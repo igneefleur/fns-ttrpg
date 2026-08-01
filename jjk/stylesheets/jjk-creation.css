@@ -217,8 +217,18 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-kv .max { color: var(--ink-3); font-variant-numeric: tabular-nums; }
 
 /* ---- compétences ---- */
-.pc-comp-search { width: 100%; padding: .26rem .5rem; border: 1px solid var(--line-2); border-radius: 6px; background: var(--card); color: var(--ink); font: inherit; font-size: .7rem; margin-bottom: .3rem; box-sizing: border-box; }
+/* outils : filtre texte, filtre de champ, puces (mêmes contrôles que la fiche HxH) */
+.pc-comp-tools { display: flex; flex-wrap: wrap; gap: .35rem; margin: .05rem 0 .4rem; align-items: center; }
+.pc-comp-search { flex: 1 1 9rem; min-width: 0; padding: .26rem .5rem; border: 1px solid var(--line-2); border-radius: 6px; background: var(--card); color: var(--ink); font: inherit; font-size: .7rem; box-sizing: border-box; }
 .pc-comp-search:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 2px var(--wash); }
+.pc-comp-tools .pc-select { flex: 0 1 8.4rem; width: auto; font-size: .66rem; }
+.pc-chip {
+  display: inline-flex; align-items: baseline; gap: .28rem; padding: .2rem .6rem;
+  border: 1px solid var(--line-2); border-radius: 999px; background: var(--panel);
+  color: var(--ink-2); font-size: .64rem; font-weight: 600; cursor: pointer; user-select: none; transition: .12s;
+}
+.pc-chip:hover { border-color: var(--line); color: var(--ink); }
+.pc-chip.on { background: var(--red); border-color: var(--red-deep); color: #fff; }
 .pc-comp-champ {
   display: flex; align-items: center; gap: .45rem; margin: .4rem 0 .1rem; padding: .05rem .05rem;
   font-family: 'Cinzel', serif; font-weight: 700; font-size: .62rem; letter-spacing: .04em; color: var(--ink-2);
