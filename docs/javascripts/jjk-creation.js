@@ -810,18 +810,30 @@
 
   var compBox = null;
   var compFilter = "";
+  var compChamp = "";           // "" = tous les champs ; "Personnalisé" = comps perso
+  var compOnly = COMPACT;       // fiche condensée (Roll20) : investies seulement par défaut
+  var compAddMode = false;      // les champs d'ajout n'apparaissent que sur demande
+  function compInvestie(it) {
+    var c = state.comps[it.key];
+    return !!(c && (c.stade > 0 || (c.techniques && c.techniques.length)));
+  }
   function rebuildComps() {
     if (!compBox) return;
     compHooks = [];   // les lignes vont être détruites : leurs hooks avec
     compBox.innerHTML = "";
     var flt = compFilter.trim().toLowerCase();
     ["Mind", "Body", "Prestance"].forEach(function (carac) {
+      if (compChamp && compChamp !== "Personnalisé" && compChamp !== carac) return;
       var items = allComps().filter(function (it) { return it.carac === carac; });
+      if (compChamp === "Personnalisé") items = items.filter(function (it) { return it.custom; });
       if (flt) items = items.filter(function (it) { return it.name.toLowerCase().indexOf(flt) >= 0; });
+      if (compOnly) items = items.filter(compInvestie);
+      if (compChamp === "Personnalisé" && !items.length && !compAddMode) return;
       var champ = el("div", "pc-comp-champ", carac);
       compBox.appendChild(champ);
       if (!items.length) {
-        compBox.appendChild(el("div", "pc-empty", flt ? "Aucune compétence ne correspond." : "—"));
+        compBox.appendChild(el("div", "pc-empty",
+          flt ? "Aucune compétence ne correspond." : compOnly ? "Aucune compétence investie." : "—"));
       } else {
         var head = el("div", "pc-comp-row head");
         head.appendChild(el("span", null, "Compétence"));
@@ -829,7 +841,9 @@
         compBox.appendChild(head);
         items.forEach(function (it, i) { compBox.appendChild(compRow(it, i % 2 === 1)); });
       }
-      // ajout d'une compétence personnalisée (les listes des règles sont ouvertes : « … »)
+      // ajout d'une compétence personnalisée (les listes des règles sont
+      // ouvertes : « … ») — seulement quand « + Compétence perso » est activé
+      if (!compAddMode) return;
       var addRow = el("div", "pc-comp-add");
       var inp = el("input");
       inp.type = "text"; inp.placeholder = "Nouvelle compétence " + carac + "…";
@@ -850,11 +864,44 @@
   }
   function buildComps(col) {
     var b = block("Compétences");
+    // mêmes outils que la fiche HxH : filtre texte, filtre de champ, puce
+    // « Investies seulement », puce « + Compétence perso »
+    var tools = el("div", "pc-comp-tools");
     var search = el("input", "pc-comp-search");
     search.type = "search";
     search.placeholder = "Filtrer les compétences…";
     search.addEventListener("input", function () { compFilter = search.value; rebuildComps(); });
-    b.appendChild(search);
+    tools.appendChild(search);
+    var champSel = el("select", "pc-select");
+    ["Tous les champs", "Mind", "Body", "Prestance", "Personnalisé"].forEach(function (ch) {
+      var o = el("option");
+      o.value = ch === "Tous les champs" ? "" : ch;
+      o.textContent = ch;
+      champSel.appendChild(o);
+    });
+    champSel.value = compChamp;
+    champSel.addEventListener("change", function () { compChamp = champSel.value; rebuildComps(); });
+    tools.appendChild(champSel);
+    var onlyChip = el("span", "pc-chip");
+    onlyChip.textContent = "Investies seulement";
+    onlyChip.classList.toggle("on", compOnly);
+    onlyChip.addEventListener("click", function () {
+      compOnly = !compOnly;
+      onlyChip.classList.toggle("on", compOnly);
+      rebuildComps();
+    });
+    tools.appendChild(onlyChip);
+    var addChip = el("span", "pc-chip");
+    addChip.textContent = "+ Compétence perso";
+    addChip.title = "Afficher un champ d'ajout de compétence personnalisée sous chaque champ.";
+    addChip.classList.toggle("on", compAddMode);
+    addChip.addEventListener("click", function () {
+      compAddMode = !compAddMode;
+      addChip.classList.toggle("on", compAddMode);
+      rebuildComps();
+    });
+    tools.appendChild(addChip);
+    b.appendChild(tools);
     compBox = el("div");
     b.appendChild(compBox);
     col.appendChild(b);
