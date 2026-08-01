@@ -147,17 +147,14 @@ def wait_signed(amo, guid, version_id):
              "temps ; relancer plus tard (le téléchargement reprendra ici).")
 
 
-def main():
-    issuer = os.environ.get("AMO_JWT_ISSUER")
-    secret = os.environ.get("AMO_JWT_SECRET")
-    if not issuer or not secret:
-        sys.exit("Clés absentes : définir AMO_JWT_ISSUER et AMO_JWT_SECRET "
-                 "(https://addons.mozilla.org/fr/developers/addon/api/key/).")
+def sign(issuer, secret):
+    """Signe le .xpi courant et met à jour docs/download/ (xpi signé + updates.json)."""
     if not XPI.exists():
         sys.exit(f"{XPI} absent : lancer d'abord mkdocs build + scripts/build_extension.py.")
 
     manifest = json.loads(FF_MANIFEST.read_text(encoding="utf-8"))
-    guid = manifest["browser_specific_settings"]["gecko"]["id"]
+    gecko = manifest["browser_specific_settings"]["gecko"]
+    guid = gecko["id"]
     version = manifest["version"]
     amo = Amo(issuer, secret)
 
@@ -178,13 +175,23 @@ def main():
             guid: {
                 "updates": [
                     {"version": version, "update_link": XPI_URL,
-                     "browser_specific_settings": {"gecko": {"strict_min_version": "109.0"}}}
+                     "browser_specific_settings": {"gecko": {
+                         "strict_min_version": gecko.get("strict_min_version", "109.0")}}}
                 ]
             }
         }
     }, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"[signature] {UPDATES.relative_to(ROOT)} mis à jour (v{version}) — "
           "les Firefox installés se mettront à jour tout seuls depuis le site.")
+
+
+def main():
+    issuer = os.environ.get("AMO_JWT_ISSUER")
+    secret = os.environ.get("AMO_JWT_SECRET")
+    if not issuer or not secret:
+        sys.exit("Clés absentes : définir AMO_JWT_ISSUER et AMO_JWT_SECRET "
+                 "(https://addons.mozilla.org/fr/developers/addon/api/key/).")
+    sign(issuer, secret)
 
 
 if __name__ == "__main__":

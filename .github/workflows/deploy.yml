@@ -21,11 +21,35 @@ jobs:
         with:
           python-version: '3.13'
       - name: Dépendances Python
-        run: pip install mkdocs-material
+        run: pip install mkdocs-material requests
       - name: Build
         env:
           NO_MKDOCS_2_WARNING: "1"   # coupe l'encadré promo « MkDocs 2.0 » de Material dans les logs
         run: mkdocs build
+      # Extension : re-signature Mozilla AUTOMATIQUE quand son contenu change
+      # (règles relues par le créateur comprises). Version montée toute seule,
+      # .xpi signé + updates.json republiés : les Firefox installés se mettent
+      # à jour sans rien faire. Clés = secrets du dépôt.
+      - name: Extension (re-signature automatique si changement)
+        env:
+          AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
+          AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
+        run: python scripts/ci_extension.py
+      - name: Rebuild (téléchargements à jour)
+        env:
+          NO_MKDOCS_2_WARNING: "1"
+        run: mkdocs build
+      # La re-signature modifie manifests, archives, updates.json et empreinte :
+      # on les recommitte sur la branche ([skip ci] : pas de nouveau run).
+      - name: Republier l'extension re-signée sur la branche
+        run: |
+          if ! git diff --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "CI : extension re-signée automatiquement [skip ci]"
+            git push || (git pull --rebase && git push)
+          fi
       # Un seul site GitHub Pages (branche gh-pages), trois emplacements :
       #   main -> racine   https://igneefleur.github.io/HxH-Regles-JDR/
       #   beta -> beta/    https://igneefleur.github.io/HxH-Regles-JDR/beta/
