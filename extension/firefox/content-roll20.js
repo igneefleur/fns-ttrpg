@@ -259,11 +259,12 @@ if (typeof browser === "undefined") { var browser = chrome; }
       function showOurPane() {
         var panes = paneBox.querySelectorAll(".tab-pane");
         for (var j = 0; j < panes.length; j++) panes[j].style.display = (panes[j] === pane) ? "block" : "none";
+        pane.classList.add("jjk-on");   // seule cette classe rend le pane visible (overlay.css)
         for (var k = 0; k < strip.children.length; k++) strip.children[k].classList.remove("active");
         tab.classList.add("active");
         refitFrame();   // l'iframe redevient visible : réajuster sa hauteur au dialogue
       }
-      function hideOurPane() { pane.style.display = "none"; tab.classList.remove("active"); }
+      function hideOurPane() { pane.style.display = "none"; pane.classList.remove("jjk-on"); tab.classList.remove("active"); }
 
       // On gère nous-mêmes l'affichage (fiable quel que soit le moment où bindTabEvents
       // s'exécute) et on bloque le gestionnaire délégué de Roll20 pour NOTRE onglet.
