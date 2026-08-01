@@ -1,7 +1,12 @@
 /* Créateur de personnage JJK — onglet « Création » du site.
  *
+ * Mise en page « dossier » transposée du créateur HxH : barre d'outils avec la
+ * bibliothèque, feuille à largeur fixe, en-tête portrait + identité, compteurs
+ * de budgets, trois onglets (Fiche / Équipement / Bio), colonnes, valeurs
+ * cliquables pour lancer les jets, journal de jets flottant.
+ *
  * Le contenu des règles (caractéristiques, listes de compétences, stades,
- * vitesses, difficultés, blessures, courbes d'armes/armures) vient de
+ * vitesses, difficultés, blessures, courbes d'armes/armures, actions) vient de
  * jjk-creation.json, généré au build par hooks/jjk_creation.py depuis la page
  * de règles. Ce fichier porte la sémantique d'interface et les règles de
  * calcul prosaïques :
@@ -21,7 +26,7 @@
  * Dans Roll20 (iframe de l'extension), creator-boot.js pose :
  *   - window.__jjkLocalStorage : persistance -> Attributes Roll20 ;
  *   - window.__jjkRoll : les jets partent dans le tchat Roll20 ;
- *   - window.__jjkCompact : masque la bibliothèque (une fiche par personnage).
+ *   - window.__jjkCompact : masque la barre d'outils et la bibliothèque.
  */
 (function () {
   "use strict";
@@ -35,6 +40,8 @@
   var CARAC_MAX = 80;         // limite sans avantage
   var CARAC_PAS = 5;          // +5 par achat d'xp
   var QUART = 4;              // « pas plus d'un quart de l'xp total »
+
+  var ABBR = { Mind: "MIND", Body: "BODY", Prestance: "PRÉS" };
 
   // ---------- outils ----------
   function el(tag, cls, txt) {
@@ -116,7 +123,6 @@
     var v = state.caracsBase[c] + CARAC_PAS * state.caracsXp[c];
     return state.sansLimite ? v : Math.min(v, CARAC_MAX);
   }
-  function caracMax() { return state.sansLimite ? 9999 : CARAC_MAX; }
   function stadeInfo(i) { return DATA.stades[clamp(i, 0, DATA.stades.length - 1)]; }
   function compXp(c) {
     var xp = DATA.xpParStade * c.stade;
@@ -131,8 +137,8 @@
     return xp;
   }
   function xpRestant() { return state.xpTotal - xpDepense(); }
-  function ptsCreationRestants() {
-    return PTS_CREATION - (state.caracsBase.Mind + state.caracsBase.Body + state.caracsBase.Prestance);
+  function ptsCreation() {
+    return state.caracsBase.Mind + state.caracsBase.Body + state.caracsBase.Prestance;
   }
   function pvMax() {
     var v = (20 + caracTotal("Body")) / 2;
@@ -156,7 +162,6 @@
     return caracTotal(carac) + stadeInfo(comp ? comp.stade : 0).bonus;
   }
   function allComps() {
-    // [{key, name, carac, custom}] : compétences des règles + personnalisées
     var out = [];
     ["Body", "Mind", "Prestance"].forEach(function (c) {
       (DATA.comps[c] || []).forEach(function (n) { out.push({ key: c + "/" + n, name: n, carac: c, custom: false }); });
@@ -200,6 +205,8 @@
     try { return normalize(JSON.parse(localStorage.getItem("jjk-perso"))); }
     catch (e) { return null; }
   }
+  function curTab() { try { return localStorage.getItem("jjk-tab") || "fiche"; } catch (e) { return "fiche"; } }
+  function setTab(id) { try { localStorage.setItem("jjk-tab", id); } catch (e) {} }
 
   // bibliothèque (site seulement : dans Roll20, une fiche par personnage)
   var PKEY = "jjk-persos";
@@ -277,8 +284,8 @@
     rollHistory.forEach(function (r) {
       var li = el("div", "pc-roll" + (r.crit === "crit" ? " crit" : r.crit === "fumble" ? " fumble" : ""));
       var head = el("div", "pc-roll-head");
-      head.appendChild(el("span", "pc-roll-label", r.label));
-      head.appendChild(el("span", "pc-roll-total", String(r.total)));
+      head.appendChild(el("span", "lbl", r.label));
+      head.appendChild(el("span", "tot", String(r.total)));
       li.appendChild(head);
       var det = "dé " + r.dice.join(" + ") + (r.value ? " " + (r.value >= 0 ? "+ " : "− ") + Math.abs(r.value) : "");
       if (r.crit === "crit") det += " — coup critique (le dé devient 100), +1 point de narration";
@@ -290,11 +297,10 @@
     if (!rollHistory.length) list.appendChild(el("div", "pc-roll-det", "Aucun jet pour l'instant."));
   }
 
-  // ---------- refresh (recalcul des zones dynamiques) ----------
+  // ---------- refresh ----------
   // hooks : fonctions appelées à chaque changement d'état. Remises à zéro à
   // chaque mount() (navigation instantanée comprise) pour ne pas s'accumuler.
-  // compHooks : hooks des lignes de compétences, vidés par rebuildComps()
-  // (les lignes sont détruites et recréées à chaque reconstruction).
+  // compHooks : hooks des lignes de compétences, vidés par rebuildComps().
   var hooks = [];
   var compHooks = [];
   function refresh() {
@@ -303,62 +309,11 @@
     compHooks.forEach(function (f) { try { f(); } catch (e) {} });
   }
   // Remplacement d'état COMPLET (import, bibliothèque, nouveau personnage) :
-  // toutes les sections tiennent des références sur l'ancien état (listEditor,
-  // avantages…), on remonte donc la fiche entière depuis le nouvel état.
+  // toutes les sections tiennent des références sur l'ancien état, on remonte
+  // donc la fiche entière depuis le nouvel état.
   var rootEl = null;
   function remount() { if (rootEl) mount(rootEl); }
 
-  // ---------- briques d'interface ----------
-  function field(labelTxt, input, cls) {
-    var w = el("label", "pc-field" + (cls ? " " + cls : ""));
-    w.appendChild(el("span", "pc-field-label", labelTxt));
-    w.appendChild(input);
-    return w;
-  }
-  function textInput(get, set, placeholder) {
-    var i = el("input", "pc-input");
-    i.type = "text";
-    if (placeholder) i.placeholder = placeholder;
-    i.value = get() || "";
-    i.addEventListener("input", function () { set(i.value); refresh(); });
-    hooks.push(function () { if (document.activeElement !== i) i.value = get() || ""; });
-    return i;
-  }
-  function areaInput(get, set, placeholder, rows) {
-    var i = el("textarea", "pc-input pc-area");
-    i.rows = rows || 3;
-    if (placeholder) i.placeholder = placeholder;
-    i.value = get() || "";
-    i.addEventListener("input", function () { set(i.value); refresh(); });
-    hooks.push(function () { if (document.activeElement !== i) i.value = get() || ""; });
-    return i;
-  }
-  function numInput(get, set, min, max, step) {
-    var i = el("input", "pc-input pc-num");
-    i.type = "number";
-    if (min != null) i.min = min;
-    if (max != null) i.max = max;
-    i.step = step || 1;
-    i.value = get();
-    i.addEventListener("input", function () { set(i.value); refresh(); });
-    hooks.push(function () { if (document.activeElement !== i) i.value = get(); });
-    return i;
-  }
-  function miniBtn(txt, title, fn) {
-    var b = el("button", "pc-mini", txt);
-    b.type = "button";
-    if (title) b.title = title;
-    b.addEventListener("click", fn);
-    return b;
-  }
-  function section(parent, title, hint) {
-    var s = el("section", "pc-section");
-    var h = el("h2", "pc-h2", title);
-    s.appendChild(h);
-    if (hint) s.appendChild(el("p", "pc-hint", hint));
-    parent.appendChild(s);
-    return s;
-  }
   function flash(msg) {
     var f = document.querySelector(".pc-flash") || el("div", "pc-flash");
     f.textContent = msg;
@@ -367,577 +322,154 @@
     setTimeout(function () { f.classList.remove("on"); }, 2600);
   }
 
-  // ---------- en-tête ----------
-  function buildHead(sheet) {
-    var head = el("header", "pc-head");
-    head.appendChild(el("h1", "pc-title", "Fiche JJK"));
+  // ---------- briques ----------
+  function fld(labelTxt, input, span) {
+    var w = el("div", "pc-f" + (span ? " " + span : ""));
+    w.appendChild(el("label", null, labelTxt));
+    w.appendChild(input);
+    return w;
+  }
+  function textInput(get, set, placeholder) {
+    var i = el("input");
+    i.type = "text";
+    if (placeholder) i.placeholder = placeholder;
+    i.value = get() || "";
+    i.addEventListener("input", function () { set(i.value); refresh(); });
+    hooks.push(function () { if (document.activeElement !== i) i.value = get() || ""; });
+    return i;
+  }
+  function miniBtn(txt, title, fn, cls) {
+    var b = el("button", "pc-mini" + (cls ? " " + cls : ""), txt);
+    b.type = "button";
+    if (title) b.title = title;
+    b.addEventListener("click", fn);
+    return b;
+  }
+  function stepBtn(txt, title, fn) {
+    var b = el("button", null, txt);
+    b.type = "button";
+    if (title) b.title = title;
+    b.addEventListener("click", fn);
+    return b;
+  }
+  // stepper −/champ/+ : le champ du milieu est éditable (pc-num)
+  function stepper(get, set, step, title) {
+    var w = el("span", "pc-step");
+    w.appendChild(stepBtn("−", title ? "− " + step : null, function () { set(get() - step); refresh(); }));
+    var i = el("input", "pc-num");
+    i.type = "number";
+    i.value = get();
+    i.addEventListener("input", function () {
+      var v = parseInt(i.value, 10);
+      if (isFinite(v)) { set(v); refresh(); }
+    });
+    hooks.push(function () { if (document.activeElement !== i) i.value = get(); });
+    w.appendChild(i);
+    w.appendChild(stepBtn("+", title ? "+ " + step : null, function () { set(get() + step); refresh(); }));
+    return w;
+  }
+  function block(title, small) {
+    var b = el("div", "pc-block");
+    var t = el("div", "pc-block-title", title);
+    if (small) t.appendChild(el("small", null, small));
+    b.appendChild(t);
+    return b;
+  }
+  function bigTile(label, getV, onClick) {
+    var d = el("div", "pc-big" + (onClick ? " pc-rollable" : ""));
+    d.appendChild(el("span", "k", label));
+    var v = el("span", "v", "");
+    d.appendChild(v);
+    hooks.push(function () { v.textContent = String(getV()); });
+    if (onClick) d.addEventListener("click", onClick);
+    return d;
+  }
 
-    var idr = el("div", "pc-head-row");
-    idr.appendChild(field("Nom", textInput(function () { return state.name; }, function (v) { state.name = v; }, "Nom du personnage"), "pc-grow"));
-    idr.appendChild(field("Âge", textInput(function () { return state.age; }, function (v) { state.age = v; })));
-    idr.appendChild(field("Genre", textInput(function () { return state.genre; }, function (v) { state.genre = v; })));
-    head.appendChild(idr);
+  // ---------- barre d'outils + bibliothèque ----------
+  function buildTop(container) {
+    if (COMPACT) return;   // dans Roll20, la fiche EST le personnage
+    var top = el("div", "pc-top");
+    top.appendChild(el("span", "pc-top-title", "Fiche JJK"));
+    top.appendChild(el("span", "pc-top-hint", "Créateur de personnage — règles de base JJK"));
 
-    var badges = el("div", "pc-badges");
-    function badge(label, getTxt, getKo) {
-      var b = el("div", "pc-badge");
-      b.appendChild(el("span", "pc-badge-label", label));
-      var v = el("span", "pc-badge-val", getTxt());
-      b.appendChild(v);
-      hooks.push(function () {
-        v.textContent = getTxt();
-        b.classList.toggle("ko", !!(getKo && getKo()));
+    var lib = el("div", "pc-lib");
+    var sel = el("select");
+    function fillSel() {
+      sel.innerHTML = "";
+      var o0 = el("option", null, "— Bibliothèque —");
+      o0.value = "";
+      sel.appendChild(o0);
+      loadPersos().forEach(function (p) {
+        var o = el("option", null, p.name || "Sans nom");
+        o.value = p.id;
+        sel.appendChild(o);
+      });
+    }
+    fillSel();
+    lib.appendChild(sel);
+
+    lib.appendChild((function () {
+      var b = el("button", "pc-btn", "Charger");
+      b.type = "button";
+      b.addEventListener("click", function () {
+        var p = loadPersos().filter(function (q) { return q.id === sel.value; })[0];
+        if (!p) { flash("Choisir un personnage dans la liste."); return; }
+        try { state = normalize(JSON.parse(JSON.stringify(p.state))); }
+        catch (e) { flash("Fiche illisible."); return; }
+        remount();
+        flash("« " + (p.name || "Sans nom") + " » chargé.");
       });
       return b;
-    }
-    badges.appendChild(badge("PV", function () { return pvCourant() + " / " + pvMax(); },
-      function () { return pvCourant() <= 0; }));
-    badges.appendChild(badge("Vitesse", function () { return vitesse(); }));
-    badges.appendChild(badge("Narration", function () { return String(state.narration); }));
-    badges.appendChild(badge("XP restant", function () { return xpRestant() + " / " + state.xpTotal; },
-      function () { return xpRestant() < 0; }));
-    head.appendChild(badges);
-    sheet.appendChild(head);
-  }
-
-  // ---------- identité ----------
-  function buildIdentite(sheet) {
-    var s = section(sheet, "Identité",
-      "À la création : 2 avantages au choix, 1 défaut comique et 2 qualités qui définissent le personnage.");
-    var g = el("div", "pc-grid2");
-    var portraitInput = textInput(function () { return state.portrait; }, function (v) { state.portrait = v; }, "https://…");
-    portraitInput.addEventListener("change", function () { refresh(); });   // maj de l'aperçu au blur
-    g.appendChild(field("Portrait (URL d'image)", portraitInput));
-    g.appendChild(field("Défaut (comique)", textInput(function () { return state.defaut; }, function (v) { state.defaut = v; }, "« Je me perds tout le temps comme Zoro »")));
-    g.appendChild(field("Qualité 1", textInput(function () { return state.qualites[0]; }, function (v) { state.qualites[0] = v; })));
-    g.appendChild(field("Qualité 2", textInput(function () { return state.qualites[1]; }, function (v) { state.qualites[1] = v; })));
-    s.appendChild(g);
-
-    var img = el("img", "pc-portrait");
-    img.alt = "";
-    hooks.push(function () {
-      // pas de requête à chaque frappe : l'aperçu attend la fin de la saisie,
-      // et src n'est réassigné que s'il a réellement changé
-      if (document.activeElement === portraitInput) return;
-      if (state.portrait) {
-        if (img.getAttribute("src") !== state.portrait) img.src = state.portrait;
-        img.style.display = "";
-      } else { img.removeAttribute("src"); img.style.display = "none"; }
-    });
-    s.appendChild(img);
-
-    // avantages : liste libre (les règles n'en donnent pas de catalogue)
-    var avT = el("h3", "pc-h3", "Avantages");
-    s.appendChild(avT);
-    var avBox = el("div", "pc-av-list");
-    s.appendChild(avBox);
-    function renderAv() {
-      avBox.innerHTML = "";
-      state.avantages.forEach(function (a, i) {
-        var row = el("div", "pc-av");
-        var n = el("input", "pc-input"); n.type = "text"; n.placeholder = "Avantage"; n.value = a.name || "";
-        n.addEventListener("input", function () { a.name = n.value; save(); });
-        var d = el("input", "pc-input pc-grow"); d.type = "text"; d.placeholder = "Effet (à définir avec le MJ)"; d.value = a.desc || "";
-        d.addEventListener("input", function () { a.desc = d.value; save(); });
-        row.appendChild(n); row.appendChild(d);
-        row.appendChild(miniBtn("✕", "Retirer", function () { state.avantages.splice(i, 1); renderAv(); refresh(); }));
-        avBox.appendChild(row);
-      });
-      var add = miniBtn("+ Ajouter un avantage", null, function () { state.avantages.push({ name: "", desc: "" }); renderAv(); refresh(); });
-      add.className = "pc-add";
-      avBox.appendChild(add);
-    }
-    renderAv();
-
-    var lim = el("label", "pc-check");
-    var cb = el("input"); cb.type = "checkbox"; cb.checked = !!state.sansLimite;
-    cb.addEventListener("change", function () { state.sansLimite = cb.checked; refresh(); });
-    lim.appendChild(cb);
-    lim.appendChild(el("span", null, "Un avantage lève la limite de 80 des caractéristiques"));
-    hooks.push(function () { cb.checked = !!state.sansLimite; });
-    s.appendChild(lim);
-  }
-
-  // ---------- caractéristiques ----------
-  function buildCaracs(sheet) {
-    var s = section(sheet, "Caractéristiques",
-      "À la création : " + PTS_CREATION + " points à répartir (0 à " + CARAC_MAX + " par caractéristique). "
-      + "Ensuite : " + DATA.xpParStade + " xp pour monter une caractéristique de +" + CARAC_PAS
-      + " (maximum " + CARAC_MAX + " sans avantage).");
-
-    var xpRow = el("div", "pc-xp-row");
-    xpRow.appendChild(field("XP total", numInput(function () { return state.xpTotal; },
-      function (v) { state.xpTotal = Math.max(0, num(v, XP_CREATION)); }, 0, null, 5)));
-    var spent = el("div", "pc-badge");
-    spent.appendChild(el("span", "pc-badge-label", "Dépensé"));
-    var spentV = el("span", "pc-badge-val", "");
-    spent.appendChild(spentV);
-    xpRow.appendChild(spent);
-    var left = el("div", "pc-badge");
-    left.appendChild(el("span", "pc-badge-label", "Restant"));
-    var leftV = el("span", "pc-badge-val", "");
-    left.appendChild(leftV);
-    xpRow.appendChild(left);
-    var crea = el("div", "pc-badge");
-    crea.appendChild(el("span", "pc-badge-label", "Points de création"));
-    var creaV = el("span", "pc-badge-val", "");
-    crea.appendChild(creaV);
-    xpRow.appendChild(crea);
-    hooks.push(function () {
-      spentV.textContent = String(xpDepense());
-      leftV.textContent = String(xpRestant());
-      leftV.parentNode.classList.toggle("ko", xpRestant() < 0);
-      creaV.textContent = ptsCreationRestants() + " / " + PTS_CREATION;
-      creaV.parentNode.classList.toggle("ko", ptsCreationRestants() < 0);
-    });
-    s.appendChild(xpRow);
-
-    var g = el("div", "pc-caracs");
-    DATA.caracs.forEach(function (c) {
-      var name = c.name;
-      var card = el("div", "pc-carac");
-      var h = el("div", "pc-carac-head");
-      h.appendChild(el("span", "pc-carac-name", name));
-      var tot = el("span", "pc-carac-total", "");
-      h.appendChild(tot);
-      card.appendChild(h);
-      card.appendChild(el("p", "pc-carac-desc", c.desc));
-
-      var row = el("div", "pc-carac-row");
-      row.appendChild(field("Création", numInput(
-        function () { return state.caracsBase[name]; },
-        function (v) {
-          var val = clamp(num(v, 0), 0, 999);
-          if (!state.sansLimite && val > CARAC_MAX) {
-            flash("Maximum " + CARAC_MAX + " par caractéristique sans avantage.");
-            val = CARAC_MAX;
-          }
-          state.caracsBase[name] = val;
-        },
-        0, null, 5)));
-      var xpBox = el("div", "pc-field");
-      xpBox.appendChild(el("span", "pc-field-label", "Achats d'xp (+" + CARAC_PAS + ")"));
-      var xpCtl = el("div", "pc-stepper");
-      var minus = miniBtn("−", "Rendre " + DATA.xpParStade + " xp", function () {
-        if (state.caracsXp[name] > 0) { state.caracsXp[name]--; refresh(); }
-      });
-      var count = el("span", "pc-step-val", "");
-      var plus = miniBtn("+", "Dépenser " + DATA.xpParStade + " xp", function () {
-        if (xpRestant() < DATA.xpParStade) { flash("XP insuffisant."); return; }
-        if (!state.sansLimite && caracTotal(name) + CARAC_PAS > CARAC_MAX) { flash("Limite de " + CARAC_MAX + " atteinte (sans avantage)."); return; }
-        state.caracsXp[name]++;
-        refresh();
-      });
-      xpCtl.appendChild(minus); xpCtl.appendChild(count); xpCtl.appendChild(plus);
-      xpBox.appendChild(xpCtl);
-      row.appendChild(xpBox);
-
-      var jet = miniBtn("Jet", "1d100 + " + name, function () { doRoll(name, caracTotal(name), null, true); });
-      jet.className = "pc-roll-btn";
-      row.appendChild(jet);
-      card.appendChild(row);
-
-      hooks.push(function () {
-        tot.textContent = String(caracTotal(name));
-        count.textContent = String(state.caracsXp[name]);
-      });
-      g.appendChild(card);
-    });
-    s.appendChild(g);
-  }
-
-  // ---------- compétences ----------
-  function compRow(item) {
-    var comp = state.comps[item.key] || { stade: 0, passifs: [] };
-    var row = el("div", "pc-comp");
-    var top = el("div", "pc-comp-top");
-    top.appendChild(el("span", "pc-comp-name", item.name));
-    var val = el("span", "pc-comp-val", "");
-    top.appendChild(val);
-    var jet = miniBtn("Jet", null, function () {
-      var c = state.comps[item.key] || { stade: 0, passifs: [] };
-      doRoll(item.name + " (" + item.carac + ")", compValue(item.carac, c), null, true);
-    });
-    jet.className = "pc-roll-btn";
-    top.appendChild(jet);
-    if (item.custom) {
-      top.appendChild(miniBtn("✕", "Retirer cette compétence", function () {
-        state.customComps = state.customComps.filter(function (cc) { return (cc.carac + "/" + cc.name) !== item.key; });
-        delete state.comps[item.key];
-        refresh();
-        rebuildComps();
-      }));
-    }
-    row.appendChild(top);
-
-    // stades : une pastille par stade, cliquable ; le coût se règle tout seul
-    var st = el("div", "pc-stades");
-    DATA.stades.forEach(function (sd, i) {
-      var b = el("button", "pc-stade", sd.nom);
+    })());
+    lib.appendChild((function () {
+      var b = el("button", "pc-btn", "Enregistrer");
       b.type = "button";
-      b.title = sd.nom + " (" + sign(sd.bonus) + (sd.passif ? ", passifs" : "") + ") — " + (DATA.xpParStade * i) + " xp";
+      b.title = "Enregistrer le personnage courant dans la bibliothèque";
       b.addEventListener("click", function () {
-        var c = state.comps[item.key] || { stade: 0, passifs: [] };
-        var target = (i === c.stade) ? 0 : i;   // recliquer le stade courant = revenir à Non initié
-        var next = { stade: target, passifs: c.passifs.slice() };
-        if (!stadeInfo(target).passif) next.passifs = [];
-        var delta = compXp(next) - compXp(c);
-        if (delta > 0 && xpRestant() < delta) { flash("XP insuffisant."); return; }
-        // le plafond du quart ne bloque que les HAUSSES : on peut toujours redescendre
-        if (delta > 0 && compXp(next) > compCap()) { flash("Pas plus d'un quart de l'xp total (" + compCap() + " xp) dans une seule compétence."); return; }
-        state.comps[item.key] = next;
-        if (!next.stade && !next.passifs.length) delete state.comps[item.key];
-        refresh();
-        renderStades();
-        renderPassifs();
+        var persos = loadPersos();
+        var name = state.name || "Sans nom";
+        var existing = null;
+        persos.forEach(function (p) { if (p.name === name) existing = p; });
+        var copy = JSON.parse(JSON.stringify(state));
+        if (existing) { existing.state = copy; existing.updated = nowStamp(); }
+        else persos.push({ id: "p" + Date.now().toString(36), name: name, state: copy, updated: nowStamp() });
+        savePersos(persos);
+        fillSel();
+        flash("« " + name + " » enregistré.");
       });
-      st.appendChild(b);
-    });
-    row.appendChild(st);
-
-    var pas = el("div", "pc-passifs");
-    row.appendChild(pas);
-
-    function renderStades() {
-      var c = state.comps[item.key] || { stade: 0, passifs: [] };
-      Array.prototype.forEach.call(st.children, function (b, i) {
-        b.classList.toggle("on", i <= c.stade && (i > 0 || c.stade > 0));
-        b.classList.toggle("cur", i === c.stade);
+      return b;
+    })());
+    lib.appendChild((function () {
+      var b = el("button", "pc-btn", "Supprimer");
+      b.type = "button";
+      b.className = "pc-btn danger";
+      b.title = "Supprimer le personnage choisi de la bibliothèque";
+      b.addEventListener("click", function () {
+        if (!sel.value) { flash("Choisir un personnage dans la liste."); return; }
+        savePersos(loadPersos().filter(function (q) { return q.id !== sel.value; }));
+        fillSel();
       });
-    }
-    function renderPassifs() {
-      var c = state.comps[item.key] || { stade: 0, passifs: [] };
-      pas.innerHTML = "";
-      if (!stadeInfo(c.stade).passif) return;
-      c.passifs.forEach(function (p, i) {
-        var chip = el("span", "pc-passif");
-        var inp = el("input", "pc-input"); inp.type = "text"; inp.placeholder = "Passif original"; inp.value = p;
-        inp.addEventListener("input", function () { c.passifs[i] = inp.value; state.comps[item.key] = c; save(); });
-        chip.appendChild(inp);
-        chip.appendChild(miniBtn("✕", "Retirer ce passif", function () {
-          c.passifs.splice(i, 1); state.comps[item.key] = c; refresh(); renderPassifs();
-        }));
-        pas.appendChild(chip);
+      return b;
+    })());
+    lib.appendChild((function () {
+      var b = el("button", "pc-btn", "Nouveau");
+      b.type = "button";
+      b.addEventListener("click", function () { state = blank(); remount(); });
+      return b;
+    })());
+    lib.appendChild((function () {
+      var b = el("button", "pc-btn", "Exporter");
+      b.type = "button";
+      b.addEventListener("click", function () {
+        var a = document.createElement("a");
+        a.href = "data:application/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
+        a.download = (state.name || "personnage-jjk") + ".json";
+        a.click();
       });
-      var cost = c.passifs.length ? DATA.xpParStade : 0;   // le 1er passif est inclus dans le stade Art
-      var add = miniBtn("+ passif" + (cost ? " (" + cost + " xp)" : ""), null, function () {
-        var test = { stade: c.stade, passifs: c.passifs.concat([""]) };
-        var delta = compXp(test) - compXp(c);
-        if (delta > 0 && xpRestant() < delta) { flash("XP insuffisant."); return; }
-        if (compXp(test) > compCap()) { flash("Pas plus d'un quart de l'xp total (" + compCap() + " xp) dans une seule compétence."); return; }
-        c.passifs.push(""); state.comps[item.key] = c; refresh(); renderPassifs();
-      });
-      add.className = "pc-add";
-      pas.appendChild(add);
-    }
-    compHooks.push(function () {
-      var c = state.comps[item.key] || { stade: 0, passifs: [] };
-      val.textContent = sign(compValue(item.carac, c));
-    });
-    renderStades();
-    renderPassifs();
-    return row;
-  }
-
-  var compCols = null;
-  function rebuildComps() {
-    if (!compCols) return;
-    compHooks = [];   // les lignes vont être détruites : leurs hooks avec
-    ["Body", "Mind", "Prestance"].forEach(function (carac) {
-      var col = compCols[carac];
-      col.innerHTML = "";
-      col.appendChild(el("h3", "pc-h3", carac));
-      allComps().filter(function (it) { return it.carac === carac; }).forEach(function (it) {
-        col.appendChild(compRow(it));
-      });
-      // ajout d'une compétence personnalisée (les listes des règles sont ouvertes : « … »)
-      var addRow = el("div", "pc-comp-add");
-      var inp = el("input", "pc-input"); inp.type = "text"; inp.placeholder = "Nouvelle compétence " + carac;
-      addRow.appendChild(inp);
-      addRow.appendChild(miniBtn("+", "Ajouter", function () {
-        var name = inp.value.trim();
-        if (!name) return;
-        var exists = allComps().some(function (it) { return it.carac === carac && it.name.toLowerCase() === name.toLowerCase(); });
-        if (exists) { flash("Cette compétence existe déjà."); return; }
-        state.customComps.push({ name: name, carac: carac });
-        inp.value = "";
-        refresh();
-        rebuildComps();
-      }));
-      col.appendChild(addRow);
-    });
-    refresh();
-  }
-  function buildComps(sheet) {
-    var s = section(sheet, "Compétences",
-      "Stades : " + DATA.stades.map(function (sd) { return sd.nom + " " + sign(sd.bonus); }).join(", ")
-      + ". Chaque stade coûte " + DATA.xpParStade + " xp ; jet = 1d100 + caractéristique + bonus de stade. "
-      + "Pas plus d'un quart de l'xp total dans une seule compétence.");
-    var cols = el("div", "pc-cols3");
-    compCols = {};
-    ["Body", "Mind", "Prestance"].forEach(function (c) {
-      var col = el("div", "pc-col");
-      compCols[c] = col;
-      cols.appendChild(col);
-    });
-    s.appendChild(cols);
-    rebuildComps();
-  }
-
-  // ---------- combat ----------
-  function buildCombat(sheet) {
-    var s = section(sheet, "Combat");
-    var g = el("div", "pc-grid2");
-
-    // PV
-    var pvBox = el("div", "pc-block");
-    pvBox.appendChild(el("h3", "pc-h3", "Points de vie"));
-    var pvRow = el("div", "pc-pv-row");
-    var pvIn = el("input", "pc-input pc-num");
-    pvIn.type = "number"; pvIn.step = "0.5";
-    pvIn.addEventListener("input", function () {
-      var v = parseFloat(pvIn.value);
-      state.pv = isFinite(v) ? v : null;
-      refresh();
-    });
-    pvRow.appendChild(miniBtn("−", null, function () { state.pv = pvCourant() - 1; refresh(); }));
-    pvRow.appendChild(pvIn);
-    var pvMaxL = el("span", "pc-pv-max", "");
-    pvRow.appendChild(pvMaxL);
-    pvRow.appendChild(miniBtn("+", null, function () { state.pv = pvCourant() + 1; refresh(); }));
-    pvRow.appendChild(miniBtn("Max", "Revenir au maximum", function () { state.pv = null; refresh(); }));
-    pvBox.appendChild(pvRow);
-    var pvInfo = el("p", "pc-hint", "");
-    pvBox.appendChild(pvInfo);
-    var seuils = el("div", "pc-seuils");
-    pvBox.appendChild(seuils);
-    hooks.push(function () {
-      if (document.activeElement !== pvIn) pvIn.value = pvCourant();
-      pvMaxL.textContent = "/ " + pvMax();
-      pvInfo.textContent = "PV max = (20 + Body) / 2. Récupération : " + regen() + " PV par jour (Body/10).";
-      seuils.innerHTML = "";
-      seuils.appendChild(el("div", "pc-seuil", "Inconscience à 0 PV — mort à −" + pvMax() + " PV."));
-      (DATA.blessures || []).forEach(function (b) {
-        var abs = b.pct ? " (" + (Math.round(pvMax() * b.pct) / 100) + " PV)" : "";
-        seuils.appendChild(el("div", "pc-seuil", b.nom + " : " + b.seuil + abs + " — " + b.effets.toLowerCase()));
-      });
-    });
-    g.appendChild(pvBox);
-
-    // narration + dé
-    var nar = el("div", "pc-block");
-    nar.appendChild(el("h3", "pc-h3", "Points de narration"));
-    var narRow = el("div", "pc-pv-row");
-    narRow.appendChild(miniBtn("−", null, function () { state.narration = Math.max(0, state.narration - 1); refresh(); }));
-    var narV = el("span", "pc-nar-val", "");
-    narRow.appendChild(narV);
-    narRow.appendChild(miniBtn("+", null, function () { state.narration++; refresh(); }));
-    narRow.appendChild(miniBtn("Nouvelle session", "Repartir à 3 points", function () { state.narration = 3; refresh(); }));
-    nar.appendChild(narRow);
-    nar.appendChild(el("p", "pc-hint",
-      "3 points par session. Un seul point par jet ou confrontation : "
-      + "Coup de Chance +25, Coup de Poker +50 ou +0, Coup du Destin (créer un aspect), Coup de Relance (relancer)."));
-    var deRow = el("div", "pc-pv-row");
-    deRow.appendChild(field("Dé", textInput(function () { return state.de; }, function (v) { state.de = v || "1d100"; }, "1d100")));
-    nar.appendChild(deRow);
-
-    // table des difficultés, pour lire un résultat
-    var diff = el("table", "pc-table");
-    var tb = el("tbody");
-    (DATA.difficultes || []).forEach(function (d) {
-      var tr = el("tr");
-      tr.appendChild(el("td", null, String(d.seuil)));
-      tr.appendChild(el("td", null, d.nom));
-      tb.appendChild(tr);
-    });
-    diff.appendChild(tb);
-    var diffWrap = el("details", "pc-details");
-    var sum = el("summary", null, "Difficultés de tests");
-    diffWrap.appendChild(sum);
-    diffWrap.appendChild(diff);
-    nar.appendChild(diffWrap);
-
-    // aide-mémoire : l'économie d'actions du livre
-    if ((DATA.actions || []).length) {
-      var act = el("details", "pc-details");
-      act.appendChild(el("summary", null, "Actions de combat"));
-      DATA.actions.forEach(function (a) {
-        act.appendChild(el("div", "pc-seuil", a.nom + " : " + a.desc));
-      });
-      nar.appendChild(act);
-    }
-    g.appendChild(nar);
-
-    hooks.push(function () { narV.textContent = String(state.narration); });
-    s.appendChild(g);
-  }
-
-  // ---------- équipement ----------
-  function listEditor(box, items, cols, addLabel, rollOf) {
-    // items : tableau d'objets ; cols : [{key, label, wide}] ; rollOf(item) -> {label, die} | null
-    function render() {
-      box.innerHTML = "";
-      var headRow = el("div", "pc-eq pc-eq-head");
-      cols.forEach(function (c) { headRow.appendChild(el("span", "pc-eq-cell" + (c.wide ? " pc-grow" : ""), c.label)); });
-      headRow.appendChild(el("span", "pc-eq-cell pc-eq-tools", ""));
-      if (items.length) box.appendChild(headRow);
-      items.forEach(function (it, idx) {
-        var row = el("div", "pc-eq");
-        cols.forEach(function (c) {
-          var i = el("input", "pc-input" + (c.wide ? " pc-grow" : ""));
-          i.type = "text"; i.placeholder = c.label; i.value = it[c.key] || "";
-          i.addEventListener("input", function () { it[c.key] = i.value; save(); });
-          row.appendChild(i);
-        });
-        var tools = el("span", "pc-eq-tools");
-        var r = rollOf && rollOf(it);
-        if (r) tools.appendChild(miniBtn("Jet", r.title || null, function () {
-          var rr = rollOf(it);
-          if (rr && rr.die) doRoll(rr.label, 0, rr.die, false);   // dés bruts : pas de critique
-          else flash("Renseigner d'abord les dés (ex. 5D8).");
-        }));
-        tools.appendChild(miniBtn("✕", "Retirer", function () { items.splice(idx, 1); render(); refresh(); }));
-        row.appendChild(tools);
-        box.appendChild(row);
-      });
-      var add = miniBtn(addLabel, null, function () {
-        var o = {};
-        cols.forEach(function (c) { o[c.key] = ""; });
-        items.push(o);
-        render();
-        refresh();
-      });
-      add.className = "pc-add";
-      box.appendChild(add);
-    }
-    render();
-  }
-  function diceOf(txt) {
-    var m = /(\d{1,2})\s*[dD]\s*(\d{1,4})\s*([+-]\s*\d{1,4})?/.exec(String(txt || ""));
-    if (!m) return null;
-    return m[1] + "d" + m[2] + (m[3] ? m[3].replace(/\s/g, "") : "");
-  }
-  function buildEquipement(sheet) {
-    var s = section(sheet, "Équipement",
-      "Armes et armures personnalisables : poids, dégâts, reach et avantages/désavantages s'équilibrent "
-      + "selon les courbes des règles (au moins 2 avantages et 2 désavantages par arme).");
-
-    s.appendChild(el("h3", "pc-h3", "Armes"));
-    var armesBox = el("div", "pc-eq-list");
-    s.appendChild(armesBox);
-    listEditor(armesBox, state.armes, [
-      { key: "nom", label: "Arme" }, { key: "poids", label: "Poids" },
-      { key: "degats", label: "Dégâts (ex. 5D10)" }, { key: "reach", label: "Reach" },
-      { key: "props", label: "Avantages / désavantages", wide: true }
-    ], "+ Ajouter une arme", function (it) {
-      var d = diceOf(it.degats);
-      return { label: "Dégâts — " + (it.nom || "arme"), die: d, title: d ? "Lancer " + d : null };
-    });
-
-    s.appendChild(el("h3", "pc-h3", "Armures"));
-    var armuresBox = el("div", "pc-eq-list");
-    s.appendChild(armuresBox);
-    listEditor(armuresBox, state.armures, [
-      { key: "nom", label: "Armure" }, { key: "poids", label: "Poids" },
-      { key: "invu", label: "Invu (ex. 5D8)" }, { key: "zones", label: "Zones protégées", wide: true }
-    ], "+ Ajouter une armure", function (it) {
-      var d = diceOf(it.invu);
-      return { label: "Invu — " + (it.nom || "armure"), die: d, title: d ? "Lancer " + d : null };
-    });
-
-    s.appendChild(el("h3", "pc-h3", "Inventaire"));
-    s.appendChild(areaInput(function () { return state.inventaire; }, function (v) { state.inventaire = v; },
-      "Une ligne par objet…", 4));
-
-    // courbes de référence, repliées
-    var det = el("details", "pc-details");
-    det.appendChild(el("summary", null, "Courbes de poids (référence des règles)"));
-    var t1 = el("table", "pc-table");
-    var tb1 = el("tbody");
-    var h1 = el("tr");
-    ["Poids", "Dégâts", "Reach"].forEach(function (h) { h1.appendChild(el("th", null, h)); });
-    tb1.appendChild(h1);
-    (DATA.armesCourbe || []).forEach(function (r) {
-      var tr = el("tr");
-      [r.poids, r.degats, r.reach].forEach(function (v) { tr.appendChild(el("td", null, v)); });
-      tb1.appendChild(tr);
-    });
-    t1.appendChild(tb1);
-    det.appendChild(t1);
-    var ac = DATA.armuresCourbe || {};
-    if (ac.invu) {
-      var t2 = el("table", "pc-table");
-      var tb2 = el("tbody");
-      var rows = [["Poids"].concat(ac.poids), ["Invu"].concat(ac.invu), ["Zones"].concat(ac.zones || []),
-                  ["Viser une zone non protégée"].concat(ac.viser || []), ["Port d'armure"].concat(ac.port || [])];
-      rows.forEach(function (cells, ri) {
-        var tr = el("tr");
-        cells.forEach(function (v, ci) { tr.appendChild(el(ri === 0 || ci === 0 ? "th" : "td", null, v)); });
-        tb2.appendChild(tr);
-      });
-      t2.appendChild(tb2);
-      det.appendChild(t2);
-    }
-    s.appendChild(det);
-  }
-
-  // ---------- notes ----------
-  function buildNotes(sheet) {
-    var s = section(sheet, "Background & notes");
-    var g = el("div", "pc-grid2");
-    g.appendChild(field("Background", areaInput(function () { return state.background; }, function (v) { state.background = v; }, "Un petit background…", 6)));
-    g.appendChild(field("Notes", areaInput(function () { return state.notes; }, function (v) { state.notes = v; }, "", 6)));
-    s.appendChild(g);
-  }
-
-  // ---------- bibliothèque (site seulement) ----------
-  function buildLibrary(sheet) {
-    if (COMPACT) return;   // dans Roll20, la fiche EST le personnage
-    var s = section(sheet, "Bibliothèque",
-      "Les personnages enregistrés se synchronisent avec l'extension Roll20 (popup « Fiche JJK »).");
-    var list = el("div", "pc-lib");
-    s.appendChild(list);
-    function render() {
-      var persos = loadPersos();
-      list.innerHTML = "";
-      persos.forEach(function (p) {
-        var row = el("div", "pc-lib-row");
-        row.appendChild(el("span", "pc-lib-name pc-grow", p.name || "Sans nom"));
-        row.appendChild(miniBtn("Charger", null, function () {
-          try { state = normalize(JSON.parse(JSON.stringify(p.state))); }
-          catch (e) { flash("Fiche illisible."); return; }
-          remount();
-          flash("« " + (p.name || "Sans nom") + " » chargé.");
-        }));
-        row.appendChild(miniBtn("✕", "Supprimer de la bibliothèque", function () {
-          savePersos(loadPersos().filter(function (q) { return q.id !== p.id; }));
-          render();
-        }));
-        list.appendChild(row);
-      });
-      if (!persos.length) list.appendChild(el("p", "pc-hint", "Aucun personnage enregistré."));
-    }
-    var tools = el("div", "pc-lib-tools");
-    tools.appendChild(miniBtn("Enregistrer le personnage courant", null, function () {
-      var persos = loadPersos();
-      var name = state.name || "Sans nom";
-      var existing = null;
-      persos.forEach(function (p) { if (p.name === name) existing = p; });
-      var copy = JSON.parse(JSON.stringify(state));
-      if (existing) { existing.state = copy; existing.updated = nowStamp(); }
-      else persos.push({ id: "p" + Date.now().toString(36), name: name, state: copy, updated: nowStamp() });
-      savePersos(persos);
-      render();
-      flash("« " + name + " » enregistré.");
-    }));
-    tools.appendChild(miniBtn("Exporter (JSON)", null, function () {
-      var a = document.createElement("a");
-      a.href = "data:application/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
-      a.download = (state.name || "personnage-jjk") + ".json";
-      a.click();
-    }));
-    var imp = miniBtn("Importer (JSON)", null, function () { file.click(); });
-    var file = el("input"); file.type = "file"; file.accept = "application/json"; file.style.display = "none";
+      return b;
+    })());
+    var file = el("input");
+    file.type = "file"; file.accept = "application/json"; file.style.display = "none";
     file.addEventListener("change", function () {
       var f = file.files && file.files[0];
       if (!f) return;
@@ -952,14 +484,688 @@
       };
       r.readAsText(f);
     });
-    tools.appendChild(imp);
-    tools.appendChild(file);
-    tools.appendChild(miniBtn("Nouveau personnage", null, function () {
-      state = blank();
-      remount();
-    }));
-    s.appendChild(tools);
+    lib.appendChild((function () {
+      var b = el("button", "pc-btn", "Importer");
+      b.type = "button";
+      b.addEventListener("click", function () { file.click(); });
+      return b;
+    })());
+    lib.appendChild(file);
+    top.appendChild(lib);
+    container.appendChild(top);
+  }
+
+  // ---------- en-tête : portrait + identité + compteurs + garde-fous ----------
+  function buildHead(sheet) {
+    var head = el("div", "pc-head");
+
+    var brand = el("div", "pc-brand");
+    var img = el("img", "pc-portrait");
+    img.alt = "";
+    hooks.push(function () {
+      var want = state.portrait || "";
+      if (img.getAttribute("src") !== want) {
+        if (want) img.src = want;
+        else img.removeAttribute("src");
+      }
+    });
+    brand.appendChild(img);
+    var pBtn = el("button", "pc-portrait-btn", "changer le portrait");
+    pBtn.type = "button";
+    pBtn.addEventListener("click", function () {
+      var url = prompt("URL de l'image du portrait :", state.portrait || "");
+      if (url === null) return;
+      state.portrait = url.trim();
+      refresh();
+    });
+    brand.appendChild(pBtn);
+    brand.appendChild(el("span", "b1", "JJK"));
+    brand.appendChild(el("span", "b2", "Système JDR"));
+    head.appendChild(brand);
+
+    var id = el("div", "pc-id");
+    id.appendChild(fld("Nom", textInput(function () { return state.name; }, function (v) { state.name = v; }, "Nom du personnage"), "c6"));
+    id.appendChild(fld("Âge", textInput(function () { return state.age; }, function (v) { state.age = v; }), "c3"));
+    id.appendChild(fld("Genre", textInput(function () { return state.genre; }, function (v) { state.genre = v; }), "c3"));
+    var xpIn = el("input", null);
+    xpIn.type = "number"; xpIn.min = 0; xpIn.step = 5;
+    xpIn.value = state.xpTotal;
+    xpIn.addEventListener("input", function () {
+      var v = parseInt(xpIn.value, 10);
+      if (isFinite(v)) { state.xpTotal = Math.max(0, v); refresh(); }
+    });
+    hooks.push(function () { if (document.activeElement !== xpIn) xpIn.value = state.xpTotal; });
+    id.appendChild(fld("XP total", xpIn, "c3"));
+    var pvRo = el("span", "pc-ro", "");
+    hooks.push(function () { pvRo.textContent = pvCourant() + " / " + pvMax(); });
+    id.appendChild(fld("PV", pvRo, "c3"));
+    var vRo = el("span", "pc-ro", "");
+    hooks.push(function () { vRo.textContent = vitesse(); });
+    id.appendChild(fld("Vitesse", vRo, "c3"));
+    var nRo = el("span", "pc-ro", "");
+    hooks.push(function () { nRo.textContent = String(state.narration); });
+    id.appendChild(fld("Narration", nRo, "c3"));
+    head.appendChild(id);
+    sheet.appendChild(head);
+
+    // compteurs de budgets
+    var meters = el("div", "pc-meters");
+    function meter(label, getUsed, getTotal) {
+      var m = el("span", "pc-meter");
+      m.appendChild(el("span", null, label));
+      var b = el("b", null, "");
+      m.appendChild(b);
+      var bar = el("span", "bar");
+      var fill = el("i");
+      bar.appendChild(fill);
+      m.appendChild(bar);
+      hooks.push(function () {
+        var used = getUsed(), total = getTotal();
+        b.textContent = used + " / " + total;
+        var over = used > total;
+        b.classList.toggle("over", over);
+        fill.classList.toggle("over", over);
+        fill.style.width = clamp(total ? (used / total) * 100 : 0, 0, 100) + "%";
+      });
+      return m;
+    }
+    meters.appendChild(meter("Création", ptsCreation, function () { return PTS_CREATION; }));
+    meters.appendChild(meter("XP dépensé", xpDepense, function () { return state.xpTotal; }));
+    sheet.appendChild(meters);
+
+    // garde-fous
+    var warns = el("div", "pc-warns");
+    hooks.push(function () {
+      warns.innerHTML = "";
+      if (ptsCreation() > PTS_CREATION)
+        warns.appendChild(el("div", "pc-warn", "Points de création dépassés : " + ptsCreation() + " / " + PTS_CREATION + "."));
+      if (xpRestant() < 0)
+        warns.appendChild(el("div", "pc-warn", "XP dépensé au-delà du total (" + xpDepense() + " / " + state.xpTotal + ")."));
+      var cap = compCap();
+      Object.keys(state.comps).forEach(function (k) {
+        if (compXp(state.comps[k]) > cap)
+          warns.appendChild(el("div", "pc-warn", "« " + k.split("/").slice(1).join("/") + " » dépasse le quart de l'xp total (" + compXp(state.comps[k]) + " / " + cap + " xp)."));
+      });
+    });
+    sheet.appendChild(warns);
+  }
+
+  // ---------- onglets ----------
+  var TABS = [
+    { id: "fiche", label: "Fiche" },
+    { id: "equipement", label: "Équipement" },
+    { id: "bio", label: "Bio" }
+  ];
+  function buildTabs(sheet) {
+    var bar = el("div", "pc-tabs");
+    var panes = {};
+    var btns = {};
+    TABS.forEach(function (t) {
+      var b = el("div", "pc-tab", t.label);
+      b.addEventListener("click", function () { activate(t.id); });
+      bar.appendChild(b);
+      btns[t.id] = b;
+      panes[t.id] = el("div", "pc-pane");
+    });
+    function activate(id) {
+      if (!panes[id]) id = "fiche";
+      TABS.forEach(function (t) {
+        btns[t.id].classList.toggle("on", t.id === id);
+        panes[t.id].classList.toggle("on", t.id === id);
+      });
+      setTab(id);
+    }
+    sheet.appendChild(bar);
+    TABS.forEach(function (t) { sheet.appendChild(panes[t.id]); });
+    activate(curTab());
+    return panes;
+  }
+
+  // ---------- onglet Fiche : caractéristiques + combat | compétences ----------
+  function buildCaracs(col) {
+    var b = block("Caractéristiques", DATA.xpParStade + " xp = +" + CARAC_PAS);
+    b.appendChild(el("div", "pc-block-note",
+      "Création : " + PTS_CREATION + " points à répartir (0 à " + CARAC_MAX + "). "
+      + "Ensuite " + DATA.xpParStade + " xp par +" + CARAC_PAS + ", maximum " + CARAC_MAX + " sans avantage. "
+      + "Cliquer la valeur lance 1d100 + caractéristique."));
+    DATA.caracs.forEach(function (c) {
+      var name = c.name;
+      var row = el("div", "pc-crow");
+      var top = el("div", "pc-crow-top");
+      var chip = el("span", "pc-abbr", ABBR[name] || name);
+      chip.title = name;
+      top.appendChild(chip);
+      var nm = el("span", "nm", c.desc);
+      nm.title = c.desc;
+      top.appendChild(nm);
+      var val = el("span", "pc-cval pc-rollable", "");
+      val.title = "Lancer 1d100 + " + name;
+      val.addEventListener("click", function () { doRoll(name, caracTotal(name), null, true); });
+      top.appendChild(val);
+      row.appendChild(top);
+
+      var bot = el("div", "pc-crow-bot");
+      bot.appendChild(el("span", "lbl", "Création"));
+      bot.appendChild(stepper(
+        function () { return state.caracsBase[name]; },
+        function (v) {
+          var max = state.sansLimite ? 999 : CARAC_MAX;
+          var val2 = clamp(v, 0, 999);
+          if (val2 > max) { flash("Maximum " + CARAC_MAX + " par caractéristique sans avantage."); val2 = max; }
+          state.caracsBase[name] = val2;
+        }, CARAC_PAS, "création"));
+      bot.appendChild(el("span", "lbl", "Achats xp"));
+      var xpStep = el("span", "pc-step");
+      xpStep.appendChild(stepBtn("−", "Rendre " + DATA.xpParStade + " xp", function () {
+        if (state.caracsXp[name] > 0) { state.caracsXp[name]--; refresh(); }
+      }));
+      var cnt = el("span", "v", "");
+      xpStep.appendChild(cnt);
+      xpStep.appendChild(stepBtn("+", "Dépenser " + DATA.xpParStade + " xp", function () {
+        if (xpRestant() < DATA.xpParStade) { flash("XP insuffisant."); return; }
+        if (!state.sansLimite && caracTotal(name) + CARAC_PAS > CARAC_MAX) { flash("Limite de " + CARAC_MAX + " atteinte (sans avantage)."); return; }
+        state.caracsXp[name]++;
+        refresh();
+      }));
+      bot.appendChild(xpStep);
+      row.appendChild(bot);
+
+      hooks.push(function () {
+        val.textContent = String(caracTotal(name));
+        cnt.textContent = String(state.caracsXp[name]);
+      });
+      b.appendChild(row);
+    });
+    col.appendChild(b);
+  }
+
+  function buildCombat(col) {
+    var b = block("Combat");
+
+    var tiles = el("div", "pc-bigrow");
+    tiles.appendChild(bigTile("Vitesse", vitesse));
+    tiles.appendChild(bigTile("Régén / jour", regen));
+    var xpTile = bigTile("XP restant", xpRestant);
+    hooks.push(function () { xpTile.classList.toggle("red", xpRestant() < 0); });
+    tiles.appendChild(xpTile);
+    b.appendChild(tiles);
+
+    // PV
+    var pvRow = el("div", "pc-kv");
+    pvRow.appendChild(el("span", "k", "PV"));
+    var pvStep = el("span", "pc-step");
+    pvStep.appendChild(stepBtn("−", null, function () { state.pv = pvCourant() - 1; refresh(); }));
+    var pvIn = el("input", "pc-num");
+    pvIn.type = "number"; pvIn.step = "0.5";
+    pvIn.addEventListener("input", function () {
+      var v = parseFloat(pvIn.value);
+      state.pv = isFinite(v) ? v : null;
+      refresh();
+    });
+    hooks.push(function () { if (document.activeElement !== pvIn) pvIn.value = pvCourant(); });
+    pvStep.appendChild(pvIn);
+    pvStep.appendChild(stepBtn("+", null, function () { state.pv = pvCourant() + 1; refresh(); }));
+    pvRow.appendChild(pvStep);
+    var pvM = el("span", "max", "");
+    hooks.push(function () { pvM.textContent = "/ " + pvMax(); });
+    pvRow.appendChild(pvM);
+    pvRow.appendChild(el("span", "sp"));
+    pvRow.appendChild(miniBtn("Max", "Revenir au maximum", function () { state.pv = null; refresh(); }));
+    b.appendChild(pvRow);
+
+    // narration
+    var nRow = el("div", "pc-kv");
+    nRow.appendChild(el("span", "k", "Narration"));
+    var nStep = el("span", "pc-step");
+    nStep.appendChild(stepBtn("−", null, function () { state.narration = Math.max(0, state.narration - 1); refresh(); }));
+    var nV = el("span", "v", "");
+    hooks.push(function () { nV.textContent = String(state.narration); });
+    nStep.appendChild(nV);
+    nStep.appendChild(stepBtn("+", null, function () { state.narration++; refresh(); }));
+    nRow.appendChild(nStep);
+    nRow.appendChild(el("span", "sp"));
+    nRow.appendChild(miniBtn("Nouvelle session", "Repartir à 3 points", function () { state.narration = 3; refresh(); }));
+    b.appendChild(nRow);
+    b.appendChild(el("div", "pc-block-note",
+      "Un seul point de narration par jet ou confrontation : Coup de Chance +25, "
+      + "Coup de Poker +50 ou +0, Coup du Destin (créer un aspect), Coup de Relance (relancer)."));
+
+    // seuils
+    var seuils = el("div", "pc-seuils");
+    hooks.push(function () {
+      seuils.innerHTML = "";
+      var s0 = el("div", "pc-seuil");
+      s0.innerHTML = "";
+      s0.appendChild(document.createTextNode("Inconscience à "));
+      s0.appendChild(el("b", null, "0 PV"));
+      s0.appendChild(document.createTextNode(" — mort à "));
+      s0.appendChild(el("b", null, "−" + pvMax() + " PV"));
+      s0.appendChild(document.createTextNode("."));
+      seuils.appendChild(s0);
+      (DATA.blessures || []).forEach(function (bl) {
+        var d = el("div", "pc-seuil");
+        d.appendChild(el("b", null, bl.nom));
+        var abs = bl.pct ? " dès " + (Math.round(pvMax() * bl.pct) / 100) + " PV perdus d'un coup" : "";
+        d.appendChild(document.createTextNode(" : " + bl.seuil + abs + " — " + bl.effets.toLowerCase() + "."));
+        seuils.appendChild(d);
+      });
+    });
+    b.appendChild(seuils);
+
+    // références repliées : difficultés + actions de combat
+    var det1 = el("details", "pc-details");
+    det1.appendChild(el("summary", null, "Difficultés de tests"));
+    var t1 = el("table", "pc-mini-table");
+    var tb1 = el("tbody");
+    (DATA.difficultes || []).forEach(function (d) {
+      var tr = el("tr");
+      tr.appendChild(el("td", null, String(d.seuil)));
+      tr.appendChild(el("td", null, d.nom));
+      tb1.appendChild(tr);
+    });
+    t1.appendChild(tb1);
+    det1.appendChild(t1);
+    b.appendChild(det1);
+
+    if ((DATA.actions || []).length) {
+      var det2 = el("details", "pc-details");
+      det2.appendChild(el("summary", null, "Actions de combat"));
+      DATA.actions.forEach(function (a) {
+        var d = el("div", "pc-seuil");
+        d.appendChild(el("b", null, a.nom));
+        d.appendChild(document.createTextNode(" : " + a.desc));
+        det2.appendChild(d);
+      });
+      b.appendChild(det2);
+    }
+    col.appendChild(b);
+  }
+
+  function compRow(item, odd) {
+    var comp = function () { return state.comps[item.key] || { stade: 0, passifs: [] }; };
+    var row = el("div", "pc-comp-row" + (odd ? " odd" : ""));
+
+    var nameBox = el("span", "pc-comp-name");
+    var label = el("span", "pc-comp-label", item.name);
+    label.title = item.name + " (" + item.carac + ")";
+    nameBox.appendChild(label);
+    if (item.custom) {
+      var del = el("button", "pc-comp-del", "✕");
+      del.type = "button";
+      del.title = "Retirer cette compétence personnalisée";
+      del.addEventListener("click", function () {
+        state.customComps = state.customComps.filter(function (cc) { return (cc.carac + "/" + cc.name) !== item.key; });
+        delete state.comps[item.key];
+        refresh();
+        rebuildComps();
+      });
+      nameBox.appendChild(del);
+    }
+    row.appendChild(nameBox);
+
+    // stade : menu déroulant (coût réglé automatiquement)
+    var sel = el("select", "pc-select");
+    DATA.stades.forEach(function (sd, i) {
+      var o = el("option", null, sd.nom + " (" + sign(sd.bonus) + ") · " + (DATA.xpParStade * i) + " xp");
+      o.value = String(i);
+      sel.appendChild(o);
+    });
+    sel.addEventListener("change", function () {
+      var c = comp();
+      var target = clamp(num(sel.value, 0), 0, DATA.stades.length - 1);
+      var next = { stade: target, passifs: c.passifs.slice() };
+      if (!stadeInfo(target).passif) next.passifs = [];
+      var delta = compXp(next) - compXp(c);
+      if (delta > 0 && xpRestant() < delta) { flash("XP insuffisant."); sel.value = String(c.stade); return; }
+      // le plafond du quart ne bloque que les HAUSSES : on peut toujours redescendre
+      if (delta > 0 && compXp(next) > compCap()) {
+        flash("Pas plus d'un quart de l'xp total (" + compCap() + " xp) dans une seule compétence.");
+        sel.value = String(c.stade);
+        return;
+      }
+      state.comps[item.key] = next;
+      if (!next.stade && !next.passifs.length) delete state.comps[item.key];
+      refresh();
+      renderPassifs();
+    });
+    row.appendChild(sel);
+
+    var total = el("span", "pc-comp-total pc-rollable", "");
+    total.title = "Lancer 1d100 + " + item.carac + " + stade";
+    total.addEventListener("click", function () {
+      doRoll(item.name + " (" + item.carac + ")", compValue(item.carac, comp()), null, true);
+    });
+    row.appendChild(total);
+
+    var pas = el("div", "pc-passifs");
+    row.appendChild(pas);
+    function renderPassifs() {
+      var c = comp();
+      pas.innerHTML = "";
+      if (!stadeInfo(c.stade).passif) return;
+      c.passifs.forEach(function (p, i) {
+        var line = el("div", "pc-passif");
+        var inp = el("input");
+        inp.type = "text"; inp.placeholder = "Passif original (à définir avec le MJ)"; inp.value = p;
+        inp.addEventListener("input", function () { c.passifs[i] = inp.value; state.comps[item.key] = c; save(); });
+        line.appendChild(inp);
+        line.appendChild(miniBtn("✕", "Retirer ce passif", function () {
+          c.passifs.splice(i, 1); state.comps[item.key] = c; refresh(); renderPassifs();
+        }, "danger"));
+        pas.appendChild(line);
+      });
+      var cost = c.passifs.length ? DATA.xpParStade : 0;   // le 1er passif est inclus dans le stade Art
+      pas.appendChild(miniBtn("+ passif" + (cost ? " (" + cost + " xp)" : ""), null, function () {
+        var test = { stade: c.stade, passifs: c.passifs.concat([""]) };
+        var delta = compXp(test) - compXp(c);
+        if (delta > 0 && xpRestant() < delta) { flash("XP insuffisant."); return; }
+        if (compXp(test) > compCap()) { flash("Pas plus d'un quart de l'xp total (" + compCap() + " xp) dans une seule compétence."); return; }
+        c.passifs.push(""); state.comps[item.key] = c; refresh(); renderPassifs();
+      }));
+    }
+
+    compHooks.push(function () {
+      var c = comp();
+      var v = compValue(item.carac, c);
+      total.textContent = sign(v);
+      total.classList.toggle("zero", !c.stade);
+      if (document.activeElement !== sel) sel.value = String(c.stade);
+      sel.classList.toggle("lv0", !c.stade);
+    });
+    renderPassifs();
+    return row;
+  }
+
+  var compBox = null;
+  var compFilter = "";
+  function rebuildComps() {
+    if (!compBox) return;
+    compHooks = [];   // les lignes vont être détruites : leurs hooks avec
+    compBox.innerHTML = "";
+    var flt = compFilter.trim().toLowerCase();
+    ["Body", "Mind", "Prestance"].forEach(function (carac) {
+      var items = allComps().filter(function (it) { return it.carac === carac; });
+      if (flt) items = items.filter(function (it) { return it.name.toLowerCase().indexOf(flt) >= 0; });
+      var champ = el("div", "pc-comp-champ", carac);
+      compBox.appendChild(champ);
+      if (!items.length) {
+        compBox.appendChild(el("div", "pc-empty", flt ? "Aucune compétence ne correspond." : "—"));
+      } else {
+        var head = el("div", "pc-comp-row head");
+        head.appendChild(el("span", null, "Compétence"));
+        head.appendChild(el("span", null, "Stade"));
+        head.appendChild(el("span", null, "Total"));
+        compBox.appendChild(head);
+        items.forEach(function (it, i) { compBox.appendChild(compRow(it, i % 2 === 1)); });
+      }
+      // ajout d'une compétence personnalisée (les listes des règles sont ouvertes : « … »)
+      var addRow = el("div", "pc-comp-add");
+      var inp = el("input");
+      inp.type = "text"; inp.placeholder = "Nouvelle compétence " + carac + "…";
+      addRow.appendChild(inp);
+      addRow.appendChild(miniBtn("+", "Ajouter", function () {
+        var name = inp.value.trim();
+        if (!name) return;
+        var exists = allComps().some(function (it) { return it.carac === carac && it.name.toLowerCase() === name.toLowerCase(); });
+        if (exists) { flash("Cette compétence existe déjà."); return; }
+        state.customComps.push({ name: name, carac: carac });
+        inp.value = "";
+        refresh();
+        rebuildComps();
+      }));
+      compBox.appendChild(addRow);
+    });
+    refresh();
+  }
+  function buildComps(col) {
+    var b = block("Compétences", DATA.xpParStade + " xp par stade · quart max");
+    b.appendChild(el("div", "pc-block-note",
+      "Jet = 1d100 + caractéristique + bonus de stade ("
+      + DATA.stades.map(function (sd) { return sd.nom + " " + sign(sd.bonus); }).join(", ")
+      + "). Cliquer le total lance le jet. Au stade Art : passifs originaux, "
+      + DATA.xpParStade + " xp par passif supplémentaire."));
+    var search = el("input", "pc-comp-search");
+    search.type = "search";
+    search.placeholder = "Filtrer les compétences…";
+    search.addEventListener("input", function () { compFilter = search.value; rebuildComps(); });
+    b.appendChild(search);
+    compBox = el("div");
+    b.appendChild(compBox);
+    col.appendChild(b);
+    rebuildComps();
+  }
+
+  function buildFiche(pane) {
+    var cols = el("div", "pc-cols-fiche");
+    var left = el("div", "pc-col");
+    var right = el("div", "pc-col");
+    cols.appendChild(left);
+    cols.appendChild(right);
+    pane.appendChild(cols);
+    buildCaracs(left);
+    buildCombat(left);
+    buildComps(right);
+  }
+
+  // ---------- onglet Équipement ----------
+  function eqField(labelTxt, obj, key, wide) {
+    var i = el("input");
+    i.type = "text";
+    i.placeholder = labelTxt;
+    i.value = obj[key] || "";
+    i.addEventListener("input", function () { obj[key] = i.value; save(); });
+    return fld(labelTxt, i, wide ? "w" : null);
+  }
+  function diceOf(txt) {
+    var m = /(\d{1,2})\s*[dD]\s*(\d{1,4})\s*([+-]\s*\d{1,4})?/.exec(String(txt || ""));
+    if (!m) return null;
+    return m[1] + "d" + m[2] + (m[3] ? m[3].replace(/\s/g, "") : "");
+  }
+  function eqCards(box, items, kind) {
+    // kind : "arme" (poids/dégâts/reach/propriétés) ou "armure" (poids/invu/zones)
+    function render() {
+      box.innerHTML = "";
+      items.forEach(function (it, idx) {
+        var card = el("div", "pc-arme");
+        var head = el("div", "pc-arme-head");
+        var nm = el("input", "nm");
+        nm.type = "text";
+        nm.placeholder = kind === "arme" ? "Nom de l'arme" : "Nom de l'armure";
+        nm.value = it.nom || "";
+        nm.addEventListener("input", function () { it.nom = nm.value; save(); });
+        head.appendChild(nm);
+        head.appendChild(miniBtn("✕", "Retirer", function () { items.splice(idx, 1); render(); refresh(); }, "danger"));
+        card.appendChild(head);
+
+        var line = el("div", "pc-arme-line");
+        line.appendChild(eqField("Poids", it, "poids"));
+        if (kind === "arme") {
+          line.appendChild(eqField("Dégâts (5D10)", it, "degats"));
+          line.appendChild(eqField("Reach", it, "reach"));
+        } else {
+          line.appendChild(eqField("Invu (5D8)", it, "invu"));
+        }
+        var chip = el("span", "pc-roll-chip", "Jet");
+        chip.title = kind === "arme" ? "Lancer les dégâts" : "Lancer l'invu";
+        chip.addEventListener("click", function () {
+          var d = diceOf(kind === "arme" ? it.degats : it.invu);
+          if (!d) { flash("Renseigner d'abord les dés (ex. 5D8)."); return; }
+          doRoll((kind === "arme" ? "Dégâts — " : "Invu — ") + (it.nom || (kind === "arme" ? "arme" : "armure")), 0, d, false);
+        });
+        line.appendChild(chip);
+        card.appendChild(line);
+
+        var line2 = el("div", "pc-arme-line");
+        if (kind === "arme") line2.appendChild(eqField("Avantages / désavantages (au moins 2 et 2)", it, "props", true));
+        else line2.appendChild(eqField("Zones protégées", it, "zones", true));
+        card.appendChild(line2);
+
+        box.appendChild(card);
+      });
+      if (!items.length) box.appendChild(el("div", "pc-empty", kind === "arme" ? "Aucune arme." : "Aucune armure."));
+      var add = miniBtn(kind === "arme" ? "+ Ajouter une arme" : "+ Ajouter une armure", null, function () {
+        items.push({});
+        render();
+        refresh();
+      });
+      box.appendChild(add);
+    }
     render();
+  }
+  function miniTable(rows, withHead) {
+    var t = el("table", "pc-mini-table");
+    var tb = el("tbody");
+    rows.forEach(function (cells, ri) {
+      var tr = el("tr");
+      cells.forEach(function (v, ci) {
+        tr.appendChild(el(withHead && (ri === 0 || ci === 0) ? "th" : "td", null, v));
+      });
+      tb.appendChild(tr);
+    });
+    t.appendChild(tb);
+    return t;
+  }
+  function buildEquipement(pane) {
+    var cols = el("div", "pc-cols2");
+    var left = el("div", "pc-col");
+    var right = el("div", "pc-col");
+    cols.appendChild(left);
+    cols.appendChild(right);
+    pane.appendChild(cols);
+
+    var bA = block("Armes", "au moins 2 avantages et 2 désavantages");
+    var boxA = el("div");
+    bA.appendChild(boxA);
+    eqCards(boxA, state.armes, "arme");
+    left.appendChild(bA);
+
+    var cA = block("Courbe de poids — armes");
+    var rowsA = [["Poids", "Dégâts", "Reach"]];
+    (DATA.armesCourbe || []).forEach(function (r) { rowsA.push([r.poids, r.degats, r.reach]); });
+    cA.appendChild(miniTable(rowsA, true));
+    left.appendChild(cA);
+
+    var bB = block("Armures");
+    var boxB = el("div");
+    bB.appendChild(boxB);
+    eqCards(boxB, state.armures, "armure");
+    right.appendChild(bB);
+
+    var ac = DATA.armuresCourbe || {};
+    if (ac.invu) {
+      var cB = block("Courbe de poids — armures");
+      cB.appendChild(miniTable([
+        ["Poids"].concat(ac.poids),
+        ["Invu"].concat(ac.invu),
+        ["Zones"].concat(ac.zones || []),
+        ["Viser zone nue"].concat(ac.viser || []),
+        ["Port requis"].concat(ac.port || [])
+      ], true));
+      right.appendChild(cB);
+    }
+
+    var bI = block("Inventaire");
+    var inv = el("textarea", "pc-notes");
+    inv.rows = 5;
+    inv.placeholder = "Une ligne par objet…";
+    inv.value = state.inventaire || "";
+    inv.addEventListener("input", function () { state.inventaire = inv.value; save(); });
+    bI.appendChild(inv);
+    right.appendChild(bI);
+  }
+
+  // ---------- onglet Bio ----------
+  function buildBio(pane) {
+    var cols = el("div", "pc-cols2");
+    var left = el("div", "pc-col");
+    var right = el("div", "pc-col");
+    cols.appendChild(left);
+    cols.appendChild(right);
+    pane.appendChild(cols);
+
+    var bP = block("Personnalité", "1 défaut comique · 2 qualités");
+    var g = el("div", "pc-id");
+    g.appendChild(fld("Défaut (comique)", textInput(function () { return state.defaut; }, function (v) { state.defaut = v; }, "« Je me perds tout le temps comme Zoro »"), "c12"));
+    g.appendChild(fld("Qualité 1", textInput(function () { return state.qualites[0]; }, function (v) { state.qualites[0] = v; }), "c6"));
+    g.appendChild(fld("Qualité 2", textInput(function () { return state.qualites[1]; }, function (v) { state.qualites[1] = v; }), "c6"));
+    bP.appendChild(g);
+    left.appendChild(bP);
+
+    var bA = block("Avantages", "2 au choix à la création");
+    var avBox = el("div");
+    bA.appendChild(avBox);
+    function renderAv() {
+      avBox.innerHTML = "";
+      state.avantages.forEach(function (a, i) {
+        var row = el("div", "pc-av-row");
+        var n = el("input", "nm");
+        n.type = "text"; n.placeholder = "Avantage"; n.value = a.name || "";
+        n.addEventListener("input", function () { a.name = n.value; save(); });
+        row.appendChild(n);
+        var d = el("input", "fx");
+        d.type = "text"; d.placeholder = "Effet (à définir avec le MJ)"; d.value = a.desc || "";
+        d.addEventListener("input", function () { a.desc = d.value; save(); });
+        row.appendChild(d);
+        row.appendChild(miniBtn("✕", "Retirer", function () { state.avantages.splice(i, 1); renderAv(); refresh(); }, "danger"));
+        avBox.appendChild(row);
+      });
+      if (!state.avantages.length) avBox.appendChild(el("div", "pc-empty", "Aucun avantage."));
+      avBox.appendChild(miniBtn("+ Ajouter un avantage", null, function () {
+        state.avantages.push({ name: "", desc: "" });
+        renderAv();
+        refresh();
+      }));
+    }
+    renderAv();
+    var lim = el("label", "pc-limite");
+    var cb = el("input");
+    cb.type = "checkbox";
+    cb.checked = !!state.sansLimite;
+    cb.addEventListener("change", function () { state.sansLimite = cb.checked; refresh(); });
+    hooks.push(function () { cb.checked = !!state.sansLimite; });
+    lim.appendChild(cb);
+    lim.appendChild(el("span", null, "Un avantage lève la limite de " + CARAC_MAX + " des caractéristiques"));
+    bA.appendChild(lim);
+    left.appendChild(bA);
+
+    var bB = block("Background");
+    var bg = el("textarea", "pc-notes");
+    bg.rows = 9;
+    bg.placeholder = "Un petit background…";
+    bg.value = state.background || "";
+    bg.addEventListener("input", function () { state.background = bg.value; save(); });
+    bB.appendChild(bg);
+    right.appendChild(bB);
+
+    var bN = block("Notes");
+    var nt = el("textarea", "pc-notes");
+    nt.rows = 6;
+    nt.value = state.notes || "";
+    nt.addEventListener("input", function () { state.notes = nt.value; save(); });
+    bN.appendChild(nt);
+    right.appendChild(bN);
+  }
+
+  // ---------- journal des jets ----------
+  function buildRolls(container) {
+    rollPanel = el("div", "pc-rolls");
+    var head = el("div", "pc-rolls-head");
+    var t = el("span", "t", "Jets");
+    t.title = "Réduire / déployer";
+    t.addEventListener("click", function () { rollPanel.classList.toggle("open"); });
+    head.appendChild(t);
+    var de = el("input", "de");
+    de.type = "text";
+    de.title = "Dé des jets de test";
+    de.value = state.de || "1d100";
+    de.addEventListener("input", function () { state.de = de.value || "1d100"; save(); });
+    hooks.push(function () { if (document.activeElement !== de) de.value = state.de || "1d100"; });
+    head.appendChild(de);
+    head.appendChild(miniBtn("Vider", null, function () { rollHistory = []; renderRolls(); }));
+    rollPanel.appendChild(head);
+    rollPanel.appendChild(el("div", "pc-rolls-list"));
+    container.appendChild(rollPanel);
+    renderRolls();
   }
 
   // ---------- montage ----------
@@ -969,31 +1175,18 @@
     compHooks = [];
     root.innerHTML = "";
     var app = el("div", "perso-atelier");
+
+    buildTop(app);
     var sheet = el("div", "pc-sheet");
     app.appendChild(sheet);
-
-    // journal des jets (sur le site ; dans Roll20 les jets partent au tchat)
-    rollPanel = el("div", "pc-rolls");
-    var rHead = el("div", "pc-rolls-head");
-    rHead.appendChild(el("span", "pc-rolls-title", "Jets"));
-    rHead.appendChild(miniBtn("Vider", null, function () { rollHistory = []; renderRolls(); }));
-    var tog = miniBtn("▾", "Réduire / déployer", function () { rollPanel.classList.toggle("open"); });
-    rHead.appendChild(tog);
-    rollPanel.appendChild(rHead);
-    rollPanel.appendChild(el("div", "pc-rolls-list"));
-    app.appendChild(rollPanel);
-    renderRolls();
-
+    buildRolls(app);
     root.appendChild(app);
 
     buildHead(sheet);
-    buildIdentite(sheet);
-    buildCaracs(sheet);
-    buildComps(sheet);
-    buildCombat(sheet);
-    buildEquipement(sheet);
-    buildNotes(sheet);
-    buildLibrary(sheet);
+    var panes = buildTabs(sheet);
+    buildFiche(panes.fiche);
+    buildEquipement(panes.equipement);
+    buildBio(panes.bio);
     refresh();
   }
 
