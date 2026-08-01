@@ -166,9 +166,36 @@ if (typeof browser === "undefined") { var browser = chrome; }
   }
 
   // ---------- montage de l'iframe du créateur / bouton de création ----------
+  // Mode sombre de Roll20, lu dans le document de la feuille (même document en
+  // popout) : marqueur officiel body.sheet-darkmode, variantes connues
+  // (darkmode, data-colortheme), puis repli sur la luminance du fond réellement
+  // peint (résiste aux évolutions de Roll20 : ce script est figé par la
+  // signature). L'état passe à la fiche par le hash (n=1/0) ; c'est ELLE qui
+  // tranche selon la préférence de son onglet Options (auto/jour/nuit).
+  function parseRgb(s) {
+    var m = /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*([\d.]+))?/.exec(s || "");
+    if (!m) return null;
+    if (m[4] !== undefined && parseFloat(m[4]) === 0) return null;   // transparent
+    return [+m[1], +m[2], +m[3]];
+  }
+  function detectNight() {
+    try {
+      var de = document.documentElement, b = document.body;
+      var cls = (((de && de.className) || "") + " " + ((b && b.className) || "")).toLowerCase();
+      if (cls.indexOf("darkmode") >= 0) return true;
+      var ct = (((de && de.getAttribute("data-colortheme")) || "") + " " +
+                ((b && b.getAttribute("data-colortheme")) || "")).toLowerCase();
+      if (ct.replace(/\s/g, "")) return ct.indexOf("dark") >= 0;
+      var rgb = (b && parseRgb(getComputedStyle(b).backgroundColor)) ||
+                (de && parseRgb(getComputedStyle(de).backgroundColor));
+      if (rgb) return (0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2]) < 96;
+    } catch (e) {}
+    return false;
+  }
   function creatorFrame(charId) {
     var f = el("iframe", "jjk-creator-frame");
-    f.src = browser.runtime.getURL("creator.html") + "#c=" + encodeURIComponent(charId || "");
+    f.src = browser.runtime.getURL("creator.html") + "#c=" + encodeURIComponent(charId || "") +
+            "&n=" + (detectNight() ? "1" : "0");
     f.setAttribute("allow", "clipboard-write");
     return f;
   }
