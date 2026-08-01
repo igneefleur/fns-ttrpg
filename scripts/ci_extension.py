@@ -89,11 +89,66 @@ def amo_latest(guid, issuer, secret):
         return None
 
 
+def xpi_signe():
+    """True si docs/download/jjk-roll20-firefox.xpi est un binaire signé Mozilla."""
+    import zipfile
+    try:
+        with zipfile.ZipFile(sign_extension.XPI) as z:
+            return any(n.startswith("META-INF/") for n in z.namelist())
+    except Exception:
+        return False
+
+
+def repare_xpi_signe(issuer, secret):
+    """Garde-fou (vécu le 2026-08-01) : un commit local peut écraser le .xpi
+    signé par un pack de développement NON signé — le site distribue alors un
+    fichier que Firefox refuse d'installer, sans que rien n'échoue en CI. Si le
+    .xpi committé n'est pas signé, on re-télécharge le dernier binaire signé
+    depuis AMO (les GET ne subissent pas le quota de soumission) et on réaligne
+    updates.json ; le commit de retour du workflow les republie."""
+    if xpi_signe():
+        return
+    print("[ci-extension] ALERTE : le .xpi committé n'est PAS signé (écrasé par "
+          "un pack local ?) — récupération du binaire signé depuis AMO…")
+    if not issuer or not secret:
+        print("[ci-extension] clés AMO absentes : réparation impossible ici.")
+        return
+    try:
+        import requests
+        amo = sign_extension.Amo(issuer, secret)
+        manifest = json.loads(MANIFESTS[0].read_text(encoding="utf-8"))
+        gecko = manifest["browser_specific_settings"]["gecko"]
+        r = amo.get(f"/addons/addon/{gecko['id']}/versions/?filter=all_with_unlisted&page_size=10")
+        for v in r.json().get("results", []):
+            f = v.get("file") or {}
+            if f.get("status") != "public":
+                continue
+            dl = requests.get(f["url"], headers=amo.h(), timeout=120)
+            dl.raise_for_status()
+            sign_extension.XPI.write_bytes(dl.content)
+            sign_extension.UPDATES.write_text(json.dumps({
+                "addons": {gecko["id"]: {"updates": [
+                    {"version": v["version"], "update_link": sign_extension.XPI_URL,
+                     "browser_specific_settings": {"gecko": {
+                         "strict_min_version": gecko.get("strict_min_version", "109.0")}}}
+                ]}}
+            }, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+            print(f"[ci-extension] binaire signé v{v['version']} restauré depuis AMO "
+                  "(updates.json réaligné)")
+            return
+        print("[ci-extension] aucune version signée publique trouvée chez AMO.")
+    except Exception as e:
+        print(f"[ci-extension] réparation impossible : {e}")
+
+
 def main():
     # 1. fichiers générés à jour (sans empaqueter : les archives gardent
     #    leur version committée — la SIGNÉE — si rien n'a changé)
     build_extension.sync_creation_css()
     build_extension.sync_creator_assets()
+
+    issuer = os.environ.get("AMO_JWT_ISSUER")
+    secret = os.environ.get("AMO_JWT_SECRET")
 
     state = {}
     if STATE.exists():
@@ -107,10 +162,9 @@ def main():
                         "docs/download/jjk-roll20-firefox.xpi",
                         "docs/download/jjk-roll20-chrome.zip"],
                        cwd=ROOT, check=False)
+        repare_xpi_signe(issuer, secret)
         return
 
-    issuer = os.environ.get("AMO_JWT_ISSUER")
-    secret = os.environ.get("AMO_JWT_SECRET")
     if not issuer or not secret:
         sys.exit("[ci-extension] l'extension a changé mais les clés AMO manquent : "
                  "ajouter les secrets AMO_JWT_ISSUER et AMO_JWT_SECRET au dépôt "
@@ -143,6 +197,7 @@ def main():
                         "extension/firefox/manifest.json",
                         "extension/chrome/manifest.json"],
                        cwd=ROOT, check=False)
+        repare_xpi_signe(issuer, secret)
         return
 
     STATE.write_text(json.dumps({"version": new_version, "hash": current},
