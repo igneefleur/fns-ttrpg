@@ -4,8 +4,10 @@
  * bibliothèque, feuille à largeur fixe, en-tête portrait + identité, compteurs
  * de budgets, onglets (Fiche / Art / Équipement / Bio / Options), colonnes,
  * valeurs cliquables pour lancer les jets, journal de jets flottant.
- * La Fiche range les compétences en trois colonnes (Body | Mind | Prestance) ;
- * l'onglet Art porte un art libre par compétence au stade Artiste.
+ * La Fiche a trois colonnes (caractéristiques | combat | compétences), tout
+ * dans l'ordre Body, Mind, Prestance ; une ligne par compétence (nom | stade
+ * en menu | total-jet). L'onglet Art porte la personnalisation : les
+ * techniques d'une compétence (dès Expert) et son art (dès Artiste).
  *
  * Le contenu des règles (caractéristiques, listes de compétences, stades,
  * vitesses, difficultés, blessures, courbes d'armes/armures, actions) vient de
@@ -710,8 +712,9 @@
   // ---------- onglet Fiche : caractéristiques + combat | compétences ----------
   function buildCaracs(col) {
     var b = block("Caractéristiques");
-    DATA.caracs.forEach(function (c) {
-      var name = c.name;
+    // même ordre que les compétences : Body, puis Mind, puis Prestance
+    CHAMPS.forEach(function (name) {
+      if (!DATA.caracs.some(function (cc) { return cc.name === name; })) return;
       var row = el("div", "pc-crow");
       var top = el("div", "pc-crow-top");
       var chip = el("span", "pc-abbr", ABBR[name] || name);
@@ -743,7 +746,13 @@
       xpStep.appendChild(cnt);
       xpStep.appendChild(stepBtn("+", "Dépenser " + DATA.xpParStade + " xp", function () {
         if (xpRestant() < DATA.xpParStade) { flash("XP insuffisant."); return; }
-        if (!state.sansLimite && caracTotal(name) + CARAC_PAS > CARAC_MAX) { flash("Limite de " + CARAC_MAX + " atteinte (sans avantage)."); return; }
+        // le plafond porte sur base + achats, SANS le modificateur d'Options
+        // (qui peut porter le total au-delà de 80 comme en dessous : le tester
+        // brûlerait de l'xp sous un malus, ou bloquerait à tort sous un bonus)
+        if (!state.sansLimite && state.caracsBase[name] + CARAC_PAS * (state.caracsXp[name] + 1) > CARAC_MAX) {
+          flash("Limite de " + CARAC_MAX + " atteinte (sans avantage).");
+          return;
+        }
         state.caracsXp[name]++;
         refresh();
       }));
@@ -840,6 +849,55 @@
     }
     row.appendChild(nameBox);
 
+    // stade : un menu sur la ligne ; le coût se règle tout seul. Les
+    // techniques et l'art se personnalisent dans l'onglet Art.
+    var sel = el("select", "pc-select");
+    DATA.stades.forEach(function (sd, i) {
+      var o = el("option", null, sd.nom);
+      o.value = String(i);
+      o.title = sd.nom + " (" + sign(sd.bonus) + ") — " + (DATA.xpParStade * i) + " xp";
+      sel.appendChild(o);
+    });
+    sel.title = "Stade — " + DATA.xpParStade + " xp par stade";
+    sel.addEventListener("change", function () {
+      var c = comp();
+      var target = clamp(num(sel.value, 0), 0, DATA.stades.length - 1);
+      var next = { stade: target, techniques: c.techniques.slice() };
+      // l'art suit la compétence : il survit aux allers-retours de stade
+      // (il ne se montre que quand le stade qui l'ouvre est atteint)
+      if (porteArt(c)) next.art = c.art;
+      if (!stadeInfo(target).techniques) {
+        // les techniques rédigées vivent dans l'onglet Art : la ligne ne les
+        // montre pas, on confirme avant de les effacer avec la descente
+        var redigees = c.techniques.filter(function (t) {
+          return String(t.name || "").trim() || String(t.desc || "").trim();
+        }).length;
+        if (redigees &&
+            !confirm("Redescendre « " + item.name + " » à " + stadeInfo(target).nom +
+                     " effacera " + redigees + " technique(s) rédigée(s) (onglet Art). Continuer ?")) {
+          sel.value = String(c.stade);
+          return;
+        }
+        next.techniques = [];
+      }
+      var delta = compXp(next) - compXp(c);
+      if (delta > 0 && xpRestant() < delta) {
+        flash("XP insuffisant.");
+        sel.value = String(c.stade);
+        return;
+      }
+      // le plafond du quart ne bloque que les HAUSSES : on peut toujours redescendre
+      if (delta > 0 && compXp(next) > compCap()) {
+        flash("Pas plus d'un quart de l'xp total (" + compCap() + " xp) dans une seule compétence.");
+        sel.value = String(c.stade);
+        return;
+      }
+      state.comps[item.key] = next;
+      if (!next.stade && !next.techniques.length && !next.art) delete state.comps[item.key];
+      refresh();
+    });
+    row.appendChild(sel);
+
     var total = el("span", "pc-comp-total pc-rollable", "");
     total.title = "Lancer 1d100 + " + item.carac + " + stade";
     total.addEventListener("click", function () {
@@ -847,93 +905,13 @@
     });
     row.appendChild(total);
 
-    // stades : une pastille par stade, cliquable ; recliquer le stade courant
-    // revient à Non initié. Le coût se règle tout seul.
-    var st = el("div", "pc-stades");
-    DATA.stades.forEach(function (sd, i) {
-      var pill = el("button", "pc-stade", sd.nom);
-      pill.type = "button";
-      pill.title = sd.nom + " (" + sign(sd.bonus) + ") — " + (DATA.xpParStade * i) + " xp";
-      pill.addEventListener("click", function () {
-        var c = comp();
-        var target = (i === c.stade) ? 0 : i;
-        var next = { stade: target, techniques: c.techniques.slice() };
-        // l'art suit la compétence : il survit aux allers-retours de stade
-        // (il ne s'affiche que quand le stade qui l'ouvre est atteint)
-        if (porteArt(c)) next.art = c.art;
-        if (!stadeInfo(target).techniques) next.techniques = [];
-        var delta = compXp(next) - compXp(c);
-        if (delta > 0 && xpRestant() < delta) { flash("XP insuffisant."); return; }
-        // le plafond du quart ne bloque que les HAUSSES : on peut toujours redescendre
-        if (delta > 0 && compXp(next) > compCap()) {
-          flash("Pas plus d'un quart de l'xp total (" + compCap() + " xp) dans une seule compétence.");
-          return;
-        }
-        state.comps[item.key] = next;
-        if (!next.stade && !next.techniques.length && !next.art) delete state.comps[item.key];
-        refresh();
-        renderTechs();
-      });
-      st.appendChild(pill);
-    });
-    row.appendChild(st);
-    function renderStades() {
-      var c = comp();
-      Array.prototype.forEach.call(st.children, function (pill, i) {
-        pill.classList.toggle("on", i > 0 && i <= c.stade);
-        pill.classList.toggle("cur", i === c.stade && c.stade > 0);
-      });
-    }
-
-    var tech = el("div", "pc-techniques");
-    row.appendChild(tech);
-    function renderTechs() {
-      var c = comp();
-      tech.innerHTML = "";
-      if (!stadeInfo(c.stade).techniques) return;
-      c.techniques.forEach(function (t, i) {
-        var card = el("div", "pc-av pc-technique");
-        var head = el("div", "pc-av-head");
-        var nm = el("input", "nm");
-        nm.type = "text"; nm.placeholder = "Nom"; nm.value = t.name || "";
-        nm.addEventListener("input", function () { t.name = nm.value; state.comps[item.key] = c; save(); });
-        head.appendChild(nm);
-        head.appendChild(chatBtn(
-          function () { return "Technique — " + (t.name || item.name); },
-          function () { return [["Compétence", item.name], ["Effet", t.desc]]; }));
-        head.appendChild(miniBtn("✕", "Retirer cette technique", function () {
-          c.techniques.splice(i, 1); state.comps[item.key] = c; refresh(); renderTechs();
-        }, "danger"));
-        card.appendChild(head);
-        var d = el("textarea", "pc-notes");
-        d.rows = 3;
-        d.placeholder = "Effet";
-        d.value = t.desc || "";
-        d.addEventListener("input", function () { t.desc = d.value; state.comps[item.key] = c; save(); });
-        card.appendChild(d);
-        tech.appendChild(card);
-      });
-      // le coût affiché suit la prochaine technique : gratuite si un stade
-      // atteint en offre encore une, sinon le tarif normal
-      var prochaine = compXp({ stade: c.stade, techniques: c.techniques.concat([{ name: "", desc: "" }]) }) - compXp(c);
-      tech.appendChild(miniBtn("+ technique (" + (prochaine ? prochaine + " xp" : "gratuite") + ")", null, function () {
-        var test = { stade: c.stade, techniques: c.techniques.concat([{ name: "", desc: "" }]) };
-        var delta = compXp(test) - compXp(c);
-        if (delta > 0 && xpRestant() < delta) { flash("XP insuffisant."); return; }
-        if (delta > 0 && compXp(test) > compCap()) { flash("Pas plus d'un quart de l'xp total (" + compCap() + " xp) dans une seule compétence."); return; }
-        c.techniques.push({ name: "", desc: "" }); state.comps[item.key] = c; refresh(); renderTechs();
-      }));
-    }
-
     compHooks.push(function () {
       var c = comp();
-      var v = compValue(item.carac, c);
-      total.textContent = sign(v);
+      if (document.activeElement !== sel) sel.value = String(c.stade);
+      sel.classList.toggle("lv0", !c.stade);
+      total.textContent = sign(compValue(item.carac, c));
       total.classList.toggle("zero", !c.stade);
-      renderStades();
     });
-    renderStades();
-    renderTechs();
     return row;
   }
 
@@ -947,7 +925,7 @@
     // l'art compte : une compétence redescendue qui garde son art reste visible
     return !!(c && (c.stade > 0 || (c.techniques && c.techniques.length) || porteArt(c)));
   }
-  // les trois colonnes de compétences de la Fiche, dans cet ordre
+  // l'ordre des champs, partout sur la Fiche : Body, puis Mind, puis Prestance
   var CHAMPS = ["Body", "Mind", "Prestance"];
   function rebuildComps() {
     if (!compBox) return;
@@ -963,19 +941,17 @@
       // ordre alphabétique (français, accents ignorés), comps perso intercalées
       items.sort(function (a, b) { return a.name.localeCompare(b.name, "fr", { sensitivity: "base" }); });
       if (compChamp === "Personnalisé" && !items.length && !compAddMode) return;
-      var col = el("div", "pc-comp-col");
-      compBox.appendChild(col);
-      var champ = el("div", "pc-comp-champ", carac);
-      col.appendChild(champ);
+      compBox.appendChild(el("div", "pc-comp-champ", carac));
       if (!items.length) {
-        col.appendChild(el("div", "pc-empty",
+        compBox.appendChild(el("div", "pc-empty",
           flt ? "Aucune compétence ne correspond." : compOnly ? "Aucune compétence investie." : "—"));
       } else {
         var head = el("div", "pc-comp-row head");
         head.appendChild(el("span", null, "Compétence"));
+        head.appendChild(el("span", null, "Stade"));
         head.appendChild(el("span", null, "Total"));
-        col.appendChild(head);
-        items.forEach(function (it, i) { col.appendChild(compRow(it, i % 2 === 1)); });
+        compBox.appendChild(head);
+        items.forEach(function (it, i) { compBox.appendChild(compRow(it, i % 2 === 1)); });
       }
       // ajout d'une compétence personnalisée (les listes des règles sont
       // ouvertes : « … ») — seulement quand « + Compétence perso » est activé
@@ -994,7 +970,7 @@
         refresh();
         rebuildComps();
       }));
-      col.appendChild(addRow);
+      compBox.appendChild(addRow);
     });
     refresh();
   }
@@ -1006,6 +982,7 @@
     var search = el("input", "pc-comp-search");
     search.type = "search";
     search.placeholder = "Filtrer les compétences…";
+    search.value = compFilter;   // le filtre survit au remount : le champ doit le montrer
     search.addEventListener("input", function () { compFilter = search.value; rebuildComps(); });
     tools.appendChild(search);
     var champSel = el("select", "pc-select");
@@ -1038,63 +1015,65 @@
     });
     tools.appendChild(addChip);
     b.appendChild(tools);
-    compBox = el("div", "pc-comp-cols");
+    compBox = el("div");
     b.appendChild(compBox);
     col.appendChild(b);
     rebuildComps();
   }
 
   function buildFiche(pane) {
-    // caractéristiques et combat côte à côte, puis les compétences en pleine
-    // largeur, rangées en trois colonnes (Body | Mind | Prestance)
-    var cols = el("div", "pc-cols2");
-    var left = el("div", "pc-col");
-    var right = el("div", "pc-col");
-    cols.appendChild(left);
-    cols.appendChild(right);
+    // trois colonnes : caractéristiques | combat | compétences, les
+    // compétences à la suite (Body, puis Mind, puis Prestance)
+    var cols = el("div", "pc-cols-fiche");
+    var c1 = el("div", "pc-col");
+    var c2 = el("div", "pc-col");
+    var c3 = el("div", "pc-col");
+    cols.appendChild(c1);
+    cols.appendChild(c2);
+    cols.appendChild(c3);
     pane.appendChild(cols);
-    buildCaracs(left);
-    buildCombat(right);
-    buildComps(pane);
+    buildCaracs(c1);
+    buildCombat(c2);
+    buildComps(c3);
   }
 
   // ---------- onglet Art ----------
-  // Un art par compétence arrivée au stade qui l'ouvre (Artiste) : nom et
-  // description libres, envoi au tchat. Aucun contenu de règles ici : la carte
-  // ne porte que les données du personnage. La liste se reconstruit seulement
-  // quand l'ensemble des compétences éligibles change (pas à chaque frappe).
-  // porteLart : la compétence a un art non vide (même si le stade est redescendu)
+  // La personnalisation d'une compétence vit ICI : dès le stade qui ouvre les
+  // techniques (Expert), sa carte porte leurs fiches ; au stade qui ouvre
+  // l'art (Artiste) s'y ajoutent le nom et la description de l'art. Aucun
+  // contenu de règles : seulement les données du personnage. La liste se
+  // reconstruit seulement quand les compétences éligibles (ou leur stade)
+  // changent, pas à chaque frappe.
+  // porteArt : la compétence a un art non vide (même si le stade est redescendu)
   function porteArt(c) {
     return !!(c && c.art && (String(c.art.name || "").trim() || String(c.art.desc || "").trim()));
   }
   function artComps() {
-    // même ordre que la Fiche : colonnes Body | Mind | Prestance, puis alphabétique
+    // même ordre que la Fiche : Body, puis Mind, puis Prestance, puis alphabétique
     var rang = {};
     CHAMPS.forEach(function (ch, i) { rang[ch] = i; });
     return allComps().filter(function (it) {
       var c = state.comps[it.key];
-      return !!(c && stadeInfo(c.stade).art);
+      return !!(c && (stadeInfo(c.stade).techniques || stadeInfo(c.stade).art));
     }).sort(function (a, b) {
       return (rang[a.carac] || 0) - (rang[b.carac] || 0)
         || a.name.localeCompare(b.name, "fr", { sensitivity: "base" });
     });
   }
   function artStadeNom() {
-    for (var i = 0; i < DATA.stades.length; i++) if (DATA.stades[i].art) return DATA.stades[i].nom;
+    // premier stade qui ouvre quelque chose (techniques ou art)
+    for (var i = 0; i < DATA.stades.length; i++)
+      if (DATA.stades[i].techniques || DATA.stades[i].art) return DATA.stades[i].nom;
     return null;
   }
   function buildArt(pane) {
-    var b = block("Arts");
+    var b = block("Arts et techniques");
     var box = el("div", "pc-arts");
     b.appendChild(box);
     pane.appendChild(b);
 
     function artCard(it) {
       var c = state.comps[it.key];
-      // l'art n'entre dans l'état qu'à la première frappe : un art resté vierge
-      // ne doit pas générer d'écriture (Attributes Roll20) à la simple ouverture
-      var a = c.art || { name: "", desc: "" };
-      function keep() { c.art = a; }
       var card = el("div", "pc-av pc-art");
 
       var top = el("div", "pc-art-top");
@@ -1102,29 +1081,84 @@
       chip.title = it.carac;
       top.appendChild(chip);
       top.appendChild(el("span", "pc-art-comp", it.name));
+      top.appendChild(el("span", "pc-art-stade", stadeInfo(c.stade).nom));
       card.appendChild(top);
 
-      var head = el("div", "pc-av-head");
-      var nm = el("input", "nm");
-      nm.type = "text"; nm.placeholder = "Nom de l'art"; nm.value = a.name || "";
-      nm.addEventListener("input", function () { a.name = nm.value; keep(); save(); });
-      head.appendChild(nm);
-      head.appendChild(chatBtn(
-        function () { return "Art — " + (a.name || it.name); },
-        function () { return [["Compétence", it.name + " (" + it.carac + ")"], ["Description", a.desc]]; }));
-      head.appendChild(miniBtn("✕", "Effacer cet art", function () {
-        delete c.art;
-        refresh();
-        render();
-      }, "danger"));
-      card.appendChild(head);
+      // l'art, au stade qui l'ouvre. Il n'entre dans l'état qu'à la première
+      // frappe : un art resté vierge ne doit pas générer d'écriture
+      // (Attributes Roll20) à la simple ouverture de la fiche.
+      if (stadeInfo(c.stade).art) {
+        var a = c.art || { name: "", desc: "" };
+        var keep = function () { c.art = a; };
+        var head = el("div", "pc-av-head");
+        var nm = el("input", "nm");
+        nm.type = "text"; nm.placeholder = "Nom de l'art"; nm.value = a.name || "";
+        nm.addEventListener("input", function () { a.name = nm.value; keep(); save(); });
+        head.appendChild(nm);
+        head.appendChild(chatBtn(
+          function () { return "Art — " + (a.name || it.name); },
+          function () { return [["Compétence", it.name + " (" + it.carac + ")"], ["Description", a.desc]]; }));
+        head.appendChild(miniBtn("✕", "Effacer cet art", function () {
+          // un texte rédigé ne part pas sur un simple clic (le ✕ jouxte Chat)
+          if ((String(a.name || "").trim() || String(a.desc || "").trim()) &&
+              !confirm("Effacer l'art « " + (a.name || it.name) + " » et sa description ?")) return;
+          delete c.art;
+          refresh();
+          render();
+        }, "danger"));
+        card.appendChild(head);
 
-      var d = el("textarea", "pc-notes");
-      d.rows = 5;
-      d.placeholder = "Description de l'art : principes, effets, limites…";
-      d.value = a.desc || "";
-      d.addEventListener("input", function () { a.desc = d.value; keep(); save(); });
-      card.appendChild(d);
+        var d = el("textarea", "pc-notes");
+        d.rows = 5;
+        d.placeholder = "Description de l'art : principes, effets, limites…";
+        d.value = a.desc || "";
+        d.addEventListener("input", function () { a.desc = d.value; keep(); save(); });
+        card.appendChild(d);
+      }
+
+      // les techniques, dès le stade qui les ouvre
+      var techBox = el("div", "pc-techniques");
+      card.appendChild(techBox);
+      function renderTechs() {
+        var cc = state.comps[it.key];
+        techBox.innerHTML = "";
+        if (!cc || !stadeInfo(cc.stade).techniques) return;
+        cc.techniques.forEach(function (t, i) {
+          var tCard = el("div", "pc-av pc-technique");
+          var tHead = el("div", "pc-av-head");
+          var tNm = el("input", "nm");
+          tNm.type = "text"; tNm.placeholder = "Nom de la technique"; tNm.value = t.name || "";
+          tNm.addEventListener("input", function () { t.name = tNm.value; state.comps[it.key] = cc; save(); });
+          tHead.appendChild(tNm);
+          tHead.appendChild(chatBtn(
+            function () { return "Technique — " + (t.name || it.name); },
+            function () { return [["Compétence", it.name], ["Effet", t.desc]]; }));
+          tHead.appendChild(miniBtn("✕", "Retirer cette technique", function () {
+            if ((String(t.name || "").trim() || String(t.desc || "").trim()) &&
+                !confirm("Retirer la technique « " + (t.name || "sans nom") + " » ?")) return;
+            cc.techniques.splice(i, 1); state.comps[it.key] = cc; refresh(); renderTechs();
+          }, "danger"));
+          tCard.appendChild(tHead);
+          var tD = el("textarea", "pc-notes");
+          tD.rows = 3;
+          tD.placeholder = "Effet";
+          tD.value = t.desc || "";
+          tD.addEventListener("input", function () { t.desc = tD.value; state.comps[it.key] = cc; save(); });
+          tCard.appendChild(tD);
+          techBox.appendChild(tCard);
+        });
+        // le coût affiché suit la prochaine technique : gratuite si un stade
+        // atteint en offre encore une, sinon le tarif normal
+        var prochaine = compXp({ stade: cc.stade, techniques: cc.techniques.concat([{ name: "", desc: "" }]) }) - compXp(cc);
+        techBox.appendChild(miniBtn("+ technique (" + (prochaine ? prochaine + " xp" : "gratuite") + ")", null, function () {
+          var test = { stade: cc.stade, techniques: cc.techniques.concat([{ name: "", desc: "" }]) };
+          var delta = compXp(test) - compXp(cc);
+          if (delta > 0 && xpRestant() < delta) { flash("XP insuffisant."); return; }
+          if (delta > 0 && compXp(test) > compCap()) { flash("Pas plus d'un quart de l'xp total (" + compCap() + " xp) dans une seule compétence."); return; }
+          cc.techniques.push({ name: "", desc: "" }); state.comps[it.key] = cc; refresh(); renderTechs();
+        }));
+      }
+      renderTechs();
       return card;
     }
 
@@ -1134,17 +1168,20 @@
       if (!items.length) {
         var nom = artStadeNom();
         box.appendChild(el("div", "pc-empty",
-          nom ? "Aucune compétence au stade " + nom + "." : "Aucune compétence n'ouvre d'art."));
+          nom ? "Aucune compétence n'a atteint le stade " + nom + "." : "Aucun stade n'ouvre de technique ou d'art."));
         return;
       }
       items.forEach(function (it) { box.appendChild(artCard(it)); });
     }
 
-    // reconstruire seulement quand la liste des compétences éligibles change :
-    // les frappes dans les champs (save sans refresh) ne détruisent pas le focus
+    // reconstruire seulement quand les compétences éligibles ou leur stade
+    // changent : les frappes (save sans refresh) ne détruisent pas le focus
     var lastSig = null;
     hooks.push(function () {
-      var sig = artComps().map(function (it) { return it.key; }).join("|");
+      var sig = artComps().map(function (it) {
+        var c = state.comps[it.key];
+        return it.key + ":" + (c ? c.stade : 0);
+      }).join("|");
       if (sig !== lastSig) { lastSig = sig; render(); }
     });
   }

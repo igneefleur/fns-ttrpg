@@ -144,20 +144,19 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 /* un bloc pleine largeur qui suit une grille de colonnes garde le même
    souffle que les blocs entre eux (ex. l'Inventaire sous Armes / Armures) */
 .pc-cols2 + .pc-block, .pc-cols-fiche + .pc-block { margin-top: var(--gut); }
-/* Fiche : les compétences en trois colonnes (Body | Mind | Prestance) ; une
-   colonne filtrée s'élargit toute seule (flex à parts égales) */
-.pc-comp-cols { display: flex; gap: var(--gut); align-items: flex-start; }
-.pc-comp-cols > .pc-comp-col { flex: 1 1 0; min-width: 0; }
+/* Fiche : trois colonnes (caractéristiques | combat | compétences, un peu
+   plus large pour la ligne nom | stade | total) */
+.pc-cols-fiche { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.3fr); gap: var(--gut); align-items: start; }
 /* Art : une carte d'art par compétence au stade qui l'ouvre */
 .pc-arts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem; align-items: start; }
 .pc-arts > .pc-empty { grid-column: 1 / -1; }
 .pc-av.pc-art { margin-bottom: 0; }   /* prime sur le margin-bottom de .pc-av (même spécificité sinon) */
 .pc-art-top { display: flex; align-items: center; gap: .35rem; margin-bottom: .22rem; }
 .pc-art-top .pc-art-comp { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; font-size: .7rem; color: var(--ink-2); }
+.pc-art-top .pc-art-stade { margin-left: auto; flex: 0 0 auto; font-size: .56rem; font-weight: 600; letter-spacing: .03em; color: var(--ink-3); }
 @media (max-width: 44em) {
   .pc-sheet { width: auto; max-width: 100%; }
-  .pc-cols2 { grid-template-columns: 1fr; }
-  .pc-comp-cols { flex-direction: column; align-items: stretch; }
+  .pc-cols2, .pc-cols-fiche { grid-template-columns: 1fr; }
   .pc-arts { grid-template-columns: 1fr; }
   .pc-id { grid-template-columns: repeat(6, minmax(0, 1fr)); }
   .pc-f.c4 { grid-column: span 3; }
@@ -249,26 +248,14 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 }
 .pc-comp-champ::after { content: ""; flex: 1; height: 1px; background: var(--hair); }
 .pc-comp-champ:first-child { margin-top: .1rem; }
-/* ligne : (nom | total rollable) puis les pastilles de stade en dessous */
-.pc-comp-row { display: grid; grid-template-columns: minmax(0, 1fr) 2.6rem; gap: .12rem .3rem; align-items: center; padding: .14rem .25rem .18rem; font-size: var(--fs-body); border-radius: 4px; }
+/* ligne unique : nom | stade (menu) | total rollable */
+.pc-comp-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 6.6rem) 2.6rem; gap: .12rem .3rem; align-items: center; padding: .14rem .25rem .18rem; font-size: var(--fs-body); border-radius: 4px; }
 .pc-comp-row.odd { background: var(--stripe); }
 .pc-comp-row.head {
   background: var(--card); border-bottom: 1px solid var(--line); border-radius: 0; padding: .2rem .25rem .16rem;
   font-size: var(--fs-label); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-3);
 }
-.pc-comp-row.head > span:nth-child(2) { text-align: right; }
-/* pastilles de stade : cocher son niveau, recliquer pour revenir à Non initié */
-.pc-stades { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: .18rem; }
-.pc-stade {
-  font: inherit; font-size: .56rem; font-weight: 600; letter-spacing: .02em;
-  color: var(--ink-3); background: var(--card); border: 1px solid var(--line-2);
-  border-radius: 999px; padding: .09rem .48rem; cursor: pointer; transition: .12s;
-}
-.pc-stade:hover { border-color: var(--line); color: var(--ink); }
-.pc-stade.on { color: var(--ink-2); border-color: var(--line); background: var(--panel); }
-.pc-stade.cur { background: var(--red); border-color: var(--red-deep); color: #fff; }
-/* cinq pastilles sur un tiers de feuille : un peu resserrées dans les colonnes */
-.pc-comp-cols .pc-stade { padding: .09rem .36rem; }
+.pc-comp-row.head > span:last-child { text-align: right; }
 .pc-comp-name { display: flex; align-items: baseline; min-width: 0; gap: .3rem; }
 .pc-comp-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); }
 .pc-comp-del { flex: 0 0 auto; border: none; background: transparent; color: var(--ink-3); font: inherit; font-size: .62rem; cursor: pointer; padding: 0 .1rem; }
@@ -281,9 +268,9 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 }
 .pc-select:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 2px var(--wash); }
 .pc-comp-row .pc-select.lv0 { color: var(--ink-3); }
-/* techniques du stade Expert : sous la ligne, en retrait */
-/* techniques : cartes nom + effet (mêmes styles que les avantages), en retrait */
-.pc-techniques { grid-column: 1 / -1; display: flex; flex-direction: column; gap: .2rem; padding: .1rem 0 .2rem 1rem; }
+/* techniques : cartes nom + effet dans la carte d'art (onglet Art) */
+.pc-techniques { display: flex; flex-direction: column; gap: .2rem; padding: .15rem 0 0; }
+.pc-techniques:empty { display: none; }
 .pc-techniques .pc-av { margin-bottom: .1rem; }
 .pc-comp-add { display: flex; gap: .35rem; align-items: center; padding: .25rem .25rem .1rem; }
 .pc-comp-add input { flex: 1 1 auto; min-width: 0; padding: .24rem .5rem; border: 1px solid var(--line-2); border-radius: 6px; background: var(--card); color: var(--ink); font: inherit; font-size: .72rem; }
