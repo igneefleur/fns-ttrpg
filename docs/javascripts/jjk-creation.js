@@ -149,15 +149,10 @@
   function ptsCreation() {
     return state.caracsBase.Mind + state.caracsBase.Body + state.caracsBase.Prestance;
   }
-  function pvMax() {
-    var v = (20 + caracTotal("Body")) / 2;
-    return Math.round(v * 10) / 10;
-  }
+  // les valeurs issues d'une division s'arrondissent à l'INFÉRIEUR
+  function pvMax() { return Math.floor((20 + caracTotal("Body")) / 2); }
   function pvCourant() { return state.pv === null ? pvMax() : state.pv; }
-  function regen() {
-    // « Body/10 PV par jour », sans arrondi (les PV acceptent les demi-points)
-    return Math.round(caracTotal("Body") / 10 * 10) / 10;
-  }
+  function regen() { return Math.floor(caracTotal("Body") / 10); }
   function vitesse() {
     var b = caracTotal("Body");
     var rows = DATA.vitesses || [];
@@ -691,7 +686,7 @@
     var pvStep = el("span", "pc-step");
     pvStep.appendChild(stepBtn("−", null, function () { state.pv = pvCourant() - 1; refresh(); }));
     var pvIn = el("input", "pc-num");
-    pvIn.type = "number"; pvIn.step = "0.5";
+    pvIn.type = "number"; pvIn.step = "1";
     pvIn.addEventListener("input", function () {
       var v = parseFloat(pvIn.value);
       state.pv = isFinite(v) ? v : null;
