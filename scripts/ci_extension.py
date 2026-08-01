@@ -127,7 +127,23 @@ def main():
           "empaquetage + signature Mozilla…")
     stamp_version(new_version)
     build_extension.build()
-    sign_extension.sign(issuer, secret)
+    try:
+        sign_extension.sign(issuer, secret)
+    except SystemExit as e:
+        # signature impossible (quota AMO, panne…) : on restaure les paquets
+        # DÉJÀ SIGNÉS pour que le site parte quand même à jour ; l'empreinte
+        # n'est pas écrite, le prochain run (push ou workflow_dispatch)
+        # retentera la signature.
+        print(f"[ci-extension] SIGNATURE REPORTÉE ({e}) — le site est déployé "
+              f"avec les paquets signés v{state.get('version', '?')}.")
+        subprocess.run(["git", "checkout", "--",
+                        "docs/download/jjk-roll20-firefox.xpi",
+                        "docs/download/jjk-roll20-chrome.zip",
+                        "docs/download/updates.json",
+                        "extension/firefox/manifest.json",
+                        "extension/chrome/manifest.json"],
+                       cwd=ROOT, check=False)
+        return
 
     STATE.write_text(json.dumps({"version": new_version, "hash": current},
                                 indent=2) + "\n", encoding="utf-8")
