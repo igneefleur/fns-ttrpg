@@ -16,11 +16,28 @@
  */
 (function () {
   "use strict";
+  if (window.__jjkBridge) return;   // jamais deux ponts (écouteurs en double)
+  window.__jjkBridge = true;
   var PREFIX = "jjk_";
   var WRITE_DELAY = 60;   // ms entre deux écritures d'attribut
 
   function str(v) { return v == null ? "" : String(v); }
-  function campaign() { return window.Campaign || (window.d20 && window.d20.Campaign) || null; }
+  function usable(c) { return (c && c.characters && c.characters.get) ? c : null; }
+  // même prédicat qu'IS_POPOUT côté content-script (ce fichier vit dans le monde principal)
+  var IS_POPOUT = /^\/editor\/character\/[^/]+\//.test(location.pathname);
+  // Fenêtre popout d'une fiche : le d20 de la campagne vit dans la fenêtre qui a
+  // ouvert le popout (même origine app.roll20.net -> accès direct autorisé) ; on
+  // s'y rabat quand cette fenêtre n'a pas de Campaign utilisable à elle. Repli
+  // STRICTEMENT réservé au popout : dans l'éditeur, un opener n'est jamais consulté.
+  function campaign() {
+    var c = usable(window.Campaign || (window.d20 && window.d20.Campaign) || null);
+    if (c || !IS_POPOUT) return c;
+    try {
+      var o = window.opener;
+      if (o && !o.closed) return usable(o.Campaign || (o.d20 && o.d20.Campaign) || null);
+    } catch (e) {}
+    return null;
+  }
   function getChar(id) {
     var c = campaign();
     return (c && c.characters && c.characters.get) ? c.characters.get(id) : null;
@@ -66,13 +83,21 @@
   }
 
   var queue = [], busy = false;
-  function enqueue(id, attrs) { queue.push({ id: id, attrs: attrs || {} }); pump(); }
+  function enqueue(id, attrs) { queue.push({ id: id, attrs: attrs || {}, tries: 0 }); pump(); }
   function pump() {
     if (busy) return;
     var job = queue.shift();
     if (!job) return;
     busy = true;
     var ch = getChar(job.id);
+    if (!ch) {
+      // Campaign injoignable (opener du popout en cours de rechargement...) : on
+      // RE-TENTE au lieu de jeter — la fiche a déjà avancé sa base de diff, une
+      // écriture jetée serait définitivement perdue. ~1 min de patience.
+      busy = false;
+      if (++job.tries <= 60) { queue.unshift(job); setTimeout(pump, 1000); }
+      return;
+    }
     var names = Object.keys(job.attrs), i = 0;
     function step() {
       if (!ch || i >= names.length) {
@@ -102,10 +127,19 @@
       var d = ev.data;
       if (!d || d.ns !== "jjk" || !d.charId) return;
       if (d.type === "has-sheet") {
-        var a = readAll(d.charId);
-        reply(ev, { type: "has-sheet-result", charId: d.charId, exists: !!a[PREFIX + "version"] });
+        // perso injoignable (Campaign pas prêt, opener fermé...) : exists:null
+        // (« Roll20 n'a pas répondu ») — surtout pas false, qui proposerait de
+        // CRÉER une fiche par-dessus une fiche existante mais illisible.
+        if (!getChar(d.charId)) {
+          reply(ev, { type: "has-sheet-result", charId: d.charId, exists: null });
+        } else {
+          var a = readAll(d.charId);
+          reply(ev, { type: "has-sheet-result", charId: d.charId, exists: !!a[PREFIX + "version"] });
+        }
       } else if (d.type === "load") {
-        reply(ev, { type: "hydrate", charId: d.charId, attrs: readAll(d.charId) });
+        // perso injoignable : ne pas hydrater avec du vide (la fiche relance load
+        // toutes les 500 ms, le Campaign peut arriver après nous)
+        if (getChar(d.charId)) reply(ev, { type: "hydrate", charId: d.charId, attrs: readAll(d.charId) });
       } else if (d.type === "save") {
         enqueue(d.charId, d.attrs);
       }

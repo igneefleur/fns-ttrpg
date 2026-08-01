@@ -12,6 +12,14 @@
  *    entre « Feuille de personnage » et « Bio & Info ». Au clic : si le perso a déjà
  *    une fiche JJK -> monte l'iframe de la coquille ; sinon -> bouton « Créer fiche JJK ».
  *
+ * Cas particulier : la fiche OUVERTE EN FENÊTRE SÉPARÉE (bouton popout ->
+ * app.roll20.net/editor/character/<campagne>/<perso>/...). Roll20 y sert le MÊME
+ * document que dans l'iframe du dialogue, mais directement en haut de fenêtre :
+ * cette frame cumule alors les deux rôles (onglet + pont). Le tchat et le d20 de
+ * la campagne restent dans la fenêtre qui a ouvert le popout : les jets y sont
+ * relayés via window.opener (même origine), et le pont d20 se rabat sur le
+ * Campaign de l'opener (voir roll20-page.js).
+ *
  * La page distante (sous la coquille) dialogue DIRECTEMENT avec le page-script via
  * window.top (postMessage, réponses par ev.source) : ce content-script ne fait que
  * poser l'onglet, interroger has-sheet, et monter l'iframe avec le charId dans le hash.
@@ -22,6 +30,9 @@ if (typeof browser === "undefined") { var browser = chrome; }
   "use strict";
 
   var IS_TOP = (function () { try { return window.top === window; } catch (e) { return true; } })();
+  // Fenêtre popout d'une fiche : la barre d'onglets vit dans le document du HAUT
+  // (aucune iframe de dialogue), il faut donc y poser l'onglet nous-mêmes.
+  var IS_POPOUT = IS_TOP && /^\/editor\/character\/[^/]+\//.test(location.pathname);
 
   function el(tag, cls, txt) {
     var e = document.createElement(tag);
@@ -83,13 +94,18 @@ if (typeof browser === "undefined") { var browser = chrome; }
   }
 
   // ---------- frame du haut : injecter le pont d20 dans le monde principal ----------
+  // Marqueur DURABLE sur <html> : la balise <script> se retire à l'onload, un
+  // getElementById laissait donc chaque need-bridge (une fiche ouverte de plus)
+  // réinjecter un pont -> écouteurs en double -> écritures d'attributs en double.
   function injectPageScript() {
-    if (document.getElementById("jjk-page-bridge")) return;
+    var root = document.documentElement;
+    if (!root || root.hasAttribute("data-jjk-bridge")) return;
+    root.setAttribute("data-jjk-bridge", "1");
     var s = document.createElement("script");
     s.id = "jjk-page-bridge";
     s.src = browser.runtime.getURL("roll20-page.js");
     s.onload = function () { this.remove(); };   // le listener reste actif, on retire la balise
-    (document.head || document.documentElement).appendChild(s);
+    (document.head || root).appendChild(s);
   }
 
   // ---------- pont léger vers le page-script (has-sheet) ----------
@@ -103,6 +119,9 @@ if (typeof browser === "undefined") { var browser = chrome; }
         var d = ev.data;
         if (!d || d.ns !== "jjk") return;   // ignore tout ce qui n'est pas à nous
         if (d.type === "has-sheet-result" && pendingHas[d.charId]) {
+          // exists:null = perso injoignable POUR L'INSTANT (Campaign pas prêt) :
+          // on laisse les relances retenter ; le délai final rendra null au pire.
+          if (d.exists === null || d.exists === undefined) return;
           var cb = pendingHas[d.charId]; delete pendingHas[d.charId]; cb(d.exists);
         }
       } catch (e) {}
@@ -122,7 +141,10 @@ if (typeof browser === "undefined") { var browser = chrome; }
       tries++;
       try { window.top.postMessage({ ns: "jjk", type: "has-sheet", charId: charId }, "*"); } catch (e) {}
       if (tries < 5) setTimeout(send, 700);
-      else if (pendingHas[charId]) { delete pendingHas[charId]; cb(null); }
+      // dernier essai : laisser sa réponse arriver avant de conclure null
+      else setTimeout(function () {
+        if (pendingHas[charId]) { delete pendingHas[charId]; cb(null); }
+      }, 700);
     })();
   }
 
@@ -135,7 +157,12 @@ if (typeof browser === "undefined") { var browser = chrome; }
     } catch (e) {}
     var n = (dialog && dialog.querySelector && dialog.querySelector("[data-characterid]")) ||
             document.querySelector("[data-characterid]");
-    return n ? n.getAttribute("data-characterid") : "";
+    if (n) return n.getAttribute("data-characterid");
+    // fenêtre popout : pas de dialogue autour, mais l'id est le 2e segment de
+    // l'URL (/editor/character/<campagne>/<perso>/...)
+    var m = /^\/editor\/character\/[^/]+\/([^/?#]+)/.exec(location.pathname);
+    if (m) { try { return decodeURIComponent(m[1]); } catch (e) { return m[1]; } }
+    return "";
   }
 
   // ---------- montage de l'iframe du créateur / bouton de création ----------
@@ -304,23 +331,8 @@ if (typeof browser === "undefined") { var browser = chrome; }
   }
 
   // ---------- boucle ----------
-  function scan() { if (!IS_TOP) placeTabs(); }
-
-  if (IS_TOP) {
-    // FRAME DU HAUT : on n'injecte RIEN au chargement (l'injection main-world gênait
-    // l'ouverture des fiches Roll20). On attend que l'utilisateur ouvre l'onglet
-    // Fiche JJK (depuis une fiche déjà ouverte) : il pose alors le pont via need-bridge.
-    // Reçoit aussi les JETS de la fiche -> tchat Roll20 (le tchat vit dans cette frame).
-    window.addEventListener("message", function (ev) {
-      try {
-        var d = ev.data;
-        if (!d || d.ns !== "jjk") return;
-        if (d.type === "need-bridge") injectPageScript();
-        else if (d.type === "roll") sendToChat(document, rollCommand(d.die, d.value, d.label));
-        else if (d.type === "say") sendToChat(document, sayCommand(d.title, d.fields));
-      } catch (e) {}
-    });
-  } else {
+  function scan() { placeTabs(); }
+  function startScan() {
     scan();
     var pending = false;
     var obs = new MutationObserver(function () {
@@ -330,5 +342,45 @@ if (typeof browser === "undefined") { var browser = chrome; }
     });
     obs.observe(document.documentElement, { childList: true, subtree: true });
     var n = 0, iv = setInterval(function () { scan(); if (++n > 12) clearInterval(iv); }, 1000);
+  }
+
+  // Fenêtre popout : pas de tchat ici. Le jet repart à la fenêtre qui a ouvert le
+  // popout (l'éditeur, même origine) où ce même content script le rejouera.
+  // On poste une COPIE (jamais muter ev.data, potentiellement Xray-wrappé) avec
+  // relayed:true (un seul rebond, jamais de boucle) et une origine CIBLÉE : si
+  // l'utilisateur a fait naviguer la fenêtre principale ailleurs, rien ne part.
+  function relayToOpener(d) {
+    if (d.relayed) return;
+    try {
+      var o = window.opener;
+      if (!o || o.closed) return;
+      o.postMessage({ ns: "jjk", type: d.type, charId: d.charId, die: d.die, value: d.value,
+                      label: d.label, title: d.title, fields: d.fields, relayed: true },
+                    "https://app.roll20.net");
+    } catch (e) {}
+  }
+
+  if (IS_TOP) {
+    // FRAME DU HAUT : on n'injecte RIEN au chargement (l'injection main-world gênait
+    // l'ouverture des fiches Roll20). On attend que l'utilisateur ouvre l'onglet
+    // Fiche JJK (depuis une fiche déjà ouverte) : il pose alors le pont via need-bridge.
+    // Reçoit aussi les JETS de la fiche -> tchat Roll20 (le tchat vit dans cette frame,
+    // sauf popout : relais vers l'opener).
+    window.addEventListener("message", function (ev) {
+      try {
+        var d = ev.data;
+        if (!d || d.ns !== "jjk") return;
+        if (d.type === "need-bridge") injectPageScript();
+        else if (d.type === "roll") {
+          if (!sendToChat(document, rollCommand(d.die, d.value, d.label)) && IS_POPOUT) relayToOpener(d);
+        } else if (d.type === "say") {
+          if (!sendToChat(document, sayCommand(d.title, d.fields)) && IS_POPOUT) relayToOpener(d);
+        }
+      } catch (e) {}
+    });
+    // popout : la barre d'onglets de la fiche vit dans CE document, on y pose l'onglet.
+    if (IS_POPOUT) startScan();
+  } else {
+    startScan();
   }
 })();

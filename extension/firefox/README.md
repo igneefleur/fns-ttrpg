@@ -11,9 +11,12 @@ les joueurs qui contrôlent ce personnage. Les jets partent dans le tchat.
 ## Pièces (toutes stables : re-signature seulement si l'une d'elles change)
 
 - `content-roll20.js` — pose l'onglet dans le dialogue de perso (frame de la
-  feuille) et relaie les jets vers le tchat (frame du haut).
+  feuille) et relaie les jets vers le tchat (frame du haut). Gère aussi la
+  fiche en fenêtre séparée (popout, `/editor/character/...`) : l'onglet se pose
+  dans le document du haut et les jets repartent à la fenêtre d'ouverture.
 - `roll20-page.js` — pont d20, injecté dans le monde principal à la demande :
-  lit/écrit les Attributes `jjk_*` (écritures throttlées et silencieuses).
+  lit/écrit les Attributes `jjk_*` (écritures throttlées et silencieuses) ;
+  dans un popout, se rabat sur le Campaign de `window.opener`.
 - `creator.html` + `creator-shell.js` — la coquille : iframe vers la fiche du
   site, charId passé dans le hash (#c=<id>). La page distante parle
   directement au pont via window.top ; aucun relais ici.
