@@ -29,7 +29,7 @@ NDASH = "–"   # tiret de plage (U+2013)
 PAGE = "content/regles/index.md"
 
 CARACS = ["Mind", "Body", "Prestance"]
-STADES = ["Non initié", "Initié", "Maitre", "Expert"]
+STADES = ["Non initié", "Initié", "Maitre", "Expert", "Artiste"]
 
 
 def _num(s):
@@ -88,15 +88,23 @@ def _stades(defs):
     """Stades et leurs bonus, parsés depuis leurs définitions."""
     out = []
     bonus = 0
+    techniques = False
+    art = False
     for nom in STADES:
         body = defs.get(nom, "")
         m = (re.search(r"malus de (" + MINUS + r"?\d+)", body)
              or re.search(r"[Bb]onus de \+?(" + MINUS + r"?\d+)", body))
         if m:
             bonus = _num(m.group(1))
-        # le stade qui parle de « techniques » ouvre leur achat (20 xp pièce)
+        # « Dès ce stade » : le stade qui parle de « techniques » ouvre leur
+        # achat (20 xp pièce), celui qui dit « développer un art » ouvre son
+        # développement ; l'un comme l'autre restent acquis aux stades suivants.
+        # Détection ancrée sur la formule de règle (pas le mot « art » isolé,
+        # qui surgirait dans « l'art de… » d'une autre définition)
+        techniques = techniques or "technique" in body.lower()
+        art = art or re.search(r"développer (?:un|des|son) arts?\b", body, re.I) is not None
         out.append({"nom": nom, "bonus": bonus,
-                    "techniques": "technique" in body.lower(), "desc": body})
+                    "techniques": techniques, "art": art, "desc": body})
     return out
 
 
@@ -175,8 +183,13 @@ def _extract(docs_dir):
 def on_files(files, config):
     data = _extract(config["docs_dir"])
     n_comps = sum(len(v) for v in data["comps"].values())
+    # les stades d'ouverture sont affichés : une dérive de la détection
+    # (reformulation des règles) se voit au build au lieu d'attendre le créateur
+    tech0 = next((s["nom"] for s in data["stades"] if s["techniques"]), "AUCUN")
+    art0 = next((s["nom"] for s in data["stades"] if s["art"]), "AUCUN")
     print(f"[jjk-creation] {len(data['caracs'])} caracs, {n_comps} compétences, "
-          f"{len(data['stades'])} stades, {len(data['vitesses'])} vitesses, "
+          f"{len(data['stades'])} stades (techniques dès {tech0}, art dès {art0}), "
+          f"{len(data['vitesses'])} vitesses, "
           f"{len(data['difficultes'])} difficultés, {len(data['blessures'])} blessures")
     content = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
     files.append(File.generated(config, "jjk-creation.json", content=content))

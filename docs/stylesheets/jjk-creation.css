@@ -148,7 +148,7 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 /* Art : une carte d'art par compétence au stade qui l'ouvre */
 .pc-arts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem; align-items: start; }
 .pc-arts > .pc-empty { grid-column: 1 / -1; }
-.pc-art { margin-bottom: 0; }
+.pc-av.pc-art { margin-bottom: 0; }   /* prime sur le margin-bottom de .pc-av (même spécificité sinon) */
 .pc-art-top { display: flex; align-items: center; gap: .35rem; margin-bottom: .22rem; }
 .pc-art-top .pc-art-comp { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; font-size: .7rem; color: var(--ink-2); }
 @media (max-width: 44em) {

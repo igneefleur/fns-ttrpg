@@ -86,7 +86,7 @@ Chaque compétence se rattache à l'une des trois caractéristiques :
 
 <div class="keep" markdown>
 
-Pour chaque compétence il existe 4 stades ; pour passer d'un stade à l'autre, il faut dépenser 20 pts d'xp.
+Pour chaque compétence il existe 5 stades ; pour passer d'un stade à l'autre, il faut dépenser 20 pts d'xp.
 
 </div>
 
@@ -99,6 +99,8 @@ Pour chaque compétence il existe 4 stades ; pour passer d'un stade à l'autre, 
 **Maitre :** Bonus de +20.
 
 **Expert :** Bonus de +30. Dès ce stade, vous pouvez dépenser à répétition 20 xp pour ajouter des techniques originales ou des propriétés spécifiques à cette compétence, qui personnalisent votre façon d'approcher cette discipline.
+
+**Artiste :** Bonus de +40. Dès ce stade, vous pouvez développer un art dans cette compétence.
 
 </div>
 
