@@ -7,7 +7,7 @@
  * La Fiche a trois colonnes (caractéristiques | combat | compétences), tout
  * dans l'ordre Body, Mind, Prestance ; une ligne par compétence (nom | stade
  * en menu | total-jet). L'onglet Art porte la personnalisation : les
- * techniques d'une compétence (dès Expert) et son art (dès Artiste).
+ * passifs d'une compétence et son art (au stade Art).
  *
  * Le contenu des règles (caractéristiques, listes de compétences, stades,
  * vitesses, difficultés, blessures, courbes d'armes/armures, actions) vient de
@@ -16,10 +16,10 @@
  * calcul prosaïques :
  *   - création : 120 points à répartir dans les 3 caractéristiques (0 à 80) ;
  *   - 500 xp à la création (total modifiable) ; 20 xp par stade de compétence
- *     (Non initié, Initié, Maitre, Expert, Artiste), 20 xp par +5 de
- *     caractéristique (limite 80 sans avantage) ; dès le stade Expert, 20 xp
- *     par technique ; le stade Artiste (sans bonus propre) ouvre un art par
- *     compétence, couvert par les 20 xp du stade, et offre une technique ;
+ *     (Non initié, Initié, Maitrise, Expertise, Art), 20 xp par +5 de
+ *     caractéristique (limite 80 sans avantage) ; le stade Art (sans bonus
+ *     propre) ouvre l'art et les passifs de la compétence : le passif
+ *     original est inclus dans le stade, les suivants coûtent 20 xp pièce ;
  *   - pas plus d'un quart de l'xp total investi dans une seule compétence ;
  *   - PV max = (20 + Body) / 2 ; récupération Body/10 PV par jour ;
  *   - jet = 1d100 + caractéristique (+ bonus de stade pour une compétence) ;
@@ -78,6 +78,23 @@
   }
   // affichage des poids : point décimal, sans zéros de traîne (« 0.5 », « 3 »)
   function fmtP(n) { return String(Math.round(n * 100) / 100); }
+  // modificateurs divers : TOUJOURS un tableau de 3 emplacements (équipement /
+  // art / décision du MJ), sommés dans la valeur effective — le geste de la
+  // fiche HxH. modArr assainit ce qui entre, modSum totalise.
+  function modArr(a) {
+    if (!Array.isArray(a)) a = [];
+    var out = [0, 0, 0];
+    for (var i = 0; i < 3; i++) {
+      var n = parseFloat(a[i]);
+      out[i] = isFinite(n) ? clamp(Math.round(n * 100) / 100, -999, 999) : 0;
+    }
+    return out;
+  }
+  function modSum(a) {
+    var t = 0;
+    (a || []).forEach(function (n) { if (isFinite(n)) t += n; });
+    return Math.round(t * 100) / 100;
+  }
   function nowStamp() { return new Date().toISOString(); }
   function sign(n) { return n >= 0 ? "+" + n : String(n).replace("-", "−"); }
   // les compétences commencent toujours par une majuscule (« apnée » -> « Apnée »)
@@ -98,6 +115,12 @@
       pv: null, narration: 3,
       armes: [], armures: [], inventaire: "",
       inv: { texte: [], groupes: ["Sur soi"], objets: [] },
+      divers: {
+        caracs: { Mind: [0, 0, 0], Body: [0, 0, 0], Prestance: [0, 0, 0] },
+        pvMax: [0, 0, 0], regen: [0, 0, 0], vitesse: [0, 0, 0],
+        comps: {}
+      },
+      pvMaxOverride: null,
       de: "1d100"
     };
   }
@@ -117,6 +140,36 @@
       s.caracsXp[c] = clamp(num(s.caracsXp[c], 0), 0, 99);
       s.caracsMod[c] = clamp(num(s.caracsMod[c], 0), -999, 999);
     });
+    // modificateurs divers (3 emplacements : équipement / art / MJ)
+    if (!s.divers || typeof s.divers !== "object" || Array.isArray(s.divers)) s.divers = b.divers;
+    if (!s.divers.caracs || typeof s.divers.caracs !== "object" || Array.isArray(s.divers.caracs)) s.divers.caracs = b.divers.caracs;
+    ["Mind", "Body", "Prestance"].forEach(function (c) { s.divers.caracs[c] = modArr(s.divers.caracs[c]); });
+    s.divers.pvMax = modArr(s.divers.pvMax);
+    s.divers.regen = modArr(s.divers.regen);
+    s.divers.vitesse = modArr(s.divers.vitesse);
+    if (!s.divers.comps || typeof s.divers.comps !== "object" || Array.isArray(s.divers.comps)) s.divers.comps = {};
+    var dcomps = {};
+    Object.keys(s.divers.comps).forEach(function (k) {
+      var a = modArr(s.divers.comps[k]);
+      if (!a[0] && !a[1] && !a[2]) return;   // les entrées nulles s'effacent
+      var di = k.indexOf("/");
+      dcomps[di > 0 ? k.slice(0, di + 1) + capFirst(k.slice(di + 1)) : k] = a;
+    });
+    s.divers.comps = dcomps;
+    // migration : l'ancien modificateur unique de l'onglet Options rejoint le
+    // 3e emplacement (décision du MJ) du divers de sa caractéristique
+    ["Mind", "Body", "Prestance"].forEach(function (c) {
+      var old = num(s.caracsMod[c], 0);
+      if (old) {
+        s.divers.caracs[c][2] = clamp(s.divers.caracs[c][2] + old, -999, 999);
+        s.caracsMod[c] = 0;
+      }
+    });
+    // PV max forcé : vide = valeur calculée ; borné comme le reste
+    s.pvMaxOverride = (s.pvMaxOverride === null || s.pvMaxOverride === undefined || s.pvMaxOverride === "")
+      ? null : Math.floor(parseFloat(s.pvMaxOverride));
+    if (s.pvMaxOverride !== null && !isFinite(s.pvMaxOverride)) s.pvMaxOverride = null;
+    if (s.pvMaxOverride !== null) s.pvMaxOverride = clamp(s.pvMaxOverride, 0, 9999);
     if (!Array.isArray(s.qualites)) s.qualites = ["", ""];
     s.qualites = s.qualites.map(function (q) { return q == null ? "" : String(q); });
     while (s.qualites.length < 2) s.qualites.push("");
@@ -135,8 +188,9 @@
       var c = s.comps[k];
       if (!c || typeof c !== "object") c = {};
       c.stade = clamp(num(c.stade, 0), 0, DATA ? DATA.stades.length - 1 : 4);
-      // migration : les « passifs » d'avant s'appellent désormais « techniques »,
-      // et une technique est un objet {name, desc} (l'ancien texte simple
+      // la clé d'état s'appelle « techniques » (historique : elle a déjà été
+      // migrée depuis « passifs », que l'interface réemploie aujourd'hui) ;
+      // chaque entrée est un objet {name, desc} (l'ancien texte simple
       // devient le nom, description vide)
       if (!Array.isArray(c.techniques)) c.techniques = Array.isArray(c.passifs) ? c.passifs : [];
       delete c.passifs;
@@ -210,16 +264,21 @@
   function caracTotal(c) {
     var v = state.caracsBase[c] + CARAC_PAS * state.caracsXp[c];
     if (!state.sansLimite) v = Math.min(v, CARAC_MAX);
-    // le modificateur (onglet Options) s'applique APRÈS le plafond : il peut
-    // porter le total au-delà de 80 comme en dessous de 0
-    return v + (state.caracsMod[c] || 0);
+    // les divers (équipement / art / MJ) s'appliquent APRÈS le plafond : ils
+    // peuvent porter le total au-delà de 80 comme en dessous de 0.
+    // caracsMod : ancien modificateur unique, migré dans divers par normalize ;
+    // lu encore par prudence (état non normalisé impossible en pratique).
+    return v + (state.caracsMod[c] || 0) + modSum(state.divers.caracs[c]);
   }
   function stadeInfo(i) { return DATA.stades[clamp(i, 0, DATA.stades.length - 1)]; }
   function compXp(c) {
     var xp = DATA.xpParStade * c.stade;
-    if (stadeInfo(c.stade).techniques) {
-      // chaque stade atteint qui offre une technique en rend une gratuite
-      // (Artiste : « vous obtenez une technique gratuite »)
+    // les passifs PRÉSENTS restent facturés même si le stade ne les ouvre
+    // plus (fiches d'avant un déplacement du stade d'ouverture : rien ne
+    // doit disparaître ni se re-créditer en silence)
+    if (stadeInfo(c.stade).techniques || (c.techniques && c.techniques.length)) {
+      // chaque stade atteint qui inclut un passif en rend un gratuit
+      // (Art : « choisir un passif original »)
       var offertes = 0;
       for (var i = 0; i <= c.stade && i < DATA.stades.length; i++) {
         if (DATA.stades[i].techniqueOfferte) offertes++;
@@ -240,11 +299,18 @@
     return state.caracsBase.Mind + state.caracsBase.Body + state.caracsBase.Prestance;
   }
   // les valeurs issues d'une division s'arrondissent à l'INFÉRIEUR
-  function pvMax() { return Math.floor((20 + caracTotal("Body")) / 2); }
+  function pvMaxAuto() { return Math.floor((20 + caracTotal("Body")) / 2) + modSum(state.divers.pvMax); }
+  // PV max : la valeur forcée (Options du bloc PV) court-circuite le calcul
+  function pvMax() { return state.pvMaxOverride !== null ? state.pvMaxOverride : pvMaxAuto(); }
   function pvCourant() { return state.pv === null ? pvMax() : state.pv; }
-  function regen() { return Math.max(0, Math.floor(caracTotal("Body") / 10)); }
-  function vitesse() {
-    var b = Math.max(0, caracTotal("Body"));   // un Body négatif reste au 1er palier
+  function regen() { return Math.max(0, Math.floor(caracTotal("Body") / 10) + modSum(state.divers.regen)); }
+  // la table des règles donne une CHAÎNE (« 10.5 m ») : le palier s'extrait en
+  // nombre pour recevoir les divers, puis se réaffiche avec son unité
+  function vitessePalier() {
+    // arrondi à l'inférieur : un Body décimal (divers) tomberait sinon dans
+    // les trous de la table (39.5 entre les lignes 0-39 et 40-79) et
+    // retomberait sur la DERNIÈRE ligne, la vitesse maximale
+    var b = Math.floor(Math.max(0, caracTotal("Body")));   // négatif : 1er palier
     var rows = DATA.vitesses || [];
     for (var i = 0; i < rows.length; i++) {
       var r = rows[i];
@@ -252,8 +318,16 @@
     }
     return rows.length ? rows[rows.length - 1].vitesse : "";
   }
-  function compValue(carac, comp) {
-    return caracTotal(carac) + stadeInfo(comp ? comp.stade : 0).bonus;
+  function vitesseBase() {
+    var n = parseFloat(vitessePalier());
+    return isFinite(n) ? n : 0;
+  }
+  function vitesse() {
+    return fmtP(Math.max(0, vitesseBase() + modSum(state.divers.vitesse))) + " m";
+  }
+  function compValue(carac, comp, key) {
+    return caracTotal(carac) + stadeInfo(comp ? comp.stade : 0).bonus +
+           (key ? modSum(state.divers.comps[key]) : 0);
   }
   function blankComp() { return { stade: 0, techniques: [] }; }
   function allComps() {
@@ -453,6 +527,48 @@
     w.appendChild(i);
     w.appendChild(stepBtn("+", title ? "+ " + step : null, function () { set(get() + step); refresh(); }));
     return w;
+  }
+  // trois petits champs ± (équipement / art / décision du MJ), sommés dans la
+  // valeur effective ; discrets, révélés au survol de l'hôte (.pc-mods-host).
+  // reg : registre de rafraîchissement (hooks, ou compHooks pour les lignes de
+  // compétences reconstruites par rebuildComps — un hook global y fuirait).
+  var MMOD_SLOTS = ["équipement", "art", "décision du MJ"];
+  // slots : 3 par défaut ; 1 pour les lignes trop denses (compétences), comme
+  // les compétences personnalisées de la fiche HxH
+  function multiMod(map, key, reg, slots) {
+    reg = reg || hooks;
+    slots = slots || 3;
+    var wrap = el("span", "pc-mmods");
+    function arr() {
+      if (!map[key]) map[key] = [0, 0, 0];
+      return map[key];
+    }
+    for (var i = 0; i < slots; i++) (function (i) {
+      var inp = el("input", "pc-mmod");
+      inp.type = "number"; inp.step = "any"; inp.placeholder = "0";
+      inp.title = slots === 1
+        ? "Bonus ou malus divers (équipement, art, décision du MJ)."
+        : "Bonus ou malus divers (" + MMOD_SLOTS[i] + ") — emplacement " +
+          (i + 1) + " sur " + slots + " ; les modificateurs s'additionnent.";
+      var v0 = map[key] ? map[key][i] : 0;
+      inp.value = v0 ? v0 : "";
+      inp.classList.toggle("neg", v0 < 0);
+      inp.addEventListener("input", function () {
+        var n = parseFloat(String(inp.value).replace(",", "."));
+        arr()[i] = isFinite(n) ? clamp(Math.round(n * 100) / 100, -999, 999) : 0;
+        inp.classList.toggle("neg", arr()[i] < 0);
+        refresh();
+      });
+      reg.push(function () {
+        if (document.activeElement !== inp) {
+          var v = map[key] ? map[key][i] : 0;
+          inp.value = v ? v : "";
+          inp.classList.toggle("neg", v < 0);
+        }
+      });
+      wrap.appendChild(inp);
+    })(i);
+    return wrap;
   }
   function block(title, small) {
     var b = el("div", "pc-block");
@@ -715,14 +831,13 @@
     // même ordre que les compétences : Body, puis Mind, puis Prestance
     CHAMPS.forEach(function (name) {
       if (!DATA.caracs.some(function (cc) { return cc.name === name; })) return;
-      var row = el("div", "pc-crow");
+      var row = el("div", "pc-crow pc-mods-host");
       var top = el("div", "pc-crow-top");
       var chip = el("span", "pc-abbr", ABBR[name] || name);
       chip.title = name;
       top.appendChild(chip);
       top.appendChild(el("span", "nm", name));
       var val = el("span", "pc-cval pc-rollable", "");
-      val.title = "Lancer 1d100 + " + name;
       val.addEventListener("click", function () { doRoll(name, caracTotal(name), null, true); });
       top.appendChild(val);
       row.appendChild(top);
@@ -732,7 +847,10 @@
       bot.appendChild(stepper(
         function () { return state.caracsBase[name]; },
         function (v) {
-          var max = state.sansLimite ? 999 : CARAC_MAX;
+          // le plafond ne bloque que les HAUSSES : une base montée au-dessus
+          // de 80 (Sans limite décoché ensuite) redescend pas à pas, sans être
+          // écrasée à 80 par un simple clic
+          var max = state.sansLimite ? 999 : Math.max(CARAC_MAX, state.caracsBase[name]);
           var val2 = clamp(v, 0, 999);
           if (val2 > max) { flash("Maximum " + CARAC_MAX + " par caractéristique sans avantage."); val2 = max; }
           state.caracsBase[name] = val2;
@@ -759,8 +877,25 @@
       bot.appendChild(xpStep);
       row.appendChild(bot);
 
+      // divers de la caractéristique (équipement / art / MJ), sur sa propre ligne
+      var divRow = el("div", "pc-crow-bot");
+      divRow.appendChild(el("span", "lbl", "Divers"));
+      divRow.appendChild(multiMod(state.divers.caracs, name));
+      row.appendChild(divRow);
+
       hooks.push(function () {
+        var d = modSum(state.divers.caracs[name]);
+        var brut = state.caracsBase[name] + CARAC_PAS * state.caracsXp[name];
+        var plafonne = state.sansLimite ? brut : Math.min(brut, CARAC_MAX);
         val.textContent = String(caracTotal(name));
+        val.classList.toggle("adj", d !== 0);
+        // quand le plafond mord, l'écrire en substitution (« plafonné à 80 »)
+        // pour que la somme du tooltip se vérifie de tête
+        val.title = "Création " + state.caracsBase[name] +
+                    " + achats " + (CARAC_PAS * state.caracsXp[name]) +
+                    (brut !== plafonne ? ", plafonné à " + CARAC_MAX : "") +
+                    (d ? " · divers " + sign(d) : "") +
+                    " = " + caracTotal(name) + " — clic : lancer 1d100 + " + name;
         cnt.textContent = String(state.caracsXp[name]);
       });
       b.appendChild(row);
@@ -774,8 +909,29 @@
   // de l'en-tête la rendait redondante.
   function buildVitesse(col) {
     var tiles = el("div", "pc-bigrow pc-bigrow-2");
-    tiles.appendChild(bigTile("Vitesse", vitesse));
-    tiles.appendChild(bigTile("Régén / jour", regen));
+
+    var tv = bigTile("Vitesse", vitesse);
+    tv.classList.add("pc-mods-host");
+    tv.appendChild(multiMod(state.divers, "vitesse"));
+    hooks.push(function () {
+      var d = modSum(state.divers.vitesse);
+      tv.classList.toggle("adj", d !== 0);
+      tv.title = "Palier de la table (Body " + caracTotal("Body") + ") : " + vitessePalier() +
+                 (d ? " · divers " + sign(d) + " m" : "");
+    });
+    tiles.appendChild(tv);
+
+    var tr = bigTile("Régén / jour", regen);
+    tr.classList.add("pc-mods-host");
+    tr.appendChild(multiMod(state.divers, "regen"));
+    hooks.push(function () {
+      var d = modSum(state.divers.regen);
+      tr.classList.toggle("adj", d !== 0);
+      tr.title = "Body / 10 = " + Math.floor(caracTotal("Body") / 10) +
+                 (d ? " · divers " + sign(d) : "") + " (jamais sous 0)";
+    });
+    tiles.appendChild(tr);
+
     col.appendChild(tiles);
   }
 
@@ -796,11 +952,43 @@
     pvStep.appendChild(stepBtn("+", null, function () { state.pv = pvCourant() + 1; refresh(); }));
     pvRow.appendChild(pvStep);
     var pvM = el("span", "max", "");
-    hooks.push(function () { pvM.textContent = "/ " + pvMax(); });
+    hooks.push(function () {
+      var d = modSum(state.divers.pvMax);
+      pvM.textContent = "/ " + pvMax();
+      pvM.classList.toggle("adj", state.pvMaxOverride !== null || d !== 0);
+      pvM.title = state.pvMaxOverride !== null
+        ? "Maximum forcé à " + state.pvMaxOverride + " (calculé : " + pvMaxAuto() + ")"
+        : "(20 + Body) / 2 = " + Math.floor((20 + caracTotal("Body")) / 2) +
+          (d ? " · divers " + sign(d) : "");
+    });
     pvRow.appendChild(pvM);
     pvRow.appendChild(el("span", "sp"));
     pvRow.appendChild(miniBtn("Max", "Revenir au maximum", function () { state.pv = null; refresh(); }));
     b.appendChild(pvRow);
+
+    // maximum : valeur forcée (vide = calculée) + divers — les leviers HxH
+    var mrow = el("div", "pc-pvmax pc-mods-host");
+    mrow.appendChild(el("span", "lbl", "Forcé"));
+    var force = el("input", "force");
+    force.type = "number"; force.step = "1"; force.min = "0";
+    force.title = "Vide = maximum calculé ((20 + Body) / 2, divers compris) ; " +
+                  "une valeur le force (avantage, décision du MJ).";
+    force.addEventListener("input", function () {
+      var v = parseFloat(force.value);
+      state.pvMaxOverride = isFinite(v) ? clamp(Math.floor(v), 0, 9999) : null;
+      refresh();
+    });
+    hooks.push(function () {
+      force.placeholder = String(pvMaxAuto());
+      if (document.activeElement !== force) {
+        force.value = state.pvMaxOverride === null ? "" : state.pvMaxOverride;
+      }
+    });
+    mrow.appendChild(force);
+    mrow.appendChild(el("span", "lbl", "Divers"));
+    mrow.appendChild(multiMod(state.divers, "pvMax"));
+    mrow.appendChild(el("span", "sp"));
+    b.appendChild(mrow);
     col.appendChild(b);
   }
 
@@ -838,12 +1026,14 @@
         var c = state.comps[item.key];
         var garde = [];
         if (c && c.stade > 0) garde.push("de l'xp investi");
-        if (c && c.techniques && c.techniques.length) garde.push("des techniques");
+        if (c && c.techniques && c.techniques.length) garde.push("des passifs");
         if (porteArt(c)) garde.push("un art");
+        if (modSum(state.divers.comps[item.key]) !== 0) garde.push("un modificateur divers");
         if (garde.length &&
             !confirm("Supprimer « " + item.name + " » effacera aussi " + garde.join(", ") + ". Continuer ?")) return;
         state.customComps = state.customComps.filter(function (cc) { return (cc.carac + "/" + cc.name) !== item.key; });
         delete state.comps[item.key];
+        delete state.divers.comps[item.key];   // sinon le divers renaîtrait sur une homonyme
         refresh();
         rebuildComps();
       });
@@ -852,7 +1042,7 @@
     row.appendChild(nameBox);
 
     // stade : un menu sur la ligne ; le coût se règle tout seul. Les
-    // techniques et l'art se personnalisent dans l'onglet Art.
+    // passifs et l'art se personnalisent dans l'onglet Art.
     var sel = el("select", "pc-select");
     DATA.stades.forEach(function (sd, i) {
       var o = el("option", null, sd.nom);
@@ -869,14 +1059,14 @@
       // (il ne se montre que quand le stade qui l'ouvre est atteint)
       if (porteArt(c)) next.art = c.art;
       if (!stadeInfo(target).techniques) {
-        // les techniques rédigées vivent dans l'onglet Art : la ligne ne les
+        // les passifs rédigés vivent dans l'onglet Art : la ligne ne les
         // montre pas, on confirme avant de les effacer avec la descente
         var redigees = c.techniques.filter(function (t) {
           return String(t.name || "").trim() || String(t.desc || "").trim();
         }).length;
         if (redigees &&
             !confirm("Redescendre « " + item.name + " » à " + stadeInfo(target).nom +
-                     " effacera " + redigees + " technique(s) rédigée(s) (onglet Art). Continuer ?")) {
+                     " effacera " + redigees + " passif(s) rédigé(s) (onglet Art). Continuer ?")) {
           sel.value = String(c.stade);
           return;
         }
@@ -900,19 +1090,29 @@
     });
     row.appendChild(sel);
 
+    // divers de la compétence (équipement / art / MJ) — « Katana +10 » sans
+    // toucher ni la caractéristique ni le stade. UN champ (ligne dense),
+    // comme les compétences personnalisées de la fiche HxH.
+    row.classList.add("pc-mods-host");
+    row.appendChild(multiMod(state.divers.comps, item.key, compHooks, 1));
+
     var total = el("span", "pc-comp-total pc-rollable", "");
-    total.title = "Lancer 1d100 + " + item.carac + " + stade";
     total.addEventListener("click", function () {
-      doRoll(item.name + " (" + item.carac + ")", compValue(item.carac, comp()), null, true);
+      doRoll(item.name + " (" + item.carac + ")", compValue(item.carac, comp(), item.key), null, true);
     });
     row.appendChild(total);
 
     compHooks.push(function () {
       var c = comp();
+      var d = modSum(state.divers.comps[item.key]);
       if (document.activeElement !== sel) sel.value = String(c.stade);
       sel.classList.toggle("lv0", !c.stade);
-      total.textContent = sign(compValue(item.carac, c));
-      total.classList.toggle("zero", !c.stade);
+      total.textContent = sign(compValue(item.carac, c, item.key));
+      total.classList.toggle("zero", !c.stade && !d);
+      total.classList.toggle("adj", d !== 0);
+      total.title = item.carac + " " + sign(caracTotal(item.carac)) +
+                    " · stade " + sign(stadeInfo(c.stade).bonus) +
+                    (d ? " · divers " + sign(d) : "") + " — clic : lancer";
     });
     return row;
   }
@@ -924,8 +1124,11 @@
   var compAddMode = false;      // les champs d'ajout n'apparaissent que sur demande
   function compInvestie(it) {
     var c = state.comps[it.key];
-    // l'art compte : une compétence redescendue qui garde son art reste visible
-    return !!(c && (c.stade > 0 || (c.techniques && c.techniques.length) || porteArt(c)));
+    // l'art compte : une compétence redescendue qui garde son art reste
+    // visible ; un divers non nul aussi (sinon « Investies seulement » cache
+    // un modificateur toujours présent dans l'état)
+    return !!(c && (c.stade > 0 || (c.techniques && c.techniques.length) || porteArt(c))) ||
+           modSum(state.divers.comps[it.key]) !== 0;
   }
   // l'ordre des champs, partout sur la Fiche : Body, puis Mind, puis Prestance
   var CHAMPS = ["Body", "Mind", "Prestance"];
@@ -1058,7 +1261,11 @@
     CHAMPS.forEach(function (ch, i) { rang[ch] = i; });
     return allComps().filter(function (it) {
       var c = state.comps[it.key];
-      return !!(c && (stadeInfo(c.stade).techniques || stadeInfo(c.stade).art));
+      // les passifs rédigés et l'art restent VISIBLES même si le stade ne les
+      // ouvre plus (stade redescendu, ou stade d'ouverture déplacé) : les
+      // données du joueur ne disparaissent jamais en silence
+      return !!(c && (stadeInfo(c.stade).techniques || stadeInfo(c.stade).art ||
+                      (c.techniques && c.techniques.length) || porteArt(c)));
     }).sort(function (a, b) {
       return (rang[a.carac] || 0) - (rang[b.carac] || 0)
         || a.name.localeCompare(b.name, "fr", { sensitivity: "base" });
@@ -1071,7 +1278,7 @@
     return null;
   }
   function buildArt(pane) {
-    var b = block("Arts et techniques");
+    var b = block("Arts et passifs");
     var box = el("div", "pc-arts");
     b.appendChild(box);
     pane.appendChild(b);
@@ -1120,7 +1327,7 @@
         card.appendChild(d);
       }
 
-      // les techniques, dès le stade qui les ouvre
+      // les passifs, dès le stade qui les ouvre
       var techBox = el("div", "pc-techniques");
       card.appendChild(techBox);
       function renderTechs() {
@@ -1131,15 +1338,15 @@
           var tCard = el("div", "pc-av pc-technique");
           var tHead = el("div", "pc-av-head");
           var tNm = el("input", "nm");
-          tNm.type = "text"; tNm.placeholder = "Nom de la technique"; tNm.value = t.name || "";
+          tNm.type = "text"; tNm.placeholder = "Nom du passif"; tNm.value = t.name || "";
           tNm.addEventListener("input", function () { t.name = tNm.value; state.comps[it.key] = cc; save(); });
           tHead.appendChild(tNm);
           tHead.appendChild(chatBtn(
-            function () { return "Technique — " + (t.name || it.name); },
+            function () { return "Passif — " + (t.name || it.name); },
             function () { return [["Compétence", it.name], ["Effet", t.desc]]; }));
-          tHead.appendChild(miniBtn("✕", "Retirer cette technique", function () {
+          tHead.appendChild(miniBtn("✕", "Retirer ce passif", function () {
             if ((String(t.name || "").trim() || String(t.desc || "").trim()) &&
-                !confirm("Retirer la technique « " + (t.name || "sans nom") + " » ?")) return;
+                !confirm("Retirer le passif « " + (t.name || "sans nom") + " » ?")) return;
             cc.techniques.splice(i, 1); state.comps[it.key] = cc; refresh(); renderTechs();
           }, "danger"));
           tCard.appendChild(tHead);
@@ -1151,10 +1358,10 @@
           tCard.appendChild(tD);
           techBox.appendChild(tCard);
         });
-        // le coût affiché suit la prochaine technique : gratuite si un stade
-        // atteint en offre encore une, sinon le tarif normal
+        // le coût affiché suit le prochain passif : inclus (gratuit) si un
+        // stade atteint en offre encore un, sinon le tarif normal
         var prochaine = compXp({ stade: cc.stade, techniques: cc.techniques.concat([{ name: "", desc: "" }]) }) - compXp(cc);
-        techBox.appendChild(miniBtn("+ technique (" + (prochaine ? prochaine + " xp" : "gratuite") + ")", null, function () {
+        techBox.appendChild(miniBtn("+ passif (" + (prochaine ? prochaine + " xp" : "inclus") + ")", null, function () {
           var test = { stade: cc.stade, techniques: cc.techniques.concat([{ name: "", desc: "" }]) };
           var delta = compXp(test) - compXp(cc);
           if (delta > 0 && xpRestant() < delta) { flash("XP insuffisant."); return; }
@@ -1172,7 +1379,7 @@
       if (!items.length) {
         var nom = artStadeNom();
         box.appendChild(el("div", "pc-empty",
-          nom ? "Aucune compétence n'a atteint le stade " + nom + "." : "Aucun stade n'ouvre de technique ou d'art."));
+          nom ? "Aucune compétence n'a atteint le stade " + nom + "." : "Aucun stade n'ouvre de passif ou d'art."));
         return;
       }
       items.forEach(function (it) { box.appendChild(artCard(it)); });
@@ -1717,26 +1924,23 @@
     bJ.appendChild(fld("Dé des jets de test", de));
     colA.appendChild(bJ);
 
-    // ---- modificateurs de caractéristiques (hors limite : au-delà de 80, sous 0) ----
-    var bM = block("Modificateurs de caractéristiques");
-    // même ordre que toute la fiche : Body, puis Mind, puis Prestance
-    CHAMPS.forEach(function (name) {
-      if (!DATA.caracs.some(function (cc) { return cc.name === name; })) return;
-      var row = el("div", "pc-kv");
-      var chip = el("span", "pc-abbr", ABBR[name] || name);
-      chip.title = name;
-      row.appendChild(chip);
-      row.appendChild(stepper(
-        function () { return state.caracsMod[name] || 0; },
-        function (v) { state.caracsMod[name] = clamp(v, -999, 999); },
-        CARAC_PAS, "modificateur"));
-      row.appendChild(el("span", "sp"));
-      var tot = el("span", "max", "");
-      hooks.push(function () { tot.textContent = "total : " + caracTotal(name); });
-      row.appendChild(tot);
-      bM.appendChild(row);
-    });
-    colA.appendChild(bM);
+    // ---- création ----
+    // (les modificateurs de caractéristiques vivent désormais EN LIGNE sur la
+    // Fiche : trois emplacements « Divers » sous chaque caractéristique)
+    var bC = block("Création");
+    var slRow = el("div", "pc-kv");
+    var slBox = el("input");
+    slBox.type = "checkbox";
+    slBox.id = "pc-sanslimite";
+    slBox.checked = !!state.sansLimite;
+    slBox.addEventListener("change", function () { state.sansLimite = slBox.checked; refresh(); });
+    hooks.push(function () { slBox.checked = !!state.sansLimite; });
+    var slLab = el("label", null, "Sans limite : plafond de " + CARAC_MAX + " levé (avantage ou décision du MJ)");
+    slLab.setAttribute("for", "pc-sanslimite");
+    slRow.appendChild(slBox);
+    slRow.appendChild(slLab);
+    bC.appendChild(slRow);
+    colA.appendChild(bC);
 
     // ---- affichage (fiche dans Roll20 seulement) ----
     // window.__jjkNight n'existe que sous roll20-fiche.html (posé par

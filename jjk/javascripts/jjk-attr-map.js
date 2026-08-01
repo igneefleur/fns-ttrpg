@@ -35,6 +35,7 @@
     ["background", "background", "s"], ["notes", "notes", "s"],
     ["inventaire", "inventaire", "s"], ["de", "de", "s"],
     ["xpTotal", "xp_total", "n"], ["narration", "narration", "n"],
+    ["pvMaxOverride", "pv_max_force", "s"],
     ["sansLimite", "sans_limite", "b"],
     ["v", "version", "n"]
   ];
@@ -46,7 +47,8 @@
     ["caracsMod", "caracs_mod"],
     ["comps", "competences"], ["customComps", "comp_perso"],
     ["armes", "armes"], ["armures", "armures"],
-    ["inv", "inventaire_sys"]
+    ["inv", "inventaire_sys"],
+    ["divers", "divers"]
   ];
 
   // état par défaut (miroir de blank() de jjk-creation.js ; sert de socle à la
@@ -65,6 +67,12 @@
       pv: null, narration: 3,
       armes: [], armures: [], inventaire: "",
       inv: { texte: [], groupes: ["Sur soi"], objets: [] },
+      divers: {
+        caracs: { Mind: [0, 0, 0], Body: [0, 0, 0], Prestance: [0, 0, 0] },
+        pvMax: [0, 0, 0], regen: [0, 0, 0], vitesse: [0, 0, 0],
+        comps: {}
+      },
+      pvMaxOverride: null,
       de: "1d100"
     };
   }
