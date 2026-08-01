@@ -29,7 +29,7 @@ NDASH = "–"   # tiret de plage (U+2013)
 PAGE = "content/regles/index.md"
 
 CARACS = ["Mind", "Body", "Prestance"]
-STADES = ["Non initié", "Initié", "Maitre", "Expert", "Artiste"]
+STADES = ["Non initié", "Initié", "Maitrise", "Expertise", "Art"]
 
 
 def _num(s):
@@ -96,18 +96,15 @@ def _stades(defs):
              or re.search(r"[Bb]onus de \+?(" + MINUS + r"?\d+)", body))
         if m:
             bonus = _num(m.group(1))
-        # « Dès ce stade » : le stade qui parle de « techniques » ouvre leur
-        # achat (20 xp pièce), celui qui dit « développer un art » ouvre son
-        # développement ; l'un comme l'autre restent acquis aux stades suivants.
-        # Détection ancrée sur la formule de règle (pas le mot « art » isolé,
-        # qui surgirait dans « l'art de… » d'une autre définition)
-        techniques = techniques or "technique" in body.lower()
-        art = art or re.search(r"développer (?:un|des|son) arts?\b", body, re.I) is not None
-        # « une technique gratuite » : ce stade en offre une (propriété du stade,
-        # le créateur cumule les offertes des stades atteints)
+        # Le stade qui parle de « passifs » ouvre leur achat (20 xp pièce) et
+        # l'art de la compétence ; l'ouverture reste acquise aux stades
+        # suivants. « passif original » = le passif inclus dans le stade
+        # (le créateur cumule les passifs offerts des stades atteints).
+        techniques = techniques or "passif" in body.lower()
+        art = art or "passif original" in body.lower()
         out.append({"nom": nom, "bonus": bonus,
                     "techniques": techniques, "art": art,
-                    "techniqueOfferte": "technique gratuite" in body.lower(),
+                    "techniqueOfferte": "passif original" in body.lower(),
                     "desc": body})
     return out
 

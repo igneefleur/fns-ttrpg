@@ -96,11 +96,11 @@ Pour chaque compétence il existe 5 stades ; pour passer d'un stade à l'autre, 
 
 **Initié :** Bonus de 0 au jet.
 
-**Maitre :** Bonus de +20.
+**Maitrise :** Bonus de +20.
 
-**Expert :** Bonus de +30. Dès ce stade, vous pouvez dépenser à répétition 20 xp pour ajouter des techniques originales ou des propriétés spécifiques à cette compétence, qui personnalisent votre façon d'approcher cette discipline.
+**Expertise :** Bonus de +30.
 
-**Artiste :** Dès ce stade, vous pouvez développer un art dans cette compétence, et vous obtenez une technique gratuite.
+**Art :** Vous pouvez choisir un passif original pour votre compétence, ce qui va personnaliser votre façon d'approcher cette discipline. À ce stade, vous pouvez dépenser à répétition 20 xp pour mettre d'autres passifs ou propriétés spécifiques à cette compétence.
 
 </div>
 
@@ -110,13 +110,13 @@ Pour chaque compétence il existe 5 stades ; pour passer d'un stade à l'autre, 
 
 ### Les PV
 
-Le calcul des PV se fait de la façon suivante :
+Le calcul des PV se fait de la façon suivante, arrondi à l'inférieur :
 
 <p class="formula">PV = (20 + Body) / 2</p>
 
 Donc une personne ayant 0 en Body aurait 10 PV. Une personne avec 120 de Body aurait 70 PV.
 
-Vous récupérez Body/10 PV par jour.
+Vous récupérez Body/10 PV par jour, arrondi à l'inférieur.
 
 </div>
 
@@ -154,6 +154,18 @@ Perdre une grande quantité de points de vie d'un seul coup amène souvent à de
 
 </div>
 
+Les blessures graves ne se soignent pas tant qu'elles n'ont pas été traitées par un jet de médecine réussi.
+
+</div>
+
+<div class="keep" markdown>
+
+### Les chutes
+
+Par 3 m de chute, 1D12 de dégâts. Un bon jet de Body Saut/Acrobatie peut réduire ces dégâts de 1D12 par tranche de succès au-dessus de Moyen (100).
+
+> Exemple. Un joueur fait une chute de 8 mètres : il devrait subir 2D12 de dégâts de chute. Il réussit un jet à 155 de Body Saut et réduit d'1D12 les dégâts. Il se rattrape sur ses pieds, mais se blesse à la jambe, s'infligeant 1D12 de dégâts de chute.
+
 </div>
 
 <div class="keep" markdown>
@@ -174,6 +186,18 @@ La vitesse de déplacement dépend de la base de Body :
 | 200+ | 18 m |
 
 </div>
+
+Les actions actives liées à la vitesse :
+
+</div>
+
+<div class="defs" markdown>
+
+**Foncer :** Vitesse × 2 pour le round.
+
+**Sprinter :** Jet de Body autorisé pour calculer la vitesse, puis vitesse × 2. Défense −25. Si touché, renversé.
+
+**Action de parcours :** Jet de Body à la difficulté donnée par le MJ ; si réussi, vitesse × 2 et défense +25, ou vitesse × 2 et ignore les terrains difficiles.
 
 </div>
 
@@ -219,6 +243,24 @@ Ajouté à cela, chaque arme possède au moins 2 avantages et 2 désavantages.
 
 <div class="keep" markdown>
 
+Le reach d'une arme indique sa portée optimale d'utilisation, mais on peut utiliser une arme en dehors de sa portée :
+
+<div class="cj-modules anima jjk" markdown>
+
+| Portée | Malus |
+|---|:---:|
+| R0 (la ligne de cases de portée optimale) | Aucun |
+| R+1 (une case plus loin) | −50 |
+| R+2 | Impossible |
+| R−1 | −50 |
+| R−2 | −100 |
+
+</div>
+
+</div>
+
+<div class="keep" markdown>
+
 De façon similaire aux armes, les armures auront une statistique d'invu croissante avec leur poids. On peut suivre cette courbe de poids :
 
 <div class="cj-modules anima jjk" markdown>
@@ -228,7 +270,7 @@ De façon similaire aux armes, les armures auront une statistique d'invu croissa
 | Invu | 5D4 | 5D8 | 5D12 |
 | Zones protégées | Torse | Torse, tête, cuisses, épaules, bras | Torse, tête, jambes, épaules, bras, mains, pieds (tout sauf le visage) |
 | Viser une zone non protégée | −10 à l'attaque | −50 à l'attaque | −100 à l'attaque |
-| Port d'armure | Initié | Maitre | Expert |
+| Port d'armure | Initié | Maitrise | Expertise |
 
 </div>
 
@@ -236,7 +278,51 @@ De façon similaire aux armes, les armures auront une statistique d'invu croissa
 
 <div class="keep" markdown>
 
+### Le poids
+
+Un joueur additionne tout ce qu'il porte sur lui en termes de poids. Il obtient un total de poids qu'il devra soustraire à chaque jet de Body (autre que l'attaque et la parade) : l'esquive, la course, la nage, l'escalade subissent par exemple ce malus. On soustrait aussi ce malus au tableau de la vitesse en fonction du Body.
+
+Si notre poids devient plus important que notre Body, notre vitesse passe à 6 m.
+
+</div>
+
+<div class="keep" markdown>
+
 ### Le combat
+
+La mécanique Pierre Feuille Ciseaux : sur l'initiative, sur l'attaque.
+
+Il existe dans ce jeu une mécanique de confrontation lorsque deux combattants avec une arme de mêlée s'affrontent et s'attaquent. Lorsqu'on utilise l'action attaquer, on choisit une stratégie d'attaque parmi :
+
+</div>
+
+<div class="defs" markdown>
+
+**Attaquer vite :** Le choix par défaut. Donne +25 à l'attaque si l'opposant dans la confrontation fait une feinte, sinon aucun bonus.
+
+**Miser sur une contre-attaque :** Donne +25 à la défense contre la prochaine attaque. Si la défense est réussie, +25 à l'attaque pour la contre-attaque, sinon vous perdez votre attaque.
+
+**Feinter :** Demande un jet de Prestance feinte contre une intuition adverse. La feinte réussie dépense la première défense adversaire et vous permet une « seconde » attaque contre l'adversaire.
+
+</div>
+
+<div class="keep" markdown>
+
+Pour l'initiative, il existe aussi trois choix, au début du round ou au lancement de l'initiative :
+
+</div>
+
+<div class="defs" markdown>
+
+**Jouer son tour normalement :** Le choix par défaut. Vous donne le droit d'agir à votre initiative.
+
+**Engager une Blitzkrieg :** Impose un duel d'initiative entre celui qui la déclenche et sa ou ses cibles. Celui qui initie la manœuvre relance son initiative avec −25, sa cible relance mais sans malus. Si celui qui initie la Blitzkrieg réussit à commencer avant sa cible, il peut soit avoir +25 au prochain jet opposé contre sa cible, soit empêcher la cible d'utiliser une action active avant le début de son tour.
+
+**Attendre qu'une cible agisse :** Vous permet de choisir une cible et de jouer après elle. Il faut pour cela avoir plus d'initiative qu'elle.
+
+</div>
+
+<div class="keep" markdown>
 
 Liste des actions liées au combat :
 
@@ -244,17 +330,117 @@ Liste des actions liées au combat :
 
 <div class="defs" markdown>
 
-**Actions passives :** Autant qu'on veut par round.
+**Actions passives :** Autant qu'on veut par round. Ce sont des actions qui se prennent en dehors de son tour : se défendre, suivre une cible du regard (une fois maximum), faire un jet de perception ou d'intellect à l'initiative du MJ, parler à un volume normal…
 
-**Actions bonus :** 1 par round, durant notre tour.
+**Actions bonus :** 1 par round, durant notre tour : un jet de Mind ou de Prestance demandé par le joueur, échanger d'arme, dégainer…
 
-**Actions actives :** 1 par round, durant notre tour (ou en dehors avec une action défensive).
+**Actions actives :** 1 par round, durant notre tour (ou en dehors avec une action défensive) : attaquer, se mettre sur la défensive, garder ses distances, foncer, techniques de Jujutsu actives…
 
 **Actions d'initiative :** À déclarer au lancement de l'initiative, ou avant le tour du premier de l'initiative. 3 choix possibles.
 
 </div>
 
-La mécanique Pierre Feuille Ciseaux : sur l'initiative, sur l'attaque. (Explication à venir.)
+<div class="keep" markdown>
+
+### L'initiative
+
+On lance notre initiative de la façon suivante :
+
+<p class="formula">Initiative = D100 + Body − poids (de ce qu'on porte)</p>
+
+Celui avec la plus grande initiative commence son tour en premier, ainsi de suite.
+
+</div>
+
+<div class="defs" markdown>
+
+**La surprise :** Si un personnage arrive à rester discret avant d'engager le combat et que le défenseur ne l'a pas remarqué, ce dernier a un malus de −50 à l'initiative.
+
+</div>
+
+<div class="keep" markdown>
+
+### Se défendre
+
+Les défenses passives :
+
+</div>
+
+<div class="defs" markdown>
+
+**Défenses multiples :** Le choix par défaut. Un défenseur subit un malus cumulatif à sa défense si plusieurs attaques en un seul round sont dirigées vers lui. Les attaques n°2 et n°3 imposent −25 à la défense. Les n°4 et n°5 imposent −50. À partir de la n°6, le défenseur subit −100 à sa défense.
+
+**Manœuvre de défense groupée :** Si vous recevez de très nombreuses attaques, vous pouvez engager une manœuvre pour ne subir que −50 de malus à votre défense, mais vous ne dépensez pas de défense pour le calcul de la défense multiple.
+
+</div>
+
+<div class="keep" markdown>
+
+Il est possible de choisir une de ces manœuvres en action passive à chaque attaque que l'on reçoit.
+
+Les défenses actives : vous pouvez, en dehors de votre tour, choisir de faire une défense active. Cependant, vous devez être en mesure de faire une action active en dehors de votre tour (mécanique de Blitz) et posséder une action active pour le round.
+
+</div>
+
+<div class="defs" markdown>
+
+**Position défensive :** +25 à toutes vos défenses pour ce round.
+
+**Garder ses distances :** +50 à toutes vos actions défensives tant que votre mouvement vous permet de rester à la limite de la portée d'arme ennemie. (L'adversaire s'approche, il vous a dans sa R0, il peut ou non choisir d'attaquer, juste avant que vous reculiez.)
+
+</div>
+
+<div class="keep" markdown>
+
+### Les manœuvres offensives
+
+Dans les règles de base, on ne peut choisir qu'une seule manœuvre par attaque.
+
+</div>
+
+<div class="defs" markdown>
+
+**Attaque classique :** Attaque contre parade, puis dégâts.
+
+**Renverser :** Body contre Body ; renversé si gagné (aucun dégât).
+
+**Impacter son adversaire (pousser/choquer) :** Body contre Body ; poussé de Body/20 m si gagné (aucun dégât).
+
+**Attaque risquée :** Attaque +25, mais défense −50.
+
+**Tenir à distance son adversaire :** Si l'attaque est réussie, l'adversaire ne peut pas avancer vers vous ; si l'attaque est ratée, défense −25.
+
+**Agripper son adversaire :** Remplace l'attaque à main nue : Body lutte contre Body lutte/échappement… Si réussi, agrippé.
+
+**Désarmer son adversaire :** Attaque contre défense ; si réussi, l'arme au sol ou jusqu'à 3 m (aucun dégât) ; si échoué, défense −25.
+
+**Viser :** Entre −10 et −100 selon la taille de la chose.
+
+</div>
+
+<div class="keep" markdown>
+
+### Les modificateurs de combat
+
+<div class="cj-modules anima jjk txt" markdown>
+
+| Situation | Effet |
+|---|---|
+| Charge | +25 à l'attaque, −25 à la défense |
+| Arme dégainée | −25 à l'attaque et à la défense |
+| Attaquer de dos | −25 à l'attaque |
+| Parer de dos | −25 à la défense |
+| Aveugle | −50 à l'attaque et à la défense |
+| Vue obstruée | −25 à l'attaque et à la défense |
+| Renversé | −25 à l'attaque et à la défense |
+| En joue | −50 à l'attaque et à la défense |
+| Surpris | −50 à l'initiative |
+| Agrippé | Vitesse 0, −25 à l'attaque et à la défense ; de même pour celui qui agrippe, sauf s'il est beaucoup plus grand |
+| Paralysé ou inconscient | Rate tous les jets de Body (sauf ceux du style poison, etc.) |
+
+</div>
+
+</div>
 
 <div class="keep" markdown>
 
