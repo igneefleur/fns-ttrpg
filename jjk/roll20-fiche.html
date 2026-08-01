@@ -20,10 +20,16 @@
   <link rel="stylesheet" href="stylesheets/jjk-creation.css?v=12">
   <style>
     /* Appoint iframe Roll20 (repris de l'ancien creator.css de l'extension).
-       Le site fige la racine de la page Création à 22 px ; ici la page est un
-       document autonome : on pose la même base directement sur html, les rem
-       de jjk-creation.css s'y accrochent sans réécriture. */
-    html { font-size: 22px; }
+       LARGEUR DE RÉFÉRENCE : le demi-écran (~940 px de fenêtre). La racine
+       passe de 22 px (site) à 18 px : la feuille native de 50rem fait alors
+       900 px et tient, EN 3 COLONNES, dans une fenêtre en demi-écran. Plus
+       large (popout plein écran), la feuille ne s'étire pas (une fiche n'a
+       pas besoin d'être plus large) : elle reste à 900 px, centrée. Plus
+       étroit, elle se comprime, puis les colonnes tombent (voir plus bas). */
+    /* jjk-creation.css épingle la racine du site à 22 px (html:has(#perso-atelier)
+       !important) : on la contre-épingle ICI, même sélecteur + !important, posé
+       APRÈS le link donc gagnant. Ne pas revenir à un simple `html {}`. */
+    html, html:has(#perso-atelier) { font-size: 18px !important; }
     html, body { margin: 0; padding: 0; }
     body {
       background: #e4ddcd;   /* plan de travail (côtés), comme le site */
@@ -31,24 +37,21 @@
     }
     .perso-atelier { min-height: 100vh; overflow-x: hidden; }
 
-    /* La feuille REMPLIT la largeur du dialogue Roll20 (fluide) au lieu de la
-       largeur fixe du site. box-sizing border-box : le padding de la feuille
-       est INCLUS dans les 100 %, sinon il déborde à droite. */
-    .perso-atelier .pc-sheet {
-      width: 100% !important; max-width: none !important;
-      box-sizing: border-box !important; margin-left: 0 !important; margin-right: 0 !important;
-    }
+    /* La feuille garde sa largeur NATIVE (50rem) et se centre (margin auto du
+       site) ; dans un dialogue plus étroit elle se comprime au lieu de défiler
+       (le site, lui, défile). box-sizing border-box : le padding est INCLUS
+       dans la largeur, sinon il déborde à droite. */
+    .perso-atelier .pc-sheet { max-width: 100%; box-sizing: border-box; }
 
-    /* Dialogue trop étroit pour les colonnes -> 1 colonne, comme le mobile du
-       site (point de bascule remonté à 60em : un dialogue Roll20 est plus
-       étroit qu'une fenêtre de navigateur). */
-    @media (max-width: 60em) {
-      .pc-cols2, .pc-cols-fiche { grid-template-columns: 1fr !important; }
-      .pc-arts { grid-template-columns: 1fr !important; }
-      .pc-id { grid-template-columns: repeat(6, minmax(0, 1fr)) !important; }
-      .pc-obj-wrap { flex-direction: column; align-items: stretch; }
-      .pc-obj-left { width: 100%; }
-      .pc-obj-panel { flex: 1 1 auto; width: 100%; }
+    /* Le site repasse en 1 colonne sous 44em ; à l'échelle Roll20 (racine
+       18 px, contenu ~18 % plus compact), les colonnes restent lisibles plus
+       bas : on les maintient jusqu'à 36em (dialogue de l'éditeur compris).
+       Sous 36em, les règles 44em du site (1 colonne, identité en 6 colonnes,
+       inventaire empilé) reprennent la main. */
+    @media (min-width: 36em) and (max-width: 44em) {
+      .pc-cols-fiche { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.3fr); }
+      .pc-cols2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .pc-arts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
 
     /* message d'attente / d'orientation (retiré par l'amorce à l'hydratation) */
