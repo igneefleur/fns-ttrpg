@@ -8,7 +8,8 @@ Les apports originaux de ce dépôt :
 
 - le **système de règles** et sa conception (barèmes, tables, équilibrage) ;
 - les **textes** du livre de règles ;
-- le **code** du site : les feuilles de style et les scripts.
+- le **code** du site et de ses outils : les feuilles de style, les scripts, le
+  créateur de personnage et l'extension navigateur.
 
 Aucune autorisation n'est accordée de copier, distribuer, publier, modifier,
 traduire, adapter ni exploiter tout ou partie de ces éléments, sous quelque forme et

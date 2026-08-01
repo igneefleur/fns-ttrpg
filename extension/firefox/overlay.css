@@ -1,0 +1,39 @@
+/* CSS EN LUMIÈRE (frame de la feuille Roll20). Le créateur lui-même vit dans une
+   iframe d'extension (creator.html) : son CSS est totalement isolé. Ici, seulement
+   l'onglet, son pane et le bouton « Créer fiche JJK ». */
+
+/* onglet « Fiche JJK » : un vrai <li><a> cloné des onglets natifs (il hérite donc du
+   style de Roll20, onglet actif violet compris). On n'ajoute que le curseur. */
+.jjk-tab, .jjk-tab a { cursor: pointer; }
+
+/* pane JJK (géré comme un pane natif de Roll20 : .tab-pane.jjkfiche).
+   FORCÉ (!important) : Roll20 impose son propre CSS aux .tab-pane (padding, height,
+   overflow) qui rognerait/écraserait notre fiche. On reprend la main. */
+.jjk-pane {
+  width: 100% !important; min-height: 620px !important; height: auto !important;
+  box-sizing: border-box !important; padding: 0 !important; margin: 0 !important;
+  overflow: visible !important; display: block !important;
+}
+
+/* iframe du créateur. La HAUTEUR est pilotée en JS (content-roll20 : fitCreatorHeight)
+   pour épouser la fenêtre de la feuille Roll20 et suivre ses redimensionnements ; on
+   ne met donc PAS height en !important (l'inline JS doit gagner). Le reste est FORCÉ
+   contre le CSS Roll20 (bordures/marges/tailles d'iframe). Plancher de secours 620 px. */
+.jjk-creator-frame {
+  display: block !important; width: 100% !important; min-height: 400px;
+  border: 0 !important; margin: 0 !important; padding: 0 !important; background: #e4ddcd;
+}
+
+/* écran « pas encore de fiche » + bouton de création */
+.jjk-create {
+  padding: 26px 20px; text-align: center;
+  font: 14px/1.5 "Segoe UI", Arial, sans-serif; color: #e8e8e8;
+}
+.jjk-create-title { font-weight: 700; font-size: 18px; margin-bottom: 6px; color: #fff; }
+.jjk-create-msg { margin: 0 0 4px; color: #cfcfcf; }
+.jjk-create-btn {
+  margin-top: 12px; padding: 10px 20px; cursor: pointer;
+  background: #a11212; color: #fff; border: 2px solid #7c0e0e; border-radius: 8px;
+  font: 700 14px "Segoe UI", Arial, sans-serif;
+}
+.jjk-create-btn:hover { background: #7c0e0e; }

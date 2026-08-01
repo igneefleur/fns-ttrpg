@@ -1,0 +1,247 @@
+/* Créateur de personnage JJK (onglet Création + iframe de l'extension Roll20).
+   Toutes les tailles sont en rem : build_extension.py les réécrit en
+   calc(N * var(--pc-rem)) pour l'iframe Roll20 (racine différente). Le style est
+   ENTIÈREMENT scopé sous .perso-atelier : il ne déborde jamais sur le site. */
+
+.perso-atelier {
+  --paper: #faf6eb;
+  --bg-side: #e4ddcd;
+  --ink: #2e2a20;
+  --green: #667861;
+  --brown: #8a4632;
+  --line: #d9d2bf;
+  --accent: #a11212;
+  font-family: 'Alegreya', 'EB Garamond', Garamond, serif;
+  color: var(--ink);
+  background: var(--bg-side);
+  padding: 1rem 0.6rem 4.5rem;
+}
+
+.perso-atelier .pc-sheet {
+  max-width: 62rem;
+  margin: 0 auto;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  box-shadow: 0 2px 14px rgba(60, 50, 30, 0.18);
+  padding: 1.4rem 1.6rem 2rem;
+}
+
+/* ---------- titres, sections ---------- */
+.perso-atelier .pc-title {
+  font-family: 'Cinzel', Garamond, serif;
+  color: var(--green);
+  font-size: 1.5rem;
+  letter-spacing: 0.06em;
+  margin: 0 0 0.8rem;
+  text-align: center;
+}
+.perso-atelier .pc-h2 {
+  font-family: 'Cinzel', Garamond, serif;
+  color: var(--green);
+  font-size: 1.05rem;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid #c9a86a;
+  padding-bottom: 0.15rem;
+  margin: 1.6rem 0 0.5rem;
+}
+.perso-atelier .pc-h3 {
+  font-family: 'Cinzel', Garamond, serif;
+  color: var(--brown);
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  margin: 0.9rem 0 0.35rem;
+}
+.perso-atelier .pc-hint {
+  font-size: 0.72rem;
+  color: #6d6553;
+  margin: 0.15rem 0 0.6rem;
+}
+.perso-atelier .pc-section { margin-bottom: 0.4rem; }
+
+/* ---------- champs ---------- */
+.perso-atelier .pc-field { display: inline-flex; flex-direction: column; gap: 0.12rem; margin: 0.2rem 0.5rem 0.2rem 0; vertical-align: top; }
+.perso-atelier .pc-field-label {
+  font-family: 'Cinzel', Garamond, serif;
+  font-size: 0.58rem;
+  letter-spacing: 0.05em;
+  color: #8a8478;
+}
+.perso-atelier .pc-input {
+  font: inherit;
+  font-size: 0.82rem;
+  color: var(--ink);
+  background: #fffdf6;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0.22rem 0.45rem;
+  min-width: 0;
+}
+.perso-atelier .pc-input:focus { outline: none; border-color: var(--green); }
+.perso-atelier .pc-num { width: 4.2rem; }
+.perso-atelier .pc-area { width: 100%; box-sizing: border-box; resize: vertical; }
+.perso-atelier .pc-grow { flex: 1 1 auto; width: auto; }
+.perso-atelier .pc-check { display: flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; margin: 0.5rem 0 0; cursor: pointer; }
+
+.perso-atelier .pc-mini,
+.perso-atelier .pc-add,
+.perso-atelier .pc-roll-btn {
+  font-family: 'Cinzel', Garamond, serif;
+  font-size: 0.62rem;
+  letter-spacing: 0.03em;
+  color: var(--green);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0.14rem 0.5rem;
+  cursor: pointer;
+}
+.perso-atelier .pc-mini:hover,
+.perso-atelier .pc-add:hover,
+.perso-atelier .pc-roll-btn:hover { border-color: var(--green); background: #f2eddd; }
+.perso-atelier .pc-roll-btn { color: var(--accent); }
+.perso-atelier .pc-roll-btn:hover { border-color: var(--accent); }
+.perso-atelier .pc-add { display: inline-block; margin-top: 0.25rem; }
+
+/* ---------- en-tête ---------- */
+.perso-atelier .pc-head-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.2rem; }
+.perso-atelier .pc-badges { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.6rem; }
+.perso-atelier .pc-badge {
+  display: inline-flex; flex-direction: column; align-items: center;
+  background: #f5efdc; border: 1px solid var(--line); border-radius: 5px;
+  padding: 0.25rem 0.7rem; min-width: 4.5rem;
+}
+.perso-atelier .pc-badge-label {
+  font-family: 'Cinzel', Garamond, serif;
+  font-size: 0.55rem; letter-spacing: 0.05em; color: #8a8478;
+}
+.perso-atelier .pc-badge-val { font-size: 0.95rem; font-weight: 700; color: var(--ink); }
+.perso-atelier .pc-badge.ko .pc-badge-val, .perso-atelier .pc-badge .pc-badge-val.ko { color: var(--accent); }
+.perso-atelier .pc-badge.ko { border-color: var(--accent); }
+
+/* ---------- identité ---------- */
+.perso-atelier .pc-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.2rem 1.2rem; }
+.perso-atelier .pc-grid2 .pc-field { display: flex; margin-right: 0; }
+.perso-atelier .pc-portrait { max-width: 9rem; max-height: 9rem; border: 1px solid var(--line); border-radius: 4px; margin: 0.4rem 0; }
+.perso-atelier .pc-av { display: flex; gap: 0.4rem; margin: 0.25rem 0; }
+.perso-atelier .pc-av .pc-input:first-child { width: 11rem; }
+
+/* ---------- caractéristiques ---------- */
+.perso-atelier .pc-xp-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.5rem; margin-bottom: 0.6rem; }
+.perso-atelier .pc-caracs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem; }
+.perso-atelier .pc-carac { background: #fbf7ec; border: 1px solid var(--line); border-radius: 6px; padding: 0.6rem 0.7rem; }
+.perso-atelier .pc-carac-head { display: flex; align-items: baseline; justify-content: space-between; }
+.perso-atelier .pc-carac-name {
+  font-family: 'Cinzel', Garamond, serif;
+  font-size: 0.95rem; letter-spacing: 0.05em; color: var(--green);
+}
+.perso-atelier .pc-carac-total { font-size: 1.5rem; font-weight: 700; color: var(--brown); }
+.perso-atelier .pc-carac-desc { font-size: 0.68rem; color: #6d6553; margin: 0.15rem 0 0.45rem; min-height: 2.1rem; }
+.perso-atelier .pc-carac-row { display: flex; align-items: flex-end; gap: 0.5rem; flex-wrap: wrap; }
+.perso-atelier .pc-stepper { display: inline-flex; align-items: center; gap: 0.3rem; }
+.perso-atelier .pc-step-val { min-width: 1.2rem; text-align: center; font-weight: 700; }
+
+/* ---------- compétences ---------- */
+.perso-atelier .pc-cols3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.perso-atelier .pc-comp { border-bottom: 1px dotted var(--line); padding: 0.3rem 0; }
+.perso-atelier .pc-comp-top { display: flex; align-items: center; gap: 0.4rem; }
+.perso-atelier .pc-comp-name { flex: 1 1 auto; font-size: 0.8rem; }
+.perso-atelier .pc-comp-val { font-weight: 700; color: var(--brown); font-size: 0.8rem; min-width: 2rem; text-align: right; }
+.perso-atelier .pc-stades { display: flex; flex-wrap: wrap; gap: 0.15rem; margin-top: 0.2rem; }
+.perso-atelier .pc-stade {
+  font-family: 'Cinzel', Garamond, serif;
+  font-size: 0.5rem; letter-spacing: 0.02em;
+  color: #8a8478; background: transparent;
+  border: 1px solid var(--line); border-radius: 8px;
+  padding: 0.08rem 0.38rem; cursor: pointer;
+}
+.perso-atelier .pc-stade.on { color: var(--green); border-color: var(--green); background: #eef0e4; }
+.perso-atelier .pc-stade.cur { color: #fff; background: var(--green); border-color: var(--green); }
+.perso-atelier .pc-passifs { margin: 0.2rem 0 0 0.6rem; }
+.perso-atelier .pc-passif { display: flex; gap: 0.3rem; margin: 0.15rem 0; }
+.perso-atelier .pc-passif .pc-input { flex: 1 1 auto; font-size: 0.72rem; }
+.perso-atelier .pc-comp-add { display: flex; gap: 0.3rem; margin-top: 0.5rem; }
+.perso-atelier .pc-comp-add .pc-input { flex: 1 1 auto; font-size: 0.72rem; }
+
+/* ---------- combat ---------- */
+.perso-atelier .pc-block { background: #fbf7ec; border: 1px solid var(--line); border-radius: 6px; padding: 0.5rem 0.7rem 0.7rem; }
+.perso-atelier .pc-pv-row { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; margin: 0.3rem 0; }
+.perso-atelier .pc-pv-max { color: #6d6553; }
+.perso-atelier .pc-nar-val { font-size: 1.3rem; font-weight: 700; min-width: 1.6rem; text-align: center; color: var(--brown); }
+.perso-atelier .pc-seuils { margin-top: 0.4rem; }
+.perso-atelier .pc-seuil { font-size: 0.68rem; color: #6d6553; padding: 0.08rem 0; border-top: 1px dotted var(--line); }
+
+/* ---------- tables de référence ---------- */
+.perso-atelier .pc-details { margin: 0.6rem 0 0; }
+.perso-atelier .pc-details summary {
+  font-family: 'Cinzel', Garamond, serif;
+  font-size: 0.68rem; letter-spacing: 0.04em; color: var(--green); cursor: pointer;
+}
+.perso-atelier .pc-table { border-collapse: collapse; margin: 0.4rem 0; font-size: 0.7rem; }
+.perso-atelier .pc-table th {
+  font-family: 'Cinzel', Garamond, serif;
+  font-size: 0.6rem; letter-spacing: 0.03em; color: #4a3520;
+  background: #fbf7ec; border-bottom: 1px solid #b39a68; text-align: left;
+}
+.perso-atelier .pc-table th, .perso-atelier .pc-table td { padding: 0.14rem 0.5rem; border-bottom: 1px solid #e6dcc1; }
+.perso-atelier .pc-table tbody tr:nth-child(odd) td { background: #f5efdc; }
+.perso-atelier .pc-table tbody tr:nth-child(even) td { background: #fbf7ec; }
+
+/* ---------- équipement ---------- */
+.perso-atelier .pc-eq-list { margin-bottom: 0.4rem; }
+.perso-atelier .pc-eq { display: flex; gap: 0.3rem; align-items: center; margin: 0.2rem 0; }
+.perso-atelier .pc-eq .pc-input { width: 7rem; font-size: 0.72rem; }
+.perso-atelier .pc-eq .pc-input.pc-grow { width: auto; flex: 1 1 auto; }
+.perso-atelier .pc-eq-head { display: flex; gap: 0.3rem; }
+.perso-atelier .pc-eq-cell {
+  width: 7rem; font-family: 'Cinzel', Garamond, serif;
+  font-size: 0.52rem; letter-spacing: 0.04em; color: #8a8478;
+  padding: 0 0.45rem; box-sizing: border-box;
+}
+.perso-atelier .pc-eq-cell.pc-grow { width: auto; flex: 1 1 auto; }
+.perso-atelier .pc-eq-tools { display: inline-flex; gap: 0.25rem; width: 5.4rem; justify-content: flex-end; }
+
+/* ---------- bibliothèque ---------- */
+.perso-atelier .pc-lib-row { display: flex; align-items: center; gap: 0.4rem; padding: 0.2rem 0; border-bottom: 1px dotted var(--line); }
+.perso-atelier .pc-lib-name { font-size: 0.82rem; }
+.perso-atelier .pc-lib-tools { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; }
+
+/* ---------- journal des jets ---------- */
+.perso-atelier .pc-rolls {
+  position: fixed; right: 0.8rem; bottom: 0.8rem; width: 15rem;
+  background: var(--paper); border: 1px solid var(--line); border-radius: 6px;
+  box-shadow: 0 2px 10px rgba(60, 50, 30, 0.25); z-index: 40;
+}
+.perso-atelier .pc-rolls-head {
+  display: flex; align-items: center; gap: 0.4rem;
+  padding: 0.25rem 0.5rem; border-bottom: 1px solid var(--line);
+}
+.perso-atelier .pc-rolls-title {
+  flex: 1 1 auto; font-family: 'Cinzel', Garamond, serif;
+  font-size: 0.68rem; letter-spacing: 0.05em; color: var(--green);
+}
+.perso-atelier .pc-rolls-list { display: none; max-height: 14rem; overflow: auto; padding: 0.3rem 0.5rem; }
+.perso-atelier .pc-rolls.open .pc-rolls-list { display: block; }
+.perso-atelier .pc-roll { border-bottom: 1px dotted var(--line); padding: 0.2rem 0; }
+.perso-atelier .pc-roll-head { display: flex; justify-content: space-between; gap: 0.4rem; }
+.perso-atelier .pc-roll-label { font-size: 0.72rem; }
+.perso-atelier .pc-roll-total { font-weight: 700; color: var(--brown); }
+.perso-atelier .pc-roll.crit .pc-roll-total { color: #2f7a33; }
+.perso-atelier .pc-roll.fumble .pc-roll-total { color: var(--accent); }
+.perso-atelier .pc-roll-det { font-size: 0.62rem; color: #6d6553; }
+
+/* ---------- flash ---------- */
+.pc-flash {
+  position: fixed; left: 50%; bottom: 1.2rem; transform: translateX(-50%);
+  background: #3a3428; color: #fff; font-size: 0.78rem;
+  font-family: 'Alegreya', Garamond, serif;
+  padding: 0.4rem 0.9rem; border-radius: 5px; opacity: 0;
+  transition: opacity 0.25s; pointer-events: none; z-index: 60;
+}
+.pc-flash.on { opacity: 1; }
+
+/* ---------- responsive ---------- */
+@media (max-width: 44em) {
+  .perso-atelier .pc-caracs, .perso-atelier .pc-cols3, .perso-atelier .pc-grid2 { grid-template-columns: 1fr; }
+  .perso-atelier .pc-rolls { width: 11rem; }
+}
