@@ -4,18 +4,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Fiche JJK</title>
-  <!-- Le VRAI créateur du site tourne ici, à l'identique : jjk-creation.css
-       (règles de style), les polices du livre embarquées, puis le montage.
-       creation-embed.js (jjk-creation.js enveloppé) est chargé par
-       creator-boot.js APRÈS l'hydratation depuis les Attributes Roll20, pour
-       que son premier load() lise déjà l'état. -->
-  <link rel="stylesheet" href="sheet-fonts.css">
-  <link rel="stylesheet" href="jjk-creation.css">
+  <!-- Coquille : la fiche n'est PLUS embarquée dans l'extension. Cette page
+       d'extension (immunisée contre la CSP de Roll20) affiche roll20-fiche.html
+       SERVIE PAR LE SITE : chaque déploiement du site met la fiche à jour dans
+       Roll20 sans re-signer l'extension. La page distante parle directement au
+       pont d20 via window.top (postMessage) ; aucun relais ici. -->
   <link rel="stylesheet" href="creator.css">
 </head>
 <body>
-  <div id="perso-atelier"></div>
-  <script src="attr-map.js"></script>
-  <script src="creator-boot.js"></script>
+  <iframe id="jjk-remote" allow="clipboard-write"></iframe>
+  <script src="creator-shell.js"></script>
 </body>
 </html>

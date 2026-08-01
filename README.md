@@ -11,8 +11,9 @@ Firefox/Chrome qui affiche la fiche JJK dans Roll20 (`/extension/`).
 
 Le créateur n'a pas sa propre copie des données : `hooks/jjk_creation.py` relit la
 page de règles à chaque construction et en extrait son JSON. Modifier une table des
-règles met donc l'outil à jour. L'extension embarque le vrai créateur du site
-(empaquetée par `python scripts/build_extension.py`, après un `mkdocs build`).
+règles met donc l'outil à jour. L'extension est une coquille : elle affiche la
+fiche servie par le site (`roll20-fiche.html`) et s'empaquette par
+`python scripts/build_extension.py`, sans build du site.
 
 ## Œuvre de fan
 

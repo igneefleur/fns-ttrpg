@@ -1,29 +1,37 @@
 # Extension « Fiche JJK sur Roll20 »
 
-Un onglet « Fiche JJK » dans le dialogue de personnage Roll20, qui fait tourner
-le VRAI créateur du site (jjk-creation.js) dans une iframe d'extension. La fiche
-est persistée dans les Attributes Roll20 du personnage (tout préfixé `jjk_`,
+Un onglet « Fiche JJK » dans le dialogue de personnage Roll20. L'extension est
+une COQUILLE stable : la fiche elle-même (le vrai créateur du site) est SERVIE
+PAR LE SITE — `roll20-fiche.html`, affichée dans une iframe — et se met donc à
+jour à chaque déploiement du site, sans re-signer l'extension. La fiche est
+persistée dans les Attributes Roll20 du personnage (tout préfixé `jjk_`,
 `jjk_state` = état entier en JSON, source de vérité), donc partagée avec tous
 les joueurs qui contrôlent ce personnage. Les jets partent dans le tchat.
 
-## Pièces
+## Pièces (toutes stables : re-signature seulement si l'une d'elles change)
 
 - `content-roll20.js` — pose l'onglet dans le dialogue de perso (frame de la
   feuille) et relaie les jets vers le tchat (frame du haut).
 - `roll20-page.js` — pont d20, injecté dans le monde principal à la demande :
   lit/écrit les Attributes `jjk_*` (écritures throttlées et silencieuses).
-- `creator.html` + `creator-boot.js` — l'iframe du créateur : shim
-  `__jjkLocalStorage` (persistance -> Attributes), `__jjkRoll` (jets -> tchat),
-  `__jjkCompact` (masque la bibliothèque).
-- `attr-map.js` — traduction état <-> Attributes, dans les deux sens.
+- `creator.html` + `creator-shell.js` — la coquille : iframe vers la fiche du
+  site, charId passé dans le hash (#c=<id>). La page distante parle
+  directement au pont via window.top ; aucun relais ici.
 - `content-jjk.js` + `popup/` — synchronisation des fiches du site vers le
   popup de l'extension.
-- `creation-embed.js`, `jjk-creation.json`, `jjk-creation.css` — GÉNÉRÉS par
-  `scripts/build_extension.py` depuis le site : ne pas éditer à la main.
+
+Le reste vit CÔTÉ SITE (`docs/`) : `roll20-fiche.html` (page affichée),
+`javascripts/jjk-roll20-boot.js` (shims `__jjk*`, poignée de main
+load/hydrate/save), `javascripts/jjk-attr-map.js` (état <-> Attributes),
+`javascripts/jjk-creation.js` + `stylesheets/jjk-creation.css` (le créateur).
+
+## Dépannage
+
+`browser.storage.local` accepte une clé `jjk_sheet_url` qui remplace l'URL de
+la fiche (ex. un mkdocs serve local), à poser depuis la console de débogage.
 
 ## Construire
 
-    mkdocs build
     python scripts/build_extension.py
 
 Sorties : `docs/download/jjk-roll20-firefox.xpi` et `docs/download/jjk-roll20-chrome.zip`.

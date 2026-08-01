@@ -1,5 +1,6 @@
 /* Content script sur Roll20 : onglet « Fiche JJK » dans le dialogue d'un personnage,
- * qui monte le VRAI créateur (jjk-creation.js) dans une iframe d'extension. La fiche est
+ * qui monte la COQUILLE creator.html ; celle-ci affiche la fiche SERVIE PAR LE SITE
+ * (roll20-fiche.html), toujours à jour sans re-signer l'extension. La fiche est
  * enregistrée dans les Attributes Roll20 du personnage (préfixe jjk_), donc partagée à
  * tous les joueurs qui contrôlent ce personnage.
  *
@@ -9,11 +10,11 @@
  *    ce page-script lit/écrit les attributs à la demande.
  *  - FRAME DE LA FEUILLE (iframe du dialogue de perso) : pose l'onglet « Fiche JJK »
  *    entre « Feuille de personnage » et « Bio & Info ». Au clic : si le perso a déjà
- *    une fiche JJK -> monte l'iframe du créateur ; sinon -> bouton « Créer fiche JJK ».
+ *    une fiche JJK -> monte l'iframe de la coquille ; sinon -> bouton « Créer fiche JJK ».
  *
- * L'iframe du créateur dialogue DIRECTEMENT avec le page-script via window.top
- * (postMessage) : ce content-script ne fait que poser l'onglet, interroger has-sheet,
- * et monter l'iframe avec le charId dans le hash.
+ * La page distante (sous la coquille) dialogue DIRECTEMENT avec le page-script via
+ * window.top (postMessage, réponses par ev.source) : ce content-script ne fait que
+ * poser l'onglet, interroger has-sheet, et monter l'iframe avec le charId dans le hash.
  */
 // compat : Chrome expose `chrome.*`, Firefox `browser.*`.
 if (typeof browser === "undefined") { var browser = chrome; }

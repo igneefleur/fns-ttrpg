@@ -18,7 +18,8 @@ en PUT répond désormais 404 pour les nouveaux add-ons) :
      version et va la chercher sur le site tout seul).
 
 Prérequis :
-  1. `mkdocs build` puis `python scripts/build_extension.py` (le .xpi à signer) ;
+  1. `python scripts/build_extension.py` (le .xpi à signer — l'extension est
+     une coquille, le site n'a pas besoin d'être construit) ;
   2. les clés API du compte Firefox (https://addons.mozilla.org/fr/developers/addon/api/key/),
      dans les variables d'environnement AMO_JWT_ISSUER et AMO_JWT_SECRET.
 

@@ -53,6 +53,14 @@ ajouté à la fiche du personnage.
   </div>
 </div>
 
+La fiche affichée dans Roll20 est chargée depuis ce site à chaque ouverture :
+les évolutions du créateur et des règles arrivent toutes seules, sans mise à
+jour de l'extension (une connexion internet est nécessaire pendant la partie).
+Les versions installées avant la 2.0.0 portent une ancienne identité : les
+désinstaller une fois, puis réinstaller depuis cette page. Firefox affiche le
+numéro de version à l'installation : si c'est encore une 1.x, la 2.0 n'est pas
+encore publiée, réessayer un peu plus tard.
+
 Ensuite : ouvrir le [créateur de personnage](../personnage/index.md) une fois
 (les fiches se synchronisent), puis, dans une partie Roll20, ouvrir un personnage
 et cliquer l'onglet « Fiche JJK » (entre « Feuille de personnage » et

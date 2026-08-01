@@ -27,10 +27,11 @@ jobs:
         env:
           NO_MKDOCS_2_WARNING: "1"   # coupe l'encadré promo « MkDocs 2.0 » de Material dans les logs
         run: mkdocs build
-      # Extension : re-signature Mozilla AUTOMATIQUE quand son contenu change
-      # (règles relues par le créateur comprises). Version montée toute seule,
-      # .xpi signé + updates.json republiés : les Firefox installés se mettent
-      # à jour sans rien faire. Clés = secrets du dépôt.
+      # Extension : re-signature Mozilla AUTOMATIQUE quand la COQUILLE
+      # (extension/) change — la fiche est servie par le site
+      # (roll20-fiche.html), les règles et le créateur ne re-signent plus rien.
+      # Version montée toute seule, .xpi signé + updates.json republiés : les
+      # Firefox installés se mettent à jour sans rien faire. Clés = secrets du dépôt.
       - name: Extension (re-signature automatique si changement)
         env:
           AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}

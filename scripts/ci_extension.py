@@ -1,18 +1,19 @@
 """Re-signature AUTOMATIQUE de l'extension en CI : rien à faire au push.
 
-Appelé par le workflow de la branche jjk après `mkdocs build`. Logique :
+Appelé par le workflow de la branche jjk après `mkdocs build`. L'extension est
+une COQUILLE (la fiche est servie par le site via roll20-fiche.html) : les
+évolutions de la fiche ne passent PLUS par ici, seuls les changements de la
+coquille elle-même déclenchent une signature. Logique :
 
-  1. Synchronise les fichiers générés de l'extension (jjk-creation.css/.json,
-     creation-embed.js) depuis le site construit — comme build_extension.py.
-  2. Calcule l'EMPREINTE du contenu de l'extension (tous les fichiers packagés,
+  1. Calcule l'EMPREINTE du contenu de l'extension (tous les fichiers packagés,
      champ "version" des manifests neutralisé : la version ne compte pas).
-  3. La compare à docs/download/ext-signed.json (l'empreinte du dernier .xpi
+  2. La compare à docs/download/ext-signed.json (l'empreinte du dernier .xpi
      SIGNÉ, committée). Identique -> rien à faire, le .xpi signé committé reste
-     bon. Différente -> montée de version automatique (1.0.N -> 1.0.N+1) dans
+     bon. Différente -> montée de version automatique (2.0.N -> 2.0.N+1) dans
      les DEUX manifests, empaquetage, signature Mozilla (scripts/
      sign_extension.py, clés dans les secrets GitHub AMO_JWT_ISSUER /
      AMO_JWT_SECRET), écriture de updates.json et de la nouvelle empreinte.
-  4. Le workflow committe alors ces fichiers sur la branche ([skip ci]) et
+  3. Le workflow committe alors ces fichiers sur la branche ([skip ci]) et
      déploie : les Firefox installés se mettent à jour tout seuls.
 
 Utilisable aussi en local (mêmes variables d'environnement).
@@ -142,11 +143,6 @@ def repare_xpi_signe(issuer, secret):
 
 
 def main():
-    # 1. fichiers générés à jour (sans empaqueter : les archives gardent
-    #    leur version committée — la SIGNÉE — si rien n'a changé)
-    build_extension.sync_creation_css()
-    build_extension.sync_creator_assets()
-
     issuer = os.environ.get("AMO_JWT_ISSUER")
     secret = os.environ.get("AMO_JWT_SECRET")
 
@@ -156,8 +152,9 @@ def main():
     current = content_hash()
     if current == state.get("hash"):
         print(f"[ci-extension] contenu inchangé (v{state.get('version')} signée reste bonne) : rien à faire")
-        # les fichiers générés re-synchronisés sont identiques byte à byte ;
-        # on remet les archives committées à l'exact au cas où
+        # plus aucune synchro depuis le site (coquille) : on remet juste les
+        # archives committées à l'exact au cas où un pack de développement
+        # local les aurait écrasées
         subprocess.run(["git", "checkout", "--",
                         "docs/download/jjk-roll20-firefox.xpi",
                         "docs/download/jjk-roll20-chrome.zip"],
@@ -170,8 +167,12 @@ def main():
                  "ajouter les secrets AMO_JWT_ISSUER et AMO_JWT_SECRET au dépôt "
                  "(Settings -> Secrets and variables -> Actions).")
 
-    base = state.get("version", "1.0.0")
-    guid = json.loads(MANIFESTS[0].read_text(encoding="utf-8"))["browser_specific_settings"]["gecko"]["id"]
+    manifest = json.loads(MANIFESTS[0].read_text(encoding="utf-8"))
+    # base = max(dernière signée, version des manifests) : un saut de version
+    # posé à la main dans les manifests (ex. 1.0.8 -> 2.0.0 pour la coquille)
+    # n'est jamais rabaissé par l'empreinte de l'ancienne série.
+    base = max(state.get("version", "1.0.0"), manifest["version"], key=parse_ver)
+    guid = manifest["browser_specific_settings"]["gecko"]["id"]
     remote = amo_latest(guid, issuer, secret)
     if remote and parse_ver(remote) > parse_ver(base):
         print(f"[ci-extension] AMO connaît déjà v{remote} (run précédent interrompu) : on repart de là")
@@ -188,8 +189,6 @@ def main():
         # DÉJÀ SIGNÉS pour que le site parte quand même à jour ; l'empreinte
         # n'est pas écrite, le prochain run (push ou workflow_dispatch)
         # retentera la signature.
-        print(f"[ci-extension] SIGNATURE REPORTÉE ({e}) — le site est déployé "
-              f"avec les paquets signés v{state.get('version', '?')}.")
         subprocess.run(["git", "checkout", "--",
                         "docs/download/jjk-roll20-firefox.xpi",
                         "docs/download/jjk-roll20-chrome.zip",
@@ -198,6 +197,16 @@ def main():
                         "extension/chrome/manifest.json"],
                        cwd=ROOT, check=False)
         repare_xpi_signe(issuer, secret)
+        print(f"::warning title=Extension JJK non signée::{e} — le site "
+              f"distribue encore la v{state.get('version', '?')} signée.")
+        # AMO ne connaît AUCUNE version de ce guid = c'est la TOUTE PREMIÈRE
+        # signature qui vient d'échouer (mauvais compte, accord développeur non
+        # accepté, clés invalides…) : sauf quota annoncé, un report silencieux
+        # masquerait une panne permanente — on fait échouer le run.
+        if "quota" not in str(e) and amo_latest(guid, issuer, secret) is None:
+            raise
+        print(f"[ci-extension] SIGNATURE REPORTÉE ({e}) — le site est déployé "
+              f"avec les paquets signés v{state.get('version', '?')}.")
         return
 
     STATE.write_text(json.dumps({"version": new_version, "hash": current},

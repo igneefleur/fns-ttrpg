@@ -17,8 +17,11 @@
  *     (@{perso|jjk_body}), PV courant/max, vitesse. Non relus (recalculés
  *     par le créateur).
  *
- * Logique PURE, sans API navigateur : testable en node, chargée telle quelle
- * dans l'iframe du créateur.
+ * Logique PURE, sans API navigateur : testable en node.
+ *
+ * Ce fichier vit sur le SITE (chargé par roll20-fiche.html avant
+ * jjk-roll20-boot.js) : le format des Attributes évolue avec la fiche, sans
+ * jamais re-signer l'extension Roll20, qui n'est qu'une coquille.
  */
 (function (root) {
   "use strict";
