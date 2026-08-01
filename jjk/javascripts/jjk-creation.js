@@ -41,7 +41,7 @@
   var CARAC_PAS = 5;          // +5 par achat d'xp
   var QUART = 4;              // « pas plus d'un quart de l'xp total »
 
-  var ABBR = { Mind: "MIND", Body: "BODY", Prestance: "PRÉS" };
+  var ABBR = { Mind: "MIND", Body: "BODY", Prestance: "PRES" };
 
   // ---------- outils ----------
   function el(tag, cls, txt) {
@@ -72,6 +72,7 @@
       avantages: [], sansLimite: false,
       caracsBase: { Mind: 0, Body: 0, Prestance: 0 },
       caracsXp: { Mind: 0, Body: 0, Prestance: 0 },
+      caracsMod: { Mind: 0, Body: 0, Prestance: 0 },
       xpTotal: XP_CREATION,
       comps: {}, customComps: [],
       pv: null, narration: 3,
@@ -89,9 +90,11 @@
     Object.keys(b).forEach(function (k) { if (s[k] === undefined) s[k] = b[k]; });
     if (!s.caracsBase || typeof s.caracsBase !== "object") s.caracsBase = b.caracsBase;
     if (!s.caracsXp || typeof s.caracsXp !== "object") s.caracsXp = b.caracsXp;
+    if (!s.caracsMod || typeof s.caracsMod !== "object") s.caracsMod = b.caracsMod;
     ["Mind", "Body", "Prestance"].forEach(function (c) {
       s.caracsBase[c] = clamp(num(s.caracsBase[c], 0), 0, 999);
       s.caracsXp[c] = clamp(num(s.caracsXp[c], 0), 0, 99);
+      s.caracsMod[c] = clamp(num(s.caracsMod[c], 0), -999, 999);
     });
     if (!Array.isArray(s.qualites)) s.qualites = ["", ""];
     s.qualites = s.qualites.map(function (q) { return q == null ? "" : String(q); });
@@ -111,10 +114,15 @@
       var c = s.comps[k];
       if (!c || typeof c !== "object") c = {};
       c.stade = clamp(num(c.stade, 0), 0, DATA ? DATA.stades.length - 1 : 3);
-      // migration : les « passifs » d'avant s'appellent désormais « techniques »
+      // migration : les « passifs » d'avant s'appellent désormais « techniques »,
+      // et une technique est un objet {name, desc} (l'ancien texte simple
+      // devient le nom, description vide)
       if (!Array.isArray(c.techniques)) c.techniques = Array.isArray(c.passifs) ? c.passifs : [];
       delete c.passifs;
-      c.techniques = c.techniques.map(function (p) { return p == null ? "" : String(p); });
+      c.techniques = c.techniques.map(function (p) {
+        if (p && typeof p === "object") return { name: String(p.name || ""), desc: String(p.desc || "") };
+        return { name: p == null ? "" : String(p), desc: "" };
+      });
       // migration : noms de compétences capitalisés (« Body/apnée » -> « Body/Apnée »)
       var i = k.indexOf("/");
       comps[i > 0 ? k.slice(0, i + 1) + capFirst(k.slice(i + 1)) : k] = c;
@@ -130,7 +138,10 @@
   // ---------- calculs ----------
   function caracTotal(c) {
     var v = state.caracsBase[c] + CARAC_PAS * state.caracsXp[c];
-    return state.sansLimite ? v : Math.min(v, CARAC_MAX);
+    if (!state.sansLimite) v = Math.min(v, CARAC_MAX);
+    // le modificateur (onglet Options) s'applique APRÈS le plafond : il peut
+    // porter le total au-delà de 80 comme en dessous de 0
+    return v + (state.caracsMod[c] || 0);
   }
   function stadeInfo(i) { return DATA.stades[clamp(i, 0, DATA.stades.length - 1)]; }
   function compXp(c) {
@@ -149,17 +160,12 @@
   function ptsCreation() {
     return state.caracsBase.Mind + state.caracsBase.Body + state.caracsBase.Prestance;
   }
-  function pvMax() {
-    var v = (20 + caracTotal("Body")) / 2;
-    return Math.round(v * 10) / 10;
-  }
+  // les valeurs issues d'une division s'arrondissent à l'INFÉRIEUR
+  function pvMax() { return Math.floor((20 + caracTotal("Body")) / 2); }
   function pvCourant() { return state.pv === null ? pvMax() : state.pv; }
-  function regen() {
-    // « Body/10 PV par jour », sans arrondi (les PV acceptent les demi-points)
-    return Math.round(caracTotal("Body") / 10 * 10) / 10;
-  }
+  function regen() { return Math.max(0, Math.floor(caracTotal("Body") / 10)); }
   function vitesse() {
-    var b = caracTotal("Body");
+    var b = Math.max(0, caracTotal("Body"));   // un Body négatif reste au 1er palier
     var rows = DATA.vitesses || [];
     for (var i = 0; i < rows.length; i++) {
       var r = rows[i];
@@ -691,7 +697,7 @@
     var pvStep = el("span", "pc-step");
     pvStep.appendChild(stepBtn("−", null, function () { state.pv = pvCourant() - 1; refresh(); }));
     var pvIn = el("input", "pc-num");
-    pvIn.type = "number"; pvIn.step = "0.5";
+    pvIn.type = "number"; pvIn.step = "1";
     pvIn.addEventListener("input", function () {
       var v = parseFloat(pvIn.value);
       state.pv = isFinite(v) ? v : null;
@@ -794,26 +800,34 @@
       var c = comp();
       tech.innerHTML = "";
       if (!stadeInfo(c.stade).techniques) return;
-      c.techniques.forEach(function (p, i) {
-        var line = el("div", "pc-technique");
-        var inp = el("input");
-        inp.type = "text"; inp.placeholder = "Technique"; inp.value = p;
-        inp.addEventListener("input", function () { c.techniques[i] = inp.value; state.comps[item.key] = c; save(); });
-        line.appendChild(inp);
-        line.appendChild(chatBtn(
-          function () { return "Technique — " + item.name; },
-          function () { return [["Technique", comp().techniques[i]]]; }));
-        line.appendChild(miniBtn("✕", "Retirer cette technique", function () {
+      c.techniques.forEach(function (t, i) {
+        var card = el("div", "pc-av pc-technique");
+        var head = el("div", "pc-av-head");
+        var nm = el("input", "nm");
+        nm.type = "text"; nm.placeholder = "Nom"; nm.value = t.name || "";
+        nm.addEventListener("input", function () { t.name = nm.value; state.comps[item.key] = c; save(); });
+        head.appendChild(nm);
+        head.appendChild(chatBtn(
+          function () { return "Technique — " + (t.name || item.name); },
+          function () { return [["Compétence", item.name], ["Effet", t.desc]]; }));
+        head.appendChild(miniBtn("✕", "Retirer cette technique", function () {
           c.techniques.splice(i, 1); state.comps[item.key] = c; refresh(); renderTechs();
         }, "danger"));
-        tech.appendChild(line);
+        card.appendChild(head);
+        var d = el("textarea", "pc-notes");
+        d.rows = 3;
+        d.placeholder = "Effet";
+        d.value = t.desc || "";
+        d.addEventListener("input", function () { t.desc = d.value; state.comps[item.key] = c; save(); });
+        card.appendChild(d);
+        tech.appendChild(card);
       });
       tech.appendChild(miniBtn("+ technique (" + DATA.xpParStade + " xp)", null, function () {
-        var test = { stade: c.stade, techniques: c.techniques.concat([""]) };
+        var test = { stade: c.stade, techniques: c.techniques.concat([{ name: "", desc: "" }]) };
         var delta = compXp(test) - compXp(c);
         if (delta > 0 && xpRestant() < delta) { flash("XP insuffisant."); return; }
         if (compXp(test) > compCap()) { flash("Pas plus d'un quart de l'xp total (" + compCap() + " xp) dans une seule compétence."); return; }
-        c.techniques.push(""); state.comps[item.key] = c; refresh(); renderTechs();
+        c.techniques.push({ name: "", desc: "" }); state.comps[item.key] = c; refresh(); renderTechs();
       }));
     }
 
@@ -849,6 +863,8 @@
       if (compChamp === "Personnalisé") items = items.filter(function (it) { return it.custom; });
       if (flt) items = items.filter(function (it) { return it.name.toLowerCase().indexOf(flt) >= 0; });
       if (compOnly) items = items.filter(compInvestie);
+      // ordre alphabétique (français, accents ignorés), comps perso intercalées
+      items.sort(function (a, b) { return a.name.localeCompare(b.name, "fr", { sensitivity: "base" }); });
       if (compChamp === "Personnalisé" && !items.length && !compAddMode) return;
       var champ = el("div", "pc-comp-champ", carac);
       compBox.appendChild(champ);
@@ -1154,6 +1170,26 @@
     hooks.push(function () { if (document.activeElement !== de) de.value = state.de || "1d100"; });
     bJ.appendChild(fld("Dé des jets de test", de));
     colA.appendChild(bJ);
+
+    // ---- modificateurs de caractéristiques (hors limite : au-delà de 80, sous 0) ----
+    var bM = block("Modificateurs de caractéristiques");
+    DATA.caracs.forEach(function (c) {
+      var name = c.name;
+      var row = el("div", "pc-kv");
+      var chip = el("span", "pc-abbr", ABBR[name] || name);
+      chip.title = name;
+      row.appendChild(chip);
+      row.appendChild(stepper(
+        function () { return state.caracsMod[name] || 0; },
+        function (v) { state.caracsMod[name] = clamp(v, -999, 999); },
+        CARAC_PAS, "modificateur"));
+      row.appendChild(el("span", "sp"));
+      var tot = el("span", "max", "");
+      hooks.push(function () { tot.textContent = "total : " + caracTotal(name); });
+      row.appendChild(tot);
+      bM.appendChild(row);
+    });
+    colA.appendChild(bM);
 
     // ---- actions sur la fiche (exporter / importer / réinitialiser) ----
     var bAct = block("Fiche");
