@@ -2,8 +2,10 @@
  *
  * Mise en page « dossier » transposée du créateur HxH : barre d'outils avec la
  * bibliothèque, feuille à largeur fixe, en-tête portrait + identité, compteurs
- * de budgets, trois onglets (Fiche / Équipement / Bio), colonnes, valeurs
- * cliquables pour lancer les jets, journal de jets flottant.
+ * de budgets, onglets (Fiche / Art / Équipement / Bio / Options), colonnes,
+ * valeurs cliquables pour lancer les jets, journal de jets flottant.
+ * La Fiche range les compétences en trois colonnes (Body | Mind | Prestance) ;
+ * l'onglet Art porte un art libre par compétence au stade Artiste.
  *
  * Le contenu des règles (caractéristiques, listes de compétences, stades,
  * vitesses, difficultés, blessures, courbes d'armes/armures, actions) vient de
@@ -12,8 +14,9 @@
  * calcul prosaïques :
  *   - création : 120 points à répartir dans les 3 caractéristiques (0 à 80) ;
  *   - 500 xp à la création (total modifiable) ; 20 xp par stade de compétence
- *     (Non initié, Initié, Maitre, Expert), 20 xp par +5 de caractéristique
- *     (limite 80 sans avantage) ; au stade Expert, 20 xp par technique ;
+ *     (Non initié, Initié, Maitre, Expert, Artiste), 20 xp par +5 de
+ *     caractéristique (limite 80 sans avantage) ; dès le stade Expert, 20 xp
+ *     par technique ; dès le stade Artiste, un art par compétence (sans coût) ;
  *   - pas plus d'un quart de l'xp total investi dans une seule compétence ;
  *   - PV max = (20 + Body) / 2 ; récupération Body/10 PV par jour ;
  *   - jet = 1d100 + caractéristique (+ bonus de stade pour une compétence) ;
@@ -65,6 +68,13 @@
   }
   function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
   function num(v, d) { var n = parseInt(v, 10); return isNaN(n) ? d : n; }
+  // poids : décimal positif, virgule tolérée à la saisie, arrondi au centième
+  function pnum(v) {
+    var n = parseFloat(String(v == null ? "" : v).replace(",", "."));
+    return isFinite(n) && n >= 0 ? Math.round(n * 100) / 100 : 0;
+  }
+  // affichage des poids : point décimal, sans zéros de traîne (« 0.5 », « 3 »)
+  function fmtP(n) { return String(Math.round(n * 100) / 100); }
   function nowStamp() { return new Date().toISOString(); }
   function sign(n) { return n >= 0 ? "+" + n : String(n).replace("-", "−"); }
   // les compétences commencent toujours par une majuscule (« apnée » -> « Apnée »)
@@ -84,6 +94,7 @@
       comps: {}, customComps: [],
       pv: null, narration: 3,
       armes: [], armures: [], inventaire: "",
+      inv: { texte: [], groupes: ["Sur soi"], objets: [] },
       de: "1d100"
     };
   }
@@ -120,7 +131,7 @@
     Object.keys(s.comps).forEach(function (k) {
       var c = s.comps[k];
       if (!c || typeof c !== "object") c = {};
-      c.stade = clamp(num(c.stade, 0), 0, DATA ? DATA.stades.length - 1 : 3);
+      c.stade = clamp(num(c.stade, 0), 0, DATA ? DATA.stades.length - 1 : 4);
       // migration : les « passifs » d'avant s'appellent désormais « techniques »,
       // et une technique est un objet {name, desc} (l'ancien texte simple
       // devient le nom, description vide)
@@ -130,11 +141,53 @@
         if (p && typeof p === "object") return { name: String(p.name || ""), desc: String(p.desc || "") };
         return { name: p == null ? "" : String(p), desc: "" };
       });
+      // l'art du stade Artiste : {name, desc} ; un art resté vide s'efface
+      if (c.art && typeof c.art === "object") {
+        c.art = { name: String(c.art.name || ""), desc: String(c.art.desc || "") };
+        if (!c.art.name.trim() && !c.art.desc.trim()) delete c.art;
+      } else delete c.art;
       // migration : noms de compétences capitalisés (« Body/apnée » -> « Body/Apnée »)
       var i = k.indexOf("/");
       comps[i > 0 ? k.slice(0, i + 1) + capFirst(k.slice(i + 1)) : k] = c;
     });
     s.comps = comps;
+    // inventaire structuré : liste (texte) + objets illustrés par groupes
+    // (un tableau passerait le typeof : ses propriétés nommées seraient
+    // perdues par JSON.stringify au premier save)
+    if (!s.inv || typeof s.inv !== "object" || Array.isArray(s.inv)) s.inv = b.inv;
+    s.inv.texte = objArray(s.inv.texte).map(function (it) {
+      return {
+        nom: it.nom == null ? "" : String(it.nom),
+        qte: Math.max(0, num(it.qte, 1)),
+        poids: pnum(it.poids),
+        compte: it.compte !== false
+      };
+    });
+    if (!Array.isArray(s.inv.groupes)) s.inv.groupes = [];
+    s.inv.groupes = s.inv.groupes.map(function (g) {
+      g = g == null ? "" : String(g).trim();
+      return g || "Groupe";
+    });
+    if (!s.inv.groupes.length) s.inv.groupes = ["Sur soi"];
+    s.inv.objets = objArray(s.inv.objets).map(function (it) {
+      return {
+        nom: it.nom == null ? "" : String(it.nom),
+        qte: Math.max(0, num(it.qte, 1)),
+        poids: pnum(it.poids),
+        img: it.img == null ? "" : String(it.img),
+        desc: it.desc == null ? "" : String(it.desc),
+        groupe: clamp(num(it.groupe, 0), 0, s.inv.groupes.length - 1)
+      };
+    });
+    // migration : l'ancien inventaire en texte libre (une ligne par objet)
+    // devient des lignes de la liste, quantité 1 et poids 0
+    if (s.inventaire && typeof s.inventaire === "string" && !s.inv.texte.length) {
+      s.inventaire.split(/\r?\n/).forEach(function (line) {
+        line = line.trim();
+        if (line) s.inv.texte.push({ nom: line, qte: 1, poids: 0, compte: true });
+      });
+      s.inventaire = "";
+    }
     s.xpTotal = Math.max(0, num(s.xpTotal, XP_CREATION));
     s.narration = clamp(num(s.narration, 3), 0, 99);
     s.pv = (s.pv === null || s.pv === undefined || s.pv === "") ? null : parseFloat(s.pv);
@@ -607,6 +660,7 @@
   // ---------- onglets ----------
   var TABS = [
     { id: "fiche", label: "Fiche" },
+    { id: "art", label: "Art" },
     { id: "equipement", label: "Équipement" },
     { id: "bio", label: "Bio" },
     { id: "options", label: "Options" }
@@ -778,6 +832,9 @@
         var c = comp();
         var target = (i === c.stade) ? 0 : i;
         var next = { stade: target, techniques: c.techniques.slice() };
+        // l'art suit la compétence : il survit aux allers-retours de stade
+        // (il ne s'affiche que quand le stade qui l'ouvre est atteint)
+        if (c.art && (String(c.art.name || "").trim() || String(c.art.desc || "").trim())) next.art = c.art;
         if (!stadeInfo(target).techniques) next.techniques = [];
         var delta = compXp(next) - compXp(c);
         if (delta > 0 && xpRestant() < delta) { flash("XP insuffisant."); return; }
@@ -787,7 +844,7 @@
           return;
         }
         state.comps[item.key] = next;
-        if (!next.stade && !next.techniques.length) delete state.comps[item.key];
+        if (!next.stade && !next.techniques.length && !next.art) delete state.comps[item.key];
         refresh();
         renderTechs();
       });
@@ -860,12 +917,14 @@
     var c = state.comps[it.key];
     return !!(c && (c.stade > 0 || (c.techniques && c.techniques.length)));
   }
+  // les trois colonnes de compétences de la Fiche, dans cet ordre
+  var CHAMPS = ["Body", "Mind", "Prestance"];
   function rebuildComps() {
     if (!compBox) return;
     compHooks = [];   // les lignes vont être détruites : leurs hooks avec
     compBox.innerHTML = "";
     var flt = compFilter.trim().toLowerCase();
-    ["Mind", "Body", "Prestance"].forEach(function (carac) {
+    CHAMPS.forEach(function (carac) {
       if (compChamp && compChamp !== "Personnalisé" && compChamp !== carac) return;
       var items = allComps().filter(function (it) { return it.carac === carac; });
       if (compChamp === "Personnalisé") items = items.filter(function (it) { return it.custom; });
@@ -874,17 +933,19 @@
       // ordre alphabétique (français, accents ignorés), comps perso intercalées
       items.sort(function (a, b) { return a.name.localeCompare(b.name, "fr", { sensitivity: "base" }); });
       if (compChamp === "Personnalisé" && !items.length && !compAddMode) return;
+      var col = el("div", "pc-comp-col");
+      compBox.appendChild(col);
       var champ = el("div", "pc-comp-champ", carac);
-      compBox.appendChild(champ);
+      col.appendChild(champ);
       if (!items.length) {
-        compBox.appendChild(el("div", "pc-empty",
+        col.appendChild(el("div", "pc-empty",
           flt ? "Aucune compétence ne correspond." : compOnly ? "Aucune compétence investie." : "—"));
       } else {
         var head = el("div", "pc-comp-row head");
         head.appendChild(el("span", null, "Compétence"));
         head.appendChild(el("span", null, "Total"));
-        compBox.appendChild(head);
-        items.forEach(function (it, i) { compBox.appendChild(compRow(it, i % 2 === 1)); });
+        col.appendChild(head);
+        items.forEach(function (it, i) { col.appendChild(compRow(it, i % 2 === 1)); });
       }
       // ajout d'une compétence personnalisée (les listes des règles sont
       // ouvertes : « … ») — seulement quand « + Compétence perso » est activé
@@ -903,7 +964,7 @@
         refresh();
         rebuildComps();
       }));
-      compBox.appendChild(addRow);
+      col.appendChild(addRow);
     });
     refresh();
   }
@@ -918,7 +979,7 @@
     search.addEventListener("input", function () { compFilter = search.value; rebuildComps(); });
     tools.appendChild(search);
     var champSel = el("select", "pc-select");
-    ["Tous les champs", "Mind", "Body", "Prestance", "Personnalisé"].forEach(function (ch) {
+    ["Tous les champs", "Body", "Mind", "Prestance", "Personnalisé"].forEach(function (ch) {
       var o = el("option");
       o.value = ch === "Tous les champs" ? "" : ch;
       o.textContent = ch;
@@ -947,22 +1008,103 @@
     });
     tools.appendChild(addChip);
     b.appendChild(tools);
-    compBox = el("div");
+    compBox = el("div", "pc-comp-cols");
     b.appendChild(compBox);
     col.appendChild(b);
     rebuildComps();
   }
 
   function buildFiche(pane) {
-    var cols = el("div", "pc-cols-fiche");
+    // caractéristiques et combat côte à côte, puis les compétences en pleine
+    // largeur, rangées en trois colonnes (Body | Mind | Prestance)
+    var cols = el("div", "pc-cols2");
     var left = el("div", "pc-col");
     var right = el("div", "pc-col");
     cols.appendChild(left);
     cols.appendChild(right);
     pane.appendChild(cols);
     buildCaracs(left);
-    buildCombat(left);
-    buildComps(right);
+    buildCombat(right);
+    buildComps(pane);
+  }
+
+  // ---------- onglet Art ----------
+  // Un art par compétence arrivée au stade qui l'ouvre (Artiste) : nom et
+  // description libres, envoi au tchat. Aucun contenu de règles ici : la carte
+  // ne porte que les données du personnage. La liste se reconstruit seulement
+  // quand l'ensemble des compétences éligibles change (pas à chaque frappe).
+  function artComps() {
+    return allComps().filter(function (it) {
+      var c = state.comps[it.key];
+      return !!(c && stadeInfo(c.stade).art);
+    });
+  }
+  function artStadeNom() {
+    for (var i = 0; i < DATA.stades.length; i++) if (DATA.stades[i].art) return DATA.stades[i].nom;
+    return null;
+  }
+  function buildArt(pane) {
+    var b = block("Arts");
+    var box = el("div", "pc-arts");
+    b.appendChild(box);
+    pane.appendChild(b);
+
+    function artCard(it) {
+      var c = state.comps[it.key];
+      if (!c.art) c.art = { name: "", desc: "" };   // créé au premier affichage
+      var a = c.art;
+      var card = el("div", "pc-av pc-art");
+
+      var top = el("div", "pc-art-top");
+      var chip = el("span", "pc-abbr", ABBR[it.carac] || it.carac);
+      chip.title = it.carac;
+      top.appendChild(chip);
+      top.appendChild(el("span", "pc-art-comp", it.name));
+      card.appendChild(top);
+
+      var head = el("div", "pc-av-head");
+      var nm = el("input", "nm");
+      nm.type = "text"; nm.placeholder = "Nom de l'art"; nm.value = a.name || "";
+      nm.addEventListener("input", function () { a.name = nm.value; save(); });
+      head.appendChild(nm);
+      head.appendChild(chatBtn(
+        function () { return "Art — " + (a.name || it.name); },
+        function () { return [["Compétence", it.name + " (" + it.carac + ")"], ["Description", a.desc]]; }));
+      head.appendChild(miniBtn("✕", "Effacer cet art", function () {
+        delete c.art;
+        refresh();
+        render();
+      }, "danger"));
+      card.appendChild(head);
+
+      var d = el("textarea", "pc-notes");
+      d.rows = 5;
+      d.placeholder = "Description de l'art : principes, effets, limites…";
+      d.value = a.desc || "";
+      d.addEventListener("input", function () { a.desc = d.value; save(); });
+      card.appendChild(d);
+      return card;
+    }
+
+    function render() {
+      box.innerHTML = "";
+      var items = artComps();
+      if (!items.length) {
+        var nom = artStadeNom();
+        box.appendChild(el("div", "pc-empty",
+          nom ? "Aucune compétence au stade " + nom + "." : "Aucune compétence n'ouvre d'art."));
+        return;
+      }
+      items.forEach(function (it) { box.appendChild(artCard(it)); });
+    }
+
+    // reconstruire seulement quand la liste des compétences éligibles change :
+    // les frappes dans les champs (save sans refresh) ne détruisent pas le focus
+    var lastSig = null;
+    hooks.push(function () {
+      var sig = artComps().map(function (it) { return it.key; }).join("|");
+      if (sig !== lastSig) { lastSig = sig; render(); }
+    });
   }
 
   // ---------- onglet Équipement ----------
@@ -1044,6 +1186,445 @@
     }
     render();
   }
+  // ---------- inventaire : liste (nom / poids / quantité) ----------
+  // Transposition de l'inventaire texte de l'ancienne extension Roll20 de
+  // l'utilisateur : lignes réordonnables, case « compter le poids » par ligne,
+  // total du poids porté. Poids en kg, décimales au point.
+  function invTexte(container) {
+    var items = state.inv.texte;
+    var box = el("div", "pc-inv");
+    var tot = el("div", "pc-inv-total");
+    var dragIdx = null;
+
+    function totalTexte() {
+      var t = 0;
+      items.forEach(function (it) { if (it.compte) t += it.qte * it.poids; });
+      return t;
+    }
+    function updateTotal() { tot.textContent = "Poids porté : " + fmtP(totalTexte()) + " kg"; }
+
+    function render() {
+      box.innerHTML = "";
+      var hdr = el("div", "pc-inv-row hdr");
+      hdr.appendChild(el("span", "h g", ""));
+      hdr.appendChild(el("span", "h g", ""));
+      hdr.appendChild(el("span", "h nm", "Objet"));
+      var hp = el("span", "h n", "Poids");
+      hp.title = "En kilogrammes";
+      hdr.appendChild(hp);
+      hdr.appendChild(el("span", "h n", "Qté"));
+      hdr.appendChild(el("span", "h g", ""));
+      box.appendChild(hdr);
+
+      items.forEach(function (it, idx) {
+        var row = el("div", "pc-inv-row");
+
+        var handle = el("span", "pc-inv-handle", "⠿");
+        handle.title = "Glisser pour réordonner";
+        handle.addEventListener("mousedown", function () {
+          row.draggable = true;
+          // un clic sans glisser ne doit pas laisser la ligne draggable : sous
+          // Firefox, un ancêtre draggable casse la sélection dans les champs
+          document.addEventListener("mouseup", function () { row.draggable = false; }, { once: true });
+        });
+        row.addEventListener("dragstart", function (e) {
+          dragIdx = idx;
+          row.classList.add("drag");
+          try { e.dataTransfer.setData("text/plain", ""); e.dataTransfer.effectAllowed = "move"; } catch (err) {}
+        });
+        row.addEventListener("dragend", function () { row.draggable = false; dragIdx = null; render(); });
+        row.addEventListener("dragover", function (e) {
+          if (dragIdx === null || dragIdx === idx) return;
+          e.preventDefault();
+          var r = row.getBoundingClientRect();
+          var before = e.clientY < r.top + r.height / 2;
+          row.classList.toggle("over-top", before);
+          row.classList.toggle("over-bot", !before);
+        });
+        row.addEventListener("dragleave", function () { row.classList.remove("over-top", "over-bot"); });
+        row.addEventListener("drop", function (e) {
+          if (dragIdx === null || dragIdx === idx) return;
+          e.preventDefault();
+          var r = row.getBoundingClientRect();
+          var before = e.clientY < r.top + r.height / 2;
+          var moved = items.splice(dragIdx, 1)[0];
+          var at = items.indexOf(it);
+          items.splice(before ? at : at + 1, 0, moved);
+          dragIdx = null;
+          render();
+          refresh();
+        });
+        row.appendChild(handle);
+
+        var tog = el("span", "pc-inv-tog" + (it.compte ? " on" : ""));
+        tog.title = "Compter ce poids dans le total (décocher : objet posé ou porté par un autre)";
+        tog.addEventListener("click", function () {
+          it.compte = !it.compte;
+          tog.classList.toggle("on", it.compte);
+          save(); updateTotal();
+        });
+        row.appendChild(tog);
+
+        var nm = el("input", "nm");
+        nm.type = "text";
+        nm.placeholder = "Objet";
+        nm.value = it.nom;
+        nm.addEventListener("input", function () { it.nom = nm.value; save(); });
+        row.appendChild(nm);
+
+        var pd = el("input", "n");
+        pd.type = "text"; pd.inputMode = "decimal";
+        pd.value = it.poids ? fmtP(it.poids) : "";
+        pd.placeholder = "0";
+        pd.addEventListener("input", function () { it.poids = pnum(pd.value); save(); updateTotal(); });
+        pd.addEventListener("blur", function () { pd.value = it.poids ? fmtP(it.poids) : ""; });
+        row.appendChild(pd);
+
+        var qt = el("input", "n");
+        qt.type = "number"; qt.min = "0"; qt.step = "1";
+        qt.value = it.qte;
+        qt.addEventListener("input", function () {
+          var v = parseInt(qt.value, 10);
+          it.qte = isFinite(v) && v >= 0 ? v : 0;
+          save(); updateTotal();
+        });
+        row.appendChild(qt);
+
+        var del = miniBtn("✕", "Retirer", function () { items.splice(idx, 1); render(); refresh(); }, "danger pc-inv-del");
+        row.appendChild(del);
+        box.appendChild(row);
+      });
+      if (!items.length) box.appendChild(el("div", "pc-empty", "Aucun objet."));
+      box.appendChild(miniBtn("+ Ajouter un objet", null, function () {
+        items.push({ nom: "", qte: 1, poids: 0, compte: true });
+        render();
+        refresh();
+      }, "pc-inv-add"));
+      updateTotal();
+    }
+    render();
+    container.appendChild(box);
+    container.appendChild(tot);
+  }
+
+  // ---------- inventaire : objets illustrés (tuiles par groupes + panneau) ----------
+  // Transposition de l'inventaire à images : tuiles par groupes (Sur soi,
+  // Sacoche…), clic -> panneau de détail (image, quantité, poids, groupe,
+  // description, envoi au tchat), glisser-déposer entre groupes. Les images
+  // importées d'un fichier sont réduites en vignette pour tenir dans la fiche
+  // (et dans les Attributes Roll20) ; préférer une URL quand c'est possible.
+  function invObjets(container) {
+    var G = state.inv.groupes;
+    var items = state.inv.objets;
+    var sel = null;          // index dans items de l'objet affiché au panneau
+    var dragIdx = null;
+    var editGi = null;       // groupe à ouvrir en édition de nom au prochain render
+    var tileRefs = {};       // idx -> { tile, nom, badge } pour maj sans re-render
+
+    var wrap = el("div", "pc-obj-wrap");
+    var leftBox = el("div", "pc-obj-left");
+    var panel = el("div", "pc-obj-panel");
+    wrap.appendChild(leftBox);
+    wrap.appendChild(panel);
+    var tot = el("div", "pc-inv-total");
+
+    function totalObjets() {
+      var t = 0;
+      items.forEach(function (it) { t += it.qte * it.poids; });
+      return t;
+    }
+    function updateTotal() { tot.textContent = "Poids total des objets : " + fmtP(totalObjets()) + " kg"; }
+
+    function vignette(file, cb) {
+      var r = new FileReader();
+      r.onerror = function () { flash("Image illisible."); };
+      r.onload = function () {
+        var img = new Image();
+        img.onload = function () {
+          if (!img.width || !img.height) { flash("Image illisible."); return; }   // ex. SVG sans dimensions
+          var S = 96, c = document.createElement("canvas");
+          c.width = S; c.height = S;
+          var k = Math.max(S / img.width, S / img.height);
+          var w = img.width * k, h = img.height * k;
+          c.getContext("2d").drawImage(img, (S - w) / 2, (S - h) / 2, w, h);
+          cb(c.toDataURL("image/jpeg", 0.7));
+        };
+        img.onerror = function () { flash("Image illisible."); };
+        img.src = r.result;
+      };
+      r.readAsDataURL(file);
+    }
+
+    function moveTo(from, gi, targetIt) {
+      // déplace items[from] dans le groupe gi, juste avant targetIt (null : à la fin).
+      // La position cible se recalcule APRÈS le retrait : retirer l'objet déplacé
+      // décale les index de tout ce qui le suivait.
+      var moved = items.splice(from, 1)[0];
+      moved.groupe = gi;
+      var at = targetIt ? items.indexOf(targetIt) : -1;
+      if (at < 0) items.push(moved);
+      else items.splice(at, 0, moved);
+      sel = items.indexOf(moved);
+    }
+
+    function tile(it, idx) {
+      var t = el("div", "pc-obj-tile" + (sel === idx ? " sel" : ""));
+      if (it.img) {
+        var im = el("img");
+        im.alt = ""; im.draggable = false;
+        im.src = it.img;
+        t.appendChild(im);
+      } else t.appendChild(el("div", "pc-obj-ph", "?"));
+      var foot = el("div", "pc-obj-foot");
+      var nom = el("span", "nm", it.nom || "Objet");
+      foot.appendChild(nom);
+      var badge = el("span", "qte", "×" + it.qte);
+      foot.appendChild(badge);
+      t.appendChild(foot);
+      tileRefs[idx] = { tile: t, nom: nom, badge: badge };
+
+      t.addEventListener("click", function () { sel = idx; render(); });
+      t.draggable = true;
+      t.addEventListener("dragstart", function (e) {
+        dragIdx = idx;
+        t.classList.add("drag");
+        try { e.dataTransfer.setData("text/plain", ""); e.dataTransfer.effectAllowed = "move"; } catch (err) {}
+      });
+      t.addEventListener("dragend", function () { dragIdx = null; render(); });
+      t.addEventListener("dragover", function (e) {
+        if (dragIdx === null) return;
+        // lâcher sur soi-même : cible invalide, et on N'EN LAISSE PAS le
+        // conteneur du groupe la valider (sinon l'objet saute en fin de groupe)
+        if (dragIdx === idx) { e.stopPropagation(); return; }
+        e.preventDefault();
+        e.stopPropagation();
+        t.classList.add("over");
+      });
+      t.addEventListener("dragleave", function () { t.classList.remove("over"); });
+      t.addEventListener("drop", function (e) {
+        if (dragIdx === null) return;
+        if (dragIdx === idx) { e.stopPropagation(); return; }
+        e.preventDefault();
+        e.stopPropagation();
+        var from = dragIdx; dragIdx = null;
+        moveTo(from, it.groupe, it);
+        render();
+        refresh();
+      });
+      return t;
+    }
+
+    function groupBox(gi) {
+      var g = el("div", "pc-obj-group");
+      var head = el("div", "pc-obj-ghead");
+      var name = el("span", "nm", G[gi]);
+      name.title = "Double-clic : renommer le groupe";
+      // édition EN PLACE, jamais prompt() : dans Roll20 la fiche est une iframe
+      // d'une autre origine, où Chrome fait échouer prompt() en silence
+      function editName() {
+        var inp = el("input", "nmedit");
+        inp.type = "text";
+        inp.value = G[gi];
+        inp.addEventListener("keydown", function (e) {
+          if (e.key === "Enter") { e.preventDefault(); inp.blur(); }
+          else if (e.key === "Escape") { inp.value = G[gi]; inp.blur(); }
+        });
+        inp.addEventListener("blur", function () {
+          G[gi] = inp.value.trim() || G[gi];
+          render();
+          refresh();
+        });
+        head.replaceChild(inp, name);
+        setTimeout(function () { inp.focus(); inp.select(); }, 0);
+      }
+      name.addEventListener("dblclick", editName);
+      head.appendChild(name);
+      if (editGi === gi) { editGi = null; editName(); }
+      if (G.length > 1) {
+        var delG = el("button", "x", "✕");
+        delG.type = "button";
+        delG.title = "Supprimer le groupe (ses objets rejoignent le premier groupe)";
+        delG.addEventListener("click", function () {
+          G.splice(gi, 1);
+          items.forEach(function (it) {
+            if (it.groupe === gi) it.groupe = 0;
+            else if (it.groupe > gi) it.groupe--;
+          });
+          sel = null;
+          render();
+          refresh();
+        });
+        head.appendChild(delG);
+      }
+      g.appendChild(head);
+
+      var tiles = el("div", "pc-obj-tiles");
+      items.forEach(function (it, idx) { if (it.groupe === gi) tiles.appendChild(tile(it, idx)); });
+      var add = el("div", "pc-obj-addtile", "+");
+      add.title = "Ajouter un objet dans « " + G[gi] + " »";
+      add.addEventListener("click", function () {
+        items.push({ nom: "", qte: 1, poids: 0, img: "", desc: "", groupe: gi });
+        sel = items.length - 1;
+        render();
+        refresh();
+      });
+      tiles.appendChild(add);
+      // déposer dans le vide du groupe : l'objet rejoint la fin de ce groupe
+      tiles.addEventListener("dragover", function (e) {
+        if (dragIdx === null) return;
+        e.preventDefault();
+        tiles.classList.add("over");
+      });
+      tiles.addEventListener("dragleave", function () { tiles.classList.remove("over"); });
+      tiles.addEventListener("drop", function (e) {
+        if (dragIdx === null) return;
+        e.preventDefault();
+        var from = dragIdx; dragIdx = null;
+        moveTo(from, gi, null);
+        render();
+        refresh();
+      });
+      g.appendChild(tiles);
+      return g;
+    }
+
+    function renderPanel() {
+      panel.innerHTML = "";
+      if (sel === null || !items[sel]) {
+        panel.appendChild(el("div", "pc-obj-empty", "Choisir un objet, ou en ajouter un avec « + »."));
+        return;
+      }
+      var it = items[sel];
+      var refs = function () { return tileRefs[sel]; };
+
+      var imgbox = el("div", "pc-obj-imgbox");
+      if (it.img) { var im = el("img"); im.alt = ""; im.src = it.img; imgbox.appendChild(im); }
+      else imgbox.appendChild(el("div", "pc-obj-ph big", "?"));
+      panel.appendChild(imgbox);
+
+      var body = el("div", "pc-obj-body");
+
+      var nm = el("input", "nm");
+      nm.type = "text"; nm.placeholder = "Nom de l'objet";
+      nm.value = it.nom;
+      nm.addEventListener("input", function () {
+        it.nom = nm.value;
+        if (refs()) refs().nom.textContent = it.nom || "Objet";
+        save();
+      });
+      body.appendChild(nm);
+
+      // quantité : curseur + champ
+      var qRow = el("div", "pc-obj-qrow");
+      var slider = el("input");
+      slider.type = "range"; slider.min = "0";
+      slider.max = String(Math.max(10, it.qte));
+      slider.value = it.qte;
+      var qIn = el("input", "n");
+      qIn.type = "number"; qIn.min = "0"; qIn.step = "1";
+      qIn.value = it.qte;
+      function setQte(v) {
+        it.qte = isFinite(v) && v >= 0 ? Math.floor(v) : 0;
+        if (+slider.max < it.qte) slider.max = String(it.qte);
+        if (document.activeElement !== slider) slider.value = it.qte;
+        if (document.activeElement !== qIn) qIn.value = it.qte;
+        if (refs()) refs().badge.textContent = "×" + it.qte;
+        save(); updateTotal();
+      }
+      slider.addEventListener("input", function () { setQte(parseInt(slider.value, 10)); });
+      qIn.addEventListener("input", function () { setQte(parseInt(qIn.value, 10)); });
+      qRow.appendChild(slider);
+      qRow.appendChild(qIn);
+      body.appendChild(fld("Quantité", qRow));
+
+      var pair = el("div", "pc-obj-pair");
+      var pd = el("input");
+      pd.type = "text"; pd.inputMode = "decimal";
+      pd.value = it.poids ? fmtP(it.poids) : "";
+      pd.placeholder = "0";
+      pd.addEventListener("input", function () { it.poids = pnum(pd.value); save(); updateTotal(); });
+      pd.addEventListener("blur", function () { pd.value = it.poids ? fmtP(it.poids) : ""; });
+      pair.appendChild(fld("Poids (kg)", pd));
+      var gSel = el("select");
+      G.forEach(function (gn, gi) {
+        var o = el("option", null, gn);
+        o.value = String(gi);
+        if (gi === it.groupe) o.selected = true;
+        gSel.appendChild(o);
+      });
+      gSel.addEventListener("change", function () {
+        moveTo(sel, clamp(num(gSel.value, 0), 0, G.length - 1), null);
+        render();
+        refresh();
+      });
+      pair.appendChild(fld("Groupe", gSel));
+      body.appendChild(pair);
+
+      var url = el("input");
+      url.type = "text"; url.placeholder = "https://…";
+      url.value = /^data:/.test(it.img) ? "" : it.img;
+      url.addEventListener("change", function () { it.img = url.value.trim(); render(); refresh(); });
+      var urlFld = fld("Image (URL)", url);
+      var file = el("input");
+      file.type = "file"; file.accept = "image/*"; file.style.display = "none";
+      file.addEventListener("change", function () {
+        var f = file.files && file.files[0];
+        file.value = "";   // vidé tout de suite : re-choisir le MÊME fichier redéclenche change
+        if (!f) return;
+        vignette(f, function (dataUrl) { it.img = dataUrl; render(); refresh(); });
+      });
+      urlFld.appendChild(file);
+      urlFld.appendChild(miniBtn("Fichier…", "Importer une image (réduite en vignette 96 px)", function () { file.click(); }));
+      body.appendChild(urlFld);
+
+      var desc = el("textarea", "pc-notes");
+      desc.rows = 3;
+      desc.placeholder = "Description, effets, notes…";
+      desc.value = it.desc;
+      desc.addEventListener("input", function () { it.desc = desc.value; save(); });
+      body.appendChild(fld("Description", desc, "w"));
+
+      var actions = el("div", "pc-obj-actions");
+      actions.appendChild(chatBtn(
+        function () { return "Objet — " + (it.nom || "objet"); },
+        function () {
+          return [
+            ["Groupe", G[it.groupe]],
+            ["Quantité", String(it.qte)],
+            ["Poids", it.poids ? fmtP(it.poids) + " kg" + (it.qte > 1 ? " (total " + fmtP(it.qte * it.poids) + " kg)" : "") : ""],
+            ["Description", it.desc]
+          ];
+        }));
+      actions.appendChild(miniBtn("Retirer", "Retirer l'objet", function () {
+        items.splice(sel, 1);
+        sel = null;
+        render();
+        refresh();
+      }, "danger"));
+      body.appendChild(actions);
+      panel.appendChild(body);
+    }
+
+    function render() {
+      tileRefs = {};
+      leftBox.innerHTML = "";
+      G.forEach(function (_, gi) { leftBox.appendChild(groupBox(gi)); });
+      var addG = miniBtn("+ Groupe", "Ajouter un groupe d'objets", function () {
+        G.push("Groupe");
+        editGi = G.length - 1;   // le nouveau groupe s'ouvre en édition de nom
+        render();
+        refresh();
+      });
+      addG.classList.add("pc-obj-addgroup");
+      leftBox.appendChild(addG);
+      renderPanel();
+      updateTotal();
+    }
+    render();
+    container.appendChild(wrap);
+    container.appendChild(tot);
+  }
+
   function buildEquipement(pane) {
     var cols = el("div", "pc-cols2");
     var left = el("div", "pc-col");
@@ -1064,14 +1645,13 @@
     eqCards(boxB, state.armures, "armure");
     left.appendChild(bB);
 
-    var bI = block("Inventaire");
-    var inv = el("textarea", "pc-notes");
-    inv.rows = 5;
-    inv.placeholder = "Une ligne par objet…";
-    inv.value = state.inventaire || "";
-    inv.addEventListener("input", function () { state.inventaire = inv.value; save(); });
-    bI.appendChild(inv);
+    var bI = block("Inventaire", "quantités et poids");
+    invTexte(bI);
     right.appendChild(bI);
+
+    var bO = block("Objets", "inventaire illustré");
+    invObjets(bO);
+    pane.appendChild(bO);
   }
 
   // ---------- onglet Bio ----------
@@ -1267,6 +1847,7 @@
     buildHead(sheet);
     var panes = buildTabs(sheet);
     buildFiche(panes.fiche);
+    buildArt(panes.art);
     buildEquipement(panes.equipement);
     buildBio(panes.bio);
     buildOptions(panes.options);

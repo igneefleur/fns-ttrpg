@@ -140,12 +140,22 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-pane { display: none; padding-top: .35rem; }
 .pc-pane.on { display: block; }
 .pc-cols2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gut); align-items: start; }
-/* Fiche : caractéristiques + combat (étroit) | compétences (large) */
-.pc-cols-fiche { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.72fr); gap: var(--gut); align-items: start; }
 .pc-col { min-width: 0; display: flex; flex-direction: column; gap: var(--gut); }
+/* Fiche : les compétences en trois colonnes (Body | Mind | Prestance) ; une
+   colonne filtrée s'élargit toute seule (flex à parts égales) */
+.pc-comp-cols { display: flex; gap: var(--gut); align-items: flex-start; }
+.pc-comp-cols > .pc-comp-col { flex: 1 1 0; min-width: 0; }
+/* Art : une carte d'art par compétence au stade qui l'ouvre */
+.pc-arts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem; align-items: start; }
+.pc-arts > .pc-empty { grid-column: 1 / -1; }
+.pc-art { margin-bottom: 0; }
+.pc-art-top { display: flex; align-items: center; gap: .35rem; margin-bottom: .22rem; }
+.pc-art-top .pc-art-comp { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; font-size: .7rem; color: var(--ink-2); }
 @media (max-width: 44em) {
   .pc-sheet { width: auto; max-width: 100%; }
-  .pc-cols2, .pc-cols-fiche { grid-template-columns: 1fr; }
+  .pc-cols2 { grid-template-columns: 1fr; }
+  .pc-comp-cols { flex-direction: column; align-items: stretch; }
+  .pc-arts { grid-template-columns: 1fr; }
   .pc-id { grid-template-columns: repeat(6, minmax(0, 1fr)); }
   .pc-f.c4 { grid-column: span 3; }
 }
@@ -254,6 +264,8 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-stade:hover { border-color: var(--line); color: var(--ink); }
 .pc-stade.on { color: var(--ink-2); border-color: var(--line); background: var(--panel); }
 .pc-stade.cur { background: var(--red); border-color: var(--red-deep); color: #fff; }
+/* cinq pastilles sur un tiers de feuille : un peu resserrées dans les colonnes */
+.pc-comp-cols .pc-stade { padding: .09rem .36rem; }
 .pc-comp-name { display: flex; align-items: baseline; min-width: 0; gap: .3rem; }
 .pc-comp-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); }
 .pc-comp-del { flex: 0 0 auto; border: none; background: transparent; color: var(--ink-3); font: inherit; font-size: .62rem; cursor: pointer; padding: 0 .1rem; }
@@ -291,6 +303,116 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
   background: var(--panel); font-weight: 700; font-size: .64rem; color: var(--ink-2); cursor: pointer; transition: .12s;
 }
 .pc-roll-chip:hover { border-color: var(--red); color: var(--red); background: var(--wash); }
+
+/* ---- inventaire : liste (nom / poids / qté), lignes réordonnables ---- */
+.pc-inv-row { display: flex; align-items: center; gap: .3rem; padding: .08rem 0; }
+.pc-inv-row.hdr { padding-bottom: .12rem; border-bottom: 1px solid var(--hair); margin-bottom: .1rem; }
+.pc-inv-row.hdr .h { font-size: .5rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); }
+.pc-inv-row.hdr .h.n { text-align: right; }
+.pc-inv-row.drag { opacity: .3; }
+.pc-inv-row.over-top { box-shadow: 0 -2px 0 var(--red); }
+.pc-inv-row.over-bot { box-shadow: 0 2px 0 var(--red); }
+.pc-inv-row > :nth-child(1) { flex: 0 0 .85rem; text-align: center; }
+.pc-inv-row > :nth-child(2) { flex: 0 0 .8rem; }
+.pc-inv-row > :nth-child(3) { flex: 1 1 auto; min-width: 0; }
+.pc-inv-row > :nth-child(4) { flex: 0 0 2.8rem; }
+.pc-inv-row > :nth-child(5) { flex: 0 0 2rem; }
+.pc-inv-row > :nth-child(6) { flex: 0 0 1.15rem; }
+.pc-inv-handle { cursor: grab; color: var(--line); font-size: .6rem; user-select: none; }
+.pc-inv-handle:hover { color: var(--red); }
+.pc-inv-handle:active { cursor: grabbing; }
+.pc-inv-tog {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: .74rem; height: .74rem; border: 1px solid var(--line-2); border-radius: 4px;
+  background: var(--card); cursor: pointer; transition: .12s;
+}
+.pc-inv-tog.on { border-color: var(--ok); }
+.pc-inv-tog.on::after { content: '✓'; color: var(--ok); font-size: .56rem; line-height: 1; }
+.pc-inv-tog:not(.on) { opacity: .45; }
+.pc-inv-row input.nm, .pc-inv-row input.n {
+  border: none; border-bottom: 1px solid var(--hair); background: transparent;
+  color: var(--ink); font: inherit; font-size: .7rem; padding: .02rem .1rem .06rem;
+  min-width: 0; width: 100%; border-radius: 0;
+}
+.pc-inv-row input.n { text-align: right; font-variant-numeric: tabular-nums; -moz-appearance: textfield; appearance: textfield; }
+.pc-inv-row input.n::-webkit-inner-spin-button, .pc-inv-row input.n::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.pc-inv-row input.nm:focus, .pc-inv-row input.n:focus { outline: none; border-bottom: 2px solid var(--red); }
+.pc-inv-row .pc-mini.pc-inv-del { box-sizing: border-box; width: 1.15rem; padding: .04rem 0; text-align: center; font-size: .6rem; }
+.pc-mini.pc-inv-add { display: block; width: 100%; margin-top: .35rem; border-style: dashed; background: transparent; }
+.pc-inv-total { text-align: right; font-size: .58rem; color: var(--ink-3); margin-top: .3rem; font-variant-numeric: tabular-nums; }
+
+/* ---- inventaire : objets illustrés (tuiles par groupes + panneau) ---- */
+.pc-obj-wrap { display: flex; gap: .6rem; align-items: flex-start; }
+.pc-obj-left { flex: 1 1 62%; min-width: 0; display: flex; flex-direction: column; gap: .45rem; }
+.pc-obj-panel { flex: 0 0 34%; min-width: 0; border: 1px solid var(--line-2); border-radius: 8px; background: var(--card); overflow: hidden; box-sizing: border-box; }
+.pc-obj-ghead { display: flex; align-items: center; gap: .3rem; margin-bottom: .2rem; }
+.pc-obj-ghead .nm {
+  font-size: .54rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ink-2); background: var(--panel); border-radius: 5px; padding: .08rem .45rem; cursor: default;
+}
+.pc-obj-ghead .x { border: none; background: transparent; color: var(--ink-3); font: inherit; font-size: .58rem; cursor: pointer; padding: 0 .15rem; }
+.pc-obj-ghead .x:hover { color: var(--red); }
+.pc-obj-ghead .nmedit {
+  font: inherit; font-size: .6rem; width: 7rem; min-width: 0;
+  border: none; border-bottom: 1px solid var(--line); background: transparent;
+  color: var(--ink); padding: .02rem .1rem; border-radius: 0;
+}
+.pc-obj-ghead .nmedit:focus { outline: none; border-bottom: 2px solid var(--red); }
+.pc-obj-tiles { display: flex; flex-wrap: wrap; gap: .3rem; --obj-cols: 4; border-radius: 6px; }
+.pc-obj-tiles.over { outline: 1px dashed var(--red); outline-offset: 2px; }
+.pc-obj-tile {
+  width: calc((100% - .3rem * (var(--obj-cols) - 1)) / var(--obj-cols));
+  border: 1px solid var(--hair); border-radius: 7px; overflow: hidden;
+  background: var(--card); cursor: pointer; transition: border-color .12s, box-shadow .12s;
+  /* border-box OBLIGATOIRE : l'iframe Roll20 n'a pas le reset de Material,
+     en content-box la bordure ferait passer la 4e tuile à la ligne */
+  box-sizing: border-box;
+}
+.pc-obj-tile:hover { border-color: var(--line); }
+.pc-obj-tile.sel { border-color: var(--red); box-shadow: 0 0 0 2px var(--wash); }
+.pc-obj-tile.drag { opacity: .3; }
+.pc-obj-tile.over { border-color: var(--red); border-style: dashed; }
+.pc-obj-tile img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block; }
+.pc-obj-ph { width: 100%; aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center; color: var(--line); font-size: 1.1rem; background: var(--panel); }
+.pc-obj-ph.big { font-size: 2rem; }
+.pc-obj-foot { display: flex; gap: .15rem; align-items: center; padding: .07rem .2rem; border-top: 1px solid var(--hair); }
+.pc-obj-foot .nm { flex: 1; min-width: 0; font-size: .5rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pc-obj-foot .qte { font-size: .5rem; font-weight: 700; color: var(--ink-2); background: var(--panel); border-radius: 3px; padding: 0 .16rem; font-variant-numeric: tabular-nums; }
+.pc-obj-addtile {
+  width: calc((100% - .3rem * (var(--obj-cols) - 1)) / var(--obj-cols));
+  aspect-ratio: 1 / 1; border: 1px dashed var(--line-2); border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--line); font-size: 1rem; cursor: pointer; transition: .12s; box-sizing: border-box;
+}
+.pc-obj-addtile:hover { border-color: var(--red); color: var(--red); }
+.pc-mini.pc-obj-addgroup { align-self: flex-start; }
+.pc-obj-imgbox { background: var(--panel); }
+.pc-obj-imgbox img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block; }
+.pc-obj-body { padding: .4rem .5rem .5rem; display: flex; flex-direction: column; gap: .32rem; }
+.pc-obj-body > input.nm {
+  border: none; border-bottom: 1px solid var(--line); background: transparent;
+  color: var(--ink); font: inherit; font-size: .76rem; font-weight: 700; padding: .02rem .1rem .06rem;
+  min-width: 0; width: 100%; border-radius: 0;
+}
+.pc-obj-body > input.nm:focus { outline: none; border-bottom: 2px solid var(--red); }
+.pc-obj-qrow { display: flex; gap: .35rem; align-items: center; }
+.pc-obj-qrow input[type="range"] { flex: 1; min-width: 0; accent-color: var(--red); }
+.pc-obj-qrow input.n {
+  flex: 0 0 2.2rem; border: none; border-bottom: 1px solid var(--hair); background: transparent;
+  color: var(--ink); font: inherit; font-size: .7rem; text-align: right; padding: .02rem .1rem .06rem;
+  font-variant-numeric: tabular-nums; -moz-appearance: textfield; appearance: textfield; min-width: 0;
+}
+.pc-obj-qrow input.n::-webkit-inner-spin-button, .pc-obj-qrow input.n::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.pc-obj-qrow input.n:focus { outline: none; border-bottom: 2px solid var(--red); }
+.pc-obj-pair { display: flex; gap: .5rem; }
+.pc-obj-pair .pc-f { flex: 1; }
+.pc-obj-actions { display: flex; gap: .35rem; justify-content: flex-end; margin-top: .1rem; }
+.pc-obj-empty { padding: 1.2rem .6rem; text-align: center; color: var(--ink-3); font-style: italic; font-size: .62rem; }
+/* même point de bascule que le mobile de la feuille (44em, pas 700px) */
+@media (max-width: 44em) {
+  .pc-obj-wrap { flex-direction: column; }
+  .pc-obj-panel { flex: 1 1 auto; width: 100%; }
+}
 
 /* ---- bio ---- */
 .pc-av { border: 1px solid var(--hair); border-radius: 7px; background: var(--card); padding: .35rem .5rem .45rem; margin-bottom: .45rem; }

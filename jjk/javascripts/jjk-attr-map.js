@@ -45,7 +45,8 @@
     ["caracsBase", "caracs_base"], ["caracsXp", "caracs_xp"],
     ["caracsMod", "caracs_mod"],
     ["comps", "competences"], ["customComps", "comp_perso"],
-    ["armes", "armes"], ["armures", "armures"]
+    ["armes", "armes"], ["armures", "armures"],
+    ["inv", "inventaire_sys"]
   ];
 
   // état par défaut (miroir de blank() de jjk-creation.js ; sert de socle à la
@@ -63,12 +64,32 @@
       comps: {}, customComps: [],
       pv: null, narration: 3,
       armes: [], armures: [], inventaire: "",
+      inv: { texte: [], groupes: ["Sur soi"], objets: [] },
       de: "1d100"
     };
   }
 
   function num(v) { var n = parseFloat(v); return isFinite(n) ? n : 0; }
   function str(v) { return v == null ? "" : String(v); }
+
+  // Copie de l'inventaire SANS les vignettes en data: pour l'attribut de repli
+  // jjk_inventaire_sys : jjk_state (source de vérité) les porte déjà, les
+  // dupliquer doublerait le poids des Attributes de la campagne. Le repli n'est
+  // relu que pour des fiches partielles : il perd seulement les images fichier.
+  function invSansVignettes(inv) {
+    if (!inv || typeof inv !== "object" || !Array.isArray(inv.objets)) return inv;
+    return {
+      texte: inv.texte,
+      groupes: inv.groupes,
+      objets: inv.objets.map(function (o) {
+        if (!o || typeof o !== "object" || String(o.img || "").indexOf("data:") !== 0) return o;
+        var c = {};
+        Object.keys(o).forEach(function (k) { c[k] = o[k]; });
+        c.img = "";
+        return c;
+      })
+    };
+  }
 
   // { fullAttrName -> {current, max} }
   function stateToAttrs(state, card) {
@@ -86,7 +107,9 @@
       put(d[1], d[2] === "b" ? (v ? 1 : 0) : v);
     });
     COLLECTIONS.forEach(function (d) {
-      put(d[1], JSON.stringify(state[d[0]] == null ? blank()[d[0]] : state[d[0]]));
+      var v = state[d[0]] == null ? blank()[d[0]] : state[d[0]];
+      if (d[0] === "inv") v = invSansVignettes(v);
+      put(d[1], JSON.stringify(v));
     });
     // PV courant nullable : conservé à l'exact (null = « au maximum »)
     put("etat_courant", JSON.stringify({ pv: state.pv == null ? null : state.pv }));
