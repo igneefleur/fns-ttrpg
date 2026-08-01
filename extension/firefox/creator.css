@@ -2,19 +2,17 @@
    EXACTEMENT à la page « Création » du site (même code, même CSS). Ajustements
    propres à l'iframe (le site les hérite du thème mkdocs, pas l'iframe) :
      - reposer la police du livre ;
-     - fixer --pc-rem à 20 px = la racine de la page Création du site (tailles
-       identiques : jjk-creation.css embarqué exprime ses rem en calc(--pc-rem)) ;
+     - fixer --pc-rem à 22 px = la racine figée de la page Création du site
+       (jjk-creation.css embarqué exprime ses rem en calc(--pc-rem)) ;
      - rendre la feuille FLUIDE (elle remplit le dialogue Roll20 au lieu d'une
-       largeur fixe qui déborde dans un dialogue étroit) + repli 1 colonne.
-   Les media queries responsives de jjk-creation.css fonctionnent nativement ici
-   (vraie iframe, vrai viewport). */
+       largeur fixe qui déborde dans un dialogue étroit) + repli 1 colonne. */
 html, body { margin: 0; padding: 0; }
 body {
   background: #e4ddcd;   /* plan de travail (côtés), comme le site */
   font-family: 'Alegreya', 'EB Garamond', Garamond, serif;
 }
 .perso-atelier {
-  --pc-rem: 20px;
+  --pc-rem: 22px;
   min-height: 100vh;
 }
 
@@ -27,11 +25,11 @@ body {
   box-sizing: border-box !important; margin-left: 0 !important; margin-right: 0 !important;
 }
 
-/* Dialogue trop étroit pour 3 colonnes lisibles -> 1 colonne, comme le mobile
-   du site (point de bascule remonté à 60em : un dialogue Roll20 est plus étroit
-   qu'une fenêtre de navigateur). */
+/* Dialogue trop étroit pour les colonnes -> 1 colonne, comme le mobile du site
+   (point de bascule remonté à 60em : un dialogue Roll20 est plus étroit qu'une
+   fenêtre de navigateur). */
 @media (max-width: 60em) {
-  .perso-atelier .pc-caracs,
-  .perso-atelier .pc-cols3,
-  .perso-atelier .pc-grid2 { grid-template-columns: 1fr !important; }
+  .pc-cols2,
+  .pc-cols-fiche { grid-template-columns: 1fr !important; }
+  .pc-id { grid-template-columns: repeat(6, minmax(0, 1fr)) !important; }
 }
