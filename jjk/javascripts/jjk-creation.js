@@ -258,7 +258,7 @@
   function blankComp() { return { stade: 0, techniques: [] }; }
   function allComps() {
     var out = [];
-    ["Mind", "Body", "Prestance"].forEach(function (c) {
+    CHAMPS.forEach(function (c) {
       (DATA.comps[c] || []).forEach(function (n) { out.push({ key: c + "/" + n, name: n, carac: c, custom: false }); });
     });
     state.customComps.forEach(function (cc) {
@@ -1715,8 +1715,9 @@
 
     // ---- modificateurs de caractéristiques (hors limite : au-delà de 80, sous 0) ----
     var bM = block("Modificateurs de caractéristiques");
-    DATA.caracs.forEach(function (c) {
-      var name = c.name;
+    // même ordre que toute la fiche : Body, puis Mind, puis Prestance
+    CHAMPS.forEach(function (name) {
+      if (!DATA.caracs.some(function (cc) { return cc.name === name; })) return;
       var row = el("div", "pc-kv");
       var chip = el("span", "pc-abbr", ABBR[name] || name);
       chip.title = name;
