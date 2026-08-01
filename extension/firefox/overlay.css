@@ -8,12 +8,19 @@
 
 /* pane HxH (géré comme un pane natif de Roll20 : .tab-pane.hxhfiche).
    FORCÉ (!important) : Roll20 impose son propre CSS aux .tab-pane (padding, height,
-   overflow) qui rognerait/écraserait notre fiche. On reprend la main. */
+   overflow) qui rognerait/écraserait notre fiche. On reprend la main.
+   La VISIBILITÉ est pilotée par la classe .hxh-on (posée/retirée par
+   content-roll20.js au changement d'onglet) : sans elle, le pane est MASQUÉ en
+   !important. L'ancien « display: block !important » gagnait sur le
+   style.display inline et laissait la fiche visible SOUS les onglets natifs
+   (Feuille de personnage, Bio & Info, Attributs). */
 .hxh-pane {
-  width: 100% !important; min-height: 620px !important; height: auto !important;
+  width: 100% !important; height: auto !important;
   box-sizing: border-box !important; padding: 0 !important; margin: 0 !important;
-  overflow: visible !important; display: block !important;
+  overflow: visible !important;
 }
+.hxh-pane:not(.hxh-on) { display: none !important; }
+.hxh-pane.hxh-on { display: block !important; min-height: 620px !important; }
 
 /* iframe du créateur. La HAUTEUR est pilotée en JS (content-roll20 : fitCreatorHeight)
    pour épouser la fenêtre de la feuille Roll20 et suivre ses redimensionnements ; on
