@@ -1,9 +1,21 @@
-"""Signe l'extension Firefox JJK via l'API de signature de Mozilla (AMO).
+"""Signe l'extension Firefox JJK via l'API de soumission de Mozilla (AMO).
 
 Un .xpi SIGNÉ s'installe DÉFINITIVEMENT sur tout Firefox (double-clic ou
 « Ouvrir avec Firefox ») : plus de rechargement à chaque session. Le canal est
 « unlisted » : l'extension n'est PAS publiée sur addons.mozilla.org, Mozilla ne
 fait que la valider et la signer ; la distribution reste le site.
+
+Flux (API de soumission v5, celle de web-ext >= 7 ; l'ancienne API « signing »
+en PUT répond désormais 404 pour les nouveaux add-ons) :
+  1. POST /addons/upload/ (multipart, channel=unlisted) -> uuid ;
+  2. attente de la validation (GET /addons/upload/{uuid}/) ;
+  3. POST /addons/addon/ {version:{upload:uuid}} (création) — ou, si l'add-on
+     existe déjà, POST /addons/addon/{guid}/versions/ (nouvelle version) ;
+  4. attente de la signature (file.status == "public"), téléchargement du .xpi
+     signé PAR-DESSUS docs/download/jjk-roll20-firefox.xpi ;
+  5. mise à jour de docs/download/updates.json (mise à jour AUTOMATIQUE : le
+     manifest porte update_url -> ce fichier ; Firefox y lit la dernière
+     version et va la chercher sur le site tout seul).
 
 Prérequis :
   1. `mkdocs build` puis `python scripts/build_extension.py` (le .xpi à signer) ;
@@ -11,12 +23,6 @@ Prérequis :
      dans les variables d'environnement AMO_JWT_ISSUER et AMO_JWT_SECRET.
 
     python scripts/sign_extension.py
-
-Le script téléverse le .xpi, attend la validation et la signature (~1 min),
-télécharge le .xpi signé PAR-DESSUS docs/download/jjk-roll20-firefox.xpi, et met
-à jour docs/download/updates.json (mise à jour AUTOMATIQUE : le manifest porte
-update_url -> ce fichier ; Firefox y lit la dernière version et va la chercher
-sur le site tout seul).
 
 Chaque signature exige une VERSION NEUVE : monter "version" dans les deux
 manifests (extension/firefox/ et extension/chrome/) avant de re-signer.
@@ -38,7 +44,7 @@ FF_MANIFEST = ROOT / "extension" / "firefox" / "manifest.json"
 XPI = ROOT / "docs" / "download" / "jjk-roll20-firefox.xpi"
 UPDATES = ROOT / "docs" / "download" / "updates.json"
 XPI_URL = "https://igneefleur.github.io/HxH-Regles-JDR/jjk/download/jjk-roll20-firefox.xpi"
-AMO = "https://addons.mozilla.org"
+API = "https://addons.mozilla.org/api/v5"
 
 
 def jwt_token(issuer, secret):
@@ -48,15 +54,97 @@ def jwt_token(issuer, secret):
     header = b64(json.dumps({"alg": "HS256", "typ": "JWT"}).encode())
     now = int(time.time())
     payload = b64(json.dumps({
-        "iss": issuer, "jti": str(uuid.uuid4()), "iat": now - 5, "exp": now + 300,
+        # AMO refuse toute fenêtre iat->exp au-delà de 5 min : 60 s suffisent,
+        # le jeton est refabriqué à chaque appel.
+        "iss": issuer, "jti": str(uuid.uuid4()), "iat": now, "exp": now + 60,
     }).encode())
     signing = header + b"." + payload
     sig = b64(hmac.new(secret.encode(), signing, hashlib.sha256).digest())
     return (signing + b"." + sig).decode()
 
 
-def auth(issuer, secret):
-    return {"Authorization": "JWT " + jwt_token(issuer, secret)}
+class Amo:
+    """Petit client authentifié ; le JWT expire en 5 min, on le refait à chaque appel."""
+
+    def __init__(self, issuer, secret):
+        self.issuer, self.secret = issuer, secret
+
+    def h(self, extra=None):
+        out = {"Authorization": "JWT " + jwt_token(self.issuer, self.secret)}
+        if extra:
+            out.update(extra)
+        return out
+
+    def get(self, path, **kw):
+        return requests.get(API + path, headers=self.h(), timeout=60, **kw)
+
+    def post(self, path, **kw):
+        return requests.post(API + path, headers=self.h(kw.pop("headers", None)), timeout=120, **kw)
+
+
+def upload_xpi(amo):
+    print(f"[signature] téléversement de {XPI.name} ({XPI.stat().st_size} octets)…")
+    with XPI.open("rb") as fh:
+        r = amo.post("/addons/upload/",
+                     files={"upload": ("jjk-roll20-firefox.xpi", fh, "application/x-xpinstall")},
+                     data={"channel": "unlisted"})
+    if r.status_code not in (200, 201, 202):
+        sys.exit(f"Téléversement refusé (HTTP {r.status_code}) : {r.text[:800]}")
+    return r.json()["uuid"]
+
+
+def wait_validation(amo, up_uuid):
+    print("[signature] validation Mozilla en cours…")
+    for _ in range(60):                       # ~5 min max
+        time.sleep(5)
+        r = amo.get(f"/addons/upload/{up_uuid}/")
+        if r.status_code != 200:
+            continue
+        s = r.json()
+        if not s.get("processed"):
+            continue
+        if not s.get("valid"):
+            msgs = (s.get("validation") or {}).get("messages", [])
+            errs = [m.get("message") for m in msgs if m.get("type") == "error"]
+            sys.exit("Validation refusée : " + " | ".join(map(str, errs[:5])))
+        print("[signature] validation acquise")
+        return
+    sys.exit("Validation toujours en cours après 5 min : relancer plus tard.")
+
+
+def create_version(amo, guid, up_uuid, version):
+    # création de l'add-on (premier envoi) ; s'il existe déjà, nouvelle version
+    r = amo.post("/addons/addon/", json={"version": {"upload": up_uuid}})
+    if r.status_code in (200, 201, 202):
+        v = r.json()["version"]
+        print(f"[signature] add-on créé sur AMO (canal unlisted), version {v['version']}")
+        return v["id"]
+    r2 = amo.post(f"/addons/addon/{guid}/versions/", json={"upload": up_uuid})
+    if r2.status_code in (200, 201, 202):
+        v = r2.json()
+        print(f"[signature] nouvelle version {v['version']} envoyée")
+        return v["id"]
+    if r2.status_code == 409 or "already exists" in r2.text:
+        sys.exit(f"La version {version} existe déjà sur AMO : monter \"version\" dans les "
+                 "deux manifests, re-packer (build_extension.py) puis relancer.")
+    sys.exit(f"Création refusée (HTTP {r.status_code} puis {r2.status_code}) : "
+             f"{r.text[:400]} | {r2.text[:400]}")
+
+
+def wait_signed(amo, guid, version_id):
+    print("[signature] signature en attente (revue automatique)…")
+    for _ in range(120):                      # ~10 min max
+        time.sleep(5)
+        r = amo.get(f"/addons/addon/{guid}/versions/{version_id}/")
+        if r.status_code != 200:
+            continue
+        f = (r.json() or {}).get("file") or {}
+        if f.get("status") == "public":
+            return f["url"]
+        if f.get("status") == "disabled":
+            sys.exit("Version désactivée par la revue : voir le tableau de bord AMO.")
+    sys.exit("Fichier signé toujours absent après 10 min : la revue peut prendre plus de "
+             "temps ; relancer plus tard (le téléchargement reprendra ici).")
 
 
 def main():
@@ -71,45 +159,15 @@ def main():
     manifest = json.loads(FF_MANIFEST.read_text(encoding="utf-8"))
     guid = manifest["browser_specific_settings"]["gecko"]["id"]
     version = manifest["version"]
-    url = f"{AMO}/api/v5/addons/{guid}/versions/{version}/"
-    print(f"[signature] {guid} v{version} — téléversement ({XPI.stat().st_size} octets)…")
+    amo = Amo(issuer, secret)
 
-    with XPI.open("rb") as fh:
-        r = requests.put(url, headers=auth(issuer, secret),
-                         files={"upload": ("jjk-roll20-firefox.xpi", fh, "application/x-xpinstall")},
-                         data={"channel": "unlisted"}, timeout=120)
-    if r.status_code == 409:
-        sys.exit(f"La version {version} existe déjà sur AMO : monter \"version\" dans les "
-                 "deux manifests, re-packer (build_extension.py) puis relancer.")
-    if r.status_code not in (200, 201, 202):
-        sys.exit(f"Téléversement refusé (HTTP {r.status_code}) : {r.text[:800]}")
-
-    # attente de la validation puis de la signature
-    print("[signature] validation Mozilla en cours…")
-    signed_url = None
-    for _ in range(60):                      # ~5 min max
-        time.sleep(5)
-        st = requests.get(url, headers=auth(issuer, secret), timeout=60)
-        if st.status_code != 200:
-            continue
-        s = st.json()
-        if not s.get("processed"):
-            continue
-        if not s.get("valid"):
-            msgs = s.get("validation_results", {}).get("messages", [])
-            errs = [m.get("message") for m in msgs if m.get("type") == "error"]
-            sys.exit("Validation refusée : " + " | ".join(errs[:5]))
-        files = s.get("files") or []
-        if files and files[0].get("signed"):
-            signed_url = files[0]["download_url"]
-            break
-        print("  … validée, signature en attente")
-    if not signed_url:
-        sys.exit("Signature toujours absente après 5 min : relancer plus tard, "
-                 "le téléversement est acquis (le script reprendra au même point).")
+    up_uuid = upload_xpi(amo)
+    wait_validation(amo, up_uuid)
+    version_id = create_version(amo, guid, up_uuid, version)
+    signed_url = wait_signed(amo, guid, version_id)
 
     print(f"[signature] téléchargement du .xpi signé : {signed_url}")
-    dl = requests.get(signed_url, headers=auth(issuer, secret), timeout=120)
+    dl = requests.get(signed_url, headers=amo.h(), timeout=120)
     dl.raise_for_status()
     XPI.write_bytes(dl.content)
     print(f"[signature] {XPI.relative_to(ROOT)} remplacé par la version SIGNÉE "

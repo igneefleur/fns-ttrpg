@@ -28,14 +28,14 @@ ajouté à la fiche du personnage.
 
 <div class="ext-grid">
   <div class="mcard ext-card">
-    <p><strong>Firefox</strong><span class="prereq">Module temporaire · fichier .xpi</span></p>
+    <p><strong>Firefox</strong><span class="prereq">Signée par Mozilla · installation permanente</span></p>
     <p><a class="md-button" href="../download/jjk-roll20-firefox.xpi" download>Télécharger (.xpi)</a></p>
     <ol class="ext-steps">
-      <li>ouvrir : <span class="ext-url"><code>about:debugging#/runtime/this-firefox</code><button class="ext-copy" type="button" data-copy="about:debugging#/runtime/this-firefox">copier</button></span></li>
-      <li>« Charger un module complémentaire temporaire… » ;</li>
-      <li>choisir le fichier <code>.xpi</code> téléchargé ;</li>
-      <li>le module est retiré à la fermeture de Firefox : recharger le
-          fichier <code>.xpi</code> à la prochaine session.</li>
+      <li>télécharger le fichier <code>.xpi</code> ;</li>
+      <li>l'ouvrir avec Firefox : <kbd>Ctrl</kbd>+<kbd>J</kbd> (téléchargements)
+          puis double-clic sur le fichier, ou le glisser dans une fenêtre Firefox ;</li>
+      <li>confirmer « Ajouter » : l'installation est définitive et les mises à
+          jour se font toutes seules depuis ce site.</li>
     </ol>
   </div>
   <div class="mcard ext-card">
