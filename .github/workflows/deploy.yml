@@ -2,74 +2,41 @@ name: website deployment
 on:
   push:
     branches:
-      - main
-      - beta
+      - jjk
 permissions:
   contents: write
+# Les trois branches (main, beta, jjk) écrivent sur la même branche gh-pages : un
+# groupe de concurrence commun (partagé entre workflows du dépôt) sérialise leurs
+# déploiements, et force: false fait rebaser l'action (avec réessais) au lieu de
+# force-pusser, pour qu'un run ne puisse pas écraser le travail d'un autre.
+concurrency:
+  group: gh-pages
+  cancel-in-progress: false
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0   # historique complet pour le changelog (hooks/changelog.py)
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.13'   # version éprouvée avec weasyprint==62.3 (évite le bleeding-edge 3.14)
-
-      # Bibliothèques natives requises par WeasyPrint (Pango >= 1.44 ; cairo et
-      # gdk-pixbuf ne sont plus nécessaires depuis WeasyPrint 53). On installe
-      # aussi EB Garamond (police du corps) pour un rendu déterministe.
-      - name: Dépendances système WeasyPrint + polices
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            libpango-1.0-0 \
-            libpangoft2-1.0-0 \
-            libharfbuzz0b \
-            libharfbuzz-subset0 \
-            fonts-ebgaramond \
-            fontconfig
-          fc-cache -f
-
-      # mkdocs-to-pdf 0.11.2 épingle weasyprint==62.3, qui plante (AssertionError:
-      # assert root_box) à la pagination de certaines pages. On force donc une
-      # version récente de weasyprint + pydyf, validée localement, qui corrige le
-      # bug ; l'API utilisée par mkdocs-to-pdf reste compatible. brotli sert à
-      # décoder les woff2 des Google Fonts (@import dans extra.css : Cinzel).
+          python-version: '3.13'
       - name: Dépendances Python
-        run: |
-          pip install mkdocs-material "mkdocs-to-pdf==0.11.2" brotli
-          pip install -U "weasyprint==69.0" "pydyf==0.12.1"
-
-      # Build avec la config CI (qui active le plugin PDF). La variable
-      # ENABLE_PDF_EXPORT déclenche réellement la génération du PDF.
-      - name: Build (PDF activé)
+        run: pip install mkdocs-material
+      - name: Build
         env:
-          ENABLE_PDF_EXPORT: "1"
           NO_MKDOCS_2_WARNING: "1"   # coupe l'encadré promo « MkDocs 2.0 » de Material dans les logs
-        run: mkdocs build --config-file mkdocs.ci.yml
-
-      # Un seul site GitHub Pages (branche gh-pages), deux emplacements :
+        run: mkdocs build
+      # Un seul site GitHub Pages (branche gh-pages), trois emplacements :
       #   main -> racine   https://igneefleur.github.io/HxH-Regles-JDR/
       #   beta -> beta/    https://igneefleur.github.io/HxH-Regles-JDR/beta/
-      # On n'utilise plus « mkdocs gh-deploy --force », qui écraserait toute la
-      # branche gh-pages (beta/ comprise) à chaque déploiement : l'action nettoie
-      # sa zone et épargne l'autre.
-      - name: Déploiement officiel (main -> racine, beta/ épargné)
-        if: github.ref == 'refs/heads/main'
+      #   jjk  -> jjk/     https://igneefleur.github.io/HxH-Regles-JDR/jjk/
+      # Avec target-folder, « clean » ne nettoie QUE le dossier cible : la racine
+      # (main) et beta/ sont épargnées par ce déploiement.
+      - name: Déploiement jjk (jjk -> jjk/)
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: site
           branch: gh-pages
+          target-folder: jjk
           clean: true
-          clean-exclude: |
-            beta
-      - name: Déploiement beta (beta -> beta/)
-        if: github.ref == 'refs/heads/beta'
-        uses: JamesIves/github-pages-deploy-action@v4
-        with:
-          folder: site
-          branch: gh-pages
-          target-folder: beta
-          clean: true
+          force: false

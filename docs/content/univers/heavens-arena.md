@@ -1,3 +1,0 @@
-# Heavens Arena
-
-TODO

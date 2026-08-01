@@ -1,26 +1,18 @@
-# HxH Système JDR
+# JJK Système JDR
 
-Un jeu de rôle sur table dans l'univers de Hunter × Hunter : le livre de règles et
-ses outils.
+Un jeu de rôle sur table dans l'univers de Jujutsu Kaisen : le livre de règles.
 
-**<https://igneefleur.github.io/HxH-Regles-JDR/>**
+**<https://igneefleur.github.io/HxH-Regles-JDR/jjk/>**
+
+Cette branche (`jjk`) est un site frère du dépôt HxH : elle reprend la maquette du
+livre (thème, polices auto-hébergées, lecture continue, mode nuit) et ne publie que
+les règles de base JJK.
 
 ## Œuvre de fan
 
-Sans but lucratif et sans lien avec les ayants droit : « Hunter × Hunter » et le
-Nen appartiennent à Yoshihiro Togashi et à Shueisha. Les règles, les textes et le
-code sont de l'auteur, en tous droits réservés. Voir [LICENSE.md](LICENSE.md).
-
-## Contenu
-
-Le livre (règles et univers), qui se lit en défilement continu et se télécharge en
-PDF, et trois outils : le créateur de personnage (`/personnage/`), la Forge d'armes
-(`/forge/`) et l'Atelier de pouvoirs de Nen (`/creation/`). Une extension Firefox
-et Chrome fait tourner le créateur dans une fiche Roll20.
-
-Les outils n'ont pas leur propre copie des données : des hooks Python relisent les
-pages de règles à chaque construction et en extraient leur JSON. Modifier une table
-du livre met donc l'outil à jour.
+Sans but lucratif et sans lien avec les ayants droit : « Jujutsu Kaisen » appartient
+à Gege Akutami et à Shueisha. Les règles, les textes et le code sont de l'auteur, en
+tous droits réservés. Voir [LICENSE.md](LICENSE.md).
 
 ## Développer
 
@@ -29,8 +21,5 @@ pip install mkdocs-material
 mkdocs serve
 ```
 
-Le PDF se construit à part, avec `mkdocs.ci.yml` : son plugin importe WeasyPrint au
-chargement, dont les bibliothèques natives manquent sous Windows, et l'inscrire
-dans `mkdocs.yml` casserait `mkdocs serve`.
-
-Chaque envoi sur `main` construit le site et le PDF, puis publie sur GitHub Pages.
+Chaque envoi sur `jjk` construit le site et le publie dans le dossier `jjk/` de la
+branche `gh-pages` ; la racine et `beta/` restent aux branches `main` et `beta`.
