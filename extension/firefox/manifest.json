@@ -6,7 +6,8 @@
   "browser_specific_settings": {
     "gecko": {
       "id": "jjk-roll20@igneefleur",
-      "strict_min_version": "109.0"
+      "strict_min_version": "109.0",
+      "update_url": "https://igneefleur.github.io/HxH-Regles-JDR/jjk/download/updates.json"
     }
   },
   "permissions": ["storage"],
