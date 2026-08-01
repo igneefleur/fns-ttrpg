@@ -37,6 +37,7 @@ extra_css:
   - stylesheets/fonts.css   # @font-face auto-hébergés : doit être chargée en premier
   - stylesheets/extra.css?v=13
   - stylesheets/night.css
+  - stylesheets/jjk.css?v=1 # variantes propres à la branche jjk (gabarit des tables anima)
 extra_javascript:
   - javascripts/continuous.js
   - javascripts/nav-drawer.js

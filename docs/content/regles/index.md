@@ -126,10 +126,14 @@ Vous récupérez Body/10 PV par jour.
 
 Perdre des PV peut mener à la mort ou l'inconscience.
 
+<div class="cj-modules anima jjk" markdown>
+
 | Seuil | État |
 |---|:---:|
 | Tomber à 0 PV ou moins | Inconscience |
 | Tomber à −100 % des PV ou moins | La mort |
+
+</div>
 
 </div>
 
@@ -138,6 +142,8 @@ Perdre des PV peut mener à la mort ou l'inconscience.
 ### Les blessures graves
 
 Perdre une grande quantité de points de vie d'un seul coup amène souvent à des blessures graves. Elles sont décomposées en 4 niveaux.
+
+<div class="cj-modules anima jjk txt" markdown>
 
 | Blessure | Perte en un seul coup | Effets |
 |---|:---:|---|
@@ -148,11 +154,15 @@ Perdre une grande quantité de points de vie d'un seul coup amène souvent à de
 
 </div>
 
+</div>
+
 <div class="keep" markdown>
 
 ### La vitesse
 
 La vitesse de déplacement dépend de la base de Body :
+
+<div class="cj-modules anima jjk" markdown>
 
 | Body | Vitesse |
 |:---:|:---:|
@@ -162,6 +172,8 @@ La vitesse de déplacement dépend de la base de Body :
 | 120 – 159 | 13.5 m |
 | 160 – 199 | 15 m |
 | 200+ | 18 m |
+
+</div>
 
 </div>
 
@@ -179,6 +191,8 @@ Globalement, une arme légère n'impose que très peu de malus de poids, mais fa
 
 On peut suivre cette courbe de poids :
 
+<div class="cj-modules anima jjk" markdown>
+
 | Poids | Dégâts | Reach |
 |:---:|:---:|:---:|
 | 0 | 5D4 | 0 m |
@@ -186,6 +200,8 @@ On peut suivre cette courbe de poids :
 | 20 | 5D8 | 1.5 m |
 | 40 | 5D10 | 3 m |
 | 40 | 5D12 | 1.5 m |
+
+</div>
 
 </div>
 
@@ -205,12 +221,16 @@ Ajouté à cela, chaque arme possède au moins 2 avantages et 2 désavantages.
 
 De façon similaire aux armes, les armures auront une statistique d'invu croissante avec leur poids. On peut suivre cette courbe de poids :
 
+<div class="cj-modules anima jjk" markdown>
+
 | Poids | 10 | 30 | 60 |
 |---|:---:|:---:|:---:|
 | Invu | 5D4 | 5D8 | 5D12 |
 | Zones protégées | Torse | Torse, tête, cuisses, épaules, bras | Torse, tête, jambes, épaules, bras, mains, pieds (tout sauf le visage) |
 | Viser une zone non protégée | −10 à l'attaque | −50 à l'attaque | −100 à l'attaque |
 | Port d'armure | Initié | Maitrise | Expertise |
+
+</div>
 
 </div>
 
@@ -240,6 +260,8 @@ La mécanique Pierre Feuille Ciseaux : sur l'initiative, sur l'attaque. (Explica
 
 ### Les difficultés de tests
 
+<div class="cj-modules anima jjk" markdown>
+
 | Seuil | Difficulté |
 |:---:|---|
 | 50 | Facile |
@@ -253,14 +275,20 @@ La mécanique Pierre Feuille Ciseaux : sur l'initiative, sur l'attaque. (Explica
 
 </div>
 
+</div>
+
 <div class="keep" markdown>
 
 ### Investir son xp
+
+<div class="cj-modules anima jjk txt" markdown>
 
 | Coût | Effet |
 |:---:|---|
 | 20 xp | Monter de +5 une caractéristique, avec un maximum de 80 (sans avantage) |
 | 20 xp | Monter d'un rang une compétence |
+
+</div>
 
 </div>
 
