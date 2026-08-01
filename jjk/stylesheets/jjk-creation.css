@@ -241,15 +241,24 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 }
 .pc-comp-champ::after { content: ""; flex: 1; height: 1px; background: var(--hair); }
 .pc-comp-champ:first-child { margin-top: .1rem; }
-/* ligne : nom | stade (menu) | total rollable */
-.pc-comp-row { display: grid; grid-template-columns: minmax(0, 1fr) 6.2rem 2.2rem; gap: .3rem; align-items: center; padding: .11rem .25rem; font-size: var(--fs-body); border-radius: 4px; }
+/* ligne : (nom | total rollable) puis les pastilles de stade en dessous */
+.pc-comp-row { display: grid; grid-template-columns: minmax(0, 1fr) 2.6rem; gap: .12rem .3rem; align-items: center; padding: .14rem .25rem .18rem; font-size: var(--fs-body); border-radius: 4px; }
 .pc-comp-row.odd { background: var(--stripe); }
 .pc-comp-row.head {
   background: var(--card); border-bottom: 1px solid var(--line); border-radius: 0; padding: .2rem .25rem .16rem;
   font-size: var(--fs-label); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-3);
 }
-.pc-comp-row.head > span:nth-child(2) { text-align: center; }
-.pc-comp-row.head > span:nth-child(3) { text-align: right; }
+.pc-comp-row.head > span:nth-child(2) { text-align: right; }
+/* pastilles de stade : cocher son niveau, recliquer pour revenir à Non initié */
+.pc-stades { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: .18rem; }
+.pc-stade {
+  font: inherit; font-size: .56rem; font-weight: 600; letter-spacing: .02em;
+  color: var(--ink-3); background: var(--card); border: 1px solid var(--line-2);
+  border-radius: 999px; padding: .09rem .48rem; cursor: pointer; transition: .12s;
+}
+.pc-stade:hover { border-color: var(--line); color: var(--ink); }
+.pc-stade.on { color: var(--ink-2); border-color: var(--line); background: var(--panel); }
+.pc-stade.cur { background: var(--red); border-color: var(--red-deep); color: #fff; }
 .pc-comp-name { display: flex; align-items: baseline; min-width: 0; gap: .3rem; }
 .pc-comp-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); }
 .pc-comp-del { flex: 0 0 auto; border: none; background: transparent; color: var(--ink-3); font: inherit; font-size: .62rem; cursor: pointer; padding: 0 .1rem; }
@@ -262,11 +271,11 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 }
 .pc-select:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 2px var(--wash); }
 .pc-comp-row .pc-select.lv0 { color: var(--ink-3); }
-/* passifs du stade Art : sous la ligne, en retrait */
-.pc-passifs { grid-column: 1 / -1; display: flex; flex-direction: column; gap: .2rem; padding: .1rem 0 .2rem 1rem; }
-.pc-passif { display: flex; gap: .3rem; align-items: center; }
-.pc-passif input { flex: 1 1 auto; min-width: 0; padding: .18rem .4rem; border: none; border-bottom: 1px solid var(--line-2); background: transparent; color: var(--ink); font: inherit; font-size: .66rem; }
-.pc-passif input:focus { outline: none; border-bottom-color: var(--red); }
+/* techniques du stade Expert : sous la ligne, en retrait */
+.pc-techniques { grid-column: 1 / -1; display: flex; flex-direction: column; gap: .2rem; padding: .1rem 0 .2rem 1rem; }
+.pc-technique { display: flex; gap: .3rem; align-items: center; }
+.pc-technique input { flex: 1 1 auto; min-width: 0; padding: .18rem .4rem; border: none; border-bottom: 1px solid var(--line-2); background: transparent; color: var(--ink); font: inherit; font-size: .66rem; }
+.pc-technique input:focus { outline: none; border-bottom-color: var(--red); }
 .pc-comp-add { display: flex; gap: .35rem; align-items: center; padding: .25rem .25rem .1rem; }
 .pc-comp-add input { flex: 1 1 auto; min-width: 0; padding: .24rem .5rem; border: 1px solid var(--line-2); border-radius: 6px; background: var(--card); color: var(--ink); font: inherit; font-size: .72rem; }
 .pc-comp-add input:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 2px var(--wash); }
@@ -290,12 +299,16 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-roll-chip:hover { border-color: var(--red); color: var(--red); background: var(--wash); }
 
 /* ---- bio ---- */
-.pc-av-row { display: flex; gap: .35rem; align-items: center; padding: .12rem 0; }
-.pc-av-row input { min-width: 0; border: none; border-bottom: 1px solid var(--line-2); background: transparent; color: var(--ink); font: inherit; font-size: .7rem; padding: .06rem .1rem; }
-.pc-av-row input:focus { outline: none; border-bottom-color: var(--red); }
-.pc-av-row input.nm { flex: 0 0 34%; font-weight: 700; }
-.pc-av-row input.fx { flex: 1 1 auto; }
-.pc-limite { display: flex; align-items: center; gap: .4rem; font-size: .66rem; color: var(--ink-2); margin-top: .35rem; cursor: pointer; }
+.pc-av { border: 1px solid var(--hair); border-radius: 7px; background: var(--card); padding: .35rem .5rem .45rem; margin-bottom: .45rem; }
+.pc-av-head { display: flex; gap: .4rem; align-items: baseline; margin-bottom: .25rem; }
+.pc-av-head input.nm {
+  flex: 1 1 auto; min-width: 0; border: none; border-bottom: 1px solid var(--line);
+  background: transparent; color: var(--ink); font: inherit; font-size: .74rem; font-weight: 700;
+  padding: .03rem .1rem .08rem;
+}
+.pc-av-head input.nm:focus { outline: none; border-bottom: 2px solid var(--red); }
+/* zone de texte posée dans un champ étiqueté (défaut, qualités, propriétés d'arme) */
+.pc-f > .pc-notes { min-height: 2.6rem; font-size: .7rem; }
 .pc-notes { width: 100%; min-height: 4.5rem; border: 1px solid var(--line-2); border-radius: 7px; background: var(--card); color: var(--ink); font: inherit; font-size: .72rem; padding: .5rem .6rem; resize: vertical; box-sizing: border-box; }
 .pc-notes:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 2px var(--wash); }
 .pc-empty { font-size: .72rem; color: var(--ink-3); font-style: italic; padding: .3rem .3rem; text-align: center; }

@@ -11,9 +11,9 @@
  * de règles. Ce fichier porte la sémantique d'interface et les règles de
  * calcul prosaïques :
  *   - création : 120 points à répartir dans les 3 caractéristiques (0 à 80) ;
- *   - 500 xp à la création (total modifiable) ; 20 xp par stade de compétence,
- *     20 xp par +5 de caractéristique (limite 80 sans avantage) ; au stade Art,
- *     20 xp par passif supplémentaire ;
+ *   - 500 xp à la création (total modifiable) ; 20 xp par stade de compétence
+ *     (Non initié, Initié, Maitre, Expert), 20 xp par +5 de caractéristique
+ *     (limite 80 sans avantage) ; au stade Expert, 20 xp par technique ;
  *   - pas plus d'un quart de l'xp total investi dans une seule compétence ;
  *   - PV max = (20 + Body) / 2 ; récupération Body/10 PV par jour ;
  *   - jet = 1d100 + caractéristique (+ bonus de stade pour une compétence) ;
@@ -106,9 +106,11 @@
     Object.keys(s.comps).forEach(function (k) {
       var c = s.comps[k];
       if (!c || typeof c !== "object") c = {};
-      c.stade = clamp(num(c.stade, 0), 0, DATA ? DATA.stades.length - 1 : 4);
-      if (!Array.isArray(c.passifs)) c.passifs = [];
-      c.passifs = c.passifs.map(function (p) { return p == null ? "" : String(p); });
+      c.stade = clamp(num(c.stade, 0), 0, DATA ? DATA.stades.length - 1 : 3);
+      // migration : les « passifs » d'avant s'appellent désormais « techniques »
+      if (!Array.isArray(c.techniques)) c.techniques = Array.isArray(c.passifs) ? c.passifs : [];
+      delete c.passifs;
+      c.techniques = c.techniques.map(function (p) { return p == null ? "" : String(p); });
       s.comps[k] = c;
     });
     s.xpTotal = Math.max(0, num(s.xpTotal, XP_CREATION));
@@ -126,7 +128,7 @@
   function stadeInfo(i) { return DATA.stades[clamp(i, 0, DATA.stades.length - 1)]; }
   function compXp(c) {
     var xp = DATA.xpParStade * c.stade;
-    if (stadeInfo(c.stade).passif) xp += DATA.xpParStade * Math.max(0, c.passifs.length - 1);
+    if (stadeInfo(c.stade).techniques) xp += DATA.xpParStade * c.techniques.length;
     return xp;
   }
   function compCap() { return Math.floor(state.xpTotal / QUART); }
@@ -161,6 +163,7 @@
   function compValue(carac, comp) {
     return caracTotal(carac) + stadeInfo(comp ? comp.stade : 0).bonus;
   }
+  function blankComp() { return { stade: 0, techniques: [] }; }
   function allComps() {
     var out = [];
     ["Body", "Mind", "Prestance"].forEach(function (c) {
@@ -623,11 +626,7 @@
 
   // ---------- onglet Fiche : caractéristiques + combat | compétences ----------
   function buildCaracs(col) {
-    var b = block("Caractéristiques", DATA.xpParStade + " xp = +" + CARAC_PAS);
-    b.appendChild(el("div", "pc-block-note",
-      "Création : " + PTS_CREATION + " points à répartir (0 à " + CARAC_MAX + "). "
-      + "Ensuite " + DATA.xpParStade + " xp par +" + CARAC_PAS + ", maximum " + CARAC_MAX + " sans avantage. "
-      + "Cliquer la valeur lance 1d100 + caractéristique."));
+    var b = block("Caractéristiques");
     DATA.caracs.forEach(function (c) {
       var name = c.name;
       var row = el("div", "pc-crow");
@@ -726,9 +725,6 @@
     nRow.appendChild(el("span", "sp"));
     nRow.appendChild(miniBtn("Nouvelle session", "Repartir à 3 points", function () { state.narration = 3; refresh(); }));
     b.appendChild(nRow);
-    b.appendChild(el("div", "pc-block-note",
-      "Un seul point de narration par jet ou confrontation : Coup de Chance +25, "
-      + "Coup de Poker +50 ou +0, Coup du Destin (créer un aspect), Coup de Relance (relancer)."));
 
     // seuils
     var seuils = el("div", "pc-seuils");
@@ -782,7 +778,7 @@
   }
 
   function compRow(item, odd) {
-    var comp = function () { return state.comps[item.key] || { stade: 0, passifs: [] }; };
+    var comp = function () { return state.comps[item.key] || blankComp(); };
     var row = el("div", "pc-comp-row" + (odd ? " odd" : ""));
 
     var nameBox = el("span", "pc-comp-name");
@@ -803,33 +799,6 @@
     }
     row.appendChild(nameBox);
 
-    // stade : menu déroulant (coût réglé automatiquement)
-    var sel = el("select", "pc-select");
-    DATA.stades.forEach(function (sd, i) {
-      var o = el("option", null, sd.nom + " (" + sign(sd.bonus) + ") · " + (DATA.xpParStade * i) + " xp");
-      o.value = String(i);
-      sel.appendChild(o);
-    });
-    sel.addEventListener("change", function () {
-      var c = comp();
-      var target = clamp(num(sel.value, 0), 0, DATA.stades.length - 1);
-      var next = { stade: target, passifs: c.passifs.slice() };
-      if (!stadeInfo(target).passif) next.passifs = [];
-      var delta = compXp(next) - compXp(c);
-      if (delta > 0 && xpRestant() < delta) { flash("XP insuffisant."); sel.value = String(c.stade); return; }
-      // le plafond du quart ne bloque que les HAUSSES : on peut toujours redescendre
-      if (delta > 0 && compXp(next) > compCap()) {
-        flash("Pas plus d'un quart de l'xp total (" + compCap() + " xp) dans une seule compétence.");
-        sel.value = String(c.stade);
-        return;
-      }
-      state.comps[item.key] = next;
-      if (!next.stade && !next.passifs.length) delete state.comps[item.key];
-      refresh();
-      renderPassifs();
-    });
-    row.appendChild(sel);
-
     var total = el("span", "pc-comp-total pc-rollable", "");
     total.title = "Lancer 1d100 + " + item.carac + " + stade";
     total.addEventListener("click", function () {
@@ -837,30 +806,64 @@
     });
     row.appendChild(total);
 
-    var pas = el("div", "pc-passifs");
-    row.appendChild(pas);
-    function renderPassifs() {
-      var c = comp();
-      pas.innerHTML = "";
-      if (!stadeInfo(c.stade).passif) return;
-      c.passifs.forEach(function (p, i) {
-        var line = el("div", "pc-passif");
-        var inp = el("input");
-        inp.type = "text"; inp.placeholder = "Passif original (à définir avec le MJ)"; inp.value = p;
-        inp.addEventListener("input", function () { c.passifs[i] = inp.value; state.comps[item.key] = c; save(); });
-        line.appendChild(inp);
-        line.appendChild(miniBtn("✕", "Retirer ce passif", function () {
-          c.passifs.splice(i, 1); state.comps[item.key] = c; refresh(); renderPassifs();
-        }, "danger"));
-        pas.appendChild(line);
+    // stades : une pastille par stade, cliquable ; recliquer le stade courant
+    // revient à Non initié. Le coût se règle tout seul.
+    var st = el("div", "pc-stades");
+    DATA.stades.forEach(function (sd, i) {
+      var pill = el("button", "pc-stade", sd.nom);
+      pill.type = "button";
+      pill.title = sd.nom + " (" + sign(sd.bonus) + ") — " + (DATA.xpParStade * i) + " xp";
+      pill.addEventListener("click", function () {
+        var c = comp();
+        var target = (i === c.stade) ? 0 : i;
+        var next = { stade: target, techniques: c.techniques.slice() };
+        if (!stadeInfo(target).techniques) next.techniques = [];
+        var delta = compXp(next) - compXp(c);
+        if (delta > 0 && xpRestant() < delta) { flash("XP insuffisant."); return; }
+        // le plafond du quart ne bloque que les HAUSSES : on peut toujours redescendre
+        if (delta > 0 && compXp(next) > compCap()) {
+          flash("Pas plus d'un quart de l'xp total (" + compCap() + " xp) dans une seule compétence.");
+          return;
+        }
+        state.comps[item.key] = next;
+        if (!next.stade && !next.techniques.length) delete state.comps[item.key];
+        refresh();
+        renderTechs();
       });
-      var cost = c.passifs.length ? DATA.xpParStade : 0;   // le 1er passif est inclus dans le stade Art
-      pas.appendChild(miniBtn("+ passif" + (cost ? " (" + cost + " xp)" : ""), null, function () {
-        var test = { stade: c.stade, passifs: c.passifs.concat([""]) };
+      st.appendChild(pill);
+    });
+    row.appendChild(st);
+    function renderStades() {
+      var c = comp();
+      Array.prototype.forEach.call(st.children, function (pill, i) {
+        pill.classList.toggle("on", i > 0 && i <= c.stade);
+        pill.classList.toggle("cur", i === c.stade && c.stade > 0);
+      });
+    }
+
+    var tech = el("div", "pc-techniques");
+    row.appendChild(tech);
+    function renderTechs() {
+      var c = comp();
+      tech.innerHTML = "";
+      if (!stadeInfo(c.stade).techniques) return;
+      c.techniques.forEach(function (p, i) {
+        var line = el("div", "pc-technique");
+        var inp = el("input");
+        inp.type = "text"; inp.placeholder = "Technique"; inp.value = p;
+        inp.addEventListener("input", function () { c.techniques[i] = inp.value; state.comps[item.key] = c; save(); });
+        line.appendChild(inp);
+        line.appendChild(miniBtn("✕", "Retirer cette technique", function () {
+          c.techniques.splice(i, 1); state.comps[item.key] = c; refresh(); renderTechs();
+        }, "danger"));
+        tech.appendChild(line);
+      });
+      tech.appendChild(miniBtn("+ technique (" + DATA.xpParStade + " xp)", null, function () {
+        var test = { stade: c.stade, techniques: c.techniques.concat([""]) };
         var delta = compXp(test) - compXp(c);
         if (delta > 0 && xpRestant() < delta) { flash("XP insuffisant."); return; }
         if (compXp(test) > compCap()) { flash("Pas plus d'un quart de l'xp total (" + compCap() + " xp) dans une seule compétence."); return; }
-        c.passifs.push(""); state.comps[item.key] = c; refresh(); renderPassifs();
+        c.techniques.push(""); state.comps[item.key] = c; refresh(); renderTechs();
       }));
     }
 
@@ -869,10 +872,10 @@
       var v = compValue(item.carac, c);
       total.textContent = sign(v);
       total.classList.toggle("zero", !c.stade);
-      if (document.activeElement !== sel) sel.value = String(c.stade);
-      sel.classList.toggle("lv0", !c.stade);
+      renderStades();
     });
-    renderPassifs();
+    renderStades();
+    renderTechs();
     return row;
   }
 
@@ -893,7 +896,6 @@
       } else {
         var head = el("div", "pc-comp-row head");
         head.appendChild(el("span", null, "Compétence"));
-        head.appendChild(el("span", null, "Stade"));
         head.appendChild(el("span", null, "Total"));
         compBox.appendChild(head);
         items.forEach(function (it, i) { compBox.appendChild(compRow(it, i % 2 === 1)); });
@@ -918,12 +920,7 @@
     refresh();
   }
   function buildComps(col) {
-    var b = block("Compétences", DATA.xpParStade + " xp par stade · quart max");
-    b.appendChild(el("div", "pc-block-note",
-      "Jet = 1d100 + caractéristique + bonus de stade ("
-      + DATA.stades.map(function (sd) { return sd.nom + " " + sign(sd.bonus); }).join(", ")
-      + "). Cliquer le total lance le jet. Au stade Art : passifs originaux, "
-      + DATA.xpParStade + " xp par passif supplémentaire."));
+    var b = block("Compétences");
     var search = el("input", "pc-comp-search");
     search.type = "search";
     search.placeholder = "Filtrer les compétences…";
@@ -955,6 +952,13 @@
     i.value = obj[key] || "";
     i.addEventListener("input", function () { obj[key] = i.value; save(); });
     return fld(labelTxt, i, wide ? "w" : null);
+  }
+  function eqArea(labelTxt, obj, key, rows) {
+    var t = el("textarea", "pc-notes");
+    t.rows = rows || 3;
+    t.value = obj[key] || "";
+    t.addEventListener("input", function () { obj[key] = t.value; save(); });
+    return fld(labelTxt, t, "w");
   }
   function diceOf(txt) {
     var m = /(\d{1,2})\s*[dD]\s*(\d{1,4})\s*([+-]\s*\d{1,4})?/.exec(String(txt || ""));
@@ -996,8 +1000,8 @@
         card.appendChild(line);
 
         var line2 = el("div", "pc-arme-line");
-        if (kind === "arme") line2.appendChild(eqField("Avantages / désavantages (au moins 2 et 2)", it, "props", true));
-        else line2.appendChild(eqField("Zones protégées", it, "zones", true));
+        if (kind === "arme") line2.appendChild(eqArea("Avantages / désavantages", it, "props", 3));
+        else line2.appendChild(eqArea("Zones protégées", it, "zones", 2));
         card.appendChild(line2);
 
         box.appendChild(card);
@@ -1033,7 +1037,7 @@
     cols.appendChild(right);
     pane.appendChild(cols);
 
-    var bA = block("Armes", "au moins 2 avantages et 2 désavantages");
+    var bA = block("Armes");
     var boxA = el("div");
     bA.appendChild(boxA);
     eqCards(boxA, state.armes, "arme");
@@ -1083,31 +1087,45 @@
     cols.appendChild(right);
     pane.appendChild(cols);
 
-    var bP = block("Personnalité", "1 défaut comique · 2 qualités");
+    var bP = block("Personnalité");
     var g = el("div", "pc-id");
-    g.appendChild(fld("Défaut (comique)", textInput(function () { return state.defaut; }, function (v) { state.defaut = v; }, "« Je me perds tout le temps comme Zoro »"), "c12"));
-    g.appendChild(fld("Qualité 1", textInput(function () { return state.qualites[0]; }, function (v) { state.qualites[0] = v; }), "c6"));
-    g.appendChild(fld("Qualité 2", textInput(function () { return state.qualites[1]; }, function (v) { state.qualites[1] = v; }), "c6"));
+    var defIn = el("textarea", "pc-notes");
+    defIn.rows = 3;
+    defIn.placeholder = "« Je me perds tout le temps comme Zoro »";
+    defIn.value = state.defaut || "";
+    defIn.addEventListener("input", function () { state.defaut = defIn.value; save(); });
+    g.appendChild(fld("Défaut (comique)", defIn, "c12"));
+    [0, 1].forEach(function (qi) {
+      var qIn = el("textarea", "pc-notes");
+      qIn.rows = 3;
+      qIn.value = state.qualites[qi] || "";
+      qIn.addEventListener("input", function () { state.qualites[qi] = qIn.value; save(); });
+      g.appendChild(fld("Qualité " + (qi + 1), qIn, "c6"));
+    });
     bP.appendChild(g);
     left.appendChild(bP);
 
-    var bA = block("Avantages", "2 au choix à la création");
+    var bA = block("Avantages");
     var avBox = el("div");
     bA.appendChild(avBox);
     function renderAv() {
       avBox.innerHTML = "";
       state.avantages.forEach(function (a, i) {
-        var row = el("div", "pc-av-row");
+        var card = el("div", "pc-av");
+        var head = el("div", "pc-av-head");
         var n = el("input", "nm");
-        n.type = "text"; n.placeholder = "Avantage"; n.value = a.name || "";
+        n.type = "text"; n.placeholder = "Nom"; n.value = a.name || "";
         n.addEventListener("input", function () { a.name = n.value; save(); });
-        row.appendChild(n);
-        var d = el("input", "fx");
-        d.type = "text"; d.placeholder = "Effet (à définir avec le MJ)"; d.value = a.desc || "";
+        head.appendChild(n);
+        head.appendChild(miniBtn("✕", "Retirer", function () { state.avantages.splice(i, 1); renderAv(); refresh(); }, "danger"));
+        card.appendChild(head);
+        var d = el("textarea", "pc-notes");
+        d.rows = 3;
+        d.placeholder = "Effet";
+        d.value = a.desc || "";
         d.addEventListener("input", function () { a.desc = d.value; save(); });
-        row.appendChild(d);
-        row.appendChild(miniBtn("✕", "Retirer", function () { state.avantages.splice(i, 1); renderAv(); refresh(); }, "danger"));
-        avBox.appendChild(row);
+        card.appendChild(d);
+        avBox.appendChild(card);
       });
       if (!state.avantages.length) avBox.appendChild(el("div", "pc-empty", "Aucun avantage."));
       avBox.appendChild(miniBtn("+ Ajouter un avantage", null, function () {
@@ -1117,21 +1135,11 @@
       }));
     }
     renderAv();
-    var lim = el("label", "pc-limite");
-    var cb = el("input");
-    cb.type = "checkbox";
-    cb.checked = !!state.sansLimite;
-    cb.addEventListener("change", function () { state.sansLimite = cb.checked; refresh(); });
-    hooks.push(function () { cb.checked = !!state.sansLimite; });
-    lim.appendChild(cb);
-    lim.appendChild(el("span", null, "Un avantage lève la limite de " + CARAC_MAX + " des caractéristiques"));
-    bA.appendChild(lim);
     left.appendChild(bA);
 
     var bB = block("Background");
     var bg = el("textarea", "pc-notes");
     bg.rows = 9;
-    bg.placeholder = "Un petit background…";
     bg.value = state.background || "";
     bg.addEventListener("input", function () { state.background = bg.value; save(); });
     bB.appendChild(bg);
