@@ -45,7 +45,7 @@ extra_javascript:
   - javascripts/continuous.js
   - javascripts/nav-drawer.js
   - javascripts/night.js
-  - javascripts/jjk-creation.js?v=19
+  - javascripts/jjk-creation.js?v=20
   - javascripts/copybtn.js
 hooks:
   - hooks/jjk_creation.py
