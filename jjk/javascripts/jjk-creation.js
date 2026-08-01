@@ -768,20 +768,20 @@
     col.appendChild(b);
   }
 
-  function buildCombat(col) {
-    var b = block("Combat");
-
-    var tiles = el("div", "pc-bigrow");
+  // L'ancien bloc « Combat » est éclaté (2026-08-01) : Vitesse et Régén / jour
+  // forment leur propre élément (tuiles autonomes), PV et Narration ont chacun
+  // leur bloc ; la tuile « XP restant » a disparu, le compteur « XP dépensé »
+  // de l'en-tête la rendait redondante.
+  function buildVitesse(col) {
+    var tiles = el("div", "pc-bigrow pc-bigrow-2");
     tiles.appendChild(bigTile("Vitesse", vitesse));
     tiles.appendChild(bigTile("Régén / jour", regen));
-    var xpTile = bigTile("XP restant", xpRestant);
-    hooks.push(function () { xpTile.classList.toggle("red", xpRestant() < 0); });
-    tiles.appendChild(xpTile);
-    b.appendChild(tiles);
+    col.appendChild(tiles);
+  }
 
-    // PV
+  function buildPv(col) {
+    var b = block("PV");
     var pvRow = el("div", "pc-kv");
-    pvRow.appendChild(el("span", "k", "PV"));
     var pvStep = el("span", "pc-step");
     pvStep.appendChild(stepBtn("−", null, function () { state.pv = pvCourant() - 1; refresh(); }));
     var pvIn = el("input", "pc-num");
@@ -801,10 +801,12 @@
     pvRow.appendChild(el("span", "sp"));
     pvRow.appendChild(miniBtn("Max", "Revenir au maximum", function () { state.pv = null; refresh(); }));
     b.appendChild(pvRow);
+    col.appendChild(b);
+  }
 
-    // narration
+  function buildNarration(col) {
+    var b = block("Narration");
     var nRow = el("div", "pc-kv");
-    nRow.appendChild(el("span", "k", "Narration"));
     var nStep = el("span", "pc-step");
     nStep.appendChild(stepBtn("−", null, function () { state.narration = Math.max(0, state.narration - 1); refresh(); }));
     var nV = el("span", "v", "");
@@ -1022,8 +1024,8 @@
   }
 
   function buildFiche(pane) {
-    // trois colonnes : caractéristiques | combat | compétences, les
-    // compétences à la suite (Body, puis Mind, puis Prestance)
+    // trois colonnes : caractéristiques | PV, vitesse, narration | compétences,
+    // les compétences à la suite (Body, puis Mind, puis Prestance)
     var cols = el("div", "pc-cols-fiche");
     var c1 = el("div", "pc-col");
     var c2 = el("div", "pc-col");
@@ -1033,7 +1035,9 @@
     cols.appendChild(c3);
     pane.appendChild(cols);
     buildCaracs(c1);
-    buildCombat(c2);
+    buildVitesse(c2);
+    buildPv(c2);
+    buildNarration(c2);
     buildComps(c3);
   }
 
