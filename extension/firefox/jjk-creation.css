@@ -267,10 +267,9 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-select:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 2px var(--wash); }
 .pc-comp-row .pc-select.lv0 { color: var(--ink-3); }
 /* techniques du stade Expert : sous la ligne, en retrait */
+/* techniques : cartes nom + effet (mêmes styles que les avantages), en retrait */
 .pc-techniques { grid-column: 1 / -1; display: flex; flex-direction: column; gap: calc(.2 * var(--pc-rem, 16px)); padding: calc(.1 * var(--pc-rem, 16px)) 0 calc(.2 * var(--pc-rem, 16px)) calc(1 * var(--pc-rem, 16px)); }
-.pc-technique { display: flex; gap: calc(.3 * var(--pc-rem, 16px)); align-items: center; }
-.pc-technique input { flex: 1 1 auto; min-width: 0; padding: calc(.18 * var(--pc-rem, 16px)) calc(.4 * var(--pc-rem, 16px)); border: none; border-bottom: 1px solid var(--line-2); background: transparent; color: var(--ink); font: inherit; font-size: calc(.66 * var(--pc-rem, 16px)); }
-.pc-technique input:focus { outline: none; border-bottom-color: var(--red); }
+.pc-techniques .pc-av { margin-bottom: calc(.1 * var(--pc-rem, 16px)); }
 .pc-comp-add { display: flex; gap: calc(.35 * var(--pc-rem, 16px)); align-items: center; padding: calc(.25 * var(--pc-rem, 16px)) calc(.25 * var(--pc-rem, 16px)) calc(.1 * var(--pc-rem, 16px)); }
 .pc-comp-add input { flex: 1 1 auto; min-width: 0; padding: calc(.24 * var(--pc-rem, 16px)) calc(.5 * var(--pc-rem, 16px)); border: 1px solid var(--line-2); border-radius: 6px; background: var(--card); color: var(--ink); font: inherit; font-size: calc(.72 * var(--pc-rem, 16px)); }
 .pc-comp-add input:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 2px var(--wash); }

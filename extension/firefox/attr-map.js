@@ -40,6 +40,7 @@
   var COLLECTIONS = [
     ["qualites", "qualites"], ["avantages", "avantages"],
     ["caracsBase", "caracs_base"], ["caracsXp", "caracs_xp"],
+    ["caracsMod", "caracs_mod"],
     ["comps", "competences"], ["customComps", "comp_perso"],
     ["armes", "armes"], ["armures", "armures"]
   ];
@@ -54,6 +55,7 @@
       avantages: [], sansLimite: false,
       caracsBase: { Mind: 0, Body: 0, Prestance: 0 },
       caracsXp: { Mind: 0, Body: 0, Prestance: 0 },
+      caracsMod: { Mind: 0, Body: 0, Prestance: 0 },
       xpTotal: 500,
       comps: {}, customComps: [],
       pv: null, narration: 3,
