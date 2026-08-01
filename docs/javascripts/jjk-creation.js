@@ -849,6 +849,8 @@
       if (compChamp === "Personnalisé") items = items.filter(function (it) { return it.custom; });
       if (flt) items = items.filter(function (it) { return it.name.toLowerCase().indexOf(flt) >= 0; });
       if (compOnly) items = items.filter(compInvestie);
+      // ordre alphabétique (français, accents ignorés), comps perso intercalées
+      items.sort(function (a, b) { return a.name.localeCompare(b.name, "fr", { sensitivity: "base" }); });
       if (compChamp === "Personnalisé" && !items.length && !compAddMode) return;
       var champ = el("div", "pc-comp-champ", carac);
       compBox.appendChild(champ);
