@@ -180,13 +180,21 @@
       };
     });
     // migration : l'ancien inventaire en texte libre (une ligne par objet)
-    // devient des lignes de la liste, quantité 1 et poids 0
+    // devient des lignes de liste, quantité 1 et poids 0
     if (s.inventaire && typeof s.inventaire === "string" && !s.inv.texte.length) {
       s.inventaire.split(/\r?\n/).forEach(function (line) {
         line = line.trim();
         if (line) s.inv.texte.push({ nom: line, qte: 1, poids: 0, compte: true });
       });
       s.inventaire = "";
+    }
+    // migration : la liste (retirée de la fiche) se fond dans les objets
+    // illustrés, au premier groupe ; sa case « compter le poids » disparaît
+    if (s.inv.texte.length) {
+      s.inv.texte.forEach(function (it) {
+        s.inv.objets.push({ nom: it.nom, qte: it.qte, poids: it.poids, img: "", desc: "", groupe: 0 });
+      });
+      s.inv.texte = [];
     }
     s.xpTotal = Math.max(0, num(s.xpTotal, XP_CREATION));
     s.narration = clamp(num(s.narration, 3), 0, 99);
@@ -1208,127 +1216,6 @@
     }
     render();
   }
-  // ---------- inventaire : liste (nom / poids / quantité) ----------
-  // Transposition de l'inventaire texte de l'ancienne extension Roll20 de
-  // l'utilisateur : lignes réordonnables, case « compter le poids » par ligne,
-  // total du poids porté. Poids en kg, décimales au point.
-  function invTexte(container) {
-    var items = state.inv.texte;
-    var box = el("div", "pc-inv");
-    var tot = el("div", "pc-inv-total");
-    var dragIdx = null;
-
-    function totalTexte() {
-      var t = 0;
-      items.forEach(function (it) { if (it.compte) t += it.qte * it.poids; });
-      return t;
-    }
-    function updateTotal() { tot.textContent = "Poids porté : " + fmtP(totalTexte()) + " kg"; }
-
-    function render() {
-      box.innerHTML = "";
-      var hdr = el("div", "pc-inv-row hdr");
-      hdr.appendChild(el("span", "h g", ""));
-      hdr.appendChild(el("span", "h g", ""));
-      hdr.appendChild(el("span", "h nm", "Objet"));
-      var hp = el("span", "h n", "Poids");
-      hp.title = "En kilogrammes";
-      hdr.appendChild(hp);
-      hdr.appendChild(el("span", "h n", "Qté"));
-      hdr.appendChild(el("span", "h g", ""));
-      box.appendChild(hdr);
-
-      items.forEach(function (it, idx) {
-        var row = el("div", "pc-inv-row");
-
-        var handle = el("span", "pc-inv-handle", "⠿");
-        handle.title = "Glisser pour réordonner";
-        handle.addEventListener("mousedown", function () {
-          row.draggable = true;
-          // un clic sans glisser ne doit pas laisser la ligne draggable : sous
-          // Firefox, un ancêtre draggable casse la sélection dans les champs
-          document.addEventListener("mouseup", function () { row.draggable = false; }, { once: true });
-        });
-        row.addEventListener("dragstart", function (e) {
-          dragIdx = idx;
-          row.classList.add("drag");
-          try { e.dataTransfer.setData("text/plain", ""); e.dataTransfer.effectAllowed = "move"; } catch (err) {}
-        });
-        row.addEventListener("dragend", function () { row.draggable = false; dragIdx = null; render(); });
-        row.addEventListener("dragover", function (e) {
-          if (dragIdx === null || dragIdx === idx) return;
-          e.preventDefault();
-          var r = row.getBoundingClientRect();
-          var before = e.clientY < r.top + r.height / 2;
-          row.classList.toggle("over-top", before);
-          row.classList.toggle("over-bot", !before);
-        });
-        row.addEventListener("dragleave", function () { row.classList.remove("over-top", "over-bot"); });
-        row.addEventListener("drop", function (e) {
-          if (dragIdx === null || dragIdx === idx) return;
-          e.preventDefault();
-          var r = row.getBoundingClientRect();
-          var before = e.clientY < r.top + r.height / 2;
-          var moved = items.splice(dragIdx, 1)[0];
-          var at = items.indexOf(it);
-          items.splice(before ? at : at + 1, 0, moved);
-          dragIdx = null;
-          render();
-          refresh();
-        });
-        row.appendChild(handle);
-
-        var tog = el("span", "pc-inv-tog" + (it.compte ? " on" : ""));
-        tog.title = "Compter ce poids dans le total (décocher : objet posé ou porté par un autre)";
-        tog.addEventListener("click", function () {
-          it.compte = !it.compte;
-          tog.classList.toggle("on", it.compte);
-          save(); updateTotal();
-        });
-        row.appendChild(tog);
-
-        var nm = el("input", "nm");
-        nm.type = "text";
-        nm.placeholder = "Objet";
-        nm.value = it.nom;
-        nm.addEventListener("input", function () { it.nom = nm.value; save(); });
-        row.appendChild(nm);
-
-        var pd = el("input", "n");
-        pd.type = "text"; pd.inputMode = "decimal";
-        pd.value = it.poids ? fmtP(it.poids) : "";
-        pd.placeholder = "0";
-        pd.addEventListener("input", function () { it.poids = pnum(pd.value); save(); updateTotal(); });
-        pd.addEventListener("blur", function () { pd.value = it.poids ? fmtP(it.poids) : ""; });
-        row.appendChild(pd);
-
-        var qt = el("input", "n");
-        qt.type = "number"; qt.min = "0"; qt.step = "1";
-        qt.value = it.qte;
-        qt.addEventListener("input", function () {
-          var v = parseInt(qt.value, 10);
-          it.qte = isFinite(v) && v >= 0 ? v : 0;
-          save(); updateTotal();
-        });
-        row.appendChild(qt);
-
-        var del = miniBtn("✕", "Retirer", function () { items.splice(idx, 1); render(); refresh(); }, "danger pc-inv-del");
-        row.appendChild(del);
-        box.appendChild(row);
-      });
-      if (!items.length) box.appendChild(el("div", "pc-empty", "Aucun objet."));
-      box.appendChild(miniBtn("+ Ajouter un objet", null, function () {
-        items.push({ nom: "", qte: 1, poids: 0, compte: true });
-        render();
-        refresh();
-      }, "pc-inv-add"));
-      updateTotal();
-    }
-    render();
-    container.appendChild(box);
-    container.appendChild(tot);
-  }
-
   // ---------- inventaire : objets illustrés (tuiles par groupes + panneau) ----------
   // Transposition de l'inventaire à images : tuiles par groupes (Sur soi,
   // Sacoche…), clic -> panneau de détail (image, quantité, poids, groupe,
@@ -1355,7 +1242,7 @@
       items.forEach(function (it) { t += it.qte * it.poids; });
       return t;
     }
-    function updateTotal() { tot.textContent = "Poids total des objets : " + fmtP(totalObjets()) + " kg"; }
+    function updateTotal() { tot.textContent = "Poids total : " + fmtP(totalObjets()) + " kg"; }
 
     function vignette(file, cb) {
       var r = new FileReader();
@@ -1665,13 +1552,9 @@
     var boxB = el("div");
     bB.appendChild(boxB);
     eqCards(boxB, state.armures, "armure");
-    left.appendChild(bB);
+    right.appendChild(bB);
 
-    var bI = block("Inventaire", "quantités et poids");
-    invTexte(bI);
-    right.appendChild(bI);
-
-    var bO = block("Objets", "inventaire illustré");
+    var bO = block("Inventaire", "objets par groupes");
     invObjets(bO);
     pane.appendChild(bO);
   }

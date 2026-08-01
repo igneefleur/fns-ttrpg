@@ -110,7 +110,7 @@
     // charger le vrai jjk-creation.js APRÈS hydratation (son init lit jjk-perso).
     // ?v= : MÊME numéro que mkdocs.yml (extra_javascript), à monter ensemble.
     var s = document.createElement("script");
-    s.src = "javascripts/jjk-creation.js?v=15";
+    s.src = "javascripts/jjk-creation.js?v=16";
     s.onload = function () { ready = true; post({ type: "mounted" }); };
     s.onerror = function () { post({ type: "error", error: "jjk-creation.js" }); };
     document.body.appendChild(s);
@@ -140,7 +140,9 @@
     tries++;
     if (tries > 40) {             // ~20 s sans réponse : le pont n'est pas là
       note("Roll20 n'a pas répondu. Fermer et rouvrir l'onglet « Fiche JJK » ; " +
-           "si rien ne change, recharger la page Roll20 (F5).");
+           "si rien ne change, recharger la page Roll20 (F5). Si la fiche est " +
+           "dans une fenêtre séparée (popout), garder la fenêtre principale de " +
+           "la partie ouverte, ou rouvrir la fiche depuis celle-ci.");
       return;
     }
     post({ type: "load" });
