@@ -805,6 +805,15 @@
       del.type = "button";
       del.title = "Retirer cette compétence personnalisée";
       del.addEventListener("click", function () {
+        // la compétence peut porter des données que la ligne ne montre pas
+        // (un art rédigé puis stade redescendu) : confirmer avant d'effacer
+        var c = state.comps[item.key];
+        var garde = [];
+        if (c && c.stade > 0) garde.push("de l'xp investi");
+        if (c && c.techniques && c.techniques.length) garde.push("des techniques");
+        if (porteArt(c)) garde.push("un art");
+        if (garde.length &&
+            !confirm("Supprimer « " + item.name + " » effacera aussi " + garde.join(", ") + ". Continuer ?")) return;
         state.customComps = state.customComps.filter(function (cc) { return (cc.carac + "/" + cc.name) !== item.key; });
         delete state.comps[item.key];
         refresh();
@@ -834,7 +843,7 @@
         var next = { stade: target, techniques: c.techniques.slice() };
         // l'art suit la compétence : il survit aux allers-retours de stade
         // (il ne s'affiche que quand le stade qui l'ouvre est atteint)
-        if (c.art && (String(c.art.name || "").trim() || String(c.art.desc || "").trim())) next.art = c.art;
+        if (porteArt(c)) next.art = c.art;
         if (!stadeInfo(target).techniques) next.techniques = [];
         var delta = compXp(next) - compXp(c);
         if (delta > 0 && xpRestant() < delta) { flash("XP insuffisant."); return; }
@@ -915,7 +924,8 @@
   var compAddMode = false;      // les champs d'ajout n'apparaissent que sur demande
   function compInvestie(it) {
     var c = state.comps[it.key];
-    return !!(c && (c.stade > 0 || (c.techniques && c.techniques.length)));
+    // l'art compte : une compétence redescendue qui garde son art reste visible
+    return !!(c && (c.stade > 0 || (c.techniques && c.techniques.length) || porteArt(c)));
   }
   // les trois colonnes de compétences de la Fiche, dans cet ordre
   var CHAMPS = ["Body", "Mind", "Prestance"];
@@ -1033,10 +1043,20 @@
   // description libres, envoi au tchat. Aucun contenu de règles ici : la carte
   // ne porte que les données du personnage. La liste se reconstruit seulement
   // quand l'ensemble des compétences éligibles change (pas à chaque frappe).
+  // porteLart : la compétence a un art non vide (même si le stade est redescendu)
+  function porteArt(c) {
+    return !!(c && c.art && (String(c.art.name || "").trim() || String(c.art.desc || "").trim()));
+  }
   function artComps() {
+    // même ordre que la Fiche : colonnes Body | Mind | Prestance, puis alphabétique
+    var rang = {};
+    CHAMPS.forEach(function (ch, i) { rang[ch] = i; });
     return allComps().filter(function (it) {
       var c = state.comps[it.key];
       return !!(c && stadeInfo(c.stade).art);
+    }).sort(function (a, b) {
+      return (rang[a.carac] || 0) - (rang[b.carac] || 0)
+        || a.name.localeCompare(b.name, "fr", { sensitivity: "base" });
     });
   }
   function artStadeNom() {
@@ -1051,8 +1071,10 @@
 
     function artCard(it) {
       var c = state.comps[it.key];
-      if (!c.art) c.art = { name: "", desc: "" };   // créé au premier affichage
-      var a = c.art;
+      // l'art n'entre dans l'état qu'à la première frappe : un art resté vierge
+      // ne doit pas générer d'écriture (Attributes Roll20) à la simple ouverture
+      var a = c.art || { name: "", desc: "" };
+      function keep() { c.art = a; }
       var card = el("div", "pc-av pc-art");
 
       var top = el("div", "pc-art-top");
@@ -1065,7 +1087,7 @@
       var head = el("div", "pc-av-head");
       var nm = el("input", "nm");
       nm.type = "text"; nm.placeholder = "Nom de l'art"; nm.value = a.name || "";
-      nm.addEventListener("input", function () { a.name = nm.value; save(); });
+      nm.addEventListener("input", function () { a.name = nm.value; keep(); save(); });
       head.appendChild(nm);
       head.appendChild(chatBtn(
         function () { return "Art — " + (a.name || it.name); },
@@ -1081,7 +1103,7 @@
       d.rows = 5;
       d.placeholder = "Description de l'art : principes, effets, limites…";
       d.value = a.desc || "";
-      d.addEventListener("input", function () { a.desc = d.value; save(); });
+      d.addEventListener("input", function () { a.desc = d.value; keep(); save(); });
       card.appendChild(d);
       return card;
     }
