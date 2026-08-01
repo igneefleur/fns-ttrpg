@@ -141,6 +141,9 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-pane.on { display: block; }
 .pc-cols2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gut); align-items: start; }
 .pc-col { min-width: 0; display: flex; flex-direction: column; gap: var(--gut); }
+/* un bloc pleine largeur qui suit une grille de colonnes garde le même
+   souffle que les blocs entre eux (ex. l'Inventaire sous Armes / Armures) */
+.pc-cols2 + .pc-block, .pc-cols-fiche + .pc-block { margin-top: var(--gut); }
 /* Fiche : les compétences en trois colonnes (Body | Mind | Prestance) ; une
    colonne filtrée s'élargit toute seule (flex à parts égales) */
 .pc-comp-cols { display: flex; gap: var(--gut); align-items: flex-start; }
@@ -376,7 +379,10 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-obj-empty { padding: 1.2rem .6rem; text-align: center; color: var(--ink-3); font-style: italic; font-size: .62rem; }
 /* même point de bascule que le mobile de la feuille (44em, pas 700px) */
 @media (max-width: 44em) {
-  .pc-obj-wrap { flex-direction: column; }
+  /* align-items: stretch : en colonne, le flex-start hérité rétrécirait les
+     enfants à leur contenu (tuiles en pourcentage -> quasi nulles) */
+  .pc-obj-wrap { flex-direction: column; align-items: stretch; }
+  .pc-obj-left { width: 100%; }
   .pc-obj-panel { flex: 1 1 auto; width: 100%; }
 }
 

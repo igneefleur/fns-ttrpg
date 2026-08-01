@@ -40,7 +40,7 @@ extra_css:
   - stylesheets/extra.css?v=13
   - stylesheets/night.css
   - stylesheets/jjk.css?v=1 # variantes propres à la branche jjk (gabarit des tables anima)
-  - stylesheets/jjk-creation.css?v=10
+  - stylesheets/jjk-creation.css?v=11
 extra_javascript:
   - javascripts/continuous.js
   - javascripts/nav-drawer.js
