@@ -82,12 +82,31 @@ class Amo:
         return requests.post(API + path, headers=self.h(kw.pop("headers", None)), timeout=120, **kw)
 
 
+def _throttle_wait(r):
+    """AMO limite la cadence des soumissions : sur un 429, renvoie le délai
+    d'attente annoncé (« Expected available in N seconds » / Retry-After),
+    borné à 7 min. Sinon None."""
+    if r.status_code != 429:
+        return None
+    import re
+    m = re.search(r"(\d+) seconds", r.text or "")
+    ra = r.headers.get("Retry-After", "")
+    wait = int(ra) if ra.isdigit() else (int(m.group(1)) if m else 60)
+    return min(wait + 5, 420)
+
+
 def upload_xpi(amo):
     print(f"[signature] téléversement de {XPI.name} ({XPI.stat().st_size} octets)…")
-    with XPI.open("rb") as fh:
-        r = amo.post("/addons/upload/",
-                     files={"upload": ("jjk-roll20-firefox.xpi", fh, "application/x-xpinstall")},
-                     data={"channel": "unlisted"})
+    for _ in range(4):
+        with XPI.open("rb") as fh:
+            r = amo.post("/addons/upload/",
+                         files={"upload": ("jjk-roll20-firefox.xpi", fh, "application/x-xpinstall")},
+                         data={"channel": "unlisted"})
+        w = _throttle_wait(r)
+        if w is None:
+            break
+        print(f"[signature] AMO limite la cadence : nouvel essai dans {w} s…")
+        time.sleep(w)
     if r.status_code not in (200, 201, 202):
         sys.exit(f"Téléversement refusé (HTTP {r.status_code}) : {r.text[:800]}")
     return r.json()["uuid"]
@@ -112,14 +131,26 @@ def wait_validation(amo, up_uuid):
     sys.exit("Validation toujours en cours après 5 min : relancer plus tard.")
 
 
+def _post_throttle(amo, path, **kw):
+    """POST avec réessais sur throttle AMO (429)."""
+    for _ in range(4):
+        r = amo.post(path, **kw)
+        w = _throttle_wait(r)
+        if w is None:
+            return r
+        print(f"[signature] AMO limite la cadence : nouvel essai dans {w} s…")
+        time.sleep(w)
+    return r
+
+
 def create_version(amo, guid, up_uuid, version):
     # création de l'add-on (premier envoi) ; s'il existe déjà, nouvelle version
-    r = amo.post("/addons/addon/", json={"version": {"upload": up_uuid}})
+    r = _post_throttle(amo, "/addons/addon/", json={"version": {"upload": up_uuid}})
     if r.status_code in (200, 201, 202):
         v = r.json()["version"]
         print(f"[signature] add-on créé sur AMO (canal unlisted), version {v['version']}")
         return v["id"]
-    r2 = amo.post(f"/addons/addon/{guid}/versions/", json={"upload": up_uuid})
+    r2 = _post_throttle(amo, f"/addons/addon/{guid}/versions/", json={"upload": up_uuid})
     if r2.status_code in (200, 201, 202):
         v = r2.json()
         print(f"[signature] nouvelle version {v['version']} envoyée")
