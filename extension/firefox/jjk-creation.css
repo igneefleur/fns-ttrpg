@@ -304,6 +304,8 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-av-head input.nm:focus { outline: none; border-bottom: 2px solid var(--red); }
 /* zone de texte posée dans un champ étiqueté (défaut, qualités, propriétés d'arme) */
 .pc-f > .pc-notes { min-height: calc(2.6 * var(--pc-rem, 16px)); font-size: calc(.7 * var(--pc-rem, 16px)); }
+/* bouton « Chat » d'un champ étiqueté : rangé sous la zone, à droite */
+.pc-f > .pc-mini { align-self: flex-end; margin-top: calc(.18 * var(--pc-rem, 16px)); }
 .pc-notes { width: 100%; min-height: calc(4.5 * var(--pc-rem, 16px)); border: 1px solid var(--line-2); border-radius: 7px; background: var(--card); color: var(--ink); font: inherit; font-size: calc(.72 * var(--pc-rem, 16px)); padding: calc(.5 * var(--pc-rem, 16px)) calc(.6 * var(--pc-rem, 16px)); resize: vertical; box-sizing: border-box; }
 .pc-notes:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 2px var(--wash); }
 .pc-empty { font-size: calc(.72 * var(--pc-rem, 16px)); color: var(--ink-3); font-style: italic; padding: calc(.3 * var(--pc-rem, 16px)) calc(.3 * var(--pc-rem, 16px)); text-align: center; }

@@ -38,6 +38,19 @@ if (typeof browser === "undefined") { var browser = chrome; }
     var name = String(label || "Jet").replace(/[{}]/g, "");
     return "&{template:default} {{name=" + name + "}} {{Jet=[[" + die + " " + v + "]]}}";
   }
+  // Carte d'ÉLÉMENT au tchat (technique, arme, avantage…) : template par défaut,
+  // une ligne par champ non vide. Accolades et sauts de ligne neutralisés.
+  function sanitizeField(s) { return String(s == null ? "" : s).replace(/[{}]/g, "").replace(/\s+/g, " ").trim(); }
+  function sayCommand(title, fields) {
+    var cmd = "&{template:default} {{name=" + sanitizeField(title) + "}}";
+    (fields || []).forEach(function (f) {
+      if (!f) return;
+      var k = sanitizeField(f[0]) || "·";
+      var v = sanitizeField(f[1]);
+      if (v) cmd += " {{" + k + "=" + v + "}}";
+    });
+    return cmd;
+  }
   function findChatInput(doc) {
     var sels = ["#textchat-input textarea", "[id*='textchat-input'] textarea",
                 "[id*='textchat'] textarea", "textarea#textchat-textarea", "textarea[name='chat']"];
@@ -299,6 +312,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
         if (!d || d.ns !== "jjk") return;
         if (d.type === "need-bridge") injectPageScript();
         else if (d.type === "roll") sendToChat(document, rollCommand(d.die, d.value, d.label));
+        else if (d.type === "say") sendToChat(document, sayCommand(d.title, d.fields));
       } catch (e) {}
     });
   } else {

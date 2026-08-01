@@ -53,6 +53,8 @@
   // (--jjk-compact) et jets envoyés au TCHAT Roll20 (au lieu du journal local).
   window.__jjkCompact = true;
   window.__jjkRoll = function (die, value, label) { post({ type: "roll", die: die, value: value, label: label }); };
+  // envoi d'un ÉLÉMENT de la fiche (technique, arme, avantage…) au tchat Roll20
+  window.__jjkSay = function (title, fields) { post({ type: "say", title: title, fields: fields }); };
 
   function scheduleSave() {
     if (saveTimer) clearTimeout(saveTimer);
