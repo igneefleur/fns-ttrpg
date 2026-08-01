@@ -84,15 +84,18 @@ class Amo:
 
 def _throttle_wait(r):
     """AMO limite la cadence des soumissions : sur un 429, renvoie le délai
-    d'attente annoncé (« Expected available in N seconds » / Retry-After),
-    borné à 7 min. Sinon None."""
+    d'attente ANNONCÉ (« Expected available in N seconds » / Retry-After).
+    Sinon None. Au-delà de 15 min, c'est un QUOTA (journalier) : inutile de
+    réessayer dans ce run, les appelants abandonnent immédiatement."""
     if r.status_code != 429:
         return None
     import re
     m = re.search(r"(\d+) seconds", r.text or "")
     ra = r.headers.get("Retry-After", "")
-    wait = int(ra) if ra.isdigit() else (int(m.group(1)) if m else 60)
-    return min(wait + 5, 420)
+    return (int(ra) if ra.isdigit() else (int(m.group(1)) if m else 60)) + 5
+
+
+QUOTA = 900   # au-delà : quota longue durée, on n'attend pas dans le run
 
 
 def upload_xpi(amo):
@@ -105,8 +108,11 @@ def upload_xpi(amo):
         w = _throttle_wait(r)
         if w is None:
             break
+        if w >= QUOTA:
+            sys.exit(f"AMO annonce {w} s d'attente (quota de soumissions épuisé) : "
+                     "réessayer quand la fenêtre sera retombée.")
         print(f"[signature] AMO limite la cadence : nouvel essai dans {w} s…")
-        time.sleep(w)
+        time.sleep(min(w, 420))
     if r.status_code not in (200, 201, 202):
         sys.exit(f"Téléversement refusé (HTTP {r.status_code}) : {r.text[:800]}")
     return r.json()["uuid"]
@@ -138,8 +144,11 @@ def _post_throttle(amo, path, **kw):
         w = _throttle_wait(r)
         if w is None:
             return r
+        if w >= QUOTA:
+            sys.exit(f"AMO annonce {w} s d'attente (quota de soumissions épuisé) : "
+                     "réessayer quand la fenêtre sera retombée.")
         print(f"[signature] AMO limite la cadence : nouvel essai dans {w} s…")
-        time.sleep(w)
+        time.sleep(min(w, 420))
     return r
 
 

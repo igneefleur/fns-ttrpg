@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - jjk
+  workflow_dispatch: {}   # relance manuelle (ex. quota AMO retombé)
 permissions:
   contents: write
 # Les trois branches (main, beta, jjk) écrivent sur la même branche gh-pages : un
