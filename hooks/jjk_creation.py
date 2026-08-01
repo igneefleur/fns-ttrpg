@@ -71,13 +71,16 @@ def _table_rows(text, header_re):
 
 
 def _comps(defs):
-    """Listes de compétences (« Nage, apnée, … ») -> {carac: [noms]}."""
+    """Listes de compétences (« Nage, apnée, … ») -> {carac: [noms]}.
+
+    Les noms commencent toujours par une MAJUSCULE (« apnée » -> « Apnée »),
+    quelle que soit la casse de la page de règles."""
     out = {}
     for carac in CARACS:
         body = defs.get(carac, "")
         body = re.sub(r"[…]|\.\.\.\s*$", "", body).rstrip(". ")
         noms = [n.strip() for n in body.split(",") if n.strip()]
-        out[carac] = noms
+        out[carac] = [n[0].upper() + n[1:] for n in noms]
     return out
 
 

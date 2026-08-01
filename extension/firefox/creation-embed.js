@@ -66,6 +66,8 @@
   function num(v, d) { var n = parseInt(v, 10); return isNaN(n) ? d : n; }
   function nowStamp() { return new Date().toISOString(); }
   function sign(n) { return n >= 0 ? "+" + n : String(n).replace("-", "−"); }
+  // les compétences commencent toujours par une majuscule (« apnée » -> « Apnée »)
+  function capFirst(t) { t = String(t == null ? "" : t); return t ? t.charAt(0).toUpperCase() + t.slice(1) : t; }
 
   // ---------- état ----------
   function blank() {
@@ -106,9 +108,11 @@
     }
     s.avantages = objArray(s.avantages);
     s.customComps = objArray(s.customComps);
+    s.customComps.forEach(function (cc) { if (cc.name) cc.name = capFirst(cc.name); });
     s.armes = objArray(s.armes);
     s.armures = objArray(s.armures);
     if (typeof s.comps !== "object" || !s.comps) s.comps = {};
+    var comps = {};
     Object.keys(s.comps).forEach(function (k) {
       var c = s.comps[k];
       if (!c || typeof c !== "object") c = {};
@@ -117,8 +121,11 @@
       if (!Array.isArray(c.techniques)) c.techniques = Array.isArray(c.passifs) ? c.passifs : [];
       delete c.passifs;
       c.techniques = c.techniques.map(function (p) { return p == null ? "" : String(p); });
-      s.comps[k] = c;
+      // migration : noms de compétences capitalisés (« Body/apnée » -> « Body/Apnée »)
+      var i = k.indexOf("/");
+      comps[i > 0 ? k.slice(0, i + 1) + capFirst(k.slice(i + 1)) : k] = c;
     });
+    s.comps = comps;
     s.xpTotal = Math.max(0, num(s.xpTotal, XP_CREATION));
     s.narration = clamp(num(s.narration, 3), 0, 99);
     s.pv = (s.pv === null || s.pv === undefined || s.pv === "") ? null : parseFloat(s.pv);
@@ -834,7 +841,7 @@
       inp.type = "text"; inp.placeholder = "Nouvelle compétence " + carac + "…";
       addRow.appendChild(inp);
       addRow.appendChild(miniBtn("+", "Ajouter", function () {
-        var name = inp.value.trim();
+        var name = capFirst(inp.value.trim());
         if (!name) return;
         var exists = allComps().some(function (it) { return it.carac === carac && it.name.toLowerCase() === name.toLowerCase(); });
         if (exists) { flash("Cette compétence existe déjà."); return; }
