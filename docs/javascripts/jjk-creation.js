@@ -16,7 +16,8 @@
  *   - 500 xp à la création (total modifiable) ; 20 xp par stade de compétence
  *     (Non initié, Initié, Maitre, Expert, Artiste), 20 xp par +5 de
  *     caractéristique (limite 80 sans avantage) ; dès le stade Expert, 20 xp
- *     par technique ; dès le stade Artiste, un art par compétence (sans coût) ;
+ *     par technique ; le stade Artiste (sans bonus propre) ouvre un art par
+ *     compétence, couvert par les 20 xp du stade, et offre une technique ;
  *   - pas plus d'un quart de l'xp total investi dans une seule compétence ;
  *   - PV max = (20 + Body) / 2 ; récupération Body/10 PV par jour ;
  *   - jet = 1d100 + caractéristique (+ bonus de stade pour une compétence) ;
@@ -214,7 +215,15 @@
   function stadeInfo(i) { return DATA.stades[clamp(i, 0, DATA.stades.length - 1)]; }
   function compXp(c) {
     var xp = DATA.xpParStade * c.stade;
-    if (stadeInfo(c.stade).techniques) xp += DATA.xpParStade * c.techniques.length;
+    if (stadeInfo(c.stade).techniques) {
+      // chaque stade atteint qui offre une technique en rend une gratuite
+      // (Artiste : « vous obtenez une technique gratuite »)
+      var offertes = 0;
+      for (var i = 0; i <= c.stade && i < DATA.stades.length; i++) {
+        if (DATA.stades[i].techniqueOfferte) offertes++;
+      }
+      xp += DATA.xpParStade * Math.max(0, c.techniques.length - offertes);
+    }
     return xp;
   }
   function compCap() { return Math.floor(state.xpTotal / QUART); }
@@ -904,11 +913,14 @@
         card.appendChild(d);
         tech.appendChild(card);
       });
-      tech.appendChild(miniBtn("+ technique (" + DATA.xpParStade + " xp)", null, function () {
+      // le coût affiché suit la prochaine technique : gratuite si un stade
+      // atteint en offre encore une, sinon le tarif normal
+      var prochaine = compXp({ stade: c.stade, techniques: c.techniques.concat([{ name: "", desc: "" }]) }) - compXp(c);
+      tech.appendChild(miniBtn("+ technique (" + (prochaine ? prochaine + " xp" : "gratuite") + ")", null, function () {
         var test = { stade: c.stade, techniques: c.techniques.concat([{ name: "", desc: "" }]) };
         var delta = compXp(test) - compXp(c);
         if (delta > 0 && xpRestant() < delta) { flash("XP insuffisant."); return; }
-        if (compXp(test) > compCap()) { flash("Pas plus d'un quart de l'xp total (" + compCap() + " xp) dans une seule compétence."); return; }
+        if (delta > 0 && compXp(test) > compCap()) { flash("Pas plus d'un quart de l'xp total (" + compCap() + " xp) dans une seule compétence."); return; }
         c.techniques.push({ name: "", desc: "" }); state.comps[item.key] = c; refresh(); renderTechs();
       }));
     }
