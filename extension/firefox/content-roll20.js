@@ -199,11 +199,15 @@ if (typeof browser === "undefined") { var browser = chrome; }
   }
 
   // ---------- pose de l'onglet dans la barre d'onglets du dialogue ----------
-  function labelEls(label) {
-    var want = norm(label);
+  // labels : un libellé ou une liste — l'interface Roll20 est LOCALISÉE selon le
+  // compte (« Feuille de personnage » en français, « Character Sheet » en
+  // anglais…) : on accepte toutes les variantes connues, sinon l'onglet
+  // n'apparaît que pour les comptes en français.
+  function labelEls(labels) {
+    var wants = (Array.isArray(labels) ? labels : [labels]).map(norm);
     var nodes = document.querySelectorAll("a, span, li");
     var raw = [];
-    for (var i = 0; i < nodes.length; i++) if (norm(nodes[i].textContent) === want) raw.push(nodes[i]);
+    for (var i = 0; i < nodes.length; i++) if (wants.indexOf(norm(nodes[i].textContent)) >= 0) raw.push(nodes[i]);
     return raw.filter(function (n) { return !raw.some(function (m) { return m !== n && n.contains(m); }); });
   }
   function siblingItems(a, b) {
@@ -221,8 +225,8 @@ if (typeof browser === "undefined") { var browser = chrome; }
 
   function placeTabs() {
     var placed = 0;
-    labelEls("Feuille de personnage").forEach(function (feuille) {
-      var bios = labelEls("Bio & Info");
+    labelEls(["Feuille de personnage", "Character Sheet"]).forEach(function (feuille) {
+      var bios = labelEls(["Bio & Info", "Bio and Info"]);
       var items = null;
       for (var i = 0; i < bios.length && !items; i++) {
         var it = siblingItems(feuille, bios[i]);
