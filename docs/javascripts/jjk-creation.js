@@ -268,13 +268,33 @@
     if (isCheck && d.n === 1 && d.faces === 100) {
       if (dice[0] >= 96) {
         total = 100 + d.plus + value;
-        det = "coup critique, le dé devient 100 — +1 point de narration";
+        det = "coup critique — le dé devient 100";
       } else if (dice[0] <= 5) {
         total = 0 + d.plus + value;
-        det = "échec critique, le dé devient 0 — +1 point de narration au MJ";
+        det = "échec critique — le dé devient 0";
       }
     }
     flash(label + " : " + total + " (" + det + ")");
+  }
+
+  // ---------- envoi d'un élément au tchat ----------
+  // Dans Roll20, l'élément part au TCHAT en carte (creator-boot pose __jjkSay) ;
+  // sur le site, il s'affiche en toast. fields : [[libellé, valeur], …],
+  // les valeurs vides sont ignorées.
+  function sayChat(title, fields) {
+    var clean = (fields || []).filter(function (f) { return f && String(f[1] || "").trim(); });
+    if (typeof window !== "undefined" && typeof window.__jjkSay === "function") {
+      window.__jjkSay(title, clean);
+      return;
+    }
+    flash(title + (clean.length
+      ? " — " + clean.map(function (f) { return f[0] + " : " + f[1]; }).join(" · ")
+      : ""));
+  }
+  function chatBtn(getTitle, getFields) {
+    return miniBtn("Chat", "Envoyer dans le tchat Roll20", function () {
+      sayChat(getTitle(), getFields());
+    });
   }
 
   // ---------- refresh ----------
@@ -612,9 +632,7 @@
       var chip = el("span", "pc-abbr", ABBR[name] || name);
       chip.title = name;
       top.appendChild(chip);
-      var nm = el("span", "nm", c.desc);
-      nm.title = c.desc;
-      top.appendChild(nm);
+      top.appendChild(el("span", "nm", name));
       var val = el("span", "pc-cval pc-rollable", "");
       val.title = "Lancer 1d100 + " + name;
       val.addEventListener("click", function () { doRoll(name, caracTotal(name), null, true); });
@@ -782,6 +800,9 @@
         inp.type = "text"; inp.placeholder = "Technique"; inp.value = p;
         inp.addEventListener("input", function () { c.techniques[i] = inp.value; state.comps[item.key] = c; save(); });
         line.appendChild(inp);
+        line.appendChild(chatBtn(
+          function () { return "Technique — " + item.name; },
+          function () { return [["Technique", comp().techniques[i]]]; }));
         line.appendChild(miniBtn("✕", "Retirer cette technique", function () {
           c.techniques.splice(i, 1); state.comps[item.key] = c; refresh(); renderTechs();
         }, "danger"));
@@ -954,16 +975,23 @@
         nm.value = it.nom || "";
         nm.addEventListener("input", function () { it.nom = nm.value; save(); });
         head.appendChild(nm);
+        head.appendChild(chatBtn(
+          function () { return (kind === "arme" ? "Arme — " : "Armure — ") + (it.nom || (kind === "arme" ? "arme" : "armure")); },
+          function () {
+            return kind === "arme"
+              ? [["Poids", it.poids], ["Dégâts", it.degats], ["Reach", it.reach], ["Propriétés", it.props]]
+              : [["Poids", it.poids], ["Invu", it.invu], ["Zones protégées", it.zones]];
+          }));
         head.appendChild(miniBtn("✕", "Retirer", function () { items.splice(idx, 1); render(); refresh(); }, "danger"));
         card.appendChild(head);
 
         var line = el("div", "pc-arme-line");
         line.appendChild(eqField("Poids", it, "poids"));
         if (kind === "arme") {
-          line.appendChild(eqField("Dégâts (5D10)", it, "degats"));
+          line.appendChild(eqField("Dégâts", it, "degats"));
           line.appendChild(eqField("Reach", it, "reach"));
         } else {
-          line.appendChild(eqField("Invu (5D8)", it, "invu"));
+          line.appendChild(eqField("Invu", it, "invu"));
         }
         var chip = el("span", "pc-roll-chip", "Jet");
         chip.title = kind === "arme" ? "Lancer les dégâts" : "Lancer l'invu";
@@ -1010,7 +1038,7 @@
     var boxB = el("div");
     bB.appendChild(boxB);
     eqCards(boxB, state.armures, "armure");
-    right.appendChild(bB);
+    left.appendChild(bB);
 
     var bI = block("Inventaire");
     var inv = el("textarea", "pc-notes");
@@ -1035,16 +1063,23 @@
     var g = el("div", "pc-id");
     var defIn = el("textarea", "pc-notes");
     defIn.rows = 3;
-    defIn.placeholder = "« Je me perds tout le temps comme Zoro »";
     defIn.value = state.defaut || "";
     defIn.addEventListener("input", function () { state.defaut = defIn.value; save(); });
-    g.appendChild(fld("Défaut (comique)", defIn, "c12"));
+    var defFld = fld("Défaut", defIn, "c12");
+    defFld.appendChild(chatBtn(
+      function () { return "Défaut" + (state.name ? " — " + state.name : ""); },
+      function () { return [["Défaut", state.defaut]]; }));
+    g.appendChild(defFld);
     [0, 1].forEach(function (qi) {
       var qIn = el("textarea", "pc-notes");
       qIn.rows = 3;
       qIn.value = state.qualites[qi] || "";
       qIn.addEventListener("input", function () { state.qualites[qi] = qIn.value; save(); });
-      g.appendChild(fld("Qualité " + (qi + 1), qIn, "c6"));
+      var qFld = fld("Qualité " + (qi + 1), qIn, "c6");
+      qFld.appendChild(chatBtn(
+        function () { return "Qualité " + (qi + 1) + (state.name ? " — " + state.name : ""); },
+        function () { return [["Qualité", state.qualites[qi]]]; }));
+      g.appendChild(qFld);
     });
     bP.appendChild(g);
     left.appendChild(bP);
@@ -1061,6 +1096,9 @@
         n.type = "text"; n.placeholder = "Nom"; n.value = a.name || "";
         n.addEventListener("input", function () { a.name = n.value; save(); });
         head.appendChild(n);
+        head.appendChild(chatBtn(
+          function () { return "Avantage — " + (a.name || "sans nom"); },
+          function () { return [["Effet", a.desc]]; }));
         head.appendChild(miniBtn("✕", "Retirer", function () { state.avantages.splice(i, 1); renderAv(); refresh(); }, "danger"));
         card.appendChild(head);
         var d = el("textarea", "pc-notes");
