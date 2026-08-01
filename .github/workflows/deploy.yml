@@ -48,7 +48,10 @@ jobs:
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add -A
             git commit -m "CI : extension re-signée automatiquement [skip ci]"
-            git push || (git pull --rebase && git push)
+            # si la branche a avancé pendant le run : rebaser en préférant NOS
+            # artefacts (les binaires fraîchement signés), sinon le rebase
+            # échoue sur les archives et la version signée reste orpheline
+            git push || (git pull --rebase -X theirs && git push)
           fi
       # Un seul site GitHub Pages (branche gh-pages), trois emplacements :
       #   main -> racine   https://igneefleur.github.io/HxH-Regles-JDR/

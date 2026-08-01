@@ -63,6 +63,32 @@ def stamp_version(version):
         p.write_text(json.dumps(m, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
+def parse_ver(v):
+    try:
+        return tuple(int(x) for x in str(v).split("."))
+    except (TypeError, ValueError):
+        return (0,)
+
+
+def amo_latest(guid, issuer, secret):
+    """Dernière version connue d'AMO (canaux confondus), ou None.
+
+    Indispensable après un run interrompu : une version peut avoir été signée
+    chez Mozilla SANS avoir jamais été recommittée ici (course de pushes,
+    commit de retour refusé). La re-proposer ferait échouer tout le pipeline
+    (« version already exists ») ; on repart donc toujours du maximum entre
+    l'empreinte locale et ce qu'AMO connaît déjà."""
+    try:
+        amo = sign_extension.Amo(issuer, secret)
+        r = amo.get(f"/addons/addon/{guid}/versions/?filter=all_with_unlisted&page_size=10")
+        if r.status_code != 200:
+            return None
+        vs = [x.get("version") for x in r.json().get("results", []) if x.get("version")]
+        return max(vs, key=parse_ver) if vs else None
+    except Exception:
+        return None
+
+
 def main():
     # 1. fichiers générés à jour (sans empaqueter : les archives gardent
     #    leur version committée — la SIGNÉE — si rien n'a changé)
@@ -90,8 +116,14 @@ def main():
                  "ajouter les secrets AMO_JWT_ISSUER et AMO_JWT_SECRET au dépôt "
                  "(Settings -> Secrets and variables -> Actions).")
 
-    new_version = bump_version(state.get("version", "1.0.0"))
-    print(f"[ci-extension] contenu modifié : v{state.get('version', '1.0.0')} -> v{new_version}, "
+    base = state.get("version", "1.0.0")
+    guid = json.loads(MANIFESTS[0].read_text(encoding="utf-8"))["browser_specific_settings"]["gecko"]["id"]
+    remote = amo_latest(guid, issuer, secret)
+    if remote and parse_ver(remote) > parse_ver(base):
+        print(f"[ci-extension] AMO connaît déjà v{remote} (run précédent interrompu) : on repart de là")
+        base = remote
+    new_version = bump_version(base)
+    print(f"[ci-extension] contenu modifié : v{base} -> v{new_version}, "
           "empaquetage + signature Mozilla…")
     stamp_version(new_version)
     build_extension.build()
