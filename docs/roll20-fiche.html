@@ -17,7 +17,7 @@
        monter ensemble — sinon un JS/CSS en cache navigateur peut cohabiter
        ~10 min (max-age de GitHub Pages) avec un jjk-creation.json tout frais. -->
   <link rel="stylesheet" href="stylesheets/fonts.css">
-  <link rel="stylesheet" href="stylesheets/jjk-creation.css?v=11">
+  <link rel="stylesheet" href="stylesheets/jjk-creation.css?v=12">
   <style>
     /* Appoint iframe Roll20 (repris de l'ancien creator.css de l'extension).
        Le site fige la racine de la page Création à 22 px ; ici la page est un
@@ -43,8 +43,7 @@
        site (point de bascule remonté à 60em : un dialogue Roll20 est plus
        étroit qu'une fenêtre de navigateur). */
     @media (max-width: 60em) {
-      .pc-cols2 { grid-template-columns: 1fr !important; }
-      .pc-comp-cols { flex-direction: column !important; align-items: stretch !important; }
+      .pc-cols2, .pc-cols-fiche { grid-template-columns: 1fr !important; }
       .pc-arts { grid-template-columns: 1fr !important; }
       .pc-id { grid-template-columns: repeat(6, minmax(0, 1fr)) !important; }
       .pc-obj-wrap { flex-direction: column; align-items: stretch; }
@@ -64,6 +63,6 @@
   <div id="jjk-roll20-note">Connexion à Roll20…</div>
   <div id="perso-atelier"><noscript>La fiche a besoin de JavaScript.</noscript></div>
   <script src="javascripts/jjk-attr-map.js?v=2"></script>
-  <script src="javascripts/jjk-roll20-boot.js?v=3"></script>
+  <script src="javascripts/jjk-roll20-boot.js?v=4"></script>
 </body>
 </html>
