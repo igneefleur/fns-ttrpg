@@ -3,7 +3,7 @@
     "jjk-roll20@igneefleur": {
       "updates": [
         {
-          "version": "1.0.4",
+          "version": "1.0.5",
           "update_link": "https://igneefleur.github.io/HxH-Regles-JDR/jjk/download/jjk-roll20-firefox.xpi",
           "browser_specific_settings": {
             "gecko": {
