@@ -6,6 +6,13 @@ on:
       - beta
 permissions:
   contents: write
+# Les trois branches (main, beta, jjk) écrivent sur la même branche gh-pages : un
+# groupe de concurrence commun (partagé entre workflows du dépôt) sérialise leurs
+# déploiements, et force: false fait rebaser l'action (avec réessais) au lieu de
+# force-pusser, pour qu'un run ne puisse pas écraser le travail d'un autre.
+concurrency:
+  group: gh-pages
+  cancel-in-progress: false
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -50,21 +57,25 @@ jobs:
           NO_MKDOCS_2_WARNING: "1"   # coupe l'encadré promo « MkDocs 2.0 » de Material dans les logs
         run: mkdocs build --config-file mkdocs.ci.yml
 
-      # Un seul site GitHub Pages (branche gh-pages), deux emplacements :
+      # Un seul site GitHub Pages (branche gh-pages), trois emplacements :
       #   main -> racine   https://igneefleur.github.io/HxH-Regles-JDR/
       #   beta -> beta/    https://igneefleur.github.io/HxH-Regles-JDR/beta/
+      #   jjk  -> jjk/     https://igneefleur.github.io/HxH-Regles-JDR/jjk/
+      #     (déployé par la branche jjk, qui porte son propre deploy.yml)
       # On n'utilise plus « mkdocs gh-deploy --force », qui écraserait toute la
-      # branche gh-pages (beta/ comprise) à chaque déploiement : l'action nettoie
-      # sa zone et épargne l'autre.
-      - name: Déploiement officiel (main -> racine, beta/ épargné)
+      # branche gh-pages (beta/ et jjk/ compris) à chaque déploiement : l'action
+      # nettoie sa zone et épargne les autres.
+      - name: Déploiement officiel (main -> racine, beta/ et jjk/ épargnés)
         if: github.ref == 'refs/heads/main'
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: site
           branch: gh-pages
           clean: true
+          force: false
           clean-exclude: |
             beta
+            jjk
       - name: Déploiement beta (beta -> beta/)
         if: github.ref == 'refs/heads/beta'
         uses: JamesIves/github-pages-deploy-action@v4
@@ -73,3 +84,4 @@ jobs:
           branch: gh-pages
           target-folder: beta
           clean: true
+          force: false
