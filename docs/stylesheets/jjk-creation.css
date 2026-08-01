@@ -304,41 +304,7 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 }
 .pc-roll-chip:hover { border-color: var(--red); color: var(--red); background: var(--wash); }
 
-/* ---- inventaire : liste (nom / poids / qté), lignes réordonnables ---- */
-.pc-inv-row { display: flex; align-items: center; gap: .3rem; padding: .08rem 0; }
-.pc-inv-row.hdr { padding-bottom: .12rem; border-bottom: 1px solid var(--hair); margin-bottom: .1rem; }
-.pc-inv-row.hdr .h { font-size: .5rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); }
-.pc-inv-row.hdr .h.n { text-align: right; }
-.pc-inv-row.drag { opacity: .3; }
-.pc-inv-row.over-top { box-shadow: 0 -2px 0 var(--red); }
-.pc-inv-row.over-bot { box-shadow: 0 2px 0 var(--red); }
-.pc-inv-row > :nth-child(1) { flex: 0 0 .85rem; text-align: center; }
-.pc-inv-row > :nth-child(2) { flex: 0 0 .8rem; }
-.pc-inv-row > :nth-child(3) { flex: 1 1 auto; min-width: 0; }
-.pc-inv-row > :nth-child(4) { flex: 0 0 2.8rem; }
-.pc-inv-row > :nth-child(5) { flex: 0 0 2rem; }
-.pc-inv-row > :nth-child(6) { flex: 0 0 1.15rem; }
-.pc-inv-handle { cursor: grab; color: var(--line); font-size: .6rem; user-select: none; }
-.pc-inv-handle:hover { color: var(--red); }
-.pc-inv-handle:active { cursor: grabbing; }
-.pc-inv-tog {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: .74rem; height: .74rem; border: 1px solid var(--line-2); border-radius: 4px;
-  background: var(--card); cursor: pointer; transition: .12s;
-}
-.pc-inv-tog.on { border-color: var(--ok); }
-.pc-inv-tog.on::after { content: '✓'; color: var(--ok); font-size: .56rem; line-height: 1; }
-.pc-inv-tog:not(.on) { opacity: .45; }
-.pc-inv-row input.nm, .pc-inv-row input.n {
-  border: none; border-bottom: 1px solid var(--hair); background: transparent;
-  color: var(--ink); font: inherit; font-size: .7rem; padding: .02rem .1rem .06rem;
-  min-width: 0; width: 100%; border-radius: 0;
-}
-.pc-inv-row input.n { text-align: right; font-variant-numeric: tabular-nums; -moz-appearance: textfield; appearance: textfield; }
-.pc-inv-row input.n::-webkit-inner-spin-button, .pc-inv-row input.n::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-.pc-inv-row input.nm:focus, .pc-inv-row input.n:focus { outline: none; border-bottom: 2px solid var(--red); }
-.pc-inv-row .pc-mini.pc-inv-del { box-sizing: border-box; width: 1.15rem; padding: .04rem 0; text-align: center; font-size: .6rem; }
-.pc-mini.pc-inv-add { display: block; width: 100%; margin-top: .35rem; border-style: dashed; background: transparent; }
+/* ---- inventaire : total du poids ---- */
 .pc-inv-total { text-align: right; font-size: .58rem; color: var(--ink-3); margin-top: .3rem; font-variant-numeric: tabular-nums; }
 
 /* ---- inventaire : objets illustrés (tuiles par groupes + panneau) ---- */
