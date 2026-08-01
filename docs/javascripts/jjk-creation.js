@@ -173,7 +173,7 @@
   function blankComp() { return { stade: 0, techniques: [] }; }
   function allComps() {
     var out = [];
-    ["Body", "Mind", "Prestance"].forEach(function (c) {
+    ["Mind", "Body", "Prestance"].forEach(function (c) {
       (DATA.comps[c] || []).forEach(function (n) { out.push({ key: c + "/" + n, name: n, carac: c, custom: false }); });
     });
     state.customComps.forEach(function (cc) {
@@ -815,7 +815,7 @@
     compHooks = [];   // les lignes vont être détruites : leurs hooks avec
     compBox.innerHTML = "";
     var flt = compFilter.trim().toLowerCase();
-    ["Body", "Mind", "Prestance"].forEach(function (carac) {
+    ["Mind", "Body", "Prestance"].forEach(function (carac) {
       var items = allComps().filter(function (it) { return it.carac === carac; });
       if (flt) items = items.filter(function (it) { return it.name.toLowerCase().indexOf(flt) >= 0; });
       var champ = el("div", "pc-comp-champ", carac);
