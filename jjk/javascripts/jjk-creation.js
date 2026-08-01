@@ -23,8 +23,9 @@
  * calculées, _current = brouillon), « jjk-persos » (bibliothèque). Clés
  * préfixées jjk- : le site partage son origine avec le site HxH.
  *
- * Dans Roll20 (iframe de l'extension), creator-boot.js pose :
- *   - window.__jjkLocalStorage : persistance -> Attributes Roll20 ;
+ * Dans Roll20 (l'extension affiche roll20-fiche.html, servie par CE site),
+ * javascripts/jjk-roll20-boot.js pose AVANT ce script :
+ *   - window.__jjkLocalStorage : persistance -> Attributes Roll20 (via STORE) ;
  *   - window.__jjkRoll : les jets partent dans le tchat Roll20 ;
  *   - window.__jjkCompact : masque la barre d'outils et la bibliothèque.
  */
@@ -32,6 +33,12 @@
   "use strict";
 
   var COMPACT = typeof window !== "undefined" && window.__jjkCompact === true;
+  // Persistance : le localStorage du navigateur sur le site ; dans Roll20, la
+  // page d'amorce pose window.__jjkLocalStorage (shim -> Attributes Roll20)
+  // avant ce script. Les appels sont tous sous try/catch : STORE peut être nul
+  // (stockage refusé par le navigateur) sans casser la fiche.
+  var STORE = (typeof window !== "undefined" && window.__jjkLocalStorage) ||
+              (function () { try { return window.localStorage; } catch (e) { return null; } })();
   var DATA = null;
   var state = null;
 
@@ -203,7 +210,7 @@
   // ---------- persistance ----------
   var saveWarned = false;   // l'échec d'enregistrement n'est signalé qu'une fois
   function save() {
-    try { localStorage.setItem("jjk-perso", JSON.stringify(state)); }
+    try { STORE.setItem("jjk-perso", JSON.stringify(state)); }
     catch (e) {
       if (!saveWarned) {
         saveWarned = true;
@@ -211,26 +218,26 @@
       }
     }
     var cards;
-    try { cards = JSON.parse(localStorage.getItem("jjk-cards")) || {}; } catch (e) { cards = {}; }
+    try { cards = JSON.parse(STORE.getItem("jjk-cards")) || {}; } catch (e) { cards = {}; }
     var card = computeCard();
     card.id = "_current";
     cards._current = card;
-    try { localStorage.setItem("jjk-cards", JSON.stringify(cards)); } catch (e) {}
+    try { STORE.setItem("jjk-cards", JSON.stringify(cards)); } catch (e) {}
   }
   function load() {
-    try { return normalize(JSON.parse(localStorage.getItem("jjk-perso"))); }
+    try { return normalize(JSON.parse(STORE.getItem("jjk-perso"))); }
     catch (e) { return null; }
   }
-  function curTab() { try { return localStorage.getItem("jjk-tab") || "fiche"; } catch (e) { return "fiche"; } }
-  function setTab(id) { try { localStorage.setItem("jjk-tab", id); } catch (e) {} }
+  function curTab() { try { return STORE.getItem("jjk-tab") || "fiche"; } catch (e) { return "fiche"; } }
+  function setTab(id) { try { STORE.setItem("jjk-tab", id); } catch (e) {} }
 
   // bibliothèque (site seulement : dans Roll20, une fiche par personnage)
   var PKEY = "jjk-persos";
-  function loadPersos() { try { var a = JSON.parse(localStorage.getItem(PKEY)); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+  function loadPersos() { try { var a = JSON.parse(STORE.getItem(PKEY)); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
   function savePersos(a) {
-    try { localStorage.setItem(PKEY, JSON.stringify(a)); } catch (e) {}
+    try { STORE.setItem(PKEY, JSON.stringify(a)); } catch (e) {}
     var cards;
-    try { cards = JSON.parse(localStorage.getItem("jjk-cards")) || {}; } catch (e) { cards = {}; }
+    try { cards = JSON.parse(STORE.getItem("jjk-cards")) || {}; } catch (e) { cards = {}; }
     var keep = { _current: cards._current };
     a.forEach(function (p) {
       var saved = state, cur;
@@ -242,11 +249,12 @@
       }
       state = saved;
     });
-    try { localStorage.setItem("jjk-cards", JSON.stringify(keep)); } catch (e) {}
+    try { STORE.setItem("jjk-cards", JSON.stringify(keep)); } catch (e) {}
   }
 
   // ---------- jets ----------
-  // Les dés se jettent dans Roll20 : creator-boot.js pose window.__jjkRoll et le
+  // Les dés se jettent dans Roll20 : jjk-roll20-boot.js (amorce Roll20 servie
+  // par le site) pose window.__jjkRoll et le
   // jet part au TCHAT. Sur le site (pas de Roll20), un clic lance quand même le
   // dé et montre le résultat dans un toast discret — aucun panneau de jets.
   function parseDice(expr) {
@@ -284,7 +292,7 @@
   }
 
   // ---------- envoi d'un élément au tchat ----------
-  // Dans Roll20, l'élément part au TCHAT en carte (creator-boot pose __jjkSay) ;
+  // Dans Roll20, l'élément part au TCHAT en carte (jjk-roll20-boot.js pose __jjkSay) ;
   // sur le site, il s'affiche en toast. fields : [[libellé, valeur], …],
   // les valeurs vides sont ignorées.
   function sayChat(title, fields) {
