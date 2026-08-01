@@ -56,6 +56,41 @@
 
   function post(msg) { msg.ns = "jjk"; msg.charId = CHAR_ID; try { window.top.postMessage(msg, "*"); } catch (e) {} }
 
+  // ---------- mode jour / nuit ----------
+  // Le CSS nuit existe déjà (jjk-creation.css : html.night .perso-atelier) ; ici
+  // on ne fait que poser la classe. Préférence locale à CE navigateur (vrai
+  // localStorage de la page, pas le shim) : "1" nuit, "0" jour, absente = auto.
+  // L'extension ne doit JAMAIS être modifiée (zéro re-signature) : impossible
+  // donc de lire le réglage sombre interne de Roll20. L'« auto » suit le mode
+  // sombre du NAVIGATEUR (prefers-color-scheme), toujours côté site.
+  // L'onglet Options de la fiche expose ce réglage via window.__jjkNight.
+  var NIGHT_KEY = "jjk-r20-night";
+  var NIGHT_HINT = (function () {
+    try { return !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches); }
+    catch (e) { return false; }
+  })();
+  function nightPref() {
+    try { var v = localStorage.getItem(NIGHT_KEY); return v === "1" || v === "0" ? v : "auto"; }
+    catch (e) { return "auto"; }
+  }
+  function applyNight() {
+    var p = nightPref();
+    var on = p === "1" || (p === "auto" && NIGHT_HINT === true);
+    document.documentElement.classList.toggle("night", on);
+  }
+  window.__jjkNight = {
+    pref: nightPref,          // "auto" | "0" (jour) | "1" (nuit)
+    auto: NIGHT_HINT,         // ce que donne l'« auto » (mode sombre du navigateur)
+    set: function (v) {
+      try {
+        if (v === "1" || v === "0") localStorage.setItem(NIGHT_KEY, v);
+        else localStorage.removeItem(NIGHT_KEY);
+      } catch (e) {}
+      applyNight();
+    }
+  };
+  applyNight();
+
   // Signale à jjk-creation.js qu'on est dans Roll20 : affichage condensé
   // « fiche » et jets envoyés au TCHAT Roll20 (au lieu du journal local).
   window.__jjkCompact = true;
@@ -110,7 +145,7 @@
     // charger le vrai jjk-creation.js APRÈS hydratation (son init lit jjk-perso).
     // ?v= : MÊME numéro que mkdocs.yml (extra_javascript), à monter ensemble.
     var s = document.createElement("script");
-    s.src = "javascripts/jjk-creation.js?v=19";
+    s.src = "javascripts/jjk-creation.js?v=20";
     s.onload = function () { ready = true; post({ type: "mounted" }); };
     s.onerror = function () { post({ type: "error", error: "jjk-creation.js" }); };
     document.body.appendChild(s);

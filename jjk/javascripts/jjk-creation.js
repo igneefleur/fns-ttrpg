@@ -1738,6 +1738,25 @@
     });
     colA.appendChild(bM);
 
+    // ---- affichage (fiche dans Roll20 seulement) ----
+    // window.__jjkNight n'existe que sous roll20-fiche.html (posé par
+    // jjk-roll20-boot.js) : sur le site, le bouton d'en-tête gère déjà la nuit.
+    // Préférence locale au navigateur (pas dans l'état : réglage d'affichage,
+    // pas de personnage) ; "auto" suit le mode sombre du navigateur.
+    if (window.__jjkNight) {
+      var bAff = block("Affichage");
+      var mode = el("select", "pc-select");
+      [["auto", "Selon le navigateur"], ["0", "Jour"], ["1", "Nuit"]].forEach(function (o) {
+        var op = el("option", null, o[1]);
+        op.value = o[0];
+        mode.appendChild(op);
+      });
+      mode.value = window.__jjkNight.pref();
+      mode.addEventListener("change", function () { window.__jjkNight.set(mode.value); });
+      bAff.appendChild(fld("Mode par défaut", mode));
+      colB.appendChild(bAff);
+    }
+
     // ---- actions sur la fiche (exporter / importer / réinitialiser) ----
     var bAct = block("Fiche");
     var act = el("div", "pc-opt-actions");
