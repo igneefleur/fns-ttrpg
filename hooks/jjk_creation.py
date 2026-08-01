@@ -103,8 +103,12 @@ def _stades(defs):
         # qui surgirait dans « l'art de… » d'une autre définition)
         techniques = techniques or "technique" in body.lower()
         art = art or re.search(r"développer (?:un|des|son) arts?\b", body, re.I) is not None
+        # « une technique gratuite » : ce stade en offre une (propriété du stade,
+        # le créateur cumule les offertes des stades atteints)
         out.append({"nom": nom, "bonus": bonus,
-                    "techniques": techniques, "art": art, "desc": body})
+                    "techniques": techniques, "art": art,
+                    "techniqueOfferte": "technique gratuite" in body.lower(),
+                    "desc": body})
     return out
 
 

@@ -100,7 +100,7 @@ Pour chaque compétence il existe 5 stades ; pour passer d'un stade à l'autre, 
 
 **Expert :** Bonus de +30. Dès ce stade, vous pouvez dépenser à répétition 20 xp pour ajouter des techniques originales ou des propriétés spécifiques à cette compétence, qui personnalisent votre façon d'approcher cette discipline.
 
-**Artiste :** Bonus de +40. Dès ce stade, vous pouvez développer un art dans cette compétence.
+**Artiste :** Dès ce stade, vous pouvez développer un art dans cette compétence, et vous obtenez une technique gratuite.
 
 </div>
 
