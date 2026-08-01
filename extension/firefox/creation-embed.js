@@ -239,8 +239,9 @@
   }
 
   // ---------- jets ----------
-  var rollHistory = [];
-  var rollPanel = null;
+  // Les dés se jettent dans Roll20 : creator-boot.js pose window.__jjkRoll et le
+  // jet part au TCHAT. Sur le site (pas de Roll20), un clic lance quand même le
+  // dé et montre le résultat dans un toast discret — aucun panneau de jets.
   function parseDice(expr) {
     var m = /^(\d{1,2})d(\d{1,4})([+-]\d{1,4})?$/i.exec(String(expr || "").replace(/\s/g, ""));
     if (!m) return null;   // expression illisible : doRoll prévient au lieu de lancer autre chose
@@ -258,9 +259,6 @@
   // d'équipement (dégâts, invu) restent des dés bruts.
   function doRoll(label, value, die, isCheck) {
     die = die || state.de || "1d100";
-    // Dans Roll20 (creator-boot.js pose window.__jjkRoll), le jet part dans le
-    // TCHAT Roll20 — Roll20 lance les dés, résultat visible de tous. Sur le
-    // site, __jjkRoll n'existe pas : jet local dans le journal.
     if (typeof window !== "undefined" && typeof window.__jjkRoll === "function") {
       window.__jjkRoll(die, value, label);
       return;
@@ -271,39 +269,22 @@
     for (var i = 0; i < d.n; i++) dice.push(1 + Math.floor(Math.random() * d.faces));
     var sum = dice.reduce(function (a, b) { return a + b; }, 0) + d.plus;
     var total = sum + value;
+    var det = "dé " + dice.join(" + ") + (value ? " " + (value >= 0 ? "+ " : "− ") + Math.abs(value) : "");
     // 96+ au dé : coup critique (le résultat au d100 devient 100) ; 5 ou moins :
     // échec critique (il devient 0). Les modificateurs (d.plus, valeur) restent.
-    var crit = null;
     if (isCheck && d.n === 1 && d.faces === 100) {
-      if (dice[0] >= 96) { crit = "crit"; total = 100 + d.plus + value; }
-      else if (dice[0] <= 5) { crit = "fumble"; total = 0 + d.plus + value; }
+      if (dice[0] >= 96) {
+        total = 100 + d.plus + value;
+        det = "coup critique, le dé devient 100 — +1 point de narration";
+      } else if (dice[0] <= 5) {
+        total = 0 + d.plus + value;
+        det = "échec critique, le dé devient 0 — +1 point de narration au MJ";
+      } else {
+        var pal = bestDifficulty(total);
+        if (pal) det += " · " + pal.nom;
+      }
     }
-    rollHistory.unshift({
-      label: label, dice: dice, sum: sum, value: value, total: total,
-      crit: crit, palier: (isCheck && d.n === 1 && d.faces === 100) ? bestDifficulty(total) : null
-    });
-    if (rollHistory.length > 30) rollHistory.pop();
-    renderRolls(true);
-  }
-  function renderRolls(open) {
-    if (!rollPanel) return;
-    var list = rollPanel.querySelector(".pc-rolls-list");
-    list.innerHTML = "";
-    if (open) rollPanel.classList.add("open");
-    rollHistory.forEach(function (r) {
-      var li = el("div", "pc-roll" + (r.crit === "crit" ? " crit" : r.crit === "fumble" ? " fumble" : ""));
-      var head = el("div", "pc-roll-head");
-      head.appendChild(el("span", "lbl", r.label));
-      head.appendChild(el("span", "tot", String(r.total)));
-      li.appendChild(head);
-      var det = "dé " + r.dice.join(" + ") + (r.value ? " " + (r.value >= 0 ? "+ " : "− ") + Math.abs(r.value) : "");
-      if (r.crit === "crit") det += " — coup critique (le dé devient 100), +1 point de narration";
-      if (r.crit === "fumble") det += " — échec critique (le dé devient 0), +1 point de narration au MJ";
-      if (r.palier) det += " — atteint « " + r.palier.nom + " » (" + r.palier.seuil + ")";
-      li.appendChild(el("div", "pc-roll-det", det));
-      list.appendChild(li);
-    });
-    if (!rollHistory.length) list.appendChild(el("div", "pc-roll-det", "Aucun jet pour l'instant."));
+    flash(label + " : " + total + " (" + det + ")");
   }
 
   // ---------- refresh ----------
@@ -603,7 +584,8 @@
   var TABS = [
     { id: "fiche", label: "Fiche" },
     { id: "equipement", label: "Équipement" },
-    { id: "bio", label: "Bio" }
+    { id: "bio", label: "Bio" },
+    { id: "options", label: "Options" }
   ];
   function buildTabs(sheet) {
     var bar = el("div", "pc-tabs");
@@ -1160,26 +1142,75 @@
     right.appendChild(bN);
   }
 
-  // ---------- journal des jets ----------
-  function buildRolls(container) {
-    rollPanel = el("div", "pc-rolls");
-    var head = el("div", "pc-rolls-head");
-    var t = el("span", "t", "Jets");
-    t.title = "Réduire / déployer";
-    t.addEventListener("click", function () { rollPanel.classList.toggle("open"); });
-    head.appendChild(t);
+  // ---------- onglet Options ----------
+  function buildOptions(pane) {
+    var cols = el("div", "pc-cols2");
+    var colA = el("div", "pc-col");
+    var colB = el("div", "pc-col");
+    cols.appendChild(colA);
+    cols.appendChild(colB);
+    pane.appendChild(cols);
+
+    // ---- jets ----
+    var bJ = block("Jets");
     var de = el("input", "de");
     de.type = "text";
-    de.title = "Dé des jets de test";
     de.value = state.de || "1d100";
     de.addEventListener("input", function () { state.de = de.value || "1d100"; save(); });
     hooks.push(function () { if (document.activeElement !== de) de.value = state.de || "1d100"; });
-    head.appendChild(de);
-    head.appendChild(miniBtn("Vider", null, function () { rollHistory = []; renderRolls(); }));
-    rollPanel.appendChild(head);
-    rollPanel.appendChild(el("div", "pc-rolls-list"));
-    container.appendChild(rollPanel);
-    renderRolls();
+    bJ.appendChild(fld("Dé des jets de test", de));
+    colA.appendChild(bJ);
+
+    // ---- actions sur la fiche (exporter / importer / réinitialiser) ----
+    var bAct = block("Fiche");
+    var act = el("div", "pc-opt-actions");
+    act.appendChild((function () {
+      var b = el("button", "pc-btn", "Exporter (JSON)");
+      b.type = "button";
+      b.addEventListener("click", function () {
+        var a = document.createElement("a");
+        a.href = "data:application/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
+        a.download = (state.name || "personnage-jjk") + ".json";
+        a.click();
+      });
+      return b;
+    })());
+    var file = el("input");
+    file.type = "file"; file.accept = "application/json"; file.style.display = "none";
+    file.addEventListener("change", function () {
+      var f = file.files && file.files[0];
+      if (!f) return;
+      var r = new FileReader();
+      r.onload = function () {
+        try {
+          state = normalize(JSON.parse(r.result));
+          remount();
+          flash("Personnage importé.");
+        } catch (e) { flash("JSON illisible."); }
+        file.value = "";
+      };
+      r.readAsText(f);
+    });
+    act.appendChild((function () {
+      var b = el("button", "pc-btn", "Importer (JSON)");
+      b.type = "button";
+      b.addEventListener("click", function () { file.click(); });
+      return b;
+    })());
+    act.appendChild(file);
+    act.appendChild((function () {
+      var b = el("button", "pc-btn danger", "Réinitialiser la fiche");
+      b.type = "button";
+      b.addEventListener("click", function () {
+        if (!confirm("Réinitialiser la fiche ? Tout le personnage sera effacé.")) return;
+        state = blank();
+        remount();
+        flash("Fiche réinitialisée.");
+      });
+      return b;
+    })());
+    bAct.appendChild(act);
+    colB.appendChild(bAct);
   }
 
   // ---------- montage ----------
@@ -1193,7 +1224,6 @@
     buildTop(app);
     var sheet = el("div", "pc-sheet");
     app.appendChild(sheet);
-    buildRolls(app);
     root.appendChild(app);
 
     buildHead(sheet);
@@ -1201,6 +1231,7 @@
     buildFiche(panes.fiche);
     buildEquipement(panes.equipement);
     buildBio(panes.bio);
+    buildOptions(panes.options);
     refresh();
   }
 
