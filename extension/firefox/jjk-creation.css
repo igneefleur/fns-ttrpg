@@ -241,15 +241,24 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 }
 .pc-comp-champ::after { content: ""; flex: 1; height: 1px; background: var(--hair); }
 .pc-comp-champ:first-child { margin-top: calc(.1 * var(--pc-rem, 16px)); }
-/* ligne : nom | stade (menu) | total rollable */
-.pc-comp-row { display: grid; grid-template-columns: minmax(0, 1fr) calc(6.2 * var(--pc-rem, 16px)) calc(2.2 * var(--pc-rem, 16px)); gap: calc(.3 * var(--pc-rem, 16px)); align-items: center; padding: calc(.11 * var(--pc-rem, 16px)) calc(.25 * var(--pc-rem, 16px)); font-size: var(--fs-body); border-radius: 4px; }
+/* ligne : (nom | total rollable) puis les pastilles de stade en dessous */
+.pc-comp-row { display: grid; grid-template-columns: minmax(0, 1fr) calc(2.6 * var(--pc-rem, 16px)); gap: calc(.12 * var(--pc-rem, 16px)) calc(.3 * var(--pc-rem, 16px)); align-items: center; padding: calc(.14 * var(--pc-rem, 16px)) calc(.25 * var(--pc-rem, 16px)) calc(.18 * var(--pc-rem, 16px)); font-size: var(--fs-body); border-radius: 4px; }
 .pc-comp-row.odd { background: var(--stripe); }
 .pc-comp-row.head {
   background: var(--card); border-bottom: 1px solid var(--line); border-radius: 0; padding: calc(.2 * var(--pc-rem, 16px)) calc(.25 * var(--pc-rem, 16px)) calc(.16 * var(--pc-rem, 16px));
   font-size: var(--fs-label); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-3);
 }
-.pc-comp-row.head > span:nth-child(2) { text-align: center; }
-.pc-comp-row.head > span:nth-child(3) { text-align: right; }
+.pc-comp-row.head > span:nth-child(2) { text-align: right; }
+/* pastilles de stade : cocher son niveau, recliquer pour revenir à Non initié */
+.pc-stades { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: calc(.18 * var(--pc-rem, 16px)); }
+.pc-stade {
+  font: inherit; font-size: calc(.56 * var(--pc-rem, 16px)); font-weight: 600; letter-spacing: .02em;
+  color: var(--ink-3); background: var(--card); border: 1px solid var(--line-2);
+  border-radius: 999px; padding: calc(.09 * var(--pc-rem, 16px)) calc(.48 * var(--pc-rem, 16px)); cursor: pointer; transition: .12s;
+}
+.pc-stade:hover { border-color: var(--line); color: var(--ink); }
+.pc-stade.on { color: var(--ink-2); border-color: var(--line); background: var(--panel); }
+.pc-stade.cur { background: var(--red); border-color: var(--red-deep); color: #fff; }
 .pc-comp-name { display: flex; align-items: baseline; min-width: 0; gap: calc(.3 * var(--pc-rem, 16px)); }
 .pc-comp-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); }
 .pc-comp-del { flex: 0 0 auto; border: none; background: transparent; color: var(--ink-3); font: inherit; font-size: calc(.62 * var(--pc-rem, 16px)); cursor: pointer; padding: 0 calc(.1 * var(--pc-rem, 16px)); }
@@ -262,11 +271,11 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 }
 .pc-select:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 2px var(--wash); }
 .pc-comp-row .pc-select.lv0 { color: var(--ink-3); }
-/* passifs du stade Art : sous la ligne, en retrait */
-.pc-passifs { grid-column: 1 / -1; display: flex; flex-direction: column; gap: calc(.2 * var(--pc-rem, 16px)); padding: calc(.1 * var(--pc-rem, 16px)) 0 calc(.2 * var(--pc-rem, 16px)) calc(1 * var(--pc-rem, 16px)); }
-.pc-passif { display: flex; gap: calc(.3 * var(--pc-rem, 16px)); align-items: center; }
-.pc-passif input { flex: 1 1 auto; min-width: 0; padding: calc(.18 * var(--pc-rem, 16px)) calc(.4 * var(--pc-rem, 16px)); border: none; border-bottom: 1px solid var(--line-2); background: transparent; color: var(--ink); font: inherit; font-size: calc(.66 * var(--pc-rem, 16px)); }
-.pc-passif input:focus { outline: none; border-bottom-color: var(--red); }
+/* techniques du stade Expert : sous la ligne, en retrait */
+.pc-techniques { grid-column: 1 / -1; display: flex; flex-direction: column; gap: calc(.2 * var(--pc-rem, 16px)); padding: calc(.1 * var(--pc-rem, 16px)) 0 calc(.2 * var(--pc-rem, 16px)) calc(1 * var(--pc-rem, 16px)); }
+.pc-technique { display: flex; gap: calc(.3 * var(--pc-rem, 16px)); align-items: center; }
+.pc-technique input { flex: 1 1 auto; min-width: 0; padding: calc(.18 * var(--pc-rem, 16px)) calc(.4 * var(--pc-rem, 16px)); border: none; border-bottom: 1px solid var(--line-2); background: transparent; color: var(--ink); font: inherit; font-size: calc(.66 * var(--pc-rem, 16px)); }
+.pc-technique input:focus { outline: none; border-bottom-color: var(--red); }
 .pc-comp-add { display: flex; gap: calc(.35 * var(--pc-rem, 16px)); align-items: center; padding: calc(.25 * var(--pc-rem, 16px)) calc(.25 * var(--pc-rem, 16px)) calc(.1 * var(--pc-rem, 16px)); }
 .pc-comp-add input { flex: 1 1 auto; min-width: 0; padding: calc(.24 * var(--pc-rem, 16px)) calc(.5 * var(--pc-rem, 16px)); border: 1px solid var(--line-2); border-radius: 6px; background: var(--card); color: var(--ink); font: inherit; font-size: calc(.72 * var(--pc-rem, 16px)); }
 .pc-comp-add input:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 2px var(--wash); }
@@ -290,12 +299,16 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-roll-chip:hover { border-color: var(--red); color: var(--red); background: var(--wash); }
 
 /* ---- bio ---- */
-.pc-av-row { display: flex; gap: calc(.35 * var(--pc-rem, 16px)); align-items: center; padding: calc(.12 * var(--pc-rem, 16px)) 0; }
-.pc-av-row input { min-width: 0; border: none; border-bottom: 1px solid var(--line-2); background: transparent; color: var(--ink); font: inherit; font-size: calc(.7 * var(--pc-rem, 16px)); padding: calc(.06 * var(--pc-rem, 16px)) calc(.1 * var(--pc-rem, 16px)); }
-.pc-av-row input:focus { outline: none; border-bottom-color: var(--red); }
-.pc-av-row input.nm { flex: 0 0 34%; font-weight: 700; }
-.pc-av-row input.fx { flex: 1 1 auto; }
-.pc-limite { display: flex; align-items: center; gap: calc(.4 * var(--pc-rem, 16px)); font-size: calc(.66 * var(--pc-rem, 16px)); color: var(--ink-2); margin-top: calc(.35 * var(--pc-rem, 16px)); cursor: pointer; }
+.pc-av { border: 1px solid var(--hair); border-radius: 7px; background: var(--card); padding: calc(.35 * var(--pc-rem, 16px)) calc(.5 * var(--pc-rem, 16px)) calc(.45 * var(--pc-rem, 16px)); margin-bottom: calc(.45 * var(--pc-rem, 16px)); }
+.pc-av-head { display: flex; gap: calc(.4 * var(--pc-rem, 16px)); align-items: baseline; margin-bottom: calc(.25 * var(--pc-rem, 16px)); }
+.pc-av-head input.nm {
+  flex: 1 1 auto; min-width: 0; border: none; border-bottom: 1px solid var(--line);
+  background: transparent; color: var(--ink); font: inherit; font-size: calc(.74 * var(--pc-rem, 16px)); font-weight: 700;
+  padding: calc(.03 * var(--pc-rem, 16px)) calc(.1 * var(--pc-rem, 16px)) calc(.08 * var(--pc-rem, 16px));
+}
+.pc-av-head input.nm:focus { outline: none; border-bottom: 2px solid var(--red); }
+/* zone de texte posée dans un champ étiqueté (défaut, qualités, propriétés d'arme) */
+.pc-f > .pc-notes { min-height: calc(2.6 * var(--pc-rem, 16px)); font-size: calc(.7 * var(--pc-rem, 16px)); }
 .pc-notes { width: 100%; min-height: calc(4.5 * var(--pc-rem, 16px)); border: 1px solid var(--line-2); border-radius: 7px; background: var(--card); color: var(--ink); font: inherit; font-size: calc(.72 * var(--pc-rem, 16px)); padding: calc(.5 * var(--pc-rem, 16px)) calc(.6 * var(--pc-rem, 16px)); resize: vertical; box-sizing: border-box; }
 .pc-notes:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 2px var(--wash); }
 .pc-empty { font-size: calc(.72 * var(--pc-rem, 16px)); color: var(--ink-3); font-style: italic; padding: calc(.3 * var(--pc-rem, 16px)) calc(.3 * var(--pc-rem, 16px)); text-align: center; }

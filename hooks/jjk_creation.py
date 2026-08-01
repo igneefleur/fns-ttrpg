@@ -29,7 +29,7 @@ NDASH = "–"   # tiret de plage (U+2013)
 PAGE = "content/regles/index.md"
 
 CARACS = ["Mind", "Body", "Prestance"]
-STADES = ["Non initié", "Initié", "Maitrise", "Expertise", "Art"]
+STADES = ["Non initié", "Initié", "Maitre", "Expert"]
 
 
 def _num(s):
@@ -91,9 +91,9 @@ def _stades(defs):
              or re.search(r"[Bb]onus de \+?(" + MINUS + r"?\d+)", body))
         if m:
             bonus = _num(m.group(1))
-        # « Art » n'énonce pas de bonus : il conserve celui d'Expertise et
-        # ajoute un passif original (puis d'autres, à 20 xp pièce).
-        out.append({"nom": nom, "bonus": bonus, "passif": nom == "Art", "desc": body})
+        # le stade qui parle de « techniques » ouvre leur achat (20 xp pièce)
+        out.append({"nom": nom, "bonus": bonus,
+                    "techniques": "technique" in body.lower(), "desc": body})
     return out
 
 
