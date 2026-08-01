@@ -247,16 +247,8 @@
     if (!m) return null;   // expression illisible : doRoll prévient au lieu de lancer autre chose
     return { n: clamp(+m[1], 1, 20), faces: clamp(+m[2], 2, 1000), plus: +(m[3] || 0) };
   }
-  function bestDifficulty(total) {
-    var best = null;
-    (DATA.difficultes || []).forEach(function (d) {
-      if (total >= d.seuil && (!best || d.seuil > best.seuil)) best = d;
-    });
-    return best;
-  }
   // isCheck : vrai pour un jet de test (carac/compétence) — seuls ces jets
-  // critent (96+/5-) et se lisent sur la table des difficultés. Les jets
-  // d'équipement (dégâts, invu) restent des dés bruts.
+  // critent (96+/5-). Les jets d'équipement (dégâts, invu) restent des dés bruts.
   function doRoll(label, value, die, isCheck) {
     die = die || state.de || "1d100";
     if (typeof window !== "undefined" && typeof window.__jjkRoll === "function") {
@@ -279,9 +271,6 @@
       } else if (dice[0] <= 5) {
         total = 0 + d.plus + value;
         det = "échec critique, le dé devient 0 — +1 point de narration au MJ";
-      } else {
-        var pal = bestDifficulty(total);
-        if (pal) det += " · " + pal.nom;
       }
     }
     flash(label + " : " + total + " (" + det + ")");
@@ -713,55 +702,6 @@
     nRow.appendChild(el("span", "sp"));
     nRow.appendChild(miniBtn("Nouvelle session", "Repartir à 3 points", function () { state.narration = 3; refresh(); }));
     b.appendChild(nRow);
-
-    // seuils
-    var seuils = el("div", "pc-seuils");
-    hooks.push(function () {
-      seuils.innerHTML = "";
-      var s0 = el("div", "pc-seuil");
-      s0.innerHTML = "";
-      s0.appendChild(document.createTextNode("Inconscience à "));
-      s0.appendChild(el("b", null, "0 PV"));
-      s0.appendChild(document.createTextNode(" — mort à "));
-      s0.appendChild(el("b", null, "−" + pvMax() + " PV"));
-      s0.appendChild(document.createTextNode("."));
-      seuils.appendChild(s0);
-      (DATA.blessures || []).forEach(function (bl) {
-        var d = el("div", "pc-seuil");
-        d.appendChild(el("b", null, bl.nom));
-        var abs = bl.pct ? " dès " + (Math.round(pvMax() * bl.pct) / 100) + " PV perdus d'un coup" : "";
-        d.appendChild(document.createTextNode(" : " + bl.seuil + abs + " — " + bl.effets.toLowerCase() + "."));
-        seuils.appendChild(d);
-      });
-    });
-    b.appendChild(seuils);
-
-    // références repliées : difficultés + actions de combat
-    var det1 = el("details", "pc-details");
-    det1.appendChild(el("summary", null, "Difficultés de tests"));
-    var t1 = el("table", "pc-mini-table");
-    var tb1 = el("tbody");
-    (DATA.difficultes || []).forEach(function (d) {
-      var tr = el("tr");
-      tr.appendChild(el("td", null, String(d.seuil)));
-      tr.appendChild(el("td", null, d.nom));
-      tb1.appendChild(tr);
-    });
-    t1.appendChild(tb1);
-    det1.appendChild(t1);
-    b.appendChild(det1);
-
-    if ((DATA.actions || []).length) {
-      var det2 = el("details", "pc-details");
-      det2.appendChild(el("summary", null, "Actions de combat"));
-      DATA.actions.forEach(function (a) {
-        var d = el("div", "pc-seuil");
-        d.appendChild(el("b", null, a.nom));
-        d.appendChild(document.createTextNode(" : " + a.desc));
-        det2.appendChild(d);
-      });
-      b.appendChild(det2);
-    }
     col.appendChild(b);
   }
 
@@ -1004,19 +944,6 @@
     }
     render();
   }
-  function miniTable(rows, withHead) {
-    var t = el("table", "pc-mini-table");
-    var tb = el("tbody");
-    rows.forEach(function (cells, ri) {
-      var tr = el("tr");
-      cells.forEach(function (v, ci) {
-        tr.appendChild(el(withHead && (ri === 0 || ci === 0) ? "th" : "td", null, v));
-      });
-      tb.appendChild(tr);
-    });
-    t.appendChild(tb);
-    return t;
-  }
   function buildEquipement(pane) {
     var cols = el("div", "pc-cols2");
     var left = el("div", "pc-col");
@@ -1031,30 +958,11 @@
     eqCards(boxA, state.armes, "arme");
     left.appendChild(bA);
 
-    var cA = block("Courbe de poids — armes");
-    var rowsA = [["Poids", "Dégâts", "Reach"]];
-    (DATA.armesCourbe || []).forEach(function (r) { rowsA.push([r.poids, r.degats, r.reach]); });
-    cA.appendChild(miniTable(rowsA, true));
-    left.appendChild(cA);
-
     var bB = block("Armures");
     var boxB = el("div");
     bB.appendChild(boxB);
     eqCards(boxB, state.armures, "armure");
     right.appendChild(bB);
-
-    var ac = DATA.armuresCourbe || {};
-    if (ac.invu) {
-      var cB = block("Courbe de poids — armures");
-      cB.appendChild(miniTable([
-        ["Poids"].concat(ac.poids),
-        ["Invu"].concat(ac.invu),
-        ["Zones"].concat(ac.zones || []),
-        ["Viser zone nue"].concat(ac.viser || []),
-        ["Port requis"].concat(ac.port || [])
-      ], true));
-      right.appendChild(cB);
-    }
 
     var bI = block("Inventaire");
     var inv = el("textarea", "pc-notes");

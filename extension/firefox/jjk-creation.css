@@ -215,21 +215,6 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-kv > .k { font-weight: 700; color: var(--ink-2); font-size: calc(.6 * var(--pc-rem, 16px)); white-space: nowrap; flex-shrink: 0; text-transform: uppercase; letter-spacing: .04em; }
 .pc-kv > .sp { flex: 1; }
 .pc-kv .max { color: var(--ink-3); font-variant-numeric: tabular-nums; }
-.pc-seuils { margin-top: calc(.3 * var(--pc-rem, 16px)); }
-.pc-seuil { font-size: calc(.62 * var(--pc-rem, 16px)); color: var(--ink-3); padding: calc(.1 * var(--pc-rem, 16px)) calc(.05 * var(--pc-rem, 16px)); border-top: 1px solid var(--hair); line-height: 1.3; }
-.pc-seuil b { color: var(--ink-2); font-variant-numeric: tabular-nums; }
-
-/* ---- petites tables de référence (difficultés, courbes, actions) ---- */
-.pc-mini-table { width: 100%; border-collapse: collapse; margin-top: calc(.2 * var(--pc-rem, 16px)); text-align: left; }
-.pc-mini-table th { font-size: calc(.52 * var(--pc-rem, 16px)); font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: var(--ink-3); text-align: center; padding: calc(.1 * var(--pc-rem, 16px)) calc(.3 * var(--pc-rem, 16px)) calc(.14 * var(--pc-rem, 16px)); border-bottom: 1px solid var(--line-2); white-space: nowrap; }
-.pc-mini-table td { font-size: calc(.62 * var(--pc-rem, 16px)); color: var(--ink-2); text-align: center; padding: calc(.1 * var(--pc-rem, 16px)) calc(.3 * var(--pc-rem, 16px)); font-variant-numeric: tabular-nums; border-bottom: 1px solid var(--hair); }
-.pc-mini-table th:first-child, .pc-mini-table td:first-child { text-align: left; }
-.pc-mini-table tr:last-child td { border-bottom: none; }
-.pc-details summary {
-  font-size: calc(.58 * var(--pc-rem, 16px)); font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
-  color: var(--ink-3); cursor: pointer; padding: calc(.18 * var(--pc-rem, 16px)) 0 calc(.1 * var(--pc-rem, 16px));
-}
-.pc-details summary:hover { color: var(--red); }
 
 /* ---- compétences ---- */
 .pc-comp-search { width: 100%; padding: calc(.26 * var(--pc-rem, 16px)) calc(.5 * var(--pc-rem, 16px)); border: 1px solid var(--line-2); border-radius: 6px; background: var(--card); color: var(--ink); font: inherit; font-size: calc(.7 * var(--pc-rem, 16px)); margin-bottom: calc(.3 * var(--pc-rem, 16px)); box-sizing: border-box; }
