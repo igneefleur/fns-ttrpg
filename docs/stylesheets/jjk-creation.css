@@ -316,8 +316,7 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
   background: var(--card); border-bottom: 1px solid var(--line); border-radius: 0; padding: .2rem .25rem .16rem;
   font-size: var(--fs-label); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-3);
 }
-.pc-comp-row.head > span { white-space: nowrap; overflow: hidden; min-width: 0; }
-.pc-comp-row.head > span:last-child { text-align: right; }
+.pc-comp-row.head > span { white-space: nowrap; overflow: hidden; min-width: 0; text-align: center; }
 .pc-comp-name { display: flex; align-items: baseline; min-width: 0; gap: .3rem; }
 .pc-comp-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); }
 .pc-comp-del { flex: 0 0 auto; border: none; background: transparent; color: var(--ink-3); font: inherit; font-size: .62rem; cursor: pointer; padding: 0 .1rem; }
