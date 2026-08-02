@@ -163,6 +163,32 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-tab.on { background: var(--red); color: #fff; box-shadow: 0 1px 4px rgba(124, 19, 12, .28); }
 .pc-tab.on:hover { background: var(--red-deep); color: #fff; }
 
+/* ---- barre d'envoi (Roll20) : destinataire + modificateur ---- */
+/* Posée entre l'en-tête et les avertissements, JAMAIS dans .pc-id (grille de
+   12 colonnes pleine, et sa hauteur commande la taille du portrait). */
+.pc-envoi {
+  display: flex; align-items: center; gap: .3rem .45rem; flex-wrap: wrap;
+  margin: .45rem 0 0; padding: .25rem .35rem;
+  background: var(--panel); border: 1px solid var(--hair); border-radius: 9px;
+}
+.pc-envoi > .lbl {
+  font-size: .58rem; font-weight: 700; letter-spacing: .04em;
+  color: var(--ink-3); white-space: nowrap;
+}
+.pc-envoi-segs { display: flex; min-width: 0; }
+.pc-envoi-segs .seg {
+  border: 1px solid var(--line-2); border-left-width: 0; background: var(--card);
+  color: var(--ink-2); font: inherit; font-size: .62rem; font-weight: 600;
+  padding: .16rem .5rem; cursor: pointer; white-space: nowrap; min-width: 0;
+  transition: background .12s, color .12s;
+}
+.pc-envoi-segs .seg:first-child { border-left-width: 1px; border-radius: 5px 0 0 5px; }
+.pc-envoi-segs .seg:last-child { border-radius: 0 5px 5px 0; }
+.pc-envoi-segs .seg:hover { color: var(--ink); background: var(--stripe); }
+.pc-envoi-segs .seg.on { background: var(--red); border-color: var(--red-deep); color: #fff; }
+.pc-envoi-segs .seg.on:hover { background: var(--red-deep); color: #fff; }
+.pc-envoi .pc-select { flex: 0 1 8.6rem; width: auto; min-width: 0; font-size: .62rem; }
+
 /* ---- avertissements ---- */
 .pc-warns { margin: .35rem 0 .15rem; display: flex; flex-direction: column; gap: .15rem; }
 .pc-warns:empty { display: none; }
@@ -570,7 +596,9 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-obj-qrow input.n:focus { outline: none; border-bottom: 2px solid var(--red); }
 .pc-obj-pair { display: flex; gap: .5rem; }
 .pc-obj-pair .pc-f { flex: 1; }
-.pc-obj-actions { display: flex; gap: .35rem; justify-content: flex-end; margin-top: .1rem; }
+.pc-obj-actions { display: flex; gap: .35rem; justify-content: flex-end; align-items: flex-end; margin-top: .1rem; }
+/* quantité traitée par les boutons de la ligne : étroite, collée à gauche */
+.pc-obj-actions .pc-f.qact { flex: 0 0 3.6rem; margin-right: auto; }
 .pc-obj-empty { padding: 1.2rem .6rem; text-align: center; color: var(--ink-3); font-style: italic; font-size: .62rem; }
 /* même point de bascule que le mobile de la feuille (44em, pas 700px) */
 @media (max-width: 44em) {
