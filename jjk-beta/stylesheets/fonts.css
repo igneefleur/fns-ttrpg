@@ -1,0 +1,607 @@
+/* ============================================================================
+   POLICES AUTO-HÉBERGÉES — aucune requête vers Google.
+   Les .woff2 vivent dans docs/assets/fonts/ et leurs licences (toutes SIL Open
+   Font License 1.1) dans docs/assets/fonts/licences/. Voir le LISEZMOI de ce
+   dossier pour la liste et les conditions.
+   Le visiteur ne contacte donc plus fonts.googleapis.com / fonts.gstatic.com :
+   son adresse IP n'est plus transmise à un tiers. Le build du PDF (WeasyPrint)
+   n'a plus besoin du réseau non plus.
+   Sous-ensembles embarqués : latin + latin-ext (suffisant pour le français, œ
+   compris) ; les unicode-range font que le navigateur ne charge que le
+   nécessaire. NE PAS éditer à la main : régénéré par scripts/get_fonts.py.
+   ============================================================================ */
+
+
+/* Alegreya 400 italic — latin-ext */
+@font-face {
+  font-family: 'Alegreya';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/alegreya-400i-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* Alegreya 400 italic — latin */
+@font-face {
+  font-family: 'Alegreya';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/alegreya-400i-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Alegreya 700 italic — latin-ext */
+@font-face {
+  font-family: 'Alegreya';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../assets/fonts/alegreya-700i-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* Alegreya 700 italic — latin */
+@font-face {
+  font-family: 'Alegreya';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../assets/fonts/alegreya-700i-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Alegreya 400 — latin-ext */
+@font-face {
+  font-family: 'Alegreya';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/alegreya-400-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* Alegreya 400 — latin */
+@font-face {
+  font-family: 'Alegreya';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/alegreya-400-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Alegreya 500 — latin-ext */
+@font-face {
+  font-family: 'Alegreya';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('../assets/fonts/alegreya-500-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* Alegreya 500 — latin */
+@font-face {
+  font-family: 'Alegreya';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('../assets/fonts/alegreya-500-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Alegreya 600 — latin-ext */
+@font-face {
+  font-family: 'Alegreya';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('../assets/fonts/alegreya-600-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* Alegreya 600 — latin */
+@font-face {
+  font-family: 'Alegreya';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('../assets/fonts/alegreya-600-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Alegreya 700 — latin-ext */
+@font-face {
+  font-family: 'Alegreya';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../assets/fonts/alegreya-700-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* Alegreya 700 — latin */
+@font-face {
+  font-family: 'Alegreya';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../assets/fonts/alegreya-700-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Cinzel 600 — latin-ext */
+@font-face {
+  font-family: 'Cinzel';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('../assets/fonts/cinzel-600-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* Cinzel 600 — latin */
+@font-face {
+  font-family: 'Cinzel';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('../assets/fonts/cinzel-600-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Cinzel 700 — latin-ext */
+@font-face {
+  font-family: 'Cinzel';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../assets/fonts/cinzel-700-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* Cinzel 700 — latin */
+@font-face {
+  font-family: 'Cinzel';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../assets/fonts/cinzel-700-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* EB Garamond 400 italic — latin-ext */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/eb-garamond-400i-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* EB Garamond 400 italic — latin */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/eb-garamond-400i-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* EB Garamond 400 — latin-ext */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/eb-garamond-400-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* EB Garamond 400 — latin */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/eb-garamond-400-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* EB Garamond 600 — latin-ext */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('../assets/fonts/eb-garamond-600-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* EB Garamond 600 — latin */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('../assets/fonts/eb-garamond-600-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* IBM Plex Sans 400 — latin-ext */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/ibm-plex-sans-400-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* IBM Plex Sans 400 — latin */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/ibm-plex-sans-400-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* IBM Plex Sans 500 — latin-ext */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('../assets/fonts/ibm-plex-sans-500-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* IBM Plex Sans 500 — latin */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('../assets/fonts/ibm-plex-sans-500-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* IBM Plex Sans 600 — latin-ext */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('../assets/fonts/ibm-plex-sans-600-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* IBM Plex Sans 600 — latin */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('../assets/fonts/ibm-plex-sans-600-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* IBM Plex Sans 700 — latin-ext */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../assets/fonts/ibm-plex-sans-700-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* IBM Plex Sans 700 — latin */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../assets/fonts/ibm-plex-sans-700-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Roboto Mono 400 italic — latin-ext */
+@font-face {
+  font-family: 'Roboto Mono';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/roboto-mono-400i-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* Roboto Mono 400 italic — latin */
+@font-face {
+  font-family: 'Roboto Mono';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/roboto-mono-400i-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Roboto Mono 700 italic — latin-ext */
+@font-face {
+  font-family: 'Roboto Mono';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../assets/fonts/roboto-mono-700i-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* Roboto Mono 700 italic — latin */
+@font-face {
+  font-family: 'Roboto Mono';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../assets/fonts/roboto-mono-700i-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Roboto Mono 400 — latin-ext */
+@font-face {
+  font-family: 'Roboto Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/roboto-mono-400-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* Roboto Mono 400 — latin */
+@font-face {
+  font-family: 'Roboto Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/roboto-mono-400-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Roboto Mono 700 — latin-ext */
+@font-face {
+  font-family: 'Roboto Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../assets/fonts/roboto-mono-700-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* Roboto Mono 700 — latin */
+@font-face {
+  font-family: 'Roboto Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../assets/fonts/roboto-mono-700-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* ---------------------------------------------------------------------------
+   SYMBOLES (★ ✦ ▰ ○ ⌈ ≤ …). Aucune police du livre ne les contient : sans ces
+   règles, chaque plateforme prend un repli différent (Segoe UI Symbol sous
+   Windows, DejaVu sous Linux) et le PDF du CI ne rend pas comme en local.
+   On rattache donc les polices de symboles à chaque famille du livre, pour les
+   SEULS codepoints concernés (unicode-range) : le reste du texte n'est pas
+   touché, et les symboles rendent à l'identique partout. Les fichiers de police
+   ne sont PAS modifiés.
+   `font-weight: normal` et PAS une plage `100 900` : sur une police non variable,
+   une plage n'est jamais sélectionnée par le navigateur (vérifié : la face reste
+   `unloaded`). Comme ces faces sont les seules candidates pour ces codepoints,
+   l'appariement de graisse retombe dessus quelle que soit la graisse du texte.
+   --------------------------------------------------------------------------- */
+
+/* ○●▰▱★☆✦✧ -> Noto Sans Symbols 2, pour 'Alegreya' (normal) */
+@font-face {
+  font-family: 'Alegreya';
+  font-style: normal;
+  font-weight: normal;
+  font-display: swap;
+  src: url('../assets/fonts/noto-sans-symbols-2-symboles.woff2') format('woff2');
+  unicode-range: U+25B0-25B1, U+25CB, U+25CF, U+2605-2606, U+2726-2727;
+}
+
+/* ○●▰▱★☆✦✧ -> Noto Sans Symbols 2, pour 'Alegreya' (bold) */
+@font-face {
+  font-family: 'Alegreya';
+  font-style: normal;
+  font-weight: bold;
+  font-display: swap;
+  src: url('../assets/fonts/noto-sans-symbols-2-symboles.woff2') format('woff2');
+  unicode-range: U+25B0-25B1, U+25CB, U+25CF, U+2605-2606, U+2726-2727;
+}
+
+/* ○●▰▱★☆✦✧ -> Noto Sans Symbols 2, pour 'Cinzel' (normal) */
+@font-face {
+  font-family: 'Cinzel';
+  font-style: normal;
+  font-weight: normal;
+  font-display: swap;
+  src: url('../assets/fonts/noto-sans-symbols-2-symboles.woff2') format('woff2');
+  unicode-range: U+25B0-25B1, U+25CB, U+25CF, U+2605-2606, U+2726-2727;
+}
+
+/* ○●▰▱★☆✦✧ -> Noto Sans Symbols 2, pour 'Cinzel' (bold) */
+@font-face {
+  font-family: 'Cinzel';
+  font-style: normal;
+  font-weight: bold;
+  font-display: swap;
+  src: url('../assets/fonts/noto-sans-symbols-2-symboles.woff2') format('woff2');
+  unicode-range: U+25B0-25B1, U+25CB, U+25CF, U+2605-2606, U+2726-2727;
+}
+
+/* ○●▰▱★☆✦✧ -> Noto Sans Symbols 2, pour 'EB Garamond' (normal) */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: normal;
+  font-display: swap;
+  src: url('../assets/fonts/noto-sans-symbols-2-symboles.woff2') format('woff2');
+  unicode-range: U+25B0-25B1, U+25CB, U+25CF, U+2605-2606, U+2726-2727;
+}
+
+/* ○●▰▱★☆✦✧ -> Noto Sans Symbols 2, pour 'EB Garamond' (bold) */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: bold;
+  font-display: swap;
+  src: url('../assets/fonts/noto-sans-symbols-2-symboles.woff2') format('woff2');
+  unicode-range: U+25B0-25B1, U+25CB, U+25CF, U+2605-2606, U+2726-2727;
+}
+
+/* ○●▰▱★☆✦✧ -> Noto Sans Symbols 2, pour 'IBM Plex Sans' (normal) */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: normal;
+  font-display: swap;
+  src: url('../assets/fonts/noto-sans-symbols-2-symboles.woff2') format('woff2');
+  unicode-range: U+25B0-25B1, U+25CB, U+25CF, U+2605-2606, U+2726-2727;
+}
+
+/* ○●▰▱★☆✦✧ -> Noto Sans Symbols 2, pour 'IBM Plex Sans' (bold) */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: bold;
+  font-display: swap;
+  src: url('../assets/fonts/noto-sans-symbols-2-symboles.woff2') format('woff2');
+  unicode-range: U+25B0-25B1, U+25CB, U+25CF, U+2605-2606, U+2726-2727;
+}
+
+/* ○●▰▱★☆✦✧ -> Noto Sans Symbols 2, pour 'Roboto Mono' (normal) */
+@font-face {
+  font-family: 'Roboto Mono';
+  font-style: normal;
+  font-weight: normal;
+  font-display: swap;
+  src: url('../assets/fonts/noto-sans-symbols-2-symboles.woff2') format('woff2');
+  unicode-range: U+25B0-25B1, U+25CB, U+25CF, U+2605-2606, U+2726-2727;
+}
+
+/* ○●▰▱★☆✦✧ -> Noto Sans Symbols 2, pour 'Roboto Mono' (bold) */
+@font-face {
+  font-family: 'Roboto Mono';
+  font-style: normal;
+  font-weight: bold;
+  font-display: swap;
+  src: url('../assets/fonts/noto-sans-symbols-2-symboles.woff2') format('woff2');
+  unicode-range: U+25B0-25B1, U+25CB, U+25CF, U+2605-2606, U+2726-2727;
+}
+
+/* ⌈⌉⌊⌋≤≥ -> Noto Sans Math, pour 'Alegreya' (normal) */
+@font-face {
+  font-family: 'Alegreya';
+  font-style: normal;
+  font-weight: normal;
+  font-display: swap;
+  src: url('../assets/fonts/noto-sans-math-symboles.woff2') format('woff2');
+  unicode-range: U+2264-2265, U+2308-230B;
+}
+
+/* ⌈⌉⌊⌋≤≥ -> Noto Sans Math, pour 'Alegreya' (bold) */
+@font-face {
+  font-family: 'Alegreya';
+  font-style: normal;
+  font-weight: bold;
+  font-display: swap;
+  src: url('../assets/fonts/noto-sans-math-symboles.woff2') format('woff2');
+  unicode-range: U+2264-2265, U+2308-230B;
+}
+
+/* ⌈⌉⌊⌋≤≥ -> Noto Sans Math, pour 'Cinzel' (normal) */
+@font-face {
+  font-family: 'Cinzel';
+  font-style: normal;
+  font-weight: normal;
+  font-display: swap;
+  src: url('../assets/fonts/noto-sans-math-symboles.woff2') format('woff2');
+  unicode-range: U+2264-2265, U+2308-230B;
+}
+
+/* ⌈⌉⌊⌋≤≥ -> Noto Sans Math, pour 'Cinzel' (bold) */
+@font-face {
+  font-family: 'Cinzel';
+  font-style: normal;
+  font-weight: bold;
+  font-display: swap;
+  src: url('../assets/fonts/noto-sans-math-symboles.woff2') format('woff2');
+  unicode-range: U+2264-2265, U+2308-230B;
+}
+
+/* ⌈⌉⌊⌋≤≥ -> Noto Sans Math, pour 'EB Garamond' (normal) */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: normal;
+  font-display: swap;
+  src: url('../assets/fonts/noto-sans-math-symboles.woff2') format('woff2');
+  unicode-range: U+2264-2265, U+2308-230B;
+}
+
+/* ⌈⌉⌊⌋≤≥ -> Noto Sans Math, pour 'EB Garamond' (bold) */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: bold;
+  font-display: swap;
+  src: url('../assets/fonts/noto-sans-math-symboles.woff2') format('woff2');
+  unicode-range: U+2264-2265, U+2308-230B;
+}
+
+/* ⌈⌉⌊⌋≤≥ -> Noto Sans Math, pour 'IBM Plex Sans' (normal) */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: normal;
+  font-display: swap;
+  src: url('../assets/fonts/noto-sans-math-symboles.woff2') format('woff2');
+  unicode-range: U+2264-2265, U+2308-230B;
+}
+
+/* ⌈⌉⌊⌋≤≥ -> Noto Sans Math, pour 'IBM Plex Sans' (bold) */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: bold;
+  font-display: swap;
+  src: url('../assets/fonts/noto-sans-math-symboles.woff2') format('woff2');
+  unicode-range: U+2264-2265, U+2308-230B;
+}
+
+/* ⌈⌉⌊⌋≤≥ -> Noto Sans Math, pour 'Roboto Mono' (normal) */
+@font-face {
+  font-family: 'Roboto Mono';
+  font-style: normal;
+  font-weight: normal;
+  font-display: swap;
+  src: url('../assets/fonts/noto-sans-math-symboles.woff2') format('woff2');
+  unicode-range: U+2264-2265, U+2308-230B;
+}
+
+/* ⌈⌉⌊⌋≤≥ -> Noto Sans Math, pour 'Roboto Mono' (bold) */
+@font-face {
+  font-family: 'Roboto Mono';
+  font-style: normal;
+  font-weight: bold;
+  font-display: swap;
+  src: url('../assets/fonts/noto-sans-math-symboles.woff2') format('woff2');
+  unicode-range: U+2264-2265, U+2308-230B;
+}
