@@ -308,9 +308,9 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-comp-champ:first-child { margin-top: .1rem; }
 /* ligne unique : nom | stade (menu) | total rollable */
 /* 4 colonnes : nom | stade | divers (levier ±) | total */
-/* trois pistes : nom | stade (Fiche) ou stepper ± (Options) | total.
-   TOUTE évolution de cette grille doit vérifier SES DEUX USAGES. */
-.pc-comp-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 6.6rem) 2.6rem; gap: .12rem .3rem; align-items: center; padding: .14rem .25rem .18rem; font-size: var(--fs-body); border-radius: 4px; }
+/* trois pistes : nom (large) | stade (Fiche) ou stepper ± (Options) | total
+   (compact). TOUTE évolution de cette grille doit vérifier SES DEUX USAGES. */
+.pc-comp-row { display: grid; grid-template-columns: minmax(0, 1fr) 5.2rem 2.4rem; gap: .12rem .3rem; align-items: center; padding: .14rem .25rem .18rem; font-size: var(--fs-body); border-radius: 4px; }
 .pc-comp-row.odd { background: var(--stripe); }
 .pc-comp-row.head {
   background: var(--card); border-bottom: 1px solid var(--line); border-radius: 0; padding: .2rem .25rem .16rem;
@@ -324,6 +324,33 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-comp-del:hover { color: var(--red); }
 .pc-comp-total { font-size: var(--fs-value); font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; text-align: right; }
 .pc-comp-total.zero { color: var(--ink-3); font-weight: 400; }
+/* le total de la Fiche est un BOUTON de jet, petit frère de .pc-cval */
+.pc-comp-roll {
+  background: var(--panel); border: 1px solid var(--line-2); border-radius: 5px;
+  font: inherit; font-size: .68rem; font-weight: 700; color: var(--ink);
+  font-variant-numeric: tabular-nums; text-align: center; line-height: 1.25;
+  padding: .06rem .05rem; min-width: 0; width: 100%; transition: .12s;
+}
+.pc-comp-roll:hover { border-color: var(--red); color: var(--red); text-decoration: none; }
+.pc-comp-roll.zero { color: var(--ink-3); font-weight: 600; }
+/* stade : barre segmentée [ N | I | M | E | A ], dégradé jusqu'au rouge des
+   caractéristiques ; cliquable seulement quand le module est en édition */
+.pc-stadebar { display: flex; min-width: 0; }
+.pc-stadebar .seg {
+  flex: 1 1 0; min-width: 0; border: 1px solid var(--line-2); border-left-width: 0;
+  background: var(--card); color: var(--ink-3);
+  font: inherit; font-size: .54rem; font-weight: 700; line-height: 1;
+  padding: .16rem 0; text-align: center; cursor: pointer; transition: .12s;
+}
+.pc-stadebar .seg:first-child { border-left-width: 1px; border-radius: 4px 0 0 4px; }
+.pc-stadebar .seg:last-child { border-radius: 0 4px 4px 0; }
+.pc-stadebar .seg.on.s0 { background: var(--panel); color: var(--ink-2); }
+.pc-stadebar .seg.on.s1 { background: #e3c3ad; color: var(--ink); border-color: #d0ab90; }
+.pc-stadebar .seg.on.s2 { background: #cf9377; color: #fff; border-color: #bd7d5f; }
+.pc-stadebar .seg.on.s3 { background: #ad5136; color: #fff; border-color: #9a422a; }
+.pc-stadebar .seg.on.s4 { background: var(--red-deep); color: #fdf3ec; border-color: var(--red-deep); }
+.pc-editable.editing .pc-stadebar .seg:hover { border-color: var(--red); }
+.pc-editable:not(.editing) .pc-stadebar .seg { cursor: default; pointer-events: none; }
 .pc-select {
   width: 100%; padding: .17rem .35rem; border: 1px solid var(--line-2); border-radius: 6px;
   background: var(--card); color: var(--ink); font: inherit; font-size: .62rem;
@@ -553,3 +580,9 @@ html.night .pc-tab:hover { background: rgba(233, 224, 204, .07); }
 html.night .pc-abbr { background: #7f2b1d; color: #f4e2da; }
 html.night .pc-mini:hover { background: #332d20; }
 html.night .pc-block-title { color: var(--ink); }
+/* dégradé des stades, tons nuit (le --red-deep nuit est un ton de TEXTE :
+   le bout de barre reprend le rouge du chip de caractéristique nuit) */
+html.night .pc-stadebar .seg.on.s1 { background: #6b4936; color: #eee4cf; border-color: #7d5742; }
+html.night .pc-stadebar .seg.on.s2 { background: #8a5138; color: #f4e2da; border-color: #9c5f44; }
+html.night .pc-stadebar .seg.on.s3 { background: #a54a30; color: #f4e2da; border-color: #b55a3e; }
+html.night .pc-stadebar .seg.on.s4 { background: #7f2b1d; color: #f4e2da; border-color: #7f2b1d; }
