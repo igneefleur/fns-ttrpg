@@ -198,7 +198,7 @@
         if (p && typeof p === "object") return { name: String(p.name || ""), desc: String(p.desc || "") };
         return { name: p == null ? "" : String(p), desc: "" };
       });
-      // l'art du stade Artiste : {name, desc} ; un art resté vide s'efface
+      // l'art du stade qui l'ouvre (Art) : {name, desc} ; un art resté vide s'efface
       if (c.art && typeof c.art === "object") {
         c.art = { name: String(c.art.name || ""), desc: String(c.art.desc || "") };
         if (!c.art.name.trim() && !c.art.desc.trim()) delete c.art;
@@ -1245,9 +1245,9 @@
   }
 
   // ---------- onglet Art ----------
-  // La personnalisation d'une compétence vit ICI : dès le stade qui ouvre les
-  // techniques (Expert), sa carte porte leurs fiches ; au stade qui ouvre
-  // l'art (Artiste) s'y ajoutent le nom et la description de l'art. Aucun
+  // La personnalisation d'une compétence vit ICI : au stade qui ouvre les
+  // passifs et l'art (« Art » sous les règles actuelles), sa carte porte les
+  // fiches de passifs, le nom et la description de l'art. Aucun
   // contenu de règles : seulement les données du personnage. La liste se
   // reconstruit seulement quand les compétences éligibles (ou leur stade)
   // changent, pas à chaque frappe.
@@ -1295,10 +1295,13 @@
       top.appendChild(el("span", "pc-art-stade", stadeInfo(c.stade).nom));
       card.appendChild(top);
 
-      // l'art, au stade qui l'ouvre. Il n'entre dans l'état qu'à la première
-      // frappe : un art resté vierge ne doit pas générer d'écriture
-      // (Attributes Roll20) à la simple ouverture de la fiche.
-      if (stadeInfo(c.stade).art) {
+      // l'art, au stade qui l'ouvre — et un art DÉJÀ rédigé reste visible et
+      // éditable même si le stade ne l'ouvre plus (même échappatoire que les
+      // passifs : les données du joueur ne disparaissent jamais en silence).
+      // Il n'entre dans l'état qu'à la première frappe : un art resté vierge
+      // ne doit pas générer d'écriture (Attributes Roll20) à la simple
+      // ouverture de la fiche.
+      if (stadeInfo(c.stade).art || porteArt(c)) {
         var a = c.art || { name: "", desc: "" };
         var keep = function () { c.art = a; };
         var head = el("div", "pc-av-head");
@@ -1333,7 +1336,10 @@
       function renderTechs() {
         var cc = state.comps[it.key];
         techBox.innerHTML = "";
-        if (!cc || !stadeInfo(cc.stade).techniques) return;
+        // même échappatoire que compXp et artComps : des passifs EXISTANTS
+        // restent lisibles, éditables et supprimables même si le stade courant
+        // ne les ouvre plus (fiche migrée : leur stade d'ouverture a bougé)
+        if (!cc || (!stadeInfo(cc.stade).techniques && !(cc.techniques && cc.techniques.length))) return;
         cc.techniques.forEach(function (t, i) {
           var tCard = el("div", "pc-av pc-technique");
           var tHead = el("div", "pc-av-head");
@@ -1358,6 +1364,8 @@
           tCard.appendChild(tD);
           techBox.appendChild(tCard);
         });
+        // en acheter de NOUVEAUX reste réservé au stade qui les ouvre
+        if (!stadeInfo(cc.stade).techniques) return;
         // le coût affiché suit le prochain passif : inclus (gratuit) si un
         // stade atteint en offre encore un, sinon le tarif normal
         var prochaine = compXp({ stade: cc.stade, techniques: cc.techniques.concat([{ name: "", desc: "" }]) }) - compXp(cc);
