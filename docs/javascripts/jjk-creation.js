@@ -763,6 +763,7 @@
   //   Création ———— | XP dépensé ———— | XP total
   function buildHead(sheet) {
     var head = el("div", "pc-head");
+    var idBox = el("div", "pc-id");   // créé tôt : le portrait s'aligne sur sa hauteur
 
     // portrait compact 1:1, coins arrondis. L'URL s'édite EN PLACE au clic
     // (jamais prompt() : muet dans l'iframe Roll20 sous Chrome).
@@ -805,23 +806,30 @@
     head.appendChild(pbox);
     // carré 1:1 haut comme l'en-tête : largeur = hauteur MESURÉE (le transfert
     // aspect-ratio depuis un étirement flex n'est pas fiable sous Firefox).
-    // En étroit (en-tête très replié, media 44em), le CSS fige un carré
-    // compact : ne pas le contredire en inline.
-    var mqEtroit = null;
-    try { mqEtroit = window.matchMedia("(max-width: 44em)"); } catch (e) {}
-    function carrePortrait() {
-      if (mqEtroit && mqEtroit.matches) {
-        if (pbox.style.width) pbox.style.width = "";
-        return;
-      }
-      var h = pbox.offsetHeight;
-      if (h && pbox.style.width !== h + "px") pbox.style.width = h + "px";
+    // Le carré fait la hauteur de l'en-tête PARTOUT (site, dialogue Roll20,
+    // fenêtre séparée) : côté = hauteur du bloc d'identité, plafonné pour ne
+    // pas dévorer la largeur quand l'en-tête se replie sur trois lignes.
+    // Les deux dimensions sont posées en dur : aucun transfert aspect-ratio
+    // (infiable depuis un étirement flex) et aucune règle de largeur en CSS.
+    // Boucle bornée : régler le côté rétrécit le bloc d'identité, qui peut se
+    // replier et changer de hauteur — on repasse au plus 3 fois, puis on garde.
+    var PORTRAIT_MAX = 6;   // rem
+    function carrePortrait(passe) {
+      var un = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+      var cible = Math.min(idBox.offsetHeight, Math.round(PORTRAIT_MAX * un));
+      if (!cible) return;
+      var actuel = parseFloat(pbox.style.width) || 0;
+      if (Math.abs(actuel - cible) <= 1) return;
+      pbox.style.width = cible + "px";
+      pbox.style.height = cible + "px";
+      if ((passe || 0) < 3) carrePortrait((passe || 0) + 1);
     }
-    hooks.push(carrePortrait);
-    setTimeout(carrePortrait, 0);
-    try { new ResizeObserver(carrePortrait).observe(head); } catch (e) {}
+    hooks.push(function () { carrePortrait(0); });
+    setTimeout(function () { carrePortrait(0); }, 0);
+    // suit les redimensionnements de la fenêtre (dialogue Roll20, popout)
+    try { new ResizeObserver(function () { carrePortrait(0); }).observe(idBox); } catch (e) {}
 
-    var id = el("div", "pc-id");
+    var id = idBox;
     id.appendChild(fld("Nom", textInput(function () { return state.name; }, function (v) { state.name = v; }, "Nom du personnage"), "c4"));
     id.appendChild(fld("Espèce", textInput(function () { return state.espece; }, function (v) { state.espece = v; }), "c2"));
     id.appendChild(fld("Âge", textInput(function () { return state.age; }, function (v) { state.age = v; }), "c2"));
