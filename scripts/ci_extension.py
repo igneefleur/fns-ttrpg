@@ -197,14 +197,28 @@ def main():
                         "extension/chrome/manifest.json"],
                        cwd=ROOT, check=False)
         repare_xpi_signe(issuer, secret)
-        print(f"::warning title=Extension JJK non signée::{e} — le site "
-              f"distribue encore la v{state.get('version', '?')} signée.")
-        # AMO ne connaît AUCUNE version de ce guid = c'est la TOUTE PREMIÈRE
-        # signature qui vient d'échouer (mauvais compte, accord développeur non
-        # accepté, clés invalides…) : sauf quota annoncé, un report silencieux
-        # masquerait une panne permanente — on fait échouer le run.
+        deja_signee = STATE.exists() and xpi_signe()
+        # Panne DURABLE (pas un simple quota) : à signaler fort. AMO qui ne
+        # connaît « aucune version » du guid alors qu'il refuse de le créer
+        # (« Duplicate add-on ID found ») veut dire que les clés API
+        # appartiennent à un compte qui ne possède PAS cet add-on : la
+        # signature ne repassera jamais toute seule.
         if "quota" not in str(e) and amo_latest(guid, issuer, secret) is None:
-            raise
+            print("::error title=Signature JJK impossible::" + str(e) +
+                  " — AMO ne montre aucune version de " + guid + " à ce compte. "
+                  "Si la création répond « Duplicate add-on ID found », les secrets "
+                  "AMO_JWT_ISSUER / AMO_JWT_SECRET sont ceux d'un AUTRE compte que "
+                  "le propriétaire de l'add-on : reposer les clés du bon compte "
+                  "(ou transférer l'add-on) puis relancer le workflow.")
+            # Le site NE DOIT PAS rester bloqué pour autant : tant qu'une version
+            # signée est distribuée, on déploie et on retentera au prochain run.
+            # On ne casse le run que si rien n'a jamais été signé (sinon la panne
+            # d'un add-on emporterait la publication des règles et de la fiche).
+            if not deja_signee:
+                raise
+        else:
+            print(f"::warning title=Extension JJK non signée::{e} — le site "
+                  f"distribue encore la v{state.get('version', '?')} signée.")
         print(f"[ci-extension] SIGNATURE REPORTÉE ({e}) — le site est déployé "
               f"avec les paquets signés v{state.get('version', '?')}.")
         return
