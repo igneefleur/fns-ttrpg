@@ -112,6 +112,27 @@
     if (typeof window.__jjkOnTake === "function") { window.__jjkOnTake(payload); return; }
     takeQueue.push(payload);
   };
+  // Joueurs connectés, pour le sélecteur « À un joueur » de la barre d'envoi.
+  // La fiche est une iframe d'une autre origine : elle ne peut pas lire la
+  // liste de Roll20 elle-même, seule l'extension y accède. Une extension qui
+  // ne connaît pas ce message ne répond RIEN (aucun accusé de réception dans
+  // ce pont) : le délai rend alors la main avec null et la fiche retombe sur
+  // la liste saisie à la main.
+  var playersWait = [];
+  window.__jjkPlayers = function (cb) {
+    if (typeof cb !== "function") return;
+    playersWait.push(cb);
+    post({ type: "players" });
+    setTimeout(function () {
+      var i = playersWait.indexOf(cb);
+      if (i >= 0) { playersWait.splice(i, 1); cb(null); }
+    }, 1200);
+  };
+  function playersReply(noms) {
+    var q = playersWait.slice();
+    playersWait.length = 0;
+    q.forEach(function (cb) { cb(noms); });
+  }
   setInterval(function () {
     if (!takeQueue.length || typeof window.__jjkOnTake !== "function") return;
     var q = takeQueue.slice();
@@ -166,7 +187,7 @@
     // charger le vrai jjk-creation.js APRÈS hydratation (son init lit jjk-perso).
     // ?v= : MÊME numéro que mkdocs.yml (extra_javascript), à monter ensemble.
     var s = document.createElement("script");
-    s.src = "javascripts/jjk-creation.js?v=36";
+    s.src = "javascripts/jjk-creation.js?v=39";
     s.onload = function () { ready = true; post({ type: "mounted" }); };
     s.onerror = function () { post({ type: "error", error: "jjk-creation.js" }); };
     document.body.appendChild(s);
@@ -181,6 +202,8 @@
     // public, chaque client décide s'il le prend), d'où l'absence de filtre
     // sur charId ; c'est le dialogue de réception qui demande confirmation.
     else if (d.type === "take" && d.payload) window.__jjkTake(d.payload);
+    // liste des joueurs connectés, en réponse à __jjkPlayers
+    else if (d.type === "players-result") playersReply(d.players || []);
   });
 
   if (STANDALONE) {
