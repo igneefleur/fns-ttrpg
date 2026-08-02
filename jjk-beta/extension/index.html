@@ -415,13 +415,30 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#la-fiche-jjk-sur-roll20-chantier" class="md-nav__link">
+  <a href="#la-fiche-jjk-sur-roll20" class="md-nav__link">
     <span class="md-ellipsis">
       
-        La fiche JJK sur Roll20 (chantier)
+        La fiche JJK sur Roll20
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="La fiche JJK sur Roll20">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mode-beta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mode beta
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -460,13 +477,30 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#la-fiche-jjk-sur-roll20-chantier" class="md-nav__link">
+  <a href="#la-fiche-jjk-sur-roll20" class="md-nav__link">
     <span class="md-ellipsis">
       
-        La fiche JJK sur Roll20 (chantier)
+        La fiche JJK sur Roll20
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="La fiche JJK sur Roll20">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mode-beta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mode beta
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -488,20 +522,21 @@
 
 
 <h1 id="extension">Extension</h1>
-<h2 id="la-fiche-jjk-sur-roll20-chantier">La fiche JJK sur Roll20 (chantier)</h2>
-<p>Cette page sert la version de CHANTIER : elle affiche la fiche du site beta,
-là où les nouveautés arrivent en premier, au risque de casses passagères. La
-version stable, elle, vit sur
-<a href="https://igneefleur.github.io/HxH-Regles-JDR/jjk/extension/">le site normal</a>.</p>
-<p>Les deux extensions portent une identité différente : elles s'installent
-côte à côte, et le dialogue de personnage Roll20 montre alors deux onglets,
-« Fiche JJK » (stable) et « Fiche JJK beta ». Elles lisent les mêmes
-Attributes du personnage : une fiche remplie d'un côté se retrouve de l'autre.</p>
+<h2 id="la-fiche-jjk-sur-roll20">La fiche JJK sur Roll20</h2>
 <p>Une extension (Firefox ou Chrome) affiche une fiche de personnage JJK à la place
 de la fiche Roll20, et envoie ses jets dans le tchat. Les personnages se créent
 dans le <a href="../personnage/">créateur de personnage</a> ; l'extension les
-récupère et les présente dans une partie Roll20, via un onglet « Fiche JJK beta »
+récupère et les présente dans une partie Roll20, via un onglet « Fiche JJK »
 ajouté à la fiche du personnage.</p>
+<h3 id="mode-beta">Mode beta</h3>
+<p>Une seule extension, deux versions de la fiche. Son bouton dans la barre du
+navigateur ouvre un panneau qui porte l'interrupteur « Mode beta » : coché,
+la fiche affichée dans Roll20 vient du site de chantier, là où les nouveautés
+arrivent en premier, au risque de casses passagères ; décoché, elle revient à
+la version stable. L'onglet du dialogue de personnage s'annonce alors
+« Fiche JJK beta », pour qu'on sache toujours quelle version on remplit.</p>
+<p>Les deux versions écrivent les mêmes Attributes du personnage : un aller-retour
+ne perd rien, et les autres joueurs ne voient aucune différence.</p>
 <style>
 .ext-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.1rem; margin:1rem 0 1.25rem; align-items:start; }
 @media (max-width:720px){ .ext-grid{ grid-template-columns:1fr; } }
@@ -523,7 +558,7 @@ ajouté à la fiche du personnage.</p>
 <div class="ext-grid">
   <div class="mcard ext-card">
     <p><strong>Firefox</strong><span class="prereq">Signée par Mozilla · installation permanente</span></p>
-    <p><a class="md-button" href="../download/jjk-beta-roll20-firefox.xpi" download>Télécharger (.xpi)</a></p>
+    <p><a class="md-button" href="../download/jjk-roll20-firefox.xpi" download>Télécharger (.xpi)</a></p>
     <ol class="ext-steps">
       <li>télécharger le fichier <code>.xpi</code> ;</li>
       <li>l'ouvrir avec Firefox : <kbd>Ctrl</kbd>+<kbd>J</kbd> (téléchargements)
@@ -534,7 +569,7 @@ ajouté à la fiche du personnage.</p>
   </div>
   <div class="mcard ext-card">
     <p><strong>Chrome / Edge</strong><span class="prereq">Mode développeur · dossier décompressé</span></p>
-    <p><a class="md-button" href="../download/jjk-beta-roll20-chrome.zip" download>Télécharger (.zip)</a></p>
+    <p><a class="md-button" href="../download/jjk-roll20-chrome.zip" download>Télécharger (.zip)</a></p>
     <ol class="ext-steps">
       <li>décompresser le <code>.zip</code> dans un dossier (à conserver : le
           navigateur y lit l'extension) ;</li>
@@ -547,11 +582,10 @@ ajouté à la fiche du personnage.</p>
   </div>
 </div>
 
-<p>La fiche affichée dans Roll20 est chargée depuis ce site beta à chaque
-ouverture : les évolutions du créateur et des règles arrivent toutes seules,
-sans mise à jour de l'extension (une connexion internet est nécessaire pendant
-la partie). L'extension stable, elle, continue de charger la fiche du site
-normal : les deux ne se marchent jamais dessus.</p>
+<p>La fiche affichée dans Roll20 est chargée depuis le site à chaque ouverture :
+les évolutions du créateur et des règles arrivent toutes seules, sans mise à
+jour de l'extension (une connexion internet est nécessaire pendant la partie).
+Le site lu dépend de l'interrupteur « Mode beta » ci-dessus.</p>
 <p>Ensuite : ouvrir le <a href="../personnage/">créateur de personnage</a> une fois
 (les fiches se synchronisent), puis, dans une partie Roll20, ouvrir un personnage
 et cliquer l'onglet « Fiche JJK » (entre « Feuille de personnage » et
