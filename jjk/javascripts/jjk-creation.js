@@ -760,6 +760,23 @@
       setTimeout(function () { pedit.focus(); pedit.select(); }, 0);
     });
     head.appendChild(pbox);
+    // carré 1:1 haut comme l'en-tête : largeur = hauteur MESURÉE (le transfert
+    // aspect-ratio depuis un étirement flex n'est pas fiable sous Firefox).
+    // En étroit (en-tête très replié, media 44em), le CSS fige un carré
+    // compact : ne pas le contredire en inline.
+    var mqEtroit = null;
+    try { mqEtroit = window.matchMedia("(max-width: 44em)"); } catch (e) {}
+    function carrePortrait() {
+      if (mqEtroit && mqEtroit.matches) {
+        if (pbox.style.width) pbox.style.width = "";
+        return;
+      }
+      var h = pbox.offsetHeight;
+      if (h && pbox.style.width !== h + "px") pbox.style.width = h + "px";
+    }
+    hooks.push(carrePortrait);
+    setTimeout(carrePortrait, 0);
+    try { new ResizeObserver(carrePortrait).observe(head); } catch (e) {}
 
     var id = el("div", "pc-id");
     id.appendChild(fld("Nom", textInput(function () { return state.name; }, function (v) { state.name = v; }, "Nom du personnage"), "c4"));
