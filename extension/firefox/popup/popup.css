@@ -14,3 +14,10 @@ body { width: 300px; margin: 0; font: 13px/1.35 "Segoe UI", Arial, sans-serif; c
 .p-btn { flex: 1; text-align: center; text-decoration: none; border: 1px solid #999; background: #f5f5f5; border-radius: 4px; padding: 6px 8px; font: inherit; color: #111; cursor: pointer; }
 .p-btn:hover { background: #fff; }
 .p-hint { padding: 4px 12px 12px; margin: 0; font-size: 11px; color: #777; }
+/* réglage « mode beta » : la fiche Roll20 vient du site de chantier */
+.p-beta { display: flex; align-items: flex-start; gap: 8px; padding: 8px 12px; border-top: 1px solid #eee; cursor: pointer; }
+.p-beta input { margin: 2px 0 0; flex-shrink: 0; }
+.p-beta span { font-size: 12px; color: #111; }
+.p-beta small { display: block; margin-top: 2px; font-size: 11px; color: #777; }
+body.beta .p-head { background: #6b4e00; }
+body.beta .p-title::after { content: " — beta"; }

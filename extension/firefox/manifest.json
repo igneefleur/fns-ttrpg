@@ -1,14 +1,14 @@
 {
   "manifest_version": 2,
-  "name": "Fiche JJK beta sur Roll20",
-  "version": "1.0.0",
-  "description": "Version de CHANTIER de la fiche JJK dans Roll20 : elle affiche la fiche du site beta. Installable à côté de la version normale.",
-  "homepage_url": "https://igneefleur.github.io/HxH-Regles-JDR/jjk-beta/",
+  "name": "Fiche JJK sur Roll20",
+  "version": "2.0.2",
+  "description": "Affiche vos fiches de personnage JJK (système JDR) à la place de la fiche Roll20, avec les jets envoyés dans le tchat.",
+  "homepage_url": "https://igneefleur.github.io/HxH-Regles-JDR/jjk/",
   "browser_specific_settings": {
     "gecko": {
-      "id": "jjk-roll20-beta@igneefleur",
+      "id": "jjk-roll20-v2@igneefleur",
       "strict_min_version": "109.0",
-      "update_url": "https://igneefleur.github.io/HxH-Regles-JDR/jjk-beta/download/updates.json"
+      "update_url": "https://igneefleur.github.io/HxH-Regles-JDR/jjk/download/updates.json"
     }
   },
   "permissions": [

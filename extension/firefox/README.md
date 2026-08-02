@@ -1,6 +1,6 @@
 # Extension « Fiche JJK sur Roll20 »
 
-Un onglet « Fiche JJK beta » dans le dialogue de personnage Roll20. L'extension est
+Un onglet « Fiche JJK » dans le dialogue de personnage Roll20. L'extension est
 une COQUILLE stable : la fiche elle-même (le vrai créateur du site) est SERVIE
 PAR LE SITE — `roll20-fiche.html`, affichée dans une iframe — et se met donc à
 jour à chaque déploiement du site, sans re-signer l'extension. La fiche est

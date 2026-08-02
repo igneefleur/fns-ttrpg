@@ -12,7 +12,7 @@ en PUT répond désormais 404 pour les nouveaux add-ons) :
   3. POST /addons/addon/ {version:{upload:uuid}} (création) — ou, si l'add-on
      existe déjà, POST /addons/addon/{guid}/versions/ (nouvelle version) ;
   4. attente de la signature (file.status == "public"), téléchargement du .xpi
-     signé PAR-DESSUS docs/download/jjk-beta-roll20-firefox.xpi ;
+     signé PAR-DESSUS docs/download/jjk-roll20-firefox.xpi ;
   5. mise à jour de docs/download/updates.json (mise à jour AUTOMATIQUE : le
      manifest porte update_url -> ce fichier ; Firefox y lit la dernière
      version et va la chercher sur le site tout seul).
@@ -42,9 +42,9 @@ import requests
 
 ROOT = Path(__file__).resolve().parent.parent
 FF_MANIFEST = ROOT / "extension" / "firefox" / "manifest.json"
-XPI = ROOT / "docs" / "download" / "jjk-beta-roll20-firefox.xpi"
+XPI = ROOT / "docs" / "download" / "jjk-roll20-firefox.xpi"
 UPDATES = ROOT / "docs" / "download" / "updates.json"
-XPI_URL = "https://igneefleur.github.io/HxH-Regles-JDR/jjk-beta/download/jjk-beta-roll20-firefox.xpi"
+XPI_URL = "https://igneefleur.github.io/HxH-Regles-JDR/jjk-beta/download/jjk-roll20-firefox.xpi"
 API = "https://addons.mozilla.org/api/v5"
 
 
@@ -104,7 +104,7 @@ def upload_xpi(amo):
     for _ in range(4):
         with XPI.open("rb") as fh:
             r = amo.post("/addons/upload/",
-                         files={"upload": ("jjk-beta-roll20-firefox.xpi", fh, "application/x-xpinstall")},
+                         files={"upload": ("jjk-roll20-firefox.xpi", fh, "application/x-xpinstall")},
                          data={"channel": "unlisted"})
         w = _throttle_wait(r)
         if w is None:

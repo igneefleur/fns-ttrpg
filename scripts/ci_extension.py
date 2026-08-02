@@ -91,7 +91,7 @@ def amo_latest(guid, issuer, secret):
 
 
 def xpi_signe():
-    """True si docs/download/jjk-beta-roll20-firefox.xpi est un binaire signé Mozilla."""
+    """True si docs/download/jjk-roll20-firefox.xpi est un binaire signé Mozilla."""
     import zipfile
     try:
         with zipfile.ZipFile(sign_extension.XPI) as z:
@@ -156,8 +156,8 @@ def main():
         # archives committées à l'exact au cas où un pack de développement
         # local les aurait écrasées
         subprocess.run(["git", "checkout", "--",
-                        "docs/download/jjk-beta-roll20-firefox.xpi",
-                        "docs/download/jjk-beta-roll20-chrome.zip"],
+                        "docs/download/jjk-roll20-firefox.xpi",
+                        "docs/download/jjk-roll20-chrome.zip"],
                        cwd=ROOT, check=False)
         repare_xpi_signe(issuer, secret)
         return
@@ -190,8 +190,8 @@ def main():
         # n'est pas écrite, le prochain run (push ou workflow_dispatch)
         # retentera la signature.
         subprocess.run(["git", "checkout", "--",
-                        "docs/download/jjk-beta-roll20-firefox.xpi",
-                        "docs/download/jjk-beta-roll20-chrome.zip",
+                        "docs/download/jjk-roll20-firefox.xpi",
+                        "docs/download/jjk-roll20-chrome.zip",
                         "docs/download/updates.json",
                         "extension/firefox/manifest.json",
                         "extension/chrome/manifest.json"],

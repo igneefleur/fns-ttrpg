@@ -54,5 +54,26 @@ if (typeof browser === "undefined") { var browser = chrome; }
   }
 
   document.getElementById("p-refresh").addEventListener("click", render);
+
+  // Mode beta : la fiche affichée dans Roll20 vient du site de chantier.
+  // Une seule extension, deux sites (creator-shell.js lit ce réglage) ; le
+  // lien « Ouvrir le créateur » suit, et l'onglet Roll20 s'annonce « beta ».
+  var beta = document.getElementById("p-beta");
+  var site = document.getElementById("p-site");
+  var CREATEUR = {
+    stable: "https://igneefleur.github.io/HxH-Regles-JDR/jjk/personnage/",
+    beta: "https://igneefleur.github.io/HxH-Regles-JDR/jjk-beta/personnage/"
+  };
+  function appliquerMode(on) {
+    beta.checked = !!on;
+    site.href = on ? CREATEUR.beta : CREATEUR.stable;
+    document.body.classList.toggle("beta", !!on);
+  }
+  browser.storage.local.get("jjkBeta").then(function (r) { appliquerMode(r && r.jjkBeta); });
+  beta.addEventListener("change", function () {
+    var on = beta.checked;
+    browser.storage.local.set({ jjkBeta: on }).then(function () { appliquerMode(on); });
+  });
+
   render();
 })();
