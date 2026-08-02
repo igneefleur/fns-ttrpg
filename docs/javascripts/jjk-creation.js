@@ -1465,9 +1465,11 @@
         nm.type = "text"; nm.placeholder = "Nom de l'art"; nm.value = a.name || "";
         nm.addEventListener("input", function () { a.name = nm.value; keep(); save(); });
         head.appendChild(nm);
+        // la compétence tient dans le titre : la carte n'a plus de colonne de
+        // libellé, sa description occupe toute la largeur
         head.appendChild(chatBtn(
-          function () { return "Art — " + (a.name || it.name); },
-          function () { return [["Compétence", it.name + " (" + it.carac + ")"], ["Description", a.desc]]; }));
+          function () { return "Art — " + (a.name || it.name) + " (" + it.name + ")"; },
+          function () { return [["", a.desc]]; }));
         head.appendChild(miniBtn("✕", "Effacer cet art", function () {
           // un texte rédigé ne part pas sur un simple clic (le ✕ jouxte Chat)
           if ((String(a.name || "").trim() || String(a.desc || "").trim()) &&
@@ -1530,8 +1532,8 @@
             : "Coût de ce passif — vide = " + DATA.xpParStade + " xp (tarif de base) ; une valeur le force.";
           tHead.appendChild(tCout);
           tHead.appendChild(chatBtn(
-            function () { return "Passif — " + (t.name || it.name); },
-            function () { return [["Compétence", it.name], ["Effet", t.desc]]; }));
+            function () { return "Passif — " + (t.name || it.name) + " (" + it.name + ")"; },
+            function () { return [["", t.desc]]; }));
           tHead.appendChild(miniBtn("✕", "Retirer ce passif", function () {
             if ((String(t.name || "").trim() || String(t.desc || "").trim()) &&
                 !confirm("Retirer le passif « " + (t.name || "sans nom") + " » ?")) return;
@@ -1628,8 +1630,9 @@
         head.appendChild(chatBtn(
           function () { return (kind === "arme" ? "Arme — " : "Armure — ") + (it.nom || (kind === "arme" ? "arme" : "armure")); },
           function () {
+            // valeurs courtes étiquetées, propriétés (texte long) pleine largeur
             return kind === "arme"
-              ? [["Poids", it.poids], ["Dégâts", it.degats], ["Reach", it.reach], ["Propriétés", it.props]]
+              ? [["Poids", it.poids], ["Dégâts", it.degats], ["Reach", it.reach], ["", it.props]]
               : [["Poids", it.poids], ["Invu", it.invu], ["Zones protégées", it.zones]];
           }));
         head.appendChild(miniBtn("✕", "Retirer", function () { items.splice(idx, 1); render(); refresh(); }, "danger pc-edit-only"));
@@ -1960,7 +1963,7 @@
             ["Groupe", G[it.groupe]],
             ["Quantité", String(it.qte)],
             ["Poids", it.poids ? fmtP(it.poids) + " kg" + (it.qte > 1 ? " (total " + fmtP(it.qte * it.poids) + " kg)" : "") : ""],
-            ["Description", it.desc]
+            ["", it.desc]   // texte long : pleine largeur, sans libellé
           ];
         }));
       actions.appendChild(miniBtn("Retirer", "Retirer l'objet", function () {
@@ -2042,7 +2045,7 @@
     var defFld = fld("Défaut", defIn, "c12");
     defFld.appendChild(chatBtn(
       function () { return "Défaut" + (state.name ? " — " + state.name : ""); },
-      function () { return [["Défaut", state.defaut]]; }));
+      function () { return [["", state.defaut]]; }));
     g.appendChild(defFld);
     [0, 1].forEach(function (qi) {
       var qIn = el("textarea", "pc-notes pc-edit-field");
@@ -2052,7 +2055,7 @@
       var qFld = fld("Qualité " + (qi + 1), qIn, "c6");
       qFld.appendChild(chatBtn(
         function () { return "Qualité " + (qi + 1) + (state.name ? " — " + state.name : ""); },
-        function () { return [["Qualité", state.qualites[qi]]]; }));
+        function () { return [["", state.qualites[qi]]]; }));
       g.appendChild(qFld);
     });
     bP.appendChild(g);
@@ -2072,7 +2075,7 @@
         head.appendChild(n);
         head.appendChild(chatBtn(
           function () { return "Avantage — " + (a.name || "sans nom"); },
-          function () { return [["Effet", a.desc]]; }));
+          function () { return [["", a.desc]]; }));
         head.appendChild(miniBtn("✕", "Retirer", function () { state.avantages.splice(i, 1); renderAv(); refresh(); }, "danger pc-edit-only"));
         card.appendChild(head);
         var d = el("textarea", "pc-notes pc-edit-field");
