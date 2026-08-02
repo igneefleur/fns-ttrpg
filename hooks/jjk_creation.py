@@ -29,7 +29,7 @@ NDASH = "–"   # tiret de plage (U+2013)
 PAGE = "content/regles/index.md"
 
 CARACS = ["Mind", "Body", "Prestance"]
-STADES = ["Non initié", "Initié", "Maitrise", "Expertise", "Art"]
+STADES = ["Non initié", "Initié", "Maitre", "Expert", "Artiste"]
 
 
 def _num(s):

@@ -7,7 +7,7 @@
  * La Fiche a trois colonnes (caractéristiques | combat | compétences), tout
  * dans l'ordre Body, Mind, Prestance ; une ligne par compétence (nom | stade
  * en menu | total-jet). L'onglet Art porte la personnalisation : les
- * passifs d'une compétence et son art (au stade Art).
+ * passifs d'une compétence et son art (au stade Artiste).
  *
  * Le contenu des règles (caractéristiques, listes de compétences, stades,
  * vitesses, difficultés, blessures, courbes d'armes/armures, actions) vient de
@@ -16,8 +16,8 @@
  * calcul prosaïques :
  *   - création : 120 points à répartir dans les 3 caractéristiques (0 à 80) ;
  *   - 500 xp à la création (total modifiable) ; 20 xp par stade de compétence
- *     (Non initié, Initié, Maitrise, Expertise, Art), 20 xp par +5 de
- *     caractéristique (limite 80 sans avantage) ; le stade Art (sans bonus
+ *     (Non initié, Initié, Maitre, Expert, Artiste), 20 xp par +5 de
+ *     caractéristique (limite 80 sans avantage) ; le stade Artiste (sans bonus
  *     propre) ouvre l'art et les passifs de la compétence : le passif
  *     original est inclus dans le stade, les suivants coûtent 20 xp pièce ;
  *   - pas plus d'un quart de l'xp total investi dans une seule compétence ;
@@ -1246,7 +1246,7 @@
 
   // ---------- onglet Art ----------
   // La personnalisation d'une compétence vit ICI : au stade qui ouvre les
-  // passifs et l'art (« Art » sous les règles actuelles), sa carte porte les
+  // passifs et l'art (« Artiste » sous les règles actuelles), sa carte porte les
   // fiches de passifs, le nom et la description de l'art. Aucun
   // contenu de règles : seulement les données du personnage. La liste se
   // reconstruit seulement quand les compétences éligibles (ou leur stade)

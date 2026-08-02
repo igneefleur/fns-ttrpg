@@ -96,11 +96,11 @@ Pour chaque compétence il existe 5 stades ; pour passer d'un stade à l'autre, 
 
 **Initié :** Bonus de 0 au jet.
 
-**Maitrise :** Bonus de +20.
+**Maitre :** Bonus de +20.
 
-**Expertise :** Bonus de +30.
+**Expert :** Bonus de +30.
 
-**Art :** Vous pouvez choisir un passif original pour votre compétence, ce qui va personnaliser votre façon d'approcher cette discipline. À ce stade, vous pouvez dépenser à répétition 20 xp pour mettre d'autres passifs ou propriétés spécifiques à cette compétence.
+**Artiste :** Vous pouvez choisir un passif original pour votre compétence, ce qui va personnaliser votre façon d'approcher cette discipline. À ce stade, vous pouvez dépenser à répétition 20 xp pour mettre d'autres passifs ou propriétés spécifiques à cette compétence.
 
 </div>
 
@@ -270,7 +270,7 @@ De façon similaire aux armes, les armures auront une statistique d'invu croissa
 | Invu | 5D4 | 5D8 | 5D12 |
 | Zones protégées | Torse | Torse, tête, cuisses, épaules, bras | Torse, tête, jambes, épaules, bras, mains, pieds (tout sauf le visage) |
 | Viser une zone non protégée | −10 à l'attaque | −50 à l'attaque | −100 à l'attaque |
-| Port d'armure | Initié | Maitrise | Expertise |
+| Port d'armure | Initié | Maitre | Expert |
 
 </div>
 
