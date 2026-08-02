@@ -72,11 +72,17 @@ def _table_rows(text, header_re):
 
 # Compétences que la FICHE ajoute, absentes des listes de la page de règles.
 # L'initiative y est une règle de combat (« Initiative = D100 + Body − poids »)
-# et non une entrée de la liste des compétences de Body ; la fiche, elle, en
-# fait une compétence à part entière (stade, passifs à Artiste), sur décision
-# de l'utilisateur. On l'ajoute ICI plutôt que dans la page : les règles sont
+# et non une entrée de la liste des compétences de Body ; l'esquive y est
+# nommée comme action sans figurer dans la liste. La fiche, elle, en fait des
+# compétences à part entière (stade, passifs à Artiste), sur décision de
+# l'utilisateur. On les ajoute ICI plutôt que dans la page : les règles sont
 # celles d'un ami et ne se réécrivent pas.
-COMPS_FICHE = {"Body": ["Initiative"]}
+COMPS_FICHE = {"Body": ["Initiative", "Esquive"]}
+
+# Compétences d'ARMES : elles vivent dans leur propre module de la fiche, pas
+# dans la liste générale. Toujours des compétences de Body. Le joueur peut en
+# ajouter d'autres depuis le module (elles ne passent alors pas par ici).
+COMPS_ARMES = ["Tanto", "Katana", "Pique Longue", "Chakram"]
 
 
 def _comps(defs):
@@ -184,6 +190,8 @@ def _extract(docs_dir):
     return {
         "caracs": [{"name": c, "desc": mcards.get(c, "")} for c in CARACS],
         "comps": _comps(defs),
+        # celles de COMPS_ARMES réellement présentes dans la liste de Body
+        "compsArmes": [n for n in COMPS_ARMES if n in _comps(defs).get("Body", [])],
         "stades": _stades(defs),
         "xpParStade": int(m.group(1)) if m else 20,
         "vitesses": _vitesses(text),
