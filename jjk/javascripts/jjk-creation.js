@@ -126,6 +126,12 @@
       },
       divers: { pvMax: [0, 0, 0], regen: [0, 0, 0], vitesse: [0, 0, 0] },
       pvMaxOverride: null,
+      vitesseOverride: null,
+      regenOverride: null,
+      // langues : des compétences de Mind à part entière (clé « Mind/<nom> »
+      // dans comps), rassemblées dans leur module. langueBase = la langue du
+      // personnage, acquise jusqu'à Expert sans rien coûter.
+      langues: [], langueBase: "",
       de: "1d100"
     };
   }
@@ -190,6 +196,29 @@
       ? null : Math.floor(parseFloat(s.pvMaxOverride));
     if (s.pvMaxOverride !== null && !isFinite(s.pvMaxOverride)) s.pvMaxOverride = null;
     if (s.pvMaxOverride !== null) s.pvMaxOverride = clamp(s.pvMaxOverride, 0, 9999);
+    // vitesse et régénération forcées : même règle, la vitesse en décimales
+    // (la table donne des paliers comme 10.5 m)
+    function force(v, dec, max) {
+      if (v === null || v === undefined || v === "") return null;
+      var n = parseFloat(v);
+      if (!isFinite(n)) return null;
+      return clamp(dec ? Math.round(n * 100) / 100 : Math.floor(n), 0, max);
+    }
+    s.vitesseOverride = force(s.vitesseOverride, true, 9999);
+    s.regenOverride = force(s.regenOverride, false, 9999);
+    // langues : noms uniques, capitalisés ; la langue de base doit être l'une
+    // d'elles (sinon la gratuité viserait une langue absente)
+    if (!Array.isArray(s.langues)) s.langues = [];
+    var vues = {};
+    s.langues = s.langues
+      .map(function (n) { return capFirst(String(n == null ? "" : n).trim()); })
+      .filter(function (n) {
+        if (!n || vues[n.toLowerCase()]) return false;
+        vues[n.toLowerCase()] = 1;
+        return true;
+      });
+    s.langueBase = capFirst(String(s.langueBase == null ? "" : s.langueBase).trim());
+    if (s.langueBase && !vues[s.langueBase.toLowerCase()]) s.langueBase = "";
     if (!Array.isArray(s.qualites)) s.qualites = ["", ""];
     s.qualites = s.qualites.map(function (q) { return q == null ? "" : String(q); });
     while (s.qualites.length < 2) s.qualites.push("");
@@ -327,8 +356,32 @@
     return (c && c.art && c.art.cout !== null && c.art.cout !== undefined && isFinite(c.art.cout))
       ? c.art.cout : 0;
   }
-  function compXp(c) {
-    var xp = DATA.xpParStade * c.stade;
+  // clés et repères des compétences que la fiche traite à part
+  var INIT_KEY = "Body/Initiative";
+  var LANGUE_CARAC = "Mind";
+  function langueKey(nom) { return LANGUE_CARAC + "/" + nom; }
+  function estLangue(key) {
+    return state.langues.some(function (n) { return langueKey(n) === key; });
+  }
+  // index du stade « Expert » : la langue du personnage y monte gratuitement
+  function stadeIndex(nom) {
+    for (var i = 0; i < DATA.stades.length; i++) {
+      if ((DATA.stades[i].nom || "").toLowerCase() === nom) return i;
+    }
+    return -1;
+  }
+  function stadeExpert() {
+    var i = stadeIndex("expert");
+    return i >= 0 ? i : Math.max(0, DATA.stades.length - 2);
+  }
+  function compXp(c, key) {
+    // la langue du personnage est acquise : ses stades ne coûtent rien
+    // jusqu'à Expert, au-delà seule la différence se paie
+    var stadesDus = c.stade;
+    if (key && state.langueBase && key === langueKey(state.langueBase)) {
+      stadesDus = Math.max(0, c.stade - stadeExpert());
+    }
+    var xp = DATA.xpParStade * stadesDus;
     // les passifs PRÉSENTS restent facturés même si le stade ne les ouvre
     // plus (fiches d'avant un déplacement du stade d'ouverture : rien ne
     // doit disparaître ni se re-créditer en silence)
@@ -339,7 +392,7 @@
   function xpDepense() {
     var xp = 0;
     ["Mind", "Body", "Prestance"].forEach(function (c) { xp += DATA.xpParStade * state.caracsXp[c]; });
-    Object.keys(state.comps).forEach(function (k) { xp += compXp(state.comps[k]); });
+    Object.keys(state.comps).forEach(function (k) { xp += compXp(state.comps[k], k); });
     return xp;
   }
   function xpRestant() { return state.xpTotal - xpDepense(); }
@@ -351,7 +404,22 @@
   // PV max : la valeur forcée (Options du bloc PV) court-circuite le calcul
   function pvMax() { return state.pvMaxOverride !== null ? state.pvMaxOverride : pvMaxAuto(); }
   function pvCourant() { return state.pv === null ? pvMax() : state.pv; }
-  function regen() { return Math.max(0, Math.floor(caracTotal("Body") / 10) + modSum(state.divers.regen)); }
+  function regenAuto() { return Math.max(0, Math.floor(caracTotal("Body") / 10) + modSum(state.divers.regen)); }
+  function regen() { return state.regenOverride !== null ? state.regenOverride : regenAuto(); }
+  // Poids porté : tout ce que le personnage a sur lui — armes, armures et
+  // objets de l'inventaire (quantité comprise). Il se soustrait à l'initiative.
+  function poidsPorte() {
+    var t = 0;
+    state.armes.forEach(function (a) { t += pnum(a.poids); });
+    state.armures.forEach(function (a) { t += pnum(a.poids); });
+    state.inv.objets.forEach(function (o) { t += pnum(o.qte) * pnum(o.poids); });
+    return Math.round(t * 100) / 100;
+  }
+  // Initiative : une compétence de Body comme les autres, moins le poids porté
+  function initComp() { return state.comps[INIT_KEY] || blankComp(); }
+  function initiative() {
+    return Math.round((compValue("Body", initComp(), INIT_KEY) - poidsPorte()) * 100) / 100;
+  }
   // la table des règles donne une CHAÎNE (« 10.5 m ») : le palier s'extrait en
   // nombre pour recevoir les divers, puis se réaffiche avec son unité
   function vitessePalier() {
@@ -370,9 +438,13 @@
     var n = parseFloat(vitessePalier());
     return isFinite(n) ? n : 0;
   }
-  function vitesse() {
-    return fmtP(Math.max(0, vitesseBase() + modSum(state.divers.vitesse))) + " m";
+  function vitesseAuto() {
+    return Math.max(0, vitesseBase() + modSum(state.divers.vitesse));
   }
+  function vitesseVal() {
+    return state.vitesseOverride !== null ? state.vitesseOverride : vitesseAuto();
+  }
+  function vitesse() { return fmtP(vitesseVal()) + " m"; }
   function compValue(carac, comp, key) {
     return caracTotal(carac) + stadeInfo(comp ? comp.stade : 0).bonus +
            (key ? (state.compsMod[key] || 0) : 0);
@@ -386,6 +458,13 @@
     state.customComps.forEach(function (cc) {
       if (cc && cc.name) out.push({ key: cc.carac + "/" + cc.name, name: cc.name, carac: cc.carac, custom: true });
     });
+    // les langues sont des compétences de Mind à part entière : elles doivent
+    // apparaître dans l'onglet Art et dans les modificateurs (Options) comme
+    // les autres. Seule la liste de l'onglet Fiche les écarte, puisqu'elles
+    // ont leur propre module.
+    state.langues.forEach(function (n) {
+      out.push({ key: langueKey(n), name: n, carac: LANGUE_CARAC, custom: true, langue: true });
+    });
     return out;
   }
 
@@ -395,7 +474,10 @@
     return {
       name: state.name || "Sans nom",
       caracs: { Mind: caracTotal("Mind"), Body: caracTotal("Body"), Prestance: caracTotal("Prestance") },
-      combat: { pv: state.pv === null ? null : pvCourant(), pvMax: pvMax(), vitesse: vitesse() },
+      combat: {
+        pv: state.pv === null ? null : pvCourant(), pvMax: pvMax(),
+        vitesse: vitesse(), regen: regen(), initiative: initiative(), poids: poidsPorte()
+      },
       narration: state.narration,
       updated: nowStamp()
     };
@@ -1265,9 +1347,39 @@
   // forment leur propre élément (tuiles autonomes), PV et Narration ont chacun
   // leur bloc ; la tuile « XP restant » a disparu, le compteur « XP dépensé »
   // de l'en-tête la rendait redondante.
+  // Valeur forcée d'une tuile : vide = valeur calculée. Même mécanique que le
+  // maximum de PV, en version étroite (deux lignes empilées sous la valeur).
+  function tuileForce(tile, champ, auto, dec) {
+    var row = el("div", "pc-bigedit pc-edit-only");
+    row.appendChild(el("span", "lbl", "Forcé"));
+    var inp = el("input", "force");
+    inp.type = "number"; inp.min = "0";
+    inp.step = dec ? "0.5" : "1";
+    inp.title = "Vide = valeur calculée (modificateurs compris) ; une valeur la force.";
+    inp.addEventListener("input", function () {
+      var v = parseFloat(inp.value);
+      state[champ] = isFinite(v)
+        ? clamp(dec ? Math.round(v * 100) / 100 : Math.floor(v), 0, 9999)
+        : null;
+      refresh();
+    });
+    hooks.push(function () {
+      inp.placeholder = fmtP(auto());
+      if (document.activeElement !== inp) inp.value = state[champ] === null ? "" : state[champ];
+    });
+    row.appendChild(inp);
+    tile.appendChild(row);
+  }
+  function tuileMods(tile, cle) {
+    var row = el("div", "pc-bigedit pc-edit-only");
+    row.appendChild(el("span", "lbl", "Modificateurs"));
+    row.appendChild(multiMod(state.divers, cle));
+    tile.appendChild(row);
+  }
+
   function buildVitesse(col) {
     // deux tuiles = deux MODULES distincts : chacune porte son propre rouage
-    // flottant (jeu : lecture ; édition : ses divers)
+    // flottant (jeu : lecture ; édition : sa valeur forcée et ses modificateurs)
     var tiles = el("div", "pc-bigrow pc-bigrow-2");
 
     var tv = bigTile("Vitesse", vitesse);
@@ -1276,14 +1388,15 @@
     var gV = gearBtn(tv, "vitesse");
     gV.classList.add("pc-gear-float");
     tv.appendChild(gV);
-    var mmV = multiMod(state.divers, "vitesse");
-    mmV.classList.add("pc-edit-only");
-    tv.appendChild(mmV);
+    tuileForce(tv, "vitesseOverride", vitesseAuto, true);
+    tuileMods(tv, "vitesse");
     hooks.push(function () {
       var d = modSum(state.divers.vitesse);
-      tv.classList.toggle("adj", d !== 0);
-      tv.title = "Palier de la table (Body " + caracTotal("Body") + ") : " + vitessePalier() +
-                 (d ? " · divers " + sign(d) + " m" : "");
+      tv.classList.toggle("adj", state.vitesseOverride !== null || d !== 0);
+      tv.title = state.vitesseOverride !== null
+        ? "Vitesse forcée à " + fmtP(state.vitesseOverride) + " m (calculée : " + fmtP(vitesseAuto()) + " m)"
+        : "Palier de la table (Body " + caracTotal("Body") + ") : " + vitessePalier() +
+          (d ? " · modificateurs " + sign(d) + " m" : "");
     });
     tiles.appendChild(tv);
 
@@ -1293,18 +1406,130 @@
     var gR = gearBtn(tr, "regen");
     gR.classList.add("pc-gear-float");
     tr.appendChild(gR);
-    var mmR = multiMod(state.divers, "regen");
-    mmR.classList.add("pc-edit-only");
-    tr.appendChild(mmR);
+    tuileForce(tr, "regenOverride", regenAuto, false);
+    tuileMods(tr, "regen");
     hooks.push(function () {
       var d = modSum(state.divers.regen);
-      tr.classList.toggle("adj", d !== 0);
-      tr.title = "Body / 10 = " + Math.floor(caracTotal("Body") / 10) +
-                 (d ? " · divers " + sign(d) : "") + " (jamais sous 0)";
+      tr.classList.toggle("adj", state.regenOverride !== null || d !== 0);
+      tr.title = state.regenOverride !== null
+        ? "Régénération forcée à " + state.regenOverride + " (calculée : " + regenAuto() + ")"
+        : "Body / 10 = " + Math.floor(caracTotal("Body") / 10) +
+          (d ? " · modificateurs " + sign(d) : "") + " (jamais sous 0)";
     });
     tiles.appendChild(tr);
 
     col.appendChild(tiles);
+  }
+
+  // ---------- initiative ----------
+  // Une compétence de Body comme les autres (stade, passifs à Artiste dans
+  // l'onglet Art, modificateur dans Options), moins le poids porté. Elle a son
+  // module parce qu'elle se lance à chaque combat ; la liste des compétences
+  // l'écarte donc, pour ne pas doubler la même commande.
+  function buildInitiative(col) {
+    var initHooks = [];   // registre PROPRE au module : la ligne est reconstruite
+    var b = block("Initiative", null, "initiative", function () { rendre(); });
+    var box = el("div");
+    b.appendChild(box);
+    function rendre() {
+      initHooks.length = 0;   // les hooks de la ligne détruite partent avec elle
+      box.innerHTML = "";
+      box.appendChild(compRow({ key: INIT_KEY, name: "Initiative", carac: "Body", custom: false },
+                              false, {
+        module: "initiative", reg: initHooks,
+        // UN seul nombre : le poids porté est déjà déduit, comme le veut la règle
+        value: function () { return initiative(); },
+        rollLabel: "Initiative",
+        adj: function () { return poidsPorte() !== 0; },
+        detail: function () {
+          var p = poidsPorte();
+          return p ? " · poids porté − " + fmtP(p) : "";
+        }
+      }));
+      applyEdit(b, "initiative");
+      refresh();
+    }
+    hooks.push(function () { initHooks.forEach(function (f) { f(); }); });
+    rendre();
+    col.appendChild(b);
+  }
+
+  // ---------- langues ----------
+  // Des compétences de Mind, rassemblées dans leur module. La langue du
+  // personnage monte jusqu'à Expert sans rien coûter ; les autres se paient
+  // comme n'importe quelle compétence.
+  function buildLangues(col) {
+    var langHooks = [];
+    var b = block("Langues", null, "langues", function () { rendre(); });
+    var box = el("div");
+    b.appendChild(box);
+
+    function rendre() {
+      langHooks.length = 0;
+      box.innerHTML = "";
+      if (state.langues.length) {
+        var head = el("div", "pc-comp-row head");
+        head.appendChild(el("span", null, "Langue"));
+        head.appendChild(el("span", null, "Stade"));
+        head.appendChild(el("span", null, "Total"));
+        box.appendChild(head);
+      } else {
+        box.appendChild(el("div", "pc-empty", isEdit("langues")
+          ? "Aucune langue : la première ajoutée devient celle du personnage."
+          : "Aucune langue."));
+      }
+      state.langues.forEach(function (nom, i) {
+        var item = { key: langueKey(nom), name: nom, carac: LANGUE_CARAC, custom: true, langue: true };
+        var row = compRow(item, i % 2 === 1,
+                          { module: "langues", reg: langHooks, onDrop: rendre });
+        // la langue du personnage se désigne d'un clic : une seule à la fois
+        var etoile = el("button", "pc-lang-base" + (state.langueBase === nom ? " on" : ""), "★");
+        etoile.type = "button";
+        etoile.title = state.langueBase === nom
+          ? "Langue du personnage : acquise jusqu'à Expert sans rien coûter"
+          : "Faire de « " + nom + " » la langue du personnage";
+        etoile.addEventListener("click", function () {
+          if (!isEdit("langues")) return;
+          state.langueBase = state.langueBase === nom ? "" : nom;
+          refresh();
+          rendre();
+        });
+        row.querySelector(".pc-comp-name").insertBefore(etoile, row.querySelector(".pc-comp-label"));
+        box.appendChild(row);
+      });
+
+      if (isEdit("langues")) {
+        var addRow = el("div", "pc-comp-add");
+        var inp = el("input");
+        inp.type = "text";
+        inp.placeholder = state.langues.length ? "Nouvelle langue…" : "Langue du personnage…";
+        addRow.appendChild(inp);
+        addRow.appendChild(miniBtn("+", "Ajouter", function () {
+          var nom = capFirst(inp.value.trim());
+          if (!nom) return;
+          if (allComps().some(function (it) {
+                return it.carac === LANGUE_CARAC && it.name.toLowerCase() === nom.toLowerCase();
+              })) { flash("« " + nom + " » existe déjà en Mind."); return; }
+          state.langues.push(nom);
+          // la première langue est celle du personnage : elle arrive à Expert,
+          // gratuitement — c'est tout l'intérêt de la désigner
+          if (!state.langueBase) {
+            state.langueBase = nom;
+            state.comps[langueKey(nom)] = { stade: stadeExpert(), techniques: [] };
+          }
+          inp.value = "";
+          refresh();
+          rendre();
+          if (optCompsRebuild) optCompsRebuild();
+        }));
+        box.appendChild(addRow);
+      }
+      applyEdit(b, "langues");
+      refresh();
+    }
+    hooks.push(function () { langHooks.forEach(function (f) { f(); }); });
+    rendre();
+    col.appendChild(b);
   }
 
   function buildPv(col) {
@@ -1334,7 +1559,7 @@
       pvM.title = state.pvMaxOverride !== null
         ? "Maximum forcé à " + state.pvMaxOverride + " (calculé : " + pvMaxAuto() + ")"
         : "(20 + Body) / 2 = " + Math.floor((20 + caracTotal("Body")) / 2) +
-          (d ? " · divers " + sign(d) : "");
+          (d ? " · modificateurs " + sign(d) : "");
     });
     pvRow.appendChild(pvM);
     pvRow.appendChild(el("span", "sp"));
@@ -1346,7 +1571,7 @@
     mrow.appendChild(el("span", "lbl", "Forcé"));
     var force = el("input", "force");
     force.type = "number"; force.step = "1"; force.min = "0";
-    force.title = "Vide = maximum calculé ((20 + Body) / 2, divers compris) ; " +
+    force.title = "Vide = maximum calculé ((20 + Body) / 2, modificateurs compris) ; " +
                   "une valeur le force (avantage, décision du MJ).";
     force.addEventListener("input", function () {
       var v = parseFloat(force.value);
@@ -1360,7 +1585,7 @@
       }
     });
     mrow.appendChild(force);
-    mrow.appendChild(el("span", "lbl", "Divers"));
+    mrow.appendChild(el("span", "lbl", "Modificateurs"));
     mrow.appendChild(multiMod(state.divers, "pvMax"));
     mrow.appendChild(el("span", "sp"));
     b.appendChild(mrow);
@@ -1383,7 +1608,14 @@
     col.appendChild(b);
   }
 
-  function compRow(item, odd) {
+  // opts : { module, reg, onDrop } — le module dont le rouage déverrouille la
+  // barre de stade, le registre de hooks où la ligne s'inscrit (celui du module
+  // qui la reconstruit, sinon ses hooks fuiteraient), et le retrait sur mesure.
+  // Par défaut : le module « comps » de l'onglet Fiche.
+  function compRow(item, odd, opts) {
+    opts = opts || {};
+    var mod = opts.module || "comps";
+    var reg = opts.reg || compHooks;
     var comp = function () { return state.comps[item.key] || blankComp(); };
     var row = el("div", "pc-comp-row" + (odd ? " odd" : ""));
 
@@ -1394,7 +1626,7 @@
     if (item.custom) {
       var del = el("button", "pc-comp-del pc-edit-only", "✕");
       del.type = "button";
-      del.title = "Retirer cette compétence personnalisée";
+      del.title = item.langue ? "Retirer cette langue" : "Retirer cette compétence personnalisée";
       del.addEventListener("click", function () {
         // la compétence peut porter des données que la ligne ne montre pas
         // (un art rédigé puis stade redescendu) : confirmer avant d'effacer
@@ -1406,10 +1638,16 @@
         if (state.compsMod[item.key]) garde.push("un modificateur (Options)");
         if (garde.length &&
             !confirm("Supprimer « " + item.name + " » effacera aussi " + garde.join(", ") + ". Continuer ?")) return;
-        state.customComps = state.customComps.filter(function (cc) { return (cc.carac + "/" + cc.name) !== item.key; });
+        if (item.langue) {
+          state.langues = state.langues.filter(function (n) { return n !== item.name; });
+          if (state.langueBase === item.name) state.langueBase = "";
+        } else {
+          state.customComps = state.customComps.filter(function (cc) { return (cc.carac + "/" + cc.name) !== item.key; });
+        }
         delete state.comps[item.key];
         delete state.compsMod[item.key];   // sinon le modificateur renaîtrait sur une homonyme
         refresh();
+        if (opts.onDrop) opts.onDrop();
         rebuildComps();
         if (optCompsRebuild) optCompsRebuild();
       });
@@ -1440,10 +1678,10 @@
                      " effacera " + redigees + " passif(s) rédigé(s) (onglet Art). Continuer ?")) return;
         next.techniques = [];
       }
-      var delta = compXp(next) - compXp(c);
+      var delta = compXp(next, item.key) - compXp(c, item.key);
       if (delta > 0 && xpRestant() < delta) { flash("XP insuffisant."); return; }
       // le plafond du quart ne bloque que les HAUSSES : on peut toujours redescendre
-      if (delta > 0 && compXp(next) > compCap()) {
+      if (delta > 0 && compXp(next, item.key) > compCap()) {
         flash("Pas plus d'un quart de l'xp total (" + compCap() + " xp) dans une seule compétence.");
         return;
       }
@@ -1458,7 +1696,7 @@
       sg.type = "button";
       sg.title = sd.nom + " (" + sign(sd.bonus) + ") — " + (DATA.xpParStade * i) + " xp";
       sg.addEventListener("click", function () {
-        if (!isEdit("comps")) return;   // construction : mode édition requis
+        if (!isEdit(mod)) return;   // construction : mode édition requis
         applyStade(i);
       });
       st.appendChild(sg);
@@ -1466,27 +1704,33 @@
     });
     row.appendChild(st);
 
-    // le total est un BOUTON de jet, comme la valeur d'une caractéristique
+    // le total est un BOUTON de jet, comme la valeur d'une caractéristique.
+    // opts.value permet à un module de compter autrement (l'initiative retire
+    // le poids porté) sans dupliquer la ligne.
+    var valeur = opts.value || function (c) { return compValue(item.carac, c, item.key); };
     var total = el("button", "pc-comp-total pc-comp-roll pc-rollable", "");
     total.type = "button";
     total.addEventListener("click", function () {
-      doRoll(item.name + " (" + item.carac + ")", compValue(item.carac, comp(), item.key), null, true);
+      doRoll(opts.rollLabel || (item.name + " (" + item.carac + ")"), valeur(comp()), null, true);
     });
     row.appendChild(total);
 
-    compHooks.push(function () {
+    reg.push(function () {
       var c = comp();
       var d = state.compsMod[item.key] || 0;
       segs.forEach(function (sg, i) {
         sg.classList.toggle("on", i <= c.stade);
         sg.classList.toggle("cur", i === c.stade);
       });
-      total.textContent = sign(compValue(item.carac, c, item.key));
-      total.classList.toggle("zero", !c.stade && !d);
-      total.classList.toggle("adj", d !== 0);
+      total.textContent = sign(valeur(c));
+      total.classList.toggle("zero", !c.stade && !d && !opts.value);
+      total.classList.toggle("adj", d !== 0 || (opts.adj ? opts.adj() : false));
       total.title = item.carac + " " + sign(caracTotal(item.carac)) +
                     " · stade " + sign(stadeInfo(c.stade).bonus) +
-                    (d ? " · modificateur (Options) " + sign(d) : "") + " — clic : lancer";
+                    (d ? " · modificateur (Options) " + sign(d) : "") +
+                    (opts.detail ? opts.detail() : "") +
+                    (item.langue && state.langueBase === item.name ? " · langue du personnage (gratuite)" : "") +
+                    " — clic : lancer";
     });
     return row;
   }
@@ -1516,7 +1760,11 @@
     var flt = compFilter.trim().toLowerCase();
     CHAMPS.forEach(function (carac) {
       if (compChamp && compChamp !== carac) return;
-      var items = allComps().filter(function (it) { return it.carac === carac; });
+      // l'Initiative et les langues ont leur propre module sur cette page :
+      // les répéter ici ferait deux commandes pour un même stade
+      var items = allComps().filter(function (it) {
+        return it.carac === carac && it.key !== INIT_KEY && !it.langue;
+      });
       if (!compPerso) items = items.filter(function (it) { return !it.custom; });
       if (flt) items = items.filter(function (it) { return it.name.toLowerCase().indexOf(flt) >= 0; });
       if (compOnly) items = items.filter(compInvestie);
@@ -1618,8 +1866,8 @@
   }
 
   function buildFiche(pane) {
-    // trois colonnes : caractéristiques | PV, vitesse, narration | compétences,
-    // les compétences à la suite (Body, puis Mind, puis Prestance)
+    // trois colonnes : narration, caractéristiques, langues | initiative,
+    // vitesse, régén, PV | compétences (à la suite : Body, Mind, Prestance)
     var cols = el("div", "pc-cols-fiche");
     var c1 = el("div", "pc-col");
     var c2 = el("div", "pc-col");
@@ -1628,10 +1876,12 @@
     cols.appendChild(c2);
     cols.appendChild(c3);
     pane.appendChild(cols);
+    buildNarration(c1);
     buildCaracs(c1);
+    buildLangues(c1);
+    buildInitiative(c2);
     buildVitesse(c2);
     buildPv(c2);
-    buildNarration(c2);
     buildComps(c3);
   }
 
