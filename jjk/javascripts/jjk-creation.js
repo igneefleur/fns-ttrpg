@@ -478,6 +478,10 @@
   var compHooks = [];
   var optHooks = [];            // bloc Options « Modificateurs de compétences », rebâtissable
   var optCompsRebuild = null;   // posé par buildOptions ; rappelé quand les comps perso changent
+  // filtres du bloc, survivants au remount comme ceux de la Fiche
+  var optFilter = "";
+  var optChamp = "";
+  var optOnly = COMPACT;        // Roll20 : investies seulement par défaut, comme la Fiche
   function refresh() {
     save();
     hooks.forEach(function (f) { try { f(); } catch (e) {} });
@@ -2079,21 +2083,59 @@
     // (optCompsRebuild, rappelé par l'ajout et la suppression) ; optHooks
     // remplace hooks pour ces lignes, sinon chaque rebâti fuirait des hooks.
     var bMC = block("Modificateurs de compétences");
+    // mêmes outils que la liste de la Fiche (filtre texte, champ, « Investies
+    // seulement ») et mêmes lignes : la grille pc-comp-row aligne nom | ± | total.
+    var mcTools = el("div", "pc-comp-tools");
+    var mcSearch = el("input", "pc-comp-search");
+    mcSearch.type = "search";
+    mcSearch.placeholder = "Filtrer les compétences…";
+    mcSearch.value = optFilter;
+    mcSearch.addEventListener("input", function () { optFilter = mcSearch.value; optCompsRebuild(); });
+    mcTools.appendChild(mcSearch);
+    var mcChamp = el("select", "pc-select");
+    ["Tous les champs", "Body", "Mind", "Prestance", "Personnalisé"].forEach(function (ch) {
+      var o = el("option");
+      o.value = ch === "Tous les champs" ? "" : ch;
+      o.textContent = ch;
+      mcChamp.appendChild(o);
+    });
+    mcChamp.value = optChamp;
+    mcChamp.addEventListener("change", function () { optChamp = mcChamp.value; optCompsRebuild(); });
+    mcTools.appendChild(mcChamp);
+    var mcOnly = el("span", "pc-chip");
+    mcOnly.textContent = "Investies seulement";
+    mcOnly.classList.toggle("on", optOnly);
+    mcOnly.addEventListener("click", function () {
+      optOnly = !optOnly;
+      mcOnly.classList.toggle("on", optOnly);
+      optCompsRebuild();
+    });
+    mcTools.appendChild(mcOnly);
+    bMC.appendChild(mcTools);
     var mcBox = el("div");
     bMC.appendChild(mcBox);
     optCompsRebuild = function () {
       optHooks = [];
       mcBox.innerHTML = "";
+      var flt = optFilter.trim().toLowerCase();
+      var shown = 0;
       CHAMPS.forEach(function (carac) {
+        if (optChamp && optChamp !== "Personnalisé" && optChamp !== carac) return;
         var items = allComps().filter(function (it) { return it.carac === carac; });
+        if (optChamp === "Personnalisé") items = items.filter(function (it) { return it.custom; });
+        if (flt) items = items.filter(function (it) { return it.name.toLowerCase().indexOf(flt) >= 0; });
+        if (optOnly) items = items.filter(compInvestie);
         items.sort(function (a, b) { return a.name.localeCompare(b.name, "fr", { sensitivity: "base" }); });
         if (!items.length) return;
         mcBox.appendChild(el("div", "pc-comp-champ", carac));
-        items.forEach(function (it) {
-          var row = el("div", "pc-kv");
-          var nm = el("span", "pc-opt-nom", it.name);
-          nm.title = it.name + " (" + it.carac + ")";
-          row.appendChild(nm);
+        items.forEach(function (it, i) {
+          shown++;
+          var row = el("div", "pc-comp-row" + (i % 2 === 1 ? " odd" : ""));
+          var nameBox = el("span", "pc-comp-name");
+          var label = el("span", "pc-comp-label", it.name);
+          label.title = it.name + " (" + it.carac + ")";
+          nameBox.appendChild(label);
+          row.appendChild(nameBox);
           row.appendChild(stepper(
             function () { return state.compsMod[it.key] || 0; },
             function (v) {
@@ -2102,17 +2144,28 @@
               else delete state.compsMod[it.key];   // zéro = pas d'entrée dans l'état
             },
             CARAC_PAS, "modificateur", optHooks));
-          row.appendChild(el("span", "sp"));
-          var tot = el("span", "max", "");
+          row.appendChild(el("span"));   // colonne du rouage de la Fiche : vide ici
+          var tot = el("span", "pc-comp-total", "");
           optHooks.push(function () {
             var d = state.compsMod[it.key] || 0;
-            tot.textContent = "total : " + sign(compValue(it.carac, state.comps[it.key] || blankComp(), it.key));
+            var c = state.comps[it.key] || blankComp();
+            tot.textContent = sign(compValue(it.carac, c, it.key));
+            tot.classList.toggle("zero", !c.stade && !d);
             tot.classList.toggle("adj", d !== 0);
+            tot.title = it.carac + " " + sign(caracTotal(it.carac)) +
+                        " · stade " + sign(stadeInfo(c.stade).bonus) +
+                        (d ? " · modificateur " + sign(d) : "");
           });
           row.appendChild(tot);
           mcBox.appendChild(row);
         });
       });
+      if (!shown) {
+        mcBox.appendChild(el("div", "pc-empty",
+          optOnly ? "Aucune compétence investie ne correspond — décocher « Investies seulement » pour toutes les voir."
+                  : "Aucune compétence ne correspond."));
+      }
+      refresh();   // les lignes viennent de naître : leurs totaux se peuplent ici
     };
     optCompsRebuild();
     colB.appendChild(bMC);
