@@ -10,12 +10,14 @@ ajouté à la fiche du personnage.
 
 ### Mode beta
 
-Une seule extension, deux versions de la fiche. Son bouton dans la barre du
-navigateur ouvre un panneau qui porte l'interrupteur « Mode beta » : coché,
-la fiche affichée dans Roll20 vient du site de chantier, là où les nouveautés
-arrivent en premier, au risque de casses passagères ; décoché, elle revient à
-la version stable. L'onglet du dialogue de personnage s'annonce alors
-« Fiche JJK beta », pour qu'on sache toujours quelle version on remplit.
+Une seule extension, deux versions de la fiche. Le fichier est le MÊME sur les
+deux sites : peu importe d'où il est téléchargé, c'est son réglage qui décide.
+Son bouton dans la barre du navigateur ouvre un panneau qui porte
+l'interrupteur « Mode beta » : coché, la fiche affichée dans Roll20 vient du
+site de chantier, là où les nouveautés arrivent en premier, au risque de casses
+passagères ; décoché, elle revient à la version stable. L'onglet du dialogue de
+personnage s'annonce alors « Fiche JJK beta », pour qu'on sache toujours quelle
+version on remplit.
 
 Les deux versions écrivent les mêmes Attributes du personnage : un aller-retour
 ne perd rien, et les autres joueurs ne voient aucune différence.
