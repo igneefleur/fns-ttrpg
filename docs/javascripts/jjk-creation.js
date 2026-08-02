@@ -1493,13 +1493,47 @@
   function buildArmesComps(col) {
     var armHooks = [];
     var b = block("Armes", null, "armescomp", function () { rendre(); });
+
+    // mêmes filtres que la liste des compétences : décoché, « Armes
+    // personnalisées » ne laisse que celles des règles ; « Investies
+    // seulement » masque celles où rien n'est posé.
+    var tools = el("div", "pc-comp-tools");
+    var line = el("div", "row");
+    var persoChip = el("span", "pc-chip");
+    persoChip.textContent = "Armes personnalisées";
+    persoChip.title = "Décoché : seules les armes des règles sont affichées.";
+    persoChip.classList.toggle("on", armesPerso);
+    persoChip.addEventListener("click", function () {
+      armesPerso = !armesPerso;
+      persoChip.classList.toggle("on", armesPerso);
+      rendre();
+    });
+    line.appendChild(persoChip);
+    var onlyChip = el("span", "pc-chip");
+    onlyChip.textContent = "Investies seulement";
+    onlyChip.title = "N'afficher que les armes où un stade, un passif ou un modificateur est posé.";
+    onlyChip.classList.toggle("on", armesOnly);
+    onlyChip.addEventListener("click", function () {
+      armesOnly = !armesOnly;
+      onlyChip.classList.toggle("on", armesOnly);
+      rendre();
+    });
+    line.appendChild(onlyChip);
+    tools.appendChild(line);
+    b.appendChild(tools);
+
     var box = el("div");
     b.appendChild(box);
 
     function rendre() {
       armHooks.length = 0;
       box.innerHTML = "";
-      var noms = armesNoms();
+      var noms = armesNoms().filter(function (nom) {
+        var perso = state.armesComps.indexOf(nom) >= 0;
+        if (!armesPerso && perso) return false;
+        if (armesOnly && !compInvestie({ key: armeKey(nom) })) return false;
+        return true;
+      });
       if (noms.length) {
         var head = el("div", "pc-comp-row head");
         head.appendChild(el("span", null, "Arme"));
@@ -1507,7 +1541,8 @@
         head.appendChild(el("span", null, "Total"));
         box.appendChild(head);
       } else {
-        box.appendChild(el("div", "pc-empty", "Aucune arme."));
+        box.appendChild(el("div", "pc-empty",
+          armesOnly ? "Aucune arme investie." : "Aucune arme."));
       }
       noms.forEach(function (nom, i) {
         var perso = state.armesComps.indexOf(nom) >= 0;
@@ -1529,6 +1564,9 @@
                 return it.carac === ARME_CARAC && it.name.toLowerCase() === nom.toLowerCase();
               })) { flash("« " + nom + " » existe déjà en Body."); return; }
           state.armesComps.push(nom);
+          // ne jamais ajouter une arme qui resterait invisible
+          if (!armesPerso) { armesPerso = true; persoChip.classList.add("on"); }
+          if (armesOnly) { armesOnly = false; onlyChip.classList.remove("on"); }
           inp.value = "";
           refresh();
           rendre();
@@ -1835,6 +1873,10 @@
   // affichées ; coché : les compétences personnalisées s'y ajoutent
   var compPerso = true;
   var compPersoChip = null;     // la puce, rallumée quand on ajoute une comp perso
+  // mêmes filtres pour le module Armes (réglages de VUE : ils survivent au
+  // remontage de la fiche, comme ceux des compétences)
+  var armesPerso = true;
+  var armesOnly = COMPACT;
   function compInvestie(it) {
     var c = state.comps[it.key];
     // l'art compte : une compétence redescendue qui garde son art reste
