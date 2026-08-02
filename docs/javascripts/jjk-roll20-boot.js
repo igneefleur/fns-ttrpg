@@ -1,4 +1,4 @@
-/* Amorce Roll20 de la fiche JJK — chargée UNIQUEMENT par roll20-fiche.html,
+﻿/* Amorce Roll20 de la fiche JJK — chargée UNIQUEMENT par roll20-fiche.html,
  * la page que l'extension Roll20 affiche dans son iframe.
  *
  * Architecture « coquille » : l'extension signée ne contient plus la fiche.
@@ -149,7 +149,7 @@
     // charger le vrai jjk-creation.js APRÈS hydratation (son init lit jjk-perso).
     // ?v= : MÊME numéro que mkdocs.yml (extra_javascript), à monter ensemble.
     var s = document.createElement("script");
-    s.src = "javascripts/jjk-creation.js?v=26";
+    s.src = "javascripts/jjk-creation.js?v=27";
     s.onload = function () { ready = true; post({ type: "mounted" }); };
     s.onerror = function () { post({ type: "error", error: "jjk-creation.js" }); };
     document.body.appendChild(s);

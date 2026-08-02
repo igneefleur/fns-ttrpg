@@ -1,4 +1,4 @@
-site_name: JJK Système JDR
+﻿site_name: JJK Système JDR
 site_url: https://igneefleur.github.io/HxH-Regles-JDR/jjk/
 # Voir LICENSE.md : tous droits réservés sur les apports originaux ; œuvre de fan,
 # sans lien avec les ayants droit de Jujutsu Kaisen.
@@ -45,7 +45,7 @@ extra_javascript:
   - javascripts/continuous.js
   - javascripts/nav-drawer.js
   - javascripts/night.js
-  - javascripts/jjk-creation.js?v=26
+  - javascripts/jjk-creation.js?v=27
   - javascripts/copybtn.js
 hooks:
   - hooks/jjk_creation.py
