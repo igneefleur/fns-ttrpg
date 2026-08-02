@@ -30,7 +30,8 @@
 
   // champ d'état scalaire -> [suffixe, type] (n = nombre, s = chaîne libre)
   var SCALARS = [
-    ["name", "nom", "s"], ["age", "age", "s"], ["genre", "genre", "s"],
+    ["name", "nom", "s"], ["espece", "espece", "s"], ["age", "age", "s"],
+    ["sexe", "sexe", "s"], ["genre", "genre", "s"],
     ["portrait", "portrait", "s"], ["defaut", "defaut", "s"],
     ["background", "background", "s"], ["notes", "notes", "s"],
     ["inventaire", "inventaire", "s"], ["de", "de", "s"],
@@ -56,7 +57,7 @@
   function blank() {
     return {
       v: 1,
-      name: "", portrait: "", age: "", genre: "",
+      name: "", portrait: "", espece: "", age: "", sexe: "", genre: "",
       defaut: "", qualites: ["", ""], background: "", notes: "",
       avantages: [], sansLimite: false,
       caracsBase: { Mind: 0, Body: 0, Prestance: 0 },
