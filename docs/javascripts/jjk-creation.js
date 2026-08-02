@@ -222,7 +222,11 @@
       });
       // l'art du stade qui l'ouvre (Art) : {name, desc} ; un art resté vide s'efface
       if (c.art && typeof c.art === "object") {
+        var aco = (c.art.cout === null || c.art.cout === undefined || c.art.cout === "")
+          ? null : Math.floor(parseFloat(c.art.cout));
         c.art = { name: String(c.art.name || ""), desc: String(c.art.desc || "") };
+        if (aco !== null && isFinite(aco)) c.art.cout = clamp(aco, 0, 9999);
+        // un art vierge s'efface — son coût forcé n'aurait plus d'objet
         if (!c.art.name.trim() && !c.art.desc.trim()) delete c.art;
       } else delete c.art;
       // migration : noms de compétences capitalisés (« Body/apnée » -> « Body/Apnée »)
@@ -291,35 +295,24 @@
     return v + (state.caracsMod[c] || 0);
   }
   function stadeInfo(i) { return DATA.stades[clamp(i, 0, DATA.stades.length - 1)]; }
-  // nombre de passifs offerts par les stades atteints (les PREMIERS de la liste)
-  function offertesDe(c) {
-    var n = 0;
-    for (var i = 0; c && i <= c.stade && i < DATA.stades.length; i++) {
-      if (DATA.stades[i].techniqueOfferte) n++;
-    }
-    return n;
-  }
   // coût d'un passif : son coût forcé s'il en porte un, sinon le tarif de base
+  // (20 xp) — TOUS les passifs sont payants, aucun n'est offert par un stade
   function techXp(t) {
     return (t && t.cout !== null && t.cout !== undefined && isFinite(t.cout))
       ? t.cout : DATA.xpParStade;
+  }
+  // coût de l'art : rien par défaut (il vient avec son stade), sauf coût forcé
+  function artXp(c) {
+    return (c && c.art && c.art.cout !== null && c.art.cout !== undefined && isFinite(c.art.cout))
+      ? c.art.cout : 0;
   }
   function compXp(c) {
     var xp = DATA.xpParStade * c.stade;
     // les passifs PRÉSENTS restent facturés même si le stade ne les ouvre
     // plus (fiches d'avant un déplacement du stade d'ouverture : rien ne
     // doit disparaître ni se re-créditer en silence)
-    if (stadeInfo(c.stade).techniques || (c.techniques && c.techniques.length)) {
-      // chaque stade atteint qui inclut un passif en rend un gratuit
-      // (Art : « choisir un passif original ») : ce sont les PREMIERS de la
-      // liste ; les suivants coûtent chacun leur propre tarif
-      var offertes = 0;
-      for (var i = 0; i <= c.stade && i < DATA.stades.length; i++) {
-        if (DATA.stades[i].techniqueOfferte) offertes++;
-      }
-      c.techniques.forEach(function (t, j) { if (j >= offertes) xp += techXp(t); });
-    }
-    return xp;
+    (c.techniques || []).forEach(function (t) { xp += techXp(t); });
+    return xp + artXp(c);
   }
   function compCap() { return Math.floor(state.xpTotal / QUART); }
   function xpDepense() {
@@ -1465,6 +1458,25 @@
         nm.type = "text"; nm.placeholder = "Nom de l'art"; nm.value = a.name || "";
         nm.addEventListener("input", function () { a.name = nm.value; keep(); save(); });
         head.appendChild(nm);
+
+        // coût de l'art, à droite de son nom : rien par défaut (il vient avec
+        // son stade), une valeur le force
+        var aCout = el("span", "pc-tech-cout pc-edit-only");
+        var aIn = el("input");
+        aIn.type = "number"; aIn.min = "0"; aIn.step = "5";
+        aIn.placeholder = "0";
+        aIn.value = (a.cout === null || a.cout === undefined) ? "" : a.cout;
+        aIn.addEventListener("input", function () {
+          var v = parseFloat(aIn.value);
+          if (isFinite(v)) a.cout = clamp(Math.floor(v), 0, 9999);
+          else delete a.cout;
+          keep();
+          refresh();
+        });
+        aCout.title = "Coût de l'art — vide = 0 xp (il vient avec son stade) ; une valeur le force.";
+        aCout.appendChild(aIn);
+        aCout.appendChild(el("span", "u", "xp"));
+        head.appendChild(aCout);
         // la compétence tient dans le titre : la carte n'a plus de colonne de
         // libellé, sa description occupe toute la largeur
         head.appendChild(chatBtn(
@@ -1524,12 +1536,9 @@
           // état posé ICI (renderTechs se rejoue à chaque ajout, retrait ou
           // changement de stade) : un hook global fuirait, cette fonction
           // n'étant pas vidée par mount()
-          var offert = i < offertesDe(cc);
-          cIn.placeholder = offert ? "inclus" : String(DATA.xpParStade);
-          tCout.classList.toggle("offert", offert);
-          tCout.title = offert
-            ? "Passif inclus dans le stade : il ne coûte rien, sauf coût forcé ici."
-            : "Coût de ce passif — vide = " + DATA.xpParStade + " xp (tarif de base) ; une valeur le force.";
+          cIn.placeholder = String(DATA.xpParStade);
+          tCout.title = "Coût de ce passif — vide = " + DATA.xpParStade +
+                        " xp (tarif de base) ; une valeur le force.";
           tHead.appendChild(tCout);
           tHead.appendChild(chatBtn(
             function () { return "Passif — " + (t.name || it.name) + " (" + it.name + ")"; },
@@ -1550,11 +1559,15 @@
         });
         // en acheter de NOUVEAUX reste réservé au stade qui les ouvre
         if (!stadeInfo(cc.stade).techniques) { applyEdit(b, "arts"); return; }
-        // le coût affiché suit le prochain passif : inclus (gratuit) si un
-        // stade atteint en offre encore un, sinon le tarif normal
-        var prochaine = compXp({ stade: cc.stade, techniques: cc.techniques.concat([{ name: "", desc: "" }]) }) - compXp(cc);
-        techBox.appendChild(miniBtn("+ passif (" + (prochaine ? prochaine + " xp" : "inclus") + ")", null, function () {
-          var test = { stade: cc.stade, techniques: cc.techniques.concat([{ name: "", desc: "" }]) };
+        // le coût annoncé est celui d'un passif neuf : le tarif de base
+        // (l'art de la compétence est repris dans la comparaison, sinon son
+        // coût forcé fausserait la différence)
+        function avecPassifNeuf() {
+          return { stade: cc.stade, art: cc.art, techniques: cc.techniques.concat([{ name: "", desc: "" }]) };
+        }
+        var prochaine = compXp(avecPassifNeuf()) - compXp(cc);
+        techBox.appendChild(miniBtn("+ passif (" + prochaine + " xp)", null, function () {
+          var test = avecPassifNeuf();
           var delta = compXp(test) - compXp(cc);
           if (delta > 0 && xpRestant() < delta) { flash("XP insuffisant."); return; }
           if (delta > 0 && compXp(test) > compCap()) { flash("Pas plus d'un quart de l'xp total (" + compCap() + " xp) dans une seule compétence."); return; }
