@@ -123,7 +123,6 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-tech-cout input::-webkit-inner-spin-button, .pc-tech-cout input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 .pc-tech-cout input:focus { outline: none; border-bottom: 2px solid var(--red); }
 .pc-tech-cout .u { font-size: .52rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); }
-.pc-tech-cout.offert input::placeholder { color: var(--ok); }
 /* 2e ligne : compteurs Création / XP dépensé (barres étirées) + XP total */
 .pc-id-meters { grid-column: 1 / -1; display: flex; align-items: flex-end; gap: .4rem 1.1rem; flex-wrap: wrap; margin-top: .15rem; }
 .pc-id-meters .pc-meter { flex: 1 1 9rem; min-width: 0; }
