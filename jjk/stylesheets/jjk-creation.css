@@ -89,10 +89,11 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 /* ---- en-tête d'identité (infos importantes + portrait compact) ---- */
 /* align-items: stretch : le portrait prend EXACTEMENT la hauteur de l'en-tête */
 .pc-head { display: flex; gap: .8rem; align-items: stretch; border-bottom: 1px solid var(--line); padding-bottom: .55rem; }
-/* portrait : carré 1:1 aux coins arrondis, haut comme l'en-tête — la hauteur
-   vient de l'étirement flex, la LARGEUR est réglée en JS (= hauteur mesurée),
-   les transferts aspect-ratio étant infiables ici. 3rem = largeur d'attente. */
-.pc-portrait-box { position: relative; flex: 0 0 auto; width: 3rem; cursor: pointer; }
+/* portrait : carré 1:1 aux coins arrondis, haut comme le bloc d'identité. Les
+   DEUX dimensions sont posées en JS (= hauteur mesurée du bloc, plafonnée) :
+   les transferts aspect-ratio depuis un étirement flex sont infiables, et une
+   largeur en CSS contredirait le calcul. 3rem = taille d'attente. */
+.pc-portrait-box { position: relative; flex: 0 0 auto; width: 3rem; height: 3rem; cursor: pointer; }
 .pc-portrait-box .clip {
   width: 100%; height: 100%; overflow: hidden; box-sizing: border-box;
   border: 1px solid var(--line-2); border-radius: 8px; background: var(--panel);
@@ -110,12 +111,6 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
   box-shadow: 0 2px 8px rgba(60, 48, 18, .18); box-sizing: border-box;
 }
 .pc-portrait-edit:focus { outline: none; border-color: var(--red); }
-/* en étroit, l'en-tête se replie sur plusieurs lignes : carré compact figé
-   (pleine hauteur, il mangerait la moitié de l'écran) */
-@media (max-width: 44em) {
-  .pc-head { align-items: flex-start; }
-  .pc-portrait-box { width: 3.4rem !important; height: 3.4rem; }
-}
 /* 2e ligne : compteurs Création / XP dépensé (barres étirées) + XP total */
 .pc-id-meters { grid-column: 1 / -1; display: flex; align-items: flex-end; gap: .4rem 1.1rem; flex-wrap: wrap; margin-top: .15rem; }
 .pc-id-meters .pc-meter { flex: 1 1 9rem; min-width: 0; }
