@@ -476,6 +476,14 @@
   function envSan(s) {
     return String(s == null ? "" : s).replace(/[{}]/g, "").replace(/\s+/g, " ").trim();
   }
+  // Valeur de champ : les accolades d'une macro Roll20 (@{Perso|jjk_body},
+  // ?{…}) sont légitimes et doivent survivre. Un champ de gabarit se ferme sur
+  // « }} » : c'est la SEULE séquence à briser, et une valeur qui finit par une
+  // accolade prend une espace pour ne pas en fabriquer une avec la fermeture.
+  function envVal(s) {
+    var v = String(s == null ? "" : s).replace(/\s+/g, " ").trim().replace(/\}\}/g, "} }");
+    return /\}$/.test(v) ? v + " " : v;
+  }
   // Le préfixe de chuchotement ouvre la commande : Roll20 exige que le message
   // COMMENCE par « / », un seul blanc devant et tout part en clair, en public.
   // Un nom qui contient une espace doit être entre guillemets droits.
@@ -494,16 +502,18 @@
   // saisir un modificateur négatif sans ambiguïté (« + (-5) »).
   var ENV_QUERY = " + (?{Modificateur|0})";
   function cmdJet(label, value, die, avecInput) {
-    var v = value >= 0 ? "+ " + value : "- " + (-value);
+    // « + 0 » est du bruit sur les jets d'équipement (dégâts, invu), qui
+    // n'ont jamais de bonus : l'expression part seule.
+    var v = value ? (value > 0 ? " + " + value : " - " + (-value)) : "";
     return "&{template:default} {{name=" + String(label || "Jet").replace(/[{}]/g, "") +
-           "}} {{Jet=[[" + (String(die || "1d100").trim() || "1d100") + " " + v +
+           "}} {{Jet=[[" + (String(die || "1d100").trim() || "1d100") + v +
            (avecInput ? ENV_QUERY : "") + "]]}}";
   }
   function cmdCarte(title, fields) {
     var cmd = "&{template:default} {{name=" + envSan(title) + "}}";
     (fields || []).forEach(function (f) {
       if (!f) return;
-      var k = envSan(f[0]), v = envSan(f[1]);
+      var k = envSan(f[0]), v = envVal(f[1]);
       if (v) cmd += " {{" + k + "=" + v + "}}";
     });
     return cmd;
@@ -539,7 +549,14 @@
       return;
     }
     var d = parseDice(die);
-    if (!d) { flash("Dé illisible : « " + die + " » (attendu : NdM, ex. 1d100)."); return; }
+    // Hors Roll20 la fiche lance le dé elle-même : elle sait faire « NdM ±k »,
+    // pas résoudre une macro Roll20 (@{…}, ?{…}), qui n'a de sens que là-bas.
+    if (!d) {
+      flash(/[@?]\{/.test(String(die))
+        ? "« " + die + " » est une macro Roll20 : elle ne se lance que dans Roll20."
+        : "Dé illisible : « " + die + " » (attendu : NdM, ex. 1d100).");
+      return;
+    }
     var dice = [];
     for (var i = 0; i < d.n; i++) dice.push(1 + Math.floor(Math.random() * d.faces));
     var sum = dice.reduce(function (a, b) { return a + b; }, 0) + d.plus;
@@ -1847,10 +1864,14 @@
     t.addEventListener("input", function () { obj[key] = t.value; save(); });
     return fld(labelTxt, t, "w");
   }
+  // Le champ accepte TOUTE expression Roll20, pas seulement « 5D8 » : dés,
+  // références d'attribut @{Perso|jjk_body}, requêtes ?{…}, arithmétique.
+  // L'expression part telle quelle dans le jet en ligne. Elle n'est PAS
+  // réécrite : l'ancienne extraction n'en gardait que les premiers dés et
+  // jetait le reste en silence (« 5d6+@{Zhalian|jjk_body}/10 » devenait
+  // « 5d6 »).
   function diceOf(txt) {
-    var m = /(\d{1,2})\s*[dD]\s*(\d{1,4})\s*([+-]\s*\d{1,4})?/.exec(String(txt || ""));
-    if (!m) return null;
-    return m[1] + "d" + m[2] + (m[3] ? m[3].replace(/\s/g, "") : "");
+    return String(txt == null ? "" : txt).replace(/\s+/g, " ").trim() || null;
   }
   function eqCards(box, items, kind, blk, mid) {
     // kind : "arme" (poids/dégâts/reach/propriétés) ou "armure" (poids/invu/zones)
@@ -1890,7 +1911,8 @@
         chip.title = kind === "arme" ? "Lancer les dégâts" : "Lancer l'invu";
         chip.addEventListener("click", function () {
           var d = diceOf(kind === "arme" ? it.degats : it.invu);
-          if (!d) { flash("Renseigner d'abord les dés (ex. 5D8)."); return; }
+          if (!d) { flash("Renseigner d'abord " + (kind === "arme" ? "les dégâts" : "l'invu") +
+                          " (ex. 5D8, ou toute expression Roll20)."); return; }
           doRoll((kind === "arme" ? "Dégâts — " : "Invu — ") + (it.nom || (kind === "arme" ? "arme" : "armure")), 0, d, false);
         });
         line.appendChild(chip);
