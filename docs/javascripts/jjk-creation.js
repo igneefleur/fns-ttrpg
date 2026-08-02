@@ -118,7 +118,12 @@
       comps: {}, customComps: [],
       pv: null, narration: 3,
       armes: [], armures: [], inventaire: "",
-      inv: { texte: [], groupes: ["Sur soi"], objets: [] },
+      // inventaire illustré : groupes, objets, et les réglages d'affichage du
+      // module (le poids de JJK est un nombre SANS unité)
+      inv: {
+        texte: [], groupes: ["Sur soi"], objets: [],
+        opts: { cols: 4, nom: true, qte: true, poids: false, total: true }
+      },
       divers: { pvMax: [0, 0, 0], regen: [0, 0, 0], vitesse: [0, 0, 0] },
       pvMaxOverride: null,
       de: "1d100"
@@ -245,6 +250,15 @@
         poids: pnum(it.poids),
         compte: it.compte !== false
       };
+    });
+    // réglages d'affichage du module (bornés : une fiche corrompue ne doit pas
+    // produire une grille de 0 colonne)
+    if (!s.inv.opts || typeof s.inv.opts !== "object" || Array.isArray(s.inv.opts)) s.inv.opts = b.inv.opts;
+    s.inv.opts.cols = clamp(num(s.inv.opts.cols, b.inv.opts.cols), 1, 8);
+    // chaque réglage garde SON défaut quand il manque (un opts partiel ne doit
+    // pas allumer un affichage éteint par défaut)
+    ["nom", "qte", "poids", "total"].forEach(function (k) {
+      s.inv.opts[k] = s.inv.opts[k] === undefined ? b.inv.opts[k] : !!s.inv.opts[k];
     });
     if (!Array.isArray(s.inv.groupes)) s.inv.groupes = [];
     s.inv.groupes = s.inv.groupes.map(function (g) {
@@ -513,6 +527,7 @@
   // toutes les sections tiennent des références sur l'ancien état, on remonte
   // donc la fiche entière depuis le nouvel état.
   var rootEl = null;
+  var appEl = null;      // le .perso-atelier monté : porte les jetons de couleur
   function remount() { if (rootEl) mount(rootEl); }
 
   function flash(msg) {
@@ -1687,6 +1702,200 @@
     }
     render();
   }
+  // ---------- donner / prendre un objet (entre joueurs, par le tchat) ----------
+  // Le donneur envoie au tchat une carte portant un lien « Prendre » : le
+  // payload de l'objet y voyage encodé en base64. L'extension Roll20 intercepte
+  // le clic sur ce lien (la fiche, dans son iframe, ne voit pas le tchat) et
+  // renvoie le payload à la fiche du preneur, qui affiche son dialogue de
+  // réception. L'encodage vit ICI, côté site : son format peut donc évoluer
+  // sans jamais re-signer l'extension, qui ne fait que relayer.
+  var TAKE_CMD = "/jjk_take";
+  var IMG_MAX = 4000;   // une vignette plus lourde ne tient pas dans un message
+  function b64encode(txt) {
+    try {
+      if (typeof TextEncoder !== "undefined") {
+        var oct = new TextEncoder().encode(txt), s = "";
+        for (var i = 0; i < oct.length; i++) s += String.fromCharCode(oct[i]);
+        return btoa(s);
+      }
+    } catch (e) {}
+    return btoa(unescape(encodeURIComponent(txt)));
+  }
+  function b64decode(b64) {
+    var bin = atob(String(b64 || "").replace(/-/g, "+").replace(/_/g, "/"));
+    try {
+      if (typeof TextDecoder !== "undefined") {
+        var oct = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) oct[i] = bin.charCodeAt(i);
+        return new TextDecoder().decode(oct);
+      }
+    } catch (e) {}
+    return decodeURIComponent(escape(bin));
+  }
+  // objet -> payload compact (clés courtes : le message de tchat est borné)
+  function packObjet(it, qte) {
+    var p = { n: String(it.nom || ""), q: Math.max(1, num(qte, 1)), p: pnum(it.poids), d: String(it.desc || "") };
+    var img = String(it.img || "");
+    if (img && (img.length <= IMG_MAX || !/^data:/.test(img))) p.i = img;
+    return b64encode(JSON.stringify(p));
+  }
+  function unpackObjet(b64) {
+    var o;
+    try { o = JSON.parse(b64decode(b64)); } catch (e) { return null; }
+    if (!o || typeof o !== "object") return null;
+    return {
+      nom: String(o.n || "Objet"), qte: Math.max(1, num(o.q, 1)), poids: pnum(o.p),
+      desc: String(o.d || ""), img: String(o.i || "")
+    };
+  }
+
+  // ---------- boîte de dialogue (jamais prompt/confirm pour un formulaire) ----------
+  // Dans Roll20 la fiche est une iframe d'une autre origine : les fenêtres
+  // natives y sont muettes sous Chrome. Tout formulaire passe donc par cette
+  // couche, posée dans le document de la fiche.
+  function dialogue(titre, corps, valider, libelleValider) {
+    var over = el("div", "pc-modal-over");
+    var box = el("div", "pc-modal");
+    box.appendChild(el("div", "pc-modal-title", titre));
+    box.appendChild(corps);
+    var pied = el("div", "pc-modal-actions");
+    function fermer() { if (over.parentNode) over.parentNode.removeChild(over); }
+    pied.appendChild(miniBtn("Annuler", null, fermer));
+    var ok = miniBtn(libelleValider || "Valider", null, function () {
+      if (valider() !== false) fermer();
+    }, "primary");
+    pied.appendChild(ok);
+    box.appendChild(pied);
+    over.appendChild(box);
+    over.addEventListener("mousedown", function (e) { if (e.target === over) fermer(); });
+    // DANS .perso-atelier : c'est lui qui porte les jetons de couleur (jour et
+    // nuit) ; accroché plus haut, le dialogue perdrait tout son habillage
+    (appEl || rootEl || document.body).appendChild(over);
+    setTimeout(function () {
+      var f = box.querySelector("input, textarea, select");
+      if (f) { f.focus(); if (f.select) f.select(); }
+    }, 0);
+    return { fermer: fermer };
+  }
+
+  // Donner : combien, puis la carte part au tchat et la pile diminue d'autant.
+  function donnerDialogue(it) {
+    var corps = el("div", "pc-modal-body");
+    corps.appendChild(el("div", "pc-modal-note",
+      "L'objet quitte l'inventaire et part dans le tchat : le premier joueur qui clique « Prendre » le reçoit."));
+    var qIn = el("input", "n");
+    qIn.type = "number"; qIn.min = "1"; qIn.max = String(Math.max(1, it.qte)); qIn.step = "1";
+    qIn.value = String(Math.max(1, Math.min(1, it.qte)) || 1);
+    corps.appendChild(fld("Quantité à donner (sur " + it.qte + ")", qIn));
+    dialogue("Donner « " + (it.nom || "objet") + " »", corps, function () {
+      var q = clamp(num(qIn.value, 1), 1, Math.max(1, it.qte));
+      if (!it.qte) { flash("Cet objet n'est plus en stock."); return; }
+      var cmd = "&{template:default} {{name=Objet donné — " + (it.nom || "objet") + "}}" +
+                (q > 1 ? " {{Quantité=" + q + "}}" : "") +
+                (it.desc ? " {{=" + String(it.desc).replace(/[{}]/g, "").replace(/\s+/g, " ").trim() + "}}" : "") +
+                " {{Prendre=[Prendre](" + TAKE_CMD + " " + packObjet(it, q) + ")}}";
+      if (typeof window.__jjkChat === "function") window.__jjkChat(cmd);
+      else flash("Hors de Roll20 : rien n'est envoyé au tchat (l'objet reste dans l'inventaire).");
+      if (typeof window.__jjkChat === "function") {
+        it.qte = Math.max(0, it.qte - q);
+        if (!it.qte) {
+          var i = state.inv.objets.indexOf(it);
+          if (i >= 0) state.inv.objets.splice(i, 1);
+        }
+        refresh();
+        if (invRender) invRender();
+      }
+    }, "Donner");
+  }
+
+  // Prendre : l'objet arrive du tchat (relayé par l'extension). S'il existe
+  // déjà, on empile les quantités et on tranche champ par champ ce qui diffère.
+  var invRender = null;   // posé par invObjets : re-rendu de l'inventaire
+  function recevoirObjet(payload) {
+    var recu = unpackObjet(payload);
+    if (!recu) { flash("Objet illisible (message abîmé)."); return; }
+    var G = state.inv.groupes, items = state.inv.objets;
+    var jumeau = null;
+    items.forEach(function (x) {
+      if (!jumeau && String(x.nom).trim().toLowerCase() === recu.nom.trim().toLowerCase()) jumeau = x;
+    });
+
+    var corps = el("div", "pc-modal-body");
+    if (recu.img) {
+      var imb = el("div", "pc-modal-img");
+      var im = el("img"); im.alt = ""; im.src = recu.img;
+      imb.appendChild(im);
+      corps.appendChild(imb);
+    }
+    var qIn = el("input", "n");
+    qIn.type = "number"; qIn.min = "1"; qIn.max = String(recu.qte); qIn.step = "1";
+    qIn.value = String(recu.qte);
+    corps.appendChild(fld("Quantité à prendre (sur " + recu.qte + ")", qIn));
+
+    var gSel = null;
+    if (!jumeau) {
+      gSel = el("select");
+      G.forEach(function (gn, gi) {
+        var o = el("option", null, gn);
+        o.value = String(gi);
+        gSel.appendChild(o);
+      });
+      corps.appendChild(fld("Ranger dans", gSel));
+    }
+
+    // conflits : pour chaque champ qui diffère, garder le sien ou prendre le neuf
+    var choix = {};
+    if (jumeau) {
+      corps.appendChild(el("div", "pc-modal-note",
+        "« " + jumeau.nom + " » est déjà dans l'inventaire (" + jumeau.qte + ") : les quantités s'additionnent."));
+      [["img", "Image"], ["poids", "Poids"], ["desc", "Description"]].forEach(function (c) {
+        var mien = String(jumeau[c[0]] || ""), neuf = String(recu[c[0]] || "");
+        if (mien === neuf || (!mien && !neuf)) return;
+        choix[c[0]] = "mien";
+        var bloc = el("div", "pc-modal-conflit");
+        bloc.appendChild(el("div", "lbl", c[1] + " : deux versions"));
+        var row = el("div", "row");
+        [["mien", "Garder le mien", mien], ["neuf", "Prendre le nouveau", neuf]].forEach(function (opt) {
+          var b = el("button", "pc-modal-choix" + (opt[0] === "mien" ? " on" : ""));
+          b.type = "button";
+          b.appendChild(el("div", "tag", opt[1]));
+          if (c[0] === "img" && opt[2]) {
+            var mi = el("img"); mi.alt = ""; mi.src = opt[2];
+            b.appendChild(mi);
+          } else {
+            b.appendChild(el("div", "val", opt[2] ? (c[0] === "poids" ? fmtP(pnum(opt[2])) : opt[2]) : "— vide —"));
+          }
+          b.addEventListener("click", function () {
+            choix[c[0]] = opt[0];
+            Array.prototype.forEach.call(row.children, function (x) { x.classList.remove("on"); });
+            b.classList.add("on");
+          });
+          row.appendChild(b);
+        });
+        bloc.appendChild(row);
+        corps.appendChild(bloc);
+      });
+    }
+
+    dialogue("Prendre « " + recu.nom + " »", corps, function () {
+      var q = clamp(num(qIn.value, recu.qte), 1, recu.qte);
+      if (jumeau) {
+        jumeau.qte += q;
+        ["img", "poids", "desc"].forEach(function (k) {
+          if (choix[k] === "neuf") jumeau[k] = recu[k];
+        });
+      } else {
+        items.push({
+          nom: recu.nom, qte: q, poids: recu.poids, img: recu.img, desc: recu.desc,
+          groupe: gSel ? clamp(num(gSel.value, 0), 0, G.length - 1) : 0
+        });
+      }
+      refresh();
+      if (invRender) invRender();
+      flash(q + " × « " + recu.nom + " » ajouté à l'inventaire.");
+    }, "Prendre");
+  }
+
   // ---------- inventaire : objets illustrés (tuiles par groupes + panneau) ----------
   // Transposition de l'inventaire à images : tuiles par groupes (Sur soi,
   // Sacoche…), clic -> panneau de détail (image, quantité, poids, groupe,
@@ -1696,10 +1905,38 @@
   function invObjets(container, renderRef) {
     var G = state.inv.groupes;
     var items = state.inv.objets;
+    var O = state.inv.opts;
     var sel = null;          // index dans items de l'objet affiché au panneau
     var dragIdx = null;
     var editGi = null;       // groupe à ouvrir en édition de nom au prochain render
     var tileRefs = {};       // idx -> { tile, nom, badge } pour maj sans re-render
+
+    // réglages d'affichage du module, en mode édition seulement
+    var optRow = el("div", "pc-obj-opts pc-edit-only");
+    var colIn = el("input", "n");
+    colIn.type = "number"; colIn.min = "1"; colIn.max = "8"; colIn.step = "1";
+    colIn.value = O.cols;
+    colIn.title = "Objets par ligne";
+    colIn.addEventListener("input", function () {
+      O.cols = clamp(num(colIn.value, 4), 1, 8);
+      render();
+      refresh();
+    });
+    optRow.appendChild(fld("Par ligne", colIn));
+    [["nom", "Nom"], ["qte", "Quantité"], ["poids", "Poids"], ["total", "Total"]].forEach(function (o) {
+      var chip = el("span", "pc-chip");
+      chip.textContent = o[1];
+      chip.title = "Afficher « " + o[1] + " » sur les tuiles" + (o[0] === "total" ? " (total en bas du module)" : "");
+      chip.classList.toggle("on", !!O[o[0]]);
+      chip.addEventListener("click", function () {
+        O[o[0]] = !O[o[0]];
+        chip.classList.toggle("on", !!O[o[0]]);
+        render();
+        refresh();
+      });
+      optRow.appendChild(chip);
+    });
+    container.appendChild(optRow);
 
     var wrap = el("div", "pc-obj-wrap");
     var leftBox = el("div", "pc-obj-left");
@@ -1713,7 +1950,11 @@
       items.forEach(function (it) { t += it.qte * it.poids; });
       return t;
     }
-    function updateTotal() { tot.textContent = "Poids total : " + fmtP(totalObjets()) + " kg"; }
+    // le poids de JJK n'a pas d'unité : c'est une valeur nue
+    function updateTotal() {
+      tot.style.display = O.total ? "" : "none";
+      tot.textContent = "Poids total : " + fmtP(totalObjets());
+    }
 
     function vignette(file, cb) {
       var r = new FileReader();
@@ -1755,13 +1996,37 @@
         im.src = it.img;
         t.appendChild(im);
       } else t.appendChild(el("div", "pc-obj-ph", "?"));
+      // retrait direct depuis la tuile, en mode édition
+      var del = el("button", "pc-obj-del pc-edit-only", "✕");
+      del.type = "button";
+      del.title = "Retirer cet objet";
+      del.addEventListener("click", function (e) {
+        e.stopPropagation();
+        if ((it.nom || it.desc) &&
+            !confirm("Retirer « " + (it.nom || "cet objet") + " » de l'inventaire ?")) return;
+        var here = items.indexOf(it);
+        items.splice(here, 1);
+        if (sel === here) sel = null;
+        else if (sel !== null && sel > here) sel--;
+        render();
+        refresh();
+      });
+      t.appendChild(del);
       var foot = el("div", "pc-obj-foot");
       var nom = el("span", "nm", it.nom || "Objet");
+      if (!O.nom) nom.style.display = "none";
       foot.appendChild(nom);
+      var poids = el("span", "pds", it.poids ? fmtP(it.poids) : "");
+      poids.title = "Poids unitaire";
+      if (!O.poids) poids.style.display = "none";
+      foot.appendChild(poids);
       var badge = el("span", "qte", "×" + it.qte);
+      if (!O.qte) badge.style.display = "none";
       foot.appendChild(badge);
+      // pied inutile si tout est masqué : la tuile reste une vignette nette
+      if (!O.nom && !O.poids && !O.qte) foot.style.display = "none";
       t.appendChild(foot);
-      tileRefs[idx] = { tile: t, nom: nom, badge: badge };
+      tileRefs[idx] = { tile: t, nom: nom, badge: badge, poids: poids };
 
       t.addEventListener("click", function () { sel = idx; render(); });
       t.draggable = true;
@@ -1780,16 +2045,32 @@
         if (dragIdx === idx) { e.stopPropagation(); return; }
         e.preventDefault();
         e.stopPropagation();
-        t.classList.add("over");
+        // le trait d'insertion se pose du côté visé : l'objet saura où il tombe
+        var r = t.getBoundingClientRect();
+        var avant = e.clientX < r.left + r.width / 2;
+        t.classList.toggle("over-l", avant);
+        t.classList.toggle("over-r", !avant);
       });
-      t.addEventListener("dragleave", function () { t.classList.remove("over"); });
+      t.addEventListener("dragleave", function () { t.classList.remove("over-l", "over-r"); });
       t.addEventListener("drop", function (e) {
         if (dragIdx === null) return;
         if (dragIdx === idx) { e.stopPropagation(); return; }
         e.preventDefault();
         e.stopPropagation();
+        var r = t.getBoundingClientRect();
+        var avant = e.clientX < r.left + r.width / 2;
         var from = dragIdx; dragIdx = null;
-        moveTo(from, it.groupe, it);
+        // déposer à DROITE d'une tuile = s'insérer avant la suivante du groupe.
+        // L'objet déplacé est exclu du calcul : sinon il serait sa propre cible
+        // et moveTo, qui le retire d'abord, l'expédierait en fin de groupe.
+        var cible = it;
+        if (!avant) {
+          var deplace = items[from];
+          var suivants = items.filter(function (x) { return x.groupe === it.groupe && x !== deplace; });
+          var k = suivants.indexOf(it);
+          cible = k >= 0 && k + 1 < suivants.length ? suivants[k + 1] : null;
+        }
+        moveTo(from, it.groupe, cible);
         render();
         refresh();
       });
@@ -1841,6 +2122,7 @@
       g.appendChild(head);
 
       var tiles = el("div", "pc-obj-tiles");
+      tiles.style.setProperty("--obj-cols", O.cols);   // objets par ligne, réglable
       items.forEach(function (it, idx) { if (it.groupe === gi) tiles.appendChild(tile(it, idx)); });
       var add = el("div", "pc-obj-addtile pc-edit-only", "+");
       add.title = "Ajouter un objet dans « " + G[gi] + " »";
@@ -1913,6 +2195,7 @@
         if (document.activeElement !== slider) slider.value = it.qte;
         if (document.activeElement !== qIn) qIn.value = it.qte;
         if (refs()) refs().badge.textContent = "×" + it.qte;
+        majPile();
         save(); updateTotal();
       }
       slider.addEventListener("input", function () { setQte(parseInt(slider.value, 10)); });
@@ -1926,9 +2209,14 @@
       pd.type = "text"; pd.inputMode = "decimal";
       pd.value = it.poids ? fmtP(it.poids) : "";
       pd.placeholder = "0";
-      pd.addEventListener("input", function () { it.poids = pnum(pd.value); save(); updateTotal(); });
+      pd.addEventListener("input", function () {
+        it.poids = pnum(pd.value);
+        if (refs()) refs().poids.textContent = it.poids ? fmtP(it.poids) : "";
+        majPile();
+        save(); updateTotal();
+      });
       pd.addEventListener("blur", function () { pd.value = it.poids ? fmtP(it.poids) : ""; });
-      pair.appendChild(fld("Poids (kg)", pd));
+      pair.appendChild(fld("Poids", pd));
       var gSel = el("select", "pc-edit-field");
       G.forEach(function (gn, gi) {
         var o = el("option", null, gn);
@@ -1943,6 +2231,15 @@
       });
       pair.appendChild(fld("Groupe", gSel));
       body.appendChild(pair);
+
+      // total de la pile : ce que cet objet pèse en tout (quantité × poids)
+      var pile = el("div", "pc-obj-pile");
+      function majPile() {
+        pile.textContent = "Total : " + fmtP(it.qte * it.poids);
+        pile.style.display = it.poids ? "" : "none";
+      }
+      majPile();
+      body.appendChild(pile);
 
       var url = el("input", "pc-edit-field");
       url.type = "text"; url.placeholder = "https://…";
@@ -1975,11 +2272,18 @@
           return [
             ["Groupe", G[it.groupe]],
             ["Quantité", String(it.qte)],
-            ["Poids", it.poids ? fmtP(it.poids) + " kg" + (it.qte > 1 ? " (total " + fmtP(it.qte * it.poids) + " kg)" : "") : ""],
+            ["Poids", it.poids ? fmtP(it.poids) + (it.qte > 1 ? " (total " + fmtP(it.qte * it.poids) + ")" : "") : ""],
             ["", it.desc]   // texte long : pleine largeur, sans libellé
           ];
         }));
+      // donner : l'objet quitte CET inventaire et part au tchat sous forme de
+      // lien « Prendre » ; le premier qui clique le reçoit dans sa fiche
+      actions.appendChild(miniBtn("Donner", "Donner tout ou partie de cet objet à un autre joueur", function () {
+        donnerDialogue(it);
+      }));
       actions.appendChild(miniBtn("Retirer", "Retirer l'objet", function () {
+        if ((it.nom || it.desc) &&
+            !confirm("Retirer « " + (it.nom || "cet objet") + " » de l'inventaire ?")) return;
         items.splice(sel, 1);
         sel = null;
         render();
@@ -2006,6 +2310,7 @@
       applyEdit(container, "inv");
     }
     if (renderRef) renderRef.fn = render;
+    invRender = render;   // un objet reçu du tchat redessine l'inventaire
     render();
     container.appendChild(wrap);
     container.appendChild(tot);
@@ -2373,6 +2678,7 @@
     optCompsRebuild = null;
     root.innerHTML = "";
     var app = el("div", "perso-atelier");
+    appEl = app;
 
     buildTop(app);
     var sheet = el("div", "pc-sheet");
@@ -2393,6 +2699,12 @@
     var root = document.getElementById("perso-atelier");
     if (!root || root.getAttribute("data-ready")) return;
     root.setAttribute("data-ready", "1");
+    // point d'entrée des objets donnés au tchat : l'amorce Roll20 appelle ceci
+    // quand le joueur clique « Prendre » (et rejoue ce qui attendait le montage)
+    window.__jjkOnTake = function (payload) {
+      if (!state) { flash("La fiche n'est pas encore prête : reclique « Prendre »."); return; }
+      recevoirObjet(payload);
+    };
     if (DATA) { state = load() || blank(); mount(root); return; }
     fetch(siteBase() + "jjk-creation.json", { cache: "no-cache" })
       .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
