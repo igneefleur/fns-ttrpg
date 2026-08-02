@@ -269,10 +269,17 @@
     s.inv.objets = objArray(s.inv.objets).map(function (it) {
       return {
         nom: it.nom == null ? "" : String(it.nom),
-        qte: Math.max(0, num(it.qte, 1)),
+        // quantités et poids DÉCIMAUX (une demi-ration, 0.5 de poids…)
+        qte: pnum(it.qte === undefined ? 1 : it.qte),
         poids: pnum(it.poids),
         img: it.img == null ? "" : String(it.img),
         desc: it.desc == null ? "" : String(it.desc),
+        // identifiant libre : c'est LUI qui reconnaît le même objet d'une fiche
+        // à l'autre quand on le donne (deux « Corde » différentes ne se
+        // confondent pas si elles portent des identifiants distincts)
+        id: it.id == null ? "" : String(it.id),
+        achat: pnum(it.achat),
+        vente: pnum(it.vente),
         groupe: clamp(num(it.groupe, 0), 0, s.inv.groupes.length - 1)
       };
     });
@@ -439,6 +446,75 @@
     try { STORE.setItem("jjk-cards", JSON.stringify(keep)); } catch (e) {}
   }
 
+  // ---------- envoi au tchat : destinataire et modificateur ----------
+  // Tout ce que la fiche envoie à Roll20 traverse ce bloc. La commande est
+  // composée ICI, côté site, et part par window.__jjkChat, que l'extension
+  // relaie SANS RIEN RÉÉCRIRE : le format peut donc évoluer sans re-signature.
+  // Les deux réglages (à qui, avec ou sans modificateur) vivent dans le VRAI
+  // localStorage du navigateur, comme la préférence jour/nuit : ce ne sont pas
+  // des données de personnage, et les écrire dans les Attributes Roll20 à
+  // chaque clic n'aurait aucun sens.
+  var ENVOI = {
+    mode: "jjk-r20-envoi",        // "public" | "gm" | "joueur"
+    dest: "jjk-r20-envoi-dest",   // nom d'affichage du destinataire
+    input: "jjk-r20-envoi-input", // "0" (sans) | "1" (avec)
+    noms: "jjk-r20-envoi-noms"    // liste de secours, si Roll20 ne la donne pas
+  };
+  function lpref(k, def) {
+    try { var v = localStorage.getItem(k); return v == null ? def : v; } catch (e) { return def; }
+  }
+  function lset(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  function envMode() {
+    var m = lpref(ENVOI.mode, "public");
+    return m === "gm" || m === "joueur" ? m : "public";
+  }
+  function envDest() { return lpref(ENVOI.dest, ""); }
+  function envInput() { return lpref(ENVOI.input, "0") === "1"; }
+  // Même assainissement que l'extension (content-roll20.js) : sur le canal brut
+  // elle n'en fait aucun, une accolade ou un retour à la ligne d'un texte de
+  // fiche casserait la carte.
+  function envSan(s) {
+    return String(s == null ? "" : s).replace(/[{}]/g, "").replace(/\s+/g, " ").trim();
+  }
+  // Le préfixe de chuchotement ouvre la commande : Roll20 exige que le message
+  // COMMENCE par « / », un seul blanc devant et tout part en clair, en public.
+  // Un nom qui contient une espace doit être entre guillemets droits.
+  function envPrefixe() {
+    var m = envMode();
+    if (m === "gm") return "/w gm ";
+    if (m === "joueur") {
+      var d = envSan(envDest()).replace(/"/g, "");
+      if (d) return "/w \"" + d + "\" ";
+      // « à un joueur » sans destinataire : public plutôt qu'une commande cassée
+    }
+    return "";
+  }
+  // Requête Roll20 : résolue côté client à l'envoi, donc seulement parce que
+  // l'extension écrit dans la zone de saisie du tchat. Les parenthèses laissent
+  // saisir un modificateur négatif sans ambiguïté (« + (-5) »).
+  var ENV_QUERY = " + (?{Modificateur|0})";
+  function cmdJet(label, value, die, avecInput) {
+    var v = value >= 0 ? "+ " + value : "- " + (-value);
+    return "&{template:default} {{name=" + String(label || "Jet").replace(/[{}]/g, "") +
+           "}} {{Jet=[[" + (String(die || "1d100").trim() || "1d100") + " " + v +
+           (avecInput ? ENV_QUERY : "") + "]]}}";
+  }
+  function cmdCarte(title, fields) {
+    var cmd = "&{template:default} {{name=" + envSan(title) + "}}";
+    (fields || []).forEach(function (f) {
+      if (!f) return;
+      var k = envSan(f[0]), v = envSan(f[1]);
+      if (v) cmd += " {{" + k + "=" + v + "}}";
+    });
+    return cmd;
+  }
+  // envoi effectif : préfixe + commande. Renvoie false hors Roll20.
+  function envoyer(cmd) {
+    if (typeof window === "undefined" || typeof window.__jjkChat !== "function") return false;
+    window.__jjkChat(envPrefixe() + cmd);
+    return true;
+  }
+
   // ---------- jets ----------
   // Les dés se jettent dans Roll20 : jjk-roll20-boot.js (amorce Roll20 servie
   // par le site) pose window.__jjkRoll et le
@@ -453,6 +529,11 @@
   // critent (96+/5-). Les jets d'équipement (dégâts, invu) restent des dés bruts.
   function doRoll(label, value, die, isCheck) {
     die = die || state.de || "1d100";
+    // « avec input » ne vaut QUE pour les jets de test : isCheck est vrai
+    // exactement aux caractéristiques et aux compétences, faux aux dégâts et
+    // à l'invulnérabilité — aucun autre filtre à écrire.
+    if (envoyer(cmdJet(label, value, die, isCheck && envInput()))) return;
+    // extension antérieure au canal brut : jet public, sans modificateur
     if (typeof window !== "undefined" && typeof window.__jjkRoll === "function") {
       window.__jjkRoll(die, value, label);
       return;
@@ -490,6 +571,8 @@
   // Une seule étiquette vide par carte : le template les indexe par clé.
   function sayChat(title, fields) {
     var clean = (fields || []).filter(function (f) { return f && String(f[1] || "").trim(); });
+    if (envoyer(cmdCarte(title, clean))) return;
+    // extension antérieure au canal brut : carte publique
     if (typeof window !== "undefined" && typeof window.__jjkSay === "function") {
       window.__jjkSay(title, clean);
       return;
@@ -797,6 +880,134 @@
   // (doublons en lecture seule de l'onglet Fiche) n'y figurent plus.
   //   Nom | Espèce | Âge | Sexe | Genre
   //   Création ———— | XP dépensé ———— | XP total
+  // ---------- barre d'envoi (Roll20 seulement) ----------
+  // À qui part la macro, et faut-il demander un modificateur. Geste de JEU :
+  // aucun rouage, aucun mode édition. Posée en FRÈRE de .pc-head, jamais dans
+  // .pc-id (dont les 12 colonnes sont pleines, et dont la hauteur commande la
+  // taille du portrait).
+  function buildEnvoi(sheet) {
+    if (!COMPACT) return;   // hors Roll20 il n'y a pas de tchat : rien à régler
+    var bar = el("div", "pc-envoi");
+    bar.appendChild(el("span", "lbl", "Envoi"));
+
+    var destSel = el("select", "pc-select");
+    destSel.title = "Destinataire du chuchotement";
+    var editNoms = null;
+
+    function majDest() {
+      var joueur = envMode() === "joueur";
+      destSel.style.display = joueur ? "" : "none";
+      if (editNoms) editNoms.style.display = joueur && !listeRoll20 ? "" : "none";
+    }
+
+    // segments : Publique | Au MJ | À un joueur
+    var segs = el("div", "pc-envoi-segs");
+    var boutons = [];
+    [["public", "Publique", "Tout le monde voit la carte"],
+     ["gm", "Au MJ", "Chuchoté au MJ (/w gm)"],
+     ["joueur", "À un joueur", "Chuchoté au joueur choisi à droite"]].forEach(function (o) {
+      var b = el("button", "seg" + (envMode() === o[0] ? " on" : ""), o[1]);
+      b.type = "button";
+      b.title = o[2];
+      b.addEventListener("click", function () {
+        lset(ENVOI.mode, o[0]);
+        boutons.forEach(function (x) { x.classList.remove("on"); });
+        b.classList.add("on");
+        majDest();
+        if (o[0] === "joueur") demanderJoueurs();
+      });
+      boutons.push(b);
+      segs.appendChild(b);
+    });
+    bar.appendChild(segs);
+
+    // liste des destinataires : celle de Roll20 si l'extension sait la donner,
+    // sinon celle que l'utilisateur saisit (et qui reste dans son navigateur)
+    var listeRoll20 = null;
+    function nomsManuels() {
+      return lpref(ENVOI.noms, "").split("\n").map(function (s) { return s.trim(); })
+        .filter(function (s) { return s; });
+    }
+    function remplirDest(noms) {
+      var actuel = envDest();
+      destSel.innerHTML = "";
+      if (!noms.length) {
+        var vide = el("option", null, listeRoll20 ? "Aucun autre joueur connecté" : "Aucun joueur enregistré");
+        vide.value = "";
+        destSel.appendChild(vide);
+      }
+      noms.forEach(function (n) {
+        var o = el("option", null, n);
+        o.value = n;
+        if (n === actuel) o.selected = true;
+        destSel.appendChild(o);
+      });
+      // un destinataire choisi avant que la liste change reste sélectionnable
+      if (actuel && noms.indexOf(actuel) < 0) {
+        var o2 = el("option", null, actuel + " (absent)");
+        o2.value = actuel; o2.selected = true;
+        destSel.appendChild(o2);
+      }
+    }
+    destSel.addEventListener("change", function () { lset(ENVOI.dest, destSel.value); });
+    // Roll20 ne livre sa liste que par l'extension (la fiche est une iframe
+    // d'une autre origine) : si elle ne répond pas, la saisie manuelle prend
+    // le relais et rien n'est perdu.
+    function demanderJoueurs() {
+      if (typeof window.__jjkPlayers !== "function") { remplirDest(nomsManuels()); return; }
+      window.__jjkPlayers(function (noms) {
+        if (noms && noms.length) {
+          listeRoll20 = noms;
+          remplirDest(noms);
+        } else remplirDest(nomsManuels());
+        majDest();
+      });
+    }
+    bar.appendChild(destSel);
+
+    editNoms = miniBtn("Joueurs…", "Saisir les noms des joueurs de la table", function () {
+      var corps = el("div", "pc-modal-body");
+      corps.appendChild(el("div", "pc-modal-note",
+        "Un nom par ligne, tel qu'il s'affiche dans Roll20. Cette liste reste dans ce navigateur."));
+      var ta = el("textarea", "pc-notes");
+      ta.rows = 6;
+      ta.value = lpref(ENVOI.noms, "");
+      corps.appendChild(ta);
+      dialogue("Joueurs de la table", corps, function () {
+        lset(ENVOI.noms, ta.value);
+        remplirDest(nomsManuels());
+      }, "Enregistrer");
+    });
+    bar.appendChild(editNoms);
+
+    // sans input / avec input : la requête ?{…} n'a de sens que sur un jet de
+    // test, elle est donc posée par doRoll et ignorée partout ailleurs
+    var sep = el("span", "lbl", "Modificateur");
+    sep.title = "Ne s'applique qu'aux jets de caractéristique et de compétence";
+    bar.appendChild(sep);
+    var segs2 = el("div", "pc-envoi-segs");
+    var bin = [];
+    [["0", "Sans input", "Le jet part tel quel"],
+     ["1", "Avec input", "Roll20 demande un modificateur avant de lancer"]].forEach(function (o) {
+      var b = el("button", "seg" + ((envInput() ? "1" : "0") === o[0] ? " on" : ""), o[1]);
+      b.type = "button";
+      b.title = o[2];
+      b.addEventListener("click", function () {
+        lset(ENVOI.input, o[0]);
+        bin.forEach(function (x) { x.classList.remove("on"); });
+        b.classList.add("on");
+      });
+      bin.push(b);
+      segs2.appendChild(b);
+    });
+    bar.appendChild(segs2);
+
+    sheet.appendChild(bar);
+    remplirDest(nomsManuels());
+    majDest();
+    demanderJoueurs();
+  }
+
   function buildHead(sheet) {
     var head = el("div", "pc-head");
     var idBox = el("div", "pc-id");   // créé tôt : le portrait s'aligne sur sa hauteur
@@ -908,6 +1119,7 @@
 
     head.appendChild(id);
     sheet.appendChild(head);
+    buildEnvoi(sheet);
 
     // garde-fous
     var warns = el("div", "pc-warns");
@@ -1734,7 +1946,11 @@
   }
   // objet -> payload compact (clés courtes : le message de tchat est borné)
   function packObjet(it, qte) {
-    var p = { n: String(it.nom || ""), q: Math.max(1, num(qte, 1)), p: pnum(it.poids), d: String(it.desc || "") };
+    var p = {
+      n: String(it.nom || ""), q: Math.max(0, pnum(qte)) || 1, p: pnum(it.poids),
+      d: String(it.desc || ""), k: String(it.id || ""),
+      a: pnum(it.achat), v: pnum(it.vente)
+    };
     var img = String(it.img || "");
     if (img && (img.length <= IMG_MAX || !/^data:/.test(img))) p.i = img;
     return b64encode(JSON.stringify(p));
@@ -1744,8 +1960,9 @@
     try { o = JSON.parse(b64decode(b64)); } catch (e) { return null; }
     if (!o || typeof o !== "object") return null;
     return {
-      nom: String(o.n || "Objet"), qte: Math.max(1, num(o.q, 1)), poids: pnum(o.p),
-      desc: String(o.d || ""), img: String(o.i || "")
+      nom: String(o.n || "Objet"), qte: Math.max(0, pnum(o.q)) || 1, poids: pnum(o.p),
+      desc: String(o.d || ""), img: String(o.i || ""),
+      id: String(o.k || ""), achat: pnum(o.a), vente: pnum(o.v)
     };
   }
 
@@ -1779,25 +1996,25 @@
   }
 
   // Donner : combien, puis la carte part au tchat et la pile diminue d'autant.
-  function donnerDialogue(it) {
+  function donnerDialogue(it, qteDefaut) {
     var corps = el("div", "pc-modal-body");
     corps.appendChild(el("div", "pc-modal-note",
       "L'objet quitte l'inventaire et part dans le tchat : le premier joueur qui clique « Prendre » le reçoit."));
     var qIn = el("input", "n");
-    qIn.type = "number"; qIn.min = "1"; qIn.max = String(Math.max(1, it.qte)); qIn.step = "1";
-    qIn.value = String(Math.max(1, Math.min(1, it.qte)) || 1);
-    corps.appendChild(fld("Quantité à donner (sur " + it.qte + ")", qIn));
+    qIn.type = "number"; qIn.min = "0"; qIn.max = String(it.qte); qIn.step = "any";
+    qIn.value = fmtP(Math.min(pnum(qteDefaut) || it.qte, it.qte));
+    corps.appendChild(fld("Quantité à donner (sur " + fmtP(it.qte) + ")", qIn));
     dialogue("Donner « " + (it.nom || "objet") + " »", corps, function () {
-      var q = clamp(num(qIn.value, 1), 1, Math.max(1, it.qte));
-      if (!it.qte) { flash("Cet objet n'est plus en stock."); return; }
+      var q = Math.min(pnum(qIn.value) || it.qte, it.qte);
+      if (!it.qte || !q) { flash("Cet objet n'est plus en stock."); return; }
       var cmd = "&{template:default} {{name=Objet donné — " + (it.nom || "objet") + "}}" +
-                (q > 1 ? " {{Quantité=" + q + "}}" : "") +
+                (q > 1 ? " {{Quantité=" + fmtP(q) + "}}" : "") +
                 (it.desc ? " {{=" + String(it.desc).replace(/[{}]/g, "").replace(/\s+/g, " ").trim() + "}}" : "") +
                 " {{Prendre=[Prendre](" + TAKE_CMD + " " + packObjet(it, q) + ")}}";
-      if (typeof window.__jjkChat === "function") window.__jjkChat(cmd);
+      if (typeof window.__jjkChat === "function") envoyer(cmd);
       else flash("Hors de Roll20 : rien n'est envoyé au tchat (l'objet reste dans l'inventaire).");
       if (typeof window.__jjkChat === "function") {
-        it.qte = Math.max(0, it.qte - q);
+        it.qte = Math.max(0, Math.round((it.qte - q) * 100) / 100);
         if (!it.qte) {
           var i = state.inv.objets.indexOf(it);
           if (i >= 0) state.inv.objets.splice(i, 1);
@@ -1815,10 +2032,18 @@
     var recu = unpackObjet(payload);
     if (!recu) { flash("Objet illisible (message abîmé)."); return; }
     var G = state.inv.groupes, items = state.inv.objets;
+    // reconnaissance : d'abord l'identifiant (deux objets homonymes mais
+    // distincts ne fusionnent pas), à défaut le nom
     var jumeau = null;
-    items.forEach(function (x) {
-      if (!jumeau && String(x.nom).trim().toLowerCase() === recu.nom.trim().toLowerCase()) jumeau = x;
-    });
+    if (recu.id) {
+      items.forEach(function (x) { if (!jumeau && x.id && x.id === recu.id) jumeau = x; });
+    }
+    if (!jumeau) {
+      items.forEach(function (x) {
+        if (!jumeau && !x.id && !recu.id &&
+            String(x.nom).trim().toLowerCase() === recu.nom.trim().toLowerCase()) jumeau = x;
+      });
+    }
 
     var corps = el("div", "pc-modal-body");
     if (recu.img) {
@@ -1828,9 +2053,9 @@
       corps.appendChild(imb);
     }
     var qIn = el("input", "n");
-    qIn.type = "number"; qIn.min = "1"; qIn.max = String(recu.qte); qIn.step = "1";
-    qIn.value = String(recu.qte);
-    corps.appendChild(fld("Quantité à prendre (sur " + recu.qte + ")", qIn));
+    qIn.type = "number"; qIn.min = "0"; qIn.max = String(recu.qte); qIn.step = "any";
+    qIn.value = fmtP(recu.qte);
+    corps.appendChild(fld("Quantité à prendre (sur " + fmtP(recu.qte) + ")", qIn));
 
     var gSel = null;
     if (!jumeau) {
@@ -1847,8 +2072,10 @@
     var choix = {};
     if (jumeau) {
       corps.appendChild(el("div", "pc-modal-note",
-        "« " + jumeau.nom + " » est déjà dans l'inventaire (" + jumeau.qte + ") : les quantités s'additionnent."));
-      [["img", "Image"], ["poids", "Poids"], ["desc", "Description"]].forEach(function (c) {
+        "« " + jumeau.nom + " » est déjà dans l'inventaire (" + fmtP(jumeau.qte) + ")" +
+        (recu.id ? " — même identifiant" : "") + " : les quantités s'additionnent."));
+      [["nom", "Nom"], ["img", "Image"], ["poids", "Poids"],
+       ["desc", "Description"], ["achat", "Achat"], ["vente", "Vente"]].forEach(function (c) {
         var mien = String(jumeau[c[0]] || ""), neuf = String(recu[c[0]] || "");
         if (mien === neuf || (!mien && !neuf)) return;
         choix[c[0]] = "mien";
@@ -1878,21 +2105,23 @@
     }
 
     dialogue("Prendre « " + recu.nom + " »", corps, function () {
-      var q = clamp(num(qIn.value, recu.qte), 1, recu.qte);
+      var q = Math.min(pnum(qIn.value) || recu.qte, recu.qte);
       if (jumeau) {
-        jumeau.qte += q;
-        ["img", "poids", "desc"].forEach(function (k) {
+        jumeau.qte = Math.round((jumeau.qte + q) * 100) / 100;
+        ["nom", "img", "poids", "desc", "achat", "vente"].forEach(function (k) {
           if (choix[k] === "neuf") jumeau[k] = recu[k];
         });
+        if (!jumeau.id && recu.id) jumeau.id = recu.id;
       } else {
         items.push({
           nom: recu.nom, qte: q, poids: recu.poids, img: recu.img, desc: recu.desc,
+          id: recu.id, achat: recu.achat, vente: recu.vente,
           groupe: gSel ? clamp(num(gSel.value, 0), 0, G.length - 1) : 0
         });
       }
       refresh();
       if (invRender) invRender();
-      flash(q + " × « " + recu.nom + " » ajouté à l'inventaire.");
+      flash(fmtP(q) + " × « " + recu.nom + " » ajouté à l'inventaire.");
     }, "Prendre");
   }
 
@@ -2020,7 +2249,7 @@
       poids.title = "Poids unitaire";
       if (!O.poids) poids.style.display = "none";
       foot.appendChild(poids);
-      var badge = el("span", "qte", "×" + it.qte);
+      var badge = el("span", "qte", "×" + fmtP(it.qte));
       if (!O.qte) badge.style.display = "none";
       foot.appendChild(badge);
       // pied inutile si tout est masqué : la tuile reste une vignette nette
@@ -2186,20 +2415,23 @@
       slider.type = "range"; slider.min = "0";
       slider.max = String(Math.max(10, it.qte));
       slider.value = it.qte;
+      slider.step = "any";
       var qIn = el("input", "n");
-      qIn.type = "number"; qIn.min = "0"; qIn.step = "1";
+      qIn.type = "number"; qIn.min = "0"; qIn.step = "any";
       qIn.value = it.qte;
       function setQte(v) {
-        it.qte = isFinite(v) && v >= 0 ? Math.floor(v) : 0;
+        // quantités DÉCIMALES : une demi-ration, 2.5 mètres de corde…
+        it.qte = isFinite(v) && v >= 0 ? Math.round(v * 100) / 100 : 0;
         if (+slider.max < it.qte) slider.max = String(it.qte);
         if (document.activeElement !== slider) slider.value = it.qte;
         if (document.activeElement !== qIn) qIn.value = it.qte;
-        if (refs()) refs().badge.textContent = "×" + it.qte;
+        if (refs()) refs().badge.textContent = "×" + fmtP(it.qte);
+        majAct();
         majPile();
         save(); updateTotal();
       }
-      slider.addEventListener("input", function () { setQte(parseInt(slider.value, 10)); });
-      qIn.addEventListener("input", function () { setQte(parseInt(qIn.value, 10)); });
+      slider.addEventListener("input", function () { setQte(parseFloat(slider.value)); });
+      qIn.addEventListener("input", function () { setQte(parseFloat(qIn.value)); });
       qRow.appendChild(slider);
       qRow.appendChild(qIn);
       body.appendChild(fld("Quantité", qRow));
@@ -2231,6 +2463,29 @@
       });
       pair.appendChild(fld("Groupe", gSel));
       body.appendChild(pair);
+
+      // achat / vente : la valeur marchande de l'objet, laissée nue comme le
+      // poids (JJK ne nomme pas sa monnaie)
+      var prix = el("div", "pc-obj-pair");
+      [["achat", "Achat"], ["vente", "Vente"]].forEach(function (c) {
+        var inp = el("input", "pc-edit-field");
+        inp.type = "text"; inp.inputMode = "decimal";
+        inp.value = it[c[0]] ? fmtP(it[c[0]]) : "";
+        inp.placeholder = "0";
+        inp.addEventListener("input", function () { it[c[0]] = pnum(inp.value); save(); });
+        inp.addEventListener("blur", function () { inp.value = it[c[0]] ? fmtP(it[c[0]]) : ""; });
+        prix.appendChild(fld(c[1], inp));
+      });
+      body.appendChild(prix);
+
+      // identifiant : c'est LUI qui reconnaît le même objet d'une fiche à
+      // l'autre quand on le donne (deux « Corde » sans rapport ne fusionnent
+      // pas si elles portent des identifiants différents)
+      var idIn = el("input", "pc-edit-field");
+      idIn.type = "text"; idIn.placeholder = "libre (ex. corde-chanvre)";
+      idIn.value = it.id || "";
+      idIn.addEventListener("input", function () { it.id = idIn.value; save(); });
+      body.appendChild(fld("Identifiant", idIn, "w pc-edit-only"));
 
       // total de la pile : ce que cet objet pèse en tout (quantité × poids)
       var pile = el("div", "pc-obj-pile");
@@ -2265,27 +2520,54 @@
       desc.addEventListener("input", function () { it.desc = desc.value; save(); });
       body.appendChild(fld("Description", desc, "w"));
 
+      // quantité d'ACTION : combien d'exemplaires les boutons ci-dessous
+      // traitent. Elle ne touche pas la pile tant qu'on n'agit pas.
+      var actQte = el("input", "n");
+      actQte.type = "number"; actQte.min = "0"; actQte.step = "any";
+      actQte.title = "Quantité traitée par les boutons ci-dessous";
+      function bornerAct() {
+        var v = pnum(actQte.value);
+        if (!v || v > it.qte) v = it.qte;
+        return Math.round(v * 100) / 100;
+      }
+      function majAct() {
+        actQte.max = String(it.qte);
+        if (document.activeElement !== actQte) actQte.value = fmtP(Math.min(pnum(actQte.value) || it.qte, it.qte));
+      }
+      actQte.value = fmtP(it.qte);
+      actQte.addEventListener("blur", function () { actQte.value = fmtP(bornerAct()); });
+
       var actions = el("div", "pc-obj-actions");
+      actions.appendChild(fld("Quantité", actQte, "qact"));
       actions.appendChild(chatBtn(
         function () { return "Objet — " + (it.nom || "objet"); },
         function () {
+          var q = bornerAct();
           return [
             ["Groupe", G[it.groupe]],
-            ["Quantité", String(it.qte)],
-            ["Poids", it.poids ? fmtP(it.poids) + (it.qte > 1 ? " (total " + fmtP(it.qte * it.poids) + ")" : "") : ""],
+            ["Quantité", fmtP(q) + (q < it.qte ? " (sur " + fmtP(it.qte) + ")" : "")],
+            ["Poids", it.poids ? fmtP(it.poids) + (q > 1 ? " (total " + fmtP(q * it.poids) + ")" : "") : ""],
+            ["Valeur", it.vente ? "vente " + fmtP(it.vente) + (it.achat ? " · achat " + fmtP(it.achat) : "")
+                                : (it.achat ? "achat " + fmtP(it.achat) : "")],
             ["", it.desc]   // texte long : pleine largeur, sans libellé
           ];
         }));
       // donner : l'objet quitte CET inventaire et part au tchat sous forme de
       // lien « Prendre » ; le premier qui clique le reçoit dans sa fiche
-      actions.appendChild(miniBtn("Donner", "Donner tout ou partie de cet objet à un autre joueur", function () {
-        donnerDialogue(it);
+      actions.appendChild(miniBtn("Donner", "Donner cette quantité à un autre joueur", function () {
+        donnerDialogue(it, bornerAct());
       }));
-      actions.appendChild(miniBtn("Retirer", "Retirer l'objet", function () {
-        if ((it.nom || it.desc) &&
+      actions.appendChild(miniBtn("Retirer", "Retirer cette quantité (tout : l'objet disparaît)", function () {
+        var q = bornerAct();
+        var tout = q >= it.qte;
+        if (tout && (it.nom || it.desc) &&
             !confirm("Retirer « " + (it.nom || "cet objet") + " » de l'inventaire ?")) return;
-        items.splice(sel, 1);
-        sel = null;
+        if (tout) {
+          items.splice(sel, 1);
+          sel = null;
+        } else {
+          it.qte = Math.round((it.qte - q) * 100) / 100;
+        }
         render();
         refresh();
       }, "danger pc-edit-only"));
