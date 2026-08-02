@@ -210,7 +210,14 @@
       if (!Array.isArray(c.techniques)) c.techniques = Array.isArray(c.passifs) ? c.passifs : [];
       delete c.passifs;
       c.techniques = c.techniques.map(function (p) {
-        if (p && typeof p === "object") return { name: String(p.name || ""), desc: String(p.desc || "") };
+        // cout : coût forcé de CE passif (null = le tarif de base) ; le joueur
+        // peut le régler à droite du nom, en mode édition
+        if (p && typeof p === "object") {
+          var t = { name: String(p.name || ""), desc: String(p.desc || "") };
+          var co = (p.cout === null || p.cout === undefined || p.cout === "") ? null : Math.floor(parseFloat(p.cout));
+          if (co !== null && isFinite(co)) t.cout = clamp(co, 0, 9999);
+          return t;
+        }
         return { name: p == null ? "" : String(p), desc: "" };
       });
       // l'art du stade qui l'ouvre (Art) : {name, desc} ; un art resté vide s'efface
@@ -284,6 +291,19 @@
     return v + (state.caracsMod[c] || 0);
   }
   function stadeInfo(i) { return DATA.stades[clamp(i, 0, DATA.stades.length - 1)]; }
+  // nombre de passifs offerts par les stades atteints (les PREMIERS de la liste)
+  function offertesDe(c) {
+    var n = 0;
+    for (var i = 0; c && i <= c.stade && i < DATA.stades.length; i++) {
+      if (DATA.stades[i].techniqueOfferte) n++;
+    }
+    return n;
+  }
+  // coût d'un passif : son coût forcé s'il en porte un, sinon le tarif de base
+  function techXp(t) {
+    return (t && t.cout !== null && t.cout !== undefined && isFinite(t.cout))
+      ? t.cout : DATA.xpParStade;
+  }
   function compXp(c) {
     var xp = DATA.xpParStade * c.stade;
     // les passifs PRÉSENTS restent facturés même si le stade ne les ouvre
@@ -291,12 +311,13 @@
     // doit disparaître ni se re-créditer en silence)
     if (stadeInfo(c.stade).techniques || (c.techniques && c.techniques.length)) {
       // chaque stade atteint qui inclut un passif en rend un gratuit
-      // (Art : « choisir un passif original »)
+      // (Art : « choisir un passif original ») : ce sont les PREMIERS de la
+      // liste ; les suivants coûtent chacun leur propre tarif
       var offertes = 0;
       for (var i = 0; i <= c.stade && i < DATA.stades.length; i++) {
         if (DATA.stades[i].techniqueOfferte) offertes++;
       }
-      xp += DATA.xpParStade * Math.max(0, c.techniques.length - offertes);
+      c.techniques.forEach(function (t, j) { if (j >= offertes) xp += techXp(t); });
     }
     return xp;
   }
@@ -454,6 +475,12 @@
   // Dans Roll20, l'élément part au TCHAT en carte (jjk-roll20-boot.js pose __jjkSay) ;
   // sur le site, il s'affiche en toast. fields : [[libellé, valeur], …],
   // les valeurs vides sont ignorées.
+  // Une étiquette VIDE ("") est volontaire : la carte Roll20 rend alors
+  // « {{=texte}} », une ligne pleine largeur sans colonne de libellé. Réservée
+  // aux TEXTES LONGS (effet d'un passif, description d'un art, avantage…),
+  // dont le libellé n'apprend rien que le titre ne dise déjà ; les champs
+  // courts et tabulaires (poids, dégâts, quantité…) gardent le leur.
+  // Une seule étiquette vide par carte : le template les indexe par clé.
   function sayChat(title, fields) {
     var clean = (fields || []).filter(function (f) { return f && String(f[1] || "").trim(); });
     if (typeof window !== "undefined" && typeof window.__jjkSay === "function") {
@@ -461,7 +488,7 @@
       return;
     }
     flash(title + (clean.length
-      ? " — " + clean.map(function (f) { return f[0] + " : " + f[1]; }).join(" · ")
+      ? " — " + clean.map(function (f) { return f[0] ? f[0] + " : " + f[1] : f[1]; }).join(" · ")
       : ""));
   }
   function chatBtn(getTitle, getFields) {
@@ -1476,6 +1503,32 @@
           tNm.type = "text"; tNm.placeholder = "Nom du passif"; tNm.value = t.name || "";
           tNm.addEventListener("input", function () { t.name = tNm.value; state.comps[it.key] = cc; save(); });
           tHead.appendChild(tNm);
+
+          // coût du passif, à droite du nom : vide = tarif de base, une valeur
+          // le force (décision du MJ, passif hors barème)
+          var tCout = el("span", "pc-tech-cout pc-edit-only");
+          var cIn = el("input");
+          cIn.type = "number"; cIn.min = "0"; cIn.step = "5";
+          cIn.value = (t.cout === null || t.cout === undefined) ? "" : t.cout;
+          cIn.addEventListener("input", function () {
+            var v = parseFloat(cIn.value);
+            if (isFinite(v)) t.cout = clamp(Math.floor(v), 0, 9999);
+            else delete t.cout;
+            state.comps[it.key] = cc;
+            refresh();
+          });
+          tCout.appendChild(cIn);
+          tCout.appendChild(el("span", "u", "xp"));
+          // état posé ICI (renderTechs se rejoue à chaque ajout, retrait ou
+          // changement de stade) : un hook global fuirait, cette fonction
+          // n'étant pas vidée par mount()
+          var offert = i < offertesDe(cc);
+          cIn.placeholder = offert ? "inclus" : String(DATA.xpParStade);
+          tCout.classList.toggle("offert", offert);
+          tCout.title = offert
+            ? "Passif inclus dans le stade : il ne coûte rien, sauf coût forcé ici."
+            : "Coût de ce passif — vide = " + DATA.xpParStade + " xp (tarif de base) ; une valeur le force.";
+          tHead.appendChild(tCout);
           tHead.appendChild(chatBtn(
             function () { return "Passif — " + (t.name || it.name); },
             function () { return [["Compétence", it.name], ["Effet", t.desc]]; }));
