@@ -187,7 +187,7 @@
     // charger le vrai jjk-creation.js APRÈS hydratation (son init lit jjk-perso).
     // ?v= : MÊME numéro que mkdocs.yml (extra_javascript), à monter ensemble.
     var s = document.createElement("script");
-    s.src = "javascripts/jjk-creation.js?v=40";
+    s.src = "javascripts/jjk-creation.js?v=41";
     s.onload = function () { ready = true; post({ type: "mounted" }); };
     s.onerror = function () { post({ type: "error", error: "jjk-creation.js" }); };
     document.body.appendChild(s);
