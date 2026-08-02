@@ -1455,7 +1455,7 @@
         var keep = function () { c.art = a; };
         var head = el("div", "pc-av-head");
         var nm = el("input", "nm pc-edit-field");
-        nm.type = "text"; nm.placeholder = "Nom de l'art"; nm.value = a.name || "";
+        nm.type = "text"; nm.placeholder = "Nom du passif"; nm.value = a.name || "";
         nm.addEventListener("input", function () { a.name = nm.value; keep(); save(); });
         head.appendChild(nm);
 
@@ -1480,7 +1480,7 @@
         // la compétence tient dans le titre : la carte n'a plus de colonne de
         // libellé, sa description occupe toute la largeur
         head.appendChild(chatBtn(
-          function () { return "Art — " + (a.name || it.name) + " (" + it.name + ")"; },
+          function () { return "Passif — " + (a.name || it.name) + " (" + it.name + ")"; },
           function () { return [["", a.desc]]; }));
         head.appendChild(miniBtn("✕", "Effacer cet art", function () {
           // un texte rédigé ne part pas sur un simple clic (le ✕ jouxte Chat)
@@ -1494,7 +1494,7 @@
 
         var d = el("textarea", "pc-notes pc-edit-field");
         d.rows = 5;
-        d.placeholder = "Description de l'art : principes, effets, limites…";
+        d.placeholder = "Effet";
         d.value = a.desc || "";
         d.addEventListener("input", function () { a.desc = d.value; keep(); save(); });
         card.appendChild(d);
