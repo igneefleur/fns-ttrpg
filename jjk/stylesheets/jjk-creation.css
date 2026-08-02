@@ -288,12 +288,16 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 /* outils : filtre texte, filtre de champ, puces (mêmes contrôles que la fiche HxH) */
 /* outils sur deux lignes : filtre texte + filtre de champ, puis les puces */
 .pc-comp-tools { display: flex; flex-direction: column; gap: .3rem; margin: .05rem 0 .4rem; }
-.pc-comp-tools .row { display: flex; gap: .35rem; align-items: center; min-width: 0; }
+/* dans chaque ligne, les contrôles se partagent la largeur à parts égales et
+   prennent la même hauteur (un libellé sur deux lignes ne déséquilibre rien) */
+.pc-comp-tools .row { display: flex; gap: .35rem; align-items: stretch; min-width: 0; }
+.pc-comp-tools .row > * { flex: 1 1 0; min-width: 0; }
 .pc-comp-search { flex: 1 1 9rem; min-width: 0; padding: .26rem .5rem; border: 1px solid var(--line-2); border-radius: 6px; background: var(--card); color: var(--ink); font: inherit; font-size: .7rem; box-sizing: border-box; }
 .pc-comp-search:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 2px var(--wash); }
 .pc-comp-tools .pc-select { flex: 0 1 8.4rem; width: auto; font-size: .66rem; }
 .pc-chip {
-  display: inline-flex; align-items: baseline; gap: .28rem; padding: .2rem .6rem;
+  display: inline-flex; align-items: center; justify-content: center; text-align: center;
+  gap: .28rem; padding: .2rem .5rem; line-height: 1.15;
   border: 1px solid var(--line-2); border-radius: 999px; background: var(--panel);
   color: var(--ink-2); font-size: .64rem; font-weight: 600; cursor: pointer; user-select: none; transition: .12s;
 }
@@ -349,7 +353,9 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-stadebar .seg.on.s3 { background: #ad5136; color: #fff; border-color: #9a422a; }
 .pc-stadebar .seg.on.s4 { background: var(--red-deep); color: #fdf3ec; border-color: var(--red-deep); }
 .pc-editable.editing .pc-stadebar .seg:hover { border-color: var(--red); }
-.pc-editable:not(.editing) .pc-stadebar .seg { cursor: default; pointer-events: none; }
+/* verrouillé : le clic ne fait rien (garde-fou côté JS) mais le survol garde
+   son infobulle — c'est elle qui donne le nom complet du stade */
+.pc-editable:not(.editing) .pc-stadebar .seg { cursor: default; }
 .pc-select {
   width: 100%; padding: .17rem .35rem; border: 1px solid var(--line-2); border-radius: 6px;
   background: var(--card); color: var(--ink); font: inherit; font-size: .62rem;
