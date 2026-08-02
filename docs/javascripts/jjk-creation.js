@@ -706,6 +706,46 @@
   function buildHead(sheet) {
     var head = el("div", "pc-head");
 
+    // portrait compact 1:1, coins arrondis. L'URL s'édite EN PLACE au clic
+    // (jamais prompt() : muet dans l'iframe Roll20 sous Chrome).
+    var pbox = el("div", "pc-portrait-box");
+    pbox.title = "Portrait — clic : changer l'image (URL)";
+    var pclip = el("div", "clip");
+    var pimg = el("img");
+    pimg.alt = "";
+    pclip.appendChild(pimg);
+    var pph = el("span", "ph", "?");
+    pclip.appendChild(pph);
+    pbox.appendChild(pclip);
+    hooks.push(function () {
+      var want = state.portrait || "";
+      if (pimg.getAttribute("src") !== want) {
+        if (want) pimg.src = want;
+        else pimg.removeAttribute("src");
+      }
+      pbox.classList.toggle("vide", !want);
+    });
+    var pedit = null;
+    pbox.addEventListener("click", function () {
+      if (pedit) return;
+      pedit = el("input", "pc-portrait-edit");
+      pedit.type = "text";
+      pedit.placeholder = "URL de l'image…";
+      pedit.value = state.portrait || "";
+      pedit.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") { e.preventDefault(); pedit.blur(); }
+        else if (e.key === "Escape") { pedit.value = state.portrait || ""; pedit.blur(); }
+      });
+      pedit.addEventListener("blur", function () {
+        state.portrait = pedit.value.trim();
+        if (pedit) { pedit.remove(); pedit = null; }
+        refresh();
+      });
+      pbox.appendChild(pedit);
+      setTimeout(function () { pedit.focus(); pedit.select(); }, 0);
+    });
+    head.appendChild(pbox);
+
     var id = el("div", "pc-id");
     id.appendChild(fld("Nom", textInput(function () { return state.name; }, function (v) { state.name = v; }, "Nom du personnage"), "c4"));
     id.appendChild(fld("Espèce", textInput(function () { return state.espece; }, function (v) { state.espece = v; }), "c2"));
@@ -1907,9 +1947,29 @@
     bJ.appendChild(fld("Dé des jets de test", de));
     colA.appendChild(bJ);
 
+    // ---- modificateurs de caractéristiques (hors limite : au-delà de 80, sous 0) ----
+    // équipement, art et décisions du MJ confondus : UN modificateur par
+    // caractéristique, appliqué au total affiché sur la Fiche
+    var bM = block("Modificateurs de caractéristiques");
+    CHAMPS.forEach(function (name) {
+      if (!DATA.caracs.some(function (cc) { return cc.name === name; })) return;
+      var row = el("div", "pc-kv");
+      var chip = el("span", "pc-abbr", ABBR[name] || name);
+      chip.title = name;
+      row.appendChild(chip);
+      row.appendChild(stepper(
+        function () { return state.caracsMod[name] || 0; },
+        function (v) { state.caracsMod[name] = clamp(v, -999, 999); },
+        CARAC_PAS, "modificateur"));
+      row.appendChild(el("span", "sp"));
+      var tot = el("span", "max", "");
+      hooks.push(function () { tot.textContent = "total : " + caracTotal(name); });
+      row.appendChild(tot);
+      bM.appendChild(row);
+    });
+    colA.appendChild(bM);
+
     // ---- création ----
-    // (les modificateurs de caractéristiques vivent désormais EN LIGNE sur la
-    // Fiche : trois emplacements « Divers » sous chaque caractéristique)
     var bC = block("Création");
     var slRow = el("div", "pc-kv");
     var slBox = el("input");

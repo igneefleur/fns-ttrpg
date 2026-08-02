@@ -86,8 +86,28 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
   padding: .9rem 1rem 1.3rem;
 }
 
-/* ---- en-tête d'identité (infos importantes seulement, sans portrait) ---- */
-.pc-head { display: flex; gap: 1rem; align-items: flex-start; border-bottom: 1px solid var(--line); padding-bottom: .55rem; }
+/* ---- en-tête d'identité (infos importantes + portrait compact) ---- */
+.pc-head { display: flex; gap: .8rem; align-items: flex-start; border-bottom: 1px solid var(--line); padding-bottom: .55rem; }
+/* portrait : carré 1:1 aux coins arrondis, discret ; l'URL s'édite en place
+   (petit champ posé sous le carré au clic) */
+.pc-portrait-box { position: relative; flex: 0 0 auto; width: 3.4rem; height: 3.4rem; cursor: pointer; }
+.pc-portrait-box .clip {
+  width: 100%; height: 100%; overflow: hidden; box-sizing: border-box;
+  border: 1px solid var(--line-2); border-radius: 8px; background: var(--panel);
+  transition: border-color .12s;
+}
+.pc-portrait-box:hover .clip { border-color: var(--line); }
+.pc-portrait-box img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pc-portrait-box.vide img { display: none; }
+.pc-portrait-box .ph { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; color: var(--line); font-size: 1.2rem; }
+.pc-portrait-box.vide .ph { display: flex; }
+.pc-portrait-edit {
+  position: absolute; left: 0; top: calc(100% + .2rem); z-index: 5; width: 11rem;
+  border: 1px solid var(--line); border-radius: 5px; background: var(--card);
+  color: var(--ink); font: inherit; font-size: .6rem; padding: .18rem .3rem;
+  box-shadow: 0 2px 8px rgba(60, 48, 18, .18); box-sizing: border-box;
+}
+.pc-portrait-edit:focus { outline: none; border-color: var(--red); }
 /* 2e ligne : compteurs Création / XP dépensé (barres étirées) + XP total */
 .pc-id-meters { grid-column: 1 / -1; display: flex; align-items: flex-end; gap: .4rem 1.1rem; flex-wrap: wrap; margin-top: .15rem; }
 .pc-id-meters .pc-meter { flex: 1 1 9rem; min-width: 0; }
