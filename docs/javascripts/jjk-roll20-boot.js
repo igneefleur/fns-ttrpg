@@ -99,8 +99,25 @@
   // « fiche » et jets envoyés au TCHAT Roll20 (au lieu du journal local).
   window.__jjkCompact = true;
   window.__jjkRoll = function (die, value, label) { post({ type: "roll", die: die, value: value, label: label }); };
-  // envoi d'un ÉLÉMENT de la fiche (technique, arme, avantage…) au tchat Roll20
+  // envoi d'un ÉLÉMENT de la fiche (passif, arme, avantage…) au tchat Roll20
   window.__jjkSay = function (title, fields) { post({ type: "say", title: title, fields: fields }); };
+  // commande de tchat COMPOSÉE par la fiche (carte « objet donné » et son lien
+  // « Prendre ») : l'extension ne fait que l'envoyer, le format vit côté site
+  window.__jjkChat = function (raw) { post({ type: "chat", raw: raw }); };
+  // Objet pris au tchat : l'extension relaie le payload du lien. Il peut
+  // arriver AVANT que jjk-creation.js soit monté (clic pendant le chargement) :
+  // on le met alors en attente et on le rejoue dès que la fiche répond.
+  var takeQueue = [];
+  window.__jjkTake = function (payload) {
+    if (typeof window.__jjkOnTake === "function") { window.__jjkOnTake(payload); return; }
+    takeQueue.push(payload);
+  };
+  setInterval(function () {
+    if (!takeQueue.length || typeof window.__jjkOnTake !== "function") return;
+    var q = takeQueue.slice();
+    takeQueue.length = 0;
+    q.forEach(function (p) { window.__jjkOnTake(p); });
+  }, 400);
 
   function scheduleSave() {
     if (saveTimer) clearTimeout(saveTimer);
@@ -149,7 +166,7 @@
     // charger le vrai jjk-creation.js APRÈS hydratation (son init lit jjk-perso).
     // ?v= : MÊME numéro que mkdocs.yml (extra_javascript), à monter ensemble.
     var s = document.createElement("script");
-    s.src = "javascripts/jjk-creation.js?v=35";
+    s.src = "javascripts/jjk-creation.js?v=36";
     s.onload = function () { ready = true; post({ type: "mounted" }); };
     s.onerror = function () { post({ type: "error", error: "jjk-creation.js" }); };
     document.body.appendChild(s);
@@ -160,6 +177,10 @@
     if (!d || d.ns !== "jjk") return;
     // on n'accepte que l'hydratation de NOTRE personnage (plusieurs fiches peuvent être ouvertes)
     if (d.type === "hydrate" && (!d.charId || d.charId === CHAR_ID)) hydrate(d.attrs);
+    // objet pris au tchat : diffusé à TOUTES les fiches ouvertes (le lien est
+    // public, chaque client décide s'il le prend), d'où l'absence de filtre
+    // sur charId ; c'est le dialogue de réception qui demande confirmation.
+    else if (d.type === "take" && d.payload) window.__jjkTake(d.payload);
   });
 
   if (STANDALONE) {
