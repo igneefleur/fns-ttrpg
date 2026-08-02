@@ -1001,16 +1001,16 @@
   // leur bloc ; la tuile « XP restant » a disparu, le compteur « XP dépensé »
   // de l'en-tête la rendait redondante.
   function buildVitesse(col) {
-    // tuiles sans cadre de bloc : le rouage flotte dans le coin de la rangée
-    // (jeu : lecture ; édition : les divers de vitesse et de régénération)
-    var tiles = el("div", "pc-bigrow pc-bigrow-2 pc-editable");
-    tiles.dataset.module = "vitesse";
-    var g = gearBtn(tiles, "vitesse");
-    g.classList.add("pc-gear-float");
-    tiles.appendChild(g);
+    // deux tuiles = deux MODULES distincts : chacune porte son propre rouage
+    // flottant (jeu : lecture ; édition : ses divers)
+    var tiles = el("div", "pc-bigrow pc-bigrow-2");
 
     var tv = bigTile("Vitesse", vitesse);
-    tv.classList.add("pc-mods-host");
+    tv.classList.add("pc-mods-host", "pc-editable");
+    tv.dataset.module = "vitesse";
+    var gV = gearBtn(tv, "vitesse");
+    gV.classList.add("pc-gear-float");
+    tv.appendChild(gV);
     var mmV = multiMod(state.divers, "vitesse");
     mmV.classList.add("pc-edit-only");
     tv.appendChild(mmV);
@@ -1023,7 +1023,11 @@
     tiles.appendChild(tv);
 
     var tr = bigTile("Régén / jour", regen);
-    tr.classList.add("pc-mods-host");
+    tr.classList.add("pc-mods-host", "pc-editable");
+    tr.dataset.module = "regen";
+    var gR = gearBtn(tr, "regen");
+    gR.classList.add("pc-gear-float");
+    tr.appendChild(gR);
     var mmR = multiMod(state.divers, "regen");
     mmR.classList.add("pc-edit-only");
     tr.appendChild(mmR);
@@ -1239,14 +1243,12 @@
     compBox.innerHTML = "";
     var flt = compFilter.trim().toLowerCase();
     CHAMPS.forEach(function (carac) {
-      if (compChamp && compChamp !== "Personnalisé" && compChamp !== carac) return;
+      if (compChamp && compChamp !== carac) return;
       var items = allComps().filter(function (it) { return it.carac === carac; });
-      if (compChamp === "Personnalisé") items = items.filter(function (it) { return it.custom; });
       if (flt) items = items.filter(function (it) { return it.name.toLowerCase().indexOf(flt) >= 0; });
       if (compOnly) items = items.filter(compInvestie);
       // ordre alphabétique (français, accents ignorés), comps perso intercalées
       items.sort(function (a, b) { return a.name.localeCompare(b.name, "fr", { sensitivity: "base" }); });
-      if (compChamp === "Personnalisé" && !items.length && !isEdit("comps")) return;
       compBox.appendChild(el("div", "pc-comp-champ", carac));
       if (!items.length) {
         compBox.appendChild(el("div", "pc-empty",
@@ -1286,17 +1288,18 @@
     // et retrait de compétences perso. Le rouage rebâtit la liste : les
     // rangées d'ajout n'existent qu'en édition.
     var b = block("Compétences", null, "comps", function () { rebuildComps(); });
-    // mêmes outils que la fiche HxH : filtre texte, filtre de champ, puce
-    // « Investies seulement »
+    // outils sur deux lignes : filtre texte + filtre de champ côte à côte,
+    // puis la puce « Investies seulement » en dessous
     var tools = el("div", "pc-comp-tools");
+    var line1 = el("div", "row");
     var search = el("input", "pc-comp-search");
     search.type = "search";
     search.placeholder = "Filtrer les compétences…";
     search.value = compFilter;   // le filtre survit au remount : le champ doit le montrer
     search.addEventListener("input", function () { compFilter = search.value; rebuildComps(); });
-    tools.appendChild(search);
+    line1.appendChild(search);
     var champSel = el("select", "pc-select");
-    ["Tous les champs", "Body", "Mind", "Prestance", "Personnalisé"].forEach(function (ch) {
+    ["Tous les champs", "Body", "Mind", "Prestance"].forEach(function (ch) {
       var o = el("option");
       o.value = ch === "Tous les champs" ? "" : ch;
       o.textContent = ch;
@@ -1304,7 +1307,9 @@
     });
     champSel.value = compChamp;
     champSel.addEventListener("change", function () { compChamp = champSel.value; rebuildComps(); });
-    tools.appendChild(champSel);
+    line1.appendChild(champSel);
+    tools.appendChild(line1);
+    var line2 = el("div", "row");
     var onlyChip = el("span", "pc-chip");
     onlyChip.textContent = "Investies seulement";
     onlyChip.classList.toggle("on", compOnly);
@@ -1313,7 +1318,8 @@
       onlyChip.classList.toggle("on", compOnly);
       rebuildComps();
     });
-    tools.appendChild(onlyChip);
+    line2.appendChild(onlyChip);
+    tools.appendChild(line2);
     b.appendChild(tools);
     compBox = el("div");
     b.appendChild(compBox);
@@ -2094,14 +2100,15 @@
     // mêmes outils que la liste de la Fiche (filtre texte, champ, « Investies
     // seulement ») et mêmes lignes : la grille pc-comp-row aligne nom | ± | total.
     var mcTools = el("div", "pc-comp-tools");
+    var mcLine1 = el("div", "row");
     var mcSearch = el("input", "pc-comp-search");
     mcSearch.type = "search";
     mcSearch.placeholder = "Filtrer les compétences…";
     mcSearch.value = optFilter;
     mcSearch.addEventListener("input", function () { optFilter = mcSearch.value; optCompsRebuild(); });
-    mcTools.appendChild(mcSearch);
+    mcLine1.appendChild(mcSearch);
     var mcChamp = el("select", "pc-select");
-    ["Tous les champs", "Body", "Mind", "Prestance", "Personnalisé"].forEach(function (ch) {
+    ["Tous les champs", "Body", "Mind", "Prestance"].forEach(function (ch) {
       var o = el("option");
       o.value = ch === "Tous les champs" ? "" : ch;
       o.textContent = ch;
@@ -2109,7 +2116,9 @@
     });
     mcChamp.value = optChamp;
     mcChamp.addEventListener("change", function () { optChamp = mcChamp.value; optCompsRebuild(); });
-    mcTools.appendChild(mcChamp);
+    mcLine1.appendChild(mcChamp);
+    mcTools.appendChild(mcLine1);
+    var mcLine2 = el("div", "row");
     var mcOnly = el("span", "pc-chip");
     mcOnly.textContent = "Investies seulement";
     mcOnly.classList.toggle("on", optOnly);
@@ -2118,7 +2127,8 @@
       mcOnly.classList.toggle("on", optOnly);
       optCompsRebuild();
     });
-    mcTools.appendChild(mcOnly);
+    mcLine2.appendChild(mcOnly);
+    mcTools.appendChild(mcLine2);
     bMC.appendChild(mcTools);
     var mcBox = el("div");
     bMC.appendChild(mcBox);
@@ -2128,9 +2138,8 @@
       var flt = optFilter.trim().toLowerCase();
       var shown = 0;
       CHAMPS.forEach(function (carac) {
-        if (optChamp && optChamp !== "Personnalisé" && optChamp !== carac) return;
+        if (optChamp && optChamp !== carac) return;
         var items = allComps().filter(function (it) { return it.carac === carac; });
-        if (optChamp === "Personnalisé") items = items.filter(function (it) { return it.custom; });
         if (flt) items = items.filter(function (it) { return it.name.toLowerCase().indexOf(flt) >= 0; });
         if (optOnly) items = items.filter(compInvestie);
         items.sort(function (a, b) { return a.name.localeCompare(b.name, "fr", { sensitivity: "base" }); });
@@ -2152,7 +2161,6 @@
               else delete state.compsMod[it.key];   // zéro = pas d'entrée dans l'état
             },
             CARAC_PAS, "modificateur", optHooks));
-          row.appendChild(el("span"));   // colonne du rouage de la Fiche : vide ici
           var tot = el("span", "pc-comp-total", "");
           optHooks.push(function () {
             var d = state.compsMod[it.key] || 0;

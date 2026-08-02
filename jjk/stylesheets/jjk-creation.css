@@ -167,7 +167,7 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-cols2 + .pc-block, .pc-cols-fiche + .pc-block { margin-top: var(--gut); }
 /* Fiche : trois colonnes (caractéristiques | combat | compétences, un peu
    plus large pour la ligne nom | stade | total) */
-.pc-cols-fiche { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.3fr); gap: var(--gut); align-items: start; }
+.pc-cols-fiche { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gut); align-items: start; }
 /* Art : une carte d'art par compétence au stade qui l'ouvre */
 .pc-arts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem; align-items: start; }
 .pc-arts > .pc-empty { grid-column: 1 / -1; }
@@ -229,8 +229,8 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-editable:not(.editing) .pc-edit-field::placeholder { color: transparent; }
 /* divers : fantômes au survol en temps normal, pleinement visibles en édition */
 .pc-editable.editing .pc-mmods { opacity: 1; }
-/* rouage flottant des tuiles Vitesse / Régén (rangée sans cadre de bloc) */
-.pc-bigrow { position: relative; }
+/* rouage flottant : chaque tuile Vitesse / Régén est son propre module */
+.pc-big { position: relative; }
 .pc-gear-float { position: absolute; top: .08rem; right: .16rem; z-index: 1; margin-left: 0; }
 
 /* ---- caractéristiques : tuiles à valeur héros ---- */
@@ -244,7 +244,10 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
   background: var(--panel); border: 1px solid var(--line-2); border-radius: 5px;
   padding: .02rem .3rem; font-variant-numeric: tabular-nums; line-height: 1.25;
 }
-.pc-crow-bot { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+/* édition d'une carac : grille étiquette | stepper, une paire par ligne
+   (le flex en vrac sautait à la ligne au milieu d'un groupe en colonne étroite) */
+.pc-crow-bot { display: grid; grid-template-columns: max-content 1fr; gap: .14rem .5rem; align-items: center; padding-top: .1rem; }
+.pc-crow-bot .pc-step { justify-self: end; }
 .pc-crow-bot .lbl { font-size: .52rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); }
 
 /* ---- stepper −/valeur/+ ---- */
@@ -283,7 +286,9 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 
 /* ---- compétences ---- */
 /* outils : filtre texte, filtre de champ, puces (mêmes contrôles que la fiche HxH) */
-.pc-comp-tools { display: flex; flex-wrap: wrap; gap: .35rem; margin: .05rem 0 .4rem; align-items: center; }
+/* outils sur deux lignes : filtre texte + filtre de champ, puis les puces */
+.pc-comp-tools { display: flex; flex-direction: column; gap: .3rem; margin: .05rem 0 .4rem; }
+.pc-comp-tools .row { display: flex; gap: .35rem; align-items: center; min-width: 0; }
 .pc-comp-search { flex: 1 1 9rem; min-width: 0; padding: .26rem .5rem; border: 1px solid var(--line-2); border-radius: 6px; background: var(--card); color: var(--ink); font: inherit; font-size: .7rem; box-sizing: border-box; }
 .pc-comp-search:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 2px var(--wash); }
 .pc-comp-tools .pc-select { flex: 0 1 8.4rem; width: auto; font-size: .66rem; }
@@ -303,13 +308,16 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-comp-champ:first-child { margin-top: .1rem; }
 /* ligne unique : nom | stade (menu) | total rollable */
 /* 4 colonnes : nom | stade | divers (levier ±) | total */
-.pc-comp-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 6.6rem) 1.4rem 2.6rem; gap: .12rem .3rem; align-items: center; padding: .14rem .25rem .18rem; font-size: var(--fs-body); border-radius: 4px; }
+/* trois pistes : nom | stade (Fiche) ou stepper ± (Options) | total.
+   TOUTE évolution de cette grille doit vérifier SES DEUX USAGES. */
+.pc-comp-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 6.6rem) 2.6rem; gap: .12rem .3rem; align-items: center; padding: .14rem .25rem .18rem; font-size: var(--fs-body); border-radius: 4px; }
 .pc-comp-row.odd { background: var(--stripe); }
 .pc-comp-row.head {
   background: var(--card); border-bottom: 1px solid var(--line); border-radius: 0; padding: .2rem .25rem .16rem;
   font-size: var(--fs-label); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-3);
 }
-.pc-comp-row.head > span:last-child { grid-column: 4; text-align: right; }
+.pc-comp-row.head > span { white-space: nowrap; overflow: hidden; min-width: 0; }
+.pc-comp-row.head > span:last-child { text-align: right; }
 .pc-comp-name { display: flex; align-items: baseline; min-width: 0; gap: .3rem; }
 .pc-comp-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); }
 .pc-comp-del { flex: 0 0 auto; border: none; background: transparent; color: var(--ink-3); font: inherit; font-size: .62rem; cursor: pointer; padding: 0 .1rem; }
