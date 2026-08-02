@@ -8,6 +8,9 @@
  * dans l'ordre Body, Mind, Prestance ; une ligne par compétence (nom | stade
  * en menu | total-jet). L'onglet Art porte la personnalisation : les
  * passifs d'une compétence et son art (au stade Artiste).
+ * Chaque module éditable porte un rouage (mode édition par module) : la
+ * construction du personnage est verrouillée hors édition, seuls les gestes
+ * de jeu restent actifs (jets, tchat, PV, narration, quantités, notes).
  *
  * Le contenu des règles (caractéristiques, listes de compétences, stades,
  * vitesses, difficultés, blessures, courbes d'armes/armures, actions) vient de
@@ -585,10 +588,46 @@
     })(i);
     return wrap;
   }
-  function block(title, small) {
+  // ---------- mode édition par module ----------
+  // Chaque module éditable porte un rouage dans son titre : il déverrouille la
+  // CONSTRUCTION du personnage (stades, ajouts, suppressions, textes, divers…).
+  // Hors édition, seuls les gestes de JEU restent actifs : jets, tchat, PV
+  // courant, narration, quantités d'objets, notes de session. Les éléments
+  // .pc-edit-only n'existent qu'en édition ; les champs .pc-edit-field
+  // deviennent inertes (disabled + air d'un simple texte). Réglage d'interface
+  // pur : ni dans l'état du personnage, ni persisté — chaque chargement
+  // repart verrouillé.
+  var editMods = {};
+  function isEdit(id) { return !!editMods[id]; }
+  function applyEdit(scope, id) {
+    scope.classList.toggle("editing", isEdit(id));
+    Array.prototype.forEach.call(scope.querySelectorAll(".pc-edit-field"), function (f) {
+      f.disabled = !isEdit(id);
+    });
+  }
+  function gearBtn(scope, id, onToggle) {
+    var g = el("button", "pc-gear", "⚙");
+    g.type = "button";
+    g.title = "Modifier ce module";
+    g.addEventListener("click", function () {
+      editMods[id] = !editMods[id];
+      g.title = isEdit(id) ? "Terminer les modifications" : "Modifier ce module";
+      applyEdit(scope, id);
+      if (onToggle) onToggle();
+    });
+    // resynchronise aussi les éléments recréés par les rebuilds internes
+    hooks.push(function () { applyEdit(scope, id); });
+    return g;
+  }
+  function block(title, small, editId, onToggle) {
     var b = el("div", "pc-block");
     var t = el("div", "pc-block-title", title);
     if (small) t.appendChild(el("small", null, small));
+    if (editId) {
+      b.classList.add("pc-editable");
+      b.dataset.module = editId;
+      t.appendChild(gearBtn(b, editId, onToggle));
+    }
     b.appendChild(t);
     return b;
   }
@@ -874,7 +913,8 @@
 
   // ---------- onglet Fiche : caractéristiques + combat | compétences ----------
   function buildCaracs(col) {
-    var b = block("Caractéristiques");
+    // jeu : le total et son jet ; édition : les steppers Création / Achats xp
+    var b = block("Caractéristiques", null, "caracs");
     // même ordre que les compétences : Body, puis Mind, puis Prestance
     CHAMPS.forEach(function (name) {
       if (!DATA.caracs.some(function (cc) { return cc.name === name; })) return;
@@ -889,7 +929,7 @@
       top.appendChild(val);
       row.appendChild(top);
 
-      var bot = el("div", "pc-crow-bot");
+      var bot = el("div", "pc-crow-bot pc-edit-only");
       bot.appendChild(el("span", "lbl", "Création"));
       bot.appendChild(stepper(
         function () { return state.caracsBase[name]; },
@@ -949,11 +989,19 @@
   // leur bloc ; la tuile « XP restant » a disparu, le compteur « XP dépensé »
   // de l'en-tête la rendait redondante.
   function buildVitesse(col) {
-    var tiles = el("div", "pc-bigrow pc-bigrow-2");
+    // tuiles sans cadre de bloc : le rouage flotte dans le coin de la rangée
+    // (jeu : lecture ; édition : les divers de vitesse et de régénération)
+    var tiles = el("div", "pc-bigrow pc-bigrow-2 pc-editable");
+    tiles.dataset.module = "vitesse";
+    var g = gearBtn(tiles, "vitesse");
+    g.classList.add("pc-gear-float");
+    tiles.appendChild(g);
 
     var tv = bigTile("Vitesse", vitesse);
     tv.classList.add("pc-mods-host");
-    tv.appendChild(multiMod(state.divers, "vitesse"));
+    var mmV = multiMod(state.divers, "vitesse");
+    mmV.classList.add("pc-edit-only");
+    tv.appendChild(mmV);
     hooks.push(function () {
       var d = modSum(state.divers.vitesse);
       tv.classList.toggle("adj", d !== 0);
@@ -964,7 +1012,9 @@
 
     var tr = bigTile("Régén / jour", regen);
     tr.classList.add("pc-mods-host");
-    tr.appendChild(multiMod(state.divers, "regen"));
+    var mmR = multiMod(state.divers, "regen");
+    mmR.classList.add("pc-edit-only");
+    tr.appendChild(mmR);
     hooks.push(function () {
       var d = modSum(state.divers.regen);
       tr.classList.toggle("adj", d !== 0);
@@ -977,7 +1027,10 @@
   }
 
   function buildPv(col) {
-    var b = block("PV");
+    // les PV COURANTS se jouent en temps réel (combat) : stepper et « Max »
+    // restent toujours actifs ; l'édition ne garde que le maximum forcé et
+    // les divers du maximum
+    var b = block("PV", null, "pv");
     var pvRow = el("div", "pc-kv");
     var pvStep = el("span", "pc-step");
     pvStep.appendChild(stepBtn("−", null, function () { state.pv = pvCourant() - 1; refresh(); }));
@@ -1008,7 +1061,7 @@
     b.appendChild(pvRow);
 
     // maximum : valeur forcée (vide = calculée) + divers — les leviers HxH
-    var mrow = el("div", "pc-pvmax pc-mods-host");
+    var mrow = el("div", "pc-pvmax pc-mods-host pc-edit-only");
     mrow.appendChild(el("span", "lbl", "Forcé"));
     var force = el("input", "force");
     force.type = "number"; force.step = "1"; force.min = "0";
@@ -1058,7 +1111,7 @@
     label.title = item.name + " (" + item.carac + ")";
     nameBox.appendChild(label);
     if (item.custom) {
-      var del = el("button", "pc-comp-del", "✕");
+      var del = el("button", "pc-comp-del pc-edit-only", "✕");
       del.type = "button";
       del.title = "Retirer cette compétence personnalisée";
       del.addEventListener("click", function () {
@@ -1084,8 +1137,9 @@
     row.appendChild(nameBox);
 
     // stade : un menu sur la ligne ; le coût se règle tout seul. Les
-    // passifs et l'art se personnalisent dans l'onglet Art.
-    var sel = el("select", "pc-select");
+    // passifs et l'art se personnalisent dans l'onglet Art. Hors édition du
+    // module, le menu est inerte et prend l'air d'un simple texte.
+    var sel = el("select", "pc-select pc-edit-field");
     DATA.stades.forEach(function (sd, i) {
       var o = el("option", null, sd.nom);
       o.value = String(i);
@@ -1157,7 +1211,6 @@
   var compFilter = "";
   var compChamp = "";           // "" = tous les champs ; "Personnalisé" = comps perso
   var compOnly = COMPACT;       // fiche condensée (Roll20) : investies seulement par défaut
-  var compAddMode = false;      // les champs d'ajout n'apparaissent que sur demande
   function compInvestie(it) {
     var c = state.comps[it.key];
     // l'art compte : une compétence redescendue qui garde son art reste
@@ -1181,7 +1234,7 @@
       if (compOnly) items = items.filter(compInvestie);
       // ordre alphabétique (français, accents ignorés), comps perso intercalées
       items.sort(function (a, b) { return a.name.localeCompare(b.name, "fr", { sensitivity: "base" }); });
-      if (compChamp === "Personnalisé" && !items.length && !compAddMode) return;
+      if (compChamp === "Personnalisé" && !items.length && !isEdit("comps")) return;
       compBox.appendChild(el("div", "pc-comp-champ", carac));
       if (!items.length) {
         compBox.appendChild(el("div", "pc-empty",
@@ -1195,8 +1248,8 @@
         items.forEach(function (it, i) { compBox.appendChild(compRow(it, i % 2 === 1)); });
       }
       // ajout d'une compétence personnalisée (les listes des règles sont
-      // ouvertes : « … ») — seulement quand « + Compétence perso » est activé
-      if (!compAddMode) return;
+      // ouvertes : « … ») — seulement en mode édition du module
+      if (!isEdit("comps")) return;
       var addRow = el("div", "pc-comp-add");
       var inp = el("input");
       inp.type = "text"; inp.placeholder = "Nouvelle compétence " + carac + "…";
@@ -1217,9 +1270,12 @@
     refresh();
   }
   function buildComps(col) {
-    var b = block("Compétences");
+    // jeu : filtres (outils de vue) et totaux-jets ; édition : stades, ajout
+    // et retrait de compétences perso. Le rouage rebâtit la liste : les
+    // rangées d'ajout n'existent qu'en édition.
+    var b = block("Compétences", null, "comps", function () { rebuildComps(); });
     // mêmes outils que la fiche HxH : filtre texte, filtre de champ, puce
-    // « Investies seulement », puce « + Compétence perso »
+    // « Investies seulement »
     var tools = el("div", "pc-comp-tools");
     var search = el("input", "pc-comp-search");
     search.type = "search";
@@ -1246,16 +1302,6 @@
       rebuildComps();
     });
     tools.appendChild(onlyChip);
-    var addChip = el("span", "pc-chip");
-    addChip.textContent = "+ Compétence perso";
-    addChip.title = "Afficher un champ d'ajout de compétence personnalisée sous chaque champ.";
-    addChip.classList.toggle("on", compAddMode);
-    addChip.addEventListener("click", function () {
-      compAddMode = !compAddMode;
-      addChip.classList.toggle("on", compAddMode);
-      rebuildComps();
-    });
-    tools.appendChild(addChip);
     b.appendChild(tools);
     compBox = el("div");
     b.appendChild(compBox);
@@ -1315,7 +1361,9 @@
     return null;
   }
   function buildArt(pane) {
-    var b = block("Arts et passifs");
+    // jeu : lire les arts et passifs, les envoyer au tchat ; édition :
+    // rédiger, ajouter, retirer
+    var b = block("Arts et passifs", null, "arts");
     var box = el("div", "pc-arts");
     b.appendChild(box);
     pane.appendChild(b);
@@ -1342,7 +1390,7 @@
         var a = c.art || { name: "", desc: "" };
         var keep = function () { c.art = a; };
         var head = el("div", "pc-av-head");
-        var nm = el("input", "nm");
+        var nm = el("input", "nm pc-edit-field");
         nm.type = "text"; nm.placeholder = "Nom de l'art"; nm.value = a.name || "";
         nm.addEventListener("input", function () { a.name = nm.value; keep(); save(); });
         head.appendChild(nm);
@@ -1356,10 +1404,10 @@
           delete c.art;
           refresh();
           render();
-        }, "danger"));
+        }, "danger pc-edit-only"));
         card.appendChild(head);
 
-        var d = el("textarea", "pc-notes");
+        var d = el("textarea", "pc-notes pc-edit-field");
         d.rows = 5;
         d.placeholder = "Description de l'art : principes, effets, limites…";
         d.value = a.desc || "";
@@ -1380,7 +1428,7 @@
         cc.techniques.forEach(function (t, i) {
           var tCard = el("div", "pc-av pc-technique");
           var tHead = el("div", "pc-av-head");
-          var tNm = el("input", "nm");
+          var tNm = el("input", "nm pc-edit-field");
           tNm.type = "text"; tNm.placeholder = "Nom du passif"; tNm.value = t.name || "";
           tNm.addEventListener("input", function () { t.name = tNm.value; state.comps[it.key] = cc; save(); });
           tHead.appendChild(tNm);
@@ -1391,9 +1439,9 @@
             if ((String(t.name || "").trim() || String(t.desc || "").trim()) &&
                 !confirm("Retirer le passif « " + (t.name || "sans nom") + " » ?")) return;
             cc.techniques.splice(i, 1); state.comps[it.key] = cc; refresh(); renderTechs();
-          }, "danger"));
+          }, "danger pc-edit-only"));
           tCard.appendChild(tHead);
-          var tD = el("textarea", "pc-notes");
+          var tD = el("textarea", "pc-notes pc-edit-field");
           tD.rows = 3;
           tD.placeholder = "Effet";
           tD.value = t.desc || "";
@@ -1402,7 +1450,7 @@
           techBox.appendChild(tCard);
         });
         // en acheter de NOUVEAUX reste réservé au stade qui les ouvre
-        if (!stadeInfo(cc.stade).techniques) return;
+        if (!stadeInfo(cc.stade).techniques) { applyEdit(b, "arts"); return; }
         // le coût affiché suit le prochain passif : inclus (gratuit) si un
         // stade atteint en offre encore un, sinon le tarif normal
         var prochaine = compXp({ stade: cc.stade, techniques: cc.techniques.concat([{ name: "", desc: "" }]) }) - compXp(cc);
@@ -1412,7 +1460,8 @@
           if (delta > 0 && xpRestant() < delta) { flash("XP insuffisant."); return; }
           if (delta > 0 && compXp(test) > compCap()) { flash("Pas plus d'un quart de l'xp total (" + compCap() + " xp) dans une seule compétence."); return; }
           cc.techniques.push({ name: "", desc: "" }); state.comps[it.key] = cc; refresh(); renderTechs();
-        }));
+        }, "pc-edit-only"));
+        applyEdit(b, "arts");
       }
       renderTechs();
       return card;
@@ -1428,6 +1477,7 @@
         return;
       }
       items.forEach(function (it) { box.appendChild(artCard(it)); });
+      applyEdit(b, "arts");
     }
 
     // reconstruire seulement quand les compétences éligibles ou leur stade
@@ -1444,7 +1494,7 @@
 
   // ---------- onglet Équipement ----------
   function eqField(labelTxt, obj, key, wide) {
-    var i = el("input");
+    var i = el("input", "pc-edit-field");
     i.type = "text";
     i.placeholder = labelTxt;
     i.value = obj[key] || "";
@@ -1452,7 +1502,7 @@
     return fld(labelTxt, i, wide ? "w" : null);
   }
   function eqArea(labelTxt, obj, key, rows) {
-    var t = el("textarea", "pc-notes");
+    var t = el("textarea", "pc-notes pc-edit-field");
     t.rows = rows || 3;
     t.value = obj[key] || "";
     t.addEventListener("input", function () { obj[key] = t.value; save(); });
@@ -1463,14 +1513,16 @@
     if (!m) return null;
     return m[1] + "d" + m[2] + (m[3] ? m[3].replace(/\s/g, "") : "");
   }
-  function eqCards(box, items, kind) {
+  function eqCards(box, items, kind, blk, mid) {
     // kind : "arme" (poids/dégâts/reach/propriétés) ou "armure" (poids/invu/zones)
+    // blk / mid : le bloc hôte et son id de module d'édition (jeu : Jet et
+    // Chat ; édition : fiches, ajout, retrait)
     function render() {
       box.innerHTML = "";
       items.forEach(function (it, idx) {
         var card = el("div", "pc-arme");
         var head = el("div", "pc-arme-head");
-        var nm = el("input", "nm");
+        var nm = el("input", "nm pc-edit-field");
         nm.type = "text";
         nm.placeholder = kind === "arme" ? "Nom de l'arme" : "Nom de l'armure";
         nm.value = it.nom || "";
@@ -1483,7 +1535,7 @@
               ? [["Poids", it.poids], ["Dégâts", it.degats], ["Reach", it.reach], ["Propriétés", it.props]]
               : [["Poids", it.poids], ["Invu", it.invu], ["Zones protégées", it.zones]];
           }));
-        head.appendChild(miniBtn("✕", "Retirer", function () { items.splice(idx, 1); render(); refresh(); }, "danger"));
+        head.appendChild(miniBtn("✕", "Retirer", function () { items.splice(idx, 1); render(); refresh(); }, "danger pc-edit-only"));
         card.appendChild(head);
 
         var line = el("div", "pc-arme-line");
@@ -1516,8 +1568,9 @@
         items.push({});
         render();
         refresh();
-      });
+      }, "pc-edit-only");
       box.appendChild(add);
+      if (blk) applyEdit(blk, mid);
     }
     render();
   }
@@ -1527,7 +1580,7 @@
   // description, envoi au tchat), glisser-déposer entre groupes. Les images
   // importées d'un fichier sont réduites en vignette pour tenir dans la fiche
   // (et dans les Attributes Roll20) ; préférer une URL quand c'est possible.
-  function invObjets(container) {
+  function invObjets(container, renderRef) {
     var G = state.inv.groupes;
     var items = state.inv.objets;
     var sel = null;          // index dans items de l'objet affiché au panneau
@@ -1600,6 +1653,8 @@
       t.addEventListener("click", function () { sel = idx; render(); });
       t.draggable = true;
       t.addEventListener("dragstart", function (e) {
+        // réordonner et changer de groupe = construction : mode édition requis
+        if (!isEdit("inv")) { e.preventDefault(); return; }
         dragIdx = idx;
         t.classList.add("drag");
         try { e.dataTransfer.setData("text/plain", ""); e.dataTransfer.effectAllowed = "move"; } catch (err) {}
@@ -1632,7 +1687,7 @@
       var g = el("div", "pc-obj-group");
       var head = el("div", "pc-obj-ghead");
       var name = el("span", "nm", G[gi]);
-      name.title = "Double-clic : renommer le groupe";
+      name.title = isEdit("inv") ? "Double-clic : renommer le groupe" : G[gi];
       // édition EN PLACE, jamais prompt() : dans Roll20 la fiche est une iframe
       // d'une autre origine, où Chrome fait échouer prompt() en silence
       function editName() {
@@ -1651,11 +1706,11 @@
         head.replaceChild(inp, name);
         setTimeout(function () { inp.focus(); inp.select(); }, 0);
       }
-      name.addEventListener("dblclick", editName);
+      name.addEventListener("dblclick", function () { if (isEdit("inv")) editName(); });
       head.appendChild(name);
       if (editGi === gi) { editGi = null; editName(); }
       if (G.length > 1) {
-        var delG = el("button", "x", "✕");
+        var delG = el("button", "x pc-edit-only", "✕");
         delG.type = "button";
         delG.title = "Supprimer le groupe (ses objets rejoignent le premier groupe)";
         delG.addEventListener("click", function () {
@@ -1674,7 +1729,7 @@
 
       var tiles = el("div", "pc-obj-tiles");
       items.forEach(function (it, idx) { if (it.groupe === gi) tiles.appendChild(tile(it, idx)); });
-      var add = el("div", "pc-obj-addtile", "+");
+      var add = el("div", "pc-obj-addtile pc-edit-only", "+");
       add.title = "Ajouter un objet dans « " + G[gi] + " »";
       add.addEventListener("click", function () {
         items.push({ nom: "", qte: 1, poids: 0, img: "", desc: "", groupe: gi });
@@ -1705,7 +1760,9 @@
     function renderPanel() {
       panel.innerHTML = "";
       if (sel === null || !items[sel]) {
-        panel.appendChild(el("div", "pc-obj-empty", "Choisir un objet, ou en ajouter un avec « + »."));
+        panel.appendChild(el("div", "pc-obj-empty", isEdit("inv")
+          ? "Choisir un objet, ou en ajouter un avec « + »."
+          : "Choisir un objet."));
         return;
       }
       var it = items[sel];
@@ -1718,7 +1775,7 @@
 
       var body = el("div", "pc-obj-body");
 
-      var nm = el("input", "nm");
+      var nm = el("input", "nm pc-edit-field");
       nm.type = "text"; nm.placeholder = "Nom de l'objet";
       nm.value = it.nom;
       nm.addEventListener("input", function () {
@@ -1752,14 +1809,14 @@
       body.appendChild(fld("Quantité", qRow));
 
       var pair = el("div", "pc-obj-pair");
-      var pd = el("input");
+      var pd = el("input", "pc-edit-field");
       pd.type = "text"; pd.inputMode = "decimal";
       pd.value = it.poids ? fmtP(it.poids) : "";
       pd.placeholder = "0";
       pd.addEventListener("input", function () { it.poids = pnum(pd.value); save(); updateTotal(); });
       pd.addEventListener("blur", function () { pd.value = it.poids ? fmtP(it.poids) : ""; });
       pair.appendChild(fld("Poids (kg)", pd));
-      var gSel = el("select");
+      var gSel = el("select", "pc-edit-field");
       G.forEach(function (gn, gi) {
         var o = el("option", null, gn);
         o.value = String(gi);
@@ -1774,7 +1831,7 @@
       pair.appendChild(fld("Groupe", gSel));
       body.appendChild(pair);
 
-      var url = el("input");
+      var url = el("input", "pc-edit-field");
       url.type = "text"; url.placeholder = "https://…";
       url.value = /^data:/.test(it.img) ? "" : it.img;
       url.addEventListener("change", function () { it.img = url.value.trim(); render(); refresh(); });
@@ -1788,10 +1845,10 @@
         vignette(f, function (dataUrl) { it.img = dataUrl; render(); refresh(); });
       });
       urlFld.appendChild(file);
-      urlFld.appendChild(miniBtn("Fichier…", "Importer une image (réduite en vignette 96 px)", function () { file.click(); }));
+      urlFld.appendChild(miniBtn("Fichier…", "Importer une image (réduite en vignette 96 px)", function () { file.click(); }, "pc-edit-only"));
       body.appendChild(urlFld);
 
-      var desc = el("textarea", "pc-notes");
+      var desc = el("textarea", "pc-notes pc-edit-field");
       desc.rows = 3;
       desc.placeholder = "Description, effets, notes…";
       desc.value = it.desc;
@@ -1814,7 +1871,7 @@
         sel = null;
         render();
         refresh();
-      }, "danger"));
+      }, "danger pc-edit-only"));
       body.appendChild(actions);
       panel.appendChild(body);
     }
@@ -1828,12 +1885,14 @@
         editGi = G.length - 1;   // le nouveau groupe s'ouvre en édition de nom
         render();
         refresh();
-      });
+      }, "pc-edit-only");
       addG.classList.add("pc-obj-addgroup");
       leftBox.appendChild(addG);
       renderPanel();
       updateTotal();
+      applyEdit(container, "inv");
     }
+    if (renderRef) renderRef.fn = render;
     render();
     container.appendChild(wrap);
     container.appendChild(tot);
@@ -1847,20 +1906,24 @@
     cols.appendChild(right);
     pane.appendChild(cols);
 
-    var bA = block("Armes");
+    var bA = block("Armes", null, "armes");
     var boxA = el("div");
     bA.appendChild(boxA);
-    eqCards(boxA, state.armes, "arme");
+    eqCards(boxA, state.armes, "arme", bA, "armes");
     left.appendChild(bA);
 
-    var bB = block("Armures");
+    var bB = block("Armures", null, "armures");
     var boxB = el("div");
     bB.appendChild(boxB);
-    eqCards(boxB, state.armures, "armure");
+    eqCards(boxB, state.armures, "armure", bB, "armures");
     right.appendChild(bB);
 
-    var bO = block("Inventaire", "objets par groupes");
-    invObjets(bO);
+    // le rouage re-rend l'inventaire : messages et titres suivent le mode
+    var invRenderRef = { fn: null };
+    var bO = block("Inventaire", "objets par groupes", "inv", function () {
+      if (invRenderRef.fn) invRenderRef.fn();
+    });
+    invObjets(bO, invRenderRef);
     pane.appendChild(bO);
   }
 
@@ -1873,9 +1936,9 @@
     cols.appendChild(right);
     pane.appendChild(cols);
 
-    var bP = block("Personnalité");
+    var bP = block("Personnalité", null, "perso");
     var g = el("div", "pc-id");
-    var defIn = el("textarea", "pc-notes");
+    var defIn = el("textarea", "pc-notes pc-edit-field");
     defIn.rows = 3;
     defIn.value = state.defaut || "";
     defIn.addEventListener("input", function () { state.defaut = defIn.value; save(); });
@@ -1885,7 +1948,7 @@
       function () { return [["Défaut", state.defaut]]; }));
     g.appendChild(defFld);
     [0, 1].forEach(function (qi) {
-      var qIn = el("textarea", "pc-notes");
+      var qIn = el("textarea", "pc-notes pc-edit-field");
       qIn.rows = 3;
       qIn.value = state.qualites[qi] || "";
       qIn.addEventListener("input", function () { state.qualites[qi] = qIn.value; save(); });
@@ -1898,7 +1961,7 @@
     bP.appendChild(g);
     left.appendChild(bP);
 
-    var bA = block("Avantages");
+    var bA = block("Avantages", null, "avantages");
     var avBox = el("div");
     bA.appendChild(avBox);
     function renderAv() {
@@ -1906,16 +1969,16 @@
       state.avantages.forEach(function (a, i) {
         var card = el("div", "pc-av");
         var head = el("div", "pc-av-head");
-        var n = el("input", "nm");
+        var n = el("input", "nm pc-edit-field");
         n.type = "text"; n.placeholder = "Nom"; n.value = a.name || "";
         n.addEventListener("input", function () { a.name = n.value; save(); });
         head.appendChild(n);
         head.appendChild(chatBtn(
           function () { return "Avantage — " + (a.name || "sans nom"); },
           function () { return [["Effet", a.desc]]; }));
-        head.appendChild(miniBtn("✕", "Retirer", function () { state.avantages.splice(i, 1); renderAv(); refresh(); }, "danger"));
+        head.appendChild(miniBtn("✕", "Retirer", function () { state.avantages.splice(i, 1); renderAv(); refresh(); }, "danger pc-edit-only"));
         card.appendChild(head);
-        var d = el("textarea", "pc-notes");
+        var d = el("textarea", "pc-notes pc-edit-field");
         d.rows = 3;
         d.placeholder = "Effet";
         d.value = a.desc || "";
@@ -1928,19 +1991,21 @@
         state.avantages.push({ name: "", desc: "" });
         renderAv();
         refresh();
-      }));
+      }, "pc-edit-only"));
+      applyEdit(bA, "avantages");
     }
     renderAv();
     left.appendChild(bA);
 
-    var bB = block("Background");
-    var bg = el("textarea", "pc-notes");
+    var bB = block("Background", null, "bg");
+    var bg = el("textarea", "pc-notes pc-edit-field");
     bg.rows = 9;
     bg.value = state.background || "";
     bg.addEventListener("input", function () { state.background = bg.value; save(); });
     bB.appendChild(bg);
     right.appendChild(bB);
 
+    // les Notes restent libres : c'est le carnet de la session, il s'écrit en jeu
     var bN = block("Notes");
     var nt = el("textarea", "pc-notes");
     nt.rows = 6;
