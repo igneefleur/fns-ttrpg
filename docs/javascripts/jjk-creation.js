@@ -1,4 +1,4 @@
-/* Créateur de personnage JJK — onglet « Création » du site.
+﻿/* Créateur de personnage JJK — onglet « Création » du site.
  *
  * Mise en page « dossier » transposée du créateur HxH : barre d'outils avec la
  * bibliothèque, feuille à largeur fixe, en-tête portrait + identité, compteurs
@@ -482,6 +482,7 @@
   var optFilter = "";
   var optChamp = "";
   var optOnly = COMPACT;        // Roll20 : investies seulement par défaut, comme la Fiche
+  var optPerso = true;          // décoché : seules les compétences de base du jeu
   function refresh() {
     save();
     hooks.forEach(function (f) { try { f(); } catch (e) {} });
@@ -1228,8 +1229,12 @@
 
   var compBox = null;
   var compFilter = "";
-  var compChamp = "";           // "" = tous les champs ; "Personnalisé" = comps perso
+  var compChamp = "";           // "" = tous les champs
   var compOnly = COMPACT;       // fiche condensée (Roll20) : investies seulement par défaut
+  // décoché : seules les compétences de base du jeu (listes des règles) sont
+  // affichées ; coché : les compétences personnalisées s'y ajoutent
+  var compPerso = true;
+  var compPersoChip = null;     // la puce, rallumée quand on ajoute une comp perso
   function compInvestie(it) {
     var c = state.comps[it.key];
     // l'art compte : une compétence redescendue qui garde son art reste
@@ -1248,6 +1253,7 @@
     CHAMPS.forEach(function (carac) {
       if (compChamp && compChamp !== carac) return;
       var items = allComps().filter(function (it) { return it.carac === carac; });
+      if (!compPerso) items = items.filter(function (it) { return !it.custom; });
       if (flt) items = items.filter(function (it) { return it.name.toLowerCase().indexOf(flt) >= 0; });
       if (compOnly) items = items.filter(compInvestie);
       // ordre alphabétique (français, accents ignorés), comps perso intercalées
@@ -1255,7 +1261,8 @@
       compBox.appendChild(el("div", "pc-comp-champ", carac));
       if (!items.length) {
         compBox.appendChild(el("div", "pc-empty",
-          flt ? "Aucune compétence ne correspond." : compOnly ? "Aucune compétence investie." : "—"));
+          flt ? "Aucune compétence ne correspond."
+              : compOnly ? "Aucune compétence investie." : "—"));
       } else {
         var head = el("div", "pc-comp-row head");
         head.appendChild(el("span", null, "Compétence"));
@@ -1277,6 +1284,11 @@
         var exists = allComps().some(function (it) { return it.carac === carac && it.name.toLowerCase() === name.toLowerCase(); });
         if (exists) { flash("Cette compétence existe déjà."); return; }
         state.customComps.push({ name: name, carac: carac });
+        // ne jamais ajouter une compétence qui resterait invisible
+        if (!compPerso) {
+          compPerso = true;
+          if (compPersoChip) compPersoChip.classList.add("on");
+        }
         inp.value = "";
         refresh();
         rebuildComps();
@@ -1297,7 +1309,7 @@
     var line1 = el("div", "row");
     var search = el("input", "pc-comp-search");
     search.type = "search";
-    search.placeholder = "Filtrer les compétences…";
+    search.placeholder = "Filtrer…";
     search.value = compFilter;   // le filtre survit au remount : le champ doit le montrer
     search.addEventListener("input", function () { compFilter = search.value; rebuildComps(); });
     line1.appendChild(search);
@@ -1313,6 +1325,17 @@
     line1.appendChild(champSel);
     tools.appendChild(line1);
     var line2 = el("div", "row");
+    var persoChip = el("span", "pc-chip");
+    persoChip.textContent = "Compétences personnalisées";
+    persoChip.title = "Décoché : seules les compétences de base du jeu sont affichées.";
+    persoChip.classList.toggle("on", compPerso);
+    persoChip.addEventListener("click", function () {
+      compPerso = !compPerso;
+      persoChip.classList.toggle("on", compPerso);
+      rebuildComps();
+    });
+    compPersoChip = persoChip;
+    line2.appendChild(persoChip);
     var onlyChip = el("span", "pc-chip");
     onlyChip.textContent = "Investies seulement";
     onlyChip.classList.toggle("on", compOnly);
@@ -2106,7 +2129,7 @@
     var mcLine1 = el("div", "row");
     var mcSearch = el("input", "pc-comp-search");
     mcSearch.type = "search";
-    mcSearch.placeholder = "Filtrer les compétences…";
+    mcSearch.placeholder = "Filtrer…";
     mcSearch.value = optFilter;
     mcSearch.addEventListener("input", function () { optFilter = mcSearch.value; optCompsRebuild(); });
     mcLine1.appendChild(mcSearch);
@@ -2122,6 +2145,16 @@
     mcLine1.appendChild(mcChamp);
     mcTools.appendChild(mcLine1);
     var mcLine2 = el("div", "row");
+    var mcPerso = el("span", "pc-chip");
+    mcPerso.textContent = "Compétences personnalisées";
+    mcPerso.title = "Décoché : seules les compétences de base du jeu sont affichées.";
+    mcPerso.classList.toggle("on", optPerso);
+    mcPerso.addEventListener("click", function () {
+      optPerso = !optPerso;
+      mcPerso.classList.toggle("on", optPerso);
+      optCompsRebuild();
+    });
+    mcLine2.appendChild(mcPerso);
     var mcOnly = el("span", "pc-chip");
     mcOnly.textContent = "Investies seulement";
     mcOnly.classList.toggle("on", optOnly);
@@ -2143,6 +2176,7 @@
       CHAMPS.forEach(function (carac) {
         if (optChamp && optChamp !== carac) return;
         var items = allComps().filter(function (it) { return it.carac === carac; });
+        if (!optPerso) items = items.filter(function (it) { return !it.custom; });
         if (flt) items = items.filter(function (it) { return it.name.toLowerCase().indexOf(flt) >= 0; });
         if (optOnly) items = items.filter(compInvestie);
         items.sort(function (a, b) { return a.name.localeCompare(b.name, "fr", { sensitivity: "base" }); });
