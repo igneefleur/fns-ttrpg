@@ -60,12 +60,16 @@
   // Le CSS nuit existe déjà (jjk-creation.css : html.night .perso-atelier) ; ici
   // on ne fait que poser la classe. Préférence locale à CE navigateur (vrai
   // localStorage de la page, pas le shim) : "1" nuit, "0" jour, absente = auto.
-  // L'extension ne doit JAMAIS être modifiée (zéro re-signature) : impossible
-  // donc de lire le réglage sombre interne de Roll20. L'« auto » suit le mode
-  // sombre du NAVIGATEUR (prefers-color-scheme), toujours côté site.
+  // L'« auto » suit ROLL20 : l'extension (2.0.3+) détecte le mode sombre de
+  // Roll20 au montage de la fiche et le passe par le hash (n=1/0, décision
+  // utilisateur du 2026-08-01 : re-signature explicitement accordée). Une
+  // extension plus ancienne n'envoie pas d'indice : repli sur le mode sombre
+  // du navigateur (prefers-color-scheme).
   // L'onglet Options de la fiche expose ce réglage via window.__jjkNight.
   var NIGHT_KEY = "jjk-r20-night";
   var NIGHT_HINT = (function () {
+    if (/[#&]n=1/.test(location.hash || "")) return true;
+    if (/[#&]n=0/.test(location.hash || "")) return false;
     try { return !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches); }
     catch (e) { return false; }
   })();
@@ -80,7 +84,7 @@
   }
   window.__jjkNight = {
     pref: nightPref,          // "auto" | "0" (jour) | "1" (nuit)
-    auto: NIGHT_HINT,         // ce que donne l'« auto » (mode sombre du navigateur)
+    auto: NIGHT_HINT,         // ce que donne l'« auto » (mode de Roll20 ; repli navigateur)
     set: function (v) {
       try {
         if (v === "1" || v === "0") localStorage.setItem(NIGHT_KEY, v);
@@ -145,7 +149,7 @@
     // charger le vrai jjk-creation.js APRÈS hydratation (son init lit jjk-perso).
     // ?v= : MÊME numéro que mkdocs.yml (extra_javascript), à monter ensemble.
     var s = document.createElement("script");
-    s.src = "javascripts/jjk-creation.js?v=22";
+    s.src = "javascripts/jjk-creation.js?v=23";
     s.onload = function () { ready = true; post({ type: "mounted" }); };
     s.onerror = function () { post({ type: "error", error: "jjk-creation.js" }); };
     document.body.appendChild(s);
