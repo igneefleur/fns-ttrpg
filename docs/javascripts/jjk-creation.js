@@ -110,16 +110,13 @@
       caracsBase: { Mind: 0, Body: 0, Prestance: 0 },
       caracsXp: { Mind: 0, Body: 0, Prestance: 0 },
       caracsMod: { Mind: 0, Body: 0, Prestance: 0 },
+      compsMod: {},
       xpTotal: XP_CREATION,
       comps: {}, customComps: [],
       pv: null, narration: 3,
       armes: [], armures: [], inventaire: "",
       inv: { texte: [], groupes: ["Sur soi"], objets: [] },
-      divers: {
-        caracs: { Mind: [0, 0, 0], Body: [0, 0, 0], Prestance: [0, 0, 0] },
-        pvMax: [0, 0, 0], regen: [0, 0, 0], vitesse: [0, 0, 0],
-        comps: {}
-      },
+      divers: { pvMax: [0, 0, 0], regen: [0, 0, 0], vitesse: [0, 0, 0] },
       pvMaxOverride: null,
       de: "1d100"
     };
@@ -135,36 +132,51 @@
     if (!s.caracsBase || typeof s.caracsBase !== "object") s.caracsBase = b.caracsBase;
     if (!s.caracsXp || typeof s.caracsXp !== "object") s.caracsXp = b.caracsXp;
     if (!s.caracsMod || typeof s.caracsMod !== "object") s.caracsMod = b.caracsMod;
+    // les modificateurs (blocs Options) acceptent les décimales : les sommes
+    // migrées depuis les anciens divers peuvent en porter
+    function modNum(v) {
+      var n = parseFloat(v);
+      return isFinite(n) ? clamp(Math.round(n * 100) / 100, -999, 999) : 0;
+    }
     ["Mind", "Body", "Prestance"].forEach(function (c) {
       s.caracsBase[c] = clamp(num(s.caracsBase[c], 0), 0, 999);
       s.caracsXp[c] = clamp(num(s.caracsXp[c], 0), 0, 99);
-      s.caracsMod[c] = clamp(num(s.caracsMod[c], 0), -999, 999);
+      s.caracsMod[c] = modNum(s.caracsMod[c]);
     });
-    // modificateurs divers (3 emplacements : équipement / art / MJ)
+    // modificateurs divers (3 emplacements : équipement / art / MJ) : seuls
+    // PV max, régén et vitesse en portent encore
     if (!s.divers || typeof s.divers !== "object" || Array.isArray(s.divers)) s.divers = b.divers;
-    if (!s.divers.caracs || typeof s.divers.caracs !== "object" || Array.isArray(s.divers.caracs)) s.divers.caracs = b.divers.caracs;
-    ["Mind", "Body", "Prestance"].forEach(function (c) { s.divers.caracs[c] = modArr(s.divers.caracs[c]); });
     s.divers.pvMax = modArr(s.divers.pvMax);
     s.divers.regen = modArr(s.divers.regen);
     s.divers.vitesse = modArr(s.divers.vitesse);
-    if (!s.divers.comps || typeof s.divers.comps !== "object" || Array.isArray(s.divers.comps)) s.divers.comps = {};
-    var dcomps = {};
-    Object.keys(s.divers.comps).forEach(function (k) {
-      var a = modArr(s.divers.comps[k]);
-      if (!a[0] && !a[1] && !a[2]) return;   // les entrées nulles s'effacent
+    if (!s.compsMod || typeof s.compsMod !== "object" || Array.isArray(s.compsMod)) s.compsMod = {};
+    // migration inverse (2026-08-02) : les divers de caractéristiques et de
+    // compétences (essai en ligne du 2026-08-01) redeviennent le modificateur
+    // UNIQUE des blocs Options — leurs sommes s'y replient, rien ne se perd
+    if (s.divers.caracs && typeof s.divers.caracs === "object") {
+      ["Mind", "Body", "Prestance"].forEach(function (c) {
+        var d = modSum(modArr(s.divers.caracs[c]));
+        if (d) s.caracsMod[c] = modNum(s.caracsMod[c] + d);
+      });
+    }
+    delete s.divers.caracs;
+    if (s.divers.comps && typeof s.divers.comps === "object" && !Array.isArray(s.divers.comps)) {
+      Object.keys(s.divers.comps).forEach(function (k) {
+        var d = modSum(modArr(s.divers.comps[k]));
+        if (d) s.compsMod[k] = modNum((parseFloat(s.compsMod[k]) || 0) + d);
+      });
+    }
+    delete s.divers.comps;
+    // modificateur unique par compétence (bloc Options) : clés normalisées
+    // comme les compétences, entrées nulles purgées
+    var cmods = {};
+    Object.keys(s.compsMod).forEach(function (k) {
+      var n = modNum(s.compsMod[k]);
+      if (!n) return;
       var di = k.indexOf("/");
-      dcomps[di > 0 ? k.slice(0, di + 1) + capFirst(k.slice(di + 1)) : k] = a;
+      cmods[di > 0 ? k.slice(0, di + 1) + capFirst(k.slice(di + 1)) : k] = n;
     });
-    s.divers.comps = dcomps;
-    // migration : l'ancien modificateur unique de l'onglet Options rejoint le
-    // 3e emplacement (décision du MJ) du divers de sa caractéristique
-    ["Mind", "Body", "Prestance"].forEach(function (c) {
-      var old = num(s.caracsMod[c], 0);
-      if (old) {
-        s.divers.caracs[c][2] = clamp(s.divers.caracs[c][2] + old, -999, 999);
-        s.caracsMod[c] = 0;
-      }
-    });
+    s.compsMod = cmods;
     // PV max forcé : vide = valeur calculée ; borné comme le reste
     s.pvMaxOverride = (s.pvMaxOverride === null || s.pvMaxOverride === undefined || s.pvMaxOverride === "")
       ? null : Math.floor(parseFloat(s.pvMaxOverride));
@@ -264,11 +276,9 @@
   function caracTotal(c) {
     var v = state.caracsBase[c] + CARAC_PAS * state.caracsXp[c];
     if (!state.sansLimite) v = Math.min(v, CARAC_MAX);
-    // les divers (équipement / art / MJ) s'appliquent APRÈS le plafond : ils
-    // peuvent porter le total au-delà de 80 comme en dessous de 0.
-    // caracsMod : ancien modificateur unique, migré dans divers par normalize ;
-    // lu encore par prudence (état non normalisé impossible en pratique).
-    return v + (state.caracsMod[c] || 0) + modSum(state.divers.caracs[c]);
+    // le modificateur (bloc Options) s'applique APRÈS le plafond : il peut
+    // porter le total au-delà de 80 comme en dessous de 0.
+    return v + (state.caracsMod[c] || 0);
   }
   function stadeInfo(i) { return DATA.stades[clamp(i, 0, DATA.stades.length - 1)]; }
   function compXp(c) {
@@ -327,7 +337,7 @@
   }
   function compValue(carac, comp, key) {
     return caracTotal(carac) + stadeInfo(comp ? comp.stade : 0).bonus +
-           (key ? modSum(state.divers.comps[key]) : 0);
+           (key ? (state.compsMod[key] || 0) : 0);
   }
   function blankComp() { return { stade: 0, techniques: [] }; }
   function allComps() {
@@ -463,10 +473,13 @@
   // compHooks : hooks des lignes de compétences, vidés par rebuildComps().
   var hooks = [];
   var compHooks = [];
+  var optHooks = [];            // bloc Options « Modificateurs de compétences », rebâtissable
+  var optCompsRebuild = null;   // posé par buildOptions ; rappelé quand les comps perso changent
   function refresh() {
     save();
     hooks.forEach(function (f) { try { f(); } catch (e) {} });
     compHooks.forEach(function (f) { try { f(); } catch (e) {} });
+    optHooks.forEach(function (f) { try { f(); } catch (e) {} });
   }
   // Remplacement d'état COMPLET (import, bibliothèque, nouveau personnage) :
   // toutes les sections tiennent des références sur l'ancien état, on remonte
@@ -512,8 +525,10 @@
     b.addEventListener("click", fn);
     return b;
   }
-  // stepper −/champ/+ : le champ du milieu est éditable (pc-num)
-  function stepper(get, set, step, title) {
+  // stepper −/champ/+ : le champ du milieu est éditable (pc-num).
+  // reg : registre de rafraîchissement (hooks par défaut ; optHooks pour le
+  // bloc rebâtissable des modificateurs de compétences, comme multiMod).
+  function stepper(get, set, step, title, reg) {
     var w = el("span", "pc-step");
     w.appendChild(stepBtn("−", title ? "− " + step : null, function () { set(get() - step); refresh(); }));
     var i = el("input", "pc-num");
@@ -523,7 +538,7 @@
       var v = parseInt(i.value, 10);
       if (isFinite(v)) { set(v); refresh(); }
     });
-    hooks.push(function () { if (document.activeElement !== i) i.value = get(); });
+    (reg || hooks).push(function () { if (document.activeElement !== i) i.value = get(); });
     w.appendChild(i);
     w.appendChild(stepBtn("+", title ? "+ " + step : null, function () { set(get() + step); refresh(); }));
     return w;
@@ -846,7 +861,7 @@
     // même ordre que les compétences : Body, puis Mind, puis Prestance
     CHAMPS.forEach(function (name) {
       if (!DATA.caracs.some(function (cc) { return cc.name === name; })) return;
-      var row = el("div", "pc-crow pc-mods-host");
+      var row = el("div", "pc-crow");
       var top = el("div", "pc-crow-top");
       var chip = el("span", "pc-abbr", ABBR[name] || name);
       chip.title = name;
@@ -892,14 +907,8 @@
       bot.appendChild(xpStep);
       row.appendChild(bot);
 
-      // divers de la caractéristique (équipement / art / MJ), sur sa propre ligne
-      var divRow = el("div", "pc-crow-bot");
-      divRow.appendChild(el("span", "lbl", "Divers"));
-      divRow.appendChild(multiMod(state.divers.caracs, name));
-      row.appendChild(divRow);
-
       hooks.push(function () {
-        var d = modSum(state.divers.caracs[name]);
+        var d = state.caracsMod[name] || 0;
         var brut = state.caracsBase[name] + CARAC_PAS * state.caracsXp[name];
         var plafonne = state.sansLimite ? brut : Math.min(brut, CARAC_MAX);
         val.textContent = String(caracTotal(name));
@@ -909,7 +918,7 @@
         val.title = "Création " + state.caracsBase[name] +
                     " + achats " + (CARAC_PAS * state.caracsXp[name]) +
                     (brut !== plafonne ? ", plafonné à " + CARAC_MAX : "") +
-                    (d ? " · divers " + sign(d) : "") +
+                    (d ? " · modificateur (Options) " + sign(d) : "") +
                     " = " + caracTotal(name) + " — clic : lancer 1d100 + " + name;
         cnt.textContent = String(state.caracsXp[name]);
       });
@@ -1043,14 +1052,15 @@
         if (c && c.stade > 0) garde.push("de l'xp investi");
         if (c && c.techniques && c.techniques.length) garde.push("des passifs");
         if (porteArt(c)) garde.push("un art");
-        if (modSum(state.divers.comps[item.key]) !== 0) garde.push("un modificateur divers");
+        if (state.compsMod[item.key]) garde.push("un modificateur (Options)");
         if (garde.length &&
             !confirm("Supprimer « " + item.name + " » effacera aussi " + garde.join(", ") + ". Continuer ?")) return;
         state.customComps = state.customComps.filter(function (cc) { return (cc.carac + "/" + cc.name) !== item.key; });
         delete state.comps[item.key];
-        delete state.divers.comps[item.key];   // sinon le divers renaîtrait sur une homonyme
+        delete state.compsMod[item.key];   // sinon le modificateur renaîtrait sur une homonyme
         refresh();
         rebuildComps();
+        if (optCompsRebuild) optCompsRebuild();
       });
       nameBox.appendChild(del);
     }
@@ -1105,12 +1115,6 @@
     });
     row.appendChild(sel);
 
-    // divers de la compétence (équipement / art / MJ) — « Katana +10 » sans
-    // toucher ni la caractéristique ni le stade. UN champ (ligne dense),
-    // comme les compétences personnalisées de la fiche HxH.
-    row.classList.add("pc-mods-host");
-    row.appendChild(multiMod(state.divers.comps, item.key, compHooks, 1));
-
     var total = el("span", "pc-comp-total pc-rollable", "");
     total.addEventListener("click", function () {
       doRoll(item.name + " (" + item.carac + ")", compValue(item.carac, comp(), item.key), null, true);
@@ -1119,7 +1123,7 @@
 
     compHooks.push(function () {
       var c = comp();
-      var d = modSum(state.divers.comps[item.key]);
+      var d = state.compsMod[item.key] || 0;
       if (document.activeElement !== sel) sel.value = String(c.stade);
       sel.classList.toggle("lv0", !c.stade);
       total.textContent = sign(compValue(item.carac, c, item.key));
@@ -1127,7 +1131,7 @@
       total.classList.toggle("adj", d !== 0);
       total.title = item.carac + " " + sign(caracTotal(item.carac)) +
                     " · stade " + sign(stadeInfo(c.stade).bonus) +
-                    (d ? " · divers " + sign(d) : "") + " — clic : lancer";
+                    (d ? " · modificateur (Options) " + sign(d) : "") + " — clic : lancer";
     });
     return row;
   }
@@ -1140,10 +1144,10 @@
   function compInvestie(it) {
     var c = state.comps[it.key];
     // l'art compte : une compétence redescendue qui garde son art reste
-    // visible ; un divers non nul aussi (sinon « Investies seulement » cache
-    // un modificateur toujours présent dans l'état)
+    // visible ; un modificateur (Options) non nul aussi (sinon « Investies
+    // seulement » cache une valeur pourtant modifiée)
     return !!(c && (c.stade > 0 || (c.techniques && c.techniques.length) || porteArt(c))) ||
-           modSum(state.divers.comps[it.key]) !== 0;
+           (state.compsMod[it.key] || 0) !== 0;
   }
   // l'ordre des champs, partout sur la Fiche : Body, puis Mind, puis Prestance
   var CHAMPS = ["Body", "Mind", "Prestance"];
@@ -1189,6 +1193,7 @@
         inp.value = "";
         refresh();
         rebuildComps();
+        if (optCompsRebuild) optCompsRebuild();   // la nouvelle comp gagne sa ligne dans Options
       }));
       compBox.appendChild(addRow);
     });
@@ -1985,6 +1990,51 @@
     bC.appendChild(slRow);
     colA.appendChild(bC);
 
+    // ---- modificateurs de compétences ----
+    // le pendant du bloc caractéristiques : UN modificateur par compétence
+    // (équipement, art, décision du MJ confondus), appliqué au total de la
+    // ligne sur la Fiche. Rebâti quand les compétences perso changent
+    // (optCompsRebuild, rappelé par l'ajout et la suppression) ; optHooks
+    // remplace hooks pour ces lignes, sinon chaque rebâti fuirait des hooks.
+    var bMC = block("Modificateurs de compétences");
+    var mcBox = el("div");
+    bMC.appendChild(mcBox);
+    optCompsRebuild = function () {
+      optHooks = [];
+      mcBox.innerHTML = "";
+      CHAMPS.forEach(function (carac) {
+        var items = allComps().filter(function (it) { return it.carac === carac; });
+        items.sort(function (a, b) { return a.name.localeCompare(b.name, "fr", { sensitivity: "base" }); });
+        if (!items.length) return;
+        mcBox.appendChild(el("div", "pc-comp-champ", carac));
+        items.forEach(function (it) {
+          var row = el("div", "pc-kv");
+          var nm = el("span", "pc-opt-nom", it.name);
+          nm.title = it.name + " (" + it.carac + ")";
+          row.appendChild(nm);
+          row.appendChild(stepper(
+            function () { return state.compsMod[it.key] || 0; },
+            function (v) {
+              v = clamp(v, -999, 999);
+              if (v) state.compsMod[it.key] = v;
+              else delete state.compsMod[it.key];   // zéro = pas d'entrée dans l'état
+            },
+            CARAC_PAS, "modificateur", optHooks));
+          row.appendChild(el("span", "sp"));
+          var tot = el("span", "max", "");
+          optHooks.push(function () {
+            var d = state.compsMod[it.key] || 0;
+            tot.textContent = "total : " + sign(compValue(it.carac, state.comps[it.key] || blankComp(), it.key));
+            tot.classList.toggle("adj", d !== 0);
+          });
+          row.appendChild(tot);
+          mcBox.appendChild(row);
+        });
+      });
+    };
+    optCompsRebuild();
+    colB.appendChild(bMC);
+
     // ---- affichage (fiche dans Roll20 seulement) ----
     // window.__jjkNight n'existe que sous roll20-fiche.html (posé par
     // jjk-roll20-boot.js) : sur le site, le bouton d'en-tête gère déjà la nuit.
@@ -2062,6 +2112,8 @@
     rootEl = root;
     hooks = [];
     compHooks = [];
+    optHooks = [];
+    optCompsRebuild = null;
     root.innerHTML = "";
     var app = el("div", "perso-atelier");
 
