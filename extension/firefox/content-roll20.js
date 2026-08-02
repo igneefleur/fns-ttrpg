@@ -30,6 +30,20 @@ if (typeof browser === "undefined") { var browser = chrome; }
   "use strict";
 
   var IS_TOP = (function () { try { return window.top === window; } catch (e) { return true; } })();
+
+  // Mode beta (réglage du popup) : la fiche vient du site de chantier. L'onglet
+  // le dit, pour qu'on sache toujours quelle version on remplit. La lecture du
+  // stockage est asynchrone : les onglets déjà posés sont relibellés à l'arrivée.
+  var BETA = false;
+  function libelleOnglet() { return BETA ? "Fiche JJK beta" : "Fiche JJK"; }
+  try {
+    browser.storage.local.get("jjkBeta").then(function (r) {
+      BETA = !!(r && r.jjkBeta);
+      if (!BETA) return;
+      Array.prototype.forEach.call(document.querySelectorAll(".jjk-tab a[data-tab='jjkfiche']"),
+        function (a) { a.textContent = libelleOnglet(); });
+    }, function () {});
+  } catch (e) {}
   // Fenêtre popout d'une fiche : la barre d'onglets vit dans le document du HAUT
   // (aucune iframe de dialogue), il faut donc y poser l'onglet nous-mêmes.
   var IS_POPOUT = IS_TOP && /^\/editor\/character\/[^/]+\//.test(location.pathname);
@@ -236,7 +250,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
   function fillButton(host, charId, exists) {
     host.innerHTML = "";
     var wrap = el("div", "jjk-create");
-    wrap.appendChild(el("div", "jjk-create-title", "Fiche JJK"));
+    wrap.appendChild(el("div", "jjk-create-title", libelleOnglet()));
     wrap.appendChild(el("p", "jjk-create-msg",
       exists === null
         ? "Roll20 n'a pas encore répondu (personnage non prêt). Ouvrir la fiche JJK :"
@@ -328,7 +342,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
       if (nativeA && nativeA.className) a.className = nativeA.className;
       a.setAttribute("href", "javascript:void(0);");
       a.setAttribute("data-tab", "jjkfiche");
-      a.textContent = "Fiche JJK";
+      a.textContent = libelleOnglet();
       tab.appendChild(a);
 
       var built = false;

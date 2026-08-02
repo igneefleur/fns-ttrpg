@@ -8,6 +8,20 @@ dans le [créateur de personnage](../personnage/index.md) ; l'extension les
 récupère et les présente dans une partie Roll20, via un onglet « Fiche JJK »
 ajouté à la fiche du personnage.
 
+### Mode beta
+
+Une seule extension, deux versions de la fiche. Le fichier est le MÊME sur les
+deux sites : peu importe d'où il est téléchargé, c'est son réglage qui décide.
+Son bouton dans la barre du navigateur ouvre un panneau qui porte
+l'interrupteur « Mode beta » : coché, la fiche affichée dans Roll20 vient du
+site de chantier, là où les nouveautés arrivent en premier, au risque de casses
+passagères ; décoché, elle revient à la version stable. L'onglet du dialogue de
+personnage s'annonce alors « Fiche JJK beta », pour qu'on sache toujours quelle
+version on remplit.
+
+Les deux versions écrivent les mêmes Attributes du personnage : un aller-retour
+ne perd rien, et les autres joueurs ne voient aucune différence.
+
 <style>
 .ext-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.1rem; margin:1rem 0 1.25rem; align-items:start; }
 @media (max-width:720px){ .ext-grid{ grid-template-columns:1fr; } }
@@ -53,13 +67,10 @@ ajouté à la fiche du personnage.
   </div>
 </div>
 
-La fiche affichée dans Roll20 est chargée depuis ce site à chaque ouverture :
+La fiche affichée dans Roll20 est chargée depuis le site à chaque ouverture :
 les évolutions du créateur et des règles arrivent toutes seules, sans mise à
 jour de l'extension (une connexion internet est nécessaire pendant la partie).
-Les versions installées avant la 2.0.0 portent une ancienne identité : les
-désinstaller une fois, puis réinstaller depuis cette page. Firefox affiche le
-numéro de version à l'installation : si c'est encore une 1.x, la 2.0 n'est pas
-encore publiée, réessayer un peu plus tard.
+Le site lu dépend de l'interrupteur « Mode beta » ci-dessus.
 
 Ensuite : ouvrir le [créateur de personnage](../personnage/index.md) une fois
 (les fiches se synchronisent), puis, dans une partie Roll20, ouvrir un personnage
