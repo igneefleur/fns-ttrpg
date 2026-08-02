@@ -10,7 +10,7 @@
  *    ce page-script lit/écrit les attributs à la demande.
  *  - FRAME DE LA FEUILLE (iframe du dialogue de perso) : pose l'onglet « Fiche JJK »
  *    entre « Feuille de personnage » et « Bio & Info ». Au clic : si le perso a déjà
- *    une fiche JJK -> monte l'iframe de la coquille ; sinon -> bouton « Créer fiche JJK ».
+ *    une fiche JJK -> monte l'iframe de la coquille ; sinon -> bouton « Créer fiche JJK beta ».
  *
  * Cas particulier : la fiche OUVERTE EN FENÊTRE SÉPARÉE (bouton popout ->
  * app.roll20.net/editor/character/<campagne>/<perso>/...). Roll20 y sert le MÊME
@@ -197,7 +197,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
     return false;
   }
   function creatorFrame(charId) {
-    var f = el("iframe", "jjk-creator-frame");
+    var f = el("iframe", "jjkbeta-creator-frame");
     f.src = browser.runtime.getURL("creator.html") + "#c=" + encodeURIComponent(charId || "") +
             "&n=" + (detectNight() ? "1" : "0");
     f.setAttribute("allow", "clipboard-write");
@@ -235,13 +235,13 @@ if (typeof browser === "undefined") { var browser = chrome; }
   }
   function fillButton(host, charId, exists) {
     host.innerHTML = "";
-    var wrap = el("div", "jjk-create");
-    wrap.appendChild(el("div", "jjk-create-title", "Fiche JJK"));
-    wrap.appendChild(el("p", "jjk-create-msg",
+    var wrap = el("div", "jjkbeta-create");
+    wrap.appendChild(el("div", "jjkbeta-create-title", "Fiche JJK beta"));
+    wrap.appendChild(el("p", "jjkbeta-create-msg",
       exists === null
-        ? "Roll20 n'a pas encore répondu (personnage non prêt). Ouvrir la fiche JJK :"
+        ? "Roll20 n'a pas encore répondu (personnage non prêt). Ouvrir la fiche JJK beta :"
         : "Ce personnage n'a pas encore de fiche JJK."));
-    var btn = el("button", "jjk-create-btn", exists === null ? "Ouvrir la fiche JJK" : "Créer fiche JJK");
+    var btn = el("button", "jjkbeta-create-btn", exists === null ? "Ouvrir la fiche JJK beta" : "Créer fiche JJK beta");
     btn.type = "button";
     btn.addEventListener("click", function () { fillCreator(host, charId); });
     wrap.appendChild(btn);
@@ -250,7 +250,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
   // Décide quoi afficher dans l'hôte selon l'existence d'une fiche.
   function populate(host, charId) {
     host.innerHTML = "";
-    host.appendChild(el("div", "jjk-create", "Chargement…"));
+    host.appendChild(el("div", "jjkbeta-create", "Chargement…"));
     queryHasSheet(charId, function (exists) {
       if (exists === true) fillCreator(host, charId);
       else fillButton(host, charId, exists);   // false = pas de fiche ; null = inconnu
@@ -297,7 +297,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
       }
       if (!items) return;
       var feuilleItem = items[0], bioItem = items[1], strip = bioItem.parentNode;
-      if (strip.querySelector(".jjk-tab")) { placed++; return; }   // déjà là
+      if (strip.querySelector(".jjkbeta-tab")) { placed++; return; }   // déjà là
 
       var dialog = dialogOf(strip);
       var contentBox = contentBoxOf(dialog, strip);
@@ -310,37 +310,37 @@ if (typeof browser === "undefined") { var browser = chrome; }
       //   bindTabEvents() fait, pour chaque `.nav li a`,
       //     allTabs[a.data-tab] = find('.tab-pane.'+data-tab)[0]; allTabs[...].style...
       //   -> si le pane manque, allTabs[...] est undefined et Roll20 PLANTE (fiche
-      //   qui ne s'ouvre plus). On crée donc TOUJOURS le pane `.tab-pane.jjkfiche`
-      //   AVANT de poser l'onglet `<a data-tab="jjkfiche">` : Roll20 l'enregistre et
+      //   qui ne s'ouvre plus). On crée donc TOUJOURS le pane `.tab-pane.jjkbetafiche`
+      //   AVANT de poser l'onglet `<a data-tab="jjkbetafiche">` : Roll20 l'enregistre et
       //   le gère nativement (affichage + onglet actif violet).
-      var pane = paneBox.querySelector(".tab-pane.jjkfiche");
+      var pane = paneBox.querySelector(".tab-pane.jjkbetafiche");
       if (!pane) {
-        pane = el("div", "tab-pane jjkfiche jjk-pane");
+        pane = el("div", "tab-pane jjkbetafiche jjkbeta-pane");
         pane.style.display = "none";
         paneBox.appendChild(pane);
       }
 
       // vrai onglet, cloné des onglets natifs (styles Roll20 : look + actif violet)
       var tab = document.createElement(feuilleItem.tagName || "li");
-      tab.className = ((feuilleItem.className || "").replace(/\b(active|ui-tabs-active|ui-state-active|chosen)\b/g, "").trim() + " jjk-tab").trim();
+      tab.className = ((feuilleItem.className || "").replace(/\b(active|ui-tabs-active|ui-state-active|chosen)\b/g, "").trim() + " jjkbeta-tab").trim();
       var nativeA = feuilleItem.querySelector("a");
       var a = document.createElement("a");
       if (nativeA && nativeA.className) a.className = nativeA.className;
       a.setAttribute("href", "javascript:void(0);");
-      a.setAttribute("data-tab", "jjkfiche");
-      a.textContent = "Fiche JJK";
+      a.setAttribute("data-tab", "jjkbetafiche");
+      a.textContent = "Fiche JJK beta";
       tab.appendChild(a);
 
       var built = false;
       function showOurPane() {
         var panes = paneBox.querySelectorAll(".tab-pane");
         for (var j = 0; j < panes.length; j++) panes[j].style.display = (panes[j] === pane) ? "block" : "none";
-        pane.classList.add("jjk-on");   // seule cette classe rend le pane visible (overlay.css)
+        pane.classList.add("jjkbeta-on");   // seule cette classe rend le pane visible (overlay.css)
         for (var k = 0; k < strip.children.length; k++) strip.children[k].classList.remove("active");
         tab.classList.add("active");
         refitFrame();   // l'iframe redevient visible : réajuster sa hauteur au dialogue
       }
-      function hideOurPane() { pane.style.display = "none"; pane.classList.remove("jjk-on"); tab.classList.remove("active"); }
+      function hideOurPane() { pane.style.display = "none"; pane.classList.remove("jjkbeta-on"); tab.classList.remove("active"); }
 
       // On gère nous-mêmes l'affichage (fiable quel que soit le moment où bindTabEvents
       // s'exécute) et on bloque le gestionnaire délégué de Roll20 pour NOTRE onglet.
@@ -352,7 +352,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
       // clic sur un onglet natif -> on masque le nôtre (Roll20 affiche le sien)
       strip.addEventListener("click", function (ev) {
         var na = ev.target.closest && ev.target.closest("a[data-tab]");
-        if (na && na.getAttribute("data-tab") !== "jjkfiche") hideOurPane();
+        if (na && na.getAttribute("data-tab") !== "jjkbetafiche") hideOurPane();
       }, true);
 
       strip.insertBefore(tab, bioItem);   // vrai onglet DANS la barre, entre Feuille et Bio

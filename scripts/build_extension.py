@@ -1,8 +1,8 @@
 """Packe l'extension JJK (Firefox + Chrome) en fichiers téléchargeables depuis le site.
 
-- Firefox : extension/firefox/ (Manifest V2) -> docs/download/jjk-roll20-firefox.xpi
+- Firefox : extension/firefox/ (Manifest V2) -> docs/download/jjk-beta-roll20-firefox.xpi
 - Chrome  : extension/chrome/manifest.json (Manifest V3) + les fichiers PARTAGÉS
-  de extension/firefox/ -> docs/download/jjk-roll20-chrome.zip
+  de extension/firefox/ -> docs/download/jjk-beta-roll20-chrome.zip
 
 L'extension est une COQUILLE : la fiche (jjk-creation.js/.css/.json, amorce,
 correspondance état <-> Attributes) est SERVIE PAR LE SITE (roll20-fiche.html)
@@ -23,8 +23,8 @@ ROOT = Path(__file__).resolve().parent.parent
 FF = ROOT / "extension" / "firefox"           # source de vérité (manifest V2 + fichiers)
 CHROME_MANIFEST = ROOT / "extension" / "chrome" / "manifest.json"  # manifest V3 seul
 DL = ROOT / "docs" / "download"
-OUT_FF = DL / "jjk-roll20-firefox.xpi"
-OUT_CHROME = DL / "jjk-roll20-chrome.zip"
+OUT_FF = DL / "jjk-beta-roll20-firefox.xpi"
+OUT_CHROME = DL / "jjk-beta-roll20-chrome.zip"
 
 
 def _write(out, files):

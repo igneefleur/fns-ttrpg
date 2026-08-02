@@ -5,13 +5,13 @@
  * plus besoin d'être re-signée quand la fiche évolue.
  *
  * Dépannage : browser.storage.local.jjk_sheet_url remplace l'URL par défaut
- * (ex. http://localhost:8000/HxH-Regles-JDR/jjk/roll20-fiche.html pour tester
+ * (ex. http://localhost:8000/HxH-Regles-JDR/jjk-beta/roll20-fiche.html pour tester
  * un mkdocs serve local — mkdocs monte le site sous le chemin de site_url,
  * /jjk/ compris), à poser depuis la console de débogage de l'extension. */
 if (typeof browser === "undefined") { var browser = chrome; }
 (function () {
   "use strict";
-  var DEFAULT_URL = "https://igneefleur.github.io/HxH-Regles-JDR/jjk/roll20-fiche.html";
+  var DEFAULT_URL = "https://igneefleur.github.io/HxH-Regles-JDR/jjk-beta/roll20-fiche.html";
 
   function mount(url) {
     document.getElementById("jjk-remote").src = url + (location.hash || "");

@@ -2,11 +2,16 @@ name: website deployment
 on:
   push:
     branches:
-      - jjk
-  workflow_dispatch: {}   # relance manuelle (ex. quota AMO retombé)
+      - jjk-beta
+  workflow_dispatch:
+    inputs:
+      signer:
+        description: "Signer l'extension beta chez Mozilla (consomme le quota AMO)"
+        type: boolean
+        default: false
 permissions:
   contents: write
-# Les trois branches (main, beta, jjk) écrivent sur la même branche gh-pages : un
+# Les branches (main, beta, jjk, jjk-beta) écrivent sur la même branche gh-pages : un
 # groupe de concurrence commun (partagé entre workflows du dépôt) sérialise leurs
 # déploiements, et force: false fait rebaser l'action (avec réessais) au lieu de
 # force-pusser, pour qu'un run ne puisse pas écraser le travail d'un autre.
@@ -27,12 +32,12 @@ jobs:
         env:
           NO_MKDOCS_2_WARNING: "1"   # coupe l'encadré promo « MkDocs 2.0 » de Material dans les logs
         run: mkdocs build
-      # Extension : re-signature Mozilla AUTOMATIQUE quand la COQUILLE
-      # (extension/) change — la fiche est servie par le site
-      # (roll20-fiche.html), les règles et le créateur ne re-signent plus rien.
-      # Version montée toute seule, .xpi signé + updates.json republiés : les
-      # Firefox installés se mettent à jour sans rien faire. Clés = secrets du dépôt.
-      - name: Extension (re-signature automatique si changement)
+      # BRANCHE DE CHANTIER : la signature Mozilla ne part JAMAIS toute seule.
+      # Un push ne fait que déployer le site beta ; l'extension beta ne se
+      # signe que sur relance manuelle du workflow, case « signer » cochée
+      # (chaque soumission mord sur le quota AMO du compte).
+      - name: Extension beta (signature manuelle seulement)
+        if: ${{ inputs.signer }}
         env:
           AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
           AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
@@ -44,6 +49,7 @@ jobs:
       # La re-signature modifie manifests, archives, updates.json et empreinte :
       # on les recommitte sur la branche ([skip ci] : pas de nouveau run).
       - name: Republier l'extension re-signée sur la branche
+        if: ${{ inputs.signer }}
         run: |
           if ! git diff --quiet; then
             git config user.name "github-actions[bot]"
@@ -58,14 +64,15 @@ jobs:
       # Un seul site GitHub Pages (branche gh-pages), trois emplacements :
       #   main -> racine   https://igneefleur.github.io/HxH-Regles-JDR/
       #   beta -> beta/    https://igneefleur.github.io/HxH-Regles-JDR/beta/
-      #   jjk  -> jjk/     https://igneefleur.github.io/HxH-Regles-JDR/jjk/
+      #   jjk      -> jjk/       https://igneefleur.github.io/HxH-Regles-JDR/jjk/
+      #   jjk-beta -> jjk-beta/  https://igneefleur.github.io/HxH-Regles-JDR/jjk-beta/ (CE workflow)
       # Avec target-folder, « clean » ne nettoie QUE le dossier cible : la racine
       # (main) et beta/ sont épargnées par ce déploiement.
-      - name: Déploiement jjk (jjk -> jjk/)
+      - name: Déploiement jjk-beta (jjk-beta -> jjk-beta/)
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: site
           branch: gh-pages
-          target-folder: jjk
+          target-folder: jjk-beta
           clean: true
           force: false

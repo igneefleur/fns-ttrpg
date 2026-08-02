@@ -1,11 +1,21 @@
 # Extension
 
-## La fiche JJK sur Roll20
+## La fiche JJK sur Roll20 (chantier)
+
+Cette page sert la version de CHANTIER : elle affiche la fiche du site beta,
+là où les nouveautés arrivent en premier, au risque de casses passagères. La
+version stable, elle, vit sur
+[le site normal](https://igneefleur.github.io/HxH-Regles-JDR/jjk/extension/).
+
+Les deux extensions portent une identité différente : elles s'installent
+côte à côte, et le dialogue de personnage Roll20 montre alors deux onglets,
+« Fiche JJK » (stable) et « Fiche JJK beta ». Elles lisent les mêmes
+Attributes du personnage : une fiche remplie d'un côté se retrouve de l'autre.
 
 Une extension (Firefox ou Chrome) affiche une fiche de personnage JJK à la place
 de la fiche Roll20, et envoie ses jets dans le tchat. Les personnages se créent
 dans le [créateur de personnage](../personnage/index.md) ; l'extension les
-récupère et les présente dans une partie Roll20, via un onglet « Fiche JJK »
+récupère et les présente dans une partie Roll20, via un onglet « Fiche JJK beta »
 ajouté à la fiche du personnage.
 
 <style>
@@ -29,7 +39,7 @@ ajouté à la fiche du personnage.
 <div class="ext-grid">
   <div class="mcard ext-card">
     <p><strong>Firefox</strong><span class="prereq">Signée par Mozilla · installation permanente</span></p>
-    <p><a class="md-button" href="../download/jjk-roll20-firefox.xpi" download>Télécharger (.xpi)</a></p>
+    <p><a class="md-button" href="../download/jjk-beta-roll20-firefox.xpi" download>Télécharger (.xpi)</a></p>
     <ol class="ext-steps">
       <li>télécharger le fichier <code>.xpi</code> ;</li>
       <li>l'ouvrir avec Firefox : <kbd>Ctrl</kbd>+<kbd>J</kbd> (téléchargements)
@@ -40,7 +50,7 @@ ajouté à la fiche du personnage.
   </div>
   <div class="mcard ext-card">
     <p><strong>Chrome / Edge</strong><span class="prereq">Mode développeur · dossier décompressé</span></p>
-    <p><a class="md-button" href="../download/jjk-roll20-chrome.zip" download>Télécharger (.zip)</a></p>
+    <p><a class="md-button" href="../download/jjk-beta-roll20-chrome.zip" download>Télécharger (.zip)</a></p>
     <ol class="ext-steps">
       <li>décompresser le <code>.zip</code> dans un dossier (à conserver : le
           navigateur y lit l'extension) ;</li>
@@ -53,13 +63,11 @@ ajouté à la fiche du personnage.
   </div>
 </div>
 
-La fiche affichée dans Roll20 est chargée depuis ce site à chaque ouverture :
-les évolutions du créateur et des règles arrivent toutes seules, sans mise à
-jour de l'extension (une connexion internet est nécessaire pendant la partie).
-Les versions installées avant la 2.0.0 portent une ancienne identité : les
-désinstaller une fois, puis réinstaller depuis cette page. Firefox affiche le
-numéro de version à l'installation : si c'est encore une 1.x, la 2.0 n'est pas
-encore publiée, réessayer un peu plus tard.
+La fiche affichée dans Roll20 est chargée depuis ce site beta à chaque
+ouverture : les évolutions du créateur et des règles arrivent toutes seules,
+sans mise à jour de l'extension (une connexion internet est nécessaire pendant
+la partie). L'extension stable, elle, continue de charger la fiche du site
+normal : les deux ne se marchent jamais dessus.
 
 Ensuite : ouvrir le [créateur de personnage](../personnage/index.md) une fois
 (les fiches se synchronisent), puis, dans une partie Roll20, ouvrir un personnage

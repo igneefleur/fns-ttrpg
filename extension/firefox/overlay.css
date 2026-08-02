@@ -4,43 +4,43 @@
 
 /* onglet « Fiche JJK » : un vrai <li><a> cloné des onglets natifs (il hérite donc du
    style de Roll20, onglet actif violet compris). On n'ajoute que le curseur. */
-.jjk-tab, .jjk-tab a { cursor: pointer; }
+.jjkbeta-tab, .jjkbeta-tab a { cursor: pointer; }
 
-/* pane JJK (géré comme un pane natif de Roll20 : .tab-pane.jjkfiche).
+/* pane JJK (géré comme un pane natif de Roll20 : .tab-pane.jjkbetafiche).
    FORCÉ (!important) : Roll20 impose son propre CSS aux .tab-pane (padding, height,
    overflow) qui rognerait/écraserait notre fiche. On reprend la main.
-   La VISIBILITÉ est pilotée par la classe .jjk-on (posée/retirée par
+   La VISIBILITÉ est pilotée par la classe .jjkbeta-on (posée/retirée par
    content-roll20.js au changement d'onglet) : sans elle, le pane est MASQUÉ en
    !important. L'ancien « display: block !important » gagnait sur le
    style.display inline et laissait la fiche visible SOUS les onglets natifs
    (Feuille de personnage, Bio & Info, Attributs). */
-.jjk-pane {
+.jjkbeta-pane {
   width: 100% !important; height: auto !important;
   box-sizing: border-box !important; padding: 0 !important; margin: 0 !important;
   overflow: visible !important;
 }
-.jjk-pane:not(.jjk-on) { display: none !important; }
-.jjk-pane.jjk-on { display: block !important; min-height: 620px !important; }
+.jjkbeta-pane:not(.jjkbeta-on) { display: none !important; }
+.jjkbeta-pane.jjkbeta-on { display: block !important; min-height: 620px !important; }
 
 /* iframe du créateur. La HAUTEUR est pilotée en JS (content-roll20 : fitCreatorHeight)
    pour épouser la fenêtre de la feuille Roll20 et suivre ses redimensionnements ; on
    ne met donc PAS height en !important (l'inline JS doit gagner). Le reste est FORCÉ
    contre le CSS Roll20 (bordures/marges/tailles d'iframe). Plancher de secours 620 px. */
-.jjk-creator-frame {
+.jjkbeta-creator-frame {
   display: block !important; width: 100% !important; min-height: 400px;
   border: 0 !important; margin: 0 !important; padding: 0 !important; background: #e4ddcd;
 }
 
 /* écran « pas encore de fiche » + bouton de création */
-.jjk-create {
+.jjkbeta-create {
   padding: 26px 20px; text-align: center;
   font: 14px/1.5 "Segoe UI", Arial, sans-serif; color: #e8e8e8;
 }
-.jjk-create-title { font-weight: 700; font-size: 18px; margin-bottom: 6px; color: #fff; }
-.jjk-create-msg { margin: 0 0 4px; color: #cfcfcf; }
-.jjk-create-btn {
+.jjkbeta-create-title { font-weight: 700; font-size: 18px; margin-bottom: 6px; color: #fff; }
+.jjkbeta-create-msg { margin: 0 0 4px; color: #cfcfcf; }
+.jjkbeta-create-btn {
   margin-top: 12px; padding: 10px 20px; cursor: pointer;
   background: #a11212; color: #fff; border: 2px solid #7c0e0e; border-radius: 8px;
   font: 700 14px "Segoe UI", Arial, sans-serif;
 }
-.jjk-create-btn:hover { background: #7c0e0e; }
+.jjkbeta-create-btn:hover { background: #7c0e0e; }
