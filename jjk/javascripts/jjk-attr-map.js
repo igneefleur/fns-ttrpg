@@ -46,6 +46,7 @@
     ["qualites", "qualites"], ["avantages", "avantages"],
     ["caracsBase", "caracs_base"], ["caracsXp", "caracs_xp"],
     ["caracsMod", "caracs_mod"],
+    ["compsMod", "comps_mod"],
     ["comps", "competences"], ["customComps", "comp_perso"],
     ["armes", "armes"], ["armures", "armures"],
     ["inv", "inventaire_sys"],
@@ -63,16 +64,13 @@
       caracsBase: { Mind: 0, Body: 0, Prestance: 0 },
       caracsXp: { Mind: 0, Body: 0, Prestance: 0 },
       caracsMod: { Mind: 0, Body: 0, Prestance: 0 },
+      compsMod: {},
       xpTotal: 500,
       comps: {}, customComps: [],
       pv: null, narration: 3,
       armes: [], armures: [], inventaire: "",
       inv: { texte: [], groupes: ["Sur soi"], objets: [] },
-      divers: {
-        caracs: { Mind: [0, 0, 0], Body: [0, 0, 0], Prestance: [0, 0, 0] },
-        pvMax: [0, 0, 0], regen: [0, 0, 0], vitesse: [0, 0, 0],
-        comps: {}
-      },
+      divers: { pvMax: [0, 0, 0], regen: [0, 0, 0], vitesse: [0, 0, 0] },
       pvMaxOverride: null,
       de: "1d100"
     };

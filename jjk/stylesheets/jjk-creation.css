@@ -245,6 +245,9 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-kv > .k { font-weight: 700; color: var(--ink-2); font-size: .6rem; white-space: nowrap; flex-shrink: 0; text-transform: uppercase; letter-spacing: .04em; }
 .pc-kv > .sp { flex: 1; }
 .pc-kv .max { color: var(--ink-3); font-variant-numeric: tabular-nums; }
+/* bloc Options « Modificateurs de compétences » : le nom tronque, le reste respire
+   (min-width: 0 obligatoire, Firefox honore les min-width intrinseques) */
+.pc-kv > .pc-opt-nom { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* ---- compétences ---- */
 /* outils : filtre texte, filtre de champ, puces (mêmes contrôles que la fiche HxH) */
