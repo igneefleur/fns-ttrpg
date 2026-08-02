@@ -1152,20 +1152,14 @@
     }
     row.appendChild(nameBox);
 
-    // stade : un menu sur la ligne ; le coût se règle tout seul. Les
-    // passifs et l'art se personnalisent dans l'onglet Art. Hors édition du
-    // module, le menu est inerte et prend l'air d'un simple texte.
-    var sel = el("select", "pc-select pc-edit-field");
-    DATA.stades.forEach(function (sd, i) {
-      var o = el("option", null, sd.nom);
-      o.value = String(i);
-      o.title = sd.nom + " (" + sign(sd.bonus) + ") — " + (DATA.xpParStade * i) + " xp";
-      sel.appendChild(o);
-    });
-    sel.title = "Stade — " + DATA.xpParStade + " xp par stade";
-    sel.addEventListener("change", function () {
+    // stade : une barre segmentée [ N | I | M | E | A ] au dégradé qui monte
+    // jusqu'au rouge des caractéristiques ; centrée, toujours au même endroit.
+    // Cliquable seulement en mode édition du module (le coût se règle tout
+    // seul) ; verrouillée, elle reste l'affichage du stade. Les passifs et
+    // l'art se personnalisent dans l'onglet Art.
+    function applyStade(target) {
       var c = comp();
-      var target = clamp(num(sel.value, 0), 0, DATA.stades.length - 1);
+      if (target === c.stade) return;
       var next = { stade: target, techniques: c.techniques.slice() };
       // l'art suit la compétence : il survit aux allers-retours de stade
       // (il ne se montre que quand le stade qui l'ouvre est atteint)
@@ -1178,31 +1172,38 @@
         }).length;
         if (redigees &&
             !confirm("Redescendre « " + item.name + " » à " + stadeInfo(target).nom +
-                     " effacera " + redigees + " passif(s) rédigé(s) (onglet Art). Continuer ?")) {
-          sel.value = String(c.stade);
-          return;
-        }
+                     " effacera " + redigees + " passif(s) rédigé(s) (onglet Art). Continuer ?")) return;
         next.techniques = [];
       }
       var delta = compXp(next) - compXp(c);
-      if (delta > 0 && xpRestant() < delta) {
-        flash("XP insuffisant.");
-        sel.value = String(c.stade);
-        return;
-      }
+      if (delta > 0 && xpRestant() < delta) { flash("XP insuffisant."); return; }
       // le plafond du quart ne bloque que les HAUSSES : on peut toujours redescendre
       if (delta > 0 && compXp(next) > compCap()) {
         flash("Pas plus d'un quart de l'xp total (" + compCap() + " xp) dans une seule compétence.");
-        sel.value = String(c.stade);
         return;
       }
       state.comps[item.key] = next;
       if (!next.stade && !next.techniques.length && !next.art) delete state.comps[item.key];
       refresh();
+    }
+    var st = el("span", "pc-stadebar");
+    var segs = [];
+    DATA.stades.forEach(function (sd, i) {
+      var sg = el("button", "seg s" + i, (sd.nom || "?").charAt(0).toUpperCase());
+      sg.type = "button";
+      sg.title = sd.nom + " (" + sign(sd.bonus) + ") — " + (DATA.xpParStade * i) + " xp";
+      sg.addEventListener("click", function () {
+        if (!isEdit("comps")) return;   // construction : mode édition requis
+        applyStade(i);
+      });
+      st.appendChild(sg);
+      segs.push(sg);
     });
-    row.appendChild(sel);
+    row.appendChild(st);
 
-    var total = el("span", "pc-comp-total pc-rollable", "");
+    // le total est un BOUTON de jet, comme la valeur d'une caractéristique
+    var total = el("button", "pc-comp-total pc-comp-roll pc-rollable", "");
+    total.type = "button";
     total.addEventListener("click", function () {
       doRoll(item.name + " (" + item.carac + ")", compValue(item.carac, comp(), item.key), null, true);
     });
@@ -1211,8 +1212,10 @@
     compHooks.push(function () {
       var c = comp();
       var d = state.compsMod[item.key] || 0;
-      if (document.activeElement !== sel) sel.value = String(c.stade);
-      sel.classList.toggle("lv0", !c.stade);
+      segs.forEach(function (sg, i) {
+        sg.classList.toggle("on", i <= c.stade);
+        sg.classList.toggle("cur", i === c.stade);
+      });
       total.textContent = sign(compValue(item.carac, c, item.key));
       total.classList.toggle("zero", !c.stade && !d);
       total.classList.toggle("adj", d !== 0);
