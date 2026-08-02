@@ -459,6 +459,36 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-pvmax input.force:focus { outline: none; border-bottom: 2px solid var(--red); }
 .pc-pvmax .sp { flex: 1; }
 
+/* mêmes leviers, version étroite : dans une tuile (Vitesse, Régén / jour), où
+   « Forcé » et « Modificateurs » s'empilent sous la valeur */
+/* le libellé se pose AU-DESSUS de son contrôle : une tuile est trop étroite
+   pour « Modificateurs » et trois cases côte à côte (elles se chevauchaient) */
+.pc-bigedit { display: flex; flex-direction: column; align-items: center; gap: .02rem; margin-top: .18rem; }
+.pc-bigedit .lbl {
+  font-size: .45rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--ink-3); white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis;
+}
+.pc-bigedit input.force {
+  width: 2.2rem; min-width: 0; border: none; border-bottom: 1px solid var(--hair);
+  background: transparent; color: var(--ink); font: inherit; font-size: .62rem;
+  text-align: center; padding: 0 0 .05rem; border-radius: 0;
+  -moz-appearance: textfield; appearance: textfield;
+}
+.pc-bigedit input.force::-webkit-inner-spin-button,
+.pc-bigedit input.force::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.pc-bigedit input.force:focus { outline: none; border-bottom: 2px solid var(--red); }
+/* dans une tuile, les leviers restent visibles dès le mode édition (ils ne se
+   révèlent pas au survol comme ailleurs : la tuile est trop petite pour ça) */
+.pc-bigedit .pc-mmods { opacity: 1; margin-top: 0; }
+
+/* langue du personnage : l'étoile la désigne (acquise, gratuite jusqu'à Expert) */
+.pc-lang-base {
+  flex: 0 0 auto; border: none; background: none; cursor: pointer; padding: 0 .15rem 0 0;
+  font: inherit; font-size: .62rem; line-height: 1; color: var(--line);
+}
+.pc-lang-base.on { color: var(--red); }
+.pc-editable:not(.editing) .pc-lang-base { cursor: default; }
+
 /* lignes de compétences : UN levier discret dans sa colonne dédiée
    (ligne dense — le total doit rester aligné à droite, jamais à la ligne) */
 .pc-comp-row .pc-mmods { justify-self: center; }

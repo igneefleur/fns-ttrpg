@@ -37,6 +37,9 @@
     ["inventaire", "inventaire", "s"], ["de", "de", "s"],
     ["xpTotal", "xp_total", "n"], ["narration", "narration", "n"],
     ["pvMaxOverride", "pv_max_force", "s"],
+    ["vitesseOverride", "vitesse_force", "s"],
+    ["regenOverride", "regen_force", "s"],
+    ["langueBase", "langue_base", "s"],
     ["sansLimite", "sans_limite", "b"],
     ["v", "version", "n"]
   ];
@@ -48,6 +51,7 @@
     ["caracsMod", "caracs_mod"],
     ["compsMod", "comps_mod"],
     ["comps", "competences"], ["customComps", "comp_perso"],
+    ["langues", "langues"],
     ["armes", "armes"], ["armures", "armures"],
     ["inv", "inventaire_sys"],
     ["divers", "divers"]
@@ -71,7 +75,8 @@
       armes: [], armures: [], inventaire: "",
       inv: { texte: [], groupes: ["Sur soi"], objets: [] },
       divers: { pvMax: [0, 0, 0], regen: [0, 0, 0], vitesse: [0, 0, 0] },
-      pvMaxOverride: null,
+      pvMaxOverride: null, vitesseOverride: null, regenOverride: null,
+      langues: [], langueBase: "",
       de: "1d100"
     };
   }
@@ -130,6 +135,10 @@
       var cb = card.combat || {};
       put("pv", cb.pv == null ? cb.pvMax : cb.pv, cb.pvMax);   // barre de jeton : PV courant / max
       put("vitesse", cb.vitesse);
+      // utilisables dans les macros Roll20 : @{Perso|jjk_initiative}, etc.
+      if (cb.initiative !== undefined) put("initiative", cb.initiative);
+      if (cb.regen !== undefined) put("regen", cb.regen);
+      if (cb.poids !== undefined) put("poids", cb.poids);
     }
     return out;
   }

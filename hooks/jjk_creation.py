@@ -70,6 +70,15 @@ def _table_rows(text, header_re):
     return []
 
 
+# Compétences que la FICHE ajoute, absentes des listes de la page de règles.
+# L'initiative y est une règle de combat (« Initiative = D100 + Body − poids »)
+# et non une entrée de la liste des compétences de Body ; la fiche, elle, en
+# fait une compétence à part entière (stade, passifs à Artiste), sur décision
+# de l'utilisateur. On l'ajoute ICI plutôt que dans la page : les règles sont
+# celles d'un ami et ne se réécrivent pas.
+COMPS_FICHE = {"Body": ["Initiative"]}
+
+
 def _comps(defs):
     """Listes de compétences (« Nage, apnée, … ») -> {carac: [noms]}.
 
@@ -81,6 +90,11 @@ def _comps(defs):
         body = re.sub(r"[…]|\.\.\.\s*$", "", body).rstrip(". ")
         noms = [n.strip() for n in body.split(",") if n.strip()]
         out[carac] = [n[0].upper() + n[1:] for n in noms]
+        # jamais en double : si la page finit par la lister, la sienne prime
+        connus = {n.lower() for n in out[carac]}
+        for n in COMPS_FICHE.get(carac, []):
+            if n.lower() not in connus:
+                out[carac].append(n)
     return out
 
 
