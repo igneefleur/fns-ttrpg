@@ -111,6 +111,19 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
   box-shadow: 0 2px 8px rgba(60, 48, 18, .18); box-sizing: border-box;
 }
 .pc-portrait-edit:focus { outline: none; border-color: var(--red); }
+
+/* coût d'un passif (onglet Art), à droite de son nom, en mode édition */
+.pc-tech-cout { flex: 0 0 auto; display: inline-flex; align-items: baseline; gap: .12rem; }
+.pc-tech-cout input {
+  width: 2.4rem; min-width: 0; border: none; border-bottom: 1px solid var(--hair);
+  background: transparent; color: var(--ink); font: inherit; font-size: .68rem;
+  text-align: right; padding: .02rem .1rem .05rem; border-radius: 0;
+  font-variant-numeric: tabular-nums; -moz-appearance: textfield; appearance: textfield;
+}
+.pc-tech-cout input::-webkit-inner-spin-button, .pc-tech-cout input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.pc-tech-cout input:focus { outline: none; border-bottom: 2px solid var(--red); }
+.pc-tech-cout .u { font-size: .52rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); }
+.pc-tech-cout.offert input::placeholder { color: var(--ok); }
 /* 2e ligne : compteurs Création / XP dépensé (barres étirées) + XP total */
 .pc-id-meters { grid-column: 1 / -1; display: flex; align-items: flex-end; gap: .4rem 1.1rem; flex-wrap: wrap; margin-top: .15rem; }
 .pc-id-meters .pc-meter { flex: 1 1 9rem; min-width: 0; }
