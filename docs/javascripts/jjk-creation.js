@@ -104,7 +104,7 @@
   function blank() {
     return {
       v: 1,
-      name: "", portrait: "", age: "", genre: "",
+      name: "", portrait: "", espece: "", age: "", sexe: "", genre: "",
       defaut: "", qualites: ["", ""], background: "", notes: "",
       avantages: [], sansLimite: false,
       caracsBase: { Mind: 0, Body: 0, Prestance: 0 },
@@ -698,60 +698,23 @@
   }
 
   // ---------- en-tête : portrait + identité + compteurs + garde-fous ----------
+  // En-tête réduit aux seules infos importantes (2026-08-02) : plus de
+  // portrait ni de cartouche « JJK Système JDR » ; PV, Vitesse et Narration
+  // (doublons en lecture seule de l'onglet Fiche) n'y figurent plus.
+  //   Nom | Espèce | Âge | Sexe | Genre
+  //   Création ———— | XP dépensé ———— | XP total
   function buildHead(sheet) {
     var head = el("div", "pc-head");
 
-    var brand = el("div", "pc-brand");
-    var img = el("img", "pc-portrait");
-    img.alt = "";
-    hooks.push(function () {
-      var want = state.portrait || "";
-      if (img.getAttribute("src") !== want) {
-        if (want) img.src = want;
-        else img.removeAttribute("src");
-      }
-    });
-    brand.appendChild(img);
-    var pBtn = el("button", "pc-portrait-btn", "changer le portrait");
-    pBtn.type = "button";
-    pBtn.addEventListener("click", function () {
-      var url = prompt("URL de l'image du portrait :", state.portrait || "");
-      if (url === null) return;
-      state.portrait = url.trim();
-      refresh();
-    });
-    brand.appendChild(pBtn);
-    brand.appendChild(el("span", "b1", "JJK"));
-    brand.appendChild(el("span", "b2", "Système JDR"));
-    head.appendChild(brand);
-
     var id = el("div", "pc-id");
-    id.appendChild(fld("Nom", textInput(function () { return state.name; }, function (v) { state.name = v; }, "Nom du personnage"), "c6"));
-    id.appendChild(fld("Âge", textInput(function () { return state.age; }, function (v) { state.age = v; }), "c3"));
-    id.appendChild(fld("Genre", textInput(function () { return state.genre; }, function (v) { state.genre = v; }), "c3"));
-    var xpIn = el("input", null);
-    xpIn.type = "number"; xpIn.min = 0; xpIn.step = 5;
-    xpIn.value = state.xpTotal;
-    xpIn.addEventListener("input", function () {
-      var v = parseInt(xpIn.value, 10);
-      if (isFinite(v)) { state.xpTotal = Math.max(0, v); refresh(); }
-    });
-    hooks.push(function () { if (document.activeElement !== xpIn) xpIn.value = state.xpTotal; });
-    id.appendChild(fld("XP total", xpIn, "c3"));
-    var pvRo = el("span", "pc-ro", "");
-    hooks.push(function () { pvRo.textContent = pvCourant() + " / " + pvMax(); });
-    id.appendChild(fld("PV", pvRo, "c3"));
-    var vRo = el("span", "pc-ro", "");
-    hooks.push(function () { vRo.textContent = vitesse(); });
-    id.appendChild(fld("Vitesse", vRo, "c3"));
-    var nRo = el("span", "pc-ro", "");
-    hooks.push(function () { nRo.textContent = String(state.narration); });
-    id.appendChild(fld("Narration", nRo, "c3"));
-    head.appendChild(id);
-    sheet.appendChild(head);
+    id.appendChild(fld("Nom", textInput(function () { return state.name; }, function (v) { state.name = v; }, "Nom du personnage"), "c4"));
+    id.appendChild(fld("Espèce", textInput(function () { return state.espece; }, function (v) { state.espece = v; }), "c2"));
+    id.appendChild(fld("Âge", textInput(function () { return state.age; }, function (v) { state.age = v; }), "c2"));
+    id.appendChild(fld("Sexe", textInput(function () { return state.sexe; }, function (v) { state.sexe = v; }), "c2"));
+    id.appendChild(fld("Genre", textInput(function () { return state.genre; }, function (v) { state.genre = v; }), "c2"));
 
-    // compteurs de budgets
-    var meters = el("div", "pc-meters");
+    // 2e ligne : compteurs de budgets + XP total
+    var mrow = el("div", "pc-id-meters");
     function meter(label, getUsed, getTotal) {
       var m = el("span", "pc-meter");
       m.appendChild(el("span", null, label));
@@ -771,9 +734,21 @@
       });
       return m;
     }
-    meters.appendChild(meter("Création", ptsCreation, function () { return PTS_CREATION; }));
-    meters.appendChild(meter("XP dépensé", xpDepense, function () { return state.xpTotal; }));
-    sheet.appendChild(meters);
+    mrow.appendChild(meter("Création", ptsCreation, function () { return PTS_CREATION; }));
+    mrow.appendChild(meter("XP dépensé", xpDepense, function () { return state.xpTotal; }));
+    var xpIn = el("input", null);
+    xpIn.type = "number"; xpIn.min = 0; xpIn.step = 5;
+    xpIn.value = state.xpTotal;
+    xpIn.addEventListener("input", function () {
+      var v = parseInt(xpIn.value, 10);
+      if (isFinite(v)) { state.xpTotal = Math.max(0, v); refresh(); }
+    });
+    hooks.push(function () { if (document.activeElement !== xpIn) xpIn.value = state.xpTotal; });
+    mrow.appendChild(fld("XP total", xpIn));
+    id.appendChild(mrow);
+
+    head.appendChild(id);
+    sheet.appendChild(head);
 
     // garde-fous
     var warns = el("div", "pc-warns");

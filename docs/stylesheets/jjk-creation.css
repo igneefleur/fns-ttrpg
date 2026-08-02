@@ -86,14 +86,13 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
   padding: .9rem 1rem 1.3rem;
 }
 
-/* ---- en-tête d'identité ---- */
+/* ---- en-tête d'identité (infos importantes seulement, sans portrait) ---- */
 .pc-head { display: flex; gap: 1rem; align-items: flex-start; border-bottom: 1px solid var(--line); padding-bottom: .55rem; }
-.pc-brand { flex: 0 0 auto; min-width: 6.5rem; text-align: center; padding: .1rem .3rem 0; }
-.pc-portrait { display: block; width: 110px; height: 110px; object-fit: cover; border-radius: 9px; border: 1px solid var(--line); box-shadow: 0 1px 4px rgba(60, 48, 18, .12); margin: 0 auto; background: var(--panel); }
-.pc-portrait-btn { display: block; margin: .28rem auto 0; border: none; background: transparent; color: var(--ink-3); font: inherit; font-size: .58rem; cursor: pointer; text-decoration: underline; }
-.pc-portrait-btn:hover { color: var(--red); }
-.pc-brand .b1 { font-family: 'Cinzel', serif; font-weight: 700; font-size: 1.15rem; line-height: 1.05; color: var(--red-deep); letter-spacing: .05em; display: block; margin-top: .2rem; }
-.pc-brand .b2 { font-size: .48rem; letter-spacing: .28em; text-transform: uppercase; color: var(--ink-3); display: block; margin-top: .14rem; }
+/* 2e ligne : compteurs Création / XP dépensé (barres étirées) + XP total */
+.pc-id-meters { grid-column: 1 / -1; display: flex; align-items: flex-end; gap: .4rem 1.1rem; flex-wrap: wrap; margin-top: .15rem; }
+.pc-id-meters .pc-meter { flex: 1 1 9rem; min-width: 0; }
+.pc-id-meters .pc-meter .bar { flex: 1; width: auto; min-width: 3rem; }
+.pc-id-meters .pc-f { flex: 0 0 5.5rem; }
 .pc-id { flex: 1; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: .35rem .6rem; align-content: start; }
 .pc-f { display: flex; flex-direction: column; gap: .08rem; min-width: 0; }
 .pc-f > label { font-size: .52rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); white-space: nowrap; }
@@ -110,7 +109,6 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-f.c4 { grid-column: span 4; } .pc-f.c3 { grid-column: span 3; } .pc-f.c2 { grid-column: span 2; }
 
 /* ---- compteurs de budgets ---- */
-.pc-meters { display: flex; flex-wrap: wrap; gap: .35rem 1.1rem; padding: .5rem .1rem .1rem; align-items: center; }
 .pc-meter { display: flex; align-items: center; gap: .4rem; font-size: .58rem; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; color: var(--ink-3); }
 .pc-meter b { font-variant-numeric: tabular-nums; font-size: .72rem; color: var(--ink); text-transform: none; letter-spacing: 0; }
 .pc-meter b.over { color: var(--red); }
