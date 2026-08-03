@@ -184,13 +184,27 @@
     mem["jjk-cards"] = "{}";
     mem["jjk-persos"] = "[]";     // pas de bibliothèque multi-perso dans Roll20
     lastAttrs = attrs;                 // base du diff = ce qui est réellement en base
-    // charger le vrai jjk-creation.js APRÈS hydratation (son init lit jjk-perso).
-    // ?v= : MÊME numéro que mkdocs.yml (extra_javascript), à monter ensemble.
-    var s = document.createElement("script");
-    s.src = "javascripts/jjk-creation.js?v=48";
-    s.onload = function () { ready = true; post({ type: "mounted" }); };
-    s.onerror = function () { post({ type: "error", error: "jjk-creation.js" }); };
-    document.body.appendChild(s);
+    // Charger le bundle de la fiche APRÈS hydratation (son init lit jjk-perso).
+    // Les fichiers ne sont plus nommés ici : c'est le MANIFESTE qui les donne
+    // (window.__jjkManifeste, posé par l'amorceur), pour qu'une page en cache
+    // ne puisse jamais figer une version du bundle. Repli si le manifeste
+    // manque : le nom courant, sans ?v=.
+    var m = window.__jjkManifeste;
+    var spec = (m && m.bundle) || { js: ["javascripts/jjk-fiche.js"], data: null };
+    // data : le jjk-creation.json à lire. Une archive embarque le sien, gelé à
+    // sa date ; sans lui un ancien bundle lirait les règles d'aujourd'hui.
+    window.__jjkDataUrl = spec.data || null;
+    var urls = spec.js || [];
+    var i = 0;
+    (function suivant() {
+      if (i >= urls.length) { ready = true; post({ type: "mounted" }); return; }
+      var s = document.createElement("script");
+      var u = urls[i++];
+      s.src = u;
+      s.onload = suivant;
+      s.onerror = function () { post({ type: "error", error: u }); suivant(); };
+      document.body.appendChild(s);
+    })();
   }
 
   window.addEventListener("message", function (ev) {

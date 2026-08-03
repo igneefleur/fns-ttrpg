@@ -67,6 +67,15 @@
     if (txt != null) e.textContent = txt;
     return e;
   }
+  // URL du jeu de données. Une ARCHIVE de version embarque son propre
+  // jjk-creation.json, gelé à sa date : l'amorce le désigne par
+  // window.__jjkDataUrl avant d'injecter le bundle. Sans lui, un bundle
+  // d'archive lirait les règles d'AUJOURD'HUI — un renommage de compétence
+  // suffirait à trahir la version qu'on croit rejouer.
+  function dataUrl() {
+    var u = typeof window !== "undefined" ? window.__jjkDataUrl : null;
+    return u || (siteBase() + "jjk-creation.json");
+  }
   function siteBase() {
     var l = document.querySelector('link[href*="assets/"], script[src*="assets/"]');
     var u = l ? (l.href || l.getAttribute("src")) : null;
@@ -3746,7 +3755,7 @@
       recevoirObjet(payload);
     };
     if (DATA) { state = load() || blank(); mount(root); return; }
-    fetch(siteBase() + "jjk-creation.json", { cache: "no-cache" })
+    fetch(dataUrl(), { cache: "no-cache" })
       .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
       .then(function (d) { DATA = d; state = load() || blank(); mount(root); })
       .catch(function (e) {
