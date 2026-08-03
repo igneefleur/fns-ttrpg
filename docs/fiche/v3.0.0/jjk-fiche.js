@@ -162,6 +162,11 @@
       // armes ajoutées par le joueur : des compétences de Body, rassemblées
       // dans le module Armes avec celles des règles (DATA.compsArmes)
       armesComps: [],
+      // modules : le coffre privé de chaque module (id -> objet libre) et les
+      // interrupteurs (id -> false pour les seuls modules coupés). Deux clés
+      // RACINE avec un défaut : normalize() les complète, donc le schéma ne
+      // monte pas et une fiche s'ouvre dans les deux sens.
+      modData: {}, modActifs: {},
       de: "1d100"
     };
   }
@@ -442,6 +447,20 @@
       });
       s.inv.texte = [];
     }
+    // coffres des modules : le contenu appartient au module, la fiche ne juge
+    // que la forme. Une entrée qui n'est pas un objet est jetée : elle ferait
+    // planter le get() du module sans que personne ne sache pourquoi.
+    if (!s.modData || typeof s.modData !== "object" || Array.isArray(s.modData)) s.modData = {};
+    Object.keys(s.modData).forEach(function (k) {
+      var d = s.modData[k];
+      if (!d || typeof d !== "object") delete s.modData[k];
+    });
+    // interrupteurs : seuls les modules COUPÉS y figurent (false). Tout le
+    // reste s'efface, pour qu'un module retiré un jour ne laisse pas de trace.
+    if (!s.modActifs || typeof s.modActifs !== "object" || Array.isArray(s.modActifs)) s.modActifs = {};
+    Object.keys(s.modActifs).forEach(function (k) {
+      if (s.modActifs[k] !== false) delete s.modActifs[k];
+    });
     s.xpTotal = Math.max(0, num(s.xpTotal, XP_CREATION));
     s.narration = clamp(num(s.narration, 3), 0, 99);
     s.pv = (s.pv === null || s.pv === undefined || s.pv === "") ? null : parseFloat(s.pv);
@@ -742,8 +761,15 @@
     // « + 0 » est du bruit sur les jets d'équipement (dégâts, invu), qui
     // n'ont jamais de bonus : l'expression part seule.
     var v = value ? (value > 0 ? " + " + value : " - " + (-value)) : "";
-    return "&{template:default} {{name=" + String(label || "Jet").replace(/[{}]/g, "") +
-           "}} {{Jet=[[" + (String(die || "1d100").trim() || "1d100") + v +
+    // Le libellé passe par envSan comme les titres de cartes, et le dé voit
+    // ses blancs repliés : un saut de ligne (nom de compétence venu d'un
+    // import, dé recopié depuis une macro) ferait une SECONDE ligne au tchat.
+    // L'extension refuse une commande multiligne, et le clic partirait alors
+    // sans rien envoyer. Les accolades du dé restent : « ?{Dé|1d100} » et
+    // « @{…} » sont des dés légitimes dans Roll20.
+    var de = String(die == null ? "" : die).replace(/\s+/g, " ").trim() || "1d100";
+    return "&{template:default} {{name=" + (envSan(label) || "Jet") +
+           "}} {{Jet=[[" + de + v +
            (avecInput ? ENV_QUERY : "") + "]]}}";
   }
   function cmdCarte(title, fields) {
@@ -842,11 +868,20 @@
   }
 
   // ---------- refresh ----------
-  // hooks : fonctions appelées à chaque changement d'état. Remises à zéro à
-  // chaque mount() (navigation instantanée comprise) pour ne pas s'accumuler.
-  // compHooks : hooks des lignes de compétences, vidés par rebuildComps().
-  var hooks = [];
-  var compHooks = [];
+  // Registres de rafraîchissement : les fonctions rappelées à chaque
+  // changement d'état. Il y en a UN PAR MODULE, plus un pour ce qui n'est pas
+  // un module (barre d'outils, en-tête, barre d'envoi). Tous sont remis à zéro
+  // à chaque mount() (navigation instantanée comprise) pour ne pas s'accumuler.
+  //
+  // « hooks » désigne le registre COURANT : monteModules le fait pointer sur
+  // celui du module en construction, puis le rend. Les briques (textInput,
+  // stepper, bigTile, gearBtn…) continuent donc d'écrire dans « hooks » sans
+  // rien savoir des modules, et chaque fonction atterrit chez son propriétaire.
+  // C'est ce qui permet de museler un module sans toucher aux autres.
+  var regHors = [];             // hors module : ce qui encadre les onglets
+  var regsModules = {};         // id -> tableau de fonctions (ordre de montage)
+  var hooks = regHors;
+  var compHooks = [];           // lignes de compétences, vidées par rebuildComps()
   var optHooks = [];            // bloc Options « Modificateurs de compétences », rebâtissable
   var optCompsRebuild = null;   // posé par le module « optcomps » ; rappelé quand les comps perso changent
   // filtres du bloc, survivants au remount comme ceux de la Fiche
@@ -854,11 +889,71 @@
   var optChamp = "";
   var optOnly = COMPACT;        // Roll20 : investies seulement par défaut, comme la Fiche
   var optPerso = true;          // décoché : seules les compétences de base du jeu
+
+  function regModule(id) {
+    if (!regsModules[id]) regsModules[id] = [];
+    return regsModules[id];
+  }
+  // Musellement : un module dont le registre jette EN CHAÎNE finit par se
+  // taire. Cinq échecs consécutifs, parce qu'un hook peut échouer une fois sur
+  // un état transitoire (une frappe en cours) sans être cassé pour autant ;
+  // cinq fois d'affilée, c'est le module qui est en faute. Une seule
+  // réussite remet le compteur à zéro.
+  var MUSELIERE = 5;
+  var etatsModules = {};        // id -> { echecs, musele, erreur, panne }
+  function etatModule(id) {
+    if (!etatsModules[id])
+      etatsModules[id] = { echecs: 0, musele: false, erreur: "", panne: "", vide: false };
+    return etatsModules[id];
+  }
+  function messageErreur(e) {
+    return String((e && (e.message || e.toString())) || "erreur inconnue");
+  }
+  // Un registre tourne SOUS SON PROPRE try/catch, fonction par fonction : un
+  // hook qui jette n'interrompt plus le rafraîchissement des autres, et ne
+  // fige donc plus la fiche entière.
+  //
+  // Le résultat n'est pas jugé ici mais RETENU dans le bilan de la passe, et
+  // le compteur ne bouge qu'une fois la passe finie. C'est nécessaire parce
+  // qu'un même id peut avoir DEUX registres (« comps » et « optcomps » ont
+  // aussi celui de leurs lignes rebâties) : en jugeant registre par registre,
+  // la réussite du premier remettait le compteur à zéro juste avant l'échec du
+  // second, et la muselière de ces deux modules-là n'aurait jamais pu tomber.
+  function joue(id, reg, bilan) {
+    if (etatModule(id).musele) return;
+    if (bilan[id] === undefined) bilan[id] = null;   // registre vu, sans échec
+    for (var i = 0; i < reg.length; i++) {
+      try { reg[i](); } catch (err) { if (!bilan[id]) bilan[id] = err; }
+    }
+  }
   function refresh() {
     save();
-    hooks.forEach(function (f) { try { f(); } catch (e) {} });
-    compHooks.forEach(function (f) { try { f(); } catch (e) {} });
-    optHooks.forEach(function (f) { try { f(); } catch (e) {} });
+    var bilan = {};
+    joue("", regHors, bilan);
+    // les clés d'un objet se parcourent dans leur ordre de création : c'est
+    // l'ordre de montage des modules, donc l'ordre où les hooks se poussaient
+    // avant qu'ils ne soient séparés — l'affichage ne bouge pas
+    Object.keys(regsModules).forEach(function (id) { joue(id, regsModules[id], bilan); });
+    // deux registres rebâtissables : ils appartiennent à leur module (même id,
+    // donc même muselière) mais vivent à part, leurs lignes étant détruites et
+    // recréées sans que le module le soit
+    joue("comps", compHooks, bilan);
+    joue("optcomps", optHooks, bilan);
+    Object.keys(bilan).forEach(function (id) {
+      var e = etatModule(id);
+      if (e.musele) return;
+      if (!bilan[id]) { e.echecs = 0; return; }
+      e.echecs++;
+      e.erreur = messageErreur(bilan[id]);
+      // « » n'est pas un module mais ce qui encadre les onglets (barre
+      // d'outils, en-tête, barre d'envoi) : le museler éteindrait la fiche
+      // elle-même, sans bloc à marquer ni interrupteur pour le rallumer. Ses
+      // hooks restent sous try/catch, c'est là qu'est la protection.
+      if (id && e.echecs >= MUSELIERE) {
+        e.musele = true;
+        museleAffiche(id, e);
+      }
+    });
   }
   // Remplacement d'état COMPLET (import, bibliothèque, nouveau personnage) :
   // toutes les sections tiennent des références sur l'ancien état, on remonte
@@ -882,13 +977,16 @@
     w.appendChild(input);
     return w;
   }
-  function textInput(get, set, placeholder) {
+  // reg : registre de rafraîchissement (le courant par défaut ; un module qui
+  // fabrique un champ APRÈS son montage passe le sien, sinon sa fonction
+  // atterrirait chez le voisin et échapperait à sa muselière).
+  function textInput(get, set, placeholder, reg) {
     var i = el("input");
     i.type = "text";
     if (placeholder) i.placeholder = placeholder;
     i.value = get() || "";
     i.addEventListener("input", function () { set(i.value); refresh(); });
-    hooks.push(function () { if (document.activeElement !== i) i.value = get() || ""; });
+    (reg || hooks).push(function () { if (document.activeElement !== i) i.value = get() || ""; });
     return i;
   }
   function miniBtn(txt, title, fn, cls) {
@@ -1008,12 +1106,13 @@
     b.appendChild(t);
     return b;
   }
-  function bigTile(label, getV, onClick) {
+  // reg : registre de rafraîchissement, comme textInput
+  function bigTile(label, getV, onClick, reg) {
     var d = el("div", "pc-big" + (onClick ? " pc-rollable" : ""));
     d.appendChild(el("span", "k", label));
     var v = el("span", "v", "");
     d.appendChild(v);
-    hooks.push(function () { v.textContent = String(getV()); });
+    (reg || hooks).push(function () { v.textContent = String(getV()); });
     if (onClick) d.addEventListener("click", onClick);
     return d;
   }
@@ -1534,8 +1633,17 @@
     }
   };
 
+  // L'interrupteur du module. Seuls les modules COUPÉS figurent dans
+  // state.modActifs : tout le reste est actif, y compris un module inconnu de
+  // la fiche qui l'ouvre.
+  function actif(id) {
+    return !state || !state.modActifs || state.modActifs[id] !== false;
+  }
+  var elModules = {};   // id -> l'élément monté (pour marquer une muselière)
+
   function monteModules(panes) {
     var colonnes = {};
+    elModules = {};
     TABS.forEach(function (t) {
       if (SQUELETTES[t.id] && panes[t.id]) colonnes[t.id] = SQUELETTES[t.id](panes[t.id]);
     });
@@ -1544,14 +1652,201 @@
       // Un mod mal réglé ne doit pas emporter toute la fiche avec lui.
       var hote = colonnes[m.onglet] && colonnes[m.onglet][m.colonne];
       if (!hote) return;
-      if (m.pour && !m.pour()) return;
-      var e = m.build();
+      if (!actif(m.id)) return;                          // coupé : pas monté
+      // « pour » de la table native est un PRÉDICAT (le module n'existe que
+      // s'il rend vrai) ; celui d'un mod est une version, gérée ailleurs.
+      if (typeof m.pour === "function" && !m.pour()) return;
+      // le module construit DANS son propre registre : tout ce que ses briques
+      // y poussent lui appartient, et lui seul en répond
+      var reg = regModule(m.id);
+      var precedent = hooks;
+      var e;
+      hooks = reg;
+      try {
+        e = m.build(contexte(m, reg));
+        etatModule(m.id).panne = "";
+      } catch (err) {
+        // build a pu pousser des fonctions avant de tomber : elles pointent
+        // sur un bloc à moitié bâti et jetteraient à chaque rafraîchissement
+        reg.length = 0;
+        e = blocEnPanne(m, err);
+      }
+      hooks = precedent;
+      // build qui ne rend rien : ce n'est PAS une erreur (un module a le droit
+      // de s'effacer), mais la liste des modules doit pouvoir le signaler
+      etatModule(m.id).vide = !e;
       if (!e) return;
       // les modules à rouage se sont déjà nommés (block() pose data-module) ;
       // les autres le reçoivent ici, pour que TOUS soient repérables
       if (!e.dataset.module) e.dataset.module = m.id;
+      elModules[m.id] = e;
       hote.appendChild(e);
     });
+  }
+
+  // ---------- isolation des pannes ----------
+  // Un module dont build() jette ne fait pas tomber la fiche : il rend cette
+  // carte à sa place, et le montage continue. Réessayer le reconstruit (une
+  // panne peut tenir à l'état du moment) ; Désactiver le retire de la fiche
+  // sans rien effacer de ce qu'il porte.
+  function blocEnPanne(m, err) {
+    var msg = messageErreur(err);
+    etatModule(m.id).panne = msg;
+    if (window.console && window.console.error) window.console.error("[mod:" + m.id + "]", err);
+    var b = el("div", "pc-block");
+    b.dataset.module = m.id;
+    b.dataset.panne = "1";
+    var t = el("div", "pc-block-title", m.titre || m.id);
+    // la page Mods promet un cadre qui donne l'ID du module et le message :
+    // c'est l'id, pas le titre, qui sert à retrouver le mod dans la liste et
+    // dans le journal du navigateur (« [mod:<id>] »)
+    t.appendChild(el("small", null, "module en panne — " + m.id));
+    b.appendChild(t);
+    b.appendChild(el("div", "pc-empty", msg));
+    var tools = el("div", "pc-comp-tools");
+    var line = el("div", "row");
+    line.appendChild(miniBtn("Réessayer", "Reconstruire ce module", function () {
+      delete etatsModules[m.id];
+      remount();
+    }));
+    line.appendChild(miniBtn("Désactiver", "Retirer ce module de la fiche : rien n'est perdu, il ne s'affiche plus.", function () {
+      // même garde que __jjkModules.active : une panne peut survenir sur un
+      // état remplacé à la main (import, bibliothèque) qui n'est pas repassé
+      // par normalize(), et la clé manquerait
+      if (!state.modActifs) state.modActifs = {};
+      state.modActifs[m.id] = false;
+      save();
+      remount();
+    }, "danger"));
+    tools.appendChild(line);
+    b.appendChild(tools);
+    return b;
+  }
+  // Muselé : le module garde son bloc (ses valeurs sont celles du dernier
+  // rafraîchissement réussi), il cesse seulement d'être rappelé. On marque son
+  // bloc et on dit pourquoi, sans rien changer à la mise en page.
+  function museleAffiche(id, e) {
+    if (window.console && window.console.warn)
+      window.console.warn("[mod:" + id + "] muselé après " + e.echecs +
+                          " rafraîchissements en erreur : " + e.erreur);
+    var n = elModules ? elModules[id] : null;
+    if (!n) return;
+    n.dataset.musele = "1";
+    n.title = "Module muselé après " + e.echecs + " rafraîchissements en erreur : " + e.erreur;
+  }
+
+  // ---------- le contexte d'un module ----------
+  // C'est TOUT ce qu'un module touche, natif comme mod : le contrat public
+  // décrit dans la page Mods. Les modules natifs de ce fichier n'en font pas
+  // usage (ils appellent les fonctions directement), mais ils le reçoivent :
+  // un mod qui reprend l'id de l'un d'eux dispose exactement du même.
+  //
+  // Les libellés officiels des données du personnage : un mod nomme les choses
+  // comme le reste de la fiche au lieu d'inventer son vocabulaire.
+  var LIBELLES = {
+    nom: "Nom", espece: "Espèce", age: "Âge", sexe: "Sexe", genre: "Genre",
+    pv: "PV", pvMax: "PV max", initiative: "Initiative", vitesse: "Vitesse",
+    regen: "Régén / jour", poids: "Poids porté", narration: "Narration",
+    xpTotal: "XP total", stade: "Stade", total: "Total",
+    competence: "Compétence", art: "Art", passif: "Passif",
+    arme: "Arme", degats: "Dégâts", armure: "Armure",
+    quantite: "Quantité", groupe: "Groupe", description: "Description",
+    avantage: "Avantage", defaut: "Défaut", qualite: "Qualité",
+    background: "Background", notes: "Notes", de: "Dé des jets de test"
+  };
+  function contexte(m, reg) {
+    var id = m.id;
+    // le coffre privé du module, rangé dans state.modData[id] : il voyage avec
+    // le personnage (bibliothèque, export JSON, Attributes Roll20)
+    var donnees = {
+      // LIRE NE SALIT PAS. L'ancienne version rangeait un objet vide dans
+      // l'état au premier get() : tout module qui se contentait de lire
+      // laissait sa trace dans le personnage, et un personnage qui n'a jamais
+      // rien réglé se retrouvait avec autant d'entrées que de modules. On rend
+      // un objet détaché ; c'est set() qui écrit, lui seul.
+      get: function () {
+        var d = state.modData && state.modData[id];
+        return (d && typeof d === "object") ? d : {};
+      },
+      // La validation est IMMÉDIATE et l'erreur remonte AU MODULE. Un objet
+      // circulaire doit casser le module qui l'écrit, jamais la sauvegarde de
+      // la fiche : rangé tel quel, il ferait échouer le JSON.stringify(state)
+      // du premier save() et le personnage entier cesserait de s'enregistrer.
+      set: function (o) {
+        if (o === null || o === undefined) o = {};
+        if (typeof o !== "object") throw new TypeError("ctx.donnees.set attend un objet.");
+        JSON.stringify(o);              // circulaire : l'erreur part au module
+        if (!state.modData) state.modData = {};
+        state.modData[id] = o;
+      }
+    };
+    // puce de filtre, comme celles des modules Armes et Compétences
+    function puce(libelle, lire, ecrire) {
+      var c = el("span", "pc-chip", libelle);
+      c.classList.toggle("on", !!lire());
+      c.addEventListener("click", function () {
+        ecrire(!lire());
+        c.classList.toggle("on", !!lire());
+        refresh();
+      });
+      reg.push(function () { c.classList.toggle("on", !!lire()); });
+      return c;
+    }
+    return {
+      // identité
+      id: id,
+      version: RELEASE,
+      // données (en lecture : ce qui appartient au personnage appartient aux
+      // modules natifs, un module ne le corrige pas dans le dos des autres)
+      state: state,
+      data: DATA,
+      donnees: donnees,
+      // structure
+      bloc: function (titre) { return block(titre, null, id); },
+      el: el,
+      fld: function (libelle, champ) { return fld(libelle, champ); },
+      // cycle
+      surRafraichissement: function (fn) { if (typeof fn === "function") reg.push(fn); },
+      rafraichir: refresh,
+      enregistrer: save,
+      reconstruire: remount,
+      edition: function () { return isEdit(id); },
+      // briques
+      texte: function (lire, ecrire, indication) { return textInput(lire, ecrire, indication, reg); },
+      bouton: function (libelle, infobulle, action) { return miniBtn(libelle, infobulle, action); },
+      pas: function (lire, ecrire, pas) { return stepper(lire, ecrire, pas || 1, null, reg); },
+      tuile: function (libelle, valeur, action) { return bigTile(libelle, valeur, action, reg); },
+      ligneComp: function (carac, nom) {
+        return compRow({ key: carac + "/" + nom, name: nom, carac: carac, custom: false },
+                       false, { module: id, reg: reg });
+      },
+      filtre: puce,
+      dialogue: function (titre, corps, valider) { return dialogue(titre, corps, valider); },
+      message: flash,
+      // sorties (le destinataire reste celui que le joueur a fixé)
+      jet: function (libelle, valeur) { doRoll(libelle, valeur, null, true); },
+      auTchat: function (titre, champs) { sayChat(titre, champs); },
+      boutonTchat: function (libelle, titre, champs) {
+        return miniBtn(libelle, "Envoyer dans le tchat Roll20", function () {
+          sayChat(titre, typeof champs === "function" ? champs() : champs);
+        });
+      },
+      // calculs : tous dérivés, donc en lecture seule
+      calculs: {
+        caracTotal: caracTotal,
+        compValue: compValue,
+        pvMax: pvMax,
+        pvCourant: pvCourant,
+        initiative: initiative,
+        vitesse: vitesse,
+        regen: regen,
+        poidsPorte: poidsPorte
+      },
+      // mise en forme
+      fmt: { signe: sign, nombre: fmtP },
+      champs: LIBELLES,
+      abbr: function (carac) { return ABBR[carac] || carac; }
+    };
   }
 
   // ---------- onglet Fiche : caractéristiques + combat | compétences ----------
@@ -2275,9 +2570,16 @@
     CHAMPS.forEach(function (carac) {
       if (filtreChampOn() && compChamp && compChamp !== carac) return;
       // l'Initiative, les langues et les armes ont leur propre module sur
-      // cette page : les répéter ici ferait deux commandes pour un même stade
+      // cette page : les répéter ici ferait deux commandes pour un même stade.
+      // Mais un module COUPÉ rend ses compétences à cette liste : sans quoi
+      // couper « Langues » rendrait les langues du personnage inatteignables.
+      // Aucun calcul ne change, seulement l'endroit où la ligne se lit.
       var items = allComps().filter(function (it) {
-        return it.carac === carac && it.key !== INIT_KEY && !it.langue && !it.arme;
+        if (it.carac !== carac) return false;
+        if (it.key === INIT_KEY) return !actif("initiative");
+        if (it.langue) return !actif("langues");
+        if (it.arme) return !actif("armescomp");
+        return true;
       });
       if (!compPerso) items = items.filter(function (it) { return !it.custom; });
       if (flt) items = items.filter(function (it) { return it.name.toLowerCase().indexOf(flt) >= 0; });
@@ -2773,7 +3075,11 @@
     dialogue("Donner « " + (it.nom || "objet") + " »", corps, function () {
       var q = Math.min(pnum(qIn.value) || it.qte, it.qte);
       if (!it.qte || !q) { flash("Cet objet n'est plus en stock."); return; }
-      var cmd = "&{template:default} {{name=Objet donné — " + (it.nom || "objet") + "}}" +
+      // le nom passe par envSan comme partout ailleurs : sans lui, un nom qui
+      // porte une accolade ou un saut de ligne (objet importé, objet reçu d'un
+      // autre joueur) compose une commande que l'extension refuse — et l'objet
+      // serait quand même retiré de l'inventaire, donc perdu.
+      var cmd = "&{template:default} {{name=Objet donné — " + (envSan(it.nom) || "objet") + "}}" +
                 (q > 1 ? " {{Quantité=" + fmtP(q) + "}}" : "") +
                 (it.desc ? " {{=" + String(it.desc).replace(/[{}]/g, "").replace(/\s+/g, " ").trim() + "}}" : "") +
                 " {{Prendre=[Prendre](" + TAKE_CMD + " " + packObjet(it, q) + ")}}";
@@ -3904,8 +4210,24 @@
     // une COPIE de la description : personne ne remanie la table de l'extérieur
     liste: function () {
       return ordreModules().map(function (m) {
-        return { id: m.id, titre: m.titre, onglet: m.onglet, colonne: m.colonne };
+        return { id: m.id, titre: m.titre, onglet: m.onglet, colonne: m.colonne, actif: actif(m.id) };
       });
+    },
+    actif: actif,
+    // l'interrupteur : couper un module le retire de la fiche sans rien
+    // effacer (son coffre et ses données restent, il ne s'affiche plus)
+    active: function (id, oui) {
+      if (!state) return;                  // avant le chargement : rien à couper
+      if (!state.modActifs) state.modActifs = {};
+      if (oui === false) state.modActifs[id] = false;
+      else delete state.modActifs[id];
+      save();
+    },
+    // de quoi afficher l'état d'un module : ses pannes, sa muselière
+    etat: function (id) {
+      var e = etatModule(id);
+      return { echecs: e.echecs, musele: e.musele, erreur: e.erreur,
+               panne: e.panne, vide: e.vide, actif: actif(id) };
     },
     remonte: remount
   };
@@ -3913,7 +4235,13 @@
   // ---------- montage ----------
   function mount(root) {
     rootEl = root;
-    hooks = [];
+    // tous les registres repartent à vide : les anciens pointent sur un DOM
+    // qui n'existe plus. Les compteurs de panne aussi : un remontage est une
+    // seconde chance, c'est ce que fait le bouton « Réessayer ».
+    regHors = [];
+    regsModules = {};
+    etatsModules = {};
+    hooks = regHors;
     compHooks = [];
     optHooks = [];
     optCompsRebuild = null;

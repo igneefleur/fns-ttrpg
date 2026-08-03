@@ -58,10 +58,22 @@ if (typeof browser === "undefined") { var browser = chrome; }
 
   // ---------- jets au tchat Roll20 (frame du haut) ----------
   // Commande de jet : template par défaut + jet en ligne. Négatifs en « - N ».
+  //
+  // Le canal « roll » compose sa commande ICI : il ne traverse donc PAS la
+  // liste blanche du canal brut, qui ne juge que du texte déjà composé. Or
+  // n'importe quel code de la page de la fiche (un mod, qui voyage dans le
+  // personnage) peut poster ce message. Ses deux champs libres se replient
+  // donc ici : un saut de ligne dans « die » ou « label » ferait sortir une
+  // SECONDE ligne au tchat, que Roll20 exécuterait comme une commande à part
+  // (« !api », « /w gm »…) au nom du joueur.
+  // Les accolades de « die » restent, elles : une macro Roll20 (?{Dé|1d100})
+  // est un dé légitime sur ce canal, qui sert les extensions antérieures au
+  // canal brut.
+  function replie(s) { return String(s == null ? "" : s).replace(/\s+/g, " ").trim(); }
   function rollCommand(die, value, label) {
-    die = String(die || "1d100").trim() || "1d100";
+    die = replie(die) || "1d100";
     var v = value >= 0 ? "+ " + value : "- " + (-value);
-    var name = String(label || "Jet").replace(/[{}]/g, "");
+    var name = replie(label).replace(/[{}]/g, "") || "Jet";
     return "&{template:default} {{name=" + name + "}} {{Jet=[[" + die + " " + v + "]]}}";
   }
   // Carte d'ÉLÉMENT au tchat (passif, arme, avantage…) : template par défaut,
@@ -81,6 +93,30 @@ if (typeof browser === "undefined") { var browser = chrome; }
     });
     return cmd;
   }
+  // ---------- liste blanche du canal brut (« chat ») ----------
+  // Ce canal envoie au tchat, AU NOM DU JOUEUR, une commande composée côté
+  // site. Or la fiche exécute désormais des mods rangés dans le personnage :
+  // quiconque l'ouvre exécute leur code. On n'accepte donc que ce que la fiche
+  // compose RÉELLEMENT (jjk-fiche.js), c'est-à-dire, dans cet ordre :
+  //   - envPrefixe() : rien, « /w gm », ou « /w "Nom du joueur" » ;
+  //   - puis cmdJet, cmdCarte ou la carte d'objet donné (avec son lien
+  //     « [Prendre](/jjk_take <base64>) ») : toutes commencent par
+  //     « &{template:default} ».
+  // Le NOM du gabarit reste libre : un gabarit ne fait qu'afficher, et le site
+  // doit pouvoir en changer sans re-signer l'extension. Tout le reste (une
+  // commande « / » quelconque, un appel d'API « ! », du texte libre) est ignoré
+  // en silence.
+  // Le saut de ligne est refusé : Roll20 traite chaque ligne comme une commande
+  // à part, une seule ligne cachée sortirait de la liste. La fiche n'en produit
+  // jamais (ses champs replient les blancs, ses noms sont des <input>).
+  var CHAT_CHUCHOTE = /^\/w\s+(?:gm|"[^"]*")\s+/;
+  var CHAT_CORPS = /^&\{template:[A-Za-z0-9_-]+\}/;
+  function chatAutorise(raw) {
+    var s = String(raw == null ? "" : raw);
+    if (!s || /[\r\n]/.test(s)) return false;
+    return CHAT_CORPS.test(s.replace(CHAT_CHUCHOTE, ""));
+  }
+
   function findChatInput(doc) {
     var sels = ["#textchat-input textarea", "[id*='textchat-input'] textarea",
                 "[id*='textchat'] textarea", "textarea#textchat-textarea", "textarea[name='chat']"];
@@ -471,8 +507,11 @@ if (typeof browser === "undefined") { var browser = chrome; }
         } else if (d.type === "chat") {
           // commande COMPOSÉE par la fiche (carte d'objet donné + lien « Prendre ») :
           // envoyée telle quelle, sans rien en réécrire ici — son format vit
-          // côté site, qui peut donc évoluer sans re-signer l'extension.
-          if (!sendToChat(document, String(d.raw || "")) && IS_POPOUT) relayToOpener(d);
+          // côté site, qui peut donc évoluer sans re-signer l'extension. Seule
+          // la FORME est vérifiée (liste blanche), jamais le contenu.
+          var brut = String(d.raw || "");
+          if (!chatAutorise(brut)) return;   // hors liste blanche : rien ne part, ni ici ni à l'opener
+          if (!sendToChat(document, brut) && IS_POPOUT) relayToOpener(d);
         }
       } catch (e) {}
     });
