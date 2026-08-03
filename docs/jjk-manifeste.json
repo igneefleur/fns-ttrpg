@@ -4,17 +4,18 @@
   "schema": 3,
   "blocage": "release",
   "amorce": [
-    "javascripts/jjk-attr-map.js?v=28",
-    "javascripts/jjk-roll20-boot.js?v=28"
+    "javascripts/jjk-attr-map.js?v=29",
+    "javascripts/jjk-roll20-boot.js?v=29"
   ],
   "bundle": {
     "js": [
-      "javascripts/jjk-migrations.js?v=28",
-      "javascripts/jjk-fiche.js?v=28"
+      "javascripts/jjk-migrations.js?v=29",
+      "javascripts/jjk-mods.js?v=29",
+      "javascripts/jjk-fiche.js?v=29"
     ],
     "css": [
-      "stylesheets/jjk-fiche.css?v=28",
-      "stylesheets/jjk-roll20.css?v=28"
+      "stylesheets/jjk-fiche.css?v=29",
+      "stylesheets/jjk-roll20.css?v=29"
     ],
     "data": null
   },
@@ -23,6 +24,7 @@
       "schema": 3,
       "js": [
         "fiche/v3.0.0/jjk-migrations.js",
+        "fiche/v3.0.0/jjk-mods.js",
         "fiche/v3.0.0/jjk-fiche.js"
       ],
       "css": [

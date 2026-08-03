@@ -3,7 +3,7 @@
 
     python scripts/verif_versions.py
 
-Cinq choses peuvent se désynchroniser en silence, et chacune se paie sur la
+Six choses peuvent se désynchroniser en silence, et chacune se paie sur la
 fiche d'un joueur :
 
   1. le MAJEUR de la version publiée et le numéro de SCHÉMA de l'état. Le
@@ -22,6 +22,11 @@ fiche d'un joueur :
   5. la chaîne de docs/javascripts/jjk-migrations.js. Elle doit être contiguë
      et monter exactement jusqu'au schéma annoncé : un cran de moins, et une
      fiche déjà migrée trouve un moteur qui refuse de la redescendre.
+  6. docs/javascripts/jjk-mods.js, oublié du manifeste ou d'une archive. Le
+     bundle vit très bien sans lui : les mods d'un personnage cessent alors
+     d'exister, sans bandeau, sans panne et sans un mot. C'est la seule panne
+     du lot qui ne laisse aucune trace, donc la seule qu'il faut attraper
+     avant la publication.
 
 Le script sort 0 si tout concorde, 1 sinon. Il est fait pour bloquer une
 publication. Seule la bibliothèque standard est employée : il doit tourner
@@ -45,6 +50,7 @@ DOCS = os.path.join(RACINE, "docs")
 # manque, l'autre décide jusqu'où une fiche sait migrer.
 ATTRMAP = os.path.join(RACINE, "docs", "javascripts", "jjk-attr-map.js")
 MIGRATIONS = os.path.join(RACINE, "docs", "javascripts", "jjk-migrations.js")
+MODS = os.path.join(RACINE, "docs", "javascripts", "jjk-mods.js")
 
 fautes = []
 notes = []
@@ -235,6 +241,24 @@ def main():
         if not nomme:
             fautes.append("manifeste : jjk-migrations.js existe mais n'est nommé nulle part ; "
                           "dans Roll20 le moteur de migration ne serait jamais chargé")
+
+    # 1 bis. le moteur de MODS, même piège, en pire : le bundle vit sans lui,
+    # donc rien ne casse. Une fiche ouverte sans jjk-mods.js n'affiche ni
+    # bandeau ni panne : les mods du personnage cessent simplement d'exister,
+    # sans un mot. C'est la panne la plus discrète du lot, d'où ce contrôle.
+    if os.path.exists(MODS):
+        nomme = any(sans_v(u) == "javascripts/jjk-mods.js"
+                    for _, u in urls_du_manifeste(man))
+        if not nomme:
+            fautes.append("manifeste : jjk-mods.js existe mais n'est nommé nulle part ; "
+                          "dans Roll20 les mods d'un personnage seraient ignorés en silence")
+        # et chaque ARCHIVE doit le porter : rouvrir un personnage dans sa
+        # version d'origine ne doit pas lui faire perdre ses mods
+        for rel, spec in sorted((man.get("archives") or {}).items()):
+            js = (spec or {}).get("js") or []
+            if not any(sans_v(u).endswith("/jjk-mods.js") for u in js):
+                fautes.append("archive %s : elle ne nomme pas jjk-mods.js ; un personnage "
+                              "qui porte des mods les perdrait en rouvrant cette version" % rel)
 
     # 2. ?v= : mkdocs.yml et le manifeste doivent dire la même chose
     mk = versions_mkdocs(lire(MKDOCS))

@@ -747,6 +747,94 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-opt-actions .pc-btn.danger:hover { border-color: var(--red); }
 .pc-f > input.de { max-width: 6rem; }
 
+/* ---- mods : consentement, code, listes de mods et de modules ----
+   Toutes les couleurs de ce bloc passent par les jetons de .perso-atelier :
+   le mode nuit les redéfinit déjà, aucune règle .night n'est nécessaire ici. */
+
+/* Le bandeau vit HORS de la feuille (entre la barre d'outils et .pc-sheet) :
+   il prend donc les tons de carte pour se détacher du plan de travail, avec le
+   liseré carmin des avertissements. Il s'aligne sur la feuille, dont il annonce
+   le contenu, et reste sur une seule ligne tant que la largeur le permet : un
+   mod en attente ne bloque rien, il ne doit pas repousser la fiche pour autant. */
+.pc-avis {
+  display: flex; align-items: center; flex-wrap: wrap; gap: .25rem .6rem;
+  width: var(--pc-sheet-w, 50rem); box-sizing: border-box;
+  margin: .6rem auto 0; padding: .28rem .5rem .3rem;
+  background: var(--card); color: var(--ink-2);
+  border: 1px solid var(--line-2); border-left: 3px solid var(--red);
+  border-radius: 0 8px 8px 0;
+}
+.pc-avis:empty { display: none; }
+/* Deux bandeaux partagent cette mise en forme et peuvent paraître ENSEMBLE : un
+   mod en attente d'autorisation, et un enregistrement qui ne passe plus. Le
+   second est le plus grave des deux (la séance entière part à la fermeture),
+   d'où le liseré plein plutôt que le filet, et le texte en gras discret. */
+.pc-avis-save { border-left-width: 5px; }
+.pc-avis-save .pc-avis-txt { color: var(--red-deep); font-weight: 600; }
+.pc-avis-txt { flex: 1 1 16rem; min-width: 0; font-size: var(--fs-meta); line-height: 1.3; }
+.pc-avis .row { flex: 0 0 auto; display: flex; align-items: center; flex-wrap: wrap; gap: .3rem; margin-left: auto; }
+@media (max-width: 44em) {
+  /* même bascule que la feuille : elle cesse d'imposer sa largeur */
+  .pc-avis { width: auto; max-width: 100%; }
+}
+
+/* code d'un mod : la modale de la fiche est étroite, le code défile donc
+   horizontalement plutôt que de se replier (une ligne coupée n'est plus du
+   code). Hauteur et marges en em : la boîte garde ses quatorze lignes quelle
+   que soit la taille du texte, ici comme dans l'iframe Roll20. */
+.pc-code {
+  display: block; width: 100%; min-width: 0; box-sizing: border-box;
+  height: 20.5em;                       /* 14 lignes de 1.4 + marges internes */
+  resize: vertical;                     /* la largeur est celle de son hôte */
+  font-family: 'Roboto Mono', monospace; font-size: var(--fs-meta);
+  line-height: 1.4; -moz-tab-size: 2; tab-size: 2;
+  white-space: pre; overflow: auto;
+  padding: .35em .5em;
+  background: var(--card); color: var(--ink);
+  border: 1px solid var(--line-2); border-radius: 7px;
+}
+.pc-code:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 2px var(--wash); }
+
+/* une ligne de la liste des mods ou des modules : le libellé prend la place,
+   l'id et l'état restent en retrait, les boutons suivent. Le liseré gauche est
+   réservé en transparent, comme les lignes de compétences du MJ : une ligne en
+   panne s'allume sans décaler ses voisines. */
+.pc-modrow {
+  display: flex; align-items: center; flex-wrap: wrap; gap: .12rem .35rem;
+  padding: .18rem .25rem .2rem; font-size: var(--fs-body);
+  border-left: 2px solid transparent; border-bottom: 1px solid var(--hair);
+  border-radius: 4px;
+}
+.pc-modrow:last-child { border-bottom: none; }
+.pc-modrow .nom { flex: 1 1 6rem; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; color: var(--ink); }
+.pc-modrow .id { flex: 0 0 auto; font-size: var(--fs-label); color: var(--ink-3); }
+.pc-modrow .etat { flex: 0 0 auto; font-size: var(--fs-label); color: var(--ink-3); white-space: nowrap; }
+.pc-modrow[data-etat="panne"] { border-left-color: var(--red); background: var(--wash); }
+.pc-modrow[data-etat="panne"] .etat { color: var(--red-deep); font-weight: 700; }
+
+/* titre d'onglet dans le bloc Modules : même filet que les champs de
+   compétences, pour que les deux longues listes se lisent de la même façon */
+.pc-modgroupe {
+  display: flex; align-items: center; gap: .45rem; margin: .4rem 0 .1rem; padding: .05rem;
+  font-family: 'Cinzel', serif; font-weight: 700; font-size: .62rem;
+  letter-spacing: .04em; color: var(--ink-2); white-space: nowrap;
+}
+.pc-modgroupe::after { content: ""; flex: 1; height: 1px; background: var(--hair); }
+.pc-modgroupe:first-child { margin-top: .1rem; }
+
+/* module en panne ou muselé : un liseré carmin sur le flanc du bloc, jamais un
+   fond — la fiche doit rester lisible pendant qu'on répare. Le liseré est une
+   ombre INTERNE et non une bordure : le bloc ne gagne pas un pixel de largeur
+   (l'iframe Roll20 n'a pas le box-sizing global du site), le marquage vaut pour
+   n'importe quel hôte (un module peut être une tuile autant qu'un bloc), et il
+   ne se dispute pas la bordure rouge du mode édition. La panne est plus large
+   que la muselière : l'une appelle une réparation, l'autre signale seulement
+   des valeurs figées au dernier rafraîchissement réussi. */
+.perso-atelier [data-panne="1"] { box-shadow: inset 3px 0 0 var(--red); }
+.perso-atelier [data-musele="1"] { box-shadow: inset 2px 0 0 var(--red); }
+/* la mention « module en panne — id » du titre porte l'alerte, pas le fond */
+.perso-atelier [data-panne="1"] .pc-block-title small { color: var(--red-deep); }
+
 /* ---- flash ---- */
 .pc-flash {
   position: fixed; left: 50%; bottom: 1.2rem; transform: translateX(-50%);

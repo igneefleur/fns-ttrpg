@@ -12,10 +12,16 @@ de le rouvrir DANS CETTE VERSION, pleinement jouable et enregistrable (modèle
 Minecraft). Cela suppose que la version d'hier existe encore, entière, à un
 chemin qui ne bougera plus.
 
-Une archive contient SIX fichiers, et les six comptent :
+Une archive contient SEPT fichiers, et les sept comptent :
 
   jjk-migrations.js   le moteur de migration (le bundle l'appelle en tête de
                       normalize() ; sans lui la fiche refuse de partir)
+  jjk-mods.js         le moteur de mods. Le bundle vit sans lui (les mods ne
+                      tournent simplement pas), et c'est précisément pourquoi
+                      il doit être là : une archive à qui il manque ouvrirait
+                      un personnage qui porte des mods SANS RIEN DIRE, ni
+                      panne ni bandeau, comme si le personnage n'en avait
+                      jamais eu.
   jjk-fiche.js        le bundle : toute la fiche
   jjk-fiche.css       le style de la fiche
   jjk-roll20.css      l'appoint iframe Roll20, posé APRÈS (il contre-épingle
@@ -60,10 +66,11 @@ import types
 
 RACINE_DEFAUT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# Les cinq fichiers COPIÉS tels quels, dans l'ordre où le manifeste les
-# nommera. La sixième pièce, jjk-creation.json, est PRODUITE (par le hook).
+# Les six fichiers COPIÉS tels quels, dans l'ordre où le manifeste les
+# nommera. La septième pièce, jjk-creation.json, est PRODUITE (par le hook).
 COPIES = [
     ("javascripts/jjk-migrations.js", "jjk-migrations.js"),
+    ("javascripts/jjk-mods.js", "jjk-mods.js"),
     ("javascripts/jjk-fiche.js", "jjk-fiche.js"),
     ("stylesheets/jjk-fiche.css", "jjk-fiche.css"),
     ("stylesheets/jjk-roll20.css", "jjk-roll20.css"),
@@ -72,9 +79,9 @@ COPIES = [
 DONNEES = "jjk-creation.json"
 PAGE = "index.html"          # l'ouvre-archive : voir _page_archive()
 
-# Les six pièces exigées. Une archive à qui il en manque une n'est pas une
+# Les sept pièces exigées. Une archive à qui il en manque une n'est pas une
 # archive : c'est un piège qui s'ouvrira à moitié le jour où on en aura besoin.
-SIX = [n for _, n in COPIES] + [DONNEES]
+SEPT = [n for _, n in COPIES] + [DONNEES]
 
 
 def lire(chemin):
@@ -161,7 +168,7 @@ def donnees_gelees(racine):
 def _page_archive(release, schema):
     """La page qui ouvre l'archive hors de Roll20.
 
-    Elle ne fait pas partie des six pièces exigées : dans Roll20, c'est
+    Elle ne fait pas partie des sept pièces exigées : dans Roll20, c'est
     l'amorceur gelé qui lit le manifeste et charge l'archive. Mais une archive
     qu'on ne peut pas ouvrir à la main est une archive que personne ne vérifie
     jamais ; celle-ci se suffit à elle-même et ne nomme que des fichiers de son
@@ -212,6 +219,7 @@ def _page_archive(release, schema):
   </script>
   <script src="jjk-attr-map.js"></script>
   <script src="jjk-migrations.js"></script>
+  <script src="jjk-mods.js"></script>
   <script src="jjk-fiche.js"></script>
 </body>
 </html>
@@ -254,7 +262,8 @@ def maj_manifeste(chemin, release, schema, essai=False, retirer=None):
         base = "fiche/v%s/" % release
         archives[release] = {
             "schema": schema,
-            "js": [base + "jjk-migrations.js", base + "jjk-fiche.js"],
+            "js": [base + "jjk-migrations.js", base + "jjk-mods.js",
+                   base + "jjk-fiche.js"],
             "css": [base + "jjk-fiche.css", base + "jjk-roll20.css"],
             "attrmap": base + "jjk-attr-map.js",
             "data": base + DONNEES,
@@ -313,7 +322,7 @@ def figer(racine, essai=False, force=False):
         fautes.append("données gelées : %s" % e)
     a_poser[PAGE] = _page_archive(release, schema).encode("utf-8")
 
-    manquantes = [n for n in SIX if not a_poser.get(n)]
+    manquantes = [n for n in SEPT if not a_poser.get(n)]
     if manquantes:
         fautes.append("archive incomplète, il manque : " + ", ".join(manquantes))
     if fautes:
@@ -348,13 +357,13 @@ def figer(racine, essai=False, force=False):
         for nom in sorted(a_poser):
             with open(os.path.join(dest, nom), "wb") as f:
                 f.write(a_poser[nom])
-    for nom in SIX:
+    for nom in SEPT:
         print("    %-20s %7d octets" % (nom, len(a_poser[nom])))
-    print("    %-20s %7d octets (ouvre-archive, hors des six)" % (PAGE, len(a_poser[PAGE])))
+    print("    %-20s %7d octets (ouvre-archive, hors des sept)" % (PAGE, len(a_poser[PAGE])))
 
     # contrôle APRÈS écriture : ce qui compte est ce qui est sur le disque
     if not essai:
-        absents = [n for n in SIX if not os.path.exists(os.path.join(dest, n))]
+        absents = [n for n in SEPT if not os.path.exists(os.path.join(dest, n))]
         if absents:
             return ["archive incomplète sur le disque : " + ", ".join(absents)]
 

@@ -55,6 +55,7 @@ FICHIERS = [
     "javascripts/jjk-attr-map.js",
     "javascripts/jjk-roll20-boot.js",
     "javascripts/jjk-migrations.js",
+    "javascripts/jjk-mods.js",
     "javascripts/jjk-fiche.js",
     "stylesheets/jjk-fiche.css",
     "stylesheets/jjk-roll20.css",
