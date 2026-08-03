@@ -18,6 +18,18 @@
  *  4. À chaque sauvegarde (setItem « jjk-perso »/« jjk-cards »),
  *     JjkAttrMap.stateToAttrs() redécompose l'état ; seuls les attributs
  *     CHANGÉS partent au pont (type "save"), qui throttle les écritures d20.
+ *  5. ACCUSÉ DE RÉCEPTION. Le pont n'en émet aucun sur "save" : il avale
+ *     l'échec d'un attribut (writeOne est en try/catch) et abandonne un job
+ *     au 61e essai sans relancer la file. Une écriture perdue l'était donc
+ *     définitivement, et ce sont justement les écritures uniques (sauvegarde
+ *     de secours, version, état migré) qui ne repassent jamais. On se fabrique
+ *     donc l'accusé de réception qui manque avec le seul canal disponible :
+ *     "load", auquel le pont répond autant de fois qu'on le demande. Le lot
+ *     posté attend dans `enVol` et n'entre dans la base du diff qu'une fois
+ *     RELU dans le personnage ; sinon il est re-diffé et repart.
+ *  6. GEL. attrsToState() rend son diagnostic avec l'état. Un jjk_state présent
+ *     mais illisible ne donne qu'une reconstruction amputée : on l'affiche, on
+ *     le dit, et on n'écrit plus rien tant que le joueur n'a pas tranché.
  *
  * Chemin des messages : cette page est imbriquée sous la page d'extension
  * creator.html, elle-même sous la frame de la feuille Roll20. Le pont d20 vit
@@ -41,9 +53,16 @@
 
   var mem = {};                 // cache localStorage
   var SAVE_KEYS = { "jjk-perso": 1, "jjk-cards": 1 };
-  var lastAttrs = {};           // dernier jeu d'attributs connu (base du diff)
+  var lastAttrs = {};           // ce que Roll20 a été VU contenir (base du diff)
+  var enVol = null;             // lot posté, pas encore relu : ni oublié, ni tenu pour acquis
+  var enVolTimer = null;
+  var echecs = 0;               // confirmations manquées d'affilée
   var ready = false;            // les sauvegardes ne partent qu'après hydratation + montage
   var saveTimer = null;
+  var askTimer = null;          // relance de la demande d'hydratation
+  var gardeArmee = false;       // le chien de garde ne se lance qu'une fois par session
+  var taillesPostees = [];      // tailles récentes de jjk_state posté (repère du chien de garde)
+  var gele = false;             // fiche lue à moitié : on n'écrit plus rien (voir hydrate)
 
   window.__jjkLocalStorage = {
     getItem: function (k) { return Object.prototype.hasOwnProperty.call(mem, k) ? mem[k] : null; },
@@ -141,6 +160,7 @@
   }, 400);
 
   function scheduleSave() {
+    if (gele) return;           // rien ne sort d'une fiche qu'on n'a pas su lire en entier
     if (saveTimer) clearTimeout(saveTimer);
     saveTimer = setTimeout(doSave, 400);
   }
@@ -152,10 +172,21 @@
     var card = null;
     try { var cards = JSON.parse(mem["jjk-cards"] || "{}"); card = cards && cards._current; } catch (e) {}
     var attrs = M.stateToAttrs(state, card);
-    var changed = diff(lastAttrs, attrs);
-    lastAttrs = attrs;
+    // Diff contre ce que Roll20 est CENSÉ contenir : le relu (lastAttrs) plus
+    // le lot encore en vol. Le supposer arrivé évite de tout réémettre à
+    // chaque frappe ; s'il ne se confirme pas il quitte cette base et repart
+    // au save suivant, donc rien ne se perd à le supposer.
+    var changed = diff(fusion(lastAttrs, enVol), attrs);
     var names = Object.keys(changed);
-    if (names.length) post({ type: "save", attrs: changed });
+    if (!names.length) return;
+    enVol = fusion(enVol, changed);
+    post({ type: "save", attrs: changed });
+    // repère du chien de garde : la taille du jjk_state qu'on vient de poster
+    var st = attrs[M.PREFIX + "state"];
+    taillesPostees.push(st ? String(st.current).length : 0);
+    if (taillesPostees.length > 5) taillesPostees.shift();
+    armerConfirmation();
+    armerGarde();
   }
   function val(a, key) { return a && typeof a === "object" ? a[key] : (key === "current" ? a : ""); }
   function diff(oldA, newA) {
@@ -165,6 +196,215 @@
       if (!o || String(val(o, "current")) !== n.current || String(val(o, "max")) !== n.max) out[k] = n;
     });
     return out;
+  }
+  function fusion(a, b) {
+    var out = {};
+    if (a) Object.keys(a).forEach(function (k) { out[k] = a[k]; });
+    if (b) Object.keys(b).forEach(function (k) { out[k] = b[k]; });
+    return out;
+  }
+
+  // ---------- accusé de réception ----------
+  // Sonde : un « load » dont on attend la réponse. Le pont répond au load par
+  // un « hydrate » ; APRÈS la première hydratation ce message n'hydrate plus
+  // rien, il vient ici (voir le routage de l'écouteur). Une absence de réponse
+  // rend la main avec null : c'est déjà un verdict (personnage injoignable).
+  var sondes = [];
+  function sonde(cb) {
+    var s = { cb: cb, t: null };
+    s.t = setTimeout(function () {
+      var i = sondes.indexOf(s);
+      if (i >= 0) sondes.splice(i, 1);
+      cb(null);
+    }, 1500);
+    sondes.push(s);
+    post({ type: "load" });
+  }
+  function sondeReponse(attrs) {
+    var q = sondes.slice();
+    sondes.length = 0;
+    q.forEach(function (s) { clearTimeout(s.t); s.cb(attrs || {}); });
+  }
+
+  // Empreinte d'une valeur : longueur, 64 premiers et 64 derniers caractères.
+  // jjk_state pèse couramment des centaines de kilo-octets ; le comparer en
+  // entier à chaque sonde figerait le fil de la fiche pour rien. Une écriture
+  // perdue, tronquée ou restée à sa valeur précédente change la longueur ou
+  // l'une des deux extrémités.
+  function empreinte(v) {
+    var s = v == null ? "" : String(v);
+    // Séparateur en caractère de contrôle, écrit en échappement pour rester
+    // visible dans le source. Sans lui, une longueur de 12 suivie de « ab »
+    // et une longueur de 1 suivie de « 2ab » donneraient la même empreinte.
+    return s.length + "\u0001" + s.slice(0, 64) + "\u0001" + s.slice(-64);
+  }
+  function concorde(recu, attendu) {
+    var noms = Object.keys(attendu);
+    for (var i = 0; i < noms.length; i++) {
+      var n = noms[i], r = recu[n], a = attendu[n];
+      if (r == null) return false;
+      if (empreinte(val(r, "current")) !== empreinte(a.current)) return false;
+      if (empreinte(val(r, "max")) !== empreinte(a.max)) return false;
+    }
+    return true;
+  }
+
+  // Poste un « load », compare ce qui revient au lot attendu, rappelle
+  // cb(true/false). Le pont écrit un attribut toutes les 60 ms en file
+  // séquentielle : un gros lot met plusieurs secondes à se poser, d'où les
+  // relectures espacées jusqu'au délai maximum.
+  function confirme(attrs, cb, delaiMax) {
+    if (!attrs || !Object.keys(attrs).length) { cb(true); return; }
+    var fin = Date.now() + (delaiMax || 8000);
+    (function essai() {
+      sonde(function (recu) {
+        if (recu && concorde(recu, attrs)) { cb(true); return; }
+        if (Date.now() >= fin) { cb(false); return; }
+        setTimeout(essai, 700);
+      });
+    })();
+  }
+
+  function armerConfirmation() {
+    // 400 ms de grâce, et une seule confirmation à la fois : inutile de relire
+    // le personnage pendant que le pont vide sa file, et un save plus récent
+    // englobe le précédent (enVol cumule).
+    if (enVolTimer) clearTimeout(enVolTimer);
+    enVolTimer = setTimeout(function () {
+      enVolTimer = null;
+      var lot = enVol;
+      if (!lot) return;
+      confirme(lot, function (ok) {
+        if (lot !== enVol) return;   // un save plus récent a repris la main
+        if (ok) { lastAttrs = fusion(lastAttrs, lot); enVol = null; echecs = 0; return; }
+        // Échec : le lot QUITTE la base du diff. Il redevient donc une
+        // différence, et le prochain doSave le repostera de lui-même.
+        enVol = null;
+        echecs++;
+        if (echecs < 2) { scheduleSave(); return; }   // une relance discrète suffit souvent
+        // Deux fois de suite : ce n'est plus un contretemps. On prévient, et
+        // on cesse de relancer tout seul — le lot part quand même à la
+        // prochaine modification, le diff ne l'a pas oublié.
+        bandeauPerte();
+      }, 8000);
+    }, 400);
+  }
+
+  // Chien de garde : une seule fois par session, 5 s après la première
+  // sauvegarde. Il ne cherche pas la perte d'un attribut (confirme() s'en
+  // charge) mais le cas où RIEN ne s'écrit : fenêtre popout orpheline de sa
+  // partie, personnage en lecture seule. C'est le seul détecteur de ces deux
+  // situations, où le pont lit très bien mais n'écrit jamais.
+  function armerGarde() {
+    if (gardeArmee) return;
+    gardeArmee = true;
+    setTimeout(chienDeGarde, 5000);
+  }
+  function chienDeGarde() {
+    // Deux divergences d'affilée sont exigées, et toute taille RÉCEMMENT
+    // postée est acceptée : entre la sonde et sa réponse l'utilisateur a pu
+    // taper une lettre de plus, et la taille attendue changer sous nos pieds.
+    var restant = 2;
+    (function verifier() {
+      sonde(function (recu) {
+        var a = recu ? recu[M.PREFIX + "state"] : null;
+        var vu = a ? String(val(a, "current")).length : -1;
+        if (taillesPostees.indexOf(vu) >= 0) return;
+        if (--restant > 0) { setTimeout(verifier, 1500); return; }
+        bandeauPerte();
+      });
+    })();
+  }
+
+  // ---------- bandeau ----------
+  // Les styles sont injectés d'ici et non posés dans stylesheets/jjk-roll20.css :
+  // ce bandeau doit pouvoir s'afficher même quand la feuille n'a pas été
+  // chargée (manifeste en repli, réseau coupé en cours de route) — or c'est
+  // précisément dans ces moments qu'il a quelque chose à dire.
+  var CSS_BANDEAU =
+    "#jjk-bandeau{position:sticky;top:0;z-index:50;display:flex;flex-wrap:wrap;align-items:center;" +
+    "gap:.5rem;padding:.5rem .7rem;background:#f6e2c8;color:#4c3a24;border-bottom:1px solid #c9a97c;" +
+    "font-family:'Alegreya','EB Garamond',Garamond,serif;font-size:.72rem;line-height:1.45}" +
+    "#jjk-bandeau .jjk-bandeau-txt{flex:1 1 14rem;min-width:0}" +
+    "#jjk-bandeau .jjk-bandeau-btn{flex:0 0 auto;padding:.2rem .6rem;border:1px solid #c9a97c;" +
+    "border-radius:.2rem;background:#fffaf0;color:#4c3a24;font:inherit;cursor:pointer}" +
+    "#jjk-bandeau .jjk-bandeau-btn:hover{background:#fff}" +
+    "html.night #jjk-bandeau{background:#3a2c1c;color:#e8dcc6;border-bottom-color:#6b5636}" +
+    "html.night #jjk-bandeau .jjk-bandeau-btn{background:#4a3a26;color:#e8dcc6;border-color:#6b5636}";
+  function poserStyles() {
+    if (document.getElementById("jjk-bandeau-css")) return;
+    var s = document.createElement("style");
+    s.id = "jjk-bandeau-css";
+    s.textContent = CSS_BANDEAU;
+    document.head.appendChild(s);
+  }
+  // txt : texte brut (jamais de HTML, il peut venir d'un message d'erreur).
+  // actions : [{ texte, action }] rendues en boutons à droite du texte.
+  function bandeau(txt, actions) {
+    poserStyles();
+    var b = document.getElementById("jjk-bandeau");
+    if (!b) {
+      b = document.createElement("div");
+      b.id = "jjk-bandeau";
+      document.body.insertBefore(b, document.body.firstChild);
+    }
+    b.innerHTML = "";
+    var p = document.createElement("span");
+    p.className = "jjk-bandeau-txt";
+    p.textContent = txt;
+    b.appendChild(p);
+    (actions || []).forEach(function (a) {
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "jjk-bandeau-btn";
+      btn.textContent = a.texte;
+      btn.onclick = a.action;
+      b.appendChild(btn);
+    });
+    return b;
+  }
+  function fermerBandeau() {
+    var b = document.getElementById("jjk-bandeau");
+    if (b && b.parentNode) b.parentNode.removeChild(b);
+  }
+  function bandeauPerte() {
+    bandeau("Roll20 n'enregistre pas cette fiche. Les modifications restent dans cette fenêtre " +
+            "et seront perdues en la fermant. Si la fiche est ouverte dans une fenêtre séparée, " +
+            "garder la fenêtre principale de la partie ouverte ; sinon, vérifier que le " +
+            "personnage n'est pas en lecture seule.", [
+      { texte: "Réessayer", action: function () {
+          fermerBandeau();
+          echecs = 0;
+          enVol = null;
+          lastAttrs = {};        // on ne sait plus ce que Roll20 tient : tout réémettre
+          gardeArmee = false;    // et refaire surveiller la première écriture qui suit
+          scheduleSave();
+        } },
+      { texte: "Masquer", action: fermerBandeau }
+    ]);
+  }
+
+  // Fiche à moitié lue : jjk_state est là mais ne se lit pas (un caractère tapé
+  // dans l'onglet Attributes de Roll20 suffit). attrsToState a rendu la
+  // meilleure reconstruction possible, qui a le droit de s'AFFICHER mais jamais
+  // de se réécrire : elle ne porte pas ce que le repli ne sait pas porter, et
+  // la première sauvegarde remplacerait l'original cassé par cette version
+  // amputée. D'où le gel. Pas de bouton « Masquer » ici : un bandeau caché
+  // laisserait croire que la fiche s'enregistre. Le seul geste offert est
+  // explicite et dit ce qu'il coûte.
+  function bandeauGel(raison) {
+    bandeau("Cette fiche n'a pas pu être lue en entier (" + (raison || "état illisible") + "). " +
+            "Ce qui s'affiche est une reconstruction incomplète : rien n'est enregistré, pour ne " +
+            "pas écraser ce que Roll20 contient encore. Récupérer l'attribut jjk_state du " +
+            "personnage avant toute chose ; il porte la fiche entière.", [
+      { texte: "Écraser avec ce qui a pu être lu", action: function () {
+          fermerBandeau();
+          gele = false;
+          lastAttrs = {};      // la base du diff ne vaut plus rien : tout réémettre
+          enVol = null;
+          scheduleSave();
+        } }
+    ]);
   }
 
   // message d'attente / d'orientation de roll20-fiche.html
@@ -177,13 +417,27 @@
   function hydrate(attrs) {
     if (hydrated) return;         // une seule hydratation par vie de page
     hydrated = true;
+    if (askTimer) { clearTimeout(askTimer); askTimer = null; }   // plus rien à réclamer
     note(null);
     attrs = attrs || {};
     var state = M.attrsToState(attrs);
+    // attrsToState DIT dans quel état il a trouvé la fiche (propriétés non
+    // énumérables, donc invisibles au JSON.stringify qui suit) :
+    //   null      -> jjk_state lu, état complet ;
+    //   "partiel" -> pas de jjk_state, fiche neuve ou d'avant : cas normal ;
+    //   "illisible" -> jjk_state présent mais cassé : on gèle les écritures.
+    // Une version antérieure de jjk-attr-map.js (cache du navigateur) ne pose
+    // rien : `undefined` ne gèle pas, la fiche se comporte comme avant.
+    var casse = !!(state && state.degrade === "illisible");
+    if (casse) gele = true;
     mem["jjk-perso"] = JSON.stringify(state);
     mem["jjk-cards"] = "{}";
     mem["jjk-persos"] = "[]";     // pas de bibliothèque multi-perso dans Roll20
     lastAttrs = attrs;                 // base du diff = ce qui est réellement en base
+    enVol = null;
+    // le bandeau vient APRÈS le cache : son bouton « écraser » déclenche une
+    // sauvegarde, qui lit mem["jjk-perso"]
+    if (casse) bandeauGel(state.raison);
     // Charger le bundle de la fiche APRÈS hydratation (son init lit jjk-perso).
     // Les fichiers ne sont plus nommés ici : c'est le MANIFESTE qui les donne
     // (window.__jjkManifeste, posé par l'amorceur), pour qu'une page en cache
@@ -211,7 +465,17 @@
     var d = ev.data;
     if (!d || d.ns !== "jjk") return;
     // on n'accepte que l'hydratation de NOTRE personnage (plusieurs fiches peuvent être ouvertes)
-    if (d.type === "hydrate" && (!d.charId || d.charId === CHAR_ID)) hydrate(d.attrs);
+    if (d.type === "hydrate" && (!d.charId || d.charId === CHAR_ID)) {
+      // ROUTAGE CRITIQUE. Une fois la fiche hydratée, un « hydrate » n'hydrate
+      // plus rien : c'est la réponse à une sonde de confirmation, qui n'a le
+      // droit que de LIRE. Le passer à hydrate() — ou même le laisser tomber
+      // dans son garde-fou — écraserait mem["jjk-perso"], donc la saisie en
+      // cours, par un état lu il y a une seconde. Les réponses tardives à la
+      // relance d'ouverture arrivent par ce même chemin et se perdent sans
+      // dommage : aucune sonde ne les attend.
+      if (hydrated) sondeReponse(d.attrs);
+      else hydrate(d.attrs);
+    }
     // objet pris au tchat : diffusé à TOUTES les fiches ouvertes (le lien est
     // public, chaque client décide s'il le prend), d'où l'absence de filtre
     // sur charId ; c'est le dialogue de réception qui demande confirmation.
@@ -231,8 +495,12 @@
   // Réclamer les Attributes jjk_* au pont d20, avec relances : le pont vient
   // peut-être d'être injecté, et cette page arrive par le réseau (plus tard
   // que l'ancienne amorce embarquée).
+  // La relance s'arrête à la PREMIÈRE hydratation : au-delà, un « load » de
+  // plus produirait un « hydrate » de plus, et donc une réponse tardive qui
+  // n'aurait plus rien à hydrater.
   var tries = 0;
   (function ask() {
+    askTimer = null;
     if (hydrated) return;
     tries++;
     if (tries > 40) {             // ~20 s sans réponse : le pont n'est pas là
@@ -243,6 +511,6 @@
       return;
     }
     post({ type: "load" });
-    setTimeout(ask, 500);
+    askTimer = setTimeout(ask, 500);
   })();
 })();
