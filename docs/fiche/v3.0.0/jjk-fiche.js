@@ -2303,7 +2303,13 @@
       data: DATA,
       donnees: donnees,
       // structure
-      bloc: function (titre) { return block(titre, null, id); },
+      // Le rouage d'édition est OPTIONNEL : ctx.bloc("Titre", { edition: true }).
+      // Sans lui, un module qui n'a rien à éditer affichait quand même le
+      // bouton, qui ne faisait que basculer un mode dont il ne se servait pas.
+      // Le bloc reste repérable sans : monteModules pose data-module lui-même.
+      bloc: function (titre, opts) {
+        return block(titre, null, (opts && opts.edition) ? id : null);
+      },
       el: el,
       fld: function (libelle, champ) { return fld(libelle, champ); },
       // cycle

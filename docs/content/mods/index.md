@@ -222,7 +222,8 @@ natif comme mod, et c'est le contrat public de la fiche 3.
 
 | Entrée | Ce que c'est |
 | --- | --- |
-| `ctx.bloc(titre)` | un bloc de fiche, cadre, titre et rouage compris, prêt à recevoir des enfants. Le rouage bascule `ctx.edition()`. |
+| `ctx.bloc(titre)` | un bloc de fiche, cadre et titre, prêt à recevoir des enfants. |
+| `ctx.bloc(titre, { edition: true })` | le même, avec le rouage qui bascule `ctx.edition()`. À ne demander que si le module s'en sert : un rouage qui ne change rien de visible est un bouton qui ment. |
 | `ctx.el(tag, classe, texte)` | un élément nu. `classe` et `texte` acceptent `null`. Un module qui ne veut pas de rouage rend son propre élément. |
 | `ctx.fld(libelle, champ)` | une ligne « libellé + champ », alignée sur celles de la fiche. |
 
