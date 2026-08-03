@@ -1500,7 +1500,7 @@
     var tools = el("div", "pc-comp-tools");
     var line = el("div", "row");
     var persoChip = el("span", "pc-chip");
-    persoChip.textContent = "Armes personnalisées";
+    persoChip.textContent = "Personnalisées";
     persoChip.title = "Décoché : seules les armes des règles sont affichées.";
     persoChip.classList.toggle("on", armesPerso);
     persoChip.addEventListener("click", function () {
@@ -1510,7 +1510,7 @@
     });
     line.appendChild(persoChip);
     var onlyChip = el("span", "pc-chip");
-    onlyChip.textContent = "Investies seulement";
+    onlyChip.textContent = "Investies";
     onlyChip.title = "N'afficher que les armes où un stade, un passif ou un modificateur est posé.";
     onlyChip.classList.toggle("on", armesOnly);
     onlyChip.addEventListener("click", function () {
@@ -1950,7 +1950,7 @@
     // rangées d'ajout n'existent qu'en édition.
     var b = block("Compétences", null, "comps", function () { rebuildComps(); });
     // outils sur deux lignes : filtre texte + filtre de champ côte à côte,
-    // puis la puce « Investies seulement » en dessous
+    // puis les deux puces de filtre en dessous
     var tools = el("div", "pc-comp-tools");
     var line1 = el("div", "row");
     var search = el("input", "pc-comp-search");
@@ -1972,7 +1972,7 @@
     tools.appendChild(line1);
     var line2 = el("div", "row");
     var persoChip = el("span", "pc-chip");
-    persoChip.textContent = "Compétences personnalisées";
+    persoChip.textContent = "Personnalisées";
     persoChip.title = "Décoché : seules les compétences de base du jeu sont affichées.";
     persoChip.classList.toggle("on", compPerso);
     persoChip.addEventListener("click", function () {
@@ -1983,7 +1983,8 @@
     compPersoChip = persoChip;
     line2.appendChild(persoChip);
     var onlyChip = el("span", "pc-chip");
-    onlyChip.textContent = "Investies seulement";
+    onlyChip.textContent = "Investies";
+    onlyChip.title = "N'afficher que les compétences où un stade, un passif ou un modificateur est posé.";
     onlyChip.classList.toggle("on", compOnly);
     onlyChip.addEventListener("click", function () {
       compOnly = !compOnly;
@@ -3209,7 +3210,7 @@
     mcTools.appendChild(mcLine1);
     var mcLine2 = el("div", "row");
     var mcPerso = el("span", "pc-chip");
-    mcPerso.textContent = "Compétences personnalisées";
+    mcPerso.textContent = "Personnalisées";
     mcPerso.title = "Décoché : seules les compétences de base du jeu sont affichées.";
     mcPerso.classList.toggle("on", optPerso);
     mcPerso.addEventListener("click", function () {
@@ -3219,7 +3220,8 @@
     });
     mcLine2.appendChild(mcPerso);
     var mcOnly = el("span", "pc-chip");
-    mcOnly.textContent = "Investies seulement";
+    mcOnly.textContent = "Investies";
+    mcOnly.title = "N'afficher que les compétences où un stade, un passif ou un modificateur est posé.";
     mcOnly.classList.toggle("on", optOnly);
     mcOnly.addEventListener("click", function () {
       optOnly = !optOnly;
@@ -3278,7 +3280,7 @@
       });
       if (!shown) {
         mcBox.appendChild(el("div", "pc-empty",
-          optOnly ? "Aucune compétence investie ne correspond — décocher « Investies seulement » pour toutes les voir."
+          optOnly ? "Aucune compétence investie ne correspond — décocher « Investies » pour toutes les voir."
                   : "Aucune compétence ne correspond."));
       }
       refresh();   // les lignes viennent de naître : leurs totaux se peuplent ici
