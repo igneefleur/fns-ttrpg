@@ -308,6 +308,30 @@
       comps[i > 0 ? k.slice(0, i + 1) + capFirst(k.slice(i + 1)) : k] = c;
     });
     s.comps = comps;
+    // renommages de compétences (2026-08-02) : les fiches d'avant migrent
+    // d'elles-mêmes — investissements, modificateurs et leviers du MJ suivent
+    // le nouveau nom, rien ne se perd
+    var RENOMMAGES = {
+      "Body/Se cacher": "Body/Discrétion",
+      "Body/Pique Longue": "Body/Pique longue",
+      "Mind/Histoire Japon": "Mind/Histoire du Japon",
+      "Mind/Se concentrer": "Mind/Concentration",
+      "Mind/Résister à la douleur": "Mind/Résistance à la douleur",
+      "Mind/Garder son calme": "Mind/Sang-froid",
+      "Mind/Observer": "Mind/Observation",
+      "Mind/Utiliser un autre de ses sens que la vue": "Mind/Sens autres que la vue",
+      "Prestance/Déception": "Prestance/Tromperie",
+      "Prestance/Commander": "Prestance/Commandement",
+      "Prestance/Réconforter": "Prestance/Réconfort"
+    };
+    [s.comps, s.compsMod, s.compsForce, s.compsXpForce, s.compsXpMod].forEach(function (m) {
+      Object.keys(RENOMMAGES).forEach(function (vieux) {
+        if (Object.prototype.hasOwnProperty.call(m, vieux)) {
+          if (m[RENOMMAGES[vieux]] === undefined) m[RENOMMAGES[vieux]] = m[vieux];
+          delete m[vieux];
+        }
+      });
+    });
     // inventaire structuré : liste (texte) + objets illustrés par groupes
     // (un tableau passerait le typeof : ses propriétés nommées seraient
     // perdues par JSON.stringify au premier save)
@@ -2190,7 +2214,6 @@
     pane.appendChild(cols);
     buildNarration(c1);
     buildCaracs(c1);
-    buildXpChamps(c1);
     buildLangues(c1);
     buildInitiative(c2);
     buildVitesse(c2);
@@ -3341,6 +3364,8 @@
       bM.appendChild(row);
     });
     colA.appendChild(bM);
+
+    buildXpChamps(colA);
 
     // ---- création ----
     var bC = block("Création");
