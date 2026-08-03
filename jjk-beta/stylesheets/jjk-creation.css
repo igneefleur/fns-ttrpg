@@ -328,11 +328,23 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-comp-tools { display: flex; flex-direction: column; gap: .3rem; margin: .05rem 0 .4rem; }
 /* dans chaque ligne, les contrôles se partagent la largeur à parts égales et
    prennent la même hauteur (un libellé sur deux lignes ne déséquilibre rien) */
-.pc-comp-tools .row { display: flex; gap: .35rem; align-items: stretch; min-width: 0; }
-.pc-comp-tools .row > * { flex: 1 1 0; min-width: 0; }
+/* GRILLE, pas flex : en flex, un <select> ne se laisse pas répartir à parts
+   strictement égales (Firefox lui garde quelques pixels de moins qu'au champ
+   de recherche, malgré flex-basis 0 et min-width 0). Des colonnes 1fr
+   garantissent la même largeur quel que soit le contenu. */
+.pc-comp-tools .row {
+  display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
+  gap: .35rem; align-items: stretch; min-width: 0;
+}
+.pc-comp-tools .row > * { min-width: 0; }
 .pc-comp-search { flex: 1 1 9rem; min-width: 0; padding: .26rem .5rem; border: 1px solid var(--line-2); border-radius: 6px; background: var(--card); color: var(--ink); font: inherit; font-size: .7rem; box-sizing: border-box; }
 .pc-comp-search:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 2px var(--wash); }
-.pc-comp-tools .pc-select { flex: 0 1 8.4rem; width: auto; font-size: .66rem; }
+/* le champ de filtre et le menu des champs remplissent leur colonne, avec le
+   même box-sizing pour que leurs bordures ne les décalent pas */
+.pc-comp-tools .row > .pc-comp-search,
+.pc-comp-tools .row > .pc-select {
+  width: 100%; min-width: 0; font-size: .66rem; box-sizing: border-box;
+}
 .pc-chip {
   display: inline-flex; align-items: center; justify-content: center; text-align: center;
   gap: .28rem; padding: .2rem .5rem; line-height: 1.15;
@@ -480,6 +492,47 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 /* dans une tuile, les leviers restent visibles dès le mode édition (ils ne se
    révèlent pas au survol comme ailleurs : la tuile est trop petite pour ça) */
 .pc-bigedit .pc-mmods { opacity: 1; margin-top: 0; }
+
+/* xp par champ : où le personnage a mis son expérience */
+.pc-xpchamp { display: flex; align-items: center; gap: .4rem; padding: .12rem 0; }
+.pc-xpchamp .pc-meter { flex: 1; min-width: 0; }
+.pc-xpchamp .pc-meter .bar { flex: 1; width: auto; min-width: 2rem; }
+.pc-xpchamp .pc-meter .pct {
+  flex: 0 0 2.2rem; text-align: right; font-variant-numeric: tabular-nums;
+  font-size: .6rem; color: var(--ink-3); text-transform: none; letter-spacing: 0;
+}
+
+/* leviers du MJ, un par compétence (onglet Options) : la grille est plus large
+   que celle de la Fiche, elle défile dans son propre cadre quand la colonne
+   est trop étroite plutôt que de pousser la page */
+.pc-optcomp-wrap { overflow-x: auto; }
+.pc-optcomp-row {
+  display: grid; align-items: center; gap: .2rem;
+  grid-template-columns: minmax(3rem, 1.2fr) 3.4rem 2.1rem 2.2rem 3.4rem 2.1rem 2.6rem;
+  min-width: 20rem; padding: .1rem .15rem; border-radius: 4px;
+}
+/* steppers compacts : sept colonnes doivent tenir dans une demi-largeur */
+.pc-optcomp-row .pc-step { gap: .1rem; }
+.pc-optcomp-row .pc-step button { width: .8rem; height: .8rem; font-size: .6rem; }
+.pc-optcomp-row .pc-num { width: 1.3rem; font-size: .62rem; }
+.pc-optcomp-row .pc-comp-total { font-size: .62rem; }
+.pc-optcomp-row .pc-comp-label { font-size: .64rem; }
+.pc-optcomp-row.odd { background: var(--stripe); }
+.pc-optcomp-row.head > span {
+  font-size: .5rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--ink-3); text-align: center; white-space: nowrap; overflow: hidden; min-width: 0;
+}
+.pc-optcomp-row.head > span:first-child { text-align: left; }
+.pc-optcomp-row .pc-step { justify-self: center; }
+.pc-optcomp-row input.force {
+  width: 100%; min-width: 0; box-sizing: border-box; border: none;
+  border-bottom: 1px solid var(--hair); background: transparent; color: var(--ink);
+  font: inherit; font-size: .66rem; text-align: center; padding: 0 0 .05rem; border-radius: 0;
+  -moz-appearance: textfield; appearance: textfield;
+}
+.pc-optcomp-row input.force::-webkit-inner-spin-button,
+.pc-optcomp-row input.force::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.pc-optcomp-row input.force:focus { outline: none; border-bottom: 2px solid var(--red); }
 
 /* langue du personnage : l'étoile la désigne (acquise, gratuite jusqu'à Expert) */
 .pc-lang-base {

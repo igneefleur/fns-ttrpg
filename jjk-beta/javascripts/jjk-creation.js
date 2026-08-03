@@ -116,6 +116,10 @@
       compsMod: {},
       xpTotal: XP_CREATION,
       comps: {}, customComps: [],
+      // leviers du MJ, par compétence (clé « Carac/Nom ») : total forcé
+      // (vide = calculé), coût en xp forcé (vide = calculé), et modificateur
+      // de ce coût
+      compsForce: {}, compsXpForce: {}, compsXpMod: {},
       pv: null, narration: 3,
       armes: [], armures: [], inventaire: "",
       // inventaire illustré : groupes, objets, et les réglages d'affichage du
@@ -194,6 +198,26 @@
       cmods[di > 0 ? k.slice(0, di + 1) + capFirst(k.slice(di + 1)) : k] = n;
     });
     s.compsMod = cmods;
+    // leviers du MJ, par compétence : les cartes de forçage acceptent le vide
+    // (= valeur calculée) ; le modificateur de coût, lui, est un nombre
+    function mapNombres(src, force) {
+      var out = {};
+      if (!src || typeof src !== "object" || Array.isArray(src)) return out;
+      Object.keys(src).forEach(function (k) {
+        var v = src[k];
+        if (force && (v === null || v === undefined || v === "")) return;
+        var n = parseFloat(v);
+        if (!isFinite(n)) return;
+        n = clamp(Math.round(n), -9999, 9999);
+        if (!force && !n) return;   // zéro = pas d'entrée
+        var i = k.indexOf("/");
+        out[i > 0 ? k.slice(0, i + 1) + capFirst(k.slice(i + 1)) : k] = n;
+      });
+      return out;
+    }
+    s.compsForce = mapNombres(s.compsForce, true);
+    s.compsXpForce = mapNombres(s.compsXpForce, true);
+    s.compsXpMod = mapNombres(s.compsXpMod, false);
     // PV max forcé : vide = valeur calculée ; borné comme le reste
     s.pvMaxOverride = (s.pvMaxOverride === null || s.pvMaxOverride === undefined || s.pvMaxOverride === "")
       ? null : Math.floor(parseFloat(s.pvMaxOverride));
@@ -398,6 +422,8 @@
     return i >= 0 ? i : Math.max(0, DATA.stades.length - 2);
   }
   function compXp(c, key) {
+    // coût forcé (Options) : il court-circuite tout le calcul
+    if (key && state.compsXpForce[key] !== undefined) return state.compsXpForce[key];
     // la langue du personnage est acquise : ses stades ne coûtent rien
     // jusqu'à Expert, au-delà seule la différence se paie
     var stadesDus = c.stade;
@@ -409,7 +435,7 @@
     // plus (fiches d'avant un déplacement du stade d'ouverture : rien ne
     // doit disparaître ni se re-créditer en silence)
     (c.techniques || []).forEach(function (t) { xp += techXp(t); });
-    return xp + artXp(c);
+    return xp + artXp(c) + (key ? (state.compsXpMod[key] || 0) : 0);
   }
   function compCap() { return Math.floor(state.xpTotal / QUART); }
   function xpDepense() {
@@ -419,6 +445,16 @@
     return xp;
   }
   function xpRestant() { return state.xpTotal - xpDepense(); }
+  // xp dépensé DANS un champ : la montée de la caractéristique elle-même, plus
+  // toutes les compétences qui s'y rattachent (armes et langues comprises,
+  // elles sont des compétences de Body et de Mind)
+  function xpChamp(carac) {
+    var xp = DATA.xpParStade * (state.caracsXp[carac] || 0);
+    Object.keys(state.comps).forEach(function (k) {
+      if (k.slice(0, carac.length + 1) === carac + "/") xp += compXp(state.comps[k], k);
+    });
+    return xp;
+  }
   function ptsCreation() {
     return state.caracsBase.Mind + state.caracsBase.Body + state.caracsBase.Prestance;
   }
@@ -469,8 +505,22 @@
   }
   function vitesse() { return fmtP(vitesseVal()) + " m"; }
   function compValue(carac, comp, key) {
+    // total forcé (Options) : il remplace le calcul, modificateur compris
+    if (key && state.compsForce[key] !== undefined) return state.compsForce[key];
     return caracTotal(carac) + stadeInfo(comp ? comp.stade : 0).bonus +
            (key ? (state.compsMod[key] || 0) : 0);
+  }
+  function compValueAuto(carac, comp, key) {
+    return caracTotal(carac) + stadeInfo(comp ? comp.stade : 0).bonus +
+           (key ? (state.compsMod[key] || 0) : 0);
+  }
+  // coût en xp SANS le forçage : ce que la compétence coûterait normalement
+  function compXpAuto(c, key) {
+    var f = state.compsXpForce[key];
+    delete state.compsXpForce[key];
+    var v = compXp(c, key);
+    if (f !== undefined) state.compsXpForce[key] = f;
+    return v;
   }
   function blankComp() { return { stade: 0, techniques: [] }; }
   function allComps() {
@@ -1491,6 +1541,40 @@
     col.appendChild(b);
   }
 
+  // ---------- xp par champ ----------
+  // Où le personnage a mis son xp : la caractéristique elle-même et toutes ses
+  // compétences. Les barres se comparent entre elles (part du dépensé), pas au
+  // total disponible : c'est la répartition qui intéresse.
+  function buildXpChamps(col) {
+    var b = block("XP par champ", null, null);
+    CHAMPS.forEach(function (carac) {
+      var row = el("div", "pc-xpchamp");
+      row.appendChild(el("span", "pc-abbr", ABBR[carac] || carac));
+      var m = el("span", "pc-meter");
+      var v = el("b", null, "");
+      m.appendChild(v);
+      var bar = el("span", "bar");
+      var fill = el("i");
+      bar.appendChild(fill);
+      m.appendChild(bar);
+      var part = el("span", "pct", "");
+      m.appendChild(part);
+      row.appendChild(m);
+      hooks.push(function () {
+        var xp = xpChamp(carac), tot = xpDepense();
+        v.textContent = xp + " xp";
+        var p = tot > 0 ? (xp / tot) * 100 : 0;
+        fill.style.width = clamp(p, 0, 100) + "%";
+        part.textContent = tot > 0 ? Math.round(p) + " %" : "—";
+        row.title = carac + " : " + (DATA.xpParStade * (state.caracsXp[carac] || 0)) +
+                    " xp de caractéristique, " +
+                    (xp - DATA.xpParStade * (state.caracsXp[carac] || 0)) + " xp de compétences";
+      });
+      b.appendChild(row);
+    });
+    col.appendChild(b);
+  }
+
   // ---------- compétences d'armes ----------
   // Toujours des compétences de Body. Celles des règles (DATA.compsArmes) et
   // celles que le joueur ajoute vivent ensemble ici, et nulle part ailleurs :
@@ -1503,6 +1587,16 @@
     // personnalisées » ne laisse que celles des règles ; « Investies
     // seulement » masque celles où rien n'est posé.
     var tools = el("div", "pc-comp-tools");
+    // pas de menu des champs ici (une arme est toujours une compétence de
+    // Body) : le filtre prend donc toute la largeur
+    var recherche = champFiltre(function () { return armesFilter; },
+                                function (v) { armesFilter = v; }, "Filtrer les armes…",
+                                function () { rendre(); });
+    if (recherche) {
+      var lineF = el("div", "row");
+      lineF.appendChild(recherche);
+      tools.appendChild(lineF);
+    }
     var line = el("div", "row");
     var persoChip = el("span", "pc-chip");
     persoChip.textContent = "Personnalisées";
@@ -1533,10 +1627,12 @@
     function rendre() {
       armHooks.length = 0;
       box.innerHTML = "";
+      var flt = filtreDe(armesFilter);
       var noms = armesNoms().filter(function (nom) {
         var perso = state.armesComps.indexOf(nom) >= 0;
         if (!armesPerso && perso) return false;
         if (armesOnly && !compInvestie({ key: armeKey(nom) })) return false;
+        if (flt && nom.toLowerCase().indexOf(flt) < 0) return false;
         return true;
       });
       if (noms.length) {
@@ -1547,7 +1643,8 @@
         box.appendChild(head);
       } else {
         box.appendChild(el("div", "pc-empty",
-          armesOnly ? "Aucune arme investie." : "Aucune arme."));
+          flt ? "Aucune arme ne correspond."
+              : armesOnly ? "Aucune arme investie." : "Aucune arme."));
       }
       noms.forEach(function (nom, i) {
         var perso = state.armesComps.indexOf(nom) >= 0;
@@ -1572,6 +1669,7 @@
           // ne jamais ajouter une arme qui resterait invisible
           if (!armesPerso) { armesPerso = true; persoChip.classList.add("on"); }
           if (armesOnly) { armesOnly = false; onlyChip.classList.remove("on"); }
+          if (filtreDe(armesFilter)) { armesFilter = ""; if (recherche) recherche.value = ""; }
           inp.value = "";
           refresh();
           rendre();
@@ -1594,24 +1692,72 @@
   function buildLangues(col) {
     var langHooks = [];
     var b = block("Langues", null, "langues", function () { rendre(); });
+
+    var tools = el("div", "pc-comp-tools");
+    // pas de menu des champs (une langue est toujours une compétence de Mind)
+    var recherche = champFiltre(function () { return languesFilter; },
+                                function (v) { languesFilter = v; }, "Filtrer les langues…",
+                                function () { rendre(); });
+    if (recherche) {
+      var lineF = el("div", "row");
+      lineF.appendChild(recherche);
+      tools.appendChild(lineF);
+    }
+    var line = el("div", "row");
+    var persoChip = el("span", "pc-chip");
+    persoChip.textContent = "Personnalisées";
+    // « personnalisée » = apprise en plus ; la langue du personnage, elle, est
+    // acquise, c'est le pendant des compétences des règles dans les autres modules
+    persoChip.title = "Décoché : seule la langue du personnage est affichée.";
+    persoChip.classList.toggle("on", languesPerso);
+    persoChip.addEventListener("click", function () {
+      languesPerso = !languesPerso;
+      persoChip.classList.toggle("on", languesPerso);
+      rendre();
+    });
+    line.appendChild(persoChip);
+    var onlyChip = el("span", "pc-chip");
+    onlyChip.textContent = "Investies";
+    onlyChip.title = "N'afficher que les langues où un stade, un passif ou un modificateur est posé.";
+    onlyChip.classList.toggle("on", languesOnly);
+    onlyChip.addEventListener("click", function () {
+      languesOnly = !languesOnly;
+      onlyChip.classList.toggle("on", languesOnly);
+      rendre();
+    });
+    line.appendChild(onlyChip);
+    tools.appendChild(line);
+    b.appendChild(tools);
+
     var box = el("div");
     b.appendChild(box);
 
     function rendre() {
       langHooks.length = 0;
       box.innerHTML = "";
-      if (state.langues.length) {
+      var flt = filtreDe(languesFilter);
+      var noms = state.langues.filter(function (nom) {
+        if (!languesPerso && nom !== state.langueBase) return false;
+        if (languesOnly && !compInvestie({ key: langueKey(nom) })) return false;
+        if (flt && nom.toLowerCase().indexOf(flt) < 0) return false;
+        return true;
+      });
+      if (noms.length) {
         var head = el("div", "pc-comp-row head");
         head.appendChild(el("span", null, "Langue"));
         head.appendChild(el("span", null, "Stade"));
         head.appendChild(el("span", null, "Total"));
         box.appendChild(head);
       } else {
-        box.appendChild(el("div", "pc-empty", isEdit("langues")
-          ? "Aucune langue : la première ajoutée devient celle du personnage."
-          : "Aucune langue."));
+        box.appendChild(el("div", "pc-empty",
+          flt ? "Aucune langue ne correspond."
+              : languesOnly ? "Aucune langue investie."
+              : state.langues.length ? "Aucune langue à afficher."
+              : isEdit("langues")
+                ? "Aucune langue : la première ajoutée devient celle du personnage."
+                : "Aucune langue."));
       }
-      state.langues.forEach(function (nom, i) {
+      noms.forEach(function (nom, i) {
         var item = { key: langueKey(nom), name: nom, carac: LANGUE_CARAC, custom: true, langue: true };
         var row = compRow(item, i % 2 === 1,
                           { module: "langues", reg: langHooks, onDrop: rendre });
@@ -1650,6 +1796,10 @@
             state.langueBase = nom;
             state.comps[langueKey(nom)] = { stade: stadeExpert(), techniques: [] };
           }
+          // une langue ajoutée ne doit jamais rester invisible
+          if (!languesPerso) { languesPerso = true; persoChip.classList.add("on"); }
+          if (languesOnly) { languesOnly = false; onlyChip.classList.remove("on"); }
+          if (filtreDe(languesFilter)) { languesFilter = ""; if (recherche) recherche.value = ""; }
           inp.value = "";
           refresh();
           rendre();
@@ -1878,10 +2028,33 @@
   // affichées ; coché : les compétences personnalisées s'y ajoutent
   var compPerso = true;
   var compPersoChip = null;     // la puce, rallumée quand on ajoute une comp perso
-  // mêmes filtres pour le module Armes (réglages de VUE : ils survivent au
-  // remontage de la fiche, comme ceux des compétences)
+  // mêmes filtres pour les modules Armes et Langues (réglages de VUE : ils
+  // survivent au remontage de la fiche, comme ceux des compétences)
   var armesPerso = true;
   var armesOnly = COMPACT;
+  var armesFilter = "";
+  var languesPerso = true;
+  var languesOnly = false;
+  var languesFilter = "";
+  // Les deux outils de filtre se coupent depuis l'onglet Options. Coupés, ils
+  // DISPARAISSENT et cessent d'agir : un filtre invisible qui masque encore
+  // des lignes est un piège. Réglage d'AFFICHAGE, donc dans le vrai
+  // localStorage du navigateur, jamais dans le personnage.
+  var FILTRES = { texte: "jjk-filtre-texte", champ: "jjk-filtre-champ" };
+  function filtreTexteOn() { return lpref(FILTRES.texte, "1") !== "0"; }
+  function filtreChampOn() { return lpref(FILTRES.champ, "1") !== "0"; }
+  // champ de filtre d'un module ; rend null quand le réglage le coupe, et le
+  // texte est alors ignoré par les listes (voir filtreDe)
+  function champFiltre(get, set, placeholder, onChange) {
+    if (!filtreTexteOn()) return null;
+    var s = el("input", "pc-comp-search");
+    s.type = "search";
+    s.placeholder = placeholder || "Filtrer…";
+    s.value = get();   // le filtre survit au remontage : le champ doit le montrer
+    s.addEventListener("input", function () { set(s.value); onChange(); });
+    return s;
+  }
+  function filtreDe(v) { return filtreTexteOn() ? String(v || "").trim().toLowerCase() : ""; }
   function compInvestie(it) {
     var c = state.comps[it.key];
     // l'art compte : une compétence redescendue qui garde son art reste
@@ -1896,9 +2069,9 @@
     if (!compBox) return;
     compHooks = [];   // les lignes vont être détruites : leurs hooks avec
     compBox.innerHTML = "";
-    var flt = compFilter.trim().toLowerCase();
+    var flt = filtreDe(compFilter);
     CHAMPS.forEach(function (carac) {
-      if (compChamp && compChamp !== carac) return;
+      if (filtreChampOn() && compChamp && compChamp !== carac) return;
       // l'Initiative, les langues et les armes ont leur propre module sur
       // cette page : les répéter ici ferait deux commandes pour un même stade
       var items = allComps().filter(function (it) {
@@ -1958,23 +2131,22 @@
     // puis les deux puces de filtre en dessous
     var tools = el("div", "pc-comp-tools");
     var line1 = el("div", "row");
-    var search = el("input", "pc-comp-search");
-    search.type = "search";
-    search.placeholder = "Filtrer…";
-    search.value = compFilter;   // le filtre survit au remount : le champ doit le montrer
-    search.addEventListener("input", function () { compFilter = search.value; rebuildComps(); });
-    line1.appendChild(search);
-    var champSel = el("select", "pc-select");
-    ["Tous les champs", "Body", "Mind", "Prestance"].forEach(function (ch) {
-      var o = el("option");
-      o.value = ch === "Tous les champs" ? "" : ch;
-      o.textContent = ch;
-      champSel.appendChild(o);
-    });
-    champSel.value = compChamp;
-    champSel.addEventListener("change", function () { compChamp = champSel.value; rebuildComps(); });
-    line1.appendChild(champSel);
-    tools.appendChild(line1);
+    var search = champFiltre(function () { return compFilter; },
+                             function (v) { compFilter = v; }, null, rebuildComps);
+    if (search) line1.appendChild(search);
+    if (filtreChampOn()) {
+      var champSel = el("select", "pc-select");
+      ["Tous les champs", "Body", "Mind", "Prestance"].forEach(function (ch) {
+        var o = el("option");
+        o.value = ch === "Tous les champs" ? "" : ch;
+        o.textContent = ch;
+        champSel.appendChild(o);
+      });
+      champSel.value = compChamp;
+      champSel.addEventListener("change", function () { compChamp = champSel.value; rebuildComps(); });
+      line1.appendChild(champSel);
+    }
+    if (line1.children.length) tools.appendChild(line1);
     var line2 = el("div", "row");
     var persoChip = el("span", "pc-chip");
     persoChip.textContent = "Personnalisées";
@@ -2018,6 +2190,7 @@
     pane.appendChild(cols);
     buildNarration(c1);
     buildCaracs(c1);
+    buildXpChamps(c1);
     buildLangues(c1);
     buildInitiative(c2);
     buildVitesse(c2);
@@ -3191,28 +3364,29 @@
     // ligne sur la Fiche. Rebâti quand les compétences perso changent
     // (optCompsRebuild, rappelé par l'ajout et la suppression) ; optHooks
     // remplace hooks pour ces lignes, sinon chaque rebâti fuirait des hooks.
-    var bMC = block("Modificateurs de compétences");
-    // mêmes outils que la liste de la Fiche (filtre texte, champ, « Investies
-    // seulement ») et mêmes lignes : la grille pc-comp-row aligne nom | ± | total.
+    var bMC = block("Compétences : leviers du MJ");
+    // mêmes outils que la liste de la Fiche (filtre texte, champ, puces) et
+    // mêmes lignes, mais une grille plus large : nom | modificateurs | total
+    // forcé | total | modificateur de coût | coût forcé | coût.
     var mcTools = el("div", "pc-comp-tools");
     var mcLine1 = el("div", "row");
-    var mcSearch = el("input", "pc-comp-search");
-    mcSearch.type = "search";
-    mcSearch.placeholder = "Filtrer…";
-    mcSearch.value = optFilter;
-    mcSearch.addEventListener("input", function () { optFilter = mcSearch.value; optCompsRebuild(); });
-    mcLine1.appendChild(mcSearch);
-    var mcChamp = el("select", "pc-select");
-    ["Tous les champs", "Body", "Mind", "Prestance"].forEach(function (ch) {
-      var o = el("option");
-      o.value = ch === "Tous les champs" ? "" : ch;
-      o.textContent = ch;
-      mcChamp.appendChild(o);
-    });
-    mcChamp.value = optChamp;
-    mcChamp.addEventListener("change", function () { optChamp = mcChamp.value; optCompsRebuild(); });
-    mcLine1.appendChild(mcChamp);
-    mcTools.appendChild(mcLine1);
+    var mcSearch = champFiltre(function () { return optFilter; },
+                               function (v) { optFilter = v; }, null,
+                               function () { optCompsRebuild(); });
+    if (mcSearch) mcLine1.appendChild(mcSearch);
+    if (filtreChampOn()) {
+      var mcChamp = el("select", "pc-select");
+      ["Tous les champs", "Body", "Mind", "Prestance"].forEach(function (ch) {
+        var o = el("option");
+        o.value = ch === "Tous les champs" ? "" : ch;
+        o.textContent = ch;
+        mcChamp.appendChild(o);
+      });
+      mcChamp.value = optChamp;
+      mcChamp.addEventListener("change", function () { optChamp = mcChamp.value; optCompsRebuild(); });
+      mcLine1.appendChild(mcChamp);
+    }
+    if (mcLine1.children.length) mcTools.appendChild(mcLine1);
     var mcLine2 = el("div", "row");
     var mcPerso = el("span", "pc-chip");
     mcPerso.textContent = "Personnalisées";
@@ -3236,15 +3410,35 @@
     mcLine2.appendChild(mcOnly);
     mcTools.appendChild(mcLine2);
     bMC.appendChild(mcTools);
+    // la grille des leviers est large : elle défile dans son cadre
+    var mcWrap = el("div", "pc-optcomp-wrap");
     var mcBox = el("div");
-    bMC.appendChild(mcBox);
+    mcWrap.appendChild(mcBox);
+    bMC.appendChild(mcWrap);
+    // un champ de forçage : vide = valeur calculée, une valeur la remplace
+    function forceField(map, key, auto, titre) {
+      var inp = el("input", "force");
+      inp.type = "number"; inp.step = "1";
+      inp.title = titre;
+      inp.addEventListener("input", function () {
+        var v = parseFloat(inp.value);
+        if (isFinite(v)) map[key] = clamp(Math.round(v), -9999, 9999);
+        else delete map[key];
+        refresh();
+      });
+      optHooks.push(function () {
+        inp.placeholder = String(auto());
+        if (document.activeElement !== inp) inp.value = map[key] === undefined ? "" : map[key];
+      });
+      return inp;
+    }
     optCompsRebuild = function () {
       optHooks = [];
       mcBox.innerHTML = "";
-      var flt = optFilter.trim().toLowerCase();
+      var flt = filtreDe(optFilter);
       var shown = 0;
       CHAMPS.forEach(function (carac) {
-        if (optChamp && optChamp !== carac) return;
+        if (filtreChampOn() && optChamp && optChamp !== carac) return;
         var items = allComps().filter(function (it) { return it.carac === carac; });
         if (!optPerso) items = items.filter(function (it) { return !it.custom; });
         if (flt) items = items.filter(function (it) { return it.name.toLowerCase().indexOf(flt) >= 0; });
@@ -3252,14 +3446,34 @@
         items.sort(function (a, b) { return a.name.localeCompare(b.name, "fr", { sensitivity: "base" }); });
         if (!items.length) return;
         mcBox.appendChild(el("div", "pc-comp-champ", carac));
+        // libellés courts : sept colonnes dans une demi-largeur ne laissent pas
+        // la place aux noms complets, que portent les infobulles
+        var head = el("div", "pc-optcomp-row head");
+        [["Compétence", "Nom de la compétence"],
+         ["Modif.", "Modificateur du total"],
+         ["Forcé", "Total forcé — vide = total calculé"],
+         ["Total", "Total effectif de la compétence"],
+         ["Mod. xp", "Modificateur du coût en xp"],
+         ["Forcé", "Coût en xp forcé — vide = coût calculé"],
+         ["Coût", "Coût effectif en xp"]].forEach(function (h) {
+          var s = el("span", null, h[0]);
+          s.title = h[1];
+          head.appendChild(s);
+        });
+        mcBox.appendChild(head);
         items.forEach(function (it, i) {
           shown++;
-          var row = el("div", "pc-comp-row" + (i % 2 === 1 ? " odd" : ""));
+          var row = el("div", "pc-optcomp-row pc-mods-host" + (i % 2 === 1 ? " odd" : ""));
+          var comp = function () { return state.comps[it.key] || blankComp(); };
+
           var nameBox = el("span", "pc-comp-name");
           var label = el("span", "pc-comp-label", it.name);
           label.title = it.name + " (" + it.carac + ")";
           nameBox.appendChild(label);
           row.appendChild(nameBox);
+
+          // modificateur du TOTAL (équipement, art, décision du MJ confondus :
+          // l'état ne porte qu'un nombre par compétence depuis la migration)
           row.appendChild(stepper(
             function () { return state.compsMod[it.key] || 0; },
             function (v) {
@@ -3268,18 +3482,52 @@
               else delete state.compsMod[it.key];   // zéro = pas d'entrée dans l'état
             },
             CARAC_PAS, "modificateur", optHooks));
+
+          row.appendChild(forceField(state.compsForce, it.key,
+            function () { return compValueAuto(it.carac, comp(), it.key); },
+            "Total forcé — vide = total calculé (caractéristique + stade + modificateur)."));
+
           var tot = el("span", "pc-comp-total", "");
-          optHooks.push(function () {
-            var d = state.compsMod[it.key] || 0;
-            var c = state.comps[it.key] || blankComp();
-            tot.textContent = sign(compValue(it.carac, c, it.key));
-            tot.classList.toggle("zero", !c.stade && !d);
-            tot.classList.toggle("adj", d !== 0);
-            tot.title = it.carac + " " + sign(caracTotal(it.carac)) +
-                        " · stade " + sign(stadeInfo(c.stade).bonus) +
-                        (d ? " · modificateur " + sign(d) : "");
-          });
           row.appendChild(tot);
+
+          row.appendChild(stepper(
+            function () { return state.compsXpMod[it.key] || 0; },
+            function (v) {
+              v = clamp(v, -9999, 9999);
+              if (v) state.compsXpMod[it.key] = v;
+              else delete state.compsXpMod[it.key];   // zéro = pas d'entrée dans l'état
+            },
+            DATA.xpParStade, "modificateur de coût", optHooks));
+
+          row.appendChild(forceField(state.compsXpForce, it.key,
+            function () { return compXpAuto(comp(), it.key); },
+            "Coût en xp forcé — vide = coût calculé (stades, passifs, art, modificateur)."));
+
+          var cout = el("span", "pc-comp-total", "");
+          row.appendChild(cout);
+
+          optHooks.push(function () {
+            var c = comp();
+            var d = state.compsMod[it.key] || 0;
+            var force = state.compsForce[it.key];
+            tot.textContent = sign(compValue(it.carac, c, it.key));
+            tot.classList.toggle("zero", !c.stade && !d && force === undefined);
+            tot.classList.toggle("adj", d !== 0 || force !== undefined);
+            tot.title = force !== undefined
+              ? "Total forcé à " + sign(force) + " (calculé : " + sign(compValueAuto(it.carac, c, it.key)) + ")"
+              : it.carac + " " + sign(caracTotal(it.carac)) +
+                " · stade " + sign(stadeInfo(c.stade).bonus) +
+                (d ? " · modificateur " + sign(d) : "");
+
+            var xf = state.compsXpForce[it.key], xm = state.compsXpMod[it.key] || 0;
+            var xp = compXp(c, it.key);
+            cout.textContent = xp + " xp";
+            cout.classList.toggle("zero", !xp);
+            cout.classList.toggle("adj", xf !== undefined || xm !== 0);
+            cout.title = xf !== undefined
+              ? "Coût forcé à " + xf + " xp (calculé : " + compXpAuto(c, it.key) + " xp)"
+              : "Stades, passifs et art" + (xm ? " · modificateur " + sign(xm) + " xp" : "");
+          });
           mcBox.appendChild(row);
         });
       });
@@ -3292,6 +3540,32 @@
     };
     optCompsRebuild();
     colB.appendChild(bMC);
+
+    // ---- outils de filtre ----
+    // Couper un outil le fait DISPARAÎTRE partout (Compétences, Armes, Langues
+    // et le bloc ci-dessus) et cesser d'agir : un filtre invisible qui masque
+    // encore des lignes serait un piège. Réglage d'affichage, donc local au
+    // navigateur — il ne suit pas le personnage.
+    var bF = block("Outils de filtre");
+    var fRow = el("div", "pc-comp-tools");
+    var fLine = el("div", "row");
+    [["texte", "Filtrer", "Le champ de recherche des modules Compétences, Armes et Langues."],
+     ["champ", "Tous les champs", "Le menu de champ du module Compétences."]].forEach(function (o) {
+      var chip = el("span", "pc-chip");
+      chip.textContent = o[1];
+      chip.title = o[2] + " Décoché : masqué, et sans effet sur les listes.";
+      chip.classList.toggle("on", lpref(FILTRES[o[0]], "1") !== "0");
+      chip.addEventListener("click", function () {
+        var on = lpref(FILTRES[o[0]], "1") !== "0";
+        lset(FILTRES[o[0]], on ? "0" : "1");
+        chip.classList.toggle("on", !on);
+        remount();   // les outils vivent dans d'autres onglets : tout se rebâtit
+      });
+      fLine.appendChild(chip);
+    });
+    fRow.appendChild(fLine);
+    bF.appendChild(fRow);
+    colB.appendChild(bF);
 
     // ---- affichage (fiche dans Roll20 seulement) ----
     // window.__jjkNight n'existe que sous roll20-fiche.html (posé par
