@@ -505,14 +505,35 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 /* leviers du MJ, un par compétence (onglet Options) : la grille est plus large
    que celle de la Fiche, elle défile dans son propre cadre quand la colonne
    est trop étroite plutôt que de pousser la page */
+/* Bloc Jets : le champ du dé et son bouton côte à côte. Le champ prend toute
+   la largeur que le bouton lui laisse, et le bouton ne s'étire pas. */
+.pc-jet-de { display: flex; align-items: flex-end; gap: .4rem; }
+.pc-jet-de .pc-f { flex: 1 1 auto; min-width: 0; margin: 0; }
+.pc-jet-de .pc-f input { width: 100%; box-sizing: border-box; }
+.pc-jet-de .pc-mini { flex: 0 0 auto; }
+
 .pc-optcomp-wrap { overflow-x: auto; }
 .pc-optcomp-row {
-  display: grid; align-items: center; gap: .2rem;
-  /* nom | forcé, modif, modif, total | filet | forcé, modif, modif, coût */
-  grid-template-columns: minmax(4rem, 1.3fr) 2rem 2rem 2rem 2.2rem 1px 2rem 2rem 2rem 2.6rem;
-  min-width: 23rem; padding: .1rem .15rem; border-radius: 4px;
+  display: grid; align-items: center; gap: .12rem;
+  /* nom | forcé, modif, modif, total | filet | forcé, modif, modif, coût
+     Dix colonnes dans une DEMI-LARGEUR : chaque dixième de rem compte. Une
+     grille trop large ne se voyait pas sur une capture du bloc seul (un
+     élément photographié hors de sa colonne ne déborde de rien) : elle se
+     voyait à l'écran, en défilement horizontal dans le module. Les largeurs
+     ci-dessous sont mesurées pour tenir SANS défilement dans la colonne du
+     site comme dans celle de l'iframe Roll20, plus étroite. */
+  /* « FORCÉ » a besoin de 1.7rem pour tenir en entier ; les deux colonnes de
+     modificateur, dont l'entête est désormais à cheval sur les deux, n'ont
+     plus à porter de libellé et se contentent de 1.4rem. Le total ne bouge
+     pas : ce qui est pris ici est rendu là. */
+  grid-template-columns: minmax(3.2rem, 1.2fr) 1.7rem 1.4rem 1.4rem 2rem 1px 1.7rem 1.4rem 1.4rem 2.3rem;
+  min-width: 0; padding: .1rem .1rem; border-radius: 4px;
   border-left: 2px solid transparent;
 }
+/* Les deux blocs de leviers, caractéristiques et compétences, emploient la
+   MÊME grille au dixième de rem près. Ils occupent les deux colonnes de
+   l'onglet, qui ont la même largeur : leurs entêtes et leurs chiffres tombent
+   donc aux mêmes abscisses, et l'oeil lit une seule grille au lieu de deux. */
 /* Le filet qui sépare la valeur du coût en xp est une COLONNE de la grille,
    étirée sur toute la hauteur de chaque rangée : les segments se rejoignent
    d'une rangée à l'autre et forment un vrai trait continu, du haut du module
@@ -553,6 +574,11 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-optcomp-row .pc-comp-name .pc-abbr { flex: 0 0 auto; }
 .pc-optcomp-row .pc-comp-label { font-size: .64rem; }
 .pc-optcomp-row.odd { background: var(--stripe); }
+/* « MODIF. » ne tient pas dans une colonne d'un rem et demi : il se tronquait
+   en « MODII ». Un seul entête, à cheval sur les DEUX champs qu'il annonce,
+   dit la même chose, tient en entier, et montre du même coup que les deux
+   colonnes vont ensemble. */
+.pc-optcomp-row.head > .duo { grid-column: span 2; }
 .pc-optcomp-row.head > span {
   font-size: .5rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
   color: var(--ink-3); text-align: center; white-space: nowrap; overflow: hidden; min-width: 0;
