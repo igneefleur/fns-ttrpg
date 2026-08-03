@@ -1582,7 +1582,11 @@ natif comme mod, et c'est le contrat public de la fiche 3.</p>
 <tbody>
 <tr>
 <td><code>ctx.bloc(titre)</code></td>
-<td>un bloc de fiche, cadre, titre et rouage compris, prêt à recevoir des enfants. Le rouage bascule <code>ctx.edition()</code>.</td>
+<td>un bloc de fiche, cadre et titre, prêt à recevoir des enfants.</td>
+</tr>
+<tr>
+<td><code>ctx.bloc(titre, { edition: true })</code></td>
+<td>le même, avec le rouage qui bascule <code>ctx.edition()</code>. À ne demander que si le module s'en sert : un rouage qui ne change rien de visible est un bouton qui ment.</td>
 </tr>
 <tr>
 <td><code>ctx.el(tag, classe, texte)</code></td>
