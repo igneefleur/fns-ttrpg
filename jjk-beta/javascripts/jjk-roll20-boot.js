@@ -536,9 +536,11 @@
     var m = manifeste();
     var a = (m && m.archives && typeof m.archives === "object") ? m.archives[rel] : null;
     if (!a) return null;
-    var spec = Array.isArray(a) ? { js: a, css: [], data: null, attrmap: null }
+    // release portée par la spec : chargerBundle en fait la release EFFECTIVE,
+    // celle que la carte d'attributs écrira dans jjk_version.max
+    var spec = Array.isArray(a) ? { js: a, css: [], data: null, attrmap: null, release: rel }
              : { js: a.js, css: Array.isArray(a.css) ? a.css : [], data: a.data == null ? null : a.data,
-                 attrmap: a.attrmap == null ? null : a.attrmap };
+                 attrmap: a.attrmap == null ? null : a.attrmap, release: rel };
     if (!listeSure(spec.js)) return null;
     if (spec.css.length && !listeSure(spec.css)) return null;
     if (spec.data != null && !urlSure(spec.data)) return null;
@@ -730,6 +732,13 @@
     // data : le jjk-creation.json à lire. Une archive embarque le sien, gelé à
     // sa date ; sans lui un ancien bundle lirait les règles d'aujourd'hui.
     window.__jjkDataUrl = spec.data || null;
+    // RELEASE EFFECTIVE : celle qui TOURNE, pas celle que le site publie. Sans
+    // ça, une archive enregistrerait jjk_version.max à la version du site, la
+    // fiche paraîtrait à jour, et sa prochaine ouverture repartirait sur le
+    // bundle du jour — « ouvrir avec sa version » ne tiendrait qu'une session.
+    // Posé AVANT toute écriture et avant l'attr-map de l'archive, qui lira le
+    // global (et non une variable de module, perdue au remplacement de M).
+    if (M && M.setRelease) M.setRelease(spec.release || null);
     if (remplacerCss) {
       // Les feuilles du jour portent data-jjk (posé par l'amorceur) : une
       // archive amène les siennes, et faire cohabiter les deux donnerait une

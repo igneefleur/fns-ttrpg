@@ -7,6 +7,7 @@
  *   - attrsToState(attrs)       : reconstruit l'état depuis les attributs,
  *                                 EN DISANT dans quel état il l'a trouvé.
  *   - ficheDe(attrs)            : la version de la fiche, sans reconstruire.
+ *   - setRelease(r)             : dit quelle release TOURNE (voir release()).
  *
  * TOUS les attributs produits commencent par « jjk_ ». Trois familles :
  *   - SOURCE DE VÉRITÉ : `jjk_state` porte l'état ENTIER en JSON. C'est lui
@@ -45,9 +46,35 @@
   var RELEASE_DEFAUT = "3.0.0";
   // majeur(RELEASE) === SCHEMA : scripts/verif_versions.py tient l'invariant
   var SCHEMA_DEFAUT = 3;
+
+  // Release EFFECTIVE : celle du code qui TOURNE, pas celle que le site publie.
+  //
+  // Le manifeste dit ce que le site sert AUJOURD'HUI. Quand l'amorce charge une
+  // ARCHIVE (« ouvrir avec sa version »), c'est un bundle plus ancien qui écrit
+  // les Attributes, sous le manifeste du jour : lire le manifeste inscrivait
+  // alors la version DU SITE dans le max de jjk_version, et la fiche d'archive
+  // paraissait à jour. D'où ce réglage, posé par l'amorce AVANT la première
+  // écriture : M.setRelease("2.9.0").
+  //
+  // Il est rangé sur `root` (window) et non dans une variable de module, parce
+  // qu'une archive amène souvent SA carte d'attributs (archives[…].attrmap) :
+  // le module est alors remplacé, et une variable interne serait perdue au
+  // remplacement. Le global, lui, survit — et la carte de l'archive, qui porte
+  // le même code, le relira.
+  function setRelease(r) {
+    if (typeof r === "string" && r) { try { root.__jjkRelease = r; } catch (e) {} }
+    else { try { root.__jjkRelease = null; } catch (e2) {} }   // null = revenir au manifeste
+    return release();
+  }
   function release() {
+    // 1. la release effective posée par l'amorce (archive en cours) ;
+    var r = root && root.__jjkRelease;
+    if (typeof r === "string" && r) return r;
+    // 2. sinon le manifeste, qui dit la version servie par le site ;
     var m = root && root.__jjkManifeste;
-    return (m && typeof m.release === "string" && m.release) ? m.release : RELEASE_DEFAUT;
+    if (m && typeof m.release === "string" && m.release) return m.release;
+    // 3. sinon la constante (node, et l'amorceur de secours sans manifeste).
+    return RELEASE_DEFAUT;
   }
 
   // champ d'état scalaire -> [suffixe, type]
@@ -82,12 +109,35 @@
     ["langues", "langues"], ["armesComps", "armes_comps"],
     ["armes", "armes"], ["armures", "armures"],
     ["inv", "inventaire_sys"],
-    ["divers", "divers"]
+    ["divers", "divers"],
+    // Disposition des modules (incrément 10). Format ÉPARS : seules les
+    // DIFFÉRENCES avec la disposition d'origine sont écrites, jamais la liste
+    // complète des identifiants. Deux raisons, et elles sont durables :
+    //   - un module natif ajouté par une version ultérieure apparaît quand
+    //     même chez un personnage rangé avant lui (il n'est simplement pas
+    //     cité, donc il garde sa place d'origine) ;
+    //   - un identifiant disparu (mod retiré, natif renommé) ne casse rien :
+    //     il reste une clé que personne ne réclame.
+    // Forme : { ordre: [ids], off: {id:1}, place: {id:{onglet,colonne}} }.
+    ["modules", "modules"],
+    // Coffres privés des mods et des modules, { id: objet libre }. Leur contenu
+    // n'est PAS interprété ici : c'est la donnée d'un module, la carte se
+    // contente de la faire voyager entière.
+    ["modData", "mod_donnees"],
+    // Interrupteurs des modules, { id: false } pour les SEULS modules coupés
+    // (clé posée par le bundle). Épars lui aussi, et pour la même raison : un
+    // module qui n'y figure pas est allumé, donc un module ajouté demain
+    // s'affiche chez tout le monde. Il double partiellement modules.off ; les
+    // deux voyagent, la carte ne tranche pas ce que le bundle décide.
+    ["modActifs", "mod_actifs"],
+    // Liste des mods, [{ id, nom, actif, pour, apiMin, src }]. L'attribut de
+    // repli passe par modsSansCode() : voir plus bas, le code source ne se
+    // duplique pas hors de jjk_state.
+    ["mods", "mods"]
   ];
 
-  // Collections qui n'existent PAS encore dans blank() du bundle : elles ne
-  // sont écrites que si l'état en porte, et relues que si l'attribut est là.
-  // Sans ça, blank() cesserait d'être le miroir exact du bundle et la
+  // Collections qui n'existent PAS dans blank() : elles ne sont écrites que si
+  // l'état en porte, et relues que si l'attribut est là. Sans ça, la
   // reconstruction inventerait un champ que la fiche ne connaît pas.
   // grenier et vHist viennent du moteur de migration (jjk-migrations.js) : ils
   // vivent à la RACINE de l'état, hors de blank(), et n'apparaissent que le
@@ -96,7 +146,6 @@
   // doit rendre en redescendant, et le laisser hors du repli le perdrait
   // précisément le jour où la fiche redescend de version.
   var COLLECTIONS_OPT = [
-    ["mods", "mods"],
     ["grenier", "grenier"],
     ["vHist", "v_hist"]
   ];
@@ -134,7 +183,19 @@
       regenOverride: null,
       langues: [], langueBase: "",
       armesComps: [],
-      de: "1d100"
+      de: "1d100",
+      // Le rangement des modules et ce que les modules gardent pour eux.
+      // Quatre clés RACINE, toutes avec un défaut vide : les ajouter ne fait
+      // pas monter le schéma (normalize() complète une clé absente et ne purge
+      // aucune clé racine inconnue), mais les omettre ici les perdrait sur le
+      // chemin de repli.
+      //
+      // Deux d'entre elles (modules, mods) ne sont pas encore dans le blank()
+      // du bundle : c'est le sens SANS DANGER de l'écart, la carte les fait
+      // voyager et normalize() les conserve. L'inverse (une clé du bundle
+      // absente d'ici) serait une perte sèche au repli — c'est ce sens-là
+      // qu'il faut vérifier à chaque ajout.
+      modules: {}, modData: {}, modActifs: {}, mods: []
     };
   }
 
@@ -162,17 +223,28 @@
     return c;
   }
 
-  // Même principe pour les mods : leur code source pèse, et jjk_state le porte
-  // déjà. L'attribut de repli garde de quoi DIRE quels mods tournaient (nom,
-  // version, réglages) sans dupliquer une ligne de code.
+  // Même principe pour les mods : leur code source pèse (des dizaines de
+  // kilo-octets pour un seul mod bavard, et Roll20 fait voyager chaque
+  // Attribute), et jjk_state le porte déjà. L'attribut de repli garde de quoi
+  // DIRE quels mods tournaient (id, nom, actif, pour, apiMin) sans dupliquer
+  // une ligne de code.
+  //
+  // Le champ de code s'appelle « src » dans la liste des mods ; « code » et
+  // « source » sont acceptés parce que la doc et les premiers essais ont connu
+  // les deux noms, et qu'un champ de code oublié ici passerait en double sans
+  // que rien ne le signale.
+  var CLES_CODE = ["src", "code", "source"];
   function modsSansCode(mods) {
     if (!Array.isArray(mods)) return [];
     return mods.map(function (m) {
       if (!m || typeof m !== "object") return m;
       var c = {};
       Object.keys(m).forEach(function (k) { c[k] = m[k]; });
-      // la clé reste, vidée : sa présence dit « ce mod avait du code »
-      if (typeof c.code === "string" && c.code) c.code = "";
+      CLES_CODE.forEach(function (k) {
+        // la clé reste, vidée : sa présence dit « ce mod avait du code », et
+        // sa disparition ferait croire à un mod sans code au chemin de repli
+        if (typeof c[k] === "string" && c[k]) c[k] = "";
+      });
       return c;
     });
   }
@@ -199,14 +271,17 @@
     put("version", state.v, release());
     COLLECTIONS.forEach(function (d) {
       var v = state[d[0]] == null ? blank()[d[0]] : state[d[0]];
+      // deux collections partent ALLÉGÉES dans leur attribut de repli : les
+      // vignettes en data: de l'inventaire, et le code source des mods. Dans
+      // les deux cas jjk_state porte l'original ; c'est la duplication, et elle
+      // seule, qu'on refuse.
       if (d[0] === "inv") v = invSansVignettes(v);
+      else if (d[0] === "mods") v = modsSansCode(v);
       put(d[1], JSON.stringify(v));
     });
     COLLECTIONS_OPT.forEach(function (d) {
       if (state[d[0]] === undefined) return;
-      var v = state[d[0]];
-      if (d[0] === "mods") v = modsSansCode(v);
-      put(d[1], JSON.stringify(v));
+      put(d[1], JSON.stringify(state[d[0]]));
     });
     // PV courant nullable : conservé à l'exact (null = « au maximum »)
     put("etat_courant", JSON.stringify({ pv: state.pv == null ? null : state.pv }));
@@ -242,6 +317,25 @@
   // Reconstruction champ par champ : le REPLI. Elle ne connaît que SCALARS,
   // COLLECTIONS et COLLECTIONS_OPT — tout champ d'état qui n'y figure pas est
   // perdu. C'est pour ça qu'elle ne doit jamais servir en douce.
+  //
+  // ELLE RECONSTRUIT AVEC LA CARTE DU JOUR, toujours, y compris quand les
+  // attributs ont été écrits par une AUTRE version de la fiche (une archive
+  // qu'on rouvre, ou une fiche enregistrée avant une montée de schéma). Elle
+  // rend donc un état dans la forme d'aujourd'hui, à charge pour migre() du
+  // bundle de le ramener où il faut — sauf que migre() se fie à `s.v`, qui
+  // vient ici de jjk_version : c'est le schéma ÉCRIT, pas celui de la carte.
+  //
+  // Aujourd'hui cela reste sans conséquence : les cartes de la 3.0.0 et du site
+  // sont identiques, une seule release de schéma 3 est publiée, et les archives
+  // qui embarquent leur propre attrmap (archives[…].attrmap dans le manifeste)
+  // remplacent ce module entier avant de lire quoi que ce soit.
+  // Le jour où ce ne sera plus vrai, c'est-à-dire le jour où un suffixe
+  // d'attribut changera DE FORME entre deux schémas (jjk_armes qui passerait
+  // d'un tableau à un objet, par exemple), lire un jjk_armes de schéma 2 avec
+  // la carte du schéma 3 donnerait un champ silencieusement faux. La condition
+  // ci-dessous, dans attrsToState, rend ce cas VISIBLE dans la raison du
+  // diagnostic : elle se déclenche dès que le schéma écrit diffère du nôtre,
+  // avant même qu'un tel changement de forme existe.
   function reconstruire(cur) {
     var s = blank();
     SCALARS.forEach(function (d) {
@@ -308,6 +402,19 @@
   //   degrade = "partiel"   -> pas de jjk_state : reconstruction champ par
   //                            champ (fiche neuve, ou écrite par une version
   //                            antérieure à jjk_state).
+  // Note ajoutée à la raison quand on reconstruit des attributs qui ne sont pas
+  // du schéma de cette carte (voir le long commentaire de reconstruire()).
+  // Le schéma écrit se lit sur le scalaire jjk_version, qui reste lisible même
+  // quand jjk_state ne l'est plus : c'est justement le cas qui compte.
+  function noteDeCarte(cur) {
+    var v = cur("version");
+    var n = (v === undefined || v === "") ? NaN : parseFloat(v);
+    if (!isFinite(n) || n === SCHEMA_DEFAUT) return "";
+    return " ; attributs écrits en schéma " + n + ", reconstruits avec la carte" +
+           " du schéma " + SCHEMA_DEFAUT + " (un champ qui aurait changé de forme" +
+           " entre ces deux schémas serait lu de travers)";
+  }
+
   function attrsToState(attrs) {
     attrs = attrs || {};
     var cur = lecteur(attrs);
@@ -324,13 +431,13 @@
       }
       if (lu) return attacher(lu, null, null);
       return attacher(reconstruire(cur), "illisible",
-                      raison + " (" + String(full).length + " caractères)");
+                      raison + " (" + String(full).length + " caractères)" + noteDeCarte(cur));
     }
 
     var vide = !Object.keys(attrs).some(isJjkAttr);
     return attacher(reconstruire(cur), "partiel",
                     vide ? "aucun attribut jjk_ : personnage sans fiche"
-                         : "jjk_state absent : reconstruction champ par champ");
+                         : "jjk_state absent : reconstruction champ par champ" + noteDeCarte(cur));
   }
 
   // Le diagnostic seul, en objet nu — pour l'appelant qui préfère ne pas
@@ -391,7 +498,9 @@
   var api = {
     PREFIX: PREFIX,
     RELEASE: RELEASE_DEFAUT,
+    SCHEMA: SCHEMA_DEFAUT,
     release: release,
+    setRelease: setRelease,
     stateToAttrs: stateToAttrs,
     attrsToState: attrsToState,
     diagnostic: diagnostic,
