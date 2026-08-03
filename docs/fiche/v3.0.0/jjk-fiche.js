@@ -73,6 +73,13 @@
 
   var ABBR = { Mind: "MIND", Body: "BODY", Prestance: "PRES" };
 
+  // LE DÉ DES JETS DE TEST, écrit comme les règles le disent et comme Roll20
+  // le comprend : « 96+ au dé est un coup critique, 5- au dé est un échec
+  // critique ». cs> et cf< sont les annotations de critique de Roll20 : le
+  // résultat s'y colore de lui-même dans le tchat, vert sur un critique et
+  // rouge sur un échec critique, sans que la fiche ait à le calculer.
+  var DE_DEFAUT = "1d100cs>96cf<5";
+
   // ---------- outils ----------
   function el(tag, cls, txt) {
     var e = document.createElement(tag);
@@ -136,7 +143,17 @@
       caracsBase: { Mind: 0, Body: 0, Prestance: 0 },
       caracsXp: { Mind: 0, Body: 0, Prestance: 0 },
       caracsMod: { Mind: 0, Body: 0, Prestance: 0 },
-      compsMod: {},
+      // DEUX modificateurs par valeur, et non un seul : le premier pour
+      // l'équipement, le second pour un art ou une décision du MJ. Un seul
+      // champ obligeait à additionner de tête avant de saisir, et à défaire le
+      // calcul pour retirer l'un des deux.
+      caracsMod2: { Mind: 0, Body: 0, Prestance: 0 },
+      // Les caractéristiques reçoivent les mêmes leviers que les compétences :
+      // total forcé, et coût en xp forcé avec ses deux modificateurs.
+      caracsForce: {}, caracsXpForce: {},
+      caracsXpMod: { Mind: 0, Body: 0, Prestance: 0 },
+      caracsXpMod2: { Mind: 0, Body: 0, Prestance: 0 },
+      compsMod: {}, compsMod2: {}, compsXpMod2: {},
       xpTotal: XP_CREATION,
       comps: {}, customComps: [],
       // leviers du MJ, par compétence (clé « Carac/Nom ») : total forcé
@@ -173,7 +190,7 @@
       // montée de schéma ; le blank() de jjk-attr-map.js les porte déjà, sans
       // quoi elles se perdraient sur le chemin de repli des Attributes Roll20.
       modules: {}, mods: [],
-      de: "1d100"
+      de: DE_DEFAUT
     };
   }
   // Toute donnée entrante (localStorage, import JSON, Attributes Roll20) passe
@@ -213,6 +230,12 @@
     if (!s.caracsBase || typeof s.caracsBase !== "object") s.caracsBase = b.caracsBase;
     if (!s.caracsXp || typeof s.caracsXp !== "object") s.caracsXp = b.caracsXp;
     if (!s.caracsMod || typeof s.caracsMod !== "object") s.caracsMod = b.caracsMod;
+    ["caracsMod2", "caracsXpMod", "caracsXpMod2"].forEach(function (k) {
+      if (!s[k] || typeof s[k] !== "object" || Array.isArray(s[k])) s[k] = { Mind: 0, Body: 0, Prestance: 0 };
+    });
+    ["caracsForce", "caracsXpForce"].forEach(function (k) {
+      if (!s[k] || typeof s[k] !== "object" || Array.isArray(s[k])) s[k] = {};
+    });
     // les modificateurs (blocs Options) acceptent les décimales : les sommes
     // migrées depuis les anciens divers peuvent en porter
     function modNum(v) {
@@ -223,6 +246,15 @@
       s.caracsBase[c] = clamp(num(s.caracsBase[c], 0), 0, 999);
       s.caracsXp[c] = clamp(num(s.caracsXp[c], 0), 0, 99);
       s.caracsMod[c] = modNum(s.caracsMod[c]);
+      s.caracsMod2[c] = modNum(s.caracsMod2[c]);
+      s.caracsXpMod[c] = modNum(s.caracsXpMod[c]);
+      s.caracsXpMod2[c] = modNum(s.caracsXpMod2[c]);
+      // forçages : ABSENTS par défaut, une valeur les pose
+      ["caracsForce", "caracsXpForce"].forEach(function (k) {
+        if (s[k][c] === undefined || s[k][c] === null || s[k][c] === "") { delete s[k][c]; return; }
+        var n = parseFloat(s[k][c]);
+        if (isFinite(n)) s[k][c] = clamp(Math.round(n), -9999, 9999); else delete s[k][c];
+      });
     });
     // modificateurs divers (3 emplacements : équipement / art / MJ) : seuls
     // PV max, régén et vitesse en portent encore
@@ -742,11 +774,13 @@
   // <nom> le passe aux filtres. Les fonctions <nom>Auto, elles, sont AUTRE
   // CHOSE : la valeur avant le forçage du MJ, et elles ne bougent pas.
   function caracTotalBrut(c) {
+    // total FORCÉ : il court-circuite tout, plafond et modificateurs compris
+    if (state.caracsForce[c] !== undefined) return state.caracsForce[c];
     var v = state.caracsBase[c] + CARAC_PAS * state.caracsXp[c];
     if (!state.sansLimite) v = Math.min(v, CARAC_MAX);
     // le modificateur (bloc Options) s'applique APRÈS le plafond : il peut
     // porter le total au-delà de 80 comme en dessous de 0.
-    return v + (state.caracsMod[c] || 0);
+    return v + (state.caracsMod[c] || 0) + (state.caracsMod2[c] || 0);
   }
   function caracTotal(c) {
     var v = caracTotalBrut(c);
@@ -805,11 +839,23 @@
     // plus (fiches d'avant un déplacement du stade d'ouverture : rien ne
     // doit disparaître ni se re-créditer en silence)
     (c.techniques || []).forEach(function (t) { xp += techXp(t); });
-    return xp + artXp(c) + (key ? (state.compsXpMod[key] || 0) : 0);
+    return xp + artXp(c) +
+           (key ? (state.compsXpMod[key] || 0) + (state.compsXpMod2[key] || 0) : 0);
   }
   function compXp(c, key) {
     var v = compXpBrut(c, key);
     return aFiltre("compXp") ? applique("compXp", v, { cle: key, comp: c }) : v;
+  }
+  // Ce qu'une caractéristique coûte, forçage et modificateurs compris. Elle
+  // se règle désormais comme une compétence : c'est le même geste pour le MJ.
+  function caracXp(c) {
+    if (state.caracsXpForce[c] !== undefined) return state.caracsXpForce[c];
+    return DATA.xpParStade * (state.caracsXp[c] || 0) +
+           (state.caracsXpMod[c] || 0) + (state.caracsXpMod2[c] || 0);
+  }
+  function caracXpAuto(c) {
+    return DATA.xpParStade * (state.caracsXp[c] || 0) +
+           (state.caracsXpMod[c] || 0) + (state.caracsXpMod2[c] || 0);
   }
   function compCap() { return Math.floor(state.xpTotal / QUART); }
   // le total appelle compXp() et non compXpBrut() : un filtre sur le coût d'une
@@ -817,7 +863,7 @@
   // l'en-tête se contrediraient
   function xpDepenseBrut() {
     var xp = 0;
-    ["Mind", "Body", "Prestance"].forEach(function (c) { xp += DATA.xpParStade * state.caracsXp[c]; });
+    ["Mind", "Body", "Prestance"].forEach(function (c) { xp += caracXp(c); });
     Object.keys(state.comps).forEach(function (k) { xp += compXp(state.comps[k], k); });
     return xp;
   }
@@ -830,7 +876,7 @@
   // toutes les compétences qui s'y rattachent (armes et langues comprises,
   // elles sont des compétences de Body et de Mind)
   function xpChamp(carac) {
-    var xp = DATA.xpParStade * (state.caracsXp[carac] || 0);
+    var xp = caracXp(carac);
     Object.keys(state.comps).forEach(function (k) {
       if (k.slice(0, carac.length + 1) === carac + "/") xp += compXp(state.comps[k], k);
     });
@@ -915,7 +961,7 @@
     // total forcé (Options) : il remplace le calcul, modificateur compris
     if (key && state.compsForce[key] !== undefined) return state.compsForce[key];
     return caracTotal(carac) + stadeInfo(comp ? comp.stade : 0).bonus +
-           (key ? (state.compsMod[key] || 0) : 0);
+           (key ? (state.compsMod[key] || 0) + (state.compsMod2[key] || 0) : 0);
   }
   function compValue(carac, comp, key) {
     var v = compValueBrut(carac, comp, key);
@@ -1154,7 +1200,7 @@
     // L'extension refuse une commande multiligne, et le clic partirait alors
     // sans rien envoyer. Les accolades du dé restent : « ?{Dé|1d100} » et
     // « @{…} » sont des dés légitimes dans Roll20.
-    var de = String(die == null ? "" : die).replace(/\s+/g, " ").trim() || "1d100";
+    var de = String(die == null ? "" : die).replace(/\s+/g, " ").trim() || DE_DEFAUT;
     return "&{template:default} {{name=" + (envSan(label) || "Jet") +
            "}} {{Jet=[[" + de + v +
            (avecInput ? ENV_QUERY : "") + "]]}}";
@@ -1188,7 +1234,7 @@
   // isCheck : vrai pour un jet de test (carac/compétence) — seuls ces jets
   // critent (96+/5-). Les jets d'équipement (dégâts, invu) restent des dés bruts.
   function doRoll(label, value, die, isCheck) {
-    die = die || state.de || "1d100";
+    die = die || state.de || DE_DEFAUT;
     // « avec input » ne vaut QUE pour les jets de test : isCheck est vrai
     // exactement aux caractéristiques et aux compétences, faux aux dégâts et
     // à l'invulnérabilité — aucun autre filtre à écrire.
@@ -3069,11 +3115,13 @@
     // seulement » cache une valeur pourtant modifiée)
     return !!(c && (c.stade > 0 || (c.techniques && c.techniques.length) || porteArt(c))) ||
            (state.compsMod[it.key] || 0) !== 0 ||
+           (state.compsMod2[it.key] || 0) !== 0 ||
            // un total ou un coût forcé compte aussi : sinon « Investies »
            // cacherait la compétence qu'on vient justement de régler
            state.compsForce[it.key] !== undefined ||
            state.compsXpForce[it.key] !== undefined ||
-           (state.compsXpMod[it.key] || 0) !== 0;
+           (state.compsXpMod[it.key] || 0) !== 0 ||
+           (state.compsXpMod2[it.key] || 0) !== 0;
   }
   // l'ordre des champs, partout sur la Fiche : Body, puis Mind, puis Prestance
   var CHAMPS = ["Body", "Mind", "Prestance"];
@@ -4304,33 +4352,160 @@
     var bJ = block("Jets");
     var de = el("input", "de");
     de.type = "text";
-    de.value = state.de || "1d100";
-    de.addEventListener("input", function () { state.de = de.value || "1d100"; save(); });
-    hooks.push(function () { if (document.activeElement !== de) de.value = state.de || "1d100"; });
+    de.title = "Ce que la fiche lance pour un jet de test. Écrit en macro Roll20 : " +
+               "cs> marque le coup critique, cf< l'échec critique.";
+    de.value = state.de || DE_DEFAUT;
+    de.addEventListener("input", function () { state.de = de.value || DE_DEFAUT; save(); });
+    hooks.push(function () { if (document.activeElement !== de) de.value = state.de || DE_DEFAUT; });
     bJ.appendChild(fld("Dé des jets de test", de));
+    // De quoi revenir au dé des règles après l'avoir bricolé : sans ce bouton,
+    // il faudrait le retaper de mémoire, annotations comprises.
+    var outilsJ = el("div", "pc-comp-tools");
+    var ligneJ = el("div", "row");
+    ligneJ.appendChild(miniBtn("Dé des règles", "Revenir à " + DE_DEFAUT, function () {
+      state.de = DE_DEFAUT;
+      refresh();
+    }));
+    outilsJ.appendChild(ligneJ);
+    bJ.appendChild(outilsJ);
     return bJ;
   }
 
   // ---- modificateurs de caractéristiques (hors limite : au-delà de 80, sous 0) ----
   // équipement, art et décisions du MJ confondus : UN modificateur par
   // caractéristique, appliqué au total affiché sur la Fiche
+  // MÊME GRILLE QUE LES COMPÉTENCES, et c'est voulu : régler une
+  // caractéristique et régler une compétence sont le même geste pour le MJ, il
+  // n'a pas à apprendre deux dispositions. Sans le filtre, le menu des champs
+  // ni les puces : sur trois lignes, ils ne servent à rien.
   function buildModCaracs() {
     var bM = block("Modificateurs de caractéristiques");
-    CHAMPS.forEach(function (name) {
+    var wrap = el("div", "pc-optcomp-wrap");
+    var box = el("div");
+    wrap.appendChild(box);
+    bM.appendChild(wrap);
+
+    // un champ de modificateur, nu, comme dans le bloc des compétences
+    function champMod(map, cle, borne, titre) {
+      var inp = el("input", "pc-num modif");
+      inp.type = "number"; inp.step = String(MOD_PAS);
+      inp.title = titre;
+      inp.addEventListener("input", function () {
+        var v = parseFloat(inp.value);
+        map[cle] = isFinite(v) ? clamp(Math.round(v), -borne, borne) : 0;
+        refresh();
+      });
+      hooks.push(function () {
+        if (document.activeElement !== inp) inp.value = map[cle] ? map[cle] : "";
+      });
+      return inp;
+    }
+    // un champ de forçage : vide = valeur calculée
+    function champForce(map, cle, auto, titre) {
+      var inp = el("input", "force");
+      inp.type = "number"; inp.step = "1";
+      inp.title = titre;
+      inp.addEventListener("input", function () {
+        var v = parseFloat(inp.value);
+        if (isFinite(v)) map[cle] = clamp(Math.round(v), -9999, 9999);
+        else delete map[cle];
+        refresh();
+      });
+      hooks.push(function () {
+        inp.placeholder = String(auto());
+        if (document.activeElement !== inp) inp.value = map[cle] === undefined ? "" : map[cle];
+      });
+      return inp;
+    }
+
+    var grp = el("div", "pc-optcomp-row grp");
+    grp.appendChild(el("span"));
+    var gV = el("span", "g", "Valeur");
+    gV.title = "Ce que vaut la caractéristique quand on la lance";
+    grp.appendChild(gV);
+    grp.appendChild(el("span", "rule"));
+    var gX = el("span", "g", "Coût en xp");
+    gX.title = "Ce que la caractéristique coûte sur l'xp du personnage";
+    grp.appendChild(gX);
+    box.appendChild(grp);
+
+    var head = el("div", "pc-optcomp-row head");
+    [["Carac.", "Caractéristique"],
+     ["Forcé", "Total forcé — vide = total calculé"],
+     ["Modif.", "Premier modificateur du total (équipement, par exemple)"],
+     ["Modif.", "Second modificateur du total (art, décision de table…)"],
+     ["Total", "Total effectif de la caractéristique"],
+     null,
+     ["Forcé", "Coût en xp forcé — vide = coût calculé"],
+     ["Modif.", "Premier modificateur du coût en xp"],
+     ["Modif.", "Second modificateur du coût en xp"],
+     ["Coût", "Coût effectif en xp"]].forEach(function (h) {
+      if (!h) { head.appendChild(el("span", "rule")); return; }
+      var sp = el("span", null, h[0]);
+      sp.title = h[1];
+      head.appendChild(sp);
+    });
+    box.appendChild(head);
+
+    CHAMPS.forEach(function (name, i) {
       if (!DATA.caracs.some(function (cc) { return cc.name === name; })) return;
-      var row = el("div", "pc-kv");
+      var row = el("div", "pc-optcomp-row pc-mods-host" + (i % 2 === 1 ? " odd" : ""));
+      var nameBox = el("span", "pc-comp-name");
       var chip = el("span", "pc-abbr", ABBR[name] || name);
       chip.title = name;
-      row.appendChild(chip);
-      row.appendChild(stepper(
-        function () { return state.caracsMod[name] || 0; },
-        function (v) { state.caracsMod[name] = clamp(v, -999, 999); },
-        CARAC_PAS, "modificateur"));
-      row.appendChild(el("span", "sp"));
-      var tot = el("span", "max", "");
-      hooks.push(function () { tot.textContent = "total : " + caracTotal(name); });
+      nameBox.appendChild(chip);
+      row.appendChild(nameBox);
+
+      row.appendChild(champForce(state.caracsForce, name,
+        function () {
+          var v = state.caracsBase[name] + CARAC_PAS * state.caracsXp[name];
+          if (!state.sansLimite) v = Math.min(v, CARAC_MAX);
+          return v + (state.caracsMod[name] || 0) + (state.caracsMod2[name] || 0);
+        },
+        "Total forcé — vide = total calculé (création + achats + modificateurs)."));
+      row.appendChild(champMod(state.caracsMod, name, 999,
+        "Premier modificateur du total — vide = aucun."));
+      row.appendChild(champMod(state.caracsMod2, name, 999,
+        "Second modificateur du total — vide = aucun."));
+      var tot = el("span", "pc-comp-total", "");
       row.appendChild(tot);
-      bM.appendChild(row);
+
+      row.appendChild(el("span", "rule"));
+      row.appendChild(champForce(state.caracsXpForce, name,
+        function () { return caracXpAuto(name); },
+        "Coût en xp forcé — vide = coût calculé (achats et modificateurs)."));
+      row.appendChild(champMod(state.caracsXpMod, name, 9999,
+        "Premier modificateur du coût en xp — vide = aucun."));
+      row.appendChild(champMod(state.caracsXpMod2, name, 9999,
+        "Second modificateur du coût en xp — vide = aucun."));
+      var cout = el("span", "pc-comp-total", "");
+      row.appendChild(cout);
+
+      hooks.push(function () {
+        var d = (state.caracsMod[name] || 0) + (state.caracsMod2[name] || 0);
+        var force = state.caracsForce[name];
+        tot.textContent = String(caracTotal(name));
+        tot.classList.toggle("adj", d !== 0 || force !== undefined);
+        tot.title = force !== undefined
+          ? "Total forcé à " + force
+          : "création " + state.caracsBase[name] +
+            " · achats " + (CARAC_PAS * state.caracsXp[name]) +
+            (d ? " · modificateurs " + sign(d) : "");
+
+        var xf = state.caracsXpForce[name];
+        var xm = (state.caracsXpMod[name] || 0) + (state.caracsXpMod2[name] || 0);
+        var xp = caracXp(name);
+        cout.textContent = xp + " xp";
+        cout.classList.toggle("zero", !xp);
+        cout.classList.toggle("adj", xf !== undefined || xm !== 0);
+        cout.title = xf !== undefined
+          ? "Coût forcé à " + xf + " xp (calculé : " + caracXpAuto(name) + " xp)"
+          : "Achats d'xp" + (xm ? " · modificateurs " + sign(xm) + " xp" : "");
+
+        row.classList.toggle("on", d !== 0 || xm !== 0 ||
+                             force !== undefined || xf !== undefined);
+      });
+      box.appendChild(row);
     });
     return bM;
   }
@@ -4360,7 +4535,7 @@
   // (optCompsRebuild, rappelé par l'ajout et la suppression) ; optHooks
   // remplace hooks pour ces lignes, sinon chaque rebâti fuirait des hooks.
   function buildOptComps() {
-    var bMC = block("Compétences");
+    var bMC = block("Modificateurs de compétences");
     // mêmes outils que la liste de la Fiche (filtre texte, champ, puces) et
     // mêmes lignes, mais une grille plus large : nom | modificateurs | total
     // forcé | total | modificateur de coût | coût forcé | coût.
@@ -4480,11 +4655,13 @@
         var head = el("div", "pc-optcomp-row head");
         [["Compétence", "Nom de la compétence"],
          ["Forcé", "Total forcé — vide = total calculé"],
-         ["Modif.", "Modificateur du total"],
+         ["Modif.", "Premier modificateur du total (équipement, par exemple)"],
+         ["Modif.", "Second modificateur du total (art, décision de table…)"],
          ["Total", "Total effectif de la compétence"],
          null,
          ["Forcé", "Coût en xp forcé — vide = coût calculé"],
-         ["Modif.", "Modificateur du coût en xp"],
+         ["Modif.", "Premier modificateur du coût en xp"],
+         ["Modif.", "Second modificateur du coût en xp"],
          ["Coût", "Coût effectif en xp"]].forEach(function (h) {
           if (!h) { head.appendChild(el("span", "rule")); return; }
           var s = el("span", null, h[0]);
@@ -4508,9 +4685,13 @@
             function () { return compValueAuto(it.carac, comp(), it.key); },
             "Total forcé — vide = total calculé (caractéristique + stade + modificateur)."));
 
-          // l'état ne porte qu'un nombre par compétence depuis la migration
+          // DEUX champs : ils s'additionnent. Un seul obligeait à faire la
+          // somme de tête avant de saisir, puis à la défaire pour retirer l'un
+          // des deux apports.
           row.appendChild(modField(state.compsMod, it.key, 999,
-            "Modificateur du total (équipement, art, autre) — vide = aucun."));
+            "Premier modificateur du total — vide = aucun."));
+          row.appendChild(modField(state.compsMod2, it.key, 999,
+            "Second modificateur du total — vide = aucun."));
 
           var tot = el("span", "pc-comp-total", "");
           row.appendChild(tot);
@@ -4522,14 +4703,16 @@
             "Coût en xp forcé — vide = coût calculé (stades, passifs, art, modificateur)."));
 
           row.appendChild(modField(state.compsXpMod, it.key, 9999,
-            "Modificateur du coût en xp — vide = aucun."));
+            "Premier modificateur du coût en xp — vide = aucun."));
+          row.appendChild(modField(state.compsXpMod2, it.key, 9999,
+            "Second modificateur du coût en xp — vide = aucun."));
 
           var cout = el("span", "pc-comp-total", "");
           row.appendChild(cout);
 
           optHooks.push(function () {
             var c = comp();
-            var d = state.compsMod[it.key] || 0;
+            var d = (state.compsMod[it.key] || 0) + (state.compsMod2[it.key] || 0);
             var force = state.compsForce[it.key];
             tot.textContent = sign(compValue(it.carac, c, it.key));
             tot.classList.toggle("zero", !c.stade && !d && force === undefined);
@@ -4540,7 +4723,8 @@
                 " · stade " + sign(stadeInfo(c.stade).bonus) +
                 (d ? " · modificateur " + sign(d) : "");
 
-            var xForce = state.compsXpForce[it.key], xm = state.compsXpMod[it.key] || 0;
+            var xForce = state.compsXpForce[it.key];
+            var xm = (state.compsXpMod[it.key] || 0) + (state.compsXpMod2[it.key] || 0);
             var xp = compXp(c, it.key);
             cout.textContent = xp + " xp";
             cout.classList.toggle("zero", !xp);
@@ -4750,8 +4934,50 @@
     while (k < ids.length) out.push(ids[k++]);
     return out;
   }
-  function ecritOrdre(ids) {
-    disposition().ordre = fusionneOrdre(ids);
+  // ON N'ÉPINGLE QUE LA COLONNE TOUCHÉE, et c'est tout le sujet.
+  //
+  // L'ancienne version écrivait l'ordre COMPLET de tous les modules, tous
+  // onglets confondus. Un seul clic sur une flèche, n'importe où, et la
+  // disposition du personnage était gelée pour toujours : la fiche pouvait
+  // ensuite changer l'agencement d'un onglet auquel le joueur n'avait jamais
+  // touché, il ne le voyait jamais. C'est arrivé pour de bon — l'onglet Options
+  // a été réagencé et les personnages qui avaient cliqué une fois gardaient
+  // l'ancien, sans aucun moyen de le savoir.
+  //
+  // Désormais l'ordre enregistré ne retient que les colonnes RÉELLEMENT
+  // remaniées. Les autres n'y figurent pas, donc elles suivent la table de la
+  // fiche : un module ajouté ou déplacé par une mise à jour arrive chez tout le
+  // monde, sauf là où le joueur a fait son propre rangement.
+  //
+  // ordonne() accepte un ordre PARTIEL, c'est ce qui rend la chose possible :
+  // les id nommés passent devant dans l'ordre donné, les autres suivent à leur
+  // rang de déclaration. Comme les colonnes sont séparées au montage, épingler
+  // une colonne ne dérange pas les voisines.
+  function memeColonne(id, onglet, colonne) {
+    var i = rangModule(id);
+    if (i < 0) return false;
+    var m = modules[i];
+    var pl = (disposition().place || {})[id];
+    var o = (pl && pl.onglet) || m.onglet;
+    var c = (pl && pl.colonne) || m.colonne;
+    return o === onglet && c === colonne;
+  }
+  // ids : l'ordre voulu, complet. onglet/colonne : la colonne remaniée.
+  function ecritOrdre(ids, onglet, colonne) {
+    var d = disposition();
+    var ancien = Array.isArray(d.ordre) ? d.ordre : [];
+    var neuf = [], vus = {}, i;
+    // ce qui était déjà épinglé AILLEURS reste épinglé, dans son ordre
+    for (i = 0; i < ancien.length; i++) {
+      if (onglet && memeColonne(ancien[i], onglet, colonne)) continue;
+      if (!vus[ancien[i]]) { vus[ancien[i]] = 1; neuf.push(ancien[i]); }
+    }
+    // puis la colonne qu'on vient de remanier, dans son ordre nouveau
+    for (i = 0; i < ids.length; i++) {
+      if (onglet && !memeColonne(ids[i], onglet, colonne)) continue;
+      if (!vus[ids[i]]) { vus[ids[i]] = 1; neuf.push(ids[i]); }
+    }
+    d.ordre = onglet ? neuf : fusionneOrdre(ids);
     save();
     remount();
   }
@@ -4764,7 +4990,11 @@
     if (i < 0 || j < 0) return;
     ids[i] = b;
     ids[j] = a;
-    ecritOrdre(ids);
+    var k = rangModule(a);
+    var m = k >= 0 ? modules[k] : null;
+    var pl = m ? (disposition().place || {})[a] : null;
+    ecritOrdre(ids, m ? ((pl && pl.onglet) || m.onglet) : null,
+               m ? ((pl && pl.colonne) || m.colonne) : null);
   }
   function natifDe(id) {
     for (var i = 0; i < MODULES_NATIFS.length; i++)
@@ -4782,7 +5012,7 @@
     if (!d.place || typeof d.place !== "object" || Array.isArray(d.place)) d.place = {};
     if (nat && nat.onglet === onglet && nat.colonne === colonne) delete d.place[id];
     else d.place[id] = { onglet: onglet, colonne: colonne };
-    ecritOrdre(idsConnus());
+    ecritOrdre(idsConnus(), onglet, colonne);
   }
   // « cible » nulle : le module est en bout de colonne, la flèche reste là mais
   // inerte. La retirer ferait danser les boutons d'une ligne à l'autre.
