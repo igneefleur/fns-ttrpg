@@ -167,6 +167,12 @@
       // RACINE avec un défaut : normalize() les complète, donc le schéma ne
       // monte pas et une fiche s'ouvre dans les deux sens.
       modData: {}, modActifs: {},
+      // disposition des modules ({ ordre: [], place: {} }, éparse : seul ce que
+      // le joueur a déplacé y figure) et mods du personnage (leur CODE voyage
+      // avec lui). Deux clés racine de plus, mêmes raisons, même absence de
+      // montée de schéma ; le blank() de jjk-attr-map.js les porte déjà, sans
+      // quoi elles se perdraient sur le chemin de repli des Attributes Roll20.
+      modules: {}, mods: [],
       de: "1d100"
     };
   }
@@ -461,6 +467,69 @@
     Object.keys(s.modActifs).forEach(function (k) {
       if (s.modActifs[k] !== false) delete s.modActifs[k];
     });
+    // Disposition des modules. ÉPARSE : on valide ce qui est là sans rien
+    // matérialiser. Écrire un « ordre » vide chez tout le monde ferait voyager
+    // une liste inutile jusque dans les Attributes Roll20, et un module ajouté
+    // demain n'apparaîtrait pas chez un personnage rangé avant lui.
+    if (!s.modules || typeof s.modules !== "object" || Array.isArray(s.modules)) s.modules = {};
+    if (s.modules.ordre !== undefined) {
+      var vusOrdre = {};
+      s.modules.ordre = (Array.isArray(s.modules.ordre) ? s.modules.ordre : [])
+        .map(function (id) { return String(id == null ? "" : id); })
+        .filter(function (id) {
+          if (!id || vusOrdre[id]) return false;   // un id en double décalerait le rangement
+          vusOrdre[id] = 1;
+          return true;
+        });
+    }
+    if (s.modules.place !== undefined) {
+      var placeSrc = s.modules.place;
+      var place = {};
+      if (placeSrc && typeof placeSrc === "object" && !Array.isArray(placeSrc)) {
+        Object.keys(placeSrc).forEach(function (id) {
+          var p = placeSrc[id];
+          if (!id || !p || typeof p !== "object" || Array.isArray(p)) return;
+          var q = {};
+          if (typeof p.onglet === "string" && p.onglet) q.onglet = p.onglet;
+          if (typeof p.colonne === "string" && p.colonne) q.colonne = p.colonne;
+          // une entrée qui ne dit ni onglet ni colonne ne déplace rien : elle
+          // ne ferait qu'occuper la place et voyager pour rien
+          if (q.onglet || q.colonne) place[id] = q;
+        });
+      }
+      s.modules.place = place;
+    }
+    // Mods du personnage. Le moteur (jjk-mods.js) fait foi quand il est là :
+    // c'est lui qui connaît la forme d'un mod. Sans lui, la fiche s'en tient au
+    // strict nécessaire, mais elle ne s'en dispense JAMAIS : un état venu
+    // d'ailleurs (import, Attributes d'un autre joueur) ne doit pas entrer sans
+    // contrôle, et un mod sans id ni code ne pourrait ni tourner ni se nommer.
+    if (!Array.isArray(s.mods)) s.mods = [];
+    if (window.JjkMods && typeof window.JjkMods.normalise === "function") {
+      try {
+        var normes = window.JjkMods.normalise(s.mods);
+        if (Array.isArray(normes)) s.mods = normes;
+      } catch (e) {}
+    }
+    var vusMods = {};
+    s.mods = objArray(s.mods).filter(function (m) {
+      // L'id impose son alphabet : il sert de clé partout (avis du navigateur,
+      // journal « [mod:<id>] », coffre du module qu'il remplacerait). Même
+      // règle que le moteur (idPropre) : les deux chemins doivent donner le
+      // MÊME id, sans quoi l'empreinte changerait selon le chemin pris et le
+      // joueur aurait à réautoriser un mod qu'il connaît déjà.
+      m.id = String(m.id == null ? "" : m.id).toLowerCase()
+        .replace(/[^a-z0-9-]+/g, "-").replace(/-+/g, "-").replace(/^-+|-+$/g, "");
+      m.nom = String(m.nom == null ? "" : m.nom);
+      m.actif = m.actif !== false;
+      if (typeof m.pour !== "string" || !m.pour) delete m.pour;
+      if (typeof m.notes !== "string" || !m.notes) delete m.notes;
+      var api = parseInt(m.apiMin, 10);
+      if (isFinite(api)) m.apiMin = clamp(api, 0, 999); else delete m.apiMin;
+      if (!m.id || typeof m.src !== "string" || vusMods[m.id]) return false;
+      vusMods[m.id] = 1;
+      return true;
+    });
     s.xpTotal = Math.max(0, num(s.xpTotal, XP_CREATION));
     s.narration = clamp(num(s.narration, 3), 0, 99);
     s.pv = (s.pv === null || s.pv === undefined || s.pv === "") ? null : parseFloat(s.pv);
@@ -468,13 +537,222 @@
     return s;
   }
 
+  // ---------- filtres de calcul ----------
+  // Un filtre intercepte une valeur DÉRIVÉE (total de caractéristique, PV max,
+  // initiative…) juste après son calcul. Le calcul lui-même garde son nom
+  // suffixé « Brut » ; le nom public appelle le brut, puis passe la valeur aux
+  // filtres enregistrés pour ce nom. C'est par là qu'un mod change une règle de
+  // calcul sans qu'on rouvre ce fichier, et sans avoir à réécrire le module qui
+  // affiche la valeur : tout ce qui lit caracTotal() voit le même chiffre.
+  //
+  // Les CASCADES sont voulues, et elles tombent toutes seules : pvMaxAuto()
+  // appelle caracTotal(), donc un filtre sur caracTotal se voit dans les PV ;
+  // initiative() appelle compValue() et poidsPorte(), xpDepense() appelle
+  // compXp(). Les gardes ci-dessous sont par NOM, jamais globales, pour ne pas
+  // couper ces chaînes-là.
+  var filtres = {};            // nom -> [{ fn, prop, echecs }], ordre d'enregistrement
+  var filtresEnCours = {};     // nom -> 1 pendant sa passe (garde de récursion)
+  var FILTRE_FAUTES = 5;       // même seuil que la muselière des modules, même raison
+  // À qui appartient ce qui s'enregistre : monteModules le pose autour du build
+  // d'un module, l'exécution des mods autour du moteur. Hors de tout
+  // propriétaire (console du navigateur), personne ne répond : « ? ».
+  var proprietaireCourant = "?";
+  // L'id du mod que le moteur est en train de lancer, ou null. Différent de
+  // proprietaireCourant, qui vaut aussi pendant le build d'un module natif.
+  var modEnExec = null;
+  var PROP_MOD = "mod";        // repli quand le moteur ne nomme pas le mod qui tourne
+  // Vrai pendant un montage. Ce qui s'enregistre HORS d'un montage (console du
+  // navigateur, script tiers chargé après la fiche) n'a personne pour le
+  // rejouer après la remise à zéro du prochain mount() : on le garde ici.
+  var enMontage = false;
+  // { mod: module, prop } ou { nom, fn, prop } pour un filtre : chaque entrée
+  // dit à QUI elle est, faute de quoi rien ne saurait plus l'en défaire
+  var horsMontage = [];
+  // Les neuf points de filtre. La table ne sert qu'à prévenir d'un nom mal
+  // tapé : un filtre posé sur « pvmax » ne serait jamais appelé, et rien ne le
+  // dirait.
+  var FILTRES_CONNUS = {
+    caracTotal: 1, compValue: 1, compXp: 1, pvMax: 1, initiative: 1,
+    vitesse: 1, regen: 1, poidsPorte: 1, xpDepense: 1
+  };
+  // Appartenance RÉELLE à une table nommée par une chaîne venue d'ailleurs (mod,
+  // état importé). Sans elle, un nom comme « toString » répond « oui » depuis
+  // Object.prototype, et la suite manipule une méthode en croyant tenir une
+  // donnée : c'est la façon la plus bête de casser un montage.
+  function aClef(o, k) { return Object.prototype.hasOwnProperty.call(o, k); }
+  function ajouteFiltre(nom, fn, prop) {
+    nom = String(nom == null ? "" : nom);
+    if (typeof fn !== "function" || !nom) return;
+    prop = prop || "?";
+    if (!aClef(FILTRES_CONNUS, nom) && window.console && window.console.warn)
+      window.console.warn("[mod:" + prop + "] filtre " + nom + " inconnu : il ne sera jamais appelé.");
+    if (!aClef(filtres, nom)) filtres[nom] = [];
+    // DÉDOUBLONNAGE DANS LE REGISTRE LUI-MÊME, et pas seulement dans ce qui
+    // attend le montage suivant. Un bouton de mod qui repose son filtre à
+    // chaque clic l'empilait DANS LE MÊME MONTAGE : deux clics et le bonus
+    // comptait double (+20, +40, +60…), sans que rien ne le montre. Même
+    // nom, même propriétaire, même texte de fonction : c'est le même filtre,
+    // et le reposer ne veut pas dire le vouloir deux fois.
+    var texte = signeFn(fn);
+    var liste = filtres[nom];
+    for (var i = 0; i < liste.length; i++) {
+      if (liste[i].prop === prop && (liste[i].fn === fn || (texte && liste[i].src === texte))) {
+        liste[i].fn = fn;
+        liste[i].echecs = 0;
+        if (!enMontage) gardeHorsMontage({ nom: nom, fn: fn, prop: prop });
+        return;
+      }
+    }
+    liste.push({ fn: fn, prop: prop, echecs: 0, src: texte });
+    if (!enMontage) gardeHorsMontage({ nom: nom, fn: fn, prop: prop });
+  }
+  // Ce qui attend le prochain montage porte son PROPRIÉTAIRE (celui du filtre,
+  // l'id du module pour un enregistrement) et ne s'inscrit qu'UNE FOIS. Sans ce
+  // second point, un bouton qui repose le même filtre à chaque clic l'empile :
+  // deux clics et le bonus compte double, à chaque montage, pour toujours.
+  //
+  // COMPARER LES FONCTIONS PAR RÉFÉRENCE NE SUFFIT PAS, et c'est le piège qui a
+  // laissé passer ce défaut une première fois : « function (v) { return v + 20; } »
+  // écrit DANS un gestionnaire de clic fabrique un objet NEUF à chaque clic.
+  // Deux entrées identiques à la lettre près étaient donc jugées différentes et
+  // s'empilaient (+20, +40, +60…). On compare donc aussi le TEXTE de la
+  // fonction. Deux filtres vraiment distincts qui s'écriraient caractère pour
+  // caractère pareil se confondraient, mais poser deux fois le même calcul pour
+  // qu'il compte double n'est pas un usage : l'empilement sans fin, si.
+  function signeFn(fn) {
+    try { return String(fn); } catch (e) { return ""; }
+  }
+  function gardeHorsMontage(e) {
+    if (!e.mod) e.src = signeFn(e.fn);
+    // l'état des mods AU MOMENT du dépôt : le rejeu s'en sert pour savoir si la
+    // liste a bougé depuis (voir rejoueHorsMontage)
+    e.sig = signatureAuMontage;
+    for (var i = 0; i < horsMontage.length; i++) {
+      var h = horsMontage[i];
+      // un module se REMPLACE à son id (c'est ce que fait enregistre) ; un
+      // filtre se reconnaît à son nom, son propriétaire et son texte
+      if (e.mod || h.mod) {
+        if (e.mod && h.mod && h.mod.id === e.mod.id) { horsMontage[i] = e; return; }
+        continue;
+      }
+      if (h.nom === e.nom && h.prop === e.prop &&
+          (h.fn === e.fn || (e.src && h.src === e.src))) { horsMontage[i] = e; return; }
+    }
+    horsMontage.push(e);
+  }
+  // Rejoué au début de chaque montage, dans l'ordre : le contrat promet qu'un
+  // Jjk.filtre ou un Jjk.enregistre lancé depuis la console vaut « pour le
+  // montage suivant » — et pour tous ceux d'après, rien d'autre ne le rejoue.
+  //
+  // Mais seulement ce qui a encore un ayant droit. Ce qui appartient à un MOD ne
+  // se rejoue que tant que ce mod est sur le personnage, actif et accordé :
+  // sinon le filtre posé par le bouton d'un mod refusé, coupé ou supprimé
+  // continuerait de fausser les calculs à chaque montage, sans un mot et sans
+  // rien pour le défaire — seul un rechargement complet de la page en viendrait
+  // à bout, geste que le joueur n'a pas dans l'iframe Roll20. Le bilan du
+  // montage précédent sert encore ici, c'est lui qui reconnaît un id de mod :
+  // executeMods ne le remplace qu'après. Le propriétaire « ? » (console du
+  // navigateur) est promis par le contrat, il se rejoue toujours.
+  // Ce que les mods du personnage donnent à voir : leurs id, leur interrupteur
+  // et l'accord du navigateur. Il change dès qu'un mod est ajouté, retiré,
+  // coupé, autorisé ou refusé — et c'est exactement à ces moments-là que ce qui
+  // n'a PAS d'ayant droit connu doit cesser d'être rejoué.
+  function signatureMods() {
+    var l = (state && Array.isArray(state.mods)) ? state.mods : [];
+    return l.map(function (m) {
+      return String(m.id) + ":" + (m.actif !== false ? "1" : "0") + ":" + avisMod(empreinteMod(m.id, m.src));
+    }).join("|");
+  }
+  var signatureAuMontage = null;
+  function rejoueHorsMontage() {
+    var sig = signatureMods();
+    var reste = [];
+    horsMontage.forEach(function (h) {
+      if (propEstUnMod(h.prop) && !modAutorise(h.prop)) return;
+      // LE FILET. Un mod qui pose un filtre depuis un setTimeout, ou depuis un
+      // écouteur qu'il a accroché lui-même, échappe à toute attribution : son
+      // propriétaire vaut « ? », comme une ligne tapée dans la console, que le
+      // contrat promet de conserver. On ne peut pas distinguer les deux — mais
+      // on peut refuser de rejouer un « ? » anonyme dès que la liste des mods a
+      // BOUGÉ. Le joueur qui refuse, coupe ou supprime un mod voit alors partir
+      // ce que ce mod avait installé, quel qu'en soit le chemin. Une mise au
+      // point à la console, elle, ne touche pas aux mods : elle survit.
+      if (h.prop === "?" && signatureAuMontage !== null && h.sig !== sig) return;
+      reste.push(h);
+      if (h.mod) enregistre(h.mod);
+      else ajouteFiltre(h.nom, h.fn, h.prop);
+    });
+    horsMontage = reste;
+    signatureAuMontage = sig;
+  }
+  function aFiltre(nom) {
+    var l = filtres[nom];
+    return !!(l && l.length);
+  }
+  // La passe : chaque filtre reçoit la valeur rendue par le précédent. Un
+  // filtre qui jette, ou qui rend autre chose qu'un nombre fini, est IGNORÉ
+  // pour cette passe (la valeur d'avant continue son chemin) et compte une
+  // faute ; cinq fautes de SUITE et il part, parce qu'un filtre cassé fausserait
+  // chaque calcul de la fiche sans que personne ne sache d'où vient le chiffre.
+  // Une passe sans faute remet son compteur à zéro.
+  function applique(nom, valeur, infos) {
+    var liste = filtres[nom];
+    if (!liste || !liste.length) return valeur;
+    // Garde de récursion : pendant la passe, tout nouvel appel au MÊME calcul
+    // rend le brut. Sans elle, un filtre qui lit ctx.calculs.caracTotal se
+    // rappellerait sans fin et figerait l'onglet.
+    if (filtresEnCours[nom]) return valeur;
+    filtresEnCours[nom] = 1;
+    try {
+      var i = 0;
+      while (i < liste.length) {
+        var f = liste[i], v = null, msg = "";
+        try { v = f.fn(valeur, infos); }
+        catch (err) { msg = messageErreur(err); }
+        if (!msg && typeof v === "number" && isFinite(v)) {
+          valeur = v;
+          f.echecs = 0;
+          i++;
+          continue;
+        }
+        if (!msg) msg = typeof v === "number" ? "résultat non fini" : "résultat de type " + (typeof v);
+        f.echecs++;
+        if (f.echecs < FILTRE_FAUTES) { i++; continue; }
+        liste.splice(i, 1);   // retiré : le suivant a pris la place, i ne bouge pas
+        retireFiltre(nom, f, msg);
+      }
+    } finally { filtresEnCours[nom] = 0; }
+    return valeur;
+  }
+  function retireFiltre(nom, f, msg) {
+    var texte = "filtre " + nom + " retiré : " + msg;
+    if (window.console && window.console.warn)
+      window.console.warn("[mod:" + f.prop + "] " + texte);
+    // le propriétaire porte l'erreur : c'est ce que Jjk.etat(id) rend, et ce
+    // que les listes de mods et de modules affichent
+    etatModule(f.prop).erreur = texte;
+  }
+  // Jjk.filtre : le propriétaire est celui du moment. ctx.filtreCalcul, lui,
+  // fige l'id de son module à la construction du contexte (un module qui pose
+  // un filtre depuis un bouton, longtemps après son build, reste chez lui).
+  function filtreCalcul(nom, fn) { ajouteFiltre(nom, fn, proprietaireCourant); }
+
   // ---------- calculs ----------
-  function caracTotal(c) {
+  // Chaque valeur dérivée existe en deux temps : <nom>Brut fait le calcul,
+  // <nom> le passe aux filtres. Les fonctions <nom>Auto, elles, sont AUTRE
+  // CHOSE : la valeur avant le forçage du MJ, et elles ne bougent pas.
+  function caracTotalBrut(c) {
     var v = state.caracsBase[c] + CARAC_PAS * state.caracsXp[c];
     if (!state.sansLimite) v = Math.min(v, CARAC_MAX);
     // le modificateur (bloc Options) s'applique APRÈS le plafond : il peut
     // porter le total au-delà de 80 comme en dessous de 0.
     return v + (state.caracsMod[c] || 0);
+  }
+  function caracTotal(c) {
+    var v = caracTotalBrut(c);
+    // le test évite de fabriquer l'objet d'infos pour rien : ce calcul-là est
+    // rappelé des centaines de fois par rafraîchissement
+    return aFiltre("caracTotal") ? applique("caracTotal", v, { carac: c }) : v;
   }
   function stadeInfo(i) { return DATA.stades[clamp(i, 0, DATA.stades.length - 1)]; }
   // coût d'un passif : son coût forcé s'il en porte un, sinon le tarif de base
@@ -513,7 +791,7 @@
     var i = stadeIndex("expert");
     return i >= 0 ? i : Math.max(0, DATA.stades.length - 2);
   }
-  function compXp(c, key) {
+  function compXpBrut(c, key) {
     // coût forcé (Options) : il court-circuite tout le calcul
     if (key && state.compsXpForce[key] !== undefined) return state.compsXpForce[key];
     // la langue du personnage est acquise : ses stades ne coûtent rien
@@ -529,12 +807,23 @@
     (c.techniques || []).forEach(function (t) { xp += techXp(t); });
     return xp + artXp(c) + (key ? (state.compsXpMod[key] || 0) : 0);
   }
+  function compXp(c, key) {
+    var v = compXpBrut(c, key);
+    return aFiltre("compXp") ? applique("compXp", v, { cle: key, comp: c }) : v;
+  }
   function compCap() { return Math.floor(state.xpTotal / QUART); }
-  function xpDepense() {
+  // le total appelle compXp() et non compXpBrut() : un filtre sur le coût d'une
+  // compétence doit se voir dans l'xp dépensé, sinon les deux chiffres de
+  // l'en-tête se contrediraient
+  function xpDepenseBrut() {
     var xp = 0;
     ["Mind", "Body", "Prestance"].forEach(function (c) { xp += DATA.xpParStade * state.caracsXp[c]; });
     Object.keys(state.comps).forEach(function (k) { xp += compXp(state.comps[k], k); });
     return xp;
+  }
+  function xpDepense() {
+    var v = xpDepenseBrut();
+    return aFiltre("xpDepense") ? applique("xpDepense", v, {}) : v;
   }
   function xpRestant() { return state.xpTotal - xpDepense(); }
   // xp dépensé DANS un champ : la montée de la caractéristique elle-même, plus
@@ -553,23 +842,42 @@
   // les valeurs issues d'une division s'arrondissent à l'INFÉRIEUR
   function pvMaxAuto() { return Math.floor((20 + caracTotal("Body")) / 2) + modSum(state.divers.pvMax); }
   // PV max : la valeur forcée (Options du bloc PV) court-circuite le calcul
-  function pvMax() { return state.pvMaxOverride !== null ? state.pvMaxOverride : pvMaxAuto(); }
+  function pvMaxBrut() { return state.pvMaxOverride !== null ? state.pvMaxOverride : pvMaxAuto(); }
+  function pvMax() {
+    var v = pvMaxBrut();
+    return aFiltre("pvMax") ? applique("pvMax", v, {}) : v;
+  }
   function pvCourant() { return state.pv === null ? pvMax() : state.pv; }
   function regenAuto() { return Math.max(0, Math.floor(caracTotal("Body") / 10) + modSum(state.divers.regen)); }
-  function regen() { return state.regenOverride !== null ? state.regenOverride : regenAuto(); }
+  function regenBrut() { return state.regenOverride !== null ? state.regenOverride : regenAuto(); }
+  function regen() {
+    var v = regenBrut();
+    return aFiltre("regen") ? applique("regen", v, {}) : v;
+  }
   // Poids porté : tout ce que le personnage a sur lui — armes, armures et
   // objets de l'inventaire (quantité comprise). Il se soustrait à l'initiative.
-  function poidsPorte() {
+  function poidsPorteBrut() {
     var t = 0;
     state.armes.forEach(function (a) { t += pnum(a.poids); });
     state.armures.forEach(function (a) { t += pnum(a.poids); });
     state.inv.objets.forEach(function (o) { t += pnum(o.qte) * pnum(o.poids); });
     return Math.round(t * 100) / 100;
   }
+  function poidsPorte() {
+    var v = poidsPorteBrut();
+    return aFiltre("poidsPorte") ? applique("poidsPorte", v, {}) : v;
+  }
   // Initiative : une compétence de Body comme les autres, moins le poids porté
   function initComp() { return state.comps[INIT_KEY] || blankComp(); }
-  function initiative() {
+  // compValue() et poidsPorte() (les publics, pas les bruts) : un filtre sur le
+  // total d'une compétence ou sur le poids porté doit se voir dans l'initiative,
+  // qui n'est que leur soustraction
+  function initiativeBrut() {
     return Math.round((compValue("Body", initComp(), INIT_KEY) - poidsPorte()) * 100) / 100;
+  }
+  function initiative() {
+    var v = initiativeBrut();
+    return aFiltre("initiative") ? applique("initiative", v, {}) : v;
   }
   // la table des règles donne une CHAÎNE (« 10.5 m ») : le palier s'extrait en
   // nombre pour recevoir les divers, puis se réaffiche avec son unité
@@ -592,27 +900,57 @@
   function vitesseAuto() {
     return Math.max(0, vitesseBase() + modSum(state.divers.vitesse));
   }
-  function vitesseVal() {
+  function vitesseValBrut() {
     return state.vitesseOverride !== null ? state.vitesseOverride : vitesseAuto();
   }
+  // le filtre porte sur le NOMBRE de mètres, jamais sur la chaîne rendue par
+  // vitesse() : un mod qui double la vitesse fait une multiplication, pas une
+  // opération de texte
+  function vitesseVal() {
+    var v = vitesseValBrut();
+    return aFiltre("vitesse") ? applique("vitesse", v, {}) : v;
+  }
   function vitesse() { return fmtP(vitesseVal()) + " m"; }
-  function compValue(carac, comp, key) {
+  function compValueBrut(carac, comp, key) {
     // total forcé (Options) : il remplace le calcul, modificateur compris
     if (key && state.compsForce[key] !== undefined) return state.compsForce[key];
     return caracTotal(carac) + stadeInfo(comp ? comp.stade : 0).bonus +
            (key ? (state.compsMod[key] || 0) : 0);
   }
-  function compValueAuto(carac, comp, key) {
-    return caracTotal(carac) + stadeInfo(comp ? comp.stade : 0).bonus +
-           (key ? (state.compsMod[key] || 0) : 0);
+  function compValue(carac, comp, key) {
+    var v = compValueBrut(carac, comp, key);
+    return aFiltre("compValue")
+      ? applique("compValue", v, { carac: carac, cle: key, comp: comp })
+      : v;
   }
-  // coût en xp SANS le forçage : ce que la compétence coûterait normalement
+  // Total SANS le forçage : ce que la compétence vaudrait normalement.
+  // « Auto » ne veut pas dire « sans filtre » : ces deux fonctions passent par
+  // les publiques (compValue, compXp), donc un filtre s'y voit aussi. C'est
+  // voulu : ce sont les valeurs de repli affichées à côté des cases de forçage,
+  // et elles doivent parler la même langue que le reste de la fiche. Recopier
+  // le corps du brut donnait deux chiffres pour une seule compétence : la
+  // colonne Total affichait 45 pendant que l'indication du champ « Total forcé »
+  // proposait 40, et le joueur qui recopiait l'indication perdait les 5 points
+  // du filtre sans rien voir. Le forçage s'ôte le temps du calcul, comme pour
+  // l'xp : c'est la seule chose dont ces valeurs doivent se passer.
+  //
+  // finally, et pas une simple ligne de plus : le forçage est une donnée du
+  // PERSONNAGE, retirée le temps d'un calcul. Ces fonctions tournent dans les
+  // hooks de rafraîchissement, où chaque appel est déjà sous try/catch ; un
+  // calcul qui jetterait entre le retrait et la remise ne ferait donc pas de
+  // bruit, mais le chiffre saisi par le joueur serait effacé pour de bon, et le
+  // save() suivant l'emporterait.
+  function compValueAuto(carac, comp, key) {
+    var f = state.compsForce[key];
+    delete state.compsForce[key];
+    try { return compValue(carac, comp, key); }
+    finally { if (f !== undefined) state.compsForce[key] = f; }
+  }
   function compXpAuto(c, key) {
     var f = state.compsXpForce[key];
     delete state.compsXpForce[key];
-    var v = compXp(c, key);
-    if (f !== undefined) state.compsXpForce[key] = f;
-    return v;
+    try { return compXp(c, key); }
+    finally { if (f !== undefined) state.compsXpForce[key] = f; }
   }
   function blankComp() { return { stade: 0, techniques: [] }; }
   function allComps() {
@@ -658,21 +996,70 @@
   }
 
   // ---------- persistance ----------
-  var saveWarned = false;   // l'échec d'enregistrement n'est signalé qu'une fois
+  // Le bandeau du dernier enregistrement raté : absent tant que ça passe. Une
+  // panne d'enregistrement ne se dit PAS en un éclair de 2.6 s vu une seule
+  // fois, comme le faisait l'ancien flash : la fiche continuerait de s'afficher,
+  // parfaitement normale, pendant qu'une session entière de travail se perd à
+  // la fermeture. Tant que ça ne repasse pas, le bandeau reste.
+  var elSavePanne = null;
   function save() {
-    try { STORE.setItem("jjk-perso", JSON.stringify(state)); }
+    // La mise en forme se fait HORS du try du stockage, et son échec se dit
+    // autrement. Un mod qui range une donnée circulaire dans ctx.state (la page
+    // Mods invite justement à y écrire, et seul ctx.donnees.set s'en protège)
+    // fait jeter stringify : setItem n'était alors jamais atteint, donc sous
+    // Roll20 le cache mémoire du pont n'était même pas à jour, donc aucune
+    // écriture programmée, donc ni accusé de réception, ni chien de garde, ni
+    // bandeau de perte. Rien ne s'enregistrait plus et rien ne le disait.
+    var json = null, panne = "";
+    try { json = JSON.stringify(state); }
     catch (e) {
-      if (!saveWarned) {
-        saveWarned = true;
-        flash("Impossible d'enregistrer (stockage plein ou bloqué) : exporter la fiche en JSON.");
-      }
+      panne = "La fiche ne peut plus se mettre en forme pour l'enregistrement (" + messageErreur(e) +
+              "). Un mod a sans doute rangé une donnée qui se contient elle-même : plus rien n'est enregistré.";
     }
+    if (json !== null) {
+      try { STORE.setItem("jjk-perso", json); }
+      catch (e) { panne = "Impossible d'enregistrer (stockage plein ou bloqué) : exporter la fiche en JSON."; }
+    }
+    montrePanneSave(panne);
     var cards;
     try { cards = JSON.parse(STORE.getItem("jjk-cards")) || {}; } catch (e) { cards = {}; }
     var card = computeCard();
     card.id = "_current";
     cards._current = card;
     try { STORE.setItem("jjk-cards", JSON.stringify(cards)); } catch (e) {}
+  }
+  // Le bandeau de perte : même mise en forme que celui des mods, au même
+  // endroit, juste avant la feuille. Il n'y en a qu'UN, gardé d'un montage à
+  // l'autre : mount() vide la racine, l'élément se retrouve détaché, et le
+  // premier enregistrement du nouveau montage le remet en tête. Il s'en va tout
+  // seul dès qu'un enregistrement repasse, sans que personne ait à y penser.
+  //
+  // SA PROPRE CLASSE, en plus de la commune. Le contrat réserve .pc-avis au
+  // bandeau de consentement ; les deux peuvent coexister (un mod en attente ET
+  // un enregistrement en panne), et sans marque distincte plus personne, code
+  // ou sonde, ne sait lequel des deux il tient.
+  function montrePanneSave(msg) {
+    if (!msg) {
+      if (elSavePanne && elSavePanne.parentNode) elSavePanne.parentNode.removeChild(elSavePanne);
+      return;
+    }
+    if (!appEl) return;   // pas encore monté : le prochain enregistrement le posera
+    if (!elSavePanne) {
+      elSavePanne = el("div", "pc-avis pc-avis-save");
+      elSavePanne.appendChild(el("div", "pc-avis-txt", ""));
+    }
+    var txt = elSavePanne.firstChild;
+    if (txt.textContent !== msg) txt.textContent = msg;
+    // save() part à chaque frappe : ne toucher au DOM que si le bandeau n'est
+    // pas déjà à sa place, sinon chaque lettre tapée le déplacerait.
+    if (elSavePanne.parentNode === appEl) return;
+    // la feuille est cherchée parmi les enfants DIRECTS : insertBefore veut un
+    // repère qui soit bien un enfant de appEl, et un querySelector qui
+    // descendrait dans l'arbre jetterait au lieu de poser le bandeau
+    var avant = null, k;
+    for (k = 0; k < appEl.children.length; k++)
+      if (appEl.children[k].className === "pc-sheet") { avant = appEl.children[k]; break; }
+    appEl.insertBefore(elSavePanne, avant);
   }
   function load() {
     try { return normalize(JSON.parse(STORE.getItem("jjk-perso"))); }
@@ -960,6 +1347,9 @@
   // donc la fiche entière depuis le nouvel état.
   var rootEl = null;
   var appEl = null;      // le .perso-atelier monté : porte les jetons de couleur
+  // C'est aussi ce que rend ctx.reconstruire et Jjk.remonte. Appelé PENDANT un
+  // montage (un mod, un hook), il ne relance rien sur-le-champ : mount() note
+  // la demande et l'honore une fois le montage courant fini.
   function remount() { if (rootEl) mount(rootEl); }
 
   function flash(msg) {
@@ -1514,6 +1904,9 @@
       bar.appendChild(b);
       btns[t.id] = b;
       panes[t.id] = el("div", "pc-pane");
+      // l'onglet se nomme sur son panneau : c'est le seul moyen, de l'extérieur,
+      // de dire dans QUELLE colonne de QUEL onglet un module a atterri
+      panes[t.id].dataset.tab = t.id;
     });
     function activate(id) {
       if (!panes[id]) id = "fiche";
@@ -1556,8 +1949,21 @@
   // disposition en douce, ce que personne n'a demandé.
   function enregistre(m) {
     var i = rangModule(m.id);
+    // QUI a enregistré ce module. Un mod pose presque toujours un module dont
+    // l'id diffère du sien : sans cette marque, ni la purge de horsMontage ni
+    // les filtres du module ne sauraient remonter jusqu'au mod que le joueur
+    // refuse ou supprime. Posée une fois pour toutes, elle survit au rejeu.
+    if (m && modEnExec && !m.__mod) m.__mod = modEnExec;
     if (i >= 0) modules[i] = m;
     else modules.push(m);
+    // Hors montage (console du navigateur, script tiers chargé après la fiche) :
+    // le prochain mount() remet la table à la table native, et rien ne
+    // rejouerait cet enregistrement. On le garde donc, comme le montage rejoue
+    // les mods à chaque fois. Le propriétaire est le MOD s'il y en a un, sinon
+    // l'id du module : c'est par lui que le rejeu saura s'il a encore un ayant
+    // droit (rejoueHorsMontage).
+    if (!enMontage)
+      gardeHorsMontage({ mod: m, prop: (m && (m.__mod || m.id)) ? String(m.__mod || m.id) : "?" });
     return m;
   }
   // Ordre PARTIEL : les id listés passent devant, dans l'ordre donné ; tous les
@@ -1639,7 +2045,28 @@
   function actif(id) {
     return !state || !state.modActifs || state.modActifs[id] !== false;
   }
+  // Couper un module le retire de la fiche sans rien effacer : son coffre et
+  // ses données restent, il ne s'affiche plus. C'est le corps de Jjk.active,
+  // NOMMÉ ici parce que le bloc Options « Modules » s'en sert aussi : son
+  // interrupteur ne doit pas passer par un window.Jjk qu'un mod peut remplacer.
+  function activeModule(id, oui) {
+    if (!state) return;                  // avant le chargement : rien à couper
+    if (!state.modActifs) state.modActifs = {};
+    // Le bloc des réglages ne se coupe pas, et le REFUS EST ICI, dans l'écriture,
+    // pas seulement dans le montage. Sinon un mod qui appelle Jjk.active laisse
+    // « modules: false » dans le personnage pour toujours : le bloc s'affiche
+    // (le montage l'exempte) pendant que Jjk.actif("modules") répond faux, et le
+    // personnage transmis emporte une incohérence que rien n'efface.
+    if (String(id) === MODULE_REGLAGES) { delete state.modActifs[id]; save(); return; }
+    if (oui === false) state.modActifs[id] = false;
+    else delete state.modActifs[id];
+    save();
+  }
   var elModules = {};   // id -> l'élément monté (pour marquer une muselière)
+  // Le bloc des réglages d'affichage, nommé une fois pour toutes : trois
+  // endroits doivent l'épargner, et un id recopié à la main finirait par
+  // manquer à l'un d'eux.
+  var MODULE_REGLAGES = "modules";
 
   function monteModules(panes) {
     var colonnes = {};
@@ -1648,22 +2075,58 @@
       if (SQUELETTES[t.id] && panes[t.id]) colonnes[t.id] = SQUELETTES[t.id](panes[t.id]);
     });
     ordreModules().forEach(function (m) {
-      // onglet ou colonne inconnus : le module est simplement laissé de côté.
-      // Un mod mal réglé ne doit pas emporter toute la fiche avec lui.
-      var hote = colonnes[m.onglet] && colonnes[m.onglet][m.colonne];
-      if (!hote) return;
-      if (!actif(m.id)) return;                          // coupé : pas monté
+      // Le bloc des réglages ne se coupe pas. Sa puce est déjà absente de la
+      // liste, mais un mod (ou une ligne de console) qui appelle
+      // Jjk.active("modules", false) écrit le refus DANS LE PERSONNAGE : le
+      // bloc ne se monterait plus, et avec lui disparaîtrait le seul endroit
+      // d'où l'on rallume un module ou d'où l'on rend la disposition d'origine.
+      // Le blocage voyagerait même avec le personnage.
+      //
+      // Ce test passe AVANT celui de l'hôte : un module coupé n'affiche rien
+      // parce que le joueur l'a voulu, il n'a pas à porter la mention de ceux
+      // qui ne trouvent pas leur place.
+      if (m.id !== MODULE_REGLAGES && !actif(m.id)) return;   // coupé : pas monté
       // « pour » de la table native est un PRÉDICAT (le module n'existe que
       // s'il rend vrai) ; celui d'un mod est une version, gérée ailleurs.
-      if (typeof m.pour === "function" && !m.pour()) return;
+      // Il passe par moduleAffichable, qui l'attrape : un prédicat qui jette
+      // emportait sinon TOUT le montage, donc la fiche, sans rien pour rouvrir.
+      // Lui aussi avant l'hôte : un module qui n'existe pas ici n'a rien à dire
+      // de sa colonne, et le bloc Modules ne lui donne d'ailleurs pas de ligne.
+      if (!moduleAffichable(m)) return;
+      // Onglet ou colonne inconnus : le module est laissé de côté (un mod mal
+      // réglé ne doit pas emporter toute la fiche), mais il est MARQUÉ. Sans ce
+      // « vide », un module qui déclare une colonne absente de son onglet ne
+      // s'affiche nulle part ET ne se plaint nulle part : sa ligne du bloc
+      // Modules le donne pour un module ordinaire, et le joueur cherche une
+      // panne qui n'existe pas. aClef, et pas une simple lecture : une colonne
+      // nommée « constructor » rendrait autrement une méthode d'Object en guise
+      // d'hôte, et le montage tomberait sur le premier appendChild.
+      var cols = colonnes[m.onglet];
+      var hote = (cols && aClef(cols, m.colonne)) ? cols[m.colonne] : null;
+      if (!hote) { etatModule(m.id).vide = true; return; }
       // le module construit DANS son propre registre : tout ce que ses briques
       // y poussent lui appartient, et lui seul en répond
       var reg = regModule(m.id);
       var precedent = hooks;
+      // même idée pour les filtres : ceux qu'un module pose pendant son build
+      // portent son id, et c'est lui que le journal nomme s'ils déraillent
+      var propPrecedent = proprietaireCourant;
       var e;
       hooks = reg;
+      // le MOD qui a posé ce module, s'il vient d'un mod : c'est lui l'ayant
+      // droit de ce que le build enregistre, pas l'id du bloc
+      proprietaireCourant = m.__mod || m.id;
       try {
         e = m.build(contexte(m, reg));
+        // build qui rend autre chose qu'un ÉLÉMENT (une chaîne, un objet, un
+        // texte) : rien à monter, et surtout rien qui porte un dataset. Le
+        // traiter comme un build muet coûte un bloc ; le poser dans la page
+        // coûtait la fiche entière.
+        if (e && e.nodeType !== 1) e = null;
+        // les modules à rouage se sont déjà nommés (block() pose data-module) ;
+        // les autres le reçoivent ici, pour que TOUS soient repérables. DANS le
+        // try : c'est encore le module qui répond de ce qu'il a rendu.
+        if (e && !e.dataset.module) e.dataset.module = m.id;
         etatModule(m.id).panne = "";
       } catch (err) {
         // build a pu pousser des fonctions avant de tomber : elles pointent
@@ -1672,15 +2135,28 @@
         e = blocEnPanne(m, err);
       }
       hooks = precedent;
+      proprietaireCourant = propPrecedent;
       // build qui ne rend rien : ce n'est PAS une erreur (un module a le droit
       // de s'effacer), mais la liste des modules doit pouvoir le signaler
       etatModule(m.id).vide = !e;
       if (!e) return;
-      // les modules à rouage se sont déjà nommés (block() pose data-module) ;
-      // les autres le reçoivent ici, pour que TOUS soient repérables
-      if (!e.dataset.module) e.dataset.module = m.id;
-      elModules[m.id] = e;
-      hote.appendChild(e);
+      // L'INSERTION AUSSI PEUT JETER, et c'était la dernière porte par laquelle
+      // un mod fermait la fiche. Un build qui rend document.body (ou n'importe
+      // quel ancêtre du point de montage) fait lever appendChild : hors try,
+      // l'exception sortait de mount(), la feuille restait à moitié bâtie, et
+      // comme le mod voyage avec le personnage cela recommençait à CHAQUE
+      // ouverture, sans une ligne d'interface pour le couper. Ici, c'est une
+      // carte de panne comme une autre, avec son bouton Désactiver.
+      try {
+        hote.appendChild(e);
+        elModules[m.id] = e;
+      } catch (err2) {
+        reg.length = 0;
+        var carte = blocEnPanne(m, err2);
+        elModules[m.id] = carte;
+        // la carte de panne, elle, est bâtie ici : elle s'insère forcément
+        hote.appendChild(carte);
+      }
     });
   }
 
@@ -1709,15 +2185,20 @@
       delete etatsModules[m.id];
       remount();
     }));
-    line.appendChild(miniBtn("Désactiver", "Retirer ce module de la fiche : rien n'est perdu, il ne s'affiche plus.", function () {
-      // même garde que __jjkModules.active : une panne peut survenir sur un
-      // état remplacé à la main (import, bibliothèque) qui n'est pas repassé
-      // par normalize(), et la clé manquerait
-      if (!state.modActifs) state.modActifs = {};
-      state.modActifs[m.id] = false;
-      save();
-      remount();
-    }, "danger"));
+    // Pas de « Désactiver » pour le bloc des réglages, même en panne : le
+    // couper retirerait le seul endroit d'où l'on rallume un module, y compris
+    // lui-même. « Réessayer » reste, et le montage suivant lui redonne sa
+    // chance ; les modules coupés le sont, eux, sans que la fiche s'en mêle.
+    if (m.id !== MODULE_REGLAGES)
+      line.appendChild(miniBtn("Désactiver", "Retirer ce module de la fiche : rien n'est perdu, il ne s'affiche plus.", function () {
+        // même garde que __jjkModules.active : une panne peut survenir sur un
+        // état remplacé à la main (import, bibliothèque) qui n'est pas repassé
+        // par normalize(), et la clé manquerait
+        if (!state.modActifs) state.modActifs = {};
+        state.modActifs[m.id] = false;
+        save();
+        remount();
+      }, "danger"));
     tools.appendChild(line);
     b.appendChild(tools);
     return b;
@@ -1756,6 +2237,26 @@
   };
   function contexte(m, reg) {
     var id = m.id;
+    // LE PROPRIÉTAIRE EST LE MOD, PAS LE MODULE. Un mod enregistre presque
+    // toujours un module dont l'id diffère du sien (« lmod » qui pose
+    // « bloc-journal ») : attribuer le filtre au module rendrait la purge
+    // inopérante, puisque c'est le MOD que le joueur refuse ou supprime.
+    // m.__mod est posé par enregistre() quand un mod tourne.
+    var prop = m.__mod || id;
+    // Ce qu'un module installe DEPUIS un gestionnaire (un clic, longtemps après
+    // le montage) doit rester à son nom. Sans cette enveloppe, proprietaireCourant
+    // est retombé à « ? » et le filtre posé par le bouton d'un mod refusé
+    // survivait à son refus : c'est exactement le défaut que la contre-relecture
+    // a rouvert.
+    function aNous(fn) {
+      if (typeof fn !== "function") return fn;
+      return function () {
+        var avant = proprietaireCourant;
+        proprietaireCourant = prop;
+        try { return fn.apply(this, arguments); }
+        finally { proprietaireCourant = avant; }
+      };
+    }
     // le coffre privé du module, rangé dans state.modData[id] : il voyage avec
     // le personnage (bibliothèque, export JSON, Attributes Roll20)
     var donnees = {
@@ -1811,17 +2312,19 @@
       enregistrer: save,
       reconstruire: remount,
       edition: function () { return isEdit(id); },
-      // briques
-      texte: function (lire, ecrire, indication) { return textInput(lire, ecrire, indication, reg); },
-      bouton: function (libelle, infobulle, action) { return miniBtn(libelle, infobulle, action); },
-      pas: function (lire, ecrire, pas) { return stepper(lire, ecrire, pas || 1, null, reg); },
-      tuile: function (libelle, valeur, action) { return bigTile(libelle, valeur, action, reg); },
+      // briques. Tout ce qui prend un GESTE du joueur passe par aNous() : le
+      // code appelé au clic doit rester attribué à son mod, sinon ce qu'il
+      // installe alors n'a plus d'ayant droit et survit à son refus.
+      texte: function (lire, ecrire, indication) { return textInput(lire, aNous(ecrire), indication, reg); },
+      bouton: function (libelle, infobulle, action) { return miniBtn(libelle, infobulle, aNous(action)); },
+      pas: function (lire, ecrire, pas) { return stepper(lire, aNous(ecrire), pas || 1, null, reg); },
+      tuile: function (libelle, valeur, action) { return bigTile(libelle, valeur, aNous(action), reg); },
       ligneComp: function (carac, nom) {
         return compRow({ key: carac + "/" + nom, name: nom, carac: carac, custom: false },
                        false, { module: id, reg: reg });
       },
       filtre: puce,
-      dialogue: function (titre, corps, valider) { return dialogue(titre, corps, valider); },
+      dialogue: function (titre, corps, valider) { return dialogue(titre, corps, aNous(valider)); },
       message: flash,
       // sorties (le destinataire reste celui que le joueur a fixé)
       jet: function (libelle, valeur) { doRoll(libelle, valeur, null, true); },
@@ -1842,6 +2345,12 @@
         regen: regen,
         poidsPorte: poidsPorte
       },
+      // …et de quoi les CHANGER : un filtre reçoit la valeur calculée et rend
+      // celle qu'il veut, pour toute la fiche. Le propriétaire est figé ici, à
+      // la construction du contexte, et c'est celui du MOD : un module qui pose
+      // son filtre depuis un bouton, longtemps après son build, reste chez lui,
+      // et refuser le mod emporte bien le filtre.
+      filtreCalcul: function (nom, fn) { ajouteFiltre(nom, fn, prop); },
       // mise en forme
       fmt: { signe: sign, nombre: fmtP },
       champs: LIBELLES,
@@ -4156,13 +4665,533 @@
     return bAct;
   }
 
+  // ---- modules : ce que la fiche affiche, et où ----
+  // Ce bloc-ci parle de TOUS les autres. Il n'écrit que deux choses : la
+  // disposition (state.modules) et les interrupteurs (state.modActifs) ; rien
+  // du personnage ne passe par lui. Les outils qu'il appelle vivent plus bas
+  // (ordreModules, colonnesDe, MODULES_NATIFS) : ce sont ceux du montage, pour
+  // que la liste dise exactement ce que la fiche a fait.
+  //
+  // Libellés COURTS : c'est l'infobulle du menu qui dit « colonne », et une
+  // ligne de module tient tout entière sur un rang tant que le menu reste
+  // étroit (mesuré sous Firefox : « Colonne du milieu » la faisait déborder,
+  // et chaque module y gagnait une seconde ligne).
+  var LIB_COLONNES = {
+    gauche: "Gauche", milieu: "Milieu", droite: "Droite", bas: "Pleine largeur"
+  };
+  // Le prédicat « pour » d'un module natif dit s'il existe ICI (« affichage »
+  // n'existe que dans Roll20). Un module qui n'existe pas n'a pas de ligne : il
+  // n'y a rien à en régler. Son id, lui, reste dans l'ordre enregistré — sans
+  // quoi ouvrir la fiche sur le site effacerait le rangement fait dans Roll20.
+  function moduleAffichable(m) {
+    if (typeof m.pour !== "function") return true;
+    try { return !!m.pour(); } catch (e) { return false; }
+  }
+  // La colonne d'un module existe-t-elle dans le squelette de son onglet ? Un
+  // mod qui recopie « milieu » (une colonne de l'onglet Fiche) dans un onglet
+  // qui n'en a pas se retrouve sans hôte : il ne se monte nulle part, tout
+  // comme un module dont l'ONGLET est inconnu. La différence est que sa ligne,
+  // elle, figure bien sous son onglet, l'air d'un module ordinaire. Il faut
+  // donc la reconnaître pour le dire.
+  function colonneRepli(m) {
+    var cols = colonnesDe(m.onglet);
+    if (!cols) return null;                          // onglet inconnu : autre cas
+    if (aClef(cols, m.colonne)) return m.colonne;
+    return Object.keys(cols)[0] || null;             // le repli d'appliqueDisposition
+  }
+  function colonneInconnue(m) {
+    var r = colonneRepli(m);
+    return !!r && r !== m.colonne;
+  }
+  function idsConnus() {
+    return ordreModules().map(function (m) { return m.id; });
+  }
+  function disposition() {
+    if (!state.modules || typeof state.modules !== "object" || Array.isArray(state.modules))
+      state.modules = {};
+    return state.modules;
+  }
+  // L'ordre COMPLET des id connus, et pas seulement les deux qui bougent : relu
+  // à froid, state.modules.ordre doit dire la disposition entière.
+  //
+  // Mais ce montage-ci ne connaît que les modules qui existent CHEZ LUI, et
+  // l'ordre, lui, voyage avec le personnage. Écrire la seule liste du jour
+  // effacerait le rang des autres : le mod « journal » de l'auteur, rangé en
+  // tête de colonne, est en attente d'autorisation chez le joueur qui ouvre la
+  // fiche ; une flèche cliquée là-bas suffisait à le renvoyer en fin de colonne,
+  // sans un mot, jusque dans les Attributes. Les id inconnus d'ici gardent donc
+  // leur rang, et les connus se rangent dans les places qui restent.
+  //
+  // Un module retiré POUR DE BON garde son rang lui aussi : rien ne le distingue
+  // d'un mod qui attend son autorisation. Ça ne coûte qu'une ligne morte dans
+  // l'ordre enregistré, qu'ordreModules() écarte de toute façon, quand oublier
+  // coûtait la disposition d'un autre joueur. « Disposition d'origine » vide
+  // tout, pour qui voudrait faire le ménage.
+  function fusionneOrdre(ids) {
+    var ancien = disposition().ordre;
+    if (!Array.isArray(ancien) || !ancien.length) return ids.slice();
+    var connu = {}, vu = {}, out = [], k = 0, i, id;
+    for (i = 0; i < ids.length; i++) connu[ids[i]] = 1;
+    for (i = 0; i < ancien.length; i++) {
+      id = ancien[i];
+      // un doublon consommerait deux places : l'ordre enregistré vient d'un
+      // fichier importé ou d'une autre version, il n'est pas garanti propre
+      if (typeof id !== "string" || !id || aClef(vu, id)) continue;
+      vu[id] = 1;
+      if (!aClef(connu, id)) { out.push(id); continue; }   // inconnu ici : il tient sa place
+      if (k < ids.length) out.push(ids[k++]);
+    }
+    while (k < ids.length) out.push(ids[k++]);
+    return out;
+  }
+  function ecritOrdre(ids) {
+    disposition().ordre = fusionneOrdre(ids);
+    save();
+    remount();
+  }
+  // Monter ou descendre = ÉCHANGER avec le voisin de la même colonne. Échanger
+  // deux entrées de l'ordre global suffit : tout ce qui les sépare (les autres
+  // onglets, les autres colonnes) garde son rang, et les deux modules
+  // permutent dans la seule colonne qu'ils partagent.
+  function echangeModules(a, b) {
+    var ids = idsConnus(), i = ids.indexOf(a), j = ids.indexOf(b);
+    if (i < 0 || j < 0) return;
+    ids[i] = b;
+    ids[j] = a;
+    ecritOrdre(ids);
+  }
+  function natifDe(id) {
+    for (var i = 0; i < MODULES_NATIFS.length; i++)
+      if (MODULES_NATIFS[i].id === id) return MODULES_NATIFS[i];
+    return null;
+  }
+  // Changer de colonne écrit la place ET l'ordre (le contrat veut l'ordre
+  // complet à chaque déplacement, pour qu'un état relu à froid se lise d'un
+  // trait). Revenir à la place d'origine EFFACE l'entrée au lieu d'y ranger la
+  // place native : la disposition reste éparse, et un module que la fiche
+  // déménagera un jour suivra son déménagement au lieu d'être épinglé ici.
+  function placeModule(id, onglet, colonne) {
+    var d = disposition();
+    var nat = natifDe(id);
+    if (!d.place || typeof d.place !== "object" || Array.isArray(d.place)) d.place = {};
+    if (nat && nat.onglet === onglet && nat.colonne === colonne) delete d.place[id];
+    else d.place[id] = { onglet: onglet, colonne: colonne };
+    ecritOrdre(idsConnus());
+  }
+  // « cible » nulle : le module est en bout de colonne, la flèche reste là mais
+  // inerte. La retirer ferait danser les boutons d'une ligne à l'autre.
+  function flecheModule(txt, titre, m, cible) {
+    var b = miniBtn(txt, cible ? titre : "Déjà en bout de colonne", function () {
+      if (cible) echangeModules(m.id, cible.id);
+    });
+    b.disabled = !cible;
+    return b;
+  }
+  // freres : les modules de la MÊME colonne du MÊME onglet, dans l'ordre de la
+  // liste. note : ce qu'il y a à dire de ce module quand il ne va pas.
+  function ligneModule(m, freres, note) {
+    var ligne = el("div", "pc-modrow");
+    // l'id sur la ligne : c'est par lui qu'une sonde retrouve LE module dont
+    // elle parle, plutôt que par un libellé qui peut changer de mot
+    ligne.dataset.id = m.id;
+    var j = freres.indexOf(m);
+    var cols = colonnesDe(m.onglet);
+    var noms = cols ? Object.keys(cols) : [];
+    ligne.appendChild(el("span", "nom", m.titre || m.id));
+    ligne.appendChild(el("span", "id", m.id));
+    var etat = el("span", "etat", "");
+    ligne.appendChild(etat);
+    // Le bloc « Modules » n'a pas de puce : c'est LUI qui rallume les autres.
+    // Se couper lui-même le ferait disparaître, et plus rien sur la fiche ne
+    // pourrait faire revenir un module éteint. Le montage l'épargne de la même
+    // façon (MODULE_REGLAGES) : l'interdiction ne tient pas qu'à cette puce.
+    if (m.id !== MODULE_REGLAGES) {
+      var puce = el("span", "pc-chip", "Affiché");
+      puce.title = "Retirer ce module de la fiche : rien n'est effacé, il cesse de s'afficher.";
+      puce.classList.toggle("on", actif(m.id));
+      puce.addEventListener("click", function () {
+        activeModule(m.id, !actif(m.id));
+        remount();
+      });
+      ligne.appendChild(puce);
+    }
+    ligne.appendChild(flecheModule("▲", "Monter dans la colonne", m, freres[j - 1]));
+    ligne.appendChild(flecheModule("▼", "Descendre dans la colonne", m, freres[j + 1]));
+    // La liste des colonnes paraît dès qu'il y a un CHOIX à faire… ou une
+    // RÉPARATION à offrir. Un onglet à colonne unique (Art) n'a rien à choisir,
+    // mais un module qui y déclare une colonne inconnue ne s'affiche nulle part :
+    // sans la liste, la ligne annonçait la panne et ne donnait aucun moyen d'en
+    // sortir. Le module était irréparable depuis la fiche.
+    var colonneInconnue = !aClef(cols, m.colonne);
+    if (noms.length > 1 || (colonneInconnue && noms.length)) {
+      var sel = el("select", "pc-select");
+      sel.title = colonneInconnue
+        ? "Colonne déclarée inconnue dans cet onglet : en choisir une remet le module à sa place."
+        : "Colonne de ce module dans son onglet.";
+      // .pc-select est taillée pour les grilles (width: 100 %). Dans une ligne
+      // en flex, elle prendrait une ligne à elle seule : mesuré sous Firefox,
+      // la liste passait de 41 à 82 px par module, soit le double de hauteur
+      // pour la même chose. Elle reprend donc la largeur de son contenu, comme
+      // le fait déjà .pc-envoi .pc-select dans la barre d'envoi.
+      sel.style.width = "auto";
+      noms.forEach(function (c) {
+        var o = el("option", null, LIB_COLONNES[c] || capFirst(c));
+        o.value = c;
+        sel.appendChild(o);
+      });
+      // Une colonne que l'onglet ne connaît pas ne correspond à AUCUNE option :
+      // la liste s'afficherait vide, et le joueur ne saurait ni où est son
+      // module ni quoi choisir. On lui donne donc SA PROPRE ENTRÉE, en tête et
+      // sélectionnée. Montrer à la place la colonne de repli aurait été pire
+      // qu'inutile : choisir cette colonne-là, la seule qui semblait juste,
+      // n'émettait aucun « change » et ne réparait donc rien.
+      if (colonneInconnue) {
+        var oInc = el("option", null, "« " + m.colonne + " » (inconnue)");
+        oInc.value = "";
+        sel.insertBefore(oInc, sel.firstChild);
+      }
+      sel.value = colonneInconnue ? "" : m.colonne;
+      sel.addEventListener("change", function () {
+        if (!sel.value) return;          // l'entrée « (inconnue) » ne range rien
+        placeModule(m.id, m.onglet, sel.value);
+      });
+      ligne.appendChild(sel);
+    }
+    // Panne et muselière sont RELUES à chaque rafraîchissement : les modules
+    // bâtis après celui-ci n'ont pas encore pu tomber quand cette liste se
+    // monte, et une muselière ne tombe qu'après cinq rafraîchissements ratés.
+    // Le message vit dans son propre élément : long, il prend une ligne à lui
+    // seul ; vide, il ne coûte ni place ni hauteur.
+    var mention = el("div", "pc-block-note", "");
+    ligne.appendChild(mention);
+    hooks.push(function () {
+      var e = etatModule(m.id), court = "", long = "";
+      if (e.panne) { court = "en panne"; long = e.panne; }
+      else if (e.musele) { court = "muselé"; long = e.erreur; }
+      else if (e.vide) { court = "n'affiche rien"; }
+      etat.textContent = court;
+      mention.textContent = long || note || "";
+      if (e.panne) ligne.setAttribute("data-etat", "panne");
+      else ligne.removeAttribute("data-etat");
+    });
+    return ligne;
+  }
+  function buildModules() {
+    var b = block("Modules");
+    b.appendChild(el("div", "pc-block-note",
+      "Ce que la fiche affiche, et où. Couper un module ne perd rien : ses données restent, il cesse de s'afficher."));
+    var box = el("div");
+    var visibles = ordreModules().filter(moduleAffichable);
+    var vus = {};
+    TABS.forEach(function (t) {
+      var dedans = visibles.filter(function (m) { return m.onglet === t.id; });
+      if (!dedans.length) return;
+      box.appendChild(el("div", "pc-modgroupe", t.label));
+      dedans.forEach(function (m) {
+        vus[m.id] = 1;
+        // La colonne inconnue se dit ici, comme l'onglet inconnu se dit plus
+        // bas : le module ne se monte pas plus dans un cas que dans l'autre, et
+        // rien d'autre sur la ligne ne le laisserait deviner.
+        box.appendChild(ligneModule(m, dedans.filter(function (x) {
+          return x.colonne === m.colonne;
+        }), colonneInconnue(m)
+          ? "colonne « " + m.colonne + " » inconnue dans cet onglet : ce module ne s'affiche nulle part."
+          : ""));
+      });
+    });
+    // Un module dont l'onglet n'existe pas (un mod mal réglé) ne se monte nulle
+    // part. Sans cette liste il serait invisible ET impossible à couper : le
+    // joueur n'aurait plus qu'à effacer le mod pour s'en défaire.
+    var perdus = visibles.filter(function (m) { return !vus[m.id]; });
+    if (perdus.length) {
+      box.appendChild(el("div", "pc-modgroupe", "Onglet inconnu"));
+      perdus.forEach(function (m) {
+        box.appendChild(ligneModule(m, [m],
+          "onglet « " + m.onglet + " » inconnu : ce module ne s'affiche nulle part."));
+      });
+    }
+    if (!box.children.length) box.appendChild(el("div", "pc-empty", "Aucun module."));
+    b.appendChild(box);
+    var tools = el("div", "pc-comp-tools");
+    var line = el("div", "row");
+    line.appendChild(miniBtn("Disposition d'origine",
+      "Rendre à chaque module son onglet, sa colonne et son rang d'origine. Les modules coupés le restent.",
+      function () {
+        state.modules = {};
+        save();
+        remount();
+        flash("Disposition d'origine rétablie.");
+      }));
+    tools.appendChild(line);
+    b.appendChild(tools);
+    return b;
+  }
+
+  // ---- mods : le code ajouté au personnage ----
+  // Ce bloc dit ce que chaque mod fait (ou pourquoi il ne fait rien), donne de
+  // quoi trancher, et permet d'en écrire un. Le moteur (jjk-mods.js) juge,
+  // exécute et range les accords ; sans lui, ce bloc se contente de le dire.
+  //
+  // Aucun bac à sable : un mod autorisé tourne dans la page de la fiche avec
+  // exactement ses droits. Les textes d'ici ne doivent jamais laisser croire
+  // autre chose.
+  var ETATS_MOD = {
+    ok: "tourne",
+    panne: "en panne",
+    attente: "en attente d'autorisation",
+    coupe: "coupé",
+    recent: "trop récent",
+    refuse: "refusé sur ce navigateur"
+  };
+  function moteurMods() {
+    return (window.JjkMods && typeof window.JjkMods.execute === "function") ? window.JjkMods : null;
+  }
+  function bilanDeMod(id) {
+    for (var i = 0; i < bilanMods.length; i++) if (bilanMods[i].id === id) return bilanMods[i];
+    return null;
+  }
+  // Le moteur fait foi pour l'empreinte comme pour l'avis : la recalculer ici
+  // ferait deux règles pour une seule décision, et un mod se remettrait à
+  // demander l'autorisation dès que les deux dérivent d'un caractère.
+  function empreinteMod(id, src) {
+    var mm = moteurMods();
+    try { return mm ? mm.empreinte(id, src) : ""; } catch (e) { return ""; }
+  }
+  function avisMod(emp) {
+    var mm = moteurMods();
+    try { return mm ? mm.avis(emp) : ""; } catch (e) { return ""; }
+  }
+  // Même règle d'id que le moteur (idPropre) et que normalize() : les trois
+  // chemins doivent donner le MÊME id, sans quoi l'empreinte changerait selon
+  // le chemin pris et le joueur réautoriserait un mod qu'il connaît déjà.
+  function idMod(v) {
+    return String(v == null ? "" : v).toLowerCase()
+      .replace(/[^a-z0-9-]+/g, "-").replace(/-+/g, "-").replace(/^-+|-+$/g, "");
+  }
+  // Un « pour » illisible est SILENCIEUSEMENT oublié par le moteur : autant le
+  // dire tout de suite, sinon le joueur croit avoir posé un garde-fou qui
+  // n'existe pas. Même forme que versionLue de jjk-mods.js.
+  function versionLisible(v) {
+    return /^\s*v?\d+(\.\d+)?(\.\d+)?\s*([-+][^\s]*)?\s*$/.test(v);
+  }
+  // Le formulaire d'un mod, celui de l'ajout comme celui de la modification.
+  // « appliquer » reçoit des valeurs déjà validées ; rendre false laisse le
+  // dialogue ouvert, avec le message qui dit pourquoi.
+  function formulaireMod(base, titre, libelleValider, appliquer) {
+    base = base || {};
+    var corps = el("div", "pc-modal-body");
+    corps.appendChild(el("div", "pc-modal-note",
+      "Ce code tourne dans la page de la fiche, avec les mêmes droits qu'elle : il n'y a pas de bac à sable. " +
+      "Il part avec le personnage, et les autres joueurs auront à l'autoriser chez eux avant qu'il ne tourne."));
+    var nom = el("input");
+    nom.type = "text";
+    nom.value = base.nom || "";
+    var id = el("input");
+    id.type = "text";
+    id.value = base.id || "";
+    // l'id se déduit du nom TANT QUE personne n'y a touché : un id corrigé à la
+    // main ne doit pas se faire réécrire à la frappe suivante
+    var idTenu = !!base.id;
+    nom.addEventListener("input", function () { if (!idTenu) id.value = idMod(nom.value); });
+    id.addEventListener("input", function () { idTenu = true; });
+    var src = el("textarea", "pc-code");
+    src.value = base.src || "";
+    src.spellcheck = false;
+    var pour = el("input");
+    pour.type = "text";
+    pour.placeholder = RELEASE;
+    pour.value = base.pour || "";
+    corps.appendChild(fld("Nom", nom));
+    corps.appendChild(fld("Identifiant", id));
+    corps.appendChild(fld("Code JavaScript (Jjk, ctx)", src));
+    corps.appendChild(fld("Pour la fiche, au moins (facultatif)", pour));
+    dialogue(titre, corps, function () {
+      var vid = idMod(id.value) || idMod(nom.value);
+      var vp = String(pour.value == null ? "" : pour.value).trim();
+      var pris = false;
+      if (!vid) { flash("Il faut un identifiant : des lettres, des chiffres ou des tirets."); return false; }
+      (state.mods || []).forEach(function (x) { if (x !== base && x.id === vid) pris = true; });
+      if (pris) { flash("L'identifiant « " + vid + " » est déjà pris par un autre mod."); return false; }
+      if (vp && !versionLisible(vp)) {
+        flash("« Pour la fiche » attend un numéro de version, comme " + RELEASE + ".");
+        return false;
+      }
+      appliquer(vid, String(nom.value == null ? "" : nom.value).trim() || vid,
+                String(src.value == null ? "" : src.value), vp);
+    }, libelleValider);
+  }
+  function ajouteMod() {
+    formulaireMod(null, "Ajouter un mod", "Ajouter", function (id, nom, src, pour) {
+      var neuf = { id: id, nom: nom, actif: true, src: src };
+      if (pour) neuf.pour = pour;
+      if (!Array.isArray(state.mods)) state.mods = [];
+      state.mods.push(neuf);
+      // Le joueur vient de le taper : il n'a pas à s'autoriser lui-même. Le oui
+      // porte sur CE code et sur ce navigateur seulement ; retoucher le mod
+      // change son empreinte, donc le fait redemander, et il ne vaut rien chez
+      // les autres joueurs.
+      decideMod(empreinteMod(id, src), "oui");
+      save();
+      remount();
+      flash("Mod « " + nom + " » ajouté.");
+    });
+  }
+  function modifieMod(m) {
+    var avant = empreinteMod(m.id, m.src);
+    formulaireMod(m, "Modifier « " + (m.nom || m.id) + " »", "Enregistrer",
+      function (id, nom, src, pour) {
+        m.id = id;
+        m.nom = nom;
+        m.src = src;
+        if (pour) m.pour = pour; else delete m.pour;
+        var apres = empreinteMod(id, src);
+        // Le oui ne se pose QUE si l'empreinte a changé : le joueur vient alors
+        // d'écrire ce code, et sans lui son propre mod lui redemanderait
+        // l'autorisation à l'instant. Ouvrir puis refermer l'éditeur sans rien
+        // toucher, en revanche, ne décide de rien : cela écrasait un refus
+        // sans un mot, alors que la note du formulaire promet l'inverse.
+        if (apres && apres !== avant) decideMod(apres, "oui");
+        save();
+        remount();
+        flash("Mod « " + nom + " » enregistré.");
+      });
+  }
+  // LIRE le code d'un mod ne doit pas supposer d'ouvrir l'éditeur : « Modifier »
+  // sert à écrire, et valider son formulaire vaut accord. Ici rien ne bouge tant
+  // que le joueur ne tranche pas, et les deux boutons sont là pour qu'il puisse
+  // trancher en connaissance de cause.
+  function voirMod(m) {
+    var emp = empreinteMod(m.id, m.src);
+    var corps = el("div", "pc-modal-body");
+    corps.appendChild(el("div", "pc-modal-note",
+      "Un mod autorisé tourne dans la page de la fiche, avec les mêmes droits qu'elle : " +
+      "il n'y a pas de bac à sable. Lire ce code ne décide de rien."));
+    var ligne = el("div", "pc-modrow");
+    ligne.appendChild(el("span", "nom", m.nom || m.id));
+    ligne.appendChild(el("span", "id", m.id));
+    corps.appendChild(ligne);
+    var ta = el("textarea", "pc-code");
+    ta.readOnly = true;
+    ta.spellcheck = false;
+    ta.value = String(m.src == null ? "" : m.src);
+    corps.appendChild(ta);
+    var boutons = el("div", "row");
+    boutons.appendChild(miniBtn("Autoriser", "Ce code tournera à chaque ouverture, sur ce navigateur", function () {
+      decideMod(emp, "oui");
+      remount();
+    }));
+    boutons.appendChild(miniBtn("Refuser", "Ce code ne tournera pas ; il reste sur le personnage", function () {
+      decideMod(emp, "non");
+      remount();
+    }, "danger"));
+    corps.appendChild(boutons);
+    // le dialogue ne valide rien : ses deux boutons ont déjà tout dit
+    dialogue("Code de « " + (m.nom || m.id) + " »", corps, function () {}, "Fermer");
+  }
+  function supprimeMod(m) {
+    var corps = el("div", "pc-modal-body");
+    corps.appendChild(el("div", "pc-modal-note",
+      "Le mod et son code quittent le personnage. Ce qu'il a déjà écrit dans la fiche reste ; " +
+      "l'accord donné à ce code sur ce navigateur reste lui aussi, et vaudrait encore si le mod revenait."));
+    dialogue("Supprimer « " + (m.nom || m.id) + " » ?", corps, function () {
+      var i = state.mods.indexOf(m);
+      if (i >= 0) state.mods.splice(i, 1);
+      save();
+      remount();
+      flash("Mod supprimé.");
+    }, "Supprimer");
+  }
+  function ligneMod(m) {
+    var ligne = el("div", "pc-modrow");
+    ligne.dataset.id = m.id;
+    var bil = bilanDeMod(m.id);
+    var etat = bil ? bil.etat : "";
+    var emp = empreinteMod(m.id, m.src);
+    var avis = avisMod(emp);
+    var on = m.actif !== false;
+    ligne.appendChild(el("span", "nom", m.nom || m.id));
+    ligne.appendChild(el("span", "id", m.id));
+    ligne.appendChild(el("span", "etat", aClef(ETATS_MOD, etat) ? ETATS_MOD[etat] : "état inconnu"));
+    if (etat === "panne") ligne.setAttribute("data-etat", "panne");
+    // Lire d'abord, écrire ensuite : le bouton de lecture passe EN PREMIER,
+    // c'est le geste qu'on attend de celui qui reçoit le code d'un autre.
+    ligne.appendChild(miniBtn("Voir le code", "Lire le code de ce mod sans y toucher", function () {
+      voirMod(m);
+    }));
+    ligne.appendChild(miniBtn("Modifier", "Changer le nom, l'identifiant ou le code de ce mod", function () {
+      modifieMod(m);
+    }));
+    // Les deux boutons suivent l'AVIS, pas l'état : un mod coupé ou trop récent
+    // se juge quand même, et un accord donné se retire. « Autoriser » reste un
+    // bouton ORDINAIRE : le mettre en avant pousserait à dire oui au code d'un
+    // autre joueur, ce qui est exactement la décision qui mérite un temps
+    // d'arrêt.
+    if (avis !== "oui")
+      ligne.appendChild(miniBtn("Autoriser", "Ce code tournera à chaque ouverture, sur ce navigateur", function () {
+        decideMod(emp, "oui");
+        remount();
+      }));
+    if (avis !== "non")
+      ligne.appendChild(miniBtn("Refuser", "Ce code ne tournera pas ; il reste sur le personnage", function () {
+        decideMod(emp, "non");
+        remount();
+      }, "danger"));
+    var puce = el("span", "pc-chip", "Actif");
+    puce.title = "Couper ce mod : il reste sur le personnage, il cesse de tourner.";
+    puce.classList.toggle("on", on);
+    puce.addEventListener("click", function () {
+      m.actif = !on;
+      save();
+      remount();
+    });
+    ligne.appendChild(puce);
+    ligne.appendChild(miniBtn("Supprimer", "Retirer ce mod du personnage", function () {
+      supprimeMod(m);
+    }, "danger"));
+    // Le message du moteur (la panne à réparer, la version qui manque) : c'est
+    // tout ce que le joueur a pour comprendre, il s'affiche en clair.
+    if (bil && bil.message) ligne.appendChild(el("div", "pc-block-note", bil.message));
+    return ligne;
+  }
+  function buildMods() {
+    var b = block("Mods");
+    b.appendChild(el("div", "pc-block-note",
+      "Le code d'un mod voyage avec le personnage : qui ouvre cette fiche reçoit ce code, " +
+      "et rien ne tourne chez lui tant qu'il ne l'a pas autorisé."));
+    // Le moteur est facultatif de naissance (un repli gelé peut ne charger que
+    // le bundle) : sans lui, on le dit et on ne propose rien qui n'aurait aucun
+    // effet — un mod ajouté ici n'aurait ni empreinte ni accord possible.
+    if (!moteurMods()) {
+      b.appendChild(el("div", "pc-empty",
+        "Le moteur de mods n'est pas chargé : les mods du personnage sont conservés tels quels, aucun ne tourne."));
+      return b;
+    }
+    var mods = Array.isArray(state.mods) ? state.mods : [];
+    var box = el("div");
+    mods.forEach(function (m) { box.appendChild(ligneMod(m)); });
+    if (!mods.length) box.appendChild(el("div", "pc-empty", "Aucun mod sur ce personnage."));
+    b.appendChild(box);
+    var tools = el("div", "pc-comp-tools");
+    var line = el("div", "row");
+    line.appendChild(miniBtn("Ajouter un mod", "Écrire un mod pour ce personnage", ajouteMod));
+    tools.appendChild(line);
+    b.appendChild(tools);
+    return b;
+  }
+
   // ---------- les modules natifs ----------
   // L'ordre de cette table EST l'ordre par défaut de la fiche : chaque module
   // tombe dans sa colonne, à la suite de ceux déjà déclarés pour elle.
   // buildTop, buildHead et buildEnvoi n'y sont pas : la barre d'outils,
   // l'en-tête et la barre d'envoi ne sont pas des modules, ils encadrent les
   // onglets et ne se déplacent pas.
-  [
+  //
+  // Cette table-ci ne se remanie JAMAIS : chaque mount() en repart (modules =
+  // MODULES_NATIFS.slice()). Sans cette copie intacte, un mod qui remplace un
+  // module natif le remplacerait pour toujours — même désinstallé, la fiche
+  // n'aurait plus l'original à remettre. Un module déplacé se recopie donc
+  // avant d'être touché (appliqueDisposition).
+  var MODULES_NATIFS = [
     // ---- onglet Fiche ----
     { id: "narration",  titre: "Narration",         onglet: "fiche", colonne: "gauche", build: buildNarration },
     { id: "caracs",     titre: "Caractéristiques",  onglet: "fiche", colonne: "gauche", build: buildCaracs },
@@ -4199,12 +5228,214 @@
     // colonne : la fiche elle-même en tête, puis les compétences, qui prennent
     // toute la hauteur restante.
     { id: "actions",    titre: "Fiche",             onglet: "options", colonne: "droite", build: buildActions },
-    { id: "optcomps",   titre: "Compétences",       onglet: "options", colonne: "droite", build: buildOptComps }
-  ].forEach(enregistre);
+    { id: "optcomps",   titre: "Compétences",       onglet: "options", colonne: "droite", build: buildOptComps },
+    // Ces deux-ci FERMENT la colonne gauche : ils ne parlent pas du
+    // personnage mais de la fiche elle-même (ce qui s'affiche et où, puis le
+    // code qu'on lui ajoute), ils se lisent donc en dernier. Déclarés à la fin
+    // de la table, ils tombent quand même sous « Affichage » : chaque module
+    // rejoint SA colonne, à la suite de ceux déjà déclarés pour elle.
+    { id: "modules",    titre: "Modules",           onglet: "options", colonne: "gauche", build: buildModules },
+    { id: "mods",       titre: "Mods",              onglet: "options", colonne: "gauche", build: buildMods }
+  ];
+  modules = MODULES_NATIFS.slice();
 
-  // La fiche expose son registre : c'est par là qu'un mod remplacera un module
-  // ou changera la disposition. Elle n'exécute rien elle-même.
-  window.__jjkModules = {
+  // ---------- le moteur de mods ----------
+  // jjk-mods.js est FACULTATIF DE NAISSANCE, exactement comme jjk-migrations.js :
+  // sans lui la fiche s'ouvre, simplement sans mods. Il ne touche ni au DOM ni à
+  // l'état, il reçoit la liste des mods et rend un bilan.
+  //
+  // Bilan du dernier passage : le bloc Options « Mods » et le bandeau de
+  // consentement le lisent. Vide tant que le moteur n'a pas tourné.
+  var bilanMods = [];
+  function modActifDe(id) {
+    var a = true;
+    ((state && state.mods) || []).forEach(function (m) { if (m && m.id === id) a = m.actif !== false; });
+    return a;
+  }
+  function modDe(id) {
+    var out = null;
+    ((state && state.mods) || []).forEach(function (m) { if (m && m.id === id) out = m; });
+    return out;
+  }
+  // Ce propriétaire est-il un MOD ? Son id figure alors parmi les mods du
+  // personnage, ou dans le bilan du montage précédent — un mod qu'on vient de
+  // supprimer n'est plus que là, et c'est justement celui-là qu'il faut
+  // reconnaître. « mod » est le repli du moteur : un mod dont on ignore le nom.
+  function propEstUnMod(prop) {
+    if (!prop || prop === "?") return false;
+    if (prop === PROP_MOD) return true;
+    return !!modDe(prop) || !!bilanDeMod(prop);
+  }
+  // Un mod n'a plus rien à faire tourner dès qu'il quitte le personnage, qu'on
+  // le coupe ou qu'on lui retire son accord : ce qu'il a inscrit hors montage
+  // (le filtre posé par l'un de ses boutons) s'arrête avec son code.
+  function modAutorise(prop) {
+    var m = modDe(prop);
+    if (!m || m.actif === false) return false;
+    return avisMod(empreinteMod(m.id, m.src)) === "oui";
+  }
+  function executeMods() {
+    bilanMods = [];
+    if (!state || !state.mods || !state.mods.length) return;
+    if (!window.JjkMods || typeof window.JjkMods.execute !== "function") return;
+    var avant = proprietaireCourant;
+    // Un mod qui pose un filtre le fait pendant que le moteur l'exécute : le
+    // propriétaire du moment lui revient. Le moteur peut nommer le mod qu'il
+    // lance (Jjk.__proprietaire) ; s'il ne le fait pas, faute de mieux, tout ce
+    // qui s'enregistre là appartient à « mod ».
+    proprietaireCourant = PROP_MOD;
+    try {
+      var b = window.JjkMods.execute(state.mods, window.Jjk, { version: RELEASE, schema: SCHEMA });
+      if (Array.isArray(b)) bilanMods = b;
+      // Le bilan se range et se tait : une faute de syntaxe dans un mod ne
+      // laissait RIEN dans la console du navigateur, alors que la page Mods dit
+      // d'y regarder en premier. Le message part au même format que les autres
+      // ennuis de module (« [mod:<id>] »), pour qu'un filtre sur « [mod: »
+      // ramasse tout ce qui concerne un mod, d'où que ça vienne.
+      bilanMods.forEach(function (x) {
+        if (!x || x.etat !== "panne") return;
+        if (window.console && window.console.warn)
+          window.console.warn("[mod:" + x.id + "] en panne : " + (x.message || "sans message"));
+      });
+    } catch (err) {
+      // le moteur lui-même en panne : la fiche s'ouvre quand même, sans mods
+      if (window.console && window.console.warn)
+        window.console.warn("[mods] moteur en panne : " + messageErreur(err));
+    }
+    proprietaireCourant = avant;
+  }
+
+  // ---------- la disposition enregistrée ----------
+  // Les colonnes d'un onglet ne se connaissent qu'en bâtissant son squelette :
+  // on le bâtit une fois à vide, dans un élément détaché, plutôt que de recopier
+  // ici une liste de colonnes qui dériverait au premier onglet remanié.
+  function colonnesDe(onglet) {
+    if (!aClef(SQUELETTES, onglet)) return null;
+    var noms = {};
+    var c = SQUELETTES[onglet](el("div"));
+    Object.keys(c || {}).forEach(function (k) { noms[k] = 1; });
+    return noms;
+  }
+  // state.modules : l'ordre d'abord, la place ensuite. Une consigne qui ne
+  // désigne rien de valide (module inconnu, onglet disparu, colonne qui
+  // n'existe plus dans ce squelette) est simplement ignorée : elle laisserait
+  // sinon le module hors de la fiche, sans rien pour l'y ramener.
+  function appliqueDisposition() {
+    var d = state && state.modules;
+    if (!d || typeof d !== "object") return;
+    if (Array.isArray(d.ordre)) ordonne(d.ordre);
+    var place = d.place;
+    if (!place || typeof place !== "object") return;
+    Object.keys(place).forEach(function (id) {
+      var p = place[id];
+      if (!p || typeof p !== "object") return;
+      var i = rangModule(id);
+      if (i < 0) return;
+      var m = modules[i];
+      var onglet = (typeof p.onglet === "string" && aClef(SQUELETTES, p.onglet)) ? p.onglet : m.onglet;
+      var cols = colonnesDe(onglet) || {};
+      var colonne = (typeof p.colonne === "string" && aClef(cols, p.colonne)) ? p.colonne : null;
+      // l'onglet change sans que la colonne suive : celle du module n'existe
+      // peut-être pas là-bas, on prend alors la première du squelette
+      if (!colonne) colonne = aClef(cols, m.colonne) ? m.colonne : Object.keys(cols)[0];
+      if (!colonne || (onglet === m.onglet && colonne === m.colonne)) return;
+      // COPIE : la table native ne se laisse pas remanier, elle est le seul
+      // moyen de rendre à un module sa place d'origine
+      var copie = {};
+      Object.keys(m).forEach(function (k) { copie[k] = m[k]; });
+      copie.onglet = onglet;
+      copie.colonne = colonne;
+      modules[i] = copie;
+    });
+  }
+
+  // ---------- le bandeau de consentement ----------
+  // Le code d'un mod voyage AVEC le personnage : ouvrir la fiche d'un autre
+  // joueur ne doit jamais exécuter son code sans un oui explicite. Ce oui reste
+  // dans CE navigateur (le moteur le range), il ne voyage pas — sinon l'auteur
+  // consentirait pour tout le monde.
+  //
+  // La fiche s'ouvre TOUJOURS : un mod en attente ne bloque rien, il ne tourne
+  // pas, c'est tout. (L'écran de version, lui, protège des données : il bloque.)
+  function modsEnAttente() {
+    if (!state || !state.mods || !state.mods.length) return [];
+    if (!window.JjkMods || typeof window.JjkMods.enAttente !== "function") return [];
+    try {
+      // MÊME repère que executeMods, sans quoi les deux écrans se contredisent :
+      // sans version ni schéma, le moteur saute ses deux contrôles, un mod
+      // « pour: 4.0.0 » est annoncé « pas autorisé », le joueur l'autorise, et
+      // le bloc Mods lui répond « trop récent ». Le oui ainsi arraché dort dans
+      // le navigateur et s'appliquerait tout seul le jour de la 4.0.0.
+      var a = window.JjkMods.enAttente(state.mods, { version: RELEASE, schema: SCHEMA });
+      return Array.isArray(a) ? a : [];
+    } catch (e) { return []; }
+  }
+  function decideMod(empreinte, avis) {
+    if (!window.JjkMods || typeof window.JjkMods.decide !== "function") return;
+    try { window.JjkMods.decide(empreinte, avis); } catch (e) {}
+  }
+  // Le dialogue d'examen : le code de chaque mod, en clair, et deux boutons.
+  // Une décision remonte la fiche aussitôt (le mod autorisé doit tourner, et
+  // le bandeau doit dire la vérité) : le dialogue part avec l'ancien DOM,
+  // le bandeau restant se rouvre d'un clic s'il reste des mods à juger.
+  function examinerMods(attente) {
+    var corps = el("div", "pc-modal-body");
+    corps.appendChild(el("div", "pc-modal-note",
+      "Un mod autorisé tourne dans la page de la fiche, avec les mêmes droits qu'elle : " +
+      "il fait ce qu'il veut de ce qui s'y affiche et de ce qui s'y enregistre. " +
+      "N'autoriser que du code dont la provenance est sûre."));
+    attente.forEach(function (m) {
+      var ligne = el("div", "pc-modrow");
+      ligne.appendChild(el("span", "nom", m.nom || m.id));
+      ligne.appendChild(el("span", "id", m.id));
+      corps.appendChild(ligne);
+      var ta = el("textarea", "pc-code");
+      ta.readOnly = true;
+      ta.value = String(m.src == null ? "" : m.src);
+      corps.appendChild(ta);
+      var boutons = el("div", "row");
+      boutons.appendChild(miniBtn("Autoriser", "Ce mod tournera à chaque ouverture, sur ce navigateur", function () {
+        decideMod(m.empreinte, "oui");
+        remount();
+      }, "primary"));
+      boutons.appendChild(miniBtn("Refuser", "Ce mod ne tournera pas ; il reste sur le personnage", function () {
+        decideMod(m.empreinte, "non");
+        remount();
+      }, "danger"));
+      corps.appendChild(boutons);
+    });
+    dialogue("Mods en attente d'autorisation", corps, function () { remount(); }, "Terminer");
+  }
+  function bandeauAvis(app) {
+    var attente = modsEnAttente();
+    if (!attente.length) return;
+    var n = attente.length;
+    // .pc-avis-mods : le bandeau de CONSENTEMENT, distinct de celui de perte
+    // d'enregistrement, qui partage la même mise en forme (voir montrePanneSave)
+    var av = el("div", "pc-avis pc-avis-mods");
+    av.appendChild(el("div", "pc-avis-txt",
+      "Ce personnage porte " + n + " mod" + (n > 1 ? "s" : "") + " qui n'" +
+      (n > 1 ? "ont" : "a") + " pas été autorisé" + (n > 1 ? "s" : "") +
+      " sur ce navigateur. " + (n > 1 ? "Ils ne tournent" : "Il ne tourne") + " pas."));
+    var row = el("div", "row");
+    row.appendChild(miniBtn("Examiner", "Lire le code de chaque mod avant de décider", function () {
+      examinerMods(attente);
+    }));
+    row.appendChild(miniBtn("Tout refuser", "Aucun de ces mods ne tournera sur ce navigateur", function () {
+      attente.forEach(function (m) { decideMod(m.empreinte, "non"); });
+      remount();
+    }, "danger"));
+    av.appendChild(row);
+    app.appendChild(av);
+  }
+
+  // La fiche expose UN objet public : c'est par là qu'un mod remplace un
+  // module, change la disposition ou détourne un calcul. Elle n'exécute rien
+  // d'elle-même. window.__jjkModules est l'ANCIEN nom du MÊME objet : ce qui a
+  // été écrit avant la 3.0.0 continue de marcher tel quel.
+  window.Jjk = {
+    version: RELEASE,
+    schema: SCHEMA,
     enregistre: enregistre,
     ordonne: ordonne,
     // une COPIE de la description : personne ne remanie la table de l'extérieur
@@ -4216,25 +5447,109 @@
     actif: actif,
     // l'interrupteur : couper un module le retire de la fiche sans rien
     // effacer (son coffre et ses données restent, il ne s'affiche plus)
-    active: function (id, oui) {
-      if (!state) return;                  // avant le chargement : rien à couper
-      if (!state.modActifs) state.modActifs = {};
-      if (oui === false) state.modActifs[id] = false;
-      else delete state.modActifs[id];
-      save();
-    },
+    active: activeModule,
     // de quoi afficher l'état d'un module : ses pannes, sa muselière
     etat: function (id) {
       var e = etatModule(id);
       return { echecs: e.echecs, musele: e.musele, erreur: e.erreur,
                panne: e.panne, vide: e.vide, actif: actif(id) };
     },
-    remonte: remount
+    remonte: remount,
+    // filtrer un calcul de la fiche (les neuf points de FILTRES_CONNUS)
+    filtre: filtreCalcul,
+    // bilan du dernier passage du moteur de mods, en COPIE : vide tant qu'il
+    // n'a pas tourné. « actif » vient de l'état (l'interrupteur du joueur),
+    // « etat » du moteur (ok, panne, attente, coupe, recent, refuse).
+    mods: function () {
+      return bilanMods.map(function (b) {
+        return { id: b.id, nom: b.nom, actif: modActifDe(b.id), etat: b.etat,
+                 message: b.message || "", empreinte: b.empreinte };
+      });
+    },
+    // INTERNE, pour le moteur de mods : nommer le mod qu'il lance, afin que les
+    // filtres enregistrés pendant son exécution portent SON id. Sans cet appel
+    // ils reviennent tous à « mod », ce qui n'est faux que dans le journal.
+    __proprietaire: function (id) {
+      proprietaireCourant = id ? String(id) : PROP_MOD;
+      // modEnExec ne vaut que PENDANT le lancement d'un mod : le moteur rend la
+      // main avec null. C'est lui qui permet à enregistre() de marquer le module
+      // au nom du mod qui l'a posé.
+      modEnExec = id ? String(id) : null;
+    },
+    // INTERNE, pour les sondes. Le double tiret bas dit ce qu'il faut : ce
+    // n'est pas le contrat public, la page Mods ne les nomme pas, et un mod qui
+    // s'y appuie le fait à ses risques. Ils existent parce qu'une sonde qui
+    // lirait les valeurs dans le DOM mesurerait la MISE EN FORME autant que le
+    // calcul : « 30 » et « 30 m » se ressemblent trop pour juger d'un filtre.
+    __calculs: {
+      caracTotal: caracTotal, compValue: compValue, compXp: compXp,
+      pvMax: pvMax, pvCourant: pvCourant, initiative: initiative,
+      vitesse: vitesse, vitesseVal: vitesseVal, regen: regen,
+      poidsPorte: poidsPorte, xpDepense: xpDepense
+    },
+    // le registre des filtres, à plat et en copie : nom, propriétaire, fautes
+    __filtres: function () {
+      var out = [];
+      Object.keys(filtres).forEach(function (nom) {
+        (filtres[nom] || []).forEach(function (f) {
+          out.push({ nom: nom, prop: f.prop, echecs: f.echecs });
+        });
+      });
+      return out;
+    }
   };
+  window.__jjkModules = window.Jjk;
 
   // ---------- montage ----------
+  // Un montage ne se relance JAMAIS depuis lui-même. Un mod qui finit par
+  // Jjk.remonte() (geste naturel, et la page Mods documente remonte() sans
+  // réserve) ou par ctx.reconstruire() rappellerait mount() DEPUIS mount() :
+  // les mods repartiraient, redemanderaient un remontage, la pile déborderait,
+  // et chaque niveau qui se dépile reprendrait son montage là où il en était
+  // (page vidée, vingt-cinq blocs rebâtis, refresh, save). L'onglet gèle, à
+  // CHAQUE ouverture puisque le mod voyage avec le personnage, et le joueur
+  // n'atteint plus le bloc Mods pour couper le fautif. La demande est donc
+  // notée et honorée UNE SEULE FOIS, le montage courant fini.
+  //
+  // La garde est ici et pas dans remount() : tout ce qui remonte la fiche passe
+  // par mount(), remount() comme le premier montage.
+  var montageEnCours = false;
+  var remontageDu = false;
+  var remontagesDus = 0;       // enchaînements, pour le mod qui en redemande à chaque fois
+  var REMONTAGES_MAX = 3;
   function mount(root) {
+    if (montageEnCours) { remontageDu = true; return; }
+    montageEnCours = true;
+    var abouti = false;
+    try { montage(root); abouti = true; }
+    finally {
+      montageEnCours = false;
+      // un montage tombé en route l'a laissé levé : ce qui s'enregistrerait
+      // ensuite serait perdu au lieu d'attendre le montage suivant
+      enMontage = false;
+      // et il a pu laisser une demande de remontage en l'air : la queue de
+      // mount() est sautée quand l'exception passe, si bien que le PROCHAIN
+      // montage, réussi celui-là, payait un remontage gratuit hérité d'un
+      // montage qui n'a jamais abouti.
+      if (!abouti) { remontageDu = false; remontagesDus = 0; }
+    }
+    if (!remontageDu) { remontagesDus = 0; return; }
+    remontageDu = false;
+    // Un mod qui redemande un remontage à chaque montage boucle sans fin : on
+    // s'arrête au bout de trois enchaînements et on le dit dans le journal. La
+    // fiche reste utilisable, donc le bloc Mods aussi.
+    if (remontagesDus >= REMONTAGES_MAX) {
+      if (window.console && window.console.warn)
+        window.console.warn("[fiche] remontage en boucle : demande ignorée. Un mod appelle Jjk.remonte() à chaque montage.");
+      remontagesDus = 0;
+      return;
+    }
+    remontagesDus++;
+    mount(root);
+  }
+  function montage(root) {
     rootEl = root;
+    enMontage = true;
     // tous les registres repartent à vide : les anciens pointent sur un DOM
     // qui n'existe plus. Les compteurs de panne aussi : un remontage est une
     // seconde chance, c'est ce que fait le bouton « Réessayer ».
@@ -4245,20 +5560,51 @@
     compHooks = [];
     optHooks = [];
     optCompsRebuild = null;
+    // Filtres et table des modules : même remise à zéro, même raison. Ce sont
+    // les mods et les modules qui les repeuplent, à chaque montage. Sans elle,
+    // un mod désinstallé garderait pour toujours la place du module natif qu'il
+    // avait remplacé, et ses filtres s'empileraient à chaque remontage.
+    filtres = {};
+    filtresEnCours = {};
+    proprietaireCourant = "?";
+    modules = MODULES_NATIFS.slice();
+    moduleOrdre = [];
+    rejoueHorsMontage();
+    // les mods d'abord (ils enregistrent modules et filtres), la disposition
+    // ensuite : elle peut nommer un module qu'un mod vient d'ajouter
+    executeMods();
+    appliqueDisposition();
     root.innerHTML = "";
     var app = el("div", "perso-atelier");
     appEl = app;
 
     buildTop(app);
+    bandeauAvis(app);
     var sheet = el("div", "pc-sheet");
     app.appendChild(sheet);
     root.appendChild(app);
 
     buildHead(sheet);
     monteModules(buildTabs(sheet));
+    enMontage = false;   // ce qui s'enregistre après (console) vaut pour le montage suivant
     refresh();
   }
 
+  // Charger les données et MONTER sont deux pannes différentes, et elles ne se
+  // disent pas de la même façon. Le montage vivait dans le .then() du fetch :
+  // tout ce qui tombait pendant lui (le plus souvent un mod) se faisait
+  // rattraper par le .catch d'à côté, qui accusait alors le fichier de données
+  // d'une faute qui n'était pas la sienne — et data-ready interdisant le
+  // réessai, la fiche restait close sur un message faux. Chacun son filet.
+  function demarre(root) {
+    state = load() || blank();
+    try { mount(root); }
+    catch (e) {
+      if (window.console && window.console.error) window.console.error("[fiche] montage", e);
+      root.innerHTML = '<p style="padding:2rem;color:#b0402c">La fiche n\'a pas pu se monter (' +
+        messageErreur(e) + "). Les données, elles, sont chargées : la cause est dans la fiche ou dans un mod.</p>";
+    }
+  }
   function init() {
     var root = document.getElementById("perso-atelier");
     if (!root || root.getAttribute("data-ready")) return;
@@ -4269,13 +5615,17 @@
       if (!state) { flash("La fiche n'est pas encore prête : reclique « Prendre »."); return; }
       recevoirObjet(payload);
     };
-    if (DATA) { state = load() || blank(); mount(root); return; }
+    if (DATA) { demarre(root); return; }
     fetch(dataUrl(), { cache: "no-cache" })
       .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
-      .then(function (d) { DATA = d; state = load() || blank(); mount(root); })
+      // DATA vide vaut échec : sans lui le montage partirait sans données, et
+      // c'est bien du fichier qu'il faudrait alors se plaindre
+      .then(function (d) { if (!d) throw new Error("données vides"); DATA = d; })
       .catch(function (e) {
         root.innerHTML = '<p style="padding:2rem;color:#b0402c">Le créateur n\'a pas pu charger ses données (' + e.message + ").</p>";
-      });
+      })
+      // hors de portée du .catch ci-dessus : DATA dit si les données sont là
+      .then(function () { if (DATA) demarre(root); });
   }
 
   if (window.document$ && typeof window.document$.subscribe === "function") window.document$.subscribe(init);

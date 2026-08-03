@@ -28,6 +28,14 @@
  * D'où le diagnostic `degrade` : l'appelant peut GELER la fiche au lieu
  * d'écraser des données qu'il n'a pas su lire.
  *
+ * Le même piège a une SECONDE porte, et elle est plus large : un jjk_state
+ * VIDÉ. Il pèse des centaines de kilo-octets dans l'onglet Attributes de
+ * Roll20, ce qui donne très envie d'y faire le ménage. L'attribut disparu, le
+ * diagnostic n'est plus « illisible » mais « partiel », qui couvre aussi le
+ * personnage NEUF, où il n'y a rien à perdre. La raison sépare les deux
+ * (RAISON_SANS_FICHE), pour que l'appelant gèle le premier cas sans geler le
+ * second.
+ *
  * Logique PURE, sans API navigateur : testable en node.
  *
  * Ce fichier vit sur le SITE (chargé par roll20-fiche.html avant
@@ -118,7 +126,11 @@
     //     cité, donc il garde sa place d'origine) ;
     //   - un identifiant disparu (mod retiré, natif renommé) ne casse rien :
     //     il reste une clé que personne ne réclame.
-    // Forme : { ordre: [ids], off: {id:1}, place: {id:{onglet,colonne}} }.
+    // Forme : { ordre: [ids], place: {id:{onglet,colonne}} }, et RIEN d'autre.
+    // La disposition ne dit QUE le rangement : ce qui est allumé ou coupé vit
+    // dans modActifs, seul interrupteur (voir plus bas). Deux endroits pour
+    // dire la même chose finiraient par se contredire chez un joueur, et la
+    // carte n'aurait aucun moyen de trancher lequel a raison.
     ["modules", "modules"],
     // Coffres privés des mods et des modules, { id: objet libre }. Leur contenu
     // n'est PAS interprété ici : c'est la donnée d'un module, la carte se
@@ -127,8 +139,9 @@
     // Interrupteurs des modules, { id: false } pour les SEULS modules coupés
     // (clé posée par le bundle). Épars lui aussi, et pour la même raison : un
     // module qui n'y figure pas est allumé, donc un module ajouté demain
-    // s'affiche chez tout le monde. Il double partiellement modules.off ; les
-    // deux voyagent, la carte ne tranche pas ce que le bundle décide.
+    // s'affiche chez tout le monde. C'est le SEUL interrupteur : `modules` ne
+    // porte que le rangement ({ ordre, place }), et aucune clé `off` n'y existe
+    // ni n'y existera.
     ["modActifs", "mod_actifs"],
     // Liste des mods, [{ id, nom, actif, pour, apiMin, src }]. L'attribut de
     // repli passe par modsSansCode() : voir plus bas, le code source ne se
@@ -190,11 +203,14 @@
       // aucune clé racine inconnue), mais les omettre ici les perdrait sur le
       // chemin de repli.
       //
-      // Deux d'entre elles (modules, mods) ne sont pas encore dans le blank()
-      // du bundle : c'est le sens SANS DANGER de l'écart, la carte les fait
-      // voyager et normalize() les conserve. L'inverse (une clé du bundle
-      // absente d'ici) serait une perte sèche au repli — c'est ce sens-là
-      // qu'il faut vérifier à chaque ajout.
+      // Les quatre sont maintenant dans le blank() du bundle aussi, à
+      // l'identique. Le sens qu'il faut vérifier à chaque ajout est celui-ci :
+      // une clé racine du bundle absente d'ici serait une perte sèche au repli.
+      // L'inverse (une clé d'ici que le bundle ignore) reste sans danger : la
+      // carte la fait voyager et normalize() ne purge pas les clés racine.
+      //
+      // modules part VIDE : sa forme, { ordre: [], place: {} }, ne se
+      // matérialise que le jour où le joueur range quelque chose.
       modules: {}, modData: {}, modActifs: {}, mods: []
     };
   }
@@ -399,9 +415,21 @@
   //                            possible, à afficher éventuellement, JAMAIS à
   //                            réécrire : la sauvegarder amputerait la fiche.
   //                            L'appelant doit geler les écritures.
-  //   degrade = "partiel"   -> pas de jjk_state : reconstruction champ par
-  //                            champ (fiche neuve, ou écrite par une version
-  //                            antérieure à jjk_state).
+  //   degrade = "partiel"   -> pas de jjk_state, absent ou VIDÉ :
+  //                            reconstruction champ par champ. Ce seul mot
+  //                            recouvre deux situations opposées, que la raison
+  //                            sépare :
+  //                              - personnage NEUF (aucun attribut jjk_) :
+  //                                raison === RAISON_SANS_FICHE, il n'y a rien
+  //                                à perdre, rien à geler ;
+  //                              - personnage qui A une fiche, dont jjk_state a
+  //                                disparu pendant que ses autres attributs
+  //                                jjk_ sont restés : la reconstruction est
+  //                                amputée exactement comme dans le cas
+  //                                « illisible » (ni code des mods, ni
+  //                                vignettes d'inventaire, ni champ sans
+  //                                attribut à lui), et l'appelant doit geler
+  //                                tout autant.
   // Note ajoutée à la raison quand on reconstruit des attributs qui ne sont pas
   // du schéma de cette carte (voir le long commentaire de reconstruire()).
   // Le schéma écrit se lit sur le scalaire jjk_version, qui reste lisible même
@@ -414,6 +442,14 @@
            " du schéma " + SCHEMA_DEFAUT + " (un champ qui aurait changé de forme" +
            " entre ces deux schémas serait lu de travers)";
   }
+
+  // La raison du personnage NEUF, nommée et exportée. C'est le seul cas
+  // « partiel » sans danger, et l'appelant a besoin de le reconnaître pour ne
+  // pas geler une fiche qui n'existe pas encore. Il le fait en comparant à
+  // cette constante plutôt qu'en relisant la prose (qui se réécrit) ou en
+  // refaisant le compte des attributs de son côté (deux critères pour la même
+  // question finiraient par se contredire).
+  var RAISON_SANS_FICHE = "aucun attribut jjk_ : personnage sans fiche";
 
   function attrsToState(attrs) {
     attrs = attrs || {};
@@ -436,7 +472,7 @@
 
     var vide = !Object.keys(attrs).some(isJjkAttr);
     return attacher(reconstruire(cur), "partiel",
-                    vide ? "aucun attribut jjk_ : personnage sans fiche"
+                    vide ? RAISON_SANS_FICHE
                          : "jjk_state absent : reconstruction champ par champ" + noteDeCarte(cur));
   }
 
@@ -499,6 +535,7 @@
     PREFIX: PREFIX,
     RELEASE: RELEASE_DEFAUT,
     SCHEMA: SCHEMA_DEFAUT,
+    RAISON_SANS_FICHE: RAISON_SANS_FICHE,
     release: release,
     setRelease: setRelease,
     stateToAttrs: stateToAttrs,

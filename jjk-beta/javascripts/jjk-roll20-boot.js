@@ -29,7 +29,11 @@
  *     RELU dans le personnage ; sinon il est re-diffé et repart.
  *  6. GEL. attrsToState() rend son diagnostic avec l'état. Un jjk_state présent
  *     mais illisible ne donne qu'une reconstruction amputée : on l'affiche, on
- *     le dit, et on n'écrit plus rien tant que le joueur n'a pas tranché.
+ *     le dit, et on n'écrit plus rien tant que le joueur n'a pas tranché. Un
+ *     jjk_state VIDÉ chez un personnage qui garde ses autres attributs jjk_
+ *     donne exactement la même reconstruction amputée, et vaut donc le même
+ *     gel : sans lui, vider l'attribut le plus lourd de l'onglet Attributes
+ *     serait PLUS destructeur que le corrompre.
  *  7. ÉCRAN DE VERSION. Entre 2 et 3, quand la fiche trouvée dans le
  *     personnage n'a pas été écrite par la version que le site sert
  *     aujourd'hui, on n'ouvre RIEN : on montre ce qui change et on laisse
@@ -428,20 +432,17 @@
     ]);
   }
 
-  // Fiche à moitié lue : jjk_state est là mais ne se lit pas (un caractère tapé
-  // dans l'onglet Attributes de Roll20 suffit). attrsToState a rendu la
-  // meilleure reconstruction possible, qui a le droit de s'AFFICHER mais jamais
-  // de se réécrire : elle ne porte pas ce que le repli ne sait pas porter, et
-  // la première sauvegarde remplacerait l'original cassé par cette version
-  // amputée. D'où le gel. Pas de bouton « Masquer » ici : un bandeau caché
-  // laisserait croire que la fiche s'enregistre. Le seul geste offert est
-  // explicite et dit ce qu'il coûte.
-  function bandeauGel(raison) {
-    bandeau("Cette fiche n'a pas pu être lue en entier (" + (raison || "état illisible") + "). " +
-            "Ce qui s'affiche est une reconstruction incomplète : rien n'est enregistré, pour ne " +
-            "pas écraser ce que Roll20 contient encore. Récupérer l'attribut jjk_state du " +
-            "personnage avant toute chose ; il porte la fiche entière.", [
-      { texte: "Écraser avec ce qui a pu être lu", action: function () {
+  // Fiche à moitié lue, dans les deux cas où cela arrive (voir hydrate).
+  // attrsToState a rendu la meilleure reconstruction possible, qui a le droit
+  // de s'AFFICHER mais jamais de se réécrire : elle ne porte pas ce que le
+  // repli ne sait pas porter, et la première sauvegarde remplacerait la fiche
+  // du personnage par cette version amputée. D'où le gel. Pas de bouton
+  // « Masquer » ici : un bandeau caché laisserait croire que la fiche
+  // s'enregistre. Le seul geste offert est explicite et dit ce qu'il coûte, et
+  // c'est le même quelle que soit la façon dont la lecture a échoué.
+  function bandeauGel(txt) {
+    bandeau(txt, [
+      { texte: "Écraser avec ce qui a pu être lu", acte: "ecraser", action: function () {
           fermerBandeau();
           gele = false;
           lastAttrs = {};      // la base du diff ne vaut plus rien : tout réémettre
@@ -449,6 +450,29 @@
           scheduleSave();
         } }
     ]);
+  }
+  // jjk_state est là mais ne se lit pas : un caractère tapé dans l'onglet
+  // Attributes de Roll20 suffit. L'original cassé est encore dans le
+  // personnage, et c'est lui qu'il faut récupérer.
+  function bandeauGelIllisible(raison) {
+    bandeauGel("Cette fiche n'a pas pu être lue en entier (" + (raison || "état illisible") + "). " +
+               "Ce qui s'affiche est une reconstruction incomplète : rien n'est enregistré, pour ne " +
+               "pas écraser ce que Roll20 contient encore. Récupérer l'attribut jjk_state du " +
+               "personnage avant toute chose ; il porte la fiche entière.");
+  }
+  // jjk_state a disparu alors que le reste de la fiche est là. Rien n'est
+  // « cassé » à l'écran : la fiche s'affiche, presque complète, ce qui rend ce
+  // cas plus traître que le précédent. Le bandeau doit donc nommer ce qui
+  // manque, sinon le joueur croit à un simple oubli et se remet à taper.
+  function bandeauGelDisparu() {
+    bandeauGel("La fiche entière de ce personnage est introuvable : l'attribut jjk_state, qui la " +
+               "porte en un seul morceau, est vide, alors que les autres attributs jjk_ sont " +
+               "toujours là. Ce qui s'affiche a été reconstruit à partir d'eux, et il y manque des " +
+               "choses : le code des mods, les images de l'inventaire, et tout ce qui n'a pas " +
+               "d'attribut à lui. Rien n'est enregistré, pour ne pas remplacer la fiche par cette " +
+               "reconstruction. Si jjk_state a été vidé par erreur, y remettre son contenu puis " +
+               "rouvrir cet onglet ; sinon, le bouton ci-dessous repart de ce qui a pu être lu, en " +
+               "acceptant ces pertes.");
   }
 
   // ================= écran de version =================
@@ -1012,7 +1036,10 @@
 
     // 0. Fiche à moitié lue : le gel a déjà tranché et son bandeau dit tout.
     // Proposer de migrer un état qu'on n'a pas su lire serait exactement le
-    // geste que le gel existe pour empêcher.
+    // geste que le gel existe pour empêcher. Depuis que le gel couvre aussi le
+    // jjk_state disparu, c'est ici que s'arrête le personnage qui n'a plus que
+    // ses attributs de repli : la montée silencieuse du cas 3 écrirait, elle
+    // aussi, et écrirait cette reconstruction amputée.
     if (gele) { chargerBundle(courant); return; }
 
     var f = versionFiche(attrs);
@@ -1071,13 +1098,34 @@
     var state = M.attrsToState(attrs);
     // attrsToState DIT dans quel état il a trouvé la fiche (propriétés non
     // énumérables, donc invisibles au JSON.stringify qui suit) :
-    //   null      -> jjk_state lu, état complet ;
-    //   "partiel" -> pas de jjk_state, fiche neuve ou d'avant : cas normal ;
-    //   "illisible" -> jjk_state présent mais cassé : on gèle les écritures.
-    // Une version antérieure de jjk-attr-map.js (cache du navigateur) ne pose
-    // rien : `undefined` ne gèle pas, la fiche se comporte comme avant.
-    var casse = !!(state && state.degrade === "illisible");
-    if (casse) gele = true;
+    //   null        -> jjk_state lu, état complet ;
+    //   "illisible" -> jjk_state présent mais cassé ;
+    //   "partiel"   -> pas de jjk_state, et là tout dépend du RESTE.
+    //
+    // « partiel » couvre deux situations opposées, et le confondre en une
+    // seule coûterait la fiche. Un personnage NEUF n'a aucun attribut jjk_ :
+    // il n'y a rien à perdre, on ouvre et on écrit normalement. Un personnage
+    // qui garde ses autres attributs jjk_ mais dont jjk_state a disparu, lui,
+    // vient de perdre la seule copie complète de sa fiche : jjk_state est
+    // l'attribut le plus lourd de l'onglet Attributes de Roll20, et le vider à
+    // la main est un geste tentant. Ce qui reste est le repli, volontairement
+    // allégé par jjk-attr-map (ni code des mods, ni vignettes d'inventaire) :
+    // la reconstruction est donc amputée exactement comme dans le cas
+    // « illisible », et le premier enregistrement la graverait par-dessus. Même
+    // danger, même gel — sans quoi vider jjk_state serait PLUS destructeur que
+    // le corrompre, puisqu'un caractère de travers, lui, arrête tout.
+    //
+    // La distinction ne se refait pas ici : elle est déjà dans la raison rendue
+    // par attrsToState, et RAISON_SANS_FICHE la nomme. Une version antérieure
+    // de jjk-attr-map.js (cache du navigateur) ne connaît pas cette constante,
+    // et n'a alors pas de quoi séparer les deux cas : on ne gèle que sur
+    // l'ancien critère, la fiche se comporte comme avant. Plus ancienne encore,
+    // elle ne pose aucun diagnostic : `undefined` ne gèle rien non plus.
+    var degrade = state ? state.degrade : null;
+    var neuf = !M.RAISON_SANS_FICHE || !!(state && state.raison === M.RAISON_SANS_FICHE);
+    var illisible = degrade === "illisible";
+    var disparu = degrade === "partiel" && !neuf;
+    if (illisible || disparu) gele = true;
     mem["jjk-perso"] = JSON.stringify(state);
     mem["jjk-cards"] = "{}";
     mem["jjk-persos"] = "[]";     // pas de bibliothèque multi-perso dans Roll20
@@ -1085,7 +1133,8 @@
     enVol = null;
     // le bandeau vient APRÈS le cache : son bouton « écraser » déclenche une
     // sauvegarde, qui lit mem["jjk-perso"]
-    if (casse) bandeauGel(state.raison);
+    if (illisible) bandeauGelIllisible(state.raison);
+    else if (disparu) bandeauGelDisparu();
     // POINT D'INSERTION DE L'ÉCRAN DE VERSION. Les attributs sont là, le bundle
     // n'est pas encore chargé, `ready` vaut false : c'est le seul instant où
     // l'on connaît la fiche sans pouvoir l'écrire. decider() choisit quoi
