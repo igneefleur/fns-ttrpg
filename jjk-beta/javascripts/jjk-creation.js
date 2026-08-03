@@ -878,7 +878,7 @@
   // valeur effective ; discrets, révélés au survol de l'hôte (.pc-mods-host).
   // reg : registre de rafraîchissement (hooks, ou compHooks pour les lignes de
   // compétences reconstruites par rebuildComps — un hook global y fuirait).
-  var MMOD_SLOTS = ["équipement", "art", "décision du MJ"];
+  var MMOD_SLOTS = ["équipement", "art", "autre"];
   // slots : 3 par défaut ; 1 pour les lignes trop denses (compétences), comme
   // les compétences personnalisées de la fiche HxH
   function multiMod(map, key, reg, slots) {
@@ -893,7 +893,7 @@
       var inp = el("input", "pc-mmod");
       inp.type = "number"; inp.step = "any"; inp.placeholder = "0";
       inp.title = slots === 1
-        ? "Bonus ou malus divers (équipement, art, décision du MJ)."
+        ? "Bonus ou malus divers (équipement, art, autre)."
         : "Bonus ou malus divers (" + MMOD_SLOTS[i] + ") — emplacement " +
           (i + 1) + " sur " + slots + " ; les modificateurs s'additionnent.";
       var v0 = map[key] ? map[key][i] : 0;
@@ -1879,7 +1879,7 @@
     var force = el("input", "force");
     force.type = "number"; force.step = "1"; force.min = "0";
     force.title = "Vide = maximum calculé ((20 + Body) / 2, modificateurs compris) ; " +
-                  "une valeur le force (avantage, décision du MJ).";
+                  "une valeur le force.";
     force.addEventListener("input", function () {
       var v = parseFloat(force.value);
       state.pvMaxOverride = isFinite(v) ? clamp(Math.floor(v), 0, 9999) : null;
@@ -2085,7 +2085,12 @@
     // visible ; un modificateur (Options) non nul aussi (sinon « Investies
     // seulement » cache une valeur pourtant modifiée)
     return !!(c && (c.stade > 0 || (c.techniques && c.techniques.length) || porteArt(c))) ||
-           (state.compsMod[it.key] || 0) !== 0;
+           (state.compsMod[it.key] || 0) !== 0 ||
+           // un total ou un coût forcé compte aussi : sinon « Investies »
+           // cacherait la compétence qu'on vient justement de régler
+           state.compsForce[it.key] !== undefined ||
+           state.compsXpForce[it.key] !== undefined ||
+           (state.compsXpMod[it.key] || 0) !== 0;
   }
   // l'ordre des champs, partout sur la Fiche : Body, puis Mind, puis Prestance
   var CHAMPS = ["Body", "Mind", "Prestance"];
@@ -3376,7 +3381,7 @@
     slBox.checked = !!state.sansLimite;
     slBox.addEventListener("change", function () { state.sansLimite = slBox.checked; refresh(); });
     hooks.push(function () { slBox.checked = !!state.sansLimite; });
-    var slLab = el("label", null, "Sans limite : plafond de " + CARAC_MAX + " levé (avantage ou décision du MJ)");
+    var slLab = el("label", null, "Sans limite : plafond de " + CARAC_MAX + " levé");
     slLab.setAttribute("for", "pc-sanslimite");
     slRow.appendChild(slBox);
     slRow.appendChild(slLab);
@@ -3389,7 +3394,7 @@
     // ligne sur la Fiche. Rebâti quand les compétences perso changent
     // (optCompsRebuild, rappelé par l'ajout et la suppression) ; optHooks
     // remplace hooks pour ces lignes, sinon chaque rebâti fuirait des hooks.
-    var bMC = block("Compétences : leviers du MJ");
+    var bMC = block("Compétences");
     // mêmes outils que la liste de la Fiche (filtre texte, champ, puces) et
     // mêmes lignes, mais une grille plus large : nom | modificateurs | total
     // forcé | total | modificateur de coût | coût forcé | coût.
@@ -3471,17 +3476,28 @@
         items.sort(function (a, b) { return a.name.localeCompare(b.name, "fr", { sensitivity: "base" }); });
         if (!items.length) return;
         mcBox.appendChild(el("div", "pc-comp-champ", carac));
-        // libellés courts : sept colonnes dans une demi-largeur ne laissent pas
-        // la place aux noms complets, que portent les infobulles
+        // Deux rangées d'entête : les groupes (valeur | coût), puis les
+        // colonnes. Libellés courts — sept colonnes dans une demi-largeur ne
+        // laissent pas la place aux noms complets, que portent les infobulles.
+        var grp = el("div", "pc-optcomp-row grp");
+        grp.appendChild(el("span"));
+        var gV = el("span", "g", "Valeur");
+        gV.title = "Ce que vaut la compétence quand on la lance";
+        grp.appendChild(gV);
+        var gX = el("span", "g sep", "Coût en xp");
+        gX.title = "Ce que la compétence coûte sur l'xp du personnage";
+        grp.appendChild(gX);
+        mcBox.appendChild(grp);
+
         var head = el("div", "pc-optcomp-row head");
-        [["Compétence", "Nom de la compétence"],
-         ["Modif.", "Modificateur du total"],
-         ["Forcé", "Total forcé — vide = total calculé"],
-         ["Total", "Total effectif de la compétence"],
-         ["Mod. xp", "Modificateur du coût en xp"],
-         ["Forcé", "Coût en xp forcé — vide = coût calculé"],
-         ["Coût", "Coût effectif en xp"]].forEach(function (h) {
-          var s = el("span", null, h[0]);
+        [["Compétence", "Nom de la compétence", ""],
+         ["Forcé", "Total forcé — vide = total calculé", ""],
+         ["Modif.", "Modificateur du total", ""],
+         ["Total", "Total effectif de la compétence", ""],
+         ["Forcé", "Coût en xp forcé — vide = coût calculé", "sep"],
+         ["Modif.", "Modificateur du coût en xp", ""],
+         ["Coût", "Coût effectif en xp", ""]].forEach(function (h) {
+          var s = el("span", h[2] || null, h[0]);
           s.title = h[1];
           head.appendChild(s);
         });
@@ -3497,8 +3513,12 @@
           nameBox.appendChild(label);
           row.appendChild(nameBox);
 
-          // modificateur du TOTAL (équipement, art, décision du MJ confondus :
-          // l'état ne porte qu'un nombre par compétence depuis la migration)
+          // VALEUR : forcé, puis modificateur, puis le total effectif
+          row.appendChild(forceField(state.compsForce, it.key,
+            function () { return compValueAuto(it.carac, comp(), it.key); },
+            "Total forcé — vide = total calculé (caractéristique + stade + modificateur)."));
+
+          // l'état ne porte qu'un nombre par compétence depuis la migration
           row.appendChild(stepper(
             function () { return state.compsMod[it.key] || 0; },
             function (v) {
@@ -3508,12 +3528,15 @@
             },
             CARAC_PAS, "modificateur", optHooks));
 
-          row.appendChild(forceField(state.compsForce, it.key,
-            function () { return compValueAuto(it.carac, comp(), it.key); },
-            "Total forcé — vide = total calculé (caractéristique + stade + modificateur)."));
-
           var tot = el("span", "pc-comp-total", "");
           row.appendChild(tot);
+
+          // COÛT EN XP : même ordre, séparé du groupe précédent par un filet
+          var xf = forceField(state.compsXpForce, it.key,
+            function () { return compXpAuto(comp(), it.key); },
+            "Coût en xp forcé — vide = coût calculé (stades, passifs, art, modificateur).");
+          xf.classList.add("sep");
+          row.appendChild(xf);
 
           row.appendChild(stepper(
             function () { return state.compsXpMod[it.key] || 0; },
@@ -3523,10 +3546,6 @@
               else delete state.compsXpMod[it.key];   // zéro = pas d'entrée dans l'état
             },
             DATA.xpParStade, "modificateur de coût", optHooks));
-
-          row.appendChild(forceField(state.compsXpForce, it.key,
-            function () { return compXpAuto(comp(), it.key); },
-            "Coût en xp forcé — vide = coût calculé (stades, passifs, art, modificateur)."));
 
           var cout = el("span", "pc-comp-total", "");
           row.appendChild(cout);
@@ -3544,14 +3563,20 @@
                 " · stade " + sign(stadeInfo(c.stade).bonus) +
                 (d ? " · modificateur " + sign(d) : "");
 
-            var xf = state.compsXpForce[it.key], xm = state.compsXpMod[it.key] || 0;
+            var xForce = state.compsXpForce[it.key], xm = state.compsXpMod[it.key] || 0;
             var xp = compXp(c, it.key);
             cout.textContent = xp + " xp";
             cout.classList.toggle("zero", !xp);
-            cout.classList.toggle("adj", xf !== undefined || xm !== 0);
-            cout.title = xf !== undefined
-              ? "Coût forcé à " + xf + " xp (calculé : " + compXpAuto(c, it.key) + " xp)"
+            cout.classList.toggle("adj", xForce !== undefined || xm !== 0);
+            cout.title = xForce !== undefined
+              ? "Coût forcé à " + xForce + " xp (calculé : " + compXpAuto(c, it.key) + " xp)"
               : "Stades, passifs et art" + (xm ? " · modificateur " + sign(xm) + " xp" : "");
+
+            // un liseré marque les lignes réglées : sur cinquante compétences,
+            // c'est le seul moyen de retrouver d'un coup d'œil celles qu'on a
+            // touchées
+            row.classList.toggle("on",
+              d !== 0 || force !== undefined || xForce !== undefined || xm !== 0);
           });
           mcBox.appendChild(row);
         });
