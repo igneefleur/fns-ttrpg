@@ -55,6 +55,7 @@
   var PTS_CREATION = 120;     // points de caractéristiques à la création
   var CARAC_MAX = 80;         // limite sans avantage
   var CARAC_PAS = 5;          // +5 par achat d'xp
+  var MOD_PAS = 5;            // tous les modificateurs se règlent de 5 en 5
   var QUART = 4;              // « pas plus d'un quart de l'xp total »
 
   var ABBR = { Mind: "MIND", Body: "BODY", Prestance: "PRES" };
@@ -3346,7 +3347,6 @@
     de.addEventListener("input", function () { state.de = de.value || "1d100"; save(); });
     hooks.push(function () { if (document.activeElement !== de) de.value = state.de || "1d100"; });
     bJ.appendChild(fld("Dé des jets de test", de));
-    colA.appendChild(bJ);
 
     // ---- modificateurs de caractéristiques (hors limite : au-delà de 80, sous 0) ----
     // équipement, art et décisions du MJ confondus : UN modificateur par
@@ -3368,9 +3368,6 @@
       row.appendChild(tot);
       bM.appendChild(row);
     });
-    colA.appendChild(bM);
-
-    buildXpChamps(colA);
 
     // ---- création ----
     var bC = block("Création");
@@ -3386,7 +3383,6 @@
     slRow.appendChild(slBox);
     slRow.appendChild(slLab);
     bC.appendChild(slRow);
-    colA.appendChild(bC);
 
     // ---- modificateurs de compétences ----
     // le pendant du bloc caractéristiques : UN modificateur par compétence
@@ -3479,25 +3475,30 @@
         // Deux rangées d'entête : les groupes (valeur | coût), puis les
         // colonnes. Libellés courts — sept colonnes dans une demi-largeur ne
         // laissent pas la place aux noms complets, que portent les infobulles.
+        // La colonne « rule » est un vrai filet : une colonne de la grille, en
+        // place sur CHAQUE rangée, qui court d'un bord à l'autre du module.
         var grp = el("div", "pc-optcomp-row grp");
         grp.appendChild(el("span"));
         var gV = el("span", "g", "Valeur");
         gV.title = "Ce que vaut la compétence quand on la lance";
         grp.appendChild(gV);
-        var gX = el("span", "g sep", "Coût en xp");
+        grp.appendChild(el("span", "rule"));
+        var gX = el("span", "g", "Coût en xp");
         gX.title = "Ce que la compétence coûte sur l'xp du personnage";
         grp.appendChild(gX);
         mcBox.appendChild(grp);
 
         var head = el("div", "pc-optcomp-row head");
-        [["Compétence", "Nom de la compétence", ""],
-         ["Forcé", "Total forcé — vide = total calculé", ""],
-         ["Modif.", "Modificateur du total", ""],
-         ["Total", "Total effectif de la compétence", ""],
-         ["Forcé", "Coût en xp forcé — vide = coût calculé", "sep"],
-         ["Modif.", "Modificateur du coût en xp", ""],
-         ["Coût", "Coût effectif en xp", ""]].forEach(function (h) {
-          var s = el("span", h[2] || null, h[0]);
+        [["Compétence", "Nom de la compétence"],
+         ["Forcé", "Total forcé — vide = total calculé"],
+         ["Modif.", "Modificateur du total"],
+         ["Total", "Total effectif de la compétence"],
+         null,
+         ["Forcé", "Coût en xp forcé — vide = coût calculé"],
+         ["Modif.", "Modificateur du coût en xp"],
+         ["Coût", "Coût effectif en xp"]].forEach(function (h) {
+          if (!h) { head.appendChild(el("span", "rule")); return; }
+          var s = el("span", null, h[0]);
           s.title = h[1];
           head.appendChild(s);
         });
@@ -3531,12 +3532,11 @@
           var tot = el("span", "pc-comp-total", "");
           row.appendChild(tot);
 
-          // COÛT EN XP : même ordre, séparé du groupe précédent par un filet
-          var xf = forceField(state.compsXpForce, it.key,
+          // COÛT EN XP : même ordre, derrière le filet de séparation
+          row.appendChild(el("span", "rule"));
+          row.appendChild(forceField(state.compsXpForce, it.key,
             function () { return compXpAuto(comp(), it.key); },
-            "Coût en xp forcé — vide = coût calculé (stades, passifs, art, modificateur).");
-          xf.classList.add("sep");
-          row.appendChild(xf);
+            "Coût en xp forcé — vide = coût calculé (stades, passifs, art, modificateur)."));
 
           row.appendChild(stepper(
             function () { return state.compsXpMod[it.key] || 0; },
@@ -3545,7 +3545,7 @@
               if (v) state.compsXpMod[it.key] = v;
               else delete state.compsXpMod[it.key];   // zéro = pas d'entrée dans l'état
             },
-            DATA.xpParStade, "modificateur de coût", optHooks));
+            MOD_PAS, "modificateur de coût", optHooks));
 
           var cout = el("span", "pc-comp-total", "");
           row.appendChild(cout);
@@ -3589,7 +3589,6 @@
       refresh();   // les lignes viennent de naître : leurs totaux se peuplent ici
     };
     optCompsRebuild();
-    colB.appendChild(bMC);
 
     // ---- outils de filtre ----
     // Couper un outil le fait DISPARAÎTRE partout (Compétences, Armes, Langues
@@ -3615,7 +3614,6 @@
     });
     fRow.appendChild(fLine);
     bF.appendChild(fRow);
-    colB.appendChild(bF);
 
     // ---- affichage (fiche dans Roll20 seulement) ----
     // window.__jjkNight n'existe que sous roll20-fiche.html (posé par
@@ -3623,8 +3621,9 @@
     // Préférence locale au navigateur (pas dans l'état : réglage d'affichage,
     // pas de personnage) ; "auto" suit le mode jour/nuit de ROLL20 (indice
     // n=1/0 posé par l'extension 2.0.3+ ; repli navigateur sans indice).
+    var bAff = null;
     if (window.__jjkNight) {
-      var bAff = block("Affichage");
+      bAff = block("Affichage");
       var mode = el("select", "pc-select");
       [["auto", "Selon Roll20"], ["0", "Jour"], ["1", "Nuit"]].forEach(function (o) {
         var op = el("option", null, o[1]);
@@ -3634,7 +3633,6 @@
       mode.value = window.__jjkNight.pref();
       mode.addEventListener("change", function () { window.__jjkNight.set(mode.value); });
       bAff.appendChild(fld("Mode par défaut", mode));
-      colB.appendChild(bAff);
     }
 
     // ---- actions sur la fiche (exporter / importer / réinitialiser) ----
@@ -3686,7 +3684,22 @@
       return b;
     })());
     bAct.appendChild(act);
+
+    // ---- disposition ----
+    // À DROITE, comme sur la Fiche où les compétences occupent déjà cette
+    // colonne : la fiche elle-même (exporter, importer, réinitialiser) en
+    // tête, puis les compétences, qui prennent toute la hauteur restante.
     colB.appendChild(bAct);
+    colB.appendChild(bMC);
+    // À GAUCHE, tout le reste, dans l'ordre de la Fiche : ce qui touche aux
+    // caractéristiques d'abord (leurs modificateurs, puis où est parti l'xp),
+    // la création ensuite, le jeu après, et les réglages d'affichage en bas.
+    colA.appendChild(bM);
+    buildXpChamps(colA);
+    colA.appendChild(bC);
+    colA.appendChild(bJ);
+    colA.appendChild(bF);
+    if (bAff) colA.appendChild(bAff);
   }
 
   // ---------- montage ----------
