@@ -4357,17 +4357,14 @@
     de.value = state.de || DE_DEFAUT;
     de.addEventListener("input", function () { state.de = de.value || DE_DEFAUT; save(); });
     hooks.push(function () { if (document.activeElement !== de) de.value = state.de || DE_DEFAUT; });
-    bJ.appendChild(fld("Dé des jets de test", de));
-    // De quoi revenir au dé des règles après l'avoir bricolé : sans ce bouton,
-    // il faudrait le retaper de mémoire, annotations comprises.
-    var outilsJ = el("div", "pc-comp-tools");
-    var ligneJ = el("div", "row");
-    ligneJ.appendChild(miniBtn("Dé des règles", "Revenir à " + DE_DEFAUT, function () {
-      state.de = DE_DEFAUT;
-      refresh();
-    }));
-    outilsJ.appendChild(ligneJ);
-    bJ.appendChild(outilsJ);
+    // Le champ et son bouton sur la MÊME ligne : le champ prend toute la place
+    // que le bouton lui laisse. Sous le champ, le bouton occupait une rangée
+    // entière pour un mot, et le bloc en paraissait deux fois plus haut.
+    var ligneDe = el("div", "pc-jet-de");
+    ligneDe.appendChild(fld("Dé des jets de test", de));
+    ligneDe.appendChild(miniBtn("Réinitialiser", "Revenir au dé des règles : " + DE_DEFAUT,
+      function () { state.de = DE_DEFAUT; refresh(); }));
+    bJ.appendChild(ligneDe);
     return bJ;
   }
 
@@ -4432,16 +4429,14 @@
     var head = el("div", "pc-optcomp-row head");
     [["Carac.", "Caractéristique"],
      ["Forcé", "Total forcé — vide = total calculé"],
-     ["Modif.", "Premier modificateur du total (équipement, par exemple)"],
-     ["Modif.", "Second modificateur du total (art, décision de table…)"],
+     ["Modif.", "Deux modificateurs du total, qui s'additionnent", "duo"],
      ["Total", "Total effectif de la caractéristique"],
      null,
      ["Forcé", "Coût en xp forcé — vide = coût calculé"],
-     ["Modif.", "Premier modificateur du coût en xp"],
-     ["Modif.", "Second modificateur du coût en xp"],
+     ["Modif.", "Deux modificateurs du coût en xp, qui s'additionnent", "duo"],
      ["Coût", "Coût effectif en xp"]].forEach(function (h) {
       if (!h) { head.appendChild(el("span", "rule")); return; }
-      var sp = el("span", null, h[0]);
+      var sp = el("span", h[2] || null, h[0]);
       sp.title = h[1];
       head.appendChild(sp);
     });
@@ -4655,16 +4650,14 @@
         var head = el("div", "pc-optcomp-row head");
         [["Compétence", "Nom de la compétence"],
          ["Forcé", "Total forcé — vide = total calculé"],
-         ["Modif.", "Premier modificateur du total (équipement, par exemple)"],
-         ["Modif.", "Second modificateur du total (art, décision de table…)"],
+         ["Modif.", "Deux modificateurs du total, qui s'additionnent", "duo"],
          ["Total", "Total effectif de la compétence"],
          null,
          ["Forcé", "Coût en xp forcé — vide = coût calculé"],
-         ["Modif.", "Premier modificateur du coût en xp"],
-         ["Modif.", "Second modificateur du coût en xp"],
+         ["Modif.", "Deux modificateurs du coût en xp, qui s'additionnent", "duo"],
          ["Coût", "Coût effectif en xp"]].forEach(function (h) {
           if (!h) { head.appendChild(el("span", "rule")); return; }
-          var s = el("span", null, h[0]);
+          var s = el("span", h[2] || null, h[0]);
           s.title = h[1];
           head.appendChild(s);
         });
