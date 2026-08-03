@@ -43,6 +43,8 @@
   // constante n'est qu'un repli (node, et l'amorceur de secours qui charge
   // sans manifeste).
   var RELEASE_DEFAUT = "3.0.0";
+  // majeur(RELEASE) === SCHEMA : scripts/verif_versions.py tient l'invariant
+  var SCHEMA_DEFAUT = 3;
   function release() {
     var m = root && root.__jjkManifeste;
     return (m && typeof m.release === "string" && m.release) ? m.release : RELEASE_DEFAUT;
@@ -65,7 +67,7 @@
     ["regenOverride", "regen_force", "N"],
     ["langueBase", "langue_base", "s"],
     ["sansLimite", "sans_limite", "b"],
-    ["v", "version", "n"]
+    ["v", "version", "n"], ["rel", "release", "s"]
   ];
 
   // champ d'état collection (objet/tableau) -> suffixe (stocké en JSON)
@@ -105,7 +107,11 @@
   // arriver ici ET dans SCALARS ou COLLECTIONS, sinon le repli la perd.
   function blank() {
     return {
-      v: 1,
+      // miroir EXACT de blank() du bundle (docs/javascripts/jjk-fiche.js) :
+      // v porte le SCHÉMA, rel la release lisible. Le chemin de repli les
+      // perdrait sans ça, et une fiche relue sans jjk_state repartirait en
+      // schéma 1 — c'est-à-dire qu'elle se ferait re-migrer indéfiniment.
+      v: SCHEMA_DEFAUT, rel: RELEASE_DEFAUT,
       name: "", portrait: "", espece: "", age: "", sexe: "", genre: "",
       defaut: "", qualites: ["", ""], background: "", notes: "",
       avantages: [], sansLimite: false,
