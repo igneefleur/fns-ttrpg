@@ -4797,8 +4797,12 @@
     var j = freres.indexOf(m);
     var cols = colonnesDe(m.onglet);
     var noms = cols ? Object.keys(cols) : [];
+    // Le titre seul. L'id reste sur la ligne (data-id) pour qui la manipule,
+    // mais il ne s'affiche pas : ces mots-là ne parlent qu'au code, et vingt-cinq
+    // « narration », « caracs », « armescomp » en gris alourdissaient la liste
+    // sans rien apprendre à personne. Un module en panne, lui, donne son id
+    // dans sa carte : c'est là qu'il sert.
     ligne.appendChild(el("span", "nom", m.titre || m.id));
-    ligne.appendChild(el("span", "id", m.id));
     var etat = el("span", "etat", "");
     ligne.appendChild(etat);
     // Le bloc « Modules » n'a pas de puce : c'est LUI qui rallume les autres.
@@ -4878,8 +4882,6 @@
   }
   function buildModules() {
     var b = block("Modules");
-    b.appendChild(el("div", "pc-block-note",
-      "Ce que la fiche affiche, et où. Couper un module ne perd rien : ses données restent, il cesse de s'afficher."));
     var box = el("div");
     var visibles = ordreModules().filter(moduleAffichable);
     var vus = {};
@@ -5155,9 +5157,10 @@
   }
   function buildMods() {
     var b = block("Mods");
-    b.appendChild(el("div", "pc-block-note",
-      "Le code d'un mod voyage avec le personnage : qui ouvre cette fiche reçoit ce code, " +
-      "et rien ne tourne chez lui tant qu'il ne l'a pas autorisé."));
+    // AUCUNE explication en tête de bloc. La fiche montre les données du
+    // personnage, pas un mode d'emploi : ce qu'il faut savoir avant d'autoriser
+    // du code est dit là où la décision se prend (le dialogue d'examen et le
+    // formulaire), et le reste est dans la page Mods du livre.
     // Le moteur est facultatif de naissance (un repli gelé peut ne charger que
     // le bundle) : sans lui, on le dit et on ne propose rien qui n'aurait aucun
     // effet — un mod ajouté ici n'aurait ni empreinte ni accord possible.
@@ -5169,7 +5172,7 @@
     var mods = Array.isArray(state.mods) ? state.mods : [];
     var box = el("div");
     mods.forEach(function (m) { box.appendChild(ligneMod(m)); });
-    if (!mods.length) box.appendChild(el("div", "pc-empty", "Aucun mod sur ce personnage."));
+    if (!mods.length) box.appendChild(el("div", "pc-empty", "Aucun mod sur cette fiche personnage."));
     b.appendChild(box);
     var tools = el("div", "pc-comp-tools");
     var line = el("div", "row");
