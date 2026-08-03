@@ -508,7 +508,7 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-optcomp-wrap { overflow-x: auto; }
 .pc-optcomp-row {
   display: grid; align-items: center; gap: .2rem;
-  grid-template-columns: minmax(3rem, 1.2fr) 2.1rem 3.4rem 2.2rem 1px 2.1rem 3.4rem 2.6rem;
+  grid-template-columns: minmax(4.4rem, 1.4fr) 2.1rem 2.1rem 2.2rem 1px 2.1rem 2.1rem 2.6rem;
   min-width: 20rem; padding: .1rem .15rem; border-radius: 4px;
   border-left: 2px solid transparent;
 }
@@ -528,10 +528,17 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 }
 /* une ligne réglée se repère d'un coup d'œil parmi cinquante */
 .pc-optcomp-row.on { border-left-color: var(--red); }
-/* steppers compacts : sept colonnes doivent tenir dans une demi-largeur */
-.pc-optcomp-row .pc-step { gap: .1rem; }
-.pc-optcomp-row .pc-step button { width: .8rem; height: .8rem; font-size: .6rem; }
-.pc-optcomp-row .pc-num { width: 1.3rem; font-size: .62rem; }
+/* champs compacts : sept colonnes doivent tenir dans une demi-largeur. Le
+   modificateur est un champ NU (ni − ni +) : sur cinquante lignes, les boutons
+   mangeaient la place sans rien apporter. */
+.pc-optcomp-row .pc-num.modif {
+  width: 100%; box-sizing: border-box; font-size: .62rem; font-weight: 600;
+  border: none; border-bottom: 1px solid var(--hair); text-align: center;
+  -moz-appearance: textfield; appearance: textfield;
+}
+.pc-optcomp-row .pc-num.modif::-webkit-inner-spin-button,
+.pc-optcomp-row .pc-num.modif::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.pc-optcomp-row .pc-num.modif:focus { outline: none; border-bottom: 2px solid var(--red); }
 .pc-optcomp-row .pc-comp-total { font-size: .62rem; }
 .pc-optcomp-row .pc-comp-label { font-size: .64rem; }
 .pc-optcomp-row.odd { background: var(--stripe); }

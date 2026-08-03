@@ -3441,6 +3441,25 @@
     var mcBox = el("div");
     mcWrap.appendChild(mcBox);
     bMC.appendChild(mcWrap);
+    // Modificateur d'une ligne de compétence : un champ NU, sans − ni +. Sur
+    // cinquante lignes de sept colonnes, les boutons mangeaient la place et
+    // n'apportaient rien qu'on ne fasse au clavier. Les caractéristiques,
+    // elles, gardent leurs boutons : elles ne sont que trois.
+    function modField(map, key, borne, titre) {
+      var inp = el("input", "pc-num modif");
+      inp.type = "number"; inp.step = String(MOD_PAS);
+      inp.title = titre;
+      inp.addEventListener("input", function () {
+        var v = parseFloat(inp.value);
+        if (isFinite(v) && clamp(Math.round(v), -borne, borne)) map[key] = clamp(Math.round(v), -borne, borne);
+        else delete map[key];   // vide ou zéro = pas d'entrée dans l'état
+        refresh();
+      });
+      optHooks.push(function () {
+        if (document.activeElement !== inp) inp.value = map[key] === undefined ? "" : map[key];
+      });
+      return inp;
+    }
     // un champ de forçage : vide = valeur calculée, une valeur la remplace
     function forceField(map, key, auto, titre) {
       var inp = el("input", "force");
@@ -3520,14 +3539,8 @@
             "Total forcé — vide = total calculé (caractéristique + stade + modificateur)."));
 
           // l'état ne porte qu'un nombre par compétence depuis la migration
-          row.appendChild(stepper(
-            function () { return state.compsMod[it.key] || 0; },
-            function (v) {
-              v = clamp(v, -999, 999);
-              if (v) state.compsMod[it.key] = v;
-              else delete state.compsMod[it.key];   // zéro = pas d'entrée dans l'état
-            },
-            CARAC_PAS, "modificateur", optHooks));
+          row.appendChild(modField(state.compsMod, it.key, 999,
+            "Modificateur du total (équipement, art, autre) — vide = aucun."));
 
           var tot = el("span", "pc-comp-total", "");
           row.appendChild(tot);
@@ -3538,14 +3551,8 @@
             function () { return compXpAuto(comp(), it.key); },
             "Coût en xp forcé — vide = coût calculé (stades, passifs, art, modificateur)."));
 
-          row.appendChild(stepper(
-            function () { return state.compsXpMod[it.key] || 0; },
-            function (v) {
-              v = clamp(v, -9999, 9999);
-              if (v) state.compsXpMod[it.key] = v;
-              else delete state.compsXpMod[it.key];   // zéro = pas d'entrée dans l'état
-            },
-            MOD_PAS, "modificateur de coût", optHooks));
+          row.appendChild(modField(state.compsXpMod, it.key, 9999,
+            "Modificateur du coût en xp — vide = aucun."));
 
           var cout = el("span", "pc-comp-total", "");
           row.appendChild(cout);
