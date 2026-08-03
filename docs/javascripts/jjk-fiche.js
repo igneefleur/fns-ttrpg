@@ -5248,24 +5248,34 @@
     // À GAUCHE, dans l'ordre de la Fiche : ce qui touche aux caractéristiques
     // d'abord (leurs modificateurs, puis où est parti l'xp), la création
     // ensuite, le jeu après, et les réglages d'affichage en bas.
-    { id: "modcaracs",  titre: "Modificateurs de caractéristiques", onglet: "options", colonne: "gauche", build: buildModCaracs },
-    { id: "xpchamps",   titre: "XP par champ",      onglet: "options", colonne: "gauche", build: buildXpChamps },
-    { id: "creation",   titre: "Création",          onglet: "options", colonne: "gauche", build: buildCreation },
+    // L'onglet Options se lit en DEUX COLONNES QUI SE RÉPONDENT, du plus
+    // employé au plus long :
+    //   en tête, ce qu'on ouvre le plus souvent : les Jets à gauche, la Fiche
+    //     (exporter, importer, réinitialiser) à droite ;
+    //   au deuxième rang, les deux faces de l'xp, côte à côte : ce qu'on ajoute
+    //     aux caractéristiques à gauche, où l'xp est parti à droite ;
+    //   au milieu, les réglages courts, répartis pour que les deux colonnes
+    //     arrivent à la même hauteur ;
+    //   tout en bas, les deux longues listes, qui déroulent sans fin : les
+    //     Modules à gauche, les Compétences à droite.
+    // L'ordre de déclaration EST l'ordre d'affichage, colonne par colonne.
     { id: "jets",       titre: "Jets",              onglet: "options", colonne: "gauche", build: buildJets },
-    { id: "filtres",    titre: "Outils de filtre",  onglet: "options", colonne: "gauche", build: buildFiltres },
-    { id: "affichage",  titre: "Affichage",         onglet: "options", colonne: "gauche", build: buildAffichage, pour: affichagePresent },
-    // À DROITE, comme sur la Fiche où les compétences occupent déjà cette
-    // colonne : la fiche elle-même en tête, puis les compétences, qui prennent
-    // toute la hauteur restante.
     { id: "actions",    titre: "Fiche",             onglet: "options", colonne: "droite", build: buildActions },
-    { id: "optcomps",   titre: "Compétences",       onglet: "options", colonne: "droite", build: buildOptComps },
-    // Ces deux-ci FERMENT la colonne gauche : ils ne parlent pas du
-    // personnage mais de la fiche elle-même (ce qui s'affiche et où, puis le
-    // code qu'on lui ajoute), ils se lisent donc en dernier. Déclarés à la fin
-    // de la table, ils tombent quand même sous « Affichage » : chaque module
-    // rejoint SA colonne, à la suite de ceux déjà déclarés pour elle.
+    { id: "modcaracs",  titre: "Modificateurs de caractéristiques", onglet: "options", colonne: "gauche", build: buildModCaracs },
+    { id: "xpchamps",   titre: "XP par champ",      onglet: "options", colonne: "droite", build: buildXpChamps },
+    // Création passe à DROITE, et ce n'est pas un choix de goût : mesuré sous
+    // Firefox, les deux longues listes du bas démarraient à 139 px d'écart avec
+    // ce bloc à gauche, contre 12 px une fois déplacé. Il tient d'ailleurs de
+    // l'xp autant que « XP par champ », son voisin du dessus.
+    { id: "creation",   titre: "Création",          onglet: "options", colonne: "droite", build: buildCreation },
+    { id: "filtres",    titre: "Outils de filtre",  onglet: "options", colonne: "droite", build: buildFiltres },
+    // « Affichage » n'existe que dans Roll20 : à gauche, il y compense les deux
+    // blocs de réglages que porte la droite, et son absence sur le site laisse
+    // les deux colonnes à égalité.
+    { id: "affichage",  titre: "Affichage",         onglet: "options", colonne: "gauche", build: buildAffichage, pour: affichagePresent },
+    { id: "mods",       titre: "Mods",              onglet: "options", colonne: "gauche", build: buildMods },
     { id: "modules",    titre: "Modules",           onglet: "options", colonne: "gauche", build: buildModules },
-    { id: "mods",       titre: "Mods",              onglet: "options", colonne: "gauche", build: buildMods }
+    { id: "optcomps",   titre: "Compétences",       onglet: "options", colonne: "droite", build: buildOptComps }
   ];
   modules = MODULES_NATIFS.slice();
 
