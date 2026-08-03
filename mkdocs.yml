@@ -47,7 +47,7 @@ extra_javascript:
   - javascripts/nav-drawer.js
   - javascripts/night.js
   - javascripts/jjk-migrations.js?v=1 # moteur de migration : AVANT le bundle, qui l'appelle
-  - javascripts/jjk-fiche.js?v=1
+  - javascripts/jjk-fiche.js?v=2
   - javascripts/copybtn.js
 hooks:
   - hooks/jjk_creation.py

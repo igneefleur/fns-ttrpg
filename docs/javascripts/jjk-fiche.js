@@ -51,6 +51,19 @@
   var DATA = null;
   var state = null;
 
+  // ---------- version ----------
+  // RELEASE est ce qu'on montre, SCHEMA est ce qui compte. Invariant tenu par
+  // scripts/verif_versions.py : majeur(RELEASE) === SCHEMA.
+  //
+  // Le SCHÉMA ne monte QUE lorsqu'une donnée EXISTANTE change de forme ou de
+  // sens (renommage, fusion, déplacement, changement de type). Ajouter une
+  // clé racine avec un défaut n'en est pas un : normalize() la complète et ne
+  // purge aucune clé racine inconnue, donc une telle fiche s'ouvre dans les
+  // deux sens sans migration. C'est ce qui permettra de livrer la disposition
+  // des modules puis les mods sans forcer un 4.0.0 puis un 5.0.0.
+  var RELEASE = "3.0.0";
+  var SCHEMA = 3;
+
   var XP_CREATION = 500;      // xp de départ (le total reste modifiable)
   var PTS_CREATION = 120;     // points de caractéristiques à la création
   var CARAC_MAX = 80;         // limite sans avantage
@@ -116,7 +129,7 @@
   // ---------- état ----------
   function blank() {
     return {
-      v: 1,
+      v: SCHEMA, rel: RELEASE,
       name: "", portrait: "", espece: "", age: "", sexe: "", genre: "",
       defaut: "", qualites: ["", ""], background: "", notes: "",
       avantages: [], sansLimite: false,
@@ -156,10 +169,36 @@
   // par cette normalisation : champ manquant -> valeur par défaut, types sûrs.
   // La validation est PROFONDE (éléments des tableaux, sous-objets compris) :
   // un état corrompu ne doit ni briquer la page ni s'effacer en silence.
+  // Migration de schéma, AVANT toute normalisation : normalize() complète et
+  // nettoie selon la forme d'AUJOURD'HUI, donc il faut d'abord amener l'état
+  // jusqu'ici. Le moteur est facultatif de naissance : le repli gelé de
+  // roll20-fiche.html ne charge que le bundle, et une fiche sans moteur doit
+  // s'ouvrir quand même — d'où le garde, qui restera pour toujours.
+  // Une fiche VENUE DU FUTUR (v > SCHEMA) n'est pas migrée à la baisse en
+  // douce : on la laisse telle quelle et l'amorce s'en occupe (écran de
+  // version). Écrire dessus avec un code qui ne la comprend pas serait le
+  // seul vrai moyen de la perdre.
+  function migre(s) {
+    if (!s || typeof s !== "object") return s;
+    var de = parseInt(s.v, 10);
+    if (!isFinite(de)) de = 1;
+    if (de === SCHEMA) return s;
+    if (de > SCHEMA) return s;                     // du futur : ne rien toucher
+    if (!window.JjkMigr || !window.JjkMigr.appliquer) return s;
+    var r = window.JjkMigr.appliquer(s, de, SCHEMA);
+    if (!r || !r.ok) return s;                     // échec : l'état d'origine, intact
+    r.state.v = SCHEMA;
+    r.state.rel = RELEASE;
+    return r.state;
+  }
+
   function normalize(s) {
     var b = blank();
     if (!s || typeof s !== "object") return b;
+    s = migre(s);
     Object.keys(b).forEach(function (k) { if (s[k] === undefined) s[k] = b[k]; });
+    // la release suit toujours le code qui vient d'écrire : c'est lui qui fait foi
+    if (parseInt(s.v, 10) === SCHEMA) s.rel = RELEASE;
     if (!s.caracsBase || typeof s.caracsBase !== "object") s.caracsBase = b.caracsBase;
     if (!s.caracsXp || typeof s.caracsXp !== "object") s.caracsXp = b.caracsXp;
     if (!s.caracsMod || typeof s.caracsMod !== "object") s.caracsMod = b.caracsMod;
