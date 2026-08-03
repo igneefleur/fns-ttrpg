@@ -51,7 +51,7 @@
     ["caracsMod", "caracs_mod"],
     ["compsMod", "comps_mod"],
     ["comps", "competences"], ["customComps", "comp_perso"],
-    ["langues", "langues"],
+    ["langues", "langues"], ["armesComps", "armes_comps"],
     ["armes", "armes"], ["armures", "armures"],
     ["inv", "inventaire_sys"],
     ["divers", "divers"]
@@ -76,7 +76,7 @@
       inv: { texte: [], groupes: ["Sur soi"], objets: [] },
       divers: { pvMax: [0, 0, 0], regen: [0, 0, 0], vitesse: [0, 0, 0] },
       pvMaxOverride: null, vitesseOverride: null, regenOverride: null,
-      langues: [], langueBase: "",
+      langues: [], langueBase: "", armesComps: [],
       de: "1d100"
     };
   }

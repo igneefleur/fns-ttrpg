@@ -132,6 +132,9 @@
       // dans comps), rassemblées dans leur module. langueBase = la langue du
       // personnage, acquise jusqu'à Expert sans rien coûter.
       langues: [], langueBase: "",
+      // armes ajoutées par le joueur : des compétences de Body, rassemblées
+      // dans le module Armes avec celles des règles (DATA.compsArmes)
+      armesComps: [],
       de: "1d100"
     };
   }
@@ -219,6 +222,19 @@
       });
     s.langueBase = capFirst(String(s.langueBase == null ? "" : s.langueBase).trim());
     if (s.langueBase && !vues[s.langueBase.toLowerCase()]) s.langueBase = "";
+    // armes ajoutées à la main : noms uniques, et jamais un doublon de celles
+    // des règles (qui sont déjà dans le module)
+    if (!Array.isArray(s.armesComps)) s.armesComps = [];
+    var basiques = {};
+    ((DATA && DATA.compsArmes) || []).forEach(function (n) { basiques[String(n).toLowerCase()] = 1; });
+    var vuesA = {};
+    s.armesComps = s.armesComps
+      .map(function (n) { return capFirst(String(n == null ? "" : n).trim()); })
+      .filter(function (n) {
+        if (!n || vuesA[n.toLowerCase()] || basiques[n.toLowerCase()]) return false;
+        vuesA[n.toLowerCase()] = 1;
+        return true;
+      });
     if (!Array.isArray(s.qualites)) s.qualites = ["", ""];
     s.qualites = s.qualites.map(function (q) { return q == null ? "" : String(q); });
     while (s.qualites.length < 2) s.qualites.push("");
@@ -359,6 +375,13 @@
   // clés et repères des compétences que la fiche traite à part
   var INIT_KEY = "Body/Initiative";
   var LANGUE_CARAC = "Mind";
+  // les compétences d'ARMES sont TOUJOURS des compétences de Body
+  var ARME_CARAC = "Body";
+  function armeKey(nom) { return ARME_CARAC + "/" + nom; }
+  // celles des règles, puis celles que le joueur a ajoutées
+  function armesNoms() {
+    return ((DATA && DATA.compsArmes) || []).concat(state.armesComps);
+  }
   function langueKey(nom) { return LANGUE_CARAC + "/" + nom; }
   function estLangue(key) {
     return state.langues.some(function (n) { return langueKey(n) === key; });
@@ -452,8 +475,17 @@
   function blankComp() { return { stade: 0, techniques: [] }; }
   function allComps() {
     var out = [];
+    var armes = {};
+    ((DATA && DATA.compsArmes) || []).forEach(function (n) { armes[n] = 1; });
     CHAMPS.forEach(function (c) {
-      (DATA.comps[c] || []).forEach(function (n) { out.push({ key: c + "/" + n, name: n, carac: c, custom: false }); });
+      (DATA.comps[c] || []).forEach(function (n) {
+        out.push({ key: c + "/" + n, name: n, carac: c, custom: false,
+                   arme: c === ARME_CARAC && !!armes[n] });
+      });
+    });
+    // armes ajoutées par le joueur : mêmes compétences de Body, personnalisées
+    state.armesComps.forEach(function (n) {
+      out.push({ key: armeKey(n), name: n, carac: ARME_CARAC, custom: true, arme: true });
     });
     state.customComps.forEach(function (cc) {
       if (cc && cc.name) out.push({ key: cc.carac + "/" + cc.name, name: cc.name, carac: cc.carac, custom: true });
@@ -1454,6 +1486,102 @@
     col.appendChild(b);
   }
 
+  // ---------- compétences d'armes ----------
+  // Toujours des compétences de Body. Celles des règles (DATA.compsArmes) et
+  // celles que le joueur ajoute vivent ensemble ici, et nulle part ailleurs :
+  // la liste générale les écarte pour ne pas doubler la commande du stade.
+  function buildArmesComps(col) {
+    var armHooks = [];
+    var b = block("Armes", null, "armescomp", function () { rendre(); });
+
+    // mêmes filtres que la liste des compétences : décoché, « Armes
+    // personnalisées » ne laisse que celles des règles ; « Investies
+    // seulement » masque celles où rien n'est posé.
+    var tools = el("div", "pc-comp-tools");
+    var line = el("div", "row");
+    var persoChip = el("span", "pc-chip");
+    persoChip.textContent = "Personnalisées";
+    persoChip.title = "Décoché : seules les armes des règles sont affichées.";
+    persoChip.classList.toggle("on", armesPerso);
+    persoChip.addEventListener("click", function () {
+      armesPerso = !armesPerso;
+      persoChip.classList.toggle("on", armesPerso);
+      rendre();
+    });
+    line.appendChild(persoChip);
+    var onlyChip = el("span", "pc-chip");
+    onlyChip.textContent = "Investies";
+    onlyChip.title = "N'afficher que les armes où un stade, un passif ou un modificateur est posé.";
+    onlyChip.classList.toggle("on", armesOnly);
+    onlyChip.addEventListener("click", function () {
+      armesOnly = !armesOnly;
+      onlyChip.classList.toggle("on", armesOnly);
+      rendre();
+    });
+    line.appendChild(onlyChip);
+    tools.appendChild(line);
+    b.appendChild(tools);
+
+    var box = el("div");
+    b.appendChild(box);
+
+    function rendre() {
+      armHooks.length = 0;
+      box.innerHTML = "";
+      var noms = armesNoms().filter(function (nom) {
+        var perso = state.armesComps.indexOf(nom) >= 0;
+        if (!armesPerso && perso) return false;
+        if (armesOnly && !compInvestie({ key: armeKey(nom) })) return false;
+        return true;
+      });
+      if (noms.length) {
+        var head = el("div", "pc-comp-row head");
+        head.appendChild(el("span", null, "Arme"));
+        head.appendChild(el("span", null, "Stade"));
+        head.appendChild(el("span", null, "Total"));
+        box.appendChild(head);
+      } else {
+        box.appendChild(el("div", "pc-empty",
+          armesOnly ? "Aucune arme investie." : "Aucune arme."));
+      }
+      noms.forEach(function (nom, i) {
+        var perso = state.armesComps.indexOf(nom) >= 0;
+        box.appendChild(compRow(
+          { key: armeKey(nom), name: nom, carac: ARME_CARAC, custom: perso, arme: true },
+          i % 2 === 1, { module: "armescomp", reg: armHooks, onDrop: rendre }));
+      });
+
+      if (isEdit("armescomp")) {
+        var addRow = el("div", "pc-comp-add");
+        var inp = el("input");
+        inp.type = "text";
+        inp.placeholder = "Nouvelle arme…";
+        addRow.appendChild(inp);
+        addRow.appendChild(miniBtn("+", "Ajouter", function () {
+          var nom = capFirst(inp.value.trim());
+          if (!nom) return;
+          if (allComps().some(function (it) {
+                return it.carac === ARME_CARAC && it.name.toLowerCase() === nom.toLowerCase();
+              })) { flash("« " + nom + " » existe déjà en Body."); return; }
+          state.armesComps.push(nom);
+          // ne jamais ajouter une arme qui resterait invisible
+          if (!armesPerso) { armesPerso = true; persoChip.classList.add("on"); }
+          if (armesOnly) { armesOnly = false; onlyChip.classList.remove("on"); }
+          inp.value = "";
+          refresh();
+          rendre();
+          if (optCompsRebuild) optCompsRebuild();
+        }));
+        box.appendChild(addRow);
+      }
+      applyEdit(b, "armescomp");
+      refresh();
+    }
+    hooks.push(function () { armHooks.forEach(function (f) { f(); }); });
+    rendre();
+    col.appendChild(b);
+  }
+
   // ---------- langues ----------
   // Des compétences de Mind, rassemblées dans leur module. La langue du
   // personnage monte jusqu'à Expert sans rien coûter ; les autres se paient
@@ -1641,6 +1769,8 @@
         if (item.langue) {
           state.langues = state.langues.filter(function (n) { return n !== item.name; });
           if (state.langueBase === item.name) state.langueBase = "";
+        } else if (item.arme) {
+          state.armesComps = state.armesComps.filter(function (n) { return n !== item.name; });
         } else {
           state.customComps = state.customComps.filter(function (cc) { return (cc.carac + "/" + cc.name) !== item.key; });
         }
@@ -1743,6 +1873,10 @@
   // affichées ; coché : les compétences personnalisées s'y ajoutent
   var compPerso = true;
   var compPersoChip = null;     // la puce, rallumée quand on ajoute une comp perso
+  // mêmes filtres pour le module Armes (réglages de VUE : ils survivent au
+  // remontage de la fiche, comme ceux des compétences)
+  var armesPerso = true;
+  var armesOnly = COMPACT;
   function compInvestie(it) {
     var c = state.comps[it.key];
     // l'art compte : une compétence redescendue qui garde son art reste
@@ -1760,10 +1894,10 @@
     var flt = compFilter.trim().toLowerCase();
     CHAMPS.forEach(function (carac) {
       if (compChamp && compChamp !== carac) return;
-      // l'Initiative et les langues ont leur propre module sur cette page :
-      // les répéter ici ferait deux commandes pour un même stade
+      // l'Initiative, les langues et les armes ont leur propre module sur
+      // cette page : les répéter ici ferait deux commandes pour un même stade
       var items = allComps().filter(function (it) {
-        return it.carac === carac && it.key !== INIT_KEY && !it.langue;
+        return it.carac === carac && it.key !== INIT_KEY && !it.langue && !it.arme;
       });
       if (!compPerso) items = items.filter(function (it) { return !it.custom; });
       if (flt) items = items.filter(function (it) { return it.name.toLowerCase().indexOf(flt) >= 0; });
@@ -1816,7 +1950,7 @@
     // rangées d'ajout n'existent qu'en édition.
     var b = block("Compétences", null, "comps", function () { rebuildComps(); });
     // outils sur deux lignes : filtre texte + filtre de champ côte à côte,
-    // puis la puce « Investies seulement » en dessous
+    // puis les deux puces de filtre en dessous
     var tools = el("div", "pc-comp-tools");
     var line1 = el("div", "row");
     var search = el("input", "pc-comp-search");
@@ -1838,7 +1972,7 @@
     tools.appendChild(line1);
     var line2 = el("div", "row");
     var persoChip = el("span", "pc-chip");
-    persoChip.textContent = "Compétences personnalisées";
+    persoChip.textContent = "Personnalisées";
     persoChip.title = "Décoché : seules les compétences de base du jeu sont affichées.";
     persoChip.classList.toggle("on", compPerso);
     persoChip.addEventListener("click", function () {
@@ -1849,7 +1983,8 @@
     compPersoChip = persoChip;
     line2.appendChild(persoChip);
     var onlyChip = el("span", "pc-chip");
-    onlyChip.textContent = "Investies seulement";
+    onlyChip.textContent = "Investies";
+    onlyChip.title = "N'afficher que les compétences où un stade, un passif ou un modificateur est posé.";
     onlyChip.classList.toggle("on", compOnly);
     onlyChip.addEventListener("click", function () {
       compOnly = !compOnly;
@@ -1867,7 +2002,7 @@
 
   function buildFiche(pane) {
     // trois colonnes : narration, caractéristiques, langues | initiative,
-    // vitesse, régén, PV | compétences (à la suite : Body, Mind, Prestance)
+    // vitesse, régén, PV, armes | compétences (à la suite : Body, Mind, Prestance)
     var cols = el("div", "pc-cols-fiche");
     var c1 = el("div", "pc-col");
     var c2 = el("div", "pc-col");
@@ -1882,6 +2017,7 @@
     buildInitiative(c2);
     buildVitesse(c2);
     buildPv(c2);
+    buildArmesComps(c2);
     buildComps(c3);
   }
 
@@ -3074,7 +3210,7 @@
     mcTools.appendChild(mcLine1);
     var mcLine2 = el("div", "row");
     var mcPerso = el("span", "pc-chip");
-    mcPerso.textContent = "Compétences personnalisées";
+    mcPerso.textContent = "Personnalisées";
     mcPerso.title = "Décoché : seules les compétences de base du jeu sont affichées.";
     mcPerso.classList.toggle("on", optPerso);
     mcPerso.addEventListener("click", function () {
@@ -3084,7 +3220,8 @@
     });
     mcLine2.appendChild(mcPerso);
     var mcOnly = el("span", "pc-chip");
-    mcOnly.textContent = "Investies seulement";
+    mcOnly.textContent = "Investies";
+    mcOnly.title = "N'afficher que les compétences où un stade, un passif ou un modificateur est posé.";
     mcOnly.classList.toggle("on", optOnly);
     mcOnly.addEventListener("click", function () {
       optOnly = !optOnly;
@@ -3143,7 +3280,7 @@
       });
       if (!shown) {
         mcBox.appendChild(el("div", "pc-empty",
-          optOnly ? "Aucune compétence investie ne correspond — décocher « Investies seulement » pour toutes les voir."
+          optOnly ? "Aucune compétence investie ne correspond — décocher « Investies » pour toutes les voir."
                   : "Aucune compétence ne correspond."));
       }
       refresh();   // les lignes viennent de naître : leurs totaux se peuplent ici
