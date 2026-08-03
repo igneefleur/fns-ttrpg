@@ -4790,7 +4790,13 @@
   // freres : les modules de la MÊME colonne du MÊME onglet, dans l'ordre de la
   // liste. note : ce qu'il y a à dire de ce module quand il ne va pas.
   function ligneModule(m, freres, note) {
-    var ligne = el("div", "pc-modrow");
+    // pc-modrow-reglage : la ligne devient une GRILLE, aux pistes fixes. Les
+    // quatre commandes tombent alors à la même abscisse d'une ligne à l'autre,
+    // et une commande absente laisse sa case vide au lieu de tirer les
+    // suivantes vers la gauche. En flux, la ligne d'un onglet à colonne unique
+    // (Art, sans liste de colonnes) et celle du bloc Modules lui-même (sans
+    // puce) désalignaient toute la liste.
+    var ligne = el("div", "pc-modrow pc-modrow-reglage");
     // l'id sur la ligne : c'est par lui qu'une sonde retrouve LE module dont
     // elle parle, plutôt que par un libellé qui peut changer de mot
     ligne.dataset.id = m.id;
@@ -4802,13 +4808,23 @@
     // « narration », « caracs », « armescomp » en gris alourdissaient la liste
     // sans rien apprendre à personne. Un module en panne, lui, donne son id
     // dans sa carte : c'est là qu'il sert.
-    ligne.appendChild(el("span", "nom", m.titre || m.id));
+    // Le titre et l'état vivent dans la MÊME case : l'état varie de longueur
+    // (« en panne », « muselé », rien du tout), et lui donner sa propre piste
+    // aurait décalé les commandes de chaque ligne selon ce qui s'y affiche.
+    var tete = el("span", "tete");
+    var nom = el("span", "nom", m.titre || m.id);
+    // un titre trop long pour sa case est coupé (« Modificateurs de cara… ») :
+    // l'infobulle le rend en entier plutôt que de laisser deviner
+    nom.title = m.titre || m.id;
+    tete.appendChild(nom);
     var etat = el("span", "etat", "");
-    ligne.appendChild(etat);
+    tete.appendChild(etat);
+    ligne.appendChild(tete);
     // Le bloc « Modules » n'a pas de puce : c'est LUI qui rallume les autres.
     // Se couper lui-même le ferait disparaître, et plus rien sur la fiche ne
     // pourrait faire revenir un module éteint. Le montage l'épargne de la même
     // façon (MODULE_REGLAGES) : l'interdiction ne tient pas qu'à cette puce.
+    // Sa case reste, vide : c'est elle qui garde les flèches alignées.
     if (m.id !== MODULE_REGLAGES) {
       var puce = el("span", "pc-chip", "Affiché");
       puce.title = "Retirer ce module de la fiche : rien n'est effacé, il cesse de s'afficher.";
@@ -4818,6 +4834,8 @@
         remount();
       });
       ligne.appendChild(puce);
+    } else {
+      ligne.appendChild(el("span", "creux"));
     }
     ligne.appendChild(flecheModule("▲", "Monter dans la colonne", m, freres[j - 1]));
     ligne.appendChild(flecheModule("▼", "Descendre dans la colonne", m, freres[j + 1]));
@@ -4832,12 +4850,11 @@
       sel.title = colonneInconnue
         ? "Colonne déclarée inconnue dans cet onglet : en choisir une remet le module à sa place."
         : "Colonne de ce module dans son onglet.";
-      // .pc-select est taillée pour les grilles (width: 100 %). Dans une ligne
-      // en flex, elle prendrait une ligne à elle seule : mesuré sous Firefox,
-      // la liste passait de 41 à 82 px par module, soit le double de hauteur
-      // pour la même chose. Elle reprend donc la largeur de son contenu, comme
-      // le fait déjà .pc-envoi .pc-select dans la barre d'envoi.
-      sel.style.width = "auto";
+      // .pc-select vaut width: 100 %, et c'est exactement ce qu'il faut ici :
+      // la piste de la grille lui donne sa largeur, la même pour toutes les
+      // lignes. (En flux, il fallait au contraire la brider : mesuré sous
+      // Firefox, elle prenait une ligne à elle seule et la liste passait de 41
+      // à 82 px par module.)
       noms.forEach(function (c) {
         var o = el("option", null, LIB_COLONNES[c] || capFirst(c));
         o.value = c;
@@ -4860,6 +4877,10 @@
         placeModule(m.id, m.onglet, sel.value);
       });
       ligne.appendChild(sel);
+    } else {
+      // pas de colonne à choisir (onglet à colonne unique) : la case reste,
+      // vide, pour que les flèches des autres lignes ne bougent pas
+      ligne.appendChild(el("span", "creux"));
     }
     // Panne et muselière sont RELUES à chaque rafraîchissement : les modules
     // bâtis après celui-ci n'ont pas encore pu tomber quand cette liste se
