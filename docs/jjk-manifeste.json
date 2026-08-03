@@ -1,0 +1,21 @@
+{
+  "_lisezmoi": "Manifeste de la fiche JJK. C'est LUI qui dit quoi charger. roll20-fiche.html est un amorceur gelé, servi sans ?v= par la coquille signée et gardé dix minutes par GitHub Pages : il ne peut donc pas nommer les fichiers lui-même sans risquer de les figer. Ce manifeste, lui, se relit sans cache à chaque ouverture. Toutes les URL sont RELATIVES à la racine du site ; une URL absolue est refusée.",
+  "release": "3.0.0",
+  "schema": 3,
+  "blocage": "release",
+  "amorce": [
+    "javascripts/jjk-attr-map.js?v=9",
+    "javascripts/jjk-roll20-boot.js?v=24"
+  ],
+  "bundle": {
+    "js": [
+      "javascripts/jjk-fiche.js?v=1"
+    ],
+    "css": [
+      "stylesheets/jjk-fiche.css?v=1",
+      "stylesheets/jjk-roll20.css?v=1"
+    ],
+    "data": null
+  },
+  "archives": {}
+}
