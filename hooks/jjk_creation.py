@@ -82,7 +82,7 @@ COMPS_FICHE = {"Body": ["Initiative", "Esquive"]}
 # Compétences d'ARMES : elles vivent dans leur propre module de la fiche, pas
 # dans la liste générale. Toujours des compétences de Body. Le joueur peut en
 # ajouter d'autres depuis le module (elles ne passent alors pas par ici).
-COMPS_ARMES = ["Tanto", "Katana", "Pique Longue", "Chakram"]
+COMPS_ARMES = ["Tanto", "Katana", "Pique longue", "Chakram"]
 
 
 def _comps(defs):
