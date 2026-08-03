@@ -812,6 +812,36 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-modrow[data-etat="panne"] { border-left-color: var(--red); background: var(--wash); }
 .pc-modrow[data-etat="panne"] .etat { color: var(--red-deep); font-weight: 700; }
 
+/* Bloc Modules : une GRILLE, pas un flux. Les pistes sont fixes, donc « Affiché »,
+   les deux flèches et la liste des colonnes tombent à la même abscisse d'une
+   ligne à l'autre, quel que soit le titre du module. Une commande absente
+   (le bloc Modules n'a pas de puce, un onglet à colonne unique n'a pas de
+   liste) laisse une case vide au lieu de tirer les suivantes vers la gauche. */
+.pc-modrow-reglage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 4.3rem 1.6rem 1.6rem 6.4rem;
+  align-items: center;
+  column-gap: .25rem;
+  flex-wrap: nowrap;
+}
+/* titre et état dans la MÊME case : l'état change de longueur d'une ligne à
+   l'autre, une piste à lui aurait décalé tout ce qui suit */
+.pc-modrow-reglage .tete {
+  display: flex; align-items: baseline; gap: .3rem; min-width: 0;
+}
+.pc-modrow-reglage .nom { flex: 0 1 auto; }
+.pc-modrow-reglage .etat { flex: 0 0 auto; }
+/* chaque commande remplit sa piste : c'est ce qui les rend toutes de la même
+   largeur, colonne par colonne */
+.pc-modrow-reglage .pc-chip,
+.pc-modrow-reglage .pc-mini,
+.pc-modrow-reglage .pc-select { width: 100%; box-sizing: border-box; }
+.pc-modrow-reglage .pc-mini { padding-left: 0; padding-right: 0; text-align: center; }
+.pc-modrow-reglage .pc-chip { padding-left: .2rem; padding-right: .2rem; }
+/* le message d'une panne prend sa propre ligne, sur toute la largeur */
+.pc-modrow-reglage .pc-block-note { grid-column: 1 / -1; margin: 0; }
+.pc-modrow-reglage .pc-block-note:empty { display: none; }
+
 /* titre d'onglet dans le bloc Modules : même filet que les champs de
    compétences, pour que les deux longues listes se lisent de la même façon */
 .pc-modgroupe {
