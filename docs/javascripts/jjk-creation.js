@@ -1079,6 +1079,11 @@
         o2.value = actuel; o2.selected = true;
         destSel.appendChild(o2);
       }
+      // Ce qui est AFFICHÉ est ce qui sera utilisé. Sans cette ligne, un
+      // sélecteur qui ne porte qu'un nom n'émet jamais « change » (le
+      // navigateur le choisit tout seul) : le destinataire restait vide et la
+      // macro repartait en public alors que son nom s'affichait.
+      lset(ENVOI.dest, destSel.value);
     }
     destSel.addEventListener("change", function () { lset(ENVOI.dest, destSel.value); });
     // Roll20 ne livre sa liste que par l'extension (la fiche est une iframe
