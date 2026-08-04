@@ -606,6 +606,13 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
   align-self: stretch; width: 1px; background: var(--line);
   margin: -.1rem 0;   /* mord sur le padding de la rangée : aucune interruption */
 }
+/* Bloc Création : la MÊME grille, à quatre colonnes. Il n'a pas de moitié
+   « coût en xp » à régler, donc pas de filet ni de second jeu de champs. Les
+   trois colonnes de chiffres sont un peu plus larges qu'à dix colonnes, où
+   elles se disputaient une demi-largeur : « MODIF. », à cheval sur deux
+   colonnes là-bas, en a ici une seule et doit tenir en entier. Le nom ramasse
+   le reste. */
+.pc-optcomp-row.quatre { grid-template-columns: minmax(3.2rem, 1.4fr) 2.6rem 2.9rem 2.8rem; }
 /* rangée des groupes : deux titres de trois colonnes, de part et d'autre */
 .pc-optcomp-row.grp > .g { grid-column: span 4; text-align: center; }
 .pc-optcomp-row.grp > .g {
@@ -672,7 +679,10 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-comp-row .pc-mmods { justify-self: center; }
 .pc-comp-row .pc-mmod { width: 1.3rem; }
 
-/* case à cocher d'option (Sans limite) */
+/* Cases à cocher d'option : la fiche n'en a plus (« Sans limite » a laissé la
+   place au bloc Création réglable, le 2026-08-04). Les deux règles restent
+   pour les MODS, qui posent des .pc-kv avec une case et se retrouveraient
+   sinon avec un contrôle sans style. */
 .pc-kv > input[type="checkbox"] { accent-color: var(--red); margin: 0; flex-shrink: 0; }
 .pc-kv > label { font-size: .64rem; color: var(--ink-2); cursor: pointer; }
 

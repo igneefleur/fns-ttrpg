@@ -65,8 +65,11 @@
   var SCHEMA = 3;
 
   var XP_CREATION = 500;      // xp de départ (le total reste modifiable)
+  // Les deux barèmes de la création. Ce ne sont plus des murs : le bloc
+  // Création des Options les décale ou les remplace, fiche par fiche (et pour
+  // le plafond, caractéristique par caractéristique).
   var PTS_CREATION = 120;     // points de caractéristiques à la création
-  var CARAC_MAX = 80;         // limite sans avantage
+  var CARAC_MAX = 80;         // plafond d'une caractéristique
   var CARAC_PAS = 5;          // +5 par achat d'xp
   var MOD_PAS = 5;            // tous les modificateurs se règlent de 5 en 5
   var QUART = 4;              // « pas plus d'un quart de l'xp total »
@@ -140,6 +143,14 @@
       name: "", portrait: "", espece: "", age: "", sexe: "", genre: "",
       defaut: "", qualites: ["", ""], background: "", notes: "",
       avantages: [], sansLimite: false,
+      // Le PLAFOND des caractéristiques et le budget de POINTS DE CRÉATION se
+      // règlent (bloc Création des Options), avec la même grammaire que les
+      // autres leviers : une valeur forcée, ou un modificateur du barème.
+      // Ils remplacent l'ancienne case « Sans limite », qui ne savait que
+      // lever le plafond, et pour les trois caractéristiques à la fois.
+      caracsPlafondMod: { Mind: 0, Body: 0, Prestance: 0 },
+      caracsPlafondForce: {},
+      ptsCreaMod: 0, ptsCreaForce: null,
       caracsBase: { Mind: 0, Body: 0, Prestance: 0 },
       caracsXp: { Mind: 0, Body: 0, Prestance: 0 },
       caracsMod: { Mind: 0, Body: 0, Prestance: 0 },
@@ -230,10 +241,10 @@
     if (!s.caracsBase || typeof s.caracsBase !== "object") s.caracsBase = b.caracsBase;
     if (!s.caracsXp || typeof s.caracsXp !== "object") s.caracsXp = b.caracsXp;
     if (!s.caracsMod || typeof s.caracsMod !== "object") s.caracsMod = b.caracsMod;
-    ["caracsMod2", "caracsXpMod", "caracsXpMod2"].forEach(function (k) {
+    ["caracsMod2", "caracsXpMod", "caracsXpMod2", "caracsPlafondMod"].forEach(function (k) {
       if (!s[k] || typeof s[k] !== "object" || Array.isArray(s[k])) s[k] = { Mind: 0, Body: 0, Prestance: 0 };
     });
-    ["caracsForce", "caracsXpForce"].forEach(function (k) {
+    ["caracsForce", "caracsXpForce", "caracsPlafondForce"].forEach(function (k) {
       if (!s[k] || typeof s[k] !== "object" || Array.isArray(s[k])) s[k] = {};
     });
     // les modificateurs (blocs Options) acceptent les décimales : les sommes
@@ -249,13 +260,35 @@
       s.caracsMod2[c] = modNum(s.caracsMod2[c]);
       s.caracsXpMod[c] = modNum(s.caracsXpMod[c]);
       s.caracsXpMod2[c] = modNum(s.caracsXpMod2[c]);
+      s.caracsPlafondMod[c] = modNum(s.caracsPlafondMod[c]);
       // forçages : ABSENTS par défaut, une valeur les pose
-      ["caracsForce", "caracsXpForce"].forEach(function (k) {
+      ["caracsForce", "caracsXpForce", "caracsPlafondForce"].forEach(function (k) {
         if (s[k][c] === undefined || s[k][c] === null || s[k][c] === "") { delete s[k][c]; return; }
         var n = parseFloat(s[k][c]);
         if (isFinite(n)) s[k][c] = clamp(Math.round(n), -9999, 9999); else delete s[k][c];
       });
     });
+    // budget de points de création : un modificateur, et un forçage qui vaut
+    // null quand il n'y en a pas (même convention que pvMaxOverride)
+    s.ptsCreaMod = modNum(s.ptsCreaMod);
+    if (s.ptsCreaForce === undefined || s.ptsCreaForce === null || s.ptsCreaForce === "") s.ptsCreaForce = null;
+    else {
+      var pcf = parseFloat(s.ptsCreaForce);
+      s.ptsCreaForce = isFinite(pcf) ? clamp(Math.round(pcf), -9999, 9999) : null;
+    }
+    // Migration de l'ancienne case « Sans limite » (retirée le 2026-08-04) :
+    // elle levait le plafond des trois caractéristiques d'un coup. Une fiche
+    // qui la portait cochée garde ses chiffres, plafond forcé assez haut pour
+    // ne jamais mordre — mais SEULEMENT là où le plafond mordrait vraiment.
+    // Sinon la case, cochée « au cas où » sur une fiche que 80 n'a jamais
+    // gênée, laissait trois plafonds forcés à 9999 en travers du bloc.
+    if (s.sansLimite) {
+      ["Mind", "Body", "Prestance"].forEach(function (c) {
+        if (s.caracsPlafondForce[c] !== undefined) return;
+        if (s.caracsBase[c] + CARAC_PAS * s.caracsXp[c] > CARAC_MAX) s.caracsPlafondForce[c] = 9999;
+      });
+    }
+    s.sansLimite = false;
     // modificateurs divers (3 emplacements : équipement / art / MJ) : seuls
     // PV max, régén et vitesse en portent encore
     if (!s.divers || typeof s.divers !== "object" || Array.isArray(s.divers)) s.divers = b.divers;
@@ -773,11 +806,27 @@
   // Chaque valeur dérivée existe en deux temps : <nom>Brut fait le calcul,
   // <nom> le passe aux filtres. Les fonctions <nom>Auto, elles, sont AUTRE
   // CHOSE : la valeur avant le forçage du MJ, et elles ne bougent pas.
+  // Plafond d'une caractéristique : le barème (80), décalé par le modificateur
+  // du bloc Création, ou remplacé net par un plafond forcé. UN SEUL endroit le
+  // calcule : les garde-fous des boutons, l'infobulle et le champ forcé des
+  // Options lisent tous cette fonction, sinon deux d'entre eux finissent par
+  // dire des chiffres différents du total réellement retenu.
+  function caracPlafondAuto(c) { return CARAC_MAX + (state.caracsPlafondMod[c] || 0); }
+  function caracPlafond(c) {
+    if (state.caracsPlafondForce[c] !== undefined) return state.caracsPlafondForce[c];
+    return caracPlafondAuto(c);
+  }
+  // budget de points de caractéristiques à la création : même grammaire
+  function ptsCreaAuto() { return PTS_CREATION + (state.ptsCreaMod || 0); }
+  function ptsCreaMax() {
+    if (state.ptsCreaForce !== null && state.ptsCreaForce !== undefined) return state.ptsCreaForce;
+    return ptsCreaAuto();
+  }
   function caracTotalBrut(c) {
     // total FORCÉ : il court-circuite tout, plafond et modificateurs compris
     if (state.caracsForce[c] !== undefined) return state.caracsForce[c];
     var v = state.caracsBase[c] + CARAC_PAS * state.caracsXp[c];
-    if (!state.sansLimite) v = Math.min(v, CARAC_MAX);
+    v = Math.min(v, caracPlafond(c));
     // le modificateur (bloc Options) s'applique APRÈS le plafond : il peut
     // porter le total au-delà de 80 comme en dessous de 0.
     return v + (state.caracsMod[c] || 0) + (state.caracsMod2[c] || 0);
@@ -1935,7 +1984,7 @@
       });
       return m;
     }
-    mrow.appendChild(meter("Création", ptsCreation, function () { return PTS_CREATION; }));
+    mrow.appendChild(meter("Création", ptsCreation, ptsCreaMax));
     mrow.appendChild(meter("XP dépensé", xpDepense, function () { return state.xpTotal; }));
     var xpIn = el("input", null);
     xpIn.type = "number"; xpIn.min = 0; xpIn.step = 5;
@@ -1956,8 +2005,8 @@
     var warns = el("div", "pc-warns");
     hooks.push(function () {
       warns.innerHTML = "";
-      if (ptsCreation() > PTS_CREATION)
-        warns.appendChild(el("div", "pc-warn", "Points de création dépassés : " + ptsCreation() + " / " + PTS_CREATION + "."));
+      if (ptsCreation() > ptsCreaMax())
+        warns.appendChild(el("div", "pc-warn", "Points de création dépassés : " + ptsCreation() + " / " + ptsCreaMax() + "."));
       if (xpRestant() < 0)
         warns.appendChild(el("div", "pc-warn", "XP dépensé au-delà du total (" + xpDepense() + " / " + state.xpTotal + ")."));
       var cap = compCap();
@@ -2472,11 +2521,12 @@
         function () { return state.caracsBase[name]; },
         function (v) {
           // le plafond ne bloque que les HAUSSES : une base montée au-dessus
-          // de 80 (Sans limite décoché ensuite) redescend pas à pas, sans être
-          // écrasée à 80 par un simple clic
-          var max = state.sansLimite ? 999 : Math.max(CARAC_MAX, state.caracsBase[name]);
-          var val2 = clamp(v, 0, 999);
-          if (val2 > max) { flash("Maximum " + CARAC_MAX + " par caractéristique sans avantage."); val2 = max; }
+          // du plafond (abaissé ensuite dans les Options) redescend pas à pas,
+          // sans être écrasée au plafond par un simple clic
+          var plaf = caracPlafond(name);
+          var max = Math.max(plaf, state.caracsBase[name]);
+          var val2 = clamp(v, 0, 9999);
+          if (val2 > max) { flash("Plafond de " + plaf + " atteint (Options, bloc Création)."); val2 = max; }
           state.caracsBase[name] = val2;
         }, CARAC_PAS, "création"));
       bot.appendChild(el("span", "lbl", "Achats xp"));
@@ -2488,11 +2538,12 @@
       xpStep.appendChild(cnt);
       xpStep.appendChild(stepBtn("+", "Dépenser " + DATA.xpParStade + " xp", function () {
         if (xpRestant() < DATA.xpParStade) { flash("XP insuffisant."); return; }
-        // le plafond porte sur base + achats, SANS le modificateur d'Options
-        // (qui peut porter le total au-delà de 80 comme en dessous : le tester
-        // brûlerait de l'xp sous un malus, ou bloquerait à tort sous un bonus)
-        if (!state.sansLimite && state.caracsBase[name] + CARAC_PAS * (state.caracsXp[name] + 1) > CARAC_MAX) {
-          flash("Limite de " + CARAC_MAX + " atteinte (sans avantage).");
+        // le plafond porte sur base + achats, SANS le modificateur de total
+        // (qui peut porter la valeur au-delà du plafond comme en dessous : le
+        // tester brûlerait de l'xp sous un malus, ou bloquerait à tort sous un
+        // bonus)
+        if (state.caracsBase[name] + CARAC_PAS * (state.caracsXp[name] + 1) > caracPlafond(name)) {
+          flash("Plafond de " + caracPlafond(name) + " atteint (Options, bloc Création).");
           return;
         }
         state.caracsXp[name]++;
@@ -2502,17 +2553,22 @@
       row.appendChild(bot);
 
       hooks.push(function () {
-        var d = state.caracsMod[name] || 0;
+        var d = (state.caracsMod[name] || 0) + (state.caracsMod2[name] || 0);
         var brut = state.caracsBase[name] + CARAC_PAS * state.caracsXp[name];
-        var plafonne = state.sansLimite ? brut : Math.min(brut, CARAC_MAX);
+        var plaf = caracPlafond(name);
+        var plafonne = Math.min(brut, plaf);
+        var force = state.caracsForce[name] !== undefined;
         val.textContent = String(caracTotal(name));
-        val.classList.toggle("adj", d !== 0);
+        val.classList.toggle("adj", d !== 0 || force);
         // quand le plafond mord, l'écrire en substitution (« plafonné à 80 »)
-        // pour que la somme du tooltip se vérifie de tête
-        val.title = "Création " + state.caracsBase[name] +
-                    " + achats " + (CARAC_PAS * state.caracsXp[name]) +
-                    (brut !== plafonne ? ", plafonné à " + CARAC_MAX : "") +
-                    (d ? " · modificateur (Options) " + sign(d) : "") +
+        // pour que la somme du tooltip se vérifie de tête ; un total forcé, lui,
+        // remplace la somme (l'afficher quand même la ferait mentir)
+        val.title = (force
+                      ? "Total forcé (Options)"
+                      : "Création " + state.caracsBase[name] +
+                        " + achats " + (CARAC_PAS * state.caracsXp[name]) +
+                        (brut !== plafonne ? ", plafonné à " + plaf : "") +
+                        (d ? " · modificateur (Options) " + sign(d) : "")) +
                     " = " + caracTotal(name) + " — clic : lancer 1d100 + " + name;
         cnt.textContent = String(state.caracsXp[name]);
       });
@@ -4413,45 +4469,61 @@
   // caractéristique et régler une compétence sont le même geste pour le MJ, il
   // n'a pas à apprendre deux dispositions. Sans le filtre, le menu des champs
   // ni les puces : sur trois lignes, ils ne servent à rien.
+  // Les deux champs des grilles d'Options vivent ICI, et non dans un bloc :
+  // trois blocs s'en servent désormais (modificateurs de caractéristiques,
+  // compétences, Création). Chacun existe en deux formes, une valeur d'un
+  // ensemble (map + clé, la plupart des leviers) ou une valeur seule (le
+  // budget de points de création) : la première délègue à la seconde, il n'y a
+  // donc qu'une implémentation à corriger le jour où l'une d'elles bouge.
+  // un champ de modificateur, nu, comme dans le bloc des compétences
+  function champModVal(lire, ecrire, borne, titre) {
+    var inp = el("input", "pc-num modif");
+    inp.type = "number"; inp.step = String(MOD_PAS);
+    inp.title = titre;
+    inp.addEventListener("input", function () {
+      var v = parseFloat(inp.value);
+      ecrire(isFinite(v) ? clamp(Math.round(v), -borne, borne) : 0);
+      refresh();
+    });
+    hooks.push(function () {
+      if (document.activeElement !== inp) inp.value = lire() ? lire() : "";
+    });
+    return inp;
+  }
+  function champMod(map, cle, borne, titre) {
+    return champModVal(function () { return map[cle]; },
+                       function (v) { map[cle] = v; }, borne, titre);
+  }
+  // un champ de forçage : vide = valeur calculée (undefined = pas de forçage)
+  function champForceVal(lire, ecrire, auto, titre) {
+    var inp = el("input", "force");
+    inp.type = "number"; inp.step = "1";
+    inp.title = titre;
+    inp.addEventListener("input", function () {
+      var v = parseFloat(inp.value);
+      ecrire(isFinite(v) ? clamp(Math.round(v), -9999, 9999) : undefined);
+      refresh();
+    });
+    hooks.push(function () {
+      inp.placeholder = String(auto());
+      var cur = lire();
+      if (document.activeElement !== inp) inp.value = cur === undefined ? "" : cur;
+    });
+    return inp;
+  }
+  function champForce(map, cle, auto, titre) {
+    return champForceVal(
+      function () { return map[cle]; },
+      function (v) { if (v === undefined) delete map[cle]; else map[cle] = v; },
+      auto, titre);
+  }
+
   function buildModCaracs() {
     var bM = block("Modificateurs de caractéristiques");
     var wrap = el("div", "pc-optcomp-wrap");
     var box = el("div");
     wrap.appendChild(box);
     bM.appendChild(wrap);
-
-    // un champ de modificateur, nu, comme dans le bloc des compétences
-    function champMod(map, cle, borne, titre) {
-      var inp = el("input", "pc-num modif");
-      inp.type = "number"; inp.step = String(MOD_PAS);
-      inp.title = titre;
-      inp.addEventListener("input", function () {
-        var v = parseFloat(inp.value);
-        map[cle] = isFinite(v) ? clamp(Math.round(v), -borne, borne) : 0;
-        refresh();
-      });
-      hooks.push(function () {
-        if (document.activeElement !== inp) inp.value = map[cle] ? map[cle] : "";
-      });
-      return inp;
-    }
-    // un champ de forçage : vide = valeur calculée
-    function champForce(map, cle, auto, titre) {
-      var inp = el("input", "force");
-      inp.type = "number"; inp.step = "1";
-      inp.title = titre;
-      inp.addEventListener("input", function () {
-        var v = parseFloat(inp.value);
-        if (isFinite(v)) map[cle] = clamp(Math.round(v), -9999, 9999);
-        else delete map[cle];
-        refresh();
-      });
-      hooks.push(function () {
-        inp.placeholder = String(auto());
-        if (document.activeElement !== inp) inp.value = map[cle] === undefined ? "" : map[cle];
-      });
-      return inp;
-    }
 
     var grp = el("div", "pc-optcomp-row grp");
     grp.appendChild(el("span"));
@@ -4491,8 +4563,8 @@
 
       row.appendChild(champForce(state.caracsForce, name,
         function () {
-          var v = state.caracsBase[name] + CARAC_PAS * state.caracsXp[name];
-          if (!state.sansLimite) v = Math.min(v, CARAC_MAX);
+          var v = Math.min(state.caracsBase[name] + CARAC_PAS * state.caracsXp[name],
+                           caracPlafond(name));
           return v + (state.caracsMod[name] || 0) + (state.caracsMod2[name] || 0);
         },
         "Total forcé — vide = total calculé (création + achats + modificateurs)."));
@@ -4543,21 +4615,105 @@
     return bM;
   }
 
-  // ---- création ----
+  // ---- création : plafond des caractéristiques et budget de points ----
+  // Ce bloc a remplacé la case « Sans limite » (2026-08-04), qui ne savait que
+  // lever le plafond, et pour les trois caractéristiques à la fois. Mêmes
+  // colonnes que les deux autres grilles de l'onglet, à quatre colonnes au lieu
+  // de dix : un demi-bloc suffit ici (il n'y a pas de coût en xp à régler).
   function buildCreation() {
     var bC = block("Création");
-    var slRow = el("div", "pc-kv");
-    var slBox = el("input");
-    slBox.type = "checkbox";
-    slBox.id = "pc-sanslimite";
-    slBox.checked = !!state.sansLimite;
-    slBox.addEventListener("change", function () { state.sansLimite = slBox.checked; refresh(); });
-    hooks.push(function () { slBox.checked = !!state.sansLimite; });
-    var slLab = el("label", null, "Sans limite : plafond de " + CARAC_MAX + " levé");
-    slLab.setAttribute("for", "pc-sanslimite");
-    slRow.appendChild(slBox);
-    slRow.appendChild(slLab);
-    bC.appendChild(slRow);
+    var wrap = el("div", "pc-optcomp-wrap");
+    var box = el("div");
+    wrap.appendChild(box);
+    bC.appendChild(wrap);
+
+    // Un seul entête pour toute la grille, en tête : les deux bandes qui
+    // suivent nomment les rangées, pas les colonnes. D'où « Valeur » et non
+    // « Plafond », qui aurait menti sur la rangée des points de création.
+    var head = el("div", "pc-optcomp-row quatre head");
+    [["Réglage", "Ce que la rangée règle"],
+     ["Forcé", "Valeur forcée — vide = valeur calculée"],
+     ["Modif.", "Modificateur du barème — vide = aucun"],
+     ["Valeur", "Valeur effective"]].forEach(function (h) {
+      var sp = el("span", null, h[0]);
+      sp.title = h[1];
+      head.appendChild(sp);
+    });
+    box.appendChild(head);
+
+    // Les deux sections se titrent comme les champs du bloc des compétences
+    // (« BODY ———— ») : un titre de RANGÉES, à gauche, filet jusqu'au bord.
+    // La bande centrée des autres grilles ne convenait pas ici : elle titre des
+    // COLONNES, et se lisait comme un second entête posé sur les chiffres.
+    function bande(titre, aide) {
+      var t = el("div", "pc-comp-champ", titre);
+      t.title = aide;
+      box.appendChild(t);
+    }
+
+    bande("Plafond des caractéristiques",
+          "Ce que création + achats d'xp ne peuvent pas dépasser, "
+          + "caractéristique par caractéristique");
+    CHAMPS.forEach(function (name, i) {
+      if (!DATA.caracs.some(function (cc) { return cc.name === name; })) return;
+      var row = el("div", "pc-optcomp-row quatre" + (i % 2 === 1 ? " odd" : ""));
+      var nameBox = el("span", "pc-comp-name");
+      var chip = el("span", "pc-abbr", ABBR[name] || name);
+      chip.title = name;
+      nameBox.appendChild(chip);
+      row.appendChild(nameBox);
+
+      row.appendChild(champForce(state.caracsPlafondForce, name,
+        function () { return caracPlafondAuto(name); },
+        "Plafond forcé — vide = plafond calculé (" + CARAC_MAX + " + modificateur)."));
+      row.appendChild(champModVal(
+        function () { return state.caracsPlafondMod[name]; },
+        function (v) { state.caracsPlafondMod[name] = v; }, 999,
+        "Modificateur du plafond de " + name + " — vide = aucun."));
+      var tot = el("span", "pc-comp-total", "");
+      row.appendChild(tot);
+
+      hooks.push(function () {
+        var m = state.caracsPlafondMod[name] || 0;
+        var f = state.caracsPlafondForce[name];
+        tot.textContent = String(caracPlafond(name));
+        tot.classList.toggle("adj", m !== 0 || f !== undefined);
+        tot.title = f !== undefined
+          ? "Plafond forcé à " + f
+          : "barème " + CARAC_MAX + (m ? " · modificateur " + sign(m) : "");
+        row.classList.toggle("on", m !== 0 || f !== undefined);
+      });
+      box.appendChild(row);
+    });
+
+    bande("Points de création",
+          "Le budget que la jauge « Création » de la Fiche mesure");
+    var rowP = el("div", "pc-optcomp-row quatre");
+    var nomP = el("span", "pc-comp-name");
+    nomP.appendChild(el("span", "pc-comp-label", "Points"));
+    rowP.appendChild(nomP);
+    rowP.appendChild(champForceVal(
+      function () { return state.ptsCreaForce === null ? undefined : state.ptsCreaForce; },
+      function (v) { state.ptsCreaForce = v === undefined ? null : v; },
+      ptsCreaAuto,
+      "Budget forcé — vide = budget calculé (" + PTS_CREATION + " + modificateur)."));
+    rowP.appendChild(champModVal(
+      function () { return state.ptsCreaMod; },
+      function (v) { state.ptsCreaMod = v; }, 999,
+      "Modificateur du budget de points de création — vide = aucun."));
+    var totP = el("span", "pc-comp-total", "");
+    rowP.appendChild(totP);
+    hooks.push(function () {
+      var m = state.ptsCreaMod || 0;
+      var f = state.ptsCreaForce;
+      totP.textContent = String(ptsCreaMax());
+      totP.classList.toggle("adj", m !== 0 || f !== null);
+      totP.title = f !== null
+        ? "Budget forcé à " + f
+        : "barème " + PTS_CREATION + (m ? " · modificateur " + sign(m) : "");
+      rowP.classList.toggle("on", m !== 0 || f !== null);
+    });
+    box.appendChild(rowP);
     return bC;
   }
 

@@ -101,6 +101,13 @@
     ["vitesseOverride", "vitesse_force", "N"],
     ["regenOverride", "regen_force", "N"],
     ["langueBase", "langue_base", "s"],
+    // budget de points de création (bloc Création des Options) : un
+    // modificateur du barème, et un forçage nullable comme les autres
+    ["ptsCreaMod", "pts_crea_mod", "n"],
+    ["ptsCreaForce", "pts_crea_force", "N"],
+    // Reliquat de la case « Sans limite », retirée le 2026-08-04 : le champ ne
+    // sert plus qu'à RELIRE une fiche d'avant, que normalize() convertit alors
+    // en plafonds forcés. Il ne vaut plus jamais true à l'écriture.
     ["sansLimite", "sans_limite", "b"],
     ["v", "version", "n"], ["rel", "release", "s"]
   ];
@@ -109,10 +116,20 @@
   var COLLECTIONS = [
     ["qualites", "qualites"], ["avantages", "avantages"],
     ["caracsBase", "caracs_base"], ["caracsXp", "caracs_xp"],
-    ["caracsMod", "caracs_mod"],
-    ["compsMod", "comps_mod"],
+    // Tous les leviers des Options voyagent, y compris sur le chemin de repli.
+    // Les seconds modificateurs et les forçages de caractéristiques manquaient
+    // ici depuis leur création : une fiche reconstruite sans jjk_state les
+    // perdait en silence, alors même qu'ils changent des totaux affichés.
+    ["caracsMod", "caracs_mod"], ["caracsMod2", "caracs_mod2"],
+    ["caracsForce", "caracs_force"],
+    ["caracsXpForce", "caracs_xp_force"],
+    ["caracsXpMod", "caracs_xp_mod"], ["caracsXpMod2", "caracs_xp_mod2"],
+    // plafond par caractéristique (bloc Création) : modificateur et forçage
+    ["caracsPlafondMod", "caracs_plafond_mod"],
+    ["caracsPlafondForce", "caracs_plafond_force"],
+    ["compsMod", "comps_mod"], ["compsMod2", "comps_mod2"],
     ["compsForce", "comps_force"], ["compsXpForce", "comps_xp_force"],
-    ["compsXpMod", "comps_xp_mod"],
+    ["compsXpMod", "comps_xp_mod"], ["compsXpMod2", "comps_xp_mod2"],
     ["comps", "competences"], ["customComps", "comp_perso"],
     ["langues", "langues"], ["armesComps", "armes_comps"],
     ["armes", "armes"], ["armures", "armures"],
@@ -177,10 +194,17 @@
       name: "", portrait: "", espece: "", age: "", sexe: "", genre: "",
       defaut: "", qualites: ["", ""], background: "", notes: "",
       avantages: [], sansLimite: false,
+      caracsPlafondMod: { Mind: 0, Body: 0, Prestance: 0 },
+      caracsPlafondForce: {},
+      ptsCreaMod: 0, ptsCreaForce: null,
       caracsBase: { Mind: 0, Body: 0, Prestance: 0 },
       caracsXp: { Mind: 0, Body: 0, Prestance: 0 },
       caracsMod: { Mind: 0, Body: 0, Prestance: 0 },
-      compsMod: {},
+      caracsMod2: { Mind: 0, Body: 0, Prestance: 0 },
+      caracsForce: {}, caracsXpForce: {},
+      caracsXpMod: { Mind: 0, Body: 0, Prestance: 0 },
+      caracsXpMod2: { Mind: 0, Body: 0, Prestance: 0 },
+      compsMod: {}, compsMod2: {}, compsXpMod2: {},
       xpTotal: 500,
       comps: {}, customComps: [],
       compsForce: {}, compsXpForce: {}, compsXpMod: {},
