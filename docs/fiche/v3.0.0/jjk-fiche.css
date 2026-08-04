@@ -843,6 +843,30 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
   border-radius: 4px;
 }
 .pc-modrow:last-child { border-bottom: none; }
+/* Une ligne de mod tient SUR UNE LIGNE : le nom se laisse couper, tout le
+   reste garde sa taille. Le message d'une panne, lui, passe dessous, sur toute
+   la largeur — c'est le seul cas où la ligne en fait deux. */
+.pc-modrow-mod { display: block; }
+.pc-modrow-mod > .l {
+  display: flex; align-items: center; flex-wrap: nowrap; gap: .25rem; min-width: 0;
+}
+.pc-modrow-mod > .l > .nom {
+  flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.pc-modrow-mod > .l > .etat { flex: 0 1 auto; min-width: 0; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap; }
+.pc-modrow-mod > .l > .pc-mini,
+.pc-modrow-mod > .l > .pc-chip { flex: 0 0 auto; }
+.pc-modrow-mod > .pc-block-note { margin: .15rem 0 0; }
+/* Le rouage ouvert ajoute deux boutons, et c'est le NOM qui se faisait couper.
+   L'état s'efface alors : en mode construction on modifie et on supprime, on
+   ne lit pas l'état, et le nom est ce qu'il faut lire pour ne pas se tromper
+   de mod. */
+.pc-editable.editing .pc-modrow-mod > .l > .etat,
+.pc-editable.editing .pc-modrow-mod > .l > .voir { display: none; }
+/* le nom garde de quoi se lire : il ne se réduit pas sous cette largeur, ce
+   sont les autres qui cèdent d'abord */
+.pc-modrow-mod > .l > .nom { flex-basis: 7rem; }
 .pc-modrow .nom { flex: 1 1 6rem; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; color: var(--ink); }
 .pc-modrow .id { flex: 0 0 auto; font-size: var(--fs-label); color: var(--ink-3); }
 .pc-modrow .etat { flex: 0 0 auto; font-size: var(--fs-label); color: var(--ink-3); white-space: nowrap; }
