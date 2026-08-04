@@ -148,6 +148,18 @@ def _vitesses(text):
     return out
 
 
+def _vitesse_surcharge(text):
+    """La vitesse de celui dont la charge dépasse le Body (« passe à 6 m »).
+
+    Elle ne vit pas dans la table des paliers mais dans la prose de la section
+    « Le poids ». La fiche ne doit écrire aucune valeur de règles, pas même
+    celle-là : elle passe donc par les données, comme les paliers eux-mêmes.
+    None si la phrase change de forme, et le build le dit alors en clair.
+    """
+    m = re.search(r"vitesse passe à\s*(\d+(?:\.\d+)?)\s*m", text)
+    return f"{m.group(1)} m" if m else None
+
+
 def _difficultes(text):
     rows = _table_rows(text, r"\|\s*Seuil\s*\|\s*Difficulté\s*\|")
     return [{"seuil": _num(c[0]), "nom": c[1]} for c in rows if len(c) >= 2]
@@ -197,6 +209,7 @@ def _extract(docs_dir):
         "stades": _stades(defs),
         "xpParStade": int(m.group(1)) if m else 20,
         "vitesses": _vitesses(text),
+        "vitesseSurcharge": _vitesse_surcharge(text),
         "difficultes": _difficultes(text),
         "blessures": _blessures(text),
         "armesCourbe": _armes_courbe(text),
@@ -214,7 +227,7 @@ def on_files(files, config):
     art0 = next((s["nom"] for s in data["stades"] if s["art"]), "AUCUN")
     print(f"[jjk-creation] {len(data['caracs'])} caracs, {n_comps} compétences, "
           f"{len(data['stades'])} stades (techniques dès {tech0}, art dès {art0}), "
-          f"{len(data['vitesses'])} vitesses, "
+          f"{len(data['vitesses'])} vitesses (surcharge : {data['vitesseSurcharge'] or 'AUCUNE'}), "
           f"{len(data['difficultes'])} difficultés, {len(data['blessures'])} blessures")
     content = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
     files.append(File.generated(config, "jjk-creation.json", content=content))

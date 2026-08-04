@@ -284,6 +284,8 @@ Un joueur additionne tout ce qu'il porte sur lui en termes de poids. Il obtient 
 
 Si notre poids devient plus important que notre Body, notre vitesse passe à 6 m.
 
+Une fois votre poids total déterminé, vous l'arrondissez à l'inférieur à la dizaine près. Par conséquent, les malus de poids seront toujours des multiples de 10. Si à la fin de votre calcul, votre poids total est de 19, vous appliquez seulement −10 de Poids.
+
 </div>
 
 <div class="keep" markdown>

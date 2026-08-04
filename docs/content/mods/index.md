@@ -266,14 +266,15 @@ les filtres.
 
 | Entrée | Ce que c'est |
 | --- | --- |
-| `ctx.calculs.caracTotal(nom)` | le total d'une caractéristique : `"Body"`, `"Mind"`, `"Prestance"`. |
-| `ctx.calculs.compValue(carac, comp, cle)` | le total d'une compétence, modificateurs et total forcé compris. `comp` est l'objet de compétence du personnage, `cle` la clé qui le désigne, de la forme `"Body/Initiative"`. |
+| `ctx.calculs.caracTotal(nom)` | le total d'une caractéristique : `"Body"`, `"Mind"`, `"Prestance"`. C'est la caractéristique nue, sans le malus de poids, celle dont sortent les PV et la régénération. |
+| `ctx.calculs.compValue(carac, comp, cle)` | le total d'une compétence, modificateurs, total forcé et malus de poids compris. `comp` est l'objet de compétence du personnage, `cle` la clé qui le désigne, de la forme `"Body/Initiative"`. |
 | `ctx.calculs.pvMax()` | les PV maximum, valeur forcée comprise. |
 | `ctx.calculs.pvCourant()` | les PV du moment. |
-| `ctx.calculs.initiative()` | l'initiative, poids porté déduit. |
+| `ctx.calculs.initiative()` | l'initiative, malus de poids déduit. |
 | `ctx.calculs.vitesse()` | la vitesse, unité comprise : une chaîne, par exemple `"10.5 m"`. |
 | `ctx.calculs.regen()` | la régénération. |
 | `ctx.calculs.poidsPorte()` | le poids porté. |
+| `ctx.calculs.poidsMalus()` | le malus que ce poids inflige, arrondi à la dizaine inférieure. |
 
 <div class="mods-code" markdown>
 
@@ -321,7 +322,7 @@ Jjk.filtre("caracTotal", function (valeur, infos) {
 
 </div>
 
-Neuf calculs se filtrent. La valeur est toujours un nombre, et le filtre doit
+Dix calculs se filtrent. La valeur est toujours un nombre, et le filtre doit
 en rendre un.
 
 | Nom | Valeur filtrée | Deuxième argument |
@@ -334,6 +335,7 @@ en rendre un.
 | `vitesse` | la vitesse en mètres, avant que l'unité ne s'y ajoute | `{}` |
 | `regen` | la régénération | `{}` |
 | `poidsPorte` | le poids porté | `{}` |
+| `poidsMalus` | le malus de poids, une fois le poids porté arrondi à la dizaine inférieure | `{}` |
 | `xpDepense` | l'xp dépensé | `{}` |
 
 Depuis un module, `ctx.filtreCalcul` fait la même chose, le propriétaire étant
@@ -357,7 +359,7 @@ Les règles de sûreté, qui valent pour les deux :
 | Règle | Détail |
 | --- | --- |
 | Ordre | les filtres tournent dans l'ordre où ils se sont inscrits. |
-| Nom inconnu | un filtre inscrit sous un autre nom que ces neuf-là n'est jamais appelé, et le journal du navigateur le dit dès l'inscription. |
+| Nom inconnu | un filtre inscrit sous un autre nom que ces dix-là n'est jamais appelé, et le journal du navigateur le dit dès l'inscription. |
 | Récursion | pendant la passe d'un filtre, tout appel au même calcul rend la valeur brute, sans repasser par les filtres. Un filtre peut donc lire `ctx.calculs` sans figer la fiche. |
 | Résultat invalide | un filtre qui jette, ou qui rend autre chose qu'un nombre fini, est ignoré pour cette passe : la valeur précédente passe, et une faute est comptée. |
 | Cinq fautes | cinq fautes consécutives et le filtre est retiré. Le journal reçoit `[mod:<id>] filtre <nom> retiré : <message>`, et `Jjk.etat(id).erreur` porte le message. Une passe sans faute remet le compteur à zéro. |
