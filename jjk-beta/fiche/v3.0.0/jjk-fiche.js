@@ -5353,60 +5353,90 @@
       flash("Mod supprimé.");
     }, "Supprimer");
   }
+  // UNE LIGNE, ET LE MOINS DE BOUTONS POSSIBLE.
+  //
+  // Il y en avait cinq, plus trois textes, et la ligne se repliait n'importe
+  // comment. Deux d'entre eux, « Autoriser » et « Refuser », sont les deux
+  // faces d'une même question : ils deviennent UNE puce, qui se lit comme
+  // celle d'à côté. Les deux gestes de construction, « Modifier » et
+  // « Supprimer », passent derrière le rouage du bloc, comme partout ailleurs
+  // sur la fiche.
+  //
+  // Reste en permanence ce qu'on regarde tous les jours : le nom, l'état, de
+  // quoi LIRE le code, et les deux interrupteurs.
+  //
+  // Les deux puces ne disent PAS la même chose, et c'est pour cela qu'elles
+  // sont deux :
+  //   « Actif »    appartient au PERSONNAGE et voyage avec lui ;
+  //   « Autorisé » appartient à CE NAVIGATEUR et n'en sort jamais.
+  // L'infobulle de chacune le dit en toutes lettres.
   function ligneMod(m) {
-    var ligne = el("div", "pc-modrow");
+    var ligne = el("div", "pc-modrow pc-modrow-mod");
     ligne.dataset.id = m.id;
     var bil = bilanDeMod(m.id);
     var etat = bil ? bil.etat : "";
     var emp = empreinteMod(m.id, m.src);
     var avis = avisMod(emp);
     var on = m.actif !== false;
-    ligne.appendChild(el("span", "nom", m.nom || m.id));
-    ligne.appendChild(el("span", "id", m.id));
-    ligne.appendChild(el("span", "etat", aClef(ETATS_MOD, etat) ? ETATS_MOD[etat] : "état inconnu"));
+    var barre = el("div", "l");
+    ligne.appendChild(barre);
+
+    // l'identifiant ne s'affiche plus : il ne parle qu'au code, il est dans le
+    // dialogue de lecture et dans celui de modification, et il volait la place
+    // qui manquait pour tenir sur une ligne
+    var nom = el("span", "nom", m.nom || m.id);
+    nom.title = (m.nom || m.id) + " · identifiant " + m.id;
+    barre.appendChild(nom);
+    barre.appendChild(el("span", "etat", aClef(ETATS_MOD, etat) ? ETATS_MOD[etat] : "état inconnu"));
     if (etat === "panne") ligne.setAttribute("data-etat", "panne");
-    // Lire d'abord, écrire ensuite : le bouton de lecture passe EN PREMIER,
-    // c'est le geste qu'on attend de celui qui reçoit le code d'un autre.
-    ligne.appendChild(miniBtn("Voir le code", "Lire le code de ce mod sans y toucher", function () {
+
+    // Lire d'abord : c'est le geste qu'on attend de celui qui reçoit le code
+    // d'un autre, et il ne décide de rien.
+    barre.appendChild(miniBtn("Voir le code", "Lire le code de ce mod sans y toucher", function () {
       voirMod(m);
-    }));
-    ligne.appendChild(miniBtn("Modifier", "Changer le nom, l'identifiant ou le code de ce mod", function () {
-      modifieMod(m);
-    }));
-    // Les deux boutons suivent l'AVIS, pas l'état : un mod coupé ou trop récent
-    // se juge quand même, et un accord donné se retire. « Autoriser » reste un
-    // bouton ORDINAIRE : le mettre en avant pousserait à dire oui au code d'un
-    // autre joueur, ce qui est exactement la décision qui mérite un temps
-    // d'arrêt.
-    if (avis !== "oui")
-      ligne.appendChild(miniBtn("Autoriser", "Ce code tournera à chaque ouverture, sur ce navigateur", function () {
-        decideMod(emp, "oui");
-        remount();
-      }));
-    if (avis !== "non")
-      ligne.appendChild(miniBtn("Refuser", "Ce code ne tournera pas ; il reste sur le personnage", function () {
-        decideMod(emp, "non");
-        remount();
-      }, "danger"));
-    var puce = el("span", "pc-chip", "Actif");
-    puce.title = "Couper ce mod : il reste sur le personnage, il cesse de tourner.";
-    puce.classList.toggle("on", on);
-    puce.addEventListener("click", function () {
+    }, "voir"));
+
+    var puceA = el("span", "pc-chip", "Actif");
+    puceA.title = "Sur LE PERSONNAGE, et voyage avec lui : couper ce mod le met " +
+                  "en veille pour tout le monde, sans rien effacer.";
+    puceA.classList.toggle("on", on);
+    puceA.addEventListener("click", function () {
       m.actif = !on;
       save();
       remount();
     });
-    ligne.appendChild(puce);
-    ligne.appendChild(miniBtn("Supprimer", "Retirer ce mod du personnage", function () {
+    barre.appendChild(puceA);
+
+    var puceO = el("span", "pc-chip", "Autorisé");
+    puceO.title = avis === "oui"
+      ? "Sur CE NAVIGATEUR seulement : retirer l'accord, le code cessera de tourner ici."
+      : "Sur CE NAVIGATEUR seulement : donner l'accord, le code tournera à chaque ouverture.";
+    puceO.classList.toggle("on", avis === "oui");
+    puceO.addEventListener("click", function () {
+      decideMod(emp, avis === "oui" ? "non" : "oui");
+      remount();
+    });
+    barre.appendChild(puceO);
+
+    // Modifier et supprimer sont des gestes de CONSTRUCTION : ils ne s'offrent
+    // que le rouage du bloc ouvert, comme les compétences et l'inventaire.
+    // pc-edit-only, et non un test à la construction : le rouage bascule une
+    // classe sur le bloc, il ne rebâtit pas ses lignes.
+    barre.appendChild(miniBtn("Modifier", "Changer le nom, l'identifiant ou le code", function () {
+      modifieMod(m);
+    }, "pc-edit-only"));
+    barre.appendChild(miniBtn("Supprimer", "Retirer ce mod du personnage", function () {
       supprimeMod(m);
-    }, "danger"));
+    }, "danger pc-edit-only"));
+
     // Le message du moteur (la panne à réparer, la version qui manque) : c'est
-    // tout ce que le joueur a pour comprendre, il s'affiche en clair.
+    // tout ce que le joueur a pour comprendre, il prend sa propre ligne.
     if (bil && bil.message) ligne.appendChild(el("div", "pc-block-note", bil.message));
     return ligne;
   }
   function buildMods() {
-    var b = block("Mods");
+    // le rouage ouvre les gestes de construction (modifier, supprimer)
+    var b = block("Mods", null, "mods");
     // AUCUNE explication en tête de bloc. La fiche montre les données du
     // personnage, pas un mode d'emploi : ce qu'il faut savoir avant d'autoriser
     // du code est dit là où la décision se prend (le dialogue d'examen et le
