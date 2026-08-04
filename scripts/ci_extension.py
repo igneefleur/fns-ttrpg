@@ -36,18 +36,47 @@ STATE = ROOT / "docs" / "download" / "ext-signed.json"
 
 
 def content_hash():
-    """Empreinte du contenu packagé, indépendante du champ version des manifests."""
+    """Empreinte du contenu packagé, indépendante du champ version des manifests.
+
+    ET INDÉPENDANTE DU SYSTÈME, sur deux points qui l'ont fait mentir.
+
+    1. L'ORDRE. Le tri se fait sur le chemin relatif en POSIX, celui-là même
+       qui est haché juste après, et non sur des objets Path : `sorted()` sur
+       des Path compare une forme normalisée qui dépend du système (mise en
+       minuscules sous Windows, pas sous Linux). Il a suffi d'un `README.md`
+       en capitales pour que les deux plateformes rangent les mêmes fichiers
+       dans un ordre différent.
+
+    2. LES FINS DE LIGNE. Sans .gitattributes, le dépôt se décoche en CRLF
+       sous Windows et en LF sous Linux : lire le disque donnait deux suites
+       d'octets pour un fichier identique. Les fichiers texte sont donc
+       ramenés en LF avant d'être hachés. Les binaires (les icônes) passent
+       intacts, reconnus à l'octet nul que git utilise lui-même comme indice :
+       les normaliser les abîmerait.
+
+    Une signature faite depuis le poste enregistrait sinon une empreinte que
+    la CI ne retrouvait jamais : au déploiement suivant elle croyait
+    l'extension modifiée et re-signait, mordant sur le quota AMO pour rien.
+    C'est arrivé (2.1.3 signée en local, 2.1.4 re-signée par la CI aussitôt).
+    """
     h = hashlib.sha256()
-    files = sorted(p for p in FF.rglob("*") if p.is_file())
+
+    def chemin(p):
+        return str(p.relative_to(ROOT)).replace("\\", "/")
+
+    files = sorted((p for p in FF.rglob("*") if p.is_file()), key=chemin)
     files.append(MANIFESTS[1])
     for p in files:
-        h.update(str(p.relative_to(ROOT)).replace("\\", "/").encode())
+        h.update(chemin(p).encode())
         if p.name == "manifest.json":
             m = json.loads(p.read_text(encoding="utf-8"))
             m["version"] = "0"
             h.update(json.dumps(m, ensure_ascii=False, sort_keys=True).encode())
         else:
-            h.update(p.read_bytes())
+            octets = p.read_bytes()
+            if b"\x00" not in octets:
+                octets = octets.replace(b"\r\n", b"\n")
+            h.update(octets)
     return h.hexdigest()
 
 
