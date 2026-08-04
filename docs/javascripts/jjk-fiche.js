@@ -1147,6 +1147,7 @@
     mode: "jjk-r20-envoi",        // "public" | "gm" | "joueur"
     dest: "jjk-r20-envoi-dest",   // nom d'affichage du destinataire
     input: "jjk-r20-envoi-input", // "0" (sans) | "1" (avec)
+    carac: "jjk-r20-envoi-carac", // "0" (automatique) | "1" (carac au choix au lancer)
     noms: "jjk-r20-envoi-noms"    // liste de secours, si Roll20 ne la donne pas
   };
   function lpref(k, def) {
@@ -1159,6 +1160,7 @@
   }
   function envDest() { return lpref(ENVOI.dest, ""); }
   function envInput() { return lpref(ENVOI.input, "0") === "1"; }
+  function envCaracChoix() { return lpref(ENVOI.carac, "0") === "1"; }
   // Même assainissement que l'extension (content-roll20.js) : sur le canal brut
   // elle n'en fait aucun, une accolade ou un retour à la ligne d'un texte de
   // fiche casserait la carte.
@@ -1190,7 +1192,7 @@
   // l'extension écrit dans la zone de saisie du tchat. Les parenthèses laissent
   // saisir un modificateur négatif sans ambiguïté (« + (-5) »).
   var ENV_QUERY = " + (?{Modificateur|0})";
-  function cmdJet(label, value, die, avecInput) {
+  function cmdJet(label, value, die, avecInput, caracQ) {
     // « + 0 » est du bruit sur les jets d'équipement (dégâts, invu), qui
     // n'ont jamais de bonus : l'expression part seule.
     var v = value ? (value > 0 ? " + " + value : " - " + (-value)) : "";
@@ -1202,7 +1204,8 @@
     // « @{…} » sont des dés légitimes dans Roll20.
     var de = String(die == null ? "" : die).replace(/\s+/g, " ").trim() || DE_DEFAUT;
     return "&{template:default} {{name=" + (envSan(label) || "Jet") +
-           "}} {{Jet=[[" + de + v +
+           "}} {{Jet=[[" + de +
+           (caracQ ? " + (" + caracQ + ")" : "") + v +
            (avecInput ? ENV_QUERY : "") + "]]}}";
   }
   function cmdCarte(title, fields) {
@@ -1233,12 +1236,23 @@
   }
   // isCheck : vrai pour un jet de test (carac/compétence) — seuls ces jets
   // critent (96+/5-). Les jets d'équipement (dégâts, invu) restent des dés bruts.
-  function doRoll(label, value, die, isCheck) {
+  // caracDe : caractéristique propre d'un jet de COMPÉTENCE. Avec le réglage
+  // « Au choix » de la barre d'envoi, la macro Roll20 demande alors quelle
+  // caractéristique porte le jet (la sienne proposée en premier) : le total
+  // envoyé se décompose en (carac choisie) + (stade et modificateur).
+  function caracQuery(propre) {
+    var ordre = [propre].concat(CHAMPS.filter(function (c) { return c !== propre; }));
+    return "?{Caractéristique|" + ordre.map(function (c) { return c + "," + caracTotal(c); }).join("|") + "}";
+  }
+  function doRoll(label, value, die, isCheck, caracDe) {
     die = die || state.de || DE_DEFAUT;
     // « avec input » ne vaut QUE pour les jets de test : isCheck est vrai
     // exactement aux caractéristiques et aux compétences, faux aux dégâts et
     // à l'invulnérabilité — aucun autre filtre à écrire.
-    if (envoyer(cmdJet(label, value, die, isCheck && envInput()))) return;
+    // Le choix de carac ne vit que sur le canal brut (macro) : les replis
+    // (vieille extension, hors Roll20) partent avec la carac automatique.
+    var q = (isCheck && caracDe && envCaracChoix()) ? caracQuery(caracDe) : null;
+    if (envoyer(cmdJet(label, q ? value - caracTotal(caracDe) : value, die, isCheck && envInput(), q))) return;
     // extension antérieure au canal brut : jet public, sans modificateur
     if (typeof window !== "undefined" && typeof window.__jjkRoll === "function") {
       window.__jjkRoll(die, value, label);
@@ -1795,6 +1809,29 @@
       segs2.appendChild(b);
     });
     bar.appendChild(segs2);
+
+    // automatique / au choix : sur un jet de COMPÉTENCE, « au choix » fait
+    // demander par Roll20 quelle caractéristique porte le jet (Body / Mind /
+    // Prestance, la sienne en tête) — ex. une Esquive lancée sur la Prestance.
+    var sep3 = el("span", "lbl", "Caractéristique");
+    sep3.title = "Ne s'applique qu'aux jets de compétence";
+    bar.appendChild(sep3);
+    var segs3 = el("div", "pc-envoi-segs");
+    var cbtn = [];
+    [["0", "Automatique", "La compétence part avec sa caractéristique"],
+     ["1", "Au choix", "Roll20 demande quelle caractéristique utiliser avant de lancer"]].forEach(function (o) {
+      var b = el("button", "seg" + ((envCaracChoix() ? "1" : "0") === o[0] ? " on" : ""), o[1]);
+      b.type = "button";
+      b.title = o[2];
+      b.addEventListener("click", function () {
+        lset(ENVOI.carac, o[0]);
+        cbtn.forEach(function (x) { x.classList.remove("on"); });
+        b.classList.add("on");
+      });
+      cbtn.push(b);
+      segs3.appendChild(b);
+    });
+    bar.appendChild(segs3);
 
     sheet.appendChild(bar);
     remplirDest(nomsManuels());
@@ -3049,7 +3086,7 @@
     var total = el("button", "pc-comp-total pc-comp-roll pc-rollable", "");
     total.type = "button";
     total.addEventListener("click", function () {
-      doRoll(opts.rollLabel || (item.name + " (" + item.carac + ")"), valeur(comp()), null, true);
+      doRoll(opts.rollLabel || (item.name + " (" + item.carac + ")"), valeur(comp()), null, true, item.carac);
     });
     row.appendChild(total);
 
