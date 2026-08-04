@@ -1241,7 +1241,16 @@
   // l'extension écrit dans la zone de saisie du tchat. Les parenthèses laissent
   // saisir un modificateur négatif sans ambiguïté (« + (-5) »).
   var ENV_QUERY = " + (?{Modificateur|0})";
-  function cmdJet(label, value, die, avecInput, caracQ) {
+  // Option de jet Roll20 : le résultat s'inscrit dans le compteur de tours, à
+  // la ligne du token sélectionné (créée si elle manque). Réservée à
+  // l'initiative, seul jet dont dépend une place au tour.
+  // Elle se pose DANS le jet en ligne, entre les doubles crochets, et non à la
+  // fin du message : hors d'un « /roll », c'est-à-dire dès qu'on passe par un
+  // gabarit, Roll20 ne la lit qu'attachée au jet lui-même
+  // (wiki Macros/Initiative : {{Initiative=[[1d20+…&{tracker}]]}}). Posée après
+  // « }} », elle s'afficherait en toutes lettres au tchat sans rien compter.
+  var ENV_TRACKER = " &{tracker}";
+  function cmdJet(label, value, die, avecInput, caracQ, tracker) {
     // « + 0 » est du bruit sur les jets d'équipement (dégâts, invu), qui
     // n'ont jamais de bonus : l'expression part seule.
     var v = value ? (value > 0 ? " + " + value : " - " + (-value)) : "";
@@ -1255,7 +1264,8 @@
     return "&{template:default} {{name=" + (envSan(label) || "Jet") +
            "}} {{Jet=[[" + de +
            (caracQ ? " + (" + caracQ + ")" : "") + v +
-           (avecInput ? ENV_QUERY : "") + "]]}}";
+           (avecInput ? ENV_QUERY : "") +
+           (tracker ? ENV_TRACKER : "") + "]]}}";
   }
   function cmdCarte(title, fields) {
     var cmd = "&{template:default} {{name=" + envSan(title) + "}}";
@@ -1293,7 +1303,8 @@
     var ordre = [propre].concat(CHAMPS.filter(function (c) { return c !== propre; }));
     return "?{Caractéristique|" + ordre.map(function (c) { return c + "," + caracTotal(c); }).join("|") + "}";
   }
-  function doRoll(label, value, die, isCheck, caracDe) {
+  // tracker : le jet s'inscrit dans le compteur de tours de Roll20 (initiative).
+  function doRoll(label, value, die, isCheck, caracDe, tracker) {
     die = die || state.de || DE_DEFAUT;
     // « avec input » ne vaut QUE pour les jets de test : isCheck est vrai
     // exactement aux caractéristiques et aux compétences, faux aux dégâts et
@@ -1301,8 +1312,10 @@
     // Le choix de carac ne vit que sur le canal brut (macro) : les replis
     // (vieille extension, hors Roll20) partent avec la carac automatique.
     var q = (isCheck && caracDe && envCaracChoix()) ? caracQuery(caracDe) : null;
-    if (envoyer(cmdJet(label, q ? value - caracTotal(caracDe) : value, die, isCheck && envInput(), q))) return;
-    // extension antérieure au canal brut : jet public, sans modificateur
+    if (envoyer(cmdJet(label, q ? value - caracTotal(caracDe) : value, die,
+                       isCheck && envInput(), q, tracker))) return;
+    // extension antérieure au canal brut : jet public, sans modificateur — et
+    // sans compteur de tours, ce canal-là n'envoyant pas de commande Roll20
     if (typeof window !== "undefined" && typeof window.__jjkRoll === "function") {
       window.__jjkRoll(die, value, label);
       return;
@@ -3143,7 +3156,12 @@
     var total = el("button", "pc-comp-total pc-comp-roll pc-rollable", "");
     total.type = "button";
     total.addEventListener("click", function () {
-      doRoll(opts.rollLabel || (item.name + " (" + item.carac + ")"), valeur(comp()), null, true, item.carac);
+      // L'initiative, et elle seule, s'inscrit au compteur de tours de Roll20.
+      // Le drapeau suit la CLÉ de la compétence, pas le module : la ligne est
+      // la même quand le module Initiative est coupé et que Body/Initiative
+      // revient dans la liste des compétences.
+      doRoll(opts.rollLabel || (item.name + " (" + item.carac + ")"), valeur(comp()),
+             null, true, item.carac, item.key === INIT_KEY);
     });
     row.appendChild(total);
 
