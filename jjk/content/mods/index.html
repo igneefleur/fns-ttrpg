@@ -53,7 +53,7 @@
     
       <link rel="stylesheet" href="../../stylesheets/jjk.css?v=1">
     
-      <link rel="stylesheet" href="../../stylesheets/jjk-fiche.css?v=35">
+      <link rel="stylesheet" href="../../stylesheets/jjk-fiche.css?v=38">
     
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -1709,11 +1709,11 @@ les filtres.</p>
 <tbody>
 <tr>
 <td><code>ctx.calculs.caracTotal(nom)</code></td>
-<td>le total d'une caractéristique : <code>"Body"</code>, <code>"Mind"</code>, <code>"Prestance"</code>.</td>
+<td>le total d'une caractéristique : <code>"Body"</code>, <code>"Mind"</code>, <code>"Prestance"</code>. C'est la caractéristique nue, sans le malus de poids, celle dont sortent les PV et la régénération.</td>
 </tr>
 <tr>
 <td><code>ctx.calculs.compValue(carac, comp, cle)</code></td>
-<td>le total d'une compétence, modificateurs et total forcé compris. <code>comp</code> est l'objet de compétence du personnage, <code>cle</code> la clé qui le désigne, de la forme <code>"Body/Initiative"</code>.</td>
+<td>le total d'une compétence, modificateurs, total forcé et malus de poids compris. <code>comp</code> est l'objet de compétence du personnage, <code>cle</code> la clé qui le désigne, de la forme <code>"Body/Initiative"</code>.</td>
 </tr>
 <tr>
 <td><code>ctx.calculs.pvMax()</code></td>
@@ -1725,7 +1725,7 @@ les filtres.</p>
 </tr>
 <tr>
 <td><code>ctx.calculs.initiative()</code></td>
-<td>l'initiative, poids porté déduit.</td>
+<td>l'initiative, malus de poids déduit.</td>
 </tr>
 <tr>
 <td><code>ctx.calculs.vitesse()</code></td>
@@ -1738,6 +1738,10 @@ les filtres.</p>
 <tr>
 <td><code>ctx.calculs.poidsPorte()</code></td>
 <td>le poids porté.</td>
+</tr>
+<tr>
+<td><code>ctx.calculs.poidsMalus()</code></td>
+<td>le malus que ce poids inflige, arrondi à la dizaine inférieure.</td>
 </tr>
 </tbody>
 </table>
@@ -1804,7 +1808,7 @@ Jjk.filtre(&quot;caracTotal&quot;, function (valeur, infos) {
 });
 </code></pre>
 </div>
-<p>Neuf calculs se filtrent. La valeur est toujours un nombre, et le filtre doit
+<p>Dix calculs se filtrent. La valeur est toujours un nombre, et le filtre doit
 en rendre un.</p>
 <table>
 <thead>
@@ -1856,6 +1860,11 @@ en rendre un.</p>
 <td><code>{}</code></td>
 </tr>
 <tr>
+<td><code>poidsMalus</code></td>
+<td>le malus de poids, une fois le poids porté arrondi à la dizaine inférieure</td>
+<td><code>{}</code></td>
+</tr>
+<tr>
 <td><code>xpDepense</code></td>
 <td>l'xp dépensé</td>
 <td><code>{}</code></td>
@@ -1888,7 +1897,7 @@ déjà connu :</p>
 </tr>
 <tr>
 <td>Nom inconnu</td>
-<td>un filtre inscrit sous un autre nom que ces neuf-là n'est jamais appelé, et le journal du navigateur le dit dès l'inscription.</td>
+<td>un filtre inscrit sous un autre nom que ces dix-là n'est jamais appelé, et le journal du navigateur le dit dès l'inscription.</td>
 </tr>
 <tr>
 <td>Récursion</td>
@@ -2385,11 +2394,11 @@ d'atteinte que parce qu'elle est d'une autre origine que la fiche.</p>
       
         <script src="../../javascripts/night.js"></script>
       
-        <script src="../../javascripts/jjk-migrations.js?v=35"></script>
+        <script src="../../javascripts/jjk-migrations.js?v=38"></script>
       
-        <script src="../../javascripts/jjk-mods.js?v=35"></script>
+        <script src="../../javascripts/jjk-mods.js?v=38"></script>
       
-        <script src="../../javascripts/jjk-fiche.js?v=35"></script>
+        <script src="../../javascripts/jjk-fiche.js?v=38"></script>
       
         <script src="../../javascripts/copybtn.js"></script>
       
