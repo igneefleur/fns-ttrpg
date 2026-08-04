@@ -61,7 +61,7 @@
   // purge aucune clé racine inconnue, donc une telle fiche s'ouvre dans les
   // deux sens sans migration. C'est ce qui permettra de livrer la disposition
   // des modules puis les mods sans forcer un 4.0.0 puis un 5.0.0.
-  var RELEASE = "3.1.2";
+  var RELEASE = "3.1.1";
   var SCHEMA = 3;
 
   var XP_CREATION = 500;      // xp de départ (le total reste modifiable)
@@ -4755,18 +4755,11 @@
     var bF = block("Outils de filtre");
     var fRow = el("div", "pc-comp-tools");
     var fLine = el("div", "row");
-    // Chaque puce ALLUME OU ÉTEINT un outil ; elle porte donc le nom de
-    // l'outil, pas celui de son réglage par défaut. La seconde s'appelait
-    // « Tous les champs », qui est le premier choix de la liste déroulante :
-    // on croyait afficher tous les champs alors qu'on décidait si la liste
-    // existe.
-    [["texte", "Champ de recherche",
-      "La case où l'on tape pour filtrer les modules Compétences, Armes et Langues."],
-     ["champ", "Sélecteur de champ",
-      "La liste déroulante Body / Mind / Prestance des modules Compétences."]].forEach(function (o) {
+    [["texte", "Filtrer", "Le champ de recherche des modules Compétences, Armes et Langues."],
+     ["champ", "Tous les champs", "Le menu de champ du module Compétences."]].forEach(function (o) {
       var chip = el("span", "pc-chip");
       chip.textContent = o[1];
-      chip.title = o[2] + " Éteinte : l'outil disparaît, et ne filtre plus rien.";
+      chip.title = o[2] + " Décoché : masqué, et sans effet sur les listes.";
       chip.classList.toggle("on", lpref(FILTRES[o[0]], "1") !== "0");
       chip.addEventListener("click", function () {
         var on = lpref(FILTRES[o[0]], "1") !== "0";
