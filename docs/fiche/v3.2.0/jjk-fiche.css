@@ -505,13 +505,80 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 /* leviers du MJ, un par compétence (onglet Options) : la grille est plus large
    que celle de la Fiche, elle défile dans son propre cadre quand la colonne
    est trop étroite plutôt que de pousser la page */
+/* ---- le plan de la fiche (bloc Modules) ----
+   Chaque onglet est dessiné avec SES colonnes, et chaque module est une carte
+   qu'on prend et qu'on lâche. Le plan ressemble à la fiche : on range en
+   regardant ce qu'on range, au lieu de compter des rangs dans une liste. */
+.pc-modplan-cols {
+  display: grid; gap: .3rem; margin: .1rem 0 .45rem;
+}
+.pc-modplan-col { min-width: 0; }
+.pc-modplan-col-nom {
+  font-size: var(--fs-label); letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ink-3); text-align: center; padding-bottom: .12rem;
+}
+/* la zone de dépôt garde une hauteur même vide, sinon une colonne vidée ne
+   pourrait plus rien recevoir */
+.pc-modplan-liste {
+  display: flex; flex-direction: column; gap: .18rem; min-height: 2.2rem;
+  padding: .18rem; border: 1px dashed var(--line-2); border-radius: 6px;
+  background: var(--panel); transition: background .12s, border-color .12s;
+}
+.pc-modplan-liste.survol { border-color: var(--red); background: var(--wash); }
+.pc-modplan-carte {
+  display: flex; align-items: center; gap: .25rem; min-width: 0;
+  padding: .2rem .3rem; border: 1px solid var(--line-2); border-radius: 5px;
+  background: var(--card); cursor: grab; user-select: none;
+}
+.pc-modplan-carte:active { cursor: grabbing; }
+.pc-modplan-carte > .t {
+  flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap; font-size: var(--fs-meta); color: var(--ink);
+}
+.pc-modplan-carte.pris { opacity: .4; }
+/* un module masqué reste là, en retrait : on doit pouvoir le rallumer et le
+   ranger comme les autres */
+.pc-modplan-carte.off { background: var(--panel); border-style: dashed; }
+.pc-modplan-carte.off > .t { color: var(--ink-3); font-style: italic; }
+/* le trait qui dit où la carte va se poser */
+.pc-modplan-carte.avant { box-shadow: 0 -2px 0 var(--red); }
+.pc-modplan-carte[data-etat="panne"] { border-color: var(--red); background: var(--wash); }
+.pc-modplan-carte[data-etat="perdu"] { border-style: dotted; border-color: var(--red); }
+.pc-modplan-oeil {
+  flex: 0 0 auto; cursor: pointer; font-size: .7rem; line-height: 1;
+  color: var(--red); padding: 0 .05rem;
+}
+.pc-modplan-carte.off .pc-modplan-oeil { color: var(--ink-3); }
+
+/* Bloc Jets : le champ du dé et son bouton côte à côte. Le champ prend toute
+   la largeur que le bouton lui laisse, et le bouton ne s'étire pas. */
+.pc-jet-de { display: flex; align-items: flex-end; gap: .4rem; }
+.pc-jet-de .pc-f { flex: 1 1 auto; min-width: 0; margin: 0; }
+.pc-jet-de .pc-f input { width: 100%; box-sizing: border-box; }
+.pc-jet-de .pc-mini { flex: 0 0 auto; }
+
 .pc-optcomp-wrap { overflow-x: auto; }
 .pc-optcomp-row {
-  display: grid; align-items: center; gap: .2rem;
-  grid-template-columns: minmax(3rem, 1.2fr) 2.1rem 3.4rem 2.2rem 1px 2.1rem 3.4rem 2.6rem;
-  min-width: 20rem; padding: .1rem .15rem; border-radius: 4px;
+  display: grid; align-items: center; gap: .12rem;
+  /* nom | forcé, modif, modif, total | filet | forcé, modif, modif, coût
+     Dix colonnes dans une DEMI-LARGEUR : chaque dixième de rem compte. Une
+     grille trop large ne se voyait pas sur une capture du bloc seul (un
+     élément photographié hors de sa colonne ne déborde de rien) : elle se
+     voyait à l'écran, en défilement horizontal dans le module. Les largeurs
+     ci-dessous sont mesurées pour tenir SANS défilement dans la colonne du
+     site comme dans celle de l'iframe Roll20, plus étroite. */
+  /* « FORCÉ » a besoin de 1.7rem pour tenir en entier ; les deux colonnes de
+     modificateur, dont l'entête est désormais à cheval sur les deux, n'ont
+     plus à porter de libellé et se contentent de 1.4rem. Le total ne bouge
+     pas : ce qui est pris ici est rendu là. */
+  grid-template-columns: minmax(3.2rem, 1.2fr) 1.7rem 1.4rem 1.4rem 2rem 1px 1.7rem 1.4rem 1.4rem 2.3rem;
+  min-width: 0; padding: .1rem .1rem; border-radius: 4px;
   border-left: 2px solid transparent;
 }
+/* Les deux blocs de leviers, caractéristiques et compétences, emploient la
+   MÊME grille au dixième de rem près. Ils occupent les deux colonnes de
+   l'onglet, qui ont la même largeur : leurs entêtes et leurs chiffres tombent
+   donc aux mêmes abscisses, et l'oeil lit une seule grille au lieu de deux. */
 /* Le filet qui sépare la valeur du coût en xp est une COLONNE de la grille,
    étirée sur toute la hauteur de chaque rangée : les segments se rejoignent
    d'une rangée à l'autre et forment un vrai trait continu, du haut du module
@@ -521,20 +588,42 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
   margin: -.1rem 0;   /* mord sur le padding de la rangée : aucune interruption */
 }
 /* rangée des groupes : deux titres de trois colonnes, de part et d'autre */
-.pc-optcomp-row.grp > .g { grid-column: span 3; text-align: center; }
+.pc-optcomp-row.grp > .g { grid-column: span 4; text-align: center; }
 .pc-optcomp-row.grp > .g {
   font-size: .52rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
   color: var(--ink-2); border-bottom: 1px solid var(--hair); padding-bottom: .05rem;
 }
 /* une ligne réglée se repère d'un coup d'œil parmi cinquante */
 .pc-optcomp-row.on { border-left-color: var(--red); }
-/* steppers compacts : sept colonnes doivent tenir dans une demi-largeur */
-.pc-optcomp-row .pc-step { gap: .1rem; }
-.pc-optcomp-row .pc-step button { width: .8rem; height: .8rem; font-size: .6rem; }
-.pc-optcomp-row .pc-num { width: 1.3rem; font-size: .62rem; }
-.pc-optcomp-row .pc-comp-total { font-size: .62rem; }
+/* champs compacts : sept colonnes doivent tenir dans une demi-largeur. Le
+   modificateur est un champ NU (ni − ni +) : sur cinquante lignes, les boutons
+   mangeaient la place sans rien apporter. */
+.pc-optcomp-row .pc-num.modif {
+  width: 100%; box-sizing: border-box; font-size: .62rem; font-weight: 600;
+  border: none; border-bottom: 1px solid var(--hair); text-align: center;
+  -moz-appearance: textfield; appearance: textfield;
+}
+.pc-optcomp-row .pc-num.modif::-webkit-inner-spin-button,
+.pc-optcomp-row .pc-num.modif::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.pc-optcomp-row .pc-num.modif:focus { outline: none; border-bottom: 2px solid var(--red); }
+/* Les valeurs calculées sont CENTRÉES dans leur colonne, comme les champs qui
+   les précèdent : une colonne de nombres dont l'alignement change d'une case à
+   l'autre se lit mal, et sur dix colonnes cela se voit tout de suite. */
+.pc-optcomp-row .pc-comp-total {
+  font-size: .62rem; text-align: center; font-variant-numeric: tabular-nums;
+}
+.pc-optcomp-row input.force { text-align: center; font-variant-numeric: tabular-nums; }
+.pc-optcomp-row .pc-num.modif { font-variant-numeric: tabular-nums; }
+/* le bloc des caractéristiques emploie la même grille : son sigle tient lieu de
+   nom, et il ne doit pas s'étirer */
+.pc-optcomp-row .pc-comp-name .pc-abbr { flex: 0 0 auto; }
 .pc-optcomp-row .pc-comp-label { font-size: .64rem; }
 .pc-optcomp-row.odd { background: var(--stripe); }
+/* « MODIF. » ne tient pas dans une colonne d'un rem et demi : il se tronquait
+   en « MODII ». Un seul entête, à cheval sur les DEUX champs qu'il annonce,
+   dit la même chose, tient en entier, et montre du même coup que les deux
+   colonnes vont ensemble. */
+.pc-optcomp-row.head > .duo { grid-column: span 2; }
 .pc-optcomp-row.head > span {
   font-size: .5rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
   color: var(--ink-3); text-align: center; white-space: nowrap; overflow: hidden; min-width: 0;
@@ -739,6 +828,114 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-opt-actions .pc-btn.danger { border-color: var(--line-2); }
 .pc-opt-actions .pc-btn.danger:hover { border-color: var(--red); }
 .pc-f > input.de { max-width: 6rem; }
+
+/* ---- mods : consentement, code, listes de mods et de modules ----
+   Toutes les couleurs de ce bloc passent par les jetons de .perso-atelier :
+   le mode nuit les redéfinit déjà, aucune règle .night n'est nécessaire ici. */
+
+/* Le bandeau vit HORS de la feuille (entre la barre d'outils et .pc-sheet) :
+   il prend donc les tons de carte pour se détacher du plan de travail, avec le
+   liseré carmin des avertissements. Il s'aligne sur la feuille, dont il annonce
+   le contenu, et reste sur une seule ligne tant que la largeur le permet : un
+   mod en attente ne bloque rien, il ne doit pas repousser la fiche pour autant. */
+.pc-avis {
+  display: flex; align-items: center; flex-wrap: wrap; gap: .25rem .6rem;
+  width: var(--pc-sheet-w, 50rem); box-sizing: border-box;
+  margin: .6rem auto 0; padding: .28rem .5rem .3rem;
+  background: var(--card); color: var(--ink-2);
+  border: 1px solid var(--line-2); border-left: 3px solid var(--red);
+  border-radius: 0 8px 8px 0;
+}
+.pc-avis:empty { display: none; }
+/* Deux bandeaux partagent cette mise en forme et peuvent paraître ENSEMBLE : un
+   mod en attente d'autorisation, et un enregistrement qui ne passe plus. Le
+   second est le plus grave des deux (la séance entière part à la fermeture),
+   d'où le liseré plein plutôt que le filet, et le texte en gras discret. */
+.pc-avis-save { border-left-width: 5px; }
+.pc-avis-save .pc-avis-txt { color: var(--red-deep); font-weight: 600; }
+.pc-avis-txt { flex: 1 1 16rem; min-width: 0; font-size: var(--fs-meta); line-height: 1.3; }
+.pc-avis .row { flex: 0 0 auto; display: flex; align-items: center; flex-wrap: wrap; gap: .3rem; margin-left: auto; }
+@media (max-width: 44em) {
+  /* même bascule que la feuille : elle cesse d'imposer sa largeur */
+  .pc-avis { width: auto; max-width: 100%; }
+}
+
+/* code d'un mod : la modale de la fiche est étroite, le code défile donc
+   horizontalement plutôt que de se replier (une ligne coupée n'est plus du
+   code). Hauteur et marges en em : la boîte garde ses quatorze lignes quelle
+   que soit la taille du texte, ici comme dans l'iframe Roll20. */
+.pc-code {
+  display: block; width: 100%; min-width: 0; box-sizing: border-box;
+  height: 20.5em;                       /* 14 lignes de 1.4 + marges internes */
+  resize: vertical;                     /* la largeur est celle de son hôte */
+  font-family: 'Roboto Mono', monospace; font-size: var(--fs-meta);
+  line-height: 1.4; -moz-tab-size: 2; tab-size: 2;
+  white-space: pre; overflow: auto;
+  padding: .35em .5em;
+  background: var(--card); color: var(--ink);
+  border: 1px solid var(--line-2); border-radius: 7px;
+}
+.pc-code:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 2px var(--wash); }
+
+/* une ligne de la liste des mods ou des modules : le libellé prend la place,
+   l'id et l'état restent en retrait, les boutons suivent. Le liseré gauche est
+   réservé en transparent, comme les lignes de compétences du MJ : une ligne en
+   panne s'allume sans décaler ses voisines. */
+.pc-modrow {
+  display: flex; align-items: center; flex-wrap: wrap; gap: .12rem .35rem;
+  padding: .18rem .25rem .2rem; font-size: var(--fs-body);
+  border-left: 2px solid transparent; border-bottom: 1px solid var(--hair);
+  border-radius: 4px;
+}
+.pc-modrow:last-child { border-bottom: none; }
+/* Une ligne de mod tient SUR UNE LIGNE : le nom se laisse couper, tout le
+   reste garde sa taille. Le message d'une panne, lui, passe dessous, sur toute
+   la largeur — c'est le seul cas où la ligne en fait deux. */
+.pc-modrow-mod { display: block; }
+.pc-modrow-mod > .l {
+  display: flex; align-items: center; flex-wrap: nowrap; gap: .25rem; min-width: 0;
+}
+.pc-modrow-mod > .l > .nom {
+  flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.pc-modrow-mod > .l > .pc-mini,
+.pc-modrow-mod > .l > .pc-chip { flex: 0 0 auto; }
+.pc-modrow-mod > .pc-block-note { margin: .15rem 0 0; }
+/* Le rouage ouvert ajoute deux boutons, et c'est le NOM qui se faisait couper.
+   « Voir le code » s'efface alors : « Modifier » montre déjà le code, et le
+   nom est ce qu'il faut lire pour ne pas se tromper de mod. */
+.pc-editable.editing .pc-modrow-mod > .l > .voir { display: none; }
+/* le nom garde de quoi se lire : il ne se réduit pas sous cette largeur, ce
+   sont les autres qui cèdent d'abord */
+.pc-modrow-mod > .l > .nom { flex-basis: 7rem; }
+.pc-modrow .nom { flex: 1 1 6rem; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; color: var(--ink); }
+.pc-modrow .id { flex: 0 0 auto; font-size: var(--fs-label); color: var(--ink-3); }
+.pc-modrow .etat { flex: 0 0 auto; font-size: var(--fs-label); color: var(--ink-3); white-space: nowrap; }
+.pc-modrow[data-etat="panne"] { border-left-color: var(--red); background: var(--wash); }
+.pc-modrow[data-etat="panne"] .etat { color: var(--red-deep); font-weight: 700; }
+
+/* titre d'onglet dans le bloc Modules : même filet que les champs de
+   compétences, pour que les deux longues listes se lisent de la même façon */
+.pc-modgroupe {
+  display: flex; align-items: center; gap: .45rem; margin: .4rem 0 .1rem; padding: .05rem;
+  font-family: 'Cinzel', serif; font-weight: 700; font-size: .62rem;
+  letter-spacing: .04em; color: var(--ink-2); white-space: nowrap;
+}
+.pc-modgroupe::after { content: ""; flex: 1; height: 1px; background: var(--hair); }
+.pc-modgroupe:first-child { margin-top: .1rem; }
+
+/* module en panne ou muselé : un liseré carmin sur le flanc du bloc, jamais un
+   fond — la fiche doit rester lisible pendant qu'on répare. Le liseré est une
+   ombre INTERNE et non une bordure : le bloc ne gagne pas un pixel de largeur
+   (l'iframe Roll20 n'a pas le box-sizing global du site), le marquage vaut pour
+   n'importe quel hôte (un module peut être une tuile autant qu'un bloc), et il
+   ne se dispute pas la bordure rouge du mode édition. La panne est plus large
+   que la muselière : l'une appelle une réparation, l'autre signale seulement
+   des valeurs figées au dernier rafraîchissement réussi. */
+.perso-atelier [data-panne="1"] { box-shadow: inset 3px 0 0 var(--red); }
+.perso-atelier [data-musele="1"] { box-shadow: inset 2px 0 0 var(--red); }
+/* la mention « module en panne — id » du titre porte l'alerte, pas le fond */
+.perso-atelier [data-panne="1"] .pc-block-title small { color: var(--red-deep); }
 
 /* ---- flash ---- */
 .pc-flash {

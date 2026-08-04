@@ -51,7 +51,7 @@
   // jjk_version. Le manifeste en est la source unique quand il est là ; la
   // constante n'est qu'un repli (node, et l'amorceur de secours qui charge
   // sans manifeste).
-  var RELEASE_DEFAUT = "3.3.0";
+  var RELEASE_DEFAUT = "3.2.0";
   // majeur(RELEASE) === SCHEMA : scripts/verif_versions.py tient l'invariant
   var SCHEMA_DEFAUT = 3;
 

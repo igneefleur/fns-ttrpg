@@ -42,6 +42,45 @@
     var c = campaign();
     return (c && c.characters && c.characters.get) ? c.characters.get(id) : null;
   }
+  // ---------- garde-fous : la fiche peut exécuter du code qui n'est pas d'elle ----------
+  // Un mod voyage DANS le personnage (il est rangé dans jjk_state) : quiconque
+  // ouvre la fiche exécute son code, MJ compris. Le pont ne peut donc pas faire
+  // confiance à ce qu'il reçoit, même sur ns:"jjk". Deux verrous, ci-dessous et
+  // au traitement des messages.
+  //
+  // VERROU 1 — ÉCRITURE : seuls les attributs « jjk_* ». C'est tout ce que la
+  // fiche produit (voir jjk-attr-map.js) ; un autre nom écraserait les attributs
+  // NATIFS du personnage (barres de token, macros, feuille Roll20). Refus
+  // silencieux : rien à signaler à qui l'a demandé.
+  function ecrivable(name) { return typeof name === "string" && name.indexOf(PREFIX) === 0; }
+
+  // VERROU 2 — LIAISON SOURCE <-> PERSONNAGE : une fiche n'écrit que dans le
+  // personnage qu'elle affiche. Le premier « load » d'une frame fixe son
+  // charId ; il vient de l'amorce du site, qui le poste AVANT de charger le
+  // bundle, donc avant qu'un mod puisse parler. Ensuite tout « load » ou
+  // « save » de cette même frame pour un AUTRE personnage est refusé : sans
+  // ça, un mod déposé sur un seul personnage écrirait, dès que le MJ ouvre sa
+  // fiche, dans toutes les fiches de la campagne.
+  // La clé est l'objet fenêtre source lui-même (ev.source) : une fenêtre ne
+  // peut pas se faire passer pour une autre. Le plafond borne la table ; au-
+  // delà on REFUSE au lieu de recycler une entrée (recycler rouvrirait la
+  // porte : il suffirait d'inonder le pont pour se relier ailleurs).
+  var srcFrames = [], srcIds = [], MAX_SRC = 64;
+  function lier(src, id) {
+    if (!src || !id) return false;
+    var i = srcFrames.indexOf(src);
+    if (i >= 0) return srcIds[i] === id;
+    if (srcFrames.length >= MAX_SRC) return false;
+    srcFrames.push(src); srcIds.push(id);
+    return true;
+  }
+  // vérifie sans jamais lier : un « save » d'une frame qui n'a jamais chargé
+  // n'a aucune raison d'exister (l'amorce charge toujours avant d'écrire).
+  function liee(src, id) {
+    var i = srcFrames.indexOf(src);
+    return i >= 0 && srcIds[i] === id;
+  }
+
   function models(ch) { return (ch && ch.attribs && ch.attribs.models) || []; }
   function attrVal(m, key) { return m.get ? m.get(key) : (m.attributes && m.attributes[key]); }
   function findAttr(ch, name) {
@@ -70,6 +109,7 @@
   //    -> aucun événement change -> Roll20 ne rafraîchit pas la fiche -> pas de crash ;
   //  - save(null, {silent:true}) persiste dans Firebase (le sync ne dépend pas de silent).
   function writeOne(ch, name, v) {
+    if (!ecrivable(name)) return;   // double fond : writeOne reste sûr quel que soit l'appelant
     var data = { name: name, current: str(v && v.current), max: str(v && v.max) };
     var m = findAttr(ch, name);
     if (!m) {
@@ -83,7 +123,14 @@
   }
 
   var queue = [], busy = false;
-  function enqueue(id, attrs) { queue.push({ id: id, attrs: attrs || {}, tries: 0 }); pump(); }
+  // Le filtre de préfixe s'applique À L'ENTRÉE : ce qui n'est pas à nous
+  // n'entre même pas dans la file (rien à réexaminer, rien à jeter en route).
+  function enqueue(id, attrs) {
+    var src = attrs || {}, garde = {};
+    Object.keys(src).forEach(function (n) { if (ecrivable(n)) garde[n] = src[n]; });
+    queue.push({ id: id, attrs: garde, tries: 0 });
+    pump();
+  }
   function pump() {
     if (busy) return;
     var job = queue.shift();
@@ -168,10 +215,14 @@
           reply(ev, { type: "has-sheet-result", charId: d.charId, exists: !!a[PREFIX + "version"] });
         }
       } else if (d.type === "load") {
+        // première demande de cette frame : elle se lie à ce personnage ; une
+        // demande ultérieure pour un autre personnage est refusée (verrou 2).
+        if (!lier(ev.source, d.charId)) return;
         // perso injoignable : ne pas hydrater avec du vide (la fiche relance load
         // toutes les 500 ms, le Campaign peut arriver après nous)
         if (getChar(d.charId)) reply(ev, { type: "hydrate", charId: d.charId, attrs: readAll(d.charId) });
       } else if (d.type === "save") {
+        if (!liee(ev.source, d.charId)) return;
         enqueue(d.charId, d.attrs);
       }
     } catch (e) {}

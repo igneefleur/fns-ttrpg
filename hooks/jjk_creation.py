@@ -73,11 +73,13 @@ def _table_rows(text, header_re):
 # Compétences que la FICHE ajoute, absentes des listes de la page de règles.
 # L'initiative y est une règle de combat (« Initiative = D100 + Body − poids »)
 # et non une entrée de la liste des compétences de Body ; l'esquive y est
-# nommée comme action sans figurer dans la liste. La fiche, elle, en fait des
-# compétences à part entière (stade, passifs à Artiste), sur décision de
+# nommée comme action sans figurer dans la liste ; l'évasion y est nommée dans
+# la manœuvre « Agripper son adversaire » (« Body lutte contre Body
+# lutte/échappement ») sans être une entrée non plus. La fiche, elle, en fait
+# des compétences à part entière (stade, passifs à Artiste), sur décision de
 # l'utilisateur. On les ajoute ICI plutôt que dans la page : les règles sont
 # celles d'un ami et ne se réécrivent pas.
-COMPS_FICHE = {"Body": ["Initiative", "Esquive"]}
+COMPS_FICHE = {"Body": ["Initiative", "Esquive", "Évasion"]}
 
 # Compétences d'ARMES : elles vivent dans leur propre module de la fiche, pas
 # dans la liste générale. Toujours des compétences de Body. Le joueur peut en

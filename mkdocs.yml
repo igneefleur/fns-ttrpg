@@ -12,6 +12,7 @@ not_in_nav: |
 nav:
   - Règles: content/regles/index.md
   - Création: personnage/index.md
+  - Mods: content/mods/index.md
   - Extension: extension/index.md
 theme:
   name: material
@@ -40,12 +41,14 @@ extra_css:
   - stylesheets/extra.css?v=13
   - stylesheets/night.css
   - stylesheets/jjk.css?v=1 # variantes propres à la branche jjk (gabarit des tables anima)
-  - stylesheets/jjk-creation.css?v=30
+  - stylesheets/jjk-fiche.css?v=35
 extra_javascript:
   - javascripts/continuous.js
   - javascripts/nav-drawer.js
   - javascripts/night.js
-  - javascripts/jjk-creation.js?v=47
+  - javascripts/jjk-migrations.js?v=35 # moteur de migration : AVANT le bundle, qui l'appelle
+  - javascripts/jjk-mods.js?v=35       # moteur de mods : AVANT le bundle aussi, et facultatif (sans lui, la fiche s'ouvre sans mods)
+  - javascripts/jjk-fiche.js?v=35
   - javascripts/copybtn.js
 hooks:
   - hooks/jjk_creation.py
