@@ -1105,36 +1105,26 @@
     var v = initiativeBrut();
     return aFiltre("initiative") ? applique("initiative", v, {}) : v;
   }
-  // Le Body qui INDEXE la table des vitesses : le malus de poids s'en retranche,
-  // la règle le dit en toutes lettres. Un seul endroit le calcule, l'infobulle de
-  // la tuile le lit ici aussi, sinon elle annoncerait un palier lu sur un autre
-  // chiffre que celui qui a servi.
-  function bodyVitesse() { return caracTotal("Body") - poidsMalus(); }
-  // La surcharge est un MALUS DE VITESSE, pas un plancher écrit en dur
-  // (précision du MJ, 2026-08-04) : « notre vitesse passe à 6 m » énonce le
-  // résultat pour le PREMIER palier, qui vaut 9 m, et l'écart de 3 m est ce qui
-  // se retranche.
+  // Le Body qui INDEXE la table des vitesses : le POIDS NE S'EN RETRANCHE PLUS
+  // (arbitrage du MJ, 2026-08-04). Porter lourd ne fait plus descendre le
+  // personnage dans la table ; la charge ne touche la vitesse que par la
+  // surcharge ci-dessous, et seulement quand elle dépasse le Body. Un seul
+  // endroit le calcule, l'infobulle de la tuile le lit ici aussi, sinon elle
+  // annoncerait un palier lu sur un autre chiffre que celui qui a servi.
+  function bodyVitesse() { return caracTotal("Body"); }
+  // La surcharge est un MALUS DE VITESSE, et la règle l'énonce désormais comme
+  // tel (« notre vitesse diminue de 3 m »). L'ancienne formulation annonçait la
+  // vitesse RÉSULTANTE (« passe à 6 m ») : elle ne tenait que parce que le poids
+  // ramenait alors le palier au premier, ce qu'il ne fait plus. Un personnage
+  // robuste et surchargé garde donc son palier, moins ces mètres-là.
   //
-  // Dans les faits, le résultat est toujours celui-là, et ce n'est pas un
-  // hasard : être surchargé veut dire que le malus dépasse le Body, donc que le
-  // Body qui lit la table est négatif, donc que le palier lu est le premier.
-  // La forme « palier moins 3 » n'est donc pas plus permissive que « 6 m » ;
-  // elle dit seulement d'où vient le chiffre, et le fait suivre si la table des
-  // vitesses change un jour. Ne pas lire ce code comme une règle plus générale
-  // qu'elle ne l'est.
-  //
-  // L'écart se LIT dans les données (premier palier moins la valeur annoncée)
-  // plutôt que de s'écrire ici : la fiche ne porte aucune valeur de règles, et
-  // le jour où la table des vitesses ou la phrase changent, le malus suit sans
-  // qu'on rouvre ce fichier. Données trop anciennes pour l'une ou l'autre : la
-  // fiche n'invente rien, la surcharge ne s'applique simplement pas.
+  // La valeur se LIT dans les données plutôt que de s'écrire ici : la fiche ne
+  // porte aucune valeur de règles, et le jour où la phrase change, le malus suit
+  // sans qu'on rouvre ce fichier. Données trop anciennes ou phrase reformulée :
+  // la fiche n'invente rien, la surcharge ne s'applique simplement pas.
   function surchargeMalus() {
-    var annonce = parseFloat(DATA && DATA.vitesseSurcharge);
-    var rows = (DATA && DATA.vitesses) || [];
-    var premier = rows.length ? parseFloat(rows[0].vitesse) : NaN;
-    if (!isFinite(annonce) || !isFinite(premier)) return null;
-    var ecart = premier - annonce;
-    return ecart > 0 ? ecart : null;
+    var malus = parseFloat(DATA && DATA.vitesseSurcharge);
+    return isFinite(malus) && malus > 0 ? malus : null;
   }
   function estSurcharge() {
     return surchargeMalus() !== null && poidsMalus() > caracTotal("Body");
@@ -1154,17 +1144,14 @@
     return rows.length ? rows[rows.length - 1].vitesse : "";
   }
   function vitesseBase() {
-    // DEUX RÈGLES, PAS UNE, et elles s'additionnent. Le malus de poids se
-    // retranche d'abord au Body qui lit la table (vitessePalier) ; puis, si la
-    // charge dépasse le Body, la surcharge retranche encore ses mètres au palier
-    // ainsi obtenu. Les deux se cumulent : c'est bien le même personnage qui
-    // change de palier ET marche moins vite.
+    // UNE SEULE PRISE DE LA CHARGE SUR LA VITESSE, et c'est la surcharge : le
+    // palier se lit sur le Body plein, puis, si la charge dépasse ce Body, la
+    // règle retranche ses mètres. Le poids ne fait plus descendre le personnage
+    // dans la table (il le faisait avant l'arbitrage du 2026-08-04, et les deux
+    // effets se cumulaient alors).
     //
-    // Le plancher ne peut pas vivre dans vitessePalier : le Math.max(0, …) qui
-    // protège la lecture de la table y ramènerait un Body négatif sur le PREMIER
-    // palier, c'est-à-dire sur la plus rapide des valeurs. Les modificateurs
-    // divers et le forçage du MJ restent en aval : ici comme partout ailleurs,
-    // ils ont le dernier mot.
+    // Les modificateurs divers et le forçage du MJ restent en aval : ici comme
+    // partout ailleurs, ils ont le dernier mot.
     var n = parseFloat(vitessePalier());
     if (!isFinite(n)) return 0;
     if (estSurcharge()) n -= surchargeMalus();
@@ -2857,15 +2844,15 @@
     tuileMods(tv, "vitesse");
     hooks.push(function () {
       var d = modSum(state.divers.vitesse);
-      var m = poidsMalus();
-      tv.classList.toggle("adj", state.vitesseOverride !== null || d !== 0 || m !== 0);
-      // D'où sort le chiffre : le palier lu sur le Body diminué, puis la
-      // surcharge si la charge dépasse le Body. Sans ce détail, un joueur chargé
-      // cherche son résultat dans la table et ne l'y trouve pas.
-      var calcul = "Palier de la table (Body " + caracTotal("Body") +
-        (m ? " · poids " + sign(-m) + " = " + bodyVitesse() : "") +
-        ") : " + vitessePalier() +
-        (estSurcharge() ? " · surcharge " + sign(-surchargeMalus()) + " m" : "");
+      // la charge ne marque la tuile que lorsqu'elle coûte vraiment des mètres,
+      // c'est-à-dire en surcharge : un sac lourd mais porté ne change plus rien
+      var surch = estSurcharge();
+      tv.classList.toggle("adj", state.vitesseOverride !== null || d !== 0 || surch);
+      // D'où sort le chiffre : le palier lu sur le Body (le poids ne l'y descend
+      // plus), puis la surcharge si la charge dépasse ce Body. Sans ce détail, un
+      // joueur surchargé cherche son résultat dans la table et ne l'y trouve pas.
+      var calcul = "Palier de la table (Body " + bodyVitesse() + ") : " + vitessePalier() +
+        (surch ? " · surcharge " + sign(-surchargeMalus()) + " m" : "");
       tv.title = state.vitesseOverride !== null
         ? "Vitesse forcée à " + fmtP(state.vitesseOverride) + " m (calculée : " + fmtP(vitesseAuto()) + " m)"
         : calcul + (d ? " · modificateurs " + sign(d) + " m" : "");
