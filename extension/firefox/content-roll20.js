@@ -482,6 +482,198 @@ if (typeof browser === "undefined") { var browser = chrome; }
     }
   }, true);
 
+  // ---------- panneau flottant : le plateau de Narration ----------
+  // Un panneau posé DANS la partie, en haut à gauche, que tous les joueurs
+  // voient : les jetons de narration s'y poussent d'une place à l'autre. Le
+  // contenu est servi par le site (roll20-narration.html) à travers la coquille
+  // générique panneau.html : tout ce qui suit est un CHÂSSIS, et rien d'autre —
+  // se déplacer, se redimensionner, se replier, se souvenir. Le plateau
+  // lui-même peut donc changer autant qu'il voudra sans re-signature.
+  //
+  // La place par défaut est mesurée sur l'interface de Roll20 : la barre
+  // d'outils tient la colonne x ∈ [20, 52], et la bande y ∈ [20, 54] revient
+  // aux actions de jeton, qui apparaissent dès qu'un jeton est sélectionné. Le
+  // panneau se pose donc juste à côté et juste en dessous — et se déplace de
+  // toute façon à la souris, sa place étant retenue par navigateur.
+  var IS_EDITEUR = IS_TOP && !IS_POPOUT && /^\/editor(\/|$)/.test(location.pathname);
+  // La page servie et la clé de rangement portent le nom du panneau : un
+  // deuxième panneau, un jour, n'aura pas à déloger la place et la taille de
+  // celui-ci — ni à faire re-signer quoi que ce soit pour ça.
+  var PAN_PAGE = "roll20-narration.html";
+  var PAN_CLE = "jjkPanneau:" + PAN_PAGE;
+  var PAN_ACTIF = "jjkPanneauActif";   // interrupteur du popup (absent = allumé)
+  var PAN_DEF = { ouvert: false, x: 62, y: 60, w: 380, h: 330 };
+  var PAN_MIN_W = 260, PAN_MIN_H = 190;
+  var panEtat = null, panBoite = null, panCorps = null, panBtn = null, panTitre = null, panEcrit = null;
+
+  function panNombre(v, def) { var n = parseInt(v, 10); return isFinite(n) ? n : def; }
+  // La largeur se borne AVANT l'abscisse, et l'abscisse tient compte de la
+  // largeur retenue : les borner séparément laissait un panneau large posé au
+  // bord droit déborder de la fenêtre (état hérité d'un grand écran, fenêtre
+  // rétrécie ensuite). En hauteur on ne retient que la barre de titre : un
+  // panneau plus haut que la fenêtre doit pouvoir dépasser par le bas, sinon il
+  // remonterait tout seul dès qu'on réduit la fenêtre.
+  function panBorne(e) {
+    var vw = window.innerWidth || 1200, vh = window.innerHeight || 800;
+    e.w = Math.max(PAN_MIN_W, Math.min(e.w, Math.max(PAN_MIN_W, vw - 20)));
+    e.h = Math.max(PAN_MIN_H, Math.min(e.h, Math.max(PAN_MIN_H, vh - 20)));
+    e.x = Math.max(0, Math.min(e.x, Math.max(0, vw - e.w)));
+    e.y = Math.max(0, Math.min(e.y, Math.max(0, vh - 28)));
+    return e;
+  }
+  // L'état ne vaut pas une écriture par pixel parcouru : on attend la fin du
+  // geste (le storage est asynchrone, et Roll20 n'a pas besoin de ça).
+  function panRange() {
+    if (panEcrit) clearTimeout(panEcrit);
+    panEcrit = setTimeout(function () {
+      panEcrit = null;
+      try {
+        var o = {};
+        o[PAN_CLE] = panEtat;
+        browser.storage.local.set(o);
+      } catch (e) {}
+    }, 400);
+  }
+  function panApplique() {
+    if (!panBoite) return;
+    panBoite.style.left = panEtat.x + "px";
+    panBoite.style.top = panEtat.y + "px";
+    // replié, le panneau se réduit à son étiquette : une barre de 380 px de
+    // large pour un seul mot occuperait le haut de la carte pour rien
+    panBoite.style.width = panEtat.ouvert ? panEtat.w + "px" : "auto";
+    panBoite.style.height = panEtat.ouvert ? panEtat.h + "px" : "auto";
+    panBoite.classList.toggle("jjk-panneau-replie", !panEtat.ouvert);
+    if (panBtn) {
+      panBtn.textContent = panEtat.ouvert ? "–" : "+";
+      panBtn.title = panEtat.ouvert ? "Replier le plateau" : "Déplier le plateau";
+    }
+  }
+  // L'iframe est créée UNE FOIS et ne meurt plus : au repli elle est masquée,
+  // pas détruite. Détruire une fenêtre et en refaire une à chaque pli mangeait
+  // une place dans la table des liaisons du pont (source <-> personnage), qui
+  // n'en compte que soixante-quatre : au bout d'une soirée de plis, le pont
+  // refusait tout, plateau ET fiches. Masquée, elle voit sa fenêtre tomber à
+  // zéro pixel, ce que la page distante reconnaît pour cesser d'interroger
+  // Roll20 — cette décision-là lui appartient, et reste donc modifiable sans
+  // signature.
+  function panRemplit() {
+    if (!panCorps || panCorps.firstChild) return;
+    var f = el("iframe", "jjk-panneau-frame");
+    f.src = browser.runtime.getURL("panneau.html") +
+            "#p=" + PAN_PAGE + "&n=" + (detectNight() ? "1" : "0");
+    f.setAttribute("allow", "clipboard-write");
+    panCorps.appendChild(f);
+    // pas d'injection du pont ici : la page distante le réclame elle-même
+    // (need-bridge), et le fichier tient à ne rien injecter de son propre chef
+  }
+  function panOuvre(ouvert) {
+    panEtat.ouvert = !!ouvert;
+    panApplique();
+    if (panEtat.ouvert) panRemplit();
+    panRange();
+  }
+  // Un geste (déplacement ou redimensionnement) se fait à la CAPTURE DE
+  // POINTEUR : la page de Roll20 est pleine d'iframes (chaque dialogue de
+  // personnage en est une), et des écouteurs posés sur le document perdaient le
+  // pointeur dès qu'il passait au-dessus de l'une d'elles. Le geste ne se
+  // terminait alors jamais : le panneau restait inerte, sans que rien ne le
+  // dise. La capture suit le pointeur partout, y compris hors de la fenêtre, et
+  // le relâchement revient toujours.
+  var panGesteEnCours = false;
+  function panGeste(ev, bouge) {
+    if (panGesteEnCours || (ev.button != null && ev.button !== 0)) return;
+    panGesteEnCours = true;
+    var cible = ev.currentTarget;
+    var x0 = ev.clientX, y0 = ev.clientY;
+    var e0 = { x: panEtat.x, y: panEtat.y, w: panEtat.w, h: panEtat.h };
+    panBoite.classList.add("jjk-panneau-geste");
+    function suit(m) {
+      var dx = m.clientX - x0, dy = m.clientY - y0;
+      if (bouge) { panEtat.x = e0.x + dx; panEtat.y = e0.y + dy; }
+      else { panEtat.w = e0.w + dx; panEtat.h = e0.h + dy; }
+      panBorne(panEtat);
+      panApplique();
+    }
+    function fin() {
+      if (!panGesteEnCours) return;
+      panGesteEnCours = false;
+      cible.removeEventListener("pointermove", suit);
+      cible.removeEventListener("pointerup", fin);
+      cible.removeEventListener("pointercancel", fin);
+      window.removeEventListener("blur", fin);
+      try { cible.releasePointerCapture(ev.pointerId); } catch (e) {}
+      panBoite.classList.remove("jjk-panneau-geste");
+      panRange();
+    }
+    try { cible.setPointerCapture(ev.pointerId); } catch (e) {}
+    cible.addEventListener("pointermove", suit);
+    cible.addEventListener("pointerup", fin);
+    cible.addEventListener("pointercancel", fin);
+    window.addEventListener("blur", fin);
+    ev.preventDefault();
+    ev.stopPropagation();
+  }
+  function panMonte(etat) {
+    if (document.getElementById("jjk-panneau")) return;
+    panEtat = panBorne(etat);
+    panBoite = el("div", "jjk-panneau");
+    panBoite.id = "jjk-panneau";
+
+    var tete = el("div", "jjk-panneau-tete");
+    panTitre = el("span", "jjk-panneau-titre", "Narration");
+    tete.appendChild(panTitre);
+    panBtn = el("button", "jjk-panneau-btn", "–");
+    panBtn.type = "button";
+    panBtn.addEventListener("pointerdown", function (ev) { ev.stopPropagation(); });
+    panBtn.addEventListener("click", function (ev) {
+      ev.preventDefault(); ev.stopPropagation();
+      panOuvre(!panEtat.ouvert);
+    });
+    tete.appendChild(panBtn);
+    tete.addEventListener("pointerdown", function (ev) { panGeste(ev, true); });
+    panBoite.appendChild(tete);
+
+    panCorps = el("div", "jjk-panneau-corps");
+    panBoite.appendChild(panCorps);
+
+    var grip = el("div", "jjk-panneau-grip");
+    grip.title = "Redimensionner";
+    grip.addEventListener("pointerdown", function (ev) { panGeste(ev, false); });
+    panBoite.appendChild(grip);
+
+    document.body.appendChild(panBoite);
+    panApplique();
+    // Rouvert d'une session à l'autre : on attend que la partie ait FINI de
+    // charger avant de monter l'iframe. C'est un événement, pas un nombre de
+    // millisecondes choisi au doigt mouillé — et le pont, lui, n'est plus posé
+    // d'ici du tout.
+    if (panEtat.ouvert) {
+      if (document.readyState === "complete") setTimeout(panRemplit, 400);
+      else window.addEventListener("load", function () { setTimeout(panRemplit, 400); });
+    }
+    window.addEventListener("resize", function () { panBorne(panEtat); panApplique(); });
+  }
+  function panDefaut() {
+    return { ouvert: PAN_DEF.ouvert, x: PAN_DEF.x, y: PAN_DEF.y, w: PAN_DEF.w, h: PAN_DEF.h };
+  }
+  function panDemarre() {
+    try {
+      browser.storage.local.get([PAN_CLE, PAN_ACTIF]).then(function (r) {
+        // l'interrupteur du popup : une partie Roll20 qui n'a rien à voir avec
+        // JJK ne doit pas se voir imposer une étiquette à demeure
+        if (r && r[PAN_ACTIF] === false) return;
+        var e = (r && r[PAN_CLE]) || {};
+        panMonte({
+          ouvert: !!e.ouvert,
+          x: panNombre(e.x, PAN_DEF.x), y: panNombre(e.y, PAN_DEF.y),
+          w: panNombre(e.w, PAN_DEF.w), h: panNombre(e.h, PAN_DEF.h)
+        });
+      }, function () { panMonte(panDefaut()); });
+    } catch (e) {
+      panMonte(panDefaut());
+    }
+  }
+
   if (IS_TOP) {
     // FRAME DU HAUT : on n'injecte RIEN au chargement (l'injection main-world gênait
     // l'ouverture des fiches Roll20). On attend que l'utilisateur ouvre l'onglet
@@ -499,6 +691,23 @@ if (typeof browser === "undefined") { var browser = chrome; }
           return;
         }
         rememberSheet(ev.source);
+        // Le panneau règle sa propre taille : c'est LA page servie par le site
+        // qui sait ce qu'elle a à montrer, et le châssis ne doit pas devenir la
+        // pièce qu'il faut re-signer pour élargir un plateau. Les valeurs sont
+        // bornées ici, comme tout ce qui vient d'une page.
+        if (d.type === "panneau") {
+          if (!panEtat) return;
+          // le titre appartient à la page : elle peut se renommer sans qu'on
+          // touche à l'extension
+          if (d.titre != null && panTitre) panTitre.textContent = String(d.titre).slice(0, 40);
+          if (d.w != null) panEtat.w = panNombre(d.w, panEtat.w);
+          if (d.h != null) panEtat.h = panNombre(d.h, panEtat.h);
+          panBorne(panEtat);
+          if (d.replie != null) { panOuvre(!d.replie); return; }
+          panApplique();
+          panRange();
+          return;
+        }
         if (d.type === "need-bridge") injectPageScript();
         else if (d.type === "roll") {
           if (!sendToChat(document, rollCommand(d.die, d.value, d.label)) && IS_POPOUT) relayToOpener(d);
@@ -517,6 +726,8 @@ if (typeof browser === "undefined") { var browser = chrome; }
     });
     // popout : la barre d'onglets de la fiche vit dans CE document, on y pose l'onglet.
     if (IS_POPOUT) startScan();
+    // la partie elle-même (et elle seule) reçoit le panneau flottant
+    if (IS_EDITEUR) panDemarre();
   } else {
     startScan();
   }

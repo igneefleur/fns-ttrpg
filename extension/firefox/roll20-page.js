@@ -66,10 +66,24 @@
   // delà on REFUSE au lieu de recycler une entrée (recycler rouvrirait la
   // porte : il suffirait d'inonder le pont pour se relier ailleurs).
   var srcFrames = [], srcIds = [], MAX_SRC = 64;
+  // Les fenêtres MORTES quittent la table. Sans ce ménage, chaque cadre détruit
+  // (une fiche qu'on ferme et rouvre, un panneau qu'on replie) gardait sa place
+  // pour toujours : au soixante-cinquième, le pont refusait toute nouvelle
+  // liaison et TOUT se figeait en silence — le plateau comme les fiches
+  // ouvertes ensuite. Une fenêtre détruite rend closed = true, ou refuse qu'on
+  // la lise : les deux cas se traitent pareil.
+  function menage() {
+    for (var i = srcFrames.length - 1; i >= 0; i--) {
+      var mort;
+      try { mort = !srcFrames[i] || srcFrames[i].closed; } catch (e) { mort = true; }
+      if (mort) { srcFrames.splice(i, 1); srcIds.splice(i, 1); }
+    }
+  }
   function lier(src, id) {
     if (!src || !id) return false;
     var i = srcFrames.indexOf(src);
     if (i >= 0) return srcIds[i] === id;
+    menage();
     if (srcFrames.length >= MAX_SRC) return false;
     srcFrames.push(src); srcIds.push(id);
     return true;
@@ -191,6 +205,45 @@
     return out;
   }
 
+  // ---------- plateau de Narration ----------
+  // Le plateau partagé vit dans les Attributes d'un personnage nommé
+  // « Narration », que le MJ rend contrôlable par tous les joueurs : c'est le
+  // SEUL objet d'une campagne où chacun a lecture et écriture (un joueur ne
+  // peut pas lire la fiche d'un autre joueur).
+  //
+  // Le panneau ne connaît aucun identifiant : il demande ICI lequel c'est.
+  // C'est le pont qui choisit, jamais la page, et il ne sait désigner que
+  // celui-là : le verrou source <-> personnage garde ainsi tout son sens, une
+  // frame ne pouvant se lier qu'à un personnage qu'on lui a nommé. Que
+  // n'importe qui puisse ensuite écrire ce plateau n'est pas une faiblesse,
+  // c'est sa raison d'être — comme la table où chacun peut tendre le bras.
+  var NARR_NOM = "narration";
+  function narrationChar() {
+    var c = campaign(), ms = (c && c.characters && c.characters.models) || [];
+    for (var i = 0; i < ms.length; i++) {
+      var n = ms[i].get ? ms[i].get("name") : (ms[i].attributes || {}).name;
+      if (String(n == null ? "" : n).replace(/\s+/g, " ").trim().toLowerCase() === NARR_NOM) return ms[i];
+    }
+    return null;
+  }
+  // Le panneau a besoin de savoir s'il peut pousser les jetons ou seulement les
+  // regarder : Roll20 refuse l'écriture côté serveur, en silence, et un plateau
+  // qui ne bouge pas sans dire pourquoi serait incompréhensible.
+  //
+  // Le pont rend la MATIÈRE, pas la conclusion : qui je suis, si je suis MJ, et
+  // la liste brute des contrôleurs. C'est la page servie par le site qui tranche
+  // — le jour où Roll20 renomme un de ces globaux (aucun n'est documenté), la
+  // réparation est un déploiement, pas une signature.
+  function droits(ch) {
+    var d = { gm: false, moi: "", controlledby: "" };
+    try { d.gm = window.is_gm === true; } catch (e) {}
+    try { d.moi = String((window.currentPlayer && window.currentPlayer.id) || ""); } catch (e) {}
+    try {
+      d.controlledby = String((ch.get ? ch.get("controlledby") : (ch.attributes || {}).controlledby) || "");
+    } catch (e) {}
+    return d;
+  }
+
   // Écouteur PASSIF : n'agit QUE sur nos messages (ns:"jjk" + charId), qui ne sont
   // émis que sur interaction (ouverture de l'onglet Fiche JJK). On NE poste RIEN de
   // spontané au chargement — Roll20 ouvre ses fiches via postMessage, un message
@@ -203,6 +256,26 @@
       // la liste des joueurs ne dépend d'aucun personnage : traitée AVANT le
       // filtre charId
       if (d.type === "players") { reply(ev, { type: "players-result", players: players() }); return; }
+      // le plateau de Narration ne dépend d'aucun personnage CONNU du panneau :
+      // c'est justement ce qu'il vient demander, donc avant le filtre charId
+      if (d.type === "narration-char") {
+        // « pas de plateau » et « campagne pas encore chargée » ne se disent pas
+        // pareil : au démarrage, characters est vide pendant une seconde ou
+        // deux, et annoncer l'absence ferait afficher un écran d'erreur pour
+        // rien (même prudence que has-sheet, qui répond exists:null).
+        var nc = narrationChar();
+        var rep = { type: "narration-char-result", pret: !!campaign(), charId: null, nom: "" };
+        if (nc) {
+          rep.charId = nc.id;
+          rep.nom = String((nc.get ? nc.get("name") : "") || "");
+          var dr = droits(nc);
+          rep.gm = dr.gm;
+          rep.moi = dr.moi;
+          rep.controlledby = dr.controlledby;
+        }
+        reply(ev, rep);
+        return;
+      }
       if (!d.charId) return;
       if (d.type === "has-sheet") {
         // perso injoignable (Campaign pas prêt, opener fermé...) : exists:null

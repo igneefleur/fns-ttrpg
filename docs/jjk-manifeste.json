@@ -7,6 +7,14 @@
     "javascripts/jjk-attr-map.js?v=41",
     "javascripts/jjk-roll20-boot.js?v=41"
   ],
+  "narration": {
+    "js": [
+      "javascripts/jjk-narration.js?v=1"
+    ],
+    "css": [
+      "stylesheets/jjk-narration.css?v=1"
+    ]
+  },
   "bundle": {
     "js": [
       "javascripts/jjk-migrations.js?v=41",

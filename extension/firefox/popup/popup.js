@@ -30,4 +30,16 @@ if (typeof browser === "undefined") { var browser = chrome; }
     var on = beta.checked;
     browser.storage.local.set({ jjkBeta: on }).then(function () { appliquerMode(on); });
   });
+
+  // Plateau de Narration : le panneau flottant posé dans la partie. Allumé tant
+  // qu'on ne l'a pas éteint (clé absente = allumé) — une partie Roll20 qui n'a
+  // rien à voir avec JJK doit pouvoir s'en débarrasser sans désinstaller.
+  var panneau = document.getElementById("p-panneau");
+  browser.storage.local.get("jjkPanneauActif").then(
+    function (r) { panneau.checked = !(r && r.jjkPanneauActif === false); },
+    function () { panneau.checked = true; }
+  );
+  panneau.addEventListener("change", function () {
+    browser.storage.local.set({ jjkPanneauActif: panneau.checked });
+  });
 })();

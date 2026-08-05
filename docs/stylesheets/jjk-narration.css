@@ -1,0 +1,194 @@
+/* Plateau de Narration — la table posée dans un coin de Roll20.
+ *
+ * Ce n'est pas une fiche : c'est un PLATEAU, et il doit s'en souvenir. Des
+ * jetons qu'on pousse du doigt, des places où les poser, rien à saisir, rien à
+ * valider. Le compte de chacun ne s'écrit nulle part : il se lit en regardant
+ * où sont les jetons, exactement comme sur la table de la partie.
+ *
+ * Tailles en PIXELS, et non en rem comme la fiche : c'est un widget de taille
+ * fixe posé dans l'interface d'un autre site, pas un document qui se lit. Le
+ * rem le ferait dépendre de la police racine du navigateur, et le panneau
+ * changerait de proportions d'un joueur à l'autre.
+ *
+ * La palette est celle du livre (jjk-fiche.css), jour et nuit, recopiée ici :
+ * cette page ne charge rien d'autre, elle doit tenir seule. */
+
+:root {
+  --paper:   #faf6eb;
+  --bg-side: #e4ddcd;
+  --card:    #fffdf6;
+  --panel:   #f6efdd;
+  --hair:    #e2d8c0;
+  --line:    #c6bb9f;
+  --line-2:  #d6cbb1;
+  --ink:     #20180c;
+  --ink-2:   #453d2d;
+  --ink-3:   #746a54;
+  --red:     #a5271c;
+  --red-deep:#7c130c;
+  --or:      #d8ac3f;   /* le jeton */
+  --or-fond: #f2d891;
+  --or-ombre:#8c6a17;
+  /* Diamètre du jeton, posé par le script d'après la largeur du plateau : les
+     jetons grossissent avec le panneau, sinon ils se perdent quand on l'agrandit. */
+  --jeton: 22px;
+}
+html.night {
+  color-scheme: dark;
+  --paper:   #201c15;
+  --bg-side: #14110c;
+  --card:    #262119;
+  --panel:   #2f2a20;
+  --hair:    #39332a;
+  --line:    #4f4838;
+  --line-2:  #453e31;
+  --ink:     #eee4cf;
+  --ink-2:   #cbc2ac;
+  --ink-3:   #978d77;
+  --red:     #c65540;
+  --red-deep:#dd7461;
+  --or:      #c79a30;
+  --or-fond: #e0c47a;
+  --or-ombre:#6a4f0f;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0; overflow: hidden;
+  background: var(--bg-side); color: var(--ink);
+  font-family: 'Alegreya', 'EB Garamond', Garamond, serif;
+  font-size: 13px; line-height: 1.35;
+  /* Roll20 sert le panneau dans une iframe : aucune sélection de texte
+     intempestive pendant qu'on pousse un jeton. */
+  -webkit-user-select: none; user-select: none;
+}
+
+/* ---------- ossature ---------- */
+/* `position: relative` n'est pas décoratif : les deux couches qui se posent
+   par-dessus le plateau (le voile des réglages, l'écran d'attente) sont en
+   `inset: 0` et doivent se caler sur CE bloc, pas sur la fenêtre. */
+#nb { position: relative; display: flex; flex-direction: column; height: 100%; }
+.nb-barre {
+  flex: 0 0 auto; display: flex; align-items: center; gap: 6px;
+  padding: 3px 6px; background: var(--panel); border-bottom: 1px solid var(--line-2);
+  font-size: 11px; color: var(--ink-3); white-space: nowrap;
+}
+.nb-barre .nb-total { color: var(--ink-2); }
+.nb-barre .nb-libres { margin-left: auto; }
+.nb-btn {
+  flex: 0 0 auto; border: 1px solid var(--line-2); background: var(--card);
+  color: var(--ink-2); font: inherit; font-size: 11px; line-height: 1;
+  padding: 3px 7px; border-radius: 5px; cursor: pointer;
+}
+.nb-btn:hover { background: var(--panel); color: var(--ink); }
+.nb-btn.on { border-color: var(--red); color: var(--red); }
+
+/* ---------- le plateau ---------- */
+/* MJ à gauche, joueurs à droite : la disposition de la vraie table, où le MJ a
+   sa réserve d'un côté et les joueurs la leur en face. */
+.nb-plateau { position: relative; flex: 1 1 auto; min-height: 0; display: flex; gap: 4px; padding: 4px; }
+.nb-cote { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.nb-cote-mj { flex: 0 0 42%; }
+/* Les places des joueurs sont une GRILLE, dont le script décide le nombre de
+   colonnes d'après la hauteur disponible : empilées en colonne, huit joueurs
+   sortaient par le bas du plateau, invisibles et hors d'atteinte. */
+.nb-cote-joueurs { flex: 1 1 auto; display: grid; gap: 4px; min-height: 0; }
+
+/* Une PLACE : la zone où l'on pose les jetons de quelqu'un. Elle ne réclame
+   rien, elle se contente d'exister ; c'est la position du jeton qui décide, pas
+   un champ « propriétaire ». */
+.nb-place {
+  position: relative; flex: 1 1 0; min-height: 34px; overflow: hidden;
+  border: 1px solid var(--line-2); border-radius: 7px;
+  background: var(--card);
+}
+.nb-place-mj {
+  /* La réserve du MJ : le parchemin de la carte, comme sur la table. */
+  background:
+    radial-gradient(120% 90% at 20% 15%, rgba(255,255,255,.5), transparent 60%),
+    linear-gradient(140deg, #f0e4c6 0%, #e8d9b4 45%, #efe3c6 100%);
+}
+html.night .nb-place-mj {
+  background:
+    radial-gradient(120% 90% at 20% 15%, rgba(255,255,255,.06), transparent 60%),
+    linear-gradient(140deg, #2a2418 0%, #221d13 45%, #2b2519 100%);
+}
+/* la place que le jeton survole pendant qu'on le déplace */
+.nb-place.vise { border-color: var(--red); box-shadow: inset 0 0 0 1px var(--red); }
+
+.nb-place-nom {
+  position: absolute; left: 6px; bottom: 4px; max-width: calc(100% - 52px);
+  font-size: 11px; font-weight: 600; color: var(--ink-2);
+  text-shadow: 0 1px 0 rgba(255,255,255,.55);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+html.night .nb-place-nom { text-shadow: 0 1px 0 rgba(0,0,0,.5); }
+.nb-place-compte {
+  position: absolute; right: 5px; bottom: 4px;
+  min-width: 17px; height: 17px; padding: 0 4px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--panel); border: 1px solid var(--line-2);
+  font-size: 11px; font-variant-numeric: tabular-nums; color: var(--ink-2);
+}
+.nb-place-compte.zero { opacity: .45; }
+/* Le portrait : posé en haut à droite, jamais en fond — les jetons doivent
+   rester lisibles par-dessus, et un portrait sombre les avalerait. */
+.nb-place-portrait {
+  position: absolute; right: 4px; top: 4px; width: 34px; height: 34px;
+  border-radius: 6px; border: 1px solid var(--line-2); background: var(--panel);
+  object-fit: cover; pointer-events: none;
+}
+.nb-place-mj .nb-place-portrait { width: 42px; height: 42px; }
+
+/* ---------- les jetons ---------- */
+/* Ils vivent dans une couche unique au-dessus des places : un jeton n'est
+   « à » personne, il est POSÉ quelque part. Ses coordonnées sont des millièmes
+   du plateau, donc redimensionner le panneau ne déplace rien. */
+.nb-jetons { position: absolute; inset: 4px; pointer-events: none; }
+.nb-jeton {
+  position: absolute; width: var(--jeton); height: var(--jeton);
+  margin-left: calc(var(--jeton) / -2); margin-top: calc(var(--jeton) / -2);
+  border-radius: 50%; pointer-events: auto; cursor: grab; touch-action: none;
+  display: flex; align-items: center; justify-content: center;
+  background:
+    radial-gradient(circle at 34% 30%, var(--or-fond) 0%, var(--or) 62%, var(--or-ombre) 100%);
+  border: 1px solid var(--or-ombre);
+  box-shadow: 0 1px 2px rgba(0,0,0,.35);
+  color: #5a4210; font-size: calc(var(--jeton) * .23); letter-spacing: -.02em;
+  overflow: hidden;
+}
+.nb-jeton span { transform: scale(.92); white-space: nowrap; }
+.nb-jeton:active { cursor: grabbing; }
+/* jeton en cours de déplacement : il se soulève de la table */
+.nb-jeton.prise { box-shadow: 0 4px 7px rgba(0,0,0,.4); z-index: 5; cursor: grabbing; }
+/* Un jeton qui arrive d'ailleurs (un autre joueur l'a poussé) glisse jusqu'à sa
+   nouvelle place : sans cela il téléporte, et on ne voit pas qui bouge quoi. */
+.nb-jeton.glisse { transition: left .35s ease, top .35s ease; }
+
+/* ---------- réglages, états ---------- */
+.nb-voile {
+  position: absolute; inset: 0; z-index: 20; overflow: auto;
+  background: var(--paper); padding: 8px;
+}
+.nb-voile h2 { margin: 0 0 6px; font-size: 13px; font-weight: 700; color: var(--ink-2); }
+.nb-ligne { display: flex; align-items: center; gap: 5px; margin-bottom: 4px; }
+.nb-ligne input[type="text"], .nb-ligne input[type="number"] {
+  min-width: 0; border: 1px solid var(--line-2); border-radius: 4px;
+  background: var(--card); color: var(--ink); font: inherit; font-size: 12px; padding: 2px 4px;
+}
+.nb-ligne .nom { flex: 1 1 40%; }
+.nb-ligne .img { flex: 1 1 60%; }
+.nb-ligne input[type="number"] { width: 52px; text-align: center; }
+.nb-ligne .nb-lab { flex: 0 0 auto; font-size: 11px; color: var(--ink-3); }
+.nb-actions { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+.nb-aide { font-size: 11px; color: var(--ink-3); line-height: 1.4; margin: 6px 0 0; }
+.nb-aide code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 10px; color: var(--ink-2); }
+.nb-etat {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 7px; padding: 10px;
+  text-align: center; font-size: 12px; color: var(--ink-2); background: var(--paper);
+}
+.nb-etat .nb-titre { font-weight: 700; }
+.nb-etat .nb-detail { font-size: 11px; color: var(--ink-3); max-width: 24em; }
+.nb-cache { display: none !important; }
