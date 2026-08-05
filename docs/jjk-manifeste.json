@@ -1,21 +1,21 @@
 {
   "_lisezmoi": "Manifeste de la fiche JJK. C'est LUI qui dit quoi charger. roll20-fiche.html est un amorceur gelé, servi sans ?v= par la coquille signée et gardé dix minutes par GitHub Pages : il ne peut donc pas nommer les fichiers lui-même sans risquer de les figer. Ce manifeste, lui, se relit sans cache à chaque ouverture. Toutes les URL sont RELATIVES à la racine du site ; une URL absolue est refusée.",
-  "release": "3.4.0",
+  "release": "3.5.0",
   "schema": 3,
   "blocage": "release",
   "amorce": [
-    "javascripts/jjk-attr-map.js?v=40",
-    "javascripts/jjk-roll20-boot.js?v=40"
+    "javascripts/jjk-attr-map.js?v=41",
+    "javascripts/jjk-roll20-boot.js?v=41"
   ],
   "bundle": {
     "js": [
-      "javascripts/jjk-migrations.js?v=40",
-      "javascripts/jjk-mods.js?v=40",
-      "javascripts/jjk-fiche.js?v=40"
+      "javascripts/jjk-migrations.js?v=41",
+      "javascripts/jjk-mods.js?v=41",
+      "javascripts/jjk-fiche.js?v=41"
     ],
     "css": [
-      "stylesheets/jjk-fiche.css?v=40",
-      "stylesheets/jjk-roll20.css?v=40"
+      "stylesheets/jjk-fiche.css?v=41",
+      "stylesheets/jjk-roll20.css?v=41"
     ],
     "data": null
   },
@@ -117,6 +117,20 @@
       ],
       "attrmap": "fiche/v3.4.0/jjk-attr-map.js",
       "data": "fiche/v3.4.0/jjk-creation.json"
+    },
+    "3.5.0": {
+      "schema": 3,
+      "js": [
+        "fiche/v3.5.0/jjk-migrations.js",
+        "fiche/v3.5.0/jjk-mods.js",
+        "fiche/v3.5.0/jjk-fiche.js"
+      ],
+      "css": [
+        "fiche/v3.5.0/jjk-fiche.css",
+        "fiche/v3.5.0/jjk-roll20.css"
+      ],
+      "attrmap": "fiche/v3.5.0/jjk-attr-map.js",
+      "data": "fiche/v3.5.0/jjk-creation.json"
     }
   }
 }
