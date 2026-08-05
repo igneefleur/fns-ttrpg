@@ -149,14 +149,20 @@ def _vitesses(text):
 
 
 def _vitesse_surcharge(text):
-    """La vitesse de celui dont la charge dépasse le Body (« passe à 6 m »).
+    """Le MALUS de vitesse de celui dont la charge dépasse le Body.
 
-    Elle ne vit pas dans la table des paliers mais dans la prose de la section
+    Il ne vit pas dans la table des paliers mais dans la prose de la section
     « Le poids ». La fiche ne doit écrire aucune valeur de règles, pas même
     celle-là : elle passe donc par les données, comme les paliers eux-mêmes.
     None si la phrase change de forme, et le build le dit alors en clair.
+
+    La phrase énonce désormais le malus lui-même (« notre vitesse diminue de
+    3 m », arbitrage du MJ du 2026-08-04). L'ancienne forme, qui annonçait la
+    vitesse RÉSULTANTE (« notre vitesse passe à 6 m »), n'a plus cours : elle
+    supposait un palier toujours ramené au premier, ce que le poids ne fait
+    plus puisqu'il ne descend plus le Body dans la table.
     """
-    m = re.search(r"vitesse passe à\s*(\d+(?:\.\d+)?)\s*m", text)
+    m = re.search(r"vitesse diminue de\s*(\d+(?:\.\d+)?)\s*m", text)
     return f"{m.group(1)} m" if m else None
 
 

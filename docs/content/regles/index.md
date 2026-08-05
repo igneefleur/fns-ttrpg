@@ -280,9 +280,9 @@ De façon similaire aux armes, les armures auront une statistique d'invu croissa
 
 ### Le poids
 
-Un joueur additionne tout ce qu'il porte sur lui en termes de poids. Il obtient un total de poids qu'il devra soustraire à chaque jet de Body (autre que l'attaque et la parade) : l'esquive, la course, la nage, l'escalade subissent par exemple ce malus. On soustrait aussi ce malus au tableau de la vitesse en fonction du Body.
+Un joueur additionne tout ce qu'il porte sur lui en termes de poids. Il obtient un total de poids qu'il devra soustraire à chaque jet de Body (autre que l'attaque et la parade) : l'esquive, la course, la nage, l'escalade subissent par exemple ce malus.
 
-Si notre poids devient plus important que notre Body, notre vitesse passe à 6 m.
+Le poids porté ne change pas le Body qui sert à lire le tableau de la vitesse. En revanche, si notre poids devient plus important que notre Body, notre vitesse diminue de 3 m.
 
 Une fois votre poids total déterminé, vous l'arrondissez à l'inférieur à la dizaine près. Par conséquent, les malus de poids seront toujours des multiples de 10. Si à la fin de votre calcul, votre poids total est de 19, vous appliquez seulement −10 de Poids.
 

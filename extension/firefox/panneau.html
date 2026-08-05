@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Panneau JJK</title>
+  <!-- Coquille GÉNÉRIQUE des panneaux flottants (le plateau de Narration
+       aujourd'hui, autre chose demain). Cette page d'extension est immunisée
+       contre la CSP de Roll20, qui interdirait d'iframer le site directement
+       dans la page de la partie ; elle n'affiche rien elle-même : la page à
+       montrer est NOMMÉE DANS LE HASH (#p=…) par content-roll20.js et servie
+       par le site. Aucune re-signature ne sera donc nécessaire pour un panneau
+       de plus, ni pour faire évoluer celui-ci. La page distante parle
+       directement au pont d20 via window.top ; aucun relais ici.
+
+       PARTAGÉE par les deux parties : rien ici ne dépend du mode. C'est la
+       coquille chargée qui en dépend, et shell-loader.js la choisit d'après le
+       mode écrit dans le hash (&m=…) par content-roll20.js. Cette page ne nomme
+       donc plus panneau-shell.js. -->
+  <link rel="stylesheet" href="creator.css">
+</head>
+<body>
+  <iframe id="jjk-remote" allow="clipboard-write"></iframe>
+  <script src="shell-loader.js" data-coquille="panneau"></script>
+</body>
+</html>

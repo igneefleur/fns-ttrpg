@@ -23,6 +23,24 @@
  * La page distante (sous la coquille) dialogue DIRECTEMENT avec le page-script via
  * window.top (postMessage, réponses par ev.source) : ce content-script ne fait que
  * poser l'onglet, interroger has-sheet, et monter l'iframe avec le charId dans le hash.
+ *
+ * COPIE. Ce fichier existe DEUX FOIS, stable/content-roll20.js et
+ * beta/content-roll20.js, et les DEUX sont déclarées au manifeste : un script de
+ * contenu ne se charge pas à l'exécution (il faudrait un eval, refusé à la revue
+ * Mozilla, ou l'import dynamique, absent du manifeste V2). Les deux copies sont
+ * donc injectées dans chaque frame, et celle qui n'est pas du mode s'éteint sans
+ * avoir rien fait : voir la garde, tout en bas du fichier. Ce qui appartient à
+ * cette copie et à elle seule porte un commentaire en bout de ligne. Il y en a
+ * trois, pas une de plus : tout le reste doit rester rigoureusement identique
+ * d'un côté et de l'autre.
+ *
+ * TOUTE CORRECTION DE SÛRETÉ DOIT ÊTRE APPLIQUÉE AUX DEUX COPIES. La liste
+ * blanche du canal brut, le repli des sauts de ligne dans les commandes, le
+ * relais vers l'opener et le canal « Prendre » vivent désormais en double
+ * exemplaire : un correctif posé d'un seul côté laisse le trou grand ouvert de
+ * l'autre, et rien ne le signalera. C'est le prix de cette structure, et il se
+ * paie ici. scripts/build_extension.py --verifie compare mécaniquement les deux
+ * copies hors des lignes marquées : le lancer après toute correction.
  */
 // compat : Chrome expose `chrome.*`, Firefox `browser.*`.
 if (typeof browser === "undefined") { var browser = chrome; }
@@ -31,19 +49,21 @@ if (typeof browser === "undefined") { var browser = chrome; }
 
   var IS_TOP = (function () { try { return window.top === window; } catch (e) { return true; } })();
 
-  // Mode beta (réglage du popup) : la fiche vient du site de chantier. L'onglet
-  // le dit, pour qu'on sache toujours quelle version on remplit. La lecture du
-  // stockage est asynchrone : les onglets déjà posés sont relibellés à l'arrivée.
-  var BETA = false;
-  function libelleOnglet() { return BETA ? "Fiche JJK beta" : "Fiche JJK"; }
-  try {
-    browser.storage.local.get("jjkBeta").then(function (r) {
-      BETA = !!(r && r.jjkBeta);
-      if (!BETA) return;
-      Array.prototype.forEach.call(document.querySelectorAll(".jjk-tab a[data-tab='jjkfiche']"),
-        function (a) { a.textContent = libelleOnglet(); });
-    }, function () {});
-  } catch (e) {}
+  // ---------- ce que cette copie a de propre ----------
+  // MODE nomme la copie. Il voyage aussi dans le hash des coquilles (« &m=… »)
+  // pour que shell-loader.js n'ait pas à relire le mode dans le stockage : une
+  // seconde lecture serait une seconde course, et on a vu l'onglet annoncer
+  // « Fiche JJK beta » avec la fiche stable dedans parce que l'utilisateur avait
+  // basculé entre les deux lectures. Ici, la copie qui construit l'adresse dicte
+  // la coquille, et il n'y a plus rien à accorder.
+  //
+  // LIBELLE est figé, alors qu'il se posait autrefois après coup : le stockage
+  // répondait parfois APRÈS la construction de l'écran « pas encore de fiche »,
+  // dont le titre restait « Fiche JJK » même en beta. Plus rien n'est construit
+  // avant que le mode soit connu, le défaut disparaît de lui-même.
+  var MODE = "stable";                                   // propre à cette copie
+  var LIBELLE = "Fiche JJK";                             // propre à cette copie
+
   // Fenêtre popout d'une fiche : la barre d'onglets vit dans le document du HAUT
   // (aucune iframe de dialogue), il faut donc y poser l'onglet nous-mêmes.
   var IS_POPOUT = IS_TOP && /^\/editor\/character\/[^/]+\//.test(location.pathname);
@@ -151,13 +171,26 @@ if (typeof browser === "undefined") { var browser = chrome; }
   // Marqueur DURABLE sur <html> : la balise <script> se retire à l'onload, un
   // getElementById laissait donc chaque need-bridge (une fiche ouverte de plus)
   // réinjecter un pont -> écouteurs en double -> écritures d'attributs en double.
+  //
+  // Le marqueur data-jjk-bridge est COMMUN aux deux copies, tout comme le
+  // window.__jjkBridge du pont lui-même : c'est délibéré. Un marqueur qui
+  // porterait le mode laisserait un utilisateur ayant basculé sans recharger sa
+  // partie se retrouver avec DEUX ponts dans le monde principal : chaque save
+  // écrit deux fois dans les Attributes, chaque has-sheet répond deux fois, et la
+  // table des liaisons du pont, qui ne compte que soixante-quatre places, se
+  // remplit deux fois plus vite. Le prix de ce choix : le pont déjà posé reste
+  // celui de l'ancien mode jusqu'au rechargement de la page.
+  //
+  // L'adresse est écrite en toutes lettres, jamais assemblée : concaténée, elle
+  // deviendrait invisible au contrôle de complétude comme à l'analyse statique
+  // d'AMO, qui ne savent lire que des littéraux.
   function injectPageScript() {
     var root = document.documentElement;
     if (!root || root.hasAttribute("data-jjk-bridge")) return;
     root.setAttribute("data-jjk-bridge", "1");
     var s = document.createElement("script");
     s.id = "jjk-page-bridge";
-    s.src = browser.runtime.getURL("roll20-page.js");
+    s.src = browser.runtime.getURL("stable/roll20-page.js");   // propre à cette copie
     s.onload = function () { this.remove(); };   // le listener reste actif, on retire la balise
     (document.head || root).appendChild(s);
   }
@@ -246,10 +279,15 @@ if (typeof browser === "undefined") { var browser = chrome; }
     } catch (e) {}
     return false;
   }
+  // creator.html est PARTAGÉE par les deux parties : rien dedans ne dépend du
+  // mode, seule la coquille qu'elle charge en dépend. Le mode lui arrive donc
+  // dans le hash (« &m=… »), d'où shell-loader.js le lit sans rien demander au
+  // stockage. Le hash entier descend ensuite jusqu'à la page du site, qui ignore
+  // ce qu'elle ne connaît pas.
   function creatorFrame(charId) {
     var f = el("iframe", "jjk-creator-frame");
     f.src = browser.runtime.getURL("creator.html") + "#c=" + encodeURIComponent(charId || "") +
-            "&n=" + (detectNight() ? "1" : "0");
+            "&n=" + (detectNight() ? "1" : "0") + "&m=" + MODE;
     f.setAttribute("allow", "clipboard-write");
     return f;
   }
@@ -286,7 +324,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
   function fillButton(host, charId, exists) {
     host.innerHTML = "";
     var wrap = el("div", "jjk-create");
-    wrap.appendChild(el("div", "jjk-create-title", libelleOnglet()));
+    wrap.appendChild(el("div", "jjk-create-title", LIBELLE));
     wrap.appendChild(el("p", "jjk-create-msg",
       exists === null
         ? "Roll20 n'a pas encore répondu (personnage non prêt). Ouvrir la fiche JJK :"
@@ -378,7 +416,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
       if (nativeA && nativeA.className) a.className = nativeA.className;
       a.setAttribute("href", "javascript:void(0);");
       a.setAttribute("data-tab", "jjkfiche");
-      a.textContent = libelleOnglet();
+      a.textContent = LIBELLE;
       tab.appendChild(a);
 
       var built = false;
@@ -470,54 +508,332 @@ if (typeof browser === "undefined") { var browser = chrome; }
       setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, 4000);
     } catch (e) {}
   }
-  document.addEventListener("click", function (e) {
-    var a = e.target && (e.target.tagName === "A" ? e.target
-            : (e.target.closest ? e.target.closest("a") : null));
-    if (!a) return;
-    var m = TAKE_RE.exec((a.getAttribute("href") || "").trim());
-    if (!m) return;
-    e.preventDefault(); e.stopPropagation();
-    if (!diffuseTake(m[1])) {
-      toast("Ouvre ta fiche JJK (onglet « Fiche JJK » du personnage), puis reclique « Prendre ».");
-    }
-  }, true);
-
-  if (IS_TOP) {
-    // FRAME DU HAUT : on n'injecte RIEN au chargement (l'injection main-world gênait
-    // l'ouverture des fiches Roll20). On attend que l'utilisateur ouvre l'onglet
-    // Fiche JJK (depuis une fiche déjà ouverte) : il pose alors le pont via need-bridge.
-    // Reçoit aussi les JETS de la fiche -> tchat Roll20 (le tchat vit dans cette frame,
-    // sauf popout : relais vers l'opener).
-    window.addEventListener("message", function (ev) {
-      try {
-        var d = ev.data;
-        if (!d || d.ns !== "jjk") return;
-        // « take » descend vers les fiches : ne jamais retenir sa source comme
-        // destinataire, sinon deux fenêtres se le renverraient sans fin
-        if (d.type === "take") {
-          if (d.payload) diffuseTake(d.payload);
-          return;
-        }
-        rememberSheet(ev.source);
-        if (d.type === "need-bridge") injectPageScript();
-        else if (d.type === "roll") {
-          if (!sendToChat(document, rollCommand(d.die, d.value, d.label)) && IS_POPOUT) relayToOpener(d);
-        } else if (d.type === "say") {
-          if (!sendToChat(document, sayCommand(d.title, d.fields)) && IS_POPOUT) relayToOpener(d);
-        } else if (d.type === "chat") {
-          // commande COMPOSÉE par la fiche (carte d'objet donné + lien « Prendre ») :
-          // envoyée telle quelle, sans rien en réécrire ici — son format vit
-          // côté site, qui peut donc évoluer sans re-signer l'extension. Seule
-          // la FORME est vérifiée (liste blanche), jamais le contenu.
-          var brut = String(d.raw || "");
-          if (!chatAutorise(brut)) return;   // hors liste blanche : rien ne part, ni ici ni à l'opener
-          if (!sendToChat(document, brut) && IS_POPOUT) relayToOpener(d);
-        }
-      } catch (e) {}
-    });
-    // popout : la barre d'onglets de la fiche vit dans CE document, on y pose l'onglet.
-    if (IS_POPOUT) startScan();
-  } else {
-    startScan();
+  // Cet écouteur se posait au chargement du fichier. Il ne peut plus : tant que
+  // le stockage n'a pas répondu, cette copie ignore si elle est celle du mode, et
+  // une copie éteinte qui écoute déjà les clics n'est pas éteinte du tout. Il est
+  // donc posé par demarre(), comme tous les autres effets.
+  function posePriseTake() {
+    document.addEventListener("click", function (e) {
+      var a = e.target && (e.target.tagName === "A" ? e.target
+              : (e.target.closest ? e.target.closest("a") : null));
+      if (!a) return;
+      var m = TAKE_RE.exec((a.getAttribute("href") || "").trim());
+      if (!m) return;
+      e.preventDefault(); e.stopPropagation();
+      if (!diffuseTake(m[1])) {
+        toast("Ouvre ta fiche JJK (onglet « Fiche JJK » du personnage), puis reclique « Prendre ».");
+      }
+    }, true);
   }
+
+  // ---------- panneau flottant : le plateau de Narration ----------
+  // Un panneau posé DANS la partie, en haut à gauche, que tous les joueurs
+  // voient : les jetons de narration s'y poussent d'une place à l'autre. Le
+  // contenu est servi par le site (roll20-narration.html) à travers la coquille
+  // générique panneau.html : tout ce qui suit est un CHÂSSIS, et rien d'autre —
+  // se déplacer, se redimensionner, se replier, se souvenir. Le plateau
+  // lui-même peut donc changer autant qu'il voudra sans re-signature.
+  //
+  // La place par défaut est mesurée sur l'interface de Roll20 : la barre
+  // d'outils tient la colonne x ∈ [20, 52], et la bande y ∈ [20, 54] revient
+  // aux actions de jeton, qui apparaissent dès qu'un jeton est sélectionné. Le
+  // panneau se pose donc juste à côté et juste en dessous — et se déplace de
+  // toute façon à la souris, sa place étant retenue par navigateur.
+  var IS_EDITEUR = IS_TOP && !IS_POPOUT && /^\/editor(\/|$)/.test(location.pathname);
+  // La page servie et la clé de rangement portent le nom du panneau : un
+  // deuxième panneau, un jour, n'aura pas à déloger la place et la taille de
+  // celui-ci — ni à faire re-signer quoi que ce soit pour ça.
+  //
+  // Ces deux clés restent COMMUNES aux deux copies, et c'est un choix : la place
+  // du panneau est une préférence d'affichage, la même main la déplace des deux
+  // côtés, et la suffixer par mode ferait oublier au plateau où il était posé à
+  // chaque bascule. PAN_ACTIF, lui, DOIT rester commun : le popup n'a qu'une
+  // case, et une clé par mode ferait qu'éteindre le plateau ne l'éteindrait que
+  // d'un côté.
+  var PAN_PAGE = "roll20-narration.html";
+  var PAN_CLE = "jjkPanneau:" + PAN_PAGE;
+  var PAN_ACTIF = "jjkPanneauActif";   // interrupteur du popup (absent = allumé)
+  var PAN_DEF = { ouvert: false, x: 62, y: 60, w: 380, h: 330 };
+  var PAN_MIN_W = 260, PAN_MIN_H = 190;
+  var panEtat = null, panBoite = null, panCorps = null, panBtn = null, panTitre = null, panEcrit = null;
+
+  function panNombre(v, def) { var n = parseInt(v, 10); return isFinite(n) ? n : def; }
+  // La largeur se borne AVANT l'abscisse, et l'abscisse tient compte de la
+  // largeur retenue : les borner séparément laissait un panneau large posé au
+  // bord droit déborder de la fenêtre (état hérité d'un grand écran, fenêtre
+  // rétrécie ensuite). En hauteur on ne retient que la barre de titre : un
+  // panneau plus haut que la fenêtre doit pouvoir dépasser par le bas, sinon il
+  // remonterait tout seul dès qu'on réduit la fenêtre.
+  function panBorne(e) {
+    var vw = window.innerWidth || 1200, vh = window.innerHeight || 800;
+    e.w = Math.max(PAN_MIN_W, Math.min(e.w, Math.max(PAN_MIN_W, vw - 20)));
+    e.h = Math.max(PAN_MIN_H, Math.min(e.h, Math.max(PAN_MIN_H, vh - 20)));
+    e.x = Math.max(0, Math.min(e.x, Math.max(0, vw - e.w)));
+    e.y = Math.max(0, Math.min(e.y, Math.max(0, vh - 28)));
+    return e;
+  }
+  // L'état ne vaut pas une écriture par pixel parcouru : on attend la fin du
+  // geste (le storage est asynchrone, et Roll20 n'a pas besoin de ça).
+  function panRange() {
+    if (panEcrit) clearTimeout(panEcrit);
+    panEcrit = setTimeout(function () {
+      panEcrit = null;
+      try {
+        var o = {};
+        o[PAN_CLE] = panEtat;
+        browser.storage.local.set(o);
+      } catch (e) {}
+    }, 400);
+  }
+  function panApplique() {
+    if (!panBoite) return;
+    panBoite.style.left = panEtat.x + "px";
+    panBoite.style.top = panEtat.y + "px";
+    // replié, le panneau se réduit à son étiquette : une barre de 380 px de
+    // large pour un seul mot occuperait le haut de la carte pour rien
+    panBoite.style.width = panEtat.ouvert ? panEtat.w + "px" : "auto";
+    panBoite.style.height = panEtat.ouvert ? panEtat.h + "px" : "auto";
+    panBoite.classList.toggle("jjk-panneau-replie", !panEtat.ouvert);
+    if (panBtn) {
+      panBtn.textContent = panEtat.ouvert ? "–" : "+";
+      panBtn.title = panEtat.ouvert ? "Replier le plateau" : "Déplier le plateau";
+    }
+  }
+  // L'iframe est créée UNE FOIS et ne meurt plus : au repli elle est masquée,
+  // pas détruite. Détruire une fenêtre et en refaire une à chaque pli mangeait
+  // une place dans la table des liaisons du pont (source <-> personnage), qui
+  // n'en compte que soixante-quatre : au bout d'une soirée de plis, le pont
+  // refusait tout, plateau ET fiches. Masquée, elle voit sa fenêtre tomber à
+  // zéro pixel, ce que la page distante reconnaît pour cesser d'interroger
+  // Roll20 — cette décision-là lui appartient, et reste donc modifiable sans
+  // signature.
+  function panRemplit() {
+    if (!panCorps || panCorps.firstChild) return;
+    var f = el("iframe", "jjk-panneau-frame");
+    f.src = browser.runtime.getURL("panneau.html") +
+            "#p=" + PAN_PAGE + "&n=" + (detectNight() ? "1" : "0") + "&m=" + MODE;
+    f.setAttribute("allow", "clipboard-write");
+    panCorps.appendChild(f);
+    // pas d'injection du pont ici : la page distante le réclame elle-même
+    // (need-bridge), et le fichier tient à ne rien injecter de son propre chef
+  }
+  function panOuvre(ouvert) {
+    panEtat.ouvert = !!ouvert;
+    panApplique();
+    if (panEtat.ouvert) panRemplit();
+    panRange();
+  }
+  // Un geste (déplacement ou redimensionnement) se fait à la CAPTURE DE
+  // POINTEUR : la page de Roll20 est pleine d'iframes (chaque dialogue de
+  // personnage en est une), et des écouteurs posés sur le document perdaient le
+  // pointeur dès qu'il passait au-dessus de l'une d'elles. Le geste ne se
+  // terminait alors jamais : le panneau restait inerte, sans que rien ne le
+  // dise. La capture suit le pointeur partout, y compris hors de la fenêtre, et
+  // le relâchement revient toujours.
+  var panGesteEnCours = false;
+  function panGeste(ev, bouge) {
+    if (panGesteEnCours || (ev.button != null && ev.button !== 0)) return;
+    panGesteEnCours = true;
+    var cible = ev.currentTarget;
+    var x0 = ev.clientX, y0 = ev.clientY;
+    var e0 = { x: panEtat.x, y: panEtat.y, w: panEtat.w, h: panEtat.h };
+    panBoite.classList.add("jjk-panneau-geste");
+    function suit(m) {
+      var dx = m.clientX - x0, dy = m.clientY - y0;
+      if (bouge) { panEtat.x = e0.x + dx; panEtat.y = e0.y + dy; }
+      else { panEtat.w = e0.w + dx; panEtat.h = e0.h + dy; }
+      panBorne(panEtat);
+      panApplique();
+    }
+    function fin() {
+      if (!panGesteEnCours) return;
+      panGesteEnCours = false;
+      cible.removeEventListener("pointermove", suit);
+      cible.removeEventListener("pointerup", fin);
+      cible.removeEventListener("pointercancel", fin);
+      window.removeEventListener("blur", fin);
+      try { cible.releasePointerCapture(ev.pointerId); } catch (e) {}
+      panBoite.classList.remove("jjk-panneau-geste");
+      panRange();
+    }
+    try { cible.setPointerCapture(ev.pointerId); } catch (e) {}
+    cible.addEventListener("pointermove", suit);
+    cible.addEventListener("pointerup", fin);
+    cible.addEventListener("pointercancel", fin);
+    window.addEventListener("blur", fin);
+    ev.preventDefault();
+    ev.stopPropagation();
+  }
+  function panMonte(etat) {
+    if (document.getElementById("jjk-panneau")) return;
+    panEtat = panBorne(etat);
+    panBoite = el("div", "jjk-panneau");
+    panBoite.id = "jjk-panneau";
+
+    var tete = el("div", "jjk-panneau-tete");
+    panTitre = el("span", "jjk-panneau-titre", "Narration");
+    tete.appendChild(panTitre);
+    panBtn = el("button", "jjk-panneau-btn", "–");
+    panBtn.type = "button";
+    panBtn.addEventListener("pointerdown", function (ev) { ev.stopPropagation(); });
+    panBtn.addEventListener("click", function (ev) {
+      ev.preventDefault(); ev.stopPropagation();
+      panOuvre(!panEtat.ouvert);
+    });
+    tete.appendChild(panBtn);
+    tete.addEventListener("pointerdown", function (ev) { panGeste(ev, true); });
+    panBoite.appendChild(tete);
+
+    panCorps = el("div", "jjk-panneau-corps");
+    panBoite.appendChild(panCorps);
+
+    var grip = el("div", "jjk-panneau-grip");
+    grip.title = "Redimensionner";
+    grip.addEventListener("pointerdown", function (ev) { panGeste(ev, false); });
+    panBoite.appendChild(grip);
+
+    document.body.appendChild(panBoite);
+    panApplique();
+    // Rouvert d'une session à l'autre : on attend que la partie ait FINI de
+    // charger avant de monter l'iframe. C'est un événement, pas un nombre de
+    // millisecondes choisi au doigt mouillé — et le pont, lui, n'est plus posé
+    // d'ici du tout.
+    if (panEtat.ouvert) {
+      if (document.readyState === "complete") setTimeout(panRemplit, 400);
+      else window.addEventListener("load", function () { setTimeout(panRemplit, 400); });
+    }
+    window.addEventListener("resize", function () { panBorne(panEtat); panApplique(); });
+  }
+  function panDefaut() {
+    return { ouvert: PAN_DEF.ouvert, x: PAN_DEF.x, y: PAN_DEF.y, w: PAN_DEF.w, h: PAN_DEF.h };
+  }
+  function panDemarre() {
+    try {
+      browser.storage.local.get([PAN_CLE, PAN_ACTIF]).then(function (r) {
+        // l'interrupteur du popup : une partie Roll20 qui n'a rien à voir avec
+        // JJK ne doit pas se voir imposer une étiquette à demeure
+        if (r && r[PAN_ACTIF] === false) return;
+        var e = (r && r[PAN_CLE]) || {};
+        panMonte({
+          ouvert: !!e.ouvert,
+          x: panNombre(e.x, PAN_DEF.x), y: panNombre(e.y, PAN_DEF.y),
+          w: panNombre(e.w, PAN_DEF.w), h: panNombre(e.h, PAN_DEF.h)
+        });
+      }, function () { panMonte(panDefaut()); });
+    } catch (e) {
+      panMonte(panDefaut());
+    }
+  }
+
+  // ---------- démarrage : tout ce qui a un effet passe par ici ----------
+  // Rien de ce fichier ne s'exécute avant que la garde n'ait appelé cette
+  // fonction : ni écouteur, ni écriture dans le DOM, ni message posté. C'est la
+  // condition pour que la copie qui n'est pas du mode ne laisse aucune trace.
+  function demarre() {
+    posePriseTake();
+    if (IS_TOP) {
+      // FRAME DU HAUT : on n'injecte RIEN au chargement (l'injection main-world gênait
+      // l'ouverture des fiches Roll20). On attend que l'utilisateur ouvre l'onglet
+      // Fiche JJK (depuis une fiche déjà ouverte) : il pose alors le pont via need-bridge.
+      // Reçoit aussi les JETS de la fiche -> tchat Roll20 (le tchat vit dans cette frame,
+      // sauf popout : relais vers l'opener).
+      window.addEventListener("message", function (ev) {
+        try {
+          var d = ev.data;
+          if (!d || d.ns !== "jjk") return;
+          // « take » descend vers les fiches : ne jamais retenir sa source comme
+          // destinataire, sinon deux fenêtres se le renverraient sans fin
+          if (d.type === "take") {
+            if (d.payload) diffuseTake(d.payload);
+            return;
+          }
+          rememberSheet(ev.source);
+          // Le panneau règle sa propre taille : c'est LA page servie par le site
+          // qui sait ce qu'elle a à montrer, et le châssis ne doit pas devenir la
+          // pièce qu'il faut re-signer pour élargir un plateau. Les valeurs sont
+          // bornées ici, comme tout ce qui vient d'une page.
+          if (d.type === "panneau") {
+            if (!panEtat) return;
+            // le titre appartient à la page : elle peut se renommer sans qu'on
+            // touche à l'extension
+            if (d.titre != null && panTitre) panTitre.textContent = String(d.titre).slice(0, 40);
+            if (d.w != null) panEtat.w = panNombre(d.w, panEtat.w);
+            if (d.h != null) panEtat.h = panNombre(d.h, panEtat.h);
+            panBorne(panEtat);
+            if (d.replie != null) { panOuvre(!d.replie); return; }
+            panApplique();
+            panRange();
+            return;
+          }
+          if (d.type === "need-bridge") injectPageScript();
+          else if (d.type === "roll") {
+            if (!sendToChat(document, rollCommand(d.die, d.value, d.label)) && IS_POPOUT) relayToOpener(d);
+          } else if (d.type === "say") {
+            if (!sendToChat(document, sayCommand(d.title, d.fields)) && IS_POPOUT) relayToOpener(d);
+          } else if (d.type === "chat") {
+            // commande COMPOSÉE par la fiche (carte d'objet donné + lien « Prendre ») :
+            // envoyée telle quelle, sans rien en réécrire ici — son format vit
+            // côté site, qui peut donc évoluer sans re-signer l'extension. Seule
+            // la FORME est vérifiée (liste blanche), jamais le contenu.
+            var brut = String(d.raw || "");
+            if (!chatAutorise(brut)) return;   // hors liste blanche : rien ne part, ni ici ni à l'opener
+            if (!sendToChat(document, brut) && IS_POPOUT) relayToOpener(d);
+          }
+        } catch (e) {}
+      });
+      // popout : la barre d'onglets de la fiche vit dans CE document, on y pose l'onglet.
+      if (IS_POPOUT) startScan();
+      // la partie elle-même (et elle seule) reçoit le panneau flottant
+      if (IS_EDITEUR) panDemarre();
+    } else {
+      startScan();
+    }
+  }
+
+  // ---------- garde de mode ----------
+  // Les deux copies de ce fichier sont injectées dans CHAQUE frame de Roll20 :
+  // le manifeste les déclare toutes les deux, et rien ne permet d'en charger une
+  // seule à l'exécution. C'est donc ici, et nulle part ailleurs, que la copie qui
+  // n'est pas du mode s'arrête.
+  //
+  // Le mode ne vit que dans browser.storage.local, dont la lecture est
+  // ASYNCHRONE dans un script de contenu : il n'existe aucune lecture synchrone
+  // équivalente. Une garde écrite en tête de fichier aurait donc, au mieux, déjà
+  // laissé passer quelque chose. C'est pourquoi tout ce qui a un effet est
+  // enfermé dans demarre(), appelé d'ici seulement.
+  //
+  // Un rejet du stockage désigne explicitement le mode stable. Sans ce choix,
+  // les DEUX copies se tairaient et l'onglet disparaîtrait sans un mot ; la
+  // partie publiée est celle qui doit survivre à une panne.
+  function garde() {
+    try {
+      browser.storage.local.get("jjkBeta").then(
+        function (r) { if ((r && r.jjkBeta ? "beta" : "stable") === MODE) reclame(); },
+        function () { if (MODE === "stable") reclame(); }
+      );
+    } catch (e) {
+      if (MODE === "stable") reclame();
+    }
+  }
+  // Verrou de frame. Les deux copies partagent le monde isolé, donc cet objet
+  // window (un expando de script de contenu reste invisible de la page, comme le
+  // window.__jjkBridge du pont l'est du monde isolé). Si les deux se réveillaient
+  // ensemble (stockage incohérent, extension rechargée, bascule pendant la
+  // lecture), la première arrivée prend la frame et la seconde se tait. Sans ce
+  // verrou, deux écouteurs « message » dans la frame du haut enverraient chaque
+  // jet DEUX FOIS au tchat : le site poste vers window.top avec « * », tous les
+  // écouteurs reçoivent le même message, et sendToChat ne dédoublonne rien.
+  //
+  // Deuxième ligne de défense, gratuite et volontairement conservée : les
+  // marqueurs de DOM portent les MÊMES noms dans les deux copies (classe
+  // .jjk-tab, id #jjk-panneau, attribut data-jjk-bridge), si bien que placeTabs
+  // et panMonte abandonnent tout seuls devant le travail de l'autre copie.
+  function reclame() {
+    try {
+      if (window.__jjkRoll20) return;   // une copie tient déjà cette frame
+      window.__jjkRoll20 = MODE;
+    } catch (e) {}
+    demarre();
+  }
+  garde();
 })();

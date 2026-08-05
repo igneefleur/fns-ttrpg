@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Fiche JJK sur Roll20",
-  "version": "2.1.4",
+  "version": "3.6.0",
   "description": "Affiche vos fiches de personnage JJK (système JDR) à la place de la fiche Roll20, avec les jets envoyés dans le tchat.",
   "homepage_url": "https://igneefleur.github.io/HxH-Regles-JDR/jjk/",
   "browser_specific_settings": {
@@ -15,10 +15,16 @@
     "storage"
   ],
   "web_accessible_resources": [
-    "roll20-page.js",
     "creator.html",
     "creator.css",
-    "creator-shell.js"
+    "panneau.html",
+    "shell-loader.js",
+    "stable/roll20-page.js",
+    "stable/creator-shell.js",
+    "stable/panneau-shell.js",
+    "beta/roll20-page.js",
+    "beta/creator-shell.js",
+    "beta/panneau-shell.js"
   ],
   "icons": {
     "48": "icons/icon.svg",
@@ -46,7 +52,8 @@
         "https://app.roll20.net/*"
       ],
       "js": [
-        "content-roll20.js"
+        "stable/content-roll20.js",
+        "beta/content-roll20.js"
       ],
       "css": [
         "overlay.css"
