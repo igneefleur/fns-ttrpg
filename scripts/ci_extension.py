@@ -10,11 +10,23 @@ coquille elle-même déclenchent une signature. Logique :
   2. La compare à docs/download/ext-signed.json (l'empreinte du dernier .xpi
      SIGNÉ, committée). Identique -> rien à faire, le .xpi signé committé reste
      bon. Différente -> la version du PROJET est POSÉE dans les DEUX manifests,
-     empaquetage, signature Mozilla (scripts/sign_extension.py, clés dans les
-     secrets GitHub AMO_JWT_ISSUER / AMO_JWT_SECRET), écriture de updates.json
-     et de la nouvelle empreinte.
+     les DEUX PARTIES sont datées (voir plus bas), empaquetage, signature Mozilla
+     (scripts/sign_extension.py, clés dans les secrets GitHub AMO_JWT_ISSUER /
+     AMO_JWT_SECRET), écriture de updates.json et de la nouvelle empreinte.
   3. Le workflow committe alors ces fichiers sur la branche ([skip ci]) et
      déploie : les Firefox installés se mettent à jour tout seuls.
+
+UNE VERSION PAR PARTIE, EN PLUS DE CELLE DU PAQUET. Le paquet porte les deux
+moitiés, stable/ et beta/, et chacune déclare le numéro du PAQUET auquel elle a
+changé pour la dernière fois : c'est ce que dit extension/firefox/parties.js,
+écrit ici même, juste avant l'empaquetage, et lu par le popup. La moitié beta
+porte le suffixe « b », la stable jamais. Conséquence à assumer : un changement
+d'un fichier PARTAGÉ (le popup, un gabarit, une icône) fait sortir un paquet neuf
+sans qu'aucune des deux parties ne bouge, et les deux gardent alors leur ancien
+numéro pendant que le paquet avance. C'est exactement l'information utile : « ces
+deux moitiés n'ont pas changé depuis la 3.6.0 ».
+
+    python scripts/ci_extension.py --etat   # dit ce qui a changé, n'écrit rien
 
 LE NUMÉRO SE POSE, IL NE S'INCRÉMENTE PLUS. Le projet n'a qu'une ligne de
 versions : la fiche du site stable, celle du chantier et l'extension visent le
@@ -54,6 +66,27 @@ FF = ROOT / "extension" / "firefox"
 MANIFESTS = [FF / "manifest.json", ROOT / "extension" / "chrome" / "manifest.json"]
 STATE = ROOT / "docs" / "download" / "ext-signed.json"
 MANIFESTE_SITE = ROOT / "docs" / "jjk-manifeste.json"
+# Le fichier que ce script ÉCRIT dans l'extension, et le nom du global qu'il
+# pose : les deux viennent de build_extension, qui les nomme pour tout le monde.
+VERSIONS_JS = FF / build_extension.VERSIONS_PARTIES
+# La partie qui porte le suffixe « b ». Les deux noms de parties, eux, viennent
+# de build_extension.PARTIES : une seule liste pour les deux outils.
+PARTIE_BETA = "beta"
+
+
+def _hache(h, etiquette, octets):
+    """Un fichier dans une empreinte : son nom, puis son contenu NORMALISÉ.
+
+    Partagé par l'empreinte du paquet et celle d'une partie, pour que les deux
+    normalisent PAREIL. Deux copies de ces quatre lignes finiraient par diverger,
+    et une empreinte de partie qui bouge sans que rien n'ait changé ferait
+    avancer un numéro de partie à chaque signature, ce qui est précisément ce
+    qu'on veut éviter. Sur le pourquoi des fins de ligne, voir content_hash().
+    """
+    h.update(etiquette.encode())
+    if b"\x00" not in octets:
+        octets = octets.replace(b"\r\n", b"\n")
+    h.update(octets)
 
 
 def content_hash():
@@ -79,25 +112,66 @@ def content_hash():
     la CI ne retrouvait jamais : au déploiement suivant elle croyait
     l'extension modifiée et re-signait, mordant sur le quota AMO pour rien.
     C'est arrivé (2.1.3 signée en local, 2.1.4 re-signée par la CI aussitôt).
+
+    3. LES NUMÉROS, TOUS LES NUMÉROS. Le champ "version" des manifests était
+       déjà neutralisé ; parties.js, qui déclare le numéro de chaque
+       partie, l'est pour LA MÊME RAISON et il faut y insister, parce que le
+       piège y est pire. Ce fichier vit DANS l'extension et c'est CE script qui
+       l'écrit, à chaque signature : compté dans l'empreinte, il la ferait
+       changer à tout coup, le déploiement suivant croirait l'extension
+       modifiée, re-signerait, réécrirait le fichier, changerait l'empreinte…
+       une boucle qui tourne toute seule, un quota AMO par tour, sur un quota
+       qui se compte à la dizaine par jour. Son NOM reste haché : le fichier
+       doit être là, et sa disparition, elle, est bien un changement de paquet.
     """
     h = hashlib.sha256()
 
     def chemin(p):
         return str(p.relative_to(ROOT)).replace("\\", "/")
 
+    neutre = chemin(VERSIONS_JS)
     files = sorted((p for p in FF.rglob("*") if p.is_file()), key=chemin)
     files.append(MANIFESTS[1])
     for p in files:
-        h.update(chemin(p).encode())
+        rel = chemin(p)
         if p.name == "manifest.json":
+            h.update(rel.encode())
             m = json.loads(p.read_text(encoding="utf-8"))
             m["version"] = "0"
             h.update(json.dumps(m, ensure_ascii=False, sort_keys=True).encode())
+        elif rel == neutre:
+            h.update(rel.encode())          # présent, oui ; son contenu, jamais
         else:
-            octets = p.read_bytes()
-            if b"\x00" not in octets:
-                octets = octets.replace(b"\r\n", b"\n")
-            h.update(octets)
+            _hache(h, rel, p.read_bytes())
+    return h.hexdigest()
+
+
+def empreinte_partie(nom):
+    """Empreinte du contenu d'une partie, ou None si le dossier n'est pas là.
+
+    Ce qui APPARTIENT à une partie, c'est extension/firefox/<nom>/ et rien
+    d'autre : les fichiers partagés n'en font pas partie, et c'est tout le sens
+    de ce numéro (voir l'en-tête). Le nom haché est RELATIF au dossier de la
+    partie, pas à la racine du dépôt : sinon les deux moitiés ne pourraient
+    jamais avoir la même empreinte, alors même que leurs cinq lignes de
+    divergence sont la seule chose qui les sépare, et la comparaison des deux
+    états ne dirait plus rien de lisible dans le journal.
+
+    Même normalisation que l'empreinte du paquet, par le même _hache() : l'ordre
+    est pris sur le chemin POSIX qui est haché juste après, et les fins de ligne
+    sont ramenées en LF. Un dossier lu sous Windows et sous Linux doit rendre le
+    même nombre, ou la partie « changerait » à chaque changement de machine.
+    """
+    dossier = FF / nom
+    if not dossier.is_dir():
+        return None
+    h = hashlib.sha256()
+
+    def sous(p):
+        return p.relative_to(dossier).as_posix()
+
+    for p in sorted((q for q in dossier.rglob("*") if q.is_file()), key=sous):
+        _hache(h, sous(p), p.read_bytes())
     return h.hexdigest()
 
 
@@ -129,6 +203,13 @@ def bump_version(old):
     committé tel quel par le workflow. Deux dégâts pour une seule ligne
     illisible. On ne devine plus, on refuse.
     """
+    # LE PLANCHER PORTE DÉJÀ UN QUATRIÈME NOMBRE dès la première ressortie, et
+    # la grammaire du projet n'en connaît que trois : lu tel quel, « 3.6.0.1 »
+    # passait pour illisible et l'outil REFUSAIT de choisir un numéro. Ce repli
+    # sert justement quand la cible ne convient pas ; le voir tomber là aurait
+    # bloqué la seule issue qui restait. On monte le tronc, et le compteur de
+    # signatures repart de zéro puisque le X.Y.Z change.
+    old = ".".join(str(old).split(".")[:3])
     v = V.lire(str(old))
     if v is None:
         refus("Plancher de version d'extension illisible",
@@ -179,6 +260,129 @@ def stamp_version(version):
         m["version"] = pose
         p.write_text(json.dumps(m, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return pose
+
+
+def parties_connues(state):
+    """{partie: (version, empreinte)} d'après l'état enregistré, ou (None, None).
+
+    TOUT EST FACULTATIF ICI, et rien ne doit tomber. L'état a vécu sans la clé
+    "parties" et les .json déjà committés ne l'ont pas : une entrée absente,
+    tronquée ou d'un autre type doit se lire « on ne sait pas », jamais lever.
+    Une exception à cet endroit arrêterait un run qui, lui, n'a rien à se
+    reprocher, et il n'y a pas de raison de payer une panne d'affichage au prix
+    d'un déploiement.
+
+    « On ne sait pas » n'est pas « inchangé » : voir versions_parties().
+    """
+    out = {}
+    connu = state.get("parties")
+    if not isinstance(connu, dict):
+        connu = {}
+    for nom in build_extension.PARTIES:
+        e = connu.get(nom)
+        e = e if isinstance(e, dict) else {}
+        v, emp = e.get("version"), e.get("hash")
+        out[nom] = (v if isinstance(v, str) and v else None,
+                    emp if isinstance(emp, str) and emp else None)
+    return out
+
+
+def versions_parties(paquet, state):
+    """(déclarations, journal) : le numéro de chaque partie après CE paquet.
+
+    Une partie prend le numéro du paquet qu'on s'apprête à signer QUAND SON
+    CONTENU A CHANGÉ, et garde le sien sinon. Les deux moitiés peuvent donc
+    rester en arrière pendant que le paquet avance, et c'est voulu : le numéro
+    d'une partie répond à « depuis quand cette moitié est-elle celle-là ? », pas
+    à « quel paquet est installé ? », auquel le manifeste répond déjà.
+
+    UNE PARTIE INCONNUE COMPTE POUR MODIFIÉE. On ne peut pas prouver qu'elle
+    n'a pas bougé, et le seul numéro qu'on puisse honnêtement lui attacher est
+    celui du paquet qu'on signe : c'est le seul dont on soit sûr qu'il la
+    contient. Ce n'est pas une boucle, parce que l'état repart écrit juste
+    après, avec l'empreinte qui manquait.
+    """
+    ancien = parties_connues(state)
+    out, journal = {}, []
+    for nom in build_extension.PARTIES:
+        emp = empreinte_partie(nom)
+        if emp is None:
+            # build_extension.verifie() a déjà refusé pour ça, bien avant la
+            # moindre requête : on ne fabrique pas un numéro pour un dossier
+            # qui n'existe pas, on n'écrit simplement rien sur cette ligne.
+            journal.append(f"::warning title=Partie absente::extension/firefox/{nom}/ "
+                           "n'existe pas : aucun numéro n'est déclaré pour cette partie.")
+            continue
+        v_avant, emp_avant = ancien[nom]
+        if emp_avant == emp and v_avant:
+            out[nom] = {"version": v_avant, "hash": emp}
+            journal.append(f"[ci-extension] partie {nom} : inchangée depuis v{v_avant}")
+        else:
+            # LE SUFFIXE EST CELUI DE LA PARTIE, pas celui de la branche : la
+            # moitié beta est la moitié beta dans les deux branches, puisque le
+            # même paquet les sert toutes les deux.
+            neuve = paquet + ("b" if nom == PARTIE_BETA else "")
+            out[nom] = {"version": neuve, "hash": emp}
+            journal.append(f"[ci-extension] partie {nom} : "
+                           + (f"contenu modifié, v{v_avant} -> v{neuve}" if emp_avant
+                              else f"aucune empreinte enregistrée, elle prend v{neuve}"))
+    return (out, journal)
+
+
+def texte_versions_parties(parties):
+    """Le fichier de déclaration, tel qu'il part dans les deux paquets.
+
+    IL NE PORTE QUE LES DEUX NUMÉROS DE PARTIES, et surtout pas celui du paquet
+    courant. Le paquet est déjà dans les manifests, et le popup le lit là
+    (getManifest().version) ; le rappeler ici ferait changer ce fichier à CHAQUE
+    signature, y compris celles où aucune des deux moitiés n'a bougé. Or c'est
+    justement l'inverse qu'on veut lire : tant que ce fichier ne change pas, les
+    deux moitiés sont les mêmes, et son diff dit à lui seul laquelle a bougé.
+    """
+    corps = ",\n".join('  "%s": "%s"' % (nom, parties[nom]["version"])
+                       for nom in build_extension.PARTIES if nom in parties)
+    return (
+        "/* Le numéro de chaque PARTIE de l'extension. ÉCRIT PAR\n"
+        " * scripts/ci_extension.py À CHAQUE SIGNATURE : ne pas le modifier à la\n"
+        " * main, la signature suivante réécrirait la retouche sans la lire.\n"
+        " *\n"
+        " * CE QUE DIT UN NUMÉRO : le paquet auquel cette partie a changé pour la\n"
+        " * dernière fois, et rien d'autre. Un changement d'un fichier PARTAGÉ (le\n"
+        " * popup, un gabarit, une icône) fait sortir un paquet neuf sans qu'aucune\n"
+        " * des deux parties ne bouge : les deux gardent alors leur ancien numéro\n"
+        " * pendant que le paquet avance, et c'est justement l'information utile,\n"
+        " * « ces deux moitiés n'ont pas changé depuis la 3.6.0 ». Le numéro du\n"
+        " * paquet, lui, est dans le manifeste, et nulle part ailleurs.\n"
+        " *\n"
+        " * La partie beta porte le suffixe « b », la stable jamais. Ces numéros ne\n"
+        " * partent JAMAIS chez Mozilla : le manifeste, lui, n'en porte aucun, sans\n"
+        " * quoi une signature faite depuis le chantier brûlerait un numéro que la\n"
+        " * branche stable doit encore publier.\n"
+        " *\n"
+        " * ES5, global, chargé par une balise script : pas de module, pas d'import.\n"
+        " * Le popup lit les clés ci-dessous sur le global "
+        + build_extension.VAR_VERSIONS + ", en se gardant\n"
+        " * du cas où le fichier n'a pas été chargé (typeof).\n"
+        " */\n"
+        "var " + build_extension.VAR_VERSIONS + " = {\n" + corps + "\n};\n")
+
+
+def ecrire_versions_parties(parties):
+    """Pose le fichier dans l'extension. Rend True s'il a changé sur le disque.
+
+    Écrit en octets, saut de ligne LF imposé : write_text() traduirait en CRLF
+    sous Windows, et le fichier ferait un diff entier d'une machine à l'autre
+    pour deux nombres. L'empreinte, elle, ne s'en soucie pas (ce fichier y est
+    neutralisé, voir content_hash), mais le journal de git, si.
+    """
+    texte = texte_versions_parties(parties)
+    ancien = None
+    if VERSIONS_JS.exists():
+        ancien = VERSIONS_JS.read_bytes().decode("utf-8").replace("\r\n", "\n")
+    if ancien == texte:
+        return False
+    VERSIONS_JS.write_bytes(texte.encode("utf-8"))
+    return True
 
 
 def parse_ver(v):
@@ -426,6 +630,14 @@ def main():
     # stamp_version() qui ôte le suffixe, et l'empreinte enregistrée plus bas
     # doit porter le numéro qui est parti chez Mozilla, pas celui qu'on visait.
     new_version = stamp_version(new_version)
+    # LES DEUX PARTIES SONT DATÉES ICI, AVANT L'EMPAQUETAGE et jamais après :
+    # le fichier de déclaration part DANS le .xpi, et l'écrire après build()
+    # n'aurait daté que la copie restée sur le disque, pendant que le paquet
+    # signé, lui, annoncerait encore les numéros d'avant.
+    parties, journal_parties = versions_parties(new_version, state)
+    for ligne in journal_parties:
+        print(ligne)
+    ecrire_versions_parties(parties)
     print(f"[ci-extension] v{new_version} : empaquetage + signature Mozilla…")
     build_extension.build()
     try:
@@ -441,6 +653,16 @@ def main():
                         "docs/download/updates.json",
                         "extension/firefox/manifest.json",
                         "extension/chrome/manifest.json"],
+                       cwd=ROOT, check=False)
+        # Le fichier des versions de parties se restaure À PART, et pas par
+        # coquetterie : un git checkout à plusieurs chemins échoue EN ENTIER si
+        # l'un d'eux n'est pas suivi (« did not match any file(s) known to
+        # git »). Le jour où ce fichier vient d'être créé et pas encore
+        # committé, le glisser dans la liste ci-dessus ferait rater la
+        # restauration des manifests, qui, elle, compte vraiment : ils
+        # resteraient estampillés d'un numéro que Mozilla n'a jamais signé.
+        subprocess.run(["git", "checkout", "--",
+                        "extension/firefox/" + build_extension.VERSIONS_PARTIES],
                        cwd=ROOT, check=False)
         repare_xpi_signe(issuer, secret)
         deja_signee = STATE.exists() and xpi_signe()
@@ -469,10 +691,60 @@ def main():
               f"avec les paquets signés v{state.get('version', '?')}.")
         return
 
-    STATE.write_text(json.dumps({"version": new_version, "hash": current},
-                                indent=2) + "\n", encoding="utf-8")
+    # "parties" s'ajoute À CÔTÉ de ce qui s'y trouvait, jamais à la place : ce
+    # fichier est lu ailleurs (scripts/verif_versions.py y prend "version" pour
+    # vérifier que rien ne recule sous ce qui est signé), et il doit rester
+    # lisible par qui n'attend que les deux anciennes clés.
+    STATE.write_text(json.dumps({"version": new_version, "hash": current,
+                                 "parties": parties}, indent=2) + "\n",
+                     encoding="utf-8")
     print(f"[ci-extension] v{new_version} signée et publiée ; empreinte enregistrée")
 
 
+def dire_etat():
+    """Dit ce que l'outil voit, SANS RIEN ÉCRIRE ni signer (option --etat).
+
+    Le seul moyen d'éprouver la mécanique sans mordre sur le quota AMO, qui se
+    compte à la dizaine par jour : ce que porte l'état, ce que valent les
+    empreintes aujourd'hui, et donc ce que la prochaine signature ferait.
+    """
+    state = {}
+    if STATE.exists():
+        try:
+            state = json.loads(STATE.read_text(encoding="utf-8"))
+        except ValueError:
+            print(f"[ci-extension] {STATE.name} est illisible : tout compte pour inconnu")
+    if not isinstance(state, dict):
+        state = {}
+    courant = content_hash()
+    print("ÉTAT DE L'EXTENSION")
+    print("  paquet signé : v%s" % state.get("version", "?"))
+    print("  empreinte    : %s" % ("inchangée" if courant == state.get("hash")
+                                   else "MODIFIÉE (une signature est due)"))
+    ancien = parties_connues(state)
+    for nom in build_extension.PARTIES:
+        v_avant, emp_avant = ancien[nom]
+        emp = empreinte_partie(nom)
+        if emp is None:
+            etat = "dossier absent"
+        elif emp_avant is None:
+            etat = "aucune empreinte enregistrée"
+        elif emp_avant == emp:
+            etat = "inchangée"
+        else:
+            etat = "MODIFIÉE (elle prendra le numéro du prochain paquet)"
+        print("  partie %-6s: v%s, %s" % (nom, v_avant or "?", etat))
+    print("  déclaré dans %s :" % build_extension.VERSIONS_PARTIES)
+    if VERSIONS_JS.exists():
+        for ligne in VERSIONS_JS.read_text(encoding="utf-8").splitlines():
+            if ligne.startswith("  \""):
+                print("   " + ligne.strip())
+    else:
+        print("    ABSENT (build_extension.verifie() le refusera)")
+
+
 if __name__ == "__main__":
-    main()
+    if "--etat" in sys.argv[1:]:
+        dire_etat()
+    else:
+        main()

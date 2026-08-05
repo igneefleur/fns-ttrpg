@@ -6,21 +6,52 @@
 </head>
 <body>
   <a id="p-regles" href="https://igneefleur.github.io/HxH-Regles-JDR/jjk/content/regles/" target="_blank" rel="noopener">Voir les règles</a>
-  <label for="p-beta" title="La fiche Roll20 vient du site de chantier : nouveautés en avance, casses possibles. Recharger la page Roll20 pour que la bascule prenne effet.">
+  <label for="p-beta" title="La fiche Roll20 est celle du chantier : nouveautés en avance, casses possibles. Recharger la page Roll20 pour que la bascule prenne effet.">
     <input type="checkbox" id="p-beta"> Mode beta
   </label>
   <label for="p-panneau" title="Le plateau de narration partagé, posé en haut à gauche de la partie.">
     <input type="checkbox" id="p-panneau" checked> Plateau de Narration
   </label>
-  <!-- Trois numéros, et trois sources différentes : les deux SITES se lisent
-       en direct dans leurs manifestes (ils avancent sans qu'on signe, un nombre
-       figé ici deviendrait faux le jour même), l'EXTENSION se lit dans son
-       propre manifeste, seule source que Mozilla ne puisse démentir. -->
-  <div class="versions">
-    <span id="p-v-stable"></span>
-    <span id="p-v-beta"></span>
-    <span id="p-v-paquet"></span>
+  <!-- Quatre numéros, deux paires, deux sources bien différentes.
+
+       Les deux FICHES se lisent en direct dans leurs manifestes de site : une
+       fiche avance sans qu'on signe quoi que ce soit, un nombre figé dans le
+       paquet deviendrait faux le jour même. C'est arrivé, en moins d'une heure.
+
+       Les deux moitiés de l'EXTENSION se lisent dans parties.js, écrit par
+       l'outil de signature : lui seul sait à quel paquet chaque moitié a changé
+       pour la dernière fois. Le fichier est posé à la racine du paquet, à côté
+       du manifeste, parce qu'il décrit le paquet et non le popup.
+
+       Le libellé dit « fiche » et non « site » : ce que le joueur choisit, ce
+       n'est pas un site web, c'est la fiche de personnage qui s'ouvrira dans
+       Roll20. Le mot « site » ne reste que là où il désigne vraiment l'adresse
+       publiée. -->
+  <div class="versions" id="p-versions">
+    <div class="ligne" id="p-l-fiche-stable">
+      <span class="quoi">fiche stable</span><span class="num"></span><span class="marque"></span>
+    </div>
+    <div class="ligne" id="p-l-fiche-beta">
+      <span class="quoi">fiche beta</span><span class="num"></span><span class="marque"></span>
+    </div>
+    <div class="ligne" id="p-l-ext-stable">
+      <span class="quoi">extension stable</span><span class="num"></span><span class="marque"></span>
+    </div>
+    <div class="ligne" id="p-l-ext-beta">
+      <span class="quoi">extension beta</span><span class="num"></span><span class="marque"></span>
+    </div>
+    <!-- Le numéro du PAQUET, celui que Mozilla a signé et que les navigateurs
+         affichent. Les quatre lignes du dessus disent quand chaque moitié a
+         changé ; aucune ne dit ce qui est installé. Sans cette ligne, un joueur
+         qui compare son extension à ce qu'annonce Firefox ne s'y retrouve pas. -->
+    <div class="ligne paquet" id="p-l-paquet">
+      <span class="quoi">paquet signé</span><span class="num"></span><span class="marque"></span>
+    </div>
   </div>
+  <!-- Chargé AVANT popup.js, et sans lui rien ne casse : s'il manque, les deux
+       lignes d'extension affichent « ? ». Une ligne laissée vide se lirait comme
+       une extension cassée, ce qu'elle ne serait pas. -->
+  <script src="../parties.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

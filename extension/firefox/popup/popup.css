@@ -1,8 +1,11 @@
 /* Panneau de l'extension, au strict minimum : un lien vers les règles, un
-   interrupteur pour le mode beta. Rien d'autre à montrer — la fiche vit dans
+   interrupteur pour le mode beta. Rien d'autre à montrer, la fiche vit dans
    le personnage Roll20. */
 body {
-  width: 190px; margin: 0; padding: 8px;
+  /* 224 px et non 190 : le bloc des versions est passé de trois lignes à
+     quatre, et sa ligne la plus longue (« extension stable », son numéro, sa
+     marque) demande environ 185 px. À 190 px elle se coupait en deux. */
+  width: 224px; margin: 0; padding: 8px;
   display: flex; flex-direction: column; gap: 8px;
   font: 13px/1.3 "Segoe UI", Arial, sans-serif; color: #111; background: #fff;
 }
@@ -13,11 +16,23 @@ a {
 a:hover { background: #fff; }
 label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
 body.beta a { border-color: #6b4e00; background: #fdf3d8; }
-/* Les deux numéros du projet, plus celui du paquet signé : le nez dans la
-   fenêtre, on doit pouvoir dire d'un coup d'oeil quelle partie tourne. */
+/* Les quatre numéros : la fiche stable et celle du chantier, puis les deux
+   moitiés du paquet. Le nez dans la fenêtre, on doit pouvoir dire d'un coup
+   d'oeil laquelle de chaque paire s'ouvrira au prochain chargement.
+   Trois colonnes tenues par le bloc, et non par chaque ligne : le libellé, le
+   numéro, la marque. */
 .versions {
-  display: flex; flex-direction: column; gap: 1px;
+  display: grid; grid-template-columns: auto auto 1fr;
+  column-gap: 6px; row-gap: 1px;
   border-top: 1px solid #e2e2e2; padding-top: 6px;
   font-size: 11px; color: #777;
 }
+/* La ligne ne dessine rien : ses trois cases sont posées directement dans la
+   grille du bloc. Sans cela chaque ligne aurait ses propres colonnes et les
+   numéros ne s'aligneraient plus d'une ligne à l'autre. La couleur, elle,
+   traverse quand même : elle s'hérite, c'est ce qui fait marcher .actif. */
+.versions .ligne { display: contents; }
 .versions .actif { color: #111; }
+/* Un numéro ne se coupe jamais en deux ; la marque, elle, peut passer à la
+   ligne plutôt que de déborder de la fenêtre. */
+.versions .num { white-space: nowrap; }

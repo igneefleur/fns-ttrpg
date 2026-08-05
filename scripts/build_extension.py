@@ -17,6 +17,11 @@ PowerShell 5.1 met des « \\ » que Firefox refuse). Conséquence à ne pas oubl
 TOUT fichier posé sous extension/firefox/ part dans les DEUX paquets, déclaré ou
 non, et personne ne le signalera — d'où les contrôles ci-dessous.
 
+CHAQUE PARTIE PORTE SON PROPRE NUMÉRO, déclaré dans parties.js (voir la
+constante VERSIONS_PARTIES). Ce fichier est ÉCRIT par scripts/ci_extension.py
+juste avant l'empaquetage et lu par le popup ; il est nommé ici parce que les
+deux outils en ont besoin, et qu'une deuxième copie du nom finirait par mentir.
+
 Comme rien de cette extension n'est essayable ici (personne n'a de compte
 Roll20), verifie() fait tout ce qui se vérifie sans navigateur : chaque fichier
 nommé par un manifeste existe, aucun fichier n'est orphelin, les deux manifestes
@@ -58,6 +63,20 @@ MARQUE = "propre à cette copie"
 # sous firefox/ y part), et le manifeste est la racine, il ne peut être nommé
 # par personne.
 ORPHELINS_ADMIS = {"README.md", "manifest.json"}
+
+# LE FICHIER DES VERSIONS DE PARTIES : ce que chaque moitié du paquet déclare
+# comme son propre numéro. Il est ÉCRIT par scripts/ci_extension.py à chaque
+# signature, jamais à la main, et lu par le popup. Il vit à la RACINE de
+# extension/firefox/ et non dans stable/ ni beta/ : il parle des deux à la fois,
+# et un fichier de plus dans une partie devrait exister dans l'autre sous le même
+# nom (les deux jeux sont comparés plus bas), ce qui donnerait deux déclarations
+# concurrentes pour un seul réglage.
+VERSIONS_PARTIES = "parties.js"
+# Le nom du global que ce fichier pose, et que le popup lit (PARTIES.stable,
+# PARTIES.beta). Le popup le charge par une balise script, sans module ni
+# import : ce nom est la seule poignée entre l'outil qui écrit et la page qui
+# lit, et il ne se change que des deux côtés à la fois.
+VAR_VERSIONS = "PARTIES"
 
 # Adresses citées à l'intérieur des fichiers. Les getURL sont EXIGÉS (un getURL
 # vers un absent donne un 404 muet, et l'onglet reste blanc) ; les autres
@@ -222,8 +241,30 @@ def verifie():
                        f"web_accessible_resources (échec muet, onglet blanc)")
 
     # Ce que les manifestes nomment doit exister : Firefox refuse le paquet sinon.
-    racines = _declares(mv2) | _declares(mv3)
+    #
+    # LE FICHIER DES VERSIONS DE PARTIES EST UNE RACINE, lui aussi, bien qu'aucun
+    # manifeste ne le nomme. Le tenir pour tel répond d'un coup aux deux façons
+    # dont il peut disparaître sans bruit : ORPHELIN s'il reste dans le paquet
+    # alors que plus personne ne le charge (il partirait chez Mozilla pour rien),
+    # MANQUANT si on l'efface (le popup n'aurait plus qu'un global indéfini et
+    # deux lignes vides, et rien ici ne l'aurait vu). Et l'exiger ICI, plutôt que
+    # de compter sur la balise <script> du popup, tient même le jour où le popup
+    # est réécrit : le paquet doit le porter parce que c'est le paquet qui le
+    # déclare, pas parce qu'une page l'appelle aujourd'hui.
+    racines = _declares(mv2) | _declares(mv3) | {VERSIONS_PARTIES}
     manquants = sorted(racines - presents)
+    if VERSIONS_PARTIES in presents:
+        src = _lit(FF / VERSIONS_PARTIES)
+        # « var PARTIES », et non « PARTIES » tout court : le nom se retrouve
+        # aussi dans l'en-tête du fichier, et un contrôle qui s'en contente
+        # passerait sur un fichier réduit à ses commentaires.
+        muet = [c for c in ["var " + VAR_VERSIONS] + ['"%s"' % p for p in PARTIES]
+                if c not in src]
+        if muet:
+            ok = refus(f"{VERSIONS_PARTIES} ne déclare pas {muet} : il est écrit par "
+                       f"scripts/ci_extension.py et ne se modifie pas à la main. "
+                       f"Sans ces noms, le popup n'a plus de numéro à afficher et "
+                       f"personne ne s'en apercevrait avant une vraie partie.")
 
     # Puis ce que les fichiers nomment entre eux, de proche en proche.
     atteints, a_voir = set(racines), list(racines)

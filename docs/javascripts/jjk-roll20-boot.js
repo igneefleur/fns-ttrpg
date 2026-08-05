@@ -1049,14 +1049,23 @@
   }
 
   // ---------- l'écran lui-même ----------
+  //
+  // CE QUE LE JOUEUR LIT NE DIT JAMAIS « SITE ». Le numéro montré ici est celui
+  // de la FICHE servie, et le popup de l'extension nomme ses deux lignes « fiche
+  // stable » et « fiche beta » : un écran qui parlerait du « site » enverrait
+  // chercher un numéro de pages de règles là où il n'y en a pas, et laisserait
+  // croire que la fiche du personnage et « le site » sont deux choses sans
+  // rapport. Les identifiants, eux, gardent « site » (relSite, releaseSite) :
+  // ils nomment l'endroit d'où la version est lue, personne ne les lit en jeu,
+  // et les renommer ne changerait rien pour un joueur.
   function ecranVersion(f, relSite, schSite) {
     var relFiche = f.release || null;
     var duFutur = (f.schema != null && f.schema > schSite);
-    var b = ecran(duFutur ? "Cette fiche vient d'une version plus récente que le site"
-                          : "Cette fiche n'a pas la version du site", false);
+    var b = ecran(duFutur ? "Cette fiche vient d'une version plus récente que celle servie ici"
+                          : "Cette fiche n'a pas la version servie ici", false);
     var v = noeud("div", "jjk-ecran-vers");
     v.appendChild(noeud("span", null, "Fiche du personnage : " + texteVersion(relFiche, f.schema)));
-    v.appendChild(noeud("span", null, "Site : " + texteVersion(relSite, schSite)));
+    v.appendChild(noeud("span", null, "Fiche servie ici : " + texteVersion(relSite, schSite)));
     b.appendChild(v);
     b.appendChild(noeud("p", null,
       "Rien n'a été lu de travers et rien n'a été enregistré : aucune écriture ne partira tant qu'un " +
@@ -1069,8 +1078,9 @@
     } catch (e) { pas = null; }
     if (duFutur) {
       b.appendChild(noeud("p", null,
-        "La fiche a été écrite par une version plus récente que celle servie ici. Le site ne sait pas la " +
-        "redescendre, et l'ouvrir avec le code d'aujourd'hui lui ferait perdre ce qu'il ne connaît pas."));
+        "La fiche a été écrite par une version plus récente que celle servie ici. La version servie ne " +
+        "sait pas la redescendre, et l'ouvrir avec le code d'aujourd'hui lui ferait perdre ce qu'il ne " +
+        "connaît pas."));
     } else if (!pas) {
       b.appendChild(noeud("p", null,
         "Cette version ne sait pas dire ce qui sépare le schéma " + f.schema + " du schéma " + schSite +
@@ -1121,8 +1131,9 @@
     boutonExport(z);
 
     if (duFutur) {
-      griser(bMonter, "La mise à niveau est indisponible : la fiche est plus récente que le site, la " +
-                      "rétrograder ici lui ferait perdre ce qui n'existe pas encore de ce côté.", b);
+      griser(bMonter, "La mise à niveau est indisponible : la fiche est plus récente que la version " +
+                      "servie ici, la rétrograder lui ferait perdre ce qui n'existe pas encore de ce " +
+                      "côté.", b);
     }
     if (!arch) {
       griser(bArch, relFiche
