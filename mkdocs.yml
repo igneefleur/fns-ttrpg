@@ -46,8 +46,8 @@ extra_javascript:
   - javascripts/continuous.js
   - javascripts/nav-drawer.js
   - javascripts/night.js
-  - javascripts/jjk-migrations.js?v=38 # moteur de migration : AVANT le bundle, qui l'appelle
-  - javascripts/jjk-mods.js?v=38       # moteur de mods : AVANT le bundle aussi, et facultatif (sans lui, la fiche s'ouvre sans mods)
+  - javascripts/jjk-migrations.js?v=39 # moteur de migration : AVANT le bundle, qui l'appelle
+  - javascripts/jjk-mods.js?v=39       # moteur de mods : AVANT le bundle aussi, et facultatif (sans lui, la fiche s'ouvre sans mods)
   - javascripts/jjk-fiche.js?v=39
   - javascripts/copybtn.js
 hooks:
