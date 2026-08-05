@@ -51,15 +51,8 @@
   // jjk_version. Le manifeste en est la source unique quand il est là ; la
   // constante n'est qu'un repli (node, et l'amorceur de secours qui charge
   // sans manifeste).
-  // Le « b » final marque la branche de chantier : le joueur voit qu'il est sur
-  // la beta. Il ne change PAS le rang du numéro (« 3.6.0b » et « 3.6.0 » sont la
-  // même version, la beta étant ce que le stable recevra à la fusion) : ce qui
-  // compare des versions doit donc l'ôter avant de lire les nombres.
-  var RELEASE_DEFAUT = "3.6.0";
-  // Entier INDÉPENDANT de la release : il ne monte qu'au changement de forme de
-  // l'état du personnage, jamais parce que le majeur a bougé. Le manifeste
-  // publie les deux séparément, et c'est ce repli-ci que l'amorce prend quand le
-  // manifeste manque.
+  var RELEASE_DEFAUT = "3.5.0";
+  // majeur(RELEASE) === SCHEMA : scripts/verif_versions.py tient l'invariant
   var SCHEMA_DEFAUT = 3;
 
   // Release EFFECTIVE : celle du code qui TOURNE, pas celle que le site publie.

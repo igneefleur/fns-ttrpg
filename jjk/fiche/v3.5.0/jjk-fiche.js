@@ -52,11 +52,8 @@
   var state = null;
 
   // ---------- version ----------
-  // RELEASE est ce qu'on montre, SCHEMA est ce qui compte. Les deux sont
-  // désormais INDÉPENDANTS : le schéma est un entier libre, que rien ne
-  // déduit du majeur de la release, et le manifeste les publie séparément.
-  // Un mod qui ferait parseInt(Jjk.version) pour en tirer le schéma se
-  // tromperait dès la première fois où les deux divergeront.
+  // RELEASE est ce qu'on montre, SCHEMA est ce qui compte. Invariant tenu par
+  // scripts/verif_versions.py : majeur(RELEASE) === SCHEMA.
   //
   // Le SCHÉMA ne monte QUE lorsqu'une donnée EXISTANTE change de forme ou de
   // sens (renommage, fusion, déplacement, changement de type). Ajouter une
@@ -64,17 +61,7 @@
   // purge aucune clé racine inconnue, donc une telle fiche s'ouvre dans les
   // deux sens sans migration. C'est ce qui permettra de livrer la disposition
   // des modules puis les mods sans forcer un 4.0.0 puis un 5.0.0.
-  //
-  // À l'inverse, une petite mise à jour (le Z de X.Y.Z) ne doit JAMAIS toucher
-  // au format de l'état du personnage : c'est ce qui autorise une seule
-  // archive par ligne X.Y, et c'est le seul garde-fou qui reste depuis que
-  // l'écran de version ne paraît plus qu'au désaccord de schéma.
-  //
-  // Le suffixe « b » marque la branche de chantier, pour que le joueur voie
-  // qu'il est sur la beta. Il ne change PAS le rang : « 3.6.0b » et « 3.6.0 »
-  // sont de même version, parce que la beta est ce que le site stable recevra
-  // à la fusion (JjkMods.compareVersions tient cette règle).
-  var RELEASE = "3.6.0";
+  var RELEASE = "3.5.0";
   var SCHEMA = 3;
 
   var XP_CREATION = 500;      // xp de départ (le total reste modifiable)
@@ -106,11 +93,8 @@
   // URL du jeu de données. Une ARCHIVE de version embarque son propre
   // jjk-creation.json, gelé à sa date : l'amorce le désigne par
   // window.__jjkDataUrl avant d'injecter le bundle. Sans lui, un bundle
-  // d'archive lirait les règles d'AUJOURD'HUI, et un renommage de compétence
+  // d'archive lirait les règles d'AUJOURD'HUI — un renommage de compétence
   // suffirait à trahir la version qu'on croit rejouer.
-  // Une archive est gelée par LIGNE X.Y, à la première release de la ligne :
-  // les règles qu'elle embarque sont donc celles de ce jour-là, et un
-  // correctif ultérieur qui les retoucherait ne serait archivé nulle part.
   function dataUrl() {
     var u = typeof window !== "undefined" ? window.__jjkDataUrl : null;
     return u || (siteBase() + "jjk-creation.json");
@@ -248,10 +232,7 @@
   // Une fiche VENUE DU FUTUR (v > SCHEMA) n'est pas migrée à la baisse en
   // douce : on la laisse telle quelle et l'amorce s'en occupe (écran de
   // version). Écrire dessus avec un code qui ne la comprend pas serait le
-  // seul vrai moyen de la perdre. Le schéma est d'ailleurs le SEUL axe qui
-  // fasse encore paraître cet écran : un simple écart de numéro de release ne
-  // le déclenche plus, sans quoi un correctif de feuille de style barrerait
-  // le passage à toute une table.
+  // seul vrai moyen de la perdre.
   function migre(s) {
     if (!s || typeof s !== "object") return s;
     var de = parseInt(s.v, 10);
@@ -271,11 +252,7 @@
     if (!s || typeof s !== "object") return b;
     s = migre(s);
     Object.keys(b).forEach(function (k) { if (s[k] === undefined) s[k] = b[k]; });
-    // La release suit toujours le code qui vient d'écrire : c'est lui qui fait
-    // foi. Sur la beta, cela tamponne le suffixe sur n'importe quel personnage
-    // seulement ouvert puis réenregistré ; c'est sans danger tant que le
-    // suffixe ne change pas le rang, un « 3.6.0b » rouvert sur le site stable
-    // 3.6.0 ne devant surtout pas passer pour venu du futur.
+    // la release suit toujours le code qui vient d'écrire : c'est lui qui fait foi
     if (parseInt(s.v, 10) === SCHEMA) s.rel = RELEASE;
     if (!s.caracsBase || typeof s.caracsBase !== "object") s.caracsBase = b.caracsBase;
     if (!s.caracsXp || typeof s.caracsXp !== "object") s.caracsXp = b.caracsXp;
@@ -2654,10 +2631,6 @@
     return {
       // identité
       id: id,
-      // Le numéro tel qu'il est, suffixe de beta compris : qui voudrait le
-      // lire passe par JjkMods.lireVersion, seul endroit qui sache ce que
-      // vaut ce suffixe. Le découper à la main ici rendrait « 0b » sur le
-      // dernier nombre, et le majeur n'apprend RIEN du schéma.
       version: RELEASE,
       // données (en lecture : ce qui appartient au personnage appartient aux
       // modules natifs, un module ne le corrige pas dans le dos des autres)
@@ -5876,18 +5849,9 @@
   }
   // Un « pour » illisible est SILENCIEUSEMENT oublié par le moteur : autant le
   // dire tout de suite, sinon le joueur croit avoir posé un garde-fou qui
-  // n'existe pas. La règle de lecture est CELLE DU MOTEUR, jamais une copie
-  // locale : cette fonction tenait sa propre expression régulière, restée en
-  // arrière quand le suffixe de beta est apparu, et le formulaire refusait
-  // alors le numéro qu'il proposait lui-même en filigrane.
+  // n'existe pas. Même forme que versionLue de jjk-mods.js.
   function versionLisible(v) {
-    var mm = window.JjkMods;
-    // Sans moteur, le bloc Mods n'affiche même pas ce formulaire : ce repli ne
-    // sert qu'au moteur trop ancien pour exporter sa lecture. Laisser passer
-    // vaut mieux que refuser au nom d'une règle qu'on ne connaît plus, et le
-    // moteur garde de toute façon le champ tel quel.
-    if (!mm || typeof mm.lireVersion !== "function") return true;
-    try { return !!mm.lireVersion(v); } catch (e) { return true; }
+    return /^\s*v?\d+(\.\d+)?(\.\d+)?\s*([-+][^\s]*)?\s*$/.test(v);
   }
   // Le formulaire d'un mod, celui de l'ajout comme celui de la modification.
   // « appliquer » reçoit des valeurs déjà validées ; rendre false laisse le
@@ -6339,9 +6303,7 @@
   // consentirait pour tout le monde.
   //
   // La fiche s'ouvre TOUJOURS : un mod en attente ne bloque rien, il ne tourne
-  // pas, c'est tout. (L'écran de version, lui, protège des données : il bloque.
-  // Mais il ne paraît plus qu'au désaccord de SCHÉMA, jamais sur un simple
-  // écart de numéro de release.)
+  // pas, c'est tout. (L'écran de version, lui, protège des données : il bloque.)
   function modsEnAttente() {
     if (!state || !state.mods || !state.mods.length) return [];
     if (!window.JjkMods || typeof window.JjkMods.enAttente !== "function") return [];
@@ -6419,12 +6381,6 @@
   // d'elle-même. window.__jjkModules est l'ANCIEN nom du MÊME objet : ce qui a
   // été écrit avant la 3.0.0 continue de marcher tel quel.
   window.Jjk = {
-    // Les deux annoncent ce qu'ils ont toujours annoncé, mais ils ne se
-    // déduisent plus l'un de l'autre : version porte le suffixe de beta le
-    // cas échéant, schema est un entier libre. Un mod qui tirerait le schéma
-    // du majeur de la version se tromperait à la première divergence, et le
-    // moteur de mods offre JjkMods.lireVersion pour ne pas avoir à découper
-    // le numéro soi-même.
     version: RELEASE,
     schema: SCHEMA,
     enregistre: enregistre,

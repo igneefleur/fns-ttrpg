@@ -249,59 +249,25 @@
 
   // ------------------------------------------------------------------
   // Versions
-  //
-  // UNE seule lecture de numéro pour tout le dispositif, et elle est exportée
-  // (JjkMods.lireVersion, JjkMods.compareVersions). La fiche, les mods et les
-  // sondes s'en servent au lieu de recopier chacun leur expression régulière.
-  // jjk-fiche.js tenait la sienne, et elle est restée en arrière : le jour du
-  // suffixe de beta, son formulaire s'est mis à refuser le numéro qu'il
-  // proposait lui-même en filigrane.
-  //
-  // L'amorceur (jjk-roll20-boot.js) ne PEUT pas s'en servir : il tranche quelle
-  // version ouvrir avant d'avoir chargé le moindre bundle, donc avant ce
-  // fichier. Sa lecture à lui est une copie de nécessité, pas un oubli ; les
-  // deux doivent avancer ensemble.
   // ------------------------------------------------------------------
-
-  // « 3.12.9b » rend { x: 3, y: 12, z: 9, beta: true }, et null sur ce qui
-  // n'est pas un numéro.
-  //
-  // Le suffixe « b » de la branche de chantier est COLLÉ au dernier nombre,
-  // sans séparateur : ce n'est pas une pré-version au sens semver, et le motif
-  // d'avant, qui n'acceptait un suffixe que derrière un « - » ou un « + »,
-  // rendait null sur « 3.6.0b ». Silencieusement, ce qui est le pire :
-  // compareVersions rend 0 sur un illisible, donc le verrou « pour la fiche »
-  // de TOUS les mods s'éteignait sans un message le jour où la beta a pris son
-  // suffixe. Un suffixe semver (« 3.1.0-beta ») reste toléré et reste lu comme
-  // sa version de base ; « beta » ne dit QUE le b du contrat, parce que c'est
-  // lui seul qui désigne le site de chantier.
-  function lireVersion(v) {
-    var m = /^\s*v?(\d+)(?:\.(\d+))?(?:\.(\d+))?(b)?\s*(?:[-+][^\s]*)?\s*$/.exec(chaine(v));
-    if (!m) return null;
-    return {
-      x: parseInt(m[1], 10),
-      y: parseInt(m[2] || "0", 10),
-      z: parseInt(m[3] || "0", 10),
-      beta: !!m[4]
-    };
-  }
 
   // Comparer des CHAÎNES rendrait "3.10.0" inférieur à "3.9.0", et un mod
   // parfaitement compatible se déclarerait « trop récent » à l'infini. D'où ce
-  // comparateur à trois nombres.
-  //
-  // Le suffixe de beta ne pèse RIEN dans le rang : « 3.12.9b » et « 3.12.9 »
-  // rendent 0, parce que la beta EST ce que le site stable recevra à la
-  // fusion. Le réflexe semver, qui range une pré-version SOUS la version
-  // finale, ferait ici passer un personnage écrit sur la beta pour plus vieux
-  // que le site stable du même numéro, et un mod « pour: 3.12.9 » refuserait
-  // de tourner sur la beta qui le publie.
+  // comparateur à trois nombres. Un suffixe de pré-version (« 3.1.0-beta ») est
+  // lu comme sa version de base : un mod n'a pas à trancher ce débat-là.
+  function versionLue(v) {
+    var m = /^\s*v?(\d+)(?:\.(\d+))?(?:\.(\d+))?\s*(?:[-+][^\s]*)?\s*$/.exec(chaine(v));
+    if (!m) return null;
+    return [parseInt(m[1], 10), parseInt(m[2] || "0", 10), parseInt(m[3] || "0", 10)];
+  }
+
   function compareVersions(a, b) {
-    var x = lireVersion(a), y = lireVersion(b);
+    var x = versionLue(a), y = versionLue(b), i;
     if (!x || !y) return 0;   // illisible : rien ne bloque, faute de repère
-    if (x.x !== y.x) return x.x > y.x ? 1 : -1;
-    if (x.y !== y.y) return x.y > y.y ? 1 : -1;
-    if (x.z !== y.z) return x.z > y.z ? 1 : -1;
+    for (i = 0; i < 3; i++) {
+      if (x[i] > y[i]) return 1;
+      if (x[i] < y[i]) return -1;
+    }
     return 0;
   }
 
@@ -365,14 +331,11 @@
         };
         // « pour » est GARDÉ TEL QUEL dès qu'il y a quelque chose, lisible ou
         // non. Un « 3.x » écrit à la main n'est pas une version au sens de
-        // lireVersion, mais c'est la SAISIE DU JOUEUR : la jeter reviendrait à
+        // versionLue, mais c'est la SAISIE DU JOUEUR : la jeter reviendrait à
         // effacer de son personnage un champ qu'il a rempli, sans un mot, au
         // premier chargement venu. Il ne bloque rien pour autant :
         // compareVersions rend 0 sur ce qu'il ne sait pas lire, donc verrou()
-        // laisse le mod tourner comme s'il n'avait rien demandé. Revers de
-        // cette conservation : un « pour: 3.7.0b » saisi du temps où le
-        // suffixe était illisible dormait dans le personnage sans rien
-        // demander, et se remet à compter maintenant que lireVersion le lit.
+        // laisse le mod tourner comme s'il n'avait rien demandé.
         if (chaine(m.pour).trim()) e.pour = chaine(m.pour).trim();
         n = entierPositif(m.apiMin);
         if (n !== null) e.apiMin = n;
@@ -395,25 +358,16 @@
   // Ce que le moteur sait de la fiche qui l'appelle. Quand une information
   // manque (appel sans infos, objet Jjk incomplet), le verrou correspondant
   // est SAUTÉ : mieux vaut laisser tourner un mod qu'on ne sait pas juger que
-  // le déclarer trop récent faute de repère. Ce principe est bon, mais il ne
-  // doit pas s'appliquer à un numéro de beta parfaitement valable : c'est ce
-  // qui arrivait tant que lireVersion butait sur le suffixe.
-  //
-  // La version est gardée BRUTE (suffixe compris) : elle sert au message du
-  // verrou, où le joueur doit lire qu'il est sur la beta. Seule la
-  // comparaison, elle, ignore le suffixe.
-  //
-  // La version et le schéma se prennent chacun pour soi, sans que l'un se
-  // déduise de l'autre : le schéma est un entier indépendant du majeur.
+  // le déclarer trop récent faute de repère.
   function repere(Jjk, infos) {
     var v = null, s = null, n;
     try {
       if (infos && typeof infos === "object") {
-        if (lireVersion(infos.version)) v = chaine(infos.version).trim();
+        if (versionLue(infos.version)) v = chaine(infos.version).trim();
         n = entierPositif(infos.schema);
         if (n !== null) s = n;
       }
-      if (v === null && Jjk && lireVersion(Jjk.version)) v = chaine(Jjk.version).trim();
+      if (v === null && Jjk && versionLue(Jjk.version)) v = chaine(Jjk.version).trim();
       if (s === null && Jjk) {
         n = entierPositif(Jjk.schema);
         if (n !== null) s = n;
@@ -447,12 +401,6 @@
   // de le lire : son propre interrupteur d'abord (c'est sa décision, elle
   // prime), son refus ensuite, l'écart de version après, l'attente en dernier.
   // Rend null quand plus rien ne s'y oppose.
-  //
-  // Les deux verrous ne se parlent pas : « pour » vise la release seule,
-  // « apiMin » le schéma seul, et rien ne déduit l'un de l'autre. Le message,
-  // lui, montre le numéro BRUT (« celle-ci est en 3.6.0b ») alors que la
-  // comparaison ignore le suffixe : le joueur voit sur quoi il tourne, le
-  // verrou juge sur le rang.
   function verrou(mod, version, schema) {
     var a;
     if (!mod.actif) return { etat: "coupe", message: "" };
@@ -550,14 +498,7 @@
     decide: decide,
     normalise: normalise,
     execute: execute,
-    enAttente: enAttente,
-    // La règle de lecture des numéros, offerte à qui en a besoin. Elle n'est
-    // pas là pour les mods (ils reçoivent ctx.version tout lu) mais pour que
-    // la fiche et les sondes cessent d'en tenir chacune une copie : deux
-    // motifs pour une seule décision, c'est ainsi que le formulaire des mods
-    // s'est mis à refuser le numéro qu'il proposait lui-même en filigrane.
-    lireVersion: lireVersion,
-    compareVersions: compareVersions
+    enAttente: enAttente
   };
 
   global.JjkMods = JjkMods;

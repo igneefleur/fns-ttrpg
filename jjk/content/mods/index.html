@@ -53,7 +53,7 @@
     
       <link rel="stylesheet" href="../../stylesheets/jjk.css?v=1">
     
-      <link rel="stylesheet" href="../../stylesheets/jjk-fiche.css?v=38">
+      <link rel="stylesheet" href="../../stylesheets/jjk-fiche.css?v=44">
     
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -759,6 +759,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Versions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#le-suffixe-du-site-de-chantier" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Le suffixe du site de chantier
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ce-quun-mod-peut-exiger" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ce qu'un mod peut exiger
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1168,6 +1196,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Versions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#le-suffixe-du-site-de-chantier" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Le suffixe du site de chantier
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ce-quun-mod-peut-exiger" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ce qu'un mod peut exiger
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1242,9 +1298,11 @@ de plus, écrit par un joueur : quelques lignes de JavaScript rangées dans le
 personnage, que la fiche exécute à chaque ouverture. Rien ne se compile et rien
 ne s'installe sur la machine ; le code est du texte, rangé dans le personnage,
 exécuté tel quel.</p>
-<p>Cette page décrit l'interface publique de la fiche 3.0.0 : l'objet <code>Jjk</code>, le
+<p>Cette page décrit l'interface publique de la fiche 3 : l'objet <code>Jjk</code>, le
 contexte reçu par un module, les filtres de calcul, et les deux blocs de
-l'onglet Options qui les gouvernent.</p>
+l'onglet Options qui les gouvernent. Le 3 est le premier nombre de la release,
+celui que rend <code>Jjk.version</code> ; il ne se confond pas avec le schéma de l'état,
+qui compte la forme des données et monte de son côté.</p>
 <div class="mods-alerte">
 <p class="cle">Installer un mod, c'est confier à son auteur son personnage, et tous ceux que ce navigateur garde.</p>
 </div>
@@ -1435,7 +1493,7 @@ Quatre règles tiennent dans cet exemple :</p>
 <tbody>
 <tr>
 <td>Le code d'un mod reçoit <code>Jjk</code></td>
-<td>c'est l'objet public de la fiche. Il reçoit aussi un <code>ctx</code> à lui, qui porte <code>id</code>, <code>nom</code>, <code>version</code> et <code>schema</code> : quatre renseignements sur le mod en cours, à ne pas confondre avec le <code>ctx</code> de <code>build</code>, qui est celui d'un module.</td>
+<td>c'est l'objet public de la fiche. Il reçoit aussi un <code>ctx</code> à lui, qui porte <code>id</code> et <code>nom</code>, les deux renseignements sur le mod en cours, puis <code>version</code> et <code>schema</code>, les deux numéros de la fiche qui l'exécute. À ne pas confondre avec le <code>ctx</code> de <code>build</code>, qui est celui d'un module.</td>
 </tr>
 <tr>
 <td><code>build</code> rend un élément</td>
@@ -1540,7 +1598,7 @@ natif comme mod, et c'est le contrat public de la fiche 3.</p>
 </tr>
 <tr>
 <td><code>ctx.version</code></td>
-<td>la release de la fiche qui l'exécute, <code>"3.0.0"</code>.</td>
+<td>la release de la fiche qui l'exécute, telle qu'elle est publiée, suffixe de chantier compris, et qui se compare <a href="#versions">nombre par nombre</a>.</td>
 </tr>
 </tbody>
 </table>
@@ -1928,11 +1986,11 @@ déjà connu :</p>
 <tbody>
 <tr>
 <td><code>Jjk.version</code></td>
-<td>la release de la fiche, <code>"3.0.0"</code>.</td>
+<td>la release de la fiche, en trois nombres, suivie du <code>b</code> du site de chantier le cas échéant : <code>"3.6.0"</code>, <code>"3.6.0b"</code>. À comparer par ses nombres, jamais comme une chaîne.</td>
 </tr>
 <tr>
 <td><code>Jjk.schema</code></td>
-<td>le numéro de schéma de l'état, <code>3</code>.</td>
+<td>le numéro de schéma de l'état, un entier, <code>3</code> aujourd'hui. Il ne se déduit pas de <code>Jjk.version</code> : un mod qui en tirerait le schéma par le premier nombre se tromperait le jour où les deux divergeront.</td>
 </tr>
 <tr>
 <td><code>Jjk.enregistre(module)</code></td>
@@ -2129,7 +2187,36 @@ moins cher que réécrire celui qui existe, et un filtre de calcul suffit souven
 là où on croyait devoir tout reprendre.</p>
 </div>
 <h2 id="versions">Versions</h2>
-<p>Un mod peut déclarer ce qu'il exige de la fiche.</p>
+<p>La fiche porte deux numéros, qui ne se déduisent pas l'un de l'autre.</p>
+<p><code>Jjk.version</code> est la release : trois nombres, <code>X.Y.Z</code>, chacun de 0 à 999, et
+au-delà de 999 le nombre repart à 0 en faisant monter celui de sa gauche. Le
+premier monte pour une fonctionnalité entière, le deuxième pour un module ou la
+correction d'une grosse erreur, le troisième pour un détail d'affichage ou une
+erreur mineure. Ce troisième nombre ne change jamais la forme des données du
+personnage : c'est ce qui permet à un personnage écrit sur <code>3.6.0</code> de s'ouvrir
+sur <code>3.6.4</code> sans que la fiche pose de question.</p>
+<p><code>Jjk.schema</code> est le numéro de schéma de l'état, un entier séparé. Il ne monte
+que lorsque la forme des données du personnage change, et il est le seul à
+compter pour la compatibilité des données. Il ne suit pas le premier nombre de
+la release : le jour où l'un des deux montera sans l'autre, un mod qui aurait
+lu le schéma dans <code>parseInt(Jjk.version)</code> lira un nombre qui ne veut rien dire.
+Le schéma se demande à <code>Jjk.schema</code>, et à lui seul.</p>
+<p>Les releases se comparent nombre par nombre, jamais comme des chaînes :
+<code>"3.10.0"</code> vient après <code>"3.9.0"</code>, alors que la comparaison de texte prétendrait
+l'inverse.</p>
+<h3 id="le-suffixe-du-site-de-chantier">Le suffixe du site de chantier</h3>
+<p>Le site de chantier ajoute un <code>b</code> collé au dernier nombre, <code>"3.6.0b"</code>. Le site
+public ne le porte jamais : il est là pour qu'un joueur voie sur quel site il
+est.</p>
+<p>Ce suffixe se lit, il ne se compte pas. <code>"3.6.0b"</code> et <code>"3.6.0"</code> sont de même
+rang, parce que le chantier est ce que le site public recevra à la fusion. Un
+mod déclaré <code>pour: "3.6.0"</code> tourne donc sur le chantier <code>3.6.0b</code>, et un mod
+déclaré <code>pour: "3.6.0b"</code> tourne sur le site public <code>3.6.0</code>. Un personnage
+enregistré sur l'un ne passe jamais pour plus récent que l'autre.</p>
+<p>Un mod qui compare des numéros lui-même retire donc ce <code>b</code> avant de lire les
+nombres. Le plus simple reste de ne pas comparer du tout : le champ <code>pour</code> le
+fait déjà, et la fiche trop ancienne écarte le mod d'elle-même.</p>
+<h3 id="ce-quun-mod-peut-exiger">Ce qu'un mod peut exiger</h3>
 <table>
 <thead>
 <tr>
@@ -2140,22 +2227,23 @@ là où on croyait devoir tout reprendre.</p>
 <tbody>
 <tr>
 <td><code>pour</code></td>
-<td>la release minimale de la fiche, en trois nombres : <code>"3.0.0"</code>. Facultatif, et proposé dans le dialogue d'ajout, qui refuse ce qui n'est pas un numéro de version. Arrivé illisible par un import, il est gardé tel quel et ne bloque rien.</td>
+<td>la release minimale de la fiche, en trois nombres, le <code>b</code> du chantier accepté : <code>"3.6.0"</code>, <code>"3.6.0b"</code>. Facultatif, et proposé dans le dialogue d'ajout, qui refuse ce qui n'est pas un numéro de version. Arrivé illisible par un import, il est gardé tel quel et ne bloque rien.</td>
 </tr>
 <tr>
 <td><code>apiMin</code></td>
-<td>le schéma minimal de l'état, un entier. <code>Jjk.schema</code> vaut 3 ici. Facultatif ; il ne se règle pas dans le dialogue, il arrive avec un mod importé dans le personnage.</td>
+<td>le schéma minimal de l'état, un entier. Il vise le schéma seul, jamais la release : <code>Jjk.schema</code> vaut 3 ici. Facultatif ; il ne se règle pas dans le dialogue, il arrive avec un mod importé dans le personnage.</td>
 </tr>
 </tbody>
 </table>
 <p>Un mod dont la release minimale dépasse celle de la fiche, ou dont le schéma
 minimal dépasse le sien, ne tourne pas : son état est « trop récent ». Il n'est
 ni effacé ni modifié, sa ligne reste dans le bloc Mods et son coffre l'attend.
-Le cas se rencontre en ouvrant, sur une fiche ancienne, un personnage réglé sur
-une fiche plus neuve.</p>
+Le message de sa ligne donne le numéro de la fiche tel quel, suffixe compris, là
+où la comparaison, elle, ignore ce suffixe. Le cas se rencontre en ouvrant, sur
+une fiche ancienne, un personnage réglé sur une fiche plus neuve.</p>
 <p>Les noms décrits sur cette page sont figés : ce sont le contrat public de la
-fiche 3, et un mod écrit contre eux traverse les mises à jour de la lignée sans
-être retouché.</p>
+fiche 3, celle que dit le premier nombre de <code>Jjk.version</code>, et un mod écrit
+contre eux traverse les mises à jour de la lignée sans être retouché.</p>
 <h2 id="quand-ca-casse">Quand ça casse</h2>
 <p>Un mod est du code écrit par un joueur : il finira par casser. La fiche est
 faite pour que cela reste sans conséquence.</p>
@@ -2394,11 +2482,11 @@ d'atteinte que parce qu'elle est d'une autre origine que la fiche.</p>
       
         <script src="../../javascripts/night.js"></script>
       
-        <script src="../../javascripts/jjk-migrations.js?v=38"></script>
+        <script src="../../javascripts/jjk-migrations.js?v=44"></script>
       
-        <script src="../../javascripts/jjk-mods.js?v=38"></script>
+        <script src="../../javascripts/jjk-mods.js?v=44"></script>
       
-        <script src="../../javascripts/jjk-fiche.js?v=38"></script>
+        <script src="../../javascripts/jjk-fiche.js?v=44"></script>
       
         <script src="../../javascripts/copybtn.js"></script>
       
