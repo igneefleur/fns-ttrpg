@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Fige la version courante de la fiche JJK dans docs/fiche/v<release>/.
+"""Fige la LIGNE courante de la fiche JJK dans docs/fiche/v<release>/.
 
-    python scripts/archive_fiche.py                # fige la version courante
+    python scripts/archive_fiche.py                # ouvre la ligne, si elle est neuve
     python scripts/archive_fiche.py --essai        # dit tout, n'écrit rien
-    python scripts/archive_fiche.py --force        # re-fige une archive qui a bougé
+    python scripts/archive_fiche.py --force        # reprend un dossier jamais publié
     python scripts/archive_fiche.py --supprimer 2.1.0
 
 POURQUOI UNE ARCHIVE
@@ -43,12 +43,33 @@ docs/fiche/v<release>/... et AUCUN ?v= nulle part là-dedans. Un ?v= sert à
 casser un cache quand un fichier change ; ici rien ne change jamais, et un ?v=
 qui bougerait ferait mentir la promesse d'immuabilité.
 
-UN DOSSIER PAR RELEASE, PAS PAR SCHÉMA. Le blocage retenu est « release » :
-l'écran de version paraît dès que le NUMÉRO diffère, même à schéma constant,
-parce que 3.0.0 et 3.1.0 partagent la forme de l'état mais pas forcément les
-règles gelées ni le code. Un dossier par schéma les ferait se recouvrir : le
-manifeste garderait archives["3.0.0"] pointant sur un dossier réécrit par
-3.1.0, et « ouvrir avec sa version » servirait l'autre version sans le dire.
+UN DOSSIER PAR LIGNE X.Y, PAS PAR SCHÉMA NI PAR RELEASE. Une ligne s'ouvre à sa
+première release (3.6.0 ouvre la ligne 3.6) et le dossier garde ce nom-là ; les
+correctifs de la ligne (3.6.1, 3.6.2…) ne gèlent plus rien, parce qu'un Z ne
+touche jamais au format des données du personnage. Un personnage qui porte
+« 3.6.4 » se fait donc servir par l'archive 3.6.0 : il redescend d'un ou deux
+correctifs, jamais d'une forme d'état.
+
+Un dossier par SCHÉMA, lui, ferait se recouvrir des versions qui ne se
+ressemblent pas : le manifeste garderait archives["3.0.0"] pointant sur un
+dossier réécrit par 3.1.0, et « ouvrir avec sa version » servirait l'autre
+version sans le dire. C'est ce raisonnement qui interdit tout regroupement plus
+large que la ligne.
+
+LE SUFFIXE « b » NE VOYAGE NULLE PART. Sur la branche de chantier, le bundle
+porte « 3.6.0b » : le dossier s'appelle quand même v3.6.0/, la clé du manifeste
+est « 3.6.0 », ET LE CONTENU GELÉ AUSSI. Le bundle copié y déclare RELEASE
+« 3.6.0 », l'attr-map RELEASE_DEFAUT « 3.6.0 », la page d'archive s'intitule
+« Fiche JJK 3.6.0 ». Le gel se fait sur le numéro NU de bout en bout.
+
+Deux raisons, et la seconde est la plus dure. Sans dépouillement du NOM, la
+fusion vers la branche stable amènerait un v3.6.0b/ immuable, doublon de la même
+ligne, et la recherche par ligne aurait deux archives concurrentes selon la
+branche qui a publié. Sans dépouillement du CONTENU, le nom serait bien le même,
+mais geler la ligne depuis le stable produirait des octets DIFFÉRENTS de ceux
+gelés depuis le chantier ; or figer() compare octet à octet, et il n'aurait plus
+qu'un choix : refuser la publication, ou réécrire une archive immuable. Une
+archive appartient à sa ligne, pas à la branche qui l'a gelée.
 
 Seule la bibliothèque standard est employée. mkdocs n'a même pas besoin d'être
 installé : le hook est chargé par chemin et son import de mkdocs est bouché.
@@ -59,10 +80,12 @@ import importlib.util
 import io
 import json
 import os
-import re
 import shutil
 import sys
 import types
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import version_fiche as V  # noqa: E402  (la grammaire du numéro, partagée)
 
 RACINE_DEFAUT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -83,6 +106,15 @@ PAGE = "index.html"          # l'ouvre-archive : voir _page_archive()
 # archive : c'est un piège qui s'ouvrira à moitié le jour où on en aura besoin.
 SEPT = [n for _, n in COPIES] + [DONNEES]
 
+# LES DEUX PIÈCES QUI NOMMENT LEUR VERSION, et donc les deux seules à dépouiller
+# de leur suffixe avant le gel. Les feuilles de style ne disent aucun numéro, le
+# moteur de migration compte en schémas, et le JSON de règles est produit tel
+# quel par le hook. Voir l'en-tête : le gel se fait sur le numéro NU.
+DENUDE = {
+    "jjk-fiche.js": V.bundle_denude,
+    "jjk-attr-map.js": V.attrmap_denude,
+}
+
 
 def lire(chemin):
     # utf-8-sig : le bundle porte une marque d'ordre des octets
@@ -90,17 +122,50 @@ def lire(chemin):
         return f.read()
 
 
-def constantes_bundle(src):
-    """(RELEASE, SCHEMA) déclarés dans le bundle, ou (None, None).
+def _octets_denudes(nom, octets, cle):
+    """Les octets à geler, numéro dépouillé du suffixe « b ». Rend (octets, faute).
 
-    Délibérément recopié de scripts/verif_versions.py plutôt qu'importé : ce
-    script doit continuer à figer une version même le jour où l'autre change
-    de forme, et deux expressions régulières de trois lignes ne valent pas un
-    couplage entre deux outils de publication.
+    Décodage en « utf-8 » et NON en « utf-8-sig » : ainsi la marque d'ordre des
+    octets reste un caractère de la chaîne et repart telle quelle dans le
+    fichier gelé. Tout ce qui n'est pas le numéro se recopie à l'octet près, y
+    compris les fins de ligne, sans quoi le gel dépendrait de la machine qui
+    l'exécute autant que de la branche.
+
+    La faute rendue est un REFUS, jamais un repli : une archive est immuable, et
+    une archive fausse ne se rattrape plus après coup.
     """
-    rel = re.search(r"""\b(?:var|let|const)\s+RELEASE\s*=\s*["']([^"']+)["']""", src)
-    sch = re.search(r"""\b(?:var|let|const)\s+SCHEMA\s*=\s*(\d+)""", src)
-    return (rel.group(1) if rel else None, int(sch.group(1)) if sch else None)
+    denude = DENUDE.get(nom)
+    if denude is None:
+        return (octets, None)
+    try:
+        src = octets.decode("utf-8")
+    except UnicodeDecodeError:
+        return (octets, "%s n'est pas lisible en utf-8 : son numéro ne peut pas "
+                "être dépouillé de son suffixe" % nom)
+    neuf, ancien, nu = denude(src)
+    if ancien is None:
+        return (octets, "%s ne déclare pas son numéro de version : gelé tel quel, "
+                "il ne dirait pas de quelle version il est" % nom)
+    if nu is None:
+        return (octets, "%s annonce le numéro %r, que la grammaire refuse : %s"
+                % (nom, ancien, V.faute_de_forme(ancien)))
+    if nu != cle:
+        # Le seul moment où l'on peut encore le dire. Une fois l'archive posée,
+        # un attr-map resté à 3.5.0 dans le dossier v3.6.0/ relira pour toujours
+        # les personnages avec la carte d'une autre version, sans un mot.
+        return (octets, "%s annonce %s alors que la ligne se gèle en %s : les "
+                "pièces d'une archive portent toutes le même numéro" % (nom, ancien, cle))
+    if neuf == src:
+        return (octets, None)      # déjà nu : les octets d'origine, intacts
+    return (neuf.encode("utf-8"), None)
+
+
+# La lecture du numéro était recopiée ici, au nom du découplage entre outils de
+# publication. Le suffixe « b » a montré ce que coûtait cette copie : le jour où
+# une expression régulière apprend une forme, les autres continuent de la
+# rejeter sans un mot. Elle vit maintenant dans scripts/version_fiche.py, avec
+# la retenue et la réduction en ligne X.Y, et tout le monde y lit la même chose.
+constantes_bundle = V.constantes_bundle
 
 
 # ------------------------------------------------------------ le hook MkDocs
@@ -165,7 +230,7 @@ def donnees_gelees(racine):
 
 
 # ----------------------------------------------------------- l'ouvre-archive
-def _page_archive(release, schema):
+def _page_archive(cle, schema):
     """La page qui ouvre l'archive hors de Roll20.
 
     Elle ne fait pas partie des sept pièces exigées : dans Roll20, c'est
@@ -174,6 +239,10 @@ def _page_archive(release, schema):
     jamais ; celle-ci se suffit à elle-même et ne nomme que des fichiers de son
     propre dossier, sauf les polices, qui sont de la présentation et jamais des
     règles.
+
+    Elle est titrée de la CLÉ, jamais de la release : c'est la clé qui nomme la
+    ligne gelée, et un « Fiche JJK 3.6.0b (archive) » ferait dire à la même
+    archive deux choses différentes selon la branche qui l'a produite.
     """
     return """<!DOCTYPE html>
 <html lang="fr">
@@ -181,8 +250,8 @@ def _page_archive(release, schema):
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex">
-  <title>Fiche JJK %(rel)s (archive)</title>
-  <!-- ARCHIVE GELÉE de la fiche %(rel)s (schéma %(sch)d), produite par
+  <title>Fiche JJK %(cle)s (archive)</title>
+  <!-- ARCHIVE GELÉE de la ligne %(cle)s (schéma %(sch)d), produite par
        scripts/archive_fiche.py. Ne rien modifier ici à la main : le jour où
        un joueur rouvre un personnage dans cette version, c'est ce dossier
        qui doit répondre exactement ce qu'il répondait le jour de la sortie.
@@ -223,23 +292,22 @@ def _page_archive(release, schema):
   <script src="jjk-fiche.js"></script>
 </body>
 </html>
-""" % {"rel": release, "sch": schema}
+""" % {"cle": cle, "sch": schema}
 
 
 # ------------------------------------------------------------- le manifeste
-def _fin_de_ligne(octets):
-    """Le saut de ligne dominant du fichier, pour le réécrire comme il était.
-
-    Le dépôt est travaillé sous Windows : le manifeste est en CRLF. Réécrire
-    en LF ferait un diff de tout le fichier à chaque archivage, et la vraie
-    modification, une clé de plus, s'y perdrait.
-    """
-    crlf = octets.count(b"\r\n")
-    return "\r\n" if crlf and crlf >= octets.count(b"\n") - crlf else "\n"
+# Le saut de ligne dominant se lit dans la grammaire partagée : le manifeste est
+# en CRLF, et le réécrire en LF ferait un diff de tout le fichier à chaque
+# archivage, où la vraie modification, une clé de plus, se perdrait. Le nom
+# privé reste : scripts/release_fiche.py le prend ici.
+_fin_de_ligne = V.fin_de_ligne
 
 
-def maj_manifeste(chemin, release, schema, essai=False, retirer=None):
+def maj_manifeste(chemin, cle, schema, essai=False, retirer=None):
     """Ajoute (ou retire) une entrée sous « archives », sans toucher au reste.
+
+    « cle » est le numéro NU (sans le suffixe « b ») : c'est la release qui a
+    ouvert la ligne, et c'est aussi le nom du dossier.
 
     Le manifeste est lu par l'amorceur gelé ET par l'écran de version : on ne
     le RÉÉCRIT PAS, on le relit, on pose la seule clé qui nous regarde et on
@@ -259,8 +327,8 @@ def maj_manifeste(chemin, release, schema, essai=False, retirer=None):
     if retirer is not None:
         archives.pop(retirer, None)
     else:
-        base = "fiche/v%s/" % release
-        archives[release] = {
+        base = "fiche/v%s/" % cle
+        archives[cle] = {
             "schema": schema,
             "js": [base + "jjk-migrations.js", base + "jjk-mods.js",
                    base + "jjk-fiche.js"],
@@ -292,8 +360,69 @@ def figer(racine, essai=False, force=False):
 
     src = lire(bundle)
     release, schema = constantes_bundle(src)
-    if not release or not schema:
+    # « schema is None » et non « not schema » : le schéma est un entier libre,
+    # détaché du majeur, et rien ne lui interdit de valoir 0 un jour.
+    if not release or schema is None:
         return ["le bundle ne déclare pas RELEASE et SCHEMA : rien à figer"]
+    faute = V.faute_de_forme(release)
+    if faute:
+        return ["le bundle annonce RELEASE %s" % faute]
+    version = V.lire(release)
+    # La CLÉ et le DOSSIER portent le numéro NU : sur le chantier le bundle
+    # s'appelle « 3.6.0b » et l'archive « 3.6.0 ». Voir l'en-tête.
+    cle = version.nu
+
+    with open(manifeste, "rb") as f:
+        man = json.loads(f.read().decode("utf-8"))
+    publiees = man.get("archives")
+    if not isinstance(publiees, dict):
+        publiees = {}
+
+    # --FORCE NE TOUCHE PAS À CE QUI EST SORTI. L'entrée au manifeste est le
+    # seul témoin dont le dépôt dispose, et elle ne veut dire qu'une chose :
+    # cette version est publiée, des personnages ont pu être ouverts avec. La
+    # réécrire ferait tourner un autre code sous le même nom, pour toujours.
+    # --force ne sert donc qu'à une ligne dont le dossier traîne sur le disque
+    # (une publication interrompue avant le manifeste) sans avoir jamais paru.
+    if force and cle in publiees:
+        return ["--force refusé : archives[%s] figure au manifeste, donc cette "
+                "version est SORTIE et son archive est immuable. --force ne "
+                "reprend qu'un dossier posé sur le disque et jamais publié." % cle]
+
+    # LA LIGNE DÉCIDE, ET ELLE SEULE. Dès qu'une archive répond pour la ligne
+    # courante, la ligne est OUVERTE et rien ne se gèle : ni un correctif (un Z
+    # ne touche pas au format des données du personnage, l'archive de la ligne
+    # sait déjà le relire), ni la release qui a ouvert la ligne elle-même.
+    # Ce dernier cas est celui qui bloquait tout : la porte se décidait sur
+    # « servante != cle », or en essai le numéro n'est pas encore posé, le
+    # bundle lit encore 3.6.0b, sa clé nue 3.6.0 est ÉGALE à l'archive déjà
+    # gelée, la porte ne s'ouvrait pas, et la publication d'un simple correctif
+    # de CSS repartait geler une archive immuable pour s'arrêter dessus.
+    # Sortir sans faute, et le DIRE : sans ce mot, un auteur croirait à une
+    # panne le jour où l'étape ne pose plus de dossier.
+    servante = V.archive_de_ligne(man, release)
+    if servante is not None:
+        print("  fiche %s : la ligne %s est déjà ouverte par l'archive %s"
+              % (release, version.ligne, servante))
+        if servante == cle:
+            print("  c'est l'archive de CE numéro : la ligne est ouverte, il n'y "
+                  "a rien à regeler")
+        else:
+            print("  un correctif ne gèle rien (seuls X et Y ouvrent une ligne)")
+        if force:
+            # ne pas avaler le --force en silence : il ne veut rien dire ici, et
+            # ne conseiller aucun --supprimer, que supprimer() refuserait de
+            # toute façon sur la ligne courante
+            print("  --force ne rouvre pas une ligne : cette archive est immuable, "
+                  "et elle sert la version publiée. Il n'y a rien à en reprendre.")
+        return []
+
+    dest = os.path.join(docs, "fiche", "v%s" % cle)
+    print("  fiche %s, schéma %d -> docs/fiche/v%s/ (ligne %s)"
+          % (release, schema, cle, version.ligne))
+    if cle != release:
+        print("  le suffixe « b » ne passe pas : dossier, clé ET contenu gelé "
+              "portent le numéro nu %s" % cle)
 
     # LE REFUS QUI PROTÈGE L'ARCHIVE. Un bundle qui ne lit pas
     # window.__jjkDataUrl ira chercher jjk-creation.json à la racine du site,
@@ -302,9 +431,6 @@ def figer(racine, essai=False, force=False):
     if "__jjkDataUrl" not in src:
         return ["le bundle ne lit pas window.__jjkDataUrl : archive refusée "
                 "(elle lirait le jjk-creation.json du jour, pas le sien)"]
-
-    dest = os.path.join(docs, "fiche", "v%s" % release)
-    print("  fiche %s, schéma %d -> docs/fiche/v%s/" % (release, schema, release))
 
     # ce qu'on va poser, en mémoire d'abord : rien n'est écrit tant qu'une
     # pièce manque à l'appel
@@ -315,12 +441,17 @@ def figer(racine, essai=False, force=False):
             fautes.append("pièce manquante : docs/" + rel)
             continue
         with open(chemin, "rb") as f:
-            a_poser[nom] = f.read()   # copie BINAIRE : une archive se fige à l'octet
+            octets = f.read()   # copie BINAIRE : une archive se fige à l'octet
+        # à un mot près : le numéro, dépouillé de son suffixe de chantier
+        octets, faute = _octets_denudes(nom, octets, cle)
+        if faute:
+            fautes.append(faute)
+        a_poser[nom] = octets
     try:
         a_poser[DONNEES] = donnees_gelees(racine).encode("utf-8")
     except Exception as e:
         fautes.append("données gelées : %s" % e)
-    a_poser[PAGE] = _page_archive(release, schema).encode("utf-8")
+    a_poser[PAGE] = _page_archive(cle, schema).encode("utf-8")
 
     manquantes = [n for n in SEPT if not a_poser.get(n)]
     if manquantes:
@@ -347,7 +478,7 @@ def figer(racine, essai=False, force=False):
         elif not force:
             return ["docs/fiche/v%s/ existe déjà et diffère (%s) ; une archive "
                     "est immuable. Reprendre avec --force seulement si cette "
-                    "version n'a jamais été publiée." % (release, ", ".join(diffs))]
+                    "version n'a jamais été publiée." % (cle, ", ".join(diffs))]
         else:
             print("  --force : %d fichier(s) réécrit(s) (%s)" % (len(diffs), ", ".join(diffs)))
 
@@ -367,8 +498,9 @@ def figer(racine, essai=False, force=False):
         if absents:
             return ["archive incomplète sur le disque : " + ", ".join(absents)]
 
-    change = maj_manifeste(manifeste, release, schema, essai=essai)
-    print("  manifeste : archives[%s] %s" % (release, "ajoutée" if change else "inchangée"))
+    change = maj_manifeste(manifeste, cle, schema, essai=essai)
+    print("  manifeste : archives[%s] %s (ligne %s ouverte)"
+          % (cle, "ajoutée" if change else "inchangée", version.ligne))
     return []
 
 
@@ -386,13 +518,30 @@ def supprimer(racine, release, essai=False):
     manifeste = os.path.join(docs, "jjk-manifeste.json")
     with open(manifeste, "rb") as f:
         man = json.loads(f.read().decode("utf-8"))
-    if release == str(man.get("release", "")):
-        return ["%s est la version COURANTE : ce n'est pas une vieille archive" % release]
+    # La comparaison porte sur la LIGNE, pas sur le texte. Avec une release
+    # 3.6.4b et une archive 3.6.0, l'égalité de chaîne est fausse : elle
+    # laisserait retirer l'archive qui sert la ligne du jour, et « ouvrir avec
+    # sa version » n'aurait plus rien pour toute la ligne.
+    #
+    # DEUX LIGNES SE PROTÈGENT, PAS UNE. Le manifeste dit ce que le site
+    # ANNONCE, le bundle dit ce qui TOURNE, et les deux divergent le temps d'une
+    # publication interrompue ou d'un fichier ramené en arrière. N'en regarder
+    # qu'un laissait retirer l'archive de la ligne de l'autre, que figer()
+    # refuserait ensuite de reposer, la ligne étant déjà ouverte.
+    protegees = []
+    for texte in (str(man.get("release", "")), V.courante(racine) or ""):
+        l = V.ligne(texte)
+        if l is not None and l not in protegees:
+            protegees.append(l)
+    if V.ligne(release) in protegees:
+        return ["%s est de la ligne COURANTE (%s) : cette archive sert la version "
+                "publiée, ce n'est pas une vieille archive"
+                % (release, V.ligne(release))]
     entree = (man.get("archives") or {}).get(release)
     if not entree:
         return ["aucune archive %s au manifeste" % release]
     schema = entree.get("schema")
-    # Un dossier par RELEASE : personne d'autre ne le nomme, il part avec son
+    # Un dossier par LIGNE : personne d'autre ne le nomme, il part avec son
     # entrée. (Un dossier par schéma aurait été partagé par 3.0.0 et 3.1.0, et
     # en retirer une aurait emporté l'autre.)
     if not essai:
@@ -408,12 +557,13 @@ def supprimer(racine, release, essai=False):
 def main():
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
-    p = argparse.ArgumentParser(description="Fige la version courante de la fiche JJK.")
+    p = argparse.ArgumentParser(description="Fige la ligne courante de la fiche JJK.")
     p.add_argument("--racine", default=RACINE_DEFAUT,
                    help="racine du dépôt (défaut : le parent de scripts/)")
     p.add_argument("--essai", action="store_true", help="dit tout, n'écrit rien")
     p.add_argument("--force", action="store_true",
-                   help="réécrit une archive qui a bougé (version jamais publiée)")
+                   help="reprend un dossier d'archive posé sur le disque et JAMAIS "
+                        "publié au manifeste ; refusé sur une version sortie")
     p.add_argument("--supprimer", metavar="RELEASE",
                    help="retire une vieille archive ; n'élague AUCUN pas de migration")
     a = p.parse_args()

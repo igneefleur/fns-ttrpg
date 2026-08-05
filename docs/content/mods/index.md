@@ -33,9 +33,11 @@ personnage, que la fiche exécute à chaque ouverture. Rien ne se compile et rie
 ne s'installe sur la machine ; le code est du texte, rangé dans le personnage,
 exécuté tel quel.
 
-Cette page décrit l'interface publique de la fiche 3.0.0 : l'objet `Jjk`, le
+Cette page décrit l'interface publique de la fiche 3 : l'objet `Jjk`, le
 contexte reçu par un module, les filtres de calcul, et les deux blocs de
-l'onglet Options qui les gouvernent.
+l'onglet Options qui les gouvernent. Le 3 est le premier nombre de la release,
+celui que rend `Jjk.version` ; il ne se confond pas avec le schéma de l'état,
+qui compte la forme des données et monte de son côté.
 
 <div class="mods-alerte" markdown>
 
@@ -164,7 +166,7 @@ Quatre règles tiennent dans cet exemple :
 
 | Règle | Détail |
 | --- | --- |
-| Le code d'un mod reçoit `Jjk` | c'est l'objet public de la fiche. Il reçoit aussi un `ctx` à lui, qui porte `id`, `nom`, `version` et `schema` : quatre renseignements sur le mod en cours, à ne pas confondre avec le `ctx` de `build`, qui est celui d'un module. |
+| Le code d'un mod reçoit `Jjk` | c'est l'objet public de la fiche. Il reçoit aussi un `ctx` à lui, qui porte `id` et `nom`, les deux renseignements sur le mod en cours, puis `version` et `schema`, les deux numéros de la fiche qui l'exécute. À ne pas confondre avec le `ctx` de `build`, qui est celui d'un module. |
 | `build` rend un élément | il ne l'accroche pas lui-même. La fiche le pose où le rangement des modules dit de le poser. |
 | Un `id` unique | c'est la clé du module dans la liste, et celle de son coffre de données. Deux modules qui partagent un `id` partagent tout : le second remplace le premier, à sa place. |
 | Le code est en ES5 | la fiche tourne dans une iframe Roll20 : `var`, `function`, pas de flèche, pas de `let`, pas de gabarit de chaîne. |
@@ -207,7 +209,7 @@ natif comme mod, et c'est le contrat public de la fiche 3.
 | Entrée | Ce que c'est |
 | --- | --- |
 | `ctx.id` | l'identifiant du module, tel qu'il s'est enregistré. |
-| `ctx.version` | la release de la fiche qui l'exécute, `"3.0.0"`. |
+| `ctx.version` | la release de la fiche qui l'exécute, telle qu'elle est publiée, suffixe de chantier compris, et qui se compare [nombre par nombre](#versions). |
 
 ### Données
 
@@ -369,8 +371,8 @@ Les règles de sûreté, qui valent pour les deux :
 
 | Membre | Ce qu'il fait |
 | --- | --- |
-| `Jjk.version` | la release de la fiche, `"3.0.0"`. |
-| `Jjk.schema` | le numéro de schéma de l'état, `3`. |
+| `Jjk.version` | la release de la fiche, en trois nombres, suivie du `b` du site de chantier le cas échéant : `"3.6.0"`, `"3.6.0b"`. À comparer par ses nombres, jamais comme une chaîne. |
+| `Jjk.schema` | le numéro de schéma de l'état, un entier, `3` aujourd'hui. Il ne se déduit pas de `Jjk.version` : un mod qui en tirerait le schéma par le premier nombre se tromperait le jour où les deux divergeront. |
 | `Jjk.enregistre(module)` | déclare un module, ou remplace celui qui porte le même `id`, à sa place. Rend le module. |
 | `Jjk.ordonne(ids)` | ordre partiel : les identifiants cités passent devant, dans l'ordre donné, les autres suivent à leur rang de déclaration. Un identifiant inconnu ne casse rien. |
 | `Jjk.liste()` | une copie de la liste des modules : `id`, `titre`, `onglet`, `colonne`, `actif`. |
@@ -588,22 +590,60 @@ là où on croyait devoir tout reprendre.
 
 ## Versions
 
-Un mod peut déclarer ce qu'il exige de la fiche.
+La fiche porte deux numéros, qui ne se déduisent pas l'un de l'autre.
+
+`Jjk.version` est la release : trois nombres, `X.Y.Z`, chacun de 0 à 999, et
+au-delà de 999 le nombre repart à 0 en faisant monter celui de sa gauche. Le
+premier monte pour une fonctionnalité entière, le deuxième pour un module ou la
+correction d'une grosse erreur, le troisième pour un détail d'affichage ou une
+erreur mineure. Ce troisième nombre ne change jamais la forme des données du
+personnage : c'est ce qui permet à un personnage écrit sur `3.6.0` de s'ouvrir
+sur `3.6.4` sans que la fiche pose de question.
+
+`Jjk.schema` est le numéro de schéma de l'état, un entier séparé. Il ne monte
+que lorsque la forme des données du personnage change, et il est le seul à
+compter pour la compatibilité des données. Il ne suit pas le premier nombre de
+la release : le jour où l'un des deux montera sans l'autre, un mod qui aurait
+lu le schéma dans `parseInt(Jjk.version)` lira un nombre qui ne veut rien dire.
+Le schéma se demande à `Jjk.schema`, et à lui seul.
+
+Les releases se comparent nombre par nombre, jamais comme des chaînes :
+`"3.10.0"` vient après `"3.9.0"`, alors que la comparaison de texte prétendrait
+l'inverse.
+
+### Le suffixe du site de chantier
+
+Le site de chantier ajoute un `b` collé au dernier nombre, `"3.6.0b"`. Le site
+public ne le porte jamais : il est là pour qu'un joueur voie sur quel site il
+est.
+
+Ce suffixe se lit, il ne se compte pas. `"3.6.0b"` et `"3.6.0"` sont de même
+rang, parce que le chantier est ce que le site public recevra à la fusion. Un
+mod déclaré `pour: "3.6.0"` tourne donc sur le chantier `3.6.0b`, et un mod
+déclaré `pour: "3.6.0b"` tourne sur le site public `3.6.0`. Un personnage
+enregistré sur l'un ne passe jamais pour plus récent que l'autre.
+
+Un mod qui compare des numéros lui-même retire donc ce `b` avant de lire les
+nombres. Le plus simple reste de ne pas comparer du tout : le champ `pour` le
+fait déjà, et la fiche trop ancienne écarte le mod d'elle-même.
+
+### Ce qu'un mod peut exiger
 
 | Champ | Ce qu'il déclare |
 | --- | --- |
-| `pour` | la release minimale de la fiche, en trois nombres : `"3.0.0"`. Facultatif, et proposé dans le dialogue d'ajout, qui refuse ce qui n'est pas un numéro de version. Arrivé illisible par un import, il est gardé tel quel et ne bloque rien. |
-| `apiMin` | le schéma minimal de l'état, un entier. `Jjk.schema` vaut 3 ici. Facultatif ; il ne se règle pas dans le dialogue, il arrive avec un mod importé dans le personnage. |
+| `pour` | la release minimale de la fiche, en trois nombres, le `b` du chantier accepté : `"3.6.0"`, `"3.6.0b"`. Facultatif, et proposé dans le dialogue d'ajout, qui refuse ce qui n'est pas un numéro de version. Arrivé illisible par un import, il est gardé tel quel et ne bloque rien. |
+| `apiMin` | le schéma minimal de l'état, un entier. Il vise le schéma seul, jamais la release : `Jjk.schema` vaut 3 ici. Facultatif ; il ne se règle pas dans le dialogue, il arrive avec un mod importé dans le personnage. |
 
 Un mod dont la release minimale dépasse celle de la fiche, ou dont le schéma
 minimal dépasse le sien, ne tourne pas : son état est « trop récent ». Il n'est
 ni effacé ni modifié, sa ligne reste dans le bloc Mods et son coffre l'attend.
-Le cas se rencontre en ouvrant, sur une fiche ancienne, un personnage réglé sur
-une fiche plus neuve.
+Le message de sa ligne donne le numéro de la fiche tel quel, suffixe compris, là
+où la comparaison, elle, ignore ce suffixe. Le cas se rencontre en ouvrant, sur
+une fiche ancienne, un personnage réglé sur une fiche plus neuve.
 
 Les noms décrits sur cette page sont figés : ce sont le contrat public de la
-fiche 3, et un mod écrit contre eux traverse les mises à jour de la lignée sans
-être retouché.
+fiche 3, celle que dit le premier nombre de `Jjk.version`, et un mod écrit
+contre eux traverse les mises à jour de la lignée sans être retouché.
 
 ## Quand ça casse
 
