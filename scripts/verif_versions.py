@@ -193,11 +193,26 @@ def controle_extension():
                       % ", ".join("%s = %r" % (c, v) for c, v in vus))
         return
     version = vus[0][1]
-    faute = V.faute_de_forme(version)
+    # LE QUATRIÈME NOMBRE N'EXISTE QUE POUR L'EXTENSION. Il compte ses
+    # signatures pour un même X.Y.Z, quand la coquille doit ressortir sans que
+    # le projet ait bougé. La grammaire du projet, elle, n'en connaît que trois,
+    # et refusait donc « 3.6.0.1 » comme un suffixe illégal. On le met de côté
+    # avant de faire juger le tronc, puis on le juge à part : entier de 1 à 999,
+    # jamais zéro (Firefox et Chrome tiennent « X.Y.Z.0 » pour ÉGAL à
+    # « X.Y.Z », et Mozilla refuserait le second après le premier).
+    morceaux = str(version).split(".")
+    tronc = ".".join(morceaux[:3])
+    quatre = morceaux[3] if len(morceaux) > 3 else None
+    if quatre is not None and not (quatre.isdigit() and 0 < int(quatre) <= V.MAX):
+        fautes.append("extension : version %r : le compteur de signatures doit "
+                      "être un entier de 1 à %d, et ne s'écrit jamais quand il "
+                      "vaut zéro" % (version, V.MAX))
+        return
+    faute = V.faute_de_forme(tronc)
     if faute:
         fautes.append("extension : version %s" % faute)
         return
-    if V.lire(version).beta:
+    if V.lire(tronc).beta:
         fautes.append("extension : version %r porte le suffixe « b » ; l'extension "
                       "n'en porte jamais, elle est la même sur les deux branches"
                       % version)
@@ -210,7 +225,25 @@ def controle_extension():
         signee = json.loads(lire(EXT_SIGNEE)).get("version")
     except ValueError:
         signee = None
-    ordre = V.compare(version, signee)
+    # LE RECUL SE COMPARE SUR QUATRE NOMBRES. V.compare ne connaît que le
+    # tronc, et rendait None sur « 3.6.0.1 » : le contrôle était alors SAUTÉ,
+    # en le disant, mais sauté quand même — c'est-à-dire précisément quand le
+    # compteur de signatures est en service, le seul moment où deux numéros
+    # peuvent se ressembler au point qu'on s'y trompe.
+    def rang4(t):
+        mx = str(t).split(".")
+        r = V.rang(".".join(mx[:3]))
+        if r is None:
+            return None
+        try:
+            b4 = int(mx[3]) if len(mx) > 3 else 0
+        except ValueError:
+            return None
+        return tuple(r) + (b4,)
+
+    ra, rb = rang4(version), rang4(signee)
+    ordre = None if (ra is None or rb is None) else (
+        0 if ra == rb else (1 if ra > rb else -1))
     if ordre is None:
         notes.append("extension : version %s, dernière signée %r illisible, contrôle du recul sauté"
                      % (version, signee))

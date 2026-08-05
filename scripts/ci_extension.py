@@ -156,16 +156,29 @@ def stamp_version(version):
     les manifests, plutôt que sur chacun des chemins qui y mènent : c'est ce qui
     le rend impossible à contourner par un chemin de plus.
     """
-    v = V.lire(str(version))
+    # LE QUATRIÈME NOMBRE appartient à l'extension seule, et la grammaire du
+    # projet n'en connaît que trois : on le met de côté, on fait valider le
+    # tronc, puis on le rend. Sans ce détour, une simple ressortie de coquille
+    # (« 3.6.0.1 ») était déclarée illisible et rien ne partait chez Mozilla.
+    mx = str(version).split(".")
+    quatre = mx[3] if len(mx) > 3 else None
+    if quatre is not None and not (quatre.isdigit() and 0 < int(quatre) <= 999):
+        refus("Quatrième nombre d'extension invalide",
+              f"« {version} » : le compteur de signatures doit être un entier de 1 "
+              "à 999, et ne s'écrit jamais quand il vaut zéro (Firefox et Chrome "
+              "tiennent « X.Y.Z.0 » pour ÉGAL à « X.Y.Z », et Mozilla refuserait "
+              "le second après le premier, APRÈS validation, quota consommé).")
+    v = V.lire(".".join(mx[:3]))
     if v is None:
         refus("Version d'extension illisible",
               f"« {version} » n'est pas un numéro X.Y.Z : rien n'est posé dans les "
               "manifests, rien n'est envoyé à la signature.")
+    pose = v.nu + ("." + quatre if quatre is not None else "")
     for p in MANIFESTS:
         m = json.loads(p.read_text(encoding="utf-8"))
-        m["version"] = v.nu
+        m["version"] = pose
         p.write_text(json.dumps(m, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    return v.nu
+    return pose
 
 
 def parse_ver(v):
@@ -192,6 +205,46 @@ def parse_ver(v):
         return (0, 0, 0)
 
 
+def signature_suivante(base, cible):
+    """« X.Y.Z.B » quand la coquille ressort sans que le projet ait bougé.
+
+    B compte les signatures d'un même X.Y.Z, et rien d'autre. Il n'existe que
+    tant que le projet piétine : dès que le site publie plus haut, la cible
+    reprend la main et B disparaît de lui-même, sans qu'on ait à le remettre à
+    zéro nulle part.
+
+    B NE S'ÉCRIT JAMAIS QUAND IL VAUT ZÉRO, et ce n'est pas une coquetterie de
+    lisibilité : Firefox comme Chrome complètent de zéros et tiennent
+    « 3.6.0.0 » pour ÉGAL à « 3.6.0 ». Soumettre le second après le premier
+    serait refusé APRÈS la validation, quota du jour consommé pour rien. La
+    première ressortie est donc « .1 ».
+
+    Rend None si le cas n'est pas celui-là : à l'appelant de monter d'un cran.
+    """
+    if not cible:
+        return None
+    # Le plancher porte DÉJÀ un quatrième nombre dès la deuxième ressortie, et
+    # la grammaire du projet, elle, n'en connaît que trois : le comparer tel
+    # quel rendait « illisible » et faisait tomber l'outil dans le refus. On le
+    # coupe donc avant de comparer les lignes.
+    morceaux = str(base).split(".")
+    tronc = ".".join(morceaux[:3])
+    rc, rb = V.rang(str(cible)), V.rang(tronc)
+    if rc is None or rb is None or rc != rb:
+        return None          # lignes différentes : ce n'est pas une ressortie
+    try:
+        b = int(morceaux[3]) if len(morceaux) > 3 else 0
+    except ValueError:
+        return None
+    b += 1
+    if b > 999:
+        # Le contrat borne chaque nombre à 999. Mille signatures pour un même
+        # X.Y.Z ne se produira pas, mais un dépassement silencieux fabriquerait
+        # un « 1000 » que plus aucun de ces outils ne sait relire.
+        return None
+    return "%s.%d" % (cible, b)
+
+
 def numero_a_poser(base, cible):
     """(version à poser, lignes de journal), d'après le plancher et la cible.
 
@@ -207,6 +260,15 @@ def numero_a_poser(base, cible):
     if cible and parse_ver(cible) > parse_ver(base):
         return (cible, [f"[ci-extension] contenu modifié : la coquille prend le "
                         f"numéro du projet, v{base} -> v{cible}"])
+    # LE QUATRIÈME NOMBRE. La coquille doit ressortir alors que le projet n'a
+    # pas bougé : c'est précisément le cas pour lequel il existe. Monter le Z du
+    # projet ferait annoncer à l'extension une version que le site n'a jamais
+    # publiée, et le prochain correctif de fiche retomberait sur un numéro déjà
+    # brûlé chez Mozilla.
+    quatrieme = signature_suivante(base, cible)
+    if quatrieme:
+        return (quatrieme, [f"[ci-extension] le projet n'a pas bougé (v{cible}) : "
+                            f"la coquille ressort, v{base} -> v{quatrieme}"])
     montee = bump_version(base)
     if cible:
         return (montee, [f"::warning title=Extension JJK décalée du projet::le site "

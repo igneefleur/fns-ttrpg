@@ -12,16 +12,15 @@
   <label for="p-panneau" title="Le plateau de narration partagé, posé en haut à gauche de la partie.">
     <input type="checkbox" id="p-panneau" checked> Plateau de Narration
   </label>
-  <!-- Les deux parties voyagent dans le même paquet signé : le numéro du
-       manifeste, seul, ne dirait jamais où en est celle de chantier. On montre
-       donc les deux, en désignant celle qui tourne, plus le numéro du paquet
-       tel que Mozilla et Chrome le connaissent. -->
+  <!-- Trois numéros, et trois sources différentes : les deux SITES se lisent
+       en direct dans leurs manifestes (ils avancent sans qu'on signe, un nombre
+       figé ici deviendrait faux le jour même), l'EXTENSION se lit dans son
+       propre manifeste, seule source que Mozilla ne puisse démentir. -->
   <div class="versions">
     <span id="p-v-stable"></span>
     <span id="p-v-beta"></span>
     <span id="p-v-paquet"></span>
   </div>
-  <script src="../version.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

@@ -28,32 +28,72 @@ if (typeof browser === "undefined") { var browser = chrome; }
   var beta = document.getElementById("p-beta");
   var regles = document.getElementById("p-regles");
 
-  // Les deux numéros du projet, déclarés dans version.js (partagé), plus celui
-  // du paquet signé, que seul le manifeste connaît. runtime.getManifest() évite
-  // de le recopier à la main : il ne se désaccordera jamais.
+  // LES NUMÉROS DES SITES SE LISENT À LA SOURCE, jamais en dur.
+  //
+  // Ils étaient déclarés dans version.js, donc figés dans le paquet signé. Or un
+  // site avance sans qu'on signe quoi que ce soit : le numéro du site stable est
+  // devenu faux en moins d'une heure, et il serait resté faux jusqu'à la
+  // signature suivante. Le popup va donc les chercher dans les deux manifestes.
+  //
+  // Aucune permission n'est nécessaire pour cela : GitHub Pages répond
+  // « Access-Control-Allow-Origin: * », donc une simple lecture depuis une autre
+  // origine passe. Élargir les permissions aurait fait réexaminer l'extension et
+  // redemandé leur accord aux joueurs, pour deux nombres d'affichage.
+  //
+  // Le numéro du PAQUET, lui, vient du manifeste : c'est la seule source qui ne
+  // puisse pas se désaccorder de ce que Mozilla a signé.
+  var MANIFESTES = {
+    stable: "https://igneefleur.github.io/HxH-Regles-JDR/jjk/jjk-manifeste.json",
+    beta: "https://igneefleur.github.io/HxH-Regles-JDR/jjk-beta/jjk-manifeste.json"
+  };
   var vStable = document.getElementById("p-v-stable");
   var vBeta = document.getElementById("p-v-beta");
   var vPaquet = document.getElementById("p-v-paquet");
+  var sites = { stable: null, beta: null };   // null : pas encore su
   try {
-    vPaquet.textContent = "paquet signé " + browser.runtime.getManifest().version;
+    vPaquet.textContent = "extension " + browser.runtime.getManifest().version;
   } catch (e) {}
+
+  // Hors ligne, ou site injoignable : on écrit « ? » plutôt que de laisser une
+  // ligne vide, qui se lirait comme une extension cassée. Le popup ne doit
+  // jamais attendre le réseau pour s'afficher : la case et le lien sont posés
+  // tout de suite, les numéros arrivent après.
+  function litSite(quel) {
+    var ctrl = null;
+    try { ctrl = new AbortController(); setTimeout(function () { ctrl.abort(); }, 4000); }
+    catch (e) { ctrl = null; }
+    fetch(MANIFESTES[quel], ctrl ? { signal: ctrl.signal, cache: "no-store" }
+                                 : { cache: "no-store" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (m) {
+        sites[quel] = (m && typeof m.release === "string") ? m.release : "?";
+        rendVersions();
+      })
+      .catch(function () { sites[quel] = "?"; rendVersions(); });
+  }
+
+  function rendVersions() {
+    var on = !!(beta && beta.checked);
+    vStable.textContent = "site stable " + (sites.stable || "…") + (on ? "" : " (choisi)");
+    vBeta.textContent = "site chantier " + (sites.beta || "…") + (on ? " (choisi)" : "");
+    vStable.classList.toggle("actif", !on);
+    vBeta.classList.toggle("actif", on);
+  }
+  rendVersions();
+  litSite("stable");
+  litSite("beta");
 
   function appliquerMode(on) {
     beta.checked = !!on;
     regles.href = on ? REGLES.beta : REGLES.stable;
     document.body.classList.toggle("beta", !!on);
-    // « CHOISIE », ET NON « EN SERVICE ». Ce que la case dit, c'est ce qui sera
-    // chargé au prochain affichage d'une page Roll20 : les onglets déjà ouverts
-    // gardent la partie qu'ils ont montée, puisque les deux copies partagent
-    // leurs marqueurs de frame et qu'un second pont d20 dans la même page
-    // écrirait tout en double. Annoncer « en service » juste après une bascule
-    // était donc faux pour toutes les fenêtres déjà là, et personne n'avait de
-    // quoi s'en apercevoir.
-    var v = (typeof VERSIONS !== "undefined" && VERSIONS) || { stable: "?", beta: "?" };
-    vStable.textContent = "stable " + v.stable + (on ? "" : " (choisie)");
-    vBeta.textContent = "beta " + v.beta + (on ? " (choisie)" : "");
-    vStable.classList.toggle("actif", !on);
-    vBeta.classList.toggle("actif", !!on);
+    // « CHOISI », ET NON « EN SERVICE ». Ce que la case dit, c'est le site qui
+    // sera chargé au prochain affichage d'une page Roll20 : les onglets déjà
+    // ouverts gardent la partie qu'ils ont montée, puisque les deux copies
+    // partagent leurs marqueurs de frame et qu'un second pont d20 dans la même
+    // page écrirait tout en double. Annoncer « en service » juste après une
+    // bascule était faux pour toutes les fenêtres déjà là.
+    rendVersions();
   }
 
   browser.storage.local.get("jjkBeta").then(
