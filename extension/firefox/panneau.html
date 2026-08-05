@@ -11,11 +11,16 @@
        montrer est NOMMÉE DANS LE HASH (#p=…) par content-roll20.js et servie
        par le site. Aucune re-signature ne sera donc nécessaire pour un panneau
        de plus, ni pour faire évoluer celui-ci. La page distante parle
-       directement au pont d20 via window.top ; aucun relais ici. -->
+       directement au pont d20 via window.top ; aucun relais ici.
+
+       PARTAGÉE par les deux parties : rien ici ne dépend du mode. C'est la
+       coquille chargée qui en dépend, et shell-loader.js la choisit d'après le
+       mode écrit dans le hash (&m=…) par content-roll20.js. Cette page ne nomme
+       donc plus panneau-shell.js. -->
   <link rel="stylesheet" href="creator.css">
 </head>
 <body>
   <iframe id="jjk-remote" allow="clipboard-write"></iframe>
-  <script src="panneau-shell.js"></script>
+  <script src="shell-loader.js" data-coquille="panneau"></script>
 </body>
 </html>

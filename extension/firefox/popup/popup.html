@@ -6,12 +6,22 @@
 </head>
 <body>
   <a id="p-regles" href="https://igneefleur.github.io/HxH-Regles-JDR/jjk/content/regles/" target="_blank" rel="noopener">Voir les règles</a>
-  <label for="p-beta" title="La fiche Roll20 vient du site de chantier : nouveautés en avance, casses possibles.">
+  <label for="p-beta" title="La fiche Roll20 vient du site de chantier : nouveautés en avance, casses possibles. Recharger la page Roll20 pour que la bascule prenne effet.">
     <input type="checkbox" id="p-beta"> Mode beta
   </label>
   <label for="p-panneau" title="Le plateau de narration partagé, posé en haut à gauche de la partie.">
     <input type="checkbox" id="p-panneau" checked> Plateau de Narration
   </label>
+  <!-- Les deux parties voyagent dans le même paquet signé : le numéro du
+       manifeste, seul, ne dirait jamais où en est celle de chantier. On montre
+       donc les deux, en désignant celle qui tourne, plus le numéro du paquet
+       tel que Mozilla et Chrome le connaissent. -->
+  <div class="versions">
+    <span id="p-v-stable"></span>
+    <span id="p-v-beta"></span>
+    <span id="p-v-paquet"></span>
+  </div>
+  <script src="../version.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

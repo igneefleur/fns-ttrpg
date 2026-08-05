@@ -309,6 +309,21 @@ def main():
     issuer = os.environ.get("AMO_JWT_ISSUER")
     secret = os.environ.get("AMO_JWT_SECRET")
 
+    # LES CONTRÔLES DU PAQUET TOMBENT ICI, ET AVANT TOUT LE RESTE.
+    #
+    # build_extension.verifie() est le SEUL garde-fou de la duplication des deux
+    # parties : il exige que stable/ et beta/ soient identiques hors des lignes
+    # marquées, et que chaque ligne marquée nomme sa propre partie. Il ne
+    # tournait que depuis la ligne de commande de build_extension.py, jamais
+    # depuis ici — or c'est ici que passe la CI, et build() emballe sans rien
+    # vérifier. Une correction de sûreté posée d'un seul côté partait donc chez
+    # Mozilla en silence, et le trou restait ouvert du côté oublié.
+    #
+    # Avant l'empreinte, avant l'emballage, avant la moindre requête : un refus
+    # ne doit rien coûter au quota, qui se compte à la dizaine par jour.
+    if not build_extension.verifie():
+        sys.exit("[ci-extension] contrôles du paquet en échec : rien n'est signé")
+
     state = {}
     if STATE.exists():
         state = json.loads(STATE.read_text(encoding="utf-8"))

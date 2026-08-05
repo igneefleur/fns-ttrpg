@@ -13,3 +13,11 @@ a {
 a:hover { background: #fff; }
 label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
 body.beta a { border-color: #6b4e00; background: #fdf3d8; }
+/* Les deux numéros du projet, plus celui du paquet signé : le nez dans la
+   fenêtre, on doit pouvoir dire d'un coup d'oeil quelle partie tourne. */
+.versions {
+  display: flex; flex-direction: column; gap: 1px;
+  border-top: 1px solid #e2e2e2; padding-top: 6px;
+  font-size: 11px; color: #777;
+}
+.versions .actif { color: #111; }

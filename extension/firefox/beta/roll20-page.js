@@ -13,6 +13,27 @@
  * Écritures THROTTLÉES : Roll20 déconnecte / perd des écritures sur des rafales
  * (importateurs tiers insèrent un « Rest Time »). On écrit un attribut à la fois,
  * espacés, en file séquentielle.
+ *
+ * COPIE. Ce fichier existe DEUX FOIS, stable/roll20-page.js et
+ * beta/roll20-page.js. Une seule des deux est jamais chargée : content-roll20.js
+ * choisit l'adresse à l'exécution, et l'isolation est donc ici RÉELLE. Les deux
+ * copies sont AUJOURD'HUI IDENTIQUES À L'OCTET, et c'est normal : ce pont ne
+ * connaît pas le mode et n'a pas à le connaître. Il n'écrit que les Attributes
+ * jjk_* du personnage, que les deux parties se partagent de toute façon. La
+ * séparation n'existe ici que pour laisser la partie de chantier changer son
+ * pont sans toucher à celui qui tourne en partie.
+ *
+ * TOUTE CORRECTION DE SÛRETÉ DOIT ÊTRE APPLIQUÉE AUX DEUX COPIES. Les verrous
+ * de ce fichier (window.__jjkBridge, ecrivable(), lier()/liee() et sa table de
+ * soixante-quatre places, le repli sur l'opener strictement réservé au popout)
+ * vivent désormais en double exemplaire : un correctif posé d'un seul côté
+ * laisse le trou grand ouvert de l'autre, et rien ne le signalera.
+ * scripts/build_extension.py --verifie compare mécaniquement les deux copies.
+ *
+ * Le verrou window.__jjkBridge est COMMUN aux deux copies, tout comme le
+ * marqueur data-jjk-bridge que pose content-roll20.js : deux ponts dans le même
+ * monde principal écriraient chaque attribut deux fois et rempliraient la table
+ * des liaisons deux fois plus vite. Ne jamais y faire entrer le mode.
  */
 (function () {
   "use strict";

@@ -10,12 +10,16 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "roll20-page.js",
         "creator.html",
         "creator.css",
-        "creator-shell.js",
         "panneau.html",
-        "panneau-shell.js"
+        "shell-loader.js",
+        "stable/roll20-page.js",
+        "stable/creator-shell.js",
+        "stable/panneau-shell.js",
+        "beta/roll20-page.js",
+        "beta/creator-shell.js",
+        "beta/panneau-shell.js"
       ],
       "matches": [
         "https://app.roll20.net/*"
@@ -51,7 +55,8 @@
         "https://app.roll20.net/*"
       ],
       "js": [
-        "content-roll20.js"
+        "stable/content-roll20.js",
+        "beta/content-roll20.js"
       ],
       "css": [
         "overlay.css"
