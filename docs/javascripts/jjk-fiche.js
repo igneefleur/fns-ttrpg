@@ -992,9 +992,10 @@
     return state.caracsBase.Mind + state.caracsBase.Body + state.caracsBase.Prestance;
   }
   // PV, régénération et coûts d'xp lisent caracTotal("Body") SANS le malus de
-  // poids, et c'est voulu : la règle le retranche « à chaque jet de Body », or
-  // aucun de ces trois-là n'est un jet. Un sac lourd ralentit et fait rater, il
-  // ne coûte ni points de vie maximum, ni régénération quotidienne, ni xp.
+  // poids, et c'est voulu : la charge ne mord que sur les compétences de Body
+  // (hors armes) et sur la vitesse, or aucun de ces trois-là n'en est. Un sac
+  // lourd ralentit et fait rater, il ne coûte ni points de vie maximum, ni
+  // régénération quotidienne, ni xp.
   // les valeurs issues d'une division s'arrondissent à l'INFÉRIEUR
   function pvMaxAuto() { return Math.floor((20 + caracTotal("Body")) / 2) + modSum(state.divers.pvMax); }
   // PV max : la valeur forcée (Options du bloc PV) court-circuite le calcul
@@ -1067,19 +1068,20 @@
     var v = poidsMalusBrut();
     return aFiltre("poidsMalus") ? applique("poidsMalus", v, {}) : v;
   }
-  // La caractéristique telle qu'on la LANCE. caracTotal() reste le total nu, et
-  // c'est vital : le malus frappe « chaque jet de Body », pas la caractéristique
-  // elle-même. Glissé dans caracTotal, il ferait perdre des PV maximum et de la
-  // régénération en enfilant un sac, pénaliserait les attaques et les parades que
-  // la règle exempte, et corromprait le miroir Roll20 jjk_body, dont les macros
-  // de dégâts des armes se servent.
+  // La caractéristique telle qu'on la LANCE.
   //
-  // Un total forcé de caractéristique (Options) fixe la CARACTÉRISTIQUE, pas le
-  // jet : le malus s'en retranche quand même. Le total forcé d'une COMPÉTENCE,
-  // lui, est la valeur du jet elle-même, et il court-circuite tout, malus
-  // compris (voir compPoidsMalus).
+  // LE POIDS NE PÈSE PLUS SUR LA CARACTÉRISTIQUE (arbitrage du MJ, 2026-08-04) :
+  // lancer Body en direct se fait au total plein. La charge garde ses deux autres
+  // prises, et elles seules : les COMPÉTENCES de Body hors armes (compPoidsMalus)
+  // et la VITESSE, dont le palier se lit sur un Body diminué (bodyVitesse), la
+  // surcharge en plus. Un seul mécanisme par endroit, jamais deux fois le même.
+  //
+  // La fonction reste, plutôt que d'appeler caracTotal partout : elle est le point
+  // unique où la question « ce jet subit-il la charge ? » se pose, l'affichage en
+  // tire le « · poids −N » de la tuile (nul, donc absent), et les mods l'appellent
+  // par l'API. Si l'arbitrage rebasculait, une ligne suffirait.
   function caracJet(c) {
-    return c === "Body" ? caracTotal(c) - poidsMalus() : caracTotal(c);
+    return caracTotal(c);
   }
   // Initiative : une compétence de Body comme les autres, malus de poids compris.
   function initComp() { return state.comps[INIT_KEY] || blankComp(); }
@@ -2726,8 +2728,8 @@
       var nm = el("span", "nm", name);
       top.appendChild(nm);
       var val = el("span", "pc-cval pc-rollable", "");
-      // caracJet, pas caracTotal : ce bouton LANCE la caractéristique, et le
-      // poids pèse sur les jets de Body
+      // caracJet, pas caracTotal : ce bouton LANCE la caractéristique, et c'est
+      // caracJet qui dit ce que vaut un jet direct (la charge n'y pèse plus)
       val.addEventListener("click", function () { doRoll(name, caracJet(name), null, true); });
       top.appendChild(val);
       row.appendChild(top);
@@ -2775,13 +2777,15 @@
         var plaf = caracPlafond(name);
         var plafonne = Math.min(brut, plaf);
         var force = state.caracsForce[name] !== undefined;
-        // ce que le poids retranche à CETTE caractéristique : zéro partout sauf
-        // sur Body, où il vaut le malus arrondi
+        // ce que le JET perd par rapport au total : nul depuis que la charge ne
+        // pèse plus sur la caractéristique (elle reste sur les compétences de
+        // Body et sur la vitesse). La ligne demeure parce qu'elle est la seule
+        // à relier l'affichage à caracJet : si l'arbitrage rebasculait, la
+        // mention et l'accent reviendraient d'eux-mêmes.
         var m = caracTotal(name) - caracJet(name);
-        // Le malus s'écrit en clair sur la ligne du nom. Sans lui, le joueur voit
-        // un total qui ne correspond ni à sa création ni à ses achats et rien
-        // dans le bloc ne dit pourquoi. C'est une donnée du personnage, ce qu'il
-        // porte, pas un rappel de la règle.
+        // Un écart s'écrirait en clair sur la ligne du nom : sans lui, le joueur
+        // verrait un total qui ne correspond ni à sa création ni à ses achats,
+        // sans rien dans le bloc pour dire pourquoi.
         nm.textContent = name + (m ? " · poids " + sign(-m) : "");
         val.textContent = String(caracJet(name));
         val.classList.toggle("adj", d !== 0 || force || m !== 0);
