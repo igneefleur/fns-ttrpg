@@ -59,6 +59,11 @@ FICHIERS = [
     "javascripts/jjk-fiche.js",
     "stylesheets/jjk-fiche.css",
     "stylesheets/jjk-roll20.css",
+    # le plateau de Narration : servi par le même site, à travers la même
+    # coquille signée, il doit monter avec les autres — un ?v= figé aurait
+    # l'air de protéger sans rien protéger
+    "javascripts/jjk-narration.js",
+    "stylesheets/jjk-narration.css",
 ]
 
 
@@ -243,6 +248,8 @@ def monter_manifeste(racine, serial, essai=False):
                 touches.append(base)
 
     monte(man.get("amorce"))
+    monte((man.get("narration") or {}).get("js"))
+    monte((man.get("narration") or {}).get("css"))
     monte((man.get("bundle") or {}).get("js"))
     monte((man.get("bundle") or {}).get("css"))
     if not essai:

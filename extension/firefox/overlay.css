@@ -31,6 +31,58 @@
   border: 0 !important; margin: 0 !important; padding: 0 !important; background: #e4ddcd;
 }
 
+/* ---- panneau flottant (plateau de Narration) ----
+   CHÂSSIS SEULEMENT : une boîte qui flotte, une barre pour la saisir, une
+   poignée pour l'étirer. Le plateau vit dans l'iframe, servi par le site, et
+   son apparence ne se règle donc pas ici (une couleur de plus à changer, et il
+   faudrait re-signer). Tous les sélecteurs sont préfixés .jjk- : cette feuille
+   est injectée dans TOUTES les frames de Roll20, elle ne doit jamais toucher à
+   quoi que ce soit qui ne soit pas à nous.
+   Z-INDEX 10500, et ce nombre est mesuré, pas choisi au hasard : il passe
+   au-dessus du canevas (5), du menu radial (6), de la zone des joueurs (2000),
+   du tchat (101) et de la barre latérale (100), et reste SOUS les outils de
+   Roll20 — actions de jeton (10502), barre d'outils et ses sous-menus (10600),
+   bandeau des pages (10700), menu contextuel (11500), erreur de connexion
+   (20000), aides de glisser-déposer (100000) et modales (999999). Un panneau
+   permanent ne doit jamais masquer un message de Roll20 ; le toast, lui, monte
+   au maximum parce qu'il ne dure que quatre secondes. */
+.jjk-panneau {
+  position: fixed; z-index: 10500; box-sizing: border-box;
+  display: flex; flex-direction: column; overflow: hidden;
+  background: #e4ddcd; border: 1px solid #7b6f52; border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, .45);
+  font: 12px/1.3 "Segoe UI", Arial, sans-serif; color: #2b2419;
+}
+.jjk-panneau-tete {
+  flex: 0 0 auto; display: flex; align-items: center; gap: 6px;
+  padding: 3px 4px 3px 8px; cursor: move; user-select: none;
+  background: #cfc4a8; border-bottom: 1px solid #a2977b;
+}
+.jjk-panneau-titre {
+  flex: 1 1 auto; font-weight: 700; font-size: 12px; letter-spacing: .02em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.jjk-panneau-btn {
+  flex: 0 0 auto; width: 20px; height: 18px; padding: 0; cursor: pointer;
+  background: #e4ddcd; color: #2b2419; border: 1px solid #a2977b; border-radius: 4px;
+  font: 700 13px/1 "Segoe UI", Arial, sans-serif;
+}
+.jjk-panneau-btn:hover { background: #f2ecdc; }
+.jjk-panneau-corps { flex: 1 1 auto; min-height: 0; }
+.jjk-panneau-frame { display: block; width: 100%; height: 100%; border: 0; }
+/* replié : la barre seule, posée dans un coin ; l'iframe est retirée du DOM */
+.jjk-panneau-replie .jjk-panneau-corps,
+.jjk-panneau-replie .jjk-panneau-grip { display: none; }
+.jjk-panneau-grip {
+  position: absolute; right: 0; bottom: 0; width: 14px; height: 14px;
+  cursor: nwse-resize;
+  background: linear-gradient(135deg, transparent 45%, #a2977b 45%, #a2977b 55%, transparent 55%,
+                              transparent 70%, #a2977b 70%, #a2977b 80%, transparent 80%);
+}
+/* pendant un geste, l'iframe ne capte plus la souris : sans cela le pointeur
+   entre dedans et le déplacement s'arrête au bord du plateau */
+.jjk-panneau-geste .jjk-panneau-frame { pointer-events: none; }
+
 /* écran « pas encore de fiche » + bouton de création */
 .jjk-create {
   padding: 26px 20px; text-align: center;

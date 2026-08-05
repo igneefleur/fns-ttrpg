@@ -18,7 +18,9 @@
     "roll20-page.js",
     "creator.html",
     "creator.css",
-    "creator-shell.js"
+    "creator-shell.js",
+    "panneau.html",
+    "panneau-shell.js"
   ],
   "icons": {
     "48": "icons/icon.svg",
