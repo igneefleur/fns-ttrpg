@@ -35,9 +35,11 @@
  *     gel : sans lui, vider l'attribut le plus lourd de l'onglet Attributes
  *     serait PLUS destructeur que le corrompre.
  *  7. ÉCRAN DE VERSION. Entre 2 et 3, quand la fiche trouvée dans le
- *     personnage n'a pas été écrite par la version que le site sert
- *     aujourd'hui, on n'ouvre RIEN : on montre ce qui change et on laisse
- *     choisir (mettre à niveau, ouvrir avec sa version, exporter). C'est le
+ *     personnage n'a pas la FORME que le site sait lire — son SCHÉMA diffère —,
+ *     on n'ouvre RIEN : on montre ce qui change et on laisse choisir (mettre à
+ *     niveau, ouvrir avec sa version, exporter). Le NUMÉRO de version, lui, ne
+ *     barre plus le passage : un correctif de CSS aurait sorti l'écran chez
+ *     toute une table alors qu'aucune donnée n'avait changé de forme. C'est le
  *     seul endroit du dispositif où ready vaut encore false alors que l'état
  *     est déjà connu : aucune écriture ne peut partir d'ici.
  *
@@ -517,15 +519,58 @@
     var m = manifeste();
     var n = m ? parseInt(m.schema, 10) : NaN;
     if (isFinite(n)) return n;
-    // repli : l'invariant majeur(RELEASE) === SCHEMA, tenu par verif_versions.py
-    var maj = parseInt(String(releaseSite()).split(".")[0], 10);
-    return isFinite(maj) ? maj : 1;
+    // Repli sans manifeste : la constante de la carte d'attributs, JAMAIS le
+    // majeur de la release. Le schéma est un entier indépendant, monté au seul
+    // changement de forme de l'état : le jour où X monte seul (4.0.0 en schéma
+    // 3), le déduire du majeur ferait passer tout le parc pour périmé et
+    // proposerait une montée que le moteur refuse, à chaque ouverture.
+    var s = M && M.SCHEMA;
+    return (typeof s === "number" && isFinite(s)) ? s : 1;
   }
-  // Décision produit : l'écran paraît dès que la RELEASE diffère, pas seulement
-  // au changement de schéma. Le manifeste peut demander l'autre réglage.
+  // Décision produit : l'écran ne paraît qu'au désaccord de SCHÉMA. Le défaut
+  // vaut aussi quand le manifeste manque ou tarde, car c'est là que l'écran est
+  // le moins utile : bloquer sur le NUMÉRO le sortirait chez un joueur dont le
+  // réseau a hoqueté. Le manifeste peut redemander l'ancien réglage.
   function blocage() {
     var m = manifeste();
-    return (m && m.blocage === "schema") ? "schema" : "release";
+    return (m && m.blocage === "release") ? "release" : "schema";
+  }
+
+  // LA lecture d'un numéro, seule de tout le fichier, et celle du contrat :
+  // « v » facultatif, un à trois nombres (les manquants valent 0), « b » de
+  // chantier COLLÉ au dernier, suffixe de fabrication [-+…] toléré. Rend
+  // { rang: [x, y, z], beta } ou null. Trois lectures cohabitaient ici et
+  // n'acceptaient pas les mêmes textes : le même numéro pouvait désigner une
+  // ligne d'archive et rester illisible pour la comparaison, qui retombait
+  // alors sur l'égalité de chaînes et déclarait deux versions différentes. Le
+  // suffixe ne change PAS le rang, la beta étant ce que le stable recevra à la
+  // fusion : une fiche écrite sur la beta ne paraît jamais plus récente que le
+  // site stable du même numéro.
+  function lire(rel) {
+    var m = /^\s*v?(\d+)(?:\.(\d+))?(?:\.(\d+))?(b?)(?:[-+][0-9A-Za-z.-]*)?\s*$/
+      .exec(String(rel == null ? "" : rel));
+    return m ? { rang: [parseInt(m[1], 10), parseInt(m[2] || "0", 10), parseInt(m[3] || "0", 10)],
+                 beta: m[4] === "b" } : null;
+  }
+  // Même rang, ou même LIGNE X.Y quand `ligne` est vrai. Illisible d'un côté :
+  // on retombe sur l'égalité de chaîne, ce que faisait le code avant la ligne —
+  // une version qu'on ne sait pas lire ne doit rien casser, la fiche s'ouvre.
+  function memeRang(a, b, ligne) {
+    var x = lire(a), y = lire(b);
+    if (!x || !y) return String(a) === String(b);
+    return x.rang[0] === y.rang[0] && x.rang[1] === y.rang[1] &&
+           (!!ligne || x.rang[2] === y.rang[2]);
+  }
+  // 1 si a est au-dessus de b, -1 en dessous, 0 au même rang, null dès que l'un
+  // des deux est illisible : conclure « égal » en silence est justement ce qui
+  // laisserait passer une fiche venue du futur sans un mot.
+  function compare(a, b) {
+    var x = lire(a), y = lire(b);
+    if (!x || !y) return null;
+    for (var i = 0; i < 3; i++) {
+      if (x.rang[i] !== y.rang[i]) return x.rang[i] > y.rang[i] ? 1 : -1;
+    }
+    return 0;
   }
 
   // Une URL de manifeste doit rester dans le site : relative, sans schéma ni
@@ -554,17 +599,51 @@
   //   "archives": { "2.9.0": { "js": [...], "css": [...], "data": "...",
   //                            "attrmap": "..." } }
   // Un simple tableau de scripts est accepté. Rend null si rien n'est publié
-  // pour cette version, ou si une seule URL sort du site.
+  // pour la LIGNE demandée, ou si une seule URL sort du site.
+  //
+  // Recherche par LIGNE X.Y, jamais par clé exacte : une ligne ne gèle qu'UNE
+  // archive, à sa première release (« 3.6.0 » ouvre la ligne 3.6), et les
+  // correctifs qui suivent n'ont donc pas de dossier à eux. Chercher
+  // m.archives["3.6.4"] ne trouvait rien et grisait « ouvrir avec sa version »
+  // pour toute une ligne. Le personnage descend alors à la release de l'archive
+  // (3.6.4 ouvert par 3.6.0) : c'est le prix assumé du gel par ligne, et il ne
+  // boucle pas, la ligne de 3.6.0 restant 3.6.
   function archiveDe(rel) {
-    if (typeof rel !== "string" || !rel) return null;
+    var r = lire(rel);
     var m = manifeste();
-    var a = (m && m.archives && typeof m.archives === "object") ? m.archives[rel] : null;
+    var tout = (m && m.archives && typeof m.archives === "object") ? m.archives : null;
+    if (!r || !tout) return null;
+    var cles = Object.keys(tout).sort(), cle = null, cr = null;
+    for (var i = 0; i < cles.length; i++) {
+      var c = lire(cles[i]);
+      if (!c || c.rang[0] !== r.rang[0] || c.rang[1] !== r.rang[1]) continue;
+      // La plus récente de la ligne (3.1 en porte trois : 3.1.0, 3.1.1, 3.1.2).
+      // X et Y sont déjà égaux par le filtre : comparer Z compare donc le rang
+      // entier. En NOMBRE, car un tri de chaînes rangerait « 3.1.10 » avant
+      // « 3.1.9 ». MÊME DÉPARTAGE que archive_de_ligne() de
+      // scripts/version_fiche.py, à la lettre, sans quoi l'outil qui gèle les
+      // archives et l'amorceur qui les sert désigneraient deux dossiers
+      // différents pour la même fiche : clés parcourues TRIÉES et comparaison
+      // STRICTE, donc à rang égal (« 3.1.2 » et « 3.1.2b ») c'est la plus
+      // PETITE qui tranche, et rien ne dépend de l'ordre des clés du JSON, qui
+      // n'est pas une garantie.
+      if (!cr || c.rang[2] > cr.rang[2]) { cr = c; cle = cles[i]; }
+    }
+    if (!cle) return null;
+    var a = tout[cle];
     if (!a) return null;
     // release portée par la spec : chargerBundle en fait la release EFFECTIVE,
-    // celle que la carte d'attributs écrira dans jjk_version.max
-    var spec = Array.isArray(a) ? { js: a, css: [], data: null, attrmap: null, release: rel }
+    // celle que la carte d'attributs écrira dans jjk_version.max. C'est la CLÉ
+    // retenue, jamais la version demandée : inscrire « 3.6.4 » alors que c'est
+    // le code de 3.6.0 qui tourne ferait mentir la seule ligne qui dit ce qui
+    // tourne vraiment.
+    var spec = Array.isArray(a) ? { js: a, css: [], data: null, attrmap: null, release: cle }
              : { js: a.js, css: Array.isArray(a.css) ? a.css : [], data: a.data == null ? null : a.data,
-                 attrmap: a.attrmap == null ? null : a.attrmap, release: rel };
+                 attrmap: a.attrmap == null ? null : a.attrmap, release: cle };
+    // Contrôles d'URL sur la SEULE entrée retenue, et refus net si elle est mal
+    // formée : redescendre à une clé plus ancienne de la ligne servirait un
+    // autre code que celui qu'annonce le bouton. Un bouton grisé est honnête,
+    // une archive de repli silencieuse ne l'est pas.
     if (!listeSure(spec.js)) return null;
     if (spec.css.length && !listeSure(spec.css)) return null;
     if (spec.data != null && !urlSure(spec.data)) return null;
@@ -580,6 +659,9 @@
       return (o && typeof o === "object" && typeof o.release === "string") ? o : null;
     } catch (e) { return null; }
   }
+  // On range la release EXACTE, jamais sa ligne : la clé et la forme rangées
+  // doivent rester lisibles pour les épinglages déjà posés chez les joueurs.
+  // C'est la comparaison, elle, qui se fait ligne à ligne (voir decider()).
   function epinglagePoser(rel) {
     try {
       localStorage.setItem(PIN_PREFIX + CHAR_ID,
@@ -947,6 +1029,25 @@
     ]);
   }
 
+  // Fiche écrite par une release PLUS RÉCENTE que le site, alors que le schéma
+  // concorde. Le contrat ne bloque plus sur le numéro, et il a raison : la forme
+  // des données est celle que ce code sait lire, un écran serait de trop. Reste
+  // ce qu'une release plus jeune a pu ajouter SANS toucher au schéma : un champ
+  // que ce code ne connaît pas et que la première sauvegarde laisserait tomber.
+  // Trop peu pour barrer le passage, trop pour ouvrir sans un mot : un bandeau,
+  // qui n'empêche rien mais met l'export à portée avant la première frappe. Il
+  // se masque, contrairement à ceux du gel : ici la fiche s'enregistre vraiment,
+  // le cacher ne fait donc croire à rien de faux.
+  function bandeauPlusRecente(relFiche, relSite) {
+    bandeau("Cette fiche a été enregistrée en " + relFiche + ", plus récent que la version servie ici (" +
+            relSite + "). Elle s'ouvre quand même : ses données ont la forme que cette version sait lire. " +
+            "Ce que " + relFiche + " a pu ajouter depuis, en revanche, cette version ne le connaît pas et " +
+            "ne le réécrira pas. Exporter avant de modifier.", [
+      { texte: "Exporter (JSON)", acte: "export", action: exporter },
+      { texte: "Masquer", acte: "masquer", action: fermerBandeau }
+    ]);
+  }
+
   // ---------- l'écran lui-même ----------
   function ecranVersion(f, relSite, schSite) {
     var relFiche = f.release || null;
@@ -1004,7 +1105,15 @@
       monter(false, f);
     }, !duFutur);
     var arch = archiveDe(relFiche);
-    var bArch = bouton(z, "Ouvrir avec sa version (" + (relFiche || "inconnue") + ")", "archive", function () {
+    // Le libellé dit ce qui va OUVRIR, pas ce que le joueur espère : une ligne
+    // ne gèle qu'une archive, donc un personnage écrit en 3.6.4 s'ouvrira avec
+    // 3.6.0. Promettre « sa version » mentirait sur le code qui va tourner.
+    // Comparaison de RANG et non de texte : la clé « 3.6.0 » est bien la version
+    // d'une fiche écrite en « 3.6.0b », et annoncer une archive « la plus proche
+    // de sa version » pour un simple suffixe inquiéterait pour rien.
+    var bArch = bouton(z, (arch && !memeRang(arch.release, relFiche))
+      ? ("Ouvrir avec l'archive " + arch.release + " (la plus proche de sa version)")
+      : ("Ouvrir avec sa version (" + (relFiche || "inconnue") + ")"), "archive", function () {
       if (!arch) return;   // bouton grisé : ceinture, au cas où un clic passe quand même
       if (caseEp.checked && relFiche) epinglagePoser(relFiche);
       chargerBundle(arch, true);
@@ -1017,7 +1126,8 @@
     }
     if (!arch) {
       griser(bArch, relFiche
-        ? "« Ouvrir avec sa version » est indisponible : aucune archive publiée pour " + relFiche + "."
+        ? "« Ouvrir avec sa version » est indisponible : aucune archive publiée pour la ligne de " +
+          relFiche + "."
         : "« Ouvrir avec sa version » est indisponible : la fiche ne dit pas quelle version l'a écrite.", b);
     }
 
@@ -1038,7 +1148,7 @@
     // Proposer de migrer un état qu'on n'a pas su lire serait exactement le
     // geste que le gel existe pour empêcher. Depuis que le gel couvre aussi le
     // jjk_state disparu, c'est ici que s'arrête le personnage qui n'a plus que
-    // ses attributs de repli : la montée silencieuse du cas 3 écrirait, elle
+    // ses attributs de repli : la montée silencieuse du cas 4 écrirait, elle
     // aussi, et écrirait cette reconstruction amputée.
     if (gele) { chargerBundle(courant); return; }
 
@@ -1047,24 +1157,67 @@
     if (!f || f.schema === null) { chargerBundle(courant); return; }
 
     var relSite = releaseSite(), schSite = schemaSite();
-    // 2. même version que le site.
-    if (f.release && f.release === relSite) { chargerBundle(courant); return; }
-    if (blocage() === "schema" && f.schema === schSite) { chargerBundle(courant); return; }
 
-    // 3. Parc historique : tout ce qui a été écrit avant le versionnage porte
+    // ACCORD : ce que ce site aurait fait sans le moindre épinglage, c'est-à-dire
+    // aucun écran et le bundle du jour.
+    //
+    // UN SEUL JUGE À LA FOIS, ET C'EST CELUI QUE LE MANIFESTE DÉSIGNE. Sous
+    // « blocage: schema », le schéma décide seul : le rang de release ne doit
+    // PAS pouvoir accorder par-dessus un désaccord de schéma. Une disjonction
+    // laissait passer le cas mesuré {v: 2, rel: "3.6.0b"} sur un site 3.6.0b en
+    // schéma 3 — même rang, donc accord — et la fiche du jour réécrivait en
+    // silence un état d'un autre schéma, sans écran et sans sauvegarde de
+    // secours. Le numéro de release d'un personnage n'est qu'une étiquette ;
+    // seul le schéma dit ce que ses données valent.
+    //
+    // Le suffixe de chantier ne compte pas dans le rang : « 3.6.0b » et
+    // « 3.6.0 » sont la même version, et une fiche écrite sur la beta ne doit
+    // pas paraître venue d'ailleurs une fois rouverte sur le site stable du
+    // même numéro.
+    var accord = blocage() === "schema"
+      ? f.schema === schSite
+      : !!(f.release && memeRang(f.release, relSite));
+
+    // 2. Choix déjà fait pour ce personnage, dans ce navigateur : on ne
+    // redemande pas. Comparé LIGNE à ligne des deux côtés, parce que le bundle
+    // d'archive réécrit state.rel avec SA constante dès la première
+    // sauvegarde : sur une égalité stricte, l'épinglage ne tenait qu'une
+    // session. L'épinglage ne vaut que si l'archive est toujours publiée ;
+    // sinon la question se repose.
+    //
+    // L'ACCORD LE SAUTE. /jjk/ et /jjk-beta/ sont servis par la même origine,
+    // donc partagent ce localStorage : le joueur qui coche « ne plus me
+    // demander » sur la beta, dont le schéma a pris un cran d'avance, posait
+    // aussi son épinglage pour le site stable, où sa fiche s'accorde et où RIEN
+    // ne lui aurait été demandé. Il y rouvrait alors une archive de la ligne
+    // précédente, sans écran pour le lui dire, et rejouait une vieille fiche
+    // sans le savoir. Partout ailleurs l'épinglage garde la tête, et doit la
+    // garder : là, l'écran reparaîtrait à chaque ouverture, et le test 3 est
+    // précisément celui qui, sur le schéma, rouvrirait la fiche avec le bundle
+    // du jour en silence, contre un choix explicite.
+    var pin = accord ? null : epinglageLu();
+    if (pin && f.release && memeRang(pin.release, f.release, true)) {
+      var arch = archiveDe(f.release);
+      if (arch) { chargerBundle(arch, true); return; }
+    }
+
+    // 3. Accord avec le site : la fiche s'ouvre sans rien demander.
+    if (accord) {
+      // Sauf qu'elle peut venir d'une release plus JEUNE que celle servie ici
+      // (fiche revenue de la beta, ou site en retard d'un déploiement). Le
+      // contrat ne bloque plus sur le numéro, donc on ouvre ; mais ouvrir plus
+      // vieux que le personnage se dit, sinon personne ne saurait qu'un champ
+      // récent risque de tomber à la première sauvegarde.
+      if (compare(f.release, relSite) === 1) bandeauPlusRecente(f.release, relSite);
+      chargerBundle(courant);
+      return;
+    }
+
+    // 4. Parc historique : tout ce qui a été écrit avant le versionnage porte
     // le schéma 1. Personne n'a CHOISI d'être en v1, donc pas d'écran : montée
     // silencieuse (le moteur la fait dans normalize) et un bandeau qui le dit,
     // avec de quoi revenir en arrière.
     if (f.schema === 1 && schSite > 1) { monter(true, f); return; }
-
-    // 4. Choix déjà fait pour ce personnage, dans ce navigateur : on ne
-    // redemande pas. L'épinglage ne vaut que si l'archive est toujours
-    // publiée ; sinon la question se repose, avec sa réponse grisée.
-    var pin = epinglageLu();
-    if (pin && f.release && pin.release === f.release) {
-      var arch = archiveDe(f.release);
-      if (arch) { chargerBundle(arch, true); return; }
-    }
 
     // 5. l'écran.
     avecMigrations(function () { ecranVersion(f, relSite, schSite); });
