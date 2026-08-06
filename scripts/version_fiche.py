@@ -631,7 +631,19 @@ def main():
     if cran is None and a.poser is None and suffixe is None:
         return 0
 
-    cible, faute = decider(racine, cran=cran, impose=a.poser, suffixe=suffixe)
+    # CHANGER LE SEUL SUFFIXE N'EST PAS UNE MONTÉE, et ne doit pas être jugé
+    # comme telle. « 3.6.0b » et « 3.6.0 » sont de MÊME RANG par contrat : le
+    # comparateur refusait donc de poser le second par-dessus le premier, au
+    # motif qu'il n'était pas « strictement au-dessus ». Autrement dit --stable
+    # ne savait pas faire son unique travail dans le seul cas où on l'appelle :
+    # une fusion vers la branche stable, où le tronc n'a justement pas bougé.
+    # Le manifeste gardait son « b » pendant que le bundle l'avait perdu, et la
+    # fiche annonçait deux numéros différents selon qui la lisait.
+    if cran is None and a.poser is None and suffixe is not None:
+        cible = Version(v.x, v.y, v.z, beta=suffixe)
+        faute = None
+    else:
+        cible, faute = decider(racine, cran=cran, impose=a.poser, suffixe=suffixe)
     if faute:
         print("VERSION : " + faute)
         return 1

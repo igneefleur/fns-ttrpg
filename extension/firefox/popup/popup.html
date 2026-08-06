@@ -3,55 +3,180 @@
 <head>
   <meta charset="utf-8">
   <link rel="stylesheet" href="popup.css">
-</head>
-<body>
-  <a id="p-regles" href="https://igneefleur.github.io/HxH-Regles-JDR/jjk/content/regles/" target="_blank" rel="noopener">Voir les règles</a>
-  <label for="p-beta" title="La fiche Roll20 est celle du chantier : nouveautés en avance, casses possibles. Recharger la page Roll20 pour que la bascule prenne effet.">
-    <input type="checkbox" id="p-beta"> Mode beta
-  </label>
-  <label for="p-panneau" title="Le plateau de narration partagé, posé en haut à gauche de la partie.">
-    <input type="checkbox" id="p-panneau" checked> Plateau de Narration
-  </label>
-  <!-- Quatre numéros, deux paires, deux sources bien différentes.
+  <!-- LES DEUX SCRIPTS SONT DANS L'EN-TÊTE, ET C'EST TOUTE LA RUSE DE LA NUIT.
+       Un popup s'ouvre et se referme en une seconde : peindre d'abord en clair
+       puis corriger donnerait un éclair blanc à chaque ouverture. Il faut donc
+       poser la classe night AVANT le premier rendu.
 
-       Les deux FICHES se lisent en direct dans leurs manifestes de site : une
-       fiche avance sans qu'on signe quoi que ce soit, un nombre figé dans le
-       paquet deviendrait faux le jour même. C'est arrivé, en moins d'une heure.
+       roll20-fiche.html le fait avec un script INLINE. Impossible ici : la
+       politique de sécurité par défaut d'une page d'extension (script-src
+       'self') refuse l'inline, et le script serait purement ignoré. La seule
+       autre façon d'agir avant le premier rendu est un script externe
+       bloquant l'analyseur, donc placé ici et non en pied de page. popup.js
+       peint donc dès sa première ligne, puis attend DOMContentLoaded pour le
+       reste : sans cette attente il ne trouverait aucun élément.
 
-       Les deux moitiés de l'EXTENSION se lisent dans parties.js, écrit par
-       l'outil de signature : lui seul sait à quel paquet chaque moitié a changé
-       pour la dernière fois. Le fichier est posé à la racine du paquet, à côté
-       du manifeste, parce qu'il décrit le paquet et non le popup.
+       Il peint d'après un écho synchrone rangé dans le localStorage de la page,
+       parce que browser.storage.local est asynchrone et répondrait un rendu trop
+       tard. L'écho n'est qu'un cache : jjkNuit reste la seule autorité, et
+       popup.js recale l'un sur l'autre dès que le stockage a répondu.
 
-       Le libellé dit « fiche » et non « site » : ce que le joueur choisit, ce
-       n'est pas un site web, c'est la fiche de personnage qui s'ouvrira dans
-       Roll20. Le mot « site » ne reste que là où il désigne vraiment l'adresse
-       publiée. -->
-  <div class="versions" id="p-versions">
-    <div class="ligne" id="p-l-fiche-stable">
-      <span class="quoi">fiche stable</span><span class="num"></span><span class="marque"></span>
-    </div>
-    <div class="ligne" id="p-l-fiche-beta">
-      <span class="quoi">fiche beta</span><span class="num"></span><span class="marque"></span>
-    </div>
-    <div class="ligne" id="p-l-ext-stable">
-      <span class="quoi">extension stable</span><span class="num"></span><span class="marque"></span>
-    </div>
-    <div class="ligne" id="p-l-ext-beta">
-      <span class="quoi">extension beta</span><span class="num"></span><span class="marque"></span>
-    </div>
-    <!-- Le numéro du PAQUET, celui que Mozilla a signé et que les navigateurs
-         affichent. Les quatre lignes du dessus disent quand chaque moitié a
-         changé ; aucune ne dit ce qui est installé. Sans cette ligne, un joueur
-         qui compare son extension à ce qu'annonce Firefox ne s'y retrouve pas. -->
-    <div class="ligne paquet" id="p-l-paquet">
-      <span class="quoi">paquet signé</span><span class="num"></span><span class="marque"></span>
-    </div>
-  </div>
-  <!-- Chargé AVANT popup.js, et sans lui rien ne casse : s'il manque, les deux
+       parties.js d'abord, et sans lui rien ne casse : s'il manque, les deux
        lignes d'extension affichent « ? ». Une ligne laissée vide se lirait comme
        une extension cassée, ce qu'elle ne serait pas. -->
   <script src="../parties.js"></script>
   <script src="popup.js"></script>
+</head>
+<body>
+
+<!-- EN HAUT, LA RÉPONSE À LA SEULE QUESTION QU'ON SE POSE EN OUVRANT :
+     est-ce que ça marche en ce moment. uBlock et Dark Reader y répondent avant
+     tout le reste ; ce panneau ne savait pas la poser.
+
+     La pastille « chantier » est du TEXTE, et rien d'autre. L'ancien panneau
+     repeignait le lien des règles en jaune dès que la beta était active : une
+     interface qui change de couleur selon la moitié chargée fait douter de ce
+     qu'on lit. Le mode se dit avec un mot, il ne se peint pas. -->
+<header class="p-tete">
+  <span class="p-nom">Fiche JJK</span>
+  <span class="p-etat" id="p-etat" aria-live="polite"><i class="p-pt"></i><span id="p-etat-txt">…</span></span>
+  <span class="p-tag" id="p-chantier" hidden>chantier</span>
+</header>
+
+<main class="p-corps">
+
+  <!-- L'INTERRUPTEUR GÉNÉRAL, la plus grosse chose de la fenêtre.
+       Un interrupteur général qu'il faut chercher n'est pas un interrupteur
+       général : il est en premier, pleine largeur, et c'est le seul contrôle
+       qui ne soit pas rangé dans une carte à titre. -->
+  <section class="p-bloc p-maitre-bloc">
+    <button type="button" class="p-maitre" id="p-off" role="switch" aria-checked="true">
+      <span class="p-maitre-txt" id="p-off-txt">Extension active</span>
+      <span class="p-sw" aria-hidden="true"><i></i></span>
+    </button>
+    <!-- La phrase d'honnêteté. Ce que l'extinction NE PEUT PAS défaire est
+         écrit noir sur blanc : le pont posé dans une page Roll20 vit dans le
+         monde principal, aucun script de contenu ne l'atteint, et les écouteurs
+         déjà posés sont des fonctions anonymes qu'on ne retire pas. Un « off »
+         qui prétendrait tout démonter mentirait. -->
+    <p class="p-note" id="p-off-note"></p>
+  </section>
+
+  <!-- L'APPARENCE. Deuxième position, et non enterrée dans un pied : c'est le
+       réglage qu'on vient changer en cours de soirée, quand la pièce
+       s'assombrit. Trois états, parce que trois est le seul nombre qui sache
+       dire « auto ». -->
+  <section class="p-bloc">
+    <h2 class="p-titre">Apparence</h2>
+    <div class="p-ligne">
+      <span class="p-lib" id="p-nuit-lib">Mode nuit</span>
+      <div class="p-segs" id="p-nuit" role="radiogroup" aria-labelledby="p-nuit-lib">
+        <button type="button" class="seg" data-v="auto" role="radio" aria-checked="true" tabindex="0">Auto</button>
+        <button type="button" class="seg" data-v="jour" role="radio" aria-checked="false" tabindex="-1">Jour</button>
+        <button type="button" class="seg" data-v="nuit" role="radio" aria-checked="false" tabindex="-1">Nuit</button>
+      </div>
+    </div>
+    <p class="p-note" id="p-nuit-note"></p>
+  </section>
+
+  <!-- LES PIÈCES QU'ON ALLUME SÉPARÉMENT. Le plateau d'abord, parce qu'il se
+       voit ; le mode de chantier en dernier, parce que c'est un réglage
+       d'auteur. Le bloc entier se grise quand l'extension est éteinte : rien
+       ici n'a de sens tant qu'elle l'est. -->
+  <section class="p-bloc" id="p-pieces">
+    <h2 class="p-titre">Pièces</h2>
+
+    <div class="p-ligne">
+      <span class="p-lib" id="p-pan-lib">Plateau de Narration</span>
+      <span class="p-actions">
+        <!-- « Replacer » répare le seul piège du plateau qui n'avait aucune
+             sortie : traîné hors de l'écran ou replié dans un coin, il ne se
+             récupérait par aucun chemin visible, alors que sa géométrie est
+             rangée sous une clé connue. -->
+        <button type="button" class="p-mini" id="p-pan-replacer"
+                title="Oublie la place, la taille et le repli retenus. Le plateau repart de sa position par défaut au prochain chargement d'une page Roll20.">Replacer</button>
+        <button type="button" class="p-sw p-sw-btn" id="p-panneau" role="switch"
+                aria-checked="true" aria-labelledby="p-pan-lib"><i></i></button>
+      </span>
+    </div>
+
+    <div class="p-ligne">
+      <span class="p-lib" id="p-beta-lib">Mode de chantier</span>
+      <button type="button" class="p-sw p-sw-btn" id="p-beta" role="switch"
+              aria-checked="false" aria-labelledby="p-beta-lib"><i></i></button>
+    </div>
+    <!-- Dit en clair, et non plus caché dans un title= que personne ne survole :
+         la bascule ne prend effet qu'au rechargement, parce que la copie déjà
+         réveillée garde son onglet, ses écouteurs et son pont. -->
+    <p class="p-note">La fiche du chantier : nouveautés en avance, casses possibles. Prend effet au rechargement de la page Roll20.</p>
+  </section>
+
+  <!-- HORS DES BLOCS, ET C'EST VOULU. Trois réglages exigent un rechargement
+       pour valoir sur une partie déjà ouverte (l'interrupteur général, le mode
+       de chantier, et la nuit qui voyage dans l'adresse) : un bouton par bloc
+       en ferait trois pour un seul geste. Il n'apparaît qu'après une bascule
+       qui l'exige, jamais à l'ouverture. -->
+  <button type="button" class="p-mini p-recharge" id="p-recharge" hidden>Recharger l'onglet actif</button>
+
+  <p class="p-flash" id="p-flash" hidden></p>
+</main>
+
+<!-- EN BAS, DES RENSEIGNEMENTS, JAMAIS DES COMMANDES.
+     Le numéro du paquet reste seul en vue : c'est le seul que le navigateur
+     affiche, donc le seul qu'un joueur puisse comparer. Les quatre autres
+     disent QUAND chaque moitié a changé ; ils servent à l'auteur, pas au
+     joueur, et ils occupaient la moitié de l'ancienne fenêtre. Ils sont
+     toujours là, repliés. -->
+<footer class="p-pied">
+  <div class="p-paquet" id="p-l-paquet">
+    <span class="quoi">paquet signé</span><span class="num"></span>
+  </div>
+
+  <details class="p-details">
+    <summary>Versions détaillées</summary>
+    <!-- Quatre numéros, deux paires, deux sources bien différentes.
+
+         Les deux FICHES se lisent en direct dans leurs manifestes de site : une
+         fiche avance sans qu'on signe quoi que ce soit, un nombre figé dans le
+         paquet deviendrait faux le jour même. C'est arrivé, en moins d'une heure.
+
+         Les deux moitiés de l'EXTENSION se lisent dans parties.js, écrit par
+         l'outil de signature : lui seul sait à quel paquet chaque moitié a changé
+         pour la dernière fois. Le fichier est posé à la racine du paquet, à côté
+         du manifeste, parce qu'il décrit le paquet et non le popup.
+
+         Le libellé dit « fiche » et non « site » : ce que le joueur choisit, ce
+         n'est pas un site web, c'est la fiche de personnage qui s'ouvrira dans
+         Roll20. Le mot « site » ne reste que là où il désigne vraiment l'adresse
+         publiée. -->
+    <div class="p-versions" id="p-versions">
+      <div class="ligne" id="p-l-fiche-stable">
+        <span class="quoi">fiche stable</span><span class="num"></span><span class="marque"></span>
+      </div>
+      <div class="ligne" id="p-l-fiche-beta">
+        <span class="quoi">fiche beta</span><span class="num"></span><span class="marque"></span>
+      </div>
+      <div class="ligne" id="p-l-ext-stable">
+        <span class="quoi">extension stable</span><span class="num"></span><span class="marque"></span>
+      </div>
+      <div class="ligne" id="p-l-ext-beta">
+        <span class="quoi">extension beta</span><span class="num"></span><span class="marque"></span>
+      </div>
+    </div>
+    <p class="p-note p-note-v" id="p-versions-note"></p>
+  </details>
+
+  <div class="p-liens">
+    <a id="p-regles" href="https://igneefleur.github.io/HxH-Regles-JDR/jjk/content/regles/" target="_blank" rel="noopener">Règles</a>
+    <a id="p-maj" href="https://igneefleur.github.io/HxH-Regles-JDR/jjk/extension/" target="_blank" rel="noopener">Mises à jour</a>
+  </div>
+
+  <!-- Les deux clés de dépannage remplacent la racine du site et ne se voient
+       nulle part : oubliées en place, elles font afficher le site stable sous un
+       onglet « Fiche JJK beta ». C'est le seul endroit qui puisse le dire sans
+       ouvrir une console. -->
+  <p class="p-alerte" id="p-depannage" hidden></p>
+</footer>
+
 </body>
 </html>

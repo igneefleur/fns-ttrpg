@@ -4,4 +4,12 @@
    un flash blanc pendant le chargement réseau. */
 html, body { margin: 0; padding: 0; width: 100%; height: 100%; }
 body { background: #e4ddcd; }
+/* La nuit, le plan de travail du site n'est plus le même : shell-loader.js pose
+   la classe d'après le n=1/0 du hash, avant même de choisir la coquille. Sans
+   cette règle, une fiche ou un plateau sombre s'ouvrait sur un fond crème le
+   temps du chargement réseau, ce qui se voit d'autant plus que la partie
+   autour est sombre. color-scheme fait suivre ce que le navigateur peint
+   lui-même : le canevas avant le premier rendu, et les barres de défilement. */
+html.night { color-scheme: dark; }
+html.night body { background: #14110c; }
 #jjk-remote { display: block; border: 0; width: 100%; height: 100%; }

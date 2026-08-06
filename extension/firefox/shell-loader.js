@@ -36,6 +36,19 @@
   var moi = document.currentScript || document.querySelector("script[data-coquille]");
   var choix = COQUILLES[(moi && moi.getAttribute("data-coquille")) || ""];
   if (!choix) return;   // page inconnue : on ne charge rien plutôt que n'importe quoi
+
+  // LE FOND DE LA COQUILLE, AVANT LA PAGE DISTANTE. Cette page d'extension
+  // reste seule à l'écran pendant tout le chargement réseau de la page servie
+  // par le site, une bonne seconde le temps du manifeste et des scripts. Son
+  // fond était toujours celui du jour : un éclair clair à chaque ouverture de
+  // fiche ou de plateau au milieu d'une partie sombre. Le n=1/0 du hash dit
+  // déjà de quelle couleur la page distante va se peindre, on prend la sienne
+  // avant elle. Ici et pas dans le HTML : une page d'extension ne peut pas
+  // porter de script en ligne (CSP script-src 'self', en V2 comme en V3).
+  try {
+    if (/[#&]n=1/.test(location.hash || "")) document.documentElement.classList.add("night");
+  } catch (e) {}
+
   var mode = /[#&]m=beta(?:&|$)/.test(location.hash || "") ? "beta" : "stable";
   var s = document.createElement("script");
   s.src = choix[mode];

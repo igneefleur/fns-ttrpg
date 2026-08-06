@@ -20,14 +20,24 @@
        trace de la panne. -->
   <div id="nb"><p id="nb-attente">Chargement du plateau…<noscript> Le plateau a besoin de JavaScript.</noscript></p></div>
   <script>
-  // JOUR / NUIT avant le premier rendu, comme la fiche : indice n=1/0 du hash
-  // (posé par l'extension d'après le thème de Roll20), sinon le thème du
-  // navigateur. Le plateau n'a pas de préférence à lui : il suit Roll20.
+  // JOUR / NUIT avant le premier rendu, exactement comme la fiche, et pour la
+  // même raison : ces quelques lignes doivent rester ICI, dans l'amorceur. Le
+  // thème est une CLASSE sur <html> ; posée plus tard, après la lecture du
+  // manifeste, le plateau clignoterait en clair avant de basculer en sombre.
+  // La règle est celle de la fiche, dans le même ordre : le choix mémorisé de
+  // ce joueur, puis l'indice n=1/0 du hash (posé par la coquille d'après le
+  // réglage jjkNuit de l'extension, et absent quand il vaut « auto »), puis le
+  // thème du navigateur. jjk-narration.js la rejoue et l'expose dans ses
+  // réglages ; la clé lui est propre, celle de la fiche est « jjk-r20-night »
+  // et les deux pages viennent de la même origine.
   (function () {
     "use strict";
     try {
       var h = location.hash || "";
-      var on = /[#&]n=1/.test(h) ? true : /[#&]n=0/.test(h) ? false
+      var p = null;
+      try { p = localStorage.getItem("jjk-r20-night-plateau"); } catch (e) {}
+      var on = p === "1" ? true : p === "0" ? false
+             : /[#&]n=1/.test(h) ? true : /[#&]n=0/.test(h) ? false
              : !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
       document.documentElement.classList.toggle("night", on);
     } catch (e) {}
