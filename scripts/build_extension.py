@@ -383,6 +383,30 @@ def build(sortie=None):
 
 if __name__ == "__main__":
     args = sys.argv[1:]
+
+    # UN ARGUMENT INCONNU NE DOIT RIEN ÉCRIRE. Seule la chaîne exacte
+    # « --verifie » arrêtait le script avant l'empaquetage : toute autre
+    # orthographe tombait dans build(), qui RÉÉCRIT docs/download/*.xpi,
+    # c'est-à-dire le binaire SIGNÉ que le site distribue, par un paquet non
+    # signé. Rien n'échouait, le code de sortie restait 0, et le message avait
+    # l'air d'un succès. C'est arrivé deux fois, dont une à moi, avec
+    # « --verifier ». On refuse donc ce qu'on ne comprend pas, avant d'écrire.
+    ADMIS = ("--verifie", "--sortie")
+    i, inconnus = 0, []
+    while i < len(args):
+        a = args[i]
+        if a == "--sortie":
+            i += 2
+            continue
+        if a not in ADMIS:
+            inconnus.append(a)
+        i += 1
+    if inconnus:
+        sys.exit("[extension] argument inconnu %s : les seuls admis sont "
+                 "--verifie (contrôle seul, n'écrit rien) et --sortie <dossier>. "
+                 "Rien n'a été écrit ; le paquet signé de docs/download/ est "
+                 "intact." % ", ".join(repr(x) for x in inconnus))
+
     if not verifie():
         sys.exit(1)
     if "--verifie" in args:

@@ -36,9 +36,28 @@ if (typeof browser === "undefined") { var browser = chrome; }
     } catch (e) { /* API absente hors extension : sans effet */ }
   }
 
-  sync();
-  window.addEventListener("focus", sync);
-  window.addEventListener("pageshow", sync);
-  // le site réécrit son localStorage à chaque frappe ; on relit périodiquement
-  setInterval(sync, 3000);
+  function demarre() {
+    sync();
+    window.addEventListener("focus", sync);
+    window.addEventListener("pageshow", sync);
+    // le site réécrit son localStorage à chaque frappe ; on relit périodiquement
+    setInterval(sync, 3000);
+  }
+
+  // L'INTERRUPTEUR GÉNÉRAL VAUT AUSSI ICI. Cette moitié-là ne touche pas à
+  // Roll20, elle lit le site, et c'est justement pour cela qu'on l'oubliait :
+  // le popup annonçait « éteinte » pendant que ce script continuait de lire le
+  // localStorage du site toutes les trois secondes et d'écrire dans le stockage
+  // de l'extension. Une extension arrêtée qui recopie encore des fiches n'est
+  // pas une extension arrêtée.
+  //
+  // Un stockage qui refuse de répondre DÉMARRE : le contraire éteindrait
+  // l'extension sur une panne de lecture, alors que la position par défaut est
+  // « allumée ». Comme ailleurs, on ne se tait que sur un « oui » explicite.
+  try {
+    browser.storage.local.get("jjkOff").then(
+      function (r) { if (!(r && r.jjkOff === true)) { demarre(); } },
+      function () { demarre(); }
+    );
+  } catch (e) { demarre(); }
 })();

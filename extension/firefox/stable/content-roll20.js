@@ -34,6 +34,13 @@
  * trois, pas une de plus : tout le reste doit rester rigoureusement identique
  * d'un côté et de l'autre.
  *
+ * RÉGLAGES. Ce fichier ne fait que LIRE le stockage, jamais écrire ailleurs que
+ * dans la géométrie du plateau ; le popup est le seul poste d'aiguillage.
+ * Il lit jjkOff (éteinte : rien ne se réveille), jjkBeta (quelle moitié parle),
+ * jjkNuit (« auto » | « jour » | « nuit », qui décide du n=1/0 envoyé aux pages
+ * du site et de la couleur du cadre flottant) et l'interrupteur du plateau.
+ * Tout cela se lit à la garde, tout en bas, où l'inventaire est détaillé.
+ *
  * TOUTE CORRECTION DE SÛRETÉ DOIT ÊTRE APPLIQUÉE AUX DEUX COPIES. La liste
  * blanche du canal brut, le repli des sauts de ligne dans les commandes, le
  * relais vers l'opener et le canal « Prendre » vivent désormais en double
@@ -257,8 +264,8 @@ if (typeof browser === "undefined") { var browser = chrome; }
   // popout) : marqueur officiel body.sheet-darkmode, variantes connues
   // (darkmode, data-colortheme), puis repli sur la luminance du fond réellement
   // peint (résiste aux évolutions de Roll20 : ce script est figé par la
-  // signature). L'état passe à la fiche par le hash (n=1/0) ; c'est ELLE qui
-  // tranche selon la préférence de son onglet Options (auto/jour/nuit).
+  // signature). Ce n'est plus le dernier mot : c'est l'INDICE que suit le
+  // réglage « auto » (voir nuitEffective juste dessous).
   function parseRgb(s) {
     var m = /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*([\d.]+))?/.exec(s || "");
     if (!m) return null;
@@ -279,6 +286,44 @@ if (typeof browser === "undefined") { var browser = chrome; }
     } catch (e) {}
     return false;
   }
+
+  // ---------- jour / nuit : le réglage du popup, puis Roll20 ----------
+  // jjkNuit vaut « auto » (défaut), « jour » ou « nuit ». Il est lu UNE FOIS,
+  // dans la même lecture de stockage que le mode (voir garde) : une seconde
+  // lecture serait une seconde course, et on a déjà vu ce que ça donne quand
+  // deux lectures se contredisent (l'onglet annonçait « Fiche JJK beta » avec
+  // la fiche stable dedans).
+  //
+  // CE QUI PART DANS LE HASH RESTE « n=1/0 », et ce choix a une raison précise.
+  // Le paramètre n dit aux pages servies par le site DE QUELLE COULEUR ELLES
+  // DOIVENT ÊTRE ; jusqu'ici il ne rapportait que le thème de Roll20, il
+  // rapporte maintenant le thème VOULU, c'est-à-dire l'ordre de l'utilisateur
+  // quand il en a donné un, et le thème de Roll20 sinon. Le faire disparaître
+  // en mode « auto », comme on l'a envisagé, aurait coûté la seule chose que
+  // l'extension sait faire de mieux que le site : sans indice, l'« auto » de la
+  // fiche et la nuit du plateau retombent sur prefers-color-scheme, donc sur le
+  // thème du NAVIGATEUR, et une partie Roll20 en sombre s'ouvrirait en clair
+  // sur un navigateur en clair. Aucune page du site n'a besoin d'être touchée :
+  // elles lisent n comme avant.
+  //
+  // La fiche garde le dernier mot par sa propre préférence (onglet Options,
+  // localStorage jjk-r20-night) : un joueur qui a explicitement mis SA fiche en
+  // jour la garde en jour. C'est voulu, le réglage le plus précis gagne ; le
+  // plateau, lui, n'a pas de préférence à lui et suit le popup.
+  var NUIT_ORDRE = "auto";
+  function normNuit(v) { return v === "jour" || v === "nuit" ? v : "auto"; }
+  function nuitEffective() {
+    if (NUIT_ORDRE === "nuit") return true;
+    if (NUIT_ORDRE === "jour") return false;
+    return detectNight();
+  }
+  // Nos boîtes portent leur nuit sur elles-mêmes (.jjk-nuit), jamais sur la
+  // racine : overlay.css est injectée dans TOUTES les frames de Roll20, et une
+  // classe posée sur <html> serait une main sur l'interface d'un autre site.
+  function poseNuit(elt) {
+    if (elt) elt.classList.toggle("jjk-nuit", nuitEffective());
+    return elt;
+  }
   // creator.html est PARTAGÉE par les deux parties : rien dedans ne dépend du
   // mode, seule la coquille qu'elle charge en dépend. Le mode lui arrive donc
   // dans le hash (« &m=… »), d'où shell-loader.js le lit sans rien demander au
@@ -287,8 +332,11 @@ if (typeof browser === "undefined") { var browser = chrome; }
   function creatorFrame(charId) {
     var f = el("iframe", "jjk-creator-frame");
     f.src = browser.runtime.getURL("creator.html") + "#c=" + encodeURIComponent(charId || "") +
-            "&n=" + (detectNight() ? "1" : "0") + "&m=" + MODE;
+            "&n=" + (nuitEffective() ? "1" : "0") + "&m=" + MODE;
     f.setAttribute("allow", "clipboard-write");
+    // le fond de l'iframe se voit AVANT que la fiche distante ait peint : clair
+    // sous une fiche sombre, cela faisait un éclair blanc à chaque ouverture
+    poseNuit(f);
     return f;
   }
   // La fiche doit ÉPOUSER la fenêtre de la feuille Roll20 (dialogue de perso) et suivre
@@ -323,7 +371,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
   }
   function fillButton(host, charId, exists) {
     host.innerHTML = "";
-    var wrap = el("div", "jjk-create");
+    var wrap = poseNuit(el("div", "jjk-create"));
     wrap.appendChild(el("div", "jjk-create-title", LIBELLE));
     wrap.appendChild(el("p", "jjk-create-msg",
       exists === null
@@ -338,7 +386,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
   // Décide quoi afficher dans l'hôte selon l'existence d'une fiche.
   function populate(host, charId) {
     host.innerHTML = "";
-    host.appendChild(el("div", "jjk-create", "Chargement…"));
+    host.appendChild(poseNuit(el("div", "jjk-create", "Chargement…")));
     queryHasSheet(charId, function (exists) {
       if (exists === true) fillCreator(host, charId);
       else fillButton(host, charId, exists);   // false = pas de fiche ; null = inconnu
@@ -553,6 +601,17 @@ if (typeof browser === "undefined") { var browser = chrome; }
   var PAN_PAGE = "roll20-narration.html";
   var PAN_CLE = "jjkPanneau:" + PAN_PAGE;
   var PAN_ACTIF = "jjkPanneauActif";   // interrupteur du popup (absent = allumé)
+  // DEUX NOMS POUR UN SEUL INTERRUPTEUR, et c'est une assurance, pas une
+  // hésitation. L'interrupteur du plateau s'est toujours appelé
+  // jjkPanneauActif ; le contrat de réglages écrit pour la refonte du popup le
+  // nomme jjkPanneau. Les deux se ressemblent assez pour qu'une main les
+  // confonde, et un popup qui écrirait le mauvais nom laisserait une case qui
+  // ne fait plus rien, sans le moindre message. On lit donc les deux : le nom
+  // du contrat l'emporte quand il est posé, l'historique sert sinon.
+  // ATTENTION, jjkPanneau n'est PAS le préfixe PAN_CLE ci-dessus : celui-là
+  // s'écrit « jjkPanneau:roll20-narration.html » et range la géométrie. Deux
+  // clés distinctes, jamais la même chaîne.
+  var PAN_ACTIF_BIS = "jjkPanneau";
   var PAN_DEF = { ouvert: false, x: 62, y: 60, w: 380, h: 330 };
   var PAN_MIN_W = 260, PAN_MIN_H = 190;
   var panEtat = null, panBoite = null, panCorps = null, panBtn = null, panTitre = null, panEcrit = null;
@@ -611,11 +670,27 @@ if (typeof browser === "undefined") { var browser = chrome; }
     if (!panCorps || panCorps.firstChild) return;
     var f = el("iframe", "jjk-panneau-frame");
     f.src = browser.runtime.getURL("panneau.html") +
-            "#p=" + PAN_PAGE + "&n=" + (detectNight() ? "1" : "0") + "&m=" + MODE;
+            "#p=" + PAN_PAGE + "&n=" + (nuitEffective() ? "1" : "0") + "&m=" + MODE;
     f.setAttribute("allow", "clipboard-write");
     panCorps.appendChild(f);
     // pas d'injection du pont ici : la page distante le réclame elle-même
     // (need-bridge), et le fichier tient à ne rien injecter de son propre chef
+  }
+  // Le CADRE et le PLATEAU ne doivent jamais être l'un clair et l'autre sombre.
+  // Le cadre vit ici, le plateau est servi par le site et ne lit sa nuit qu'au
+  // chargement, dans le hash : les accorder demande donc de refaire l'iframe,
+  // car changer le seul fragment d'une adresse ne recharge rien (c'est une
+  // navigation dans le même document, la page distante ne s'en aperçoit même
+  // pas). Refaire l'iframe est sans danger depuis que la table des liaisons du
+  // pont fait le ménage des fenêtres mortes, et le plateau n'a rien à perdre :
+  // son état, ce sont les jetons rangés dans Roll20, jamais la page.
+  function panRepeint() {
+    if (!panBoite) return;
+    poseNuit(panBoite);
+    if (panCorps && panCorps.firstChild) {
+      panCorps.innerHTML = "";
+      panRemplit();
+    }
   }
   function panOuvre(ouvert) {
     panEtat.ouvert = !!ouvert;
@@ -667,7 +742,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
   function panMonte(etat) {
     if (document.getElementById("jjk-panneau")) return;
     panEtat = panBorne(etat);
-    panBoite = el("div", "jjk-panneau");
+    panBoite = poseNuit(el("div", "jjk-panneau"));
     panBoite.id = "jjk-panneau";
 
     var tete = el("div", "jjk-panneau-tete");
@@ -707,12 +782,19 @@ if (typeof browser === "undefined") { var browser = chrome; }
   function panDefaut() {
     return { ouvert: PAN_DEF.ouvert, x: PAN_DEF.x, y: PAN_DEF.y, w: PAN_DEF.w, h: PAN_DEF.h };
   }
+  // Éteint seulement si on l'a dit : les deux clés absentes valent allumé, une
+  // partie fraîchement installée montre donc le plateau.
+  function panEteint(r) {
+    if (!r) return false;
+    if (r[PAN_ACTIF_BIS] !== undefined) return r[PAN_ACTIF_BIS] === false;
+    return r[PAN_ACTIF] === false;
+  }
   function panDemarre() {
     try {
-      browser.storage.local.get([PAN_CLE, PAN_ACTIF]).then(function (r) {
+      browser.storage.local.get([PAN_CLE, PAN_ACTIF, PAN_ACTIF_BIS]).then(function (r) {
         // l'interrupteur du popup : une partie Roll20 qui n'a rien à voir avec
         // JJK ne doit pas se voir imposer une étiquette à demeure
-        if (r && r[PAN_ACTIF] === false) return;
+        if (panEteint(r)) return;
         var e = (r && r[PAN_CLE]) || {};
         panMonte({
           ouvert: !!e.ouvert,
@@ -725,11 +807,46 @@ if (typeof browser === "undefined") { var browser = chrome; }
     }
   }
 
+  // ---------- le seul réglage relu en cours de partie : la nuit ----------
+  // Une nuit qui réclame de recharger la partie n'est pas une nuit : on l'allume
+  // le soir venu, entre deux jets, et l'écran doit suivre. Elle est aussi le
+  // seul réglage qu'on peut appliquer à chaud SANS RIEN DÉMONTER : repeindre
+  // n'enlève ni un onglet, ni un écouteur, ni un pont, et ne peut donc pas
+  // laisser Roll20 dans un état où il n'était pas prévu.
+  //
+  // L'extinction (jjkOff) et l'interrupteur du plateau ne sont volontairement
+  // PAS relus ici : ils démontent, et démonter à chaud est ce qui casse (voir
+  // la garde, tout en bas, pour ce que « éteindre » peut et ne peut pas).
+  //
+  // La fiche servie par le site n'est pas repeinte : ce serait la RECHARGER
+  // sous les doigts du joueur, au milieu d'une saisie. Elle a son propre
+  // réglage dans son onglet Options, et prendra celui du popup à sa prochaine
+  // ouverture.
+  function repeintTout() {
+    panRepeint();
+    var n = document.querySelectorAll(".jjk-create, .jjk-creator-frame");
+    for (var i = 0; i < n.length; i++) poseNuit(n[i]);
+  }
+  function ecouteNuit() {
+    try {
+      browser.storage.onChanged.addListener(function (ch, zone) {
+        if (zone && zone !== "local") return;
+        if (!ch || !ch.jjkNuit) return;
+        var v = normNuit(ch.jjkNuit.newValue);
+        if (v === NUIT_ORDRE) return;
+        NUIT_ORDRE = v;
+        repeintTout();
+      });
+    } catch (e) {}
+  }
+
   // ---------- démarrage : tout ce qui a un effet passe par ici ----------
   // Rien de ce fichier ne s'exécute avant que la garde n'ait appelé cette
   // fonction : ni écouteur, ni écriture dans le DOM, ni message posté. C'est la
-  // condition pour que la copie qui n'est pas du mode ne laisse aucune trace.
+  // condition pour que la copie qui n'est pas du mode, ou l'extension éteinte,
+  // ne laisse aucune trace.
   function demarre() {
+    ecouteNuit();
     posePriseTake();
     if (IS_TOP) {
       // FRAME DU HAUT : on n'injecte RIEN au chargement (l'injection main-world gênait
@@ -757,6 +874,15 @@ if (typeof browser === "undefined") { var browser = chrome; }
             // le titre appartient à la page : elle peut se renommer sans qu'on
             // touche à l'extension
             if (d.titre != null && panTitre) panTitre.textContent = String(d.titre).slice(0, 40);
+            // LA COULEUR DU CADRE SUIT CELLE DU PLATEAU, dès que le plateau la
+            // dit. Le cadre est signé, le plateau ne l'est pas : le jour où il
+            // se donne un réglage de nuit à lui, et il l'a fait, lui seul sait
+            // de quelle couleur il s'est peint. Un cadre qui n'écouterait que
+            // le réglage de l'extension resterait clair autour d'un plateau
+            // devenu sombre, et c'est précisément ce qu'il ne doit jamais
+            // arriver. Sans ce message, le cadre garde le réglage du popup,
+            // que le plateau suit de toute façon par défaut.
+            if (d.nuit != null && panBoite) panBoite.classList.toggle("jjk-nuit", !!d.nuit);
             if (d.w != null) panEtat.w = panNombre(d.w, panEtat.w);
             if (d.h != null) panEtat.h = panNombre(d.h, panEtat.h);
             panBorne(panEtat);
@@ -790,11 +916,12 @@ if (typeof browser === "undefined") { var browser = chrome; }
     }
   }
 
-  // ---------- garde de mode ----------
+  // ---------- garde : éteinte ? puis quel mode ? ----------
   // Les deux copies de ce fichier sont injectées dans CHAQUE frame de Roll20 :
   // le manifeste les déclare toutes les deux, et rien ne permet d'en charger une
   // seule à l'exécution. C'est donc ici, et nulle part ailleurs, que la copie qui
-  // n'est pas du mode s'arrête.
+  // n'est pas du mode s'arrête, et ici aussi que les DEUX s'arrêtent quand
+  // l'extension est éteinte.
   //
   // Le mode ne vit que dans browser.storage.local, dont la lecture est
   // ASYNCHRONE dans un script de contenu : il n'existe aucune lecture synchrone
@@ -802,13 +929,54 @@ if (typeof browser === "undefined") { var browser = chrome; }
   // laissé passer quelque chose. C'est pourquoi tout ce qui a un effet est
   // enfermé dans demarre(), appelé d'ici seulement.
   //
-  // Un rejet du stockage désigne explicitement le mode stable. Sans ce choix,
-  // les DEUX copies se tairaient et l'onglet disparaîtrait sans un mot ; la
-  // partie publiée est celle qui doit survivre à une panne.
+  // UNE SEULE LECTURE pour les trois réglages. Trois lectures, ce serait trois
+  // moments différents, donc trois occasions de se contredire : on a déjà vu
+  // l'onglet annoncer un mode et montrer l'autre pour exactement cette raison.
+  // Ici les deux copies lisent la même chose au même instant : éteintes, elles
+  // se taisent toutes les deux, et il n'y a pas de course à arbitrer.
+  //
+  // jjkOff ABSENT VAUT ALLUMÉ, et la comparaison est stricte : une extension
+  // fraîchement installée, dont le stockage est vide, doit fonctionner.
+  //
+  // Un rejet du stockage désigne explicitement le mode stable, allumé. Sans ce
+  // choix, les DEUX copies se tairaient et l'onglet disparaîtrait sans un mot ;
+  // la partie publiée est celle qui doit survivre à une panne. Le prix est
+  // assumé : si le stockage était injoignable, on ne saurait pas non plus que
+  // l'utilisateur a éteint. Cela ne se produit que si l'API storage manque
+  // elle-même, c'est-à-dire jamais tant que la permission est accordée.
+  //
+  // CE QU'ÉTEINDRE FAIT, ET CE QU'IL NE PEUT PAS FAIRE. Le popup doit pouvoir
+  // le dire au joueur sans mentir, alors voici l'inventaire exact.
+  //   Sur les pages Roll20 OUVERTES ENSUITE, rien ne se réveille : pas d'onglet
+  //   « Fiche JJK », pas de pane, pas de plateau flottant, pas de pont d20
+  //   (il n'est injecté que sur need-bridge, qui ne part plus), aucun écouteur
+  //   de message, aucune interception du lien « Prendre », aucune écriture dans
+  //   le stockage. La frame reste exactement telle que Roll20 l'a faite.
+  //   Sur une partie DÉJÀ OUVERTE, rien ne se démonte, et c'est délibéré :
+  //     - le pont posé dans le monde principal ne peut pas être retiré. Aucun
+  //       script de contenu n'atteint ce monde, sa balise <script> s'est retirée
+  //       toute seule à l'onload et son écouteur, lui, est resté ;
+  //     - les écouteurs déjà posés sont des fonctions anonymes (message de la
+  //       frame du haut, clic de capture de « Prendre », resize, ResizeObserver) :
+  //       removeEventListener n'a rien à leur passer ;
+  //     - le pane .tab-pane.jjkfiche ne doit surtout pas être retiré. Le système
+  //       d'onglets de Roll20 garde un renvoi vers lui ; le supprimer d'un
+  //       dialogue déjà lié empêche la fiche du personnage de s'ouvrir, la
+  //       nôtre comme les siennes ;
+  //     - overlay.css est injectée par le manifeste dans toutes les frames et ne
+  //       se retire pas non plus. Elle ne peint rien tant que rien ne porte nos
+  //       classes.
+  //   Autrement dit : éteindre prend effet AU RECHARGEMENT DE LA PARTIE, comme
+  //   chez uBlock. C'est la seule promesse tenable, et la seule qui ne laisse
+  //   pas Roll20 à moitié démonté.
   function garde() {
     try {
-      browser.storage.local.get("jjkBeta").then(
-        function (r) { if ((r && r.jjkBeta ? "beta" : "stable") === MODE) reclame(); },
+      browser.storage.local.get(["jjkOff", "jjkBeta", "jjkNuit"]).then(
+        function (r) {
+          if (r && r.jjkOff === true) return;   // éteinte : aucune des deux copies ne bouge
+          NUIT_ORDRE = normNuit(r && r.jjkNuit);
+          if ((r && r.jjkBeta ? "beta" : "stable") === MODE) reclame();
+        },
         function () { if (MODE === "stable") reclame(); }
       );
     } catch (e) {
