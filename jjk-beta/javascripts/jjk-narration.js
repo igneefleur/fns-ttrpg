@@ -93,6 +93,71 @@
   function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
   function entier(v, def) { var n = parseInt(v, 10); return isFinite(n) ? n : def; }
 
+  // ---------- jour / nuit ----------
+  // Même règle de priorité que la fiche, et dans le même ordre : le choix
+  // mémorisé de ce joueur, puis l'indice n=1/0 du hash (posé par la coquille
+  // d'après le réglage jjkNuit de l'extension, et ABSENT quand ce réglage vaut
+  // « auto »), puis le thème du navigateur. Jusqu'ici personne ne pouvait
+  // CHOISIR la nuit du plateau : il subissait le hash.
+  //
+  // La clé est propre au plateau. La fiche a la sienne (« jjk-r20-night ») et
+  // les deux pages sont servies par la même origine : partager la clé ferait
+  // qu'éclairer le plateau repeindrait la fiche du même joueur.
+  //
+  // Et surtout, cette préférence ne va PAS dans jjk_narr_conf : c'est un
+  // réglage d'affichage, propre à chacun. Dans la configuration partagée, le
+  // choix d'un joueur repeindrait l'écran de toute la table, et chaque bascule
+  // coûterait une écriture Roll20.
+  var NUIT_CLE = "jjk-r20-night-plateau";
+  var NUIT_INDICE = (function () {
+    var h = location.hash || "";
+    if (/[#&]n=1/.test(h)) return true;
+    if (/[#&]n=0/.test(h)) return false;
+    try { return !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches); }
+    catch (e) { return false; }
+  })();
+  function nuitPref() {
+    // localStorage peut manquer dans une iframe tierce dont les cookies sont
+    // bloqués : la lecture lève, et le plateau doit alors simplement suivre
+    // Roll20 au lieu de ne pas démarrer.
+    try { var v = localStorage.getItem(NUIT_CLE); return v === "1" || v === "0" ? v : "auto"; }
+    catch (e) { return "auto"; }
+  }
+  function nuitActive() { var p = nuitPref(); return p === "1" || (p === "auto" && NUIT_INDICE); }
+  function appliqueNuit() {
+    var on = nuitActive();
+    document.documentElement.classList.toggle("night", on);
+    if (btnNuit) {
+      var t = on ? "Repasser en mode jour" : "Passer en mode nuit";
+      btnNuit.title = t;
+      btnNuit.setAttribute("aria-label", t);
+      btnNuit.setAttribute("aria-pressed", on ? "true" : "false");
+    }
+    // ON LE DIT AU CADRE. Le cadre flottant est peint par l'extension, qui ne
+    // connaît que son propre réglage ; lui seul ne peut pas deviner qu'un
+    // joueur a mis CE plateau en nuit alors que le reste est en jour. Sans ce
+    // message, on aurait une barre de titre claire autour d'un plateau sombre,
+    // c'est-à-dire l'objet cassé en deux. Le canal l'accepte, et le cadre
+    // ignore ce qu'il ne comprend pas : une extension plus ancienne ne fera
+    // rien de ce champ, sans casser pour autant.
+    post({ type: "panneau", nuit: on });
+  }
+  function poseNuit(v) {
+    try {
+      if (v === "1" || v === "0") localStorage.setItem(NUIT_CLE, v);
+      else localStorage.removeItem(NUIT_CLE);
+    } catch (e) {}
+    appliqueNuit();
+  }
+  // Les deux icônes du bouton du site (docs/javascripts/night.js), recopiées :
+  // la page ne charge rien d'autre. Laquelle des deux paraît est décidé en CSS
+  // pur par html.night, jamais ici.
+  var SVG_NUIT =
+    '<svg class="nb-croissant" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">' +
+    '<path d="M17.75,4.09L15.22,6.03L16.13,9.09L13.5,7.28L10.87,9.09L11.78,6.03L9.25,4.09L12.44,4L13.5,1L14.56,4L17.75,4.09M21.25,10.5L19.61,11.76L20.2,13.74L18.5,12.56L16.8,13.74L17.39,11.76L15.75,10.5L17.81,10.43L18.5,8.5L19.19,10.43L21.25,10.5M18.97,15.95C19.8,15.87 20.69,17.05 20.16,17.8C19.84,18.25 19.5,18.67 19.08,19.07C15.17,23 8.84,23 4.94,19.07C1.03,15.17 1.03,8.83 4.94,4.93C5.34,4.53 5.76,4.17 6.21,3.85C6.96,3.32 8.14,4.21 8.06,5.04C7.79,7.9 8.75,10.87 10.95,13.06C13.14,15.26 16.1,16.22 18.97,15.95Z"/></svg>' +
+    '<svg class="nb-soleil" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">' +
+    '<path d="M3.55,19.09L4.96,20.5L6.76,18.71L5.34,17.29M12,6A6,6 0 0,0 6,12A6,6 0 0,0 12,18A6,6 0 0,0 18,12A6,6 0 0,0 12,6M20,13H23V11H20M17.24,18.71L19.04,20.5L20.45,19.09L18.66,17.29M20.45,5L19.04,3.5L17.24,5.29L18.66,6.71M13,1H11V4H13M6.76,5.29L4.96,3.5L3.55,4.91L5.34,6.71M1,13H4V11H1M13,20H11V23H13V20Z"/></svg>';
+
   // ---------- dialogue avec le pont ----------
   function post(msg) {
     msg.ns = NS;
@@ -293,23 +358,54 @@
   function ecritPoint(p) { return Math.round(p.x) + "," + Math.round(p.y); }
 
   // ---------- construction ----------
-  var racine, barre, plateau, coteMj, coteJoueurs, coucheJetons, lblTotal, lblLibres, btnReglages;
+  var racine, barre, plateau, coteMj, coteJoueurs, coucheJetons;
+  var lblTotal, boiteTotal, lblHors, boiteHors, lblAvis, btnNuit, btnReglages;
   var jaugeRef = null;
   var placesDom = {};   // id de place -> élément
+
+  // Un couple libellé / valeur : la capitale minuscule et espacée face au
+  // chiffre tabulaire. C'est ce contraste, plus que les couleurs, qui donne
+  // l'air de formulaire imprimé ; l'ancienne barre disait « 12 jetons » en
+  // texte courant, à la taille de tout le reste.
+  function kv(cls, lab) {
+    var b = el("div", "nb-kv " + cls);
+    b.appendChild(el("span", "k", lab));
+    b.appendChild(el("span", "v", "0"));
+    return b;
+  }
 
   function bati() {
     racine = document.getElementById("nb");
     racine.innerHTML = "";   // le mot d'attente de l'amorceur a fait son office
+
     barre = el("div", "nb-barre");
-    lblTotal = el("span", "nb-total", "");
-    lblLibres = el("span", "nb-libres", "");
+    boiteTotal = kv("nb-total", "Jetons");
+    lblTotal = boiteTotal.lastChild;
+    barre.appendChild(boiteTotal);
+    // « hors place » et « lecture seule » sont deux choses distinctes : un
+    // compte et un empêchement. Elles se disputaient la même case, et la plus
+    // grave des deux se disait en gris clair.
+    boiteHors = kv("nb-hors", "Hors place");
+    lblHors = boiteHors.lastChild;
+    boiteHors.hidden = true;
+    barre.appendChild(boiteHors);
+
+    var outils = el("div", "nb-outils");
+    btnNuit = el("button", "nb-btn nb-lune");
+    btnNuit.type = "button";
+    btnNuit.innerHTML = SVG_NUIT;   // deux SVG écrits juste au-dessus, sans rien d'extérieur
+    btnNuit.addEventListener("click", function () { poseNuit(nuitActive() ? "0" : "1"); });
+    outils.appendChild(btnNuit);
     btnReglages = el("button", "nb-btn", "Réglages");
     btnReglages.type = "button";
     btnReglages.addEventListener("click", function () { ouvreReglages(); });
-    barre.appendChild(lblTotal);
-    barre.appendChild(lblLibres);
-    barre.appendChild(btnReglages);
+    outils.appendChild(btnReglages);
+    barre.appendChild(outils);
     racine.appendChild(barre);
+    appliqueNuit();   // le bouton vient d'exister : ses libellés doivent dire l'état
+
+    lblAvis = el("div", "nb-avis");
+    racine.appendChild(lblAvis);
 
     plateau = el("div", "nb-plateau");
     coteMj = el("div", "nb-cote nb-cote-mj");
@@ -322,16 +418,25 @@
 
     // Le diamètre des jetons suit la largeur du plateau : agrandir le panneau
     // doit agrandir la table, pas semer des confettis.
+    //
+    // MONTÉ DE 5.5 À 6.8 POUR CENT depuis que le jeton porte une médaille
+    // frappée et non plus un disque peint. Un dégradé se lit à seize pixels ;
+    // une gravure, non : à l'ancienne taille le personnage devenait une tache
+    // dorée et l'image ne servait à rien. Le plancher passe de 16 à 20 px, le
+    // plafond de 30 à 38.
     function jauge() {
-      var w = plateau.clientWidth || 320, h = plateau.clientHeight || 260;
-      plateau.style.setProperty("--jeton", clamp(Math.round(w * 0.055), 16, 30) + "px");
-      // Douze joueurs empilés dans une colonne de 270 pixels donneraient des
-      // places hautes de rien, puis des places SOUS le plateau : invisibles, et
-      // surtout impossibles à atteindre (un jeton n'y tomberait jamais). Passé
-      // ce que la hauteur permet, la colonne devient une grille.
+      var w = plateau.clientWidth || 320;
+      plateau.style.setProperty("--jeton", clamp(Math.round(w * 0.068), 20, 38) + "px");
+      // Le nombre de colonnes ne dépend QUE du nombre de joueurs, jamais de la
+      // hauteur disponible. Quand il en dépendait, les places changeaient de
+      // position d'un panneau à l'autre alors que les jetons, eux, sont en
+      // millièmes du plateau entier : deux joueurs lisaient des comptes
+      // différents du même état partagé (mesuré sur le même état : 3/2/3/2/2 à
+      // 380x330 et 3/1/4/0/4 à 260x190). Les rangs, eux, se partagent la
+      // hauteur à parts égales et les places n'ont plus de hauteur minimale :
+      // aucune ne peut sortir du plateau, donc aucune ne devient inatteignable.
       var n = Math.max(1, conf.joueurs.length);
-      var rangs = Math.max(1, Math.floor(h / 44));
-      var cols = Math.max(1, Math.ceil(n / rangs));
+      var cols = Math.min(3, Math.ceil(n / 4));
       coteJoueurs.style.gridTemplateColumns = "repeat(" + cols + ", minmax(0, 1fr))";
       coteJoueurs.style.gridTemplateRows = "repeat(" + Math.ceil(n / cols) + ", minmax(0, 1fr))";
     }
@@ -361,18 +466,30 @@
       var hote = p.mj ? coteMj : coteJoueurs;
       if (!d) {
         d = el("div", "nb-place" + (p.mj ? " nb-place-mj" : ""));
-        var im = el("img", "nb-place-portrait");
+        // Une place est une CARTE du livre : un en-tête (portrait, nom en
+        // Cinzel, compte à droite) souligné d'un filet, puis la table. Le nom
+        // n'est plus une légende posée en bas à gauche qui se disputait la
+        // place avec le portrait et se tronquait dès 260 pixels.
+        var tete = el("div", "nb-place-tete");
+        var boite = el("span", "nb-place-portrait");
+        var im = el("img");
         im.alt = "";
-        // une URL de portrait qui ne répond plus (image supprimée, campagne
-        // d'un autre) ne doit pas laisser une icône brisée sur la table
+        // Une URL de portrait qui ne répond plus (image supprimée, campagne
+        // d'un autre) ne doit pas laisser une icône brisée sur la table. On
+        // cache l'IMAGE, jamais sa boîte : un trou dans un en-tête se remarque
+        // plus qu'une plaque vide.
         im.addEventListener("error", function () { im.classList.add("nb-cache"); });
-        d.appendChild(im);
-        d.appendChild(el("div", "nb-place-nom"));
-        d.appendChild(el("div", "nb-place-compte"));
+        boite.appendChild(im);
+        tete.appendChild(boite);
+        tete.appendChild(el("div", "nb-place-nom"));
+        tete.appendChild(el("div", "nb-place-compte"));
+        d.appendChild(tete);
+        d.appendChild(el("div", "nb-place-corps"));
         placesDom[p.id] = d;
       }
       if (d.parentNode !== hote) hote.appendChild(d);
-      var img = d.querySelector(".nb-place-portrait");
+      var cadre = d.querySelector(".nb-place-portrait");
+      var img = cadre.querySelector("img");
       // ne toucher à src que s'il CHANGE : réaffecter la même URL morte
       // relançait la requête et faisait clignoter une image brisée à chaque
       // relecture, c'est-à-dire une fois par seconde
@@ -381,7 +498,18 @@
         if (p.img) { img.src = p.img; img.classList.remove("nb-cache"); }
         else { img.removeAttribute("src"); img.classList.add("nb-cache"); }
       }
-      d.querySelector(".nb-place-nom").textContent = p.nom;
+      // Pas de portrait CONFIGURÉ : pas de cadre du tout. Une page imprimée ne
+      // laisse pas de vignettes blanches en marge, et sur un panneau de 260
+      // pixels ce cadre vide volait vingt pixels au nom. Un portrait configuré
+      // mais CASSÉ, lui, garde son cadre : c'est le seul signe visible qu'il y
+      // a un réglage à corriger.
+      cadre.classList.toggle("nb-cache", !p.img);
+      var nom = d.querySelector(".nb-place-nom");
+      nom.textContent = p.nom;
+      // Un nom se tronque dans une place étroite, et c'est inévitable à 260
+      // pixels de large : l'infobulle le rend entier, la table ne devient donc
+      // jamais anonyme.
+      nom.title = p.nom;
       d.dataset.place = p.id;
     });
     Object.keys(placesDom).forEach(function (id) {
@@ -411,8 +539,11 @@
       if (!j) {
         j = el("div", "nb-jeton");
         j.dataset.jeton = id;
-        j.title = "narration";
-        j.appendChild(el("span", null, "narration"));
+        // Le mot « narration » était GRAVÉ sur la face du jeton : mesuré à
+        // 4.83 px de haut dans un disque de 21, à 3.64:1 de contraste en nuit,
+        // ce n'était plus du texte mais une tache. Il ne reste que dans
+        // l'infobulle, et le jeton porte un sillon (CSS) à la place.
+        j.title = "Jeton de narration";
         j.addEventListener("pointerdown", saisit);
         coucheJetons.appendChild(j);
         // un jeton neuf ne glisse pas : il apparaît là où il est
@@ -436,7 +567,27 @@
 
   // Le compte d'une place est une question de GÉOMÉTRIE : combien de jetons
   // tombent dans son rectangle. Rien n'est stocké, donc rien ne peut mentir.
+  // Un plateau qu'on ne peut pas toucher doit le DIRE : sinon on pousse un
+  // jeton, rien ne bouge, et on ne sait pas si c'est le droit qui manque ou le
+  // logiciel qui a lâché. Trois empêchements, donc trois phrases distinctes, et
+  // rien du tout quand tout va bien (le bandeau disparaît alors du panneau).
+  function ditEmpechement() {
+    if (!lblAvis) return;
+    // Tant que le pont n'a pas dit quel est le personnage, on n'accuse
+    // personne : « ecrivable » vaut faux au démarrage, et l'annoncer ferait
+    // paraître un bandeau d'alerte pendant les deux premières secondes de
+    // chaque ouverture, alors que rien n'est encore su. L'écran d'état, lui,
+    // dit déjà ce qu'il faut si le pont ne répond pas.
+    if (!charId) { lblAvis.textContent = ""; return; }
+    lblAvis.textContent =
+      confFuture ? "Plateau réglé par une version plus récente : lecture seule."
+      : !ecrivable ? "Lecture seule : ce personnage n'est pas partagé avec ce joueur."
+      : refuse ? "Roll20 a refusé les dernières écritures : lecture seule."
+      : "";
+  }
+
   function compte() {
+    ditEmpechement();   // avant la sortie anticipée : un empêchement se dit même panneau replié
     var base = coucheJetons.getBoundingClientRect();
     if (!base.width || !base.height) return;
     var zones = [];
@@ -472,13 +623,12 @@
       c.textContent = String(z.n);
       c.classList.toggle("zero", !z.n);
     });
-    lblTotal.textContent = total + " jeton" + (total > 1 ? "s" : "");
-    // Un plateau qu'on ne peut pas toucher doit le DIRE : sinon on pousse un
-    // jeton, rien ne bouge, et on ne sait pas si c'est le droit qui manque ou
-    // le logiciel qui a lâché.
-    lblLibres.textContent = confFuture ? "plateau plus récent : lecture seule"
-      : !peutPousser() ? "lecture seule"
-      : libres ? "hors place : " + libres : "";
+    lblTotal.textContent = String(total);
+    // Le zéro se dit en encre pâle et perd sa graisse, comme partout dans la
+    // fiche : c'est un état neutre, pas une valeur à lire.
+    boiteTotal.classList.toggle("zero", !total);
+    lblHors.textContent = String(libres);
+    boiteHors.hidden = !libres;
   }
 
   // ---------- déplacer un jeton ----------
@@ -539,40 +689,68 @@
   // Tout ce que le MJ (ou n'importe qui, les droits Roll20 sont par personnage)
   // règle une fois par campagne : qui joue, avec quel portrait, et combien de
   // jetons chacun reçoit au début d'une session.
+  //
+  // C'est un DIALOGUE posé sur le plateau, et non plus un voile opaque qui le
+  // remplaçait : on règle qui joue en voyant la table. Les deux gestes qui
+  // effacent les positions de tout le monde (distribuer, tout ramasser) ont leur
+  // propre bloc « Session » : ce ne sont pas des réglages, ce sont des gestes de
+  // partie, et ils n'ont rien à faire dans la même rangée que « Enregistrer ».
   function ouvreReglages() {
-    var v = el("div", "nb-voile");
+    var over = el("div", "nb-modal-over");
+    var boite = el("div", "nb-modal");
+    over.appendChild(boite);
     var brouillon = JSON.parse(JSON.stringify(conf));
 
-    v.appendChild(el("h2", null, "Réglages du plateau"));
+    boite.appendChild(el("div", "nb-modal-titre", "Réglages du plateau"));
+
+    // ---- les places ----
+    // Une liste, donc une ligne d'en-tête et des colonnes, comme les listes de
+    // la fiche : répéter « NOM » et « PORTRAIT » sur chacune des douze lignes
+    // faisait deux fois plus d'étiquettes que de valeurs.
+    boite.appendChild(groupe("Places", true));
+    var head = el("div", "nb-ligne head");
+    head.appendChild(el("span", "nb-rang", ""));
+    head.appendChild(el("span", "nb-col nom", "Nom"));
+    head.appendChild(el("span", "nb-col img", "Portrait"));
+    head.appendChild(el("span", "nb-creux", ""));
+    boite.appendChild(head);
 
     var lMj = el("div", "nb-ligne");
-    lMj.appendChild(el("span", "nb-lab", "MJ"));
-    var nomMj = champ("text", "nom", brouillon.mj.nom, "Nom");
-    var imgMj = champ("text", "img", brouillon.mj.img, "URL du portrait");
-    lMj.appendChild(nomMj); lMj.appendChild(imgMj);
-    v.appendChild(lMj);
+    lMj.appendChild(el("span", "nb-rang", "MJ"));
+    var nomMj = champ("text", "Nom", brouillon.mj.nom, "MJ", "nom");
+    var imgMj = champ("text", "Portrait", brouillon.mj.img, "https://…", "img");
+    lMj.appendChild(nomMj.f); lMj.appendChild(imgMj.f);
+    // le creux tient la colonne du bouton « − » que la ligne du MJ n'a pas :
+    // sans lui, son champ de portrait déborde de vingt-sept pixels sur les
+    // autres et la colonne cesse d'être une colonne
+    lMj.appendChild(el("span", "nb-creux", ""));
+    boite.appendChild(lMj);
 
     var hote = el("div");
-    v.appendChild(hote);
+    boite.appendChild(hote);
     function rendJoueurs() {
       hote.innerHTML = "";
       brouillon.joueurs.forEach(function (j, i) {
-        var l = el("div", "nb-ligne");
-        l.appendChild(el("span", "nb-lab", String(i + 1)));
-        var n = champ("text", "nom", j.nom, "Nom du personnage");
-        var g = champ("text", "img", j.img, "URL du portrait");
-        n.addEventListener("input", function () { j.nom = n.value; });
-        g.addEventListener("input", function () { j.img = g.value; });
-        var moins = el("button", "nb-btn", "−");
+        // une ligne sur deux prend la bande : c'est le zébrage de la fiche,
+        // posé en JS parce que le nombre de lignes change
+        var l = el("div", "nb-ligne" + (i % 2 ? " odd" : ""));
+        l.appendChild(el("span", "nb-rang", String(i + 1)));
+        var n = champ("text", "Nom", j.nom, "Nom du personnage", "nom");
+        var g = champ("text", "Portrait", j.img, "https://…", "img");
+        n.i.addEventListener("input", function () { j.nom = n.i.value; });
+        g.i.addEventListener("input", function () { j.img = g.i.value; });
+        var moins = el("button", "nb-btn danger", "−");
         moins.type = "button";
         moins.title = "Retirer cette place";
+        moins.setAttribute("aria-label", "Retirer cette place");
         moins.addEventListener("click", function () {
           brouillon.joueurs.splice(i, 1);
           rendJoueurs();
         });
-        l.appendChild(n); l.appendChild(g); l.appendChild(moins);
+        l.appendChild(n.f); l.appendChild(g.f); l.appendChild(moins);
         hote.appendChild(l);
       });
+      var rangee = el("div", "nb-session");
       var plus = el("button", "nb-btn", "Ajouter un joueur");
       plus.type = "button";
       plus.addEventListener("click", function () {
@@ -584,36 +762,51 @@
         brouillon.joueurs.push({ id: id, nom: "", img: "" });
         rendJoueurs();
       });
-      hote.appendChild(plus);
+      rangee.appendChild(plus);
+      hote.appendChild(rangee);
+      // la liste vient d'être refaite : ses boutons neufs doivent retomber sous
+      // le même verrou que le reste
+      verrouille();
     }
     rendJoueurs();
 
+    // ---- la donne ----
+    boite.appendChild(groupe("Donne"));
+    boite.appendChild(el("p", "nb-note", "Jetons posés sur chaque place au début d'une session."));
     var lDonne = el("div", "nb-ligne");
-    lDonne.appendChild(el("span", "nb-lab", "Jetons au début de session — MJ"));
-    var dMj = champ("number", null, brouillon.donne.mj, "");
-    lDonne.appendChild(dMj);
-    lDonne.appendChild(el("span", "nb-lab", "par joueur"));
-    var dJ = champ("number", null, brouillon.donne.joueur, "");
-    lDonne.appendChild(dJ);
-    v.appendChild(lDonne);
+    var dMj = champ("number", "MJ", brouillon.donne.mj, "", "don");
+    var dJ = champ("number", "Par joueur", brouillon.donne.joueur, "", "don");
+    lDonne.appendChild(dMj.f); lDonne.appendChild(dJ.f);
+    boite.appendChild(lDonne);
 
-    var actions = el("div", "nb-actions");
-    var bOk = el("button", "nb-btn on", "Enregistrer");
-    bOk.type = "button";
-    bOk.addEventListener("click", function () {
-      brouillon.mj.nom = nomMj.value;
-      brouillon.mj.img = imgMj.value;
-      brouillon.donne.mj = clamp(entier(dMj.value, 3), 0, 40);
-      brouillon.donne.joueur = clamp(entier(dJ.value, 3), 0, 40);
-      // Le compteur d'identifiants ne redescend jamais : le brouillon date de
-      // l'ouverture du voile, et quelqu'un a pu distribuer entre-temps.
-      brouillon.seq = Math.max(entier(brouillon.seq, 0), entier(conf.seq, 0));
-      conf = litConf(JSON.stringify(brouillon));
-      ecrire(defObj(A_CONF, JSON.stringify(conf)));
-      ferme();
-      rend();
+    // ---- l'affichage ----
+    // Le menu à trois états de la fiche, à l'identique : c'est le seul qui sache
+    // dire « auto ». Le bouton de la barre, lui, ne fait que basculer.
+    boite.appendChild(groupe("Affichage"));
+    var lAff = el("div", "nb-ligne");
+    var fAff = el("div", "nb-f");
+    fAff.appendChild(el("label", null, "Mode"));
+    var selNuit = el("select", "nb-select");
+    [["auto", "Selon Roll20"], ["0", "Jour"], ["1", "Nuit"]].forEach(function (o) {
+      var op = el("option", null, o[1]);
+      op.value = o[0];
+      selNuit.appendChild(op);
     });
-    var bDist = el("button", "nb-btn", "Distribuer");
+    selNuit.value = nuitPref();
+    selNuit.setAttribute("aria-label", "Mode d'affichage");
+    // Un réglage d'affichage n'est pas un réglage de plateau : il reste ouvert
+    // même en lecture seule, où l'on ne fait justement que regarder.
+    selNuit.dataset.libre = "1";
+    selNuit.addEventListener("change", function () { poseNuit(selNuit.value); });
+    fAff.appendChild(selNuit);
+    lAff.appendChild(fAff);
+    boite.appendChild(lAff);
+
+    // ---- la session ----
+    boite.appendChild(groupe("Session"));
+    boite.appendChild(el("p", "nb-note", "Ces deux gestes replacent les jetons de toute la table."));
+    var session = el("div", "nb-session");
+    var bDist = el("button", "nb-btn danger", "Distribuer");
     bDist.type = "button";
     bDist.title = "Replace les jetons : la donne de chacun sur sa place";
     // Deux temps. Le premier clic ne fait que demander : distribuer efface les
@@ -622,54 +815,105 @@
     var arme = null;
     bDist.addEventListener("click", function () {
       if (!arme) {
-        arme = setTimeout(function () { arme = null; bDist.textContent = "Distribuer"; bDist.classList.remove("on"); }, 3000);
+        arme = setTimeout(function () { arme = null; bDist.textContent = "Distribuer"; bDist.classList.remove("arme"); }, 3000);
         bDist.textContent = "Confirmer ?";
-        bDist.classList.add("on");
+        bDist.classList.add("arme");
         return;
       }
       clearTimeout(arme);
       arme = null;
-      brouillon.mj.nom = nomMj.value;
-      brouillon.mj.img = imgMj.value;
-      brouillon.donne.mj = clamp(entier(dMj.value, 3), 0, 40);
-      brouillon.donne.joueur = clamp(entier(dJ.value, 3), 0, 40);
-      brouillon.seq = Math.max(entier(brouillon.seq, 0), entier(conf.seq, 0));
+      recolte();
       conf = litConf(JSON.stringify(brouillon));
       ferme();
       rend();
       distribue();
     });
-    var bRamasse = el("button", "nb-btn", "Tout ramasser");
+    var bRamasse = el("button", "nb-btn danger", "Tout ramasser");
     bRamasse.type = "button";
     bRamasse.title = "Ramène tous les jetons du plateau chez le MJ";
     bRamasse.addEventListener("click", function () { ferme(); ramasse(); });
+    session.appendChild(bDist);
+    session.appendChild(bRamasse);
+    boite.appendChild(session);
+
+    // ---- les actions du dialogue ----
+    var actions = el("div", "nb-actions");
     var bFerme = el("button", "nb-btn", "Fermer");
     bFerme.type = "button";
+    bFerme.dataset.libre = "1";   // on peut toujours sortir, même sans droit d'écrire
     bFerme.addEventListener("click", ferme);
-    actions.appendChild(bOk);
-    actions.appendChild(bDist);
-    actions.appendChild(bRamasse);
+    var bOk = el("button", "nb-btn primary", "Enregistrer");
+    bOk.type = "button";
+    bOk.addEventListener("click", function () {
+      recolte();
+      conf = litConf(JSON.stringify(brouillon));
+      ecrire(defObj(A_CONF, JSON.stringify(conf)));
+      ferme();
+      rend();
+    });
     actions.appendChild(bFerme);
-    v.appendChild(actions);
+    actions.appendChild(bOk);
+    boite.appendChild(actions);
 
-    v.appendChild(el("p", "nb-aide",
+    boite.appendChild(el("p", "nb-aide",
       "Le plateau vit dans les Attributes du personnage « Narration ». "
       + "Tous ceux qui le contrôlent peuvent pousser les jetons."));
 
-    function ferme() { if (v.parentNode) v.parentNode.removeChild(v); }
     if (!peutPousser()) {
-      bOk.disabled = bDist.disabled = bRamasse.disabled = true;
-      v.appendChild(el("p", "nb-aide", "Lecture seule : ce personnage n'est pas partagé avec ce joueur."));
+      boite.appendChild(el("p", "nb-aide", "Lecture seule : les réglages ne peuvent pas être enregistrés."));
     }
-    racine.appendChild(v);
+    verrouille();
 
-    function champ(type, cls, val, ph) {
-      var i = el("input", cls);
+    // Le voile se ferme au clic à côté et à la touche d'échappement : le
+    // dialogue couvre un panneau qui fait parfois 260 pixels de large, où le
+    // bouton « Fermer » peut avoir défilé hors de vue.
+    over.addEventListener("pointerdown", function (ev) { if (ev.target === over) ferme(); });
+    document.addEventListener("keydown", auClavier);
+    racine.appendChild(over);
+    (nomMj.i).focus();
+
+    function auClavier(ev) { if (ev.key === "Escape" || ev.key === "Esc") ferme(); }
+    function ferme() {
+      document.removeEventListener("keydown", auClavier);
+      if (over.parentNode) over.parentNode.removeChild(over);
+    }
+    // Les champs qui ne se surveillent pas au fil de la frappe (le MJ, la donne)
+    // sont relus ICI, au moment d'agir : les deux boutons qui écrivent doivent
+    // partir du même brouillon, et le compteur d'identifiants ne redescend
+    // jamais (le brouillon date de l'ouverture, quelqu'un a pu distribuer
+    // entre-temps).
+    function recolte() {
+      brouillon.mj.nom = nomMj.i.value;
+      brouillon.mj.img = imgMj.i.value;
+      brouillon.donne.mj = clamp(entier(dMj.i.value, 3), 0, 40);
+      brouillon.donne.joueur = clamp(entier(dJ.i.value, 3), 0, 40);
+      brouillon.seq = Math.max(entier(brouillon.seq, 0), entier(conf.seq, 0));
+    }
+    function verrouille() {
+      if (peutPousser()) return;
+      Array.prototype.forEach.call(boite.querySelectorAll("button, input, select"), function (e) {
+        if (e.dataset && e.dataset.libre === "1") return;
+        e.disabled = true;
+      });
+    }
+    // Un titre de groupe : Cinzel, prolongé par un filet jusqu'au bord.
+    function groupe(t, premier) { return el("div", "nb-groupe" + (premier ? " premier" : ""), t); }
+    // Un champ du livre : une micro-étiquette en capitales espacées, et un
+    // souligné qui rougit au focus. Jamais une boîte.
+    function champ(type, lab, val, ph, cls) {
+      var f = el("div", "nb-f" + (cls ? " " + cls : ""));
+      // Dans une liste, l'étiquette est en tête de colonne et non sur chaque
+      // ligne : le champ ne porte alors que son aria-label, pour que la colonne
+      // reste nommée au lecteur d'écran.
+      if (!cls || (cls !== "nom" && cls !== "img")) f.appendChild(el("label", null, lab));
+      var i = el("input");
       i.type = type;
       i.value = val == null ? "" : val;
       if (ph) i.placeholder = ph;
       if (type === "number") { i.min = 0; i.max = 40; }
-      return i;
+      i.setAttribute("aria-label", lab);
+      f.appendChild(i);
+      return { f: f, i: i };
     }
   }
 
@@ -725,14 +969,21 @@
   }
   // Une position au hasard DANS une place, avec une marge : les jetons se
   // chevauchent un peu, comme sur une vraie table, mais aucun ne déborde chez
-  // le voisin ni ne se cache sous le portrait.
+  // le voisin ni ne se pose sur l'en-tête de la carte : la distribution
+  // masquerait justement le nom et le compte qu'elle vient de changer.
   function auHasardDans(placeId) {
     var d = placesDom[placeId], base = coucheJetons.getBoundingClientRect();
     if (!d || !base.width) return { x: 500, y: 500 };
     var r = d.getBoundingClientRect();
-    var mx = Math.min(18, r.width * 0.18), my = Math.min(18, r.height * 0.18);
-    var x = r.left + mx + Math.random() * Math.max(1, r.width - 2 * mx - r.width * 0.22);
-    var y = r.top + my + Math.random() * Math.max(1, r.height - 2 * my);
+    var tete = d.querySelector(".nb-place-tete");
+    // La réserve d'en-tête est bornée à 40 % de la carte : dans une place très
+    // basse (douze joueurs dans un panneau minimal), la réserve entière ne
+    // laisserait plus de hauteur, et les jetons tomberaient sous la carte,
+    // c'est-à-dire « hors place ».
+    var haut = tete ? Math.min(tete.getBoundingClientRect().height + 2, r.height * 0.4) : 0;
+    var mx = Math.min(18, r.width * 0.18), my = Math.min(12, r.height * 0.12);
+    var x = r.left + mx + Math.random() * Math.max(1, r.width - 2 * mx);
+    var y = r.top + haut + my + Math.random() * Math.max(1, r.height - haut - 2 * my);
     return {
       x: clamp((x - base.left) / base.width * MILLE, 0, MILLE),
       y: clamp((y - base.top) / base.height * MILLE, 0, MILLE)
@@ -761,7 +1012,8 @@
       e.appendChild(el("div", "nb-detail",
         "Le plateau n'a pas trouvé le pont de l'extension. Recharger la partie suffit d'ordinaire."));
     }
-    var b = el("button", "nb-btn", "Réessayer");
+    // seule action de l'écran, donc la seule qui ait droit au plein carmin
+    var b = el("button", "nb-btn primary", "Réessayer");
     b.type = "button";
     b.addEventListener("click", function () { montreEtat(null); demandePerso(); });
     e.appendChild(b);
@@ -771,6 +1023,13 @@
   // ---------- amorce ----------
   function demarre() {
     bati();
+    // Le châssis de l'extension accepte depuis toujours qu'une page se NOMME
+    // elle-même (canal { type: "panneau", titre }), et personne ne s'en était
+    // jamais servi : la barre de titre disait « Narration » en dur. Le titre
+    // appartient à la page, donc le renommer ne coûte pas une signature. On ne
+    // pousse en revanche NI largeur NI hauteur : le châssis les range, et les
+    // imposer à chaque chargement écraserait la taille choisie par le joueur.
+    post({ type: "panneau", titre: "Plateau de Narration", nuit: nuitActive() });
     demandePerso();
     // « Roll20 ne répond pas » ne vaut que si le pont n'a RIEN dit. S'il a
     // répondu qu'il n'y a pas de plateau, c'est cet écran-là qu'il faut garder :
