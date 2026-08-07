@@ -14,11 +14,11 @@
  * OÙ VIT L'ÉTAT. Dans les Attributes d'un personnage Roll20 nommé
  * « Narration », que le MJ partage à tous les joueurs (c'est le seul objet de
  * la campagne où chacun a lecture ET écriture : un joueur ne peut pas lire la
- * fiche d'un autre joueur). Deux natures d'attributs, et deux seulement :
+ * fiche d'un autre joueur). Trois natures d'attributs, et trois seulement :
  *
- *   jjk_narr_conf     la configuration (les places, les portraits, la donne),
- *                     en JSON. Elle change rarement, et une seule personne à la
- *                     fois y touche : un seul attribut convient.
+ *   jjk_narr_conf     la configuration (les places, les fonds en URL, la
+ *                     donne), en JSON. Elle change rarement, et une seule
+ *                     personne à la fois y touche : un seul attribut convient.
  *   jjk_narr_pt_<id>  UN JETON, « x,y » en millièmes du plateau. Un attribut
  *                     par jeton, et x et y ENSEMBLE : plus fin serait deux
  *                     écritures pour un seul geste, plus gros ferait qu'un
@@ -26,6 +26,11 @@
  *                     simultané d'un autre (Roll20 n'a pas de transaction :
  *                     le dernier qui écrit gagne). Une valeur vide = jeton
  *                     retiré du plateau.
+ *   jjk_narr_bg_<id>  LE FOND D'UNE PLACE téléversé, en data: WebP. Son propre
+ *                     attribut, et surtout pas un champ de jjk_narr_conf :
+ *                     changer un fond réécrirait sinon toute la configuration
+ *                     de la table, donc les places et la donne de tout le
+ *                     monde, pour une image. Vide = pas de fond téléversé.
  *
  * COMMENT ÇA PARLE À ROLL20. Par le pont d20 de l'extension, exactement comme
  * la fiche : postMessage vers window.top, réponses par ev.source. Le pont ne
@@ -41,6 +46,22 @@
  * l'ouverture de sa fiche : le pont ouvre donc « Narration » lui-même, hors
  * champ, et dit avec chaque lecture si elle vaut vérité. Tant qu'elle ne vaut
  * rien, le plateau ne touche à rien — c'est la règle qui tient tout le reste.
+ *
+ * LA TRACE DE DÉPANNAGE EST ÉTEINTE, ET VOICI COMMENT LA RALLUMER. Elle écrivait
+ * « [plateau JJK] … » dans la console à chaque lecture, c'est-à-dire deux fois
+ * par seconde et chez chaque joueur pendant toute une partie. Elle a servi, elle
+ * resservira, elle est intacte — mais sous condition. Pour la ralentir, au
+ * choix :
+ *
+ *   - ajouter « #diag » à l'adresse du plateau. La coquille y pose déjà l'indice
+ *     de nuit, l'adresse devient donc « …/roll20-narration.html#n=1&diag » ;
+ *   - ou, dans la console du CADRE du plateau (celui de igneefleur.github.io,
+ *     pas celui de Roll20) : localStorage.setItem("jjk-plateau-diag", "1"),
+ *     puis rouvrir le plateau. localStorage.removeItem("jjk-plateau-diag")
+ *     l'éteint. C'est le seul des deux qui survive à une réouverture.
+ *
+ * Par défaut, trace() ne dit RIEN : ni console, ni message vers la fenêtre du
+ * haut.
  */
 (function () {
   "use strict";
@@ -49,6 +70,7 @@
   var PREF = "jjk_narr_";
   var A_CONF = PREF + "conf";
   var A_PT = PREF + "pt_";
+  var A_BG = PREF + "bg_";  // le fond téléversé d'une place, un attribut chacun
   var POLL = 1200;          // ms entre deux relectures
   var GARDE = 4000;         // ms pendant lesquelles une écriture locale prime sur l'écho
   var PONT_PAS = 60;        // ms entre deux écritures d'attribut, côté pont
@@ -72,6 +94,7 @@
   function peutPousser() { return etatSur && ecrivable && !refuse && !confFuture; }
   var conf = confVide();
   var points = {};          // id -> {x, y}
+  var fonds = {};           // id de place -> fond TÉLÉVERSÉ (data: WebP), lu de Roll20
   var attente = {};         // nom d'attribut -> {val, t} : nos écritures pas encore revenues
   var prise = null;         // jeton en cours de déplacement
   var timer = null;
@@ -90,6 +113,8 @@
     return {
       v: V_CONF,
       seq: 0,                             // compteur d'identifiants de jetons
+      // « img » est l'URL du fond de la place, celle qu'on tape à la main. Le
+      // fichier TÉLÉVERSÉ, lui, n'est pas ici : il vit dans jjk_narr_bg_<id>.
       mj: { nom: "MJ", img: "" },
       joueurs: [],                        // [{ id, nom, img }]
       donne: { mj: 3, joueur: 3 }         // jetons créés à la distribution
@@ -186,7 +211,20 @@
     post({ type: "need-bridge" });
     post({ type: "narration-char", encore: !!encore });
   }
-  function demandeEtat() { if (charId) post({ type: "load", charId: charId }); }
+  // L'ALLÈGEMENT SE DEMANDE, SINON IL NE SERT À RIEN. Le pont sait retenir les
+  // gros attributs — les fonds téléversés, qui pèsent jusqu'à deux cents kilos en
+  // base64 — mais seulement si la page le lui demande. Personne ne le demandait :
+  // les images repartaient donc à chaque tour, toutes les 1.2 seconde, pour rien.
+  //
+  // On ne l'allège QU'UNE FOIS QU'ON LES TIENT. La toute première lecture doit
+  // être complète, sinon le plateau n'aurait jamais vu les fonds ; et « omis »
+  // dit lesquels le pont a retenus, pour qu'on garde les nôtres au lieu de les
+  // croire effacés.
+  var fondsTenus = false;
+  function demandeEtat() {
+    if (!charId) { return; }
+    post({ type: "load", charId: charId, allege: fondsTenus === true });
+  }
   // Une écriture = un lot d'attributs. On note ce qu'on vient d'écrire : l'écho
   // met un aller-retour à revenir, et sans cette note la relecture suivante
   // remettrait le jeton là où il était avant notre geste.
@@ -242,12 +280,14 @@
         // jamais lu, et pouvait écrire par-dessus la table neuve.
         if (charId && d.charId !== charId) {
           etatSur = false; lu = false; vide = 0; perdues = 0; refuse = false;
-          confFuture = false; points = {}; conf = confVide();
+          confFuture = false; points = {}; conf = confVide(); fonds = {};
           attente = {}; connus = {}; prise = null;
+          annuleEnvoi();
           montreEtat("attente");
         }
         charId = d.charId;
         ecrivable = jugeDroits(d);
+        ditMenage(d);
         // le personnage est trouvé : ces deux écrans-là n'ont plus lieu d'être.
         // Les autres disent l'état de la LECTURE, que seule la lecture peut lever.
         if (etatMontre === "absent" || etatMontre === "pont") montreEtat(null);
@@ -292,9 +332,21 @@
     // Une écriture qui REVIENT prouve que Roll20 accepte : le refus se lève.
     // Sans cela, un seul conflit passager condamnait le plateau jusqu'au
     // rechargement, et le joueur n'avait aucun moyen de le savoir.
-    if (a.val === distant) { delete attente[nom]; perdues = 0; refuse = false; return false; }
+    if (a.val === distant) {
+      delete attente[nom];
+      perdues = 0; refuse = false;
+      // Un fond qui revient de Roll20, c'est la taille qui passe : c'est là,
+      // et nulle part ailleurs, qu'on apprend la limite du serveur.
+      if (envoi && nom === A_BG + envoi.id) fondPasse();
+      return false;
+    }
     if (Date.now() - a.t < (a.marge || GARDE)) return true;
     delete attente[nom];
+    // UN FOND PERDU NE DIT RIEN DES DROITS DU JOUEUR : c'est très probablement
+    // sa taille que Roll20 a refusée, et la réduction va le prouver. Le compter
+    // comme une perte ordinaire mettait tout le plateau en lecture seule au bout
+    // de deux images trop lourdes, et sans rapport avec le partage du personnage.
+    if (envoi && nom === A_BG + envoi.id) { fondRefuse(); return false; }
     // Notre écriture n'est jamais revenue. Une fois, c'est quelqu'un qui a
     // poussé le même jeton en même temps ; deux fois de suite, c'est que Roll20
     // refuse nos écritures (le personnage n'est pas partagé avec ce joueur, ou
@@ -303,8 +355,11 @@
     if (a.t !== dernierePerte) {
       dernierePerte = a.t;
       if (++perdues >= 2) { refuse = true; perdues = 0; }
+      // Les homonymes, eux, sont relevés par le PONT et voyagent dans « ecrits » :
+      // la note d'attente ne les a jamais portés, et les redemander ici ne
+      // rendait qu'un « null » qui faisait croire à un attribut sans doublon.
       trace("ecriture perdue", { attribut: nom, attendu: a.val, recu: distant,
-                                 avant: a.avant, homonymes: a.homonymes || null,
+                                 avant: a.avant,
                                  verdict: (a.avant != null && String(distant) === String(a.avant))
                                    ? "notre ecriture n a pas pris"
                                    : "un autre a ecrit (ou valeur inconnue)" });
@@ -329,8 +384,21 @@
   // Elle n'écrit rien et ne change rien. Elle se déclenche seulement quand le
   // plateau change d'avis (état sûr, refus, droits) ou toutes les dix secondes,
   // pour ne pas noyer la console d'une partie.
+  //
+  // ET ELLE EST ÉTEINTE PAR DÉFAUT depuis qu'elle a servi : deux lignes par
+  // seconde dans la console de chaque joueur pendant toute une partie, c'est une
+  // console inutilisable pour tout le reste. Les deux façons de la rallumer sont
+  // en tête de fichier ; DIAG est lu une seule fois, au chargement, pour qu'une
+  // partie ne puisse pas se mettre à parler en cours de route.
+  var DIAG = (function () {
+    if (/[#&]diag\b/.test(location.hash || "")) return true;
+    // localStorage peut lever dans une iframe tierce aux cookies bloqués : la
+    // trace n'est pas une raison de ne pas démarrer.
+    try { return localStorage.getItem("jjk-plateau-diag") === "1"; } catch (e) { return false; }
+  })();
   var traceQuoi = "", traceQuand = 0;
   function trace(ou, sup) {
+    if (!DIAG) return;
     try {
       var e = { ou: ou, charId: charId, ecrivable: ecrivable, etatSur: etatSur,
                 refuse: refuse, confFuture: confFuture, lu: lu, vide: vide,
@@ -355,11 +423,33 @@
     } catch (err) {}
   }
 
+  // Ce que le pont a relevé du modèle juste après avoir écrit, RACCOURCI. Un
+  // fond de zone pèse deux cent mille caractères : recopié tel quel dans la
+  // trace, il la rend illisible et fait ramer la console qu'on venait consulter.
+  // Seule la LONGUEUR importe pour ces valeurs-là.
+  function resumeEcrits(e) {
+    if (!e) return null;
+    var r = {}, k, s, v;
+    for (k in e) {
+      if (!e.hasOwnProperty(k)) continue;
+      s = {}; v = e[k] || {};
+      s.serveur = v.serveur; s.detail = v.detail; s.homonymes = v.homonymes;
+      s.voulu = court(v.voulu); s.modele = court(v.modele);
+      r[k] = s;
+    }
+    return r;
+  }
+  function court(v) {
+    if (v == null) return v;
+    var s = String(v);
+    return s.length > 80 ? "(" + s.length + " caracteres)" : s;
+  }
+
   function applique(attrs, d) {
+    ditMenage(d);
     trace("lecture", { pontSur: (d && d.sur), pontRaison: (d && d.raison),
                        nbAttrs: attrs ? Object.keys(attrs).length : 0,
-                       // ce que le pont a relevé du modèle juste après avoir écrit
-                       ecrits: (d && d.ecrits) || null });
+                       ecrits: resumeEcrits(d && d.ecrits) });
     try {
       var _k, _a = attrs || {};
       for (_k in _a) { if (_a.hasOwnProperty(_k)) { dernierLu[_k] = String(_a[_k] && _a[_k].current != null ? _a[_k].current : _a[_k]); } }
@@ -403,8 +493,62 @@
     // On sait, maintenant.
     etatSur = true;
     montreEtat(null);
+
+    // CE QUE LE SERVEUR A RÉPONDU À NOTRE FOND, quand le pont sait le dire. Il
+    // arrive bien avant la garde d'écriture : une image trop lourde se réduit
+    // alors en une seconde au lieu de six. Un pont plus ancien ne dit rien de
+    // tout cela, et le minuteur d'envoi prend le relais.
+    //
+    // ICI ET PAS PLUS HAUT : c'est la règle qui tient tout le fichier. Sur une
+    // lecture qui ne vaut pas vérité, on ne conclut rien — et surtout pas qu'une
+    // écriture a été refusée, ce qui relancerait l'envoi dans le vide.
+    try {
+      if (envoi && d && d.ecrits) {
+        var rep = d.ecrits[A_BG + envoi.id];
+        if (rep && (rep.serveur === "refuse" || rep.serveur === "exception")) fondRefuse();
+      }
+    } catch (e) {}
+
     var brutConf = attrs[A_CONF] ? String(attrs[A_CONF].current || "") : "";
     if (!retenu(A_CONF, brutConf)) conf = litConf(brutConf);
+
+    // LES FONDS, avant les jetons : ils changent la peinture des places, pas le
+    // compte. Même règle que pour un jeton — notre écriture en attente prime sur
+    // l'écho périmé — et même contrôle du nom, pour la même raison.
+    var neufFonds = {};
+    Object.keys(attrs).forEach(function (n) {
+      if (n.indexOf(A_BG) !== 0) return;
+      var idf = n.slice(A_BG.length);
+      if (!/^[A-Za-z0-9_-]{1,16}$/.test(idf)) return;
+      var brutF = String(attrs[n].current || "");
+      if (retenu(n, brutF)) { if (fonds[idf]) neufFonds[idf] = fonds[idf]; return; }
+      var sf = fondSur(brutF);
+      if (sf) neufFonds[idf] = sf;
+    });
+    // Un fond qu'on vient d'envoyer et que Roll20 ne nous a pas encore rendu ne
+    // doit pas clignoter : il reste affiché le temps de l'écho.
+    Object.keys(attente).forEach(function (n) {
+      if (n.indexOf(A_BG) !== 0) return;
+      var idf = n.slice(A_BG.length);
+      if (!neufFonds[idf] && fonds[idf] && attente[n].val) neufFonds[idf] = fonds[idf];
+    });
+    // CE QUE LE PONT A RETENU N'EST PAS EFFACÉ. « omis » liste les attributs
+    // qu'il n'a pas renvoyés parce qu'ils n'ont pas changé : sans cette reprise,
+    // le premier tour allégé ferait disparaître tous les fonds de l'écran.
+    try {
+      var om = (d && d.omis) || [];
+      for (var io_ = 0; io_ < om.length; io_++) {
+        var no = String(om[io_]);
+        if (no.indexOf(A_BG) !== 0) { continue; }
+        var ido = no.slice(A_BG.length);
+        if (!neufFonds[ido] && fonds[ido]) { neufFonds[ido] = fonds[ido]; }
+      }
+    } catch (e) {}
+    fonds = neufFonds;
+    // À partir du moment où une lecture COMPLÈTE est passée, les suivantes
+    // peuvent être allégées : on tient les fonds, le pont n'a plus à les
+    // retransporter.
+    if (!fondsTenus && !(d && d.allege)) { fondsTenus = true; }
 
     var neuf = {};
     Object.keys(attrs).forEach(function (n) {
@@ -465,11 +609,28 @@
     return c;
   }
   // Une image vient d'un attribut que n'importe quel joueur peut écrire : on
-  // n'accepte que du http(s), jamais un « javascript: » ni une image en data:
-  // (qui pèserait bien plus que ce qu'un attribut Roll20 sait porter).
+  // n'accepte que du http(s), jamais un « javascript: ». Et jamais un data: ICI :
+  // la configuration entière est réécrite à chaque enregistrement, une image
+  // dedans la ferait peser deux cent mille caractères. Le fichier téléversé a
+  // son propre attribut, et fondSur() le relit.
   function urlSure(u) {
     var s = String(u == null ? "" : u).trim();
     return /^https?:\/\//i.test(s) ? s.slice(0, 400) : "";
+  }
+  // Le fond d'une place, tel qu'il revient de Roll20. C'est une valeur que
+  // n'importe quel joueur de la table peut écrire, et elle finit dans un
+  // background-image : on n'accepte donc que ce qui ne peut être qu'une image.
+  //
+  // Pas de SVG, même en data: — c'est le seul format d'image qui puisse porter
+  // autre chose qu'une image. Et un plafond de longueur, parce qu'une chaîne de
+  // plusieurs mégaoctets recopiée à chaque relecture suffirait à figer l'onglet
+  // de tout le monde.
+  var BG_LIRE_MAX = 1400 * 1024;
+  function fondSur(brut) {
+    var s = String(brut == null ? "" : brut).trim();
+    if (!s || s.length > BG_LIRE_MAX) return "";
+    if (/^data:image\/(?:webp|png|jpeg|gif|avif);base64,[A-Za-z0-9+/=]+$/.test(s)) return s;
+    return urlSure(s);
   }
   function litPoint(brut) {
     var m = /^(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)$/.exec(String(brut).trim());
@@ -478,11 +639,190 @@
   }
   function ecritPoint(p) { return Math.round(p.x) + "," + Math.round(p.y); }
 
+  // ---------- le mot au joueur ----------
+  var motTimer = null, motsVus = {};
+  var MOT_DUREE = 12000;
+  function mot(txt, cle) {
+    // « une fois » se tient ICI et non chez l'appelant : le pont répète son
+    // rapport de ménage à chaque lecture, soit toutes les 1.2 s.
+    if (cle) { if (motsVus[cle]) return; motsVus[cle] = 1; }
+    if (!lblMot) return;
+    lblMot.textContent = txt;
+    boiteMot.hidden = false;
+    if (motTimer) clearTimeout(motTimer);
+    motTimer = setTimeout(fermeMot, MOT_DUREE);
+  }
+  function fermeMot() {
+    if (motTimer) { clearTimeout(motTimer); motTimer = null; }
+    if (!boiteMot) return;
+    lblMot.textContent = "";
+    boiteMot.hidden = true;
+  }
+
+  // CE QUE LE PONT A RETIRÉ DE « NARRATION ». Une fois par chargement, il en
+  // enlève tout attribut « jjk_ » qui n'est pas « jjk_narr_ » — la trace d'une
+  // fiche de personnage ouverte un jour sur ce personnage-là (mesuré chez
+  // l'auteur : 82 attributs pour 18 attendus) — et fusionne les homonymes. Il
+  // rapporte { trouves, etrangers, doublons, retires } avec la lecture suivante.
+  //
+  // Le plateau n'en montre QUE le compte de ce qui a disparu, et une seule fois :
+  // ce n'est pas une panne, c'est un ménage, et le reste du rapport (dont l'arrêt
+  // sur refus) part dans la trace de dépannage. Le mot ne dit pas « de fiche » :
+  // les homonymes fusionnés, eux, étaient bien du plateau.
+  //
+  // La lecture est tolérante à dessein. Le pont est signé et le plateau ne l'est
+  // pas : ils ne sont jamais déployés le même jour, et le nombre nu comme
+  // l'objet détaillé doivent tous deux se lire.
+  function ditMenage(d) {
+    if (!d || d.menage == null) return;
+    var m = d.menage, n = 0;
+    if (typeof m === "number") n = m;
+    else if (Object.prototype.toString.call(m) === "[object Array]") n = m.length;
+    else if (typeof m === "object") {
+      n = entier(m.retires != null ? m.retires : (m.n != null ? m.n : m.nb), 0);
+      trace("menage", { menage: m });
+    }
+    if (!(n > 0)) return;
+    mot(n > 1 ? ("Ménage : " + n + " attributs retirés du plateau.")
+              : "Ménage : 1 attribut retiré du plateau.", "menage");
+  }
+
+  // ---------- les fonds de zone ----------
+  // Chaque place porte une IMAGE DE FOND, à la place du portrait qu'elle avait :
+  // une vignette de seize pixels dans un en-tête ne montrait rien de personne.
+  // Deux façons de la donner, et l'ordre entre elles compte : une URL, rangée
+  // dans la configuration, ou un FICHIER, rangé dans son propre attribut. Le
+  // fichier l'emporte, parce que c'est le plus explicite des deux gestes.
+  //
+  // POURQUOI ON REDIMENSIONNE. Un attribut Roll20 n'est pas un entrepôt
+  // d'images, et personne n'a mesuré ce qu'il accepte. On plafonne donc la
+  // largeur, on encode en WebP, et on descend la qualité jusqu'à tenir sous la
+  // cible. Ce qui revient de Roll20 est relu à chaque tour : chaque millier de
+  // caractères se paie une fois par seconde et par joueur.
+  var BG_LARGEURS = [800, 600, 400];
+  var BG_CIBLE = 200 * 1024;   // caractères visés pour la chaîne enregistrée
+  var BG_QUALITES = [0.86, 0.78, 0.7, 0.62, 0.54, 0.46, 0.38, 0.3];
+
+  function reduitImage(fichier, largeur, pret, rate) {
+    var lect = new FileReader();
+    lect.onerror = function () { rate("Image illisible."); };
+    lect.onload = function () {
+      var im = new Image();
+      im.onerror = function () { rate("Image illisible."); };
+      im.onload = function () {
+        try {
+          var w0 = im.naturalWidth || im.width, h0 = im.naturalHeight || im.height;
+          if (!(w0 > 0) || !(h0 > 0)) { rate("Image illisible."); return; }
+          // On n'AGRANDIT jamais : une petite image étirée à 800 px ne gagne que
+          // du poids.
+          var w = Math.min(largeur, w0);
+          var h = Math.max(1, Math.round(h0 * (w / w0)));
+          var c = document.createElement("canvas");
+          c.width = w; c.height = h;
+          c.getContext("2d").drawImage(im, 0, 0, w, h);
+          var i, url = "";
+          for (i = 0; i < BG_QUALITES.length; i++) {
+            url = c.toDataURL("image/webp", BG_QUALITES[i]);
+            // toDataURL ne SAIT PAS refuser : un navigateur sans encodeur WebP
+            // rend du PNG sans le dire, et un PNG de photo pèse trois fois le
+            // budget. On vérifie donc ce qu'on a obtenu, et on retombe sur le
+            // JPEG, qui n'a jamais manqué nulle part.
+            if (url.indexOf("data:image/webp") !== 0) url = c.toDataURL("image/jpeg", BG_QUALITES[i]);
+            if (url.length <= BG_CIBLE) break;
+          }
+          if (url.length > BG_CIBLE) { rate("Image trop lourde, même réduite."); return; }
+          pret(url, w);
+        } catch (e) { rate("Image illisible."); }
+      };
+      im.src = String(lect.result || "");
+    };
+    lect.readAsDataURL(fichier);
+  }
+
+  // L'ENVOI D'UN FOND, ET LA SEULE FAÇON DE DÉCOUVRIR LA LIMITE DE ROLL20.
+  // Personne ne l'a mesurée, et l'essayer à l'aveugle coûterait une soirée. On
+  // tente donc la plus grande taille ; si le serveur refuse (le pont rapporte sa
+  // réponse) ou si l'écriture ne revient jamais, on descend d'un cran et on
+  // recommence. À l'arrivée, on DIT à quelle taille c'est passé : la limite se
+  // découvre une fois, pas à chaque image.
+  var envoi = null;   // { id, fichier, rang, largeur, apres, minuteur }
+
+  function annuleEnvoi() {
+    if (!envoi) return;
+    if (envoi.minuteur) clearTimeout(envoi.minuteur);
+    envoi = null;
+  }
+  function poseFond(id, fichier, apres) {
+    if (!peutPousser()) { mot("Lecture seule : le fond n'a pas pu être enregistré."); return; }
+    annuleEnvoi();
+    envoi = { id: id, fichier: fichier, rang: 0, apres: apres, minuteur: null };
+    mot("Réduction de l'image…");
+    envoieFond();
+  }
+  function envoieFond() {
+    var e = envoi;
+    if (!e) return;
+    reduitImage(e.fichier, BG_LARGEURS[e.rang], function (url, w) {
+      if (envoi !== e) return;   // un autre envoi a commencé pendant l'encodage
+      e.largeur = w;
+      fonds[e.id] = url;         // à l'écran tout de suite, l'écho suivra
+      ecrire(defObj(A_BG + e.id, url));
+      mot("Enregistrement du fond en " + w + " px…");
+      if (e.apres) { try { e.apres(); } catch (err) {} }
+      rend();
+      // LE FILET, pour le jour où le pont ne dit rien. Un attribut refusé peut
+      // ne jamais reparaître dans la lecture : retenu() ne sera alors jamais
+      // appelé pour lui, et l'envoi resterait en attente pour toujours. Deux
+      // tours de relecture après la garde suffisent à trancher.
+      if (e.minuteur) clearTimeout(e.minuteur);
+      e.minuteur = setTimeout(function () { if (envoi === e) fondRefuse(); },
+                              GARDE + PONT_PAS + 2 * POLL);
+    }, function (m) { if (envoi === e) { annuleEnvoi(); mot(m); } });
+  }
+  function fondRefuse() {
+    var e = envoi;
+    if (!e) return;
+    if (e.minuteur) { clearTimeout(e.minuteur); e.minuteur = null; }
+    var refusee = e.largeur || BG_LARGEURS[e.rang];
+    if (e.rang + 1 < BG_LARGEURS.length) {
+      e.rang++;
+      mot("Roll20 a refusé " + refusee + " px : nouvel essai en " + BG_LARGEURS[e.rang] + " px.");
+      envoieFond();
+      return;
+    }
+    var id = e.id, apres = e.apres;
+    annuleEnvoi();
+    delete fonds[id];
+    mot("Roll20 refuse cette image, même en " + refusee + " px.");
+    if (apres) { try { apres(); } catch (err) {} }
+    rend();
+  }
+  function fondPasse() {
+    var e = envoi;
+    if (!e) return;
+    var w = e.largeur;
+    annuleEnvoi();
+    mot("Fond enregistré en " + w + " px.");
+  }
+  function retireFond(id) {
+    if (!peutPousser()) { mot("Lecture seule : le fond n'a pas pu être retiré."); return; }
+    if (envoi && envoi.id === id) annuleEnvoi();
+    delete fonds[id];
+    ecrire(defObj(A_BG + id, ""));
+    rend();
+  }
+  // Le fichier téléversé l'emporte sur l'URL : c'est le geste le plus explicite
+  // des deux, et il vit dans son propre attribut. Vider l'un ne touche pas
+  // l'autre, on peut donc garder une URL de secours sous une image.
+  function fondDe(p) { return fonds[p.id] || p.img || ""; }
+
   // ---------- construction ----------
   var racine, barre, plateau, coteMj, coteJoueurs, coucheJetons;
   var lblTotal, boiteTotal, lblHors, boiteHors, lblAvis, btnNuit, btnReglages;
+  var boiteMot, lblMot;
   var jaugeRef = null;
   var placesDom = {};   // id de place -> élément
+  var fondPose = {};    // id de place -> fond DÉJÀ peint, pour ne pas repeindre
 
   // Un couple libellé / valeur : la capitale minuscule et espacée face au
   // chiffre tabulaire. C'est ce contraste, plus que les couleurs, qui donne
@@ -535,6 +875,28 @@
     plateau.appendChild(coteMj);
     plateau.appendChild(coteJoueurs);
     plateau.appendChild(coucheJetons);
+
+    // LE MOT, et ce n'est pas l'avis. L'avis dit un EMPÊCHEMENT, il reste tant
+    // que sa cause dure. Le mot rend compte d'un geste qui vient d'aboutir (le
+    // fond enregistré, à quelle taille) ou du ménage fait à l'ouverture : il se
+    // dit une fois, se ferme d'un clic, s'efface tout seul, et ne bloque rien.
+    //
+    // IL EST POSÉ DANS LE PLATEAU, ET NON DANS LA COLONNE : dans la colonne il
+    // couvrait la barre d'outils, c'est-à-dire les deux comptes et les deux
+    // boutons, pendant les douze secondes où il se lit. Le CSS le range en bas
+    // de la table et lui fait traverser les clics.
+    boiteMot = el("div", "nb-mot");
+    boiteMot.hidden = true;
+    lblMot = el("span", "t");
+    boiteMot.appendChild(lblMot);
+    var croix = el("button", "x", "×");
+    croix.type = "button";
+    croix.title = "Fermer";
+    croix.setAttribute("aria-label", "Fermer");
+    croix.addEventListener("click", fermeMot);
+    boiteMot.appendChild(croix);
+    plateau.appendChild(boiteMot);
+
     racine.appendChild(plateau);
 
     // Le diamètre des jetons suit la largeur du plateau : agrandir le panneau
@@ -587,21 +949,11 @@
       var hote = p.mj ? coteMj : coteJoueurs;
       if (!d) {
         d = el("div", "nb-place" + (p.mj ? " nb-place-mj" : ""));
-        // Une place est une CARTE du livre : un en-tête (portrait, nom en
-        // Cinzel, compte à droite) souligné d'un filet, puis la table. Le nom
-        // n'est plus une légende posée en bas à gauche qui se disputait la
-        // place avec le portrait et se tronquait dès 260 pixels.
+        // Une place est une CARTE du livre : un en-tête (nom en Cinzel, compte à
+        // droite) souligné d'un filet, puis la table. Le nom n'est plus une
+        // légende posée en bas à gauche qui se disputait la place avec le
+        // portrait et se tronquait dès 260 pixels.
         var tete = el("div", "nb-place-tete");
-        var boite = el("span", "nb-place-portrait");
-        var im = el("img");
-        im.alt = "";
-        // Une URL de portrait qui ne répond plus (image supprimée, campagne
-        // d'un autre) ne doit pas laisser une icône brisée sur la table. On
-        // cache l'IMAGE, jamais sa boîte : un trou dans un en-tête se remarque
-        // plus qu'une plaque vide.
-        im.addEventListener("error", function () { im.classList.add("nb-cache"); });
-        boite.appendChild(im);
-        tete.appendChild(boite);
         tete.appendChild(el("div", "nb-place-nom"));
         tete.appendChild(el("div", "nb-place-compte"));
         d.appendChild(tete);
@@ -609,22 +961,28 @@
         placesDom[p.id] = d;
       }
       if (d.parentNode !== hote) hote.appendChild(d);
-      var cadre = d.querySelector(".nb-place-portrait");
-      var img = cadre.querySelector("img");
-      // ne toucher à src que s'il CHANGE : réaffecter la même URL morte
-      // relançait la requête et faisait clignoter une image brisée à chaque
-      // relecture, c'est-à-dire une fois par seconde
-      if (img.dataset.url !== (p.img || "")) {
-        img.dataset.url = p.img || "";
-        if (p.img) { img.src = p.img; img.classList.remove("nb-cache"); }
-        else { img.removeAttribute("src"); img.classList.add("nb-cache"); }
+      // LE FOND DE LA ZONE, à la place du portrait. Une image en fond, et non
+      // plus une vignette de seize pixels dans l'en-tête, où elle ne montrait
+      // rien de personne.
+      //
+      // On ne repeint que si la valeur CHANGE. Deux raisons, et la seconde
+      // suffirait : réaffecter la même adresse relance la requête, ce qui
+      // faisait clignoter l'ancien portrait cassé une fois par seconde ; et un
+      // fond téléversé pèse deux cent mille caractères, qu'il serait absurde de
+      // repasser au moteur de style à chaque relecture. Le repère est gardé en
+      // JS et non dans un data- : une chaîne pareille dans un attribut du DOM
+      // s'inspecte mal et se recopie deux fois.
+      var f = fondDe(p);
+      if (fondPose[p.id] !== f) {
+        fondPose[p.id] = f;
+        // Les guillemets et les obliques inverses sont ôtés de l'adresse : sans
+        // cela, une URL fabriquée par n'importe quel joueur de la table
+        // refermerait le url() et poserait ce qu'elle veut dans la règle de
+        // style. Une adresse d'image n'en contient jamais, et un data: est du
+        // base64, donc rien à perdre.
+        d.style.backgroundImage = f ? 'url("' + f.replace(/["\\\s]/g, "") + '")' : "";
+        d.classList.toggle("nb-fond", !!f);
       }
-      // Pas de portrait CONFIGURÉ : pas de cadre du tout. Une page imprimée ne
-      // laisse pas de vignettes blanches en marge, et sur un panneau de 260
-      // pixels ce cadre vide volait vingt pixels au nom. Un portrait configuré
-      // mais CASSÉ, lui, garde son cadre : c'est le seul signe visible qu'il y
-      // a un réglage à corriger.
-      cadre.classList.toggle("nb-cache", !p.img);
       var nom = d.querySelector(".nb-place-nom");
       nom.textContent = p.nom;
       // Un nom se tronque dans une place étroite, et c'est inévitable à 260
@@ -637,6 +995,9 @@
       if (vus[id]) return;
       if (placesDom[id].parentNode) placesDom[id].parentNode.removeChild(placesDom[id]);
       delete placesDom[id];
+      // le repère de fond suit la carte : le garder ferait qu'une place recréée
+      // sous le même identifiant se croirait déjà peinte
+      delete fondPose[id];
     });
     // l'ordre des cartes suit celui de la configuration
     l.forEach(function (p) { if (!p.mj) coteJoueurs.appendChild(placesDom[p.id]); });
@@ -811,8 +1172,8 @@
 
   // ---------- réglages ----------
   // Tout ce que le MJ (ou n'importe qui, les droits Roll20 sont par personnage)
-  // règle une fois par campagne : qui joue, avec quel portrait, et combien de
-  // jetons chacun reçoit au début d'une session.
+  // règle une fois par campagne : qui joue, sur quel fond, et combien de jetons
+  // chacun reçoit au début d'une session.
   //
   // C'est un DIALOGUE posé sur le plateau, et non plus un voile opaque qui le
   // remplaçait : on règle qui joue en voyant la table. Les deux gestes qui
@@ -829,24 +1190,27 @@
 
     // ---- les places ----
     // Une liste, donc une ligne d'en-tête et des colonnes, comme les listes de
-    // la fiche : répéter « NOM » et « PORTRAIT » sur chacune des douze lignes
-    // faisait deux fois plus d'étiquettes que de valeurs.
+    // la fiche : répéter « NOM » et « FOND » sur chacune des douze lignes
+    // faisait deux fois plus d'étiquettes que de valeurs. C'est aussi ce qui
+    // laisse la ligne assez large pour ses deux boutons.
     boite.appendChild(groupe("Places", true));
     var head = el("div", "nb-ligne head");
     head.appendChild(el("span", "nb-rang", ""));
     head.appendChild(el("span", "nb-col nom", "Nom"));
-    head.appendChild(el("span", "nb-col img", "Portrait"));
-    head.appendChild(el("span", "nb-creux", ""));
+    head.appendChild(el("span", "nb-col img", "Fond"));
+    head.appendChild(el("span", "nb-creux", ""));   // colonne du bouton d'image
+    head.appendChild(el("span", "nb-creux", ""));   // colonne du bouton « − »
     boite.appendChild(head);
 
     var lMj = el("div", "nb-ligne");
     lMj.appendChild(el("span", "nb-rang", "MJ"));
     var nomMj = champ("text", "Nom", brouillon.mj.nom, "MJ", "nom");
-    var imgMj = champ("text", "Portrait", brouillon.mj.img, "https://…", "img");
+    var imgMj = champ("text", "Fond", brouillon.mj.img, "https://…", "img");
     lMj.appendChild(nomMj.f); lMj.appendChild(imgMj.f);
+    lMj.appendChild(boutonFond("mj", imgMj.i));
     // le creux tient la colonne du bouton « − » que la ligne du MJ n'a pas :
-    // sans lui, son champ de portrait déborde de vingt-sept pixels sur les
-    // autres et la colonne cesse d'être une colonne
+    // sans lui, son champ de fond déborde de vingt-sept pixels sur les autres
+    // et la colonne cesse d'être une colonne
     lMj.appendChild(el("span", "nb-creux", ""));
     boite.appendChild(lMj);
 
@@ -860,7 +1224,7 @@
         var l = el("div", "nb-ligne" + (i % 2 ? " odd" : ""));
         l.appendChild(el("span", "nb-rang", String(i + 1)));
         var n = champ("text", "Nom", j.nom, "Nom du personnage", "nom");
-        var g = champ("text", "Portrait", j.img, "https://…", "img");
+        var g = champ("text", "Fond", j.img, "https://…", "img");
         n.i.addEventListener("input", function () { j.nom = n.i.value; });
         g.i.addEventListener("input", function () { j.img = g.i.value; });
         var moins = el("button", "nb-btn danger", "−");
@@ -871,7 +1235,9 @@
           brouillon.joueurs.splice(i, 1);
           rendJoueurs();
         });
-        l.appendChild(n.f); l.appendChild(g.f); l.appendChild(moins);
+        l.appendChild(n.f); l.appendChild(g.f);
+        l.appendChild(boutonFond(j.id, g.i));
+        l.appendChild(moins);
         hote.appendChild(l);
       });
       var rangee = el("div", "nb-session");
@@ -971,7 +1337,15 @@
     bOk.addEventListener("click", function () {
       recolte();
       conf = litConf(JSON.stringify(brouillon));
-      ecrire(defObj(A_CONF, JSON.stringify(conf)));
+      var lot = defObj(A_CONF, JSON.stringify(conf));
+      // UNE PLACE RETIRÉE EMPORTE SON FOND. Un attribut de deux cent mille
+      // caractères qui ne se rattache plus à rien resterait sinon dans le
+      // personnage, invisible, et serait relu par chaque joueur à chaque tour.
+      // C'est le seul endroit qui sache qu'une place vient de disparaître.
+      var vivants = { mj: 1 };
+      conf.joueurs.forEach(function (j) { vivants[j.id] = 1; });
+      Object.keys(fonds).forEach(function (id) { if (!vivants[id]) lot[A_BG + id] = ""; });
+      ecrire(lot);
       ferme();
       rend();
     });
@@ -1019,6 +1393,44 @@
         if (e.dataset && e.dataset.libre === "1") return;
         e.disabled = true;
       });
+    }
+    // UN SEUL BOUTON POUR LE FOND, DONT LE SENS SUIT L'ÉTAT : « … » ouvre le
+    // sélecteur de fichier, « × » retire l'image déjà téléversée. Deux boutons
+    // côte à côte dans une ligne de deux cent quatre-vingts pixels, c'est la
+    // colonne du nom qui disparaît ; et l'un des deux serait toujours inutile.
+    //
+    // Le téléversement écrit TOUT DE SUITE, sans passer par « Enregistrer » :
+    // l'image a son propre attribut, elle n'attend pas la configuration, et
+    // faire attendre un envoi de deux cent mille caractères derrière un bouton
+    // qu'on peut oublier de presser serait le meilleur moyen de le perdre.
+    function boutonFond(id, entree) {
+      var b = el("button", "nb-btn", "…");
+      b.type = "button";
+      function etat() {
+        var pose = !!fonds[id];
+        b.textContent = pose ? "×" : "…";
+        var t = pose ? "Retirer l'image" : "Téléverser une image";
+        b.title = t;
+        b.setAttribute("aria-label", t);
+        // Une URL sous une image téléversée ne sert à rien tant que l'image est
+        // là : le champ se tait plutôt que de mentir sur ce qu'on voit.
+        entree.disabled = pose || !peutPousser();
+        entree.placeholder = pose ? "image téléversée" : "https://…";
+      }
+      b.addEventListener("click", function () {
+        if (fonds[id]) { retireFond(id); etat(); return; }
+        // L'entrée de fichier n'est pas dans le dialogue : elle n'y servirait
+        // qu'à occuper une colonne. Créée au clic, elle meurt avec lui.
+        var f = el("input");
+        f.type = "file";
+        f.accept = "image/*";
+        f.addEventListener("change", function () {
+          if (f.files && f.files[0]) poseFond(id, f.files[0], etat);
+        });
+        f.click();
+      });
+      etat();
+      return b;
     }
     // Un titre de groupe : Cinzel, prolongé par un filet jusqu'au bord.
     function groupe(t, premier) { return el("div", "nb-groupe" + (premier ? " premier" : ""), t); }
