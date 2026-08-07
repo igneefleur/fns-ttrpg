@@ -5,26 +5,26 @@
   "schema": 3,
   "blocage": "schema",
   "amorce": [
-    "javascripts/jjk-attr-map.js?v=45",
-    "javascripts/jjk-roll20-boot.js?v=45"
+    "javascripts/jjk-attr-map.js?v=46",
+    "javascripts/jjk-roll20-boot.js?v=46"
   ],
   "narration": {
     "js": [
-      "javascripts/jjk-narration.js?v=45"
+      "javascripts/jjk-narration.js?v=46"
     ],
     "css": [
-      "stylesheets/jjk-narration.css?v=45"
+      "stylesheets/jjk-narration.css?v=46"
     ]
   },
   "bundle": {
     "js": [
-      "javascripts/jjk-migrations.js?v=45",
-      "javascripts/jjk-mods.js?v=45",
-      "javascripts/jjk-fiche.js?v=45"
+      "javascripts/jjk-migrations.js?v=46",
+      "javascripts/jjk-mods.js?v=46",
+      "javascripts/jjk-fiche.js?v=46"
     ],
     "css": [
-      "stylesheets/jjk-fiche.css?v=45",
-      "stylesheets/jjk-roll20.css?v=45"
+      "stylesheets/jjk-fiche.css?v=46",
+      "stylesheets/jjk-roll20.css?v=46"
     ],
     "data": null
   },
