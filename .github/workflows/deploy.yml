@@ -69,3 +69,16 @@ jobs:
           target-folder: jjk
           clean: true
           force: false
+      # L'EXTENSION EST UNIQUE : ELLE SE PUBLIE AUX DEUX ADRESSES. Symétrique de
+      # ce que fait le workflow de jjk-beta, et pour la même raison : le paquet
+      # porte les deux moitiés, la case du popup choisit, il n'y a donc pas une
+      # extension par branche. Sans cela, l'adresse qui n'a pas déployé en
+      # dernier sert un paquet périmé.
+      - name: L'extension signée va aussi sur jjk-beta (download/ seul)
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: site/download
+          branch: gh-pages
+          target-folder: jjk-beta/download
+          clean: false
+          force: false
