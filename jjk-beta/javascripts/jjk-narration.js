@@ -304,7 +304,7 @@
       dernierePerte = a.t;
       if (++perdues >= 2) { refuse = true; perdues = 0; }
       trace("ecriture perdue", { attribut: nom, attendu: a.val, recu: distant,
-                                 avant: a.avant,
+                                 avant: a.avant, homonymes: a.homonymes || null,
                                  verdict: (a.avant != null && String(distant) === String(a.avant))
                                    ? "notre ecriture n a pas pris"
                                    : "un autre a ecrit (ou valeur inconnue)" });
