@@ -76,3 +76,28 @@ jobs:
           target-folder: jjk-beta
           clean: true
           force: false
+      # L'EXTENSION EST UNIQUE : ELLE SE PUBLIE AUX DEUX ADRESSES.
+      #
+      # Le paquet signé porte les DEUX moitiés, stable et beta, et c'est la case
+      # du popup qui choisit laquelle s'exécute. Il n'existe donc pas de « version
+      # beta de l'extension » : il n'y en a qu'une, et la plus récente est
+      # toujours la bonne pour tout le monde.
+      #
+      # Or elle était publiée par branche. Une signature faite ici n'atteignait
+      # /jjk/download/ qu'après une fusion ET un déploiement stable : le bouton
+      # de téléchargement du site public servait un paquet périmé, et surtout
+      # update_url pointe sur /jjk/download/updates.json, donc les mises à jour
+      # automatiques attendaient elles aussi. C'est ce qui a fait tourner un
+      # joueur en 3.6.0.3 alors que la 3.6.0.4 était signée depuis longtemps.
+      #
+      # On recopie donc le seul dossier download/ dans l'autre emplacement, sans
+      # toucher au reste : clean à false, sinon ce déploiement effacerait tout le
+      # site stable.
+      - name: L'extension signée va aussi sur jjk (download/ seul)
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: site/download
+          branch: gh-pages
+          target-folder: jjk/download
+          clean: false
+          force: false
