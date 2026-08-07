@@ -44,7 +44,18 @@
   --red:     #a5271c;   /* le ton de BORDURE et de remplissage */
   --red-deep:#7c130c;   /* le ton de TEXTE (et la nuit l'inverse : voir plus bas) */
   --wash:    rgba(165, 39, 28, .09);
-  --ok:      #4f7a3a;
+
+  /* LE VOILE DES FONDS DE ZONE. Une place porte désormais l'image qu'on lui a
+     donnée, et cette image n'appartient à personne : elle peut être blanche,
+     bariolée, contrastée. Le nom et le compte doivent rester lisibles par-dessus
+     QUELLE QU'ELLE SOIT, et c'est le rôle de ces deux teintes — la couleur du
+     papier, rendue translucide.
+
+     Deux forces, deux emplois. La forte tient sous l'en-tête, là où il y a du
+     texte à protéger. La douce couvre toute la carte, juste assez pour que
+     l'image cesse de crier sous les jetons sans cesser d'être visible. */
+  --voile:      rgba(250, 246, 235, .90);
+  --voile-doux: rgba(250, 246, 235, .30);
 
   /* Le jeton est le seul objet du plateau qui ait droit à des couleurs hors
      palette : c'est un objet de table, pas un élément de fiche. */
@@ -62,7 +73,6 @@
   --fs-title: 12px;   /* titre de dialogue */
   --fs-body:  12px;
   --fs-value: 13px;   /* un chiffre qui compte */
-  --fs-hero:  16px;
   --gut: 6px;         /* le souffle unique entre deux choses */
 
   /* COUPLAGE INVISIBLE, et la raison d'être de cette variable : le padding du
@@ -101,7 +111,10 @@ html.night {
   --red:     #c65540;
   --red-deep:#dd7461;
   --wash:    rgba(198, 85, 64, .18);
-  --ok:      #9fb37e;
+  /* Le voile suit le papier : de nuit il FONCE l'image au lieu de l'éclaircir,
+     sans quoi une photo sombre garderait un bandeau clair sous un texte clair. */
+  --voile:      rgba(32, 28, 21, .90);
+  --voile-doux: rgba(32, 28, 21, .40);
   --or:      #c79a30;
   --or-fond: #e0c47a;
   --or-ombre:#6a4f0f;
@@ -260,9 +273,35 @@ html.night .nb-lune .nb-croissant { display: none; }
   border: 1px solid var(--line-2); border-radius: 8px;
   background: var(--card);
   box-shadow: 0 1px 2px rgba(60, 48, 18, .05);
-  padding: 1px 5px 3px;
-  transition: border-color .12s, background .12s;
+  transition: border-color .12s, background-color .12s;
 }
+/* LE FOND DE ZONE. Il remplace le portrait : une vignette de seize pixels dans
+   un en-tête ne montrait rien de personne, alors qu'une place entière peut
+   porter une image.
+
+   L'adresse est posée en style en ligne par le script (background-image), et
+   RIEN d'autre : la façon dont elle se pose est ici, une fois. « cover » et non
+   « contain » — une place ne fait parfois que soixante pixels de haut, une
+   image qu'on y ferait tenir en entier ne serait plus qu'un timbre au milieu du
+   vide. Et background-color en dessous, pour que la carte reste une carte
+   pendant que l'image charge, ou si elle ne charge jamais : une URL morte ne
+   laisse ici aucune icône brisée, contrairement à l'ancien <img>, elle ne laisse
+   simplement rien. */
+.nb-place.nb-fond { background-position: center; background-size: cover; background-repeat: no-repeat; }
+/* Le voile doux, sur toute la carte : l'image reste lisible, mais elle passe
+   derrière les jetons au lieu de se battre avec eux. Il est SOUS l'en-tête et
+   le corps (z-index par ordre de pile : ::before d'abord, enfants ensuite dès
+   qu'ils sont positionnés), et il ne prend aucun clic. */
+.nb-place.nb-fond::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: var(--voile-doux);
+}
+/* PADDING PORTÉ PAR L'EN-TÊTE, PLUS PAR LA CARTE. C'est ce qui permet au voile
+   de l'en-tête d'aller d'un bord à l'autre : une plaque de texte qui s'arrête à
+   cinq pixels des bords laisse deux bandes d'image nue de part et d'autre du
+   nom, et c'est précisément là que le nom devient illisible. Le corps, lui, n'a
+   jamais rien affiché : il n'a besoin d'aucune marge. */
+.nb-place > .nb-place-tete { padding: 1px 5px 3px; }
 /* La réserve du MJ se distingue par la STRUCTURE et non par la texture, comme
    partout dans la fiche : la surface d'encadré (--panel) au lieu de la surface
    de carte. L'ancien dégradé parchemin peignait trois hexadécimaux qui
@@ -275,28 +314,38 @@ html.night .nb-lune .nb-croissant { display: none; }
 
 /* L'en-tête de la carte : la signature du système. Cinzel, un filet --hair, et
    le petit tiret carmin posé dessus, à gauche. */
+/* LES ÉTIQUETTES SONT EN BAS, CHACUNE DANS SON COIN, ET À SA PROPRE LARGEUR.
+   Une barre pleine largeur en haut de carte mangeait le fond de zone sur toute
+   sa largeur et écrasait l'image ; le nom et le compte n'ont besoin que de la
+   place de leurs lettres. La rangée occupe donc le bas, mais elle est
+   TRANSPARENTE : ce sont les deux plaques, à gauche et à droite, qui se voient.
+   Elle reste au-dessus des jetons (z-index) pour que le nom demeure lisible. */
 .nb-place-tete {
-  position: relative; flex: 0 0 auto;
-  display: flex; align-items: center; gap: 4px; min-width: 0;
-  padding: 1px 0 3px; margin-bottom: 2px;
-  border-bottom: 1px solid var(--hair);
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 3;
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: 4px; min-width: 0; padding: 0 4px 3px;
+  pointer-events: none;   /* on pousse un jeton à travers l'étiquette */
 }
-.nb-place-tete::after {
-  content: ""; position: absolute; left: 0; bottom: -1px;
-  width: 18px; height: 1.5px; background: var(--red); border-radius: 2px;
-}
-/* Le portrait : dans l'en-tête, comme une lettrine, et non plus posé en flottant
-   sur la table. En fond il avalerait les jetons ; en flottant il mordait le coin
-   de la carte voisine. La boîte reste visible quand l'image manque ou casse :
-   un trou dans un en-tête se remarque plus qu'une plaque vide. */
-.nb-place-portrait {
-  flex: 0 0 auto; display: block; width: 16px; height: 16px; overflow: hidden;
-  border: 1px solid var(--line-2); border-radius: 4px; background: var(--panel);
-}
-.nb-place-mj .nb-place-portrait { width: 18px; height: 18px; }
-.nb-place-portrait img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* Le tiret carmin reste aligné sur le TEXTE, pas sur le bord de la carte : le
+   padding est passé de la carte à l'en-tête, et left:0 le collerait maintenant
+   au filet du bord. */
+/* PAS DE TIRET SOUS LE NOM. Il signe les titres de section dans la fiche, où il
+   souligne un en-tête posé sur toute la largeur ; sous une étiquette de deux
+   centimètres posée sur une image, ce n'était plus une signature mais une barre
+   rouge inexplicable. L'auteur l'a fait retirer, et il a raison. */
+/* LA PLAQUE DE LISIBILITÉ, et la seule chose qui fasse tenir un nom sur une
+   image inconnue. Elle ne paraît QUE s'il y a une image : sans elle, la carte
+   garde sa surface pleine et n'a besoin de rien. */
+.nb-place.nb-fond .nb-place-nom,
+.nb-place.nb-fond .nb-place-compte { background: var(--voile); }
 .nb-place-nom {
-  flex: 1 1 auto; min-width: 0;
+  position: relative;
+  /* « 0 1 auto » et non « 1 1 auto » : le nom prend la largeur de ses lettres et
+     pas un pixel de plus. C'est ce que l'auteur demande — une étiquette dans un
+     coin, pas un bandeau. */
+  flex: 0 1 auto; min-width: 0; max-width: 68%;
+  border: 1px solid var(--line-2); border-radius: 5px;
+  padding: 0 5px 3px;
   font-family: 'Cinzel', serif; font-weight: 700;
   font-size: var(--fs-group); letter-spacing: .03em; line-height: 1.2;
   color: var(--ink-2);
@@ -317,7 +366,8 @@ html.night .nb-place-nom { color: var(--ink); }
 .nb-place-mj .nb-place-compte { background: var(--card); }
 .nb-place-compte.zero { color: var(--ink-3); font-weight: 400; }
 /* Le corps de la carte n'affiche rien : c'est la table, l'endroit où les jetons
-   se posent. Il n'existe que pour réserver la place sous l'en-tête. */
+   se posent. Il n'existe que pour réserver la place sous l'en-tête, et le voile
+   d'un fond de zone lui passe donc par-dessus sans conséquence. */
 .nb-place-corps { flex: 1 1 auto; min-height: 0; }
 
 /* ---------- les jetons ---------- */
@@ -485,7 +535,6 @@ html.night .nb-groupe { color: var(--ink); }
   background: var(--card); border-top: 1px solid var(--hair);
 }
 .nb-aide { font-size: var(--fs-meta); color: var(--ink-3); line-height: 1.35; margin: 6px 0 0; }
-.nb-aide code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: var(--fs-label); color: var(--ink-2); }
 
 /* ---------- écrans d'état ---------- */
 .nb-etat {
@@ -504,4 +553,48 @@ html.night .nb-etat .nb-titre { color: var(--ink); }
   font-size: var(--fs-meta); font-style: italic; color: var(--ink-3);
   max-width: 26em; line-height: 1.4;
 }
-.nb-cache { display: none !important; }
+
+/* ---------- le mot au joueur ---------- */
+/* CE N'EST PAS LE BANDEAU D'AVIS, et les deux ne doivent pas se ressembler.
+   L'avis dit un EMPÊCHEMENT et reste tant que sa cause dure : il est carmin, il
+   pousse le plateau vers le bas, il s'impose. Le mot rend compte d'un geste qui
+   vient d'aboutir (le fond enregistré, et à quelle taille) ou du ménage fait à
+   l'ouverture : il se dit une fois et s'en va.
+
+   Il FLOTTE, et c'est la raison d'être de tout ce bloc. Posé en flux, il ferait
+   grandir puis rétrécir le plateau toutes les douze secondes. Il vit dans
+   .nb-plateau, qui est en position: relative SANS z-index et n'ouvre donc pas de
+   contexte d'empilement : le 40 se compare bien à celui du dialogue (20) et de
+   l'écran d'état (30), et le mot passe par-dessus les deux. Il le faut : on
+   importe une image DEPUIS les réglages, et un compte rendu caché sous le
+   voile ne rend compte de rien.
+
+   EN BAS DE LA TABLE, et pas ailleurs. Dans la colonne il couvrait la barre
+   d'outils, donc les deux comptes et les deux boutons ; en haut de la table il
+   couvrait la rangée d'en-têtes, donc le nom de trois places sur six. En bas il
+   ne recouvre que du feutre.
+
+   ET IL LAISSE PASSER LES CLICS : sans cela, un jeton posé dessous deviendrait
+   insaisissable douze secondes durant, sans qu'on comprenne pourquoi. Seule la
+   croix reprend les siens. */
+.nb-mot {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 40;
+  display: flex; align-items: baseline; gap: 5px;
+  padding: 3px 5px 4px;
+  font-size: var(--fs-meta); line-height: 1.3;
+  color: var(--ink); background: var(--panel);
+  border-top: 1px solid var(--line);
+  box-shadow: 0 -2px 6px rgba(0, 0, 0, .18);
+  pointer-events: none;
+}
+.nb-mot[hidden] { display: none; }
+.nb-mot .t { flex: 1 1 auto; min-width: 0; }
+/* La croix est un bouton, pas un caractère décoratif : le mot s'efface tout seul
+   au bout de douze secondes, mais on doit pouvoir le renvoyer tout de suite. */
+.nb-mot .x {
+  flex: 0 0 auto; border: none; background: none; padding: 0 2px; cursor: pointer;
+  font: inherit; font-size: var(--fs-body); line-height: 1; color: var(--ink-3);
+  pointer-events: auto;
+}
+.nb-mot .x:hover { color: var(--red-deep); }
+.nb-mot .x:focus-visible { outline: none; color: var(--red-deep); box-shadow: 0 0 0 2px var(--wash); border-radius: 3px; }
