@@ -13,8 +13,8 @@ ajouté à la fiche du personnage.
 Une seule extension, deux versions de la fiche. Le fichier est le MÊME sur les
 deux sites : peu importe d'où il est téléchargé, c'est son réglage qui décide.
 Son bouton dans la barre du navigateur ouvre un panneau qui porte
-l'interrupteur « Mode beta » : coché, la fiche affichée dans Roll20 est celle du
-chantier, là où les nouveautés arrivent en premier, au risque de casses
+l'interrupteur « Beta » : coché, la fiche affichée dans Roll20 est celle de la
+beta, là où les nouveautés arrivent en premier, au risque de casses
 passagères ; décoché, elle revient à la version stable. L'onglet du dialogue de
 personnage s'annonce alors « Fiche JJK beta », pour qu'on sache toujours quelle
 version on remplit.

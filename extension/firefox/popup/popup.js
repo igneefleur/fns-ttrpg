@@ -9,14 +9,25 @@
  *   jjkOff             l'interrupteur général      (absent = allumée)
  *   jjkNuit            "auto" | "jour" | "nuit"    (absent = auto)
  *   jjkPanneauActif    le plateau de Narration     (absent = allumé)
- *   jjkBeta            la moitié de chantier       (absent = stable)
+ *   jjkBeta            la moitié beta              (absent = stable)
+ *
+ * LE MOT EST « BETA » DANS TOUT CE QU'UN JOUEUR LIT — le réglage et la pastille
+ * comme les lignes du pied, qui le disaient déjà. « Mode de chantier » traînait
+ * ailleurs alors que le mot était arrêté. Rien d'autre n'a bougé : la clé
+ * jjkBeta est déjà posée chez les joueurs et lue par les deux copies de
+ * content-roll20.js, et l'identifiant p-chantier ne se lit que d'ici.
  *
  * CE QU'IL NE FAIT PLUS : repeindre quoi que ce soit selon le mode. L'ancien
  * panneau posait une classe « beta » sur le corps et le lien des règles virait
  * au jaune. Une interface qui change de couleur selon la moitié chargée fait
  * douter de ce qu'on lit, et la couleur ne portait aucune information que le mot
- * « chantier » ne porte mieux. Il ne reste du mode qu'une pastille de texte et
- * deux adresses de lien qui changent.
+ * ne porte mieux. Il ne reste du mode qu'une pastille de texte et deux adresses
+ * de lien qui changent.
+ *
+ * CE QU'IL N'ÉCRIT PLUS : les notices sous les réglages. Trois paragraphes
+ * disaient ce que le libellé disait déjà, ou répétaient « prend effet au
+ * rechargement » alors que le bouton de rechargement sort tout seul quand c'est
+ * vrai. Ce qui ne se devine pas est passé en title=, le reste est parti.
  *
  * ES5 prudent : var, pas de fonction fléchée, pas de gabarit, pas de spread.
  * Une page d'extension sert des navigateurs qu'on ne choisit pas.
@@ -147,17 +158,14 @@ if (typeof browser === "undefined") { var browser = chrome; }
     var elChantier = $("p-chantier");
     var elOff = $("p-off");
     var elOffTxt = $("p-off-txt");
-    var elOffNote = $("p-off-note");
     var elRecharge = $("p-recharge");
     var elNuit = $("p-nuit");
-    var elNuitNote = $("p-nuit-note");
     var elPan = $("p-panneau");
     var elPanReplacer = $("p-pan-replacer");
     var elBeta = $("p-beta");
     var elFlash = $("p-flash");
     var elRegles = $("p-regles");
     var elMaj = $("p-maj");
-    var elVersionsNote = $("p-versions-note");
     var elDepannage = $("p-depannage");
     var segs = elNuit ? elNuit.querySelectorAll(".seg") : [];
 
@@ -171,28 +179,18 @@ if (typeof browser === "undefined") { var browser = chrome; }
       elBody.classList.toggle("p-off", etat.off);
       elEtatTxt.textContent = !su ? "…" : (etat.off ? "Éteinte" : "Active");
 
-      // LA SEULE MARQUE DU MODE DE CHANTIER : un mot. Pas une couleur, pas un
-      // fond, pas un liseré. C'est l'exigence explicite de l'auteur, et elle
-      // vaut mieux que ce qu'elle remplace : le jaune de l'ancien lien
-      // n'apprenait rien à qui ne connaissait pas déjà le code couleur.
+      // LA SEULE MARQUE DE LA BETA : un mot. Pas une couleur, pas un fond, pas
+      // un liseré. C'est l'exigence explicite de l'auteur, et elle vaut mieux
+      // que ce qu'elle remplace : le jaune de l'ancien lien n'apprenait rien à
+      // qui ne connaissait pas déjà le code couleur.
       elChantier.hidden = !etat.beta;
 
       marque(elOff, !etat.off);
+      // Deux mots, et l'interrupteur à côté. Ce qu'une extinction ne peut PAS
+      // défaire (le pont vit dans le monde principal, où aucun script de contenu
+      // n'entre ; les écouteurs déjà posés sont anonymes et ne se retirent pas)
+      // reste vrai et reste dit — en title=, sur le bouton, dans popup.html.
       elOffTxt.textContent = etat.off ? "Extension éteinte" : "Extension active";
-
-      // LA PHRASE D'HONNÊTETÉ. Ce qu'un « off » peut défaire et ce qu'il ne peut
-      // pas est dit ici, parce que rien d'autre ne le dira. Les scripts de
-      // contenu restent injectés dans chaque page Roll20 (le manifeste les
-      // déclare, éteint ou non) ; le pont vit dans le monde principal, où aucun
-      // script de contenu n'entre ; les écouteurs déjà posés sont des fonctions
-      // anonymes qu'on ne retire pas. Promettre une extinction totale serait
-      // faux pour toute fenêtre déjà ouverte.
-      elOffNote.textContent = etat.off
-        ? "Rien de neuf ne se pose sur les pages Roll20. Les onglets déjà ouverts gardent "
-          + "ce qu'ils ont monté, et le pont des jets déjà posé dans la page ne s'en va "
-          + "qu'à leur rechargement."
-        : "L'onglet Fiche JJK, le plateau et le pont des jets se posent sur chaque page "
-          + "Roll20 chargée.";
     }
 
     function rendNuit() {
@@ -205,10 +203,6 @@ if (typeof browser === "undefined") { var browser = chrome; }
         // et trois arrêts de tabulation pour un réglage seraient trois de trop.
         segs[i].tabIndex = on ? 0 : -1;
       }
-      elNuitNote.textContent = (etat.nuit === "auto"
-        ? "Suit le thème du navigateur. "
-        : "Passe outre le thème du navigateur. ")
-        + "Ce panneau s'habille tout de suite ; la fiche et le plateau suivent au rechargement.";
     }
 
     function rendPieces() {
@@ -237,13 +231,13 @@ if (typeof browser === "undefined") { var browser = chrome; }
       for (i = 0; i < etat.depannage.length; i++) {
         mots.push(etat.depannage[i].cle + " → " + etat.depannage[i].val);
       }
-      elDepannage.textContent = "Clé de dépannage posée : " + mots.join(" ; ")
-        + ". Elle remplace l'adresse du site quel que soit le mode.";
+      elDepannage.textContent = "Clé de dépannage posée : " + mots.join(" ; ");
+      elDepannage.title = "Elle remplace l'adresse du site quel que soit le mode.";
     }
 
     // ------------------------------------------------------- les cinq numéros
 
-    // Le suffixe du chantier est posé À L'AFFICHAGE : la moitié beta se montre
+    // Le suffixe de la beta est posé À L'AFFICHAGE : la moitié beta se montre
     // avec un « b », la stable jamais, et le manifeste, lui, n'en porte aucun (le
     // même paquet sert les deux branches, un numéro suffixé y brûlerait un numéro
     // que la branche stable doit encore publier).
@@ -291,12 +285,6 @@ if (typeof browser === "undefined") { var browser = chrome; }
     } catch (e) {
       if (LIGNES.paquet.num) { LIGNES.paquet.num.textContent = "?"; }
     }
-    if (LIGNES.paquet.bloc) {
-      LIGNES.paquet.bloc.title = "Ce que Mozilla a signé, et ce que le navigateur "
-        + "affiche. Chaque moitié, dans le détail, montre le paquet où ELLE a changé "
-        + "pour la dernière fois : un correctif d'un fichier partagé fait sortir "
-        + "un paquet neuf sans qu'aucune moitié ne bouge.";
-    }
 
     function ecrit(l, numero, choisie) {
       if (!l.bloc || !l.num || !l.marque) { return; }
@@ -320,10 +308,6 @@ if (typeof browser === "undefined") { var browser = chrome; }
       ecrit(LIGNES.ficheBeta, fiches.beta || (etat.off ? "non lu" : "…"), montre && etat.beta);
       ecrit(LIGNES.extStable, numeroPartie("stable"), montre && !etat.beta);
       ecrit(LIGNES.extBeta, numeroPartie("beta"), montre && etat.beta);
-      elVersionsNote.textContent = etat.off
-        ? "Numéros des fiches non lus : l'extension est éteinte."
-        : "Les deux fiches se lisent en direct sur le site ; les deux moitiés disent à quel "
-          + "paquet elles ont changé pour la dernière fois.";
     }
 
     // Hors ligne, ou site injoignable : on écrit « ? » plutôt que de laisser une
@@ -478,8 +462,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
 
     elPanReplacer.addEventListener("click", function () {
       try { browser.storage.local.remove(CLE_PAN_GEO); } catch (e) { /* rien à replacer */ }
-      flash("Plateau replacé : il repartira de sa position par défaut au prochain "
-            + "chargement d'une page Roll20.");
+      flash("Plateau replacé.");
     });
 
     elBeta.addEventListener("click", function () {

@@ -8,20 +8,6 @@
  * livre qui a l'air d'un livre ne se ressemblaient en rien ; celui-ci ressemble
  * au livre.
  *
- * LES POLICES DU LIVRE NE SONT PAS EMBARQUÉES, et il faut le dire plutôt que le
- * laisser croire. Une page d'extension n'atteint pas docs/assets/fonts/ : il
- * faudrait copier les .woff2 DANS le paquet, ce que cette intervention n'a pas
- * le droit de faire (elle ne possède que les trois fichiers du popup, et un
- * fichier neuf non cité ferait refuser le paquet par build_extension.py). Les
- * piles ci-dessous nomment donc Alegreya et Cinzel EN PREMIER — elles serviront
- * telles quelles sur une machine où l'auteur les a installées — puis retombent
- * sur une pile serif. Sur la plupart des machines, ce panneau est donc dessiné
- * en Georgia ou en Times, pas dans la police du livre. Le jour où l'on voudra la
- * vraie police, il suffira de poser alegreya-400-latin.woff2 (43.5 ko),
- * alegreya-700-latin.woff2 (43.5 ko) et cinzel-600-latin.woff2 (25.9 ko) à côté
- * de ce fichier et de les citer par url() : le paquet passe de 84 ko à moins de
- * 200 ko, et le contrôle des orphelins accepte un fichier cité par url().
- *
  * LA RACINE EST ÉPINGLÉE À 18 px, la valeur de l'iframe Roll20. Toutes les
  * tailles de la fiche sont en rem sur une racine de 22 px (site) ou de 18 px
  * (Roll20) : recopiées dans une page à racine 16 px elles perdent 27 pour cent,
@@ -29,6 +15,53 @@
  * de convertir chaque valeur à la main, et évite surtout qu'un joueur qui a
  * grossi la police de son navigateur voie ce panneau déborder.
  */
+
+/* LES POLICES DU LIVRE SONT DANS LE PAQUET — une par famille, 69.4 ko à deux.
+ *
+ * Elles étaient nommées dans les piles sans être embarquées : une page
+ * d'extension n'atteint pas docs/assets/fonts/, et sur toute machine où elles ne
+ * sont pas installées (donc presque toutes) ce panneau se dessinait en Georgia.
+ *
+ * UNE SEULE PAR FAMILLE, ET IL NE FAUT PAS EN AJOUTER. Les fichiers sont copiés
+ * octet pour octet de docs/assets/fonts/alegreya-400-latin.woff2 et
+ * cinzel-600-latin.woff2 ; le chiffre de leur nom d'origine est une case de
+ * Google Fonts, pas un poids : ces fichiers sont VARIABLES (axe wght, 400 à
+ * 900), et toutes les cases de poids d'une même famille ont le même md5 (400,
+ * 500, 600 et 700 pour Alegreya ; 600 et 700 pour Cinzel). Poser en plus
+ * « alegreya-700 » coûterait 43.5 ko pour le même octet. Le poids se demande par
+ * font-weight, la police l'interpole.
+ *
+ * PAS DE local() dans src : une Alegreya d'une autre coupe, installée sur la
+ * machine, gagnerait sur le fichier embarqué et on aurait payé 69 ko pour rien.
+ *
+ * Sous-ensemble « latin » seul, sans le latin-ext : il suffit au français, œ
+ * compris (U+0152-0153 est dans « latin »). Les quelques signes qu'aucune des
+ * deux ne porte (la flèche du dépannage, les triangles du repli, le triangle
+ * d'alerte) tombent sur la police du système, caractère par caractère, comme
+ * avant.
+ *
+ * font-display: block, et non swap. Un popup se dimensionne à son contenu :
+ * peindre en Georgia puis échanger ne ferait pas que changer la police, il
+ * redimensionnerait la fenêtre sous la souris. Le fichier est local, l'attente
+ * se compte en millisecondes.
+ *
+ * Les deux sont sous SIL Open Font License 1.1 — Alegreya, copyright 2011 The
+ * Alegreya Project Authors ; Cinzel, copyright 2020 The Cinzel Project Authors.
+ * Texte des licences : docs/assets/fonts/licences/. */
+@font-face {
+  font-family: 'Alegreya';
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: block;
+  src: url('../fonts/alegreya-latin.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Cinzel';
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: block;
+  src: url('../fonts/cinzel-latin.woff2') format('woff2');
+}
 
 /* Aucune page d'extension n'a de reset : sans ce box-sizing, la première
    bordure fait déborder les blocs de leur colonne. La fiche re-déclare la même
@@ -212,15 +245,9 @@ html.night .p-titre { color: var(--ink); }
 .p-lib { flex: 1 1 auto; min-width: 0; color: var(--ink); }
 .p-actions { display: inline-flex; align-items: center; gap: .3rem; flex: 0 0 auto; }
 
-/* La note qui explique. --ink-3 sur --card mesure 5.25:1 de jour et 4.86:1 de
-   nuit : c'est la seule paire de gris qui passe des deux côtés. Sur --panel elle
-   tomberait à 4.34:1 de nuit, sous le seuil ; les notes restent donc sur les
-   cartes et jamais sur un fond de panneau. */
-.p-note {
-  margin: .1rem 0 0;
-  font-size: var(--fs-meta); line-height: 1.3;
-  color: var(--ink-3);
-}
+/* IL N'Y A PLUS DE .p-note, ET IL NE FAUT PAS EN REMETTRE. Une phrase sous
+   chaque réglage pour dire ce qu'il fait, c'est un libellé qui a raté. Ce qui ne
+   se devine pas tient dans un title= ; le reste n'avait pas à être écrit. */
 
 /* ------------------------------------------------- L'INTERRUPTEUR GÉNÉRAL */
 
@@ -406,7 +433,6 @@ body.p-off #p-pieces .p-titre { color: var(--ink-3); }
 .p-versions .ligne { display: contents; }
 .p-versions .actif { color: var(--ink); font-weight: 600; }
 .p-versions .num { white-space: nowrap; font-variant-numeric: tabular-nums; }
-.p-note-v { margin-top: .2rem; }
 
 .p-liens { display: flex; gap: .3rem; margin-top: .3rem; }
 .p-liens a {
