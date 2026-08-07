@@ -329,11 +329,10 @@ html.night .nb-lune .nb-croissant { display: none; }
 /* Le tiret carmin reste aligné sur le TEXTE, pas sur le bord de la carte : le
    padding est passé de la carte à l'en-tête, et left:0 le collerait maintenant
    au filet du bord. */
-/* Le tiret carmin suit le nom, puisque la rangée n'a plus de filet à souligner. */
-.nb-place-nom::after {
-  content: ""; position: absolute; left: 4px; bottom: 1px;
-  width: 16px; height: 1.5px; background: var(--red); border-radius: 2px;
-}
+/* PAS DE TIRET SOUS LE NOM. Il signe les titres de section dans la fiche, où il
+   souligne un en-tête posé sur toute la largeur ; sous une étiquette de deux
+   centimètres posée sur une image, ce n'était plus une signature mais une barre
+   rouge inexplicable. L'auteur l'a fait retirer, et il a raison. */
 /* LA PLAQUE DE LISIBILITÉ, et la seule chose qui fasse tenir un nom sur une
    image inconnue. Elle ne paraît QUE s'il y a une image : sans elle, la carte
    garde sa surface pleine et n'a besoin de rien. */
