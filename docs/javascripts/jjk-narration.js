@@ -203,7 +203,11 @@
     noms.forEach(function (n) {
       var v = String(attrs[n] == null ? "" : attrs[n]);
       lot[n] = { current: v, max: "" };
-      attente[n] = { val: v, t: t, marge: marge };
+      // « avant » : la valeur que Roll20 nous avait donnée juste avant qu'on
+      // écrive. Si la valeur qui revient lui est ÉGALE, notre écriture n'a pas
+      // pris ; si elle en diffère, c'est quelqu'un d'autre qui a écrit. Sans ce
+      // repère, les deux pannes se ressemblent trait pour trait.
+      attente[n] = { val: v, t: t, marge: marge, avant: (dernierLu[n] == null ? null : dernierLu[n]) };
     });
     post({ type: "save", charId: charId, attrs: lot });
   }
@@ -280,6 +284,8 @@
   // compte donc qu'une perte pour un même instant d'écriture.
   var perdues = 0;
   var dernierePerte = 0;
+  // Ce que Roll20 disait à la dernière lecture, attribut par attribut.
+  var dernierLu = {};
   function retenu(nom, distant) {
     var a = attente[nom];
     if (!a) return false;
@@ -297,7 +303,11 @@
     if (a.t !== dernierePerte) {
       dernierePerte = a.t;
       if (++perdues >= 2) { refuse = true; perdues = 0; }
-      trace("ecriture perdue", { attribut: nom, attendu: a.val, recu: distant });
+      trace("ecriture perdue", { attribut: nom, attendu: a.val, recu: distant,
+                                 avant: a.avant,
+                                 verdict: (a.avant != null && String(distant) === String(a.avant))
+                                   ? "notre ecriture n a pas pris"
+                                   : "un autre a ecrit (ou valeur inconnue)" });
     }
     return false;
   }
@@ -339,6 +349,10 @@
   function applique(attrs, d) {
     trace("lecture", { pontSur: (d && d.sur), pontRaison: (d && d.raison),
                        nbAttrs: attrs ? Object.keys(attrs).length : 0 });
+    try {
+      var _k, _a = attrs || {};
+      for (_k in _a) { if (_a.hasOwnProperty(_k)) { dernierLu[_k] = String(_a[_k] && _a[_k].current != null ? _a[_k].current : _a[_k]); } }
+    } catch (e) {}
     // « JE NE SAIS PAS ENCORE » N'EST PAS « C'EST VIDE ». Roll20 ne peuple les
     // Attributes d'un personnage qu'à l'ouverture de sa fiche, et le plateau est
     // justement lu sans que personne n'ouvre celle de « Narration » : tant que le
