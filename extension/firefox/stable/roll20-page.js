@@ -132,6 +132,23 @@
     for (var i = 0; i < ms.length; i++) if (attrVal(ms[i], "name") === name) return ms[i];
     return null;
   }
+  // TOUS LES HOMONYMES, et non le premier. Un personnage peut porter PLUSIEURS
+  // attributs du même nom : Roll20 ne l'interdit pas, et le pont lui-même en a
+  // fabriqué tant que la fiche de « Narration » n'était pas ouverte — la
+  // collection était vide, findAttr ne trouvait rien, et chaque écriture créait
+  // un doublon au lieu de mettre à jour l'existant.
+  //
+  // Le dégât est sournois parce que les deux moitiés du dispositif ne
+  // choisissent pas le même : writeOne écrivait dans le PREMIER, readAll
+  // parcourt tout et laisse le DERNIER gagner. L'écriture était donc réellement
+  // enregistrée — le serveur répondait « accepté », mesuré chez l'auteur — et la
+  // relecture rendait quand même l'ancienne valeur, indéfiniment. Le compte le
+  // disait : 82 attributs pour 18 attendus.
+  function findAllAttrs(ch, name) {
+    var ms = models(ch), out = [];
+    for (var i = 0; i < ms.length; i++) if (attrVal(ms[i], "name") === name) out.push(ms[i]);
+    return out;
+  }
 
   function readAll(id) {
     var ch = getChar(id), out = {};
@@ -166,7 +183,23 @@
   function writeOne(ch, name, v) {
     if (!ecrivable(name)) return;   // double fond : writeOne reste sûr quel que soit l'appelant
     var data = { name: name, current: str(v && v.current), max: str(v && v.max) };
-    var m = findAttr(ch, name);
+    // On écrit dans TOUS les homonymes : c'est le seul moyen que la relecture
+    // rende ce qu'on vient d'écrire, quel que soit celui qu'elle retient. Les
+    // supprimer serait plus propre, mais détruire des attributs d'un personnage
+    // partagé sur un pronostic n'est pas une opération qu'on fait à la légère.
+    var tous = findAllAttrs(ch, name);
+    if (tous.length > 1) { doublons(name, tous.length); }
+    if (tous.length > 1) {
+      for (var k = 0; k < tous.length; k++) {
+        var mk = tous[k];
+        if (mk.set) mk.set(data, { silent: true });
+        if (mk.save) mk.save(null);
+      }
+      relu(tous[0], name, data);
+      issue(name, "accepte", null);
+      return;
+    }
+    var m = tous[0] || null;
     if (!m) {
       m = ch.attribs.create(data, { silent: true });
       if (m && m.save) m.save(null);
@@ -230,6 +263,15 @@
   }
   // Ce que le SERVEUR a répondu à cette écriture. Rangé au même endroit, il
   // voyage avec la lecture suivante jusqu'au plateau, donc jusqu'à la console.
+  // Combien d'homonymes portait cet attribut : c'est le fait qui a manqué le plus
+  // longtemps, et il se lit d'un coup d'oeil dans la trace du plateau.
+  function doublons(name, n) {
+    try {
+      var e = dernieresEcritures[name] || {};
+      e.homonymes = n;
+      dernieresEcritures[name] = e;
+    } catch (err) {}
+  }
   function issue(name, quoi, detail) {
     try {
       var e = dernieresEcritures[name] || {};
