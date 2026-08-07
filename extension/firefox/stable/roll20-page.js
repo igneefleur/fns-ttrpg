@@ -709,7 +709,8 @@
   // Le ménage ne se fait qu'UNE FOIS PAR CHARGEMENT DE PAGE, et seulement quand
   // la lecture vaut vérité (« sur ») : sur une collection non peuplée, tout
   // paraîtrait absent et il n'y aurait rien à retirer — mais rien ne le dirait.
-  var NARR_PREFIX = "jjk_narr_";
+  // Repli si la page ne dit rien : le ménage garde alors TOUT, donc ne détruit
+  // rien. Le préfixe n'est plus écrit ici — c'est le site qui le donne.
   var menageFait = false;     // une fois par chargement, pas une fois par lecture
   var menageRapport = null;   // ce qu'il a fait, transmis avec la lecture suivante
 
@@ -721,10 +722,43 @@
   // que Roll20 rafraîchisse la fiche de « Narration » — qui est ouverte, mais
   // hors champ, et qu'aucun joueur ne regarde — au plus une fois par
   // chargement de partie, puisque le ménage ne se fait qu'une fois.
-  // LA FONCTION DE DESTRUCTION A ÉTÉ RETIRÉE, pas seulement désactivée. Du
-  // code qui supprime des attributs d'un personnage partagé, dormant dans un
-  // paquet signé, n'attend qu'un appel posé par distraction. Elle reviendra
-  // avec le ménage, quand il sera sûr.
+  function detruit(m, ok, ko) {
+    var fini = false;
+    function fin(f, a) { if (fini) return; fini = true; f(a); }
+    try {
+      if (!m || typeof m.destroy !== "function") { fin(ko, "destroy absent"); return; }
+      m.destroy({
+        success: function () { fin(ok); },
+        error: function (mm, rep) { fin(ko, texteReponse(rep)); }
+      });
+    } catch (e) {
+      fin(ko, String((e && e.message) || e).slice(0, 120));
+      return;
+    }
+    setTimeout(function () { fin(ko, "aucune reponse"); }, 4000);
+  }
+  function encoreLa(ch, m) {
+    var ms = models(ch);
+    for (var i = 0; i < ms.length; i++) { if (ms[i] === m) return true; }
+    return false;
+  }
+
+  // CE QUI APPARTIENT AU PLATEAU EST DIT PAR LE SITE, jamais deviné ici.
+  //
+  // « tout jjk_ qui n'est pas jjk_narr_ est un reste de fiche » est un critère
+  // NÉGATIF : gravé dans un paquet signé, il condamnerait tout nom que la page
+  // du plateau se mettrait à écrire plus tard — et cette page, elle, change sans
+  // signature. Le site envoie donc SES préfixes avec la demande de ménage, et
+  // rien d'autre n'est jamais conservé. Sans cette liste, on ne détruit RIEN :
+  // un ménage qui ne sait pas ce qu'il garde n'est pas un ménage.
+  var menageGarde = null;   // liste de préfixes, donnée par la page du plateau
+  function aMoi(n) {
+    if (!menageGarde || !menageGarde.length) return true;   // on ne sait pas -> on garde
+    for (var i = 0; i < menageGarde.length; i++) {
+      if (n.indexOf(menageGarde[i]) === 0) return true;
+    }
+    return false;
+  }
   function menagePlateau(ch) {
     if (menageFait) return;
     if (!ch || !narrId || ch.id !== narrId) return;   // VERROU 1
@@ -735,7 +769,7 @@
       n = attrVal(ms[i], "name");
       if (typeof n !== "string" || n.indexOf(PREFIX) !== 0) continue;
       rap.trouves++;
-      if (n.indexOf(NARR_PREFIX) !== 0) {
+      if (!aMoi(n)) {
         rap.etrangers++;
         morts.push({ nom: n, m: ms[i], plateau: false });
         continue;
@@ -755,6 +789,19 @@
     // Les étapes se déroulent UNE À UNE et espacées, comme les écritures du
     // plateau : Roll20 perd des écritures sur une rafale, et une rafale de
     // suppressions n'est pas moins brutale.
+    //
+    // « garde » retient l'exemplaire conservé pour chaque nom, « confirme » dit
+    // si le serveur a accepté SA valeur. Les copies ne meurent qu'après ce oui.
+    var garde = {}, confirme = {};
+    function sauveConfirme(m, nom, data) {
+      try {
+        if (!m || !m.save) return;
+        m.save(null, {
+          success: function () { confirme[nom] = true; },
+          error: function () { confirme[nom] = false; }
+        });
+      } catch (e) { confirme[nom] = false; }
+    }
     var etape = 0;
     function suite() { setTimeout(pas, WRITE_DELAY); }
     function pas() {
@@ -769,41 +816,49 @@
           // tout et laisse le dernier gagner), donc celui que le plateau montre.
           var d0 = tous[tous.length - 1];
           var data = { name: nom, current: str(attrVal(d0, "current")), max: str(attrVal(d0, "max")) };
+          // ON RETIENT CELUI QU'ON GARDE, ET ON ATTEND SA CONFIRMATION. Les
+          // copies ne seront détruites que si le serveur a dit « accepté » pour
+          // lui : supprimer avant de savoir si la valeur conservée a pris, c'est
+          // la perdre. On a passé la journée à découvrir qu'une écriture peut
+          // être acceptée en mémoire et jamais persistée.
+          garde[nom] = d0;
           for (var j = 0; j < tous.length; j++) {
             try {
               if (tous[j].set) tous[j].set(data, { silent: true });
-              sauve(tous[j], nom, data);
+              if (tous[j] === d0) { sauveConfirme(tous[j], nom, data); }
+              else { sauve(tous[j], nom, data); }
             } catch (e) {}
           }
         }
         return suite();
       }
-      // LA SUPPRESSION EST SUSPENDUE, ET CE N'EST PAS UN OUBLI.
-      //
-      // Trois défauts graves ont été trouvés en relecture sur cette partie-là,
-      // et détruire des attributs d'un personnage partagé par toute une table ne
-      // se fait pas sur un « à peu près » :
-      //   1. le compte des homonymes se fait sur la collection LOCALE, qui ne
-      //      connaît pas encore les suppressions d'un autre joueur : deux
-      //      personnes qui rangent en même temps peuvent effacer le DERNIER
-      //      exemplaire, et deux clients n'énumèrent même pas les attributs dans
-      //      le même ordre ;
-      //   2. la valeur fusionnée est ÉMISE avant les suppressions, mais rien
-      //      n'attend qu'elle soit arrivée : on supprime les copies avant de
-      //      savoir si celle qu'on garde a bien pris ;
-      //   3. le critère « c'est un reste de fiche » est NÉGATIF (tout jjk_ qui
-      //      n'est pas jjk_narr_) et figé dans un paquet signé, alors que ce que
-      //      le plateau écrit est décidé par le SITE, qui bouge sans signature.
-      //      Le jour où le site écrit un nom neuf, la version signée le
-      //      détruirait comme un intrus.
-      //
-      // L'INVENTAIRE, LUI, RESTE : il compte et rapporte sans rien toucher, donc
-      // l'auteur voit l'ampleur du ménage à faire. La suppression reviendra
-      // quand elle sera sûre — confirmation d'écriture avant destruction, critère
-      // POSITIF donné par le site, et une coordination entre joueurs.
-      rap.suspendu = "suppression suspendue : inventaire seul";
-      menageRapport = rap;
-      return;
+      var mort = morts[etape - fusions.length];
+      etape++;
+      if (!mort) { menageRapport = rap; return; }
+      if (!encoreLa(ch, mort.m)) return suite();   // un autre joueur est passé avant
+      if (mort.plateau) {
+        // VERROU 2, EN DEUX TEMPS, parce qu'un seul ne suffisait pas.
+        //
+        // a. jamais le DERNIER exemplaire, recompté sur la collection VIVANTE
+        //    juste avant la suppression, et non sur l'inventaire du début ;
+        // b. et seulement si le serveur a CONFIRMÉ la valeur de celui qu'on
+        //    garde. Sans ce second temps, deux joueurs qui rangent en même temps
+        //    voient chacun deux exemplaires, en suppriment chacun un, et il n'en
+        //    reste zéro : leur collection locale ignore encore la suppression de
+        //    l'autre. La confirmation les sérialise sur le serveur, qui lui ne
+        //    ment pas.
+        if (findAllAttrs(ch, mort.nom).length < 2) return suite();
+        if (confirme[mort.nom] !== true) {
+          rap.attendus = (rap.attendus || 0) + 1;
+          return suite();
+        }
+      }
+      detruit(mort.m,
+        function () { rap.retires++; suite(); },
+        function (pourquoi) {                       // VERROU 3 : on s'arrête, on ne s'acharne pas
+          rap.arret = mort.nom + " : " + pourquoi;
+          menageRapport = rap;
+        });
     }
     pas();
   }
@@ -863,6 +918,19 @@
         // première demande de cette frame : elle se lie à ce personnage ; une
         // demande ultérieure pour un autre personnage est refusée (verrou 2).
         if (!lier(ev.source, d.charId)) return;
+        // LA LISTE DES PRÉFIXES DU PLATEAU, envoyée par la page qui les écrit.
+        // C'est elle qui rend le ménage possible : sans elle, aMoi() garde tout
+        // et rien n'est jamais détruit. On ne retient que des chaînes commençant
+        // par le préfixe général, pour qu'une page malveillante ne puisse pas
+        // faire passer les attributs NATIFS de Roll20 pour les siens.
+        if (d.menageGarde && d.menageGarde.length) {
+          var g = [], gi;
+          for (gi = 0; gi < d.menageGarde.length; gi++) {
+            var gp = String(d.menageGarde[gi] || "");
+            if (gp.length > 4 && gp.indexOf(PREFIX) === 0) g.push(gp);
+          }
+          if (g.length) menageGarde = g;
+        }
         // perso injoignable : ne pas hydrater avec du vide (la fiche relance load
         // toutes les 500 ms, le Campaign peut arriver après nous)
         var chl = getChar(d.charId);

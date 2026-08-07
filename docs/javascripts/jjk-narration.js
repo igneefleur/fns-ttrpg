@@ -221,9 +221,18 @@
   // dit lesquels le pont a retenus, pour qu'on garde les nôtres au lieu de les
   // croire effacés.
   var fondsTenus = false;
+  // CE QUI APPARTIENT AU PLATEAU, dit par le plateau lui-même. Le pont range les
+  // attributs de « Narration » : il retire les restes d'une fiche de personnage
+  // ouverte un jour dessus, et dédoublonne les nôtres. Mais il ne peut pas
+  // DEVINER lesquels sont les nôtres — et un critère gravé dans un paquet signé
+  // condamnerait tout nom qu'on se mettrait à écrire plus tard, puisque cette
+  // page-ci change sans signature. On envoie donc la liste, et le pont ne
+  // détruit rien sans elle.
+  var MENAGE_GARDE = [A_CONF, A_PT, A_BG];
   function demandeEtat() {
     if (!charId) { return; }
-    post({ type: "load", charId: charId, allege: fondsTenus === true });
+    post({ type: "load", charId: charId, allege: fondsTenus === true,
+           menageGarde: MENAGE_GARDE });
   }
   // Une écriture = un lot d'attributs. On note ce qu'on vient d'écrire : l'écho
   // met un aller-retour à revenir, et sans cette note la relecture suivante
@@ -1180,10 +1189,24 @@
   // effacent les positions de tout le monde (distribuer, tout ramasser) ont leur
   // propre bloc « Session » : ce ne sont pas des réglages, ce sont des gestes de
   // partie, et ils n'ont rien à faire dans la même rangée que « Enregistrer ».
+  // LES RÉGLAGES DEMANDENT DE LA PLACE, ET LE CADRE LA DONNE. Le plateau vit
+  // dans une iframe dont la taille est fixée par l'extension : un dialogue ne
+  // peut pas en sortir, et serré dans une colonne ancrée à la barre d'outils il
+  // devenait illisible. On demande donc au cadre de s'agrandir et de se centrer
+  // le temps du réglage, puis de reprendre sa place.
+  //
+  // Si personne n'écoute — page ouverte hors de Roll20, extension plus ancienne
+  // que ce site — il ne se passe rien de fâcheux : le dialogue s'affiche comme
+  // avant, à l'étroit mais entier.
+  function cadreGrand(on) {
+    try { window.top.postMessage({ ns: NS, type: "pan-grand", grand: !!on }, "*"); }
+    catch (e) {}
+  }
   function ouvreReglages() {
     var over = el("div", "nb-modal-over");
     var boite = el("div", "nb-modal");
     over.appendChild(boite);
+    cadreGrand(true);
     var brouillon = JSON.parse(JSON.stringify(conf));
 
     boite.appendChild(el("div", "nb-modal-titre", "Réglages du plateau"));
@@ -1374,6 +1397,7 @@
     function ferme() {
       document.removeEventListener("keydown", auClavier);
       if (over.parentNode) over.parentNode.removeChild(over);
+      cadreGrand(false);   // le cadre reprend sa place
     }
     // Les champs qui ne se surveillent pas au fil de la frappe (le MJ, la donne)
     // sont relus ICI, au moment d'agir : les deux boutons qui écrivent doivent

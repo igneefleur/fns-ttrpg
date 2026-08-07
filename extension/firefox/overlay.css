@@ -145,10 +145,17 @@
   padding: 4px 5px 4px 10px; cursor: move; user-select: none;
   background: var(--panel); border-bottom: 1px solid var(--line-2);
 }
+/* ANCRÉ, LE TITRE RECULE D'UNE TABULATION. Collé à la boîte à outils, il
+   commençait juste contre elle et se faisait manger par son ombre : les
+   premières lettres n'étaient plus lisibles. Vingt-huit pixels suffisent à l'en
+   dégager, et seulement dans ce cas — flottant, le panneau n'a rien à sa gauche
+   et un décalage ne serait qu'un trou. */
+.jjk-panneau.jjk-panneau-ancre > .jjk-panneau-tete { padding-left: 28px; }
 .jjk-panneau-tete::after {
   content: ""; position: absolute; left: 10px; bottom: -1px;
   width: 22px; height: 1.5px; background: var(--red); border-radius: 2px;
 }
+.jjk-panneau.jjk-panneau-ancre > .jjk-panneau-tete::after { left: 28px; }
 .jjk-panneau-titre {
   flex: 1 1 auto; min-width: 0;
   font-family: 'Cinzel', 'Alegreya', Garamond, 'Times New Roman', serif;

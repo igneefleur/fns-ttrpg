@@ -867,9 +867,9 @@ if (typeof browser === "undefined") { var browser = chrome; }
   // plateau ancré commence. Une barre repliée ou pas encore peinte ne compte
   // pas — le plateau retombe alors sur sa place flottante, plutôt que de se
   // coller à un fantôme.
-  // COLLÉ VEUT DIRE COLLÉ : zéro pixel entre la barre et le plateau. Quatre
-  // pixels de jeu se voyaient à l'écran et l'auteur l'a relevé sur capture.
-  var ANCRE_JOINT = 0;
+  // COLLÉ VEUT DIRE COLLÉ, ET MÊME UN PEU PLUS : le panneau passe SOUS la barre
+  // de quelques pixels, pour boucher le creux que laissait son coin arrondi.
+  var ANCRE_SOUS = 10;
   function barreRect() {
     var b = document.getElementById("master-toolbar") ||
             document.getElementById("vm-master-toolbar");
@@ -913,14 +913,36 @@ if (typeof browser === "undefined") { var browser = chrome; }
   function panAncre() { return !!(panEtat && panEtat.ancre) && !!barreRect(); }
   // Collé à la barre, pleine hauteur. La largeur reste celle que le joueur (ou
   // la page du plateau) a demandée, bornée à ce qui tient à droite de la barre.
+  // GRAND ET CENTRÉ, LE TEMPS D'UN RÉGLAGE. Une géométrie de PASSAGE : elle
+  // n'est jamais rangée dans le stockage, et panApplique() la retrouve tant
+  // qu'elle est posée. À la fermeture, on la jette et le panneau reprend
+  // exactement la place qu'il avait, ancrée ou flottante.
+  var panGeoGrande = null;
+  function panGrand(on) {
+    if (!on) { panGeoGrande = null; panApplique(); return; }
+    var vw = window.innerWidth || 1200, vh = window.innerHeight || 800;
+    var w = Math.max(PAN_MIN_W, Math.min(760, vw - 80));
+    var h = Math.max(PAN_MIN_H, Math.min(640, vh - 80));
+    panGeoGrande = { x: Math.round((vw - w) / 2), y: Math.round((vh - h) / 2), w: w, h: h };
+    panApplique();
+  }
   function panGeoAncree() {
     var vw = window.innerWidth || 1200, vh = window.innerHeight || 800;
     var r = barreRect();
-    var x = r ? Math.round(r.right + ANCRE_JOINT) : PAN_DEF.x;
+    // LE PANNEAU GLISSE SOUS LA BARRE POUR BOUCHER LE TROU. La boîte à outils a
+    // les coins arrondis : collé à son bord droit, le panneau laissait paraître
+    // un petit creux en bas à droite, entre l'arrondi et le début du plateau.
+    // On recule donc de quelques pixels vers la gauche, ce qui remplit le creux,
+    // et on rend ces pixels à la largeur pour que le bord DROIT ne bouge pas.
+    //
+    // Rien n'est perdu de la surface utile : la partie qui passe sous la barre
+    // est cachée par elle (elle est au-dessus, z-index 10600 contre 10500). La
+    // place du MJ ne gagne donc pas un pixel, c'est bien un bouche-trou.
+    var x = r ? Math.round(r.right - ANCRE_SOUS) : PAN_DEF.x;
     var y = r ? Math.max(0, Math.round(r.top)) : PAN_DEF.y;
     return {
       x: x, y: y,
-      w: Math.max(PAN_MIN_W, Math.min(panEtat.w, Math.max(PAN_MIN_W, vw - x - 8))),
+      w: Math.max(PAN_MIN_W, Math.min(panEtat.w + ANCRE_SOUS, Math.max(PAN_MIN_W, vw - x - 8))),
       // LA MÊME HAUTEUR QUE LA BOÎTE À OUTILS, exactement. Le plateau prenait
       // toute la fenêtre et descendait bien plus bas que la barre : posés côte à
       // côte, les deux ne formaient pas un bloc. On suit donc la barre, sans
@@ -940,7 +962,11 @@ if (typeof browser === "undefined") { var browser = chrome; }
     panBoite.style.display = efface ? "none" : "";
     panBoite.classList.toggle("jjk-panneau-ancre", ancre);
     panBoite.classList.toggle("jjk-panneau-replie", !panEtat.ouvert && !efface);
-    var g = ancre ? panGeoAncree() : panEtat;
+    // La géométrie de passage (réglages ouverts) l'emporte sur tout : ancré ou
+    // flottant, on veut le dialogue grand et au centre. Elle disparaît d'elle
+    // même à la fermeture, sans avoir rien écrit.
+    var g = panGeoGrande ? panGeoGrande : (ancre ? panGeoAncree() : panEtat);
+    if (panGeoGrande) { panBoite.classList.remove("jjk-panneau-ancre"); }
     panBoite.style.left = g.x + "px";
     panBoite.style.top = g.y + "px";
     // replié, le panneau se réduit à son étiquette : une barre de 380 px de
@@ -1015,7 +1041,9 @@ if (typeof browser === "undefined") { var browser = chrome; }
     // On ne le repousse que s'il le faut, et jamais plus loin que nécessaire.
     if (!panEtat.ancre) {
       var r = barreRect();
-      if (r && panEtat.x < r.right) panEtat.x = Math.round(r.right + ANCRE_JOINT);
+      // DÉTACHÉ, on ne glisse pas sous la barre : ce serait le perdre. Le
+      // chevauchement n'a de sens qu'ancré, où la barre le cache exprès.
+      if (r && panEtat.x < r.right) panEtat.x = Math.round(r.right + 4);
     }
     panBorne(panEtat);
     panApplique();
@@ -1259,6 +1287,14 @@ if (typeof browser === "undefined") { var browser = chrome; }
             // arriver. Sans ce message, le cadre garde le réglage du popup,
             // que le plateau suit de toute façon par défaut.
             if (d.nuit != null && panBoite) panBoite.classList.toggle("jjk-nuit", !!d.nuit);
+            // LE CADRE S'AGRANDIT POUR LES RÉGLAGES. Le plateau ne peut pas
+            // faire sortir un dialogue de son iframe : serré dans une colonne
+            // ancrée à la barre, il devenait illisible. Il demande donc de la
+            // place, on la lui donne au centre de la page, et on la reprend à
+            // la fermeture. L'état rangé n'est PAS touché : on ne mémorise pas
+            // une géométrie de passage, sinon rouvrir Roll20 retrouverait le
+            // plateau grand ouvert au milieu de l'écran.
+            if (d.type === "pan-grand") { panGrand(!!d.grand); }
             if (d.w != null) panEtat.w = panNombre(d.w, panEtat.w);
             if (d.h != null) panEtat.h = panNombre(d.h, panEtat.h);
             panBorne(panEtat);
