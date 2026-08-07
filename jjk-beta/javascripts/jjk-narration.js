@@ -343,6 +343,15 @@
       if (sig === traceQuoi && t - traceQuand < 10000) { return; }
       traceQuoi = sig; traceQuand = t;
       if (window.console && console.log) { console.log("[plateau JJK] " + sig); }
+      // ET ON LA FAIT REMONTER. Le plateau vit dans un iframe d'une autre
+      // origine : ses messages de console n'apparaissent pas dans celle de
+      // Roll20 sans aller sélectionner le cadre à la main, ce que personne n'a
+      // envie de faire pour signaler une panne. On la poste donc vers la fenêtre
+      // du haut, où un script de dépannage peut les ramasser toutes.
+      //
+      // « jjk-diag » et non « jjk » : le pont ne doit jamais confondre ceci avec
+      // un ordre. Il ignore tout ce qui ne porte pas son propre nom.
+      try { (window.top || window).postMessage({ ns: "jjk-diag", ligne: sig }, "*"); } catch (e2) {}
     } catch (err) {}
   }
 
