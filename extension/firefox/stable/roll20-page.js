@@ -169,12 +169,26 @@
     var m = findAttr(ch, name);
     if (!m) {
       m = ch.attribs.create(data, { silent: true });
-      if (m && m.save) m.save(data, { silent: true });
+      if (m && m.save) m.save(null);
       return relu(m, name, data);
     }
     if (m.set) m.set(data, { silent: true });
     else { m.attributes = m.attributes || {}; m.attributes.name = data.name; m.attributes.current = data.current; m.attributes.max = data.max; }
-    if (m.save) m.save(data, { silent: true });
+    // SAVE N'EST PLUS SILENCIEUX, ET C'EST TOUTE LA CORRECTION.
+    //
+    // Backbone transmet ses options jusqu'à la synchronisation. Pour Roll20,
+    // « silencieux » veut dire NE PAS PROPAGER : on demandait donc au serveur de
+    // ne rien recevoir, et l'écho Firebase de la valeur inchangée restaurait
+    // ensuite l'ancienne, jusque dans le modèle. Mesuré chez l'auteur : le
+    // modèle prenait bien la valeur (voulu et modele identiques), puis la
+    // relecture rendait la position d'avant, à l'identique, indéfiniment.
+    //
+    // On garde le set SILENCIEUX : c'est lui qui évite l'événement change, donc
+    // onAttribChange puis updateSheetValues, qui plante quand la fiche est
+    // ouverte — et le pont ouvre justement celle de « Narration ». save(null)
+    // ne repose aucune valeur, donc n'émet aucun événement : il ne fait que
+    // pousser vers Firebase, ce qui est exactement ce qu'on veut.
+    if (m.save) m.save(null);
     return relu(m, name, data);
   }
 
