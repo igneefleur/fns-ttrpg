@@ -62,7 +62,17 @@ MARQUE = "propre à cette copie"
 # Orphelins assumés : le README part quand même chez Mozilla (tout ce qui est
 # sous firefox/ y part), et le manifeste est la racine, il ne peut être nommé
 # par personne.
-ORPHELINS_ADMIS = {"README.md", "manifest.json"}
+#
+# LES LICENCES DES POLICES en sont, et elles DOIVENT partir. Alegreya et Cinzel
+# sont sous SIL Open Font License, qui exige que le texte de la licence
+# accompagne toute redistribution — or le paquet signé redistribue bien les
+# fichiers de police. Aucun CSS ne les nomme, donc rien ne les atteint : sans
+# cette ligne, le contrôle les refuserait en orphelins et on serait tenté de les
+# retirer du paquet, c'est-à-dire de violer la licence pour faire taire un
+# contrôle.
+ORPHELINS_ADMIS = {"README.md", "manifest.json",
+                   "fonts/licences/alegreya-OFL.txt",
+                   "fonts/licences/cinzel-OFL.txt"}
 
 # LE FICHIER DES VERSIONS DE PARTIES : ce que chaque moitié du paquet déclare
 # comme son propre numéro. Il est ÉCRIT par scripts/ci_extension.py à chaque

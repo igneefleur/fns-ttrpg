@@ -36,6 +36,11 @@
  * FRAÎCHEUR. Le pont ne pousse rien de lui-même : le plateau redemande l'état
  * toutes les 1.2 s. Sur une table qui bouge trois fois par heure, personne ne
  * verra la différence avec du temps réel, et rien ne peut s'emballer.
+ *
+ * CE QUE VAUT UNE LECTURE. Roll20 ne peuple les Attributes d'un personnage qu'à
+ * l'ouverture de sa fiche : le pont ouvre donc « Narration » lui-même, hors
+ * champ, et dit avec chaque lecture si elle vaut vérité. Tant qu'elle ne vaut
+ * rien, le plateau ne touche à rien — c'est la règle qui tient tout le reste.
  */
 (function () {
   "use strict";
@@ -54,10 +59,17 @@
   var charId = null;        // personnage « Narration » (null = pas trouvé)
   var ecrivable = false;    // ce que le pont ANNONCE des droits du joueur
   var refuse = false;       // ce que Roll20 a montré en refusant nos écritures
-  // Trois raisons de ne pas toucher au plateau, et une seule question à poser :
-  // le pont annonce que ce joueur n'a pas la main, Roll20 a refusé nos
-  // écritures, ou le plateau a été écrit par une version plus récente.
-  function peutPousser() { return ecrivable && !refuse && !confFuture; }
+  // L'ÉTAT LU EST-IL UNE VÉRITÉ ? Roll20 ne peuple les attributs d'un personnage
+  // qu'à l'ouverture de sa fiche : avant, la lecture rend du vide qui n'est la
+  // vérité de rien. Le pont ouvre donc la fiche lui-même et le dit ici. Faux au
+  // départ : on ne sait rien avant d'avoir lu.
+  var etatSur = false;
+  // Quatre raisons de ne pas toucher au plateau, et une seule question à poser :
+  // on ne sait pas encore ce qu'il y a dessus, le pont annonce que ce joueur n'a
+  // pas la main, Roll20 a refusé nos écritures, ou le plateau a été écrit par une
+  // version plus récente. La première est la plus importante : pousser un jeton
+  // sur un état qu'on n'a pas lu, c'est écraser la table de tout le monde.
+  function peutPousser() { return etatSur && ecrivable && !refuse && !confFuture; }
   var conf = confVide();
   var points = {};          // id -> {x, y}
   var attente = {};         // nom d'attribut -> {val, t} : nos écritures pas encore revenues
@@ -167,9 +179,12 @@
   // qu'une fiche a déjà été ouverte dans cette partie : le plateau réclame donc
   // le pont lui-même avant de parler. L'injection est idempotente, le redemander
   // ne coûte rien.
-  function demandePerso() {
+  // « encore » ne part qu'au clic sur Réessayer : il fait recommencer au pont son
+  // ouverture de fiche. La demande périodique, elle, ne doit rien relancer, sinon
+  // un échec s'effacerait tout seul toutes les douze secondes.
+  function demandePerso(encore) {
     post({ type: "need-bridge" });
-    post({ type: "narration-char" });
+    post({ type: "narration-char", encore: !!encore });
   }
   function demandeEtat() { if (charId) post({ type: "load", charId: charId }); }
   // Une écriture = un lot d'attributs. On note ce qu'on vient d'écrire : l'écho
@@ -213,13 +228,28 @@
           if (d.pret !== false) montreEtat("absent");
           return;
         }
+        // LE PERSONNAGE A CHANGÉ : ON REPART DE ZÉRO. Le MJ qui suit la consigne
+        // « aucun plateau dans cette campagne » supprime et recrée « Narration » ;
+        // deux personnages du même nom suffisent aussi à faire changer d'avis la
+        // recherche quand la collection se retrie. Chez un joueur dont le panneau
+        // est déjà ouvert, le nouvel identifiant remplaçait l'ancien SANS rien
+        // remettre à zéro : le plateau gardait les jetons, la configuration et
+        // les attentes de l'ancien personnage, se croyait sûr de ce qu'il n'avait
+        // jamais lu, et pouvait écrire par-dessus la table neuve.
+        if (charId && d.charId !== charId) {
+          etatSur = false; lu = false; vide = 0; perdues = 0; refuse = false;
+          confFuture = false; points = {}; conf = confVide();
+          attente = {}; connus = {}; prise = null;
+          montreEtat("attente");
+        }
         charId = d.charId;
         ecrivable = jugeDroits(d);
-        montreEtat(null);      // tout va bien : l'écran d'attente s'efface
+        // le personnage est trouvé : ces deux écrans-là n'ont plus lieu d'être.
+        // Les autres disent l'état de la LECTURE, que seule la lecture peut lever.
+        if (etatMontre === "absent" || etatMontre === "pont") montreEtat(null);
         demandeEtat();
       } else if (d.type === "hydrate" && d.charId === charId) {
-        montreEtat(null);
-        applique(d.attrs || {});
+        applique(d.attrs || {}, d);
       }
     } catch (e) {}
   }, false);
@@ -242,20 +272,32 @@
   // jeton qu'on a dans la main, et contre une écriture toute fraîche qui n'a
   // pas encore fait l'aller-retour. Passé le délai de garde, il reprend la main
   // (notre écriture s'est perdue, ou quelqu'un a poussé le même jeton).
+  // UNE PERTE PAR LOT, ET NON PAR ATTRIBUT. Une distribution écrit N attributs
+  // d'un coup ; si deux joueurs poussent leur jeton dans la foulée — c'est
+  // exactement ce qu'on fait après une donne — deux de ces attributs reviennent
+  // différents, le compteur montait de deux d'un seul coup, et le plateau se
+  // déclarait refusé DÉFINITIVEMENT sur un conflit parfaitement normal. On ne
+  // compte donc qu'une perte pour un même instant d'écriture.
   var perdues = 0;
+  var dernierePerte = 0;
   function retenu(nom, distant) {
     var a = attente[nom];
     if (!a) return false;
-    if (a.val === distant) { delete attente[nom]; perdues = 0; return false; }
+    // Une écriture qui REVIENT prouve que Roll20 accepte : le refus se lève.
+    // Sans cela, un seul conflit passager condamnait le plateau jusqu'au
+    // rechargement, et le joueur n'avait aucun moyen de le savoir.
+    if (a.val === distant) { delete attente[nom]; perdues = 0; refuse = false; return false; }
     if (Date.now() - a.t < (a.marge || GARDE)) return true;
     delete attente[nom];
     // Notre écriture n'est jamais revenue. Une fois, c'est quelqu'un qui a
     // poussé le même jeton en même temps ; deux fois de suite, c'est que Roll20
     // refuse nos écritures (le personnage n'est pas partagé avec ce joueur, ou
     // le pronostic du pont s'est trompé). On le DIT plutôt que de laisser les
-    // jetons revenir en arrière sans explication, et on ne revient pas en
-    // arrière là-dessus : un refus observé vaut mieux qu'un droit annoncé.
-    if (++perdues >= 2) { refuse = true; perdues = 0; }
+    // jetons revenir en arrière sans explication.
+    if (a.t !== dernierePerte) {
+      dernierePerte = a.t;
+      if (++perdues >= 2) { refuse = true; perdues = 0; }
+    }
     return false;
   }
 
@@ -266,22 +308,46 @@
   var connus = {};
   var vide = 0;   // lectures vides consécutives
 
-  function applique(attrs) {
-    // UNE LECTURE VIDE N'EST PAS UNE VÉRITÉ. Roll20 ne peuple les Attributes
-    // d'un personnage que paresseusement, et le plateau est justement lu sans
-    // que personne n'ouvre sa fiche : les premières réponses peuvent être
-    // vides. Les croire effacerait le plateau à l'écran — et si quelqu'un
-    // distribue dans cette fenêtre-là, il double tous les jetons. On ne cède
-    // qu'après plusieurs lectures vides d'affilée, au cas où le plateau aurait
-    // vraiment été vidé à la main.
+  function applique(attrs, d) {
+    // « JE NE SAIS PAS ENCORE » N'EST PAS « C'EST VIDE ». Roll20 ne peuple les
+    // Attributes d'un personnage qu'à l'ouverture de sa fiche, et le plateau est
+    // justement lu sans que personne n'ouvre celle de « Narration » : tant que le
+    // pont ne l'a pas ouverte, ce qu'il rend n'est la vérité de rien. Le prendre
+    // pour l'état effaçait le plateau à l'écran, et faisait redistribuer sur du
+    // vide ; les écritures parties là-dessus ne revenaient jamais, et le plateau
+    // finissait par accuser Roll20 de les refuser. On ne touche donc à RIEN tant
+    // que ce n'est pas sûr : ni configuration, ni jetons, ni verdict de refus.
+    var dit = !!d && d.sur !== undefined;
+    if (dit && d.sur !== true) {
+      etatSur = false;
+      lu = false;
+      vide = 0;
+      // nos écritures ne peuvent pas revenir d'un personnage que Roll20 ne lit
+      // pas encore : ce ne sont pas des pertes, et elles ne prouvent aucun refus
+      attente = {};
+      perdues = 0;
+      montreEtat(d.raison ? "ouverture" : "attente");
+      return;
+    }
     var rien = true;
     Object.keys(attrs).forEach(function (n) { if (n.indexOf(PREF) === 0) rien = false; });
-    if (rien && lu) {
-      if (++vide < 5) return;
+    // Une lecture vide n'efface pas un plateau sur un coup de tête : cinq
+    // d'affilée, au cas où il aurait vraiment été vidé à la main. Et la règle
+    // vaut dès la PREMIÈRE lecture quand le pont est trop ancien pour ouvrir la
+    // fiche — c'est tout ce qu'on peut faire pour lui sans extension à jour ;
+    // un pont récent, lui, a déjà répondu de ce vide-là.
+    if (rien && (lu || !dit)) {
+      if (++vide < 5) {
+        if (!lu) montreEtat("attente");   // rien de lu : pas de table à montrer
+        return;
+      }
     } else {
       vide = 0;
     }
     lu = true;
+    // On sait, maintenant.
+    etatSur = true;
+    montreEtat(null);
     var brutConf = attrs[A_CONF] ? String(attrs[A_CONF].current || "") : "";
     if (!retenu(A_CONF, brutConf)) conf = litConf(brutConf);
 
@@ -578,7 +644,10 @@
     // paraître un bandeau d'alerte pendant les deux premières secondes de
     // chaque ouverture, alors que rien n'est encore su. L'écran d'état, lui,
     // dit déjà ce qu'il faut si le pont ne répond pas.
-    if (!charId) { lblAvis.textContent = ""; return; }
+    // Et tant que l'état n'est pas lu, on n'accuse pas davantage : l'écran de
+    // lecture dit déjà où l'on en est, et « lecture seule » y ajouterait un
+    // reproche qui n'est encore la faute de personne.
+    if (!charId || !etatSur) { lblAvis.textContent = ""; return; }
     lblAvis.textContent =
       confFuture ? "Plateau réglé par une version plus récente : lecture seule."
       : !ecrivable ? "Lecture seule : ce personnage n'est pas partagé avec ce joueur."
@@ -993,6 +1062,9 @@
   // ---------- états visibles ----------
   var etatMontre = null;
   function montreEtat(quoi) {
+    // un message peut arriver avant le premier rendu : rien à montrer, et
+    // surtout rien à effacer
+    if (!racine) return;
     // Le plateau redemande son personnage tant qu'il ne l'a pas : sans cette
     // garde, l'écran d'attente se reconstruirait toutes les 1.2 s et le bouton
     // se déroberait sous le doigt.
@@ -1011,12 +1083,26 @@
       e.appendChild(el("div", "nb-titre", "Roll20 ne répond pas"));
       e.appendChild(el("div", "nb-detail",
         "Le plateau n'a pas trouvé le pont de l'extension. Recharger la partie suffit d'ordinaire."));
+    } else if (quoi === "attente") {
+      // Le temps que Roll20 charge les attributs du personnage. Deux secondes en
+      // général, et rien à faire pendant : pas de bouton, pas d'explication.
+      e.appendChild(el("div", "nb-titre", "Lecture du plateau…"));
+    } else if (quoi === "ouverture") {
+      // Le pont n'a pas réussi à ouvrir la fiche « Narration », donc les
+      // attributs restent illisibles. Le dire pour ce que c'est : ce n'est pas
+      // Roll20 qui refuse d'écrire, c'est l'état qu'on n'a pas pu lire.
+      e.appendChild(el("div", "nb-titre", "Plateau illisible"));
+      e.appendChild(el("div", "nb-detail", ecrivable
+        ? "Ouvrir une fois le personnage « Narration » dans le journal."
+        : "Ce personnage n'est pas partagé avec ce joueur."));
     }
-    // seule action de l'écran, donc la seule qui ait droit au plein carmin
-    var b = el("button", "nb-btn primary", "Réessayer");
-    b.type = "button";
-    b.addEventListener("click", function () { montreEtat(null); demandePerso(); });
-    e.appendChild(b);
+    if (quoi !== "attente") {
+      // seule action de l'écran, donc la seule qui ait droit au plein carmin
+      var b = el("button", "nb-btn primary", "Réessayer");
+      b.type = "button";
+      b.addEventListener("click", function () { montreEtat(null); demandePerso(true); });
+      e.appendChild(b);
+    }
     racine.appendChild(e);
   }
 
@@ -1030,6 +1116,9 @@
     // pousse en revanche NI largeur NI hauteur : le châssis les range, et les
     // imposer à chaque chargement écraserait la taille choisie par le joueur.
     post({ type: "panneau", titre: "Plateau de Narration", nuit: nuitActive() });
+    // Un plateau vide tant qu'on n'a rien lu serait un mensonge : on ne montre
+    // la table qu'une fois qu'on sait ce qu'il y a dessus.
+    montreEtat("attente");
     demandePerso();
     // « Roll20 ne répond pas » ne vaut que si le pont n'a RIEN dit. S'il a
     // répondu qu'il n'y a pas de plateau, c'est cet écran-là qu'il faut garder :
