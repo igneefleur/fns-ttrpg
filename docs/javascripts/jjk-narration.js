@@ -348,7 +348,9 @@
 
   function applique(attrs, d) {
     trace("lecture", { pontSur: (d && d.sur), pontRaison: (d && d.raison),
-                       nbAttrs: attrs ? Object.keys(attrs).length : 0 });
+                       nbAttrs: attrs ? Object.keys(attrs).length : 0,
+                       // ce que le pont a relevé du modèle juste après avoir écrit
+                       ecrits: (d && d.ecrits) || null });
     try {
       var _k, _a = attrs || {};
       for (_k in _a) { if (_a.hasOwnProperty(_k)) { dernierLu[_k] = String(_a[_k] && _a[_k].current != null ? _a[_k].current : _a[_k]); } }

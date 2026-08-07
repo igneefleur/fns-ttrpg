@@ -152,18 +152,42 @@
   //    Backbone, si bien que l'écho Firebase de notre écriture voit une valeur IDENTIQUE
   //    -> aucun événement change -> Roll20 ne rafraîchit pas la fiche -> pas de crash ;
   //  - save(null, {silent:true}) persiste dans Firebase (le sync ne dépend pas de silent).
+  //
+  // LES ATTRIBUTS SONT PASSÉS À save(), et non laissés au modèle. « save(null) »
+  // compte sur Backbone pour envoyer l'état courant du modèle ; les modèles de
+  // Roll20 sont adossés à Firebase et rien ne garantit ce contrat. Mesuré chez
+  // l'auteur sur le personnage « Narration » : les écritures partaient, et la
+  // relecture rendait l'ANCIENNE position, indéfiniment — donc rien n'était
+  // persisté. C'est la seule différence entre ce chemin et celui de la fiche,
+  // qui lui fonctionne depuis des mois.
+  //
+  // Le silence est CONSERVÉ : il n'est pas en cause, et il est plus nécessaire
+  // que jamais depuis que le pont ouvre lui-même la fiche de Narration.
   function writeOne(ch, name, v) {
     if (!ecrivable(name)) return;   // double fond : writeOne reste sûr quel que soit l'appelant
     var data = { name: name, current: str(v && v.current), max: str(v && v.max) };
     var m = findAttr(ch, name);
     if (!m) {
       m = ch.attribs.create(data, { silent: true });
-      if (m && m.save) m.save(null, { silent: true });
-      return;
+      if (m && m.save) m.save(data, { silent: true });
+      return relu(m, name, data);
     }
     if (m.set) m.set(data, { silent: true });
     else { m.attributes = m.attributes || {}; m.attributes.name = data.name; m.attributes.current = data.current; m.attributes.max = data.max; }
-    if (m.save) m.save(null, { silent: true });
+    if (m.save) m.save(data, { silent: true });
+    return relu(m, name, data);
+  }
+
+  // CE QUE LE MODÈLE DIT JUSTE APRÈS L'ÉCRITURE. Deux pannes se ressemblent trait
+  // pour trait vues du plateau : le modèle n'a pas pris notre valeur, ou il l'a
+  // prise mais Firebase ne l'a pas reçue. Sans ce relevé, il faut une signature
+  // par hypothèse ; avec lui, le prochain retour tranche.
+  var dernieresEcritures = {};
+  function relu(m, name, data) {
+    try {
+      dernieresEcritures[name] = { voulu: data.current,
+                                   modele: m ? str(attrVal(m, "current")) : null };
+    } catch (e) {}
   }
 
   var queue = [], busy = false;
@@ -550,6 +574,11 @@
           var e = etatAttributs(chl);
           rl.sur = e === "sur";
           if (e === "echec") rl.raison = "ouverture";
+          // Le relevé de la dernière écriture voyage avec la lecture : c'est le
+          // seul moyen, sans compte Roll20, de savoir si le modèle a pris notre
+          // valeur. Vidé une fois transmis, pour ne rien répéter.
+          var _n; for (_n in dernieresEcritures) { if (dernieresEcritures.hasOwnProperty(_n)) { rl.ecrits = dernieresEcritures; break; } }
+          dernieresEcritures = {};
         }
         reply(ev, rl);
       } else if (d.type === "save") {
