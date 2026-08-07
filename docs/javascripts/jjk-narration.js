@@ -297,6 +297,7 @@
     if (a.t !== dernierePerte) {
       dernierePerte = a.t;
       if (++perdues >= 2) { refuse = true; perdues = 0; }
+      trace("ecriture perdue", { attribut: nom, attendu: a.val, recu: distant });
     }
     return false;
   }
@@ -308,7 +309,36 @@
   var connus = {};
   var vide = 0;   // lectures vides consécutives
 
+  // SONDE DE DÉPANNAGE. Le plateau vit dans un iframe d'une autre origine : ni
+  // la page Roll20 ni une sonde collée dans sa console ne peuvent lire ces
+  // variables, et le message « hydrate » est adressé au panneau, pas à la
+  // fenêtre du haut. Sans cette trace, un joueur qui constate une panne n'a
+  // aucun moyen de dire ce que son plateau a vu, et moi aucun moyen de le
+  // savoir : je n'ai pas de compte Roll20.
+  //
+  // Elle n'écrit rien et ne change rien. Elle se déclenche seulement quand le
+  // plateau change d'avis (état sûr, refus, droits) ou toutes les dix secondes,
+  // pour ne pas noyer la console d'une partie.
+  var traceQuoi = "", traceQuand = 0;
+  function trace(ou, sup) {
+    try {
+      var e = { ou: ou, charId: charId, ecrivable: ecrivable, etatSur: etatSur,
+                refuse: refuse, confFuture: confFuture, lu: lu, vide: vide,
+                perdues: perdues, attentes: Object.keys(attente).length,
+                jetons: Object.keys(points).length, ecran: etatMontre };
+      var k;
+      for (k in (sup || {})) { if (sup.hasOwnProperty(k)) { e[k] = sup[k]; } }
+      var sig = JSON.stringify(e);
+      var t = Date.now();
+      if (sig === traceQuoi && t - traceQuand < 10000) { return; }
+      traceQuoi = sig; traceQuand = t;
+      if (window.console && console.log) { console.log("[plateau JJK] " + sig); }
+    } catch (err) {}
+  }
+
   function applique(attrs, d) {
+    trace("lecture", { pontSur: (d && d.sur), pontRaison: (d && d.raison),
+                       nbAttrs: attrs ? Object.keys(attrs).length : 0 });
     // « JE NE SAIS PAS ENCORE » N'EST PAS « C'EST VIDE ». Roll20 ne peuple les
     // Attributes d'un personnage qu'à l'ouverture de sa fiche, et le plateau est
     // justement lu sans que personne n'ouvre celle de « Narration » : tant que le
