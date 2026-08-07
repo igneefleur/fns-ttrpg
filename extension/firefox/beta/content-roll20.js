@@ -812,10 +812,36 @@ if (typeof browser === "undefined") { var browser = chrome; }
     var modele = barreModele(zone);
     if (!modele) return false;
     if (deja && deja.parentNode) deja.parentNode.removeChild(deja);
-    zone.appendChild(barreFabrique(modele));
+    barreInsere(zone, barreFabrique(modele));
     barreOK = true;
     barrePeint();
     return true;
+  }
+  // DANS « OUTILS », PAS DANS « EFFETS ». Ajouté à la fin de la liste, le bouton
+  // tombait après effects-button, donc sous l'intitulé « Effets » — l'auteur l'a
+  // vu sur sa capture. La barre est faite de groupes séparés par des
+  // « .spacer-outer » : settings | select, pan | draw, text, measure, dice |
+  // effects, more. Le groupe des outils finit donc juste avant le séparateur qui
+  // précède le bouton des effets.
+  //
+  // On vise ce séparateur-là par le bouton des effets, et non par un rang : un
+  // rang se décale au premier outil que Roll20 ajoute. Si rien n'est reconnu, on
+  // ajoute à la fin comme avant : mal placé vaut mieux qu'absent.
+  function barreInsere(zone, noeud) {
+    var ancre = null;
+    try {
+      var eff = zone.querySelector("#effects-button");
+      if (eff) {
+        var p = eff.previousElementSibling;
+        ancre = (p && p.className && String(p.className).indexOf("spacer") >= 0) ? p : eff;
+      }
+      if (!ancre) {
+        var sp = zone.querySelectorAll(".spacer-outer");
+        if (sp.length) ancre = sp[sp.length - 1];
+      }
+    } catch (e) { ancre = null; }
+    if (ancre && ancre.parentNode === zone) zone.insertBefore(noeud, ancre);
+    else zone.appendChild(noeud);
   }
   function barreGuet() {
     if (barreObs) return;
@@ -841,7 +867,9 @@ if (typeof browser === "undefined") { var browser = chrome; }
   // plateau ancré commence. Une barre repliée ou pas encore peinte ne compte
   // pas — le plateau retombe alors sur sa place flottante, plutôt que de se
   // coller à un fantôme.
-  var ANCRE_JOINT = 4, ANCRE_BAS = 8;
+  // COLLÉ VEUT DIRE COLLÉ : zéro pixel entre la barre et le plateau. Quatre
+  // pixels de jeu se voyaient à l'écran et l'auteur l'a relevé sur capture.
+  var ANCRE_JOINT = 0;
   function barreRect() {
     var b = document.getElementById("master-toolbar") ||
             document.getElementById("vm-master-toolbar");
@@ -893,7 +921,11 @@ if (typeof browser === "undefined") { var browser = chrome; }
     return {
       x: x, y: y,
       w: Math.max(PAN_MIN_W, Math.min(panEtat.w, Math.max(PAN_MIN_W, vw - x - 8))),
-      h: Math.max(PAN_MIN_H, vh - y - ANCRE_BAS)
+      // LA MÊME HAUTEUR QUE LA BOÎTE À OUTILS, exactement. Le plateau prenait
+      // toute la fenêtre et descendait bien plus bas que la barre : posés côte à
+      // côte, les deux ne formaient pas un bloc. On suit donc la barre, sans
+      // plancher qui la contredirait — si elle est courte, le plateau est court.
+      h: r ? Math.round(r.height) : Math.max(PAN_MIN_H, vh - y - 8)
     };
   }
   function panApplique() {
