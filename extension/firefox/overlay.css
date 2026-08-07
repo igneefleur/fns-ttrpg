@@ -24,6 +24,25 @@
    style de Roll20, onglet actif violet compris). On n'ajoute que le curseur. */
 .jjk-tab, .jjk-tab a { cursor: pointer; }
 
+/* ---- bouton du plateau dans la barre d'outils ----
+   Le bouton est un CLONE d'un bouton natif : il porte non seulement les mêmes
+   classes, mais les mêmes attributs data-v-… par lesquels le CSS « scopé » de
+   Vue s'applique. Il n'y a donc RIEN à peindre ici, et c'est voulu : toute
+   couleur écrite de ce côté-ci vieillirait mal, ce fichier étant figé par la
+   signature alors que Roll20 change de thème quand il veut.
+   Reste un seul garde-fou. L'icône est une LIGATURE de la police d'icônes de
+   Roll20 : si cette police venait à manquer, ou à renommer sa ligature, le span
+   afficherait le mot en toutes lettres et pousserait toute la barre. On le
+   borne à la largeur d'une icône, sans rien changer quand tout va bien.
+   La borne est en PIXELS et non en em : une icône manquante peut aussi être une
+   police à zéro, et une borne relative vaudrait alors zéro elle aussi. Les
+   icônes natives mesurent 1.3em, soit environ 21 px ; 26 px les laisse passer
+   toutes sans jamais laisser passer un mot. */
+#jjk-barre-bouton .grimoire__roll20-icon {
+  display: inline-block; max-width: 26px; overflow: hidden;
+  white-space: nowrap; vertical-align: middle;
+}
+
 /* ---- palette, jour et nuit ----
    Les variables sont posées SUR NOS PROPRES BOÎTES, jamais sur :root. Cette
    feuille part dans TOUTES les frames de Roll20 : des variables posées sur la
@@ -93,12 +112,12 @@
   background: var(--bg-side);
 }
 
-/* ---- cadre flottant (plateau de Narration) ----
-   CHÂSSIS SEULEMENT : une boîte qui flotte, une barre pour la saisir, une
-   poignée pour l'étirer. Le plateau vit dans l'iframe, servi par le site, et
-   son contenu ne se règle donc pas ici. Sa NUIT, en revanche, se décide ici
-   comme là-bas, à partir du même réglage : le cadre et le plateau ne doivent
-   jamais être l'un clair et l'autre sombre.
+/* ---- cadre du plateau de Narration (ancré à la barre, ou flottant) ----
+   CHÂSSIS SEULEMENT : une boîte, une barre de titre, une poignée pour l'étirer.
+   Le plateau vit dans l'iframe, servi par le site, et son contenu ne se règle
+   donc pas ici. Sa NUIT, en revanche, se décide ici comme là-bas, à partir du
+   même réglage : le cadre et le plateau ne doivent jamais être l'un clair et
+   l'autre sombre.
    Tous les sélecteurs sont préfixés .jjk- : cette feuille est injectée dans
    TOUTES les frames de Roll20, elle ne doit jamais toucher à quoi que ce soit
    qui ne soit pas à nous.
@@ -136,13 +155,18 @@
   font-weight: 700; font-size: 12px; letter-spacing: .06em; color: var(--ink-2);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-/* le bouton de repli a la forme des petits boutons de la fiche : fond --card,
-   filet --line-2, cinq pixels de rayon */
+/* les deux boutons de la barre de titre (détacher, fermer) ont la forme des
+   petits boutons de la fiche : fond --card, filet --line-2, cinq pixels de
+   rayon.
+   La pile de polices finit par « sans-serif » alors que tout le reste du cadre
+   est en sérif : les deux flèches d'ancrage (⇱ ⇲) n'existent dans aucune police
+   du livre, et c'est le repli glyphe par glyphe du navigateur qui les dessine.
+   Sans ce dernier recours nommé, un carré vide aurait remplacé le bouton. */
 .jjk-panneau-btn {
   flex: 0 0 auto; width: 20px; height: 18px; padding: 0; cursor: pointer;
   background: var(--card); color: var(--ink-2);
   border: 1px solid var(--line-2); border-radius: 5px;
-  font: 700 13px/1 'Alegreya', Garamond, 'Times New Roman', serif;
+  font: 700 13px/1 'Alegreya', Garamond, 'Times New Roman', serif, sans-serif;
   transition: background .12s, border-color .12s, color .12s;
 }
 .jjk-panneau-btn:hover { background: var(--panel); border-color: var(--line); color: var(--ink); }
@@ -168,6 +192,19 @@
 /* pendant un geste, l'iframe ne capte plus la souris : sans cela le pointeur
    entre dedans et le déplacement s'arrête au bord du plateau */
 .jjk-panneau-geste .jjk-panneau-frame { pointer-events: none; }
+
+/* ---- ancré à la barre d'outils ----
+   Collé à la barre et sur toute la hauteur, comme les panneaux natifs de
+   Roll20. La géométrie est posée en ligne par content-roll20.js, qui MESURE la
+   barre au lieu de la deviner : rien de tout cela ne se règle ici, sans quoi il
+   faudrait re-signer l'extension le jour où Roll20 élargit sa barre.
+   Ce qui se règle ici, c'est ce qui SE VOIT : le coin gauche perd son arrondi
+   (une carte arrondie contre une barre droite laisse deux entailles de fond), la
+   barre de titre n'invite plus à saisir ce qui ne bouge plus, et la poignée ne
+   promet plus que la largeur. */
+.jjk-panneau-ancre { border-radius: 0 8px 8px 0; }
+.jjk-panneau-ancre .jjk-panneau-tete { cursor: default; }
+.jjk-panneau-ancre .jjk-panneau-grip { cursor: ew-resize; }
 
 /* ---- écran « pas encore de fiche » + bouton de création ----
    Une carte du livre, posée au milieu du pane : fond --card, filet --line-2,

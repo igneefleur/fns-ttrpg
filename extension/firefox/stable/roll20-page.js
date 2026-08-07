@@ -26,9 +26,11 @@
  * TOUTE CORRECTION DE SÛRETÉ DOIT ÊTRE APPLIQUÉE AUX DEUX COPIES. Les verrous
  * de ce fichier (window.__jjkBridge, ecrivable(), lier()/liee() et sa table de
  * soixante-quatre places, le repli sur l'opener strictement réservé au popout,
- * l'ouverture forcée de la fiche du plateau et le « sûr » qu'elle seule donne)
- * vivent désormais en double exemplaire : un correctif posé d'un seul côté
- * laisse le trou grand ouvert de l'autre, et rien ne le signalera.
+ * l'ouverture forcée de la fiche du plateau et le « sûr » qu'elle seule donne,
+ * et les trois verrous du ménage des attributs, qui est la seule opération
+ * DESTRUCTRICE du dispositif) vivent désormais en double exemplaire : un
+ * correctif posé d'un seul côté laisse le trou grand ouvert de l'autre, et
+ * rien ne le signalera.
  * scripts/build_extension.py --verifie compare mécaniquement les deux copies.
  *
  * Le verrou window.__jjkBridge est COMMUN aux deux copies, tout comme le
@@ -95,7 +97,13 @@
   // peut pas se faire passer pour une autre. Le plafond borne la table ; au-
   // delà on REFUSE au lieu de recycler une entrée (recycler rouvrirait la
   // porte : il suffirait d'inonder le pont pour se relier ailleurs).
-  var srcFrames = [], srcIds = [], MAX_SRC = 64;
+  // srcLourds tient, POUR CHAQUE FENÊTRE, l'empreinte des gros attributs qu'on
+  // lui a déjà envoyés (voir allege). Il est parallèle aux deux autres tables et
+  // suit exactement leur vie : une fenêtre qui entre, une fenêtre qui meurt.
+  // Le tenir PAR FENÊTRE et non globalement est indispensable : l'iframe du
+  // plateau est refaite au changement de nuit, et une fenêtre neuve doit tout
+  // recevoir, sinon elle afficherait un plateau sans ses fonds.
+  var srcFrames = [], srcIds = [], srcLourds = [], MAX_SRC = 64;
   // Les fenêtres MORTES quittent la table. Sans ce ménage, chaque cadre détruit
   // (une fiche qu'on ferme et rouvre, un panneau qu'on replie) gardait sa place
   // pour toujours : au soixante-cinquième, le pont refusait toute nouvelle
@@ -106,7 +114,7 @@
     for (var i = srcFrames.length - 1; i >= 0; i--) {
       var mort;
       try { mort = !srcFrames[i] || srcFrames[i].closed; } catch (e) { mort = true; }
-      if (mort) { srcFrames.splice(i, 1); srcIds.splice(i, 1); }
+      if (mort) { srcFrames.splice(i, 1); srcIds.splice(i, 1); srcLourds.splice(i, 1); }
     }
   }
   function lier(src, id) {
@@ -115,7 +123,7 @@
     if (i >= 0) return srcIds[i] === id;
     menage();
     if (srcFrames.length >= MAX_SRC) return false;
-    srcFrames.push(src); srcIds.push(id);
+    srcFrames.push(src); srcIds.push(id); srcLourds.push(null);
     return true;
   }
   // vérifie sans jamais lier : un « save » d'une frame qui n'a jamais chargé
@@ -127,11 +135,6 @@
 
   function models(ch) { return (ch && ch.attribs && ch.attribs.models) || []; }
   function attrVal(m, key) { return m.get ? m.get(key) : (m.attributes && m.attributes[key]); }
-  function findAttr(ch, name) {
-    var ms = models(ch);
-    for (var i = 0; i < ms.length; i++) if (attrVal(ms[i], "name") === name) return ms[i];
-    return null;
-  }
   // TOUS LES HOMONYMES, et non le premier. Un personnage peut porter PLUSIEURS
   // attributs du même nom : Roll20 ne l'interdit pas, et le pont lui-même en a
   // fabriqué tant que la fiche de « Narration » n'était pas ouverte — la
@@ -161,6 +164,73 @@
     return out;
   }
 
+  // ---------- les gros attributs ne repartent qu'AU CHANGEMENT ----------
+  // Un fond de zone téléversé est rangé en base64 DANS l'attribut : quelques
+  // centaines de milliers de caractères, parfois plus. Or le plateau relit tout
+  // toutes les 1.2 s, et postMessage RECOPIE la chaîne à chaque envoi : renvoyer
+  // les images à chaque tour étouffe la liaison, et c'est le plateau entier qui
+  // se met à traîner, jetons compris. On envoie donc un gros attribut une
+  // première fois, puis on ne le renvoie que si son EMPREINTE a changé.
+  //
+  // Le tri se fait sur la TAILLE, jamais sur le nom. Le nom des attributs de
+  // fond appartient à la page servie par le site, qui doit pouvoir en changer
+  // sans re-signature ; la taille, elle, est le vrai critère — c'est elle qui
+  // étouffe la liaison, pas l'orthographe.
+  //
+  // C'EST LE PLATEAU QUI DEMANDE À ÊTRE ALLÉGÉ, et rien ne s'allège sans qu'il
+  // l'ait dit (« allege: true » dans son « load »). Ce n'est pas de la
+  // prudence de principe, c'est la seule conduite tenable ici : le pont est
+  // SIGNÉ et le plateau ne l'est pas, ils ne sont donc jamais déployés le même
+  // jour — la moitié stable du pont part chez Mozilla maintenant, la page de
+  // /jjk/ arrivera quand elle arrivera. Un pont qui allégerait de son propre
+  // chef ferait disparaître les fonds d'un plateau plus ancien, qui reconstruit
+  // ses images à chaque lecture et prendrait l'absence pour un retrait. Il
+  // faudrait alors une signature pour réparer. Dans l'autre sens, un plateau
+  // neuf devant un pont ancien reçoit tout à chaque tour, comme avant : c'est
+  // lent, ce n'est pas cassé.
+  //
+  // LE PLATEAU DOIT SAVOIR CE QU'ON LUI A TU. La réponse porte toujours
+  // « omis » (le tableau des noms retenus, vide s'il n'y en a pas) : sa seule
+  // présence dit au plateau que ce pont-ci sait alléger, et qu'un nom manquant
+  // veut dire « inchangé », jamais « effacé ».
+  //
+  // DEUX FILETS, parce qu'une empreinte qui se désaccorde ne se voit pas.
+  //   - « complet » : le plateau peut réclamer tout, et doit le faire à sa
+  //     première lecture (une page rechargée dans la MÊME fenêtre garderait
+  //     sinon des empreintes qui ne correspondent plus à rien chez elle) ;
+  //   - RENVOI_TOUT : passé une minute, tout repart de toute façon.
+  var LOURD_MIN = 512;        // caractères : en dessous, ça ne coûte rien, ça part
+  var RENVOI_TOUT = 60000;    // ms : filet, tout repart de temps en temps
+  function empreinte(s) {
+    // djb2 : bon marché et suffisant. On ne compare pas deux mégaoctets à chaque
+    // tour, on compare une longueur et un nombre.
+    var h = 5381, i = 0;
+    for (; i < s.length; i++) { h = (((h << 5) + h) ^ s.charCodeAt(i)) >>> 0; }
+    return String(s.length) + "." + String(h);
+  }
+  function allege(attrs, src, complet) {
+    var i = srcFrames.indexOf(src);
+    if (i < 0) return [];   // fenêtre inconnue : on n'allège rien
+    var etat = srcLourds[i];
+    if (!etat) { etat = srcLourds[i] = { vus: {}, t: 0 }; }
+    var n = Date.now(), force = complet || (n - etat.t >= RENVOI_TOUT);
+    if (force) etat.t = n;
+    var omis = [], nom;
+    for (nom in attrs) {
+      if (!attrs.hasOwnProperty(nom)) continue;
+      var v = attrs[nom];
+      if ((v.current.length + v.max.length) < LOURD_MIN) {
+        // redevenu léger (une adresse a remplacé une image) : plus rien à retenir
+        if (etat.vus[nom]) delete etat.vus[nom];
+        continue;
+      }
+      var e = empreinte(v.current) + "/" + empreinte(v.max);
+      if (!force && etat.vus[nom] === e) { delete attrs[nom]; omis.push(nom); }
+      else etat.vus[nom] = e;
+    }
+    return omis;
+  }
+
   // Écriture SILENCIEUSE — indispensable quand la fiche du perso est OUVERTE.
   // Un attribut modifié déclenche sinon onAttribChange -> updateSheetValues de Roll20,
   // qui plante (« u.childWindow.d20 is undefined ») -> la fiche charge à l'infini.
@@ -180,72 +250,70 @@
   //
   // Le silence est CONSERVÉ : il n'est pas en cause, et il est plus nécessaire
   // que jamais depuis que le pont ouvre lui-même la fiche de Narration.
+  //
+  // SAVE N'EST PLUS SILENCIEUX, ET C'EST TOUTE LA CORRECTION.
+  //
+  // Backbone transmet ses options jusqu'à la synchronisation. Pour Roll20,
+  // « silencieux » veut dire NE PAS PROPAGER : on demandait donc au serveur de
+  // ne rien recevoir, et l'écho Firebase de la valeur inchangée restaurait
+  // ensuite l'ancienne, jusque dans le modèle. Mesuré chez l'auteur : le
+  // modèle prenait bien la valeur (voulu et modele identiques), puis la
+  // relecture rendait la position d'avant, à l'identique, indéfiniment.
+  //
+  // ON ÉCOUTE ENFIN CE QUE LE SERVEUR RÉPOND. save() accepte success et error
+  // depuis toujours ; personne ne les avait jamais lus, si bien qu'on écrivait
+  // sans jamais demander si l'écriture avait été acceptée. Quatre issues, et
+  // elles appellent quatre corrections différentes : le serveur accepte (et le
+  // problème est ailleurs), le serveur REFUSE en le disant (permission), l'appel
+  // lève, ou rien ne répond du tout (l'écriture n'est même pas partie).
+  // Le plateau en a un usage concret depuis les fonds de zone : une image trop
+  // lourde se fait refuser, et c'est en le SACHANT qu'il peut la réduire et
+  // réessayer, au lieu de croire qu'elle est passée.
+  function texteReponse(rep) {
+    var txt = "";
+    try { txt = String((rep && (rep.message || rep.statusText || rep.status)) || rep || ""); }
+    catch (e) {}
+    return txt.slice(0, 120);
+  }
+  function sauve(m, name, data) {
+    if (!m || !m.save) return;
+    var fini = false;
+    try {
+      m.save(null, {
+        success: function () { if (!fini) { fini = true; issue(name, "accepte", null); } },
+        error: function (mm, rep) { if (!fini) { fini = true; issue(name, "refuse", texteReponse(rep)); } }
+      });
+    } catch (e) {
+      fini = true;
+      issue(name, "exception", String((e && e.message) || e).slice(0, 120));
+      return;
+    }
+    setTimeout(function () { if (!fini) { fini = true; issue(name, "aucune reponse", null); } }, 2500);
+  }
   function writeOne(ch, name, v) {
     if (!ecrivable(name)) return;   // double fond : writeOne reste sûr quel que soit l'appelant
     var data = { name: name, current: str(v && v.current), max: str(v && v.max) };
     // On écrit dans TOUS les homonymes : c'est le seul moyen que la relecture
-    // rende ce qu'on vient d'écrire, quel que soit celui qu'elle retient. Les
-    // supprimer serait plus propre, mais détruire des attributs d'un personnage
-    // partagé sur un pronostic n'est pas une opération qu'on fait à la légère.
+    // rende ce qu'on vient d'écrire, quel que soit celui qu'elle retient. Le
+    // ménage, lui, ramène le compte à un — mais il ne s'exécute qu'une fois par
+    // chargement, et il peut échouer : cette boucle reste la seule garantie.
     var tous = findAllAttrs(ch, name);
-    if (tous.length > 1) { doublons(name, tous.length); }
-    if (tous.length > 1) {
-      for (var k = 0; k < tous.length; k++) {
-        var mk = tous[k];
-        if (mk.set) mk.set(data, { silent: true });
-        if (mk.save) mk.save(null);
-      }
-      relu(tous[0], name, data);
-      issue(name, "accepte", null);
-      return;
+    if (tous.length > 1) doublons(name, tous.length);
+    if (!tous.length) {
+      var neuf = ch.attribs.create(data, { silent: true });
+      sauve(neuf, name, data);
+      return relu(neuf, name, data);
     }
-    var m = tous[0] || null;
-    if (!m) {
-      m = ch.attribs.create(data, { silent: true });
-      if (m && m.save) m.save(null);
-      return relu(m, name, data);
+    for (var k = 0; k < tous.length; k++) {
+      var mk = tous[k];
+      // On garde le set SILENCIEUX : c'est lui qui évite l'événement change, donc
+      // onAttribChange puis updateSheetValues, qui plante quand la fiche est
+      // ouverte — et le pont ouvre justement celle de « Narration ».
+      if (mk.set) mk.set(data, { silent: true });
+      else { mk.attributes = mk.attributes || {}; mk.attributes.name = data.name; mk.attributes.current = data.current; mk.attributes.max = data.max; }
+      sauve(mk, name, data);
     }
-    if (m.set) m.set(data, { silent: true });
-    else { m.attributes = m.attributes || {}; m.attributes.name = data.name; m.attributes.current = data.current; m.attributes.max = data.max; }
-    // SAVE N'EST PLUS SILENCIEUX, ET C'EST TOUTE LA CORRECTION.
-    //
-    // Backbone transmet ses options jusqu'à la synchronisation. Pour Roll20,
-    // « silencieux » veut dire NE PAS PROPAGER : on demandait donc au serveur de
-    // ne rien recevoir, et l'écho Firebase de la valeur inchangée restaurait
-    // ensuite l'ancienne, jusque dans le modèle. Mesuré chez l'auteur : le
-    // modèle prenait bien la valeur (voulu et modele identiques), puis la
-    // relecture rendait la position d'avant, à l'identique, indéfiniment.
-    //
-    // On garde le set SILENCIEUX : c'est lui qui évite l'événement change, donc
-    // onAttribChange puis updateSheetValues, qui plante quand la fiche est
-    // ouverte — et le pont ouvre justement celle de « Narration ». save(null)
-    // ne repose aucune valeur, donc n'émet aucun événement : il ne fait que
-    // pousser vers Firebase, ce qui est exactement ce qu'on veut.
-    // ON ÉCOUTE ENFIN CE QUE LE SERVEUR RÉPOND. save() accepte success et error
-    // depuis toujours ; personne ne les avait jamais lus, si bien qu'on écrivait
-    // sans jamais demander si l'écriture avait été acceptée. Trois issues, et
-    // elles appellent trois corrections différentes : le serveur accepte (et le
-    // problème est ailleurs), le serveur REFUSE en le disant (permission), ou
-    // rien ne répond du tout (l'écriture n'est même pas partie).
-    if (m.save) {
-      var fini = false;
-      try {
-        m.save(null, {
-          success: function () { fini = true; issue(name, "accepte", null); },
-          error: function (mm, rep) {
-            fini = true;
-            var txt = "";
-            try { txt = String((rep && (rep.message || rep.statusText || rep.status)) || rep || ""); }
-            catch (e3) {}
-            issue(name, "refuse", txt.slice(0, 120));
-          }
-        });
-      } catch (e2) {
-        issue(name, "exception", String(e2 && e2.message || e2).slice(0, 120));
-      }
-      setTimeout(function () { if (!fini) { issue(name, "aucune reponse", null); } }, 2500);
-    }
-    return relu(m, name, data);
+    return relu(tous[0], name, data);
   }
 
   // CE QUE LE MODÈLE DIT JUSTE APRÈS L'ÉCRITURE. Deux pannes se ressemblent trait
@@ -272,11 +340,18 @@
       dernieresEcritures[name] = e;
     } catch (err) {}
   }
+  // UN REFUS L'EMPORTE SUR UNE ACCEPTATION. Un attribut porté par plusieurs
+  // homonymes reçoit autant de réponses que d'exemplaires, et elles n'arrivent
+  // pas dans l'ordre : sans cette règle, une acceptation arrivée en dernier
+  // effacerait le refus qui, lui, dit au plateau qu'il doit réduire son image
+  // et réessayer. La plus grave gagne, quel que soit l'ordre.
   function issue(name, quoi, detail) {
     try {
       var e = dernieresEcritures[name] || {};
-      e.serveur = quoi;
-      if (detail) { e.detail = detail; }
+      if (!(quoi === "accepte" && e.serveur && e.serveur !== "accepte")) {
+        e.serveur = quoi;
+        if (detail) { e.detail = detail; }
+      }
       dernieresEcritures[name] = e;
     } catch (err) {}
   }
@@ -597,6 +672,142 @@
     s.sur = false; s.echec = false;
   }
 
+  // ---------- le ménage des attributs du plateau ----------
+  // Mesuré chez l'auteur : 82 attributs « jjk_ » sur « Narration » pour 18
+  // attendus. Deux causes, deux remèdes, et la SEULE opération destructrice de
+  // ce fichier — donc la plus surveillée.
+  //   - LES ÉTRANGERS. Une fiche de personnage JJK a été ouverte un jour sur ce
+  //     personnage : sa carte d'attributs en produit une soixantaine (jjk_pv,
+  //     jjk_state…). Elles n'ont rien à faire sur un plateau, alourdissent
+  //     chaque lecture, et font passer le plateau pour un personnage.
+  //   - LES HOMONYMES. Le pont lui-même en a fabriqué tant que la fiche de
+  //     « Narration » n'était pas ouverte : la collection était vide, chaque
+  //     écriture créait un doublon au lieu de mettre à jour l'existant.
+  //
+  // L'ORDRE N'EST PAS NÉGOCIABLE. On écrit D'ABORD la valeur retenue dans TOUS
+  // les homonymes, on ne supprime qu'ENSUITE. Si une suppression échoue au
+  // milieu, ce qui survit dit déjà la bonne chose ; l'ordre inverse pourrait
+  // laisser un survivant porteur d'une valeur périmée, et le plateau reculerait
+  // d'un tour sans que personne ne comprenne pourquoi.
+  //
+  // TROIS VERROUS.
+  //   1. LE PERSONNAGE DU PLATEAU, ET LUI SEUL. narrId est choisi par le pont
+  //      lui-même, d'après le nom ; aucun autre personnage n'est jamais touché,
+  //      et surtout pas une fiche de joueur.
+  //   2. JAMAIS LE DERNIER EXEMPLAIRE D'UN NOM « jjk_narr_ » : c'est l'état du
+  //      plateau, et une place perdue ne se retrouve pas. Le contrôle est refait
+  //      JUSTE AVANT chaque suppression, sur la collection vivante, parce que
+  //      les autres joueurs font le même ménage au même moment sur le même
+  //      personnage partagé. Les étrangers, eux, se retirent jusqu'au dernier :
+  //      ils ne portent aucun état de plateau, c'est même toute la raison de les
+  //      retirer — leur appliquer ce verrou reviendrait à ne rien faire.
+  //   3. UNE SUPPRESSION QUI ÉCHOUE ARRÊTE TOUT. Insister sur un serveur qui
+  //      refuse (un joueur sans droit d'écriture, par exemple), c'est marteler
+  //      Roll20 à chaque chargement de partie pour rien. On note où l'on s'est
+  //      arrêté, et le plateau pourra le dire.
+  //
+  // Le ménage ne se fait qu'UNE FOIS PAR CHARGEMENT DE PAGE, et seulement quand
+  // la lecture vaut vérité (« sur ») : sur une collection non peuplée, tout
+  // paraîtrait absent et il n'y aurait rien à retirer — mais rien ne le dirait.
+  var NARR_PREFIX = "jjk_narr_";
+  var menageFait = false;     // une fois par chargement, pas une fois par lecture
+  var menageRapport = null;   // ce qu'il a fait, transmis avec la lecture suivante
+
+  // AUCUN « silent » ICI, contrairement aux écritures, et c'est un choix.
+  // Pour Roll20, silencieux veut dire NE PAS PROPAGER (c'est exactement ce qui
+  // rendait save() inopérant, voir plus haut) : une suppression silencieuse
+  // resterait donc locale, l'attribut reviendrait au rechargement suivant, et
+  // le ménage aurait l'air de marcher sans rien retirer. On accepte en échange
+  // que Roll20 rafraîchisse la fiche de « Narration » — qui est ouverte, mais
+  // hors champ, et qu'aucun joueur ne regarde — au plus une fois par
+  // chargement de partie, puisque le ménage ne se fait qu'une fois.
+  // LA FONCTION DE DESTRUCTION A ÉTÉ RETIRÉE, pas seulement désactivée. Du
+  // code qui supprime des attributs d'un personnage partagé, dormant dans un
+  // paquet signé, n'attend qu'un appel posé par distraction. Elle reviendra
+  // avec le ménage, quand il sera sûr.
+  function menagePlateau(ch) {
+    if (menageFait) return;
+    if (!ch || !narrId || ch.id !== narrId) return;   // VERROU 1
+    menageFait = true;   // posé AVANT le travail : un échec ne doit pas le relancer
+    var rap = { trouves: 0, etrangers: 0, doublons: 0, retires: 0 };
+    var ms = models(ch), parNom = {}, noms = [], fusions = [], morts = [], i, n;
+    for (i = 0; i < ms.length; i++) {
+      n = attrVal(ms[i], "name");
+      if (typeof n !== "string" || n.indexOf(PREFIX) !== 0) continue;
+      rap.trouves++;
+      if (n.indexOf(NARR_PREFIX) !== 0) {
+        rap.etrangers++;
+        morts.push({ nom: n, m: ms[i], plateau: false });
+        continue;
+      }
+      if (!parNom[n]) { parNom[n] = []; noms.push(n); }
+      parNom[n].push(ms[i]);
+    }
+    for (i = 0; i < noms.length; i++) {
+      var l = parNom[noms[i]];
+      if (l.length < 2) continue;
+      rap.doublons += l.length - 1;
+      fusions.push(noms[i]);
+      for (var k = 1; k < l.length; k++) morts.push({ nom: noms[i], m: l[k], plateau: true });
+    }
+    if (!fusions.length && !morts.length) { menageRapport = rap; return; }
+
+    // Les étapes se déroulent UNE À UNE et espacées, comme les écritures du
+    // plateau : Roll20 perd des écritures sur une rafale, et une rafale de
+    // suppressions n'est pas moins brutale.
+    var etape = 0;
+    function suite() { setTimeout(pas, WRITE_DELAY); }
+    function pas() {
+      if (etape < fusions.length) {
+        var nom = fusions[etape++];
+        // La valeur est relue MAINTENANT, jamais celle de l'inventaire : le
+        // plateau écrit pendant ce temps-là, et une valeur d'il y a trois
+        // secondes écraserait un jeton qu'on vient de pousser.
+        var tous = findAllAttrs(ch, nom);
+        if (tous.length > 1) {
+          // Le DERNIER fait foi : c'est celui que readAll retient (elle parcourt
+          // tout et laisse le dernier gagner), donc celui que le plateau montre.
+          var d0 = tous[tous.length - 1];
+          var data = { name: nom, current: str(attrVal(d0, "current")), max: str(attrVal(d0, "max")) };
+          for (var j = 0; j < tous.length; j++) {
+            try {
+              if (tous[j].set) tous[j].set(data, { silent: true });
+              sauve(tous[j], nom, data);
+            } catch (e) {}
+          }
+        }
+        return suite();
+      }
+      // LA SUPPRESSION EST SUSPENDUE, ET CE N'EST PAS UN OUBLI.
+      //
+      // Trois défauts graves ont été trouvés en relecture sur cette partie-là,
+      // et détruire des attributs d'un personnage partagé par toute une table ne
+      // se fait pas sur un « à peu près » :
+      //   1. le compte des homonymes se fait sur la collection LOCALE, qui ne
+      //      connaît pas encore les suppressions d'un autre joueur : deux
+      //      personnes qui rangent en même temps peuvent effacer le DERNIER
+      //      exemplaire, et deux clients n'énumèrent même pas les attributs dans
+      //      le même ordre ;
+      //   2. la valeur fusionnée est ÉMISE avant les suppressions, mais rien
+      //      n'attend qu'elle soit arrivée : on supprime les copies avant de
+      //      savoir si celle qu'on garde a bien pris ;
+      //   3. le critère « c'est un reste de fiche » est NÉGATIF (tout jjk_ qui
+      //      n'est pas jjk_narr_) et figé dans un paquet signé, alors que ce que
+      //      le plateau écrit est décidé par le SITE, qui bouge sans signature.
+      //      Le jour où le site écrit un nom neuf, la version signée le
+      //      détruirait comme un intrus.
+      //
+      // L'INVENTAIRE, LUI, RESTE : il compte et rapporte sans rien toucher, donc
+      // l'auteur voit l'ampleur du ménage à faire. La suppression reviendra
+      // quand elle sera sûre — confirmation d'écriture avant destruction, critère
+      // POSITIF donné par le site, et une coordination entre joueurs.
+      rap.suspendu = "suppression suspendue : inventaire seul";
+      menageRapport = rap;
+      return;
+    }
+    pas();
+  }
+
   // Écouteur PASSIF : n'agit QUE sur nos messages (ns:"jjk" + charId), qui ne sont
   // émis que sur interaction (ouverture de l'onglet Fiche JJK). On NE poste RIEN de
   // spontané au chargement — Roll20 ouvre ses fiches via postMessage, un message
@@ -665,6 +876,14 @@
           var e = etatAttributs(chl);
           rl.sur = e === "sur";
           if (e === "echec") rl.raison = "ouverture";
+          // Le ménage attend que la lecture vaille vérité : sur une collection
+          // que Roll20 n'a pas encore peuplée, tout paraîtrait absent.
+          if (rl.sur) menagePlateau(chl);
+          if (menageRapport) { rl.menage = menageRapport; menageRapport = null; }
+          // « omis » est TOUJOURS posé, même vide : sa présence dit au plateau
+          // que ce pont-ci sait alléger. Mais on n'allège QUE s'il l'a demandé
+          // (d.allege), parce que le pont est signé et lui non : voir allege().
+          rl.omis = d.allege === true ? allege(rl.attrs, ev.source, d.complet === true) : [];
           // Le relevé de la dernière écriture voyage avec la lecture : c'est le
           // seul moyen, sans compte Roll20, de savoir si le modèle a pris notre
           // valeur. Vidé une fois transmis, pour ne rien répéter.
