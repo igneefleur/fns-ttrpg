@@ -314,25 +314,39 @@ html.night .nb-lune .nb-croissant { display: none; }
 
 /* L'en-tête de la carte : la signature du système. Cinzel, un filet --hair, et
    le petit tiret carmin posé dessus, à gauche. */
+/* LES ÉTIQUETTES SONT EN BAS, CHACUNE DANS SON COIN, ET À SA PROPRE LARGEUR.
+   Une barre pleine largeur en haut de carte mangeait le fond de zone sur toute
+   sa largeur et écrasait l'image ; le nom et le compte n'ont besoin que de la
+   place de leurs lettres. La rangée occupe donc le bas, mais elle est
+   TRANSPARENTE : ce sont les deux plaques, à gauche et à droite, qui se voient.
+   Elle reste au-dessus des jetons (z-index) pour que le nom demeure lisible. */
 .nb-place-tete {
-  position: relative; z-index: 1; flex: 0 0 auto;
-  display: flex; align-items: center; gap: 4px; min-width: 0;
-  margin-bottom: 2px;
-  border-bottom: 1px solid var(--hair);
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 3;
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: 4px; min-width: 0; padding: 0 4px 3px;
+  pointer-events: none;   /* on pousse un jeton à travers l'étiquette */
 }
 /* Le tiret carmin reste aligné sur le TEXTE, pas sur le bord de la carte : le
    padding est passé de la carte à l'en-tête, et left:0 le collerait maintenant
    au filet du bord. */
-.nb-place-tete::after {
-  content: ""; position: absolute; left: 5px; bottom: -1px;
-  width: 18px; height: 1.5px; background: var(--red); border-radius: 2px;
+/* Le tiret carmin suit le nom, puisque la rangée n'a plus de filet à souligner. */
+.nb-place-nom::after {
+  content: ""; position: absolute; left: 4px; bottom: 1px;
+  width: 16px; height: 1.5px; background: var(--red); border-radius: 2px;
 }
 /* LA PLAQUE DE LISIBILITÉ, et la seule chose qui fasse tenir un nom sur une
    image inconnue. Elle ne paraît QUE s'il y a une image : sans elle, la carte
    garde sa surface pleine et n'a besoin de rien. */
-.nb-place.nb-fond > .nb-place-tete { background: var(--voile); }
+.nb-place.nb-fond .nb-place-nom,
+.nb-place.nb-fond .nb-place-compte { background: var(--voile); }
 .nb-place-nom {
-  flex: 1 1 auto; min-width: 0;
+  position: relative;
+  /* « 0 1 auto » et non « 1 1 auto » : le nom prend la largeur de ses lettres et
+     pas un pixel de plus. C'est ce que l'auteur demande — une étiquette dans un
+     coin, pas un bandeau. */
+  flex: 0 1 auto; min-width: 0; max-width: 68%;
+  border: 1px solid var(--line-2); border-radius: 5px;
+  padding: 0 5px 3px;
   font-family: 'Cinzel', serif; font-weight: 700;
   font-size: var(--fs-group); letter-spacing: .03em; line-height: 1.2;
   color: var(--ink-2);
@@ -553,7 +567,7 @@ html.night .nb-etat .nb-titre { color: var(--ink); }
    .nb-plateau, qui est en position: relative SANS z-index et n'ouvre donc pas de
    contexte d'empilement : le 40 se compare bien à celui du dialogue (20) et de
    l'écran d'état (30), et le mot passe par-dessus les deux. Il le faut : on
-   téléverse une image DEPUIS les réglages, et un compte rendu caché sous le
+   importe une image DEPUIS les réglages, et un compte rendu caché sous le
    voile ne rend compte de rien.
 
    EN BAS DE LA TABLE, et pas ailleurs. Dans la colonne il couvrait la barre

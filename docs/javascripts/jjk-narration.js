@@ -26,11 +26,11 @@
  *                     simultané d'un autre (Roll20 n'a pas de transaction :
  *                     le dernier qui écrit gagne). Une valeur vide = jeton
  *                     retiré du plateau.
- *   jjk_narr_bg_<id>  LE FOND D'UNE PLACE téléversé, en data: WebP. Son propre
+ *   jjk_narr_bg_<id>  LE FOND D'UNE PLACE importé, en data: WebP. Son propre
  *                     attribut, et surtout pas un champ de jjk_narr_conf :
  *                     changer un fond réécrirait sinon toute la configuration
  *                     de la table, donc les places et la donne de tout le
- *                     monde, pour une image. Vide = pas de fond téléversé.
+ *                     monde, pour une image. Vide = pas de fond importé.
  *
  * COMMENT ÇA PARLE À ROLL20. Par le pont d20 de l'extension, exactement comme
  * la fiche : postMessage vers window.top, réponses par ev.source. Le pont ne
@@ -70,7 +70,7 @@
   var PREF = "jjk_narr_";
   var A_CONF = PREF + "conf";
   var A_PT = PREF + "pt_";
-  var A_BG = PREF + "bg_";  // le fond téléversé d'une place, un attribut chacun
+  var A_BG = PREF + "bg_";  // le fond importé d'une place, un attribut chacun
   var POLL = 1200;          // ms entre deux relectures
   var GARDE = 4000;         // ms pendant lesquelles une écriture locale prime sur l'écho
   var PONT_PAS = 60;        // ms entre deux écritures d'attribut, côté pont
@@ -212,7 +212,7 @@
     post({ type: "narration-char", encore: !!encore });
   }
   // L'ALLÈGEMENT SE DEMANDE, SINON IL NE SERT À RIEN. Le pont sait retenir les
-  // gros attributs — les fonds téléversés, qui pèsent jusqu'à deux cents kilos en
+  // gros attributs — les fonds importés, qui pèsent jusqu'à deux cents kilos en
   // base64 — mais seulement si la page le lui demande. Personne ne le demandait :
   // les images repartaient donc à chaque tour, toutes les 1.2 seconde, pour rien.
   //
@@ -611,7 +611,7 @@
   // Une image vient d'un attribut que n'importe quel joueur peut écrire : on
   // n'accepte que du http(s), jamais un « javascript: ». Et jamais un data: ICI :
   // la configuration entière est réécrite à chaque enregistrement, une image
-  // dedans la ferait peser deux cent mille caractères. Le fichier téléversé a
+  // dedans la ferait peser deux cent mille caractères. Le fichier importé a
   // son propre attribut, et fondSur() le relit.
   function urlSure(u) {
     var s = String(u == null ? "" : u).trim();
@@ -811,7 +811,7 @@
     ecrire(defObj(A_BG + id, ""));
     rend();
   }
-  // Le fichier téléversé l'emporte sur l'URL : c'est le geste le plus explicite
+  // Le fichier importé l'emporte sur l'URL : c'est le geste le plus explicite
   // des deux, et il vit dans son propre attribut. Vider l'un ne touche pas
   // l'autre, on peut donc garder une URL de secours sous une image.
   function fondDe(p) { return fonds[p.id] || p.img || ""; }
@@ -968,7 +968,7 @@
       // On ne repeint que si la valeur CHANGE. Deux raisons, et la seconde
       // suffirait : réaffecter la même adresse relance la requête, ce qui
       // faisait clignoter l'ancien portrait cassé une fois par seconde ; et un
-      // fond téléversé pèse deux cent mille caractères, qu'il serait absurde de
+      // fond importé pèse deux cent mille caractères, qu'il serait absurde de
       // repasser au moteur de style à chaque relecture. Le repère est gardé en
       // JS et non dans un data- : une chaîne pareille dans un attribut du DOM
       // s'inspecte mal et se recopie deux fois.
@@ -1395,11 +1395,11 @@
       });
     }
     // UN SEUL BOUTON POUR LE FOND, DONT LE SENS SUIT L'ÉTAT : « … » ouvre le
-    // sélecteur de fichier, « × » retire l'image déjà téléversée. Deux boutons
+    // sélecteur de fichier, « × » retire l'image déjà importée. Deux boutons
     // côte à côte dans une ligne de deux cent quatre-vingts pixels, c'est la
     // colonne du nom qui disparaît ; et l'un des deux serait toujours inutile.
     //
-    // Le téléversement écrit TOUT DE SUITE, sans passer par « Enregistrer » :
+    // L'image est écrite TOUT DE SUITE, sans passer par « Enregistrer » :
     // l'image a son propre attribut, elle n'attend pas la configuration, et
     // faire attendre un envoi de deux cent mille caractères derrière un bouton
     // qu'on peut oublier de presser serait le meilleur moyen de le perdre.
@@ -1409,13 +1409,13 @@
       function etat() {
         var pose = !!fonds[id];
         b.textContent = pose ? "×" : "…";
-        var t = pose ? "Retirer l'image" : "Téléverser une image";
+        var t = pose ? "Retirer l'image" : "Importer une image";
         b.title = t;
         b.setAttribute("aria-label", t);
-        // Une URL sous une image téléversée ne sert à rien tant que l'image est
+        // Une URL sous une image importée ne sert à rien tant que l'image est
         // là : le champ se tait plutôt que de mentir sur ce qu'on voit.
         entree.disabled = pose || !peutPousser();
-        entree.placeholder = pose ? "image téléversée" : "https://…";
+        entree.placeholder = pose ? "image importée" : "https://…";
       }
       b.addEventListener("click", function () {
         if (fonds[id]) { retireFond(id); etat(); return; }
