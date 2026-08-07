@@ -867,9 +867,8 @@ if (typeof browser === "undefined") { var browser = chrome; }
   // plateau ancré commence. Une barre repliée ou pas encore peinte ne compte
   // pas — le plateau retombe alors sur sa place flottante, plutôt que de se
   // coller à un fantôme.
-  // COLLÉ VEUT DIRE COLLÉ, ET MÊME UN PEU PLUS : le panneau passe SOUS la barre
-  // de quelques pixels, pour boucher le creux que laissait son coin arrondi.
-  var ANCRE_SOUS = 10;
+  // COLLÉ VEUT DIRE COLLÉ : zéro pixel entre la barre et le plateau, et pas un
+  // seul pixel DESSOUS non plus.
   function barreRect() {
     var b = document.getElementById("master-toolbar") ||
             document.getElementById("vm-master-toolbar");
@@ -929,20 +928,15 @@ if (typeof browser === "undefined") { var browser = chrome; }
   function panGeoAncree() {
     var vw = window.innerWidth || 1200, vh = window.innerHeight || 800;
     var r = barreRect();
-    // LE PANNEAU GLISSE SOUS LA BARRE POUR BOUCHER LE TROU. La boîte à outils a
-    // les coins arrondis : collé à son bord droit, le panneau laissait paraître
-    // un petit creux en bas à droite, entre l'arrondi et le début du plateau.
-    // On recule donc de quelques pixels vers la gauche, ce qui remplit le creux,
-    // et on rend ces pixels à la largeur pour que le bord DROIT ne bouge pas.
-    //
-    // Rien n'est perdu de la surface utile : la partie qui passe sous la barre
-    // est cachée par elle (elle est au-dessus, z-index 10600 contre 10500). La
-    // place du MJ ne gagne donc pas un pixel, c'est bien un bouche-trou.
-    var x = r ? Math.round(r.right - ANCRE_SOUS) : PAN_DEF.x;
+    // ON NE GLISSE PAS SOUS LA BARRE. Un chevauchement de dix pixels avait été
+    // essayé pour boucher le creux du coin arrondi : il faisait passer la place
+    // du MJ sous la boîte à outils, ce que l'auteur avait explicitement exclu.
+    // Le creux se règle par un coin arrondi, pas en poussant le plateau dessous.
+    var x = r ? Math.round(r.right) : PAN_DEF.x;
     var y = r ? Math.max(0, Math.round(r.top)) : PAN_DEF.y;
     return {
       x: x, y: y,
-      w: Math.max(PAN_MIN_W, Math.min(panEtat.w + ANCRE_SOUS, Math.max(PAN_MIN_W, vw - x - 8))),
+      w: Math.max(PAN_MIN_W, Math.min(panEtat.w, Math.max(PAN_MIN_W, vw - x - 8))),
       // LA MÊME HAUTEUR QUE LA BOÎTE À OUTILS, exactement. Le plateau prenait
       // toute la fenêtre et descendait bien plus bas que la barre : posés côte à
       // côte, les deux ne formaient pas un bloc. On suit donc la barre, sans
@@ -961,6 +955,13 @@ if (typeof browser === "undefined") { var browser = chrome; }
     var efface = !panEtat.ouvert && barreOK;
     panBoite.style.display = efface ? "none" : "";
     panBoite.classList.toggle("jjk-panneau-ancre", ancre);
+    // Le coin bas-gauche ne s'arrondit que s'il se VOIT : quand la barre descend
+    // jusqu'au bas de la fenêtre, ce coin est hors champ et un arrondi y
+    // dessinerait une encoche dans le vide. Le CSS ne peut pas mesurer la barre,
+    // c'est donc ici qu'on tranche.
+    var rb = ancre ? barreRect() : null;
+    panBoite.classList.toggle("jjk-panneau-bas-plein",
+      !!(rb && rb.bottom >= (window.innerHeight || 800) - 4));
     panBoite.classList.toggle("jjk-panneau-replie", !panEtat.ouvert && !efface);
     // La géométrie de passage (réglages ouverts) l'emporte sur tout : ancré ou
     // flottant, on veut le dialogue grand et au centre. Elle disparaît d'elle

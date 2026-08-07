@@ -209,7 +209,17 @@
    (une carte arrondie contre une barre droite laisse deux entailles de fond), la
    barre de titre n'invite plus à saisir ce qui ne bouge plus, et la poignée ne
    promet plus que la largeur. */
-.jjk-panneau-ancre { border-radius: 0 8px 8px 0; }
+/* LES COINS, ANCRÉ. Seul le côté qui TOUCHE la barre reste droit ; tout le reste
+   s'arrondit comme une carte du livre.
+     - en haut à gauche : toujours droit quand on est collé, c'est là que la
+       barre commence ;
+     - en bas à gauche : ARRONDI d'ordinaire — c'est le creux que l'auteur
+       voulait boucher — et droit seulement quand la barre descend jusqu'au bas
+       de la fenêtre, où le coin est de toute façon hors champ. Cette variante
+       est posée par content-roll20.js (classe .jjk-panneau-bas-plein), qui
+       mesure la barre : le CSS ne peut pas savoir jusqu'où elle descend. */
+.jjk-panneau-ancre { border-radius: 0 8px 8px 8px; }
+.jjk-panneau-ancre.jjk-panneau-bas-plein { border-radius: 0 8px 8px 0; }
 .jjk-panneau-ancre .jjk-panneau-tete { cursor: default; }
 .jjk-panneau-ancre .jjk-panneau-grip { cursor: ew-resize; }
 
