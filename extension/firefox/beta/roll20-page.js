@@ -188,7 +188,30 @@
     // ouverte — et le pont ouvre justement celle de « Narration ». save(null)
     // ne repose aucune valeur, donc n'émet aucun événement : il ne fait que
     // pousser vers Firebase, ce qui est exactement ce qu'on veut.
-    if (m.save) m.save(null);
+    // ON ÉCOUTE ENFIN CE QUE LE SERVEUR RÉPOND. save() accepte success et error
+    // depuis toujours ; personne ne les avait jamais lus, si bien qu'on écrivait
+    // sans jamais demander si l'écriture avait été acceptée. Trois issues, et
+    // elles appellent trois corrections différentes : le serveur accepte (et le
+    // problème est ailleurs), le serveur REFUSE en le disant (permission), ou
+    // rien ne répond du tout (l'écriture n'est même pas partie).
+    if (m.save) {
+      var fini = false;
+      try {
+        m.save(null, {
+          success: function () { fini = true; issue(name, "accepte", null); },
+          error: function (mm, rep) {
+            fini = true;
+            var txt = "";
+            try { txt = String((rep && (rep.message || rep.statusText || rep.status)) || rep || ""); }
+            catch (e3) {}
+            issue(name, "refuse", txt.slice(0, 120));
+          }
+        });
+      } catch (e2) {
+        issue(name, "exception", String(e2 && e2.message || e2).slice(0, 120));
+      }
+      setTimeout(function () { if (!fini) { issue(name, "aucune reponse", null); } }, 2500);
+    }
     return relu(m, name, data);
   }
 
@@ -199,9 +222,21 @@
   var dernieresEcritures = {};
   function relu(m, name, data) {
     try {
-      dernieresEcritures[name] = { voulu: data.current,
-                                   modele: m ? str(attrVal(m, "current")) : null };
-    } catch (e) {}
+      var e = dernieresEcritures[name] || {};
+      e.voulu = data.current;
+      e.modele = m ? str(attrVal(m, "current")) : null;
+      dernieresEcritures[name] = e;
+    } catch (err) {}
+  }
+  // Ce que le SERVEUR a répondu à cette écriture. Rangé au même endroit, il
+  // voyage avec la lecture suivante jusqu'au plateau, donc jusqu'à la console.
+  function issue(name, quoi, detail) {
+    try {
+      var e = dernieresEcritures[name] || {};
+      e.serveur = quoi;
+      if (detail) { e.detail = detail; }
+      dernieresEcritures[name] = e;
+    } catch (err) {}
   }
 
   var queue = [], busy = false;
