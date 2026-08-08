@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Fiche JJK sur Roll20",
-  "version": "3.6.0.13",
+  "version": "3.6.0.14",
   "description": "Affiche vos fiches de personnage JJK (système JDR) à la place de la fiche Roll20, avec les jets envoyés dans le tchat.",
   "homepage_url": "https://igneefleur.github.io/HxH-Regles-JDR/jjk/",
   "permissions": [
