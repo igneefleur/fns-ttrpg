@@ -577,13 +577,18 @@ def main():
 
     # LES CONTRÔLES DU PAQUET TOMBENT ICI, ET AVANT TOUT LE RESTE.
     #
-    # build_extension.verifie() est le SEUL garde-fou de la duplication des deux
-    # parties : il exige que stable/ et beta/ soient identiques hors des lignes
-    # marquées, et que chaque ligne marquée nomme sa propre partie. Il ne
-    # tournait que depuis la ligne de commande de build_extension.py, jamais
-    # depuis ici — or c'est ici que passe la CI, et build() emballe sans rien
-    # vérifier. Une correction de sûreté posée d'un seul côté partait donc chez
-    # Mozilla en silence, et le trou restait ouvert du côté oublié.
+    # build_extension.verifie() est le SEUL garde-fou des deux parties : il exige
+    # que stable/ et beta/ soient À JOUR par rapport à leurs morceaux
+    # (src/extension/, collés d'après scripts/assemblage.plan), et que chaque
+    # ligne marquée nomme sa propre partie. Il ne tournait que depuis la ligne de
+    # commande de build_extension.py, jamais depuis ici — or c'est ici que passe
+    # la CI, et build() emballe sans rien vérifier. Une moitié retouchée à la
+    # main partait donc chez Mozilla en silence.
+    #
+    # Il EXIGEAIT autrefois que les deux copies soient identiques hors des lignes
+    # marquées : elles étaient tenues à la main, et on surveillait leur dérive.
+    # Elles sont maintenant engendrées d'une source unique, ce qui rend la
+    # dérive impossible plutôt que détectable.
     #
     # Avant l'empreinte, avant l'emballage, avant la moindre requête : un refus
     # ne doit rien coûter au quota, qui se compte à la dizaine par jour.

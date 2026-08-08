@@ -23,6 +23,15 @@ jobs:
           python-version: '3.13'
       - name: Dépendances Python
         run: pip install mkdocs-material requests
+      # LE FICHIER SERVI DOIT CORRESPONDRE À SES MORCEAUX, et c'est ici qu'on le
+      # vérifie — avant de construire quoi que ce soit. Un morceau modifié sans
+      # réassemblage passe « git status » sans un mot : le dépôt paraît propre et
+      # le site déploie l'ancien code, sans que rien n'échoue. On VÉRIFIE sans
+      # écrire : la chaîne ne doit pas réparer en silence ce qui n'a pas été
+      # fait, sinon le dépôt garde durablement des sources et des fichiers servis
+      # qui divergent.
+      - name: Assemblage à jour
+        run: python scripts/assembler.py --verifie
       - name: Build
         env:
           NO_MKDOCS_2_WARNING: "1"   # coupe l'encadré promo « MkDocs 2.0 » de Material dans les logs

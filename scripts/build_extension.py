@@ -17,6 +17,19 @@ PowerShell 5.1 met des « \\ » que Firefox refuse). Conséquence à ne pas oubl
 TOUT fichier posé sous extension/firefox/ part dans les DEUX paquets, déclaré ou
 non, et personne ne le signalera — d'où les contrôles ci-dessous.
 
+LES DEUX PARTIES NE SONT PLUS ÉCRITES, ELLES SONT ENGENDRÉES. Elles étaient
+deux copies tenues à la main, et ce fichier les COMPARAIT ligne à ligne pour
+attraper la dérive : une surveillance, pas une garantie — un correctif de sûreté
+posé d'un seul côté laissait le trou ouvert de l'autre jusqu'à ce que quelqu'un
+lance le contrôle. Les huit fichiers sortent maintenant des morceaux de
+src/extension/, collés par scripts/assembler.py d'après scripts/assemblage.plan,
+où les trois valeurs qui séparent les moitiés sont déclarées UNE fois. La
+divergence n'est plus détectée : elle est impossible. Ce qui se vérifie ici a
+donc changé de nature — non plus « les deux copies se ressemblent-elles » mais
+« chaque moitié est-elle bien à jour par rapport à la source » (voir
+_parties_a_jour). Une moitié retouchée à la main fait échouer le contrôle, et le
+message dit quoi relancer.
+
 CHAQUE PARTIE PORTE SON PROPRE NUMÉRO, déclaré dans parties.js (voir la
 constante VERSIONS_PARTIES). Ce fichier est ÉCRIT par scripts/ci_extension.py
 juste avant l'empaquetage et lu par le popup ; il est nommé ici parce que les
@@ -25,10 +38,11 @@ deux outils en ont besoin, et qu'une deuxième copie du nom finirait par mentir.
 Comme rien de cette extension n'est essayable ici (personne n'a de compte
 Roll20), verifie() fait tout ce qui se vérifie sans navigateur : chaque fichier
 nommé par un manifeste existe, aucun fichier n'est orphelin, les deux manifestes
-déclarent la même chose, et les deux copies de chaque fichier dédoublé sont
-identiques hors des lignes marquées « propre à cette copie ». Ce dernier contrôle
-est le prix de la duplication : un correctif de sûreté posé d'un seul côté
-laisserait le trou ouvert de l'autre, et rien d'autre ne le verrait.
+déclarent la même chose, chaque moitié est à jour par rapport à ses morceaux, et
+chaque ligne marquée « propre à cette copie » nomme bien SA partie et pas
+l'autre. Ce dernier contrôle survit à l'assemblage, et pour une bonne raison :
+la substitution supprime le risque de laisser une ligne en arrière, pas celui
+d'écrire la mauvaise valeur en face du mauvais nom dans le plan.
 
     python scripts/build_extension.py              # packe dans docs/download/
     python scripts/build_extension.py --verifie    # contrôles seuls, rien d'écrit
@@ -45,6 +59,9 @@ import sys
 import zipfile
 from pathlib import Path, PurePosixPath
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import assembler  # noqa: E402  (le collage des morceaux : c'est lui qui fait les deux moitiés)
+
 ROOT = Path(__file__).resolve().parent.parent
 FF = ROOT / "extension" / "firefox"           # source de vérité (manifest V2 + fichiers)
 CHROME = ROOT / "extension" / "chrome"
@@ -54,11 +71,19 @@ NOM_FF = "jjk-roll20-firefox.xpi"
 NOM_CHROME = "jjk-roll20-chrome.zip"
 
 # Les deux parties. Les fichiers qui dépendent du mode existent une fois par
-# dossier, sous le MÊME nom : c'est ce qui rend leur comparaison mécanique.
+# dossier, sous le MÊME nom, parce qu'ils sortent des MÊMES morceaux : c'est le
+# plan d'assemblage qui les nomme, pas une main.
 PARTIES = ("stable", "beta")
 # La ligne qui appartient à une copie et à elle seule le dit en bout de ligne.
-# Tout le reste des deux copies doit être identique au caractère près.
+# Elle ne s'écrit plus deux fois : elle porte un repère dans la source, et
+# l'assemblage y pose la valeur de la moitié. La marque reste, parce que c'est
+# elle qui donne au contrôle ci-dessous les lignes à juger.
 MARQUE = "propre à cette copie"
+# Le plan d'assemblage : la source unique des deux moitiés. Son absence est un
+# REFUS et non un « rien à faire ». C'est lui qui a remplacé la comparaison des
+# deux copies ; sans lui, les huit fichiers ne sont plus tenus par rien, et le
+# paquet partirait chez Mozilla avec ce que la dernière main y a laissé.
+PLAN = ROOT / "scripts" / "assemblage.plan"
 # Orphelins assumés : le README part quand même chez Mozilla (tout ce qui est
 # sous firefox/ y part), et le manifeste est la racine, il ne peut être nommé
 # par personne.
@@ -202,11 +227,72 @@ def _war(manifeste):
     return out
 
 
-def _copies(texte):
-    """(lignes hors marque, lignes marquées) d'un fichier dédoublé."""
-    lignes = texte.splitlines()
-    return ([l for l in lignes if MARQUE not in l],
-            [l for l in lignes if MARQUE in l])
+def _marquees(texte):
+    """Les lignes marquées « propre à cette copie » d'une moitié."""
+    return [l for l in texte.splitlines() if MARQUE in l]
+
+
+def _parties_a_jour():
+    """Chaque fichier des deux moitiés sort-il bien de ses morceaux ? (ok, engendrés)
+
+    LE CONTRÔLE A CHANGÉ DE NATURE. Il comparait stable/ et beta/ ligne à ligne :
+    la duplication était un fait, et on surveillait sa dérive. Les deux moitiés
+    sont maintenant ENGENDRÉES par scripts/assembler.py à partir des morceaux de
+    src/extension/, avec les trois valeurs qui les séparent déclarées une seule
+    fois dans le plan. Comparer n'a plus de sens — deux fichiers faits du même
+    moule se ressemblent toujours. Ce qui peut encore mal tourner, c'est qu'une
+    moitié soit RETOUCHÉE À LA MAIN, ou qu'une source ait bougé sans qu'on
+    réassemble : dans les deux cas le fichier servi ne correspond plus à ses
+    morceaux, et c'est cela qu'on mesure.
+
+    On refuse aussi tout fichier de partie que le plan n'engendre PAS. Sans quoi
+    il suffirait d'en poser un à la main pour qu'il échappe à tout — et il
+    partirait quand même chez Mozilla, puisque tout ce qui est sous
+    extension/firefox/ part dans le paquet.
+    """
+    if not PLAN.exists():
+        return (refus(f"{PLAN.relative_to(ROOT).as_posix()} est absent : les deux moitiés "
+                      f"de l'extension n'ont plus de source. Elles ne sont plus comparées "
+                      f"l'une à l'autre, c'est ce plan qui les engendre."), set())
+    try:
+        cibles = [c for c in assembler.charger_plan(str(PLAN))
+                  if c.sortie.startswith("extension/firefox/")]
+    except (OSError, assembler.Faute) as e:
+        return (refus(f"plan d'assemblage illisible : {e}"), set())
+
+    ok = True
+    engendres = {c.sortie for c in cibles}
+    for c in cibles:
+        try:
+            produit = assembler.assembler(c, str(ROOT))
+        except (OSError, assembler.Faute) as e:
+            ok = refus(f"{c.sortie} ne s'assemble pas : {e}")
+            continue
+        identique, journal = assembler.verifier(c, str(ROOT), produit)
+        if not identique:
+            for ligne in journal:
+                print(f"[extension]   {ligne}", file=sys.stderr)
+            ok = refus(f"{c.sortie} ne correspond plus à ses morceaux. Soit cette moitié a "
+                       f"été retouchée à la main — ce qui ne se fait plus, elle est "
+                       f"engendrée — soit un morceau a bougé sans réassemblage. Corriger "
+                       f"sous src/extension/, puis « python scripts/assembler.py ».")
+
+    for partie in PARTIES:
+        dossier = FF / partie
+        if not dossier.is_dir():
+            ok = refus(f"partie manquante : extension/firefox/{partie}/ (elle est "
+                       f"engendrée : « python scripts/assembler.py »)")
+            continue
+        for p in sorted(dossier.rglob("*")):
+            if not p.is_file():
+                continue
+            arc = p.relative_to(ROOT).as_posix()
+            if arc not in engendres:
+                ok = refus(f"{arc} n'est engendré par aucun bloc de "
+                           f"{PLAN.relative_to(ROOT).as_posix()} : il a été posé à la main "
+                           f"dans une moitié, rien ne le tient, et il part quand même dans "
+                           f"le paquet signé.")
+    return (ok, engendres)
 
 
 def verifie():
@@ -295,32 +381,17 @@ def verifie():
         ok = refus(f"fichiers orphelins (ni déclarés, ni atteints, et pourtant expédiés "
                    f"chez Mozilla) : {orphelins}")
 
-    # Les deux parties : mêmes fichiers, et mêmes fichiers À L'IDENTIQUE hors
-    # des lignes marquées. C'est le seul garde-fou contre la dérive.
+    # Les deux parties sortent du plan d'assemblage : ni comparées l'une à
+    # l'autre, ni écrites à la main — engendrées, et vérifiées à jour.
+    ok = _parties_a_jour()[0] and ok
     jeux = {}
     for partie in PARTIES:
         dossier = FF / partie
-        if not dossier.is_dir():
-            ok = refus(f"partie manquante : extension/firefox/{partie}/")
-            jeux[partie] = set()
-            continue
-        jeux[partie] = {p.name for p in dossier.iterdir() if p.is_file()}
-    if jeux.get("stable") != jeux.get("beta"):
-        ok = refus(f"les deux parties n'ont pas les mêmes fichiers : "
-                   f"stable seul {sorted(jeux['stable'] - jeux['beta'])}, "
-                   f"beta seul {sorted(jeux['beta'] - jeux['stable'])}")
+        jeux[partie] = ({p.name for p in dossier.iterdir() if p.is_file()}
+                        if dossier.is_dir() else set())
     for nom in sorted(jeux.get("stable", set()) & jeux.get("beta", set())):
-        corps_s, marques_s = _copies(_lit(FF / "stable" / nom))
-        corps_b, marques_b = _copies(_lit(FF / "beta" / nom))
-        if corps_s != corps_b:
-            ecart = next((i + 1 for i, (a, b) in enumerate(zip(corps_s, corps_b)) if a != b),
-                         min(len(corps_s), len(corps_b)) + 1)
-            ok = refus(f"{nom} : les deux copies divergent hors des lignes marquées "
-                       f"« {MARQUE} » (vers la ligne utile {ecart}). Toute correction de "
-                       f"sûreté doit être appliquée AUX DEUX.")
-        if len(marques_s) != len(marques_b):
-            ok = refus(f"{nom} : {len(marques_s)} ligne(s) marquée(s) côté stable contre "
-                       f"{len(marques_b)} côté beta")
+        marques_s = _marquees(_lit(FF / "stable" / nom))
+        marques_b = _marquees(_lit(FF / "beta" / nom))
         # CHAQUE LIGNE MARQUÉE DOIT DÉSIGNER SA PROPRE PARTIE, et jamais
         # l'autre. Ne vérifier que l'absence du mot d'en face laissait passer
         # les trois oublis qui comptent, tous mesurés : une copie beta restée
@@ -328,6 +399,13 @@ def verifie():
         # pont dont l'adresse n'a pas suivi son dossier. Dans les trois cas la
         # ligne ne contient PAS le mot de l'autre partie, donc rien ne bronchait,
         # et le paquet partait chez Mozilla en annonçant « identiques hors mode ».
+        #
+        # CE CONTRÔLE SURVIT À L'ASSEMBLAGE, et ce n'est pas par prudence
+        # superstitieuse. La substitution a supprimé une faute (oublier de
+        # reporter une ligne d'une moitié à l'autre) et laissé l'autre intacte :
+        # rien n'empêche d'écrire « partie = stable » sous « [variante beta] »
+        # dans le plan. La faute est juste passée d'un fichier à un autre, et
+        # elle se lit toujours ici, sur le fichier engendré.
         for partie, autre, marques in (("stable", "beta", marques_s),
                                        ("beta", "stable", marques_b)):
             for ligne in marques:
@@ -360,7 +438,7 @@ def verifie():
     if ok:
         print(f"[extension] contrôles : {len(presents)} fichiers, "
               f"{len(racines)} déclarés, orphelins admis {sorted(ORPHELINS_ADMIS)}, "
-              f"parties {sorted(jeux.get('stable', ()))} identiques hors mode.")
+              f"parties {sorted(jeux.get('stable', ()))} engendrées et à jour.")
     return ok
 
 
