@@ -23,7 +23,7 @@
     // Relecture régulière : c'est tout le « temps réel » du plateau. La page
     // cachée (panneau replié, onglet en arrière-plan) ne demande rien.
     var tour = 0;
-    timer = setInterval(function () {
+    setInterval(function () {
       tour++;
       // Panneau replié : l'extension masque l'iframe, dont la fenêtre tombe
       // alors à zéro pixel. Rien à interroger pour un plateau que personne ne

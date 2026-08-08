@@ -72,8 +72,8 @@
 
     function eteintTout() {
       listes.forEach(function (z) { z.classList.remove("survol"); });
-      var c = plan.querySelectorAll(".pc-modplan-carte.avant, .pc-modplan-carte.apres");
-      for (var i = 0; i < c.length; i++) c[i].classList.remove("avant", "apres");
+      var c = plan.querySelectorAll(".pc-modplan-carte.avant");
+      for (var i = 0; i < c.length; i++) c[i].classList.remove("avant");
     }
 
     // Devant quelle carte se pose ce qu'on lâche à cette hauteur ? La moitié

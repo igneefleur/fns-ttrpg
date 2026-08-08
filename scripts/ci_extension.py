@@ -65,7 +65,10 @@ ROOT = Path(__file__).resolve().parent.parent
 FF = ROOT / "extension" / "firefox"
 MANIFESTS = [FF / "manifest.json", ROOT / "extension" / "chrome" / "manifest.json"]
 STATE = ROOT / "docs" / "download" / "ext-signed.json"
-MANIFESTE_SITE = ROOT / "docs" / "jjk-manifeste.json"
+# Le manifeste du site se nomme dans version_fiche, comme les autres porteurs du
+# numéro : il était recodé ici, et deux chemins pour un même fichier finissent
+# par ne plus désigner le même.
+MANIFESTE_SITE = ROOT / V.MANIFESTE
 # Le fichier que ce script ÉCRIT dans l'extension, et le nom du global qu'il
 # pose : les deux viennent de build_extension, qui les nomme pour tout le monde.
 VERSIONS_JS = FF / build_extension.VERSIONS_PARTIES
@@ -556,13 +559,10 @@ def repare_xpi_signe(issuer, secret):
             dl = requests.get(f["url"], headers=amo.h(), timeout=120)
             dl.raise_for_status()
             sign_extension.XPI.write_bytes(dl.content)
-            sign_extension.UPDATES.write_text(json.dumps({
-                "addons": {gecko["id"]: {"updates": [
-                    {"version": v["version"], "update_link": sign_extension.XPI_URL,
-                     "browser_specific_settings": {"gecko": {
-                         "strict_min_version": gecko.get("strict_min_version", "109.0")}}}
-                ]}}
-            }, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+            # la FORME du fichier de mise à jour appartient à sign_extension, qui
+            # l'écrit aussi après une vraie signature : elle était recopiée ici,
+            # et les deux copies ne se voyaient pas
+            sign_extension.ecrire_updates(gecko, v["version"])
             print(f"[ci-extension] binaire signé v{v['version']} restauré depuis AMO "
                   "(updates.json réaligné)")
             return

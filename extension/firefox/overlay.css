@@ -52,18 +52,20 @@
    réglage jjkNuit du popup (« auto » suit Roll20), et JAMAIS d'une media query
    seule : une media query suit le navigateur, que l'utilisateur ne pourrait pas
    contredire, et le cadre resterait clair pendant que le plateau servi par le
-   site, lui, serait sombre. */
+   site, lui, serait sombre.
+   Seuls les tons dont cette feuille se sert sont déclarés, et non la palette
+   entière du livre : une variable posée ici n'est lue que par cette feuille.
+   Elle ne traverse aucune iframe, donc ni la fiche ni le plateau, qui sont des
+   documents servis par le site et portent leur propre palette. */
 .jjk-panneau, .jjk-create, .jjk-creator-frame {
   --paper:    #faf6eb;
   --bg-side:  #e4ddcd;
   --card:     #fffdf6;
   --panel:    #f6efdd;
-  --hair:     #e2d8c0;
   --line:     #c6bb9f;
   --line-2:   #d6cbb1;
   --ink:      #20180c;
   --ink-2:    #453d2d;
-  --ink-3:    #746a54;
   --red:      #a5271c;
   --ombre:    rgba(60, 48, 18, .10);
   --ombre-portee: rgba(0, 0, 0, .28);
@@ -73,12 +75,10 @@
   --bg-side:  #14110c;
   --card:     #262119;
   --panel:    #2f2a20;
-  --hair:     #39332a;
   --line:     #4f4838;
   --line-2:   #453e31;
   --ink:      #eee4cf;
   --ink-2:    #cbc2ac;
-  --ink-3:    #978d77;
   --red:      #c65540;
   --ombre:    rgba(0, 0, 0, .35);
   --ombre-portee: rgba(0, 0, 0, .60);

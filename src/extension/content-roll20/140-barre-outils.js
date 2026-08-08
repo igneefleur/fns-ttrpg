@@ -51,7 +51,10 @@
   function barreFabrique(modele) {
     var n = modele.cloneNode(true);   // cloneNode ne copie AUCUN écouteur : le
     n.id = BARRE_ID;                  // clone est inerte tant qu'on ne lui en pose pas
-    n.className = ((n.className || "") + " jjk-barre-bouton").replace(/^\s+/, "");
+    // L'identifiant SUFFIT à le désigner, et il n'y a rien d'autre à poser : le
+    // clone gardait en plus une classe « jjk-barre-bouton » qu'aucune feuille ne
+    // lisait — overlay.css vise « #jjk-barre-bouton », et barreModele() reconnaît
+    // notre bouton par son id.
     // ceinture : un modèle masqué ne doit pas transmettre son invisibilité
     try { n.style.removeProperty("display"); } catch (e) {}
     var slot = n.querySelector(".icon-slot");

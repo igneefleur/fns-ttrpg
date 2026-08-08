@@ -62,39 +62,6 @@
       state.modules = {};
     return state.modules;
   }
-  // L'ordre COMPLET des id connus, et pas seulement les deux qui bougent : relu
-  // à froid, state.modules.ordre doit dire la disposition entière.
-  //
-  // Mais ce montage-ci ne connaît que les modules qui existent CHEZ LUI, et
-  // l'ordre, lui, voyage avec le personnage. Écrire la seule liste du jour
-  // effacerait le rang des autres : le mod « journal » de l'auteur, rangé en
-  // tête de colonne, est en attente d'autorisation chez le joueur qui ouvre la
-  // fiche ; une flèche cliquée là-bas suffisait à le renvoyer en fin de colonne,
-  // sans un mot, jusque dans les Attributes. Les id inconnus d'ici gardent donc
-  // leur rang, et les connus se rangent dans les places qui restent.
-  //
-  // Un module retiré POUR DE BON garde son rang lui aussi : rien ne le distingue
-  // d'un mod qui attend son autorisation. Ça ne coûte qu'une ligne morte dans
-  // l'ordre enregistré, qu'ordreModules() écarte de toute façon, quand oublier
-  // coûtait la disposition d'un autre joueur. « Disposition d'origine » vide
-  // tout, pour qui voudrait faire le ménage.
-  function fusionneOrdre(ids) {
-    var ancien = disposition().ordre;
-    if (!Array.isArray(ancien) || !ancien.length) return ids.slice();
-    var connu = {}, vu = {}, out = [], k = 0, i, id;
-    for (i = 0; i < ids.length; i++) connu[ids[i]] = 1;
-    for (i = 0; i < ancien.length; i++) {
-      id = ancien[i];
-      // un doublon consommerait deux places : l'ordre enregistré vient d'un
-      // fichier importé ou d'une autre version, il n'est pas garanti propre
-      if (typeof id !== "string" || !id || aClef(vu, id)) continue;
-      vu[id] = 1;
-      if (!aClef(connu, id)) { out.push(id); continue; }   // inconnu ici : il tient sa place
-      if (k < ids.length) out.push(ids[k++]);
-    }
-    while (k < ids.length) out.push(ids[k++]);
-    return out;
-  }
   // ON N'ÉPINGLE QUE LA COLONNE TOUCHÉE, et c'est tout le sujet.
   //
   // L'ancienne version écrivait l'ordre COMPLET de tous les modules, tous
@@ -135,7 +102,7 @@
       if (onglet && !memeColonne(ids[i], onglet, colonne)) continue;
       if (!vus[ids[i]]) { vus[ids[i]] = 1; neuf.push(ids[i]); }
     }
-    d.ordre = onglet ? neuf : fusionneOrdre(ids);
+    d.ordre = neuf;
     // L'ordre vivant suit tout de suite, mais LA FICHE NE SE REMONTE PAS.
     //
     // Elle se remontait à chaque geste : ranger trois modules reconstruisait

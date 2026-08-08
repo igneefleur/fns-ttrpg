@@ -119,7 +119,9 @@
     // « garde » retient l'exemplaire conservé pour chaque nom, « confirme » dit
     // si le serveur a accepté SA valeur. Les copies ne meurent qu'après ce oui.
     var garde = {}, confirme = {};
-    function sauveConfirme(m, nom, data) {
+    // Pas d'attributs en argument : comme sauve(), c'est « m.save(null, …) » qui
+    // envoie l'état que le set juste avant a posé dans le modèle.
+    function sauveConfirme(m, nom) {
       try {
         if (!m || !m.save) return;
         m.save(null, {
@@ -151,8 +153,8 @@
           for (var j = 0; j < tous.length; j++) {
             try {
               if (tous[j].set) tous[j].set(data, { silent: true });
-              if (tous[j] === d0) { sauveConfirme(tous[j], nom, data); }
-              else { sauve(tous[j], nom, data); }
+              if (tous[j] === d0) { sauveConfirme(tous[j], nom); }
+              else { sauve(tous[j], nom); }
             } catch (e) {}
           }
         }

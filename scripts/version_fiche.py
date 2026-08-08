@@ -45,6 +45,11 @@ release_fiche, ci_extension). Une seule lecture du numéro pour tout le monde :
 tant qu'elle était recopiée d'un script à l'autre, le jour où l'un apprenait le
 suffixe, les autres continuaient de le rejeter sans un mot.
 
+CE QUI SE DÉCLARE ICI, ET NULLE PART AILLEURS : la forme du numéro, les chemins
+de ses porteurs (BUNDLE, ATTRMAP, MANIFESTE, MKDOCS), la lecture d'un fichier du
+site, et la forme des ?v= de mkdocs.yml. Les autres outils les IMPORTENT. Chacun
+les recopiait, et une copie ne se corrige jamais deux fois le même jour.
+
 Seule la bibliothèque standard est employée : ces outils doivent tourner là où
 mkdocs n'est même pas installé.
 """
@@ -121,11 +126,12 @@ class Version(object):
     def avec_suffixe(self, beta):
         return Version(self.x, self.y, self.z, beta)
 
-    def __str__(self):
-        return self.texte()
-
-    def __repr__(self):
-        return "Version(%s)" % self.texte()
+    # PAS DE __str__ NI DE __repr__ ICI, ET C'EST VOULU. Le numéro se demande
+    # par son nom — texte(), nu, ligne, rang — parce que ces quatre réponses ne
+    # sont pas la même et que le suffixe « b » se perd trop facilement. Un
+    # « %s » qui rendrait tout seul le texte suffixé ferait écrire un « 3.6.0b »
+    # là où le dossier d'archive s'appelle « 3.6.0 », sans un mot. Formater une
+    # Version rend donc « <Version object at …> », ce qui se voit tout de suite.
 
 
 def faute_de_forme(texte):
@@ -180,11 +186,17 @@ def ligne(texte):
 
 
 def compare(a, b):
-    """-1, 0 ou 1 sur le RANG. None dès que l'un des deux est illisible.
+    """-1, 0 ou 1 sur le RANG. None des que l'un des deux est illisible.
 
-    Le repli silencieux (« illisible, donc égal ») est précisément ce qui a
-    rendu la panne du suffixe invisible du côté des mods : ici l'appelant voit
-    le None et décide lui-même quoi en dire.
+    Le repli silencieux (« illisible, donc egal ») est precisement ce qui a
+    rendu la panne du suffixe invisible du cote des mods : ici l'appelant voit
+    le None et decide lui-meme quoi en dire.
+
+    ELLE N'A PAS D'APPELANT DANS scripts/, ET ELLE RESTE. Un audit l'a retiree
+    comme morte, ce qui a casse trois sondes : l'essai de grammaire s'en sert
+    pour eprouver la regle qui fonde tout le contrat de versions, à savoir que
+    « 3.12.9b » et « 3.12.9 » sont de MEME RANG. Un essai est un consommateur, et
+    la fonction qu'il eprouve est le contrat lui-meme.
     """
     ra, rb = rang(a), rang(b)
     if ra is None or rb is None:
@@ -284,6 +296,47 @@ def fin_de_ligne(octets):
     return "\r\n" if crlf and crlf >= octets.count(b"\n") - crlf else "\n"
 
 
+# ---------------------------------------------------- les ?v= (clés de cache)
+# LE ?v= N'EST PAS UN NUMÉRO DE VERSION, et il vit pourtant ici : ce fichier est
+# le seul endroit qui sache déjà où sont mkdocs.yml et le manifeste, et la FORME
+# d'une ligne « - javascripts/jjk-fiche.js?v=25 » était écrite deux fois, mot pour
+# mot, dans verif_versions.py et dans release_fiche.py. L'un contrôle que les deux
+# côtés disent le même ?v=, l'autre les monte : le jour où l'un des deux apprend
+# une forme de ligne que l'autre ignore, le contrôle passe sur ce que la montée
+# n'a pas touché, et deux mondes font tourner deux codes en croyant le même.
+_LIGNE_MKDOCS = re.compile(
+    r"^\s*-\s*([^\s#]+\.(?:js|css))(?:\?v=([^\s#]+))?\s*(?:#.*)?$")
+
+
+def sans_v(url):
+    """L'URL débarrassée de sa clé de cache : « a.js?v=25 » rend « a.js »."""
+    return url.split("?", 1)[0]
+
+
+def serial_v(url):
+    """La clé de cache d'une URL, ou None si elle n'en porte pas."""
+    m = re.search(r"[?&]v=([^&\s#]+)", url)
+    return m.group(1) if m else None
+
+
+def serials_mkdocs(src):
+    """{ 'javascripts/jjk-fiche.js': '25' } d'après extra_css et extra_javascript.
+
+    La valeur est None pour un fichier nommé SANS ?v= : « pas de clé de cache »
+    et « fichier absent du site » sont deux réponses différentes, et l'appelant
+    a besoin de les distinguer.
+    """
+    out = {}
+    # « brute » et non « ligne » : ligne() est une fonction de ce module, et
+    # l'ombrer ici la rendrait introuvable au premier besoin.
+    for brute in src.splitlines():
+        m = _LIGNE_MKDOCS.match(brute)
+        if m:
+            out[m.group(1)] = m.group(2)
+    return out
+
+
+# ------------------------------------------------------------ les constantes
 def constantes_bundle(src):
     """(RELEASE, SCHEMA) déclarés dans le bundle, ou (None, None).
 

@@ -98,8 +98,7 @@
         pv: state.pv === null ? null : pvCourant(), pvMax: pvMax(),
         vitesse: vitesse(), regen: regen(), initiative: initiative(), poids: poidsPorte()
       },
-      narration: state.narration,
-      updated: nowStamp()
+      narration: state.narration
     };
   }
 

@@ -38,17 +38,6 @@
   "content_scripts": [
     {
       "matches": [
-        "https://igneefleur.github.io/HxH-Regles-JDR/*",
-        "http://127.0.0.1:8000/HxH-Regles-JDR/*",
-        "http://localhost:8000/HxH-Regles-JDR/*"
-      ],
-      "js": [
-        "content-jjk.js"
-      ],
-      "run_at": "document_idle"
-    },
-    {
-      "matches": [
         "https://app.roll20.net/*"
       ],
       "js": [

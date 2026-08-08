@@ -46,7 +46,15 @@ jobs:
           AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
           AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
         run: python scripts/ci_extension.py
+      # LE SECOND BUILD NE SERT QU'À LA SIGNATURE, et à rien d'autre. Le seul pas
+      # qui touche à docs/ entre les deux est celui du dessus : il réécrit
+      # docs/download/ (le .xpi signé, updates.json, l'empreinte, les manifests),
+      # et sans ce rebuild le site partirait avec les téléchargements d'avant.
+      # Sur un push ordinaire, ce pas est sauté et rien ne bouge entre les deux
+      # builds : mkdocs refabriquait alors site/ à l'identique, à chaque push, et
+      # une étape qui ne peut rien changer finit par être crue là où elle compte.
       - name: Rebuild (téléchargements à jour)
+        if: ${{ inputs.signer }}
         env:
           NO_MKDOCS_2_WARNING: "1"
         run: mkdocs build

@@ -77,7 +77,6 @@ installé : le hook est chargé par chemin et son import de mkdocs est bouché.
 
 import argparse
 import importlib.util
-import io
 import json
 import os
 import shutil
@@ -114,12 +113,6 @@ DENUDE = {
     "jjk-fiche.js": V.bundle_denude,
     "jjk-attr-map.js": V.attrmap_denude,
 }
-
-
-def lire(chemin):
-    # utf-8-sig : le bundle porte une marque d'ordre des octets
-    with io.open(chemin, encoding="utf-8-sig") as f:
-        return f.read()
 
 
 def _octets_denudes(nom, octets, cle):
@@ -160,12 +153,13 @@ def _octets_denudes(nom, octets, cle):
     return (neuf.encode("utf-8"), None)
 
 
-# La lecture du numéro était recopiée ici, au nom du découplage entre outils de
-# publication. Le suffixe « b » a montré ce que coûtait cette copie : le jour où
-# une expression régulière apprend une forme, les autres continuent de la
-# rejeter sans un mot. Elle vit maintenant dans scripts/version_fiche.py, avec
-# la retenue et la réduction en ligne X.Y, et tout le monde y lit la même chose.
-constantes_bundle = V.constantes_bundle
+# TOUT CE QUI TOUCHE AU NUMÉRO VIENT DE scripts/version_fiche.py, et rien n'en
+# est recopié ici : ni la lecture des constantes du bundle (V.constantes_bundle),
+# ni le lecteur utf-8-sig (V.lire_fichier), ni le saut de ligne dominant
+# (V.fin_de_ligne), ni les chemins des porteurs (V.BUNDLE, V.MANIFESTE). Chacun
+# l'a été, au nom du découplage entre outils de publication ; le suffixe « b » a
+# montré le prix de ces copies : le jour où une expression régulière apprend une
+# forme, les autres continuent de la rejeter sans un mot.
 
 
 # ------------------------------------------------------------ le hook MkDocs
@@ -296,13 +290,6 @@ def _page_archive(cle, schema):
 
 
 # ------------------------------------------------------------- le manifeste
-# Le saut de ligne dominant se lit dans la grammaire partagée : le manifeste est
-# en CRLF, et le réécrire en LF ferait un diff de tout le fichier à chaque
-# archivage, où la vraie modification, une clé de plus, se perdrait. Le nom
-# privé reste : scripts/release_fiche.py le prend ici.
-_fin_de_ligne = V.fin_de_ligne
-
-
 def maj_manifeste(chemin, cle, schema, essai=False, retirer=None):
     """Ajoute (ou retire) une entrée sous « archives », sans toucher au reste.
 
@@ -316,7 +303,10 @@ def maj_manifeste(chemin, cle, schema, essai=False, retirer=None):
     """
     with open(chemin, "rb") as f:
         octets = f.read()
-    nl = _fin_de_ligne(octets)
+    # le manifeste est en CRLF : le réécrire en LF ferait un diff de tout le
+    # fichier à chaque archivage, où la vraie modification, une clé de plus, se
+    # perdrait. La règle vit dans la grammaire partagée.
+    nl = V.fin_de_ligne(octets)
     man = json.loads(octets.decode("utf-8"))
 
     archives = man.get("archives")
@@ -349,17 +339,17 @@ def maj_manifeste(chemin, cle, schema, essai=False, retirer=None):
 # ------------------------------------------------------------------- marche
 def figer(racine, essai=False, force=False):
     docs = os.path.join(racine, "docs")
-    bundle = os.path.join(docs, "javascripts", "jjk-fiche.js")
-    manifeste = os.path.join(docs, "jjk-manifeste.json")
+    bundle = os.path.join(racine, V.BUNDLE)
+    manifeste = os.path.join(racine, V.MANIFESTE)
     fautes = []
 
     if not os.path.exists(bundle):
-        return ["bundle introuvable : docs/javascripts/jjk-fiche.js"]
+        return ["bundle introuvable : " + V.BUNDLE.replace(os.sep, "/")]
     if not os.path.exists(manifeste):
-        return ["manifeste introuvable : docs/jjk-manifeste.json"]
+        return ["manifeste introuvable : " + V.MANIFESTE.replace(os.sep, "/")]
 
-    src = lire(bundle)
-    release, schema = constantes_bundle(src)
+    src = V.lire_fichier(bundle)
+    release, schema = V.constantes_bundle(src)
     # « schema is None » et non « not schema » : le schéma est un entier libre,
     # détaché du majeur, et rien ne lui interdit de valoir 0 un jour.
     if not release or schema is None:
@@ -515,7 +505,7 @@ def supprimer(racine, release, essai=False):
     époque ne remonte plus du tout.
     """
     docs = os.path.join(racine, "docs")
-    manifeste = os.path.join(docs, "jjk-manifeste.json")
+    manifeste = os.path.join(racine, V.MANIFESTE)
     with open(manifeste, "rb") as f:
         man = json.loads(f.read().decode("utf-8"))
     # La comparaison porte sur la LIGNE, pas sur le texte. Avec une release
