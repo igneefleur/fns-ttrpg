@@ -100,7 +100,6 @@
         }
         charId = d.charId;
         ecrivable = jugeDroits(d);
-        ditMenage(d);
         // le personnage est trouvé : ces deux écrans-là n'ont plus lieu d'être.
         // Les autres disent l'état de la LECTURE, que seule la lecture peut lever.
         if (etatMontre === "absent" || etatMontre === "pont") montreEtat(null);

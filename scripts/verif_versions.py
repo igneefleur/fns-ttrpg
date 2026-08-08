@@ -56,7 +56,6 @@ régulière et non par PyYAML.
 """
 
 import argparse
-import io
 import json
 import os
 import re
@@ -66,14 +65,17 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import version_fiche as V  # noqa: E402  (la grammaire du numéro, partagée)
 
 RACINE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-BUNDLE = os.path.join(RACINE, "docs", "javascripts", "jjk-fiche.js")
-MANIFESTE = os.path.join(RACINE, "docs", "jjk-manifeste.json")
-MKDOCS = os.path.join(RACINE, "mkdocs.yml")
+# LES QUATRE PORTEURS SE NOMMENT DANS version_fiche, ET NULLE PART AILLEURS. Ils
+# étaient recodés ici, et le contrôle aurait fini par juger d'autres fichiers que
+# ceux que la publication écrit : le jour où l'un des deux jeux de chemins bouge,
+# ce script dit « rien à signaler » sur le fichier que personne ne sert.
+BUNDLE = os.path.join(RACINE, V.BUNDLE)
+MANIFESTE = os.path.join(RACINE, V.MANIFESTE)
+MKDOCS = os.path.join(RACINE, V.MKDOCS)
+ATTRMAP = os.path.join(RACINE, V.ATTRMAP)
 DOCS = os.path.join(RACINE, "docs")
-# Deux fichiers portent eux aussi un numéro, et personne ne les regardait :
-# l'un répond « quelle version a écrit cette fiche ? » quand le manifeste
-# manque, l'autre décide jusqu'où une fiche sait migrer.
-ATTRMAP = os.path.join(RACINE, "docs", "javascripts", "jjk-attr-map.js")
+# Ce fichier-ci ne porte pas le numéro mais décide jusqu'où une fiche sait
+# migrer : personne ne le regardait.
 MIGRATIONS = os.path.join(RACINE, "docs", "javascripts", "jjk-migrations.js")
 MODS = os.path.join(RACINE, "docs", "javascripts", "jjk-mods.js")
 # L'extension est une COQUILLE : son numéro avance seul, et le seul contrôle
@@ -84,12 +86,6 @@ EXT_SIGNEE = os.path.join(RACINE, "docs", "download", "ext-signed.json")
 
 fautes = []
 notes = []
-
-
-def lire(chemin):
-    # utf-8-sig : jjk-fiche.js porte une marque d'ordre des octets
-    with io.open(chemin, encoding="utf-8-sig") as f:
-        return f.read()
 
 
 # ---------------------------------------------------------------- le bundle
@@ -104,24 +100,11 @@ def chaine_migrations(src):
     return (int(base.group(1)) if base else None, cibles)
 
 
-# ------------------------------------------------------------------ les ?v=
-def versions_mkdocs(src):
-    """{ 'javascripts/jjk-fiche.js': '1' } d'après extra_css et extra_javascript."""
-    out = {}
-    for ligne in src.splitlines():
-        m = re.match(r"^\s*-\s*([^\s#]+\.(?:js|css))(\?v=([^\s#]+))?\s*(?:#.*)?$", ligne)
-        if m:
-            out[m.group(1)] = m.group(3)
-    return out
-
-
-def sans_v(url):
-    return url.split("?", 1)[0]
-
-
-def version_de(url):
-    m = re.search(r"[?&]v=([^&]+)", url)
-    return m.group(1) if m else None
+# Les ?v= se lisent dans version_fiche (V.sans_v, V.serial_v, V.serials_mkdocs).
+# Ces trois fonctions étaient écrites ici ET dans release_fiche.py, avec le même
+# motif de ligne mkdocs recopié mot pour mot : celui qui MONTE les ?v= et celui
+# qui les CONTRÔLE doivent lire mkdocs.yml de la même façon, ou le contrôle
+# approuve ce que la montée n'a pas touché.
 
 
 # ------------------------------------------------------- URL du manifeste
@@ -180,7 +163,7 @@ def controle_extension():
         if not os.path.exists(chemin):
             return
         try:
-            m = json.loads(lire(chemin))
+            m = json.loads(V.lire_fichier(chemin))
         except ValueError as e:
             fautes.append("%s illisible : %s" % (os.path.relpath(chemin, RACINE), e))
             return
@@ -222,13 +205,13 @@ def controle_extension():
         notes.append("extension : version %s (aucune empreinte signée à comparer)" % version)
         return
     try:
-        signee = json.loads(lire(EXT_SIGNEE)).get("version")
+        signee = json.loads(V.lire_fichier(EXT_SIGNEE)).get("version")
     except ValueError:
         signee = None
-    # LE RECUL SE COMPARE SUR QUATRE NOMBRES. V.compare ne connaît que le
-    # tronc, et rendait None sur « 3.6.0.1 » : le contrôle était alors SAUTÉ,
-    # en le disant, mais sauté quand même — c'est-à-dire précisément quand le
-    # compteur de signatures est en service, le seul moment où deux numéros
+    # LE RECUL SE COMPARE SUR QUATRE NOMBRES. La grammaire du projet n'en connaît
+    # que trois et rend « illisible » sur « 3.6.0.1 » : le contrôle était alors
+    # SAUTÉ, en le disant, mais sauté quand même — c'est-à-dire précisément quand
+    # le compteur de signatures est en service, le seul moment où deux numéros
     # peuvent se ressembler au point qu'on s'y trompe.
     def rang4(t):
         mx = str(t).split(".")
@@ -264,12 +247,12 @@ def main(archive_differee=False):
     if fautes:
         return rendre()
 
-    release, schema = V.constantes_bundle(lire(BUNDLE))
+    release, schema = V.constantes_bundle(V.lire_fichier(BUNDLE))
 
     try:
-        man = json.loads(lire(MANIFESTE))
+        man = json.loads(V.lire_fichier(MANIFESTE))
     except ValueError as e:
-        fautes.append("docs/jjk-manifeste.json illisible : %s" % e)
+        fautes.append("%s illisible : %s" % (V.MANIFESTE.replace(os.sep, "/"), e))
         return rendre()
 
     # 1. LA FORME du numéro, et les TROIS porteurs qui doivent dire le même mot
@@ -325,7 +308,7 @@ def main(archive_differee=False):
     # 1 bis. le TROISIÈME porteur, celui que la fiche écrit dans le personnage
     # quand le manifeste n'a pas répondu.
     if os.path.exists(ATTRMAP):
-        ra = V.release_attrmap(lire(ATTRMAP))
+        ra = V.release_attrmap(V.lire_fichier(ATTRMAP))
         if ra is None:
             notes.append("jjk-attr-map.js : pas de RELEASE_DEFAUT, contrôle sauté")
         elif isinstance(mrel, str) and ra != mrel:
@@ -339,7 +322,7 @@ def main(archive_differee=False):
     # deux seuls ancrages sont le manifeste (contrôlé plus haut) et la chaîne de
     # migrations, qui doit monter exactement jusqu'à lui.
     if os.path.exists(MIGRATIONS):
-        socle, cibles = chaine_migrations(lire(MIGRATIONS))
+        socle, cibles = chaine_migrations(V.lire_fichier(MIGRATIONS))
         if socle is None:
             fautes.append("jjk-migrations.js : SCHEMA_BASE introuvable")
         elif not cibles:
@@ -357,7 +340,7 @@ def main(archive_differee=False):
             else:
                 notes.append("jjk-migrations.js : chaîne %d -> %d" % (socle, max(cibles)))
         # le moteur doit être SERVI, sinon window.JjkMigr n'existe nulle part
-        nomme = any(sans_v(u) == "javascripts/jjk-migrations.js"
+        nomme = any(V.sans_v(u) == "javascripts/jjk-migrations.js"
                     for _, u in urls_du_manifeste(man))
         if not nomme:
             fautes.append("manifeste : jjk-migrations.js existe mais n'est nommé nulle part ; "
@@ -452,7 +435,7 @@ def main(archive_differee=False):
     # n'affiche ni bandeau ni panne : les mods du personnage cessent simplement
     # d'exister, sans un mot. C'est la panne la plus discrète du lot.
     if os.path.exists(MODS):
-        nomme = any(sans_v(u) == "javascripts/jjk-mods.js"
+        nomme = any(V.sans_v(u) == "javascripts/jjk-mods.js"
                     for _, u in urls_du_manifeste(man))
         if not nomme:
             fautes.append("manifeste : jjk-mods.js existe mais n'est nommé nulle part ; "
@@ -461,22 +444,22 @@ def main(archive_differee=False):
         # version d'origine ne doit pas lui faire perdre ses mods
         for rel, spec in sorted(brutes.items()):
             js = (spec or {}).get("js") or []
-            if not any(sans_v(u).endswith("/jjk-mods.js") for u in js):
+            if not any(V.sans_v(u).endswith("/jjk-mods.js") for u in js):
                 fautes.append("archive %s : elle ne nomme pas jjk-mods.js ; un personnage "
                               "qui porte des mods les perdrait en rouvrant cette version" % rel)
 
     # 5. ?v= : mkdocs.yml et le manifeste doivent dire la même chose
-    mk = versions_mkdocs(lire(MKDOCS))
+    mk = V.serials_mkdocs(V.lire_fichier(MKDOCS))
     urls = urls_du_manifeste(man)
     communs = 0
     for ou, u in urls:
-        chemin = sans_v(u)
+        chemin = V.sans_v(u)
         if chemin not in mk:
             # normal : l'amorce, jjk-roll20.css et les archives ne sont
             # chargées QUE par le manifeste, le site ne les connaît pas
             continue
         communs += 1
-        vm, vk = version_de(u), mk[chemin]
+        vm, vk = V.serial_v(u), mk[chemin]
         if vm != vk:
             fautes.append("?v= discordant pour %s : manifeste %s (%s), mkdocs.yml %s"
                           % (chemin, "?v=" + vm if vm else "aucun", ou, "?v=" + vk if vk else "aucun"))
@@ -488,9 +471,9 @@ def main(archive_differee=False):
             fautes.append("manifeste : URL non relative en %s (%s), l'amorceur la refuserait et "
                           "retomberait sur son repli sans ?v=" % (ou, u))
             continue
-        cible = os.path.join(DOCS, sans_v(u).replace("/", os.sep))
+        cible = os.path.join(DOCS, V.sans_v(u).replace("/", os.sep))
         if not os.path.exists(cible):
-            fautes.append("manifeste : %s nomme docs/%s, qui n'existe pas" % (ou, sans_v(u)))
+            fautes.append("manifeste : %s nomme docs/%s, qui n'existe pas" % (ou, V.sans_v(u)))
 
     return rendre()
 

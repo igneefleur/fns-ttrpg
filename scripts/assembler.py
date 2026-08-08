@@ -79,12 +79,14 @@ relatifs a la racine du depot. L'indentation ne sert qu'a l'oeil.
     bom = oui | non   marque d'ordre des octets en tete du fichier produit
     fin = lf | crlf   fin de ligne du fichier produit
 
-Un morceau prefixe de « + » se soude au precedent SANS fin de ligne entre eux.
-C'est reserve a une coupure en plein milieu d'une ligne, ce qui ne devrait
-jamais arriver ; sans ce prefixe, un morceau qui ne finit pas par une fin de
-ligne est refuse. Un editeur qui mange le saut de ligne final souderait sinon
-« })(); » et « var X » sur une meme ligne, en silence, et le fichier produit
-serait faux sans que rien ne le dise.
+TOUT MORCEAU SAUF LE DERNIER DOIT FINIR PAR UNE FIN DE LIGNE, et un morceau qui
+n'en a pas est refuse. Un editeur qui mange le saut de ligne final souderait
+sinon « })(); » et « var X » sur une meme ligne, en silence, et le fichier
+produit serait faux sans que rien ne le dise. Il exista un prefixe « + » pour
+souder deux morceaux volontairement, coupure en plein milieu d'une ligne : aucun
+plan ne s'en est jamais servi, et une porte de sortie que personne n'emprunte
+n'est plus qu'un chemin de plus a relire dans le seul outil qui garantit
+l'octet.
 
 Un fichier absent du plan n'est pas touche : cet outil arrive avant le decoupage,
 et une publication doit continuer de fonctionner tant que rien n'est decoupe.
@@ -170,19 +172,18 @@ class Bloc(object):
         self.bom = False
         self.fin = "lf"
         self.variantes = None         # None = un seul fichier, sans substitution
-        self.morceaux = []            # (chemin, soude) ; soude = pas de fin de ligne avant
+        self.morceaux = []            # chemins des morceaux, dans l'ordre
 
 
 class Cible(object):
     """Un fichier servi, la liste ordonnee de ses morceaux, et ses valeurs."""
 
-    def __init__(self, bloc, sortie, variante, valeurs):
+    def __init__(self, bloc, sortie, valeurs):
         self.sortie = sortie              # chemin relatif au depot, reperes resolus
         self.ligne_plan = bloc.ligne_plan
         self.bom = bloc.bom
         self.fin = bloc.fin
         self.morceaux = bloc.morceaux
-        self.variante = variante          # nom de la variante, ou None
         self.valeurs = valeurs            # ce que les reperes valent ici
 
 
@@ -327,14 +328,7 @@ def charger_plan(chemin):
                 # que personne ait le moindre indice.
                 raise Faute("plan, ligne %d : cle inconnue « %s »" % (n, cle))
             continue
-        soude = ligne.startswith("+")
-        chemin_m = ligne[1:].strip() if soude else ligne
-        if not chemin_m:
-            raise Faute("plan, ligne %d : « + » sans nom de morceau" % n)
-        if soude and not courant.morceaux:
-            raise Faute("plan, ligne %d : le premier morceau de %s ne peut pas se souder "
-                        "a celui d'avant, il n'y en a pas" % (n, courant.modele))
-        courant.morceaux.append((chemin_m.replace("\\", "/"), soude))
+        courant.morceaux.append(ligne.replace("\\", "/"))
 
     for b in blocs:
         if not b.morceaux:
@@ -351,7 +345,7 @@ def _developpe(blocs, variantes, lignes_variantes):
             if RE_REPERE.search(b.modele):
                 raise Faute("plan, ligne %d : %s porte un repere mais aucune cle "
                             "« variantes » ne dit ce qu'il vaut" % (b.ligne_plan, b.modele))
-            cibles.append(Cible(b, b.modele, None, {}))
+            cibles.append(Cible(b, b.modele, {}))
             continue
         for nom in b.variantes:
             if nom not in variantes:
@@ -360,7 +354,7 @@ def _developpe(blocs, variantes, lignes_variantes):
             employees.add(nom)
             valeurs = variantes[nom]
             ou = "plan, ligne %d (variante %s)" % (b.ligne_plan, nom)
-            cibles.append(Cible(b, substitue(b.modele, valeurs, ou), nom, valeurs))
+            cibles.append(Cible(b, substitue(b.modele, valeurs, ou), valeurs))
     for nom in variantes:
         if nom not in employees:
             # Une variante orpheline veut dire qu'un fichier a perdu sa cle
@@ -393,7 +387,7 @@ def assembler(cible, racine):
     avec deux jeux de valeurs, donne les deux moities de l'extension.
     """
     bouts = []
-    for i, (rel, _soude) in enumerate(cible.morceaux):
+    for i, rel in enumerate(cible.morceaux):
         chemin = os.path.join(racine, rel.replace("/", os.sep))
         if not os.path.exists(chemin):
             raise Faute("%s : morceau introuvable, %s" % (cible.sortie, rel))
@@ -423,14 +417,12 @@ def assembler(cible, racine):
                     lignes[k] = substitue(l, cible.valeurs, "%s, ligne %d" % (rel, k + 1))
             texte = "\n".join(lignes)
         dernier = (i == len(cible.morceaux) - 1)
-        suivant_soude = (not dernier and cible.morceaux[i + 1][1])
-        if texte and not texte.endswith("\n") and not dernier and not suivant_soude:
+        if texte and not texte.endswith("\n") and not dernier:
             raise Faute(
                 "%s : le morceau %s ne finit pas par une fin de ligne. Sa derniere "
                 "ligne se souderait a la premiere du morceau suivant, et le fichier "
                 "produit serait faux sans que rien ne le montre. Remettre la fin de "
-                "ligne, ou prefixer le morceau suivant de « + » si la soudure est "
-                "voulue." % (cible.sortie, rel))
+                "ligne." % (cible.sortie, rel))
         bouts.append(texte)
     texte = "".join(bouts)
     octets = texte.replace("\n", FINS[cible.fin].decode("ascii")).encode("utf-8")
@@ -592,7 +584,7 @@ def _morceau_de_ligne(cible, racine, no):
     etait cense rendre facile.
     """
     debut = 1
-    for rel, _soude in cible.morceaux:
+    for rel in cible.morceaux:
         chemin = os.path.join(racine, rel.replace("/", os.sep))
         try:
             with open(chemin, "rb") as f:
@@ -604,9 +596,9 @@ def _morceau_de_ligne(cible, racine, no):
         # c'est-a-dire au seul endroit ou l'on a besoin qu'il soit juste.
         #
         # Un morceau qui finit par un saut de ligne fournit n lignes pour n
-        # sauts : la ligne suivante appartient DEJA au morceau d'apres. Un
-        # morceau qui n'en a pas (le dernier, ou un morceau soude par « + »)
-        # fournit une ligne de plus, celle qu'il laisse ouverte.
+        # sauts : la ligne suivante appartient DEJA au morceau d'apres. Le
+        # dernier morceau, seul autorise a ne pas en avoir, fournit une ligne de
+        # plus, celle qu'il laisse ouverte.
         texte = octets.replace(b"\r\n", b"\n")
         n = texte.count(b"\n")
         lignes = n if texte.endswith(b"\n") else n + 1
@@ -638,10 +630,12 @@ def ecrire(cible, racine, produit):
 
 
 # --------------------------------------------------- la porte de publication
-def porte(racine, essai=False, plan=None):
+def porte(racine, essai=False):
     """Assemble (ou verifie seulement) avant une publication.
 
-    Rend (ok, journal). Appelee par scripts/release_fiche.py.
+    Rend (ok, journal). Appelee par scripts/release_fiche.py, qui ne connait que
+    le plan par defaut : la publication assemble ce que la CI verifie, et un plan
+    choisi a l'appel aurait ouvert deux verites pour un seul depot.
 
       - plan absent            : rien a assembler, on laisse passer. Cet outil
                                  arrive AVANT le decoupage, et une publication
@@ -655,7 +649,7 @@ def porte(racine, essai=False, plan=None):
                                  source modifiee sans assemblage devient donc
                                  impossible a publier sans qu'on le voie.
     """
-    chemin_plan = plan or os.path.join(racine, PLAN_DEFAUT)
+    chemin_plan = os.path.join(racine, PLAN_DEFAUT)
     if not os.path.exists(chemin_plan):
         return (True, ["aucun plan (%s) : rien n'est encore decoupe, rien a assembler"
                        % os.path.relpath(chemin_plan, racine).replace(os.sep, "/")])

@@ -188,6 +188,29 @@ def wait_signed(amo, guid, version_id):
              "temps ; relancer plus tard (le téléchargement reprendra ici).")
 
 
+def ecrire_updates(gecko, version):
+    """Le fichier de mise à jour automatique, tel que Firefox l'attend.
+
+    LA FORME NE S'ÉCRIT QU'ICI. Elle l'était deux fois — à la signature, et dans
+    la réparation de scripts/ci_extension.py qui restaure un binaire signé depuis
+    AMO — et les deux copies ne se voyaient pas. C'est le manifeste qui porte
+    update_url vers ce fichier : Firefox y lit la dernière version et va la
+    chercher sur le site tout seul. Une clé de travers d'un côté, et la mise à
+    jour automatique s'arrête sans un mot chez tous ceux qui l'ont installée.
+    """
+    UPDATES.write_text(json.dumps({
+        "addons": {
+            gecko["id"]: {
+                "updates": [
+                    {"version": version, "update_link": XPI_URL,
+                     "browser_specific_settings": {"gecko": {
+                         "strict_min_version": gecko.get("strict_min_version", "109.0")}}}
+                ]
+            }
+        }
+    }, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
 def sign(issuer, secret):
     """Signe le .xpi courant et met à jour docs/download/ (xpi signé + updates.json)."""
     if not XPI.exists():
@@ -211,17 +234,7 @@ def sign(issuer, secret):
     print(f"[signature] {XPI.relative_to(ROOT)} remplacé par la version SIGNÉE "
           f"({len(dl.content)} octets)")
 
-    UPDATES.write_text(json.dumps({
-        "addons": {
-            guid: {
-                "updates": [
-                    {"version": version, "update_link": XPI_URL,
-                     "browser_specific_settings": {"gecko": {
-                         "strict_min_version": gecko.get("strict_min_version", "109.0")}}}
-                ]
-            }
-        }
-    }, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    ecrire_updates(gecko, version)
     print(f"[signature] {UPDATES.relative_to(ROOT)} mis à jour (v{version}) — "
           "les Firefox installés se mettront à jour tout seuls depuis le site.")
 

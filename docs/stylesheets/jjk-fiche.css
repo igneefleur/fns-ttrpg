@@ -4,8 +4,7 @@
  * chaude posée sur le parchemin, hiérarchie sérif, filets fins, un seul accent
  * carmin (onglet actif, valeurs finales, focus). Contrôles unifiés (steppers
  * fantômes, champs à filet, cartes douces). Palette scindée jour/nuit.
- * Toutes les tailles sont en rem : build_extension.py les réécrit en
- * calc(N * var(--pc-rem)) pour l'iframe Roll20. */
+ * Toutes les tailles sont en rem. */
 
 /* rem FIGÉ sur la page du créateur : la feuille garde une taille stable. */
 html:has(#perso-atelier) { font-size: 22px !important; }
@@ -139,7 +138,6 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-f > input:focus, .pc-f > select:focus { outline: none; border-bottom: 2px solid var(--red); }
 .pc-f > input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 .pc-f > input[type="number"]::-webkit-inner-spin-button, .pc-f > input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-.pc-f > .pc-ro { text-align: left; font-weight: 700; padding: .05rem .1rem .12rem; border-bottom: 1px solid var(--hair); color: var(--red-deep); font-variant-numeric: tabular-nums; }
 .pc-f.c12 { grid-column: span 12; } .pc-f.c6 { grid-column: span 6; }
 .pc-f.c4 { grid-column: span 4; } .pc-f.c3 { grid-column: span 3; } .pc-f.c2 { grid-column: span 2; }
 
@@ -314,7 +312,6 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-big { border: 1px solid var(--line-2); border-radius: 7px; background: var(--panel); text-align: center; padding: .28rem .2rem .32rem; transition: border-color .12s; }
 .pc-big .k { display: block; font-size: .5rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); white-space: nowrap; }
 .pc-big .v { display: block; font-size: var(--fs-hero); font-weight: 700; line-height: 1.1; color: var(--ink); font-variant-numeric: tabular-nums; margin-top: .08rem; white-space: nowrap; }
-.pc-big.red .v { color: var(--red-deep); }
 
 /* ---- PV / narration : lignes de contrôle ---- */
 .pc-kv { display: flex; align-items: center; gap: .35rem; padding: .12rem .05rem; font-size: .7rem; }
@@ -411,7 +408,6 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
   background: var(--card); color: var(--ink); font: inherit; font-size: .62rem;
 }
 .pc-select:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 2px var(--wash); }
-.pc-comp-row .pc-select.lv0 { color: var(--ink-3); }
 /* techniques : cartes nom + effet dans la carte d'art (onglet Art) */
 .pc-techniques { display: flex; flex-direction: column; gap: .2rem; padding: .15rem 0 0; }
 .pc-techniques:empty { display: none; }

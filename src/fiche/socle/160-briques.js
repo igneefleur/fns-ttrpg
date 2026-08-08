@@ -33,7 +33,7 @@
   }
   // stepper −/champ/+ : le champ du milieu est éditable (pc-num).
   // reg : registre de rafraîchissement (hooks par défaut ; optHooks pour le
-  // bloc rebâtissable des modificateurs de compétences, comme multiMod).
+  // bloc rebâtissable des modificateurs de compétences).
   function stepper(get, set, step, title, reg) {
     var w = el("span", "pc-step");
     w.appendChild(stepBtn("−", title ? "− " + step : null, function () { set(get() - step); refresh(); }));
@@ -51,26 +51,18 @@
   }
   // trois petits champs ± (équipement / art / décision du MJ), sommés dans la
   // valeur effective ; discrets, révélés au survol de l'hôte (.pc-mods-host).
-  // reg : registre de rafraîchissement (hooks, ou compHooks pour les lignes de
-  // compétences reconstruites par rebuildComps — un hook global y fuirait).
   var MMOD_SLOTS = ["équipement", "art", "autre"];
-  // slots : 3 par défaut ; 1 pour les lignes trop denses (compétences), comme
-  // les compétences personnalisées de la fiche HxH
-  function multiMod(map, key, reg, slots) {
-    reg = reg || hooks;
-    slots = slots || 3;
+  function multiMod(map, key) {
     var wrap = el("span", "pc-mmods");
     function arr() {
       if (!map[key]) map[key] = [0, 0, 0];
       return map[key];
     }
-    for (var i = 0; i < slots; i++) (function (i) {
+    for (var i = 0; i < MMOD_SLOTS.length; i++) (function (i) {
       var inp = el("input", "pc-mmod");
       inp.type = "number"; inp.step = "any"; inp.placeholder = "0";
-      inp.title = slots === 1
-        ? "Bonus ou malus divers (équipement, art, autre)."
-        : "Bonus ou malus divers (" + MMOD_SLOTS[i] + ") — emplacement " +
-          (i + 1) + " sur " + slots + " ; les modificateurs s'additionnent.";
+      inp.title = "Bonus ou malus divers (" + MMOD_SLOTS[i] + ") — emplacement " +
+                  (i + 1) + " sur " + MMOD_SLOTS.length + " ; les modificateurs s'additionnent.";
       var v0 = map[key] ? map[key][i] : 0;
       inp.value = v0 ? v0 : "";
       inp.classList.toggle("neg", v0 < 0);
@@ -80,7 +72,7 @@
         inp.classList.toggle("neg", arr()[i] < 0);
         refresh();
       });
-      reg.push(function () {
+      hooks.push(function () {
         if (document.activeElement !== inp) {
           var v = map[key] ? map[key][i] : 0;
           inp.value = v ? v : "";

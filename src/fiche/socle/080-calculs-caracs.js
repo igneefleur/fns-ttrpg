@@ -81,9 +81,6 @@
     return false;
   }
   function langueKey(nom) { return LANGUE_CARAC + "/" + nom; }
-  function estLangue(key) {
-    return state.langues.some(function (n) { return langueKey(n) === key; });
-  }
   // index du stade « Expert » : la langue du personnage y monte gratuitement
   function stadeIndex(nom) {
     for (var i = 0; i < DATA.stades.length; i++) {

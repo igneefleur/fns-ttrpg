@@ -27,7 +27,6 @@
         tete.appendChild(el("div", "nb-place-nom"));
         tete.appendChild(el("div", "nb-place-compte"));
         d.appendChild(tete);
-        d.appendChild(el("div", "nb-place-corps"));
         placesDom[p.id] = d;
       }
       if (d.parentNode !== hote) hote.appendChild(d);
@@ -59,7 +58,6 @@
       // pixels de large : l'infobulle le rend entier, la table ne devient donc
       // jamais anonyme.
       nom.title = p.nom;
-      d.dataset.place = p.id;
     });
     Object.keys(placesDom).forEach(function (id) {
       if (vus[id]) return;

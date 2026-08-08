@@ -50,8 +50,11 @@ en stable, et une régression du site de chantier abîme les mêmes personnages.
 
 Partagées :
 
-- `content-jjk.js` + `popup/` — le popup (lien des règles, case du mode beta,
-  case du plateau) et la reprise des fiches du site.
+- `popup/` — le popup (lien des règles, case du mode beta, case du plateau).
+  L'extension NE LIT PLUS LE SITE. Un `content-jjk.js` recopiait les fiches
+  calculées du localStorage du site vers `browser.storage.local` toutes les
+  trois secondes ; personne n'a jamais relu ce qu'il y déposait, et il coûtait
+  au manifeste trois adresses d'hôte de plus à faire accepter par Mozilla.
 - `creator.html` — la coquille de l'onglet : une iframe vers la fiche du site,
   charId passé dans le hash (`#c=<id>`). Immunisée contre la CSP de Roll20.
 - `panneau.html` — la coquille générique des panneaux flottants (le plateau de
@@ -59,7 +62,7 @@ Partagées :
 - `shell-loader.js` — ajoute à ces deux pages la balise `<script>` de la bonne
   coquille, d'après le mode écrit dans le hash (`&m=`). Aucun script en ligne,
   aucun eval : une page d'extension ne les accepte pas.
-- `version.js` — les deux numéros du projet, montrés par le popup. Le manifeste,
+- `parties.js` — les deux numéros du projet, montrés par le popup. Le manifeste,
   lui, ne porte que le numéro du paquet signé, le même pour les deux parties.
 - `creator.css`, `overlay.css`, `icons/`.
 

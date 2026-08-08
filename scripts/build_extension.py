@@ -233,7 +233,7 @@ def _marquees(texte):
 
 
 def _parties_a_jour():
-    """Chaque fichier des deux moitiés sort-il bien de ses morceaux ? (ok, engendrés)
+    """Chaque fichier des deux moitiés sort-il bien de ses morceaux ? Rend True.
 
     LE CONTRÔLE A CHANGÉ DE NATURE. Il comparait stable/ et beta/ ligne à ligne :
     la duplication était un fait, et on surveillait sa dérive. Les deux moitiés
@@ -251,14 +251,14 @@ def _parties_a_jour():
     extension/firefox/ part dans le paquet.
     """
     if not PLAN.exists():
-        return (refus(f"{PLAN.relative_to(ROOT).as_posix()} est absent : les deux moitiés "
-                      f"de l'extension n'ont plus de source. Elles ne sont plus comparées "
-                      f"l'une à l'autre, c'est ce plan qui les engendre."), set())
+        return refus(f"{PLAN.relative_to(ROOT).as_posix()} est absent : les deux moitiés "
+                     f"de l'extension n'ont plus de source. Elles ne sont plus comparées "
+                     f"l'une à l'autre, c'est ce plan qui les engendre.")
     try:
         cibles = [c for c in assembler.charger_plan(str(PLAN))
                   if c.sortie.startswith("extension/firefox/")]
     except (OSError, assembler.Faute) as e:
-        return (refus(f"plan d'assemblage illisible : {e}"), set())
+        return refus(f"plan d'assemblage illisible : {e}")
 
     ok = True
     engendres = {c.sortie for c in cibles}
@@ -292,7 +292,7 @@ def _parties_a_jour():
                            f"{PLAN.relative_to(ROOT).as_posix()} : il a été posé à la main "
                            f"dans une moitié, rien ne le tient, et il part quand même dans "
                            f"le paquet signé.")
-    return (ok, engendres)
+    return ok
 
 
 def verifie():
@@ -383,7 +383,7 @@ def verifie():
 
     # Les deux parties sortent du plan d'assemblage : ni comparées l'une à
     # l'autre, ni écrites à la main — engendrées, et vérifiées à jour.
-    ok = _parties_a_jour()[0] and ok
+    ok = _parties_a_jour() and ok
     jeux = {}
     for partie in PARTIES:
         dossier = FF / partie
@@ -421,7 +421,17 @@ def verifie():
                 # le mode déclaré doit être celui du dossier
                 if "var MODE" in ligne and ('"%s"' % partie) not in ligne:
                     ok = refus(f"{partie}/{nom} : MODE ne vaut pas {partie!r} -> {nue}")
-                # une adresse du site doit être celle du site de cette partie
+                # UNE REDITE VOULUE, ET LA SEULE DE CE FICHIER. La correspondance
+                # « moitié -> site » (stable pour /jjk/, beta pour /jjk-beta/) est
+                # AUSSI déclarée dans scripts/assemblage.plan, sous « site = ». La
+                # réécrire ici n'est pas un oubli : c'est le témoin. Si les deux
+                # lignes ne disaient qu'une fois la même chose, le contrôle
+                # relirait au fichier engendré exactement ce que le plan y a
+                # écrit, et approuverait un « site = jjk » posé sous
+                # « [variante beta] » — la faute que l'assemblage ne peut pas
+                # attraper, puisqu'il l'exécute fidèlement. Ces deux lignes-ci se
+                # corrigent donc À LA MAIN, et le jour où elles contredisent le
+                # plan, c'est qu'il faut aller lire le plan.
                 if "igneefleur.github.io" in ligne:
                     attendu = "/jjk-beta/" if partie == "beta" else "/jjk/"
                     interdit = "/jjk/" if partie == "beta" else "/jjk-beta/"

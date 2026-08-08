@@ -44,8 +44,8 @@
         var existing = null;
         persos.forEach(function (p) { if (p.name === name) existing = p; });
         var copy = JSON.parse(JSON.stringify(state));
-        if (existing) { existing.state = copy; existing.updated = nowStamp(); }
-        else persos.push({ id: "p" + Date.now().toString(36), name: name, state: copy, updated: nowStamp() });
+        if (existing) { existing.state = copy; }
+        else persos.push({ id: "p" + Date.now().toString(36), name: name, state: copy });
         savePersos(persos);
         fillSel();
         flash("« " + name + " » enregistré.");

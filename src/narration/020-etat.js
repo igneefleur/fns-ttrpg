@@ -19,7 +19,6 @@
   var fonds = {};           // id de place -> fond TÉLÉVERSÉ (data: WebP), lu de Roll20
   var attente = {};         // nom d'attribut -> {val, t} : nos écritures pas encore revenues
   var prise = null;         // jeton en cours de déplacement
-  var timer = null;
   var lu = false;           // au moins une lecture réussie
   var repondu = false;      // le pont a parlé, même pour dire qu'il n'y a rien
 

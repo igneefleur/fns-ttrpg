@@ -62,7 +62,6 @@ visent la même ligne, mais chacun avance quand il a une raison d'avancer.
 """
 
 import argparse
-import importlib.util
 import io
 import json
 import os
@@ -96,23 +95,13 @@ FICHIERS = [
 ]
 
 
-def _module(racine, nom):
-    """Charge un script voisin par chemin (scripts/ n'est pas un paquet)."""
-    chemin = os.path.join(racine, "scripts", nom + ".py")
-    spec = importlib.util.spec_from_file_location("jjk_" + nom, chemin)
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod
-
-
-def lire(chemin):
-    with io.open(chemin, encoding="utf-8-sig") as f:
-        return f.read()
-
-
-# une seule lecture du numéro pour tous les outils de publication : voir
-# scripts/version_fiche.py, qui porte aussi la retenue et la ligne X.Y
-constantes_bundle = V.constantes_bundle
+# UNE SEULE GRAMMAIRE POUR TOUS LES OUTILS DE PUBLICATION, dans
+# scripts/version_fiche.py : les chemins des porteurs (V.BUNDLE, V.MANIFESTE,
+# V.MKDOCS), le lecteur utf-8-sig (V.lire_fichier), le saut de ligne dominant
+# (V.fin_de_ligne), la lecture des constantes du bundle (V.constantes_bundle) et
+# la forme des ?v= (V.sans_v, V.serial_v, V.serials_mkdocs). Ce fichier les avait
+# tous recopiés, dont un détour qui rechargeait archive_fiche.py par chemin pour
+# n'y reprendre qu'un alias de V.fin_de_ligne.
 
 
 # ---------------------------------------------------------- 1. la descente
@@ -187,24 +176,14 @@ def controle_descente(racine, schema, journal):
 
 
 # ------------------------------------------------------------- 2. les ?v=
-def _v_de(url):
-    m = re.search(r"[?&]v=([^&\s#]+)", url)
-    return m.group(1) if m else None
-
-
-def _sans_v(url):
-    return url.split("?", 1)[0]
-
-
 def serials_actuels(racine):
     """Tous les ?v= portés par les fichiers de la fiche, des deux côtés."""
     vus = []
-    src = lire(os.path.join(racine, "mkdocs.yml"))
-    for ligne in src.splitlines():
-        m = re.match(r"^\s*-\s*([^\s#]+\.(?:js|css))(\?v=([^\s#]+))?\s*(?:#.*)?$", ligne)
-        if m and m.group(1) in FICHIERS and m.group(3):
-            vus.append(m.group(3))
-    with open(os.path.join(racine, "docs", "jjk-manifeste.json"), "rb") as f:
+    for chemin, serial in V.serials_mkdocs(
+            V.lire_fichier(os.path.join(racine, V.MKDOCS))).items():
+        if chemin in FICHIERS and serial:
+            vus.append(serial)
+    with open(os.path.join(racine, V.MANIFESTE), "rb") as f:
         man = json.loads(f.read().decode("utf-8"))
     # « narration » compte comme les autres. monter_manifeste() montait déjà ce
     # bloc, mais personne ne le LISAIT ici : le plus grand ?v= servi pouvait
@@ -217,8 +196,8 @@ def serials_actuels(racine):
                   + [(man.get("bundle") or {}).get("js") or []]
                   + [(man.get("bundle") or {}).get("css") or []]):
         for u in liste:
-            if _sans_v(u) in FICHIERS and _v_de(u):
-                vus.append(_v_de(u))
+            if V.sans_v(u) in FICHIERS and V.serial_v(u):
+                vus.append(V.serial_v(u))
     return vus
 
 
@@ -239,7 +218,7 @@ def prochain_serial(vus):
 
 
 def monter_mkdocs(racine, serial, essai=False):
-    chemin = os.path.join(racine, "mkdocs.yml")
+    chemin = os.path.join(racine, V.MKDOCS)
     with open(chemin, "rb") as f:
         texte = f.read().decode("utf-8")   # la marque d'ordre des octets reste dans le texte
     touches = []
@@ -278,15 +257,15 @@ def poser_schema(racine, schema, essai=False):
     Le manifeste est relu et rendu dans son ordre d'origine, avec ses fins de
     ligne d'origine : la seule clé qui bouge est celle-là.
     """
-    chemin = os.path.join(racine, "docs", "jjk-manifeste.json")
+    chemin = os.path.join(racine, V.MANIFESTE)
     if not os.path.exists(chemin):
-        return (False, "manifeste introuvable : docs/jjk-manifeste.json")
+        return (False, "manifeste introuvable : " + V.MANIFESTE.replace(os.sep, "/"))
     with open(chemin, "rb") as f:
         octets = f.read()
     try:
         man = json.loads(octets.decode("utf-8"))
     except ValueError as e:
-        return (False, "docs/jjk-manifeste.json illisible : %s" % e)
+        return (False, "%s illisible : %s" % (V.MANIFESTE.replace(os.sep, "/"), e))
     if man.get("schema") == schema:
         return (False, None)
     man["schema"] = schema
@@ -300,17 +279,16 @@ def poser_schema(racine, schema, essai=False):
 def monter_manifeste(racine, serial, essai=False):
     """Monte les ?v= du manifeste. Les ARCHIVES n'y passent pas : leur chemin
     est immuable, un ?v= y serait un mensonge."""
-    archive = _module(racine, "archive_fiche")
-    chemin = os.path.join(racine, "docs", "jjk-manifeste.json")
+    chemin = os.path.join(racine, V.MANIFESTE)
     with open(chemin, "rb") as f:
         octets = f.read()
-    nl = archive._fin_de_ligne(octets)
+    nl = V.fin_de_ligne(octets)
     man = json.loads(octets.decode("utf-8"))
     touches = []
 
     def monte(liste):
         for i, u in enumerate(liste or []):
-            base = _sans_v(u)
+            base = V.sans_v(u)
             if base in FICHIERS:
                 liste[i] = base + "?v=" + str(serial)
                 touches.append(base)
@@ -481,11 +459,11 @@ def main():
         print("  ARRÊT : les morceaux ne s'assemblent pas.")
         return 1
 
-    bundle = os.path.join(racine, "docs", "javascripts", "jjk-fiche.js")
+    bundle = os.path.join(racine, V.BUNDLE)
     if not os.path.exists(bundle):
-        print("  bundle introuvable : docs/javascripts/jjk-fiche.js")
+        print("  bundle introuvable : " + V.BUNDLE.replace(os.sep, "/"))
         return 1
-    release, schema = constantes_bundle(lire(bundle))
+    release, schema = V.constantes_bundle(V.lire_fichier(bundle))
     # « schema is None » : le schéma est un entier libre, détaché du majeur, et
     # rien ne lui interdit de valoir 0 le jour où la numérotation repart
     if not release or schema is None:

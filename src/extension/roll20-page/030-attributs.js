@@ -74,14 +74,6 @@
   //    -> aucun événement change -> Roll20 ne rafraîchit pas la fiche -> pas de crash ;
   //  - save(null, {silent:true}) persiste dans Firebase (le sync ne dépend pas de silent).
   //
-  // LES ATTRIBUTS SONT PASSÉS À save(), et non laissés au modèle. « save(null) »
-  // compte sur Backbone pour envoyer l'état courant du modèle ; les modèles de
-  // Roll20 sont adossés à Firebase et rien ne garantit ce contrat. Mesuré chez
-  // l'auteur sur le personnage « Narration » : les écritures partaient, et la
-  // relecture rendait l'ANCIENNE position, indéfiniment — donc rien n'était
-  // persisté. C'est la seule différence entre ce chemin et celui de la fiche,
-  // qui lui fonctionne depuis des mois.
-  //
   // Le silence est CONSERVÉ : il n'est pas en cause, et il est plus nécessaire
   // que jamais depuis que le pont ouvre lui-même la fiche de Narration.
   //
@@ -109,7 +101,11 @@
     catch (e) {}
     return txt.slice(0, 120);
   }
-  function sauve(m, name, data) {
+  // Les attributs ne sont PAS repassés ici : c'est « m.save(null, …) », et null
+  // dit à Backbone d'envoyer l'état courant du modèle, celui que le set juste
+  // au-dessus vient d'y poser. Un troisième argument aurait laissé croire que
+  // save écrit ce qu'on lui tend, alors qu'il n'en lisait rien.
+  function sauve(m, name) {
     if (!m || !m.save) return;
     var fini = false;
     try {
@@ -135,7 +131,7 @@
     if (tous.length > 1) doublons(name, tous.length);
     if (!tous.length) {
       var neuf = ch.attribs.create(data, { silent: true });
-      sauve(neuf, name, data);
+      sauve(neuf, name);
       return relu(neuf, name, data);
     }
     for (var k = 0; k < tous.length; k++) {
@@ -145,7 +141,7 @@
       // ouverte — et le pont ouvre justement celle de « Narration ».
       if (mk.set) mk.set(data, { silent: true });
       else { mk.attributes = mk.attributes || {}; mk.attributes.name = data.name; mk.attributes.current = data.current; mk.attributes.max = data.max; }
-      sauve(mk, name, data);
+      sauve(mk, name);
     }
     return relu(tous[0], name, data);
   }

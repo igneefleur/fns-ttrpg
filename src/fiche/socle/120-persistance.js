@@ -74,21 +74,10 @@
   // bibliothèque (site seulement : dans Roll20, une fiche par personnage)
   var PKEY = "jjk-persos";
   function loadPersos() { try { var a = JSON.parse(STORE.getItem(PKEY)); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+  // jjk-cards ne porte QUE la fiche ouverte (« _current »), la seule que le
+  // popup de l'extension et les attributs miroir lisent : y recalculer une carte
+  // par personnage de la bibliothèque ne servait personne.
   function savePersos(a) {
     try { STORE.setItem(PKEY, JSON.stringify(a)); } catch (e) {}
-    var cards;
-    try { cards = JSON.parse(STORE.getItem("jjk-cards")) || {}; } catch (e) { cards = {}; }
-    var keep = { _current: cards._current };
-    a.forEach(function (p) {
-      var saved = state, cur;
-      try { cur = normalize(JSON.parse(JSON.stringify(p.state))); } catch (e) { cur = null; }
-      if (cur) {
-        state = cur;
-        var card = computeCard(); card.id = p.id; card.name = p.name;
-        keep[p.id] = card;
-      }
-      state = saved;
-    });
-    try { STORE.setItem("jjk-cards", JSON.stringify(keep)); } catch (e) {}
   }
 

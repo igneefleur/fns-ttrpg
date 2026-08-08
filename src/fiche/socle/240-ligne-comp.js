@@ -120,6 +120,11 @@
       var m = compPoidsMalus(item.carac, item.key);
       segs.forEach(function (sg, i) {
         sg.classList.toggle("on", i <= c.stade);
+        // « cur » MARQUE LE STADE COURANT, et n'a effectivement aucune regle de
+        // style : c'est un REPERE, pas une decoration. Un audit l'a retiree pour
+        // cette raison, et quatre sondes sont tombees — c'est par elle qu'on
+        // lit, de l'exterieur, a quel stade une competence se trouve. Une marque
+        // sans peinture reste une marque.
         sg.classList.toggle("cur", i === c.stade);
       });
       total.textContent = sign(valeur(c));
@@ -127,12 +132,11 @@
       // le malus compte, sans quoi une compétence grisée comme inerte afficherait
       // un total qui bouge à chaque objet rangé dans le sac
       total.classList.toggle("zero", !c.stade && !d && !m && !opts.value);
-      total.classList.toggle("adj", d !== 0 || m !== 0 || (opts.adj ? opts.adj() : false));
+      total.classList.toggle("adj", d !== 0 || m !== 0);
       total.title = item.carac + " " + sign(caracTotal(item.carac)) +
                     " · stade " + sign(stadeInfo(c.stade).bonus) +
                     (d ? " · modificateur (Options) " + sign(d) : "") +
                     (m ? " · poids " + sign(-m) : "") +
-                    (opts.detail ? opts.detail() : "") +
                     (item.langue && state.langueBase === item.name ? " · langue du personnage (gratuite)" : "") +
                     " — clic : lancer";
     });

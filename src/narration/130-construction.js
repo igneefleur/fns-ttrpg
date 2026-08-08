@@ -1,7 +1,7 @@
 
   // ---------- construction ----------
-  var racine, barre, plateau, coteMj, coteJoueurs, coucheJetons;
-  var lblTotal, boiteTotal, lblHors, boiteHors, lblAvis, btnNuit, btnReglages;
+  var racine, coteMj, coteJoueurs, coucheJetons;
+  var lblTotal, boiteTotal, lblHors, boiteHors, lblAvis, btnNuit;
   var boiteMot, lblMot;
   var jaugeRef = null;
   var placesDom = {};   // id de place -> élément
@@ -22,7 +22,7 @@
     racine = document.getElementById("nb");
     racine.innerHTML = "";   // le mot d'attente de l'amorceur a fait son office
 
-    barre = el("div", "nb-barre");
+    var barre = el("div", "nb-barre");
     boiteTotal = kv("nb-total", "Jetons");
     lblTotal = boiteTotal.lastChild;
     barre.appendChild(boiteTotal);
@@ -40,7 +40,7 @@
     btnNuit.innerHTML = SVG_NUIT;   // deux SVG écrits juste au-dessus, sans rien d'extérieur
     btnNuit.addEventListener("click", function () { poseNuit(nuitActive() ? "0" : "1"); });
     outils.appendChild(btnNuit);
-    btnReglages = el("button", "nb-btn", "Réglages");
+    var btnReglages = el("button", "nb-btn", "Réglages");
     btnReglages.type = "button";
     btnReglages.addEventListener("click", function () { ouvreReglages(); });
     outils.appendChild(btnReglages);
@@ -51,7 +51,7 @@
     lblAvis = el("div", "nb-avis");
     racine.appendChild(lblAvis);
 
-    plateau = el("div", "nb-plateau");
+    var plateau = el("div", "nb-plateau");
     coteMj = el("div", "nb-cote nb-cote-mj");
     coteJoueurs = el("div", "nb-cote nb-cote-joueurs");
     coucheJetons = el("div", "nb-jetons");

@@ -73,12 +73,12 @@
 
   /* La palette du livre, jour. Recopiée de docs/stylesheets/jjk-narration.css,
      qui la recopie elle-même de jjk-fiche.css : cette page ne charge rien
-     d'autre, elle doit tenir seule. */
+     d'autre, elle doit tenir seule. Recopiée mais non complète : on ne garde
+     que les tons dont ce panneau se sert, un ton mort étant un ton qui ment
+     sur ce qu'on peut peindre ici. */
   --paper:   #faf6eb;
-  --bg-side: #e4ddcd;
   --card:    #fffdf6;
   --panel:   #f6efdd;
-  --stripe:  #f1e8d3;
   --hair:    #e2d8c0;
   --line:    #c6bb9f;
   --line-2:  #d6cbb1;
@@ -115,10 +115,8 @@ html.night {
      sur la racine et non sur un scope, parce qu'ici toute la page est sombre. */
   color-scheme: dark;
   --paper:   #201c15;
-  --bg-side: #14110c;
   --card:    #262119;
   --panel:   #2f2a20;
-  --stripe:  #2b261d;
   --hair:    #39332a;
   --line:    #4f4838;
   --line-2:  #453e31;

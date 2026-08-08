@@ -23,7 +23,7 @@
     var sel = null;          // index dans items de l'objet affiché au panneau
     var dragIdx = null;
     var editGi = null;       // groupe à ouvrir en édition de nom au prochain render
-    var tileRefs = {};       // idx -> { tile, nom, badge } pour maj sans re-render
+    var tileRefs = {};       // idx -> { nom, badge, poids } pour maj sans re-render
     // Les poids des bandeaux se rafraîchissent SANS re-render : saisir un poids
     // dans le panneau recréerait sinon la tuile en cours d'édition, et le champ
     // frappé perdrait le focus au premier caractère.
@@ -155,7 +155,7 @@
       // pied inutile si tout est masqué : la tuile reste une vignette nette
       if (!O.nom && !O.poids && !O.qte) foot.style.display = "none";
       t.appendChild(foot);
-      tileRefs[idx] = { tile: t, nom: nom, badge: badge, poids: poids };
+      tileRefs[idx] = { nom: nom, badge: badge, poids: poids };
 
       t.addEventListener("click", function () { sel = idx; render(); });
       t.draggable = true;
