@@ -942,9 +942,6 @@
     return false;
   }
   function langueKey(nom) { return LANGUE_CARAC + "/" + nom; }
-  function estLangue(key) {
-    return state.langues.some(function (n) { return langueKey(n) === key; });
-  }
   // index du stade « Expert » : la langue du personnage y monte gratuitement
   function stadeIndex(nom) {
     for (var i = 0; i < DATA.stades.length; i++) {
@@ -1297,8 +1294,7 @@
         pv: state.pv === null ? null : pvCourant(), pvMax: pvMax(),
         vitesse: vitesse(), regen: regen(), initiative: initiative(), poids: poidsPorte()
       },
-      narration: state.narration,
-      updated: nowStamp()
+      narration: state.narration
     };
   }
 
@@ -1378,22 +1374,11 @@
   // bibliothèque (site seulement : dans Roll20, une fiche par personnage)
   var PKEY = "jjk-persos";
   function loadPersos() { try { var a = JSON.parse(STORE.getItem(PKEY)); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+  // jjk-cards ne porte QUE la fiche ouverte (« _current »), la seule que le
+  // popup de l'extension et les attributs miroir lisent : y recalculer une carte
+  // par personnage de la bibliothèque ne servait personne.
   function savePersos(a) {
     try { STORE.setItem(PKEY, JSON.stringify(a)); } catch (e) {}
-    var cards;
-    try { cards = JSON.parse(STORE.getItem("jjk-cards")) || {}; } catch (e) { cards = {}; }
-    var keep = { _current: cards._current };
-    a.forEach(function (p) {
-      var saved = state, cur;
-      try { cur = normalize(JSON.parse(JSON.stringify(p.state))); } catch (e) { cur = null; }
-      if (cur) {
-        state = cur;
-        var card = computeCard(); card.id = p.id; card.name = p.name;
-        keep[p.id] = card;
-      }
-      state = saved;
-    });
-    try { STORE.setItem("jjk-cards", JSON.stringify(keep)); } catch (e) {}
   }
 
   // ---------- envoi au tchat : destinataire et modificateur ----------
@@ -1729,7 +1714,7 @@
   }
   // stepper −/champ/+ : le champ du milieu est éditable (pc-num).
   // reg : registre de rafraîchissement (hooks par défaut ; optHooks pour le
-  // bloc rebâtissable des modificateurs de compétences, comme multiMod).
+  // bloc rebâtissable des modificateurs de compétences).
   function stepper(get, set, step, title, reg) {
     var w = el("span", "pc-step");
     w.appendChild(stepBtn("−", title ? "− " + step : null, function () { set(get() - step); refresh(); }));
@@ -1747,26 +1732,18 @@
   }
   // trois petits champs ± (équipement / art / décision du MJ), sommés dans la
   // valeur effective ; discrets, révélés au survol de l'hôte (.pc-mods-host).
-  // reg : registre de rafraîchissement (hooks, ou compHooks pour les lignes de
-  // compétences reconstruites par rebuildComps — un hook global y fuirait).
   var MMOD_SLOTS = ["équipement", "art", "autre"];
-  // slots : 3 par défaut ; 1 pour les lignes trop denses (compétences), comme
-  // les compétences personnalisées de la fiche HxH
-  function multiMod(map, key, reg, slots) {
-    reg = reg || hooks;
-    slots = slots || 3;
+  function multiMod(map, key) {
     var wrap = el("span", "pc-mmods");
     function arr() {
       if (!map[key]) map[key] = [0, 0, 0];
       return map[key];
     }
-    for (var i = 0; i < slots; i++) (function (i) {
+    for (var i = 0; i < MMOD_SLOTS.length; i++) (function (i) {
       var inp = el("input", "pc-mmod");
       inp.type = "number"; inp.step = "any"; inp.placeholder = "0";
-      inp.title = slots === 1
-        ? "Bonus ou malus divers (équipement, art, autre)."
-        : "Bonus ou malus divers (" + MMOD_SLOTS[i] + ") — emplacement " +
-          (i + 1) + " sur " + slots + " ; les modificateurs s'additionnent.";
+      inp.title = "Bonus ou malus divers (" + MMOD_SLOTS[i] + ") — emplacement " +
+                  (i + 1) + " sur " + MMOD_SLOTS.length + " ; les modificateurs s'additionnent.";
       var v0 = map[key] ? map[key][i] : 0;
       inp.value = v0 ? v0 : "";
       inp.classList.toggle("neg", v0 < 0);
@@ -1776,7 +1753,7 @@
         inp.classList.toggle("neg", arr()[i] < 0);
         refresh();
       });
-      reg.push(function () {
+      hooks.push(function () {
         if (document.activeElement !== inp) {
           var v = map[key] ? map[key][i] : 0;
           inp.value = v ? v : "";
@@ -1887,8 +1864,8 @@
         var existing = null;
         persos.forEach(function (p) { if (p.name === name) existing = p; });
         var copy = JSON.parse(JSON.stringify(state));
-        if (existing) { existing.state = copy; existing.updated = nowStamp(); }
-        else persos.push({ id: "p" + Date.now().toString(36), name: name, state: copy, updated: nowStamp() });
+        if (existing) { existing.state = copy; }
+        else persos.push({ id: "p" + Date.now().toString(36), name: name, state: copy });
         savePersos(persos);
         fillSel();
         flash("« " + name + " » enregistré.");
@@ -3414,6 +3391,11 @@
       var m = compPoidsMalus(item.carac, item.key);
       segs.forEach(function (sg, i) {
         sg.classList.toggle("on", i <= c.stade);
+        // « cur » MARQUE LE STADE COURANT, et n'a effectivement aucune regle de
+        // style : c'est un REPERE, pas une decoration. Un audit l'a retiree pour
+        // cette raison, et quatre sondes sont tombees — c'est par elle qu'on
+        // lit, de l'exterieur, a quel stade une competence se trouve. Une marque
+        // sans peinture reste une marque.
         sg.classList.toggle("cur", i === c.stade);
       });
       total.textContent = sign(valeur(c));
@@ -3421,12 +3403,11 @@
       // le malus compte, sans quoi une compétence grisée comme inerte afficherait
       // un total qui bouge à chaque objet rangé dans le sac
       total.classList.toggle("zero", !c.stade && !d && !m && !opts.value);
-      total.classList.toggle("adj", d !== 0 || m !== 0 || (opts.adj ? opts.adj() : false));
+      total.classList.toggle("adj", d !== 0 || m !== 0);
       total.title = item.carac + " " + sign(caracTotal(item.carac)) +
                     " · stade " + sign(stadeInfo(c.stade).bonus) +
                     (d ? " · modificateur (Options) " + sign(d) : "") +
                     (m ? " · poids " + sign(-m) : "") +
-                    (opts.detail ? opts.detail() : "") +
                     (item.langue && state.langueBase === item.name ? " · langue du personnage (gratuite)" : "") +
                     " — clic : lancer";
     });
@@ -4153,7 +4134,7 @@
     var sel = null;          // index dans items de l'objet affiché au panneau
     var dragIdx = null;
     var editGi = null;       // groupe à ouvrir en édition de nom au prochain render
-    var tileRefs = {};       // idx -> { tile, nom, badge } pour maj sans re-render
+    var tileRefs = {};       // idx -> { nom, badge, poids } pour maj sans re-render
     // Les poids des bandeaux se rafraîchissent SANS re-render : saisir un poids
     // dans le panneau recréerait sinon la tuile en cours d'édition, et le champ
     // frappé perdrait le focus au premier caractère.
@@ -4285,7 +4266,7 @@
       // pied inutile si tout est masqué : la tuile reste une vignette nette
       if (!O.nom && !O.poids && !O.qte) foot.style.display = "none";
       t.appendChild(foot);
-      tileRefs[idx] = { tile: t, nom: nom, badge: badge, poids: poids };
+      tileRefs[idx] = { nom: nom, badge: badge, poids: poids };
 
       t.addEventListener("click", function () { sel = idx; render(); });
       t.draggable = true;
@@ -5483,39 +5464,6 @@
       state.modules = {};
     return state.modules;
   }
-  // L'ordre COMPLET des id connus, et pas seulement les deux qui bougent : relu
-  // à froid, state.modules.ordre doit dire la disposition entière.
-  //
-  // Mais ce montage-ci ne connaît que les modules qui existent CHEZ LUI, et
-  // l'ordre, lui, voyage avec le personnage. Écrire la seule liste du jour
-  // effacerait le rang des autres : le mod « journal » de l'auteur, rangé en
-  // tête de colonne, est en attente d'autorisation chez le joueur qui ouvre la
-  // fiche ; une flèche cliquée là-bas suffisait à le renvoyer en fin de colonne,
-  // sans un mot, jusque dans les Attributes. Les id inconnus d'ici gardent donc
-  // leur rang, et les connus se rangent dans les places qui restent.
-  //
-  // Un module retiré POUR DE BON garde son rang lui aussi : rien ne le distingue
-  // d'un mod qui attend son autorisation. Ça ne coûte qu'une ligne morte dans
-  // l'ordre enregistré, qu'ordreModules() écarte de toute façon, quand oublier
-  // coûtait la disposition d'un autre joueur. « Disposition d'origine » vide
-  // tout, pour qui voudrait faire le ménage.
-  function fusionneOrdre(ids) {
-    var ancien = disposition().ordre;
-    if (!Array.isArray(ancien) || !ancien.length) return ids.slice();
-    var connu = {}, vu = {}, out = [], k = 0, i, id;
-    for (i = 0; i < ids.length; i++) connu[ids[i]] = 1;
-    for (i = 0; i < ancien.length; i++) {
-      id = ancien[i];
-      // un doublon consommerait deux places : l'ordre enregistré vient d'un
-      // fichier importé ou d'une autre version, il n'est pas garanti propre
-      if (typeof id !== "string" || !id || aClef(vu, id)) continue;
-      vu[id] = 1;
-      if (!aClef(connu, id)) { out.push(id); continue; }   // inconnu ici : il tient sa place
-      if (k < ids.length) out.push(ids[k++]);
-    }
-    while (k < ids.length) out.push(ids[k++]);
-    return out;
-  }
   // ON N'ÉPINGLE QUE LA COLONNE TOUCHÉE, et c'est tout le sujet.
   //
   // L'ancienne version écrivait l'ordre COMPLET de tous les modules, tous
@@ -5556,7 +5504,7 @@
       if (onglet && !memeColonne(ids[i], onglet, colonne)) continue;
       if (!vus[ids[i]]) { vus[ids[i]] = 1; neuf.push(ids[i]); }
     }
-    d.ordre = onglet ? neuf : fusionneOrdre(ids);
+    d.ordre = neuf;
     // L'ordre vivant suit tout de suite, mais LA FICHE NE SE REMONTE PAS.
     //
     // Elle se remontait à chaque geste : ranger trois modules reconstruisait
@@ -5645,8 +5593,8 @@
 
     function eteintTout() {
       listes.forEach(function (z) { z.classList.remove("survol"); });
-      var c = plan.querySelectorAll(".pc-modplan-carte.avant, .pc-modplan-carte.apres");
-      for (var i = 0; i < c.length; i++) c[i].classList.remove("avant", "apres");
+      var c = plan.querySelectorAll(".pc-modplan-carte.avant");
+      for (var i = 0; i < c.length; i++) c[i].classList.remove("avant");
     }
 
     // Devant quelle carte se pose ce qu'on lâche à cette hauteur ? La moitié

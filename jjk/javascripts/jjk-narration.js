@@ -97,7 +97,6 @@
   var fonds = {};           // id de place -> fond TÉLÉVERSÉ (data: WebP), lu de Roll20
   var attente = {};         // nom d'attribut -> {val, t} : nos écritures pas encore revenues
   var prise = null;         // jeton en cours de déplacement
-  var timer = null;
   var lu = false;           // au moins une lecture réussie
   var repondu = false;      // le pont a parlé, même pour dire qu'il n'y a rien
 
@@ -296,7 +295,6 @@
         }
         charId = d.charId;
         ecrivable = jugeDroits(d);
-        ditMenage(d);
         // le personnage est trouvé : ces deux écrans-là n'ont plus lieu d'être.
         // Les autres disent l'état de la LECTURE, que seule la lecture peut lever.
         if (etatMontre === "absent" || etatMontre === "pont") montreEtat(null);
@@ -826,8 +824,8 @@
   function fondDe(p) { return fonds[p.id] || p.img || ""; }
 
   // ---------- construction ----------
-  var racine, barre, plateau, coteMj, coteJoueurs, coucheJetons;
-  var lblTotal, boiteTotal, lblHors, boiteHors, lblAvis, btnNuit, btnReglages;
+  var racine, coteMj, coteJoueurs, coucheJetons;
+  var lblTotal, boiteTotal, lblHors, boiteHors, lblAvis, btnNuit;
   var boiteMot, lblMot;
   var jaugeRef = null;
   var placesDom = {};   // id de place -> élément
@@ -848,7 +846,7 @@
     racine = document.getElementById("nb");
     racine.innerHTML = "";   // le mot d'attente de l'amorceur a fait son office
 
-    barre = el("div", "nb-barre");
+    var barre = el("div", "nb-barre");
     boiteTotal = kv("nb-total", "Jetons");
     lblTotal = boiteTotal.lastChild;
     barre.appendChild(boiteTotal);
@@ -866,7 +864,7 @@
     btnNuit.innerHTML = SVG_NUIT;   // deux SVG écrits juste au-dessus, sans rien d'extérieur
     btnNuit.addEventListener("click", function () { poseNuit(nuitActive() ? "0" : "1"); });
     outils.appendChild(btnNuit);
-    btnReglages = el("button", "nb-btn", "Réglages");
+    var btnReglages = el("button", "nb-btn", "Réglages");
     btnReglages.type = "button";
     btnReglages.addEventListener("click", function () { ouvreReglages(); });
     outils.appendChild(btnReglages);
@@ -877,7 +875,7 @@
     lblAvis = el("div", "nb-avis");
     racine.appendChild(lblAvis);
 
-    plateau = el("div", "nb-plateau");
+    var plateau = el("div", "nb-plateau");
     coteMj = el("div", "nb-cote nb-cote-mj");
     coteJoueurs = el("div", "nb-cote nb-cote-joueurs");
     coucheJetons = el("div", "nb-jetons");
@@ -966,7 +964,6 @@
         tete.appendChild(el("div", "nb-place-nom"));
         tete.appendChild(el("div", "nb-place-compte"));
         d.appendChild(tete);
-        d.appendChild(el("div", "nb-place-corps"));
         placesDom[p.id] = d;
       }
       if (d.parentNode !== hote) hote.appendChild(d);
@@ -998,7 +995,6 @@
       // pixels de large : l'infobulle le rend entier, la table ne devient donc
       // jamais anonyme.
       nom.title = p.nom;
-      d.dataset.place = p.id;
     });
     Object.keys(placesDom).forEach(function (id) {
       if (vus[id]) return;
@@ -1621,7 +1617,7 @@
     // Relecture régulière : c'est tout le « temps réel » du plateau. La page
     // cachée (panneau replié, onglet en arrière-plan) ne demande rien.
     var tour = 0;
-    timer = setInterval(function () {
+    setInterval(function () {
       tour++;
       // Panneau replié : l'extension masque l'iframe, dont la fenêtre tombe
       // alors à zéro pixel. Rien à interroger pour un plateau que personne ne
