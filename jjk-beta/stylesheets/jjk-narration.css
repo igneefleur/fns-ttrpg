@@ -312,8 +312,6 @@ html.night .nb-lune .nb-croissant { display: none; }
    repère se déplace sous le doigt en plein glissement. */
 .nb-place.vise { border-color: var(--red); box-shadow: inset 0 0 0 1px var(--red); }
 
-/* L'en-tête de la carte : la signature du système. Cinzel, un filet --hair, et
-   le petit tiret carmin posé dessus, à gauche. */
 /* LES ÉTIQUETTES SONT EN BAS, CHACUNE DANS SON COIN, ET À SA PROPRE LARGEUR.
    Une barre pleine largeur en haut de carte mangeait le fond de zone sur toute
    sa largeur et écrasait l'image ; le nom et le compte n'ont besoin que de la
@@ -339,7 +337,6 @@ html.night .nb-lune .nb-croissant { display: none; }
 .nb-place.nb-fond .nb-place-nom,
 .nb-place.nb-fond .nb-place-compte { background: var(--voile); }
 .nb-place-nom {
-  position: relative;
   /* « 0 1 auto » et non « 1 1 auto » : le nom prend la largeur de ses lettres et
      pas un pixel de plus. C'est ce que l'auteur demande — une étiquette dans un
      coin, pas un bandeau. */
@@ -365,10 +362,6 @@ html.night .nb-place-nom { color: var(--ink); }
 }
 .nb-place-mj .nb-place-compte { background: var(--card); }
 .nb-place-compte.zero { color: var(--ink-3); font-weight: 400; }
-/* Le corps de la carte n'affiche rien : c'est la table, l'endroit où les jetons
-   se posent. Il n'existe que pour réserver la place sous l'en-tête, et le voile
-   d'un fond de zone lui passe donc par-dessus sans conséquence. */
-.nb-place-corps { flex: 1 1 auto; min-height: 0; }
 
 /* ---------- les jetons ---------- */
 /* Ils vivent dans une couche unique au-dessus des places : un jeton n'est
