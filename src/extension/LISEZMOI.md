@@ -1,27 +1,26 @@
-# Le plateau de Narration, en morceaux
+# L'extension, en morceaux
 
-Ces fichiers sont les sources de `docs/javascripts/jjk-narration.js`. L'ordre du
-collage est dans `scripts/assemblage.plan`, avec ce que fait chaque morceau.
+Ces fichiers sont les sources de `extension/firefox/stable/ et beta/`. L'ordre du collage est dans
+`scripts/assemblage.plan`, avec ce que fait chaque morceau.
+
+Un dossier par fichier produit. Ces morceaux servent DEUX FOIS : ils
+engendrent `extension/firefox/stable/` et `extension/firefox/beta/`. Les trois
+valeurs qui séparent les deux moitiés — le mode, le libellé de l'onglet,
+l'adresse du site — sont déclarées une seule fois, en tête de
+`scripts/assemblage.plan`, et l'assemblage les pose. Retoucher une moitié à la
+main ne sert à rien : le prochain assemblage efface la retouche.
 
 ## Ce ne sont pas des modules
 
-C'est le point à comprendre avant d'ouvrir un seul de ces fichiers. Le plateau
+C'est le point à comprendre avant d'ouvrir un seul de ces fichiers. Le code
 est écrit dans une fonction anonyme unique, et le découpage a tranché dedans :
-un morceau est un FRAGMENT, une suite de lignes, assemblée comme un `#include`.
-Isolé, il n'est pas du JavaScript valide, ses accolades ne s'équilibrent pas, et
-`node --check` n'a rien à y faire. La seule vérification qui vaille porte sur le
-fichier ASSEMBLÉ :
+un morceau est un FRAGMENT, une suite de lignes, assemblée comme un
+`#include`. Il n'est donc pas un fichier JavaScript valide isolément, et
+`node --check` ne s'applique qu'au fichier ASSEMBLÉ, jamais à un morceau.
 
-    python scripts/assembler.py --verifie   # compare au dépôt, n'écrit rien
-    python scripts/assembler.py             # réassemble docs/javascripts/jjk-narration.js
-    node --check docs/javascripts/jjk-narration.js
-
-C'est le prix de la règle qui a présidé au découpage : le fichier assemblé doit
-être identique à l'octet près à celui d'avant. Le manifeste nomme ce fichier-là,
-le chargeur le prend tel quel, et `docs/fiche/v*/` en fige des copies exactes qui
-sont la mémoire des personnages déjà écrits. Un découpage purement mécanique, où
-pas une espace n'a bougé, ne peut rien avoir cassé en chemin. Les vrais modules
-autonomes viendront après, un par un, chacun sous sa propre vérification.
+C'est le prix de la règle qui a présidé au découpage : le fichier produit doit
+être identique à l'octet près à celui d'avant. Ce point d'appui acquis, les
+fragments deviendront de vrais modules autonomes, un par un.
 
 ## Les trois règles pour ne rien casser
 

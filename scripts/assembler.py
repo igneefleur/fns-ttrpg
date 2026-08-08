@@ -599,10 +599,20 @@ def _morceau_de_ligne(cible, racine, no):
                 octets = f.read()
         except OSError:
             return None
-        n = octets.replace(b"\r\n", b"\n").count(b"\n")
-        if debut <= no <= debut + n:
+        # LE COMPTE DES LIGNES N'EST PAS LE COMPTE DES SAUTS DE LIGNE, et cet
+        # ecart d'un rang nommait le mauvais morceau EXACTEMENT a la couture —
+        # c'est-a-dire au seul endroit ou l'on a besoin qu'il soit juste.
+        #
+        # Un morceau qui finit par un saut de ligne fournit n lignes pour n
+        # sauts : la ligne suivante appartient DEJA au morceau d'apres. Un
+        # morceau qui n'en a pas (le dernier, ou un morceau soude par « + »)
+        # fournit une ligne de plus, celle qu'il laisse ouverte.
+        texte = octets.replace(b"\r\n", b"\n")
+        n = texte.count(b"\n")
+        lignes = n if texte.endswith(b"\n") else n + 1
+        if debut <= no < debut + lignes:
             return "%s (sa ligne %d)" % (rel, no - debut + 1)
-        debut += n
+        debut += lignes
     return None
 
 
@@ -677,8 +687,19 @@ def porte(racine, essai=False, plan=None):
         journal.append("les sources etaient EN AVANCE sur le fichier servi : %s"
                        % ", ".join(retard))
         if essai:
-            journal.append("l'essai n'ecrit rien : une publication en ordre de marche "
-                           "reassemblerait ces fichiers, et la suite les jugerait")
+            # UN ESSAI QUI SAIT LE FICHIER PERIME NE DOIT PAS DIRE OUI.
+            #
+            # Il n'ecrit rien, c'est entendu — mais il annoncait « en ordre de
+            # marche » apres avoir lui-meme constate que le fichier servi ne
+            # correspond plus a ses morceaux. Or tout ce que release_fiche.py
+            # juge ensuite (RELEASE, SCHEMA, les archives) est lu DANS ce fichier
+            # perime : l'essai validait donc la publication d'hier en croyant
+            # juger celle d'aujourd'hui. Un essai doit refuser de conclure sur ce
+            # qu'il sait faux.
+            journal.append("ESSAI REFUSE : ces fichiers servis ne correspondent plus a "
+                           "leurs morceaux, et tout ce qui suit se lit DEDANS. "
+                           "Lancer « python scripts/assembler.py » puis recommencer.")
+            return (False, journal)
     return (True, journal)
 
 

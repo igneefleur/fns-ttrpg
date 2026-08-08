@@ -16,17 +16,27 @@ l'une à l'autre :
 - `stable/` — la partie publiée, qui affiche le site `/jjk/` ;
 - `beta/` — la partie de chantier, qui affiche le site `/jjk-beta/`.
 
-Ces deux dossiers contiennent les MÊMES fichiers, au départ identiques : seules
-diffèrent les lignes marquées « propre à cette copie » (le nom du mode, le
-libellé de l'onglet, l'adresse du site et celle du pont). Le reste du paquet est
+CES DEUX DOSSIERS NE S'ÉCRIVENT PAS : ILS SONT ENGENDRÉS. Leur source unique est
+`src/extension/`, découpée par rôle, et les trois valeurs qui séparent les deux
+moitiés — le nom du mode, le libellé de l'onglet, l'adresse du site — sont
+déclarées une seule fois dans `scripts/assemblage.plan`. Le reste du paquet est
 partagé, parce qu'il ne dépend pas du mode : les pages, les feuilles de style,
 les icônes et le popup n'existent qu'une fois.
 
-TOUTE CORRECTION DE SÛRETÉ DOIT ÊTRE APPLIQUÉE AUX DEUX COPIES : la liste
-blanche du tchat, le repli des sauts de ligne dans les commandes envoyées, le
-relais vers la fenêtre d'ouverture et les verrous du pont d20 vivent en double
-exemplaire. `python scripts/build_extension.py --verifie` compare mécaniquement
-les deux copies hors des lignes marquées, et refuse toute autre divergence.
+On modifie donc un morceau de `src/extension/`, puis on lance
+`python scripts/assembler.py` ; les huit fichiers sont réécrits. Retoucher
+`stable/` ou `beta/` à la main ne sert à rien : le prochain assemblage efface la
+retouche.
+
+UNE CORRECTION DE SÛRETÉ NE S'APPLIQUE PLUS QU'UNE FOIS, et c'est tout l'intérêt
+du changement. La liste blanche du tchat, le repli des sauts de ligne dans les
+commandes envoyées, le relais vers la fenêtre d'ouverture et les verrous du pont
+d20 vivaient en double exemplaire, tenus à la main : un correctif posé d'un seul
+côté laissait le trou ouvert de l'autre jusqu'à ce que quelqu'un lance le
+contrôle. Ils n'existent maintenant qu'une fois, dans `src/extension/`.
+`python scripts/build_extension.py --verifie` ne compare donc plus les deux
+copies : il vérifie que chacune est À JOUR par rapport à ses morceaux, et refuse
+le paquet sinon.
 
 La bascule ne prend effet qu'au RECHARGEMENT de la page Roll20 : une copie déjà
 réveillée garde son onglet, ses écouteurs et son panneau, et le pont d20 déjà
