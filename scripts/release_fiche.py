@@ -10,6 +10,16 @@ personnage écrit aujourd'hui se rouvrira demain, et qu'un personnage écrit
 hier se rouvrira dans la version d'hier. Six gestes tiennent cette promesse,
 et ils s'oublient tous les six quand on les fait à la main.
 
+  0. L'ASSEMBLAGE (scripts/assembler.py). Les gros fichiers servis se découpent
+     en morceaux, un par module, pour qu'on puisse y travailler à plusieurs.
+     Le fichier servi est donc un PRODUIT : publier sans l'avoir réassemblé
+     publierait le fichier d'hier avec les sources d'aujourd'hui, et personne ne
+     le verrait, puisque le fichier servi, lui, aurait l'air parfaitement normal.
+     Cette étape passe donc EN PREMIER, avant même la lecture de RELEASE et
+     SCHEMA : ces deux constantes se lisent dans le bundle, et les lire avant
+     l'assemblage les prendrait dans la version périmée.
+     Tant que rien n'est découpé (pas de scripts/assemblage.plan), l'étape ne
+     fait rien et le dit.
   1. LE NUMÉRO. Il se demande par son CRAN, jamais à la main : --majeur pour
      une fonctionnalité entière, --moyen pour un petit module ou la correction
      d'une grosse erreur, --petit pour du CSS ou une erreur mineure. Le script
@@ -63,6 +73,7 @@ import tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import version_fiche as V  # noqa: E402  (la grammaire du numéro, partagée)
+import assembler as A      # noqa: E402  (le collage des morceaux, avant tout le reste)
 
 RACINE_DEFAUT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -452,6 +463,24 @@ def main():
     journal = []
 
     print("PUBLICATION DE LA FICHE" + (" (essai)" if a.essai else ""))
+
+    # 0. L'ASSEMBLAGE, AVANT TOUT LE RESTE. Le fichier servi est un produit :
+    # ses morceaux sont la vérité, lui n'en est que le collage. Publier sans
+    # réassembler mettrait en ligne le collage d'hier avec les sources du jour,
+    # et rien ne le montrerait, puisque le fichier servi aurait l'air normal.
+    # Placé ici, avant la lecture de RELEASE et SCHEMA, il garantit aussi que
+    # ces deux constantes sont lues dans le fichier qui va réellement partir :
+    # les lire avant l'assemblage, c'était publier sous le numéro d'hier.
+    print("")
+    print("  --- assemblage des fichiers servis")
+    ok, journal_a = A.porte(racine, essai=a.essai)
+    for l in journal_a:
+        print("      " + l)
+    if not ok:
+        print("")
+        print("  ARRÊT : les morceaux ne s'assemblent pas.")
+        return 1
+
     bundle = os.path.join(racine, "docs", "javascripts", "jjk-fiche.js")
     if not os.path.exists(bundle):
         print("  bundle introuvable : docs/javascripts/jjk-fiche.js")

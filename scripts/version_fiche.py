@@ -64,6 +64,15 @@ CRANS = ("majeur", "moyen", "petit")
 # lui-même : le bundle est ce qui TOURNE, le manifeste est ce que le site
 # ANNONCE, et RELEASE_DEFAUT est ce que la fiche INSCRIT dans le personnage
 # quand le manifeste n'a pas répondu.
+#
+# LE NUMÉRO S'ÉCRIT DANS LA SOURCE, PAS DANS LE FICHIER ENGENDRÉ. Depuis que le
+# bundle est assemblé de morceaux, écrire dans docs/javascripts/jjk-fiche.js ne
+# tient qu'un instant : le prochain assemblage le refabrique à partir des
+# morceaux et RAMÈNE l'ancien numéro, sans que rien ne le signale. On écrit donc
+# dans le morceau qui porte RELEASE, et l'assemblage propage. Le fichier engendré
+# reste NOMMÉ ici, parce que c'est encore lui qu'on LIT (il est ce qui tourne) et
+# lui que les contrôles comparent au manifeste.
+BUNDLE_SRC = os.path.join("src", "fiche", "socle", "020-version.js")
 BUNDLE = os.path.join("docs", "javascripts", "jjk-fiche.js")
 ATTRMAP = os.path.join("docs", "javascripts", "jjk-attr-map.js")
 MANIFESTE = os.path.join("docs", "jjk-manifeste.json")
@@ -463,6 +472,19 @@ def poser(racine, texte, essai=False):
     fins de ligne d'origine.
     """
     touches, absents = [], []
+
+    # LA SOURCE D'ABORD, ET LE FICHIER ENGENDRÉ ENSUITE. Écrire seulement dans
+    # docs/javascripts/jjk-fiche.js ne tiendrait pas : le prochain assemblage le
+    # refabrique depuis les morceaux et ramène l'ancien numéro, en silence. On
+    # pose donc dans le morceau qui porte RELEASE ; le fichier engendré est mis à
+    # jour dans la foulée pour que tout ce qui le LIT (le plancher, les contrôles,
+    # release_fiche) voie le bon numéro sans attendre un assemblage.
+    #
+    # Si la source n'existe pas — dépôt d'avant le découpage — on se contente du
+    # fichier engendré, comme autrefois.
+    bs = os.path.join(racine, BUNDLE_SRC)
+    if os.path.exists(bs) and _poser_js(bs, _RELEASE_JS, texte, essai):
+        touches.append("source du bundle")
 
     b = os.path.join(racine, BUNDLE)
     if not os.path.exists(b):

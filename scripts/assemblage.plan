@@ -1,0 +1,224 @@
+# LE PLAN D'ASSEMBLAGE : quels fichiers servis, faits de quels morceaux, dans
+# quel ordre. Déplacer un module, c'est déplacer une ligne.
+#
+#     python scripts/assembler.py            assemble et écrit
+#     python scripts/assembler.py --verifie   compare, n'écrit rien, sort 1
+#
+# UN MORCEAU N'EST PAS UN FICHIER JAVASCRIPT. Coupé dans une fonction anonyme,
+# il n'est valide qu'une fois collé : « node --check » ne vaut que pour le
+# fichier ASSEMBLÉ, jamais pour un morceau. C'est le prix de la règle « octet
+# pour octet », et il se paie une seule fois : les morceaux deviendront de vrais
+# modules autonomes plus tard, un par un.
+#
+# LES SOURCES VIVENT SOUS src/, PAS SOUS extension/. Ce n'est pas un rangement,
+# c'est une sûreté : build_extension.py emporte dans le paquet signé TOUT ce qui
+# se trouve sous extension/firefox/, déclaré ou non. Un morceau posé là partirait
+# chez Mozilla, et ce serait un fichier JavaScript invalide.
+
+
+# ---------------------------------------------------------------------------
+# L'EXTENSION : DEUX MOITIÉS, UNE SEULE SOURCE
+#
+# stable/ et beta/ étaient deux copies tenues à la main, et un contrôle refusait
+# le paquet quand elles divergeaient. C'était une surveillance, pas une garantie :
+# un correctif de sûreté posé d'un seul côté laissait le trou grand ouvert de
+# l'autre jusqu'à ce que quelqu'un lance le contrôle. Les deux moitiés sont
+# maintenant ENGENDRÉES par les mêmes morceaux : elles ne peuvent plus diverger.
+#
+# Tout ce qui les sépare tient dans les six lignes ci-dessous, et nulle part
+# ailleurs. Les morceaux portent des repères (« @@partie@@ ») ; l'assemblage y
+# écrit la valeur de la moitié qu'il fabrique.
+
+[variante stable]
+partie  = stable
+libelle = Fiche JJK
+site    = jjk
+
+[variante beta]
+partie  = beta
+libelle = Fiche JJK beta
+site    = jjk-beta
+
+
+# Le script de contenu : l'onglet « Fiche JJK », le pont vers le monde principal,
+# le plateau de Narration et sa barre. C'est le seul fichier dont les DEUX copies
+# sont déclarées au manifeste et injectées dans chaque frame — d'où la garde, en
+# fin de fichier, par laquelle la copie qui n'est pas du mode s'éteint.
+[extension/firefox/@@partie@@/content-roll20.js]
+bom = non
+fin = lf
+variantes = stable, beta
+  src/extension/content-roll20/000-entete.js
+  src/extension/content-roll20/010-copie.js
+  src/extension/content-roll20/020-outils.js
+  src/extension/content-roll20/030-tchat.js
+  src/extension/content-roll20/040-canal-brut.js
+  src/extension/content-roll20/050-pont-page.js
+  src/extension/content-roll20/060-has-sheet.js
+  src/extension/content-roll20/070-plateau-pas-un-perso.js
+  src/extension/content-roll20/080-creator.js
+  src/extension/content-roll20/090-onglet.js
+  src/extension/content-roll20/100-boucle.js
+  src/extension/content-roll20/110-relais-opener.js
+  src/extension/content-roll20/120-prendre.js
+  src/extension/content-roll20/130-plateau.js
+  src/extension/content-roll20/140-barre-outils.js
+  src/extension/content-roll20/150-plateau-geometrie.js
+  src/extension/content-roll20/160-plateau-iframe.js
+  src/extension/content-roll20/170-plateau-etat.js
+  src/extension/content-roll20/180-nuit.js
+  src/extension/content-roll20/190-demarrage.js
+  src/extension/content-roll20/200-garde.js
+
+# Le pont d20, injecté dans le monde principal : lui seul voit window.Campaign,
+# donc lui seul lit et écrit les Attributes. Aucun repère ici : ce fichier est
+# rigoureusement le même des deux côtés, et c'est le plan qui le dit désormais.
+[extension/firefox/@@partie@@/roll20-page.js]
+bom = non
+fin = lf
+variantes = stable, beta
+  src/extension/roll20-page/000-entete.js
+  src/extension/roll20-page/010-outils.js
+  src/extension/roll20-page/020-gardes.js
+  src/extension/roll20-page/030-attributs.js
+  src/extension/roll20-page/040-file-ecriture.js
+  src/extension/roll20-page/050-joueurs.js
+  src/extension/roll20-page/060-plateau.js
+  src/extension/roll20-page/070-ouverture-fiche.js
+  src/extension/roll20-page/080-menage.js
+  src/extension/roll20-page/090-ecouteur.js
+
+# La coquille de l'onglet : elle pointe son iframe vers la fiche servie par le
+# site. Une seule des deux copies est jamais chargée (shell-loader.js choisit
+# d'après le mode écrit dans le hash).
+[extension/firefox/@@partie@@/creator-shell.js]
+bom = non
+fin = lf
+variantes = stable, beta
+  src/extension/creator-shell/000-entete.js
+  src/extension/creator-shell/010-montage.js
+
+# La coquille générique d'un panneau : même principe, pour le plateau de
+# Narration servi par le site.
+[extension/firefox/@@partie@@/panneau-shell.js]
+bom = non
+fin = lf
+variantes = stable, beta
+  src/extension/panneau-shell/000-entete.js
+  src/extension/panneau-shell/010-sure.js
+  src/extension/panneau-shell/020-montage.js
+
+
+# CE QUI RESTE À FAIRE, ET QUI N'EST PAS FAIT ICI. Les en-têtes des quatre
+# fichiers racontent encore la duplication à la main : « Ce fichier existe DEUX
+# FOIS », « TOUTE CORRECTION DE SÛRETÉ DOIT ÊTRE APPLIQUÉE AUX DEUX COPIES »,
+# « build_extension.py --verifie compare mécaniquement les deux copies ». Ce
+# n'est plus vrai : il n'y a plus qu'une source, et le contrôle vérifie
+# maintenant que les moitiés sont à jour. Ces phrases ne sont pas corrigées dans
+# le même geste, et c'est délibéré : ce découpage doit rendre les huit fichiers
+# IDENTIQUES À L'OCTET à ceux d'avant, faute de quoi rien ne prouve que la
+# substitution est juste. La réécriture des en-têtes est le premier changement
+# qui viendra ensuite, seul, et se lira alors dans un diff d'une page.
+
+
+# LA FICHE DE PERSONNAGE. Le socle d'abord (amorce, état, calculs communs,
+# entêtes et onglets), puis un fichier par MODULE, rangé sous le nom de
+# l'onglet où il paraît : c'est la table des matières que le gros fichier
+# portait dans sa tête, et qu'on peut maintenant lire d'un coup d'oeil.
+[docs/javascripts/jjk-fiche.js]
+bom = oui
+fin = lf
+  src/fiche/socle/010-ouverture.js
+  src/fiche/socle/020-version.js
+  src/fiche/socle/030-outils.js
+  src/fiche/socle/040-etat-defaut.js
+  src/fiche/socle/050-etat-migration.js
+  src/fiche/socle/060-etat-normalise.js
+  src/fiche/socle/070-filtres-calcul.js
+  src/fiche/socle/080-calculs-caracs.js
+  src/fiche/socle/090-calculs-corps.js
+  src/fiche/socle/100-calculs-jets.js
+  src/fiche/socle/110-calculs-comps.js
+  src/fiche/socle/120-persistance.js
+  src/fiche/socle/130-envoi-tchat.js
+  src/fiche/socle/140-jets.js
+  src/fiche/socle/150-refresh.js
+  src/fiche/socle/160-briques.js
+  src/fiche/socle/170-edition.js
+  src/fiche/socle/180-barre-outils.js
+  src/fiche/socle/190-entete.js
+  src/fiche/socle/200-onglets.js
+  src/fiche/socle/210-registre-modules.js
+  src/fiche/socle/220-pannes-modules.js
+  src/fiche/socle/230-contexte-module.js
+  src/fiche/fiche/caracs.js
+  src/fiche/fiche/tuiles.js
+  src/fiche/fiche/initiative.js
+  src/fiche/options/xpchamps.js
+  src/fiche/fiche/armescomp.js
+  src/fiche/fiche/langues.js
+  src/fiche/fiche/pv.js
+  src/fiche/fiche/narration.js
+  src/fiche/socle/240-ligne-comp.js
+  src/fiche/socle/250-filtres-vue.js
+  src/fiche/fiche/comps.js
+  src/fiche/art/arts.js
+  src/fiche/equipement/commun-cartes.js
+  src/fiche/equipement/inv-echange.js
+  src/fiche/socle/260-dialogue.js
+  src/fiche/equipement/inv-don.js
+  src/fiche/equipement/inv-objets.js
+  src/fiche/equipement/armes.js
+  src/fiche/equipement/armures.js
+  src/fiche/equipement/inv.js
+  src/fiche/bio/perso.js
+  src/fiche/bio/avantages.js
+  src/fiche/bio/bg.js
+  src/fiche/bio/notes.js
+  src/fiche/options/jets.js
+  src/fiche/options/commun-champs.js
+  src/fiche/options/modcaracs.js
+  src/fiche/options/creation.js
+  src/fiche/options/optcomps.js
+  src/fiche/options/filtres.js
+  src/fiche/options/affichage.js
+  src/fiche/options/actions.js
+  src/fiche/options/commun-disposition.js
+  src/fiche/options/modules.js
+  src/fiche/options/mods.js
+  src/fiche/socle/270-modules-natifs.js
+  src/fiche/socle/280-moteur-mods.js
+  src/fiche/socle/290-disposition.js
+  src/fiche/socle/300-consentement.js
+  src/fiche/socle/310-api-publique.js
+  src/fiche/socle/320-montage.js
+
+
+# LE PLATEAU DE NARRATION. Découpé par rôle, faute d'onglets : le dialogue
+# avec le pont, l'état, les places et les jetons, les fonds, les réglages,
+# les écrans d'état.
+[docs/javascripts/jjk-narration.js]
+bom = non
+fin = lf
+  src/narration/000-entete.js
+  src/narration/010-constantes.js
+  src/narration/020-etat.js
+  src/narration/030-outils.js
+  src/narration/040-jour-nuit.js
+  src/narration/050-pont.js
+  src/narration/060-lecture-echo.js
+  src/narration/070-trace-depannage.js
+  src/narration/080-lecture-applique.js
+  src/narration/090-formats-attributs.js
+  src/narration/100-mot-au-joueur.js
+  src/narration/110-menage.js
+  src/narration/120-fonds-de-zone.js
+  src/narration/130-construction.js
+  src/narration/140-rendu-places.js
+  src/narration/150-rendu-jetons.js
+  src/narration/160-comptes.js
+  src/narration/170-glisser.js
+  src/narration/180-reglages.js
+  src/narration/190-distribution.js
+  src/narration/200-ecrans-etat.js
+  src/narration/210-amorce.js
