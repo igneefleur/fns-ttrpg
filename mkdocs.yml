@@ -16,6 +16,7 @@ nav:
           - Actions et compétences: content/regles/base/actions.md
       - Le Combat:
           - Portées: content/regles/combat/portees.md
+          - Armes: content/regles/combat/armes.md
 theme:
   name: material
   custom_dir: overrides

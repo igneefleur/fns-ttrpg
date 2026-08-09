@@ -4,11 +4,21 @@
 
 Un personnage agit par actions. La plupart des actions réclament des dés d'action, qu'il engage pour les entreprendre. La plus fréquente de toutes consiste à employer une compétence, et c'est par elle que passent l'attaque, l'escalade, le soin et tout ce dont l'issue n'est pas acquise d'avance.
 
+<div class="keep" markdown>
+
+### Les dés d'action
+
+Tous les dés du jeu sont des dés à six faces.
+
+Au début de son tour, un personnage reçoit 5 dés d'action. Ce sont eux qu'il engage pour agir, et ce sont eux qu'il lance quand son action demande un jet.
+
+</div>
+
 ### Employer une compétence
 
 Une compétence couvre un large domaine et sert à bien des choses. La compétence d'une arme, par exemple, sert au jet d'attaque porté avec cette arme.
 
-Employer une compétence se résout en trois temps : on fixe d'abord la difficulté de ce que le personnage tente, le personnage rassemble ensuite les dés dont il dispose, puis il les lance et compare son résultat à cette difficulté.
+Employer une compétence se résout en trois temps : on fixe d'abord la difficulté de ce que le personnage tente, le personnage engage ensuite les dés qu'il y consacre, puis il les lance et compare son résultat à cette difficulté.
 
 <div class="keep" markdown>
 
@@ -16,7 +26,7 @@ Employer une compétence se résout en trois temps : on fixe d'abord la difficul
 
 La difficulté ne tient pas à la compétence employée mais à ce que le personnage cherche à en faire : une même compétence sert des gestes faciles et des gestes presque hors d'atteinte. Chaque emploi a donc sa difficulté propre.
 
-Une attaque portée avec une arme a une difficulté de base comprise entre 4 et 10.
+Une attaque portée avec une arme a une difficulté de base comprise entre 4 et 10, donnée par l'arme employée dans la table des [armes](../combat/armes.md).
 
 </div>
 
@@ -28,19 +38,19 @@ La distance en est le premier exemple. La table des [portées](../combat/portees
 
 ### Le jet
 
-Un personnage dispose de 0 à 2 dés pour employer une compétence.
+Un personnage engage 0 à 2 dés d'action pour employer une compétence.
 
 Sans aucun dé, il échoue automatiquement : le jet n'a pas lieu.
 
 Avec un dé ou deux, il les lance et en fait la somme. Cette somme est le résultat du jet.
 
-<p class="formula">Résultat = somme des dés lancés</p>
+<p class="formula">Résultat = somme des dés d'action engagés</p>
 
 Le jet réussit si le résultat atteint la difficulté, et échoue s'il reste en dessous.
 
 <div class="memo" markdown>
 
-Exemple. Un personnage attaque à l'épée courte. Le meneur fixe la difficulté de base de l'attaque à 6. La cible se tient à une case, où l'épée courte est notée +1 : la difficulté monte à 7. Le personnage lance ses deux dés et en fait la somme ; s'il atteint 7, il touche.
+Exemple. Un personnage attaque à l'épée d'armes, dont la difficulté de base est 6. La cible se tient à une case, où l'épée d'armes est notée +1 : la difficulté monte à 7. Le personnage engage deux de ses dés d'action et obtient 4 et 5, soit 9 : il touche. Avec un seul dé, il lui aurait fallu un 7 sur six faces, hors d'atteinte.
 
 </div>
 
