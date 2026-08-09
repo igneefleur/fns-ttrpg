@@ -4,6 +4,10 @@ site_url: https://igneefleur.github.io/fns-ttrpg/owd-beta/
 # Voir LICENSE.md : tous droits réservés sur les apports originaux ; œuvre de fan,
 # sans lien avec les ayants droit d'Outward.
 copyright: © 2026 IgneeFleur. Tous droits réservés. Œuvre de fan, non affiliée à Nine Dots Studio.
+# Le lisez-moi des polices accompagne les fichiers .woff2 et leurs licences ; il
+# n'a rien à faire dans le site publié, où mkdocs en ferait une page.
+exclude_docs: |
+  assets/fonts/LISEZMOI.md
 nav:
   - Accueil: index.md
   - Règles:
