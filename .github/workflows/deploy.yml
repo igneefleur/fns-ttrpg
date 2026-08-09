@@ -11,10 +11,17 @@ on:
         default: false
 permissions:
   contents: write
-# Les branches (main, beta, jjk, jjk-beta) écrivent sur la même branche gh-pages : un
-# groupe de concurrence commun (partagé entre workflows du dépôt) sérialise leurs
-# déploiements, et force: false fait rebaser l'action (avec réessais) au lieu de
-# force-pusser, pour qu'un run ne puisse pas écraser le travail d'un autre.
+# Les cinq branches écrivent sur la même branche gh-pages, chacune dans son
+# dossier : un groupe de concurrence commun (partagé entre workflows du dépôt)
+# sérialise leurs déploiements, et force: false fait rebaser l'action (avec
+# réessais) au lieu de force-pusser, pour qu'un run ne puisse pas écraser le
+# travail d'un autre.
+#
+# EN CONTREPARTIE, ON NE POUSSE PAS PLUSIEURS BRANCHES D'AFFILÉE. Le groupe ne
+# garde qu'UN run en attente : le troisième qui arrive annule celui qui
+# patientait, et la branche concernée n'est jamais déployée — « completed /
+# cancelled », aucune erreur, rien à lire. Pousser une branche, attendre la fin
+# de son run, pousser la suivante.
 concurrency:
   group: gh-pages
   cancel-in-progress: false
@@ -85,13 +92,14 @@ jobs:
             # échoue sur les archives et la version signée reste orpheline
             git push || (git pull --rebase -X theirs && git push)
           fi
-      # Un seul site GitHub Pages (branche gh-pages), trois emplacements :
-      #   main -> racine   https://igneefleur.github.io/FNS-TTRPG-RULES/
-      #   beta -> beta/    https://igneefleur.github.io/FNS-TTRPG-RULES/beta/
-      #   jjk      -> jjk/       https://igneefleur.github.io/FNS-TTRPG-RULES/jjk/
-      #   jjk-beta -> jjk-beta/  https://igneefleur.github.io/FNS-TTRPG-RULES/jjk-beta/ (CE workflow)
-      # Avec target-folder, « clean » ne nettoie QUE le dossier cible : la racine
-      # (main) et beta/ sont épargnées par ce déploiement.
+      # Un seul site GitHub Pages (branche gh-pages), CINQ emplacements :
+      #   main     -> racine     https://igneefleur.github.io/fns-ttrpg/          (le hub)
+      #   hxh-main -> hxh/       https://igneefleur.github.io/fns-ttrpg/hxh/
+      #   hxh-beta -> hxh-beta/  https://igneefleur.github.io/fns-ttrpg/hxh-beta/
+      #   jjk-main -> jjk/       https://igneefleur.github.io/fns-ttrpg/jjk/
+      #   jjk-beta -> jjk-beta/  https://igneefleur.github.io/fns-ttrpg/jjk-beta/ (CE workflow)
+      # Avec target-folder, « clean » ne nettoie QUE le dossier cible : les quatre
+      # autres emplacements sont épargnés par ce déploiement.
       - name: Déploiement jjk-beta (jjk-beta -> jjk-beta/)
         uses: JamesIves/github-pages-deploy-action@v4
         with:

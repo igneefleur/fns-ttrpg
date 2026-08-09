@@ -16,7 +16,7 @@
  * posé d'un seul côté laisse le trou ouvert de l'autre, et rien ne le signalera.
  *
  * Dépannage : browser.storage.local.jjk_sheet_url remplace l'URL du site
- * (ex. http://localhost:8000/FNS-TTRPG-RULES/jjk/roll20-fiche.html pour tester
+ * (ex. http://localhost:8000/fns-ttrpg/jjk/roll20-fiche.html pour tester
  * un mkdocs serve local, mkdocs montant le site sous le chemin de site_url,
  * /jjk/ compris), à poser depuis la console de débogage de l'extension. Cette
  * clé reste COMMUNE aux deux parties, et c'est assumé : elle épingle la coquille
@@ -25,7 +25,7 @@
 if (typeof browser === "undefined") { var browser = chrome; }
 (function () {
   "use strict";
-  var SITE_URL = "https://igneefleur.github.io/FNS-TTRPG-RULES/jjk-beta/roll20-fiche.html";   // propre à cette copie
+  var SITE_URL = "https://igneefleur.github.io/fns-ttrpg/jjk-beta/roll20-fiche.html";   // propre à cette copie
 
   function mount(url) {
     document.getElementById("jjk-remote").src = url + (location.hash || "");
