@@ -12,6 +12,8 @@ nav:
   - Accueil: index.md
   - Règles:
       - content/regles/index.md
+      - Les Bases:
+          - Actions et compétences: content/regles/base/actions.md
       - Le Combat:
           - Portées: content/regles/combat/portees.md
 theme:
