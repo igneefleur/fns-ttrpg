@@ -71,9 +71,9 @@ Trois exceptions modifient ce barème.
 
 <div class="cols" markdown>
 
-### La table des portées
+### Lire la table
 
-La table ci-dessous donne le malus de chaque arme selon la distance qui la sépare de sa cible, comptée en cases. Chaque ligne se déduit du barème et de ses trois exceptions : une arme absente de la table se place en mesurant sa portée, puis en descendant d'un cran par case.
+La table donne le malus de chaque arme selon la distance qui la sépare de sa cible, comptée en cases. Chaque ligne se déduit du barème et de ses trois exceptions : une arme absente de la table se place en mesurant sa portée, puis en descendant d'un cran par case.
 
 <div class="defs" markdown>
 
@@ -86,6 +86,10 @@ La table ci-dessous donne le malus de chaque arme selon la distance qui la sépa
 **Case vide :** la distance dépasse la portée de l'arme, qui n'atteint rien.
 
 </div>
+
+</div>
+
+## Table des portées
 
 <div class="cj-modules anima portees" markdown>
 
@@ -125,6 +129,8 @@ La table ci-dessous donne le malus de chaque arme selon la distance qui la sépa
 | Pique | × | −4 | −3 | −2 | −1 | 0 |
 
 </div>
+
+<div class="cols" markdown>
 
 Une arme qui porte deux modes de frappe occupe deux lignes, une par mode, et son porteur choisit le mode qu'il emploie au moment d'attaquer. Le kusarigama en est le seul exemple de la table : sa lame se lit à 1 case, la chaîne qui la porte à 3 cases.
 
