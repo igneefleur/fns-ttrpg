@@ -101,6 +101,18 @@
   color: var(--green-title);
 }
 
+/* La difficulté d'attaque appartient au geste, pas à l'arme : estoquer et
+   balayer ne demandent pas la même adresse. Elle se pose sous les dégâts, en
+   retrait, pour qu'on lise d'abord ce que le coup fait. */
+.md-typeset .geste-diff {
+  margin: 0;
+  font-family: 'Roboto Mono', ui-monospace, monospace;
+  font-size: 0.57rem;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  opacity: 0.66;
+}
+
 .md-typeset .geste-note {
   margin: 0.1rem 0 0;
   font-size: 0.58rem;
