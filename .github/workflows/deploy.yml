@@ -34,9 +34,9 @@ jobs:
 
       # Un seul site GitHub Pages (branche gh-pages), CINQ emplacements :
       #   main     -> racine     https://igneefleur.github.io/fns-ttrpg/          (CE workflow)
-      #   hxh-main -> hxh/       https://igneefleur.github.io/fns-ttrpg/hxh/
+      #   hxh      -> hxh/       https://igneefleur.github.io/fns-ttrpg/hxh/
       #   hxh-beta -> hxh-beta/  https://igneefleur.github.io/fns-ttrpg/hxh-beta/
-      #   jjk-main -> jjk/       https://igneefleur.github.io/fns-ttrpg/jjk/
+      #   jjk      -> jjk/       https://igneefleur.github.io/fns-ttrpg/jjk/
       #   jjk-beta -> jjk-beta/  https://igneefleur.github.io/fns-ttrpg/jjk-beta/
       #
       # LA LISTE clean-exclude DOIT PORTER TOUS LES AUTRES DOSSIERS, SANS

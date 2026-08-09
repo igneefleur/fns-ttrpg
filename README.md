@@ -6,8 +6,8 @@ Deux jeux de rôle sur table, chacun avec son livre de règles et ses outils.
 
 | | Site | Chantier | Branches |
 |---|---|---|---|
-| **Hunter × Hunter** | [/hxh/](https://igneefleur.github.io/fns-ttrpg/hxh/) | [/hxh-beta/](https://igneefleur.github.io/fns-ttrpg/hxh-beta/) | `hxh-main`, `hxh-beta` |
-| **Jujutsu Kaisen** | [/jjk/](https://igneefleur.github.io/fns-ttrpg/jjk/) | [/jjk-beta/](https://igneefleur.github.io/fns-ttrpg/jjk-beta/) | `jjk-main`, `jjk-beta` |
+| **Hunter × Hunter** | [/hxh/](https://igneefleur.github.io/fns-ttrpg/hxh/) | [/hxh-beta/](https://igneefleur.github.io/fns-ttrpg/hxh-beta/) | `hxh`, `hxh-beta` |
+| **Jujutsu Kaisen** | [/jjk/](https://igneefleur.github.io/fns-ttrpg/jjk/) | [/jjk-beta/](https://igneefleur.github.io/fns-ttrpg/jjk-beta/) | `jjk`, `jjk-beta` |
 
 ## Cette branche
 
@@ -17,7 +17,7 @@ branches, aux mêmes chemins de fichiers mais avec des contenus sans rapport.
 C'est `hub/index.html`, un fichier statique sans dépendance, publié à la racine du
 site.
 
-Le contenu Hunter × Hunter qui vivait ici auparavant est passé sur `hxh-main`, avec
+Le contenu Hunter × Hunter qui vivait ici auparavant est passé sur `hxh`, avec
 son historique.
 
 ## Œuvres de fan
