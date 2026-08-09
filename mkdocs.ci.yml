@@ -13,7 +13,7 @@
 #         output_path: pdf/livre-de-regles.pdf
 #         cover_title: Outward Système JDR
 #         cover_subtitle: Livre de Règles
-#         author: igneefleur
+#         author: IgneeFleur
 #         toc_title: Table des matières
 #
 # ...et remettre dans deploy.yml les dépendances natives de WeasyPrint (Pango,
