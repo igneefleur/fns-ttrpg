@@ -1,0 +1,436 @@
+/* Atelier de création de pouvoir (page « Création de pouvoir »).
+   Éditeur de nœuds façon ComfyUI, greffé sur les règles de Nen. Tout est scopé
+   sous .nen-atelier / .atelier-page pour ne rien changer au reste du site.
+
+   Police : IBM Plex Sans (--ui) pour tout le fonctionnel (labels, valeurs, champs,
+   prises, listes) ; Cinzel (--display) pour les NOMS/titres. Échelle compacte,
+   chiffres tabulaires partout. */
+
+/* Pleine largeur : extra.css bride .md-content__inner à 50rem ; on force en
+   !important, mais seulement sous .atelier-page. Le reste du site est intact. */
+.atelier-page .md-main__inner { margin: 0 !important; }
+.atelier-page .md-grid { max-width: none !important; margin: 0 !important; }
+.atelier-page .md-content,
+.atelier-page .md-content__inner,
+.atelier-page .md-content > .md-content__inner { max-width: none !important; margin: 0 !important; padding: 0 !important; }
+.atelier-page .md-content__inner::before { display: none !important; }
+.atelier-page .md-sidebar--secondary,
+.atelier-page .md-sidebar--primary { display: none !important; }
+.atelier-page .md-typeset h1 { display: none; }
+.atelier-page .md-typeset { line-height: normal; }
+
+:root {
+  --fg-renforcement:  #9c5a3c;
+  --fg-emission:      #46688a;
+  --fg-transmutation: #8a6d2f;
+  --fg-manipulation:  #6d4a7c;
+  --fg-conjuration:   #3f7a5a;
+  --fg-specialisation:#7c3f5a;
+  --fg-raccord:       #6a6a63;
+  --fg-arme:          #5f6b78;
+  --ty-attaque: #a2413a;
+  --ty-defense: #3f5d8a;
+  --ty-effet:   #4a6d4a;
+  --ty-end:     #4a4640;
+}
+
+/* ---- Cadre général ---------------------------------------------------- */
+.nen-atelier {
+  --paper:   #f9f5e8;
+  --panel:   #f1ebd6;
+  --card:    #fdfaf2;
+  --line:    #dad2bc;
+  --line-2:  #eae3ce;
+  --ink:     #2a2820;
+  --ink-2:   #5b564a;
+  --ink-3:   #918a78;
+  --accent:  #5d6f57;
+  --accent-deep: #46543d;
+  --sel-on:  #5a8a5c;   /* vert « coché » des tableaux cumulables (posé, non flashy) */
+  --gold:    #b8863b;
+  --danger:  #b0402c;
+  --ui: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+  --display: "Cinzel", Garamond, serif;
+
+  display: grid;
+  grid-template-columns: 236px 1fr 300px;
+  grid-template-rows: auto 1fr;
+  grid-template-areas: "bar bar bar" "palette canvas inspector";
+  height: calc(100vh - 48px);
+  min-height: 540px;
+  color: var(--ink);
+  background: var(--paper);
+  border-top: 1px solid var(--line);
+  font-family: var(--ui);
+  font-size: 13px;
+  overflow: hidden;
+}
+.nen-atelier * { box-sizing: border-box; }
+.nen-atelier button { cursor: pointer; }
+/* les contrôles n'héritent pas la police par défaut : on force partout */
+.nen-atelier input, .nen-atelier select, .nen-atelier textarea, .nen-atelier button { font-family: inherit; }
+.nen-atelier ::-webkit-scrollbar { width: 9px; height: 9px; }
+.nen-atelier ::-webkit-scrollbar-thumb { background: #d3caae; border-radius: 6px; border: 2px solid var(--panel); }
+.nen-atelier ::-webkit-scrollbar-thumb:hover { background: #c4b998; }
+
+/* ---- Barre d'outils --------------------------------------------------- */
+.nf-bar {
+  grid-area: bar; display: flex; align-items: center; gap: .5rem;
+  padding: .35rem .7rem; background: var(--panel);
+  border-bottom: 1px solid var(--line); flex-wrap: wrap;
+}
+.nf-bar .nf-title { font-family: var(--display); font-weight: 600; font-size: .88rem; letter-spacing: .05em; color: var(--accent-deep); margin-right: .45rem; }
+.nf-bar .nf-spacer { flex: 1; }
+.nf-bar .nf-hint { font-size: .72rem; color: var(--ink-3); }
+.nf-bar label { font-size: .76rem; color: var(--ink-2); }
+.nf-btn {
+  border: 1px solid var(--line); background: #fbf8ee; color: var(--ink);
+  border-radius: 6px; padding: .3rem .6rem; font-size: .76rem; font-weight: 500;
+  transition: background .12s, border-color .12s, box-shadow .12s;
+}
+.nf-btn:hover { background: #fff; border-color: #bcb295; box-shadow: 0 1px 3px rgba(60,50,30,.1); }
+.nf-btn.primary { background: var(--accent); color: #fbf8ee; border-color: var(--accent-deep); }
+.nf-btn.primary:hover { background: var(--accent-deep); }
+.nf-select {
+  font-family: inherit; font-size: .76rem; border: 1px solid var(--line);
+  border-radius: 6px; background: #fbf8ee; color: var(--ink); padding: .26rem .45rem;
+}
+.nf-select:focus { outline: 2px solid rgba(93,111,87,.3); border-color: var(--accent); }
+
+/* ---- Palette ---------------------------------------------------------- */
+.nf-palette { grid-area: palette; background: var(--panel); border-right: 1px solid var(--line); overflow-y: auto; padding: .5rem .5rem; }
+.nf-search {
+  width: 100%; margin-bottom: .5rem; padding: .38rem .55rem;
+  border: 1px solid var(--line); border-radius: 7px; background: #fbf8ee;
+  font-family: inherit; font-size: .78rem; color: var(--ink);
+}
+.nf-search:focus { outline: 2px solid rgba(93,111,87,.3); border-color: var(--accent); }
+.nf-search::placeholder { color: var(--ink-3); }
+.nf-cat { margin-bottom: .35rem; }
+.nf-cat-head {
+  display: flex; align-items: center; gap: .35rem;
+  font-family: var(--display); font-size: .72rem; font-weight: 600; letter-spacing: .05em;
+  padding: .32rem .45rem; border-radius: 6px; cursor: pointer; color: #fff;
+  box-shadow: inset 0 -1px 0 rgba(0,0,0,.12);
+}
+.nf-cat-head .caret { font-size: .55rem; transition: transform .15s; opacity: .85; }
+.nf-cat.collapsed .caret { transform: rotate(-90deg); }
+.nf-cat.collapsed .nf-cat-items { display: none; }
+.nf-cat-head .nf-count { margin-left: auto; font-size: .64rem; font-weight: 600; opacity: .95; background: rgba(255,255,255,.22); border-radius: 9px; padding: .02rem .38rem; }
+.nf-cat-items { padding: .25rem 0 .05rem; }
+.nf-pill {
+  display: block; width: 100%; text-align: left;
+  border: 1px solid var(--line-2); border-left-width: 3px; background: #fbf8ee;
+  border-radius: 6px; padding: .3rem .45rem; margin: .18rem 0;
+  color: var(--ink); cursor: grab; touch-action: none;
+  transition: background .1s, box-shadow .1s, transform .04s;
+}
+.nf-pill:hover { background: #fff; box-shadow: 0 1px 4px rgba(60,50,30,.12); }
+.nf-pill:active { cursor: grabbing; transform: scale(.985); }
+.nf-pill .nm { display: block; font-size: .77rem; font-weight: 600; line-height: 1.2; }
+.nf-pill small { display: block; color: var(--ink-3); font-size: .63rem; margin-top: .04rem; letter-spacing: .02em; }
+
+/* fantôme de glisser-déposer (au <body> : valeurs littérales) */
+.nf-ghost {
+  position: fixed; z-index: 9999; pointer-events: none; transform: translate(12px, 10px);
+  background: #fdfaf2; color: #2a2820; border: 1px solid #dad2bc;
+  border-left: 3px solid var(--fg-raccord); border-radius: 6px; padding: .28rem .55rem;
+  font-family: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+  font-size: .78rem; font-weight: 600; box-shadow: 0 8px 20px rgba(60,50,30,.28);
+}
+.nf-ghost.over { outline: 2px solid #5d6f57; outline-offset: 1px; }
+
+/* ---- Canvas ----------------------------------------------------------- */
+.nf-canvas {
+  grid-area: canvas; position: relative; overflow: hidden; cursor: grab;
+  background:
+    radial-gradient(circle at 1px 1px, #e5decb 1px, transparent 1.5px) 0 0 / 22px 22px,
+    var(--paper);
+}
+.nf-canvas.panning { cursor: grabbing; }
+.nf-world { position: absolute; top: 0; left: 0; transform-origin: 0 0; }
+.nf-edges { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.nf-edges path { fill: none; stroke: #5f6e40; stroke-width: 2.4; stroke-linecap: round; }
+.nf-edges path.chain { stroke: #5f6e40; }
+.nf-edges path.t-cap { stroke: var(--gold); stroke-dasharray: 6 5; }
+.nf-edges path.chain:hover, .nf-edges path.t-cap:hover { stroke: #46531f; }
+.nf-edges path.sel { stroke: var(--danger); stroke-width: 3.4; stroke-dasharray: none; }
+
+.nf-empty {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  color: #a89f88; font-size: .88rem; text-align: center; pointer-events: none;
+  padding: 2rem; max-width: 560px; margin: auto; line-height: 1.5;
+}
+
+/* contrôles de vue (zoom / recentrer) */
+.nf-ctrls {
+  position: absolute; right: 12px; bottom: 12px; z-index: 5;
+  display: flex; align-items: center; gap: .12rem;
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: 8px; padding: .18rem .28rem; box-shadow: 0 3px 10px rgba(60,50,30,.15);
+}
+.nf-ctrls button { width: 24px; height: 24px; border: none; background: transparent; border-radius: 5px; font-size: .92rem; line-height: 1; color: var(--ink-2); display: grid; place-items: center; }
+.nf-ctrls button:hover { background: var(--panel); color: var(--ink); }
+.nf-zoom { font-size: .7rem; color: var(--ink-2); min-width: 40px; text-align: center; font-variant-numeric: tabular-nums; }
+
+/* ---- Nœuds ------------------------------------------------------------ */
+.nf-node {
+  position: absolute; width: 460px; background: var(--card);
+  border: 1px solid var(--line); border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(40,32,16,.08), 0 5px 12px rgba(40,32,16,.10);
+  font-size: .76rem; user-select: none; transition: box-shadow .12s;
+  display: flex; flex-direction: column;   /* pour un corps scrollable quand la hauteur est fixée */
+}
+.nf-node:hover { box-shadow: 0 1px 2px rgba(40,32,16,.1), 0 8px 18px rgba(40,32,16,.15); }
+.nf-node.sel, .nf-node.sel:hover { border-color: var(--accent); box-shadow: 0 0 0 1.5px var(--accent), 0 8px 20px rgba(40,32,16,.2); }
+.nf-node.start { width: 540px; }
+.nf-node.module { width: 560px; }
+.nf-node.start.ty-attaque .nf-node-head { background: var(--ty-attaque); }
+.nf-node.start.ty-defense .nf-node-head { background: var(--ty-defense); }
+.nf-node.start.ty-effet   .nf-node-head { background: var(--ty-effet); }
+.nf-node.start.ty-bete    .nf-node-head { background: var(--fg-conjuration); }
+.nf-node.start.ty-objet   .nf-node-head { background: var(--fg-conjuration); }
+.nf-node.start.ty-objet-t .nf-node-head { background: var(--fg-transmutation); }
+.nf-node.start.ty-bete-e  .nf-node-head { background: var(--fg-emission); }
+.nf-node.start.ty-emprise-etre  .nf-node-head { background: var(--fg-manipulation); }
+.nf-node.start.ty-emprise-objet .nf-node-head { background: var(--fg-manipulation); }
+.nf-node.end .nf-node-head { background: var(--ty-end); }
+
+.nf-node-head {
+  flex: none; display: flex; align-items: center; gap: .3rem; height: 25px; padding: 0 .28rem 0 .55rem;
+  border-radius: 7px 7px 0 0; color: #fdfaf1; cursor: move;
+  font-family: var(--display); font-weight: 600; font-size: .8rem; letter-spacing: .03em;
+}
+.nf-node-head .nf-node-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nf-node-head .nf-x { flex: none; background: rgba(255,255,255,.16); color: #fff; border: none; border-radius: 4px; width: 18px; height: 18px; line-height: 1; font-size: .82rem; }
+.nf-node-head .nf-x:hover { background: rgba(0,0,0,.22); }
+
+.nf-node-body { flex: 1 1 auto; min-height: 0; overflow: hidden auto; padding: .45rem .5rem .5rem; }
+/* description du module, dans le nœud */
+.nf-desc { font-size: .68rem; line-height: 1.42; color: var(--ink-2); margin: .05rem 0 .35rem; }
+.nf-desc p { margin: 0 0 .4em; }
+.nf-desc p:last-child { margin-bottom: 0; }
+/* prose descriptive d'une grille (le paragraphe qui précède son tableau) */
+.nf-griddesc { font-size: .66rem; line-height: 1.4; color: var(--ink-2); margin: .55rem 0 0; }
+/* légende de l'option choisie dans un sélecteur (defs du tableau) */
+.nf-optdef { font-size: .64rem; line-height: 1.38; color: var(--ink-2); background: #f7f3e7; border-left: 2px solid var(--accent); border-radius: 0 5px 5px 0; padding: .3rem .48rem; margin: .28rem 0 0; }
+.nf-optdef b { color: var(--ink); font-weight: 700; }
+/* cible d'une capacité (socle) */
+.nf-cible { font-size: .76rem; font-weight: 500; color: var(--ink); background: #f4efe0; border: 1px dashed var(--line); border-radius: 6px; padding: .28rem .42rem; }
+/* trois rôles côte à côte : lanceur | mainteneur | cible */
+.nf-roles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .3rem; }
+.nf-roles .nf-cible { font-size: .68rem; overflow-wrap: anywhere; }
+.nf-cap-cible { font-size: .7rem; color: var(--ink-2); margin: .28rem 0 0; }
+.nf-cap-cible b { color: var(--ink); font-weight: 600; }
+.nf-node-body label { display: block; font-size: .58rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); margin: .45rem 0 .15rem; }
+.nf-node-body .nf-modmeta + label,
+.nf-node-body > label:first-child { margin-top: 0; }
+.nf-node-body select,
+.nf-node-body input[type=text],
+.nf-node-body input[type=number] {
+  width: 100%; font-family: inherit; font-size: .74rem; color: var(--ink);
+  border: 1px solid var(--line); border-radius: 6px; background: #fff; padding: .28rem .4rem;
+  transition: border-color .12s, box-shadow .12s;
+}
+.nf-node-body select:focus,
+.nf-node-body input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2.5px rgba(93,111,87,.18); }
+.nf-modmeta { font-size: .6rem; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; margin-bottom: .1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* sections d'un nœud séparées par un simple espace (plus de trait) */
+.nf-tsec { margin-top: 1rem; }
+/* section d'un groupe : tableau UNIFIÉ intégré à la node — pleine largeur, transparent, sans cadre */
+.nf-tgrid { display: grid; grid-template-columns: minmax(0,1fr) repeat(5, minmax(2.3rem, auto)); margin: 0 -.5rem; border: none; }
+.nf-tgrid .h { font-size: .54rem; text-transform: uppercase; font-weight: 700; letter-spacing: .03em; color: var(--ink-3); background: transparent; padding: .24rem .34rem .1rem; text-align: center; font-variant-numeric: tabular-nums; }
+.nf-tgrid .h.name { text-align: left; text-transform: none; font-family: var(--display); font-size: .72rem; letter-spacing: .01em; color: var(--ink); font-weight: 600; padding: .2rem .55rem .12rem; }
+.nf-tgrid .v { font-size: .62rem; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; display: flex; align-items: center; justify-content: center; padding: .12rem .34rem; background: transparent; border-top: 1px solid var(--line-2); }
+.nf-tgrid .v.val { justify-content: stretch; align-items: stretch; padding: 0; background: #fff; }   /* fond blanc = éditable, le select remplit toute la cellule */
+.nf-tgrid .v.val > * { width: 100%; }
+.nf-tgrid .v.val select { border: none; background: transparent; padding: .3rem .5rem; box-shadow: none; font-size: .74rem; height: 100%; }
+.nf-tgrid .v.val:focus-within { box-shadow: inset 0 0 0 2px var(--accent); }
+.nf-tgrid .sep { border-left: 1px solid var(--line-2); }
+/* cumulable : lignes cliquables — BLANC = décoché, VERT = coché (la couleur seule l'indique) */
+.nf-tgrid-rows .rcell.opt { justify-content: flex-start; text-align: left; padding: .32rem .55rem; font-size: .7rem; font-weight: 600; cursor: pointer; user-select: none; background: #fff; border-top: 1px solid var(--line-2); transition: background .1s, color .1s; }
+.nf-tgrid-rows .rcell.opt:hover { background: #eef4ea; }
+.nf-tgrid-rows .rcell.opt.on { background: var(--sel-on); color: #fff; }
+.nf-tgrid-rows .rcell.opt.on:hover { background: var(--sel-on); filter: brightness(1.06); }
+.nf-tgrid-rows .sum { background: transparent; border-top: 1px solid var(--line-2); font-weight: 700; font-size: .7rem; }
+.nf-tsec-desc { font-size: .64rem; line-height: 1.4; color: var(--ink-2); margin: .32rem 0 0; }
+/* conditions : espace au-dessus (plus de trait) + titre + [textarea | mod. AE / ×] */
+.nf-conds { margin-top: 1.15rem; }
+.nf-conds-title { font-size: .58rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); margin: 0 0 .35rem; }
+.nf-cond { display: flex; gap: .4rem; align-items: flex-start; margin-bottom: .4rem; }
+.nf-ta { flex: 1 1 auto; min-width: 0; resize: vertical; font-family: inherit; font-size: .68rem; line-height: 1.36; color: var(--ink); border: 1px solid var(--line); border-radius: 6px; background: #fff; padding: .3rem .42rem; }
+.nf-ta:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2.5px rgba(93,111,87,.18); }
+.nf-cond-ae { flex: none; display: flex; align-items: center; gap: .25rem; padding-top: .12rem; }
+.nf-cond-ae label { display: inline-block; font-size: .5rem; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: var(--ink-3); margin: 0; }
+.nf-cond-ae input.pct { width: 2.9rem; text-align: right; }
+
+/* poignée de redimensionnement (coin bas-droit) */
+.nf-resize { position: absolute; right: 0; bottom: 0; width: 15px; height: 15px; cursor: nwse-resize; z-index: 4; }
+.nf-resize::after { content: ""; position: absolute; right: 2px; bottom: 2px; width: 8px; height: 8px; background: repeating-linear-gradient(-45deg, var(--ink-3) 0 1px, transparent 1px 3px); opacity: .4; }
+.nf-node:hover .nf-resize::after { opacity: .65; }
+.nf-resize:hover::after { opacity: 1; }
+
+/* bandeau de coûts (DI / UA / MA …) */
+.nf-costs { display: flex; flex-wrap: wrap; gap: .28rem; margin-top: .5rem; }
+.nf-cost { flex: 1 1 0; min-width: 38px; text-align: center; background: var(--panel); border: 1px solid var(--line-2); border-radius: 6px; padding: .16rem .1rem .2rem; }
+.nf-cost .k { display: block; font-size: .52rem; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); }
+.nf-cost .v { font-size: .78rem; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+.nf-affnote { font-size: .66rem; color: var(--ink-2); margin-top: .3rem; }
+.nf-affnote b { color: var(--gold); font-variant-numeric: tabular-nums; }
+
+.nf-reflink { font-size: .68rem; color: #8a6524; background: #f6edd4; border: 1px solid #e3d3a6; border-radius: 6px; padding: .28rem .4rem; margin: .18rem 0; }
+.nf-reflink.off { color: #a58a52; font-style: italic; }
+.nf-reflink b { color: #6f4e18; }
+
+.nf-endcap { font-family: var(--display); font-weight: 600; font-size: .82rem; color: var(--ink); display: flex; justify-content: space-between; align-items: baseline; gap: .4rem; margin-bottom: .3rem; }
+.nf-endtag { font-family: var(--ui); font-size: .54rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #fff; border-radius: 4px; padding: .06rem .32rem; }
+.nf-empty-hint { font-size: .7rem; color: var(--ink-3); padding: .2rem 0; line-height: 1.4; }
+
+.nf-mod-line { display: flex; align-items: baseline; gap: .3rem; font-size: .68rem; color: var(--ink-2); padding: .14rem 0; border-top: 1px dotted var(--line-2); }
+.nf-mod-line:first-child { border-top: none; }
+.nf-mod-line .dot { font-size: .66rem; }
+.nf-mod-line .val { margin-left: auto; color: #9c5a3c; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* conditions */
+.nf-conds { margin-top: .4rem; }
+/* une condition : ligne d'en-tête (nom | AEG/AEL | ×) au-dessus d'une description */
+.nf-cond { display: flex; flex-direction: column; align-items: stretch; gap: .28rem; margin: .35rem 0; }
+.nf-cond-head { display: flex; align-items: center; gap: .3rem; }
+.nf-cond-name { flex: 1 1 auto; min-width: 0; }
+.nf-cond-aelbl { flex: none; font-size: .5rem; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: var(--ink-3); }
+.nf-cond input.pct { width: 3rem; flex: none; text-align: right; }
+.nf-cond .nf-x { flex: none; width: 20px; height: 20px; border: 1px solid var(--line); background: #fbf8ee; color: var(--ink-2); border-radius: 5px; font-size: .8rem; line-height: 1; }
+.nf-cond .nf-x:hover { background: #f3e7e2; color: var(--danger); border-color: #e3c6bc; }
+.nf-addcond { font-size: .68rem; font-weight: 600; color: var(--accent); background: none; border: none; padding: .12rem 0; text-align: left; }
+.nf-addcond:hover { text-decoration: underline; }
+
+/* Stepper −/+ (décalage d'AE d'une condition) : remplace le spinner natif, laid et
+   inutilisable en mode nuit. Filet : on neutralise aussi tout spinner natif restant. */
+.nen-atelier input[type=number]::-webkit-inner-spin-button,
+.nen-atelier input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.nen-atelier input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+.nf-step { display: inline-flex; align-items: stretch; flex: none; height: 1.55rem; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: var(--card); }
+.nf-step-btn { flex: none; width: 1.35rem; border: none; border-radius: 0; background: var(--panel); color: var(--ink-2); font-size: .95rem; line-height: 1; cursor: pointer; padding: 0; display: grid; place-items: center; font-family: inherit; }
+.nf-step-btn:first-child { border-right: 1px solid var(--line); }
+.nf-step-btn:last-child { border-left: 1px solid var(--line); }
+.nf-step-btn:hover { background: var(--accent); color: #fff; }
+html.night .nf-step-btn:hover { color: #1c1913; }
+.nf-step-val { min-width: 3rem; padding: 0 .4rem; display: grid; place-items: center; font-size: .74rem; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--ink); white-space: nowrap; }
+.nf-conds-scope { color: var(--accent); }
+
+/* prises (anatomie LiteGraph : entrées à gauche, sorties à droite, sous le titre) */
+.nf-slots { flex: none; padding: .32rem 0 .28rem; background: linear-gradient(#f8f4e6, #f5efdf); border-bottom: 1px solid var(--line-2); }
+.nf-slot-row { position: relative; display: flex; align-items: center; min-height: 17px; padding: 1px 0; }
+.nf-slot-lbl { font-size: .68rem; color: var(--ink-2); }
+.nf-slot-lbl.in  { padding-left: 12px; }
+.nf-slot-lbl.out { margin-left: auto; padding-right: 12px; }
+.nf-port {
+  position: absolute; width: 11px; height: 11px; border-radius: 50%;
+  background: var(--card); border: 2px solid var(--accent); cursor: crosshair; z-index: 3;
+  box-shadow: 0 0 0 2px var(--card); transition: transform .08s;
+}
+.nf-port.in  { left: -5.5px; top: calc(50% - 5.5px); }
+.nf-port.out { right: -5.5px; top: calc(50% - 5.5px); }
+.nf-port.t-cap { border-color: var(--gold); }
+.nf-port:hover, .nf-port.hot { background: var(--accent); transform: scale(1.22); }
+.nf-port.t-cap:hover, .nf-port.t-cap.hot { background: var(--gold); }
+.nf-port.hot-bad { background: var(--danger); border-color: #7a1f14; transform: scale(1.22); }
+
+/* --- objet : arme (Forge) ⇢ Conjuration d'objet --- */
+html.night .nen-atelier { --fg-arme: #8b97a6; }   /* acier plus clair sur canvas sombre */
+.nf-edges path.t-objet { stroke: var(--fg-arme); stroke-dasharray: 6 5; }
+.nf-edges path.t-objet:hover { stroke: var(--fg-arme); filter: brightness(1.18); }
+.nf-port.t-objet { border-color: var(--fg-arme); }
+.nf-port.t-objet:hover, .nf-port.t-objet.hot { background: var(--fg-arme); }
+.nf-arme-fiche { margin-top: .12rem; }
+.nf-arme-row { display: flex; justify-content: space-between; gap: .5rem; font-size: .66rem; padding: .09rem 0; border-bottom: 1px dotted var(--line-2); }
+.nf-arme-row .k { color: var(--ink-3); flex: none; }
+.nf-arme-row .v { color: var(--ink); text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* sélecteurs cumulables */
+.nf-cumul { display: flex; flex-wrap: wrap; gap: .22rem; margin: .18rem 0; }
+.nf-chip { font-size: .66rem; border: 1px solid var(--line); border-radius: 20px; padding: .1rem .45rem; background: #fff; color: var(--ink-2); }
+.nf-chip:hover { border-color: var(--accent); }
+.nf-chip.on { background: var(--accent); color: #fff; border-color: var(--accent-deep); }
+
+/* ---- Inspecteur / fiche ---------------------------------------------- */
+.nf-inspector { grid-area: inspector; background: var(--panel); border-left: 1px solid var(--line); overflow-y: auto; padding: .65rem .7rem .85rem; }
+.nf-inspector h2 { font-family: var(--display); font-size: .9rem; letter-spacing: .04em; color: var(--accent-deep); margin: 0 0 .1rem; }
+.nf-inspector .nf-sub { color: var(--ink-3); font-size: .72rem; margin-bottom: .55rem; }
+
+.nf-affinity { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: .18rem .45rem; margin-bottom: .65rem; }
+.nf-affinity .k { font-size: .7rem; color: var(--ink-2); }
+.nf-affinity .bar { height: 5px; background: var(--line-2); border-radius: 3px; overflow: hidden; }
+.nf-affinity .bar > i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), #7d8f6a); border-radius: 3px; }
+.nf-affinity .v { font-size: .7rem; font-weight: 600; color: var(--accent-deep); text-align: right; font-variant-numeric: tabular-nums; min-width: 32px; }
+
+.nf-fiche { margin-top: .2rem; }
+.nf-cap-card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: .45rem .5rem; margin-bottom: .5rem; box-shadow: 0 1px 3px rgba(60,50,30,.06); }
+.nf-cap-card h3 { font-family: var(--display); font-weight: 600; font-size: .86rem; margin: 0 0 .2rem; color: var(--ink); display: flex; justify-content: space-between; align-items: baseline; gap: .4rem; }
+.nf-cap-card h3 .tag { font-family: var(--ui); font-size: .55rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #fff; border-radius: 4px; padding: .06rem .32rem; }
+.nf-cap-card .nf-costs { margin-top: .3rem; }
+.nf-cap-card .nf-mod-line { padding: .14rem 0; }
+.nf-warn { display: flex; gap: .35rem; align-items: baseline; color: #8f3320; font-size: .68rem; background: #f6e6df; border: 1px solid #e8c9bc; border-radius: 6px; padding: .22rem .4rem; margin-top: .3rem; }
+/* Mise en garde non bloquante (jaune) : rouge = erreur, jaune = simple avertissement. */
+.nf-warn-soft { color: #7c5e10; background: #f7f0d6; border-color: #e4d69c; }
+
+.nf-totals { position: sticky; bottom: -1rem; margin-top: .5rem; padding: .55rem 0 0; background: linear-gradient(180deg, rgba(241,235,214,0), var(--panel) 30%); border-top: 1px solid var(--line); }
+.nf-totals .grand { display: flex; justify-content: space-between; align-items: baseline; }
+.nf-totals .grand .lbl { font-family: var(--display); font-size: .78rem; letter-spacing: .03em; color: var(--accent-deep); }
+.nf-totals .grand .num { font-size: 1.1rem; font-weight: 800; color: #9c5a3c; font-variant-numeric: tabular-nums; }
+.nf-dibreak { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .4rem; }
+.nf-dibreak .b { font-size: .62rem; font-weight: 600; border-radius: 5px; padding: .08rem .4rem; color: #fff; font-variant-numeric: tabular-nums; }
+
+/* développement par catégorie (DR/DE/…) : pastilles dans les nœuds, ventilation dans la fiche */
+.nf-devline { display: flex; flex-wrap: wrap; gap: .28rem; align-items: center; margin: .35rem 0 .1rem; }
+.nf-devlbl { font-size: .56rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); }
+.nf-dev-b { font-size: .64rem; font-weight: 700; color: #fff; border-radius: 4px; padding: .06rem .4rem; font-variant-numeric: tabular-nums; }
+.nf-devbreak { margin-top: .4rem; display: grid; gap: .2rem; }
+.nf-devrow { display: flex; align-items: baseline; gap: .3rem; font-size: .68rem; color: var(--ink-2); }
+.nf-devrow .dot { font-size: .6rem; }
+.nf-devrow .dx { font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+.nf-devrow .arr { color: var(--ink-3); }
+.nf-devrow .di { font-weight: 700; color: #9c5a3c; font-variant-numeric: tabular-nums; }
+.nf-devrow .aa { margin-left: auto; font-size: .6rem; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+
+/* ---- Recherche de nœud — MODALE plein écran -------------------------- */
+.nf-overlay {
+  --card: #fdfaf2; --panel: #f1ebd6; --line: #dad2bc; --line-2: #eae3ce;
+  --ink: #2a2820; --ink-2: #5b564a; --ink-3: #918a78; --accent: #5d6f57; --accent-deep: #46543d;
+  --ui: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+  --display: "Cinzel", Garamond, serif;
+  position: fixed; inset: 0; z-index: 3000;
+  display: flex; align-items: flex-start; justify-content: center; padding: 7vh 20px 24px;
+  background: rgba(32,27,18,.42);
+  -webkit-backdrop-filter: blur(7px); backdrop-filter: blur(7px);
+  font-family: var(--ui); animation: nf-fade .12s ease-out;
+}
+@keyframes nf-fade { from { opacity: 0; } to { opacity: 1; } }
+.nf-overlay input, .nf-overlay select, .nf-overlay button, .nf-overlay textarea { font-family: inherit; }
+.nf-search-modal {
+  width: min(760px, 90vw); max-height: 82vh; display: flex; flex-direction: column; overflow: hidden;
+  background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+  box-shadow: 0 28px 66px rgba(24,18,8,.5); animation: nf-pop .13s ease-out;
+}
+@keyframes nf-pop { from { transform: translateY(-10px) scale(.985); opacity: .5; } to { transform: none; opacity: 1; } }
+.nf-menu-head { display: flex; justify-content: space-between; align-items: center; gap: .6rem; padding: .8rem 1rem .3rem; font-family: var(--display); font-size: .74rem; font-weight: 600; letter-spacing: .05em; color: var(--ink-3); }
+.nf-menu-head span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nf-menu-count { flex: none; font-family: var(--ui); background: var(--panel); border-radius: 10px; padding: .06rem .5rem; color: var(--ink-2); font-size: .68rem; font-variant-numeric: tabular-nums; }
+.nf-menu-search { margin: .35rem 1rem .5rem; padding: .55rem .8rem; border: 1px solid var(--line); border-radius: 10px; background: #fff; font-family: inherit; font-size: .92rem; color: var(--ink); }
+.nf-menu-search:focus { outline: 3px solid rgba(93,111,87,.28); border-color: var(--accent); }
+.nf-menu-list { overflow-y: auto; padding: 0 .8rem 1rem; display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: .4rem; align-content: start; }
+.nf-menu-item { text-align: left; border: 1px solid var(--line-2); border-left: 3px solid var(--fg-raccord); background: #fbf8ee; border-radius: 8px; padding: .42rem .6rem; color: var(--ink); transition: background .06s, box-shadow .06s; }
+.nf-menu-item.sel { background: #fff; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(93,111,87,.4), 0 3px 10px rgba(60,50,30,.14); }
+.nf-menu-item .nm { display: block; font-size: .82rem; font-weight: 600; line-height: 1.25; }
+.nf-menu-item .nm b { color: var(--accent-deep); font-weight: 800; }
+.nf-menu-item small { display: block; color: var(--ink-3); font-size: .68rem; margin-top: .06rem; }
+.nf-menu-empty { grid-column: 1 / -1; color: var(--ink-3); font-size: .82rem; padding: 1rem; text-align: center; }
+
+/* responsive : sous 1000px, on empile */
+@media (max-width: 1000px) {
+  .nen-atelier { grid-template-columns: 1fr; grid-template-rows: auto auto 1fr auto; grid-template-areas: "bar" "palette" "canvas" "inspector"; height: auto; }
+  .nf-palette { max-height: 200px; }
+  .nf-canvas { height: 62vh; }
+  .nf-inspector { max-height: 52vh; }
+}

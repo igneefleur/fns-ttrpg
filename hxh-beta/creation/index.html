@@ -1,0 +1,4542 @@
+
+<!doctype html>
+<html lang="fr" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://igneefleur.github.io/fns-ttrpg/hxh-beta/creation/">
+      
+      
+        <link rel="prev" href="../forge/">
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Atelier - HxH Système JDR</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/fonts.css">
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css?v=13">
+    
+      <link rel="stylesheet" href="../stylesheets/atelier.css">
+    
+      <link rel="stylesheet" href="../stylesheets/night.css">
+    
+      <link rel="stylesheet" href="../stylesheets/forge.css">
+    
+      <link rel="stylesheet" href="../stylesheets/creation.css?v=57">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  
+  
+  <script>
+    (function () {
+      if (location.pathname.indexOf("/content/") !== -1) {
+        document.documentElement.classList.add("book-mode", "book-loading");
+        setTimeout(function () {
+          document.documentElement.classList.remove("book-loading");
+        }, 2000);
+      }
+    })();
+  </script>
+  
+  <script>
+    (function () {
+      try {
+        if (localStorage.getItem("night") === "1") {
+          document.documentElement.classList.add("night");
+        }
+      } catch (e) {}
+    })();
+  </script>
+
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#atelier" class="md-skip">
+          Aller au contenu
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="En-tête">
+    <a href=".." title="HxH Système JDR" class="md-header__button md-logo" aria-label="HxH Système JDR" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            HxH Système JDR
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Atelier
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Rechercher" placeholder="Rechercher" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Recherche">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Effacer" aria-label="Effacer" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initialisation de la recherche
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Onglets" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Accueil
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../content/regles/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Règles
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../content/univers/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Univers
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../personnage/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Création
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../forge/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Forge
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Atelier
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="HxH Système JDR" class="md-nav__button md-logo" aria-label="HxH Système JDR" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    HxH Système JDR
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Accueil
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../content/regles/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Règles
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Règles
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Le Personnage
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Le Personnage
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/personnage/avantages/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Avantages
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/personnage/eclat/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Éclat
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/personnage/caracteristiques/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Caractéristiques
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/personnage/capacites-physiques/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Capacités physiques
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/personnage/points-formation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Points de formation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/personnage/competences/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compétences
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/personnage/classe/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Classes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/personnage/sens/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Les Sens
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/personnage/etats/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    États
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/personnage/influence/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Influence
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Formation
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Formation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/formation/formations-martiales/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Formations martiales
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/formation/formations-athletiques/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Formations athlétiques
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/formation/formations-vitales/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Formations vitales
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/formation/formations-sociales/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Formations sociales
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/formation/formations-intellectuelles/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Formations intellectuelles
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/formation/formations-naturelles/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Formations naturelles
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/formation/formations-sensorielles/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Formations sensorielles
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/formation/formations-techniques/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Formations techniques
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/formation/formations-transport/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Formations du transport
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/formation/formations-furtives/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Formations furtives
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/formation/formations-artisanales/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Formations artisanales
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/formation/formations-artistiques/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Formations artistiques
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Art
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Art
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/art/arts-martiaux/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arts martiaux
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/art/arts-athletiques/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arts athlétiques
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/art/arts-vitaux/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arts vitaux
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/art/arts-sociaux/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arts sociaux
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/art/arts-intellectuels/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arts intellectuels
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/art/arts-naturels/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arts naturels
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/art/arts-sensoriels/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arts sensoriels
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/art/arts-techniques/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arts techniques
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/art/arts-transport/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arts du transport
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/art/arts-furtifs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arts furtifs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/art/arts-artisanaux/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arts artisanaux
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/art/arts-artistiques/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arts artistiques
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    L'Échelle du Monde
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    L'Échelle du Monde
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/monde/tailles/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Les Tailles
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/monde/degats/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Types de Dégâts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/monde/formes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Formes du vivant
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_6" id="__nav_2_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Le Combat
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Le Combat
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/combat/deroulement-combat/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Déroulement du combat
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/combat/manoeuvres/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Attaque et Défense
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/combat/critique-blessures/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Critique et Blessures
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/combat/armes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Armes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_7" id="__nav_2_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Nen
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Nen
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/nen/aura/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Aura
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/nen/di/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Développement intérieur
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/nen/archetypes-nen/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Les 12 archétypes de Nen
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/nen/techniques-nen/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Techniques du Nen
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/nen/capacites-de-nen/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Capacités de Nen
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/nen/renforcement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Renforcement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/nen/emission/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Émission
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/nen/transmutation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Transmutation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/nen/manipulation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Manipulation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/nen/conjuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conjuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/nen/specialisation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spécialisation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_8" id="__nav_2_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Annexes
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Annexes
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/annexes/conversion-magicien-dnd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conversion Magicien D&D
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../content/univers/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Univers
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Univers
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/univers/cartes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cartes du monde
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/univers/heavens-arena/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Heavens Arena
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../personnage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Création
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../forge/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Forge
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Atelier
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table des matières">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="atelier">Atelier</h1>
+<div id="nen-atelier">
+  <noscript>L'atelier de création de pouvoir requiert JavaScript.</noscript>
+  <p style="padding:2rem;color:#8a8478">Chargement de l'atelier…</p>
+</div>
+
+<div class="gloss-defs">
+<!-- Mouvement -->
+<div class="gcard gloss-card" data-key="mouvement:0 m">
+<p><strong>0 m</strong></p>
+<div class="gcard-text">
+<p>0 km/h : immobile, aucun déplacement pendant le round.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:2 m">
+<p><strong>2 m</strong></p>
+<div class="gcard-text">
+<p>1.2 km/h : le pas d'un visiteur de musée qui s'attarde devant chaque œuvre.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:4 m">
+<p><strong>4 m</strong></p>
+<div class="gcard-text">
+<p>2.4 km/h : la flânerie d'un passant qui fait du lèche-vitrines.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:10 m">
+<p><strong>10 m</strong></p>
+<div class="gcard-text">
+<p>6 km/h : la marche rapide d'un piéton pressé d'attraper son bus.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:3 m">
+<p><strong>3 m</strong></p>
+<div class="gcard-text">
+<p>1.8 km/h : le pas d'une personne âgée au déambulateur, 0.5 m par seconde.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:6 m">
+<p><strong>6 m</strong></p>
+<div class="gcard-text">
+<p>3.6 km/h : un mètre par seconde tout rond, la promenade tranquille au parc.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:15 m">
+<p><strong>15 m</strong></p>
+<div class="gcard-text">
+<p>9 km/h : un footing tranquille, à 6 min 40 s au kilomètre.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:8 m">
+<p><strong>8 m</strong></p>
+<div class="gcard-text">
+<p>4.8 km/h : la marche normale d'un adulte en ville.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:20 m">
+<p><strong>20 m</strong></p>
+<div class="gcard-text">
+<p>12 km/h : les 5 minutes au kilomètre, allure de référence du coureur amateur régulier.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:12 m">
+<p><strong>12 m</strong></p>
+<div class="gcard-text">
+<p>7.2 km/h : l'allure d'un marcheur nordique entraîné, à la frontière entre marche et course.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:30 m">
+<p><strong>30 m</strong></p>
+<div class="gcard-text">
+<p>18 km/h : un cycliste qui roule d'un bon train en ville.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:16 m">
+<p><strong>16 m</strong></p>
+<div class="gcard-text">
+<p>9.6 km/h : le footing d'un joggeur occasionnel, 10 km bouclés en un peu plus d'une heure.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:40 m">
+<p><strong>40 m</strong></p>
+<div class="gcard-text">
+<p>24 km/h : le sprint d'un adulte ordinaire, sans entraînement particulier.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:50 m">
+<p><strong>50 m</strong></p>
+<div class="gcard-text">
+<p>30 km/h : un cycliste sportif lancé sur le plat.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:24 m">
+<p><strong>24 m</strong></p>
+<div class="gcard-text">
+<p>14.4 km/h : un coureur bien entraîné, qui boucle 10 km en moins de 42 minutes.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:60 m">
+<p><strong>60 m</strong></p>
+<div class="gcard-text">
+<p>36 km/h : la moyenne exacte d'un sprinteur qui court le 100 m en 10 secondes pile.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:14 m">
+<p><strong>14 m</strong></p>
+<div class="gcard-text">
+<p>8.4 km/h : le trottinement d'un débutant en course à pied, plus de 7 minutes au kilomètre.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:28 m">
+<p><strong>28 m</strong></p>
+<div class="gcard-text">
+<p>16.8 km/h : un bon coureur de club, 10 km avalés en moins de 36 minutes.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:70 m">
+<p><strong>70 m</strong></p>
+<div class="gcard-text">
+<p>42 km/h : un cheval au galop, sans forcer l'allure.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:32 m">
+<p><strong>32 m</strong></p>
+<div class="gcard-text">
+<p>19.2 km/h : l'allure d'un marathonien professionnel, marathon couru en 2 h 12.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:80 m">
+<p><strong>80 m</strong></p>
+<div class="gcard-text">
+<p>48 km/h : un chat domestique en pleine pointe de vitesse.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:100 m">
+<p><strong>100 m</strong></p>
+<div class="gcard-text">
+<p>60 km/h : la moyenne d'un pur-sang sur toute la durée d'une course hippique.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:150 m">
+<p><strong>150 m</strong></p>
+<div class="gcard-text">
+<p>90 km/h : une voiture lancée sur une route de campagne.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:200 m">
+<p><strong>200 m</strong></p>
+<div class="gcard-text">
+<p>120 km/h : une voiture qui file sur l'autoroute.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:120 m">
+<p><strong>120 m</strong></p>
+<div class="gcard-text">
+<p>72 km/h : la pointe d'un lévrier de course, le chien le plus rapide du monde.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:300 m">
+<p><strong>300 m</strong></p>
+<div class="gcard-text">
+<p>180 km/h : un premier service de tennis sur le circuit professionnel.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:160 m">
+<p><strong>160 m</strong></p>
+<div class="gcard-text">
+<p>96 km/h : un guépard en pleine chasse, tout près des 98 km/h de la pointe la plus rapide jamais chronométrée.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:400 m">
+<p><strong>400 m</strong></p>
+<div class="gcard-text">
+<p>240 km/h : un parachutiste en chute libre qui pique tête la première.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:500 m">
+<p><strong>500 m</strong></p>
+<div class="gcard-text">
+<p>300 km/h : un TGV en service commercial, qui roule à 300 ou 320 km/h selon les lignes.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:750 m">
+<p><strong>750 m</strong></p>
+<div class="gcard-text">
+<p>450 km/h : un peu au-dessus du train le plus rapide en service, le maglev de Shanghai et ses 431 km/h.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:1 km">
+<p><strong>1 km</strong></p>
+<div class="gcard-text">
+<p>600 km/h : quasiment le record du monde ferroviaire, 603 km/h par le maglev japonais L0 en 2015.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:600 m">
+<p><strong>600 m</strong></p>
+<div class="gcard-text">
+<p>360 km/h : juste sous le record de vitesse en MotoGP, les 368.6 km/h de Jorge Martin à Mugello en 2026.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:1.5 km">
+<p><strong>1.5 km</strong></p>
+<div class="gcard-text">
+<p>900 km/h : un avion de ligne en croisière.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:800 m">
+<p><strong>800 m</strong></p>
+<div class="gcard-text">
+<p>480 km/h : à peine au-dessus du record de vitesse d'un hélicoptère, les 472 km/h de l'Eurocopter X3 en vol horizontal.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:2 km">
+<p><strong>2 km</strong></p>
+<div class="gcard-text">
+<p>1 200 km/h : presque le record de vitesse terrestre, les 1 227.9 km/h supersoniques de la Thrust SSC en 1997.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:1.2 km">
+<p><strong>1.2 km</strong></p>
+<div class="gcard-text">
+<p>720 km/h : un peu au-dessus de la pointe d'un P-51 Mustang, chasseur à hélice de la Seconde Guerre mondiale (703 km/h).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:3 km">
+<p><strong>3 km</strong></p>
+<div class="gcard-text">
+<p>1 800 km/h : un peu sous la vitesse maximale d'un chasseur Rafale, Mach 1.8 en altitude (environ 1 900 km/h).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:1.6 km">
+<p><strong>1.6 km</strong></p>
+<div class="gcard-text">
+<p>960 km/h : tout près de la pointe du Cessna Citation X+, l'avion d'affaires le plus rapide (Mach 0.935, soit 978 km/h).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:4 km">
+<p><strong>4 km</strong></p>
+<div class="gcard-text">
+<p>2 400 km/h : la vitesse maximale d'un F-22 Raptor (Mach 2.25).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:5 km">
+<p><strong>5 km</strong></p>
+<div class="gcard-text">
+<p>3 000 km/h : la pointe du MiG-25, le chasseur le plus rapide jamais mis en service (Mach 2.83).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:7.5 km">
+<p><strong>7.5 km</strong></p>
+<div class="gcard-text">
+<p>4 500 km/h : la balle de fusil la plus véloce, une .220 Swift, sort du canon à environ 1 250 m par seconde.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:10 km">
+<p><strong>10 km</strong></p>
+<div class="gcard-text">
+<p>6 000 km/h : un obus-flèche de char moderne à la sortie du canon, environ 1 700 m par seconde.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:6 km">
+<p><strong>6 km</strong></p>
+<div class="gcard-text">
+<p>3 600 km/h : un peu au-dessus du record du SR-71 Blackbird, l'avion à réaction habité le plus rapide (3 529.6 km/h).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:15 km">
+<p><strong>15 km</strong></p>
+<div class="gcard-text">
+<p>9 000 km/h : un projectile de canon électromagnétique testé par l'US Navy, environ Mach 7 à la sortie des rails.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:25 km">
+<p><strong>25 km</strong></p>
+<div class="gcard-text">
+<p>15 000 km/h : à peu près la vitesse de libération de Mercure, les 4.25 km par seconde qui suffisent pour échapper à la planète.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:20 km">
+<p><strong>20 km</strong></p>
+<div class="gcard-text">
+<p>12 000 km/h : au-dessus du record de l'avion le plus rapide jamais construit, le drone hypersonique X-43A (Mach 9.6, environ 11 000 km/h).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:50 km">
+<p><strong>50 km</strong></p>
+<div class="gcard-text">
+<p>30 000 km/h : un peu plus vite que la Station spatiale internationale, qui orbite à 27 600 km/h.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:40 km">
+<p><strong>40 km</strong></p>
+<div class="gcard-text">
+<p>24 000 km/h : une ogive de missile intercontinental qui retombe sur sa cible, environ Mach 20.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:100 km">
+<p><strong>100 km</strong></p>
+<div class="gcard-text">
+<p>60 000 km/h : la sonde Voyager 1, l'objet humain le plus lointain, file à 17 km par seconde (61 200 km/h).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:250 km">
+<p><strong>250 km</strong></p>
+<div class="gcard-text">
+<p>150 000 km/h : une comète tombée des confins du Système solaire croise l'orbite terrestre à 42 km par seconde.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:200 km">
+<p><strong>200 km</strong></p>
+<div class="gcard-text">
+<p>120 000 km/h : un peu plus vite que la Terre elle-même sur son orbite autour du Soleil (107 000 km/h).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="mouvement:500 km">
+<p><strong>500 km</strong></p>
+<div class="gcard-text">
+<p>300 000 km/h : seule la sonde solaire Parker est allée aussi vite, 343 000 km/h dès son premier passage près du Soleil fin 2018.</p>
+</div>
+</div>
+<!-- Saut -->
+<div class="gcard gloss-card" data-key="saut:0 m">
+<p><strong>0 m</strong></p>
+<div class="gcard-text">
+<p>Aucun saut : les pieds ne quittent pas le sol.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:0.1 m">
+<p><strong>0.1 m</strong></p>
+<div class="gcard-text">
+<p>Un mug posé sur la table (environ 10 cm).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:0.2 m">
+<p><strong>0.2 m</strong></p>
+<div class="gcard-text">
+<p>Une haute marche d'escalier (20 cm).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:0.3 m">
+<p><strong>0.3 m</strong></p>
+<div class="gcard-text">
+<p>Une feuille A4 posée debout (29.7 cm).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:0.5 m">
+<p><strong>0.5 m</strong></p>
+<div class="gcard-text">
+<p>La hauteur du genou d'un adulte (environ 50 cm).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:1 m">
+<p><strong>1 m</strong></p>
+<div class="gcard-text">
+<p>Un garde-corps de balcon (1 m, hauteur minimale réglementaire).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:2 m">
+<p><strong>2 m</strong></p>
+<div class="gcard-text">
+<p>La barre transversale d'un but de handball (2 m).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:1.5 m">
+<p><strong>1.5 m</strong></p>
+<div class="gcard-text">
+<p>Une clôture de jardin en grillage (1.5 m).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:3 m">
+<p><strong>3 m</strong></p>
+<div class="gcard-text">
+<p>L'arceau d'un panier de basket (3.05 m).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:2.5 m">
+<p><strong>2.5 m</strong></p>
+<div class="gcard-text">
+<p>Le plafond d'un logement récent (2.5 m).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:5 m">
+<p><strong>5 m</strong></p>
+<div class="gcard-text">
+<p>La tête d'une girafe mâle adulte (environ 5 m).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:3.5 m">
+<p><strong>3.5 m</strong></p>
+<div class="gcard-text">
+<p>Le garrot d'un grand éléphant d'Afrique mâle (environ 3.5 m).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:7 m">
+<p><strong>7 m</strong></p>
+<div class="gcard-text">
+<p>Le faîte du toit d'une maison à un étage (environ 7 m).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:10 m">
+<p><strong>10 m</strong></p>
+<div class="gcard-text">
+<p>La plus haute plate-forme de plongeon olympique (10 m).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:20 m">
+<p><strong>20 m</strong></p>
+<div class="gcard-text">
+<p>La corniche d'un immeuble haussmannien de six étages (environ 20 m).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:15 m">
+<p><strong>15 m</strong></p>
+<div class="gcard-text">
+<p>Le toit d'un immeuble de quatre étages (environ 15 m).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:30 m">
+<p><strong>30 m</strong></p>
+<div class="gcard-text">
+<p>La cime d'un grand chêne adulte (environ 30 m).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:25 m">
+<p><strong>25 m</strong></p>
+<div class="gcard-text">
+<p>L'obélisque de la Concorde à Paris (23 m).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:50 m">
+<p><strong>50 m</strong></p>
+<div class="gcard-text">
+<p>L'Arc de Triomphe (50 m).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:35 m">
+<p><strong>35 m</strong></p>
+<div class="gcard-text">
+<p>La colonne Trajane à Rome, socle compris (35 m).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:70 m">
+<p><strong>70 m</strong></p>
+<div class="gcard-text">
+<p>Les tours de Notre-Dame de Paris (69 m).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:100 m">
+<p><strong>100 m</strong></p>
+<div class="gcard-text">
+<p>La statue de la Liberté, du sol au sommet de la torche (93 m).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:200 m">
+<p><strong>200 m</strong></p>
+<div class="gcard-text">
+<p>La tour Montparnasse (210 m).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:150 m">
+<p><strong>150 m</strong></p>
+<div class="gcard-text">
+<p>La grande pyramide de Gizeh à sa construction (146.6 m).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:300 m">
+<p><strong>300 m</strong></p>
+<div class="gcard-text">
+<p>La tour Eiffel sans ses antennes (300 m).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:250 m">
+<p><strong>250 m</strong></p>
+<div class="gcard-text">
+<p>Le toit du 30 Rockefeller Plaza à New York (259 m).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:500 m">
+<p><strong>500 m</strong></p>
+<div class="gcard-text">
+<p>La tour Taipei 101 (508 m).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:350 m">
+<p><strong>350 m</strong></p>
+<div class="gcard-text">
+<p>Le plus haut pylône du viaduc de Millau (343 m).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:700 m">
+<p><strong>700 m</strong></p>
+<div class="gcard-text">
+<p>Les plus hautes falaises des gorges du Verdon (700 m).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:1 km">
+<p><strong>1 km</strong></p>
+<div class="gcard-text">
+<p>Le Salto Ángel au Venezuela, plus haute cascade du monde (979 m).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:2 km">
+<p><strong>2 km</strong></p>
+<div class="gcard-text">
+<p>Le sommet du mont Ventoux (1 910 m).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:1.5 km">
+<p><strong>1.5 km</strong></p>
+<div class="gcard-text">
+<p>La profondeur du Grand Canyon (environ 1.6 km).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:3 km">
+<p><strong>3 km</strong></p>
+<div class="gcard-text">
+<p>La Zugspitze, point culminant de l'Allemagne (2 962 m).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:2.5 km">
+<p><strong>2.5 km</strong></p>
+<div class="gcard-text">
+<p>Le col du Grand-Saint-Bernard, entre la Suisse et l'Italie (2 469 m).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:5 km">
+<p><strong>5 km</strong></p>
+<div class="gcard-text">
+<p>Le sommet du mont Blanc (environ 4 806 m).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:3.5 km">
+<p><strong>3.5 km</strong></p>
+<div class="gcard-text">
+<p>Le sommet de l'Etna (environ 3 350 m).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:7 km">
+<p><strong>7 km</strong></p>
+<div class="gcard-text">
+<p>L'Aconcagua, plus haut sommet des Amériques (6 961 m).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:10 km">
+<p><strong>10 km</strong></p>
+<div class="gcard-text">
+<p>L'altitude de croisière d'un avion de ligne (environ 10 000 m).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:20 km">
+<p><strong>20 km</strong></p>
+<div class="gcard-text">
+<p>L'altitude de vol de l'avion espion U-2 (environ 21 km).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:15 km">
+<p><strong>15 km</strong></p>
+<div class="gcard-text">
+<p>Le sommet d'un cumulonimbus d'orage tropical (environ 15 km).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:30 km">
+<p><strong>30 km</strong></p>
+<div class="gcard-text">
+<p>L'altitude où éclatent les ballons-sondes météo (30 à 35 km).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:25 km">
+<p><strong>25 km</strong></p>
+<div class="gcard-text">
+<p>L'altitude de croisière du SR-71 Blackbird (environ 26 km).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:50 km">
+<p><strong>50 km</strong></p>
+<div class="gcard-text">
+<p>La stratopause, sommet de la stratosphère (environ 50 km).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:35 km">
+<p><strong>35 km</strong></p>
+<div class="gcard-text">
+<p>Le record d'altitude d'un avion à réaction, un MiG-25 soviétique (37 650 m).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:70 km">
+<p><strong>70 km</strong></p>
+<div class="gcard-text">
+<p>La mésosphère, où s'embrasent la plupart des étoiles filantes (entre 70 et 100 km).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="saut:100 km">
+<p><strong>100 km</strong></p>
+<div class="gcard-text">
+<p>La ligne de Kármán (100 km), frontière conventionnelle de l'espace.</p>
+</div>
+</div>
+<!-- Port -->
+<div class="gcard gloss-card" data-key="port:0 kg">
+<p><strong>0 kg</strong></p>
+<div class="gcard-text">
+<p>Un flocon de neige, si leger que la main ne sent pas son poids.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:1 kg">
+<p><strong>1 kg</strong></p>
+<div class="gcard-text">
+<p>Un litre d'eau, qui pese tout juste 1 kilo.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:2 kg">
+<p><strong>2 kg</strong></p>
+<div class="gcard-text">
+<p>Un ordinateur portable de 15 pouces.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:5 kg">
+<p><strong>5 kg</strong></p>
+<div class="gcard-text">
+<p>Un gros chat domestique adulte.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:10 kg">
+<p><strong>10 kg</strong></p>
+<div class="gcard-text">
+<p>Un pneu de voiture de tourisme, sans la jante.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:3 kg">
+<p><strong>3 kg</strong></p>
+<div class="gcard-text">
+<p>Un nouveau-ne humain, a la naissance.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:8 kg">
+<p><strong>8 kg</strong></p>
+<div class="gcard-text">
+<p>Une grosse pasteque bien mure.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:20 kg">
+<p><strong>20 kg</strong></p>
+<div class="gcard-text">
+<p>Un bidon de 20 litres rempli d'eau.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:15 kg">
+<p><strong>15 kg</strong></p>
+<div class="gcard-text">
+<p>Un four a micro-ondes de cuisine.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:50 kg">
+<p><strong>50 kg</strong></p>
+<div class="gcard-text">
+<p>Un grand sac de riz de 50 kilos, comme on en charge sur les quais.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:30 kg">
+<p><strong>30 kg</strong></p>
+<div class="gcard-text">
+<p>Un labrador adulte de belle taille.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:100 kg">
+<p><strong>100 kg</strong></p>
+<div class="gcard-text">
+<p>Un panda geant adulte.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:60 kg">
+<p><strong>60 kg</strong></p>
+<div class="gcard-text">
+<p>Une personne adulte plutot mince.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:200 kg">
+<p><strong>200 kg</strong></p>
+<div class="gcard-text">
+<p>Un piano droit de salon.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:300 kg">
+<p><strong>300 kg</strong></p>
+<div class="gcard-text">
+<p>Un grand ours brun male, un grizzly.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:150 kg">
+<p><strong>150 kg</strong></p>
+<div class="gcard-text">
+<p>Un gros sanglier male.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:500 kg">
+<p><strong>500 kg</strong></p>
+<div class="gcard-text">
+<p>Un cheval de selle adulte.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:1 t">
+<p><strong>1 t</strong></p>
+<div class="gcard-text">
+<p>Une petite voiture citadine.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:3 t">
+<p><strong>3 t</strong></p>
+<div class="gcard-text">
+<p>Un gros pick-up americain a 4 roues motrices.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:10 t">
+<p><strong>10 t</strong></p>
+<div class="gcard-text">
+<p>Un des plus grands tyrannosaures connus, le specimen Scotty : pres de 9 tonnes.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:2 t">
+<p><strong>2 t</strong></p>
+<div class="gcard-text">
+<p>Un rhinoceros blanc adulte.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:6 t">
+<p><strong>6 t</strong></p>
+<div class="gcard-text">
+<p>Un grand elephant d'Afrique male, le plus lourd des animaux terrestres.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:20 t">
+<p><strong>20 t</strong></p>
+<div class="gcard-text">
+<p>Un requin-baleine, le plus grand poisson du monde.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:30 t">
+<p><strong>30 t</strong></p>
+<div class="gcard-text">
+<p>Une baleine a bosse adulte.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:5 t">
+<p><strong>5 t</strong></p>
+<div class="gcard-text">
+<p>Un elephant d'Asie male.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:15 t">
+<p><strong>15 t</strong></p>
+<div class="gcard-text">
+<p>Une femelle de cachalot.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:50 t">
+<p><strong>50 t</strong></p>
+<div class="gcard-text">
+<p>Un grand cachalot male.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:100 t">
+<p><strong>100 t</strong></p>
+<div class="gcard-text">
+<p>Une grosse locomotive de train de ligne.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:300 t">
+<p><strong>300 t</strong></p>
+<div class="gcard-text">
+<p>Un Airbus A350 a pleine charge au decollage : environ 300 tonnes.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:1 000 t">
+<p><strong>1 000 t</strong></p>
+<div class="gcard-text">
+<p>Une petite corvette de guerre.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:200 t">
+<p><strong>200 t</strong></p>
+<div class="gcard-text">
+<p>La statue de la Liberte, sans son socle : environ 200 tonnes.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:600 t">
+<p><strong>600 t</strong></p>
+<div class="gcard-text">
+<p>La statue du Christ Redempteur, a Rio de Janeiro : environ 635 tonnes.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:2 000 t">
+<p><strong>2 000 t</strong></p>
+<div class="gcard-text">
+<p>La navette spatiale americaine, pleine, au decollage : environ 2 030 tonnes.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:3 000 t">
+<p><strong>3 000 t</strong></p>
+<div class="gcard-text">
+<p>La fusee Saturn V, pleine, au decollage : environ 2 970 tonnes.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:500 t">
+<p><strong>500 t</strong></p>
+<div class="gcard-text">
+<p>Un Boeing 747 a pleine charge au decollage : environ 450 tonnes.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:1 500 t">
+<p><strong>1 500 t</strong></p>
+<div class="gcard-text">
+<p>La fusee Falcon Heavy au decollage : environ 1 420 tonnes.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:5 000 t">
+<p><strong>5 000 t</strong></p>
+<div class="gcard-text">
+<p>Une fregate de guerre moderne.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:10 000 t">
+<p><strong>10 000 t</strong></p>
+<div class="gcard-text">
+<p>La tour Eiffel entiere : environ 10 100 tonnes.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:30 000 t">
+<p><strong>30 000 t</strong></p>
+<div class="gcard-text">
+<p>Un porte-avions de la Seconde Guerre mondiale, de la classe Essex : environ 30 000 tonnes.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:100 000 t">
+<p><strong>100 000 t</strong></p>
+<div class="gcard-text">
+<p>Un porte-avions nucleaire de classe Nimitz, a pleine charge : environ 100 000 tonnes.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:20 000 t">
+<p><strong>20 000 t</strong></p>
+<div class="gcard-text">
+<p>Un sous-marin nucleaire lance-missiles de classe Ohio, en plongee : pres de 19 000 tonnes.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:60 000 t">
+<p><strong>60 000 t</strong></p>
+<div class="gcard-text">
+<p>Un cuirasse de classe Iowa, a pleine charge : environ 57 500 tonnes.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:200 000 t">
+<p><strong>200 000 t</strong></p>
+<div class="gcard-text">
+<p>Un grand porte-conteneurs a pleine charge : environ 200 000 tonnes.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:300 000 t">
+<p><strong>300 000 t</strong></p>
+<div class="gcard-text">
+<p>Un supertanker plein de petrole, un VLCC : environ 320 000 tonnes.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:50 000 t">
+<p><strong>50 000 t</strong></p>
+<div class="gcard-text">
+<p>Le paquebot Titanic : environ 52 000 tonnes.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:150 000 t">
+<p><strong>150 000 t</strong></p>
+<div class="gcard-text">
+<p>Un petrolier Suezmax a pleine charge : environ 160 000 tonnes.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:500 000 t">
+<p><strong>500 000 t</strong></p>
+<div class="gcard-text">
+<p>Le Burj Khalifa, le plus haut gratte-ciel du monde : environ 500 000 tonnes.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:1 000 000 t">
+<p><strong>1 000 000 t</strong></p>
+<div class="gcard-text">
+<p>Une butte rocheuse isolee d'environ 55 metres de haut.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:3 000 000 t">
+<p><strong>3 000 000 t</strong></p>
+<div class="gcard-text">
+<p>La moitie de la grande pyramide de Gizeh.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:10 000 000 t">
+<p><strong>10 000 000 t</strong></p>
+<div class="gcard-text">
+<p>Une colline rocheuse isolee d'environ 120 metres de haut.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:2 000 000 t">
+<p><strong>2 000 000 t</strong></p>
+<div class="gcard-text">
+<p>Un piton rocheux isole d'environ 70 metres de haut.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:6 000 000 t">
+<p><strong>6 000 000 t</strong></p>
+<div class="gcard-text">
+<p>La grande pyramide de Gizeh : environ 5.9 millions de tonnes.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:20 000 000 t">
+<p><strong>20 000 000 t</strong></p>
+<div class="gcard-text">
+<p>Le beton du barrage de Grand Coulee, aux Etats-Unis : plus de 20 millions de tonnes.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:30 000 000 t">
+<p><strong>30 000 000 t</strong></p>
+<div class="gcard-text">
+<p>Le beton du barrage d'Itaipu, entre le Bresil et le Paraguay : pres de 30 millions de tonnes.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:5 000 000 t">
+<p><strong>5 000 000 t</strong></p>
+<div class="gcard-text">
+<p>Le palais du Parlement de Bucarest, le batiment le plus lourd du monde : environ 4 millions de tonnes.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:15 000 000 t">
+<p><strong>15 000 000 t</strong></p>
+<div class="gcard-text">
+<p>Le beton du barrage de la Grande Dixence, en Suisse, le plus haut barrage-poids du monde : environ 15 millions de tonnes.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:50 000 000 t">
+<p><strong>50 000 000 t</strong></p>
+<div class="gcard-text">
+<p>Une grosse colline rocheuse d'environ 200 metres de haut.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:100 000 000 t">
+<p><strong>100 000 000 t</strong></p>
+<div class="gcard-text">
+<p>Les remblais du barrage d'Assouan, en Egypte : pres de 100 millions de tonnes de roche et de terre.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:300 000 000 t">
+<p><strong>300 000 000 t</strong></p>
+<div class="gcard-text">
+<p>Un mont rocheux d'environ 350 metres de haut.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="port:1 000 000 000 t">
+<p><strong>1 000 000 000 t</strong></p>
+<div class="gcard-text">
+<p>Une petite montagne d'environ 500 metres de haut.</p>
+</div>
+</div>
+<!-- Lancer -->
+<div class="gcard gloss-card" data-key="lancer:×0">
+<p><strong>×0</strong></p>
+<div class="gcard-text">
+<p>Aucun lancer : l'arme tombe aux pieds du lanceur.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="lancer:×0.2">
+<p><strong>×0.2</strong></p>
+<div class="gcard-text">
+<p>Une dague (10 m au mieux) ne porte plus qu'à 2 m.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="lancer:×0.4">
+<p><strong>×0.4</strong></p>
+<div class="gcard-text">
+<p>Une dague (10 m au mieux) ne porte plus qu'à 4 m.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="lancer:×0.6">
+<p><strong>×0.6</strong></p>
+<div class="gcard-text">
+<p>Une dague (10 m au mieux) ne porte plus qu'à 6 m.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="lancer:×0.8">
+<p><strong>×0.8</strong></p>
+<div class="gcard-text">
+<p>Une dague (10 m au mieux) ne porte plus qu'à 8 m.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="lancer:×1">
+<p><strong>×1</strong></p>
+<div class="gcard-text">
+<p>Une dague garde ses portées du livre : 5 m en courte, 10 m au mieux.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="lancer:×1.5">
+<p><strong>×1.5</strong></p>
+<div class="gcard-text">
+<p>Une dague (10 m au mieux) vole à 15 m.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="lancer:×2">
+<p><strong>×2</strong></p>
+<div class="gcard-text">
+<p>Une dague (10 m au mieux) vole à 20 m.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="lancer:×2.5">
+<p><strong>×2.5</strong></p>
+<div class="gcard-text">
+<p>Une dague (10 m au mieux) vole à 25 m.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="lancer:×3">
+<p><strong>×3</strong></p>
+<div class="gcard-text">
+<p>Une dague (10 m au mieux) vole à 30 m.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="lancer:×5">
+<p><strong>×5</strong></p>
+<div class="gcard-text">
+<p>Une dague (10 m au mieux) vole à 50 m.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="lancer:×7">
+<p><strong>×7</strong></p>
+<div class="gcard-text">
+<p>Une dague (10 m au mieux) vole à 70 m.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="lancer:×10">
+<p><strong>×10</strong></p>
+<div class="gcard-text">
+<p>Une dague (10 m au mieux) vole à 100 m, toute la ligne droite d'un sprint olympique.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="lancer:×20">
+<p><strong>×20</strong></p>
+<div class="gcard-text">
+<p>Une dague (10 m au mieux) vole à 200 m, presque la hauteur de la tour Montparnasse (209 m).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="lancer:×30">
+<p><strong>×30</strong></p>
+<div class="gcard-text">
+<p>Une dague (10 m au mieux) vole à 300 m, un peu moins que la hauteur de la tour Eiffel (330 m).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="lancer:×50">
+<p><strong>×50</strong></p>
+<div class="gcard-text">
+<p>Une dague (10 m au mieux) vole à 500 m, presque la hauteur de la tour Taipei 101 (508 m).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="lancer:×70">
+<p><strong>×70</strong></p>
+<div class="gcard-text">
+<p>Une dague (10 m au mieux) vole à 700 m.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="lancer:×100">
+<p><strong>×100</strong></p>
+<div class="gcard-text">
+<p>Une dague (10 m au mieux) vole à 1 km.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="lancer:×200">
+<p><strong>×200</strong></p>
+<div class="gcard-text">
+<p>Une dague (10 m au mieux) vole à 2 km, un peu plus que la longueur des Champs-Élysées (1.9 km).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="lancer:×300">
+<p><strong>×300</strong></p>
+<div class="gcard-text">
+<p>Une dague (10 m au mieux) vole à 3 km.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="lancer:×500">
+<p><strong>×500</strong></p>
+<div class="gcard-text">
+<p>Une dague (10 m au mieux) vole à 5 km, une heure de marche.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="lancer:×700">
+<p><strong>×700</strong></p>
+<div class="gcard-text">
+<p>Une dague (10 m au mieux) vole à 7 km.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="lancer:×1 000">
+<p><strong>×1 000</strong></p>
+<div class="gcard-text">
+<p>Une dague (10 m au mieux) vole à 10 km, l'altitude de croisière d'un avion de ligne.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="lancer:×2 000">
+<p><strong>×2 000</strong></p>
+<div class="gcard-text">
+<p>Une dague (10 m au mieux) vole à 20 km, presque la distance d'un semi-marathon (21.1 km).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="lancer:×3 000">
+<p><strong>×3 000</strong></p>
+<div class="gcard-text">
+<p>Une dague (10 m au mieux) vole à 30 km, un peu moins que le pas de Calais à son point le plus étroit (33.3 km).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="lancer:×5 000">
+<p><strong>×5 000</strong></p>
+<div class="gcard-text">
+<p>Une dague (10 m au mieux) vole à 50 km, plus que la distance d'un marathon (42.195 km).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="lancer:×7 000">
+<p><strong>×7 000</strong></p>
+<div class="gcard-text">
+<p>Une dague (10 m au mieux) vole à 70 km.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="lancer:×10 000">
+<p><strong>×10 000</strong></p>
+<div class="gcard-text">
+<p>Une dague (10 m au mieux) vole à 100 km ; lancée à la verticale, elle atteindrait la ligne de Kármán, la frontière de l'espace.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="lancer:×20 000">
+<p><strong>×20 000</strong></p>
+<div class="gcard-text">
+<p>Une dague (10 m au mieux) vole à 200 km, l'altitude des plus basses orbites terrestres.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="lancer:×30 000">
+<p><strong>×30 000</strong></p>
+<div class="gcard-text">
+<p>Une dague (10 m au mieux) vole à 300 km, ce qu'un TGV lancé à 300 km/h parcourt en une heure.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="lancer:×50 000">
+<p><strong>×50 000</strong></p>
+<div class="gcard-text">
+<p>Une dague (10 m au mieux) vole à 500 km, au-delà de Paris-Lyon à vol d'oiseau (environ 390 km).</p>
+</div>
+</div>
+<!-- Apnée -->
+<div class="gcard gloss-card" data-key="apnee:moins de 6 s">
+<p><strong>moins de 6 s</strong></p>
+<div class="gcard-text">
+<p>Jeté dans l'eau glacée, le corps hoquette malgré lui : il ne bloque pas l'air plus de quelques secondes.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="apnee:0 s">
+<p><strong>0 s</strong></p>
+<div class="gcard-text">
+<p>Poumons en feu à la fin d'un sprint total, on ne peut plus bloquer l'air une seule seconde.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="apnee:6 s">
+<p><strong>6 s</strong></p>
+<div class="gcard-text">
+<p>Le temps de passer le visage sous l'eau pour se rincer, une retenue si brève qu'elle ne coûte aucun effort.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="apnee:12 s">
+<p><strong>12 s</strong></p>
+<div class="gcard-text">
+<p>Le temps de plonger au fond de la piscine ramasser un objet et de remonter.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="apnee:18 s">
+<p><strong>18 s</strong></p>
+<div class="gcard-text">
+<p>Le temps qu'un surfeur reste plaqué sous l'eau après une chute, jusqu'à ce que la vague passe.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="apnee:30 s">
+<p><strong>30 s</strong></p>
+<div class="gcard-text">
+<p>La retenue tranquille d'un baigneur ordinaire qui garde la tête sous l'eau, sans aucun entraînement.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="apnee:1 min">
+<p><strong>1 min</strong></p>
+<div class="gcard-text">
+<p>Une minute pleine, à la portée de la plupart des adultes qui s'y appliquent au repos.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="apnee:2 min">
+<p><strong>2 min</strong></p>
+<div class="gcard-text">
+<p>Ce qu'atteint un plongeur en apnée débutant après quelques séances d'entraînement.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="apnee:3 min">
+<p><strong>3 min</strong></p>
+<div class="gcard-text">
+<p>La retenue d'un apnéiste amateur régulier, immobile pour épargner son oxygène.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="apnee:5 min">
+<p><strong>5 min</strong></p>
+<div class="gcard-text">
+<p>Ce que tient un apnéiste confirmé, parfaitement détendu et sans un geste.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="apnee:10 min">
+<p><strong>10 min</strong></p>
+<div class="gcard-text">
+<p>Presque le record du monde d'apnée statique sans oxygène : Stéphane Mifsud a tenu 11 min 35 s en 2009.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="apnee:20 min">
+<p><strong>20 min</strong></p>
+<div class="gcard-text">
+<p>La plongée d'un manchot empereur, qui reste jusqu'à une vingtaine de minutes sous la banquise pour chasser.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="apnee:30 min">
+<p><strong>30 min</strong></p>
+<div class="gcard-text">
+<p>Une tortue de mer au repos reste facilement une demi-heure sous l'eau entre deux bouffées d'air.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="apnee:1 h">
+<p><strong>1 h</strong></p>
+<div class="gcard-text">
+<p>Le phoque de Weddell, sous la glace de l'Antarctique, tient près d'une heure en plongée.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="apnee:2 h">
+<p><strong>2 h</strong></p>
+<div class="gcard-text">
+<p>L'éléphant de mer plonge presque sans répit, jusqu'à près de deux heures sans respirer.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="apnee:3 h">
+<p><strong>3 h</strong></p>
+<div class="gcard-text">
+<p>La baleine à bec de Cuvier détient le record des mammifères : 3 h 42 min mesurées au large de la Caroline du Nord.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="apnee:5 h">
+<p><strong>5 h</strong></p>
+<div class="gcard-text">
+<p>Une tortue de mer endormie peut rester immergée plusieurs heures d'affilée, jusqu'à cinq environ, avant de remonter.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="apnee:10 h">
+<p><strong>10 h</strong></p>
+<div class="gcard-text">
+<p>Léthargique dans une eau froide, une tortue de mer passe une dizaine d'heures sur le fond sans une seule remontée.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="apnee:1 jour">
+<p><strong>1 jour</strong></p>
+<div class="gcard-text">
+<p>Dans une eau froide et bien oxygénée, une tortue d'eau douce reste plus d'une journée au fond, respirant un peu par la peau.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="apnee:2 jours">
+<p><strong>2 jours</strong></p>
+<div class="gcard-text">
+<p>Une tortue serpentine engourdie par le froid passe deux jours sans remonter respirer.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="apnee:3 jours">
+<p><strong>3 jours</strong></p>
+<div class="gcard-text">
+<p>Sous une eau proche de zéro, une tortue peinte reste trois jours immobile au fond, sans un passage en surface.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="apnee:5 jours">
+<p><strong>5 jours</strong></p>
+<div class="gcard-text">
+<p>Enfouie dans la vase froide, une tortue musquée tient près d'une semaine sans respirer d'air.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="apnee:10 jours">
+<p><strong>10 jours</strong></p>
+<div class="gcard-text">
+<p>Quand la glace scelle l'étang, une tortue d'eau douce y reste plus de dix jours d'affilée sans remonter.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="apnee:20 jours">
+<p><strong>20 jours</strong></p>
+<div class="gcard-text">
+<p>Sous la glace d'un étang, une tortue peut passer près de trois semaines sans respirer une seule fois.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="apnee:1 mois">
+<p><strong>1 mois</strong></p>
+<div class="gcard-text">
+<p>Dès que l'étang gèle, la tortue peinte s'installe au fond pour un mois entier sans remonter respirer.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="apnee:2 mois">
+<p><strong>2 mois</strong></p>
+<div class="gcard-text">
+<p>En plein hiver, une tortue d'eau douce reste deux mois sous la glace, son métabolisme réduit à presque rien.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="apnee:3 mois">
+<p><strong>3 mois</strong></p>
+<div class="gcard-text">
+<p>Une tortue peinte passe couramment trois mois à hiberner au fond d'un étang gelé, sans respirer d'air.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="apnee:5 mois">
+<p><strong>5 mois</strong></p>
+<div class="gcard-text">
+<p>Privée de tout oxygène, la tortue peinte survit jusqu'à cinq mois au fond d'un étang glacé, à environ 3 °C.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="apnee:10 mois">
+<p><strong>10 mois</strong></p>
+<div class="gcard-text">
+<p>Figée dans le grand froid subarctique, la grenouille des bois reste gelée, cœur arrêté et sans un souffle, près de huit mois, la quasi-totalité de l'hiver.</p>
+</div>
+</div>
+<!-- Pression -->
+<div class="gcard gloss-card" data-key="pression:0 m">
+<p><strong>0 m</strong></p>
+<div class="gcard-text">
+<p>La surface de l'eau : la mer n'y pèse pas plus que l'air que l'on respire.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:0.2 m">
+<p><strong>0.2 m</strong></p>
+<div class="gcard-text">
+<p>L'eau au fond d'une bassine remplie.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:0.4 m">
+<p><strong>0.4 m</strong></p>
+<div class="gcard-text">
+<p>L'eau jusqu'aux genoux, au bord d'une plage.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:1 m">
+<p><strong>1 m</strong></p>
+<div class="gcard-text">
+<p>Le petit bain d'une piscine, là où l'on a encore pied.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:2 m">
+<p><strong>2 m</strong></p>
+<div class="gcard-text">
+<p>Le fond du grand bain d'une piscine municipale.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:0.6 m">
+<p><strong>0.6 m</strong></p>
+<div class="gcard-text">
+<p>Une baignoire remplie à ras bord.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:1.6 m">
+<p><strong>1.6 m</strong></p>
+<div class="gcard-text">
+<p>Un adulte y a de l'eau juste au-dessus de la tête.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:4 m">
+<p><strong>4 m</strong></p>
+<div class="gcard-text">
+<p>La fosse de plongeon d'une piscine, sous les tremplins.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:3 m">
+<p><strong>3 m</strong></p>
+<div class="gcard-text">
+<p>Le fond d'une piscine olympique, profonde de 3 m.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:10 m">
+<p><strong>10 m</strong></p>
+<div class="gcard-text">
+<p>La profondeur où la pression de l'eau égale déjà celle de l'air ; un chasseur sous-marin y descend en apnée.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:6 m">
+<p><strong>6 m</strong></p>
+<div class="gcard-text">
+<p>Le tirant d'eau d'un grand ferry, la part de sa coque enfoncée sous l'eau.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:20 m">
+<p><strong>20 m</strong></p>
+<div class="gcard-text">
+<p>La profondeur d'une première plongée bouteille encadrée en club.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:12 m">
+<p><strong>12 m</strong></p>
+<div class="gcard-text">
+<p>Une plongée tranquille au-dessus d'un récif de corail.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:40 m">
+<p><strong>40 m</strong></p>
+<div class="gcard-text">
+<p>La limite officielle de la plongée de loisir à l'air.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:60 m">
+<p><strong>60 m</strong></p>
+<div class="gcard-text">
+<p>La limite de la plongée à l'air comprimé ; plus bas, l'azote enivre le plongeur.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:30 m">
+<p><strong>30 m</strong></p>
+<div class="gcard-text">
+<p>Une plongée sportive courante, le long d'un tombant.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:100 m">
+<p><strong>100 m</strong></p>
+<div class="gcard-text">
+<p>La plongée technique aux mélanges spéciaux ; respirer de l'air ordinaire y serait mortel.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:200 m">
+<p><strong>200 m</strong></p>
+<div class="gcard-text">
+<p>Le bord du plateau continental, là où s'éteint la dernière lumière du jour dans l'océan.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:600 m">
+<p><strong>600 m</strong></p>
+<div class="gcard-text">
+<p>Le domaine de la plongée à saturation professionnelle ; le record humain en mer approche 534 m.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:2 km">
+<p><strong>2 km</strong></p>
+<div class="gcard-text">
+<p>La profondeur où le cachalot chasse le calmar, en retenant son souffle près d'une heure.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:400 m">
+<p><strong>400 m</strong></p>
+<div class="gcard-text">
+<p>La profondeur d'immersion maximale d'un sous-marin militaire moderne.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:1.2 km">
+<p><strong>1.2 km</strong></p>
+<div class="gcard-text">
+<p>Les eaux noires et glacées où rôde le calmar géant.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:4 km">
+<p><strong>4 km</strong></p>
+<div class="gcard-text">
+<p>L'épave du Titanic repose ici, par près de 3 800 m de fond.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:6 km">
+<p><strong>6 km</strong></p>
+<div class="gcard-text">
+<p>Le fond des plus profondes plaines abyssales, juste avant les fosses océaniques.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:1 km">
+<p><strong>1 km</strong></p>
+<div class="gcard-text">
+<p>Plus le moindre rayon de soleil : la nuit permanente des abysses commence.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:3 km">
+<p><strong>3 km</strong></p>
+<div class="gcard-text">
+<p>Le record de plongée d'un mammifère : la baleine à bec de Cuvier, mesurée à 2 992 m.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:10 km">
+<p><strong>10 km</strong></p>
+<div class="gcard-text">
+<p>Le fond de la fosse des Mariannes, le point le plus profond des océans (10 935 m).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:20 km">
+<p><strong>20 km</strong></p>
+<div class="gcard-text">
+<p>Plus aucun océan n'est si profond ; l'eau y écraserait à 2 000 bars, comme le gazole injecté dans un moteur diesel.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:60 km">
+<p><strong>60 km</strong></p>
+<div class="gcard-text">
+<p>6 000 bars : la pression qui pasteurise les aliments à froid, sans les cuire.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:200 km">
+<p><strong>200 km</strong></p>
+<div class="gcard-text">
+<p>20 000 bars, la pression du manteau terrestre vers 70 km sous la surface.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:40 km">
+<p><strong>40 km</strong></p>
+<div class="gcard-text">
+<p>4 000 bars, la pression d'un jet d'eau industriel qui découpe le métal.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:120 km">
+<p><strong>120 km</strong></p>
+<div class="gcard-text">
+<p>12 000 bars, la pression sous la racine d'une chaîne de montagnes, à la base de la croûte terrestre.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:400 km">
+<p><strong>400 km</strong></p>
+<div class="gcard-text">
+<p>40 000 bars, la pression régnant dans le manteau vers 130 km de profondeur.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:600 km">
+<p><strong>600 km</strong></p>
+<div class="gcard-text">
+<p>60 000 bars, la pression des presses industrielles qui fabriquent les diamants synthétiques.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:100 km">
+<p><strong>100 km</strong></p>
+<div class="gcard-text">
+<p>10 000 bars : sous une telle pression, l'eau se fige en glace même à température ambiante.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:300 km">
+<p><strong>300 km</strong></p>
+<div class="gcard-text">
+<p>30 000 bars, reproduite dans les presses de laboratoire pour recréer les roches du manteau profond.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:1 000 km">
+<p><strong>1 000 km</strong></p>
+<div class="gcard-text">
+<p>100 000 bars, la pression du manteau terrestre vers 300 km de profondeur.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:2 000 km">
+<p><strong>2 000 km</strong></p>
+<div class="gcard-text">
+<p>200 000 bars, là où se forme la bridgmanite, le minéral le plus abondant de la Terre.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:6 000 km">
+<p><strong>6 000 km</strong></p>
+<div class="gcard-text">
+<p>600 000 bars, dans le manteau inférieur de la Terre, vers 1 500 km de profondeur.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:20 000 km">
+<p><strong>20 000 km</strong></p>
+<div class="gcard-text">
+<p>2 millions de bars, au sein du noyau de fer liquide de la Terre.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:4 000 km">
+<p><strong>4 000 km</strong></p>
+<div class="gcard-text">
+<p>400 000 bars, dans le manteau inférieur où les roches se compactent en minéraux introuvables en surface.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:12 000 km">
+<p><strong>12 000 km</strong></p>
+<div class="gcard-text">
+<p>1.2 million de bars : la frontière entre le manteau et le noyau de la Terre.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:40 000 km">
+<p><strong>40 000 km</strong></p>
+<div class="gcard-text">
+<p>4 millions de bars, à peu près la pression au centre de la Terre (près de 3.6 millions).</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:60 000 km">
+<p><strong>60 000 km</strong></p>
+<div class="gcard-text">
+<p>6 millions de bars, plus d'une fois et demie la pression qui règne au centre de la Terre.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:10 000 km">
+<p><strong>10 000 km</strong></p>
+<div class="gcard-text">
+<p>1 million de bars, un million de fois la pression de l'air : le manteau profond de la Terre.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:30 000 km">
+<p><strong>30 000 km</strong></p>
+<div class="gcard-text">
+<p>3 millions de bars, en approchant le centre de la Terre.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:100 000 km">
+<p><strong>100 000 km</strong></p>
+<div class="gcard-text">
+<p>10 millions de bars, le record de pression statique jamais atteint entre deux pointes de diamant, près de trois fois le centre de la Terre.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:200 000 km">
+<p><strong>200 000 km</strong></p>
+<div class="gcard-text">
+<p>20 millions de bars, le double de ce record des enclumes de diamant, déjà la moitié du cœur de Jupiter.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:600 000 km">
+<p><strong>600 000 km</strong></p>
+<div class="gcard-text">
+<p>60 millions de bars, plus encore qu'au cœur de Jupiter.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:2 000 000 km">
+<p><strong>2 000 000 km</strong></p>
+<div class="gcard-text">
+<p>200 millions de bars, dans l'intérieur d'une naine brune, une étoile trop légère pour s'allumer.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:400 000 km">
+<p><strong>400 000 km</strong></p>
+<div class="gcard-text">
+<p>40 millions de bars : la pression estimée au cœur de Jupiter.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:1 200 000 km">
+<p><strong>1 200 000 km</strong></p>
+<div class="gcard-text">
+<p>120 millions de bars, profond dans une naine brune.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:4 000 000 km">
+<p><strong>4 000 000 km</strong></p>
+<div class="gcard-text">
+<p>400 millions de bars, dix fois le cœur de Jupiter, dans les profondeurs d'une étoile.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:6 000 000 km">
+<p><strong>6 000 000 km</strong></p>
+<div class="gcard-text">
+<p>600 millions de bars, au sein d'une petite étoile.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:1 000 000 km">
+<p><strong>1 000 000 km</strong></p>
+<div class="gcard-text">
+<p>100 millions de bars, dans les couches d'une naine brune.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:3 000 000 km">
+<p><strong>3 000 000 km</strong></p>
+<div class="gcard-text">
+<p>300 millions de bars, dans l'intérieur d'une étoile.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:10 000 000 km">
+<p><strong>10 000 000 km</strong></p>
+<div class="gcard-text">
+<p>1 milliard de bars, un milliard de fois la pression de l'air, au sein d'une étoile.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:20 000 000 km">
+<p><strong>20 000 000 km</strong></p>
+<div class="gcard-text">
+<p>2 milliards de bars, plus profond dans une étoile comme le Soleil.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:60 000 000 km">
+<p><strong>60 000 000 km</strong></p>
+<div class="gcard-text">
+<p>6 milliards de bars, enfoui dans le Soleil, encore loin de son cœur.</p>
+</div>
+</div>
+<div class="gcard gloss-card" data-key="pression:200 000 000 km">
+<p><strong>200 000 000 km</strong></p>
+<div class="gcard-text">
+<p>20 milliards de bars, dans le Soleil non loin de son cœur, qui écrase pourtant plus de dix fois plus fort (près de 250 milliards de bars).</p>
+</div>
+</div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Pied de page" >
+        
+          
+          <a href="../forge/" class="md-footer__link md-footer__link--prev" aria-label="Précédent: Forge">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Précédent
+              </span>
+              <div class="md-ellipsis">
+                Forge
+              </div>
+            </div>
+          </a>
+        
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      © 2026 Théo Cavaillès. Tous droits réservés. Œuvre de fan, non affiliée à Shueisha.
+    </div>
+  
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.tabs", "navigation.tabs.sticky", "navigation.expand", "navigation.indexes", "navigation.footer", "content.tooltips"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copi\u00e9 dans le presse-papier", "clipboard.copy": "Copier dans le presse-papier", "search.result.more.one": "1 de plus sur cette page", "search.result.more.other": "# de plus sur cette page", "search.result.none": "Aucun document trouv\u00e9", "search.result.one": "1 document trouv\u00e9", "search.result.other": "# documents trouv\u00e9s", "search.result.placeholder": "Taper pour d\u00e9marrer la recherche", "search.result.term.missing": "Non trouv\u00e9", "select.version": "S\u00e9lectionner la version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../javascripts/changelog.js"></script>
+      
+        <script src="../javascripts/continuous.js"></script>
+      
+        <script src="../javascripts/nav-drawer.js"></script>
+      
+        <script src="../javascripts/glossary.js"></script>
+      
+        <script src="../javascripts/print-book.js"></script>
+      
+        <script src="../javascripts/atelier.js?v=3"></script>
+      
+        <script src="../javascripts/night.js"></script>
+      
+        <script src="../javascripts/forge.js"></script>
+      
+        <script src="../javascripts/creation.js?v=38"></script>
+      
+        <script src="../javascripts/copybtn.js"></script>
+      
+    
+  </body>
+</html>
