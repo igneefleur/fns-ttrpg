@@ -58,9 +58,9 @@ jobs:
         run: mkdocs build --config-file mkdocs.ci.yml
 
       # Un seul site GitHub Pages (branche gh-pages), trois emplacements :
-      #   main -> racine   https://igneefleur.github.io/HxH-Regles-JDR/
-      #   beta -> beta/    https://igneefleur.github.io/HxH-Regles-JDR/beta/
-      #   jjk  -> jjk/     https://igneefleur.github.io/HxH-Regles-JDR/jjk/
+      #   main -> racine   https://igneefleur.github.io/FNS-TTRPG-RULES/
+      #   beta -> beta/    https://igneefleur.github.io/FNS-TTRPG-RULES/beta/
+      #   jjk  -> jjk/     https://igneefleur.github.io/FNS-TTRPG-RULES/jjk/
       #     (déployé par la branche jjk, qui porte son propre deploy.yml)
       # On n'utilise plus « mkdocs gh-deploy --force », qui écraserait toute la
       # branche gh-pages (beta/ et jjk/ compris) à chaque déploiement : l'action

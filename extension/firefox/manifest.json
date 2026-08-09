@@ -28,9 +28,9 @@
   "content_scripts": [
     {
       "matches": [
-        "https://igneefleur.github.io/HxH-Regles-JDR/*",
-        "http://127.0.0.1:8000/HxH-Regles-JDR/*",
-        "http://localhost:8000/HxH-Regles-JDR/*"
+        "https://igneefleur.github.io/FNS-TTRPG-RULES/*",
+        "http://127.0.0.1:8000/FNS-TTRPG-RULES/*",
+        "http://localhost:8000/FNS-TTRPG-RULES/*"
       ],
       "js": ["content-hxh.js"],
       "run_at": "document_idle"

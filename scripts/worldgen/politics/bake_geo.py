@@ -9,7 +9,7 @@ Rend aussi les cartes physique + plaques mises a jour (tache 1).
 """
 import sys, os, numpy as np, importlib.util
 from scipy import ndimage
-WG = r'C:\Users\Shadow\Documents\Github\HxH-Regles-JDR\scripts\worldgen'
+WG = r'C:\Users\IgneeFleur\Documents\Github\FNS-TTRPG-RULES\scripts\worldgen'
 sys.path.insert(0, WG)
 import worldflat as wf
 BK = r'C:\Users\Shadow\AppData\Local\Temp\claude\c--Users-Shadow-Documents-Github-HxH-Regles-JDR\efbdd221-498b-48e9-a203-cab3d57315f6\scratchpad\worldflat_backup_prestyle.py'
@@ -19,8 +19,8 @@ SEED = 314159265
 AX, AY, FEAT, BANDW = 40.0, 26.0, 58.0, 46.0
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = HERE
-DOCS = r'C:\Users\Shadow\Documents\Github\HxH-Regles-JDR\docs\assets\cartes'
-SITE = r'C:\Users\Shadow\Documents\Github\HxH-Regles-JDR\site\assets\cartes'
+DOCS = r'C:\Users\IgneeFleur\Documents\Github\FNS-TTRPG-RULES\docs\assets\cartes'
+SITE = r'C:\Users\IgneeFleur\Documents\Github\FNS-TTRPG-RULES\site\assets\cartes'
 gg = wf.merc_geom(ow=1300)
 
 
