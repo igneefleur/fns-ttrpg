@@ -39,7 +39,7 @@ Sources et formats parsés (voir chaque fonction pour le détail) :
   - personnage/capacites-physiques.md : tables 0-30 (Mouvement, Port, Apnée,
     Sommeil/Activité) repérées par leur colonne de tête.
 
-Les pages encore en chantier (avantages.md, classe.md, formations non martiales,
+Les pages encore inachevées (avantages.md, classe.md, formations non martiales,
 arts sans paliers) sont tolérées : le hook n'exige jamais leur contenu. Le
 créateur (creation.js) porte la sémantique d'interface et les règles de calcul
 prosaïques (caractéristiques : 60 points, 3 à 9 ; 5 PF = +20 de base, plafond de

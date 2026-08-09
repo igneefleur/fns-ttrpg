@@ -9,7 +9,7 @@ ses outils.
 
 Sans but lucratif et sans lien avec les ayants droit : « Hunter × Hunter » et le
 Nen appartiennent à Yoshihiro Togashi et à Shueisha. Les règles, les textes et le
-code sont de l'auteur, en tous droits réservés. Voir [LICENSE.md](LICENSE.md).
+code sont d'igneefleur, en tous droits réservés. Voir [LICENSE.md](LICENSE.md).
 
 ## Contenu
 

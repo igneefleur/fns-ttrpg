@@ -75,7 +75,7 @@ jobs:
       # autres emplacements sont épargnés par ce déploiement, sans avoir à les
       # énumérer. Seul le déploiement de main, qui écrit à la RACINE, doit tenir
       # une liste clean-exclude à jour.
-      - name: Déploiement HxH chantier (hxh-beta -> hxh-beta/)
+      - name: Déploiement HxH beta (hxh-beta -> hxh-beta/)
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: site
