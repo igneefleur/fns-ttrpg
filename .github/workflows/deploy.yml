@@ -129,7 +129,15 @@ jobs:
       # porte les deux moitiés, la case du popup choisit, il n'y a donc pas une
       # extension par branche. Sans cela, l'adresse qui n'a pas déployé en
       # dernier sert un paquet périmé.
+      #
+      # MAIS SEULEMENT QUAND CE RUN A VRAIMENT SIGNÉ. Ce qui se propage d'une
+      # adresse à l'autre, c'est une SIGNATURE, jamais un déploiement : les deux
+      # branches ne portent pas forcément le même paquet, puisque la re-signature
+      # automatique ne commite que sur celle-ci. Recopier à chaque push faisait de
+      # « qui a déployé en dernier » l'arbitre du paquet servi, ce qui a déjà fait
+      # reculer une adresse de plusieurs versions sans qu'aucun run n'échoue.
       - name: L'extension signée va aussi sur jjk-beta (download/ seul)
+        if: steps.paquet.outputs.change == 'true'
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: site/download
