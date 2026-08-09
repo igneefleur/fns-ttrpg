@@ -14,8 +14,8 @@ from scipy import ndimage
 import matplotlib.pyplot as plt
 import matplotlib.patheffects as pe
 
-DOCS = r'C:\Users\Shadow\Documents\Github\HxH-Regles-JDR\docs\assets\cartes'
-SITE = r'C:\Users\Shadow\Documents\Github\HxH-Regles-JDR\site\assets\cartes'
+DOCS = r'C:\Users\IgneeFleur\Documents\Github\FNS-TTRPG-RULES\docs\assets\cartes'
+SITE = r'C:\Users\IgneeFleur\Documents\Github\FNS-TTRPG-RULES\site\assets\cartes'
 SEED = 314159265
 P = polgraph.load(); K = P.K; NODES = list(range(1, K + 1))
 with open(os.path.join(HERE, 'cultures.json'), encoding='utf-8') as f:

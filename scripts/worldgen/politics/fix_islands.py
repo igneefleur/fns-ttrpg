@@ -8,8 +8,8 @@ HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 import render_pol as R
 from scipy import ndimage
 
-DOCS = r'C:\Users\Shadow\Documents\Github\HxH-Regles-JDR\docs\assets\cartes'
-SITE = r'C:\Users\Shadow\Documents\Github\HxH-Regles-JDR\site\assets\cartes'
+DOCS = r'C:\Users\IgneeFleur\Documents\Github\FNS-TTRPG-RULES\docs\assets\cartes'
+SITE = r'C:\Users\IgneeFleur\Documents\Github\FNS-TTRPG-RULES\site\assets\cartes'
 VIOLET = 5
 CONT_COLORS = np.array([
     [0.86, 0.50, 0.42], [0.55, 0.72, 0.45], [0.45, 0.62, 0.80], [0.90, 0.78, 0.42],

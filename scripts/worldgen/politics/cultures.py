@@ -15,8 +15,8 @@ HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 import polgraph, namegen as NG, render_pol as R
 from scipy import ndimage
 
-DOCS = r'C:\Users\Shadow\Documents\Github\HxH-Regles-JDR\docs\assets\cartes'
-SITE = r'C:\Users\Shadow\Documents\Github\HxH-Regles-JDR\site\assets\cartes'
+DOCS = r'C:\Users\IgneeFleur\Documents\Github\FNS-TTRPG-RULES\docs\assets\cartes'
+SITE = r'C:\Users\IgneeFleur\Documents\Github\FNS-TTRPG-RULES\site\assets\cartes'
 SEED = 314159265
 
 P = polgraph.load()
