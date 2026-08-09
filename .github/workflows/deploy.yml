@@ -6,7 +6,7 @@ on:
   workflow_dispatch: {}   # relance manuelle
 permissions:
   contents: write
-# Les cinq branches écrivent sur la même branche gh-pages, chacune dans son
+# Les sept branches écrivent sur la même branche gh-pages, chacune dans son
 # dossier : un groupe de concurrence commun (partagé entre workflows du dépôt)
 # sérialise leurs déploiements, et force: false fait rebaser l'action (avec
 # réessais) au lieu de force-pusser, pour qu'un run ne puisse pas écraser le
@@ -32,12 +32,14 @@ jobs:
       # échouerait laisserait le site entier sans porte d'entrée, alors que les
       # deux jeux, eux, continueraient de se déployer dans leurs dossiers.
 
-      # Un seul site GitHub Pages (branche gh-pages), CINQ emplacements :
+      # Un seul site GitHub Pages (branche gh-pages), SEPT emplacements :
       #   main     -> racine     https://igneefleur.github.io/fns-ttrpg/          (CE workflow)
       #   hxh      -> hxh/       https://igneefleur.github.io/fns-ttrpg/hxh/
       #   hxh-beta -> hxh-beta/  https://igneefleur.github.io/fns-ttrpg/hxh-beta/
       #   jjk      -> jjk/       https://igneefleur.github.io/fns-ttrpg/jjk/
       #   jjk-beta -> jjk-beta/  https://igneefleur.github.io/fns-ttrpg/jjk-beta/
+      #   owd      -> owd/       https://igneefleur.github.io/fns-ttrpg/owd/
+      #   owd-beta -> owd-beta/  https://igneefleur.github.io/fns-ttrpg/owd-beta/
       #
       # LA LISTE clean-exclude DOIT PORTER TOUS LES AUTRES DOSSIERS, SANS
       # EXCEPTION. Seul ce déploiement écrit à la racine, donc seul son nettoyage
@@ -58,3 +60,5 @@ jobs:
             hxh-beta
             jjk
             jjk-beta
+            owd
+            owd-beta
