@@ -21,12 +21,12 @@
      sombre reprend la palette de night.css. Rien n'est inventé ici.
      ============================================================================ -->
 <!-- Mode nuit, appliqué AVANT le premier rendu pour éviter le flash de mode jour.
-     Copie conforme du script de overrides/main.html sur les deux sites : même clé
+     Copie conforme du script de overrides/main.html sur tous les sites : même clé
      localStorage « night », même classe sur <html>, même comparaison stricte.
 
      La clé est indexée par ORIGINE, pas par chemin : /fns-ttrpg/, /hxh/, /hxh-beta/,
-     /jjk/ et /jjk-beta/ partagent physiquement la même entrée. Le choix fait ici
-     suit donc le lecteur dans les deux sites, et réciproquement.
+     /jjk/, /jjk-beta/, /owd/ et /owd-beta/ partagent physiquement la même entrée. Le
+     choix fait ici suit donc le lecteur dans tous les sites, et réciproquement.
 
      Clé absente = mode JOUR, exactement comme sur les sites mkdocs. Surtout ne pas
      retomber sur prefers-color-scheme : c'était le défaut de cette page, qui
@@ -165,14 +165,16 @@ body {
   font-style: italic; color: var(--encre-douce);
 }
 
-/* ---------- Les deux cartes ---------- */
+/* ---------- Les cartes des systèmes ---------- */
+/* Trois colonnes puis une seule : on saute volontairement le palier à deux
+   colonnes, qui laisserait la troisième carte orpheline sur sa propre ligne. */
 .systemes {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: clamp(1.1rem, 3vw, 1.75rem);
   align-items: stretch;
 }
-@media (max-width: 44rem) { .systemes { grid-template-columns: 1fr; } }
+@media (max-width: 52rem) { .systemes { grid-template-columns: 1fr; } }
 
 .systeme {
   display: flex; flex-direction: column;
@@ -296,7 +298,7 @@ html.night .night-btn__sun { display: inline-flex; }
     <p class="marque">FNS</p>
     <h1>Systèmes de jeu de rôle</h1>
     <p class="filet"><span>✦</span></p>
-    <p class="chapeau">Deux jeux de table, chacun avec son livre de règles et ses
+    <p class="chapeau">Trois jeux de table, chacun avec son livre de règles et ses
       outils. Choisissez le vôtre.</p>
   </div>
 
@@ -334,13 +336,28 @@ html.night .night-btn__sun { display: inline-flex; }
       </div>
     </article>
 
+    <article class="systeme">
+      <h2>Outward</h2>
+      <div class="corps">
+        <p>La survie avant l'héroïsme : on porte son sac, on paie ses dettes et on
+          se bat à la distance qu'on a su prendre.</p>
+        <ul class="contenu">
+          <li>Chantier ouvert, presque tout reste à écrire</li>
+          <li>Combat à la case, une case par mètre</li>
+        </ul>
+        <a class="entrer" href="owd/">Entrer</a>
+        <p class="beta"><a href="owd-beta/">Version beta</a></p>
+      </div>
+    </article>
+
   </div>
 
   <footer class="pied">
     <p>Œuvres de fan, sans but lucratif et sans lien avec les ayants droit.
       « Hunter × Hunter » appartient à Yoshihiro Togashi et à Shueisha,
-      « Jujutsu Kaisen » à Gege Akutami et à Shueisha.</p>
-    <p>Site, code et règles Hunter × Hunter © igneefleur ;
+      « Jujutsu Kaisen » à Gege Akutami et à Shueisha,
+      « Outward » à Nine Dots Studio.</p>
+    <p>Site, code et règles Hunter × Hunter et Outward © igneefleur ;
       règles Jujutsu Kaisen © Qyu. Tous droits réservés.
       <a href="https://github.com/igneefleur/fns-ttrpg">Dépôt</a></p>
   </footer>
