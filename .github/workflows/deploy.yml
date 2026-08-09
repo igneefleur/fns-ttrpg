@@ -6,10 +6,17 @@ on:
       - beta
 permissions:
   contents: write
-# Les trois branches (main, beta, jjk) écrivent sur la même branche gh-pages : un
-# groupe de concurrence commun (partagé entre workflows du dépôt) sérialise leurs
-# déploiements, et force: false fait rebaser l'action (avec réessais) au lieu de
-# force-pusser, pour qu'un run ne puisse pas écraser le travail d'un autre.
+# Les quatre branches (main, beta, jjk, jjk-beta) écrivent sur la même branche
+# gh-pages : un groupe de concurrence commun (partagé entre workflows du dépôt)
+# sérialise leurs déploiements, et force: false fait rebaser l'action (avec
+# réessais) au lieu de force-pusser, pour qu'un run ne puisse pas écraser le
+# travail d'un autre.
+#
+# EN CONTREPARTIE, ON NE POUSSE PAS QUATRE BRANCHES D'AFFILÉE. Le groupe ne garde
+# qu'UN run en attente : le troisième qui arrive annule celui qui patientait, et
+# la branche concernée n'est jamais déployée — « completed / cancelled », aucune
+# erreur, rien à lire. Pousser une branche, attendre la fin de son run, pousser la
+# suivante.
 concurrency:
   group: gh-pages
   cancel-in-progress: false
@@ -57,15 +64,25 @@ jobs:
           NO_MKDOCS_2_WARNING: "1"   # coupe l'encadré promo « MkDocs 2.0 » de Material dans les logs
         run: mkdocs build --config-file mkdocs.ci.yml
 
-      # Un seul site GitHub Pages (branche gh-pages), trois emplacements :
-      #   main -> racine   https://igneefleur.github.io/FNS-TTRPG-RULES/
-      #   beta -> beta/    https://igneefleur.github.io/FNS-TTRPG-RULES/beta/
-      #   jjk  -> jjk/     https://igneefleur.github.io/FNS-TTRPG-RULES/jjk/
-      #     (déployé par la branche jjk, qui porte son propre deploy.yml)
+      # Un seul site GitHub Pages (branche gh-pages), QUATRE emplacements :
+      #   main     -> racine     https://igneefleur.github.io/fns-ttrpg-rules/
+      #   beta     -> beta/      https://igneefleur.github.io/fns-ttrpg-rules/beta/
+      #   jjk      -> jjk/       https://igneefleur.github.io/fns-ttrpg-rules/jjk/
+      #   jjk-beta -> jjk-beta/  https://igneefleur.github.io/fns-ttrpg-rules/jjk-beta/
+      #     (les deux derniers déployés par leurs branches, qui portent leur propre
+      #     deploy.yml)
       # On n'utilise plus « mkdocs gh-deploy --force », qui écraserait toute la
-      # branche gh-pages (beta/ et jjk/ compris) à chaque déploiement : l'action
-      # nettoie sa zone et épargne les autres.
-      - name: Déploiement officiel (main -> racine, beta/ et jjk/ épargnés)
+      # branche gh-pages (les trois autres dossiers compris) à chaque déploiement :
+      # l'action nettoie sa zone et épargne les autres.
+      #
+      # LA LISTE DOIT PORTER TOUS LES AUTRES DOSSIERS, SANS EXCEPTION. Seul main
+      # déploie à la RACINE, donc seul son nettoyage voit les dossiers des autres
+      # branches : ce qui n'est pas nommé ici est effacé du site, sans que rien
+      # n'échoue et sans qu'aucune branche n'ait bougé. jjk-beta y manquait, et le
+      # premier déploiement de main l'a fait disparaître du site ; la branche, elle,
+      # était intacte, ce qui rend la panne illisible tant qu'on cherche du côté du
+      # contenu. Une branche de plus = une ligne de plus ici, le même jour.
+      - name: Déploiement officiel (main -> racine, beta/, jjk/ et jjk-beta/ épargnés)
         if: github.ref == 'refs/heads/main'
         uses: JamesIves/github-pages-deploy-action@v4
         with:
@@ -76,6 +93,7 @@ jobs:
           clean-exclude: |
             beta
             jjk
+            jjk-beta
       - name: Déploiement beta (beta -> beta/)
         if: github.ref == 'refs/heads/beta'
         uses: JamesIves/github-pages-deploy-action@v4

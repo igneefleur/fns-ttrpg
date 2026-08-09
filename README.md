@@ -3,7 +3,7 @@
 Un jeu de rôle sur table dans l'univers de Hunter × Hunter : le livre de règles et
 ses outils.
 
-**<https://igneefleur.github.io/FNS-TTRPG-RULES/>**
+**<https://igneefleur.github.io/fns-ttrpg-rules/>**
 
 ## Œuvre de fan
 

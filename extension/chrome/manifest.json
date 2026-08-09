@@ -30,9 +30,9 @@
   "content_scripts": [
     {
       "matches": [
-        "https://igneefleur.github.io/FNS-TTRPG-RULES/*",
-        "http://127.0.0.1:8000/FNS-TTRPG-RULES/*",
-        "http://localhost:8000/FNS-TTRPG-RULES/*"
+        "https://igneefleur.github.io/fns-ttrpg-rules/*",
+        "http://127.0.0.1:8000/fns-ttrpg-rules/*",
+        "http://localhost:8000/fns-ttrpg-rules/*"
       ],
       "js": ["content-hxh.js"],
       "run_at": "document_idle"
