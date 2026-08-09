@@ -1,5 +1,19 @@
 [
 {
+"short": "37a6f9a",
+"author": "Théo Cavaillès",
+"date": "2026-08-09T18:37:36+02:00",
+"message": "Les portées prennent la prose et la mise en page du livre",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/37a6f9ae0394d9253cae23df50a12a2ce0ed4fa2",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/combat/portees.md",
+"url": "content/regles/combat/portees/"
+}
+]
+},
+{
 "short": "baad078",
 "author": "Théo Cavaillès",
 "date": "2026-08-09T18:16:19+02:00",
@@ -555,20 +569,6 @@
 "status": "modified",
 "filename": "content/regles/personnage/etats.md",
 "url": "content/regles/personnage/etats/"
-}
-]
-},
-{
-"short": "a103212",
-"author": "Théo Cavaillès",
-"date": "2026-07-17T10:39:51+02:00",
-"message": "Blessures : « un malus de −X à toutes les actions », Immobilisé hors des amputations",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/a10321224f581ef1df1535462b133e6dc20fcc01",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/combat/critique-blessures.md",
-"url": "content/regles/combat/critique-blessures/"
 }
 ]
 }

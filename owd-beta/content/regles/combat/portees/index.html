@@ -496,10 +496,32 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#la-grille" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        La grille
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#mesurer-une-portee" class="md-nav__link">
     <span class="md-ellipsis">
       
         Mesurer une portée
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#placer-une-arme" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Placer une arme
       
     </span>
   </a>
@@ -518,21 +540,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#table-des-portees" class="md-nav__link">
+  <a href="#la-table-des-portees" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Table des portées
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#ce-que-la-table-raconte" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Ce que la table raconte
+        La table des portées
       
     </span>
   </a>
@@ -590,10 +601,32 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#la-grille" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        La grille
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#mesurer-une-portee" class="md-nav__link">
     <span class="md-ellipsis">
       
         Mesurer une portée
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#placer-une-arme" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Placer une arme
       
     </span>
   </a>
@@ -612,21 +645,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#table-des-portees" class="md-nav__link">
+  <a href="#la-table-des-portees" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Table des portées
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#ce-que-la-table-raconte" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Ce que la table raconte
+        La table des portées
       
     </span>
   </a>
@@ -651,87 +673,80 @@
 
 
 <h1 id="portees">Portées</h1>
-<p>Le combat se joue sur une grille dont <strong>chaque case vaut un mètre</strong>, et une case ne
-porte qu'une personne de taille normale. La distance entre deux combattants se compte
-donc en cases pleines : deux adversaires sur des cases voisines sont à une case l'un
-de l'autre, torses écartés d'un mètre.</p>
-<p>La case 0 est la case du combattant lui-même. Elle ne contient une cible que si
-quelque chose se trouve <strong>sur lui</strong> : une créature agrippée à son bras, une entrave à
-trancher, une partie de son propre corps, ou un adversaire entré dans sa case par une
-saisie. Hors de ces cas, la colonne reste vide, et c'est normal.</p>
-<h2 id="mesurer-une-portee">Mesurer une portée</h2>
-<p>La portée d'une arme est un rayon, mesuré depuis le torse de son porteur. Elle
-additionne l'allonge du bras tendu et la part de l'arme qui dépasse le poing — ou qui
-dépasse la <strong>main avant</strong> pour une arme à hampe, dont la prise décale le point d'appui.</p>
-<p class="formula">Portée = 0,70 m (bras tendu) + la part de l'arme qui dépasse le poing</p>
-
-<p>Les deux portées de deux adversaires ne s'additionnent jamais : pour toucher, il faut
-atteindre le corps de l'autre, pas son poing. Seule compte la portée de celui qui
-frappe.</p>
-<p>La portée obtenue se convertit en cases par ces seuils. Ce sont des frontières, pas
-des murs : une arme qui en chevauche une se range par son emploi le plus courant.</p>
+<div class="cols">
+<p>La portée d'une arme est la distance à laquelle elle atteint sa cible. Chaque arme a une distance idéale, celle où elle frappe pleinement ; plus près, elle touche encore mais mal ; plus loin, elle ne touche pas du tout. Ce chapitre donne la grille sur laquelle se compte cette distance, la façon de mesurer la portée d'une arme, le barème des malus, et la table qui range chaque arme à sa distance.</p>
+<div class="keep">
+<h3 id="la-grille">La grille</h3>
+<p>Le combat se joue sur une grille dont chaque case vaut 1 mètre. Une case ne porte qu'une seule personne de taille normale.</p>
+<p>La distance entre deux combattants se compte en cases pleines. Deux adversaires sur des cases voisines sont à une case l'un de l'autre, leurs torses écartés de 1 mètre.</p>
+<p>La case 0 est la case du combattant lui-même. Elle ne porte une cible que si quelque chose se trouve sur lui : une créature agrippée à son bras, une entrave à trancher, une partie de son propre corps, ou un adversaire entré dans sa case par une saisie. En dehors de ces cas, aucune attaque ne s'y porte.</p>
+</div>
+<h3 id="mesurer-une-portee">Mesurer une portée</h3>
+<p>La portée d'une arme se mesure depuis le torse de son porteur. Elle additionne l'allonge du bras tendu, qui vaut 0.7 m, et la part de l'arme qui dépasse le poing. Pour une arme à hampe, on compte la part qui dépasse la main avant, la prise décalant le point d'appui.</p>
+<p class="formula">Portée = 0.7 m + la part de l'arme qui dépasse le poing</p>
+<p>Les portées de deux adversaires ne s'additionnent jamais. Pour toucher, il faut atteindre le corps de l'autre, pas son poing : seule compte la portée de celui qui frappe. La longueur des bras de la cible ne change rien à ce que l'attaquant atteint.</p>
+<div class="memo">
+<p>L'allonge de 0.7 m est celle d'un bras d'adulte tendu depuis le torse. Elle ne se confond pas avec l'envergure, mesurée d'un bout des doigts à l'autre, qui vaut environ 1.75 m : entre les deux bras s'ajoute la largeur des épaules, une quarantaine de centimètres.</p>
+</div>
+<h3 id="placer-une-arme">Placer une arme</h3>
+<p>La portée mesurée donne la distance idéale de l'arme. La table ci-dessous donne la distance idéale selon la portée. Ces valeurs sont des frontières et non des murs : une arme qui en chevauche une se range à la distance de son emploi le plus courant.</p>
+<div class="sepia-table">
 <table>
 <thead>
 <tr>
-<th>Portée mesurée</th>
+<th style="text-align: center;">Portée mesurée</th>
 <th style="text-align: center;">Distance idéale</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>moins de 0,70 m</td>
+<td style="text-align: center;">moins de 0.7 m</td>
 <td style="text-align: center;">case 0</td>
 </tr>
 <tr>
-<td>de 0,70 m à 1,20 m</td>
+<td style="text-align: center;">de 0.7 m à 1.2 m</td>
 <td style="text-align: center;">1 case</td>
 </tr>
 <tr>
-<td>environ 1,20 m</td>
+<td style="text-align: center;">de 1.2 m à 2.2 m</td>
 <td style="text-align: center;">2 cases</td>
 </tr>
 <tr>
-<td>environ 2,20 m</td>
+<td style="text-align: center;">de 2.2 m à 3.2 m</td>
 <td style="text-align: center;">3 cases</td>
 </tr>
 <tr>
-<td>environ 3,20 m</td>
+<td style="text-align: center;">de 3.2 m à 4.2 m</td>
 <td style="text-align: center;">4 cases</td>
 </tr>
 <tr>
-<td>environ 4,20 m</td>
+<td style="text-align: center;">4.2 m et plus</td>
 <td style="text-align: center;">5 cases</td>
 </tr>
 </tbody>
 </table>
-<h2 id="le-bareme">Le barème</h2>
-<p>Une arme frappe pleinement à sa distance idéale. Plus près, elle touche encore mais
-mal ; plus loin, elle ne touche pas du tout. Cette asymétrie est le cœur de la règle :
-une portée est une limite physique, pas une pénalité. C'est pourquoi aucune arme ne
-subit de malus au-delà de sa distance, et pourquoi le vrai danger d'un combattant armé
-long n'est pas qu'on l'attaque de loin, mais qu'on lui rentre dedans.</p>
-<p><strong>Chaque case en dessous de la distance idéale coûte un cran</strong>, sans plancher. Le pas
-en avant n'entre pas dans ce calcul : se déplacer est une action, pas une indulgence
-de portée.</p>
-<p>Trois exceptions, et trois seulement.</p>
-<p><strong>Arme courte qui blesse sans élan.</strong> Aucune dégradation du tout : deux cases pleines
-consécutives. Deux conditions doivent tenir ensemble — l'arme est tenue au poing ou
-fixée au bras, assez courte pour travailler collée au corps ; et elle blesse sans que
-le bras s'étende ni que le geste s'arme, par poussée, piqûre, pression, traction ou
-crochet à bout portant. Le poing nu, le poing américain et le pied en sont exclus :
-toute leur puissance vient de l'élan.</p>
-<p><strong>Arme à deux mains qui frappe par rotation ample.</strong> Deux crans par case au lieu d'un.
-Le critère est l'amplitude, non la longueur ni le nombre de mains : les armes d'hast,
-qu'on raccourcit en glissant les mains le long de la hampe, restent au barème de base.</p>
-<p><strong>Portée idéale de quatre cases ou plus.</strong> L'arme ne sert absolument plus au contact,
-noté d'une croix.</p>
-<h2 id="table-des-portees">Table des portées</h2>
-<div class="defs">
-<p><strong>0 :</strong> l'arme est à sa distance, frappe pleine, aucun malus.</p>
-<p><strong>−N :</strong> l'arme touche encore, mais mal : N crans de malus.</p>
-<p><strong>× :</strong> trop près, l'arme ne sert plus du tout.</p>
-<p><strong>— :</strong> hors d'atteinte.</p>
 </div>
+<h3 id="le-bareme">Le barème</h3>
+<p>À sa distance idéale, une arme frappe sans malus. Chaque case en dessous de cette distance donne un cran de malus, et ce décompte n'a pas de plancher. Au-delà de sa distance idéale, une arme n'atteint rien : une portée est une limite physique, pas une pénalité.</p>
+<p>Le déplacement n'entre pas dans ce calcul. Un personnage qui avance d'une case avant de frapper dépense son mouvement : il ne gagne pas de portée pour autant.</p>
+<p>Trois exceptions modifient ce barème.</p>
+<div class="defs">
+<p><strong>Arme courte qui blesse sans élan :</strong> l'arme ne se dégrade pas du tout, et sa case 0 ne prend aucun malus. Deux conditions doivent tenir ensemble : l'arme est tenue au poing ou fixée au bras, assez courte pour travailler collée au corps ; et elle blesse sans que le bras s'étende ni que le geste s'arme, par poussée, piqûre, pression, traction ou crochet à bout portant. Le poing nu, le poing américain et le pied n'y entrent pas, car toute leur puissance vient de l'élan.</p>
+<p><strong>Arme à deux mains qui frappe par rotation ample :</strong> l'arme perd deux crans par case au lieu d'un. Le critère est l'amplitude du geste, non la longueur de l'arme ni le nombre de mains : une arme d'hast, qu'on raccourcit en glissant les mains le long de la hampe, suit le barème ordinaire.</p>
+<p><strong>Portée idéale de quatre cases ou plus :</strong> l'arme ne sert plus du tout au contact, et sa case 0 est interdite.</p>
+</div>
+</div>
+<hr />
+<div class="cols">
+<h3 id="la-table-des-portees">La table des portées</h3>
+<p>La table ci-dessous donne le malus de chaque arme selon la distance qui la sépare de sa cible, comptée en cases. Chaque ligne se déduit du barème et de ses trois exceptions : une arme absente de la table se place en mesurant sa portée, puis en descendant d'un cran par case.</p>
+<div class="defs">
+<p><strong>0 :</strong> l'arme est à sa distance idéale et frappe sans malus.</p>
+<p><strong>−N :</strong> l'arme touche encore, mais mal : elle subit N crans de malus.</p>
+<p><strong>× :</strong> l'arme est trop près pour servir, et l'attaque est impossible.</p>
+<p><strong>Case vide :</strong> la distance dépasse la portée de l'arme, qui n'atteint rien.</p>
+</div>
+<div class="cj-modules anima portees">
 <table>
 <thead>
 <tr>
@@ -748,209 +763,209 @@ noté d'une croix.</p>
 <tr>
 <td>Lutte, étranglement</td>
 <td style="text-align: center;">0</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
 </tr>
 <tr>
 <td>Morsure</td>
 <td style="text-align: center;">0</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
 </tr>
 <tr>
 <td>Coudes, genoux, tête</td>
 <td style="text-align: center;">0</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
 </tr>
 <tr>
 <td>Saisie, agrippement</td>
 <td style="text-align: center;">0</td>
 <td style="text-align: center;">0</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
 </tr>
 <tr>
 <td>Griffes, cestes lamés</td>
 <td style="text-align: center;">0</td>
 <td style="text-align: center;">0</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
 </tr>
 <tr>
 <td>Couteau, dague, poignard, tanto</td>
 <td style="text-align: center;">0</td>
 <td style="text-align: center;">0</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
 </tr>
 <tr>
 <td>Katar</td>
 <td style="text-align: center;">0</td>
 <td style="text-align: center;">0</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
 </tr>
 <tr>
 <td>Sai, jutte, tonfa</td>
 <td style="text-align: center;">0</td>
 <td style="text-align: center;">0</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
 </tr>
 <tr>
 <td>Poings, poing américain, cestes non lamés</td>
 <td style="text-align: center;">−1</td>
 <td style="text-align: center;">0</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
 </tr>
 <tr>
 <td>Kukri, hachette</td>
 <td style="text-align: center;">−1</td>
 <td style="text-align: center;">0</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
 </tr>
 <tr>
-<td>Faucille, serpe, kusarigama (côté faucille)</td>
+<td>Faucille, serpe, kusarigama (faucille)</td>
 <td style="text-align: center;">−1</td>
 <td style="text-align: center;">0</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
 </tr>
 <tr>
 <td>Pieds</td>
 <td style="text-align: center;">−1</td>
 <td style="text-align: center;">0</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
 </tr>
 <tr>
 <td>Épée courte, gladius, wakizashi, machette</td>
 <td style="text-align: center;">−2</td>
 <td style="text-align: center;">−1</td>
 <td style="text-align: center;">0</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
 </tr>
 <tr>
 <td>Épée d'armes, sabre, cimeterre</td>
 <td style="text-align: center;">−2</td>
 <td style="text-align: center;">−1</td>
 <td style="text-align: center;">0</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
 </tr>
 <tr>
 <td>Hache à une main, masse, marteau</td>
 <td style="text-align: center;">−2</td>
 <td style="text-align: center;">−1</td>
 <td style="text-align: center;">0</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
 </tr>
 <tr>
 <td>Gourdin, matraque</td>
 <td style="text-align: center;">−2</td>
 <td style="text-align: center;">−1</td>
 <td style="text-align: center;">0</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
 </tr>
 <tr>
 <td>Bâton long, bô</td>
 <td style="text-align: center;">−2</td>
 <td style="text-align: center;">−1</td>
 <td style="text-align: center;">0</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
 </tr>
 <tr>
 <td>Chaîne courte, fléau à une main, nunchaku</td>
 <td style="text-align: center;">−2</td>
 <td style="text-align: center;">−1</td>
 <td style="text-align: center;">0</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
 </tr>
 <tr>
 <td>Rapière, estoc</td>
 <td style="text-align: center;">−2</td>
 <td style="text-align: center;">−1</td>
 <td style="text-align: center;">0</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
 </tr>
 <tr>
 <td>Épée longue, épée bâtarde, katana</td>
 <td style="text-align: center;">−4</td>
 <td style="text-align: center;">−2</td>
 <td style="text-align: center;">0</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
 </tr>
 <tr>
 <td>Épée à deux mains, espadon, nodachi</td>
 <td style="text-align: center;">−4</td>
 <td style="text-align: center;">−2</td>
 <td style="text-align: center;">0</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
 </tr>
 <tr>
 <td>Hache à deux mains, hache danoise, maillet</td>
 <td style="text-align: center;">−4</td>
 <td style="text-align: center;">−2</td>
 <td style="text-align: center;">0</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
 </tr>
 <tr>
 <td>Fléau d'armes à deux mains</td>
 <td style="text-align: center;">−4</td>
 <td style="text-align: center;">−2</td>
 <td style="text-align: center;">0</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
 </tr>
 <tr>
 <td>Lance, épieu</td>
@@ -958,8 +973,8 @@ noté d'une croix.</p>
 <td style="text-align: center;">−2</td>
 <td style="text-align: center;">−1</td>
 <td style="text-align: center;">0</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
 </tr>
 <tr>
 <td>Naginata, fauchard, guisarme</td>
@@ -967,8 +982,8 @@ noté d'une croix.</p>
 <td style="text-align: center;">−2</td>
 <td style="text-align: center;">−1</td>
 <td style="text-align: center;">0</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
 </tr>
 <tr>
 <td>Hallebarde, bardiche, pertuisane</td>
@@ -976,8 +991,8 @@ noté d'une croix.</p>
 <td style="text-align: center;">−2</td>
 <td style="text-align: center;">−1</td>
 <td style="text-align: center;">0</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
 </tr>
 <tr>
 <td>Trident</td>
@@ -985,17 +1000,17 @@ noté d'une croix.</p>
 <td style="text-align: center;">−2</td>
 <td style="text-align: center;">−1</td>
 <td style="text-align: center;">0</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
 </tr>
 <tr>
-<td>Kusarigama (côté chaîne)</td>
+<td>Kusarigama (chaîne)</td>
 <td style="text-align: center;">−3</td>
 <td style="text-align: center;">−2</td>
 <td style="text-align: center;">−1</td>
 <td style="text-align: center;">0</td>
-<td style="text-align: center;">—</td>
-<td style="text-align: center;">—</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
 </tr>
 <tr>
 <td>Fouet</td>
@@ -1004,7 +1019,7 @@ noté d'une croix.</p>
 <td style="text-align: center;">−2</td>
 <td style="text-align: center;">−1</td>
 <td style="text-align: center;">0</td>
-<td style="text-align: center;">—</td>
+<td style="text-align: center;"></td>
 </tr>
 <tr>
 <td>Chaîne longue lestée</td>
@@ -1013,7 +1028,7 @@ noté d'une croix.</p>
 <td style="text-align: center;">−2</td>
 <td style="text-align: center;">−1</td>
 <td style="text-align: center;">0</td>
-<td style="text-align: center;">—</td>
+<td style="text-align: center;"></td>
 </tr>
 <tr>
 <td>Lance de cavalerie, couchée</td>
@@ -1022,7 +1037,7 @@ noté d'une croix.</p>
 <td style="text-align: center;">−2</td>
 <td style="text-align: center;">−1</td>
 <td style="text-align: center;">0</td>
-<td style="text-align: center;">—</td>
+<td style="text-align: center;"></td>
 </tr>
 <tr>
 <td>Pique</td>
@@ -1035,21 +1050,9 @@ noté d'une croix.</p>
 </tr>
 </tbody>
 </table>
-<p>La table entière se régénère de tête à partir du barème et de ses trois exceptions :
-une arme absente de la liste se place en mesurant sa portée, puis en descendant d'un
-cran par case. C'est la contrainte qui a présidé à sa construction, et le meilleur
-moyen d'y ajouter une arme sans la consulter.</p>
-<h2 id="ce-que-la-table-raconte">Ce que la table raconte</h2>
-<p>Chaque arme est une bande qui glisse vers la droite sans s'allonger : ce qu'elle gagne
-en distance, elle le perd au contact. Le bord droit n'est qu'une banalité — je ne
-t'atteins pas. Le bord gauche est le vrai sujet : tu es trop près et je ne peux plus
-rien faire.</p>
-<p>Le couteau est la seule arme qui ne se dégrade jamais en se rapprochant, et c'est toute
-son identité ; son problème est entièrement de traverser la case où l'épée règne. Le
-kusarigama, lui, n'est pas une exception mais deux armes reliées par une chaîne, chacune
-suivant le barème ordinaire. Et la pique paie quatre cases d'effondrement pour une case
-de domination : injouable en duel, redoutable en formation, où les rangs voisins couvrent
-la zone morte que le piquier ne peut pas défendre.</p>
+</div>
+<p>Une arme qui porte deux modes de frappe occupe deux lignes, une par mode, et son porteur choisit le mode qu'il emploie au moment d'attaquer. Le kusarigama en est le seul exemple de la table : sa lame se lit à 1 case, la chaîne qui la porte à 3 cases.</p>
+</div>
 
 
 
@@ -1103,7 +1106,7 @@ la zone morte que le piquier ne peut pas défendre.</p>
       <div class="md-copyright">
   
     <div class="md-copyright__highlight">
-      © 2026 igneefleur. Tous droits réservés. Œuvre de fan, non affiliée à Nine Dots Studio.
+      © 2026 IgneeFleur. Tous droits réservés. Œuvre de fan, non affiliée à Nine Dots Studio.
     </div>
   
   
