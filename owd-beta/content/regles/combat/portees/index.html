@@ -1,0 +1,1142 @@
+
+<!doctype html>
+<html lang="fr" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://igneefleur.github.io/fns-ttrpg/owd-beta/content/regles/combat/portees/">
+      
+      
+        <link rel="prev" href="../../">
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Portées - Outward Système JDR</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+    
+    
+      <link rel="stylesheet" href="../../../../stylesheets/fonts.css">
+    
+      <link rel="stylesheet" href="../../../../stylesheets/extra.css?v=13">
+    
+      <link rel="stylesheet" href="../../../../stylesheets/night.css">
+    
+    <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  
+  
+  <script>
+    (function () {
+      if (location.pathname.indexOf("/content/") !== -1) {
+        document.documentElement.classList.add("book-mode", "book-loading");
+        setTimeout(function () {
+          document.documentElement.classList.remove("book-loading");
+        }, 2000);
+      }
+    })();
+  </script>
+  
+  <script>
+    (function () {
+      try {
+        if (localStorage.getItem("night") === "1") {
+          document.documentElement.classList.add("night");
+        }
+      } catch (e) {}
+    })();
+  </script>
+
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#portees" class="md-skip">
+          Aller au contenu
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="En-tête">
+    <a href="../../../.." title="Outward Système JDR" class="md-header__button md-logo" aria-label="Outward Système JDR" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Outward Système JDR
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Portées
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Rechercher" placeholder="Rechercher" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Recherche">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Effacer" aria-label="Effacer" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initialisation de la recherche
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Onglets" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Accueil
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Règles
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../.." title="Outward Système JDR" class="md-nav__button md-logo" aria-label="Outward Système JDR" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Outward Système JDR
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Accueil
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Règles
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Règles
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Le Combat
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Le Combat
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Portées
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Portées
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table des matières">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table des matières
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#mesurer-une-portee" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mesurer une portée
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#le-bareme" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Le barème
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#table-des-portees" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table des portées
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ce-que-la-table-raconte" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ce que la table raconte
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table des matières">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table des matières
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#mesurer-une-portee" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mesurer une portée
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#le-bareme" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Le barème
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#table-des-portees" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table des portées
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ce-que-la-table-raconte" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ce que la table raconte
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="portees">Portées</h1>
+<p>Le combat se joue sur une grille dont <strong>chaque case vaut un mètre</strong>, et une case ne
+porte qu'une personne de taille normale. La distance entre deux combattants se compte
+donc en cases pleines : deux adversaires sur des cases voisines sont à une case l'un
+de l'autre, torses écartés d'un mètre.</p>
+<p>La case 0 est la case du combattant lui-même. Elle ne contient une cible que si
+quelque chose se trouve <strong>sur lui</strong> : une créature agrippée à son bras, une entrave à
+trancher, une partie de son propre corps, ou un adversaire entré dans sa case par une
+saisie. Hors de ces cas, la colonne reste vide, et c'est normal.</p>
+<h2 id="mesurer-une-portee">Mesurer une portée</h2>
+<p>La portée d'une arme est un rayon, mesuré depuis le torse de son porteur. Elle
+additionne l'allonge du bras tendu et la part de l'arme qui dépasse le poing — ou qui
+dépasse la <strong>main avant</strong> pour une arme à hampe, dont la prise décale le point d'appui.</p>
+<p class="formula">Portée = 0,70 m (bras tendu) + la part de l'arme qui dépasse le poing</p>
+
+<p>Les deux portées de deux adversaires ne s'additionnent jamais : pour toucher, il faut
+atteindre le corps de l'autre, pas son poing. Seule compte la portée de celui qui
+frappe.</p>
+<p>La portée obtenue se convertit en cases par ces seuils. Ce sont des frontières, pas
+des murs : une arme qui en chevauche une se range par son emploi le plus courant.</p>
+<table>
+<thead>
+<tr>
+<th>Portée mesurée</th>
+<th style="text-align: center;">Distance idéale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>moins de 0,70 m</td>
+<td style="text-align: center;">case 0</td>
+</tr>
+<tr>
+<td>de 0,70 m à 1,20 m</td>
+<td style="text-align: center;">1 case</td>
+</tr>
+<tr>
+<td>environ 1,20 m</td>
+<td style="text-align: center;">2 cases</td>
+</tr>
+<tr>
+<td>environ 2,20 m</td>
+<td style="text-align: center;">3 cases</td>
+</tr>
+<tr>
+<td>environ 3,20 m</td>
+<td style="text-align: center;">4 cases</td>
+</tr>
+<tr>
+<td>environ 4,20 m</td>
+<td style="text-align: center;">5 cases</td>
+</tr>
+</tbody>
+</table>
+<h2 id="le-bareme">Le barème</h2>
+<p>Une arme frappe pleinement à sa distance idéale. Plus près, elle touche encore mais
+mal ; plus loin, elle ne touche pas du tout. Cette asymétrie est le cœur de la règle :
+une portée est une limite physique, pas une pénalité. C'est pourquoi aucune arme ne
+subit de malus au-delà de sa distance, et pourquoi le vrai danger d'un combattant armé
+long n'est pas qu'on l'attaque de loin, mais qu'on lui rentre dedans.</p>
+<p><strong>Chaque case en dessous de la distance idéale coûte un cran</strong>, sans plancher. Le pas
+en avant n'entre pas dans ce calcul : se déplacer est une action, pas une indulgence
+de portée.</p>
+<p>Trois exceptions, et trois seulement.</p>
+<p><strong>Arme courte qui blesse sans élan.</strong> Aucune dégradation du tout : deux cases pleines
+consécutives. Deux conditions doivent tenir ensemble — l'arme est tenue au poing ou
+fixée au bras, assez courte pour travailler collée au corps ; et elle blesse sans que
+le bras s'étende ni que le geste s'arme, par poussée, piqûre, pression, traction ou
+crochet à bout portant. Le poing nu, le poing américain et le pied en sont exclus :
+toute leur puissance vient de l'élan.</p>
+<p><strong>Arme à deux mains qui frappe par rotation ample.</strong> Deux crans par case au lieu d'un.
+Le critère est l'amplitude, non la longueur ni le nombre de mains : les armes d'hast,
+qu'on raccourcit en glissant les mains le long de la hampe, restent au barème de base.</p>
+<p><strong>Portée idéale de quatre cases ou plus.</strong> L'arme ne sert absolument plus au contact,
+noté d'une croix.</p>
+<h2 id="table-des-portees">Table des portées</h2>
+<div class="defs">
+<p><strong>0 :</strong> l'arme est à sa distance, frappe pleine, aucun malus.</p>
+<p><strong>−N :</strong> l'arme touche encore, mais mal : N crans de malus.</p>
+<p><strong>× :</strong> trop près, l'arme ne sert plus du tout.</p>
+<p><strong>— :</strong> hors d'atteinte.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Arme</th>
+<th style="text-align: center;">0</th>
+<th style="text-align: center;">1</th>
+<th style="text-align: center;">2</th>
+<th style="text-align: center;">3</th>
+<th style="text-align: center;">4</th>
+<th style="text-align: center;">5</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Lutte, étranglement</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Morsure</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Coudes, genoux, tête</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Saisie, agrippement</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Griffes, cestes lamés</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Couteau, dague, poignard, tanto</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Katar</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Sai, jutte, tonfa</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Poings, poing américain, cestes non lamés</td>
+<td style="text-align: center;">−1</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Kukri, hachette</td>
+<td style="text-align: center;">−1</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Faucille, serpe, kusarigama (côté faucille)</td>
+<td style="text-align: center;">−1</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Pieds</td>
+<td style="text-align: center;">−1</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Épée courte, gladius, wakizashi, machette</td>
+<td style="text-align: center;">−2</td>
+<td style="text-align: center;">−1</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Épée d'armes, sabre, cimeterre</td>
+<td style="text-align: center;">−2</td>
+<td style="text-align: center;">−1</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Hache à une main, masse, marteau</td>
+<td style="text-align: center;">−2</td>
+<td style="text-align: center;">−1</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Gourdin, matraque</td>
+<td style="text-align: center;">−2</td>
+<td style="text-align: center;">−1</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Bâton long, bô</td>
+<td style="text-align: center;">−2</td>
+<td style="text-align: center;">−1</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Chaîne courte, fléau à une main, nunchaku</td>
+<td style="text-align: center;">−2</td>
+<td style="text-align: center;">−1</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Rapière, estoc</td>
+<td style="text-align: center;">−2</td>
+<td style="text-align: center;">−1</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Épée longue, épée bâtarde, katana</td>
+<td style="text-align: center;">−4</td>
+<td style="text-align: center;">−2</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Épée à deux mains, espadon, nodachi</td>
+<td style="text-align: center;">−4</td>
+<td style="text-align: center;">−2</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Hache à deux mains, hache danoise, maillet</td>
+<td style="text-align: center;">−4</td>
+<td style="text-align: center;">−2</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Fléau d'armes à deux mains</td>
+<td style="text-align: center;">−4</td>
+<td style="text-align: center;">−2</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Lance, épieu</td>
+<td style="text-align: center;">−3</td>
+<td style="text-align: center;">−2</td>
+<td style="text-align: center;">−1</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Naginata, fauchard, guisarme</td>
+<td style="text-align: center;">−3</td>
+<td style="text-align: center;">−2</td>
+<td style="text-align: center;">−1</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Hallebarde, bardiche, pertuisane</td>
+<td style="text-align: center;">−3</td>
+<td style="text-align: center;">−2</td>
+<td style="text-align: center;">−1</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Trident</td>
+<td style="text-align: center;">−3</td>
+<td style="text-align: center;">−2</td>
+<td style="text-align: center;">−1</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Kusarigama (côté chaîne)</td>
+<td style="text-align: center;">−3</td>
+<td style="text-align: center;">−2</td>
+<td style="text-align: center;">−1</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Fouet</td>
+<td style="text-align: center;">×</td>
+<td style="text-align: center;">−3</td>
+<td style="text-align: center;">−2</td>
+<td style="text-align: center;">−1</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Chaîne longue lestée</td>
+<td style="text-align: center;">×</td>
+<td style="text-align: center;">−3</td>
+<td style="text-align: center;">−2</td>
+<td style="text-align: center;">−1</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Lance de cavalerie, couchée</td>
+<td style="text-align: center;">×</td>
+<td style="text-align: center;">−3</td>
+<td style="text-align: center;">−2</td>
+<td style="text-align: center;">−1</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">—</td>
+</tr>
+<tr>
+<td>Pique</td>
+<td style="text-align: center;">×</td>
+<td style="text-align: center;">−4</td>
+<td style="text-align: center;">−3</td>
+<td style="text-align: center;">−2</td>
+<td style="text-align: center;">−1</td>
+<td style="text-align: center;">0</td>
+</tr>
+</tbody>
+</table>
+<p>La table entière se régénère de tête à partir du barème et de ses trois exceptions :
+une arme absente de la liste se place en mesurant sa portée, puis en descendant d'un
+cran par case. C'est la contrainte qui a présidé à sa construction, et le meilleur
+moyen d'y ajouter une arme sans la consulter.</p>
+<h2 id="ce-que-la-table-raconte">Ce que la table raconte</h2>
+<p>Chaque arme est une bande qui glisse vers la droite sans s'allonger : ce qu'elle gagne
+en distance, elle le perd au contact. Le bord droit n'est qu'une banalité — je ne
+t'atteins pas. Le bord gauche est le vrai sujet : tu es trop près et je ne peux plus
+rien faire.</p>
+<p>Le couteau est la seule arme qui ne se dégrade jamais en se rapprochant, et c'est toute
+son identité ; son problème est entièrement de traverser la case où l'épée règne. Le
+kusarigama, lui, n'est pas une exception mais deux armes reliées par une chaîne, chacune
+suivant le barème ordinaire. Et la pique paie quatre cases d'effondrement pour une case
+de domination : injouable en duel, redoutable en formation, où les rangs voisins couvrent
+la zone morte que le piquier ne peut pas défendre.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Pied de page" >
+        
+          
+          <a href="../../" class="md-footer__link md-footer__link--prev" aria-label="Précédent: Règles">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Précédent
+              </span>
+              <div class="md-ellipsis">
+                Règles
+              </div>
+            </div>
+          </a>
+        
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      © 2026 igneefleur. Tous droits réservés. Œuvre de fan, non affiliée à Nine Dots Studio.
+    </div>
+  
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../../..", "features": ["navigation.instant", "navigation.tabs", "navigation.tabs.sticky", "navigation.expand", "navigation.indexes", "navigation.footer", "content.tooltips"], "search": "../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copi\u00e9 dans le presse-papier", "clipboard.copy": "Copier dans le presse-papier", "search.result.more.one": "1 de plus sur cette page", "search.result.more.other": "# de plus sur cette page", "search.result.none": "Aucun document trouv\u00e9", "search.result.one": "1 document trouv\u00e9", "search.result.other": "# documents trouv\u00e9s", "search.result.placeholder": "Taper pour d\u00e9marrer la recherche", "search.result.term.missing": "Non trouv\u00e9", "select.version": "S\u00e9lectionner la version"}, "version": null}</script>
+    
+    
+      <script src="../../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../../../../javascripts/changelog.js"></script>
+      
+        <script src="../../../../javascripts/continuous.js"></script>
+      
+        <script src="../../../../javascripts/nav-drawer.js"></script>
+      
+        <script src="../../../../javascripts/night.js"></script>
+      
+        <script src="../../../../javascripts/copybtn.js"></script>
+      
+    
+  </body>
+</html>
