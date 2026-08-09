@@ -24,7 +24,7 @@ La situation ajuste ensuite cette difficulté de base, à la hausse comme à la 
 
 <p class="formula">Difficulté = difficulté de base + modificateurs de la situation</p>
 
-La distance en est le premier exemple. La table des [portées](../combat/portees.md) donne, pour chaque arme, la valeur qui lui revient à la distance où elle frappe ; cette valeur s'ajoute à la difficulté, signe inversé. Une arme notée −2 à cette distance ajoute donc 2 à la difficulté, et une arme à sa distance idéale, notée 0, n'ajoute rien. Une case où l'arme n'atteint rien interdit l'attaque, et aucune difficulté ne s'y calcule.
+La distance en est le premier exemple. La table des [portées](../combat/portees.md) donne, pour chaque arme, ce qu'elle ajoute à la difficulté à la distance où elle frappe : la valeur lue s'ajoute telle quelle. Une arme notée +2 à cette distance ajoute donc 2 à la difficulté, et une arme à sa distance idéale, notée 0, n'ajoute rien. Une case où l'arme n'atteint rien interdit l'attaque, et aucune difficulté ne s'y calcule.
 
 ### Le jet
 
@@ -40,7 +40,7 @@ Le jet réussit si le résultat atteint la difficulté, et échoue s'il reste en
 
 <div class="memo" markdown>
 
-Exemple. Un personnage attaque à l'épée courte. Le meneur fixe la difficulté de base de l'attaque à 6. La cible se tient à une case, où l'épée courte est notée −1 : la difficulté monte à 7. Le personnage lance ses deux dés et en fait la somme ; s'il atteint 7, il touche.
+Exemple. Un personnage attaque à l'épée courte. Le meneur fixe la difficulté de base de l'attaque à 6. La cible se tient à une case, où l'épée courte est notée +1 : la difficulté monte à 7. Le personnage lance ses deux dés et en fait la somme ; s'il atteint 7, il touche.
 
 </div>
 

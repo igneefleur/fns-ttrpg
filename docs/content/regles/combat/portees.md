@@ -2,7 +2,7 @@
 
 <div class="cols" markdown>
 
-La portée d'une arme est la distance à laquelle elle atteint sa cible. Chaque arme a une distance idéale, celle où elle frappe pleinement ; plus près, elle touche encore mais mal ; plus loin, elle ne touche pas du tout. Ce chapitre donne la grille sur laquelle se compte cette distance, la façon de mesurer la portée d'une arme, le barème des malus, et la table qui range chaque arme à sa distance.
+La portée d'une arme est la distance à laquelle elle atteint sa cible. Chaque arme a une distance idéale, celle où elle frappe pleinement ; plus près, elle touche encore mais mal ; plus loin, elle ne touche pas du tout. Ce chapitre donne la grille sur laquelle se compte cette distance, la façon de mesurer la portée d'une arme, le barème qui traduit l'écart en difficulté, et la table qui range chaque arme à sa distance.
 
 <div class="keep" markdown>
 
@@ -49,7 +49,7 @@ La portée mesurée donne la distance idéale de l'arme. La table ci-dessous don
 
 ### Le barème
 
-À sa distance idéale, une arme frappe sans malus. Chaque case en dessous de cette distance donne un cran de malus, et ce décompte n'a pas de plancher. Au-delà de sa distance idéale, une arme n'atteint rien : une portée est une limite physique, pas une pénalité.
+À sa distance idéale, une arme n'ajoute rien à la [difficulté](../base/actions.md) du jet d'attaque. Chaque case en dessous de cette distance lui ajoute 1, et ce décompte n'a pas de plafond. Au-delà de sa distance idéale, une arme n'atteint rien : une portée est une limite physique, pas une difficulté de plus.
 
 Le déplacement n'entre pas dans ce calcul. Un personnage qui avance d'une case avant de frapper dépense son mouvement : il ne gagne pas de portée pour autant.
 
@@ -57,9 +57,9 @@ Trois exceptions modifient ce barème.
 
 <div class="defs" markdown>
 
-**Arme courte qui blesse sans élan :** l'arme ne se dégrade pas du tout, et sa case 0 ne prend aucun malus. Deux conditions doivent tenir ensemble : l'arme est tenue au poing ou fixée au bras, assez courte pour travailler collée au corps ; et elle blesse sans que le bras s'étende ni que le geste s'arme, par poussée, piqûre, pression, traction ou crochet à bout portant. Le poing nu, le poing américain et le pied n'y entrent pas, car toute leur puissance vient de l'élan.
+**Arme courte qui blesse sans élan :** l'arme n'ajoute jamais rien à la difficulté, sa case 0 comprise. Deux conditions doivent tenir ensemble : l'arme est tenue au poing ou fixée au bras, assez courte pour travailler collée au corps ; et elle blesse sans que le bras s'étende ni que le geste s'arme, par poussée, piqûre, pression, traction ou crochet à bout portant. Le poing nu, le poing américain et le pied n'y entrent pas, car toute leur puissance vient de l'élan.
 
-**Arme à deux mains qui frappe par rotation ample :** l'arme perd deux crans par case au lieu d'un. Le critère est l'amplitude du geste, non la longueur de l'arme ni le nombre de mains : une arme d'hast, qu'on raccourcit en glissant les mains le long de la hampe, suit le barème ordinaire.
+**Arme à deux mains qui frappe par rotation ample :** l'arme ajoute 2 à la difficulté par case au lieu de 1. Le critère est l'amplitude du geste, non la longueur de l'arme ni le nombre de mains : une arme d'hast, qu'on raccourcit en glissant les mains le long de la hampe, suit le barème ordinaire.
 
 **Portée idéale de quatre cases ou plus :** l'arme ne sert plus du tout au contact, et sa case 0 est interdite.
 
@@ -73,13 +73,13 @@ Trois exceptions modifient ce barème.
 
 ### Lire la table
 
-La table donne le malus de chaque arme selon la distance qui la sépare de sa cible, comptée en cases. Chaque ligne se déduit du barème et de ses trois exceptions : une arme absente de la table se place en mesurant sa portée, puis en descendant d'un cran par case.
+La table donne ce que chaque arme ajoute à la [difficulté](../base/actions.md) selon la distance qui la sépare de sa cible, comptée en cases. La valeur lue s'ajoute telle quelle, sans conversion. Chaque ligne se déduit du barème et de ses trois exceptions : une arme absente de la table se place en mesurant sa portée, puis en ajoutant 1 par case en dessous de sa distance idéale.
 
 <div class="defs" markdown>
 
-**0 :** l'arme est à sa distance idéale et frappe sans malus.
+**0 :** l'arme est à sa distance idéale et n'ajoute rien à la difficulté.
 
-**−N :** l'arme touche encore, mais mal : elle subit N crans de malus.
+**+N :** l'arme atteint encore sa cible, mais mal : elle ajoute N à la difficulté.
 
 **× :** l'arme est trop près pour servir, et l'attaque est impossible.
 
@@ -103,30 +103,30 @@ La table donne le malus de chaque arme selon la distance qui la sépare de sa ci
 | Couteau, dague, poignard, tanto | 0 | 0 | | | | |
 | Katar | 0 | 0 | | | | |
 | Sai, jutte, tonfa | 0 | 0 | | | | |
-| Poings, poing américain, cestes non lamés | −1 | 0 | | | | |
-| Kukri, hachette | −1 | 0 | | | | |
-| Faucille, serpe, kusarigama (faucille) | −1 | 0 | | | | |
-| Pieds | −1 | 0 | | | | |
-| Épée courte, gladius, wakizashi, machette | −2 | −1 | 0 | | | |
-| Épée d'armes, sabre, cimeterre | −2 | −1 | 0 | | | |
-| Hache à une main, masse, marteau | −2 | −1 | 0 | | | |
-| Gourdin, matraque | −2 | −1 | 0 | | | |
-| Bâton long, bô | −2 | −1 | 0 | | | |
-| Chaîne courte, fléau à une main, nunchaku | −2 | −1 | 0 | | | |
-| Rapière, estoc | −2 | −1 | 0 | | | |
-| Épée longue, épée bâtarde, katana | −4 | −2 | 0 | | | |
-| Épée à deux mains, espadon, nodachi | −4 | −2 | 0 | | | |
-| Hache à deux mains, hache danoise, maillet | −4 | −2 | 0 | | | |
-| Fléau d'armes à deux mains | −4 | −2 | 0 | | | |
-| Lance, épieu | −3 | −2 | −1 | 0 | | |
-| Naginata, fauchard, guisarme | −3 | −2 | −1 | 0 | | |
-| Hallebarde, bardiche, pertuisane | −3 | −2 | −1 | 0 | | |
-| Trident | −3 | −2 | −1 | 0 | | |
-| Kusarigama (chaîne) | −3 | −2 | −1 | 0 | | |
-| Fouet | × | −3 | −2 | −1 | 0 | |
-| Chaîne longue lestée | × | −3 | −2 | −1 | 0 | |
-| Lance de cavalerie, couchée | × | −3 | −2 | −1 | 0 | |
-| Pique | × | −4 | −3 | −2 | −1 | 0 |
+| Poings, poing américain, cestes non lamés | +1 | 0 | | | | |
+| Kukri, hachette | +1 | 0 | | | | |
+| Faucille, serpe, kusarigama (faucille) | +1 | 0 | | | | |
+| Pieds | +1 | 0 | | | | |
+| Épée courte, gladius, wakizashi, machette | +2 | +1 | 0 | | | |
+| Épée d'armes, sabre, cimeterre | +2 | +1 | 0 | | | |
+| Hache à une main, masse, marteau | +2 | +1 | 0 | | | |
+| Gourdin, matraque | +2 | +1 | 0 | | | |
+| Bâton long, bô | +2 | +1 | 0 | | | |
+| Chaîne courte, fléau à une main, nunchaku | +2 | +1 | 0 | | | |
+| Rapière, estoc | +2 | +1 | 0 | | | |
+| Épée longue, épée bâtarde, katana | +4 | +2 | 0 | | | |
+| Épée à deux mains, espadon, nodachi | +4 | +2 | 0 | | | |
+| Hache à deux mains, hache danoise, maillet | +4 | +2 | 0 | | | |
+| Fléau d'armes à deux mains | +4 | +2 | 0 | | | |
+| Lance, épieu | +3 | +2 | +1 | 0 | | |
+| Naginata, fauchard, guisarme | +3 | +2 | +1 | 0 | | |
+| Hallebarde, bardiche, pertuisane | +3 | +2 | +1 | 0 | | |
+| Trident | +3 | +2 | +1 | 0 | | |
+| Kusarigama (chaîne) | +3 | +2 | +1 | 0 | | |
+| Fouet | × | +3 | +2 | +1 | 0 | |
+| Chaîne longue lestée | × | +3 | +2 | +1 | 0 | |
+| Lance de cavalerie, couchée | × | +3 | +2 | +1 | 0 | |
+| Pique | × | +4 | +3 | +2 | +1 | 0 |
 
 </div>
 
