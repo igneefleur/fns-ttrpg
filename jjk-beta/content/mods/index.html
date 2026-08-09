@@ -763,10 +763,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#le-suffixe-du-site-de-chantier" class="md-nav__link">
+  <a href="#le-suffixe-du-site-beta" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Le suffixe du site de chantier
+        Le suffixe du site beta
       
     </span>
   </a>
@@ -1200,10 +1200,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#le-suffixe-du-site-de-chantier" class="md-nav__link">
+  <a href="#le-suffixe-du-site-beta" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Le suffixe du site de chantier
+        Le suffixe du site beta
       
     </span>
   </a>
@@ -1598,7 +1598,7 @@ natif comme mod, et c'est le contrat public de la fiche 3.</p>
 </tr>
 <tr>
 <td><code>ctx.version</code></td>
-<td>la release de la fiche qui l'exécute, telle qu'elle est publiée, suffixe de chantier compris, et qui se compare <a href="#versions">nombre par nombre</a>.</td>
+<td>la release de la fiche qui l'exécute, telle qu'elle est publiée, suffixe de beta compris, et qui se compare <a href="#versions">nombre par nombre</a>.</td>
 </tr>
 </tbody>
 </table>
@@ -1986,7 +1986,7 @@ déjà connu :</p>
 <tbody>
 <tr>
 <td><code>Jjk.version</code></td>
-<td>la release de la fiche, en trois nombres, suivie du <code>b</code> du site de chantier le cas échéant : <code>"3.6.0"</code>, <code>"3.6.0b"</code>. À comparer par ses nombres, jamais comme une chaîne.</td>
+<td>la release de la fiche, en trois nombres, suivie du <code>b</code> du site beta le cas échéant : <code>"3.6.0"</code>, <code>"3.6.0b"</code>. À comparer par ses nombres, jamais comme une chaîne.</td>
 </tr>
 <tr>
 <td><code>Jjk.schema</code></td>
@@ -2204,15 +2204,14 @@ Le schéma se demande à <code>Jjk.schema</code>, et à lui seul.</p>
 <p>Les releases se comparent nombre par nombre, jamais comme des chaînes :
 <code>"3.10.0"</code> vient après <code>"3.9.0"</code>, alors que la comparaison de texte prétendrait
 l'inverse.</p>
-<h3 id="le-suffixe-du-site-de-chantier">Le suffixe du site de chantier</h3>
-<p>Le site de chantier ajoute un <code>b</code> collé au dernier nombre, <code>"3.6.0b"</code>. Le site
-public ne le porte jamais : il est là pour qu'un joueur voie sur quel site il
-est.</p>
+<h3 id="le-suffixe-du-site-beta">Le suffixe du site beta</h3>
+<p>Le site beta ajoute un <code>b</code> collé au dernier nombre, <code>"3.6.0b"</code>. Le site public
+ne le porte jamais : il est là pour qu'un joueur voie sur quel site il est.</p>
 <p>Ce suffixe se lit, il ne se compte pas. <code>"3.6.0b"</code> et <code>"3.6.0"</code> sont de même
-rang, parce que le chantier est ce que le site public recevra à la fusion. Un
-mod déclaré <code>pour: "3.6.0"</code> tourne donc sur le chantier <code>3.6.0b</code>, et un mod
-déclaré <code>pour: "3.6.0b"</code> tourne sur le site public <code>3.6.0</code>. Un personnage
-enregistré sur l'un ne passe jamais pour plus récent que l'autre.</p>
+rang, parce que la beta est ce que le site public recevra à la fusion. Un mod
+déclaré <code>pour: "3.6.0"</code> tourne donc sur la beta <code>3.6.0b</code>, et un mod déclaré
+<code>pour: "3.6.0b"</code> tourne sur le site public <code>3.6.0</code>. Un personnage enregistré
+sur l'un ne passe jamais pour plus récent que l'autre.</p>
 <p>Un mod qui compare des numéros lui-même retire donc ce <code>b</code> avant de lire les
 nombres. Le plus simple reste de ne pas comparer du tout : le champ <code>pour</code> le
 fait déjà, et la fiche trop ancienne écarte le mod d'elle-même.</p>
@@ -2227,7 +2226,7 @@ fait déjà, et la fiche trop ancienne écarte le mod d'elle-même.</p>
 <tbody>
 <tr>
 <td><code>pour</code></td>
-<td>la release minimale de la fiche, en trois nombres, le <code>b</code> du chantier accepté : <code>"3.6.0"</code>, <code>"3.6.0b"</code>. Facultatif, et proposé dans le dialogue d'ajout, qui refuse ce qui n'est pas un numéro de version. Arrivé illisible par un import, il est gardé tel quel et ne bloque rien.</td>
+<td>la release minimale de la fiche, en trois nombres, le <code>b</code> de la beta accepté : <code>"3.6.0"</code>, <code>"3.6.0b"</code>. Facultatif, et proposé dans le dialogue d'ajout, qui refuse ce qui n'est pas un numéro de version. Arrivé illisible par un import, il est gardé tel quel et ne bloque rien.</td>
 </tr>
 <tr>
 <td><code>apiMin</code></td>
@@ -2452,7 +2451,7 @@ d'atteinte que parce qu'elle est d'une autre origine que la fiche.</p>
       <div class="md-copyright">
   
     <div class="md-copyright__highlight">
-      © 2026 Théo Cavaillès. Tous droits réservés. Œuvre de fan, non affiliée à Shueisha.
+      Règles © 2026 Qyu. Site et code © 2026 igneefleur. Tous droits réservés. Œuvre de fan, non affiliée à Shueisha.
     </div>
   
   

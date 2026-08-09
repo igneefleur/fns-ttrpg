@@ -266,7 +266,7 @@
   // « 3.12.9b » rend { x: 3, y: 12, z: 9, beta: true }, et null sur ce qui
   // n'est pas un numéro.
   //
-  // Le suffixe « b » de la branche de chantier est COLLÉ au dernier nombre,
+  // Le suffixe « b » de la branche beta est COLLÉ au dernier nombre,
   // sans séparateur : ce n'est pas une pré-version au sens semver, et le motif
   // d'avant, qui n'acceptait un suffixe que derrière un « - » ou un « + »,
   // rendait null sur « 3.6.0b ». Silencieusement, ce qui est le pire :
@@ -274,7 +274,7 @@
   // de TOUS les mods s'éteignait sans un message le jour où la beta a pris son
   // suffixe. Un suffixe semver (« 3.1.0-beta ») reste toléré et reste lu comme
   // sa version de base ; « beta » ne dit QUE le b du contrat, parce que c'est
-  // lui seul qui désigne le site de chantier.
+  // lui seul qui désigne le site beta.
   function lireVersion(v) {
     var m = /^\s*v?(\d+)(?:\.(\d+))?(?:\.(\d+))?(b)?\s*(?:[-+][^\s]*)?\s*$/.exec(chaine(v));
     if (!m) return null;
