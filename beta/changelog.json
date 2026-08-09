@@ -4,7 +4,7 @@
 "author": "Théo Cavaillès",
 "date": "2026-07-18T13:11:40+02:00",
 "message": "Création : Mouvement à trois milieux (terrestre/aquatique/aérien), refonte des États, Sens en première colonne",
-"url": "https://github.com/igneefleur/HxH-Regles-JDR/commit/17463034ff16dc789d526c3649cc178851ba381f",
+"url": "https://github.com/igneefleur/FNS-TTRPG-RULES/commit/17463034ff16dc789d526c3649cc178851ba381f",
 "files": [
 {
 "status": "modified",
@@ -18,7 +18,7 @@
 "author": "Théo Cavaillès",
 "date": "2026-07-18T13:11:33+02:00",
 "message": "Nen : coûts des multiplicateurs d'aura divisés par deux (UAR 20, RUA 10, plafond 30 DI)",
-"url": "https://github.com/igneefleur/HxH-Regles-JDR/commit/3da09bdcdd5bbaea019ef1ab89fc99897557eba2",
+"url": "https://github.com/igneefleur/FNS-TTRPG-RULES/commit/3da09bdcdd5bbaea019ef1ab89fc99897557eba2",
 "files": [
 {
 "status": "modified",
@@ -37,7 +37,7 @@
 "author": "Théo Cavaillès",
 "date": "2026-07-18T07:22:28+02:00",
 "message": "Chantier : fiche de personnage densifiée et complétée (capacités, armes, Nen, personnalisation)",
-"url": "https://github.com/igneefleur/HxH-Regles-JDR/commit/9bcc53bab064f8741165cc99456faacc6e2d52ad",
+"url": "https://github.com/igneefleur/FNS-TTRPG-RULES/commit/9bcc53bab064f8741165cc99456faacc6e2d52ad",
 "files": [
 {
 "status": "modified",
@@ -66,7 +66,7 @@
 "author": "Théo Cavaillès",
 "date": "2026-07-18T00:20:44+02:00",
 "message": "Capacités physiques : tables Repos et Fond côte à côte en 2 colonnes",
-"url": "https://github.com/igneefleur/HxH-Regles-JDR/commit/e71d44380187280e4c111785069d38473c53081c",
+"url": "https://github.com/igneefleur/FNS-TTRPG-RULES/commit/e71d44380187280e4c111785069d38473c53081c",
 "files": [
 {
 "status": "modified",
@@ -80,7 +80,7 @@
 "author": "Théo Cavaillès",
 "date": "2026-07-17T23:42:56+02:00",
 "message": "Capacités physiques : le Repos scindé en Repos (sommeil) et Fond (effort)",
-"url": "https://github.com/igneefleur/HxH-Regles-JDR/commit/bd54f495ed130650149e00ce6317d6237ee50c12",
+"url": "https://github.com/igneefleur/FNS-TTRPG-RULES/commit/bd54f495ed130650149e00ce6317d6237ee50c12",
 "files": [
 {
 "status": "modified",
@@ -94,7 +94,7 @@
 "author": "Théo Cavaillès",
 "date": "2026-07-17T19:55:39+02:00",
 "message": "Chantier : refonte du Nen, armes, compétences, avantages, atelier et création",
-"url": "https://github.com/igneefleur/HxH-Regles-JDR/commit/665677ee6098d3522842beb198e4df1492648b60",
+"url": "https://github.com/igneefleur/FNS-TTRPG-RULES/commit/665677ee6098d3522842beb198e4df1492648b60",
 "files": [
 {
 "status": "modified",
@@ -193,7 +193,7 @@
 "author": "Théo Cavaillès",
 "date": "2026-07-17T17:04:40+02:00",
 "message": "Formes : déplacement et propriétés spéciales réécrits en règles claires",
-"url": "https://github.com/igneefleur/HxH-Regles-JDR/commit/415f179fabdab6f5fd1ff990923295b2a46cdf8a",
+"url": "https://github.com/igneefleur/FNS-TTRPG-RULES/commit/415f179fabdab6f5fd1ff990923295b2a46cdf8a",
 "files": [
 {
 "status": "modified",
@@ -207,7 +207,7 @@
 "author": "Théo Cavaillès",
 "date": "2026-07-17T12:24:22+02:00",
 "message": "État complet du chantier (arts, sens, hooks) avant séparation main/beta",
-"url": "https://github.com/igneefleur/HxH-Regles-JDR/commit/6111993a341ab6a019513f471578809d24a9ab37",
+"url": "https://github.com/igneefleur/FNS-TTRPG-RULES/commit/6111993a341ab6a019513f471578809d24a9ab37",
 "files": [
 {
 "status": "modified",
@@ -226,7 +226,7 @@
 "author": "Théo Cavaillès",
 "date": "2026-07-17T12:04:39+02:00",
 "message": "Blessures : plus aucun état de combat, seule l'Inconscience via le jet",
-"url": "https://github.com/igneefleur/HxH-Regles-JDR/commit/d73a3415c3dd4c13cbfecbd920b974be2e9e834c",
+"url": "https://github.com/igneefleur/FNS-TTRPG-RULES/commit/d73a3415c3dd4c13cbfecbd920b974be2e9e834c",
 "files": [
 {
 "status": "modified",
@@ -245,7 +245,7 @@
 "author": "Théo Cavaillès",
 "date": "2026-07-17T10:39:51+02:00",
 "message": "Blessures : « un malus de −X à toutes les actions », Immobilisé hors des amputations",
-"url": "https://github.com/igneefleur/HxH-Regles-JDR/commit/a10321224f581ef1df1535462b133e6dc20fcc01",
+"url": "https://github.com/igneefleur/FNS-TTRPG-RULES/commit/a10321224f581ef1df1535462b133e6dc20fcc01",
 "files": [
 {
 "status": "modified",
@@ -259,7 +259,7 @@
 "author": "Théo Cavaillès",
 "date": "2026-07-16T23:55:46+02:00",
 "message": "Blessures : 4 zones de plus, la fusion réduite à ce qui la mérite",
-"url": "https://github.com/igneefleur/HxH-Regles-JDR/commit/e29a46ff99710740dc7b66dd146e2e8f97de624d",
+"url": "https://github.com/igneefleur/FNS-TTRPG-RULES/commit/e29a46ff99710740dc7b66dd146e2e8f97de624d",
 "files": [
 {
 "status": "modified",
@@ -273,7 +273,7 @@
 "author": "Théo Cavaillès",
 "date": "2026-07-16T23:49:59+02:00",
 "message": "Blessures : le chapitre redevient humain, et 47 constats de relecture",
-"url": "https://github.com/igneefleur/HxH-Regles-JDR/commit/c5513eb93afbb1a0078bd671deff7817bda1d000",
+"url": "https://github.com/igneefleur/FNS-TTRPG-RULES/commit/c5513eb93afbb1a0078bd671deff7817bda1d000",
 "files": [
 {
 "status": "modified",
