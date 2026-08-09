@@ -538,7 +538,7 @@
 
   // LA lecture d'un numéro, seule de tout le fichier, et celle du contrat :
   // « v » facultatif, un à trois nombres (les manquants valent 0), « b » de
-  // chantier COLLÉ au dernier, suffixe de fabrication [-+…] toléré. Rend
+  // la beta COLLÉ au dernier, suffixe de fabrication [-+…] toléré. Rend
   // { rang: [x, y, z], beta } ou null. Trois lectures cohabitaient ici et
   // n'acceptaient pas les mêmes textes : le même numéro pouvait désigner une
   // ligne d'archive et rester illisible pour la comparaison, qui retombait
@@ -1181,7 +1181,7 @@
     // secours. Le numéro de release d'un personnage n'est qu'une étiquette ;
     // seul le schéma dit ce que ses données valent.
     //
-    // Le suffixe de chantier ne compte pas dans le rang : « 3.6.0b » et
+    // Le suffixe de la beta ne compte pas dans le rang : « 3.6.0b » et
     // « 3.6.0 » sont la même version, et une fiche écrite sur la beta ne doit
     // pas paraître venue d'ailleurs une fois rouverte sur le site stable du
     // même numéro.

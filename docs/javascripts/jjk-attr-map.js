@@ -51,8 +51,8 @@
   // jjk_version. Le manifeste en est la source unique quand il est là ; la
   // constante n'est qu'un repli (node, et l'amorceur de secours qui charge
   // sans manifeste).
-  // Le « b » final marque la branche de chantier : le joueur voit qu'il est sur
-  // la beta. Il ne change PAS le rang du numéro (« 3.6.0b » et « 3.6.0 » sont la
+  // Le « b » final marque la branche beta : le joueur voit sur quel site
+  // il est. Il ne change PAS le rang du numéro (« 3.6.0b » et « 3.6.0 » sont la
   // même version, la beta étant ce que le stable recevra à la fusion) : ce qui
   // compare des versions doit donc l'ôter avant de lire les nombres.
   var RELEASE_DEFAUT = "3.6.0";

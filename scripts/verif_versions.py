@@ -9,8 +9,8 @@ fiche d'un joueur :
 
   1. LA FORME du numéro publié et sa concordance entre ses TROIS porteurs (le
      bundle, le manifeste, RELEASE_DEFAUT de la carte d'attributs). Le contrat
-     dit « X.Y.Z », chaque nombre de 0 à 999, plus le suffixe « b » de la
-     branche de chantier, qui doit être là sur le chantier et absent ailleurs :
+     dit « X.Y.Z », chaque nombre de 0 à 999, plus le suffixe « b », qui doit
+     être là sur la branche beta et absent ailleurs :
      c'est ce suffixe, et lui seul, qui montre au joueur qu'il est sur la beta.
   2. LE RECUL. Une archive est immuable : republier sous une version déjà gelée
      ferait servir un code à un numéro qui en désigne un autre. La seule mémoire
@@ -289,21 +289,24 @@ def main(archive_differee=False):
     # LE SUFFIXE ET LA BRANCHE. Le marqueur est site_url de mkdocs.yml, qui est
     # versionné et voyage avec une copie du dépôt : git peut manquer là où ce
     # script tourne (un bac de sonde, une machine nue).
-    chantier = V.chantier(RACINE)
+    # « branche_beta » et non « beta » : version.beta, juste en dessous, dit le
+    # SUFFIXE d'un numéro, pas la branche du dépôt. Ce sont les deux moitiés du
+    # contrôle, et les confondre le viderait de son sens.
+    branche_beta = V.est_beta(RACINE)
     if version is None:
         pass
-    elif chantier is None:
+    elif branche_beta is None:
         notes.append("mkdocs.yml ne dit pas site_url : le suffixe n'est pas contrôlé")
-    elif chantier and not version.beta:
-        fautes.append("branche de chantier : RELEASE = %s devrait porter le suffixe "
+    elif branche_beta and not version.beta:
+        fautes.append("branche beta : RELEASE = %s devrait porter le suffixe "
                       "« b » ; sans lui le joueur ne voit pas qu'il est sur la beta"
                       % release)
-    elif not chantier and version.beta:
+    elif not branche_beta and version.beta:
         fautes.append("branche stable : RELEASE = %s porte le suffixe « b », qui "
-                      "n'appartient qu'au chantier" % release)
+                      "n'appartient qu'à la beta" % release)
     else:
         notes.append("suffixe : conforme à la branche (%s)"
-                     % ("chantier" if chantier else "stable"))
+                     % ("beta" if branche_beta else "stable"))
 
     # 1 bis. le TROISIÈME porteur, celui que la fiche écrit dans le personnage
     # quand le manifeste n'a pas répondu.

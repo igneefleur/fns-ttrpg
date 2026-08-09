@@ -56,7 +56,7 @@ dossier réécrit par 3.1.0, et « ouvrir avec sa version » servirait l'autre
 version sans le dire. C'est ce raisonnement qui interdit tout regroupement plus
 large que la ligne.
 
-LE SUFFIXE « b » NE VOYAGE NULLE PART. Sur la branche de chantier, le bundle
+LE SUFFIXE « b » NE VOYAGE NULLE PART. Sur la branche beta, le bundle
 porte « 3.6.0b » : le dossier s'appelle quand même v3.6.0/, la clé du manifeste
 est « 3.6.0 », ET LE CONTENU GELÉ AUSSI. Le bundle copié y déclare RELEASE
 « 3.6.0 », l'attr-map RELEASE_DEFAUT « 3.6.0 », la page d'archive s'intitule
@@ -67,7 +67,7 @@ fusion vers la branche stable amènerait un v3.6.0b/ immuable, doublon de la mê
 ligne, et la recherche par ligne aurait deux archives concurrentes selon la
 branche qui a publié. Sans dépouillement du CONTENU, le nom serait bien le même,
 mais geler la ligne depuis le stable produirait des octets DIFFÉRENTS de ceux
-gelés depuis le chantier ; or figer() compare octet à octet, et il n'aurait plus
+gelés depuis la beta ; or figer() compare octet à octet, et il n'aurait plus
 qu'un choix : refuser la publication, ou réécrire une archive immuable. Une
 archive appartient à sa ligne, pas à la branche qui l'a gelée.
 
@@ -358,7 +358,7 @@ def figer(racine, essai=False, force=False):
     if faute:
         return ["le bundle annonce RELEASE %s" % faute]
     version = V.lire(release)
-    # La CLÉ et le DOSSIER portent le numéro NU : sur le chantier le bundle
+    # La CLÉ et le DOSSIER portent le numéro NU : sur la beta le bundle
     # s'appelle « 3.6.0b » et l'archive « 3.6.0 ». Voir l'en-tête.
     cle = version.nu
 
@@ -432,7 +432,7 @@ def figer(racine, essai=False, force=False):
             continue
         with open(chemin, "rb") as f:
             octets = f.read()   # copie BINAIRE : une archive se fige à l'octet
-        # à un mot près : le numéro, dépouillé de son suffixe de chantier
+        # à un mot près : le numéro, dépouillé du suffixe de la beta
         octets, faute = _octets_denudes(nom, octets, cle)
         if faute:
             fautes.append(faute)

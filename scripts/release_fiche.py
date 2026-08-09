@@ -24,7 +24,7 @@ et ils s'oublient tous les six quand on les fait à la main.
      une fonctionnalité entière, --moyen pour un petit module ou la correction
      d'une grosse erreur, --petit pour du CSS ou une erreur mineure. Le script
      le calcule (retenue à 999 comprise), pose le suffixe « b » si la branche
-     est le chantier, et l'écrit dans les TROIS porteurs d'un seul geste. Un
+     est la beta, et l'écrit dans les TROIS porteurs d'un seul geste. Un
      numéro implicite est exactement ce que le contrat de versionnage supprime.
      Le SCHÉMA du bundle est posé au manifeste dans le même geste : c'est ce
      nombre-là, et non le numéro de version, que l'amorceur compare au schéma
@@ -392,11 +392,11 @@ def controle_numero(racine, release, schema, cran, impose, sans_montee):
         # conforme, sinon la reprise d'une publication interrompue serait la
         # porte par où un numéro fautif passerait sans être vu
         v = V.lire(release)
-        c = V.chantier(racine)
+        c = V.est_beta(racine)
         if c is not None and v.beta != c:
             return (None, "%s %s le suffixe « b » alors que la branche est %s"
                     % (release, "porte" if v.beta else "n'a pas",
-                       "le chantier" if c else "stable"))
+                       "la beta" if c else "stable"))
         if isinstance(man, dict):
             for cle, av in sorted(V.archives_lisibles(man).items()):
                 if av.rang > v.rang:
