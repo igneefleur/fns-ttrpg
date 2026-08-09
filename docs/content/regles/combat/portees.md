@@ -8,7 +8,15 @@ La portée d'une arme est la distance à laquelle elle atteint sa cible. Ce chap
 
 ### La grille
 
-Le combat se joue sur une grille d'hexagones, et **une case vaut un pas**. Un pas de marche fait environ 0.7 m, et c'est l'unité par laquelle les armées ont mesuré le terrain pendant deux mille ans.
+Le combat se joue sur une grille d'hexagones, et **une case vaut un pas**. Le pas dont il s'agit est celui de la marche ordinaire, qui fait environ 0.7 m.
+
+<div class="memo" markdown>
+
+Le mot recouvre deux mesures qu'il vaut mieux ne pas confondre. Le pas de la marche, celui du livre, vaut une soixantaine de centimètres chez un homme petit et jusqu'à quatre-vingt-dix chez un très grand. Le pas des armées est plus long et plus réglé : le *gradus* romain valait 0.74 m, le pas ordinaire français 0.75 m, le pas cadencé britannique 0.76 m.
+
+Et le *passus* romain, celui qui a donné notre mot et qui fonde le mille, mille pas, est un pas **double** de 1.48 m. Le livre ne s'en réclame donc pas : sa case est le pas de la marche, non celui de la manœuvre.
+
+</div>
 
 Une case ne porte qu'une seule personne. La distance entre deux combattants se compte en cases pleines : deux adversaires sur des cases voisines sont à un pas l'un de l'autre.
 
