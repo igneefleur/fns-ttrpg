@@ -4,7 +4,7 @@ Deux jeux de rôle sur table, chacun avec son livre de règles et ses outils.
 
 **<https://igneefleur.github.io/fns-ttrpg/>**
 
-| | Site | Chantier | Branches |
+| | Site | Beta | Branches |
 |---|---|---|---|
 | **Hunter × Hunter** | [/hxh/](https://igneefleur.github.io/fns-ttrpg/hxh/) | [/hxh-beta/](https://igneefleur.github.io/fns-ttrpg/hxh-beta/) | `hxh`, `hxh-beta` |
 | **Jujutsu Kaisen** | [/jjk/](https://igneefleur.github.io/fns-ttrpg/jjk/) | [/jjk-beta/](https://igneefleur.github.io/fns-ttrpg/jjk-beta/) | `jjk`, `jjk-beta` |
@@ -24,5 +24,9 @@ son historique.
 
 Sans but lucratif et sans lien avec les ayants droit : « Hunter × Hunter »
 appartient à Yoshihiro Togashi et à Shueisha, « Jujutsu Kaisen » à Gege Akutami et
-à Shueisha. Les règles, les textes et le code sont de l'auteur, en tous droits
-réservés. Voir [LICENSE.md](LICENSE.md).
+à Shueisha.
+
+Le site, son code et les règles Hunter × Hunter sont d'igneefleur. **Les règles
+Jujutsu Kaisen sont de Qyu**, et lui appartiennent : elles sont reprises ici telles
+qu'il les a écrites. Tous droits réservés par leurs auteurs respectifs.
+Voir [LICENSE.md](LICENSE.md).

@@ -43,7 +43,7 @@ jobs:
       # EXCEPTION. Seul ce déploiement écrit à la racine, donc seul son nettoyage
       # voit les dossiers des autres branches : ce qui n'est pas nommé ici est
       # effacé du site, sans que rien n'échoue et sans qu'aucune branche n'ait
-      # bougé. jjk-beta y a déjà manqué, et le site de chantier JJK a disparu ;
+      # bougé. jjk-beta y a déjà manqué, et le site beta JJK a disparu ;
       # la panne est illisible tant qu'on cherche du côté du contenu. Une branche
       # de plus = une ligne de plus ici, le même jour.
       - name: Déploiement du hub (main -> racine)

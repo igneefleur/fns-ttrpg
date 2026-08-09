@@ -9,16 +9,27 @@
      relative se résoudrait par rapport au chemin fautif, et le lien de retour
      tomberait à côté. Pas de police auto-hébergée non plus, pour la même raison —
      et parce qu'une page d'erreur doit s'afficher quoi qu'il arrive. -->
+<!-- Le thème que le lecteur a choisi ailleurs sur le domaine, relu avant le
+     premier rendu. Aucun bouton ici : une page d'erreur n'est pas un endroit où
+     l'on règle ses préférences, mais elle n'a aucune raison de contredire le
+     reste du site. Clé absente = mode jour, comme partout. -->
+<script>
+  (function () {
+    try {
+      if (localStorage.getItem("night") === "1") {
+        document.documentElement.classList.add("night");
+      }
+    } catch (e) {}
+  })();
+</script>
 <style>
 :root {
   --encre: #1d1d1d; --encre-tenue: #6f6d63; --papier: #faf6eb;
   --fond: #e4ddcd; --vert-titre: #667861; --liseré: #c8bfa5;
 }
-@media (prefers-color-scheme: dark) {
-  :root {
-    --encre: #e8dfcb; --encre-tenue: #a89e88; --papier: #201c15;
-    --fond: #14110c; --vert-titre: #adc08c; --liseré: #3c3527;
-  }
+html.night {
+  --encre: #e8dfcb; --encre-tenue: #a89e88; --papier: #201c15;
+  --fond: #14110c; --vert-titre: #adc08c; --liseré: #3c3527;
 }
 * { box-sizing: border-box; }
 body {
