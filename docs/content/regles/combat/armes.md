@@ -52,7 +52,27 @@ La compétence d'une arme à une distance donnée est donc le meilleur de ses co
 
 Les traités européens enseignent le duel : aucun ne décrit de coup visant plusieurs adversaires. Un balayage est donc une extrapolation, et le chapitre n'en accorde que deux, aux seules armes dont la longueur de fil la rend crédible.
 
-La taille large de la grande épée couvre trois cases, la taille ronde de l'épée à une main en couvre deux. Une hache n'a que quinze centimètres de tranchant : elle mord dans le premier corps et s'y arrête. Un marteau moins encore, toute sa masse allant dans un seul point.
+La taille large de la grande épée couvre trois cases, la taille ronde de l'épée à une main en couvre deux, et le refoulement de hampe de la hallebarde en pousse deux sans vraiment les blesser. Les sept autres catégories n'en ont aucune, et chacune pour sa raison.
+
+<div class="defs" markdown>
+
+**Corps à corps :** le poing n'a ni allonge ni fil : il dépose tout ce qu'il porte dans le premier homme, et à distance de bras il n'y en a jamais qu'un.
+
+**Dague :** quinze centimètres de lame s'arrêtent au premier corps, et l'on ne poignarde qu'à la distance où il ne reste plus qu'un homme devant soi.
+
+**Hache :** le tranchant mord et se fiche, c'est le défaut connu de la hache ; et son manche, long de trois quarts de pas, ne barre pas plus large qu'un homme. Ni par le fer ni par le bois elle n'a de surface longue.
+
+**Masse :** elle ne coupe pas, elle transmet : la blessure est le transfert lui-même, et l'élan qui brise le premier homme n'existe plus pour le second.
+
+**Grande hache :** le fer reste un tranchant court, et le demi-fût que les maîtres nomment ainsi n'est pas la hampe entière mais son tiers médian, entre les deux mains. Moins large qu'un homme.
+
+**Grand marteau :** toute l'arme tient dans sa tête, et une tête s'arrête où elle frappe. Le marteau achète sa violence en renonçant à toute longueur de contact.
+
+**Lance :** elle travaille de la pointe, et une pointe ne perce qu'un homme. Couchée en travers elle barrerait deux cases, mais aucun texte ne l'emploie ainsi, et l'on ne prête pas à une arme ce qu'on n'a lu que d'une autre.
+
+</div>
+
+Le balayage bas de la hampe a été cherché puis écarté : fauchée, elle est tenue au talon, donc radiale, et ne présente qu'un travers de bois rond, moins qu'un tranchant de hache. Les deux mètres de front qu'on lui prête sont une aire balayée dans le temps, non une surface en contact.
 
 </div>
 
@@ -444,6 +464,13 @@ La taille large de la grande épée couvre trois cases, la taille ronde de l'ép
 <p class="geste-chiffres"><b>20</b> PER</p>
 <p class="geste-diff">attaque 8</p>
 <p class="geste-note">Le croc mord la plate, la nuque, le genou ou la hampe adverse, perce et tire à soi : c'est un perce-plate autant qu'un crochet, et jamais l'engin à décrocher les cavaliers que la vulgarisation répète.</p>
+</div>
+
+<div class="geste" data-zone="arc2:1">
+<p class="geste-nom">Refoulement de hampe<em>hallebarde de sergent, en usage jusqu'en 1793</em></p>
+<p class="geste-chiffres"><b>4</b> CON</p>
+<p class="geste-diff">attaque 8 · déduit</p>
+<p class="geste-note">La hampe couchée en travers et poussée à pleine masse touche deux hommes au même instant, seul contact multiple qu'un texte décrive littéralement. Elle refoule plus qu'elle ne blesse : les deux reculent d'une case, et qui ne le peut pas tombe.</p>
 </div>
 
 <div class="geste" data-zone="pointe:1">
