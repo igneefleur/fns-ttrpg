@@ -20,8 +20,8 @@ HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 import render_pol as R
 
 SEED = 314159265
-DOCS = r'C:\Users\IgneeFleur\Documents\Github\FNS-TTRPG-RULES\docs\assets\cartes'
-SITE = r'C:\Users\IgneeFleur\Documents\Github\FNS-TTRPG-RULES\site\assets\cartes'
+DOCS = r'C:\Users\IgneeFleur\Documents\Github\fns-ttrpg-rules\docs\assets\cartes'
+SITE = r'C:\Users\IgneeFleur\Documents\Github\fns-ttrpg-rules\site\assets\cartes'
 TARGET_LO, TARGET_HI = 110, 190          # nombre final de pays vise
 KMTN = 9.0                               # cout de traversee des montagnes (frontieres sur cretes)
 SEA_BRIDGE = 0.012                       # pont maritime pour regrouper iles proches en continents

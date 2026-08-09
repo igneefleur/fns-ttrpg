@@ -13,7 +13,7 @@
     '<path d="M5,20H19V18H5V20M19,9H15V3H9V9H5L12,16L19,9Z"/></svg>';
 
   // URL du PDF, préfixe GitHub Pages compris : on coupe le chemin courant à
-  // /content/regles/ pour récupérer la base du site ("/FNS-TTRPG-RULES" en ligne,
+  // /content/regles/ pour récupérer la base du site ("/fns-ttrpg-rules" en ligne,
   // "" en local), puis on y accroche le fichier.
   function pdfHref() {
     const base = location.pathname.split(SCOPE)[0].replace(/\/$/, "");
