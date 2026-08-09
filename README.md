@@ -12,7 +12,7 @@ d'igneefleur, en tous droits réservés. Voir [LICENSE.md](LICENSE.md).
 
 ## Contenu
 
-Le chantier commence, et presque tout reste à écrire. Une seule règle est posée pour
+L'écriture commence, et presque tout reste à écrire. Une seule règle est posée pour
 l'instant, celle des portées : la grille vaut un mètre par case, l'allonge se mesure
 depuis le torse, et une table donne la distance à laquelle chaque arme est chez elle.
 
