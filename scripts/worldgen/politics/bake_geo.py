@@ -12,7 +12,16 @@ from scipy import ndimage
 WG = r'C:\Users\IgneeFleur\Documents\Github\FNS-TTRPG-RULES\scripts\worldgen'
 sys.path.insert(0, WG)
 import worldflat as wf
-BK = r'C:\Users\Shadow\AppData\Local\Temp\claude\c--Users-Shadow-Documents-Github-HxH-Regles-JDR\efbdd221-498b-48e9-a203-cab3d57315f6\scratchpad\worldflat_backup_prestyle.py'
+# worldflat d'avant restylage : reshaped() s'en sert pour reproduire le masque de
+# terres canonique. Ce fichier vivait dans un dossier temporaire de l'ancienne
+# machine et n'a pas ete conserve ; renseigner WORLDFLAT_BACKUP pour rejouer ce
+# script, ou repartir d'un geo.npz deja construit.
+BK = os.environ.get('WORLDFLAT_BACKUP', '')
+if not BK or not os.path.isfile(BK):
+    raise SystemExit(
+        "bake_geo.py : sauvegarde worldflat d'avant restylage introuvable.\n"
+        "Definir WORLDFLAT_BACKUP vers worldflat_backup_prestyle.py."
+    )
 spec = importlib.util.spec_from_file_location('wf_old', BK); wf_old = importlib.util.module_from_spec(spec); spec.loader.exec_module(wf_old)
 
 SEED = 314159265
