@@ -1,0 +1,142 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   CARTES D'ARMES
+   Chaque arme est une carte : son nom, ses caractéristiques, et la carte
+   hexagonale de sa portée dessinée par javascripts/armes.js.
+
+   Toutes les couleurs passent par les variables de extra.css, que night.css
+   redéfinit : le mode nuit suit donc sans une seule règle en plus.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Grille des cartes. Le bloc se pose HORS du conteneur .cols et prend toute la
+   largeur de la page, comme les tables du livre. */
+.md-typeset .armes-grille {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 1.1rem;
+  margin: 1.1rem 0 1.6rem;
+  align-items: start;
+}
+
+.md-typeset .arme {
+  border: 1px solid var(--green-header);
+  border-radius: 3px;
+  background: var(--paper);
+  padding: 0.6rem 0.7rem 0.7rem;
+  break-inside: avoid;
+}
+
+.md-typeset .arme-nom {
+  margin: 0 0 0.45rem;
+  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-size: 0.74rem;
+  font-variant: small-caps;
+  letter-spacing: 0.05em;
+  color: var(--green-title);
+  border-bottom: 1px solid var(--green-header);
+  padding-bottom: 0.18rem;
+}
+
+/* Caractéristiques : libellé à gauche, valeur à droite, une par ligne.
+   Elles restent lisibles sans JavaScript, la carte n'étant qu'un appui. */
+.md-typeset .arme-stats {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.62rem;
+  line-height: 1.5;
+}
+.md-typeset .arme-stats li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin: 0;
+  border-bottom: 1px dotted var(--md-default-fg-color--lightest, rgba(29, 29, 29, 0.12));
+}
+.md-typeset .arme-stats li:last-child { border-bottom: none; }
+.md-typeset .arme-stats li span {
+  color: var(--green-title);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.md-typeset .arme-map {
+  margin-top: 0.55rem;
+}
+.md-typeset svg.arme-carte {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* ── Les hexagones ──
+   Un seul vert, décliné par fill-opacity : la couleur suit la variable, donc le
+   mode nuit, et l'opacité ne touche que le polygone, jamais son libellé. */
+.md-typeset svg.arme-carte .hx polygon {
+  fill: var(--green-title);
+  stroke: var(--paper);
+  stroke-width: 0.7;
+}
+.md-typeset svg.arme-carte .hx text {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 7px;
+  text-anchor: middle;
+  fill: var(--ink);
+  pointer-events: none;
+}
+
+/* La distance idéale : pleine, c'est là que l'arme est chez elle. */
+.md-typeset svg.arme-carte .hx-0 polygon { fill-opacity: 1; }
+.md-typeset svg.arme-carte .hx-0 text    { fill: var(--paper); font-weight: 700; }
+
+/* Chaque case en deçà pâlit d'autant que la difficulté monte. */
+.md-typeset svg.arme-carte .hx-1 polygon { fill-opacity: 0.66; }
+.md-typeset svg.arme-carte .hx-1 text    { fill: var(--paper); }
+.md-typeset svg.arme-carte .hx-2 polygon { fill-opacity: 0.44; }
+.md-typeset svg.arme-carte .hx-3 polygon { fill-opacity: 0.28; }
+.md-typeset svg.arme-carte .hx-4 polygon { fill-opacity: 0.17; }
+
+/* Trop près pour servir : le brun-rouge des titres de module, jamais le vert. */
+.md-typeset svg.arme-carte .hx-x polygon { fill: #8a4632; fill-opacity: 0.7; }
+.md-typeset svg.arme-carte .hx-x text    { fill: var(--paper); font-weight: 700; }
+
+/* Hors d'atteinte : la case existe, mais l'arme n'y va pas. */
+.md-typeset svg.arme-carte .hx-off polygon {
+  fill: var(--ink);
+  fill-opacity: 0.045;
+  stroke: var(--paper);
+}
+
+/* ── Légende ── */
+.md-typeset .armes-legende {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.1rem;
+  align-items: center;
+  margin: 0.9rem 0 0.2rem;
+  font-size: 0.62rem;
+}
+.md-typeset .armes-legende b {
+  display: inline-block;
+  width: 1.5rem;
+  text-align: center;
+  border-radius: 2px;
+  margin-right: 0.3rem;
+  font-weight: 700;
+  color: var(--paper);
+  background: var(--green-title);
+}
+.md-typeset .armes-legende .lg-1 { background: rgba(102, 120, 97, 0.66); }
+.md-typeset .armes-legende .lg-2 { background: rgba(102, 120, 97, 0.44); color: var(--ink); }
+.md-typeset .armes-legende .lg-x { background: #8a4632; }
+.md-typeset .armes-legende .lg-off {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--green-header);
+}
+
+/* À l'impression, on dessine tout : l'observateur ne s'est pas déclenché sur les
+   cartes restées hors écran, mais celles qui l'ont été doivent tenir d'un bloc. */
+@media print {
+  .md-typeset .arme { break-inside: avoid; }
+  .md-typeset .armes-grille { grid-template-columns: repeat(3, 1fr); }
+}

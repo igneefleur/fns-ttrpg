@@ -2,27 +2,25 @@
 
 <div class="cols" markdown>
 
-Une arme se définit par sa ligne de table : chaque colonne y porte une de ses règles. Ce chapitre liste les armes, rangées par famille, et donne pour chacune sa distance idéale, ses dégâts et leur type, la prise qu'elle exige, la difficulté de son attaque, et ce qu'elle vaut en défense.
+Chaque arme du chapitre tient sur une carte. La carte donne ses caractéristiques, puis dessine sa portée : une carte hexagonale de cinq cases de rayon, centrée sur le porteur, où chaque case porte ce que l'arme y ajoute à la difficulté.
+
+On lit donc une arme d'un seul regard. La couronne pleine est la distance où elle est chez elle ; les cases pâles, celles où elle touche encore mais mal ; les cases éteintes, celles qu'elle n'atteint pas.
 
 <div class="keep" markdown>
 
-### Lire une arme
+### Lire une carte
 
 <div class="defs" markdown>
 
-**Arme :** le nom de l'arme ; la section qui la contient est sa famille.
-
-**Portée :** la distance idéale de l'arme, comptée en cases, celle où elle n'ajoute rien à la difficulté. La table des [portées](portees.md) donne ce qu'elle ajoute à toute autre distance.
-
 **Dégâts :** les dégâts que l'arme inflige sur une touche.
 
-**Type :** le ou les types de dégâts infligés, contondant (CON), perforant (PER) ou tranchant (TRA). Quand une arme en porte deux, l'attaquant choisit lequel il emploie à chaque attaque.
+**Type :** le ou les types de dégâts, contondant (CON), perforant (PER) ou tranchant (TRA). Quand une arme en porte deux, l'attaquant choisit lequel il emploie à chaque attaque.
 
 **Mains :** la prise qu'exige le maniement, à une main, à deux mains, ou l'une ou l'autre pour une arme polyvalente. Une arme de corps qui n'occupe pas les mains porte Aucune.
 
 **Attaque :** la difficulté de base du [jet d'attaque](../base/actions.md), avant les modificateurs de la situation.
 
-**Parade :** la difficulté de base du [jet de parade](../base/actions.md) opposé avec cette arme. Une case vide signale une arme qui ne pare pas.
+**Parade :** la difficulté de base du [jet de parade](../base/actions.md) opposé avec cette arme. Certaines armes ne parent pas.
 
 **Réduction :** les dégâts que la parade retire à l'attaque quand elle réussit.
 
@@ -30,11 +28,25 @@ Une arme se définit par sa ligne de table : chaque colonne y porte une de ses r
 
 </div>
 
+### La carte des portées
+
+Le combat se joue sur des hexagones d'un mètre, et la carte de chaque arme les reprend tels quels. Le centre est la case du porteur : elle ne porte une cible que si quelque chose se trouve sur lui, une créature agrippée ou une entrave à trancher. Les six cases qui l'entourent sont à une case, et ainsi de suite jusqu'à cinq.
+
+<div class="armes-legende">
+  <span><b>0</b> distance idéale</span>
+  <span><b class="lg-1">+1</b> plus près, plus dur</span>
+  <span><b class="lg-2">+2</b> plus dur encore</span>
+  <span><b class="lg-x">×</b> trop près pour servir</span>
+  <span><b class="lg-off"></b> hors d'atteinte</span>
+</div>
+
+La table des [portées](portees.md) donne le même barème sous forme de lignes, pour qui préfère la lire ainsi.
+
 ### L'échelle des dégâts
 
 L'épée d'armes en fer, à une main, est l'arme de référence du chapitre : elle inflige 20 dégâts. Tout le reste se lit par rapport à elle.
 
-Un poing nu tourne autour de 4, une lame courte de 8 à 14, une arme d'hast de 20 à 30, et les plus lourdes des armes à deux mains atteignent 34. Aucune arme de ce chapitre ne dépasse ce plafond : ce qui distingue les plus fortes n'est pas un surcroît de dégâts mais ce qu'elles coûtent ailleurs, en prise, en portée ou en difficulté.
+Un poing nu tourne autour de 4, une lame courte de 8 à 14, une arme d'hast de 20 à 30, et les plus lourdes des armes à deux mains atteignent 34. Aucune arme ne dépasse ce plafond : ce qui distingue les plus fortes n'est pas un surcroît de dégâts mais ce qu'elles coûtent ailleurs, en prise, en portée ou en difficulté.
 
 ### Les trois types de dégâts
 
@@ -60,7 +72,7 @@ Une arme facile compense par des dégâts modestes, une arme difficile se paie p
 
 ### Ce qu'une arme vaut en défense
 
-Parer ne dépend pas des dégâts mais de la forme de l'arme. Une arme longue et rigide, qu'on interpose sur toute sa longueur, pare le mieux : le bâton descend à 4, l'épée et les armes d'hast tiennent 5 ou 6. Une arme dont tout le poids est en tête pare mal, car elle n'oppose que son manche : hache et masse restent à 7. Une arme souple ne pare pas du tout, et sa case reste vide.
+Parer ne dépend pas des dégâts mais de la forme de l'arme. Une arme longue et rigide, qu'on interpose sur toute sa longueur, pare le mieux : le bâton descend à 4, l'épée et les armes d'hast tiennent 5 ou 6. Une arme dont tout le poids est en tête pare mal, car elle n'oppose que son manche : hache et masse restent à 7. Une arme souple ne pare pas du tout.
 
 La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une arme rigide, qui oppose sa masse entière au coup, et le quart seulement pour une arme à tête lourde, qui n'a que son manche à interposer. Une arme qui pare mal peut donc bien encaisser, et l'inverse : le sai pare admirablement mais ne retient presque rien, la hache à deux mains encaisse plus qu'elle ne pare.
 
@@ -68,118 +80,860 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 
 ## Corps
 
-<div class="cj-modules anima armes" markdown>
+<div class="armes-grille">
 
-| Arme | Portée | Dégâts | Type | Mains | Attaque | Parade | Réduction |
-| --- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| Poings | 1 | 4 | CON | 1 main | 4 | 8 | 2 |
-| Pieds | 1 | 6 | CON | Aucune | 5 | 9 | 3 |
-| Coudes, genoux | 0 | 5 | CON | Aucune | 4 | 8 | 2 |
-| Tête | 0 | 5 | CON | Aucune | 5 | | |
-| Morsure | 0 | 6 | PER | Aucune | 5 | | |
+<div class="arme" data-cases="1,0,,,,">
+<p class="arme-nom">Poings</p>
+<ul class="arme-stats">
+<li>Dégâts <span>4</span></li>
+<li>Type <span>CON</span></li>
+<li>Mains <span>1 main</span></li>
+<li>Attaque <span>4</span></li>
+<li>Parade <span>8</span></li>
+<li>Réduction <span>2</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="1,0,,,,">
+<p class="arme-nom">Pieds</p>
+<ul class="arme-stats">
+<li>Dégâts <span>6</span></li>
+<li>Type <span>CON</span></li>
+<li>Mains <span>Aucune</span></li>
+<li>Attaque <span>5</span></li>
+<li>Parade <span>9</span></li>
+<li>Réduction <span>3</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="0,,,,,">
+<p class="arme-nom">Coudes, genoux</p>
+<ul class="arme-stats">
+<li>Dégâts <span>5</span></li>
+<li>Type <span>CON</span></li>
+<li>Mains <span>Aucune</span></li>
+<li>Attaque <span>4</span></li>
+<li>Parade <span>8</span></li>
+<li>Réduction <span>2</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="0,,,,,">
+<p class="arme-nom">Tête</p>
+<ul class="arme-stats">
+<li>Dégâts <span>5</span></li>
+<li>Type <span>CON</span></li>
+<li>Mains <span>Aucune</span></li>
+<li>Attaque <span>5</span></li>
+<li>Parade <span>aucune</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="0,,,,,">
+<p class="arme-nom">Morsure</p>
+<ul class="arme-stats">
+<li>Dégâts <span>6</span></li>
+<li>Type <span>PER</span></li>
+<li>Mains <span>Aucune</span></li>
+<li>Attaque <span>5</span></li>
+<li>Parade <span>aucune</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
 
 </div>
 
 ## Lames courtes
 
-<div class="cj-modules anima armes" markdown>
+<div class="armes-grille">
 
-| Arme | Portée | Dégâts | Type | Mains | Attaque | Parade | Réduction |
-| --- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| Poing américain | 1 | 6 | CON | 1 main | 4 | 8 | 3 |
-| Couteau | 1 | 8 | TRA / PER | 1 main | 4 | 7 | 4 |
-| Griffes | 1 | 8 | TRA | 1 main | 5 | 8 | 4 |
-| Cestes lamés | 1 | 8 | TRA | 1 main | 4 | 8 | 4 |
-| Sai | 1 | 8 | CON / PER | 1 main | 5 | 4 | 4 |
-| Jutte | 1 | 8 | CON | 1 main | 5 | 4 | 4 |
-| Dague | 1 | 10 | TRA / PER | 1 main | 5 | 7 | 5 |
-| Poignard | 1 | 10 | PER | 1 main | 5 | 7 | 5 |
-| Tanto | 1 | 10 | TRA / PER | 1 main | 5 | 7 | 5 |
-| Tonfa | 1 | 10 | CON | 1 main | 5 | 5 | 5 |
-| Katar | 1 | 12 | PER | 1 main | 5 | 7 | 6 |
-| Faucille | 1 | 12 | TRA | 1 main | 6 | 8 | 3 |
-| Serpe | 1 | 12 | TRA | 1 main | 6 | 8 | 3 |
-| Kukri | 1 | 14 | TRA | 1 main | 5 | 7 | 7 |
-| Hachette | 1 | 14 | TRA | 1 main | 5 | 8 | 3 |
+<div class="arme" data-cases="1,0,,,,">
+<p class="arme-nom">Poing américain</p>
+<ul class="arme-stats">
+<li>Dégâts <span>6</span></li>
+<li>Type <span>CON</span></li>
+<li>Mains <span>1 main</span></li>
+<li>Attaque <span>4</span></li>
+<li>Parade <span>8</span></li>
+<li>Réduction <span>3</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="0,0,,,,">
+<p class="arme-nom">Couteau</p>
+<ul class="arme-stats">
+<li>Dégâts <span>8</span></li>
+<li>Type <span>TRA / PER</span></li>
+<li>Mains <span>1 main</span></li>
+<li>Attaque <span>4</span></li>
+<li>Parade <span>7</span></li>
+<li>Réduction <span>4</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="0,0,,,,">
+<p class="arme-nom">Griffes</p>
+<ul class="arme-stats">
+<li>Dégâts <span>8</span></li>
+<li>Type <span>TRA</span></li>
+<li>Mains <span>1 main</span></li>
+<li>Attaque <span>5</span></li>
+<li>Parade <span>8</span></li>
+<li>Réduction <span>4</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="0,0,,,,">
+<p class="arme-nom">Cestes lamés</p>
+<ul class="arme-stats">
+<li>Dégâts <span>8</span></li>
+<li>Type <span>TRA</span></li>
+<li>Mains <span>1 main</span></li>
+<li>Attaque <span>4</span></li>
+<li>Parade <span>8</span></li>
+<li>Réduction <span>4</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="0,0,,,,">
+<p class="arme-nom">Sai</p>
+<ul class="arme-stats">
+<li>Dégâts <span>8</span></li>
+<li>Type <span>CON / PER</span></li>
+<li>Mains <span>1 main</span></li>
+<li>Attaque <span>5</span></li>
+<li>Parade <span>4</span></li>
+<li>Réduction <span>4</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="0,0,,,,">
+<p class="arme-nom">Jutte</p>
+<ul class="arme-stats">
+<li>Dégâts <span>8</span></li>
+<li>Type <span>CON</span></li>
+<li>Mains <span>1 main</span></li>
+<li>Attaque <span>5</span></li>
+<li>Parade <span>4</span></li>
+<li>Réduction <span>4</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="0,0,,,,">
+<p class="arme-nom">Dague</p>
+<ul class="arme-stats">
+<li>Dégâts <span>10</span></li>
+<li>Type <span>TRA / PER</span></li>
+<li>Mains <span>1 main</span></li>
+<li>Attaque <span>5</span></li>
+<li>Parade <span>7</span></li>
+<li>Réduction <span>5</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="0,0,,,,">
+<p class="arme-nom">Poignard</p>
+<ul class="arme-stats">
+<li>Dégâts <span>10</span></li>
+<li>Type <span>PER</span></li>
+<li>Mains <span>1 main</span></li>
+<li>Attaque <span>5</span></li>
+<li>Parade <span>7</span></li>
+<li>Réduction <span>5</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="0,0,,,,">
+<p class="arme-nom">Tanto</p>
+<ul class="arme-stats">
+<li>Dégâts <span>10</span></li>
+<li>Type <span>TRA / PER</span></li>
+<li>Mains <span>1 main</span></li>
+<li>Attaque <span>5</span></li>
+<li>Parade <span>7</span></li>
+<li>Réduction <span>5</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="0,0,,,,">
+<p class="arme-nom">Tonfa</p>
+<ul class="arme-stats">
+<li>Dégâts <span>10</span></li>
+<li>Type <span>CON</span></li>
+<li>Mains <span>1 main</span></li>
+<li>Attaque <span>5</span></li>
+<li>Parade <span>5</span></li>
+<li>Réduction <span>5</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="0,0,,,,">
+<p class="arme-nom">Katar</p>
+<ul class="arme-stats">
+<li>Dégâts <span>12</span></li>
+<li>Type <span>PER</span></li>
+<li>Mains <span>1 main</span></li>
+<li>Attaque <span>5</span></li>
+<li>Parade <span>7</span></li>
+<li>Réduction <span>6</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="1,0,,,,">
+<p class="arme-nom">Faucille</p>
+<ul class="arme-stats">
+<li>Dégâts <span>12</span></li>
+<li>Type <span>TRA</span></li>
+<li>Mains <span>1 main</span></li>
+<li>Attaque <span>6</span></li>
+<li>Parade <span>8</span></li>
+<li>Réduction <span>3</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="1,0,,,,">
+<p class="arme-nom">Serpe</p>
+<ul class="arme-stats">
+<li>Dégâts <span>12</span></li>
+<li>Type <span>TRA</span></li>
+<li>Mains <span>1 main</span></li>
+<li>Attaque <span>6</span></li>
+<li>Parade <span>8</span></li>
+<li>Réduction <span>3</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="1,0,,,,">
+<p class="arme-nom">Kukri</p>
+<ul class="arme-stats">
+<li>Dégâts <span>14</span></li>
+<li>Type <span>TRA</span></li>
+<li>Mains <span>1 main</span></li>
+<li>Attaque <span>5</span></li>
+<li>Parade <span>7</span></li>
+<li>Réduction <span>7</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="1,0,,,,">
+<p class="arme-nom">Hachette</p>
+<ul class="arme-stats">
+<li>Dégâts <span>14</span></li>
+<li>Type <span>TRA</span></li>
+<li>Mains <span>1 main</span></li>
+<li>Attaque <span>5</span></li>
+<li>Parade <span>8</span></li>
+<li>Réduction <span>3</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
 
 </div>
 
 ## Lames longues
 
-<div class="cj-modules anima armes" markdown>
+<div class="armes-grille">
 
-| Arme | Portée | Dégâts | Type | Mains | Attaque | Parade | Réduction |
-| --- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| Machette | 2 | 14 | TRA | 1 main | 5 | 6 | 7 |
-| Épée courte | 2 | 16 | TRA / PER | 1 main | 5 | 5 | 8 |
-| Gladius | 2 | 16 | TRA / PER | 1 main | 5 | 5 | 8 |
-| Wakizashi | 2 | 16 | TRA | 1 main | 5 | 5 | 8 |
-| Rapière | 2 | 16 | PER | 1 main | 5 | 5 | 8 |
-| Estoc | 2 | 18 | PER | Polyvalente | 6 | 5 | 9 |
-| Épée d'armes | 2 | 20 | TRA / PER | 1 main | 6 | 5 | 10 |
-| Sabre | 2 | 20 | TRA | 1 main | 6 | 5 | 10 |
-| Cimeterre | 2 | 20 | TRA | 1 main | 6 | 5 | 10 |
-| Épée longue | 2 | 26 | TRA / PER | Polyvalente | 6 | 5 | 13 |
-| Épée bâtarde | 2 | 26 | TRA / PER | Polyvalente | 6 | 5 | 13 |
-| Katana | 2 | 26 | TRA | Polyvalente | 6 | 5 | 13 |
-| Épée à deux mains | 2 | 34 | TRA | 2 mains | 7 | 5 | 17 |
-| Espadon | 2 | 34 | TRA | 2 mains | 7 | 5 | 17 |
-| Nodachi | 2 | 34 | TRA | 2 mains | 7 | 6 | 17 |
+<div class="arme" data-cases="2,1,0,,,">
+<p class="arme-nom">Machette</p>
+<ul class="arme-stats">
+<li>Dégâts <span>14</span></li>
+<li>Type <span>TRA</span></li>
+<li>Mains <span>1 main</span></li>
+<li>Attaque <span>5</span></li>
+<li>Parade <span>6</span></li>
+<li>Réduction <span>7</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="2,1,0,,,">
+<p class="arme-nom">Épée courte</p>
+<ul class="arme-stats">
+<li>Dégâts <span>16</span></li>
+<li>Type <span>TRA / PER</span></li>
+<li>Mains <span>1 main</span></li>
+<li>Attaque <span>5</span></li>
+<li>Parade <span>5</span></li>
+<li>Réduction <span>8</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="2,1,0,,,">
+<p class="arme-nom">Gladius</p>
+<ul class="arme-stats">
+<li>Dégâts <span>16</span></li>
+<li>Type <span>TRA / PER</span></li>
+<li>Mains <span>1 main</span></li>
+<li>Attaque <span>5</span></li>
+<li>Parade <span>5</span></li>
+<li>Réduction <span>8</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="2,1,0,,,">
+<p class="arme-nom">Wakizashi</p>
+<ul class="arme-stats">
+<li>Dégâts <span>16</span></li>
+<li>Type <span>TRA</span></li>
+<li>Mains <span>1 main</span></li>
+<li>Attaque <span>5</span></li>
+<li>Parade <span>5</span></li>
+<li>Réduction <span>8</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="2,1,0,,,">
+<p class="arme-nom">Rapière</p>
+<ul class="arme-stats">
+<li>Dégâts <span>16</span></li>
+<li>Type <span>PER</span></li>
+<li>Mains <span>1 main</span></li>
+<li>Attaque <span>5</span></li>
+<li>Parade <span>5</span></li>
+<li>Réduction <span>8</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="2,1,0,,,">
+<p class="arme-nom">Estoc</p>
+<ul class="arme-stats">
+<li>Dégâts <span>18</span></li>
+<li>Type <span>PER</span></li>
+<li>Mains <span>Polyvalente</span></li>
+<li>Attaque <span>6</span></li>
+<li>Parade <span>5</span></li>
+<li>Réduction <span>9</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="2,1,0,,,">
+<p class="arme-nom">Épée d'armes</p>
+<ul class="arme-stats">
+<li>Dégâts <span>20</span></li>
+<li>Type <span>TRA / PER</span></li>
+<li>Mains <span>1 main</span></li>
+<li>Attaque <span>6</span></li>
+<li>Parade <span>5</span></li>
+<li>Réduction <span>10</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="2,1,0,,,">
+<p class="arme-nom">Sabre</p>
+<ul class="arme-stats">
+<li>Dégâts <span>20</span></li>
+<li>Type <span>TRA</span></li>
+<li>Mains <span>1 main</span></li>
+<li>Attaque <span>6</span></li>
+<li>Parade <span>5</span></li>
+<li>Réduction <span>10</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="2,1,0,,,">
+<p class="arme-nom">Cimeterre</p>
+<ul class="arme-stats">
+<li>Dégâts <span>20</span></li>
+<li>Type <span>TRA</span></li>
+<li>Mains <span>1 main</span></li>
+<li>Attaque <span>6</span></li>
+<li>Parade <span>5</span></li>
+<li>Réduction <span>10</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="4,2,0,,,">
+<p class="arme-nom">Épée longue</p>
+<ul class="arme-stats">
+<li>Dégâts <span>26</span></li>
+<li>Type <span>TRA / PER</span></li>
+<li>Mains <span>Polyvalente</span></li>
+<li>Attaque <span>6</span></li>
+<li>Parade <span>5</span></li>
+<li>Réduction <span>13</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="4,2,0,,,">
+<p class="arme-nom">Épée bâtarde</p>
+<ul class="arme-stats">
+<li>Dégâts <span>26</span></li>
+<li>Type <span>TRA / PER</span></li>
+<li>Mains <span>Polyvalente</span></li>
+<li>Attaque <span>6</span></li>
+<li>Parade <span>5</span></li>
+<li>Réduction <span>13</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="4,2,0,,,">
+<p class="arme-nom">Katana</p>
+<ul class="arme-stats">
+<li>Dégâts <span>26</span></li>
+<li>Type <span>TRA</span></li>
+<li>Mains <span>Polyvalente</span></li>
+<li>Attaque <span>6</span></li>
+<li>Parade <span>5</span></li>
+<li>Réduction <span>13</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="4,2,0,,,">
+<p class="arme-nom">Épée à deux mains</p>
+<ul class="arme-stats">
+<li>Dégâts <span>34</span></li>
+<li>Type <span>TRA</span></li>
+<li>Mains <span>2 mains</span></li>
+<li>Attaque <span>7</span></li>
+<li>Parade <span>5</span></li>
+<li>Réduction <span>17</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="4,2,0,,,">
+<p class="arme-nom">Espadon</p>
+<ul class="arme-stats">
+<li>Dégâts <span>34</span></li>
+<li>Type <span>TRA</span></li>
+<li>Mains <span>2 mains</span></li>
+<li>Attaque <span>7</span></li>
+<li>Parade <span>5</span></li>
+<li>Réduction <span>17</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="4,2,0,,,">
+<p class="arme-nom">Nodachi</p>
+<ul class="arme-stats">
+<li>Dégâts <span>34</span></li>
+<li>Type <span>TRA</span></li>
+<li>Mains <span>2 mains</span></li>
+<li>Attaque <span>7</span></li>
+<li>Parade <span>6</span></li>
+<li>Réduction <span>17</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
 
 </div>
 
 ## Haches, masses et marteaux
 
-<div class="cj-modules anima armes" markdown>
+<div class="armes-grille">
 
-| Arme | Portée | Dégâts | Type | Mains | Attaque | Parade | Réduction |
-| --- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| Matraque | 2 | 12 | CON | 1 main | 4 | 6 | 6 |
-| Gourdin | 2 | 14 | CON | 1 main | 4 | 6 | 7 |
-| Masse | 2 | 22 | CON | 1 main | 5 | 7 | 5 |
-| Hache à une main | 2 | 22 | TRA | 1 main | 6 | 7 | 5 |
-| Marteau | 2 | 22 | CON / PER | 1 main | 6 | 7 | 5 |
-| Hache à deux mains | 2 | 32 | TRA | 2 mains | 7 | 7 | 8 |
-| Hache danoise | 2 | 32 | TRA | 2 mains | 7 | 7 | 8 |
-| Maillet | 2 | 34 | CON | 2 mains | 7 | 8 | 8 |
+<div class="arme" data-cases="2,1,0,,,">
+<p class="arme-nom">Matraque</p>
+<ul class="arme-stats">
+<li>Dégâts <span>12</span></li>
+<li>Type <span>CON</span></li>
+<li>Mains <span>1 main</span></li>
+<li>Attaque <span>4</span></li>
+<li>Parade <span>6</span></li>
+<li>Réduction <span>6</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="2,1,0,,,">
+<p class="arme-nom">Gourdin</p>
+<ul class="arme-stats">
+<li>Dégâts <span>14</span></li>
+<li>Type <span>CON</span></li>
+<li>Mains <span>1 main</span></li>
+<li>Attaque <span>4</span></li>
+<li>Parade <span>6</span></li>
+<li>Réduction <span>7</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="2,1,0,,,">
+<p class="arme-nom">Masse</p>
+<ul class="arme-stats">
+<li>Dégâts <span>22</span></li>
+<li>Type <span>CON</span></li>
+<li>Mains <span>1 main</span></li>
+<li>Attaque <span>5</span></li>
+<li>Parade <span>7</span></li>
+<li>Réduction <span>5</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="2,1,0,,,">
+<p class="arme-nom">Hache à une main</p>
+<ul class="arme-stats">
+<li>Dégâts <span>22</span></li>
+<li>Type <span>TRA</span></li>
+<li>Mains <span>1 main</span></li>
+<li>Attaque <span>6</span></li>
+<li>Parade <span>7</span></li>
+<li>Réduction <span>5</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="2,1,0,,,">
+<p class="arme-nom">Marteau</p>
+<ul class="arme-stats">
+<li>Dégâts <span>22</span></li>
+<li>Type <span>CON / PER</span></li>
+<li>Mains <span>1 main</span></li>
+<li>Attaque <span>6</span></li>
+<li>Parade <span>7</span></li>
+<li>Réduction <span>5</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="4,2,0,,,">
+<p class="arme-nom">Hache à deux mains</p>
+<ul class="arme-stats">
+<li>Dégâts <span>32</span></li>
+<li>Type <span>TRA</span></li>
+<li>Mains <span>2 mains</span></li>
+<li>Attaque <span>7</span></li>
+<li>Parade <span>7</span></li>
+<li>Réduction <span>8</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="4,2,0,,,">
+<p class="arme-nom">Hache danoise</p>
+<ul class="arme-stats">
+<li>Dégâts <span>32</span></li>
+<li>Type <span>TRA</span></li>
+<li>Mains <span>2 mains</span></li>
+<li>Attaque <span>7</span></li>
+<li>Parade <span>7</span></li>
+<li>Réduction <span>8</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="4,2,0,,,">
+<p class="arme-nom">Maillet</p>
+<ul class="arme-stats">
+<li>Dégâts <span>34</span></li>
+<li>Type <span>CON</span></li>
+<li>Mains <span>2 mains</span></li>
+<li>Attaque <span>7</span></li>
+<li>Parade <span>8</span></li>
+<li>Réduction <span>8</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
 
 </div>
 
 ## Armes souples et articulées
 
-<div class="cj-modules anima armes" markdown>
+<div class="armes-grille">
 
-| Arme | Portée | Dégâts | Type | Mains | Attaque | Parade | Réduction |
-| --- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| Nunchaku | 2 | 12 | CON | 1 main | 8 | 8 | 3 |
-| Chaîne courte | 2 | 12 | CON | 1 main | 8 | 9 | 3 |
-| Kusarigama (faucille) | 1 | 12 | TRA | 1 main | 6 | 7 | 6 |
-| Kusarigama (chaîne) | 3 | 12 | CON | 2 mains | 9 | | |
-| Chaîne longue lestée | 4 | 14 | CON | 1 main | 9 | | |
-| Fléau à une main | 2 | 20 | CON | 1 main | 8 | | |
-| Fléau d'armes à deux mains | 2 | 30 | CON | 2 mains | 9 | | |
-| Fouet | 4 | 6 | TRA | 1 main | 10 | | |
+<div class="arme" data-cases="2,1,0,,,">
+<p class="arme-nom">Nunchaku</p>
+<ul class="arme-stats">
+<li>Dégâts <span>12</span></li>
+<li>Type <span>CON</span></li>
+<li>Mains <span>1 main</span></li>
+<li>Attaque <span>8</span></li>
+<li>Parade <span>8</span></li>
+<li>Réduction <span>3</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="2,1,0,,,">
+<p class="arme-nom">Chaîne courte</p>
+<ul class="arme-stats">
+<li>Dégâts <span>12</span></li>
+<li>Type <span>CON</span></li>
+<li>Mains <span>1 main</span></li>
+<li>Attaque <span>8</span></li>
+<li>Parade <span>9</span></li>
+<li>Réduction <span>3</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="1,0,,,,">
+<p class="arme-nom">Kusarigama (faucille)</p>
+<ul class="arme-stats">
+<li>Dégâts <span>12</span></li>
+<li>Type <span>TRA</span></li>
+<li>Mains <span>1 main</span></li>
+<li>Attaque <span>6</span></li>
+<li>Parade <span>7</span></li>
+<li>Réduction <span>6</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="3,2,1,0,,">
+<p class="arme-nom">Kusarigama (chaîne)</p>
+<ul class="arme-stats">
+<li>Dégâts <span>12</span></li>
+<li>Type <span>CON</span></li>
+<li>Mains <span>2 mains</span></li>
+<li>Attaque <span>9</span></li>
+<li>Parade <span>aucune</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="x,3,2,1,0,">
+<p class="arme-nom">Chaîne longue lestée</p>
+<ul class="arme-stats">
+<li>Dégâts <span>14</span></li>
+<li>Type <span>CON</span></li>
+<li>Mains <span>1 main</span></li>
+<li>Attaque <span>9</span></li>
+<li>Parade <span>aucune</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="2,1,0,,,">
+<p class="arme-nom">Fléau à une main</p>
+<ul class="arme-stats">
+<li>Dégâts <span>20</span></li>
+<li>Type <span>CON</span></li>
+<li>Mains <span>1 main</span></li>
+<li>Attaque <span>8</span></li>
+<li>Parade <span>aucune</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="4,2,0,,,">
+<p class="arme-nom">Fléau d'armes à deux mains</p>
+<ul class="arme-stats">
+<li>Dégâts <span>30</span></li>
+<li>Type <span>CON</span></li>
+<li>Mains <span>2 mains</span></li>
+<li>Attaque <span>9</span></li>
+<li>Parade <span>aucune</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="x,3,2,1,0,">
+<p class="arme-nom">Fouet</p>
+<ul class="arme-stats">
+<li>Dégâts <span>6</span></li>
+<li>Type <span>TRA</span></li>
+<li>Mains <span>1 main</span></li>
+<li>Attaque <span>10</span></li>
+<li>Parade <span>aucune</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
 
 </div>
 
 ## Armes d'hast et bâtons
 
-<div class="cj-modules anima armes" markdown>
+<div class="armes-grille">
 
-| Arme | Portée | Dégâts | Type | Mains | Attaque | Parade | Réduction |
-| --- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| Bâton long | 2 | 14 | CON | 2 mains | 5 | 4 | 7 |
-| Bô | 2 | 14 | CON | 2 mains | 5 | 4 | 7 |
-| Lance | 3 | 20 | PER | Polyvalente | 5 | 6 | 10 |
-| Épieu | 3 | 22 | PER | 2 mains | 5 | 6 | 11 |
-| Trident | 3 | 22 | PER | Polyvalente | 6 | 6 | 11 |
-| Guisarme | 3 | 24 | TRA / PER | 2 mains | 7 | 6 | 12 |
-| Naginata | 3 | 26 | TRA | 2 mains | 6 | 5 | 13 |
-| Fauchard | 3 | 26 | TRA | 2 mains | 6 | 6 | 13 |
-| Pertuisane | 3 | 26 | PER | 2 mains | 6 | 6 | 13 |
-| Hallebarde | 3 | 30 | TRA / PER | 2 mains | 7 | 6 | 15 |
-| Bardiche | 3 | 30 | TRA | 2 mains | 7 | 7 | 15 |
-| Pique | 5 | 24 | PER | 2 mains | 8 | 9 | 6 |
-| Lance de cavalerie | 4 | 34 | PER | 1 main | 7 | | |
+<div class="arme" data-cases="2,1,0,,,">
+<p class="arme-nom">Bâton long</p>
+<ul class="arme-stats">
+<li>Dégâts <span>14</span></li>
+<li>Type <span>CON</span></li>
+<li>Mains <span>2 mains</span></li>
+<li>Attaque <span>5</span></li>
+<li>Parade <span>4</span></li>
+<li>Réduction <span>7</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="2,1,0,,,">
+<p class="arme-nom">Bô</p>
+<ul class="arme-stats">
+<li>Dégâts <span>14</span></li>
+<li>Type <span>CON</span></li>
+<li>Mains <span>2 mains</span></li>
+<li>Attaque <span>5</span></li>
+<li>Parade <span>4</span></li>
+<li>Réduction <span>7</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="3,2,1,0,,">
+<p class="arme-nom">Lance</p>
+<ul class="arme-stats">
+<li>Dégâts <span>20</span></li>
+<li>Type <span>PER</span></li>
+<li>Mains <span>Polyvalente</span></li>
+<li>Attaque <span>5</span></li>
+<li>Parade <span>6</span></li>
+<li>Réduction <span>10</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="3,2,1,0,,">
+<p class="arme-nom">Épieu</p>
+<ul class="arme-stats">
+<li>Dégâts <span>22</span></li>
+<li>Type <span>PER</span></li>
+<li>Mains <span>2 mains</span></li>
+<li>Attaque <span>5</span></li>
+<li>Parade <span>6</span></li>
+<li>Réduction <span>11</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="3,2,1,0,,">
+<p class="arme-nom">Trident</p>
+<ul class="arme-stats">
+<li>Dégâts <span>22</span></li>
+<li>Type <span>PER</span></li>
+<li>Mains <span>Polyvalente</span></li>
+<li>Attaque <span>6</span></li>
+<li>Parade <span>6</span></li>
+<li>Réduction <span>11</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="3,2,1,0,,">
+<p class="arme-nom">Guisarme</p>
+<ul class="arme-stats">
+<li>Dégâts <span>24</span></li>
+<li>Type <span>TRA / PER</span></li>
+<li>Mains <span>2 mains</span></li>
+<li>Attaque <span>7</span></li>
+<li>Parade <span>6</span></li>
+<li>Réduction <span>12</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="3,2,1,0,,">
+<p class="arme-nom">Naginata</p>
+<ul class="arme-stats">
+<li>Dégâts <span>26</span></li>
+<li>Type <span>TRA</span></li>
+<li>Mains <span>2 mains</span></li>
+<li>Attaque <span>6</span></li>
+<li>Parade <span>5</span></li>
+<li>Réduction <span>13</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="3,2,1,0,,">
+<p class="arme-nom">Fauchard</p>
+<ul class="arme-stats">
+<li>Dégâts <span>26</span></li>
+<li>Type <span>TRA</span></li>
+<li>Mains <span>2 mains</span></li>
+<li>Attaque <span>6</span></li>
+<li>Parade <span>6</span></li>
+<li>Réduction <span>13</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="3,2,1,0,,">
+<p class="arme-nom">Pertuisane</p>
+<ul class="arme-stats">
+<li>Dégâts <span>26</span></li>
+<li>Type <span>PER</span></li>
+<li>Mains <span>2 mains</span></li>
+<li>Attaque <span>6</span></li>
+<li>Parade <span>6</span></li>
+<li>Réduction <span>13</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="3,2,1,0,,">
+<p class="arme-nom">Hallebarde</p>
+<ul class="arme-stats">
+<li>Dégâts <span>30</span></li>
+<li>Type <span>TRA / PER</span></li>
+<li>Mains <span>2 mains</span></li>
+<li>Attaque <span>7</span></li>
+<li>Parade <span>6</span></li>
+<li>Réduction <span>15</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="3,2,1,0,,">
+<p class="arme-nom">Bardiche</p>
+<ul class="arme-stats">
+<li>Dégâts <span>30</span></li>
+<li>Type <span>TRA</span></li>
+<li>Mains <span>2 mains</span></li>
+<li>Attaque <span>7</span></li>
+<li>Parade <span>7</span></li>
+<li>Réduction <span>15</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="x,4,3,2,1,0">
+<p class="arme-nom">Pique</p>
+<ul class="arme-stats">
+<li>Dégâts <span>24</span></li>
+<li>Type <span>PER</span></li>
+<li>Mains <span>2 mains</span></li>
+<li>Attaque <span>8</span></li>
+<li>Parade <span>9</span></li>
+<li>Réduction <span>6</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
+
+<div class="arme" data-cases="x,3,2,1,0,">
+<p class="arme-nom">Lance de cavalerie</p>
+<ul class="arme-stats">
+<li>Dégâts <span>34</span></li>
+<li>Type <span>PER</span></li>
+<li>Mains <span>1 main</span></li>
+<li>Attaque <span>7</span></li>
+<li>Parade <span>aucune</span></li>
+</ul>
+<div class="arme-map"></div>
+</div>
 
 </div>

@@ -43,12 +43,14 @@ extra_css:
   - stylesheets/fonts.css   # @font-face auto-hébergés : doit être chargée en premier
   - stylesheets/extra.css?v=13
   - stylesheets/night.css
+  - stylesheets/armes.css?v=1
 extra_javascript:
   - javascripts/changelog.js
   - javascripts/continuous.js
   - javascripts/nav-drawer.js
   - javascripts/night.js
   - javascripts/copybtn.js
+  - javascripts/armes.js?v=1
 hooks:
   - hooks/changelog.py
 plugins:
