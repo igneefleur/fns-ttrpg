@@ -3,7 +3,7 @@
     "jjk-roll20@igneefleur": {
       "updates": [
         {
-          "version": "3.6.0.15",
+          "version": "3.6.0.16",
           "update_link": "https://igneefleur.github.io/fns-ttrpg/jjk/download/jjk-roll20-firefox.xpi",
           "browser_specific_settings": {
             "gecko": {
