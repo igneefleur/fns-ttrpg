@@ -86,6 +86,20 @@
   line-height: 1.15;
   color: var(--green-title);
 }
+/* Le terme technique de la source, sous le nom francais : c'est lui qui permet
+   de remonter au traite, et il ne doit pas concurrencer le nom du livre. */
+.md-typeset .geste-nom em {
+  display: block;
+  margin-top: 0.08rem;
+  font-family: 'Symboles JDR', 'Alegreya', Georgia, serif;
+  font-size: 0.56rem;
+  font-variant: normal;
+  font-style: italic;
+  letter-spacing: 0;
+  line-height: 1.25;
+  color: var(--ink);
+  opacity: 0.6;
+}
 
 /* Les dégâts et le type, sur une ligne : c'est la seule donnée chiffrée du
    geste, elle n'a pas besoin d'une tuile. */
