@@ -50,9 +50,9 @@ extra_javascript:
   - javascripts/nav-drawer.js
   - javascripts/night.js
   - javascripts/copybtn.js
-  - javascripts/armes.js?v=1
 hooks:
   - hooks/changelog.py
+  - hooks/armes.py
 plugins:
   - search
 markdown_extensions:
