@@ -1,5 +1,19 @@
 [
 {
+"short": "baad078",
+"author": "Théo Cavaillès",
+"date": "2026-08-09T18:16:19+02:00",
+"message": "« Beta » remplace « chantier »",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/baad0784f7474255c79e5df7b17f50ee49a350e2",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/index.md",
+"url": "content/regles/"
+}
+]
+},
+{
 "short": "f4e513b",
 "author": "Théo Cavaillès",
 "date": "2026-08-09T17:17:40+02:00",
@@ -550,20 +564,6 @@
 "date": "2026-07-17T10:39:51+02:00",
 "message": "Blessures : « un malus de −X à toutes les actions », Immobilisé hors des amputations",
 "url": "https://github.com/igneefleur/fns-ttrpg/commit/a10321224f581ef1df1535462b133e6dc20fcc01",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/combat/critique-blessures.md",
-"url": "content/regles/combat/critique-blessures/"
-}
-]
-},
-{
-"short": "e29a46f",
-"author": "Théo Cavaillès",
-"date": "2026-07-16T23:55:46+02:00",
-"message": "Blessures : 4 zones de plus, la fusion réduite à ce qui la mérite",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/e29a46ff99710740dc7b66dd146e2e8f97de624d",
 "files": [
 {
 "status": "modified",
