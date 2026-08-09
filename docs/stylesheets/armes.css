@@ -1,36 +1,25 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    CARTES D'ARMES
 
-   Une arme, une carte, une par ligne : la carte prend toute la largeur de la
-   page pour laisser de la place aux caractéristiques, et la carte hexagonale de
-   sa portée tient dans une colonne étroite à gauche.
+   Une catégorie d'arme, une carte large. La carte porte le bandeau de l'arme,
+   puis un geste par colonne : son empreinte hexagonale, son nom, ce qu'il
+   inflige, et ce qu'il fait.
 
    Toutes les couleurs passent par les variables de extra.css, que night.css
-   redéfinit : le mode nuit suit sans une seule règle en plus. Le bloc se pose
-   HORS du conteneur .cols, comme les tables du livre.
+   redéfinit : le mode nuit suit sans une règle en plus. Le bloc se pose HORS du
+   conteneur .cols, comme les tables du livre.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* Une seule colonne : mieux vaut une carte large et lisible que trois cartes
-   serrées où les caractéristiques se replient sur deux lignes. */
 .md-typeset .armes-grille {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 0.75rem;
+  gap: 1rem;
   margin: 1rem 0 1.6rem;
 }
 
-/* ── La carte ──
-   Deux zones sous le nom : la carte hexagonale à gauche, à largeur fixe, et les
-   caractéristiques à droite, qui prennent tout le reste. */
+/* ── La carte d'une catégorie ── */
 .md-typeset .arme {
-  display: grid;
-  grid-template-columns: 10.5rem minmax(0, 1fr);
-  grid-template-areas:
-    "nom  nom"
-    "map  stats";
-  gap: 0.5rem 1.2rem;
-  align-items: start;
-  padding: 0.65rem 0.9rem 0.8rem;
+  padding: 0.7rem 0.95rem 0.9rem;
   border: 1px solid var(--green-header);
   border-left: 3px solid var(--green-title);
   border-radius: 3px;
@@ -38,179 +27,133 @@
   break-inside: avoid;
 }
 
-/* ── Le bandeau du nom ──
-   Le nom à gauche, la distance idéale à droite : les deux informations qu'on
-   cherche en premier quand on compare deux armes. */
 .md-typeset .arme-nom {
-  grid-area: nom;
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 0.8rem;
-  margin: 0;
-  padding-bottom: 0.22rem;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.9rem;
+  margin: 0 0 0.6rem;
+  padding-bottom: 0.25rem;
   border-bottom: 1px solid var(--green-header);
   font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-variant: small-caps;
   letter-spacing: 0.05em;
   color: var(--green-title);
 }
-
-/* Distance idéale, écrite par hooks/armes.py à partir de data-cases. */
 .md-typeset .arme-portee {
   flex: none;
   font-family: 'Symboles JDR', 'Alegreya', Georgia, serif;
-  font-size: 0.6rem;
+  font-size: 0.62rem;
   font-variant: normal;
   letter-spacing: 0.02em;
   color: var(--ink);
-  opacity: 0.68;
-  white-space: nowrap;
+  opacity: 0.7;
 }
 
-/* ── Les caractéristiques ──
-   En tuiles plutôt qu'en lignes : sur une carte large, six lignes laisseraient
-   les trois quarts de la place vides. Le filet vertical rattache la valeur à
-   son libellé sans ajouter de trait horizontal. */
-.md-typeset .arme-stats {
-  grid-area: stats;
+/* ── Les gestes ──
+   Autant de colonnes que la largeur en permet, chacune assez large pour que
+   l'empreinte reste lisible : c'est elle qu'on lit en premier. */
+.md-typeset .gestes {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(5.6rem, 1fr));
-  gap: 0.4rem 0.9rem;
-  list-style: none;
-  margin: 0;
-  padding: 0;
+  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+  gap: 0.7rem 0.9rem;
 }
-.md-typeset .arme-stats li {
+
+.md-typeset .geste {
   display: flex;
   flex-direction: column;
-  gap: 0.05rem;
-  margin: 0;
-  padding-left: 0.5rem;
-  border-left: 2px solid var(--green-header);
+  align-items: center;
+  gap: 0.18rem;
   min-width: 0;
-}
-.md-typeset .arme-stats .k {
-  font-size: 0.55rem;
-  font-variant: small-caps;
-  letter-spacing: 0.07em;
-  line-height: 1.2;
-  color: var(--ink);
-  opacity: 0.62;
-}
-.md-typeset .arme-stats .v {
-  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
-  font-size: 0.78rem;
-  font-weight: 700;
-  line-height: 1.15;
-  color: var(--green-title);
-  overflow-wrap: break-word;
+  text-align: center;
 }
 
-/* ── La carte hexagonale ──
-   Cases volontairement petites : la carte sert à reconnaître une silhouette de
-   portée d'un coup d'oeil, pas à se compter case par case. La légende, en tête
-   de chapitre, donne la valeur de chaque teinte. */
-.md-typeset .arme-map {
-  grid-area: map;
-  width: 100%;
-}
-.md-typeset svg.arme-carte {
+.md-typeset svg.geste-carte {
   display: block;
   width: 100%;
+  max-width: 7.5rem;
   height: auto;
-  overflow: visible;
 }
 
-.md-typeset svg.arme-carte .hx polygon {
-  fill: var(--green-title);
-  stroke: var(--paper);
-  stroke-width: 0.5;
+.md-typeset .geste-nom {
+  margin: 0.1rem 0 0;
+  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-size: 0.7rem;
+  font-variant: small-caps;
+  letter-spacing: 0.04em;
+  line-height: 1.15;
+  color: var(--green-title);
 }
-/* Le libellé ne suit PAS l'opacité du polygone : il reste net à toutes les
-   teintes, ce qui compte d'autant plus que les cases sont petites. */
-.md-typeset svg.arme-carte .hx text {
+
+/* Les dégâts et le type, sur une ligne : c'est la seule donnée chiffrée du
+   geste, elle n'a pas besoin d'une tuile. */
+.md-typeset .geste-chiffres {
+  margin: 0;
   font-family: 'Roboto Mono', ui-monospace, monospace;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: -0.5px;
-  text-anchor: middle;
-  fill: var(--ink);
-  pointer-events: none;
-}
-
-/* Distance idéale : pleine, l'arme y est chez elle. */
-.md-typeset svg.arme-carte .hx-0 polygon { fill-opacity: 1; }
-.md-typeset svg.arme-carte .hx-0 text    { fill: var(--paper); }
-
-/* Chaque case en deçà pâlit à mesure que la difficulté monte. */
-.md-typeset svg.arme-carte .hx-1 polygon { fill-opacity: 0.68; }
-.md-typeset svg.arme-carte .hx-1 text    { fill: var(--paper); }
-.md-typeset svg.arme-carte .hx-2 polygon { fill-opacity: 0.46; }
-.md-typeset svg.arme-carte .hx-3 polygon { fill-opacity: 0.30; }
-.md-typeset svg.arme-carte .hx-4 polygon { fill-opacity: 0.18; }
-
-/* Trop près pour servir : le brun-rouge des titres de module, jamais le vert. */
-.md-typeset svg.arme-carte .hx-x polygon { fill: #8a4632; fill-opacity: 0.78; }
-.md-typeset svg.arme-carte .hx-x text    { fill: var(--paper); }
-
-/* Hors d'atteinte : la case existe, l'arme n'y va pas. */
-.md-typeset svg.arme-carte .hx-off polygon {
-  fill: var(--ink);
-  fill-opacity: 0.05;
-  stroke: var(--paper);
-}
-
-/* ── La légende, en tête de chapitre ── */
-.md-typeset .armes-legende {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem 1rem;
-  align-items: center;
-  margin: 0.8rem 0 0.3rem;
   font-size: 0.6rem;
+  letter-spacing: 0.02em;
+  color: var(--ink);
 }
-.md-typeset .armes-legende b {
-  display: inline-block;
-  min-width: 1.5rem;
-  padding: 0 0.15rem;
-  text-align: center;
-  border-radius: 2px;
-  margin-right: 0.3rem;
+.md-typeset .geste-chiffres b {
   font-weight: 700;
-  color: var(--paper);
-  background: var(--green-title);
-}
-.md-typeset .armes-legende .lg-1   { background: rgba(102, 120, 97, 0.68); }
-.md-typeset .armes-legende .lg-2   { background: rgba(102, 120, 97, 0.46); color: var(--ink); }
-.md-typeset .armes-legende .lg-x   { background: #8a4632; }
-.md-typeset .armes-legende .lg-off {
-  background: transparent;
-  border: 1px solid var(--green-header);
+  color: var(--green-title);
 }
 
-/* ── Écrans étroits ──
-   Sous 44rem, la carte hexagonale passe au-dessus des caractéristiques et se
-   recentre : deux colonnes de 10 rem ne tiennent pas sur un téléphone. */
+.md-typeset .geste-note {
+  margin: 0.1rem 0 0;
+  font-size: 0.58rem;
+  line-height: 1.35;
+  color: var(--ink);
+  opacity: 0.72;
+  text-wrap: balance;
+}
+
+/* ── L'empreinte ──
+   Trois états seulement : la case couverte par le geste, la case du personnage,
+   et le reste de la grille, qui n'est là que pour donner l'échelle. */
+.md-typeset svg.geste-carte polygon {
+  stroke: var(--paper);
+  stroke-width: 0.6;
+}
+.md-typeset svg.geste-carte .hx-vide {
+  fill: var(--ink);
+  fill-opacity: 0.055;
+}
+.md-typeset svg.geste-carte .hx-soi {
+  fill: var(--ink);
+  fill-opacity: 0.13;
+}
+.md-typeset svg.geste-carte .hx-zone {
+  fill: var(--green-title);
+  fill-opacity: 0.92;
+}
+/* Le personnage et son regard : posés par-dessus, jamais masqués par la zone. */
+.md-typeset svg.geste-carte .hx-perso {
+  fill: var(--ink);
+  fill-opacity: 0.55;
+}
+.md-typeset svg.geste-carte .hx-regard {
+  fill: none;
+  stroke: var(--ink);
+  stroke-opacity: 0.55;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+/* Sur une case couverte, le personnage se frappe lui-même ou ce qui est sur
+   lui : le regard passe en couleur du papier pour rester visible sur le vert. */
+.md-typeset svg.geste-carte .hx-zone + .hx-regard,
+.md-typeset svg.geste-carte polygon.hx-zone ~ .hx-regard { stroke: var(--ink); }
+
+/* ── Écrans étroits ── */
 @media screen and (max-width: 44rem) {
-  .md-typeset .arme {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-areas:
-      "nom"
-      "map"
-      "stats";
-    justify-items: center;
-  }
-  .md-typeset .arme-nom  { justify-content: space-between; width: 100%; }
-  .md-typeset .arme-map  { max-width: 13rem; }
-  .md-typeset .arme-stats { width: 100%; }
+  .md-typeset .gestes { grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr)); }
+  .md-typeset svg.geste-carte { max-width: 6rem; }
 }
 
-/* ── Impression ──
-   Deux cartes par ligne pour ne pas gâcher le papier, et jamais une carte
-   coupée entre deux pages. */
+/* ── Impression ── */
 @media print {
-  .md-typeset .armes-grille { grid-template-columns: 1fr 1fr; gap: 0.5rem; }
   .md-typeset .arme { break-inside: avoid; page-break-inside: avoid; }
 }
