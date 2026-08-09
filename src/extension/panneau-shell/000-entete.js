@@ -17,13 +17,13 @@
  * et le trou reste ouvert alors que l'autre copie est saine.
  *
  * Dépannage : browser.storage.local.jjk_site_url remplace la racine du site
- * (ex. http://localhost:8000/HxH-Regles-JDR/jjk/ pour un mkdocs serve local),
+ * (ex. http://localhost:8000/FNS-TTRPG-RULES/jjk/ pour un mkdocs serve local),
  * à poser depuis la console de débogage de l'extension. Cette clé reste COMMUNE
  * aux deux parties, comme jjk_sheet_url : elle épingle la coquille effectivement
  * chargée, quelle qu'elle soit. */
 if (typeof browser === "undefined") { var browser = chrome; }
 (function () {
   "use strict";
-  var SITE = "https://igneefleur.github.io/HxH-Regles-JDR/@@site@@/";   // propre à cette copie
+  var SITE = "https://igneefleur.github.io/FNS-TTRPG-RULES/@@site@@/";   // propre à cette copie
   var DEFAUT = "roll20-narration.html";
 
