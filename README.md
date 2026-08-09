@@ -8,7 +8,7 @@ Un jeu de rôle sur table dans l'univers d'Outward : le livre de règles.
 
 Sans but lucratif et sans lien avec les ayants droit : « Outward » et son univers
 appartiennent à Nine Dots Studio. Les règles, les textes et le code sont
-d'igneefleur, en tous droits réservés. Voir [LICENSE.md](LICENSE.md).
+d'IgneeFleur, en tous droits réservés. Voir [LICENSE.md](LICENSE.md).
 
 ## Contenu
 
