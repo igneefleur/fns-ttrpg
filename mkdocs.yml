@@ -3,7 +3,7 @@ site_url: https://igneefleur.github.io/fns-ttrpg/hxh-beta/
 # Repris en pied de CHAQUE page du PDF (le plugin to-pdf lit ce champ). Voir
 # LICENSE.md : tous droits réservés sur les apports originaux ; œuvre de fan, sans
 # lien avec les ayants droit de Hunter × Hunter.
-copyright: © 2026 igneefleur. Tous droits réservés. Œuvre de fan, non affiliée à Shueisha.
+copyright: © 2026 IgneeFleur. Tous droits réservés. Œuvre de fan, non affiliée à Shueisha.
 exclude_docs: |
   includes/glossaire.md
   assets/fonts/LISEZMOI.md
