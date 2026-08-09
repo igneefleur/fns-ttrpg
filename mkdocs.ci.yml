@@ -16,7 +16,7 @@ plugins:
   - search
   - to-pdf:
       enabled_if_env: ENABLE_PDF_EXPORT       # ne génère le PDF que si la variable vaut "1"
-      output_path: pdf/livre-de-regles.pdf    # => https://igneefleur.github.io/fns-ttrpg-rules/pdf/livre-de-regles.pdf
+      output_path: pdf/livre-de-regles.pdf    # => https://igneefleur.github.io/fns-ttrpg/hxh/pdf/livre-de-regles.pdf
       cover_title: HxH Système JDR
       cover_subtitle: Livre de Règles
       author: Théo Cavaillès

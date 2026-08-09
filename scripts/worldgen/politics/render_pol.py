@@ -8,7 +8,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from scipy import ndimage
-WG = r'C:\Users\IgneeFleur\Documents\Github\fns-ttrpg-rules\scripts\worldgen'
+WG = r'C:\Users\IgneeFleur\Documents\Github\fns-ttrpg\scripts\worldgen'
 sys.path.insert(0, WG)
 import worldflat as wf
 

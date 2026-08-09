@@ -9,7 +9,7 @@ Rend aussi les cartes physique + plaques mises a jour (tache 1).
 """
 import sys, os, numpy as np, importlib.util
 from scipy import ndimage
-WG = r'C:\Users\IgneeFleur\Documents\Github\fns-ttrpg-rules\scripts\worldgen'
+WG = r'C:\Users\IgneeFleur\Documents\Github\fns-ttrpg\scripts\worldgen'
 sys.path.insert(0, WG)
 import worldflat as wf
 # worldflat d'avant restylage : reshaped() s'en sert pour reproduire le masque de
@@ -28,8 +28,8 @@ SEED = 314159265
 AX, AY, FEAT, BANDW = 40.0, 26.0, 58.0, 46.0
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = HERE
-DOCS = r'C:\Users\IgneeFleur\Documents\Github\fns-ttrpg-rules\docs\assets\cartes'
-SITE = r'C:\Users\IgneeFleur\Documents\Github\fns-ttrpg-rules\site\assets\cartes'
+DOCS = r'C:\Users\IgneeFleur\Documents\Github\fns-ttrpg\docs\assets\cartes'
+SITE = r'C:\Users\IgneeFleur\Documents\Github\fns-ttrpg\site\assets\cartes'
 gg = wf.merc_geom(ow=1300)
 
 

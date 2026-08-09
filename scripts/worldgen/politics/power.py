@@ -17,8 +17,8 @@ import matplotlib.patheffects as pe
 from matplotlib import cm
 from scipy import ndimage
 
-DOCS = r'C:\Users\IgneeFleur\Documents\Github\fns-ttrpg-rules\docs\assets\cartes'
-SITE = r'C:\Users\IgneeFleur\Documents\Github\fns-ttrpg-rules\site\assets\cartes'
+DOCS = r'C:\Users\IgneeFleur\Documents\Github\fns-ttrpg\docs\assets\cartes'
+SITE = r'C:\Users\IgneeFleur\Documents\Github\fns-ttrpg\site\assets\cartes'
 P = polgraph.load(); K = P.K; NODES = list(range(1, K + 1))
 with open(os.path.join(HERE, 'cultures.json'), encoding='utf-8') as f:
     CJ = json.load(f)
