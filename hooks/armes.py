@@ -92,7 +92,12 @@ def _cases(zone):
     if forme == "arc2":
         # Deux cases seulement : une taille à une main balaie moins large. Le
         # coup vient d'un côté, l'empreinte est donc dissymétrique à dessein.
-        return {(0, -n), (1, -n)}
+        #
+        # Le livre suppose un combattant DROITIER. Une taille à une main part de
+        # sa droite et finit à sa gauche : la lame a sa vitesse pleine devant lui
+        # puis dans la case de gauche, qui est la seconde couverte. En q positif
+        # vers la droite, cette case est (-1, -n+1).
+        return {(0, -n), (-1, -n + 1)}
     return set()
 
 

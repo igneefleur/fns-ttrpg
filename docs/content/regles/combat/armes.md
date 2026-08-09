@@ -21,7 +21,9 @@ Chaque geste porte son empreinte : une carte hexagonale où le personnage occupe
 
 **La portée, en teinte claire :** les cases que le geste peut atteindre. Une seule cible y est frappée, celle que l'attaquant choisit. Elle couvre le plus souvent deux cases, une arme qui porte à une distance donnée atteignant aussi ce qui se tient plus près.
 
-**L'effet, en teinte pleine :** les cases qu'un même coup frappe ensemble. Trois gestes seulement en portent dans tout le chapitre, et ce sont les seuls à atteindre plusieurs adversaires d'un coup.
+**L'effet, en teinte pleine :** les cases qu'un même coup frappe ensemble, chacune subissant les dégâts entiers. Quatre gestes seulement en portent dans tout le chapitre, et ce sont les seuls à atteindre plusieurs adversaires d'un coup.
+
+**La main :** les empreintes supposent un combattant **droitier**. Une taille à une main part de sa droite et finit à sa gauche, d'où une empreinte dissymétrique vers la gauche. Une arme à deux mains inverse ce sens, la main basse menant le coup : son empreinte se lit en miroir. Un gaucher inverse tout.
 
 **Les dégâts :** ce que le geste inflige sur une touche, suivis de leur type, contondant (CON), perforant (PER) ou tranchant (TRA).
 
@@ -85,6 +87,13 @@ Ce chapitre ne donne pour l'instant que les gestes qui blessent. Ceux qui saisis
 <p class="geste-note">Collé à l'adversaire, là où le poing n'a plus d'élan et le coude en a encore.</p>
 </div>
 
+<div class="geste" data-zone="soi">
+<p class="geste-nom">Coup de tête</p>
+<p class="geste-chiffres"><b>5</b> CON</p>
+<p class="geste-diff">attaque 5</p>
+<p class="geste-note">Le front contre le nez ou l'arcade. Il faut être saisi, ou saisir, pour le porter.</p>
+</div>
+
 </div>
 </div>
 
@@ -135,7 +144,7 @@ Ce chapitre ne donne pour l'instant que les gestes qui blessent. Ceux qui saisis
 
 <div class="geste" data-zone="arc2:2">
 <p class="geste-nom">Taille ample</p>
-<p class="geste-chiffres"><b>20</b> TRA, puis moitié</p>
+<p class="geste-chiffres"><b>20</b> TRA</p>
 <p class="geste-diff">attaque 7</p>
 <p class="geste-note">Le fil balaie deux cases contiguës. Quatre-vingts centimètres de tranchant ne s'arrêtent pas au premier corps.</p>
 </div>
@@ -168,6 +177,20 @@ Ce chapitre ne donne pour l'instant que les gestes qui blessent. Ceux qui saisis
 <p class="geste-note">Tout le poids en tête, donc plus fort et plus lent que l'épée.</p>
 </div>
 
+<div class="geste" data-zone="pointe:1-2">
+<p class="geste-nom">Coup de corne</p>
+<p class="geste-chiffres"><b>14</b> PER</p>
+<p class="geste-diff">attaque 6</p>
+<p class="geste-note">La corne haute du fer, poussée comme une pointe. Elle entre où le fil ripe.</p>
+</div>
+
+<div class="geste" data-zone="pointe:1-2">
+<p class="geste-nom">Coup de plat</p>
+<p class="geste-chiffres"><b>16</b> CON</p>
+<p class="geste-diff">attaque 6</p>
+<p class="geste-note">La joue du fer, retournée. On assomme au lieu d'ouvrir, et l'arme ne se coince pas dans l'os.</p>
+</div>
+
 <div class="geste" data-zone="pointe:1">
 <p class="geste-nom">Talon</p>
 <p class="geste-chiffres"><b>8</b> CON</p>
@@ -187,6 +210,20 @@ Ce chapitre ne donne pour l'instant que les gestes qui blessent. Ceux qui saisis
 <p class="geste-chiffres"><b>22</b> CON</p>
 <p class="geste-diff">attaque 5</p>
 <p class="geste-note">Elle n'entame pas, elle transmet. Rien à trancher, tout à écraser.</p>
+</div>
+
+<div class="geste" data-zone="pointe:1-2">
+<p class="geste-nom">Pointe</p>
+<p class="geste-chiffres"><b>14</b> PER</p>
+<p class="geste-diff">attaque 6</p>
+<p class="geste-note">La pointe du sommet, poussée droit. Elle cherche ce que l'écrasement ne suffit pas à défoncer.</p>
+</div>
+
+<div class="geste" data-zone="pointe:1-2">
+<p class="geste-nom">Coup montant</p>
+<p class="geste-chiffres"><b>20</b> CON</p>
+<p class="geste-diff">attaque 7</p>
+<p class="geste-note">La tête remonte sous la garde, là où rien ne couvre. Difficile à placer, et rien ne l'arrête.</p>
 </div>
 
 <div class="geste" data-zone="pointe:1">
@@ -251,6 +288,13 @@ Ce chapitre ne donne pour l'instant que les gestes qui blessent. Ceux qui saisis
 <p class="geste-note">Le plus brutal des gestes tranchants, et le plus long à ramener. Le fer mord et s'arrête : il ne balaie pas.</p>
 </div>
 
+<div class="geste" data-zone="pointe:2-3">
+<p class="geste-nom">Coup de corne</p>
+<p class="geste-chiffres"><b>18</b> PER</p>
+<p class="geste-diff">attaque 6</p>
+<p class="geste-note">La corne du fer poussée en avant, à deux mains. Elle passe où le fil glisse.</p>
+</div>
+
 <div class="geste" data-zone="pointe:1">
 <p class="geste-nom">Hampe</p>
 <p class="geste-chiffres"><b>10</b> CON</p>
@@ -308,7 +352,7 @@ Ce chapitre ne donne pour l'instant que les gestes qui blessent. Ceux qui saisis
 
 <div class="geste" data-zone="ligne:4">
 <p class="geste-nom">Estoc traversant</p>
-<p class="geste-chiffres"><b>20</b> PER, puis moitié</p>
+<p class="geste-chiffres"><b>20</b> PER</p>
 <p class="geste-diff">attaque 7</p>
 <p class="geste-note">Dans une presse, la pointe ressort et atteint qui se tient derrière. Il faut l'alignement.</p>
 </div>
