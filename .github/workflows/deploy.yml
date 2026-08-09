@@ -55,7 +55,7 @@ jobs:
         env:
           NO_MKDOCS_2_WARNING: "1"   # coupe l'encadré promo « MkDocs 2.0 » de Material dans les logs
         run: mkdocs build
-      # BRANCHE DE CHANTIER : la signature Mozilla ne part JAMAIS toute seule.
+      # BRANCHE BETA : la signature Mozilla ne part JAMAIS toute seule.
       # Un push ne fait que déployer le site beta ; l'extension beta ne se
       # signe que sur relance manuelle du workflow, case « signer » cochée
       # (chaque soumission mord sur le quota AMO du compte).
@@ -127,10 +127,10 @@ jobs:
       # site stable.
       #
       # MAIS SEULEMENT QUAND CE RUN A VRAIMENT SIGNÉ. Sans cette condition, un
-      # push ordinaire sur le chantier recopiait le download/ de CETTE branche
+      # push ordinaire sur la beta recopiait le download/ de CETTE branche
       # par-dessus celui du site des joueurs — et les deux branches ne portent pas
       # forcément le même paquet, puisque la signature automatique ne commite que
-      # sur jjk. Un simple déploiement de chantier a ainsi fait reculer
+      # sur jjk. Un simple déploiement de la beta a ainsi fait reculer
       # /jjk/download/ de la 3.6.0.16 à la 3.6.0.12 : update_url annonçait une
       # version inférieure à celle installée, donc plus aucune mise à jour, et le
       # bouton de téléchargement servait un paquet d'avant les renommages. Aucun

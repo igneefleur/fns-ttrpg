@@ -10,7 +10,7 @@
     python scripts/version_fiche.py --petit --essai  # dit tout, n'écrit rien
 
 UNE SEULE LIGNE DE VERSIONS pour le projet entier : la fiche du site stable, la
-fiche du chantier et l'extension. Forme « X.Y.Z », chaque nombre de 0 à 999.
+fiche de la beta et l'extension. Forme « X.Y.Z », chaque nombre de 0 à 999.
 
   X monte pour une grosse mise à jour (une fonctionnalité entière) ;
   Y monte pour une moyenne (un petit module, la correction d'une grosse erreur) ;
@@ -22,13 +22,13 @@ RETENUE. 999 plus 1 rend 0 et monte le cran du dessus : 3.12.999 plus un
 correctif rend 3.13.0, et 3.999.999 plus un correctif rend 4.0.0. C'est ce qui
 permet de garder trois nombres bornés sans jamais reculer.
 
-LE SUFFIXE « b » EST CELUI DU CHANTIER, ET IL NE CHANGE PAS LE RANG. « 3.12.9b »
+LE SUFFIXE « b » EST CELUI DE LA BETA, ET IL NE CHANGE PAS LE RANG. « 3.12.9b »
 et « 3.12.9 » sont de même rang, parce que la beta EST ce que le stable recevra
 à la fusion. Le réflexe semver, qui range une pré-version SOUS la version
 finale, ferait passer un personnage écrit sur la beta pour venu du passé dès
 qu'il serait rouvert sur le site stable du même numéro : c'est exactement ce
 qu'il ne faut pas. Le suffixe ne sert qu'à une chose, montrer au joueur qu'il
-est sur le chantier.
+est sur la beta.
 
 LA LIGNE « X.Y » est ce qui gèle une archive : une archive par ligne, prise à la
 première release de la ligne. Un Z ne gèle plus rien, et un personnage qui porte
@@ -147,8 +147,8 @@ def faute_de_forme(texte):
     if not m:
         return "%r n'est pas un numéro X.Y.Z" % texte
     if m.group(4) not in ("", "b"):
-        return ("%r : le seul suffixe admis est « b », celui de la branche de "
-                "chantier (« 3.6.0-beta » ou « 3.6.0.1 » n'en sont pas)" % texte)
+        return ("%r : le seul suffixe admis est « b », celui de la branche "
+                "beta (« 3.6.0-beta » ou « 3.6.0.1 » n'en sont pas)" % texte)
     for cran, brut in zip(CRANS, m.group(1, 2, 3)):
         if len(brut) > 1 and brut[0] == "0":
             return ("%r : le %s s'écrit sans zéro en tête, sinon deux textes "
@@ -383,17 +383,17 @@ def _denuder(src, motif):
 
 
 def bundle_denude(src):
-    """Le bundle dont RELEASE a perdu le suffixe « b » du chantier.
+    """Le bundle dont RELEASE a perdu le suffixe « b » de la beta.
 
     Sert au GEL d'une archive : une archive appartient à sa LIGNE, pas à la
-    branche qui l'a gelée, et le même dossier doit sortir octet pour octet du
-    chantier et du stable. Voir scripts/archive_fiche.py.
+    branche qui l'a gelée, et le même dossier doit sortir octet pour octet de
+    la beta et du stable. Voir scripts/archive_fiche.py.
     """
     return _denuder(src, _RELEASE_JS)
 
 
 def attrmap_denude(src):
-    """L'attr-map dont RELEASE_DEFAUT a perdu le suffixe « b » du chantier."""
+    """L'attr-map dont RELEASE_DEFAUT a perdu le suffixe « b » de la beta."""
     return _denuder(src, _DEFAUT_JS)
 
 
@@ -409,8 +409,12 @@ def manifeste(racine):
         return None
 
 
-def chantier(racine):
-    """True si ce dépôt est la branche de CHANTIER, d'après site_url.
+def branche_beta(racine):
+    """True si ce dépôt est la branche BETA, d'après site_url.
+
+    À ne pas confondre avec Version.beta, qui dit tout autre chose : celui-ci
+    juge le DÉPÔT, celui-là le NUMÉRO. C'est justement leur accord que
+    scripts/verif_versions.py contrôle.
 
     Le marqueur est VERSIONNÉ et jamais git : les sondes recopient docs/,
     hooks/, scripts/ et mkdocs.yml dans un bac qui n'est pas un dépôt, et ces
@@ -576,7 +580,7 @@ def decider(racine, cran=None, impose=None, suffixe=None):
     Tout part du PLANCHER, jamais du seul bundle : c'est de lui qu'un cran
     monte, et aucune cible ne passe en dessous. Voir plancher().
 
-    suffixe : True (chantier), False (stable), None (d'après mkdocs.yml).
+    suffixe : True (beta), False (stable), None (d'après mkdocs.yml).
     """
     brut = courante(racine)
     if brut is None:
@@ -608,7 +612,7 @@ def decider(racine, cran=None, impose=None, suffixe=None):
         cible = sol
 
     if suffixe is None:
-        c = chantier(racine)
+        c = branche_beta(racine)
         # mkdocs.yml muet : on garde le suffixe tel quel plutôt que de le
         # retirer par défaut, ce qui ferait passer une beta pour un stable
         suffixe = cible.beta if c is None else c
@@ -668,7 +672,7 @@ def main():
     g.add_argument("--petit", action="store_true", help="du CSS, une erreur mineure")
     g.add_argument("--poser", metavar="X.Y.Z", help="numéro imposé")
     s = p.add_mutually_exclusive_group()
-    s.add_argument("--chantier", action="store_true", help="force le suffixe « b »")
+    s.add_argument("--beta", action="store_true", help="force le suffixe « b »")
     s.add_argument("--stable", action="store_true", help="retire le suffixe « b »")
     a = p.parse_args()
 
@@ -676,13 +680,13 @@ def main():
     print("VERSION" + (" (essai)" if a.essai else ""))
     brut = courante(racine)
     v = lire(brut) if brut else None
-    c = chantier(racine)
+    c = branche_beta(racine)
     print("  courante : %s" % (brut if brut else "aucune (le bundle est muet)"))
     if v:
         print("  ligne    : %s" % v.ligne)
     elif brut:
         print("  ligne    : illisible, %s" % faute_de_forme(brut))
-    print("  branche  : %s" % ("chantier, suffixe « b » obligatoire" if c
+    print("  branche  : %s" % ("beta, suffixe « b » obligatoire" if c
                                else ("stable, aucun suffixe" if c is False
                                      else "inconnue : mkdocs.yml ne dit pas site_url")))
     for nom, _, valeur in porteurs(racine):
@@ -702,7 +706,7 @@ def main():
                                    else "aucune pour la ligne %s" % v.ligne))
 
     cran = "majeur" if a.majeur else ("moyen" if a.moyen else ("petit" if a.petit else None))
-    suffixe = True if a.chantier else (False if a.stable else None)
+    suffixe = True if a.beta else (False if a.stable else None)
     if cran is None and a.poser is None and suffixe is None:
         return 0
 

@@ -70,10 +70,10 @@
   // archive par ligne X.Y, et c'est le seul garde-fou qui reste depuis que
   // l'écran de version ne paraît plus qu'au désaccord de schéma.
   //
-  // Le suffixe « b » marque la branche de chantier, pour que le joueur voie
-  // qu'il est sur la beta. Il ne change PAS le rang : « 3.6.0b » et « 3.6.0 »
-  // sont de même version, parce que la beta est ce que le site stable recevra
-  // à la fusion (JjkMods.compareVersions tient cette règle).
+  // Le suffixe « b » marque la branche beta, pour que le joueur voie sur quel
+  // site il est. Il ne change PAS le rang : « 3.6.0b » et « 3.6.0 » sont de
+  // même version, parce que la beta est ce que le site stable recevra à la
+  // fusion (JjkMods.compareVersions tient cette règle).
   var RELEASE = "3.6.0b";
   var SCHEMA = 3;
 

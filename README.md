@@ -18,8 +18,9 @@ fiche servie par le site (`roll20-fiche.html`) et s'empaquette par
 ## Œuvre de fan
 
 Sans but lucratif et sans lien avec les ayants droit : « Jujutsu Kaisen » appartient
-à Gege Akutami et à Shueisha. Les règles, les textes et le code sont de l'auteur, en
-tous droits réservés. Voir [LICENSE.md](LICENSE.md).
+à Gege Akutami et à Shueisha. Les **règles** du jeu sont de **Qyu** et lui
+appartiennent ; le **site**, le **code** et les **outils** sont d'**igneefleur**. Le
+tout en tous droits réservés. Voir [LICENSE.md](LICENSE.md).
 
 ## Développer
 

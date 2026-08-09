@@ -29,7 +29,7 @@ deux moitiés n'ont pas changé depuis la 3.6.0 ».
     python scripts/ci_extension.py --etat   # dit ce qui a changé, n'écrit rien
 
 LE NUMÉRO SE POSE, IL NE S'INCRÉMENTE PLUS. Le projet n'a qu'une ligne de
-versions : la fiche du site stable, celle du chantier et l'extension visent le
+versions : la fiche du site stable, celle de la beta et l'extension visent le
 même numéro. La coquille prend donc celui que publie docs/jjk-manifeste.json,
 DÉBARRASSÉ du suffixe « b » : l'extension est la même sur les deux branches et
 n'en porte jamais.
@@ -234,7 +234,7 @@ def stamp_version(version):
     """Pose le numéro dans les DEUX manifests. Dernière porte avant Mozilla.
 
     LE SUFFIXE « b » NE PASSE PAS. L'extension est la même sur les deux branches
-    et n'en porte jamais : signée depuis le chantier, elle brûlerait chez Mozilla
+    et n'en porte jamais : signée depuis la beta, elle brûlerait chez Mozilla
     un numéro que le site stable doit encore publier, et un numéro pris ne se
     reprend pas. Le contrôle est ici, au seul endroit par où le numéro entre dans
     les manifests, plutôt que sur chacun des chemins qui y mènent : c'est ce qui

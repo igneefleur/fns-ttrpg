@@ -209,7 +209,7 @@ natif comme mod, et c'est le contrat public de la fiche 3.
 | Entrée | Ce que c'est |
 | --- | --- |
 | `ctx.id` | l'identifiant du module, tel qu'il s'est enregistré. |
-| `ctx.version` | la release de la fiche qui l'exécute, telle qu'elle est publiée, suffixe de chantier compris, et qui se compare [nombre par nombre](#versions). |
+| `ctx.version` | la release de la fiche qui l'exécute, telle qu'elle est publiée, suffixe de beta compris, et qui se compare [nombre par nombre](#versions). |
 
 ### Données
 
@@ -371,7 +371,7 @@ Les règles de sûreté, qui valent pour les deux :
 
 | Membre | Ce qu'il fait |
 | --- | --- |
-| `Jjk.version` | la release de la fiche, en trois nombres, suivie du `b` du site de chantier le cas échéant : `"3.6.0"`, `"3.6.0b"`. À comparer par ses nombres, jamais comme une chaîne. |
+| `Jjk.version` | la release de la fiche, en trois nombres, suivie du `b` du site beta le cas échéant : `"3.6.0"`, `"3.6.0b"`. À comparer par ses nombres, jamais comme une chaîne. |
 | `Jjk.schema` | le numéro de schéma de l'état, un entier, `3` aujourd'hui. Il ne se déduit pas de `Jjk.version` : un mod qui en tirerait le schéma par le premier nombre se tromperait le jour où les deux divergeront. |
 | `Jjk.enregistre(module)` | déclare un module, ou remplace celui qui porte le même `id`, à sa place. Rend le module. |
 | `Jjk.ordonne(ids)` | ordre partiel : les identifiants cités passent devant, dans l'ordre donné, les autres suivent à leur rang de déclaration. Un identifiant inconnu ne casse rien. |
@@ -611,17 +611,16 @@ Les releases se comparent nombre par nombre, jamais comme des chaînes :
 `"3.10.0"` vient après `"3.9.0"`, alors que la comparaison de texte prétendrait
 l'inverse.
 
-### Le suffixe du site de chantier
+### Le suffixe du site beta
 
-Le site de chantier ajoute un `b` collé au dernier nombre, `"3.6.0b"`. Le site
-public ne le porte jamais : il est là pour qu'un joueur voie sur quel site il
-est.
+Le site beta ajoute un `b` collé au dernier nombre, `"3.6.0b"`. Le site public
+ne le porte jamais : il est là pour qu'un joueur voie sur quel site il est.
 
 Ce suffixe se lit, il ne se compte pas. `"3.6.0b"` et `"3.6.0"` sont de même
-rang, parce que le chantier est ce que le site public recevra à la fusion. Un
-mod déclaré `pour: "3.6.0"` tourne donc sur le chantier `3.6.0b`, et un mod
-déclaré `pour: "3.6.0b"` tourne sur le site public `3.6.0`. Un personnage
-enregistré sur l'un ne passe jamais pour plus récent que l'autre.
+rang, parce que la beta est ce que le site public recevra à la fusion. Un mod
+déclaré `pour: "3.6.0"` tourne donc sur la beta `3.6.0b`, et un mod déclaré
+`pour: "3.6.0b"` tourne sur le site public `3.6.0`. Un personnage enregistré
+sur l'un ne passe jamais pour plus récent que l'autre.
 
 Un mod qui compare des numéros lui-même retire donc ce `b` avant de lire les
 nombres. Le plus simple reste de ne pas comparer du tout : le champ `pour` le
@@ -631,7 +630,7 @@ fait déjà, et la fiche trop ancienne écarte le mod d'elle-même.
 
 | Champ | Ce qu'il déclare |
 | --- | --- |
-| `pour` | la release minimale de la fiche, en trois nombres, le `b` du chantier accepté : `"3.6.0"`, `"3.6.0b"`. Facultatif, et proposé dans le dialogue d'ajout, qui refuse ce qui n'est pas un numéro de version. Arrivé illisible par un import, il est gardé tel quel et ne bloque rien. |
+| `pour` | la release minimale de la fiche, en trois nombres, le `b` de la beta accepté : `"3.6.0"`, `"3.6.0b"`. Facultatif, et proposé dans le dialogue d'ajout, qui refuse ce qui n'est pas un numéro de version. Arrivé illisible par un import, il est gardé tel quel et ne bloque rien. |
 | `apiMin` | le schéma minimal de l'état, un entier. Il vise le schéma seul, jamais la release : `Jjk.schema` vaut 3 ici. Facultatif ; il ne se règle pas dans le dialogue, il arrive avec un mod importé dans le personnage. |
 
 Un mod dont la release minimale dépasse celle de la fiche, ou dont le schéma

@@ -1,15 +1,16 @@
 # Licence
 
-Copyright © 2026 Théo Cavaillès. **Tous droits réservés.**
+Copyright © 2026 Théo Cavaillès, sur les apports listés ci-dessous.
+**Tous droits réservés.**
 
 ## Ce que couvre cette licence
 
 Les apports originaux de ce dépôt :
 
-- le **système de règles** et sa conception (barèmes, tables, équilibrage) ;
-- les **textes** du livre de règles ;
 - le **code** du site et de ses outils : les feuilles de style, les scripts, le
-  créateur de personnage et l'extension navigateur.
+  créateur de personnage, la fiche de personnage et l'extension navigateur ;
+- la **mise en forme** de ce qui est publié : la maquette, la typographie et la
+  présentation.
 
 Aucune autorisation n'est accordée de copier, distribuer, publier, modifier,
 traduire, adapter ni exploiter tout ou partie de ces éléments, sous quelque forme et
@@ -17,6 +18,16 @@ par quelque moyen que ce soit, sans l'accord écrit préalable de l'auteur.
 
 Ce dépôt est public **pour consultation**. Sa publication, comme celle du site,
 n'emporte aucune concession de droits : lire n'est pas réutiliser.
+
+## Les règles du jeu, qui ne sont pas de l'auteur
+
+Le **système de règles** publié ici — sa conception, ses barèmes, ses tables, son
+équilibrage et les textes qui les énoncent — est l'œuvre de **Qyu**.
+
+Ce n'est donc pas un apport original de ce dépôt, et la présente licence n'en dispose
+pas : les droits sur ces règles restent à leur auteur. Ce dépôt n'en assure que la
+publication — le site, la mise en forme, les outils et l'extension, couverts
+ci-dessus.
 
 ## Œuvre de fan, non affiliée
 
@@ -34,7 +45,9 @@ droit. Toute demande de leur part sera honorée.
 ## Composants tiers
 
 Ce dépôt embarque ou utilise des travaux tiers qui **ne sont pas couverts par la
-présente licence** : ils restent régis par la leur, et rien ici n'y déroge.
+présente licence** : ils restent régis par la leur, et rien ici n'y déroge. Ce
+tableau ne recense que des composants logiciels ; les règles du jeu, qui échappent
+elles aussi à cette licence, ont leur propre section ci-dessus.
 
 | Composant | Emplacement | Licence |
 |---|---|---|
