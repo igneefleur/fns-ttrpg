@@ -6,13 +6,21 @@ HAUT ; la zone se lit donc relativement à lui.
 
     soi         la case du personnage lui-même, le contact absolu
     pointe:2    une seule case, droit devant, à deux cases
+    pointe:1-2  la bande de cases où le geste travaille, de un à deux pas
     arc2:2      deux cases contiguës, la taille d'une arme à une main
     arc:2       trois cases contiguës, la taille d'une arme à deux mains
     ligne:3     les trois cases alignées devant, l'estoc qui traverse
 
+Une case vaut UN PAS, soit environ 0.7 m. Cette taille n'est pas une commodité :
+c'est celle qui sépare le mieux les portées réelles des armes, un mètre écrasant
+l'épée, la hache et la masse sur une seule valeur.
+
+Un geste couvre une bande et non une distance unique : une lame qui porte à
+1.48 m atteint aussi bien la case 1 que la case 2. D'où la forme à intervalle.
+
 Les hexagones sont à SOMMET PLAT : c'est la seule orientation où il existe une
 case droit devant, ce qu'une empreinte orientée exige. Le rayon de la carte est
-de trois cases, la plus longue portée du chapitre.
+de quatre cases, la plus longue portée du chapitre.
 
 Le dessin se fait ici plutôt qu'en JavaScript : le SVG part dans la page
 construite, donc il s'affiche sans script, se retrouvera dans le PDF, et se
@@ -23,7 +31,7 @@ import math
 import re
 
 RAYON_CASE = 10.0   # rayon du cercle circonscrit d'un hexagone, en unités SVG
-PORTEE_MAX = 3      # rayon de la carte, en cases
+PORTEE_MAX = 4      # rayon de la carte, en cases (un pas chacune)
 SQ3 = math.sqrt(3.0)
 
 GESTE = re.compile(
@@ -56,6 +64,19 @@ def _cases(zone):
         return {(0, 0)}
 
     forme, _, valeur = zone.partition(":")
+
+    # « pointe:1-2 » : la bande de cases où le geste travaille. Un geste ne
+    # frappe pas à une distance unique mais dans un intervalle, une lame qui
+    # porte à 1.48 m atteignant la case 1 comme la case 2.
+    if "-" in valeur:
+        try:
+            a, b = (int(x) for x in valeur.split("-", 1))
+        except ValueError:
+            return set()
+        if forme == "pointe":
+            return {(0, -i) for i in range(a, b + 1)}
+        return set()
+
     try:
         n = int(valeur)
     except ValueError:

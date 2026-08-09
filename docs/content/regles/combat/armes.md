@@ -12,7 +12,7 @@ Chaque geste porte son empreinte : une carte hexagonale où le personnage occupe
 
 <div class="defs" markdown>
 
-**L'empreinte :** les cases que le geste couvre, le personnage étant au centre et regardant vers le haut. Une seule case pour un coup porté, trois cases contiguës pour une frappe qui balaie, une file de cases pour un estoc qui traverse.
+**L'empreinte :** les cases que le geste couvre, le personnage étant au centre et regardant vers le haut. Chaque case vaut un [pas](portees.md). Un geste couvre le plus souvent une bande de deux cases, car une arme qui porte à une distance donnée atteint aussi ce qui se tient plus près ; les gestes amples couvrent trois cases contiguës, et l'estoc qui traverse une file de cases alignées.
 
 **Les dégâts :** ce que le geste inflige sur une touche, suivis de leur type, contondant (CON), perforant (PER) ou tranchant (TRA).
 
@@ -36,7 +36,7 @@ La compétence d'une arme à une distance donnée est donc le meilleur de ses ge
 
 C'est la longueur du fil, non la puissance du coup. Une lame ne s'arrête pas dans le premier corps : les essais de coupe japonais, gravés sur la soie des armes, attestent des lames ayant tranché deux, trois, cinq corps empilés d'un seul coup, et jusqu'à sept pour le record connu. L'énergie n'est donc pas la limite.
 
-Ce qui limite au combat, c'est l'alignement. Des corps liés et couchés se prêtent au geste ; des hommes debout, à un mètre les uns des autres et dans des postures différentes, ne s'y prêtent presque jamais. La taille ample est donc une récompense de position plutôt qu'un coup qu'on choisit.
+Ce qui limite au combat, c'est l'alignement. Des corps liés et couchés se prêtent au geste ; des hommes debout, à un pas les uns des autres et dans des postures différentes, ne s'y prêtent presque jamais. La taille ample est donc une récompense de position plutôt qu'un coup qu'on choisit.
 
 Une arme balaie si elle a du fil à donner : l'épée en porte quatre-vingts centimètres, la grande épée davantage, le fer de hallebarde autant. Une hache n'en a que quinze : elle mord dans le premier corps et s'y arrête. Un marteau moins encore, toute sa masse allant dans un seul point. C'est pourquoi ces deux-là frappent plus fort et ne balaient pas.
 
@@ -89,14 +89,14 @@ Ce chapitre ne donne pour l'instant que les gestes qui blessent. Ceux qui saisis
 <p class="arme-nom">Dague<span class="arme-portee">1 main · parade 7 · réduction 5</span></p>
 <div class="gestes">
 
-<div class="geste" data-zone="pointe:1">
+<div class="geste" data-zone="pointe:1-2">
 <p class="geste-nom">Estoc</p>
 <p class="geste-chiffres"><b>10</b> PER</p>
 <p class="geste-diff">attaque 4</p>
 <p class="geste-note">Rapide, court, et le geste ne s'arme pas.</p>
 </div>
 
-<div class="geste" data-zone="pointe:1">
+<div class="geste" data-zone="pointe:1-2">
 <p class="geste-nom">Taille</p>
 <p class="geste-chiffres"><b>8</b> TRA</p>
 <p class="geste-diff">attaque 5</p>
@@ -117,7 +117,7 @@ Ce chapitre ne donne pour l'instant que les gestes qui blessent. Ceux qui saisis
 <p class="arme-nom">Épée<span class="arme-portee">1 main · parade 5 · réduction 10</span></p>
 <div class="gestes">
 
-<div class="geste" data-zone="pointe:2">
+<div class="geste" data-zone="pointe:1-2">
 <p class="geste-nom">Taille</p>
 <p class="geste-chiffres"><b>20</b> TRA</p>
 <p class="geste-diff">attaque 6</p>
@@ -131,7 +131,7 @@ Ce chapitre ne donne pour l'instant que les gestes qui blessent. Ceux qui saisis
 <p class="geste-note">Le fil balaie deux cases contiguës. Quatre-vingts centimètres de tranchant ne s'arrêtent pas au premier corps.</p>
 </div>
 
-<div class="geste" data-zone="pointe:2">
+<div class="geste" data-zone="pointe:2-3">
 <p class="geste-nom">Estoc</p>
 <p class="geste-chiffres"><b>18</b> PER</p>
 <p class="geste-diff">attaque 5</p>
@@ -152,7 +152,7 @@ Ce chapitre ne donne pour l'instant que les gestes qui blessent. Ceux qui saisis
 <p class="arme-nom">Hache<span class="arme-portee">1 main · parade 7 · réduction 5</span></p>
 <div class="gestes">
 
-<div class="geste" data-zone="pointe:2">
+<div class="geste" data-zone="pointe:1-2">
 <p class="geste-nom">Taille</p>
 <p class="geste-chiffres"><b>22</b> TRA</p>
 <p class="geste-diff">attaque 6</p>
@@ -173,7 +173,7 @@ Ce chapitre ne donne pour l'instant que les gestes qui blessent. Ceux qui saisis
 <p class="arme-nom">Masse<span class="arme-portee">1 main · parade 7 · réduction 5</span></p>
 <div class="gestes">
 
-<div class="geste" data-zone="pointe:2">
+<div class="geste" data-zone="pointe:1-2">
 <p class="geste-nom">Frappe</p>
 <p class="geste-chiffres"><b>22</b> CON</p>
 <p class="geste-diff">attaque 5</p>
@@ -200,21 +200,21 @@ Ce chapitre ne donne pour l'instant que les gestes qui blessent. Ceux qui saisis
 <p class="arme-nom">Grande épée<span class="arme-portee">2 mains · parade 5 · réduction 17</span></p>
 <div class="gestes">
 
-<div class="geste" data-zone="arc:2">
+<div class="geste" data-zone="arc:3">
 <p class="geste-nom">Taille ample</p>
 <p class="geste-chiffres"><b>34</b> TRA</p>
 <p class="geste-diff">attaque 7</p>
 <p class="geste-note">Le fil balaie trois cases contiguës. Il fauche aussi les alliés qui s'y trouvent.</p>
 </div>
 
-<div class="geste" data-zone="pointe:2">
+<div class="geste" data-zone="pointe:2-3">
 <p class="geste-nom">Estoc</p>
 <p class="geste-chiffres"><b>28</b> PER</p>
 <p class="geste-diff">attaque 6</p>
 <p class="geste-note">Plus court à ramener qu'une taille, et il ne menace personne d'autre.</p>
 </div>
 
-<div class="geste" data-zone="pointe:1">
+<div class="geste" data-zone="pointe:1-2">
 <p class="geste-nom">Demi-épée</p>
 <p class="geste-chiffres"><b>24</b> PER</p>
 <p class="geste-diff">attaque 6</p>
@@ -235,7 +235,7 @@ Ce chapitre ne donne pour l'instant que les gestes qui blessent. Ceux qui saisis
 <p class="arme-nom">Grande hache<span class="arme-portee">2 mains · parade 7 · réduction 8</span></p>
 <div class="gestes">
 
-<div class="geste" data-zone="pointe:2">
+<div class="geste" data-zone="pointe:2-3">
 <p class="geste-nom">Taille</p>
 <p class="geste-chiffres"><b>32</b> TRA</p>
 <p class="geste-diff">attaque 7</p>
@@ -256,14 +256,14 @@ Ce chapitre ne donne pour l'instant que les gestes qui blessent. Ceux qui saisis
 <p class="arme-nom">Grand marteau<span class="arme-portee">2 mains · parade 8 · réduction 8</span></p>
 <div class="gestes">
 
-<div class="geste" data-zone="pointe:2">
+<div class="geste" data-zone="pointe:2-3">
 <p class="geste-nom">Frappe</p>
 <p class="geste-chiffres"><b>34</b> CON</p>
 <p class="geste-diff">attaque 8</p>
 <p class="geste-note">L'impact maximal du chapitre, au prix de tout le temps qu'il demande. Toute la masse va dans un seul corps.</p>
 </div>
 
-<div class="geste" data-zone="pointe:2">
+<div class="geste" data-zone="pointe:2-3">
 <p class="geste-nom">Bec</p>
 <p class="geste-chiffres"><b>26</b> PER</p>
 <p class="geste-diff">attaque 7</p>
@@ -290,28 +290,28 @@ Ce chapitre ne donne pour l'instant que les gestes qui blessent. Ceux qui saisis
 <p class="arme-nom">Lance<span class="arme-portee">2 mains · parade 6 · réduction 10</span></p>
 <div class="gestes">
 
-<div class="geste" data-zone="pointe:3">
+<div class="geste" data-zone="pointe:3-4">
 <p class="geste-nom">Estoc</p>
 <p class="geste-chiffres"><b>20</b> PER</p>
 <p class="geste-diff">attaque 5</p>
 <p class="geste-note">Trois cases pour une difficulté basse. C'est l'arme qui a armé les foules.</p>
 </div>
 
-<div class="geste" data-zone="ligne:3">
+<div class="geste" data-zone="ligne:4">
 <p class="geste-nom">Estoc traversant</p>
 <p class="geste-chiffres"><b>20</b> PER, puis moitié</p>
 <p class="geste-diff">attaque 7</p>
 <p class="geste-note">Dans une presse, la pointe ressort et atteint qui se tient derrière. Il faut l'alignement.</p>
 </div>
 
-<div class="geste" data-zone="pointe:2">
+<div class="geste" data-zone="pointe:2-3">
 <p class="geste-nom">Estoc raccourci</p>
 <p class="geste-chiffres"><b>16</b> PER</p>
 <p class="geste-diff">attaque 6</p>
 <p class="geste-note">Mains glissées vers l'arrière, quand la pointe a été franchie.</p>
 </div>
 
-<div class="geste" data-zone="pointe:1">
+<div class="geste" data-zone="pointe:1-2">
 <p class="geste-nom">Talon</p>
 <p class="geste-chiffres"><b>8</b> CON</p>
 <p class="geste-diff">attaque 6</p>
@@ -325,21 +325,21 @@ Ce chapitre ne donne pour l'instant que les gestes qui blessent. Ceux qui saisis
 <p class="arme-nom">Hallebarde<span class="arme-portee">2 mains · parade 6 · réduction 15</span></p>
 <div class="gestes">
 
-<div class="geste" data-zone="arc:3">
+<div class="geste" data-zone="arc:4">
 <p class="geste-nom">Taille</p>
 <p class="geste-chiffres"><b>30</b> TRA</p>
 <p class="geste-diff">attaque 7</p>
 <p class="geste-note">Le fer balaie trois cases à trois de distance. Aucun autre geste ne couvre autant.</p>
 </div>
 
-<div class="geste" data-zone="pointe:3">
+<div class="geste" data-zone="pointe:3-4">
 <p class="geste-nom">Estoc</p>
 <p class="geste-chiffres"><b>24</b> PER</p>
 <p class="geste-diff">attaque 6</p>
 <p class="geste-note">La pointe de hampe, plus sobre que le fer et plus sûre.</p>
 </div>
 
-<div class="geste" data-zone="pointe:1">
+<div class="geste" data-zone="pointe:1-2">
 <p class="geste-nom">Talon</p>
 <p class="geste-chiffres"><b>10</b> CON</p>
 <p class="geste-diff">attaque 6</p>

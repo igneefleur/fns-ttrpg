@@ -2,136 +2,68 @@
 
 <div class="cols" markdown>
 
-La portée d'une arme est la distance à laquelle elle atteint sa cible. Chaque arme a une distance idéale, celle où elle frappe pleinement ; plus près, elle touche encore mais mal ; plus loin, elle ne touche pas du tout. Ce chapitre donne la grille sur laquelle se compte cette distance, la façon de mesurer la portée d'une arme, le barème qui traduit l'écart en difficulté, et la table qui range chaque arme à sa distance.
+La portée d'une arme est la distance à laquelle elle atteint sa cible. Ce chapitre donne la grille sur laquelle cette distance se compte, et la façon de la mesurer. Ce que chaque arme atteint réellement se lit sur son [répertoire de gestes](armes.md), chacun portant sa propre empreinte.
 
 <div class="keep" markdown>
 
 ### La grille
 
-Le combat se joue sur une grille dont chaque case vaut 1 mètre. Une case ne porte qu'une seule personne de taille normale.
+Le combat se joue sur une grille d'hexagones, et **une case vaut un pas**. Un pas de marche fait environ 0.7 m, et c'est l'unité par laquelle les armées ont mesuré le terrain pendant deux mille ans.
 
-La distance entre deux combattants se compte en cases pleines. Deux adversaires sur des cases voisines sont à une case l'un de l'autre, leurs torses écartés de 1 mètre.
-
-La case 0 est la case du combattant lui-même. Elle ne porte une cible que si quelque chose se trouve sur lui : une créature agrippée à son bras, une entrave à trancher, une partie de son propre corps, ou un adversaire entré dans sa case par une saisie. En dehors de ces cas, aucune attaque ne s'y porte.
+Une case ne porte qu'une seule personne. La distance entre deux combattants se compte en cases pleines : deux adversaires sur des cases voisines sont à un pas l'un de l'autre.
 
 </div>
 
-### Mesurer une portée
+### Pourquoi le pas et non le mètre
 
-La portée d'une arme se mesure depuis le torse de son porteur. Elle additionne l'allonge du bras tendu, qui vaut 0.7 m, et la part de l'arme qui dépasse le poing. Pour une arme à hampe, on compte la part qui dépasse la main avant, la prise décalant le point d'appui.
+Parce que le mètre est trop grossier pour ce qu'on cherche à distinguer.
 
-<p class="formula">Portée = 0.7 m + la part de l'arme qui dépasse le poing</p>
+Les armes à une main portent de 1.5 à 2 m environ, les grandes armes à deux mains autour de 2.4 m, les armes d'hast autour de 2.8 m. À un mètre par case, ces trois familles s'écrasent sur deux valeurs : l'épée, la hache et la masse tombent avec la dague et les poings, et la différence entre une grande épée et une hallebarde disparaît.
 
-Les portées de deux adversaires ne s'additionnent jamais. Pour toucher, il faut atteindre le corps de l'autre, pas son poing : seule compte la portée de celui qui frappe. La longueur des bras de la cible ne change rien à ce que l'attaquant atteint.
-
-<div class="memo" markdown>
-
-L'allonge de 0.7 m est celle d'un bras d'adulte tendu depuis le torse. Elle ne se confond pas avec l'envergure, mesurée d'un bout des doigts à l'autre, qui vaut environ 1.75 m : entre les deux bras s'ajoute la largeur des épaules, une quarantaine de centimètres.
-
-</div>
-
-### Placer une arme
-
-La portée mesurée donne la distance idéale de l'arme. La table ci-dessous donne la distance idéale selon la portée. Ces valeurs sont des frontières et non des murs : une arme qui en chevauche une se range à la distance de son emploi le plus courant.
+Au pas, les mêmes portées se répartissent sur cinq paliers. La mesure a donc désigné cette taille, et il se trouve qu'elle porte déjà un nom.
 
 <div class="sepia-table" markdown>
 
-| Portée mesurée | Distance idéale |
-|:---:|:---:|
-| moins de 0.7 m | case 0 |
-| de 0.7 m à 1.2 m | 1 case |
-| de 1.2 m à 2.2 m | 2 cases |
-| de 2.2 m à 3.2 m | 3 cases |
-| de 3.2 m à 4.2 m | 4 cases |
-| 4.2 m et plus | 5 cases |
+| Case | Ce qui y travaille |
+|:---:|---|
+| 0 | coude, genou, lutte |
+| 1 | poings, pieds |
+| 2 | dague, hache, masse |
+| 3 | épée, grande épée, grande hache, grand marteau |
+| 4 | lance, hallebarde |
 
 </div>
 
-### Le barème
+### La case 0
 
-À sa distance idéale, une arme n'ajoute rien à la [difficulté](../base/actions.md) du jet d'attaque. Chaque case en dessous de cette distance lui ajoute 1, et ce décompte n'a pas de plafond. Au-delà de sa distance idéale, une arme n'atteint rien : une portée est une limite physique, pas une difficulté de plus.
+La case 0 est la case du combattant lui-même. Elle ne porte une cible que si quelque chose se trouve sur lui : une créature agrippée à son bras, une entrave à trancher, une partie de son propre corps, ou un adversaire entré dans sa case. En dehors de ces cas, aucune attaque ne s'y porte.
 
-Le déplacement n'entre pas dans ce calcul. Un personnage qui avance d'une case avant de frapper dépense son mouvement : il ne gagne pas de portée pour autant.
+### Pourquoi l'hexagone
 
-Trois exceptions modifient ce barème.
+Ses six voisins sont tous à exactement un pas, là où la diagonale d'un carré en vaut 1.41. Cet écart dépasserait les distinctions que ce chapitre établit. L'hexagone fixe aussi à six le nombre d'adversaires qui peuvent en entourer un seul, ce qui est le chiffre réel.
+
+### Mesurer une portée
+
+La portée d'un geste se mesure depuis le torse de son auteur. Elle additionne trois choses : la distance du torse à la main avant, la part de l'arme qui dépasse cette main, et l'engagement du corps dans le coup, le pas ou la fente qui en fait partie.
+
+<p class="formula">Portée = main avant + part de l'arme au-delà + engagement du corps</p>
 
 <div class="defs" markdown>
 
-**Arme courte qui blesse sans élan :** l'arme n'ajoute jamais rien à la difficulté, sa case 0 comprise. Deux conditions doivent tenir ensemble : l'arme est tenue au poing ou fixée au bras, assez courte pour travailler collée au corps ; et elle blesse sans que le bras s'étende ni que le geste s'arme, par poussée, piqûre, pression, traction ou crochet à bout portant. Le poing nu, le poing américain et le pied n'y entrent pas, car toute leur puissance vient de l'élan.
+**La main avant :** 0.70 m pour un estoc à une main, bras tendu et épaule engagée ; 0.60 m pour une taille, dont l'arc n'étend pas complètement le bras ; 0.50 m pour deux mains jointes sur une poignée ; 0.65 m pour deux mains écartées sur une hampe ; 0.55 m quand les mains tiennent la lame.
 
-**Arme à deux mains qui frappe par rotation ample :** l'arme ajoute 2 à la difficulté par case au lieu de 1. Le critère est l'amplitude du geste, non la longueur de l'arme ni le nombre de mains : une arme d'hast, qu'on raccourcit en glissant les mains le long de la hampe, suit le barème ordinaire.
-
-**Portée idéale de quatre cases ou plus :** l'arme ne sert plus du tout au contact, et sa case 0 est interdite.
+**L'engagement du corps :** 0.50 m pour un coup porté à fond, 0.18 m pour un coup donné de près, où l'on ne peut plus avancer.
 
 </div>
 
-</div>
+Une cible dont le torse se tient à N cases est atteinte si la portée du geste vaut au moins N pas moins 0.15 m, la face avant d'un corps se tenant une quinzaine de centimètres devant son axe.
 
----
+Les portées de deux adversaires ne s'additionnent jamais. Pour toucher, il faut atteindre le corps de l'autre, pas son arme : seule compte la portée de celui qui frappe.
 
-<div class="cols" markdown>
+### Ce que cette mesure ne peut pas faire
 
-### Lire la table
+Les seuils sont des arbitrages, non des certitudes. Une épée d'armes court de 81 à 107 cm selon l'exemplaire, une hache de 60 à 90 cm de manche : l'écart au sein d'une même catégorie approche la taille d'une case. Plusieurs gestes tombent donc à quelques centimètres d'une frontière, et le livre a tranché du côté généreux, uniformément.
 
-La table donne ce que chaque arme ajoute à la [difficulté](../base/actions.md) selon la distance qui la sépare de sa cible, comptée en cases. La valeur lue s'ajoute telle quelle, sans conversion. Chaque ligne se déduit du barème et de ses trois exceptions : une arme absente de la table se place en mesurant sa portée, puis en ajoutant 1 par case en dessous de sa distance idéale.
-
-<div class="defs" markdown>
-
-**0 :** l'arme est à sa distance idéale et n'ajoute rien à la difficulté.
-
-**+N :** l'arme atteint encore sa cible, mais mal : elle ajoute N à la difficulté.
-
-**× :** l'arme est trop près pour servir, et l'attaque est impossible.
-
-**Case vide :** la distance dépasse la portée de l'arme, qui n'atteint rien.
-
-</div>
-
-</div>
-
-## Table des portées
-
-<div class="cj-modules anima portees" markdown>
-
-| Arme | 0 | 1 | 2 | 3 | 4 | 5 |
-| --- | :---: | :---: | :---: | :---: | :---: | :---: |
-| Lutte, étranglement | 0 | | | | | |
-| Morsure | 0 | | | | | |
-| Coudes, genoux, tête | 0 | | | | | |
-| Saisie, agrippement | 0 | 0 | | | | |
-| Griffes, cestes lamés | 0 | 0 | | | | |
-| Couteau, dague, poignard, tanto | 0 | 0 | | | | |
-| Katar | 0 | 0 | | | | |
-| Sai, jutte, tonfa | 0 | 0 | | | | |
-| Poings, poing américain, cestes non lamés | +1 | 0 | | | | |
-| Kukri, hachette | +1 | 0 | | | | |
-| Faucille, serpe, kusarigama (faucille) | +1 | 0 | | | | |
-| Pieds | +1 | 0 | | | | |
-| Épée courte, gladius, wakizashi, machette | +2 | +1 | 0 | | | |
-| Épée d'armes, sabre, cimeterre | +2 | +1 | 0 | | | |
-| Hache à une main, masse, marteau | +2 | +1 | 0 | | | |
-| Gourdin, matraque | +2 | +1 | 0 | | | |
-| Bâton long, bô | +2 | +1 | 0 | | | |
-| Chaîne courte, fléau à une main, nunchaku | +2 | +1 | 0 | | | |
-| Rapière, estoc | +2 | +1 | 0 | | | |
-| Épée longue, épée bâtarde, katana | +4 | +2 | 0 | | | |
-| Épée à deux mains, espadon, nodachi | +4 | +2 | 0 | | | |
-| Hache à deux mains, hache danoise, maillet | +4 | +2 | 0 | | | |
-| Fléau d'armes à deux mains | +4 | +2 | 0 | | | |
-| Lance, épieu | +3 | +2 | +1 | 0 | | |
-| Naginata, fauchard, guisarme | +3 | +2 | +1 | 0 | | |
-| Hallebarde, bardiche, pertuisane | +3 | +2 | +1 | 0 | | |
-| Trident | +3 | +2 | +1 | 0 | | |
-| Kusarigama (chaîne) | +3 | +2 | +1 | 0 | | |
-| Fouet | × | +3 | +2 | +1 | 0 | |
-| Chaîne longue lestée | × | +3 | +2 | +1 | 0 | |
-| Lance de cavalerie, couchée | × | +3 | +2 | +1 | 0 | |
-| Pique | × | +4 | +3 | +2 | +1 | 0 |
-
-</div>
-
-<div class="cols" markdown>
-
-Une arme qui porte deux modes de frappe occupe deux lignes, une par mode, et son porteur choisit le mode qu'il emploie au moment d'attaquer. Le kusarigama en est le seul exemple de la table : sa lame se lit à 1 case, la chaîne qui la porte à 3 cases.
+C'est aussi pourquoi ce chapitre ne donne pas de table d'armes. Une arme n'a pas une portée mais autant que de gestes, et un geste couvre une bande plutôt qu'une distance : une lame qui porte à 1.48 m atteint la case 1 comme la case 2. Chaque geste porte donc son empreinte, dessinée sur la [carte de son arme](armes.md), et un adversaire qu'aucun geste n'atteint ne peut pas être frappé.
 
 </div>
