@@ -137,7 +137,18 @@
   fill: var(--ink);
   fill-opacity: 0.13;
 }
-.md-typeset svg.geste-carte .hx-zone {
+/* Portée : les cases que le geste PEUT atteindre, une seule cible étant frappée.
+   Teinte claire et contour marqué : c'est un domaine, pas une zone d'effet. */
+.md-typeset svg.geste-carte .hx-portee {
+  fill: var(--green-title);
+  fill-opacity: 0.30;
+  stroke: var(--green-title);
+  stroke-width: 1.4;
+}
+/* Effet : les cases qu'un même coup frappe ensemble. Teinte pleine, et c'est le
+   seul endroit de la carte où le vert est saturé : les gestes qui touchent
+   plusieurs adversaires se repèrent alors d'un coup d'oeil, page entière. */
+.md-typeset svg.geste-carte .hx-effet {
   fill: var(--green-title);
   fill-opacity: 0.92;
 }
@@ -154,10 +165,28 @@
   stroke-linecap: round;
   stroke-linejoin: round;
 }
-/* Sur une case couverte, le personnage se frappe lui-même ou ce qui est sur
-   lui : le regard passe en couleur du papier pour rester visible sur le vert. */
-.md-typeset svg.geste-carte .hx-zone + .hx-regard,
-.md-typeset svg.geste-carte polygon.hx-zone ~ .hx-regard { stroke: var(--ink); }
+/* Légende des deux états, posée sous le chapeau du chapitre. */
+.md-typeset .gestes-legende {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 1.2rem;
+  align-items: center;
+  margin: 0.7rem 0 0.2rem;
+  font-size: 0.6rem;
+}
+.md-typeset .gestes-legende i {
+  display: inline-block;
+  width: 0.85rem;
+  height: 0.85rem;
+  margin-right: 0.35rem;
+  vertical-align: -0.14rem;
+  border-radius: 2px;
+  background: var(--green-title);
+}
+.md-typeset .gestes-legende .lg-portee {
+  background: color-mix(in srgb, var(--green-title) 30%, transparent);
+  box-shadow: inset 0 0 0 1.5px var(--green-title);
+}
 
 /* ── Écrans étroits ── */
 @media screen and (max-width: 44rem) {

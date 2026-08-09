@@ -96,8 +96,20 @@ def _cases(zone):
     return set()
 
 
+def _frappe_ensemble(zone):
+    """Le geste frappe-t-il toutes ses cases d'un coup, ou en choisit-il une ?
+
+    Distinction essentielle, et purement visuelle jusqu'ici : une bande de portée
+    dit où le geste PEUT atteindre, une seule cible étant touchée ; un arc ou une
+    file disent ce qu'un même coup traverse. Sans deux teintes, une dague qui
+    porte à deux cases se lisait comme une dague qui fauche deux adversaires.
+    """
+    return zone.split(":")[0] in ("arc", "arc2", "ligne")
+
+
 def carte_svg(zone):
     couvertes = _cases(zone)
+    classe_zone = "hx-effet" if _frappe_ensemble(zone) else "hx-portee"
     largeur = RAYON_CASE * (1.5 * PORTEE_MAX + 1)
     hauteur = RAYON_CASE * SQ3 * (PORTEE_MAX + 0.5)
 
@@ -114,7 +126,7 @@ def carte_svg(zone):
             cy = RAYON_CASE * SQ3 * (r + q / 2.0)
 
             if (q, r) in couvertes:
-                classe = "hx-zone"
+                classe = classe_zone
             elif (q, r) == (0, 0):
                 classe = "hx-soi"
             else:

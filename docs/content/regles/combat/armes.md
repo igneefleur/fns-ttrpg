@@ -4,7 +4,12 @@
 
 Une arme n'est pas une attaque, c'est un répertoire. De l'épée on tire la taille, l'estoc et le coup de pommeau ; de la lance, l'estoc long, l'estoc raccourci et le talon. Ce chapitre range les armes en dix catégories et donne, pour chacune, les gestes qu'elle permet réellement.
 
-Chaque geste porte son empreinte : une carte hexagonale où le personnage occupe le centre et regarde vers le haut, les cases pleines étant celles que le geste atteint.
+Chaque geste porte son empreinte : une carte hexagonale où le personnage occupe le centre et regarde vers le haut.
+
+<div class="gestes-legende">
+  <span><i class="lg-portee"></i>portée, une cible au choix</span>
+  <span><i></i>effet, toutes les cases frappées ensemble</span>
+</div>
 
 <div class="keep" markdown>
 
@@ -12,7 +17,11 @@ Chaque geste porte son empreinte : une carte hexagonale où le personnage occupe
 
 <div class="defs" markdown>
 
-**L'empreinte :** les cases que le geste couvre, le personnage étant au centre et regardant vers le haut. Chaque case vaut un [pas](portees.md). Un geste couvre le plus souvent une bande de deux cases, car une arme qui porte à une distance donnée atteint aussi ce qui se tient plus près ; les gestes amples couvrent trois cases contiguës, et l'estoc qui traverse une file de cases alignées.
+**L'empreinte :** les cases que le geste couvre, le personnage étant au centre et regardant vers le haut. Chaque case vaut un [pas](portees.md). Elle se lit en deux teintes, qui ne disent pas la même chose.
+
+**La portée, en teinte claire :** les cases que le geste peut atteindre. Une seule cible y est frappée, celle que l'attaquant choisit. Elle couvre le plus souvent deux cases, une arme qui porte à une distance donnée atteignant aussi ce qui se tient plus près.
+
+**L'effet, en teinte pleine :** les cases qu'un même coup frappe ensemble. Trois gestes seulement en portent dans tout le chapitre, et ce sont les seuls à atteindre plusieurs adversaires d'un coup.
 
 **Les dégâts :** ce que le geste inflige sur une touche, suivis de leur type, contondant (CON), perforant (PER) ou tranchant (TRA).
 
