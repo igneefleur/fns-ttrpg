@@ -7,8 +7,9 @@ Une arme n'est pas une attaque, c'est un répertoire. De l'épée on tire le fen
 Chaque coup porte son empreinte : une carte hexagonale où le personnage occupe le centre et regarde vers le haut.
 
 <div class="gestes-legende">
-  <span><i class="lg-portee"></i>portée, une cible au choix</span>
-  <span><i></i>effet, toutes les cases frappées ensemble</span>
+  <span><i class="lg-perso"></i>le porteur, et le sens de son regard</span>
+  <span><i></i>la case frappée</span>
+  <span><i class="lg-espace"></i>l'espace à laisser libre</span>
 </div>
 
 <div class="keep" markdown>
@@ -19,7 +20,9 @@ Chaque coup porte son empreinte : une carte hexagonale où le personnage occupe 
 
 **Le nom :** le nom français du coup, suivi du terme technique de sa source quand il en porte un. Un coup sans mention est déduit de la forme de l'arme, faute de traité.
 
-**L'empreinte :** les cases que le coup couvre, le personnage étant au centre et regardant vers le haut. Chaque case vaut un [pas](portees.md). Un coup, une case : les armes qui travaillent à deux distances portent deux coups distincts, chacun avec son nom.
+**L'"'"'empreinte :** ce que le coup couvre, le porteur étant au centre, figuré par un triangle qui montre le sens de son regard. Chaque case vaut un [pas](portees.md). Un coup, une case : les armes qui travaillent à deux distances portent deux coups distincts, chacun avec son nom.
+
+**L'"'"'espace nécessaire :** les cases cernées de vert doivent être LIBRES pour que le coup parte. La ligne du coup passe entre le porteur et sa cible, et un corps interposé l'"'"'arrête : on ne pique pas un homme à quatre pas si quelqu'"'"'un se tient à deux. C'"'"'est le prix des armes longues dans une mêlée serrée.
 
 **Les dégâts :** ce que le coup inflige sur une touche, suivis de leur type, contondant (CON), perforant (PER) ou tranchant (TRA).
 

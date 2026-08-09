@@ -147,37 +147,25 @@
   fill: var(--ink);
   fill-opacity: 0.055;
 }
-.md-typeset svg.geste-carte .hx-soi {
-  fill: var(--ink);
-  fill-opacity: 0.13;
-}
-/* Portée : les cases que le geste PEUT atteindre, une seule cible étant frappée.
-   Teinte claire et contour marqué : c'est un domaine, pas une zone d'effet. */
-.md-typeset svg.geste-carte .hx-portee {
-  fill: var(--green-title);
-  fill-opacity: 0.30;
-  stroke: var(--green-title);
-  stroke-width: 1.4;
-}
-/* Effet : les cases qu'un même coup frappe ensemble. Teinte pleine, et c'est le
-   seul endroit de la carte où le vert est saturé : les gestes qui touchent
-   plusieurs adversaires se repèrent alors d'un coup d'oeil, page entière. */
-.md-typeset svg.geste-carte .hx-effet {
+/* La zone d'attaque : vert plein. Un seul symbole, parce qu'un coup ne couvre
+   plus qu'une case sauf pour les deux balayages du livre : toute case verte est
+   frappee, il n'y a plus rien a distinguer. */
+.md-typeset svg.geste-carte .hx-zone {
   fill: var(--green-title);
   fill-opacity: 0.92;
 }
-/* Le personnage et son regard : posés par-dessus, jamais masqués par la zone. */
+/* L'espace necessaire : la meme couleur, mais vide et cernee. La case n'est pas
+   frappee, elle doit etre LIBRE pour que le coup parte. */
+.md-typeset svg.geste-carte .hx-espace {
+  fill: var(--paper);
+  stroke: var(--green-title);
+  stroke-width: 1.5;
+}
+/* Le personnage : un triangle qui pointe vers le haut, pose par-dessus. Il dit
+   d'un seul signe ou il se tient et de quel cote il regarde. */
 .md-typeset svg.geste-carte .hx-perso {
   fill: var(--ink);
-  fill-opacity: 0.55;
-}
-.md-typeset svg.geste-carte .hx-regard {
-  fill: none;
-  stroke: var(--ink);
-  stroke-opacity: 0.55;
-  stroke-width: 1.6;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  fill-opacity: 0.6;
 }
 /* Légende des deux états, posée sous le chapeau du chapitre. */
 .md-typeset .gestes-legende {
@@ -197,9 +185,20 @@
   border-radius: 2px;
   background: var(--green-title);
 }
-.md-typeset .gestes-legende .lg-portee {
-  background: color-mix(in srgb, var(--green-title) 30%, transparent);
+.md-typeset .gestes-legende .lg-espace {
+  background: var(--paper);
   box-shadow: inset 0 0 0 1.5px var(--green-title);
+}
+/* Le personnage, dans la legende : le meme triangle que sur les cartes. */
+.md-typeset .gestes-legende .lg-perso {
+  background: transparent;
+  border-left: 0.42rem solid transparent;
+  border-right: 0.42rem solid transparent;
+  border-bottom: 0.72rem solid var(--ink);
+  width: 0;
+  height: 0;
+  border-radius: 0;
+  opacity: 0.6;
 }
 
 /* ── Écrans étroits ── */

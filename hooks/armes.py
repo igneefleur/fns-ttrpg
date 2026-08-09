@@ -101,20 +101,24 @@ def _cases(zone):
     return set()
 
 
-def _frappe_ensemble(zone):
-    """Le geste frappe-t-il toutes ses cases d'un coup, ou en choisit-il une ?
+def _espace(couvertes):
+    """Les cases qui doivent être LIBRES pour que le coup parte.
 
-    Distinction essentielle, et purement visuelle jusqu'ici : une bande de portée
-    dit où le geste PEUT atteindre, une seule cible étant touchée ; un arc ou une
-    file disent ce qu'un même coup traverse. Sans deux teintes, une dague qui
-    porte à deux cases se lisait comme une dague qui fauche deux adversaires.
+    La ligne du coup passe entre le porteur et sa cible : un corps interpose
+    l'arrête. On ne pique pas un homme à quatre pas si quelqu'un se tient à deux,
+    et c'est ce qui donne son prix a une arme longue dans une melee serree.
     """
-    return zone.split(":")[0] in ("arc", "arc2", "ligne")
+    if not couvertes:
+        return set()
+    d = max(_distance(q, r) for q, r in couvertes)
+    if d < 2:
+        return set()
+    return {(0, -i) for i in range(1, d)} - couvertes
 
 
 def carte_svg(zone):
     couvertes = _cases(zone)
-    classe_zone = "hx-effet" if _frappe_ensemble(zone) else "hx-portee"
+    libres = _espace(couvertes)
     largeur = RAYON_CASE * (1.5 * PORTEE_MAX + 1)
     hauteur = RAYON_CASE * SQ3 * (PORTEE_MAX + 0.5)
 
@@ -131,9 +135,9 @@ def carte_svg(zone):
             cy = RAYON_CASE * SQ3 * (r + q / 2.0)
 
             if (q, r) in couvertes:
-                classe = classe_zone
-            elif (q, r) == (0, 0):
-                classe = "hx-soi"
+                classe = "hx-zone"
+            elif (q, r) in libres:
+                classe = "hx-espace"
             else:
                 classe = "hx-vide"
 
@@ -141,12 +145,12 @@ def carte_svg(zone):
                 f'<polygon class="{classe}" points="{_sommets(cx, cy, RAYON_CASE - 0.7)}"/>'
             )
 
-    # Le personnage : un disque au centre, et un chevron qui dit où il regarde.
-    if (0, 0) not in couvertes:
-        out.append(f'<circle class="hx-perso" cx="0" cy="0" r="{RAYON_CASE * 0.26:.2f}"/>')
+    # Le personnage : un triangle qui pointe vers le haut, et rien d'autre. Il
+    # dit d'un seul signe où il se tient et de quel côté il regarde.
+    h = RAYON_CASE * 0.62
     out.append(
-        f'<path class="hx-regard" d="M -{RAYON_CASE * 0.30:.2f} -{RAYON_CASE * 0.46:.2f} '
-        f'L 0 -{RAYON_CASE * 0.74:.2f} L {RAYON_CASE * 0.30:.2f} -{RAYON_CASE * 0.46:.2f}"/>'
+        f'<path class="hx-perso" d="M 0 -{h:.2f} '
+        f'L {h * 0.80:.2f} {h * 0.62:.2f} L -{h * 0.80:.2f} {h * 0.62:.2f} Z"/>'
     )
     out.append("</svg>")
     return "".join(out)
