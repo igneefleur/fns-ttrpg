@@ -1,4 +1,4 @@
-# FNS — systèmes de jeu de rôle
+# F&S — systèmes de jeu de rôle
 
 Deux jeux de rôle sur table, chacun avec son livre de règles et ses outils.
 
@@ -26,7 +26,7 @@ Sans but lucratif et sans lien avec les ayants droit : « Hunter × Hunter »
 appartient à Yoshihiro Togashi et à Shueisha, « Jujutsu Kaisen » à Gege Akutami et
 à Shueisha.
 
-Le site, son code et les règles Hunter × Hunter sont d'igneefleur. **Les règles
+Le site, son code et les règles Hunter × Hunter sont d'IgneeFleur. **Les règles
 Jujutsu Kaisen sont de Qyu**, et lui appartiennent : elles sont reprises ici telles
 qu'il les a écrites. Tous droits réservés par leurs auteurs respectifs.
 Voir [LICENSE.md](LICENSE.md).
