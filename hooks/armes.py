@@ -6,7 +6,8 @@ HAUT ; la zone se lit donc relativement à lui.
 
     soi         la case du personnage lui-même, le contact absolu
     pointe:2    une seule case, droit devant, à deux cases
-    arc:2       trois cases contiguës à deux cases, la frappe qui balaie
+    arc2:2      deux cases contiguës, la taille d'une arme à une main
+    arc:2       trois cases contiguës, la taille d'une arme à deux mains
     ligne:3     les trois cases alignées devant, l'estoc qui traverse
 
 Les hexagones sont à SOMMET PLAT : c'est la seule orientation où il existe une
@@ -67,6 +68,10 @@ def _cases(zone):
     if forme == "arc":
         # La case de devant et ses deux voisines du même anneau.
         return {(0, -n), (1, -n), (-1, -n + 1)}
+    if forme == "arc2":
+        # Deux cases seulement : une taille à une main balaie moins large. Le
+        # coup vient d'un côté, l'empreinte est donc dissymétrique à dessein.
+        return {(0, -n), (1, -n)}
     return set()
 
 

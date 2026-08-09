@@ -32,6 +32,14 @@ Une lance dont on a franchi la pointe se raccourcit d'un glissement de mains, et
 
 La compétence d'une arme à une distance donnée est donc le meilleur de ses gestes à cette distance, et c'est ce que les empreintes montrent.
 
+### Ce qui décide qu'un coup en atteint deux
+
+C'est la longueur du fil, non la puissance du coup. Une lame ne s'arrête pas dans le premier corps : les essais de coupe japonais, gravés sur la soie des armes, attestent des lames ayant tranché deux, trois, cinq corps empilés d'un seul coup, et jusqu'à sept pour le record connu. L'énergie n'est donc pas la limite.
+
+Ce qui limite au combat, c'est l'alignement. Des corps liés et couchés se prêtent au geste ; des hommes debout, à un mètre les uns des autres et dans des postures différentes, ne s'y prêtent presque jamais. La taille ample est donc une récompense de position plutôt qu'un coup qu'on choisit.
+
+Une arme balaie si elle a du fil à donner : l'épée en porte quatre-vingts centimètres, la grande épée davantage, le fer de hallebarde autant. Une hache n'en a que quinze : elle mord dans le premier corps et s'y arrête. Un marteau moins encore, toute sa masse allant dans un seul point. C'est pourquoi ces deux-là frappent plus fort et ne balaient pas.
+
 ### La difficulté appartient au geste
 
 Estoquer et balayer ne demandent pas la même adresse, et une même arme ne se place pas aussi bien selon le coup qu'elle porte. La difficulté d'attaque est donc portée par le geste et non par l'arme.
@@ -114,6 +122,13 @@ Ce chapitre ne donne pour l'instant que les gestes qui blessent. Ceux qui saisis
 <p class="geste-chiffres"><b>20</b> TRA</p>
 <p class="geste-diff">attaque 6</p>
 <p class="geste-note">Le fil, porté du bras et du poignet.</p>
+</div>
+
+<div class="geste" data-zone="arc2:2">
+<p class="geste-nom">Taille ample</p>
+<p class="geste-chiffres"><b>20</b> TRA, puis moitié</p>
+<p class="geste-diff">attaque 7</p>
+<p class="geste-note">Le fil balaie deux cases contiguës. Quatre-vingts centimètres de tranchant ne s'arrêtent pas au premier corps.</p>
 </div>
 
 <div class="geste" data-zone="pointe:2">
@@ -220,11 +235,11 @@ Ce chapitre ne donne pour l'instant que les gestes qui blessent. Ceux qui saisis
 <p class="arme-nom">Grande hache<span class="arme-portee">2 mains · parade 7 · réduction 8</span></p>
 <div class="gestes">
 
-<div class="geste" data-zone="arc:2">
-<p class="geste-nom">Taille ample</p>
+<div class="geste" data-zone="pointe:2">
+<p class="geste-nom">Taille</p>
 <p class="geste-chiffres"><b>32</b> TRA</p>
 <p class="geste-diff">attaque 7</p>
-<p class="geste-note">Le plus brutal des gestes tranchants, et le plus long à ramener.</p>
+<p class="geste-note">Le plus brutal des gestes tranchants, et le plus long à ramener. Le fer mord et s'arrête : il ne balaie pas.</p>
 </div>
 
 <div class="geste" data-zone="pointe:1">
@@ -241,11 +256,11 @@ Ce chapitre ne donne pour l'instant que les gestes qui blessent. Ceux qui saisis
 <p class="arme-nom">Grand marteau<span class="arme-portee">2 mains · parade 8 · réduction 8</span></p>
 <div class="gestes">
 
-<div class="geste" data-zone="arc:2">
-<p class="geste-nom">Frappe ample</p>
+<div class="geste" data-zone="pointe:2">
+<p class="geste-nom">Frappe</p>
 <p class="geste-chiffres"><b>34</b> CON</p>
 <p class="geste-diff">attaque 8</p>
-<p class="geste-note">L'impact maximal du chapitre, au prix de tout le temps qu'il demande.</p>
+<p class="geste-note">L'impact maximal du chapitre, au prix de tout le temps qu'il demande. Toute la masse va dans un seul corps.</p>
 </div>
 
 <div class="geste" data-zone="pointe:2">
