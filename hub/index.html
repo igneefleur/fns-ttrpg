@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FNS — systèmes de jeu de rôle</title>
+<meta name="description" content="Deux jeux de rôle sur table : Hunter × Hunter et Jujutsu Kaisen. Livres de règles, créateurs de personnage et outils de table.">
+<link rel="canonical" href="https://igneefleur.github.io/fns-ttrpg/">
+<!-- ============================================================================
+     LE HUB. Une seule page, à la racine du site, dont tout le rôle est de laisser
+     choisir le système. Elle ne porte AUCUNE règle : les règles vivent dans les
+     deux sites qu'elle annonce.
+
+     Volontairement sans mkdocs et sans dépendance : un fichier, ses polices, et
+     rien d'autre. Le déploiement de main écrit à la RACINE et ne peut donc pas
+     être laissé à une chaîne qui échouerait — une racine cassée, c'est le site
+     entier qui n'a plus de porte d'entrée.
+
+     La grammaire visuelle est celle des deux sites (docs/stylesheets/extra.css) :
+     parchemin et verts, Cinzel pour les titres, Alegreya pour le texte. Le thème
+     sombre reprend la palette de night.css. Rien n'est inventé ici.
+     ============================================================================ -->
+<style>
+/* ---------- Polices, auto-hébergées : aucune requête vers un tiers ----------
+   Mêmes fichiers que les deux sites, copiés dans polices/ avec leurs licences
+   (SIL Open Font License 1.1, que la redistribution oblige à joindre). */
+@font-face {
+  font-family: 'Cinzel'; font-style: normal; font-weight: 700; font-display: swap;
+  src: url('polices/cinzel-700-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Cinzel'; font-style: normal; font-weight: 700; font-display: swap;
+  src: url('polices/cinzel-700-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Alegreya'; font-style: normal; font-weight: 400; font-display: swap;
+  src: url('polices/alegreya-400-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Alegreya'; font-style: normal; font-weight: 400; font-display: swap;
+  src: url('polices/alegreya-400-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Alegreya'; font-style: italic; font-weight: 400; font-display: swap;
+  src: url('polices/alegreya-400i-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Alegreya'; font-style: italic; font-weight: 400; font-display: swap;
+  src: url('polices/alegreya-400i-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* Les symboles du livre (✦ ✧) manquent à Cinzel comme à Alegreya : servis par la
+   face dédiée et ramenés à la bonne taille par size-adjust, exactement comme dans
+   extra.css. Sans elle, ils tomberaient sur une police système, trop grosse. */
+@font-face {
+  font-family: 'Symboles JDR';
+  src: url('polices/noto-sans-symbols-2-symboles.woff2') format('woff2');
+  unicode-range: U+2726-2727;
+  size-adjust: 85%;
+}
+
+/* ---------- Palette ----------
+   Clair : celle d'extra.css. Sombre : celle de night.css. Les deux sont DESSINÉES,
+   aucun filtre. Le thème suit le réglage du système, comme le fait le mode « auto »
+   du site JJK. */
+:root {
+  --encre:        #1d1d1d;
+  --encre-douce:  #4a4a44;
+  --encre-tenue:  #6f6d63;
+  --papier:       #faf6eb;
+  --fond:         #e4ddcd;
+  --vert-titre:   #667861;
+  --vert-section: #63755e;
+  --vert-tete:    #82997b;
+  --liseré:       #c8bfa5;
+  --ombre:        0 1px 2px rgba(29,29,29,.08), 0 6px 18px rgba(29,29,29,.07);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --encre:        #e8dfcb;
+    --encre-douce:  #c8bfa8;
+    --encre-tenue:  #a89e88;
+    --papier:       #201c15;
+    --fond:         #14110c;
+    --vert-titre:   #adc08c;
+    --vert-section: #9fb37e;
+    --vert-tete:    #46543b;
+    --liseré:       #3c3527;
+    --ombre:        0 1px 2px rgba(0,0,0,.35), 0 6px 18px rgba(0,0,0,.30);
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  padding: clamp(1.5rem, 5vw, 4rem) 1.25rem clamp(2rem, 5vw, 4rem);
+  background: var(--fond);
+  color: var(--encre);
+  font-family: 'Symboles JDR', 'Alegreya', Georgia, serif;
+  font-size: clamp(1.02rem, 0.98rem + 0.25vw, 1.15rem);
+  line-height: 1.6;
+  display: flex;
+  justify-content: center;
+}
+.hub { width: 100%; max-width: 58rem; }
+
+/* ---------- En-tête ---------- */
+.enseigne { text-align: center; margin-bottom: clamp(2rem, 5vw, 3.25rem); }
+.marque {
+  margin: 0;
+  font-family: 'Cinzel', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(2.4rem, 1.8rem + 3vw, 3.9rem);
+  line-height: 1.05;
+  letter-spacing: .12em;
+  color: var(--vert-titre);
+}
+.enseigne h1 {
+  margin: .45rem 0 0;
+  font-family: 'Cinzel', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(.82rem, .74rem + .35vw, 1rem);
+  letter-spacing: .28em;
+  text-transform: uppercase;
+  color: var(--encre-tenue);
+}
+/* Le filet et son losange : la respiration des ouvertures de chapitre du livre. */
+.filet {
+  display: flex; align-items: center; gap: .9rem;
+  margin: 1.35rem auto 1.15rem; max-width: 22rem;
+  color: var(--vert-tete);
+}
+.filet::before, .filet::after {
+  content: ""; flex: 1; height: 1px; background: currentColor; opacity: .55;
+}
+.filet span { font-size: .85em; }
+.chapeau {
+  margin: 0 auto; max-width: 34rem;
+  font-style: italic; color: var(--encre-douce);
+}
+
+/* ---------- Les deux cartes ---------- */
+.systemes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(1.1rem, 3vw, 1.75rem);
+  align-items: stretch;
+}
+@media (max-width: 44rem) { .systemes { grid-template-columns: 1fr; } }
+
+.systeme {
+  display: flex; flex-direction: column;
+  background: var(--papier);
+  border: 1px solid var(--liseré);
+  border-radius: 3px;
+  box-shadow: var(--ombre);
+  overflow: hidden;
+}
+.systeme > h2 {
+  margin: 0;
+  padding: .95rem 1.25rem;
+  background: var(--vert-tete);
+  color: #faf6eb;
+  font-family: 'Cinzel', Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(1.15rem, 1.02rem + .5vw, 1.4rem);
+  letter-spacing: .06em;
+  text-align: center;
+}
+@media (prefers-color-scheme: dark) { .systeme > h2 { color: #e8dfcb; } }
+
+.corps { padding: 1.35rem 1.4rem 1.5rem; display: flex; flex-direction: column; flex: 1; }
+.corps > p { margin: 0 0 1.1rem; }
+/* La liste de ce qu'on trouve : alignée sur un tiret cadratin, comme les
+   énumérations du livre — pas de puces rondes. */
+.contenu { list-style: none; margin: 0 0 1.5rem; padding: 0; }
+/* 1.6rem, pas 1.15 : un cadratin fait à lui seul près d'un em de large, et le
+   texte venait s'y coller. */
+.contenu li {
+  position: relative; padding-left: 1.6rem;
+  color: var(--encre-douce); line-height: 1.45; margin-bottom: .3rem;
+}
+.contenu li::before {
+  content: "—"; position: absolute; left: 0; color: var(--vert-tete);
+}
+
+.entrer {
+  margin-top: auto;
+  display: block; text-align: center;
+  padding: .62rem 1rem;
+  background: var(--vert-section);
+  color: #faf6eb;
+  font-family: 'Cinzel', Georgia, serif;
+  font-weight: 700; font-size: .9rem; letter-spacing: .1em; text-transform: uppercase;
+  text-decoration: none;
+  border-radius: 2px;
+  transition: background .15s ease;
+}
+.entrer:hover, .entrer:focus-visible { background: var(--vert-titre); }
+@media (prefers-color-scheme: dark) {
+  .entrer { background: var(--vert-tete); color: #e8dfcb; }
+  .entrer:hover, .entrer:focus-visible { background: #56684a; }
+}
+.chantier {
+  margin: .7rem 0 0; text-align: center;
+  font-size: .86rem; color: var(--encre-tenue);
+}
+.chantier a { color: inherit; text-decoration-color: var(--liseré); }
+.chantier a:hover, .chantier a:focus-visible { color: var(--vert-titre); }
+
+/* ---------- Pied ---------- */
+.pied {
+  margin-top: clamp(2.25rem, 5vw, 3.5rem);
+  text-align: center;
+  font-size: .85rem; line-height: 1.55; color: var(--encre-tenue);
+}
+.pied p { margin: .35rem 0; }
+.pied a { color: inherit; }
+
+:focus-visible { outline: 2px solid var(--vert-titre); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<main class="hub">
+
+  <div class="enseigne">
+    <p class="marque">FNS</p>
+    <h1>Systèmes de jeu de rôle</h1>
+    <p class="filet"><span>✦</span></p>
+    <p class="chapeau">Deux jeux de table, chacun avec son livre de règles et ses
+      outils. Choisissez le vôtre.</p>
+  </div>
+
+  <div class="systemes">
+
+    <article class="systeme">
+      <h2>Hunter × Hunter</h2>
+      <div class="corps">
+        <p>Le Nen, ses six catégories et ses capacités sur mesure, dans un système
+          où l'on conçoit son pouvoir autant qu'on le joue.</p>
+        <ul class="contenu">
+          <li>Livre de règles complet, aussi en PDF</li>
+          <li>Créateur de personnage</li>
+          <li>Forge d'armes et atelier de Nen</li>
+          <li>Extension Roll20</li>
+        </ul>
+        <a class="entrer" href="hxh/">Entrer</a>
+        <p class="chantier"><a href="hxh-beta/">Version de chantier</a></p>
+      </div>
+    </article>
+
+    <article class="systeme">
+      <h2>Jujutsu Kaisen</h2>
+      <div class="corps">
+        <p>L'énergie occulte, les techniques héritées et les extensions du
+          territoire, pour des combats qui se jouent autant hors du dé que dessus.</p>
+        <ul class="contenu">
+          <li>Règles complètes</li>
+          <li>Fiche de personnage jouable sur Roll20</li>
+          <li>Plateau de narration</li>
+          <li>Extension Roll20</li>
+        </ul>
+        <a class="entrer" href="jjk/">Entrer</a>
+        <p class="chantier"><a href="jjk-beta/">Version de chantier</a></p>
+      </div>
+    </article>
+
+  </div>
+
+  <footer class="pied">
+    <p>Œuvres de fan, sans but lucratif et sans lien avec les ayants droit.
+      « Hunter × Hunter » appartient à Yoshihiro Togashi et à Shueisha,
+      « Jujutsu Kaisen » à Gege Akutami et à Shueisha.</p>
+    <p>Règles, textes et code © Théo Cavaillès, tous droits réservés.
+      <a href="https://github.com/igneefleur/fns-ttrpg">Dépôt</a></p>
+  </footer>
+
+</main>
+</body>
+</html>

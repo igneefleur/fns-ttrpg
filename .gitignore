@@ -1,17 +1,5 @@
-# Cache Python (hooks)
+# Cette branche ne porte que le hub (hub/index.html) : pas de build, pas de
+# dépendance, donc presque rien à ignorer. Les règles d'exclusion des deux jeux
+# vivent sur leurs branches, où elles ont un sens.
 __pycache__/
 *.pyc
-
-# Site construit : artefact régénéré par `mkdocs build`, inutile à versionner. La CI le
-# reconstruit et le publie sur la branche gh-pages. On le garde sur le disque, car
-# scripts/build_extension.py lit site/creation.json après un build.
-site/
-
-# Brouillons et rendus de debug (worldgen, dumps de mise en page)
-scratch_*
-scratchpad_*
-# Exception : image de référence de la Terre réelle, gardée (elle ne se régénère pas).
-!scratch_ref_ocean.png
-creation.debug.json
-forge.debug.json
-scripts/glossaire.json

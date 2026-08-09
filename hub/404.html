@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Page introuvable — FNS</title>
+<!-- Le 404 de la RACINE, celui que GitHub Pages sert pour tout chemin inconnu du
+     site, à n'importe quelle profondeur. Ses adresses sont donc ABSOLUES : une URL
+     relative se résoudrait par rapport au chemin fautif, et le lien de retour
+     tomberait à côté. Pas de police auto-hébergée non plus, pour la même raison —
+     et parce qu'une page d'erreur doit s'afficher quoi qu'il arrive. -->
+<style>
+:root {
+  --encre: #1d1d1d; --encre-tenue: #6f6d63; --papier: #faf6eb;
+  --fond: #e4ddcd; --vert-titre: #667861; --liseré: #c8bfa5;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --encre: #e8dfcb; --encre-tenue: #a89e88; --papier: #201c15;
+    --fond: #14110c; --vert-titre: #adc08c; --liseré: #3c3527;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; min-height: 100vh; padding: 2rem 1.25rem;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--fond); color: var(--encre);
+  font-family: Georgia, 'Times New Roman', serif; line-height: 1.6;
+}
+.bloc {
+  max-width: 32rem; width: 100%; text-align: center;
+  background: var(--papier); border: 1px solid var(--liseré); border-radius: 3px;
+  padding: clamp(1.75rem, 5vw, 2.75rem);
+}
+h1 {
+  margin: 0 0 .35rem; color: var(--vert-titre);
+  font-size: clamp(1.4rem, 1.2rem + 1vw, 1.9rem); letter-spacing: .04em;
+}
+.code { margin: 0 0 1.25rem; color: var(--encre-tenue); font-size: .9rem; letter-spacing: .18em; }
+p { margin: 0 0 1.5rem; }
+a.retour {
+  display: inline-block; padding: .55rem 1.25rem;
+  background: var(--vert-titre); color: var(--papier);
+  text-decoration: none; border-radius: 2px; letter-spacing: .06em;
+}
+</style>
+</head>
+<body>
+  <div class="bloc">
+    <p class="code">ERREUR 404</p>
+    <h1>Cette page n'existe pas</h1>
+    <p>Le lien est peut-être ancien : le site a changé d'adresse et d'organisation.
+      Repartez de l'accueil pour choisir votre système.</p>
+    <a class="retour" href="/fns-ttrpg/">Retour à l'accueil</a>
+  </div>
+</body>
+</html>

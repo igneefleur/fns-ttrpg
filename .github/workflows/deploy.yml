@@ -3,20 +3,20 @@ on:
   push:
     branches:
       - main
-      - beta
+  workflow_dispatch: {}   # relance manuelle
 permissions:
   contents: write
-# Les quatre branches (main, beta, jjk, jjk-beta) écrivent sur la même branche
-# gh-pages : un groupe de concurrence commun (partagé entre workflows du dépôt)
+# Les cinq branches écrivent sur la même branche gh-pages, chacune dans son
+# dossier : un groupe de concurrence commun (partagé entre workflows du dépôt)
 # sérialise leurs déploiements, et force: false fait rebaser l'action (avec
 # réessais) au lieu de force-pusser, pour qu'un run ne puisse pas écraser le
 # travail d'un autre.
 #
-# EN CONTREPARTIE, ON NE POUSSE PAS QUATRE BRANCHES D'AFFILÉE. Le groupe ne garde
-# qu'UN run en attente : le troisième qui arrive annule celui qui patientait, et
-# la branche concernée n'est jamais déployée — « completed / cancelled », aucune
-# erreur, rien à lire. Pousser une branche, attendre la fin de son run, pousser la
-# suivante.
+# EN CONTREPARTIE, ON NE POUSSE PAS PLUSIEURS BRANCHES D'AFFILÉE. Le groupe ne
+# garde qu'UN run en attente : le troisième qui arrive annule celui qui
+# patientait, et la branche concernée n'est jamais déployée — « completed /
+# cancelled », aucune erreur, rien à lire. Pousser une branche, attendre la fin
+# de son run, pousser la suivante.
 concurrency:
   group: gh-pages
   cancel-in-progress: false
@@ -25,81 +25,36 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0   # historique complet pour le changelog (hooks/changelog.py)
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'   # version éprouvée avec weasyprint==62.3 (évite le bleeding-edge 3.14)
 
-      # Bibliothèques natives requises par WeasyPrint (Pango >= 1.44 ; cairo et
-      # gdk-pixbuf ne sont plus nécessaires depuis WeasyPrint 53). On installe
-      # aussi EB Garamond (police du corps) pour un rendu déterministe.
-      - name: Dépendances système WeasyPrint + polices
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            libpango-1.0-0 \
-            libpangoft2-1.0-0 \
-            libharfbuzz0b \
-            libharfbuzz-subset0 \
-            fonts-ebgaramond \
-            fontconfig
-          fc-cache -f
+      # AUCUNE CONSTRUCTION ICI, ET C'EST VOULU. Le hub est un fichier statique
+      # (hub/index.html) : ni mkdocs, ni Python, ni dépendance à installer. Cette
+      # branche est la seule à écrire à la RACINE du site ; une chaîne qui
+      # échouerait laisserait le site entier sans porte d'entrée, alors que les
+      # deux jeux, eux, continueraient de se déployer dans leurs dossiers.
 
-      # mkdocs-to-pdf 0.11.2 épingle weasyprint==62.3, qui plante (AssertionError:
-      # assert root_box) à la pagination de certaines pages. On force donc une
-      # version récente de weasyprint + pydyf, validée localement, qui corrige le
-      # bug ; l'API utilisée par mkdocs-to-pdf reste compatible. brotli sert à
-      # décoder les woff2 des Google Fonts (@import dans extra.css : Cinzel).
-      - name: Dépendances Python
-        run: |
-          pip install mkdocs-material "mkdocs-to-pdf==0.11.2" brotli
-          pip install -U "weasyprint==69.0" "pydyf==0.12.1"
-
-      # Build avec la config CI (qui active le plugin PDF). La variable
-      # ENABLE_PDF_EXPORT déclenche réellement la génération du PDF.
-      - name: Build (PDF activé)
-        env:
-          ENABLE_PDF_EXPORT: "1"
-          NO_MKDOCS_2_WARNING: "1"   # coupe l'encadré promo « MkDocs 2.0 » de Material dans les logs
-        run: mkdocs build --config-file mkdocs.ci.yml
-
-      # Un seul site GitHub Pages (branche gh-pages), QUATRE emplacements :
-      #   main     -> racine     https://igneefleur.github.io/fns-ttrpg-rules/
-      #   beta     -> beta/      https://igneefleur.github.io/fns-ttrpg-rules/beta/
-      #   jjk      -> jjk/       https://igneefleur.github.io/fns-ttrpg-rules/jjk/
-      #   jjk-beta -> jjk-beta/  https://igneefleur.github.io/fns-ttrpg-rules/jjk-beta/
-      #     (les deux derniers déployés par leurs branches, qui portent leur propre
-      #     deploy.yml)
-      # On n'utilise plus « mkdocs gh-deploy --force », qui écraserait toute la
-      # branche gh-pages (les trois autres dossiers compris) à chaque déploiement :
-      # l'action nettoie sa zone et épargne les autres.
+      # Un seul site GitHub Pages (branche gh-pages), CINQ emplacements :
+      #   main     -> racine     https://igneefleur.github.io/fns-ttrpg/          (CE workflow)
+      #   hxh-main -> hxh/       https://igneefleur.github.io/fns-ttrpg/hxh/
+      #   hxh-beta -> hxh-beta/  https://igneefleur.github.io/fns-ttrpg/hxh-beta/
+      #   jjk-main -> jjk/       https://igneefleur.github.io/fns-ttrpg/jjk/
+      #   jjk-beta -> jjk-beta/  https://igneefleur.github.io/fns-ttrpg/jjk-beta/
       #
-      # LA LISTE DOIT PORTER TOUS LES AUTRES DOSSIERS, SANS EXCEPTION. Seul main
-      # déploie à la RACINE, donc seul son nettoyage voit les dossiers des autres
-      # branches : ce qui n'est pas nommé ici est effacé du site, sans que rien
-      # n'échoue et sans qu'aucune branche n'ait bougé. jjk-beta y manquait, et le
-      # premier déploiement de main l'a fait disparaître du site ; la branche, elle,
-      # était intacte, ce qui rend la panne illisible tant qu'on cherche du côté du
-      # contenu. Une branche de plus = une ligne de plus ici, le même jour.
-      - name: Déploiement officiel (main -> racine, beta/, jjk/ et jjk-beta/ épargnés)
-        if: github.ref == 'refs/heads/main'
+      # LA LISTE clean-exclude DOIT PORTER TOUS LES AUTRES DOSSIERS, SANS
+      # EXCEPTION. Seul ce déploiement écrit à la racine, donc seul son nettoyage
+      # voit les dossiers des autres branches : ce qui n'est pas nommé ici est
+      # effacé du site, sans que rien n'échoue et sans qu'aucune branche n'ait
+      # bougé. jjk-beta y a déjà manqué, et le site de chantier JJK a disparu ;
+      # la panne est illisible tant qu'on cherche du côté du contenu. Une branche
+      # de plus = une ligne de plus ici, le même jour.
+      - name: Déploiement du hub (main -> racine)
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: site
+          folder: hub
           branch: gh-pages
           clean: true
           force: false
           clean-exclude: |
-            beta
+            hxh
+            hxh-beta
             jjk
             jjk-beta
-      - name: Déploiement beta (beta -> beta/)
-        if: github.ref == 'refs/heads/beta'
-        uses: JamesIves/github-pages-deploy-action@v4
-        with:
-          folder: site
-          branch: gh-pages
-          target-folder: beta
-          clean: true
-          force: false

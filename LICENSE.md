@@ -46,4 +46,4 @@ présente licence** : ils restent régis par la leur, et rien ici n'y déroge.
 
 ## Demandes d'autorisation
 
-Par une *issue* sur le dépôt : <https://github.com/igneefleur/fns-ttrpg-rules>
+Par une *issue* sur le dépôt : <https://github.com/igneefleur/fns-ttrpg>
