@@ -8,9 +8,9 @@ sans rapport d'une branche à l'autre** :
 | Branche | Jeu | Dossier publié |
 |---|---|---|
 | `main` | — | racine `/` — le hub, qui laisse choisir le système |
-| `hxh-main` | HxH | `/hxh/` — site officiel, épuré |
+| `hxh` | HxH | `/hxh/` — site officiel, épuré |
 | `hxh-beta` | HxH | `/hxh-beta/` — chantier |
-| `jjk-main` | JJK | `/jjk/` — ce que les joueurs utilisent |
+| `jjk` | JJK | `/jjk/` — ce que les joueurs utilisent |
 | `jjk-beta` | JJK | `/jjk-beta/` — chantier |
 
 `git branch --show-current` **avant** toute action. Un `grep` ou un souvenir de
@@ -62,7 +62,7 @@ adresses publiées, extension comprise. À éviter ; et si c'est inévitable, le
 
 ## Extension JJK — le point le plus coûteux du dépôt
 
-Ne modifier `extension/` sur `jjk-main` / `jjk-beta` qu'en stricte nécessité et
+Ne modifier `extension/` sur `jjk` / `jjk-beta` qu'en stricte nécessité et
 après accord explicite : tout changement de contenu déclenche une soumission de
 signature chez Mozilla, dont le quota quotidien est très serré. Chercher d'abord
 une solution 100 % site — l'architecture en coquille existe pour ça. Ne jamais

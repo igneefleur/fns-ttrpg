@@ -2,7 +2,7 @@ name: website deployment
 on:
   push:
     branches:
-      - jjk-main
+      - jjk
   workflow_dispatch: {}   # relance manuelle (ex. quota AMO retombé)
 permissions:
   contents: write
@@ -101,21 +101,22 @@ jobs:
           fi
       # Un seul site GitHub Pages (branche gh-pages), CINQ emplacements :
       #   main     -> racine     https://igneefleur.github.io/fns-ttrpg/          (le hub)
-      #   hxh-main -> hxh/       https://igneefleur.github.io/fns-ttrpg/hxh/
+      #   hxh      -> hxh/       https://igneefleur.github.io/fns-ttrpg/hxh/
       #   hxh-beta -> hxh-beta/  https://igneefleur.github.io/fns-ttrpg/hxh-beta/
-      #   jjk-main -> jjk/       https://igneefleur.github.io/fns-ttrpg/jjk/      (CE workflow)
+      #   jjk      -> jjk/       https://igneefleur.github.io/fns-ttrpg/jjk/      (CE workflow)
       #   jjk-beta -> jjk-beta/  https://igneefleur.github.io/fns-ttrpg/jjk-beta/
       #
-      # LA BRANCHE S'APPELLE jjk-main, LE DOSSIER RESTE jjk/, ET CE N'EST PAS UNE
-      # INCOHÉRENCE. Ce chemin est cuit dans le paquet SIGNÉ que les joueurs ont
-      # installé — adresse de la fiche et adresse des mises à jour. Le renommer
-      # coûterait une réinstallation manuelle à chacun d'eux et une signature
-      # Mozilla de plus, pour rien. Le nom d'une branche est interne ; ce chemin-là
-      # est public et engage.
+      # LE DOSSIER jjk/ NE SE RENOMME PAS, quoi qu'il arrive à la branche. Ce
+      # chemin est cuit dans le paquet SIGNÉ que les joueurs ont installé —
+      # adresse de la fiche et adresse des mises à jour — et rien ne redirige :
+      # le changer leur coûterait une réinstallation manuelle à chacun, plus une
+      # signature Mozilla. Le nom de la branche, lui, est interne et se renomme
+      # sans conséquence ; c'est d'ailleurs ce qui a été fait deux fois le même
+      # jour. Ne pas déduire de leur nom identique qu'ils sont liés.
       #
       # Avec target-folder, « clean » ne nettoie QUE le dossier cible : les quatre
       # autres emplacements sont épargnés par ce déploiement.
-      - name: Déploiement JJK officiel (jjk-main -> jjk/)
+      - name: Déploiement JJK officiel (jjk -> jjk/)
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: site
