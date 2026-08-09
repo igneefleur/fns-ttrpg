@@ -19,7 +19,7 @@ plugins:
       output_path: pdf/livre-de-regles.pdf    # => https://igneefleur.github.io/fns-ttrpg/hxh/pdf/livre-de-regles.pdf
       cover_title: HxH Système JDR
       cover_subtitle: Livre de Règles
-      author: igneefleur
+      author: IgneeFleur
       toc_title: Table des matières
       exclude_pages:                          # le PDF ne contient QUE le livre (règles + univers)
         - '^\.?/?$'                           # accueil (changelog + extension Roll20) : URL '.' ou './'
