@@ -66,9 +66,9 @@ jobs:
 
       # Un seul site GitHub Pages (branche gh-pages), CINQ emplacements :
       #   main     -> racine     https://igneefleur.github.io/fns-ttrpg/          (le hub)
-      #   hxh-main -> hxh/       https://igneefleur.github.io/fns-ttrpg/hxh/
+      #   hxh      -> hxh/       https://igneefleur.github.io/fns-ttrpg/hxh/
       #   hxh-beta -> hxh-beta/  https://igneefleur.github.io/fns-ttrpg/hxh-beta/ (CE workflow)
-      #   jjk-main -> jjk/       https://igneefleur.github.io/fns-ttrpg/jjk/
+      #   jjk      -> jjk/       https://igneefleur.github.io/fns-ttrpg/jjk/
       #   jjk-beta -> jjk-beta/  https://igneefleur.github.io/fns-ttrpg/jjk-beta/
       #
       # Avec target-folder, « clean » ne nettoie QUE le dossier cible : les quatre
