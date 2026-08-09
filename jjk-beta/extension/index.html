@@ -1,0 +1,736 @@
+
+<!doctype html>
+<html lang="fr" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://igneefleur.github.io/fns-ttrpg/jjk-beta/extension/">
+      
+      
+        <link rel="prev" href="../content/mods/">
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Extension - JJK Système JDR</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/fonts.css">
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css?v=13">
+    
+      <link rel="stylesheet" href="../stylesheets/night.css">
+    
+      <link rel="stylesheet" href="../stylesheets/jjk.css?v=1">
+    
+      <link rel="stylesheet" href="../stylesheets/jjk-fiche.css?v=58">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  
+  
+  <script>
+    (function () {
+      if (location.pathname.indexOf("/content/") !== -1) {
+        document.documentElement.classList.add("book-mode", "book-loading");
+        setTimeout(function () {
+          document.documentElement.classList.remove("book-loading");
+        }, 2000);
+      }
+    })();
+  </script>
+  
+  <script>
+    (function () {
+      try {
+        if (localStorage.getItem("night") === "1") {
+          document.documentElement.classList.add("night");
+        }
+      } catch (e) {}
+    })();
+  </script>
+
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#extension" class="md-skip">
+          Aller au contenu
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="En-tête">
+    <a href=".." title="JJK Système JDR" class="md-header__button md-logo" aria-label="JJK Système JDR" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            JJK Système JDR
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Extension
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Rechercher" placeholder="Rechercher" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Recherche">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Effacer" aria-label="Effacer" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initialisation de la recherche
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Onglets" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../content/regles/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Règles
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../personnage/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Création
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../content/mods/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Mods
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Extension
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="JJK Système JDR" class="md-nav__button md-logo" aria-label="JJK Système JDR" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    JJK Système JDR
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Règles
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../personnage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Création
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/mods/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mods
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Extension
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Extension
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table des matières">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table des matières
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#la-fiche-jjk-sur-roll20" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        La fiche JJK sur Roll20
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="La fiche JJK sur Roll20">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mode-beta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mode beta
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table des matières">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table des matières
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#la-fiche-jjk-sur-roll20" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        La fiche JJK sur Roll20
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="La fiche JJK sur Roll20">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mode-beta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mode beta
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="extension">Extension</h1>
+<h2 id="la-fiche-jjk-sur-roll20">La fiche JJK sur Roll20</h2>
+<p>Une extension (Firefox ou Chrome) affiche une fiche de personnage JJK à la place
+de la fiche Roll20, et envoie ses jets dans le tchat. Les personnages se créent
+dans le <a href="../personnage/">créateur de personnage</a> ; l'extension les
+récupère et les présente dans une partie Roll20, via un onglet « Fiche JJK »
+ajouté à la fiche du personnage.</p>
+<h3 id="mode-beta">Mode beta</h3>
+<p>Une seule extension, deux versions de la fiche. Le fichier est le MÊME sur les
+deux sites : peu importe d'où il est téléchargé, c'est son réglage qui décide.
+Son bouton dans la barre du navigateur ouvre un panneau qui porte
+l'interrupteur « Beta » : coché, la fiche affichée dans Roll20 est celle de la
+beta, là où les nouveautés arrivent en premier, au risque de casses
+passagères ; décoché, elle revient à la version stable. L'onglet du dialogue de
+personnage s'annonce alors « Fiche JJK beta », pour qu'on sache toujours quelle
+version on remplit.</p>
+<p>Les deux versions écrivent les mêmes Attributes du personnage : un aller-retour
+ne perd rien, et les autres joueurs ne voient aucune différence.</p>
+<style>
+.ext-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.1rem; margin:1rem 0 1.25rem; align-items:start; }
+@media (max-width:720px){ .ext-grid{ grid-template-columns:1fr; } }
+.md-typeset .ext-grid .mcard { margin:0; }
+.md-typeset .ext-card .md-button { font-size:.62rem; padding:.3em .9em; margin:.15rem 0 .55rem; }
+.md-typeset .ext-card ol.ext-steps { font-size:.66rem; margin:.2rem 0 0; padding-left:1.15rem; }
+.md-typeset .ext-card ol.ext-steps li { margin:.24rem 0; text-align:left; }
+.ext-url { display:inline-flex; align-items:center; gap:.3rem; }
+.ext-url code { white-space:nowrap; }
+.md-typeset .ext-copy {
+  font-family:'Cinzel', Garamond, serif; font-size:.6rem; letter-spacing:.03em;
+  border:1px solid var(--md-default-fg-color--lightest,#d9d2bf); border-radius:4px;
+  background:transparent; color:var(--green-title,#667861); padding:.06rem .42rem; cursor:pointer;
+}
+.md-typeset .ext-copy:hover { border-color:var(--green-title,#667861); }
+.md-typeset .ext-copy.ok { border-color:var(--green-title,#667861); font-weight:700; }
+</style>
+
+<div class="ext-grid">
+  <div class="mcard ext-card">
+    <p><strong>Firefox</strong><span class="prereq">Signée par Mozilla · installation permanente</span></p>
+    <p><a class="md-button" href="../download/jjk-roll20-firefox.xpi" download>Télécharger (.xpi)</a></p>
+    <ol class="ext-steps">
+      <li>télécharger le fichier <code>.xpi</code> ;</li>
+      <li>l'ouvrir avec Firefox : <kbd>Ctrl</kbd>+<kbd>J</kbd> (téléchargements)
+          puis double-clic sur le fichier, ou le glisser dans une fenêtre Firefox ;</li>
+      <li>confirmer « Ajouter » : l'installation est définitive et les mises à
+          jour se font toutes seules depuis ce site.</li>
+    </ol>
+  </div>
+  <div class="mcard ext-card">
+    <p><strong>Chrome / Edge</strong><span class="prereq">Mode développeur · dossier décompressé</span></p>
+    <p><a class="md-button" href="../download/jjk-roll20-chrome.zip" download>Télécharger (.zip)</a></p>
+    <ol class="ext-steps">
+      <li>décompresser le <code>.zip</code> dans un dossier (à conserver : le
+          navigateur y lit l'extension) ;</li>
+      <li>ouvrir : <span class="ext-url"><code>chrome://extensions</code><button class="ext-copy" type="button" data-copy="chrome://extensions">copier</button></span>
+          (Edge : <span class="ext-url"><code>edge://extensions</code><button class="ext-copy" type="button" data-copy="edge://extensions">copier</button></span>) ;</li>
+      <li>activer le « Mode développeur » (« Developer mode ») ;</li>
+      <li>« Charger l'extension non empaquetée » (« Load unpacked ») et choisir
+          le dossier décompressé.</li>
+    </ol>
+  </div>
+</div>
+
+<p>La fiche affichée dans Roll20 est chargée depuis le site à chaque ouverture :
+les évolutions du créateur et des règles arrivent toutes seules, sans mise à
+jour de l'extension (une connexion internet est nécessaire pendant la partie).
+La fiche lue dépend de l'interrupteur « Mode beta » ci-dessus.</p>
+<p>Ensuite : ouvrir le <a href="../personnage/">créateur de personnage</a> une fois
+(les fiches se synchronisent), puis, dans une partie Roll20, ouvrir un personnage
+et cliquer l'onglet « Fiche JJK » (entre « Feuille de personnage » et
+« Bio &amp; Info »). Si le personnage n'a pas encore de fiche, un bouton
+« Créer fiche JJK » en fabrique une, enregistrée dans le personnage Roll20
+lui-même (partagée avec tous les joueurs qui le contrôlent).</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Pied de page" >
+        
+          
+          <a href="../content/mods/" class="md-footer__link md-footer__link--prev" aria-label="Précédent: Mods">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Précédent
+              </span>
+              <div class="md-ellipsis">
+                Mods
+              </div>
+            </div>
+          </a>
+        
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      © 2026 Théo Cavaillès. Tous droits réservés. Œuvre de fan, non affiliée à Shueisha.
+    </div>
+  
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.instant", "navigation.tabs", "navigation.tabs.sticky", "navigation.expand", "navigation.indexes", "navigation.footer", "content.tooltips"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copi\u00e9 dans le presse-papier", "clipboard.copy": "Copier dans le presse-papier", "search.result.more.one": "1 de plus sur cette page", "search.result.more.other": "# de plus sur cette page", "search.result.none": "Aucun document trouv\u00e9", "search.result.one": "1 document trouv\u00e9", "search.result.other": "# documents trouv\u00e9s", "search.result.placeholder": "Taper pour d\u00e9marrer la recherche", "search.result.term.missing": "Non trouv\u00e9", "select.version": "S\u00e9lectionner la version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../javascripts/continuous.js"></script>
+      
+        <script src="../javascripts/nav-drawer.js"></script>
+      
+        <script src="../javascripts/night.js"></script>
+      
+        <script src="../javascripts/jjk-migrations.js?v=58"></script>
+      
+        <script src="../javascripts/jjk-mods.js?v=58"></script>
+      
+        <script src="../javascripts/jjk-fiche.js?v=58"></script>
+      
+        <script src="../javascripts/copybtn.js"></script>
+      
+    
+  </body>
+</html>

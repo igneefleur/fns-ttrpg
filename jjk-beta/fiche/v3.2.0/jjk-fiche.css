@@ -1,0 +1,990 @@
+/* Création JJK — créateur de personnage, mise en page « dossier ».
+ *
+ * Transposition du système visuel du créateur HxH (creation.css) : feuille
+ * chaude posée sur le parchemin, hiérarchie sérif, filets fins, un seul accent
+ * carmin (onglet actif, valeurs finales, focus). Contrôles unifiés (steppers
+ * fantômes, champs à filet, cartes douces). Palette scindée jour/nuit.
+ * Toutes les tailles sont en rem : build_extension.py les réécrit en
+ * calc(N * var(--pc-rem)) pour l'iframe Roll20. */
+
+/* rem FIGÉ sur la page du créateur : la feuille garde une taille stable. */
+html:has(#perso-atelier) { font-size: 22px !important; }
+
+/* Pleine largeur, uniquement sur la page de la Création. */
+body:has(#perso-atelier) .md-grid { max-width: none !important; margin: 0 !important; }
+body:has(#perso-atelier) .md-content,
+body:has(#perso-atelier) .md-content__inner,
+body:has(#perso-atelier) .md-content > .md-content__inner { max-width: none !important; margin: 0 !important; padding: 0 !important; }
+body:has(#perso-atelier) .md-content__inner::before { display: none !important; }
+body:has(#perso-atelier) .md-content__inner > h1:first-child { display: none; }
+body:has(#perso-atelier) .md-sidebar--secondary,
+body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
+
+.perso-atelier {
+  --paper:   #faf6eb;   /* la feuille (site : héritée d'extra.css ; iframe : ce repli) */
+  --bg-side: #e4ddcd;   /* le plan de travail */
+  --card:    #fffdf6;   /* cartes de section */
+  --panel:   #f6efdd;   /* encadrés doux, tuiles chiffrées */
+  --stripe:  #f1e8d3;   /* zébrage des lignes */
+  --hair:    #e2d8c0;   /* filets fins */
+  --line:    #c6bb9f;   /* bordures et soulignés */
+  --line-2:  #d6cbb1;   /* bordures de cartes */
+  --ink:     #20180c;
+  --ink-2:   #453d2d;
+  --ink-3:   #746a54;
+  --red:     #a5271c;
+  --red-deep:#7c130c;
+  --wash:    rgba(165, 39, 28, .09);
+  --ok:      #4f7a3a;
+
+  /* échelle typographique dense */
+  --fs-label: .54rem;
+  --fs-meta:  .6rem;
+  --fs-body:  .68rem;
+  --fs-value: .76rem;
+  --fs-title: .68rem;
+  --fs-hero:  1.05rem;
+  --gut: .7rem;
+  --pc-sheet-w: 50rem;
+
+  color: var(--ink);
+  background: var(--bg-side);
+  min-height: 74vh;
+  font-family: 'Alegreya', 'EB Garamond', Garamond, serif;
+  font-size: var(--fs-body);
+  line-height: 1.4;
+  padding-bottom: 3rem;
+  overflow-x: auto;   /* la feuille garde sa largeur : on défile plutôt que rétrécir */
+}
+
+/* ---- barre d'outils (hors feuille) ---- */
+.perso-atelier .pc-top {
+  display: flex; align-items: center; gap: .5rem; flex-wrap: wrap;
+  padding: .5rem 1.1rem; background: #e7dfc9; border-bottom: 1px solid #d7cdb2;
+}
+.pc-top-title { font-family: 'Cinzel', serif; font-weight: 600; font-size: 1.02rem; letter-spacing: .06em; color: #47543e; }
+.pc-top-hint { font-size: .72rem; color: #8c8574; }
+.pc-btn {
+  padding: .3rem .75rem; border: 1px solid #cabf9f; border-radius: 7px;
+  background: #fdfaf1; color: #5b564a; font: inherit; font-size: .75rem; cursor: pointer;
+  transition: background .12s, border-color .12s, color .12s;
+}
+.pc-btn:hover { background: #fff; border-color: #a99e7f; color: #2a2820; }
+.pc-btn.danger { color: var(--red); }
+.pc-btn.danger:hover { border-color: var(--red); background: var(--wash); color: var(--red-deep); }
+.pc-top .pc-lib { margin-left: auto; display: flex; gap: .35rem; align-items: center; flex-wrap: wrap; }
+.pc-top .pc-lib select { max-width: 220px; padding: .3rem .5rem; border: 1px solid #cabf9f; border-radius: 7px; background: #fdfaf1; color: #2a2820; font: inherit; font-size: .75rem; }
+@media (max-width: 700px) {
+  .perso-atelier .pc-top .pc-lib { margin-left: 0; }
+  .perso-atelier .pc-top .pc-lib select { max-width: none; min-width: 0; flex: 1 1 120px; }
+}
+
+/* ---- la feuille : largeur fixe ---- */
+.pc-sheet {
+  width: var(--pc-sheet-w, 50rem); max-width: none; margin: 1.1rem auto 0; background: var(--paper);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, .18);
+  padding: .9rem 1rem 1.3rem;
+}
+
+/* ---- en-tête d'identité (infos importantes + portrait compact) ---- */
+/* align-items: stretch : le portrait prend EXACTEMENT la hauteur de l'en-tête */
+.pc-head { display: flex; gap: .8rem; align-items: stretch; border-bottom: 1px solid var(--line); padding-bottom: .55rem; }
+/* portrait : carré 1:1 aux coins arrondis, haut comme le bloc d'identité. Les
+   DEUX dimensions sont posées en JS (= hauteur mesurée du bloc, plafonnée) :
+   les transferts aspect-ratio depuis un étirement flex sont infiables, et une
+   largeur en CSS contredirait le calcul. 3rem = taille d'attente. */
+.pc-portrait-box { position: relative; flex: 0 0 auto; width: 3rem; height: 3rem; cursor: pointer; }
+.pc-portrait-box .clip {
+  width: 100%; height: 100%; overflow: hidden; box-sizing: border-box;
+  border: 1px solid var(--line-2); border-radius: 8px; background: var(--panel);
+  transition: border-color .12s;
+}
+.pc-portrait-box:hover .clip { border-color: var(--line); }
+.pc-portrait-box img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pc-portrait-box.vide img { display: none; }
+.pc-portrait-box .ph { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; color: var(--line); font-size: 1.2rem; }
+.pc-portrait-box.vide .ph { display: flex; }
+.pc-portrait-edit {
+  position: absolute; left: 0; top: calc(100% + .2rem); z-index: 5; width: 11rem;
+  border: 1px solid var(--line); border-radius: 5px; background: var(--card);
+  color: var(--ink); font: inherit; font-size: .6rem; padding: .18rem .3rem;
+  box-shadow: 0 2px 8px rgba(60, 48, 18, .18); box-sizing: border-box;
+}
+.pc-portrait-edit:focus { outline: none; border-color: var(--red); }
+
+/* coût d'un passif (onglet Art), à droite de son nom, en mode édition */
+.pc-tech-cout { flex: 0 0 auto; display: inline-flex; align-items: baseline; gap: .12rem; }
+.pc-tech-cout input {
+  width: 2.4rem; min-width: 0; border: none; border-bottom: 1px solid var(--hair);
+  background: transparent; color: var(--ink); font: inherit; font-size: .68rem;
+  text-align: right; padding: .02rem .1rem .05rem; border-radius: 0;
+  font-variant-numeric: tabular-nums; -moz-appearance: textfield; appearance: textfield;
+}
+.pc-tech-cout input::-webkit-inner-spin-button, .pc-tech-cout input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.pc-tech-cout input:focus { outline: none; border-bottom: 2px solid var(--red); }
+.pc-tech-cout .u { font-size: .52rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); }
+/* 2e ligne : compteurs Création / XP dépensé (barres étirées) + XP total */
+.pc-id-meters { grid-column: 1 / -1; display: flex; align-items: flex-end; gap: .4rem 1.1rem; flex-wrap: wrap; margin-top: .15rem; }
+.pc-id-meters .pc-meter { flex: 1 1 9rem; min-width: 0; }
+.pc-id-meters .pc-meter .bar { flex: 1; width: auto; min-width: 3rem; }
+.pc-id-meters .pc-f { flex: 0 0 5.5rem; }
+.pc-id { flex: 1; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: .35rem .6rem; align-content: start; }
+.pc-f { display: flex; flex-direction: column; gap: .08rem; min-width: 0; }
+.pc-f > label { font-size: .52rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); white-space: nowrap; }
+.pc-f > input, .pc-f > select {
+  width: 100%; min-width: 0; border: none; border-bottom: 1px solid var(--line);
+  background: transparent; color: var(--ink); font: inherit; font-size: .74rem; font-weight: 600;
+  padding: .03rem .1rem .08rem; text-align: left; border-radius: 0;
+}
+.pc-f > input:focus, .pc-f > select:focus { outline: none; border-bottom: 2px solid var(--red); }
+.pc-f > input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+.pc-f > input[type="number"]::-webkit-inner-spin-button, .pc-f > input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.pc-f > .pc-ro { text-align: left; font-weight: 700; padding: .05rem .1rem .12rem; border-bottom: 1px solid var(--hair); color: var(--red-deep); font-variant-numeric: tabular-nums; }
+.pc-f.c12 { grid-column: span 12; } .pc-f.c6 { grid-column: span 6; }
+.pc-f.c4 { grid-column: span 4; } .pc-f.c3 { grid-column: span 3; } .pc-f.c2 { grid-column: span 2; }
+
+/* ---- compteurs de budgets ---- */
+.pc-meter { display: flex; align-items: center; gap: .4rem; font-size: .58rem; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; color: var(--ink-3); }
+.pc-meter b { font-variant-numeric: tabular-nums; font-size: .72rem; color: var(--ink); text-transform: none; letter-spacing: 0; }
+.pc-meter b.over { color: var(--red); }
+.pc-meter .bar { width: 84px; height: 4px; background: var(--stripe); border-radius: 3px; overflow: hidden; }
+.pc-meter .bar > i { display: block; height: 100%; background: var(--ok); border-radius: 3px; transition: width .15s; }
+.pc-meter .bar > i.over { background: var(--red); }
+
+/* ---- onglets : contrôle segmenté ---- */
+.pc-tabs { display: flex; gap: .2rem; margin: .5rem 0 .3rem; padding: .2rem; background: var(--panel); border: 1px solid var(--hair); border-radius: 9px; }
+.pc-tab {
+  flex: 1 1 auto; text-align: center; cursor: pointer; user-select: none;
+  border-radius: 7px; padding: .3rem .7rem; border: 1px solid transparent;
+  font-weight: 600; font-size: .7rem; letter-spacing: .02em; color: var(--ink-2);
+  transition: background .12s, color .12s, box-shadow .12s;
+}
+.pc-tab:hover { background: rgba(90, 70, 30, .07); color: var(--ink); }
+.pc-tab.on { background: var(--red); color: #fff; box-shadow: 0 1px 4px rgba(124, 19, 12, .28); }
+.pc-tab.on:hover { background: var(--red-deep); color: #fff; }
+
+/* ---- barre d'envoi (Roll20) : destinataire + modificateur ---- */
+/* Posée entre l'en-tête et les avertissements, JAMAIS dans .pc-id (grille de
+   12 colonnes pleine, et sa hauteur commande la taille du portrait). */
+.pc-envoi {
+  display: flex; align-items: center; gap: .3rem .45rem; flex-wrap: wrap;
+  margin: .45rem 0 0; padding: .25rem .35rem;
+  background: var(--panel); border: 1px solid var(--hair); border-radius: 9px;
+}
+.pc-envoi > .lbl {
+  font-size: .58rem; font-weight: 700; letter-spacing: .04em;
+  color: var(--ink-3); white-space: nowrap;
+}
+.pc-envoi-segs { display: flex; min-width: 0; }
+.pc-envoi-segs .seg {
+  border: 1px solid var(--line-2); border-left-width: 0; background: var(--card);
+  color: var(--ink-2); font: inherit; font-size: .62rem; font-weight: 600;
+  padding: .16rem .5rem; cursor: pointer; white-space: nowrap; min-width: 0;
+  transition: background .12s, color .12s;
+}
+.pc-envoi-segs .seg:first-child { border-left-width: 1px; border-radius: 5px 0 0 5px; }
+.pc-envoi-segs .seg:last-child { border-radius: 0 5px 5px 0; }
+.pc-envoi-segs .seg:hover { color: var(--ink); background: var(--stripe); }
+.pc-envoi-segs .seg.on { background: var(--red); border-color: var(--red-deep); color: #fff; }
+.pc-envoi-segs .seg.on:hover { background: var(--red-deep); color: #fff; }
+.pc-envoi .pc-select { flex: 0 1 8.6rem; width: auto; min-width: 0; font-size: .62rem; }
+
+/* ---- avertissements ---- */
+.pc-warns { margin: .35rem 0 .15rem; display: flex; flex-direction: column; gap: .15rem; }
+.pc-warns:empty { display: none; }
+.pc-warn { font-size: .64rem; font-weight: 600; color: var(--red-deep); background: var(--wash); border-left: 2px solid var(--red); border-radius: 0 4px 4px 0; padding: .14rem .45rem; line-height: 1.25; }
+.pc-warn::before { content: "⚠ "; }
+
+/* ---- colonnes d'un onglet ---- */
+.pc-pane { display: none; padding-top: .35rem; }
+.pc-pane.on { display: block; }
+.pc-cols2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gut); align-items: start; }
+.pc-col { min-width: 0; display: flex; flex-direction: column; gap: var(--gut); }
+/* un bloc pleine largeur qui suit une grille de colonnes garde le même
+   souffle que les blocs entre eux (ex. l'Inventaire sous Armes / Armures) */
+.pc-cols2 + .pc-block, .pc-cols-fiche + .pc-block { margin-top: var(--gut); }
+/* Fiche : trois colonnes (caractéristiques | combat | compétences, un peu
+   plus large pour la ligne nom | stade | total) */
+.pc-cols-fiche { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gut); align-items: start; }
+/* Art : une carte d'art par compétence au stade qui l'ouvre */
+.pc-arts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem; align-items: start; }
+.pc-arts > .pc-empty { grid-column: 1 / -1; }
+.pc-av.pc-art { margin-bottom: 0; }   /* prime sur le margin-bottom de .pc-av (même spécificité sinon) */
+.pc-art-top { display: flex; align-items: center; gap: .35rem; margin-bottom: .22rem; }
+.pc-art-top .pc-art-comp { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; font-size: .7rem; color: var(--ink-2); }
+.pc-art-top .pc-art-stade { margin-left: auto; flex: 0 0 auto; font-size: .56rem; font-weight: 600; letter-spacing: .03em; color: var(--ink-3); }
+@media (max-width: 44em) {
+  .pc-sheet { width: auto; max-width: 100%; }
+  .pc-cols2, .pc-cols-fiche { grid-template-columns: 1fr; }
+  .pc-arts { grid-template-columns: 1fr; }
+  .pc-id { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .pc-f.c4 { grid-column: span 3; }
+}
+
+/* ---- bloc de section ---- */
+.pc-block {
+  min-width: 0; background: var(--card);
+  border: 1px solid var(--line-2); border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(60, 48, 18, .05);
+  padding: .35rem .5rem .5rem;
+}
+.pc-block-title {
+  position: relative; display: flex; align-items: baseline; gap: .4rem;
+  margin: 0 0 .35rem; padding: .04rem 0 .2rem;
+  border-bottom: 1px solid var(--hair);
+  font-family: 'Cinzel', serif; font-weight: 700;
+  font-size: var(--fs-title); letter-spacing: .04em; color: var(--ink-2); line-height: 1.1;
+}
+.pc-block-title::after { content: ""; position: absolute; left: 0; bottom: -1px; width: 1.4rem; height: 1.5px; background: var(--red); border-radius: 2px; }
+.pc-block-title small { font-family: 'Alegreya', Garamond, serif; font-weight: 600; font-size: var(--fs-label); letter-spacing: 0; color: var(--ink-3); margin-left: auto; text-align: right; white-space: nowrap; flex: 0 0 auto; }
+.pc-block-note { font-size: var(--fs-meta); color: var(--ink-3); margin: .12rem 0 .3rem; line-height: 1.3; }
+
+/* ---- mode édition par module ----
+   Un rouage dans le titre déverrouille la CONSTRUCTION du module ; hors
+   édition, seuls les gestes de jeu restent actifs (jets, tchat, PV,
+   narration, quantités). Les .pc-edit-only n'existent qu'en édition ; les
+   champs .pc-edit-field verrouillés prennent l'air d'un simple texte. */
+.pc-gear {
+  margin-left: auto; flex: 0 0 auto; border: none; background: transparent;
+  color: var(--ink-3); font: inherit; font-size: .84rem; line-height: 1;
+  cursor: pointer; padding: 0 .02rem; transition: color .12s, transform .15s;
+}
+.pc-block-title small ~ .pc-gear { margin-left: .4rem; }
+.pc-gear:hover { color: var(--ink); }
+.pc-editable.editing .pc-gear { color: var(--red); transform: rotate(90deg); }
+.pc-editable.editing { border-color: var(--red); }
+.pc-editable:not(.editing) .pc-edit-only { display: none !important; }
+.pc-editable:not(.editing) .pc-edit-field {
+  pointer-events: none;
+  border-color: transparent !important; background: transparent !important;
+  box-shadow: none !important; resize: none;
+  color: var(--ink); opacity: 1;
+}
+.pc-editable:not(.editing) select.pc-edit-field {
+  appearance: none; -moz-appearance: none; -webkit-appearance: none;
+  padding-left: 0;
+}
+.pc-editable:not(.editing) .pc-edit-field::placeholder { color: transparent; }
+/* divers : fantômes au survol en temps normal, pleinement visibles en édition */
+.pc-editable.editing .pc-mmods { opacity: 1; }
+/* rouage flottant : chaque tuile Vitesse / Régén est son propre module */
+.pc-big { position: relative; }
+.pc-gear-float { position: absolute; top: .08rem; right: .16rem; z-index: 1; margin-left: 0; }
+
+/* ---- caractéristiques : tuiles à valeur héros ---- */
+.pc-crow { display: flex; flex-direction: column; gap: .1rem; padding: .18rem .1rem .24rem; border-bottom: 1px solid var(--hair); }
+.pc-crow:last-child { border-bottom: none; }
+.pc-crow-top { display: flex; align-items: center; gap: .35rem; }
+.pc-abbr { display: inline-block; box-sizing: border-box; min-width: 2.6rem; background: var(--red-deep); color: #fdf3ec; font-weight: 700; font-size: .58rem; letter-spacing: .01em; padding: .14rem .3rem; border-radius: 4px; text-align: center; white-space: nowrap; }
+.pc-crow-top .nm { flex: 1 1 auto; min-width: 0; font-size: var(--fs-meta); color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pc-cval {
+  min-width: 2rem; text-align: center; font-size: 1rem; font-weight: 700; color: var(--ink);
+  background: var(--panel); border: 1px solid var(--line-2); border-radius: 5px;
+  padding: .02rem .3rem; font-variant-numeric: tabular-nums; line-height: 1.25;
+}
+/* édition d'une carac : grille étiquette | stepper, une paire par ligne
+   (le flex en vrac sautait à la ligne au milieu d'un groupe en colonne étroite) */
+.pc-crow-bot { display: grid; grid-template-columns: max-content 1fr; gap: .14rem .5rem; align-items: center; padding-top: .1rem; }
+.pc-crow-bot .pc-step { justify-self: end; }
+.pc-crow-bot .lbl { font-size: .52rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); }
+
+/* ---- stepper −/valeur/+ ---- */
+.pc-step { display: inline-flex; align-items: center; gap: .25rem; }
+.pc-step button {
+  width: 1.05rem; height: 1.05rem; border-radius: 50%; padding: 0;
+  border: 1px solid var(--line); background: var(--card); color: var(--ink-2);
+  font-weight: 700; font-size: .74rem; line-height: 1; cursor: pointer;
+  display: inline-grid; place-items: center; transition: background .12s, border-color .12s, color .12s;
+}
+.pc-step button:hover { border-color: var(--red); color: var(--red); background: var(--wash); }
+.pc-step .v { min-width: 2ch; text-align: center; font-variant-numeric: tabular-nums; font-weight: 700; font-size: .74rem; color: var(--ink); padding: 0 .08rem; }
+/* champ nombre éditable au cœur d'un stepper */
+.pc-num {
+  width: 2.4rem; min-width: 0; border: 1px solid transparent; border-bottom: 1px solid var(--line-2);
+  background: transparent; color: var(--ink); font: inherit; font-size: .74rem; font-weight: 700;
+  text-align: center; padding: 0 .05rem; font-variant-numeric: tabular-nums; border-radius: 0;
+  -moz-appearance: textfield; appearance: textfield;
+}
+.pc-num::-webkit-inner-spin-button, .pc-num::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.pc-num:focus { outline: none; border-bottom: 2px solid var(--red); }
+
+/* ---- tuiles de grande valeur ---- */
+.pc-bigrow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .4rem; }
+.pc-bigrow-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.pc-big { border: 1px solid var(--line-2); border-radius: 7px; background: var(--panel); text-align: center; padding: .28rem .2rem .32rem; transition: border-color .12s; }
+.pc-big .k { display: block; font-size: .5rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); white-space: nowrap; }
+.pc-big .v { display: block; font-size: var(--fs-hero); font-weight: 700; line-height: 1.1; color: var(--ink); font-variant-numeric: tabular-nums; margin-top: .08rem; white-space: nowrap; }
+.pc-big.red .v { color: var(--red-deep); }
+
+/* ---- PV / narration : lignes de contrôle ---- */
+.pc-kv { display: flex; align-items: center; gap: .35rem; padding: .12rem .05rem; font-size: .7rem; }
+.pc-kv > .k { font-weight: 700; color: var(--ink-2); font-size: .6rem; white-space: nowrap; flex-shrink: 0; text-transform: uppercase; letter-spacing: .04em; }
+.pc-kv > .sp { flex: 1; }
+.pc-kv .max { color: var(--ink-3); font-variant-numeric: tabular-nums; }
+
+/* ---- compétences ---- */
+/* outils : filtre texte, filtre de champ, puces (mêmes contrôles que la fiche HxH) */
+/* outils sur deux lignes : filtre texte + filtre de champ, puis les puces */
+.pc-comp-tools { display: flex; flex-direction: column; gap: .3rem; margin: .05rem 0 .4rem; }
+/* dans chaque ligne, les contrôles se partagent la largeur à parts égales et
+   prennent la même hauteur (un libellé sur deux lignes ne déséquilibre rien) */
+/* GRILLE, pas flex : en flex, un <select> ne se laisse pas répartir à parts
+   strictement égales (Firefox lui garde quelques pixels de moins qu'au champ
+   de recherche, malgré flex-basis 0 et min-width 0). Des colonnes 1fr
+   garantissent la même largeur quel que soit le contenu. */
+.pc-comp-tools .row {
+  display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
+  gap: .35rem; align-items: stretch; min-width: 0;
+}
+.pc-comp-tools .row > * { min-width: 0; }
+.pc-comp-search { flex: 1 1 9rem; min-width: 0; padding: .26rem .5rem; border: 1px solid var(--line-2); border-radius: 6px; background: var(--card); color: var(--ink); font: inherit; font-size: .7rem; box-sizing: border-box; }
+.pc-comp-search:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 2px var(--wash); }
+/* le champ de filtre et le menu des champs remplissent leur colonne, avec le
+   même box-sizing pour que leurs bordures ne les décalent pas */
+.pc-comp-tools .row > .pc-comp-search,
+.pc-comp-tools .row > .pc-select {
+  width: 100%; min-width: 0; font-size: .66rem; box-sizing: border-box;
+}
+.pc-chip {
+  display: inline-flex; align-items: center; justify-content: center; text-align: center;
+  gap: .28rem; padding: .2rem .5rem; line-height: 1.15;
+  border: 1px solid var(--line-2); border-radius: 999px; background: var(--panel);
+  color: var(--ink-2); font-size: .64rem; font-weight: 600; cursor: pointer; user-select: none; transition: .12s;
+}
+.pc-chip:hover { border-color: var(--line); color: var(--ink); }
+.pc-chip.on { background: var(--red); border-color: var(--red-deep); color: #fff; }
+.pc-comp-champ {
+  display: flex; align-items: center; gap: .45rem; margin: .4rem 0 .1rem; padding: .05rem .05rem;
+  font-family: 'Cinzel', serif; font-weight: 700; font-size: .62rem; letter-spacing: .04em; color: var(--ink-2);
+  white-space: nowrap;
+}
+.pc-comp-champ::after { content: ""; flex: 1; height: 1px; background: var(--hair); }
+.pc-comp-champ:first-child { margin-top: .1rem; }
+/* ligne unique : nom | stade (menu) | total rollable */
+/* 4 colonnes : nom | stade | divers (levier ±) | total */
+/* trois pistes : nom (large) | stade (Fiche) ou stepper ± (Options) | total
+   (compact). TOUTE évolution de cette grille doit vérifier SES DEUX USAGES. */
+.pc-comp-row { display: grid; grid-template-columns: minmax(0, 1fr) 5.2rem 2.4rem; gap: .12rem .3rem; align-items: center; padding: .14rem .25rem .18rem; font-size: var(--fs-body); border-radius: 4px; }
+.pc-comp-row.odd { background: var(--stripe); }
+.pc-comp-row.head {
+  background: var(--card); border-bottom: 1px solid var(--line); border-radius: 0; padding: .2rem .25rem .16rem;
+  font-size: var(--fs-label); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-3);
+}
+.pc-comp-row.head > span { white-space: nowrap; overflow: hidden; min-width: 0; text-align: center; }
+.pc-comp-name { display: flex; align-items: baseline; min-width: 0; gap: .3rem; }
+.pc-comp-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); }
+.pc-comp-del { flex: 0 0 auto; border: none; background: transparent; color: var(--ink-3); font: inherit; font-size: .62rem; cursor: pointer; padding: 0 .1rem; }
+.pc-comp-del:hover { color: var(--red); }
+.pc-comp-total { font-size: var(--fs-value); font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; text-align: right; }
+.pc-comp-total.zero { color: var(--ink-3); font-weight: 400; }
+/* le total de la Fiche est un BOUTON de jet, petit frère de .pc-cval */
+.pc-comp-roll {
+  background: var(--panel); border: 1px solid var(--line-2); border-radius: 5px;
+  font: inherit; font-size: .68rem; font-weight: 700; color: var(--ink);
+  font-variant-numeric: tabular-nums; text-align: center; line-height: 1.25;
+  padding: .06rem .05rem; min-width: 0; width: 100%; transition: .12s;
+}
+.pc-comp-roll:hover { border-color: var(--red); color: var(--red); text-decoration: none; }
+.pc-comp-roll.zero { color: var(--ink-3); font-weight: 600; }
+/* stade : barre segmentée [ N | I | M | E | A ], dégradé jusqu'au rouge des
+   caractéristiques ; cliquable seulement quand le module est en édition */
+.pc-stadebar { display: flex; min-width: 0; }
+.pc-stadebar .seg {
+  flex: 1 1 0; min-width: 0; border: 1px solid var(--line-2); border-left-width: 0;
+  background: var(--card); color: var(--ink-3);
+  font: inherit; font-size: .54rem; font-weight: 700; line-height: 1;
+  padding: .16rem 0; text-align: center; cursor: pointer; transition: .12s;
+}
+.pc-stadebar .seg:first-child { border-left-width: 1px; border-radius: 4px 0 0 4px; }
+.pc-stadebar .seg:last-child { border-radius: 0 4px 4px 0; }
+.pc-stadebar .seg.on.s0 { background: var(--panel); color: var(--ink-2); }
+.pc-stadebar .seg.on.s1 { background: #e3c3ad; color: var(--ink); border-color: #d0ab90; }
+.pc-stadebar .seg.on.s2 { background: #cf9377; color: #fff; border-color: #bd7d5f; }
+.pc-stadebar .seg.on.s3 { background: #ad5136; color: #fff; border-color: #9a422a; }
+.pc-stadebar .seg.on.s4 { background: var(--red-deep); color: #fdf3ec; border-color: var(--red-deep); }
+.pc-editable.editing .pc-stadebar .seg:hover { border-color: var(--red); }
+/* verrouillé : le clic ne fait rien (garde-fou côté JS) mais le survol garde
+   son infobulle — c'est elle qui donne le nom complet du stade */
+.pc-editable:not(.editing) .pc-stadebar .seg { cursor: default; }
+.pc-select {
+  width: 100%; padding: .17rem .35rem; border: 1px solid var(--line-2); border-radius: 6px;
+  background: var(--card); color: var(--ink); font: inherit; font-size: .62rem;
+}
+.pc-select:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 2px var(--wash); }
+.pc-comp-row .pc-select.lv0 { color: var(--ink-3); }
+/* techniques : cartes nom + effet dans la carte d'art (onglet Art) */
+.pc-techniques { display: flex; flex-direction: column; gap: .2rem; padding: .15rem 0 0; }
+.pc-techniques:empty { display: none; }
+.pc-techniques .pc-av { margin-bottom: .1rem; }
+.pc-comp-add { display: flex; gap: .35rem; align-items: center; padding: .25rem .25rem .1rem; }
+.pc-comp-add input { flex: 1 1 auto; min-width: 0; padding: .24rem .5rem; border: 1px solid var(--line-2); border-radius: 6px; background: var(--card); color: var(--ink); font: inherit; font-size: .72rem; }
+.pc-comp-add input:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 2px var(--wash); }
+.pc-mini { padding: .16rem .5rem; border: 1px solid var(--line-2); border-radius: 5px; background: var(--panel); color: var(--ink-2); font: inherit; font-size: .66rem; font-weight: 600; cursor: pointer; transition: .12s; }
+.pc-mini:hover { border-color: var(--line); color: var(--ink); background: #fff; }
+.pc-mini.danger { color: var(--red); }
+.pc-mini.danger:hover { border-color: var(--red); background: var(--wash); }
+
+/* ---- équipement : cartes d'armes / d'armures ---- */
+.pc-arme { border: 1px solid var(--hair); border-radius: 8px; background: var(--card); padding: .4rem .55rem .45rem; margin-bottom: .5rem; }
+.pc-arme-head { display: flex; align-items: baseline; gap: .5rem; }
+.pc-arme-head input.nm { flex: 1 1 auto; min-width: 0; border: none; border-bottom: 1px solid var(--line); background: transparent; color: var(--ink); font: inherit; font-size: .78rem; font-weight: 700; padding: .02rem .1rem .06rem; }
+.pc-arme-head input.nm:focus { outline: none; border-bottom: 2px solid var(--red); }
+.pc-arme-line { display: flex; flex-wrap: wrap; align-items: flex-end; gap: .35rem .6rem; margin-top: .3rem; }
+.pc-arme-line .pc-f { flex: 1 1 3.4rem; }
+.pc-arme-line .pc-f.w { flex: 2 1 8rem; }
+.pc-roll-chip {
+  flex: 0 0 auto; display: inline-block; padding: .14rem .5rem; border: 1px solid var(--line-2); border-radius: 5px;
+  background: var(--panel); font-weight: 700; font-size: .64rem; color: var(--ink-2); cursor: pointer; transition: .12s;
+}
+.pc-roll-chip:hover { border-color: var(--red); color: var(--red); background: var(--wash); }
+
+/* ---- modificateurs divers (3 emplacements : équipement / art / MJ) ----
+   Le geste HxH : la valeur reste propre, les leviers ± n'apparaissent qu'au
+   survol de leur hôte (.pc-mods-host) ou au focus ; une valeur modifiée
+   passe à l'accent (.adj) et son tooltip porte la décomposition. */
+.pc-mmods { display: inline-flex; gap: .14rem; align-items: center; opacity: .3; transition: opacity .12s; }
+.pc-mods-host:hover .pc-mmods, .pc-mmods:focus-within { opacity: 1; }
+.pc-mmod {
+  width: 1.35rem; min-width: 0; border: none; border-bottom: 1px solid var(--hair);
+  background: transparent; color: var(--ink-2); font: inherit; font-size: .6rem;
+  text-align: center; padding: 0 0 .05rem; border-radius: 0;
+  -moz-appearance: textfield; appearance: textfield;
+}
+.pc-mmod::-webkit-inner-spin-button, .pc-mmod::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.pc-mmod:focus { outline: none; border-bottom: 2px solid var(--red); }
+.pc-mmod.neg { color: var(--red); }
+.pc-cval.adj, .pc-big.adj .v, .pc-comp-total.adj, .pc-kv .max.adj { color: var(--red-deep) !important; }
+
+/* tuiles (Vitesse, Régén) : leviers centrés sous la valeur */
+.pc-big .pc-mmods { display: flex; justify-content: center; margin-top: .12rem; }
+
+/* ligne du maximum de PV : override « Forcé » (vide = calculé) + divers */
+.pc-pvmax { display: flex; align-items: center; gap: .35rem; padding: .1rem .05rem 0; font-size: .62rem; color: var(--ink-3); }
+.pc-pvmax .lbl { font-size: .5rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); }
+.pc-pvmax input.force {
+  width: 2.4rem; min-width: 0; border: none; border-bottom: 1px solid var(--hair);
+  background: transparent; color: var(--ink); font: inherit; font-size: .66rem;
+  text-align: center; padding: 0 0 .05rem; border-radius: 0;
+  -moz-appearance: textfield; appearance: textfield;
+}
+.pc-pvmax input.force::-webkit-inner-spin-button, .pc-pvmax input.force::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.pc-pvmax input.force:focus { outline: none; border-bottom: 2px solid var(--red); }
+.pc-pvmax .sp { flex: 1; }
+
+/* mêmes leviers, version étroite : dans une tuile (Vitesse, Régén / jour), où
+   « Forcé » et « Modificateurs » s'empilent sous la valeur */
+/* le libellé se pose AU-DESSUS de son contrôle : une tuile est trop étroite
+   pour « Modificateurs » et trois cases côte à côte (elles se chevauchaient) */
+.pc-bigedit { display: flex; flex-direction: column; align-items: center; gap: .02rem; margin-top: .18rem; }
+.pc-bigedit .lbl {
+  font-size: .45rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--ink-3); white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis;
+}
+.pc-bigedit input.force {
+  width: 2.2rem; min-width: 0; border: none; border-bottom: 1px solid var(--hair);
+  background: transparent; color: var(--ink); font: inherit; font-size: .62rem;
+  text-align: center; padding: 0 0 .05rem; border-radius: 0;
+  -moz-appearance: textfield; appearance: textfield;
+}
+.pc-bigedit input.force::-webkit-inner-spin-button,
+.pc-bigedit input.force::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.pc-bigedit input.force:focus { outline: none; border-bottom: 2px solid var(--red); }
+/* dans une tuile, les leviers restent visibles dès le mode édition (ils ne se
+   révèlent pas au survol comme ailleurs : la tuile est trop petite pour ça) */
+.pc-bigedit .pc-mmods { opacity: 1; margin-top: 0; }
+
+/* xp par champ : où le personnage a mis son expérience */
+.pc-xpchamp { display: flex; align-items: center; gap: .4rem; padding: .12rem 0; }
+.pc-xpchamp .pc-meter { flex: 1; min-width: 0; }
+.pc-xpchamp .pc-meter .bar { flex: 1; width: auto; min-width: 2rem; }
+.pc-xpchamp .pc-meter .pct {
+  flex: 0 0 2.2rem; text-align: right; font-variant-numeric: tabular-nums;
+  font-size: .6rem; color: var(--ink-3); text-transform: none; letter-spacing: 0;
+}
+
+/* leviers du MJ, un par compétence (onglet Options) : la grille est plus large
+   que celle de la Fiche, elle défile dans son propre cadre quand la colonne
+   est trop étroite plutôt que de pousser la page */
+/* ---- le plan de la fiche (bloc Modules) ----
+   Chaque onglet est dessiné avec SES colonnes, et chaque module est une carte
+   qu'on prend et qu'on lâche. Le plan ressemble à la fiche : on range en
+   regardant ce qu'on range, au lieu de compter des rangs dans une liste. */
+.pc-modplan-cols {
+  display: grid; gap: .3rem; margin: .1rem 0 .45rem;
+}
+.pc-modplan-col { min-width: 0; }
+.pc-modplan-col-nom {
+  font-size: var(--fs-label); letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ink-3); text-align: center; padding-bottom: .12rem;
+}
+/* la zone de dépôt garde une hauteur même vide, sinon une colonne vidée ne
+   pourrait plus rien recevoir */
+.pc-modplan-liste {
+  display: flex; flex-direction: column; gap: .18rem; min-height: 2.2rem;
+  padding: .18rem; border: 1px dashed var(--line-2); border-radius: 6px;
+  background: var(--panel); transition: background .12s, border-color .12s;
+}
+.pc-modplan-liste.survol { border-color: var(--red); background: var(--wash); }
+.pc-modplan-carte {
+  display: flex; align-items: center; gap: .25rem; min-width: 0;
+  padding: .2rem .3rem; border: 1px solid var(--line-2); border-radius: 5px;
+  background: var(--card); cursor: grab; user-select: none;
+}
+.pc-modplan-carte:active { cursor: grabbing; }
+.pc-modplan-carte > .t {
+  flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap; font-size: var(--fs-meta); color: var(--ink);
+}
+.pc-modplan-carte.pris { opacity: .4; }
+/* un module masqué reste là, en retrait : on doit pouvoir le rallumer et le
+   ranger comme les autres */
+.pc-modplan-carte.off { background: var(--panel); border-style: dashed; }
+.pc-modplan-carte.off > .t { color: var(--ink-3); font-style: italic; }
+/* le trait qui dit où la carte va se poser */
+.pc-modplan-carte.avant { box-shadow: 0 -2px 0 var(--red); }
+.pc-modplan-carte[data-etat="panne"] { border-color: var(--red); background: var(--wash); }
+.pc-modplan-carte[data-etat="perdu"] { border-style: dotted; border-color: var(--red); }
+.pc-modplan-oeil {
+  flex: 0 0 auto; cursor: pointer; font-size: .7rem; line-height: 1;
+  color: var(--red); padding: 0 .05rem;
+}
+.pc-modplan-carte.off .pc-modplan-oeil { color: var(--ink-3); }
+
+/* Bloc Jets : le champ du dé et son bouton côte à côte. Le champ prend toute
+   la largeur que le bouton lui laisse, et le bouton ne s'étire pas. */
+.pc-jet-de { display: flex; align-items: flex-end; gap: .4rem; }
+.pc-jet-de .pc-f { flex: 1 1 auto; min-width: 0; margin: 0; }
+.pc-jet-de .pc-f input { width: 100%; box-sizing: border-box; }
+.pc-jet-de .pc-mini { flex: 0 0 auto; }
+
+.pc-optcomp-wrap { overflow-x: auto; }
+.pc-optcomp-row {
+  display: grid; align-items: center; gap: .12rem;
+  /* nom | forcé, modif, modif, total | filet | forcé, modif, modif, coût
+     Dix colonnes dans une DEMI-LARGEUR : chaque dixième de rem compte. Une
+     grille trop large ne se voyait pas sur une capture du bloc seul (un
+     élément photographié hors de sa colonne ne déborde de rien) : elle se
+     voyait à l'écran, en défilement horizontal dans le module. Les largeurs
+     ci-dessous sont mesurées pour tenir SANS défilement dans la colonne du
+     site comme dans celle de l'iframe Roll20, plus étroite. */
+  /* « FORCÉ » a besoin de 1.7rem pour tenir en entier ; les deux colonnes de
+     modificateur, dont l'entête est désormais à cheval sur les deux, n'ont
+     plus à porter de libellé et se contentent de 1.4rem. Le total ne bouge
+     pas : ce qui est pris ici est rendu là. */
+  grid-template-columns: minmax(3.2rem, 1.2fr) 1.7rem 1.4rem 1.4rem 2rem 1px 1.7rem 1.4rem 1.4rem 2.3rem;
+  min-width: 0; padding: .1rem .1rem; border-radius: 4px;
+  border-left: 2px solid transparent;
+}
+/* Les deux blocs de leviers, caractéristiques et compétences, emploient la
+   MÊME grille au dixième de rem près. Ils occupent les deux colonnes de
+   l'onglet, qui ont la même largeur : leurs entêtes et leurs chiffres tombent
+   donc aux mêmes abscisses, et l'oeil lit une seule grille au lieu de deux. */
+/* Le filet qui sépare la valeur du coût en xp est une COLONNE de la grille,
+   étirée sur toute la hauteur de chaque rangée : les segments se rejoignent
+   d'une rangée à l'autre et forment un vrai trait continu, du haut du module
+   jusqu'en bas. Sans lui, les six nombres se lisent comme une seule bouillie. */
+.pc-optcomp-row > .rule {
+  align-self: stretch; width: 1px; background: var(--line);
+  margin: -.1rem 0;   /* mord sur le padding de la rangée : aucune interruption */
+}
+/* rangée des groupes : deux titres de trois colonnes, de part et d'autre */
+.pc-optcomp-row.grp > .g { grid-column: span 4; text-align: center; }
+.pc-optcomp-row.grp > .g {
+  font-size: .52rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ink-2); border-bottom: 1px solid var(--hair); padding-bottom: .05rem;
+}
+/* une ligne réglée se repère d'un coup d'œil parmi cinquante */
+.pc-optcomp-row.on { border-left-color: var(--red); }
+/* champs compacts : sept colonnes doivent tenir dans une demi-largeur. Le
+   modificateur est un champ NU (ni − ni +) : sur cinquante lignes, les boutons
+   mangeaient la place sans rien apporter. */
+.pc-optcomp-row .pc-num.modif {
+  width: 100%; box-sizing: border-box; font-size: .62rem; font-weight: 600;
+  border: none; border-bottom: 1px solid var(--hair); text-align: center;
+  -moz-appearance: textfield; appearance: textfield;
+}
+.pc-optcomp-row .pc-num.modif::-webkit-inner-spin-button,
+.pc-optcomp-row .pc-num.modif::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.pc-optcomp-row .pc-num.modif:focus { outline: none; border-bottom: 2px solid var(--red); }
+/* Les valeurs calculées sont CENTRÉES dans leur colonne, comme les champs qui
+   les précèdent : une colonne de nombres dont l'alignement change d'une case à
+   l'autre se lit mal, et sur dix colonnes cela se voit tout de suite. */
+.pc-optcomp-row .pc-comp-total {
+  font-size: .62rem; text-align: center; font-variant-numeric: tabular-nums;
+}
+.pc-optcomp-row input.force { text-align: center; font-variant-numeric: tabular-nums; }
+.pc-optcomp-row .pc-num.modif { font-variant-numeric: tabular-nums; }
+/* le bloc des caractéristiques emploie la même grille : son sigle tient lieu de
+   nom, et il ne doit pas s'étirer */
+.pc-optcomp-row .pc-comp-name .pc-abbr { flex: 0 0 auto; }
+.pc-optcomp-row .pc-comp-label { font-size: .64rem; }
+.pc-optcomp-row.odd { background: var(--stripe); }
+/* « MODIF. » ne tient pas dans une colonne d'un rem et demi : il se tronquait
+   en « MODII ». Un seul entête, à cheval sur les DEUX champs qu'il annonce,
+   dit la même chose, tient en entier, et montre du même coup que les deux
+   colonnes vont ensemble. */
+.pc-optcomp-row.head > .duo { grid-column: span 2; }
+.pc-optcomp-row.head > span {
+  font-size: .5rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--ink-3); text-align: center; white-space: nowrap; overflow: hidden; min-width: 0;
+}
+.pc-optcomp-row.head > span:first-child { text-align: left; }
+.pc-optcomp-row .pc-step { justify-self: center; }
+.pc-optcomp-row input.force {
+  width: 100%; min-width: 0; box-sizing: border-box; border: none;
+  border-bottom: 1px solid var(--hair); background: transparent; color: var(--ink);
+  font: inherit; font-size: .66rem; text-align: center; padding: 0 0 .05rem; border-radius: 0;
+  -moz-appearance: textfield; appearance: textfield;
+}
+.pc-optcomp-row input.force::-webkit-inner-spin-button,
+.pc-optcomp-row input.force::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.pc-optcomp-row input.force:focus { outline: none; border-bottom: 2px solid var(--red); }
+
+/* langue du personnage : l'étoile la désigne (acquise, gratuite jusqu'à Expert) */
+.pc-lang-base {
+  flex: 0 0 auto; border: none; background: none; cursor: pointer; padding: 0 .15rem 0 0;
+  font: inherit; font-size: .62rem; line-height: 1; color: var(--line);
+}
+.pc-lang-base.on { color: var(--red); }
+.pc-editable:not(.editing) .pc-lang-base { cursor: default; }
+
+/* lignes de compétences : UN levier discret dans sa colonne dédiée
+   (ligne dense — le total doit rester aligné à droite, jamais à la ligne) */
+.pc-comp-row .pc-mmods { justify-self: center; }
+.pc-comp-row .pc-mmod { width: 1.3rem; }
+
+/* case à cocher d'option (Sans limite) */
+.pc-kv > input[type="checkbox"] { accent-color: var(--red); margin: 0; flex-shrink: 0; }
+.pc-kv > label { font-size: .64rem; color: var(--ink-2); cursor: pointer; }
+
+/* ---- inventaire : total du poids ---- */
+.pc-inv-total { text-align: right; font-size: .58rem; color: var(--ink-3); margin-top: .3rem; font-variant-numeric: tabular-nums; }
+
+/* ---- inventaire : objets illustrés (tuiles par groupes + panneau) ---- */
+.pc-obj-wrap { display: flex; gap: .6rem; align-items: flex-start; }
+.pc-obj-left { flex: 1 1 62%; min-width: 0; display: flex; flex-direction: column; gap: .45rem; }
+.pc-obj-panel { flex: 0 0 34%; min-width: 0; border: 1px solid var(--line-2); border-radius: 8px; background: var(--card); overflow: hidden; box-sizing: border-box; }
+.pc-obj-ghead { display: flex; align-items: center; gap: .3rem; margin-bottom: .2rem; }
+.pc-obj-ghead .nm {
+  font-size: .54rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ink-2); background: var(--panel); border-radius: 5px; padding: .08rem .45rem; cursor: default;
+}
+.pc-obj-ghead .x { border: none; background: transparent; color: var(--ink-3); font: inherit; font-size: .58rem; cursor: pointer; padding: 0 .15rem; }
+.pc-obj-ghead .x:hover { color: var(--red); }
+.pc-obj-ghead .nmedit {
+  font: inherit; font-size: .6rem; width: 7rem; min-width: 0;
+  border: none; border-bottom: 1px solid var(--line); background: transparent;
+  color: var(--ink); padding: .02rem .1rem; border-radius: 0;
+}
+.pc-obj-ghead .nmedit:focus { outline: none; border-bottom: 2px solid var(--red); }
+.pc-obj-tiles { display: flex; flex-wrap: wrap; gap: .3rem; --obj-cols: 4; border-radius: 6px; }
+.pc-obj-tiles.over { outline: 1px dashed var(--red); outline-offset: 2px; }
+.pc-obj-tile {
+  width: calc((100% - .3rem * (var(--obj-cols) - 1)) / var(--obj-cols));
+  border: 1px solid var(--hair); border-radius: 7px; overflow: hidden;
+  background: var(--card); cursor: pointer; transition: border-color .12s, box-shadow .12s;
+  /* border-box OBLIGATOIRE : l'iframe Roll20 n'a pas le reset de Material,
+     en content-box la bordure ferait passer la 4e tuile à la ligne */
+  box-sizing: border-box;
+}
+.pc-obj-tile:hover { border-color: var(--line); }
+.pc-obj-tile.sel { border-color: var(--red); box-shadow: 0 0 0 2px var(--wash); }
+.pc-obj-tile.drag { opacity: .3; }
+.pc-obj-tile.over { border-color: var(--red); border-style: dashed; }
+/* trait d'insertion : l'objet tombera de CE côté de la tuile visée */
+.pc-obj-tile.over-l { box-shadow: inset 3px 0 0 var(--red); }
+.pc-obj-tile.over-r { box-shadow: inset -3px 0 0 var(--red); }
+/* retrait direct sur la tuile (mode édition) */
+.pc-obj-tile { position: relative; }
+.pc-obj-del {
+  position: absolute; top: .12rem; right: .12rem; z-index: 1;
+  border: none; border-radius: 4px; background: rgba(32, 24, 12, .62);
+  color: #fdf3ec; font: inherit; font-size: .56rem; line-height: 1;
+  padding: .1rem .22rem; cursor: pointer; opacity: 0; transition: opacity .12s, background .12s;
+}
+.pc-obj-tile:hover .pc-obj-del { opacity: 1; }
+.pc-obj-del:hover { background: var(--red-deep); }
+.pc-obj-tile img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block; }
+.pc-obj-ph { width: 100%; aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center; color: var(--line); font-size: 1.1rem; background: var(--panel); }
+.pc-obj-ph.big { font-size: 2rem; }
+.pc-obj-foot { display: flex; gap: .15rem; align-items: center; padding: .07rem .2rem; border-top: 1px solid var(--hair); }
+.pc-obj-foot .nm { flex: 1; min-width: 0; font-size: .5rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pc-obj-foot .qte { font-size: .5rem; font-weight: 700; color: var(--ink-2); background: var(--panel); border-radius: 3px; padding: 0 .16rem; font-variant-numeric: tabular-nums; }
+/* poids unitaire sur la tuile (affichage réglable ; JJK ne donne pas d'unité) */
+.pc-obj-foot .pds { font-size: .5rem; color: var(--ink-3); font-variant-numeric: tabular-nums; flex: 0 0 auto; }
+/* réglages du module, en mode édition */
+.pc-obj-opts { display: flex; flex-wrap: wrap; gap: .3rem .5rem; align-items: flex-end; margin: 0 0 .4rem; }
+.pc-obj-opts .pc-f { flex: 0 0 4.2rem; }
+.pc-obj-opts .pc-chip { padding: .16rem .5rem; }
+/* total de la pile, sous les champs du panneau */
+.pc-obj-pile { font-size: .58rem; color: var(--ink-3); text-align: right; font-variant-numeric: tabular-nums; padding: .1rem 0 0; }
+.pc-obj-addtile {
+  width: calc((100% - .3rem * (var(--obj-cols) - 1)) / var(--obj-cols));
+  aspect-ratio: 1 / 1; border: 1px dashed var(--line-2); border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--line); font-size: 1rem; cursor: pointer; transition: .12s; box-sizing: border-box;
+}
+.pc-obj-addtile:hover { border-color: var(--red); color: var(--red); }
+.pc-mini.pc-obj-addgroup { align-self: flex-start; }
+
+/* ---- boîte de dialogue de la fiche (donner / prendre un objet) ----
+   Posée DANS la fiche : dans l'iframe Roll20, les fenêtres natives du
+   navigateur sont muettes. */
+.pc-modal-over {
+  position: fixed; inset: 0; z-index: 40;
+  background: rgba(20, 16, 10, .55);
+  display: flex; align-items: center; justify-content: center; padding: 1rem;
+}
+.pc-modal {
+  width: 15rem; max-width: 100%; max-height: 90%; overflow-y: auto;
+  background: var(--card); border: 1px solid var(--line); border-radius: 9px;
+  box-shadow: 0 6px 26px rgba(0, 0, 0, .35); padding: .6rem .7rem .55rem;
+}
+.pc-modal-title {
+  font-family: 'Cinzel', serif; font-weight: 700; font-size: var(--fs-title);
+  color: var(--ink-2); border-bottom: 1px solid var(--hair); padding-bottom: .2rem; margin-bottom: .4rem;
+}
+.pc-modal-body { display: flex; flex-direction: column; gap: .35rem; }
+.pc-modal-note { font-size: .58rem; color: var(--ink-3); line-height: 1.3; }
+.pc-modal-img { text-align: center; }
+.pc-modal-img img { max-width: 6rem; max-height: 6rem; border-radius: 7px; border: 1px solid var(--line-2); }
+.pc-modal-actions { display: flex; justify-content: flex-end; gap: .35rem; margin-top: .5rem; }
+.pc-mini.primary { background: var(--red); border-color: var(--red-deep); color: #fff; }
+.pc-mini.primary:hover { background: var(--red-deep); color: #fff; }
+/* conflit : deux versions d'un même champ, on tranche */
+.pc-modal-conflit { border-top: 1px solid var(--hair); padding-top: .3rem; }
+.pc-modal-conflit .lbl { font-size: .52rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); margin-bottom: .2rem; }
+.pc-modal-conflit .row { display: flex; gap: .3rem; }
+.pc-modal-choix {
+  flex: 1 1 0; min-width: 0; text-align: left; cursor: pointer;
+  border: 1px solid var(--line-2); border-radius: 6px; background: var(--panel);
+  color: var(--ink-2); font: inherit; font-size: .56rem; padding: .22rem .3rem; transition: .12s;
+}
+.pc-modal-choix:hover { border-color: var(--line); }
+.pc-modal-choix.on { border-color: var(--red); background: var(--wash); color: var(--ink); }
+.pc-modal-choix .tag { font-size: .5rem; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: var(--ink-3); margin-bottom: .12rem; }
+.pc-modal-choix .val { overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+.pc-modal-choix img { width: 100%; border-radius: 4px; display: block; }
+.pc-obj-imgbox { background: var(--panel); }
+.pc-obj-imgbox img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block; }
+.pc-obj-body { padding: .4rem .5rem .5rem; display: flex; flex-direction: column; gap: .32rem; }
+.pc-obj-body > input.nm {
+  border: none; border-bottom: 1px solid var(--line); background: transparent;
+  color: var(--ink); font: inherit; font-size: .76rem; font-weight: 700; padding: .02rem .1rem .06rem;
+  min-width: 0; width: 100%; border-radius: 0;
+}
+.pc-obj-body > input.nm:focus { outline: none; border-bottom: 2px solid var(--red); }
+.pc-obj-qrow { display: flex; gap: .35rem; align-items: center; }
+.pc-obj-qrow input[type="range"] { flex: 1; min-width: 0; accent-color: var(--red); }
+.pc-obj-qrow input.n {
+  flex: 0 0 2.2rem; border: none; border-bottom: 1px solid var(--hair); background: transparent;
+  color: var(--ink); font: inherit; font-size: .7rem; text-align: right; padding: .02rem .1rem .06rem;
+  font-variant-numeric: tabular-nums; -moz-appearance: textfield; appearance: textfield; min-width: 0;
+}
+.pc-obj-qrow input.n::-webkit-inner-spin-button, .pc-obj-qrow input.n::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.pc-obj-qrow input.n:focus { outline: none; border-bottom: 2px solid var(--red); }
+.pc-obj-pair { display: flex; gap: .5rem; }
+.pc-obj-pair .pc-f { flex: 1; }
+.pc-obj-actions { display: flex; gap: .35rem; justify-content: flex-end; align-items: flex-end; margin-top: .1rem; }
+/* quantité traitée par les boutons de la ligne : étroite, collée à gauche */
+.pc-obj-actions .pc-f.qact { flex: 0 0 3.6rem; margin-right: auto; }
+.pc-obj-empty { padding: 1.2rem .6rem; text-align: center; color: var(--ink-3); font-style: italic; font-size: .62rem; }
+/* même point de bascule que le mobile de la feuille (44em, pas 700px) */
+@media (max-width: 44em) {
+  /* align-items: stretch : en colonne, le flex-start hérité rétrécirait les
+     enfants à leur contenu (tuiles en pourcentage -> quasi nulles) */
+  .pc-obj-wrap { flex-direction: column; align-items: stretch; }
+  .pc-obj-left { width: 100%; }
+  .pc-obj-panel { flex: 1 1 auto; width: 100%; }
+}
+
+/* ---- bio ---- */
+.pc-av { border: 1px solid var(--hair); border-radius: 7px; background: var(--card); padding: .35rem .5rem .45rem; margin-bottom: .45rem; }
+.pc-av-head { display: flex; gap: .4rem; align-items: baseline; margin-bottom: .25rem; }
+.pc-av-head input.nm {
+  flex: 1 1 auto; min-width: 0; border: none; border-bottom: 1px solid var(--line);
+  background: transparent; color: var(--ink); font: inherit; font-size: .74rem; font-weight: 700;
+  padding: .03rem .1rem .08rem;
+}
+.pc-av-head input.nm:focus { outline: none; border-bottom: 2px solid var(--red); }
+/* zone de texte posée dans un champ étiqueté (défaut, qualités, propriétés d'arme) */
+.pc-f > .pc-notes { min-height: 2.6rem; font-size: .7rem; }
+/* bouton « Chat » d'un champ étiqueté : rangé sous la zone, à droite */
+.pc-f > .pc-mini { align-self: flex-end; margin-top: .18rem; }
+.pc-notes { width: 100%; min-height: 4.5rem; border: 1px solid var(--line-2); border-radius: 7px; background: var(--card); color: var(--ink); font: inherit; font-size: .72rem; padding: .5rem .6rem; resize: vertical; box-sizing: border-box; }
+.pc-notes:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 2px var(--wash); }
+.pc-empty { font-size: .72rem; color: var(--ink-3); font-style: italic; padding: .3rem .3rem; text-align: center; }
+
+/* ---- valeurs cliquables (lancer un jet) ---- */
+.pc-rollable { cursor: pointer; }
+.pc-rollable:hover { color: var(--red) !important; }
+.pc-comp-total.pc-rollable:hover { text-decoration: underline; }
+.pc-cval.pc-rollable:hover { border-color: var(--red); color: var(--red); }
+.pc-big.pc-rollable:hover { border-color: var(--red); }
+.pc-big.pc-rollable:hover .v { color: var(--red); }
+
+/* ---- onglet Options ---- */
+.pc-opt-actions { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .1rem; }
+.pc-opt-actions .pc-btn.danger { border-color: var(--line-2); }
+.pc-opt-actions .pc-btn.danger:hover { border-color: var(--red); }
+.pc-f > input.de { max-width: 6rem; }
+
+/* ---- mods : consentement, code, listes de mods et de modules ----
+   Toutes les couleurs de ce bloc passent par les jetons de .perso-atelier :
+   le mode nuit les redéfinit déjà, aucune règle .night n'est nécessaire ici. */
+
+/* Le bandeau vit HORS de la feuille (entre la barre d'outils et .pc-sheet) :
+   il prend donc les tons de carte pour se détacher du plan de travail, avec le
+   liseré carmin des avertissements. Il s'aligne sur la feuille, dont il annonce
+   le contenu, et reste sur une seule ligne tant que la largeur le permet : un
+   mod en attente ne bloque rien, il ne doit pas repousser la fiche pour autant. */
+.pc-avis {
+  display: flex; align-items: center; flex-wrap: wrap; gap: .25rem .6rem;
+  width: var(--pc-sheet-w, 50rem); box-sizing: border-box;
+  margin: .6rem auto 0; padding: .28rem .5rem .3rem;
+  background: var(--card); color: var(--ink-2);
+  border: 1px solid var(--line-2); border-left: 3px solid var(--red);
+  border-radius: 0 8px 8px 0;
+}
+.pc-avis:empty { display: none; }
+/* Deux bandeaux partagent cette mise en forme et peuvent paraître ENSEMBLE : un
+   mod en attente d'autorisation, et un enregistrement qui ne passe plus. Le
+   second est le plus grave des deux (la séance entière part à la fermeture),
+   d'où le liseré plein plutôt que le filet, et le texte en gras discret. */
+.pc-avis-save { border-left-width: 5px; }
+.pc-avis-save .pc-avis-txt { color: var(--red-deep); font-weight: 600; }
+.pc-avis-txt { flex: 1 1 16rem; min-width: 0; font-size: var(--fs-meta); line-height: 1.3; }
+.pc-avis .row { flex: 0 0 auto; display: flex; align-items: center; flex-wrap: wrap; gap: .3rem; margin-left: auto; }
+@media (max-width: 44em) {
+  /* même bascule que la feuille : elle cesse d'imposer sa largeur */
+  .pc-avis { width: auto; max-width: 100%; }
+}
+
+/* code d'un mod : la modale de la fiche est étroite, le code défile donc
+   horizontalement plutôt que de se replier (une ligne coupée n'est plus du
+   code). Hauteur et marges en em : la boîte garde ses quatorze lignes quelle
+   que soit la taille du texte, ici comme dans l'iframe Roll20. */
+.pc-code {
+  display: block; width: 100%; min-width: 0; box-sizing: border-box;
+  height: 20.5em;                       /* 14 lignes de 1.4 + marges internes */
+  resize: vertical;                     /* la largeur est celle de son hôte */
+  font-family: 'Roboto Mono', monospace; font-size: var(--fs-meta);
+  line-height: 1.4; -moz-tab-size: 2; tab-size: 2;
+  white-space: pre; overflow: auto;
+  padding: .35em .5em;
+  background: var(--card); color: var(--ink);
+  border: 1px solid var(--line-2); border-radius: 7px;
+}
+.pc-code:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 2px var(--wash); }
+
+/* une ligne de la liste des mods ou des modules : le libellé prend la place,
+   l'id et l'état restent en retrait, les boutons suivent. Le liseré gauche est
+   réservé en transparent, comme les lignes de compétences du MJ : une ligne en
+   panne s'allume sans décaler ses voisines. */
+.pc-modrow {
+  display: flex; align-items: center; flex-wrap: wrap; gap: .12rem .35rem;
+  padding: .18rem .25rem .2rem; font-size: var(--fs-body);
+  border-left: 2px solid transparent; border-bottom: 1px solid var(--hair);
+  border-radius: 4px;
+}
+.pc-modrow:last-child { border-bottom: none; }
+/* Une ligne de mod tient SUR UNE LIGNE : le nom se laisse couper, tout le
+   reste garde sa taille. Le message d'une panne, lui, passe dessous, sur toute
+   la largeur — c'est le seul cas où la ligne en fait deux. */
+.pc-modrow-mod { display: block; }
+.pc-modrow-mod > .l {
+  display: flex; align-items: center; flex-wrap: nowrap; gap: .25rem; min-width: 0;
+}
+.pc-modrow-mod > .l > .nom {
+  flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.pc-modrow-mod > .l > .pc-mini,
+.pc-modrow-mod > .l > .pc-chip { flex: 0 0 auto; }
+.pc-modrow-mod > .pc-block-note { margin: .15rem 0 0; }
+/* Le rouage ouvert ajoute deux boutons, et c'est le NOM qui se faisait couper.
+   « Voir le code » s'efface alors : « Modifier » montre déjà le code, et le
+   nom est ce qu'il faut lire pour ne pas se tromper de mod. */
+.pc-editable.editing .pc-modrow-mod > .l > .voir { display: none; }
+/* le nom garde de quoi se lire : il ne se réduit pas sous cette largeur, ce
+   sont les autres qui cèdent d'abord */
+.pc-modrow-mod > .l > .nom { flex-basis: 7rem; }
+.pc-modrow .nom { flex: 1 1 6rem; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; color: var(--ink); }
+.pc-modrow .id { flex: 0 0 auto; font-size: var(--fs-label); color: var(--ink-3); }
+.pc-modrow .etat { flex: 0 0 auto; font-size: var(--fs-label); color: var(--ink-3); white-space: nowrap; }
+.pc-modrow[data-etat="panne"] { border-left-color: var(--red); background: var(--wash); }
+.pc-modrow[data-etat="panne"] .etat { color: var(--red-deep); font-weight: 700; }
+
+/* titre d'onglet dans le bloc Modules : même filet que les champs de
+   compétences, pour que les deux longues listes se lisent de la même façon */
+.pc-modgroupe {
+  display: flex; align-items: center; gap: .45rem; margin: .4rem 0 .1rem; padding: .05rem;
+  font-family: 'Cinzel', serif; font-weight: 700; font-size: .62rem;
+  letter-spacing: .04em; color: var(--ink-2); white-space: nowrap;
+}
+.pc-modgroupe::after { content: ""; flex: 1; height: 1px; background: var(--hair); }
+.pc-modgroupe:first-child { margin-top: .1rem; }
+
+/* module en panne ou muselé : un liseré carmin sur le flanc du bloc, jamais un
+   fond — la fiche doit rester lisible pendant qu'on répare. Le liseré est une
+   ombre INTERNE et non une bordure : le bloc ne gagne pas un pixel de largeur
+   (l'iframe Roll20 n'a pas le box-sizing global du site), le marquage vaut pour
+   n'importe quel hôte (un module peut être une tuile autant qu'un bloc), et il
+   ne se dispute pas la bordure rouge du mode édition. La panne est plus large
+   que la muselière : l'une appelle une réparation, l'autre signale seulement
+   des valeurs figées au dernier rafraîchissement réussi. */
+.perso-atelier [data-panne="1"] { box-shadow: inset 3px 0 0 var(--red); }
+.perso-atelier [data-musele="1"] { box-shadow: inset 2px 0 0 var(--red); }
+/* la mention « module en panne — id » du titre porte l'alerte, pas le fond */
+.perso-atelier [data-panne="1"] .pc-block-title small { color: var(--red-deep); }
+
+/* ---- flash ---- */
+.pc-flash {
+  position: fixed; left: 50%; bottom: 1.2rem; transform: translateX(-50%);
+  background: #2a2620; color: #f3ecdd; font-size: .72rem;
+  font-family: 'Alegreya', Garamond, serif;
+  padding: .4rem .9rem; border-radius: 7px; opacity: 0;
+  transition: opacity .25s; pointer-events: none; z-index: 60;
+  box-shadow: 0 4px 14px rgba(0,0,0,.3);
+}
+.pc-flash.on { opacity: 1; }
+
+/* ============================================================
+   Mode nuit — papier sombre, encre claire, même carmin
+   ============================================================ */
+html.night .perso-atelier { color-scheme: dark; }
+html.night .perso-atelier {
+  /* mêmes papiers nuit que le livre (night.css) : le --paper local (repli de
+     l'iframe) masquerait sinon la feuille sombre du site */
+  --paper:   #201c15;
+  --bg-side: #14110c;
+  --card:    #262119;
+  --panel:   #2f2a20;
+  --stripe:  #2b261d;
+  --hair:    #39332a;
+  --line:    #4f4838;
+  --line-2:  #453e31;
+  --ink:     #eee4cf;
+  --ink-2:   #cbc2ac;
+  --ink-3:   #978d77;
+  --red:     #c65540;
+  --red-deep:#dd7461;
+  --wash:    rgba(198, 85, 64, .18);
+  --ok:      #9fb37e;
+}
+html.night .perso-atelier .pc-top { background: #201c15; border-bottom-color: #3c3527; }
+html.night .pc-top-title { color: #adc08c; }
+html.night .pc-top-hint { color: #8f8672; }
+html.night .pc-btn { background: #2a2519; border-color: #3c3527; color: #b7ad97; }
+html.night .pc-btn:hover { background: #332d20; color: #e8dfcb; }
+html.night .pc-top .pc-lib select { background: #2a2519; border-color: #3c3527; color: #e8dfcb; }
+html.night .pc-sheet { box-shadow: 0 6px 26px rgba(0, 0, 0, .5); }
+html.night .pc-tab:hover { background: rgba(233, 224, 204, .07); }
+html.night .pc-abbr { background: #7f2b1d; color: #f4e2da; }
+html.night .pc-mini:hover { background: #332d20; }
+html.night .pc-block-title { color: var(--ink); }
+/* dégradé des stades, tons nuit (le --red-deep nuit est un ton de TEXTE :
+   le bout de barre reprend le rouge du chip de caractéristique nuit) */
+html.night .pc-stadebar .seg.on.s1 { background: #6b4936; color: #eee4cf; border-color: #7d5742; }
+html.night .pc-stadebar .seg.on.s2 { background: #8a5138; color: #f4e2da; border-color: #9c5f44; }
+html.night .pc-stadebar .seg.on.s3 { background: #a54a30; color: #f4e2da; border-color: #b55a3e; }
+html.night .pc-stadebar .seg.on.s4 { background: #7f2b1d; color: #f4e2da; border-color: #7f2b1d; }
