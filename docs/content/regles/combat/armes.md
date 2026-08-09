@@ -85,12 +85,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="1,0,,,,">
 <p class="arme-nom">Poings</p>
 <ul class="arme-stats">
-<li>Dégâts <span>4</span></li>
-<li>Type <span>CON</span></li>
-<li>Mains <span>1 main</span></li>
-<li>Attaque <span>4</span></li>
-<li>Parade <span>8</span></li>
-<li>Réduction <span>2</span></li>
+<li><span class="k">Dégâts</span><span class="v">4</span></li>
+<li><span class="k">Type</span><span class="v">CON</span></li>
+<li><span class="k">Mains</span><span class="v">1 main</span></li>
+<li><span class="k">Attaque</span><span class="v">4</span></li>
+<li><span class="k">Parade</span><span class="v">8</span></li>
+<li><span class="k">Réduction</span><span class="v">2</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -98,12 +98,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="1,0,,,,">
 <p class="arme-nom">Pieds</p>
 <ul class="arme-stats">
-<li>Dégâts <span>6</span></li>
-<li>Type <span>CON</span></li>
-<li>Mains <span>Aucune</span></li>
-<li>Attaque <span>5</span></li>
-<li>Parade <span>9</span></li>
-<li>Réduction <span>3</span></li>
+<li><span class="k">Dégâts</span><span class="v">6</span></li>
+<li><span class="k">Type</span><span class="v">CON</span></li>
+<li><span class="k">Mains</span><span class="v">Aucune</span></li>
+<li><span class="k">Attaque</span><span class="v">5</span></li>
+<li><span class="k">Parade</span><span class="v">9</span></li>
+<li><span class="k">Réduction</span><span class="v">3</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -111,12 +111,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="0,,,,,">
 <p class="arme-nom">Coudes, genoux</p>
 <ul class="arme-stats">
-<li>Dégâts <span>5</span></li>
-<li>Type <span>CON</span></li>
-<li>Mains <span>Aucune</span></li>
-<li>Attaque <span>4</span></li>
-<li>Parade <span>8</span></li>
-<li>Réduction <span>2</span></li>
+<li><span class="k">Dégâts</span><span class="v">5</span></li>
+<li><span class="k">Type</span><span class="v">CON</span></li>
+<li><span class="k">Mains</span><span class="v">Aucune</span></li>
+<li><span class="k">Attaque</span><span class="v">4</span></li>
+<li><span class="k">Parade</span><span class="v">8</span></li>
+<li><span class="k">Réduction</span><span class="v">2</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -124,11 +124,11 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="0,,,,,">
 <p class="arme-nom">Tête</p>
 <ul class="arme-stats">
-<li>Dégâts <span>5</span></li>
-<li>Type <span>CON</span></li>
-<li>Mains <span>Aucune</span></li>
-<li>Attaque <span>5</span></li>
-<li>Parade <span>aucune</span></li>
+<li><span class="k">Dégâts</span><span class="v">5</span></li>
+<li><span class="k">Type</span><span class="v">CON</span></li>
+<li><span class="k">Mains</span><span class="v">Aucune</span></li>
+<li><span class="k">Attaque</span><span class="v">5</span></li>
+<li><span class="k">Parade</span><span class="v">aucune</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -136,11 +136,11 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="0,,,,,">
 <p class="arme-nom">Morsure</p>
 <ul class="arme-stats">
-<li>Dégâts <span>6</span></li>
-<li>Type <span>PER</span></li>
-<li>Mains <span>Aucune</span></li>
-<li>Attaque <span>5</span></li>
-<li>Parade <span>aucune</span></li>
+<li><span class="k">Dégâts</span><span class="v">6</span></li>
+<li><span class="k">Type</span><span class="v">PER</span></li>
+<li><span class="k">Mains</span><span class="v">Aucune</span></li>
+<li><span class="k">Attaque</span><span class="v">5</span></li>
+<li><span class="k">Parade</span><span class="v">aucune</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -154,12 +154,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="1,0,,,,">
 <p class="arme-nom">Poing américain</p>
 <ul class="arme-stats">
-<li>Dégâts <span>6</span></li>
-<li>Type <span>CON</span></li>
-<li>Mains <span>1 main</span></li>
-<li>Attaque <span>4</span></li>
-<li>Parade <span>8</span></li>
-<li>Réduction <span>3</span></li>
+<li><span class="k">Dégâts</span><span class="v">6</span></li>
+<li><span class="k">Type</span><span class="v">CON</span></li>
+<li><span class="k">Mains</span><span class="v">1 main</span></li>
+<li><span class="k">Attaque</span><span class="v">4</span></li>
+<li><span class="k">Parade</span><span class="v">8</span></li>
+<li><span class="k">Réduction</span><span class="v">3</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -167,12 +167,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="0,0,,,,">
 <p class="arme-nom">Couteau</p>
 <ul class="arme-stats">
-<li>Dégâts <span>8</span></li>
-<li>Type <span>TRA / PER</span></li>
-<li>Mains <span>1 main</span></li>
-<li>Attaque <span>4</span></li>
-<li>Parade <span>7</span></li>
-<li>Réduction <span>4</span></li>
+<li><span class="k">Dégâts</span><span class="v">8</span></li>
+<li><span class="k">Type</span><span class="v">TRA / PER</span></li>
+<li><span class="k">Mains</span><span class="v">1 main</span></li>
+<li><span class="k">Attaque</span><span class="v">4</span></li>
+<li><span class="k">Parade</span><span class="v">7</span></li>
+<li><span class="k">Réduction</span><span class="v">4</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -180,12 +180,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="0,0,,,,">
 <p class="arme-nom">Griffes</p>
 <ul class="arme-stats">
-<li>Dégâts <span>8</span></li>
-<li>Type <span>TRA</span></li>
-<li>Mains <span>1 main</span></li>
-<li>Attaque <span>5</span></li>
-<li>Parade <span>8</span></li>
-<li>Réduction <span>4</span></li>
+<li><span class="k">Dégâts</span><span class="v">8</span></li>
+<li><span class="k">Type</span><span class="v">TRA</span></li>
+<li><span class="k">Mains</span><span class="v">1 main</span></li>
+<li><span class="k">Attaque</span><span class="v">5</span></li>
+<li><span class="k">Parade</span><span class="v">8</span></li>
+<li><span class="k">Réduction</span><span class="v">4</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -193,12 +193,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="0,0,,,,">
 <p class="arme-nom">Cestes lamés</p>
 <ul class="arme-stats">
-<li>Dégâts <span>8</span></li>
-<li>Type <span>TRA</span></li>
-<li>Mains <span>1 main</span></li>
-<li>Attaque <span>4</span></li>
-<li>Parade <span>8</span></li>
-<li>Réduction <span>4</span></li>
+<li><span class="k">Dégâts</span><span class="v">8</span></li>
+<li><span class="k">Type</span><span class="v">TRA</span></li>
+<li><span class="k">Mains</span><span class="v">1 main</span></li>
+<li><span class="k">Attaque</span><span class="v">4</span></li>
+<li><span class="k">Parade</span><span class="v">8</span></li>
+<li><span class="k">Réduction</span><span class="v">4</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -206,12 +206,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="0,0,,,,">
 <p class="arme-nom">Sai</p>
 <ul class="arme-stats">
-<li>Dégâts <span>8</span></li>
-<li>Type <span>CON / PER</span></li>
-<li>Mains <span>1 main</span></li>
-<li>Attaque <span>5</span></li>
-<li>Parade <span>4</span></li>
-<li>Réduction <span>4</span></li>
+<li><span class="k">Dégâts</span><span class="v">8</span></li>
+<li><span class="k">Type</span><span class="v">CON / PER</span></li>
+<li><span class="k">Mains</span><span class="v">1 main</span></li>
+<li><span class="k">Attaque</span><span class="v">5</span></li>
+<li><span class="k">Parade</span><span class="v">4</span></li>
+<li><span class="k">Réduction</span><span class="v">4</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -219,12 +219,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="0,0,,,,">
 <p class="arme-nom">Jutte</p>
 <ul class="arme-stats">
-<li>Dégâts <span>8</span></li>
-<li>Type <span>CON</span></li>
-<li>Mains <span>1 main</span></li>
-<li>Attaque <span>5</span></li>
-<li>Parade <span>4</span></li>
-<li>Réduction <span>4</span></li>
+<li><span class="k">Dégâts</span><span class="v">8</span></li>
+<li><span class="k">Type</span><span class="v">CON</span></li>
+<li><span class="k">Mains</span><span class="v">1 main</span></li>
+<li><span class="k">Attaque</span><span class="v">5</span></li>
+<li><span class="k">Parade</span><span class="v">4</span></li>
+<li><span class="k">Réduction</span><span class="v">4</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -232,12 +232,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="0,0,,,,">
 <p class="arme-nom">Dague</p>
 <ul class="arme-stats">
-<li>Dégâts <span>10</span></li>
-<li>Type <span>TRA / PER</span></li>
-<li>Mains <span>1 main</span></li>
-<li>Attaque <span>5</span></li>
-<li>Parade <span>7</span></li>
-<li>Réduction <span>5</span></li>
+<li><span class="k">Dégâts</span><span class="v">10</span></li>
+<li><span class="k">Type</span><span class="v">TRA / PER</span></li>
+<li><span class="k">Mains</span><span class="v">1 main</span></li>
+<li><span class="k">Attaque</span><span class="v">5</span></li>
+<li><span class="k">Parade</span><span class="v">7</span></li>
+<li><span class="k">Réduction</span><span class="v">5</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -245,12 +245,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="0,0,,,,">
 <p class="arme-nom">Poignard</p>
 <ul class="arme-stats">
-<li>Dégâts <span>10</span></li>
-<li>Type <span>PER</span></li>
-<li>Mains <span>1 main</span></li>
-<li>Attaque <span>5</span></li>
-<li>Parade <span>7</span></li>
-<li>Réduction <span>5</span></li>
+<li><span class="k">Dégâts</span><span class="v">10</span></li>
+<li><span class="k">Type</span><span class="v">PER</span></li>
+<li><span class="k">Mains</span><span class="v">1 main</span></li>
+<li><span class="k">Attaque</span><span class="v">5</span></li>
+<li><span class="k">Parade</span><span class="v">7</span></li>
+<li><span class="k">Réduction</span><span class="v">5</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -258,12 +258,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="0,0,,,,">
 <p class="arme-nom">Tanto</p>
 <ul class="arme-stats">
-<li>Dégâts <span>10</span></li>
-<li>Type <span>TRA / PER</span></li>
-<li>Mains <span>1 main</span></li>
-<li>Attaque <span>5</span></li>
-<li>Parade <span>7</span></li>
-<li>Réduction <span>5</span></li>
+<li><span class="k">Dégâts</span><span class="v">10</span></li>
+<li><span class="k">Type</span><span class="v">TRA / PER</span></li>
+<li><span class="k">Mains</span><span class="v">1 main</span></li>
+<li><span class="k">Attaque</span><span class="v">5</span></li>
+<li><span class="k">Parade</span><span class="v">7</span></li>
+<li><span class="k">Réduction</span><span class="v">5</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -271,12 +271,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="0,0,,,,">
 <p class="arme-nom">Tonfa</p>
 <ul class="arme-stats">
-<li>Dégâts <span>10</span></li>
-<li>Type <span>CON</span></li>
-<li>Mains <span>1 main</span></li>
-<li>Attaque <span>5</span></li>
-<li>Parade <span>5</span></li>
-<li>Réduction <span>5</span></li>
+<li><span class="k">Dégâts</span><span class="v">10</span></li>
+<li><span class="k">Type</span><span class="v">CON</span></li>
+<li><span class="k">Mains</span><span class="v">1 main</span></li>
+<li><span class="k">Attaque</span><span class="v">5</span></li>
+<li><span class="k">Parade</span><span class="v">5</span></li>
+<li><span class="k">Réduction</span><span class="v">5</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -284,12 +284,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="0,0,,,,">
 <p class="arme-nom">Katar</p>
 <ul class="arme-stats">
-<li>Dégâts <span>12</span></li>
-<li>Type <span>PER</span></li>
-<li>Mains <span>1 main</span></li>
-<li>Attaque <span>5</span></li>
-<li>Parade <span>7</span></li>
-<li>Réduction <span>6</span></li>
+<li><span class="k">Dégâts</span><span class="v">12</span></li>
+<li><span class="k">Type</span><span class="v">PER</span></li>
+<li><span class="k">Mains</span><span class="v">1 main</span></li>
+<li><span class="k">Attaque</span><span class="v">5</span></li>
+<li><span class="k">Parade</span><span class="v">7</span></li>
+<li><span class="k">Réduction</span><span class="v">6</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -297,12 +297,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="1,0,,,,">
 <p class="arme-nom">Faucille</p>
 <ul class="arme-stats">
-<li>Dégâts <span>12</span></li>
-<li>Type <span>TRA</span></li>
-<li>Mains <span>1 main</span></li>
-<li>Attaque <span>6</span></li>
-<li>Parade <span>8</span></li>
-<li>Réduction <span>3</span></li>
+<li><span class="k">Dégâts</span><span class="v">12</span></li>
+<li><span class="k">Type</span><span class="v">TRA</span></li>
+<li><span class="k">Mains</span><span class="v">1 main</span></li>
+<li><span class="k">Attaque</span><span class="v">6</span></li>
+<li><span class="k">Parade</span><span class="v">8</span></li>
+<li><span class="k">Réduction</span><span class="v">3</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -310,12 +310,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="1,0,,,,">
 <p class="arme-nom">Serpe</p>
 <ul class="arme-stats">
-<li>Dégâts <span>12</span></li>
-<li>Type <span>TRA</span></li>
-<li>Mains <span>1 main</span></li>
-<li>Attaque <span>6</span></li>
-<li>Parade <span>8</span></li>
-<li>Réduction <span>3</span></li>
+<li><span class="k">Dégâts</span><span class="v">12</span></li>
+<li><span class="k">Type</span><span class="v">TRA</span></li>
+<li><span class="k">Mains</span><span class="v">1 main</span></li>
+<li><span class="k">Attaque</span><span class="v">6</span></li>
+<li><span class="k">Parade</span><span class="v">8</span></li>
+<li><span class="k">Réduction</span><span class="v">3</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -323,12 +323,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="1,0,,,,">
 <p class="arme-nom">Kukri</p>
 <ul class="arme-stats">
-<li>Dégâts <span>14</span></li>
-<li>Type <span>TRA</span></li>
-<li>Mains <span>1 main</span></li>
-<li>Attaque <span>5</span></li>
-<li>Parade <span>7</span></li>
-<li>Réduction <span>7</span></li>
+<li><span class="k">Dégâts</span><span class="v">14</span></li>
+<li><span class="k">Type</span><span class="v">TRA</span></li>
+<li><span class="k">Mains</span><span class="v">1 main</span></li>
+<li><span class="k">Attaque</span><span class="v">5</span></li>
+<li><span class="k">Parade</span><span class="v">7</span></li>
+<li><span class="k">Réduction</span><span class="v">7</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -336,12 +336,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="1,0,,,,">
 <p class="arme-nom">Hachette</p>
 <ul class="arme-stats">
-<li>Dégâts <span>14</span></li>
-<li>Type <span>TRA</span></li>
-<li>Mains <span>1 main</span></li>
-<li>Attaque <span>5</span></li>
-<li>Parade <span>8</span></li>
-<li>Réduction <span>3</span></li>
+<li><span class="k">Dégâts</span><span class="v">14</span></li>
+<li><span class="k">Type</span><span class="v">TRA</span></li>
+<li><span class="k">Mains</span><span class="v">1 main</span></li>
+<li><span class="k">Attaque</span><span class="v">5</span></li>
+<li><span class="k">Parade</span><span class="v">8</span></li>
+<li><span class="k">Réduction</span><span class="v">3</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -355,12 +355,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="2,1,0,,,">
 <p class="arme-nom">Machette</p>
 <ul class="arme-stats">
-<li>Dégâts <span>14</span></li>
-<li>Type <span>TRA</span></li>
-<li>Mains <span>1 main</span></li>
-<li>Attaque <span>5</span></li>
-<li>Parade <span>6</span></li>
-<li>Réduction <span>7</span></li>
+<li><span class="k">Dégâts</span><span class="v">14</span></li>
+<li><span class="k">Type</span><span class="v">TRA</span></li>
+<li><span class="k">Mains</span><span class="v">1 main</span></li>
+<li><span class="k">Attaque</span><span class="v">5</span></li>
+<li><span class="k">Parade</span><span class="v">6</span></li>
+<li><span class="k">Réduction</span><span class="v">7</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -368,12 +368,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="2,1,0,,,">
 <p class="arme-nom">Épée courte</p>
 <ul class="arme-stats">
-<li>Dégâts <span>16</span></li>
-<li>Type <span>TRA / PER</span></li>
-<li>Mains <span>1 main</span></li>
-<li>Attaque <span>5</span></li>
-<li>Parade <span>5</span></li>
-<li>Réduction <span>8</span></li>
+<li><span class="k">Dégâts</span><span class="v">16</span></li>
+<li><span class="k">Type</span><span class="v">TRA / PER</span></li>
+<li><span class="k">Mains</span><span class="v">1 main</span></li>
+<li><span class="k">Attaque</span><span class="v">5</span></li>
+<li><span class="k">Parade</span><span class="v">5</span></li>
+<li><span class="k">Réduction</span><span class="v">8</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -381,12 +381,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="2,1,0,,,">
 <p class="arme-nom">Gladius</p>
 <ul class="arme-stats">
-<li>Dégâts <span>16</span></li>
-<li>Type <span>TRA / PER</span></li>
-<li>Mains <span>1 main</span></li>
-<li>Attaque <span>5</span></li>
-<li>Parade <span>5</span></li>
-<li>Réduction <span>8</span></li>
+<li><span class="k">Dégâts</span><span class="v">16</span></li>
+<li><span class="k">Type</span><span class="v">TRA / PER</span></li>
+<li><span class="k">Mains</span><span class="v">1 main</span></li>
+<li><span class="k">Attaque</span><span class="v">5</span></li>
+<li><span class="k">Parade</span><span class="v">5</span></li>
+<li><span class="k">Réduction</span><span class="v">8</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -394,12 +394,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="2,1,0,,,">
 <p class="arme-nom">Wakizashi</p>
 <ul class="arme-stats">
-<li>Dégâts <span>16</span></li>
-<li>Type <span>TRA</span></li>
-<li>Mains <span>1 main</span></li>
-<li>Attaque <span>5</span></li>
-<li>Parade <span>5</span></li>
-<li>Réduction <span>8</span></li>
+<li><span class="k">Dégâts</span><span class="v">16</span></li>
+<li><span class="k">Type</span><span class="v">TRA</span></li>
+<li><span class="k">Mains</span><span class="v">1 main</span></li>
+<li><span class="k">Attaque</span><span class="v">5</span></li>
+<li><span class="k">Parade</span><span class="v">5</span></li>
+<li><span class="k">Réduction</span><span class="v">8</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -407,12 +407,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="2,1,0,,,">
 <p class="arme-nom">Rapière</p>
 <ul class="arme-stats">
-<li>Dégâts <span>16</span></li>
-<li>Type <span>PER</span></li>
-<li>Mains <span>1 main</span></li>
-<li>Attaque <span>5</span></li>
-<li>Parade <span>5</span></li>
-<li>Réduction <span>8</span></li>
+<li><span class="k">Dégâts</span><span class="v">16</span></li>
+<li><span class="k">Type</span><span class="v">PER</span></li>
+<li><span class="k">Mains</span><span class="v">1 main</span></li>
+<li><span class="k">Attaque</span><span class="v">5</span></li>
+<li><span class="k">Parade</span><span class="v">5</span></li>
+<li><span class="k">Réduction</span><span class="v">8</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -420,12 +420,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="2,1,0,,,">
 <p class="arme-nom">Estoc</p>
 <ul class="arme-stats">
-<li>Dégâts <span>18</span></li>
-<li>Type <span>PER</span></li>
-<li>Mains <span>Polyvalente</span></li>
-<li>Attaque <span>6</span></li>
-<li>Parade <span>5</span></li>
-<li>Réduction <span>9</span></li>
+<li><span class="k">Dégâts</span><span class="v">18</span></li>
+<li><span class="k">Type</span><span class="v">PER</span></li>
+<li><span class="k">Mains</span><span class="v">Polyvalente</span></li>
+<li><span class="k">Attaque</span><span class="v">6</span></li>
+<li><span class="k">Parade</span><span class="v">5</span></li>
+<li><span class="k">Réduction</span><span class="v">9</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -433,12 +433,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="2,1,0,,,">
 <p class="arme-nom">Épée d'armes</p>
 <ul class="arme-stats">
-<li>Dégâts <span>20</span></li>
-<li>Type <span>TRA / PER</span></li>
-<li>Mains <span>1 main</span></li>
-<li>Attaque <span>6</span></li>
-<li>Parade <span>5</span></li>
-<li>Réduction <span>10</span></li>
+<li><span class="k">Dégâts</span><span class="v">20</span></li>
+<li><span class="k">Type</span><span class="v">TRA / PER</span></li>
+<li><span class="k">Mains</span><span class="v">1 main</span></li>
+<li><span class="k">Attaque</span><span class="v">6</span></li>
+<li><span class="k">Parade</span><span class="v">5</span></li>
+<li><span class="k">Réduction</span><span class="v">10</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -446,12 +446,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="2,1,0,,,">
 <p class="arme-nom">Sabre</p>
 <ul class="arme-stats">
-<li>Dégâts <span>20</span></li>
-<li>Type <span>TRA</span></li>
-<li>Mains <span>1 main</span></li>
-<li>Attaque <span>6</span></li>
-<li>Parade <span>5</span></li>
-<li>Réduction <span>10</span></li>
+<li><span class="k">Dégâts</span><span class="v">20</span></li>
+<li><span class="k">Type</span><span class="v">TRA</span></li>
+<li><span class="k">Mains</span><span class="v">1 main</span></li>
+<li><span class="k">Attaque</span><span class="v">6</span></li>
+<li><span class="k">Parade</span><span class="v">5</span></li>
+<li><span class="k">Réduction</span><span class="v">10</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -459,12 +459,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="2,1,0,,,">
 <p class="arme-nom">Cimeterre</p>
 <ul class="arme-stats">
-<li>Dégâts <span>20</span></li>
-<li>Type <span>TRA</span></li>
-<li>Mains <span>1 main</span></li>
-<li>Attaque <span>6</span></li>
-<li>Parade <span>5</span></li>
-<li>Réduction <span>10</span></li>
+<li><span class="k">Dégâts</span><span class="v">20</span></li>
+<li><span class="k">Type</span><span class="v">TRA</span></li>
+<li><span class="k">Mains</span><span class="v">1 main</span></li>
+<li><span class="k">Attaque</span><span class="v">6</span></li>
+<li><span class="k">Parade</span><span class="v">5</span></li>
+<li><span class="k">Réduction</span><span class="v">10</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -472,12 +472,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="4,2,0,,,">
 <p class="arme-nom">Épée longue</p>
 <ul class="arme-stats">
-<li>Dégâts <span>26</span></li>
-<li>Type <span>TRA / PER</span></li>
-<li>Mains <span>Polyvalente</span></li>
-<li>Attaque <span>6</span></li>
-<li>Parade <span>5</span></li>
-<li>Réduction <span>13</span></li>
+<li><span class="k">Dégâts</span><span class="v">26</span></li>
+<li><span class="k">Type</span><span class="v">TRA / PER</span></li>
+<li><span class="k">Mains</span><span class="v">Polyvalente</span></li>
+<li><span class="k">Attaque</span><span class="v">6</span></li>
+<li><span class="k">Parade</span><span class="v">5</span></li>
+<li><span class="k">Réduction</span><span class="v">13</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -485,12 +485,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="4,2,0,,,">
 <p class="arme-nom">Épée bâtarde</p>
 <ul class="arme-stats">
-<li>Dégâts <span>26</span></li>
-<li>Type <span>TRA / PER</span></li>
-<li>Mains <span>Polyvalente</span></li>
-<li>Attaque <span>6</span></li>
-<li>Parade <span>5</span></li>
-<li>Réduction <span>13</span></li>
+<li><span class="k">Dégâts</span><span class="v">26</span></li>
+<li><span class="k">Type</span><span class="v">TRA / PER</span></li>
+<li><span class="k">Mains</span><span class="v">Polyvalente</span></li>
+<li><span class="k">Attaque</span><span class="v">6</span></li>
+<li><span class="k">Parade</span><span class="v">5</span></li>
+<li><span class="k">Réduction</span><span class="v">13</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -498,12 +498,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="4,2,0,,,">
 <p class="arme-nom">Katana</p>
 <ul class="arme-stats">
-<li>Dégâts <span>26</span></li>
-<li>Type <span>TRA</span></li>
-<li>Mains <span>Polyvalente</span></li>
-<li>Attaque <span>6</span></li>
-<li>Parade <span>5</span></li>
-<li>Réduction <span>13</span></li>
+<li><span class="k">Dégâts</span><span class="v">26</span></li>
+<li><span class="k">Type</span><span class="v">TRA</span></li>
+<li><span class="k">Mains</span><span class="v">Polyvalente</span></li>
+<li><span class="k">Attaque</span><span class="v">6</span></li>
+<li><span class="k">Parade</span><span class="v">5</span></li>
+<li><span class="k">Réduction</span><span class="v">13</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -511,12 +511,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="4,2,0,,,">
 <p class="arme-nom">Épée à deux mains</p>
 <ul class="arme-stats">
-<li>Dégâts <span>34</span></li>
-<li>Type <span>TRA</span></li>
-<li>Mains <span>2 mains</span></li>
-<li>Attaque <span>7</span></li>
-<li>Parade <span>5</span></li>
-<li>Réduction <span>17</span></li>
+<li><span class="k">Dégâts</span><span class="v">34</span></li>
+<li><span class="k">Type</span><span class="v">TRA</span></li>
+<li><span class="k">Mains</span><span class="v">2 mains</span></li>
+<li><span class="k">Attaque</span><span class="v">7</span></li>
+<li><span class="k">Parade</span><span class="v">5</span></li>
+<li><span class="k">Réduction</span><span class="v">17</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -524,12 +524,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="4,2,0,,,">
 <p class="arme-nom">Espadon</p>
 <ul class="arme-stats">
-<li>Dégâts <span>34</span></li>
-<li>Type <span>TRA</span></li>
-<li>Mains <span>2 mains</span></li>
-<li>Attaque <span>7</span></li>
-<li>Parade <span>5</span></li>
-<li>Réduction <span>17</span></li>
+<li><span class="k">Dégâts</span><span class="v">34</span></li>
+<li><span class="k">Type</span><span class="v">TRA</span></li>
+<li><span class="k">Mains</span><span class="v">2 mains</span></li>
+<li><span class="k">Attaque</span><span class="v">7</span></li>
+<li><span class="k">Parade</span><span class="v">5</span></li>
+<li><span class="k">Réduction</span><span class="v">17</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -537,12 +537,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="4,2,0,,,">
 <p class="arme-nom">Nodachi</p>
 <ul class="arme-stats">
-<li>Dégâts <span>34</span></li>
-<li>Type <span>TRA</span></li>
-<li>Mains <span>2 mains</span></li>
-<li>Attaque <span>7</span></li>
-<li>Parade <span>6</span></li>
-<li>Réduction <span>17</span></li>
+<li><span class="k">Dégâts</span><span class="v">34</span></li>
+<li><span class="k">Type</span><span class="v">TRA</span></li>
+<li><span class="k">Mains</span><span class="v">2 mains</span></li>
+<li><span class="k">Attaque</span><span class="v">7</span></li>
+<li><span class="k">Parade</span><span class="v">6</span></li>
+<li><span class="k">Réduction</span><span class="v">17</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -556,12 +556,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="2,1,0,,,">
 <p class="arme-nom">Matraque</p>
 <ul class="arme-stats">
-<li>Dégâts <span>12</span></li>
-<li>Type <span>CON</span></li>
-<li>Mains <span>1 main</span></li>
-<li>Attaque <span>4</span></li>
-<li>Parade <span>6</span></li>
-<li>Réduction <span>6</span></li>
+<li><span class="k">Dégâts</span><span class="v">12</span></li>
+<li><span class="k">Type</span><span class="v">CON</span></li>
+<li><span class="k">Mains</span><span class="v">1 main</span></li>
+<li><span class="k">Attaque</span><span class="v">4</span></li>
+<li><span class="k">Parade</span><span class="v">6</span></li>
+<li><span class="k">Réduction</span><span class="v">6</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -569,12 +569,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="2,1,0,,,">
 <p class="arme-nom">Gourdin</p>
 <ul class="arme-stats">
-<li>Dégâts <span>14</span></li>
-<li>Type <span>CON</span></li>
-<li>Mains <span>1 main</span></li>
-<li>Attaque <span>4</span></li>
-<li>Parade <span>6</span></li>
-<li>Réduction <span>7</span></li>
+<li><span class="k">Dégâts</span><span class="v">14</span></li>
+<li><span class="k">Type</span><span class="v">CON</span></li>
+<li><span class="k">Mains</span><span class="v">1 main</span></li>
+<li><span class="k">Attaque</span><span class="v">4</span></li>
+<li><span class="k">Parade</span><span class="v">6</span></li>
+<li><span class="k">Réduction</span><span class="v">7</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -582,12 +582,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="2,1,0,,,">
 <p class="arme-nom">Masse</p>
 <ul class="arme-stats">
-<li>Dégâts <span>22</span></li>
-<li>Type <span>CON</span></li>
-<li>Mains <span>1 main</span></li>
-<li>Attaque <span>5</span></li>
-<li>Parade <span>7</span></li>
-<li>Réduction <span>5</span></li>
+<li><span class="k">Dégâts</span><span class="v">22</span></li>
+<li><span class="k">Type</span><span class="v">CON</span></li>
+<li><span class="k">Mains</span><span class="v">1 main</span></li>
+<li><span class="k">Attaque</span><span class="v">5</span></li>
+<li><span class="k">Parade</span><span class="v">7</span></li>
+<li><span class="k">Réduction</span><span class="v">5</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -595,12 +595,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="2,1,0,,,">
 <p class="arme-nom">Hache à une main</p>
 <ul class="arme-stats">
-<li>Dégâts <span>22</span></li>
-<li>Type <span>TRA</span></li>
-<li>Mains <span>1 main</span></li>
-<li>Attaque <span>6</span></li>
-<li>Parade <span>7</span></li>
-<li>Réduction <span>5</span></li>
+<li><span class="k">Dégâts</span><span class="v">22</span></li>
+<li><span class="k">Type</span><span class="v">TRA</span></li>
+<li><span class="k">Mains</span><span class="v">1 main</span></li>
+<li><span class="k">Attaque</span><span class="v">6</span></li>
+<li><span class="k">Parade</span><span class="v">7</span></li>
+<li><span class="k">Réduction</span><span class="v">5</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -608,12 +608,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="2,1,0,,,">
 <p class="arme-nom">Marteau</p>
 <ul class="arme-stats">
-<li>Dégâts <span>22</span></li>
-<li>Type <span>CON / PER</span></li>
-<li>Mains <span>1 main</span></li>
-<li>Attaque <span>6</span></li>
-<li>Parade <span>7</span></li>
-<li>Réduction <span>5</span></li>
+<li><span class="k">Dégâts</span><span class="v">22</span></li>
+<li><span class="k">Type</span><span class="v">CON / PER</span></li>
+<li><span class="k">Mains</span><span class="v">1 main</span></li>
+<li><span class="k">Attaque</span><span class="v">6</span></li>
+<li><span class="k">Parade</span><span class="v">7</span></li>
+<li><span class="k">Réduction</span><span class="v">5</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -621,12 +621,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="4,2,0,,,">
 <p class="arme-nom">Hache à deux mains</p>
 <ul class="arme-stats">
-<li>Dégâts <span>32</span></li>
-<li>Type <span>TRA</span></li>
-<li>Mains <span>2 mains</span></li>
-<li>Attaque <span>7</span></li>
-<li>Parade <span>7</span></li>
-<li>Réduction <span>8</span></li>
+<li><span class="k">Dégâts</span><span class="v">32</span></li>
+<li><span class="k">Type</span><span class="v">TRA</span></li>
+<li><span class="k">Mains</span><span class="v">2 mains</span></li>
+<li><span class="k">Attaque</span><span class="v">7</span></li>
+<li><span class="k">Parade</span><span class="v">7</span></li>
+<li><span class="k">Réduction</span><span class="v">8</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -634,12 +634,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="4,2,0,,,">
 <p class="arme-nom">Hache danoise</p>
 <ul class="arme-stats">
-<li>Dégâts <span>32</span></li>
-<li>Type <span>TRA</span></li>
-<li>Mains <span>2 mains</span></li>
-<li>Attaque <span>7</span></li>
-<li>Parade <span>7</span></li>
-<li>Réduction <span>8</span></li>
+<li><span class="k">Dégâts</span><span class="v">32</span></li>
+<li><span class="k">Type</span><span class="v">TRA</span></li>
+<li><span class="k">Mains</span><span class="v">2 mains</span></li>
+<li><span class="k">Attaque</span><span class="v">7</span></li>
+<li><span class="k">Parade</span><span class="v">7</span></li>
+<li><span class="k">Réduction</span><span class="v">8</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -647,12 +647,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="4,2,0,,,">
 <p class="arme-nom">Maillet</p>
 <ul class="arme-stats">
-<li>Dégâts <span>34</span></li>
-<li>Type <span>CON</span></li>
-<li>Mains <span>2 mains</span></li>
-<li>Attaque <span>7</span></li>
-<li>Parade <span>8</span></li>
-<li>Réduction <span>8</span></li>
+<li><span class="k">Dégâts</span><span class="v">34</span></li>
+<li><span class="k">Type</span><span class="v">CON</span></li>
+<li><span class="k">Mains</span><span class="v">2 mains</span></li>
+<li><span class="k">Attaque</span><span class="v">7</span></li>
+<li><span class="k">Parade</span><span class="v">8</span></li>
+<li><span class="k">Réduction</span><span class="v">8</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -666,12 +666,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="2,1,0,,,">
 <p class="arme-nom">Nunchaku</p>
 <ul class="arme-stats">
-<li>Dégâts <span>12</span></li>
-<li>Type <span>CON</span></li>
-<li>Mains <span>1 main</span></li>
-<li>Attaque <span>8</span></li>
-<li>Parade <span>8</span></li>
-<li>Réduction <span>3</span></li>
+<li><span class="k">Dégâts</span><span class="v">12</span></li>
+<li><span class="k">Type</span><span class="v">CON</span></li>
+<li><span class="k">Mains</span><span class="v">1 main</span></li>
+<li><span class="k">Attaque</span><span class="v">8</span></li>
+<li><span class="k">Parade</span><span class="v">8</span></li>
+<li><span class="k">Réduction</span><span class="v">3</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -679,12 +679,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="2,1,0,,,">
 <p class="arme-nom">Chaîne courte</p>
 <ul class="arme-stats">
-<li>Dégâts <span>12</span></li>
-<li>Type <span>CON</span></li>
-<li>Mains <span>1 main</span></li>
-<li>Attaque <span>8</span></li>
-<li>Parade <span>9</span></li>
-<li>Réduction <span>3</span></li>
+<li><span class="k">Dégâts</span><span class="v">12</span></li>
+<li><span class="k">Type</span><span class="v">CON</span></li>
+<li><span class="k">Mains</span><span class="v">1 main</span></li>
+<li><span class="k">Attaque</span><span class="v">8</span></li>
+<li><span class="k">Parade</span><span class="v">9</span></li>
+<li><span class="k">Réduction</span><span class="v">3</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -692,12 +692,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="1,0,,,,">
 <p class="arme-nom">Kusarigama (faucille)</p>
 <ul class="arme-stats">
-<li>Dégâts <span>12</span></li>
-<li>Type <span>TRA</span></li>
-<li>Mains <span>1 main</span></li>
-<li>Attaque <span>6</span></li>
-<li>Parade <span>7</span></li>
-<li>Réduction <span>6</span></li>
+<li><span class="k">Dégâts</span><span class="v">12</span></li>
+<li><span class="k">Type</span><span class="v">TRA</span></li>
+<li><span class="k">Mains</span><span class="v">1 main</span></li>
+<li><span class="k">Attaque</span><span class="v">6</span></li>
+<li><span class="k">Parade</span><span class="v">7</span></li>
+<li><span class="k">Réduction</span><span class="v">6</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -705,11 +705,11 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="3,2,1,0,,">
 <p class="arme-nom">Kusarigama (chaîne)</p>
 <ul class="arme-stats">
-<li>Dégâts <span>12</span></li>
-<li>Type <span>CON</span></li>
-<li>Mains <span>2 mains</span></li>
-<li>Attaque <span>9</span></li>
-<li>Parade <span>aucune</span></li>
+<li><span class="k">Dégâts</span><span class="v">12</span></li>
+<li><span class="k">Type</span><span class="v">CON</span></li>
+<li><span class="k">Mains</span><span class="v">2 mains</span></li>
+<li><span class="k">Attaque</span><span class="v">9</span></li>
+<li><span class="k">Parade</span><span class="v">aucune</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -717,11 +717,11 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="x,3,2,1,0,">
 <p class="arme-nom">Chaîne longue lestée</p>
 <ul class="arme-stats">
-<li>Dégâts <span>14</span></li>
-<li>Type <span>CON</span></li>
-<li>Mains <span>1 main</span></li>
-<li>Attaque <span>9</span></li>
-<li>Parade <span>aucune</span></li>
+<li><span class="k">Dégâts</span><span class="v">14</span></li>
+<li><span class="k">Type</span><span class="v">CON</span></li>
+<li><span class="k">Mains</span><span class="v">1 main</span></li>
+<li><span class="k">Attaque</span><span class="v">9</span></li>
+<li><span class="k">Parade</span><span class="v">aucune</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -729,11 +729,11 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="2,1,0,,,">
 <p class="arme-nom">Fléau à une main</p>
 <ul class="arme-stats">
-<li>Dégâts <span>20</span></li>
-<li>Type <span>CON</span></li>
-<li>Mains <span>1 main</span></li>
-<li>Attaque <span>8</span></li>
-<li>Parade <span>aucune</span></li>
+<li><span class="k">Dégâts</span><span class="v">20</span></li>
+<li><span class="k">Type</span><span class="v">CON</span></li>
+<li><span class="k">Mains</span><span class="v">1 main</span></li>
+<li><span class="k">Attaque</span><span class="v">8</span></li>
+<li><span class="k">Parade</span><span class="v">aucune</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -741,11 +741,11 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="4,2,0,,,">
 <p class="arme-nom">Fléau d'armes à deux mains</p>
 <ul class="arme-stats">
-<li>Dégâts <span>30</span></li>
-<li>Type <span>CON</span></li>
-<li>Mains <span>2 mains</span></li>
-<li>Attaque <span>9</span></li>
-<li>Parade <span>aucune</span></li>
+<li><span class="k">Dégâts</span><span class="v">30</span></li>
+<li><span class="k">Type</span><span class="v">CON</span></li>
+<li><span class="k">Mains</span><span class="v">2 mains</span></li>
+<li><span class="k">Attaque</span><span class="v">9</span></li>
+<li><span class="k">Parade</span><span class="v">aucune</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -753,11 +753,11 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="x,3,2,1,0,">
 <p class="arme-nom">Fouet</p>
 <ul class="arme-stats">
-<li>Dégâts <span>6</span></li>
-<li>Type <span>TRA</span></li>
-<li>Mains <span>1 main</span></li>
-<li>Attaque <span>10</span></li>
-<li>Parade <span>aucune</span></li>
+<li><span class="k">Dégâts</span><span class="v">6</span></li>
+<li><span class="k">Type</span><span class="v">TRA</span></li>
+<li><span class="k">Mains</span><span class="v">1 main</span></li>
+<li><span class="k">Attaque</span><span class="v">10</span></li>
+<li><span class="k">Parade</span><span class="v">aucune</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -771,12 +771,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="2,1,0,,,">
 <p class="arme-nom">Bâton long</p>
 <ul class="arme-stats">
-<li>Dégâts <span>14</span></li>
-<li>Type <span>CON</span></li>
-<li>Mains <span>2 mains</span></li>
-<li>Attaque <span>5</span></li>
-<li>Parade <span>4</span></li>
-<li>Réduction <span>7</span></li>
+<li><span class="k">Dégâts</span><span class="v">14</span></li>
+<li><span class="k">Type</span><span class="v">CON</span></li>
+<li><span class="k">Mains</span><span class="v">2 mains</span></li>
+<li><span class="k">Attaque</span><span class="v">5</span></li>
+<li><span class="k">Parade</span><span class="v">4</span></li>
+<li><span class="k">Réduction</span><span class="v">7</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -784,12 +784,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="2,1,0,,,">
 <p class="arme-nom">Bô</p>
 <ul class="arme-stats">
-<li>Dégâts <span>14</span></li>
-<li>Type <span>CON</span></li>
-<li>Mains <span>2 mains</span></li>
-<li>Attaque <span>5</span></li>
-<li>Parade <span>4</span></li>
-<li>Réduction <span>7</span></li>
+<li><span class="k">Dégâts</span><span class="v">14</span></li>
+<li><span class="k">Type</span><span class="v">CON</span></li>
+<li><span class="k">Mains</span><span class="v">2 mains</span></li>
+<li><span class="k">Attaque</span><span class="v">5</span></li>
+<li><span class="k">Parade</span><span class="v">4</span></li>
+<li><span class="k">Réduction</span><span class="v">7</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -797,12 +797,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="3,2,1,0,,">
 <p class="arme-nom">Lance</p>
 <ul class="arme-stats">
-<li>Dégâts <span>20</span></li>
-<li>Type <span>PER</span></li>
-<li>Mains <span>Polyvalente</span></li>
-<li>Attaque <span>5</span></li>
-<li>Parade <span>6</span></li>
-<li>Réduction <span>10</span></li>
+<li><span class="k">Dégâts</span><span class="v">20</span></li>
+<li><span class="k">Type</span><span class="v">PER</span></li>
+<li><span class="k">Mains</span><span class="v">Polyvalente</span></li>
+<li><span class="k">Attaque</span><span class="v">5</span></li>
+<li><span class="k">Parade</span><span class="v">6</span></li>
+<li><span class="k">Réduction</span><span class="v">10</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -810,12 +810,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="3,2,1,0,,">
 <p class="arme-nom">Épieu</p>
 <ul class="arme-stats">
-<li>Dégâts <span>22</span></li>
-<li>Type <span>PER</span></li>
-<li>Mains <span>2 mains</span></li>
-<li>Attaque <span>5</span></li>
-<li>Parade <span>6</span></li>
-<li>Réduction <span>11</span></li>
+<li><span class="k">Dégâts</span><span class="v">22</span></li>
+<li><span class="k">Type</span><span class="v">PER</span></li>
+<li><span class="k">Mains</span><span class="v">2 mains</span></li>
+<li><span class="k">Attaque</span><span class="v">5</span></li>
+<li><span class="k">Parade</span><span class="v">6</span></li>
+<li><span class="k">Réduction</span><span class="v">11</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -823,12 +823,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="3,2,1,0,,">
 <p class="arme-nom">Trident</p>
 <ul class="arme-stats">
-<li>Dégâts <span>22</span></li>
-<li>Type <span>PER</span></li>
-<li>Mains <span>Polyvalente</span></li>
-<li>Attaque <span>6</span></li>
-<li>Parade <span>6</span></li>
-<li>Réduction <span>11</span></li>
+<li><span class="k">Dégâts</span><span class="v">22</span></li>
+<li><span class="k">Type</span><span class="v">PER</span></li>
+<li><span class="k">Mains</span><span class="v">Polyvalente</span></li>
+<li><span class="k">Attaque</span><span class="v">6</span></li>
+<li><span class="k">Parade</span><span class="v">6</span></li>
+<li><span class="k">Réduction</span><span class="v">11</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -836,12 +836,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="3,2,1,0,,">
 <p class="arme-nom">Guisarme</p>
 <ul class="arme-stats">
-<li>Dégâts <span>24</span></li>
-<li>Type <span>TRA / PER</span></li>
-<li>Mains <span>2 mains</span></li>
-<li>Attaque <span>7</span></li>
-<li>Parade <span>6</span></li>
-<li>Réduction <span>12</span></li>
+<li><span class="k">Dégâts</span><span class="v">24</span></li>
+<li><span class="k">Type</span><span class="v">TRA / PER</span></li>
+<li><span class="k">Mains</span><span class="v">2 mains</span></li>
+<li><span class="k">Attaque</span><span class="v">7</span></li>
+<li><span class="k">Parade</span><span class="v">6</span></li>
+<li><span class="k">Réduction</span><span class="v">12</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -849,12 +849,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="3,2,1,0,,">
 <p class="arme-nom">Naginata</p>
 <ul class="arme-stats">
-<li>Dégâts <span>26</span></li>
-<li>Type <span>TRA</span></li>
-<li>Mains <span>2 mains</span></li>
-<li>Attaque <span>6</span></li>
-<li>Parade <span>5</span></li>
-<li>Réduction <span>13</span></li>
+<li><span class="k">Dégâts</span><span class="v">26</span></li>
+<li><span class="k">Type</span><span class="v">TRA</span></li>
+<li><span class="k">Mains</span><span class="v">2 mains</span></li>
+<li><span class="k">Attaque</span><span class="v">6</span></li>
+<li><span class="k">Parade</span><span class="v">5</span></li>
+<li><span class="k">Réduction</span><span class="v">13</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -862,12 +862,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="3,2,1,0,,">
 <p class="arme-nom">Fauchard</p>
 <ul class="arme-stats">
-<li>Dégâts <span>26</span></li>
-<li>Type <span>TRA</span></li>
-<li>Mains <span>2 mains</span></li>
-<li>Attaque <span>6</span></li>
-<li>Parade <span>6</span></li>
-<li>Réduction <span>13</span></li>
+<li><span class="k">Dégâts</span><span class="v">26</span></li>
+<li><span class="k">Type</span><span class="v">TRA</span></li>
+<li><span class="k">Mains</span><span class="v">2 mains</span></li>
+<li><span class="k">Attaque</span><span class="v">6</span></li>
+<li><span class="k">Parade</span><span class="v">6</span></li>
+<li><span class="k">Réduction</span><span class="v">13</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -875,12 +875,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="3,2,1,0,,">
 <p class="arme-nom">Pertuisane</p>
 <ul class="arme-stats">
-<li>Dégâts <span>26</span></li>
-<li>Type <span>PER</span></li>
-<li>Mains <span>2 mains</span></li>
-<li>Attaque <span>6</span></li>
-<li>Parade <span>6</span></li>
-<li>Réduction <span>13</span></li>
+<li><span class="k">Dégâts</span><span class="v">26</span></li>
+<li><span class="k">Type</span><span class="v">PER</span></li>
+<li><span class="k">Mains</span><span class="v">2 mains</span></li>
+<li><span class="k">Attaque</span><span class="v">6</span></li>
+<li><span class="k">Parade</span><span class="v">6</span></li>
+<li><span class="k">Réduction</span><span class="v">13</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -888,12 +888,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="3,2,1,0,,">
 <p class="arme-nom">Hallebarde</p>
 <ul class="arme-stats">
-<li>Dégâts <span>30</span></li>
-<li>Type <span>TRA / PER</span></li>
-<li>Mains <span>2 mains</span></li>
-<li>Attaque <span>7</span></li>
-<li>Parade <span>6</span></li>
-<li>Réduction <span>15</span></li>
+<li><span class="k">Dégâts</span><span class="v">30</span></li>
+<li><span class="k">Type</span><span class="v">TRA / PER</span></li>
+<li><span class="k">Mains</span><span class="v">2 mains</span></li>
+<li><span class="k">Attaque</span><span class="v">7</span></li>
+<li><span class="k">Parade</span><span class="v">6</span></li>
+<li><span class="k">Réduction</span><span class="v">15</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -901,12 +901,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="3,2,1,0,,">
 <p class="arme-nom">Bardiche</p>
 <ul class="arme-stats">
-<li>Dégâts <span>30</span></li>
-<li>Type <span>TRA</span></li>
-<li>Mains <span>2 mains</span></li>
-<li>Attaque <span>7</span></li>
-<li>Parade <span>7</span></li>
-<li>Réduction <span>15</span></li>
+<li><span class="k">Dégâts</span><span class="v">30</span></li>
+<li><span class="k">Type</span><span class="v">TRA</span></li>
+<li><span class="k">Mains</span><span class="v">2 mains</span></li>
+<li><span class="k">Attaque</span><span class="v">7</span></li>
+<li><span class="k">Parade</span><span class="v">7</span></li>
+<li><span class="k">Réduction</span><span class="v">15</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -914,12 +914,12 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="x,4,3,2,1,0">
 <p class="arme-nom">Pique</p>
 <ul class="arme-stats">
-<li>Dégâts <span>24</span></li>
-<li>Type <span>PER</span></li>
-<li>Mains <span>2 mains</span></li>
-<li>Attaque <span>8</span></li>
-<li>Parade <span>9</span></li>
-<li>Réduction <span>6</span></li>
+<li><span class="k">Dégâts</span><span class="v">24</span></li>
+<li><span class="k">Type</span><span class="v">PER</span></li>
+<li><span class="k">Mains</span><span class="v">2 mains</span></li>
+<li><span class="k">Attaque</span><span class="v">8</span></li>
+<li><span class="k">Parade</span><span class="v">9</span></li>
+<li><span class="k">Réduction</span><span class="v">6</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>
@@ -927,11 +927,11 @@ La réduction suit une autre logique. Elle vaut la moitié des dégâts pour une
 <div class="arme" data-cases="x,3,2,1,0,">
 <p class="arme-nom">Lance de cavalerie</p>
 <ul class="arme-stats">
-<li>Dégâts <span>34</span></li>
-<li>Type <span>PER</span></li>
-<li>Mains <span>1 main</span></li>
-<li>Attaque <span>7</span></li>
-<li>Parade <span>aucune</span></li>
+<li><span class="k">Dégâts</span><span class="v">34</span></li>
+<li><span class="k">Type</span><span class="v">PER</span></li>
+<li><span class="k">Mains</span><span class="v">1 main</span></li>
+<li><span class="k">Attaque</span><span class="v">7</span></li>
+<li><span class="k">Parade</span><span class="v">aucune</span></li>
 </ul>
 <div class="arme-map"></div>
 </div>

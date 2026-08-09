@@ -29,6 +29,12 @@ CARTE = re.compile(
     re.S,
 )
 
+# Le bandeau du nom, qui suit immédiatement l'ouverture de la carte : on y ajoute
+# la distance idéale, déduite du même data-cases plutôt que saisie à la main.
+NOM = re.compile(
+    r'(<div class="arme" data-cases="([^"]*)">\s*<p class="arme-nom">)([^<]*)(</p>)'
+)
+
 
 def _sommets(cx, cy, rayon):
     """Hexagone pointe en haut : le premier sommet est à midi."""
@@ -88,7 +94,33 @@ def carte_svg(cases_brut):
     return "".join(morceaux)
 
 
+def distance_ideale(cases_brut):
+    """Anneau où l'arme n'ajoute rien, c'est-à-dire le plus lointain marqué 0.
+
+    Le couteau porte deux zéros, à la case 0 et à la case 1 : sa distance idéale
+    est la plus lointaine des deux, celle jusqu'où il atteint sans rien ajouter.
+    """
+    anneaux = [i for i, v in enumerate(cases_brut.split(",")) if v.strip() == "0"]
+    return anneaux[-1] if anneaux else None
+
+
+def libelle_portee(cases_brut):
+    d = distance_ideale(cases_brut)
+    if d is None:
+        return ""
+    if d == 0:
+        return "au contact"
+    return f"idéale à {d} case" + ("s" if d > 1 else "")
+
+
 def on_page_content(html, page, config, files):
     if 'class="arme"' not in html:
         return html
-    return CARTE.sub(lambda m: m.group(1) + carte_svg(m.group(2)) + m.group(3), html)
+    html = CARTE.sub(lambda m: m.group(1) + carte_svg(m.group(2)) + m.group(3), html)
+    html = NOM.sub(
+        lambda m: m.group(1) + m.group(3)
+        + f'<span class="arme-portee">{libelle_portee(m.group(2))}</span>'
+        + m.group(4),
+        html,
+    )
+    return html
