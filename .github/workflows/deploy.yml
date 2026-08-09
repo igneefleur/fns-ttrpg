@@ -73,9 +73,9 @@ jobs:
             git push || (git pull --rebase -X theirs && git push)
           fi
       # Un seul site GitHub Pages (branche gh-pages), trois emplacements :
-      #   main -> racine   https://igneefleur.github.io/HxH-Regles-JDR/
-      #   beta -> beta/    https://igneefleur.github.io/HxH-Regles-JDR/beta/
-      #   jjk  -> jjk/     https://igneefleur.github.io/HxH-Regles-JDR/jjk/
+      #   main -> racine   https://igneefleur.github.io/FNS-TTRPG-RULES/
+      #   beta -> beta/    https://igneefleur.github.io/FNS-TTRPG-RULES/beta/
+      #   jjk  -> jjk/     https://igneefleur.github.io/FNS-TTRPG-RULES/jjk/
       # Avec target-folder, « clean » ne nettoie QUE le dossier cible : la racine
       # (main) et beta/ sont épargnées par ce déploiement.
       - name: Déploiement jjk (jjk -> jjk/)

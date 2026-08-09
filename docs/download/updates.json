@@ -4,7 +4,7 @@
       "updates": [
         {
           "version": "3.6.0.15",
-          "update_link": "https://igneefleur.github.io/HxH-Regles-JDR/jjk/download/jjk-roll20-firefox.xpi",
+          "update_link": "https://igneefleur.github.io/FNS-TTRPG-RULES/jjk/download/jjk-roll20-firefox.xpi",
           "browser_specific_settings": {
             "gecko": {
               "strict_min_version": "109.0"

@@ -44,7 +44,7 @@ ROOT = Path(__file__).resolve().parent.parent
 FF_MANIFEST = ROOT / "extension" / "firefox" / "manifest.json"
 XPI = ROOT / "docs" / "download" / "jjk-roll20-firefox.xpi"
 UPDATES = ROOT / "docs" / "download" / "updates.json"
-XPI_URL = "https://igneefleur.github.io/HxH-Regles-JDR/jjk/download/jjk-roll20-firefox.xpi"
+XPI_URL = "https://igneefleur.github.io/FNS-TTRPG-RULES/jjk/download/jjk-roll20-firefox.xpi"
 API = "https://addons.mozilla.org/api/v5"
 
 
