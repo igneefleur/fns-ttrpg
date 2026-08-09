@@ -20,6 +20,27 @@
      parchemin et verts, Cinzel pour les titres, Alegreya pour le texte. Le thème
      sombre reprend la palette de night.css. Rien n'est inventé ici.
      ============================================================================ -->
+<!-- Mode nuit, appliqué AVANT le premier rendu pour éviter le flash de mode jour.
+     Copie conforme du script de overrides/main.html sur les deux sites : même clé
+     localStorage « night », même classe sur <html>, même comparaison stricte.
+
+     La clé est indexée par ORIGINE, pas par chemin : /fns-ttrpg/, /hxh/, /hxh-beta/,
+     /jjk/ et /jjk-beta/ partagent physiquement la même entrée. Le choix fait ici
+     suit donc le lecteur dans les deux sites, et réciproquement.
+
+     Clé absente = mode JOUR, exactement comme sur les sites mkdocs. Surtout ne pas
+     retomber sur prefers-color-scheme : c'était le défaut de cette page, qui
+     s'affichait en nuit chez qui a un OS sombre pendant que les deux sites, eux,
+     s'affichaient en jour. -->
+<script>
+  (function () {
+    try {
+      if (localStorage.getItem("night") === "1") {
+        document.documentElement.classList.add("night");
+      }
+    } catch (e) {}
+  })();
+</script>
 <style>
 /* ---------- Polices, auto-hébergées : aucune requête vers un tiers ----------
    Mêmes fichiers que les deux sites, copiés dans polices/ avec leurs licences
@@ -66,8 +87,9 @@
 
 /* ---------- Palette ----------
    Clair : celle d'extra.css. Sombre : celle de night.css. Les deux sont DESSINÉES,
-   aucun filtre. Le thème suit le réglage du système, comme le fait le mode « auto »
-   du site JJK. */
+   aucun filtre. Le thème ne suit PAS le réglage du système : il suit la classe
+   .night posée sur <html>, comme sur les deux sites — c'est le lecteur qui
+   choisit, au bouton, et son choix vaut pour tout le domaine. */
 :root {
   --encre:        #1d1d1d;
   --encre-douce:  #4a4a44;
@@ -80,19 +102,17 @@
   --liseré:       #c8bfa5;
   --ombre:        0 1px 2px rgba(29,29,29,.08), 0 6px 18px rgba(29,29,29,.07);
 }
-@media (prefers-color-scheme: dark) {
-  :root {
-    --encre:        #e8dfcb;
-    --encre-douce:  #c8bfa8;
-    --encre-tenue:  #a89e88;
-    --papier:       #201c15;
-    --fond:         #14110c;
-    --vert-titre:   #adc08c;
-    --vert-section: #9fb37e;
-    --vert-tete:    #46543b;
-    --liseré:       #3c3527;
-    --ombre:        0 1px 2px rgba(0,0,0,.35), 0 6px 18px rgba(0,0,0,.30);
-  }
+html.night {
+  --encre:        #e8dfcb;
+  --encre-douce:  #c8bfa8;
+  --encre-tenue:  #a89e88;
+  --papier:       #201c15;
+  --fond:         #14110c;
+  --vert-titre:   #adc08c;
+  --vert-section: #9fb37e;
+  --vert-tete:    #46543b;
+  --liseré:       #3c3527;
+  --ombre:        0 1px 2px rgba(0,0,0,.35), 0 6px 18px rgba(0,0,0,.30);
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -173,7 +193,7 @@ body {
   letter-spacing: .06em;
   text-align: center;
 }
-@media (prefers-color-scheme: dark) { .systeme > h2 { color: #e8dfcb; } }
+html.night .systeme > h2 { color: #e8dfcb; }
 
 .corps { padding: 1.35rem 1.4rem 1.5rem; display: flex; flex-direction: column; flex: 1; }
 .corps > p { margin: 0 0 1.1rem; }
@@ -203,16 +223,49 @@ body {
   transition: background .15s ease;
 }
 .entrer:hover, .entrer:focus-visible { background: var(--vert-titre); }
-@media (prefers-color-scheme: dark) {
-  .entrer { background: var(--vert-tete); color: #e8dfcb; }
-  .entrer:hover, .entrer:focus-visible { background: #56684a; }
-}
-.chantier {
+html.night .entrer { background: var(--vert-tete); color: #e8dfcb; }
+html.night .entrer:hover,
+html.night .entrer:focus-visible { background: #56684a; }
+
+.beta {
   margin: .7rem 0 0; text-align: center;
   font-size: .86rem; color: var(--encre-tenue);
 }
-.chantier a { color: inherit; text-decoration-color: var(--liseré); }
-.chantier a:hover, .chantier a:focus-visible { color: var(--vert-titre); }
+.beta a { color: inherit; text-decoration-color: var(--liseré); }
+.beta a:hover, .beta a:focus-visible { color: var(--vert-titre); }
+
+/* ---------- La bascule jour / nuit ----------
+   Mêmes icônes, mêmes libellés et même geste que le bouton des deux sites
+   (docs/javascripts/night.js), pour que le lecteur retrouve la même chose
+   partout. Ici il n'y a pas de barre d'en-tête où le loger : il se pose dans
+   le coin, discret, et ne bouge pas au défilement. */
+.night-btn {
+  position: fixed;
+  top: clamp(.55rem, 2vw, 1.35rem);
+  right: clamp(.55rem, 2vw, 1.35rem);
+  z-index: 10;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 2.4rem; height: 2.4rem; padding: 0;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  color: var(--encre-tenue);
+  cursor: pointer;
+  transition: color .15s ease, border-color .15s ease, background .15s ease;
+}
+.night-btn:hover, .night-btn:focus-visible {
+  color: var(--vert-titre);
+  border-color: var(--liseré);
+  background: var(--papier);
+}
+.night-btn svg { display: block; width: 1.2rem; height: 1.2rem; fill: currentColor; }
+/* L'icône affichée est pilotée en pur CSS par html.night, comme dans night.css :
+   le JS ne touche qu'à la classe et aux libellés d'accessibilité. */
+.night-btn__moon,
+.night-btn__sun { display: inline-flex; align-items: center; }
+.night-btn__sun { display: none; }
+html.night .night-btn__moon { display: none; }
+html.night .night-btn__sun { display: inline-flex; }
 
 /* ---------- Pied ---------- */
 .pied {
@@ -227,6 +280,16 @@ body {
 </style>
 </head>
 <body>
+
+<!-- Les deux icônes sont celles de night.js, au tracé près. Les libellés de
+     départ sont ceux du mode jour : la clé absente vaut jour, et le script de
+     fin de page les rectifie aussitôt si la classe .night est déjà posée. -->
+<button type="button" class="night-btn" aria-pressed="false"
+        aria-label="Passer en mode nuit" title="Passer en mode nuit">
+  <span class="night-btn__moon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.75,4.09L15.22,6.03L16.13,9.09L13.5,7.28L10.87,9.09L11.78,6.03L9.25,4.09L12.44,4L13.5,1L14.56,4L17.75,4.09M21.25,10.5L19.61,11.76L20.2,13.74L18.5,12.56L16.8,13.74L17.39,11.76L15.75,10.5L17.81,10.43L18.5,8.5L19.19,10.43L21.25,10.5M18.97,15.95C19.8,15.87 20.69,17.05 20.16,17.8C19.84,18.25 19.5,18.67 19.08,19.07C15.17,23 8.84,23 4.94,19.07C1.03,15.17 1.03,8.83 4.94,4.93C5.34,4.53 5.76,4.17 6.21,3.85C6.96,3.32 8.14,4.21 8.06,5.04C7.79,7.9 8.75,10.87 10.95,13.06C13.14,15.26 16.1,16.22 18.97,15.95Z"/></svg></span>
+  <span class="night-btn__sun"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3.55,19.09L4.96,20.5L6.76,18.71L5.34,17.29M12,6A6,6 0 0,0 6,12A6,6 0 0,0 12,18A6,6 0 0,0 18,12A6,6 0 0,0 12,6M20,13H23V11H20M17.24,18.71L19.04,20.5L20.45,19.09L18.66,17.29M20.45,5L19.04,3.5L17.24,5.29L18.66,6.71M13,1H11V4H13M6.76,5.29L4.96,3.5L3.55,4.91L5.34,6.71M1,13H4V11H1M13,20H11V23H13V20Z"/></svg></span>
+</button>
+
 <main class="hub">
 
   <div class="enseigne">
@@ -251,7 +314,7 @@ body {
           <li>Extension Roll20</li>
         </ul>
         <a class="entrer" href="hxh/">Entrer</a>
-        <p class="chantier"><a href="hxh-beta/">Version de chantier</a></p>
+        <p class="beta"><a href="hxh-beta/">Version beta</a></p>
       </div>
     </article>
 
@@ -267,7 +330,7 @@ body {
           <li>Extension Roll20</li>
         </ul>
         <a class="entrer" href="jjk/">Entrer</a>
-        <p class="chantier"><a href="jjk-beta/">Version de chantier</a></p>
+        <p class="beta"><a href="jjk-beta/">Version beta</a></p>
       </div>
     </article>
 
@@ -277,10 +340,48 @@ body {
     <p>Œuvres de fan, sans but lucratif et sans lien avec les ayants droit.
       « Hunter × Hunter » appartient à Yoshihiro Togashi et à Shueisha,
       « Jujutsu Kaisen » à Gege Akutami et à Shueisha.</p>
-    <p>Règles, textes et code © Théo Cavaillès, tous droits réservés.
+    <p>Site, code et règles Hunter × Hunter © igneefleur ;
+      règles Jujutsu Kaisen © Qyu. Tous droits réservés.
       <a href="https://github.com/igneefleur/fns-ttrpg">Dépôt</a></p>
   </footer>
 
 </main>
+
+<!-- La bascule. Reprend trait pour trait la logique de docs/javascripts/night.js :
+     même classe sur <html>, même clé, même écriture en chaîne brute « 1 » / « 0 ».
+     Toute autre valeur serait relue comme « jour » par les deux sites, dont le
+     script d'en-tête compare en === strict — écrire true, "dark" ou du JSON
+     casserait la synchronisation en silence. -->
+<script>
+(function () {
+  var btn = document.querySelector(".night-btn");
+  if (!btn) return;
+
+  function estNuit() {
+    return document.documentElement.classList.contains("night");
+  }
+
+  // Met à jour les libellés d'accessibilité selon l'état courant.
+  // (L'icône affichée, elle, est pilotée en pur CSS par html.night.)
+  function sync() {
+    var on = estNuit();
+    var libelle = on ? "Repasser en mode jour" : "Passer en mode nuit";
+    btn.setAttribute("aria-pressed", on ? "true" : "false");
+    btn.setAttribute("aria-label", libelle);
+    btn.title = libelle;
+  }
+
+  btn.addEventListener("click", function () {
+    var on = !estNuit();
+    document.documentElement.classList.toggle("night", on);
+    // En navigation privée, l'écriture échoue : la classe reste posée pour la
+    // session, on n'en fait pas une erreur. Même parti pris que night.js.
+    try { localStorage.setItem("night", on ? "1" : "0"); } catch (e) {}
+    sync();
+  });
+
+  sync();
+})();
+</script>
 </body>
 </html>
