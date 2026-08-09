@@ -22,7 +22,7 @@ Sans but lucratif et sans lien avec les ayants droit : « Jujutsu Kaisen » appa
 
 Les **règles** de ce jeu sont de **Qyu**, et les droits d'auteur sur elles lui
 restent. Le **site**, le **code** et les **outils** — la fiche, le créateur de
-personnage, l'extension, la mise en forme — sont d'**igneefleur**, en tous droits
+personnage, l'extension, la mise en forme — sont d'**IgneeFleur**, en tous droits
 réservés. Voir [LICENSE.md](LICENSE.md).
 
 ## Développer
