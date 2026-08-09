@@ -54,4 +54,20 @@ Exemple. Un personnage attaque à l'épée d'armes, dont la difficulté de base 
 
 </div>
 
+### La parade
+
+Un personnage attaqué peut parer avec son arme. La parade est un jet comme un autre : il engage 0 à 2 dés d'action et compare leur somme à la difficulté de parade de l'arme qui pare, donnée par la table des [armes](../combat/armes.md). Toutes les armes ne parent pas : celles dont la case est vide n'opposent aucune parade.
+
+Une parade réussie n'annule pas l'attaque, elle l'amortit. La réduction de l'arme qui pare se soustrait aux dégâts subis.
+
+<p class="formula">Dégâts subis = dégâts de l'attaque − réduction de l'arme qui pare</p>
+
+Une parade ratée ne retire rien, et les dégâts s'appliquent en entier.
+
+<div class="memo" markdown>
+
+Exemple. Un personnage est attaqué à la hache à deux mains, qui inflige 32 dégâts. Il pare de son épée d'armes, dont la difficulté de parade est 5 et la réduction 10. Il engage deux dés d'action, obtient 6 : la parade réussit, et il ne subit que 22 dégâts. La même parade tentée d'un fouet n'aurait pas eu lieu, cette arme ne parant pas.
+
+</div>
+
 </div>

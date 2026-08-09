@@ -1754,7 +1754,12 @@ html.book-loading .md-content__inner {
    Comme la table des portées, ces blocs se placent HORS du conteneur .cols et
    prennent toute la largeur de la page. Le !important est nécessaire pour
    passer devant les largeurs !important du gabarit des modules (73/64/9 %),
-   taillées pour les tables de coûts. */
+   taillées pour les tables de coûts.
+
+   HUIT colonnes : Arme, Portée, Dégâts, Type, Mains, Attaque, Parade,
+   Réduction. Deux filets verticaux les groupent : après la Portée, qui vient de
+   l'autre table et se lit contre elle, et après l'Attaque, qui sépare ce que
+   l'arme fait de ce qu'elle encaisse. */
 .md-typeset .cj-modules.anima.armes table:not([class]) {
   table-layout: fixed !important;
   width: 100%;
@@ -1771,13 +1776,26 @@ html.book-loading .md-content__inner {
   color: inherit !important;
 }
 .md-typeset .cj-modules.anima.armes table:not([class]) th:nth-child(1),
-.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(1) { width: 40% !important; text-align: left !important; }   /* Arme */
-.md-typeset .cj-modules.anima.armes table:not([class]) th:nth-child(n+2),
-.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(n+2) { width: 15% !important; }   /* Portée, Dégâts, Mains, Difficulté */
-/* Filet après la portée : elle vient de la table des portées et se lit contre
-   elle, alors que les trois colonnes suivantes appartiennent à l'arme seule. */
+.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(1) { width: 24% !important; text-align: left !important; }   /* Arme */
 .md-typeset .cj-modules.anima.armes table:not([class]) th:nth-child(2),
-.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(2) {
+.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(2) { width: 8%  !important; }   /* Portée */
+.md-typeset .cj-modules.anima.armes table:not([class]) th:nth-child(3),
+.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(3) { width: 8%  !important; }   /* Dégâts */
+.md-typeset .cj-modules.anima.armes table:not([class]) th:nth-child(4),
+.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(4) { width: 13% !important; }   /* Type */
+.md-typeset .cj-modules.anima.armes table:not([class]) th:nth-child(5),
+.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(5) { width: 15% !important; }   /* Mains */
+.md-typeset .cj-modules.anima.armes table:not([class]) th:nth-child(6),
+.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(6) { width: 11% !important; }   /* Attaque */
+.md-typeset .cj-modules.anima.armes table:not([class]) th:nth-child(7),
+.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(7) { width: 11% !important; }   /* Parade */
+.md-typeset .cj-modules.anima.armes table:not([class]) th:nth-child(8),
+.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(8) { width: 10% !important; }   /* Réduction */
+/* Les deux filets de groupement, posés apres la Portee et apres l'Attaque. */
+.md-typeset .cj-modules.anima.armes table:not([class]) th:nth-child(2),
+.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(2),
+.md-typeset .cj-modules.anima.armes table:not([class]) th:nth-child(6),
+.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(6) {
   border-right: 1px solid #c9b88f !important;
 }
 
