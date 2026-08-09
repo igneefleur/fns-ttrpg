@@ -2,7 +2,7 @@
 
 Un jeu de rôle sur table dans l'univers de Jujutsu Kaisen : le livre de règles.
 
-**<https://igneefleur.github.io/FNS-TTRPG-RULES/jjk-beta/>**
+**<https://igneefleur.github.io/fns-ttrpg/jjk/>**
 
 Cette branche (`jjk`) est un site frère du dépôt HxH : elle reprend la maquette du
 livre (thème, polices auto-hébergées, lecture continue, mode nuit) et publie les

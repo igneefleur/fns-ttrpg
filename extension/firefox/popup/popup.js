@@ -121,12 +121,12 @@ if (typeof browser === "undefined") { var browser = chrome; }
   var demandees = false; // les manifestes de site ont-ils déjà été demandés
 
   var REGLES = {
-    stable: "https://igneefleur.github.io/FNS-TTRPG-RULES/jjk/content/regles/",
-    beta: "https://igneefleur.github.io/FNS-TTRPG-RULES/jjk-beta/content/regles/"
+    stable: "https://igneefleur.github.io/fns-ttrpg/jjk/content/regles/",
+    beta: "https://igneefleur.github.io/fns-ttrpg/jjk-beta/content/regles/"
   };
   var PAGE_EXT = {
-    stable: "https://igneefleur.github.io/FNS-TTRPG-RULES/jjk/extension/",
-    beta: "https://igneefleur.github.io/FNS-TTRPG-RULES/jjk-beta/extension/"
+    stable: "https://igneefleur.github.io/fns-ttrpg/jjk/extension/",
+    beta: "https://igneefleur.github.io/fns-ttrpg/jjk-beta/extension/"
   };
   // LES NUMÉROS DES FICHES SE LISENT À LA SOURCE, jamais en dur.
   //
@@ -141,8 +141,8 @@ if (typeof browser === "undefined") { var browser = chrome; }
   // origine passe. Élargir les permissions aurait fait réexaminer l'extension et
   // redemandé leur accord aux joueurs, pour deux nombres d'affichage.
   var MANIFESTES = {
-    stable: "https://igneefleur.github.io/FNS-TTRPG-RULES/jjk/jjk-manifeste.json",
-    beta: "https://igneefleur.github.io/FNS-TTRPG-RULES/jjk-beta/jjk-manifeste.json"
+    stable: "https://igneefleur.github.io/fns-ttrpg/jjk/jjk-manifeste.json",
+    beta: "https://igneefleur.github.io/fns-ttrpg/jjk-beta/jjk-manifeste.json"
   };
 
   // ==========================================================================

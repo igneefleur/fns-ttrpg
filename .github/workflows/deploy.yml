@@ -2,14 +2,21 @@ name: website deployment
 on:
   push:
     branches:
-      - jjk
+      - jjk-main
   workflow_dispatch: {}   # relance manuelle (ex. quota AMO retombé)
 permissions:
   contents: write
-# Les trois branches (main, beta, jjk) écrivent sur la même branche gh-pages : un
-# groupe de concurrence commun (partagé entre workflows du dépôt) sérialise leurs
-# déploiements, et force: false fait rebaser l'action (avec réessais) au lieu de
-# force-pusser, pour qu'un run ne puisse pas écraser le travail d'un autre.
+# Les cinq branches écrivent sur la même branche gh-pages, chacune dans son
+# dossier : un groupe de concurrence commun (partagé entre workflows du dépôt)
+# sérialise leurs déploiements, et force: false fait rebaser l'action (avec
+# réessais) au lieu de force-pusser, pour qu'un run ne puisse pas écraser le
+# travail d'un autre.
+#
+# EN CONTREPARTIE, ON NE POUSSE PAS PLUSIEURS BRANCHES D'AFFILÉE. Le groupe ne
+# garde qu'UN run en attente : le troisième qui arrive annule celui qui
+# patientait, et la branche concernée n'est jamais déployée — « completed /
+# cancelled », aucune erreur, rien à lire. Pousser une branche, attendre la fin
+# de son run, pousser la suivante.
 concurrency:
   group: gh-pages
   cancel-in-progress: false
@@ -46,6 +53,25 @@ jobs:
           AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
           AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
         run: python scripts/ci_extension.py
+      # CE PAS DIT SI LE PAQUET A BOUGÉ, et c'est lui qui commande les deux
+      # suivants. Il remplace un `if: inputs.signer` qui ne pouvait pas marcher
+      # ICI : cette entrée n'existe que sur le workflow de jjk-beta, où la
+      # signature est manuelle. Sur cette branche-ci, la signature est
+      # AUTOMATIQUE, `inputs.signer` était donc toujours vide, le rebuild
+      # toujours sauté — et le site repartait avec les téléchargements d'AVANT la
+      # signature, pendant que la branche, elle, portait bien le nouveau .xpi.
+      # Un joueur voyait alors une version signée depuis longtemps ne jamais lui
+      # parvenir. Rien n'échouait nulle part.
+      - name: Le paquet a-t-il changé ?
+        id: paquet
+        run: |
+          if git diff --quiet -- docs/download; then
+            echo "change=false" >> "$GITHUB_OUTPUT"
+            echo "Aucune re-signature : les téléchargements servis restent bons."
+          else
+            echo "change=true" >> "$GITHUB_OUTPUT"
+            echo "Extension re-signée : rebuild du site pour embarquer le paquet neuf."
+          fi
       # LE SECOND BUILD NE SERT QU'À LA SIGNATURE, et à rien d'autre. Le seul pas
       # qui touche à docs/ entre les deux est celui du dessus : il réécrit
       # docs/download/ (le .xpi signé, updates.json, l'empreinte, les manifests),
@@ -54,13 +80,14 @@ jobs:
       # builds : mkdocs refabriquait alors site/ à l'identique, à chaque push, et
       # une étape qui ne peut rien changer finit par être crue là où elle compte.
       - name: Rebuild (téléchargements à jour)
-        if: ${{ inputs.signer }}
+        if: steps.paquet.outputs.change == 'true'
         env:
           NO_MKDOCS_2_WARNING: "1"
         run: mkdocs build
       # La re-signature modifie manifests, archives, updates.json et empreinte :
       # on les recommitte sur la branche ([skip ci] : pas de nouveau run).
       - name: Republier l'extension re-signée sur la branche
+        if: steps.paquet.outputs.change == 'true'
         run: |
           if ! git diff --quiet; then
             git config user.name "github-actions[bot]"
@@ -72,13 +99,23 @@ jobs:
             # échoue sur les archives et la version signée reste orpheline
             git push || (git pull --rebase -X theirs && git push)
           fi
-      # Un seul site GitHub Pages (branche gh-pages), trois emplacements :
-      #   main -> racine   https://igneefleur.github.io/FNS-TTRPG-RULES/
-      #   beta -> beta/    https://igneefleur.github.io/FNS-TTRPG-RULES/beta/
-      #   jjk  -> jjk/     https://igneefleur.github.io/FNS-TTRPG-RULES/jjk/
-      # Avec target-folder, « clean » ne nettoie QUE le dossier cible : la racine
-      # (main) et beta/ sont épargnées par ce déploiement.
-      - name: Déploiement jjk (jjk -> jjk/)
+      # Un seul site GitHub Pages (branche gh-pages), CINQ emplacements :
+      #   main     -> racine     https://igneefleur.github.io/fns-ttrpg/          (le hub)
+      #   hxh-main -> hxh/       https://igneefleur.github.io/fns-ttrpg/hxh/
+      #   hxh-beta -> hxh-beta/  https://igneefleur.github.io/fns-ttrpg/hxh-beta/
+      #   jjk-main -> jjk/       https://igneefleur.github.io/fns-ttrpg/jjk/      (CE workflow)
+      #   jjk-beta -> jjk-beta/  https://igneefleur.github.io/fns-ttrpg/jjk-beta/
+      #
+      # LA BRANCHE S'APPELLE jjk-main, LE DOSSIER RESTE jjk/, ET CE N'EST PAS UNE
+      # INCOHÉRENCE. Ce chemin est cuit dans le paquet SIGNÉ que les joueurs ont
+      # installé — adresse de la fiche et adresse des mises à jour. Le renommer
+      # coûterait une réinstallation manuelle à chacun d'eux et une signature
+      # Mozilla de plus, pour rien. Le nom d'une branche est interne ; ce chemin-là
+      # est public et engage.
+      #
+      # Avec target-folder, « clean » ne nettoie QUE le dossier cible : les quatre
+      # autres emplacements sont épargnés par ce déploiement.
+      - name: Déploiement JJK officiel (jjk-main -> jjk/)
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: site
