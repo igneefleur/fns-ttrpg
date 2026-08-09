@@ -1,69 +1,15 @@
-﻿site_name: HxH Système JDR
-site_url: https://igneefleur.github.io/fns-ttrpg/hxh/
-# Repris en pied de CHAQUE page du PDF (le plugin to-pdf lit ce champ). Voir
-# LICENSE.md : tous droits réservés sur les apports originaux ; œuvre de fan, sans
-# lien avec les ayants droit de Hunter × Hunter.
-copyright: © 2026 igneefleur. Tous droits réservés. Œuvre de fan, non affiliée à Shueisha.
-exclude_docs: |
-  includes/glossaire.md
-  assets/fonts/LISEZMOI.md
-
-not_in_nav: |
-  content/regles/nen/refonte_nen.md
+site_name: Outward Système JDR
+site_url: https://igneefleur.github.io/fns-ttrpg/owd/
+# Repris en pied de CHAQUE page (et du PDF, le jour où le livre en justifiera un).
+# Voir LICENSE.md : tous droits réservés sur les apports originaux ; œuvre de fan,
+# sans lien avec les ayants droit d'Outward.
+copyright: © 2026 igneefleur. Tous droits réservés. Œuvre de fan, non affiliée à Nine Dots Studio.
 nav:
   - Accueil: index.md
   - Règles:
-      - Le Personnage:
-          - Avantages: content/regles/personnage/avantages.md
-          - Éclat: content/regles/personnage/eclat.md
-          - Caractéristiques: content/regles/personnage/caracteristiques.md
-          - Capacités physiques: content/regles/personnage/capacites-physiques.md
-          - Points de formation: content/regles/personnage/points-formation.md
-          - Compétences: content/regles/personnage/competences.md
-          - Classes: content/regles/personnage/classe.md
-          - Les Sens: content/regles/personnage/sens.md
-          - États: content/regles/personnage/etats.md
-          - Influence: content/regles/personnage/influence.md
-      - Formation:
-          - Formations martiales: content/regles/formation/formations-martiales.md
-      - Art:
-          - Arts martiaux: content/regles/art/arts-martiaux.md
-          - Arts athlétiques: content/regles/art/arts-athletiques.md
-          - Arts vitaux: content/regles/art/arts-vitaux.md
-          - Arts sociaux: content/regles/art/arts-sociaux.md
-          - Arts intellectuels: content/regles/art/arts-intellectuels.md
-          - Arts sensoriels: content/regles/art/arts-sensoriels.md
-          - Arts furtifs: content/regles/art/arts-furtifs.md
-          - Arts artisanaux: content/regles/art/arts-artisanaux.md
-          - Arts artistiques: content/regles/art/arts-artistiques.md
-      - L'Échelle du Monde:
-          - Les Tailles: content/regles/monde/tailles.md
-          - Types de Dégâts: content/regles/monde/degats.md
-          - Formes du vivant: content/regles/monde/formes.md
+      - content/regles/index.md
       - Le Combat:
-          - Déroulement du combat: content/regles/combat/deroulement-combat.md
-          - Attaque et Défense: content/regles/combat/manoeuvres.md
-          - Critique et Blessures: content/regles/combat/critique-blessures.md
-          - Armes: content/regles/combat/armes.md
-      - Nen:
-          - Aura: content/regles/nen/aura.md
-          - Développement intérieur: content/regles/nen/di.md
-          - Les 12 archétypes de Nen: content/regles/nen/archetypes-nen.md
-          - Techniques du Nen: content/regles/nen/techniques-nen.md
-          - Capacités de Nen: content/regles/nen/capacites-de-nen.md
-          - Renforcement: content/regles/nen/renforcement.md
-          - Émission: content/regles/nen/emission.md
-          - Transmutation: content/regles/nen/transmutation.md
-          - Manipulation: content/regles/nen/manipulation.md
-          - Conjuration: content/regles/nen/conjuration.md
-          - Spécialisation: content/regles/nen/specialisation.md
-      - Annexes:
-          - Conversion Magicien D&D: content/regles/annexes/conversion-magicien-dnd.md
-  - Univers:
-      - Cartes du monde: content/univers/cartes.md
-  - Création: personnage/index.md
-  - Forge: forge/index.md
-  - Atelier: creation/index.md
+          - Portées: content/regles/combat/portees.md
 theme:
   name: material
   custom_dir: overrides
@@ -89,33 +35,18 @@ extra:
 extra_css:
   - stylesheets/fonts.css   # @font-face auto-hébergés : doit être chargée en premier
   - stylesheets/extra.css?v=13
-  - stylesheets/atelier.css
   - stylesheets/night.css
-  - stylesheets/forge.css
-  - stylesheets/creation.css?v=57
 extra_javascript:
   - javascripts/changelog.js
   - javascripts/continuous.js
   - javascripts/nav-drawer.js
-  - javascripts/glossary.js
-  - javascripts/print-book.js
-  - javascripts/atelier.js?v=3
   - javascripts/night.js
-  - javascripts/forge.js
-  - javascripts/creation.js?v=38
   - javascripts/copybtn.js
 hooks:
   - hooks/changelog.py
-  - hooks/glossaire.py
-  - hooks/nen_atelier.py
-  - hooks/forge.py
-  - hooks/creation.py
 plugins:
   - search
 markdown_extensions:
   - abbr
   - attr_list
   - md_in_html
-  - pymdownx.snippets:
-      auto_append:
-        - docs/includes/glossaire.md

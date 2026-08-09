@@ -1,28 +1,22 @@
-# Configuration de CI : hérite de mkdocs.yml et ACTIVE en plus la génération du
-# livre en PDF (plugin mkdocs-to-pdf, moteur WeasyPrint). Utilisée uniquement par
-# la CI Linux (.github/workflows/deploy.yml), avec la variable ENABLE_PDF_EXPORT=1.
+# Configuration de CI : hérite de mkdocs.yml. Utilisée par la CI Linux
+# (.github/workflows/deploy.yml).
 #
-# Pourquoi un fichier séparé plutôt qu'une entrée dans mkdocs.yml :
-# mkdocs-to-pdf importe WeasyPrint dès le chargement du module, et WeasyPrint a
-# besoin de bibliothèques natives (Pango/GTK) absentes sous Windows. Lister le
-# plugin dans mkdocs.yml ferait donc échouer « mkdocs serve » en local (erreur
-# « cannot load library 'libgobject-2.0-0' »). En isolant le plugin ici, le build
-# et le serveur de développement locaux restent intacts ; seule la CI charge le PDF.
+# LE PDF EST DÉSACTIVÉ TANT QU'IL N'Y A PAS DE LIVRE. Les branches HxH génèrent
+# un PDF via mkdocs-to-pdf (moteur WeasyPrint) ; ici il n'y a qu'une poignée de
+# pages, et faire paginer un livre vide ferait échouer le build — donc plus rien
+# ne se déploierait. Le jour où les règles existent, rétablir :
+#
+#   plugins:
+#     - search
+#     - to-pdf:
+#         enabled_if_env: ENABLE_PDF_EXPORT
+#         output_path: pdf/livre-de-regles.pdf
+#         cover_title: Outward Système JDR
+#         cover_subtitle: Livre de Règles
+#         author: igneefleur
+#         toc_title: Table des matières
+#
+# ...et remettre dans deploy.yml les dépendances natives de WeasyPrint (Pango,
+# HarfBuzz, fontconfig), la variable ENABLE_PDF_EXPORT=1, ainsi que le script
+# docs/javascripts/print-book.js qui affiche le bouton de téléchargement.
 INHERIT: mkdocs.yml
-
-# La liste plugins remplace (et non complète) celle héritée : on redéclare donc
-# « search » avant d'ajouter le générateur de PDF.
-plugins:
-  - search
-  - to-pdf:
-      enabled_if_env: ENABLE_PDF_EXPORT       # ne génère le PDF que si la variable vaut "1"
-      output_path: pdf/livre-de-regles.pdf    # => https://igneefleur.github.io/fns-ttrpg/hxh/pdf/livre-de-regles.pdf
-      cover_title: HxH Système JDR
-      cover_subtitle: Livre de Règles
-      author: igneefleur
-      toc_title: Table des matières
-      exclude_pages:                          # le PDF ne contient QUE le livre (règles + univers)
-        - '^\.?/?$'                           # accueil (changelog + extension Roll20) : URL '.' ou './'
-        - '^creation/'                        # atelier de création (outil JS)
-        - '^personnage/'                      # créateur de personnage (outil JS)
-        - '^forge/'                           # forge d'armes (outil JS)
