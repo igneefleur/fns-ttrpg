@@ -28,9 +28,9 @@
   "content_scripts": [
     {
       "matches": [
-        "https://igneefleur.github.io/fns-ttrpg/*",
-        "http://127.0.0.1:8000/fns-ttrpg/*",
-        "http://localhost:8000/fns-ttrpg/*"
+        "https://igneefleur.github.io/fns-ttrpg/hxh*",
+        "http://127.0.0.1:8000/fns-ttrpg/hxh*",
+        "http://localhost:8000/fns-ttrpg/hxh*"
       ],
       "js": ["content-hxh.js"],
       "run_at": "document_idle"

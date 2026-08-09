@@ -2,7 +2,7 @@ name: website deployment
 on:
   push:
     branches:
-      - hxh-main
+      - hxh
   workflow_dispatch: {}   # relance manuelle
 permissions:
   contents: write
@@ -66,16 +66,16 @@ jobs:
 
       # Un seul site GitHub Pages (branche gh-pages), CINQ emplacements :
       #   main     -> racine     https://igneefleur.github.io/fns-ttrpg/          (le hub)
-      #   hxh-main -> hxh/       https://igneefleur.github.io/fns-ttrpg/hxh/      (CE workflow)
+      #   hxh      -> hxh/       https://igneefleur.github.io/fns-ttrpg/hxh/      (CE workflow)
       #   hxh-beta -> hxh-beta/  https://igneefleur.github.io/fns-ttrpg/hxh-beta/
-      #   jjk-main -> jjk/       https://igneefleur.github.io/fns-ttrpg/jjk/
+      #   jjk      -> jjk/       https://igneefleur.github.io/fns-ttrpg/jjk/
       #   jjk-beta -> jjk-beta/  https://igneefleur.github.io/fns-ttrpg/jjk-beta/
       #
       # Avec target-folder, « clean » ne nettoie QUE le dossier cible : les quatre
       # autres emplacements sont épargnés par ce déploiement, sans avoir à les
       # énumérer. Seul le déploiement de main, qui écrit à la RACINE, doit tenir
       # une liste clean-exclude à jour.
-      - name: Déploiement HxH officiel (hxh-main -> hxh/)
+      - name: Déploiement HxH officiel (hxh -> hxh/)
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: site
