@@ -26,7 +26,7 @@ Employer une compétence se résout en trois temps : on fixe d'abord la difficul
 
 La difficulté ne tient pas à la compétence employée mais à ce que le personnage cherche à en faire : une même compétence sert des gestes faciles et des gestes presque hors d'atteinte. Chaque emploi a donc sa difficulté propre.
 
-Une attaque portée avec une arme a une difficulté de base comprise entre 4 et 10, donnée par l'arme employée dans la table des [armes](../combat/armes.md).
+Une attaque portée avec une arme a une difficulté de base comprise entre 4 et 10, donnée par le geste employé dans le répertoire de cette [arme](../combat/armes.md). Une même arme n'a donc pas une difficulté mais autant que de gestes : estoquer et balayer ne demandent pas la même adresse.
 
 </div>
 
@@ -34,7 +34,7 @@ La situation ajuste ensuite cette difficulté de base, à la hausse comme à la 
 
 <p class="formula">Difficulté = difficulté de base + modificateurs de la situation</p>
 
-La distance en est le premier exemple. La table des [portées](../combat/portees.md) donne, pour chaque arme, ce qu'elle ajoute à la difficulté à la distance où elle frappe : la valeur lue s'ajoute telle quelle. Une arme notée +2 à cette distance ajoute donc 2 à la difficulté, et une arme à sa distance idéale, notée 0, n'ajoute rien. Une case où l'arme n'atteint rien interdit l'attaque, et aucune difficulté ne s'y calcule.
+La distance, elle, n'est pas un modificateur. Elle décide d'autre chose, en amont : quel geste le personnage peut employer. Chaque geste d'une arme couvre les cases qu'il couvre, et un adversaire qu'aucun geste n'atteint ne peut pas être attaqué, quelle que soit la difficulté qu'on voudrait y mettre. Se rapprocher ou s'écarter ne rend donc pas le coup plus dur : cela change le coup lui-même.
 
 ### Le jet
 
@@ -50,13 +50,13 @@ Le jet réussit si le résultat atteint la difficulté, et échoue s'il reste en
 
 <div class="memo" markdown>
 
-Exemple. Un personnage attaque à l'épée d'armes, dont la difficulté de base est 6. La cible se tient à une case, où l'épée d'armes est notée +1 : la difficulté monte à 7. Le personnage engage deux de ses dés d'action et obtient 4 et 5, soit 9 : il touche. Avec un seul dé, il lui aurait fallu un 7 sur six faces, hors d'atteinte.
+Exemple. Un personnage attaque à l'épée. Sa cible se tient assez loin pour que la taille ne porte pas, mais l'estoc l'atteint : c'est donc ce geste-là, dont la difficulté de base est 5. Le sol est couvert d'éboulis et le meneur ajoute 2 : la difficulté monte à 7. Le personnage engage deux de ses dés d'action et obtient 4 et 5, soit 9 : il touche. Avec un seul dé, il lui aurait fallu un 7 sur six faces, hors d'atteinte.
 
 </div>
 
 ### La parade
 
-Un personnage attaqué peut parer avec son arme. La parade est un jet comme un autre : il engage 0 à 2 dés d'action et compare leur somme à la difficulté de parade de l'arme qui pare, donnée par la table des [armes](../combat/armes.md). Toutes les armes ne parent pas : celles dont la case est vide n'opposent aucune parade.
+Un personnage attaqué peut parer avec son arme. La parade est un jet comme un autre : il engage 0 à 2 dés d'action et compare leur somme à la difficulté de parade de l'arme qui pare, portée par la ligne de cette [arme](../combat/armes.md). À la différence de l'attaque, cette difficulté appartient à l'arme et non au geste : on pare de la même façon quel que soit le coup qu'on vient de donner.
 
 Une parade réussie n'annule pas l'attaque, elle l'amortit. La réduction de l'arme qui pare se soustrait aux dégâts subis.
 
@@ -66,7 +66,7 @@ Une parade ratée ne retire rien, et les dégâts s'appliquent en entier.
 
 <div class="memo" markdown>
 
-Exemple. Un personnage est attaqué à la hache à deux mains, qui inflige 32 dégâts. Il pare de son épée d'armes, dont la difficulté de parade est 5 et la réduction 10. Il engage deux dés d'action, obtient 6 : la parade réussit, et il ne subit que 22 dégâts. La même parade tentée d'un fouet n'aurait pas eu lieu, cette arme ne parant pas.
+Exemple. Un personnage est attaqué à la grande hache, dont la taille inflige 32 dégâts. Il pare de son épée, dont la difficulté de parade est 5 et la réduction 10. Il engage deux dés d'action, obtient 6 : la parade réussit, et il ne subit que 22 dégâts.
 
 </div>
 
