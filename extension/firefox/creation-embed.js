@@ -27,7 +27,7 @@
  *   - frappe d'un art martial : base + multiple du modificateur de Force
  *     (arts-martiaux.md).
  *
- * Les règles encore en chantier dans le livre (classes donc PV par niveau,
+ * Les règles pas encore arrêtées dans le livre (classes donc PV par niveau,
  * avantages, capital de PF et argent de départ, coût des arts) sont exposées en
  * champs réglables plutôt qu'inventées ici. Les personnages s'enregistrent dans
  * localStorage (« creation-persos ») et s'exportent/importent en JSON ; les
@@ -1296,7 +1296,7 @@
     var grid = el("div", "pc-id");
     idField(grid, "c4", "Nom", state.name, function (v) { state.name = v; });
     idField(grid, "c2", "Classe", state.classe, function (v) { state.classe = v; },
-      { tip: "Les classes sont en chantier dans les règles : champ libre." });
+      { tip: "Les classes ne sont pas encore arrêtées dans les règles : champ libre." });
     idField(grid, "c2", "Genre", state.genre, function (v) { state.genre = v; });
     if (DATA.formes && DATA.formes.length) {
       var formeIn = idField(grid, "c4", "Forme", state.forme, function (v) {
@@ -1339,7 +1339,7 @@
     idField(grid, "c2", "Capital PF", state.pfTotal, function (v) { state.pfTotal = num(v, 0); },
       { type: "number", min: 0, tip: "Capital de points de formation, au choix du MJ. Niveau = ⌈PF ÷ 100⌉." });
     idField(grid, "c2", "PV / niveau", state.pvParNiveau, function (v) { state.pvParNiveau = num(v, 0); },
-      { type: "number", min: 0, tip: "Viendra des classes (en chantier) : champ réglable." });
+      { type: "number", min: 0, tip: "Viendra des classes (pas encore arrêtées) : champ réglable." });
     var nivRo = idField(grid, "c2", "Niveau", niveau(), null, { ro: true });
     updaters.push(function () {
       nivRo.textContent = String(niveau());
@@ -2457,7 +2457,7 @@
   // --- onglet Arts --------------------------------------------------------------------
   function buildArts(pane) {
     var b = block(pane, "Arts", null,
-      "Le coût des arts est en chantier dans les règles : choix libre du palier, à valider avec le MJ. Un prérequis en rouge n'est pas rempli par le personnage.");
+      "Le coût des arts n'est pas encore arrêté dans les règles : choix libre du palier, à valider avec le MJ. Un prérequis en rouge n'est pas rempli par le personnage.");
     var tools = el("div", "pc-comp-tools");
     var search = el("input", "pc-comp-search");
     search.type = "search"; search.placeholder = "Filtrer les arts…";
@@ -2517,7 +2517,7 @@
         head.addEventListener("click", function () { setOpen(!box.classList.contains("open")); });
         setOpen(!!artDescOpen[a.name]);
       }
-      if (a.todo) box.appendChild(el("div", "pc-art-todo", "Fiche en chantier dans les règles."));
+      if (a.todo) box.appendChild(el("div", "pc-art-todo", "Fiche pas encore rédigée dans les règles."));
       var seg = el("div", "pc-seg");
       var effet = el("div", "pc-art-effet");
       var frappe = el("div", "pc-art-frappe");

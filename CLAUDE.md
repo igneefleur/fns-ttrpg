@@ -9,9 +9,13 @@ sans rapport d'une branche à l'autre** :
 |---|---|---|
 | `main` | — | racine `/` — le hub, qui laisse choisir le système |
 | `hxh` | HxH | `/hxh/` — site officiel, épuré |
-| `hxh-beta` | HxH | `/hxh-beta/` — chantier |
+| `hxh-beta` | HxH | `/hxh-beta/` — la beta |
 | `jjk` | JJK | `/jjk/` — ce que les joueurs utilisent |
-| `jjk-beta` | JJK | `/jjk-beta/` — chantier |
+| `jjk-beta` | JJK | `/jjk-beta/` — la beta |
+
+On dit **« beta »**, jamais « chantier » : dans le texte du site, dans les noms de
+classes et de fonctions, et dans la conversation. Ne pas confondre avec l'**atelier**
+de Nen (`docs/javascripts/atelier.js`), qui est un outil HxH et garde son nom.
 
 `git branch --show-current` **avant** toute action. Un `grep` ou un souvenir de
 fichier ne dit rien tant qu'on ignore la branche : `extension/`, `hooks/`,
@@ -19,6 +23,8 @@ fichier ne dit rien tant qu'on ignore la branche : `extension/`, `hooks/`,
 
 Les règles d'écriture du livre HxH ne s'appliquent pas aux règles JJK, qui se
 transcrivent verbatim ; et les règles du livre ne s'appliquent pas au code.
+**Les règles JJK sont de Qyu**, un ami de l'auteur : ne jamais les récrire, ni les
+présenter comme étant de l'auteur du dépôt.
 
 **Le dossier `jjk/` ne se renomme pas**, quel que soit le nom de sa branche : ce
 chemin est cuit dans le paquet signé installé chez les joueurs (adresse de la fiche
@@ -69,7 +75,16 @@ une solution 100 % site — l'architecture en coquille existe pour ça. Ne jamai
 monter la version des manifests à la main, ni committer un `.xpi` construit en
 local par-dessus le binaire signé.
 
-## Licence
+## Licence, nom et attribution
 
-Dépôt public sous licence **fermée** : tous droits réservés (`LICENSE.md`,
-© Théo Cavaillès). Ne jamais proposer de licence ouverte.
+Dépôt public sous licence **fermée** : tous droits réservés (`LICENSE.md`). Ne
+jamais proposer de licence ouverte.
+
+L'auteur se fait appeler **igneefleur**. Aucun texte destiné au public — page du
+site, pied de page, `copyright:` de `mkdocs.yml`, `author` d'un manifest, README —
+ne porte son nom civil ; le pseudonyme est le nom par défaut partout.
+
+La titularité se partage : le site, le code et les règles **Hunter × Hunter** sont
+d'igneefleur, les règles **Jujutsu Kaisen** sont de **Qyu**. Toute ligne de crédit
+qui dit « règles, textes et code © igneefleur » sans distinguer les deux jeux est
+fausse.

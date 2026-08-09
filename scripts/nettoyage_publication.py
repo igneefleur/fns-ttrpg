@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """Nettoyage de publication : à lancer sur main AVANT tout push vers le site officiel.
 
-Le chantier complet vit sur la branche beta ; main ne publie que le fini. Après un
-merge de beta vers main, ce script retire tout ce qui est incomplet :
+Tout le travail en cours vit sur la branche beta ; main ne publie que le fini.
+Après un merge de beta vers main, ce script retire tout ce qui est incomplet :
 
   1. les cartes d'arts (<div class="mcard art">) contenant TODO ;
   2. les lignes de note « > **TODO … » des autres pages ;
