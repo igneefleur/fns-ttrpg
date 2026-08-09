@@ -10,8 +10,8 @@ import render_pol as R
 HERE = os.path.dirname(os.path.abspath(__file__))
 CC = np.array([[0.86, 0.50, 0.42], [0.55, 0.72, 0.45], [0.45, 0.62, 0.80], [0.90, 0.78, 0.42],
                [0.68, 0.52, 0.75], [0.42, 0.75, 0.72]], np.float32)
-DOCS = r'C:\Users\IgneeFleur\Documents\Github\fns-ttrpg-rules\docs\assets\cartes'
-SITE = r'C:\Users\IgneeFleur\Documents\Github\fns-ttrpg-rules\site\assets\cartes'
+DOCS = r'C:\Users\IgneeFleur\Documents\Github\fns-ttrpg\docs\assets\cartes'
+SITE = r'C:\Users\IgneeFleur\Documents\Github\fns-ttrpg\site\assets\cartes'
 LOBE_ID = 5
 
 g = np.load(os.path.join(HERE, 'geo.npz')); c = np.load(os.path.join(HERE, 'countries.npz'))
