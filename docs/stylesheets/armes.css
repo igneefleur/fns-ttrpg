@@ -147,22 +147,30 @@
   fill: var(--ink);
   fill-opacity: 0.055;
 }
-/* La zone d'attaque : vert plein. Un seul symbole, parce qu'un coup ne couvre
-   plus qu'une case sauf pour les deux balayages du livre : toute case verte est
-   frappee, il n'y a plus rien a distinguer. */
-.md-typeset svg.geste-carte .hx-zone {
+/* Vert plein : la case est FRAPPEE. Blanc cerne de vert : elle doit etre LIBRE,
+   le coup ne fait qu'y passer, et un corps interpose l'arrete. */
+.md-typeset svg.geste-carte .hx-frappe {
   fill: var(--green-title);
   fill-opacity: 0.92;
 }
-/* L'espace necessaire : la meme couleur, mais vide et cernee. La case n'est pas
-   frappee, elle doit etre LIBRE pour que le coup parte. */
-.md-typeset svg.geste-carte .hx-espace {
+.md-typeset svg.geste-carte .hx-libre {
   fill: var(--paper);
   stroke: var(--green-title);
   stroke-width: 1.5;
 }
-/* Le personnage : un triangle qui pointe vers le haut, pose par-dessus. Il dit
-   d'un seul signe ou il se tient et de quel cote il regarde. */
+/* Le RANG : l'ordre ou le coup traverse les cases, donc l'ordre ou il s'arrete
+   si l'une d'elles est occupee. C'est la seule chose que la carte chiffre. */
+.md-typeset svg.geste-carte .hx-rang {
+  font-family: 'Roboto Mono', ui-monospace, monospace;
+  font-size: 8px;
+  font-weight: 700;
+  text-anchor: middle;
+  pointer-events: none;
+}
+.md-typeset svg.geste-carte .hx-rang--frappe { fill: var(--paper); }
+.md-typeset svg.geste-carte .hx-rang--libre  { fill: var(--green-title); }
+
+/* Le porteur : un triangle qui pointe vers le haut, pose par-dessus. */
 .md-typeset svg.geste-carte .hx-perso {
   fill: var(--ink);
   fill-opacity: 0.6;
@@ -185,7 +193,7 @@
   border-radius: 2px;
   background: var(--green-title);
 }
-.md-typeset .gestes-legende .lg-espace {
+.md-typeset .gestes-legende .lg-libre {
   background: var(--paper);
   box-shadow: inset 0 0 0 1.5px var(--green-title);
 }
@@ -210,4 +218,28 @@
 /* ── Impression ── */
 @media print {
   .md-typeset .arme { break-inside: avoid; page-break-inside: avoid; }
+}
+
+/* ── La citation, sous chaque coup ──
+   Elle est la condition de validite du coup : sans source verifiable, il n'entre
+   pas au chapitre. Elle se lit donc a la demande, en petit, mais elle est la. */
+.md-typeset .geste-source {
+  margin: 0.25rem 0 0;
+  padding-top: 0.22rem;
+  border-top: 1px dotted var(--md-default-fg-color--lightest, rgba(29, 29, 29, 0.14));
+  font-size: 0.52rem;
+  line-height: 1.3;
+  font-style: italic;
+  color: var(--ink);
+  opacity: 0.55;
+  text-wrap: pretty;
+}
+
+/* La prise, sous le nom de la categorie : elle vaut pour tous ses coups. */
+.md-typeset .arme-prise {
+  margin: -0.3rem 0 0.6rem;
+  font-size: 0.6rem;
+  line-height: 1.4;
+  color: var(--ink);
+  opacity: 0.7;
 }
