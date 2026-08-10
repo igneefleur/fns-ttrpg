@@ -17,14 +17,16 @@ LE TRAJET. Chaque étape vaut :
 NOMMAGE DES CASES, le porteur au centre regardant vers le haut :
     soi              sa propre case
     1, 2, 3, 4       droit devant, à N pas
-    1d, 2d...        la case voisine à droite, sur le même anneau
-    2dd, 3ddd...     la deuxième, la troisième à droite, toujours sur l'anneau
-    1g, 2gg...       de même vers la gauche
+    2d               un cran à droite le long de l'anneau
+    2d2, 3g5         deux crans à droite, cinq crans à gauche
+    2dd, 3ggg        ancienne écriture, toujours acceptée : autant de crans que
+                     de lettres
 
-Une lettre de plus, une case de plus le long de l'anneau : l'anneau N porte 2N+1
-cases nommables, et l'éventail ouvre 120° à toute distance. Il ne peut pas y avoir
-plus de lettres que d'anneaux — la colonne dd n'existe qu'à partir du deuxième —
-et le hook le refuse.
+On tourne AUTOUR du porteur : l'anneau N porte 6N cases et on les atteint toutes,
+de 0 (droit devant) à 3N (droit derrière), dans un sens comme dans l'autre. Un
+grand geste arme derrière une épaule et sort derrière l'autre : ses cases de
+départ et de fin sont donc à côté du porteur et dans son dos, et le livre doit
+savoir les nommer. Au-delà de 3N crans on a fait le tour, et le hook le refuse.
 
 Une case vaut UN PAS, soit 0.75 m. Les hexagones sont à SOMMET PLAT : c'est la
 seule orientation qui offre une case droit devant, ce qu'un trajet orienté exige.
@@ -59,7 +61,7 @@ RAYON_CASE = 10.0   # rayon du cercle circonscrit d'un hexagone, en unités SVG
 PORTEE_MAX = 4      # rayon de la carte, en cases : la lance et la hallebarde
 SQ3 = math.sqrt(3.0)
 
-ETAPE = re.compile(r"^(soi|(\d+)(g*|d*))$")
+ETAPE = re.compile(r"^(soi|(\d+)(g*|d*)(\d*))$")
 TYPES = ("CON", "PER", "TRA")
 
 # L'ouverture d'un coup et son nom : la carte se pose avant le nom, les chiffres
@@ -102,30 +104,49 @@ def _centre(q, r):
     return RAYON_CASE * 1.5 * q, RAYON_CASE * SQ3 * (r + q / 2.0)
 
 
+def _anneau(n):
+    """Les 6N cases de l'anneau N, rangées à partir de droit devant, dans le sens
+    des aiguilles. Elles ne sont PAS également espacées en azimut — l'hexagone a
+    des coins — d'où le tri plutôt qu'un calcul d'angle."""
+    if n in _ANNEAUX:
+        return _ANNEAUX[n]
+    cells = [(q, r) for q in range(-n, n + 1) for r in range(-n, n + 1)
+             if _distance(q, r) == n]
+    cells.sort(key=lambda c: math.atan2(*(lambda x, y: (x, -y))(*_centre(*c))))
+    i0 = min(range(len(cells)),
+             key=lambda i: abs(math.atan2(*(lambda x, y: (x, -y))(*_centre(*cells[i])))))
+    _ANNEAUX[n] = cells[i0:] + cells[:i0]
+    return _ANNEAUX[n]
+
+
+_ANNEAUX = {}
+
+
 def _case(nom):
     """Coordonnées axiales d'une case nommée, le porteur regardant vers le haut.
 
-    En sommet plat, la case de devant est (0, -N). On avance ensuite le long de
-    l'anneau : la k-ième case à droite est (k, -N), la k-ième à gauche
-    (-k, -N+k). Toutes sont à la distance N du centre, et l'éventail des 2N+1
-    cases nommables couvre exactement 120°.
+    La case de devant est (0, -N) ; on tourne ensuite AUTOUR du porteur, d'un
+    cran par lettre ou par le nombre qui suit la lettre. L'anneau N porte 6N
+    cases, et 3N crans mènent droit derrière.
     """
     m = ETAPE.match(nom.strip())
     if not m:
         return None
     if m.group(1) == "soi":
         return (0, 0)
-    n, cote = int(m.group(2)), m.group(3)
-    k = len(cote) if cote.startswith("d") else -len(cote)
-    if abs(k) > n:
+    n, cote, compte = int(m.group(2)), m.group(3), m.group(4)
+    if compte and len(cote) != 1:
         raise ErreurCoup(
-            f"case « {nom} » : {abs(k)} crans de côté sur l'anneau {n}, "
-            f"or une case ne peut s'écarter de l'axe que de {n} au plus")
-    if k > 0:
-        return (k, -n)
-    if k < 0:
-        return (k, -n - k)
-    return (0, -n)
+            f"case « {nom} » : un nombre de crans se met après UNE seule lettre, "
+            f"comme 2d3 ou 3g5")
+    k = int(compte) if compte else len(cote)
+    if cote.startswith("g"):
+        k = -k
+    if abs(k) > 3 * n:
+        raise ErreurCoup(
+            f"case « {nom} » : {abs(k)} crans sur l'anneau {n}, or {3 * n} crans "
+            f"mènent déjà droit derrière et on a fait le tour")
+    return _anneau(n)[k % (6 * n)]
 
 
 def _trajet(brut):
