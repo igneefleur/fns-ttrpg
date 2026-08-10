@@ -104,23 +104,27 @@ Aucun nombre, et surtout pas le silence des traités. Ils enseignent le duel : q
 
 **La longueur du fil.** Un long tranchant traverse un corps et ressort — l'épée en porte quatre-vingts centimètres, la grande épée quatre-vingt-quinze. Un tranchant court se fiche : la hache à une main en a dix à quinze, montés en coin, et c'est son défaut connu. Une tête de masse ou de marteau n'a aucune surface de contact : elle dépose tout ce qu'elle porte dans ce qu'elle touche. Une pointe ne mord qu'alignée, ce qui ne dure qu'un instant.
 
-**Le rayon.** Les cases d'un même anneau sont à la même distance : le point de percussion les traverse toutes. Mais si le geste se referme — le coude qui plie, la main qui passe sous le bras, les mains qui se figent — le fer retombe à un anneau plus court, et une case lointaine ne peut plus être verte là où l'arme n'arrive plus.
+**Le rayon.** Les cases d'un même anneau sont à la même distance : le point de percussion les traverse toutes. Mais le rayon varie le long de l'arc — le coude qui finit de s'ouvrir, la main qui passe sous le bras, les mains qui se figent — et le fer change alors d'anneau. C'est ce qui permet à un même coup de frapper à deux distances, et ce qui lui interdit d'atteindre une case lointaine quand l'arme n'y arrive plus.
 
 </div>
 
-Cinq coups de tout le chapitre balaient, et leur largeur suit leur secteur.
+Sept coups de tout le chapitre frappent plus d'une case, et de deux façons qui ne se confondent pas : **en largeur**, quand le fil balaie plusieurs azimuts, et **en profondeur**, quand il frappe deux fois à des distances différentes. Deux coups font les deux.
 
 <div class="sepia-table" markdown>
 
-| Coup | Arme | Secteur | Cases |
-|---|---|:---:|:---:|
-| Taille du fer en croix | hallebarde | 120° | 9 |
-| Taille du milieu | grande épée | 82° | 5 |
-| Taille ronde | épée | 60° | 3 |
-| Taille en travers | grande épée | 41° | 3 |
-| Taille horizontale de revers | épée | 30° | 2 |
+| Coup | Arme | Vertes | Secteur | Anneaux |
+|---|---|:---:|:---:|:---:|
+| Taille du fer en croix | hallebarde | 9 | 120° | 4 |
+| Taille du milieu | grande épée | 5 | 82° | 3 |
+| Taille ronde | épée | 4 | 90° | 2 |
+| Taille en travers | grande épée | 3 | 41° | 3 |
+| Taille horizontale de revers | épée | 3 | 30° | 1 et 2 |
+| Taille montante de revers | épée | 2 | 60° | 1 et 2 |
+| Fendant à pleine volée | grande hache | 2 | — | 2 et 3 |
 
 </div>
+
+Le fendant à pleine volée est le cas pur de la profondeur : aucune largeur, il tombe dans le plan de la ligne, mais son fer frappe à trois pas puis, poursuivant sa chute, à deux pas et à hauteur de genou. Les deux revers de l'épée sont les cas mixtes : ils s'ouvrent en tournant et changent d'anneau en même temps, parce que le coude n'a pas fini de s'ouvrir quand le fil mord la première fois.
 
 Seule la hallebarde n'est bornée que par ses propres flancs : Meyer la lance bras tendu, l'extension est acquise avant l'entrée, et le fer ne sort de l'éventail qu'une fois passé derrière l'épaule. Toutes les autres sont bornées par le bras — celui de l'épée se ferme à l'axe, ceux de la grande épée tiennent tant que les épaules tournent, et la taille en travers meurt quand la croix se fige devant le front. Les sept autres catégories n'ont aucun balayage, et jamais par prudence : ou leurs coups ne tournent pas, ou leur arme n'a rien à traîner d'un corps au suivant.
 
