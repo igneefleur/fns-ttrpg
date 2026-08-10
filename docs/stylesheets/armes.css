@@ -210,16 +210,32 @@
   fill-opacity: 0.055;
 }
 /* Vert plein : la case VISEE, degats pleins, et le coup poursuit sa course.
-   Blanc cerne de vert : l'arme y PASSE a hauteur de corps ; qui s'y tient prend
-   la moitie des degats et arrete le coup, le reste du trajet etant annule. */
+   DEMI-VERT : l'arme y PASSE a hauteur de corps ; qui s'y tient prend la moitie
+   des degats et arrete le coup, le reste du trajet etant annule. Le meme vert a
+   la moitie de sa densite, ce qui dit la regle sans legende : moitie de teinte,
+   moitie de degats. Aucun contour ici — il est reserve a la case du porteur. */
 .md-typeset svg.geste-carte .hx-frappe {
   fill: var(--green-title);
   fill-opacity: 0.92;
 }
 .md-typeset svg.geste-carte .hx-passe {
-  fill: var(--paper);
-  stroke: var(--green-title);
-  stroke-width: 1.5;
+  fill: var(--green-title);
+  fill-opacity: 0.30;
+}
+
+/* La case du porteur : un contour orange, jamais un remplissage, parce qu'elle
+   se frappe aussi et qu'on doit voir ce qu'elle porte. Son arete du haut est
+   doublee : c'est le cote qu'il regarde. */
+.md-typeset svg.geste-carte .hx-soi {
+  fill: none;
+  stroke: var(--orange-soi);
+  stroke-width: 1.4;
+}
+.md-typeset svg.geste-carte .hx-soi-face {
+  fill: none;
+  stroke: var(--orange-soi);
+  stroke-width: 3;
+  stroke-linecap: round;
 }
 /* Le RANG : l'ordre ou le coup traverse les cases, donc l'ordre ou il s'arrete
    si l'une d'elles est occupee. C'est la seule chose que la carte chiffre. */
@@ -231,7 +247,9 @@
   pointer-events: none;
 }
 .md-typeset svg.geste-carte .hx-rang--frappe { fill: var(--paper); }
-.md-typeset svg.geste-carte .hx-rang--passe  { fill: var(--green-title); }
+/* Sur le demi-vert, c'est l'encre qui porte : elle tient de jour comme de nuit,
+   la ou un vert sur du vert clair se perdrait. */
+.md-typeset svg.geste-carte .hx-rang--passe  { fill: var(--ink); }
 
 /* Le PAS : la case quittee, en pointille, et la fleche qui en vient. Le pas est
    un prerequis du coup et non une de ses etapes : il ne porte donc pas de rang
@@ -250,10 +268,13 @@
   fill: none;
 }
 
-/* Le porteur : un triangle qui pointe vers le haut, pose par-dessus. */
-.md-typeset svg.geste-carte .hx-perso {
-  fill: var(--ink);
-  fill-opacity: 0.6;
+/* L'orange du porteur. Le livre n'en avait pas : c'est la seule couleur qui ne
+   soit ni le vert des coups ni l'encre du texte, et elle ne sert qu'a ca. */
+body {
+  --orange-soi: #b4682e;
+}
+html.night body {
+  --orange-soi: #d99552;
 }
 /* Légende des deux états, posée sous le chapeau du chapitre. */
 .md-typeset .gestes-legende {
@@ -274,24 +295,21 @@
   background: var(--green-title);
 }
 .md-typeset .gestes-legende .lg-passe {
-  background: var(--paper);
-  box-shadow: inset 0 0 0 1.5px var(--green-title);
+  background: var(--green-title);
+  opacity: 0.3;
 }
 .md-typeset .gestes-legende .lg-quittee {
   background: transparent;
   border: 1.5px dashed var(--ink);
   opacity: 0.45;
 }
-/* Le personnage, dans la legende : le meme triangle que sur les cartes. */
-.md-typeset .gestes-legende .lg-perso {
+/* La case du porteur : le meme contour orange que sur les cartes, l'arete du
+   haut doublee pour dire le cote qu'il regarde. */
+.md-typeset .gestes-legende .lg-soi {
   background: transparent;
-  border-left: 0.42rem solid transparent;
-  border-right: 0.42rem solid transparent;
-  border-bottom: 0.72rem solid var(--ink);
-  width: 0;
-  height: 0;
-  border-radius: 0;
-  opacity: 0.6;
+  box-shadow: inset 0 0 0 1.4px var(--orange-soi);
+  border-top: 2.5px solid var(--orange-soi);
+  border-radius: 1px;
 }
 
 /* ── Écrans étroits ── */

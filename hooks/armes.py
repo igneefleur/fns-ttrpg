@@ -211,20 +211,24 @@ def carte_svg(brut, pas=None):
 
     # Le rang de chaque étape, posé par-dessus les cases : c'est l'ordre dans
     # lequel le coup les traverse, et donc l'ordre où il s'interrompt.
+    # La case du porteur porte son rang comme les autres : depuis que le triangle
+    # a disparu, un coup au contact s'y lit.
     for (q, r), role, rang in etapes:
-        if (q, r) == (0, 0):
-            continue   # la case du porteur porte déjà son triangle
         cx, cy = _centre(q, r)
         out.append(
             f'<text class="hx-rang hx-rang--{role}" x="{cx:.2f}" y="{cy:.2f}" '
             f'dy="0.34em">{rang}</text>'
         )
 
-    # Le porteur : un triangle qui pointe vers le haut, et rien d'autre.
-    h = RAYON_CASE * 0.58
+    # La case du porteur : un contour, et rien dans la case. Le triangle qui s'y
+    # tenait la bouchait, or elle est frappable — un coup au contact s'y porte —
+    # et il faut l'y voir. Son arête du HAUT est doublée : c'est le côté qu'il
+    # regarde, et c'est tout ce qui reste pour dire son orientation.
+    s = RAYON_CASE - 0.7
+    out.append(f'<polygon class="hx-soi" points="{_sommets(0, 0, s)}"/>')
     out.append(
-        f'<path class="hx-perso" d="M 0 -{h:.2f} '
-        f'L {h * 0.80:.2f} {h * 0.62:.2f} L -{h * 0.80:.2f} {h * 0.62:.2f} Z"/>'
+        f'<path class="hx-soi-face" d="M {-0.5 * s:.2f} {-0.866 * s:.2f} '
+        f'L {0.5 * s:.2f} {-0.866 * s:.2f}"/>'
     )
     out.append("</svg>")
     return "".join(out)
