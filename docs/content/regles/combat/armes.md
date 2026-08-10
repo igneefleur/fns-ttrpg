@@ -10,7 +10,6 @@ Chaque coup porte son empreinte : une carte hexagonale où le personnage occupe 
   <span><i class="lg-soi"></i>la case du porteur, qui regarde toujours vers le haut</span>
   <span><i></i>la case frappée, dégâts pleins</span>
   <span><i class="lg-passe"></i>la case traversée, moitié des dégâts</span>
-  <span><i class="lg-quittee"></i>la case quittée, quand le coup exige un pas</span>
 </div>
 
 <div class="keep" markdown>
@@ -28,8 +27,6 @@ Chaque coup porte son empreinte : une carte hexagonale où le personnage occupe 
 **Les dégâts :** deux valeurs, la pleine sur la case verte et la moitié sur la blanche. La pleine est toujours paire, si bien que la moitié tombe juste ; on arrondirait à l'inférieur, mais l'occasion ne se présente pas. **Le type peut changer d'une couleur à l'autre**, et c'est de la physique : ce n'est pas la même partie de l'arme qui touche. Le fil tranche (TRA), la pointe perce (PER), une hampe, un manche, un plat ou un pommeau écrasent (CON). Qui prend la hallebarde à deux pas ne prend pas le fer, il prend le bois.
 
 **La garde :** la position des mains du porteur, lue sur un carré de neuf cases qui figure un plan vertical devant lui. Chaque coup part d'une garde et finit dans une autre : le petit carré donne le départ par un cercle vide, l'arrivée par un disque plein, et le chemin des mains par une flèche.
-
-**Le pas :** certains coups ne se donnent qu'en changeant de case. La carte marque alors en pointillé la case quittée, et le coup se lit depuis la case d'arrivée. Un pas n'est pas la fente : la fente engage le corps sans quitter la case, et elle est déjà comptée dans la [portée](portees.md).
 
 **La citation :** chaque coup porte sa source, auteur, date, manuscrit et folio. Un coup sans source vérifiable n'entre pas au chapitre ; ceux qui restent déduits de la forme d'une arme, faute de traité, le disent.
 
@@ -450,7 +447,7 @@ L'éventail que la grille sait nommer ouvre **cent vingt degrés à toute distan
 <p class="geste-source">Le Jeu de la Hache, XVe s., Paris, BnF ms. fr. 1996, § 4 : " luy baillier destocq de ladicte queue en coulant par la main gauche au visage. ou la ou bon vous samblera " ; repris §§ 6 et 43</p>
 </div>
 
-<div class="geste" data-trajet="1d3:passe>1:passe>2:frappe>soi:passe" data-degats="16 PER / CON" data-garde="6>5" data-pas="avant">
+<div class="geste" data-trajet="1d3:passe>1:passe>2:frappe>soi:passe" data-degats="16 PER / CON" data-garde="6>5">
 <p class="geste-nom">Estoc de la dague au visage<em>estocq de la dague</em></p>
 <p class="geste-diff">attaque 4</p>
 <p class="geste-note">Portée 0,65 + 0,45 (la prise ne change pas, la main avant reste collée à la croix) + 0,50, moins la hauteur du visage = 1,55 m à l'horizontale : case 2. Le traité le sait court et l'ordonne : les deux paragraphes qui donnent ce coup commandent d'abord de fermer la distance, en suivant un pied après l'autre, en marchant entre l'homme et sa hache. La dague est l'arme du dedans, et la carte se lit depuis la case gagnée. Pointe en ligne droite ; tout le fer, croix comme dague, est déjà en case 2, et la case 1 n'est franchie que par la hampe et le poing droit : qui s'y tient prend le bois, à moitié et en contondant, et le visage visé reste intact. Estoc bref et rapide, sans engagement de hampe : on le tire et l'on revient en garde dans le temps, mains poussées dans l'axe, et c'est pourquoi il est le plus facile du répertoire. Il partage son trajet avec les deux estocs de la queue ; sa différence est dans la portée gagnée, la vitesse et le prix.</p>
@@ -486,14 +483,14 @@ L'éventail que la grille sait nommer ouvre **cent vingt degrés à toute distan
 <p class="geste-source">Fiore dei Liberi, Fior di Battaglia, v. 1410, Getty MS Ludwig XV 13, f. 39v-c (le coup où finissent les trois maîtres)</p>
 </div>
 
-<div class="geste" data-trajet="3d:passe>2d:passe>1d:passe>soi:passe>1:passe>2:passe>3:frappe>1d2:passe" data-degats="16 PER / CON" data-garde="6>5" data-pas="traverse-d">
+<div class="geste" data-trajet="3d:passe>2d:passe>1d:passe>soi:passe>1:passe>2:passe>3:frappe>1d2:passe" data-degats="16 PER / CON" data-garde="6>5">
 <p class="geste-nom">Battre et frapper<em>rebatter e ferire</em></p>
 <p class="geste-diff">attaque 6</p>
-<p class="geste-note">0,65 + 1,55 + 0,18 (l'élan passe dans le pas de traverse et dans le battement, non dans l'allonge) = 2,38 m : la troisième case, jamais la quatrième. On ne bat vers sa gauche qu'en partant de sa droite : la lance attend en travers, du côté droit, et une hampe de 2,30 m qui tourne n'occupe pas une seule case. La table des rayons a corrigé le chemin : 2d et 3d se rejoignent par la case 1, non par 1d, qui appartient au rayon de 2dd et de 3ddd. Près des mains le bois franchit donc 1, au tiers de sa longueur il balaie 2d, et la pointe elle-même passe par 3d, que la carte oubliait : une hampe de 2,30 m qui tourne de quatre-vingt-dix degrés occupe toute sa colonne, pas ses deux premières cases. Le battement fini, elle revient en ligne et le coup s'achève en estoc : 2 franchie par la hampe, 3 frappée de la pointe. Quatre cases de bois avant le fer : un corps posé sur l'une d'elles prend la moitié des dégâts, contondants, et arrête tout ; s'il se tient en 1, le battement lui-même n'a pas lieu. Le pas, le battement et le coup se font en un seul temps : si l'ennemi attaquait ce tour, son coup est annulé. Exige un pas hors ligne vers la droite.</p>
+<p class="geste-note">0,65 + 1,55 + 0,18 (l'élan passe dans le battement, non dans l'allonge) = 2,38 m : la troisième case, jamais la quatrième. On ne bat vers sa gauche qu'en partant de sa droite : la lance attend en travers, du côté droit, et une hampe de 2,30 m qui tourne n'occupe pas une seule case. La table des rayons a corrigé le chemin : 2d et 3d se rejoignent par la case 1, non par 1d, qui appartient au rayon de 2dd et de 3ddd. Près des mains le bois franchit donc 1, au tiers de sa longueur il balaie 2d, et la pointe elle-même passe par 3d, que la carte oubliait : une hampe de 2,30 m qui tourne de quatre-vingt-dix degrés occupe toute sa colonne, pas ses deux premières cases. Le battement fini, elle revient en ligne et le coup s'achève en estoc : 2 franchie par la hampe, 3 frappée de la pointe. Quatre cases de bois avant le fer : un corps posé sur l'une d'elles prend la moitié des dégâts, contondants, et arrête tout ; s'il se tient en 1, le battement lui-même n'a pas lieu. Le battement et le coup se font en un seul temps : si l'ennemi attaquait ce tour, son coup est annulé.</p>
 <p class="geste-source">Fiore dei Liberi, Fior di Battaglia, v. 1410, Getty MS Ludwig XV 13, f. 39r-a : " passaro cum lo pe dritto ala traversa fora de strada, E traversando la sua lança rebattero in parte stancha. Si che'llo passar e'llo rebatter se fa in un passo cum lo ferire "</p>
 </div>
 
-<div class="geste" data-trajet="1d3:passe>soi:passe>1:passe>2:frappe" data-degats="12 PER / CON" data-garde="8>5" data-pas="avant">
+<div class="geste" data-trajet="1d3:passe>soi:passe>1:passe>2:frappe" data-degats="12 PER / CON" data-garde="8>5">
 <p class="geste-nom">Estoc à lance raccourcie<em>curta lanza</em></p>
 <p class="geste-diff">attaque 5 · déduit</p>
 <p class="geste-note">DÉDUIT quant à la géométrie : le jeu est au folio, mais Fiore ne décrit nulle part un raccourcissement en cours de combat : chez lui la lance courte est un état de départ, une garde, pas une action : et il ne dit jamais de combien. La main avant à 1,45 m du talon, donc 0,85 m de bois au-delà d'elle, est un choix de modèle. 0,65 + 0,85 + 0,18 = 1,68 m, case 2, une seule case franchie avant elle et par le bois : la pointe se tient déjà à 1,50 m quand le coup part, si bien qu'un corps arrêté là prend la hampe et le poing, moitié des dégâts et contondants, et que le fer n'atteint jamais la cible. L'appui pris sur di Grassi a été retiré : chez lui la main ARRIÈRE reste fixe et c'est l'arme qui coulisse dans la main avant, mécanisme qui ALLONGE le coup et concerne une pique de 1594, non la lance de Fiore. Effet rétabli sur le texte : c'est un coup de battement, non un estoc sec : toutes les gardes tenues hors ligne suffisent, lance courte ou épée courte, à attendre n'importe quelle arme longue, le battement et le coup se faisant en un seul temps. Le battement relève la lance de la demi-porte de fer aux mains devant, et il faut un pas en avant : une lance raccourcie ne rejoint pas sa cible autrement.</p>
@@ -542,14 +539,14 @@ L'éventail que la grille sait nommer ouvre **cent vingt degrés à toute distan
 <p class="geste-source">Joachim Meyer, Gründtliche Beschreibung der Kunst des Fechtens, Strasbourg, 1570, livre III, f. 38r : " ergreiffe im von der anderen seiten seinen hocken, mit dem deinen, unnd reisse zu dir " ; Risse du croc aux f. 32r et 32v : " Reisse mit deinem hacken gegen seiner Lincken zum gesicht, undersich gegen deiner Lincken durch " ; désarmement au f. 37r : " so numstu im sein Helleparten "</p>
 </div>
 
-<div class="geste" data-trajet="soi:passe>1d:passe>1:frappe>2d6:passe" data-degats="14 CON / CON" data-garde="2>8" data-pas="avant">
+<div class="geste" data-trajet="soi:passe>1d:passe>1:frappe>2d6:passe" data-degats="14 CON / CON" data-garde="2>8">
 <p class="geste-nom">Entrée au talon<em>hinder Ort</em></p>
 <p class="geste-diff">attaque 6</p>
 <p class="geste-note">Le coup portait au bout de la hampe ; le texte décrit un corps à corps. On court dedans, on enroule le talon entre ses bras ou autour de son cou, on lui passe la jambe derrière et on le jette : rien de cela ne se fait au bout des deux mètres. Le talon ne dépasse la main arrière que de peu, et la portée tombe à 1,40 m, l'un des deux derniers rangs de la catégorie. La course dedans est un vrai changement de case et non une fente : elle consomme l'intervalle, la carte se lit depuis la case gagnée, et l'homme qui se tenait à deux pas devient le voisin. Rien ne reste alors à traverser. Le déclencheur a été rétabli à l'endroit : c'est VOTRE hallebarde qu'il a menée trop haut, non la sienne : l'inversion rendait le coup injouable au moment même où Meyer l'emploie. On pèse sur son fer et l'on entre au talon : les mains partent donc hautes, d'une garde qu'aucun coup de la catégorie ne produit puisque l'adversaire l'impose, et finissent sous la ceinture avec l'homme jeté. Di Grassi le frappe dans la poitrine et souhaite le talon garni d'un fer aigu. C'est le seul coup qui reste quand les fers sont liés.</p>
 <p class="geste-source">Joachim Meyer, Gründtliche Beschreibung der Kunst des Fechtens, Strasbourg, 1570, livre III, f. 37r : " Fuhret dir einer… dein Hellepart zu hoch ubersich, so bleibe oder trucke ihm hart auff seine blat, und lauffe im underdes mit dem hindern ort hinein, winde im mit demselbigen oberhalb oder underhalb seiner stangen zwischen die arm, oder umb sein hals, hindertrit ihn zum wurff "</p>
 </div>
 
-<div class="geste" data-trajet="3:passe>2:passe>1:frappe>soi:passe>1d3:passe>2d6:passe" data-degats="6 CON / CON" data-garde="5>8" data-pas="traverse-g">
+<div class="geste" data-trajet="3:passe>2:passe>1:frappe>soi:passe>1d3:passe>2d6:passe" data-degats="6 CON / CON" data-garde="5>8">
 <p class="geste-nom">Poussée du fer au cou<em>die Helleparten vornen an Halß setzen</em></p>
 <p class="geste-diff">attaque 7</p>
 <p class="geste-note">Le type TRA était faux : rien n'est tranché. Meyer POSE le fer en travers du cou, pousse de toute sa force et fauche la jambe avancée : c'est une pesée et une projection, donc contondant, dégâts faibles, et toute la valeur du coup est dans la chute. Portée 0,65 + 0,30 (après le glissement de la hampe en arrière à travers les deux mains, pour venir plus près) + 0,18 = 1,13 m : la case voisine, rien à traverser puisqu'on est déjà dessus. La hampe reste courte tant qu'on ne l'a pas relancée dans les mains. Exige d'avoir esquivé un estoc pour entrer : il estoque vers votre droite, vous quittez la ligne d'un pas vers sa droite, c'est-à-dire vers votre gauche, et la carte se lit depuis la case gagnée. Les mains, parties de la garde où l'estoc au visage les a laissées, descendent sous la ceinture avec l'homme qu'elles jettent : aucun coup de la catégorie ne repart de là.</p>

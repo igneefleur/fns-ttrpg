@@ -7,7 +7,6 @@ dans le markdown, quatre attributs.
     data-trajet="1:passe>2:frappe"    les étapes ordonnées
     data-degats="20 TRA / CON"        20 sur la case verte, la moitié sur la blanche
     data-garde="3>8"                  d'où partent les mains, où elles finissent
-    data-pas="traverse-d"             le déplacement exigé, s'il y en a un
 
 LE TRAJET. Chaque étape vaut :
     frappe   la case visée : dégâts pleins, et le coup POURSUIT sa course
@@ -45,10 +44,6 @@ ceinture, sous la ceinture. Colonnes : sa gauche, son axe, sa droite.
     4 5 6
     7 8 9
 
-LE PAS. Un changement de case, à distinguer de l'engagement du corps, qui est la
-fente et qui ne quitte pas la case. La carte est centrée sur la case D'OÙ LE COUP
-EST PORTÉ, donc après le pas : celui-ci se marque sur la case quittée.
-
 Le dessin se fait ici plutôt qu'en JavaScript : le SVG part dans la page
 construite, donc il s'affiche sans script, se retrouvera dans le PDF, et se
 vérifie en lisant le HTML.
@@ -72,15 +67,6 @@ COUP = re.compile(
 )
 ATTR = re.compile(r'data-([a-z]+)="([^"]*)"')
 
-# La case quittée, pour chaque pas : le porteur vient de là.
-PAS = {
-    "avant":      ((0, 1),   "pas avant"),
-    "arriere":    ((0, -1),  "pas en arrière"),
-    "traverse-d": ((-1, 1),  "pas de traverse à droite"),
-    "traverse-g": ((1, 0),   "pas de traverse à gauche"),
-    "arriere-d":  ((-1, 0),  "pas oblique en arrière à droite"),
-    "arriere-g":  ((1, -1),  "pas oblique en arrière à gauche"),
-}
 
 
 class ErreurCoup(Exception):
@@ -166,15 +152,9 @@ def _trajet(brut):
     return etapes
 
 
-def carte_svg(brut, pas=None):
+def carte_svg(brut):
     etapes = _trajet(brut)
     par_case = {c: (role, rang) for c, role, rang in etapes}
-
-    quittee = None
-    if pas:
-        if pas not in PAS:
-            raise ErreurCoup(f"pas inconnu « {pas} »")
-        quittee = PAS[pas][0]
 
     largeur = RAYON_CASE * (1.5 * PORTEE_MAX + 1)
     hauteur = RAYON_CASE * SQ3 * (PORTEE_MAX + 0.5)
@@ -194,21 +174,6 @@ def carte_svg(brut, pas=None):
                 f'<polygon class="{classe}" points="{_sommets(cx, cy, RAYON_CASE - 0.7)}"/>'
             )
 
-    # La case quittée, et la flèche qui en vient : le pas est un prérequis du
-    # coup, non une de ses étapes, donc il se dessine à part et en pointillé.
-    if quittee:
-        cx, cy = _centre(*quittee)
-        out.append(
-            f'<polygon class="hx-quittee" points="{_sommets(cx, cy, RAYON_CASE - 1.6)}"/>'
-        )
-        d = math.hypot(cx, cy)
-        if d:
-            ux, uy = cx / d, cy / d
-            out.append(
-                f'<path class="hx-pas" d="M {cx - ux * 4.2:.2f} {cy - uy * 4.2:.2f} '
-                f'L {ux * 5.4:.2f} {uy * 5.4:.2f}"/>'
-            )
-
     # Le rang de chaque étape, posé par-dessus les cases : c'est l'ordre dans
     # lequel le coup les traverse, et donc l'ordre où il s'interrompt.
     # La case du porteur porte son rang comme les autres : depuis que le triangle
@@ -222,14 +187,11 @@ def carte_svg(brut, pas=None):
 
     # La case du porteur : un contour, et rien dans la case. Le triangle qui s'y
     # tenait la bouchait, or elle est frappable — un coup au contact s'y porte —
-    # et il faut l'y voir. Son arête du HAUT est doublée : c'est le côté qu'il
-    # regarde, et c'est tout ce qui reste pour dire son orientation.
+    # et il faut l'y voir. L'orientation ne se marque PAS ici : le texte dit déjà
+    # que le porteur regarde vers le haut, et l'arête doublée qu'on avait essayée
+    # ne faisait qu'alourdir la carte.
     s = RAYON_CASE - 0.7
     out.append(f'<polygon class="hx-soi" points="{_sommets(0, 0, s)}"/>')
-    out.append(
-        f'<path class="hx-soi-face" d="M {-0.5 * s:.2f} {-0.866 * s:.2f} '
-        f'L {0.5 * s:.2f} {-0.866 * s:.2f}"/>'
-    )
     out.append("</svg>")
     return "".join(out)
 
@@ -318,8 +280,7 @@ def _rendu(attrs):
     trajet = attrs.get("trajet")
     if not trajet:
         return "", ""
-    pas = attrs.get("pas") or None
-    avant = carte_svg(trajet, pas)
+    avant = carte_svg(trajet)
 
     apres = []
     a_du_blanc = any(b.endswith(":passe") for b in trajet.split(">"))
@@ -330,8 +291,6 @@ def _rendu(attrs):
         svg, _, _ = garde_svg(attrs["garde"])
         apres.append(f'<p class="geste-garde">{svg}</p>')
 
-    if pas:
-        apres.append(f'<p class="geste-pas">exige un {PAS[pas][1]}</p>')
     return avant, "".join(apres)
 
 

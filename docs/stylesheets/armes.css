@@ -166,16 +166,6 @@
   fill-opacity: 0.6;
 }
 
-/* Le pas, quand le coup en exige un : c'est un prérequis, il se lit avant la
-   difficulté et non après. */
-.md-typeset .geste-pas {
-  margin: 0;
-  font-family: 'Roboto Mono', ui-monospace, monospace;
-  font-size: 0.55rem;
-  letter-spacing: 0.02em;
-  color: var(--green-title);
-  opacity: 0.8;
-}
 
 /* La difficulté d'attaque appartient au geste, pas à l'arme : estoquer et
    balayer ne demandent pas la même adresse. Elle se pose sous les dégâts, en
@@ -224,18 +214,13 @@
 }
 
 /* La case du porteur : un contour orange, jamais un remplissage, parce qu'elle
-   se frappe aussi et qu'on doit voir ce qu'elle porte. Son arete du haut est
-   doublee : c'est le cote qu'il regarde. */
+   se frappe aussi et qu'on doit voir ce qu'elle porte. Un contour REGULIER : on
+   avait doublé l'arete du haut pour marquer le cote regarde, mais le texte le
+   dit deja et le trait ne faisait qu'enlaidir la carte. */
 .md-typeset svg.geste-carte .hx-soi {
   fill: none;
   stroke: var(--orange-soi);
   stroke-width: 1.4;
-}
-.md-typeset svg.geste-carte .hx-soi-face {
-  fill: none;
-  stroke: var(--orange-soi);
-  stroke-width: 3;
-  stroke-linecap: round;
 }
 /* Le RANG : l'ordre ou le coup traverse les cases, donc l'ordre ou il s'arrete
    si l'une d'elles est occupee. C'est la seule chose que la carte chiffre. */
@@ -251,22 +236,6 @@
    la ou un vert sur du vert clair se perdrait. */
 .md-typeset svg.geste-carte .hx-rang--passe  { fill: var(--ink); }
 
-/* Le PAS : la case quittee, en pointille, et la fleche qui en vient. Le pas est
-   un prerequis du coup et non une de ses etapes : il ne porte donc pas de rang
-   et ne se confond avec aucune case du trajet. */
-.md-typeset svg.geste-carte .hx-quittee {
-  fill: none;
-  stroke: var(--ink);
-  stroke-width: 1.1;
-  stroke-opacity: 0.45;
-  stroke-dasharray: 2.6 2;
-}
-.md-typeset svg.geste-carte .hx-pas {
-  stroke: var(--ink);
-  stroke-width: 1.1;
-  stroke-opacity: 0.45;
-  fill: none;
-}
 
 /* L'orange du porteur. Le livre n'en avait pas : c'est la seule couleur qui ne
    soit ni le vert des coups ni l'encre du texte, et elle ne sert qu'a ca. */
@@ -298,17 +267,10 @@ html.night body {
   background: var(--green-title);
   opacity: 0.3;
 }
-.md-typeset .gestes-legende .lg-quittee {
-  background: transparent;
-  border: 1.5px dashed var(--ink);
-  opacity: 0.45;
-}
-/* La case du porteur : le meme contour orange que sur les cartes, l'arete du
-   haut doublee pour dire le cote qu'il regarde. */
+/* La case du porteur : le meme contour orange que sur les cartes, regulier. */
 .md-typeset .gestes-legende .lg-soi {
   background: transparent;
   box-shadow: inset 0 0 0 1.4px var(--orange-soi);
-  border-top: 2.5px solid var(--orange-soi);
   border-radius: 1px;
 }
 
