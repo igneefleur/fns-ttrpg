@@ -101,8 +101,9 @@
   opacity: 0.6;
 }
 
-/* Les dégâts et le type, sur une ligne : c'est la seule donnée chiffrée du
-   geste, elle n'a pas besoin d'une tuile. */
+/* Les dégâts : deux valeurs, la pleine sur la case verte et la moitié sur la
+   blanche, cette dernière en retrait puisqu'elle n'arrive qu'à l'accident. Le
+   type peut différer, ce n'est pas la même partie de l'arme qui touche. */
 .md-typeset .geste-chiffres {
   margin: 0;
   font-family: 'Roboto Mono', ui-monospace, monospace;
@@ -113,6 +114,68 @@
 .md-typeset .geste-chiffres b {
   font-weight: 700;
   color: var(--green-title);
+}
+.md-typeset .geste-chiffres .dg-passe {
+  opacity: 0.62;
+}
+.md-typeset .geste-chiffres .dg-passe::before {
+  content: '\2002·\2002';
+  opacity: 0.7;
+}
+.md-typeset .geste-chiffres .dg-passe b {
+  font-weight: 400;
+  color: inherit;
+}
+
+/* ── La garde ──
+   Le carré des neuf, départ cerclé et arrivée pleine. Il tient sur la ligne des
+   chiffres : un coup s'enchaîne sur le précédent si sa garde de départ est celle
+   où le précédent a fini, et cela doit se lire d'un regard. */
+.md-typeset .geste-garde {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  margin: 0;
+  font-family: 'Roboto Mono', ui-monospace, monospace;
+  font-size: 0.57rem;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  opacity: 0.78;
+}
+.md-typeset svg.garde-carre {
+  flex: none;
+  width: 1.15rem;
+  height: 1.15rem;
+}
+.md-typeset svg.garde-carre .gd-case {
+  fill: var(--ink);
+  fill-opacity: 0.07;
+}
+.md-typeset svg.garde-carre .gd-depart {
+  fill: var(--paper);
+  stroke: var(--green-title);
+  stroke-width: 1.3;
+}
+.md-typeset svg.garde-carre .gd-arrivee {
+  fill: var(--green-title);
+}
+.md-typeset svg.garde-carre .gd-fleche {
+  stroke: var(--green-title);
+  stroke-width: 1.1;
+  stroke-opacity: 0.55;
+  fill: none;
+}
+
+/* Le pas, quand le coup en exige un : c'est un prérequis, il se lit avant la
+   difficulté et non après. */
+.md-typeset .geste-pas {
+  margin: 0;
+  font-family: 'Roboto Mono', ui-monospace, monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.02em;
+  color: var(--green-title);
+  opacity: 0.8;
 }
 
 /* La difficulté d'attaque appartient au geste, pas à l'arme : estoquer et
@@ -147,13 +210,14 @@
   fill: var(--ink);
   fill-opacity: 0.055;
 }
-/* Vert plein : la case est FRAPPEE. Blanc cerne de vert : elle doit etre LIBRE,
-   le coup ne fait qu'y passer, et un corps interpose l'arrete. */
+/* Vert plein : la case VISEE, degats pleins, et le coup poursuit sa course.
+   Blanc cerne de vert : l'arme y PASSE a hauteur de corps ; qui s'y tient prend
+   la moitie des degats et arrete le coup, le reste du trajet etant annule. */
 .md-typeset svg.geste-carte .hx-frappe {
   fill: var(--green-title);
   fill-opacity: 0.92;
 }
-.md-typeset svg.geste-carte .hx-libre {
+.md-typeset svg.geste-carte .hx-passe {
   fill: var(--paper);
   stroke: var(--green-title);
   stroke-width: 1.5;
@@ -168,7 +232,24 @@
   pointer-events: none;
 }
 .md-typeset svg.geste-carte .hx-rang--frappe { fill: var(--paper); }
-.md-typeset svg.geste-carte .hx-rang--libre  { fill: var(--green-title); }
+.md-typeset svg.geste-carte .hx-rang--passe  { fill: var(--green-title); }
+
+/* Le PAS : la case quittee, en pointille, et la fleche qui en vient. Le pas est
+   un prerequis du coup et non une de ses etapes : il ne porte donc pas de rang
+   et ne se confond avec aucune case du trajet. */
+.md-typeset svg.geste-carte .hx-quittee {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.1;
+  stroke-opacity: 0.45;
+  stroke-dasharray: 2.6 2;
+}
+.md-typeset svg.geste-carte .hx-pas {
+  stroke: var(--ink);
+  stroke-width: 1.1;
+  stroke-opacity: 0.45;
+  fill: none;
+}
 
 /* Le porteur : un triangle qui pointe vers le haut, pose par-dessus. */
 .md-typeset svg.geste-carte .hx-perso {
@@ -193,9 +274,14 @@
   border-radius: 2px;
   background: var(--green-title);
 }
-.md-typeset .gestes-legende .lg-libre {
+.md-typeset .gestes-legende .lg-passe {
   background: var(--paper);
   box-shadow: inset 0 0 0 1.5px var(--green-title);
+}
+.md-typeset .gestes-legende .lg-quittee {
+  background: transparent;
+  border: 1.5px dashed var(--ink);
+  opacity: 0.45;
 }
 /* Le personnage, dans la legende : le meme triangle que sur les cartes. */
 .md-typeset .gestes-legende .lg-perso {

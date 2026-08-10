@@ -100,6 +100,6 @@ Les portées de deux adversaires ne s'additionnent jamais. Pour toucher, il faut
 
 Les seuils sont des arbitrages, non des certitudes. Une épée d'armes court de 81 à 107 cm selon l'exemplaire, une hache de 60 à 90 cm de manche : l'écart au sein d'une même catégorie approche la taille d'une case. Plusieurs gestes tombent donc à quelques centimètres d'une frontière, et le livre a tranché du côté généreux, uniformément.
 
-C'est aussi pourquoi ce chapitre ne donne pas de table d'armes. Une arme n'a pas une portée mais autant que de coups, et chaque coup ne frappe qu'une case, celle que son rang lui donne dans sa catégorie. Il porte donc son propre trajet, dessiné sur la [carte de son arme](armes.md) : les cases qu'il traverse avant de frapper, dans l'ordre où il les traverse. Un adversaire qu'aucun coup n'atteint ne peut pas être frappé, et un corps qui se tient sur le trajet l'arrête avant sa cible.
+C'est aussi pourquoi ce chapitre ne donne pas de table d'armes. Une arme n'a pas une portée mais autant que de coups, et chaque coup ne frappe qu'une case, celle que son rang lui donne dans sa catégorie. Il porte donc son propre trajet, dessiné sur la [carte de son arme](armes.md) : les cases qu'il traverse avant de frapper, dans l'ordre où il les traverse. Un adversaire qu'aucun coup n'atteint ne peut pas être frappé, et un corps qui se tient sur le trajet reçoit le coup à sa place, pour la moitié de ses dégâts, ce qui met fin à l'attaque.
 
 </div>
