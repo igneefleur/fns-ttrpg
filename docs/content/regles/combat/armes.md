@@ -7,7 +7,7 @@ Une arme n'est pas une attaque, c'est un répertoire. De l'épée on tire le fen
 Chaque coup porte son empreinte : une carte hexagonale où le personnage occupe le centre et regarde vers le haut.
 
 <div class="gestes-legende">
-  <span><i class="lg-soi"></i>la case du porteur, arête épaisse du côté qu'il regarde</span>
+  <span><i class="lg-soi"></i>la case du porteur, qui regarde toujours vers le haut</span>
   <span><i></i>la case frappée, dégâts pleins</span>
   <span><i class="lg-passe"></i>la case traversée, moitié des dégâts</span>
   <span><i class="lg-quittee"></i>la case quittée, quand le coup exige un pas</span>
@@ -21,7 +21,7 @@ Chaque coup porte son empreinte : une carte hexagonale où le personnage occupe 
 
 **Le nom :** le nom français du coup, suivi du terme technique de sa source quand il en porte un. Un coup sans mention est déduit de la forme de l'arme, faute de traité.
 
-**Le trajet :** un coup ne se pose pas sur une zone, il parcourt l'espace case après case. La carte le montre, la case du porteur au centre cernée d'orange, son arête épaisse du côté qu'il regarde, et chaque case porte son rang : l'ordre où l'arme la traverse. Chaque case vaut un [pas](portees.md). La case du porteur n'est pas bouchée par un jeton, parce qu'elle se frappe aussi : un coup au contact s'y porte.
+**Le trajet :** un coup ne se pose pas sur une zone, il parcourt l'espace case après case. La carte le montre, la case du porteur au centre cernée d'orange — il y regarde toujours vers le haut — et chaque case porte son rang : l'ordre où l'arme la traverse. Chaque case vaut un [pas](portees.md). La case du porteur n'est pas bouchée par un jeton, parce qu'elle se frappe aussi : un coup au contact s'y porte.
 
 **Les cases vertes** sont visées : dégâts pleins, et le coup poursuit sa course. **Les cases en demi-vert** sont traversées : l'arme y passe à hauteur de corps, celui qui s'y tient prend **la moitié des dégâts**, et le coup **s'arrête là**. Tout le reste du trajet est annulé. La teinte dit la règle : moitié de vert, moitié de dégâts.
 
