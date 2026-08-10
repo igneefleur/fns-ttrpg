@@ -128,43 +128,42 @@
 }
 
 /* ── La garde ──
-   Le carré des neuf, départ cerclé et arrivée pleine. Il tient sur la ligne des
-   chiffres : un coup s'enchaîne sur le précédent si sa garde de départ est celle
-   où le précédent a fini, et cela doit se lire d'un regard. */
+   Le carré des positions de mains, SANS AUCUN CHIFFRE : un numéro de case ne dit
+   rien à qui lit, le dessin dit tout. Cercle vide au départ, disque plein à
+   l'arrivée, flèche entre les deux — et c'est la pointe de la flèche qui porte le
+   sens, puisqu'il n'y a plus de texte pour le donner. D'où une taille plus
+   généreuse que celle d'une simple vignette : ce carré se lit. */
 .md-typeset .geste-garde {
   display: flex;
-  align-items: center;
   justify-content: center;
-  gap: 0.3rem;
-  margin: 0;
-  font-family: 'Roboto Mono', ui-monospace, monospace;
-  font-size: 0.57rem;
-  letter-spacing: 0.02em;
-  color: var(--ink);
-  opacity: 0.78;
+  margin: 0.05rem 0 0;
 }
 .md-typeset svg.garde-carre {
   flex: none;
-  width: 1.15rem;
-  height: 1.15rem;
+  width: 1.6rem;
+  height: 1.6rem;
 }
 .md-typeset svg.garde-carre .gd-case {
   fill: var(--ink);
-  fill-opacity: 0.07;
+  fill-opacity: 0.08;
 }
 .md-typeset svg.garde-carre .gd-depart {
   fill: var(--paper);
   stroke: var(--green-title);
-  stroke-width: 1.3;
+  stroke-width: 1.4;
 }
 .md-typeset svg.garde-carre .gd-arrivee {
   fill: var(--green-title);
 }
 .md-typeset svg.garde-carre .gd-fleche {
   stroke: var(--green-title);
-  stroke-width: 1.1;
-  stroke-opacity: 0.55;
+  stroke-width: 1.2;
+  stroke-opacity: 0.6;
   fill: none;
+}
+.md-typeset svg.garde-carre .gd-pointe {
+  fill: var(--green-title);
+  fill-opacity: 0.6;
 }
 
 /* Le pas, quand le coup en exige un : c'est un prérequis, il se lit avant la

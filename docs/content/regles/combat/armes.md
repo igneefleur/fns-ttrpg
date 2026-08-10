@@ -27,7 +27,7 @@ Chaque coup porte son empreinte : une carte hexagonale où le personnage occupe 
 
 **Les dégâts :** deux valeurs, la pleine sur la case verte et la moitié sur la blanche. La pleine est toujours paire, si bien que la moitié tombe juste ; on arrondirait à l'inférieur, mais l'occasion ne se présente pas. **Le type peut changer d'une couleur à l'autre**, et c'est de la physique : ce n'est pas la même partie de l'arme qui touche. Le fil tranche (TRA), la pointe perce (PER), une hampe, un manche, un plat ou un pommeau écrasent (CON). Qui prend la hallebarde à deux pas ne prend pas le fer, il prend le bois.
 
-**La garde :** la position des mains du porteur, lue sur un carré de neuf cases qui figure un plan vertical devant lui. Chaque coup part d'une garde et finit dans une autre : le petit carré donne le départ par un cercle vide et l'arrivée par un point plein.
+**La garde :** la position des mains du porteur, lue sur un carré de neuf cases qui figure un plan vertical devant lui. Chaque coup part d'une garde et finit dans une autre : le petit carré donne le départ par un cercle vide, l'arrivée par un disque plein, et le chemin des mains par une flèche.
 
 **Le pas :** certains coups ne se donnent qu'en changeant de case. La carte marque alors en pointillé la case quittée, et le coup se lit depuis la case d'arrivée. Un pas n'est pas la fente : la fente engage le corps sans quitter la case, et elle est déjà comptée dans la [portée](portees.md).
 
@@ -55,21 +55,15 @@ Une case verte n'arrête rien : un balayage qui prend le premier homme continue 
 
 <div class="keep" markdown>
 
-### Les neuf gardes
+### Les gardes
 
-Une garde est la position des mains du porteur. Le livre en distingue neuf, sur un carré qui figure un plan vertical devant lui : trois hauteurs de mains, trois côtés.
+Une garde est la position des mains du porteur. Le livre en distingue neuf, sur un carré qui figure un plan vertical devant lui : trois hauteurs de mains — au-dessus des épaules, entre les épaules et la ceinture, sous la ceinture — et trois côtés — sa gauche, son axe, sa droite.
 
-<div class="sepia-table" markdown>
+Ce carré se lit sur chaque coup, en petit, sous ses dégâts. **Le cercle vide** marque la garde d'où le coup part, **le disque plein** celle où il finit, et la flèche donne le chemin des mains. Il ne porte aucun chiffre : une position de mains ne se retient pas par un numéro.
 
-| Mains | à sa gauche | dans son axe | à sa droite |
-|---|:---:|:---:|:---:|
-| au-dessus des épaules | 1 | 2 | 3 |
-| entre les épaules et la ceinture | 4 | 5 | 6 |
-| sous la ceinture | 7 | 8 | 9 |
+La gauche et la droite sont celles du porteur, comme sur les cartes, et **le porteur est droitier**. Tous les coups descendants du chapitre partent donc de la garde haute du côté de l'arme, au-dessus de l'épaule droite, et les seuls qui partent de la gauche sont les revers, qui viennent bien de là chez un droitier. La hallebarde fait exception d'un bout à l'autre : elle se tient main gauche devant, et ses gardes s'inversent comme ses balayages.
 
-</div>
-
-La gauche et la droite sont celles du porteur, comme sur les cartes. Chaque coup part d'une garde et finit dans une autre, et cela n'est pas une décoration : un coup descendant finit bas, une taille montante finit haut, un estoc à fond finit les mains devant soi. C'est ce que les traités appellent revenir en garde, et ils le disent presque toujours.
+Rien de tout cela n'est une décoration : un coup descendant finit bas, une taille montante finit haut, un estoc à fond finit les mains devant soi. C'est ce que les traités appellent revenir en garde, et ils le disent presque toujours.
 
 Ce que la garde d'arrivée décide, on le verra aux [enchaînements](../base/actions.md) : **un coup ne s'enchaîne sur le précédent que s'il part de la garde où celui-ci a fini.** Un coup qui finit là où aucun autre ne commence est un cul-de-sac : il faut alors un temps pour se replacer.
 

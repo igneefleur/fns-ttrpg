@@ -202,15 +202,29 @@ def _garde_centre(i):
     return 4.0 + 8.0 * col, 4.0 + 8.0 * rang
 
 
+# Les neuf gardes, dites en toutes lettres : le carré ne porte AUCUN chiffre,
+# un numéro de case ne voulant rien dire pour qui lit. Ces libellés ne servent
+# qu'à l'aria-label, pour qui n'a pas l'image.
+_HAUTEUR = {0: "au-dessus des épaules", 1: "à hauteur de poitrine",
+            2: "sous la ceinture"}
+_COTE = {0: "à gauche", 1: "dans l'axe", 2: "à droite"}
+
+
+def _dit_garde(i):
+    return f"mains {_HAUTEUR[(i - 1) // 3]}, {_COTE[(i - 1) % 3]}"
+
+
 def garde_svg(brut):
-    """Le carré des neuf gardes, départ cerclé, arrivée pleine, flèche entre les deux."""
+    """Le carré des gardes : départ cerclé, arrivée pleine, flèche entre les deux."""
     bouts = [b.strip() for b in brut.split(">")]
     if len(bouts) != 2 or not all(b.isdigit() and 1 <= int(b) <= 9 for b in bouts):
         raise ErreurCoup(f"garde illisible « {brut} » : attendu « n>n », de 1 à 9")
     depart, arrivee = int(bouts[0]), int(bouts[1])
 
-    out = [f'<svg class="garde-carre" role="img" '
-           f'aria-label="Garde de départ {depart}, garde d\'arrivée {arrivee}" '
+    dit = (f"Part de la garde {_dit_garde(depart)}, "
+           f"finit {_dit_garde(arrivee)}" if depart != arrivee
+           else f"Part et finit dans la même garde, {_dit_garde(depart)}")
+    out = [f'<svg class="garde-carre" role="img" aria-label="{dit}." '
            f'viewBox="0 0 24 24">']
     for i in range(1, 10):
         cx, cy = _garde_centre(i)
@@ -222,10 +236,19 @@ def garde_svg(brut):
     if depart != arrivee:
         d = math.hypot(bx - ax, by - ay)
         ux, uy = (bx - ax) / d, (by - ay) / d
-        out.append(f'<path class="gd-fleche" d="M {ax + ux * 3.2:.2f} {ay + uy * 3.2:.2f} '
-                   f'L {bx - ux * 3.4:.2f} {by - uy * 3.4:.2f}"/>')
-    out.append(f'<circle class="gd-depart" cx="{ax:.1f}" cy="{ay:.1f}" r="2.5"/>')
-    out.append(f'<circle class="gd-arrivee" cx="{bx:.1f}" cy="{by:.1f}" r="2.5"/>')
+        # La pointe de la flèche porte à elle seule le sens du mouvement : sans
+        # chiffre, c'est elle qu'on lit, le cercle et le point ne font que
+        # confirmer. Elle s'arrête au bord du disque d'arrivée.
+        px, py = bx - ux * 3.6, by - uy * 3.6
+        nx, ny = -uy, ux
+        out.append(f'<path class="gd-fleche" d="M {ax + ux * 3.4:.2f} {ay + uy * 3.4:.2f} '
+                   f'L {px:.2f} {py:.2f}"/>')
+        out.append(
+            f'<path class="gd-pointe" d="M {px:.2f} {py:.2f} '
+            f'L {px - ux * 2.4 + nx * 1.5:.2f} {py - uy * 2.4 + ny * 1.5:.2f} '
+            f'L {px - ux * 2.4 - nx * 1.5:.2f} {py - uy * 2.4 - ny * 1.5:.2f} Z"/>')
+    out.append(f'<circle class="gd-depart" cx="{ax:.1f}" cy="{ay:.1f}" r="2.4"/>')
+    out.append(f'<circle class="gd-arrivee" cx="{bx:.1f}" cy="{by:.1f}" r="2.4"/>')
     out.append("</svg>")
     return "".join(out), depart, arrivee
 
@@ -267,9 +290,8 @@ def _rendu(attrs):
         apres.append(chiffres_html(attrs["degats"], a_du_blanc))
 
     if "garde" in attrs:
-        svg, depart, arrivee = garde_svg(attrs["garde"])
-        apres.append(f'<p class="geste-garde">{svg}'
-                     f'<span>garde {depart}&#8239;&rarr;&#8239;{arrivee}</span></p>')
+        svg, _, _ = garde_svg(attrs["garde"])
+        apres.append(f'<p class="geste-garde">{svg}</p>')
 
     if pas:
         apres.append(f'<p class="geste-pas">exige un {PAS[pas][1]}</p>')
