@@ -40,7 +40,7 @@ Chaque coup porte son empreinte : une carte hexagonale où le personnage occupe 
 
 De leurs sources, et le livre les nomme. Le corps à corps vient du Ringen et de l'abrazare de Fiore ; la dague, de son jeu de rondel ; l'épée, du MS I.33, des Bolonais et du Messer de Leckuchner ; la grande épée, de Liechtenauer ; le marteau d'armes et la grande hache, du Jeu de la Hache ; la lance et la hallebarde, de Fiore et de Meyer. La hache à une main et la masse n'ont pas de traité : leurs coups viennent des sagas, de l'archéologie et de la forme de l'objet.
 
-Sur les quarante-cinq coups du chapitre, quarante sont attestés dans une source. Les cinq autres portent la mention déduit, et il faut la lire comme telle.
+Sur les quarante-quatre coups du chapitre, trente-deux sont attestés dans une source. Les douze autres portent la mention déduit, et il faut la lire comme telle.
 
 Cinq coups ont été retirés en cours d'écriture pour cause de folklore ou de doublon. Le croc de corne de la hache à une main s'est révélé traçable à une pratique moderne plutôt qu'à un texte ancien, et la taille de dague, à une doctrine d'escrime contemporaine : aucun traité de dague n'enseigne la taille, tous s'organisent contre l'estoc.
 
@@ -54,7 +54,7 @@ La compétence d'une arme à une distance donnée est donc le meilleur de ses co
 
 Les traités européens enseignent le duel : aucun ne décrit de coup visant plusieurs adversaires. Un balayage est donc une extrapolation, et le chapitre n'en accorde que deux, aux seules armes dont la longueur de fil la rend crédible.
 
-La taille large de la grande épée couvre trois cases, la taille ronde de l'épée à une main en couvre deux, et le refoulement de hampe de la hallebarde en pousse deux sans vraiment les blesser. Les sept autres catégories n'en ont aucune, et chacune pour sa raison.
+La taille du fer en croix de la hallebarde couvre trois cases, la taille ronde de l'épée à une main en couvre deux. Les huit autres catégories n'en ont aucune, et chacune pour sa raison.
 
 <div class="defs" markdown>
 
@@ -65,6 +65,8 @@ La taille large de la grande épée couvre trois cases, la taille ronde de l'ép
 **Hache :** le tranchant mord et se fiche, c'est le défaut connu de la hache ; et son manche, long de trois quarts de pas, ne barre pas plus large qu'un homme. Ni par le fer ni par le bois elle n'a de surface longue.
 
 **Masse :** elle ne coupe pas, elle transmet : la blessure est le transfert lui-même, et l'élan qui brise le premier homme n'existe plus pour le second.
+
+**Grande épée :** elle a le fil qu'il faudrait, et c'est la source qui la retient. Les gloses donnent la taille en travers à UNE ouverture, et la garde haute qui l'accompagne doit cueillir dans le fort le coup qui vient : la lame s'arrête là, elle ne poursuit pas à travers un corps.
 
 **Grande hache :** le fer reste un tranchant court, et le demi-fût que les maîtres nomment ainsi n'est pas la hampe entière mais son tiers médian, entre les deux mains. Moins large qu'un homme.
 
@@ -213,11 +215,11 @@ Le balayage bas de la hampe a été cherché puis écarté : fauchée, elle est 
 <p class="geste-source">Fiore dei Liberi, Fior di Battaglia, v. 1409, Getty MS Ludwig XV 13, f. 23r, figure des colpi sottani : rendu en français, hors guillemets : les sottani partent du genou et vont jusqu'au milieu du front, par le chemin qu'a fait le fendente, et se donnent du faux tranchant</p>
 </div>
 
-<div class="geste" data-trajet="1:libre>2:libre>3:frappe">
+<div class="geste" data-trajet="1:libre>2:frappe">
 <p class="geste-nom">Estoc à fond<em>stoccata</em></p>
 <p class="geste-chiffres"><b>16</b> PER</p>
 <p class="geste-diff">attaque 6</p>
-<p class="geste-note">Portée 0,70 (main avant d'estoc) + 0,85 (du poing à la pointe) + 0,50 = 2,05 m : le seul coup de la catégorie qui prenne le troisième anneau. Réserve honnête, la même que pour Fiore : dall'Agocchie décrit une spada da lato de 0,90 à 1,00 m, le calcul est fait sur l'épée d'armes de 0,80 m du livre. La pointe parcourt une droite à hauteur de poitrine et traverse les colonnes 1 et 2 ; une seule case frappée, une pointe ne blesse que ce dans quoi elle entre. Une pointe ne peut pas dépasser la taille pleine de la même arme : 16 contre 20. Le prix est le retour, on reste allongé sur la pointe et qui écarte le fer entre sans obstacle.</p>
+<p class="geste-note">Portée 0,70 (main avant d'estoc) + 0,85 (du poing à la pointe) + 0,50 = 2,05 m : la plus longue mesure de la catégorie, et c'est à ce titre qu'il en occupe le dernier anneau. Réserve honnête, la même que pour Fiore : dall'Agocchie décrit une spada da lato de 0,90 à 1,00 m, le calcul est fait sur l'épée d'armes de 0,80 m du livre. La pointe parcourt une droite à hauteur de poitrine et traverse la case 1 ; une seule case frappée, une pointe ne blesse que ce dans quoi elle entre. Une pointe ne peut pas dépasser la taille pleine de la même arme : 16 contre 20. Le prix est le retour, on reste allongé sur la pointe et qui écarte le fer entre sans obstacle.</p>
 <p class="geste-source">Giovanni dall'Agocchie, Dell'Arte di Scrimia Libri Tre, Venise, 1572, libro I, prima giornata, les trois pointes : imbroccata (main haute), stoccata (main basse, donnée par en dessous), punta riversa (du côté gauche)</p>
 </div>
 
@@ -307,35 +309,35 @@ Le balayage bas de la hampe a été cherché puis écarté : fauchée, elle est 
 <p class="arme-prise">Deux mains jointes sur la poignée, épée de 1,20 m hors tout, lame 0,95 m ; à demi-épée, la gauche empoigne la lame ; au coup meurtrier, les deux mains serrent la lame et c'est le pommeau qui frappe.</p>
 <div class="gestes">
 
-<div class="geste" data-trajet="1:libre>2:frappe">
+<div class="geste" data-trajet="1:libre>2:libre>3:frappe">
 <p class="geste-nom">Fendant de colère<em>Zornhaw</em></p>
 <p class="geste-chiffres"><b>26</b> TRA</p>
 <p class="geste-diff">attaque 6</p>
-<p class="geste-note">L'attribution de la glose à Ringeck était fausse : la glose de Ringeck s'arrête au f. 48v du Dresd. C.487, le f. 57r ouvre une glose ANONYME. Le folio n'était pas fantaisiste, son auteur l'était. La case 1d a été retirée : un Oberhau arme derrière l'épaule droite, sa pointe est alors au-dessus de la case du porteur et jamais au-dessus d'une case en avant à droite : et un homme ne bloque pas ce qui lui passe par-dessus la tête. Portée 0,50 (mains jointes) + 0,70 (point de percussion, où le fil mord) + 0,50 = 1,70 m, case 2. Le coup brise tous les Oberhäue en un seul temps : on frappe sur l'épée qui vient, du long tranchant, sans parer. Sur frappe réussie, le porteur choisit d'enchaîner l'estoc de pointe si l'autre est mou, ou de reprendre l'initiative de l'autre côté s'il est dur.</p>
+<p class="geste-note">L'attribution de la glose à Ringeck était fausse : la glose de Ringeck s'arrête au f. 48v du Dresd. C.487, le f. 57r ouvre une glose ANONYME. Le folio n'était pas fantaisiste, son auteur l'était. La case 1d a été retirée : un Oberhau arme derrière l'épaule droite, sa pointe est alors au-dessus de la case du porteur et jamais au-dessus d'une case en avant à droite : et un homme ne bloque pas ce qui lui passe par-dessus la tête. Portée 0,50 (mains jointes) + 0,70 (point de percussion, où le fil mord) + 0,50 = 1,70 m, la mesure des trois tailles de la catégorie, qui en occupent donc ensemble le dernier anneau. Le coup brise tous les Oberhäue en un seul temps : on frappe sur l'épée qui vient, du long tranchant, sans parer. Sur frappe réussie, le porteur choisit d'enchaîner l'estoc de pointe si l'autre est mou, ou de reprendre l'initiative de l'autre côté s'il est dur.</p>
 <p class="geste-source">Johannes Liechtenauer, Zettel, copie de 1452, Rome, Biblioteca dell'Accademia Nazionale dei Lincei e Corsiniana, Cod. 44 A 8, f. 4r : " Der zornhaw / Wer dir öberhäwt / zornhaw ort dem drawt " ; glose anonyme dite fragment de Dresde, MS Dresd. C.487, ff. 57r-59v</p>
 </div>
 
-<div class="geste" data-trajet="1d:libre>2d:frappe">
+<div class="geste" data-trajet="1d:libre>2d:libre>3d:frappe">
 <p class="geste-nom">Taille en travers<em>Zwerchhaw</em></p>
 <p class="geste-chiffres"><b>22</b> TRA</p>
 <p class="geste-diff">attaque 8</p>
-<p class="geste-note">Deux cases frappées d'un seul Zwerch contredisaient la source : les gloses le donnent à UNE ouverture, et la garde haute qui l'accompagne doit cueillir le coup adverse dans le fort : la lame s'arrête, elle ne poursuit pas à travers un corps. Une seule case frappée, hors de la ligne, et c'est ce qui le distingue du fendant de colère sur la grille. La portée a été recalculée sans le paramètre inventé de " projection utile " : 0,50 + 0,70 + 0,50 = 1,70 m, case 2 ; la case 1d est traversée par les bras et la lame avant qu'elle ne morde. Le coup prend ce qui vient du toit : il brise la garde vom Tag et tout ce qui descend, la parade et la frappe étant le même geste. Si la cible frappait d'un coup descendant ce tour-ci, ce coup l'annule.</p>
+<p class="geste-note">Deux cases frappées d'un seul Zwerch contredisaient la source : les gloses le donnent à UNE ouverture, et la garde haute qui l'accompagne doit cueillir le coup adverse dans le fort : la lame s'arrête, elle ne poursuit pas à travers un corps. Une seule case frappée, hors de la ligne, et c'est ce qui le distingue du fendant de colère sur la grille. La portée a été recalculée sans le paramètre inventé de " projection utile " : 0,50 + 0,70 + 0,50 = 1,70 m, comme les deux autres tailles, donc au dernier anneau mais hors de la ligne ; les cases 1d et 2d sont traversées par les bras et la lame avant qu'elle ne morde. Le coup prend ce qui vient du toit : il brise la garde vom Tag et tout ce qui descend, la parade et la frappe étant le même geste. Si la cible frappait d'un coup descendant ce tour-ci, ce coup l'annule.</p>
 <p class="geste-source">Johannes Liechtenauer, Zettel, 1452, Rome, Cod. 44 A 8, f. 4v : " Twer benympt / was vom tag her chümpt " ; glose du Pseudo-Peter von Danzig, Cod. 44 A 8, f. 19r ; MS 3227a, f. 27v</p>
 </div>
 
-<div class="geste" data-trajet="1:libre>2:frappe">
+<div class="geste" data-trajet="1:libre>2:libre>3:frappe">
 <p class="geste-nom">Taille verticale au sommet du crâne<em>Schaitelhaw</em></p>
 <p class="geste-chiffres"><b>28</b> TRA</p>
 <p class="geste-diff">attaque 7</p>
-<p class="geste-note">La portée de 1,95 m tombait exactement sur le seuil de la case 3, et elle l'atteignait en s'accordant la lame entière jusqu'à la pointe alors que le fendant de colère se voyait refuser la pointe dix lignes plus haut. Le modèle est appliqué uniformément : 0,50 + 0,70 + 0,50 = 1,70 m, case 2. La pointe pendante au visage est ce qui reste APRÈS parade, ce n'est pas l'allonge de la taille. Le coup partage donc son trajet avec le fendant de colère, et il le garde : on n'invente pas une case latérale pour faire différent, la différence est ailleurs. Il brise Alber, la garde basse : contre un homme qui laisse tomber sa pointe vers la terre, il tombe par-dessus, hors de portée de son fer, et ignore la protection d'une garde basse. Son contre porte un nom, la Kron ; le contre de la Kron est de trancher dessous, sous les mains.</p>
+<p class="geste-note">Un premier calcul portait ce coup à 1,95 m en s'accordant la lame entière jusqu'à la pointe, alors que le fendant de colère se voyait refuser la pointe dix lignes plus haut. Le modèle est appliqué uniformément : 0,50 + 0,70 + 0,50 = 1,70 m, la mesure des trois tailles, qui partagent le dernier anneau de la catégorie. La pointe pendante au visage est ce qui reste APRÈS parade, ce n'est pas l'allonge de la taille. Le coup partage donc son trajet avec le fendant de colère, et il le garde : on n'invente pas une case latérale pour faire différent, la différence est ailleurs. Il brise Alber, la garde basse : contre un homme qui laisse tomber sa pointe vers la terre, il tombe par-dessus, hors de portée de son fer, et ignore la protection d'une garde basse. Son contre porte un nom, la Kron ; le contre de la Kron est de trancher dessous, sous les mains.</p>
 <p class="geste-source">Johannes Liechtenauer, Zettel, 1452, Rome, Cod. 44 A 8, ff. 4v-5r : " Der scheitlar / dem antlützt ist gevar " ; glose du Pseudo-Peter von Danzig, Cod. 44 A 8, f. 25r ; MS 3227a, f. 30r</p>
 </div>
 
-<div class="geste" data-trajet="1:frappe">
+<div class="geste" data-trajet="1:libre>2:frappe">
 <p class="geste-nom">Estoc à demi-épée<em>Halbschwert / Ansetzen</em></p>
 <p class="geste-chiffres"><b>18</b> PER</p>
 <p class="geste-diff">attaque 6</p>
-<p class="geste-note">L'engagement du corps était laissé en suspens ; il est tranché ici pour la mesure courte, et le motif est dans l'effet même de la glose : on dirige la pointe dans les défauts du harnois, visière, aisselle, aine, creux du genou, ce qui est un travail de liaison et non une entrée à fond. 0,55 (mains sur la lame) + 0,45 (lame au-delà de la main avant) + 0,18 = 1,18 m, case 1, rien à traverser. La main gauche quitte la poignée et l'épée devient une courte lance : elle gagne en précision tout ce qu'elle perd en allonge. La glose énonce que l'épée a deux pointes, la pointe et le pommeau, et qu'on ne pose jamais la pointe ailleurs que sur une ouverture. En jeu : ignore l'armure de plates, dégâts modestes mais qui ne se réduisent pas.</p>
+<p class="geste-note">L'engagement du corps était laissé en suspens ; il est tranché ici pour la mesure courte, et le motif est dans l'effet même de la glose : on dirige la pointe dans les défauts du harnois, visière, aisselle, aine, creux du genou, ce qui est un travail de liaison et non une entrée à fond. 0,55 (mains sur la lame) + 0,45 (lame au-delà de la main avant) + 0,18 = 1,18 m : deuxième mesure de la catégorie derrière les trois tailles, donc deuxième anneau, la case 1 étant traversée par la lame tenue courte. La main gauche quitte la poignée et l'épée devient une courte lance : elle gagne en précision tout ce qu'elle perd en allonge. La glose énonce que l'épée a deux pointes, la pointe et le pommeau, et qu'on ne pose jamais la pointe ailleurs que sur une ouverture. En jeu : ignore l'armure de plates, dégâts modestes mais qui ne se réduisent pas.</p>
 <p class="geste-source">Pseudo-Peter von Danzig, glose de l'épée courte (combat en armure), 1452, Rome, Cod. 44 A 8, ff. 61v-62r : " In aller were / den ort gegen der plöss kere "</p>
 </div>
 
@@ -403,11 +405,11 @@ Le balayage bas de la hampe a été cherché puis écarté : fauchée, elle est 
 <p class="geste-source">Le Jeu de la Hache, XVe s. (Anglo v. 1400 ; Dupuis & Deluz 1460-1485), Paris, BnF ms. fr. 1996, § 4 : " ou luy baillier a tour de bras sur la teste " ; § 22 : " gardez que vostre hache ne passe plus avant que vostre homme "</p>
 </div>
 
-<div class="geste" data-trajet="1:libre>2:frappe">
+<div class="geste" data-trajet="1:libre>2:libre>3:frappe">
 <p class="geste-nom">Estoc de la queue au visage<em>estocq de la queue en coulant</em></p>
 <p class="geste-chiffres"><b>20</b> PER</p>
 <p class="geste-diff">attaque 5</p>
-<p class="geste-note">Les 0,35 m de coulée qui achetaient la case 3 avec cinq centimètres de marge ont été RETIRÉS : le texte dit " en coulant " et ne chiffre rien, et un titre de gloire produit par une variable non sourcée n'est pas un titre. 0,65 + 0,88 + 0,50 = 2,03 m de fil, soit 2,00 m à l'horizontale (visage à 0,40 m au-dessus du centre du torse, valeur unique fixée pour tout le chapitre) : case 2. La pointe suit la ligne droite, la case 1 est traversée et un corps interposé arrête le dard. Le dard du talon cherche le défaut du visage, seul endroit non couvert d'un homme en harnois. Il faut retirer la hache aussitôt : main gauche en bout de hampe, l'arme est un long levier contre son porteur tant qu'elle est tendue.</p>
+<p class="geste-note">Les 0,35 m de coulée qui gonflaient la mesure ont été RETIRÉS : le texte dit " en coulant " et ne chiffre rien, et un chiffre produit par une variable non sourcée ne vaut rien. 0,65 + 0,88 + 0,50 = 2,03 m de fil, soit 2,00 m à l'horizontale (visage à 0,40 m au-dessus du centre du torse, valeur unique fixée pour tout le chapitre) : la plus longue mesure de la catégorie, et le seul coup de la hache d'armes à tenir son dernier anneau. La pointe suit la ligne droite, les cases 1 et 2 sont traversées et un corps posé sur l'une d'elles arrête le dard. Le dard du talon cherche le défaut du visage, seul endroit non couvert d'un homme en harnois. Il faut retirer la hache aussitôt : main gauche en bout de hampe, l'arme est un long levier contre son porteur tant qu'elle est tendue.</p>
 <p class="geste-source">Le Jeu de la Hache, XVe s., Paris, BnF ms. fr. 1996, § 4 : " luy baillier destocq de ladicte queue en coulant par la main gauche au visage. ou la ou bon vous samblera " ; repris §§ 6 et 43</p>
 </div>
 
@@ -431,7 +433,7 @@ Le balayage bas de la hampe a été cherché puis écarté : fauchée, elle est 
 <p class="geste-nom">Estoc de la queue au pied<em>estocq de la queue au pie</em></p>
 <p class="geste-chiffres"><b>6</b> PER</p>
 <p class="geste-diff">attaque 4</p>
-<p class="geste-note">0,65 + 0,88 (sans coulée : le § 25 en fait un estoc répété et rapide, non le grand geste du § 4) + 0,50 = 2,03 m de fil, mais le pied est au sol, 1,15 m sous le centre du torse : la chute ramène la portée à 1,67 m, case 2. Le même dard qui atteint le visage à deux cases n'en atteint pas davantage au pied : c'est la géométrie qui le dit, pas le texte. Pointe rasant le sol, la case 1 traversée : un estoc bas ne passe pas sous un homme. Coup de harcèlement : peu de dégâts, mais le pied est le point que le harnois couvre le moins, et le § 34 ne donne qu'une parade : lever le pied et détourner la queue. Le coup coûte donc à l'adversaire son appui et son temps, ce qui ouvre la tête et les mains. À tirer souvent, pas pour tuer.</p>
+<p class="geste-note">0,65 + 0,88 (sans coulée : le § 25 en fait un estoc répété et rapide, non le grand geste du § 4) + 0,50 = 2,03 m de fil, mais le pied est au sol, 1,15 m sous le centre du torse : la chute ramène la portée à 1,67 m, et le dard perd un anneau. Le même dard qui atteint le visage au bout du répertoire tombe donc au rang du tour de bras quand il vise le pied : c'est la géométrie qui le dit, pas le texte. Pointe rasant le sol, la case 1 traversée : un estoc bas ne passe pas sous un homme. Coup de harcèlement : peu de dégâts, mais le pied est le point que le harnois couvre le moins, et le § 34 ne donne qu'une parade : lever le pied et détourner la queue. Le coup coûte donc à l'adversaire son appui et son temps, ce qui ouvre la tête et les mains. À tirer souvent, pas pour tuer.</p>
 <p class="geste-source">Le Jeu de la Hache, XVe s., Paris, BnF ms. fr. 1996, § 43 : " le pouez estocquer au visage de la queue de vostre hache ou au pie quil na dague de couuerte " ; § 25 : " souvent le deuez arguez de ces estocs puis sur le pie puis sur la main et au visage " ; parade au § 34</p>
 </div>
 
@@ -443,7 +445,7 @@ Le balayage bas de la hampe a été cherché puis écarté : fauchée, elle est 
 <p class="arme-prise">Deux mains écartées de 0,60 m sur une hampe de 2,30 m, main arrière à 0,15 m du talon ; le talon est ferré autant que la pointe.</p>
 <div class="gestes">
 
-<div class="geste" data-trajet="1:libre>2:libre>3:frappe">
+<div class="geste" data-trajet="1:libre>2:libre>3:libre>4:frappe">
 <p class="geste-nom">Estoc à fond<em>punta</em></p>
 <p class="geste-chiffres"><b>24</b> PER</p>
 <p class="geste-diff">attaque 6</p>
@@ -489,19 +491,19 @@ Le balayage bas de la hampe a été cherché puis écarté : fauchée, elle est 
 <p class="arme-prise">Deux mains écartées sur une hampe de 2,15 m, la GAUCHE devant à 0,75 m du talon, pied gauche devant : la tenue est inversée, et elle inverse le sens des coups. Le croc mord 0,10 m en arrière de la pointe.</p>
 <div class="gestes">
 
-<div class="geste" data-trajet="1:libre>2:libre>3:frappe">
+<div class="geste" data-trajet="1:libre>2:libre>3:libre>4:frappe">
 <p class="geste-nom">Estoc au visage<em>Stechen gegen seinem gesicht</em></p>
 <p class="geste-chiffres"><b>22</b> PER</p>
 <p class="geste-diff">attaque 6</p>
-<p class="geste-note">Le nom de source " Stich zum Gesicht " était une reconstitution : Meyer ne titre rien ainsi, et son estoc au visage vient toujours après un Riss ou un battement. La formule du folio est rendue à sa place. Portée 0,65 + 1,40 + 0,50 = 2,55 m : la troisième case, et la hallebarde manque la quatrième de dix centimètres : c'est là tout le départ entre elle et la lance. Le battement préalable n'occupe aucune case, il se fait sur la hampe adverse et non sur le terrain. La pointe file ensuite en ligne : 1 et 2 traversées. Le battement est obligatoire, di Grassi l'exige avant tout estoc de hallebarde, parce que crocs et fourchons accrochent la pointe qui part à découvert.</p>
+<p class="geste-note">Le nom de source " Stich zum Gesicht " était une reconstitution : Meyer ne titre rien ainsi, et son estoc au visage vient toujours après un Riss ou un battement. La formule du folio est rendue à sa place. Portée 0,65 + 1,40 + 0,50 = 2,55 m : la plus longue mesure de la catégorie, donc son dernier anneau. La lance la dépasse de quinze centimètres et la grille ne les sépare pas : les deux armes d'hast portent aussi loin l'une que l'autre, et ce qui les distingue est ailleurs, dans le fer. Le battement préalable n'occupe aucune case, il se fait sur la hampe adverse et non sur le terrain. La pointe file ensuite en ligne : 1, 2 et 3 traversées. Le battement est obligatoire, di Grassi l'exige avant tout estoc de hallebarde, parce que crocs et fourchons accrochent la pointe qui part à découvert.</p>
 <p class="geste-source">Joachim Meyer, Gründtliche Beschreibung der Kunst des Fechtens, Strasbourg, 1570, livre III, " Etliche brüch auff die Leger ", f. 38r : " stich im als dann erst volkomen vom riß ab, gegen seinem gesicht " ; Giacomo di Grassi, His True Arte of Defence, Londres, 1594, p. 119-120 : " he must alwaies proue and trie (before he be determined to deliuer a thrust) to beat off the enimies weapon, which being done, presently deliuer a forcible thrust "</p>
 </div>
 
-<div class="geste" data-trajet="1g:libre>2g:libre>3g:frappe>1:libre>2:libre>3:frappe>1d:libre>2d:libre>3d:frappe">
+<div class="geste" data-trajet="1g:libre>2g:libre>3g:libre>4g:frappe>1:libre>2:libre>3:libre>4:frappe>1d:libre>2d:libre>3d:libre>4d:frappe">
 <p class="geste-nom">Taille du fer en croix<em>Kreutzhauw von oben</em></p>
 <p class="geste-chiffres"><b>20</b> TRA</p>
 <p class="geste-diff">attaque 8</p>
-<p class="geste-note">Le seul vrai balayage du chapitre, et le seul que la longueur de contact rende physiquement nécessaire : 2,15 m d'arme, bras tendu, fer de large tranchant à hauteur de visage. Il est aussi le plus coûteux : le trajet nomme les neuf cases dans l'ordre réel, chaque case du troisième anneau étant précédée des deux qui l'en séparent, si bien qu'un corps planté n'importe où dans le premier ou le deuxième anneau arrête le fer là où il en est : après avoir frappé ce qu'il avait déjà pris. L'ordre latéral va de g vers d, exception à la règle du droitier : c'est la TENUE main gauche devant qui l'impose, et Meyer fait sortir le fer derrière l'épaule droite. Portée 0,65 + 1,40 + 0,50 = 2,55 m. Coup de zone, donc plus faible qu'un estoc de la même arme ; le porteur finit ouvert à gauche jusqu'à ce qu'il remonte en garde.</p>
+<p class="geste-note">Le seul vrai balayage du chapitre, et le seul que la longueur de contact rende physiquement nécessaire : 2,15 m d'arme, bras tendu, fer de large tranchant à hauteur de visage. Il est aussi, et de loin, le plus coûteux du chapitre : le trajet nomme douze cases dans l'ordre réel, chaque case du dernier anneau étant précédée des trois qui l'en séparent, si bien qu'un corps planté n'importe où en deçà arrête le fer là où il en est : après avoir frappé ce qu'il avait déjà pris. Un tel coup ne se donne qu'en terrain vide, et c'est bien ce que Meyer suppose. L'ordre latéral va de g vers d, exception à la règle du droitier : c'est la TENUE main gauche devant qui l'impose, et Meyer fait sortir le fer derrière l'épaule droite. Portée 0,65 + 1,40 + 0,50 = 2,55 m. Coup de zone, donc plus faible qu'un estoc de la même arme ; le porteur finit ouvert à gauche jusqu'à ce qu'il remonte en garde.</p>
 <p class="geste-source">Joachim Meyer, Gründtliche Beschreibung der Kunst des Fechtens, Strasbourg, 1570, livre III, f. 32r : " führestu dein Lincke hand in der Stangen vor, so komme mit deinem Lincken fuß im zufechten auch vor, unnd Hauwe den ersten mit außgestrecktem Arm von deiner Lincken, von oben gegen seiner Rechten schlims durch sein gesicht, und neben deiner Rechten zu ruck hindersich durch "</p>
 </div>
 
@@ -517,7 +519,7 @@ Le balayage bas de la hampe a été cherché puis écarté : fauchée, elle est 
 <p class="geste-nom">Entrée au talon<em>hinder Ort</em></p>
 <p class="geste-chiffres"><b>14</b> CON</p>
 <p class="geste-diff">attaque 6</p>
-<p class="geste-note">Le coup portait à deux cases ; le texte décrit un corps à corps. On court dedans, on enroule le talon entre ses bras ou autour de son cou, on lui passe la jambe derrière et on le jette : rien de cela ne se fait à 1,40 m. La case frappée descend donc à 1, ce que la portée couvre largement. Le déclencheur a été rétabli à l'endroit : c'est VOTRE hallebarde qu'il a menée trop haut, non la sienne : l'inversion rendait le coup injouable au moment même où Meyer l'emploie. On pèse sur son fer et l'on entre au talon. Di Grassi le frappe dans la poitrine et souhaite le talon garni d'un fer aigu. C'est le seul coup qui reste quand les fers sont liés.</p>
+<p class="geste-note">Le coup portait au bout de la hampe ; le texte décrit un corps à corps. On court dedans, on enroule le talon entre ses bras ou autour de son cou, on lui passe la jambe derrière et on le jette : rien de cela ne se fait au bout des deux mètres. Le talon ne dépasse la main arrière que de peu, et la portée tombe à 1,40 m : la case 2, l'un des deux derniers rangs de la catégorie, et la case 1 est franchie en courant dedans. Le déclencheur a été rétabli à l'endroit : c'est VOTRE hallebarde qu'il a menée trop haut, non la sienne : l'inversion rendait le coup injouable au moment même où Meyer l'emploie. On pèse sur son fer et l'on entre au talon. Di Grassi le frappe dans la poitrine et souhaite le talon garni d'un fer aigu. C'est le seul coup qui reste quand les fers sont liés.</p>
 <p class="geste-source">Joachim Meyer, Gründtliche Beschreibung der Kunst des Fechtens, Strasbourg, 1570, livre III, f. 37r : " Fuhret dir einer… dein Hellepart zu hoch ubersich, so bleibe oder trucke ihm hart auff seine blat, und lauffe im underdes mit dem hindern ort hinein, winde im mit demselbigen oberhalb oder underhalb seiner stangen zwischen die arm, oder umb sein hals, hindertrit ihn zum wurff "</p>
 </div>
 

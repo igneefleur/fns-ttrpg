@@ -35,13 +35,26 @@ Au pas, les mêmes portées se répartissent sur quatre paliers. La mesure a don
 | Case | Ce qui y travaille |
 |:---:|---|
 | 0 | coude, genou, tête, lutte |
-| 1 | poings, pieds, dague |
-| 2 | hache, masse, grande épée, grand marteau |
-| 3 | épée, grande hache, lance, hallebarde |
+| 1 | corps à corps, dague |
+| 2 | épée, hache, masse |
+| 3 | grande épée, grande hache, grand marteau |
+| 4 | lance, hallebarde |
 
 </div>
 
-Le classement surprend, et c'est le calcul qui le veut : l'épée atteint trois pas par son estoc à fond, quand la grande épée n'y parvient pas. La grande arme frappe plus fort et couvre plus large, elle ne porte pas plus loin, parce que ses deux mains jointes sur la poignée ramènent la garde vers le corps que le bras d'un seul étendait.
+### Le palier d'une catégorie
+
+Ce tableau n'est pas un résultat, c'est une règle. Chaque catégorie d'armes tient un palier, et ce palier vaut pour toutes les armes qui y entrent : l'épée porte à deux pas, la grande épée à trois, la lance à quatre, et aucune mesure ne vient les en déloger.
+
+La mesure garde un rôle, mais elle en change. Elle ne dit plus à quelle case un coup se pose ; elle **range les coups d'une même arme les uns par rapport aux autres**, du plus long, qui tient le palier de sa catégorie, au plus court, qui tombe au contact. C'est ainsi que la grande épée frappe à trois pas de ses trois tailles, à deux de son estoc à demi-épée et à un de son coup meurtrier : l'ordre est mesuré, l'échelle est donnée.
+
+<div class="memo" markdown>
+
+Le livre y perd une chose et il faut la dire : deux coups de portée égale, pris dans deux catégories différentes, n'occupent plus la même case. Le fendant de la grande épée et celui de la hache à une main mesurent l'un et l'autre 1,70 m, et le premier frappe désormais à trois pas quand le second frappe à deux.
+
+Le calcul n'était pourtant pas plus juste. Il portait sur une épée à deux mains de 1,20 m, qui est une épée longue et non une grande épée : les Zweihänder du XVI<sup>e</sup> siècle vont de 1,60 à 1,80 m. Le palier les décrit mieux que la mesure ne les décrivait, et le désaccord vient du gabarit retenu, non de la règle.
+
+</div>
 
 ### La case 0
 
@@ -52,6 +65,8 @@ La case 0 est la case du combattant lui-même. Elle ne porte une cible que si qu
 Ses six voisins sont tous à exactement un pas, là où la diagonale d'un carré en vaut 1.41. Cet écart dépasserait les distinctions que ce chapitre établit. L'hexagone fixe aussi à six le nombre d'adversaires qui peuvent en entourer un seul, ce qui est le chiffre réel.
 
 ### Mesurer une portée
+
+La mesure ne décide plus d'une case, elle décide d'un ordre : c'est elle qui dit lequel des coups d'une arme tient son palier et lesquels tombent en deçà. Elle vaut donc encore, et chaque coup du [répertoire](armes.md) porte son calcul.
 
 La portée d'un geste se mesure depuis le torse de son auteur. Elle additionne trois choses : la distance du torse à la main avant, la part de l'arme qui dépasse cette main, et l'engagement du corps dans le coup, le pas ou la fente qui en fait partie.
 
@@ -67,9 +82,9 @@ La portée d'un geste se mesure depuis le torse de son auteur. Elle additionne t
 
 Un homme en garde ne présente pas sa poitrine mais son épaule, et c'est elle qui mène : le point le plus proche de sa case se tient 0.20 m devant l'axe, valeur qui vaut quelle que soit l'orientation qu'on lui prête, puisque la grille n'en privilégie aucune.
 
-<p class="formula">Un coup atteint une cible à N cases si sa portée vaut au moins N × 0.75 m − 0.20 m</p>
+<p class="formula">Une case vaut N × 0.75 m − 0.20 m de portée</p>
 
-Soit 0.55 m à une case, 1.30 m à deux, 2.05 m à trois et 2.80 m à quatre. La main et l'avant-bras avancés vont deux fois plus loin, mais ils ne se comptent pas ici : les frapper est un coup visé, qui relèvera de sa propre règle.
+Soit 0.55 m à une case, 1.30 m à deux, 2.05 m à trois et 2.80 m à quatre. C'est l'échelle sur laquelle les portées se lisent, et le livre l'a suivie à la lettre tant qu'il assignait les cases au calcul. La main et l'avant-bras avancés vont deux fois plus loin, mais ils ne se comptent pas ici : les frapper est un coup visé, qui relèvera de sa propre règle.
 
 <div class="memo" markdown>
 
@@ -85,6 +100,6 @@ Les portées de deux adversaires ne s'additionnent jamais. Pour toucher, il faut
 
 Les seuils sont des arbitrages, non des certitudes. Une épée d'armes court de 81 à 107 cm selon l'exemplaire, une hache de 60 à 90 cm de manche : l'écart au sein d'une même catégorie approche la taille d'une case. Plusieurs gestes tombent donc à quelques centimètres d'une frontière, et le livre a tranché du côté généreux, uniformément.
 
-C'est aussi pourquoi ce chapitre ne donne pas de table d'armes. Une arme n'a pas une portée mais autant que de coups, et chaque coup ne frappe qu'une case, celle que sa mesure lui donne. Il porte donc son propre trajet, dessiné sur la [carte de son arme](armes.md) : les cases qu'il traverse avant de frapper, dans l'ordre où il les traverse. Un adversaire qu'aucun coup n'atteint ne peut pas être frappé, et un corps qui se tient sur le trajet l'arrête avant sa cible.
+C'est aussi pourquoi ce chapitre ne donne pas de table d'armes. Une arme n'a pas une portée mais autant que de coups, et chaque coup ne frappe qu'une case, celle que son rang lui donne dans sa catégorie. Il porte donc son propre trajet, dessiné sur la [carte de son arme](armes.md) : les cases qu'il traverse avant de frapper, dans l'ordre où il les traverse. Un adversaire qu'aucun coup n'atteint ne peut pas être frappé, et un corps qui se tient sur le trajet l'arrête avant sa cible.
 
 </div>

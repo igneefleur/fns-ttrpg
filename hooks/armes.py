@@ -32,7 +32,7 @@ import math
 import re
 
 RAYON_CASE = 10.0   # rayon du cercle circonscrit d'un hexagone, en unités SVG
-PORTEE_MAX = 3      # rayon de la carte, en cases ; plus rien ne porte au-dela
+PORTEE_MAX = 4      # rayon de la carte, en cases : la lance et la hallebarde
 SQ3 = math.sqrt(3.0)
 
 COUP = re.compile(r'(<div class="geste" data-trajet="([^"]*)">)')
