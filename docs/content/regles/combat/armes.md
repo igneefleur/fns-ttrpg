@@ -213,7 +213,7 @@ Le balayage bas de la hampe a été cherché puis écarté : fauchée, elle est 
 <p class="geste-source">Fiore dei Liberi, Fior di Battaglia, v. 1409, Getty MS Ludwig XV 13, f. 23r, figure des colpi sottani : rendu en français, hors guillemets : les sottani partent du genou et vont jusqu'au milieu du front, par le chemin qu'a fait le fendente, et se donnent du faux tranchant</p>
 </div>
 
-<div class="geste" data-trajet="1:libre>2:libre>3:frappe">
+<div class="geste" data-trajet="1:libre>2:frappe">
 <p class="geste-nom">Estoc à fond<em>stoccata</em></p>
 <p class="geste-chiffres"><b>16</b> PER</p>
 <p class="geste-diff">attaque 6</p>
@@ -355,7 +355,7 @@ Le balayage bas de la hampe a été cherché puis écarté : fauchée, elle est 
 <p class="arme-prise">Deux mains sur une hampe estimée à 1,10 m, fer de type M à tranchant de plus de 25 cm ; mains écartées en garde, réunies au talon à l'impact. Aucun manuel : la catégorie ne tient que par la littérature, l'image et l'objet.</p>
 <div class="gestes">
 
-<div class="geste" data-trajet="1:libre>2:libre>3:frappe">
+<div class="geste" data-trajet="1:libre>2:frappe">
 <p class="geste-nom">Fendant à pleine volée</p>
 <p class="geste-chiffres"><b>34</b> TRA</p>
 <p class="geste-diff">attaque 8 · déduit</p>
@@ -443,7 +443,7 @@ Le balayage bas de la hampe a été cherché puis écarté : fauchée, elle est 
 <p class="arme-prise">Deux mains écartées de 0,60 m sur une hampe de 2,30 m, main arrière à 0,15 m du talon ; le talon est ferré autant que la pointe.</p>
 <div class="gestes">
 
-<div class="geste" data-trajet="1:libre>2:libre>3:libre>4:frappe">
+<div class="geste" data-trajet="1:libre>2:libre>3:frappe">
 <p class="geste-nom">Estoc à fond<em>punta</em></p>
 <p class="geste-chiffres"><b>24</b> PER</p>
 <p class="geste-diff">attaque 6</p>
@@ -513,7 +513,7 @@ Le balayage bas de la hampe a été cherché puis écarté : fauchée, elle est 
 <p class="geste-source">Joachim Meyer, Gründtliche Beschreibung der Kunst des Fechtens, Strasbourg, 1570, livre III, f. 38r : " ergreiffe im von der anderen seiten seinen hocken, mit dem deinen, unnd reisse zu dir " ; Risse du croc aux f. 32r et 32v : " Reisse mit deinem hacken gegen seiner Lincken zum gesicht, undersich gegen deiner Lincken durch " ; désarmement au f. 37r : " so numstu im sein Helleparten "</p>
 </div>
 
-<div class="geste" data-trajet="1:frappe">
+<div class="geste" data-trajet="1:libre>2:frappe">
 <p class="geste-nom">Entrée au talon<em>hinder Ort</em></p>
 <p class="geste-chiffres"><b>14</b> CON</p>
 <p class="geste-diff">attaque 6</p>

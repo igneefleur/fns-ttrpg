@@ -19,7 +19,7 @@ NOMMAGE DES CASES, le porteur étant au centre et regardant vers le haut :
     1d, 2d...        la voisine de droite au même anneau
     1g, 2g...        la voisine de gauche
 
-Une case vaut UN PAS, soit environ 0.70 m. Les hexagones sont à SOMMET PLAT :
+Une case vaut UN PAS, soit 0.75 m. Les hexagones sont à SOMMET PLAT :
 c'est la seule orientation qui offre une case droit devant, ce qu'un trajet
 orienté exige.
 
@@ -32,7 +32,7 @@ import math
 import re
 
 RAYON_CASE = 10.0   # rayon du cercle circonscrit d'un hexagone, en unités SVG
-PORTEE_MAX = 4      # rayon de la carte, en cases
+PORTEE_MAX = 3      # rayon de la carte, en cases ; plus rien ne porte au-dela
 SQ3 = math.sqrt(3.0)
 
 COUP = re.compile(r'(<div class="geste" data-trajet="([^"]*)">)')
