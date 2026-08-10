@@ -36,12 +36,12 @@ Au pas, les mêmes portées se répartissent sur quatre paliers. La mesure a don
 |:---:|---|
 | 0 | coude, genou, tête, lutte |
 | 1 | poings, pieds, dague |
-| 2 | épée, hache, masse, et les grandes armes à deux mains |
-| 3 | lance, hallebarde |
+| 2 | hache, masse, grande épée, grand marteau |
+| 3 | épée, grande hache, lance, hallebarde |
 
 </div>
 
-Le palier 2 est chargé, et c'est le prix du pas ordinaire : à 0.70 m, la grande épée et la grande hache s'en détachaient. Six pieds de hampe restent le seul moyen d'atteindre trois pas.
+Le classement surprend, et c'est le calcul qui le veut : l'épée atteint trois pas par son estoc à fond, quand la grande épée n'y parvient pas. La grande arme frappe plus fort et couvre plus large, elle ne porte pas plus loin, parce que ses deux mains jointes sur la poignée ramènent la garde vers le corps que le bras d'un seul étendait.
 
 ### La case 0
 
@@ -65,7 +65,19 @@ La portée d'un geste se mesure depuis le torse de son auteur. Elle additionne t
 
 </div>
 
-Une cible dont le torse se tient à N cases est atteinte si la portée du geste vaut au moins N fois 0.75 m moins 0.15 m, la face avant d'un corps se tenant une quinzaine de centimètres devant son axe.
+Un homme en garde ne présente pas sa poitrine mais son épaule, et c'est elle qui mène : le point le plus proche de sa case se tient 0.20 m devant l'axe, valeur qui vaut quelle que soit l'orientation qu'on lui prête, puisque la grille n'en privilégie aucune.
+
+<p class="formula">Un coup atteint une cible à N cases si sa portée vaut au moins N × 0.75 m − 0.20 m</p>
+
+Soit 0.55 m à une case, 1.30 m à deux, 2.05 m à trois et 2.80 m à quatre. La main et l'avant-bras avancés vont deux fois plus loin, mais ils ne se comptent pas ici : les frapper est un coup visé, qui relèvera de sa propre règle.
+
+<div class="memo" markdown>
+
+Ces 0.20 m ne sont pas la moitié d'un torse. Sur les 4082 hommes mesurés par ANSUR II, l'épaisseur médiane de la poitrine est de 0.25 m, ce qui donnerait 0.13 m ; mais la largeur aux épaules atteint 0.51 m, soit 0.25 m de plein profil. Le tronc se modélise donc par une ellipse, et son rayon avant, moyenné sur toutes les orientations, vaut 0.196 m d'après ANSUR, 0.188 m d'après la table Pheasant, et 0.182 m sur un gabarit sec d'avant l'ère moderne.
+
+Le livre retient 0.20 m, le haut de ce faisceau. Un livre plus sévère écrirait 0.19 m et aurait tout autant raison : la fourchette défendable va de 0.17 à 0.23 m.
+
+</div>
 
 Les portées de deux adversaires ne s'additionnent jamais. Pour toucher, il faut atteindre le corps de l'autre, pas son arme : seule compte la portée de celui qui frappe.
 
