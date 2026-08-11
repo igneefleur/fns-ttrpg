@@ -1,16 +1,275 @@
 {
  "_lisezmoi": "Produit au build par hooks/owd_creation.py depuis docs/content/regles/. Ne pas editer a la main : la prochaine construction l'ecrase.",
  "_absents": [
-  "base/caracteristiques.md",
-  "base/competences.md",
-  "base/techniques.md",
-  "base/capacites-physiques.md",
   "equipement.md"
+ ],
+ "caracs": [
+  {
+   "cle": "Force",
+   "libelle": "Force",
+   "abbr": "FOR",
+   "famille": "maitrise",
+   "ouvre": "les armes de puissance",
+   "donne": [
+    "charge"
+   ]
+  },
+  {
+   "cle": "Dexterite",
+   "libelle": "Dextérité",
+   "abbr": "DEX",
+   "famille": "maitrise",
+   "ouvre": "les armes de finesse",
+   "donne": [
+    "acces"
+   ]
+  },
+  {
+   "cle": "Intelligence",
+   "libelle": "Intelligence",
+   "abbr": "INT",
+   "famille": "maitrise",
+   "ouvre": "les sorts du savoir, ceux des runes et des lignes telluriques",
+   "donne": []
+  },
+  {
+   "cle": "Ferveur",
+   "libelle": "Ferveur",
+   "abbr": "FER",
+   "famille": "maitrise",
+   "ouvre": "les rituels, ceux des bienfaits, des totems et des maléfices",
+   "donne": [
+    "pi"
+   ]
+  },
+  {
+   "cle": "Vigueur",
+   "libelle": "Vigueur",
+   "abbr": "VIG",
+   "famille": "reserve",
+   "donne": [
+    "pv",
+    "pr"
+   ]
+  },
+  {
+   "cle": "Endurance",
+   "libelle": "Endurance",
+   "abbr": "END",
+   "famille": "reserve",
+   "donne": [
+    "pe",
+    "ps",
+    "ph"
+   ]
+  },
+  {
+   "cle": "Resistance",
+   "libelle": "Résistance",
+   "abbr": "RES",
+   "famille": "reserve",
+   "donne": [
+    "expo"
+   ]
+  },
+  {
+   "cle": "Chance",
+   "libelle": "Chance",
+   "abbr": "CHA",
+   "famille": "reserve",
+   "donne": []
+  }
+ ],
+ "moyenneHumaine": 20,
+ "rangs": [
+  {
+   "rang": 0,
+   "nom": "Non initié",
+   "designation": "Rang 0",
+   "des": 1,
+   "bonus": 0,
+   "xp": 0,
+   "rupture": 0,
+   "initiale": "N"
+  },
+  {
+   "rang": 1,
+   "nom": "Initié",
+   "designation": "Rang 1",
+   "des": 2,
+   "bonus": 0,
+   "xp": 25,
+   "rupture": 0,
+   "initiale": "I"
+  },
+  {
+   "rang": 2,
+   "nom": "Apprenti",
+   "designation": "Rang 2",
+   "des": 2,
+   "bonus": 1,
+   "xp": 25,
+   "rupture": 0,
+   "initiale": "A"
+  },
+  {
+   "rang": 3,
+   "nom": "Maître",
+   "designation": "Rang 3",
+   "des": 2,
+   "bonus": 2,
+   "xp": 25,
+   "rupture": 0,
+   "initiale": "M"
+  },
+  {
+   "rang": 4,
+   "nom": "Expert",
+   "designation": "Rang 4",
+   "des": 2,
+   "bonus": 3,
+   "xp": 25,
+   "rupture": 0,
+   "initiale": "E"
+  },
+  {
+   "rang": 5,
+   "nom": "Rupture",
+   "designation": "Rang Max",
+   "des": 3,
+   "bonus": 3,
+   "xp": 50,
+   "rupture": 1,
+   "initiale": "R"
+  }
  ],
  "des": {
   "faces": 6,
   "actionParTour": 5,
-  "compMax": 2
+  "compMax": 2,
+  "techniqueMax": 5
+ },
+ "rupture": {
+  "points": 3
+ },
+ "capacites": [
+  {
+   "cle": "pv",
+   "libelle": "Points de vie",
+   "abbr": "PV",
+   "base": 80,
+   "carac": "Vigueur",
+   "facteur": 1,
+   "formule": "Points de vie = 80 + Vigueur"
+  },
+  {
+   "cle": "pe",
+   "libelle": "Points d'endurance",
+   "abbr": "PE",
+   "base": 80,
+   "carac": "Endurance",
+   "facteur": 1,
+   "formule": "Points d'endurance = 80 + Endurance"
+  },
+  {
+   "cle": "pi",
+   "libelle": "Points d'innocence",
+   "abbr": "PI",
+   "base": 80,
+   "carac": "Ferveur",
+   "facteur": 1,
+   "formule": "Points d'innocence = 80 + Ferveur"
+  },
+  {
+   "cle": "pr",
+   "libelle": "Points de repos",
+   "abbr": "PR",
+   "base": 800,
+   "carac": "Vigueur",
+   "facteur": 8,
+   "formule": "Points de repos = 800 + Vigueur × 8"
+  },
+  {
+   "cle": "ps",
+   "libelle": "Points de satiété",
+   "abbr": "PS",
+   "base": 1600,
+   "carac": "Endurance",
+   "facteur": 16,
+   "formule": "Points de satiété = 1600 + Endurance × 16"
+  },
+  {
+   "cle": "ph",
+   "libelle": "Points d'hydratation",
+   "abbr": "PH",
+   "base": 400,
+   "carac": "Endurance",
+   "facteur": 4,
+   "formule": "Points d'hydratation = 400 + Endurance × 4"
+  },
+  {
+   "cle": "charge",
+   "libelle": "Charge",
+   "abbr": "CHG",
+   "base": 30,
+   "carac": "Force",
+   "facteur": 1,
+   "formule": "Charge = 30 + Force"
+  },
+  {
+   "cle": "acces",
+   "libelle": "Accès rapides",
+   "abbr": "ACC",
+   "base": 0,
+   "carac": "Dexterite",
+   "formule": "Accès rapides = Dextérité ÷ 4, arrondi à l'inférieur",
+   "diviseur": 4,
+   "arrondi": "bas"
+  },
+  {
+   "cle": "contenance",
+   "libelle": "Contenance",
+   "abbr": "CTN",
+   "base": 60,
+   "carac": null,
+   "facteur": 0,
+   "formule": "Contenance = 60"
+  },
+  {
+   "cle": "expo",
+   "libelle": "Exposition",
+   "abbr": "EXP",
+   "base": 100,
+   "carac": "Resistance",
+   "facteur": 1,
+   "formule": "Exposition = de −(100 + Résistance) à +(100 + Résistance)",
+   "signe": true
+  },
+  {
+   "cle": "pm",
+   "libelle": "Points de mana",
+   "abbr": "PM",
+   "base": 0,
+   "carac": null,
+   "facteur": 0,
+   "formule": null
+  }
+ ],
+ "effondrement": {
+  "tranche": 10,
+  "plafond": 10,
+  "peParNiveau": 10,
+  "pvParNiveau": 5,
+  "reserves": [
+   "pr",
+   "ps",
+   "ph",
+   "expo"
+  ]
+ },
+ "climat": {
+  "nuBas": 28,
+  "nuHaut": 32
  },
  "pas": 0.75,
  "armes": [
