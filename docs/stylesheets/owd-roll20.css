@@ -1,0 +1,147 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   FICHE OUTWARD — retouches propres au cadre Roll20
+
+   CE FICHIER N'EST CHARGE QUE PAR roll20-fiche.html, par le manifeste
+   (bundle.css) ou par la liste DEFAUT de l'amorceur gelé. Le site, lui, ne
+   charge que stylesheets/owd-fiche.css. C'est pourquoi ce fichier se permet
+   des regles de PAGE (html, body) : ailleurs, elles seraient une intrusion.
+
+   Ce qu'il fait, et rien d'autre :
+     - il pose la racine a 18 px, la largeur de reference de toute la fiche ;
+     - il donne a la page son fond, faute de quoi la feuille flotterait sur le
+       blanc du navigateur, et le mode nuit s'arreterait au bord de la feuille ;
+     - il resserre ce qui doit l'etre quand la fiche vit dans le dialogue de
+       personnage, large comme un demi-ecran et haut comme rien.
+
+   Ce qu'il ne fait PAS, et il ne faut pas le lui faire faire :
+     - il ne redefinit aucune couleur : elles vivent toutes dans les variables
+       de owd-fiche.css, que html.night rebascule en bloc. Une couleur ecrite
+       ici serait une couleur qui rate le mode nuit ;
+     - il n'habille pas les bandeaux de l'amorce (gel des ecritures, perte,
+       ecran de version). Leurs styles sont injectes PAR L'AMORCE, et c'est
+       voulu : ils doivent pouvoir s'afficher quand cette feuille-ci n'a pas
+       ete chargee — or c'est precisement dans ces moments-la qu'ils ont
+       quelque chose a dire.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ═══ 1. La page ═════════════════════════════════════════════════════════ */
+
+/* 18 px : la racine sur laquelle la fiche entiere est calibree. Tout le reste
+   est en em, si bien que changer ce seul nombre change l'echelle de la fiche
+   sans en deranger la mise en page. Ne pas y toucher a la legere. */
+html {
+  font-size: 18px;
+  /* Le fond de la PAGE, pas celui de la feuille : la fiche ne remplit pas
+     toujours la fenetre (popout large, fiche courte), et le blanc du
+     navigateur trouerait l'ecran en mode nuit. */
+  background: #faf6eb;
+}
+html.night { background: #14110c; }
+
+body {
+  margin: 0;
+  min-height: 100%;
+  background: transparent;
+  /* Roll20 sert la fiche dans une iframe etroite : un debordement horizontal
+     y ajouterait une seconde barre de defilement par-dessus la sienne. La
+     fiche ne deborde jamais en largeur — les tableaux larges defilent dans
+     leur propre conteneur. */
+  overflow-x: hidden;
+}
+
+/* Le noeud de montage et le mot d'attente que l'amorce y ecrit avant que le
+   bundle n'arrive. L'amorce pose ses propres bandeaux ; ici on ne fait que
+   donner de l'air au texte pour qu'il ne colle pas au bord de la frame. */
+#perso-fiche { min-height: 1px; }
+#owd-roll20-note {
+  padding: 1.2rem 1rem;
+  font-family: 'Alegreya', 'EB Garamond', Garamond, serif;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  text-align: center;
+  color: #837c6a;
+}
+html.night #owd-roll20-note { color: #8f8672; }
+
+/* La barre de defilement suit le theme : celle du navigateur, claire par
+   defaut, est le dernier morceau blanc d'une fiche de nuit. */
+html.night { color-scheme: dark; }
+
+/* ═══ 2. La feuille sous Roll20 ══════════════════════════════════════════ */
+/* .owd-compact est posee par le bundle quand window.__owdCompact est vrai.
+   Dans Roll20, la fiche EST le personnage : pas de barre d'outils, pas de
+   bibliotheque, rien a choisir. Les onglets et les blocs, eux, RESTENT — seul
+   le chrome disparait. */
+
+.owd-fiche.owd-compact .owd-sheet {
+  padding: 0.4em 0.45em 1em;
+  /* la feuille prend toute la frame : la centrer laisserait deux bandes de
+     fond perdues la ou chaque pixel de largeur compte */
+  max-width: none;
+}
+
+/* Les onglets restent sous la main pendant qu'on descend dans un bloc long
+   (le repertoire d'une arme, l'equipement) : dans une frame haute de quelques
+   centimetres, remonter pour changer d'onglet est un aller-retour a chaque
+   fois. Le fond est opaque, sinon le contenu defile a travers. */
+.owd-fiche.owd-compact .owd-tabs {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--owd-papier);
+  margin: 0 -0.45em 0.6em;
+  padding: 0.25em 0.45em 0;
+}
+.owd-fiche.owd-compact .owd-tab {
+  padding: 0.25em 0.6em;
+  font-size: 0.78em;
+}
+
+/* Blocs et champs se resserrent : la fiche de jeu montre des nombres, pas des
+   marges. On ne descend pas plus bas — sous cette taille, on ne clique plus
+   juste sur un bouton de jauge en pleine partie. */
+.owd-fiche.owd-compact .owd-block {
+  padding: 0.4em 0.45em 0.5em;
+  margin-bottom: 0.5em;
+}
+.owd-fiche.owd-compact .owd-block-title { margin-bottom: 0.35em; }
+.owd-fiche.owd-compact .owd-cols { gap: 0.5em; }
+
+/* Le portrait mange la hauteur d'une frame courte : il tient sur le tiers de
+   la largeur plutot que sur un carre fixe. */
+.owd-fiche.owd-compact .owd-portrait {
+  width: 5.5em;
+  height: 5.5em;
+}
+
+/* La fenetre popout est aussi haute qu'un ecran : les zones de texte longues y
+   gagnent a ne pas etre plafonnees a leur hauteur de dialogue. */
+@media (min-height: 44em) {
+  .owd-fiche.owd-compact .owd-area { min-height: 4em; }
+}
+
+/* ═══ 3. Le dialogue de personnage, court et etroit ══════════════════════ */
+
+/* Sous une certaine hauteur, une modale centree ne tient plus : elle se colle
+   en haut et defile. Sans cette regle, ses boutons de validation sortaient du
+   cadre et le joueur ne pouvait plus ni valider ni annuler. */
+@media (max-height: 34em) {
+  .owd-fiche .owd-modal-over { align-items: flex-start; padding: 0.5em; }
+  .owd-fiche .owd-modal { max-height: 96vh; }
+}
+
+/* Le message furtif se pose au-dessus du bord bas de la frame, jamais dessous :
+   dans une iframe courte, un toast a 1.2em du bas passe sous la ligne de
+   flottaison et personne ne le voit. Il vit sur <body>, hors de la feuille —
+   c'est donc la HAUTEUR de la fenetre qui le commande, et surtout pas un
+   selecteur de voisinage avec .owd-compact, qui ne l'atteindrait jamais. */
+@media (max-height: 34em) {
+  .owd-flash { bottom: 0.6em; }
+}
+
+/* ═══ 4. Ce qui n'a pas lieu d'etre dans Roll20 ══════════════════════════ */
+/* La fiche n'a ni barre d'outils ni bibliotheque : le bundle ne les construit
+   simplement pas quand COMPACT est vrai. Il n'y a donc rien a masquer ici, et
+   c'est mieux ainsi — un display:none laisserait croire que le code existe et
+   qu'on pourrait le rallumer. Ce commentaire est la pour que personne n'aille
+   en chercher un. */

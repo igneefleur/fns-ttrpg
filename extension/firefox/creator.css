@@ -1,0 +1,26 @@
+/* Coquille des deux pages d'extension : l'onglet « Fiche Outward »
+   (roll20-fiche.html) et le panneau flottant (roll20-camp.html), tous deux
+   SERVIS PAR LE SITE. L'iframe distante remplit toute la page ; l'apparence de
+   ce qu'elle contient vit côté site, et rien de ce fichier ne la touche.
+   Le fond reprend le plan de travail du site pour éviter un flash blanc pendant
+   le chargement réseau. */
+html, body { margin: 0; padding: 0; width: 100%; height: 100%; }
+/* #e4ddcd : le --bg-side du site Outward, de jour (docs/stylesheets/extra.css).
+   C'est le fond visible pendant TOUT le chargement réseau de la page distante ;
+   sans lui, blanc navigateur, donc un éclair à chaque ouverture. */
+body { background: #e4ddcd; }
+/* La nuit, le plan de travail du site n'est plus le même : shell-loader.js pose
+   la classe d'après le n=1/0 du hash, avant même de choisir la coquille. Sans
+   cette règle, une fiche ou un panneau sombre s'ouvrait sur un fond crème le
+   temps du chargement réseau, ce qui se voit d'autant plus que la partie
+   autour est sombre. color-scheme fait suivre ce que le navigateur peint
+   lui-même : le canevas avant le premier rendu, et les barres de défilement.
+   #14110c est le --bg-side de nuit du site (docs/stylesheets/night.css). */
+html.night { color-scheme: dark; }
+html.night body { background: #14110c; }
+/* display: block supprime l'espace de ligne de base sous une iframe (élément
+   remplacé en ligne par défaut), qui laisserait quelques pixels de fond en bas ;
+   border: 0 retire le cadre 3D par défaut. Et les deux 100 % ne valent que
+   parce que html et body ont une hauteur réelle, ci-dessus : sans elle, une
+   iframe en height: 100 % se résout à auto et s'effondre à 150 px de haut. */
+#owd-remote { display: block; border: 0; width: 100%; height: 100%; }

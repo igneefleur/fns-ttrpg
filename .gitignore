@@ -3,8 +3,9 @@ __pycache__/
 *.pyc
 
 # Site construit : artefact régénéré par `mkdocs build`, inutile à versionner. La CI le
-# reconstruit et le publie sur la branche gh-pages. On le garde sur le disque, car
-# scripts/build_extension.py lit site/creation.json après un build.
+# reconstruit et le publie sur la branche gh-pages. La chaîne d'extension n'y touche
+# pas : scripts/build_extension.py packe extension/ et écrit dans docs/download/, qui
+# est VERSIONNÉ — c'est le site qui sert les paquets, et le .xpi signé s'y committe.
 site/
 
 # Brouillons et rendus de debug (worldgen, dumps de mise en page)

@@ -3,7 +3,17 @@ on:
   push:
     branches:
       - owd-beta
-  workflow_dispatch: {}   # relance manuelle
+  # Relance manuelle, avec une case à cocher et une seule : elle commande la
+  # SIGNATURE de l'extension chez Mozilla. Un push ordinaire ne la voit jamais
+  # (inputs.signer est alors vide), toutes les étapes qui en dépendent se
+  # sautent, et le déploiement se comporte exactement comme avant qu'elle
+  # existe.
+  workflow_dispatch:
+    inputs:
+      signer:
+        description: "Signer l'extension Outward chez Mozilla (consomme le quota AMO)"
+        type: boolean
+        default: false
 permissions:
   contents: write
 # Les branches du dépôt écrivent toutes sur la même branche gh-pages, chacune dans
@@ -33,13 +43,101 @@ jobs:
 
       # Pas de WeasyPrint ici : le PDF est désactivé tant qu'il n'y a pas de livre
       # (voir l'en-tête de mkdocs.ci.yml, qui dit quoi rétablir le jour venu).
+      #
+      # « requests » ne sert QU'À scripts/sign_extension.py ; tous les autres
+      # scripts tiennent avec la bibliothèque standard, exprès. Il s'installe
+      # quand même à tous les coups : deux secondes contre une étape
+      # conditionnelle de plus, c'est-à-dire un chemin qu'on n'emprunterait
+      # presque jamais et dont on ne saurait donc pas qu'il est en panne.
       - name: Dépendances Python
-        run: pip install mkdocs-material
+        run: pip install mkdocs-material requests
+
+      # LES DEUX MOITIÉS DE L'EXTENSION, À CHAQUE PUSH. stable/ et beta/ sont
+      # écrites à la main : ce contrôle exige qu'elles ne diffèrent que par les
+      # lignes marquées « propre à cette copie », que chaque ligne marquée nomme
+      # bien SA partie et son propre site, et que rien de ce que les manifestes
+      # déclarent ne manque. Il n'écrit RIEN (--verifie) : la CI ne répare pas
+      # en silence ce qui n'a pas été fait. Il tourne ici, et pas seulement
+      # avant une signature, parce qu'une dérive posée aujourd'hui se paie le
+      # jour où l'on signe — et ce jour-là on veut signer, pas déboguer.
+      #
+      # Tant qu'il n'y a AUCUNE extension (ni manifeste, ni fichier sous
+      # extension/firefox/), l'étape le dit et laisse passer : « rien » est un
+      # état, « à moitié » est une faute. Voir build_extension.paquet_absent().
+      - name: Extension Outward — les deux moitiés
+        run: python scripts/build_extension.py --verifie
 
       - name: Build
         env:
           NO_MKDOCS_2_WARNING: "1"   # coupe l'encadré promo « MkDocs 2.0 » de Material dans les logs
         run: mkdocs build --config-file mkdocs.ci.yml
+
+      # BRANCHE BETA : LA SIGNATURE MOZILLA NE PART JAMAIS TOUTE SEULE. Un push
+      # ne fait que déployer le site beta ; l'extension ne se signe que sur
+      # relance manuelle du workflow, case « signer » cochée. Chaque soumission
+      # mord sur le quota AMO du compte, qui se compte à la dizaine par jour et
+      # qui est PARTAGÉ avec l'extension de la branche sœur : signer ici mange
+      # le quota dont elle peut avoir besoin le même jour.
+      #
+      # Le script ne signe de toute façon que si l'empreinte du paquet a changé
+      # (docs/download/ext-signed.json) : cocher la case sur une coquille
+      # inchangée ne coûte rien.
+      - name: Extension Outward (signature manuelle seulement)
+        if: ${{ inputs.signer }}
+        env:
+          AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
+          AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
+        run: python scripts/ci_extension.py
+
+      # LE SECOND BUILD NE SERT QU'À LA SIGNATURE. Le seul pas qui touche à
+      # docs/ entre les deux est celui du dessus : il réécrit docs/download/
+      # (le .xpi signé, updates.json, l'empreinte), et sans ce rebuild le site
+      # partirait avec les téléchargements d'avant. MÊME configuration que le
+      # premier build, sans quoi les deux ne produiraient pas le même site.
+      # Conditionné, parce qu'une étape qui ne peut rien changer finit par être
+      # crue là où elle compte.
+      - name: Rebuild (téléchargements à jour)
+        if: ${{ inputs.signer }}
+        env:
+          NO_MKDOCS_2_WARNING: "1"
+        run: mkdocs build --config-file mkdocs.ci.yml
+
+      # La re-signature modifie les deux manifests, parties.js, les paquets,
+      # updates.json et l'empreinte : on les recommitte sur la branche, sans
+      # quoi le prochain run croirait l'extension modifiée et re-signerait.
+      # « [skip ci] » évite de relancer un run ; on nomme les fichiers UN PAR UN
+      # (jamais « git add -A ») parce que d'autres sessions travaillent dans les
+      # mêmes worktrees et que leurs modifications non committées partiraient
+      # avec. Le diff se lit sur l'INDEX, puisqu'on vient d'y ajouter des
+      # chemins nommés.
+      #
+      # CHAQUE CHEMIN EST TESTÉ AVANT D'ÊTRE INDEXÉ, et ce n'est pas de la
+      # prudence gratuite : « git add » sur un chemin absent échoue (« pathspec
+      # did not match any files ») et fait tomber l'étape ENTIÈRE, donc le job,
+      # donc le déploiement du site. Or les deux paquets n'existent pas tant que
+      # rien n'a jamais été signé — c'est exactement l'état d'un premier run où
+      # la coquille n'aurait pas bougé.
+      - name: Republier l'extension re-signée sur la branche
+        if: ${{ inputs.signer }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for f in docs/download/owd-roll20-firefox.xpi \
+                   docs/download/owd-roll20-chrome.zip \
+                   docs/download/updates.json \
+                   docs/download/ext-signed.json \
+                   extension/firefox/manifest.json \
+                   extension/chrome/manifest.json \
+                   extension/firefox/parties.js; do
+            if [ -f "$f" ]; then git add "$f"; fi
+          done
+          if ! git diff --cached --quiet; then
+            git commit -m "CI : extension Outward re-signée automatiquement [skip ci]"
+            # si la branche a avancé pendant le run : rebaser en préférant NOS
+            # artefacts (les binaires fraîchement signés), sinon le rebase
+            # échoue sur les paquets et la version signée reste orpheline
+            git push || (git pull --rebase -X theirs && git push)
+          fi
 
       # Un seul site GitHub Pages (branche gh-pages), SEPT emplacements :
       #   main     -> racine     https://igneefleur.github.io/fns-ttrpg/          (le hub)
@@ -61,4 +159,33 @@ jobs:
           branch: gh-pages
           target-folder: owd-beta
           clean: true
+          force: false
+
+      # L'EXTENSION EST UNIQUE : ELLE SE PUBLIE AUX DEUX ADRESSES. Le paquet
+      # signé porte les DEUX moitiés, stable et beta, et c'est la case du popup
+      # qui choisit laquelle s'exécute — il n'existe pas de « version beta de
+      # l'extension », il n'y en a qu'une, et la plus récente est la bonne pour
+      # tout le monde. Or update_url pointe sur /owd/download/updates.json :
+      # sans cette recopie, une signature faite ici n'atteindrait le site des
+      # joueurs qu'après une fusion et un déploiement stable, et les mises à
+      # jour automatiques attendraient d'autant.
+      #
+      # MAIS SEULEMENT QUAND CE RUN A VRAIMENT SIGNÉ. Sans la condition, un push
+      # ordinaire sur la beta recopierait le download/ de CETTE branche par-dessus
+      # celui du site des joueurs, qui ne porte pas forcément le même paquet :
+      # /owd/download/ reculerait, update_url annoncerait une version inférieure
+      # à celle installée, plus aucune mise à jour ne partirait — et pas un seul
+      # run n'échouerait. Ce qui se propage ici, c'est une SIGNATURE, jamais un
+      # déploiement.
+      #
+      # clean: false — on ajoute dans owd/download/ sans toucher au reste du
+      # site stable, que cette branche n'a pas à réécrire.
+      - name: L'extension signée va aussi sur owd (download/ seul)
+        if: ${{ inputs.signer }}
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: site/download
+          branch: gh-pages
+          target-folder: owd/download
+          clean: false
           force: false

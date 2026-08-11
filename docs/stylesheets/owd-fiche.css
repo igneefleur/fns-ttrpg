@@ -1,0 +1,1079 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   FICHE DE PERSONNAGE OUTWARD — la feuille du bundle (docs/javascripts/owd-fiche.js)
+
+   Elle habille la MEME fiche a deux endroits : sur le site, dans une page de
+   creation, et dans Roll20, sous roll20-fiche.html. Les retouches propres au
+   cadre Roll20 (fenetre etroite, pas de chrome autour) vivent dans
+   stylesheets/owd-roll20.css, chargee apres celle-ci.
+
+   TROIS REGLES QUI COMMANDENT TOUT LE RESTE :
+
+   1. LARGEUR DE REFERENCE : le demi-ecran, ~940 px, racine 18 px. La feuille
+      prend sa largeur native, plafonnee a max-width: 100 %, et les trois
+      colonnes se tiennent de 36em a 44em. Pas de bascule a 60em : c'est a
+      cette largeur-la que tout se juge, et une bascule haute rendrait la
+      fiche a une colonne dans le dialogue de personnage de Roll20, ou elle
+      passe sa vie.
+
+   2. TOUTES LES COULEURS PASSENT PAR LES VARIABLES posees sur .owd-fiche.
+      html.night les rebascule EN BLOC, une seule fois : aucune couleur ne
+      doit etre ecrite en dur dans une regle de composant, sans quoi le mode
+      nuit se rate a un endroit et un seul, celui qu'on ne regarde jamais. Une
+      partie Roll20 se joue souvent en sombre : les deux themes sont dessines,
+      pas filtres.
+      La classe .night est posee sur <html> par le bloc en ligne de
+      roll20-fiche.html (n=1/0 du hash, puis owd-r20-night, puis le theme du
+      navigateur) et par night.js sur le site. La feuille ne fait que s'y
+      accrocher — elle ne decide rien.
+
+   3. LA FICHE NE PORTE AUCUNE REGLE, et le style ne doit pas en fabriquer :
+      pas de tableau de reference deguise en grille, pas de bareme en pied de
+      bloc. Ce qui s'affiche est l'etat du personnage.
+
+   Esprit du site Outward : parchemin, serif pour la prose (Alegreya, avec EB
+   Garamond en repli), Cinzel pour les titres, vert sombre en accent. Les
+   polices sont auto-hebergees par stylesheets/fonts.css, seul <link> de la
+   page gelee : si elle manque, les replis systeme prennent le relais et rien
+   ne casse.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ═══ 1. Variables ═══════════════════════════════════════════════════════ */
+
+.owd-fiche {
+  /* papier et encre */
+  --owd-papier:   #faf6eb;   /* la feuille */
+  --owd-papier-2: #f2ecdd;   /* un bloc pose dessus */
+  --owd-papier-3: #e8e0cb;   /* un pave teinte, une ligne paire */
+  --owd-encre:    #1d1d1d;
+  --owd-encre-2:  #4d4a42;   /* prose secondaire */
+  --owd-encre-3:  #837c6a;   /* libelles, unites, ce qui ne se lit pas */
+
+  /* verts du livre */
+  --owd-vert:        #63755e;
+  --owd-vert-clair:  #82997b;
+  --owd-vert-sombre: #46543b;
+  --owd-vert-pale:   #d6e2d0;
+
+  /* signaux : ils ne servent QU'A signaler, jamais a decorer */
+  --owd-or:      #a9862f;
+  --owd-rouille: #b0402c;
+  --owd-froid:   #4a6f96;
+  --owd-chaud:   #b5702c;
+
+  --owd-ligne:   #cfc7b1;
+  --owd-ligne-2: #e3dcc8;
+  --owd-ombre:   rgba(40, 34, 20, .14);
+  --owd-focus:   rgba(99, 117, 94, .40);
+
+  --owd-serif: 'Alegreya', 'EB Garamond', Garamond, 'Times New Roman', serif;
+  --owd-titre: 'Cinzel', 'Alegreya', Garamond, serif;
+  --owd-mono:  'Roboto Mono', 'Consolas', monospace;
+
+  --owd-r: 3px;              /* le rayon des coins, partout le meme */
+}
+
+/* Le mode nuit est DESSINE : on rebascule les variables en bloc, et les
+   composants suivent sans une regle de plus. Les rares endroits ou la nuit
+   demande autre chose qu'une couleur (une ombre qui devient un liseré) sont
+   nommes en §10, et il n'y en a qu'une poignee. */
+html.night .owd-fiche {
+  --owd-papier:   #201c15;
+  --owd-papier-2: #262119;
+  --owd-papier-3: #2e2820;
+  --owd-encre:    #e8dfcb;
+  --owd-encre-2:  #b7ad97;
+  --owd-encre-3:  #8f8672;
+
+  --owd-vert:        #9fb37e;
+  --owd-vert-clair:  #adc08c;
+  --owd-vert-sombre: #6f8663;
+  --owd-vert-pale:   #33402c;
+
+  --owd-or:      #c9a24e;
+  --owd-rouille: #cf8368;
+  --owd-froid:   #7fa6cd;
+  --owd-chaud:   #d59a56;
+
+  --owd-ligne:   #3c3527;
+  --owd-ligne-2: #2e2920;
+  --owd-ombre:   rgba(0, 0, 0, .45);
+  --owd-focus:   rgba(159, 179, 126, .40);
+}
+
+/* ═══ 2. La feuille ══════════════════════════════════════════════════════ */
+
+.owd-fiche {
+  font-family: var(--owd-serif);
+  font-size: 1rem;               /* racine 18 px sous Roll20 : tout est en em */
+  line-height: 1.35;
+  color: var(--owd-encre);
+  font-variant-numeric: lining-nums;  /* Alegreya a des chiffres elzeviriens */
+  -webkit-text-size-adjust: 100%;
+}
+.owd-fiche *,
+.owd-fiche *::before,
+.owd-fiche *::after { box-sizing: border-box; }
+
+.owd-sheet {
+  max-width: 100%;               /* la feuille ne deborde jamais de son cadre */
+  margin: 0 auto;
+  padding: 0.6em 0.7em 1.4em;
+  background: var(--owd-papier);
+  color: var(--owd-encre);
+}
+
+/* ═══ 3. Onglets et colonnes ═════════════════════════════════════════════ */
+
+.owd-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15em;
+  border-bottom: 2px solid var(--owd-vert);
+  margin-bottom: 0.7em;
+}
+.owd-tab {
+  padding: 0.3em 0.9em;
+  font-family: var(--owd-titre);
+  font-size: 0.85em;
+  letter-spacing: 0.02em;
+  color: var(--owd-encre-2);
+  background: var(--owd-papier-2);
+  border: 1px solid var(--owd-ligne);
+  border-bottom: none;
+  border-radius: var(--owd-r) var(--owd-r) 0 0;
+  cursor: pointer;
+  user-select: none;
+}
+.owd-tab:hover { color: var(--owd-vert); }
+.owd-tab.on {
+  color: var(--owd-papier);
+  background: var(--owd-vert);
+  border-color: var(--owd-vert);
+}
+
+.owd-pane { display: none; }
+.owd-pane.on { display: block; }
+
+/* Trois colonnes, tenues de 36em a 44em. Le repli a une colonne n'arrive que
+   sous 34em : en dessous, deux colonnes cassent les nombres en deux lignes. */
+.owd-cols {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.7em;
+  align-items: start;
+}
+.owd-col { min-width: 0; }
+.owd-seule, .owd-bas { min-width: 0; }
+.owd-seule:not(:empty) { margin-bottom: 0.7em; }
+.owd-bas:not(:empty) { margin-top: 0.7em; }
+
+@media (max-width: 46em) {
+  .owd-cols { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 34em) {
+  .owd-cols { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ═══ 4. Blocs ═══════════════════════════════════════════════════════════ */
+
+.owd-block {
+  background: var(--owd-papier-2);
+  border: 1px solid var(--owd-ligne);
+  border-left: 3px solid var(--owd-vert);
+  border-radius: var(--owd-r);
+  padding: 0.5em 0.6em 0.65em;
+  margin-bottom: 0.7em;
+  break-inside: avoid;
+}
+.owd-block-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5em;
+  font-family: var(--owd-titre);
+  font-size: 0.82em;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--owd-vert);
+  border-bottom: 1px solid var(--owd-ligne-2);
+  padding-bottom: 0.25em;
+  margin-bottom: 0.45em;
+}
+.owd-block-title small {
+  font-family: var(--owd-serif);
+  font-size: 0.85em;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--owd-encre-3);
+}
+/* Un bloc qui alerte se cerne, il ne se colore pas : la couleur de fond ferait
+   crier tout le bloc quand seule une valeur est en cause. */
+.owd-block.owd-alerte { border-left-color: var(--owd-rouille); }
+
+/* ═══ 5. Champs et commandes ═════════════════════════════════════════════ */
+
+.owd-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35em;
+}
+.owd-grid2, .owd-grid3, .owd-grid4 {
+  display: grid;
+  gap: 0.35em;
+  align-items: end;
+}
+.owd-grid2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.owd-grid3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.owd-grid4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 34em) {
+  .owd-grid3, .owd-grid4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.owd-f {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1em;
+  min-width: 0;
+  margin: 0.15em 0;
+}
+.owd-f > label {
+  font-size: 0.7em;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--owd-encre-3);
+}
+.owd-f.grand { flex: 1 1 12em; }
+.owd-f-mini { flex: 0 0 auto; }
+.owd-f-mini input { width: 4.5em; }
+
+.owd-fiche input[type="text"],
+.owd-fiche input[type="search"],
+.owd-fiche input[type="number"],
+.owd-fiche textarea,
+.owd-fiche select {
+  font-family: inherit;
+  font-size: 0.82em;
+  color: var(--owd-encre);
+  background: var(--owd-papier);
+  border: 1px solid var(--owd-ligne);
+  border-radius: var(--owd-r);
+  padding: 0.2em 0.35em;
+  min-width: 0;
+  width: 100%;
+}
+.owd-fiche textarea { resize: vertical; line-height: 1.3; }
+.owd-fiche input:focus,
+.owd-fiche textarea:focus,
+.owd-fiche select:focus {
+  outline: none;
+  border-color: var(--owd-vert);
+  box-shadow: 0 0 0 2px var(--owd-focus);
+}
+.owd-fiche input[type="number"] {
+  width: 4.5em;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.owd-fiche input::placeholder,
+.owd-fiche textarea::placeholder { color: var(--owd-encre-3); opacity: 0.75; }
+
+/* .owd-num et .owd-select doublent les selecteurs de type ci-dessus. Elles ne
+   sont pas decoratives : un champ nombre ou un menu pose ailleurs qu'ici (dans
+   une modale, dans une ligne de commande de jauge) doit s'habiller pareil sans
+   dependre de son type, que le navigateur peut rendre autrement. */
+.owd-fiche .owd-num { text-align: right; font-variant-numeric: tabular-nums; }
+.owd-fiche .owd-select { width: auto; max-width: 100%; }
+
+.owd-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  font-size: 0.78em;
+  color: var(--owd-encre-2);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.owd-check input { accent-color: var(--owd-vert); }
+
+.owd-mini {
+  font-family: var(--owd-serif);
+  font-size: 0.78em;
+  line-height: 1.2;
+  padding: 0.25em 0.6em;
+  color: var(--owd-encre-2);
+  background: var(--owd-papier);
+  border: 1px solid var(--owd-ligne);
+  border-radius: var(--owd-r);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.owd-mini:hover:not(:disabled) {
+  color: var(--owd-vert);
+  border-color: var(--owd-vert-clair);
+}
+.owd-mini:disabled { opacity: 0.45; cursor: default; }
+.owd-mini.primary {
+  color: var(--owd-papier);
+  background: var(--owd-vert);
+  border-color: var(--owd-vert);
+}
+.owd-mini.primary:hover:not(:disabled) { background: var(--owd-vert-sombre); color: var(--owd-papier); }
+.owd-mini.danger { color: var(--owd-rouille); border-color: var(--owd-rouille); }
+.owd-mini.danger:hover:not(:disabled) { color: var(--owd-papier); background: var(--owd-rouille); }
+.owd-mini.on { color: var(--owd-papier); background: var(--owd-vert-sombre); border-color: var(--owd-vert-sombre); }
+
+.owd-actions {
+  gap: 0.3em;
+  margin-top: 0.4em;
+}
+.owd-note {
+  font-size: 0.78em;
+  color: var(--owd-encre-3);
+  margin-top: 0.3em;
+}
+.owd-note.ko { color: var(--owd-rouille); }
+.owd-vide {
+  font-size: 0.8em;
+  font-style: italic;
+  color: var(--owd-encre-3);
+  padding: 0.5em 0.2em;
+}
+
+/* Segments : un choix parmi trois ou quatre, la ou un <select> ferait perdre
+   un clic et cacherait les autres possibilites. */
+.owd-segs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  border: 1px solid var(--owd-ligne);
+  border-radius: var(--owd-r);
+  overflow: hidden;
+}
+.owd-segs .seg {
+  font-family: var(--owd-serif);
+  font-size: 0.76em;
+  padding: 0.22em 0.6em;
+  color: var(--owd-encre-2);
+  background: var(--owd-papier);
+  border: none;
+  border-right: 1px solid var(--owd-ligne);
+  cursor: pointer;
+}
+.owd-segs .seg:last-child { border-right: none; }
+.owd-segs .seg:hover { color: var(--owd-vert); }
+.owd-segs .seg.on { color: var(--owd-papier); background: var(--owd-vert); }
+
+/* ═══ 6. Valeurs, jauges, pastilles ══════════════════════════════════════ */
+
+/* La grande valeur d'un bloc : ce que l'oeil cherche en premier. */
+.owd-big {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4em;
+  padding: 0.15em 0;
+}
+.owd-big .k {
+  font-size: 0.72em;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--owd-encre-3);
+}
+.owd-big .v {
+  font-family: var(--owd-titre);
+  font-size: 1.5em;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--owd-vert);
+  font-variant-numeric: tabular-nums;
+}
+.owd-big .s { font-size: 0.75em; color: var(--owd-encre-3); }
+
+.owd-barre {
+  position: relative;
+  height: 0.5em;
+  background: var(--owd-papier-3);
+  border: 1px solid var(--owd-ligne);
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 0.2em 0;
+}
+.owd-barre i {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--owd-vert-clair);
+  transition: width .12s linear;
+}
+/* Chaque jauge porte sa teinte : a sept barres empilees, la couleur est ce qui
+   permet de retrouver la bonne sans lire le libelle. */
+.owd-barre.pv i      { background: var(--owd-rouille); }
+.owd-barre.pe i      { background: var(--owd-vert-clair); }
+.owd-barre.pm i      { background: var(--owd-froid); }
+.owd-barre.pi i      { background: var(--owd-or); }
+.owd-barre.repos i   { background: #7d6f9c; }
+.owd-barre.satiete i { background: #9c8348; }
+.owd-barre.hydra i   { background: #4f8f9c; }
+.owd-barre.charge i,
+.owd-barre.ventre i,
+.owd-barre.rapides i { background: var(--owd-vert); }
+.owd-barre.over i    { background: var(--owd-rouille); }
+
+.owd-pastilles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2em;
+  margin: 0.25em 0;
+}
+.owd-pastille {
+  width: 1.5em;
+  height: 1.5em;
+  padding: 0;
+  font-family: var(--owd-serif);
+  font-size: 0.78em;
+  line-height: 1;
+  color: var(--owd-encre-3);
+  background: var(--owd-papier);
+  border: 1px solid var(--owd-ligne);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.owd-pastille:hover { border-color: var(--owd-vert-clair); color: var(--owd-vert); }
+.owd-pastille.on {
+  color: var(--owd-papier);
+  background: var(--owd-vert);
+  border-color: var(--owd-vert);
+  font-weight: 700;
+}
+
+/* ═══ 7. Onglet « Fiche » ════════════════════════════════════════════════ */
+
+/* — caracteristiques — */
+/* Le conteneur porte les huit lignes et rien d'autre : il existe pour qu'une
+   sonde puisse dire « le bloc des caracteristiques », et pour que le filet de
+   lignes ne deborde pas d'un bloc etroit. */
+.owd-caracs { min-width: 0; }
+.owd-carac {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 4.6em 4.6em 2.6em;
+  align-items: end;
+  gap: 0.3em;
+  padding: 0.12em 0;
+  border-bottom: 1px solid var(--owd-ligne-2);
+}
+.owd-carac:last-child { border-bottom: none; }
+.owd-carac .nom {
+  font-size: 0.85em;
+  align-self: center;
+  display: flex;
+  align-items: center;
+  gap: 0.25em;
+}
+.owd-carac .tot {
+  font-family: var(--owd-titre);
+  font-size: 1.15em;
+  font-weight: 700;
+  text-align: right;
+  color: var(--owd-vert);
+  font-variant-numeric: tabular-nums;
+  align-self: center;
+}
+/* Un total FORCE se distingue d'un total calcule : sans cette marque, on
+   cherche pendant dix minutes pourquoi la somme ne tombe pas. */
+.owd-carac .tot.force { color: var(--owd-or); }
+/* La pastille de levier n'existe que lorsqu'un levier existe : une pastille
+   toujours la, seulement grisee, ne se remarque plus. */
+.owd-levier {
+  width: 0.4em;
+  height: 0.4em;
+  border-radius: 999px;
+  background: transparent;
+  flex: 0 0 auto;
+}
+.owd-levier.on { background: var(--owd-or); }
+
+/* — progression — */
+.owd-compte {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, auto));
+  justify-content: start;
+  align-items: baseline;
+  gap: 0.2em 0.5em;
+  margin-top: 0.3em;
+}
+.owd-compte .k { font-size: 0.72em; text-transform: uppercase; color: var(--owd-encre-3); }
+.owd-compte .v {
+  font-family: var(--owd-titre);
+  font-size: 1em;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.owd-compte .v.neg { color: var(--owd-rouille); }
+.owd-compte .v.force { color: var(--owd-or); }
+
+/* — des d'action — */
+.owd-des { display: flex; align-items: center; gap: 0.6em; }
+.owd-des .owd-pastilles { margin: 0; }
+.owd-des .owd-pastille { width: 1.9em; height: 1.9em; }
+.owd-des-compte {
+  font-family: var(--owd-titre);
+  font-size: 1.35em;
+  font-weight: 700;
+  color: var(--owd-vert);
+  font-variant-numeric: tabular-nums;
+  margin-left: auto;
+}
+
+/* — reserves — */
+.owd-jauge {
+  padding: 0.25em 0;
+  border-bottom: 1px solid var(--owd-ligne-2);
+}
+.owd-jauge:last-of-type { border-bottom: none; }
+.owd-jauge .tete {
+  justify-content: space-between;
+  gap: 0.4em;
+  flex-wrap: nowrap;
+}
+.owd-jauge .nom {
+  font-size: 0.78em;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--owd-encre-2);
+}
+.owd-jauge .val {
+  font-family: var(--owd-titre);
+  font-size: 0.95em;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.owd-jauge-cmd { gap: 0.2em; margin-top: 0.15em; flex-wrap: nowrap; }
+.owd-jauge-cmd input[type="number"] { width: 4.2em; }
+.owd-jauge-cmd .owd-mini { padding: 0.15em 0.45em; }
+.owd-jauge-cmd .owd-f { flex-direction: row; align-items: center; gap: 0.25em; margin: 0; }
+.owd-jauge-cmd .owd-f > label { font-size: 0.66em; }
+.owd-pct { font-size: 0.7em; color: var(--owd-encre-3); text-align: right; }
+/* Le mana est la seule jauge dont le maximum se tape, et la seule qui puisse
+   n'en avoir aucun : sa barre est masquee par le bundle tant que rien n'est
+   pose, et son champ « max » reste discret pour qu'on ne le confonde pas avec
+   le courant. Aucune formule ici, jamais : les regles n'en donnent pas. */
+.owd-jauge-pm .owd-f > label { color: var(--owd-encre-3); }
+.owd-jauge-pm .owd-f input { width: 4em; }
+
+/* — effondrement — */
+.owd-parts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.1em 0.5em;
+  margin: 0.3em 0;
+}
+.owd-part {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.4em;
+  font-size: 0.78em;
+  border-bottom: 1px dotted var(--owd-ligne);
+}
+.owd-part .k { color: var(--owd-encre-2); }
+.owd-part .v { font-weight: 700; font-variant-numeric: tabular-nums; }
+/* Une contribution nulle s'efface : ce qui compte, ce sont les reserves qui
+   tirent le personnage vers le bas. */
+.owd-part.nul { opacity: 0.45; }
+.owd-effet {
+  font-size: 0.8em;
+  color: var(--owd-encre-2);
+  padding: 0.25em 0.4em;
+  background: var(--owd-papier-3);
+  border-radius: var(--owd-r);
+  font-variant-numeric: tabular-nums;
+}
+.owd-effet.ko { color: var(--owd-papier); background: var(--owd-rouille); }
+
+/* — climat et exposition — */
+.owd-lecture {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2em 0.7em;
+  margin: 0.4em 0 0.2em;
+  font-size: 0.8em;
+}
+.owd-lecture .l { color: var(--owd-encre-2); font-variant-numeric: tabular-nums; }
+.owd-lecture .l.ok    { color: var(--owd-vert); }
+.owd-lecture .l.froid { color: var(--owd-froid); font-weight: 700; }
+.owd-lecture .l.chaud { color: var(--owd-chaud); font-weight: 700; }
+
+/* Barre a deux sens : le zero est au MILIEU, et c'est la seule facon de lire
+   d'un coup d'oeil de quel cote le corps penche. */
+.owd-expo {
+  position: relative;
+  height: 0.65em;
+  background: var(--owd-papier-3);
+  border: 1px solid var(--owd-ligne);
+  border-radius: var(--owd-r);
+  overflow: hidden;
+  margin: 0.25em 0 0.1em;
+}
+.owd-expo .fill {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 0;
+  background: var(--owd-vert-clair);
+}
+.owd-expo .fill.froid { background: var(--owd-froid); }
+.owd-expo .fill.chaud { background: var(--owd-chaud); }
+.owd-expo .zero {
+  position: absolute;
+  left: 50%;
+  top: 0; bottom: 0;
+  width: 1px;
+  background: var(--owd-encre-3);
+}
+.owd-expo-val { font-size: 0.76em; color: var(--owd-encre-2); font-variant-numeric: tabular-nums; }
+
+/* — competences — */
+.owd-comps-tete { gap: 0.4em; margin-bottom: 0.35em; flex-wrap: nowrap; }
+.owd-filtre { flex: 1 1 6em; }
+/* La liste peut etre longue : dans une colonne de fiche, elle defile chez elle
+   plutot que d'allonger la page entiere. La hauteur est genereuse — une liste
+   qui defile trop tot fait rater les rangs du bas. */
+.owd-comps { max-height: 32em; overflow-y: auto; min-width: 0; }
+.owd-comp {
+  padding: 0.3em 0.35em;
+  border-radius: var(--owd-r);
+}
+.owd-comp.impair { background: var(--owd-papier-3); }
+.owd-comp .tete { justify-content: space-between; gap: 0.4em; flex-wrap: nowrap; }
+.owd-comp .nom {
+  font-size: 0.88em;
+  display: flex;
+  align-items: baseline;
+  gap: 0.15em;
+  min-width: 0;
+}
+/* La marque d'une competence personnalisee : un point, pas un mot. On la
+   reconnait, on ne la lit pas. */
+.owd-perso-mark { color: var(--owd-or); font-style: normal; }
+.owd-comp .rang {
+  font-size: 0.72em;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--owd-vert);
+  white-space: nowrap;
+}
+.owd-rangs { margin: 0.2em 0; }
+.owd-comp-jets { gap: 0.25em; flex-wrap: nowrap; }
+.owd-comp-jets .infos {
+  font-size: 0.75em;
+  color: var(--owd-encre-3);
+  font-variant-numeric: tabular-nums;
+  margin-right: auto;
+  white-space: nowrap;
+}
+.owd-comp-jets .infos.force { color: var(--owd-or); }
+.owd-comp-note { display: none; margin-top: 0.25em; }
+.owd-comp-note.on { display: block; }
+.owd-ajout { gap: 0.3em; margin-top: 0.45em; flex-wrap: nowrap; }
+.owd-ajout input { flex: 1 1 6em; }
+
+/* ═══ 8. Onglet « Combat » ═══════════════════════════════════════════════ */
+
+.owd-armes, .owd-techs { min-width: 0; }
+.owd-arme, .owd-tech {
+  background: var(--owd-papier);
+  border: 1px solid var(--owd-ligne);
+  border-left: 3px solid var(--owd-ligne);
+  border-radius: var(--owd-r);
+  padding: 0.35em 0.5em;
+  margin-bottom: 0.5em;
+}
+/* Une arme equipee se voit a son liseré : c'est celle qu'on a en main. */
+.owd-arme.equipee { border-left-color: var(--owd-vert); }
+.owd-arme > summary, .owd-tech > summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.3em 0.7em;
+  cursor: pointer;
+  list-style: none;
+}
+.owd-arme > summary::-webkit-details-marker,
+.owd-tech > summary::-webkit-details-marker { display: none; }
+.owd-arme > summary .nom, .owd-tech > summary .nom {
+  font-family: var(--owd-titre);
+  font-size: 0.9em;
+  font-weight: 700;
+  color: var(--owd-vert);
+}
+.owd-arme > summary .res, .owd-tech > summary .res {
+  font-size: 0.75em;
+  color: var(--owd-encre-3);
+  font-variant-numeric: tabular-nums;
+}
+.owd-arme-cmd, .owd-obj-cmd { gap: 0.3em; margin: 0.35em 0; }
+
+.owd-gestes { margin-top: 0.4em; }
+.owd-geste {
+  padding: 0.3em 0.35em;
+  border-top: 1px solid var(--owd-ligne-2);
+}
+.owd-geste-l1 {
+  display: grid;
+  grid-template-columns: minmax(0, 2.4fr) repeat(5, minmax(0, 1fr));
+  gap: 0.3em;
+  align-items: end;
+}
+@media (max-width: 46em) {
+  .owd-geste-l1 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+.owd-geste-l2 { gap: 0.3em; margin-top: 0.25em; }
+.owd-geste-l2 .res {
+  font-size: 0.76em;
+  color: var(--owd-encre-2);
+  font-variant-numeric: tabular-nums;
+  margin-left: auto;
+}
+/* Le trajet et la garde se LISENT, on ne les dessine pas : la carte hexagonale
+   du livre est une regle et reste au livre. */
+.owd-geste-plus {
+  display: none;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.3em;
+  margin-top: 0.25em;
+}
+.owd-geste-plus.on { display: grid; }
+.owd-geste-plus input { font-family: var(--owd-mono); font-size: 0.72em; }
+
+.owd-tech-rangs { margin: 0.35em 0; }
+/* Les rangs au-dela du rang courant sont grises, JAMAIS caches : c'est ce qui
+   reste a prendre, et le cacher effacerait la progression a venir. */
+.owd-tech-rang {
+  padding: 0.3em 0.4em;
+  margin-bottom: 0.25em;
+  background: var(--owd-papier-2);
+  border-left: 2px solid var(--owd-ligne);
+  border-radius: var(--owd-r);
+  opacity: 0.55;
+}
+.owd-tech-rang.pris { opacity: 1; border-left-color: var(--owd-vert); }
+.owd-tech-rang .tete { justify-content: space-between; gap: 0.4em; }
+.owd-tech-rang .tete .k {
+  font-family: var(--owd-titre);
+  font-size: 0.76em;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--owd-vert);
+}
+
+/* ═══ 9. Onglet « Équipement » ═══════════════════════════════════════════ */
+
+.owd-objets { min-width: 0; }
+.owd-gtabs { display: flex; flex-wrap: wrap; gap: 0.2em; margin-bottom: 0.4em; }
+.owd-gtab {
+  font-family: var(--owd-serif);
+  font-size: 0.78em;
+  padding: 0.2em 0.6em;
+  color: var(--owd-encre-2);
+  background: var(--owd-papier);
+  border: 1px solid var(--owd-ligne);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.owd-gtab.on { color: var(--owd-papier); background: var(--owd-vert); border-color: var(--owd-vert); }
+.owd-gbandeau, .owd-obj-opts {
+  gap: 0.4em;
+  padding: 0.3em 0.4em;
+  background: var(--owd-papier-3);
+  border-radius: var(--owd-r);
+  margin-bottom: 0.4em;
+}
+.owd-gbandeau .owd-f { flex: 0 0 12em; }
+
+.owd-tuiles { display: grid; gap: 0.4em; }
+.owd-tuile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  text-align: left;
+  background: var(--owd-papier);
+  border: 1px solid var(--owd-ligne);
+  border-radius: var(--owd-r);
+  cursor: pointer;
+  overflow: hidden;
+}
+.owd-tuile:hover { border-color: var(--owd-vert-clair); }
+.owd-tuile.on { border-color: var(--owd-vert); box-shadow: 0 0 0 2px var(--owd-focus); }
+.owd-tuile .clip {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  background: var(--owd-papier-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.owd-tuile .clip img { width: 100%; height: 100%; object-fit: cover; }
+.owd-tuile .clip .ph {
+  font-family: var(--owd-titre);
+  font-size: 1.6em;
+  color: var(--owd-encre-3);
+}
+.owd-tuile .pied {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05em;
+  padding: 0.2em 0.3em 0.3em;
+  min-width: 0;
+}
+.owd-tuile .pied .n {
+  font-size: 0.76em;
+  line-height: 1.15;
+  color: var(--owd-encre);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.owd-tuile .pied .c {
+  font-size: 0.68em;
+  color: var(--owd-encre-3);
+  font-variant-numeric: tabular-nums;
+}
+.owd-tuile .marques {
+  position: absolute;
+  top: 0.15em;
+  right: 0.2em;
+  display: flex;
+  gap: 0.15em;
+  font-size: 0.7em;
+  font-style: normal;
+}
+/* Porte et rapide : deux marques, deux sens. Porte compte dans la zone de
+   temperature, rapide occupe une place — les confondre ferait croire qu'un
+   manteau au fond du sac rechauffe. */
+.owd-tuile .marques .porte  { color: var(--owd-vert); }
+.owd-tuile .marques .rapide { color: var(--owd-or); }
+
+.owd-objet {
+  margin-top: 0.5em;
+  padding: 0.4em 0.5em;
+  background: var(--owd-papier);
+  border: 1px solid var(--owd-vert-clair);
+  border-radius: var(--owd-r);
+}
+
+/* ═══ 10. Onglet « Bio » ═════════════════════════════════════════════════ */
+
+.owd-portrait {
+  position: relative;
+  width: 7em;
+  height: 7em;
+  margin: 0 auto 0.5em;
+  cursor: pointer;
+}
+.owd-portrait .clip {
+  width: 100%;
+  height: 100%;
+  border: 1px solid var(--owd-ligne);
+  border-radius: var(--owd-r);
+  background: var(--owd-papier-3);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.owd-portrait .clip img { width: 100%; height: 100%; object-fit: cover; }
+.owd-portrait .ph { display: none; font-family: var(--owd-titre); font-size: 2em; color: var(--owd-encre-3); }
+.owd-portrait.vide .ph { display: block; }
+.owd-portrait.vide img { display: none; }
+/* L'URL s'edite EN PLACE : prompt() est muet dans l'iframe Roll20 sous Chrome,
+   et un formulaire de plus pour un champ serait une modale de trop. */
+.owd-portrait-edit {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  font-size: 0.7em !important;
+}
+
+/* ═══ 11. Onglet « Options » ═════════════════════════════════════════════ */
+
+.owd-levier-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.3em;
+  padding: 0.15em 0;
+}
+.owd-levier-row .k {
+  flex: 1 1 7em;
+  font-size: 0.8em;
+  align-self: center;
+  min-width: 0;
+}
+/* Une ligne par competence : la liste est aussi longue que celle de l'onglet
+   Fiche, et elle defile de meme. */
+.owd-leviers-comps { max-height: 26em; overflow-y: auto; min-width: 0; }
+.owd-levier-comp {
+  border-bottom: 1px solid var(--owd-ligne-2);
+  padding: 0.15em 0;
+}
+.owd-levier-comp > summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.4em;
+  font-size: 0.82em;
+  cursor: pointer;
+  list-style: none;
+}
+.owd-levier-comp > summary::-webkit-details-marker { display: none; }
+.owd-levier-comp > summary .m { font-size: 0.8em; color: var(--owd-or); }
+/* Un forcage vide dit ce qu'il vaudrait : sans ce rappel, on ne sait pas si
+   l'on force a la valeur courante ou a autre chose. */
+.owd-force { display: inline-flex; align-items: center; gap: 0.25em; }
+.owd-force .auto {
+  font-size: 0.7em;
+  color: var(--owd-encre-3);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.owd-versions { margin-top: 0.5em; }
+.owd-versions .owd-part { font-family: var(--owd-mono); font-size: 0.68em; }
+
+/* ═══ 12. Dialogues, bandeaux, message furtif ════════════════════════════ */
+
+/* Dans Roll20 la fiche est une iframe d'une AUTRE ORIGINE : prompt() et
+   confirm() y sont muets sous Chrome. Toute saisie et toute confirmation
+   passent donc par cette couche, posee DANS la racine montee — accrochee plus
+   haut, elle perdrait tout son habillage et ses variables de couleur. */
+.owd-modal-over {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1em;
+  background: rgba(20, 17, 12, .55);
+}
+.owd-modal {
+  width: min(34em, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  padding: 0.7em 0.8em 0.8em;
+  background: var(--owd-papier);
+  border: 1px solid var(--owd-vert);
+  border-radius: var(--owd-r);
+  box-shadow: 0 6px 24px var(--owd-ombre);
+}
+.owd-modal-title {
+  font-family: var(--owd-titre);
+  font-size: 0.95em;
+  font-weight: 700;
+  color: var(--owd-vert);
+  border-bottom: 1px solid var(--owd-ligne-2);
+  padding-bottom: 0.3em;
+  margin-bottom: 0.5em;
+}
+.owd-modal-body { display: flex; flex-direction: column; gap: 0.4em; }
+.owd-modal-note { font-size: 0.8em; color: var(--owd-encre-2); }
+.owd-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.3em;
+  margin-top: 0.7em;
+}
+.owd-modal-img { display: flex; justify-content: center; }
+.owd-modal-img img { max-width: 8em; max-height: 8em; border-radius: var(--owd-r); }
+.owd-modal-conflit { border-top: 1px solid var(--owd-ligne-2); padding-top: 0.35em; }
+.owd-modal-conflit .lbl {
+  font-size: 0.72em;
+  text-transform: uppercase;
+  color: var(--owd-encre-3);
+  margin-bottom: 0.2em;
+}
+.owd-modal-conflit .choix { display: grid; grid-template-columns: 1fr 1fr; gap: 0.3em; }
+.owd-modal-choix {
+  padding: 0.3em;
+  text-align: left;
+  background: var(--owd-papier-2);
+  border: 1px solid var(--owd-ligne);
+  border-radius: var(--owd-r);
+  cursor: pointer;
+}
+.owd-modal-choix.on { border-color: var(--owd-vert); box-shadow: 0 0 0 2px var(--owd-focus); }
+.owd-modal-choix .tag { font-size: 0.7em; text-transform: uppercase; color: var(--owd-encre-3); }
+.owd-modal-choix .val { font-size: 0.8em; word-break: break-word; }
+.owd-modal-choix img { max-width: 100%; max-height: 5em; }
+.owd-des-choix { gap: 0.3em; }
+
+/* Le bandeau d'un enregistrement en panne : il RESTE tant que ca ne repasse
+   pas. Une panne d'enregistrement ne se dit pas en un eclair de deux secondes
+   vu une seule fois — la fiche continuerait de s'afficher, parfaitement
+   normale, pendant qu'une session entiere se perd a la fermeture. */
+.owd-avis {
+  padding: 0.5em 0.7em;
+  margin-bottom: 0.5em;
+  font-size: 0.82em;
+  color: var(--owd-papier);
+  background: var(--owd-rouille);
+  border-radius: var(--owd-r);
+}
+/* Sa propre classe, EN PLUS de la commune : les bandeaux de l'amorce (gel des
+   ecritures, perte, fiche plus recente) peuvent coexister avec celui-ci, et
+   sans marque distincte plus personne, code ou sonde, ne sait lequel des deux
+   il tient. */
+.owd-avis-save { border-left: 4px solid rgba(0, 0, 0, .25); }
+
+/* Le message furtif : pour ce qui vient de se passer et qu'on n'a pas besoin
+   de relire. Tout ce qui doit rester est un bandeau, pas un flash. */
+.owd-flash {
+  position: fixed;
+  left: 50%;
+  bottom: 1.2em;
+  transform: translate(-50%, 1em);
+  z-index: 10000;
+  max-width: 90vw;
+  padding: 0.4em 0.9em;
+  font-family: var(--owd-serif);
+  font-size: 0.85em;
+  color: #faf6eb;
+  background: #46543b;
+  border-radius: 999px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, .3);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .18s ease, transform .18s ease;
+}
+.owd-flash.on { opacity: 1; transform: translate(-50%, 0); }
+
+/* ═══ 13. Ce que la nuit demande en plus d'une couleur ═══════════════════ */
+/* Trois endroits, pas un de plus. Partout ailleurs, les variables du §1
+   suffisent — et c'est la seule raison pour laquelle ce theme se tient. */
+
+/* Les images d'objets et de portrait sont un peu calmees : une vignette pleine
+   lumiere sur un fond sombre eblouit. On ne FILTRE pas la fiche pour autant,
+   les couleurs d'un objet devant rester fideles. */
+html.night .owd-tuile .clip img,
+html.night .owd-portrait .clip img { filter: brightness(.92); }
+
+/* L'ombre du dialogue ne se voit pas sur du sombre : c'est le liseré qui porte
+   la separation. */
+html.night .owd-modal { box-shadow: 0 6px 24px rgba(0, 0, 0, .6); }
+
+/* Le message furtif garde ses couleurs propres (il flotte hors de la feuille),
+   mais s'inverse pour ne pas trouer l'ecran. */
+html.night .owd-flash { color: #201c15; background: #adc08c; }
+
+/* ═══ 14. Impression ═════════════════════════════════════════════════════ */
+/* Une fiche s'imprime a la table : on sort le chrome, on ouvre les onglets, et
+   on laisse tomber tout ce qui ne se lit pas sur du papier. */
+@media print {
+  .owd-tabs, .owd-actions, .owd-jauge-cmd, .owd-obj-opts,
+  .owd-flash, .owd-modal-over, .owd-avis { display: none !important; }
+  .owd-pane { display: block !important; }
+  .owd-block { break-inside: avoid; border-color: #999; }
+  .owd-fiche { color: #000; }
+  .owd-sheet { background: #fff; }
+}
