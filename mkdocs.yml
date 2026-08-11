@@ -14,6 +14,10 @@ nav:
       - content/regles/index.md
       - Les Bases:
           - Actions et compétences: content/regles/base/actions.md
+          - Compétences: content/regles/base/competences.md
+          - Techniques: content/regles/base/techniques.md
+          - Caractéristiques: content/regles/base/caracteristiques.md
+          - Capacités physiques: content/regles/base/capacites-physiques.md
       - Le Combat:
           - Portées: content/regles/combat/portees.md
           - Armes: content/regles/combat/armes.md
