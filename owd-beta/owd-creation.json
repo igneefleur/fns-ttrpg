@@ -1,0 +1,115 @@
+{
+ "_lisezmoi": "Produit au build par hooks/owd_creation.py depuis docs/content/regles/. Ne pas editer a la main : la prochaine construction l'ecrase.",
+ "_absents": [
+  "base/caracteristiques.md",
+  "base/competences.md",
+  "base/techniques.md",
+  "base/capacites-physiques.md",
+  "equipement.md"
+ ],
+ "des": {
+  "faces": 6,
+  "actionParTour": 5,
+  "compMax": 2
+ },
+ "pas": 0.75,
+ "armes": [
+  {
+   "cle": "corps-a-corps",
+   "nom": "Corps à corps",
+   "categorie": "Corps à corps",
+   "parade": 9,
+   "reduction": 4,
+   "palier": 1
+  },
+  {
+   "cle": "dague",
+   "nom": "Dague",
+   "categorie": "Armes à une main",
+   "parade": 8,
+   "reduction": 6,
+   "palier": 1
+  },
+  {
+   "cle": "epee",
+   "nom": "Épée à une main",
+   "categorie": "Armes à une main",
+   "parade": 5,
+   "reduction": 14,
+   "palier": 2
+  },
+  {
+   "cle": "hache",
+   "nom": "Hache à une main",
+   "categorie": "Armes à une main",
+   "parade": 7,
+   "reduction": 10,
+   "palier": 2
+  },
+  {
+   "cle": "masse",
+   "nom": "Masse à une main",
+   "categorie": "Armes à une main",
+   "parade": 6,
+   "reduction": 10,
+   "palier": 2
+  },
+  {
+   "cle": "grande-epee",
+   "nom": "Grande épée à deux mains",
+   "categorie": "Armes à deux mains",
+   "parade": 4,
+   "reduction": 20,
+   "palier": 3
+  },
+  {
+   "cle": "grande-hache",
+   "nom": "Grande hache à deux mains",
+   "categorie": "Armes à deux mains",
+   "parade": 7,
+   "reduction": 16,
+   "palier": 3
+  },
+  {
+   "cle": "grand-marteau",
+   "nom": "Grand marteau",
+   "categorie": "Armes à deux mains",
+   "parade": 5,
+   "reduction": 18,
+   "palier": 3
+  },
+  {
+   "cle": "lance",
+   "nom": "Lance à deux mains",
+   "categorie": "Armes à deux mains",
+   "parade": 6,
+   "reduction": 12,
+   "palier": 4
+  },
+  {
+   "cle": "hallebarde",
+   "nom": "Hallebarde",
+   "categorie": "Armes d'hast",
+   "parade": 5,
+   "reduction": 16,
+   "palier": 4
+  }
+ ],
+ "typesDegats": [
+  {
+   "cle": "TRA",
+   "libelle": "TRA",
+   "dit": "Le fil tranche"
+  },
+  {
+   "cle": "PER",
+   "libelle": "PER",
+   "dit": "la pointe perce"
+  },
+  {
+   "cle": "CON",
+   "libelle": "CON",
+   "dit": "une hampe, un manche, un plat ou un pommeau écrasent"
+  }
+ ]
+}

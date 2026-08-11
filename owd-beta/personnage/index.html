@@ -53,7 +53,7 @@
     
       <link rel="stylesheet" href="../stylesheets/armes.css?v=1">
     
-      <link rel="stylesheet" href="../stylesheets/owd-fiche.css?v=1">
+      <link rel="stylesheet" href="../stylesheets/owd-fiche.css?v=2">
     
     <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -737,20 +737,9 @@
 
 
 <h1 id="personnage">Personnage</h1>
-<p>La fiche de personnage Outward, montée ici même, hors Roll20 et sans compte : ce
-qui suit est exactement le code que l'<a href="../extension/">extension</a> affiche
-dans une partie, servi par ce site et non par elle. On peut donc s'en servir
-seul, pour préparer un personnage ou simplement regarder ce que donne la fiche.</p>
-<p>Une seule différence, et elle est voulue : ici, le personnage vit dans <strong>ce
-navigateur</strong> ; dans Roll20, il est enregistré dans le personnage lui-même, donc
-partagé avec tous ceux qui le contrôlent.</p>
-<!-- L'id est « perso-fiche », le MEME mot que roll20-fiche.html : c'est par
-     lui que docs/javascripts/owd-fiche.js cherche sa racine de montage, et
-     l'amorceur de Roll20 est gele. Le renommer ici laisse la page blanche,
-     sans erreur a lire. -->
 <div id="perso-fiche">
   <noscript>La fiche de personnage requiert JavaScript.</noscript>
-  <p style="padding:2rem;color:#8a8478">Chargement de la fiche de personnage…</p>
+  <p style="padding:2rem;color:#8a8478">Chargement de la fiche…</p>
 </div>
 
 
@@ -853,9 +842,11 @@ partagé avec tous ceux qui le contrôlent.</p>
       
         <script src="../javascripts/night.js"></script>
       
-        <script src="../javascripts/owd-migrations.js?v=1"></script>
+        <script src="../javascripts/owd-migrations.js?v=2"></script>
       
-        <script src="../javascripts/owd-fiche.js?v=1"></script>
+        <script src="../javascripts/owd-mods.js?v=2"></script>
+      
+        <script src="../javascripts/owd-fiche.js?v=2"></script>
       
         <script src="../javascripts/copybtn.js"></script>
       
