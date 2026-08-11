@@ -54,18 +54,26 @@ extra_css:
   # par ces deux listes, Roll20 la charge par le manifeste ; deux clés de cache
   # qui divergent, et les deux mondes font tourner deux codes en croyant faire
   # tourner le même. Un fichier monté d'un seul côté ne se voit pas.
-  - stylesheets/owd-fiche.css?v=1
+  - stylesheets/owd-fiche.css?v=2
 extra_javascript:
   - javascripts/changelog.js
   - javascripts/continuous.js
   - javascripts/nav-drawer.js
   - javascripts/night.js
-  - javascripts/owd-migrations.js?v=1 # moteur de migration : AVANT le bundle, qui l'appelle
-  - javascripts/owd-fiche.js?v=1
+  - javascripts/owd-migrations.js?v=2 # moteur de migration : AVANT le bundle, qui l'appelle
+  - javascripts/owd-mods.js?v=2       # moteur de mods : AVANT la fiche, qui l'interroge (et facultatif de naissance)
+  - javascripts/owd-fiche.js?v=2
   - javascripts/copybtn.js
 hooks:
   - hooks/changelog.py
   - hooks/armes.py
+  # Produit owd-creation.json depuis docs/content/regles/ : le barème des rangs,
+  # les formules des capacités, les caractéristiques, les armes et leurs paliers.
+  # Les données viennent des règles, jamais du code. Une page ABSENTE (chapitre
+  # pas encore écrit ou pas encore committé) voit sa section omise et le hook le
+  # dit au journal ; une page PRÉSENTE mais illisible casse le build, parce que
+  # c'est une règle qui a changé de forme sans qu'il le sache.
+  - hooks/owd_creation.py
 plugins:
   - search
 markdown_extensions:

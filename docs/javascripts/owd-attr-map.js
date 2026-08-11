@@ -1,8 +1,9 @@
 /* Correspondance fiche Outward <-> Attributes Roll20 (natifs par valeur).
  *
- * La fiche (owd-fiche.js) travaille sur un objet `state` imbriqué. Roll20
- * stocke des Attributes plats {name, current, max}. Ce module fait la
- * traduction, DANS LES DEUX SENS et SANS PERTE :
+ * La fiche (owd-fiche.js, réutilisée telle quelle sur le site et dans Roll20)
+ * travaille sur un objet `state` imbriqué. Roll20 stocke des Attributes plats
+ * {name, current, max}. Ce module fait la traduction, DANS LES DEUX SENS et
+ * SANS PERTE :
  *   - stateToAttrs(state, card) : décompose l'état en attributs Roll20.
  *   - attrsToState(attrs)       : reconstruit l'état depuis les attributs,
  *                                 EN DISANT dans quel état il l'a trouvé.
@@ -14,13 +15,21 @@
  *     qu'on relit pour reconstruire la fiche : il ne dérive JAMAIS quand
  *     owd-fiche.js gagne un champ. attrsToState le préfère à tout le reste ;
  *     la reconstruction champ par champ n'est qu'un repli.
- *   - NATIFS (repli + macros) : un attribut par valeur (SCALARS) ou par
- *     collection (COLLECTIONS, en JSON), plus COLLECTIONS_OPT pour ce qui
- *     n'existe pas dans blank() (grenier, historique de migration).
+ *   - NATIFS (repli + macros) : un attribut par valeur / collection.
  *   - MIROIR (écrits seulement si `card` est fourni) : valeurs DÉRIVÉES pour
- *     les macros et les barres de jetons Roll20 — caractéristiques TOTALES
- *     (@{Perso|owd_resistance}), PV et PE courant/max effondrés, exposition.
- *     Non relus : la fiche les recalcule à chaque rendu.
+ *     les macros et les barres de jetons — caractéristiques TOTALES
+ *     (@{Perso|owd_resistance}), jauges courant/max, charge, effondrement.
+ *     Jamais relus : la fiche les recalcule.
+ *
+ * LA RÈGLE DU MIROIR EXACT, à vérifier AVANT d'ajouter la moindre ligne :
+ * toute clé de blank() figure dans SCALARS ou dans COLLECTIONS, et AUCUN
+ * suffixe ne sert deux fois. Un miroir qui reprendrait le nom d'un scalaire
+ * l'écraserait en silence, et le repli relirait la valeur DÉRIVÉE en croyant
+ * relire la saisie. C'est pour tenir cette règle sans exception que les treize
+ * maximums forcés vivent dans UNE collection éparse (`maxForce`) et les dix
+ * valeurs courantes dans UNE autre (`etat`, suffixe `etat_courant`) : les
+ * suffixes owd_pv, owd_pe, owd_charge… restent alors libres pour le MIROIR,
+ * qui est justement ce que les barres de jetons veulent lire.
  *
  * LE PIÈGE QUE CE MODULE DOIT ÉVITER. Un owd_state impossible à lire (il
  * suffit qu'un joueur tape un caractère dans l'onglet Attributes de Roll20)
@@ -31,23 +40,32 @@
  * qu'il n'a pas su lire.
  *
  * Le même piège a une SECONDE porte, et elle est plus large : un owd_state
- * VIDÉ. Il pèse des centaines de kilo-octets dans l'onglet Attributes de
- * Roll20, ce qui donne très envie d'y faire le ménage. L'attribut disparu, le
- * diagnostic n'est plus « illisible » mais « partiel », qui couvre aussi le
- * personnage NEUF, où il n'y a rien à perdre. La raison sépare les deux
+ * VIDÉ. Il pèse des centaines de kilo-octets dans l'onglet Attributes, ce qui
+ * donne très envie d'y faire le ménage. L'attribut disparu, le diagnostic
+ * n'est plus « illisible » mais « partiel », qui couvre aussi le personnage
+ * NEUF, où il n'y a rien à perdre. La raison sépare les deux
  * (RAISON_SANS_FICHE), pour que l'appelant gèle le premier cas sans geler le
- * second.
+ * second. Sans cette séparation, VIDER l'attribut le plus lourd du personnage
+ * serait PLUS destructeur que le corrompre.
  *
  * Logique PURE, sans API navigateur : testable en node.
  *
  * Ce fichier vit sur le SITE (chargé par roll20-fiche.html avant
  * owd-roll20-boot.js) : le format des Attributes évolue avec la fiche, sans
- * jamais re-signer l'extension Roll20, qui n'est qu'une coquille.
+ * jamais re-signer l'extension Roll20, qui n'est qu'une coquille — et dont le
+ * paquet 1.0.0.1 est SIGNÉ et GELÉ.
  */
 (function (root) {
   "use strict";
 
   var PREFIX = "owd_";
+
+  // UN SUFFIXE RÉSERVÉ, ET IL N'EST PAS DANS LES TABLES : owd_backup appartient
+  // à l'amorce, qui y met la fiche à l'abri avant une montée de version et la
+  // relit dans le personnage pour « Restaurer l'état d'origine ». Cette carte ne
+  // l'écrit JAMAIS et ne le lit jamais ; il est interdit à tout le reste. Le
+  // reprendre pour un miroir ou un repli écraserait le seul filet du protocole
+  // de mise à niveau, au moment précis où il sert.
 
   // Numéro de version LISIBLE de la fiche, publié dans le `max` de
   // owd_version. Le manifeste en est la source unique quand il est là ; la
@@ -56,13 +74,16 @@
   // Le « b » final marque la branche beta : le joueur voit sur quel site il
   // est. Il ne change PAS le rang du numéro (« 1.0.0b » et « 1.0.0 » sont la
   // même version, la beta étant ce que le stable recevra à la fusion) : ce qui
-  // compare des versions doit donc l'ôter avant de lire les nombres.
-  var RELEASE_DEFAUT = "1.0.0b";
+  // compare des versions doit donc l'ôter avant de lire les nombres, et c'est
+  // exactement ce que fait OwdMods.compareVersions.
+  var RELEASE_DEFAUT = "1.1.0b";
   // Entier INDÉPENDANT de la release : il ne monte qu'au changement de forme de
-  // l'état du personnage, jamais parce que le majeur a bougé. Le manifeste
-  // publie les deux séparément, et c'est ce repli-ci que l'amorce prend quand
-  // le manifeste manque. Le schéma 1 est le PREMIER : aucune fiche Outward n'a
-  // jamais porté autre chose, et la chaîne de owd-migrations.js est vide.
+  // l'état du personnage, jamais parce que le majeur a bougé. Ajouter une clé
+  // racine avec un défaut n'en est PAS un : normalize() complète une clé
+  // absente et ne purge aucune clé racine inconnue, donc une telle fiche
+  // s'ouvre dans les deux sens sans migration. Le manifeste publie les deux
+  // numéros séparément, et c'est ce repli-ci que l'amorce prend quand le
+  // manifeste manque.
   var SCHEMA_DEFAUT = 1;
 
   // Release EFFECTIVE : celle du code qui TOURNE, pas celle que le site publie.
@@ -95,80 +116,83 @@
     return RELEASE_DEFAUT;
   }
 
-  // ==========================================================================
-  // PIÈGE À NE JAMAIS REFAIRE : aucun suffixe de SCALARS ni de COLLECTIONS ne
-  // doit porter le nom d'un attribut MIROIR. Les miroirs s'écrivent APRÈS la
-  // boucle et écraseraient l'attribut de repli du même nom, silencieusement.
-  // C'est pourquoi les réserves courantes prennent « _cur » (owd_pv_cur) et les
-  // miroirs le nom nu (owd_pv). Toute addition future se vérifie contre la
-  // liste des miroirs, plus bas dans stateToAttrs.
+  // champ d'état scalaire -> [clé d'état, suffixe, type]
+  //   n = nombre, s = chaîne libre, b = booléen,
+  //   N = nombre NULLABLE : "" vaut null et non 0 (les « forcé » du MJ, où vide
+  //       veut dire « valeur calculée » — les confondre avec 0 clouerait une
+  //       capacité à zéro sur le chemin de repli).
   //
-  // La seule exception est VOULUE : owd_version est écrit par la boucle des
-  // scalaires puis RÉÉCRIT juste après, pour lui donner son `max`.
-  // ==========================================================================
-
-  // champ d'état scalaire -> [suffixe, type]
-  //   n = nombre, s = chaîne libre, b = booléen (écrit 1/0),
-  //   N = nombre NULLABLE : "" vaut null et NON 0. Les confondre clouerait les
-  //       réserves « au maximum » à zéro sur le chemin de repli (un personnage
-  //       jamais blessé se retrouverait à terre), et un forçage vide à une
-  //       valeur forcée de 0.
+  // TREIZE, et pas un de plus. Les maximums forcés du MJ ne sont PAS ici :
+  // ils vivent tous dans la collection éparse `maxForce`. Une capacité de plus
+  // n'ajoute alors ni clé racine, ni suffixe, ni ligne dans cette table — et
+  // surtout, aucun d'eux ne vient disputer au MIROIR les suffixes que les
+  // barres de jetons lisent.
   var SCALARS = [
-    ["name",            "nom",               "s"],
-    ["portrait",        "portrait",          "s"],
-    ["espece",          "espece",            "s"],
-    ["origine",         "origine",           "s"],
-    ["age",             "age",               "s"],
-    ["histoire",        "histoire",          "s"],
-    ["notes",           "notes",             "s"],
-
-    // réserves courantes : toutes NULLABLES (null = au maximum), sauf pm,
-    // expo et ventre, dont zéro est une valeur pleine et légitime
-    ["pv",              "pv_cur",            "N"],
-    ["pe",              "pe_cur",            "N"],
-    ["pi",              "pi_cur",            "N"],
-    ["repos",           "repos_cur",         "N"],
-    ["satiete",         "satiete_cur",       "N"],
-    ["hydratation",     "hydra_cur",         "N"],
-    ["pm",              "pm_cur",            "n"],
-    ["pmMax",           "pm_max",            "N"],   // pas de formule : saisie libre
-    ["expo",            "expo_cur",          "n"],
-    ["ventre",          "ventre_cur",        "n"],
-
-    ["desTour",         "des_tour",          "n"],
-    ["desEngages",      "des_engages",       "n"],
-
-    ["xpTotal",         "xp_total",          "n"],
-    ["xpDepForce",      "xp_dep_force",      "N"],
-    ["ruptureTotal",    "rupture_total",     "n"],
-    ["ruptureDepForce", "rupture_dep_force", "N"],
-
-    ["v",               "version",           "n"],
-    ["rel",             "release",           "s"]
+    ["name", "nom", "s"], ["espece", "espece", "s"], ["age", "age", "s"],
+    ["sexe", "sexe", "s"], ["genre", "genre", "s"],
+    ["portrait", "portrait", "s"],
+    ["background", "background", "s"], ["notes", "notes", "s"],
+    ["de", "de", "s"],
+    ["xpTotal", "xp_total", "n"],
+    ["argent", "argent", "n"],
+    ["v", "version", "n"], ["rel", "release", "s"]
   ];
 
   // champ d'état collection (objet/tableau) -> suffixe (stocké en JSON)
   var COLLECTIONS = [
-    ["caracsBase",  "caracs_base"],
-    ["caracsXp",    "caracs_xp"],
-    ["caracsMod",   "caracs_mod"],
+    ["caracs", "caracs"],
+    // Deux modificateurs qui s'additionnent (équipement / décision du MJ), et
+    // un forçage épars où une clé présente REMPLACE la somme. Tous les leviers
+    // des Options voyagent, y compris sur le chemin de repli : en JJK, les
+    // seconds modificateurs et les forçages de caractéristiques ont manqué ici
+    // depuis leur création, et une fiche reconstruite sans jjk_state les
+    // perdait en silence alors même qu'ils changent des totaux affichés.
+    ["caracsMod", "caracs_mod"], ["caracsMod2", "caracs_mod2"],
     ["caracsForce", "caracs_force"],
-    // Leviers des capacités dérivées : un modificateur par capacité, et un
-    // forçage épars du maximum. Les deux voyagent au repli — ils changent des
-    // totaux affichés, et une fiche reconstruite sans eux mentirait.
-    ["capMod",      "cap_mod"],
-    ["capForce",    "cap_force"],
-    ["comps",       "competences"],
-    ["compsPerso",  "comp_perso"],
-    ["compsNote",   "comps_note"],
-    ["compsMod",    "comps_mod"],
-    ["compsDesMod", "comps_des_mod"],
-    ["compsForce",  "comps_force"],
-    ["techniques",  "techniques"],
-    ["armes",       "armes"],
-    // equip part ALLÉGÉ dans son attribut de repli : voir equipSansVignettes
-    ["equip",       "equipement"],
-    ["climat",      "climat"]
+    // Les VALEURS COURANTES des jauges, toutes ensemble et à l'exact :
+    // null = « au maximum » se conserve, ce qu'un attribut de nombre perdrait
+    // (il rendrait 0, c'est-à-dire un personnage vidé de tout).
+    ["etat", "etat_courant"],
+    // Les maximums forcés, épars. Absent = calculé, et ce n'est PAS 0.
+    ["maxForce", "max_force"],
+    // Les modificateurs à trois emplacements de toutes les capacités.
+    ["divers", "divers"],
+    // Le tableau des compétences, à id stable : c'est LUI la liste, les règles
+    // d'Outward n'en donnant aucune. Le perdre au repli effacerait des noms que
+    // le joueur seul a écrits, et que rien d'autre ne sait redire.
+    ["comps", "competences"],
+    ["compsMod", "comps_mod"], ["compsMod2", "comps_mod2"],
+    ["compsForce", "comps_force"], ["compsDesForce", "comps_des_force"],
+    ["techniques", "techniques"],
+    ["armes", "armes"], ["vetements", "vetements"],
+    ["inv", "inventaire"],
+    // Les quatre clés du dispositif de modules et de mods.
+    // modules : le RANGEMENT SEUL, { ordre: [ids], place: {id:{onglet,colonne}} },
+    // et RIEN d'autre. Format ÉPARS : seules les différences avec la disposition
+    // d'origine sont écrites, jamais la liste complète des identifiants. Deux
+    // raisons, et elles sont durables : un module natif ajouté par une version
+    // ultérieure apparaît quand même chez un personnage rangé avant lui (il
+    // n'est pas cité, donc il garde sa place d'origine) ; et un identifiant
+    // disparu (mod retiré, natif renommé) ne casse rien, il reste une clé que
+    // personne ne réclame.
+    // La disposition ne dit QUE le rangement : ce qui est allumé ou coupé vit
+    // dans modActifs, SEUL interrupteur. Deux endroits pour dire la même chose
+    // finiraient par se contredire chez un joueur, et la carte n'aurait aucun
+    // moyen de trancher lequel a raison.
+    ["modules", "modules"],
+    // Coffres privés des mods et des modules, { id: objet libre }. Leur contenu
+    // n'est PAS interprété ici : c'est la donnée d'un module, la carte se
+    // contente de la faire voyager entière.
+    ["modData", "mod_donnees"],
+    // Interrupteurs des modules, { id: false } pour les SEULS modules coupés.
+    // Épars lui aussi, et pour la même raison : un module qui n'y figure pas est
+    // allumé, donc un module ajouté demain s'affiche chez tout le monde, et un
+    // module retiré ne laisse aucune trace.
+    ["modActifs", "mod_actifs"],
+    // Liste des mods, [{ id, nom, actif, pour, apiMin, src }]. L'attribut de
+    // repli passe par modsSansCode() : voir plus bas, le code source ne se
+    // duplique pas hors de owd_state.
+    ["mods", "mods"]
   ];
 
   // Collections qui n'existent PAS dans blank() : elles ne sont écrites que si
@@ -182,323 +206,141 @@
   // précisément le jour où la fiche redescend de version.
   var COLLECTIONS_OPT = [
     ["grenier", "grenier"],
-    ["vHist",   "v_hist"]
+    ["vHist", "v_hist"]
   ];
 
-  // ==========================================================================
-  // MIROIR EXACT de blank() de owd-fiche.js : le même littéral, aux deux seules
-  // substitutions près — SCHEMA -> SCHEMA_DEFAUT, RELEASE -> RELEASE_DEFAUT.
-  // Toute clé ajoutée là-bas doit arriver ici ET dans SCALARS ou COLLECTIONS,
-  // sinon le chemin de repli des Attributes la perd EN SILENCE.
-  //
-  // Le sens à vérifier est celui-là : une clé racine du bundle absente d'ici
-  // est une PERTE SÈCHE au repli. L'inverse (une clé d'ici que le bundle
-  // ignore) est sans danger : normalize() ne purge aucune clé racine inconnue.
-  //
-  // Les commentaires ci-dessous sont les mêmes des deux côtés, mot pour mot :
-  // ils sont la seule chose qui empêche la divergence.
-  // ==========================================================================
+  // état par défaut : MIROIR EXACT de blank() de owd-fiche.js (mêmes clés,
+  // mêmes valeurs). Il sert de socle à la reconstruction champ par champ : un
+  // attribut absent laisse la valeur par défaut. Toute clé ajoutée là-bas doit
+  // arriver ici ET dans SCALARS ou COLLECTIONS, sinon le repli la perd.
   function blank() {
     return {
-      // v porte le SCHÉMA (entier), rel la release lisible. Les deux vivent
-      // dans blank() parce que le chemin de repli les perdrait sinon : une
-      // fiche relue sans owd_state repartirait en schéma 1, c'est-à-dire
-      // qu'elle se ferait re-migrer indéfiniment à chaque ouverture.
+      // v porte le SCHÉMA, rel la release lisible. Le chemin de repli les
+      // perdrait sans ça, et une fiche relue sans owd_state repartirait en
+      // schéma 1 — c'est-à-dire qu'elle se ferait re-migrer indéfiniment.
       v: SCHEMA_DEFAUT, rel: RELEASE_DEFAUT,
 
-      // ---------- identité ----------
-      // portrait : une image en data: ou une URL. Elle pèse, et c'est voulu :
-      // owd_state la porte, l'attribut de repli owd_portrait la porte aussi
-      // (une seule image, contrairement aux vignettes d'objets qui, elles,
-      // partent allégées — voir equipSansVignettes plus bas).
-      name: "", portrait: "", espece: "", origine: "", age: "",
-      histoire: "", notes: "",
+      // ---- identité ----
+      name: "", portrait: "", espece: "", age: "", sexe: "", genre: "",
+      background: "", notes: "",
 
-      // ---------- les huit caractéristiques ----------
-      // Les CLÉS sont sans accent et sans espace : elles voyagent en JSON, en
-      // noms d'attribut Roll20 (owd_dexterite) et en fragments de macro
-      // (@{Perso|owd_resistance}). Les libellés accentués (« Dextérité »,
-      // « Résistance ») vivent dans la table d'affichage du bundle, jamais
-      // dans l'état. Renommer une clé ici casserait toutes les macros écrites
-      // par les joueurs : c'est aussi gelé qu'un nom de fichier de manifeste.
-      //
-      // L'ordre est celui du livre : les quatre maîtrises (ce que le
-      // personnage emploie et ce qu'il inflige), puis les quatre réserves (ce
-      // que le corps tient). Il commande l'ordre d'affichage du bloc.
-      //
-      // Quatre leviers par caractéristique, la grammaire de JJK, qui a fait
-      // ses preuves :
-      //   caracsBase  la valeur de départ, saisie à la création ;
-      //   caracsXp    ce que l'expérience y a ajouté, compté à part pour que
-      //               le joueur voie d'où vient son total ;
-      //   caracsMod   le modificateur du moment (équipement, bénédiction,
-      //               décision du meneur) — il peut être négatif ;
-      //   caracsForce le total FORCÉ. Épars : une clé absente veut dire
-      //               « calculé ». C'est pourquoi caracsForce part à {} et non
-      //               à un objet de huit zéros — un zéro forcé est une valeur
-      //               légitime, et le confondre avec « pas de forçage »
-      //               clouerait la caractéristique à zéro.
-      caracsBase: {
-        Force: 0, Dexterite: 0, Intelligence: 0, Ferveur: 0,
-        Vigueur: 0, Endurance: 0, Resistance: 0, Chance: 0
-      },
-      caracsXp: {
-        Force: 0, Dexterite: 0, Intelligence: 0, Ferveur: 0,
-        Vigueur: 0, Endurance: 0, Resistance: 0, Chance: 0
-      },
-      caracsMod: {
-        Force: 0, Dexterite: 0, Intelligence: 0, Ferveur: 0,
-        Vigueur: 0, Endurance: 0, Resistance: 0, Chance: 0
-      },
+      // ---- expérience ----
+      // Les règles ne donnent AUCUNE dotation de départ : le total part à zéro
+      // et se saisit dans l'en-tête. Le dépensé, lui, se CALCULE (rangs des
+      // compétences + coût saisi des techniques) et ne se range jamais dans
+      // l'état : deux endroits pour dire la même chose finiraient par se
+      // contredire.
+      xpTotal: 0,
+
+      // ---- caractéristiques ----
+      // Les CLÉS sont SANS ACCENT : elles voyagent en nom d'attribut Roll20 et
+      // en fragment de macro (@{Perso|owd_resistance}). Les libellés accentués
+      // vivent dans la table d'affichage du bundle, jamais dans l'état.
+      // 20 est la moyenne humaine ; l'échelle n'a pas de plafond et la carte
+      // n'en invente pas — aucune borne haute n'est écrite ici.
+      caracs: { Force: 20, Dexterite: 20, Intelligence: 20, Ferveur: 20,
+                Vigueur: 20, Endurance: 20, Resistance: 20, Chance: 20 },
+      caracsMod: { Force: 0, Dexterite: 0, Intelligence: 0, Ferveur: 0,
+                   Vigueur: 0, Endurance: 0, Resistance: 0, Chance: 0 },
+      caracsMod2: { Force: 0, Dexterite: 0, Intelligence: 0, Ferveur: 0,
+                    Vigueur: 0, Endurance: 0, Resistance: 0, Chance: 0 },
+      // ÉPARSE, et NULLABLE par l'absence : une clé présente REMPLACE la somme,
+      // elle ne s'y ajoute pas. Absente n'est pas 0.
       caracsForce: {},
 
-      // ---------- leviers des capacités dérivées ----------
-      // Les dix capacités que les règles tirent des caractéristiques. Deux
-      // objets et non vingt scalaires : un modificateur par capacité, et un
-      // forçage ÉPARS du maximum (clé absente = calculé par la formule).
-      // Les clés, une fois pour toutes :
-      //   pv pe pi          les trois maxima de base, AVANT effondrement ;
-      //   repos satiete hydra  les trois réserves de survie ;
-      //   expo              la BORNE de l'exposition, symétrique (± la borne) ;
-      //   charge rapides contenance.
-      // Le mana n'est pas de la fête : il n'a NI formule NI maximum aux
-      // règles, et son maximum se saisit à la main (pmMax, plus bas).
-      capMod: {
-        pv: 0, pe: 0, pi: 0, repos: 0, satiete: 0, hydra: 0,
-        expo: 0, charge: 0, rapides: 0, contenance: 0
+      // ---- ce que le personnage porte à l'instant ----
+      // null = « au maximum » : la valeur SUIT le maximum quand il bouge, ce
+      // qu'un nombre figé ne ferait pas — et le maximum de PV et de PE bouge
+      // tout seul, à chaque niveau d'effondrement.
+      // expo et contenance partent de 0, qui est une VRAIE valeur (exposition
+      // nulle, ventre vide) et non un repli : elles ne sont donc pas nullables.
+      etat: { pv: null, pe: null, pm: null, pi: null,
+              pr: null, ps: null, ph: null,
+              expo: 0, contenance: 0, rupture: null },
+
+      // Maximums FORCÉS, épars : une clé présente remplace le calcul, une clé
+      // absente laisse calculer. Clés connues : pv pe pm pi pr ps ph charge
+      // acces contenance expo rupture desAction effondrement.
+      maxForce: {},
+
+      // Modificateurs à TROIS emplacements (équipement / technique / autre).
+      divers: {
+        pv: [0, 0, 0], pe: [0, 0, 0], pm: [0, 0, 0], pi: [0, 0, 0],
+        pr: [0, 0, 0], ps: [0, 0, 0], ph: [0, 0, 0],
+        charge: [0, 0, 0], acces: [0, 0, 0], contenance: [0, 0, 0],
+        expo: [0, 0, 0], rupture: [0, 0, 0], desAction: [0, 0, 0],
+        // Le seul modificateur qui joue sur un NIVEAU et non sur des points.
+        effondrement: [0, 0, 0]
       },
-      capForce: {},
 
-      // ---------- réserves COURANTES ----------
-      // On ne stocke QUE le courant : le maximum se recalcule à chaque rendu
-      // depuis les caractéristiques et l'effondrement. Le ranger aussi
-      // donnerait deux vérités pour la même valeur, qui finiraient par se
-      // contredire chez un joueur dont la Vigueur a bougé.
-      //
-      // null veut dire « au maximum », et ce n'est pas la même chose que le
-      // maximum écrit en chiffres : un personnage qui n'a jamais été blessé
-      // suit sa Vigueur quand elle monte, alors qu'une valeur figée resterait
-      // en arrière. C'est aussi pourquoi ces champs sont de type « N » dans
-      // SCALARS et non « n » : sur le chemin de repli, "" doit redonner null
-      // et surtout pas 0, qui laisserait le personnage à terre.
-      pv: null,           // points de vie
-      pe: null,           // points d'endurance
-      pi: null,           // points d'innocence
-      repos: null,        // points de repos (l'éveil qui reste)
-      satiete: null,      // points de satiété
-      hydratation: null,  // points d'hydratation
+      // ---- compétences ----
+      // LES RÈGLES NE DONNENT AUCUNE LISTE DE COMPÉTENCES : le joueur les nomme
+      // toutes. D'où un TABLEAU d'entrées à `id` STABLE, et non une carte
+      // indexée par le nom — renommer une compétence perdrait sinon son rang et
+      // ses modificateurs du même geste, sans un mot.
+      // Une entrée : { id, nom, groupe, rang }, rang entier de 0 à 5.
+      comps: [],
+      // Cartes ÉPARSES indexées par l'ID de la compétence, jamais par son nom.
+      compsMod: {}, compsMod2: {},
+      compsForce: {},        // bonus TOTAL forcé : remplace rang + modificateurs
+      compsDesForce: {},     // nombre de dés engageables forcé : remplace le rang
 
-      // Points de mana. Aucune formule, aucun maximum aux règles : le courant
-      // part de zéro et le maximum se saisit à la main. pmMax vaut null tant
-      // que le joueur n'en pose pas, et la jauge s'affiche alors sans borne
-      // (un nombre, pas une barre). Inventer « 80 + quelque chose » ici serait
-      // écrire une règle dans la fiche.
-      pm: 0,
-      pmMax: null,
-
-      // Exposition : part de zéro, descend au froid, monte au chaud, et ses
-      // deux bornes découlent de la Résistance. Zéro est un état légitime et
-      // fréquent, donc pas de null ici — la convention « null = au maximum »
-      // n'a aucun sens pour une valeur qui se lit dans les deux sens.
-      expo: 0,
-
-      // Contenance occupée : les places prises dans le ventre. Elle monte à
-      // mesure qu'on avale, redescend d'une place toutes les dix minutes.
-      ventre: 0,
-
-      // ---------- le tour ----------
-      // desTour : ce que le personnage reçoit au début de son tour. 5 aux
-      // règles, et le champ existe quand même : c'est exactement le genre de
-      // nombre qu'un objet ou une décision de table déplace, et le forcer par
-      // un levier d'Options obligerait à ouvrir un onglet en plein combat.
-      // desEngages : ce qu'il a déjà engagé dans le tour en cours. Se remet à
-      // zéro d'un bouton, jamais tout seul — la fiche ne sait pas quand le
-      // tour tourne, et le deviner ferait perdre le compte au mauvais moment.
-      desTour: 5,
-      desEngages: 0,
-
-      // ---------- compétences ----------
-      // Les rangs se rangent par NOM, en clair. Pas de clé composée « Carac/Nom »
-      // comme dans JJK : dans Outward une compétence n'appartient à aucune
-      // caractéristique, les caractéristiques ouvrent et frappent mais
-      // n'entrent jamais dans le jet.
-      //
-      // comps : nom -> rang entier, 0 à 5, où 5 est le Rang Max (la rupture).
-      // Le Rang 0 NE SE NOTE PAS : la clé est simplement absente, et une
-      // compétence à 0 posée par mégarde se purge à la normalisation. Une map
-      // éparse, donc, et non une ligne par compétence du monde.
-      //
-      // compsPerso : les compétences que le joueur ajoute lui-même, [{ nom }].
-      // Celles du jeu de données (owd-creation.json, désigné par
-      // window.__owdDataUrl) n'y figurent pas : elles viennent des règles et
-      // c'est la liste servie qui fait foi. Une compétence personnalisée dont
-      // le nom finirait par entrer aux règles se retrouverait en double ; la
-      // normalisation dédoublonne sur le nom, les règles gagnent.
-      comps: {},
-      compsPerso: [],
-      compsNote: {},     // nom -> note libre (à quoi le joueur s'en sert)
-      compsMod: {},      // nom -> modificateur du BONUS de rang
-      compsDesMod: {},   // nom -> modificateur du NOMBRE de dés engageables
-      compsForce: {},    // nom -> bonus total FORCÉ (épars : absent = calculé)
-
-      // ---------- techniques ----------
-      // Un geste appris pour lui-même : ses rangs lui appartiennent, chacun
-      // dit ce qu'il apporte, et certains réclament un point de rupture.
-      // Gabarit d'une entrée, tenu par normalize() :
-      //   {
-      //     id: "",        identifiant libre et STABLE : c'est lui qui suit la
-      //                    technique au renommage, et qui la reconnaît d'une
-      //                    fiche à l'autre quand on l'envoie au tchat ;
-      //     nom: "", source: "", note: "",
-      //     rang: 0,       le rang POSSÉDÉ, 0 = pas apprise. Les rangs se
-      //                    prennent dans l'ordre, jamais en sautant ;
-      //     rangs: [],     un objet par rang, du Rang 1 au dernier, qui se
-      //                    nomme toujours Rang Max quel que soit leur nombre.
-      //                    La LONGUEUR de ce tableau EST le nombre de rangs
-      //                    (5 au plus) : le ranger une seconde fois dans un
-      //                    champ nbRangs donnerait deux vérités à départager.
-      //                    Chaque entrée : { texte: "", rupture: false, xp: 0 }
-      //                    — texte = ce que ce rang apporte, rupture = ce rang
-      //                    coûte un point de rupture, xp = ce qu'il a coûté en
-      //                    expérience. Les règles ne donnent AUCUN prix en XP
-      //                    pour une technique : ce champ est une saisie, et
-      //                    surtout pas un barème calculé ;
-      //     seuil: null,   seuil de base, quand la technique en a un. null
-      //                    pour une technique à coût, qui ne se jette pas ;
-      //     cout: "",      texte libre (« 2 DÉ », « 2 DÉ et 10 PM ») : les
-      //                    coûts d'Outward ne sont pas tous en dés d'action ;
-      //     des: 5,        dés d'action engageables au plus (5 aux règles) ;
-      //     desMod: 0,
-      //     degats: "", portee: ""   textes libres, recopiés de la technique
-      //   }
+      // ---- techniques ----
+      // Les rangs d'une technique LUI APPARTIENNENT : les règles le disent, la
+      // fiche ne les barème donc pas et se contente de les compter.
+      // Une entrée : { id, nom, rang, rangs, xp, rupture, desc }.
       techniques: [],
 
-      // ---------- armes ----------
-      // Une arme n'est pas une attaque, c'est un répertoire : la ligne de
-      // l'arme porte la difficulté de parade et la réduction, et chaque geste
-      // porte son propre seuil, ses dégâts et sa portée. La fiche recopie ce
-      // que le joueur lit sur la carte de son arme dans le livre ; elle ne
-      // porte pas le répertoire du livre, qui est une règle.
-      // Gabarit d'une entrée :
-      //   {
-      //     id: "", nom: "", note: "",
-      //     categorie: "",   « Épée à une main », « Hallebarde »… texte libre
-      //     portee: "",      le palier de la catégorie (« 2 pas ») ;
-      //     parade: null,    difficulté de parade de l'ARME (nullable : une
-      //                      arme qui ne pare pas n'a pas de difficulté 0) ;
-      //     reduction: 0,    ce que la parade réussie retire aux dégâts ;
-      //     comp: "",        nom de la compétence employée avec cette arme :
-      //                      c'est elle qui donne les dés et le bonus du jet
-      //                      d'attaque et de parade. Une chaîne libre, jamais
-      //                      un index : renommer une compétence ne doit pas
-      //                      décrocher l'arme en silence ;
-      //     poids: 0, equipee: false,
-      //     gestes: []       le répertoire, un objet par coup :
-      //       {
-      //         nom: "",
-      //         seuil: 0,      la difficulté de base, avant la situation ;
-      //         degats: 0,     les dégâts pleins (toujours pairs aux règles) ;
-      //         type: "",      TRA | PER | CON, type des dégâts pleins ;
-      //         typeMi: "",    le type de la MOITIÉ, sur la case traversée. Il
-      //                        change souvent : ce n'est pas la même partie de
-      //                        l'arme qui touche, et le confondre avec type
-      //                        ferait passer du bois pour du fer ;
-      //         portee: "",    les cases FRAPPÉES (« 2 », « 2 et 3 », « soi ») ;
-      //         trajet: "",    recopie facultative de data-trajet du livre ;
-      //         garde: "",     recopie facultative de data-garde (« 3>9 ») ;
-      //         note: ""
-      //       }
-      //   }
+      // ---- équipement ----
+      // Une arme est un RÉPERTOIRE, pas une attaque : sa ligne (prise, parade,
+      // réduction, compétence qui porte le jet) et ses gestes. `comp` est l'ID
+      // d'une entrée de `comps` — jamais son nom, qui se renomme.
       armes: [],
+      // Ce que le personnage porte contre le froid et le chaud, compté en
+      // degrés, et ce qu'il pèse : { id, nom, froid, chaud, poids, porte, note }.
+      vetements: [],
+      argent: 0,             // pièces d'argent : la monnaie du livre, nommée
 
-      // ---------- équipement ----------
-      // Un objet porte son poids (la charge), ses places de contenance (ce
-      // qu'il occupe dans le ventre quand on l'avale) et ses deux protections
-      // en degrés, l'une contre le froid, l'autre contre la chaleur.
-      //   groupes  les rangements, dans l'ordre d'affichage ;
-      //   comptes  un drapeau « ce groupe pèse sur le personnage » par groupe,
-      //            dans un tableau PARALLÈLE et non dans le groupe lui-même :
-      //            groupes est un tableau de CHAÎNES que le bandeau, le
-      //            renommage, les menus et la carte de tchat lisent tel quel.
-      //            Le passer en objets obligerait à un pas de migration avec
-      //            descente. Un sac posé à terre ne pèse plus : c'est à ça
-      //            que sert le drapeau ;
-      //   objets   { id, nom, qte, poids, places, froid, chaud, achat, vente,
-      //              desc, img, groupe, porte, rapide }
-      //            porte  = l'objet est SUR LUI : ses protections froid et
-      //                     chaud comptent alors dans la zone de température,
-      //                     celles du sac ne comptent pas ;
-      //            rapide = l'objet occupe un accès rapide (saisi sans rien
-      //                     fouiller). Un objet, une place, quelle que soit la
-      //                     quantité : c'est la main qui compte, pas le stock ;
-      //            id     = identifiant libre, celui qui reconnaît le même
-      //                     objet d'une fiche à l'autre quand on le donne ;
-      //   opts     réglages d'affichage des tuiles, rien de plus.
-      equip: {
-        groupes: ["Sur soi", "Sac"],
-        comptes: [true, true],
-        objets: [],
-        opts: { cols: 4, nom: true, qte: true, poids: true, total: true }
+      // Inventaire illustré. `groupes` est un tableau de CHAÎNES et `comptes`
+      // un tableau PARALLÈLE de booléens : décocher pose le groupe au sol — son
+      // poids sort de la charge, ses objets restent entiers. Une clé de `inv`
+      // absente de ce miroir serait une perte sèche au repli.
+      inv: {
+        groupes: ["Sur soi"], comptes: [true], objets: [],
+        opts: { cols: 4, nom: true, qte: true, poids: false, total: true, vign: true }
       },
 
-      // ---------- climat de la table ----------
-      // L'état du personnage, pas une règle : où il se tient et ce qu'il y
-      // fait. La fiche s'en sert pour calculer sa zone, son écart et ses
-      // paliers ; elle ne montre ni la table des milieux, ni les degrés que
-      // chaque intensité ajoute, ni les deux tables du froid et du chaud.
-      //   temp      la température de l'air en °C, saisie ;
-      //   activite  0 repos, 1 légère, 2 intermédiaire, 3 lourde. Défaut 1 :
-      //             les règles la nomment l'intensité ordinaire d'une journée
-      //             éveillée, et c'est l'état où un personnage se trouve le
-      //             plus souvent ;
-      //   froidMod  degrés de protection qui ne viennent d'aucun objet (un
-      //             abri, un feu, un sort). Les vêtements, eux, sont dans
-      //             equip et se somment tout seuls.
-      climat: { temp: 20, activite: 1, froidMod: 0, chaudMod: 0 },
+      // ---- le dé des jets ----
+      // Tous les dés du jeu sont des d8. Le champ reste modifiable : c'est un
+      // réglage de table, pas une règle que la fiche imposerait.
+      de: "1d8",
 
-      // ---------- progression ----------
-      // xpTotal        toute l'expérience gagnée. La dépensée se CALCULE
-      //                (rangs de compétences + xp des rangs de techniques
-      //                effectivement pris) : la ranger serait la laisser
-      //                dériver du jour où un rang bouge ;
-      // xpDepForce     forçage de cette dépense, nullable. Vide = calculée.
-      //                Il existe pour la table qui compte autrement, pas pour
-      //                réparer un calcul faux ;
-      // ruptureTotal   les points de rupture que le personnage POSSÈDE. Trois
-      //                aux règles, et le champ existe parce que c'est le
-      //                genre de nombre qu'une campagne déplace ;
-      // ruptureDepForce   forçage des points dépensés, nullable. Le calcul :
-      //                un par compétence menée au Rang Max, plus les rangs de
-      //                technique qui en réclament un et que le personnage a
-      //                effectivement pris.
-      xpTotal: 0,
-      xpDepForce: null,
-      ruptureTotal: 3,
-      ruptureDepForce: null
+      // ---- le dispositif de modules et de mods : QUATRE clés racine ----
+      // Toutes avec un défaut vide : les ajouter ne fait pas monter le schéma,
+      // mais les omettre ICI les perdrait sur le chemin de repli. Le sens qu'il
+      // faut vérifier à chaque ajout est celui-là : une clé racine du bundle
+      // absente de ce blank() serait une perte sèche. L'inverse (une clé d'ici
+      // que le bundle ignore) reste sans danger : la carte la fait voyager et
+      // normalize() ne purge pas les clés racine.
+      modules: {}, modData: {}, modActifs: {}, mods: []
     };
   }
 
   function num(v) { var n = parseFloat(v); return isFinite(n) ? n : 0; }
   function str(v) { return v == null ? "" : String(v); }
 
-  // Copie de l'équipement SANS les vignettes en data: pour l'attribut de repli
-  // owd_equipement : owd_state (source de vérité) les porte déjà, les dupliquer
+  // Copie de l'inventaire SANS les vignettes en data: pour l'attribut de repli
+  // owd_inventaire : owd_state (source de vérité) les porte déjà, les dupliquer
   // doublerait le poids des Attributes de la campagne. Le repli n'est relu que
   // pour des fiches partielles : il perd seulement les images fichier.
-  //
-  // TOUTES LES AUTRES CLÉS D'EQUIP ET DE CHAQUE OBJET SONT RECOPIÉES TELLES
-  // QUELLES (dont opts, groupes et comptes) : les énumérer ici les perdrait en
-  // silence à chaque champ nouveau.
-  //
-  // Le portrait, lui, n'est PAS allégé : il y en a un par personnage, là où un
-  // équipement en porte trente. Et il n'y a pas d'équivalent du modsSansCode de
-  // JJK : Outward n'a pas de moteur de mods, donc pas de code source à ne pas
-  // dupliquer.
-  function equipSansVignettes(equip) {
-    if (!equip || typeof equip !== "object" || !Array.isArray(equip.objets)) return equip;
+  // Les autres clés de `inv` (dont opts, les réglages d'affichage) sont
+  // recopiées TELLES QUELLES : les énumérer ici les aurait perdues en silence à
+  // chaque champ nouveau.
+  function invSansVignettes(inv) {
+    if (!inv || typeof inv !== "object" || !Array.isArray(inv.objets)) return inv;
     var c = {};
-    Object.keys(equip).forEach(function (k) { c[k] = equip[k]; });
-    c.objets = equip.objets.map(function (o) {
+    Object.keys(inv).forEach(function (k) { c[k] = inv[k]; });
+    c.objets = inv.objets.map(function (o) {
       if (!o || typeof o !== "object" || String(o.img || "").indexOf("data:") !== 0) return o;
       var oc = {};
       Object.keys(o).forEach(function (k) { oc[k] = o[k]; });
@@ -508,12 +350,42 @@
     return c;
   }
 
+  // Même principe pour les mods : leur code source pèse (des dizaines de
+  // kilo-octets pour un seul mod bavard, et Roll20 fait voyager chaque
+  // Attribute), et owd_state le porte déjà. L'attribut de repli garde de quoi
+  // DIRE quels mods tournaient (id, nom, actif, pour, apiMin) sans dupliquer
+  // une ligne de code.
+  //
+  // Le champ de code s'appelle « src » dans la liste des mods ; « code » et
+  // « source » sont acceptés parce que la documentation et les premiers essais
+  // ont connu les trois noms, et qu'un champ de code oublié ici passerait en
+  // double sans que rien ne le signale.
+  var CLES_CODE = ["src", "code", "source"];
+  function modsSansCode(mods) {
+    if (!Array.isArray(mods)) return [];
+    return mods.map(function (m) {
+      if (!m || typeof m !== "object") return m;
+      var c = {};
+      Object.keys(m).forEach(function (k) { c[k] = m[k]; });
+      CLES_CODE.forEach(function (k) {
+        // la clé reste, VIDÉE : sa présence dit « ce mod avait du code », et sa
+        // disparition ferait croire à un mod sans code au chemin de repli
+        if (typeof c[k] === "string" && c[k]) c[k] = "";
+      });
+      return c;
+    });
+  }
+
   // { fullAttrName -> {current, max} }
   //
-  // `card` est ce que le bundle range dans STORE.setItem("owd-cards",
-  // {_current: card}) : les valeurs DÉRIVÉES qu'il vient de calculer. Sans
-  // elle, aucun attribut miroir n'est écrit — et c'est voulu, la carte
-  // d'attributs ne refait pas l'arithmétique de la fiche.
+  // `card` est le bilan des valeurs DÉRIVÉES que la fiche vient de calculer :
+  //   { caracs: { Force, Dexterite, … },
+  //     capacites: { pv, pvMax, pe, peMax, pm, pmMax, pi, piMax, pr, prMax,
+  //                  ps, psMax, ph, phMax, expo, expoMax, chargePorte, charge,
+  //                  accesPris, acces, contenancePrise, contenance,
+  //                  rupture, ruptureMax, effondrement, desAction, xpDepense } }
+  // Il est FACULTATIF : sans lui, aucun attribut miroir n'est écrit, et la
+  // fiche se relit exactement pareil.
   function stateToAttrs(state, card) {
     state = state || blank();
     var out = {};
@@ -522,24 +394,25 @@
     }
 
     // ROUND-TRIP COMPLET : l'état entier en un attribut, source de vérité.
-    // Écrit en tête, hors de toute condition sur `card`.
     put("state", JSON.stringify(state));
 
     SCALARS.forEach(function (d) {
       var v = state[d[0]];
       put(d[1], d[2] === "b" ? (v ? 1 : 0) : v);
     });
-    // owd_version, réécrit APRÈS la boucle : son `current` reste le SCHÉMA
-    // (un entier, pour que hasSheet et les macros gardent un nombre), son
-    // `max` porte la version lisible. Personne ne lit ce max ; il voyage avec
-    // le diff et raconte à qui ouvre les Attributes quelle fiche a écrit là.
+    // owd_version, réécrit APRÈS la boucle : son `current` reste le SCHÉMA (un
+    // entier, pour que hasSheet et les macros gardent un nombre), son `max`
+    // porte la version lisible. Personne ne lit ce max ; il voyage avec le diff
+    // et raconte à qui ouvre l'onglet Attributes quelle fiche a écrit là.
     put("version", state.v, release());
     COLLECTIONS.forEach(function (d) {
       var v = state[d[0]] == null ? blank()[d[0]] : state[d[0]];
-      // Une seule collection part ALLÉGÉE dans son attribut de repli : les
-      // vignettes en data: de l'équipement. owd_state porte l'original ; c'est
-      // la duplication, et elle seule, qu'on refuse.
-      if (d[0] === "equip") v = equipSansVignettes(v);
+      // deux collections partent ALLÉGÉES dans leur attribut de repli : les
+      // vignettes en data: de l'inventaire, et le code source des mods. Dans
+      // les deux cas owd_state porte l'original ; c'est la duplication, et elle
+      // seule, qu'on refuse.
+      if (d[0] === "inv") v = invSansVignettes(v);
+      else if (d[0] === "mods") v = modsSansCode(v);
       put(d[1], JSON.stringify(v));
     });
     COLLECTIONS_OPT.forEach(function (d) {
@@ -547,57 +420,47 @@
       put(d[1], JSON.stringify(state[d[0]]));
     });
 
-    // ---- miroir dérivé (macros / barres de jetons), seulement si la carte est
-    // fournie. JAMAIS RELUS : la fiche les recalcule à chaque rendu, et les
-    // relire donnerait deux vérités pour la même valeur. ----
+    // ---- miroir dérivé (macros / barres de jetons), seulement si la carte est fournie ----
+    // AUCUN de ces suffixes n'apparaît dans SCALARS ni dans COLLECTIONS : la
+    // liste a été vérifiée une par une, et elle doit l'être à chaque ajout.
     if (card) {
       var cc = card.caracs || {};
-      put("force",        cc.Force);
-      put("dexterite",    cc.Dexterite);
-      put("intelligence", cc.Intelligence);
-      put("ferveur",      cc.Ferveur);
-      put("vigueur",      cc.Vigueur);
-      put("endurance",    cc.Endurance);
-      put("resistance",   cc.Resistance);
-      put("chance",       cc.Chance);
+      // TOTAUX, utilisables en macro : @{Perso|owd_force}, @{Perso|owd_resistance}
+      put("force", cc.Force);               put("dexterite", cc.Dexterite);
+      put("intelligence", cc.Intelligence); put("ferveur", cc.Ferveur);
+      put("vigueur", cc.Vigueur);           put("endurance", cc.Endurance);
+      put("resistance", cc.Resistance);     put("chance", cc.Chance);
 
-      var rs = card.reserves || {};
-      // barres de jetons : courant / max. PV et PE portent les maxima
-      // EFFONDRÉS, ceux du personnage à cet instant, pas ceux de sa Vigueur.
-      put("pv",          rs.pv == null ? rs.pvMax : rs.pv, rs.pvMax);
-      put("pe",          rs.pe == null ? rs.peMax : rs.pe, rs.peMax);
-      put("pi",          rs.pi == null ? rs.piMax : rs.pi, rs.piMax);
-      // Le mana n'a pas de maximum aux règles : tant que le joueur n'en pose
-      // pas, le `max` part VIDE et la barre de jeton reste un nombre sans
-      // borne. Y écrire un maximum inventé serait écrire une règle.
-      put("pm",          rs.pm, rs.pmMax);
-      put("repos",       rs.repos == null ? rs.reposMax : rs.repos, rs.reposMax);
-      put("satiete",     rs.satiete == null ? rs.satieteMax : rs.satiete, rs.satieteMax);
-      put("hydratation", rs.hydratation == null ? rs.hydraMax : rs.hydratation, rs.hydraMax);
-      // exposition : le courant est SIGNÉ (négatif au froid, positif au
-      // chaud) et le max porte la borne, la même des deux côtés.
-      put("exposition",  rs.expo, rs.expoMax);
-
-      var co = card.corps || {};
-      put("charge",       co.poids, co.charge);
-      put("effondrement", co.effondrement, 10);
-      put("contenance",   co.ventre, co.contenance);
-      put("rapides",      co.rapidesOccupes, co.rapides);
-
-      var to = card.tour || {};
-      put("des", to.des, to.desMax);
-
-      var cl = card.climat || {};
-      put("ressentie", cl.ressentie);
-      // le `max` porte le SENS (« froid », « chaud », « zone ») : un palier
-      // sans son sens ne dit rien, et Roll20 n'offre pas d'autre place.
-      put("paliers", cl.paliers, cl.sens);
+      var k = card.capacites || {};
+      // BARRES DE JETON : current / max. Un courant null vaut le maximum, sinon
+      // la barre du jeton afficherait un vide pour un personnage intact.
+      put("pv", k.pv == null ? k.pvMax : k.pv, k.pvMax);
+      put("pe", k.pe == null ? k.peMax : k.pe, k.peMax);
+      // PM : aucune règle ne donne son maximum, il vaut 0 tant qu'une règle ne
+      // le fixe pas. Le miroir le dit tel quel plutôt que d'inventer un nombre.
+      put("pm", k.pm == null ? k.pmMax : k.pm, k.pmMax);
+      put("pi", k.pi == null ? k.piMax : k.pi, k.piMax);
+      put("pr", k.pr == null ? k.prMax : k.pr, k.prMax);
+      put("ps", k.ps == null ? k.psMax : k.ps, k.psMax);
+      put("ph", k.ph == null ? k.phMax : k.ph, k.phMax);
+      // L'exposition est SIGNÉE : le max porte la borne HAUTE, la borne basse
+      // est son opposée. Deux attributs pour dire un nombre symétrique
+      // n'apprendraient rien de plus à une macro, et le signe du courant suffit
+      // à lire le sens.
+      put("expo", k.expo, k.expoMax);
+      put("charge", k.chargePorte, k.charge);
+      put("acces", k.accesPris, k.acces);
+      put("contenance", k.contenancePrise, k.contenance);
+      put("rupture", k.rupture, k.ruptureMax);
+      put("effondrement", k.effondrement, 10);
+      put("des_action", k.desAction);
+      put("xp_depense", k.xpDepense);
     }
     return out;
   }
 
   // lecteurs d'attribut : les appelants passent soit {current, max}, soit la
-  // seule valeur courante (le pont d20 a connu les deux formes)
+  // seule valeur courante (le pont de l'extension a connu les deux formes)
   function lecteur(attrs) {
     return function (suffix, champ) {
       var a = attrs[PREFIX + suffix];
@@ -614,19 +477,21 @@
   // ELLE RECONSTRUIT AVEC LA CARTE DU JOUR, toujours, y compris quand les
   // attributs ont été écrits par une AUTRE version de la fiche (une archive
   // qu'on rouvre, ou une fiche enregistrée avant une montée de schéma). Elle
-  // rend donc un état dans la forme d'aujourd'hui, à charge pour migre() du
-  // bundle de le ramener où il faut — sauf que migre() se fie à `s.v`, qui
-  // vient ici de owd_version : c'est le schéma ÉCRIT, pas celui de la carte.
+  // rend donc un état dans la forme d'aujourd'hui, à charge pour le moteur de
+  // migration du bundle de le ramener où il faut — sauf que celui-ci se fie à
+  // `s.v`, qui vient ici de owd_version : c'est le schéma ÉCRIT, pas celui de
+  // la carte.
   //
-  // Aujourd'hui cela reste sans conséquence : le schéma 1 est le seul publié
-  // et aucune archive n'existe. Le jour où ce ne sera plus vrai, c'est-à-dire
-  // le jour où un suffixe d'attribut changera DE FORME entre deux schémas
-  // (owd_armes qui passerait d'un tableau à un objet, par exemple), lire un
-  // owd_armes de schéma 1 avec la carte du schéma 2 donnerait un champ
-  // silencieusement faux. La note de noteDeCarte(), dans attrsToState, rend ce
-  // cas VISIBLE dans la raison du diagnostic : elle se déclenche dès que le
-  // schéma écrit diffère du nôtre, avant même qu'un tel changement de forme
-  // existe.
+  // Aujourd'hui cela reste sans conséquence : une seule release de schéma 1 est
+  // publiée, aucune archive n'existe, et celles qui embarqueront leur propre
+  // carte (archives[…].attrmap dans le manifeste) remplaceront ce module entier
+  // avant de lire quoi que ce soit. Le jour où ce ne sera plus vrai,
+  // c'est-à-dire le jour où un suffixe d'attribut changera DE FORME entre deux
+  // schémas (owd_armes qui passerait d'un tableau à un objet, par exemple),
+  // lire un owd_armes de schéma 1 avec la carte du schéma 2 donnerait un champ
+  // silencieusement faux. noteDeCarte() rend ce cas VISIBLE dans la raison du
+  // diagnostic, et se déclenche dès que le schéma écrit diffère du nôtre, avant
+  // même qu'un tel changement de forme existe.
   function reconstruire(cur) {
     var s = blank();
     SCALARS.forEach(function (d) {
@@ -652,8 +517,8 @@
 
   // Accroche le diagnostic à l'état SANS le rendre visible.
   //
-  // Les appelants écrivent « var state = M.attrsToState(attrs) » puis
-  // JSON.stringify(state) : rendre un objet enveloppe {state, …} leur ferait
+  // Un appelant écrit couramment `var state = M.attrsToState(attrs)` puis
+  // JSON.stringify(state). Rendre un objet enveloppe {state, …} lui ferait
   // persister l'enveloppe. On rend donc l'état LUI-MÊME, avec
   // state/degrade/raison en propriétés NON ÉNUMÉRABLES : JSON.stringify et
   // Object.keys les ignorent, `r.degrade` et `r.state` marchent. `r.state`
@@ -675,8 +540,8 @@
   }
 
   // Note ajoutée à la raison quand on reconstruit des attributs qui ne sont pas
-  // du schéma de cette carte (voir le long commentaire de reconstruire()).
-  // Le schéma écrit se lit sur le scalaire owd_version, qui reste lisible même
+  // du schéma de cette carte (voir le long commentaire de reconstruire()). Le
+  // schéma écrit se lit sur le scalaire owd_version, qui reste lisible même
   // quand owd_state ne l'est plus : c'est justement le cas qui compte.
   function noteDeCarte(cur) {
     var v = cur("version");
@@ -715,9 +580,10 @@
   //                                disparu pendant que ses autres attributs
   //                                owd_ sont restés : la reconstruction est
   //                                amputée exactement comme dans le cas
-  //                                « illisible » (ni vignettes d'équipement, ni
-  //                                champ sans attribut à lui), et l'appelant
-  //                                doit geler tout autant.
+  //                                « illisible » (ni code des mods, ni
+  //                                vignettes d'inventaire, ni champ sans
+  //                                attribut à lui), et l'appelant doit geler
+  //                                tout autant.
   function attrsToState(attrs) {
     attrs = attrs || {};
     var cur = lecteur(attrs);
@@ -752,10 +618,13 @@
 
   // Version de la fiche qui a écrit ces attributs, SANS reconstruire l'état :
   //   { schema, release } — schema = entier de format (state.v), release = le
-  //   numéro lisible ("1.0.0") ; null si le personnage n'a pas de fiche.
+  //   numéro lisible ("1.0.0b") ; null si le personnage n'a pas de fiche.
   // Le schéma vient d'abord de owd_state (seule source que la fiche met à jour
   // en migrant), puis du scalaire owd_version — qui reste lisible même quand
   // owd_state ne l'est plus, et c'est justement ce cas-là qui compte.
+  //
+  // Ne PAS reconstruire l'état est le point : l'amorce s'en sert pour l'écran
+  // de version, sur un owd_state qui pèse des centaines de kilo-octets.
   function ficheDe(attrs) {
     attrs = attrs || {};
     var cur = lecteur(attrs);
@@ -791,9 +660,7 @@
   }
 
   function isOwdAttr(name) { return typeof name === "string" && name.indexOf(PREFIX) === 0; }
-  // une fiche Outward existe si l'attribut de version est présent. C'est le
-  // test que l'extension emploie pour décider si l'onglet montre la fiche ou
-  // un bouton « créer ».
+  // une fiche Outward existe si l'attribut de version est présent
   function hasSheet(names) {
     if (!names) return false;
     var list = Array.isArray(names) ? names : Object.keys(names);
@@ -811,7 +678,7 @@
     attrsToState: attrsToState,
     diagnostic: diagnostic,
     ficheDe: ficheDe,
-    equipSansVignettes: equipSansVignettes,
+    modsSansCode: modsSansCode,
     isOwdAttr: isOwdAttr,
     hasSheet: hasSheet,
     blank: blank

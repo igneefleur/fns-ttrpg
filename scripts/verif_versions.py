@@ -78,6 +78,12 @@ MIGRATIONS = os.path.join(RACINE, "docs", "javascripts", "owd-migrations.js")
 EXT_MANIFESTS = [os.path.join(RACINE, "extension", "firefox", "manifest.json"),
                  os.path.join(RACINE, "extension", "chrome", "manifest.json")]
 EXT_SIGNEE = os.path.join(RACINE, "docs", "download", "ext-signed.json")
+# Tous les fichiers servis ne sont pas dans docs/ : certains n'existent QU'APRÈS
+# la construction, engendrés par un hook mkdocs (owd-creation.json, que
+# hooks/owd_creation.py dérive des règles ; changelog.json). Les chercher sur le
+# disque les déclarerait manquants à chaque fois, et ce script bloque une
+# publication : la faute serait fausse et la seule issue serait de le contourner.
+HOOKS = os.path.join(RACINE, "hooks")
 
 fautes = []
 notes = []
@@ -124,6 +130,42 @@ def chaine_migrations(src):
 
 
 # ------------------------------------------------------- URL du manifeste
+def fichiers_engendres():
+    """Les fichiers qu'un hook mkdocs ajoute AU BUILD, à la racine du site.
+
+    On les lit dans hooks/*.py au motif « File.generated(config, X » : X est
+    soit la chaîne elle-même, soit le nom d'une constante déclarée en tête du
+    même fichier (owd_creation.py passe par CIBLE). Lire les hooks plutôt que
+    tenir une liste ici est le seul moyen que le contrôle suive le jour où un
+    hook change sa cible : une liste recopiée vieillirait en silence, et ce
+    script dirait « rien à signaler » sur un fichier que personne ne sert plus.
+    On n'IMPORTE pas les hooks — ce script ne doit dépendre que de la
+    bibliothèque standard, et importer un hook exigerait mkdocs.
+    """
+    engendres = set()
+    if not os.path.isdir(HOOKS):
+        return engendres
+    for nom in sorted(os.listdir(HOOKS)):
+        if not nom.endswith(".py"):
+            continue
+        src = V.lire_fichier(os.path.join(HOOKS, nom))
+        for arg in re.findall(r"File\.generated\(\s*config\s*,\s*([^,)]+)", src):
+            arg = arg.strip()
+            lit = re.match(r"""^["'](.+?)["']$""", arg)
+            if lit:
+                engendres.add(lit.group(1))
+                continue
+            # une constante : on la résout dans le hook qui la nomme
+            const = re.search(r"""^%s\s*=\s*["'](.+?)["']""" % re.escape(arg),
+                              src, re.M)
+            if const:
+                engendres.add(const.group(1))
+            else:
+                notes.append("hooks/%s : cible de File.generated illisible (%s), "
+                             "son fichier n'est pas contrôlé" % (nom, arg))
+    return engendres
+
+
 def relative(u):
     """Même règle que sure() dans roll20-fiche.html : pas de schéma, pas de
     « // » en tête, pas de remontée de dossier."""
@@ -465,14 +507,23 @@ def main():
     notes.append("?v= : %d fichier(s) nommé(s) des deux côtés, sur %d URL(s) au manifeste" % (communs, len(urls)))
 
     # 6. URL relatives, et qui désignent un fichier réellement publié
+    engendres = fichiers_engendres()
     for ou, u in urls:
         if not relative(u):
             fautes.append("manifeste : URL non relative en %s (%s), l'amorceur la refuserait et "
                           "retomberait sur son repli sans ?v=" % (ou, u))
             continue
-        cible = os.path.join(DOCS, V.sans_v(u).replace("/", os.sep))
+        rel = V.sans_v(u)
+        # Un fichier engendré au build n'est pas sur le disque et n'a pas à y
+        # être : il paraît à la racine du site, servi comme les autres.
+        if rel in engendres:
+            continue
+        cible = os.path.join(DOCS, rel.replace("/", os.sep))
         if not os.path.exists(cible):
-            fautes.append("manifeste : %s nomme docs/%s, qui n'existe pas" % (ou, V.sans_v(u)))
+            fautes.append("manifeste : %s nomme docs/%s, qui n'existe pas" % (ou, rel))
+    if engendres:
+        notes.append("engendrés au build, non cherchés sur le disque : %s"
+                     % ", ".join(sorted(engendres)))
 
     return rendre()
 

@@ -73,6 +73,12 @@ FICHIERS = [
     "javascripts/owd-attr-map.js",
     "javascripts/owd-roll20-boot.js",
     "javascripts/owd-migrations.js",
+    # le moteur de mods : chargé AVANT la fiche, qui l'interroge. Il a été
+    # oublié de cette liste à sa création, alors qu'il était bien nommé au
+    # manifeste et à mkdocs.yml — c'est la faute exacte que l'avertissement
+    # ci-dessus décrit, et elle serait passée : tout le bundle serait monté
+    # d'un cran pendant que le moteur, lui, restait servi depuis le cache.
+    "javascripts/owd-mods.js",
     "javascripts/owd-fiche.js",
     "stylesheets/owd-fiche.css",
     "stylesheets/owd-roll20.css",
@@ -81,6 +87,13 @@ FICHIERS = [
     # protéger sans rien protéger
     "javascripts/owd-camp.js",
     "stylesheets/owd-camp.css",
+    # ENGENDRÉ AU BUILD, et monté quand même. hooks/owd_creation.py le produit
+    # depuis les règles : il n'est donc pas sur le disque, mais il EST servi par
+    # le site et nommé au manifeste (bundle.data), et son contenu change dès
+    # qu'une règle bouge. Le laisser hors de cette liste, c'est servir un vieux
+    # barème de rangs à une fiche neuve. Le contrôle d'existence sur disque le
+    # saute déjà, comme le fait verif_versions.py.
+    "owd-creation.json",
 ]
 
 # LES BLOCS DU MANIFESTE QUI PORTENT DES ?v=. Une seule liste, lue par les DEUX
@@ -106,6 +119,26 @@ def blocs_a_serial(man):
     ]
 
 
+# « bundle.data » EST UNE CHAÎNE, PAS UNE LISTE, et c'est le seul porteur de ?v=
+# dans ce cas. Il ne pouvait donc pas entrer dans blocs_a_serial(), dont les deux
+# consommateurs parcourent des listes et les MUTENT en place ; l'envelopper dans
+# une liste d'un élément aurait relu le bon numéro sans jamais écrire le nouveau,
+# la mutation ne retombant pas dans le manifeste.
+#
+# Il doit pourtant monter avec les autres : owd-creation.json est engendré au
+# build par hooks/owd_creation.py depuis docs/content/regles/, donc son contenu
+# change dès qu'une règle bouge. Servi depuis le cache d'un navigateur, il ferait
+# tourner la fiche du jour sur le barème des rangs d'hier — et rien ne le dirait.
+def data_du_bundle(man):
+    """L'URL de bundle.data, ou None si le manifeste n'en porte pas."""
+    d = (man.get("bundle") or {}).get("data")
+    return d if isinstance(d, str) and d else None
+
+
+def pose_data_du_bundle(man, url):
+    man.setdefault("bundle", {})["data"] = url
+
+
 # UNE SEULE GRAMMAIRE POUR TOUS LES OUTILS DE PUBLICATION, dans
 # scripts/version_fiche.py : les chemins des porteurs (V.BUNDLE, V.MANIFESTE,
 # V.MKDOCS), le lecteur utf-8-sig (V.lire_fichier), le saut de ligne dominant
@@ -129,6 +162,11 @@ def serials_actuels(racine):
         for u in (liste or []):
             if V.sans_v(u) in FICHIERS and V.serial_v(u):
                 vus.append(V.serial_v(u))
+    # le scalaire, relu comme les listes : son numéro compte dans le maximum,
+    # sans quoi « maximum + 1 » pourrait retomber sur une clé qu'il a déjà servie
+    d = data_du_bundle(man)
+    if d and V.sans_v(d) in FICHIERS and V.serial_v(d):
+        vus.append(V.serial_v(d))
     return vus
 
 
@@ -194,6 +232,11 @@ def monter_manifeste(racine, serial, essai=False):
 
     for liste in blocs_a_serial(man):
         monte(liste)
+    # le scalaire se pose par affectation, là où les listes se mutent
+    d = data_du_bundle(man)
+    if d and V.sans_v(d) in FICHIERS:
+        pose_data_du_bundle(man, V.sans_v(d) + "?v=" + str(serial))
+        touches.append(V.sans_v(d))
     if not essai:
         texte = json.dumps(man, ensure_ascii=False, indent=2) + "\n"
         with open(chemin, "wb") as f:
