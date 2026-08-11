@@ -2,18 +2,30 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://igneefleur.github.io/fns-ttrpg/owd-beta/</loc>
-         <lastmod>2026-08-09</lastmod>
-    </url>
-    <url>
-         <loc>https://igneefleur.github.io/fns-ttrpg/owd-beta/assets/fonts/LISEZMOI/</loc>
-         <lastmod>2026-08-09</lastmod>
+         <lastmod>2026-08-11</lastmod>
     </url>
     <url>
          <loc>https://igneefleur.github.io/fns-ttrpg/owd-beta/content/regles/</loc>
-         <lastmod>2026-08-09</lastmod>
+         <lastmod>2026-08-11</lastmod>
+    </url>
+    <url>
+         <loc>https://igneefleur.github.io/fns-ttrpg/owd-beta/content/regles/base/actions/</loc>
+         <lastmod>2026-08-11</lastmod>
+    </url>
+    <url>
+         <loc>https://igneefleur.github.io/fns-ttrpg/owd-beta/content/regles/combat/armes/</loc>
+         <lastmod>2026-08-11</lastmod>
     </url>
     <url>
          <loc>https://igneefleur.github.io/fns-ttrpg/owd-beta/content/regles/combat/portees/</loc>
-         <lastmod>2026-08-09</lastmod>
+         <lastmod>2026-08-11</lastmod>
+    </url>
+    <url>
+         <loc>https://igneefleur.github.io/fns-ttrpg/owd-beta/extension/</loc>
+         <lastmod>2026-08-11</lastmod>
+    </url>
+    <url>
+         <loc>https://igneefleur.github.io/fns-ttrpg/owd-beta/personnage/</loc>
+         <lastmod>2026-08-11</lastmod>
     </url>
 </urlset>

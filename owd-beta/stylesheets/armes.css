@@ -1,0 +1,310 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   CARTES D'ARMES
+
+   Une catégorie d'arme, une carte large. La carte porte le bandeau de l'arme,
+   puis un geste par colonne : son empreinte hexagonale, son nom, ce qu'il
+   inflige, et ce qu'il fait.
+
+   Toutes les couleurs passent par les variables de extra.css, que night.css
+   redéfinit : le mode nuit suit sans une règle en plus. Le bloc se pose HORS du
+   conteneur .cols, comme les tables du livre.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.md-typeset .armes-grille {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin: 1rem 0 1.6rem;
+}
+
+/* ── La carte d'une catégorie ── */
+.md-typeset .arme {
+  padding: 0.7rem 0.95rem 0.9rem;
+  border: 1px solid var(--green-header);
+  border-left: 3px solid var(--green-title);
+  border-radius: 3px;
+  background: var(--paper);
+  break-inside: avoid;
+}
+
+.md-typeset .arme-nom {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.9rem;
+  margin: 0 0 0.6rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid var(--green-header);
+  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-size: 0.85rem;
+  font-variant: small-caps;
+  letter-spacing: 0.05em;
+  color: var(--green-title);
+}
+.md-typeset .arme-portee {
+  flex: none;
+  font-family: 'Symboles JDR', 'Alegreya', Georgia, serif;
+  font-size: 0.62rem;
+  font-variant: normal;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  opacity: 0.7;
+}
+
+/* ── Les gestes ──
+   Autant de colonnes que la largeur en permet, chacune assez large pour que
+   l'empreinte reste lisible : c'est elle qu'on lit en premier. */
+.md-typeset .gestes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+  gap: 0.7rem 0.9rem;
+}
+
+.md-typeset .geste {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.18rem;
+  min-width: 0;
+  text-align: center;
+}
+
+.md-typeset svg.geste-carte {
+  display: block;
+  width: 100%;
+  max-width: 7.5rem;
+  height: auto;
+}
+
+.md-typeset .geste-nom {
+  margin: 0.1rem 0 0;
+  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-size: 0.7rem;
+  font-variant: small-caps;
+  letter-spacing: 0.04em;
+  line-height: 1.15;
+  color: var(--green-title);
+}
+/* Le terme technique de la source, sous le nom francais : c'est lui qui permet
+   de remonter au traite, et il ne doit pas concurrencer le nom du livre. */
+.md-typeset .geste-nom em {
+  display: block;
+  margin-top: 0.08rem;
+  font-family: 'Symboles JDR', 'Alegreya', Georgia, serif;
+  font-size: 0.56rem;
+  font-variant: normal;
+  font-style: italic;
+  letter-spacing: 0;
+  line-height: 1.25;
+  color: var(--ink);
+  opacity: 0.6;
+}
+
+/* Les dégâts : deux valeurs, la pleine sur la case verte et la moitié sur la
+   blanche, cette dernière en retrait puisqu'elle n'arrive qu'à l'accident. Le
+   type peut différer, ce n'est pas la même partie de l'arme qui touche. */
+.md-typeset .geste-chiffres {
+  margin: 0;
+  font-family: 'Roboto Mono', ui-monospace, monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+}
+.md-typeset .geste-chiffres b {
+  font-weight: 700;
+  color: var(--green-title);
+}
+.md-typeset .geste-chiffres .dg-passe {
+  opacity: 0.62;
+}
+.md-typeset .geste-chiffres .dg-passe::before {
+  content: '\2002·\2002';
+  opacity: 0.7;
+}
+.md-typeset .geste-chiffres .dg-passe b {
+  font-weight: 400;
+  color: inherit;
+}
+
+/* ── La garde ──
+   Le carré des positions de mains, SANS AUCUN CHIFFRE : un numéro de case ne dit
+   rien à qui lit, le dessin dit tout. Cercle vide au départ, disque plein à
+   l'arrivée, flèche entre les deux — et c'est la pointe de la flèche qui porte le
+   sens, puisqu'il n'y a plus de texte pour le donner. D'où une taille plus
+   généreuse que celle d'une simple vignette : ce carré se lit. */
+.md-typeset .geste-garde {
+  display: flex;
+  justify-content: center;
+  margin: 0.05rem 0 0;
+}
+.md-typeset svg.garde-carre {
+  flex: none;
+  width: 1.6rem;
+  height: 1.6rem;
+}
+.md-typeset svg.garde-carre .gd-case {
+  fill: var(--ink);
+  fill-opacity: 0.08;
+}
+.md-typeset svg.garde-carre .gd-depart {
+  fill: var(--paper);
+  stroke: var(--green-title);
+  stroke-width: 1.4;
+}
+.md-typeset svg.garde-carre .gd-arrivee {
+  fill: var(--green-title);
+}
+.md-typeset svg.garde-carre .gd-fleche {
+  stroke: var(--green-title);
+  stroke-width: 1.2;
+  stroke-opacity: 0.6;
+  fill: none;
+}
+.md-typeset svg.garde-carre .gd-pointe {
+  fill: var(--green-title);
+  fill-opacity: 0.6;
+}
+
+
+/* La difficulté d'attaque appartient au geste, pas à l'arme : estoquer et
+   balayer ne demandent pas la même adresse. Elle se pose sous les dégâts, en
+   retrait, pour qu'on lise d'abord ce que le coup fait. */
+.md-typeset .geste-diff {
+  margin: 0;
+  font-family: 'Roboto Mono', ui-monospace, monospace;
+  font-size: 0.57rem;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  opacity: 0.66;
+}
+
+.md-typeset .geste-note {
+  margin: 0.1rem 0 0;
+  font-size: 0.58rem;
+  line-height: 1.35;
+  color: var(--ink);
+  opacity: 0.72;
+  text-wrap: balance;
+}
+
+/* ── L'empreinte ──
+   Trois états seulement : la case couverte par le geste, la case du personnage,
+   et le reste de la grille, qui n'est là que pour donner l'échelle. */
+.md-typeset svg.geste-carte polygon {
+  stroke: var(--paper);
+  stroke-width: 0.6;
+}
+.md-typeset svg.geste-carte .hx-vide {
+  fill: var(--ink);
+  fill-opacity: 0.055;
+}
+/* Vert plein : la case VISEE, degats pleins, et le coup poursuit sa course.
+   DEMI-VERT : l'arme y PASSE a hauteur de corps ; qui s'y tient prend la moitie
+   des degats et arrete le coup, le reste du trajet etant annule. Le meme vert a
+   la moitie de sa densite, ce qui dit la regle sans legende : moitie de teinte,
+   moitie de degats. Aucun contour ici — il est reserve a la case du porteur. */
+.md-typeset svg.geste-carte .hx-frappe {
+  fill: var(--green-title);
+  fill-opacity: 0.92;
+}
+.md-typeset svg.geste-carte .hx-passe {
+  fill: var(--green-title);
+  fill-opacity: 0.30;
+}
+
+/* La case du porteur : un contour orange, jamais un remplissage, parce qu'elle
+   se frappe aussi et qu'on doit voir ce qu'elle porte. Un contour REGULIER : on
+   avait doublé l'arete du haut pour marquer le cote regarde, mais le texte le
+   dit deja et le trait ne faisait qu'enlaidir la carte. */
+.md-typeset svg.geste-carte .hx-soi {
+  fill: none;
+  stroke: var(--orange-soi);
+  stroke-width: 1.4;
+}
+/* Le RANG : l'ordre ou le coup traverse les cases, donc l'ordre ou il s'arrete
+   si l'une d'elles est occupee. C'est la seule chose que la carte chiffre. */
+.md-typeset svg.geste-carte .hx-rang {
+  font-family: 'Roboto Mono', ui-monospace, monospace;
+  font-size: 8px;
+  font-weight: 700;
+  text-anchor: middle;
+  pointer-events: none;
+}
+.md-typeset svg.geste-carte .hx-rang--frappe { fill: var(--paper); }
+/* Sur le demi-vert, c'est l'encre qui porte : elle tient de jour comme de nuit,
+   la ou un vert sur du vert clair se perdrait. */
+.md-typeset svg.geste-carte .hx-rang--passe  { fill: var(--ink); }
+
+
+/* L'orange du porteur. Le livre n'en avait pas : c'est la seule couleur qui ne
+   soit ni le vert des coups ni l'encre du texte, et elle ne sert qu'a ca. */
+body {
+  --orange-soi: #b4682e;
+}
+html.night body {
+  --orange-soi: #d99552;
+}
+/* Légende des deux états, posée sous le chapeau du chapitre. */
+.md-typeset .gestes-legende {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 1.2rem;
+  align-items: center;
+  margin: 0.7rem 0 0.2rem;
+  font-size: 0.6rem;
+}
+.md-typeset .gestes-legende i {
+  display: inline-block;
+  width: 0.85rem;
+  height: 0.85rem;
+  margin-right: 0.35rem;
+  vertical-align: -0.14rem;
+  border-radius: 2px;
+  background: var(--green-title);
+}
+.md-typeset .gestes-legende .lg-passe {
+  background: var(--green-title);
+  opacity: 0.3;
+}
+/* La case du porteur : le meme contour orange que sur les cartes, regulier. */
+.md-typeset .gestes-legende .lg-soi {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.4px var(--orange-soi);
+  border-radius: 1px;
+}
+
+/* ── Écrans étroits ── */
+@media screen and (max-width: 44rem) {
+  .md-typeset .gestes { grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr)); }
+  .md-typeset svg.geste-carte { max-width: 6rem; }
+}
+
+/* ── Impression ── */
+@media print {
+  .md-typeset .arme { break-inside: avoid; page-break-inside: avoid; }
+}
+
+/* ── La citation, sous chaque coup ──
+   Elle est la condition de validite du coup : sans source verifiable, il n'entre
+   pas au chapitre. Elle se lit donc a la demande, en petit, mais elle est la. */
+.md-typeset .geste-source {
+  margin: 0.25rem 0 0;
+  padding-top: 0.22rem;
+  border-top: 1px dotted var(--md-default-fg-color--lightest, rgba(29, 29, 29, 0.14));
+  font-size: 0.52rem;
+  line-height: 1.3;
+  font-style: italic;
+  color: var(--ink);
+  opacity: 0.55;
+  text-wrap: pretty;
+}
+
+/* La prise, sous le nom de la categorie : elle vaut pour tous ses coups. */
+.md-typeset .arme-prise {
+  margin: -0.3rem 0 0.6rem;
+  font-size: 0.6rem;
+  line-height: 1.4;
+  color: var(--ink);
+  opacity: 0.7;
+}

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Camp Outward sur Roll20</title>
+  <!-- AMORCEUR GELÉ, comme roll20-fiche.html, et pour exactement la même
+       raison. Ne plus rien ajouter ici : ni feuille de style, ni script, ni
+       numéro de version.
+
+       Pourquoi. La coquille signée charge cette page en dur, SANS query
+       (extension/firefox/<partie>/panneau-shell.js, stable ou beta, où elle
+       s'appelle DEFAUT), et GitHub Pages la sert avec dix minutes de cache que
+       le navigateur ne peut pas contourner. Tout ce qui est nommé ICI est donc
+       figé pour dix minutes après chaque publication, et pour bien plus
+       longtemps si un navigateur garde la page.
+
+       CE NOM DE FICHIER EST CUIT DANS LE PAQUET SIGNÉ. Le renommer coûte une
+       signature chez Mozilla, dont le quota quotidien est très serré : cette
+       page peut changer de contenu autant qu'elle veut, jamais de nom. Et tant
+       que le paquet n'est pas signé, elle doit EXISTER : la coquille compose
+       la racine du site et ce nom-là, et un nom mort donne une iframe vide,
+       sans la moindre erreur à lire.
+
+       Alors cette page ne nomme plus rien : elle lit owd-manifeste.json, qui se
+       relit SANS cache, et charge le bloc « camp » qu'il nomme. Le camp lui-même
+       (owd-camp.js, owd-camp.css) peut donc être refait de fond en comble sans
+       toucher à l'extension.
+
+       CE QUI EST FIGÉ ICI L'EST POUR TOUJOURS, en pratique, et c'est la liste
+       entière : le nom du fichier de manifeste, le nom du bloc qu'on y lit
+       (camp), l'id de la racine de montage (camp-panneau, que owd-camp.js
+       cherche par cet id — les deux côtés doivent dire le même mot), la classe
+       jour/nuit (.night sur <html>), la clé locale du jour/nuit
+       (owd-r20-night-camp), le marqueur de feuille (data-owd="1"), la feuille
+       de polices, et la liste DEFAUT ci-dessous.
+
+       LA CLÉ DE NUIT EST PROPRE AU CAMP, et ce n'est pas un oubli : la fiche a
+       la sienne (owd-r20-night), les deux pages sont servies par la même
+       origine, et partager la clé ferait qu'éclairer le camp repeindrait la
+       fiche du même joueur. -->
+  <link rel="stylesheet" href="stylesheets/fonts.css">
+</head>
+<body>
+  <div id="camp-panneau"><noscript>Le camp a besoin de JavaScript.</noscript></div>
+  <script>
+  // JOUR / NUIT, tout de suite. Cette poignée de lignes doit rester ICI, dans
+  // l'amorceur : elle s'exécute AVANT le premier rendu. Passée au camp, qui
+  // n'arrive qu'après la lecture du manifeste, elle ferait clignoter le panneau
+  // en clair avant de basculer en sombre — et le cadre qui l'entoure, lui, est
+  // déjà peint par l'extension. La règle ne changera plus : préférence locale,
+  // sinon l'indice n=1/0 du hash (posé par la coquille d'après le réglage
+  // owdNuit de l'extension, et ABSENT quand ce réglage vaut « auto »), sinon le
+  // thème du navigateur. Le camp la rejoue, et la redit au cadre.
+  (function () {
+    "use strict";
+    try {
+      var h = location.hash || "";
+      var p = null;
+      // localStorage lève dans une iframe tierce dont les cookies sont
+      // bloqués : le panneau doit alors suivre Roll20, pas refuser de s'ouvrir.
+      try { p = localStorage.getItem("owd-r20-night-camp"); } catch (e) {}
+      var on = p === "1" ? true : p === "0" ? false
+             : /[#&]n=1/.test(h) ? true : /[#&]n=0/.test(h) ? false
+             : !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+      document.documentElement.classList.toggle("night", on);
+    } catch (e) {}
+  })();
+  (function () {
+    "use strict";
+    // Repli : ce que l'on charge si le manifeste ne répond pas. Volontairement
+    // sans ?v= — mieux vaut un fichier de cache qu'aucun camp.
+    var DEFAUT = {
+      js: ["javascripts/owd-camp.js"],
+      css: ["stylesheets/owd-camp.css"]
+    };
+    var DELAI = 3000;   // un fetch qui PEND ne rejette jamais : on le borne
+
+    // Une URL de manifeste doit rester dans le site : relative, sans schéma ni
+    // « // », sans remontée de dossier. Sinon on refuse tout le bloc.
+    function sure(u) {
+      return typeof u === "string" && u &&
+             !/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(u) && u.indexOf("//") !== 0 &&
+             u.indexOf("..") < 0;
+    }
+    function listeSure(l) {
+      return Array.isArray(l) && l.length && l.every(sure);
+    }
+    function valide(m) {
+      if (!m || typeof m !== "object") return false;
+      var c = m.camp;
+      return !!c && typeof c === "object" && listeSure(c.js) && listeSure(c.css);
+    }
+
+    function css(u) {
+      var l = document.createElement("link");
+      l.rel = "stylesheet";
+      l.href = u;
+      l.setAttribute("data-owd", "1");
+      document.head.appendChild(l);
+    }
+    // Les scripts s'injectent EN SÉRIE, comme pour la fiche : le bloc « camp »
+    // peut en compter plusieurs un jour, et le second supposerait le premier.
+    function serie(urls) {
+      var i = 0;
+      (function suivant() {
+        if (i >= urls.length) return;
+        var s = document.createElement("script");
+        s.src = urls[i++];
+        s.onload = suivant;
+        s.onerror = suivant;   // un manquant ne doit pas geler la file
+        document.body.appendChild(s);
+      })();
+    }
+
+    function lancer(m) {
+      // Le camp y lit la release publiée, pour la dire dans son pied de
+      // panneau. Il n'en dépend pas : sans manifeste, il ne dit rien.
+      try { window.__owdManifeste = m; } catch (e) {}
+      var c = (m && m.camp) || DEFAUT;
+      (c.css || []).forEach(css);
+      serie(c.js || []);
+    }
+
+    var parti = false;
+    function une(m) {
+      if (parti) return;
+      parti = true;
+      // Un manifeste à moitié cru serait pire que pas de manifeste du tout :
+      // c'est DEFAUT en entier, ou le bloc du manifeste en entier, jamais un
+      // mélange.
+      lancer(valide(m) ? m : { camp: DEFAUT });
+    }
+
+    setTimeout(function () { une(null); }, DELAI);
+    try {
+      // ?t= : ne pas nettoyer. Il change la clé de cache du CDN, que
+      // « cache: no-store » seul ne contourne pas.
+      fetch("owd-manifeste.json?t=" + new Date().getTime(), { cache: "no-store" })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(une, function () { une(null); });
+    } catch (e) { une(null); }
+  })();
+  </script>
+</body>
+</html>
