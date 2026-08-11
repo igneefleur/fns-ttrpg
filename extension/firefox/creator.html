@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fiche Outward</title>
+  <!-- Coquille : la fiche n'est PAS embarquée dans l'extension. Cette page
+       d'extension (immunisée contre la CSP de Roll20) affiche roll20-fiche.html
+       SERVIE PAR LE SITE : chaque déploiement du site met la fiche à jour dans
+       Roll20 sans re-signer l'extension. La page distante parle directement au
+       pont d20 via window.top (postMessage) ; aucun relais ici.
+
+       C'est tout le pari de l'architecture en coquille, et il tient à une
+       arithmétique : une signature Mozilla se compte au quota quotidien, un
+       déploiement du site ne coûte rien. Tout ce qui bouge souvent doit donc
+       vivre côté site, et ce fichier ne doit jamais recommencer à porter de la
+       fiche.
+
+       PARTAGÉE par les deux parties : rien ici ne dépend du mode. C'est la
+       coquille chargée qui en dépend, et shell-loader.js la choisit d'après le
+       mode écrit dans le hash (&m=…) par content-roll20.js. Cette page ne nomme
+       donc aucune des deux coquilles. -->
+  <link rel="stylesheet" href="creator.css">
+</head>
+<body>
+  <iframe id="owd-remote" allow="clipboard-write"></iframe>
+  <script src="shell-loader.js" data-coquille="creator"></script>
+</body>
+</html>

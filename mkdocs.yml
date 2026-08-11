@@ -10,6 +10,10 @@ nav:
       - content/regles/index.md
       - Le Combat:
           - Portées: content/regles/combat/portees.md
+  # La fiche de personnage, servie par le site et non par l'extension : la même
+  # page monte la fiche ici, hors Roll20, et dans l'iframe de la coquille signée.
+  - Personnage: personnage/index.md
+  - Extension: extension/index.md
 theme:
   name: material
   custom_dir: overrides
@@ -36,11 +40,20 @@ extra_css:
   - stylesheets/fonts.css   # @font-face auto-hébergés : doit être chargée en premier
   - stylesheets/extra.css?v=13
   - stylesheets/night.css
+  # LES ?v= DE LA FICHE SE MONTENT PAR OUTIL, JAMAIS À LA MAIN, et tous
+  # ensemble : scripts/release_fiche.py les pose ici ET dans
+  # docs/owd-manifeste.json, sur un seul numéro commun. Le site charge la fiche
+  # par ces deux listes, Roll20 la charge par le manifeste ; deux clés de cache
+  # qui divergent, et les deux mondes font tourner deux codes en croyant faire
+  # tourner le même. Un fichier monté d'un seul côté ne se voit pas.
+  - stylesheets/owd-fiche.css?v=1
 extra_javascript:
   - javascripts/changelog.js
   - javascripts/continuous.js
   - javascripts/nav-drawer.js
   - javascripts/night.js
+  - javascripts/owd-migrations.js?v=1 # moteur de migration : AVANT le bundle, qui l'appelle
+  - javascripts/owd-fiche.js?v=1
   - javascripts/copybtn.js
 hooks:
   - hooks/changelog.py

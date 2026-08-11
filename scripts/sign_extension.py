@@ -1,0 +1,274 @@
+"""Signe l'extension Firefox Outward via l'API de soumission de Mozilla (AMO).
+
+Un .xpi SIGNÉ s'installe DÉFINITIVEMENT sur tout Firefox (double-clic ou
+« Ouvrir avec Firefox ») : plus de rechargement à chaque session. Le canal est
+« unlisted » : l'extension n'est PAS publiée sur addons.mozilla.org, Mozilla ne
+fait que la valider et la signer ; la distribution reste le site.
+
+Flux (API de soumission v5, celle de web-ext >= 7 ; l'ancienne API « signing »
+en PUT répond désormais 404 pour les nouveaux add-ons) :
+  1. POST /addons/upload/ (multipart, channel=unlisted) -> uuid ;
+  2. attente de la validation (GET /addons/upload/{uuid}/) ;
+  3. POST /addons/addon/ {version:{upload:uuid}} (création) — c'est ce premier
+     envoi qui CRÉE l'add-on chez Mozilla — ou, s'il existe déjà,
+     POST /addons/addon/{guid}/versions/ (nouvelle version) ;
+  4. attente de la signature (file.status == "public"), téléchargement du .xpi
+     signé PAR-DESSUS docs/download/owd-roll20-firefox.xpi ;
+  5. mise à jour de docs/download/updates.json (mise à jour AUTOMATIQUE : le
+     manifest porte update_url -> ce fichier ; Firefox y lit la dernière
+     version et va la chercher sur le site tout seul).
+
+Prérequis :
+  1. `python scripts/build_extension.py` (le .xpi à signer — l'extension est
+     une coquille, le site n'a pas besoin d'être construit) ;
+  2. les clés API du compte Firefox (https://addons.mozilla.org/fr/developers/addon/api/key/),
+     dans les variables d'environnement AMO_JWT_ISSUER et AMO_JWT_SECRET.
+     ELLES NE SE RANGENT NULLE PART DANS LE DÉPÔT : en CI ce sont les secrets
+     du dépôt, en local des variables d'environnement de la session. Une clé
+     committée, même dans un fichier ignoré par mégarde, se révoque et se
+     remplace — et elle donne le droit de signer sous ce nom d'add-on.
+
+    python scripts/sign_extension.py
+
+LE COMPTE EST PARTAGÉ AVEC L'EXTENSION DE LA BRANCHE SŒUR : le quota
+journalier de soumissions se compte à la dizaine, et signer ici mange celui
+dont l'autre extension peut avoir besoin le même jour.
+
+Chaque signature exige une VERSION NEUVE. Elle est posée par
+scripts/ci_extension.py dans les deux manifests, JAMAIS à la main : le numéro
+se calcule au-dessus de ce qui est déjà pris (chez Mozilla comme ici), et un
+numéro déjà pris est refusé APRÈS la validation, quota consommé.
+"""
+import base64
+import hashlib
+import hmac
+import json
+import os
+import sys
+import time
+import uuid
+from pathlib import Path
+
+import requests
+
+ROOT = Path(__file__).resolve().parent.parent
+FF_MANIFEST = ROOT / "extension" / "firefox" / "manifest.json"
+XPI = ROOT / "docs" / "download" / "owd-roll20-firefox.xpi"
+UPDATES = ROOT / "docs" / "download" / "updates.json"
+# L'ADRESSE DU PAQUET, ÉCRITE EN TOUTES LETTRES ET EN MINUSCULES. Elle pointe
+# sur le site STABLE, jamais sur la beta : c'est elle qui est cuite dans
+# update_url du manifeste signé, chez tous ceux qui ont installé l'extension, et
+# elle ne se reprend pas. Elle fonctionne même avant que /owd/ existe, puisque
+# le workflow recopie docs/download/ vers owd/download/ après chaque signature.
+# Jamais concaténée : une URL assemblée par bouts est un motif de méfiance à la
+# revue Mozilla, et une faute de frappe y serait invisible.
+XPI_URL = "https://igneefleur.github.io/fns-ttrpg/owd/download/owd-roll20-firefox.xpi"
+API = "https://addons.mozilla.org/api/v5"
+
+
+def jwt_token(issuer, secret):
+    """JWT HS256 signé à la main (aucune dépendance) — format exigé par l'API AMO."""
+    def b64(d):
+        return base64.urlsafe_b64encode(d).rstrip(b"=")
+    header = b64(json.dumps({"alg": "HS256", "typ": "JWT"}).encode())
+    now = int(time.time())
+    payload = b64(json.dumps({
+        # AMO refuse toute fenêtre iat->exp au-delà de 5 min : 60 s suffisent,
+        # le jeton est refabriqué à chaque appel.
+        "iss": issuer, "jti": str(uuid.uuid4()), "iat": now, "exp": now + 60,
+    }).encode())
+    signing = header + b"." + payload
+    sig = b64(hmac.new(secret.encode(), signing, hashlib.sha256).digest())
+    return (signing + b"." + sig).decode()
+
+
+class Amo:
+    """Petit client authentifié ; le JWT expire en 5 min, on le refait à chaque appel."""
+
+    def __init__(self, issuer, secret):
+        self.issuer, self.secret = issuer, secret
+
+    def h(self, extra=None):
+        out = {"Authorization": "JWT " + jwt_token(self.issuer, self.secret)}
+        if extra:
+            out.update(extra)
+        return out
+
+    def get(self, path, **kw):
+        return requests.get(API + path, headers=self.h(), timeout=60, **kw)
+
+    def post(self, path, **kw):
+        return requests.post(API + path, headers=self.h(kw.pop("headers", None)), timeout=120, **kw)
+
+
+def _throttle_wait(r):
+    """AMO limite la cadence des soumissions : sur un 429, renvoie le délai
+    d'attente ANNONCÉ (« Expected available in N seconds » / Retry-After).
+    Sinon None. Au-delà de 15 min, c'est un QUOTA (journalier) : inutile de
+    réessayer dans ce run, les appelants abandonnent immédiatement."""
+    if r.status_code != 429:
+        return None
+    import re
+    m = re.search(r"(\d+) seconds", r.text or "")
+    ra = r.headers.get("Retry-After", "")
+    return (int(ra) if ra.isdigit() else (int(m.group(1)) if m else 60)) + 5
+
+
+QUOTA = 900   # au-delà : quota longue durée, on n'attend pas dans le run
+
+
+def upload_xpi(amo):
+    print(f"[signature] téléversement de {XPI.name} ({XPI.stat().st_size} octets)…")
+    for _ in range(4):
+        with XPI.open("rb") as fh:
+            r = amo.post("/addons/upload/",
+                         files={"upload": ("owd-roll20-firefox.xpi", fh, "application/x-xpinstall")},
+                         data={"channel": "unlisted"})
+        w = _throttle_wait(r)
+        if w is None:
+            break
+        if w >= QUOTA:
+            sys.exit(f"AMO annonce {w} s d'attente (quota de soumissions épuisé) : "
+                     "réessayer quand la fenêtre sera retombée.")
+        print(f"[signature] AMO limite la cadence : nouvel essai dans {w} s…")
+        time.sleep(min(w, 420))
+    if r.status_code not in (200, 201, 202):
+        sys.exit(f"Téléversement refusé (HTTP {r.status_code}) : {r.text[:800]}")
+    return r.json()["uuid"]
+
+
+def wait_validation(amo, up_uuid):
+    print("[signature] validation Mozilla en cours…")
+    for _ in range(60):                       # ~5 min max
+        time.sleep(5)
+        r = amo.get(f"/addons/upload/{up_uuid}/")
+        if r.status_code != 200:
+            continue
+        s = r.json()
+        if not s.get("processed"):
+            continue
+        if not s.get("valid"):
+            msgs = (s.get("validation") or {}).get("messages", [])
+            errs = [m.get("message") for m in msgs if m.get("type") == "error"]
+            sys.exit("Validation refusée : " + " | ".join(map(str, errs[:5])))
+        print("[signature] validation acquise")
+        return
+    sys.exit("Validation toujours en cours après 5 min : relancer plus tard.")
+
+
+def _post_throttle(amo, path, **kw):
+    """POST avec réessais sur throttle AMO (429)."""
+    for _ in range(4):
+        r = amo.post(path, **kw)
+        w = _throttle_wait(r)
+        if w is None:
+            return r
+        if w >= QUOTA:
+            sys.exit(f"AMO annonce {w} s d'attente (quota de soumissions épuisé) : "
+                     "réessayer quand la fenêtre sera retombée.")
+        print(f"[signature] AMO limite la cadence : nouvel essai dans {w} s…")
+        time.sleep(min(w, 420))
+    return r
+
+
+def create_version(amo, guid, up_uuid, version):
+    # création de l'add-on (premier envoi) ; s'il existe déjà, nouvelle version.
+    # Un « Duplicate add-on ID found » sur un GUID qu'AMO ne montre pas veut
+    # dire que les clés sont celles d'un AUTRE compte que le propriétaire de
+    # l'add-on : ci_extension.py le dit en clair dans le journal du run.
+    r = _post_throttle(amo, "/addons/addon/", json={"version": {"upload": up_uuid}})
+    if r.status_code in (200, 201, 202):
+        v = r.json()["version"]
+        print(f"[signature] add-on créé sur AMO (canal unlisted), version {v['version']}")
+        return v["id"]
+    r2 = _post_throttle(amo, f"/addons/addon/{guid}/versions/", json={"upload": up_uuid})
+    if r2.status_code in (200, 201, 202):
+        v = r2.json()
+        print(f"[signature] nouvelle version {v['version']} envoyée")
+        return v["id"]
+    if r2.status_code == 409 or "already exists" in r2.text:
+        sys.exit(f"La version {version} existe déjà sur AMO : monter \"version\" dans les "
+                 "deux manifests, re-packer (build_extension.py) puis relancer.")
+    sys.exit(f"Création refusée (HTTP {r.status_code} puis {r2.status_code}) : "
+             f"{r.text[:400]} | {r2.text[:400]}")
+
+
+def wait_signed(amo, guid, version_id):
+    print("[signature] signature en attente (revue automatique)…")
+    for _ in range(120):                      # ~10 min max
+        time.sleep(5)
+        r = amo.get(f"/addons/addon/{guid}/versions/{version_id}/")
+        if r.status_code != 200:
+            continue
+        f = (r.json() or {}).get("file") or {}
+        if f.get("status") == "public":
+            return f["url"]
+        if f.get("status") == "disabled":
+            sys.exit("Version désactivée par la revue : voir le tableau de bord AMO.")
+    sys.exit("Fichier signé toujours absent après 10 min : la revue peut prendre plus de "
+             "temps ; relancer plus tard (le téléchargement reprendra ici).")
+
+
+def ecrire_updates(gecko, version):
+    """Le fichier de mise à jour automatique, tel que Firefox l'attend.
+
+    LA FORME NE S'ÉCRIT QU'ICI. Sur la branche sœur elle l'était deux fois — à
+    la signature, et dans la réparation de scripts/ci_extension.py qui restaure
+    un binaire signé depuis AMO — et les deux copies ne se voyaient pas. C'est
+    le manifeste qui porte update_url vers ce fichier : Firefox y lit la
+    dernière version et va la chercher sur le site tout seul. Une clé de travers
+    d'un côté, et la mise à jour automatique s'arrête sans un mot chez tous ceux
+    qui l'ont installée.
+    """
+    UPDATES.write_text(json.dumps({
+        "addons": {
+            gecko["id"]: {
+                "updates": [
+                    {"version": version, "update_link": XPI_URL,
+                     "browser_specific_settings": {"gecko": {
+                         "strict_min_version": gecko.get("strict_min_version", "109.0")}}}
+                ]
+            }
+        }
+    }, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def sign(issuer, secret):
+    """Signe le .xpi courant et met à jour docs/download/ (xpi signé + updates.json)."""
+    if not XPI.exists():
+        sys.exit(f"{XPI} absent : lancer d'abord scripts/build_extension.py.")
+
+    manifest = json.loads(FF_MANIFEST.read_text(encoding="utf-8"))
+    gecko = manifest["browser_specific_settings"]["gecko"]
+    guid = gecko["id"]
+    version = manifest["version"]
+    amo = Amo(issuer, secret)
+
+    up_uuid = upload_xpi(amo)
+    wait_validation(amo, up_uuid)
+    version_id = create_version(amo, guid, up_uuid, version)
+    signed_url = wait_signed(amo, guid, version_id)
+
+    print(f"[signature] téléchargement du .xpi signé : {signed_url}")
+    dl = requests.get(signed_url, headers=amo.h(), timeout=120)
+    dl.raise_for_status()
+    XPI.write_bytes(dl.content)
+    print(f"[signature] {XPI.relative_to(ROOT)} remplacé par la version SIGNÉE "
+          f"({len(dl.content)} octets)")
+
+    ecrire_updates(gecko, version)
+    print(f"[signature] {UPDATES.relative_to(ROOT)} mis à jour (v{version}) — "
+          "les Firefox installés se mettront à jour tout seuls depuis le site.")
+
+
+def main():
+    issuer = os.environ.get("AMO_JWT_ISSUER")
+    secret = os.environ.get("AMO_JWT_SECRET")
+    if not issuer or not secret:
+        sys.exit("Clés absentes : définir AMO_JWT_ISSUER et AMO_JWT_SECRET "
+                 "(https://addons.mozilla.org/fr/developers/addon/api/key/).")
+    sign(issuer, secret)
+
+
+if __name__ == "__main__":
+    main()

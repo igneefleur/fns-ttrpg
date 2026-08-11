@@ -1,0 +1,490 @@
+/* Panneau de l'extension — la même main que le livre Outward.
+ *
+ * CE QUI EST REPRIS DU LIVRE, et pourquoi : la palette parchemin (jour et
+ * nuit), les cartes à filet sur une feuille claire, le petit tiret olive sous
+ * chaque titre de bloc, les libellés minuscules en capitales espacées face aux
+ * valeurs, l'accent réservé à quatre situations (le tiret, le segment actif, le
+ * focus, l'alerte). Une extension qui a l'air d'un réglage de navigateur et un
+ * livre qui a l'air d'un livre ne se ressembleraient en rien ; celui-ci
+ * ressemble au livre.
+ *
+ * L'ACCENT D'OUTWARD EST L'OLIVE, jamais un carmin : c'est --green-section
+ * (docs/stylesheets/extra.css) et son éclaircissement de nuit
+ * (docs/stylesheets/night.css). Les autres jeux du dépôt ont un rouge, et leurs
+ * feuilles se ressemblent assez pour qu'on recopie l'une pour l'autre sans s'en
+ * apercevoir : ce fichier-ci n'a pas une seule valeur rouge, et il ne doit pas
+ * en gagner.
+ *
+ * LA RACINE EST ÉPINGLÉE À 18 px, la valeur de l'iframe Roll20. Toutes les
+ * tailles de la fiche sont en rem sur une racine de 22 px (site) ou de 18 px
+ * (Roll20) : recopiées dans une page à racine 16 px elles perdent 27 pour cent,
+ * un libellé de .54rem tomberait à 8.6 px et ne se lirait plus. Épingler évite
+ * de convertir chaque valeur à la main, et évite surtout qu'un joueur qui a
+ * grossi la police de son navigateur voie ce panneau déborder.
+ */
+
+/* LES POLICES DU LIVRE SONT DANS LE PAQUET — une par famille, 69.4 ko à deux.
+ *
+ * Les nommer sans les embarquer ne servirait à rien : une page d'extension
+ * n'atteint pas docs/assets/fonts/, et sur toute machine où elles ne sont pas
+ * installées (donc presque toutes) ce panneau se dessinerait en Georgia.
+ *
+ * UNE SEULE PAR FAMILLE, ET IL NE FAUT PAS EN AJOUTER. Les fichiers sont copiés
+ * octet pour octet de docs/assets/fonts/alegreya-400-latin.woff2 et
+ * cinzel-600-latin.woff2 ; le chiffre de leur nom d'origine est une case de
+ * Google Fonts, pas un poids : ces fichiers sont VARIABLES (axe wght, 400 à
+ * 900), et toutes les cases de poids d'une même famille ont le même md5 (400,
+ * 500, 600 et 700 pour Alegreya ; 600 et 700 pour Cinzel — vérifié dans ce
+ * dépôt). Poser en plus « alegreya-700 » coûterait 43.5 ko pour le même octet.
+ * Le poids se demande par font-weight, la police l'interpole.
+ *
+ * PAS DE local() dans src : une Alegreya d'une autre coupe, installée sur la
+ * machine, gagnerait sur le fichier embarqué et on aurait payé 69 ko pour rien.
+ *
+ * Sous-ensemble « latin » seul, sans le latin-ext : il suffit au français, œ
+ * compris (U+0152-0153 est dans « latin »). Les quelques signes qu'aucune des
+ * deux ne porte (la flèche du dépannage, les triangles du repli, le triangle
+ * d'alerte) tombent sur la police du système, caractère par caractère.
+ *
+ * font-display: block, et non swap. Un popup se dimensionne à son contenu :
+ * peindre en Georgia puis échanger ne ferait pas que changer la police, il
+ * redimensionnerait la fenêtre sous la souris. Le fichier est local, l'attente
+ * se compte en millisecondes.
+ *
+ * Les deux sont sous SIL Open Font License 1.1 — Alegreya, copyright 2011 The
+ * Alegreya Project Authors ; Cinzel, copyright 2020 The Cinzel Project Authors.
+ * Texte des licences : fonts/licences/, dans le paquet. */
+@font-face {
+  font-family: 'Alegreya';
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: block;
+  src: url('../fonts/alegreya-latin.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Cinzel';
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: block;
+  src: url('../fonts/cinzel-latin.woff2') format('woff2');
+}
+
+/* Aucune page d'extension n'a de reset : sans ce box-sizing, la première
+   bordure fait déborder les blocs de leur colonne. La fiche re-déclare la même
+   chose à la main dans l'iframe Roll20, pour la même raison. */
+* { box-sizing: border-box; }
+
+:root {
+  font-size: 18px;
+
+  /* La palette du livre, jour. Recopiée de docs/stylesheets/extra.css : cette
+     page ne charge rien d'autre, elle doit tenir seule. Recopiée mais non
+     complète : on ne garde que les tons dont ce panneau se sert, un ton mort
+     étant un ton qui ment sur ce qu'on peut peindre ici. */
+  --paper:   #faf6eb;
+  --card:    #fffdf6;
+  --panel:   #f6efdd;
+  --hair:    #e2d8c0;
+  --line:    #c6bb9f;
+  --line-2:  #d6cbb1;
+  --ink:     #1d1d1d;
+  --ink-2:   #453d2d;
+  --ink-3:   #746a54;
+  /* DEUX OLIVES, ET LEURS NOMS DISENT LEUR EMPLOI, non leur clarté : --vert est
+     le ton de BORDURE et de REMPLISSAGE, --vert-txt le ton de TEXTE. Les deux
+     s'inversent d'ailleurs entre le jour et la nuit, et un nom comme « foncé »
+     mentirait donc la moitié du temps. --vert-txt mesure 8.0:1 sur --card. */
+  --vert:    #63755e;
+  --vert-txt:#46543b;
+  --wash:    rgba(99, 117, 94, .12);
+  /* Le vert franc de l'état, et non l'olive de l'accent : la pastille répond
+     « oui, ça marche », elle ne décore pas. Deux verts sur la même barre se
+     distinguent parce que l'un est gris et l'autre pas. */
+  --ok:      #4f7a3a;
+  /* Le remplissage d'un contrôle actif et le texte qu'il porte. De jour, blanc
+     sur --vert-txt mesure 8.1:1. De nuit, la même paire est illisible : le fond
+     doit rester sombre et le texte devenir clair, d'où la paire du livre de
+     nuit, #e8dfcb sur #46543b, mesurée 6.1:1. */
+  --actif-fond: var(--vert-txt);
+  --actif-txt:  #fff;
+
+  --fs-label: .58rem;   /* 10.4 px — capitales espacées */
+  --fs-meta:  .62rem;   /* 11.2 px — notes et pied */
+  --fs-title: .68rem;   /* 12.2 px — Cinzel, titre de bloc */
+  --fs-body:  .72rem;   /* 13.0 px — libellé d'un réglage */
+  --fs-hero:  .84rem;   /* 15.1 px — l'interrupteur général */
+  --gut:      .38rem;
+}
+
+/* LA NUIT EST UNE CLASSE, POSÉE PAR popup.js AVANT LE PREMIER RENDU, et jamais
+   une media query seule : « Jour » et « Nuit » ne veulent rien dire si le
+   système peut les contredire. Le mode « auto » est résolu en JavaScript, par
+   matchMedia, ce qui donne le même résultat qu'une media query mais laisse le
+   réglage gagner. */
+html.night {
+  /* Sans lui, les widgets natifs (le triangle du <details>, l'ascenseur, les
+     anneaux de focus du système) restent clairs sur un fond sombre. Il est posé
+     sur la racine et non sur un scope, parce qu'ici toute la page est sombre. */
+  color-scheme: dark;
+  --paper:   #201c15;
+  --card:    #2a2519;
+  --panel:   #241f16;
+  --hair:    #322c21;
+  --line:    #4f4838;
+  --line-2:  #3c3527;
+  --ink:     #e8dfcb;
+  --ink-2:   #a89e88;
+  /* Le « texte discret » du site vaut #867c68 ; à 11.2 px sur --paper il mesure
+     4.1:1, sous le seuil AA, et tout le pied de ce panneau est écrit à cette
+     taille-là. Il est donc éclairci ici, et seulement ici : la page du site,
+     qui l'emploie plus gros, garde le sien. */
+  --ink-3:   #978d77;
+  /* L'olive S'ÉCLAIRCIT la nuit, dans les deux rôles : sur fond sombre un
+     trait doit être clair pour se voir, et un texte clair pour se lire.
+     --vert-txt mesure 7.8:1 sur --card. */
+  --vert:    #9fb37e;
+  --vert-txt:#adc08c;
+  --wash:    rgba(159, 179, 126, .18);
+  --ok:      #8fb36a;
+  --actif-fond: #46543b;
+  --actif-txt:  #e8dfcb;
+}
+
+body {
+  /* 340 px : uBlock et Dark Reader tiennent entre 320 et 400, et un popup
+     Firefox se dimensionne à son contenu jusqu'à 800 sur 600. Le bloc des
+     versions est replié par défaut pour que rien ne défile à l'ouverture. */
+  width: 340px;
+  margin: 0;
+  padding: 0 0 .45rem;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Alegreya', 'EB Garamond', Garamond, Georgia, 'Times New Roman', serif;
+  font-size: var(--fs-body);
+  line-height: 1.35;
+}
+
+/* ------------------------------------------------------------------ EN-TÊTE */
+
+.p-tete {
+  display: flex; align-items: center; gap: .35rem;
+  padding: .34rem .5rem .3rem;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line-2);
+}
+.p-nom {
+  font-family: 'Cinzel', 'Trajan Pro', Georgia, serif;
+  font-weight: 700; font-size: .82rem; letter-spacing: .04em;
+  color: var(--ink); line-height: 1.1;
+  /* Cinzel à .68rem donnerait 12.2 px, et cette capitale ne se lit plus guère
+     en dessous ; le titre du panneau est donc monté à .82rem (14.8 px). */
+}
+.p-etat {
+  display: inline-flex; align-items: center; gap: .22rem;
+  margin-left: auto; flex: 0 0 auto;
+  font-size: var(--fs-label); font-weight: 700;
+  letter-spacing: .05em; text-transform: uppercase;
+  color: var(--ink-2); white-space: nowrap;
+}
+/* La pastille d'état : un point de 6 px suffit à répondre « oui, ça marche »
+   avant même qu'on ait lu le mot. */
+.p-pt {
+  width: .3rem; height: .3rem; border-radius: 50%;
+  background: var(--ok); flex: 0 0 auto;
+}
+body.p-off .p-pt { background: var(--ink-3); }
+body.p-off .p-etat { color: var(--ink-3); }
+
+/* LA PASTILLE DE BETA, ET RIEN D'AUTRE. Elle ne change AUCUNE couleur : ni la
+   sienne selon le mode, ni celle d'un autre élément. Repeindre le lien des
+   règles selon la moitié chargée n'apprendrait rien à qui ne connaît pas le
+   code couleur, et ferait douter du reste. Le mode se dit avec un mot. */
+.p-tag {
+  flex: 0 0 auto;
+  padding: .05rem .3rem .08rem;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--panel);
+  color: var(--ink-2);
+  font-size: var(--fs-label); font-weight: 700;
+  letter-spacing: .05em; line-height: 1.3;
+  white-space: nowrap;
+}
+.p-tag[hidden] { display: none; }
+
+/* -------------------------------------------------------------------- CORPS */
+
+.p-corps {
+  display: flex; flex-direction: column; gap: var(--gut);
+  padding: var(--gut) .5rem 0;
+}
+
+/* La carte de section du livre, à l'identique : filet --line-2, rayon 8px,
+   et une ombre presque nulle. La profondeur vient de la page, les cartes ne
+   flottent pas. */
+.p-bloc {
+  background: var(--card);
+  border: 1px solid var(--line-2);
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(60, 48, 18, .05);
+  padding: .3rem .45rem .4rem;
+  min-width: 0;
+}
+
+/* L'en-tête de bloc, signature du projet : Cinzel, un filet, et le petit tiret
+   olive de 1.4rem posé dessus, à gauche. */
+.p-titre {
+  position: relative;
+  margin: 0 0 .3rem; padding: .02rem 0 .18rem;
+  border-bottom: 1px solid var(--hair);
+  font-family: 'Cinzel', 'Trajan Pro', Georgia, serif;
+  font-weight: 700; font-size: var(--fs-title);
+  letter-spacing: .04em; line-height: 1.1;
+  color: var(--ink-2);
+}
+html.night .p-titre { color: var(--ink); }
+.p-titre::after {
+  content: ""; position: absolute; left: 0; bottom: -1px;
+  width: 1.4rem; height: 1.5px;
+  background: var(--vert); border-radius: 2px;
+}
+
+.p-ligne {
+  display: flex; align-items: center; gap: .4rem;
+  padding: .16rem 0;
+  min-width: 0;
+}
+.p-lib { flex: 1 1 auto; min-width: 0; color: var(--ink); }
+.p-actions { display: inline-flex; align-items: center; gap: .3rem; flex: 0 0 auto; }
+
+/* IL N'Y A PAS DE .p-note, ET IL NE FAUT PAS EN METTRE. Une phrase sous chaque
+   réglage pour dire ce qu'il fait, c'est un libellé qui a raté. Ce qui ne se
+   devine pas tient dans un title= ; le reste n'a pas à être écrit. */
+
+/* ------------------------------------------------- L'INTERRUPTEUR GÉNÉRAL */
+
+.p-maitre-bloc { padding: .35rem .45rem .4rem; }
+.p-maitre {
+  display: flex; align-items: center; gap: .5rem;
+  width: 100%;
+  margin: 0; padding: .1rem 0;
+  border: 0; background: transparent;
+  color: inherit; font: inherit; text-align: left;
+  cursor: pointer;
+}
+.p-maitre-txt {
+  flex: 1 1 auto; min-width: 0;
+  font-size: var(--fs-hero); font-weight: 700;
+  color: var(--ink); line-height: 1.15;
+}
+
+/* L'interrupteur. L'olive d'un contrôle actif, comme le segment actif d'un
+   contrôle segmenté ou l'onglet en service : c'est l'une des quatre situations
+   où l'accent a le droit de paraître. Éteint, il retombe sur --panel cerclé de
+   --line, et ne crie pas. */
+.p-sw {
+  position: relative; flex: 0 0 auto;
+  display: inline-block;
+  width: 2.05rem; height: 1.05rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel);
+  transition: background-color .12s, border-color .12s;
+}
+.p-sw > i {
+  position: absolute; top: 50%; left: .08rem;
+  width: .78rem; height: .78rem;
+  margin-top: -.39rem;
+  border-radius: 50%;
+  background: var(--card);
+  border: 1px solid var(--line);
+  transition: transform .12s, background-color .12s, border-color .12s;
+}
+[aria-checked="true"] .p-sw > i,
+.p-sw[aria-checked="true"] > i {
+  transform: translateX(1rem);
+  background: #fff; border-color: rgba(0, 0, 0, .2);
+}
+[aria-checked="true"] > .p-sw,
+.p-sw[aria-checked="true"] {
+  background: var(--vert); border-color: var(--vert-txt);
+}
+
+/* Le petit interrupteur des pièces : même objet, deux tiers de la taille. */
+.p-sw-btn {
+  padding: 0; cursor: pointer;
+  width: 1.72rem; height: .9rem;
+}
+.p-sw-btn > i { width: .66rem; height: .66rem; margin-top: -.33rem; }
+.p-sw-btn[aria-checked="true"] > i { transform: translateX(.8rem); }
+
+/* --------------------------------------------------- LE CONTRÔLE SEGMENTÉ */
+
+/* Segments soudés, comme la barre d'envoi de la fiche : un seul filet entre
+   deux segments, les coins arrondis aux extrémités seulement. */
+.p-segs { display: inline-flex; flex: 0 0 auto; }
+.p-segs .seg {
+  margin: 0; padding: .16rem .42rem .2rem;
+  border: 1px solid var(--line-2); border-left-width: 0;
+  border-radius: 0;
+  background: var(--card);
+  color: var(--ink-2);
+  font-family: inherit; font-size: var(--fs-meta); font-weight: 600;
+  line-height: 1.2; cursor: pointer;
+  transition: background-color .12s, border-color .12s, color .12s;
+}
+.p-segs .seg:first-child { border-left-width: 1px; border-radius: 5px 0 0 5px; }
+.p-segs .seg:last-child { border-radius: 0 5px 5px 0; }
+.p-segs .seg:hover { color: var(--ink); }
+.p-segs .seg[aria-checked="true"] {
+  background: var(--actif-fond);
+  border-color: var(--actif-fond);
+  color: var(--actif-txt);
+}
+/* Un segment actif mange le filet de son voisin de droite : sans cela, la
+   bordure claire du suivant coupe le remplissage en deux. */
+.p-segs .seg[aria-checked="true"] + .seg { border-left-color: var(--actif-fond); }
+
+/* ------------------------------------------------------- BOUTONS MINUSCULES */
+
+.p-mini {
+  padding: .12rem .4rem .16rem;
+  border: 1px solid var(--line-2); border-radius: 5px;
+  background: var(--panel);
+  color: var(--ink-2);
+  font-family: inherit; font-size: var(--fs-meta); font-weight: 600;
+  line-height: 1.2; cursor: pointer;
+  transition: background-color .12s, border-color .12s, color .12s;
+}
+.p-mini:hover { border-color: var(--line); color: var(--ink); }
+/* La proposition de rechargement occupe toute la largeur : elle ne commande pas
+   un bloc en particulier, elle applique ce qui vient d'être décidé. */
+.p-recharge { display: block; width: 100%; padding: .2rem .4rem .24rem; }
+.p-recharge[hidden] { display: none; }
+
+/* LE FOCUS EST LE SECOND IDIOME DU SYSTÈME : le bord verdit et gagne un halo de
+   2px en --wash. Il ne se montre qu'au clavier (:focus-visible) pour qu'un clic
+   à la souris ne laisse pas un anneau derrière lui. */
+.p-segs .seg:focus-visible,
+.p-mini:focus-visible,
+.p-sw-btn:focus-visible,
+.p-liens a:focus-visible,
+.p-details > summary:focus-visible {
+  outline: none;
+  border-color: var(--vert);
+  box-shadow: 0 0 0 2px var(--wash);
+}
+/* L'interrupteur général n'a pas de bordure à verdir : le halo seul flotterait
+   autour d'un bouton transparent. Il prend donc un liseré franc, et sa pastille
+   verdit avec lui. */
+.p-maitre:focus-visible {
+  outline: 2px solid var(--vert);
+  outline-offset: 2px;
+  border-radius: 5px;
+}
+.p-maitre:focus-visible .p-sw { border-color: var(--vert); }
+
+/* ---------------------------------------------------- L'EXTENSION ÉTEINTE */
+
+/* Éteinte, le panneau le MONTRE. Les pièces se grisent et refusent le clic :
+   allumer le camp d'une extension arrêtée n'a aucun sens, et laisser cliquer
+   ferait croire à un réglage pris en compte. L'Apparence, elle, reste vive :
+   elle habille CE panneau, qu'on doit pouvoir lire éteint comme allumé. */
+body.p-off #p-pieces {
+  opacity: .45;
+  pointer-events: none;
+}
+body.p-off #p-pieces .p-titre { color: var(--ink-3); }
+
+/* ----------------------------------------------------------------- LE PIED */
+
+.p-pied {
+  margin: .45rem .5rem 0; padding-top: .3rem;
+  border-top: 1px solid var(--hair);
+  font-size: var(--fs-meta);
+  color: var(--ink-3);
+}
+.p-paquet {
+  display: flex; align-items: baseline; gap: .35rem;
+}
+.p-paquet .quoi {
+  font-size: var(--fs-label); font-weight: 700;
+  letter-spacing: .05em; text-transform: uppercase;
+}
+/* Le seul numéro que le navigateur affiche, donc le seul qu'un joueur puisse
+   comparer : il reste en vue et en chiffres tabulaires, les quatre autres se
+   replient. */
+.p-paquet .num {
+  color: var(--ink); font-weight: 700;
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+
+.p-details { margin-top: .18rem; }
+.p-details > summary {
+  cursor: pointer; list-style: none;
+  display: inline-block;
+  padding: .06rem .3rem .1rem;
+  border: 1px solid var(--line-2); border-radius: 5px;
+  background: var(--panel); color: var(--ink-2);
+  font-size: var(--fs-meta); font-weight: 600;
+}
+.p-details > summary::-webkit-details-marker { display: none; }
+.p-details > summary::before { content: "▸ "; color: var(--ink-3); }
+.p-details[open] > summary::before { content: "▾ "; }
+
+/* Trois colonnes tenues par le BLOC, et non par chaque ligne : le libellé, le
+   numéro, la marque. Sans cela chaque ligne aurait ses propres colonnes et les
+   numéros ne s'aligneraient plus d'une ligne à l'autre. La couleur, elle,
+   traverse quand même le display: contents : elle s'hérite, et c'est ce qui
+   fait marcher .actif. */
+.p-versions {
+  display: grid; grid-template-columns: auto auto 1fr;
+  column-gap: .3rem; row-gap: 1px;
+  margin-top: .25rem;
+}
+.p-versions .ligne { display: contents; }
+.p-versions .actif { color: var(--ink); font-weight: 600; }
+.p-versions .num { white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+.p-liens { display: flex; gap: .3rem; margin-top: .3rem; }
+.p-liens a {
+  flex: 1 1 auto; text-align: center; text-decoration: none;
+  padding: .16rem .4rem .2rem;
+  border: 1px solid var(--line-2); border-radius: 5px;
+  background: var(--panel); color: var(--ink-2);
+  font-size: var(--fs-meta); font-weight: 600;
+  transition: background-color .12s, border-color .12s, color .12s;
+}
+.p-liens a:hover { border-color: var(--line); color: var(--ink); }
+
+/* L'alerte du livre, à l'identique : un liseré olive à gauche, un fond --wash,
+   aucun cadre complet. Elle ne paraît que si une clé de dépannage est posée, ce
+   qui est presque toujours un oubli. */
+.p-alerte {
+  margin: .3rem 0 0; padding: .14rem .4rem .18rem;
+  background: var(--wash);
+  border-left: 2px solid var(--vert);
+  border-radius: 0 4px 4px 0;
+  color: var(--vert-txt);
+  font-size: var(--fs-meta); font-weight: 600; line-height: 1.25;
+  /* Une clé de dépannage porte une adresse, et une adresse n'a pas d'espace où
+     se couper : sans cela elle passe sous le bord de la fenêtre. */
+  overflow-wrap: anywhere;
+}
+.p-alerte[hidden] { display: none; }
+/* L'espace insécable, et non une espace ordinaire : dans une séquence
+   d'échappement CSS, l'espace qui suit TERMINE l'échappement et disparaît, et
+   le triangle se collerait au premier mot. */
+.p-alerte::before { content: "\26A0\00A0"; }
+
+/* Le message fugitif d'une action faite. Il prend la place qu'il faut au lieu de
+   flotter : dans une fenêtre de 340 px, un toast en position fixe recouvrirait
+   le réglage qu'on vient de toucher. */
+.p-flash {
+  margin: 0; padding: .16rem .45rem .2rem;
+  background: var(--panel);
+  border: 1px solid var(--hair); border-radius: 5px;
+  color: var(--ink-2);
+  font-size: var(--fs-meta); line-height: 1.25;
+}
+.p-flash[hidden] { display: none; }

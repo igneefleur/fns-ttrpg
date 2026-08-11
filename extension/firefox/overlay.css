@@ -1,0 +1,267 @@
+/* CSS EN LUMIÈRE (pages de Roll20). Tout ce que l'extension DESSINE elle-même
+   dans la partie tient ici : l'onglet « Fiche Outward », son pane, l'écran « pas
+   encore de fiche », et le cadre du panneau de Camp. Le reste (la fiche, le
+   camp) vit dans des iframes servies par le site, dont le CSS est totalement
+   isolé de celui-ci.
+
+   PALETTE DU SITE OUTWARD, jour et nuit, recopiée de docs/stylesheets/extra.css
+   et docs/stylesheets/night.css : ce fichier est signé, il ne peut rien charger
+   du site, et il doit tenir seul. L'accent d'Outward est le VERT OLIVE du livre
+   (--green-section), là où les autres jeux du dépôt ont un carmin : ne pas
+   recopier un rouge d'une feuille voisine, il n'appartient pas à ce livre-ci.
+   Les formes, elles, sont celles de la fiche : une carte, c'est un fond --card,
+   un filet --line-2, huit pixels de rayon et une ombre à peine posée ; un titre
+   de section, c'est un petit trait vert sous un texte espacé.
+
+   LES POLICES DU LIVRE NE SONT PAS LÀ, et il faut le dire plutôt que de le
+   laisser croire : Alegreya et Cinzel sont servies par le site, une feuille
+   injectée dans Roll20 ne peut pas aller les chercher (la CSP de Roll20 refuse
+   la police d'une autre origine), et le paquet ne les embarque QUE pour le
+   popup, qui est une page d'extension. On les NOMME quand même, en tête de
+   pile : le joueur qui les a installées les verra, les autres auront la
+   meilleure sérif de leur machine. Le contenu des iframes, lui, a bien les
+   vraies polices, puisqu'il vient du site. */
+
+/* onglet « Fiche Outward » : un vrai <li><a> cloné des onglets natifs (il hérite
+   donc du style de Roll20, onglet actif compris). On n'ajoute que le curseur. */
+.owd-tab, .owd-tab a { cursor: pointer; }
+
+/* ---- bouton du panneau dans la barre d'outils ----
+   Le bouton est un CLONE d'un bouton natif : il porte non seulement les mêmes
+   classes, mais les mêmes attributs data-v-… par lesquels le CSS « scopé » de
+   Vue s'applique. Il n'y a donc RIEN à peindre ici, et c'est voulu : toute
+   couleur écrite de ce côté-ci vieillirait mal, ce fichier étant figé par la
+   signature alors que Roll20 change de thème quand il veut.
+   Reste un seul garde-fou. L'icône est une LIGATURE de la police d'icônes de
+   Roll20 : si cette police venait à manquer, ou à renommer sa ligature, le span
+   afficherait le mot en toutes lettres et pousserait toute la barre. On le
+   borne à la largeur d'une icône, sans rien changer quand tout va bien.
+   La borne est en PIXELS et non en em : une icône manquante peut aussi être une
+   police à zéro, et une borne relative vaudrait alors zéro elle aussi. Les
+   icônes natives mesurent 1.3em, soit environ 21 px ; 26 px les laisse passer
+   toutes sans jamais laisser passer un mot. */
+#owd-barre-bouton .grimoire__roll20-icon {
+  display: inline-block; max-width: 26px; overflow: hidden;
+  white-space: nowrap; vertical-align: middle;
+}
+
+/* ---- palette, jour et nuit ----
+   Les variables sont posées SUR NOS PROPRES BOÎTES, jamais sur :root. Cette
+   feuille part dans TOUTES les frames de Roll20 : des variables posées sur la
+   racine s'ajouteraient à celles du site, et deux noms aussi communs que --card
+   ou --line suffiraient à repeindre un morceau de son interface.
+   La nuit vient de la classe .owd-nuit, posée par content-roll20.js d'après le
+   réglage owdNuit du popup (« auto » suit Roll20), et JAMAIS d'une media query
+   seule : une media query suit le navigateur, que l'utilisateur ne pourrait pas
+   contredire, et le cadre resterait clair pendant que le camp servi par le
+   site, lui, serait sombre.
+   Seuls les tons dont cette feuille se sert sont déclarés, et non la palette
+   entière du livre : une variable posée ici n'est lue que par cette feuille.
+   Elle ne traverse aucune iframe, donc ni la fiche ni le camp, qui sont des
+   documents servis par le site et portent leur propre palette. */
+.owd-panneau, .owd-create, .owd-creator-frame {
+  --paper:    #faf6eb;
+  --bg-side:  #e4ddcd;
+  --card:     #fffdf6;
+  --panel:    #f6efdd;
+  --line:     #c6bb9f;
+  --line-2:   #d6cbb1;
+  --ink:      #1d1d1d;
+  --ink-2:    #453d2d;
+  --vert:     #63755e;
+  --ombre:    rgba(60, 48, 18, .10);
+  --ombre-portee: rgba(0, 0, 0, .28);
+}
+.owd-panneau.owd-nuit, .owd-create.owd-nuit, .owd-creator-frame.owd-nuit {
+  --paper:    #201c15;
+  --bg-side:  #14110c;
+  --card:     #2a2519;
+  --panel:    #241f16;
+  --line:     #3c3527;
+  --line-2:   #453e31;
+  --ink:      #e8dfcb;
+  --ink-2:    #a89e88;
+  /* L'olive S'ÉCLAIRCIT la nuit : c'est un ton de TRAIT sur fond sombre, pas
+     un ton « plus foncé ». Le #63755e du jour, posé sur #201c15, ne se
+     distinguerait plus du filet. */
+  --vert:     #9fb37e;
+  --ombre:    rgba(0, 0, 0, .35);
+  --ombre-portee: rgba(0, 0, 0, .60);
+}
+
+/* pane Outward (géré comme un pane natif de Roll20 : .tab-pane.owdfiche).
+   FORCÉ (!important) : Roll20 impose son propre CSS aux .tab-pane (padding, height,
+   overflow) qui rognerait/écraserait notre fiche. On reprend la main.
+   La VISIBILITÉ est pilotée par la classe .owd-on (posée/retirée par
+   content-roll20.js au changement d'onglet) : sans elle, le pane est MASQUÉ en
+   !important. Un « display: block !important » gagnerait sur le style.display
+   inline de Roll20 et laisserait la fiche visible SOUS les onglets natifs
+   (Feuille de personnage, Bio & Info, Attributs). */
+.owd-pane {
+  width: 100% !important; height: auto !important;
+  box-sizing: border-box !important; padding: 0 !important; margin: 0 !important;
+  overflow: visible !important;
+}
+.owd-pane:not(.owd-on) { display: none !important; }
+.owd-pane.owd-on { display: block !important; min-height: 620px !important; }
+
+/* iframe du créateur. La HAUTEUR est pilotée en JS (content-roll20 : fitCreatorHeight)
+   pour épouser la fenêtre de la feuille Roll20 et suivre ses redimensionnements ; on
+   ne met donc PAS height en !important (l'inline JS doit gagner). Le reste est FORCÉ
+   contre le CSS Roll20 (bordures/marges/tailles d'iframe). Plancher de secours 620 px.
+   Le fond se voit pendant que la fiche distante charge : sombre sous une fiche
+   sombre, sans quoi chaque ouverture commencerait par un éclair blanc. */
+.owd-creator-frame {
+  display: block !important; width: 100% !important; min-height: 400px;
+  border: 0 !important; margin: 0 !important; padding: 0 !important;
+  background: var(--bg-side);
+}
+
+/* ---- cadre du panneau de Camp (ancré à la barre, ou flottant) ----
+   CHÂSSIS SEULEMENT : une boîte, une barre de titre, une poignée pour l'étirer.
+   Le camp vit dans l'iframe, servi par le site, et son contenu ne se règle donc
+   pas ici. Sa NUIT, en revanche, se décide ici comme là-bas, à partir du même
+   réglage : le cadre et son contenu ne doivent jamais être l'un clair et
+   l'autre sombre.
+   Tous les sélecteurs sont préfixés .owd- : cette feuille est injectée dans
+   TOUTES les frames de Roll20, elle ne doit jamais toucher à quoi que ce soit
+   qui ne soit pas à nous.
+   Z-INDEX 10500, et ce nombre est mesuré, pas choisi au hasard : il passe
+   au-dessus du canevas (5), du menu radial (6), de la zone des joueurs (2000),
+   du tchat (101) et de la barre latérale (100), et reste SOUS les outils de
+   Roll20 : actions de jeton (10502), barre d'outils et ses sous-menus (10600),
+   bandeau des pages (10700), menu contextuel (11500), erreur de connexion
+   (20000), aides de glisser-déposer (100000) et modales (999999). Un panneau
+   permanent ne doit jamais masquer un message de Roll20. */
+.owd-panneau {
+  position: fixed; z-index: 10500; box-sizing: border-box;
+  display: flex; flex-direction: column; overflow: hidden;
+  background: var(--paper); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 8px;
+  box-shadow: 0 6px 22px var(--ombre-portee);
+  font: 13px/1.35 'Alegreya', 'EB Garamond', Garamond, 'Times New Roman', serif;
+}
+/* la barre de titre : l'en-tête d'une section du livre, fond --panel et filet
+   dessous, avec le petit trait vert qui signe les titres de la fiche */
+.owd-panneau-tete {
+  position: relative;
+  flex: 0 0 auto; display: flex; align-items: center; gap: 6px;
+  padding: 4px 5px 4px 10px; cursor: move; user-select: none;
+  background: var(--panel); border-bottom: 1px solid var(--line-2);
+}
+/* ANCRÉ, LE TITRE RECULE D'UNE TABULATION. Collé à la boîte à outils, il
+   commencerait juste contre elle et se ferait manger par son ombre : les
+   premières lettres ne seraient plus lisibles. Vingt-huit pixels suffisent à
+   l'en dégager, et seulement dans ce cas — flottant, le panneau n'a rien à sa
+   gauche et un décalage ne serait qu'un trou. */
+.owd-panneau.owd-panneau-ancre > .owd-panneau-tete { padding-left: 28px; }
+.owd-panneau-tete::after {
+  content: ""; position: absolute; left: 10px; bottom: -1px;
+  width: 22px; height: 1.5px; background: var(--vert); border-radius: 2px;
+}
+.owd-panneau.owd-panneau-ancre > .owd-panneau-tete::after { left: 28px; }
+.owd-panneau-titre {
+  flex: 1 1 auto; min-width: 0;
+  font-family: 'Cinzel', 'Alegreya', Garamond, 'Times New Roman', serif;
+  font-weight: 700; font-size: 12px; letter-spacing: .06em; color: var(--ink-2);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+/* les deux boutons de la barre de titre (détacher, fermer) ont la forme des
+   petits boutons de la fiche : fond --card, filet --line-2, cinq pixels de
+   rayon.
+   La pile de polices finit par « sans-serif » alors que tout le reste du cadre
+   est en sérif : les deux flèches d'ancrage (⇱ ⇲) n'existent dans aucune police
+   du livre, et c'est le repli glyphe par glyphe du navigateur qui les dessine.
+   Sans ce dernier recours nommé, un carré vide remplacerait le bouton. */
+.owd-panneau-btn {
+  flex: 0 0 auto; width: 20px; height: 18px; padding: 0; cursor: pointer;
+  background: var(--card); color: var(--ink-2);
+  border: 1px solid var(--line-2); border-radius: 5px;
+  font: 700 13px/1 'Alegreya', Garamond, 'Times New Roman', serif, sans-serif;
+  transition: background .12s, border-color .12s, color .12s;
+}
+.owd-panneau-btn:hover { background: var(--panel); border-color: var(--line); color: var(--ink); }
+/* le panneau se prend à la souris, mais le repli doit rester atteignable au
+   clavier : sans contour visible, la tabulation traverse le panneau à l'aveugle */
+.owd-panneau-btn:focus-visible { outline: 2px solid var(--vert); outline-offset: 1px; }
+.owd-panneau-corps { flex: 1 1 auto; min-height: 0; background: var(--bg-side); }
+.owd-panneau-frame { display: block; width: 100%; height: 100%; border: 0; }
+/* replié : l'étiquette seule, posée dans un coin ; l'iframe reste en place mais
+   n'est plus montrée (la détruire coûterait une place dans la table des
+   liaisons du pont, voir content-roll20.js). Le filet et le trait vert
+   disparaissent : ils soulignent un contenu qui n'est plus là. */
+.owd-panneau-replie .owd-panneau-corps,
+.owd-panneau-replie .owd-panneau-grip { display: none; }
+.owd-panneau-replie .owd-panneau-tete { border-bottom: 0; }
+.owd-panneau-replie .owd-panneau-tete::after { display: none; }
+.owd-panneau-grip {
+  position: absolute; right: 0; bottom: 0; width: 14px; height: 14px;
+  cursor: nwse-resize;
+  background: linear-gradient(135deg, transparent 45%, var(--line) 45%, var(--line) 55%, transparent 55%,
+                              transparent 70%, var(--line) 70%, var(--line) 80%, transparent 80%);
+}
+/* pendant un geste, l'iframe ne capte plus la souris : sans cela le pointeur
+   entre dedans et le déplacement s'arrête au bord du panneau */
+.owd-panneau-geste .owd-panneau-frame { pointer-events: none; }
+
+/* ---- ancré à la barre d'outils ----
+   Collé à la barre et sur toute la hauteur, comme les panneaux natifs de
+   Roll20. La géométrie est posée en ligne par content-roll20.js, qui MESURE la
+   barre au lieu de la deviner : rien de tout cela ne se règle ici, sans quoi il
+   faudrait re-signer l'extension le jour où Roll20 élargit sa barre.
+   Ce qui se règle ici, c'est ce qui SE VOIT : le coin gauche perd son arrondi
+   (une carte arrondie contre une barre droite laisse deux entailles de fond), la
+   barre de titre n'invite plus à saisir ce qui ne bouge plus, et la poignée ne
+   promet plus que la largeur. */
+/* LES COINS, ANCRÉ. Seul le côté qui TOUCHE la barre reste droit ; tout le reste
+   s'arrondit comme une carte du livre.
+     - en haut à gauche : toujours droit quand on est collé, c'est là que la
+       barre commence ;
+     - en bas à gauche : ARRONDI d'ordinaire — c'est le creux qu'il fallait
+       boucher — et droit seulement quand la barre descend jusqu'au bas de la
+       fenêtre, où le coin est de toute façon hors champ. Cette variante est
+       posée par content-roll20.js (classe .owd-panneau-bas-plein), qui mesure
+       la barre : le CSS ne peut pas savoir jusqu'où elle descend. */
+.owd-panneau-ancre { border-radius: 0 8px 8px 8px; }
+.owd-panneau-ancre.owd-panneau-bas-plein { border-radius: 0 8px 8px 0; }
+.owd-panneau-ancre .owd-panneau-tete { cursor: default; }
+.owd-panneau-ancre .owd-panneau-grip { cursor: ew-resize; }
+
+/* ---- écran « pas encore de fiche » + bouton de création ----
+   Une carte du livre, posée au milieu du pane : fond --card, filet --line-2,
+   titre en capitales espacées sous son trait vert. Elle remplace le bloc de
+   texte gris clair qui n'appartiendrait à rien. */
+.owd-create {
+  box-sizing: border-box; max-width: 26rem; margin: 22px auto; padding: 18px 22px 22px;
+  text-align: center;
+  background: var(--card); color: var(--ink);
+  border: 1px solid var(--line-2); border-radius: 8px;
+  box-shadow: 0 1px 3px var(--ombre);
+  font: 14px/1.5 'Alegreya', 'EB Garamond', Garamond, 'Times New Roman', serif;
+}
+.owd-create-title {
+  position: relative; display: inline-block; margin: 0 0 10px; padding-bottom: 7px;
+  font-family: 'Cinzel', 'Alegreya', Garamond, 'Times New Roman', serif;
+  font-weight: 700; font-size: 17px; letter-spacing: .05em; color: var(--ink-2);
+}
+.owd-create-title::after {
+  content: ""; position: absolute; left: 50%; bottom: 0; margin-left: -13px;
+  width: 26px; height: 1.5px; background: var(--vert); border-radius: 2px;
+}
+.owd-create-msg { margin: 0; color: var(--ink-2); font-size: 13px; }
+/* L'olive de ce bouton ne suit PAS la nuit, et c'est mesuré : le --vert du
+   livre s'éclaircit la nuit parce qu'il y sert de couleur de TRAIT sur fond
+   sombre, et du blanc cassé posé dessus tomberait sous le seuil. L'olive
+   profond du jour tient 8.1 pour 1 contre le blanc cassé, de jour comme de
+   nuit, et reste le vert du livre. */
+.owd-create-btn {
+  margin-top: 14px; padding: 9px 20px 10px; cursor: pointer;
+  background: #46543b; color: #fff8f0;
+  border: 1px solid #2f3b28; border-radius: 7px;
+  font: 700 14px/1.2 'Alegreya', 'EB Garamond', Garamond, 'Times New Roman', serif;
+  letter-spacing: .02em;
+  box-shadow: 0 1px 3px var(--ombre);
+  transition: background .12s;
+}
+.owd-create-btn:hover { background: #2f3b28; }
+.owd-create-btn:focus-visible { outline: 2px solid var(--vert); outline-offset: 2px; }
