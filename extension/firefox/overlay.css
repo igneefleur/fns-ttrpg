@@ -59,7 +59,7 @@
    entière du livre : une variable posée ici n'est lue que par cette feuille.
    Elle ne traverse aucune iframe, donc ni la fiche ni le camp, qui sont des
    documents servis par le site et portent leur propre palette. */
-.owd-panneau, .owd-create, .owd-creator-frame {
+.owd-panneau, .owd-create, .owd-creator-frame, .owd-des {
   --paper:    #faf6eb;
   --bg-side:  #e4ddcd;
   --card:     #fffdf6;
@@ -72,7 +72,7 @@
   --ombre:    rgba(60, 48, 18, .10);
   --ombre-portee: rgba(0, 0, 0, .28);
 }
-.owd-panneau.owd-nuit, .owd-create.owd-nuit, .owd-creator-frame.owd-nuit {
+.owd-panneau.owd-nuit, .owd-create.owd-nuit, .owd-creator-frame.owd-nuit, .owd-des.owd-nuit {
   --paper:    #201c15;
   --bg-side:  #14110c;
   --card:     #2a2519;
@@ -265,3 +265,213 @@
 }
 .owd-create-btn:hover { background: #2f3b28; }
 .owd-create-btn:focus-visible { outline: 2px solid var(--vert); outline-offset: 2px; }
+
+/* ---- les dés d'action, rhabillés dans le tchat ----
+   content-roll20.js repère le gabarit « OWD Action Dice » et glisse cette carte
+   AVANT lui, en repliant l'original dans un <details>.
+
+   LE DÉ SUIT « 3D Dice with CSS » de jico (codepen.io/jico/pen/wvMpgog) : un
+   cube de six faces, des coins ARRONDIS, et des POINTS. La version précédente
+   découpait des triangles au clip-path et les orientait par décomposition
+   d'Euler : géométriquement juste, illisible à l'écran. Ce sont les coins
+   arrondis et les points qui font reconnaître un dé, pas la trigonométrie.
+
+   TOUT EST PRÉFIXÉ .owd-, ET C'EST VITAL ICI PLUS QU'AILLEURS : cette feuille
+   est injectée dans toutes les frames de Roll20, et le tchat est l'endroit où
+   les feuilles de personnage de la communauté déversent leurs propres styles.
+   Un sélecteur générique (.dice, .face, .dot) y trouverait des victimes.
+
+   Les tailles sont en px : le tchat de Roll20 impose sa racine, qui n'est pas la
+   nôtre, et un dé en rem changerait de taille selon le zoom de l'interface.
+   L'ARÊTE EST ÉCRITE DEUX FOIS, ici et dans CUBE du code : c'est le seul nombre
+   partagé, et les deux doivent bouger ensemble. */
+.owd-des-hote { margin: .25em 0; }
+
+.owd-des {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 7px 9px 8px;
+  box-shadow: 0 1px 3px var(--ombre);
+  font-family: 'Alegreya', 'EB Garamond', Garamond, 'Times New Roman', serif;
+  color: var(--ink);
+}
+
+.owd-des-tete {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 8px; padding-bottom: 5px; margin-bottom: 10px;
+  border-bottom: 1px solid var(--line-2);
+}
+.owd-des-titre {
+  font-family: 'Cinzel', 'Trajan Pro', Georgia, serif;
+  font-size: 12px; letter-spacing: .06em; color: var(--vert);
+}
+.owd-des-compte { font-size: 11px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+
+/* La piste enveloppe : cinq dés tiennent en ligne dans un tchat large, pas dans
+   un tchat réduit à sa colonne minimale. Le gap vertical laisse la place aux
+   dés qui dépassent un peu de leur case pendant la culbute. */
+.owd-des-piste {
+  display: flex; flex-wrap: wrap; gap: 16px 14px;
+  justify-content: center; align-items: center;
+  padding: 6px 0 4px;
+}
+
+/* ---- la scène et le cube ----
+   LA SCÈNE PORTE LA PERSPECTIVE, LE CUBE PORTE LA ROTATION. Les séparer n'est
+   pas un raffinement : une perspective posée sur l'élément qui tourne tournerait
+   avec lui, et le dé s'aplatirait à mi-culbute. */
+.owd-de {
+  position: relative;
+  width: 44px; height: 44px;
+  perspective: 320px;
+  flex: 0 0 auto;
+}
+.owd-cube {
+  position: absolute; inset: 0;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* UNE FACE — ET LES TROIS PARADES CONTRE LES JOINTURES OUVERTES.
+   « On voit entre les faces » est LE défaut du cube en CSS, et il a trois causes
+   qui se cumulent. Elles sont traitées ici, ensemble, parce qu'aucune ne suffit
+   seule. Ne pas en retirer une en croyant simplifier.
+
+   1. L'ANTICRÉNELAGE. Deux faces qui se rejoignent exactement sont lissées
+      chacune de son côté, et il reste une ligne d'un pixel à demi transparente
+      par où l'on voit le fond. La parade est le RECOUVREMENT : les faces sont
+      dessinées un pixel plus grandes que le cube et décalées d'un demi-pixel,
+      si bien qu'elles se chevauchent au lieu de se toucher. C'est pour cela que
+      la taille écrite ici (45) n'est pas l'arête (44) : ce n'est pas une faute.
+
+   2. LES COINS ARRONDIS. Ils sont l'essentiel du dé — un cube à angles vifs se
+      lit comme une boîte — mais chaque arrondi retire de la matière aux huit
+      coins du cube, et il y reste un trou. La parade est la PLAQUE DE FOND, le
+      ::before ci-dessous, posé un pixel EN RETRAIT derrière sa face : les
+      plaques de deux faces voisines se croisent près du coin et le bouchent.
+      C'est exactement ce que fait le pen d'origine, et c'est la pièce que la
+      première version d'ici avait laissée tomber.
+
+   3. backface-visibility: hidden. Elle cachait les trois faces arrière, qui ne
+      pouvaient donc plus servir de fond aux jointures. Elle est retirée : les
+      faces sont opaques, les avant recouvrent les arrière, et les arrière
+      bouchent ce qui dépasse. */
+.owd-cube-f {
+  position: absolute;
+  box-sizing: border-box;
+  width: 45px; height: 45px;          /* l'arête + 1 : voir la parade 1 */
+  left: -0.5px; top: -0.5px;
+  border-radius: 9px;
+  background: #f6f2e6;
+  border: 1px solid #e0d8c2;
+  box-shadow: inset 0 0 6px rgba(120, 104, 66, .18);
+}
+/* la plaque de fond : même découpe, un pixel derrière, opaque. Elle ne se voit
+   jamais de face — elle ne sert qu'à ce qu'on ne voie pas à travers le dé. */
+.owd-cube-f::before {
+  content: ""; position: absolute; inset: -1px;
+  border-radius: 10px;
+  background: #efe9d8;
+  transform: translateZ(-1px);
+}
+
+/* UN POINT. left/top sont posés en ligne, en pourcentage de la face (le quart,
+   le milieu, les trois quarts) ; translate le recentre sur lui-même. Le dé
+   change alors d'arête sans qu'aucune coordonnée ne soit à reprendre. */
+.owd-cube-p {
+  position: absolute;
+  width: 8px; height: 8px;
+  margin: -4px 0 0 -4px;
+  border-radius: 50%;
+  background: #2f2a1c;
+  box-shadow: inset 0 -1px 1px rgba(255, 255, 255, .25);
+}
+
+/* L'or du livre quand le dé montre son maximum, un ton éteint sur le 1. Ni l'un
+   ni l'autre ne dit « réussite » ou « échec » : un dé d'action ne réussit rien
+   tout seul, c'est le seuil du geste qui en décide. */
+.owd-de-haut .owd-cube-f { background: #f2dcae; border-color: #dcc287; }
+.owd-de-haut .owd-cube-f::before { background: #e8cf9c; }
+.owd-de-haut .owd-cube-p { background: #6b4f13; }
+.owd-de-bas .owd-cube-f { background: #ebe7dd; border-color: #d7d1c2; }
+.owd-de-bas .owd-cube-f::before { background: #e0dcd0; }
+.owd-de-bas .owd-cube-p { background: #6e6a5e; }
+
+/* LA NUIT ASSOMBRIT L'IVOIRE, elle ne l'inverse pas : un dé reste un objet clair
+   posé dans une pièce sombre. Ce qui change vraiment, c'est le fond de la carte. */
+.owd-des.owd-nuit .owd-cube-f { background: #ddd5c0; border-color: #b9ae93; }
+.owd-des.owd-nuit .owd-cube-f::before { background: #cec5ac; }
+.owd-des.owd-nuit .owd-de-haut .owd-cube-f { background: #dcc48f; border-color: #b99f66; }
+
+/* LE JETON : tout ce qui n'est pas un d6 aujourd'hui. Il porte son chiffre et ne
+   prétend à aucune forme — mieux vaut avouer qu'on ne sait pas encore dessiner
+   ce dé-là que faire passer un cube pour un d20. */
+.owd-de-jeton .owd-cube {
+  border-radius: 50%;
+  background: #ece6d6;
+  border: 2px solid #cfc4a8;
+  box-sizing: border-box;
+  display: flex; align-items: center; justify-content: center;
+}
+.owd-des.owd-nuit .owd-de-jeton .owd-cube { background: #cdc3a8; border-color: #9d937a; }
+.owd-de-n {
+  font-family: 'Cinzel', 'Trajan Pro', Georgia, serif;
+  font-size: 15px; line-height: 1; color: #392f1c;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- la valeur en clair ----
+   Des points se comptent mal du coin de l'oeil, et une capture d'écran du tchat
+   doit rester exploitable. Chaque chiffre a la largeur d'un dé : il tombe donc
+   sous le sien. */
+.owd-des-chiffres {
+  display: flex; flex-wrap: wrap; gap: 16px 14px;
+  justify-content: center; margin-top: 8px;
+}
+.owd-des-chiffre {
+  min-width: 44px; text-align: center;
+  font-family: 'Cinzel', 'Trajan Pro', Georgia, serif;
+  font-size: 15px; color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.owd-des-chiffre-haut { color: #8a6a1c; font-weight: 700; }
+.owd-des.owd-nuit .owd-des-chiffre-haut { color: #d9b45f; }
+.owd-des-chiffre-bas { color: var(--ink-2); opacity: .7; }
+
+/* le pied : la somme, le meilleur, et le bouton — tous en retrait. La somme et
+   le meilleur ne sont PAS des résultats. */
+.owd-des-pied {
+  display: flex; gap: 12px; align-items: center; justify-content: center;
+  margin-top: 8px; padding-top: 5px; border-top: 1px solid var(--line-2);
+}
+.owd-des-info { font-size: 11px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+
+/* RE-ANIMER. Discret : il rejoue une animation, il ne relance aucun dé, et un
+   bouton trop visible dans un tchat de jeu laisserait croire le contraire. */
+.owd-des-rejouer {
+  font-family: 'Cinzel', Garamond, Georgia, serif;
+  font-size: 10px; letter-spacing: .04em;
+  color: var(--ink-2); background: transparent;
+  border: 1px solid var(--line-2); border-radius: 4px;
+  padding: 1px 7px; cursor: pointer; opacity: .75;
+}
+.owd-des-rejouer:hover { opacity: 1; border-color: var(--vert); color: var(--vert); }
+
+/* le message d'origine, replié : on peut toujours vérifier un jet contesté */
+.owd-des-repli { margin-top: 5px; }
+.owd-des-repli > summary {
+  cursor: pointer; font-size: 10px; color: var(--ink-2);
+  list-style: none; opacity: .7;
+}
+.owd-des-repli > summary:hover { opacity: 1; }
+.owd-des-repli > summary::-webkit-details-marker { display: none; }
+
+/* QUI DEMANDE MOINS DE MOUVEMENT N'EN AURA PAS — mais la coupure est DANS LE JS,
+   pas ici, parce que la culbute est lancée par element.animate() : une animation
+   du moteur d'animations web ne se laisse pas éteindre par une media query, qui
+   ne gouverne que ce que la feuille déclare. Voir moinsDeMouvement(). Le dé se
+   pose alors directement sur sa face — même valeur, même lecture. */
+@media (prefers-reduced-motion: reduce) {
+  .owd-cube { transition: none !important; }
+}

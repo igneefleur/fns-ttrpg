@@ -647,6 +647,363 @@ if (typeof browser === "undefined") { var browser = chrome; }
     }, true);
   }
 
+
+  // ---------- les dés d'action : rhabiller le message du tchat ----------
+  // Roll20 sait lancer, il ne sait pas présenter. La commande que le joueur
+  // envoie est un gabarit « default » ordinaire :
+  //
+  //     &{template:default}{{name=OWD Action Dice}}{{rolls=[[1d6]][[1d6]]…}}
+  //
+  // …et Roll20 la rend en tableau gris, un jet par petite boîte jaune. On ne
+  // touche NI à la commande NI au jet : les dés sont lancés par Roll20, donc
+  // vérifiables par tous. On ne réécrit QUE la présentation, et seulement dans
+  // le navigateur de qui porte l'extension — un joueur sans elle voit le
+  // tableau d'origine, et les deux lisent les mêmes chiffres.
+  //
+  // D'OÙ VIENT CE DÉ. La construction suit « 3D Dice with CSS » de jico
+  // (codepen.io/jico/pen/wvMpgog) : six faces posées par un quart de tour puis
+  // un translateZ, des coins arrondis, et des POINTS plutôt que des chiffres.
+  // Une première version maison empilait des triangles découpés au clip-path et
+  // orientés par décomposition d'Euler. Elle était géométriquement exacte —
+  // solides fermés, sommets au bon endroit — et illisible à l'écran. Elle a été
+  // jetée : ce sont les coins arrondis et les points qui font reconnaître un dé,
+  // pas la trigonométrie.
+  //
+  // POUR L'INSTANT, LE d6 SEUL. Tout autre dé reçoit un jeton rond, qui ne
+  // prétend à aucune forme. Les solides à faces triangulaires viendront ensuite,
+  // sur cette base-ci — mieux vaut un dé juste que six approximatifs.
+  //
+  // DEUX NOMS DE CLASSES, PAS UN DE PLUS, pour la reconnaissance :
+  // « .sheet-rolltemplate-default » et « .inlinerollresult », documentés et
+  // stables depuis des années. Viser la structure interne du tableau (les <td>,
+  // l'ordre des lignes) aurait fait dépendre ce fichier — que la signature fige
+  // — d'un détail que Roll20 change quand il veut.
+  //
+  // POURQUOI UN MARQUEUR SUR LE NOEUD. Notre réécriture est elle-même une
+  // mutation du DOM : sans « data-owd-des », l'observateur se rappellerait sur
+  // son propre travail, indéfiniment. Le marqueur se pose AVANT de construire,
+  // jamais après : une exception au milieu de la construction laisserait sinon
+  // un noeud non marqué que la mutation suivante reprendrait en boucle.
+  var DES_NOM = "owd action dice";      // ce que {{name=…}} doit dire, normalisé
+  var DES_MARQUE = "data-owd-des";
+  var desObs = null;
+
+  // ---- LE CUBE ----
+  // L'arête, en pixels. TOUT en découle : le demi-côté qui pousse chaque face
+  // vers l'extérieur, le rayon des coins, la taille des points. Un seul nombre
+  // à changer pour agrandir le dé.
+  var CUBE = 44;
+  var DEMI = CUBE / 2;
+
+  // Les six faces. Chacune porte :
+  //   pose   sa place sur le cube — un quart de tour, puis on la pousse dehors
+  //   avant  la rotation qui la ramène EN FACE du lecteur, inverse exacte de sa
+  //          pose. C'est elle qui fait que le dé s'arrête toujours sur la bonne
+  //          face, et qu'elle regarde droit plutôt que de biais.
+  //   points le nombre de points gravés dessus
+  //
+  // LES FACES OPPOSÉES FONT 7, comme sur tout dé du commerce : 1 devant et 6
+  // derrière, 2 en haut et 5 en bas, 3 à gauche et 4 à droite. Ce n'est pas de
+  // la coquetterie — un dé dont les faces cachées seraient incohérentes se
+  // verrait au premier tour de culbute.
+  var CUBE_FACES = [
+    { points: 1, pose: "translateZ(" + DEMI + "px)",                 avant: "" },
+    { points: 2, pose: "rotateX(90deg) translateZ(" + DEMI + "px)",  avant: "rotateX(-90deg)" },
+    { points: 3, pose: "rotateY(-90deg) translateZ(" + DEMI + "px)", avant: "rotateY(90deg)" },
+    { points: 4, pose: "rotateY(90deg) translateZ(" + DEMI + "px)",  avant: "rotateY(-90deg)" },
+    { points: 5, pose: "rotateX(-90deg) translateZ(" + DEMI + "px)", avant: "rotateX(90deg)" },
+    { points: 6, pose: "rotateX(180deg) translateZ(" + DEMI + "px)", avant: "rotateX(-180deg)" }
+  ];
+
+  // La disposition des points, en QUARTS de face : la colonne 1 est au quart, la
+  // 2 au milieu, la 3 aux trois quarts, et les lignes de même. C'est la
+  // disposition universelle du dé à six faces. Exprimée ainsi, elle suit
+  // l'arête du cube sans qu'aucune coordonnée ne soit à recalculer.
+  var CUBE_POINTS = {
+    1: [[2, 2]],
+    2: [[1, 1], [3, 3]],
+    3: [[1, 1], [2, 2], [3, 3]],
+    4: [[1, 1], [3, 1], [1, 3], [3, 3]],
+    5: [[1, 1], [3, 1], [2, 2], [1, 3], [3, 3]],
+    6: [[1, 1], [3, 1], [1, 2], [3, 2], [1, 3], [3, 3]]
+  };
+
+  // Le réglage système « réduire les animations ». Interrogé à chaque dé plutôt
+  // que retenu une fois pour toutes : il se change sans recharger la page, et un
+  // joueur pris de vertiges en pleine partie doit être soulagé au message
+  // suivant, pas au prochain redémarrage de Roll20.
+  function moinsDeMouvement() {
+    try {
+      return !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+    } catch (e) { return false; }
+  }
+
+  // La valeur d'un jet en ligne. textContent porte le résultat ; on refuse tout
+  // ce qui n'est pas un entier, plutôt que de rendre « NaN » dans une jolie
+  // boîte — un dé illisible vaut « pas de dé », et le message reste tel quel.
+  function desValeur(n) {
+    var t = String((n && n.textContent) || "").replace(/\s+/g, "");
+    return /^\d+$/.test(t) ? parseInt(t, 10) : null;
+  }
+
+  // Le nombre de faces d'UN jet, lu dans son propre détail (« Rolling 1d6 = 4 »).
+  //
+  // ATTENTION AU MOT-FRONTIÈRE. Une version précédente cherchait « \bd(\d+)\b »
+  // et ne trouvait JAMAIS rien : dans « 1d6 », le 1 et le d sont deux caractères
+  // de mot, il n'y a pas de frontière entre eux. Tous les dés retombaient sur le
+  // repli, et un seul type de dé paraissait juste — par accident.
+  function desTaille(detail) {
+    var m = /(\d*)\s*d\s*(\d{1,3})/i.exec(String(detail || ""));
+    var n = m ? parseInt(m[2], 10) : 0;
+    return n >= 2 ? n : 6;
+  }
+
+  // Le gabarit porte-t-il NOS dés d'action ? On exige les trois à la fois : le
+  // gabarit, le nom, et au moins un jet en ligne. Le nom seul ne suffirait pas —
+  // quelqu'un qui écrirait « OWD Action Dice » au tchat verrait son message
+  // rhabillé en dés.
+  function desConcerne(tpl) {
+    if (!tpl || tpl.getAttribute(DES_MARQUE)) return null;
+    if (norm(tpl.textContent).indexOf(DES_NOM) < 0) return null;
+    var brut = tpl.querySelectorAll(".inlinerollresult");
+    var out = [];
+    for (var i = 0; i < brut.length; i++) {
+      var v = desValeur(brut[i]);
+      if (v === null) continue;
+      var det = brut[i].getAttribute("title") || "";
+      out.push({ valeur: v, detail: det, taille: desTaille(det) });
+    }
+    return out.length ? out : null;
+  }
+
+  // LA CULBUTE. Elle part d'une orientation propre à chaque dé et se termine
+  // EXACTEMENT sur la face voulue. element.animate() plutôt que des @keyframes :
+  // un texte figé ne sait ni partir d'un angle différent par dé, ni arriver sur
+  // une face choisie à l'exécution. Sans cette API, le dé se pose sans culbuter —
+  // le résultat est le même, seule la mise en scène manque.
+  function cubeCulbute(cube, arrivee, rang) {
+    if (moinsDeMouvement() || typeof cube.animate !== "function") return;
+    var tours = 2 + (rang % 3);
+    var dx = -240 - rang * 53, dy = -200 - rang * 71;
+    try {
+      cube.animate([
+        { transform: "rotateX(" + dx + "deg) rotateY(" + dy + "deg) scale(.5)", offset: 0 },
+        { transform: "rotateX(" + (dx / 2) + "deg) rotateY(" + (dy / 2) + "deg) scale(1.1)", offset: .5 },
+        { transform: "rotateX(" + (360 * tours) + "deg) rotateY(" + (360 * tours) + "deg) scale(1)", offset: .8 },
+        { transform: (arrivee || "rotateZ(0deg)") + " scale(1)", offset: 1 }
+      ], {
+        duration: 850 + rang * 110,
+        easing: "cubic-bezier(.2,.85,.3,1.05)",
+        fill: "forwards"
+      });
+    } catch (e) {}
+  }
+
+  // UN DÉ À SIX FACES. Rend { noeud, rejoue } : le second sert au bouton
+  // « re-animer » de la carte.
+  function unCube(d, rang) {
+    var scene = el("div", "owd-de");
+    var cube = el("div", "owd-cube");
+
+    for (var i = 0; i < CUBE_FACES.length; i++) {
+      var f = CUBE_FACES[i];
+      var face = el("div", "owd-cube-f");
+      face.style.transform = f.pose;
+      var pts = CUBE_POINTS[f.points];
+      for (var k = 0; k < pts.length; k++) {
+        var p = el("i", "owd-cube-p");
+        p.style.left = (pts[k][0] * 25) + "%";
+        p.style.top = (pts[k][1] * 25) + "%";
+        face.appendChild(p);
+      }
+      cube.appendChild(face);
+    }
+    scene.appendChild(cube);
+
+    // la face qui porte la valeur, ramenée droit devant
+    var cible = CUBE_FACES[0];
+    for (i = 0; i < CUBE_FACES.length; i++) {
+      if (CUBE_FACES[i].points === d.valeur) cible = CUBE_FACES[i];
+    }
+    var arrivee = cible.avant;
+    cube.style.transform = arrivee || "rotateZ(0deg)";
+
+    if (d.valeur >= 6) scene.classList.add("owd-de-haut");
+    if (d.valeur <= 1) scene.classList.add("owd-de-bas");
+    if (d.detail) scene.setAttribute("title", d.detail);
+    scene.setAttribute("aria-label", "dé " + (rang + 1) + " (d6) : " + d.valeur);
+
+    cubeCulbute(cube, arrivee, rang);
+    return { noeud: scene, rejoue: function () { cubeCulbute(cube, arrivee, rang); } };
+  }
+
+  // LE JETON : tout ce qui n'est pas un d6 aujourd'hui. Il tourne sur lui-même
+  // et porte son chiffre, sans prétendre à une forme — mieux vaut avouer qu'on
+  // ne sait pas encore dessiner ce dé-là que faire passer un cube pour un d20.
+  function unJeton(d, rang) {
+    var scene = el("div", "owd-de owd-de-jeton");
+    var j = el("div", "owd-cube");
+    j.appendChild(el("span", "owd-de-n", String(d.valeur)));
+    scene.appendChild(j);
+    if (d.detail) scene.setAttribute("title", d.detail);
+    scene.setAttribute("aria-label", "dé " + (rang + 1) + " (d" + d.taille + ") : " + d.valeur);
+    return { noeud: scene, rejoue: function () { cubeCulbute(j, "", rang); } };
+  }
+
+  // Un TOTAL n'est pas une face : « [[2d6]] » ne rend qu'un résultat au tchat,
+  // la somme, qui monte à 12 sur un dé à six faces. Il reçoit le jeton, comme
+  // tout ce qui sort du domaine des faces (« [[1d6+2]] » aussi).
+  function desFace(d, rang) {
+    if (d.taille === 6 && d.valeur >= 1 && d.valeur <= 6) return unCube(d, rang);
+    return unJeton(d, rang);
+  }
+
+  function desCarte(liste) {
+    // la carte suit le réglage jour/nuit du popup, comme toutes nos boîtes :
+    // le tchat de Roll20 a son propre thème, qui n'est pas forcément le nôtre
+    var carte = poseNuit(el("div", "owd-des"));
+    var tete = el("div", "owd-des-tete");
+    tete.appendChild(el("span", "owd-des-titre", "Dés d'action"));
+
+    // L'ÉTIQUETTE DIT CE QU'ON A VRAIMENT LANCÉ, dé par dé : « 3 d6 · 1 d4 »
+    // plutôt qu'un « 4 d6 » qui serait faux dès qu'un jet mélange les dés.
+    var compte = {}, ordre = [], i;
+    for (i = 0; i < liste.length; i++) {
+      var t = liste[i].taille;
+      if (!compte[t]) { compte[t] = 0; ordre.push(t); }
+      compte[t]++;
+    }
+    var bouts = [];
+    for (i = 0; i < ordre.length; i++) bouts.push(compte[ordre[i]] + " d" + ordre[i]);
+    tete.appendChild(el("span", "owd-des-compte", bouts.join(" · ")));
+    carte.appendChild(tete);
+
+    var piste = el("div", "owd-des-piste");
+    var rejeux = [], somme = 0, haut = 0;
+    for (i = 0; i < liste.length; i++) {
+      var de = desFace(liste[i], i);
+      piste.appendChild(de.noeud);
+      rejeux.push(de.rejoue);
+      somme += liste[i].valeur;
+      if (liste[i].valeur > haut) haut = liste[i].valeur;
+    }
+    carte.appendChild(piste);
+
+    // LA VALEUR EST AUSSI ÉCRITE EN CLAIR, sous chaque dé. Des points se comptent
+    // mal du coin de l'oeil, et une capture d'écran du tchat doit rester lisible.
+    var chiffres = el("div", "owd-des-chiffres");
+    for (i = 0; i < liste.length; i++) {
+      var c = el("span", "owd-des-chiffre", String(liste[i].valeur));
+      if (liste[i].valeur >= liste[i].taille) c.classList.add("owd-des-chiffre-haut");
+      if (liste[i].valeur <= 1) c.classList.add("owd-des-chiffre-bas");
+      chiffres.appendChild(c);
+    }
+    carte.appendChild(chiffres);
+
+    // Le pied dit la SOMME et le MEILLEUR, discrètement. Aucun des deux n'est le
+    // résultat du tour : les dés d'action s'engagent un à un, c'est le joueur qui
+    // choisit lesquels. Les mettre en gros ferait croire à un jet unique.
+    var pied = el("div", "owd-des-pied");
+    pied.appendChild(el("span", "owd-des-info", "somme " + somme));
+    pied.appendChild(el("span", "owd-des-info", "meilleur " + haut));
+
+    // RE-ANIMER. Le bouton ne relance AUCUN dé : il rejoue la culbute sur les
+    // mêmes valeurs, qui sont déjà dans le DOM et viennent de Roll20. Le dire
+    // dans l'infobulle n'est pas une politesse — un bouton qui a l'air de
+    // relancer un jet, dans un tchat de jeu, est une accusation de triche en
+    // puissance.
+    var rej = el("button", "owd-des-rejouer", "re-animer");
+    rej.type = "button";
+    rej.setAttribute("title", "Rejoue l'animation. Les valeurs ne changent pas : elles viennent de Roll20.");
+    rej.addEventListener("click", function (ev) {
+      ev.preventDefault(); ev.stopPropagation();
+      for (var k = 0; k < rejeux.length; k++) rejeux[k]();
+    });
+    pied.appendChild(rej);
+    carte.appendChild(pied);
+    return carte;
+  }
+
+  // Rhabille UN gabarit. L'original n'est pas supprimé : il est replié dans un
+  // <details> fermé, sous la carte. Deux raisons, et la seconde est la vraie —
+  // on peut vérifier le détail d'un jet contesté à la table, et le jour où cette
+  // réécriture se trompera, le message d'origine sera encore là pour le dire.
+  function desRhabille(tpl) {
+    var liste = desConcerne(tpl);
+    if (!liste) return false;
+    tpl.setAttribute(DES_MARQUE, "1");   // AVANT de construire : voir l'en-tête
+    try {
+      var hote = el("div", "owd-des-hote");
+      hote.appendChild(desCarte(liste));
+      var repli = document.createElement("details");
+      repli.className = "owd-des-repli";
+      var res = document.createElement("summary");
+      res.textContent = "détail Roll20";
+      repli.appendChild(res);
+      // le gabarit d'origine est DÉPLACÉ, jamais recopié : une copie se
+      // désynchroniserait d'une éventuelle mise à jour de Roll20
+      tpl.parentNode.insertBefore(hote, tpl);
+      repli.appendChild(tpl);
+      hote.appendChild(repli);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function desBalaye(racine) {
+    if (!racine || !racine.querySelectorAll) return;
+    var l = racine.querySelectorAll(".sheet-rolltemplate-default:not([" + DES_MARQUE + "])");
+    for (var i = 0; i < l.length; i++) desRhabille(l[i]);
+    // le noeud ajouté PEUT être le gabarit lui-même, pas seulement son parent
+    if (racine.classList && racine.classList.contains("sheet-rolltemplate-default")) desRhabille(racine);
+  }
+
+  // Le tchat, quel que soit le nom que Roll20 donne à sa boîte cette année. On
+  // observe le plus PROCHE conteneur trouvé plutôt que le document entier :
+  // l'éditeur Roll20 mute sans arrêt (jetons, calques, minuteurs), et écouter
+  // tout ferait tourner ce balayage des centaines de fois par seconde.
+  function desBoite() {
+    var sels = ["#textchat .content", "#textchat", "[id*='textchat'] .content", "[id*='textchat']"];
+    for (var i = 0; i < sels.length; i++) {
+      var n = document.querySelector(sels[i]);
+      if (n) return n;
+    }
+    return null;
+  }
+
+  function poseDes() {
+    if (desObs) return;
+    var boite = desBoite();
+    if (!boite) return;
+    desBalaye(boite);   // les messages DÉJÀ là (rechargement en cours de partie)
+    try {
+      desObs = new MutationObserver(function (muts) {
+        for (var i = 0; i < muts.length; i++) {
+          var aj = muts[i].addedNodes;
+          for (var j = 0; j < aj.length; j++) {
+            if (aj[j].nodeType === 1) desBalaye(aj[j]);
+          }
+        }
+      });
+      desObs.observe(boite, { childList: true, subtree: true });
+    } catch (e) {}
+  }
+
+  // Le tchat n'existe pas forcément quand le script démarre : Roll20 le monte
+  // après sa connexion. On réessaie quelques secondes, puis on renonce — un
+  // intervalle laissé tourner pour rien, dans un onglet ouvert toute une soirée,
+  // finit par se voir.
+  function guetteDes() {
+    poseDes();
+    if (desObs) return;
+    var n = 0;
+    var iv = setInterval(function () {
+      poseDes();
+      if (desObs || ++n > 30) clearInterval(iv);
+    }, 1000);
+  }
+
   // ---------- le panneau de Camp : ancré à la barre, ou flottant ----------
   // Un panneau posé DANS la partie, que tous les joueurs voient : l'état du camp
   // s'y tient, à la vue de tous. Le contenu est servi par le site
@@ -1256,6 +1613,10 @@ if (typeof browser === "undefined") { var browser = chrome; }
   function demarre() {
     ecouteNuit();
     posePriseTake();
+    // Le tchat vit dans la frame de l'ÉDITEUR : ni la fenêtre popout d'une
+    // fiche ni l'iframe d'une feuille n'en portent, et y guetter reviendrait
+    // à laisser un intervalle tourner trente secondes pour rien.
+    if (IS_EDITEUR) guetteDes();
     if (IS_TOP) {
       // FRAME DU HAUT : on n'injecte RIEN au chargement (l'injection main-world gêne
       // l'ouverture des fiches Roll20). On attend que l'utilisateur ouvre l'onglet
