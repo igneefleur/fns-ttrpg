@@ -1,0 +1,436 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   PANNEAU DE CAMP — la seule feuille de roll20-camp.html
+
+   CE FICHIER N'EST CHARGÉ QUE PAR roll20-camp.html, par le bloc « camp » du
+   manifeste ou par sa liste de repli. Ni owd-fiche.css ni owd-roll20.css ne
+   sont chargés sur cette page : cette feuille est donc SEULE, et c'est
+   pourquoi elle se permet des règles de page (html, body) et redéfinit la
+   palette au lieu d'en hériter.
+
+   LA PALETTE EST RECOPIÉE DE owd-fiche.css, ET C'EST VOULU. La partager par
+   import obligerait roll20-camp.html à charger une feuille de 60 Ko pour
+   quatorze couleurs, dans un panneau large comme une colonne. LE LIVRE DES
+   COULEURS RESTE owd-fiche.css : le jour où une teinte y change, elle change
+   ici dans le même geste, sans quoi le camp et la fiche seraient de deux
+   nuances de papier différentes à l'écran, côte à côte.
+
+   LES CLASSES PORTENT « oc- », pour « Outward camp », et jamais « owd- » :
+   c'est la marque de la fiche, dont aucune règle ne doit paraître s'appliquer
+   ici par mégarde. Le préfixe est celui d'owd-camp.js — les deux côtés disent
+   le même mot, et se relisent ensemble.
+
+   LE PANNEAU EST UNE COLONNE ÉTROITE, toujours. Le châssis de l'extension
+   l'ancre à la barre d'outils de Roll20 sur toute la hauteur : 260 px de large
+   au minimum, souvent 380. Rien ici ne doit supposer davantage — pas de
+   colonnes côte à côte, pas de tableau qui ne sache pas se serrer.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ═══ 1. La palette ══════════════════════════════════════════════════════ */
+
+:root {
+  --oc-papier:   #faf6eb;   /* le fond du panneau */
+  --oc-papier-2: #f2ecdd;   /* un bloc posé dessus */
+  --oc-papier-3: #e8e0cb;   /* un pavé teinté, une ligne paire */
+  --oc-encre:    #1d1d1d;
+  --oc-encre-2:  #4d4a42;   /* prose secondaire */
+  --oc-encre-3:  #837c6a;   /* libellés, unités, ce qui ne se lit pas */
+
+  --oc-vert:        #63755e;
+  --oc-vert-clair:  #82997b;
+  --oc-vert-sombre: #46543b;
+  --oc-vert-pale:   #d6e2d0;
+
+  --oc-or:      #a9862f;
+  --oc-rouille: #b0402c;
+  --oc-froid:   #4a6f96;
+  --oc-chaud:   #b5702c;
+
+  --oc-ligne:   #cfc7b1;
+  --oc-ligne-2: #e3dcc8;
+  --oc-ombre:   rgba(40, 34, 20, .14);
+  --oc-focus:   rgba(99, 117, 94, .40);
+
+  --oc-serif: 'Alegreya', 'EB Garamond', Garamond, 'Times New Roman', serif;
+  --oc-titre: 'Cinzel', 'Alegreya', Garamond, serif;
+
+  --oc-r: 3px;              /* le rayon des coins, partout le même */
+}
+
+/* Le mode nuit rebascule la palette EN BLOC, une seule fois. Aucune couleur ne
+   doit être écrite ailleurs qu'ici : une teinte posée en dur dans une règle
+   plus bas est une teinte qui rate la nuit, et le camp est justement la page
+   qu'on regarde le plus souvent de nuit. */
+html.night {
+  --oc-papier:   #201c15;
+  --oc-papier-2: #262119;
+  --oc-papier-3: #2e2820;
+  --oc-encre:    #e8dfcb;
+  --oc-encre-2:  #b7ad97;
+  --oc-encre-3:  #8f8672;
+
+  --oc-vert:        #9fb37e;
+  --oc-vert-clair:  #adc08c;
+  --oc-vert-sombre: #6f8663;
+  --oc-vert-pale:   #33402c;
+
+  --oc-or:      #c9a24e;
+  --oc-rouille: #cf8368;
+  --oc-froid:   #7fa6cd;
+  --oc-chaud:   #d59a56;
+
+  --oc-ligne:   #3c3527;
+  --oc-ligne-2: #2e2920;
+  --oc-ombre:   rgba(0, 0, 0, .45);
+  --oc-focus:   rgba(159, 179, 126, .40);
+}
+
+/* ═══ 2. La page ═════════════════════════════════════════════════════════ */
+
+/* 15 px, et non les 18 de la fiche : le panneau est une colonne de 260 à
+   380 px, où l'échelle de la fiche ferait déborder chaque ligne. Tout le reste
+   est en em, si bien que ce seul nombre règle l'échelle du panneau entier. */
+html {
+  font-size: 15px;
+  background: var(--oc-papier);
+}
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--oc-papier);
+  color: var(--oc-encre);
+  font-family: var(--oc-serif);
+  /* Le panneau est étroit par nature : un débordement horizontal y ajouterait
+     une seconde barre de défilement par-dessus celle du cadre. Rien ne déborde
+     en largeur — le tableau, lui, se serre. */
+  overflow-x: hidden;
+}
+
+.oc-camp {
+  padding: .6rem .7rem 1rem;
+  position: relative;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* Un écran d'état (« Lecture du camp… », « Aucun camp… ») remplace le panneau,
+   il ne s'y superpose pas : montrer une horloge que l'on n'a pas lue derrière
+   un voile donnerait envie de cliquer dessus. */
+.oc-camp.oc-masque > *:not(.oc-etat) { display: none; }
+
+/* ═══ 3. La tête ═════════════════════════════════════════════════════════ */
+
+.oc-tete {
+  display: flex;
+  align-items: baseline;
+  gap: .5rem;
+  padding-bottom: .5rem;
+  border-bottom: 1px solid var(--oc-ligne);
+}
+.oc-date {
+  display: flex;
+  align-items: baseline;
+  gap: .45rem;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.oc-jour {
+  font-family: var(--oc-titre);
+  font-size: .82rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--oc-encre-3);
+  white-space: nowrap;
+}
+/* L'heure est ce qu'on vient lire : elle est le seul grand nombre du panneau,
+   et rien d'autre ne doit lui disputer la place. */
+.oc-heure {
+  font-family: var(--oc-titre);
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--oc-encre);
+  font-variant-numeric: tabular-nums;
+}
+.oc-moment {
+  font-size: .82rem;
+  font-style: italic;
+  color: var(--oc-encre-2);
+  white-space: nowrap;
+}
+
+/* Le bouton de nuit, seule commande de la tête. Les deux icônes sont dans le
+   document en permanence ; laquelle paraît est décidé ICI, en CSS pur, jamais
+   en JavaScript — c'est ce qui fait que la bascule ne clignote pas. */
+.oc-nuit {
+  flex: 0 0 auto;
+  width: 1.7rem;
+  height: 1.7rem;
+  padding: .25rem;
+  border: 1px solid var(--oc-ligne);
+  border-radius: var(--oc-r);
+  background: var(--oc-papier-2);
+  color: var(--oc-encre-2);
+  cursor: pointer;
+  line-height: 0;
+}
+.oc-nuit:hover { border-color: var(--oc-vert); color: var(--oc-vert); }
+.oc-nuit svg { width: 100%; height: 100%; fill: currentColor; }
+.oc-nuit .oc-soleil { display: none; }
+html.night .oc-nuit .oc-croissant { display: none; }
+html.night .oc-nuit .oc-soleil { display: block; }
+
+/* ═══ 4. Le bandeau d'avertissement ══════════════════════════════════════ */
+
+/* Ce que le camp ne peut pas faire, et pourquoi. Il n'apparaît que lorsqu'il a
+   quelque chose à dire : un bandeau permanent finirait par ne plus se lire. */
+.oc-bandeau {
+  margin: .55rem 0 0;
+  padding: .4rem .55rem;
+  border-left: 3px solid var(--oc-or);
+  border-radius: 0 var(--oc-r) var(--oc-r) 0;
+  background: var(--oc-papier-3);
+  color: var(--oc-encre-2);
+  font-size: .82rem;
+  line-height: 1.35;
+}
+.oc-bandeau[hidden] { display: none; }
+
+/* ═══ 5. Les blocs ═══════════════════════════════════════════════════════ */
+
+.oc-bloc {
+  margin-top: .8rem;
+  padding-top: .7rem;
+  border-top: 1px solid var(--oc-ligne-2);
+}
+.oc-bloc:first-of-type { border-top: 0; padding-top: 0; }
+.oc-titre {
+  margin: 0 0 .45rem;
+  font-family: var(--oc-titre);
+  font-size: .78rem;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--oc-vert-sombre);
+}
+html.night .oc-titre { color: var(--oc-vert-clair); }
+
+.oc-note {
+  margin: .45rem 0 0;
+  font-size: .76rem;
+  line-height: 1.4;
+  color: var(--oc-encre-3);
+  text-align: justify;
+  hyphens: auto;
+}
+
+/* ═══ 6. Les boutons ═════════════════════════════════════════════════════ */
+
+.oc-btn {
+  padding: .28rem .5rem;
+  border: 1px solid var(--oc-ligne);
+  border-radius: var(--oc-r);
+  background: var(--oc-papier-2);
+  color: var(--oc-encre);
+  font-family: var(--oc-serif);
+  font-size: .84rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.oc-btn:hover { border-color: var(--oc-vert); background: var(--oc-vert-pale); }
+.oc-btn:focus-visible { outline: 2px solid var(--oc-focus); outline-offset: 1px; }
+/* Le pas en arrière ne se cherche pas : il rattrape un clic de trop, il n'est
+   pas une commande ordinaire. Il reste lisible, mais ne tire pas l'œil. */
+.oc-arriere { color: var(--oc-encre-3); }
+/* Le seul bouton plein du panneau, et il n'apparaît que sur un écran d'état :
+   deux boutons pleins à l'écran, et aucun des deux n'est plus « le » bouton. */
+.oc-btn-fort {
+  margin-top: .7rem;
+  border-color: var(--oc-vert-sombre);
+  background: var(--oc-vert);
+  color: var(--oc-papier);
+}
+.oc-btn-fort:hover { background: var(--oc-vert-sombre); color: var(--oc-papier); }
+
+/* Les pas de l'horloge s'enroulent : à 260 px ils tiennent sur deux lignes, à
+   380 sur une seule. Aucune largeur n'est imposée — le châssis décide. */
+.oc-pas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .3rem;
+}
+
+/* ═══ 7. Les champs ══════════════════════════════════════════════════════ */
+
+.oc-ligne {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-top: .35rem;
+}
+.oc-lib {
+  flex: 0 0 4.6rem;
+  font-size: .78rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--oc-encre-3);
+}
+.oc-champ {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: .25rem .4rem;
+  border: 1px solid var(--oc-ligne);
+  border-radius: var(--oc-r);
+  background: var(--oc-papier);
+  color: var(--oc-encre);
+  font-family: var(--oc-serif);
+  font-size: .88rem;
+}
+.oc-champ:focus { outline: 2px solid var(--oc-focus); outline-offset: 0; border-color: var(--oc-vert); }
+.oc-court { flex: 0 0 5rem; }
+
+/* ═══ 8. L'air ═══════════════════════════════════════════════════════════ */
+
+/* Le second grand nombre du panneau, et le seul qui change de couleur : le
+   froid tire au bleu, le chaud à la rouille, la zone au vert. C'est la seule
+   information qu'on doit pouvoir lire du coin de l'œil. */
+.oc-air {
+  font-family: var(--oc-titre);
+  font-size: 1.35rem;
+  line-height: 1.1;
+  color: var(--oc-encre-3);
+  font-variant-numeric: tabular-nums;
+}
+.oc-air-froid { color: var(--oc-froid); }
+.oc-air-chaud { color: var(--oc-chaud); }
+.oc-air-zone  { color: var(--oc-vert); }
+
+.oc-repere {
+  margin: .2rem 0 0;
+  font-size: .84rem;
+  line-height: 1.4;
+  color: var(--oc-encre-2);
+}
+
+/* ═══ 9. Le tableau des dix minutes ══════════════════════════════════════ */
+
+/* Quatre colonnes dans une colonne de 260 px : les chiffres sont serrés et
+   alignés à droite, seul le nom de l'intensité reste à gauche. */
+.oc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .82rem;
+  font-variant-numeric: tabular-nums;
+}
+.oc-table th {
+  padding: .15rem .3rem;
+  border-bottom: 1px solid var(--oc-ligne);
+  font-family: var(--oc-titre);
+  font-size: .7rem;
+  font-weight: 600;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--oc-encre-3);
+  text-align: right;
+}
+.oc-table th:first-child { text-align: left; }
+.oc-table td {
+  padding: .18rem .3rem;
+  text-align: right;
+  color: var(--oc-encre-2);
+}
+.oc-table td.oc-nom { text-align: left; color: var(--oc-encre); }
+.oc-table tbody tr:nth-child(even) { background: var(--oc-papier-2); }
+
+/* ═══ 10. Les installations ══════════════════════════════════════════════ */
+
+/* Deux par ligne à 260 px, trois au-delà : la grille se remplit d'elle-même,
+   sans point de rupture à tenir à jour. */
+.oc-grille {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(6.2rem, 1fr));
+  gap: .35rem;
+}
+.oc-case {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .1rem;
+  padding: .35rem .45rem;
+  border: 1px solid var(--oc-ligne);
+  border-radius: var(--oc-r);
+  background: var(--oc-papier-2);
+  color: var(--oc-encre);
+  font-family: var(--oc-serif);
+  text-align: left;
+  cursor: pointer;
+}
+.oc-case:hover { border-color: var(--oc-vert); }
+.oc-case:focus-visible { outline: 2px solid var(--oc-focus); outline-offset: 1px; }
+.oc-case-nom { font-size: .86rem; }
+.oc-case-etat { font-size: .74rem; font-style: italic; color: var(--oc-encre-3); }
+/* Allumé, monté, à portée : la case posée se distingue par son fond ET par son
+   trait, jamais par la seule couleur — le panneau se regarde de loin, sur un
+   écran quelconque, et le vert seul ne suffirait pas à le dire. */
+.oc-case-on {
+  border-color: var(--oc-vert);
+  background: var(--oc-vert-pale);
+}
+.oc-case-on .oc-case-etat { color: var(--oc-vert-sombre); font-style: normal; }
+html.night .oc-case-on .oc-case-etat { color: var(--oc-vert-clair); }
+
+/* ═══ 11. Le camp figé ═══════════════════════════════════════════════════ */
+
+/* Lecture seule : rien ne disparaît, tout se lit encore, mais aucune commande
+   ne fait mine d'être vivante. Le POURQUOI est dans le bandeau, jamais dans
+   cet estompage seul — un panneau grisé sans un mot est une panne muette. */
+.oc-fige .oc-btn,
+.oc-fige .oc-case,
+.oc-fige .oc-champ {
+  opacity: .55;
+  cursor: default;
+}
+.oc-fige .oc-btn:hover,
+.oc-fige .oc-case:hover { border-color: var(--oc-ligne); background: var(--oc-papier-2); }
+/* Le bouton « Réessayer » d'un écran d'état n'est jamais figé : c'est la seule
+   sortie quand le camp ne se lit pas. */
+.oc-fige .oc-btn-fort { opacity: 1; cursor: pointer; }
+
+/* ═══ 12. Les écrans d'état ══════════════════════════════════════════════ */
+
+.oc-etat {
+  padding: 1.4rem .8rem;
+  text-align: center;
+}
+.oc-etat-titre {
+  font-family: var(--oc-titre);
+  font-size: 1rem;
+  color: var(--oc-encre);
+}
+.oc-etat-detail {
+  margin-top: .5rem;
+  font-size: .84rem;
+  line-height: 1.45;
+  color: var(--oc-encre-2);
+  text-align: left;
+}
+
+/* ═══ 13. Le pied ════════════════════════════════════════════════════════ */
+
+/* Le numéro publié, et rien d'autre. Il ne sert qu'à une chose : qu'un joueur
+   puisse le lire au téléphone en signalant une panne. */
+.oc-pied {
+  margin-top: 1rem;
+  padding-top: .5rem;
+  border-top: 1px solid var(--oc-ligne-2);
+  font-size: .72rem;
+  letter-spacing: .04em;
+  color: var(--oc-encre-3);
+  text-align: right;
+}
+
+/* ═══ 14. La nuit de la partie ═══════════════════════════════════════════ */
+
+/* À ne pas confondre avec le mode nuit de l'écran : celle-ci est l'heure du
+   MONDE, et elle ne repeint rien — elle pose seulement un filet le long du
+   bord, pour qu'on voie d'un coup d'œil qu'il fait noir dehors. Repeindre le
+   panneau entier ferait croire que le joueur a basculé son thème. */
+.oc-camp.oc-nuit-jeu { box-shadow: inset 3px 0 0 var(--oc-froid); }

@@ -1,0 +1,32 @@
+{
+  "_lisezmoi": "Manifeste de la fiche Outward. C'est LUI qui dit quoi charger. roll20-fiche.html est un amorceur gelé, servi sans ?v= par la coquille signée et gardé dix minutes par GitHub Pages : il ne peut donc pas nommer les fichiers lui-même sans risquer de les figer. Ce manifeste, lui, se relit sans cache à chaque ouverture (fetch no-store, plus un ?t= qui change la clé de cache du CDN). Toutes les URL sont RELATIVES à la racine du site ; une URL absolue, une URL commençant par // ou une URL contenant .. fait refuser le manifeste ENTIER, et l'amorceur retombe sur son repli gelé — panne muette, la fiche a l'air de marcher mais sans ?v= et sans manifeste. Les ?v= sont des clés de cache, jamais des numéros de version : ils s'incrémentent ensemble, et le site qui charge le même bundle par mkdocs doit porter le même numéro, sinon les deux mondes ne font pas tourner le même code.",
+  "_versions": "release et schema sont DEUX numéros indépendants, et ce manifeste est la seule autorité sur les deux. release est le numéro publié, X.Y.Z, chaque nombre de 0 à 999 avec retenue ; le site beta y colle un b, que le site public ne porte jamais et qui NE CHANGE PAS LE RANG (1.0.0b et 1.0.0 sont de même rang, la beta étant ce que le public recevra à la fusion). schema est un entier qui ne monte QUE lorsque la forme de l'état du personnage change : il ne se déduit pas du premier nombre de la release, et le jour où l'un bouge sans l'autre, c'est schema qui fait foi. Un Z ne doit JAMAIS toucher au format de l'état : c'est ce qui autorise une seule archive par ligne X.Y. blocage dit ce qui fait paraître l'écran de version : \"schema\" ne le sort qu'au désaccord de SCHÉMA, pour qu'un correctif de CSS ne barre pas le passage à toute une table ; \"release\" le sortirait à chaque numéro publié, ce qui est intenable. Le code doit retomber sur \"schema\" quand ce manifeste manque, sinon un fetch expiré ressort l'écran chez tout le monde. Les trois porteurs du numéro (ce manifeste, RELEASE de owd-fiche.js, RELEASE_DEFAUT de owd-attr-map.js) montent ENSEMBLE, suffixe compris ; les deux porteurs du schéma (ce manifeste et SCHEMA_DEFAUT de owd-attr-map.js, plus le SCHEMA du bundle) aussi, et la chaîne de owd-migrations.js doit être contiguë et monter exactement jusqu'à lui.",
+  "release": "1.0.0",
+  "schema": 1,
+  "blocage": "schema",
+  "amorce": [
+    "javascripts/owd-attr-map.js?v=1",
+    "javascripts/owd-roll20-boot.js?v=1"
+  ],
+  "camp": {
+    "js": [
+      "javascripts/owd-camp.js?v=1"
+    ],
+    "css": [
+      "stylesheets/owd-camp.css?v=1"
+    ]
+  },
+  "bundle": {
+    "js": [
+      "javascripts/owd-migrations.js?v=1",
+      "javascripts/owd-fiche.js?v=1"
+    ],
+    "css": [
+      "stylesheets/owd-fiche.css?v=1",
+      "stylesheets/owd-roll20.css?v=1"
+    ],
+    "data": null
+  },
+  "_archives": "Une archive par LIGNE X.Y, jamais par release : la clé et le dossier porteraient le numéro de la release qui a OUVERT la ligne (fiche/v1.0.0/, clé \"1.0.0\", sans le b de la beta), et un correctif Z ne gèle rien. La recherche se fait donc PAR LIGNE : on réduit la version du personnage à ses deux premiers nombres (\"1.0.4b\" donne 1.0), on garde les clés de même ligne et on retient la plus récente, Z comparé NUMÉRIQUEMENT (un tri de chaînes rangerait 1.0.10 avant 1.0.9), clés parcourues triées et comparaison stricte, si bien qu'à rang égal (\"1.0.2\" et \"1.0.2b\") c'est la plus petite qui tranche et que rien ne dépend de l'ordre des clés du JSON. Un personnage servi par l'archive de sa ligne repart avec le numéro de cette clé, jamais avec le sien : c'est ce numéro que l'amorce pose en release EFFECTIVE, et que la carte d'attributs inscrira dans owd_version.max. Ces entrées seront IMMUABLES : jamais renommées, jamais fusionnées, jamais supprimées, sous peine de casser les personnages déjà épinglés et les manifestes gardés en cache. Le dispositif part ici avec archives VIDE : la 1.0.0b est la première fiche publiée, il n'y a aucune ancienne version à rouvrir, et l'écran de version grise donc « ouvrir avec sa version » en disant pourquoi — c'est le comportement correct, pas un oubli.",
+  "archives": {}
+}

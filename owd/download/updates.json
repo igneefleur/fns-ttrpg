@@ -1,0 +1,17 @@
+{
+  "addons": {
+    "owd-roll20@igneefleur": {
+      "updates": [
+        {
+          "version": "1.0.0.1",
+          "update_link": "https://igneefleur.github.io/fns-ttrpg/owd/download/owd-roll20-firefox.xpi",
+          "browser_specific_settings": {
+            "gecko": {
+              "strict_min_version": "109.0"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
