@@ -179,8 +179,8 @@
 }
 .md-typeset svg.garde-carre {
   flex: none;
-  width: 1.6rem;
-  height: 1.6rem;
+  width: 1.9rem;
+  height: 1.9rem;
 }
 .md-typeset svg.garde-carre .gd-case {
   fill: var(--ink);
@@ -188,18 +188,28 @@
 }
 /* Un point quand les mains ne bougent pas, UNE FLÈCHE quand elles bougent, et
    jamais les deux : le point et la flèche ensemble se cachaient l'un l'autre.
-   La flèche porte donc seule le sens, d'où un trait plein et non estompé. */
+   Le fût et la tête sont tracés du même trait, la tête en V et non pleine :
+   un triangle plein, à cette taille, se lit comme une tache. */
 .md-typeset svg.garde-carre .gd-fixe {
   fill: var(--green-title);
 }
-.md-typeset svg.garde-carre .gd-fleche {
-  stroke: var(--green-title);
-  stroke-width: 1.9;
-  stroke-linecap: round;
-  fill: none;
-}
+.md-typeset svg.garde-carre .gd-fleche,
 .md-typeset svg.garde-carre .gd-pointe {
-  fill: var(--green-title);
+  fill: none;
+  stroke: var(--green-title);
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* De nuit l'encre est CLAIRE : les neuf cases à 8 % s'effacent sur le fond
+   sombre, et la flèche flotte alors sans grille pour la lire. Même écart sur
+   les cases vides de l'empreinte, réglées elles aussi sur l'encre. */
+html.night .md-typeset svg.garde-carre .gd-case {
+  fill-opacity: 0.17;
+}
+html.night .md-typeset svg.geste-carte .hx-vide {
+  fill-opacity: 0.12;
 }
 
 
