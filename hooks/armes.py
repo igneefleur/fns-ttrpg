@@ -67,6 +67,19 @@ COUP = re.compile(
 )
 ATTR = re.compile(r'data-([a-z]+)="([^"]*)"')
 
+# Le nom français reçoit sa propre boîte. Sans elle il ne peut pas tenir une
+# hauteur fixe, et le terme qui le suit se pose alors plus haut sur les cartes
+# au nom court que sur celles au nom long : les sous-titres ne s'alignent plus
+# d'une colonne à l'autre.
+NOM = re.compile(r'(<p class="geste-nom">)(.*?)(<em>.*?</em>)?(</p>)', re.S)
+
+
+def _nom_html(bloc):
+    def enveloppe(m):
+        return (f'{m.group(1)}<span class="geste-appel">{m.group(2).strip()}'
+                f'</span>{m.group(3) or ""}{m.group(4)}')
+    return NOM.sub(enveloppe, bloc, count=1)
+
 
 
 class ErreurCoup(Exception):
@@ -232,22 +245,26 @@ def garde_svg(brut):
 
     ax, ay = _garde_centre(depart)
     bx, by = _garde_centre(arrivee)
-    if depart != arrivee:
+    if depart == arrivee:
+        # Les mains ne bougent pas : un point, et il n'y a rien d'autre à lire.
+        out.append(f'<circle class="gd-fixe" cx="{ax:.1f}" cy="{ay:.1f}" r="2.6"/>')
+    else:
+        # SEULE la flèche dit le mouvement. On avait posé en plus un cercle au
+        # départ et un disque à l'arrivée : à 1,6 rem les trois se marchent
+        # dessus, la flèche disparaît sous les pastilles et les pastilles ne se
+        # distinguent plus l'une de l'autre. Elle va donc d'un centre à l'autre.
         d = math.hypot(bx - ax, by - ay)
         ux, uy = (bx - ax) / d, (by - ay) / d
-        # La pointe de la flèche porte à elle seule le sens du mouvement : sans
-        # chiffre, c'est elle qu'on lit, le cercle et le point ne font que
-        # confirmer. Elle s'arrête au bord du disque d'arrivée.
-        px, py = bx - ux * 3.6, by - uy * 3.6
         nx, ny = -uy, ux
-        out.append(f'<path class="gd-fleche" d="M {ax + ux * 3.4:.2f} {ay + uy * 3.4:.2f} '
-                   f'L {px:.2f} {py:.2f}"/>')
+        qx, qy = ax + ux * 0.8, ay + uy * 0.8      # naissance du fût
+        px, py = bx - ux * 0.8, by - uy * 0.8      # pointe
+        rx, ry = px - ux * 3.8, py - uy * 3.8      # base de la tête
+        out.append(f'<path class="gd-fleche" d="M {qx:.2f} {qy:.2f} '
+                   f'L {rx:.2f} {ry:.2f}"/>')
         out.append(
             f'<path class="gd-pointe" d="M {px:.2f} {py:.2f} '
-            f'L {px - ux * 2.4 + nx * 1.5:.2f} {py - uy * 2.4 + ny * 1.5:.2f} '
-            f'L {px - ux * 2.4 - nx * 1.5:.2f} {py - uy * 2.4 - ny * 1.5:.2f} Z"/>')
-    out.append(f'<circle class="gd-depart" cx="{ax:.1f}" cy="{ay:.1f}" r="2.4"/>')
-    out.append(f'<circle class="gd-arrivee" cx="{bx:.1f}" cy="{by:.1f}" r="2.4"/>')
+            f'L {rx + nx * 2.3:.2f} {ry + ny * 2.3:.2f} '
+            f'L {rx - nx * 2.3:.2f} {ry - ny * 2.3:.2f} Z"/>')
     out.append("</svg>")
     return "".join(out), depart, arrivee
 
@@ -304,6 +321,6 @@ def on_page_content(html, page, config, files):
             avant, apres = _rendu(attrs)
         except ErreurCoup as e:
             raise ErreurCoup(f"{page.file.src_path} : {e}") from None
-        return m.group(1) + avant + m.group(3) + apres
+        return m.group(1) + avant + _nom_html(m.group(3)) + apres
 
     return COUP.sub(rendre, html)
