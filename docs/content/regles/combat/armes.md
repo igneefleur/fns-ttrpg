@@ -84,7 +84,7 @@ Ce que la garde d'arrivée décide, on le verra aux [enchaînements](../base/act
 
 De leurs sources, et le livre les nomme. Le corps à corps vient du Ringen et de l'abrazare de Fiore ; la dague, de son jeu de rondel ; l'épée, de Fiore et des Bolonais ; la grande épée, de Liechtenauer ; le marteau d'armes et la grande hache, du Jeu de la Hache ; la lance et la hallebarde, de Fiore et de Meyer. La hache à une main et la masse n'ont pas de traité : leurs coups viennent des sagas, de l'archéologie et de la forme de l'objet.
 
-Sur les quatre-vingts coups du chapitre, quarante et un sont attestés dans une source. Les trente-neuf autres portent la mention déduit, et il faut la lire comme telle. Des attestés, vingt-cinq citent leur folio au mot ; les seize autres le rendent en français, hors guillemets, parce que le libellé n'en a pas été collationné, et chaque carte le dit. Sept coups attestés ne portent aucun terme technique : le geste est au folio, le mot qui le nommerait ne l'est pas, et le chapitre préfère le silence à un composé fabriqué. Le geste est attesté, le libellé ne l'est pas encore, et ils le disent.
+Sur les quatre-vingts coups du chapitre, quarante et un sont attestés dans une source. Les trente-neuf autres portent la mention déduit, et il faut la lire comme telle. Des attestés, vingt-cinq citent leur folio au mot ; les seize autres le rendent en français, hors guillemets, parce que le libellé n'en a pas été collationné, et chaque carte le dit. Huit coups attestés ne portent aucun terme technique : le geste est au folio, le mot qui le nommerait ne l'est pas, et le chapitre préfère le silence à un composé fabriqué ou mal appliqué. Le geste est attesté, le libellé ne l'est pas encore, et ils le disent.
 
 Cinq coups ont été retirés en cours d'écriture pour cause de folklore ou de doublon. Le croc de corne de la hache à une main s'est révélé traçable à une pratique moderne plutôt qu'à un texte ancien, et la taille de dague, à une doctrine d'escrime contemporaine : aucun traité de dague n'enseigne la taille, tous s'organisent contre l'estoc.
 
@@ -108,7 +108,7 @@ Aucun nombre, et surtout pas le silence des traités. Ils enseignent le duel : q
 
 </div>
 
-Douze coups sur les quatre-vingts du chapitre frappent plus d'une case, et de deux façons qui ne se confondent pas : **en largeur**, quand le fil balaie plusieurs azimuts, et **en profondeur**, quand il frappe deux fois à des distances différentes. Trois coups font les deux.
+Douze coups sur les quatre-vingts du chapitre frappent plus d'une case, et de deux façons qui ne se confondent pas : **en largeur**, quand le fil balaie plusieurs azimuts, et **en profondeur**, quand il frappe deux fois à des distances différentes. Quatre coups font les deux.
 
 <div class="sepia-table" markdown>
 
@@ -120,16 +120,16 @@ Douze coups sur les quatre-vingts du chapitre frappent plus d'une case, et de de
 | Taille en travers | grande épée | 3 | 60° | 2 |
 | Taille moyenne en travers | hallebarde | 3 | 60° | 2 |
 | Taille horizontale de revers | épée | 3 | 30° | 1 et 2 |
+| Taille montante du côté droit | épée | 3 | 60° | 1 et 2 |
 | Taille montante de revers | épée | 3 | 60° | 1 et 2 |
 | Fendant en diagonale | épée | 2 | 30° | 2 |
-| Fendant de revers en diagonale | épée | 2 | 30° | 2 |
 | Taille montante au fer | hallebarde | 2 | 30° | 2 et 3 |
 | Fendant à pleine volée | grande hache | 2 | — | 2 et 3 |
 | Taille haute d'aplomb | hallebarde | 2 | — | 2 et 3 |
 
 </div>
 
-Le fendant à pleine volée et la taille haute d'aplomb sont les cas purs de la profondeur : aucune largeur, ils tombent dans le plan de la ligne, mais leur fer frappe au loin puis, poursuivant sa chute, un anneau en deçà et à hauteur de genou. Les deux revers de l'épée et la montante de la hallebarde sont les cas mixtes : ils s'ouvrent en tournant et changent d'anneau en même temps, parce que le coude n'a pas fini de s'ouvrir quand le fil mord la première fois.
+Le fendant à pleine volée et la taille haute d'aplomb sont les cas purs de la profondeur : aucune largeur, ils tombent dans le plan de la ligne, mais leur fer frappe au loin puis, poursuivant sa chute, un anneau en deçà et à hauteur de genou. Les deux montantes de l'épée, sa taille horizontale de revers et la montante de la hallebarde sont les cas mixtes : elles s'ouvrent en tournant et changent d'anneau en même temps, parce que le coude n'a pas fini de s'ouvrir quand le fil mord la première fois.
 
 Seule la hallebarde n'est bornée que par ses propres flancs : Meyer la lance bras tendu, l'extension est acquise avant l'entrée, et le fer ne sort de l'éventail qu'une fois passé derrière l'épaule. Toutes les autres sont bornées par le bras — celui de l'épée se ferme à l'axe, ceux de la grande épée tiennent tant que les épaules tournent, et la taille en travers meurt quand la croix se fige devant le front. La grande hache ne balaie qu'en profondeur : son fer ne tourne pas, il tombe. Les six autres catégories n'ont aucun balayage, et jamais par prudence : ou leurs coups ne tournent pas, ou leur arme n'a rien à traîner d'un corps au suivant — c'est le cas de la masse et du grand marteau, dont la tête ne dépose rien qu'à l'endroit qu'elle touche.
 
@@ -263,20 +263,15 @@ L'éventail que la grille sait nommer ouvre **cent vingt degrés à toute distan
 <p class="arme-nom">Épée à une main<span class="arme-portee">parade 5 · réduction 14</span></p>
 <p class="arme-prise">Une main sur la poignée, épée d'armes de 0,80 m de lame ; la gauche reste libre, et couvre. C'est l'arme étalon du chapitre : sa taille pleine vaut 20.</p>
 <div class="gestes">
-<div class="geste" data-trajet="1d2:passe>2:frappe>1:passe" data-degats="20 TRA / TRA" data-garde="3>9">
-<p class="geste-nom">Fendant du côté droit<em>colpo fendente</em></p>
+<div class="geste" data-trajet="2:frappe>1:passe" data-degats="20 TRA / TRA" data-garde="2>8">
+<p class="geste-nom">Fendant d'aplomb<em>colpo fendente</em></p>
 <p class="geste-diff">attaque 5</p>
-<p class="geste-source">Fiore dei Liberi, Fior di Battaglia, v. 1409, Getty MS Ludwig XV 13, f. 23r, figure des colpi fendenti : " Noy semo fendenti e façemo questione de fender gli denti cum drita raxone. Noy del ferir non auemo tardo e tornamo in guardia de vargo in vargo "</p>
+<p class="geste-source">Fiore dei Liberi, Fior di Battaglia, v. 1409, Getty MS Ludwig XV 13, f. 23r, figure des colpi fendenti : " Noy semo fendenti e façemo questione de fender gli denti cum drita raxone. Noy del ferir non auemo tardo e tornamo in guardia de vargo in vargo " — le folio dit en toutes lettres que le fendant va DROIT, ce qui fixe le plan de la descente et, avec lui, des mains qui partent au-dessus de la tête et finissent sous la ceinture sans quitter l'axe</p>
 </div>
 <div class="geste" data-trajet="1d:passe>2d:frappe>1:passe>2:frappe>1g:passe" data-degats="16 TRA / TRA" data-garde="3>7">
 <p class="geste-nom">Fendant en diagonale<em>sgualimbro</em></p>
 <p class="geste-diff">attaque 5</p>
 <p class="geste-source">Giovanni dall'Agocchie, Dell'Arte di Scrimia Libri Tre, Venise, Giulio Tamborino, 1572, libro I, prima giornata, f. 8v, division des cinq mandritti (fendente, sgualimbro, tondo aussi dit traverso, ridoppio, tramazzone) : le folio n'est pas cité au mot, le libellé n'ayant pas été collationné</p>
-</div>
-<div class="geste" data-trajet="1g:passe>2g:frappe>1:passe>2:frappe>1d:passe" data-degats="14 TRA / TRA" data-garde="1>9">
-<p class="geste-nom">Fendant de revers en diagonale<em>riverso sgualimbro</em></p>
-<p class="geste-diff">attaque 6</p>
-<p class="geste-source">Giovanni dall'Agocchie, Dell'Arte di Scrimia Libri Tre, Venise, Giulio Tamborino, 1572, libro I, prima giornata, f. 8v, division des colpi : rendu en français, hors guillemets : le mandritto se divise en fendente, sgualimbro, tondo aussi dit traverso, ridoppio et tramazzone, et le riverso porte les mêmes natures ; on appelle sgualimbro le mandritto qui va en travers, de l'épaule gauche de l'adversaire à son genou droit ; les riversi sont ainsi nommés parce qu'ils sont l'opposé des dritti, commençant du côté gauche et finissant du côté droit. Le composé riverso sgualimbro est écrit tel quel par le traité, dans les suites d'action des ff. 11v, 18v et 26r. Le libellé italien n'a pas été collationné : la lecture est faite sur la transcription.</p>
 </div>
 <div class="geste" data-trajet="1d2:passe>2d3:passe>1d:passe>2d2:frappe>1:passe>2d:frappe>2:frappe>2g:frappe>1g:passe" data-degats="10 TRA / TRA" data-garde="6>4">
 <p class="geste-nom">Taille horizontale du côté droit<em>mandritto tondo (o traverso)</em></p>
@@ -288,21 +283,26 @@ L'éventail que la grille sait nommer ouvre **cent vingt degrés à toute distan
 <p class="geste-diff">attaque 8</p>
 <p class="geste-source">Giovanni dall'Agocchie, Dell'Arte di Scrimia Libri Tre, Venise, Giulio Tamborino, 1572, libro I, prima giornata, f. 8v, division des colpi : rendu en français, hors guillemets : le mandritto se divise en cinq natures — fendente, sgualimbro, tondo aussi dit traverso, ridoppio, tramazzone — et le riverso porte les mêmes ; les riversi commencent du côté gauche et finissent au côté droit. Le libellé italien n'a pas été collationné : la lecture est faite sur la transcription.</p>
 </div>
-<div class="geste" data-trajet="1g2:passe>1g:frappe>2g:frappe>1:passe>2:frappe" data-degats="10 TRA / TRA" data-garde="7>3">
+<div class="geste" data-trajet="1d2:passe>1d:frappe>2d:frappe>1:passe>2:frappe>2g:passe" data-degats="12 TRA / TRA" data-garde="9>1">
+<p class="geste-nom">Taille montante du côté droit<em>ridoppio</em></p>
+<p class="geste-diff">attaque 7</p>
+<p class="geste-source">Giovanni dall'Agocchie, Dell'Arte di Scrimia Libri Tre, Venise, Giulio Tamborino, 1572, libro I, prima giornata, f. 8v, division des colpi : rendu en français, hors guillemets : le ridoppio est celui qui part de dessous, du vrai tranchant de l'épée, et finit à la pointe de l'épaule droite de l'ennemi. L'épaule droite de l'adversaire est du côté gauche du porteur : c'est ce qui fixe l'arrivée du coup, et non une commodité. Le libellé italien n'a pas été collationné : la lecture est faite sur la transcription.</p>
+</div>
+<div class="geste" data-trajet="1g2:passe>1g:frappe>2g:frappe>1:passe>2:frappe" data-degats="10 TRA / TRA" data-garde="7>5">
 <p class="geste-nom">Taille montante de revers<em>colpo sottano</em></p>
 <p class="geste-diff">attaque 8</p>
 <p class="geste-source">Fiore dei Liberi, Fior di Battaglia, v. 1409, Getty MS Ludwig XV 13, f. 23r, figure des colpi sottani : rendu en français, hors guillemets : les sottani partent du genou et vont jusqu'au milieu du front, par le chemin qu'a fait le fendente, et se donnent du faux tranchant</p>
 </div>
-<div class="geste" data-trajet="1:passe>2:frappe" data-degats="16 PER / PER" data-garde="9>5">
-<p class="geste-nom">Estoc à fond<em>stoccata</em></p>
+<div class="geste" data-trajet="1:passe>2:frappe" data-degats="16 PER / PER" data-garde="5>5">
+<p class="geste-nom">Estoc à fond</p>
 <p class="geste-diff">attaque 6</p>
-<p class="geste-source">Giovanni dall'Agocchie, Dell'Arte di Scrimia Libri Tre, Venise, 1572, libro I, prima giornata, f. 8v, les trois pointes : imbroccata (celle qui se donne main haute), stoccata (celle qui se donne main basse, par en dessous), punta riversa (celle qui sort du côté gauche)</p>
+<p class="geste-source">Giovanni dall'Agocchie, Dell'Arte di Scrimia Libri Tre, Venise, 1572, libro I, prima giornata, f. 8v, les trois pointes : imbroccata (celle qui se donne main haute), stoccata (celle qui se donne main basse, par en dessous), punta riversa (celle qui sort du côté gauche). Le folio divise les pointes par la position de la MAIN ; celle-ci se donne main à hauteur de poitrine, ni haute ni basse, et aucun des trois noms ne lui revient. Le chapitre préfère le silence à un terme mal appliqué.</p>
 </div>
-
 <div class="geste" data-trajet="soi:passe>1:frappe" data-degats="8 CON / TRA" data-garde="5>2">
 <p class="geste-nom">Coup de pommeau au visage<em>knopfslac</em></p>
 <p class="geste-diff">attaque 5 · déduit</p>
 <p class="geste-source">Le nom allemand est CONSTRUIT et non cité : knopf est le mot des gloses de la tradition Liechtenauer pour le pommeau, slac le coup, mais aucune source n'imprime le composé, les gloses écrivant frapper avec le knopf. Il est donné comme une commodité de nommage, non comme une caution. DÉDUIT de l'objet pour le reste : aucune source n'est alléguée pour le geste lui-même, ni chez Fiore dei Liberi ni chez Giovanni dall'Agocchie, dont aucun folio ne montre de coup de pommeau à l'épée d'une main. Ce qui est attesté et qui fonde la déduction est ailleurs : la forme de l'arme, dont le pommeau contrepèse la lame, et le fait que les deux traditions amènent le jeu au liement puis au corps à corps.</p>
+</div>
 </div>
 </div>
 </div>
