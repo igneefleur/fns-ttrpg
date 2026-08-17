@@ -356,56 +356,102 @@ L'éventail que la grille sait nommer ouvre **cent vingt degrés à toute distan
 </div>
 </div>
 
-<div class="arme">
+<div class="arme" data-base="20">
 <p class="arme-nom">Hache à une main<span class="arme-portee">parade 7 · réduction 10</span></p>
 <p class="arme-prise">Une main, manche court de 0,60 à 0,80 m, fer de 0,3 à 0,8 kg (Petersen A, B, C, G, H, I et la skeggöx barbue) ; le bouclier au bras gauche.</p>
 <div class="gestes">
-<div class="geste" data-trajet="1d2:passe>2:frappe" data-degats="22 TRA / TRA" data-garde="3>9">
+<div class="geste" data-trajet="1d2:passe>2:frappe>1:passe" data-degats="1.5 TRA / TRA" data-garde="3>8">
 <p class="geste-nom">Fendant à la tête</p>
 <p class="geste-diff">attaque 8 · déduit</p>
-<p class="geste-source">Brennu-Njáls saga, rédigée v. 1280, ch. 92 (= Dasent, ch. 91) : " höggur til Þráins með öxinni Rimmugýgi og kom í höfuðið og klauf ofan í jaxlana " : trad. Dasent 1861 : " clove him down to the teeth, so that his jaw-teeth fell out on the ice "</p>
+<p class="geste-source">Jan Petersen, De norske vikingesverd, Kristiania, 1919, types A, B, C, G, H, I : fers de 10 à 15 cm de tranchant montés en coin ; la longueur de manche, 0,60 à 0,80 m, est estimée d'après le genre, aucun manche ne se conservant</p>
 </div>
-
-<div class="geste" data-trajet="2d:passe>1:passe>2:frappe" data-degats="18 TRA / CON" data-garde="3>5">
+<div class="geste" data-trajet="1d:passe>2d:frappe>1:passe>1g:passe" data-degats="1.4 TRA / CON" data-garde="3>7">
 <p class="geste-nom">Fendant en diagonale à l'épaule</p>
 <p class="geste-diff">attaque 5 · déduit</p>
-<p class="geste-source">Brennu-Njáls saga, v. 1280, ch. 17 (meurtre de Glúmr) : " Þjóstólfur hjó þegar með öxinni í móti og kom á öxlina og tók í sundur axlarbeinið og viðbeinað "</p>
+<p class="geste-source">Jan Petersen, De norske vikingesverd, Kristiania, 1919, types A, B, C, G, H, I : fers de 10 à 15 cm de tranchant montés en coin ; la longueur de manche, 0,60 à 0,80 m, est estimée d'après le genre, aucun manche ne se conservant. Les sagas ne connaissent que le verbe höggva, qui dit qu'on frappe de taille sans jamais dire dans quel plan</p>
 </div>
-
-<div class="geste" data-trajet="1g:passe>1:frappe>1d:passe" data-degats="14 TRA / TRA" data-garde="4>9">
+<div class="geste" data-trajet="1g:passe>2g:passe>1:passe>2:frappe>1d:passe" data-degats="1.4 TRA / CON" data-garde="1>6">
 <p class="geste-nom">Fendant de revers au cou</p>
 <p class="geste-diff">attaque 7 · déduit</p>
-<p class="geste-source">DÉDUIT : aucun traité ne porte sur la hache à une main, et les sagas ne connaissent que le verbe höggva, qui dit qu'on frappe de taille sans jamais dire dans quel plan. La déduction repose sur l'objet et sur le bras : fers de 10 à 15 cm de tranchant montés en coin (typologie de Jan Petersen, De norske vikingesverd, Kristiania, 1919, types A, B, C, G, H, I ; la longueur de manche, 0,60 à 0,80 m, est estimée d'après le genre, aucun manche ne se conservant, et ne vient pas de Petersen), et bouclier au bras gauche, qui interdit d'armer un revers ailleurs qu'au-dessus de l'épaule.</p>
+<p class="geste-source">Les sagas ne connaissent que le verbe höggva, qui dit qu'on frappe de taille sans jamais dire dans quel plan ; l'écu au bras gauche interdit d'armer un revers ailleurs qu'au-dessus de l'épaule</p>
 </div>
-
-<div class="geste" data-trajet="1d3:passe>1d:passe>1:passe>2:frappe" data-degats="20 TRA / TRA" data-garde="6>4">
+<div class="geste" data-trajet="1d2:passe>1d:passe>2d:passe>2:frappe>1g:passe" data-degats="1.4 TRA / CON" data-garde="6>4">
 <p class="geste-nom">Taille en travers aux côtes</p>
 <p class="geste-diff">attaque 6 · déduit</p>
-<p class="geste-source">DÉDUIT de l'objet : fers de hache de l'âge viking, tranchants de 10 à 15 cm montés en coin sur des manches de 0,60 à 0,80 m (Jan Petersen, De norske vikingesverd, Kristiania, 1919, types A, B, C, G, H, I). Aucune source technique ne décrit un plan de frappe, les sagas ne disant que höggva, frapper de taille. Le pas engagé de 0,50 m est le paramètre du chapitre, non une donnée de fouille.</p>
+<p class="geste-source">Les sagas ne connaissent que le verbe höggva, qui dit qu'on frappe de taille sans jamais dire dans quel plan</p>
 </div>
-
-<div class="geste" data-trajet="1g:passe>1:passe>2d:frappe" data-degats="12 TRA / TRA" data-garde="4>3">
+<div class="geste" data-trajet="1g:passe>2g:passe>1:passe>2:passe>2d:frappe>1d:passe" data-degats="1.4 TRA / CON" data-garde="4>6">
 <p class="geste-nom">Taille de revers en travers</p>
 <p class="geste-diff">attaque 8 · déduit</p>
-<p class="geste-source">DÉDUIT : les sagas emploient le même verbe, höggva, pour le coup droit et pour le revers, et ne les distinguent jamais ; aucun folio n'existe pour cette arme. La déduction est anatomique et se vérifie sur l'objet : hache en main droite, écu au bras gauche, fer de 10 à 15 cm monté en coin (typologie de Jan Petersen, De norske vikingesverd, Kristiania, 1919, types A, B, C, G, H, I ; la longueur de manche, 0,60 à 0,80 m, est estimée d'après le genre, aucun manche ne se conservant, et ne vient pas de Petersen).</p>
+<p class="geste-source">Les sagas ne connaissent que le verbe höggva, qui dit qu'on frappe de taille sans jamais dire dans quel plan</p>
 </div>
-
-<div class="geste" data-trajet="soi:passe>1:passe>2:frappe" data-degats="16 TRA / TRA" data-garde="9>8">
+<div class="geste" data-trajet="1d:passe>1:passe>2:frappe" data-degats="1.4 TRA / CON" data-garde="9>5">
 <p class="geste-nom">Taille basse à la jambe</p>
 <p class="geste-diff">attaque 7 · déduit</p>
-<p class="geste-source">Snorri Sturluson, Heimskringla, Óláfs saga helga, v. 1230, ch. 228 (" La chute du roi Olaf ", Stiklestad, 1030), trad. Laing : " Thorstein Knarrarsmid struck at King Olaf with his axe, and the blow hit his left leg above the knee "</p>
+<p class="geste-source">Jan Petersen, De norske vikingesverd, Kristiania, 1919, types A, B, C, G, H, I : fers de 10 à 15 cm de tranchant montés en coin ; la longueur de manche, 0,60 à 0,80 m, est estimée d'après le genre, aucun manche ne se conservant</p>
 </div>
-
-<div class="geste" data-trajet="1:frappe>soi:passe" data-degats="6 PER / CON" data-garde="5>9">
+<div class="geste" data-trajet="1:frappe>1g:passe" data-degats="0.8 PER / CON" data-garde="5>1">
 <p class="geste-nom">Croc de la barbe au bouclier</p>
 <p class="geste-diff">attaque 9 · déduit</p>
-<p class="geste-source">DÉDUIT de la forme de deux objets mis face à face : la skeggöx barbue, dont la barbe descend sous le tranchant et forme un croc, et les boucliers ronds du navire de Gokstad, v. 900, Kulturhistorisk museum, Oslo — environ 0,94 m de diamètre, planches de 6 à 10 mm, sans cercle de fer, donc un bord de bois nu qu'un croc prend. Aucune source écrite ni figurée ne montre le geste.</p>
+<p class="geste-source">Le bouclier rond est partout dans la Tapisserie de Bayeux ; la barbe du fer, chez les types épanouis de la typologie de Jan Petersen, De norske vikingesverd, Kristiania, 1919, se tient loin du manche</p>
 </div>
-
-<div class="geste" data-trajet="1d:passe>1:frappe" data-degats="10 CON / CON" data-garde="3>6">
+<div class="geste" data-trajet="1g:passe>1:frappe>1d:passe" data-degats="0.9 CON / CON" data-garde="7>9">
 <p class="geste-nom">Coup du dos du fer au casque</p>
 <p class="geste-diff">attaque 6 · déduit</p>
-<p class="geste-source">DÉDUIT de l'objet : les fers de hache de l'âge viking n'ont pas de marteau au dos, seulement une arête et deux joues étroites (Jan Petersen, De norske vikingesverd, Kristiania, 1919), et le manche, long de 0,60 à 0,80 m selon une estimation de genre, se tient à son extrémité, le talon ne dépassant le poing que de la largeur d'une main. Le seul casque de l'âge viking scandinave conservé à peu près entier, celui de Gjermundbu, Ringerike, v. 970, Kulturhistorisk museum, Oslo, est une calotte de plaques rivetées ; les autres ne sont connus que par fragments. Aucune source ne décrit le geste.</p>
+<p class="geste-source">Les fers de hache de l'âge viking n'ont pas de marteau au dos, seulement une arête et deux joues étroites (Jan Petersen, De norske vikingesverd, Kristiania, 1919). Le seul casque de l'âge viking scandinave conservé à peu près entier, celui de Gjermundbu, Ringerike, v. 970, Kulturhistorisk museum, Oslo, est une calotte de plaques rivetées ; les autres ne sont connus que par fragments</p>
+</div>
+</div>
+<div class="combos">
+<p class="combos-nom">Enchaînements<span class="combos-regle">la garde d'arrivée d'un coup ouvre le suivant, et aucun coup ne se répète dans le même tour</span></p>
+<div class="combo">
+<span class="combo-long">deux coups</span>
+<span class="combo-coup" data-garde="4>6">Taille de revers en travers</span>
+<span class="combo-coup" data-garde="6>4">Taille en travers aux côtes</span>
+</div>
+<div class="combo">
+<span class="combo-long">deux coups</span>
+<span class="combo-coup" data-garde="6>4">Taille en travers aux côtes</span>
+<span class="combo-coup" data-garde="4>6">Taille de revers en travers</span>
+</div>
+<div class="combo">
+<span class="combo-long">trois coups</span>
+<span class="combo-coup" data-garde="1>6">Fendant de revers au cou</span>
+<span class="combo-coup" data-garde="6>4">Taille en travers aux côtes</span>
+<span class="combo-coup" data-garde="4>6">Taille de revers en travers</span>
+</div>
+<div class="combo">
+<span class="combo-long">quatre coups</span>
+<span class="combo-coup" data-garde="5>1">Croc de la barbe au bouclier</span>
+<span class="combo-coup" data-garde="1>6">Fendant de revers au cou</span>
+<span class="combo-coup" data-garde="6>4">Taille en travers aux côtes</span>
+<span class="combo-coup" data-garde="4>6">Taille de revers en travers</span>
+</div>
+<div class="combo">
+<span class="combo-long">cinq coups</span>
+<span class="combo-coup" data-garde="9>5">Taille basse à la jambe</span>
+<span class="combo-coup" data-garde="5>1">Croc de la barbe au bouclier</span>
+<span class="combo-coup" data-garde="1>6">Fendant de revers au cou</span>
+<span class="combo-coup" data-garde="6>4">Taille en travers aux côtes</span>
+<span class="combo-coup" data-garde="4>6">Taille de revers en travers</span>
+</div>
+<div class="combo">
+<span class="combo-long">six coups</span>
+<span class="combo-coup" data-garde="7>9">Coup du dos du fer au casque</span>
+<span class="combo-coup" data-garde="9>5">Taille basse à la jambe</span>
+<span class="combo-coup" data-garde="5>1">Croc de la barbe au bouclier</span>
+<span class="combo-coup" data-garde="1>6">Fendant de revers au cou</span>
+<span class="combo-coup" data-garde="6>4">Taille en travers aux côtes</span>
+<span class="combo-coup" data-garde="4>6">Taille de revers en travers</span>
+</div>
+<div class="combo">
+<span class="combo-long">sept coups</span>
+<span class="combo-coup" data-garde="3>7">Fendant en diagonale à l'épaule</span>
+<span class="combo-coup" data-garde="7>9">Coup du dos du fer au casque</span>
+<span class="combo-coup" data-garde="9>5">Taille basse à la jambe</span>
+<span class="combo-coup" data-garde="5>1">Croc de la barbe au bouclier</span>
+<span class="combo-coup" data-garde="1>6">Fendant de revers au cou</span>
+<span class="combo-coup" data-garde="6>4">Taille en travers aux côtes</span>
+<span class="combo-coup" data-garde="4>6">Taille de revers en travers</span>
 </div>
 </div>
 </div>
