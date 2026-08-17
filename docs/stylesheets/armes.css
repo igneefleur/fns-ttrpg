@@ -179,15 +179,6 @@
   opacity: 0.66;
 }
 
-.md-typeset .geste-note {
-  margin: 0.1rem 0 0;
-  font-size: 0.58rem;
-  line-height: 1.35;
-  color: var(--ink);
-  opacity: 0.72;
-  text-wrap: balance;
-}
-
 /* ── L'empreinte ──
    Trois états seulement : la case couverte par le geste, la case du personnage,
    et le reste de la grille, qui n'est là que pour donner l'échelle. */
