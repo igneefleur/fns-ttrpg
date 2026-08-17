@@ -256,15 +256,23 @@ def garde_svg(brut):
         d = math.hypot(bx - ax, by - ay)
         ux, uy = (bx - ax) / d, (by - ay) / d
         nx, ny = -uy, ux
-        qx, qy = ax + ux * 0.8, ay + uy * 0.8      # naissance du fût
-        px, py = bx - ux * 0.8, by - uy * 0.8      # pointe
-        rx, ry = px - ux * 3.8, py - uy * 3.8      # base de la tête
+        # Le fût court d'un centre de case à l'autre, à peine retiré des deux
+        # bouts, et la tête est un V tracé du MÊME trait. Une tête pleine, à
+        # cette taille, se lit comme une tache : la première version lui donnait
+        # 3,8 de long pour un fût de 2,6 entre deux cases voisines, ce qui ne
+        # faisait plus une flèche mais un triangle posé sur un moignon.
+        qx, qy = ax + ux * 1.5, ay + uy * 1.5      # naissance du fût
+        px, py = bx - ux * 1.5, by - uy * 1.5      # pointe
+        # La barbe suit la longueur, sinon elle mange les flèches courtes : entre
+        # deux cases voisines le fût ne fait que cinq unités.
+        barbe = min(3.0, 0.42 * math.hypot(px - qx, py - qy))
+        rec, ouv = barbe * 0.848, barbe * 0.530    # ouverte à 32°
         out.append(f'<path class="gd-fleche" d="M {qx:.2f} {qy:.2f} '
-                   f'L {rx:.2f} {ry:.2f}"/>')
+                   f'L {px:.2f} {py:.2f}"/>')
         out.append(
-            f'<path class="gd-pointe" d="M {px:.2f} {py:.2f} '
-            f'L {rx + nx * 2.3:.2f} {ry + ny * 2.3:.2f} '
-            f'L {rx - nx * 2.3:.2f} {ry - ny * 2.3:.2f} Z"/>')
+            f'<path class="gd-pointe" d="M {px - ux * rec + nx * ouv:.2f} '
+            f'{py - uy * rec + ny * ouv:.2f} L {px:.2f} {py:.2f} '
+            f'L {px - ux * rec - nx * ouv:.2f} {py - uy * rec - ny * ouv:.2f}"/>')
     out.append("</svg>")
     return "".join(out), depart, arrivee
 
