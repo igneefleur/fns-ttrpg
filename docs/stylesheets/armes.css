@@ -157,9 +157,12 @@
 .md-typeset .geste-chiffres .dg-passe {
   opacity: 0.62;
 }
+/* Un simple blanc, et rien d'autre. Il y avait ici un point médian : aligné sur
+   toutes les cartes par le subgrid, il formait une file de points noirs en
+   travers de la rangée des flèches. La demi-valeur est déjà en retrait, elle
+   n'a pas besoin qu'on la sépare d'un signe. */
 .md-typeset .geste-chiffres .dg-passe::before {
-  content: '\2002·\2002';
-  opacity: 0.7;
+  content: '\2003';
 }
 .md-typeset .geste-chiffres .dg-passe b {
   font-weight: 400;
