@@ -238,16 +238,23 @@ def garde_svg(brut):
            else f"Part et finit dans la même garde, {_dit_garde(depart)}")
     out = [f'<svg class="garde-carre" role="img" aria-label="{dit}." '
            f'viewBox="0 0 24 24">']
+    # Les couleurs sont posées EN ATTRIBUT sur les formes, pas seulement en
+    # feuille de style. Une forme SVG sans règle se remplit en NOIR par défaut :
+    # tant qu'un navigateur sert un armes.css d'avant l'ajout d'une classe, le
+    # signe apparaît en noir. L'attribut est battu par la moindre règle CSS,
+    # donc il ne gêne rien et il sauve le dessin quand la feuille manque.
     for i in range(1, 10):
         cx, cy = _garde_centre(i)
         out.append(f'<rect class="gd-case" x="{cx - 3.4:.1f}" y="{cy - 3.4:.1f}" '
-                   f'width="6.8" height="6.8" rx="1"/>')
+                   f'width="6.8" height="6.8" rx="1" '
+                   f'fill="var(--ink)" fill-opacity="0.08"/>')
 
     ax, ay = _garde_centre(depart)
     bx, by = _garde_centre(arrivee)
     if depart == arrivee:
         # Les mains ne bougent pas : un point, et il n'y a rien d'autre à lire.
-        out.append(f'<circle class="gd-fixe" cx="{ax:.1f}" cy="{ay:.1f}" r="2.6"/>')
+        out.append(f'<circle class="gd-fixe" cx="{ax:.1f}" cy="{ay:.1f}" r="2.6" '
+                   f'fill="var(--green-title)"/>')
     else:
         # SEULE la flèche dit le mouvement. On avait posé en plus un cercle au
         # départ et un disque à l'arrivée : à 1,6 rem les trois se marchent
@@ -267,12 +274,14 @@ def garde_svg(brut):
         # deux cases voisines le fût ne fait que cinq unités.
         barbe = min(3.0, 0.42 * math.hypot(px - qx, py - qy))
         rec, ouv = barbe * 0.848, barbe * 0.530    # ouverte à 32°
+        trait = ('fill="none" stroke="var(--green-title)" stroke-width="1.7" '
+                 'stroke-linecap="round" stroke-linejoin="round"')
         out.append(f'<path class="gd-fleche" d="M {qx:.2f} {qy:.2f} '
-                   f'L {px:.2f} {py:.2f}"/>')
+                   f'L {px:.2f} {py:.2f}" {trait}/>')
         out.append(
             f'<path class="gd-pointe" d="M {px - ux * rec + nx * ouv:.2f} '
             f'{py - uy * rec + ny * ouv:.2f} L {px:.2f} {py:.2f} '
-            f'L {px - ux * rec - nx * ouv:.2f} {py - uy * rec - ny * ouv:.2f}"/>')
+            f'L {px - ux * rec - nx * ouv:.2f} {py - uy * rec - ny * ouv:.2f}" {trait}/>')
     out.append("</svg>")
     return "".join(out), depart, arrivee
 
