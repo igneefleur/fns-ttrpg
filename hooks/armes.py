@@ -292,13 +292,37 @@ def garde_svg(brut):
     return "".join(out), depart, arrivee
 
 
-def chiffres_html(brut, a_du_blanc):
-    """« 20 TRA / CON » : la moitié blanche est calculée, jamais écrite."""
-    m = re.match(r"^\s*(\d+)\s+(CON|PER|TRA)\s*(?:/\s*(CON|PER|TRA)\s*)?$", brut)
+def chiffres_html(brut, a_du_blanc, base=None):
+    """« 20 TRA / CON », ou « 1.5 TRA / CON » quand l'arme déclare une base.
+
+    Le multiplicateur appartient au COUP, la base à l'ARME : changer la base
+    recalcule toute l'arme, ce qui est la raison d'être d'une base. La moitié
+    blanche reste calculée, jamais écrite.
+    """
+    m = re.match(r"^\s*([\d.]+)\s+(CON|PER|TRA)\s*(?:/\s*(CON|PER|TRA)\s*)?$", brut)
     if not m:
         raise ErreurCoup(
             f"dégâts illisibles « {brut} » : attendu « N TYPE » ou « N TYPE / TYPE »")
-    vert, tv, tb = int(m.group(1)), m.group(2), m.group(3)
+    tv, tb = m.group(2), m.group(3)
+    mult = None
+    if base is None:
+        if "." in m.group(1):
+            raise ErreurCoup(
+                f"« {brut} » : multiplicateur donné, mais l'arme ne déclare "
+                f"aucune base ; il lui faut data-base sur son bloc")
+        vert = int(m.group(1))
+    else:
+        mult = float(m.group(1))
+        if not (0.8 - 1e-9 <= mult <= 1.5 + 1e-9):
+            raise ErreurCoup(
+                f"multiplicateur {mult} hors de la fourchette : de 0,8 à 1,5")
+        if abs(round(mult * 10) - mult * 10) > 1e-9:
+            raise ErreurCoup(f"multiplicateur {mult} : le pas est de un dixième")
+        exact = base * mult
+        if abs(round(exact) - exact) > 1e-9:
+            raise ErreurCoup(
+                f"base {base} × {mult} = {exact} : la valeur doit être entière")
+        vert = round(exact)
     if vert % 2:
         raise ErreurCoup(
             f"dégâts verts impairs ({vert}) : la case blanche en vaut la moitié, "
@@ -309,13 +333,23 @@ def chiffres_html(brut, a_du_blanc):
     if not a_du_blanc and tb is not None:
         raise ErreurCoup(
             f"« {brut} » : ce coup n'a aucune case blanche, le second type est de trop")
-    html = f'<p class="geste-chiffres"><b>{vert}</b> {tv}'
+    if mult is None:
+        html = f'<p class="geste-chiffres"><b>{vert}</b> {tv}'
+        if tb:
+            html += f'<span class="dg-passe"><b>{vert // 2}</b> {tb}</span>'
+        return html + "</p>"
+
+    # Le multiplicateur d'abord, puisque c'est lui qui appartient au coup ; la
+    # valeur qu'il donne vient après, entre parenthèses.
+    dit = f"{mult:.1f}".replace(".", ",")
+    html = (f'<p class="geste-chiffres"><b>×{dit}</b>'
+            f'<span class="dg-val">({vert} {tv}')
     if tb:
-        html += f'<span class="dg-passe"><b>{vert // 2}</b> {tb}</span>'
-    return html + "</p>"
+        html += f'<span class="dg-passe">{vert // 2} {tb}</span>'
+    return html + ")</span></p>"
 
 
-def _rendu(attrs):
+def _rendu(attrs, base=None):
     """Ce qui se dessine avant le nom, et ce qui se pose après."""
     trajet = attrs.get("trajet")
     if not trajet:
@@ -325,7 +359,7 @@ def _rendu(attrs):
     apres = []
     a_du_blanc = any(b.endswith(":passe") for b in trajet.split(">"))
     if "degats" in attrs:
-        apres.append(chiffres_html(attrs["degats"], a_du_blanc))
+        apres.append(chiffres_html(attrs["degats"], a_du_blanc, base))
 
     if "garde" in attrs:
         svg, _, _ = garde_svg(attrs["garde"])
@@ -334,14 +368,21 @@ def _rendu(attrs):
     return avant, "".join(apres)
 
 
+# Une arme peut déclarer sa base de dégâts. Ses coups portent alors un
+# multiplicateur au lieu d'une valeur, et la base se pose d'elle-même dans le
+# bandeau : elle n'est écrite qu'une fois, donc elle ne peut pas dériver.
+ARME = re.compile(r'<div class="arme"((?:\s+data-[a-z]+="[^"]*")*)>')
+PORTEE = re.compile(r'(<span class="arme-portee">)')
+
+
 def on_page_content(html, page, config, files):
     if 'data-trajet="' not in html:
         return html
 
-    def rendre(m):
+    def rendre(m, base=None):
         attrs = dict(ATTR.findall(m.group(2)))
         try:
-            avant, apres = _rendu(attrs)
+            avant, apres = _rendu(attrs, base)
         except ErreurCoup as e:
             raise ErreurCoup(f"{page.file.src_path} : {e}") from None
         return m.group(1) + avant + _nom_html(m.group(3)) + apres
@@ -355,4 +396,17 @@ def on_page_content(html, page, config, files):
         # Le carré se pose SOUS le nom du coup, donc après lui dans le document.
         return m.group(1) + m.group(3) + svg + m.group(4)
 
-    return ENCHAINE.sub(enchaine, COUP.sub(rendre, html))
+    # On découpe arme par arme : chacune emporte sa base, ou n'en a pas.
+    bouts, out = re.split(r'(<div class="arme"(?:\s+data-[a-z]+="[^"]*")*>)', html), []
+    base = None
+    for bout in bouts:
+        m = ARME.fullmatch(bout)
+        if m:
+            a = dict(ATTR.findall(m.group(1)))
+            base = int(a["base"]) if "base" in a else None
+            out.append(bout)
+            continue
+        if base is not None:
+            bout = PORTEE.sub(r'\1dégâts %d · ' % base, bout, count=1)
+        out.append(COUP.sub(lambda x, b=base: rendre(x, b), bout))
+    return ENCHAINE.sub(enchaine, "".join(out))
