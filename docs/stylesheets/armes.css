@@ -216,6 +216,72 @@ html.night .md-typeset svg.geste-carte .hx-vide {
 }
 
 
+/* ── Les enchaînements ──
+   La garde d'arrivée d'un coup ouvre le suivant : c'est tout le système, et il
+   ne se lit qu'en voyant les carrés se répondre d'un coup à l'autre. On les
+   pose donc côte à côte, du plus court enchaînement au plus long. */
+.md-typeset .combos {
+  margin: 0.9rem 0 0;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--green-header);
+}
+.md-typeset .combos-nom {
+  margin: 0 0 0.45rem;
+  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-size: 0.72rem;
+  font-variant: small-caps;
+  letter-spacing: 0.05em;
+  color: var(--green-title);
+}
+.md-typeset .combos-regle {
+  margin-left: 0.5rem;
+  font-family: 'Symboles JDR', 'Alegreya', Georgia, serif;
+  font-size: 0.58rem;
+  font-variant: normal;
+  letter-spacing: 0;
+  color: var(--ink);
+  opacity: 0.62;
+}
+.md-typeset .combo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.2rem 0.55rem;
+  padding: 0.35rem 0;
+  border-top: 1px dotted var(--md-default-fg-color--lightest, rgba(29, 29, 29, 0.14));
+}
+.md-typeset .combos .combo:first-of-type {
+  border-top: 0;
+}
+.md-typeset .combo-long {
+  flex: none;
+  width: 4rem;
+  padding-top: 0.55rem;
+  font-family: 'Roboto Mono', ui-monospace, monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  opacity: 0.55;
+}
+.md-typeset .combo-coup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.05rem;
+  width: 5.4rem;
+  text-align: center;
+  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-size: 0.55rem;
+  font-variant: small-caps;
+  letter-spacing: 0.03em;
+  line-height: 1.15;
+  color: var(--green-title);
+}
+.md-typeset .combo-coup svg.garde-carre {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
 /* La difficulté d'attaque appartient au geste, pas à l'arme : estoquer et
    balayer ne demandent pas la même adresse. Elle se pose sous les dégâts, en
    retrait, pour qu'on lise d'abord ce que le coup fait. */
