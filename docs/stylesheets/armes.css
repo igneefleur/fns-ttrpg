@@ -154,6 +154,13 @@
   font-weight: 700;
   color: var(--green-title);
 }
+/* Quand l'arme déclare une base, le coup ne porte plus qu'un MULTIPLICATEUR,
+   et la valeur qu'il donne le suit entre parenthèses. C'est le multiplicateur
+   qu'on lit d'abord : il dit ce que le geste fait de l'arme. */
+.md-typeset .geste-chiffres .dg-val {
+  margin-left: 0.3em;
+  opacity: 0.8;
+}
 .md-typeset .geste-chiffres .dg-passe {
   opacity: 0.62;
 }
