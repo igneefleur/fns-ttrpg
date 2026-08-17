@@ -277,7 +277,7 @@ L'éventail que la grille sait nommer ouvre **cent vingt degrés à toute distan
 <p class="geste-diff">attaque 7</p>
 <p class="geste-source">Giovanni dall'Agocchie, Dell'Arte di Scrimia Libri Tre, Venise, Giulio Tamborino, 1572, libro I, prima giornata, f. 8v, division des cinq mandritti : fendente, sgualimbro, tondo aussi dit traverso, ridoppio, tramazzone</p>
 </div>
-<div class="geste" data-trajet="1g:passe>2g:frappe>1:passe>2:frappe>2d:frappe>1d:passe>2d2:frappe" data-degats="1.0 TRA / TRA" data-garde="4>6">
+<div class="geste" data-trajet="1g:passe>2g:passe>1:passe>2:frappe>2d:frappe>2d2:frappe>1d:passe>2d3:frappe>1d2:passe" data-degats="1.0 TRA / TRA" data-garde="4>6">
 <p class="geste-nom">Taille horizontale de revers<em>riverso tondo</em></p>
 <p class="geste-diff">attaque 8</p>
 <p class="geste-source">Giovanni dall'Agocchie, Dell'Arte di Scrimia Libri Tre, Venise, Giulio Tamborino, 1572, libro I, prima giornata, f. 8v : les riversi portent les mêmes natures que les mandritti, et vont du côté gauche au côté droit</p>
