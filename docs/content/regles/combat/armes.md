@@ -102,13 +102,13 @@ Aucun nombre, et surtout pas le silence des traités. Ils enseignent le duel : q
 
 **Le plan du geste.** Un fendant tombe dans le plan vertical de la ligne : sa trace au sol est un segment, jamais un éventail, et il ne balaie rien quelle que soit sa force. Un estoc file droit. Seul un coup qui tourne à plat, ou obliquement, peut prendre plus d'une case, et c'est pourquoi la plupart des coups du chapitre n'en prennent qu'une : ils ne tournent pas.
 
-**La longueur du fil.** Un long tranchant traverse un corps et ressort — l'épée en porte quatre-vingts centimètres, la grande épée quatre-vingt-quinze. Un tranchant court se fiche : la hache à une main en a dix à quinze, montés en coin, et c'est son défaut connu. Une tête de masse ou de marteau n'a aucune surface de contact : elle dépose tout ce qu'elle porte dans ce qu'elle touche. Une pointe ne mord qu'alignée, ce qui ne dure qu'un instant.
+**La longueur du fil.** Un long tranchant traverse un corps et ressort, et il en traverse d'autant plus qu'il est long : l'épée en porte quatre-vingts centimètres et prend jusqu'à quatre hommes, la grande épée quatre-vingt-quinze et en prend cinq. Un tranchant court traverse encore, mais s'épuise vite : les dix à quinze centimètres de la hache à une main, montés en coin, ne portent pas au-delà de **trois**. Une tête de masse ou de marteau n'a aucune surface de contact : elle dépose tout ce qu'elle porte dans ce qu'elle touche, et ne prend jamais qu'un homme. Une pointe ne mord qu'alignée, ce qui ne dure qu'un instant.
 
 **Le rayon.** Les cases d'un même anneau sont à la même distance : le point de percussion les traverse toutes. Mais le rayon varie le long de l'arc — le coude qui finit de s'ouvrir, la main qui passe sous le bras, les mains qui se figent — et le fer change alors d'anneau. C'est ce qui permet à un même coup de frapper à deux distances, et ce qui lui interdit d'atteindre une case lointaine quand l'arme n'y arrive plus.
 
 </div>
 
-Douze coups sur les quatre-vingts du chapitre frappent plus d'une case, et de deux façons qui ne se confondent pas : **en largeur**, quand le fil balaie plusieurs azimuts, et **en profondeur**, quand il frappe deux fois à des distances différentes. Quatre coups font les deux.
+Seize coups sur les quatre-vingts du chapitre frappent plus d'une case, et de deux façons qui ne se confondent pas : **en largeur**, quand le fil balaie plusieurs azimuts, et **en profondeur**, quand il frappe deux fois à des distances différentes. Six coups font les deux.
 
 <div class="sepia-table" markdown>
 
@@ -120,18 +120,22 @@ Douze coups sur les quatre-vingts du chapitre frappent plus d'une case, et de de
 | Taille horizontale du côté droit | épée | 4 | 90° | 2 |
 | Taille horizontale de revers | épée | 4 | 90° | 2 |
 | Taille en travers | grande épée | 3 | 60° | 2 |
+| Taille en travers aux côtes | hache | 3 | 60° | 2 |
+| Taille de revers en travers | hache | 3 | 60° | 2 |
 | Taille moyenne en travers | hallebarde | 3 | 60° | 2 |
 | Taille montante du côté droit | épée | 3 | 60° | 1 et 2 |
 | Taille montante de revers | épée | 3 | 60° | 1 et 2 |
+| Fendant en diagonale à l'épaule | hache | 2 | 90° | 1 et 2 |
+| Fendant de revers au cou | hache | 2 | 30° | 1 et 2 |
 | Taille montante au fer | hallebarde | 2 | 30° | 2 et 3 |
 | Fendant à pleine volée | grande hache | 2 | — | 2 et 3 |
 | Taille haute d'aplomb | hallebarde | 2 | — | 2 et 3 |
 
 </div>
 
-Le fendant à pleine volée et la taille haute d'aplomb sont les cas purs de la profondeur : aucune largeur, ils tombent dans le plan de la ligne, mais leur fer frappe au loin puis, poursuivant sa chute, un anneau en deçà et à hauteur de genou. Les deux montantes de l'épée, son fendant en diagonale et la montante de la hallebarde sont les cas mixtes : elles s'ouvrent en tournant et changent d'anneau en même temps, parce que le coude n'a pas fini de s'ouvrir quand le fil mord la première fois.
+Le fendant à pleine volée et la taille haute d'aplomb sont les cas purs de la profondeur : aucune largeur, ils tombent dans le plan de la ligne, mais leur fer frappe au loin puis, poursuivant sa chute, un anneau en deçà et à hauteur de genou. Les deux montantes de l'épée, son fendant en diagonale, les deux diagonales de la hache et la montante de la hallebarde sont les cas mixtes : elles s'ouvrent en tournant et changent d'anneau en même temps, parce que le coude n'a pas fini de s'ouvrir quand le fil mord la première fois.
 
-Seule la hallebarde n'est bornée que par ses propres flancs : Meyer la lance bras tendu, l'extension est acquise avant l'entrée, et le fer ne sort de l'éventail qu'une fois passé derrière l'épaule. Toutes les autres sont bornées par le bras — celui de l'épée se ferme à l'axe, ceux de la grande épée tiennent tant que les épaules tournent, et la taille en travers meurt quand la croix se fige devant le front. La grande hache ne balaie qu'en profondeur : son fer ne tourne pas, il tombe. Les six autres catégories n'ont aucun balayage, et jamais par prudence : ou leurs coups ne tournent pas, ou leur arme n'a rien à traîner d'un corps au suivant — c'est le cas de la masse et du grand marteau, dont la tête ne dépose rien qu'à l'endroit qu'elle touche.
+Seule la hallebarde n'est bornée que par ses propres flancs : Meyer la lance bras tendu, l'extension est acquise avant l'entrée, et le fer ne sort de l'éventail qu'une fois passé derrière l'épaule. Toutes les autres sont bornées par le bras — celui de la hache, court, s'épuise au troisième homme, celui de l'épée se ferme à l'axe, ceux de la grande épée tiennent tant que les épaules tournent, et la taille en travers meurt quand la croix se fige devant le front. La grande hache ne balaie qu'en profondeur : son fer ne tourne pas, il tombe. Les cinq autres catégories n'ont aucun balayage, et jamais par prudence : ou leurs coups ne tournent pas, ou leur arme n'a rien à traîner d'un corps au suivant — c'est le cas de la masse et du grand marteau, dont la tête ne dépose rien qu'à l'endroit qu'elle touche.
 
 <div class="memo" markdown>
 
@@ -365,27 +369,27 @@ L'éventail que la grille sait nommer ouvre **cent vingt degrés à toute distan
 <p class="geste-diff">attaque 8 · déduit</p>
 <p class="geste-source">Jan Petersen, De norske vikingesverd, Kristiania, 1919, types A, B, C, G, H, I : fers de 10 à 15 cm de tranchant montés en coin ; la longueur de manche, 0,60 à 0,80 m, est estimée d'après le genre, aucun manche ne se conservant</p>
 </div>
-<div class="geste" data-trajet="1d:passe>2d:frappe>1:passe>1g:passe" data-degats="1.4 TRA / CON" data-garde="3>7">
+<div class="geste" data-trajet="1d:passe>2d:frappe>1:passe>2:passe>1g:frappe" data-degats="1.3 TRA / CON" data-garde="3>7">
 <p class="geste-nom">Fendant en diagonale à l'épaule</p>
 <p class="geste-diff">attaque 5 · déduit</p>
 <p class="geste-source">Jan Petersen, De norske vikingesverd, Kristiania, 1919, types A, B, C, G, H, I : fers de 10 à 15 cm de tranchant montés en coin ; la longueur de manche, 0,60 à 0,80 m, est estimée d'après le genre, aucun manche ne se conservant. Les sagas ne connaissent que le verbe höggva, qui dit qu'on frappe de taille sans jamais dire dans quel plan</p>
 </div>
-<div class="geste" data-trajet="1g:passe>2g:passe>1:passe>2:frappe>1d:passe" data-degats="1.4 TRA / CON" data-garde="1>6">
+<div class="geste" data-trajet="1g:passe>2g:passe>1:passe>2:passe>2d:frappe>1d:frappe" data-degats="1.3 TRA / CON" data-garde="1>6">
 <p class="geste-nom">Fendant de revers au cou</p>
 <p class="geste-diff">attaque 7 · déduit</p>
 <p class="geste-source">Les sagas ne connaissent que le verbe höggva, qui dit qu'on frappe de taille sans jamais dire dans quel plan ; l'écu au bras gauche interdit d'armer un revers ailleurs qu'au-dessus de l'épaule</p>
 </div>
-<div class="geste" data-trajet="1d2:passe>1d:passe>2d:passe>2:frappe>1g:passe" data-degats="1.4 TRA / CON" data-garde="6>4">
+<div class="geste" data-trajet="1d2:passe>2d2:passe>1d:passe>2d:frappe>1:passe>2:frappe>2g:frappe>1g:passe" data-degats="1.2 TRA / CON" data-garde="6>4">
 <p class="geste-nom">Taille en travers aux côtes</p>
 <p class="geste-diff">attaque 6 · déduit</p>
 <p class="geste-source">Les sagas ne connaissent que le verbe höggva, qui dit qu'on frappe de taille sans jamais dire dans quel plan</p>
 </div>
-<div class="geste" data-trajet="1g:passe>2g:passe>1:passe>2:passe>2d:frappe>1d:passe" data-degats="1.4 TRA / CON" data-garde="4>6">
+<div class="geste" data-trajet="1g:passe>2g:passe>1:passe>2:frappe>2d:frappe>1d:passe>2d2:frappe>1d2:passe" data-degats="1.2 TRA / CON" data-garde="4>6">
 <p class="geste-nom">Taille de revers en travers</p>
 <p class="geste-diff">attaque 8 · déduit</p>
 <p class="geste-source">Les sagas ne connaissent que le verbe höggva, qui dit qu'on frappe de taille sans jamais dire dans quel plan</p>
 </div>
-<div class="geste" data-trajet="1d:passe>1:passe>2:frappe" data-degats="1.4 TRA / CON" data-garde="9>5">
+<div class="geste" data-trajet="1d:passe>2d:passe>1:frappe" data-degats="1.4 TRA / CON" data-garde="9>5">
 <p class="geste-nom">Taille basse à la jambe</p>
 <p class="geste-diff">attaque 7 · déduit</p>
 <p class="geste-source">Jan Petersen, De norske vikingesverd, Kristiania, 1919, types A, B, C, G, H, I : fers de 10 à 15 cm de tranchant montés en coin ; la longueur de manche, 0,60 à 0,80 m, est estimée d'après le genre, aucun manche ne se conservant</p>
