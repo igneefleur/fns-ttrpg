@@ -108,7 +108,7 @@ Aucun nombre, et surtout pas le silence des traités. Ils enseignent le duel : q
 
 </div>
 
-Seize coups sur les quatre-vingts du chapitre frappent plus d'une case, et de deux façons qui ne se confondent pas : **en largeur**, quand le fil balaie plusieurs azimuts, et **en profondeur**, quand il frappe deux fois à des distances différentes. Six coups font les deux.
+Dix-sept coups sur les quatre-vingts du chapitre frappent plus d'une case, et de deux façons qui ne se confondent pas : **en largeur**, quand le fil balaie plusieurs azimuts, et **en profondeur**, quand il frappe deux fois à des distances différentes. Six coups font les deux.
 
 <div class="sepia-table" markdown>
 
@@ -127,13 +127,14 @@ Seize coups sur les quatre-vingts du chapitre frappent plus d'une case, et de de
 | Taille montante de revers | épée | 3 | 60° | 1 et 2 |
 | Fendant en diagonale à l'épaule | hache | 2 | 90° | 1 et 2 |
 | Fendant de revers au cou | hache | 2 | 30° | 1 et 2 |
+| Taille basse à la jambe | hache | 2 | — | 1 et 2 |
 | Taille montante au fer | hallebarde | 2 | 30° | 2 et 3 |
 | Fendant à pleine volée | grande hache | 2 | — | 2 et 3 |
 | Taille haute d'aplomb | hallebarde | 2 | — | 2 et 3 |
 
 </div>
 
-Le fendant à pleine volée et la taille haute d'aplomb sont les cas purs de la profondeur : aucune largeur, ils tombent dans le plan de la ligne, mais leur fer frappe au loin puis, poursuivant sa chute, un anneau en deçà et à hauteur de genou. Les deux montantes de l'épée, son fendant en diagonale, les deux diagonales de la hache et la montante de la hallebarde sont les cas mixtes : elles s'ouvrent en tournant et changent d'anneau en même temps, parce que le coude n'a pas fini de s'ouvrir quand le fil mord la première fois.
+Le fendant à pleine volée, la taille haute d'aplomb et la taille basse de la hache sont les cas purs de la profondeur : aucune largeur, ils tombent dans le plan de la ligne et frappent deux fois sur le même rayon — les deux premiers de loin puis un anneau en deçà, en poursuivant leur chute ; la dernière à l'inverse, au pied d'abord puis au genou, le bras s'allongeant au lieu de se fermer. Les deux montantes de l'épée, son fendant en diagonale, les deux diagonales de la hache et la montante de la hallebarde sont les cas mixtes : elles s'ouvrent en tournant et changent d'anneau en même temps, parce que le coude n'a pas fini de s'ouvrir quand le fil mord la première fois.
 
 Seule la hallebarde n'est bornée que par ses propres flancs : Meyer la lance bras tendu, l'extension est acquise avant l'entrée, et le fer ne sort de l'éventail qu'une fois passé derrière l'épaule. Toutes les autres sont bornées par le bras — celui de la hache, court, s'épuise au troisième homme, celui de l'épée se ferme à l'axe, ceux de la grande épée tiennent tant que les épaules tournent, et la taille en travers meurt quand la croix se fige devant le front. La grande hache ne balaie qu'en profondeur : son fer ne tourne pas, il tombe. Les cinq autres catégories n'ont aucun balayage, et jamais par prudence : ou leurs coups ne tournent pas, ou leur arme n'a rien à traîner d'un corps au suivant — c'est le cas de la masse et du grand marteau, dont la tête ne dépose rien qu'à l'endroit qu'elle touche.
 
@@ -389,7 +390,7 @@ L'éventail que la grille sait nommer ouvre **cent vingt degrés à toute distan
 <p class="geste-diff">attaque 8 · déduit</p>
 <p class="geste-source">Les sagas ne connaissent que le verbe höggva, qui dit qu'on frappe de taille sans jamais dire dans quel plan</p>
 </div>
-<div class="geste" data-trajet="1d:passe>2d:passe>1:frappe" data-degats="1.4 TRA / CON" data-garde="9>5">
+<div class="geste" data-trajet="1d:passe>2d:passe>1:frappe>2:frappe" data-degats="1.3 TRA / CON" data-garde="9>5">
 <p class="geste-nom">Taille basse à la jambe</p>
 <p class="geste-diff">attaque 7 · déduit</p>
 <p class="geste-source">Jan Petersen, De norske vikingesverd, Kristiania, 1919, types A, B, C, G, H, I : fers de 10 à 15 cm de tranchant montés en coin ; la longueur de manche, 0,60 à 0,80 m, est estimée d'après le genre, aucun manche ne se conservant</p>
