@@ -305,7 +305,6 @@ L'éventail que la grille sait nommer ouvre **cent vingt degrés à toute distan
 </div>
 </div>
 </div>
-</div>
 
 <div class="arme">
 <p class="arme-nom">Hache à une main<span class="arme-portee">parade 7 · réduction 10</span></p>
