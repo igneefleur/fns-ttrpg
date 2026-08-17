@@ -103,15 +103,13 @@
   height: auto;
 }
 
-/* Le titre tient une hauteur FIXE : deux lignes de nom et la ligne du terme,
-   soit 2 × 0.805rem + 0.78rem. Les noms qui tiennent sur une seule ligne se
-   centrent dans cette hauteur au lieu de remonter, ce qui poserait le terme et
-   tout ce qui suit plus haut que sur la carte voisine. */
+/* Le nom tient DEUX LIGNES quoi qu'il arrive, et s'y centre quand il n'en
+   remplit qu'une. C'est sa boîte qui porte la hauteur, pas le titre entier :
+   sinon un nom court remonterait le terme avec lui, et les sous-titres ne
+   s'aligneraient plus d'une colonne à l'autre. */
 .md-typeset .geste-nom {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  min-height: 2.4rem;
   margin: 0.1rem 0 0;
   font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
   font-size: 0.7rem;
@@ -120,6 +118,13 @@
   line-height: 1.15;
   color: var(--green-title);
 }
+.md-typeset .geste-appel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.3em; /* deux lignes : 2 × line-height */
+}
+
 /* Le terme technique de la source, sous le nom francais : c'est lui qui permet
    de remonter au traite, et il ne doit pas concurrencer le nom du livre. */
 .md-typeset .geste-nom em {
@@ -181,23 +186,20 @@
   fill: var(--ink);
   fill-opacity: 0.08;
 }
-.md-typeset svg.garde-carre .gd-depart {
-  fill: var(--paper);
-  stroke: var(--green-title);
-  stroke-width: 1.4;
-}
-.md-typeset svg.garde-carre .gd-arrivee {
+/* Un point quand les mains ne bougent pas, UNE FLÈCHE quand elles bougent, et
+   jamais les deux : le point et la flèche ensemble se cachaient l'un l'autre.
+   La flèche porte donc seule le sens, d'où un trait plein et non estompé. */
+.md-typeset svg.garde-carre .gd-fixe {
   fill: var(--green-title);
 }
 .md-typeset svg.garde-carre .gd-fleche {
   stroke: var(--green-title);
-  stroke-width: 1.2;
-  stroke-opacity: 0.6;
+  stroke-width: 1.9;
+  stroke-linecap: round;
   fill: none;
 }
 .md-typeset svg.garde-carre .gd-pointe {
   fill: var(--green-title);
-  fill-opacity: 0.6;
 }
 
 
