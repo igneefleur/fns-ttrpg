@@ -84,7 +84,7 @@ Ce que la garde d'arrivée décide, on le verra aux [enchaînements](../base/act
 
 De leurs sources, et le livre les nomme. Le corps à corps vient du Ringen et de l'abrazare de Fiore ; la dague, de son jeu de rondel ; l'épée, de Fiore et des Bolonais ; la grande épée, de Liechtenauer ; le marteau d'armes et la grande hache, du Jeu de la Hache ; la lance et la hallebarde, de Fiore et de Meyer. La hache à une main et la masse n'ont pas de traité : leurs coups viennent des sagas, de l'archéologie et de la forme de l'objet.
 
-Sur les quatre-vingts coups du chapitre, quarante et un sont attestés dans une source. Les trente-neuf autres portent la mention déduit, et il faut la lire comme telle. Des attestés, vingt-cinq citent leur folio au mot ; les seize autres le rendent en français, hors guillemets, parce que le libellé n'en a pas été collationné, et chaque carte le dit. Huit coups attestés ne portent aucun terme technique : le geste est au folio, le mot qui le nommerait ne l'est pas, et le chapitre préfère le silence à un composé fabriqué ou mal appliqué. Le geste est attesté, le libellé ne l'est pas encore, et ils le disent.
+Sur les quatre-vingts coups du chapitre, quarante et un sont attestés dans une source. Les trente-neuf autres portent la mention déduit, et il faut la lire comme telle. Des attestés, vingt-cinq citent leur folio au mot ; les seize autres le rendent en français, hors guillemets, le libellé n'en ayant pas été collationné. Six coups attestés ne portent aucun terme technique : le geste est au folio, le mot qui le nommerait ne l'est pas, et le chapitre préfère le silence à un composé fabriqué ou mal appliqué. Le geste est attesté, le libellé ne l'est pas encore, et ils le disent.
 
 Cinq coups ont été retirés en cours d'écriture pour cause de folklore ou de doublon. Le croc de corne de la hache à une main s'est révélé traçable à une pratique moderne plutôt qu'à un texte ancien, et la taille de dague, à une doctrine d'escrime contemporaine : aucun traité de dague n'enseigne la taille, tous s'organisent contre l'estoc.
 
@@ -266,42 +266,41 @@ L'éventail que la grille sait nommer ouvre **cent vingt degrés à toute distan
 <div class="geste" data-trajet="2:frappe>1:passe" data-degats="20 TRA / TRA" data-garde="2>8">
 <p class="geste-nom">Fendant d'aplomb<em>colpo fendente</em></p>
 <p class="geste-diff">attaque 5</p>
-<p class="geste-source">Fiore dei Liberi, Fior di Battaglia, v. 1409, Getty MS Ludwig XV 13, f. 23r, figure des colpi fendenti : " Noy semo fendenti e façemo questione de fender gli denti cum drita raxone. Noy del ferir non auemo tardo e tornamo in guardia de vargo in vargo " — le folio dit en toutes lettres que le fendant va DROIT, ce qui fixe le plan de la descente et, avec lui, des mains qui partent au-dessus de la tête et finissent sous la ceinture sans quitter l'axe</p>
+<p class="geste-source">Fiore dei Liberi, Fior di Battaglia, v. 1409, Getty MS Ludwig XV 13, f. 23r, figure des colpi fendenti : " Noy semo fendenti e façemo questione de fender gli denti cum drita raxone. Noy del ferir non auemo tardo e tornamo in guardia de vargo in vargo "</p>
 </div>
 <div class="geste" data-trajet="1d:passe>2d:frappe>1:passe>2:frappe>1g:passe" data-degats="16 TRA / TRA" data-garde="3>7">
 <p class="geste-nom">Fendant en diagonale<em>sgualimbro</em></p>
 <p class="geste-diff">attaque 5</p>
-<p class="geste-source">Giovanni dall'Agocchie, Dell'Arte di Scrimia Libri Tre, Venise, Giulio Tamborino, 1572, libro I, prima giornata, f. 8v, division des cinq mandritti (fendente, sgualimbro, tondo aussi dit traverso, ridoppio, tramazzone) : le folio n'est pas cité au mot, le libellé n'ayant pas été collationné</p>
+<p class="geste-source">Giovanni dall'Agocchie, Dell'Arte di Scrimia Libri Tre, Venise, Giulio Tamborino, 1572, libro I, prima giornata, f. 8v, division des cinq mandritti : fendente, sgualimbro, tondo aussi dit traverso, ridoppio, tramazzone</p>
 </div>
 <div class="geste" data-trajet="1d2:passe>2d3:passe>1d:passe>2d2:frappe>1:passe>2d:frappe>2:frappe>2g:frappe>1g:passe" data-degats="10 TRA / TRA" data-garde="6>4">
 <p class="geste-nom">Taille horizontale du côté droit<em>mandritto tondo (o traverso)</em></p>
 <p class="geste-diff">attaque 7</p>
-<p class="geste-source">Giovanni dall'Agocchie, Dell'Arte di Scrimia Libri Tre, Venise, Giulio Tamborino, 1572, libro I, prima giornata, f. 8v, division des cinq mandritti (fendente, sgualimbro, tondo aussi dit traverso, ridoppio, tramazzone)</p>
+<p class="geste-source">Giovanni dall'Agocchie, Dell'Arte di Scrimia Libri Tre, Venise, Giulio Tamborino, 1572, libro I, prima giornata, f. 8v, division des cinq mandritti : fendente, sgualimbro, tondo aussi dit traverso, ridoppio, tramazzone</p>
 </div>
 <div class="geste" data-trajet="1g:passe>1:frappe>2:frappe>2d:frappe>1d:passe" data-degats="12 TRA / TRA" data-garde="4>6">
-<p class="geste-nom">Taille horizontale de revers</p>
+<p class="geste-nom">Taille horizontale de revers<em>riverso tondo</em></p>
 <p class="geste-diff">attaque 8</p>
-<p class="geste-source">Giovanni dall'Agocchie, Dell'Arte di Scrimia Libri Tre, Venise, Giulio Tamborino, 1572, libro I, prima giornata, f. 8v, division des colpi : rendu en français, hors guillemets : le mandritto se divise en cinq natures — fendente, sgualimbro, tondo aussi dit traverso, ridoppio, tramazzone — et le riverso porte les mêmes ; les riversi commencent du côté gauche et finissent au côté droit. Le libellé italien n'a pas été collationné : la lecture est faite sur la transcription.</p>
+<p class="geste-source">Giovanni dall'Agocchie, Dell'Arte di Scrimia Libri Tre, Venise, Giulio Tamborino, 1572, libro I, prima giornata, f. 8v : les riversi portent les mêmes natures que les mandritti, et vont du côté gauche au côté droit</p>
 </div>
 <div class="geste" data-trajet="1d2:passe>1d:frappe>2d:frappe>1:passe>2:frappe>2g:passe" data-degats="12 TRA / TRA" data-garde="9>1">
 <p class="geste-nom">Taille montante du côté droit<em>ridoppio</em></p>
 <p class="geste-diff">attaque 7</p>
-<p class="geste-source">Giovanni dall'Agocchie, Dell'Arte di Scrimia Libri Tre, Venise, Giulio Tamborino, 1572, libro I, prima giornata, f. 8v, division des colpi : rendu en français, hors guillemets : le ridoppio est celui qui part de dessous, du vrai tranchant de l'épée, et finit à la pointe de l'épaule droite de l'ennemi. L'épaule droite de l'adversaire est du côté gauche du porteur : c'est ce qui fixe l'arrivée du coup, et non une commodité. Le libellé italien n'a pas été collationné : la lecture est faite sur la transcription.</p>
+<p class="geste-source">Giovanni dall'Agocchie, Dell'Arte di Scrimia Libri Tre, Venise, Giulio Tamborino, 1572, libro I, prima giornata, f. 8v : le ridoppio part de dessous, du vrai tranchant de l'épée, et finit à la pointe de l'épaule droite de l'ennemi</p>
 </div>
 <div class="geste" data-trajet="1g2:passe>1g:frappe>2g:frappe>1:passe>2:frappe" data-degats="10 TRA / TRA" data-garde="7>5">
 <p class="geste-nom">Taille montante de revers<em>colpo sottano</em></p>
 <p class="geste-diff">attaque 8</p>
-<p class="geste-source">Fiore dei Liberi, Fior di Battaglia, v. 1409, Getty MS Ludwig XV 13, f. 23r, figure des colpi sottani : rendu en français, hors guillemets : les sottani partent du genou et vont jusqu'au milieu du front, par le chemin qu'a fait le fendente, et se donnent du faux tranchant</p>
+<p class="geste-source">Fiore dei Liberi, Fior di Battaglia, v. 1409, Getty MS Ludwig XV 13, f. 23r, figure des colpi sottani : les sottani partent du genou et vont jusqu'au milieu du front, par le chemin qu'a fait le fendente, et se donnent du faux tranchant</p>
 </div>
 <div class="geste" data-trajet="1:passe>2:frappe" data-degats="16 PER / PER" data-garde="5>5">
-<p class="geste-nom">Estoc à fond</p>
+<p class="geste-nom">Estoc à fond<em>stoccata</em></p>
 <p class="geste-diff">attaque 6</p>
-<p class="geste-source">Giovanni dall'Agocchie, Dell'Arte di Scrimia Libri Tre, Venise, 1572, libro I, prima giornata, f. 8v, les trois pointes : imbroccata (celle qui se donne main haute), stoccata (celle qui se donne main basse, par en dessous), punta riversa (celle qui sort du côté gauche). Le folio divise les pointes par la position de la MAIN ; celle-ci se donne main à hauteur de poitrine, ni haute ni basse, et aucun des trois noms ne lui revient. Le chapitre préfère le silence à un terme mal appliqué.</p>
+<p class="geste-source">Giovanni dall'Agocchie, Dell'Arte di Scrimia Libri Tre, Venise, Giulio Tamborino, 1572, libro I, prima giornata, f. 8v, les trois pointes : imbroccata donnée main haute, stoccata donnée main basse par en dessous, punta riversa sortie du côté gauche</p>
 </div>
 <div class="geste" data-trajet="soi:passe>1:frappe" data-degats="8 CON / TRA" data-garde="5>2">
 <p class="geste-nom">Coup de pommeau au visage<em>knopfslac</em></p>
 <p class="geste-diff">attaque 5 · déduit</p>
-<p class="geste-source">Le nom allemand est CONSTRUIT et non cité : knopf est le mot des gloses de la tradition Liechtenauer pour le pommeau, slac le coup, mais aucune source n'imprime le composé, les gloses écrivant frapper avec le knopf. Il est donné comme une commodité de nommage, non comme une caution. DÉDUIT de l'objet pour le reste : aucune source n'est alléguée pour le geste lui-même, ni chez Fiore dei Liberi ni chez Giovanni dall'Agocchie, dont aucun folio ne montre de coup de pommeau à l'épée d'une main. Ce qui est attesté et qui fonde la déduction est ailleurs : la forme de l'arme, dont le pommeau contrepèse la lame, et le fait que les deux traditions amènent le jeu au liement puis au corps à corps.</p>
 </div>
 </div>
 </div>
