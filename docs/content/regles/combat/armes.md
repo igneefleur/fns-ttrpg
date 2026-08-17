@@ -301,6 +301,58 @@ L'éventail que la grille sait nommer ouvre **cent vingt degrés à toute distan
 <p class="geste-nom">Coup de pommeau au visage<em>knopfslac</em></p>
 <p class="geste-diff">attaque 5 · déduit</p>
 </div>
+<div class="combos">
+<p class="combos-nom">Enchaînements<span class="combos-regle">la garde d'arrivée d'un coup ouvre le suivant, et aucun coup ne se répète dans le même tour</span></p>
+<div class="combo">
+<span class="combo-long">deux coups</span>
+<span class="combo-coup" data-garde="5>2">Coup de pommeau au visage</span>
+<span class="combo-coup" data-garde="2>8">Fendant d'aplomb</span>
+</div>
+<div class="combo">
+<span class="combo-long">deux coups</span>
+<span class="combo-coup" data-garde="4>6">Taille horizontale de revers</span>
+<span class="combo-coup" data-garde="6>4">Taille horizontale du côté droit</span>
+</div>
+<div class="combo">
+<span class="combo-long">deux coups</span>
+<span class="combo-coup" data-garde="6>4">Taille horizontale du côté droit</span>
+<span class="combo-coup" data-garde="4>6">Taille horizontale de revers</span>
+</div>
+<div class="combo">
+<span class="combo-long">trois coups</span>
+<span class="combo-coup" data-garde="5>5">Estoc à fond</span>
+<span class="combo-coup" data-garde="5>2">Coup de pommeau au visage</span>
+<span class="combo-coup" data-garde="2>8">Fendant d'aplomb</span>
+</div>
+<div class="combo">
+<span class="combo-long">trois coups</span>
+<span class="combo-coup" data-garde="7>5">Taille montante de revers</span>
+<span class="combo-coup" data-garde="5>2">Coup de pommeau au visage</span>
+<span class="combo-coup" data-garde="2>8">Fendant d'aplomb</span>
+</div>
+<div class="combo">
+<span class="combo-long">quatre coups</span>
+<span class="combo-coup" data-garde="3>7">Fendant en diagonale</span>
+<span class="combo-coup" data-garde="7>5">Taille montante de revers</span>
+<span class="combo-coup" data-garde="5>2">Coup de pommeau au visage</span>
+<span class="combo-coup" data-garde="2>8">Fendant d'aplomb</span>
+</div>
+<div class="combo">
+<span class="combo-long">quatre coups</span>
+<span class="combo-coup" data-garde="7>5">Taille montante de revers</span>
+<span class="combo-coup" data-garde="5>5">Estoc à fond</span>
+<span class="combo-coup" data-garde="5>2">Coup de pommeau au visage</span>
+<span class="combo-coup" data-garde="2>8">Fendant d'aplomb</span>
+</div>
+<div class="combo">
+<span class="combo-long">cinq coups</span>
+<span class="combo-coup" data-garde="3>7">Fendant en diagonale</span>
+<span class="combo-coup" data-garde="7>5">Taille montante de revers</span>
+<span class="combo-coup" data-garde="5>5">Estoc à fond</span>
+<span class="combo-coup" data-garde="5>2">Coup de pommeau au visage</span>
+<span class="combo-coup" data-garde="2>8">Fendant d'aplomb</span>
+</div>
+</div>
 </div>
 </div>
 
