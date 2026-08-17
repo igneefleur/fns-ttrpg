@@ -74,6 +74,11 @@ ATTR = re.compile(r'data-([a-z]+)="([^"]*)"')
 NOM = re.compile(r'(<p class="geste-nom">)(.*?)(<em>.*?</em>)?(</p>)', re.S)
 
 
+# Un coup cité dans un enchaînement : il ne porte que son nom et sa garde, et
+# c'est la garde qu'on lit, puisque c'est elle qui décide de ce qui peut suivre.
+ENCHAINE = re.compile(r'(<span class="combo-coup"((?:\s+data-[a-z]+="[^"]*")+)>)')
+
+
 def _nom_html(bloc):
     def enveloppe(m):
         return (f'{m.group(1)}<span class="geste-appel">{m.group(2).strip()}'
@@ -340,4 +345,12 @@ def on_page_content(html, page, config, files):
             raise ErreurCoup(f"{page.file.src_path} : {e}") from None
         return m.group(1) + avant + _nom_html(m.group(3)) + apres
 
-    return COUP.sub(rendre, html)
+    def enchaine(m):
+        attrs = dict(ATTR.findall(m.group(2)))
+        try:
+            svg, _, _ = garde_svg(attrs["garde"])
+        except ErreurCoup as e:
+            raise ErreurCoup(f"{page.file.src_path} : enchaînement, {e}") from None
+        return m.group(1) + svg
+
+    return ENCHAINE.sub(enchaine, COUP.sub(rendre, html))
