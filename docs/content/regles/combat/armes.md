@@ -395,10 +395,10 @@ L'éventail que la grille sait nommer ouvre **cent vingt degrés à toute distan
 <p class="geste-diff">attaque 7 · déduit</p>
 <p class="geste-source">Jan Petersen, De norske vikingesverd, Kristiania, 1919, types A, B, C, G, H, I : fers de 10 à 15 cm de tranchant montés en coin ; la longueur de manche, 0,60 à 0,80 m, est estimée d'après le genre, aucun manche ne se conservant</p>
 </div>
-<div class="geste" data-trajet="1:passe>2d:frappe>2:passe>2g:passe>1g:passe" data-degats="0.8 PER / CON" data-garde="5>1">
-<p class="geste-nom">Croc de la barbe sous l'écu</p>
+<div class="geste" data-trajet="soi:passe>1:passe>2:frappe>1g:passe" data-degats="0.8 PER / CON" data-garde="5>1">
+<p class="geste-nom">Estoc de la corne au visage</p>
 <p class="geste-diff">attaque 9 · déduit</p>
-<p class="geste-source">Le bouclier rond est partout dans la Tapisserie de Bayeux ; la barbe du fer, chez les types épanouis de la typologie de Jan Petersen, De norske vikingesverd, Kristiania, 1919, se tient loin du manche</p>
+<p class="geste-source">Les fers épanouis de la typologie de Jan Petersen, De norske vikingesverd, Kristiania, 1919, portent une corne supérieure prononcée, qui s'écarte du manche</p>
 </div>
 <div class="geste" data-trajet="1g:passe>1:frappe" data-degats="0.9 CON / CON" data-garde="7>8">
 <p class="geste-nom">Coup du dos du fer au casque</p>
@@ -431,7 +431,7 @@ L'éventail que la grille sait nommer ouvre **cent vingt degrés à toute distan
 </div>
 <div class="combo">
 <span class="combo-long">quatre coups</span>
-<span class="combo-coup" data-garde="5>1">Croc de la barbe sous l'écu</span>
+<span class="combo-coup" data-garde="5>1">Estoc de la corne au visage</span>
 <span class="combo-coup" data-garde="1>6">Fendant de revers au cou</span>
 <span class="combo-coup" data-garde="6>4">Taille en travers aux côtes</span>
 <span class="combo-coup" data-garde="4>6">Taille de revers en travers</span>
@@ -439,7 +439,7 @@ L'éventail que la grille sait nommer ouvre **cent vingt degrés à toute distan
 <div class="combo">
 <span class="combo-long">cinq coups</span>
 <span class="combo-coup" data-garde="9>5">Taille montante au flanc</span>
-<span class="combo-coup" data-garde="5>1">Croc de la barbe sous l'écu</span>
+<span class="combo-coup" data-garde="5>1">Estoc de la corne au visage</span>
 <span class="combo-coup" data-garde="1>6">Fendant de revers au cou</span>
 <span class="combo-coup" data-garde="6>4">Taille en travers aux côtes</span>
 <span class="combo-coup" data-garde="4>6">Taille de revers en travers</span>
