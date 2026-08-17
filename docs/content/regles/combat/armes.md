@@ -108,7 +108,7 @@ Aucun nombre, et surtout pas le silence des traités. Ils enseignent le duel : q
 
 </div>
 
-Dix-sept coups sur les quatre-vingts du chapitre frappent plus d'une case, et de deux façons qui ne se confondent pas : **en largeur**, quand le fil balaie plusieurs azimuts, et **en profondeur**, quand il frappe deux fois à des distances différentes. Six coups font les deux.
+Dix-sept coups sur les quatre-vingts du chapitre frappent plus d'une case, et de deux façons qui ne se confondent pas : **en largeur**, quand le fil balaie plusieurs azimuts, et **en profondeur**, quand il frappe deux fois à des distances différentes. Quatre coups font les deux.
 
 <div class="sepia-table" markdown>
 
@@ -125,16 +125,16 @@ Dix-sept coups sur les quatre-vingts du chapitre frappent plus d'une case, et de
 | Taille moyenne en travers | hallebarde | 3 | 60° | 2 |
 | Taille montante du côté droit | épée | 3 | 60° | 1 et 2 |
 | Taille montante de revers | épée | 3 | 60° | 1 et 2 |
-| Fendant en diagonale à l'épaule | hache | 2 | 90° | 1 et 2 |
-| Fendant de revers au cou | hache | 2 | 30° | 1 et 2 |
-| Taille basse à la jambe | hache | 2 | — | 1 et 2 |
+| Fendant en diagonale à l'épaule | hache | 2 | 30° | 2 |
+| Fendant de revers au cou | hache | 2 | 30° | 2 |
+| Taille montante au flanc | hache | 2 | 30° | 2 |
 | Taille montante au fer | hallebarde | 2 | 30° | 2 et 3 |
 | Fendant à pleine volée | grande hache | 2 | — | 2 et 3 |
 | Taille haute d'aplomb | hallebarde | 2 | — | 2 et 3 |
 
 </div>
 
-Le fendant à pleine volée, la taille haute d'aplomb et la taille basse de la hache sont les cas purs de la profondeur : aucune largeur, ils tombent dans le plan de la ligne et frappent deux fois sur le même rayon — les deux premiers de loin puis un anneau en deçà, en poursuivant leur chute ; la dernière à l'inverse, au pied d'abord puis au genou, le bras s'allongeant au lieu de se fermer. Les deux montantes de l'épée, son fendant en diagonale, les deux diagonales de la hache et la montante de la hallebarde sont les cas mixtes : elles s'ouvrent en tournant et changent d'anneau en même temps, parce que le coude n'a pas fini de s'ouvrir quand le fil mord la première fois.
+Le fendant à pleine volée et la taille haute d'aplomb sont les cas purs de la profondeur : aucune largeur, ils tombent dans le plan de la ligne, mais leur fer frappe au loin puis, poursuivant sa chute, un anneau en deçà et à hauteur de genou. Les deux montantes de l'épée, son fendant en diagonale et la montante de la hallebarde sont les cas mixtes : elles s'ouvrent en tournant et changent d'anneau en même temps, parce que le coude n'a pas fini de s'ouvrir quand le fil mord la première fois.
 
 Seule la hallebarde n'est bornée que par ses propres flancs : Meyer la lance bras tendu, l'extension est acquise avant l'entrée, et le fer ne sort de l'éventail qu'une fois passé derrière l'épaule. Toutes les autres sont bornées par le bras — celui de la hache, court, s'épuise au troisième homme, celui de l'épée se ferme à l'axe, ceux de la grande épée tiennent tant que les épaules tournent, et la taille en travers meurt quand la croix se fige devant le front. La grande hache ne balaie qu'en profondeur : son fer ne tourne pas, il tombe. Les cinq autres catégories n'ont aucun balayage, et jamais par prudence : ou leurs coups ne tournent pas, ou leur arme n'a rien à traîner d'un corps au suivant — c'est le cas de la masse et du grand marteau, dont la tête ne dépose rien qu'à l'endroit qu'elle touche.
 
@@ -365,17 +365,17 @@ L'éventail que la grille sait nommer ouvre **cent vingt degrés à toute distan
 <p class="arme-nom">Hache à une main<span class="arme-portee">parade 7 · réduction 10</span></p>
 <p class="arme-prise">Une main, manche court de 0,60 à 0,80 m, fer de 0,3 à 0,8 kg (Petersen A, B, C, G, H, I et la skeggöx barbue) ; le bouclier au bras gauche.</p>
 <div class="gestes">
-<div class="geste" data-trajet="1d2:passe>2:frappe>1:passe" data-degats="1.5 TRA / TRA" data-garde="3>8">
+<div class="geste" data-trajet="1d2:passe>2:frappe>1:passe>soi:passe" data-degats="1.5 TRA / TRA" data-garde="3>8">
 <p class="geste-nom">Fendant à la tête</p>
 <p class="geste-diff">attaque 8 · déduit</p>
 <p class="geste-source">Jan Petersen, De norske vikingesverd, Kristiania, 1919, types A, B, C, G, H, I : fers de 10 à 15 cm de tranchant montés en coin ; la longueur de manche, 0,60 à 0,80 m, est estimée d'après le genre, aucun manche ne se conservant</p>
 </div>
-<div class="geste" data-trajet="1d:passe>2d:frappe>1:passe>2:passe>1g:frappe" data-degats="1.3 TRA / CON" data-garde="3>7">
+<div class="geste" data-trajet="1d:passe>2d:frappe>1:passe>2:frappe>2g:passe>1g:passe" data-degats="1.3 TRA / CON" data-garde="3>7">
 <p class="geste-nom">Fendant en diagonale à l'épaule</p>
 <p class="geste-diff">attaque 5 · déduit</p>
 <p class="geste-source">Jan Petersen, De norske vikingesverd, Kristiania, 1919, types A, B, C, G, H, I : fers de 10 à 15 cm de tranchant montés en coin ; la longueur de manche, 0,60 à 0,80 m, est estimée d'après le genre, aucun manche ne se conservant. Les sagas ne connaissent que le verbe höggva, qui dit qu'on frappe de taille sans jamais dire dans quel plan</p>
 </div>
-<div class="geste" data-trajet="1g:passe>2g:passe>1:passe>2:passe>2d:frappe>1d:frappe" data-degats="1.3 TRA / CON" data-garde="1>6">
+<div class="geste" data-trajet="1g:passe>2g:passe>1:passe>2:passe>2d:frappe>2d2:frappe>1d:passe" data-degats="1.3 TRA / CON" data-garde="1>6">
 <p class="geste-nom">Fendant de revers au cou</p>
 <p class="geste-diff">attaque 7 · déduit</p>
 <p class="geste-source">Les sagas ne connaissent que le verbe höggva, qui dit qu'on frappe de taille sans jamais dire dans quel plan ; l'écu au bras gauche interdit d'armer un revers ailleurs qu'au-dessus de l'épaule</p>
@@ -390,12 +390,12 @@ L'éventail que la grille sait nommer ouvre **cent vingt degrés à toute distan
 <p class="geste-diff">attaque 8 · déduit</p>
 <p class="geste-source">Les sagas ne connaissent que le verbe höggva, qui dit qu'on frappe de taille sans jamais dire dans quel plan</p>
 </div>
-<div class="geste" data-trajet="1d:passe>2d:passe>1:frappe>2:frappe" data-degats="1.3 TRA / CON" data-garde="9>5">
-<p class="geste-nom">Taille basse à la jambe</p>
+<div class="geste" data-trajet="1d2:passe>1d:passe>2d:passe>2:frappe>2g:frappe>1:passe" data-degats="1.3 TRA / CON" data-garde="9>5">
+<p class="geste-nom">Taille montante au flanc</p>
 <p class="geste-diff">attaque 7 · déduit</p>
 <p class="geste-source">Jan Petersen, De norske vikingesverd, Kristiania, 1919, types A, B, C, G, H, I : fers de 10 à 15 cm de tranchant montés en coin ; la longueur de manche, 0,60 à 0,80 m, est estimée d'après le genre, aucun manche ne se conservant</p>
 </div>
-<div class="geste" data-trajet="1:frappe>1g:passe" data-degats="0.8 PER / CON" data-garde="5>1">
+<div class="geste" data-trajet="1:passe>2d:frappe>2:passe>2g:passe>1g:passe" data-degats="0.8 PER / CON" data-garde="5>1">
 <p class="geste-nom">Croc de la barbe sous l'écu</p>
 <p class="geste-diff">attaque 9 · déduit</p>
 <p class="geste-source">Le bouclier rond est partout dans la Tapisserie de Bayeux ; la barbe du fer, chez les types épanouis de la typologie de Jan Petersen, De norske vikingesverd, Kristiania, 1919, se tient loin du manche</p>
@@ -438,7 +438,7 @@ L'éventail que la grille sait nommer ouvre **cent vingt degrés à toute distan
 </div>
 <div class="combo">
 <span class="combo-long">cinq coups</span>
-<span class="combo-coup" data-garde="9>5">Taille basse à la jambe</span>
+<span class="combo-coup" data-garde="9>5">Taille montante au flanc</span>
 <span class="combo-coup" data-garde="5>1">Croc de la barbe sous l'écu</span>
 <span class="combo-coup" data-garde="1>6">Fendant de revers au cou</span>
 <span class="combo-coup" data-garde="6>4">Taille en travers aux côtes</span>
