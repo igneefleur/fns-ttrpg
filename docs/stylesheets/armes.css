@@ -70,6 +70,32 @@
   text-align: center;
 }
 
+/* ── L'alignement d'une carte à l'autre ──
+   Chaque geste prend SIX rangées du conteneur et les partage avec ses voisines :
+   l'empreinte, le nom, les dégâts, la garde, la difficulté et la source se
+   posent donc exactement à la même hauteur d'une carte à l'autre. La rangée de
+   la source prend d'elle-même la hauteur de la plus longue source de l'arme,
+   sans qu'on ait à la chiffrer. L'écart des rangées devient l'écart INTERNE
+   d'une carte, et l'air entre deux rangées de cartes se reprend sous la source.
+   Là où subgrid manque, la colonne flex ci-dessus reste en place : les cartes
+   se décalent comme avant, ce n'est pas aligné mais ce n'est pas cassé. */
+@supports (grid-template-rows: subgrid) {
+  .md-typeset .gestes {
+    row-gap: 0.18rem;
+  }
+  .md-typeset .geste {
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-row: span 6;
+  }
+  .md-typeset svg.geste-carte {
+    margin-inline: auto;
+  }
+  .md-typeset .geste-source {
+    margin-bottom: 0.55rem;
+  }
+}
+
 .md-typeset svg.geste-carte {
   display: block;
   width: 100%;
@@ -77,7 +103,15 @@
   height: auto;
 }
 
+/* Le titre tient une hauteur FIXE : deux lignes de nom et la ligne du terme,
+   soit 2 × 0.805rem + 0.78rem. Les noms qui tiennent sur une seule ligne se
+   centrent dans cette hauteur au lieu de remonter, ce qui poserait le terme et
+   tout ce qui suit plus haut que sur la carte voisine. */
 .md-typeset .geste-nom {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 2.4rem;
   margin: 0.1rem 0 0;
   font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
   font-size: 0.7rem;
