@@ -301,6 +301,7 @@ L'éventail que la grille sait nommer ouvre **cent vingt degrés à toute distan
 <p class="geste-nom">Coup de pommeau au visage<em>knopfslac</em></p>
 <p class="geste-diff">attaque 5 · déduit</p>
 </div>
+</div>
 <div class="combos">
 <p class="combos-nom">Enchaînements<span class="combos-regle">la garde d'arrivée d'un coup ouvre le suivant, et aucun coup ne se répète dans le même tour</span></p>
 <div class="combo">
@@ -351,7 +352,6 @@ L'éventail que la grille sait nommer ouvre **cent vingt degrés à toute distan
 <span class="combo-coup" data-garde="5>5">Estoc à fond</span>
 <span class="combo-coup" data-garde="5>2">Coup de pommeau au visage</span>
 <span class="combo-coup" data-garde="2>8">Fendant d'aplomb</span>
-</div>
 </div>
 </div>
 </div>
