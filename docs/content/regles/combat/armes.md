@@ -365,7 +365,7 @@ L'éventail que la grille sait nommer ouvre **cent vingt degrés à toute distan
 <p class="arme-nom">Hache à une main<span class="arme-portee">parade 7 · réduction 10</span></p>
 <p class="arme-prise">Une main, manche court de 0,60 à 0,80 m, fer de 0,3 à 0,8 kg (Petersen A, B, C, G, H, I et la skeggöx barbue) ; le bouclier au bras gauche.</p>
 <div class="gestes">
-<div class="geste" data-trajet="1d2:passe>2:frappe>1:passe>soi:passe" data-degats="1.5 TRA / TRA" data-garde="3>8">
+<div class="geste" data-trajet="1d2:passe>1d:passe>1:passe>2:frappe" data-degats="1.5 TRA / TRA" data-garde="3>8">
 <p class="geste-nom">Fendant à la tête</p>
 <p class="geste-diff">attaque 8 · déduit</p>
 <p class="geste-source">Jan Petersen, De norske vikingesverd, Kristiania, 1919, types A, B, C, G, H, I : fers de 10 à 15 cm de tranchant montés en coin ; la longueur de manche, 0,60 à 0,80 m, est estimée d'après le genre, aucun manche ne se conservant</p>
@@ -375,22 +375,22 @@ L'éventail que la grille sait nommer ouvre **cent vingt degrés à toute distan
 <p class="geste-diff">attaque 5 · déduit</p>
 <p class="geste-source">Jan Petersen, De norske vikingesverd, Kristiania, 1919, types A, B, C, G, H, I : fers de 10 à 15 cm de tranchant montés en coin ; la longueur de manche, 0,60 à 0,80 m, est estimée d'après le genre, aucun manche ne se conservant. Les sagas ne connaissent que le verbe höggva, qui dit qu'on frappe de taille sans jamais dire dans quel plan</p>
 </div>
-<div class="geste" data-trajet="1g:passe>2g:passe>1:passe>2:passe>2d:frappe>2d2:frappe>1d:passe" data-degats="1.3 TRA / CON" data-garde="1>6">
+<div class="geste" data-trajet="1g:passe>2g:passe>1:passe>2:passe>2d:frappe>1d:passe>2d2:frappe" data-degats="1.3 TRA / CON" data-garde="1>6">
 <p class="geste-nom">Fendant de revers au cou</p>
 <p class="geste-diff">attaque 7 · déduit</p>
 <p class="geste-source">Les sagas ne connaissent que le verbe höggva, qui dit qu'on frappe de taille sans jamais dire dans quel plan ; l'écu au bras gauche interdit d'armer un revers ailleurs qu'au-dessus de l'épaule</p>
 </div>
-<div class="geste" data-trajet="1d2:passe>2d2:passe>1d:passe>2d:frappe>1:passe>2:frappe>2g:frappe>1g:passe" data-degats="1.2 TRA / CON" data-garde="6>4">
+<div class="geste" data-trajet="1d2:passe>2d3:passe>1d:passe>2d2:passe>2d:frappe>1:passe>2:frappe>2g:frappe>1g:passe" data-degats="1.2 TRA / CON" data-garde="6>4">
 <p class="geste-nom">Taille en travers aux côtes</p>
 <p class="geste-diff">attaque 6 · déduit</p>
 <p class="geste-source">Les sagas ne connaissent que le verbe höggva, qui dit qu'on frappe de taille sans jamais dire dans quel plan</p>
 </div>
-<div class="geste" data-trajet="1g:passe>2g:passe>1:passe>2:frappe>2d:frappe>1d:passe>2d2:frappe>1d2:passe" data-degats="1.2 TRA / CON" data-garde="4>6">
+<div class="geste" data-trajet="1g:passe>2g:passe>1:passe>2:frappe>2d:frappe>1d:passe>2d2:frappe>2d3:passe>1d2:passe" data-degats="1.2 TRA / CON" data-garde="4>6">
 <p class="geste-nom">Taille de revers en travers</p>
 <p class="geste-diff">attaque 8 · déduit</p>
 <p class="geste-source">Les sagas ne connaissent que le verbe höggva, qui dit qu'on frappe de taille sans jamais dire dans quel plan</p>
 </div>
-<div class="geste" data-trajet="1d2:passe>1d:passe>2d:passe>2:frappe>2g:frappe>1:passe" data-degats="1.3 TRA / CON" data-garde="9>5">
+<div class="geste" data-trajet="1d2:passe>1d:passe>2d:passe>1:passe>2:frappe>2g:frappe>soi:passe" data-degats="1.3 TRA / CON" data-garde="9>5">
 <p class="geste-nom">Taille montante au flanc</p>
 <p class="geste-diff">attaque 7 · déduit</p>
 <p class="geste-source">Jan Petersen, De norske vikingesverd, Kristiania, 1919, types A, B, C, G, H, I : fers de 10 à 15 cm de tranchant montés en coin ; la longueur de manche, 0,60 à 0,80 m, est estimée d'après le genre, aucun manche ne se conservant</p>
