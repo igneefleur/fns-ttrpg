@@ -399,7 +399,7 @@ L'éventail que la grille sait nommer ouvre **cent vingt degrés à toute distan
 <p class="geste-diff">attaque 9 · déduit</p>
 <p class="geste-source">Le bouclier rond est partout dans la Tapisserie de Bayeux ; la barbe du fer, chez les types épanouis de la typologie de Jan Petersen, De norske vikingesverd, Kristiania, 1919, se tient loin du manche</p>
 </div>
-<div class="geste" data-trajet="1g:passe>1:frappe>1d:passe" data-degats="0.9 CON / CON" data-garde="7>9">
+<div class="geste" data-trajet="1g:passe>1:frappe" data-degats="0.9 CON / CON" data-garde="7>8">
 <p class="geste-nom">Coup du dos du fer au casque</p>
 <p class="geste-diff">attaque 6 · déduit</p>
 <p class="geste-source">Les fers de hache de l'âge viking n'ont pas de marteau au dos, seulement une arête et deux joues étroites (Jan Petersen, De norske vikingesverd, Kristiania, 1919). Le seul casque de l'âge viking scandinave conservé à peu près entier, celui de Gjermundbu, Ringerike, v. 970, Kulturhistorisk museum, Oslo, est une calotte de plaques rivetées ; les autres ne sont connus que par fragments</p>
@@ -407,6 +407,11 @@ L'éventail que la grille sait nommer ouvre **cent vingt degrés à toute distan
 </div>
 <div class="combos">
 <p class="combos-nom">Enchaînements<span class="combos-regle">la garde d'arrivée d'un coup ouvre le suivant, et aucun coup ne se répète dans le même tour</span></p>
+<div class="combo">
+<span class="combo-long">deux coups</span>
+<span class="combo-coup" data-garde="3>7">Fendant en diagonale à l'épaule</span>
+<span class="combo-coup" data-garde="7>8">Coup du dos du fer au casque</span>
+</div>
 <div class="combo">
 <span class="combo-long">deux coups</span>
 <span class="combo-coup" data-garde="4>6">Taille de revers en travers</span>
@@ -432,25 +437,6 @@ L'éventail que la grille sait nommer ouvre **cent vingt degrés à toute distan
 </div>
 <div class="combo">
 <span class="combo-long">cinq coups</span>
-<span class="combo-coup" data-garde="9>5">Taille basse à la jambe</span>
-<span class="combo-coup" data-garde="5>1">Croc de la barbe au bouclier</span>
-<span class="combo-coup" data-garde="1>6">Fendant de revers au cou</span>
-<span class="combo-coup" data-garde="6>4">Taille en travers aux côtes</span>
-<span class="combo-coup" data-garde="4>6">Taille de revers en travers</span>
-</div>
-<div class="combo">
-<span class="combo-long">six coups</span>
-<span class="combo-coup" data-garde="7>9">Coup du dos du fer au casque</span>
-<span class="combo-coup" data-garde="9>5">Taille basse à la jambe</span>
-<span class="combo-coup" data-garde="5>1">Croc de la barbe au bouclier</span>
-<span class="combo-coup" data-garde="1>6">Fendant de revers au cou</span>
-<span class="combo-coup" data-garde="6>4">Taille en travers aux côtes</span>
-<span class="combo-coup" data-garde="4>6">Taille de revers en travers</span>
-</div>
-<div class="combo">
-<span class="combo-long">sept coups</span>
-<span class="combo-coup" data-garde="3>7">Fendant en diagonale à l'épaule</span>
-<span class="combo-coup" data-garde="7>9">Coup du dos du fer au casque</span>
 <span class="combo-coup" data-garde="9>5">Taille basse à la jambe</span>
 <span class="combo-coup" data-garde="5>1">Croc de la barbe au bouclier</span>
 <span class="combo-coup" data-garde="1>6">Fendant de revers au cou</span>
