@@ -262,7 +262,7 @@ L'éventail que la grille sait nommer ouvre **cent vingt degrés à toute distan
 <div class="arme">
 <p class="arme-nom">Épée à une main<span class="arme-portee">parade 5 · réduction 14</span></p>
 <div class="gestes">
-<div class="geste" data-trajet="2:frappe>1:passe" data-degats="20 TRA / TRA" data-garde="2>8">
+<div class="geste" data-trajet="1:passe>2:frappe" data-degats="20 TRA / TRA" data-garde="2>8">
 <p class="geste-nom">Fendant d'aplomb<em>colpo fendente</em></p>
 <p class="geste-diff">attaque 5</p>
 <p class="geste-source">Fiore dei Liberi, Fior di Battaglia, v. 1409, Getty MS Ludwig XV 13, f. 23r, figure des colpi fendenti : " Noy semo fendenti e façemo questione de fender gli denti cum drita raxone. Noy del ferir non auemo tardo e tornamo in guardia de vargo in vargo "</p>
