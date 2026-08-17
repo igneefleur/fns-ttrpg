@@ -116,20 +116,20 @@ Douze coups sur les quatre-vingts du chapitre frappent plus d'une case, et de de
 |---|---|:---:|:---:|:---:|
 | Taille du fer en croix | hallebarde | 9 | 120° | 4 |
 | Taille du milieu | grande épée | 5 | 82° | 3 |
+| Fendant en diagonale | épée | 4 | 90° | 1 et 2 |
 | Taille horizontale du côté droit | épée | 4 | 90° | 2 |
+| Taille horizontale de revers | épée | 4 | 90° | 2 |
 | Taille en travers | grande épée | 3 | 60° | 2 |
 | Taille moyenne en travers | hallebarde | 3 | 60° | 2 |
-| Taille horizontale de revers | épée | 3 | 30° | 1 et 2 |
 | Taille montante du côté droit | épée | 3 | 60° | 1 et 2 |
 | Taille montante de revers | épée | 3 | 60° | 1 et 2 |
-| Fendant en diagonale | épée | 2 | 30° | 2 |
 | Taille montante au fer | hallebarde | 2 | 30° | 2 et 3 |
 | Fendant à pleine volée | grande hache | 2 | — | 2 et 3 |
 | Taille haute d'aplomb | hallebarde | 2 | — | 2 et 3 |
 
 </div>
 
-Le fendant à pleine volée et la taille haute d'aplomb sont les cas purs de la profondeur : aucune largeur, ils tombent dans le plan de la ligne, mais leur fer frappe au loin puis, poursuivant sa chute, un anneau en deçà et à hauteur de genou. Les deux montantes de l'épée, sa taille horizontale de revers et la montante de la hallebarde sont les cas mixtes : elles s'ouvrent en tournant et changent d'anneau en même temps, parce que le coude n'a pas fini de s'ouvrir quand le fil mord la première fois.
+Le fendant à pleine volée et la taille haute d'aplomb sont les cas purs de la profondeur : aucune largeur, ils tombent dans le plan de la ligne, mais leur fer frappe au loin puis, poursuivant sa chute, un anneau en deçà et à hauteur de genou. Les deux montantes de l'épée, son fendant en diagonale et la montante de la hallebarde sont les cas mixtes : elles s'ouvrent en tournant et changent d'anneau en même temps, parce que le coude n'a pas fini de s'ouvrir quand le fil mord la première fois.
 
 Seule la hallebarde n'est bornée que par ses propres flancs : Meyer la lance bras tendu, l'extension est acquise avant l'entrée, et le fer ne sort de l'éventail qu'une fois passé derrière l'épaule. Toutes les autres sont bornées par le bras — celui de l'épée se ferme à l'axe, ceux de la grande épée tiennent tant que les épaules tournent, et la taille en travers meurt quand la croix se fige devant le front. La grande hache ne balaie qu'en profondeur : son fer ne tourne pas, il tombe. Les six autres catégories n'ont aucun balayage, et jamais par prudence : ou leurs coups ne tournent pas, ou leur arme n'a rien à traîner d'un corps au suivant — c'est le cas de la masse et du grand marteau, dont la tête ne dépose rien qu'à l'endroit qu'elle touche.
 
@@ -261,14 +261,13 @@ L'éventail que la grille sait nommer ouvre **cent vingt degrés à toute distan
 
 <div class="arme">
 <p class="arme-nom">Épée à une main<span class="arme-portee">parade 5 · réduction 14</span></p>
-<p class="arme-prise">Une main sur la poignée, épée d'armes de 0,80 m de lame ; la gauche reste libre, et couvre. C'est l'arme étalon du chapitre : sa taille pleine vaut 20.</p>
 <div class="gestes">
 <div class="geste" data-trajet="2:frappe>1:passe" data-degats="20 TRA / TRA" data-garde="2>8">
 <p class="geste-nom">Fendant d'aplomb<em>colpo fendente</em></p>
 <p class="geste-diff">attaque 5</p>
 <p class="geste-source">Fiore dei Liberi, Fior di Battaglia, v. 1409, Getty MS Ludwig XV 13, f. 23r, figure des colpi fendenti : " Noy semo fendenti e façemo questione de fender gli denti cum drita raxone. Noy del ferir non auemo tardo e tornamo in guardia de vargo in vargo "</p>
 </div>
-<div class="geste" data-trajet="1d:passe>2d:frappe>1:passe>2:frappe>1g:passe" data-degats="16 TRA / TRA" data-garde="3>7">
+<div class="geste" data-trajet="1d:passe>2d:frappe>1:passe>2:frappe>2g:frappe>1g:frappe" data-degats="16 TRA / TRA" data-garde="3>7">
 <p class="geste-nom">Fendant en diagonale<em>sgualimbro</em></p>
 <p class="geste-diff">attaque 5</p>
 <p class="geste-source">Giovanni dall'Agocchie, Dell'Arte di Scrimia Libri Tre, Venise, Giulio Tamborino, 1572, libro I, prima giornata, f. 8v, division des cinq mandritti : fendente, sgualimbro, tondo aussi dit traverso, ridoppio, tramazzone</p>
@@ -278,7 +277,7 @@ L'éventail que la grille sait nommer ouvre **cent vingt degrés à toute distan
 <p class="geste-diff">attaque 7</p>
 <p class="geste-source">Giovanni dall'Agocchie, Dell'Arte di Scrimia Libri Tre, Venise, Giulio Tamborino, 1572, libro I, prima giornata, f. 8v, division des cinq mandritti : fendente, sgualimbro, tondo aussi dit traverso, ridoppio, tramazzone</p>
 </div>
-<div class="geste" data-trajet="1g:passe>1:frappe>2:frappe>2d:frappe>1d:passe" data-degats="12 TRA / TRA" data-garde="4>6">
+<div class="geste" data-trajet="1g:passe>2g:frappe>1:passe>2:frappe>2d:frappe>1d:passe>2d2:frappe" data-degats="12 TRA / TRA" data-garde="4>6">
 <p class="geste-nom">Taille horizontale de revers<em>riverso tondo</em></p>
 <p class="geste-diff">attaque 8</p>
 <p class="geste-source">Giovanni dall'Agocchie, Dell'Arte di Scrimia Libri Tre, Venise, Giulio Tamborino, 1572, libro I, prima giornata, f. 8v : les riversi portent les mêmes natures que les mandritti, et vont du côté gauche au côté droit</p>
@@ -298,7 +297,7 @@ L'éventail que la grille sait nommer ouvre **cent vingt degrés à toute distan
 <p class="geste-diff">attaque 6</p>
 <p class="geste-source">Giovanni dall'Agocchie, Dell'Arte di Scrimia Libri Tre, Venise, Giulio Tamborino, 1572, libro I, prima giornata, f. 8v, les trois pointes : imbroccata donnée main haute, stoccata donnée main basse par en dessous, punta riversa sortie du côté gauche</p>
 </div>
-<div class="geste" data-trajet="soi:passe>1:frappe" data-degats="8 CON / TRA" data-garde="5>2">
+<div class="geste" data-trajet="1:frappe" data-degats="8 CON" data-garde="5>2">
 <p class="geste-nom">Coup de pommeau au visage<em>knopfslac</em></p>
 <p class="geste-diff">attaque 5 · déduit</p>
 </div>
