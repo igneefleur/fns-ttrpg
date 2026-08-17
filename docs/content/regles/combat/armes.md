@@ -390,15 +390,15 @@ L'éventail que la grille sait nommer ouvre **cent vingt degrés à toute distan
 <p class="geste-diff">attaque 8 · déduit</p>
 <p class="geste-source">Les sagas ne connaissent que le verbe höggva, qui dit qu'on frappe de taille sans jamais dire dans quel plan</p>
 </div>
-<div class="geste" data-trajet="1d2:passe>1d:passe>2d:passe>1:passe>2:frappe>2g:frappe>soi:passe" data-degats="1.3 TRA / CON" data-garde="9>5">
+<div class="geste" data-trajet="1d2:passe>1d:passe>2d:passe>1:passe>2:frappe>2g:frappe>1g:passe" data-degats="1.3 TRA / CON" data-garde="9>7">
 <p class="geste-nom">Taille montante au flanc</p>
 <p class="geste-diff">attaque 7 · déduit</p>
 <p class="geste-source">Jan Petersen, De norske vikingesverd, Kristiania, 1919, types A, B, C, G, H, I : fers de 10 à 15 cm de tranchant montés en coin ; la longueur de manche, 0,60 à 0,80 m, est estimée d'après le genre, aucun manche ne se conservant</p>
 </div>
-<div class="geste" data-trajet="soi:passe>1:passe>2:frappe>1g:passe" data-degats="0.8 PER / CON" data-garde="5>1">
-<p class="geste-nom">Estoc de la corne au visage</p>
-<p class="geste-diff">attaque 9 · déduit</p>
-<p class="geste-source">Les fers épanouis de la typologie de Jan Petersen, De norske vikingesverd, Kristiania, 1919, portent une corne supérieure prononcée, qui s'écarte du manche</p>
+<div class="geste" data-trajet="1g:passe>1:passe>2:frappe>2g:passe" data-degats="0.8 TRA / CON" data-garde="7>1">
+<p class="geste-nom">Taille aux mains</p>
+<p class="geste-diff">attaque 5 · déduit</p>
+<p class="geste-source">Jan Petersen, De norske vikingesverd, Kristiania, 1919, types A, B, C, G, H, I : fers de 10 à 15 cm de tranchant montés en coin ; la longueur de manche, 0,60 à 0,80 m, est estimée d'après le genre, aucun manche ne se conservant. Les sagas ne connaissent que le verbe höggva, qui dit qu'on frappe de taille sans jamais dire dans quel plan</p>
 </div>
 <div class="geste" data-trajet="1g:passe>1:frappe" data-degats="0.9 CON / CON" data-garde="7>8">
 <p class="geste-nom">Coup du dos du fer au casque</p>
@@ -424,6 +424,11 @@ L'éventail que la grille sait nommer ouvre **cent vingt degrés à toute distan
 <span class="combo-coup" data-garde="4>6">Taille de revers en travers</span>
 </div>
 <div class="combo">
+<span class="combo-long">deux coups</span>
+<span class="combo-coup" data-garde="9>7">Taille montante au flanc</span>
+<span class="combo-coup" data-garde="7>8">Coup du dos du fer au casque</span>
+</div>
+<div class="combo">
 <span class="combo-long">trois coups</span>
 <span class="combo-coup" data-garde="1>6">Fendant de revers au cou</span>
 <span class="combo-coup" data-garde="6>4">Taille en travers aux côtes</span>
@@ -431,15 +436,23 @@ L'éventail que la grille sait nommer ouvre **cent vingt degrés à toute distan
 </div>
 <div class="combo">
 <span class="combo-long">quatre coups</span>
-<span class="combo-coup" data-garde="5>1">Estoc de la corne au visage</span>
+<span class="combo-coup" data-garde="7>1">Taille aux mains</span>
 <span class="combo-coup" data-garde="1>6">Fendant de revers au cou</span>
 <span class="combo-coup" data-garde="6>4">Taille en travers aux côtes</span>
 <span class="combo-coup" data-garde="4>6">Taille de revers en travers</span>
 </div>
 <div class="combo">
 <span class="combo-long">cinq coups</span>
-<span class="combo-coup" data-garde="9>5">Taille montante au flanc</span>
-<span class="combo-coup" data-garde="5>1">Estoc de la corne au visage</span>
+<span class="combo-coup" data-garde="3>7">Fendant en diagonale à l'épaule</span>
+<span class="combo-coup" data-garde="7>1">Taille aux mains</span>
+<span class="combo-coup" data-garde="1>6">Fendant de revers au cou</span>
+<span class="combo-coup" data-garde="6>4">Taille en travers aux côtes</span>
+<span class="combo-coup" data-garde="4>6">Taille de revers en travers</span>
+</div>
+<div class="combo">
+<span class="combo-long">cinq coups</span>
+<span class="combo-coup" data-garde="9>7">Taille montante au flanc</span>
+<span class="combo-coup" data-garde="7>1">Taille aux mains</span>
 <span class="combo-coup" data-garde="1>6">Fendant de revers au cou</span>
 <span class="combo-coup" data-garde="6>4">Taille en travers aux côtes</span>
 <span class="combo-coup" data-garde="4>6">Taille de revers en travers</span>
