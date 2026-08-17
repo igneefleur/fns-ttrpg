@@ -259,45 +259,45 @@ L'éventail que la grille sait nommer ouvre **cent vingt degrés à toute distan
 </div>
 </div>
 
-<div class="arme">
+<div class="arme" data-base="20">
 <p class="arme-nom">Épée à une main<span class="arme-portee">parade 5 · réduction 14</span></p>
 <div class="gestes">
-<div class="geste" data-trajet="1:passe>2:frappe" data-degats="20 TRA / TRA" data-garde="2>8">
+<div class="geste" data-trajet="1:passe>2:frappe" data-degats="1.5 TRA / TRA" data-garde="2>8">
 <p class="geste-nom">Fendant d'aplomb<em>colpo fendente</em></p>
 <p class="geste-diff">attaque 5</p>
 <p class="geste-source">Fiore dei Liberi, Fior di Battaglia, v. 1409, Getty MS Ludwig XV 13, f. 23r, figure des colpi fendenti : " Noy semo fendenti e façemo questione de fender gli denti cum drita raxone. Noy del ferir non auemo tardo e tornamo in guardia de vargo in vargo "</p>
 </div>
-<div class="geste" data-trajet="1d:passe>2d:frappe>1:passe>2:frappe>2g:frappe>1g:frappe" data-degats="16 TRA / TRA" data-garde="3>7">
+<div class="geste" data-trajet="1d:passe>2d:frappe>1:passe>2:frappe>2g:frappe>1g:frappe" data-degats="1.1 TRA / TRA" data-garde="3>7">
 <p class="geste-nom">Fendant en diagonale<em>sgualimbro</em></p>
 <p class="geste-diff">attaque 5</p>
 <p class="geste-source">Giovanni dall'Agocchie, Dell'Arte di Scrimia Libri Tre, Venise, Giulio Tamborino, 1572, libro I, prima giornata, f. 8v, division des cinq mandritti : fendente, sgualimbro, tondo aussi dit traverso, ridoppio, tramazzone</p>
 </div>
-<div class="geste" data-trajet="1d2:passe>2d3:passe>1d:passe>2d2:frappe>1:passe>2d:frappe>2:frappe>2g:frappe>1g:passe" data-degats="10 TRA / TRA" data-garde="6>4">
+<div class="geste" data-trajet="1d2:passe>2d3:passe>1d:passe>2d2:frappe>1:passe>2d:frappe>2:frappe>2g:frappe>1g:passe" data-degats="1.0 TRA / TRA" data-garde="6>4">
 <p class="geste-nom">Taille horizontale du côté droit<em>mandritto tondo (o traverso)</em></p>
 <p class="geste-diff">attaque 7</p>
 <p class="geste-source">Giovanni dall'Agocchie, Dell'Arte di Scrimia Libri Tre, Venise, Giulio Tamborino, 1572, libro I, prima giornata, f. 8v, division des cinq mandritti : fendente, sgualimbro, tondo aussi dit traverso, ridoppio, tramazzone</p>
 </div>
-<div class="geste" data-trajet="1g:passe>2g:frappe>1:passe>2:frappe>2d:frappe>1d:passe>2d2:frappe" data-degats="12 TRA / TRA" data-garde="4>6">
+<div class="geste" data-trajet="1g:passe>2g:frappe>1:passe>2:frappe>2d:frappe>1d:passe>2d2:frappe" data-degats="1.0 TRA / TRA" data-garde="4>6">
 <p class="geste-nom">Taille horizontale de revers<em>riverso tondo</em></p>
 <p class="geste-diff">attaque 8</p>
 <p class="geste-source">Giovanni dall'Agocchie, Dell'Arte di Scrimia Libri Tre, Venise, Giulio Tamborino, 1572, libro I, prima giornata, f. 8v : les riversi portent les mêmes natures que les mandritti, et vont du côté gauche au côté droit</p>
 </div>
-<div class="geste" data-trajet="1d2:passe>1d:frappe>2d:frappe>1:passe>2:frappe>2g:passe" data-degats="12 TRA / TRA" data-garde="9>1">
+<div class="geste" data-trajet="1d2:passe>1d:frappe>2d:frappe>1:passe>2:frappe>2g:passe" data-degats="1.3 TRA / TRA" data-garde="9>1">
 <p class="geste-nom">Taille montante du côté droit<em>ridoppio</em></p>
 <p class="geste-diff">attaque 7</p>
 <p class="geste-source">Giovanni dall'Agocchie, Dell'Arte di Scrimia Libri Tre, Venise, Giulio Tamborino, 1572, libro I, prima giornata, f. 8v : le ridoppio part de dessous, du vrai tranchant de l'épée, et finit à la pointe de l'épaule droite de l'ennemi</p>
 </div>
-<div class="geste" data-trajet="1g2:passe>1g:frappe>2g:frappe>1:passe>2:frappe" data-degats="10 TRA / TRA" data-garde="7>5">
+<div class="geste" data-trajet="1g2:passe>1g:frappe>2g:frappe>1:passe>2:frappe" data-degats="1.2 TRA / TRA" data-garde="7>5">
 <p class="geste-nom">Taille montante de revers<em>colpo sottano</em></p>
 <p class="geste-diff">attaque 8</p>
 <p class="geste-source">Fiore dei Liberi, Fior di Battaglia, v. 1409, Getty MS Ludwig XV 13, f. 23r, figure des colpi sottani : les sottani partent du genou et vont jusqu'au milieu du front, par le chemin qu'a fait le fendente, et se donnent du faux tranchant</p>
 </div>
-<div class="geste" data-trajet="1:passe>2:frappe" data-degats="16 PER / PER" data-garde="5>5">
+<div class="geste" data-trajet="1:passe>2:frappe" data-degats="1.4 PER / PER" data-garde="5>5">
 <p class="geste-nom">Estoc à fond<em>stoccata</em></p>
 <p class="geste-diff">attaque 6</p>
 <p class="geste-source">Giovanni dall'Agocchie, Dell'Arte di Scrimia Libri Tre, Venise, Giulio Tamborino, 1572, libro I, prima giornata, f. 8v, les trois pointes : imbroccata donnée main haute, stoccata donnée main basse par en dessous, punta riversa sortie du côté gauche</p>
 </div>
-<div class="geste" data-trajet="1:frappe" data-degats="8 CON" data-garde="5>2">
+<div class="geste" data-trajet="1:frappe" data-degats="0.9 CON" data-garde="5>2">
 <p class="geste-nom">Coup de pommeau au visage<em>knopfslac</em></p>
 <p class="geste-diff">attaque 5 · déduit</p>
 </div>
