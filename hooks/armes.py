@@ -76,7 +76,8 @@ NOM = re.compile(r'(<p class="geste-nom">)(.*?)(<em>.*?</em>)?(</p>)', re.S)
 
 # Un coup cité dans un enchaînement : il ne porte que son nom et sa garde, et
 # c'est la garde qu'on lit, puisque c'est elle qui décide de ce qui peut suivre.
-ENCHAINE = re.compile(r'(<span class="combo-coup"((?:\s+data-[a-z]+="[^"]*")+)>)')
+ENCHAINE = re.compile(
+    r'(<span class="combo-coup"((?:\s+data-[a-z]+="[^"]*")+)>)(.*?)(</span>)', re.S)
 
 
 def _nom_html(bloc):
@@ -351,6 +352,7 @@ def on_page_content(html, page, config, files):
             svg, _, _ = garde_svg(attrs["garde"])
         except ErreurCoup as e:
             raise ErreurCoup(f"{page.file.src_path} : enchaînement, {e}") from None
-        return m.group(1) + svg
+        # Le carré se pose SOUS le nom du coup, donc après lui dans le document.
+        return m.group(1) + m.group(3) + svg + m.group(4)
 
     return ENCHAINE.sub(enchaine, COUP.sub(rendre, html))
