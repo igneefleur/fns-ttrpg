@@ -18,7 +18,7 @@
   // DISPARAISSENT et cessent d'agir : un filtre invisible qui masque encore
   // des lignes est un piège. Réglage d'AFFICHAGE, donc dans le vrai
   // localStorage du navigateur, jamais dans le personnage.
-  var FILTRES = { texte: "jjk-filtre-texte", champ: "jjk-filtre-champ" };
+  var FILTRES = { texte: "mia-filtre-texte", champ: "mia-filtre-champ" };
   function filtreTexteOn() { return lpref(FILTRES.texte, "1") !== "0"; }
   function filtreChampOn() { return lpref(FILTRES.champ, "1") !== "0"; }
   // champ de filtre d'un module ; rend null quand le réglage le coupe, et le

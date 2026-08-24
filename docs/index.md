@@ -3,7 +3,7 @@ search:
   exclude: true
 ---
 
-# Règles de Base JJK
+# Règles de Base MIA
 
 <meta http-equiv="refresh" content="0; url=content/regles/" />
 <script>location.replace("content/regles/");</script>

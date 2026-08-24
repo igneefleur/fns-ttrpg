@@ -2,10 +2,10 @@
   // Ce canal envoie au tchat, AU NOM DU JOUEUR, une commande composée côté
   // site. Or la fiche exécute désormais des mods rangés dans le personnage :
   // quiconque l'ouvre exécute leur code. On n'accepte donc que ce que la fiche
-  // compose RÉELLEMENT (jjk-fiche.js), c'est-à-dire, dans cet ordre :
+  // compose RÉELLEMENT (mia-fiche.js), c'est-à-dire, dans cet ordre :
   //   - envPrefixe() : rien, « /w gm », ou « /w "Nom du joueur" » ;
   //   - puis cmdJet, cmdCarte ou la carte d'objet donné (avec son lien
-  //     « [Prendre](/jjk_take <base64>) ») : toutes commencent par
+  //     « [Prendre](/mia_take <base64>) ») : toutes commencent par
   //     « &{template:default} ».
   // Le NOM du gabarit reste libre : un gabarit ne fait qu'afficher, et le site
   // doit pouvoir en changer sans re-signer l'extension. Tout le reste (une

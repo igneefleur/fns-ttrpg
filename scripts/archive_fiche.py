@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fige la LIGNE courante de la fiche JJK dans docs/fiche/v<release>/.
+"""Fige la LIGNE courante de la fiche MIA dans docs/fiche/v<release>/.
 
     python scripts/archive_fiche.py                # ouvre la ligne, si elle est neuve
     python scripts/archive_fiche.py --essai        # dit tout, n'écrit rien
@@ -14,28 +14,28 @@ chemin qui ne bougera plus.
 
 Une archive contient SEPT fichiers, et les sept comptent :
 
-  jjk-migrations.js   le moteur de migration (le bundle l'appelle en tête de
+  mia-migrations.js   le moteur de migration (le bundle l'appelle en tête de
                       normalize() ; sans lui la fiche refuse de partir)
-  jjk-mods.js         le moteur de mods. Le bundle vit sans lui (les mods ne
+  mia-mods.js         le moteur de mods. Le bundle vit sans lui (les mods ne
                       tournent simplement pas), et c'est précisément pourquoi
                       il doit être là : une archive à qui il manque ouvrirait
                       un personnage qui porte des mods SANS RIEN DIRE, ni
                       panne ni bandeau, comme si le personnage n'en avait
                       jamais eu.
-  jjk-fiche.js        le bundle : toute la fiche
-  jjk-fiche.css       le style de la fiche
-  jjk-roll20.css      l'appoint iframe Roll20, posé APRÈS (il contre-épingle
+  mia-fiche.js        le bundle : toute la fiche
+  mia-fiche.css       le style de la fiche
+  mia-roll20.css      l'appoint iframe Roll20, posé APRÈS (il contre-épingle
                       la racine à 18 px) ; l'ordre est porté par le manifeste
-  jjk-attr-map.js     la carte des Attributes Roll20 de cette version : c'est
+  mia-attr-map.js     la carte des Attributes Roll20 de cette version : c'est
                       elle qui sait relire l'état écrit à l'époque
-  jjk-creation.json   les données de règles GELÉES À LEUR DATE
+  mia-creation.json   les données de règles GELÉES À LEUR DATE
 
 Le dernier est le moins évident et le plus important. Le bundle lit ses
 compétences, ses stades et ses courbes dans un JSON produit au build depuis la
 page de règles. Sans copie gelée, une archive lirait les règles d'AUJOURD'HUI :
 un simple renommage de compétence, et le personnage qu'on croit rejouer tel
 qu'il était perd une ligne. D'où le refus, ci-dessous, de figer un bundle qui
-ne sait pas lire window.__jjkDataUrl : un tel bundle ne saurait pas où trouver
+ne sait pas lire window.__miaDataUrl : un tel bundle ne saurait pas où trouver
 la copie gelée et retomberait sur celle du jour, en silence.
 
 CHEMIN IMMUABLE
@@ -60,7 +60,7 @@ LE SUFFIXE « b » NE VOYAGE NULLE PART. Sur la branche beta, le bundle
 porte « 3.6.0b » : le dossier s'appelle quand même v3.6.0/, la clé du manifeste
 est « 3.6.0 », ET LE CONTENU GELÉ AUSSI. Le bundle copié y déclare RELEASE
 « 3.6.0 », l'attr-map RELEASE_DEFAUT « 3.6.0 », la page d'archive s'intitule
-« Fiche JJK 3.6.0 ». Le gel se fait sur le numéro NU de bout en bout.
+« Fiche MIA 3.6.0 ». Le gel se fait sur le numéro NU de bout en bout.
 
 Deux raisons, et la seconde est la plus dure. Sans dépouillement du NOM, la
 fusion vers la branche stable amènerait un v3.6.0b/ immuable, doublon de la même
@@ -89,16 +89,16 @@ import version_fiche as V  # noqa: E402  (la grammaire du numéro, partagée)
 RACINE_DEFAUT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Les six fichiers COPIÉS tels quels, dans l'ordre où le manifeste les
-# nommera. La septième pièce, jjk-creation.json, est PRODUITE (par le hook).
+# nommera. La septième pièce, mia-creation.json, est PRODUITE (par le hook).
 COPIES = [
-    ("javascripts/jjk-migrations.js", "jjk-migrations.js"),
-    ("javascripts/jjk-mods.js", "jjk-mods.js"),
-    ("javascripts/jjk-fiche.js", "jjk-fiche.js"),
-    ("stylesheets/jjk-fiche.css", "jjk-fiche.css"),
-    ("stylesheets/jjk-roll20.css", "jjk-roll20.css"),
-    ("javascripts/jjk-attr-map.js", "jjk-attr-map.js"),
+    ("javascripts/mia-migrations.js", "mia-migrations.js"),
+    ("javascripts/mia-mods.js", "mia-mods.js"),
+    ("javascripts/mia-fiche.js", "mia-fiche.js"),
+    ("stylesheets/mia-fiche.css", "mia-fiche.css"),
+    ("stylesheets/mia-roll20.css", "mia-roll20.css"),
+    ("javascripts/mia-attr-map.js", "mia-attr-map.js"),
 ]
-DONNEES = "jjk-creation.json"
+DONNEES = "mia-creation.json"
 PAGE = "index.html"          # l'ouvre-archive : voir _page_archive()
 
 # Les sept pièces exigées. Une archive à qui il en manque une n'est pas une
@@ -110,8 +110,8 @@ SEPT = [n for _, n in COPIES] + [DONNEES]
 # moteur de migration compte en schémas, et le JSON de règles est produit tel
 # quel par le hook. Voir l'en-tête : le gel se fait sur le numéro NU.
 DENUDE = {
-    "jjk-fiche.js": V.bundle_denude,
-    "jjk-attr-map.js": V.attrmap_denude,
+    "mia-fiche.js": V.bundle_denude,
+    "mia-attr-map.js": V.attrmap_denude,
 }
 
 
@@ -203,13 +203,13 @@ def _bouchon_mkdocs():
 
 
 def donnees_gelees(racine):
-    """Le contenu de jjk-creation.json, produit par le hook, tel quel."""
-    chemin = os.path.join(racine, "hooks", "jjk_creation.py")
+    """Le contenu de mia-creation.json, produit par le hook, tel quel."""
+    chemin = os.path.join(racine, "hooks", "mia_creation.py")
     if not os.path.exists(chemin):
-        raise RuntimeError("hooks/jjk_creation.py introuvable : "
+        raise RuntimeError("hooks/mia_creation.py introuvable : "
                            "sans lui l'archive n'aurait pas ses données gelées")
     _bouchon_mkdocs()
-    spec = importlib.util.spec_from_file_location("jjk_creation_pour_archive", chemin)
+    spec = importlib.util.spec_from_file_location("mia_creation_pour_archive", chemin)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     # on force le bouchon MÊME quand mkdocs est là : le vrai File.generated()
@@ -235,7 +235,7 @@ def _page_archive(cle, schema):
     règles.
 
     Elle est titrée de la CLÉ, jamais de la release : c'est la clé qui nomme la
-    ligne gelée, et un « Fiche JJK 3.6.0b (archive) » ferait dire à la même
+    ligne gelée, et un « Fiche MIA 3.6.0b (archive) » ferait dire à la même
     archive deux choses différentes selon la branche qui l'a produite.
     """
     return """<!DOCTYPE html>
@@ -244,7 +244,7 @@ def _page_archive(cle, schema):
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex">
-  <title>Fiche JJK %(cle)s (archive)</title>
+  <title>Fiche MIA %(cle)s (archive)</title>
   <!-- ARCHIVE GELÉE de la ligne %(cle)s (schéma %(sch)d), produite par
        scripts/archive_fiche.py. Ne rien modifier ici à la main : le jour où
        un joueur rouvre un personnage dans cette version, c'est ce dossier
@@ -253,8 +253,8 @@ def _page_archive(cle, schema):
        Aucun ?v= : le chemin est immuable, donc rien ne change jamais, donc il
        n'y a aucun cache à casser. -->
   <link rel="stylesheet" href="../../stylesheets/fonts.css">
-  <link rel="stylesheet" href="jjk-fiche.css">
-  <link rel="stylesheet" href="jjk-roll20.css">
+  <link rel="stylesheet" href="mia-fiche.css">
+  <link rel="stylesheet" href="mia-roll20.css">
 </head>
 <body>
   <div id="perso-atelier">
@@ -268,7 +268,7 @@ def _page_archive(cle, schema):
     try {
       var h = location.hash || "";
       var p = null;
-      try { p = localStorage.getItem("jjk-r20-night"); } catch (e) {}
+      try { p = localStorage.getItem("mia-r20-night"); } catch (e) {}
       var on = p === "1" ? true : p === "0" ? false
              : /[#&]n=1/.test(h) ? true : /[#&]n=0/.test(h) ? false
              : !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
@@ -276,14 +276,14 @@ def _page_archive(cle, schema):
     } catch (e) {}
   })();
   // LE RACCORD QUI FAIT L'ARCHIVE. Sans lui, le bundle retombe sur le
-  // jjk-creation.json de la RACINE du site, c'est-à-dire sur les règles
+  // mia-creation.json de la RACINE du site, c'est-à-dire sur les règles
   // d'aujourd'hui : la fiche s'ouvrirait sans erreur et mentirait.
-  window.__jjkDataUrl = "jjk-creation.json";
+  window.__miaDataUrl = "mia-creation.json";
   </script>
-  <script src="jjk-attr-map.js"></script>
-  <script src="jjk-migrations.js"></script>
-  <script src="jjk-mods.js"></script>
-  <script src="jjk-fiche.js"></script>
+  <script src="mia-attr-map.js"></script>
+  <script src="mia-migrations.js"></script>
+  <script src="mia-mods.js"></script>
+  <script src="mia-fiche.js"></script>
 </body>
 </html>
 """ % {"cle": cle, "sch": schema}
@@ -320,10 +320,10 @@ def maj_manifeste(chemin, cle, schema, essai=False, retirer=None):
         base = "fiche/v%s/" % cle
         archives[cle] = {
             "schema": schema,
-            "js": [base + "jjk-migrations.js", base + "jjk-mods.js",
-                   base + "jjk-fiche.js"],
-            "css": [base + "jjk-fiche.css", base + "jjk-roll20.css"],
-            "attrmap": base + "jjk-attr-map.js",
+            "js": [base + "mia-migrations.js", base + "mia-mods.js",
+                   base + "mia-fiche.js"],
+            "css": [base + "mia-fiche.css", base + "mia-roll20.css"],
+            "attrmap": base + "mia-attr-map.js",
             "data": base + DONNEES,
         }
     man["archives"] = archives
@@ -415,12 +415,12 @@ def figer(racine, essai=False, force=False):
               "portent le numéro nu %s" % cle)
 
     # LE REFUS QUI PROTÈGE L'ARCHIVE. Un bundle qui ne lit pas
-    # window.__jjkDataUrl ira chercher jjk-creation.json à la racine du site,
+    # window.__miaDataUrl ira chercher mia-creation.json à la racine du site,
     # donc les règles du jour, même servi depuis docs/fiche/v3.0.0/. L'archive
     # aurait l'air complète et serait fausse : on refuse de la fabriquer.
-    if "__jjkDataUrl" not in src:
-        return ["le bundle ne lit pas window.__jjkDataUrl : archive refusée "
-                "(elle lirait le jjk-creation.json du jour, pas le sien)"]
+    if "__miaDataUrl" not in src:
+        return ["le bundle ne lit pas window.__miaDataUrl : archive refusée "
+                "(elle lirait le mia-creation.json du jour, pas le sien)"]
 
     # ce qu'on va poser, en mémoire d'abord : rien n'est écrit tant qu'une
     # pièce manque à l'appel
@@ -497,7 +497,7 @@ def figer(racine, essai=False, force=False):
 def supprimer(racine, release, essai=False):
     """Retire une vieille archive (dossier + entrée du manifeste).
 
-    NE TOUCHE JAMAIS docs/javascripts/jjk-migrations.js. Les pas de migration
+    NE TOUCHE JAMAIS docs/javascripts/mia-migrations.js. Les pas de migration
     ne s'élaguent pas, même quand le bundle correspondant disparaît : un
     personnage n'a pas besoin de repasser par les versions intermédiaires,
     mais la CHAÎNE, elle, doit rester contiguë pour le traverser. Un pas retiré
@@ -540,14 +540,14 @@ def supprimer(racine, release, essai=False):
         if os.path.isdir(dossier):
             shutil.rmtree(dossier)
     print("  archive %s retirée (avec docs/fiche/v%s/)" % (release, release))
-    print("  jjk-migrations.js : intact, les pas ne s'élaguent pas")
+    print("  mia-migrations.js : intact, les pas ne s'élaguent pas")
     return []
 
 
 def main():
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
-    p = argparse.ArgumentParser(description="Fige la ligne courante de la fiche JJK.")
+    p = argparse.ArgumentParser(description="Fige la ligne courante de la fiche MIA.")
     p.add_argument("--racine", default=RACINE_DEFAUT,
                    help="racine du dépôt (défaut : le parent de scripts/)")
     p.add_argument("--essai", action="store_true", help="dit tout, n'écrit rien")

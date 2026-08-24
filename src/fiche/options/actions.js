@@ -8,7 +8,7 @@
       b.addEventListener("click", function () {
         var a = document.createElement("a");
         a.href = "data:application/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
-        a.download = (state.name || "personnage-jjk") + ".json";
+        a.download = (state.name || "personnage-mia") + ".json";
         a.click();
       });
       return b;

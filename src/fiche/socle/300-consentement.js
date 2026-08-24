@@ -10,20 +10,20 @@
   // écart de numéro de release.)
   function modsEnAttente() {
     if (!state || !state.mods || !state.mods.length) return [];
-    if (!window.JjkMods || typeof window.JjkMods.enAttente !== "function") return [];
+    if (!window.MiaMods || typeof window.MiaMods.enAttente !== "function") return [];
     try {
       // MÊME repère que executeMods, sans quoi les deux écrans se contredisent :
       // sans version ni schéma, le moteur saute ses deux contrôles, un mod
       // « pour: 4.0.0 » est annoncé « pas autorisé », le joueur l'autorise, et
       // le bloc Mods lui répond « trop récent ». Le oui ainsi arraché dort dans
       // le navigateur et s'appliquerait tout seul le jour de la 4.0.0.
-      var a = window.JjkMods.enAttente(state.mods, { version: RELEASE, schema: SCHEMA });
+      var a = window.MiaMods.enAttente(state.mods, { version: RELEASE, schema: SCHEMA });
       return Array.isArray(a) ? a : [];
     } catch (e) { return []; }
   }
   function decideMod(empreinte, avis) {
-    if (!window.JjkMods || typeof window.JjkMods.decide !== "function") return;
-    try { window.JjkMods.decide(empreinte, avis); } catch (e) {}
+    if (!window.MiaMods || typeof window.MiaMods.decide !== "function") return;
+    try { window.MiaMods.decide(empreinte, avis); } catch (e) {}
   }
   // Le dialogue d'examen : le code de chaque mod, en clair, et deux boutons.
   // Une décision remonte la fiche aussitôt (le mod autorisé doit tourner, et

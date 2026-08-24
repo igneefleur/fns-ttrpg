@@ -1,6 +1,6 @@
   // ---------- en-tête : portrait + identité + compteurs + garde-fous ----------
   // En-tête réduit aux seules infos importantes (2026-08-02) : plus de
-  // portrait ni de cartouche « JJK Système JDR » ; PV, Vitesse et Narration
+  // portrait ni de cartouche « MIA Système JDR » ; PV, Vitesse et Narration
   // (doublons en lecture seule de l'onglet Fiche) n'y figurent plus.
   //   Nom | Espèce | Âge | Sexe | Genre
   //   Création ———— | XP dépensé ———— | XP total
@@ -83,8 +83,8 @@
     // d'une autre origine) : si elle ne répond pas, la saisie manuelle prend
     // le relais et rien n'est perdu.
     function demanderJoueurs() {
-      if (typeof window.__jjkPlayers !== "function") { remplirDest(nomsManuels()); return; }
-      window.__jjkPlayers(function (noms) {
+      if (typeof window.__miaPlayers !== "function") { remplirDest(nomsManuels()); return; }
+      window.__miaPlayers(function (noms) {
         if (noms && noms.length) {
           listeRoll20 = noms;
           remplirDest(noms);

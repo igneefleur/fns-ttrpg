@@ -14,7 +14,7 @@
  * LE MODE ARRIVE DANS LE HASH (« &m=beta »), posé par la copie de
  * content-roll20.js qui a monté l'iframe. Il n'est PAS relu dans le stockage, et
  * c'est le point important : une seconde lecture serait asynchrone, donc une
- * seconde course. On avait déjà de quoi voir l'onglet annoncer « Fiche JJK
+ * seconde course. On avait déjà de quoi voir l'onglet annoncer « Fiche MIA
  * beta » avec la fiche stable dedans, si l'utilisateur basculait entre les deux
  * lectures. Ici, la copie qui a construit l'adresse dicte la coquille, et il n'y
  * a plus rien à accorder.

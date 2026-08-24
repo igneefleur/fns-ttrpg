@@ -1,10 +1,10 @@
-# Extension « Fiche JJK sur Roll20 »
+# Extension « Fiche MIA sur Roll20 »
 
-Un onglet « Fiche JJK » dans le dialogue de personnage Roll20. L'extension est
+Un onglet « Fiche MIA » dans le dialogue de personnage Roll20. L'extension est
 une COQUILLE : la fiche elle-même (le vrai créateur du site) est SERVIE PAR LE
 SITE — `roll20-fiche.html`, affichée dans une iframe — et se met donc à jour à
 chaque déploiement du site, sans re-signer l'extension. La fiche est persistée
-dans les Attributes Roll20 du personnage (tout préfixé `jjk_`, `jjk_state` =
+dans les Attributes Roll20 du personnage (tout préfixé `mia_`, `mia_state` =
 état entier en JSON, source de vérité), donc partagée avec tous les joueurs qui
 contrôlent ce personnage. Les jets partent dans le tchat.
 
@@ -13,8 +13,8 @@ contrôlent ce personnage. Les jets partent dans le tchat.
 L'extension porte DEUX parties, et la case « Mode beta » du popup bascule de
 l'une à l'autre :
 
-- `stable/` — la partie publiée, qui affiche le site `/jjk/` ;
-- `beta/` — la partie de chantier, qui affiche le site `/jjk-beta/`.
+- `stable/` — la partie publiée, qui affiche le site `/mia/` ;
+- `beta/` — la partie de chantier, qui affiche le site `/mia-beta/`.
 
 CES DEUX DOSSIERS NE S'ÉCRIVENT PAS : ILS SONT ENGENDRÉS. Leur source unique est
 `src/extension/`, découpée par rôle, et les trois valeurs qui séparent les deux
@@ -51,7 +51,7 @@ en stable, et une régression du site de chantier abîme les mêmes personnages.
 Partagées :
 
 - `popup/` — le popup (lien des règles, case du mode beta, case du plateau).
-  L'extension NE LIT PLUS LE SITE. Un `content-jjk.js` recopiait les fiches
+  L'extension NE LIT PLUS LE SITE. Un `content-mia.js` recopiait les fiches
   calculées du localStorage du site vers `browser.storage.local` toutes les
   trois secondes ; personne n'a jamais relu ce qu'il y déposait, et il coûtait
   au manifeste trois adresses d'hôte de plus à faire accepter par Mozilla.
@@ -75,34 +75,34 @@ Dédoublées dans `stable/` et `beta/` :
   copies sont déclarées au manifeste et injectées dans chaque frame ; celle qui
   n'est pas du mode s'arrête avant de poser le moindre écouteur.
 - `roll20-page.js` — pont d20, injecté dans le monde principal à la demande :
-  lit/écrit les Attributes `jjk_*` (écritures throttlées et silencieuses) ; dans
+  lit/écrit les Attributes `mia_*` (écritures throttlées et silencieuses) ; dans
   un popout, se rabat sur le Campaign de `window.opener`. Une seule copie est
   jamais chargée : l'adresse se choisit à l'exécution.
 - `creator-shell.js`, `panneau-shell.js` — chacune pointe son iframe vers un
   seul site. Une seule des deux est jamais chargée.
 
 Le reste vit CÔTÉ SITE (`docs/`) : `roll20-fiche.html` (page affichée),
-`javascripts/jjk-roll20-boot.js` (shims `__jjk*`, poignée de main
-load/hydrate/save), `javascripts/jjk-attr-map.js` (état <-> Attributes),
-`javascripts/jjk-creation.js` + `stylesheets/jjk-creation.css` (le créateur).
+`javascripts/mia-roll20-boot.js` (shims `__mia*`, poignée de main
+load/hydrate/save), `javascripts/mia-attr-map.js` (état <-> Attributes),
+`javascripts/mia-creation.js` + `stylesheets/mia-creation.css` (le créateur).
 
 ## Dépannage
 
 `browser.storage.local` accepte deux clés, à poser depuis la console de débogage
 de l'extension, qui remplacent l'adresse du site quel que soit le mode :
 
-- `jjk_sheet_url` — l'adresse de la fiche (ex. un mkdocs serve local) ;
-- `jjk_site_url` — la racine du site pour les panneaux.
+- `mia_sheet_url` — l'adresse de la fiche (ex. un mkdocs serve local) ;
+- `mia_site_url` — la racine du site pour les panneaux.
 
 Oubliées en place, elles peuvent faire afficher le site stable sous un onglet
-« Fiche JJK beta » : c'est assumé, ce sont des clés de dépannage.
+« Fiche MIA beta » : c'est assumé, ce sont des clés de dépannage.
 
 ## Construire
 
     python scripts/build_extension.py --verifie    # contrôles seuls, rien d'écrit
     python scripts/build_extension.py              # packe dans docs/download/
 
-Sorties : `docs/download/jjk-roll20-firefox.xpi` et `docs/download/jjk-roll20-chrome.zip`.
+Sorties : `docs/download/mia-roll20-firefox.xpi` et `docs/download/mia-roll20-chrome.zip`.
 Le manifest V2 (ce dossier) sert Firefox ; `extension/chrome/manifest.json` (V3)
 sert Chrome avec les mêmes fichiers. Tout fichier posé sous `extension/firefox/`
 part dans les DEUX paquets, déclaré ou non : les contrôles refusent les orphelins.

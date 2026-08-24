@@ -1,6 +1,6 @@
   // ---- mods : le code ajouté au personnage ----
   // Ce bloc dit ce que chaque mod fait (ou pourquoi il ne fait rien), donne de
-  // quoi trancher, et permet d'en écrire un. Le moteur (jjk-mods.js) juge,
+  // quoi trancher, et permet d'en écrire un. Le moteur (mia-mods.js) juge,
   // exécute et range les accords ; sans lui, ce bloc se contente de le dire.
   //
   // Aucun bac à sable : un mod autorisé tourne dans la page de la fiche avec
@@ -15,7 +15,7 @@
     refuse: "refusé sur ce navigateur"
   };
   function moteurMods() {
-    return (window.JjkMods && typeof window.JjkMods.execute === "function") ? window.JjkMods : null;
+    return (window.MiaMods && typeof window.MiaMods.execute === "function") ? window.MiaMods : null;
   }
   function bilanDeMod(id) {
     for (var i = 0; i < bilanMods.length; i++) if (bilanMods[i].id === id) return bilanMods[i];
@@ -46,7 +46,7 @@
   // arrière quand le suffixe de beta est apparu, et le formulaire refusait
   // alors le numéro qu'il proposait lui-même en filigrane.
   function versionLisible(v) {
-    var mm = window.JjkMods;
+    var mm = window.MiaMods;
     // Sans moteur, le bloc Mods n'affiche même pas ce formulaire : ce repli ne
     // sert qu'au moteur trop ancien pour exporter sa lecture. Laisser passer
     // vaut mieux que refuser au nom d'une règle qu'on ne connaît plus, et le
@@ -83,7 +83,7 @@
     pour.value = base.pour || "";
     corps.appendChild(fld("Nom", nom));
     corps.appendChild(fld("Identifiant", id));
-    corps.appendChild(fld("Code JavaScript (Jjk, ctx)", src));
+    corps.appendChild(fld("Code JavaScript (Mia, ctx)", src));
     corps.appendChild(fld("Pour la fiche, au moins (facultatif)", pour));
     dialogue(titre, corps, function () {
       var vid = idMod(id.value) || idMod(nom.value);

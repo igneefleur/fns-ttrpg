@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Protocole de publication d'une version de la fiche JJK.
+"""Protocole de publication d'une version de la fiche MIA.
 
     python scripts/release_fiche.py --petit --essai   # déroule tout, n'écrit rien
     python scripts/release_fiche.py --moyen
@@ -77,21 +77,21 @@ import assembler as A      # noqa: E402  (le collage des morceaux, avant tout le
 RACINE_DEFAUT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Les fichiers de la FICHE, les seuls dont ce script monte le ?v=. extra.css,
-# jjk.css et les scripts du site ne sont pas de la fiche : les monter à chaque
+# mia.css et les scripts du site ne sont pas de la fiche : les monter à chaque
 # publication ferait retélécharger tout le site pour rien.
 FICHIERS = [
-    "javascripts/jjk-attr-map.js",
-    "javascripts/jjk-roll20-boot.js",
-    "javascripts/jjk-migrations.js",
-    "javascripts/jjk-mods.js",
-    "javascripts/jjk-fiche.js",
-    "stylesheets/jjk-fiche.css",
-    "stylesheets/jjk-roll20.css",
+    "javascripts/mia-attr-map.js",
+    "javascripts/mia-roll20-boot.js",
+    "javascripts/mia-migrations.js",
+    "javascripts/mia-mods.js",
+    "javascripts/mia-fiche.js",
+    "stylesheets/mia-fiche.css",
+    "stylesheets/mia-roll20.css",
     # le plateau de Narration : servi par le même site, à travers la même
     # coquille signée, il doit monter avec les autres — un ?v= figé aurait
     # l'air de protéger sans rien protéger
-    "javascripts/jjk-narration.js",
-    "stylesheets/jjk-narration.css",
+    "javascripts/mia-narration.js",
+    "stylesheets/mia-narration.css",
 ]
 
 
@@ -109,7 +109,7 @@ SONDE_DESCENTE = r"""
 /* Le pas qui mène au schéma publié sait-il redescendre ?
  * On ne se contente pas de regarder si descendre() existe : le moteur l'exige
  * déjà au chargement. Ce qui nous intéresse est le pas qui existe et qui
- * REFUSE, en levant JjkMigr.IRREVERSIBLE. Celui-là condamne toute table restée
+ * REFUSE, en levant MiaMigr.IRREVERSIBLE. Celui-là condamne toute table restée
  * sur la version d'avant, et il ne se publie pas par distraction. */
 "use strict";
 var M = require(process.argv[2]);
@@ -132,9 +132,9 @@ console.log(JSON.stringify(out));
 
 def controle_descente(racine, schema, journal):
     """Rend (bloquant, texte) : bloquant = il faut --sans-descente."""
-    migrations = os.path.join(racine, "docs", "javascripts", "jjk-migrations.js")
+    migrations = os.path.join(racine, "docs", "javascripts", "mia-migrations.js")
     if not os.path.exists(migrations):
-        return (False, "jjk-migrations.js absent, contrôle sauté")
+        return (False, "mia-migrations.js absent, contrôle sauté")
     fd, sonde = tempfile.mkstemp(suffix=".js")
     os.close(fd)
     try:
@@ -418,7 +418,7 @@ def controle_numero(racine, release, schema, cran, impose, sans_montee):
 def main():
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
-    p = argparse.ArgumentParser(description="Publie une version de la fiche JJK.")
+    p = argparse.ArgumentParser(description="Publie une version de la fiche MIA.")
     p.add_argument("--racine", default=RACINE_DEFAUT)
     p.add_argument("--essai", action="store_true", help="déroule tout, n'écrit rien")
     p.add_argument("--v", type=int, default=None, help="numéro de ?v= imposé (clé de cache)")

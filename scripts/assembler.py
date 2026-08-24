@@ -5,7 +5,7 @@
     python scripts/assembler.py             # assemble et ecrit les fichiers servis
 
 POURQUOI CET OUTIL EXISTE
-docs/javascripts/jjk-fiche.js fait 6634 lignes dans une seule fonction anonyme.
+docs/javascripts/mia-fiche.js fait 6634 lignes dans une seule fonction anonyme.
 Deux personnes ne peuvent pas y travailler en meme temps sans se marcher dessus.
 On veut donc un fichier par module dans les sources, et une etape d'assemblage a
 la publication. Ce qui est SERVI et ce qui est ARCHIVE ne doit pas bouger d'un
@@ -29,14 +29,14 @@ regle « octet pour octet », et c'est le bon prix.
 LES TROIS PIEGES, ET COMMENT ILS SONT TRAITES
 
 1. LES FINS DE LIGNE. Le depot n'a pas de .gitattributes et core.autocrlf vaut
-   true : git stocke jjk-fiche.js en LF (« git ls-files --eol » dit i/lf) mais
+   true : git stocke mia-fiche.js en LF (« git ls-files --eol » dit i/lf) mais
    une extraction fraiche sous Windows le pose en CRLF dans la copie de travail,
    pendant que mkdocs.yml et le manifeste y sont deja en CRLF. Les deux formes
    passent « git status » sans un mot, puisque autocrlf renormalise a l'ajout.
    Sans precaution, la meme comparaison dirait donc vrai en CI et faux sur la
    machine de l'auteur. Ce n'est pas une crainte theorique : ce piege a DEJA
-   frappe ce depot, docs/fiche/v3.4.0/jjk-fiche.js est fige en CRLF quand les
-   huit autres archives sont en LF, et docs/fiche/v3.0.0/jjk-attr-map.js
+   frappe ce depot, docs/fiche/v3.4.0/mia-fiche.js est fige en CRLF quand les
+   huit autres archives sont en LF, et docs/fiche/v3.0.0/mia-attr-map.js
    pareillement. Deux archives portent la cicatrice.
    La parade : les morceaux sont ramenes en LF a la lecture, quelle que soit la
    forme sous laquelle ils ont ete extraits, puis le fichier produit recoit la
@@ -44,9 +44,9 @@ LES TROIS PIEGES, ET COMMENT ILS SONT TRAITES
    dependent plus de la machine.
 
 2. L'ENCODAGE ET LA MARQUE D'ORDRE DES OCTETS. Contrairement a ce qu'on croit
-   dans ce depot, docs/javascripts/jjk-fiche.js PORTE une marque d'ordre des
+   dans ce depot, docs/javascripts/mia-fiche.js PORTE une marque d'ordre des
    octets (EF BB BF), dans la copie de travail, dans git, et dans les neuf
-   archives. jjk-narration.js n'en a pas. Un assemblage qui l'oublierait
+   archives. mia-narration.js n'en a pas. Un assemblage qui l'oublierait
    differerait des l'octet 0 ; un assemblage qui l'ajouterait partout casserait
    la narration. Elle se DECLARE donc par fichier (bom = oui), et jamais ne se
    devine. Chaque morceau est par ailleurs debarrasse de la sienne : un editeur
@@ -65,7 +65,7 @@ deplacer une ligne.
 
     # tout ce qui suit un croisillon est un commentaire
 
-    [docs/javascripts/jjk-fiche.js]
+    [docs/javascripts/mia-fiche.js]
     bom = oui
     fin = lf
       src/fiche/000-entete.js
@@ -99,13 +99,13 @@ une garantie. Une variante rend la divergence IMPOSSIBLE au lieu de la detecter.
 
     [variante stable]
     partie  = stable
-    libelle = Fiche JJK
-    site    = jjk
+    libelle = Fiche MIA
+    site    = mia
 
     [variante beta]
     partie  = beta
-    libelle = Fiche JJK beta
-    site    = jjk-beta
+    libelle = Fiche MIA beta
+    site    = mia-beta
 
     [extension/firefox/@@partie@@/content-roll20.js]
     variantes = stable, beta
@@ -285,7 +285,7 @@ def charger_plan(chemin):
         if variante is not None:
             # Sous une variante, tout est « repere = valeur ». La valeur n'est
             # PAS mise en minuscules : c'est du texte qui part dans un fichier
-            # signe (« Fiche JJK beta »), pas un reglage.
+            # signe (« Fiche MIA beta »), pas un reglage.
             if "=" not in ligne:
                 raise Faute("plan, ligne %d : sous [variante %s], « %s » n'est pas "
                             "un « repere = valeur »" % (n, variante, ligne))

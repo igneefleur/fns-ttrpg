@@ -91,7 +91,7 @@
   // donc la fiche entière depuis le nouvel état.
   var rootEl = null;
   var appEl = null;      // le .perso-atelier monté : porte les jetons de couleur
-  // C'est aussi ce que rend ctx.reconstruire et Jjk.remonte. Appelé PENDANT un
+  // C'est aussi ce que rend ctx.reconstruire et Mia.remonte. Appelé PENDANT un
   // montage (un mod, un hook), il ne relance rien sur-le-champ : mount() note
   // la demande et l'honore une fois le montage courant fini.
   function remount() { if (rootEl) mount(rootEl); }

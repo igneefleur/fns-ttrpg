@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Vérification des numéros de version de la fiche JJK.
+"""Vérification des numéros de version de la fiche MIA.
 
     python scripts/verif_versions.py
     python scripts/verif_versions.py --archive-differee   # pendant un essai de publication
@@ -32,7 +32,7 @@ fiche d'un joueur :
      les mêmes données. C'est une note, pas une faute : le contrat n'interdit pas
      ce réglage, l'amorceur le sert pour de bon, et un outil qui refuserait de
      passer sur un réglage licite se ferait contourner tout entier.
-  5. les ?v= de mkdocs.yml et ceux de docs/jjk-manifeste.json. Le site charge le
+  5. les ?v= de mkdocs.yml et ceux de docs/mia-manifeste.json. Le site charge le
      bundle par mkdocs.yml, Roll20 le charge par le manifeste : deux numéros
      différents, et les deux mondes ne font pas tourner le même code. (Le ?v=
      est une clé de cache, jamais un numéro de version : les aligner sur X.Y.Z
@@ -40,7 +40,7 @@ fiche d'un joueur :
   6. une URL absolue dans le manifeste. L'amorceur gelé la refuse déjà
      (roll20-fiche.html, fonction sure()) et retombe alors sur son repli sans
      ?v= : la panne est muette, la fiche a l'air de marcher.
-  7. docs/javascripts/jjk-mods.js, oublié du manifeste ou d'une archive. Le
+  7. docs/javascripts/mia-mods.js, oublié du manifeste ou d'une archive. Le
      bundle vit très bien sans lui : les mods d'un personnage cessent alors
      d'exister, sans bandeau, sans panne et sans un mot. C'est la seule panne du
      lot qui ne laisse aucune trace, donc la seule qu'il faut attraper avant la
@@ -76,8 +76,8 @@ ATTRMAP = os.path.join(RACINE, V.ATTRMAP)
 DOCS = os.path.join(RACINE, "docs")
 # Ce fichier-ci ne porte pas le numéro mais décide jusqu'où une fiche sait
 # migrer : personne ne le regardait.
-MIGRATIONS = os.path.join(RACINE, "docs", "javascripts", "jjk-migrations.js")
-MODS = os.path.join(RACINE, "docs", "javascripts", "jjk-mods.js")
+MIGRATIONS = os.path.join(RACINE, "docs", "javascripts", "mia-migrations.js")
+MODS = os.path.join(RACINE, "docs", "javascripts", "mia-mods.js")
 # L'extension est une COQUILLE : son numéro avance seul, et le seul contrôle
 # qui la regarde ici est qu'il ne RECULE pas sous ce qui est déjà signé.
 EXT_MANIFESTS = [os.path.join(RACINE, "extension", "firefox", "manifest.json"),
@@ -90,7 +90,7 @@ notes = []
 
 # ---------------------------------------------------------------- le bundle
 def chaine_migrations(src):
-    """(socle, [schémas cibles des pas]) de jjk-migrations.js.
+    """(socle, [schémas cibles des pas]) de mia-migrations.js.
 
     Le motif ne peut attraper que les « schema: <entier> » des appels à
     ajouter() : partout ailleurs dans ce fichier, la clé porte une variable.
@@ -313,13 +313,13 @@ def main(archive_differee=False):
     if os.path.exists(ATTRMAP):
         ra = V.release_attrmap(V.lire_fichier(ATTRMAP))
         if ra is None:
-            notes.append("jjk-attr-map.js : pas de RELEASE_DEFAUT, contrôle sauté")
+            notes.append("mia-attr-map.js : pas de RELEASE_DEFAUT, contrôle sauté")
         elif isinstance(mrel, str) and ra != mrel:
-            fautes.append("jjk-attr-map.js : RELEASE_DEFAUT = %r, manifeste : release = %r "
-                          "(c'est ce numéro que la fiche écrit dans jjk_version quand le "
+            fautes.append("mia-attr-map.js : RELEASE_DEFAUT = %r, manifeste : release = %r "
+                          "(c'est ce numéro que la fiche écrit dans mia_version quand le "
                           "manifeste manque)" % (ra, mrel))
         else:
-            notes.append("jjk-attr-map.js : RELEASE_DEFAUT %s" % ra)
+            notes.append("mia-attr-map.js : RELEASE_DEFAUT %s" % ra)
 
     # 3. LE SCHÉMA, détaché du majeur. Plus rien ne le déduit du numéro : ses
     # deux seuls ancrages sont le manifeste (contrôlé plus haut) et la chaîne de
@@ -327,32 +327,32 @@ def main(archive_differee=False):
     if os.path.exists(MIGRATIONS):
         socle, cibles = chaine_migrations(V.lire_fichier(MIGRATIONS))
         if socle is None:
-            fautes.append("jjk-migrations.js : SCHEMA_BASE introuvable")
+            fautes.append("mia-migrations.js : SCHEMA_BASE introuvable")
         elif not cibles:
-            notes.append("jjk-migrations.js : aucun pas déclaré, contrôle sauté")
+            notes.append("mia-migrations.js : aucun pas déclaré, contrôle sauté")
         else:
             attendu = list(range(socle + 1, max(cibles) + 1))
             if cibles != attendu:
-                fautes.append("jjk-migrations.js : chaîne trouée ou hors d'ordre, pas déclarés %s, "
+                fautes.append("mia-migrations.js : chaîne trouée ou hors d'ordre, pas déclarés %s, "
                               "attendus %s" % (cibles, attendu))
             elif isinstance(msch, int) and max(cibles) != msch:
                 # une fiche en schéma msch qui rencontre un moteur qui s'arrête
                 # plus bas refuse de migrer : « schéma inconnu de cette version »
-                fautes.append("jjk-migrations.js : la chaîne monte jusqu'au schéma %d, "
+                fautes.append("mia-migrations.js : la chaîne monte jusqu'au schéma %d, "
                               "le manifeste annonce schema = %s" % (max(cibles), msch))
             else:
-                notes.append("jjk-migrations.js : chaîne %d -> %d" % (socle, max(cibles)))
-        # le moteur doit être SERVI, sinon window.JjkMigr n'existe nulle part
-        nomme = any(V.sans_v(u) == "javascripts/jjk-migrations.js"
+                notes.append("mia-migrations.js : chaîne %d -> %d" % (socle, max(cibles)))
+        # le moteur doit être SERVI, sinon window.MiaMigr n'existe nulle part
+        nomme = any(V.sans_v(u) == "javascripts/mia-migrations.js"
                     for _, u in urls_du_manifeste(man))
         if not nomme:
-            fautes.append("manifeste : jjk-migrations.js existe mais n'est nommé nulle part ; "
+            fautes.append("manifeste : mia-migrations.js existe mais n'est nommé nulle part ; "
                           "dans Roll20 le moteur de migration ne serait jamais chargé")
 
     # 4. LE MODE DE BLOCAGE. C'est ce réglage, et non le suffixe, qui décide
     # quand l'écran de version paraît. « release » n'est pas une faute : le
     # contrat ne l'a jamais banni et l'amorceur le sert pour de bon (voir
-    # blocage() dans jjk-roll20-boot.js). En faire un refus donnait un outil
+    # blocage() dans mia-roll20-boot.js). En faire un refus donnait un outil
     # qu'il fallait contourner pour publier un réglage licite, et un outil qu'on
     # contourne ne garde plus rien du tout. On le dit, on ne bloque pas.
     blocage = man.get("blocage")
@@ -434,21 +434,21 @@ def main(archive_differee=False):
     controle_extension()
 
     # 7. le moteur de MODS, même piège que les migrations, en pire : le bundle
-    # vit sans lui, donc rien ne casse. Une fiche ouverte sans jjk-mods.js
+    # vit sans lui, donc rien ne casse. Une fiche ouverte sans mia-mods.js
     # n'affiche ni bandeau ni panne : les mods du personnage cessent simplement
     # d'exister, sans un mot. C'est la panne la plus discrète du lot.
     if os.path.exists(MODS):
-        nomme = any(V.sans_v(u) == "javascripts/jjk-mods.js"
+        nomme = any(V.sans_v(u) == "javascripts/mia-mods.js"
                     for _, u in urls_du_manifeste(man))
         if not nomme:
-            fautes.append("manifeste : jjk-mods.js existe mais n'est nommé nulle part ; "
+            fautes.append("manifeste : mia-mods.js existe mais n'est nommé nulle part ; "
                           "dans Roll20 les mods d'un personnage seraient ignorés en silence")
         # et chaque ARCHIVE doit le porter : rouvrir un personnage dans sa
         # version d'origine ne doit pas lui faire perdre ses mods
         for rel, spec in sorted(brutes.items()):
             js = (spec or {}).get("js") or []
-            if not any(V.sans_v(u).endswith("/jjk-mods.js") for u in js):
-                fautes.append("archive %s : elle ne nomme pas jjk-mods.js ; un personnage "
+            if not any(V.sans_v(u).endswith("/mia-mods.js") for u in js):
+                fautes.append("archive %s : elle ne nomme pas mia-mods.js ; un personnage "
                               "qui porte des mods les perdrait en rouvrant cette version" % rel)
 
     # 5. ?v= : mkdocs.yml et le manifeste doivent dire la même chose
@@ -458,7 +458,7 @@ def main(archive_differee=False):
     for ou, u in urls:
         chemin = V.sans_v(u)
         if chemin not in mk:
-            # normal : l'amorce, jjk-roll20.css et les archives ne sont
+            # normal : l'amorce, mia-roll20.css et les archives ne sont
             # chargées QUE par le manifeste, le site ne les connaît pas
             continue
         communs += 1
@@ -496,7 +496,7 @@ def rendre():
 if __name__ == "__main__":
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
-    p = argparse.ArgumentParser(description="Vérifie les numéros de version de la fiche JJK.")
+    p = argparse.ArgumentParser(description="Vérifie les numéros de version de la fiche MIA.")
     p.add_argument("--archive-differee", action="store_true", dest="archive_differee",
                    help="l'archive de la ligne courante n'a pas encore été écrite "
                         "(essai de publication) : ne pas en faire une faute")

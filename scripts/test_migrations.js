@@ -1,4 +1,4 @@
-/* Épreuve du moteur de migration de la fiche JJK.
+/* Épreuve du moteur de migration de la fiche MIA.
  *
  *   node scripts/test_migrations.js
  *
@@ -13,9 +13,9 @@
 "use strict";
 
 var path = require("path");
-var JjkMigr;
+var MiaMigr;
 try {
-  JjkMigr = require(path.join(__dirname, "..", "docs", "javascripts", "jjk-migrations.js"));
+  MiaMigr = require(path.join(__dirname, "..", "docs", "javascripts", "mia-migrations.js"));
 } catch (e) {
   // un pas mal déclaré fait lever ajouter() au chargement : le dire en clair
   // vaut mieux qu'une trace de pile au milieu d'un journal de publication
@@ -143,42 +143,42 @@ var TEMOINS = {
 };
 
 // ------------------------------------------------- 1. forme de la chaîne
-var MAX = JjkMigr.max();
-ok(MAX >= JjkMigr.SCHEMA_BASE, "le registre doit connaître au moins le socle");
-ok(JjkMigr.verifier().length === 0, "chaîne incohérente : " + JjkMigr.verifier().join(" / "));
+var MAX = MiaMigr.max();
+ok(MAX >= MiaMigr.SCHEMA_BASE, "le registre doit connaître au moins le socle");
+ok(MiaMigr.verifier().length === 0, "chaîne incohérente : " + MiaMigr.verifier().join(" / "));
 
-for (var s = JjkMigr.SCHEMA_BASE + 1; s <= MAX; s++) {
-  var p = JjkMigr.pas(s);
-  ok(!!p, "pas " + s + " absent : la chaîne doit être contiguë depuis le schéma " + JjkMigr.SCHEMA_BASE);
+for (var s = MiaMigr.SCHEMA_BASE + 1; s <= MAX; s++) {
+  var p = MiaMigr.pas(s);
+  ok(!!p, "pas " + s + " absent : la chaîne doit être contiguë depuis le schéma " + MiaMigr.SCHEMA_BASE);
   ok(p && typeof p.monter === "function", "pas " + s + " : monter() doit être une fonction");
   ok(p && typeof p.descendre === "function", "pas " + s + " : descendre() doit être déclaré");
   ok(p && typeof p.notes === "string" && p.notes.length > 0, "pas " + s + " : notes exigées pour l'avertissement");
 }
-ok(JjkMigr.pas(JjkMigr.SCHEMA_BASE) === null, "le socle ne doit pas porter de pas");
+ok(MiaMigr.pas(MiaMigr.SCHEMA_BASE) === null, "le socle ne doit pas porter de pas");
 
 // --------------------------------------- 2. aller-retour sur chaque paire
 Object.keys(TEMOINS).forEach(function (nom) {
-  for (var de = JjkMigr.SCHEMA_BASE; de <= MAX; de++) {
-    for (var vers = JjkMigr.SCHEMA_BASE; vers <= MAX; vers++) {
+  for (var de = MiaMigr.SCHEMA_BASE; de <= MAX; de++) {
+    for (var vers = MiaMigr.SCHEMA_BASE; vers <= MAX; vers++) {
       var depart = copie(TEMOINS[nom]);
       depart.v = de;
       var fige = JSON.stringify(depart);
 
-      var aller = JjkMigr.appliquer(depart, de, vers);
+      var aller = MiaMigr.appliquer(depart, de, vers);
       ok(aller.ok, nom + " " + de + "->" + vers + " : montée refusée (" + (aller.erreur && aller.erreur.message) + ")");
       if (!aller.ok) continue;
       ok(aller.state.v === vers, nom + " " + de + "->" + vers + " : le schéma doit être estampillé");
       ok(JSON.stringify(depart) === fige, nom + " " + de + "->" + vers + " : l'état d'origine a été modifié");
 
-      var retour = JjkMigr.appliquer(aller.state, vers, de);
+      var retour = MiaMigr.appliquer(aller.state, vers, de);
       ok(retour.ok, nom + " " + vers + "->" + de + " : descente refusée");
       if (!retour.ok) continue;
 
       var a = sansQuand(retour.state), b = sansQuand(depart);
       ok(egal(a, b), nom + " " + de + "->" + vers + "->" + de + " : aller-retour non neutre — " + ecart(a, b));
 
-      var g = retour.state.grenier ? JjkMigr.octets(JSON.stringify(retour.state.grenier)) : 0;
-      ok(g <= JjkMigr.GRENIER_MAX, nom + " " + de + "->" + vers + " : grenier de " + g + " octets, plafond " + JjkMigr.GRENIER_MAX);
+      var g = retour.state.grenier ? MiaMigr.octets(JSON.stringify(retour.state.grenier)) : 0;
+      ok(g <= MiaMigr.GRENIER_MAX, nom + " " + de + "->" + vers + " : grenier de " + g + " octets, plafond " + MiaMigr.GRENIER_MAX);
     }
   }
 });
@@ -188,13 +188,13 @@ Object.keys(TEMOINS).forEach(function (nom) {
 // le même état, le même journal et les mêmes pertes. Un pas qui lirait
 // l'horloge, un compteur global ou Math.random tomberait ici.
 Object.keys(TEMOINS).forEach(function (nom) {
-  for (var s = JjkMigr.SCHEMA_BASE + 1; s <= MAX; s++) {
+  for (var s = MiaMigr.SCHEMA_BASE + 1; s <= MAX; s++) {
     [[s - 1, s], [s, s - 1]].forEach(function (paire) {
       var t = copie(TEMOINS[nom]);
       t.v = paire[0];
       var opts = { par: "test", quand: "2026-08-03T00:00:00.000Z" };
-      var r1 = JjkMigr.appliquer(t, paire[0], paire[1], opts);
-      var r2 = JjkMigr.appliquer(t, paire[0], paire[1], opts);
+      var r1 = MiaMigr.appliquer(t, paire[0], paire[1], opts);
+      var r2 = MiaMigr.appliquer(t, paire[0], paire[1], opts);
       ok(r1.ok && r2.ok, nom + " pas " + paire[0] + "->" + paire[1] + " : refusé");
       ok(egal(r1.state, r2.state), nom + " pas " + paire[0] + "->" + paire[1] + " : état non déterministe — " + ecart(r1.state, r2.state));
       ok(egal(r1.journal, r2.journal), nom + " pas " + paire[0] + "->" + paire[1] + " : journal non déterministe");
@@ -204,37 +204,43 @@ Object.keys(TEMOINS).forEach(function (nom) {
 });
 
 // ------------------------------------------------------------ 4. résumé
-var res = JjkMigr.resume(JjkMigr.SCHEMA_BASE, MAX);
-ok(Array.isArray(res) && res.length === MAX - JjkMigr.SCHEMA_BASE, "résumé : un bloc par pas traversé");
+var res = MiaMigr.resume(MiaMigr.SCHEMA_BASE, MAX);
+ok(Array.isArray(res) && res.length === MAX - MiaMigr.SCHEMA_BASE, "résumé : un bloc par pas traversé");
 ok(res && res.every(function (e) { return e.sens === "montee" && e.notes; }), "résumé : sens et notes attendus en montée");
-var resBas = JjkMigr.resume(MAX, JjkMigr.SCHEMA_BASE);
+var resBas = MiaMigr.resume(MAX, MiaMigr.SCHEMA_BASE);
 ok(resBas && resBas.every(function (e) { return e.sens === "descente"; }), "résumé : sens attendu en descente");
-ok(resBas && resBas[0] && resBas[0].schema === MAX, "résumé : la descente commence par le pas le plus haut");
-ok(JjkMigr.resume(1, MAX + 5) === null, "résumé : un trajet impossible rend null, jamais un tableau vide");
+// La chaîne publiée est VIDE tant qu'aucune forme d'état n'a changé (MIA y est
+// aujourd'hui) : resume(socle, socle) rend alors [], et non null, parce que le
+// trajet est possible — il ne traverse simplement aucun pas. L'assertion
+// « le premier bloc est le plus haut » n'a donc de sens qu'à partir d'un pas.
+if (MAX > MiaMigr.SCHEMA_BASE) {
+  ok(resBas && resBas[0] && resBas[0].schema === MAX, "résumé : la descente commence par le pas le plus haut");
+}
+ok(MiaMigr.resume(1, MAX + 5) === null, "résumé : un trajet impossible rend null, jamais un tableau vide");
 
 // -------------------------------------------- 5. journal de bord (vHist)
 (function () {
   var t = copie(TEMOINS["fiche vierge"]);
-  var r = JjkMigr.appliquer(t, 1, MAX);
+  var r = MiaMigr.appliquer(t, 1, MAX);
   ok(r.ok && r.state.vHist === undefined, "vHist : un aperçu (sans « par ») ne doit rien inscrire");
 
-  r = JjkMigr.appliquer(t, 1, MAX, { par: "fiche" });
+  r = MiaMigr.appliquer(t, 1, MAX, { par: "fiche" });
   ok(r.ok && r.state.vHist.length === 1, "vHist : une entrée par migration validée");
   ok(r.state.vHist[0].de === 1 && r.state.vHist[0].vers === MAX && r.state.vHist[0].par === "fiche", "vHist : de / vers / par attendus");
   ok(/^\d{4}-\d\d-\d\dT/.test(r.state.vHist[0].quand), "vHist : horodatage ISO attendu");
 
   var etat = copie(TEMOINS["fiche vierge"]);
   for (var i = 0; i < 15; i++) {
-    var rr = JjkMigr.appliquer(etat, etat.v || 1, etat.v === MAX ? 1 : MAX, { par: "boucle " + i });
+    var rr = MiaMigr.appliquer(etat, etat.v || 1, etat.v === MAX ? 1 : MAX, { par: "boucle " + i });
     etat = rr.state;
   }
-  ok(etat.vHist.length === JjkMigr.VHIST_MAX, "vHist : plafonné à " + JjkMigr.VHIST_MAX + " entrées (" + etat.vHist.length + ")");
+  ok(etat.vHist.length === MiaMigr.VHIST_MAX, "vHist : plafonné à " + MiaMigr.VHIST_MAX + " entrées (" + etat.vHist.length + ")");
   ok(etat.vHist[etat.vHist.length - 1].par === "boucle 14", "vHist : ce sont les DERNIÈRES entrées qui restent");
 })();
 
 // ------------------------------------- 6. grenier : aller-retour et plafond
 (function () {
-  var R = JjkMigr.creer();
+  var R = MiaMigr.creer();
   R.ajouter({
     schema: 2,
     titre: "Essai grenier",
@@ -259,7 +265,7 @@ ok(JjkMigr.resume(1, MAX + 5) === null, "résumé : un trajet impossible rend nu
 
   // le grenier ne doit pas servir de cave sans fond : au-delà du plafond, la
   // donnée est REFUSÉE et la perte déclarée, l'état reste publiable.
-  var R2 = JjkMigr.creer();
+  var R2 = MiaMigr.creer();
   R2.ajouter({
     schema: 2, titre: "Essai plafond", notes: "Essai.",
     monter: function () {},
@@ -276,14 +282,14 @@ ok(JjkMigr.resume(1, MAX + 5) === null, "résumé : un trajet impossible rend nu
   ok(r2.pertes.length === 1 && /grenier plein/.test(r2.pertes[0].pourquoi), "grenier plein : une perte déclarée");
   ok(r2.alerte === true, "grenier : alerte levée au-delà de " + R2.GRENIER_ALERTE + " octets");
   ok(/grenier chargé/.test(JSON.stringify(r2.journal)), "grenier : le franchissement des " + R2.GRENIER_ALERTE + " octets est journalisé");
-  ok(JjkMigr.octets(JSON.stringify(r2.state.grenier)) <= JjkMigr.GRENIER_MAX, "grenier : plafond de 64 Ko tenu");
+  ok(MiaMigr.octets(JSON.stringify(r2.state.grenier)) <= MiaMigr.GRENIER_MAX, "grenier : plafond de 64 Ko tenu");
 
-  ok(JjkMigr.octets("é") === 2 && JjkMigr.octets("a") === 1 && JjkMigr.octets("😀") === 4, "octets : mesure UTF-8, pas UTF-16");
+  ok(MiaMigr.octets("é") === 2 && MiaMigr.octets("a") === 1 && MiaMigr.octets("😀") === 4, "octets : mesure UTF-8, pas UTF-16");
 })();
 
 // ----------------------------------- 7. échec d'un pas : rien ne bouge
 (function () {
-  var R = JjkMigr.creer();
+  var R = MiaMigr.creer();
   R.ajouter({
     schema: 2, titre: "Réversible", notes: "Essai.",
     monter: function (st) { st.marque = 1; },
@@ -307,7 +313,7 @@ ok(JjkMigr.resume(1, MAX + 5) === null, "résumé : un trajet impossible rend nu
   ok(bas.state === haut.state, "descente impossible : appliquer rend l'état d'origine");
 
   // un pas qui casse au MILIEU de la chaîne ne doit rien laisser à moitié fait
-  var R3 = JjkMigr.creer();
+  var R3 = MiaMigr.creer();
   R3.ajouter({ schema: 2, titre: "A", notes: "n", monter: function (st) { st.a = 1; }, descendre: function (st) { delete st.a; } });
   R3.ajouter({ schema: 3, titre: "B", notes: "n", monter: function () { throw new Error("boum"); }, descendre: function () {} });
   var t3 = { v: 1 };
@@ -317,13 +323,13 @@ ok(JjkMigr.resume(1, MAX + 5) === null, "résumé : un trajet impossible rend nu
 
 // ------------------------------- 8. refus d'une chaîne trouée et des abus
 (function () {
-  var R = JjkMigr.creer();
+  var R = MiaMigr.creer();
   R.ajouter({ schema: 3, titre: "Orpheline", notes: "n", monter: function () {}, descendre: function () {} });
   ok(R.verifier().length === 1, "chaîne trouée : verifier() doit le dire");
   ok(!R.appliquer({ v: 1 }, 1, 3).ok, "chaîne trouée : appliquer doit refuser de partir");
   ok(R.resume(1, 3) === null, "chaîne trouée : resume doit rendre null");
 
-  var R2 = JjkMigr.creer();
+  var R2 = MiaMigr.creer();
   var leve = function (f) { try { f(); return false; } catch (e) { return true; } };
   ok(leve(function () { R2.ajouter({ schema: 2, titre: "T", notes: "n", monter: function () {} }); }), "ajouter : descendre() manquant doit lever");
   ok(leve(function () { R2.ajouter({ schema: 2, titre: "T", notes: "n", descendre: function () {} }); }), "ajouter : monter() manquant doit lever");
@@ -332,10 +338,13 @@ ok(JjkMigr.resume(1, MAX + 5) === null, "résumé : un trajet impossible rend nu
   R2.ajouter({ schema: 2, titre: "T", notes: "n", monter: function () {}, descendre: function () {} });
   ok(leve(function () { R2.ajouter({ schema: 2, titre: "T", notes: "n", monter: function () {}, descendre: function () {} }); }), "ajouter : deux pas pour le même schéma doivent lever");
 
-  ok(!JjkMigr.appliquer(null, 1, MAX).ok, "appliquer : un état absent est refusé");
-  ok(!JjkMigr.appliquer({ v: 1 }, 1, MAX + 4).ok, "appliquer : un schéma inconnu est refusé");
-  ok(!JjkMigr.appliquer({ v: 1 }, "x", 2).ok, "appliquer : un schéma illisible est refusé");
-  var memeSchema = JjkMigr.appliquer({ v: 2, name: "A" }, 2, 2);
+  ok(!MiaMigr.appliquer(null, 1, MAX).ok, "appliquer : un état absent est refusé");
+  ok(!MiaMigr.appliquer({ v: 1 }, 1, MAX + 4).ok, "appliquer : un schéma inconnu est refusé");
+  ok(!MiaMigr.appliquer({ v: 1 }, "x", 2).ok, "appliquer : un schéma illisible est refusé");
+  // MAX, et non « 2 » en dur : sur une chaîne vide le schéma 2 n'existe pas et
+  // appliquer() le refuse comme inconnu, ce qui ferait échouer une épreuve qui
+  // ne parle pas de ça. MAX est toujours un schéma valide, chaîne vide comprise.
+  var memeSchema = MiaMigr.appliquer({ v: MAX, name: "A" }, MAX, MAX);
   ok(memeSchema.ok && memeSchema.journal.length === 0, "appliquer : de == vers ne joue aucun pas");
 })();
 
@@ -347,4 +356,4 @@ if (echecs.length) {
   process.exit(1);
 }
 console.log("MIGRATIONS : " + faits + " vérifications, aucune faute (" + duree + " ms)");
-console.log("  chaîne " + JjkMigr.SCHEMA_BASE + " -> " + MAX + ", " + Object.keys(TEMOINS).length + " états témoins, aller-retour sur toutes les paires");
+console.log("  chaîne " + MiaMigr.SCHEMA_BASE + " -> " + MAX + ", " + Object.keys(TEMOINS).length + " états témoins, aller-retour sur toutes les paires");

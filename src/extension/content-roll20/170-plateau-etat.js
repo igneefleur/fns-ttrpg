@@ -1,14 +1,14 @@
   function panMonte(etat) {
-    if (document.getElementById("jjk-panneau")) return;
+    if (document.getElementById("mia-panneau")) return;
     panEtat = panBorne(etat);
-    panBoite = poseNuit(el("div", "jjk-panneau"));
-    panBoite.id = "jjk-panneau";
+    panBoite = poseNuit(el("div", "mia-panneau"));
+    panBoite.id = "mia-panneau";
 
-    var tete = el("div", "jjk-panneau-tete");
-    panTitre = el("span", "jjk-panneau-titre", "Narration");
+    var tete = el("div", "mia-panneau-tete");
+    panTitre = el("span", "mia-panneau-titre", "Narration");
     tete.appendChild(panTitre);
     // Deux boutons, et aucune phrase d'explication sous eux : l'infobulle suffit.
-    panBtnAncre = el("button", "jjk-panneau-btn", "⇲");
+    panBtnAncre = el("button", "mia-panneau-btn", "⇲");
     panBtnAncre.type = "button";
     panBtnAncre.addEventListener("pointerdown", function (ev) { ev.stopPropagation(); });
     panBtnAncre.addEventListener("click", function (ev) {
@@ -16,7 +16,7 @@
       panDetache(!panEtat.ancre);
     });
     tete.appendChild(panBtnAncre);
-    panBtn = el("button", "jjk-panneau-btn", "–");
+    panBtn = el("button", "mia-panneau-btn", "–");
     panBtn.type = "button";
     panBtn.addEventListener("pointerdown", function (ev) { ev.stopPropagation(); });
     panBtn.addEventListener("click", function (ev) {
@@ -27,10 +27,10 @@
     tete.addEventListener("pointerdown", function (ev) { panGeste(ev, true); });
     panBoite.appendChild(tete);
 
-    panCorps = el("div", "jjk-panneau-corps");
+    panCorps = el("div", "mia-panneau-corps");
     panBoite.appendChild(panCorps);
 
-    var grip = el("div", "jjk-panneau-grip");
+    var grip = el("div", "mia-panneau-grip");
     grip.title = "Redimensionner";
     grip.addEventListener("pointerdown", function (ev) { panGeste(ev, false); });
     panBoite.appendChild(grip);
@@ -97,7 +97,7 @@
     try {
       browser.storage.local.get([PAN_CLE, PAN_ACTIF, PAN_ACTIF_BIS]).then(function (r) {
         // l'interrupteur du popup : une partie Roll20 qui n'a rien à voir avec
-        // JJK ne doit pas se voir imposer une étiquette à demeure
+        // MIA ne doit pas se voir imposer une étiquette à demeure
         if (panEteint(r)) return;
         var e = (r && r[PAN_CLE]) || {};
         panPrepare({

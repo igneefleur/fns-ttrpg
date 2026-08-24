@@ -1,4 +1,4 @@
-/* Coquille de l'onglet « Fiche JJK » : pointe l'iframe vers la fiche SERVIE
+/* Coquille de l'onglet « Fiche MIA » : pointe l'iframe vers la fiche SERVIE
  * PAR LE SITE (roll20-fiche.html) en lui passant le charId reçu dans le hash
  * (#c=<id>, posé par content-roll20.js). Tout le fonctionnement (créateur,
  * correspondance état <-> Attributes, amorce) vit côté site : l'extension n'a
@@ -15,13 +15,13 @@
  * TOUTE CORRECTION DE SÛRETÉ DOIT ÊTRE APPLIQUÉE AUX DEUX COPIES : un correctif
  * posé d'un seul côté laisse le trou ouvert de l'autre, et rien ne le signalera.
  *
- * Dépannage : browser.storage.local.jjk_sheet_url remplace l'URL du site
- * (ex. http://localhost:8000/fns-ttrpg/jjk/roll20-fiche.html pour tester
+ * Dépannage : browser.storage.local.mia_sheet_url remplace l'URL du site
+ * (ex. http://localhost:8000/fns-ttrpg/mia/roll20-fiche.html pour tester
  * un mkdocs serve local, mkdocs montant le site sous le chemin de site_url,
- * /jjk/ compris), à poser depuis la console de débogage de l'extension. Cette
+ * /mia/ compris), à poser depuis la console de débogage de l'extension. Cette
  * clé reste COMMUNE aux deux parties, et c'est assumé : elle épingle la coquille
  * effectivement chargée, quelle qu'elle soit. Oubliée en place, elle peut donc
- * faire afficher le site stable sous un onglet « Fiche JJK beta ». */
+ * faire afficher le site stable sous un onglet « Fiche MIA beta ». */
 if (typeof browser === "undefined") { var browser = chrome; }
 (function () {
   "use strict";

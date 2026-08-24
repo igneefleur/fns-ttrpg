@@ -15,10 +15,10 @@
     return fld(labelTxt, t, "w");
   }
   // Le champ accepte TOUTE expression Roll20, pas seulement « 5D8 » : dés,
-  // références d'attribut @{Perso|jjk_body}, requêtes ?{…}, arithmétique.
+  // références d'attribut @{Perso|mia_body}, requêtes ?{…}, arithmétique.
   // L'expression part telle quelle dans le jet en ligne. Elle n'est PAS
   // réécrite : l'ancienne extraction n'en gardait que les premiers dés et
-  // jetait le reste en silence (« 5d6+@{Zhalian|jjk_body}/10 » devenait
+  // jetait le reste en silence (« 5d6+@{Zhalian|mia_body}/10 » devenait
   // « 5d6 »).
   function diceOf(txt) {
     return String(txt == null ? "" : txt).replace(/\s+/g, " ").trim() || null;

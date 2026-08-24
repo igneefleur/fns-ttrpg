@@ -31,16 +31,16 @@
 
 [variante stable]
 partie  = stable
-libelle = Fiche JJK
-site    = jjk
+libelle = Fiche MIA
+site    = mia
 
 [variante beta]
 partie  = beta
-libelle = Fiche JJK beta
-site    = jjk-beta
+libelle = Fiche MIA beta
+site    = mia-beta
 
 
-# Le script de contenu : l'onglet « Fiche JJK », le pont vers le monde principal,
+# Le script de contenu : l'onglet « Fiche MIA », le pont vers le monde principal,
 # le plateau de Narration et sa barre. C'est le seul fichier dont les DEUX copies
 # sont déclarées au manifeste et injectées dans chaque frame — d'où la garde, en
 # fin de fichier, par laquelle la copie qui n'est pas du mode s'éteint.
@@ -125,7 +125,7 @@ variantes = stable, beta
 # entêtes et onglets), puis un fichier par MODULE, rangé sous le nom de
 # l'onglet où il paraît : c'est la table des matières que le gros fichier
 # portait dans sa tête, et qu'on peut maintenant lire d'un coup d'oeil.
-[docs/javascripts/jjk-fiche.js]
+[docs/javascripts/mia-fiche.js]
 bom = oui
 fin = lf
   src/fiche/socle/010-ouverture.js
@@ -197,7 +197,7 @@ fin = lf
 # LE PLATEAU DE NARRATION. Découpé par rôle, faute d'onglets : le dialogue
 # avec le pont, l'état, les places et les jetons, les fonds, les réglages,
 # les écrans d'état.
-[docs/javascripts/jjk-narration.js]
+[docs/javascripts/mia-narration.js]
 bom = non
 fin = lf
   src/narration/000-entete.js

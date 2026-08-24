@@ -89,20 +89,20 @@
     // étiquette — sinon il n'y aurait plus AUCUN moyen de le rouvrir.
     var efface = !panEtat.ouvert && barreOK;
     panBoite.style.display = efface ? "none" : "";
-    panBoite.classList.toggle("jjk-panneau-ancre", ancre);
+    panBoite.classList.toggle("mia-panneau-ancre", ancre);
     // Le coin bas-gauche ne s'arrondit que s'il se VOIT : quand la barre descend
     // jusqu'au bas de la fenêtre, ce coin est hors champ et un arrondi y
     // dessinerait une encoche dans le vide. Le CSS ne peut pas mesurer la barre,
     // c'est donc ici qu'on tranche.
     var rb = ancre ? barreRect() : null;
-    panBoite.classList.toggle("jjk-panneau-bas-plein",
+    panBoite.classList.toggle("mia-panneau-bas-plein",
       !!(rb && rb.bottom >= (window.innerHeight || 800) - 4));
-    panBoite.classList.toggle("jjk-panneau-replie", !panEtat.ouvert && !efface);
+    panBoite.classList.toggle("mia-panneau-replie", !panEtat.ouvert && !efface);
     // La géométrie de passage (réglages ouverts) l'emporte sur tout : ancré ou
     // flottant, on veut le dialogue grand et au centre. Elle disparaît d'elle
     // même à la fermeture, sans avoir rien écrit.
     var g = panGeoGrande ? panGeoGrande : (ancre ? panGeoAncree() : panEtat);
-    if (panGeoGrande) { panBoite.classList.remove("jjk-panneau-ancre"); }
+    if (panGeoGrande) { panBoite.classList.remove("mia-panneau-ancre"); }
     panBoite.style.left = g.x + "px";
     panBoite.style.top = g.y + "px";
     // replié, le panneau se réduit à son étiquette : une barre de 380 px de

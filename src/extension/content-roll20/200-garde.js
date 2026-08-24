@@ -17,7 +17,7 @@
   // Ici les deux copies lisent la même chose au même instant : éteintes, elles
   // se taisent toutes les deux, et il n'y a pas de course à arbitrer.
   //
-  // jjkOff ABSENT VAUT ALLUMÉ, et la comparaison est stricte : une extension
+  // miaOff ABSENT VAUT ALLUMÉ, et la comparaison est stricte : une extension
   // fraîchement installée, dont le stockage est vide, doit fonctionner.
   //
   // Un rejet du stockage désigne explicitement le mode stable, allumé. Sans ce
@@ -30,7 +30,7 @@
   // CE QU'ÉTEINDRE FAIT, ET CE QU'IL NE PEUT PAS FAIRE. Le popup doit pouvoir
   // le dire au joueur sans mentir, alors voici l'inventaire exact.
   //   Sur les pages Roll20 OUVERTES ENSUITE, rien ne se réveille : pas d'onglet
-  //   « Fiche JJK », pas de pane, pas de plateau, pas de bouton dans la barre
+  //   « Fiche MIA », pas de pane, pas de plateau, pas de bouton dans la barre
   //   d'outils, pas de pont d20 (il n'est injecté que sur need-bridge, qui ne
   //   part plus), aucun écouteur de message, aucune interception du lien
   //   « Prendre », aucune écriture dans le stockage. La frame reste exactement
@@ -46,7 +46,7 @@
   //       repose aussi. Le retirer serait faisable, mais ce serait un démontage
   //       de plus dans une interface Vue qu'on ne contrôle pas, pour gagner une
   //       demi-seconde sur un rechargement de partie ;
-  //     - le pane .tab-pane.jjkfiche ne doit surtout pas être retiré. Le système
+  //     - le pane .tab-pane.miafiche ne doit surtout pas être retiré. Le système
   //       d'onglets de Roll20 garde un renvoi vers lui ; le supprimer d'un
   //       dialogue déjà lié empêche la fiche du personnage de s'ouvrir, la
   //       nôtre comme les siennes ;
@@ -58,11 +58,11 @@
   //   pas Roll20 à moitié démonté.
   function garde() {
     try {
-      browser.storage.local.get(["jjkOff", "jjkBeta", "jjkNuit"]).then(
+      browser.storage.local.get(["miaOff", "miaBeta", "miaNuit"]).then(
         function (r) {
-          if (r && r.jjkOff === true) return;   // éteinte : aucune des deux copies ne bouge
-          NUIT_ORDRE = normNuit(r && r.jjkNuit);
-          if ((r && r.jjkBeta ? "beta" : "stable") === MODE) reclame();
+          if (r && r.miaOff === true) return;   // éteinte : aucune des deux copies ne bouge
+          NUIT_ORDRE = normNuit(r && r.miaNuit);
+          if ((r && r.miaBeta ? "beta" : "stable") === MODE) reclame();
         },
         function () { if (MODE === "stable") reclame(); }
       );
@@ -72,7 +72,7 @@
   }
   // Verrou de frame. Les deux copies partagent le monde isolé, donc cet objet
   // window (un expando de script de contenu reste invisible de la page, comme le
-  // window.__jjkBridge du pont l'est du monde isolé). Si les deux se réveillaient
+  // window.__miaBridge du pont l'est du monde isolé). Si les deux se réveillaient
   // ensemble (stockage incohérent, extension rechargée, bascule pendant la
   // lecture), la première arrivée prend la frame et la seconde se tait. Sans ce
   // verrou, deux écouteurs « message » dans la frame du haut enverraient chaque
@@ -81,12 +81,12 @@
   //
   // Deuxième ligne de défense, gratuite et volontairement conservée : les
   // marqueurs de DOM portent les MÊMES noms dans les deux copies (classe
-  // .jjk-tab, id #jjk-panneau, attribut data-jjk-bridge), si bien que placeTabs
+  // .mia-tab, id #mia-panneau, attribut data-mia-bridge), si bien que placeTabs
   // et panMonte abandonnent tout seuls devant le travail de l'autre copie.
   function reclame() {
     try {
-      if (window.__jjkRoll20) return;   // une copie tient déjà cette frame
-      window.__jjkRoll20 = MODE;
+      if (window.__miaRoll20) return;   // une copie tient déjà cette frame
+      window.__miaRoll20 = MODE;
     } catch (e) {}
     demarre();
   }

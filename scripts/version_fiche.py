@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Le NUMÉRO de version du projet JJK : sa forme, sa montée, ses trois porteurs.
+"""Le NUMÉRO de version du projet MIA : sa forme, sa montée, ses trois porteurs.
 
     python scripts/version_fiche.py                  # dit où en est le numéro
     python scripts/version_fiche.py --petit          # du CSS, une erreur mineure
@@ -71,16 +71,16 @@ CRANS = ("majeur", "moyen", "petit")
 # quand le manifeste n'a pas répondu.
 #
 # LE NUMÉRO S'ÉCRIT DANS LA SOURCE, PAS DANS LE FICHIER ENGENDRÉ. Depuis que le
-# bundle est assemblé de morceaux, écrire dans docs/javascripts/jjk-fiche.js ne
+# bundle est assemblé de morceaux, écrire dans docs/javascripts/mia-fiche.js ne
 # tient qu'un instant : le prochain assemblage le refabrique à partir des
 # morceaux et RAMÈNE l'ancien numéro, sans que rien ne le signale. On écrit donc
 # dans le morceau qui porte RELEASE, et l'assemblage propage. Le fichier engendré
 # reste NOMMÉ ici, parce que c'est encore lui qu'on LIT (il est ce qui tourne) et
 # lui que les contrôles comparent au manifeste.
 BUNDLE_SRC = os.path.join("src", "fiche", "socle", "020-version.js")
-BUNDLE = os.path.join("docs", "javascripts", "jjk-fiche.js")
-ATTRMAP = os.path.join("docs", "javascripts", "jjk-attr-map.js")
-MANIFESTE = os.path.join("docs", "jjk-manifeste.json")
+BUNDLE = os.path.join("docs", "javascripts", "mia-fiche.js")
+ATTRMAP = os.path.join("docs", "javascripts", "mia-attr-map.js")
+MANIFESTE = os.path.join("docs", "mia-manifeste.json")
 MKDOCS = "mkdocs.yml"
 
 _MOTIF = re.compile(r"^(\d+)\.(\d+)\.(\d+)(b?)$")
@@ -299,7 +299,7 @@ def fin_de_ligne(octets):
 # ---------------------------------------------------- les ?v= (clés de cache)
 # LE ?v= N'EST PAS UN NUMÉRO DE VERSION, et il vit pourtant ici : ce fichier est
 # le seul endroit qui sache déjà où sont mkdocs.yml et le manifeste, et la FORME
-# d'une ligne « - javascripts/jjk-fiche.js?v=25 » était écrite deux fois, mot pour
+# d'une ligne « - javascripts/mia-fiche.js?v=25 » était écrite deux fois, mot pour
 # mot, dans verif_versions.py et dans release_fiche.py. L'un contrôle que les deux
 # côtés disent le même ?v=, l'autre les monte : le jour où l'un des deux apprend
 # une forme de ligne que l'autre ignore, le contrôle passe sur ce que la montée
@@ -320,7 +320,7 @@ def serial_v(url):
 
 
 def serials_mkdocs(src):
-    """{ 'javascripts/jjk-fiche.js': '25' } d'après extra_css et extra_javascript.
+    """{ 'javascripts/mia-fiche.js': '25' } d'après extra_css et extra_javascript.
 
     La valeur est None pour un fichier nommé SANS ?v= : « pas de clé de cache »
     et « fichier absent du site » sont deux réponses différentes, et l'appelant
@@ -349,9 +349,9 @@ def constantes_bundle(src):
 
 
 def release_attrmap(src):
-    """RELEASE_DEFAUT de jjk-attr-map.js, ou None.
+    """RELEASE_DEFAUT de mia-attr-map.js, ou None.
 
-    C'est le numéro que la fiche inscrit dans le `max` de jjk_version quand le
+    C'est le numéro que la fiche inscrit dans le `max` de mia_version quand le
     manifeste n'est pas là (node, amorceur de secours). Laissé en arrière, il
     fait dire à des personnages Roll20 qu'ils ont été écrits par une version
     qui n'existe plus.
@@ -432,7 +432,7 @@ def est_beta(racine):
     m = re.search(r"^\s*site_url\s*:\s*(\S+)", src, re.M)
     if not m:
         return None
-    return m.group(1).strip("'\"").rstrip("/").endswith("/jjk-beta")
+    return m.group(1).strip("'\"").rstrip("/").endswith("/mia-beta")
 
 
 def porteurs(racine):
@@ -474,7 +474,7 @@ def plancher(racine):
     """Le plus haut numéro que porte ce dépôt : (Version, [porteurs qui le portent]).
 
     LE BUNDLE SEUL NE FAIT PAS UN PLANCHER, et c'est le piège qui a coûté un
-    numéro republié. Un « git checkout <ancien> -- docs/javascripts/jjk-fiche.js »
+    numéro republié. Un « git checkout <ancien> -- docs/javascripts/mia-fiche.js »
     (une bissection, une reprise de correctif) ramène le bundle à 3.6.1b sans un
     mot, pendant que le manifeste, lui, annonce toujours le 3.6.4b SORTI. Monter
     d'un cran depuis le bundle rendait alors 3.6.2b : un numéro déjà servi, sous
@@ -532,7 +532,7 @@ def poser(racine, texte, essai=False):
     touches, absents = [], []
 
     # LA SOURCE D'ABORD, ET LE FICHIER ENGENDRÉ ENSUITE. Écrire seulement dans
-    # docs/javascripts/jjk-fiche.js ne tiendrait pas : le prochain assemblage le
+    # docs/javascripts/mia-fiche.js ne tiendrait pas : le prochain assemblage le
     # refabrique depuis les morceaux et ramène l'ancien numéro, en silence. On
     # pose donc dans le morceau qui porte RELEASE ; le fichier engendré est mis à
     # jour dans la foulée pour que tout ce qui le LIT (le plancher, les contrôles,
@@ -662,7 +662,7 @@ def main():
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
     p = argparse.ArgumentParser(
-        description="Dit et monte le numéro de version du projet JJK.")
+        description="Dit et monte le numéro de version du projet MIA.")
     p.add_argument("--racine",
                    default=os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     p.add_argument("--essai", action="store_true", help="dit tout, n'écrit rien")

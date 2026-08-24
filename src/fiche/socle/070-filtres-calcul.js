@@ -103,7 +103,7 @@
     horsMontage.push(e);
   }
   // Rejoué au début de chaque montage, dans l'ordre : le contrat promet qu'un
-  // Jjk.filtre ou un Jjk.enregistre lancé depuis la console vaut « pour le
+  // Mia.filtre ou un Mia.enregistre lancé depuis la console vaut « pour le
   // montage suivant » — et pour tous ceux d'après, rien d'autre ne le rejoue.
   //
   // Mais seulement ce qui a encore un ayant droit. Ce qui appartient à un MOD ne
@@ -190,11 +190,11 @@
     var texte = "filtre " + nom + " retiré : " + msg;
     if (window.console && window.console.warn)
       window.console.warn("[mod:" + f.prop + "] " + texte);
-    // le propriétaire porte l'erreur : c'est ce que Jjk.etat(id) rend, et ce
+    // le propriétaire porte l'erreur : c'est ce que Mia.etat(id) rend, et ce
     // que les listes de mods et de modules affichent
     etatModule(f.prop).erreur = texte;
   }
-  // Jjk.filtre : le propriétaire est celui du moment. ctx.filtreCalcul, lui,
+  // Mia.filtre : le propriétaire est celui du moment. ctx.filtreCalcul, lui,
   // fige l'id de son module à la construction du contexte (un module qui pose
   // un filtre depuis un bouton, longtemps après son build, reste chez lui).
   function filtreCalcul(nom, fn) { ajouteFiltre(nom, fn, proprietaireCourant); }

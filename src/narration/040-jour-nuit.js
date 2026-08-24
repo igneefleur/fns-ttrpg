@@ -2,19 +2,19 @@
   // ---------- jour / nuit ----------
   // Même règle de priorité que la fiche, et dans le même ordre : le choix
   // mémorisé de ce joueur, puis l'indice n=1/0 du hash (posé par la coquille
-  // d'après le réglage jjkNuit de l'extension, et ABSENT quand ce réglage vaut
+  // d'après le réglage miaNuit de l'extension, et ABSENT quand ce réglage vaut
   // « auto »), puis le thème du navigateur. Jusqu'ici personne ne pouvait
   // CHOISIR la nuit du plateau : il subissait le hash.
   //
-  // La clé est propre au plateau. La fiche a la sienne (« jjk-r20-night ») et
+  // La clé est propre au plateau. La fiche a la sienne (« mia-r20-night ») et
   // les deux pages sont servies par la même origine : partager la clé ferait
   // qu'éclairer le plateau repeindrait la fiche du même joueur.
   //
-  // Et surtout, cette préférence ne va PAS dans jjk_narr_conf : c'est un
+  // Et surtout, cette préférence ne va PAS dans mia_narr_conf : c'est un
   // réglage d'affichage, propre à chacun. Dans la configuration partagée, le
   // choix d'un joueur repeindrait l'écran de toute la table, et chaque bascule
   // coûterait une écriture Roll20.
-  var NUIT_CLE = "jjk-r20-night-plateau";
+  var NUIT_CLE = "mia-r20-night-plateau";
   var NUIT_INDICE = (function () {
     var h = location.hash || "";
     if (/[#&]n=1/.test(h)) return true;

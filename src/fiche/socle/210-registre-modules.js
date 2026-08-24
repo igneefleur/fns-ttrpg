@@ -123,16 +123,16 @@
     return !state || !state.modActifs || state.modActifs[id] !== false;
   }
   // Couper un module le retire de la fiche sans rien effacer : son coffre et
-  // ses données restent, il ne s'affiche plus. C'est le corps de Jjk.active,
+  // ses données restent, il ne s'affiche plus. C'est le corps de Mia.active,
   // NOMMÉ ici parce que le bloc Options « Modules » s'en sert aussi : son
-  // interrupteur ne doit pas passer par un window.Jjk qu'un mod peut remplacer.
+  // interrupteur ne doit pas passer par un window.Mia qu'un mod peut remplacer.
   function activeModule(id, oui) {
     if (!state) return;                  // avant le chargement : rien à couper
     if (!state.modActifs) state.modActifs = {};
     // Le bloc des réglages ne se coupe pas, et le REFUS EST ICI, dans l'écriture,
-    // pas seulement dans le montage. Sinon un mod qui appelle Jjk.active laisse
+    // pas seulement dans le montage. Sinon un mod qui appelle Mia.active laisse
     // « modules: false » dans le personnage pour toujours : le bloc s'affiche
-    // (le montage l'exempte) pendant que Jjk.actif("modules") répond faux, et le
+    // (le montage l'exempte) pendant que Mia.actif("modules") répond faux, et le
     // personnage transmis emporte une incohérence que rien n'efface.
     if (String(id) === MODULE_REGLAGES) { delete state.modActifs[id]; save(); return; }
     if (oui === false) state.modActifs[id] = false;
@@ -154,7 +154,7 @@
     ordreModules().forEach(function (m) {
       // Le bloc des réglages ne se coupe pas. Sa puce est déjà absente de la
       // liste, mais un mod (ou une ligne de console) qui appelle
-      // Jjk.active("modules", false) écrit le refus DANS LE PERSONNAGE : le
+      // Mia.active("modules", false) écrit le refus DANS LE PERSONNAGE : le
       // bloc ne se monterait plus, et avec lui disparaîtrait le seul endroit
       // d'où l'on rallume un module ou d'où l'on rend la disposition d'origine.
       // Le blocage voyagerait même avec le personnage.

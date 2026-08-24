@@ -1,5 +1,5 @@
   // ---------- le moteur de mods ----------
-  // jjk-mods.js est FACULTATIF DE NAISSANCE, exactement comme jjk-migrations.js :
+  // mia-mods.js est FACULTATIF DE NAISSANCE, exactement comme mia-migrations.js :
   // sans lui la fiche s'ouvre, simplement sans mods. Il ne touche ni au DOM ni à
   // l'état, il reçoit la liste des mods et rend un bilan.
   //
@@ -36,15 +36,15 @@
   function executeMods() {
     bilanMods = [];
     if (!state || !state.mods || !state.mods.length) return;
-    if (!window.JjkMods || typeof window.JjkMods.execute !== "function") return;
+    if (!window.MiaMods || typeof window.MiaMods.execute !== "function") return;
     var avant = proprietaireCourant;
     // Un mod qui pose un filtre le fait pendant que le moteur l'exécute : le
     // propriétaire du moment lui revient. Le moteur peut nommer le mod qu'il
-    // lance (Jjk.__proprietaire) ; s'il ne le fait pas, faute de mieux, tout ce
+    // lance (Mia.__proprietaire) ; s'il ne le fait pas, faute de mieux, tout ce
     // qui s'enregistre là appartient à « mod ».
     proprietaireCourant = PROP_MOD;
     try {
-      var b = window.JjkMods.execute(state.mods, window.Jjk, { version: RELEASE, schema: SCHEMA });
+      var b = window.MiaMods.execute(state.mods, window.Mia, { version: RELEASE, schema: SCHEMA });
       if (Array.isArray(b)) bilanMods = b;
       // Le bilan se range et se tait : une faute de syntaxe dans un mod ne
       // laissait RIEN dans la console du navigateur, alors que la page Mods dit

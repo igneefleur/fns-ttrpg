@@ -36,7 +36,7 @@
       pv: null, narration: 3,
       armes: [], armures: [], inventaire: "",
       // inventaire illustré : groupes, objets, et les réglages d'affichage du
-      // module (le poids de JJK est un nombre SANS unité)
+      // module (le poids de MIA est un nombre SANS unité)
       inv: {
         texte: [], groupes: ["Sur soi"], objets: [],
         // Un drapeau « compté » par groupe, dans un tableau PARALLÈLE et non
@@ -76,7 +76,7 @@
       // disposition des modules ({ ordre: [], place: {} }, éparse : seul ce que
       // le joueur a déplacé y figure) et mods du personnage (leur CODE voyage
       // avec lui). Deux clés racine de plus, mêmes raisons, même absence de
-      // montée de schéma ; le blank() de jjk-attr-map.js les porte déjà, sans
+      // montée de schéma ; le blank() de mia-attr-map.js les porte déjà, sans
       // quoi elles se perdraient sur le chemin de repli des Attributes Roll20.
       modules: {}, mods: [],
       de: DE_DEFAUT

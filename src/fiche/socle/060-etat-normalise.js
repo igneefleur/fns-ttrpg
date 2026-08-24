@@ -352,15 +352,15 @@
       }
       s.modules.place = place;
     }
-    // Mods du personnage. Le moteur (jjk-mods.js) fait foi quand il est là :
+    // Mods du personnage. Le moteur (mia-mods.js) fait foi quand il est là :
     // c'est lui qui connaît la forme d'un mod. Sans lui, la fiche s'en tient au
     // strict nécessaire, mais elle ne s'en dispense JAMAIS : un état venu
     // d'ailleurs (import, Attributes d'un autre joueur) ne doit pas entrer sans
     // contrôle, et un mod sans id ni code ne pourrait ni tourner ni se nommer.
     if (!Array.isArray(s.mods)) s.mods = [];
-    if (window.JjkMods && typeof window.JjkMods.normalise === "function") {
+    if (window.MiaMods && typeof window.MiaMods.normalise === "function") {
       try {
-        var normes = window.JjkMods.normalise(s.mods);
+        var normes = window.MiaMods.normalise(s.mods);
         if (Array.isArray(normes)) s.mods = normes;
       } catch (e) {}
     }

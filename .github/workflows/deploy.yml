@@ -2,11 +2,31 @@ name: website deployment
 on:
   push:
     branches:
-      - jjk
+      - mia
   workflow_dispatch: {}   # relance manuelle (ex. quota AMO retombé)
 permissions:
   contents: write
-# Les cinq branches écrivent sur la même branche gh-pages, chacune dans son
+# LA SIGNATURE MOZILLA EST COUPÉE TANT QUE L'ADD-ON MIA N'EXISTE PAS CHEZ EUX.
+#
+# ATTENTION, c'est ICI que ça compte le plus : sur cette branche la signature est
+# AUTOMATIQUE, sans case à cocher. Le moindre envoi la déclencherait.
+#
+# L'extension MIA porte un identifiant NEUF, mia-roll20@igneefleur. Or
+# sign_extension.create_version() commence par un POST sur /addons/addon/,
+# c'est-à-dire une CRÉATION : lancé avec un id que Mozilla ne connaît pas, il
+# RÉUSSIT et fait naître un second add-on unlisted sur le compte, en mordant sur
+# un quota déjà serré. Ce n'est pas une erreur qu'on rattrape : l'add-on est créé.
+#
+# Le pas de signature est donc gardé par une variable de dépôt, et les deux pas
+# qui en dépendent ne partent plus puisque le paquet ne bouge pas. POUR LE
+# RÉTABLIR, le jour où l'add-on MIA existe vraiment sur addons.mozilla.org :
+#   1. créer l'add-on chez Mozilla avec l'id mia-roll20@igneefleur ;
+#   2. dans Settings > Secrets and variables > Actions > Variables du dépôt,
+#      poser AMO_MIA = pret ;
+#   3. vérifier que les secrets AMO_JWT_ISSUER et AMO_JWT_SECRET sont là.
+# Rien d'autre à toucher : les pas ci-dessous sont intacts.
+#
+# Les neuf branches écrivent sur la même branche gh-pages, chacune dans son
 # dossier : un groupe de concurrence commun (partagé entre workflows du dépôt)
 # sérialise leurs déploiements, et force: false fait rebaser l'action (avec
 # réessais) au lieu de force-pusser, pour qu'un run ne puisse pas écraser le
@@ -49,13 +69,14 @@ jobs:
       # Version montée toute seule, .xpi signé + updates.json republiés : les
       # Firefox installés se mettent à jour sans rien faire. Clés = secrets du dépôt.
       - name: Extension (re-signature automatique si changement)
+        if: ${{ vars.AMO_MIA == 'pret' }}   # voir l'en-tête : l'add-on MIA n'existe pas encore chez Mozilla
         env:
           AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
           AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
         run: python scripts/ci_extension.py
       # CE PAS DIT SI LE PAQUET A BOUGÉ, et c'est lui qui commande les deux
       # suivants. Il remplace un `if: inputs.signer` qui ne pouvait pas marcher
-      # ICI : cette entrée n'existe que sur le workflow de jjk-beta, où la
+      # ICI : cette entrée n'existe que sur le workflow de mia-beta, où la
       # signature est manuelle. Sur cette branche-ci, la signature est
       # AUTOMATIQUE, `inputs.signer` était donc toujours vide, le rebuild
       # toujours sauté — et le site repartait avec les téléchargements d'AVANT la
@@ -99,33 +120,42 @@ jobs:
             # échoue sur les archives et la version signée reste orpheline
             git push || (git pull --rebase -X theirs && git push)
           fi
-      # Un seul site GitHub Pages (branche gh-pages), CINQ emplacements :
+      # Un seul site GitHub Pages (branche gh-pages), NEUF emplacements :
       #   main     -> racine     https://igneefleur.github.io/fns-ttrpg/          (le hub)
       #   hxh      -> hxh/       https://igneefleur.github.io/fns-ttrpg/hxh/
       #   hxh-beta -> hxh-beta/  https://igneefleur.github.io/fns-ttrpg/hxh-beta/
-      #   jjk      -> jjk/       https://igneefleur.github.io/fns-ttrpg/jjk/      (CE workflow)
+      #   jjk      -> jjk/       https://igneefleur.github.io/fns-ttrpg/jjk/
       #   jjk-beta -> jjk-beta/  https://igneefleur.github.io/fns-ttrpg/jjk-beta/
+      #   owd      -> owd/       https://igneefleur.github.io/fns-ttrpg/owd/
+      #   owd-beta -> owd-beta/  https://igneefleur.github.io/fns-ttrpg/owd-beta/
+      #   mia      -> mia/       https://igneefleur.github.io/fns-ttrpg/mia/      (CE workflow)
+      #   mia-beta -> mia-beta/  https://igneefleur.github.io/fns-ttrpg/mia-beta/
       #
-      # LE DOSSIER jjk/ NE SE RENOMME PAS, quoi qu'il arrive à la branche. Ce
-      # chemin est cuit dans le paquet SIGNÉ que les joueurs ont installé —
-      # adresse de la fiche et adresse des mises à jour — et rien ne redirige :
-      # le changer leur coûterait une réinstallation manuelle à chacun, plus une
-      # signature Mozilla. Le nom de la branche, lui, est interne et se renomme
-      # sans conséquence ; c'est d'ailleurs ce qui a été fait deux fois le même
-      # jour. Ne pas déduire de leur nom identique qu'ils sont liés.
+      # LE DOSSIER mia/ NE SE RENOMMERA PAS, quoi qu'il arrive à la branche. Ce
+      # chemin part dans le paquet SIGNÉ — adresse de la fiche et adresse des
+      # mises à jour — et rien ne redirige : le changer après la première
+      # signature coûterait une réinstallation manuelle à chaque joueur, plus une
+      # signature Mozilla. La règle est écrite maintenant, avant qu'il y ait un
+      # joueur, parce qu'après il sera trop tard : c'est exactement ce qui a figé
+      # le dossier jjk/. Le nom de la BRANCHE, lui, est interne et se renomme sans
+      # conséquence ; ne pas déduire de leur nom identique qu'ils sont liés.
       #
-      # Avec target-folder, « clean » ne nettoie QUE le dossier cible : les quatre
+      # Avec target-folder, « clean » ne nettoie QUE le dossier cible : les huit
       # autres emplacements sont épargnés par ce déploiement.
-      - name: Déploiement JJK officiel (jjk -> jjk/)
+      #
+      # RAPPEL : le déploiement de main, seul à écrire à la RACINE, doit nommer
+      # mia et mia-beta dans son clean-exclude, sans quoi le prochain push du hub
+      # efface les deux sites MIA sans qu'aucun run n'échoue.
+      - name: Déploiement MIA officiel (mia -> mia/)
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: site
           branch: gh-pages
-          target-folder: jjk
+          target-folder: mia
           clean: true
           force: false
       # L'EXTENSION EST UNIQUE : ELLE SE PUBLIE AUX DEUX ADRESSES. Symétrique de
-      # ce que fait le workflow de jjk-beta, et pour la même raison : le paquet
+      # ce que fait le workflow de mia-beta, et pour la même raison : le paquet
       # porte les deux moitiés, la case du popup choisit, il n'y a donc pas une
       # extension par branche. Sans cela, l'adresse qui n'a pas déployé en
       # dernier sert un paquet périmé.
@@ -136,12 +166,12 @@ jobs:
       # automatique ne commite que sur celle-ci. Recopier à chaque push faisait de
       # « qui a déployé en dernier » l'arbitre du paquet servi, ce qui a déjà fait
       # reculer une adresse de plusieurs versions sans qu'aucun run n'échoue.
-      - name: L'extension signée va aussi sur jjk-beta (download/ seul)
+      - name: L'extension signée va aussi sur mia-beta (download/ seul)
         if: steps.paquet.outputs.change == 'true'
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: site/download
           branch: gh-pages
-          target-folder: jjk-beta/download
+          target-folder: mia-beta/download
           clean: false
           force: false

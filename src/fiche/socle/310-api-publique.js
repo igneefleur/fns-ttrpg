@@ -1,13 +1,13 @@
   // La fiche expose UN objet public : c'est par là qu'un mod remplace un
   // module, change la disposition ou détourne un calcul. Elle n'exécute rien
-  // d'elle-même. window.__jjkModules est l'ANCIEN nom du MÊME objet : ce qui a
+  // d'elle-même. window.__miaModules est l'ANCIEN nom du MÊME objet : ce qui a
   // été écrit avant la 3.0.0 continue de marcher tel quel.
-  window.Jjk = {
+  window.Mia = {
     // Les deux annoncent ce qu'ils ont toujours annoncé, mais ils ne se
     // déduisent plus l'un de l'autre : version porte le suffixe de beta le
     // cas échéant, schema est un entier libre. Un mod qui tirerait le schéma
     // du majeur de la version se tromperait à la première divergence, et le
-    // moteur de mods offre JjkMods.lireVersion pour ne pas avoir à découper
+    // moteur de mods offre MiaMods.lireVersion pour ne pas avoir à découper
     // le numéro soi-même.
     version: RELEASE,
     schema: SCHEMA,
@@ -73,5 +73,5 @@
       return out;
     }
   };
-  window.__jjkModules = window.Jjk;
+  window.__miaModules = window.Mia;
 

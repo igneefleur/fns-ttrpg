@@ -35,7 +35,7 @@
       v: V_CONF,
       seq: 0,                             // compteur d'identifiants de jetons
       // « img » est l'URL du fond de la place, celle qu'on tape à la main. Le
-      // fichier TÉLÉVERSÉ, lui, n'est pas ici : il vit dans jjk_narr_bg_<id>.
+      // fichier TÉLÉVERSÉ, lui, n'est pas ici : il vit dans mia_narr_bg_<id>.
       mj: { nom: "MJ", img: "" },
       joueurs: [],                        // [{ id, nom, img }]
       donne: { mj: 3, joueur: 3 }         // jetons créés à la distribution

@@ -6,16 +6,16 @@
     return e;
   }
   // URL du jeu de données. Une ARCHIVE de version embarque son propre
-  // jjk-creation.json, gelé à sa date : l'amorce le désigne par
-  // window.__jjkDataUrl avant d'injecter le bundle. Sans lui, un bundle
+  // mia-creation.json, gelé à sa date : l'amorce le désigne par
+  // window.__miaDataUrl avant d'injecter le bundle. Sans lui, un bundle
   // d'archive lirait les règles d'AUJOURD'HUI, et un renommage de compétence
   // suffirait à trahir la version qu'on croit rejouer.
   // Une archive est gelée par LIGNE X.Y, à la première release de la ligne :
   // les règles qu'elle embarque sont donc celles de ce jour-là, et un
   // correctif ultérieur qui les retoucherait ne serait archivé nulle part.
   function dataUrl() {
-    var u = typeof window !== "undefined" ? window.__jjkDataUrl : null;
-    return u || (siteBase() + "jjk-creation.json");
+    var u = typeof window !== "undefined" ? window.__miaDataUrl : null;
+    return u || (siteBase() + "mia-creation.json");
   }
   function siteBase() {
     var l = document.querySelector('link[href*="assets/"], script[src*="assets/"]');

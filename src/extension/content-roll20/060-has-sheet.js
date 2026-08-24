@@ -7,7 +7,7 @@
     window.addEventListener("message", function (ev) {
       try {
         var d = ev.data;
-        if (!d || d.ns !== "jjk") return;   // ignore tout ce qui n'est pas à nous
+        if (!d || d.ns !== "mia") return;   // ignore tout ce qui n'est pas à nous
         if (d.type === "has-sheet-result" && pendingHas[d.charId]) {
           // exists:null = perso injoignable POUR L'INSTANT (Campaign pas prêt) :
           // on laisse les relances retenter ; le délai final rendra null au pire.
@@ -19,7 +19,7 @@
   }
   // Demande au page-script d20 de s'injecter (l'injection ne se fait QUE là, sur
   // interaction — jamais au chargement de l'éditeur, pour ne pas gêner Roll20).
-  function requestBridge() { try { window.top.postMessage({ ns: "jjk", type: "need-bridge" }, "*"); } catch (e) {} }
+  function requestBridge() { try { window.top.postMessage({ ns: "mia", type: "need-bridge" }, "*"); } catch (e) {} }
   // interroge has-sheet, avec relances (le page-script vient peut-être d'être injecté)
   function queryHasSheet(charId, cb) {
     ensureHasListener();
@@ -29,7 +29,7 @@
     (function send() {
       if (!pendingHas[charId]) return;   // déjà répondu
       tries++;
-      try { window.top.postMessage({ ns: "jjk", type: "has-sheet", charId: charId }, "*"); } catch (e) {}
+      try { window.top.postMessage({ ns: "mia", type: "has-sheet", charId: charId }, "*"); } catch (e) {}
       if (tries < 5) setTimeout(send, 700);
       // dernier essai : laisser sa réponse arriver avant de conclure null
       else setTimeout(function () {

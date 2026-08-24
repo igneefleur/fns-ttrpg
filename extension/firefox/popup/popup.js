@@ -6,15 +6,15 @@
  * ne saurait laquelle croire.
  *
  * CE QU'IL COMMANDE, dans l'ordre où on les rencontre :
- *   jjkOff             l'interrupteur général      (absent = allumée)
- *   jjkNuit            "auto" | "jour" | "nuit"    (absent = auto)
- *   jjkPanneauActif    le plateau de Narration     (absent = allumé)
- *   jjkBeta            la moitié beta              (absent = stable)
+ *   miaOff             l'interrupteur général      (absent = allumée)
+ *   miaNuit            "auto" | "jour" | "nuit"    (absent = auto)
+ *   miaPanneauActif    le plateau de Narration     (absent = allumé)
+ *   miaBeta            la moitié beta              (absent = stable)
  *
  * LE MOT EST « BETA » DANS TOUT CE QU'UN JOUEUR LIT — le réglage et la pastille
  * comme les lignes du pied, qui le disaient déjà. « Mode de chantier » traînait
  * ailleurs alors que le mot était arrêté. Rien d'autre n'a bougé : la clé
- * jjkBeta est déjà posée chez les joueurs et lue par les deux copies de
+ * miaBeta est déjà posée chez les joueurs et lue par les deux copies de
  * content-roll20.js, et l'identifiant p-chantier ne se lit que d'ici.
  *
  * CE QU'IL NE FAIT PLUS : repeindre quoi que ce soit selon le mode. L'ancien
@@ -37,38 +37,38 @@ if (typeof browser === "undefined") { var browser = chrome; }
 (function () {
   "use strict";
 
-  var CLE_OFF = "jjkOff";
-  var CLE_NUIT = "jjkNuit";
-  var CLE_BETA = "jjkBeta";
+  var CLE_OFF = "miaOff";
+  var CLE_NUIT = "miaNuit";
+  var CLE_BETA = "miaBeta";
 
   // DEUX NOMS POUR UN SEUL INTERRUPTEUR DE PLATEAU, ET C'EST DÉLIBÉRÉ.
   //
   // La clé que les deux copies de content-roll20.js lisent réellement s'appelle
-  // jjkPanneauActif (PAN_ACTIF, ligne 555). Le contrat de la refonte, lui,
-  // annonce « jjkPanneau ». Les deux moitiés de ce chantier s'écrivent en
+  // miaPanneauActif (PAN_ACTIF, ligne 555). Le contrat de la refonte, lui,
+  // annonce « miaPanneau ». Les deux moitiés de ce chantier s'écrivent en
   // parallèle et ne se parlent pas : écrire l'un des deux noms au hasard, c'est
   // une chance sur deux que l'interrupteur du plateau ne fasse plus rien, et
   // personne ne s'en apercevrait avant une vraie partie, qui ne se joue pas ici.
   //
-  // Le panneau écrit donc LES DEUX, et lit jjkPanneauActif en premier parce que
+  // Le panneau écrit donc LES DEUX, et lit miaPanneauActif en premier parce que
   // c'est la valeur déjà posée chez les joueurs. Le jour où le nom retenu sera
   // tranché, la ligne de trop se retire en une minute ; l'inverse aurait coûté
   // une signature, qui se compte à la dizaine par jour.
   //
   // Aucune collision avec la géométrie : celle-ci est rangée sous
-  // « jjkPanneau:roll20-narration.html », et storage.local.get("jjkPanneau") ne
+  // « miaPanneau:roll20-narration.html », et storage.local.get("miaPanneau") ne
   // rend que la clé exacte, jamais ce qui commence pareil.
-  var CLE_PAN = "jjkPanneauActif";
-  var CLE_PAN_BIS = "jjkPanneau";
-  var CLE_PAN_GEO = "jjkPanneau:roll20-narration.html";
+  var CLE_PAN = "miaPanneauActif";
+  var CLE_PAN_BIS = "miaPanneau";
+  var CLE_PAN_GEO = "miaPanneau:roll20-narration.html";
 
-  var CLE_DEP = ["jjk_sheet_url", "jjk_site_url"];
+  var CLE_DEP = ["mia_sheet_url", "mia_site_url"];
 
   // L'écho de la nuit, rangé dans le localStorage de CETTE page (et non dans
   // browser.storage, qui est asynchrone). Il ne sert qu'à peindre le premier
-  // rendu ; jjkNuit reste la seule autorité, et les deux se recalent dès que le
+  // rendu ; miaNuit reste la seule autorité, et les deux se recalent dès que le
   // stockage a répondu.
-  var CLE_ECHO = "jjkNuitEcho";
+  var CLE_ECHO = "miaNuitEcho";
 
   // ==========================================================================
   // 1. LA NUIT, AVANT TOUT LE RESTE
@@ -121,12 +121,12 @@ if (typeof browser === "undefined") { var browser = chrome; }
   var demandees = false; // les manifestes de site ont-ils déjà été demandés
 
   var REGLES = {
-    stable: "https://igneefleur.github.io/fns-ttrpg/jjk/content/regles/",
-    beta: "https://igneefleur.github.io/fns-ttrpg/jjk-beta/content/regles/"
+    stable: "https://igneefleur.github.io/fns-ttrpg/mia/content/regles/",
+    beta: "https://igneefleur.github.io/fns-ttrpg/mia-beta/content/regles/"
   };
   var PAGE_EXT = {
-    stable: "https://igneefleur.github.io/fns-ttrpg/jjk/extension/",
-    beta: "https://igneefleur.github.io/fns-ttrpg/jjk-beta/extension/"
+    stable: "https://igneefleur.github.io/fns-ttrpg/mia/extension/",
+    beta: "https://igneefleur.github.io/fns-ttrpg/mia-beta/extension/"
   };
   // LES NUMÉROS DES FICHES SE LISENT À LA SOURCE, jamais en dur.
   //
@@ -141,8 +141,8 @@ if (typeof browser === "undefined") { var browser = chrome; }
   // origine passe. Élargir les permissions aurait fait réexaminer l'extension et
   // redemandé leur accord aux joueurs, pour deux nombres d'affichage.
   var MANIFESTES = {
-    stable: "https://igneefleur.github.io/fns-ttrpg/jjk/jjk-manifeste.json",
-    beta: "https://igneefleur.github.io/fns-ttrpg/jjk-beta/jjk-manifeste.json"
+    stable: "https://igneefleur.github.io/fns-ttrpg/mia/mia-manifeste.json",
+    beta: "https://igneefleur.github.io/fns-ttrpg/mia-beta/mia-manifeste.json"
   };
 
   // ==========================================================================
@@ -224,7 +224,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
       if (!etat.depannage.length) { elDepannage.hidden = true; return; }
       elDepannage.hidden = false;
       // Nommer la clé, et dire ce qu'elle force. Oubliée en place, elle fait
-      // afficher le site stable sous un onglet « Fiche JJK beta », et rien nulle
+      // afficher le site stable sous un onglet « Fiche MIA beta », et rien nulle
       // part ne l'annonce : ce panneau est le seul endroit qui puisse le dire
       // sans ouvrir une console.
       var mots = [], i;
@@ -394,7 +394,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
     elOff.addEventListener("click", function () {
       etat.off = !etat.off;
       touche[CLE_OFF] = true;
-      pose({ jjkOff: etat.off });
+      pose({ miaOff: etat.off });
       rend();
       litFiches();          // rallumée : les numéros du site peuvent être lus
       proposeRechargement();
@@ -408,7 +408,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
       touche[CLE_NUIT] = true;
       peint(v);             // le panneau s'habille avant même l'écriture
       ecritEcho(v);         // pour que la prochaine ouverture n'ait pas d'éclair
-      pose({ jjkNuit: v });
+      pose({ miaNuit: v });
       rendNuit();
       // Le panneau s'habille seul, mais la fiche et le plateau d'une partie déjà
       // ouverte gardent la couleur qu'ils avaient : leur nuit voyage dans
@@ -468,7 +468,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
     elBeta.addEventListener("click", function () {
       etat.beta = !etat.beta;
       touche[CLE_BETA] = true;
-      pose({ jjkBeta: etat.beta });
+      pose({ miaBeta: etat.beta });
       // « ACTUELLE », ET NON « EN SERVICE ». Ce que l'interrupteur dit, c'est la
       // fiche qui sera chargée au prochain affichage d'une page Roll20 : les
       // onglets déjà ouverts gardent la moitié qu'ils ont montée, puisque les
@@ -512,7 +512,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
         etat.nuit = (r[CLE_NUIT] === "jour" || r[CLE_NUIT] === "nuit") ? r[CLE_NUIT] : "auto";
       }
       // Absent = allumé, des deux côtés : une partie Roll20 qui n'a rien à voir
-      // avec JJK doit pouvoir se débarrasser du plateau sans désinstaller, mais
+      // avec MIA doit pouvoir se débarrasser du plateau sans désinstaller, mais
       // ne doit pas avoir à l'allumer pour l'avoir.
       if (!touche[CLE_PAN]) {
         etat.panneau = !(r[CLE_PAN] === false || r[CLE_PAN_BIS] === false);

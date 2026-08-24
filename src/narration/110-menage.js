@@ -1,6 +1,6 @@
 
   // CE QUE LE PONT A RETIRÉ DE « NARRATION ». Une fois par chargement, il en
-  // enlève tout attribut « jjk_ » qui n'est pas « jjk_narr_ » — la trace d'une
+  // enlève tout attribut « mia_ » qui n'est pas « mia_narr_ » — la trace d'une
   // fiche de personnage ouverte un jour sur ce personnage-là (mesuré chez
   // l'auteur : 82 attributs pour 18 attendus) — et fusionne les homonymes. Il
   // rapporte { trouves, etrangers, doublons, retires } avec la lecture suivante.

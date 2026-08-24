@@ -16,7 +16,7 @@
   // prudence de principe, c'est la seule conduite tenable ici : le pont est
   // SIGNÉ et le plateau ne l'est pas, ils ne sont donc jamais déployés le même
   // jour — la moitié stable du pont part chez Mozilla maintenant, la page de
-  // /jjk/ arrivera quand elle arrivera. Un pont qui allégerait de son propre
+  // /mia/ arrivera quand elle arrivera. Un pont qui allégerait de son propre
   // chef ferait disparaître les fonds d'un plateau plus ancien, qui reconstruit
   // ses images à chaque lecture et prendrait l'absence pour un retrait. Il
   // faudrait alors une signature pour réparer. Dans l'autre sens, un plateau

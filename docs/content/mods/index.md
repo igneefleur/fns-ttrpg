@@ -33,10 +33,10 @@ personnage, que la fiche exécute à chaque ouverture. Rien ne se compile et rie
 ne s'installe sur la machine ; le code est du texte, rangé dans le personnage,
 exécuté tel quel.
 
-Cette page décrit l'interface publique de la fiche 3 : l'objet `Jjk`, le
+Cette page décrit l'interface publique de la fiche 3 : l'objet `Mia`, le
 contexte reçu par un module, les filtres de calcul, et les deux blocs de
 l'onglet Options qui les gouvernent. Le 3 est le premier nombre de la release,
-celui que rend `Jjk.version` ; il ne se confond pas avec le schéma de l'état,
+celui que rend `Mia.version` ; il ne se confond pas avec le schéma de l'état,
 qui compte la forme des données et monte de son côté.
 
 <div class="mods-alerte" markdown>
@@ -86,7 +86,7 @@ Un mod ne tourne pas tant qu'il n'a pas été autorisé sur ce navigateur.
 | Règle | Détail |
 | --- | --- |
 | Empreinte | chaque mod porte une empreinte calculée sur son identifiant et son code. Deux mods identiques ont la même empreinte. |
-| Registre des avis | les réponses tiennent dans le stockage local du navigateur, sous la clé `jjk.mods.avis`. Elles ne partent jamais dans le personnage ni dans les Attributes : autoriser un mod chez soi n'autorise personne d'autre. |
+| Registre des avis | les réponses tiennent dans le stockage local du navigateur, sous la clé `mia.mods.avis`. Elles ne partent jamais dans le personnage ni dans les Attributes : autoriser un mod chez soi n'autorise personne d'autre. |
 | Sans avis, rien ne tourne | un mod dont l'empreinte n'a pas de réponse est en attente, et son code n'est pas exécuté. |
 | Un mod modifié redemande | changer une ligne de code change l'empreinte : la question est reposée à tous ceux qui n'ont pas écrit cette version. |
 | Ce qu'on écrit soi-même | un mod tapé dans le bloc Mods est autorisé d'office, puisqu'il vient d'être écrit. Le modifier vaut de même, dès que le code change ; ouvrir l'éditeur et le refermer sans rien toucher ne décide de rien. |
@@ -109,7 +109,7 @@ tous les cas : un mod en attente ne bloque rien.
 | recent | sa release minimale dépasse celle de la fiche, ou son schéma minimal dépasse le sien. |
 | panne | son code a levé une erreur ; le message est affiché. Le mod n'est pas coupé pour autant, le montage suivant le retente. |
 
-`Jjk.mods()` rend la même chose au code : une copie du bilan du dernier passage
+`Mia.mods()` rend la même chose au code : une copie du bilan du dernier passage
 du moteur, avec l'identifiant, le nom, l'interrupteur, l'état et l'empreinte de
 chaque mod. Elle est vide tant que le moteur n'a pas tourné.
 
@@ -146,7 +146,7 @@ Options, puis « Mods », puis « Ajouter un mod ». Coller ceci, valider :
 <div class="mods-code" markdown>
 
 ```
-Jjk.enregistre({
+Mia.enregistre({
   id: "mon-premier-mod",
   titre: "Bonjour",
   onglet: "fiche",
@@ -166,14 +166,14 @@ Quatre règles tiennent dans cet exemple :
 
 | Règle | Détail |
 | --- | --- |
-| Le code d'un mod reçoit `Jjk` | c'est l'objet public de la fiche. Il reçoit aussi un `ctx` à lui, qui porte `id` et `nom`, les deux renseignements sur le mod en cours, puis `version` et `schema`, les deux numéros de la fiche qui l'exécute. À ne pas confondre avec le `ctx` de `build`, qui est celui d'un module. |
+| Le code d'un mod reçoit `Mia` | c'est l'objet public de la fiche. Il reçoit aussi un `ctx` à lui, qui porte `id` et `nom`, les deux renseignements sur le mod en cours, puis `version` et `schema`, les deux numéros de la fiche qui l'exécute. À ne pas confondre avec le `ctx` de `build`, qui est celui d'un module. |
 | `build` rend un élément | il ne l'accroche pas lui-même. La fiche le pose où le rangement des modules dit de le poser. |
 | Un `id` unique | c'est la clé du module dans la liste, et celle de son coffre de données. Deux modules qui partagent un `id` partagent tout : le second remplace le premier, à sa place. |
 | Le code est en ES5 | la fiche tourne dans une iframe Roll20 : `var`, `function`, pas de flèche, pas de `let`, pas de gabarit de chaîne. |
 
 ## Le module, en entier
 
-`Jjk.enregistre` prend un seul objet.
+`Mia.enregistre` prend un seul objet.
 
 | Clé | Valeur |
 | --- | --- |
@@ -291,7 +291,7 @@ var v = ctx.calculs.compValue("Body", ctx.state.comps[cle], cle);
 
 | Entrée | Ce que c'est |
 | --- | --- |
-| `ctx.filtreCalcul(nom, fn)` | inscrit un filtre sur un calcul de la fiche, au nom du module. Même chose que `Jjk.filtre`, section suivante. |
+| `ctx.filtreCalcul(nom, fn)` | inscrit un filtre sur un calcul de la fiche, au nom du module. Même chose que `Mia.filtre`, section suivante. |
 
 ### Mise en forme
 
@@ -304,7 +304,7 @@ var v = ctx.calculs.compValue("Body", ctx.state.comps[cle], cle);
 
 ## Filtrer un calcul
 
-`Jjk.filtre(nom, fn)` glisse une fonction dans un calcul de la fiche. Le calcul
+`Mia.filtre(nom, fn)` glisse une fonction dans un calcul de la fiche. Le calcul
 fait son travail, puis passe sa valeur aux filtres inscrits, chacun recevant ce
 que le précédent a rendu.
 
@@ -312,12 +312,12 @@ que le précédent a rendu.
 
 ```
 // un mod qui donne 10 PV de plus, quelle que soit la source du calcul
-Jjk.filtre("pvMax", function (valeur, infos) {
+Mia.filtre("pvMax", function (valeur, infos) {
   return valeur + 10;
 });
 
 // un mod qui ne touche qu'une caractéristique
-Jjk.filtre("caracTotal", function (valeur, infos) {
+Mia.filtre("caracTotal", function (valeur, infos) {
   return infos.carac === "Body" ? valeur + 5 : valeur;
 });
 ```
@@ -364,33 +364,33 @@ Les règles de sûreté, qui valent pour les deux :
 | Nom inconnu | un filtre inscrit sous un autre nom que ces dix-là n'est jamais appelé, et le journal du navigateur le dit dès l'inscription. |
 | Récursion | pendant la passe d'un filtre, tout appel au même calcul rend la valeur brute, sans repasser par les filtres. Un filtre peut donc lire `ctx.calculs` sans figer la fiche. |
 | Résultat invalide | un filtre qui jette, ou qui rend autre chose qu'un nombre fini, est ignoré pour cette passe : la valeur précédente passe, et une faute est comptée. |
-| Cinq fautes | cinq fautes consécutives et le filtre est retiré. Le journal reçoit `[mod:<id>] filtre <nom> retiré : <message>`, et `Jjk.etat(id).erreur` porte le message. Une passe sans faute remet le compteur à zéro. |
+| Cinq fautes | cinq fautes consécutives et le filtre est retiré. Le journal reçoit `[mod:<id>] filtre <nom> retiré : <message>`, et `Mia.etat(id).erreur` porte le message. Une passe sans faute remet le compteur à zéro. |
 | Remise à zéro | le registre des filtres est vidé à chaque montage : les mods et les modules le repeuplent. Un filtre posé hors montage, depuis un bouton ou depuis la console, est reposé au montage suivant ; celui d'un mod cesse de l'être dès que ce mod est coupé, refusé ou supprimé. |
 
-## L'objet Jjk
+## L'objet Mia
 
 | Membre | Ce qu'il fait |
 | --- | --- |
-| `Jjk.version` | la release de la fiche, en trois nombres, suivie du `b` du site beta le cas échéant : `"3.6.0"`, `"3.6.0b"`. À comparer par ses nombres, jamais comme une chaîne. |
-| `Jjk.schema` | le numéro de schéma de l'état, un entier, `3` aujourd'hui. Il ne se déduit pas de `Jjk.version` : un mod qui en tirerait le schéma par le premier nombre se tromperait le jour où les deux divergeront. |
-| `Jjk.enregistre(module)` | déclare un module, ou remplace celui qui porte le même `id`, à sa place. Rend le module. |
-| `Jjk.ordonne(ids)` | ordre partiel : les identifiants cités passent devant, dans l'ordre donné, les autres suivent à leur rang de déclaration. Un identifiant inconnu ne casse rien. |
-| `Jjk.liste()` | une copie de la liste des modules : `id`, `titre`, `onglet`, `colonne`, `actif`. |
-| `Jjk.actif(id)` | vrai tant que le module n'est pas coupé. |
-| `Jjk.active(id, oui)` | coupe ou rallume un module, et enregistre. |
-| `Jjk.etat(id)` | l'état d'un module : `echecs`, `musele`, `erreur`, `panne`, `vide`, `actif`. |
-| `Jjk.remonte()` | rebâtit la fiche entière. |
-| `Jjk.filtre(nom, fn)` | inscrit un filtre de calcul. |
-| `Jjk.mods()` | une copie de la liste des mods : `id`, `nom`, `actif`, `etat`, `empreinte`. |
+| `Mia.version` | la release de la fiche, en trois nombres, suivie du `b` du site beta le cas échéant : `"3.6.0"`, `"3.6.0b"`. À comparer par ses nombres, jamais comme une chaîne. |
+| `Mia.schema` | le numéro de schéma de l'état, un entier, `3` aujourd'hui. Il ne se déduit pas de `Mia.version` : un mod qui en tirerait le schéma par le premier nombre se tromperait le jour où les deux divergeront. |
+| `Mia.enregistre(module)` | déclare un module, ou remplace celui qui porte le même `id`, à sa place. Rend le module. |
+| `Mia.ordonne(ids)` | ordre partiel : les identifiants cités passent devant, dans l'ordre donné, les autres suivent à leur rang de déclaration. Un identifiant inconnu ne casse rien. |
+| `Mia.liste()` | une copie de la liste des modules : `id`, `titre`, `onglet`, `colonne`, `actif`. |
+| `Mia.actif(id)` | vrai tant que le module n'est pas coupé. |
+| `Mia.active(id, oui)` | coupe ou rallume un module, et enregistre. |
+| `Mia.etat(id)` | l'état d'un module : `echecs`, `musele`, `erreur`, `panne`, `vide`, `actif`. |
+| `Mia.remonte()` | rebâtit la fiche entière. |
+| `Mia.filtre(nom, fn)` | inscrit un filtre de calcul. |
+| `Mia.mods()` | une copie de la liste des mods : `id`, `nom`, `actif`, `etat`, `empreinte`. |
 
-Appelés depuis la console du navigateur, hors de tout montage, `Jjk.enregistre`
-et `Jjk.filtre` restent valides : ils prennent effet au montage suivant, que
-`Jjk.remonte()` déclenche, et à tous ceux d'après. Ce qu'un mod inscrit ainsi,
+Appelés depuis la console du navigateur, hors de tout montage, `Mia.enregistre`
+et `Mia.filtre` restent valides : ils prennent effet au montage suivant, que
+`Mia.remonte()` déclenche, et à tous ceux d'après. Ce qu'un mod inscrit ainsi,
 depuis un bouton par exemple, cesse d'être rejoué dès que ce mod est coupé,
 refusé ou supprimé.
 
-`window.__jjkModules` est l'ancien nom du même objet. Il reste en place pour ce
-qui a été écrit avant ; un mod neuf s'écrit contre `Jjk`.
+`window.__miaModules` est l'ancien nom du même objet. Il reste en place pour ce
+qui a été écrit avant ; un mod neuf s'écrit contre `Mia`.
 
 ## Lire et écrire les données du personnage
 
@@ -475,7 +475,7 @@ mod n'a donc pas à savoir où il tourne.
 <div class="mods-code" markdown>
 
 ```
-Jjk.enregistre({
+Mia.enregistre({
   id: "pv-en-grand",
   titre: "PV en grand",
   onglet: "fiche",
@@ -500,7 +500,7 @@ rappelle à chaque rafraîchissement.
 <div class="mods-code" markdown>
 
 ```
-Jjk.enregistre({
+Mia.enregistre({
   id: "munitions",
   titre: "Munitions",
   onglet: "equipement",
@@ -534,7 +534,7 @@ lui, change la donnée sans passer par un champ : il lui faut donc
 <div class="mods-code" markdown>
 
 ```
-Jjk.enregistre({
+Mia.enregistre({
   id: "init-tchat",
   titre: "Initiative au tchat",
   onglet: "fiche",
@@ -562,7 +562,7 @@ colonne, même rang. Le natif ne s'exécute plus.
 <div class="mods-code" markdown>
 
 ```
-Jjk.enregistre({
+Mia.enregistre({
   id: "initiative",
   titre: "Initiative",
   onglet: "fiche",
@@ -576,7 +576,7 @@ Jjk.enregistre({
 </div>
 
 L'identifiant d'un module natif se lit dans la fiche elle-même : son bloc porte
-l'attribut `data-module`. `Jjk.liste()` les donne tous. Supprimer le mod rend sa
+l'attribut `data-module`. `Mia.liste()` les donne tous. Supprimer le mod rend sa
 place au module natif, intact.
 
 <div class="mods-note" markdown>
@@ -592,7 +592,7 @@ là où on croyait devoir tout reprendre.
 
 La fiche porte deux numéros, qui ne se déduisent pas l'un de l'autre.
 
-`Jjk.version` est la release : trois nombres, `X.Y.Z`, chacun de 0 à 999, et
+`Mia.version` est la release : trois nombres, `X.Y.Z`, chacun de 0 à 999, et
 au-delà de 999 le nombre repart à 0 en faisant monter celui de sa gauche. Le
 premier monte pour une fonctionnalité entière, le deuxième pour un module ou la
 correction d'une grosse erreur, le troisième pour un détail d'affichage ou une
@@ -600,12 +600,12 @@ erreur mineure. Ce troisième nombre ne change jamais la forme des données du
 personnage : c'est ce qui permet à un personnage écrit sur `3.6.0` de s'ouvrir
 sur `3.6.4` sans que la fiche pose de question.
 
-`Jjk.schema` est le numéro de schéma de l'état, un entier séparé. Il ne monte
+`Mia.schema` est le numéro de schéma de l'état, un entier séparé. Il ne monte
 que lorsque la forme des données du personnage change, et il est le seul à
 compter pour la compatibilité des données. Il ne suit pas le premier nombre de
 la release : le jour où l'un des deux montera sans l'autre, un mod qui aurait
-lu le schéma dans `parseInt(Jjk.version)` lira un nombre qui ne veut rien dire.
-Le schéma se demande à `Jjk.schema`, et à lui seul.
+lu le schéma dans `parseInt(Mia.version)` lira un nombre qui ne veut rien dire.
+Le schéma se demande à `Mia.schema`, et à lui seul.
 
 Les releases se comparent nombre par nombre, jamais comme des chaînes :
 `"3.10.0"` vient après `"3.9.0"`, alors que la comparaison de texte prétendrait
@@ -631,7 +631,7 @@ fait déjà, et la fiche trop ancienne écarte le mod d'elle-même.
 | Champ | Ce qu'il déclare |
 | --- | --- |
 | `pour` | la release minimale de la fiche, en trois nombres, le `b` de la beta accepté : `"3.6.0"`, `"3.6.0b"`. Facultatif, et proposé dans le dialogue d'ajout, qui refuse ce qui n'est pas un numéro de version. Arrivé illisible par un import, il est gardé tel quel et ne bloque rien. |
-| `apiMin` | le schéma minimal de l'état, un entier. Il vise le schéma seul, jamais la release : `Jjk.schema` vaut 3 ici. Facultatif ; il ne se règle pas dans le dialogue, il arrive avec un mod importé dans le personnage. |
+| `apiMin` | le schéma minimal de l'état, un entier. Il vise le schéma seul, jamais la release : `Mia.schema` vaut 3 ici. Facultatif ; il ne se règle pas dans le dialogue, il arrive avec un mod importé dans le personnage. |
 
 Un mod dont la release minimale dépasse celle de la fiche, ou dont le schéma
 minimal dépasse le sien, ne tourne pas : son état est « trop récent ». Il n'est
@@ -641,7 +641,7 @@ où la comparaison, elle, ignore ce suffixe. Le cas se rencontre en ouvrant, sur
 une fiche ancienne, un personnage réglé sur une fiche plus neuve.
 
 Les noms décrits sur cette page sont figés : ce sont le contrat public de la
-fiche 3, celle que dit le premier nombre de `Jjk.version`, et un mod écrit
+fiche 3, celle que dit le premier nombre de `Mia.version`, et un mod écrit
 contre eux traverse les mises à jour de la lignée sans être retouché.
 
 ## Quand ça casse
@@ -653,7 +653,7 @@ faite pour que cela reste sans conséquence.
 | --- | --- |
 | Le code du mod jette, ou ne s'analyse même pas | le mod passe en panne avec son message, sur sa ligne du bloc Mods. Il n'est pas coupé : le montage suivant le retente. Les autres mods tournent. |
 | `build` lève une erreur | le bloc du module est remplacé par un cadre qui donne son identifiant et le message, avec « Réessayer » et « Désactiver ». Le bloc « Modules » n'a que « Réessayer » : le désactiver retirerait le seul endroit d'où l'on rallume un module. Le reste de la fiche se monte normalement. |
-| `build` ne rend rien, ou rend autre chose qu'un élément | rien ne s'affiche, et `Jjk.etat(id).vide` passe à vrai. Ce n'est pas une erreur : un module a le droit de s'effacer. |
+| `build` ne rend rien, ou rend autre chose qu'un élément | rien ne s'affiche, et `Mia.etat(id).vide` passe à vrai. Ce n'est pas une erreur : un module a le droit de s'effacer. |
 | Une fonction de rafraîchissement jette cinq fois de suite | le module est muselé : son bloc reste, avec les valeurs du dernier rafraîchissement réussi, il est marqué et cesse d'être rappelé. Une passe réussie remet le compteur à zéro. |
 | Un filtre jette ou rend autre chose qu'un nombre fini | la valeur passe sans lui, et cinq fautes consécutives le retirent. |
 
@@ -675,7 +675,7 @@ depuis le bloc Modules ou depuis le bouton « Désactiver » du cadre d'erreur,
 refuser le mod depuis le bloc Mods, ou le supprimer.
 
 Le vrai garde-fou reste le consentement : un mod qui n'a pas été autorisé sur ce
-navigateur ne tourne pas du tout. Effacer la clé `jjk.mods.avis` du stockage
+navigateur ne tourne pas du tout. Effacer la clé `mia.mods.avis` du stockage
 local efface les réponses enregistrées, et plus aucun de ces mods ne tourne tant
 qu'il n'est pas autorisé à nouveau, y compris dans une page restée ouverte : le
 stockage fait foi, et une réponse effacée est une réponse retirée. C'est ce qui
@@ -707,7 +707,7 @@ pont ne fait confiance à rien de ce qui vient d'elle.
 
 | Verrou | Ce qu'il laisse passer |
 | --- | --- |
-| Écriture | les seuls attributs `jjk_`. Un autre nom est refusé en silence : les attributs natifs du personnage, barres de jetons et macros comprises, restent hors d'atteinte. |
+| Écriture | les seuls attributs `mia_`. Un autre nom est refusé en silence : les attributs natifs du personnage, barres de jetons et macros comprises, restent hors d'atteinte. |
 | Personnage | une fiche n'écrit que dans le personnage qu'elle affiche. Toute écriture demandée pour un autre personnage est refusée, même par le MJ qui a ouvert la sienne. |
 | Tchat | les seules commandes que la fiche compose : un chuchotement facultatif, puis une carte de gabarit, sur une seule ligne. Une commande d'API, une autre commande à barre oblique ou du texte libre sont ignorés en silence. |
 

@@ -2,7 +2,7 @@
   // RELEASE est ce qu'on montre, SCHEMA est ce qui compte. Les deux sont
   // désormais INDÉPENDANTS : le schéma est un entier libre, que rien ne
   // déduit du majeur de la release, et le manifeste les publie séparément.
-  // Un mod qui ferait parseInt(Jjk.version) pour en tirer le schéma se
+  // Un mod qui ferait parseInt(Mia.version) pour en tirer le schéma se
   // tromperait dès la première fois où les deux divergeront.
   //
   // Le SCHÉMA ne monte QUE lorsqu'une donnée EXISTANTE change de forme ou de
@@ -20,9 +20,9 @@
   // Le suffixe « b » marque la branche beta, pour que le joueur voie sur quel
   // site il est. Il ne change PAS le rang : « 3.6.0b » et « 3.6.0 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
-  // fusion (JjkMods.compareVersions tient cette règle).
-  var RELEASE = "3.6.0";
-  var SCHEMA = 3;
+  // fusion (MiaMods.compareVersions tient cette règle).
+  var RELEASE = "1.0.0";
+  var SCHEMA = 1;
 
   var XP_CREATION = 500;      // xp de départ (le total reste modifiable)
   // Les deux barèmes de la création. Ce ne sont plus des murs : le bloc

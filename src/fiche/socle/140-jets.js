@@ -1,6 +1,6 @@
   // ---------- jets ----------
-  // Les dés se jettent dans Roll20 : jjk-roll20-boot.js (amorce Roll20 servie
-  // par le site) pose window.__jjkRoll et le
+  // Les dés se jettent dans Roll20 : mia-roll20-boot.js (amorce Roll20 servie
+  // par le site) pose window.__miaRoll et le
   // jet part au TCHAT. Sur le site (pas de Roll20), un clic lance quand même le
   // dé et montre le résultat dans un toast discret — aucun panneau de jets.
   function parseDice(expr) {
@@ -31,8 +31,8 @@
                        isCheck && envInput(), q, tracker))) return;
     // extension antérieure au canal brut : jet public, sans modificateur — et
     // sans compteur de tours, ce canal-là n'envoyant pas de commande Roll20
-    if (typeof window !== "undefined" && typeof window.__jjkRoll === "function") {
-      window.__jjkRoll(die, value, label);
+    if (typeof window !== "undefined" && typeof window.__miaRoll === "function") {
+      window.__miaRoll(die, value, label);
       return;
     }
     var d = parseDice(die);
@@ -64,7 +64,7 @@
   }
 
   // ---------- envoi d'un élément au tchat ----------
-  // Dans Roll20, l'élément part au TCHAT en carte (jjk-roll20-boot.js pose __jjkSay) ;
+  // Dans Roll20, l'élément part au TCHAT en carte (mia-roll20-boot.js pose __miaSay) ;
   // sur le site, il s'affiche en toast. fields : [[libellé, valeur], …],
   // les valeurs vides sont ignorées.
   // Une étiquette VIDE ("") est volontaire : la carte Roll20 rend alors
@@ -77,8 +77,8 @@
     var clean = (fields || []).filter(function (f) { return f && String(f[1] || "").trim(); });
     if (envoyer(cmdCarte(title, clean))) return;
     // extension antérieure au canal brut : carte publique
-    if (typeof window !== "undefined" && typeof window.__jjkSay === "function") {
-      window.__jjkSay(title, clean);
+    if (typeof window !== "undefined" && typeof window.__miaSay === "function") {
+      window.__miaSay(title, clean);
       return;
     }
     flash(title + (clean.length

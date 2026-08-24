@@ -5,7 +5,7 @@
   // renvoie le payload à la fiche du preneur, qui affiche son dialogue de
   // réception. L'encodage vit ICI, côté site : son format peut donc évoluer
   // sans jamais re-signer l'extension, qui ne fait que relayer.
-  var TAKE_CMD = "/jjk_take";
+  var TAKE_CMD = "/mia_take";
   var IMG_MAX = 4000;   // une vignette plus lourde ne tient pas dans un message
   function b64encode(txt) {
     try {

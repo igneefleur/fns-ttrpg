@@ -1,6 +1,6 @@
 """Re-signature AUTOMATIQUE de l'extension en CI : rien à faire au push.
 
-Appelé par le workflow de la branche jjk après `mkdocs build`. L'extension est
+Appelé par le workflow de la branche mia après `mkdocs build`. L'extension est
 une COQUILLE (la fiche est servie par le site via roll20-fiche.html) : les
 évolutions de la fiche ne passent PLUS par ici, seuls les changements de la
 coquille elle-même déclenchent une signature. Logique :
@@ -30,7 +30,7 @@ deux moitiés n'ont pas changé depuis la 3.6.0 ».
 
 LE NUMÉRO SE POSE, IL NE S'INCRÉMENTE PLUS. Le projet n'a qu'une ligne de
 versions : la fiche du site stable, celle de la beta et l'extension visent le
-même numéro. La coquille prend donc celui que publie docs/jjk-manifeste.json,
+même numéro. La coquille prend donc celui que publie docs/mia-manifeste.json,
 DÉBARRASSÉ du suffixe « b » : l'extension est la même sur les deux branches et
 n'en porte jamais.
 
@@ -478,21 +478,21 @@ def numero_a_poser(base, cible):
                             f"la coquille ressort, v{base} -> v{quatrieme}"])
     montee = bump_version(base)
     if cible:
-        return (montee, [f"::warning title=Extension JJK décalée du projet::le site "
+        return (montee, [f"::warning title=Extension MIA décalée du projet::le site "
                          f"publie v{cible}, qui n'est pas au-dessus de ce qui est "
                          f"déjà pris (v{base}) : la coquille part en v{montee}. Les "
                          "trois numéros du projet visent la même ligne mais avancent "
                          "chacun quand ils ont une raison d'avancer ; le site "
                          "rattrapera."])
     return (montee, ["::warning title=Numéro du projet illisible::"
-                     "docs/jjk-manifeste.json ne donne pas de release lisible : "
+                     "docs/mia-manifeste.json ne donne pas de release lisible : "
                      f"la coquille monte d'un cran, v{base} -> v{montee}."])
 
 
 def version_du_projet():
     """Le numéro que publie le site, sans le suffixe « b », ou None.
 
-    C'est docs/jjk-manifeste.json qui fait foi : c'est lui que lisent l'amorceur
+    C'est docs/mia-manifeste.json qui fait foi : c'est lui que lisent l'amorceur
     et la fiche, donc c'est lui qui dit ce que le projet publie aujourd'hui.
     """
     try:
@@ -523,7 +523,7 @@ def amo_latest(guid, issuer, secret):
 
 
 def xpi_signe():
-    """True si docs/download/jjk-roll20-firefox.xpi est un binaire signé Mozilla."""
+    """True si docs/download/mia-roll20-firefox.xpi est un binaire signé Mozilla."""
     import zipfile
     try:
         with zipfile.ZipFile(sign_extension.XPI) as z:
@@ -605,8 +605,8 @@ def main():
         # archives committées à l'exact au cas où un pack de développement
         # local les aurait écrasées
         subprocess.run(["git", "checkout", "--",
-                        "docs/download/jjk-roll20-firefox.xpi",
-                        "docs/download/jjk-roll20-chrome.zip"],
+                        "docs/download/mia-roll20-firefox.xpi",
+                        "docs/download/mia-roll20-chrome.zip"],
                        cwd=ROOT, check=False)
         repare_xpi_signe(issuer, secret)
         return
@@ -653,8 +653,8 @@ def main():
         # n'est pas écrite, le prochain run (push ou workflow_dispatch)
         # retentera la signature.
         subprocess.run(["git", "checkout", "--",
-                        "docs/download/jjk-roll20-firefox.xpi",
-                        "docs/download/jjk-roll20-chrome.zip",
+                        "docs/download/mia-roll20-firefox.xpi",
+                        "docs/download/mia-roll20-chrome.zip",
                         "docs/download/updates.json",
                         "extension/firefox/manifest.json",
                         "extension/chrome/manifest.json"],
@@ -677,7 +677,7 @@ def main():
         # appartiennent à un compte qui ne possède PAS cet add-on : la
         # signature ne repassera jamais toute seule.
         if "quota" not in str(e) and amo_latest(guid, issuer, secret) is None:
-            print("::error title=Signature JJK impossible::" + str(e) +
+            print("::error title=Signature MIA impossible::" + str(e) +
                   " — AMO ne montre aucune version de " + guid + " à ce compte. "
                   "Si la création répond « Duplicate add-on ID found », les secrets "
                   "AMO_JWT_ISSUER / AMO_JWT_SECRET sont ceux d'un AUTRE compte que "
@@ -690,7 +690,7 @@ def main():
             if not deja_signee:
                 raise
         else:
-            print(f"::warning title=Extension JJK non signée::{e} — le site "
+            print(f"::warning title=Extension MIA non signée::{e} — le site "
                   f"distribue encore la v{state.get('version', '?')} signée.")
         print(f"[ci-extension] SIGNATURE REPORTÉE ({e}) — le site est déployé "
               f"avec les paquets signés v{state.get('version', '?')}.")

@@ -24,10 +24,10 @@ n'emporte aucune concession de droits : lire n'est pas réutiliser.
 ## Les règles de ce jeu
 
 Le système de règles publié ici — sa conception, ses barèmes, ses tables, son
-équilibrage et les textes qui l'énoncent — est l'œuvre de **Qyu**.
+équilibrage et les textes qui l'énoncent — est l'œuvre de **Erua**.
 
 Il n'est pas un apport original de ce dépôt, et les droits d'auteur sur ces
-règles restent à Qyu. La présente licence n'en dispose pas et ne saurait s'y
+règles restent à Erua. La présente licence n'en dispose pas et ne saurait s'y
 substituer : ce qu'elle couvre, c'est la mise en forme de ces règles et le code
 qui les sert.
 
@@ -36,12 +36,12 @@ qui les sert.
 Ce projet est une **œuvre de fan, sans but lucratif**, réalisée par admiration pour
 l'œuvre d'origine et sans aucun lien avec ses ayants droit.
 
-« Jujutsu Kaisen », les personnages, les lieux et tout autre élément de cet univers
-sont la propriété de **Gege Akutami** et de **Shueisha**.
+« Made in Abyss », les personnages, les lieux et tout autre élément de cet univers
+sont la propriété de **Akihito Tsukushi** et de **Takeshobo**.
 
 La présente licence ne porte que sur les apports originaux de l'auteur, énumérés
 sous « Ce que couvre cette licence ». Elle **ne concède aucun droit** sur l'univers
-Jujutsu Kaisen, et ne revendique ni approbation, ni parrainage, ni affiliation de
+Made in Abyss, et ne revendique ni approbation, ni parrainage, ni affiliation de
 la part de ses ayants droit. Toute demande de leur part sera honorée.
 
 ## Composants tiers

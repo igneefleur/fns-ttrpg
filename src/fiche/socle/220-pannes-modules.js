@@ -29,7 +29,7 @@
     // chance ; les modules coupés le sont, eux, sans que la fiche s'en mêle.
     if (m.id !== MODULE_REGLAGES)
       line.appendChild(miniBtn("Désactiver", "Retirer ce module de la fiche : rien n'est perdu, il ne s'affiche plus.", function () {
-        // même garde que __jjkModules.active : une panne peut survenir sur un
+        // même garde que __miaModules.active : une panne peut survenir sur un
         // état remplacé à la main (import, bibliothèque) qui n'est pas repassé
         // par normalize(), et la clé manquerait
         if (!state.modActifs) state.modActifs = {};

@@ -1,6 +1,6 @@
 
-  var NS = "jjk";
-  var PREF = "jjk_narr_";
+  var NS = "mia";
+  var PREF = "mia_narr_";
   var A_CONF = PREF + "conf";
   var A_PT = PREF + "pt_";
   var A_BG = PREF + "bg_";  // le fond importé d'une place, un attribut chacun

@@ -2,8 +2,8 @@
   function buildTop(container) {
     if (COMPACT) return;   // dans Roll20, la fiche EST le personnage
     var top = el("div", "pc-top");
-    top.appendChild(el("span", "pc-top-title", "Fiche JJK"));
-    top.appendChild(el("span", "pc-top-hint", "Créateur de personnage — règles de base JJK"));
+    top.appendChild(el("span", "pc-top-title", "Fiche MIA"));
+    top.appendChild(el("span", "pc-top-hint", "Créateur de personnage — règles de base MIA"));
 
     var lib = el("div", "pc-lib");
     var sel = el("select");
@@ -76,7 +76,7 @@
       b.addEventListener("click", function () {
         var a = document.createElement("a");
         a.href = "data:application/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
-        a.download = (state.name || "personnage-jjk") + ".json";
+        a.download = (state.name || "personnage-mia") + ".json";
         a.click();
       });
       return b;
