@@ -1,0 +1,2146 @@
+﻿/* ============================================================
+   Thème du livre (repris de HxH) — parchemin + verts, Cinzel / EB Garamond.
+
+   Sommaire :
+     1. Variables
+     2. Fonds & feuille de lecture
+     3. Typographie (corps + titres)
+     4. Mise en page (grille, colonne centrée, nav fixe, 2 colonnes)
+     5. Tableaux
+     6. En-tête & onglets
+     7. Navigation latérale (Material + masquages)
+     8. Arbre custom du livre
+     9. Lecture en défilement continu
+    10. Page d'accueil : changelog
+   ============================================================ */
+
+/* Les polices (Alegreya, Cinzel, EB Garamond, IBM Plex Sans, Roboto Mono) sont
+   AUTO-HÉBERGÉES : leurs @font-face sont dans stylesheets/fonts.css, chargée avant
+   ce fichier. Plus aucune requête vers Google (l'IP du visiteur ne part plus chez
+   un tiers) et le build du PDF ne dépend plus du réseau. */
+
+/* Symboles de notation du livre (● ○ utilité, ★ ☆ illégalité, ✦ ✧ paliers,
+   ▰ ▱ jauges) : absents d'Alegreya et de Cinzel, ils rendraient à la taille
+   brute de la police de symboles, trop grosse face au texte. Ces faces dédiées
+   les servent depuis la Noto Sans Symbols 2 auto-hébergée (la même que les
+   faces « symboles figés » de fonts.css) et règlent leur taille via
+   size-adjust ; placées en tête de chaque pile avec un unicode-range limité,
+   elles ne touchent aucun autre caractère.
+   RÈGLE : la taille des symboles se règle ICI (size-adjust), jamais par un
+   font-size local ; toute nouvelle notation à symboles ajoute une face à sa
+   plage, et toute nouvelle pile de polices commence par 'Symboles JDR'. */
+@font-face {
+  font-family: 'Symboles JDR';
+  src: url('../assets/fonts/noto-sans-symbols-2-symboles.woff2') format('woff2');
+  unicode-range: U+25CB, U+25CF, U+2605-2606, U+2726-2727;
+  size-adjust: 85%;
+}
+/* ▰ ▱ : plus grands que les autres symboles, eux seuls. */
+@font-face {
+  font-family: 'Symboles JDR';
+  src: url('../assets/fonts/noto-sans-symbols-2-symboles.woff2') format('woff2');
+  unicode-range: U+25B0-25B1;
+  size-adjust: 115%;
+}
+
+/* ---------- 1. Variables ---------- */
+:root {
+  --green-title:   #667861;
+  --green-section: #63755e;
+  --green-header:  #82997b;
+  --row-a:         #d6e2d0;
+  --row-b:         #e9f0e6;
+  --ink:           #1d1d1d;
+  --paper:         #faf6eb;  /* crème chaud (feuille de lecture) */
+  --bg-side:       #e4ddcd;  /* fond sombre des côtés */
+
+  --md-primary-fg-color:        var(--green-section);
+  --md-primary-fg-color--light: var(--green-header);
+  --md-primary-fg-color--dark:  var(--green-title);
+  --md-accent-fg-color:         var(--green-title);
+  --md-default-bg-color:        var(--paper);
+  --md-typeset-color:           var(--ink);
+
+  /* Polices de l'interface Material. mkdocs.yml pose `font: false` pour couper
+     l'auto-chargement Google Fonts ; Material n'injecte donc plus ces variables
+     et on les redéclare ici, pointant sur les polices auto-hébergées (fonts.css). */
+  --md-text-font: 'Symboles JDR', 'Alegreya';
+  --md-code-font: 'Roboto Mono';
+}
+
+/* Badge « PDF » injecté dans l'en-tête par le plugin to-pdf (CI seulement,
+   classe héritée md-header-nav__button) : masqué, le bouton « Télécharger le
+   livre (PDF) » de print-book.js le remplace. */
+.md-header a.md-header-nav__button[title="PDF"],
+a.md-header-nav__button[href$="livre-de-regles.pdf"] {
+  display: none !important;
+}
+
+/* ---------- 2. Fonds & feuille de lecture ---------- */
+.md-main,
+.md-container {
+  background: var(--bg-side);
+}
+.md-content {
+  background: transparent;
+}
+/* La colonne de lecture porte le papier (sauf en mode livre, voir §9). */
+.md-content > .md-content__inner {
+  background: var(--paper);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, .18);
+  padding: 1.4rem 2rem 2rem;
+}
+
+/* ---------- 3. Typographie ---------- */
+.md-typeset,
+.md-typeset p,
+.md-typeset li,
+.md-typeset td,
+.md-typeset th {
+  font-family: 'Symboles JDR', 'Alegreya', 'EB Garamond', Garamond, serif;
+}
+.md-typeset {
+  font-size: 0.72rem;
+  line-height: 1.4;
+  text-align: justify;
+  font-variant-numeric: lining-nums; /* Alegreya a des chiffres elzeviriens par defaut */
+}
+
+/* Titres en Cinzel */
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3,
+.md-typeset h4,
+.md-typeset h5,
+.md-typeset h6 {
+  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-weight: 700;
+  color: var(--green-section);
+}
+.md-typeset h1 {
+  color: var(--green-title);
+  font-style: italic;
+  text-align: center;
+}
+/* Seuls le titre (h1) et les sous-titres (h2) sont centrés. */
+.md-typeset h2 {
+  text-align: center;
+  margin-top: 0.9em;
+}
+/* Sous-sous-titres (h3+) : alignés à gauche, resserrés. */
+.md-typeset h3,
+.md-typeset h4,
+.md-typeset h5,
+.md-typeset h6 {
+  margin-top: 0.6em;
+  margin-bottom: 0.15em;
+  line-height: 1.2;
+}
+.md-typeset h3 + *,
+.md-typeset h4 + *,
+.md-typeset h5 + *,
+.md-typeset h6 + * {
+  margin-top: 0;
+}
+
+.md-typeset blockquote {
+  border-left: 2px solid #e0dccd;
+  color: #555;
+  font-style: italic;
+}
+
+/* ---------- 4. Mise en page ---------- */
+/* Grille pleine largeur : la nav va à l'extrême gauche, le contenu occupe
+   le reste, puis la colonne de lecture se recentre. */
+.md-grid {
+  max-width: none;
+}
+.md-content > .md-content__inner,
+[dir=ltr] .md-sidebar--primary:not([hidden]) ~ .md-content > .md-content__inner,
+[dir=rtl] .md-sidebar--primary:not([hidden]) ~ .md-content > .md-content__inner {
+  max-width: 50rem;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* Desktop : nav fixée hors du flux à l'extrême gauche, pour que le contenu
+   se centre dans tout le viewport. */
+@media screen and (min-width: 76.25em) {
+  .md-sidebar--primary {
+    position: fixed;
+    top: 4.8rem;   /* sous le header + la barre d'onglets */
+    left: 0;
+    bottom: 0;
+    height: auto;
+    width: 14rem;
+    padding: 1.2rem 0;
+    z-index: 1;
+  }
+  /* La nav fixe occupe 14rem à l'extrême gauche. Sur un écran assez large, le
+     contenu centré garde une marge plus grande que la nav et ne la touche pas.
+     Mais sur un DEMI-ÉCRAN de PC (~1220 à 1720px), cette marge devient plus
+     étroite que la nav : le texte passerait SOUS le rail et les références
+     écraseraient la page. On réserve donc la place du rail à gauche, mais
+     UNIQUEMENT quand c'est nécessaire : au-delà de 80rem de large, padding = 0
+     et le grand écran reste centré exactement comme avant. */
+  .md-content {
+    padding-left: max(0px, 80rem - 100vw);
+  }
+}
+
+/* Mise en page sur 2 colonnes — à la demande, via <div class="cols" markdown>. */
+.md-typeset .cols {
+  column-count: 2;
+  column-gap: 2.4rem;
+}
+.md-typeset .cols h1 {
+  column-span: all;   /* le titre s'étale sur les deux colonnes */
+}
+.md-typeset .cols h2 {
+  column-span: all;   /* titres de section pleine largeur, jamais seuls en colonne */
+}
+.md-typeset .cols h3 {
+  break-after: avoid; /* pas de titre orphelin en bas de colonne */
+  break-inside: avoid;
+}
+.md-typeset .cols h4 {
+  break-after: avoid; /* l'entrée de glossaire reste collée à sa description */
+  break-inside: avoid;
+}
+/* Encart de référence (rappel du modèle de combat) : fond léger, filet vert à gauche. */
+.md-typeset .rappel {
+  background: rgba(127, 127, 127, 0.08);
+  border-left: 3px solid var(--green-title, #5a7d2a);
+  border-radius: 4px;
+  padding: 0.2rem 1rem 0.6rem;
+  margin: 1rem 0 1.6rem;
+}
+.md-typeset .rappel h3 {
+  margin-top: 0.5rem;
+}
+/* Encart « Pour mémoire » : notes de contexte (physiologie, réalité) hors règles. */
+.md-typeset .memo {
+  background: rgba(127, 127, 127, 0.06);
+  border-left: 3px solid #cfc8b8;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  margin: 1rem 0 1.4rem;
+  font-size: 0.9em;
+  font-style: italic;
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+}
+/* Paragraphe d'introduction qui doit s'étaler sur les deux colonnes. */
+.md-typeset .cols .span {
+  column-span: all;
+}
+/* Garder un bloc (titre + sa description/table) insécable dans une colonne :
+   entourer de <div class="keep" markdown> … </div>. S'il ne tient pas en bas
+   d'une colonne, il passe ENTIER à la colonne suivante (fiable sous Chrome,
+   contrairement aux sauts de colonne forcés). */
+.md-typeset .cols .keep {
+  -webkit-column-break-inside: avoid;
+  break-inside: avoid;
+}
+/* Cut-safety générale des pages en deux colonnes : paragraphes, citations
+   (exemples) et blocs de définitions ne sont jamais coupés par un saut de
+   colonne. Même effet qu'un bloc .keep, sans avoir à les envelopper un à un
+   sur les longues pages de règles (ex. Capacités physiques). */
+.md-typeset .cols p,
+.md-typeset .cols blockquote,
+.md-typeset .cols .defs {
+  -webkit-column-break-inside: avoid;
+  break-inside: avoid;
+}
+/* Séparateur (---) en colonnes : ligne grise fine qui traverse les deux
+   colonnes et réinitialise l'équilibrage → les groupes d'archétypes repartent
+   alignés en haut de colonne sous chaque trait. */
+.md-typeset .cols hr {
+  column-span: all;
+  border: none;
+  border-top: 1px solid #cfc8b8;
+  margin: 0.5rem 0 1rem;
+}
+
+/* Illustration d'un personnage à côté d'un archétype. C'est un bloc .keep
+   (insécable) qui occupe une colonne ; le bloc .keep voisin (description +
+   table) occupe l'autre. Un séparateur --- avant et après chaque paire
+   réinitialise l'équilibrage des colonnes, ce qui réaligne les deux blocs côte
+   à côte et fait alterner le côté de l'image selon l'ordre dans le markdown. */
+.md-typeset .cols .portrait {
+  text-align: center;
+  margin: 0;
+}
+.md-typeset .cols .portrait .frame {
+  position: relative;
+  display: block;
+  line-height: 0;
+}
+.md-typeset .cols .portrait .frame p {
+  margin: 0;
+  line-height: 0;
+}
+.md-typeset .cols .portrait .frame img {
+  width: 100%;
+  display: block;
+  border: 1px solid #cfc8b8;
+  background: #fff;
+  padding: 5px;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, .15);
+}
+/* Crédit de l'image : petit lien discret en bas à gauche de la vignette. */
+.md-typeset .cols .portrait .credit {
+  position: absolute;
+  left: 7px;
+  bottom: 7px;
+  max-width: calc(100% - 14px);
+  box-sizing: border-box;
+  padding: 1px 5px;
+  font-family: 'Symboles JDR', 'Alegreya', 'EB Garamond', Garamond, serif;
+  font-size: 0.5rem;
+  line-height: 1.4;
+  color: #fff;
+  background: rgba(0, 0, 0, .55);
+  border-radius: 2px;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.md-typeset .cols .portrait .credit:hover {
+  background: rgba(0, 0, 0, .82);
+  text-decoration: underline;
+}
+.md-typeset .cols .portrait em {
+  display: block;
+  margin-top: 0.35rem;
+  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-style: normal;
+  font-size: 0.66rem;
+  color: var(--green-section);
+}
+
+/* ---------- 5. Tableaux ---------- */
+/* Base : toutes les tables de contenu remplissent la largeur disponible. */
+.md-typeset table:not([class]) {
+  display: table;
+  width: 100%;
+  max-width: 100%;
+  table-layout: auto;
+  font-size: 0.62rem;
+  line-height: 1.2;
+  border: none;
+  box-shadow: none;
+}
+/* En multicol (.cols), il faut table-layout: fixed pour remplir la colonne
+   (auto réduit la table à son contenu). On justifie aussi les cellules. */
+.md-typeset .cols table:not([class]) {
+  table-layout: fixed;
+  break-inside: avoid;
+}
+.md-typeset .cols table:not([class]) td:not([align]) {
+  text-align: justify;
+}
+/* Cartes Compatibilité AM et Illégalité : 5 colonnes (une colonne Prix ajoutée),
+   largeurs EXPLICITES par table (le Statut de l'Illégalité est long, le Palier de
+   l'AM court). On garde le table-layout: fixed de .cols et on fixe des proportions
+   adaptées à CHACUNE. Ciblé par [data-cols] : uniquement ces deux tables. */
+.md-typeset .cols [data-cols] table:not([class]) td { text-align: center; }
+.md-typeset .cols [data-cols] table:not([class]) th:nth-child(2),
+.md-typeset .cols [data-cols] table:not([class]) td:nth-child(2) { text-align: left; }
+/* Coût (DERNIÈRE colonne) et Prix (avant-dernière) de largeur UNIFORME et alignés
+   à droite dans TOUTES les fiches de propriétés → les valeurs s'alignent en colonne
+   d'une fiche à l'autre, plus facile à lire. Largeur FIXE en rem (pas en %) : un % de
+   la largeur de table variait de 3 à 5 colonnes (border-spacing/padding par colonne :
+   ~73 px à 3 col, ~69 px à 5 col, et l'aberrante Lourdeur à 78) ; une largeur fixe donne
+   des pixels IDENTIQUES partout, quel que soit le nombre de colonnes. nth-last-child :
+   marche à 3, 4 ou 5 colonnes ; !important pour battre les règles génériques. */
+/* NB : ces règles Prix/Coût sont réservées aux fiches d'armes (.armes-fiches) ; sans
+   ce garde-fou elles écraseraient les tables descriptives des autres pages qui
+   emploient aussi .mcard (arts martiaux, etc. : dernière colonne longue forcée à
+   2,5 rem nowrap = illisible). */
+/* min-width: 0 : Material pose min-width: 5rem sur les th, qui plancherait les
+   colonnes à 100 px dans les tables en layout auto (les 2 colonnes ci-dessous). */
+.md-typeset .cols.armes-fiches .mcard table:not([class]) th:last-child,
+.md-typeset .cols.armes-fiches .mcard table:not([class]) td:last-child { width: 2.5rem !important; min-width: 0; text-align: right !important; white-space: nowrap; }        /* Coût (étroit : collé au Prix) */
+/* Prix : largeur fixe sur TOUTES les fiches (paliers comme coût fixe), pour que la
+   colonne Prix ait la même taille d'une fiche à l'autre. */
+.md-typeset .cols.armes-fiches .mcard table:not([class]) th:nth-last-child(2),
+.md-typeset .cols.armes-fiches .mcard table:not([class]) td:nth-last-child(2) { width: 4.6rem !important; min-width: 0; text-align: right !important; white-space: nowrap; }  /* Prix */
+/* Propriétés à coût fixe : table « Prix | Coût » (2 colonnes). Elle se réduit à ses
+   deux colonnes (Prix = 4,6 rem par la règle ci-dessus, Coût = 2,5 rem) et se cale au
+   bord droit de la fiche, si bien que Prix et Coût tombent au même bord droit que les
+   tables à paliers. width:auto : le table-layout fixed de .cols retombe en auto et les
+   largeurs de cellules deviennent la largeur de la table. Le wrapper Material
+   (.md-typeset__table, inline-block) doit être élargi à 100 % pour que le
+   margin-left: auto ait de l'espace où pousser la table contre le bord droit. */
+.md-typeset .cols.armes-fiches .mcard table:not([class]):not(:has(th:nth-child(3))) { width: auto; margin-left: auto; }
+.md-typeset .cols.armes-fiches .mcard .md-typeset__table:has(table:not([class]) th:nth-child(2):last-child) { width: 100%; }
+/* Libellés (colonnes AVANT Prix/Coût) : par table, une colonne de libellé reste
+   sans largeur (elle absorbe le mou) ou reçoit un calc() qui somme pile à 100 %.
+   Si toutes les colonnes avaient une largeur inexacte, le mou serait redistribué
+   sur toutes (Prix/Coût compris) et la colonne Prix varierait d'une fiche à l'autre. */
+/* Fiches génériques à 3 colonnes (libellé | prix | coût) : libellé = le reste.
+   PAS de colonne auto ici : la règle générique des tables 3 colonnes de .cols
+   (modules de conjuration, 30/50/20 %) reprendrait la main sur la colonne libellé. */
+.md-typeset .cols.armes-fiches .mcard:not([data-cols]) table:not([class]):has(th:nth-child(3)):not(:has(th:nth-child(4))) th:nth-child(1),
+.md-typeset .cols.armes-fiches .mcard:not([data-cols]) table:not([class]):has(th:nth-child(3)):not(:has(th:nth-child(4))) td:nth-child(1) { width: calc(100% - 7.1rem); text-align: left; }
+/* AM : compatibilité | palier | illégalité max (libellés ; palier = auto, absorbe). */
+.md-typeset .cols [data-cols="am"] table:not([class]) th:nth-child(1),
+.md-typeset .cols [data-cols="am"] table:not([class]) td:nth-child(1) { width: 14%; }
+.md-typeset .cols [data-cols="am"] table:not([class]) th:nth-child(3),
+.md-typeset .cols [data-cols="am"] table:not([class]) td:nth-child(3) { width: 24%; }
+/* Illégalité : illégalité | statut (long, auto : absorbe) | AM max (libellés). */
+.md-typeset .cols [data-cols="illeg"] table:not([class]) th:nth-child(1),
+.md-typeset .cols [data-cols="illeg"] table:not([class]) td:nth-child(1) { width: 14%; white-space: nowrap; }
+.md-typeset .cols [data-cols="illeg"] table:not([class]) th:nth-child(3),
+.md-typeset .cols [data-cols="illeg"] table:not([class]) td:nth-child(3) { width: 12%; }
+/* Mains : mains | effet (long, auto : absorbe) (libellés). L'effet, seul texte
+   long des tables de fiches, se justifie comme la prose. */
+.md-typeset .cols [data-cols="mains"] table:not([class]) th:nth-child(1),
+.md-typeset .cols [data-cols="mains"] table:not([class]) td:nth-child(1) { width: 16%; white-space: nowrap; }
+.md-typeset .cols [data-cols="mains"] table:not([class]) td:nth-child(2) { text-align: justify; }
+/* Table de grade (haut d'armes.md) : 4 colonnes dont la dernière (liste d'armes) très
+   longue. Sans largeurs fixes, elle écrase Grade et Prix (« ×80 » se coupe en deux). */
+.md-typeset .grade-table table:not([class]) { table-layout: fixed; }
+.md-typeset .grade-table table:not([class]) th:nth-child(1),
+.md-typeset .grade-table table:not([class]) td:nth-child(1) { width: 14%; }
+.md-typeset .grade-table table:not([class]) th:nth-child(2),
+.md-typeset .grade-table table:not([class]) td:nth-child(2) { width: 15%; }
+.md-typeset .grade-table table:not([class]) th:nth-child(3),
+.md-typeset .grade-table table:not([class]) td:nth-child(3) { width: 8%; text-align: center; white-space: nowrap; }
+.md-typeset .grade-table table:not([class]) th:nth-child(4),
+.md-typeset .grade-table table:not([class]) td:nth-child(4) { width: 63%; }
+/* (bloc .armes retiré : les tables d'armes sont régies par le bloc .cj-modules.anima.armes plus bas, en !important) */
+/* Tableaux de la page Éclat (apprentissage, niveau/prestige par âge) : colonnes
+   régulières, première colonne (Éclat) étroite. Ces tables ont 8 ou 9 colonnes,
+   donc on neutralise au passage la règle des tables d'armes (9 colonnes) et le
+   table-layout: auto, qui les déformaient. */
+.md-typeset .eclat-grid table:not([class]) {
+  table-layout: fixed !important;
+  width: 100%;
+}
+.md-typeset .eclat-grid table:not([class]) th,
+.md-typeset .eclat-grid table:not([class]) td {
+  width: auto !important;
+  text-align: center !important;
+  vertical-align: middle;          /* centre « Éclat » qui s'étend sur deux rangs d'en-tête */
+  padding: 0.18rem 0.15rem;
+}
+/* Cellules de DONNÉES seulement : on annule le gris/petit de la 2e colonne (hérité de
+   la règle des tables d'armes à 10 colonnes), sans toucher l'en-tête, qui reste blanc. */
+.md-typeset .eclat-grid table:not([class]) td {
+  color: inherit !important;
+  font-size: inherit !important;
+  font-variant: normal !important;
+  letter-spacing: normal !important;
+}
+.md-typeset .eclat-grid table:not([class]) th:first-child,
+.md-typeset .eclat-grid table:not([class]) td:first-child {
+  width: 3rem !important;
+}
+/* Page Éclat : chaque palier dans une petite carte parchemin (façon .mcard), qui
+   flotte dans le multicol. Le « Éclat N » est sur sa propre ligne, en vert Cinzel,
+   suivi d'un saut de ligne avant la description. Sans aucune majuscule. */
+.md-typeset .eclat-card {
+  background: #fbf9f1;
+  border: 1px solid #d9d2bf;
+  border-radius: 5px;
+  padding: 0.45rem 0.6rem 0.5rem;
+  margin: 0 0 0.6rem;
+  -webkit-column-break-inside: avoid;
+  break-inside: avoid;
+  box-shadow: 0 1px 2px rgba(60, 50, 20, 0.06);
+}
+.md-typeset .eclat-card p {
+  margin: 0;
+}
+.md-typeset .eclat-card p strong:first-child {
+  display: block;
+  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-weight: 700;
+  color: var(--green-title);
+  letter-spacing: 0.02em;
+  margin-bottom: 0.15rem;
+}
+/* « Les deux Éclats » : entrées de définition alignées, façon lignes de tableau
+   mais sans tableau. Le terme à gauche en vert Cinzel, la description à droite,
+   un filet fin séparant les entrées. Pleine largeur via le bloc .span. */
+.md-typeset .eclat-defs {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  column-gap: 1.1rem;
+  margin: 0.4rem 0 0.9rem;
+}
+.md-typeset .eclat-defs dt,
+.md-typeset .eclat-defs dd {
+  border-top: 1px solid #e0dccd;
+  padding: 0.4rem 0;
+}
+.md-typeset .eclat-defs dt {
+  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-weight: 700;
+  color: var(--green-title);
+  letter-spacing: 0.02em;
+}
+.md-typeset .eclat-defs dd {
+  margin: 0;
+}
+
+/* ── Modules de conjuration : présentation façon bestiaire ANIMA ──
+   Titre de capacité souligné, table « Effet | Coût » avec colonne de coût
+   étroite à droite, définitions de propriétés en retrait sous la table. */
+.md-typeset .cj-modules h3,
+.md-typeset .cj-modules h4 {
+  font-size: 0.78rem;
+  color: var(--green-title);
+  letter-spacing: 0.03em;
+  margin-top: 1rem;
+  margin-bottom: 0.3rem;
+  padding-bottom: 0.12rem;
+  border-bottom: 1px solid #cfc8b8;
+}
+/* Colonnes de coût (DC, UA, MA, EC) : étroites et centrées, comme les
+   colonnes Coût/GN d'ANIMA ; la colonne effet occupe le reste. */
+.md-typeset .cj-modules table:not([class]) th:nth-child(1) {
+  width: 73% !important;
+}
+.md-typeset .cj-modules table:not([class]):has(th:nth-child(5)) th:nth-child(1) {
+  width: 64% !important;
+}
+.md-typeset .cj-modules table:not([class]) th:not(:first-child),
+.md-typeset .cj-modules table:not([class]) td:not(:first-child) {
+  width: 9% !important;
+  text-align: center !important;
+  padding-left: 0.2em;
+  padding-right: 0.2em;
+}
+/* Lignes de catégorie (« Quantité », « Taille », « Volume », « Charge »…) :
+   présentées comme des lignes de tableau normales, simplement alignées à gauche. */
+.md-typeset .cj-modules table:not([class]) tbody tr.cat td {
+  text-align: left !important;
+  padding-left: 0.5em !important;
+}
+/* Lignes appartenant à une catégorie : tabulées vers la droite pour montrer
+   qu'elles dépendent de la ligne de catégorie au-dessus. */
+.md-typeset .cj-modules table:not([class]):has(tbody tr.cat) tbody tr:not(.cat):not(.flush) td:first-child {
+  padding-left: 1rem;
+}
+
+/* ── Variante « anima » des modules : tables sépia façon encadré « Modified
+   Costs » d'Anima. Activée par la classe .anima sur le conteneur .cj-modules ;
+   ne touche QUE ces tables-là (titre en petites capitales brun-rouge ; tout le
+   tableau en zébrures crème uniformes, en-tête et lignes de catégorie compris,
+   sans fond spécial), jamais les autres tables du livre. ── */
+.md-typeset .cj-modules.anima h3,
+.md-typeset .cj-modules.anima h4 {
+  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  color: #8a4632;
+  font-variant: small-caps;
+  letter-spacing: 0.06em;
+  border-bottom: 2px solid #c9a86a;
+}
+/* En-tête : pas de fond plein, juste le libellé brun et un filet ; il reçoit la
+   même crème que les zébrures pour rester dans la trame. */
+.md-typeset .cj-modules.anima table:not([class]) th {
+  background: #fbf7ec;
+  color: #4a3520;
+  border-bottom: 1px solid #b39a68;
+}
+.md-typeset .cj-modules.anima table:not([class]) td {
+  border-bottom: 1px solid #e6dcc1;
+}
+/* Zébrure crème pour TOUTES les lignes du corps, y compris les lignes de
+   catégorie (qui ne reçoivent donc aucun fond particulier). */
+.md-typeset .cj-modules.anima table:not([class]) tbody tr:nth-child(odd)  td { background: #f5efdc; }
+.md-typeset .cj-modules.anima table:not([class]) tbody tr:nth-child(even) td { background: #fbf7ec; }
+/* Colonnes unifiées Effet | DI | CAR | UA | MA | AE : la colonne Effet prend la
+   place restante (sinon six colonnes débordent), les cinq autres restent étroites. */
+.md-typeset .cj-modules.anima table:not([class]) th:nth-child(1) { width: auto !important; }
+/* Filets verticaux séparant les trois groupes (DI CAR · UA MA · AE) : après CAR
+   (3ᵉ colonne) et après MA (5ᵉ), continus sur toute la hauteur du tableau. Les
+   lignes de catégorie sont défusionnées (libellé en 1ʳᵉ colonne, cellules vides
+   ensuite) pour que les filets ne s'y interrompent pas. */
+.md-typeset .cj-modules.anima table:not([class]) th:nth-child(3),
+.md-typeset .cj-modules.anima table:not([class]) td:nth-child(3),
+.md-typeset .cj-modules.anima table:not([class]) th:nth-child(5),
+.md-typeset .cj-modules.anima table:not([class]) td:nth-child(5) {
+  border-right: 1px solid #c9b88f;
+}
+/* Paragraphes de la zone modules : par défaut traités comme des définitions de
+   propriété (petits, en retrait avec un filet) ; la description, juste après le
+   titre, reprend le corps normal. */
+.md-typeset .cj-modules p {
+  font-size: 0.66rem;
+  margin: 0.25rem 0;
+  text-align: left;
+}
+/* Bloc d'entrées sous un tableau : une seule barre grise continue à gauche,
+   plutôt qu'une barre par paragraphe. Utilisable hors conjuration (ex. états). */
+.md-typeset .defs {
+  border-left: 2px solid #e0dccd;
+  padding-left: 0.7rem;
+  margin: 0.4rem 0 0.6rem;
+}
+.md-typeset .defs p {
+  font-size: 0.66rem;
+  margin: 0.25rem 0;
+}
+.md-typeset .defs ul {
+  margin: 0.1rem 0 0.5rem;
+}
+/* Variante « titre » des définitions : le nom passe en titre sur sa propre ligne
+   (en vert), la description vient dessous. Pour bien distinguer les manœuvres. */
+.md-typeset .defs.titled {
+  border-left: none;
+  padding-left: 0;
+}
+.md-typeset .defs.titled p {
+  margin: 0 0 0.7rem;
+  break-inside: avoid;
+}
+.md-typeset .defs.titled p strong:first-child {
+  display: block;
+  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-weight: 700;
+  color: var(--green-title, #5a7d2a);
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.05rem;
+}
+/* Ligne de prérequis sous le nom de manœuvre : Cinzel gris, plus petit. */
+.md-typeset .defs.titled p .prereq {
+  display: block;
+  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-weight: 400;
+  font-style: normal;
+  color: #8a8478;
+  font-size: 0.6rem;
+  letter-spacing: 0.03em;
+  margin-bottom: 0.2rem;
+}
+/* Cartes de manœuvres : chaque manœuvre est un <div class="mcard"> (parchemin),
+   ce qui autorise paragraphes et vraies listes à puces lisibles à l'intérieur. */
+.md-typeset .mcard {
+  background: #fbf9f1;
+  border: 1px solid #d9d2bf;
+  border-radius: 5px;
+  padding: 0.5rem 0.7rem 0.55rem;
+  margin: 0 0 0.7rem;
+  break-inside: avoid;
+  box-shadow: 0 1px 2px rgba(60, 50, 20, 0.06);
+}
+.md-typeset .mcard p {
+  font-size: 0.66rem;
+  margin: 0 0 0.4rem;
+}
+.md-typeset .mcard p:last-child { margin-bottom: 0; }
+.md-typeset .mcard > p:first-child strong:first-child {
+  display: block;
+  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-weight: 700;
+  color: var(--green-title);
+  font-size: 0.84rem;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid #e8e1cf;
+  padding-bottom: 0.22rem;
+  margin-bottom: 0.28rem;
+}
+.md-typeset .mcard .prereq {
+  display: block;
+  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-weight: 600;
+  font-style: normal;
+  color: #8a8478;
+  font-size: 0.58rem;
+  letter-spacing: 0.03em;
+  margin-bottom: 0.1rem;
+}
+/* ====== Page États : blocs façon « statblock » (bandeau de titre coloré + corps compact) ====== */
+.md-typeset .sblock {
+  break-inside: avoid;
+  border: 1px solid #d9d2bf;
+  border-radius: 4px;
+  margin: 0 0 0.55rem;
+  overflow: hidden;
+  font-size: 0.66rem;
+  line-height: 1.34;
+}
+/* Bandeau de titre coloré, pleine largeur */
+.md-typeset .sblock > p:first-child {
+  margin: 0 0 0.35rem;
+  padding: 0.24rem 0.5rem;
+  background: var(--green-header);
+}
+.md-typeset .sblock > p:first-child strong:first-child {
+  display: block;
+  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  color: #fdfaf1;
+}
+/* Corps : retrait latéral pour tout sauf le bandeau */
+.md-typeset .sblock > :not(:first-child) {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+.md-typeset .sblock > p { margin: 0 0 0.32rem; }
+.md-typeset .sblock > p:last-child { margin-bottom: 0.4rem; }
+/* Paliers (Prise, Paralysie, Mutisme, Immobilisé, Abri) */
+.md-typeset .sblock .palier {
+  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-weight: 700;
+  font-size: 0.68rem;
+  color: var(--green-section);
+  margin: 0.1rem 0 0.28rem;
+  padding-top: 0.32rem;
+  border-top: 1px solid #e8e1cf;
+}
+/* Puces de modificateurs chiffrés */
+.md-typeset .sblock .smods {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.22rem;
+  margin: 0;
+}
+.md-typeset .sblock .smod {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.18rem;
+  padding: 0.05rem 0.18rem;
+  border-radius: 3px;
+  background: #f4e8e1;
+  font-size: 0.6rem;
+  color: #4a4436;
+  white-space: nowrap;
+}
+.md-typeset .sblock .smod b {
+  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-weight: 700;
+  font-size: 0.7rem;
+  color: #a1462f;
+}
+.md-typeset .sblock .smod.pos { background: #e7efdf; }
+.md-typeset .sblock .smod.pos b { color: #587a45; }
+.md-typeset .mcard ul {
+  margin: 0.15rem 0 0.2rem;
+  padding-left: 1rem;
+  font-size: 0.66rem;
+}
+.md-typeset .mcard li { margin: 0.06rem 0; }
+/* Entrées de définition dans une carte (façon modules de conjuration). */
+.md-typeset .mcard .defs { margin: 0.2rem 0 0.1rem; }
+.md-typeset .mcard .defs p { margin: 0.18rem 0; }
+/* Effets par zone (Agripper, Assommer…) : chaque groupe de zones en pastilles,
+   son effet dessous. Pastilles en inline-block (ni flex ni grid) : repli naturel
+   en colonne étroite et rendu sûr dans le PDF. */
+.md-typeset .zones { margin: 0.25rem 0 0.1rem; }
+.md-typeset .zones .zone {
+  padding: 0.3rem 0 0.26rem;
+  border-top: 1px solid #e8e1cf;
+}
+.md-typeset .zones .zone:last-child { padding-bottom: 0.05rem; }
+/* Filet de clôture sous le dernier groupe, seulement si du texte suit encore
+   dans la carte (si le composant clôt la carte, pas de filet). */
+.md-typeset .zones:not(:last-child) .zone:last-child {
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid #e8e1cf;
+}
+.md-typeset .zones p { margin: 0; font-size: 0.66rem; }
+/* Retrait suspendu : les lignes repliées (pastilles ou texte) s'alignent sous la
+   première pastille / le début de l'effet, pas sous l'étiquette. */
+.md-typeset .zones .zone-chips {
+  line-height: 1.5;
+  padding-left: 3.85rem;
+  text-indent: -3.85rem;
+}
+.md-typeset .zchip {
+  display: inline-block;
+  padding: 0 0.34rem 0.03rem;
+  margin: 0 0.16rem 0.1rem 0;
+  border: 1px solid #ddd5c2;
+  border-radius: 999px;
+  background: #f3efe0;
+  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-weight: 600;
+  font-size: 0.56rem;
+  letter-spacing: 0.05em;
+  color: #4a4436;
+  white-space: nowrap;
+}
+.md-typeset .zones .zone-effet {
+  margin-top: 0.1rem;
+  padding-left: 3.85rem;
+  text-indent: -3.85rem;
+}
+/* Micro-étiquette devant chaque ligne (« Zone saisie », « Effet ») : rend le
+   mappage zones -> effet lisible d'un coup d'œil. */
+.md-typeset .zones .zlbl {
+  display: inline-block;
+  min-width: 3.6rem;
+  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-weight: 600;
+  font-size: 0.54rem;
+  letter-spacing: 0.05em;
+  color: #8a8478;
+  margin-right: 0.25rem;
+}
+/* text-indent s'hérite : sans remise à zéro, le retrait suspendu du paragraphe
+   décale aussi le texte À L'INTÉRIEUR des pastilles et de l'étiquette. */
+.md-typeset .zones .zlbl,
+.md-typeset .zones .zchip { text-indent: 0; }
+/* Séparateur (---) à l'intérieur d'une carte : filet simple qui NE traverse pas
+   les colonnes (contrairement à .cols hr), pour cloisonner deux blocs de règle. */
+.md-typeset .mcard hr {
+  column-span: none;
+  border: none;
+  border-top: 1px solid #ded5c0;
+  margin: 0.45rem 0;
+}
+/* Cartes d'arts martiaux : en-tête (nom + aspect) centré et dominant, séparé d'un filet. */
+.md-typeset .mcard.art > p:first-child {
+  text-align: center;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.32rem;
+  border-bottom: 1px solid #ded5c0;
+}
+.md-typeset .mcard.art > p:first-child strong:first-child {
+  display: block;
+  font-size: 1rem;
+  letter-spacing: 0.06em;
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: 0.1rem;
+}
+.md-typeset .mcard.art > p:first-child .prereq {
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.11em;
+  font-size: 0.55rem;
+  margin-bottom: 0;
+}
+/* Corps des cartes d'arts : paragraphes resserrés. */
+.md-typeset .mcard.art p { margin-bottom: 0.28rem; }
+/* Titre de palier : aligné à gauche, court trait sous le seul mot (display:table
+   pour que le filet épouse la largeur du texte). Subordonné à l'en-tête centré. */
+.md-typeset .mcard.art p.palier {
+  display: table;
+  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--green-section);
+  font-size: 0.58rem;
+  margin: 0.55rem 0 0.12rem;
+  padding-bottom: 0.1rem;
+  border-bottom: 1px solid #ded5c0;
+}
+
+/* Cartes de glossaire : titre, description + exemples à gauche, image carrée à droite. */
+.md-typeset .gcards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 0.6rem;
+  margin: 0.6rem 0 1rem;
+}
+.md-typeset .gcard {
+  background: #fbf9f1;
+  border: 1px solid #d9d2bf;
+  border-radius: 5px;
+  padding: 0.45rem 0.6rem 0.55rem;
+  box-shadow: 0 1px 2px rgba(60, 50, 20, 0.06);
+}
+.md-typeset .gcard > p:first-child {
+  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-weight: 700;
+  color: var(--green-title);
+  font-size: 0.82rem;
+  letter-spacing: 0.03em;
+  margin: 0 0 0.35rem;
+  border-bottom: 1px solid #e8e1cf;
+  padding-bottom: 0.2rem;
+}
+.md-typeset .gcard-body {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+}
+.md-typeset .gcard-text {
+  flex: 1;
+  font-size: 0.66rem;
+}
+.md-typeset .gcard-text p { margin: 0 0 0.4rem; }
+.md-typeset .gcard-text p:last-child { margin-bottom: 0; }
+.md-typeset .gcard-img {
+  flex-shrink: 0;
+  width: 8.5rem;
+  height: 8.5rem;
+  border-radius: 4px;
+  border: 1px solid #d9d2bf;
+  object-fit: cover;
+}
+.md-typeset .gcard-img.ph {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #efeada;
+  color: #9a9078;
+  font-size: 0.55rem;
+  text-align: center;
+  padding: 2px;
+  box-sizing: border-box;
+}
+.md-typeset .gcard-fig {
+  flex-shrink: 0;
+  width: 8.5rem;
+  margin: 0;
+  text-align: center;
+}
+.md-typeset .gcard-fig .gcard-img {
+  width: 8.5rem;
+  height: 8.5rem;
+}
+.md-typeset .gcard-fig figcaption {
+  font-size: 0.42rem;
+  line-height: 1.2;
+  color: #9a9078;
+  margin-top: 3px;
+}
+
+/* Glossaire au survol : cartes masquées, bulle flottante, cellules survolables. */
+.gloss-defs { display: none; }
+.gloss-tip {
+  position: absolute;
+  z-index: 2000;
+  width: 23rem;
+  max-width: 88vw;
+  max-height: 72vh;
+  overflow: hidden;
+  pointer-events: none;
+  display: none;
+}
+/* La carte du tooltip prend la forme de son bloc d'origine : vraie mcard d'une manœuvre,
+   sblock d'un état, ou gcard (titre + paragraphes) pour une compétence / règle. */
+.gloss-tip .gcard,
+.gloss-tip .mcard,
+.gloss-tip .sblock {
+  margin: 0;
+  max-height: 72vh;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(40, 30, 10, 0.22);
+}
+.md-typeset .gloss-source td.gloss-trigger { cursor: help; }
+.md-typeset .gloss-source td.gloss-trigger:hover { background: #f3edda; }
+
+/* Glossaire général : liens inline discrets. La couleur du corps est gardée ; seul un
+   soulignement pointillé signale le terme, pour ne pas noyer la page de bleu. */
+.md-typeset a.gloss-link,
+.md-typeset a.gloss-link:visited {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px dotted var(--green-header);
+  cursor: help;
+}
+.md-typeset a.gloss-link:hover {
+  color: var(--green-section);
+  border-bottom-color: var(--green-section);
+}
+/* Ancre invisible : la navigation vers un terme s'arrête un peu au-dessus du bloc. */
+.gloss-anchor {
+  display: inline;
+  scroll-margin-top: 4rem;
+}
+.md-typeset .defs li {
+  font-size: 0.66rem;
+  margin: 0.08rem 0;
+}
+
+/* ---- Compétences : modules ---- */
+.md-typeset .comp h4 {
+  font-size: 0.8rem;
+  color: var(--green-title);
+  border-bottom: 1px solid #cfc8b8;
+  padding-bottom: 0.12rem;
+  margin: 0.1rem 0 0.3rem;
+}
+.md-typeset .comp .groupes {
+  font-size: 0.6rem;
+  font-style: italic;
+  color: #9b9686;
+  line-height: 1.35;
+  margin: 0.2rem 0 0.3rem;
+}
+.md-typeset .comp p:not(.groupes) {
+  font-size: 0.7rem;
+  margin: 0.2rem 0 0;
+}
+.md-typeset .comp .keep {
+  margin: 0 0 0.7rem;
+}
+
+/* ---- Compétences : tableaux récapitulatifs (un par champ, pleine largeur) ---- */
+.md-typeset .comp-recap {
+  margin: 0.6rem 0 1.6rem;
+}
+.md-typeset .comp-recap table {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+  font-size: 0.68rem;
+  margin: 0 0 1.3rem;
+}
+.md-typeset .comp-recap th,
+.md-typeset .comp-recap td {
+  padding: 0.2em 0.6em;
+}
+.md-typeset .comp-recap td:first-child {
+  width: 30%;
+}
+.md-typeset .comp-recap td:nth-child(2) {
+  width: 18%;
+}
+/* Colonne Utilité (4e) : note en glyphes ●○, centrée et insécable ; on aligne le
+   rendu sur les autres glyphes du livre (taille et couleur héritées, aucun
+   letter-spacing) pour ne pas jurer avec le texte. */
+.md-typeset .comp-recap th:nth-child(4),
+.md-typeset .comp-recap td:nth-child(4) {
+  width: 13%;
+  text-align: center;
+  white-space: nowrap;
+  font-size: inherit;
+  color: inherit;
+  letter-spacing: normal;
+}
+/* Colonne Accessible (5e) : peu importante, réduite au minimum ; ne porte que
+   « Non » (les accessibles restent vides). */
+.md-typeset .comp-recap th:nth-child(5),
+.md-typeset .comp-recap td:nth-child(5) {
+  width: 7%;
+  text-align: center;
+  font-size: 0.9em;
+}
+/* Tables façon « armes » : même habillage sépia que les tables .cj-modules.anima
+   (en-tête crème à texte brun + zébrures crème + filets), au lieu de l'en-tête vert
+   plein par défaut. Couvre les récaps de compétences (.comp-recap), la table de
+   difficulté (.diff-table), les tables des capacités physiques (.gloss-source) et
+   toute table enveloppée dans .sepia-table. Seules les couleurs changent ; les
+   largeurs et l'alignement propres à chaque table restent. */
+.md-typeset .comp-recap table:not([class]) th,
+.md-typeset .diff-table table:not([class]) th,
+.md-typeset .gloss-source table:not([class]) th,
+.md-typeset .sepia-table table:not([class]) th {
+  background: #fbf7ec;
+  color: #4a3520;
+  border-bottom: 1px solid #b39a68;
+}
+.md-typeset .comp-recap table:not([class]) td,
+.md-typeset .diff-table table:not([class]) td,
+.md-typeset .gloss-source table:not([class]) td,
+.md-typeset .sepia-table table:not([class]) td {
+  border-bottom: 1px solid #e6dcc1;
+}
+.md-typeset .comp-recap table:not([class]) tbody tr:nth-child(odd)  td,
+.md-typeset .diff-table table:not([class]) tbody tr:nth-child(odd)  td,
+.md-typeset .gloss-source table:not([class]) tbody tr:nth-child(odd)  td,
+.md-typeset .sepia-table table:not([class]) tbody tr:nth-child(odd)  td { background: #f5efdc; }
+.md-typeset .comp-recap table:not([class]) tbody tr:nth-child(even) td,
+.md-typeset .diff-table table:not([class]) tbody tr:nth-child(even) td,
+.md-typeset .gloss-source table:not([class]) tbody tr:nth-child(even) td,
+.md-typeset .sepia-table table:not([class]) tbody tr:nth-child(even) td { background: #fbf7ec; }
+/* Table du sommeil : trait vertical séparant le bloc veille (colonnes 5-6,
+   « Avant de pouvoir redormir » et « Avant d'être fatigué », rejeté à droite)
+   du bloc sommeil / activité. */
+.md-typeset .sommeil table:not([class]) th:nth-child(5),
+.md-typeset .sommeil table:not([class]) td:nth-child(5) {
+  border-left: 2px solid #e6dcc1;
+}
+/* Formule (difficulté…) : ligne grise en italique sous un tableau. */
+.md-typeset p.formula {
+  font-style: italic;
+  color: #9b9686;
+  font-size: 0.66rem;
+  margin: 0.3rem 0 0.7rem;
+}
+
+/* Paragraphes en blocs insécables : ne se coupent pas au changement de colonne ;
+   le titre reste collé à son contenu. */
+.md-typeset .blocs p {
+  break-inside: avoid;
+}
+.md-typeset .blocs h3 {
+  break-after: avoid;
+}
+
+/* ============================================================
+   Critique & Blessures — fiches de blessure dans le flux 2 colonnes.
+   Chaque zone garde son groupe de 5 degrés insécable et ses fiches
+   s'empilent dans la colonne (sceau chiffré + couleur + jauge ▰▱
+   = triple signal de gravité).
+   ============================================================ */
+/* Encadré « règle optionnelle » en tête de chapitre ----------------------- */
+.md-typeset .optrule {
+  break-inside: avoid;
+  margin: 0.2rem 0 1.15rem;
+  padding: 0.5rem 0.85rem 0.55rem;
+  background: #f4eeda;
+  border: 1px solid #d8ceb2;
+  border-left: 4px solid var(--green-title);
+  border-radius: 5px;
+  box-shadow: 0 1px 2px rgba(60, 50, 20, 0.06);
+}
+.md-typeset .optrule > p:first-child strong:first-child {
+  display: block;
+  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-weight: 700;
+  color: var(--green-title);
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.22rem;
+}
+.md-typeset .optrule p {
+  font-size: 0.72rem;
+  margin: 0;
+}
+
+.md-typeset .cols .wounds {
+  column-span: all;
+  margin: 0.6rem 0 0.2rem;
+}
+.md-typeset .wzone {
+  break-inside: avoid;
+  margin: 0 0 1.4rem;
+}
+.md-typeset .wzone-titre {
+  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  color: var(--green-title);
+  font-size: 0.82rem;
+  margin: 0 0 0.45rem;
+  padding-bottom: 0.12rem;
+  border-bottom: 1px solid #cfc8b8;
+  break-after: avoid;
+}
+/* Par zone : degrés 1 2 puis 3 4 par lignes de deux, le 5 centré seul (flex 2 par ligne). */
+.md-typeset .wgrid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.55rem;
+  align-items: stretch;
+}
+
+/* ---- La fiche ---- */
+.md-typeset .wfiche {
+  --g: #7c9275;
+  flex: 0 0 calc((100% - 0.55rem) / 2);
+  background: #fffdf6;
+  border: 1px solid #ded7c5;
+  border-left: 3px solid var(--g);
+  border-radius: 3px;
+  padding: 0.4rem 0.55rem 0.5rem;
+  break-inside: avoid;
+  font-size: 0.66rem;
+  line-height: 1.32;
+  text-align: left;
+}
+.md-typeset .wfiche[data-deg="1"] { --g: #7c9275; }
+.md-typeset .wfiche[data-deg="2"] { --g: #968d52; }
+.md-typeset .wfiche[data-deg="3"] { --g: #c0853b; }
+.md-typeset .wfiche[data-deg="4"] { --g: #b26a3a; }
+.md-typeset .wfiche[data-deg="5"] { --g: #9c4a42; }
+
+/* ---- 6e case : « perte du membre », carte parchemin claire assortie au fond ---- */
+.md-typeset .wfiche.wperte {
+  background: linear-gradient(#fbf6e9, #f3ecd8);
+  border: 1px solid #ddd3ba;
+  border-left: 3px solid #b0a274;
+}
+.md-typeset .wperte .wf-head { display: block; margin: 0 0 0.32rem; }
+.md-typeset .wperte .wf-nom {
+  font-size: 0.72rem;
+  border-bottom: 1px solid #d8cdae;
+  padding-bottom: 0.18rem;
+}
+.md-typeset .wperte .wf-effet {
+  background: none;
+  padding: 0;
+  margin: 0;
+  color: var(--ink);
+}
+/* Zones sans perte de membre : emplacement image vide (à remplir plus tard). */
+.md-typeset .wfiche.wperte-img { display: flex; }
+.md-typeset .wperte-img .wf-img {
+  flex: 1;
+  min-height: 4rem;
+  border: 1px dashed #cabf9e;
+  border-radius: 3px;
+  background: rgba(176, 162, 116, 0.05);
+}
+
+/* ---- En-tête : sceau de cire + nom + jauge ---- */
+.md-typeset .wf-head {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas: "sceau nom" "sceau jauge";
+  column-gap: 0.45rem;
+  align-items: center;
+  margin-bottom: 0.32rem;
+}
+.md-typeset .wf-sceau {
+  grid-area: sceau;
+  align-self: center;
+  width: 1.7rem;
+  height: 1.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #fdfaf1;
+  background: var(--g);
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .35), 0 1px 1px rgba(0, 0, 0, .25);
+}
+.md-typeset .wf-nom {
+  grid-area: nom;
+  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-weight: 600;
+  font-size: 0.7rem;
+  line-height: 1.15;
+  color: var(--green-section);
+  margin: 0;
+}
+.md-typeset .wf-jauge {
+  grid-area: jauge;
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  color: var(--g);
+  margin-top: 0.05rem;
+}
+
+/* ---- Effet : le « diagnostic », sur pavé teinté ---- */
+.md-typeset .wf-effet {
+  margin: 0 0 0.35rem;
+  padding: 0.25rem 0.4rem;
+  background: #f6f1e2;
+  border-radius: 2px;
+}
+
+/* ---- Soins : étiquettes Cinzel grises, test isolé en vert ---- */
+.md-typeset .wf-soins {
+  margin: 0;
+  border-top: 1px dotted #d8d1bf;
+  padding-top: 0.32rem;
+}
+.md-typeset .wf-soin { margin: 0 0 0.4rem; }
+.md-typeset .wf-soin:last-child { margin-bottom: 0; }
+.md-typeset .wf-lbl {
+  display: block;
+  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-size: 0.54rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #9b9686;
+}
+/* Méthode de soin : tout le jet en gras vert (compétence + parenthèse +
+   difficulté, ou « Repos : N jours »), pas seulement le mot « Médecine ». */
+.md-typeset .wf-roll {
+  display: block;
+  line-height: 1.25;
+  font-weight: 600;
+  color: var(--green-section);
+}
+.md-typeset .wf-test { font-weight: inherit; color: inherit; }
+.md-typeset .wf-desc {
+  display: block;
+  line-height: 1.32;
+  margin-top: 0.05rem;
+}
+/* « aucun » : ni gras ni vert, mention discrète. */
+.md-typeset .wf-roll.wf-aucun { font-weight: normal; color: #a59f8e; font-style: italic; }
+
+/* ============================================================
+   Impression / export PDF.
+   Le PDF du livre est rendu au build par WeasyPrint (plugin mkdocs-to-pdf, en
+   media « print »). Ces règles ne s'appliquent donc qu'au PDF et à un éventuel
+   Ctrl+P, jamais à l'affichage écran. */
+@media print {
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  /* WeasyPrint 69 (le moteur du PDF du livre) sait désormais paginer le
+     multi-colonnes, les grilles et le flex : on GARDE donc la mise en page riche
+     du livre à l'impression et dans le PDF (2 colonnes via .cols, cartes en
+     grille, etc.) au lieu de l'aplatir comme il fallait le faire pour l'ancien
+     WeasyPrint 62.3 qui tronquait le livre. On autorise seulement les coupures
+     partout : filet de sécurité contre un élément plus haut qu'une page/colonne
+     qui, sinon, bloquerait la pagination. */
+  .md-typeset, .md-typeset * {
+    break-inside: auto !important;
+    break-after: auto !important;
+    break-before: auto !important;
+  }
+
+  .md-typeset .wfiche { box-shadow: none; }
+
+  /* Ne jamais imprimer les définitions de glossaire (cachées à l'écran). */
+  .gloss-defs { display: none !important; }
+
+  @page { margin: 14mm 12mm; }
+}
+/* ---- Écran étroit : la frise retombe en pile ---- */
+/* Écran étroit : une fiche par ligne. */
+@media screen and (max-width: 40em) {
+  .md-typeset .wfiche { flex-basis: 100%; }
+}
+
+/* Tables de contenu (états…) : colonne de nom étroite, le reste pour le texte. */
+.md-typeset .states table:not([class]) th:first-child,
+.md-typeset .states table:not([class]) td:first-child {
+  width: 26%;
+}
+/* Table des situations (6 colonnes : nom + 5 malus) : nom large, malus étroits et centrés. */
+.md-typeset .states table:not([class]):has(th:nth-child(6)) {
+  table-layout: fixed;
+}
+.md-typeset .states table:not([class]):has(th:nth-child(6)) th:first-child {
+  width: 35%;
+}
+.md-typeset .states table:not([class]):has(th:nth-child(6)) th:nth-child(n+2),
+.md-typeset .states table:not([class]):has(th:nth-child(6)) td:nth-child(n+2) {
+  width: 13%;
+  text-align: center;
+}
+/* Formule de calcul d'une catégorie non cumulable : ligne grise sous le tableau,
+   donnant les formules exactes (effet, DC, UA) pour extrapoler au-delà des paliers. */
+.md-typeset .cj-modules p.formula {
+  font-size: 0.58rem;
+  color: #9b9686;
+  margin: 0.1rem 0 0.4rem;
+}
+/* Ligne « TYPE : … » sous le titre : étiquette grise en Cinzel, en majuscules,
+   indiquant quels types de conjuration peuvent prendre ce module. */
+.md-typeset .cj-modules .mod-type {
+  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-size: 0.58rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #9b9686;
+  margin: 0 0 0.4rem;
+  padding-left: 0;
+  border-left: none;
+  text-align: left;
+}
+/* Description du module : paragraphe qui suit la ligne TYPE (ou le titre, pour
+   les modules sans ligne TYPE), en corps normal. */
+.md-typeset .cj-modules .mod-type + p,
+.md-typeset .cj-modules h3 + p,
+.md-typeset .cj-modules h4 + p {
+  font-size: inherit;
+  margin: 0.2rem 0 0.45rem;
+  padding-left: 0;
+  border-left: none;
+  text-align: justify;
+}
+
+/* Tables à 3 colonnes en multicol (ex. modules de conjuration : Nom | Effet |
+   Coût) : nom étroit, effet large, coût compact à droite. */
+.md-typeset .cols table:not([class]):has(th:nth-child(3)):not(:has(th:nth-child(4))) th:nth-child(1) { width: 30%; }
+.md-typeset .cols table:not([class]):has(th:nth-child(3)):not(:has(th:nth-child(4))) th:nth-child(2) { width: 50%; }
+.md-typeset .cols table:not([class]):has(th:nth-child(3)):not(:has(th:nth-child(4))) th:nth-child(3) { width: 20%; text-align: center; }
+.md-typeset .cols table:not([class]):has(th:nth-child(3)):not(:has(th:nth-child(4))) td:nth-child(3) { text-align: center; }
+
+/* En-têtes : verts, à la ligne. */
+.md-typeset table:not([class]) th {
+  background: var(--green-header);
+  color: #fff;
+  font-weight: 600;
+  text-align: center;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  padding: 0.3em 0.45em;
+  border: none;
+}
+
+/* Cellules compactes, texte à la ligne. */
+.md-typeset table:not([class]) td {
+  padding: 0.18em 0.5em;
+  border: none;
+  vertical-align: middle;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* Lignes alternées + survol. */
+.md-typeset table:not([class]) tbody tr {
+  border: none;
+}
+.md-typeset table:not([class]) tbody tr:nth-child(odd)  td { background: var(--row-a); }
+.md-typeset table:not([class]) tbody tr:nth-child(even) td { background: var(--row-b); }
+
+/* Tables dans une carte (ex. les rayons de l'En) : style épuré façon liste, entièrement
+   transparent (Material pose un fond sur l'élément table lui-même), sans en-tête vert
+   plein ni zébrures — l'en-tête se réduit à un filet, le fond reste celui de la carte. */
+.md-typeset .mcard table:not([class]) { background: none; }
+.md-typeset .mcard table:not([class]) th {
+  background: none;
+  color: #4a4538;
+  text-align: left;
+  border-bottom: 1px solid #ded5c0;
+}
+.md-typeset .mcard table:not([class]) td {
+  background: none;
+  text-align: left;
+}
+.md-typeset .mcard table:not([class]) tbody tr:nth-child(odd)  td,
+.md-typeset .mcard table:not([class]) tbody tr:nth-child(even) td {
+  background: none;
+  border-bottom: 1px solid #ece7d8;
+}
+/* Pas de changement de cellule au survol dans ces tableaux de carte. */
+.md-typeset .mcard table:not([class]) tr:hover,
+.md-typeset .mcard table:not([class]) tr:hover td,
+.md-typeset .mcard table:not([class]) tr:hover th {
+  background: none !important;
+  background-color: transparent !important;
+}
+/* Annexe Conversion Magicien D&D : tables au style des fiches d'armes (épuré,
+   sans en-tête plein ni zébrures, filets fins). */
+.md-typeset .annexe-dnd table:not([class]) { background: none; }
+.md-typeset .annexe-dnd table:not([class]) th {
+  background: none;
+  color: #4a4538;
+  text-align: left;
+  border-bottom: 1px solid #ded5c0;
+}
+.md-typeset .annexe-dnd table:not([class]) td { background: none; }
+.md-typeset .annexe-dnd table:not([class]) tbody tr:nth-child(odd)  td,
+.md-typeset .annexe-dnd table:not([class]) tbody tr:nth-child(even) td {
+  background: none;
+  border-bottom: 1px solid #ece7d8;
+}
+.md-typeset .annexe-dnd table:not([class]) tr:hover,
+.md-typeset .annexe-dnd table:not([class]) tr:hover td,
+.md-typeset .annexe-dnd table:not([class]) tr:hover th {
+  background: none !important;
+  background-color: transparent !important;
+}
+
+/* (ancien bloc :has(th:nth-child(10)) « Archétype » supprimé : CSS mort d'avant la refonte des armes, il cassait la table Formes) */
+
+/* ---------- 6. En-tête & onglets (style 5e.tools) ---------- */
+.md-header {
+  background-color: var(--green-title);
+  box-shadow: none;
+}
+.md-header__title {
+  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-weight: 700;
+}
+.md-tabs {
+  background-color: var(--green-section);
+  border-top: 1px solid rgba(255, 255, 255, .12);
+}
+.md-tabs__list {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: .25rem 0;
+}
+.md-tabs__item {
+  height: auto;
+  padding: 0;
+  margin: 0 .1rem;
+}
+.md-tabs__link {
+  font-family: 'Symboles JDR', 'Alegreya', 'EB Garamond', Garamond, serif;
+  font-size: .72rem;
+  margin: 0;
+  padding: .18rem .7rem;
+  opacity: 1;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, .35);
+  border-radius: 3px;
+  background-color: rgba(255, 255, 255, .06);
+  transition: background-color .12s, border-color .12s;
+}
+.md-tabs__link:hover {
+  background-color: rgba(255, 255, 255, .18);
+  border-color: rgba(255, 255, 255, .65);
+  opacity: 1;
+}
+.md-tabs__link--active {
+  background-color: var(--green-header);
+  border-color: #fff;
+  font-weight: 600;
+}
+
+/* ---------- 7. Navigation latérale ---------- */
+.md-sidebar--primary {
+  width: 14rem;
+}
+.md-sidebar--secondary {       /* pas de sommaire à droite */
+  display: none !important;
+}
+.md-footer {                   /* pas de pied de page */
+  display: none;
+}
+/* Nav Material générale (pages hors livre) */
+.md-nav {
+  font-size: 0.66rem;
+  line-height: 1.3;
+}
+.md-nav__title {
+  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-size: 0.7rem;
+  color: var(--green-section);
+}
+.md-nav__link--active,
+.md-nav__link--active > * {
+  color: var(--green-title) !important;
+  font-weight: 600;
+}
+.md-nav__link:hover {
+  color: var(--green-title);
+}
+
+/* ---------- 8. Arbre custom du livre (continuous.js) ---------- */
+/* Sur les pages du livre, la LISTE de nav auto de Material est masquée (mais on
+   garde son titre, réutilisé comme barre de tête/fermeture du tiroir en §12).
+   Les liens restent dans le DOM (display:none) et continuous.js les lit toujours. */
+.book-mode .md-sidebar--primary .md-nav--primary > .md-nav__list {
+  display: none;
+}
+
+/* Anti-FOUC au rechargement : on masque le contenu (sans en perdre la mise en
+   page, donc visibility et non display) jusqu'à ce que continuous.js l'ait
+   enveloppé et positionné, puis retire book-loading. */
+html.book-loading .md-content__inner {
+  visibility: hidden;
+}
+.book-nav {
+  font-family: 'Symboles JDR', 'Alegreya', 'EB Garamond', Garamond, serif;
+  font-size: 0.7rem;
+  line-height: 1.3;
+  padding: 0.6rem 0.7rem;
+}
+.book-nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Niveau chapitre : en-tête du groupe, toujours déplié. Même TAILLE que les
+   pages — seule l'indentation des pages les distingue. Le clic défile vers la
+   première page du chapitre. */
+.book-group-title {
+  display: block;
+  padding: 0.2rem 0;
+  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-weight: 400;
+  font-size: 0.72rem;
+  color: var(--green-section);
+  text-decoration: none;
+  cursor: pointer;
+}
+.book-group.active > .book-group-title,
+.book-group-title:hover {
+  color: var(--green-title);
+}
+/* Scopé sous .book-nav pour battre `.book-nav ul { padding/margin: 0 }` en
+   spécificité — sinon l'indentation des pages est écrasée. */
+.book-nav .book-group-pages {
+  margin: 0 0 0.35rem 0.35rem;
+  padding-left: 0.7rem;
+  border-left: 1px solid #d8e0d3;
+}
+
+.book-chapter > .book-link {
+  display: block;
+  padding: 0.2rem 0;
+  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-weight: 400;
+  font-size: 0.72rem;
+  color: var(--green-section);
+  text-decoration: none;
+  cursor: pointer;
+}
+.book-chapter > .book-link:hover,
+.book-chapter.active > .book-link {
+  color: var(--green-title);
+}
+/* Sous-sections : visibles uniquement pour le chapitre actif. */
+.book-sections {
+  display: none;
+  margin: 0.1rem 0 0.4rem;
+}
+.book-chapter.active .book-sections {
+  display: block;
+}
+.book-sec {
+  display: block;
+  padding: 0.12rem 0 0.12rem 0.7rem;
+  margin-left: 0.15rem;
+  border-left: 1px solid #cdd8c8;
+  color: #5a5a5a;
+  text-decoration: none;
+  cursor: pointer;
+}
+.book-sec:hover {
+  color: var(--green-title);
+  border-left-color: var(--green-header);
+}
+.book-sec.active {
+  color: var(--green-title);
+  border-left-color: var(--green-title);
+  font-weight: 600;
+}
+
+/* ---------- 9. Lecture en défilement continu (continuous.js) ---------- */
+/* Chaque page devient une « feuille » crème séparée ; le conteneur devient
+   transparent (le fond sombre apparaît entre les feuilles). */
+.md-content > .md-content__inner.cont-active {
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  /* Ancrage natif ACTIF : pendant le scroll, le navigateur garde la position
+     de façon fluide quand une page s'insère au-dessus (pas de scrollTo manuel
+     qui glitcherait). Les cas tout-en-haut (clic/arrivée) sont repositionnés
+     explicitement par continuous.js sur la cible. */
+}
+/* Offset pour scrollIntoView (clics dans l'arbre) : la cible se place sous
+   l'en-tête collant (header + onglets ≈ 4.8rem). */
+.cont-page,
+.cont-page h1,
+.cont-page h2,
+.cont-page h3 {
+  scroll-margin-top: 5.2rem;
+}
+
+/* Page fraîchement chargée : masquée le temps d'être mise en page (l'espace est
+   réservé via visibility, donc pas de saut), puis révélée d'un coup → tous ses
+   éléments apparaissent en même temps, jamais le fond seul puis le contenu. */
+.md-typeset .cont-page.cont-pending {
+  visibility: hidden;
+}
+
+.md-typeset .cont-page {
+  background: var(--paper);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, .18);
+  padding: 1.6rem 2rem 2.2rem;
+  margin-bottom: 1.8rem;
+}
+.md-typeset .cont-sentinel {
+  height: 1px;
+}
+/* Surbrillance temporaire du titre ciblé après un clic dans l'arbre. */
+@keyframes cont-flash-anim {
+  0%   { background-color: rgba(130, 153, 123, 0.55); }
+  100% { background-color: transparent; }
+}
+.md-typeset .cont-flash {
+  animation: cont-flash-anim 1.5s ease-out;
+  border-radius: 3px;
+  /* PAS de box-decoration-break ici : le modifier dans un multi-colonnes force
+     une re-fragmentation et fait sauter les colonnes au clic. Le fond animé
+     suffit ; les titres flashés tiennent sur une ligne. */
+}
+
+/* ---------- 10. Page d'accueil : changelog ---------- */
+.md-typeset .changelog {
+  display: flex;
+  flex-direction: column;
+  gap: .7rem;
+  margin-top: 1rem;
+}
+.md-typeset .cl-commit {
+  background: #fff;
+  border: 1px solid #d3ddcd;
+  border-left: 3px solid var(--green-header);
+  border-radius: 3px;
+  padding: .5rem .7rem;
+}
+.md-typeset .cl-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: .6rem;
+}
+.md-typeset .cl-msg {
+  font-weight: 600;
+  color: var(--green-section);
+}
+.md-typeset .cl-sha {
+  font-family: 'Roboto Mono', monospace;
+  font-size: .68rem;
+  color: #8a8a8a;
+  flex-shrink: 0;
+}
+.md-typeset .cl-meta {
+  font-size: .68rem;
+  color: #777;
+  margin: .1rem 0 .35rem;
+}
+.md-typeset .cl-files {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.md-typeset .cl-file {
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+  margin: .12rem 0;
+  font-size: .72rem;
+}
+.md-typeset .cl-file code {
+  background: transparent;
+  padding: 0;
+  font-family: inherit;
+  font-size: .72rem;
+  color: var(--green-section);
+  border-bottom: 1px dotted var(--green-header);
+}
+.md-typeset .cl-link {
+  font-size: .72rem;
+  color: var(--green-section);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--green-header);
+}
+.md-typeset .cl-link:hover {
+  color: var(--green-title);
+  border-bottom-style: solid;
+}
+.md-typeset .cl-status {
+  flex-shrink: 0;
+  min-width: 4.4rem;
+  text-align: center;
+  font-size: .6rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  padding: .05rem .3rem;
+  border-radius: 2px;
+  color: #fff;
+}
+.md-typeset .cl-added    { background: #5a8a5a; }
+.md-typeset .cl-modified { background: #b08a3e; }
+.md-typeset .cl-removed  { background: #a85a52; }
+.md-typeset .cl-renamed  { background: #5a7a9a; }
+.md-typeset .cl-info  { color: #777; font-style: italic; }
+.md-typeset .cl-error { color: #a85a52; }
+/* Entrée « modifications en cours » (non committées) : barre jaune pleine */
+.md-typeset .cl-commit.cl-pending {
+  border-left: 3px solid #e0a800;
+  background: #fffdf6;
+}
+.md-typeset .cl-pending-tag {
+  background: #b08a3e;
+  color: #fff;
+  border-radius: 2px;
+  padding: .03rem .3rem;
+  font-family: inherit;
+  font-size: .6rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+/* ARMES-COMME-MODULES */
+/* Tables des familles d'armes présentées façon module de Nen (encadré sépia
+   d'Anima) : l'habillage (en-tête brun, zébrures crème) vient de .cj-modules
+   .anima. Ici on écarte le gabarit 6 colonnes des modules et on REMET les
+   largeurs et l'alignement d'origine des tables d'armes (11 colonnes, Prix
+   inséré avant Propriétés), en !important pour passer devant les règles
+   !important des modules. */
+.md-typeset .cj-modules.anima.armes table:not([class]) {
+  table-layout: fixed !important;
+}
+.md-typeset .cj-modules.anima.armes table:not([class]) th:nth-child(1),
+.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(1) { width: 13% !important; text-align: left !important; }   /* Arme */
+.md-typeset .cj-modules.anima.armes table:not([class]) th:nth-child(2),
+.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(2) { width: 4%  !important; text-align: center !important; font-size: inherit !important; color: inherit !important; }   /* AM */
+.md-typeset .cj-modules.anima.armes table:not([class]) th:nth-child(3),
+.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(3) { width: 10% !important; text-align: center !important; border-right: none !important; }   /* Portée */
+.md-typeset .cj-modules.anima.armes table:not([class]) th:nth-child(4),
+.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(4) { width: 7%  !important; text-align: center !important; }   /* Munitions */
+.md-typeset .cj-modules.anima.armes table:not([class]) th:nth-child(5),
+.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(5) { width: 7%  !important; text-align: center !important; border-right: none !important; }   /* Mains */
+.md-typeset .cj-modules.anima.armes table:not([class]) th:nth-child(6),
+.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(6) { width: 5%  !important; text-align: center !important; }   /* Dégâts */
+.md-typeset .cj-modules.anima.armes table:not([class]) th:nth-child(7),
+.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(7) { width: 6%  !important; text-align: center !important; font-variant: normal !important; letter-spacing: normal !important; }   /* Mod. dégâts */
+.md-typeset .cj-modules.anima.armes table:not([class]) th:nth-child(8),
+.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(8) { width: 5%  !important; text-align: center !important; font-variant: normal !important; letter-spacing: normal !important; }   /* Type */
+.md-typeset .cj-modules.anima.armes table:not([class]) th:nth-child(9),
+.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(9) { width: 8%  !important; text-align: center !important; white-space: nowrap; }   /* Illégalité */
+.md-typeset .cj-modules.anima.armes table:not([class]) th:nth-child(10),
+.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(10) { width: 8% !important; text-align: center !important; border-right: none !important; white-space: nowrap; }   /* Prix */
+.md-typeset .cj-modules.anima.armes table:not([class]) th:nth-child(11),
+.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(11) { width: 27% !important; text-align: left !important; }   /* Propriétés */
+
+/* ── Page « Formes du vivant » : matrices larges, MÊME mécanisme que les tables
+   d'armes — table-layout FIXE + largeurs de colonnes explicites en %, sommées à
+   100 %, pour que la table fasse pile la largeur de la page et ne déborde jamais
+   (le texte se replie dans la cellule). On neutralise les largeurs (73/64/9 %) et
+   les filets verticaux hérités des tables de coûts. Trois gabarits selon la classe
+   du conteneur : .membres (11 colonnes), .carac (7), .sens (6). */
+.md-typeset .cj-modules.anima.formes table:not([class]) {
+  table-layout: fixed !important;
+  width: 100%;
+}
+.md-typeset .cj-modules.anima.formes table:not([class]) th,
+.md-typeset .cj-modules.anima.formes table:not([class]) td {
+  border-right: none !important;
+  text-align: center !important;
+  padding: 0.18rem 0.25rem !important;
+  font-size: 0.7rem !important;
+  white-space: normal !important;
+  overflow-wrap: break-word;
+  vertical-align: middle;
+}
+.md-typeset .cj-modules.anima.formes table:not([class]) td {
+  color: inherit !important;
+  font-variant: normal !important;
+  letter-spacing: normal !important;
+}
+.md-typeset .cj-modules.anima.formes table:not([class]) th:first-child,
+.md-typeset .cj-modules.anima.formes table:not([class]) td:first-child {
+  text-align: left !important;
+}
+
+/* Gabarit MEMBRES (10 col) : Forme + 9 comptes. */
+.md-typeset .cj-modules.anima.formes.membres table:not([class]) th:nth-child(1),
+.md-typeset .cj-modules.anima.formes.membres table:not([class]) td:nth-child(1) { width: 28% !important; }
+.md-typeset .cj-modules.anima.formes.membres table:not([class]) th:nth-child(n+2):nth-child(-n+10),
+.md-typeset .cj-modules.anima.formes.membres table:not([class]) td:nth-child(n+2):nth-child(-n+10) { width: 8% !important; }
+
+/* Gabarit BIO (5 col) : Forme + exemples, respiration, alimentation, propriété spéciale, tout à gauche. */
+.md-typeset .cj-modules.anima.formes.bio table:not([class]) th,
+.md-typeset .cj-modules.anima.formes.bio table:not([class]) td { text-align: left !important; }
+.md-typeset .cj-modules.anima.formes.bio table:not([class]) th:nth-child(1),
+.md-typeset .cj-modules.anima.formes.bio table:not([class]) td:nth-child(1) { width: 17% !important; }
+.md-typeset .cj-modules.anima.formes.bio table:not([class]) th:nth-child(2),
+.md-typeset .cj-modules.anima.formes.bio table:not([class]) td:nth-child(2) { width: 24% !important; }
+.md-typeset .cj-modules.anima.formes.bio table:not([class]) th:nth-child(3),
+.md-typeset .cj-modules.anima.formes.bio table:not([class]) td:nth-child(3) { width: 10% !important; }
+.md-typeset .cj-modules.anima.formes.bio table:not([class]) th:nth-child(4),
+.md-typeset .cj-modules.anima.formes.bio table:not([class]) td:nth-child(4) { width: 25% !important; }
+.md-typeset .cj-modules.anima.formes.bio table:not([class]) th:nth-child(5),
+.md-typeset .cj-modules.anima.formes.bio table:not([class]) td:nth-child(5) { width: 24% !important; }
+
+/* Gabarit CARACTÉRISTIQUES (7 col) : Forme + 6 caracs centrées. */
+.md-typeset .cj-modules.anima.formes.carac table:not([class]) th:nth-child(1),
+.md-typeset .cj-modules.anima.formes.carac table:not([class]) td:nth-child(1) { width: 28% !important; }
+.md-typeset .cj-modules.anima.formes.carac table:not([class]) th:not(:first-child),
+.md-typeset .cj-modules.anima.formes.carac table:not([class]) td:not(:first-child) { width: 12% !important; }
+
+/* Gabarit SENS (6 col) : Forme + 5 niveaux, texte à gauche. */
+.md-typeset .cj-modules.anima.formes.sens table:not([class]) th:nth-child(1),
+.md-typeset .cj-modules.anima.formes.sens table:not([class]) td:nth-child(1) { width: 20% !important; }
+.md-typeset .cj-modules.anima.formes.sens table:not([class]) th:not(:first-child),
+.md-typeset .cj-modules.anima.formes.sens table:not([class]) td:not(:first-child) { width: 16% !important; text-align: left !important; }
+
+/* Gabarit MATRICE des sens (.sens-grille) : formes en lignes, un SENS par colonne,
+   en-têtes tournés à la verticale pour faire tenir 17 colonnes ; cases = P/S/T/L/I.
+   Deux largeurs selon le conteneur : .mat-ext (18 colonnes), .mat-int (7 colonnes). */
+.md-typeset .cj-modules.anima.formes.sens-grille table:not([class]) th:first-child { vertical-align: bottom !important; }
+.md-typeset .cj-modules.anima.formes.sens-grille table:not([class]) th:not(:first-child) {
+  vertical-align: bottom !important;
+  padding: 0.3rem 0.02rem !important;
+}
+/* Le texte vertical est porté par un <span> (rotation stable, taille strictement
+   uniforme d'une colonne à l'autre) et non par la cellule, dont la rotation +
+   largeur fractionnaire faisait varier le rendu sous-pixel. */
+.md-typeset .cj-modules.anima.formes.sens-grille table:not([class]) th .vh {
+  display: inline-block;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);          /* lecture de bas en haut */
+  white-space: nowrap;
+  line-height: 1;
+  font-size: 0.62rem !important;
+}
+.md-typeset .cj-modules.anima.formes.sens-grille table:not([class]) td:not(:first-child) {
+  text-align: center !important;
+  padding: 0.14rem 0.02rem !important;
+  font-weight: 600;
+}
+/* Grille de couleur continue. Couleurs OPAQUES (la transparence délavait le vert vers
+   le parchemin et laissait voir le fond aux jointures = les traits blancs). En plus de
+   border-collapse, un box-shadow de 1px de la MÊME couleur bouche toute jointure
+   sous-pixel. Vert pour les trois sens ACTIFS (primaire → tertiaire, soutenu → clair),
+   gris pour les NON-actifs (latent, puis inexistant sans lettre). Sombre : night.css. */
+.md-typeset .cj-modules.anima.formes.sens-grille table:not([class]) {
+  border-collapse: collapse !important;
+  border-spacing: 0 !important;
+}
+/* En-têtes SANS fond (le fond crème créait un liseré parchemin aux jointures) et
+   sans bordure. */
+.md-typeset .cj-modules.anima.formes.sens-grille table:not([class]) th { border: none !important; background: var(--paper) !important; box-shadow: 0 0 0 1px var(--paper); }
+.md-typeset .cj-modules.anima.formes.sens-grille table:not([class]) td { border: none !important; }
+/* Dégradé séquentiel vert, foncé (primaire) → très clair (inexistant). box-shadow de
+   la même teinte pour souder les jointures. Texte crème sur les deux plus foncés. */
+.md-typeset .cj-modules.anima.formes.sens-grille table:not([class]) td.p { background: #3a6b47 !important; color: #f4efdf !important; box-shadow: 0 0 0 1px #3a6b47; }
+.md-typeset .cj-modules.anima.formes.sens-grille table:not([class]) td.s { background: #5e9160 !important; color: #f4efdf !important; box-shadow: 0 0 0 1px #5e9160; }
+.md-typeset .cj-modules.anima.formes.sens-grille table:not([class]) td.t { background: #92bd86 !important; box-shadow: 0 0 0 1px #92bd86; }
+.md-typeset .cj-modules.anima.formes.sens-grille table:not([class]) td.l { background: #c2d8ae !important; box-shadow: 0 0 0 1px #c2d8ae; }
+.md-typeset .cj-modules.anima.formes.sens-grille table:not([class]) td.i { background: #e6eed9 !important; box-shadow: 0 0 0 1px #e6eed9; }
+.md-typeset .cj-modules.anima.formes.mat-ext table:not([class]) th:nth-child(1),
+.md-typeset .cj-modules.anima.formes.mat-ext table:not([class]) td:nth-child(1) { width: 24% !important; }
+.md-typeset .cj-modules.anima.formes.mat-ext table:not([class]) th:not(:first-child),
+.md-typeset .cj-modules.anima.formes.mat-ext table:not([class]) td:not(:first-child) { width: 4.47% !important; }
+/* Sens internes : peu de colonnes, on borne la largeur pour ne pas étaler sur toute la page. */
+.md-typeset .cj-modules.anima.formes.mat-int { max-width: 30rem; }
+.md-typeset .cj-modules.anima.formes.mat-int table:not([class]) th:nth-child(1),
+.md-typeset .cj-modules.anima.formes.mat-int table:not([class]) td:nth-child(1) { width: 40% !important; }
+.md-typeset .cj-modules.anima.formes.mat-int table:not([class]) th:not(:first-child),
+.md-typeset .cj-modules.anima.formes.mat-int table:not([class]) td:not(:first-child) { width: 10% !important; }
+
+/* ---------- 11. Fenêtre étroite (vertical / téléphone) ----------
+   Adaptation AUTOMATIQUE à la largeur de la fenêtre. Le grand écran n'est PAS modifié.
+   Trois paliers : téléphone (< 37.5em) = 1 colonne ; demi-écran de PC (37.5em à desktop)
+   = 2 colonnes conservées ; grand écran = 2 colonnes (inchangé). Ce bloc = le palier
+   TÉLÉPHONE (1 colonne). */
+@media screen and (max-width: 37.5em) {
+  /* la feuille de lecture récupère de la place (marges intérieures réduites) */
+  .md-content > .md-content__inner { padding: 1rem 0.8rem 1.6rem; }
+
+  /* corps de texte en UNE colonne : on DÉSACTIVE le multi-colonnes (comme le PDF)
+     plutôt que column-count:1, qui garde un contexte multicol où les enveloppes de
+     tableaux (overflow) se placent mal et débordent. En flux de blocs simple, tout
+     coule normalement et les tables de Material défilent proprement. */
+  .md-typeset .cols {
+    columns: auto !important;
+    column-count: auto !important;
+    column-width: auto !important;
+  }
+
+  /* grilles multi-colonnes -> flux vertical (mêmes classes que l'aplatissement PDF) */
+  .md-typeset .eclat-grid, .md-typeset .eclat-tiers, .md-typeset .cj-modules,
+  .md-typeset .comp, .md-typeset .comp-recap, .md-typeset .states,
+  .md-typeset .wgrid, .md-typeset .eclat-defs {
+    display: block !important;
+    grid-template-columns: none !important;
+  }
+
+  /* longues chaînes insécables (URLs, chemins du changelog) : coupure autorisée */
+  .md-typeset code, .md-typeset .cl-file, .md-typeset .cl-file code,
+  .md-typeset .ext-url, .md-typeset .ext-url code {
+    overflow-wrap: anywhere; word-break: break-word;
+  }
+
+  /* tableaux du corps : disposition automatique + largeurs libres + cellules
+     coupables, pour tenir dans la colonne (les tables denses d'armes ont des
+     colonnes à largeur FIXE en rem + table-layout:fixed qui les font déborder). */
+  .md-typeset .cols table:not([class]) { table-layout: auto !important; width: 100% !important; }
+  .md-typeset .cols table:not([class]) th,
+  .md-typeset .cols table:not([class]) td { white-space: normal !important; width: auto !important; }
+  /* enveloppe de tableau de Material : reste dans la largeur et DÉFILE en interne
+     (les tables denses, ex. armes, restent plus larges que l'écran du téléphone). */
+  .md-typeset .cols .md-typeset__scrollwrap {
+    max-width: 100% !important;
+    overflow-x: auto !important;
+  }
+}
+
+/* ---------- 12. Nav de référence : rail en grand écran, tiroir en fenêtre réduite ----------
+   En GRAND ÉCRAN (>= 90em / 1440px) la table de référence reste un rail visible à
+   gauche (§4), là où il y a la place sans rien écraser. En FENÊTRE RÉDUITE (< 90em :
+   demi-écran de PC, tablette, téléphone) elle est CACHÉE et s'ouvre en tiroir par le
+   bouton hamburger natif de Material, par-dessus un fond sombre. Elle n'écrase donc
+   plus les règles au demi-écran, tout en restant un rail permanent en plein écran.
+   Tout ce bloc (le tiroir) ne s'applique donc QUE sous 90em ; limité aux pages du
+   livre (.book-mode) pour ne pas réveiller la sidebar des pages-outils. La sidebar
+   est cachée par TRANSFORM (jamais display:none) car continuous.js la lit. */
+@media screen and (max-width: 89.9375em) {
+  /* Hamburger natif visible en fenêtre réduite (Material le masque au-delà de 76.25em ;
+     au-delà de 90em on le laisse masqué : c'est le rail qui reprend la main). */
+  .book-mode .md-header__button.md-icon[for="__drawer"] { display: inline-block; }
+
+  /* Plus de place réservée au rail : le contenu se centre normalement (annule le
+     padding-left du §4 sur les pages du livre en mode tiroir). */
+  .book-mode .md-content { padding-left: 0 !important; }
+
+  /* La sidebar primaire devient un tiroir pleine hauteur hors-écran à gauche. On
+     force top/bottom en !important car Material pose un `top` inline (sticky) qui le
+     décalerait. Le tiroir passe au-dessus de tout ; on ferme via le fond, un lien, Échap. */
+  .book-mode .md-sidebar--primary {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    bottom: 0 !important;
+    height: 100% !important;
+    width: 15rem !important;
+    max-width: 84vw;
+    margin: 0 !important;
+    padding: 0 !important;
+    transform: translateX(-100%);
+    transition: transform .24s cubic-bezier(.2, .7, .2, 1);
+    z-index: 41;
+    background: var(--bg-side);
+    border-right: 1px solid rgba(0, 0, 0, .12);
+    box-shadow: 3px 0 18px rgba(0, 0, 0, .32);
+    overflow: hidden;
+  }
+  .book-mode .md-sidebar--primary .md-sidebar__scrollwrap {
+    height: 100% !important;
+    margin: 0 !important;
+    padding-top: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+  /* Sous 76.25em Material transforme .md-nav--primary en pane coulissant plein cadre
+     (position:absolute, pleine hauteur, fond blanc) qui remplit le tiroir et repousse
+     l'arbre du livre hors de vue. On le neutralise pour qu'il ne fasse plus que la
+     hauteur de son titre, laissant la .book-nav couler juste dessous. */
+  .book-mode .md-sidebar--primary .md-nav--primary,
+  .book-mode .md-sidebar--primary .md-sidebar__inner {
+    position: static !important;
+    height: auto !important;
+    width: auto !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  .book-mode .book-nav { padding-bottom: 1.4rem; }
+
+  /* Barre de tête du tiroir : le titre natif Material (logo + nom du site) est un
+     label[for=__drawer], donc CLIQUER DESSUS FERME. On le rend visible (Material le
+     masque au desktop) et collant en haut, comme un en-tête de tiroir avec fermeture. */
+  .book-mode .md-sidebar--primary .md-nav__title {
+    display: block;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    margin: 0;
+    padding: 0.5rem 0.8rem;
+    font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+    font-size: 0.72rem;
+    color: #fff;
+    background: var(--green-title);
+    cursor: pointer;
+  }
+  .book-mode .md-sidebar--primary .md-nav__title::after {
+    content: '\00D7';   /* croix de fermeture */
+    float: right;
+    font-family: sans-serif;
+    font-size: 1.1rem;
+    line-height: 1;
+  }
+  .book-mode .md-sidebar--primary .md-nav__title .md-nav__button.md-logo { display: none; }
+
+  /* Ouverture : la checkbox native cochée fait glisser le tiroir en vue. */
+  .book-mode #__drawer:checked ~ .md-container .md-sidebar--primary {
+    transform: translateX(0);
+  }
+
+  /* Fond sombre cliquable : plein écran sous le tiroir, ferme au clic. */
+  .book-mode .md-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    width: auto;
+    height: auto;
+    background: rgba(0, 0, 0, .5);
+    opacity: 0;
+    z-index: 40;
+    pointer-events: none;
+    transition: opacity .24s ease;
+  }
+  .book-mode #__drawer:checked ~ .md-overlay {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+/* Sens de chaque niveau (page Sens) : dans chaque carte de niveau, les sens de
+   l'humain en pastilles (façon zones des manœuvres), un groupe Externes et un
+   groupe Internes. Filet au-dessus, et en dessous quand du texte suit encore
+   dans la carte. L'étiquette du groupe est sur sa propre ligne : les pastilles
+   prennent toute la largeur de la carte (les noms de sens sont longs). */
+.md-typeset .sens-niveau {
+  margin: 0.4rem 0 0.1rem;
+  padding-top: 0.34rem;
+  border-top: 1px solid #e8e1cf;
+}
+.md-typeset .sens-niveau:not(:last-child) {
+  margin-bottom: 0.42rem;
+  padding-bottom: 0.34rem;
+  border-bottom: 1px solid #e8e1cf;
+}
+.md-typeset .sens-niveau p {
+  margin: 0 0 0.3rem;
+  font-size: 0.66rem;
+  line-height: 1.7;
+}
+.md-typeset .sens-niveau p:last-child { margin-bottom: 0; }
+.md-typeset .sens-niveau .zlbl {
+  display: block;
+  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-weight: 600;
+  font-size: 0.54rem;
+  letter-spacing: 0.05em;
+  color: #8a8478;
+  margin: 0 0 0.12rem;
+}
+/* nowrap : un nom de sens ne se coupe jamais à l'intérieur de sa pastille. */
+.md-typeset .sens-niveau .zchip { white-space: nowrap; }
+
+/* Tables de l'influence (comportement + huit axes) : valeur | nom | description.
+   Les largeurs sont IDENTIQUES d'une table à l'autre, quel que soit l'axe :
+   valeur 3.2 rem centrée, nom 7.4 rem sur une ligne, la description prend le
+   reste. !important : le gabarit générique 30/50/20 des tables 3 colonnes de
+   .cols est plus spécifique et reprendrait la main. */
+/* L'enveloppe défilante de Material (.md-typeset__table, inline-block, posée au
+   runtime et par continuous.js) rétrécit la table à son contenu : sans 100 %,
+   les largeurs de colonnes ci-dessous ne valent rien sur la vraie page. */
+.md-typeset .cols [data-cols="axe"] .md-typeset__scrollwrap,
+.md-typeset .somme-table .md-typeset__scrollwrap,
+.md-typeset .crans-table .md-typeset__scrollwrap { margin: 0 !important; overflow-x: visible; }
+.md-typeset .cols [data-cols="axe"] .md-typeset__table,
+.md-typeset .somme-table .md-typeset__table,
+.md-typeset .crans-table .md-typeset__table { display: block !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
+.md-typeset .cols [data-cols="axe"] table:not([class]),
+.md-typeset .somme-table table:not([class]),
+.md-typeset .crans-table table:not([class]) { width: 100% !important; table-layout: fixed !important; }
+.md-typeset .cols [data-cols="axe"] table:not([class]) th:nth-child(1),
+.md-typeset .cols [data-cols="axe"] table:not([class]) td:nth-child(1),
+.md-typeset .somme-table table:not([class]) th:nth-child(1),
+.md-typeset .somme-table table:not([class]) td:nth-child(1) { width: 1.9rem !important; min-width: 0 !important; padding-left: 0.1rem !important; padding-right: 0.1rem !important; text-align: center !important; }
+/* L'entête (« Cran », « Somme ») est ce qui force la largeur : police réduite. */
+.md-typeset .cols [data-cols="axe"] table:not([class]) th:nth-child(1),
+.md-typeset .somme-table table:not([class]) th:nth-child(1) { font-size: 0.55rem; }
+.md-typeset .cols [data-cols="axe"] table:not([class]) th:nth-child(2),
+.md-typeset .cols [data-cols="axe"] table:not([class]) td:nth-child(2),
+.md-typeset .somme-table table:not([class]) th:nth-child(2),
+.md-typeset .somme-table table:not([class]) td:nth-child(2) { width: 5.5rem !important; min-width: 0 !important; text-align: left !important; white-space: nowrap; }
+.md-typeset .cols [data-cols="axe"] table:not([class]) th:nth-child(3),
+.md-typeset .cols [data-cols="axe"] table:not([class]) td:nth-child(3),
+.md-typeset .somme-table table:not([class]) th:nth-child(3),
+.md-typeset .somme-table table:not([class]) td:nth-child(3) { width: auto !important; min-width: 0 !important; text-align: left !important; }
+/* Échelle des crans (page Influence) : cran étroit centré, aligné sur les autres. */
+.md-typeset .crans-table table:not([class]) th:nth-child(1),
+.md-typeset .crans-table table:not([class]) td:nth-child(1) { width: 2.6rem; min-width: 0; text-align: center; }
+/* Table de l'aura (carte Aura farming) : palier | aura | effet, deux premières
+   colonnes étroites et centrées, mêmes contraintes d'enveloppe et de min-width
+   (Firefox) que les tables d'influence. */
+.md-typeset .cols [data-cols="aura"] .md-typeset__scrollwrap { margin: 0 !important; overflow-x: visible; }
+.md-typeset .cols [data-cols="aura"] .md-typeset__table { display: block !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
+.md-typeset .cols [data-cols="aura"] table:not([class]) { width: 100% !important; table-layout: fixed !important; }
+.md-typeset .cols [data-cols="aura"] table:not([class]) th:nth-child(1),
+.md-typeset .cols [data-cols="aura"] table:not([class]) td:nth-child(1) { width: 2.4rem !important; min-width: 0 !important; padding-left: 0.1rem !important; padding-right: 0.1rem !important; text-align: center !important; }
+.md-typeset .cols [data-cols="aura"] table:not([class]) th:nth-child(2),
+.md-typeset .cols [data-cols="aura"] table:not([class]) td:nth-child(2) { width: 3.6rem !important; min-width: 0 !important; padding-left: 0.15rem !important; padding-right: 0.15rem !important; text-align: center !important; white-space: nowrap; }
+.md-typeset .cols [data-cols="aura"] table:not([class]) th:nth-child(3),
+.md-typeset .cols [data-cols="aura"] table:not([class]) td:nth-child(3) { width: auto !important; min-width: 0 !important; text-align: left !important; }
+/* Trait plus sombre entre les groupes de paliers (Basique 1-3 / Avancé 4-6 /
+   Expert 7-9) : au-dessus des lignes des paliers 4 et 7 (ligne 1 = palier 0). */
+.md-typeset .cols [data-cols="aura"] table:not([class]) tbody tr:nth-child(5) td,
+.md-typeset .cols [data-cols="aura"] table:not([class]) tbody tr:nth-child(8) td { border-top: 1px solid #999; }
+/* Table des grades du Mage noir : même trait au-dessus des grades que l'art gravit
+   (Déchet de la société, Mage noir, Transcendant : lignes 2, 4 et 12). */
+.md-typeset .cols [data-cols="grades"] table:not([class]) tbody tr:nth-child(2) td,
+.md-typeset .cols [data-cols="grades"] table:not([class]) tbody tr:nth-child(4) td,
+.md-typeset .cols [data-cols="grades"] table:not([class]) tbody tr:nth-child(12) td { border-top: 1px solid #999; }
+.md-typeset .cols [data-cols="aura"] table:not([class]) th:nth-child(1),
+.md-typeset .cols [data-cols="aura"] table:not([class]) th:nth-child(2) { font-size: 0.55rem !important; }
