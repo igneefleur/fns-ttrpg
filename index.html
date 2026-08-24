@@ -25,7 +25,8 @@
      localStorage « night », même classe sur <html>, même comparaison stricte.
 
      La clé est indexée par ORIGINE, pas par chemin : /fns-ttrpg/, /hxh/, /hxh-beta/,
-     /jjk/, /jjk-beta/, /owd/ et /owd-beta/ partagent physiquement la même entrée. Le
+     /jjk/, /jjk-beta/, /owd/, /owd-beta/, /mia/ et /mia-beta/ partagent physiquement
+     la même entrée. Le
      choix fait ici suit donc le lecteur dans tous les sites, et réciproquement.
 
      Clé absente = mode JOUR, exactement comme sur les sites mkdocs. Surtout ne pas
@@ -166,15 +167,20 @@ body {
 }
 
 /* ---------- Les cartes des systèmes ---------- */
-/* Trois colonnes puis une seule : on saute volontairement le palier à deux
-   colonnes, qui laisserait la troisième carte orpheline sur sa propre ligne. */
+/* DEUX COLONNES, et non quatre. À trois jeux, la grille en tenait trois de
+   front et sautait volontairement le palier à deux, qui aurait laissé la
+   troisième carte orpheline sur sa propre ligne. À quatre, c'est l'inverse qui
+   tombe juste : deux rangs de deux, aucune carte seule, et des colonnes assez
+   larges pour que les listes de contenu ne se coupent pas mot par mot. Quatre
+   de front ne tiendrait qu'au-delà de 80 rem, et rendrait chaque carte illisible
+   en dessous. */
 .systemes {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: clamp(1.1rem, 3vw, 1.75rem);
   align-items: stretch;
 }
-@media (max-width: 52rem) { .systemes { grid-template-columns: 1fr; } }
+@media (max-width: 40rem) { .systemes { grid-template-columns: 1fr; } }
 
 .systeme {
   display: flex; flex-direction: column;
@@ -298,7 +304,7 @@ html.night .night-btn__sun { display: inline-flex; }
     <p class="marque">F&amp;S</p>
     <h1>Systèmes de jeu de rôle</h1>
     <p class="filet"><span>✦</span></p>
-    <p class="chapeau">Trois jeux de table, chacun avec son livre de règles et ses
+    <p class="chapeau">Quatre jeux de table, chacun avec son livre de règles et ses
       outils. Choisissez le vôtre.</p>
   </div>
 
@@ -350,15 +356,33 @@ html.night .night-btn__sun { display: inline-flex; }
       </div>
     </article>
 
+    <article class="systeme">
+      <h2>Made in Abyss</h2>
+      <div class="corps">
+        <p>Descendre coûte, et remonter coûte davantage : un système où chaque
+          jet bute sur une limite, et où l'endurance qu'on brûle est le seul
+          moyen de la franchir.</p>
+        <ul class="contenu">
+          <li>Règles de base : caractéristiques, compétences, spécialités</li>
+          <li>Fiche de personnage jouable sur Roll20</li>
+          <li>Extension Roll20</li>
+        </ul>
+        <a class="entrer" href="mia/">Entrer</a>
+        <p class="beta"><a href="mia-beta/">Version beta</a></p>
+      </div>
+    </article>
+
   </div>
 
   <footer class="pied">
     <p>Œuvres de fan, sans but lucratif et sans lien avec les ayants droit.
       « Hunter × Hunter » appartient à Yoshihiro Togashi et à Shueisha,
       « Jujutsu Kaisen » à Gege Akutami et à Shueisha,
-      « Outward » à Nine Dots Studio.</p>
+      « Outward » à Nine Dots Studio,
+      « Made in Abyss » à Akihito Tsukushi et à Takeshobo.</p>
     <p>Site, code et règles Hunter × Hunter et Outward © IgneeFleur ;
-      règles Jujutsu Kaisen © Qyu. Tous droits réservés.
+      règles Jujutsu Kaisen © Qyu ; règles Made in Abyss © Erua.
+      Tous droits réservés.
       <a href="https://github.com/igneefleur/fns-ttrpg">Dépôt</a></p>
   </footer>
 
