@@ -77,7 +77,6 @@ variantes = stable, beta
   src/extension/roll20-page/030-attributs.js
   src/extension/roll20-page/040-file-ecriture.js
   src/extension/roll20-page/050-joueurs.js
-  src/extension/roll20-page/070-ouverture-fiche.js
   src/extension/roll20-page/090-ecouteur.js
 
 # La coquille de l'onglet : elle pointe son iframe vers la fiche servie par le

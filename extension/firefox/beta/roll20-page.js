@@ -94,13 +94,7 @@
   // peut pas se faire passer pour une autre. Le plafond borne la table ; au-
   // delà on REFUSE au lieu de recycler une entrée (recycler rouvrirait la
   // porte : il suffirait d'inonder le pont pour se relier ailleurs).
-  // srcLourds tient, POUR CHAQUE FENÊTRE, l'empreinte des gros attributs qu'on
-  // lui a déjà envoyés (voir allege). Il est parallèle aux deux autres tables et
-  // suit exactement leur vie : une fenêtre qui entre, une fenêtre qui meurt.
-  // Le tenir PAR FENÊTRE et non globalement est indispensable : l'iframe du
-  // plateau est refaite au changement de nuit, et une fenêtre neuve doit tout
-  // recevoir, sinon elle afficherait un plateau sans ses fonds.
-  var srcFrames = [], srcIds = [], srcLourds = [], MAX_SRC = 64;
+  var srcFrames = [], srcIds = [], MAX_SRC = 64;
   // Les fenêtres MORTES quittent la table. Sans ce ménage, chaque cadre détruit
   // (une fiche qu'on ferme et rouvre, un panneau qu'on replie) gardait sa place
   // pour toujours : au soixante-cinquième, le pont refusait toute nouvelle
@@ -111,7 +105,7 @@
     for (var i = srcFrames.length - 1; i >= 0; i--) {
       var mort;
       try { mort = !srcFrames[i] || srcFrames[i].closed; } catch (e) { mort = true; }
-      if (mort) { srcFrames.splice(i, 1); srcIds.splice(i, 1); srcLourds.splice(i, 1); }
+      if (mort) { srcFrames.splice(i, 1); srcIds.splice(i, 1); }
     }
   }
   function lier(src, id) {
@@ -120,7 +114,7 @@
     if (i >= 0) return srcIds[i] === id;
     menage();
     if (srcFrames.length >= MAX_SRC) return false;
-    srcFrames.push(src); srcIds.push(id); srcLourds.push(null);
+    srcFrames.push(src); srcIds.push(id);
     return true;
   }
   // vérifie sans jamais lier : un « save » d'une frame qui n'a jamais chargé
@@ -134,9 +128,9 @@
   function attrVal(m, key) { return m.get ? m.get(key) : (m.attributes && m.attributes[key]); }
   // TOUS LES HOMONYMES, et non le premier. Un personnage peut porter PLUSIEURS
   // attributs du même nom : Roll20 ne l'interdit pas, et le pont lui-même en a
-  // fabriqué tant que la fiche de « Narration » n'était pas ouverte — la
-  // collection était vide, findAttr ne trouvait rien, et chaque écriture créait
-  // un doublon au lieu de mettre à jour l'existant.
+  // fabriqué tant que la fiche du personnage n'était pas ouverte — la collection
+  // était vide, findAttr ne trouvait rien, et chaque écriture créait un doublon
+  // au lieu de mettre à jour l'existant.
   //
   // Le dégât est sournois parce que les deux moitiés du dispositif ne
   // choisissent pas le même : writeOne écrivait dans le PREMIER, readAll
@@ -161,73 +155,6 @@
     return out;
   }
 
-  // ---------- les gros attributs ne repartent qu'AU CHANGEMENT ----------
-  // Un fond de zone téléversé est rangé en base64 DANS l'attribut : quelques
-  // centaines de milliers de caractères, parfois plus. Or le plateau relit tout
-  // toutes les 1.2 s, et postMessage RECOPIE la chaîne à chaque envoi : renvoyer
-  // les images à chaque tour étouffe la liaison, et c'est le plateau entier qui
-  // se met à traîner, jetons compris. On envoie donc un gros attribut une
-  // première fois, puis on ne le renvoie que si son EMPREINTE a changé.
-  //
-  // Le tri se fait sur la TAILLE, jamais sur le nom. Le nom des attributs de
-  // fond appartient à la page servie par le site, qui doit pouvoir en changer
-  // sans re-signature ; la taille, elle, est le vrai critère — c'est elle qui
-  // étouffe la liaison, pas l'orthographe.
-  //
-  // C'EST LE PLATEAU QUI DEMANDE À ÊTRE ALLÉGÉ, et rien ne s'allège sans qu'il
-  // l'ait dit (« allege: true » dans son « load »). Ce n'est pas de la
-  // prudence de principe, c'est la seule conduite tenable ici : le pont est
-  // SIGNÉ et le plateau ne l'est pas, ils ne sont donc jamais déployés le même
-  // jour — la moitié stable du pont part chez Mozilla maintenant, la page de
-  // /mia/ arrivera quand elle arrivera. Un pont qui allégerait de son propre
-  // chef ferait disparaître les fonds d'un plateau plus ancien, qui reconstruit
-  // ses images à chaque lecture et prendrait l'absence pour un retrait. Il
-  // faudrait alors une signature pour réparer. Dans l'autre sens, un plateau
-  // neuf devant un pont ancien reçoit tout à chaque tour, comme avant : c'est
-  // lent, ce n'est pas cassé.
-  //
-  // LE PLATEAU DOIT SAVOIR CE QU'ON LUI A TU. La réponse porte toujours
-  // « omis » (le tableau des noms retenus, vide s'il n'y en a pas) : sa seule
-  // présence dit au plateau que ce pont-ci sait alléger, et qu'un nom manquant
-  // veut dire « inchangé », jamais « effacé ».
-  //
-  // DEUX FILETS, parce qu'une empreinte qui se désaccorde ne se voit pas.
-  //   - « complet » : le plateau peut réclamer tout, et doit le faire à sa
-  //     première lecture (une page rechargée dans la MÊME fenêtre garderait
-  //     sinon des empreintes qui ne correspondent plus à rien chez elle) ;
-  //   - RENVOI_TOUT : passé une minute, tout repart de toute façon.
-  var LOURD_MIN = 512;        // caractères : en dessous, ça ne coûte rien, ça part
-  var RENVOI_TOUT = 60000;    // ms : filet, tout repart de temps en temps
-  function empreinte(s) {
-    // djb2 : bon marché et suffisant. On ne compare pas deux mégaoctets à chaque
-    // tour, on compare une longueur et un nombre.
-    var h = 5381, i = 0;
-    for (; i < s.length; i++) { h = (((h << 5) + h) ^ s.charCodeAt(i)) >>> 0; }
-    return String(s.length) + "." + String(h);
-  }
-  function allege(attrs, src, complet) {
-    var i = srcFrames.indexOf(src);
-    if (i < 0) return [];   // fenêtre inconnue : on n'allège rien
-    var etat = srcLourds[i];
-    if (!etat) { etat = srcLourds[i] = { vus: {}, t: 0 }; }
-    var n = Date.now(), force = complet || (n - etat.t >= RENVOI_TOUT);
-    if (force) etat.t = n;
-    var omis = [], nom;
-    for (nom in attrs) {
-      if (!attrs.hasOwnProperty(nom)) continue;
-      var v = attrs[nom];
-      if ((v.current.length + v.max.length) < LOURD_MIN) {
-        // redevenu léger (une adresse a remplacé une image) : plus rien à retenir
-        if (etat.vus[nom]) delete etat.vus[nom];
-        continue;
-      }
-      var e = empreinte(v.current) + "/" + empreinte(v.max);
-      if (!force && etat.vus[nom] === e) { delete attrs[nom]; omis.push(nom); }
-      else etat.vus[nom] = e;
-    }
-    return omis;
-  }
-
   // Écriture SILENCIEUSE — indispensable quand la fiche du perso est OUVERTE.
   // Un attribut modifié déclenche sinon onAttribChange -> updateSheetValues de Roll20,
   // qui plante (« u.childWindow.d20 is undefined ») -> la fiche charge à l'infini.
@@ -237,8 +164,8 @@
   //    -> aucun événement change -> Roll20 ne rafraîchit pas la fiche -> pas de crash ;
   //  - save(null, {silent:true}) persiste dans Firebase (le sync ne dépend pas de silent).
   //
-  // Le silence est CONSERVÉ : il n'est pas en cause, et il est plus nécessaire
-  // que jamais depuis que le pont ouvre lui-même la fiche de Narration.
+  // Le silence est CONSERVÉ : il n'est pas en cause, et il reste nécessaire dès
+  // qu'une fiche de personnage est ouverte à côté pendant qu'on écrit.
   //
   // SAVE N'EST PLUS SILENCIEUX, ET C'EST TOUTE LA CORRECTION.
   //
@@ -249,39 +176,22 @@
   // modèle prenait bien la valeur (voulu et modele identiques), puis la
   // relecture rendait la position d'avant, à l'identique, indéfiniment.
   //
-  // ON ÉCOUTE ENFIN CE QUE LE SERVEUR RÉPOND. save() accepte success et error
-  // depuis toujours ; personne ne les avait jamais lus, si bien qu'on écrivait
-  // sans jamais demander si l'écriture avait été acceptée. Quatre issues, et
-  // elles appellent quatre corrections différentes : le serveur accepte (et le
-  // problème est ailleurs), le serveur REFUSE en le disant (permission), l'appel
-  // lève, ou rien ne répond du tout (l'écriture n'est même pas partie).
-  // Le plateau en a un usage concret depuis les fonds de zone : une image trop
-  // lourde se fait refuser, et c'est en le SACHANT qu'il peut la réduire et
-  // réessayer, au lieu de croire qu'elle est passée.
-  function texteReponse(rep) {
-    var txt = "";
-    try { txt = String((rep && (rep.message || rep.statusText || rep.status)) || rep || ""); }
-    catch (e) {}
-    return txt.slice(0, 120);
-  }
-  // Les attributs ne sont PAS repassés ici : c'est « m.save(null, …) », et null
-  // dit à Backbone d'envoyer l'état courant du modèle, celui que le set juste
-  // au-dessus vient d'y poser. Un troisième argument aurait laissé croire que
-  // save écrit ce qu'on lui tend, alors qu'il n'en lisait rien.
-  function sauve(m, name) {
+  // Les attributs ne sont PAS repassés ici : c'est « m.save(null) », et null dit
+  // à Backbone d'envoyer l'état courant du modèle, celui que le set juste
+  // au-dessus vient d'y poser. Un second argument aurait laissé croire que save
+  // écrit ce qu'on lui tend, alors qu'il n'en lit rien.
+  //
+  // CE QUE LE SERVEUR RÉPOND N'EST PLUS RELEVÉ. Le pont écoutait success et
+  // error pour ranger l'issue de chaque écriture — accepté, refusé, exception,
+  // aucune réponse — et ce relevé n'avait qu'un lecteur : la trace de dépannage
+  // du plateau de Narration, qui n'existe plus. On remplissait donc une table
+  // que personne ne lisait. Le jour où MIA voudra savoir si une écriture a été
+  // refusée, ce relevé revient AVEC ce qui l'affiche, et pas avant.
+  function sauve(m) {
     if (!m || !m.save) return;
-    var fini = false;
-    try {
-      m.save(null, {
-        success: function () { if (!fini) { fini = true; issue(name, "accepte", null); } },
-        error: function (mm, rep) { if (!fini) { fini = true; issue(name, "refuse", texteReponse(rep)); } }
-      });
-    } catch (e) {
-      fini = true;
-      issue(name, "exception", String((e && e.message) || e).slice(0, 120));
-      return;
-    }
-    setTimeout(function () { if (!fini) { fini = true; issue(name, "aucune reponse", null); } }, 2500);
+    // Le try/catch reste : un save qui lève ne doit pas arrêter la boucle qui
+    // écrit les autres homonymes.
+    try { m.save(null); } catch (e) {}
   }
   function writeOne(ch, name, v) {
     if (!ecrivable(name)) return;   // double fond : writeOne reste sûr quel que soit l'appelant
@@ -291,62 +201,21 @@
     // ménage, lui, ramène le compte à un — mais il ne s'exécute qu'une fois par
     // chargement, et il peut échouer : cette boucle reste la seule garantie.
     var tous = findAllAttrs(ch, name);
-    if (tous.length > 1) doublons(name, tous.length);
     if (!tous.length) {
       var neuf = ch.attribs.create(data, { silent: true });
-      sauve(neuf, name);
-      return relu(neuf, name, data);
+      sauve(neuf);
+      return;
     }
     for (var k = 0; k < tous.length; k++) {
       var mk = tous[k];
       // On garde le set SILENCIEUX : c'est lui qui évite l'événement change, donc
-      // onAttribChange puis updateSheetValues, qui plante quand la fiche est
-      // ouverte — et le pont ouvre justement celle de « Narration ».
+      // onAttribChange puis updateSheetValues, qui plante quand la fiche du
+      // personnage est ouverte à côté.
       if (mk.set) mk.set(data, { silent: true });
       else { mk.attributes = mk.attributes || {}; mk.attributes.name = data.name; mk.attributes.current = data.current; mk.attributes.max = data.max; }
-      sauve(mk, name);
+      sauve(mk);
     }
-    return relu(tous[0], name, data);
-  }
-
-  // CE QUE LE MODÈLE DIT JUSTE APRÈS L'ÉCRITURE. Deux pannes se ressemblent trait
-  // pour trait vues du plateau : le modèle n'a pas pris notre valeur, ou il l'a
-  // prise mais Firebase ne l'a pas reçue. Sans ce relevé, il faut une signature
-  // par hypothèse ; avec lui, le prochain retour tranche.
-  var dernieresEcritures = {};
-  function relu(m, name, data) {
-    try {
-      var e = dernieresEcritures[name] || {};
-      e.voulu = data.current;
-      e.modele = m ? str(attrVal(m, "current")) : null;
-      dernieresEcritures[name] = e;
-    } catch (err) {}
-  }
-  // Ce que le SERVEUR a répondu à cette écriture. Rangé au même endroit, il
-  // voyage avec la lecture suivante jusqu'au plateau, donc jusqu'à la console.
-  // Combien d'homonymes portait cet attribut : c'est le fait qui a manqué le plus
-  // longtemps, et il se lit d'un coup d'oeil dans la trace du plateau.
-  function doublons(name, n) {
-    try {
-      var e = dernieresEcritures[name] || {};
-      e.homonymes = n;
-      dernieresEcritures[name] = e;
-    } catch (err) {}
-  }
-  // UN REFUS L'EMPORTE SUR UNE ACCEPTATION. Un attribut porté par plusieurs
-  // homonymes reçoit autant de réponses que d'exemplaires, et elles n'arrivent
-  // pas dans l'ordre : sans cette règle, une acceptation arrivée en dernier
-  // effacerait le refus qui, lui, dit au plateau qu'il doit réduire son image
-  // et réessayer. La plus grave gagne, quel que soit l'ordre.
-  function issue(name, quoi, detail) {
-    try {
-      var e = dernieresEcritures[name] || {};
-      if (!(quoi === "accepte" && e.serveur && e.serveur !== "accepte")) {
-        e.serveur = quoi;
-        if (detail) { e.detail = detail; }
-      }
-      dernieresEcritures[name] = e;
-    } catch (err) {}
+    return;
   }
 
   var queue = [], busy = false;
@@ -364,16 +233,15 @@
     if (!job) return;
     busy = true;
     var ch = getChar(job.id);
-    // Deux raisons d'attendre, une seule conduite. Campaign injoignable (opener
-    // du popout en cours de rechargement...), ou attributs pas encore chargés
-    // par Roll20 : dans le second cas, écrire créerait des doublons dans une
-    // collection liée à rien — la valeur ne reviendrait jamais et l'ancienne
-    // resterait sous elle. On RE-TENTE au lieu de jeter : la fiche a déjà avancé
-    // sa base de diff, une écriture jetée serait définitivement perdue.
-    // ~1 min de patience. Le contrôle de chargement ne vise QUE le plateau
-    // (narrId, posé plus bas) : une fiche, elle, n'est ouverte que depuis un
-    // dialogue déjà ouvert, donc déjà peuplé, et rien ne doit changer pour elle.
-    if (!ch || (job.id && job.id === narrId && etatAttributs(ch) !== "sur")) {
+    // Campaign injoignable (opener du popout en cours de rechargement…) : on
+    // RE-TENTE au lieu de jeter, la fiche ayant déjà avancé sa base de diff, si
+    // bien qu'une écriture jetée serait définitivement perdue. ~1 min de patience.
+    //
+    // Il y avait ici un SECOND motif d'attente, le personnage du plateau dont les
+    // attributs n'étaient pas encore chargés. Il est parti avec le plateau : une
+    // fiche, elle, n'est ouverte que depuis un dialogue déjà ouvert, donc déjà
+    // peuplé, et rien ne doit changer pour elle.
+    if (!ch) {
       busy = false;
       if (++job.tries <= 60) { queue.unshift(job); setTimeout(pump, 1000); }
       return;
@@ -422,208 +290,6 @@
       } catch (e) {}
     });
     return out;
-  }
-
-  // ---------- les attributs ne sont peuplés qu'à l'ouverture de la fiche ----------
-  // ROLL20 NE CHARGE LES ATTRIBUTES D'UN PERSONNAGE QU'À L'OUVERTURE DE SA
-  // FICHE. Tant que « Narration » n'a jamais été ouvert dans la partie, readAll
-  // rend {} — un vide qui ressemble trait pour trait à un plateau neuf — et
-  // writeOne crée ses attributs dans une collection qui n'est liée à rien : ils
-  // ne reviennent jamais. C'est l'unique cause des deux pannes vues en partie :
-  // le plateau redistribuait sur du vide, puis annonçait « Roll20 a refusé les
-  // dernières écritures » au bout de deux allers-retours manqués.
-  //
-  // Le pont ouvre donc la fiche lui-même, hors champ, et ne répond « sûr »
-  // qu'une fois Roll20 passé par là. RIEN DE TOUT CECI N'EST DOCUMENTÉ par
-  // Roll20 : chaque chemin d'ouverture est SONDÉ, du plus discret au plus
-  // brutal, et seul le RÉSULTAT observé fait foi — des attributs peuplés, ou le
-  // dialogue apparu dans le document. Aucun appel n'est cru sur parole.
-  //
-  // LA FICHE RESTE OUVERTE, cachée, au lieu d'être refermée sitôt les attributs
-  // lus. C'est le choix le plus sûr des deux : rien ne garantit qu'une collection
-  // reste synchronisée avec Firebase une fois la fiche fermée, et un plateau qui
-  // cesserait de voir les jetons poussés par les autres serait une panne bien plus
-  // sournoise que celle qu'on répare. Le joueur, lui, ne perd rien : la fiche est
-  // hors champ, et elle reparaît s'il l'ouvre lui-même (guet ci-dessous).
-  var OUV_ESSAI = 700;      // ms entre deux tentatives d'ouverture
-  var OUV_GRACE = 1500;     // ms de fiche ouverte avant de croire un plateau vraiment vide
-  var OUV_LIMITE = 12000;   // ms au bout desquelles on dit franchement que ça n'a pas marché
-  var suivis = {};          // charId -> avancement de l'ouverture
-  var narrId = null;        // le personnage du plateau, seul concerné (voir pump)
-
-  function suivi(id) {
-    var s = suivis[id];
-    if (!s) {
-      s = suivis[id] = { t0: Date.now(), dernier: 0, pas: 0, vue: 0,
-                         sur: false, echec: false, tente: false, sienne: false };
-    }
-    return s;
-  }
-  function docCampagne() {
-    var w = winCampagne || window;
-    try { return w.document || null; } catch (e) { return null; }
-  }
-  // un identifiant inattendu ne part jamais dans un sélecteur bricolé
-  function idSur(id) { return /^[-A-Za-z0-9_]{1,40}$/.test(String(id || "")); }
-  // Le dialogue de fiche de CE personnage, quand Roll20 l'a ouvert. La classe et
-  // l'attribut sont ceux par lesquels le script de contenu reconnaît déjà une
-  // fiche ouverte (.characterdialog[data-characterid]).
-  function dialogueDe(id) {
-    var doc = docCampagne();
-    if (!doc || !idSur(id)) return null;
-    try { return doc.querySelector('.characterdialog[data-characterid="' + id + '"]'); }
-    catch (e) { return null; }
-  }
-  function boiteDe(dlg) { return (dlg.closest && dlg.closest(".ui-dialog")) || dlg; }
-  // La même, mais seulement si elle est VRAIMENT ouverte. Roll20 garde ses
-  // dialogues dans le document après fermeture (display:none) : sans ce
-  // contrôle, une fiche fermée par le joueur passerait pour ouverte et le pont
-  // croirait avoir chargé ce qu'il n'a pas. Notre cachette, elle, ne touche
-  // JAMAIS à display, justement pour que ce signe reste celui de Roll20 seul.
-  function ficheOuverte(id) {
-    var dlg = dialogueDe(id);
-    if (!dlg) return null;
-    try {
-      var w = winCampagne || window;
-      if (w.getComputedStyle && w.getComputedStyle(boiteDe(dlg)).display === "none") return null;
-    } catch (e) {}
-    return dlg;
-  }
-  // Hors champ, sans prise, mais VIVANTE : display:none déchargerait l'iframe de
-  // feuille, c'est-à-dire peut-être ce qu'on est venu chercher. Les propriétés
-  // sont posées en !important parce que jQuery UI replace ses dialogues (au
-  // redimensionnement de la fenêtre, notamment) et écraserait sinon la cachette.
-  function cacheFiche(dlg) {
-    var b = boiteDe(dlg);
-    if (!b || !b.style) return;
-    try {
-      b.style.setProperty("position", "fixed", "important");
-      b.style.setProperty("left", "-20000px", "important");
-      b.style.setProperty("top", "0", "important");
-      b.style.setProperty("opacity", "0", "important");
-      b.style.setProperty("pointer-events", "none", "important");
-      b.setAttribute("aria-hidden", "true");
-    } catch (e) {}
-  }
-  function montreFiche(dlg) {
-    var b = boiteDe(dlg);
-    if (!b || !b.style) return;
-    ["position", "left", "top", "opacity", "pointer-events"].forEach(function (p) {
-      try { b.style.removeProperty(p); } catch (e) {}
-    });
-    try { b.removeAttribute("aria-hidden"); } catch (e) {}
-  }
-  // LE GUET. Roll20 remploie le même dialogue : le joueur qui ouvre « Narration »
-  // depuis le journal ne verrait rien s'ouvrir, notre cachette tenant toujours.
-  // On lève donc la cachette à son clic, et on ne la repose plus — la fiche est
-  // à lui désormais. isTrusted fait toute la différence entre son geste et le
-  // nôtre : notre propre clic de journal est synthétique, il ne se réveille pas
-  // lui-même.
-  var guet = false;
-  function poseGuet() {
-    if (guet) return;
-    var doc = docCampagne();
-    if (!doc || !doc.addEventListener) return;
-    guet = true;
-    doc.addEventListener("click", function (ev) {
-      try {
-        if (!ev.isTrusted || !idSur(narrId)) return;
-        var s = suivis[narrId];
-        if (!s || s.sienne) return;
-        var t = ev.target;
-        if (!t || !t.closest || !t.closest('[data-itemid="' + narrId + '"]')) return;
-        s.sienne = true;
-        var dlg = dialogueDe(narrId);
-        if (dlg) montreFiche(dlg);
-      } catch (e) {}
-    }, true);
-  }
-  // Roll20 ouvre une fiche au clic sur son nom dans le journal : faute d'API
-  // publiée, on rejoue ce geste. Dernier chemin essayé, parce que c'est le plus
-  // brutal — et le plus sûr.
-  function clicJournal(id) {
-    var doc = docCampagne();
-    if (!doc || !idSur(id)) return;
-    var li = null;
-    try {
-      li = doc.querySelector('#journalfolderroot [data-itemid="' + id + '"]') ||
-           doc.querySelector('li[data-itemid="' + id + '"]');
-    } catch (e) {}
-    if (!li) return;
-    var cible = li.querySelector(".namecontainer") || li.querySelector(".name") || li;
-    var w = winCampagne || window;
-    // trois événements parce qu'on ne sait pas lequel Roll20 écoute, et aucun
-    // n'a d'effet ailleurs. Pas de dblclick : sur un dossier il le replierait.
-    ["mousedown", "mouseup", "click"].forEach(function (t) {
-      try {
-        cible.dispatchEvent(new w.MouseEvent(t, { bubbles: true, cancelable: true, view: w }));
-      } catch (e) {}
-    });
-  }
-  // Du plus discret au plus brutal, un chemin par tentative : la collection sait
-  // peut-être se charger seule, la vue du personnage sait peut-être s'ouvrir, et
-  // à défaut il reste le geste du joueur. Rien n'est cru : c'est etatAttributs
-  // qui regarde ensuite si quelque chose est arrivé.
-  var CHEMINS = ["fetch", "showDialog", "render", "journal"];
-  function tenteOuvrir(ch, s) {
-    var pas = s.pas;
-    s.pas = pas + 1;
-    s.tente = true;
-    var quoi = CHEMINS[pas < CHEMINS.length ? pas : CHEMINS.length - 1];
-    try {
-      if (quoi === "journal") { clicJournal(ch.id); return; }
-      if (quoi === "fetch") {
-        if (ch.attribs && typeof ch.attribs.fetch === "function") ch.attribs.fetch();
-        return;
-      }
-      var v = ch.view;
-      if (v && typeof v[quoi] === "function") v[quoi]();
-    } catch (e) {}
-  }
-  // « sur » : ce que readAll rend vaut vérité. « attente » : on ne sait pas
-  // encore, et personne ne doit conclure. « echec » : Roll20 n'a pas laissé
-  // ouvrir la fiche, et il faut le DIRE plutôt que de laisser croire à un refus
-  // d'écriture.
-  function etatAttributs(ch) {
-    var id = ch.id, s = suivi(id), n = Date.now();
-    poseGuet();
-    if (models(ch).length) {
-      // des attributs sont là : Roll20 les a chargés. Vrai aussi quand c'est le
-      // joueur qui a ouvert la fiche à la main, ce qui répare tout seul un échec.
-      s.sur = true;
-      s.echec = false;
-      return "sur";
-    }
-    if (s.sur) return "sur";   // plateau lu et VRAIMENT vide : rien à rouvrir
-    if (s.echec) return "echec";
-    var dlg = ficheOuverte(id);
-    // Une fiche ouverte AVANT notre première tentative est au joueur : on ne la
-    // cache pas. Son ouverture charge les attributs aussi bien que la nôtre.
-    if (dlg && !s.tente) s.sienne = true;
-    if (dlg) {
-      if (!s.sienne) cacheFiche(dlg);   // à chaque passage : jQuery UI replace ses dialogues
-      if (!s.vue) s.vue = n;
-      // Fiche ouverte et toujours aucun attribut : passé un instant, c'est que le
-      // personnage est VRAIMENT vide (plateau neuf). C'est le seul moment où une
-      // lecture vide devient une vérité.
-      if (n - s.vue >= OUV_GRACE) { s.sur = true; return "sur"; }
-      return "attente";
-    }
-    // fiche refermée entre-temps (par le joueur) : le délai de grâce doit
-    // repartir de sa prochaine ouverture, jamais de l'ancienne
-    s.vue = 0;
-    if (n - s.dernier >= OUV_ESSAI) { s.dernier = n; tenteOuvrir(ch, s); }
-    if (n - s.t0 >= OUV_LIMITE) { s.echec = true; return "echec"; }
-    return "attente";
-  }
-  // Le joueur redemande : on repart de zéro, sans oublier À QUI est la fiche.
-  // Effacer tout le suivi ferait de la fiche du joueur la nôtre au premier
-  // « Réessayer », et on la lui cacherait sous les yeux.
-  function relanceOuverture(id) {
-    var s = suivis[id];
-    if (!s) return;
-    s.t0 = Date.now(); s.dernier = 0; s.pas = 0; s.vue = 0;
-    s.sur = false; s.echec = false;
   }
 
   // Écouteur PASSIF : n'agit QUE sur nos messages (ns:"mia" + charId), qui ne sont

@@ -11,22 +11,18 @@ on:
         default: false
 permissions:
   contents: write
-# LA SIGNATURE MOZILLA EST COUPÉE TANT QUE L'ADD-ON MIA N'EXISTE PAS CHEZ EUX.
+# LA PREMIÈRE SIGNATURE CRÉE L'ADD-ON CHEZ MOZILLA, et c'est voulu.
 #
-# L'extension MIA porte un identifiant NEUF, mia-roll20@igneefleur. Or
-# sign_extension.create_version() commence par un POST sur /addons/addon/,
-# c'est-à-dire une CRÉATION : lancé avec un id que Mozilla ne connaît pas, il
-# RÉUSSIT et fait naître un second add-on unlisted sur le compte, en mordant sur
-# un quota déjà serré. Ce n'est pas une erreur qu'on rattrape : l'add-on est créé.
+# L'extension MIA porte un identifiant NEUF, mia-roll20@igneefleur, que Mozilla
+# ne connaît pas. sign_extension.create_version() commence par un POST sur
+# /addons/addon/, c'est-à-dire une CRÉATION : la première signature fait donc
+# NAÎTRE l'add-on sur le compte, en unlisted, sous le « name » du manifeste —
+# « Fiche MIA sur Roll20 ». Vérifier ce nom AVANT de lancer, il engage.
 #
-# Les quatre pas de signature sont donc gardés par une variable de dépôt, et
-# cocher « signer » ne suffit PAS à les déclencher. POUR LES RÉTABLIR, le jour où
-# l'add-on MIA existe vraiment sur addons.mozilla.org :
-#   1. créer l'add-on chez Mozilla avec l'id mia-roll20@igneefleur ;
-#   2. dans Settings > Secrets and variables > Actions > Variables du dépôt,
-#      poser AMO_MIA = pret ;
-#   3. vérifier que les secrets AMO_JWT_ISSUER et AMO_JWT_SECRET sont là.
-# Rien d'autre à toucher : les pas ci-dessous sont intacts.
+# Ce pas ne part jamais tout seul sur cette branche : il faut relancer le
+# workflow à la main, case « signer » cochée. Il consomme le quota AMO du compte,
+# qui est serré. Les secrets AMO_JWT_ISSUER et AMO_JWT_SECRET doivent être là ;
+# ils avaient déjà disparu une fois après un renommage de dépôt.
 #
 # Les neuf branches écrivent sur la même branche gh-pages, chacune dans son
 # dossier : un groupe de concurrence commun (partagé entre workflows du dépôt)
@@ -77,7 +73,7 @@ jobs:
       # signe que sur relance manuelle du workflow, case « signer » cochée
       # (chaque soumission mord sur le quota AMO du compte).
       - name: Extension beta (signature manuelle seulement)
-        if: ${{ inputs.signer && vars.AMO_MIA == 'pret' }}
+        if: ${{ inputs.signer }}
         env:
           AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
           AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
@@ -90,14 +86,14 @@ jobs:
       # builds : mkdocs refabriquait alors site/ à l'identique, à chaque push, et
       # une étape qui ne peut rien changer finit par être crue là où elle compte.
       - name: Rebuild (téléchargements à jour)
-        if: ${{ inputs.signer && vars.AMO_MIA == 'pret' }}
+        if: ${{ inputs.signer }}
         env:
           NO_MKDOCS_2_WARNING: "1"
         run: mkdocs build
       # La re-signature modifie manifests, archives, updates.json et empreinte :
       # on les recommitte sur la branche ([skip ci] : pas de nouveau run).
       - name: Republier l'extension re-signée sur la branche
-        if: ${{ inputs.signer && vars.AMO_MIA == 'pret' }}
+        if: ${{ inputs.signer }}
         run: |
           if ! git diff --quiet; then
             git config user.name "github-actions[bot]"
@@ -163,7 +159,7 @@ jobs:
       # renommages. Aucun run n'avait échoué. Ce qui se propage ici, c'est une
       # SIGNATURE, jamais un déploiement.
       - name: L'extension signée va aussi sur mia (download/ seul)
-        if: ${{ inputs.signer && vars.AMO_MIA == 'pret' }}
+        if: ${{ inputs.signer }}
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: site/download

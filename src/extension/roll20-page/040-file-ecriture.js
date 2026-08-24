@@ -13,16 +13,15 @@
     if (!job) return;
     busy = true;
     var ch = getChar(job.id);
-    // Deux raisons d'attendre, une seule conduite. Campaign injoignable (opener
-    // du popout en cours de rechargement...), ou attributs pas encore chargés
-    // par Roll20 : dans le second cas, écrire créerait des doublons dans une
-    // collection liée à rien — la valeur ne reviendrait jamais et l'ancienne
-    // resterait sous elle. On RE-TENTE au lieu de jeter : la fiche a déjà avancé
-    // sa base de diff, une écriture jetée serait définitivement perdue.
-    // ~1 min de patience. Le contrôle de chargement ne vise QUE le plateau
-    // (narrId, posé plus bas) : une fiche, elle, n'est ouverte que depuis un
-    // dialogue déjà ouvert, donc déjà peuplé, et rien ne doit changer pour elle.
-    if (!ch || (job.id && job.id === narrId && etatAttributs(ch) !== "sur")) {
+    // Campaign injoignable (opener du popout en cours de rechargement…) : on
+    // RE-TENTE au lieu de jeter, la fiche ayant déjà avancé sa base de diff, si
+    // bien qu'une écriture jetée serait définitivement perdue. ~1 min de patience.
+    //
+    // Il y avait ici un SECOND motif d'attente, le personnage du plateau dont les
+    // attributs n'étaient pas encore chargés. Il est parti avec le plateau : une
+    // fiche, elle, n'est ouverte que depuis un dialogue déjà ouvert, donc déjà
+    // peuplé, et rien ne doit changer pour elle.
+    if (!ch) {
       busy = false;
       if (++job.tries <= 60) { queue.unshift(job); setTimeout(pump, 1000); }
       return;

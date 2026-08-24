@@ -21,13 +21,7 @@
   // peut pas se faire passer pour une autre. Le plafond borne la table ; au-
   // delà on REFUSE au lieu de recycler une entrée (recycler rouvrirait la
   // porte : il suffirait d'inonder le pont pour se relier ailleurs).
-  // srcLourds tient, POUR CHAQUE FENÊTRE, l'empreinte des gros attributs qu'on
-  // lui a déjà envoyés (voir allege). Il est parallèle aux deux autres tables et
-  // suit exactement leur vie : une fenêtre qui entre, une fenêtre qui meurt.
-  // Le tenir PAR FENÊTRE et non globalement est indispensable : l'iframe du
-  // plateau est refaite au changement de nuit, et une fenêtre neuve doit tout
-  // recevoir, sinon elle afficherait un plateau sans ses fonds.
-  var srcFrames = [], srcIds = [], srcLourds = [], MAX_SRC = 64;
+  var srcFrames = [], srcIds = [], MAX_SRC = 64;
   // Les fenêtres MORTES quittent la table. Sans ce ménage, chaque cadre détruit
   // (une fiche qu'on ferme et rouvre, un panneau qu'on replie) gardait sa place
   // pour toujours : au soixante-cinquième, le pont refusait toute nouvelle
@@ -38,7 +32,7 @@
     for (var i = srcFrames.length - 1; i >= 0; i--) {
       var mort;
       try { mort = !srcFrames[i] || srcFrames[i].closed; } catch (e) { mort = true; }
-      if (mort) { srcFrames.splice(i, 1); srcIds.splice(i, 1); srcLourds.splice(i, 1); }
+      if (mort) { srcFrames.splice(i, 1); srcIds.splice(i, 1); }
     }
   }
   function lier(src, id) {
@@ -47,7 +41,7 @@
     if (i >= 0) return srcIds[i] === id;
     menage();
     if (srcFrames.length >= MAX_SRC) return false;
-    srcFrames.push(src); srcIds.push(id); srcLourds.push(null);
+    srcFrames.push(src); srcIds.push(id);
     return true;
   }
   // vérifie sans jamais lier : un « save » d'une frame qui n'a jamais chargé
@@ -61,9 +55,9 @@
   function attrVal(m, key) { return m.get ? m.get(key) : (m.attributes && m.attributes[key]); }
   // TOUS LES HOMONYMES, et non le premier. Un personnage peut porter PLUSIEURS
   // attributs du même nom : Roll20 ne l'interdit pas, et le pont lui-même en a
-  // fabriqué tant que la fiche de « Narration » n'était pas ouverte — la
-  // collection était vide, findAttr ne trouvait rien, et chaque écriture créait
-  // un doublon au lieu de mettre à jour l'existant.
+  // fabriqué tant que la fiche du personnage n'était pas ouverte — la collection
+  // était vide, findAttr ne trouvait rien, et chaque écriture créait un doublon
+  // au lieu de mettre à jour l'existant.
   //
   // Le dégât est sournois parce que les deux moitiés du dispositif ne
   // choisissent pas le même : writeOne écrivait dans le PREMIER, readAll
