@@ -1,0 +1,14 @@
+{
+  "version": "1.0.0.2",
+  "hash": "20b1883c47e9a956ec582e10bbd8ae39761742b3f5ef185c2c8767ffb25eb1ff",
+  "parties": {
+    "stable": {
+      "version": "1.0.0.2",
+      "hash": "e63d18fdc5307ffb62561eeef4a80852da587811c9ff2cbfd85fa90da93e26d6"
+    },
+    "beta": {
+      "version": "1.0.0.2b",
+      "hash": "cc3798585e26de85076edaf8c2ff439a2e115efad9f08834ab4c8cbea0668762"
+    }
+  }
+}
