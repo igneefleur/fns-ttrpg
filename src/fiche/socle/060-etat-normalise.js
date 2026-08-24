@@ -98,6 +98,9 @@
         comp: connu(sp.comp, codesK),
         pts: entier(sp.pts, 0, 9999),
         mod: modNum(sp.mod), mod2: modNum(sp.mod2),
+        // le bonus de la spécialité : une valeur EN PLUS, qui part de zéro et
+        // qu'on peut vouloir négative (un malus permanent)
+        bonus: modNum(sp.bonus),
         force: forceVal(sp.force), xpForce: forceVal(sp.xpForce)
       };
     });

@@ -27,17 +27,17 @@
     if (search) line.appendChild(search);
     tools.appendChild(line);
     if (search) b.appendChild(tools);
-    // l'entête des cinq colonnes, du même squelette que le quintuple des
-    // lignes : c'est ce qui garantit que chaque mot tombe en face de sa colonne
+    // l'entête des trois colonnes, du même squelette que le trio des lignes :
+    // c'est ce qui garantit que chaque mot tombe en face de sa colonne
     var tete = el("div", "pc-crow-top pc-caracs-tete");
     tete.appendChild(el("span", "sp"));
-    var teteQuint = el("span", "pc-trio cinq tete");
-    ["Val", "Mod", "Comp", "Lim", "Bonus"].forEach(function (k) {
+    var teteTrio = el("span", "pc-trio tete");
+    ["Val", "Lim", "Bonus"].forEach(function (k) {
       var c = el("span", "c");
       c.appendChild(el("span", "k", k));
-      teteQuint.appendChild(c);
+      teteTrio.appendChild(c);
     });
-    tete.appendChild(teteQuint);
+    tete.appendChild(teteTrio);
     b.appendChild(tete);
     b.appendChild(box);
     // Les lignes sont détruites et refaites à chaque ajout ou retrait ; le
@@ -90,12 +90,12 @@
       nom.value = spe.nom || "";
       nom.addEventListener("input", function () { spe.nom = nom.value; refresh(); });
       top.appendChild(nom);
-      // LES CINQ NOMBRES D'UN SEUL TENANT, et c'est le bloc ENTIER qui lance.
-      // Une spécialité en demande deux de plus qu'une compétence, et les deux
-      // se méritent : ses propres points ne sont pas seuls à faire le bonus —
-      // la compétence dont elle relève y entre aussi — et le total, lui, ne se
-      // recompose pas de tête quand l'endurance ou la charge mordent dessus.
-      var quint = el("span", "pc-trio cinq pc-rollable");
+      // LE MÊME TRIO QUE PARTOUT AILLEURS, et c'est le bloc ENTIER qui lance.
+      // Ce que la caractéristique et la compétence apportent ne s'écrit PAS ici :
+      // le sigle de gauche dit lesquelles, et leurs deux modules les portent déjà,
+      // à deux colonnes de là. Restent les trois nombres qui n'appartiennent qu'à
+      // la spécialité : ses points, la limite qui la coiffe, et son bonus.
+      var quint = el("span", "pc-trio pc-rollable");
       function case5() {
         var c = el("span", "c");
         var v = el("span", "v", "");
@@ -104,8 +104,6 @@
         return v;
       }
       var vPts = case5();
-      var vMod = case5();
-      var vComp = case5();
       var vLim = case5();
       var vBon = case5();
       quint.addEventListener("click", function () {
@@ -146,6 +144,14 @@
           }
           spe.pts = Math.max(0, n);
         }, 1, "points", lignes));
+      // LE BONUS : une valeur EN PLUS, qui part de zéro. Elle ne se déduit de
+      // rien — ni des points, ni de la caractéristique, ni de la compétence —
+      // et c'est pour cela qu'elle se saisit, au pas des modificateurs.
+      bot.appendChild(el("span", "lbl", "Bonus"));
+      bot.appendChild(stepper(
+        function () { return spe.bonus || 0; },
+        function (v) { spe.bonus = clamp(Math.round(v), -999, 999); },
+        MOD_PAS, "bonus", lignes));
       bot.appendChild(el("span", "lbl", "Plafond"));
       var vPlaf = el("span", "max", "");
       vPlaf.style.justifySelf = "end";
@@ -191,17 +197,13 @@
         chip.textContent = (spe.carac || "—") + " · " + (spe.comp || "—");
         chip.title = (spe.carac ? caracInfo(spe.carac).nom : "aucune caractéristique") +
                      " · " + (spe.comp ? compInfo(spe.comp).nom : "aucune compétence");
-        // LES CINQ CASES DISENT LA MÊME PHRASE, dans l'ordre où elle se compose :
-        // ce que la spécialité vaut à elle seule, ce que la caractéristique y
-        // ajoute, ce que la compétence y ajoute, ce qui coiffe le résultat, et
-        // ce que tout cela donne au dé. Le bonus n'est PAS la somme des trois
-        // premières quand l'endurance ou la charge mordent — c'est justement
-        // pour cela qu'il est écrit plutôt que laissé à faire de tête.
+        // LES TROIS CASES NE DISENT QUE LA SPÉCIALITÉ : ses points, sa limite,
+        // son bonus. Ce que la caractéristique et la compétence apportent se lit
+        // dans leurs propres modules, à deux colonnes de là ; le répéter ici
+        // mettait quatre nombres sur la ligne pour n'en expliquer qu'un.
         vPts.textContent = String(spePts(spe));
-        vMod.textContent = spe.carac ? sign(caracMod(spe.carac)) : "—";
-        vComp.textContent = spe.comp ? sign(compPts(spe.comp)) : "—";
         vLim.textContent = spe.carac ? String(lim) : "—";
-        vBon.textContent = spe.carac ? sign(bonus) : "—";
+        vBon.textContent = sign(spe.bonus || 0);
         quint.classList.toggle("adj", force || d !== 0 || mord || mal !== 0 || ch !== 0);
         quint.title = !spe.carac
           ? ""
@@ -212,6 +214,7 @@
                  (d ? " · modificateur (Options) " + sign(d) : "")) +
             " · " + spe.carac + " " + sign(caracMod(spe.carac)) +
             (spe.comp ? " · " + spe.comp + " " + sign(compPts(spe.comp)) : "") +
+            ((spe.bonus || 0) ? " · bonus " + sign(spe.bonus) : "") +
             (ch ? " · charge " + sign(ch) : "") +
             (mal ? " · endurance " + sign(-mal) : "") +
             " — clic : lancer " + DE_DEFAUT + " " + sign(bonus) +

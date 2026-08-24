@@ -19,7 +19,7 @@
   function blankSpe(nom, carac, comp) {
     return {
       nom: nom || "", carac: carac || "", comp: comp || "",
-      pts: 0, mod: 0, mod2: 0, force: null, xpForce: null
+      pts: 0, mod: 0, mod2: 0, bonus: 0, force: null, xpForce: null
     };
   }
   function allSpes() {
