@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Fiche MIA sur Roll20",
-  "version": "1.0.0",
+  "version": "1.0.0.2",
   "description": "Affiche vos fiches de personnage MIA (système JDR) à la place de la fiche Roll20, avec les jets envoyés dans le tchat.",
   "homepage_url": "https://igneefleur.github.io/fns-ttrpg/mia/",
   "browser_specific_settings": {
