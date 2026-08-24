@@ -1,23 +1,75 @@
-  // PV, régénération et coûts d'xp lisent caracTotal("Body") SANS le malus de
-  // poids, et c'est voulu : la charge ne mord que sur les compétences de Body
-  // (hors armes) et sur la vitesse, or aucun de ces trois-là n'en est. Un sac
-  // lourd ralentit et fait rater, il ne coûte ni points de vie maximum, ni
-  // régénération quotidienne, ni xp.
-  // les valeurs issues d'une division s'arrondissent à l'INFÉRIEUR
-  function pvMaxAuto() { return Math.floor((20 + caracTotal("Body")) / 2) + modSum(state.divers.pvMax); }
-  // PV max : la valeur forcée (Options du bloc PV) court-circuite le calcul
+  // ---------- le corps ----------
+  // Les valeurs issues d'une division s'arrondissent à l'INFÉRIEUR.
+
+  // PV = (20 + MOD CON + PHY) / 2 + SPÉ PV. « PHY » y désigne les POINTS de la
+  // compétence Physique, pas son jet : c'est ce que le personnage a investi
+  // dedans. La spécialité s'ajoute APRÈS la division, telle qu'elle est écrite.
+  function pvMaxAuto() {
+    var base = (20 + caracMod("CON") + compPts("PHY")) / 2;
+    return Math.floor(base) + spePtsParNom("PV") + modSum(state.divers.pvMax);
+  }
   function pvMaxBrut() { return state.pvMaxOverride !== null ? state.pvMaxOverride : pvMaxAuto(); }
   function pvMax() {
     var v = pvMaxBrut();
     return aFiltre("pvMax") ? applique("pvMax", v, {}) : v;
   }
   function pvCourant() { return state.pv === null ? pvMax() : state.pv; }
-  function regenAuto() { return Math.max(0, Math.floor(caracTotal("Body") / 10) + modSum(state.divers.regen)); }
-  function regenBrut() { return state.regenOverride !== null ? state.regenOverride : regenAuto(); }
-  function regen() {
-    var v = regenBrut();
-    return aFiltre("regen") ? applique("regen", v, {}) : v;
+  // LA BARRE NÉGATIVE. Le personnage meurt à −100 % de ses PV maximaux : le
+  // plancher de la seconde barre est donc l'opposé du maximum.
+  function pvPlancher() { return -pvMax(); }
+  function pvMort() { return pvCourant() <= pvPlancher(); }
+  // Le seuil du jet d'obstination, à faire chaque fois que des dégâts font
+  // passer les PV dans le négatif : la part du maximum déjà creusée, en
+  // pourcents. À −30 sur 60 de maximum, le seuil est 50.
+  function obstinationDD() {
+    var m = pvMax();
+    if (m <= 0 || pvCourant() >= 0) return 0;
+    return Math.round(Math.abs(pvCourant()) / m * 100);
   }
+
+  // ---------- l'endurance ----------
+  // Une réserve égale au MOD CON, qui descend jusqu'à son opposé. Dans le
+  // négatif, sa valeur absolue devient un malus sur TOUS les jets — c'est le
+  // seul malus général du système, et il se lit ici.
+  function enduranceMaxAuto() { return caracMod("CON") + modSum(state.divers.endurance); }
+  function enduranceMaxBrut() {
+    return state.enduranceMaxOverride !== null ? state.enduranceMaxOverride : enduranceMaxAuto();
+  }
+  function enduranceMax() {
+    var v = enduranceMaxBrut();
+    return aFiltre("enduranceMax") ? applique("enduranceMax", v, {}) : v;
+  }
+  function endurancePlancher() { return -enduranceMax(); }
+  function enduranceCourante() {
+    return state.endurance === null ? enduranceMax() : state.endurance;
+  }
+  function enduranceMalusBrut() { return Math.max(0, -enduranceCourante()); }
+  function enduranceMalus() {
+    var v = enduranceMalusBrut();
+    return aFiltre("enduranceMalus") ? applique("enduranceMalus", v, {}) : v;
+  }
+  // À −100 % de sa réserve, le personnage tombe et ne se relève qu'au plein.
+  function enduranceAuTapis() {
+    return enduranceMax() > 0 && enduranceCourante() <= endurancePlancher();
+  }
+
+  // ---------- la récupération ----------
+  // Une spécialité unique, dont le plafond n'est PAS celui des autres : MOD CON
+  // fois le multiplicateur des règles. Elle commande ce qu'on regagne par jour.
+  function recupPlafond() { return caracMod("CON") * repli("recupMult"); }
+  function recupPts() { return Math.min(spePtsParNom("Récupération"), recupPlafond()); }
+  function recupJourAuto() {
+    return Math.floor((caracMod("CON") + recupPts()) / 2) + modSum(state.divers.recup);
+  }
+  function recupJourBrut() {
+    return state.recupOverride !== null ? state.recupOverride : recupJourAuto();
+  }
+  function recupJour() {
+    var v = recupJourBrut();
+    return aFiltre("recupJour") ? applique("recupJour", v, {}) : v;
+  }
+
+  // ---------- la charge ----------
   // Le poids des objets se calcule ICI et nulle part ailleurs : le module
   // d'inventaire lit les mêmes trois fonctions que poidsPorteBrut(). Deux
   // calculs séparés finiraient par se contredire à l'écran (le pied du module
@@ -43,10 +95,6 @@
     });
     return Math.round(t * 100) / 100;
   }
-  // Poids porté : tout ce que le personnage a sur lui — armes, armures et
-  // objets de l'inventaire (quantité comprise). C'est la SOURCE du malus, pas le
-  // malus : il s'affiche tel quel partout où il s'affichait, et poidsMalus() en
-  // tire le chiffre qui pénalise réellement les jets.
   function poidsPorteBrut() {
     var t = 0;
     state.armes.forEach(function (a) { t += pnum(a.poids); });
@@ -60,30 +108,41 @@
     var v = poidsPorteBrut();
     return aFiltre("poidsPorte") ? applique("poidsPorte", v, {}) : v;
   }
-  // LE MALUS, qui n'est pas le poids : les règles arrondissent le total porté à
-  // la dizaine INFÉRIEURE, si bien qu'un poids de 19 n'ôte que 10 et qu'un poids
-  // de 9 n'ôte rien. Il se dérive de poidsPorte() (le public, pas le brut) pour
-  // qu'un filtre de mod sur le poids se voie dans le malus.
-  //
-  // Math.max(0 : un filtre peut rendre un poids NÉGATIF (applique() ne vérifie
-  // que la finitude), et Math.floor(−5 / 10) × 10 vaut −10, c'est-à-dire un
-  // BONUS de 10 à tous les jets de Body que personne n'a demandé.
-  function poidsMalusBrut() {
-    return Math.max(0, Math.floor(poidsPorte() / 10) * 10);
+  // Ce que le personnage peut porter : le plus haut de ses deux modificateurs
+  // de force et de constitution.
+  function chargeMaxAuto() {
+    return Math.max(caracMod("CON"), caracMod("FOR")) + modSum(state.divers.charge);
   }
-  function poidsMalus() {
-    var v = poidsMalusBrut();
-    return aFiltre("poidsMalus") ? applique("poidsMalus", v, {}) : v;
+  function chargeMaxBrut() {
+    return state.chargeOverride !== null ? state.chargeOverride : chargeMaxAuto();
   }
-  // La caractéristique telle qu'on la LANCE.
-  //
-  // LE POIDS NE PÈSE PLUS SUR LA CARACTÉRISTIQUE (arbitrage du MJ, 2026-08-04) :
-  // lancer Body en direct se fait au total plein. La charge garde ses deux autres
-  // prises, et elles seules : les COMPÉTENCES de Body hors armes (compPoidsMalus)
-  // et la VITESSE, dont le palier se lit sur un Body diminué (bodyVitesse), la
-  // surcharge en plus. Un seul mécanisme par endroit, jamais deux fois le même.
-  //
-  // La fonction reste, plutôt que d'appeler caracTotal partout : elle est le point
-  // unique où la question « ce jet subit-il la charge ? » se pose, l'affichage en
-  // tire le « · poids −N » de la tuile (nul, donc absent), et les mods l'appellent
-  // par l'API. Si l'arbitrage rebasculait, une ligne suffirait.
+  function chargeMax() {
+    var v = chargeMaxBrut();
+    return aFiltre("chargeMax") ? applique("chargeMax", v, {}) : v;
+  }
+  function chargePct() {
+    var m = chargeMax();
+    return m > 0 ? poidsPorte() / m * 100 : (poidsPorte() > 0 ? Infinity : 0);
+  }
+  // LES PALIERS FRANCHIS, du plus bas au plus haut. Ils se CUMULENT : à 100 %,
+  // les trois s'appliquent l'un après l'autre. Les seuils viennent des règles,
+  // leurs effets de CHARGE_EFFETS — les deux doivent bouger ensemble.
+  function chargePaliers() {
+    var pct = chargePct(), out = [];
+    ((regles().charge) || []).forEach(function (p) {
+      if (pct >= p.seuil && CHARGE_EFFETS[p.seuil]) {
+        out.push({ seuil: p.seuil, effets: p.effets, calc: CHARGE_EFFETS[p.seuil] });
+      }
+    });
+    out.sort(function (a, b) { return a.seuil - b.seuil; });
+    return out;
+  }
+  // Le malus que la charge fait peser sur l'esquive, une fois les paliers
+  // additionnés. Les modules et les infobulles le lisent ici plutôt que de le
+  // recomposer, sinon ils finiraient par énumérer un terme que le total n'a pas
+  // subi.
+  function chargeMalusEsquive() {
+    var t = 0;
+    chargePaliers().forEach(function (p) { t += (p.calc.esq || 0); });
+    return t;
+  }

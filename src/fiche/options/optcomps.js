@@ -1,223 +1,320 @@
-  // ---- modificateurs de compétences ----
-  // le pendant du bloc caractéristiques : UN modificateur par compétence
-  // (équipement, art, décision du MJ confondus), appliqué au total de la
-  // ligne sur la Fiche. Rebâti quand les compétences perso changent
-  // (optCompsRebuild, rappelé par l'ajout et la suppression) ; optHooks
-  // remplace hooks pour ces lignes, sinon chaque rebâti fuirait des hooks.
+  // ---- modificateurs de compétences et de spécialités ----
+  // Le pendant du bloc des caractéristiques, pour les HUIT compétences des
+  // règles et pour les SPÉCIALITÉS. Les deux ne se règlent pas de la même
+  // façon parce qu'elles ne sont pas de la même matière : les compétences sont
+  // une liste fermée, rangée par sigle dans l'état, tandis que les spécialités
+  // sont créées par le joueur, portent leurs leviers sur elles-mêmes, et vont
+  // et viennent. D'où le rebâti (optCompsRebuild, rappelé par le module qui
+  // les ajoute et les supprime) et optHooks, qui remplace hooks pour ces
+  // lignes : sans lui, chaque rebâti fuirait des fonctions de rafraîchissement.
   function buildOptComps() {
-    var bMC = block("Modificateurs de compétences");
-    // mêmes outils que la liste de la Fiche (filtre texte, champ, puces) et
-    // mêmes lignes, mais une grille plus large : nom | modificateurs | total
-    // forcé | total | modificateur de coût | coût forcé | coût.
+    var bMC = block("Modificateurs de compétences", "et spécialités");
+    // Le menu des champs et la puce « Personnalisées » ont disparu avec ce
+    // qu'ils réglaient : il n'y a plus ni champ, ni compétence inventée. Le
+    // filtre texte reste, et la puce « Investies » avec lui : les spécialités
+    // sont une liste libre, et rien ne dit qu'elle sera courte.
     var mcTools = el("div", "pc-comp-tools");
-    var mcLine1 = el("div", "row");
+    var mcLine = el("div", "row");
     var mcSearch = champFiltre(function () { return optFilter; },
                                function (v) { optFilter = v; }, null,
                                function () { optCompsRebuild(); });
-    if (mcSearch) mcLine1.appendChild(mcSearch);
-    if (filtreChampOn()) {
-      var mcChamp = el("select", "pc-select");
-      ["Tous les champs", "Body", "Mind", "Prestance"].forEach(function (ch) {
-        var o = el("option");
-        o.value = ch === "Tous les champs" ? "" : ch;
-        o.textContent = ch;
-        mcChamp.appendChild(o);
-      });
-      mcChamp.value = optChamp;
-      mcChamp.addEventListener("change", function () { optChamp = mcChamp.value; optCompsRebuild(); });
-      mcLine1.appendChild(mcChamp);
-    }
-    if (mcLine1.children.length) mcTools.appendChild(mcLine1);
-    var mcLine2 = el("div", "row");
-    var mcPerso = el("span", "pc-chip");
-    mcPerso.textContent = "Personnalisées";
-    mcPerso.title = "Décoché : seules les compétences de base du jeu sont affichées.";
-    mcPerso.classList.toggle("on", optPerso);
-    mcPerso.addEventListener("click", function () {
-      optPerso = !optPerso;
-      mcPerso.classList.toggle("on", optPerso);
-      optCompsRebuild();
-    });
-    mcLine2.appendChild(mcPerso);
+    if (mcSearch) mcLine.appendChild(mcSearch);
     var mcOnly = el("span", "pc-chip");
     mcOnly.textContent = "Investies";
-    mcOnly.title = "N'afficher que les compétences où un stade, un passif ou un modificateur est posé.";
+    mcOnly.title = "N'afficher que les lignes qui portent des points ou un réglage.";
     mcOnly.classList.toggle("on", optOnly);
     mcOnly.addEventListener("click", function () {
       optOnly = !optOnly;
       mcOnly.classList.toggle("on", optOnly);
       optCompsRebuild();
     });
-    mcLine2.appendChild(mcOnly);
-    mcTools.appendChild(mcLine2);
+    mcLine.appendChild(mcOnly);
+    mcTools.appendChild(mcLine);
     bMC.appendChild(mcTools);
     // la grille des leviers est large : elle défile dans son cadre
     var mcWrap = el("div", "pc-optcomp-wrap");
     var mcBox = el("div");
     mcWrap.appendChild(mcBox);
     bMC.appendChild(mcWrap);
-    // Modificateur d'une ligne de compétence : un champ NU, sans − ni +. Sur
-    // cinquante lignes de sept colonnes, les boutons mangeaient la place et
-    // n'apportaient rien qu'on ne fasse au clavier. Les caractéristiques,
-    // elles, gardent leurs boutons : elles ne sont que trois.
-    function modField(map, key, borne, titre) {
+
+    // Les deux champs de la grille, en version optHooks : ceux de
+    // commun-champs.js écrivent dans « hooks », or ces lignes-ci sont détruites
+    // et recréées à chaque rebâti. Chacun existe en forme LIBRE (lire/écrire),
+    // parce qu'une spécialité n'est PAS une entrée de table : son forçage est
+    // une propriété de l'objet, et il vaut null quand il est absent, là où une
+    // table n'a tout simplement pas la clé. Les deux formes de table ne sont
+    // donc qu'un habillage de la forme libre.
+    //
+    // Modificateur : un champ NU, sans − ni +. Sur une grille de dix colonnes,
+    // les boutons mangeaient la place et n'apportaient rien qu'on ne fasse au
+    // clavier.
+    function optMod(lire, ecrire, borne, titre) {
       var inp = el("input", "pc-num modif");
       inp.type = "number"; inp.step = String(MOD_PAS);
       inp.title = titre;
       inp.addEventListener("input", function () {
         var v = parseFloat(inp.value);
-        if (isFinite(v) && clamp(Math.round(v), -borne, borne)) map[key] = clamp(Math.round(v), -borne, borne);
-        else delete map[key];   // vide ou zéro = pas d'entrée dans l'état
+        ecrire(isFinite(v) ? clamp(Math.round(v), -borne, borne) : 0);
         refresh();
       });
       optHooks.push(function () {
-        if (document.activeElement !== inp) inp.value = map[key] === undefined ? "" : map[key];
+        if (document.activeElement !== inp) inp.value = lire() ? lire() : "";
       });
       return inp;
     }
+    function optModTable(map, cle, borne, titre) {
+      return optMod(function () { return map[cle]; },
+                    function (v) { map[cle] = v; }, borne, titre);
+    }
     // un champ de forçage : vide = valeur calculée, une valeur la remplace
-    function forceField(map, key, auto, titre) {
+    function optForce(lire, ecrire, auto, titre) {
       var inp = el("input", "force");
       inp.type = "number"; inp.step = "1";
       inp.title = titre;
       inp.addEventListener("input", function () {
         var v = parseFloat(inp.value);
-        if (isFinite(v)) map[key] = clamp(Math.round(v), -9999, 9999);
-        else delete map[key];
+        ecrire(isFinite(v) ? clamp(Math.round(v), -9999, 9999) : undefined);
         refresh();
       });
       optHooks.push(function () {
         inp.placeholder = String(auto());
-        if (document.activeElement !== inp) inp.value = map[key] === undefined ? "" : map[key];
+        var cur = lire();
+        if (document.activeElement !== inp) inp.value = cur === undefined ? "" : cur;
       });
       return inp;
     }
+    function optForceTable(map, cle, auto, titre) {
+      return optForce(function () { return map[cle]; },
+                      function (v) { if (v === undefined) delete map[cle]; else map[cle] = v; },
+                      auto, titre);
+    }
+    // le forçage d'une spécialité : même champ, mais null au lieu d'une clé
+    // absente. « lire » prend la spécialité VIVANTE et non celle capturée au
+    // montage, pour que la ligne écrive dans l'état même si la liste a bougé
+    // sous elle entre deux rebâtis.
+    function optForceSpe(vivante, cle, auto, titre) {
+      return optForce(
+        function () { var v = vivante()[cle]; return v === null ? undefined : v; },
+        function (v) { vivante()[cle] = v === undefined ? null : v; },
+        auto, titre);
+    }
+    function optModSpe(vivante, cle, borne, titre) {
+      return optMod(function () { return vivante()[cle]; },
+                    function (v) { vivante()[cle] = v; }, borne, titre);
+    }
+
+    // Deux rangées d'entête par section : les groupes (valeur | coût), puis les
+    // colonnes. Libellés courts — dix colonnes dans une demi-largeur ne
+    // laissent pas la place aux noms complets, que portent les infobulles. La
+    // colonne « rule » est un vrai filet : une colonne de la grille, en place
+    // sur CHAQUE rangée, qui court d'un bord à l'autre du module.
+    function entetes(quoi, aideValeur, cols) {
+      var grp = el("div", "pc-optcomp-row grp");
+      grp.appendChild(el("span"));
+      var gV = el("span", "g", "Valeur");
+      gV.title = aideValeur;
+      grp.appendChild(gV);
+      grp.appendChild(el("span", "rule"));
+      var gX = el("span", "g", "Coût en xp");
+      gX.title = "Ce que " + quoi + " coûte sur l'xp du personnage";
+      grp.appendChild(gX);
+      mcBox.appendChild(grp);
+
+      var head = el("div", "pc-optcomp-row head");
+      cols.forEach(function (h) {
+        if (!h) { head.appendChild(el("span", "rule")); return; }
+        var s = el("span", h[2] || null, h[0]);
+        s.title = h[1];
+        head.appendChild(s);
+      });
+      mcBox.appendChild(head);
+    }
+
     optCompsRebuild = function () {
       optHooks = [];
       mcBox.innerHTML = "";
       var flt = filtreDe(optFilter);
-      var shown = 0;
-      CHAMPS.forEach(function (carac) {
-        if (filtreChampOn() && optChamp && optChamp !== carac) return;
-        var items = allComps().filter(function (it) { return it.carac === carac; });
-        if (!optPerso) items = items.filter(function (it) { return !it.custom; });
-        if (flt) items = items.filter(function (it) { return it.name.toLowerCase().indexOf(flt) >= 0; });
-        if (optOnly) items = items.filter(compInvestie);
-        items.sort(function (a, b) { return a.name.localeCompare(b.name, "fr", { sensitivity: "base" }); });
-        if (!items.length) return;
-        mcBox.appendChild(el("div", "pc-comp-champ", carac));
-        // Deux rangées d'entête : les groupes (valeur | coût), puis les
-        // colonnes. Libellés courts — sept colonnes dans une demi-largeur ne
-        // laissent pas la place aux noms complets, que portent les infobulles.
-        // La colonne « rule » est un vrai filet : une colonne de la grille, en
-        // place sur CHAQUE rangée, qui court d'un bord à l'autre du module.
-        var grp = el("div", "pc-optcomp-row grp");
-        grp.appendChild(el("span"));
-        var gV = el("span", "g", "Valeur");
-        gV.title = "Ce que vaut la compétence quand on la lance";
-        grp.appendChild(gV);
-        grp.appendChild(el("span", "rule"));
-        var gX = el("span", "g", "Coût en xp");
-        gX.title = "Ce que la compétence coûte sur l'xp du personnage";
-        grp.appendChild(gX);
-        mcBox.appendChild(grp);
+      var comps = allComps();
+      var spes = allSpes();
+      if (flt) {
+        comps = comps.filter(function (it) { return it.name.toLowerCase().indexOf(flt) >= 0; });
+        spes = spes.filter(function (it) { return it.name.toLowerCase().indexOf(flt) >= 0; });
+      }
+      if (optOnly) {
+        comps = comps.filter(compInvestie);
+        spes = spes.filter(function (it) { return speInvestie(it.spe); });
+      }
+      // Aucun tri : l'ordre des compétences est celui de la page de règles, et
+      // celui des spécialités celui où le joueur les a créées. Les deux listes
+      // se retrouvent donc ici dans l'ordre où elles se lisent sur la Fiche.
 
-        var head = el("div", "pc-optcomp-row head");
-        [["Compétence", "Nom de la compétence"],
-         ["Forcé", "Total forcé — vide = total calculé"],
-         ["Modif.", "Deux modificateurs du total, qui s'additionnent", "duo"],
-         ["Total", "Total effectif de la compétence"],
-         null,
-         ["Forcé", "Coût en xp forcé — vide = coût calculé"],
-         ["Modif.", "Deux modificateurs du coût en xp, qui s'additionnent", "duo"],
-         ["Coût", "Coût effectif en xp"]].forEach(function (h) {
-          if (!h) { head.appendChild(el("span", "rule")); return; }
-          var s = el("span", h[2] || null, h[0]);
-          s.title = h[1];
-          head.appendChild(s);
-        });
-        mcBox.appendChild(head);
-        items.forEach(function (it, i) {
-          shown++;
+      if (comps.length) {
+        mcBox.appendChild(el("div", "pc-comp-champ", "Compétences"));
+        entetes("la compétence", "Ce que valent les points de la compétence dans un jet",
+          [["Compétence", "Nom de la compétence"],
+           ["Forcé", "Total forcé — vide = total calculé"],
+           ["Modif.", "Deux modificateurs du total, qui s'additionnent", "duo"],
+           ["Total", "Points effectifs de la compétence"],
+           null,
+           ["Forcé", "Coût en xp forcé — vide = coût calculé"],
+           ["Modif.", "Deux modificateurs du coût en xp, qui s'additionnent", "duo"],
+           ["Coût", "Coût effectif en xp"]]);
+        comps.forEach(function (it, i) {
           var row = el("div", "pc-optcomp-row pc-mods-host" + (i % 2 === 1 ? " odd" : ""));
-          var comp = function () { return state.comps[it.key] || blankComp(); };
 
           var nameBox = el("span", "pc-comp-name");
+          var chip = el("span", "pc-abbr", it.code);
+          chip.title = it.name;
+          nameBox.appendChild(chip);
           var label = el("span", "pc-comp-label", it.name);
-          label.title = it.name + " (" + it.carac + ")";
+          label.title = it.name + " — lancée sur " + it.carac;
           nameBox.appendChild(label);
           row.appendChild(nameBox);
 
-          // VALEUR : forcé, puis modificateur, puis le total effectif
-          row.appendChild(forceField(state.compsForce, it.key,
-            function () { return compValueAuto(it.carac, comp(), it.key); },
-            "Total forcé — vide = total calculé (caractéristique + stade + modificateur)."));
-
+          // VALEUR : forcé, puis les deux modificateurs, puis le total
+          // effectif. Le repère du champ forcé est compPts() lui-même : le
+          // champ vide EST le cas non forcé, où compPts() rend déjà ce que les
+          // points, le plafond et les modificateurs donnent.
+          row.appendChild(optForceTable(state.compsForce, it.key,
+            function () { return compPts(it.key); },
+            "Total forcé — vide = total calculé (points, plafond, modificateurs)."));
           // DEUX champs : ils s'additionnent. Un seul obligeait à faire la
           // somme de tête avant de saisir, puis à la défaire pour retirer l'un
           // des deux apports.
-          row.appendChild(modField(state.compsMod, it.key, 999,
+          row.appendChild(optModTable(state.compsMod, it.key, 999,
             "Premier modificateur du total — vide = aucun."));
-          row.appendChild(modField(state.compsMod2, it.key, 999,
+          row.appendChild(optModTable(state.compsMod2, it.key, 999,
             "Second modificateur du total — vide = aucun."));
-
           var tot = el("span", "pc-comp-total", "");
           row.appendChild(tot);
 
           // COÛT EN XP : même ordre, derrière le filet de séparation
           row.appendChild(el("span", "rule"));
-          row.appendChild(forceField(state.compsXpForce, it.key,
-            function () { return compXpAuto(comp(), it.key); },
-            "Coût en xp forcé — vide = coût calculé (stades, passifs, art, modificateur)."));
-
-          row.appendChild(modField(state.compsXpMod, it.key, 9999,
+          row.appendChild(optForceTable(state.compsXpForce, it.key,
+            function () { return compXpAuto(it.key); },
+            "Coût en xp forcé — vide = coût calculé (points achetés et modificateurs)."));
+          row.appendChild(optModTable(state.compsXpMod, it.key, 9999,
             "Premier modificateur du coût en xp — vide = aucun."));
-          row.appendChild(modField(state.compsXpMod2, it.key, 9999,
+          row.appendChild(optModTable(state.compsXpMod2, it.key, 9999,
             "Second modificateur du coût en xp — vide = aucun."));
-
           var cout = el("span", "pc-comp-total", "");
           row.appendChild(cout);
 
           optHooks.push(function () {
-            var c = comp();
+            var pts = state.comps[it.key] || 0;
             var d = (state.compsMod[it.key] || 0) + (state.compsMod2[it.key] || 0);
-            var force = state.compsForce[it.key];
-            // même terme que la colonne Total de l'onglet Fiche : les deux
-            // afficheraient sinon des chiffres différents pour une compétence
-            var m = compPoidsMalus(it.carac, it.key);
-            tot.textContent = sign(compValue(it.carac, c, it.key));
-            tot.classList.toggle("zero", !c.stade && !d && !m && force === undefined);
-            tot.classList.toggle("adj", d !== 0 || m !== 0 || force !== undefined);
-            tot.title = force !== undefined
-              ? "Total forcé à " + sign(force) + " (calculé : " + sign(compValueAuto(it.carac, c, it.key)) + ")"
-              : it.carac + " " + sign(caracTotal(it.carac)) +
-                " · stade " + sign(stadeInfo(c.stade).bonus) +
-                (d ? " · modificateur " + sign(d) : "") +
-                (m ? " · poids " + sign(-m) : "");
+            var f = state.compsForce[it.key];
+            var v = compPts(it.key);
+            tot.textContent = String(v);
+            tot.classList.toggle("zero", !v);
+            tot.classList.toggle("adj", d !== 0 || f !== undefined);
+            // Le plafond paraît dans l'infobulle parce qu'il n'est écrit nulle
+            // part ailleurs dans cette grille : c'est lui, et non le nombre
+            // saisi, qui explique un total qui ne monte plus.
+            tot.title = f !== undefined
+              ? "Total forcé à " + f
+              : "points " + pts + " · plafond " + compPlafond(it.key) +
+                (d ? " · modificateurs " + sign(d) : "");
 
-            var xForce = state.compsXpForce[it.key];
+            var xf = state.compsXpForce[it.key];
             var xm = (state.compsXpMod[it.key] || 0) + (state.compsXpMod2[it.key] || 0);
-            var xp = compXp(c, it.key);
+            var xp = compXp(it.key);
             cout.textContent = xp + " xp";
             cout.classList.toggle("zero", !xp);
-            cout.classList.toggle("adj", xForce !== undefined || xm !== 0);
-            cout.title = xForce !== undefined
-              ? "Coût forcé à " + xForce + " xp (calculé : " + compXpAuto(c, it.key) + " xp)"
-              : "Stades, passifs et art" + (xm ? " · modificateur " + sign(xm) + " xp" : "");
+            cout.classList.toggle("adj", xf !== undefined || xm !== 0);
+            cout.title = xf !== undefined
+              ? "Coût forcé à " + xf + " xp (calculé : " + compXpAuto(it.key) + " xp)"
+              : "points " + pts + " × " + repli("xpComp") + " xp" +
+                (xm ? " · modificateurs " + sign(xm) + " xp" : "");
 
-            // un liseré marque les lignes réglées : sur cinquante compétences,
-            // c'est le seul moyen de retrouver d'un coup d'œil celles qu'on a
-            // touchées
+            // un liseré marque les lignes réglées : c'est le seul moyen de
+            // retrouver d'un coup d'œil celles qu'on a touchées
             row.classList.toggle("on",
-              d !== 0 || force !== undefined || xForce !== undefined || xm !== 0);
+              d !== 0 || xm !== 0 || f !== undefined || xf !== undefined);
           });
           mcBox.appendChild(row);
         });
-      });
-      if (!shown) {
+      }
+
+      if (spes.length) {
+        mcBox.appendChild(el("div", "pc-comp-champ", "Spécialités"));
+        entetes("la spécialité", "Ce que valent les points de la spécialité dans un jet",
+          [["Spécialité", "Nom de la spécialité"],
+           ["Forcé", "Total forcé — vide = total calculé"],
+           ["Modif.", "Deux modificateurs du total, qui s'additionnent", "duo"],
+           ["Total", "Points effectifs de la spécialité"],
+           null,
+           ["Forcé", "Coût en xp forcé — vide = coût calculé"],
+           // Une spécialité n'a PAS de modificateur de coût : l'état ne lui en
+           // porte pas, et on n'en invente pas. Les deux colonnes restent
+           // VIDES au lieu de disparaître, pour que ses chiffres tombent aux
+           // mêmes abscisses que ceux des compétences, juste au-dessus.
+           ["", "", "duo"],
+           ["Coût", "Coût effectif en xp"]]);
+        spes.forEach(function (it, i) {
+          var row = el("div", "pc-optcomp-row pc-mods-host" + (i % 2 === 1 ? " odd" : ""));
+          // la spécialité VIVANTE, relue à chaque geste : la ligne survit à un
+          // rafraîchissement, l'objet capturé au montage pourrait ne plus être
+          // celui de l'état (import, bibliothèque, suppression du voisin)
+          var spe = function () { return state.specialites[it.index] || blankSpe(); };
+
+          var nameBox = el("span", "pc-comp-name");
+          var label = el("span", "pc-comp-label", it.name);
+          label.title = it.name + " — " + (it.carac || "sans caractéristique") +
+                        " · " + (it.comp || "sans compétence");
+          nameBox.appendChild(label);
+          row.appendChild(nameBox);
+
+          row.appendChild(optForceSpe(spe, "force",
+            function () { return spePts(spe()); },
+            "Total forcé — vide = total calculé (points, plafond, modificateurs)."));
+          row.appendChild(optModSpe(spe, "mod", 999,
+            "Premier modificateur du total — vide = aucun."));
+          row.appendChild(optModSpe(spe, "mod2", 999,
+            "Second modificateur du total — vide = aucun."));
+          var tot = el("span", "pc-comp-total", "");
+          row.appendChild(tot);
+
+          row.appendChild(el("span", "rule"));
+          row.appendChild(optForceSpe(spe, "xpForce",
+            function () { return speXp(spe()); },
+            "Coût en xp forcé — vide = coût calculé (points achetés)."));
+          row.appendChild(el("span"));
+          row.appendChild(el("span"));
+          var cout = el("span", "pc-comp-total", "");
+          row.appendChild(cout);
+
+          optHooks.push(function () {
+            var s = spe();
+            var d = (s.mod || 0) + (s.mod2 || 0);
+            var v = spePts(s);
+            tot.textContent = String(v);
+            tot.classList.toggle("zero", !v);
+            tot.classList.toggle("adj", d !== 0 || s.force !== null);
+            tot.title = s.force !== null
+              ? "Total forcé à " + s.force
+              : "points " + (s.pts || 0) + " · plafond " + spePlafond(s) +
+                (d ? " · modificateurs " + sign(d) : "");
+
+            var xp = speXp(s);
+            cout.textContent = xp + " xp";
+            cout.classList.toggle("zero", !xp);
+            cout.classList.toggle("adj", s.xpForce !== null);
+            cout.title = s.xpForce !== null
+              ? "Coût forcé à " + s.xpForce + " xp"
+              : "points " + (s.pts || 0) + " × " + repli("xpSpe") + " xp";
+
+            row.classList.toggle("on",
+              d !== 0 || s.force !== null || s.xpForce !== null);
+          });
+          mcBox.appendChild(row);
+        });
+      }
+
+      if (!comps.length && !spes.length) {
         mcBox.appendChild(el("div", "pc-empty",
-          optOnly ? "Aucune compétence investie ne correspond — décocher « Investies » pour toutes les voir."
-                  : "Aucune compétence ne correspond."));
+          optOnly ? "Rien d'investi ne correspond — décocher « Investies » pour tout voir."
+                  : "Aucune compétence ni spécialité ne correspond."));
       }
       refresh();   // les lignes viennent de naître : leurs totaux se peuplent ici
     };

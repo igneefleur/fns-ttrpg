@@ -6,12 +6,13 @@
   // calcul sans qu'on rouvre ce fichier, et sans avoir à réécrire le module qui
   // affiche la valeur : tout ce qui lit caracTotal() voit le même chiffre.
   //
-  // Les CASCADES sont voulues, et elles tombent toutes seules : pvMaxAuto()
-  // appelle caracTotal(), donc un filtre sur caracTotal se voit dans les PV ;
-  // poidsMalus() appelle poidsPorte() et compValue() appelle poidsMalus(), donc
-  // un filtre sur le poids se voit dans toutes les compétences de Body, dans
-  // l'initiative et dans la vitesse ; xpDepense() appelle compXp(). Les gardes
-  // ci-dessous sont par NOM, jamais globales, pour ne pas couper ces chaînes-là.
+  // Les CASCADES sont voulues, et elles tombent toutes seules : caracMod() lit
+  // caracTotal(), compPlafond() lit caracMod(), spePlafond() lit les deux, et
+  // jetBonus() lit tout le monde — un filtre posé sur la caractéristique se voit
+  // donc jusque dans le jet d'une spécialité. De même, chargeMax() lit
+  // caracMod() et les paliers de charge commandent l'initiative, la vitesse et
+  // les sauts ; xpDepense() appelle compXp(). Les gardes ci-dessous sont par
+  // NOM, jamais globales, pour ne pas couper ces chaînes-là.
   var filtres = {};            // nom -> [{ fn, prop, echecs }], ordre d'enregistrement
   var filtresEnCours = {};     // nom -> 1 pendant sa passe (garde de récursion)
   var FILTRE_FAUTES = 5;       // même seuil que la muselière des modules, même raison
@@ -33,9 +34,16 @@
   // Les dix points de filtre. La table ne sert qu'à prévenir d'un nom mal
   // tapé : un filtre posé sur « pvmax » ne serait jamais appelé, et rien ne le
   // dirait.
+  // ILS SUIVENT LES RÈGLES. Chaque nom est un point de calcul qu'un mod peut
+  // détourner ; ils ont donc changé avec le système, et un mod écrit pour
+  // l'ancien se verra prévenir plutôt que d'agir dans le vide.
   var FILTRES_CONNUS = {
-    caracTotal: 1, compValue: 1, compXp: 1, pvMax: 1, initiative: 1,
-    vitesse: 1, regen: 1, poidsPorte: 1, poidsMalus: 1, xpDepense: 1
+    caracTotal: 1, caracMod: 1, caracLim: 1,
+    compValue: 1, compPlafond: 1, compXp: 1,
+    spePts: 1, spePlafond: 1, jetBonus: 1,
+    pvMax: 1, enduranceMax: 1, enduranceMalus: 1, recupJour: 1,
+    initiative: 1, vitesse: 1,
+    poidsPorte: 1, chargeMax: 1, xpDepense: 1
   };
   // Appartenance RÉELLE à une table nommée par une chaîne venue d'ailleurs (mod,
   // état importé). Sans elle, un nom comme « toString » répond « oui » depuis

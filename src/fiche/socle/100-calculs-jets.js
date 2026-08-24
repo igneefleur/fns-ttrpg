@@ -1,83 +1,87 @@
-  function caracJet(c) {
-    return caracTotal(c);
+  // ---------- les jets ----------
+  // UN JET N'EST PAS UN DÉ PLUS UN BONUS : c'est un couple, « d100 + bonus » et
+  // « la limite », dont on garde le PLUS BAS. La limite plafonne donc le
+  // résultat, et Roll20 l'affiche déjà plafonné, sans qu'un joueur ait à
+  // comparer deux nombres au tchat. D'où la forme {…,0d0+LIM}kl1 : le second
+  // terme est un dé à zéro face, c'est-à-dire une constante.
+  //
+  // Le MALUS D'ENDURANCE entre ici, et ici seulement : il pèse sur TOUS les
+  // jets, donc l'écrire dans chaque appelant reviendrait à l'oublier une fois.
+  function jetBonusBrut(carac, comp, spe) {
+    var b = caracMod(carac) - enduranceMalus();
+    if (comp) b += compPts(comp);
+    if (spe) b += spePts(spe) + speMalusCharge(spe);
+    return Math.round(b);
   }
-  // Initiative : une compétence de Body comme les autres, malus de poids compris.
-  function initComp() { return state.comps[INIT_KEY] || blankComp(); }
-  // LE POIDS NE SE SOUSTRAIT PLUS ICI (arbitrage du MJ, 2026-08-04). Body/Initiative
-  // est une compétence de Body : compValue() lui applique déjà le malus, comme à
-  // l'esquive ou à la course, et l'ôter une seconde fois le comptait deux fois.
-  // Un seul mécanisme, appliqué une seule fois.
+  function jetBonus(carac, comp, spe) {
+    var v = jetBonusBrut(carac, comp, spe);
+    return aFiltre("jetBonus")
+      ? applique("jetBonus", v, { carac: carac, cle: comp, spe: spe })
+      : v;
+  }
+  // La charge ne mord que sur l'esquive, et l'esquive est une SPÉCIALITÉ : le
+  // malus s'applique donc au jet qui la porte, pas à sa compétence entière.
+  function speMalusCharge(spe) {
+    if (!spe || String(spe.nom || "").trim().toLowerCase() !== CHARGE_ESQUIVE.toLowerCase()) return 0;
+    return chargeMalusEsquive();
+  }
+  // L'expression Roll20 d'un jet, prête à poser entre les doubles crochets.
   //
-  // Conséquence voulue : le malus de l'initiative est désormais ARRONDI à la
-  // dizaine inférieure (19 de poids porté valent −10), là où cette ligne
-  // soustrayait le poids exact. La formule des règles (« Initiative = D100 +
-  // Body − poids ») reste vraie : « poids » y désigne ce malus arrondi.
-  //
-  // compValue() (le public, pas le brut) : un filtre sur le total d'une
-  // compétence doit se voir dans l'initiative. L'arrondi au centième reste, les
-  // modificateurs de compétence acceptant les décimales.
+  // Le modificateur saisi à l'envoi entre DANS le groupe, avant le kl1 : un
+  // bonus de circonstance — l'endurance qu'on dépense, l'aide d'un allié — est
+  // un bonus au jet, donc la limite le plafonne comme le reste. Posé après le
+  // groupe, il ferait franchir la limite, qui ne serait plus une limite.
+  function jetExpr(bonus, lim, avecInput) {
+    var b = Math.round(bonus);
+    return "{" + DE_DEFAUT + (b >= 0 ? "+" : "-") + Math.abs(b) +
+           (avecInput ? ENV_QUERY : "") +
+           ",0d0+" + Math.round(lim) + "}kl1";
+  }
+
+  // ---------- l'initiative ----------
+  // Base MOD AGI × 2. L'équipement s'y ajoute de deux façons qui ne sont PAS
+  // symétriques, et c'est la règle : les BONUS ne comptent que pour ce qui est
+  // porté activement, les MALUS comptent pour tout ce qu'on transporte. Un
+  // personnage qui range une armure dans son sac en garde donc le malus.
+  function equipInitBonus() {
+    var t = 0;
+    function prendre(o) {
+      var v = pnum(o && o.ini);
+      if (!v) return;
+      if (v > 0) { if (o.porte !== false) t += v; }   // bonus : seulement porté
+      else t += v;                                     // malus : toujours
+    }
+    state.armes.forEach(prendre);
+    state.armures.forEach(prendre);
+    return t;
+  }
+  // Mains nues : le bonus des règles, quand aucune arme n'est en main.
+  function mainsNues() {
+    for (var i = 0; i < state.armes.length; i++) if (state.armes[i].porte !== false) return false;
+    return true;
+  }
+  function initiativeAuto() {
+    var v = caracMod("AGI") * repli("iniMult") + equipInitBonus();
+    if (mainsNues()) v += repli("iniMainsNues");
+    chargePaliers().forEach(function (p) {
+      if (p.calc.ini) v += p.calc.ini;
+      if (p.calc.iniDiv) v = v / p.calc.iniDiv;
+    });
+    return Math.floor(v) + modSum(state.divers.initiative);
+  }
   function initiativeBrut() {
-    return Math.round(compValue("Body", initComp(), INIT_KEY) * 100) / 100;
+    return state.initiativeOverride !== null ? state.initiativeOverride : initiativeAuto();
   }
   function initiative() {
     var v = initiativeBrut();
     return aFiltre("initiative") ? applique("initiative", v, {}) : v;
   }
-  // Le Body qui INDEXE la table des vitesses : le POIDS NE S'EN RETRANCHE PLUS
-  // (arbitrage du MJ, 2026-08-04). Porter lourd ne fait plus descendre le
-  // personnage dans la table ; la charge ne touche la vitesse que par la
-  // surcharge ci-dessous, et seulement quand elle dépasse le Body. Un seul
-  // endroit le calcule, l'infobulle de la tuile le lit ici aussi, sinon elle
-  // annoncerait un palier lu sur un autre chiffre que celui qui a servi.
-  function bodyVitesse() { return caracTotal("Body"); }
-  // La surcharge est un MALUS DE VITESSE, et la règle l'énonce désormais comme
-  // tel (« notre vitesse diminue de 3 m »). L'ancienne formulation annonçait la
-  // vitesse RÉSULTANTE (« passe à 6 m ») : elle ne tenait que parce que le poids
-  // ramenait alors le palier au premier, ce qu'il ne fait plus. Un personnage
-  // robuste et surchargé garde donc son palier, moins ces mètres-là.
-  //
-  // La valeur se LIT dans les données plutôt que de s'écrire ici : la fiche ne
-  // porte aucune valeur de règles, et le jour où la phrase change, le malus suit
-  // sans qu'on rouvre ce fichier. Données trop anciennes ou phrase reformulée :
-  // la fiche n'invente rien, la surcharge ne s'applique simplement pas.
-  function surchargeMalus() {
-    var malus = parseFloat(DATA && DATA.vitesseSurcharge);
-    return isFinite(malus) && malus > 0 ? malus : null;
-  }
-  function estSurcharge() {
-    return surchargeMalus() !== null && poidsMalus() > caracTotal("Body");
-  }
-  // la table des règles donne une CHAÎNE (« 10.5 m ») : le palier s'extrait en
-  // nombre pour recevoir les divers, puis se réaffiche avec son unité
-  function vitessePalier() {
-    // arrondi à l'inférieur : un Body décimal (divers) tomberait sinon dans
-    // les trous de la table (39.5 entre les lignes 0-39 et 40-79) et
-    // retomberait sur la DERNIÈRE ligne, la vitesse maximale
-    var b = Math.floor(Math.max(0, bodyVitesse()));   // négatif : 1er palier
-    var rows = DATA.vitesses || [];
-    for (var i = 0; i < rows.length; i++) {
-      var r = rows[i];
-      if (b >= r.min && (r.max === null || b <= r.max)) return r.vitesse;
-    }
-    return rows.length ? rows[rows.length - 1].vitesse : "";
-  }
-  function vitesseBase() {
-    // UNE SEULE PRISE DE LA CHARGE SUR LA VITESSE, et c'est la surcharge : le
-    // palier se lit sur le Body plein, puis, si la charge dépasse ce Body, la
-    // règle retranche ses mètres. Le poids ne fait plus descendre le personnage
-    // dans la table (il le faisait avant l'arbitrage du 2026-08-04, et les deux
-    // effets se cumulaient alors).
-    //
-    // Les modificateurs divers et le forçage du MJ restent en aval : ici comme
-    // partout ailleurs, ils ont le dernier mot.
-    var n = parseFloat(vitessePalier());
-    if (!isFinite(n)) return 0;
-    if (estSurcharge()) n -= surchargeMalus();
-    // jamais négatif : on ne recule pas parce qu'on porte trop
-    return Math.max(0, n);
-  }
+
+  // ---------- la vitesse ----------
   function vitesseAuto() {
-    return Math.max(0, vitesseBase() + modSum(state.divers.vitesse));
+    var v = caracTotal("AGI") * repli("vitesseMult");
+    chargePaliers().forEach(function (p) { if (p.calc.vitesseDiv) v = v / p.calc.vitesseDiv; });
+    return Math.max(0, v + modSum(state.divers.vitesse));
   }
   function vitesseValBrut() {
     return state.vitesseOverride !== null ? state.vitesseOverride : vitesseAuto();
@@ -90,3 +94,21 @@
     return aFiltre("vitesse") ? applique("vitesse", v, {}) : v;
   }
   function vitesse() { return fmtP(vitesseVal()) + " m"; }
+
+  // ---------- les sauts ----------
+  // Les deux sauts partagent le diviseur de charge : c'est le même palier qui
+  // les écrase, et la règle ne les sépare qu'au multiplicateur.
+  function sautDiv() {
+    var d = 1;
+    chargePaliers().forEach(function (p) { if (p.calc.sautDiv) d *= p.calc.sautDiv; });
+    return d;
+  }
+  function sautLongVal() {
+    return Math.max(0, caracTotal("FOR") * repli("sautLong") / sautDiv());
+  }
+  function sautHautVal() {
+    var d = repli("sautHaut") || 1;
+    return Math.max(0, caracTotal("FOR") / d / sautDiv());
+  }
+  function sautLong() { return fmtP(sautLongVal()) + " m"; }
+  function sautHaut() { return fmtP(sautHautVal()) + " m"; }

@@ -256,7 +256,13 @@
       });
       return m;
     }
-    mrow.appendChild(meter("Création", ptsCreation, ptsCreaMax));
+    // Le prestige n'est pas une jauge de dépense : c'est un rang, et il se lit
+    // en clair. La jauge, elle, ne dit que l'xp, seule ressource qu'on épuise.
+    mrow.appendChild(fld("Prestige", (function () {
+      var p = el("div", "pc-meter-val");
+      hooks.push(function () { p.textContent = prestige() + " / " + repli("prestigeMax"); });
+      return p;
+    })()));
     mrow.appendChild(meter("XP dépensé", xpDepense, function () { return state.xpTotal; }));
     var xpIn = el("input", null);
     xpIn.type = "number"; xpIn.min = 0; xpIn.step = 5;
@@ -277,14 +283,28 @@
     var warns = el("div", "pc-warns");
     hooks.push(function () {
       warns.innerHTML = "";
-      if (ptsCreation() > ptsCreaMax())
-        warns.appendChild(el("div", "pc-warn", "Points de création dépassés : " + ptsCreation() + " / " + ptsCreaMax() + "."));
       if (xpRestant() < 0)
         warns.appendChild(el("div", "pc-warn", "XP dépensé au-delà du total (" + xpDepense() + " / " + state.xpTotal + ")."));
-      var cap = compCap();
-      Object.keys(state.comps).forEach(function (k) {
-        if (compXp(state.comps[k]) > cap)
-          warns.appendChild(el("div", "pc-warn", "« " + k.split("/").slice(1).join("/") + " » dépasse le quart de l'xp total (" + compXp(state.comps[k]) + " / " + cap + " xp)."));
+      // Une caractéristique au-dessus du prestige, des points au-dessus du
+      // plafond : ce sont les deux murs du système, et ils ne se franchissent
+      // que par un forçage du MJ — qu'on ne signale donc pas.
+      champs().forEach(function (c) {
+        if (state.caracsForce[c] !== undefined) return;
+        if (caracBase(c) > caracPlafond(c))
+          warns.appendChild(el("div", "pc-warn", "« " + caracInfo(c).nom + " » dépasse le plafond du prestige (" +
+            caracBase(c) + " / " + caracPlafond(c) + ")."));
+      });
+      champsComp().forEach(function (c) {
+        if (state.compsForce[c] !== undefined) return;
+        if ((state.comps[c] || 0) > compPlafond(c))
+          warns.appendChild(el("div", "pc-warn", "« " + compInfo(c).nom + " » dépasse son plafond de points (" +
+            (state.comps[c] || 0) + " / " + compPlafond(c) + ")."));
+      });
+      (state.specialites || []).forEach(function (sp) {
+        if (!sp.carac || sp.force !== null) return;
+        if ((sp.pts || 0) > spePlafond(sp))
+          warns.appendChild(el("div", "pc-warn", "« " + (sp.nom || "Spécialité") + " » dépasse son plafond (" +
+            (sp.pts || 0) + " / " + spePlafond(sp) + ")."));
       });
     });
     sheet.appendChild(warns);

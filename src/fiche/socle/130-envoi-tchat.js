@@ -64,22 +64,30 @@
   // (wiki Macros/Initiative : {{Initiative=[[1d20+…&{tracker}]]}}). Posée après
   // « }} », elle s'afficherait en toutes lettres au tchat sans rien compter.
   var ENV_TRACKER = " &{tracker}";
-  function cmdJet(label, value, die, avecInput, caracQ, tracker) {
-    // « + 0 » est du bruit sur les jets d'équipement (dégâts, invu), qui
-    // n'ont jamais de bonus : l'expression part seule.
+  // LE JET DE TEST. L'expression entière est bâtie en amont (jetExpr, ou la
+  // requête de choix de caractéristique) : elle porte déjà le dé, le bonus, la
+  // limite et le kl1. Ce composeur ne fait que l'habiller du gabarit et, pour
+  // l'initiative seule, du compteur de tours.
+  function cmdJetExpr(label, expr, tracker) {
+    // Le libellé passe par envSan comme les titres de cartes, et l'expression
+    // voit ses blancs repliés : un saut de ligne (nom venu d'un import) ferait
+    // une SECONDE ligne au tchat. L'extension refuse une commande multiligne,
+    // et le clic partirait alors sans rien envoyer.
+    var e = String(expr == null ? "" : expr).replace(/\s+/g, " ").trim();
+    return "&{template:default} {{name=" + (envSan(label) || "Jet") +
+           "}} {{Jet=[[" + e + (tracker ? ENV_TRACKER : "") + "]]}}";
+  }
+  // LE JET BRUT : dégâts d'une arme, protection d'une armure. Pas de limite,
+  // pas de modificateur — un dé et, au plus, une constante.
+  function cmdJet(label, value, die) {
+    // « + 0 » est du bruit sur les jets d'équipement, qui n'ont jamais de
+    // bonus : l'expression part seule.
     var v = value ? (value > 0 ? " + " + value : " - " + (-value)) : "";
-    // Le libellé passe par envSan comme les titres de cartes, et le dé voit
-    // ses blancs repliés : un saut de ligne (nom de compétence venu d'un
-    // import, dé recopié depuis une macro) ferait une SECONDE ligne au tchat.
-    // L'extension refuse une commande multiligne, et le clic partirait alors
-    // sans rien envoyer. Les accolades du dé restent : « ?{Dé|1d100} » et
-    // « @{…} » sont des dés légitimes dans Roll20.
+    // Les accolades du dé restent : « ?{Dé|1d100} » et « @{…} » sont des dés
+    // légitimes dans Roll20.
     var de = String(die == null ? "" : die).replace(/\s+/g, " ").trim() || DE_DEFAUT;
     return "&{template:default} {{name=" + (envSan(label) || "Jet") +
-           "}} {{Jet=[[" + de +
-           (caracQ ? " + (" + caracQ + ")" : "") + v +
-           (avecInput ? ENV_QUERY : "") +
-           (tracker ? ENV_TRACKER : "") + "]]}}";
+           "}} {{Jet=[[" + de + v + "]]}}";
   }
   function cmdCarte(title, fields) {
     var cmd = "&{template:default} {{name=" + envSan(title) + "}}";

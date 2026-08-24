@@ -6,228 +6,123 @@
     // La release suit toujours le code qui vient d'écrire : c'est lui qui fait
     // foi. Sur la beta, cela tamponne le suffixe sur n'importe quel personnage
     // seulement ouvert puis réenregistré ; c'est sans danger tant que le
-    // suffixe ne change pas le rang, un « 3.6.0b » rouvert sur le site stable
-    // 3.6.0 ne devant surtout pas passer pour venu du futur.
+    // suffixe ne change pas le rang.
     if (parseInt(s.v, 10) === SCHEMA) s.rel = RELEASE;
-    if (!s.caracsBase || typeof s.caracsBase !== "object") s.caracsBase = b.caracsBase;
-    if (!s.caracsXp || typeof s.caracsXp !== "object") s.caracsXp = b.caracsXp;
-    if (!s.caracsMod || typeof s.caracsMod !== "object") s.caracsMod = b.caracsMod;
-    ["caracsMod2", "caracsXpMod", "caracsXpMod2", "caracsPlafondMod"].forEach(function (k) {
-      if (!s[k] || typeof s[k] !== "object" || Array.isArray(s[k])) s[k] = { Mind: 0, Body: 0, Prestance: 0 };
-    });
-    ["caracsForce", "caracsXpForce", "caracsPlafondForce"].forEach(function (k) {
-      if (!s[k] || typeof s[k] !== "object" || Array.isArray(s[k])) s[k] = {};
-    });
-    // les modificateurs (blocs Options) acceptent les décimales : les sommes
-    // migrées depuis les anciens divers peuvent en porter
+
+    // ---------- outils ----------
+    // les modificateurs (blocs Options) acceptent les décimales
     function modNum(v) {
       var n = parseFloat(v);
       return isFinite(n) ? clamp(Math.round(n * 100) / 100, -999, 999) : 0;
     }
-    ["Mind", "Body", "Prestance"].forEach(function (c) {
-      s.caracsBase[c] = clamp(num(s.caracsBase[c], 0), 0, 999);
-      s.caracsXp[c] = clamp(num(s.caracsXp[c], 0), 0, 99);
-      s.caracsMod[c] = modNum(s.caracsMod[c]);
-      s.caracsMod2[c] = modNum(s.caracsMod2[c]);
-      s.caracsXpMod[c] = modNum(s.caracsXpMod[c]);
-      s.caracsXpMod2[c] = modNum(s.caracsXpMod2[c]);
-      s.caracsPlafondMod[c] = modNum(s.caracsPlafondMod[c]);
-      // forçages : ABSENTS par défaut, une valeur les pose
-      ["caracsForce", "caracsXpForce", "caracsPlafondForce"].forEach(function (k) {
-        if (s[k][c] === undefined || s[k][c] === null || s[k][c] === "") { delete s[k][c]; return; }
-        var n = parseFloat(s[k][c]);
-        if (isFinite(n)) s[k][c] = clamp(Math.round(n), -9999, 9999); else delete s[k][c];
-      });
-    });
-    // budget de points de création : un modificateur, et un forçage qui vaut
-    // null quand il n'y en a pas (même convention que pvMaxOverride)
-    s.ptsCreaMod = modNum(s.ptsCreaMod);
-    if (s.ptsCreaForce === undefined || s.ptsCreaForce === null || s.ptsCreaForce === "") s.ptsCreaForce = null;
-    else {
-      var pcf = parseFloat(s.ptsCreaForce);
-      s.ptsCreaForce = isFinite(pcf) ? clamp(Math.round(pcf), -9999, 9999) : null;
-    }
-    // Migration de l'ancienne case « Sans limite » (retirée le 2026-08-04) :
-    // elle levait le plafond des trois caractéristiques d'un coup. Une fiche
-    // qui la portait cochée garde ses chiffres, plafond forcé assez haut pour
-    // ne jamais mordre — mais SEULEMENT là où le plafond mordrait vraiment.
-    // Sinon la case, cochée « au cas où » sur une fiche que 80 n'a jamais
-    // gênée, laissait trois plafonds forcés à 9999 en travers du bloc.
-    if (s.sansLimite) {
-      ["Mind", "Body", "Prestance"].forEach(function (c) {
-        if (s.caracsPlafondForce[c] !== undefined) return;
-        if (s.caracsBase[c] + CARAC_PAS * s.caracsXp[c] > CARAC_MAX) s.caracsPlafondForce[c] = 9999;
-      });
-    }
-    s.sansLimite = false;
-    // modificateurs divers (3 emplacements : équipement / art / MJ) : seuls
-    // PV max, régén et vitesse en portent encore
-    if (!s.divers || typeof s.divers !== "object" || Array.isArray(s.divers)) s.divers = b.divers;
-    s.divers.pvMax = modArr(s.divers.pvMax);
-    s.divers.regen = modArr(s.divers.regen);
-    s.divers.vitesse = modArr(s.divers.vitesse);
-    if (!s.compsMod || typeof s.compsMod !== "object" || Array.isArray(s.compsMod)) s.compsMod = {};
-    // migration inverse (2026-08-02) : les divers de caractéristiques et de
-    // compétences (essai en ligne du 2026-08-01) redeviennent le modificateur
-    // UNIQUE des blocs Options — leurs sommes s'y replient, rien ne se perd
-    if (s.divers.caracs && typeof s.divers.caracs === "object") {
-      ["Mind", "Body", "Prestance"].forEach(function (c) {
-        var d = modSum(modArr(s.divers.caracs[c]));
-        if (d) s.caracsMod[c] = modNum(s.caracsMod[c] + d);
-      });
-    }
-    delete s.divers.caracs;
-    if (s.divers.comps && typeof s.divers.comps === "object" && !Array.isArray(s.divers.comps)) {
-      Object.keys(s.divers.comps).forEach(function (k) {
-        var d = modSum(modArr(s.divers.comps[k]));
-        if (d) s.compsMod[k] = modNum((parseFloat(s.compsMod[k]) || 0) + d);
-      });
-    }
-    delete s.divers.comps;
-    // modificateur unique par compétence (bloc Options) : clés normalisées
-    // comme les compétences, entrées nulles purgées
-    var cmods = {};
-    Object.keys(s.compsMod).forEach(function (k) {
-      var n = modNum(s.compsMod[k]);
-      if (!n) return;
-      var di = k.indexOf("/");
-      cmods[di > 0 ? k.slice(0, di + 1) + capFirst(k.slice(di + 1)) : k] = n;
-    });
-    s.compsMod = cmods;
-    // leviers du MJ, par compétence : les cartes de forçage acceptent le vide
-    // (= valeur calculée) ; le modificateur de coût, lui, est un nombre
-    function mapNombres(src, force) {
-      var out = {};
-      if (!src || typeof src !== "object" || Array.isArray(src)) return out;
-      Object.keys(src).forEach(function (k) {
-        var v = src[k];
-        if (force && (v === null || v === undefined || v === "")) return;
-        var n = parseFloat(v);
-        if (!isFinite(n)) return;
-        n = clamp(Math.round(n), -9999, 9999);
-        if (!force && !n) return;   // zéro = pas d'entrée
-        var i = k.indexOf("/");
-        out[i > 0 ? k.slice(0, i + 1) + capFirst(k.slice(i + 1)) : k] = n;
-      });
-      return out;
-    }
-    s.compsForce = mapNombres(s.compsForce, true);
-    s.compsXpForce = mapNombres(s.compsXpForce, true);
-    s.compsXpMod = mapNombres(s.compsXpMod, false);
-    // PV max forcé : vide = valeur calculée ; borné comme le reste
-    s.pvMaxOverride = (s.pvMaxOverride === null || s.pvMaxOverride === undefined || s.pvMaxOverride === "")
-      ? null : Math.floor(parseFloat(s.pvMaxOverride));
-    if (s.pvMaxOverride !== null && !isFinite(s.pvMaxOverride)) s.pvMaxOverride = null;
-    if (s.pvMaxOverride !== null) s.pvMaxOverride = clamp(s.pvMaxOverride, 0, 9999);
-    // vitesse et régénération forcées : même règle, la vitesse en décimales
-    // (la table donne des paliers comme 10.5 m)
-    function force(v, dec, max) {
+    // un champ FORCÉ : vide vaut « pas de forçage », et surtout pas zéro
+    function forceVal(v) {
       if (v === null || v === undefined || v === "") return null;
       var n = parseFloat(v);
-      if (!isFinite(n)) return null;
-      return clamp(dec ? Math.round(n * 100) / 100 : Math.floor(n), 0, max);
+      return isFinite(n) ? Math.round(n * 100) / 100 : null;
     }
-    s.vitesseOverride = force(s.vitesseOverride, true, 9999);
-    s.regenOverride = force(s.regenOverride, false, 9999);
-    // langues : noms uniques, capitalisés ; la langue de base doit être l'une
-    // d'elles (sinon la gratuité viserait une langue absente)
-    if (!Array.isArray(s.langues)) s.langues = [];
-    var vues = {};
-    s.langues = s.langues
-      .map(function (n) { return capFirst(String(n == null ? "" : n).trim()); })
-      .filter(function (n) {
-        if (!n || vues[n.toLowerCase()]) return false;
-        vues[n.toLowerCase()] = 1;
-        return true;
-      });
-    s.langueBase = capFirst(String(s.langueBase == null ? "" : s.langueBase).trim());
-    if (s.langueBase && !vues[s.langueBase.toLowerCase()]) s.langueBase = "";
-    // armes ajoutées à la main : noms uniques, et jamais un doublon de celles
-    // des règles (qui sont déjà dans le module)
-    if (!Array.isArray(s.armesComps)) s.armesComps = [];
-    var basiques = {};
-    ((DATA && DATA.compsArmes) || []).forEach(function (n) { basiques[String(n).toLowerCase()] = 1; });
-    var vuesA = {};
-    s.armesComps = s.armesComps
-      .map(function (n) { return capFirst(String(n == null ? "" : n).trim()); })
-      .filter(function (n) {
-        if (!n || vuesA[n.toLowerCase()] || basiques[n.toLowerCase()]) return false;
-        vuesA[n.toLowerCase()] = 1;
-        return true;
-      });
-    if (!Array.isArray(s.qualites)) s.qualites = ["", ""];
-    s.qualites = s.qualites.map(function (q) { return q == null ? "" : String(q); });
-    while (s.qualites.length < 2) s.qualites.push("");
     function objArray(a) {
       if (!Array.isArray(a)) return [];
       return a.filter(function (x) { return x && typeof x === "object"; });
     }
+    function objet(v) {
+      return (v && typeof v === "object" && !Array.isArray(v)) ? v : {};
+    }
+
+    // LES SIGLES VIENNENT DES RÈGLES, JAMAIS D'ICI. Quand DATA manque — fiche
+    // ouverte hors ligne, données trop anciennes, chemin de repli des
+    // Attributes Roll20 — les listes sont VIDES, et c'est la bonne réponse :
+    // on ne touche alors à aucune clé plutôt que d'en inventer huit et
+    // d'effacer ce que le joueur avait. Un état non normalisé se rouvre ; un
+    // état amputé, non.
+    var codesC = champs(), codesK = champsComp();
+    function connu(v, codes) {
+      v = v == null ? "" : String(v);
+      return codes.indexOf(v) >= 0 ? v : "";
+    }
+    // Nettoie une table « sigle -> nombre » SANS y ajouter de clé : une
+    // caractéristique jamais touchée n'a pas à peser dans l'état, les
+    // accesseurs rendent zéro pour elle.
+    function tableNombres(v, borne) {
+      var src = objet(v), out = {};
+      Object.keys(src).forEach(function (k) {
+        var n = borne(src[k]);
+        if (n !== 0 || src[k] === 0) out[k] = n;
+      });
+      return out;
+    }
+    function tableForce(v) {
+      var src = objet(v), out = {};
+      Object.keys(src).forEach(function (k) {
+        var n = forceVal(src[k]);
+        if (n !== null) out[k] = n;
+      });
+      return out;
+    }
+    function entier(v, min, max) { return clamp(num(v, 0), min, max); }
+
+    // ---------- le prestige ----------
+    var pMax = repli("prestigeMax");
+    s.prestige = entier(s.prestige, 0, pMax);
+    s.prestigeMod = modNum(s.prestigeMod);
+    s.prestigeForce = forceVal(s.prestigeForce);
+
+    // ---------- les caractéristiques ----------
+    // La valeur achetée se borne au prestige maximal des règles et non au
+    // prestige du personnage : le plafond est affaire de CALCUL (caracPlafond),
+    // pas de rangement. Un joueur qui redescend son prestige ne doit pas voir
+    // ses achats effacés au premier enregistrement.
+    s.caracs = tableNombres(s.caracs, function (v) { return entier(v, 0, pMax); });
+    ["caracsMod", "caracsMod2", "caracsXpMod", "caracsXpMod2", "caracsPlafondMod"]
+      .forEach(function (k) { s[k] = tableNombres(s[k], modNum); });
+    ["caracsForce", "caracsXpForce", "caracsPlafondForce"]
+      .forEach(function (k) { s[k] = tableForce(s[k]); });
+
+    // ---------- les compétences ----------
+    // Les points ne se bornent pas au plafond ici non plus, et pour la même
+    // raison : compPts() le fait au calcul, et une caractéristique momentanément
+    // baissée ne doit pas coûter au joueur ce qu'il avait investi.
+    s.comps = tableNombres(s.comps, function (v) { return entier(v, 0, 9999); });
+    ["compsMod", "compsMod2", "compsXpMod", "compsXpMod2"]
+      .forEach(function (k) { s[k] = tableNombres(s[k], modNum); });
+    ["compsForce", "compsXpForce"].forEach(function (k) { s[k] = tableForce(s[k]); });
+
+    // ---------- les spécialités ----------
+    // Une spécialité sans caractéristique ni compétence reste dans la fiche : le
+    // joueur vient peut-être de l'ajouter et n'a pas fini de la remplir. Elle ne
+    // vaut simplement rien tant qu'elle n'en désigne pas.
+    s.specialites = objArray(s.specialites).map(function (sp) {
+      return {
+        nom: sp.nom == null ? "" : String(sp.nom),
+        carac: connu(sp.carac, codesC),
+        comp: connu(sp.comp, codesK),
+        pts: entier(sp.pts, 0, 9999),
+        mod: modNum(sp.mod), mod2: modNum(sp.mod2),
+        force: forceVal(sp.force), xpForce: forceVal(sp.xpForce)
+      };
+    });
+
+    // ---------- identité, bio ----------
+    ["name", "portrait", "espece", "age", "sexe", "genre", "defaut", "background", "notes"]
+      .forEach(function (k) { s[k] = s[k] == null ? "" : String(s[k]); });
+    if (!Array.isArray(s.qualites)) s.qualites = ["", ""];
+    s.qualites = s.qualites.map(function (q) { return q == null ? "" : String(q); });
+    while (s.qualites.length < 2) s.qualites.push("");
     s.avantages = objArray(s.avantages);
-    s.customComps = objArray(s.customComps);
-    s.customComps.forEach(function (cc) { if (cc.name) cc.name = capFirst(cc.name); });
     s.armes = objArray(s.armes);
     s.armures = objArray(s.armures);
-    if (typeof s.comps !== "object" || !s.comps) s.comps = {};
-    var comps = {};
-    Object.keys(s.comps).forEach(function (k) {
-      var c = s.comps[k];
-      if (!c || typeof c !== "object") c = {};
-      c.stade = clamp(num(c.stade, 0), 0, DATA ? DATA.stades.length - 1 : 4);
-      // la clé d'état s'appelle « techniques » (historique : elle a déjà été
-      // migrée depuis « passifs », que l'interface réemploie aujourd'hui) ;
-      // chaque entrée est un objet {name, desc} (l'ancien texte simple
-      // devient le nom, description vide)
-      if (!Array.isArray(c.techniques)) c.techniques = Array.isArray(c.passifs) ? c.passifs : [];
-      delete c.passifs;
-      c.techniques = c.techniques.map(function (p) {
-        // cout : coût forcé de CE passif (null = le tarif de base) ; le joueur
-        // peut le régler à droite du nom, en mode édition
-        if (p && typeof p === "object") {
-          var t = { name: String(p.name || ""), desc: String(p.desc || "") };
-          var co = (p.cout === null || p.cout === undefined || p.cout === "") ? null : Math.floor(parseFloat(p.cout));
-          if (co !== null && isFinite(co)) t.cout = clamp(co, 0, 9999);
-          return t;
-        }
-        return { name: p == null ? "" : String(p), desc: "" };
-      });
-      // l'art du stade qui l'ouvre (Art) : {name, desc} ; un art resté vide s'efface
-      if (c.art && typeof c.art === "object") {
-        var aco = (c.art.cout === null || c.art.cout === undefined || c.art.cout === "")
-          ? null : Math.floor(parseFloat(c.art.cout));
-        c.art = { name: String(c.art.name || ""), desc: String(c.art.desc || "") };
-        if (aco !== null && isFinite(aco)) c.art.cout = clamp(aco, 0, 9999);
-        // un art vierge s'efface — son coût forcé n'aurait plus d'objet
-        if (!c.art.name.trim() && !c.art.desc.trim()) delete c.art;
-      } else delete c.art;
-      // migration : noms de compétences capitalisés (« Body/apnée » -> « Body/Apnée »)
-      var i = k.indexOf("/");
-      comps[i > 0 ? k.slice(0, i + 1) + capFirst(k.slice(i + 1)) : k] = c;
+
+    // ---------- les valeurs dérivées ----------
+    s.divers = objet(s.divers);
+    ["pvMax", "endurance", "vitesse", "initiative", "charge", "recup"].forEach(function (k) {
+      var a = Array.isArray(s.divers[k]) ? s.divers[k] : [];
+      s.divers[k] = [modNum(a[0]), modNum(a[1]), modNum(a[2])];
     });
-    s.comps = comps;
-    // renommages de compétences (2026-08-02) : les fiches d'avant migrent
-    // d'elles-mêmes — investissements, modificateurs et leviers du MJ suivent
-    // le nouveau nom, rien ne se perd
-    var RENOMMAGES = {
-      "Body/Se cacher": "Body/Discrétion",
-      "Body/Pique Longue": "Body/Pique longue",
-      "Mind/Histoire Japon": "Mind/Histoire du Japon",
-      "Mind/Se concentrer": "Mind/Concentration",
-      "Mind/Résister à la douleur": "Mind/Résistance à la douleur",
-      "Mind/Garder son calme": "Mind/Sang-froid",
-      "Mind/Observer": "Mind/Observation",
-      "Mind/Utiliser un autre de ses sens que la vue": "Mind/Sens autres que la vue",
-      "Prestance/Déception": "Prestance/Tromperie",
-      "Prestance/Commander": "Prestance/Commandement",
-      "Prestance/Réconforter": "Prestance/Réconfort"
-    };
-    [s.comps, s.compsMod, s.compsForce, s.compsXpForce, s.compsXpMod].forEach(function (m) {
-      Object.keys(RENOMMAGES).forEach(function (vieux) {
-        if (Object.prototype.hasOwnProperty.call(m, vieux)) {
-          if (m[RENOMMAGES[vieux]] === undefined) m[RENOMMAGES[vieux]] = m[vieux];
-          delete m[vieux];
-        }
-      });
-    });
+    ["pvMaxOverride", "enduranceMaxOverride", "vitesseOverride",
+     "initiativeOverride", "chargeOverride", "recupOverride"]
+      .forEach(function (k) { s[k] = forceVal(s[k]); });
+
+    // ---------- l'inventaire ----------
     // inventaire structuré : liste (texte) + objets illustrés par groupes
     // (un tableau passerait le typeof : ses propriétés nommées seraient
     // perdues par JSON.stringify au premier save)
@@ -246,7 +141,7 @@
     s.inv.opts.cols = clamp(num(s.inv.opts.cols, b.inv.opts.cols), 1, 8);
     // chaque réglage garde SON défaut quand il manque (un opts partiel ne doit
     // pas allumer un affichage éteint par défaut)
-    ["nom", "qte", "poids", "total", "vign"].forEach(function (k) {
+    ["nom", "qte", "poids", "total"].forEach(function (k) {
       s.inv.opts[k] = s.inv.opts[k] === undefined ? b.inv.opts[k] : !!s.inv.opts[k];
     });
     if (!Array.isArray(s.inv.groupes)) s.inv.groupes = [];
@@ -257,17 +152,12 @@
     if (!s.inv.groupes.length) s.inv.groupes = ["Sur soi"];
     // Les drapeaux « compté » se recalent sur les groupes à chaque chargement :
     // un tableau plus court se complète (un groupe neuf est PORTÉ, jamais posé,
-    // sinon du poids disparaîtrait en silence), un tableau plus long se coupe
-    // (le groupe a été supprimé ailleurs). C'est un tableau RECONSTRUIT : ne
-    // rien y ranger d'autre.
+    // sinon du poids disparaîtrait en silence), un tableau plus long se coupe.
     if (!Array.isArray(s.inv.comptes)) s.inv.comptes = [];
-    // PLUS DE DRAPEAUX QUE DE GROUPES : un groupe a été supprimé par une version
-    // qui ignore « comptes » (une archive antérieure sait ouvrir ce personnage,
-    // c'est même son rôle). Elle n'a pas retiré le drapeau correspondant, et
-    // personne ne peut plus dire LEQUEL : couper la fin décalerait tous les
-    // suivants, et un sac resterait posé au sol sans que rien ne le montre.
-    // On rend donc tout au poids porté. Perdre un décochage se voit et se
-    // refait ; perdre du poids en silence fausse la fiche sans prévenir.
+    // PLUS DE DRAPEAUX QUE DE GROUPES : personne ne peut plus dire LEQUEL a
+    // sauté, et couper la fin décalerait tous les suivants. On rend donc tout au
+    // poids porté. Perdre un décochage se voit et se refait ; perdre du poids en
+    // silence fausse la fiche sans prévenir.
     if (s.inv.comptes.length > s.inv.groupes.length) s.inv.comptes = [];
     s.inv.comptes = s.inv.groupes.map(function (_, gi) {
       return s.inv.comptes[gi] !== false;
@@ -281,31 +171,29 @@
         img: it.img == null ? "" : String(it.img),
         desc: it.desc == null ? "" : String(it.desc),
         // identifiant libre : c'est LUI qui reconnaît le même objet d'une fiche
-        // à l'autre quand on le donne (deux « Corde » différentes ne se
-        // confondent pas si elles portent des identifiants distincts)
+        // à l'autre quand on le donne
         id: it.id == null ? "" : String(it.id),
         achat: pnum(it.achat),
         vente: pnum(it.vente),
         groupe: clamp(num(it.groupe, 0), 0, s.inv.groupes.length - 1)
       };
     });
-    // migration : l'ancien inventaire en texte libre (une ligne par objet)
-    // devient des lignes de liste, quantité 1 et poids 0
-    if (s.inventaire && typeof s.inventaire === "string" && !s.inv.texte.length) {
+    // l'ancien inventaire en texte libre se fond dans les objets illustrés
+    if (s.inventaire && typeof s.inventaire === "string") {
       s.inventaire.split(/\r?\n/).forEach(function (line) {
         line = line.trim();
-        if (line) s.inv.texte.push({ nom: line, qte: 1, poids: 0, compte: true });
+        if (line) s.inv.objets.push({ nom: line, qte: 1, poids: 0, img: "", desc: "", groupe: 0 });
       });
       s.inventaire = "";
     }
-    // migration : la liste (retirée de la fiche) se fond dans les objets
-    // illustrés, au premier groupe ; sa case « compter le poids » disparaît
     if (s.inv.texte.length) {
       s.inv.texte.forEach(function (it) {
         s.inv.objets.push({ nom: it.nom, qte: it.qte, poids: it.poids, img: "", desc: "", groupe: 0 });
       });
       s.inv.texte = [];
     }
+
+    // ---------- les modules ----------
     // coffres des modules : le contenu appartient au module, la fiche ne juge
     // que la forme. Une entrée qui n'est pas un objet est jetée : elle ferait
     // planter le get() du module sans que personne ne sache pourquoi.
@@ -369,8 +257,7 @@
       // L'id impose son alphabet : il sert de clé partout (avis du navigateur,
       // journal « [mod:<id>] », coffre du module qu'il remplacerait). Même
       // règle que le moteur (idPropre) : les deux chemins doivent donner le
-      // MÊME id, sans quoi l'empreinte changerait selon le chemin pris et le
-      // joueur aurait à réautoriser un mod qu'il connaît déjà.
+      // MÊME id, sans quoi l'empreinte changerait selon le chemin pris.
       m.id = String(m.id == null ? "" : m.id).toLowerCase()
         .replace(/[^a-z0-9-]+/g, "-").replace(/-+/g, "-").replace(/^-+|-+$/g, "");
       m.nom = String(m.nom == null ? "" : m.nom);
@@ -383,10 +270,16 @@
       vusMods[m.id] = 1;
       return true;
     });
-    s.xpTotal = Math.max(0, num(s.xpTotal, XP_CREATION));
-    s.narration = clamp(num(s.narration, 3), 0, 99);
-    s.pv = (s.pv === null || s.pv === undefined || s.pv === "") ? null : parseFloat(s.pv);
-    if (s.pv !== null && !isFinite(s.pv)) s.pv = null;
+
+    // ---------- l'expérience et les deux jauges ----------
+    s.xpTotal = Math.max(0, num(s.xpTotal, 0));
+    // pv et endurance : null veut dire « au maximum », et c'est différent de
+    // zéro. Un personnage neuf est en pleine forme sans qu'on ait à recopier
+    // son maximum dans son état.
+    ["pv", "endurance"].forEach(function (k) {
+      s[k] = (s[k] === null || s[k] === undefined || s[k] === "") ? null : parseFloat(s[k]);
+      if (s[k] !== null && !isFinite(s[k])) s[k] = null;
+    });
+    s.de = s.de == null ? DE_DEFAUT : String(s.de);
     return s;
   }
-

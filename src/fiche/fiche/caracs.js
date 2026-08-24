@@ -1,96 +1,181 @@
-  // ---------- onglet Fiche : caractéristiques + combat | compétences ----------
+  // ---------- onglet Fiche : les caractéristiques ----------
+  // LE PRESTIGE OUVRE LE MODULE, et ce n'est pas une question de goût : c'est
+  // lui qui plafonne chacune des huit valeurs. Le lire après elles, ce serait
+  // lire la conséquence avant la cause — un joueur bloqué à 5 ne saurait pas
+  // où regarder.
+  //
+  // Les lignes se rangent par GROUPE, dans l'ordre de champs(), c'est-à-dire
+  // l'ordre de la page de règles. Le titre d'un groupe est le mot des DONNÉES
+  // lui-même : une famille renommée dans les règles arrive ici sans qu'on
+  // rouvre ce fichier, et aucune liste écrite en dur ne peut en diverger.
   function buildCaracs() {
-    // jeu : le total et son jet ; édition : les steppers Création / Achats xp
+    // jeu : la valeur, ses trois chiffres et son jet ; édition : les ± qui la
+    // montent et la descendent, achat par achat
     var b = block("Caractéristiques", null, "caracs");
-    // même ordre que les compétences : Body, puis Mind, puis Prestance
-    CHAMPS.forEach(function (name) {
-      if (!DATA.caracs.some(function (cc) { return cc.name === name; })) return;
+
+    // ---------- le prestige ----------
+    var pRow = el("div", "pc-kv");
+    pRow.appendChild(el("span", "k", "Prestige"));
+    // la valeur affichée est le prestige EFFECTIF (modificateur et forçage des
+    // Options compris), le stepper règle la valeur ACHETÉE : c'est le même
+    // partage que sur les caractéristiques en dessous, et il évite qu'un
+    // prestige forcé se laisse « corriger » par un clic qui ne changerait rien.
+    var pVal = el("span", "pc-cval", "");
+    pRow.appendChild(pVal);
+    var pStep = stepper(
+      function () { return state.prestige || 0; },
+      function (v) {
+        var max = repli("prestigeMax");
+        // le plancher se lit dans les règles quand elles sont là ; REPLI ne le
+        // porte pas, et un undefined rendrait la borne inutile
+        var min = repli("prestigeMin");
+        if (typeof min !== "number") min = 0;
+        // le plafond ne bloque que les HAUSSES : un prestige déjà au-delà
+        // (règles corrigées sous les pieds d'une fiche déjà écrite) redescend
+        // pas à pas au lieu d'être écrasé d'un seul clic
+        var haut = Math.max(max, state.prestige || 0);
+        var n = Math.round(v);
+        if (n > haut) {
+          flash(haut === max
+            ? "Le prestige ne dépasse pas " + max + "."
+            : "Le prestige est déjà au-delà de " + max + " : il ne peut que redescendre.");
+          n = haut;
+        }
+        state.prestige = Math.max(min, n);
+      }, 1, "prestige");
+    pStep.classList.add("pc-edit-only");
+    pRow.appendChild(pStep);
+    pRow.appendChild(el("span", "sp"));
+    var pMax = el("span", "max", "");
+    pRow.appendChild(pMax);
+    hooks.push(function () {
+      var force = state.prestigeForce !== null && state.prestigeForce !== undefined;
+      var d = state.prestigeMod || 0;
+      pVal.textContent = String(prestige());
+      pVal.classList.toggle("adj", force || d !== 0);
+      pVal.title = (force
+                     ? "Prestige forcé (Options) — calculé : " + prestigeAuto()
+                     : (state.prestige || 0) +
+                       (d ? " · modificateur (Options) " + sign(d) : "") +
+                       " = " + prestige()) +
+                   " — il plafonne chaque caractéristique.";
+      pMax.textContent = "/ " + repli("prestigeMax");
+    });
+    b.appendChild(pRow);
+
+    // ---------- une caractéristique ----------
+    function ligne(code) {
+      var info = caracInfo(code);
       var row = el("div", "pc-crow");
+
       var top = el("div", "pc-crow-top");
-      var chip = el("span", "pc-abbr", ABBR[name] || name);
-      chip.title = name;
+      // le sigle est ce que le joueur lit sur ses jets et dans ses règles ; le
+      // nom entier tient dans l'infobulle, pour la colonne trop étroite
+      var chip = el("span", "pc-abbr", code);
+      chip.title = info.nom;
       top.appendChild(chip);
-      // la ligne du nom porte aussi le malus de poids : elle est mise à jour au
-      // rafraîchissement, d'où la référence gardée
-      var nm = el("span", "nm", name);
-      top.appendChild(nm);
+      top.appendChild(el("span", "nm", info.nom));
+      // LA VALEUR EST LE BOUTON DE JET : le geste de cette fiche depuis
+      // toujours est un chiffre qu'on clique, pas un bouton de plus posé à
+      // côté d'un chiffre. doJet est le seul chemin d'un jet de test : il pose
+      // le MOD, la limite et le malus d'endurance sans qu'on ait à y penser.
       var val = el("span", "pc-cval pc-rollable", "");
-      // caracJet, pas caracTotal : ce bouton LANCE la caractéristique, et c'est
-      // caracJet qui dit ce que vaut un jet direct (la charge n'y pèse plus)
-      val.addEventListener("click", function () { doRoll(name, caracJet(name), null, true); });
+      val.addEventListener("click", function () { doJet(info.nom, code, null, null); });
       top.appendChild(val);
       row.appendChild(top);
 
+      // MOD, LIM et XP restent lisibles EN PERMANENCE, rouage fermé : ce sont
+      // eux qu'on cherche en jouant, la valeur n'étant que ce qui les produit.
+      var meta = el("div", "pc-kv");
+      meta.appendChild(el("span", "k", "MOD"));
+      var vMod = el("span", "max", "");
+      meta.appendChild(vMod);
+      meta.appendChild(el("span", "k", "LIM"));
+      var vLim = el("span", "max", "");
+      meta.appendChild(vLim);
+      meta.appendChild(el("span", "sp"));
+      meta.appendChild(el("span", "k", "XP"));
+      var vXp = el("span", "max", "");
+      meta.appendChild(vXp);
+      row.appendChild(meta);
+
+      // LES ± ACHÈTENT LA VALEUR, et rien ne les retient faute d'xp : l'en-tête
+      // AVERTIT dès que le total est dépassé, là où un blocage figerait à zéro
+      // toute fiche remplie à l'envers — les valeurs d'abord, l'xp total
+      // ensuite. Le prestige, lui, borne pour de bon.
       var bot = el("div", "pc-crow-bot pc-edit-only");
-      bot.appendChild(el("span", "lbl", "Création"));
+      bot.appendChild(el("span", "lbl", "Valeur"));
       bot.appendChild(stepper(
-        function () { return state.caracsBase[name]; },
+        function () { return caracBase(code); },
         function (v) {
-          // le plafond ne bloque que les HAUSSES : une base montée au-dessus
-          // du plafond (abaissé ensuite dans les Options) redescend pas à pas,
-          // sans être écrasée au plafond par un simple clic
-          var plaf = caracPlafond(name);
-          var max = Math.max(plaf, state.caracsBase[name]);
-          var val2 = clamp(v, 0, 9999);
-          if (val2 > max) { flash("Plafond de " + plaf + " atteint (Options, bloc Création)."); val2 = max; }
-          state.caracsBase[name] = val2;
-        }, CARAC_PAS, "création"));
-      bot.appendChild(el("span", "lbl", "Achats xp"));
-      var xpStep = el("span", "pc-step");
-      xpStep.appendChild(stepBtn("−", "Rendre " + DATA.xpParStade + " xp", function () {
-        if (state.caracsXp[name] > 0) { state.caracsXp[name]--; refresh(); }
-      }));
-      var cnt = el("span", "v", "");
-      xpStep.appendChild(cnt);
-      xpStep.appendChild(stepBtn("+", "Dépenser " + DATA.xpParStade + " xp", function () {
-        if (xpRestant() < DATA.xpParStade) { flash("XP insuffisant."); return; }
-        // le plafond porte sur base + achats, SANS le modificateur de total
-        // (qui peut porter la valeur au-delà du plafond comme en dessous : le
-        // tester brûlerait de l'xp sous un malus, ou bloquerait à tort sous un
-        // bonus)
-        if (state.caracsBase[name] + CARAC_PAS * (state.caracsXp[name] + 1) > caracPlafond(name)) {
-          flash("Plafond de " + caracPlafond(name) + " atteint (Options, bloc Création).");
-          return;
-        }
-        state.caracsXp[name]++;
-        refresh();
-      }));
-      bot.appendChild(xpStep);
+          // le plafond ne bloque que les HAUSSES : une valeur passée au-dessus
+          // (prestige abaissé après coup, relèvement retiré des Options)
+          // redescend pas à pas au lieu d'être écrasée d'un seul clic
+          var plaf = caracPlafond(code);
+          var haut = Math.max(plaf, caracBase(code));
+          var n = Math.round(v);
+          if (n > haut) {
+            flash(haut === plaf
+              ? "Plafond de " + plaf + " : le prestige plafonne " + code + "."
+              : code + " est déjà au-delà du plafond (" + plaf + ") : il ne peut que redescendre.");
+            n = haut;
+          }
+          state.caracs[code] = Math.max(0, n);
+        }, 1, "valeur"));
       row.appendChild(bot);
 
       hooks.push(function () {
-        var d = (state.caracsMod[name] || 0) + (state.caracsMod2[name] || 0);
-        var brut = state.caracsBase[name] + CARAC_PAS * state.caracsXp[name];
-        var plaf = caracPlafond(name);
-        var plafonne = Math.min(brut, plaf);
-        var force = state.caracsForce[name] !== undefined;
-        // ce que le JET perd par rapport au total : nul depuis que la charge ne
-        // pèse plus sur la caractéristique (elle reste sur les compétences de
-        // Body et sur la vitesse). La ligne demeure parce qu'elle est la seule
-        // à relier l'affichage à caracJet : si l'arbitrage rebasculait, la
-        // mention et l'accent reviendraient d'eux-mêmes.
-        var m = caracTotal(name) - caracJet(name);
-        // Un écart s'écrirait en clair sur la ligne du nom : sans lui, le joueur
-        // verrait un total qui ne correspond ni à sa création ni à ses achats,
-        // sans rien dans le bloc pour dire pourquoi.
-        nm.textContent = name + (m ? " · poids " + sign(-m) : "");
-        val.textContent = String(caracJet(name));
-        val.classList.toggle("adj", d !== 0 || force || m !== 0);
-        // quand le plafond mord, l'écrire en substitution (« plafonné à 80 »)
-        // pour que la somme du tooltip se vérifie de tête ; un total forcé, lui,
-        // remplace la somme (l'afficher quand même la ferait mentir). Le malus de
-        // poids vient APRÈS le forçage : il fixe la caractéristique, pas le jet.
+        var d = (state.caracsMod[code] || 0) + (state.caracsMod2[code] || 0);
+        var force = state.caracsForce[code] !== undefined;
+        var plaf = caracPlafond(code);
+        var base = caracBase(code);
+        var mord = base > plaf;
+        var xpF = state.caracsXpForce[code] !== undefined;
+        var xpD = (state.caracsXpMod[code] || 0) + (state.caracsXpMod2[code] || 0);
+        val.textContent = String(caracTotal(code));
+        val.classList.toggle("adj", force || d !== 0 || mord);
+        // quand le plafond mord, l'écrire en clair (« plafonnée à 12 ») : sans
+        // cela, le joueur voit un total qui ne correspond ni à ce qu'il a
+        // acheté ni à ce qu'il a modifié, et rien ne dit pourquoi. Un total
+        // forcé, lui, REMPLACE la somme : l'afficher quand même la ferait mentir.
         val.title = (force
                       ? "Total forcé (Options)"
-                      : "Création " + state.caracsBase[name] +
-                        " + achats " + (CARAC_PAS * state.caracsXp[name]) +
-                        (brut !== plafonne ? ", plafonné à " + plaf : "") +
+                      : "Valeur " + base +
+                        (mord ? ", plafonnée à " + plaf + " (prestige)" : "") +
                         (d ? " · modificateur (Options) " + sign(d) : "")) +
-                    (m ? " · poids " + sign(-m) : "") +
-                    " = " + caracJet(name) + " — clic : lancer 1d100 + " + name;
-        cnt.textContent = String(state.caracsXp[name]);
+                    " = " + caracTotal(code) +
+                    " — clic : lancer " + DE_DEFAUT + " " + sign(caracMod(code)) +
+                    ", plafonné à " + caracLim(code);
+        vMod.textContent = sign(caracMod(code));
+        vMod.title = "Ce que " + code + " ajoute à ses jets.";
+        vMod.classList.toggle("adj", force || d !== 0 || mord);
+        vLim.textContent = String(caracLim(code));
+        vLim.title = "Aucun jet de " + code + " ne dépasse ce résultat.";
+        vLim.classList.toggle("adj", force || d !== 0 || mord);
+        // l'XP se lit sur la valeur ACHETÉE, jamais sur le total : un
+        // modificateur d'équipement ne se paie pas.
+        vXp.textContent = String(caracXp(code));
+        vXp.classList.toggle("adj", xpF || xpD !== 0);
+        vXp.title = xpF
+          ? "Coût forcé (Options) — calculé : " + caracXpAuto(code)
+          : "XP cumulé de la valeur " + base + ", lu dans la table des règles" +
+            (xpD ? " · modificateur (Options) " + sign(xpD) : "");
       });
-      b.appendChild(row);
+      return row;
+    }
+
+    // ---------- les huit, groupées ----------
+    var groupe = null;
+    champs().forEach(function (code) {
+      var g = caracInfo(code).groupe || "";
+      if (g !== groupe) {
+        groupe = g;
+        // un intertitre discret, et non un bloc de plus : les familles se
+        // lisent d'un coup d'œil sans couper le module en modules séparés,
+        // qu'on pourrait déplacer l'un sans l'autre.
+        if (g) b.appendChild(el("div", "pc-block-note", capFirst(g)));
+      }
+      b.appendChild(ligne(code));
     });
     return b;
   }

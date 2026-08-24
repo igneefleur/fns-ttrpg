@@ -1,36 +1,67 @@
   // ---------- jets ----------
   // Les dés se jettent dans Roll20 : mia-roll20-boot.js (amorce Roll20 servie
-  // par le site) pose window.__miaRoll et le
-  // jet part au TCHAT. Sur le site (pas de Roll20), un clic lance quand même le
-  // dé et montre le résultat dans un toast discret — aucun panneau de jets.
+  // par le site) pose window.__miaRoll et le jet part au TCHAT. Sur le site
+  // (pas de Roll20), un clic lance quand même le dé et montre le résultat dans
+  // un toast discret — aucun panneau de jets.
   function parseDice(expr) {
     var m = /^(\d{1,2})d(\d{1,4})([+-]\d{1,4})?$/i.exec(String(expr || "").replace(/\s/g, ""));
     if (!m) return null;   // expression illisible : doRoll prévient au lieu de lancer autre chose
     return { n: clamp(+m[1], 1, 20), faces: clamp(+m[2], 2, 1000), plus: +(m[3] || 0) };
   }
-  // isCheck : vrai pour un jet de test (carac/compétence) — seuls ces jets
-  // critent (96+/5-). Les jets d'équipement (dégâts, invu) restent des dés bruts.
-  // caracDe : caractéristique propre d'un jet de COMPÉTENCE. Avec le réglage
-  // « Au choix » de la barre d'envoi, la macro Roll20 demande alors quelle
-  // caractéristique porte le jet (la sienne proposée en premier) : le total
-  // envoyé se décompose en (carac choisie) + (stade et modificateur).
-  function caracQuery(propre) {
-    var ordre = [propre].concat(CHAMPS.filter(function (c) { return c !== propre; }));
-    return "?{Caractéristique|" + ordre.map(function (c) { return c + "," + caracTotal(c); }).join("|") + "}";
+
+  // ÉCHAPPER UNE EXPRESSION POUR L'INTÉRIEUR D'UNE REQUÊTE ROLL20. Une requête
+  // ?{…} se découpe sur « | » et sur la PREMIÈRE virgule de chaque option : une
+  // expression de jet, qui porte {…,…}, la casserait donc en deux. Roll20 rend
+  // les entités HTML à leur caractère après avoir résolu la requête, ce qui est
+  // le seul moyen de faire voyager une accolade ou une virgule là-dedans.
+  function echapQuery(expr) {
+    return String(expr)
+      .replace(/\{/g, "&#123;").replace(/\}/g, "&#125;")
+      .replace(/,/g, "&#44;").replace(/\|/g, "&#124;");
   }
-  // tracker : le jet s'inscrit dans le compteur de tours de Roll20 (initiative).
-  function doRoll(label, value, die, isCheck, caracDe, tracker) {
-    die = die || state.de || DE_DEFAUT;
-    // « avec input » ne vaut QUE pour les jets de test : isCheck est vrai
-    // exactement aux caractéristiques et aux compétences, faux aux dégâts et
-    // à l'invulnérabilité — aucun autre filtre à écrire.
-    // Le choix de carac ne vit que sur le canal brut (macro) : les replis
-    // (vieille extension, hors Roll20) partent avec la carac automatique.
-    var q = (isCheck && caracDe && envCaracChoix()) ? caracQuery(caracDe) : null;
-    if (envoyer(cmdJet(label, q ? value - caracTotal(caracDe) : value, die,
-                       isCheck && envInput(), q, tracker))) return;
-    // extension antérieure au canal brut : jet public, sans modificateur — et
-    // sans compteur de tours, ce canal-là n'envoyant pas de commande Roll20
+  // Le réglage « Au choix » de la barre d'envoi : Roll20 demande AVANT de
+  // lancer quelle caractéristique porte le jet, la sienne proposée en premier.
+  //
+  // La requête ne porte pas un nombre mais L'EXPRESSION ENTIÈRE, parce que
+  // changer de caractéristique change à la fois le MOD et la LIMITE. Deux
+  // requêtes séparées poseraient deux questions au joueur, qui pourrait
+  // répondre deux choses différentes et obtenir un jet incohérent.
+  // Le modificateur d'envoi est emporté DANS chaque option, échappé avec le
+  // reste : la requête intérieure ne se pose qu'une fois, son texte étant le
+  // même partout, et le bonus reste sous la limite quelle que soit la
+  // caractéristique choisie.
+  function caracQuery(propre, comp, spe, avecInput) {
+    var ordre = [propre].concat(champs().filter(function (c) { return c !== propre; }));
+    var opts = ordre.map(function (c) {
+      return c + "," + echapQuery(jetExpr(jetBonus(c, comp, spe), caracLim(c), avecInput));
+    });
+    return "?{Caractéristique|" + opts.join("|") + "}";
+  }
+
+  // LE JET DE TEST : caractéristique, compétence ou spécialité. C'est le seul
+  // chemin par lequel un jet plafonné part au tchat.
+  function doJet(label, carac, comp, spe, tracker) {
+    var avecInput = envInput();
+    var expr = envCaracChoix()
+      ? caracQuery(carac, comp, spe, avecInput)
+      : jetExpr(jetBonus(carac, comp, spe), caracLim(carac), avecInput);
+    if (envoyer(cmdJetExpr(label, expr, tracker))) return;
+    // Hors Roll20, ou sous une extension antérieure au canal brut : la fiche
+    // lance elle-même et applique le plafond, en le DISANT — un résultat rogné
+    // sans explication passerait pour une faute de calcul.
+    var de = 1 + Math.floor(Math.random() * 100);
+    var bonus = jetBonus(carac, comp, spe), lim = caracLim(carac);
+    var brut = de + bonus, total = Math.min(brut, lim);
+    var det = "dé " + de + (bonus ? " " + (bonus >= 0 ? "+ " : "− ") + Math.abs(bonus) : "");
+    if (total < brut) det += " = " + brut + ", plafonné à " + lim;
+    flash(label + " : " + total + " (" + det + ")");
+  }
+
+  // LE JET BRUT : dégâts d'une arme, protection d'une armure. Ni MOD, ni
+  // plafond, ni requête — c'est un dé, et rien d'autre.
+  function doRoll(label, value, die) {
+    die = die || DE_DEFAUT;
+    if (envoyer(cmdJet(label, value, die))) return;
     if (typeof window !== "undefined" && typeof window.__miaRoll === "function") {
       window.__miaRoll(die, value, label);
       return;
@@ -49,17 +80,6 @@
     var sum = dice.reduce(function (a, b) { return a + b; }, 0) + d.plus;
     var total = sum + value;
     var det = "dé " + dice.join(" + ") + (value ? " " + (value >= 0 ? "+ " : "− ") + Math.abs(value) : "");
-    // 96+ au dé : coup critique (le résultat au d100 devient 100) ; 5 ou moins :
-    // échec critique (il devient 0). Les modificateurs (d.plus, valeur) restent.
-    if (isCheck && d.n === 1 && d.faces === 100) {
-      if (dice[0] >= 96) {
-        total = 100 + d.plus + value;
-        det = "coup critique — le dé devient 100";
-      } else if (dice[0] <= 5) {
-        total = 0 + d.plus + value;
-        det = "échec critique — le dé devient 0";
-      }
-    }
     flash(label + " : " + total + " (" + det + ")");
   }
 
@@ -69,9 +89,8 @@
   // les valeurs vides sont ignorées.
   // Une étiquette VIDE ("") est volontaire : la carte Roll20 rend alors
   // « {{=texte}} », une ligne pleine largeur sans colonne de libellé. Réservée
-  // aux TEXTES LONGS (effet d'un passif, description d'un art, avantage…),
-  // dont le libellé n'apprend rien que le titre ne dise déjà ; les champs
-  // courts et tabulaires (poids, dégâts, quantité…) gardent le leur.
+  // aux TEXTES LONGS, dont le libellé n'apprend rien que le titre ne dise déjà ;
+  // les champs courts et tabulaires (poids, dégâts, quantité…) gardent le leur.
   // Une seule étiquette vide par carte : le template les indexe par clé.
   function sayChat(title, fields) {
     var clean = (fields || []).filter(function (f) { return f && String(f[1] || "").trim(); });
@@ -90,4 +109,3 @@
       sayChat(getTitle(), getFields());
     });
   }
-

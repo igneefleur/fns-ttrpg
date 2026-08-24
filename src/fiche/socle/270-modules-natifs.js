@@ -12,18 +12,19 @@
   // avant d'être touché (appliqueDisposition).
   var MODULES_NATIFS = [
     // ---- onglet Fiche ----
-    { id: "narration",  titre: "Narration",         onglet: "fiche", colonne: "gauche", build: buildNarration },
+    // Les caractéristiques d'abord, prestige en tête : c'est lui qui plafonne
+    // tout le reste, et on le lit avant de lire ce qu'il autorise.
     { id: "caracs",     titre: "Caractéristiques",  onglet: "fiche", colonne: "gauche", build: buildCaracs },
-    { id: "langues",    titre: "Langues",           onglet: "fiche", colonne: "gauche", build: buildLangues },
     { id: "initiative", titre: "Initiative",        onglet: "fiche", colonne: "milieu", build: buildInitiative },
-    // Vitesse et Régén partagent une grille à deux cases qui ne se découpe
-    // pas : elles ne forment qu'UN module, même si chacune garde son rouage
-    { id: "tuiles",     titre: "Vitesse et Régén",  onglet: "fiche", colonne: "milieu", build: buildVitesse },
-    { id: "pv",         titre: "PV",                onglet: "fiche", colonne: "milieu", build: buildPv },
-    { id: "armescomp",  titre: "Armes",             onglet: "fiche", colonne: "milieu", build: buildArmesComps },
+    // Vitesse, sauts, charge et récupération partagent une grille de cases qui
+    // ne se découpe pas : elles ne forment qu'UN module, même si chacune garde
+    // son rouage.
+    { id: "tuiles",     titre: "Corps",             onglet: "fiche", colonne: "milieu", build: buildVitesse },
+    { id: "pv",         titre: "PV et endurance",   onglet: "fiche", colonne: "milieu", build: buildPv },
     { id: "comps",      titre: "Compétences",       onglet: "fiche", colonne: "droite", build: buildComps },
-    // ---- onglet Art ----
-    { id: "arts",       titre: "Arts et passifs",   onglet: "art", colonne: "seule", build: buildArt },
+    // Les spécialités suivent les compétences dont elles relèvent : c'est dans
+    // cet ordre-là qu'on les remplit, et dans cet ordre-là qu'on les lance.
+    { id: "specialites", titre: "Spécialités",      onglet: "fiche", colonne: "droite", build: buildSpecialites },
     // ---- onglet Équipement ----
     { id: "armes",      titre: "Armes",             onglet: "equipement", colonne: "gauche", build: buildArmes },
     { id: "armures",    titre: "Armures",           onglet: "equipement", colonne: "droite", build: buildArmures },
