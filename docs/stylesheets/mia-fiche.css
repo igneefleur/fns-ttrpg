@@ -406,26 +406,54 @@ html.night body:has(#perso-atelier) .md-container { background: #0e0e0e !importa
    « LIM », ne tomberait plus en face. Les colonnes ne dépendent donc de rien
    de ce qu'on y écrit : elles sont le tiers d'une largeur fixe, et l'entête
    comme les huit lignes partagent exactement la même. */
+/* CHAQUE CASE EST SON PROPRE REPÈRE, et c'est ce qui répare une faute visible :
+   la taille du chiffre se réglait sur la COLONNE. Depuis que l'onglet Fiche se
+   partage en un quart, un quart et une moitié, la même case recevait donc deux
+   tailles — un chiffre de caractéristique à 13 px et un chiffre de spécialité à
+   19 px, pour des objets identiques, côte à côte. Réglée sur la case, la taille
+   ne peut plus dépendre que de la place que le chiffre a VRAIMENT. */
 .pc-trio > .c {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   flex: 1 1 0; min-width: 0;
-  padding: .1rem clamp(.08rem, 1.4cqw, .2rem) .12rem;
+  padding: .1rem .16rem .12rem;
+  container-type: inline-size; container-name: case;
 }
 /* CINQ CASES au lieu de trois, même largeur de case : une spécialité tient de
    ses propres points, du MOD de sa caractéristique et des points de sa
    compétence, elle est coiffée par une limite, et on lui pose un bonus. Cinq
    nombres, cinq colonnes — et la même case que partout ailleurs, pour que l'œil
    retrouve le même pas d'une liste à l'autre. */
-.pc-trio.cinq { width: min(var(--pc-quint-w, 14.5rem), 74cqw); }
+/* LA MÊME CASE QUE LE TRIO, ET C'EST UN CALCUL, PAS UN RÉGLAGE À L'ŒIL.
+   Le trio prend 58 % de SA colonne pour trois cases : une case vaut donc
+   19,33 % d'une colonne de caractéristiques. Le quintuple en porte cinq, et sa
+   colonne à lui n'a pas la même largeur — la part qu'il doit prendre dépend
+   donc du RAPPORT entre les deux colonnes, qui change avec le nombre de
+   colonnes de l'onglet :
+
+     trois colonnes  la sienne vaut DEUX quarts  ->  5 × 19,33 / 2 = 48,33 %
+     deux colonnes   elle occupe toute la largeur, les autres une moitié
+                     (rapport ~2,05)             ->  47,2 %
+     une colonne     les deux colonnes n'en font qu'une (rapport 1) -> 96,67 %
+
+   Sans cela, un chiffre de spécialité s'affichait à 19 px là où le même chiffre
+   de caractéristique s'affichait à 13 px, côte à côte, sur la même feuille. */
+.pc-trio.cinq { width: min(var(--pc-quint-w, 14.5rem), 96.67cqw); }
+@container feuille (min-width: 26rem) {
+  .pc-trio.cinq { width: min(var(--pc-quint-w, 14.5rem), 47.2cqw); }
+}
+@container feuille (min-width: 38rem) {
+  .pc-trio.cinq { width: min(var(--pc-quint-w, 14.5rem), 48.33cqw); }
+}
 .pc-trio > .c + .c { border-left: 1px solid var(--line-2); }
 .pc-trio .k {
-  font-size: clamp(.36rem, 3.3cqw, .48rem); font-weight: 700; letter-spacing: .07em;
+  font-size: clamp(.36rem, 19cqw, .48rem); font-weight: 700; letter-spacing: .07em;
   text-transform: uppercase; color: var(--ink-3);
 }
-/* le nombre rétrécit AVEC sa case : une taille figée le faisait couper dès que
-   la colonne passait sous le quart d'une feuille de demi-écran */
+/* le nombre rétrécit AVEC SA CASE — celle-ci, pas la colonne : une taille figée
+   le faisait couper dès que la place manquait, et une taille réglée sur la
+   colonne donnait deux tailles à un même objet selon la colonne où il tombe */
 .pc-trio .v {
-  font-size: clamp(.62rem, 6cqw, .88rem); font-weight: 700; color: var(--ink);
+  font-size: clamp(.62rem, 35cqw, .88rem); font-weight: 700; color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
 /* L'ENTÊTE : le même squelette, sans rien qui l'encadre. Il ne porte que les
@@ -456,8 +484,23 @@ html.night body:has(#perso-atelier) .md-container { background: #0e0e0e !importa
    côte à côte. */
 @container colonne (max-width: 17rem) {
   .pc-block[data-module="specialites"] .pc-crow-top { flex-wrap: wrap; }
+  /* Passé à la ligne, le quintuple a toute la largeur du bloc — et c'est LUI
+     qui manque de place le premier, puisqu'il porte cinq cases là où le trio en
+     porte trois. C'est donc lui qui fixe la mesure, et le trio qui le suit :
+     trois cinquièmes de la même largeur, pour que la case reste la même dans
+     les trois listes. À cette étroitesse, toutes les colonnes sont d'égale
+     largeur (une seule colonne empilée), ce qui rend la règle exacte. */
   .pc-block[data-module="specialites"] .pc-crow-top > .pc-trio.cinq {
-    width: 100%; margin-top: .12rem;
+    width: min(var(--pc-quint-w, 14.5rem), calc(100cqw - 1.4rem));
+    margin-left: auto; margin-top: .12rem;
+  }
+  /* ET SEULEMENT LÀ OÙ LES COLONNES SONT ÉGALES, c'est-à-dire quand l'onglet
+     n'en a plus qu'une. Ailleurs, une colonne de caractéristiques est étroite
+     SANS que celle des spécialités le soit : rétrécir le trio pour un quintuple
+     qui, lui, ne manque de rien, c'est refaire l'écart dans l'autre sens — il
+     est monté à 10 % avant que cette garde ne soit posée. */
+  @container feuille (max-width: 25.9rem) {
+    .pc-trio { width: min(var(--pc-trio-w, 8.7rem), calc((100cqw - 1.4rem) * 3 / 5)); }
   }
 }
 
