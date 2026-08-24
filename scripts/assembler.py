@@ -46,9 +46,10 @@ LES TROIS PIEGES, ET COMMENT ILS SONT TRAITES
 2. L'ENCODAGE ET LA MARQUE D'ORDRE DES OCTETS. Contrairement a ce qu'on croit
    dans ce depot, docs/javascripts/mia-fiche.js PORTE une marque d'ordre des
    octets (EF BB BF), dans la copie de travail, dans git, et dans les neuf
-   archives. mia-narration.js n'en a pas. Un assemblage qui l'oublierait
-   differerait des l'octet 0 ; un assemblage qui l'ajouterait partout casserait
-   la narration. Elle se DECLARE donc par fichier (bom = oui), et jamais ne se
+   archives. Les fichiers de l'extension, eux, n'en ont pas. Un assemblage qui
+   l'oublierait differerait des l'octet 0 ; un assemblage qui l'ajouterait
+   partout casserait les autres. Elle se DECLARE donc par fichier (bom = oui),
+   et jamais ne se
    devine. Chaque morceau est par ailleurs debarrasse de la sienne : un editeur
    Windows en pose volontiers une, et collee au milieu du fichier elle
    deviendrait un caractere invisible en plein code.
@@ -69,8 +70,8 @@ deplacer une ligne.
     bom = oui
     fin = lf
       src/fiche/000-entete.js
-      src/fiche/fiche/narration.js
       src/fiche/fiche/caracs.js
+      src/fiche/fiche/comps.js
       src/fiche/999-amorce.js
 
 Entre crochets, le fichier SERVI. En dessous, ses morceaux dans l'ordre, chemins

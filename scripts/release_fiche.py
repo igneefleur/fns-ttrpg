@@ -87,11 +87,6 @@ FICHIERS = [
     "javascripts/mia-fiche.js",
     "stylesheets/mia-fiche.css",
     "stylesheets/mia-roll20.css",
-    # le plateau de Narration : servi par le même site, à travers la même
-    # coquille signée, il doit monter avec les autres — un ?v= figé aurait
-    # l'air de protéger sans rien protéger
-    "javascripts/mia-narration.js",
-    "stylesheets/mia-narration.css",
 ]
 
 
@@ -185,14 +180,11 @@ def serials_actuels(racine):
             vus.append(serial)
     with open(os.path.join(racine, V.MANIFESTE), "rb") as f:
         man = json.loads(f.read().decode("utf-8"))
-    # « narration » compte comme les autres. monter_manifeste() montait déjà ce
-    # bloc, mais personne ne le LISAIT ici : le plus grand ?v= servi pouvait
-    # donc être le sien sans que prochain_serial() le voie, et le « maximum + 1 »
-    # retombait EN DESSOUS. Le plateau serait reparti sur une clé de cache qu'un
-    # navigateur avait déjà vue, avec l'ancien fichier au bout.
+    # TOUS les blocs du manifeste comptent, et pas seulement le bundle : le plus
+    # grand ?v= servi peut être celui d'un bloc qu'on ne lirait pas ici, et le
+    # « maximum + 1 » retomberait EN DESSOUS — un fichier repartirait alors sur
+    # une clé de cache qu'un navigateur a déjà vue, avec l'ancien contenu au bout.
     for liste in ([man.get("amorce") or []]
-                  + [(man.get("narration") or {}).get("js") or []]
-                  + [(man.get("narration") or {}).get("css") or []]
                   + [(man.get("bundle") or {}).get("js") or []]
                   + [(man.get("bundle") or {}).get("css") or []]):
         for u in liste:
@@ -294,8 +286,6 @@ def monter_manifeste(racine, serial, essai=False):
                 touches.append(base)
 
     monte(man.get("amorce"))
-    monte((man.get("narration") or {}).get("js"))
-    monte((man.get("narration") or {}).get("css"))
     monte((man.get("bundle") or {}).get("js"))
     monte((man.get("bundle") or {}).get("css"))
     if not essai:

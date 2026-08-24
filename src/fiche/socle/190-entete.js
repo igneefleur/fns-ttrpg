@@ -1,9 +1,9 @@
   // ---------- en-tête : portrait + identité + compteurs + garde-fous ----------
   // En-tête réduit aux seules infos importantes (2026-08-02) : plus de
-  // portrait ni de cartouche « MIA Système JDR » ; PV, Vitesse et Narration
+  // portrait ni de cartouche « MIA Système JDR » ; PV, endurance et vitesse
   // (doublons en lecture seule de l'onglet Fiche) n'y figurent plus.
   //   Nom | Espèce | Âge | Sexe | Genre
-  //   Création ———— | XP dépensé ———— | XP total
+  //   Prestige | XP dépensé ———— | XP total
   // ---------- barre d'envoi (Roll20 seulement) ----------
   // À qui part la macro, et faut-il demander un modificateur. Geste de JEU :
   // aucun rouage, aucun mode édition. Posée en FRÈRE de .pc-head, jamais dans
@@ -112,7 +112,7 @@
     // sans input / avec input : la requête ?{…} n'a de sens que sur un jet de
     // test, elle est donc posée par doRoll et ignorée partout ailleurs
     var sep = el("span", "lbl", "Modificateur");
-    sep.title = "Ne s'applique qu'aux jets de caractéristique et de compétence";
+    sep.title = "S'ajoute APRÈS la limite — c'est par là que passe l'endurance dépensée";
     bar.appendChild(sep);
     var segs2 = el("div", "pc-envoi-segs");
     var bin = [];
@@ -131,9 +131,10 @@
     });
     bar.appendChild(segs2);
 
-    // automatique / au choix : sur un jet de COMPÉTENCE, « au choix » fait
-    // demander par Roll20 quelle caractéristique porte le jet (Body / Mind /
-    // Prestance, la sienne en tête) — ex. une Esquive lancée sur la Prestance.
+    // automatique / au choix : sur un jet de COMPÉTENCE ou de SPÉCIALITÉ, « au
+    // choix » fait demander par Roll20 quelle caractéristique porte le jet (les
+    // huit, la sienne en tête). Elle change à la fois le MOD et la LIMITE, d'où
+    // une requête qui porte l'expression entière et non un nombre.
     var sep3 = el("span", "lbl", "Caractéristique");
     sep3.title = "Ne s'applique qu'aux jets de compétence";
     bar.appendChild(sep3);

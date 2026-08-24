@@ -30,11 +30,10 @@
   // CE QU'ÉTEINDRE FAIT, ET CE QU'IL NE PEUT PAS FAIRE. Le popup doit pouvoir
   // le dire au joueur sans mentir, alors voici l'inventaire exact.
   //   Sur les pages Roll20 OUVERTES ENSUITE, rien ne se réveille : pas d'onglet
-  //   « Fiche MIA », pas de pane, pas de plateau, pas de bouton dans la barre
-  //   d'outils, pas de pont d20 (il n'est injecté que sur need-bridge, qui ne
-  //   part plus), aucun écouteur de message, aucune interception du lien
-  //   « Prendre », aucune écriture dans le stockage. La frame reste exactement
-  //   telle que Roll20 l'a faite.
+  //   « Fiche MIA », pas de pane, pas de pont d20 (il n'est injecté que sur
+  //   need-bridge, qui ne part plus), aucun écouteur de message, aucune
+  //   interception du lien « Prendre », aucune écriture dans le stockage. La
+  //   frame reste exactement telle que Roll20 l'a faite.
   //   Sur une partie DÉJÀ OUVERTE, rien ne se démonte, et c'est délibéré :
   //     - le pont posé dans le monde principal ne peut pas être retiré. Aucun
   //       script de contenu n'atteint ce monde, sa balise <script> s'est retirée
@@ -42,10 +41,6 @@
   //     - les écouteurs déjà posés sont des fonctions anonymes (message de la
   //       frame du haut, clic de capture de « Prendre », resize, ResizeObserver) :
   //       removeEventListener n'a rien à leur passer ;
-  //     - le bouton déjà posé dans la barre d'outils reste, et le guet qui le
-  //       repose aussi. Le retirer serait faisable, mais ce serait un démontage
-  //       de plus dans une interface Vue qu'on ne contrôle pas, pour gagner une
-  //       demi-seconde sur un rechargement de partie ;
   //     - le pane .tab-pane.miafiche ne doit surtout pas être retiré. Le système
   //       d'onglets de Roll20 garde un renvoi vers lui ; le supprimer d'un
   //       dialogue déjà lié empêche la fiche du personnage de s'ouvrir, la
@@ -81,8 +76,8 @@
   //
   // Deuxième ligne de défense, gratuite et volontairement conservée : les
   // marqueurs de DOM portent les MÊMES noms dans les deux copies (classe
-  // .mia-tab, id #mia-panneau, attribut data-mia-bridge), si bien que placeTabs
-  // et panMonte abandonnent tout seuls devant le travail de l'autre copie.
+  // .mia-tab, attribut data-mia-bridge), si bien que placeTabs abandonne tout
+  // seul devant le travail de l'autre copie.
   function reclame() {
     try {
       if (window.__miaRoll20) return;   // une copie tient déjà cette frame

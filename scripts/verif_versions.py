@@ -138,11 +138,11 @@ def urls_du_manifeste(man):
             if re.search(r"\.(js|css|json)(\?|$)", noeud) or "://" in noeud or noeud.startswith("//"):
                 trouvees.append((ou, noeud))
 
-    # « narration » (le plateau du panneau flottant) compte comme le reste : ses
-    # deux URL doivent être relatives et nommer des fichiers qui existent, sans
-    # quoi le panneau resterait vide sans un mot (l'amorceur avale l'erreur de
-    # chargement pour ne jamais geler sur un fichier manquant).
-    for cle in ("amorce", "narration", "bundle", "archives"):
+    # Chaque bloc du manifeste compte : ses URL doivent être relatives et nommer
+    # des fichiers qui existent, sans quoi la fiche resterait vide sans un mot
+    # (l'amorceur avale l'erreur de chargement pour ne jamais geler sur un
+    # fichier manquant).
+    for cle in ("amorce", "bundle", "archives"):
         if cle in man:
             marche(man[cle], cle)
     return trouvees

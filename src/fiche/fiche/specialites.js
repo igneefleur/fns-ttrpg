@@ -190,6 +190,21 @@
       allSpes().forEach(function (it) { box.appendChild(ligne(it)); });
       if (!state.specialites.length)
         box.appendChild(el("div", "pc-empty", "Aucune spécialité."));
+      // LES QUATRE NOMS QUE LES FORMULES APPELLENT. Aucune spécialité n'est
+      // proposée d'office — chacun crée les siennes — mais quatre sont lues PAR
+      // LEUR NOM : les PV en ajoutent une, la récupération en EST une,
+      // l'obstination en lance une, la charge en pénalise une. Écrit autrement,
+      // le nom ne répond pas, et rien à l'écran ne le dirait. On les rappelle
+      // donc ici, et on marque celles qui manquent encore.
+      var nommees = regles().speNommees || [];
+      if (nommees.length) {
+        var absentes = nommees.filter(function (n) { return !speParNom(n); });
+        var note = el("div", "pc-block-note");
+        note.textContent = "Noms lus par les règles : " + nommees.join(", ") +
+          (absentes.length ? " — manquent : " + absentes.join(", ") : " — toutes présentes");
+        note.title = "Ces spécialités-là ne comptent que si leur nom est écrit exactement ainsi.";
+        box.appendChild(note);
+      }
       box.appendChild(miniBtn("+ Ajouter une spécialité", null, function () {
         state.specialites.push(blankSpe());
         rendu();

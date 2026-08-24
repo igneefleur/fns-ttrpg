@@ -100,6 +100,19 @@ def _comps(text):
     return out
 
 
+def _spe_nommees(text):
+    """Les spécialités que les formules des règles appellent par leur nom.
+
+    Il n'y a pas de liste de spécialités — chacun crée les siennes — mais quatre
+    noms sont LUS par la fiche (les PV en ajoutent une, la récupération en EST
+    une, l'obstination en lance une, la charge en pénalise une). Une spécialité
+    mal orthographiée ne les remplit pas, et rien ne le dirait : la fiche
+    affiche donc ces noms-là, et c'est d'ici qu'elle les tient.
+    """
+    m = re.search(r"nomment\s+cependant\s+quatre[^:]*:\s*(.+?)\.", text, re.S)
+    return re.findall(r"\*\*([^*]+)\*\*", m.group(1)) if m else []
+
+
 def _charge(text):
     """Les paliers de charge : seuil en pourcents, et leurs effets en toutes lettres."""
     out = []
@@ -120,6 +133,7 @@ def _extract(docs_dir):
         "caracs": caracs,
         "valeurs": valeurs,
         "comps": comps,
+        "speNommees": _spe_nommees(text),
         "charge": _charge(text),
 
         # --- le prestige, qui plafonne toute caractéristique ---

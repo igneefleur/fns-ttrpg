@@ -25,12 +25,9 @@
  *
  * TOUTE CORRECTION DE SÛRETÉ DOIT ÊTRE APPLIQUÉE AUX DEUX COPIES. Les verrous
  * de ce fichier (window.__miaBridge, ecrivable(), lier()/liee() et sa table de
- * soixante-quatre places, le repli sur l'opener strictement réservé au popout,
- * l'ouverture forcée de la fiche du plateau et le « sûr » qu'elle seule donne,
- * et les trois verrous du ménage des attributs, qui est la seule opération
- * DESTRUCTRICE du dispositif) vivent désormais en double exemplaire : un
- * correctif posé d'un seul côté laisse le trou grand ouvert de l'autre, et
- * rien ne le signalera.
+ * soixante-quatre places, le repli sur l'opener strictement réservé au popout)
+ * vivent désormais en double exemplaire : un correctif posé d'un seul côté
+ * laisse le trou grand ouvert de l'autre, et rien ne le signalera.
  * scripts/build_extension.py --verifie compare mécaniquement les deux copies.
  *
  * Le verrou window.__miaBridge est COMMUN aux deux copies, tout comme le

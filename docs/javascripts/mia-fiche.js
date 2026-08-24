@@ -10,7 +10,7 @@
  * passifs d'une compétence et son art (au stade Artiste).
  * Chaque module éditable porte un rouage (mode édition par module) : la
  * construction du personnage est verrouillée hors édition, seuls les gestes
- * de jeu restent actifs (jets, tchat, PV, narration, quantités, notes).
+ * de jeu restent actifs (jets, tchat, PV, endurance, quantités, notes).
  *
  * Le contenu des règles (caractéristiques, listes de compétences, stades,
  * vitesses, difficultés, blessures, courbes d'armes/armures, actions) vient de
@@ -1170,15 +1170,18 @@
   }
   // L'expression Roll20 d'un jet, prête à poser entre les doubles crochets.
   //
-  // Le modificateur saisi à l'envoi entre DANS le groupe, avant le kl1 : un
-  // bonus de circonstance — l'endurance qu'on dépense, l'aide d'un allié — est
-  // un bonus au jet, donc la limite le plafonne comme le reste. Posé après le
-  // groupe, il ferait franchir la limite, qui ne serait plus une limite.
+  // LE MODIFICATEUR SAISI À L'ENVOI S'AJOUTE APRÈS LE PLAFOND, hors du groupe.
+  // C'est la règle de l'endurance : ce qu'on dépense « est un bonus qu'on
+  // ajoute à la fin ». La limite borne donc ce que le personnage vaut par
+  // lui-même ; l'endurance est ce par quoi il la dépasse, et c'est tout son
+  // prix. Posé dans le groupe, ce bonus serait rogné et ne servirait à rien
+  // dès qu'un personnage atteint sa limite — c'est-à-dire justement quand il
+  // en aurait besoin.
   function jetExpr(bonus, lim, avecInput) {
     var b = Math.round(bonus);
     return "{" + DE_DEFAUT + (b >= 0 ? "+" : "-") + Math.abs(b) +
-           (avecInput ? ENV_QUERY : "") +
-           ",0d0+" + Math.round(lim) + "}kl1";
+           ",0d0+" + Math.round(lim) + "}kl1" +
+           (avecInput ? ENV_QUERY : "");
   }
 
   // ---------- l'initiative ----------
@@ -1532,14 +1535,14 @@
   // changer de caractéristique change à la fois le MOD et la LIMITE. Deux
   // requêtes séparées poseraient deux questions au joueur, qui pourrait
   // répondre deux choses différentes et obtenir un jet incohérent.
-  // Le modificateur d'envoi est emporté DANS chaque option, échappé avec le
-  // reste : la requête intérieure ne se pose qu'une fois, son texte étant le
-  // même partout, et le bonus reste sous la limite quelle que soit la
-  // caractéristique choisie.
-  function caracQuery(propre, comp, spe, avecInput) {
+  // La requête ne porte que le GROUPE PLAFONNÉ, sans le modificateur d'envoi :
+  // celui-ci s'ajoutant après le plafond, il se pose une seule fois, dehors,
+  // quelle que soit la caractéristique choisie. Une requête dans une requête
+  // n'a donc pas à exister.
+  function caracQuery(propre, comp, spe) {
     var ordre = [propre].concat(champs().filter(function (c) { return c !== propre; }));
     var opts = ordre.map(function (c) {
-      return c + "," + echapQuery(jetExpr(jetBonus(c, comp, spe), caracLim(c), avecInput));
+      return c + "," + echapQuery(jetExpr(jetBonus(c, comp, spe), caracLim(c), false));
     });
     return "?{Caractéristique|" + opts.join("|") + "}";
   }
@@ -1547,10 +1550,9 @@
   // LE JET DE TEST : caractéristique, compétence ou spécialité. C'est le seul
   // chemin par lequel un jet plafonné part au tchat.
   function doJet(label, carac, comp, spe, tracker) {
-    var avecInput = envInput();
     var expr = envCaracChoix()
-      ? caracQuery(carac, comp, spe, avecInput)
-      : jetExpr(jetBonus(carac, comp, spe), caracLim(carac), avecInput);
+      ? caracQuery(carac, comp, spe) + (envInput() ? ENV_QUERY : "")
+      : jetExpr(jetBonus(carac, comp, spe), caracLim(carac), envInput());
     if (envoyer(cmdJetExpr(label, expr, tracker))) return;
     // Hors Roll20, ou sous une extension antérieure au canal brut : la fiche
     // lance elle-même et applique le plafond, en le DISANT — un résultat rogné
@@ -1810,7 +1812,7 @@
   // Chaque module éditable porte un rouage dans son titre : il déverrouille la
   // CONSTRUCTION du personnage (stades, ajouts, suppressions, textes, divers…).
   // Hors édition, seuls les gestes de JEU restent actifs : jets, tchat, PV
-  // courant, narration, quantités d'objets, notes de session. Les éléments
+  // courant, endurance, quantités d'objets, notes de session. Les éléments
   // .pc-edit-only n'existent qu'en édition ; les champs .pc-edit-field
   // deviennent inertes (disabled + air d'un simple texte). Réglage d'interface
   // pur : ni dans l'état du personnage, ni persisté — chaque chargement
@@ -1972,10 +1974,10 @@
 
   // ---------- en-tête : portrait + identité + compteurs + garde-fous ----------
   // En-tête réduit aux seules infos importantes (2026-08-02) : plus de
-  // portrait ni de cartouche « MIA Système JDR » ; PV, Vitesse et Narration
+  // portrait ni de cartouche « MIA Système JDR » ; PV, endurance et vitesse
   // (doublons en lecture seule de l'onglet Fiche) n'y figurent plus.
   //   Nom | Espèce | Âge | Sexe | Genre
-  //   Création ———— | XP dépensé ———— | XP total
+  //   Prestige | XP dépensé ———— | XP total
   // ---------- barre d'envoi (Roll20 seulement) ----------
   // À qui part la macro, et faut-il demander un modificateur. Geste de JEU :
   // aucun rouage, aucun mode édition. Posée en FRÈRE de .pc-head, jamais dans
@@ -2084,7 +2086,7 @@
     // sans input / avec input : la requête ?{…} n'a de sens que sur un jet de
     // test, elle est donc posée par doRoll et ignorée partout ailleurs
     var sep = el("span", "lbl", "Modificateur");
-    sep.title = "Ne s'applique qu'aux jets de caractéristique et de compétence";
+    sep.title = "S'ajoute APRÈS la limite — c'est par là que passe l'endurance dépensée";
     bar.appendChild(sep);
     var segs2 = el("div", "pc-envoi-segs");
     var bin = [];
@@ -2103,9 +2105,10 @@
     });
     bar.appendChild(segs2);
 
-    // automatique / au choix : sur un jet de COMPÉTENCE, « au choix » fait
-    // demander par Roll20 quelle caractéristique porte le jet (Body / Mind /
-    // Prestance, la sienne en tête) — ex. une Esquive lancée sur la Prestance.
+    // automatique / au choix : sur un jet de COMPÉTENCE ou de SPÉCIALITÉ, « au
+    // choix » fait demander par Roll20 quelle caractéristique porte le jet (les
+    // huit, la sienne en tête). Elle change à la fois le MOD et la LIMITE, d'où
+    // une requête qui porte l'expression entière et non un nombre.
     var sep3 = el("span", "lbl", "Caractéristique");
     sep3.title = "Ne s'applique qu'aux jets de compétence";
     bar.appendChild(sep3);
@@ -3876,6 +3879,21 @@
       allSpes().forEach(function (it) { box.appendChild(ligne(it)); });
       if (!state.specialites.length)
         box.appendChild(el("div", "pc-empty", "Aucune spécialité."));
+      // LES QUATRE NOMS QUE LES FORMULES APPELLENT. Aucune spécialité n'est
+      // proposée d'office — chacun crée les siennes — mais quatre sont lues PAR
+      // LEUR NOM : les PV en ajoutent une, la récupération en EST une,
+      // l'obstination en lance une, la charge en pénalise une. Écrit autrement,
+      // le nom ne répond pas, et rien à l'écran ne le dirait. On les rappelle
+      // donc ici, et on marque celles qui manquent encore.
+      var nommees = regles().speNommees || [];
+      if (nommees.length) {
+        var absentes = nommees.filter(function (n) { return !speParNom(n); });
+        var note = el("div", "pc-block-note");
+        note.textContent = "Noms lus par les règles : " + nommees.join(", ") +
+          (absentes.length ? " — manquent : " + absentes.join(", ") : " — toutes présentes");
+        note.title = "Ces spécialités-là ne comptent que si leur nom est écrit exactement ainsi.";
+        box.appendChild(note);
+      }
       box.appendChild(miniBtn("+ Ajouter une spécialité", null, function () {
         state.specialites.push(blankSpe());
         rendu();

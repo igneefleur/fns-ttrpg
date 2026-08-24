@@ -40,8 +40,8 @@ libelle = Fiche MIA beta
 site    = mia-beta
 
 
-# Le script de contenu : l'onglet « Fiche MIA », le pont vers le monde principal,
-# le plateau de Narration et sa barre. C'est le seul fichier dont les DEUX copies
+# Le script de contenu : l'onglet « Fiche MIA » et le pont vers le monde
+# principal. C'est le seul fichier dont les DEUX copies
 # sont déclarées au manifeste et injectées dans chaque frame — d'où la garde, en
 # fin de fichier, par laquelle la copie qui n'est pas du mode s'éteint.
 [extension/firefox/@@partie@@/content-roll20.js]
@@ -55,17 +55,11 @@ variantes = stable, beta
   src/extension/content-roll20/040-canal-brut.js
   src/extension/content-roll20/050-pont-page.js
   src/extension/content-roll20/060-has-sheet.js
-  src/extension/content-roll20/070-plateau-pas-un-perso.js
   src/extension/content-roll20/080-creator.js
   src/extension/content-roll20/090-onglet.js
   src/extension/content-roll20/100-boucle.js
   src/extension/content-roll20/110-relais-opener.js
   src/extension/content-roll20/120-prendre.js
-  src/extension/content-roll20/130-plateau.js
-  src/extension/content-roll20/140-barre-outils.js
-  src/extension/content-roll20/150-plateau-geometrie.js
-  src/extension/content-roll20/160-plateau-iframe.js
-  src/extension/content-roll20/170-plateau-etat.js
   src/extension/content-roll20/180-nuit.js
   src/extension/content-roll20/190-demarrage.js
   src/extension/content-roll20/200-garde.js
@@ -83,9 +77,7 @@ variantes = stable, beta
   src/extension/roll20-page/030-attributs.js
   src/extension/roll20-page/040-file-ecriture.js
   src/extension/roll20-page/050-joueurs.js
-  src/extension/roll20-page/060-plateau.js
   src/extension/roll20-page/070-ouverture-fiche.js
-  src/extension/roll20-page/080-menage.js
   src/extension/roll20-page/090-ecouteur.js
 
 # La coquille de l'onglet : elle pointe son iframe vers la fiche servie par le
@@ -97,16 +89,6 @@ fin = lf
 variantes = stable, beta
   src/extension/creator-shell/000-entete.js
   src/extension/creator-shell/010-montage.js
-
-# La coquille générique d'un panneau : même principe, pour le plateau de
-# Narration servi par le site.
-[extension/firefox/@@partie@@/panneau-shell.js]
-bom = non
-fin = lf
-variantes = stable, beta
-  src/extension/panneau-shell/000-entete.js
-  src/extension/panneau-shell/010-sure.js
-  src/extension/panneau-shell/020-montage.js
 
 
 # CE QUI RESTE À FAIRE, ET QUI N'EST PAS FAIT ICI. Les en-têtes des quatre
@@ -189,33 +171,3 @@ fin = lf
   src/fiche/socle/300-consentement.js
   src/fiche/socle/310-api-publique.js
   src/fiche/socle/320-montage.js
-
-
-# LE PLATEAU DE NARRATION. Découpé par rôle, faute d'onglets : le dialogue
-# avec le pont, l'état, les places et les jetons, les fonds, les réglages,
-# les écrans d'état.
-[docs/javascripts/mia-narration.js]
-bom = non
-fin = lf
-  src/narration/000-entete.js
-  src/narration/010-constantes.js
-  src/narration/020-etat.js
-  src/narration/030-outils.js
-  src/narration/040-jour-nuit.js
-  src/narration/050-pont.js
-  src/narration/060-lecture-echo.js
-  src/narration/070-trace-depannage.js
-  src/narration/080-lecture-applique.js
-  src/narration/090-formats-attributs.js
-  src/narration/100-mot-au-joueur.js
-  src/narration/110-menage.js
-  src/narration/120-fonds-de-zone.js
-  src/narration/130-construction.js
-  src/narration/140-rendu-places.js
-  src/narration/150-rendu-jetons.js
-  src/narration/160-comptes.js
-  src/narration/170-glisser.js
-  src/narration/180-reglages.js
-  src/narration/190-distribution.js
-  src/narration/200-ecrans-etat.js
-  src/narration/210-amorce.js

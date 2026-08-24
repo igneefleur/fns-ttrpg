@@ -26,14 +26,14 @@
   // changer de caractéristique change à la fois le MOD et la LIMITE. Deux
   // requêtes séparées poseraient deux questions au joueur, qui pourrait
   // répondre deux choses différentes et obtenir un jet incohérent.
-  // Le modificateur d'envoi est emporté DANS chaque option, échappé avec le
-  // reste : la requête intérieure ne se pose qu'une fois, son texte étant le
-  // même partout, et le bonus reste sous la limite quelle que soit la
-  // caractéristique choisie.
-  function caracQuery(propre, comp, spe, avecInput) {
+  // La requête ne porte que le GROUPE PLAFONNÉ, sans le modificateur d'envoi :
+  // celui-ci s'ajoutant après le plafond, il se pose une seule fois, dehors,
+  // quelle que soit la caractéristique choisie. Une requête dans une requête
+  // n'a donc pas à exister.
+  function caracQuery(propre, comp, spe) {
     var ordre = [propre].concat(champs().filter(function (c) { return c !== propre; }));
     var opts = ordre.map(function (c) {
-      return c + "," + echapQuery(jetExpr(jetBonus(c, comp, spe), caracLim(c), avecInput));
+      return c + "," + echapQuery(jetExpr(jetBonus(c, comp, spe), caracLim(c), false));
     });
     return "?{Caractéristique|" + opts.join("|") + "}";
   }
@@ -41,10 +41,9 @@
   // LE JET DE TEST : caractéristique, compétence ou spécialité. C'est le seul
   // chemin par lequel un jet plafonné part au tchat.
   function doJet(label, carac, comp, spe, tracker) {
-    var avecInput = envInput();
     var expr = envCaracChoix()
-      ? caracQuery(carac, comp, spe, avecInput)
-      : jetExpr(jetBonus(carac, comp, spe), caracLim(carac), avecInput);
+      ? caracQuery(carac, comp, spe) + (envInput() ? ENV_QUERY : "")
+      : jetExpr(jetBonus(carac, comp, spe), caracLim(carac), envInput());
     if (envoyer(cmdJetExpr(label, expr, tracker))) return;
     // Hors Roll20, ou sous une extension antérieure au canal brut : la fiche
     // lance elle-même et applique le plafond, en le DISANT — un résultat rogné

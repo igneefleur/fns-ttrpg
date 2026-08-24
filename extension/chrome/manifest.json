@@ -12,14 +12,11 @@
       "resources": [
         "creator.html",
         "creator.css",
-        "panneau.html",
         "shell-loader.js",
         "stable/roll20-page.js",
         "stable/creator-shell.js",
-        "stable/panneau-shell.js",
         "beta/roll20-page.js",
-        "beta/creator-shell.js",
-        "beta/panneau-shell.js"
+        "beta/creator-shell.js"
       ],
       "matches": [
         "https://app.roll20.net/*"

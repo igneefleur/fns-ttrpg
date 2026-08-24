@@ -1,47 +1,25 @@
 /* CSS EN LUMIÈRE (pages de Roll20). Tout ce que l'extension DESSINE elle-même
-   dans la partie tient ici : l'onglet « Fiche MIA », son pane, l'écran « pas
-   encore de fiche », et le cadre du plateau de Narration. Le reste (la fiche,
-   le plateau) vit dans des iframes servies par le site, dont le CSS est
-   totalement isolé de celui-ci.
+   dans la partie tient ici : l'onglet « Fiche MIA », son pane et l'écran « pas
+   encore de fiche ». Le reste — la fiche — vit dans une iframe servie par le
+   site, dont le CSS est totalement isolé de celui-ci.
 
    PALETTE DU LIVRE, jour et nuit, recopiée de docs/stylesheets/mia-fiche.css :
    ce fichier est signé, il ne peut rien charger du site, et il doit tenir seul.
    Les formes aussi viennent de la fiche : une carte, c'est un fond --card, un
    filet --line-2, huit pixels de rayon et une ombre à peine posée ; un titre de
-   section, c'est un petit trait rouge sous un texte espacé. Le cadre du plateau
-   avait la couleur mais pas la forme, il avait donc l'air d'un widget collé sur
-   Roll20 au lieu d'une page du livre.
+   section, c'est un petit trait rouge sous un texte espacé.
 
    LES POLICES DU LIVRE NE SONT PAS LÀ, et il faut le dire plutôt que de le
    laisser croire : Alegreya et Cinzel sont servies par le site, une feuille
    injectée dans Roll20 ne peut pas aller les chercher (la CSP de Roll20 refuse
    la police d'une autre origine), et le paquet ne les embarque pas. On les
    NOMME quand même, en tête de pile : le joueur qui les a installées les verra,
-   les autres auront la meilleure sérif de leur machine. Le contenu des iframes,
+   les autres auront la meilleure sérif de leur machine. Le contenu de l'iframe,
    lui, a bien les vraies polices, puisqu'il vient du site. */
 
 /* onglet « Fiche MIA » : un vrai <li><a> cloné des onglets natifs (il hérite donc du
    style de Roll20, onglet actif violet compris). On n'ajoute que le curseur. */
 .mia-tab, .mia-tab a { cursor: pointer; }
-
-/* ---- bouton du plateau dans la barre d'outils ----
-   Le bouton est un CLONE d'un bouton natif : il porte non seulement les mêmes
-   classes, mais les mêmes attributs data-v-… par lesquels le CSS « scopé » de
-   Vue s'applique. Il n'y a donc RIEN à peindre ici, et c'est voulu : toute
-   couleur écrite de ce côté-ci vieillirait mal, ce fichier étant figé par la
-   signature alors que Roll20 change de thème quand il veut.
-   Reste un seul garde-fou. L'icône est une LIGATURE de la police d'icônes de
-   Roll20 : si cette police venait à manquer, ou à renommer sa ligature, le span
-   afficherait le mot en toutes lettres et pousserait toute la barre. On le
-   borne à la largeur d'une icône, sans rien changer quand tout va bien.
-   La borne est en PIXELS et non en em : une icône manquante peut aussi être une
-   police à zéro, et une borne relative vaudrait alors zéro elle aussi. Les
-   icônes natives mesurent 1.3em, soit environ 21 px ; 26 px les laisse passer
-   toutes sans jamais laisser passer un mot. */
-#mia-barre-bouton .grimoire__roll20-icon {
-  display: inline-block; max-width: 26px; overflow: hidden;
-  white-space: nowrap; vertical-align: middle;
-}
 
 /* ---- palette, jour et nuit ----
    Les variables sont posées SUR NOS PROPRES BOÎTES, jamais sur :root. Cette
@@ -51,13 +29,13 @@
    La nuit vient de la classe .mia-nuit, posée par content-roll20.js d'après le
    réglage miaNuit du popup (« auto » suit Roll20), et JAMAIS d'une media query
    seule : une media query suit le navigateur, que l'utilisateur ne pourrait pas
-   contredire, et le cadre resterait clair pendant que le plateau servi par le
-   site, lui, serait sombre.
+   contredire, et le cadre resterait clair pendant que la fiche servie par le
+   site, elle, serait sombre.
    Seuls les tons dont cette feuille se sert sont déclarés, et non la palette
    entière du livre : une variable posée ici n'est lue que par cette feuille.
-   Elle ne traverse aucune iframe, donc ni la fiche ni le plateau, qui sont des
-   documents servis par le site et portent leur propre palette. */
-.mia-panneau, .mia-create, .mia-creator-frame {
+   Elle ne traverse aucune iframe, donc pas la fiche, qui est un document servi
+   par le site et porte sa propre palette. */
+.mia-create, .mia-creator-frame {
   --paper:    #faf6eb;
   --bg-side:  #e4ddcd;
   --card:     #fffdf6;
@@ -70,7 +48,7 @@
   --ombre:    rgba(60, 48, 18, .10);
   --ombre-portee: rgba(0, 0, 0, .28);
 }
-.mia-panneau.mia-nuit, .mia-create.mia-nuit, .mia-creator-frame.mia-nuit {
+.mia-create.mia-nuit, .mia-creator-frame.mia-nuit {
   --paper:    #201c15;
   --bg-side:  #14110c;
   --card:     #262119;
@@ -111,117 +89,6 @@
   border: 0 !important; margin: 0 !important; padding: 0 !important;
   background: var(--bg-side);
 }
-
-/* ---- cadre du plateau de Narration (ancré à la barre, ou flottant) ----
-   CHÂSSIS SEULEMENT : une boîte, une barre de titre, une poignée pour l'étirer.
-   Le plateau vit dans l'iframe, servi par le site, et son contenu ne se règle
-   donc pas ici. Sa NUIT, en revanche, se décide ici comme là-bas, à partir du
-   même réglage : le cadre et le plateau ne doivent jamais être l'un clair et
-   l'autre sombre.
-   Tous les sélecteurs sont préfixés .mia- : cette feuille est injectée dans
-   TOUTES les frames de Roll20, elle ne doit jamais toucher à quoi que ce soit
-   qui ne soit pas à nous.
-   Z-INDEX 10500, et ce nombre est mesuré, pas choisi au hasard : il passe
-   au-dessus du canevas (5), du menu radial (6), de la zone des joueurs (2000),
-   du tchat (101) et de la barre latérale (100), et reste SOUS les outils de
-   Roll20 : actions de jeton (10502), barre d'outils et ses sous-menus (10600),
-   bandeau des pages (10700), menu contextuel (11500), erreur de connexion
-   (20000), aides de glisser-déposer (100000) et modales (999999). Un panneau
-   permanent ne doit jamais masquer un message de Roll20 ; le toast, lui, monte
-   au maximum parce qu'il ne dure que quatre secondes. */
-.mia-panneau {
-  position: fixed; z-index: 10500; box-sizing: border-box;
-  display: flex; flex-direction: column; overflow: hidden;
-  background: var(--paper); color: var(--ink);
-  border: 1px solid var(--line); border-radius: 8px;
-  box-shadow: 0 6px 22px var(--ombre-portee);
-  font: 13px/1.35 'Alegreya', 'EB Garamond', Garamond, 'Times New Roman', serif;
-}
-/* la barre de titre : l'en-tête d'une section du livre, fond --panel et filet
-   dessous, avec le petit trait rouge qui signe les titres de la fiche */
-.mia-panneau-tete {
-  position: relative;
-  flex: 0 0 auto; display: flex; align-items: center; gap: 6px;
-  padding: 4px 5px 4px 10px; cursor: move; user-select: none;
-  background: var(--panel); border-bottom: 1px solid var(--line-2);
-}
-/* ANCRÉ, LE TITRE RECULE D'UNE TABULATION. Collé à la boîte à outils, il
-   commençait juste contre elle et se faisait manger par son ombre : les
-   premières lettres n'étaient plus lisibles. Vingt-huit pixels suffisent à l'en
-   dégager, et seulement dans ce cas — flottant, le panneau n'a rien à sa gauche
-   et un décalage ne serait qu'un trou. */
-.mia-panneau.mia-panneau-ancre > .mia-panneau-tete { padding-left: 28px; }
-.mia-panneau-tete::after {
-  content: ""; position: absolute; left: 10px; bottom: -1px;
-  width: 22px; height: 1.5px; background: var(--red); border-radius: 2px;
-}
-.mia-panneau.mia-panneau-ancre > .mia-panneau-tete::after { left: 28px; }
-.mia-panneau-titre {
-  flex: 1 1 auto; min-width: 0;
-  font-family: 'Cinzel', 'Alegreya', Garamond, 'Times New Roman', serif;
-  font-weight: 700; font-size: 12px; letter-spacing: .06em; color: var(--ink-2);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-/* les deux boutons de la barre de titre (détacher, fermer) ont la forme des
-   petits boutons de la fiche : fond --card, filet --line-2, cinq pixels de
-   rayon.
-   La pile de polices finit par « sans-serif » alors que tout le reste du cadre
-   est en sérif : les deux flèches d'ancrage (⇱ ⇲) n'existent dans aucune police
-   du livre, et c'est le repli glyphe par glyphe du navigateur qui les dessine.
-   Sans ce dernier recours nommé, un carré vide aurait remplacé le bouton. */
-.mia-panneau-btn {
-  flex: 0 0 auto; width: 20px; height: 18px; padding: 0; cursor: pointer;
-  background: var(--card); color: var(--ink-2);
-  border: 1px solid var(--line-2); border-radius: 5px;
-  font: 700 13px/1 'Alegreya', Garamond, 'Times New Roman', serif, sans-serif;
-  transition: background .12s, border-color .12s, color .12s;
-}
-.mia-panneau-btn:hover { background: var(--panel); border-color: var(--line); color: var(--ink); }
-/* le plateau se prend à la souris, mais le repli doit rester atteignable au
-   clavier : sans contour visible, la tabulation traverse le panneau à l'aveugle */
-.mia-panneau-btn:focus-visible { outline: 2px solid var(--red); outline-offset: 1px; }
-.mia-panneau-corps { flex: 1 1 auto; min-height: 0; background: var(--bg-side); }
-.mia-panneau-frame { display: block; width: 100%; height: 100%; border: 0; }
-/* replié : l'étiquette seule, posée dans un coin ; l'iframe reste en place mais
-   n'est plus montrée (la détruire coûtait une place dans la table des liaisons
-   du pont, voir content-roll20.js). Le filet et le trait rouge disparaissent :
-   ils soulignent un contenu qui n'est plus là. */
-.mia-panneau-replie .mia-panneau-corps,
-.mia-panneau-replie .mia-panneau-grip { display: none; }
-.mia-panneau-replie .mia-panneau-tete { border-bottom: 0; }
-.mia-panneau-replie .mia-panneau-tete::after { display: none; }
-.mia-panneau-grip {
-  position: absolute; right: 0; bottom: 0; width: 14px; height: 14px;
-  cursor: nwse-resize;
-  background: linear-gradient(135deg, transparent 45%, var(--line) 45%, var(--line) 55%, transparent 55%,
-                              transparent 70%, var(--line) 70%, var(--line) 80%, transparent 80%);
-}
-/* pendant un geste, l'iframe ne capte plus la souris : sans cela le pointeur
-   entre dedans et le déplacement s'arrête au bord du plateau */
-.mia-panneau-geste .mia-panneau-frame { pointer-events: none; }
-
-/* ---- ancré à la barre d'outils ----
-   Collé à la barre et sur toute la hauteur, comme les panneaux natifs de
-   Roll20. La géométrie est posée en ligne par content-roll20.js, qui MESURE la
-   barre au lieu de la deviner : rien de tout cela ne se règle ici, sans quoi il
-   faudrait re-signer l'extension le jour où Roll20 élargit sa barre.
-   Ce qui se règle ici, c'est ce qui SE VOIT : le coin gauche perd son arrondi
-   (une carte arrondie contre une barre droite laisse deux entailles de fond), la
-   barre de titre n'invite plus à saisir ce qui ne bouge plus, et la poignée ne
-   promet plus que la largeur. */
-/* LES COINS, ANCRÉ. Seul le côté qui TOUCHE la barre reste droit ; tout le reste
-   s'arrondit comme une carte du livre.
-     - en haut à gauche : toujours droit quand on est collé, c'est là que la
-       barre commence ;
-     - en bas à gauche : ARRONDI d'ordinaire — c'est le creux que l'auteur
-       voulait boucher — et droit seulement quand la barre descend jusqu'au bas
-       de la fenêtre, où le coin est de toute façon hors champ. Cette variante
-       est posée par content-roll20.js (classe .mia-panneau-bas-plein), qui
-       mesure la barre : le CSS ne peut pas savoir jusqu'où elle descend. */
-.mia-panneau-ancre { border-radius: 0 8px 8px 8px; }
-.mia-panneau-ancre.mia-panneau-bas-plein { border-radius: 0 8px 8px 0; }
-.mia-panneau-ancre .mia-panneau-tete { cursor: default; }
-.mia-panneau-ancre .mia-panneau-grip { cursor: ew-resize; }
 
 /* ---- écran « pas encore de fiche » + bouton de création ----
    Une carte du livre, posée au milieu du pane : fond --card, filet --line-2,

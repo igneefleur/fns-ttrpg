@@ -9,6 +9,8 @@
 Le prestige va de 0 à 20. Il mesure ce que le personnage est devenu, et il plafonne chacune
 de ses caractéristiques : une caractéristique ne monte jamais au-dessus du prestige.
 
+Il commence à 0 et ne s'achète pas : c'est le meneur qui l'accorde, de loin en loin.
+
 </div>
 
 <div class="keep" markdown>
@@ -130,6 +132,10 @@ dépend de la caractéristique dont elle relève et du plafond de sa compétence
 
 Dans ce calcul, le MOD et le plafond de la compétence comptent chacun pour 30 au minimum.
 
+Il n'existe pas de liste de spécialités : chacun crée les siennes. Ces règles en nomment
+cependant quatre, que leurs formules appellent par leur nom : **Esquive**, **PV**,
+**Obstination** et **Récupération**.
+
 </div>
 
 <div class="keep" markdown>
@@ -185,7 +191,8 @@ d'obstination. S'il le rate, il tombe dans les pommes ; sinon, il reste conscien
 L'endurance est une réserve égale au MOD CON. Elle descend jusqu'à −MOD CON.
 
 Elle se dépense pour ajouter un bonus à vos actions, jusqu'à 50 points pour une même action, et
-se regagne chaque jour.
+se regagne chaque jour. **Ce bonus s'ajoute à la fin, une fois la limite appliquée** : c'est par
+lui, et par lui seul, qu'un jet dépasse la LIM.
 
 Quand elle est dans le négatif, elle devient un malus à tous vos jets : une personne dont
 l'endurance est à −20 subit un malus de 20 sur tous ses jets. À −100 %, vous tombez dans les

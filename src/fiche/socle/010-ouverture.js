@@ -10,7 +10,7 @@
  * passifs d'une compétence et son art (au stade Artiste).
  * Chaque module éditable porte un rouage (mode édition par module) : la
  * construction du personnage est verrouillée hors édition, seuls les gestes
- * de jeu restent actifs (jets, tchat, PV, narration, quantités, notes).
+ * de jeu restent actifs (jets, tchat, PV, endurance, quantités, notes).
  *
  * Le contenu des règles (caractéristiques, listes de compétences, stades,
  * vitesses, difficultés, blessures, courbes d'armes/armures, actions) vient de

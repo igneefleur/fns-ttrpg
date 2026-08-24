@@ -27,15 +27,18 @@
   }
   // L'expression Roll20 d'un jet, prête à poser entre les doubles crochets.
   //
-  // Le modificateur saisi à l'envoi entre DANS le groupe, avant le kl1 : un
-  // bonus de circonstance — l'endurance qu'on dépense, l'aide d'un allié — est
-  // un bonus au jet, donc la limite le plafonne comme le reste. Posé après le
-  // groupe, il ferait franchir la limite, qui ne serait plus une limite.
+  // LE MODIFICATEUR SAISI À L'ENVOI S'AJOUTE APRÈS LE PLAFOND, hors du groupe.
+  // C'est la règle de l'endurance : ce qu'on dépense « est un bonus qu'on
+  // ajoute à la fin ». La limite borne donc ce que le personnage vaut par
+  // lui-même ; l'endurance est ce par quoi il la dépasse, et c'est tout son
+  // prix. Posé dans le groupe, ce bonus serait rogné et ne servirait à rien
+  // dès qu'un personnage atteint sa limite — c'est-à-dire justement quand il
+  // en aurait besoin.
   function jetExpr(bonus, lim, avecInput) {
     var b = Math.round(bonus);
     return "{" + DE_DEFAUT + (b >= 0 ? "+" : "-") + Math.abs(b) +
-           (avecInput ? ENV_QUERY : "") +
-           ",0d0+" + Math.round(lim) + "}kl1";
+           ",0d0+" + Math.round(lim) + "}kl1" +
+           (avecInput ? ENV_QUERY : "");
   }
 
   // ---------- l'initiative ----------
