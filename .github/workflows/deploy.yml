@@ -11,16 +11,15 @@ permissions:
 # ATTENTION, c'est ICI que ça compte le plus : sur cette branche la signature est
 # AUTOMATIQUE, sans case à cocher. Le moindre envoi la déclenche.
 #
-# L'extension MIA porte un identifiant NEUF, mia-roll20@igneefleur. Or
-# sign_extension.create_version() commence par un POST sur /addons/addon/,
-# c'est-à-dire une CRÉATION : lancé avec un id que Mozilla ne connaît pas, il
-# RÉUSSIT et fait naître un second add-on unlisted sur le compte, en mordant sur
-# un quota déjà serré. Ce n'est pas une erreur qu'on rattrape : l'add-on est créé.
+# L'extension MIA porte un identifiant NEUF, mia-roll20@igneefleur, que Mozilla
+# ne connaît pas. Or sign_extension.create_version() commence par un POST sur
+# /addons/addon/, c'est-à-dire une CRÉATION : la première signature fait NAÎTRE
+# l'add-on sur le compte, en unlisted, sous le « name » du manifeste — « Fiche
+# MIA sur Roll20 ». Vérifier ce nom AVANT de pousser, il engage, et chaque
+# soumission mord sur un quota serré.
 #
-# La première signature fait donc NAÎTRE l'add-on sur le compte, en unlisted,
-# sous le « name » du manifeste — « Fiche MIA sur Roll20 ». Vérifier ce nom AVANT
-# de pousser, il engage. Les secrets AMO_JWT_ISSUER et AMO_JWT_SECRET doivent
-# être là ; ils avaient déjà disparu une fois après un renommage de dépôt.
+# Les secrets AMO_JWT_ISSUER et AMO_JWT_SECRET doivent être là ; ils avaient déjà
+# disparu une fois après un renommage de dépôt.
 #
 # Les neuf branches écrivent sur la même branche gh-pages, chacune dans son
 # dossier : un groupe de concurrence commun (partagé entre workflows du dépôt)
@@ -78,10 +77,18 @@ jobs:
       # signature, pendant que la branche, elle, portait bien le nouveau .xpi.
       # Un joueur voyait alors une version signée depuis longtemps ne jamais lui
       # parvenir. Rien n'échouait nulle part.
+      #
+      # « git diff » NE VOIT PAS LES FICHIERS NON SUIVIS, et c'est ce qui a coûté
+      # la première signature MIA. docs/download/ avait été retiré du dépôt avec
+      # le paquet JJK : tout ce que la signature y écrit est donc NEUF, donc
+      # invisible à git diff. Le pas a répondu « rien n'a changé », le rebuild et
+      # le recommit ont été sautés, le site est parti sans ses téléchargements et
+      # le .xpi fraîchement signé a été jeté avec le runner. Aucun run n'avait
+      # échoué. « git status --porcelain », lui, voit le suivi ET le neuf.
       - name: Le paquet a-t-il changé ?
         id: paquet
         run: |
-          if git diff --quiet -- docs/download; then
+          if [ -z "$(git status --porcelain -- docs/download)" ]; then
             echo "change=false" >> "$GITHUB_OUTPUT"
             echo "Aucune re-signature : les téléchargements servis restent bons."
           else
@@ -105,7 +112,10 @@ jobs:
       - name: Republier l'extension re-signée sur la branche
         if: steps.paquet.outputs.change == 'true'
         run: |
-          if ! git diff --quiet; then
+          # Même piège que plus haut : git diff ignore le NEUF, et tout ce que
+          # la signature écrit dans docs/download/ est neuf tant que le dossier
+          # n'est pas suivi. C'est git status qui décide ici.
+          if [ -n "$(git status --porcelain)" ]; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add -A
