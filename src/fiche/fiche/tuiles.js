@@ -1,13 +1,11 @@
-  // ---------- le corps : vitesse, sauts, charge, récupération ----------
+  // ---------- le corps : vitesse, charge, sauts ----------
   // Quatre tuiles autonomes plutôt qu'un bloc encadré : chacune est SON module
   // (rouage flottant, valeur forcée, modificateurs), et la grille à deux
   // colonnes les tient serrées au milieu de la fiche.
   //
   // La charge y entre parce qu'elle commande tout le reste : passé ses paliers,
-  // elle rogne l'initiative, la vitesse, les sauts et l'esquive. Un joueur qui
-  // voit ses chiffres fondre sans lire POURQUOI cherche une panne là où il n'y
-  // a qu'un sac trop lourd — d'où le palier franchi écrit en toutes lettres
-  // sous la valeur, avec la phrase des règles et non une paraphrase.
+  // elle rogne l'initiative, la vitesse, les sauts et l'esquive. Quand elle
+  // mord, les tuiles atteintes se marquent — c'est tout ce que la fiche en dit.
   //
   // Valeur forcée d'une tuile : vide = valeur calculée. Même mécanique que le
   // maximum de PV, en version étroite (deux lignes empilées sous la valeur).
@@ -63,6 +61,11 @@
   }
 
   function buildVitesse() {
+    // DEUX RANGS DE DEUX : la vitesse et la charge d'abord, parce qu'on les lit
+    // à chaque round ; les deux sauts en dessous, qui ne servent qu'au moment
+    // où l'on saute. Les sauts sont SÉPARÉS : ce sont deux distances, dans deux
+    // unités de geste différentes, et les empiler dans une seule case obligeait
+    // à se rappeler laquelle venait en premier.
     var tiles = el("div", "pc-bigrow pc-bigrow-2");
 
     // ---- vitesse ----
@@ -81,19 +84,6 @@
     });
     tiles.appendChild(tv);
 
-    // ---- sauts ----
-    // Une seule tuile pour les deux : le round compte les deux dans le même
-    // déplacement, et c'est le même palier de charge qui les écrase.
-    var ts = bigTile("Sauts long · haut", function () {
-      return sautLong() + " · " + sautHaut();
-    });
-    hooks.push(function () {
-      var pal = tuilePaliers("sautDiv", "divisés par");
-      ts.classList.toggle("adj", pal.length > 0);
-      ts.title = pal.join(" · ");
-    });
-    tiles.appendChild(ts);
-
     // ---- charge ----
     var tc = bigTile("Charge", function () {
       return fmtP(poidsPorte()) + " / " + fmtP(chargeMax());
@@ -101,8 +91,7 @@
     tuileReglable(tc, "charge", "chargeOverride", chargeMaxAuto, "charge", true);
     hooks.push(function () {
       var d = modSum(state.divers.charge);
-      var pal = chargePaliers();
-      var haut = pal.length ? pal[pal.length - 1] : null;
+      var haut = chargePaliers().length;
       tc.classList.toggle("adj", !!haut || state.chargeOverride !== null || d !== 0);
       var pct = chargePct();
       tc.title = (state.chargeOverride !== null
@@ -115,19 +104,18 @@
     });
     tiles.appendChild(tc);
 
-    // ---- récupération ----
-    var tr = tuileReglable(bigTile("Récup / jour", recupJour), "recup",
-                           "recupOverride", recupJourAuto, "recup", false);
-    hooks.push(function () {
-      var d = modSum(state.divers.recup);
-      tr.classList.toggle("adj", state.recupOverride !== null || d !== 0);
-      tr.title = state.recupOverride !== null
-        ? "Récupération forcée à " + fmtP(state.recupOverride) + " (calculée : " +
-          recupJourAuto() + ")"
-        : (d ? "Modificateurs " + sign(d) : "");
+    // ---- les deux sauts ----
+    // Ni valeur forcée ni modificateur : ni les règles ni l'état ne leur en
+    // donnent, et leur en fabriquer un ici reviendrait à inventer une règle.
+    [["Saut longueur", sautLong], ["Saut hauteur", sautHaut]].forEach(function (o) {
+      var ts = bigTile(o[0], o[1]);
+      hooks.push(function () {
+        var pal = tuilePaliers("sautDiv", "divisés par");
+        ts.classList.toggle("adj", pal.length > 0);
+        ts.title = pal.join(" · ");
+      });
+      tiles.appendChild(ts);
     });
-    tiles.appendChild(tr);
 
     return tiles;
   }
-

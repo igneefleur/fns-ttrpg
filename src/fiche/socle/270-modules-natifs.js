@@ -12,15 +12,19 @@
   // avant d'être touché (appliqueDisposition).
   var MODULES_NATIFS = [
     // ---- onglet Fiche ----
-    // Les caractéristiques d'abord, prestige en tête : c'est lui qui plafonne
-    // tout le reste, et on le lit avant de lire ce qu'il autorise.
     { id: "caracs",     titre: "Caractéristiques",  onglet: "fiche", colonne: "gauche", build: buildCaracs },
+    // Initiative et récupération vont ensemble : deux valeurs qu'on relit, et
+    // qui portent chacune le bouton qui en fait quelque chose.
     { id: "initiative", titre: "Initiative",        onglet: "fiche", colonne: "milieu", build: buildInitiative },
-    // Vitesse, sauts, charge et récupération partagent une grille de cases qui
-    // ne se découpe pas : elles ne forment qu'UN module, même si chacune garde
-    // son rouage.
+    { id: "recup",      titre: "Récup / jour",      onglet: "fiche", colonne: "milieu", build: buildRecup },
+    // Vitesse, charge et les deux sauts partagent une grille de cases qui ne se
+    // découpe pas : elles ne forment qu'UN module, même si chacune garde son
+    // rouage.
     { id: "tuiles",     titre: "Corps",             onglet: "fiche", colonne: "milieu", build: buildVitesse },
-    { id: "pv",         titre: "PV et endurance",   onglet: "fiche", colonne: "milieu", build: buildPv },
+    // DEUX RÉSERVES, DEUX MODULES : même forme, mais on ne les lit pas au même
+    // moment, et elles se déplacent — ou se coupent — l'une sans l'autre.
+    { id: "pv",         titre: "PV",                onglet: "fiche", colonne: "milieu", build: buildPv },
+    { id: "endurance",  titre: "Endurance",         onglet: "fiche", colonne: "milieu", build: buildEndurance },
     { id: "comps",      titre: "Compétences",       onglet: "fiche", colonne: "droite", build: buildComps },
     // Les spécialités suivent les compétences dont elles relèvent : c'est dans
     // cet ordre-là qu'on les remplit, et dans cet ordre-là qu'on les lance.

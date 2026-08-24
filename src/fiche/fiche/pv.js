@@ -1,35 +1,33 @@
-  // ---------- PV et endurance ----------
-  // DEUX RÉSERVES DE MÊME FORME, et c'est la règle qui le veut : les PV
-  // descendent du maximum jusqu'à son opposé, l'endurance aussi. On les bâtit
-  // donc avec le même outil — le défaut à éviter était de corriger la barre
-  // négative des PV en laissant celle de l'endurance derrière.
-  //
+  // ---------- les points de vie ----------
   // Ce qui relève du JEU reste toujours actif (la valeur courante, le retour au
   // maximum) : on perd des points de vie en pleine partie, pas en construisant
-  // son personnage. Le rouage ne déverrouille que les deux maximums.
+  // son personnage. Le rouage ne déverrouille que le maximum.
 
   // Le signe moins TYPOGRAPHIQUE (U+2212), comme dans sign() : à cette taille,
   // le trait d'union du clavier passe pour une césure, et un plancher de vie
   // n'a pas le droit d'être ambigu.
   function pvFmtNeg(n) { return n < 0 ? "−" + fmtP(-n) : fmtP(n); }
 
-  // Une barre de jauge, au CSS des compteurs de l'en-tête. Deux réglages se
-  // posent ici plutôt que dans la feuille : .pc-meter .bar est figée à 84 px et
-  // les deux règles qui l'étirent (.pc-id-meters, .pc-xpchamp) nomment leur
-  // hôte, qui n'est pas ce bloc-ci. La largeur FIXE du nombre, elle, garde les
-  // deux barres exactement de même longueur — sans quoi la positive et la
-  // négative ne se compareraient plus d'un coup d'œil, ce qui est tout ce
-  // qu'on leur demande.
-  function pvJauge(rouge) {
+  // UNE SEULE BARRE, ET SON SENS DIT LE SIGNE. Verte, elle part de la GAUCHE et
+  // montre ce qui reste ; rouge, elle part de la DROITE et montre ce qui a été
+  // creusé sous zéro. Deux barres empilées obligeaient à chercher laquelle
+  // bougeait avant de lire combien — et l'une des deux était toujours vide.
+  //
+  // Deux réglages se posent ici plutôt que dans la feuille : .pc-meter .bar est
+  // figée à 84 px et les deux règles qui l'étirent nomment leur hôte, qui n'est
+  // pas ce bloc-ci. Le passage en flex est ce qui permet à la barre rouge de
+  // se coller à droite (marge automatique) sans une classe de plus.
+  function pvJauge() {
     var m = el("span", "pc-meter");
     var bar = el("span", "bar");
     bar.style.flex = "1";
     bar.style.width = "auto";
-    var f = el("i", rouge ? "over" : null);
+    bar.style.display = "flex";
+    var f = el("i");
     bar.appendChild(f);
     m.appendChild(bar);
     var t = el("b", null, "");
-    t.style.flex = "0 0 5rem";
+    t.style.flex = "0 0 5.5rem";
     t.style.textAlign = "right";
     m.appendChild(t);
     return { el: m, txt: t, fill: f };
@@ -46,9 +44,10 @@
     ligne.style.display = texte ? "" : "none";
   }
 
-  // LA RÉSERVE : la valeur courante au stepper, son maximum, sa barre positive
-  // et sa barre négative. infoMax dit ce que l'infobulle du maximum raconte et
-  // si le chiffre a été retouché ; tout le reste est commun aux deux réserves.
+  // LA RÉSERVE : la valeur courante au stepper, son maximum, et sa barre.
+  // infoMax dit ce que l'infobulle du maximum raconte et si le chiffre a été
+  // retouché ; tout le reste est commun aux PV et à l'endurance, qui ont
+  // exactement la même forme.
   function pvReserve(nom, lire, ecrire, maxi, plancher, infoMax) {
     var box = el("div");
     var row = el("div", "pc-kv");
@@ -74,20 +73,21 @@
     row.appendChild(miniBtn("Max", "Revenir au maximum", function () { ecrire(null); refresh(); }));
     box.appendChild(row);
 
-    var pos = pvJauge(false), neg = pvJauge(true);
-    box.appendChild(pos.el);
-    box.appendChild(neg.el);
+    var j = pvJauge();
+    box.appendChild(j.el);
     hooks.push(function () {
       var v = lire(), m = maxi(), p = plancher(), i = infoMax();
       mx.textContent = "/ " + fmtP(m);
       mx.classList.toggle("adj", !!i.adj);
       mx.title = i.titre;
-      // la positive ne montre que ce qui reste au-dessus de zéro, la négative
-      // que ce qui a été creusé en dessous : une seule des deux bouge à la fois
-      pos.txt.textContent = fmtP(Math.max(0, v)) + " / " + fmtP(m);
-      pos.fill.style.width = clamp(m > 0 ? Math.max(0, v) / m * 100 : 0, 0, 100) + "%";
-      neg.txt.textContent = pvFmtNeg(Math.min(0, v)) + " / " + pvFmtNeg(p);
-      neg.fill.style.width = clamp(p < 0 ? Math.min(0, v) / p * 100 : 0, 0, 100) + "%";
+      var neg = v < 0;
+      j.fill.classList.toggle("over", neg);
+      // la barre rouge se colle à droite : c'est la marge qui la pousse, la
+      // barre étant passée en flex à sa construction
+      j.fill.style.marginLeft = neg ? "auto" : "0";
+      j.fill.style.width = clamp(neg ? (p < 0 ? v / p * 100 : 0)
+                                     : (m > 0 ? v / m * 100 : 0), 0, 100) + "%";
+      j.txt.textContent = pvFmtNeg(v) + " / " + pvFmtNeg(neg ? p : m);
     });
     return box;
   }
@@ -117,9 +117,7 @@
   }
 
   function buildPv() {
-    var b = block("PV et endurance", null, "pv");
-
-    // ---- les points de vie ----
+    var b = block("PV", null, "pv");
     b.appendChild(pvReserve("PV", pvCourant, function (v) { state.pv = v; },
                             pvMax, pvPlancher, function () {
       var d = modSum(state.divers.pvMax);
@@ -132,35 +130,10 @@
     }));
     var mort = pvLigne("pc-warn");
     b.appendChild(mort);
-
-    // ---- l'endurance ----
-    b.appendChild(pvReserve("Endurance", enduranceCourante,
-                            function (v) { state.endurance = v; },
-                            enduranceMax, endurancePlancher, function () {
-      var d = modSum(state.divers.endurance);
-      return {
-        adj: state.enduranceMaxOverride !== null || d !== 0,
-        titre: state.enduranceMaxOverride !== null
-          ? "Maximum forcé à " + state.enduranceMaxOverride +
-            " (calculé : " + enduranceMaxAuto() + ")"
-          : (d ? "Modificateurs " + sign(d) : "")
-      };
-    }));
-    var endTapis = pvLigne("pc-warn");
-    b.appendChild(endTapis);
-
-    // ---- construction : les deux maximums ----
     b.appendChild(pvForceRow("PV max", "pvMaxOverride", pvMaxAuto, "pvMax",
       "Vide = calculé ; une valeur le force."));
-    b.appendChild(pvForceRow("Endurance max", "enduranceMaxOverride", enduranceMaxAuto,
-      "endurance", "Vide = calculé ; une valeur le force."));
-
-    // DEUX ÉTATS DU PERSONNAGE, et rien d'autre : ce sont des faits sur lui,
-    // au même titre que ses PV. La règle qui les produit n'a pas à être ici.
-    hooks.push(function () {
-      pvDit(mort, pvMort() ? "Mort" : "");
-      pvDit(endTapis, enduranceAuTapis() ? "Au tapis" : "");
-    });
+    // un ÉTAT du personnage, et rien d'autre : un fait sur lui, au même titre
+    // que ses PV. La règle qui le produit n'a pas à être ici.
+    hooks.push(function () { pvDit(mort, pvMort() ? "Mort" : ""); });
     return b;
   }
-

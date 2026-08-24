@@ -137,6 +137,8 @@ fin = lf
   src/fiche/fiche/initiative.js
   src/fiche/options/xpchamps.js
   src/fiche/fiche/pv.js
+  src/fiche/fiche/endurance.js
+  src/fiche/fiche/recup.js
   src/fiche/socle/240-ligne-comp.js
   src/fiche/socle/250-filtres-vue.js
   src/fiche/fiche/comps.js

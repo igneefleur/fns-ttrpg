@@ -257,13 +257,6 @@
       });
       return m;
     }
-    // Le prestige n'est pas une jauge de dépense : c'est un rang, et il se lit
-    // en clair. La jauge, elle, ne dit que l'xp, seule ressource qu'on épuise.
-    mrow.appendChild(fld("Prestige", (function () {
-      var p = el("div", "pc-meter-val");
-      hooks.push(function () { p.textContent = prestige() + " / " + repli("prestigeMax"); });
-      return p;
-    })()));
     mrow.appendChild(meter("XP dépensé", xpDepense, function () { return state.xpTotal; }));
     var xpIn = el("input", null);
     xpIn.type = "number"; xpIn.min = 0; xpIn.step = 5;
@@ -274,6 +267,25 @@
     });
     hooks.push(function () { if (document.activeElement !== xpIn) xpIn.value = state.xpTotal; });
     mrow.appendChild(fld("XP total", xpIn));
+    // LE PRESTIGE SE SAISIT ICI, COMME L'XP TOTAL, et nulle part ailleurs. Ce
+    // sont les deux mêmes choses : ce que le meneur accorde, et que le
+    // personnage dépense ensuite. Le mettre parmi les caractéristiques le
+    // faisait passer pour l'une d'elles, alors qu'il les plafonne toutes.
+    var prIn = el("input", null);
+    prIn.type = "number"; prIn.min = 0; prIn.step = 1;
+    prIn.addEventListener("input", function () {
+      var v = parseInt(prIn.value, 10);
+      if (isFinite(v)) { state.prestige = clamp(v, 0, repli("prestigeMax")); refresh(); }
+    });
+    hooks.push(function () {
+      if (document.activeElement !== prIn) prIn.value = state.prestige || 0;
+      // le total EFFECTIF peut différer de ce qui est saisi (forçage ou
+      // modificateur des Options) : la case vire au rouge pour que personne ne
+      // cherche pourquoi ses caractéristiques plafonnent ailleurs
+      prIn.classList.toggle("adj", prestige() !== (state.prestige || 0));
+      prIn.title = prestige() !== (state.prestige || 0) ? "Effectif : " + prestige() : "";
+    });
+    mrow.appendChild(fld("Prestige", prIn));
     id.appendChild(mrow);
 
     head.appendChild(id);

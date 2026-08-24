@@ -1,64 +1,15 @@
   // ---------- onglet Fiche : les caractéristiques ----------
-  // LE PRESTIGE OUVRE LE MODULE, et ce n'est pas une question de goût : c'est
-  // lui qui plafonne chacune des huit valeurs. Le lire après elles, ce serait
-  // lire la conséquence avant la cause — un joueur bloqué à 5 ne saurait pas
-  // où regarder.
+  // LES HUIT, dans l'ordre de champs(), c'est-à-dire celui de la page de
+  // règles. Aucune liste écrite en dur : une caractéristique renommée ou
+  // déplacée dans les règles arrive ici sans qu'on rouvre ce fichier.
   //
-  // Les lignes se rangent par GROUPE, dans l'ordre de champs(), c'est-à-dire
-  // l'ordre de la page de règles. Le titre d'un groupe est le mot des DONNÉES
-  // lui-même : une famille renommée dans les règles arrive ici sans qu'on
-  // rouvre ce fichier, et aucune liste écrite en dur ne peut en diverger.
+  // LE PRESTIGE N'EST PAS ICI, et c'est délibéré : il n'est pas une
+  // caractéristique, il les plafonne toutes. Il se saisit dans l'en-tête, à
+  // côté de l'XP total — les deux mêmes choses, ce que le meneur accorde.
   function buildCaracs() {
     // jeu : la valeur, ses trois chiffres et son jet ; édition : les ± qui la
     // montent et la descendent, achat par achat
     var b = block("Caractéristiques", null, "caracs");
-
-    // ---------- le prestige ----------
-    var pRow = el("div", "pc-kv");
-    pRow.appendChild(el("span", "k", "Prestige"));
-    // la valeur affichée est le prestige EFFECTIF (modificateur et forçage des
-    // Options compris), le stepper règle la valeur ACHETÉE : c'est le même
-    // partage que sur les caractéristiques en dessous, et il évite qu'un
-    // prestige forcé se laisse « corriger » par un clic qui ne changerait rien.
-    var pVal = el("span", "pc-cval", "");
-    pRow.appendChild(pVal);
-    var pStep = stepper(
-      function () { return state.prestige || 0; },
-      function (v) {
-        var max = repli("prestigeMax");
-        // le plancher se lit dans les règles quand elles sont là ; REPLI ne le
-        // porte pas, et un undefined rendrait la borne inutile
-        var min = repli("prestigeMin");
-        if (typeof min !== "number") min = 0;
-        // le plafond ne bloque que les HAUSSES : un prestige déjà au-delà
-        // (règles corrigées sous les pieds d'une fiche déjà écrite) redescend
-        // pas à pas au lieu d'être écrasé d'un seul clic
-        var haut = Math.max(max, state.prestige || 0);
-        var n = Math.round(v);
-        if (n > haut) {
-          flash(haut === max
-            ? "Le prestige ne dépasse pas " + max + "."
-            : "Le prestige est déjà au-delà de " + max + " : il ne peut que redescendre.");
-          n = haut;
-        }
-        state.prestige = Math.max(min, n);
-      }, 1, "prestige");
-    pStep.classList.add("pc-edit-only");
-    pRow.appendChild(pStep);
-    pRow.appendChild(el("span", "sp"));
-    hooks.push(function () {
-      var force = state.prestigeForce !== null && state.prestigeForce !== undefined;
-      var d = state.prestigeMod || 0;
-      pVal.textContent = String(prestige());
-      pVal.classList.toggle("adj", force || d !== 0);
-      pVal.title = (force
-                     ? "Prestige forcé (Options) — calculé : " + prestigeAuto()
-                     : (state.prestige || 0) +
-                       (d ? " · modificateur (Options) " + sign(d) : "") +
-                       " = " + prestige()) +
-                   "";
-    });
-    b.appendChild(pRow);
 
     // ---------- une caractéristique ----------
     function ligne(code) {
