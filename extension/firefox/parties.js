@@ -7,7 +7,7 @@
  * popup, un gabarit, une icône) fait sortir un paquet neuf sans qu'aucune
  * des deux parties ne bouge : les deux gardent alors leur ancien numéro
  * pendant que le paquet avance, et c'est justement l'information utile,
- * « ces deux moitiés n'ont pas changé depuis la 1.0.0 ». Le numéro du
+ * « ces deux moitiés n'ont pas changé depuis la 3.6.0 ». Le numéro du
  * paquet, lui, est dans le manifeste, et nulle part ailleurs.
  *
  * La partie beta porte le suffixe « b », la stable jamais. Ces numéros ne
@@ -20,6 +20,6 @@
  * du cas où le fichier n'a pas été chargé (typeof).
  */
 var PARTIES = {
-  "stable": "1.0.0",
-  "beta": "1.0.0b"
+  "stable": "1.0.0.2",
+  "beta": "1.0.0.2b"
 };
