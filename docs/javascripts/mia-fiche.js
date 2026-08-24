@@ -74,7 +74,7 @@
   // site il est. Il ne change PAS le rang : « 1.0.1b » et « 1.0.1 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (MiaMods.compareVersions tient cette règle).
-  var RELEASE = "1.4.0b";
+  var RELEASE = "1.4.1b";
   var SCHEMA = 1;
 
   // ---------- ce que la fiche ne décide PAS ----------
@@ -3654,17 +3654,17 @@
     if (search) line.appendChild(search);
     tools.appendChild(line);
     if (search) b.appendChild(tools);
-    // l'entête des trois colonnes, du même squelette que le trio des lignes :
-    // c'est ce qui garantit que chaque mot tombe en face de sa colonne
+    // l'entête des cinq colonnes, du même squelette que le quintuple des
+    // lignes : c'est ce qui garantit que chaque mot tombe en face de sa colonne
     var tete = el("div", "pc-crow-top pc-caracs-tete");
     tete.appendChild(el("span", "sp"));
-    var teteTrio = el("span", "pc-trio tete");
-    ["Val", "Lim", "Bonus"].forEach(function (k) {
+    var teteQuint = el("span", "pc-trio cinq tete");
+    ["Val", "Mod", "Comp", "Lim", "Bonus"].forEach(function (k) {
       var c = el("span", "c");
       c.appendChild(el("span", "k", k));
-      teteTrio.appendChild(c);
+      teteQuint.appendChild(c);
     });
-    tete.appendChild(teteTrio);
+    tete.appendChild(teteQuint);
     b.appendChild(tete);
     b.appendChild(box);
     // Les lignes sont détruites et refaites à chaque ajout ou retrait ; le
@@ -3703,11 +3703,12 @@
       var row = el("div", "pc-crow");
 
       var top = el("div", "pc-crow-top");
-      // le couple « caractéristique · compétence » tient la place du sigle
-      // d'une caractéristique : c'est ce qu'on lit en premier pour savoir ce
-      // que la ligne teste
-      var chip = el("span", "pc-abbr", "");
-      top.appendChild(chip);
+      // AUCUN SIGLE À GAUCHE. Le couple « caractéristique · compétence » y
+      // tenait la place qu'un sigle occupe sur une caractéristique — mais ici
+      // il ne nommait pas la ligne, il répétait ce que les colonnes MOD et
+      // COMP chiffrent déjà. Le nom de la spécialité commence donc la ligne.
+      // Quelles caractéristique et compétence elle tient se règle sous le
+      // rouage, et se relit dans l'infobulle du bloc de nombres.
       // LE NOM COMPTE POUR LES CALCULS : trois formules des règles vont
       // chercher une spécialité par son nom. Il se saisit donc tel quel, sans
       // capitale forcée ni correction, et l'infobulle dit lesquels sont lus.
@@ -3717,12 +3718,12 @@
       nom.value = spe.nom || "";
       nom.addEventListener("input", function () { spe.nom = nom.value; refresh(); });
       top.appendChild(nom);
-      // LE MÊME TRIO QUE PARTOUT AILLEURS, et c'est le bloc ENTIER qui lance.
-      // Ce que la caractéristique et la compétence apportent ne s'écrit PAS ici :
-      // le sigle de gauche dit lesquelles, et leurs deux modules les portent déjà,
-      // à deux colonnes de là. Restent les trois nombres qui n'appartiennent qu'à
-      // la spécialité : ses points, la limite qui la coiffe, et son bonus.
-      var quint = el("span", "pc-trio pc-rollable");
+      // LES CINQ NOMBRES D'UN SEUL TENANT, et c'est le bloc ENTIER qui lance.
+      // Une spécialité en demande deux de plus qu'une compétence, et les deux se
+      // méritent : ses propres points ne font pas seuls le jet — le MOD de sa
+      // caractéristique et les points de sa compétence y entrent aussi, et ce
+      // sont eux qui disent d'où elle tient.
+      var quint = el("span", "pc-trio cinq pc-rollable");
       function case5() {
         var c = el("span", "c");
         var v = el("span", "v", "");
@@ -3731,6 +3732,8 @@
         return v;
       }
       var vPts = case5();
+      var vMod = case5();
+      var vComp = case5();
       var vLim = case5();
       var vBon = case5();
       quint.addEventListener("click", function () {
@@ -3821,20 +3824,22 @@
         var ch = speMalusCharge(spe);
         var lim = spe.carac ? caracLim(spe.carac) : 0;
         var bonus = jetBonus(spe.carac, spe.comp, spe);
-        chip.textContent = (spe.carac || "—") + " · " + (spe.comp || "—");
-        chip.title = (spe.carac ? caracInfo(spe.carac).nom : "aucune caractéristique") +
-                     " · " + (spe.comp ? compInfo(spe.comp).nom : "aucune compétence");
-        // LES TROIS CASES NE DISENT QUE LA SPÉCIALITÉ : ses points, sa limite,
-        // son bonus. Ce que la caractéristique et la compétence apportent se lit
-        // dans leurs propres modules, à deux colonnes de là ; le répéter ici
-        // mettait quatre nombres sur la ligne pour n'en expliquer qu'un.
+        // LES CINQ CASES, dans l'ordre où la phrase se compose : ce que la
+        // spécialité vaut à elle seule, ce que sa caractéristique y ajoute, ce
+        // que sa compétence y ajoute, ce qui coiffe le résultat, et le bonus
+        // qu'on lui a posé.
         vPts.textContent = String(spePts(spe));
+        vMod.textContent = spe.carac ? sign(caracMod(spe.carac)) : "—";
+        vComp.textContent = spe.comp ? sign(compPts(spe.comp)) : "—";
         vLim.textContent = spe.carac ? String(lim) : "—";
         vBon.textContent = sign(spe.bonus || 0);
         quint.classList.toggle("adj", force || d !== 0 || mord || mal !== 0 || ch !== 0);
+        // l'infobulle porte seule, désormais, de QUOI la spécialité relève :
+        // les deux sigles ont quitté la ligne
         quint.title = !spe.carac
-          ? ""
-          : (force
+          ? "Cette spécialité ne dit pas de quelle caractéristique elle tient."
+          : (spe.carac + (spe.comp ? " · " + spe.comp : "") + " — ") +
+            (force
                ? "Points forcés (Options)"
                : "Points " + (spe.pts || 0) +
                  (mord ? ", plafonnés à " + plaf : "") +

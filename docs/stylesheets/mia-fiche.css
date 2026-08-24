@@ -94,6 +94,7 @@ html.night body:has(#perso-atelier) .md-container { background: #0e0e0e !importa
      (min(…, 100%)) : sur un écran plus petit elle se replie comme avant. */
   --pc-sheet-w: 62rem;
   --pc-trio-w: 8.7rem;   /* trois cases égales : voir .pc-trio */
+  --pc-quint-w: 14.5rem; /* cinq cases égales, même largeur de case */
 
   color: var(--ink);
   background: var(--bg-side);
@@ -275,7 +276,7 @@ html.night body:has(#perso-atelier) .md-container { background: #0e0e0e !importa
    colonnes portent des listes FERMÉES (huit caractéristiques, huit compétences)
    et des valeurs de corps : un sigle et trois nombres par ligne, jamais plus.
    La troisième porte la seule liste OUVERTE de la fiche, dont chaque ligne
-   demande un nom qu'on écrit, deux sigles qu'on choisit et un filtre à elle.
+   demande cinq nombres, un nom qu'on écrit et un filtre à elle.
    Trois tiers l'étouffaient.
    Les paliers se lisent sur la FEUILLE, qui seule sait combien de colonnes
    tiennent ; ce qu'il y a DANS une colonne se règle sur la colonne. */
@@ -410,6 +411,12 @@ html.night body:has(#perso-atelier) .md-container { background: #0e0e0e !importa
   flex: 1 1 0; min-width: 0;
   padding: .1rem clamp(.08rem, 1.4cqw, .2rem) .12rem;
 }
+/* CINQ CASES au lieu de trois, même largeur de case : une spécialité tient de
+   ses propres points, du MOD de sa caractéristique et des points de sa
+   compétence, elle est coiffée par une limite, et on lui pose un bonus. Cinq
+   nombres, cinq colonnes — et la même case que partout ailleurs, pour que l'œil
+   retrouve le même pas d'une liste à l'autre. */
+.pc-trio.cinq { width: min(var(--pc-quint-w, 14.5rem), 74cqw); }
 .pc-trio > .c + .c { border-left: 1px solid var(--line-2); }
 .pc-trio .k {
   font-size: clamp(.36rem, 3.3cqw, .48rem); font-weight: 700; letter-spacing: .07em;
@@ -441,15 +448,15 @@ html.night body:has(#perso-atelier) .md-container { background: #0e0e0e !importa
 }
 /* colonne étroite (iframe Roll20 réduite, téléphone) : le trio et le sigle se
    serrent plutôt que de pousser le bloc hors de sa colonne. */
-/* COLONNE TROP ÉTROITE POUR UNE SEULE LIGNE : le trio d'une spécialité descend
-   d'un cran et prend toute la largeur. Il le fait POUR L'ENTÊTE COMME POUR LES
-   LIGNES — c'est le même sélecteur, et c'est la seule façon que les trois mots
-   restent en face des trois nombres. Une spécialité porte, en plus de ses trois
-   cases, un couple de sigles et un nom qu'on écrit : à un moment, tout cela ne
-   tient plus côte à côte. */
+/* COLONNE TROP ÉTROITE POUR UNE SEULE LIGNE : le quintuple d'une spécialité
+   descend d'un cran et prend toute la largeur. Il le fait POUR L'ENTÊTE COMME
+   POUR LES LIGNES — c'est le même sélecteur, et c'est la seule façon que les
+   cinq mots restent en face des cinq nombres. Une spécialité porte, en plus de
+   ses cinq cases, un nom qu'on écrit : à un moment, les deux ne tiennent plus
+   côte à côte. */
 @container colonne (max-width: 17rem) {
   .pc-block[data-module="specialites"] .pc-crow-top { flex-wrap: wrap; }
-  .pc-block[data-module="specialites"] .pc-crow-top > .pc-trio {
+  .pc-block[data-module="specialites"] .pc-crow-top > .pc-trio.cinq {
     width: 100%; margin-top: .12rem;
   }
 }
