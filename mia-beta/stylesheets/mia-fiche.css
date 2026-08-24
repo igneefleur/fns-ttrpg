@@ -45,6 +45,7 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
   --fs-hero:  1.05rem;
   --gut: .7rem;
   --pc-sheet-w: 50rem;
+  --pc-trio-w: 8.7rem;   /* trois cases égales : voir .pc-trio */
 
   color: var(--ink);
   background: var(--bg-side);
@@ -78,11 +79,22 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
   .perso-atelier .pc-top .pc-lib select { max-width: none; min-width: 0; flex: 1 1 120px; }
 }
 
-/* ---- la feuille : largeur fixe ---- */
+/* ---- la feuille : sa largeur de confort, jamais plus que la place ----
+   LA FENÊTRE NE DIT PAS COMBIEN DE PLACE A LA FEUILLE : sur le site elle perd
+   deux barres latérales, dans Roll20 elle tient dans une iframe large comme on
+   veut, et un point de bascule en @media se trompe donc dans les deux cas.
+   D'où les deux moitiés de la réponse : la feuille prend 50rem OU la place
+   qu'elle a, et tout ce qui se replie à l'intérieur se règle sur ELLE
+   (container-type + @container feuille), pas sur l'écran. Sans quoi il restait
+   entre 705 px et 1 150 px de fenêtre une bande entière où la troisième
+   colonne — les compétences — était coupée net, et ne se lisait qu'à la barre
+   de défilement horizontale. */
 .pc-sheet {
-  width: var(--pc-sheet-w, 50rem); max-width: none; margin: 1.1rem auto 0; background: var(--paper);
+  width: min(var(--pc-sheet-w, 50rem), 100%); max-width: none; box-sizing: border-box;
+  margin: 1.1rem auto 0; background: var(--paper);
   box-shadow: 0 1px 6px rgba(0, 0, 0, .18);
   padding: .9rem 1rem 1.3rem;
+  container-type: inline-size; container-name: feuille;
 }
 
 /* ---- en-tête d'identité (infos importantes + portrait compact) ---- */
@@ -125,7 +137,7 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 /* 2e ligne : compteurs Création / XP dépensé (barres étirées) + XP total */
 .pc-id-meters { grid-column: 1 / -1; display: flex; align-items: flex-end; gap: .4rem 1.1rem; flex-wrap: wrap; margin-top: .15rem; }
 .pc-id-meters .pc-meter { flex: 1 1 9rem; min-width: 0; }
-.pc-id-meters .pc-meter .bar { flex: 1; width: auto; min-width: 3rem; }
+.pc-id-meters .pc-meter .bar { flex: 1 1 3rem; width: auto; min-width: 0; }
 .pc-id-meters .pc-f { flex: 0 0 5.5rem; }
 .pc-id { flex: 1; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: .35rem .6rem; align-content: start; }
 .pc-f { display: flex; flex-direction: column; gap: .08rem; min-width: 0; }
@@ -142,7 +154,7 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-f.c4 { grid-column: span 4; } .pc-f.c3 { grid-column: span 3; } .pc-f.c2 { grid-column: span 2; }
 
 /* ---- compteurs de budgets ---- */
-.pc-meter { display: flex; align-items: center; gap: .4rem; font-size: .58rem; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; color: var(--ink-3); }
+.pc-meter { display: flex; align-items: center; flex-wrap: wrap; gap: .4rem; font-size: .58rem; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; color: var(--ink-3); }
 .pc-meter b { font-variant-numeric: tabular-nums; font-size: .72rem; color: var(--ink); text-transform: none; letter-spacing: 0; }
 .pc-meter b.over { color: var(--red); }
 .pc-meter .bar { width: 84px; height: 4px; background: var(--stripe); border-radius: 3px; overflow: hidden; }
@@ -150,9 +162,9 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-meter .bar > i.over { background: var(--red); }
 
 /* ---- onglets : contrôle segmenté ---- */
-.pc-tabs { display: flex; gap: .2rem; margin: .5rem 0 .3rem; padding: .2rem; background: var(--panel); border: 1px solid var(--hair); border-radius: 9px; }
+.pc-tabs { display: flex; flex-wrap: wrap; gap: .2rem; margin: .5rem 0 .3rem; padding: .2rem; background: var(--panel); border: 1px solid var(--hair); border-radius: 9px; }
 .pc-tab {
-  flex: 1 1 auto; text-align: center; cursor: pointer; user-select: none;
+  flex: 1 1 5rem; min-width: 0; text-align: center; cursor: pointer; user-select: none;
   border-radius: 7px; padding: .3rem .7rem; border: 1px solid transparent;
   font-weight: 600; font-size: .7rem; letter-spacing: .02em; color: var(--ink-2);
   transition: background .12s, color .12s, box-shadow .12s;
@@ -196,27 +208,36 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 /* ---- colonnes d'un onglet ---- */
 .pc-pane { display: none; padding-top: .35rem; }
 .pc-pane.on { display: block; }
-.pc-cols2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gut); align-items: start; }
+.pc-cols2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(18rem, 100%), 1fr)); gap: var(--gut); align-items: start; }
 .pc-col { min-width: 0; display: flex; flex-direction: column; gap: var(--gut); }
 /* un bloc pleine largeur qui suit une grille de colonnes garde le même
    souffle que les blocs entre eux (ex. l'Inventaire sous Armes / Armures) */
 .pc-cols2 + .pc-block, .pc-cols-fiche + .pc-block { margin-top: var(--gut); }
 /* Fiche : trois colonnes (caractéristiques | combat | compétences, un peu
    plus large pour la ligne nom | stade | total) */
-.pc-cols-fiche { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gut); align-items: start; }
+/* auto-fit : trois colonnes tant qu'elles tiennent, deux ensuite, une enfin —
+   et c'est la largeur de la FEUILLE qui tranche, pas celle de l'écran.
+   min(15rem, 100%) et non 15rem : un plancher de colonne plus large que la
+   place disponible déborderait au lieu de céder, et la grille sortait de
+   34 px sur une fenêtre de 340. */
+.pc-cols-fiche { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr)); gap: var(--gut); align-items: start; }
 /* Art : une carte d'art par compétence au stade qui l'ouvre */
-.pc-arts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem; align-items: start; }
+.pc-arts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(13rem, 100%), 1fr)); gap: .5rem; align-items: start; }
 .pc-arts > .pc-empty { grid-column: 1 / -1; }
 .pc-av.pc-art { margin-bottom: 0; }   /* prime sur le margin-bottom de .pc-av (même spécificité sinon) */
 .pc-art-top { display: flex; align-items: center; gap: .35rem; margin-bottom: .22rem; }
 .pc-art-top .pc-art-comp { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; font-size: .7rem; color: var(--ink-2); }
 .pc-art-top .pc-art-stade { margin-left: auto; flex: 0 0 auto; font-size: .56rem; font-weight: 600; letter-spacing: .03em; color: var(--ink-3); }
-@media (max-width: 44em) {
-  .pc-sheet { width: auto; max-width: 100%; }
-  .pc-cols2, .pc-cols-fiche { grid-template-columns: 1fr; }
-  .pc-arts { grid-template-columns: 1fr; }
+/* L'EN-TÊTE D'IDENTITÉ se replie sur la largeur de la feuille, comme le reste :
+   douze colonnes tant qu'un champ y garde un mot lisible, six ensuite, trois
+   quand il ne reste plus que la largeur d'un téléphone. */
+@container feuille (max-width: 30rem) {
   .pc-id { grid-template-columns: repeat(6, minmax(0, 1fr)); }
   .pc-f.c4 { grid-column: span 3; }
+}
+@container feuille (max-width: 18rem) {
+  .pc-id { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .pc-f.c6, .pc-f.c4, .pc-f.c3, .pc-f.c2 { grid-column: span 3; }
 }
 
 /* ---- bloc de section ---- */
@@ -288,17 +309,24 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
    Les trois nombres qu'on lit en jouant, dans l'ordre où ils se composent : la
    valeur achetée, le modificateur qu'elle donne au jet, la limite qui le coiffe.
    Aucun ne veut rien dire sans les deux autres, d'où le bloc soudé — et c'est le
-   BLOC ENTIER qui lance, pas l'un des trois. L'étiquette de chaque case est en
-   très petit au-dessus du nombre : sans elle, trois chiffres nus au bout d'une
-   ligne se lisent dans le désordre au premier coup d'œil. */
+   BLOC ENTIER qui lance, pas l'un des trois. Les trois mots ne sont écrits
+   qu'UNE fois, en entête de la liste : répétés à chaque ligne ils encombraient
+   huit fois de suite ce qu'on apprend une bonne fois. */
 .pc-trio {
   display: inline-flex; align-items: stretch; flex: 0 0 auto;
+  width: var(--pc-trio-w, 8.7rem); box-sizing: border-box;
   background: var(--panel); border: 1px solid var(--line-2); border-radius: 5px;
   overflow: hidden; line-height: 1.1;
 }
+/* LARGEUR IMPOSÉE, TROIS TIERS ÉGAUX. Si les cases se réglaient sur leur
+   contenu, une limite à 1000 élargirait sa case et l'entête, qui ne porte que
+   « LIM », ne tomberait plus en face. Les colonnes ne dépendent donc de rien
+   de ce qu'on y écrit : elles sont le tiers d'une largeur fixe, et l'entête
+   comme les huit lignes partagent exactement la même. */
 .pc-trio > .c {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  padding: .1rem .4rem .12rem; min-width: 2.5rem;
+  flex: 1 1 0; min-width: 0;
+  padding: .1rem .2rem .12rem;
 }
 .pc-trio > .c + .c { border-left: 1px solid var(--line-2); }
 .pc-trio .k {
@@ -325,10 +353,19 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 [data-module="comps"] .pc-crow-top > .pc-abbr {
   font-size: .78rem; min-width: 3.1rem; padding: .16rem .35rem;
 }
-/* La case du MOD d'une compétence porte le sigle de SA caractéristique au-dessus
-   du nombre : il change d'une ligne à l'autre, l'entête ne peut donc pas le
-   dire. Les deux autres cases n'ont qu'un nombre, et se centrent en face. */
-[data-module="comps"] .pc-trio .k { color: var(--red-deep); }
+/* colonne étroite (iframe Roll20 réduite, téléphone) : le trio et le sigle se
+   serrent plutôt que de pousser le bloc hors de sa colonne. */
+@container feuille (max-width: 20rem) {
+  .pc-trio { --pc-trio-w: 7.4rem; }
+  [data-module="caracs"] .pc-crow-top > .pc-abbr,
+  [data-module="comps"] .pc-crow-top > .pc-abbr { font-size: .7rem; min-width: 2.6rem; padding: .14rem .25rem; }
+}
+@container feuille (max-width: 15rem) {
+  .pc-trio { --pc-trio-w: 6.8rem; }
+  .pc-trio .v { font-size: .8rem; }
+  [data-module="caracs"] .pc-crow-top > .pc-abbr,
+  [data-module="comps"] .pc-crow-top > .pc-abbr { font-size: .62rem; min-width: 2.1rem; padding: .12rem .2rem; }
+}
 .pc-trio.adj .v { color: var(--red-deep); }
 .pc-trio.pc-rollable:hover { border-color: var(--red); }
 .pc-trio.pc-rollable:hover .v { color: var(--red); }
@@ -367,7 +404,7 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-big .v { display: block; font-size: var(--fs-hero); font-weight: 700; line-height: 1.1; color: var(--ink); font-variant-numeric: tabular-nums; margin-top: .08rem; white-space: nowrap; }
 
 /* ---- PV / endurance : lignes de contrôle ---- */
-.pc-kv { display: flex; align-items: center; gap: .35rem; padding: .12rem .05rem; font-size: .7rem; }
+.pc-kv { display: flex; align-items: center; flex-wrap: wrap; gap: .35rem; padding: .12rem .05rem; font-size: .7rem; }
 .pc-kv > .k { font-weight: 700; color: var(--ink-2); font-size: .6rem; white-space: nowrap; flex-shrink: 0; text-transform: uppercase; letter-spacing: .04em; }
 .pc-kv > .sp { flex: 1; }
 .pc-kv .max { color: var(--ink-3); font-variant-numeric: tabular-nums; }
@@ -894,8 +931,8 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 /* quantité traitée par les boutons de la ligne : étroite, collée à gauche */
 .pc-obj-actions .pc-f.qact { flex: 0 0 3.6rem; margin-right: auto; }
 .pc-obj-empty { padding: 1.2rem .6rem; text-align: center; color: var(--ink-3); font-style: italic; font-size: .62rem; }
-/* même point de bascule que le mobile de la feuille (44em, pas 700px) */
-@media (max-width: 44em) {
+/* même bascule que les colonnes de la feuille, et sur la même mesure qu'elles */
+@container feuille (max-width: 30rem) {
   /* align-items: stretch : en colonne, le flex-start hérité rétrécirait les
      enfants à leur contenu (tuiles en pourcentage -> quasi nulles) */
   .pc-obj-wrap { flex-direction: column; align-items: stretch; }
@@ -945,7 +982,7 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
    mod en attente ne bloque rien, il ne doit pas repousser la fiche pour autant. */
 .pc-avis {
   display: flex; align-items: center; flex-wrap: wrap; gap: .25rem .6rem;
-  width: var(--pc-sheet-w, 50rem); box-sizing: border-box;
+  width: min(var(--pc-sheet-w, 50rem), 100%); box-sizing: border-box;
   margin: .6rem auto 0; padding: .28rem .5rem .3rem;
   background: var(--card); color: var(--ink-2);
   border: 1px solid var(--line-2); border-left: 3px solid var(--red);
@@ -960,10 +997,6 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-avis-save .pc-avis-txt { color: var(--red-deep); font-weight: 600; }
 .pc-avis-txt { flex: 1 1 16rem; min-width: 0; font-size: var(--fs-meta); line-height: 1.3; }
 .pc-avis .row { flex: 0 0 auto; display: flex; align-items: center; flex-wrap: wrap; gap: .3rem; margin-left: auto; }
-@media (max-width: 44em) {
-  /* même bascule que la feuille : elle cesse d'imposer sa largeur */
-  .pc-avis { width: auto; max-width: 100%; }
-}
 
 /* code d'un mod : la modale de la fiche est étroite, le code défile donc
    horizontalement plutôt que de se replier (une ligne coupée n'est plus du
