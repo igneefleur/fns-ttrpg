@@ -67,8 +67,9 @@ ne perd rien, et les autres joueurs ne voient aucune différence.
   </div>
 </div>
 
-Les deux marches à suivre ci-dessus valent telles quelles : seuls les boutons de
-téléchargement manquent, et ils reviendront à la première signature.
+Le paquet est le MÊME des deux côtés : le .xpi signé et le .zip Chrome sortent d'une
+seule signature, et se publient aux deux adresses. Firefox se met à jour tout seul
+depuis ce site ; Chrome n'a aucun canal de mise à jour, il faut y retélécharger le zip.
 
 La fiche affichée dans Roll20 est chargée depuis le site à chaque ouverture :
 les évolutions du créateur et des règles arrivent toutes seules, sans mise à
