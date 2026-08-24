@@ -95,7 +95,10 @@ jobs:
       - name: Republier l'extension re-signée sur la branche
         if: ${{ inputs.signer }}
         run: |
-          if ! git diff --quiet; then
+          # Même piège que plus haut : git diff ignore le NEUF, et tout ce que
+          # la signature écrit dans docs/download/ est neuf tant que le dossier
+          # n'est pas suivi. C'est git status qui décide ici.
+          if [ -n "$(git status --porcelain)" ]; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add -A
