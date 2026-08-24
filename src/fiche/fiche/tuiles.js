@@ -17,7 +17,7 @@
     var inp = el("input", "force");
     inp.type = "number"; inp.min = "0";
     inp.step = dec ? "0.5" : "1";
-    inp.title = "Vide = valeur calculée (modificateurs compris) ; une valeur la force.";
+    inp.title = "Vide = calculée ; une valeur la force.";
     inp.addEventListener("input", function () {
       var v = parseFloat(inp.value);
       state[champ] = isFinite(v)
@@ -77,9 +77,7 @@
       tv.title = state.vitesseOverride !== null
         ? "Vitesse forcée à " + fmtP(state.vitesseOverride) + " m (calculée : " +
           fmtP(vitesseAuto()) + " m)"
-        : ["AGI × " + fmtP(repli("vitesseMult")) + " = " +
-           fmtP(caracTotal("AGI") * repli("vitesseMult")) + " m"]
-            .concat(pal, d ? ["modificateurs " + sign(d) + " m"] : []).join(" · ");
+        : pal.concat(d ? ["modificateurs " + sign(d) + " m"] : []).join(" · ");
     });
     tiles.appendChild(tv);
 
@@ -92,9 +90,7 @@
     hooks.push(function () {
       var pal = tuilePaliers("sautDiv", "divisés par");
       ts.classList.toggle("adj", pal.length > 0);
-      ts.title = ["Longueur : FOR × " + fmtP(repli("sautLong")) + " m",
-                  "Hauteur : FOR ÷ " + fmtP(repli("sautHaut")) + " m"]
-                   .concat(pal).join(" · ");
+      ts.title = pal.join(" · ");
     });
     tiles.appendChild(ts);
 
@@ -102,25 +98,17 @@
     var tc = bigTile("Charge", function () {
       return fmtP(poidsPorte()) + " / " + fmtP(chargeMax());
     });
-    // le palier franchi LE PLUS HAUT, avec sa phrase des règles : les paliers se
-    // cumulent, mais celui du dessus est le seul qu'on ne puisse pas deviner
-    var note = el("div", "pc-block-note");
-    note.style.display = "none";
-    tc.appendChild(note);
     tuileReglable(tc, "charge", "chargeOverride", chargeMaxAuto, "charge", true);
     hooks.push(function () {
       var d = modSum(state.divers.charge);
       var pal = chargePaliers();
       var haut = pal.length ? pal[pal.length - 1] : null;
-      note.textContent = haut ? haut.seuil + " % — " + haut.effets : "";
-      note.style.display = haut ? "" : "none";
       tc.classList.toggle("adj", !!haut || state.chargeOverride !== null || d !== 0);
       var pct = chargePct();
       tc.title = (state.chargeOverride !== null
         ? "Charge maximale forcée à " + fmtP(state.chargeOverride) + " (calculée : " +
           fmtP(chargeMaxAuto()) + ")"
-        : "Le plus haut du MOD CON et du MOD FOR" +
-          (d ? " · modificateurs " + sign(d) : "")) +
+        : (d ? "Modificateurs " + sign(d) : "")) +
         // une charge maximale nulle rend le pourcentage infini : on le dit au
         // lieu d'afficher « Infinity % », qui passerait pour une panne
         (isFinite(pct) ? " · porté : " + Math.round(pct) + " %" : " · aucune charge maximale");
@@ -136,13 +124,7 @@
       tr.title = state.recupOverride !== null
         ? "Récupération forcée à " + fmtP(state.recupOverride) + " (calculée : " +
           recupJourAuto() + ")"
-        // RÉCUP est une spécialité, et son plafond n'est pas celui des autres :
-        // le dire ici évite de chercher pourquoi des points achetés ne comptent pas
-        : "(MOD CON + RÉCUP) / 2 = (" + caracMod("CON") + " + " + recupPts() + ") / 2 = " +
-          Math.floor((caracMod("CON") + recupPts()) / 2) +
-          " · spécialité Récupération plafonnée à MOD CON × " + fmtP(repli("recupMult")) +
-          " = " + recupPlafond() +
-          (d ? " · modificateurs " + sign(d) : "");
+        : (d ? "Modificateurs " + sign(d) : "");
     });
     tiles.appendChild(tr);
 

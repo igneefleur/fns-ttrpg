@@ -15,11 +15,6 @@
   var compHooks = [];           // lignes de compétences, vidées par rebuildComps()
   var optHooks = [];            // bloc Options « Modificateurs de compétences », rebâtissable
   var optCompsRebuild = null;   // posé par le module « optcomps » ; rappelé quand les comps perso changent
-  // filtres du bloc, survivants au remount comme ceux de la Fiche
-  var optFilter = "";
-  var optChamp = "";
-  var optOnly = COMPACT;        // Roll20 : investies seulement par défaut, comme la Fiche
-  var optPerso = true;          // décoché : seules les compétences de base du jeu
 
   function regModule(id) {
     if (!regsModules[id]) regsModules[id] = [];

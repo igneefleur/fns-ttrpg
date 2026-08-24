@@ -46,8 +46,6 @@
     pStep.classList.add("pc-edit-only");
     pRow.appendChild(pStep);
     pRow.appendChild(el("span", "sp"));
-    var pMax = el("span", "max", "");
-    pRow.appendChild(pMax);
     hooks.push(function () {
       var force = state.prestigeForce !== null && state.prestigeForce !== undefined;
       var d = state.prestigeMod || 0;
@@ -58,8 +56,7 @@
                      : (state.prestige || 0) +
                        (d ? " · modificateur (Options) " + sign(d) : "") +
                        " = " + prestige()) +
-                   " — il plafonne chaque caractéristique.";
-      pMax.textContent = "/ " + repli("prestigeMax");
+                   "";
     });
     b.appendChild(pRow);
 
@@ -74,13 +71,12 @@
       var chip = el("span", "pc-abbr", code);
       chip.title = info.nom;
       top.appendChild(chip);
-      top.appendChild(el("span", "nm", info.nom));
       // LA VALEUR EST LE BOUTON DE JET : le geste de cette fiche depuis
       // toujours est un chiffre qu'on clique, pas un bouton de plus posé à
       // côté d'un chiffre. doJet est le seul chemin d'un jet de test : il pose
       // le MOD, la limite et le malus d'endurance sans qu'on ait à y penser.
       var val = el("span", "pc-cval pc-rollable", "");
-      val.addEventListener("click", function () { doJet(info.nom, code, null, null); });
+      val.addEventListener("click", function () { doJet(code, code, null, null); });
       top.appendChild(val);
       row.appendChild(top);
 
@@ -164,19 +160,8 @@
       return row;
     }
 
-    // ---------- les huit, groupées ----------
-    var groupe = null;
-    champs().forEach(function (code) {
-      var g = caracInfo(code).groupe || "";
-      if (g !== groupe) {
-        groupe = g;
-        // un intertitre discret, et non un bloc de plus : les familles se
-        // lisent d'un coup d'œil sans couper le module en modules séparés,
-        // qu'on pourrait déplacer l'un sans l'autre.
-        if (g) b.appendChild(el("div", "pc-block-note", capFirst(g)));
-      }
-      b.appendChild(ligne(code));
-    });
+    // ---------- les huit, dans l'ordre des règles ----------
+    champs().forEach(function (code) { b.appendChild(ligne(code)); });
     return b;
   }
 

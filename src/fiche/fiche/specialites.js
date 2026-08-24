@@ -15,6 +15,18 @@
     // sigles, les ± et le retrait
     var b = block("Spécialités", null, "specialites");
     var box = el("div");
+    // LE FILTRE VIT ICI. C'est la seule liste ouverte de la fiche : le joueur
+    // la remplit lui-même, et elle est la seule à pouvoir devenir assez longue
+    // pour qu'on s'y perde. rendu() est passée en avant-déclaration parce que
+    // la case doit pouvoir la rappeler à chaque frappe.
+    var tools = el("div", "pc-comp-tools");
+    var line = el("div", "row");
+    var search = champFiltre(function () { return speFilter; },
+                             function (v) { speFilter = v; }, null,
+                             function () { rendu(); });
+    if (search) line.appendChild(search);
+    tools.appendChild(line);
+    if (search) b.appendChild(tools);
     b.appendChild(box);
     // Les lignes sont détruites et refaites à chaque ajout ou retrait ; le
     // registre du module, lui, survit au geste. UNE SEULE fonction y entre, qui
@@ -63,8 +75,6 @@
       var nom = el("input", "nm pc-edit-field");
       nom.type = "text";
       nom.placeholder = "Nom de la spécialité";
-      nom.title = "Le nom est lu par les règles : « PV » s'ajoute aux points de vie, " +
-                  "« Récupération » et « Esquive » sont reprises par leurs formules.";
       nom.value = spe.nom || "";
       nom.addEventListener("input", function () { spe.nom = nom.value; refresh(); });
       top.appendChild(nom);
@@ -127,7 +137,7 @@
           var n = Math.round(v);
           if (n > haut) {
             flash(haut === plaf
-              ? "Plafond de " + plaf + " : la limite de la caractéristique et le plafond de la compétence le fixent."
+              ? "Plafond de " + plaf + "."
               : "Cette spécialité est déjà au-delà de son plafond (" + plaf + ") : elle ne peut que redescendre.");
             n = haut;
           }
@@ -153,7 +163,7 @@
         val.textContent = spe.carac ? sign(bonus) : "—";
         val.classList.toggle("adj", force || d !== 0 || mord || mal !== 0 || ch !== 0);
         val.title = !spe.carac
-          ? "Choisir une caractéristique (rouage) : c'est elle qui donne le MOD et la limite du jet."
+          ? ""
           : (force
                ? "Points forcés (Options)"
                : "Points " + (spe.pts || 0) +
@@ -167,17 +177,10 @@
             ", plafonné à " + lim;
         vPts.textContent = spePts(spe) + " / " + plaf;
         vPts.classList.toggle("adj", force || d !== 0 || mord);
-        vPts.title = "Points investis, et leur plafond : la limite de la caractéristique, " +
-                     "moins ce que le MOD et la compétence prennent déjà.";
         vLim.textContent = spe.carac ? String(lim) : "—";
-        vLim.title = spe.carac
-          ? "Aucun jet de cette spécialité ne dépasse ce résultat."
-          : "Sans caractéristique, la spécialité n'a pas de limite à opposer.";
         vXp.textContent = String(speXp(spe));
         vXp.classList.toggle("adj", xpF);
-        vXp.title = xpF
-          ? "Coût forcé (Options)"
-          : "Un point de spécialité coûte " + repli("xpSpe") + " xp.";
+        vXp.title = xpF ? "Coût forcé (Options)" : "";
       });
       return row;
     }
@@ -187,24 +190,13 @@
       // les fonctions des lignes effacées n'ont plus rien à rafraîchir ; le
       // tableau est vidé SUR PLACE, celui du registre étant le même objet
       lignes.length = 0;
-      allSpes().forEach(function (it) { box.appendChild(ligne(it)); });
-      if (!state.specialites.length)
-        box.appendChild(el("div", "pc-empty", "Aucune spécialité."));
-      // LES QUATRE NOMS QUE LES FORMULES APPELLENT. Aucune spécialité n'est
-      // proposée d'office — chacun crée les siennes — mais quatre sont lues PAR
-      // LEUR NOM : les PV en ajoutent une, la récupération en EST une,
-      // l'obstination en lance une, la charge en pénalise une. Écrit autrement,
-      // le nom ne répond pas, et rien à l'écran ne le dirait. On les rappelle
-      // donc ici, et on marque celles qui manquent encore.
-      var nommees = regles().speNommees || [];
-      if (nommees.length) {
-        var absentes = nommees.filter(function (n) { return !speParNom(n); });
-        var note = el("div", "pc-block-note");
-        note.textContent = "Noms lus par les règles : " + nommees.join(", ") +
-          (absentes.length ? " — manquent : " + absentes.join(", ") : " — toutes présentes");
-        note.title = "Ces spécialités-là ne comptent que si leur nom est écrit exactement ainsi.";
-        box.appendChild(note);
-      }
+      var flt = filtreDe(speFilter);
+      var items = allSpes();
+      if (flt) items = items.filter(function (it) {
+        return it.name.toLowerCase().indexOf(flt) >= 0;
+      });
+      items.forEach(function (it) { box.appendChild(ligne(it)); });
+      if (!items.length) box.appendChild(el("div", "pc-empty", "—"));
       box.appendChild(miniBtn("+ Ajouter une spécialité", null, function () {
         state.specialites.push(blankSpe());
         rendu();

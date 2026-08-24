@@ -9,28 +9,18 @@
   // lignes : sans lui, chaque rebâti fuirait des fonctions de rafraîchissement.
   function buildOptComps() {
     var bMC = block("Modificateurs de compétences", "et spécialités");
-    // Le menu des champs et la puce « Personnalisées » ont disparu avec ce
-    // qu'ils réglaient : il n'y a plus ni champ, ni compétence inventée. Le
-    // filtre texte reste, et la puce « Investies » avec lui : les spécialités
-    // sont une liste libre, et rien ne dit qu'elle sera courte.
+    // LE FILTRE NE PORTE QUE SUR LES SPÉCIALITÉS. Les huit compétences sont
+    // toujours toutes là, et « investies » ne trie rien : on n'investit que
+    // dans ses propres spécialités, et elles n'existent que parce qu'on les a
+    // créées.
     var mcTools = el("div", "pc-comp-tools");
     var mcLine = el("div", "row");
-    var mcSearch = champFiltre(function () { return optFilter; },
-                               function (v) { optFilter = v; }, null,
+    var mcSearch = champFiltre(function () { return speFilter; },
+                               function (v) { speFilter = v; }, null,
                                function () { optCompsRebuild(); });
     if (mcSearch) mcLine.appendChild(mcSearch);
-    var mcOnly = el("span", "pc-chip");
-    mcOnly.textContent = "Investies";
-    mcOnly.title = "N'afficher que les lignes qui portent des points ou un réglage.";
-    mcOnly.classList.toggle("on", optOnly);
-    mcOnly.addEventListener("click", function () {
-      optOnly = !optOnly;
-      mcOnly.classList.toggle("on", optOnly);
-      optCompsRebuild();
-    });
-    mcLine.appendChild(mcOnly);
     mcTools.appendChild(mcLine);
-    bMC.appendChild(mcTools);
+    if (mcSearch) bMC.appendChild(mcTools);
     // la grille des leviers est large : elle défile dans son cadre
     var mcWrap = el("div", "pc-optcomp-wrap");
     var mcBox = el("div");
@@ -133,17 +123,14 @@
     optCompsRebuild = function () {
       optHooks = [];
       mcBox.innerHTML = "";
-      var flt = filtreDe(optFilter);
+      var flt = filtreDe(speFilter);
       var comps = allComps();
       var spes = allSpes();
-      if (flt) {
-        comps = comps.filter(function (it) { return it.name.toLowerCase().indexOf(flt) >= 0; });
-        spes = spes.filter(function (it) { return it.name.toLowerCase().indexOf(flt) >= 0; });
-      }
-      if (optOnly) {
-        comps = comps.filter(compInvestie);
-        spes = spes.filter(function (it) { return speInvestie(it.spe); });
-      }
+      // le filtre ne mord que sur les spécialités : les huit compétences
+      // restent, sans quoi on chercherait où sont passés ses leviers
+      if (flt) spes = spes.filter(function (it) {
+        return it.name.toLowerCase().indexOf(flt) >= 0;
+      });
       // Aucun tri : l'ordre des compétences est celui de la page de règles, et
       // celui des spécialités celui où le joueur les a créées. Les deux listes
       // se retrouvent donc ici dans l'ordre où elles se lisent sur la Fiche.
@@ -311,11 +298,7 @@
         });
       }
 
-      if (!comps.length && !spes.length) {
-        mcBox.appendChild(el("div", "pc-empty",
-          optOnly ? "Rien d'investi ne correspond — décocher « Investies » pour tout voir."
-                  : "Aucune compétence ni spécialité ne correspond."));
-      }
+      if (!comps.length && !spes.length) mcBox.appendChild(el("div", "pc-empty", "—"));
       refresh();   // les lignes viennent de naître : leurs totaux se peuplent ici
     };
     optCompsRebuild();

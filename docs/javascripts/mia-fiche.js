@@ -1634,11 +1634,6 @@
   var compHooks = [];           // lignes de compétences, vidées par rebuildComps()
   var optHooks = [];            // bloc Options « Modificateurs de compétences », rebâtissable
   var optCompsRebuild = null;   // posé par le module « optcomps » ; rappelé quand les comps perso changent
-  // filtres du bloc, survivants au remount comme ceux de la Fiche
-  var optFilter = "";
-  var optChamp = "";
-  var optOnly = COMPACT;        // Roll20 : investies seulement par défaut, comme la Fiche
-  var optPerso = true;          // décoché : seules les compétences de base du jeu
 
   function regModule(id) {
     if (!regsModules[id]) regsModules[id] = [];
@@ -2826,8 +2821,6 @@
     pStep.classList.add("pc-edit-only");
     pRow.appendChild(pStep);
     pRow.appendChild(el("span", "sp"));
-    var pMax = el("span", "max", "");
-    pRow.appendChild(pMax);
     hooks.push(function () {
       var force = state.prestigeForce !== null && state.prestigeForce !== undefined;
       var d = state.prestigeMod || 0;
@@ -2838,8 +2831,7 @@
                      : (state.prestige || 0) +
                        (d ? " · modificateur (Options) " + sign(d) : "") +
                        " = " + prestige()) +
-                   " — il plafonne chaque caractéristique.";
-      pMax.textContent = "/ " + repli("prestigeMax");
+                   "";
     });
     b.appendChild(pRow);
 
@@ -2854,13 +2846,12 @@
       var chip = el("span", "pc-abbr", code);
       chip.title = info.nom;
       top.appendChild(chip);
-      top.appendChild(el("span", "nm", info.nom));
       // LA VALEUR EST LE BOUTON DE JET : le geste de cette fiche depuis
       // toujours est un chiffre qu'on clique, pas un bouton de plus posé à
       // côté d'un chiffre. doJet est le seul chemin d'un jet de test : il pose
       // le MOD, la limite et le malus d'endurance sans qu'on ait à y penser.
       var val = el("span", "pc-cval pc-rollable", "");
-      val.addEventListener("click", function () { doJet(info.nom, code, null, null); });
+      val.addEventListener("click", function () { doJet(code, code, null, null); });
       top.appendChild(val);
       row.appendChild(top);
 
@@ -2944,19 +2935,8 @@
       return row;
     }
 
-    // ---------- les huit, groupées ----------
-    var groupe = null;
-    champs().forEach(function (code) {
-      var g = caracInfo(code).groupe || "";
-      if (g !== groupe) {
-        groupe = g;
-        // un intertitre discret, et non un bloc de plus : les familles se
-        // lisent d'un coup d'œil sans couper le module en modules séparés,
-        // qu'on pourrait déplacer l'un sans l'autre.
-        if (g) b.appendChild(el("div", "pc-block-note", capFirst(g)));
-      }
-      b.appendChild(ligne(code));
-    });
+    // ---------- les huit, dans l'ordre des règles ----------
+    champs().forEach(function (code) { b.appendChild(ligne(code)); });
     return b;
   }
 
@@ -2979,7 +2959,7 @@
     var inp = el("input", "force");
     inp.type = "number"; inp.min = "0";
     inp.step = dec ? "0.5" : "1";
-    inp.title = "Vide = valeur calculée (modificateurs compris) ; une valeur la force.";
+    inp.title = "Vide = calculée ; une valeur la force.";
     inp.addEventListener("input", function () {
       var v = parseFloat(inp.value);
       state[champ] = isFinite(v)
@@ -3039,9 +3019,7 @@
       tv.title = state.vitesseOverride !== null
         ? "Vitesse forcée à " + fmtP(state.vitesseOverride) + " m (calculée : " +
           fmtP(vitesseAuto()) + " m)"
-        : ["AGI × " + fmtP(repli("vitesseMult")) + " = " +
-           fmtP(caracTotal("AGI") * repli("vitesseMult")) + " m"]
-            .concat(pal, d ? ["modificateurs " + sign(d) + " m"] : []).join(" · ");
+        : pal.concat(d ? ["modificateurs " + sign(d) + " m"] : []).join(" · ");
     });
     tiles.appendChild(tv);
 
@@ -3054,9 +3032,7 @@
     hooks.push(function () {
       var pal = tuilePaliers("sautDiv", "divisés par");
       ts.classList.toggle("adj", pal.length > 0);
-      ts.title = ["Longueur : FOR × " + fmtP(repli("sautLong")) + " m",
-                  "Hauteur : FOR ÷ " + fmtP(repli("sautHaut")) + " m"]
-                   .concat(pal).join(" · ");
+      ts.title = pal.join(" · ");
     });
     tiles.appendChild(ts);
 
@@ -3064,25 +3040,17 @@
     var tc = bigTile("Charge", function () {
       return fmtP(poidsPorte()) + " / " + fmtP(chargeMax());
     });
-    // le palier franchi LE PLUS HAUT, avec sa phrase des règles : les paliers se
-    // cumulent, mais celui du dessus est le seul qu'on ne puisse pas deviner
-    var note = el("div", "pc-block-note");
-    note.style.display = "none";
-    tc.appendChild(note);
     tuileReglable(tc, "charge", "chargeOverride", chargeMaxAuto, "charge", true);
     hooks.push(function () {
       var d = modSum(state.divers.charge);
       var pal = chargePaliers();
       var haut = pal.length ? pal[pal.length - 1] : null;
-      note.textContent = haut ? haut.seuil + " % — " + haut.effets : "";
-      note.style.display = haut ? "" : "none";
       tc.classList.toggle("adj", !!haut || state.chargeOverride !== null || d !== 0);
       var pct = chargePct();
       tc.title = (state.chargeOverride !== null
         ? "Charge maximale forcée à " + fmtP(state.chargeOverride) + " (calculée : " +
           fmtP(chargeMaxAuto()) + ")"
-        : "Le plus haut du MOD CON et du MOD FOR" +
-          (d ? " · modificateurs " + sign(d) : "")) +
+        : (d ? "Modificateurs " + sign(d) : "")) +
         // une charge maximale nulle rend le pourcentage infini : on le dit au
         // lieu d'afficher « Infinity % », qui passerait pour une panne
         (isFinite(pct) ? " · porté : " + Math.round(pct) + " %" : " · aucune charge maximale");
@@ -3098,13 +3066,7 @@
       tr.title = state.recupOverride !== null
         ? "Récupération forcée à " + fmtP(state.recupOverride) + " (calculée : " +
           recupJourAuto() + ")"
-        // RÉCUP est une spécialité, et son plafond n'est pas celui des autres :
-        // le dire ici évite de chercher pourquoi des points achetés ne comptent pas
-        : "(MOD CON + RÉCUP) / 2 = (" + caracMod("CON") + " + " + recupPts() + ") / 2 = " +
-          Math.floor((caracMod("CON") + recupPts()) / 2) +
-          " · spécialité Récupération plafonnée à MOD CON × " + fmtP(repli("recupMult")) +
-          " = " + recupPlafond() +
-          (d ? " · modificateurs " + sign(d) : "");
+        : (d ? "Modificateurs " + sign(d) : "");
     });
     tiles.appendChild(tr);
 
@@ -3112,10 +3074,10 @@
   }
 
   // ---------- initiative ----------
-  // L'INITIATIVE N'EST PLUS UNE COMPÉTENCE : les règles en font une VALEUR,
-  // MOD AGI × 2, que l'équipement pousse et que la charge écrase. Elle garde
-  // son module parce qu'on la relit à chaque combat, et parce qu'elle est le
-  // seul chiffre de la fiche qui aille au compteur de tours de Roll20.
+  // L'INITIATIVE N'EST PLUS UNE COMPÉTENCE : les règles en font une VALEUR, que
+  // l'équipement pousse et que la charge écrase. Elle garde son module parce
+  // qu'on la relit à chaque combat, et parce qu'elle est le seul chiffre de la
+  // fiche qui aille au compteur de tours de Roll20.
   //
   // AUCUN DÉ NE LA DÉCIDE : personne ne « lance » son initiative dans MIA. Le
   // bouton porte donc la valeur telle quelle au compteur, sans passer par
@@ -3128,27 +3090,6 @@
     if (envoyer(cmdJetExpr("Initiative", "0d0+" + v, true))) return;
     flash("Initiative : " + v + " (hors Roll20 : aucun compteur de tours où l'inscrire).");
   }
-  // D'OÙ SORT LE CHIFFRE, en toutes lettres. Sans ce détail, un personnage
-  // sanglé dans son armure lit une initiative qu'aucune formule de la page ne
-  // rend, et cherche l'erreur là où il n'y a qu'un malus d'équipement. Les
-  // termes absents ne s'écrivent pas : une ligne qui annonce « équipement +0 »
-  // n'apprend rien et pousse le reste hors de la colonne.
-  function initDetail() {
-    var parts = ["MOD AGI × " + fmtP(repli("iniMult")) + " = " +
-                 (caracMod("AGI") * repli("iniMult"))];
-    if (mainsNues()) parts.push("mains nues " + sign(repli("iniMainsNues")));
-    // les bonus ne comptent que porté, les malus comptent toujours : c'est
-    // equipInitBonus() qui tranche, et le total qu'il rend est ce qu'on montre
-    var eq = equipInitBonus();
-    if (eq) parts.push("équipement " + sign(eq));
-    chargePaliers().forEach(function (p) {
-      if (p.calc.ini) parts.push("charge " + p.seuil + " % : " + sign(p.calc.ini));
-      if (p.calc.iniDiv) parts.push("charge " + p.seuil + " % : divisée par " + fmtP(p.calc.iniDiv));
-    });
-    var d = modSum(state.divers.initiative);
-    if (d) parts.push("modificateurs " + sign(d));
-    return parts.join(" · ");
-  }
 
   function buildInitiative() {
     var b = block("Initiative", null, "initiative");
@@ -3160,8 +3101,6 @@
                             initAuCompteur));
     b.appendChild(row);
 
-    var det = el("div", "pc-block-note");
-    b.appendChild(det);
 
     // construction : valeur forcée (vide = calculée) + divers, comme les PV.
     // Le forçage accepte le NÉGATIF, et c'est voulu : deux armures dans le sac
@@ -3171,8 +3110,7 @@
     mrow.appendChild(el("span", "lbl", "Forcée"));
     var force = el("input", "force");
     force.type = "number"; force.step = "1";
-    force.title = "Vide = initiative calculée (équipement, mains nues, paliers de charge " +
-                  "et modificateurs compris) ; une valeur la force.";
+    force.title = "Vide = calculée ; une valeur la force.";
     force.addEventListener("input", function () {
       var v = parseFloat(force.value);
       state.initiativeOverride = isFinite(v) ? clamp(Math.floor(v), -9999, 9999) : null;
@@ -3194,9 +3132,6 @@
       val.textContent = String(initiative());
       var d = modSum(state.divers.initiative);
       val.classList.toggle("adj", state.initiativeOverride !== null || d !== 0);
-      det.textContent = state.initiativeOverride !== null
-        ? "Initiative forcée (calculée : " + initiativeAuto() + ")"
-        : initDetail();
     });
     return b;
   }
@@ -3384,17 +3319,9 @@
         adj: state.pvMaxOverride !== null || d !== 0,
         titre: state.pvMaxOverride !== null
           ? "Maximum forcé à " + state.pvMaxOverride + " (calculé : " + pvMaxAuto() + ")"
-          : "(20 + MOD CON + PHY) / 2 + SPÉ PV = (20 + " + caracMod("CON") + " + " +
-            compPts("PHY") + ") / 2 + " + spePtsParNom("PV") +
-            (d ? " · modificateurs " + sign(d) : "")
+          : (d ? "Modificateurs " + sign(d) : "")
       };
     }));
-    // LE SEUIL DE L'OBSTINATION ne se montre que dans le négatif : il n'y a
-    // rien à jeter tant que les PV sont positifs. Il bouge à chaque coup reçu,
-    // puisqu'il est la part du maximum déjà creusée, et le joueur doit le lire
-    // au moment où le MJ lui demande le jet.
-    var obst = pvLigne("pc-block-note");
-    b.appendChild(obst);
     var mort = pvLigne("pc-warn");
     b.appendChild(mort);
 
@@ -3408,48 +3335,23 @@
         titre: state.enduranceMaxOverride !== null
           ? "Maximum forcé à " + state.enduranceMaxOverride +
             " (calculé : " + enduranceMaxAuto() + ")"
-          : "MOD CON = " + caracMod("CON") + (d ? " · modificateurs " + sign(d) : "")
+          : (d ? "Modificateurs " + sign(d) : "")
       };
     }));
-    // Ce que l'endurance coûte à l'usage : le plafond par action est le seul
-    // chiffre qu'on cherche en pleine partie, et il ne se déduit d'aucun autre
-    // affichage de la fiche.
-    var endDep = el("div", "pc-block-note");
-    b.appendChild(endDep);
-    // le malus général : il pèse sur TOUS les jets, et jetBonus() le retire
-    // déjà de chacun. On l'écrit ici pour qu'un joueur comprenne pourquoi ses
-    // chiffres ont baissé partout à la fois.
-    var endMal = pvLigne("pc-warn");
-    b.appendChild(endMal);
     var endTapis = pvLigne("pc-warn");
     b.appendChild(endTapis);
 
     // ---- construction : les deux maximums ----
     b.appendChild(pvForceRow("PV max", "pvMaxOverride", pvMaxAuto, "pvMax",
-      "Vide = maximum calculé ((20 + MOD CON + PHY) / 2 + SPÉ PV, modificateurs " +
-      "compris) ; une valeur le force."));
+      "Vide = calculé ; une valeur le force."));
     b.appendChild(pvForceRow("Endurance max", "enduranceMaxOverride", enduranceMaxAuto,
-      "endurance",
-      "Vide = maximum calculé (MOD CON, modificateurs compris) ; une valeur le force."));
+      "endurance", "Vide = calculé ; une valeur le force."));
 
+    // DEUX ÉTATS DU PERSONNAGE, et rien d'autre : ce sont des faits sur lui,
+    // au même titre que ses PV. La règle qui les produit n'a pas à être ici.
     hooks.push(function () {
-      pvDit(obst, pvCourant() < 0
-        ? "Obstination : jet contre " + obstinationDD() +
-          " chaque fois que des dégâts font passer les PV dans le négatif — raté, " +
-          "le personnage tombe dans les pommes."
-        : "");
-      pvDit(mort, pvMort()
-        ? "Mort : les PV ont atteint " + pvFmtNeg(pvPlancher()) + ", soit −100 % du maximum."
-        : "");
-      endDep.textContent = "Se dépense pour ajouter un bonus, jusqu'à " +
-        repli("endurAction") + " points sur une même action ; se regagne chaque jour.";
-      pvDit(endMal, enduranceMalus()
-        ? "Endurance négative : malus de " + enduranceMalus() + " sur tous les jets."
-        : "");
-      pvDit(endTapis, enduranceAuTapis()
-        ? "Au tapis : l'endurance a atteint " + pvFmtNeg(endurancePlancher()) +
-          " ; le personnage reste dans les pommes jusqu'au retour de sa réserve au maximum."
-        : "");
+      pvDit(mort, pvMort() ? "Mort" : "");
+      pvDit(endTapis, enduranceAuTapis() ? "Au tapis" : "");
     });
     return b;
   }
@@ -3483,12 +3385,11 @@
     var chip = el("span", "pc-abbr", code);
     chip.title = item.name;
     top.appendChild(chip);
-    top.appendChild(el("span", "nm", item.name));
     // LA VALEUR EST LE BOUTON DE JET, comme sur une caractéristique. Ce qu'elle
     // affiche est le BONUS et non les points : c'est lui qui part sur le dé,
     // points et MOD confondus, et c'est le seul nombre qu'on cherche en jouant.
     var val = el("span", "pc-cval pc-rollable", "");
-    val.addEventListener("click", function () { doJet(item.name, carac, code, null); });
+    val.addEventListener("click", function () { doJet(code, carac, code, null); });
     top.appendChild(val);
     row.appendChild(top);
 
@@ -3525,8 +3426,8 @@
         var n = Math.round(v);
         if (n > haut) {
           flash(haut === plaf
-            ? "Plafond de " + plaf + " : le meilleur MOD des caractéristiques de " + code + "."
-            : code + " est déjà au-delà du plafond (" + plaf + ") : la compétence ne peut que redescendre.");
+            ? "Plafond de " + plaf + "."
+            : code + " est au-delà du plafond (" + plaf + ").");
           n = haut;
         }
         n = Math.max(0, n);
@@ -3561,10 +3462,7 @@
                   ", plafonné à " + caracLim(carac);
       vPts.textContent = compPts(code) + " / " + plaf;
       vPts.classList.toggle("adj", force || d !== 0 || mord);
-      vPts.title = "Points investis, et leur plafond : le meilleur MOD de " +
-                   ((item.caracsPlafond || compInfo(code).mod || []).join(", ") || "ses caractéristiques") + ".";
       vLim.textContent = String(caracLim(carac));
-      vLim.title = "Aucun jet de " + item.name + " par " + carac + " ne dépasse ce résultat.";
       vXp.textContent = String(compXp(code));
       vXp.classList.toggle("adj", xpF || xpD !== 0);
       vXp.title = xpF
@@ -3576,28 +3474,21 @@
   }
 
   var compBox = null;
-  var compFilter = "";
-  var compChamp = "";           // "" = tous les champs
-  var compOnly = COMPACT;       // fiche condensée (Roll20) : investies seulement par défaut
-  // décoché : seules les compétences de base du jeu (listes des règles) sont
-  // affichées ; coché : les compétences personnalisées s'y ajoutent
-  var compPerso = true;
-  var compPersoChip = null;     // la puce, rallumée quand on ajoute une comp perso
-  // mêmes filtres pour les modules Armes et Langues (réglages de VUE : ils
-  // survivent au remontage de la fiche, comme ceux des compétences)
-  var armesPerso = true;
-  var armesOnly = COMPACT;
-  var armesFilter = "";
-  var languesPerso = true;
-  var languesOnly = false;
-  var languesFilter = "";
-  // Les deux outils de filtre se coupent depuis l'onglet Options. Coupés, ils
-  // DISPARAISSENT et cessent d'agir : un filtre invisible qui masque encore
-  // des lignes est un piège. Réglage d'AFFICHAGE, donc dans le vrai
-  // localStorage du navigateur, jamais dans le personnage.
-  var FILTRES = { texte: "mia-filtre-texte", champ: "mia-filtre-champ" };
+  // LE FILTRE EST CELUI DES SPÉCIALITÉS, et de nulle part ailleurs. Les huit
+  // compétences sont toujours toutes là et tiennent à l'écran : les filtrer ne
+  // cache rien qu'on cherchait. Les spécialités, elles, sont une liste ouverte
+  // que le joueur remplit lui-même — c'est la seule de la fiche qui puisse
+  // devenir assez longue pour qu'on s'y perde.
+  //
+  // Réglage de VUE : il survit au remontage de la fiche, et ne voyage pas avec
+  // le personnage.
+  var speFilter = "";
+  // Le filtre se coupe depuis l'onglet Options. Coupé, il DISPARAÎT et cesse
+  // d'agir : un filtre invisible qui masque encore des lignes est un piège.
+  // Réglage d'AFFICHAGE, donc dans le vrai localStorage du navigateur, jamais
+  // dans le personnage.
+  var FILTRES = { texte: "mia-filtre-texte" };
   function filtreTexteOn() { return lpref(FILTRES.texte, "1") !== "0"; }
-  function filtreChampOn() { return lpref(FILTRES.champ, "1") !== "0"; }
   // champ de filtre d'un module ; rend null quand le réglage le coupe, et le
   // texte est alors ignoré par les listes (voir filtreDe)
   function champFiltre(get, set, placeholder, onChange) {
@@ -3610,83 +3501,32 @@
     return s;
   }
   function filtreDe(v) { return filtreTexteOn() ? String(v || "").trim().toLowerCase() : ""; }
-  function compInvestie(it) {
-    // Un modificateur non nul compte autant que des points : sinon
-    // « Investies seulement » cacherait la compétence qu'on vient justement de
-    // régler.
-    return (state.comps[it.key] || 0) > 0 ||
-           (state.compsMod[it.key] || 0) !== 0 ||
-           (state.compsMod2[it.key] || 0) !== 0 ||
-           state.compsForce[it.key] !== undefined ||
-           state.compsXpForce[it.key] !== undefined ||
-           (state.compsXpMod[it.key] || 0) !== 0 ||
-           (state.compsXpMod2[it.key] || 0) !== 0;
-  }
-  // Une spécialité est « investie » dès qu'elle porte un point ou un réglage :
-  // son existence seule ne suffit pas, le joueur venant peut-être de l'ajouter.
-  function speInvestie(spe) {
-    if (!spe) return false;
-    return (spe.pts || 0) > 0 || (spe.mod || 0) !== 0 || (spe.mod2 || 0) !== 0 ||
-           spe.force !== null || spe.xpForce !== null;
-  }
   // ---------- onglet Fiche : les compétences ----------
-  // HUIT compétences, celles des règles, dans l'ordre de la page. Le menu des
-  // champs et la puce « Personnalisées » ont disparu avec ce qu'ils réglaient :
-  // il n'y a plus de champ où ranger une compétence, ni de compétence inventée
-  // à ajouter — les langues et les armes, qui étaient les deux listes ouvertes,
-  // n'existent plus. Restent le filtre texte et la puce « Investies », qui
-  // servent surtout à la fiche condensée de Roll20, où la colonne est étroite.
+  // HUIT compétences, celles des règles, dans l'ordre de la page. Ni filtre ni
+  // puce : on ne filtre pas huit lignes qui tiennent à l'écran et qu'on connaît
+  // par cœur, et « investies » ne trie rien puisqu'elles sont toutes là, tout
+  // le temps. Ce qui se filtre, ce sont les SPÉCIALITÉS, dont la liste est
+  // ouverte et n'appartient qu'au joueur — c'est leur module qui porte l'outil.
   function rebuildComps() {
     if (!compBox) return;
     compHooks = [];   // les lignes vont être détruites : leurs fonctions avec
     compBox.innerHTML = "";
-    var flt = filtreDe(compFilter);
     var items = allComps();
-    if (flt) items = items.filter(function (it) { return it.name.toLowerCase().indexOf(flt) >= 0; });
-    if (compOnly) items = items.filter(compInvestie);
     // Aucun tri : l'ordre des règles est celui où le joueur lit ses compétences
-    // dans son livre, et le même que dans le bloc des Options. Un ordre
-    // alphabétique n'aurait de sens que sur une liste qu'on ne connaît pas.
-    if (!items.length) {
-      // Une liste vide n'a pas la même cause selon ce qui l'a vidée, et le
-      // joueur qui ne voit plus ses points doit savoir laquelle : un filtre se
-      // défait, des données absentes se rechargent.
-      compBox.appendChild(el("div", "pc-empty",
-        flt ? "Aucune compétence ne correspond."
-            : compOnly ? "Aucune compétence investie."
-            : "Les règles n'ont pas été chargées."));
-    } else {
-      items.forEach(function (it, i) { compBox.appendChild(compRow(it, i % 2 === 1)); });
-    }
+    // dans son livre, et le même que dans le bloc des Options.
+    if (!items.length) compBox.appendChild(el("div", "pc-empty", "—"));
+    else items.forEach(function (it, i) { compBox.appendChild(compRow(it, i % 2 === 1)); });
     refresh();
   }
   function buildComps() {
     // jeu : les points, la limite et le jet ; édition : les ± qui achètent les
     // points, ligne par ligne
     var b = block("Compétences", null, "comps");
-    var tools = el("div", "pc-comp-tools");
-    var line = el("div", "row");
-    var search = champFiltre(function () { return compFilter; },
-                             function (v) { compFilter = v; }, null, rebuildComps);
-    if (search) line.appendChild(search);
-    var onlyChip = el("span", "pc-chip");
-    onlyChip.textContent = "Investies";
-    onlyChip.title = "N'afficher que les compétences qui portent des points ou un réglage.";
-    onlyChip.classList.toggle("on", compOnly);
-    onlyChip.addEventListener("click", function () {
-      compOnly = !compOnly;
-      onlyChip.classList.toggle("on", compOnly);
-      rebuildComps();
-    });
-    line.appendChild(onlyChip);
-    tools.appendChild(line);
-    b.appendChild(tools);
     compBox = el("div");
     b.appendChild(compBox);
     rebuildComps();
     return b;
   }
-
   // ---------- onglet Fiche : les spécialités ----------
   // C'est la SEULE liste de la fiche que le joueur écrit entièrement. Les
   // règles disent ce qu'est une spécialité, ce qu'elle coûte et ce qui la
@@ -3704,6 +3544,18 @@
     // sigles, les ± et le retrait
     var b = block("Spécialités", null, "specialites");
     var box = el("div");
+    // LE FILTRE VIT ICI. C'est la seule liste ouverte de la fiche : le joueur
+    // la remplit lui-même, et elle est la seule à pouvoir devenir assez longue
+    // pour qu'on s'y perde. rendu() est passée en avant-déclaration parce que
+    // la case doit pouvoir la rappeler à chaque frappe.
+    var tools = el("div", "pc-comp-tools");
+    var line = el("div", "row");
+    var search = champFiltre(function () { return speFilter; },
+                             function (v) { speFilter = v; }, null,
+                             function () { rendu(); });
+    if (search) line.appendChild(search);
+    tools.appendChild(line);
+    if (search) b.appendChild(tools);
     b.appendChild(box);
     // Les lignes sont détruites et refaites à chaque ajout ou retrait ; le
     // registre du module, lui, survit au geste. UNE SEULE fonction y entre, qui
@@ -3752,8 +3604,6 @@
       var nom = el("input", "nm pc-edit-field");
       nom.type = "text";
       nom.placeholder = "Nom de la spécialité";
-      nom.title = "Le nom est lu par les règles : « PV » s'ajoute aux points de vie, " +
-                  "« Récupération » et « Esquive » sont reprises par leurs formules.";
       nom.value = spe.nom || "";
       nom.addEventListener("input", function () { spe.nom = nom.value; refresh(); });
       top.appendChild(nom);
@@ -3816,7 +3666,7 @@
           var n = Math.round(v);
           if (n > haut) {
             flash(haut === plaf
-              ? "Plafond de " + plaf + " : la limite de la caractéristique et le plafond de la compétence le fixent."
+              ? "Plafond de " + plaf + "."
               : "Cette spécialité est déjà au-delà de son plafond (" + plaf + ") : elle ne peut que redescendre.");
             n = haut;
           }
@@ -3842,7 +3692,7 @@
         val.textContent = spe.carac ? sign(bonus) : "—";
         val.classList.toggle("adj", force || d !== 0 || mord || mal !== 0 || ch !== 0);
         val.title = !spe.carac
-          ? "Choisir une caractéristique (rouage) : c'est elle qui donne le MOD et la limite du jet."
+          ? ""
           : (force
                ? "Points forcés (Options)"
                : "Points " + (spe.pts || 0) +
@@ -3856,17 +3706,10 @@
             ", plafonné à " + lim;
         vPts.textContent = spePts(spe) + " / " + plaf;
         vPts.classList.toggle("adj", force || d !== 0 || mord);
-        vPts.title = "Points investis, et leur plafond : la limite de la caractéristique, " +
-                     "moins ce que le MOD et la compétence prennent déjà.";
         vLim.textContent = spe.carac ? String(lim) : "—";
-        vLim.title = spe.carac
-          ? "Aucun jet de cette spécialité ne dépasse ce résultat."
-          : "Sans caractéristique, la spécialité n'a pas de limite à opposer.";
         vXp.textContent = String(speXp(spe));
         vXp.classList.toggle("adj", xpF);
-        vXp.title = xpF
-          ? "Coût forcé (Options)"
-          : "Un point de spécialité coûte " + repli("xpSpe") + " xp.";
+        vXp.title = xpF ? "Coût forcé (Options)" : "";
       });
       return row;
     }
@@ -3876,24 +3719,13 @@
       // les fonctions des lignes effacées n'ont plus rien à rafraîchir ; le
       // tableau est vidé SUR PLACE, celui du registre étant le même objet
       lignes.length = 0;
-      allSpes().forEach(function (it) { box.appendChild(ligne(it)); });
-      if (!state.specialites.length)
-        box.appendChild(el("div", "pc-empty", "Aucune spécialité."));
-      // LES QUATRE NOMS QUE LES FORMULES APPELLENT. Aucune spécialité n'est
-      // proposée d'office — chacun crée les siennes — mais quatre sont lues PAR
-      // LEUR NOM : les PV en ajoutent une, la récupération en EST une,
-      // l'obstination en lance une, la charge en pénalise une. Écrit autrement,
-      // le nom ne répond pas, et rien à l'écran ne le dirait. On les rappelle
-      // donc ici, et on marque celles qui manquent encore.
-      var nommees = regles().speNommees || [];
-      if (nommees.length) {
-        var absentes = nommees.filter(function (n) { return !speParNom(n); });
-        var note = el("div", "pc-block-note");
-        note.textContent = "Noms lus par les règles : " + nommees.join(", ") +
-          (absentes.length ? " — manquent : " + absentes.join(", ") : " — toutes présentes");
-        note.title = "Ces spécialités-là ne comptent que si leur nom est écrit exactement ainsi.";
-        box.appendChild(note);
-      }
+      var flt = filtreDe(speFilter);
+      var items = allSpes();
+      if (flt) items = items.filter(function (it) {
+        return it.name.toLowerCase().indexOf(flt) >= 0;
+      });
+      items.forEach(function (it) { box.appendChild(ligne(it)); });
+      if (!items.length) box.appendChild(el("div", "pc-empty", "—"));
       box.appendChild(miniBtn("+ Ajouter une spécialité", null, function () {
         state.specialites.push(blankSpe());
         rendu();
@@ -5228,28 +5060,18 @@
   // lignes : sans lui, chaque rebâti fuirait des fonctions de rafraîchissement.
   function buildOptComps() {
     var bMC = block("Modificateurs de compétences", "et spécialités");
-    // Le menu des champs et la puce « Personnalisées » ont disparu avec ce
-    // qu'ils réglaient : il n'y a plus ni champ, ni compétence inventée. Le
-    // filtre texte reste, et la puce « Investies » avec lui : les spécialités
-    // sont une liste libre, et rien ne dit qu'elle sera courte.
+    // LE FILTRE NE PORTE QUE SUR LES SPÉCIALITÉS. Les huit compétences sont
+    // toujours toutes là, et « investies » ne trie rien : on n'investit que
+    // dans ses propres spécialités, et elles n'existent que parce qu'on les a
+    // créées.
     var mcTools = el("div", "pc-comp-tools");
     var mcLine = el("div", "row");
-    var mcSearch = champFiltre(function () { return optFilter; },
-                               function (v) { optFilter = v; }, null,
+    var mcSearch = champFiltre(function () { return speFilter; },
+                               function (v) { speFilter = v; }, null,
                                function () { optCompsRebuild(); });
     if (mcSearch) mcLine.appendChild(mcSearch);
-    var mcOnly = el("span", "pc-chip");
-    mcOnly.textContent = "Investies";
-    mcOnly.title = "N'afficher que les lignes qui portent des points ou un réglage.";
-    mcOnly.classList.toggle("on", optOnly);
-    mcOnly.addEventListener("click", function () {
-      optOnly = !optOnly;
-      mcOnly.classList.toggle("on", optOnly);
-      optCompsRebuild();
-    });
-    mcLine.appendChild(mcOnly);
     mcTools.appendChild(mcLine);
-    bMC.appendChild(mcTools);
+    if (mcSearch) bMC.appendChild(mcTools);
     // la grille des leviers est large : elle défile dans son cadre
     var mcWrap = el("div", "pc-optcomp-wrap");
     var mcBox = el("div");
@@ -5352,17 +5174,14 @@
     optCompsRebuild = function () {
       optHooks = [];
       mcBox.innerHTML = "";
-      var flt = filtreDe(optFilter);
+      var flt = filtreDe(speFilter);
       var comps = allComps();
       var spes = allSpes();
-      if (flt) {
-        comps = comps.filter(function (it) { return it.name.toLowerCase().indexOf(flt) >= 0; });
-        spes = spes.filter(function (it) { return it.name.toLowerCase().indexOf(flt) >= 0; });
-      }
-      if (optOnly) {
-        comps = comps.filter(compInvestie);
-        spes = spes.filter(function (it) { return speInvestie(it.spe); });
-      }
+      // le filtre ne mord que sur les spécialités : les huit compétences
+      // restent, sans quoi on chercherait où sont passés ses leviers
+      if (flt) spes = spes.filter(function (it) {
+        return it.name.toLowerCase().indexOf(flt) >= 0;
+      });
       // Aucun tri : l'ordre des compétences est celui de la page de règles, et
       // celui des spécialités celui où le joueur les a créées. Les deux listes
       // se retrouvent donc ici dans l'ordre où elles se lisent sur la Fiche.
@@ -5530,11 +5349,7 @@
         });
       }
 
-      if (!comps.length && !spes.length) {
-        mcBox.appendChild(el("div", "pc-empty",
-          optOnly ? "Rien d'investi ne correspond — décocher « Investies » pour tout voir."
-                  : "Aucune compétence ni spécialité ne correspond."));
-      }
+      if (!comps.length && !spes.length) mcBox.appendChild(el("div", "pc-empty", "—"));
       refresh();   // les lignes viennent de naître : leurs totaux se peuplent ici
     };
     optCompsRebuild();
@@ -5542,35 +5357,27 @@
   }
 
   // ---- outils de filtre ----
-  // Couper un outil le fait DISPARAÎTRE partout (Compétences, Armes, Langues
-  // et le bloc ci-dessus) et cesser d'agir : un filtre invisible qui masque
-  // encore des lignes serait un piège. Réglage d'affichage, donc local au
-  // navigateur — il ne suit pas le personnage.
+  // Une seule puce depuis que le filtre ne sert plus qu'aux spécialités : le
+  // sélecteur de champ réglait une liste déroulante qui n'existe plus. Coupée,
+  // la case de recherche DISPARAÎT et cesse d'agir — un filtre invisible qui
+  // masque encore des lignes serait un piège. Réglage d'affichage, donc local
+  // au navigateur ; il ne suit pas le personnage.
   function buildFiltres() {
     var bF = block("Outils de filtre");
     var fRow = el("div", "pc-comp-tools");
     var fLine = el("div", "row");
-    // Chaque puce ALLUME OU ÉTEINT un outil ; elle porte donc le nom de
-    // l'outil, pas celui de son réglage par défaut. La seconde s'appelait
-    // « Tous les champs », qui est le premier choix de la liste déroulante :
-    // on croyait afficher tous les champs alors qu'on décidait si la liste
-    // existe.
-    [["texte", "Champ de recherche",
-      "La case où l'on tape pour filtrer les modules Compétences, Armes et Langues."],
-     ["champ", "Sélecteur de champ",
-      "La liste déroulante Body / Mind / Prestance des modules Compétences."]].forEach(function (o) {
-      var chip = el("span", "pc-chip");
-      chip.textContent = o[1];
-      chip.title = o[2] + " Éteinte : l'outil disparaît, et ne filtre plus rien.";
-      chip.classList.toggle("on", lpref(FILTRES[o[0]], "1") !== "0");
-      chip.addEventListener("click", function () {
-        var on = lpref(FILTRES[o[0]], "1") !== "0";
-        lset(FILTRES[o[0]], on ? "0" : "1");
-        chip.classList.toggle("on", !on);
-        remount();   // les outils vivent dans d'autres onglets : tout se rebâtit
-      });
-      fLine.appendChild(chip);
+    var chip = el("span", "pc-chip");
+    chip.textContent = "Champ de recherche";
+    chip.title = "La case où l'on tape pour filtrer les spécialités. " +
+                 "Éteinte : l'outil disparaît, et ne filtre plus rien.";
+    chip.classList.toggle("on", filtreTexteOn());
+    chip.addEventListener("click", function () {
+      var on = filtreTexteOn();
+      lset(FILTRES.texte, on ? "0" : "1");
+      chip.classList.toggle("on", !on);
+      remount();   // l'outil vit dans d'autres onglets : tout se rebâtit
     });
+    fLine.appendChild(chip);
     fRow.appendChild(fLine);
     bF.appendChild(fRow);
     return bF;

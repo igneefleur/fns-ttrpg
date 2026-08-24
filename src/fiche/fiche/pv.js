@@ -127,17 +127,9 @@
         adj: state.pvMaxOverride !== null || d !== 0,
         titre: state.pvMaxOverride !== null
           ? "Maximum forcé à " + state.pvMaxOverride + " (calculé : " + pvMaxAuto() + ")"
-          : "(20 + MOD CON + PHY) / 2 + SPÉ PV = (20 + " + caracMod("CON") + " + " +
-            compPts("PHY") + ") / 2 + " + spePtsParNom("PV") +
-            (d ? " · modificateurs " + sign(d) : "")
+          : (d ? "Modificateurs " + sign(d) : "")
       };
     }));
-    // LE SEUIL DE L'OBSTINATION ne se montre que dans le négatif : il n'y a
-    // rien à jeter tant que les PV sont positifs. Il bouge à chaque coup reçu,
-    // puisqu'il est la part du maximum déjà creusée, et le joueur doit le lire
-    // au moment où le MJ lui demande le jet.
-    var obst = pvLigne("pc-block-note");
-    b.appendChild(obst);
     var mort = pvLigne("pc-warn");
     b.appendChild(mort);
 
@@ -151,48 +143,23 @@
         titre: state.enduranceMaxOverride !== null
           ? "Maximum forcé à " + state.enduranceMaxOverride +
             " (calculé : " + enduranceMaxAuto() + ")"
-          : "MOD CON = " + caracMod("CON") + (d ? " · modificateurs " + sign(d) : "")
+          : (d ? "Modificateurs " + sign(d) : "")
       };
     }));
-    // Ce que l'endurance coûte à l'usage : le plafond par action est le seul
-    // chiffre qu'on cherche en pleine partie, et il ne se déduit d'aucun autre
-    // affichage de la fiche.
-    var endDep = el("div", "pc-block-note");
-    b.appendChild(endDep);
-    // le malus général : il pèse sur TOUS les jets, et jetBonus() le retire
-    // déjà de chacun. On l'écrit ici pour qu'un joueur comprenne pourquoi ses
-    // chiffres ont baissé partout à la fois.
-    var endMal = pvLigne("pc-warn");
-    b.appendChild(endMal);
     var endTapis = pvLigne("pc-warn");
     b.appendChild(endTapis);
 
     // ---- construction : les deux maximums ----
     b.appendChild(pvForceRow("PV max", "pvMaxOverride", pvMaxAuto, "pvMax",
-      "Vide = maximum calculé ((20 + MOD CON + PHY) / 2 + SPÉ PV, modificateurs " +
-      "compris) ; une valeur le force."));
+      "Vide = calculé ; une valeur le force."));
     b.appendChild(pvForceRow("Endurance max", "enduranceMaxOverride", enduranceMaxAuto,
-      "endurance",
-      "Vide = maximum calculé (MOD CON, modificateurs compris) ; une valeur le force."));
+      "endurance", "Vide = calculé ; une valeur le force."));
 
+    // DEUX ÉTATS DU PERSONNAGE, et rien d'autre : ce sont des faits sur lui,
+    // au même titre que ses PV. La règle qui les produit n'a pas à être ici.
     hooks.push(function () {
-      pvDit(obst, pvCourant() < 0
-        ? "Obstination : jet contre " + obstinationDD() +
-          " chaque fois que des dégâts font passer les PV dans le négatif — raté, " +
-          "le personnage tombe dans les pommes."
-        : "");
-      pvDit(mort, pvMort()
-        ? "Mort : les PV ont atteint " + pvFmtNeg(pvPlancher()) + ", soit −100 % du maximum."
-        : "");
-      endDep.textContent = "Se dépense pour ajouter un bonus, jusqu'à " +
-        repli("endurAction") + " points sur une même action ; se regagne chaque jour.";
-      pvDit(endMal, enduranceMalus()
-        ? "Endurance négative : malus de " + enduranceMalus() + " sur tous les jets."
-        : "");
-      pvDit(endTapis, enduranceAuTapis()
-        ? "Au tapis : l'endurance a atteint " + pvFmtNeg(endurancePlancher()) +
-          " ; le personnage reste dans les pommes jusqu'au retour de sa réserve au maximum."
-        : "");
+      pvDit(mort, pvMort() ? "Mort" : "");
+      pvDit(endTapis, enduranceAuTapis() ? "Au tapis" : "");
     });
     return b;
   }

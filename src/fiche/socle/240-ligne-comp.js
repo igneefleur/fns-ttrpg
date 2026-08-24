@@ -27,12 +27,11 @@
     var chip = el("span", "pc-abbr", code);
     chip.title = item.name;
     top.appendChild(chip);
-    top.appendChild(el("span", "nm", item.name));
     // LA VALEUR EST LE BOUTON DE JET, comme sur une caractéristique. Ce qu'elle
     // affiche est le BONUS et non les points : c'est lui qui part sur le dé,
     // points et MOD confondus, et c'est le seul nombre qu'on cherche en jouant.
     var val = el("span", "pc-cval pc-rollable", "");
-    val.addEventListener("click", function () { doJet(item.name, carac, code, null); });
+    val.addEventListener("click", function () { doJet(code, carac, code, null); });
     top.appendChild(val);
     row.appendChild(top);
 
@@ -69,8 +68,8 @@
         var n = Math.round(v);
         if (n > haut) {
           flash(haut === plaf
-            ? "Plafond de " + plaf + " : le meilleur MOD des caractéristiques de " + code + "."
-            : code + " est déjà au-delà du plafond (" + plaf + ") : la compétence ne peut que redescendre.");
+            ? "Plafond de " + plaf + "."
+            : code + " est au-delà du plafond (" + plaf + ").");
           n = haut;
         }
         n = Math.max(0, n);
@@ -105,10 +104,7 @@
                   ", plafonné à " + caracLim(carac);
       vPts.textContent = compPts(code) + " / " + plaf;
       vPts.classList.toggle("adj", force || d !== 0 || mord);
-      vPts.title = "Points investis, et leur plafond : le meilleur MOD de " +
-                   ((item.caracsPlafond || compInfo(code).mod || []).join(", ") || "ses caractéristiques") + ".";
       vLim.textContent = String(caracLim(carac));
-      vLim.title = "Aucun jet de " + item.name + " par " + carac + " ne dépasse ce résultat.";
       vXp.textContent = String(compXp(code));
       vXp.classList.toggle("adj", xpF || xpD !== 0);
       vXp.title = xpF
