@@ -26,16 +26,16 @@
   // manifeste, le plateau clignoterait en clair avant de basculer en sombre.
   // La règle est celle de la fiche, dans le même ordre : le choix mémorisé de
   // ce joueur, puis l'indice n=1/0 du hash (posé par la coquille d'après le
-  // réglage jjkNuit de l'extension, et absent quand il vaut « auto »), puis le
-  // thème du navigateur. jjk-narration.js la rejoue et l'expose dans ses
-  // réglages ; la clé lui est propre, celle de la fiche est « jjk-r20-night »
+  // réglage miaNuit de l'extension, et absent quand il vaut « auto »), puis le
+  // thème du navigateur. mia-narration.js la rejoue et l'expose dans ses
+  // réglages ; la clé lui est propre, celle de la fiche est « mia-r20-night »
   // et les deux pages viennent de la même origine.
   (function () {
     "use strict";
     try {
       var h = location.hash || "";
       var p = null;
-      try { p = localStorage.getItem("jjk-r20-night-plateau"); } catch (e) {}
+      try { p = localStorage.getItem("mia-r20-night-plateau"); } catch (e) {}
       var on = p === "1" ? true : p === "0" ? false
              : /[#&]n=1/.test(h) ? true : /[#&]n=0/.test(h) ? false
              : !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
@@ -45,8 +45,8 @@
   (function () {
     "use strict";
     var DEFAUT = {
-      js: ["javascripts/jjk-narration.js"],
-      css: ["stylesheets/jjk-narration.css"]
+      js: ["javascripts/mia-narration.js"],
+      css: ["stylesheets/mia-narration.css"]
     };
     var DELAI = 3000;
 
@@ -87,7 +87,7 @@
 
     setTimeout(function () { une(null); }, DELAI);
     try {
-      fetch("jjk-manifeste.json?t=" + new Date().getTime(), { cache: "no-store" })
+      fetch("mia-manifeste.json?t=" + new Date().getTime(), { cache: "no-store" })
         .then(function (r) { return r.ok ? r.json() : null; })
         .then(une, function () { une(null); });
     } catch (e) { une(null); }

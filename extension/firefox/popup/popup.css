@@ -71,8 +71,8 @@
 :root {
   font-size: 18px;
 
-  /* La palette du livre, jour. Recopiée de docs/stylesheets/jjk-narration.css,
-     qui la recopie elle-même de jjk-fiche.css : cette page ne charge rien
+  /* La palette du livre, jour. Recopiée de docs/stylesheets/mia-narration.css,
+     qui la recopie elle-même de mia-fiche.css : cette page ne charge rien
      d'autre, elle doit tenir seule. Recopiée mais non complète : on ne garde
      que les tons dont ce panneau se sert, un ton mort étant un ton qui ment
      sur ce qu'on peut peindre ici. */

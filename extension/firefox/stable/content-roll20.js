@@ -1,7 +1,7 @@
-/* Content script sur Roll20 : onglet « Fiche JJK » dans le dialogue d'un personnage,
+/* Content script sur Roll20 : onglet « Fiche MIA » dans le dialogue d'un personnage,
  * qui monte la COQUILLE creator.html ; celle-ci affiche la fiche SERVIE PAR LE SITE
  * (roll20-fiche.html), toujours à jour sans re-signer l'extension. La fiche est
- * enregistrée dans les Attributes Roll20 du personnage (préfixe jjk_), donc partagée à
+ * enregistrée dans les Attributes Roll20 du personnage (préfixe mia_), donc partagée à
  * tous les joueurs qui contrôlent ce personnage.
  *
  * Deux rôles selon la frame (le script tourne all_frames) :
@@ -10,9 +10,9 @@
  *    ce page-script lit/écrit les attributs à la demande. C'est aussi elle qui pose
  *    le BOUTON DU PLATEAU dans la barre d'outils de Roll20 et le cadre du plateau
  *    de Narration, ancré à cette barre ou détaché.
- *  - FRAME DE LA FEUILLE (iframe du dialogue de perso) : pose l'onglet « Fiche JJK »
+ *  - FRAME DE LA FEUILLE (iframe du dialogue de perso) : pose l'onglet « Fiche MIA »
  *    entre « Feuille de personnage » et « Bio & Info ». Au clic : si le perso a déjà
- *    une fiche JJK -> monte l'iframe de la coquille ; sinon -> bouton « Créer fiche JJK ».
+ *    une fiche MIA -> monte l'iframe de la coquille ; sinon -> bouton « Créer fiche MIA ».
  *    SAUF sur le personnage « Narration », qui porte le plateau et pas un personnage :
  *    l'onglet ne s'y pose pas (voir estPlateau).
  *
@@ -40,8 +40,8 @@
  *
  * RÉGLAGES. Ce fichier ne fait que LIRE le stockage, jamais écrire ailleurs que
  * dans la géométrie du plateau ; le popup est le seul poste d'aiguillage.
- * Il lit jjkOff (éteinte : rien ne se réveille), jjkBeta (quelle moitié parle),
- * jjkNuit (« auto » | « jour » | « nuit », qui décide du n=1/0 envoyé aux pages
+ * Il lit miaOff (éteinte : rien ne se réveille), miaBeta (quelle moitié parle),
+ * miaNuit (« auto » | « jour » | « nuit », qui décide du n=1/0 envoyé aux pages
  * du site et de la couleur du cadre flottant) et l'interrupteur du plateau.
  * Tout cela se lit à la garde, tout en bas, où l'inventaire est détaillé.
  *
@@ -64,16 +64,16 @@ if (typeof browser === "undefined") { var browser = chrome; }
   // MODE nomme la copie. Il voyage aussi dans le hash des coquilles (« &m=… »)
   // pour que shell-loader.js n'ait pas à relire le mode dans le stockage : une
   // seconde lecture serait une seconde course, et on a vu l'onglet annoncer
-  // « Fiche JJK beta » avec la fiche stable dedans parce que l'utilisateur avait
+  // « Fiche MIA beta » avec la fiche stable dedans parce que l'utilisateur avait
   // basculé entre les deux lectures. Ici, la copie qui construit l'adresse dicte
   // la coquille, et il n'y a plus rien à accorder.
   //
   // LIBELLE est figé, alors qu'il se posait autrefois après coup : le stockage
   // répondait parfois APRÈS la construction de l'écran « pas encore de fiche »,
-  // dont le titre restait « Fiche JJK » même en beta. Plus rien n'est construit
+  // dont le titre restait « Fiche MIA » même en beta. Plus rien n'est construit
   // avant que le mode soit connu, le défaut disparaît de lui-même.
   var MODE = "stable";                                   // propre à cette copie
-  var LIBELLE = "Fiche JJK";                             // propre à cette copie
+  var LIBELLE = "Fiche MIA";                             // propre à cette copie
 
   // Fenêtre popout d'une fiche : la barre d'onglets vit dans le document du HAUT
   // (aucune iframe de dialogue), il faut donc y poser l'onglet nous-mêmes.
@@ -128,10 +128,10 @@ if (typeof browser === "undefined") { var browser = chrome; }
   // Ce canal envoie au tchat, AU NOM DU JOUEUR, une commande composée côté
   // site. Or la fiche exécute désormais des mods rangés dans le personnage :
   // quiconque l'ouvre exécute leur code. On n'accepte donc que ce que la fiche
-  // compose RÉELLEMENT (jjk-fiche.js), c'est-à-dire, dans cet ordre :
+  // compose RÉELLEMENT (mia-fiche.js), c'est-à-dire, dans cet ordre :
   //   - envPrefixe() : rien, « /w gm », ou « /w "Nom du joueur" » ;
   //   - puis cmdJet, cmdCarte ou la carte d'objet donné (avec son lien
-  //     « [Prendre](/jjk_take <base64>) ») : toutes commencent par
+  //     « [Prendre](/mia_take <base64>) ») : toutes commencent par
   //     « &{template:default} ».
   // Le NOM du gabarit reste libre : un gabarit ne fait qu'afficher, et le site
   // doit pouvoir en changer sans re-signer l'extension. Tout le reste (une
@@ -183,8 +183,8 @@ if (typeof browser === "undefined") { var browser = chrome; }
   // getElementById laissait donc chaque need-bridge (une fiche ouverte de plus)
   // réinjecter un pont -> écouteurs en double -> écritures d'attributs en double.
   //
-  // Le marqueur data-jjk-bridge est COMMUN aux deux copies, tout comme le
-  // window.__jjkBridge du pont lui-même : c'est délibéré. Un marqueur qui
+  // Le marqueur data-mia-bridge est COMMUN aux deux copies, tout comme le
+  // window.__miaBridge du pont lui-même : c'est délibéré. Un marqueur qui
   // porterait le mode laisserait un utilisateur ayant basculé sans recharger sa
   // partie se retrouver avec DEUX ponts dans le monde principal : chaque save
   // écrit deux fois dans les Attributes, chaque has-sheet répond deux fois, et la
@@ -197,10 +197,10 @@ if (typeof browser === "undefined") { var browser = chrome; }
   // d'AMO, qui ne savent lire que des littéraux.
   function injectPageScript() {
     var root = document.documentElement;
-    if (!root || root.hasAttribute("data-jjk-bridge")) return;
-    root.setAttribute("data-jjk-bridge", "1");
+    if (!root || root.hasAttribute("data-mia-bridge")) return;
+    root.setAttribute("data-mia-bridge", "1");
     var s = document.createElement("script");
-    s.id = "jjk-page-bridge";
+    s.id = "mia-page-bridge";
     s.src = browser.runtime.getURL("stable/roll20-page.js");   // propre à cette copie
     s.onload = function () { this.remove(); };   // le listener reste actif, on retire la balise
     (document.head || root).appendChild(s);
@@ -215,7 +215,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
     window.addEventListener("message", function (ev) {
       try {
         var d = ev.data;
-        if (!d || d.ns !== "jjk") return;   // ignore tout ce qui n'est pas à nous
+        if (!d || d.ns !== "mia") return;   // ignore tout ce qui n'est pas à nous
         if (d.type === "has-sheet-result" && pendingHas[d.charId]) {
           // exists:null = perso injoignable POUR L'INSTANT (Campaign pas prêt) :
           // on laisse les relances retenter ; le délai final rendra null au pire.
@@ -227,7 +227,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
   }
   // Demande au page-script d20 de s'injecter (l'injection ne se fait QUE là, sur
   // interaction — jamais au chargement de l'éditeur, pour ne pas gêner Roll20).
-  function requestBridge() { try { window.top.postMessage({ ns: "jjk", type: "need-bridge" }, "*"); } catch (e) {} }
+  function requestBridge() { try { window.top.postMessage({ ns: "mia", type: "need-bridge" }, "*"); } catch (e) {} }
   // interroge has-sheet, avec relances (le page-script vient peut-être d'être injecté)
   function queryHasSheet(charId, cb) {
     ensureHasListener();
@@ -237,7 +237,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
     (function send() {
       if (!pendingHas[charId]) return;   // déjà répondu
       tries++;
-      try { window.top.postMessage({ ns: "jjk", type: "has-sheet", charId: charId }, "*"); } catch (e) {}
+      try { window.top.postMessage({ ns: "mia", type: "has-sheet", charId: charId }, "*"); } catch (e) {}
       if (tries < 5) setTimeout(send, 700);
       // dernier essai : laisser sa réponse arriver avant de conclure null
       else setTimeout(function () {
@@ -267,9 +267,9 @@ if (typeof browser === "undefined") { var browser = chrome; }
   // Ce personnage-là existe pour ranger l'état du plateau dans ses Attributes,
   // et pour rien d'autre : le MJ le rend contrôlable par tous, c'est le seul
   // objet d'une campagne où chacun a lecture et écriture. Lui poser l'onglet
-  // « Fiche JJK », c'est inviter à créer une fiche de personnage dessus — et
+  // « Fiche MIA », c'est inviter à créer une fiche de personnage dessus — et
   // c'est déjà arrivé : la carte d'attributs d'une fiche en produit une
-  // soixantaine, mesurés à 82 attributs « jjk_ » pour 18 attendus, que le pont
+  // soixantaine, mesurés à 82 attributs « mia_ » pour 18 attendus, que le pont
   // doit maintenant retirer au démarrage. On coupe donc à la racine.
   //
   // LE NOM EST CELUI QUE LE PONT CONNAÎT (roll20-page.js, NARR_NOM) : c'est la
@@ -347,10 +347,10 @@ if (typeof browser === "undefined") { var browser = chrome; }
   }
 
   // ---------- jour / nuit : le réglage du popup, puis Roll20 ----------
-  // jjkNuit vaut « auto » (défaut), « jour » ou « nuit ». Il est lu UNE FOIS,
+  // miaNuit vaut « auto » (défaut), « jour » ou « nuit ». Il est lu UNE FOIS,
   // dans la même lecture de stockage que le mode (voir garde) : une seconde
   // lecture serait une seconde course, et on a déjà vu ce que ça donne quand
-  // deux lectures se contredisent (l'onglet annonçait « Fiche JJK beta » avec
+  // deux lectures se contredisent (l'onglet annonçait « Fiche MIA beta » avec
   // la fiche stable dedans).
   //
   // CE QUI PART DANS LE HASH RESTE « n=1/0 », et ce choix a une raison précise.
@@ -366,7 +366,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
   // elles lisent n comme avant.
   //
   // La fiche garde le dernier mot par sa propre préférence (onglet Options,
-  // localStorage jjk-r20-night) : un joueur qui a explicitement mis SA fiche en
+  // localStorage mia-r20-night) : un joueur qui a explicitement mis SA fiche en
   // jour la garde en jour. C'est voulu, le réglage le plus précis gagne ; le
   // plateau, lui, n'a pas de préférence à lui et suit le popup.
   var NUIT_ORDRE = "auto";
@@ -376,11 +376,11 @@ if (typeof browser === "undefined") { var browser = chrome; }
     if (NUIT_ORDRE === "jour") return false;
     return detectNight();
   }
-  // Nos boîtes portent leur nuit sur elles-mêmes (.jjk-nuit), jamais sur la
+  // Nos boîtes portent leur nuit sur elles-mêmes (.mia-nuit), jamais sur la
   // racine : overlay.css est injectée dans TOUTES les frames de Roll20, et une
   // classe posée sur <html> serait une main sur l'interface d'un autre site.
   function poseNuit(elt) {
-    if (elt) elt.classList.toggle("jjk-nuit", nuitEffective());
+    if (elt) elt.classList.toggle("mia-nuit", nuitEffective());
     return elt;
   }
   // creator.html est PARTAGÉE par les deux parties : rien dedans ne dépend du
@@ -389,7 +389,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
   // stockage. Le hash entier descend ensuite jusqu'à la page du site, qui ignore
   // ce qu'elle ne connaît pas.
   function creatorFrame(charId) {
-    var f = el("iframe", "jjk-creator-frame");
+    var f = el("iframe", "mia-creator-frame");
     f.src = browser.runtime.getURL("creator.html") + "#c=" + encodeURIComponent(charId || "") +
             "&n=" + (nuitEffective() ? "1" : "0") + "&m=" + MODE;
     f.setAttribute("allow", "clipboard-write");
@@ -430,13 +430,13 @@ if (typeof browser === "undefined") { var browser = chrome; }
   }
   function fillButton(host, charId, exists) {
     host.innerHTML = "";
-    var wrap = poseNuit(el("div", "jjk-create"));
-    wrap.appendChild(el("div", "jjk-create-title", LIBELLE));
-    wrap.appendChild(el("p", "jjk-create-msg",
+    var wrap = poseNuit(el("div", "mia-create"));
+    wrap.appendChild(el("div", "mia-create-title", LIBELLE));
+    wrap.appendChild(el("p", "mia-create-msg",
       exists === null
-        ? "Roll20 n'a pas encore répondu (personnage non prêt). Ouvrir la fiche JJK :"
-        : "Ce personnage n'a pas encore de fiche JJK."));
-    var btn = el("button", "jjk-create-btn", exists === null ? "Ouvrir la fiche JJK" : "Créer fiche JJK");
+        ? "Roll20 n'a pas encore répondu (personnage non prêt). Ouvrir la fiche MIA :"
+        : "Ce personnage n'a pas encore de fiche MIA."));
+    var btn = el("button", "mia-create-btn", exists === null ? "Ouvrir la fiche MIA" : "Créer fiche MIA");
     btn.type = "button";
     btn.addEventListener("click", function () { fillCreator(host, charId); });
     wrap.appendChild(btn);
@@ -445,7 +445,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
   // Décide quoi afficher dans l'hôte selon l'existence d'une fiche.
   function populate(host, charId) {
     host.innerHTML = "";
-    host.appendChild(poseNuit(el("div", "jjk-create", "Chargement…")));
+    host.appendChild(poseNuit(el("div", "mia-create", "Chargement…")));
     queryHasSheet(charId, function (exists) {
       if (exists === true) fillCreator(host, charId);
       else fillButton(host, charId, exists);   // false = pas de fiche ; null = inconnu
@@ -502,13 +502,13 @@ if (typeof browser === "undefined") { var browser = chrome; }
       // Roll20 garde un renvoi vers lui, et le supprimer d'un dialogue déjà lié
       // empêche la fiche du personnage de s'ouvrir, la nôtre comme les siennes.
       if (estPlateau(charId)) {
-        var vieux = strip.querySelector(".jjk-tab");
+        var vieux = strip.querySelector(".mia-tab");
         if (vieux && vieux.parentNode) vieux.parentNode.removeChild(vieux);
-        var vieuxPane = dialog && dialog.querySelector && dialog.querySelector(".tab-pane.jjkfiche");
-        if (vieuxPane) { vieuxPane.style.display = "none"; vieuxPane.classList.remove("jjk-on"); }
+        var vieuxPane = dialog && dialog.querySelector && dialog.querySelector(".tab-pane.miafiche");
+        if (vieuxPane) { vieuxPane.style.display = "none"; vieuxPane.classList.remove("mia-on"); }
         return;
       }
-      if (strip.querySelector(".jjk-tab")) { placed++; return; }   // déjà là
+      if (strip.querySelector(".mia-tab")) { placed++; return; }   // déjà là
 
       var contentBox = contentBoxOf(dialog, strip);
       // conteneur des panes = parent d'un pane natif (là où Roll20 les place)
@@ -520,24 +520,24 @@ if (typeof browser === "undefined") { var browser = chrome; }
       //   bindTabEvents() fait, pour chaque `.nav li a`,
       //     allTabs[a.data-tab] = find('.tab-pane.'+data-tab)[0]; allTabs[...].style...
       //   -> si le pane manque, allTabs[...] est undefined et Roll20 PLANTE (fiche
-      //   qui ne s'ouvre plus). On crée donc TOUJOURS le pane `.tab-pane.jjkfiche`
-      //   AVANT de poser l'onglet `<a data-tab="jjkfiche">` : Roll20 l'enregistre et
+      //   qui ne s'ouvre plus). On crée donc TOUJOURS le pane `.tab-pane.miafiche`
+      //   AVANT de poser l'onglet `<a data-tab="miafiche">` : Roll20 l'enregistre et
       //   le gère nativement (affichage + onglet actif violet).
-      var pane = paneBox.querySelector(".tab-pane.jjkfiche");
+      var pane = paneBox.querySelector(".tab-pane.miafiche");
       if (!pane) {
-        pane = el("div", "tab-pane jjkfiche jjk-pane");
+        pane = el("div", "tab-pane miafiche mia-pane");
         pane.style.display = "none";
         paneBox.appendChild(pane);
       }
 
       // vrai onglet, cloné des onglets natifs (styles Roll20 : look + actif violet)
       var tab = document.createElement(feuilleItem.tagName || "li");
-      tab.className = ((feuilleItem.className || "").replace(/\b(active|ui-tabs-active|ui-state-active|chosen)\b/g, "").trim() + " jjk-tab").trim();
+      tab.className = ((feuilleItem.className || "").replace(/\b(active|ui-tabs-active|ui-state-active|chosen)\b/g, "").trim() + " mia-tab").trim();
       var nativeA = feuilleItem.querySelector("a");
       var a = document.createElement("a");
       if (nativeA && nativeA.className) a.className = nativeA.className;
       a.setAttribute("href", "javascript:void(0);");
-      a.setAttribute("data-tab", "jjkfiche");
+      a.setAttribute("data-tab", "miafiche");
       a.textContent = LIBELLE;
       tab.appendChild(a);
 
@@ -545,12 +545,12 @@ if (typeof browser === "undefined") { var browser = chrome; }
       function showOurPane() {
         var panes = paneBox.querySelectorAll(".tab-pane");
         for (var j = 0; j < panes.length; j++) panes[j].style.display = (panes[j] === pane) ? "block" : "none";
-        pane.classList.add("jjk-on");   // seule cette classe rend le pane visible (overlay.css)
+        pane.classList.add("mia-on");   // seule cette classe rend le pane visible (overlay.css)
         for (var k = 0; k < strip.children.length; k++) strip.children[k].classList.remove("active");
         tab.classList.add("active");
         refitFrame();   // l'iframe redevient visible : réajuster sa hauteur au dialogue
       }
-      function hideOurPane() { pane.style.display = "none"; pane.classList.remove("jjk-on"); tab.classList.remove("active"); }
+      function hideOurPane() { pane.style.display = "none"; pane.classList.remove("mia-on"); tab.classList.remove("active"); }
 
       // On gère nous-mêmes l'affichage (fiable quel que soit le moment où bindTabEvents
       // s'exécute) et on bloque le gestionnaire délégué de Roll20 pour NOTRE onglet.
@@ -562,7 +562,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
       // clic sur un onglet natif -> on masque le nôtre (Roll20 affiche le sien)
       strip.addEventListener("click", function (ev) {
         var na = ev.target.closest && ev.target.closest("a[data-tab]");
-        if (na && na.getAttribute("data-tab") !== "jjkfiche") hideOurPane();
+        if (na && na.getAttribute("data-tab") !== "miafiche") hideOurPane();
       }, true);
 
       strip.insertBefore(tab, bioItem);   // vrai onglet DANS la barre, entre Feuille et Bio
@@ -595,7 +595,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
     try {
       var o = window.opener;
       if (!o || o.closed) return;
-      o.postMessage({ ns: "jjk", type: d.type, charId: d.charId, die: d.die, value: d.value,
+      o.postMessage({ ns: "mia", type: d.type, charId: d.charId, die: d.die, value: d.value,
                       label: d.label, title: d.title, fields: d.fields, raw: d.raw, relayed: true },
                     "https://app.roll20.net");
     } catch (e) {}
@@ -603,10 +603,10 @@ if (typeof browser === "undefined") { var browser = chrome; }
 
   // ---------- « Prendre » : le lien d'un objet donné, cliqué dans le tchat ----------
   // La fiche vit dans une iframe : elle ne voit pas le tchat. C'est donc ICI
-  // qu'on intercepte le clic sur le lien « [Prendre](/jjk_take <payload>) »
+  // qu'on intercepte le clic sur le lien « [Prendre](/mia_take <payload>) »
   // composé par la fiche, pour renvoyer le payload — jamais interprété ici —
   // aux fiches ouvertes, qui affichent leur dialogue de réception.
-  var TAKE_RE = /^\/jjk_take\s+([A-Za-z0-9+/=_-]+)$/;
+  var TAKE_RE = /^\/mia_take\s+([A-Za-z0-9+/=_-]+)$/;
   var sheets = [];   // fenêtres de fiches (ou popouts) qui nous ont parlé
   function rememberSheet(w) {
     if (!w) return;
@@ -616,7 +616,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
     sheets = sheets.filter(function (w) { try { return w && !w.closed; } catch (e) { return false; } });
     var n = 0;
     sheets.forEach(function (w) {
-      try { w.postMessage({ ns: "jjk", type: "take", payload: payload }, "*"); n++; } catch (e) {}
+      try { w.postMessage({ ns: "mia", type: "take", payload: payload }, "*"); n++; } catch (e) {}
     });
     return n;
   }
@@ -643,7 +643,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
       if (!m) return;
       e.preventDefault(); e.stopPropagation();
       if (!diffuseTake(m[1])) {
-        toast("Ouvre ta fiche JJK (onglet « Fiche JJK » du personnage), puis reclique « Prendre ».");
+        toast("Ouvre ta fiche MIA (onglet « Fiche MIA » du personnage), puis reclique « Prendre ».");
       }
     }, true);
   }
@@ -683,19 +683,19 @@ if (typeof browser === "undefined") { var browser = chrome; }
   // case, et une clé par mode ferait qu'éteindre le plateau ne l'éteindrait que
   // d'un côté.
   var PAN_PAGE = "roll20-narration.html";
-  var PAN_CLE = "jjkPanneau:" + PAN_PAGE;
-  var PAN_ACTIF = "jjkPanneauActif";   // interrupteur du popup (absent = allumé)
+  var PAN_CLE = "miaPanneau:" + PAN_PAGE;
+  var PAN_ACTIF = "miaPanneauActif";   // interrupteur du popup (absent = allumé)
   // DEUX NOMS POUR UN SEUL INTERRUPTEUR, et c'est une assurance, pas une
   // hésitation. L'interrupteur du plateau s'est toujours appelé
-  // jjkPanneauActif ; le contrat de réglages écrit pour la refonte du popup le
-  // nomme jjkPanneau. Les deux se ressemblent assez pour qu'une main les
+  // miaPanneauActif ; le contrat de réglages écrit pour la refonte du popup le
+  // nomme miaPanneau. Les deux se ressemblent assez pour qu'une main les
   // confonde, et un popup qui écrirait le mauvais nom laisserait une case qui
   // ne fait plus rien, sans le moindre message. On lit donc les deux : le nom
   // du contrat l'emporte quand il est posé, l'historique sert sinon.
-  // ATTENTION, jjkPanneau n'est PAS le préfixe PAN_CLE ci-dessus : celui-là
-  // s'écrit « jjkPanneau:roll20-narration.html » et range la géométrie. Deux
+  // ATTENTION, miaPanneau n'est PAS le préfixe PAN_CLE ci-dessus : celui-là
+  // s'écrit « miaPanneau:roll20-narration.html » et range la géométrie. Deux
   // clés distinctes, jamais la même chaîne.
-  var PAN_ACTIF_BIS = "jjkPanneau";
+  var PAN_ACTIF_BIS = "miaPanneau";
   // « ancre » entre dans l'état rangé : le choix de la place se retient d'une
   // session à l'autre, comme le reste. Absent (installation d'avant), il vaut
   // ancré — c'est la place voulue, le flottant est le second choix.
@@ -730,7 +730,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
   // la police. Elle n'est utilisée par aucun bouton de la barre, elle est du
   // même trait que les autres, et elle ne crie pas.
   var BARRE_ICONE = "dualSheets";
-  var BARRE_ID = "jjk-barre-bouton";
+  var BARRE_ID = "mia-barre-bouton";
   var BARRE_TITRE = "Plateau de narration";
   var barreOK = false;     // le bouton a été posé au moins une fois
   var barreObs = null;
@@ -760,8 +760,8 @@ if (typeof browser === "undefined") { var browser = chrome; }
     var n = modele.cloneNode(true);   // cloneNode ne copie AUCUN écouteur : le
     n.id = BARRE_ID;                  // clone est inerte tant qu'on ne lui en pose pas
     // L'identifiant SUFFIT à le désigner, et il n'y a rien d'autre à poser : le
-    // clone gardait en plus une classe « jjk-barre-bouton » qu'aucune feuille ne
-    // lisait — overlay.css vise « #jjk-barre-bouton », et barreModele() reconnaît
+    // clone gardait en plus une classe « mia-barre-bouton » qu'aucune feuille ne
+    // lisait — overlay.css vise « #mia-barre-bouton », et barreModele() reconnaît
     // notre bouton par son id.
     // ceinture : un modèle masqué ne doit pas transmettre son invisibilité
     try { n.style.removeProperty("display"); } catch (e) {}
@@ -957,20 +957,20 @@ if (typeof browser === "undefined") { var browser = chrome; }
     // étiquette — sinon il n'y aurait plus AUCUN moyen de le rouvrir.
     var efface = !panEtat.ouvert && barreOK;
     panBoite.style.display = efface ? "none" : "";
-    panBoite.classList.toggle("jjk-panneau-ancre", ancre);
+    panBoite.classList.toggle("mia-panneau-ancre", ancre);
     // Le coin bas-gauche ne s'arrondit que s'il se VOIT : quand la barre descend
     // jusqu'au bas de la fenêtre, ce coin est hors champ et un arrondi y
     // dessinerait une encoche dans le vide. Le CSS ne peut pas mesurer la barre,
     // c'est donc ici qu'on tranche.
     var rb = ancre ? barreRect() : null;
-    panBoite.classList.toggle("jjk-panneau-bas-plein",
+    panBoite.classList.toggle("mia-panneau-bas-plein",
       !!(rb && rb.bottom >= (window.innerHeight || 800) - 4));
-    panBoite.classList.toggle("jjk-panneau-replie", !panEtat.ouvert && !efface);
+    panBoite.classList.toggle("mia-panneau-replie", !panEtat.ouvert && !efface);
     // La géométrie de passage (réglages ouverts) l'emporte sur tout : ancré ou
     // flottant, on veut le dialogue grand et au centre. Elle disparaît d'elle
     // même à la fermeture, sans avoir rien écrit.
     var g = panGeoGrande ? panGeoGrande : (ancre ? panGeoAncree() : panEtat);
-    if (panGeoGrande) { panBoite.classList.remove("jjk-panneau-ancre"); }
+    if (panGeoGrande) { panBoite.classList.remove("mia-panneau-ancre"); }
     panBoite.style.left = g.x + "px";
     panBoite.style.top = g.y + "px";
     // replié, le panneau se réduit à son étiquette : une barre de 380 px de
@@ -1002,7 +1002,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
   // signature.
   function panRemplit() {
     if (!panCorps || panCorps.firstChild) return;
-    var f = el("iframe", "jjk-panneau-frame");
+    var f = el("iframe", "mia-panneau-frame");
     f.src = browser.runtime.getURL("panneau.html") +
             "#p=" + PAN_PAGE + "&n=" + (nuitEffective() ? "1" : "0") + "&m=" + MODE;
     f.setAttribute("allow", "clipboard-write");
@@ -1074,7 +1074,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
     var cible = ev.currentTarget;
     var x0 = ev.clientX, y0 = ev.clientY;
     var e0 = { x: panEtat.x, y: panEtat.y, w: panEtat.w, h: panEtat.h };
-    panBoite.classList.add("jjk-panneau-geste");
+    panBoite.classList.add("mia-panneau-geste");
     function suit(m) {
       var dx = m.clientX - x0, dy = m.clientY - y0;
       if (bouge) { panEtat.x = e0.x + dx; panEtat.y = e0.y + dy; }
@@ -1090,7 +1090,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
       cible.removeEventListener("pointercancel", fin);
       window.removeEventListener("blur", fin);
       try { cible.releasePointerCapture(ev.pointerId); } catch (e) {}
-      panBoite.classList.remove("jjk-panneau-geste");
+      panBoite.classList.remove("mia-panneau-geste");
       panRange();
     }
     try { cible.setPointerCapture(ev.pointerId); } catch (e) {}
@@ -1102,16 +1102,16 @@ if (typeof browser === "undefined") { var browser = chrome; }
     ev.stopPropagation();
   }
   function panMonte(etat) {
-    if (document.getElementById("jjk-panneau")) return;
+    if (document.getElementById("mia-panneau")) return;
     panEtat = panBorne(etat);
-    panBoite = poseNuit(el("div", "jjk-panneau"));
-    panBoite.id = "jjk-panneau";
+    panBoite = poseNuit(el("div", "mia-panneau"));
+    panBoite.id = "mia-panneau";
 
-    var tete = el("div", "jjk-panneau-tete");
-    panTitre = el("span", "jjk-panneau-titre", "Narration");
+    var tete = el("div", "mia-panneau-tete");
+    panTitre = el("span", "mia-panneau-titre", "Narration");
     tete.appendChild(panTitre);
     // Deux boutons, et aucune phrase d'explication sous eux : l'infobulle suffit.
-    panBtnAncre = el("button", "jjk-panneau-btn", "⇲");
+    panBtnAncre = el("button", "mia-panneau-btn", "⇲");
     panBtnAncre.type = "button";
     panBtnAncre.addEventListener("pointerdown", function (ev) { ev.stopPropagation(); });
     panBtnAncre.addEventListener("click", function (ev) {
@@ -1119,7 +1119,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
       panDetache(!panEtat.ancre);
     });
     tete.appendChild(panBtnAncre);
-    panBtn = el("button", "jjk-panneau-btn", "–");
+    panBtn = el("button", "mia-panneau-btn", "–");
     panBtn.type = "button";
     panBtn.addEventListener("pointerdown", function (ev) { ev.stopPropagation(); });
     panBtn.addEventListener("click", function (ev) {
@@ -1130,10 +1130,10 @@ if (typeof browser === "undefined") { var browser = chrome; }
     tete.addEventListener("pointerdown", function (ev) { panGeste(ev, true); });
     panBoite.appendChild(tete);
 
-    panCorps = el("div", "jjk-panneau-corps");
+    panCorps = el("div", "mia-panneau-corps");
     panBoite.appendChild(panCorps);
 
-    var grip = el("div", "jjk-panneau-grip");
+    var grip = el("div", "mia-panneau-grip");
     grip.title = "Redimensionner";
     grip.addEventListener("pointerdown", function (ev) { panGeste(ev, false); });
     panBoite.appendChild(grip);
@@ -1200,7 +1200,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
     try {
       browser.storage.local.get([PAN_CLE, PAN_ACTIF, PAN_ACTIF_BIS]).then(function (r) {
         // l'interrupteur du popup : une partie Roll20 qui n'a rien à voir avec
-        // JJK ne doit pas se voir imposer une étiquette à demeure
+        // MIA ne doit pas se voir imposer une étiquette à demeure
         if (panEteint(r)) return;
         var e = (r && r[PAN_CLE]) || {};
         panPrepare({
@@ -1222,7 +1222,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
   // n'enlève ni un onglet, ni un écouteur, ni un pont, et ne peut donc pas
   // laisser Roll20 dans un état où il n'était pas prévu.
   //
-  // L'extinction (jjkOff) et l'interrupteur du plateau ne sont volontairement
+  // L'extinction (miaOff) et l'interrupteur du plateau ne sont volontairement
   // PAS relus ici : ils démontent, et démonter à chaud est ce qui casse (voir
   // la garde, tout en bas, pour ce que « éteindre » peut et ne peut pas).
   //
@@ -1232,15 +1232,15 @@ if (typeof browser === "undefined") { var browser = chrome; }
   // ouverture.
   function repeintTout() {
     panRepeint();
-    var n = document.querySelectorAll(".jjk-create, .jjk-creator-frame");
+    var n = document.querySelectorAll(".mia-create, .mia-creator-frame");
     for (var i = 0; i < n.length; i++) poseNuit(n[i]);
   }
   function ecouteNuit() {
     try {
       browser.storage.onChanged.addListener(function (ch, zone) {
         if (zone && zone !== "local") return;
-        if (!ch || !ch.jjkNuit) return;
-        var v = normNuit(ch.jjkNuit.newValue);
+        if (!ch || !ch.miaNuit) return;
+        var v = normNuit(ch.miaNuit.newValue);
         if (v === NUIT_ORDRE) return;
         NUIT_ORDRE = v;
         repeintTout();
@@ -1259,13 +1259,13 @@ if (typeof browser === "undefined") { var browser = chrome; }
     if (IS_TOP) {
       // FRAME DU HAUT : on n'injecte RIEN au chargement (l'injection main-world gênait
       // l'ouverture des fiches Roll20). On attend que l'utilisateur ouvre l'onglet
-      // Fiche JJK (depuis une fiche déjà ouverte) : il pose alors le pont via need-bridge.
+      // Fiche MIA (depuis une fiche déjà ouverte) : il pose alors le pont via need-bridge.
       // Reçoit aussi les JETS de la fiche -> tchat Roll20 (le tchat vit dans cette frame,
       // sauf popout : relais vers l'opener).
       window.addEventListener("message", function (ev) {
         try {
           var d = ev.data;
-          if (!d || d.ns !== "jjk") return;
+          if (!d || d.ns !== "mia") return;
           // « take » descend vers les fiches : ne jamais retenir sa source comme
           // destinataire, sinon deux fenêtres se le renverraient sans fin
           if (d.type === "take") {
@@ -1290,7 +1290,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
             // devenu sombre, et c'est précisément ce qu'il ne doit jamais
             // arriver. Sans ce message, le cadre garde le réglage du popup,
             // que le plateau suit de toute façon par défaut.
-            if (d.nuit != null && panBoite) panBoite.classList.toggle("jjk-nuit", !!d.nuit);
+            if (d.nuit != null && panBoite) panBoite.classList.toggle("mia-nuit", !!d.nuit);
             // LE CADRE S'AGRANDIT POUR LES RÉGLAGES. Le plateau ne peut pas
             // faire sortir un dialogue de son iframe : serré dans une colonne
             // ancrée à la barre, il devenait illisible. Il demande donc de la
@@ -1351,7 +1351,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
   // Ici les deux copies lisent la même chose au même instant : éteintes, elles
   // se taisent toutes les deux, et il n'y a pas de course à arbitrer.
   //
-  // jjkOff ABSENT VAUT ALLUMÉ, et la comparaison est stricte : une extension
+  // miaOff ABSENT VAUT ALLUMÉ, et la comparaison est stricte : une extension
   // fraîchement installée, dont le stockage est vide, doit fonctionner.
   //
   // Un rejet du stockage désigne explicitement le mode stable, allumé. Sans ce
@@ -1364,7 +1364,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
   // CE QU'ÉTEINDRE FAIT, ET CE QU'IL NE PEUT PAS FAIRE. Le popup doit pouvoir
   // le dire au joueur sans mentir, alors voici l'inventaire exact.
   //   Sur les pages Roll20 OUVERTES ENSUITE, rien ne se réveille : pas d'onglet
-  //   « Fiche JJK », pas de pane, pas de plateau, pas de bouton dans la barre
+  //   « Fiche MIA », pas de pane, pas de plateau, pas de bouton dans la barre
   //   d'outils, pas de pont d20 (il n'est injecté que sur need-bridge, qui ne
   //   part plus), aucun écouteur de message, aucune interception du lien
   //   « Prendre », aucune écriture dans le stockage. La frame reste exactement
@@ -1380,7 +1380,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
   //       repose aussi. Le retirer serait faisable, mais ce serait un démontage
   //       de plus dans une interface Vue qu'on ne contrôle pas, pour gagner une
   //       demi-seconde sur un rechargement de partie ;
-  //     - le pane .tab-pane.jjkfiche ne doit surtout pas être retiré. Le système
+  //     - le pane .tab-pane.miafiche ne doit surtout pas être retiré. Le système
   //       d'onglets de Roll20 garde un renvoi vers lui ; le supprimer d'un
   //       dialogue déjà lié empêche la fiche du personnage de s'ouvrir, la
   //       nôtre comme les siennes ;
@@ -1392,11 +1392,11 @@ if (typeof browser === "undefined") { var browser = chrome; }
   //   pas Roll20 à moitié démonté.
   function garde() {
     try {
-      browser.storage.local.get(["jjkOff", "jjkBeta", "jjkNuit"]).then(
+      browser.storage.local.get(["miaOff", "miaBeta", "miaNuit"]).then(
         function (r) {
-          if (r && r.jjkOff === true) return;   // éteinte : aucune des deux copies ne bouge
-          NUIT_ORDRE = normNuit(r && r.jjkNuit);
-          if ((r && r.jjkBeta ? "beta" : "stable") === MODE) reclame();
+          if (r && r.miaOff === true) return;   // éteinte : aucune des deux copies ne bouge
+          NUIT_ORDRE = normNuit(r && r.miaNuit);
+          if ((r && r.miaBeta ? "beta" : "stable") === MODE) reclame();
         },
         function () { if (MODE === "stable") reclame(); }
       );
@@ -1406,7 +1406,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
   }
   // Verrou de frame. Les deux copies partagent le monde isolé, donc cet objet
   // window (un expando de script de contenu reste invisible de la page, comme le
-  // window.__jjkBridge du pont l'est du monde isolé). Si les deux se réveillaient
+  // window.__miaBridge du pont l'est du monde isolé). Si les deux se réveillaient
   // ensemble (stockage incohérent, extension rechargée, bascule pendant la
   // lecture), la première arrivée prend la frame et la seconde se tait. Sans ce
   // verrou, deux écouteurs « message » dans la frame du haut enverraient chaque
@@ -1415,12 +1415,12 @@ if (typeof browser === "undefined") { var browser = chrome; }
   //
   // Deuxième ligne de défense, gratuite et volontairement conservée : les
   // marqueurs de DOM portent les MÊMES noms dans les deux copies (classe
-  // .jjk-tab, id #jjk-panneau, attribut data-jjk-bridge), si bien que placeTabs
+  // .mia-tab, id #mia-panneau, attribut data-mia-bridge), si bien que placeTabs
   // et panMonte abandonnent tout seuls devant le travail de l'autre copie.
   function reclame() {
     try {
-      if (window.__jjkRoll20) return;   // une copie tient déjà cette frame
-      window.__jjkRoll20 = MODE;
+      if (window.__miaRoll20) return;   // une copie tient déjà cette frame
+      window.__miaRoll20 = MODE;
     } catch (e) {}
     demarre();
   }

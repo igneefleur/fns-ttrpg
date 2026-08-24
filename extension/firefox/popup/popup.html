@@ -18,7 +18,7 @@
 
        Il peint d'après un écho synchrone rangé dans le localStorage de la page,
        parce que browser.storage.local est asynchrone et répondrait un rendu trop
-       tard. L'écho n'est qu'un cache : jjkNuit reste la seule autorité, et
+       tard. L'écho n'est qu'un cache : miaNuit reste la seule autorité, et
        popup.js recale l'un sur l'autre dès que le stockage a répondu.
 
        parties.js d'abord, et sans lui rien ne casse : s'il manque, les deux
@@ -41,10 +41,10 @@
      LE MOT EST « BETA », partout où un joueur le lit : ici, sur le réglage, et
      dans le pied. « Mode de chantier » avait été écrit sans y penser alors que
      le mot était arrêté ; deux mots pour une seule chose font chercher la
-     deuxième. Les clés (jjkBeta) et les identifiants (p-chantier) ne bougent
+     deuxième. Les clés (miaBeta) et les identifiants (p-chantier) ne bougent
      pas : les renommer casserait les réglages déjà posés chez les joueurs. -->
 <header class="p-tete">
-  <span class="p-nom">Fiche JJK</span>
+  <span class="p-nom">Fiche MIA</span>
   <span class="p-etat" id="p-etat" aria-live="polite"><i class="p-pt"></i><span id="p-etat-txt">…</span></span>
   <span class="p-tag" id="p-chantier" hidden>beta</span>
 </header>
@@ -171,13 +171,13 @@
   </details>
 
   <div class="p-liens">
-    <a id="p-regles" href="https://igneefleur.github.io/fns-ttrpg/jjk/content/regles/" target="_blank" rel="noopener">Règles</a>
-    <a id="p-maj" href="https://igneefleur.github.io/fns-ttrpg/jjk/extension/" target="_blank" rel="noopener">Mises à jour</a>
+    <a id="p-regles" href="https://igneefleur.github.io/fns-ttrpg/mia/content/regles/" target="_blank" rel="noopener">Règles</a>
+    <a id="p-maj" href="https://igneefleur.github.io/fns-ttrpg/mia/extension/" target="_blank" rel="noopener">Mises à jour</a>
   </div>
 
   <!-- Les deux clés de dépannage remplacent la racine du site et ne se voient
        nulle part : oubliées en place, elles font afficher le site stable sous un
-       onglet « Fiche JJK beta ». C'est le seul endroit qui puisse le dire sans
+       onglet « Fiche MIA beta ». C'est le seul endroit qui puisse le dire sans
        ouvrir une console. -->
   <p class="p-alerte" id="p-depannage" hidden></p>
 </footer>

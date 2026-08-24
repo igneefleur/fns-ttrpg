@@ -27,10 +27,10 @@
   }
 
   // ---------- jour / nuit : le réglage du popup, puis Roll20 ----------
-  // jjkNuit vaut « auto » (défaut), « jour » ou « nuit ». Il est lu UNE FOIS,
+  // miaNuit vaut « auto » (défaut), « jour » ou « nuit ». Il est lu UNE FOIS,
   // dans la même lecture de stockage que le mode (voir garde) : une seconde
   // lecture serait une seconde course, et on a déjà vu ce que ça donne quand
-  // deux lectures se contredisent (l'onglet annonçait « Fiche JJK beta » avec
+  // deux lectures se contredisent (l'onglet annonçait « Fiche MIA beta » avec
   // la fiche stable dedans).
   //
   // CE QUI PART DANS LE HASH RESTE « n=1/0 », et ce choix a une raison précise.
@@ -46,7 +46,7 @@
   // elles lisent n comme avant.
   //
   // La fiche garde le dernier mot par sa propre préférence (onglet Options,
-  // localStorage jjk-r20-night) : un joueur qui a explicitement mis SA fiche en
+  // localStorage mia-r20-night) : un joueur qui a explicitement mis SA fiche en
   // jour la garde en jour. C'est voulu, le réglage le plus précis gagne ; le
   // plateau, lui, n'a pas de préférence à lui et suit le popup.
   var NUIT_ORDRE = "auto";
@@ -56,11 +56,11 @@
     if (NUIT_ORDRE === "jour") return false;
     return detectNight();
   }
-  // Nos boîtes portent leur nuit sur elles-mêmes (.jjk-nuit), jamais sur la
+  // Nos boîtes portent leur nuit sur elles-mêmes (.mia-nuit), jamais sur la
   // racine : overlay.css est injectée dans TOUTES les frames de Roll20, et une
   // classe posée sur <html> serait une main sur l'interface d'un autre site.
   function poseNuit(elt) {
-    if (elt) elt.classList.toggle("jjk-nuit", nuitEffective());
+    if (elt) elt.classList.toggle("mia-nuit", nuitEffective());
     return elt;
   }
   // creator.html est PARTAGÉE par les deux parties : rien dedans ne dépend du
@@ -69,7 +69,7 @@
   // stockage. Le hash entier descend ensuite jusqu'à la page du site, qui ignore
   // ce qu'elle ne connaît pas.
   function creatorFrame(charId) {
-    var f = el("iframe", "jjk-creator-frame");
+    var f = el("iframe", "mia-creator-frame");
     f.src = browser.runtime.getURL("creator.html") + "#c=" + encodeURIComponent(charId || "") +
             "&n=" + (nuitEffective() ? "1" : "0") + "&m=" + MODE;
     f.setAttribute("allow", "clipboard-write");
@@ -110,13 +110,13 @@
   }
   function fillButton(host, charId, exists) {
     host.innerHTML = "";
-    var wrap = poseNuit(el("div", "jjk-create"));
-    wrap.appendChild(el("div", "jjk-create-title", LIBELLE));
-    wrap.appendChild(el("p", "jjk-create-msg",
+    var wrap = poseNuit(el("div", "mia-create"));
+    wrap.appendChild(el("div", "mia-create-title", LIBELLE));
+    wrap.appendChild(el("p", "mia-create-msg",
       exists === null
-        ? "Roll20 n'a pas encore répondu (personnage non prêt). Ouvrir la fiche JJK :"
-        : "Ce personnage n'a pas encore de fiche JJK."));
-    var btn = el("button", "jjk-create-btn", exists === null ? "Ouvrir la fiche JJK" : "Créer fiche JJK");
+        ? "Roll20 n'a pas encore répondu (personnage non prêt). Ouvrir la fiche MIA :"
+        : "Ce personnage n'a pas encore de fiche MIA."));
+    var btn = el("button", "mia-create-btn", exists === null ? "Ouvrir la fiche MIA" : "Créer fiche MIA");
     btn.type = "button";
     btn.addEventListener("click", function () { fillCreator(host, charId); });
     wrap.appendChild(btn);
@@ -125,7 +125,7 @@
   // Décide quoi afficher dans l'hôte selon l'existence d'une fiche.
   function populate(host, charId) {
     host.innerHTML = "";
-    host.appendChild(poseNuit(el("div", "jjk-create", "Chargement…")));
+    host.appendChild(poseNuit(el("div", "mia-create", "Chargement…")));
     queryHasSheet(charId, function (exists) {
       if (exists === true) fillCreator(host, charId);
       else fillButton(host, charId, exists);   // false = pas de fiche ; null = inconnu

@@ -8,7 +8,7 @@
     try {
       var o = window.opener;
       if (!o || o.closed) return;
-      o.postMessage({ ns: "jjk", type: d.type, charId: d.charId, die: d.die, value: d.value,
+      o.postMessage({ ns: "mia", type: d.type, charId: d.charId, die: d.die, value: d.value,
                       label: d.label, title: d.title, fields: d.fields, raw: d.raw, relayed: true },
                     "https://app.roll20.net");
     } catch (e) {}

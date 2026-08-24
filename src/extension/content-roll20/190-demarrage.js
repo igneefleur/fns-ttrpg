@@ -9,13 +9,13 @@
     if (IS_TOP) {
       // FRAME DU HAUT : on n'injecte RIEN au chargement (l'injection main-world gênait
       // l'ouverture des fiches Roll20). On attend que l'utilisateur ouvre l'onglet
-      // Fiche JJK (depuis une fiche déjà ouverte) : il pose alors le pont via need-bridge.
+      // Fiche MIA (depuis une fiche déjà ouverte) : il pose alors le pont via need-bridge.
       // Reçoit aussi les JETS de la fiche -> tchat Roll20 (le tchat vit dans cette frame,
       // sauf popout : relais vers l'opener).
       window.addEventListener("message", function (ev) {
         try {
           var d = ev.data;
-          if (!d || d.ns !== "jjk") return;
+          if (!d || d.ns !== "mia") return;
           // « take » descend vers les fiches : ne jamais retenir sa source comme
           // destinataire, sinon deux fenêtres se le renverraient sans fin
           if (d.type === "take") {
@@ -40,7 +40,7 @@
             // devenu sombre, et c'est précisément ce qu'il ne doit jamais
             // arriver. Sans ce message, le cadre garde le réglage du popup,
             // que le plateau suit de toute façon par défaut.
-            if (d.nuit != null && panBoite) panBoite.classList.toggle("jjk-nuit", !!d.nuit);
+            if (d.nuit != null && panBoite) panBoite.classList.toggle("mia-nuit", !!d.nuit);
             // LE CADRE S'AGRANDIT POUR LES RÉGLAGES. Le plateau ne peut pas
             // faire sortir un dialogue de son iframe : serré dans une colonne
             // ancrée à la barre, il devenait illisible. Il demande donc de la

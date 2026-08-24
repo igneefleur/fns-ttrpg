@@ -20,8 +20,8 @@
     if (!isFinite(de)) de = 1;
     if (de === SCHEMA) return s;
     if (de > SCHEMA) return s;                     // du futur : ne rien toucher
-    if (!window.JjkMigr || !window.JjkMigr.appliquer) return s;
-    var r = window.JjkMigr.appliquer(s, de, SCHEMA);
+    if (!window.MiaMigr || !window.MiaMigr.appliquer) return s;
+    var r = window.MiaMigr.appliquer(s, de, SCHEMA);
     if (!r || !r.ok) return s;                     // échec : l'état d'origine, intact
     r.state.v = SCHEMA;
     r.state.rel = RELEASE;

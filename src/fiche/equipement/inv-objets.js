@@ -63,7 +63,7 @@
     wrap.appendChild(panel);
     var tot = el("div", "pc-inv-total");
 
-    // le poids de JJK n'a pas d'unité : c'est une valeur nue
+    // le poids de MIA n'a pas d'unité : c'est une valeur nue
     //
     // Le pied distingue ce que le personnage PORTE de ce qu'il a POSÉ : un
     // total unique laisserait croire qu'un sac décoché pèse encore, ou qu'il a
@@ -417,7 +417,7 @@
       body.appendChild(pair);
 
       // achat / vente : la valeur marchande de l'objet, laissée nue comme le
-      // poids (JJK ne nomme pas sa monnaie)
+      // poids (MIA ne nomme pas sa monnaie)
       var prix = el("div", "pc-obj-pair");
       [["achat", "Achat"], ["vente", "Vente"]].forEach(function (c) {
         var inp = el("input", "pc-edit-field");

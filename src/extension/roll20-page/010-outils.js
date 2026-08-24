@@ -1,4 +1,4 @@
-  var PREFIX = "jjk_";
+  var PREFIX = "mia_";
   var WRITE_DELAY = 60;   // ms entre deux écritures d'attribut
 
   function str(v) { return v == null ? "" : String(v); }

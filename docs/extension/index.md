@@ -1,11 +1,11 @@
 # Extension
 
-## La fiche JJK sur Roll20
+## La fiche MIA sur Roll20
 
-Une extension (Firefox ou Chrome) affiche une fiche de personnage JJK à la place
+Une extension (Firefox ou Chrome) affiche une fiche de personnage MIA à la place
 de la fiche Roll20, et envoie ses jets dans le tchat. Les personnages se créent
 dans le [créateur de personnage](../personnage/index.md) ; l'extension les
-récupère et les présente dans une partie Roll20, via un onglet « Fiche JJK »
+récupère et les présente dans une partie Roll20, via un onglet « Fiche MIA »
 ajouté à la fiche du personnage.
 
 ### Mode beta
@@ -16,7 +16,7 @@ Son bouton dans la barre du navigateur ouvre un panneau qui porte
 l'interrupteur « Beta » : coché, la fiche affichée dans Roll20 est celle de la
 beta, là où les nouveautés arrivent en premier, au risque de casses
 passagères ; décoché, elle revient à la version stable. L'onglet du dialogue de
-personnage s'annonce alors « Fiche JJK beta », pour qu'on sache toujours quelle
+personnage s'annonce alors « Fiche MIA beta », pour qu'on sache toujours quelle
 version on remplit.
 
 Les deux versions écrivent les mêmes Attributes du personnage : un aller-retour
@@ -40,10 +40,16 @@ ne perd rien, et les autres joueurs ne voient aucune différence.
 .md-typeset .ext-copy.ok { border-color:var(--green-title,#667861); font-weight:700; }
 </style>
 
+### Pas encore téléchargeable
+
+L'extension MIA existe, elle se construit et elle passe ses contrôles, mais elle
+n'a pas encore d'add-on chez Mozilla : rien n'est donc distribué depuis cette
+page. Firefox refuse d'installer une extension non signée, et un paquet posé ici
+sans signature ne servirait à personne.
+
 <div class="ext-grid">
   <div class="mcard ext-card">
-    <p><strong>Firefox</strong><span class="prereq">Signée par Mozilla · installation permanente</span></p>
-    <p><a class="md-button" href="../download/jjk-roll20-firefox.xpi" download>Télécharger (.xpi)</a></p>
+    <p><strong>Firefox</strong><span class="prereq">En attente de signature Mozilla</span></p>
     <ol class="ext-steps">
       <li>télécharger le fichier <code>.xpi</code> ;</li>
       <li>l'ouvrir avec Firefox : <kbd>Ctrl</kbd>+<kbd>J</kbd> (téléchargements)
@@ -54,7 +60,6 @@ ne perd rien, et les autres joueurs ne voient aucune différence.
   </div>
   <div class="mcard ext-card">
     <p><strong>Chrome / Edge</strong><span class="prereq">Mode développeur · dossier décompressé</span></p>
-    <p><a class="md-button" href="../download/jjk-roll20-chrome.zip" download>Télécharger (.zip)</a></p>
     <ol class="ext-steps">
       <li>décompresser le <code>.zip</code> dans un dossier (à conserver : le
           navigateur y lit l'extension) ;</li>
@@ -67,6 +72,9 @@ ne perd rien, et les autres joueurs ne voient aucune différence.
   </div>
 </div>
 
+Les deux marches à suivre ci-dessus valent telles quelles : seuls les boutons de
+téléchargement manquent, et ils reviendront à la première signature.
+
 La fiche affichée dans Roll20 est chargée depuis le site à chaque ouverture :
 les évolutions du créateur et des règles arrivent toutes seules, sans mise à
 jour de l'extension (une connexion internet est nécessaire pendant la partie).
@@ -74,7 +82,7 @@ La fiche lue dépend de l'interrupteur « Mode beta » ci-dessus.
 
 Ensuite : ouvrir le [créateur de personnage](../personnage/index.md) une fois
 (les fiches se synchronisent), puis, dans une partie Roll20, ouvrir un personnage
-et cliquer l'onglet « Fiche JJK » (entre « Feuille de personnage » et
+et cliquer l'onglet « Fiche MIA » (entre « Feuille de personnage » et
 « Bio & Info »). Si le personnage n'a pas encore de fiche, un bouton
-« Créer fiche JJK » en fabrique une, enregistrée dans le personnage Roll20
+« Créer fiche MIA » en fabrique une, enregistrée dans le personnage Roll20
 lui-même (partagée avec tous les joueurs qui le contrôlent).

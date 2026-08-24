@@ -1,6 +1,6 @@
   // ---------- montage ----------
   // Un montage ne se relance JAMAIS depuis lui-même. Un mod qui finit par
-  // Jjk.remonte() (geste naturel, et la page Mods documente remonte() sans
+  // Mia.remonte() (geste naturel, et la page Mods documente remonte() sans
   // réserve) ou par ctx.reconstruire() rappellerait mount() DEPUIS mount() :
   // les mods repartiraient, redemanderaient un remontage, la pile déborderait,
   // et chaque niveau qui se dépile reprendrait son montage là où il en était
@@ -38,7 +38,7 @@
     // fiche reste utilisable, donc le bloc Mods aussi.
     if (remontagesDus >= REMONTAGES_MAX) {
       if (window.console && window.console.warn)
-        window.console.warn("[fiche] remontage en boucle : demande ignorée. Un mod appelle Jjk.remonte() à chaque montage.");
+        window.console.warn("[fiche] remontage en boucle : demande ignorée. Un mod appelle Mia.remonte() à chaque montage.");
       remontagesDus = 0;
       return;
     }
@@ -118,7 +118,7 @@
     root.setAttribute("data-ready", "1");
     // point d'entrée des objets donnés au tchat : l'amorce Roll20 appelle ceci
     // quand le joueur clique « Prendre » (et rejoue ce qui attendait le montage)
-    window.__jjkOnTake = function (payload) {
+    window.__miaOnTake = function (payload) {
       if (!state) { flash("La fiche n'est pas encore prête : reclique « Prendre »."); return; }
       recevoirObjet(payload);
     };

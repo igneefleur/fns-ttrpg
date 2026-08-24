@@ -1,0 +1,18 @@
+/* Feuille propre à la branche mia (extra.css reste identique à beta).
+   Tables des règles MIA : habillage sépia « anima » des tables d'armes
+   (extra.css : .cj-modules.anima = en-tête brun sur crème, zébrures crème),
+   avec un gabarit libre. On neutralise le gabarit 6 colonnes des modules
+   (largeurs 73 %/9 % et filets verticaux en !important) pour laisser chaque
+   table se dimensionner sur son contenu, comme le font .armes et .formes. */
+.md-typeset .cj-modules.anima.mia table:not([class]) th,
+.md-typeset .cj-modules.anima.mia table:not([class]) td {
+  width: auto !important;
+  border-right: none !important;
+}
+
+/* Variante « txt » : la dernière colonne porte du texte long, alignée à
+   gauche (comme la colonne Propriétés des tables d'armes). */
+.md-typeset .cj-modules.anima.mia.txt table:not([class]) th:last-child,
+.md-typeset .cj-modules.anima.mia.txt table:not([class]) td:last-child {
+  text-align: left !important;
+}

@@ -20,16 +20,16 @@
               "). Un mod a sans doute rangé une donnée qui se contient elle-même : plus rien n'est enregistré.";
     }
     if (json !== null) {
-      try { STORE.setItem("jjk-perso", json); }
+      try { STORE.setItem("mia-perso", json); }
       catch (e) { panne = "Impossible d'enregistrer (stockage plein ou bloqué) : exporter la fiche en JSON."; }
     }
     montrePanneSave(panne);
     var cards;
-    try { cards = JSON.parse(STORE.getItem("jjk-cards")) || {}; } catch (e) { cards = {}; }
+    try { cards = JSON.parse(STORE.getItem("mia-cards")) || {}; } catch (e) { cards = {}; }
     var card = computeCard();
     card.id = "_current";
     cards._current = card;
-    try { STORE.setItem("jjk-cards", JSON.stringify(cards)); } catch (e) {}
+    try { STORE.setItem("mia-cards", JSON.stringify(cards)); } catch (e) {}
   }
   // Le bandeau de perte : même mise en forme que celui des mods, au même
   // endroit, juste avant la feuille. Il n'y en a qu'UN, gardé d'un montage à
@@ -65,16 +65,16 @@
     appEl.insertBefore(elSavePanne, avant);
   }
   function load() {
-    try { return normalize(JSON.parse(STORE.getItem("jjk-perso"))); }
+    try { return normalize(JSON.parse(STORE.getItem("mia-perso"))); }
     catch (e) { return null; }
   }
-  function curTab() { try { return STORE.getItem("jjk-tab") || "fiche"; } catch (e) { return "fiche"; } }
-  function setTab(id) { try { STORE.setItem("jjk-tab", id); } catch (e) {} }
+  function curTab() { try { return STORE.getItem("mia-tab") || "fiche"; } catch (e) { return "fiche"; } }
+  function setTab(id) { try { STORE.setItem("mia-tab", id); } catch (e) {} }
 
   // bibliothèque (site seulement : dans Roll20, une fiche par personnage)
-  var PKEY = "jjk-persos";
+  var PKEY = "mia-persos";
   function loadPersos() { try { var a = JSON.parse(STORE.getItem(PKEY)); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
-  // jjk-cards ne porte QUE la fiche ouverte (« _current »), la seule que le
+  // mia-cards ne porte QUE la fiche ouverte (« _current »), la seule que le
   // popup de l'extension et les attributs miroir lisent : y recalculer une carte
   // par personnage de la bibliothèque ne servait personne.
   function savePersos(a) {

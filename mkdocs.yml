@@ -1,9 +1,9 @@
-﻿site_name: JJK Système JDR
-site_url: https://igneefleur.github.io/fns-ttrpg/jjk-beta/
-# Voir LICENSE.md : les règles sont de Qyu et ses droits sur elles lui restent ;
+﻿site_name: MIA Système JDR
+site_url: https://igneefleur.github.io/fns-ttrpg/mia-beta/
+# Voir LICENSE.md : les règles sont d'Erua et ses droits sur elles lui restent ;
 # le site, le code et les outils sont d'IgneeFleur, tous droits réservés. Œuvre
-# de fan, sans lien avec les ayants droit de Jujutsu Kaisen.
-copyright: Règles © 2026 Qyu. Site et code © 2026 IgneeFleur. Tous droits réservés. Œuvre de fan, non affiliée à Shueisha.
+# de fan, sans lien avec les ayants droit de Made in Abyss.
+copyright: Règles © 2026 Erua. Site et code © 2026 IgneeFleur. Tous droits réservés. Œuvre de fan, non affiliée à Takeshobo.
 exclude_docs: |
   assets/fonts/LISEZMOI.md
 
@@ -41,18 +41,18 @@ extra_css:
   - stylesheets/fonts.css   # @font-face auto-hébergés : doit être chargée en premier
   - stylesheets/extra.css?v=13
   - stylesheets/night.css
-  - stylesheets/jjk.css?v=1 # variantes propres à la branche jjk (gabarit des tables anima)
-  - stylesheets/jjk-fiche.css?v=58
+  - stylesheets/mia.css?v=1 # variantes propres à la branche mia (gabarit des tables anima)
+  - stylesheets/mia-fiche.css?v=1
 extra_javascript:
   - javascripts/continuous.js
   - javascripts/nav-drawer.js
   - javascripts/night.js
-  - javascripts/jjk-migrations.js?v=58 # moteur de migration : AVANT le bundle, qui l'appelle
-  - javascripts/jjk-mods.js?v=58       # moteur de mods : AVANT le bundle aussi, et facultatif (sans lui, la fiche s'ouvre sans mods)
-  - javascripts/jjk-fiche.js?v=58
+  - javascripts/mia-migrations.js?v=1 # moteur de migration : AVANT le bundle, qui l'appelle
+  - javascripts/mia-mods.js?v=1       # moteur de mods : AVANT le bundle aussi, et facultatif (sans lui, la fiche s'ouvre sans mods)
+  - javascripts/mia-fiche.js?v=1
   - javascripts/copybtn.js
 hooks:
-  - hooks/jjk_creation.py
+  - hooks/mia_creation.py
 plugins:
   - search
 markdown_extensions:

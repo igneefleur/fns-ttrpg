@@ -18,9 +18,9 @@
                 (q > 1 ? " {{Quantité=" + fmtP(q) + "}}" : "") +
                 (it.desc ? " {{=" + String(it.desc).replace(/[{}]/g, "").replace(/\s+/g, " ").trim() + "}}" : "") +
                 " {{Prendre=[Prendre](" + TAKE_CMD + " " + packObjet(it, q) + ")}}";
-      if (typeof window.__jjkChat === "function") envoyer(cmd);
+      if (typeof window.__miaChat === "function") envoyer(cmd);
       else flash("Hors de Roll20 : rien n'est envoyé au tchat (l'objet reste dans l'inventaire).");
-      if (typeof window.__jjkChat === "function") {
+      if (typeof window.__miaChat === "function") {
         it.qte = Math.max(0, Math.round((it.qte - q) * 100) / 100);
         if (!it.qte) {
           var i = state.inv.objets.indexOf(it);

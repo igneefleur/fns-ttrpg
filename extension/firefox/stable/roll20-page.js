@@ -2,7 +2,7 @@
  * window.d20 / window.Campaign, invisible depuis un content-script isolé). Injecté
  * par content-roll20.js dans la frame du haut via <script src=web_accessible>.
  *
- * Rôle : lire, créer et mettre à jour les Attributes « jjk_* » d'un personnage, à la
+ * Rôle : lire, créer et mettre à jour les Attributes « mia_* » d'un personnage, à la
  * demande de l'iframe du créateur (qui poste des messages vers window.top). Modèle
  * client confirmé par VTTES / Beyond20 / roll20-character-exporter-importer :
  *   Campaign.characters.get(id).attribs -> collection Backbone
@@ -19,12 +19,12 @@
  * choisit l'adresse à l'exécution, et l'isolation est donc ici RÉELLE. Les deux
  * copies sont AUJOURD'HUI IDENTIQUES À L'OCTET, et c'est normal : ce pont ne
  * connaît pas le mode et n'a pas à le connaître. Il n'écrit que les Attributes
- * jjk_* du personnage, que les deux parties se partagent de toute façon. La
+ * mia_* du personnage, que les deux parties se partagent de toute façon. La
  * séparation n'existe ici que pour laisser la partie de chantier changer son
  * pont sans toucher à celui qui tourne en partie.
  *
  * TOUTE CORRECTION DE SÛRETÉ DOIT ÊTRE APPLIQUÉE AUX DEUX COPIES. Les verrous
- * de ce fichier (window.__jjkBridge, ecrivable(), lier()/liee() et sa table de
+ * de ce fichier (window.__miaBridge, ecrivable(), lier()/liee() et sa table de
  * soixante-quatre places, le repli sur l'opener strictement réservé au popout,
  * l'ouverture forcée de la fiche du plateau et le « sûr » qu'elle seule donne,
  * et les trois verrous du ménage des attributs, qui est la seule opération
@@ -33,16 +33,16 @@
  * rien ne le signalera.
  * scripts/build_extension.py --verifie compare mécaniquement les deux copies.
  *
- * Le verrou window.__jjkBridge est COMMUN aux deux copies, tout comme le
- * marqueur data-jjk-bridge que pose content-roll20.js : deux ponts dans le même
+ * Le verrou window.__miaBridge est COMMUN aux deux copies, tout comme le
+ * marqueur data-mia-bridge que pose content-roll20.js : deux ponts dans le même
  * monde principal écriraient chaque attribut deux fois et rempliraient la table
  * des liaisons deux fois plus vite. Ne jamais y faire entrer le mode.
  */
 (function () {
   "use strict";
-  if (window.__jjkBridge) return;   // jamais deux ponts (écouteurs en double)
-  window.__jjkBridge = true;
-  var PREFIX = "jjk_";
+  if (window.__miaBridge) return;   // jamais deux ponts (écouteurs en double)
+  window.__miaBridge = true;
+  var PREFIX = "mia_";
   var WRITE_DELAY = 60;   // ms entre deux écritures d'attribut
 
   function str(v) { return v == null ? "" : String(v); }
@@ -75,13 +75,13 @@
     return (c && c.characters && c.characters.get) ? c.characters.get(id) : null;
   }
   // ---------- garde-fous : la fiche peut exécuter du code qui n'est pas d'elle ----------
-  // Un mod voyage DANS le personnage (il est rangé dans jjk_state) : quiconque
+  // Un mod voyage DANS le personnage (il est rangé dans mia_state) : quiconque
   // ouvre la fiche exécute son code, MJ compris. Le pont ne peut donc pas faire
-  // confiance à ce qu'il reçoit, même sur ns:"jjk". Deux verrous, ci-dessous et
+  // confiance à ce qu'il reçoit, même sur ns:"mia". Deux verrous, ci-dessous et
   // au traitement des messages.
   //
-  // VERROU 1 — ÉCRITURE : seuls les attributs « jjk_* ». C'est tout ce que la
-  // fiche produit (voir jjk-attr-map.js) ; un autre nom écraserait les attributs
+  // VERROU 1 — ÉCRITURE : seuls les attributs « mia_* ». C'est tout ce que la
+  // fiche produit (voir mia-attr-map.js) ; un autre nom écraserait les attributs
   // NATIFS du personnage (barres de token, macros, feuille Roll20). Refus
   // silencieux : rien à signaler à qui l'a demandé.
   function ecrivable(name) { return typeof name === "string" && name.indexOf(PREFIX) === 0; }
@@ -182,7 +182,7 @@
   // prudence de principe, c'est la seule conduite tenable ici : le pont est
   // SIGNÉ et le plateau ne l'est pas, ils ne sont donc jamais déployés le même
   // jour — la moitié stable du pont part chez Mozilla maintenant, la page de
-  // /jjk/ arrivera quand elle arrivera. Un pont qui allégerait de son propre
+  // /mia/ arrivera quand elle arrivera. Un pont qui allégerait de son propre
   // chef ferait disparaître les fonds d'un plateau plus ancien, qui reconstruit
   // ses images à chaque lecture et prendrait l'absence pour un retrait. Il
   // faudrait alors une signature pour réparer. Dans l'autre sens, un plateau
@@ -398,7 +398,7 @@
     step();
   }
 
-  function reply(ev, msg) { msg.ns = "jjk"; try { ev.source.postMessage(msg, "*"); } catch (e) {} }
+  function reply(ev, msg) { msg.ns = "mia"; try { ev.source.postMessage(msg, "*"); } catch (e) {} }
 
   // Joueurs de la partie, pour le sélecteur « À un joueur » de la barre d'envoi
   // de la fiche (qui est une iframe d'une autre origine et ne peut pas les lire
@@ -669,12 +669,12 @@
   }
 
   // ---------- le ménage des attributs du plateau ----------
-  // Mesuré chez l'auteur : 82 attributs « jjk_ » sur « Narration » pour 18
+  // Mesuré chez l'auteur : 82 attributs « mia_ » sur « Narration » pour 18
   // attendus. Deux causes, deux remèdes, et la SEULE opération destructrice de
   // ce fichier — donc la plus surveillée.
-  //   - LES ÉTRANGERS. Une fiche de personnage JJK a été ouverte un jour sur ce
-  //     personnage : sa carte d'attributs en produit une soixantaine (jjk_pv,
-  //     jjk_state…). Elles n'ont rien à faire sur un plateau, alourdissent
+  //   - LES ÉTRANGERS. Une fiche de personnage MIA a été ouverte un jour sur ce
+  //     personnage : sa carte d'attributs en produit une soixantaine (mia_pv,
+  //     mia_state…). Elles n'ont rien à faire sur un plateau, alourdissent
   //     chaque lecture, et font passer le plateau pour un personnage.
   //   - LES HOMONYMES. Le pont lui-même en a fabriqué tant que la fiche de
   //     « Narration » n'était pas ouverte : la collection était vide, chaque
@@ -690,7 +690,7 @@
   //   1. LE PERSONNAGE DU PLATEAU, ET LUI SEUL. narrId est choisi par le pont
   //      lui-même, d'après le nom ; aucun autre personnage n'est jamais touché,
   //      et surtout pas une fiche de joueur.
-  //   2. JAMAIS LE DERNIER EXEMPLAIRE D'UN NOM « jjk_narr_ » : c'est l'état du
+  //   2. JAMAIS LE DERNIER EXEMPLAIRE D'UN NOM « mia_narr_ » : c'est l'état du
   //      plateau, et une place perdue ne se retrouve pas. Le contrôle est refait
   //      JUSTE AVANT chaque suppression, sur la collection vivante, parce que
   //      les autres joueurs font le même ménage au même moment sur le même
@@ -741,7 +741,7 @@
 
   // CE QUI APPARTIENT AU PLATEAU EST DIT PAR LE SITE, jamais deviné ici.
   //
-  // « tout jjk_ qui n'est pas jjk_narr_ est un reste de fiche » est un critère
+  // « tout mia_ qui n'est pas mia_narr_ est un reste de fiche » est un critère
   // NÉGATIF : gravé dans un paquet signé, il condamnerait tout nom que la page
   // du plateau se mettrait à écrire plus tard — et cette page, elle, change sans
   // signature. Le site envoie donc SES préfixes avec la demande de ménage, et
@@ -861,15 +861,15 @@
     pas();
   }
 
-  // Écouteur PASSIF : n'agit QUE sur nos messages (ns:"jjk" + charId), qui ne sont
-  // émis que sur interaction (ouverture de l'onglet Fiche JJK). On NE poste RIEN de
+  // Écouteur PASSIF : n'agit QUE sur nos messages (ns:"mia" + charId), qui ne sont
+  // émis que sur interaction (ouverture de l'onglet Fiche MIA). On NE poste RIEN de
   // spontané au chargement — Roll20 ouvre ses fiches via postMessage, un message
   // inattendu casserait son gestionnaire. Tout est en try/catch pour ne jamais
   // laisser une exception remonter dans le contexte de Roll20.
   window.addEventListener("message", function (ev) {
     try {
       var d = ev.data;
-      if (!d || d.ns !== "jjk") return;
+      if (!d || d.ns !== "mia") return;
       // la liste des joueurs ne dépend d'aucun personnage : traitée AVANT le
       // filtre charId
       if (d.type === "players") { reply(ev, { type: "players-result", players: players() }); return; }

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex">
-  <title>Fiche JJK sur Roll20</title>
+  <title>Fiche MIA sur Roll20</title>
   <!-- AMORCEUR GELÉ. Ne plus rien ajouter ici : ni feuille de style, ni
        script, ni numéro de version.
 
@@ -16,7 +16,7 @@
        périmée qui nommerait un vieux script pourrait faire tourner une
        ancienne fiche sur des données neuves, sans le savoir.
 
-       Alors cette page ne nomme plus rien : elle lit jjk-manifeste.json, qui
+       Alors cette page ne nomme plus rien : elle lit mia-manifeste.json, qui
        se relit SANS cache, et charge ce qu'il nomme. C'est le seul artefact
        irréductiblement périmable du dispositif, et il n'a plus de raison de
        changer.
@@ -26,7 +26,7 @@
   <link rel="stylesheet" href="stylesheets/fonts.css">
 </head>
 <body>
-  <div id="jjk-roll20-note">Connexion à Roll20…</div>
+  <div id="mia-roll20-note">Connexion à Roll20…</div>
   <div id="perso-atelier"><noscript>La fiche a besoin de JavaScript.</noscript></div>
   <script>
   // JOUR / NUIT, tout de suite. Cette poignée de lignes doit rester ICI, dans
@@ -40,7 +40,7 @@
     try {
       var h = location.hash || "";
       var p = null;
-      try { p = localStorage.getItem("jjk-r20-night"); } catch (e) {}
+      try { p = localStorage.getItem("mia-r20-night"); } catch (e) {}
       var on = p === "1" ? true : p === "0" ? false
              : /[#&]n=1/.test(h) ? true : /[#&]n=0/.test(h) ? false
              : !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
@@ -52,10 +52,10 @@
     // Repli : ce que l'on charge si le manifeste ne répond pas. Volontairement
     // sans ?v= — mieux vaut un fichier de cache qu'aucune fiche.
     var DEFAUT = {
-      amorce: ["javascripts/jjk-attr-map.js", "javascripts/jjk-roll20-boot.js"],
+      amorce: ["javascripts/mia-attr-map.js", "javascripts/mia-roll20-boot.js"],
       bundle: {
-        js: ["javascripts/jjk-fiche.js"],
-        css: ["stylesheets/jjk-fiche.css", "stylesheets/jjk-roll20.css"],
+        js: ["javascripts/mia-fiche.js"],
+        css: ["stylesheets/mia-fiche.css", "stylesheets/mia-roll20.css"],
         data: null
       }
     };
@@ -83,10 +83,10 @@
       var l = document.createElement("link");
       l.rel = "stylesheet";
       l.href = u;
-      l.setAttribute("data-jjk", "1");
+      l.setAttribute("data-mia", "1");
       document.head.appendChild(l);
     }
-    // Les scripts s'injectent EN SÉRIE : jjk-attr-map doit être là avant
+    // Les scripts s'injectent EN SÉRIE : mia-attr-map doit être là avant
     // l'amorce, et l'amorce avant tout le reste.
     function serie(urls, fini) {
       var i = 0;
@@ -101,7 +101,7 @@
     }
 
     function lancer(m) {
-      window.__jjkManifeste = m;   // l'amorce y lit le bundle, la version, les archives
+      window.__miaManifeste = m;   // l'amorce y lit le bundle, la version, les archives
       (m.bundle.css || []).forEach(css);
       serie(m.amorce);
     }
@@ -117,7 +117,7 @@
     try {
       // ?t= : ne pas nettoyer. Il change la clé de cache du CDN, que
       // « cache: no-store » seul ne contourne pas.
-      fetch("jjk-manifeste.json?t=" + new Date().getTime(), { cache: "no-store" })
+      fetch("mia-manifeste.json?t=" + new Date().getTime(), { cache: "no-store" })
         .then(function (r) { return r.ok ? r.json() : null; })
         .then(une, function () { une(null); });
     } catch (e) { une(null); }

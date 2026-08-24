@@ -48,13 +48,13 @@
       // Roll20 garde un renvoi vers lui, et le supprimer d'un dialogue déjà lié
       // empêche la fiche du personnage de s'ouvrir, la nôtre comme les siennes.
       if (estPlateau(charId)) {
-        var vieux = strip.querySelector(".jjk-tab");
+        var vieux = strip.querySelector(".mia-tab");
         if (vieux && vieux.parentNode) vieux.parentNode.removeChild(vieux);
-        var vieuxPane = dialog && dialog.querySelector && dialog.querySelector(".tab-pane.jjkfiche");
-        if (vieuxPane) { vieuxPane.style.display = "none"; vieuxPane.classList.remove("jjk-on"); }
+        var vieuxPane = dialog && dialog.querySelector && dialog.querySelector(".tab-pane.miafiche");
+        if (vieuxPane) { vieuxPane.style.display = "none"; vieuxPane.classList.remove("mia-on"); }
         return;
       }
-      if (strip.querySelector(".jjk-tab")) { placed++; return; }   // déjà là
+      if (strip.querySelector(".mia-tab")) { placed++; return; }   // déjà là
 
       var contentBox = contentBoxOf(dialog, strip);
       // conteneur des panes = parent d'un pane natif (là où Roll20 les place)
@@ -66,24 +66,24 @@
       //   bindTabEvents() fait, pour chaque `.nav li a`,
       //     allTabs[a.data-tab] = find('.tab-pane.'+data-tab)[0]; allTabs[...].style...
       //   -> si le pane manque, allTabs[...] est undefined et Roll20 PLANTE (fiche
-      //   qui ne s'ouvre plus). On crée donc TOUJOURS le pane `.tab-pane.jjkfiche`
-      //   AVANT de poser l'onglet `<a data-tab="jjkfiche">` : Roll20 l'enregistre et
+      //   qui ne s'ouvre plus). On crée donc TOUJOURS le pane `.tab-pane.miafiche`
+      //   AVANT de poser l'onglet `<a data-tab="miafiche">` : Roll20 l'enregistre et
       //   le gère nativement (affichage + onglet actif violet).
-      var pane = paneBox.querySelector(".tab-pane.jjkfiche");
+      var pane = paneBox.querySelector(".tab-pane.miafiche");
       if (!pane) {
-        pane = el("div", "tab-pane jjkfiche jjk-pane");
+        pane = el("div", "tab-pane miafiche mia-pane");
         pane.style.display = "none";
         paneBox.appendChild(pane);
       }
 
       // vrai onglet, cloné des onglets natifs (styles Roll20 : look + actif violet)
       var tab = document.createElement(feuilleItem.tagName || "li");
-      tab.className = ((feuilleItem.className || "").replace(/\b(active|ui-tabs-active|ui-state-active|chosen)\b/g, "").trim() + " jjk-tab").trim();
+      tab.className = ((feuilleItem.className || "").replace(/\b(active|ui-tabs-active|ui-state-active|chosen)\b/g, "").trim() + " mia-tab").trim();
       var nativeA = feuilleItem.querySelector("a");
       var a = document.createElement("a");
       if (nativeA && nativeA.className) a.className = nativeA.className;
       a.setAttribute("href", "javascript:void(0);");
-      a.setAttribute("data-tab", "jjkfiche");
+      a.setAttribute("data-tab", "miafiche");
       a.textContent = LIBELLE;
       tab.appendChild(a);
 
@@ -91,12 +91,12 @@
       function showOurPane() {
         var panes = paneBox.querySelectorAll(".tab-pane");
         for (var j = 0; j < panes.length; j++) panes[j].style.display = (panes[j] === pane) ? "block" : "none";
-        pane.classList.add("jjk-on");   // seule cette classe rend le pane visible (overlay.css)
+        pane.classList.add("mia-on");   // seule cette classe rend le pane visible (overlay.css)
         for (var k = 0; k < strip.children.length; k++) strip.children[k].classList.remove("active");
         tab.classList.add("active");
         refitFrame();   // l'iframe redevient visible : réajuster sa hauteur au dialogue
       }
-      function hideOurPane() { pane.style.display = "none"; pane.classList.remove("jjk-on"); tab.classList.remove("active"); }
+      function hideOurPane() { pane.style.display = "none"; pane.classList.remove("mia-on"); tab.classList.remove("active"); }
 
       // On gère nous-mêmes l'affichage (fiable quel que soit le moment où bindTabEvents
       // s'exécute) et on bloque le gestionnaire délégué de Roll20 pour NOTRE onglet.
@@ -108,7 +108,7 @@
       // clic sur un onglet natif -> on masque le nôtre (Roll20 affiche le sien)
       strip.addEventListener("click", function (ev) {
         var na = ev.target.closest && ev.target.closest("a[data-tab]");
-        if (na && na.getAttribute("data-tab") !== "jjkfiche") hideOurPane();
+        if (na && na.getAttribute("data-tab") !== "miafiche") hideOurPane();
       }, true);
 
       strip.insertBefore(tab, bioItem);   // vrai onglet DANS la barre, entre Feuille et Bio

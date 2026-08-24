@@ -1,9 +1,9 @@
   // ---------- « Prendre » : le lien d'un objet donné, cliqué dans le tchat ----------
   // La fiche vit dans une iframe : elle ne voit pas le tchat. C'est donc ICI
-  // qu'on intercepte le clic sur le lien « [Prendre](/jjk_take <payload>) »
+  // qu'on intercepte le clic sur le lien « [Prendre](/mia_take <payload>) »
   // composé par la fiche, pour renvoyer le payload — jamais interprété ici —
   // aux fiches ouvertes, qui affichent leur dialogue de réception.
-  var TAKE_RE = /^\/jjk_take\s+([A-Za-z0-9+/=_-]+)$/;
+  var TAKE_RE = /^\/mia_take\s+([A-Za-z0-9+/=_-]+)$/;
   var sheets = [];   // fenêtres de fiches (ou popouts) qui nous ont parlé
   function rememberSheet(w) {
     if (!w) return;
@@ -13,7 +13,7 @@
     sheets = sheets.filter(function (w) { try { return w && !w.closed; } catch (e) { return false; } });
     var n = 0;
     sheets.forEach(function (w) {
-      try { w.postMessage({ ns: "jjk", type: "take", payload: payload }, "*"); n++; } catch (e) {}
+      try { w.postMessage({ ns: "mia", type: "take", payload: payload }, "*"); n++; } catch (e) {}
     });
     return n;
   }
@@ -40,7 +40,7 @@
       if (!m) return;
       e.preventDefault(); e.stopPropagation();
       if (!diffuseTake(m[1])) {
-        toast("Ouvre ta fiche JJK (onglet « Fiche JJK » du personnage), puis reclique « Prendre ».");
+        toast("Ouvre ta fiche MIA (onglet « Fiche MIA » du personnage), puis reclique « Prendre ».");
       }
     }, true);
   }

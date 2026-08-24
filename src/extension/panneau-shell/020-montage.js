@@ -6,11 +6,11 @@
 
   function mount(base) {
     // le hash entier suit : la page distante y lit le thème (n=1/0) comme la fiche
-    document.getElementById("jjk-remote").src = String(base) + page + hash;
+    document.getElementById("mia-remote").src = String(base) + page + hash;
   }
   try {
-    browser.storage.local.get("jjk_site_url").then(
-      function (r) { mount((r && r.jjk_site_url) || SITE); },
+    browser.storage.local.get("mia_site_url").then(
+      function (r) { mount((r && r.mia_site_url) || SITE); },
       function () { mount(SITE); }
     );
   } catch (e) { mount(SITE); }

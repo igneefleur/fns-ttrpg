@@ -1,12 +1,12 @@
-  // Écouteur PASSIF : n'agit QUE sur nos messages (ns:"jjk" + charId), qui ne sont
-  // émis que sur interaction (ouverture de l'onglet Fiche JJK). On NE poste RIEN de
+  // Écouteur PASSIF : n'agit QUE sur nos messages (ns:"mia" + charId), qui ne sont
+  // émis que sur interaction (ouverture de l'onglet Fiche MIA). On NE poste RIEN de
   // spontané au chargement — Roll20 ouvre ses fiches via postMessage, un message
   // inattendu casserait son gestionnaire. Tout est en try/catch pour ne jamais
   // laisser une exception remonter dans le contexte de Roll20.
   window.addEventListener("message", function (ev) {
     try {
       var d = ev.data;
-      if (!d || d.ns !== "jjk") return;
+      if (!d || d.ns !== "mia") return;
       // la liste des joueurs ne dépend d'aucun personnage : traitée AVANT le
       // filtre charId
       if (d.type === "players") { reply(ev, { type: "players-result", players: players() }); return; }

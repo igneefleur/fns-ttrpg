@@ -16,15 +16,15 @@
  * tomber d'un côté : sans elle, cette coquille devient un iframeur universel,
  * et le trou reste ouvert alors que l'autre copie est saine.
  *
- * Dépannage : browser.storage.local.jjk_site_url remplace la racine du site
- * (ex. http://localhost:8000/fns-ttrpg/jjk/ pour un mkdocs serve local),
+ * Dépannage : browser.storage.local.mia_site_url remplace la racine du site
+ * (ex. http://localhost:8000/fns-ttrpg/mia/ pour un mkdocs serve local),
  * à poser depuis la console de débogage de l'extension. Cette clé reste COMMUNE
- * aux deux parties, comme jjk_sheet_url : elle épingle la coquille effectivement
+ * aux deux parties, comme mia_sheet_url : elle épingle la coquille effectivement
  * chargée, quelle qu'elle soit. */
 if (typeof browser === "undefined") { var browser = chrome; }
 (function () {
   "use strict";
-  var SITE = "https://igneefleur.github.io/fns-ttrpg/jjk-beta/";   // propre à cette copie
+  var SITE = "https://igneefleur.github.io/fns-ttrpg/mia-beta/";   // propre à cette copie
   var DEFAUT = "roll20-narration.html";
 
   // Même règle que l'amorceur du site : une page du site, relative, sans
@@ -44,11 +44,11 @@ if (typeof browser === "undefined") { var browser = chrome; }
 
   function mount(base) {
     // le hash entier suit : la page distante y lit le thème (n=1/0) comme la fiche
-    document.getElementById("jjk-remote").src = String(base) + page + hash;
+    document.getElementById("mia-remote").src = String(base) + page + hash;
   }
   try {
-    browser.storage.local.get("jjk_site_url").then(
-      function (r) { mount((r && r.jjk_site_url) || SITE); },
+    browser.storage.local.get("mia_site_url").then(
+      function (r) { mount((r && r.mia_site_url) || SITE); },
       function () { mount(SITE); }
     );
   } catch (e) { mount(SITE); }

@@ -33,19 +33,19 @@
   // case, et une clé par mode ferait qu'éteindre le plateau ne l'éteindrait que
   // d'un côté.
   var PAN_PAGE = "roll20-narration.html";
-  var PAN_CLE = "jjkPanneau:" + PAN_PAGE;
-  var PAN_ACTIF = "jjkPanneauActif";   // interrupteur du popup (absent = allumé)
+  var PAN_CLE = "miaPanneau:" + PAN_PAGE;
+  var PAN_ACTIF = "miaPanneauActif";   // interrupteur du popup (absent = allumé)
   // DEUX NOMS POUR UN SEUL INTERRUPTEUR, et c'est une assurance, pas une
   // hésitation. L'interrupteur du plateau s'est toujours appelé
-  // jjkPanneauActif ; le contrat de réglages écrit pour la refonte du popup le
-  // nomme jjkPanneau. Les deux se ressemblent assez pour qu'une main les
+  // miaPanneauActif ; le contrat de réglages écrit pour la refonte du popup le
+  // nomme miaPanneau. Les deux se ressemblent assez pour qu'une main les
   // confonde, et un popup qui écrirait le mauvais nom laisserait une case qui
   // ne fait plus rien, sans le moindre message. On lit donc les deux : le nom
   // du contrat l'emporte quand il est posé, l'historique sert sinon.
-  // ATTENTION, jjkPanneau n'est PAS le préfixe PAN_CLE ci-dessus : celui-là
-  // s'écrit « jjkPanneau:roll20-narration.html » et range la géométrie. Deux
+  // ATTENTION, miaPanneau n'est PAS le préfixe PAN_CLE ci-dessus : celui-là
+  // s'écrit « miaPanneau:roll20-narration.html » et range la géométrie. Deux
   // clés distinctes, jamais la même chaîne.
-  var PAN_ACTIF_BIS = "jjkPanneau";
+  var PAN_ACTIF_BIS = "miaPanneau";
   // « ancre » entre dans l'état rangé : le choix de la place se retient d'une
   // session à l'autre, comme le reste. Absent (installation d'avant), il vaut
   // ancré — c'est la place voulue, le flottant est le second choix.

@@ -8,7 +8,7 @@
   // signature.
   function panRemplit() {
     if (!panCorps || panCorps.firstChild) return;
-    var f = el("iframe", "jjk-panneau-frame");
+    var f = el("iframe", "mia-panneau-frame");
     f.src = browser.runtime.getURL("panneau.html") +
             "#p=" + PAN_PAGE + "&n=" + (nuitEffective() ? "1" : "0") + "&m=" + MODE;
     f.setAttribute("allow", "clipboard-write");
@@ -80,7 +80,7 @@
     var cible = ev.currentTarget;
     var x0 = ev.clientX, y0 = ev.clientY;
     var e0 = { x: panEtat.x, y: panEtat.y, w: panEtat.w, h: panEtat.h };
-    panBoite.classList.add("jjk-panneau-geste");
+    panBoite.classList.add("mia-panneau-geste");
     function suit(m) {
       var dx = m.clientX - x0, dy = m.clientY - y0;
       if (bouge) { panEtat.x = e0.x + dx; panEtat.y = e0.y + dy; }
@@ -96,7 +96,7 @@
       cible.removeEventListener("pointercancel", fin);
       window.removeEventListener("blur", fin);
       try { cible.releasePointerCapture(ev.pointerId); } catch (e) {}
-      panBoite.classList.remove("jjk-panneau-geste");
+      panBoite.classList.remove("mia-panneau-geste");
       panRange();
     }
     try { cible.setPointerCapture(ev.pointerId); } catch (e) {}

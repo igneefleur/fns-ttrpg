@@ -1,10 +1,10 @@
-"""Packe l'extension JJK (Firefox + Chrome) en fichiers téléchargeables depuis le site.
+"""Packe l'extension MIA (Firefox + Chrome) en fichiers téléchargeables depuis le site.
 
-- Firefox : extension/firefox/ (Manifest V2) -> docs/download/jjk-roll20-firefox.xpi
+- Firefox : extension/firefox/ (Manifest V2) -> docs/download/mia-roll20-firefox.xpi
 - Chrome  : extension/chrome/manifest.json (Manifest V3) + les fichiers PARTAGÉS
-  de extension/firefox/ -> docs/download/jjk-roll20-chrome.zip
+  de extension/firefox/ -> docs/download/mia-roll20-chrome.zip
 
-L'extension est une COQUILLE : la fiche (jjk-creation.js/.css/.json, amorce,
+L'extension est une COQUILLE : la fiche (mia-creation.js/.css/.json, amorce,
 correspondance état <-> Attributes) est SERVIE PAR LE SITE (roll20-fiche.html)
 et affichée dans une iframe — plus rien n'est copié du site dans le paquet, et
 l'extension n'a besoin d'être re-signée que si la coquille elle-même change.
@@ -48,7 +48,7 @@ d'écrire la mauvaise valeur en face du mauvais nom dans le plan.
     python scripts/build_extension.py --verifie    # contrôles seuls, rien d'écrit
     python scripts/build_extension.py --sortie DIR # packe ailleurs (essai)
 
-ATTENTION : sans --sortie, build() ÉCRASE docs/download/jjk-roll20-firefox.xpi,
+ATTENTION : sans --sortie, build() ÉCRASE docs/download/mia-roll20-firefox.xpi,
 c'est-à-dire le binaire SIGNÉ que distribue le site (Firefox refuse alors de
 l'installer, sans que rien n'échoue en CI). Pour seulement voir ce que contient
 le paquet, prendre --sortie ou --verifie.
@@ -67,8 +67,8 @@ FF = ROOT / "extension" / "firefox"           # source de vérité (manifest V2 
 CHROME = ROOT / "extension" / "chrome"
 CHROME_MANIFEST = CHROME / "manifest.json"    # manifest V3 seul
 DL = ROOT / "docs" / "download"
-NOM_FF = "jjk-roll20-firefox.xpi"
-NOM_CHROME = "jjk-roll20-chrome.zip"
+NOM_FF = "mia-roll20-firefox.xpi"
+NOM_CHROME = "mia-roll20-chrome.zip"
 
 # Les deux parties. Les fichiers qui dépendent du mode existent une fois par
 # dossier, sous le MÊME nom, parce qu'ils sortent des MÊMES morceaux : c'est le
@@ -395,7 +395,7 @@ def verifie():
         # CHAQUE LIGNE MARQUÉE DOIT DÉSIGNER SA PROPRE PARTIE, et jamais
         # l'autre. Ne vérifier que l'absence du mot d'en face laissait passer
         # les trois oublis qui comptent, tous mesurés : une copie beta restée
-        # en MODE "stable", une coquille beta pointant encore sur /jjk/, et un
+        # en MODE "stable", une coquille beta pointant encore sur /mia/, et un
         # pont dont l'adresse n'a pas suivi son dossier. Dans les trois cas la
         # ligne ne contient PAS le mot de l'autre partie, donc rien ne bronchait,
         # et le paquet partait chez Mozilla en annonçant « identiques hors mode ».
@@ -422,19 +422,19 @@ def verifie():
                 if "var MODE" in ligne and ('"%s"' % partie) not in ligne:
                     ok = refus(f"{partie}/{nom} : MODE ne vaut pas {partie!r} -> {nue}")
                 # UNE REDITE VOULUE, ET LA SEULE DE CE FICHIER. La correspondance
-                # « moitié -> site » (stable pour /jjk/, beta pour /jjk-beta/) est
+                # « moitié -> site » (stable pour /mia/, beta pour /mia-beta/) est
                 # AUSSI déclarée dans scripts/assemblage.plan, sous « site = ». La
                 # réécrire ici n'est pas un oubli : c'est le témoin. Si les deux
                 # lignes ne disaient qu'une fois la même chose, le contrôle
                 # relirait au fichier engendré exactement ce que le plan y a
-                # écrit, et approuverait un « site = jjk » posé sous
+                # écrit, et approuverait un « site = mia » posé sous
                 # « [variante beta] » — la faute que l'assemblage ne peut pas
                 # attraper, puisqu'il l'exécute fidèlement. Ces deux lignes-ci se
                 # corrigent donc À LA MAIN, et le jour où elles contredisent le
                 # plan, c'est qu'il faut aller lire le plan.
                 if "igneefleur.github.io" in ligne:
-                    attendu = "/jjk-beta/" if partie == "beta" else "/jjk/"
-                    interdit = "/jjk/" if partie == "beta" else "/jjk-beta/"
+                    attendu = "/mia-beta/" if partie == "beta" else "/mia/"
+                    interdit = "/mia/" if partie == "beta" else "/mia-beta/"
                     if attendu not in ligne or interdit in ligne:
                         ok = refus(f"{partie}/{nom} : une ligne de mode ne pointe pas sur "
                                    f"{attendu} -> {nue}")

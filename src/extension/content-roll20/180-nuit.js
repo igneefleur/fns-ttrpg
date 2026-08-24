@@ -5,7 +5,7 @@
   // n'enlève ni un onglet, ni un écouteur, ni un pont, et ne peut donc pas
   // laisser Roll20 dans un état où il n'était pas prévu.
   //
-  // L'extinction (jjkOff) et l'interrupteur du plateau ne sont volontairement
+  // L'extinction (miaOff) et l'interrupteur du plateau ne sont volontairement
   // PAS relus ici : ils démontent, et démonter à chaud est ce qui casse (voir
   // la garde, tout en bas, pour ce que « éteindre » peut et ne peut pas).
   //
@@ -15,15 +15,15 @@
   // ouverture.
   function repeintTout() {
     panRepeint();
-    var n = document.querySelectorAll(".jjk-create, .jjk-creator-frame");
+    var n = document.querySelectorAll(".mia-create, .mia-creator-frame");
     for (var i = 0; i < n.length; i++) poseNuit(n[i]);
   }
   function ecouteNuit() {
     try {
       browser.storage.onChanged.addListener(function (ch, zone) {
         if (zone && zone !== "local") return;
-        if (!ch || !ch.jjkNuit) return;
-        var v = normNuit(ch.jjkNuit.newValue);
+        if (!ch || !ch.miaNuit) return;
+        var v = normNuit(ch.miaNuit.newValue);
         if (v === NUIT_ORDRE) return;
         NUIT_ORDRE = v;
         repeintTout();

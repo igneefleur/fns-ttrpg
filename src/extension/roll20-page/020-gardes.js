@@ -1,11 +1,11 @@
   // ---------- garde-fous : la fiche peut exécuter du code qui n'est pas d'elle ----------
-  // Un mod voyage DANS le personnage (il est rangé dans jjk_state) : quiconque
+  // Un mod voyage DANS le personnage (il est rangé dans mia_state) : quiconque
   // ouvre la fiche exécute son code, MJ compris. Le pont ne peut donc pas faire
-  // confiance à ce qu'il reçoit, même sur ns:"jjk". Deux verrous, ci-dessous et
+  // confiance à ce qu'il reçoit, même sur ns:"mia". Deux verrous, ci-dessous et
   // au traitement des messages.
   //
-  // VERROU 1 — ÉCRITURE : seuls les attributs « jjk_* ». C'est tout ce que la
-  // fiche produit (voir jjk-attr-map.js) ; un autre nom écraserait les attributs
+  // VERROU 1 — ÉCRITURE : seuls les attributs « mia_* ». C'est tout ce que la
+  // fiche produit (voir mia-attr-map.js) ; un autre nom écraserait les attributs
   // NATIFS du personnage (barres de token, macros, feuille Roll20). Refus
   // silencieux : rien à signaler à qui l'a demandé.
   function ecrivable(name) { return typeof name === "string" && name.indexOf(PREFIX) === 0; }

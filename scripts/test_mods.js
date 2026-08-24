@@ -1,4 +1,4 @@
-/* Épreuve du moteur de mods de la fiche JJK.
+/* Épreuve du moteur de mods de la fiche MIA.
  *
  *   node scripts/test_mods.js
  *
@@ -43,9 +43,9 @@ global.window = {
   }
 };
 
-var JjkMods;
+var MiaMods;
 try {
-  JjkMods = require(path.join(__dirname, "..", "docs", "javascripts", "jjk-mods.js"));
+  MiaMods = require(path.join(__dirname, "..", "docs", "javascripts", "mia-mods.js"));
 } catch (e) {
   console.error("MODS : le moteur refuse de se charger — " + (e && e.message ? e.message : e));
   process.exit(1);
@@ -63,7 +63,7 @@ function etats(bilan) {
 }
 
 var INFOS = { version: "3.0.0", schema: 3 };
-var SAGE = "Jjk.__vu = (Jjk.__vu || 0) + 1;";
+var SAGE = "Mia.__vu = (Mia.__vu || 0) + 1;";
 
 function oublieTout() {
   stock = {};
@@ -74,20 +74,20 @@ function oublieTout() {
 
 // ------------------------------------------------------------ 1. empreinte
 (function () {
-  var a = JjkMods.empreinte("mod", SAGE);
-  ok(a === JjkMods.empreinte("mod", SAGE), "empreinte : deux appels identiques donnent la même");
-  ok(a !== JjkMods.empreinte("mod", SAGE + " "), "empreinte : un espace de plus la change");
-  ok(a !== JjkMods.empreinte("autre", SAGE), "empreinte : l'id entre dedans");
+  var a = MiaMods.empreinte("mod", SAGE);
+  ok(a === MiaMods.empreinte("mod", SAGE), "empreinte : deux appels identiques donnent la même");
+  ok(a !== MiaMods.empreinte("mod", SAGE + " "), "empreinte : un espace de plus la change");
+  ok(a !== MiaMods.empreinte("autre", SAGE), "empreinte : l'id entre dedans");
   ok(/^[0-9a-f]{16}$/.test(a), "empreinte : seize chiffres hexadécimaux");
 
   // le piège du séparateur : sans la longueur de l'id dans le mélange,
   // ("a\nb", "c") et ("a", "b\nc") composeraient le même texte
-  ok(JjkMods.empreinte("a\nb", "c") !== JjkMods.empreinte("a", "b\nc"),
+  ok(MiaMods.empreinte("a\nb", "c") !== MiaMods.empreinte("a", "b\nc"),
      "empreinte : le saut de ligne ne peut pas déplacer la frontière id/source");
 
   // deux sources voisines : djb2 seul les rendrait presque identiques
   var voisines = {};
-  for (var i = 0; i < 400; i++) voisines[JjkMods.empreinte("m", "var x = " + i + ";")] = 1;
+  for (var i = 0; i < 400; i++) voisines[MiaMods.empreinte("m", "var x = " + i + ";")] = 1;
   ok(Object.keys(voisines).length === 400, "empreinte : 400 sources voisines, 400 empreintes");
 })();
 
@@ -95,38 +95,38 @@ function oublieTout() {
 (function () {
   oublieTout();
   var mods = [{ id: "sage", nom: "Sage", src: SAGE }];
-  var emp = JjkMods.empreinte("sage", SAGE);
-  var Jjk = {};
+  var emp = MiaMods.empreinte("sage", SAGE);
+  var Mia = {};
 
-  var b = JjkMods.execute(mods, Jjk, INFOS);
+  var b = MiaMods.execute(mods, Mia, INFOS);
   ok(etats(b) === "sage:attente", "sans avis : le mod attend (" + etats(b) + ")");
-  ok(Jjk.__vu === undefined, "sans avis : LE MOD N'A PAS TOURNÉ");
-  ok(JjkMods.enAttente(mods, INFOS).length === 1, "sans avis : il figure dans les mods en attente");
+  ok(Mia.__vu === undefined, "sans avis : LE MOD N'A PAS TOURNÉ");
+  ok(MiaMods.enAttente(mods, INFOS).length === 1, "sans avis : il figure dans les mods en attente");
 
-  JjkMods.decide(emp, "oui");
-  b = JjkMods.execute(mods, Jjk, INFOS);
+  MiaMods.decide(emp, "oui");
+  b = MiaMods.execute(mods, Mia, INFOS);
   ok(etats(b) === "sage:ok", "avec un oui : le mod tourne (" + etats(b) + ")");
-  ok(Jjk.__vu === 1, "avec un oui : son code s'est exécuté une fois");
-  ok(JjkMods.enAttente(mods, INFOS).length === 0, "avec un oui : plus rien n'attend");
+  ok(Mia.__vu === 1, "avec un oui : son code s'est exécuté une fois");
+  ok(MiaMods.enAttente(mods, INFOS).length === 0, "avec un oui : plus rien n'attend");
 
   // le « oui » est rangé dans le navigateur, PAS dans le personnage
   ok(JSON.stringify(mods).indexOf(emp) < 0, "le consentement n'entre pas dans state.mods");
-  ok(stock["jjk.mods.avis"] && stock["jjk.mods.avis"].indexOf(emp) >= 0,
+  ok(stock["mia.mods.avis"] && stock["mia.mods.avis"].indexOf(emp) >= 0,
      "le consentement est rangé dans le localStorage du navigateur");
   ok(Object.keys(stock).length === 1, "le moteur n'écrit rien d'autre que sa table d'avis");
 
   // une lettre de plus : l'accord ne suit pas
   var retouche = [{ id: "sage", nom: "Sage", src: SAGE + "\n// retouche" }];
-  b = JjkMods.execute(retouche, {}, INFOS);
+  b = MiaMods.execute(retouche, {}, INFOS);
   ok(etats(b) === "sage:attente", "un mod retouché redemande l'accord (" + etats(b) + ")");
 
-  JjkMods.decide(emp, "non");
-  b = JjkMods.execute(mods, {}, INFOS);
+  MiaMods.decide(emp, "non");
+  b = MiaMods.execute(mods, {}, INFOS);
   ok(etats(b) === "sage:refuse", "un refus est une décision, pas une attente (" + etats(b) + ")");
-  ok(JjkMods.enAttente(mods, INFOS).length === 0, "un mod refusé ne réclame plus rien");
+  ok(MiaMods.enAttente(mods, INFOS).length === 0, "un mod refusé ne réclame plus rien");
 
-  JjkMods.decide(emp, "");
-  b = JjkMods.execute(mods, {}, INFOS);
+  MiaMods.decide(emp, "");
+  b = MiaMods.execute(mods, {}, INFOS);
   ok(etats(b) === "sage:attente", "l'oubli remet le mod en attente (" + etats(b) + ")");
 })();
 
@@ -135,16 +135,16 @@ function oublieTout() {
   oublieTout();
   refuse = true;
   var mods = [{ id: "sage", nom: "Sage", src: SAGE }];
-  var emp = JjkMods.empreinte("sage", SAGE);
-  var Jjk = {};
-  var b = JjkMods.execute(mods, Jjk, INFOS);
+  var emp = MiaMods.empreinte("sage", SAGE);
+  var Mia = {};
+  var b = MiaMods.execute(mods, Mia, INFOS);
   ok(etats(b) === "sage:attente", "stockage refusé : le mod attend, il ne tourne pas");
-  JjkMods.decide(emp, "oui");
-  b = JjkMods.execute(mods, Jjk, INFOS);
+  MiaMods.decide(emp, "oui");
+  b = MiaMods.execute(mods, Mia, INFOS);
   ok(etats(b) === "sage:ok", "stockage refusé : la décision tient quand même pour la session");
-  ok(Jjk.__vu === 1, "stockage refusé : le mod a bien tourné");
+  ok(Mia.__vu === 1, "stockage refusé : le mod a bien tourné");
   refuse = false;
-  JjkMods.decide(emp, "");
+  MiaMods.decide(emp, "");
 })();
 
 // ------------------------------------------------------------ 4. verrous
@@ -157,8 +157,8 @@ function oublieTout() {
     { id: "dix", nom: "Dix", pour: "3.10.0", src: SAGE },
     { id: "vieux", nom: "Vieux", pour: "2.0.0", src: SAGE }
   ];
-  mods.forEach(function (m) { JjkMods.decide(JjkMods.empreinte(m.id, m.src), "oui"); });
-  var b = JjkMods.execute(mods, {}, INFOS);
+  mods.forEach(function (m) { MiaMods.decide(MiaMods.empreinte(m.id, m.src), "oui"); });
+  var b = MiaMods.execute(mods, {}, INFOS);
   var par = {};
   b.forEach(function (x) { par[x.id] = x.etat; });
   ok(par.coupe === "coupe", "l'interrupteur du joueur prime sur tout (" + par.coupe + ")");
@@ -168,7 +168,7 @@ function oublieTout() {
   ok(par.vieux === "ok", "un mod écrit pour une fiche plus ancienne tourne");
 
   // même chose sans repère : faute de version connue, on laisse tourner
-  var sans = JjkMods.execute([{ id: "futur", pour: "9.0.0", src: SAGE }], {}, null);
+  var sans = MiaMods.execute([{ id: "futur", pour: "9.0.0", src: SAGE }], {}, null);
   ok(sans[0].etat === "ok", "sans repère de version, le verrou est sauté plutôt qu'inventé");
 })();
 
@@ -191,7 +191,7 @@ function oublieTout() {
     { id: "boucle", src: "var o = {}; o.o = o; JSON.stringify(o);" },
     { id: "apres", src: SAGE }
   ];
-  var n = JjkMods.normalise(mods);
+  var n = MiaMods.normalise(mods);
   ok(n.length === 8, "normalise : 8 entrées valides sur " + mods.length + " (obtenu " + n.length + ")");
   ok(n[0].id === "deux-fois", "normalise : « Deux Fois » devient « deux-fois »");
   ok(n.filter(function (m) { return m.id === "deux-fois"; }).length === 1,
@@ -199,11 +199,11 @@ function oublieTout() {
   ok(JSON.stringify(mods[7]) === JSON.stringify({ id: "Deux Fois", src: "1" }),
      "normalise : l'entrée d'origine n'est jamais modifiée");
 
-  n.forEach(function (m) { JjkMods.decide(JjkMods.empreinte(m.id, m.src), "oui"); });
-  var Jjk = {};
+  n.forEach(function (m) { MiaMods.decide(MiaMods.empreinte(m.id, m.src), "oui"); });
+  var Mia = {};
   var b;
   try {
-    b = JjkMods.execute(mods, Jjk, INFOS);
+    b = MiaMods.execute(mods, Mia, INFOS);
   } catch (e) {
     b = null;
   }
@@ -219,7 +219,7 @@ function oublieTout() {
     ok(par["jette-rien"] && par["jette-rien"].etat === "panne", "jeter null est une panne");
     ok(par.boucle && par.boucle.etat === "panne", "un objet circulaire casse SON mod, pas le moteur");
     ok(par.apres && par.apres.etat === "ok", "LE MOD SUIVANT TOURNE QUAND MÊME");
-    ok(Jjk.__vu === 1, "et son code s'est bien exécuté");
+    ok(Mia.__vu === 1, "et son code s'est bien exécuté");
     ok(b.length === n.length, "le bilan porte tous les mods normalisés, tournés ou non");
   }
 })();
@@ -228,10 +228,10 @@ function oublieTout() {
 (function () {
   oublieTout();
   var vus = [];
-  var Jjk = { __proprietaire: function (id) { vus.push(id); } };
+  var Mia = { __proprietaire: function (id) { vus.push(id); } };
   var mods = [{ id: "un", src: SAGE }, { id: "deux", src: "throw new Error('x')" }];
-  mods.forEach(function (m) { JjkMods.decide(JjkMods.empreinte(m.id, m.src), "oui"); });
-  JjkMods.execute(mods, Jjk, INFOS);
+  mods.forEach(function (m) { MiaMods.decide(MiaMods.empreinte(m.id, m.src), "oui"); });
+  MiaMods.execute(mods, Mia, INFOS);
   ok(vus.length === 4, "le propriétaire est posé et rendu pour chaque mod (" + vus.join(",") + ")");
   ok(vus[0] === "un" && vus[1] === null, "posé à l'entrée, rendu à la sortie");
   ok(vus[2] === "deux" && vus[3] === null, "RENDU MÊME QUAND LE MOD JETTE");
@@ -248,15 +248,15 @@ function oublieTout() {
   // Une instance du module = un onglet : son MEM lui appartient, le « stock »
   // est commun. Le cache de require est vidé pour en obtenir une neuve, ce qui
   // simule aussi bien un second onglet qu'un onglet rouvert.
-  var chemin = require.resolve(path.join(__dirname, "..", "docs", "javascripts", "jjk-mods.js"));
+  var chemin = require.resolve(path.join(__dirname, "..", "docs", "javascripts", "mia-mods.js"));
   function onglet() {
     delete require.cache[chemin];
     return require(chemin);
   }
-  var A = JjkMods, B = onglet();
+  var A = MiaMods, B = onglet();
   ok(A !== B, "deux onglets : deux instances distinctes du moteur");
 
-  var srcX = "Jjk.__x = 1;", srcY = "Jjk.__y = 1;";
+  var srcX = "Mia.__x = 1;", srcY = "Mia.__y = 1;";
   var modsX = [{ id: "x", nom: "X", src: srcX }];
   var eX = A.empreinte("x", srcX), eY = A.empreinte("y", srcY);
 
@@ -287,7 +287,7 @@ function oublieTout() {
   ok(A.avis(eX) === "non" && onglet().avis(eX) === "non", "le sens inverse tient aussi");
 
   A.decide(eX, "");
-  ok(stock["jjk.mods.avis"] === "{}", "une fois tout oublié, la table du navigateur est vide");
+  ok(stock["mia.mods.avis"] === "{}", "une fois tout oublié, la table du navigateur est vide");
 })();
 
 // ---------------------------------------------------------------- verdict

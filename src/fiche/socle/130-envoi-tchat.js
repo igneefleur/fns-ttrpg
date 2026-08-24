@@ -1,17 +1,17 @@
   // ---------- envoi au tchat : destinataire et modificateur ----------
   // Tout ce que la fiche envoie à Roll20 traverse ce bloc. La commande est
-  // composée ICI, côté site, et part par window.__jjkChat, que l'extension
+  // composée ICI, côté site, et part par window.__miaChat, que l'extension
   // relaie SANS RIEN RÉÉCRIRE : le format peut donc évoluer sans re-signature.
   // Les deux réglages (à qui, avec ou sans modificateur) vivent dans le VRAI
   // localStorage du navigateur, comme la préférence jour/nuit : ce ne sont pas
   // des données de personnage, et les écrire dans les Attributes Roll20 à
   // chaque clic n'aurait aucun sens.
   var ENVOI = {
-    mode: "jjk-r20-envoi",        // "public" | "gm" | "joueur"
-    dest: "jjk-r20-envoi-dest",   // nom d'affichage du destinataire
-    input: "jjk-r20-envoi-input", // "0" (sans) | "1" (avec)
-    carac: "jjk-r20-envoi-carac", // "0" (automatique) | "1" (carac au choix au lancer)
-    noms: "jjk-r20-envoi-noms"    // liste de secours, si Roll20 ne la donne pas
+    mode: "mia-r20-envoi",        // "public" | "gm" | "joueur"
+    dest: "mia-r20-envoi-dest",   // nom d'affichage du destinataire
+    input: "mia-r20-envoi-input", // "0" (sans) | "1" (avec)
+    carac: "mia-r20-envoi-carac", // "0" (automatique) | "1" (carac au choix au lancer)
+    noms: "mia-r20-envoi-noms"    // liste de secours, si Roll20 ne la donne pas
   };
   function lpref(k, def) {
     try { var v = localStorage.getItem(k); return v == null ? def : v; } catch (e) { return def; }
@@ -30,7 +30,7 @@
   function envSan(s) {
     return String(s == null ? "" : s).replace(/[{}]/g, "").replace(/\s+/g, " ").trim();
   }
-  // Valeur de champ : les accolades d'une macro Roll20 (@{Perso|jjk_body},
+  // Valeur de champ : les accolades d'une macro Roll20 (@{Perso|mia_body},
   // ?{…}) sont légitimes et doivent survivre. Un champ de gabarit se ferme sur
   // « }} » : c'est la SEULE séquence à briser, et une valeur qui finit par une
   // accolade prend une espace pour ne pas en fabriquer une avec la fermeture.
@@ -92,8 +92,8 @@
   }
   // envoi effectif : préfixe + commande. Renvoie false hors Roll20.
   function envoyer(cmd) {
-    if (typeof window === "undefined" || typeof window.__jjkChat !== "function") return false;
-    window.__jjkChat(envPrefixe() + cmd);
+    if (typeof window === "undefined" || typeof window.__miaChat !== "function") return false;
+    window.__miaChat(envPrefixe() + cmd);
     return true;
   }
 

@@ -1,4 +1,4 @@
-  function reply(ev, msg) { msg.ns = "jjk"; try { ev.source.postMessage(msg, "*"); } catch (e) {} }
+  function reply(ev, msg) { msg.ns = "mia"; try { ev.source.postMessage(msg, "*"); } catch (e) {} }
 
   // Joueurs de la partie, pour le sélecteur « À un joueur » de la barre d'envoi
   // de la fiche (qui est une iframe d'une autre origine et ne peut pas les lire

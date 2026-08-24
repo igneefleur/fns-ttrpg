@@ -1,10 +1,10 @@
   // ---------- le ménage des attributs du plateau ----------
-  // Mesuré chez l'auteur : 82 attributs « jjk_ » sur « Narration » pour 18
+  // Mesuré chez l'auteur : 82 attributs « mia_ » sur « Narration » pour 18
   // attendus. Deux causes, deux remèdes, et la SEULE opération destructrice de
   // ce fichier — donc la plus surveillée.
-  //   - LES ÉTRANGERS. Une fiche de personnage JJK a été ouverte un jour sur ce
-  //     personnage : sa carte d'attributs en produit une soixantaine (jjk_pv,
-  //     jjk_state…). Elles n'ont rien à faire sur un plateau, alourdissent
+  //   - LES ÉTRANGERS. Une fiche de personnage MIA a été ouverte un jour sur ce
+  //     personnage : sa carte d'attributs en produit une soixantaine (mia_pv,
+  //     mia_state…). Elles n'ont rien à faire sur un plateau, alourdissent
   //     chaque lecture, et font passer le plateau pour un personnage.
   //   - LES HOMONYMES. Le pont lui-même en a fabriqué tant que la fiche de
   //     « Narration » n'était pas ouverte : la collection était vide, chaque
@@ -20,7 +20,7 @@
   //   1. LE PERSONNAGE DU PLATEAU, ET LUI SEUL. narrId est choisi par le pont
   //      lui-même, d'après le nom ; aucun autre personnage n'est jamais touché,
   //      et surtout pas une fiche de joueur.
-  //   2. JAMAIS LE DERNIER EXEMPLAIRE D'UN NOM « jjk_narr_ » : c'est l'état du
+  //   2. JAMAIS LE DERNIER EXEMPLAIRE D'UN NOM « mia_narr_ » : c'est l'état du
   //      plateau, et une place perdue ne se retrouve pas. Le contrôle est refait
   //      JUSTE AVANT chaque suppression, sur la collection vivante, parce que
   //      les autres joueurs font le même ménage au même moment sur le même
@@ -71,7 +71,7 @@
 
   // CE QUI APPARTIENT AU PLATEAU EST DIT PAR LE SITE, jamais deviné ici.
   //
-  // « tout jjk_ qui n'est pas jjk_narr_ est un reste de fiche » est un critère
+  // « tout mia_ qui n'est pas mia_narr_ est un reste de fiche » est un critère
   // NÉGATIF : gravé dans un paquet signé, il condamnerait tout nom que la page
   // du plateau se mettrait à écrire plus tard — et cette page, elle, change sans
   // signature. Le site envoie donc SES préfixes avec la demande de ménage, et

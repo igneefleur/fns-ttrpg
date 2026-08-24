@@ -1,6 +1,6 @@
 # La fiche de personnage, en morceaux
 
-Ces fichiers sont les sources de `docs/javascripts/jjk-fiche.js`. L'ordre du collage est dans
+Ces fichiers sont les sources de `docs/javascripts/mia-fiche.js`. L'ordre du collage est dans
 `scripts/assemblage.plan`, avec ce que fait chaque morceau.
 
 Le socle d'abord — l'amorce, l'état, les calculs communs, les entêtes et les

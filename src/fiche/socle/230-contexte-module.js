@@ -79,7 +79,7 @@
       // identité
       id: id,
       // Le numéro tel qu'il est, suffixe de beta compris : qui voudrait le
-      // lire passe par JjkMods.lireVersion, seul endroit qui sache ce que
+      // lire passe par MiaMods.lireVersion, seul endroit qui sache ce que
       // vaut ce suffixe. Le découper à la main ici rendrait « 0b » sur le
       // dernier nombre, et le majeur n'apprend RIEN du schéma.
       version: RELEASE,

@@ -1,7 +1,7 @@
-/* Content script sur Roll20 : onglet « Fiche JJK » dans le dialogue d'un personnage,
+/* Content script sur Roll20 : onglet « Fiche MIA » dans le dialogue d'un personnage,
  * qui monte la COQUILLE creator.html ; celle-ci affiche la fiche SERVIE PAR LE SITE
  * (roll20-fiche.html), toujours à jour sans re-signer l'extension. La fiche est
- * enregistrée dans les Attributes Roll20 du personnage (préfixe jjk_), donc partagée à
+ * enregistrée dans les Attributes Roll20 du personnage (préfixe mia_), donc partagée à
  * tous les joueurs qui contrôlent ce personnage.
  *
  * Deux rôles selon la frame (le script tourne all_frames) :
@@ -10,9 +10,9 @@
  *    ce page-script lit/écrit les attributs à la demande. C'est aussi elle qui pose
  *    le BOUTON DU PLATEAU dans la barre d'outils de Roll20 et le cadre du plateau
  *    de Narration, ancré à cette barre ou détaché.
- *  - FRAME DE LA FEUILLE (iframe du dialogue de perso) : pose l'onglet « Fiche JJK »
+ *  - FRAME DE LA FEUILLE (iframe du dialogue de perso) : pose l'onglet « Fiche MIA »
  *    entre « Feuille de personnage » et « Bio & Info ». Au clic : si le perso a déjà
- *    une fiche JJK -> monte l'iframe de la coquille ; sinon -> bouton « Créer fiche JJK ».
+ *    une fiche MIA -> monte l'iframe de la coquille ; sinon -> bouton « Créer fiche MIA ».
  *    SAUF sur le personnage « Narration », qui porte le plateau et pas un personnage :
  *    l'onglet ne s'y pose pas (voir estPlateau).
  *
@@ -40,8 +40,8 @@
  *
  * RÉGLAGES. Ce fichier ne fait que LIRE le stockage, jamais écrire ailleurs que
  * dans la géométrie du plateau ; le popup est le seul poste d'aiguillage.
- * Il lit jjkOff (éteinte : rien ne se réveille), jjkBeta (quelle moitié parle),
- * jjkNuit (« auto » | « jour » | « nuit », qui décide du n=1/0 envoyé aux pages
+ * Il lit miaOff (éteinte : rien ne se réveille), miaBeta (quelle moitié parle),
+ * miaNuit (« auto » | « jour » | « nuit », qui décide du n=1/0 envoyé aux pages
  * du site et de la couleur du cadre flottant) et l'interrupteur du plateau.
  * Tout cela se lit à la garde, tout en bas, où l'inventaire est détaillé.
  *

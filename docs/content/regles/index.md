@@ -1,4 +1,13 @@
-# Règles de Base JJK
+<!-- ATTENTION — CE TEXTE N'EST PAS ENCORE CELUI DE MADE IN ABYSS.
+     C'est le corps des règles JJK, reprises telles quelles pour que la chaîne
+     tienne debout pendant l'adaptation : hooks/mia_creation.py les relit au
+     build et en tire le JSON que lisent le créateur et la fiche, donc vider
+     cette page casserait les deux sans lever la moindre erreur.
+     Les règles de JJK sont l'œuvre de Qyu et lui appartiennent : cette page
+     doit être remplacée par les règles MIA d'Erua AVANT toute publication de
+     la branche. Voir le README, section « En chantier ». -->
+
+# Règles de Base MIA
 
 <div class="cols" markdown>
 
@@ -8,7 +17,7 @@ Base de règle : le D100, avec l'ajout de la mécanique des points fate au trave
 
 ### Le D100
 
-Chaque jet de compétences dans JJK sera lancé grâce au D100. 96+ au dé est un coup critique. 5- au dé est un échec critique.
+Chaque jet de compétences dans MIA sera lancé grâce au D100. 96+ au dé est un coup critique. 5- au dé est un échec critique.
 
 </div>
 
@@ -126,7 +135,7 @@ Vous récupérez Body/10 PV par jour, arrondi à l'inférieur.
 
 Perdre des PV peut mener à la mort ou l'inconscience.
 
-<div class="cj-modules anima jjk" markdown>
+<div class="cj-modules anima mia" markdown>
 
 | Seuil | État |
 |---|:---:|
@@ -143,7 +152,7 @@ Perdre des PV peut mener à la mort ou l'inconscience.
 
 Perdre une grande quantité de points de vie d'un seul coup amène souvent à des blessures graves. Elles sont décomposées en 4 niveaux.
 
-<div class="cj-modules anima jjk txt" markdown>
+<div class="cj-modules anima mia txt" markdown>
 
 | Blessure | Perte en un seul coup | Effets |
 |---|:---:|---|
@@ -174,7 +183,7 @@ Par 3 m de chute, 1D12 de dégâts. Un bon jet de Body Saut/Acrobatie peut rédu
 
 La vitesse de déplacement dépend de la base de Body :
 
-<div class="cj-modules anima jjk" markdown>
+<div class="cj-modules anima mia" markdown>
 
 | Body | Vitesse |
 |:---:|:---:|
@@ -215,7 +224,7 @@ Globalement, une arme légère n'impose que très peu de malus de poids, mais fa
 
 On peut suivre cette courbe de poids :
 
-<div class="cj-modules anima jjk" markdown>
+<div class="cj-modules anima mia" markdown>
 
 | Poids | Dégâts | Reach |
 |:---:|:---:|:---:|
@@ -245,7 +254,7 @@ Ajouté à cela, chaque arme possède au moins 2 avantages et 2 désavantages.
 
 Le reach d'une arme indique sa portée optimale d'utilisation, mais on peut utiliser une arme en dehors de sa portée :
 
-<div class="cj-modules anima jjk" markdown>
+<div class="cj-modules anima mia" markdown>
 
 | Portée | Malus |
 |---|:---:|
@@ -263,7 +272,7 @@ Le reach d'une arme indique sa portée optimale d'utilisation, mais on peut util
 
 De façon similaire aux armes, les armures auront une statistique d'invu croissante avec leur poids. On peut suivre cette courbe de poids :
 
-<div class="cj-modules anima jjk" markdown>
+<div class="cj-modules anima mia" markdown>
 
 | Poids | 10 | 30 | 60 |
 |---|:---:|:---:|:---:|
@@ -424,7 +433,7 @@ Dans les règles de base, on ne peut choisir qu'une seule manœuvre par attaque.
 
 ### Les modificateurs de combat
 
-<div class="cj-modules anima jjk txt" markdown>
+<div class="cj-modules anima mia txt" markdown>
 
 | Situation | Effet |
 |---|---|
@@ -448,7 +457,7 @@ Dans les règles de base, on ne peut choisir qu'une seule manœuvre par attaque.
 
 ### Les difficultés de tests
 
-<div class="cj-modules anima jjk" markdown>
+<div class="cj-modules anima mia" markdown>
 
 | Seuil | Difficulté |
 |:---:|---|
@@ -469,7 +478,7 @@ Dans les règles de base, on ne peut choisir qu'une seule manœuvre par attaque.
 
 ### Investir son xp
 
-<div class="cj-modules anima jjk txt" markdown>
+<div class="cj-modules anima mia txt" markdown>
 
 | Coût | Effet |
 |:---:|---|

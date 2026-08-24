@@ -1,6 +1,6 @@
 # Le plateau de Narration, en morceaux
 
-Ces fichiers sont les sources de `docs/javascripts/jjk-narration.js`. L'ordre du
+Ces fichiers sont les sources de `docs/javascripts/mia-narration.js`. L'ordre du
 collage est dans `scripts/assemblage.plan`, avec ce que fait chaque morceau.
 
 ## Ce ne sont pas des modules
@@ -13,8 +13,8 @@ Isolé, il n'est pas du JavaScript valide, ses accolades ne s'équilibrent pas, 
 fichier ASSEMBLÉ :
 
     python scripts/assembler.py --verifie   # compare au dépôt, n'écrit rien
-    python scripts/assembler.py             # réassemble docs/javascripts/jjk-narration.js
-    node --check docs/javascripts/jjk-narration.js
+    python scripts/assembler.py             # réassemble docs/javascripts/mia-narration.js
+    node --check docs/javascripts/mia-narration.js
 
 C'est le prix de la règle qui a présidé au découpage : le fichier assemblé doit
 être identique à l'octet près à celui d'avant. Le manifeste nomme ce fichier-là,
