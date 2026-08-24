@@ -154,7 +154,12 @@ def _extract(docs_dir):
         # --- l'initiative, la vitesse, les sauts, la récupération ---
         "iniMult": _un(text, r"Initiative = MOD AGI\s*×\s*(\d+)", 2),
         "iniMainsNues": _un(text, r"mains nues, elle y ajoute\s*(\d+)", 20),
-        "vitesseMult": _un(text, r"Vitesse = AGI\s*×\s*(\d+)", 2),
+        # LA VITESSE EST UN CARRÉ : « AGI × AGI ». Il n'y a donc pas de
+        # multiplicateur à lire, mais une forme à reconnaître — et si la page
+        # revenait un jour à « AGI × n », le carré retomberait à faux et le
+        # nombre serait relu, sans qu'on touche au code de la fiche.
+        "vitesseCarre": bool(re.search(r"Vitesse = AGI\s*×\s*AGI", text)),
+        "vitesseMult": _un(text, r"Vitesse = AGI\s*×\s*([\d,\.]+)\s*m", None),
         "sautLong": _un(text, r"Saut en longueur = FOR\s*×\s*([\d,\.]+)", 1.75),
         "sautHaut": _un(text, r"Saut en hauteur = FOR\s*÷\s*([\d,\.]+)", 2),
         "recupMult": _un(text, r"Elle monte jusqu'à MOD CON\s*×\s*(\d+)", 2),
@@ -170,6 +175,9 @@ def _extract(docs_dir):
         fautes.append("%d compétence(s) lue(s), 8 attendues" % len(comps))
     if len(valeurs) < 2:
         fautes.append("la table Valeur / MOD / LIM est introuvable ou vide")
+    if not data["vitesseCarre"] and data["vitesseMult"] is None:
+        fautes.append("la formule de la vitesse n'est plus reconnue "
+                      "(ni « AGI × AGI », ni « AGI × n mètres »)")
     for c in comps:
         inconnus = [s for s in c["mod"] + [c["lim"]] if s not in codes]
         if inconnus:

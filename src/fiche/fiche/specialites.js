@@ -27,6 +27,18 @@
     if (search) line.appendChild(search);
     tools.appendChild(line);
     if (search) b.appendChild(tools);
+    // l'entête des cinq colonnes, du même squelette que le quintuple des
+    // lignes : c'est ce qui garantit que chaque mot tombe en face de sa colonne
+    var tete = el("div", "pc-crow-top pc-caracs-tete");
+    tete.appendChild(el("span", "sp"));
+    var teteQuint = el("span", "pc-trio cinq tete");
+    ["Val", "Mod", "Comp", "Lim", "Bonus"].forEach(function (k) {
+      var c = el("span", "c");
+      c.appendChild(el("span", "k", k));
+      teteQuint.appendChild(c);
+    });
+    tete.appendChild(teteQuint);
+    b.appendChild(tete);
     b.appendChild(box);
     // Les lignes sont détruites et refaites à chaque ajout ou retrait ; le
     // registre du module, lui, survit au geste. UNE SEULE fonction y entre, qui
@@ -78,41 +90,32 @@
       nom.value = spe.nom || "";
       nom.addEventListener("input", function () { spe.nom = nom.value; refresh(); });
       top.appendChild(nom);
-      var val = el("span", "pc-cval pc-rollable", "");
-      val.addEventListener("click", function () {
+      // LES CINQ NOMBRES D'UN SEUL TENANT, et c'est le bloc ENTIER qui lance.
+      // Une spécialité en demande deux de plus qu'une compétence, et les deux
+      // se méritent : ses propres points ne sont pas seuls à faire le bonus —
+      // la compétence dont elle relève y entre aussi — et le total, lui, ne se
+      // recompose pas de tête quand l'endurance ou la charge mordent dessus.
+      var quint = el("span", "pc-trio cinq pc-rollable");
+      function case5() {
+        var c = el("span", "c");
+        var v = el("span", "v", "");
+        c.appendChild(v);
+        quint.appendChild(c);
+        return v;
+      }
+      var vPts = case5();
+      var vMod = case5();
+      var vComp = case5();
+      var vLim = case5();
+      var vBon = case5();
+      quint.addEventListener("click", function () {
         // sans caractéristique, la limite vaut zéro et le jet ne rendrait
         // jamais que zéro : le dire vaut mieux que de le lancer
         if (!spe.carac) { flash("Cette spécialité ne dit pas de quelle caractéristique elle tient."); return; }
         doJet(spe.nom || "Spécialité", spe.carac, spe.comp, spe);
       });
-      top.appendChild(val);
-      top.appendChild(miniBtn("✕", "Retirer cette spécialité", function () {
-        // des points sont de l'xp dépensé : on ne les efface pas sur un clic
-        // malheureux sans demander
-        if (spe.pts &&
-            !confirm("Retirer « " + (spe.nom || "sans nom") + " » et ses " + spe.pts + " points ?")) return;
-        state.specialites.splice(it.index, 1);
-        rendu();
-        refresh();
-        if (optCompsRebuild) optCompsRebuild();   // sa ligne quitte aussi le bloc des Options
-      }, "danger pc-edit-only"));
+      top.appendChild(quint);
       row.appendChild(top);
-
-      // PTS, LIM et XP restent lisibles rouage fermé, comme sur une
-      // caractéristique : le coût est nommé ici parce qu'un point de
-      // spécialité ne coûte pas un point d'xp, et qu'on l'oublierait.
-      var meta = el("div", "pc-kv");
-      meta.appendChild(el("span", "k", "PTS"));
-      var vPts = el("span", "max", "");
-      meta.appendChild(vPts);
-      meta.appendChild(el("span", "k", "LIM"));
-      var vLim = el("span", "max", "");
-      meta.appendChild(vLim);
-      meta.appendChild(el("span", "sp"));
-      meta.appendChild(el("span", "k", "XP"));
-      var vXp = el("span", "max", "");
-      meta.appendChild(vXp);
-      row.appendChild(meta);
 
       var bot = el("div", "pc-crow-bot pc-edit-only");
       bot.appendChild(el("span", "lbl", "Carac"));
@@ -143,6 +146,34 @@
           }
           spe.pts = Math.max(0, n);
         }, 1, "points", lignes));
+      bot.appendChild(el("span", "lbl", "Plafond"));
+      var vPlaf = el("span", "max", "");
+      vPlaf.style.justifySelf = "end";
+      bot.appendChild(vPlaf);
+      // LE COÛT EST NOMMÉ ICI, avec le reste de la construction : un point de
+      // spécialité ne coûte pas un point d'xp, et on ne le regarde qu'en
+      // achetant. En jouant, ce qu'on cherche est sur la ligne du haut.
+      bot.appendChild(el("span", "lbl", "XP"));
+      var vXp = el("span", "max", "");
+      vXp.style.justifySelf = "end";
+      bot.appendChild(vXp);
+      // le retrait descend avec le reste : c'est un geste de construction, et
+      // le laisser en haut décalait le quintuple d'une ligne à l'autre selon
+      // que le rouage était ouvert ou fermé
+      var sup = el("span");
+      sup.style.gridColumn = "1 / -1";
+      sup.style.justifySelf = "end";
+      sup.appendChild(miniBtn("✕ Retirer", "Retirer cette spécialité", function () {
+        // des points sont de l'xp dépensé : on ne les efface pas sur un clic
+        // malheureux sans demander
+        if (spe.pts &&
+            !confirm("Retirer « " + (spe.nom || "sans nom") + " » et ses " + spe.pts + " points ?")) return;
+        state.specialites.splice(it.index, 1);
+        rendu();
+        refresh();
+        if (optCompsRebuild) optCompsRebuild();   // sa ligne quitte aussi le bloc des Options
+      }, "danger"));
+      bot.appendChild(sup);
       row.appendChild(bot);
 
       lignes.push(function () {
@@ -160,9 +191,19 @@
         chip.textContent = (spe.carac || "—") + " · " + (spe.comp || "—");
         chip.title = (spe.carac ? caracInfo(spe.carac).nom : "aucune caractéristique") +
                      " · " + (spe.comp ? compInfo(spe.comp).nom : "aucune compétence");
-        val.textContent = spe.carac ? sign(bonus) : "—";
-        val.classList.toggle("adj", force || d !== 0 || mord || mal !== 0 || ch !== 0);
-        val.title = !spe.carac
+        // LES CINQ CASES DISENT LA MÊME PHRASE, dans l'ordre où elle se compose :
+        // ce que la spécialité vaut à elle seule, ce que la caractéristique y
+        // ajoute, ce que la compétence y ajoute, ce qui coiffe le résultat, et
+        // ce que tout cela donne au dé. Le bonus n'est PAS la somme des trois
+        // premières quand l'endurance ou la charge mordent — c'est justement
+        // pour cela qu'il est écrit plutôt que laissé à faire de tête.
+        vPts.textContent = String(spePts(spe));
+        vMod.textContent = spe.carac ? sign(caracMod(spe.carac)) : "—";
+        vComp.textContent = spe.comp ? sign(compPts(spe.comp)) : "—";
+        vLim.textContent = spe.carac ? String(lim) : "—";
+        vBon.textContent = spe.carac ? sign(bonus) : "—";
+        quint.classList.toggle("adj", force || d !== 0 || mord || mal !== 0 || ch !== 0);
+        quint.title = !spe.carac
           ? ""
           : (force
                ? "Points forcés (Options)"
@@ -175,9 +216,8 @@
             (mal ? " · endurance " + sign(-mal) : "") +
             " — clic : lancer " + DE_DEFAUT + " " + sign(bonus) +
             ", plafonné à " + lim;
-        vPts.textContent = spePts(spe) + " / " + plaf;
-        vPts.classList.toggle("adj", force || d !== 0 || mord);
-        vLim.textContent = spe.carac ? String(lim) : "—";
+        vPlaf.textContent = String(plaf);
+        vPlaf.classList.toggle("adj", mord);
         vXp.textContent = String(speXp(spe));
         vXp.classList.toggle("adj", xpF);
         vXp.title = xpF ? "Coût forcé (Options)" : "";

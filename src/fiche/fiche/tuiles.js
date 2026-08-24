@@ -36,9 +36,9 @@
     row.appendChild(multiMod(state.divers, cle));
     tile.appendChild(row);
   }
-  // Le gréement commun d'une tuile réglable. Les Sauts ne l'ont pas : ni les
-  // règles ni l'état ne leur donnent de valeur forcée ni de modificateur, et
-  // leur en fabriquer un ici reviendrait à inventer une règle.
+  // Le gréement commun d'une tuile réglable. LES QUATRE L'ONT : ce sont quatre
+  // valeurs dérivées de la même façon, que les mêmes paliers de charge rognent,
+  // et une seule qui refuserait le décalage du MJ serait un trou, pas un choix.
   function tuileReglable(tile, id, champ, auto, cle, dec) {
     tile.classList.add("pc-mods-host", "pc-editable");
     tile.dataset.module = id;
@@ -105,14 +105,20 @@
     tiles.appendChild(tc);
 
     // ---- les deux sauts ----
-    // Ni valeur forcée ni modificateur : ni les règles ni l'état ne leur en
-    // donnent, et leur en fabriquer un ici reviendrait à inventer une règle.
-    [["Saut longueur", sautLong], ["Saut hauteur", sautHaut]].forEach(function (o) {
-      var ts = bigTile(o[0], o[1]);
+    // Chacun est son module, comme la vitesse et la charge : rouage, valeur
+    // forcée, modificateurs. Ils partagent le diviseur de charge mais rien
+    // d'autre, et se règlent donc séparément.
+    [["Saut longueur", sautLong, "sautLong", "sautLongOverride", sautLongAuto],
+     ["Saut hauteur",  sautHaut, "sautHaut", "sautHautOverride", sautHautAuto]
+    ].forEach(function (o) {
+      var ts = tuileReglable(bigTile(o[0], o[1]), o[2], o[3], o[4], o[2], true);
       hooks.push(function () {
+        var d = modSum(state.divers[o[2]]);
         var pal = tuilePaliers("sautDiv", "divisés par");
-        ts.classList.toggle("adj", pal.length > 0);
-        ts.title = pal.join(" · ");
+        ts.classList.toggle("adj", state[o[3]] !== null || d !== 0 || pal.length > 0);
+        ts.title = state[o[3]] !== null
+          ? o[0] + " forcé à " + fmtP(state[o[3]]) + " m (calculé : " + fmtP(o[4]()) + " m)"
+          : pal.concat(d ? ["modificateurs " + sign(d) + " m"] : []).join(" · ");
       });
       tiles.appendChild(ts);
     });

@@ -64,6 +64,18 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import version_fiche as V  # noqa: E402  (la grammaire du numéro, partagée)
 
+def cles_divers(txt):
+    """Les clés de state.divers, telles qu'un fichier les déclare."""
+    m = re.search(r"divers:\s*\{(.*?)\}", txt, re.S)
+    return set(re.findall(r"(\w+)\s*:\s*\[", m.group(1))) if m else None
+
+
+def cles_forcees(txt):
+    """Les valeurs dérivées remplaçables net (xxxOverride: null)."""
+    t = set(re.findall(r"(\w+Override)\s*:\s*null", txt))
+    return t or None
+
+
 RACINE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # LES QUATRE PORTEURS SE NOMMENT DANS version_fiche, ET NULLE PART AILLEURS. Ils
 # étaient recodés ici, et le contrôle aurait fini par juger d'autres fichiers que
@@ -77,6 +89,7 @@ DOCS = os.path.join(RACINE, "docs")
 # Ce fichier-ci ne porte pas le numéro mais décide jusqu'où une fiche sait
 # migrer : personne ne le regardait.
 MIGRATIONS = os.path.join(RACINE, "docs", "javascripts", "mia-migrations.js")
+ETAT_DEFAUT = os.path.join(RACINE, "src", "fiche", "socle", "040-etat-defaut.js")
 MODS = os.path.join(RACINE, "docs", "javascripts", "mia-mods.js")
 # L'extension est une COQUILLE : son numéro avance seul, et le seul contrôle
 # qui la regarde ici est qu'il ne RECULE pas sous ce qui est déjà signé.
@@ -317,6 +330,26 @@ def main(archive_differee=False):
                           "manifeste manque)" % (ra, mrel))
         else:
             notes.append("mia-attr-map.js : RELEASE_DEFAUT %s" % ra)
+
+    # 1 ter. LE MIROIR DE blank(). mia-attr-map.js n'est PAS assemblé : il porte
+    # sa propre copie de l'état par défaut, celle qui sert quand le bundle n'a
+    # pas répondu. Une valeur dérivée ajoutée d'un seul côté est une perte sèche
+    # sur ce chemin de repli — et strictement rien ne le dirait, puisque tout
+    # continue de fonctionner tant que le bundle répond.
+    if os.path.exists(ATTRMAP) and os.path.exists(ETAT_DEFAUT):
+        for quoi, cles in (("divers", cles_divers), ("valeurs forcées", cles_forcees)):
+            vraies = cles(V.lire_fichier(ETAT_DEFAUT))
+            copie = cles(V.lire_fichier(ATTRMAP))
+            if vraies is None or copie is None:
+                notes.append("blank() : %s illisible d'un côté, contrôle sauté" % quoi)
+            elif vraies != copie:
+                fautes.append("mia-attr-map.js ne recopie plus blank() : %s "
+                              "manquante(s) ici %s, en trop %s (chemin de repli)"
+                              % (quoi, sorted(vraies - copie) or "—",
+                                 sorted(copie - vraies) or "—"))
+            else:
+                notes.append("blank() : %s recopiées à l'identique (%d)"
+                             % (quoi, len(vraies)))
 
     # 3. LE SCHÉMA, détaché du majeur. Plus rien ne le déduit du numéro : ses
     # deux seuls ancrages sont le manifeste (contrôlé plus haut) et la chaîne de

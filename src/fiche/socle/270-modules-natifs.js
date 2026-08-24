@@ -12,7 +12,17 @@
   // avant d'être touché (appliqueDisposition).
   var MODULES_NATIFS = [
     // ---- onglet Fiche ----
+    // TROIS COLONNES INÉGALES : un quart, un quart, une moitié. Les deux listes
+    // fermées — huit caractéristiques, huit compétences — tiennent dans un quart
+    // parce qu'elles ne portent que trois nombres chacune ; les valeurs du corps
+    // tiennent dans le deuxième. LA MOITIÉ EST AUX SPÉCIALITÉS : c'est la seule
+    // liste OUVERTE de la fiche, la seule qui s'allonge sans fin, et la seule
+    // dont chaque ligne porte cinq nombres, un nom libre et deux sigles.
     { id: "caracs",     titre: "Caractéristiques",  onglet: "fiche", colonne: "gauche", build: buildCaracs },
+    // Les compétences suivent les caractéristiques, dans la même colonne : ce
+    // sont deux listes de huit lignes, de la même forme, qu'on lit l'une après
+    // l'autre — la compétence dit à quelle caractéristique elle emprunte.
+    { id: "comps",      titre: "Compétences",       onglet: "fiche", colonne: "gauche", build: buildComps },
     // Initiative et récupération vont ensemble : deux valeurs qu'on relit, et
     // qui portent chacune le bouton qui en fait quelque chose.
     { id: "initiative", titre: "Initiative",        onglet: "fiche", colonne: "milieu", build: buildInitiative },
@@ -25,9 +35,9 @@
     // moment, et elles se déplacent — ou se coupent — l'une sans l'autre.
     { id: "pv",         titre: "PV",                onglet: "fiche", colonne: "milieu", build: buildPv },
     { id: "endurance",  titre: "Endurance",         onglet: "fiche", colonne: "milieu", build: buildEndurance },
-    { id: "comps",      titre: "Compétences",       onglet: "fiche", colonne: "droite", build: buildComps },
-    // Les spécialités suivent les compétences dont elles relèvent : c'est dans
-    // cet ordre-là qu'on les remplit, et dans cet ordre-là qu'on les lance.
+    // Les spécialités ont la colonne large POUR ELLES SEULES : cinq nombres,
+    // un nom qu'on écrit, deux sigles à choisir et un filtre, sur une liste qui
+    // n'a pas de fin. Elles étouffaient sous un tiers de feuille.
     { id: "specialites", titre: "Spécialités",      onglet: "fiche", colonne: "droite", build: buildSpecialites },
     // ---- onglet Équipement ----
     { id: "armes",      titre: "Armes",             onglet: "equipement", colonne: "gauche", build: buildArmes },

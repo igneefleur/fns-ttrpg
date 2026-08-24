@@ -58,10 +58,12 @@
       // chacune) ou remplacer net.
       divers: {
         pvMax: [0, 0, 0], endurance: [0, 0, 0], vitesse: [0, 0, 0],
-        initiative: [0, 0, 0], charge: [0, 0, 0], recup: [0, 0, 0]
+        initiative: [0, 0, 0], charge: [0, 0, 0], recup: [0, 0, 0],
+        sautLong: [0, 0, 0], sautHaut: [0, 0, 0]
       },
       pvMaxOverride: null, enduranceMaxOverride: null, vitesseOverride: null,
       initiativeOverride: null, chargeOverride: null, recupOverride: null,
+      sautLongOverride: null, sautHautOverride: null,
 
       // modules : le coffre privé de chaque module (id -> objet libre) et les
       // interrupteurs (id -> false pour les seuls modules coupés).

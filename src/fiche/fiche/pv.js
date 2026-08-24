@@ -13,6 +13,10 @@
   // creusé sous zéro. Deux barres empilées obligeaient à chercher laquelle
   // bougeait avant de lire combien — et l'une des deux était toujours vide.
   //
+  // ELLE PREND TOUTE LA LARGEUR, ET ELLE EST SEULE. Le chiffre qui la doublait
+  // en bout de ligne disait exactement ce que le stepper dit déjà au-dessus :
+  // deux fois la même valeur et le même maximum, dans le même bloc.
+  //
   // Deux réglages se posent ici plutôt que dans la feuille : .pc-meter .bar est
   // figée à 84 px et les deux règles qui l'étirent nomment leur hôte, qui n'est
   // pas ce bloc-ci. Le passage en flex est ce qui permet à la barre rouge de
@@ -20,17 +24,13 @@
   function pvJauge() {
     var m = el("span", "pc-meter");
     var bar = el("span", "bar");
-    bar.style.flex = "1";
+    bar.style.flex = "1 1 100%";
     bar.style.width = "auto";
     bar.style.display = "flex";
     var f = el("i");
     bar.appendChild(f);
     m.appendChild(bar);
-    var t = el("b", null, "");
-    t.style.flex = "0 0 5.5rem";
-    t.style.textAlign = "right";
-    m.appendChild(t);
-    return { el: m, txt: t, fill: f };
+    return { el: m, fill: f };
   }
   // Une ligne d'état qui n'existe que lorsqu'elle a quelque chose à dire : le
   // texte vide l'efface, ses marges avec.
@@ -51,7 +51,10 @@
   function pvReserve(nom, lire, ecrire, maxi, plancher, infoMax) {
     var box = el("div");
     var row = el("div", "pc-kv");
-    row.appendChild(el("span", "k", nom));
+    // PAS D'ÉTIQUETTE : le titre du bloc dit déjà « PV » ou « Endurance », et
+    // le répéter en tête de la ligne juste dessous coûtait cinq lettres de
+    // large dans une colonne qui n'en a pas de trop — au point que le bouton
+    // « Max » passait à la ligne.
     var step = el("span", "pc-step");
     step.appendChild(stepBtn("−", null, function () { ecrire(lire() - 1); refresh(); }));
     var inp = el("input", "pc-num");
@@ -87,7 +90,9 @@
       j.fill.style.marginLeft = neg ? "auto" : "0";
       j.fill.style.width = clamp(neg ? (p < 0 ? v / p * 100 : 0)
                                      : (m > 0 ? v / m * 100 : 0), 0, 100) + "%";
-      j.txt.textContent = pvFmtNeg(v) + " / " + pvFmtNeg(neg ? p : m);
+      // la barre porte SON infobulle : c'est le seul endroit où le plancher
+      // négatif se nomme, la ligne du dessus n'annonçant que le maximum
+      j.el.title = nom + " " + pvFmtNeg(v) + " / " + pvFmtNeg(neg ? p : m);
     });
     return box;
   }

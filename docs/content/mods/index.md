@@ -283,7 +283,9 @@ les filtres.
 | `ctx.calculs.enduranceMalus()` | ce qu'une endurance négative retranche à tous les jets. |
 | `ctx.calculs.recupJour()` | les PV regagnés par jour. |
 | `ctx.calculs.initiative()` | l'initiative, équipement et paliers de charge compris. |
-| `ctx.calculs.vitesse()` | la vitesse, unité comprise : une chaîne, par exemple `"10 m"`. |
+| `ctx.calculs.vitesse()` | la vitesse, unité comprise : une chaîne, par exemple `"25 m"`. |
+| `ctx.calculs.sautLong()` | le saut en longueur, unité comprise. |
+| `ctx.calculs.sautHaut()` | le saut en hauteur, unité comprise. |
 | `ctx.calculs.poidsPorte()` | le poids porté. |
 | `ctx.calculs.chargeMax()` | ce que le personnage peut porter au plus. |
 
@@ -353,6 +355,8 @@ en rendre un.
 | `recupJour` | les PV regagnés par jour | `{}` |
 | `initiative` | l'initiative | `{}` |
 | `vitesse` | la vitesse en mètres, avant que l'unité ne s'y ajoute | `{}` |
+| `sautLong` | le saut en longueur, en mètres, avant l'unité | `{}` |
+| `sautHaut` | le saut en hauteur, en mètres, avant l'unité | `{}` |
 | `poidsPorte` | le poids porté | `{}` |
 | `chargeMax` | la charge maximale | `{}` |
 | `xpDepense` | l'xp dépensé | `{}` |

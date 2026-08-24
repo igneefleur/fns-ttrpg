@@ -81,8 +81,12 @@
   }
 
   // ---------- la vitesse ----------
+  // L'AGILITÉ SE MULTIPLIE PAR ELLE-MÊME : 5 en agilité valent 25 mètres, 10 en
+  // valent 100. La progression n'est donc pas linéaire, et c'est la règle qui le
+  // veut ; la forme carrée se lit dans la page, elle ne se décide pas ici.
   function vitesseAuto() {
-    var v = caracTotal("AGI") * repli("vitesseMult");
+    var agi = caracTotal("AGI");
+    var v = repli("vitesseCarre") ? agi * agi : agi * repli("vitesseMult");
     chargePaliers().forEach(function (p) { if (p.calc.vitesseDiv) v = v / p.calc.vitesseDiv; });
     return Math.max(0, v + modSum(state.divers.vitesse));
   }
@@ -106,12 +110,34 @@
     chargePaliers().forEach(function (p) { if (p.calc.sautDiv) d *= p.calc.sautDiv; });
     return d;
   }
+  // LES DEUX SAUTS SE RÈGLENT COMME LA VITESSE : valeur forcée, modificateurs,
+  // point de filtre. Ce sont trois distances de déplacement, elles subissent
+  // les mêmes paliers de charge, et un MJ qui peut décaler l'une sans pouvoir
+  // décaler les autres n'a pas un réglage : il a un trou.
+  // Les modificateurs entrent APRÈS la division de charge, comme pour la
+  // vitesse : ce sont des mètres qu'on ajoute, pas un facteur qu'on rogne.
+  function sautLongAuto() {
+    var v = caracTotal("FOR") * repli("sautLong") / sautDiv();
+    return Math.max(0, v + modSum(state.divers.sautLong));
+  }
+  function sautLongValBrut() {
+    return state.sautLongOverride !== null ? state.sautLongOverride : sautLongAuto();
+  }
   function sautLongVal() {
-    return Math.max(0, caracTotal("FOR") * repli("sautLong") / sautDiv());
+    var v = sautLongValBrut();
+    return aFiltre("sautLong") ? applique("sautLong", v, {}) : v;
+  }
+  function sautHautAuto() {
+    var d = repli("sautHaut") || 1;
+    var v = caracTotal("FOR") / d / sautDiv();
+    return Math.max(0, v + modSum(state.divers.sautHaut));
+  }
+  function sautHautValBrut() {
+    return state.sautHautOverride !== null ? state.sautHautOverride : sautHautAuto();
   }
   function sautHautVal() {
-    var d = repli("sautHaut") || 1;
-    return Math.max(0, caracTotal("FOR") / d / sautDiv());
+    var v = sautHautValBrut();
+    return aFiltre("sautHaut") ? applique("sautHaut", v, {}) : v;
   }
   function sautLong() { return fmtP(sautLongVal()) + " m"; }
   function sautHaut() { return fmtP(sautHautVal()) + " m"; }

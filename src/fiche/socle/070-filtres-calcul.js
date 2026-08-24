@@ -42,7 +42,7 @@
     compValue: 1, compPlafond: 1, compXp: 1,
     spePts: 1, spePlafond: 1, jetBonus: 1,
     pvMax: 1, enduranceMax: 1, enduranceMalus: 1, recupJour: 1,
-    initiative: 1, vitesse: 1,
+    initiative: 1, vitesse: 1, sautLong: 1, sautHaut: 1,
     poidsPorte: 1, chargeMax: 1, xpDepense: 1
   };
   // Appartenance RÉELLE à une table nommée par une chaîne venue d'ailleurs (mod,

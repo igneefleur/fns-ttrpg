@@ -235,7 +235,7 @@ La vitesse est le déplacement possible au cours d'un round.
 
 <div class="formula" markdown>
 
-<p class="formula">Vitesse = AGI × 2 mètres</p>
+<p class="formula">Vitesse = AGI × AGI mètres</p>
 
 </div>
 

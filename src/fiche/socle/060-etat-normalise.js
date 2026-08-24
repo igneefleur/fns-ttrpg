@@ -114,12 +114,14 @@
 
     // ---------- les valeurs dérivées ----------
     s.divers = objet(s.divers);
-    ["pvMax", "endurance", "vitesse", "initiative", "charge", "recup"].forEach(function (k) {
+    ["pvMax", "endurance", "vitesse", "initiative", "charge", "recup",
+     "sautLong", "sautHaut"].forEach(function (k) {
       var a = Array.isArray(s.divers[k]) ? s.divers[k] : [];
       s.divers[k] = [modNum(a[0]), modNum(a[1]), modNum(a[2])];
     });
     ["pvMaxOverride", "enduranceMaxOverride", "vitesseOverride",
-     "initiativeOverride", "chargeOverride", "recupOverride"]
+     "initiativeOverride", "chargeOverride", "recupOverride",
+     "sautLongOverride", "sautHautOverride"]
       .forEach(function (k) { s[k] = forceVal(s[k]); });
 
     // ---------- l'inventaire ----------
