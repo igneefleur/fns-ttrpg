@@ -273,6 +273,10 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-crow { display: flex; flex-direction: column; gap: .1rem; padding: .18rem .1rem .24rem; border-bottom: 1px solid var(--hair); }
 .pc-crow:last-child { border-bottom: none; }
 .pc-crow-top { display: flex; align-items: center; gap: .35rem; }
+/* le ressort qui pousse le trio contre le bord droit : le sigle à gauche, les
+   trois nombres à droite, et la ligne se lit d'un bout à l'autre sans que le
+   regard ait à chercher où commencent les chiffres */
+.pc-crow-top > .sp { flex: 1 1 auto; min-width: .25rem; }
 .pc-abbr { display: inline-block; box-sizing: border-box; min-width: 2.6rem; background: var(--red-deep); color: #fdf3ec; font-weight: 700; font-size: .58rem; letter-spacing: .01em; padding: .14rem .3rem; border-radius: 4px; text-align: center; white-space: nowrap; }
 .pc-crow-top .nm { flex: 1 1 auto; min-width: 0; font-size: var(--fs-meta); color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pc-cval {
@@ -280,6 +284,35 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
   background: var(--panel); border: 1px solid var(--line-2); border-radius: 5px;
   padding: .02rem .3rem; font-variant-numeric: tabular-nums; line-height: 1.25;
 }
+/* ---- caractéristique : VAL | MOD | LIM d'un seul tenant, et cliquable ----
+   Les trois nombres qu'on lit en jouant, dans l'ordre où ils se composent : la
+   valeur achetée, le modificateur qu'elle donne au jet, la limite qui le coiffe.
+   Aucun ne veut rien dire sans les deux autres, d'où le bloc soudé — et c'est le
+   BLOC ENTIER qui lance, pas l'un des trois. L'étiquette de chaque case est en
+   très petit au-dessus du nombre : sans elle, trois chiffres nus au bout d'une
+   ligne se lisent dans le désordre au premier coup d'œil. */
+.pc-trio {
+  display: inline-flex; align-items: stretch; flex: 0 0 auto;
+  background: var(--panel); border: 1px solid var(--line-2); border-radius: 5px;
+  overflow: hidden; line-height: 1.1;
+}
+.pc-trio > .c {
+  display: flex; flex-direction: column; align-items: center;
+  padding: .05rem .4rem .1rem; min-width: 2.5rem;
+}
+.pc-trio > .c + .c { border-left: 1px solid var(--line-2); }
+.pc-trio .k {
+  font-size: .44rem; font-weight: 700; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--ink-3);
+}
+.pc-trio .v {
+  font-size: .88rem; font-weight: 700; color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.pc-trio.adj .v { color: var(--red-deep); }
+.pc-trio.pc-rollable:hover { border-color: var(--red); }
+.pc-trio.pc-rollable:hover .v { color: var(--red); }
+
 /* édition d'une carac : grille étiquette | stepper, une paire par ligne
    (le flex en vrac sautait à la ligne au milieu d'un groupe en colonne étroite) */
 .pc-crow-bot { display: grid; grid-template-columns: max-content 1fr; gap: .14rem .5rem; align-items: center; padding-top: .1rem; }

@@ -74,7 +74,7 @@
   // site il est. Il ne change PAS le rang : « 1.0.1b » et « 1.0.1 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (MiaMods.compareVersions tient cette règle).
-  var RELEASE = "1.1.0b";
+  var RELEASE = "1.1.1b";
   var SCHEMA = 1;
 
   // ---------- ce que la fiche ne décide PAS ----------
@@ -2794,8 +2794,8 @@
   // caractéristique, il les plafonne toutes. Il se saisit dans l'en-tête, à
   // côté de l'XP total — les deux mêmes choses, ce que le meneur accorde.
   function buildCaracs() {
-    // jeu : la valeur, ses trois chiffres et son jet ; édition : les ± qui la
-    // montent et la descendent, achat par achat
+    // jeu : le sigle et son trio ; édition : les ± qui achètent la valeur, et
+    // ce qu'elle a coûté
     var b = block("Caractéristiques", null, "caracs");
 
     // ---------- une caractéristique ----------
@@ -2809,34 +2809,38 @@
       var chip = el("span", "pc-abbr", code);
       chip.title = info.nom;
       top.appendChild(chip);
-      // LA VALEUR EST LE BOUTON DE JET : le geste de cette fiche depuis
-      // toujours est un chiffre qu'on clique, pas un bouton de plus posé à
-      // côté d'un chiffre. doJet est le seul chemin d'un jet de test : il pose
-      // le MOD, la limite et le malus d'endurance sans qu'on ait à y penser.
-      var val = el("span", "pc-cval pc-rollable", "");
-      val.addEventListener("click", function () { doJet(code, code, null, null); });
-      top.appendChild(val);
-      row.appendChild(top);
+      top.appendChild(el("span", "sp"));
 
-      // MOD, LIM et XP restent lisibles EN PERMANENCE, rouage fermé : ce sont
-      // eux qu'on cherche en jouant, la valeur n'étant que ce qui les produit.
-      var meta = el("div", "pc-kv");
-      meta.appendChild(el("span", "k", "MOD"));
-      var vMod = el("span", "max", "");
-      meta.appendChild(vMod);
-      meta.appendChild(el("span", "k", "LIM"));
-      var vLim = el("span", "max", "");
-      meta.appendChild(vLim);
-      meta.appendChild(el("span", "sp"));
-      meta.appendChild(el("span", "k", "XP"));
-      var vXp = el("span", "max", "");
-      meta.appendChild(vXp);
-      row.appendChild(meta);
+      // LE TRIO EST LE BOUTON DE JET, d'un seul tenant. Les trois nombres se
+      // lisent dans l'ordre où ils se composent — la valeur qu'on a achetée, le
+      // modificateur qu'elle donne au jet, la limite qui le coiffe — et aucun
+      // ne veut rien dire sans les deux autres : c'est donc le BLOC qui lance,
+      // et non l'un des trois. doJet est le seul chemin d'un jet de test : il
+      // pose le MOD, la limite et le malus d'endurance sans qu'on y pense.
+      var trio = el("span", "pc-trio pc-rollable");
+      function case3(k) {
+        var c = el("span", "c");
+        c.appendChild(el("span", "k", k));
+        var v = el("span", "v", "");
+        c.appendChild(v);
+        trio.appendChild(c);
+        return v;
+      }
+      var vVal = case3("Val");
+      var vMod = case3("Mod");
+      var vLim = case3("Lim");
+      trio.addEventListener("click", function () { doJet(code, code, null, null); });
+      top.appendChild(trio);
+      row.appendChild(top);
 
       // LES ± ACHÈTENT LA VALEUR, et rien ne les retient faute d'xp : l'en-tête
       // AVERTIT dès que le total est dépassé, là où un blocage figerait à zéro
       // toute fiche remplie à l'envers — les valeurs d'abord, l'xp total
       // ensuite. Le prestige, lui, borne pour de bon.
+      //
+      // L'XP EST ICI, ET NON EN PERMANENCE : ce qu'une caractéristique a coûté
+      // ne se lit qu'en construisant le personnage. En jouant, il n'apprend
+      // rien et prend une ligne.
       var bot = el("div", "pc-crow-bot pc-edit-only");
       bot.appendChild(el("span", "lbl", "Valeur"));
       bot.appendChild(stepper(
@@ -2850,12 +2854,16 @@
           var n = Math.round(v);
           if (n > haut) {
             flash(haut === plaf
-              ? "Plafond de " + plaf + " : le prestige plafonne " + code + "."
-              : code + " est déjà au-delà du plafond (" + plaf + ") : il ne peut que redescendre.");
+              ? "Plafond de " + plaf + "."
+              : code + " est au-delà du plafond (" + plaf + ").");
             n = haut;
           }
           state.caracs[code] = Math.max(0, n);
         }, 1, "valeur"));
+      bot.appendChild(el("span", "lbl", "XP"));
+      var vXp = el("span", "max", "");
+      vXp.style.justifySelf = "end";
+      bot.appendChild(vXp);
       row.appendChild(bot);
 
       hooks.push(function () {
@@ -2866,34 +2874,28 @@
         var mord = base > plaf;
         var xpF = state.caracsXpForce[code] !== undefined;
         var xpD = (state.caracsXpMod[code] || 0) + (state.caracsXpMod2[code] || 0);
-        val.textContent = String(caracTotal(code));
-        val.classList.toggle("adj", force || d !== 0 || mord);
-        // quand le plafond mord, l'écrire en clair (« plafonnée à 12 ») : sans
-        // cela, le joueur voit un total qui ne correspond ni à ce qu'il a
-        // acheté ni à ce qu'il a modifié, et rien ne dit pourquoi. Un total
-        // forcé, lui, REMPLACE la somme : l'afficher quand même la ferait mentir.
-        val.title = (force
-                      ? "Total forcé (Options)"
-                      : "Valeur " + base +
-                        (mord ? ", plafonnée à " + plaf + " (prestige)" : "") +
-                        (d ? " · modificateur (Options) " + sign(d) : "")) +
-                    " = " + caracTotal(code) +
-                    " — clic : lancer " + DE_DEFAUT + " " + sign(caracMod(code)) +
-                    ", plafonné à " + caracLim(code);
+        var retouche = force || d !== 0 || mord;
+        vVal.textContent = String(caracTotal(code));
         vMod.textContent = sign(caracMod(code));
-        vMod.title = "Ce que " + code + " ajoute à ses jets.";
-        vMod.classList.toggle("adj", force || d !== 0 || mord);
         vLim.textContent = String(caracLim(code));
-        vLim.title = "Aucun jet de " + code + " ne dépasse ce résultat.";
-        vLim.classList.toggle("adj", force || d !== 0 || mord);
+        trio.classList.toggle("adj", retouche);
+        // quand le plafond mord, le dire : sans cela, le joueur voit un total
+        // qui ne correspond ni à ce qu'il a acheté ni à ce qu'il a modifié, et
+        // rien ne dit pourquoi. Un total forcé, lui, REMPLACE la somme :
+        // l'afficher quand même la ferait mentir.
+        trio.title = (force
+                       ? "Total forcé (Options)"
+                       : "Valeur " + base +
+                         (mord ? ", plafonnée à " + plaf : "") +
+                         (d ? " · modificateur (Options) " + sign(d) : "")) +
+                     " — clic : lancer " + DE_DEFAUT + " " + sign(caracMod(code)) +
+                     ", plafonné à " + caracLim(code);
         // l'XP se lit sur la valeur ACHETÉE, jamais sur le total : un
         // modificateur d'équipement ne se paie pas.
         vXp.textContent = String(caracXp(code));
         vXp.classList.toggle("adj", xpF || xpD !== 0);
-        vXp.title = xpF
-          ? "Coût forcé (Options) — calculé : " + caracXpAuto(code)
-          : "XP cumulé de la valeur " + base + ", lu dans la table des règles" +
-            (xpD ? " · modificateur (Options) " + sign(xpD) : "");
+        vXp.title = xpF ? "Coût forcé (Options) — calculé : " + caracXpAuto(code)
+                        : (xpD ? "Modificateur (Options) " + sign(xpD) : "");
       });
       return row;
     }
@@ -2902,7 +2904,6 @@
     champs().forEach(function (code) { b.appendChild(ligne(code)); });
     return b;
   }
-
   // ---------- le corps : vitesse, charge, sauts ----------
   // Quatre tuiles autonomes plutôt qu'un bloc encadré : chacune est SON module
   // (rouage flottant, valeur forcée, modificateurs), et la grille à deux
