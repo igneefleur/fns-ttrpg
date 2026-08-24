@@ -6,11 +6,6 @@
   // Deux charpentes pour un même contenu auraient fini par diverger d'un pixel,
   // puis d'une infobulle.
   //
-  // LE MOD NOMME SA CARACTÉRISTIQUE, et il le faut : il vient de FOR pour PHY,
-  // de DEX pour COM, et ainsi de suite. L'entête ne peut pas le dire, puisqu'il
-  // change d'une ligne à l'autre — c'est donc la case qui le porte, en petit
-  // au-dessus du nombre.
-  //
   // opts : { reg } — le registre de rafraîchissement où la ligne s'inscrit,
   // celui du module qui la bâtit. Une ligne détruite emporte ses fonctions ;
   // laissées dans le registre du voisin, elles rafraîchiraient un élément qui
@@ -38,17 +33,16 @@
     // investis, le MOD de la caractéristique qui la porte, la limite qui coiffe
     // le résultat. Aucun ne veut rien dire sans les deux autres.
     var trio = el("span", "pc-trio pc-rollable");
-    function case3(k) {
+    function case3() {
       var c = el("span", "c");
-      if (k) c.appendChild(el("span", "k", k));
       var v = el("span", "v", "");
       c.appendChild(v);
       trio.appendChild(c);
       return v;
     }
-    var vPts = case3(null);
-    var vMod = case3(carac);
-    var vLim = case3(null);
+    var vPts = case3();
+    var vMod = case3();
+    var vLim = case3();
     trio.addEventListener("click", function () { doJet(code, carac, code, null); });
     top.appendChild(trio);
     row.appendChild(top);
