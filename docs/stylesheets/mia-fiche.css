@@ -243,7 +243,13 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
   .pc-cols-fiche { grid-template-columns: 1fr 1fr; }
   .pc-cols-fiche > :nth-child(3) { grid-column: 1 / -1; }
 }
-@container feuille (min-width: 52rem) {
+/* 38rem, ET PAS 52 : LA LARGEUR DE TRAVAIL EST LE DEMI-ÉCRAN. C'est à ~940 px
+   de fenêtre que cette fiche se juge — une feuille de 916 px, soit 41,6rem de
+   conteneur. Un seuil à 52rem y renvoyait deux colonnes, c'est-à-dire tout sauf
+   ce qui est demandé. À 38rem le quart tombe à 9,15rem : c'est le plancher
+   au-dessous duquel un sigle et trois nombres ne tiennent plus côte à côte,
+   même serrés au dernier cran de l'échelle ci-dessous. */
+@container feuille (min-width: 38rem) {
   .pc-cols-fiche { grid-template-columns: 1fr 1fr 2fr; }
   .pc-cols-fiche > :nth-child(3) { grid-column: auto; }
 }
@@ -319,11 +325,11 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 /* ---- caractéristiques : tuiles à valeur héros ---- */
 .pc-crow { display: flex; flex-direction: column; gap: .1rem; padding: .18rem .1rem .24rem; border-bottom: 1px solid var(--hair); }
 .pc-crow:last-child { border-bottom: none; }
-.pc-crow-top { display: flex; align-items: center; gap: .35rem; }
+.pc-crow-top { display: flex; align-items: center; gap: clamp(.14rem, 1.6cqw, .35rem); }
 /* le ressort qui pousse le trio contre le bord droit : le sigle à gauche, les
    trois nombres à droite, et la ligne se lit d'un bout à l'autre sans que le
    regard ait à chercher où commencent les chiffres */
-.pc-crow-top > .sp { flex: 1 1 auto; min-width: .25rem; }
+.pc-crow-top > .sp { flex: 1 1 auto; min-width: 0; }
 .pc-abbr { display: inline-block; box-sizing: border-box; min-width: 2.6rem; background: var(--red-deep); color: #fdf3ec; font-weight: 700; font-size: .58rem; letter-spacing: .01em; padding: .14rem .3rem; border-radius: 4px; text-align: center; white-space: nowrap; }
 .pc-crow-top .nm { flex: 1 1 auto; min-width: 0; font-size: var(--fs-meta); color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pc-cval {
@@ -340,7 +346,14 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
    huit fois de suite ce qu'on apprend une bonne fois. */
 .pc-trio {
   display: inline-flex; align-items: stretch; flex: 0 0 auto;
-  width: var(--pc-trio-w, 8.7rem); box-sizing: border-box;
+  /* SA LARGEUR DE CONFORT, OU UNE PART DE LA COLONNE — la plus petite des deux.
+     Les paliers écrits à la main se trompaient à chaque frontière : juste au-
+     dessus d'un cran, le palier précédent débordait de deux à huit pixels, et
+     l'entête, qui ne porte pas de sigle, ne tombait plus en face des nombres.
+     58cqw est une part de LA COLONNE, la même pour l'entête et pour les huit
+     lignes : elles ne peuvent plus se décaler, et la ligne ne peut plus sortir
+     de son bloc quelle que soit la largeur. */
+  width: min(var(--pc-trio-w, 8.7rem), 58cqw); box-sizing: border-box;
   background: var(--panel); border: 1px solid var(--line-2); border-radius: 5px;
   overflow: hidden; line-height: 1.1;
 }
@@ -352,21 +365,23 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-trio > .c {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   flex: 1 1 0; min-width: 0;
-  padding: .1rem .2rem .12rem;
+  padding: .1rem clamp(.08rem, 1.4cqw, .2rem) .12rem;
 }
 /* CINQ CASES au lieu de trois, même largeur de case : une spécialité tient de
    ses propres points, du MOD de sa caractéristique et des points de sa
    compétence, elle est coiffée par une limite, et tout cela donne un bonus.
    Cinq nombres, cinq colonnes — et la même case que partout ailleurs, pour que
    l'œil retrouve le même pas d'une liste à l'autre. */
-.pc-trio.cinq { width: var(--pc-quint-w, 14.5rem); }
+.pc-trio.cinq { width: min(var(--pc-quint-w, 14.5rem), 74cqw); }
 .pc-trio > .c + .c { border-left: 1px solid var(--line-2); }
 .pc-trio .k {
-  font-size: .48rem; font-weight: 700; letter-spacing: .07em;
+  font-size: clamp(.36rem, 3.3cqw, .48rem); font-weight: 700; letter-spacing: .07em;
   text-transform: uppercase; color: var(--ink-3);
 }
+/* le nombre rétrécit AVEC sa case : une taille figée le faisait couper dès que
+   la colonne passait sous le quart d'une feuille de demi-écran */
 .pc-trio .v {
-  font-size: .88rem; font-weight: 700; color: var(--ink);
+  font-size: clamp(.62rem, 6cqw, .88rem); font-weight: 700; color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
 /* L'ENTÊTE : le même squelette, sans rien qui l'encadre. Il ne porte que les
@@ -383,7 +398,9 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
    mal à cette taille. */
 [data-module="caracs"] .pc-crow-top > .pc-abbr,
 [data-module="comps"] .pc-crow-top > .pc-abbr {
-  font-size: .78rem; min-width: 3.1rem; padding: .16rem .35rem;
+  font-size: clamp(.55rem, 5.4cqw, .78rem);
+  min-width: clamp(1.8rem, 21cqw, 3.1rem);
+  padding: .16rem clamp(.12rem, 1.1cqw, .35rem);
 }
 /* colonne étroite (iframe Roll20 réduite, téléphone) : le trio et le sigle se
    serrent plutôt que de pousser le bloc hors de sa colonne. */
@@ -399,22 +416,7 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
     width: 100%; margin-top: .12rem;
   }
 }
-@container colonne (max-width: 15rem) {
-  .pc-trio { --pc-trio-w: 7.9rem; --pc-quint-w: 13.2rem; }
-  [data-module="caracs"] .pc-crow-top > .pc-abbr,
-  [data-module="comps"] .pc-crow-top > .pc-abbr { font-size: .74rem; min-width: 2.9rem; padding: .15rem .3rem; }
-}
-@container colonne (max-width: 13rem) {
-  .pc-trio { --pc-trio-w: 7.4rem; --pc-quint-w: 12.4rem; }
-  [data-module="caracs"] .pc-crow-top > .pc-abbr,
-  [data-module="comps"] .pc-crow-top > .pc-abbr { font-size: .7rem; min-width: 2.6rem; padding: .14rem .25rem; }
-}
-@container colonne (max-width: 11rem) {
-  .pc-trio { --pc-trio-w: 6.8rem; --pc-quint-w: 11.4rem; }
-  .pc-trio .v { font-size: .8rem; }
-  [data-module="caracs"] .pc-crow-top > .pc-abbr,
-  [data-module="comps"] .pc-crow-top > .pc-abbr { font-size: .62rem; min-width: 2.1rem; padding: .12rem .2rem; }
-}
+
 .pc-trio.adj .v { color: var(--red-deep); }
 .pc-trio.pc-rollable:hover { border-color: var(--red); }
 .pc-trio.pc-rollable:hover .v { color: var(--red); }
@@ -450,10 +452,26 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-bigrow-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .pc-big { border: 1px solid var(--line-2); border-radius: 7px; background: var(--panel); text-align: center; padding: .28rem .2rem .32rem; transition: border-color .12s; }
 .pc-big .k { display: block; font-size: .5rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); white-space: nowrap; }
+/* Une tuile réglable porte son rouage EN HAUT À DROITE, posé par-dessus. Sans
+   cette marge, « SAUT LONGUEUR » lui passait dessous dès que la tuile
+   descendait au quart de feuille. Les deux côtés, pour que le mot reste centré
+   sur ce qui lui reste — et le mot cesse d'être insécable, sans quoi c'est la
+   TUILE qui sortait de la colonne pour ne pas le couper. */
+.pc-big.pc-editable > .k {
+  padding: 0 1.05rem;
+  white-space: normal; overflow-wrap: anywhere;
+  font-size: clamp(.38rem, 3.4cqw, .5rem);
+}
+.pc-bigrow > * { min-width: 0; }
 .pc-big .v { display: block; font-size: var(--fs-hero); font-weight: 700; line-height: 1.1; color: var(--ink); font-variant-numeric: tabular-nums; margin-top: .08rem; white-space: nowrap; }
 
 /* ---- PV / endurance : lignes de contrôle ---- */
-.pc-kv { display: flex; align-items: center; flex-wrap: wrap; gap: .35rem; padding: .12rem .05rem; font-size: .7rem; }
+/* Écarts et champs se serrent AVEC la colonne : au quart d'une feuille de
+   demi-écran, « Max » passait à la ligne pour quatorze pixels. */
+.pc-kv { display: flex; align-items: center; flex-wrap: wrap; gap: clamp(.16rem, 1.6cqw, .35rem); padding: .12rem .05rem; font-size: .7rem; }
+.pc-kv .pc-step { gap: clamp(.12rem, 1.2cqw, .25rem); }
+.pc-kv .pc-num { width: clamp(1.8rem, 12cqw, 2.4rem); }
+.pc-kv .pc-mini { padding-inline: clamp(.28rem, 3cqw, .5rem); }
 .pc-kv > .k { font-weight: 700; color: var(--ink-2); font-size: .6rem; white-space: nowrap; flex-shrink: 0; text-transform: uppercase; letter-spacing: .04em; }
 .pc-kv > .sp { flex: 1; }
 .pc-kv .max { color: var(--ink-3); font-variant-numeric: tabular-nums; }
