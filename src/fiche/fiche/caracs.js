@@ -11,6 +11,26 @@
     // ce qu'elle a coûté
     var b = block("Caractéristiques", null, "caracs");
 
+    // ---------- l'entête des trois colonnes ----------
+    // MÊME SQUELETTE QUE LE TRIO, sans ses bordures : c'est la seule façon
+    // d'être sûr que les étiquettes tombent en face de leurs nombres. Une
+    // rangée bâtie à part dériverait d'un pixel au premier changement de
+    // remplissage, et personne ne saurait plus laquelle des trois on lit.
+    //
+    // Une seule fois, en tête : répétées sur chacune des huit lignes, elles
+    // disaient vingt-quatre fois ce que trois mots suffisent à dire, et
+    // noyaient les nombres qu'on vient lire.
+    var tete = el("div", "pc-crow-top pc-caracs-tete");
+    tete.appendChild(el("span", "sp"));
+    var teteTrio = el("span", "pc-trio tete");
+    ["Val", "Mod", "Lim"].forEach(function (k) {
+      var c = el("span", "c");
+      c.appendChild(el("span", "k", k));
+      teteTrio.appendChild(c);
+    });
+    tete.appendChild(teteTrio);
+    b.appendChild(tete);
+
     // ---------- une caractéristique ----------
     function ligne(code) {
       var info = caracInfo(code);
@@ -31,17 +51,16 @@
       // et non l'un des trois. doJet est le seul chemin d'un jet de test : il
       // pose le MOD, la limite et le malus d'endurance sans qu'on y pense.
       var trio = el("span", "pc-trio pc-rollable");
-      function case3(k) {
+      function case3() {
         var c = el("span", "c");
-        c.appendChild(el("span", "k", k));
         var v = el("span", "v", "");
         c.appendChild(v);
         trio.appendChild(c);
         return v;
       }
-      var vVal = case3("Val");
-      var vMod = case3("Mod");
-      var vLim = case3("Lim");
+      var vVal = case3();
+      var vMod = case3();
+      var vLim = case3();
       trio.addEventListener("click", function () { doJet(code, code, null, null); });
       top.appendChild(trio);
       row.appendChild(top);
