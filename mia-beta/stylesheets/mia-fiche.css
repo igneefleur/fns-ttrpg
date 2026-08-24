@@ -318,12 +318,17 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 /* Le sigle se lisait deux fois plus petit que les nombres qu'il annonce, et la
    ligne paraissait bancale. Il monte à leur hauteur : c'est le NOM de la
    caractéristique, pas une note de bas de page.
-   SCOPÉ AU MODULE : les compétences et les spécialités portent le même sigle,
-   mais à côté d'un total plus petit — les grossir là romprait leur équilibre à
-   elles. */
-[data-module="caracs"] .pc-crow-top > .pc-abbr {
+   SCOPÉ AUX DEUX MODULES QUI PORTENT LE TRIO : les spécialités gardent leur
+   sigle en petit, parce que le leur en dit deux (« DEX·COM ») et qu'il tiendrait
+   mal à cette taille. */
+[data-module="caracs"] .pc-crow-top > .pc-abbr,
+[data-module="comps"] .pc-crow-top > .pc-abbr {
   font-size: .78rem; min-width: 3.1rem; padding: .16rem .35rem;
 }
+/* La case du MOD d'une compétence porte le sigle de SA caractéristique au-dessus
+   du nombre : il change d'une ligne à l'autre, l'entête ne peut donc pas le
+   dire. Les deux autres cases n'ont qu'un nombre, et se centrent en face. */
+[data-module="comps"] .pc-trio .k { color: var(--red-deep); }
 .pc-trio.adj .v { color: var(--red-deep); }
 .pc-trio.pc-rollable:hover { border-color: var(--red); }
 .pc-trio.pc-rollable:hover .v { color: var(--red); }
