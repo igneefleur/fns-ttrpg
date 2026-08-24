@@ -19,6 +19,18 @@
     // jeu : les points, la limite et le jet ; édition : les ± qui achètent les
     // points, ligne par ligne
     var b = block("Compétences", null, "comps");
+    // l'entête des trois colonnes, du même squelette que le trio des lignes :
+    // c'est ce qui garantit que chaque mot tombe en face de sa colonne
+    var tete = el("div", "pc-crow-top pc-caracs-tete");
+    tete.appendChild(el("span", "sp"));
+    var teteTrio = el("span", "pc-trio tete");
+    ["Val", "Mod", "Lim"].forEach(function (k) {
+      var c = el("span", "c");
+      c.appendChild(el("span", "k", k));
+      teteTrio.appendChild(c);
+    });
+    tete.appendChild(teteTrio);
+    b.appendChild(tete);
     compBox = el("div");
     b.appendChild(compBox);
     rebuildComps();

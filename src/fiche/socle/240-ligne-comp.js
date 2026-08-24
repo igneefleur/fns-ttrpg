@@ -1,10 +1,15 @@
   // ---------- la ligne d'une compétence ----------
   // MÊME CHARPENTE QU'UNE CARACTÉRISTIQUE (.pc-crow), et ce n'est pas une
   // économie de style : depuis que les stades ont disparu, les deux lignes
-  // portent exactement les mêmes choses — un nombre qu'on achète, un plafond
-  // qui le retient, une limite qui coiffe le jet, et le chiffre lui-même comme
-  // bouton. Deux charpentes pour un même contenu auraient fini par diverger
-  // d'un pixel, puis d'une infobulle.
+  // portent exactement les mêmes choses — un nombre qu'on achète, le MOD qui
+  // s'y ajoute, la limite qui coiffe le jet, et le bloc lui-même comme bouton.
+  // Deux charpentes pour un même contenu auraient fini par diverger d'un pixel,
+  // puis d'une infobulle.
+  //
+  // LE MOD NOMME SA CARACTÉRISTIQUE, et il le faut : il vient de FOR pour PHY,
+  // de DEX pour COM, et ainsi de suite. L'entête ne peut pas le dire, puisqu'il
+  // change d'une ligne à l'autre — c'est donc la case qui le porte, en petit
+  // au-dessus du nombre.
   //
   // opts : { reg } — le registre de rafraîchissement où la ligne s'inscrit,
   // celui du module qui la bâtit. Une ligne détruite emporte ses fonctions ;
@@ -27,34 +32,34 @@
     var chip = el("span", "pc-abbr", code);
     chip.title = item.name;
     top.appendChild(chip);
-    // LA VALEUR EST LE BOUTON DE JET, comme sur une caractéristique. Ce qu'elle
-    // affiche est le BONUS et non les points : c'est lui qui part sur le dé,
-    // points et MOD confondus, et c'est le seul nombre qu'on cherche en jouant.
-    var val = el("span", "pc-cval pc-rollable", "");
-    val.addEventListener("click", function () { doJet(code, carac, code, null); });
-    top.appendChild(val);
-    row.appendChild(top);
+    top.appendChild(el("span", "sp"));
 
-    // PTS, LIM et XP restent lisibles ROUAGE FERMÉ. Le plafond suit les points
-    // dans la même case : sans lui, on découvre qu'on est au bout quand un « + »
-    // cesse de répondre, ce qui passe pour une panne du bouton.
-    var meta = el("div", "pc-kv");
-    meta.appendChild(el("span", "k", "PTS"));
-    var vPts = el("span", "max", "");
-    meta.appendChild(vPts);
-    meta.appendChild(el("span", "k", "LIM"));
-    var vLim = el("span", "max", "");
-    meta.appendChild(vLim);
-    meta.appendChild(el("span", "sp"));
-    meta.appendChild(el("span", "k", "XP"));
-    var vXp = el("span", "max", "");
-    meta.appendChild(vXp);
-    row.appendChild(meta);
+    // LE TRIO EST LE BOUTON DE JET, d'un seul tenant : les points qu'on a
+    // investis, le MOD de la caractéristique qui la porte, la limite qui coiffe
+    // le résultat. Aucun ne veut rien dire sans les deux autres.
+    var trio = el("span", "pc-trio pc-rollable");
+    function case3(k) {
+      var c = el("span", "c");
+      if (k) c.appendChild(el("span", "k", k));
+      var v = el("span", "v", "");
+      c.appendChild(v);
+      trio.appendChild(c);
+      return v;
+    }
+    var vPts = case3(null);
+    var vMod = case3(carac);
+    var vLim = case3(null);
+    trio.addEventListener("click", function () { doJet(code, carac, code, null); });
+    top.appendChild(trio);
+    row.appendChild(top);
 
     // LES ± ACHÈTENT LES POINTS, et rien ne les retient faute d'xp : l'en-tête
     // avertit dès que le total est dépassé, là où un blocage figerait toute
     // fiche remplie à l'envers — les points d'abord, l'xp total ensuite. Le
     // plafond, lui, borne pour de bon : il vient des règles.
+    //
+    // LE PLAFOND ET L'XP SONT ICI, ET NON EN PERMANENCE : on ne les regarde
+    // qu'en construisant. En jouant, ce qu'on cherche est sur la ligne du haut.
     var bot = el("div", "pc-crow-bot pc-edit-only");
     bot.appendChild(el("span", "lbl", "Points"));
     bot.appendChild(stepper(
@@ -77,6 +82,14 @@
         // (accesseurs, attributs Roll20), et l'état voyage d'autant plus léger
         if (n) state.comps[code] = n; else delete state.comps[code];
       }, 1, "points", reg));
+    bot.appendChild(el("span", "lbl", "Plafond"));
+    var vPlaf = el("span", "max", "");
+    vPlaf.style.justifySelf = "end";
+    bot.appendChild(vPlaf);
+    bot.appendChild(el("span", "lbl", "XP"));
+    var vXp = el("span", "max", "");
+    vXp.style.justifySelf = "end";
+    bot.appendChild(vXp);
     row.appendChild(bot);
 
     reg.push(function () {
@@ -91,27 +104,24 @@
       // bonus, il n'est nommé ici que pour qu'on sache d'où vient l'écart
       var mal = enduranceMalus();
       var b = jetBonus(carac, code, null);
-      val.textContent = sign(b);
-      val.classList.toggle("adj", force || d !== 0 || mord || mal !== 0);
-      val.title = (force
-                    ? "Points forcés (Options)"
-                    : "Points " + base +
-                      (mord ? ", plafonnés à " + plaf : "") +
-                      (d ? " · modificateur (Options) " + sign(d) : "")) +
-                  " · " + carac + " " + sign(caracMod(carac)) +
-                  (mal ? " · endurance " + sign(-mal) : "") +
-                  " — clic : lancer " + DE_DEFAUT + " " + sign(b) +
-                  ", plafonné à " + caracLim(carac);
-      vPts.textContent = compPts(code) + " / " + plaf;
-      vPts.classList.toggle("adj", force || d !== 0 || mord);
+      vPts.textContent = String(compPts(code));
+      vMod.textContent = sign(caracMod(carac));
       vLim.textContent = String(caracLim(carac));
+      trio.classList.toggle("adj", force || d !== 0 || mord || mal !== 0);
+      trio.title = (force
+                     ? "Points forcés (Options)"
+                     : "Points " + base +
+                       (mord ? ", plafonnés à " + plaf : "") +
+                       (d ? " · modificateur (Options) " + sign(d) : "")) +
+                   (mal ? " · endurance " + sign(-mal) : "") +
+                   " — clic : lancer " + DE_DEFAUT + " " + sign(b) +
+                   ", plafonné à " + caracLim(carac);
+      vPlaf.textContent = String(plaf);
+      vPlaf.classList.toggle("adj", mord);
       vXp.textContent = String(compXp(code));
       vXp.classList.toggle("adj", xpF || xpD !== 0);
-      vXp.title = xpF
-        ? "Coût forcé (Options) — calculé : " + compXpAuto(code)
-        : "Un point de compétence coûte " + repli("xpComp") + " xp" +
-          (xpD ? " · modificateur (Options) " + sign(xpD) : "");
+      vXp.title = xpF ? "Coût forcé (Options) — calculé : " + compXpAuto(code)
+                      : (xpD ? "Modificateur (Options) " + sign(xpD) : "");
     });
     return row;
   }
-
