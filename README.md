@@ -15,23 +15,24 @@ règles met donc l'outil à jour. L'extension est une coquille : elle affiche la
 fiche servie par le site (`roll20-fiche.html`) et s'empaquette par
 `python scripts/build_extension.py`, sans build du site.
 
-## En chantier
+## Où en est le jeu
 
-Cette branche vient d'être ouverte depuis `jjk-beta` : l'outillage est adapté à
-MIA (fiche, extension, plateau, chaîne de publication), **les règles ne le sont
-pas encore**. `docs/content/regles/index.md` porte toujours le corps des règles
-JJK, gardé comme échafaudage parce que `hooks/mia_creation.py` en tire au build
-les données du créateur et de la fiche. Ces règles-là sont l'œuvre de Qyu :
-elles doivent être remplacées par celles d'Erua avant toute publication.
+Les règles de base sont écrites : prestige, huit caractéristiques, huit
+compétences, spécialités, jets plafonnés, PV et endurance, initiative, vitesse,
+sauts, charge, récupération. La fiche les suit, et n'en porte aucun nombre —
+`hooks/mia_creation.py` relit la page de règles au build et en tire tout.
 
-Deux autres choses attendent leur tour :
+Restent à écrire : le combat et la prise de vitesse, les difficultés, les
+critiques s'il y en a, et la façon dont le prestige s'accorde.
 
-- **la signature Mozilla**, coupée tant que l'add-on `mia-roll20@igneefleur`
-  n'existe pas chez eux ; la marche à suivre est en tête de
-  `.github/workflows/deploy.yml` ;
-- **le hub** (branche `main`), dont le `clean-exclude` doit nommer `mia` et
-  `mia-beta` le jour du premier envoi, sans quoi son déploiement efface les deux
-  sites sans qu'aucun run n'échoue.
+L'extension attend sa **première signature Mozilla**, qui créera l'add-on
+`mia-roll20@igneefleur` sur le compte. Tant qu'elle n'a pas eu lieu, les deux
+boutons de téléchargement de la page Extension ne servent à rien. La marche à
+suivre est en tête de `.github/workflows/deploy.yml`.
+
+Le **hub** (branche `main`) doit nommer `mia` et `mia-beta` dans son
+`clean-exclude`, sans quoi son déploiement efface les deux sites sans qu'aucun
+run n'échoue.
 
 ## Œuvre de fan
 
