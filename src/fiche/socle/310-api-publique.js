@@ -57,10 +57,15 @@
     // lirait les valeurs dans le DOM mesurerait la MISE EN FORME autant que le
     // calcul : « 30 » et « 30 m » se ressemblent trop pour juger d'un filtre.
     __calculs: {
-      caracTotal: caracTotal, caracJet: caracJet, compValue: compValue, compXp: compXp,
+      caracTotal: caracTotal, caracMod: caracMod, caracLim: caracLim,
+      compPts: compPts, compPlafond: compPlafond, compXp: compXp,
+      spePts: spePts, spePlafond: spePlafond, speXp: speXp, jetBonus: jetBonus,
+      prestige: prestige, enduranceMax: enduranceMax, enduranceMalus: enduranceMalus,
+      recupJour: recupJour, chargeMax: chargeMax,
       pvMax: pvMax, pvCourant: pvCourant, initiative: initiative,
-      vitesse: vitesse, vitesseVal: vitesseVal, regen: regen,
-      poidsPorte: poidsPorte, poidsMalus: poidsMalus, xpDepense: xpDepense
+      vitesse: vitesse, vitesseVal: vitesseVal,
+      sautLong: sautLong, sautHaut: sautHaut,
+      poidsPorte: poidsPorte, xpDepense: xpDepense
     },
     // le registre des filtres, à plat et en copie : nom, propriétaire, fautes
     __filtres: function () {

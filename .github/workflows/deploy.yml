@@ -6,10 +6,10 @@ on:
   workflow_dispatch: {}   # relance manuelle (ex. quota AMO retombé)
 permissions:
   contents: write
-# LA SIGNATURE MOZILLA EST COUPÉE TANT QUE L'ADD-ON MIA N'EXISTE PAS CHEZ EUX.
+# LA PREMIÈRE SIGNATURE CRÉE L'ADD-ON CHEZ MOZILLA, et c'est voulu.
 #
 # ATTENTION, c'est ICI que ça compte le plus : sur cette branche la signature est
-# AUTOMATIQUE, sans case à cocher. Le moindre envoi la déclencherait.
+# AUTOMATIQUE, sans case à cocher. Le moindre envoi la déclenche.
 #
 # L'extension MIA porte un identifiant NEUF, mia-roll20@igneefleur. Or
 # sign_extension.create_version() commence par un POST sur /addons/addon/,
@@ -17,14 +17,10 @@ permissions:
 # RÉUSSIT et fait naître un second add-on unlisted sur le compte, en mordant sur
 # un quota déjà serré. Ce n'est pas une erreur qu'on rattrape : l'add-on est créé.
 #
-# Le pas de signature est donc gardé par une variable de dépôt, et les deux pas
-# qui en dépendent ne partent plus puisque le paquet ne bouge pas. POUR LE
-# RÉTABLIR, le jour où l'add-on MIA existe vraiment sur addons.mozilla.org :
-#   1. créer l'add-on chez Mozilla avec l'id mia-roll20@igneefleur ;
-#   2. dans Settings > Secrets and variables > Actions > Variables du dépôt,
-#      poser AMO_MIA = pret ;
-#   3. vérifier que les secrets AMO_JWT_ISSUER et AMO_JWT_SECRET sont là.
-# Rien d'autre à toucher : les pas ci-dessous sont intacts.
+# La première signature fait donc NAÎTRE l'add-on sur le compte, en unlisted,
+# sous le « name » du manifeste — « Fiche MIA sur Roll20 ». Vérifier ce nom AVANT
+# de pousser, il engage. Les secrets AMO_JWT_ISSUER et AMO_JWT_SECRET doivent
+# être là ; ils avaient déjà disparu une fois après un renommage de dépôt.
 #
 # Les neuf branches écrivent sur la même branche gh-pages, chacune dans son
 # dossier : un groupe de concurrence commun (partagé entre workflows du dépôt)
@@ -69,7 +65,6 @@ jobs:
       # Version montée toute seule, .xpi signé + updates.json republiés : les
       # Firefox installés se mettent à jour sans rien faire. Clés = secrets du dépôt.
       - name: Extension (re-signature automatique si changement)
-        if: ${{ vars.AMO_MIA == 'pret' }}   # voir l'en-tête : l'add-on MIA n'existe pas encore chez Mozilla
         env:
           AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
           AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}

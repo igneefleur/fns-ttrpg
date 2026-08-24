@@ -8,7 +8,6 @@
  * CE QU'IL COMMANDE, dans l'ordre où on les rencontre :
  *   miaOff             l'interrupteur général      (absent = allumée)
  *   miaNuit            "auto" | "jour" | "nuit"    (absent = auto)
- *   miaPanneauActif    le plateau de Narration     (absent = allumé)
  *   miaBeta            la moitié beta              (absent = stable)
  *
  * LE MOT EST « BETA » DANS TOUT CE QU'UN JOUEUR LIT — le réglage et la pastille
@@ -40,27 +39,6 @@ if (typeof browser === "undefined") { var browser = chrome; }
   var CLE_OFF = "miaOff";
   var CLE_NUIT = "miaNuit";
   var CLE_BETA = "miaBeta";
-
-  // DEUX NOMS POUR UN SEUL INTERRUPTEUR DE PLATEAU, ET C'EST DÉLIBÉRÉ.
-  //
-  // La clé que les deux copies de content-roll20.js lisent réellement s'appelle
-  // miaPanneauActif (PAN_ACTIF, ligne 555). Le contrat de la refonte, lui,
-  // annonce « miaPanneau ». Les deux moitiés de ce chantier s'écrivent en
-  // parallèle et ne se parlent pas : écrire l'un des deux noms au hasard, c'est
-  // une chance sur deux que l'interrupteur du plateau ne fasse plus rien, et
-  // personne ne s'en apercevrait avant une vraie partie, qui ne se joue pas ici.
-  //
-  // Le panneau écrit donc LES DEUX, et lit miaPanneauActif en premier parce que
-  // c'est la valeur déjà posée chez les joueurs. Le jour où le nom retenu sera
-  // tranché, la ligne de trop se retire en une minute ; l'inverse aurait coûté
-  // une signature, qui se compte à la dizaine par jour.
-  //
-  // Aucune collision avec la géométrie : celle-ci est rangée sous
-  // « miaPanneau:roll20-narration.html », et storage.local.get("miaPanneau") ne
-  // rend que la clé exacte, jamais ce qui commence pareil.
-  var CLE_PAN = "miaPanneauActif";
-  var CLE_PAN_BIS = "miaPanneau";
-  var CLE_PAN_GEO = "miaPanneau:roll20-narration.html";
 
   var CLE_DEP = ["mia_sheet_url", "mia_site_url"];
 
@@ -110,7 +88,6 @@ if (typeof browser === "undefined") { var browser = chrome; }
     off: false,
     nuit: "auto",
     beta: false,
-    panneau: true,
     depannage: []      // les clés de dépannage trouvées posées
   };
   var su = false;        // le stockage a-t-il répondu
@@ -160,8 +137,6 @@ if (typeof browser === "undefined") { var browser = chrome; }
     var elOffTxt = $("p-off-txt");
     var elRecharge = $("p-recharge");
     var elNuit = $("p-nuit");
-    var elPan = $("p-panneau");
-    var elPanReplacer = $("p-pan-replacer");
     var elBeta = $("p-beta");
     var elFlash = $("p-flash");
     var elRegles = $("p-regles");
@@ -206,16 +181,13 @@ if (typeof browser === "undefined") { var browser = chrome; }
     }
 
     function rendPieces() {
-      marque(elPan, etat.panneau);
       marque(elBeta, etat.beta);
       // GRISER NE SUFFIT PAS. L'opacité et pointer-events arrêtent la souris et
-      // rien d'autre : au clavier, ces trois boutons restaient dans l'ordre de
-      // tabulation et se déclenchaient à la barre d'espace, sur un bloc que
-      // l'écran donne pour hors service. disabled, lui, les sort de l'ordre de
-      // tabulation ET les annonce désactivés aux lecteurs d'écran.
-      elPan.disabled = etat.off;
+      // rien d'autre : au clavier, ce bouton restait dans l'ordre de tabulation
+      // et se déclenchait à la barre d'espace, sur un bloc que l'écran donne
+      // pour hors service. disabled, lui, le sort de l'ordre de tabulation ET
+      // l'annonce désactivé aux lecteurs d'écran.
       elBeta.disabled = etat.off;
-      elPanReplacer.disabled = etat.off;
       elRegles.href = etat.beta ? REGLES.beta : REGLES.stable;
       elMaj.href = etat.beta ? PAGE_EXT.beta : PAGE_EXT.stable;
     }
@@ -410,9 +382,9 @@ if (typeof browser === "undefined") { var browser = chrome; }
       ecritEcho(v);         // pour que la prochaine ouverture n'ait pas d'éclair
       pose({ miaNuit: v });
       rendNuit();
-      // Le panneau s'habille seul, mais la fiche et le plateau d'une partie déjà
-      // ouverte gardent la couleur qu'ils avaient : leur nuit voyage dans
-      // l'adresse posée au montage, et cette adresse ne se réécrit pas sous eux.
+      // Le panneau s'habille seul, mais la fiche d'une partie déjà ouverte garde
+      // la couleur qu'elle avait : sa nuit voyage dans l'adresse posée au
+      // montage, et cette adresse ne se réécrit pas sous elle.
       proposeRechargement();
     }
     var i;
@@ -448,23 +420,6 @@ if (typeof browser === "undefined") { var browser = chrome; }
 
     // ------------------------------------------------------------ les pièces
 
-    elPan.addEventListener("click", function () {
-      etat.panneau = !etat.panneau;
-      touche[CLE_PAN] = true;
-      // Les deux noms, pour la raison dite en tête de fichier. La valeur est la
-      // même des deux côtés : jamais deux vérités.
-      var o = {};
-      o[CLE_PAN] = etat.panneau;
-      o[CLE_PAN_BIS] = etat.panneau;
-      pose(o);
-      rendPieces();
-    });
-
-    elPanReplacer.addEventListener("click", function () {
-      try { browser.storage.local.remove(CLE_PAN_GEO); } catch (e) { /* rien à replacer */ }
-      flash("Plateau replacé.");
-    });
-
     elBeta.addEventListener("click", function () {
       etat.beta = !etat.beta;
       touche[CLE_BETA] = true;
@@ -487,8 +442,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
     // sans que rien ne le dise ; ici l'échec passe par le même chemin que la
     // réponse vide, et le panneau s'affiche avec les valeurs par défaut, qui
     // sont aussi celles que les scripts de contenu prendront.
-    var voulues = [CLE_OFF, CLE_NUIT, CLE_BETA, CLE_PAN, CLE_PAN_BIS]
-      .concat(CLE_DEP);
+    var voulues = [CLE_OFF, CLE_NUIT, CLE_BETA].concat(CLE_DEP);
     try {
       browser.storage.local.get(voulues).then(recu, function () { recu(null); });
     } catch (e) {
@@ -510,12 +464,6 @@ if (typeof browser === "undefined") { var browser = chrome; }
       if (!touche[CLE_BETA]) { etat.beta = !!r[CLE_BETA]; }
       if (!touche[CLE_NUIT]) {
         etat.nuit = (r[CLE_NUIT] === "jour" || r[CLE_NUIT] === "nuit") ? r[CLE_NUIT] : "auto";
-      }
-      // Absent = allumé, des deux côtés : une partie Roll20 qui n'a rien à voir
-      // avec MIA doit pouvoir se débarrasser du plateau sans désinstaller, mais
-      // ne doit pas avoir à l'allumer pour l'avoir.
-      if (!touche[CLE_PAN]) {
-        etat.panneau = !(r[CLE_PAN] === false || r[CLE_PAN_BIS] === false);
       }
 
       var k;

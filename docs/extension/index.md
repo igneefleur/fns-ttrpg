@@ -40,16 +40,10 @@ ne perd rien, et les autres joueurs ne voient aucune différence.
 .md-typeset .ext-copy.ok { border-color:var(--green-title,#667861); font-weight:700; }
 </style>
 
-### Pas encore téléchargeable
-
-L'extension MIA existe, elle se construit et elle passe ses contrôles, mais elle
-n'a pas encore d'add-on chez Mozilla : rien n'est donc distribué depuis cette
-page. Firefox refuse d'installer une extension non signée, et un paquet posé ici
-sans signature ne servirait à personne.
-
 <div class="ext-grid">
   <div class="mcard ext-card">
-    <p><strong>Firefox</strong><span class="prereq">En attente de signature Mozilla</span></p>
+    <p><strong>Firefox</strong><span class="prereq">Signée par Mozilla · installation permanente</span></p>
+    <p><a class="md-button" href="../download/mia-roll20-firefox.xpi" download>Télécharger (.xpi)</a></p>
     <ol class="ext-steps">
       <li>télécharger le fichier <code>.xpi</code> ;</li>
       <li>l'ouvrir avec Firefox : <kbd>Ctrl</kbd>+<kbd>J</kbd> (téléchargements)
@@ -60,6 +54,7 @@ sans signature ne servirait à personne.
   </div>
   <div class="mcard ext-card">
     <p><strong>Chrome / Edge</strong><span class="prereq">Mode développeur · dossier décompressé</span></p>
+    <p><a class="md-button" href="../download/mia-roll20-chrome.zip" download>Télécharger (.zip)</a></p>
     <ol class="ext-steps">
       <li>décompresser le <code>.zip</code> dans un dossier (à conserver : le
           navigateur y lit l'extension) ;</li>
@@ -82,7 +77,7 @@ La fiche lue dépend de l'interrupteur « Mode beta » ci-dessus.
 
 Ensuite : ouvrir le [créateur de personnage](../personnage/index.md) une fois
 (les fiches se synchronisent), puis, dans une partie Roll20, ouvrir un personnage
-et cliquer l'onglet « Fiche MIA » (entre « Feuille de personnage » et
-« Bio & Info »). Si le personnage n'a pas encore de fiche, un bouton
-« Créer fiche MIA » en fabrique une, enregistrée dans le personnage Roll20
-lui-même (partagée avec tous les joueurs qui le contrôlent).
+et cliquer l'onglet « Fiche MIA », en **deuxième position** dans la barre du
+dialogue. Si le personnage n'a pas encore de fiche, un bouton « Créer fiche MIA »
+en fabrique une, enregistrée dans le personnage Roll20 lui-même (partagée avec
+tous les joueurs qui le contrôlent).

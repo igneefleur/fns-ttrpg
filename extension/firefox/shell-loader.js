@@ -1,10 +1,10 @@
 /* Chargeur des coquilles : il choisit stable/ ou beta/ à l'exécution.
  *
- * creator.html et panneau.html sont PARTAGÉES par les deux parties, parce que
- * rien en elles ne dépend du mode : ce sont deux iframes vides. La coquille
- * qu'elles chargent, elle, en dépend, puisque c'est elle qui sait de quel site
- * vient la page distante. Or ces pages nommaient leur coquille dans une balise
- * <script src> écrite en dur, ce qui interdisait tout choix à l'exécution.
+ * creator.html est PARTAGÉE par les deux parties, parce que rien en elle ne
+ * dépend du mode : c'est une iframe vide. La coquille qu'elle charge, elle, en
+ * dépend, puisque c'est elle qui sait de quel site vient la page distante. Or
+ * cette page nommait sa coquille dans une balise <script src> écrite en dur, ce
+ * qui interdisait tout choix à l'exécution.
  *
  * Une page d'extension ne peut pas porter de script en ligne (CSP script-src
  * 'self', en V2 comme en V3) et l'eval est refusée à la revue Mozilla. Ajouter
@@ -22,14 +22,13 @@
  * Tout mode absent ou inconnu vaut stable : une page d'extension ouverte à la
  * main doit montrer la fiche publiée, jamais celle du chantier.
  *
- * Les quatre adresses sont écrites en toutes lettres. Assemblées par
+ * Les deux adresses sont écrites en toutes lettres. Assemblées par
  * concaténation, elles deviendraient invisibles au contrôle de complétude comme
  * à l'analyse statique d'AMO, qui ne savent lire que des littéraux. */
 (function () {
   "use strict";
   var COQUILLES = {
-    creator: { stable: "stable/creator-shell.js", beta: "beta/creator-shell.js" },
-    panneau: { stable: "stable/panneau-shell.js", beta: "beta/panneau-shell.js" }
+    creator: { stable: "stable/creator-shell.js", beta: "beta/creator-shell.js" }
   };
   // data-coquille dit QUELLE coquille ; le hash dit LAQUELLE DES DEUX. Le repli
   // sur querySelector couvre le cas où document.currentScript manquerait.
@@ -41,9 +40,9 @@
   // reste seule à l'écran pendant tout le chargement réseau de la page servie
   // par le site, une bonne seconde le temps du manifeste et des scripts. Son
   // fond était toujours celui du jour : un éclair clair à chaque ouverture de
-  // fiche ou de plateau au milieu d'une partie sombre. Le n=1/0 du hash dit
-  // déjà de quelle couleur la page distante va se peindre, on prend la sienne
-  // avant elle. Ici et pas dans le HTML : une page d'extension ne peut pas
+  // fiche au milieu d'une partie sombre. Le n=1/0 du hash dit déjà de quelle
+  // couleur la page distante va se peindre, on prend la sienne avant elle.
+  // Ici et pas dans le HTML : une page d'extension ne peut pas
   // porter de script en ligne (CSP script-src 'self', en V2 comme en V3).
   try {
     if (/[#&]n=1/.test(location.hash || "")) document.documentElement.classList.add("night");

@@ -2,29 +2,72 @@
   // Chaque valeur dérivée existe en deux temps : <nom>Brut fait le calcul,
   // <nom> le passe aux filtres. Les fonctions <nom>Auto, elles, sont AUTRE
   // CHOSE : la valeur avant le forçage du MJ, et elles ne bougent pas.
-  // Plafond d'une caractéristique : le barème (80), décalé par le modificateur
-  // du bloc Création, ou remplacé net par un plafond forcé. UN SEUL endroit le
-  // calcule : les garde-fous des boutons, l'infobulle et le champ forcé des
-  // Options lisent tous cette fonction, sinon deux d'entre eux finissent par
-  // dire des chiffres différents du total réellement retenu.
-  function caracPlafondAuto(c) { return CARAC_MAX + (state.caracsPlafondMod[c] || 0); }
+
+  // ---------- ce que disent les règles ----------
+  // Tout ce qui suit LIT les données engendrées par hooks/mia_creation.py
+  // depuis la page de règles. Rien n'est recalculé ici : la table des valeurs
+  // porte déjà le MOD, la LIM et l'XP cumulé de 0 à 20.
+  function regles() { return (typeof DATA === "object" && DATA) || {}; }
+  function repli(cle) {
+    var v = regles()[cle];
+    return (v === undefined || v === null) ? REPLI[cle] : v;
+  }
+  function caracsRegles() { return regles().caracs || []; }
+  function compsRegles() { return regles().comps || []; }
+  // Les sigles des caractéristiques, dans l'ordre de la page. Remplace la
+  // liste écrite en dur qu'était CHAMPS : l'ordre d'affichage est celui des
+  // règles, et une caractéristique ajoutée à la page arrive sans toucher au code.
+  function champs() { return caracsRegles().map(function (c) { return c.code; }); }
+  function champsComp() { return compsRegles().map(function (c) { return c.code; }); }
+  function caracInfo(code) {
+    var l = caracsRegles(), i;
+    for (i = 0; i < l.length; i++) if (l[i].code === code) return l[i];
+    return { code: code, nom: code, groupe: "" };
+  }
+  function compInfo(code) {
+    var l = compsRegles(), i;
+    for (i = 0; i < l.length; i++) if (l[i].code === code) return l[i];
+    return { code: code, nom: code, mod: [], lim: "" };
+  }
+
+  // LA TABLE DES VALEURS, et le seul endroit qui la lise. Une valeur hors table
+  // (un modificateur qui pousse au-delà de 20, un total négatif) se rabat sur la
+  // ligne la plus proche : la fiche ne fabrique pas de MOD que les règles
+  // n'annoncent pas.
+  function ligneValeur(v) {
+    var t = regles().valeurs || [];
+    if (!t.length) return { v: v, mod: 0, lim: 0, xp: 0 };
+    var n = Math.floor(v);
+    if (n <= t[0].v) return t[0];
+    if (n >= t[t.length - 1].v) return t[t.length - 1];
+    for (var i = 0; i < t.length; i++) if (t[i].v === n) return t[i];
+    return t[t.length - 1];
+  }
+
+  // ---------- le prestige ----------
+  function prestigeAuto() { return (state.prestige || 0) + (state.prestigeMod || 0); }
+  function prestige() {
+    if (state.prestigeForce !== null && state.prestigeForce !== undefined) return state.prestigeForce;
+    return prestigeAuto();
+  }
+  // Plafond d'une caractéristique : le prestige, décalé caractéristique par
+  // caractéristique, ou remplacé net. UN SEUL endroit le calcule — les
+  // garde-fous des boutons, l'infobulle et le champ forcé des Options lisent
+  // tous cette fonction, sinon trois chiffres différents finissent à l'écran.
+  function caracPlafondAuto(c) { return prestige() + (state.caracsPlafondMod[c] || 0); }
   function caracPlafond(c) {
     if (state.caracsPlafondForce[c] !== undefined) return state.caracsPlafondForce[c];
     return caracPlafondAuto(c);
   }
-  // budget de points de caractéristiques à la création : même grammaire
-  function ptsCreaAuto() { return PTS_CREATION + (state.ptsCreaMod || 0); }
-  function ptsCreaMax() {
-    if (state.ptsCreaForce !== null && state.ptsCreaForce !== undefined) return state.ptsCreaForce;
-    return ptsCreaAuto();
-  }
+
+  // ---------- les caractéristiques ----------
+  function caracBase(c) { return state.caracs[c] || 0; }
   function caracTotalBrut(c) {
     // total FORCÉ : il court-circuite tout, plafond et modificateurs compris
     if (state.caracsForce[c] !== undefined) return state.caracsForce[c];
-    var v = state.caracsBase[c] + CARAC_PAS * state.caracsXp[c];
-    v = Math.min(v, caracPlafond(c));
+    var v = Math.min(caracBase(c), caracPlafond(c));
     // le modificateur (bloc Options) s'applique APRÈS le plafond : il peut
-    // porter le total au-delà de 80 comme en dessous de 0.
+    // porter le total au-delà du prestige comme en dessous de zéro.
     return v + (state.caracsMod[c] || 0) + (state.caracsMod2[c] || 0);
   }
   function caracTotal(c) {
@@ -33,122 +76,137 @@
     // rappelé des centaines de fois par rafraîchissement
     return aFiltre("caracTotal") ? applique("caracTotal", v, { carac: c }) : v;
   }
-  function stadeInfo(i) { return DATA.stades[clamp(i, 0, DATA.stades.length - 1)]; }
-  // coût d'un passif : son coût forcé s'il en porte un, sinon le tarif de base
-  // (20 xp) — TOUS les passifs sont payants, aucun n'est offert par un stade
-  function techXp(t) {
-    return (t && t.cout !== null && t.cout !== undefined && isFinite(t.cout))
-      ? t.cout : DATA.xpParStade;
+  // LE MODIFICATEUR, qui s'ajoute à tous les jets passant par la
+  // caractéristique, et LA LIMITE, qui les plafonne. Les deux se lisent dans la
+  // table, jamais ne se recalculent.
+  function caracModBrut(c) { return ligneValeur(caracTotal(c)).mod; }
+  function caracMod(c) {
+    var v = caracModBrut(c);
+    return aFiltre("caracMod") ? applique("caracMod", v, { carac: c }) : v;
   }
-  // coût de l'art : rien par défaut (il vient avec son stade), sauf coût forcé
-  function artXp(c) {
-    return (c && c.art && c.art.cout !== null && c.art.cout !== undefined && isFinite(c.art.cout))
-      ? c.art.cout : 0;
+  function caracLimBrut(c) { return ligneValeur(caracTotal(c)).lim; }
+  function caracLim(c) {
+    var v = caracLimBrut(c);
+    return aFiltre("caracLim") ? applique("caracLim", v, { carac: c }) : v;
   }
-  // clés et repères des compétences que la fiche traite à part
-  var INIT_KEY = "Body/Initiative";
-  var LANGUE_CARAC = "Mind";
-  // les compétences d'ARMES sont TOUJOURS des compétences de Body
-  var ARME_CARAC = "Body";
-  function armeKey(nom) { return ARME_CARAC + "/" + nom; }
-  // celles des règles, puis celles que le joueur a ajoutées
-  function armesNoms() {
-    return ((DATA && DATA.compsArmes) || []).concat(state.armesComps);
+  // Ce qu'une caractéristique coûte : l'XP CUMULÉ de sa ligne, et non une somme
+  // de pas. La table porte déjà les 20 XP le +1 jusqu'à 5 puis 40 au-delà, donc
+  // un barème corrigé dans les règles arrive ici sans qu'on rouvre ce fichier.
+  function caracXpAuto(c) {
+    return ligneValeur(caracBase(c)).xp +
+           (state.caracsXpMod[c] || 0) + (state.caracsXpMod2[c] || 0);
   }
-  // Reconnaître une compétence d'arme par sa CLÉ, et surtout pas par le drapeau
-  // « arme » que allComps() pose sur ses items : compValue() ne reçoit jamais
-  // l'item, et ctx.ligneComp construit le sien SANS ce drapeau. Un mod qui
-  // afficherait une ligne de Katana verrait alors le malus de poids tomber sur
-  // une attaque, que la règle exempte. Passer par armesNoms() plutôt que par une
-  // liste figée fait qu'une arme ajoutée par le joueur en est exempte aussitôt.
-  // Une compétence d'arme, c'est-à-dire l'attaque et la parade, que le malus de
-  // poids épargne.
-  //
-  // Les armes des règles font foi. Une arme PERSONNALISÉE, elle, n'exempte que
-  // si son nom ne recouvre pas une compétence de Body existante : sans cette
-  // réserve, un joueur qui baptise son arme « Esquive » ou « Sprint » retirerait
-  // le malus de poids à la compétence du même nom, initiative comprise, et rien
-  // à l'écran ne le dirait.
-  function estArme(key) {
-    var rgl = (DATA && DATA.compsArmes) || [];
-    var i;
-    for (i = 0; i < rgl.length; i++) if (armeKey(rgl[i]) === key) return true;
-    var body = (DATA && DATA.comps && DATA.comps[ARME_CARAC]) || [];
-    for (i = 0; i < state.armesComps.length; i++) {
-      if (armeKey(state.armesComps[i]) !== key) continue;
-      return body.indexOf(state.armesComps[i]) < 0;
-    }
-    return false;
-  }
-  function langueKey(nom) { return LANGUE_CARAC + "/" + nom; }
-  // index du stade « Expert » : la langue du personnage y monte gratuitement
-  function stadeIndex(nom) {
-    for (var i = 0; i < DATA.stades.length; i++) {
-      if ((DATA.stades[i].nom || "").toLowerCase() === nom) return i;
-    }
-    return -1;
-  }
-  function stadeExpert() {
-    var i = stadeIndex("expert");
-    return i >= 0 ? i : Math.max(0, DATA.stades.length - 2);
-  }
-  function compXpBrut(c, key) {
-    // coût forcé (Options) : il court-circuite tout le calcul
-    if (key && state.compsXpForce[key] !== undefined) return state.compsXpForce[key];
-    // la langue du personnage est acquise : ses stades ne coûtent rien
-    // jusqu'à Expert, au-delà seule la différence se paie
-    var stadesDus = c.stade;
-    if (key && state.langueBase && key === langueKey(state.langueBase)) {
-      stadesDus = Math.max(0, c.stade - stadeExpert());
-    }
-    var xp = DATA.xpParStade * stadesDus;
-    // les passifs PRÉSENTS restent facturés même si le stade ne les ouvre
-    // plus (fiches d'avant un déplacement du stade d'ouverture : rien ne
-    // doit disparaître ni se re-créditer en silence)
-    (c.techniques || []).forEach(function (t) { xp += techXp(t); });
-    return xp + artXp(c) +
-           (key ? (state.compsXpMod[key] || 0) + (state.compsXpMod2[key] || 0) : 0);
-  }
-  function compXp(c, key) {
-    var v = compXpBrut(c, key);
-    return aFiltre("compXp") ? applique("compXp", v, { cle: key, comp: c }) : v;
-  }
-  // Ce qu'une caractéristique coûte, forçage et modificateurs compris. Elle
-  // se règle désormais comme une compétence : c'est le même geste pour le MJ.
   function caracXp(c) {
     if (state.caracsXpForce[c] !== undefined) return state.caracsXpForce[c];
-    return DATA.xpParStade * (state.caracsXp[c] || 0) +
-           (state.caracsXpMod[c] || 0) + (state.caracsXpMod2[c] || 0);
+    return caracXpAuto(c);
   }
-  function caracXpAuto(c) {
-    return DATA.xpParStade * (state.caracsXp[c] || 0) +
-           (state.caracsXpMod[c] || 0) + (state.caracsXpMod2[c] || 0);
+
+  // ---------- les compétences ----------
+  // LE PLAFOND DE POINTS : le MOD le plus haut des caractéristiques qui
+  // commandent la compétence. PHY en compte quatre, COM deux, les six autres
+  // une seule — et c'est la page de règles qui le dit, pas ce fichier.
+  function compPlafondBrut(code) {
+    var mods = compInfo(code).mod || [], best = 0;
+    for (var i = 0; i < mods.length; i++) best = Math.max(best, caracMod(mods[i]));
+    return best;
   }
-  function compCap() { return Math.floor(state.xpTotal / QUART); }
-  // le total appelle compXp() et non compXpBrut() : un filtre sur le coût d'une
-  // compétence doit se voir dans l'xp dépensé, sinon les deux chiffres de
-  // l'en-tête se contrediraient
+  function compPlafond(code) {
+    var v = compPlafondBrut(code);
+    return aFiltre("compPlafond") ? applique("compPlafond", v, { cle: code }) : v;
+  }
+  // La caractéristique par DÉFAUT d'une compétence : celle qui fournit le MOD
+  // et la LIM quand le joueur ne demande rien d'autre. Il peut en demander une
+  // autre — c'est tout l'intérêt d'avoir séparé les deux colonnes.
+  function compCarac(code) { return compInfo(code).lim || champs()[0] || ""; }
+  function compPtsBrut(code) {
+    if (state.compsForce[code] !== undefined) return state.compsForce[code];
+    var v = Math.min(state.comps[code] || 0, compPlafond(code));
+    return v + (state.compsMod[code] || 0) + (state.compsMod2[code] || 0);
+  }
+  function compPts(code) {
+    var v = compPtsBrut(code);
+    return aFiltre("compValue") ? applique("compValue", v, { cle: code }) : v;
+  }
+  function compXpAuto(code) {
+    return (state.comps[code] || 0) * repli("xpComp") +
+           (state.compsXpMod[code] || 0) + (state.compsXpMod2[code] || 0);
+  }
+  function compXp(code) {
+    if (state.compsXpForce[code] !== undefined) return state.compsXpForce[code];
+    var v = compXpAuto(code);
+    return aFiltre("compXp") ? applique("compXp", v, { cle: code }) : v;
+  }
+
+  // ---------- les spécialités ----------
+  // Une spécialité relève d'UNE caractéristique et d'UNE compétence, qui ne
+  // sont pas forcément accordées : Esquive tient de DEX, sa compétence COM
+  // plafonne sur le meilleur de DEX et d'AGI. Le plafond de la spécialité les
+  // fait donc entrer tous les deux, chacun compté pour 30 au minimum — sans quoi
+  // on accumulerait des points à 2 en caractéristique pour les emporter à 3.
+  function spePlafondBrut(spe) {
+    if (!spe || !spe.carac) return 0;
+    var min = repli("speMin");
+    var v = caracLim(spe.carac) - repli("speMarge") -
+            Math.max(caracMod(spe.carac), min) -
+            Math.max(spe.comp ? compPlafond(spe.comp) : 0, min);
+    return Math.max(0, v);
+  }
+  function spePlafond(spe) {
+    var v = spePlafondBrut(spe);
+    return aFiltre("spePlafond") ? applique("spePlafond", v, { spe: spe }) : v;
+  }
+  function spePtsBrut(spe) {
+    if (!spe) return 0;
+    if (spe.force !== null && spe.force !== undefined) return spe.force;
+    return Math.min(spe.pts || 0, spePlafond(spe)) + (spe.mod || 0) + (spe.mod2 || 0);
+  }
+  function spePts(spe) {
+    var v = spePtsBrut(spe);
+    return aFiltre("spePts") ? applique("spePts", v, { spe: spe }) : v;
+  }
+  // Un point de spécialité coûte un QUART d'XP : le total est donc décimal, et
+  // c'est voulu. On l'arrondit au centième pour que l'en-tête n'affiche pas
+  // 12.750000000000002.
+  function speXp(spe) {
+    if (!spe) return 0;
+    if (spe.xpForce !== null && spe.xpForce !== undefined) return spe.xpForce;
+    return Math.round((spe.pts || 0) * repli("xpSpe") * 100) / 100;
+  }
+  // Retrouver une spécialité par son nom, pour les formules qui la nomment :
+  // les PV ajoutent « SPÉ PV », la récupération EST une spécialité, et
+  // l'obstination en lance une. La comparaison ignore la casse et les espaces.
+  function speParNom(nom) {
+    var cible = String(nom || "").trim().toLowerCase(), l = state.specialites || [], i;
+    for (i = 0; i < l.length; i++) {
+      if (String(l[i].nom || "").trim().toLowerCase() === cible) return l[i];
+    }
+    return null;
+  }
+  function spePtsParNom(nom) {
+    var s = speParNom(nom);
+    return s ? spePts(s) : 0;
+  }
+
+  // ---------- l'expérience ----------
   function xpDepenseBrut() {
     var xp = 0;
-    ["Mind", "Body", "Prestance"].forEach(function (c) { xp += caracXp(c); });
-    Object.keys(state.comps).forEach(function (k) { xp += compXp(state.comps[k], k); });
-    return xp;
+    champs().forEach(function (c) { xp += caracXp(c); });
+    champsComp().forEach(function (c) { xp += compXp(c); });
+    (state.specialites || []).forEach(function (s) { xp += speXp(s); });
+    return Math.round(xp * 100) / 100;
   }
   function xpDepense() {
     var v = xpDepenseBrut();
     return aFiltre("xpDepense") ? applique("xpDepense", v, {}) : v;
   }
-  function xpRestant() { return state.xpTotal - xpDepense(); }
-  // xp dépensé DANS un champ : la montée de la caractéristique elle-même, plus
-  // toutes les compétences qui s'y rattachent (armes et langues comprises,
-  // elles sont des compétences de Body et de Mind)
+  function xpRestant() { return Math.round((state.xpTotal - xpDepense()) * 100) / 100; }
+  // XP dépensé DANS un champ : la montée de la caractéristique elle-même, plus
+  // les compétences qu'elle commande et les spécialités qui en relèvent. Une
+  // compétence qui plafonne sur plusieurs caractéristiques compte dans celle
+  // qu'elle lance par défaut, pour n'être comptée qu'une fois.
   function xpChamp(carac) {
     var xp = caracXp(carac);
-    Object.keys(state.comps).forEach(function (k) {
-      if (k.slice(0, carac.length + 1) === carac + "/") xp += compXp(state.comps[k], k);
-    });
-    return xp;
-  }
-  function ptsCreation() {
-    return state.caracsBase.Mind + state.caracsBase.Body + state.caracsBase.Prestance;
+    champsComp().forEach(function (c) { if (compCarac(c) === carac) xp += compXp(c); });
+    (state.specialites || []).forEach(function (s) { if (s.carac === carac) xp += speXp(s); });
+    return Math.round(xp * 100) / 100;
   }

@@ -80,7 +80,7 @@ var TEMOINS = {
     v: 1, name: "", caracsBase: { Mind: 0, Body: 0, Prestance: 0 },
     comps: {}, customComps: [], avantages: [], armes: [], armures: [],
     inv: { texte: [], groupes: ["Sur soi"], objets: [], opts: { cols: 4, nom: true, qte: true, poids: false, total: true } },
-    xpTotal: 500, narration: 3, pv: null, de: "1d100"
+    xpTotal: 500, pv: null, endurance: null, de: "d100"
   },
   "fiche jouée": {
     v: 1, name: "Yûji Itadori", portrait: "", espece: "Humain", age: "16",
@@ -117,7 +117,7 @@ var TEMOINS = {
     },
     divers: { pvMax: [0, 5, 0], regen: [0, 0, 0], vitesse: [1.5, 0, 0] },
     pvMaxOverride: null, vitesseOverride: 10.5, regenOverride: null,
-    pv: 37, narration: 2, xpTotal: 620, sansLimite: false, de: "1d100"
+    pv: 37, endurance: -4, xpTotal: 620, de: "d100"
   },
   // Une fiche déjà passée par le moteur : grenier et journal en place, pour
   // qu'un pas mal écrit qui écraserait le casier d'un autre se voie.

@@ -1,7 +1,6 @@
   // ---------- onglets ----------
   var TABS = [
     { id: "fiche", label: "Fiche" },
-    { id: "art", label: "Art" },
     { id: "equipement", label: "Équipement" },
     { id: "bio", label: "Bio" },
     { id: "options", label: "Options" }

@@ -2,7 +2,7 @@
   // Chaque module éditable porte un rouage dans son titre : il déverrouille la
   // CONSTRUCTION du personnage (stades, ajouts, suppressions, textes, divers…).
   // Hors édition, seuls les gestes de JEU restent actifs : jets, tchat, PV
-  // courant, narration, quantités d'objets, notes de session. Les éléments
+  // courant, endurance, quantités d'objets, notes de session. Les éléments
   // .pc-edit-only n'existent qu'en édition ; les champs .pc-edit-field
   // deviennent inertes (disabled + air d'un simple texte). Réglage d'interface
   // pur : ni dans l'état du personnage, ni persisté — chaque chargement

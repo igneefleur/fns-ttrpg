@@ -9,9 +9,9 @@ fiche d'un joueur :
 
   1. LA FORME du numéro publié et sa concordance entre ses TROIS porteurs (le
      bundle, le manifeste, RELEASE_DEFAUT de la carte d'attributs). Le contrat
-     dit « X.Y.Z », chaque nombre de 0 à 999, plus le suffixe « b », qui doit
-     être là sur la branche beta et absent ailleurs :
-     c'est ce suffixe, et lui seul, qui montre au joueur qu'il est sur la beta.
+     dit « X.Y.Z », chaque nombre de 0 à 999, plus le suffixe « b » de la
+     branche beta, qui doit être là sur la beta et absent ailleurs : c'est ce
+     suffixe, et lui seul, qui montre au joueur qu'il est sur la beta.
   2. LE RECUL. Une archive est immuable : republier sous une version déjà gelée
      ferait servir un code à un numéro qui en désigne un autre. La seule mémoire
      dont ce script dispose est le manifeste (ni git, qui peut manquer, ni le
@@ -138,11 +138,11 @@ def urls_du_manifeste(man):
             if re.search(r"\.(js|css|json)(\?|$)", noeud) or "://" in noeud or noeud.startswith("//"):
                 trouvees.append((ou, noeud))
 
-    # « narration » (le plateau du panneau flottant) compte comme le reste : ses
-    # deux URL doivent être relatives et nommer des fichiers qui existent, sans
-    # quoi le panneau resterait vide sans un mot (l'amorceur avale l'erreur de
-    # chargement pour ne jamais geler sur un fichier manquant).
-    for cle in ("amorce", "narration", "bundle", "archives"):
+    # Chaque bloc du manifeste compte : ses URL doivent être relatives et nommer
+    # des fichiers qui existent, sans quoi la fiche resterait vide sans un mot
+    # (l'amorceur avale l'erreur de chargement pour ne jamais geler sur un
+    # fichier manquant).
+    for cle in ("amorce", "bundle", "archives"):
         if cle in man:
             marche(man[cle], cle)
     return trouvees
@@ -289,24 +289,21 @@ def main(archive_differee=False):
     # LE SUFFIXE ET LA BRANCHE. Le marqueur est site_url de mkdocs.yml, qui est
     # versionné et voyage avec une copie du dépôt : git peut manquer là où ce
     # script tourne (un bac de sonde, une machine nue).
-    # « branche_beta » et non « beta » : version.beta, juste en dessous, dit le
-    # SUFFIXE d'un numéro, pas la branche du dépôt. Ce sont les deux moitiés du
-    # contrôle, et les confondre le viderait de son sens.
-    branche_beta = V.est_beta(RACINE)
+    sur_beta = V.branche_beta(RACINE)
     if version is None:
         pass
-    elif branche_beta is None:
+    elif sur_beta is None:
         notes.append("mkdocs.yml ne dit pas site_url : le suffixe n'est pas contrôlé")
-    elif branche_beta and not version.beta:
+    elif sur_beta and not version.beta:
         fautes.append("branche beta : RELEASE = %s devrait porter le suffixe "
                       "« b » ; sans lui le joueur ne voit pas qu'il est sur la beta"
                       % release)
-    elif not branche_beta and version.beta:
+    elif not sur_beta and version.beta:
         fautes.append("branche stable : RELEASE = %s porte le suffixe « b », qui "
                       "n'appartient qu'à la beta" % release)
     else:
         notes.append("suffixe : conforme à la branche (%s)"
-                     % ("beta" if branche_beta else "stable"))
+                     % ("beta" if sur_beta else "stable"))
 
     # 1 bis. le TROISIÈME porteur, celui que la fiche écrit dans le personnage
     # quand le manifeste n'a pas répondu.

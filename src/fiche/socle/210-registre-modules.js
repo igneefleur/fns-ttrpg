@@ -71,8 +71,8 @@
   // qu'un mod n'ait qu'un bloc à fournir sans rien savoir de la charpente.
   var SQUELETTES = {
     fiche: function (pane) {
-      // trois colonnes : narration, caractéristiques, langues | initiative,
-      // vitesse, régén, PV, armes | compétences (Body, Mind, Prestance)
+      // trois colonnes : prestige et caractéristiques | initiative, corps,
+      // PV et endurance | compétences et spécialités
       var cols = el("div", "pc-cols-fiche");
       var c1 = el("div", "pc-col");
       var c2 = el("div", "pc-col");
@@ -82,9 +82,6 @@
       cols.appendChild(c3);
       pane.appendChild(cols);
       return { gauche: c1, milieu: c2, droite: c3 };
-    },
-    art: function (pane) {
-      return { seule: pane };   // un seul bloc, sur toute la largeur
     },
     equipement: function (pane) {
       var cols = el("div", "pc-cols2");

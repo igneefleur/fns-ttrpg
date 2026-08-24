@@ -8,14 +8,6 @@
     "javascripts/mia-attr-map.js?v=1",
     "javascripts/mia-roll20-boot.js?v=1"
   ],
-  "narration": {
-    "js": [
-      "javascripts/mia-narration.js?v=1"
-    ],
-    "css": [
-      "stylesheets/mia-narration.css?v=1"
-    ]
-  },
   "bundle": {
     "js": [
       "javascripts/mia-migrations.js?v=1",

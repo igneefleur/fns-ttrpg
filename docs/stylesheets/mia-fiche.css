@@ -240,7 +240,7 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 /* ---- mode édition par module ----
    Un rouage dans le titre déverrouille la CONSTRUCTION du module ; hors
    édition, seuls les gestes de jeu restent actifs (jets, tchat, PV,
-   narration, quantités). Les .pc-edit-only n'existent qu'en édition ; les
+   endurance, quantités). Les .pc-edit-only n'existent qu'en édition ; les
    champs .pc-edit-field verrouillés prennent l'air d'un simple texte. */
 .pc-gear {
   margin-left: auto; flex: 0 0 auto; border: none; background: transparent;
@@ -313,7 +313,7 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-big .k { display: block; font-size: .5rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); white-space: nowrap; }
 .pc-big .v { display: block; font-size: var(--fs-hero); font-weight: 700; line-height: 1.1; color: var(--ink); font-variant-numeric: tabular-nums; margin-top: .08rem; white-space: nowrap; }
 
-/* ---- PV / narration : lignes de contrôle ---- */
+/* ---- PV / endurance : lignes de contrôle ---- */
 .pc-kv { display: flex; align-items: center; gap: .35rem; padding: .12rem .05rem; font-size: .7rem; }
 .pc-kv > .k { font-weight: 700; color: var(--ink-2); font-size: .6rem; white-space: nowrap; flex-shrink: 0; text-transform: uppercase; letter-spacing: .04em; }
 .pc-kv > .sp { flex: 1; }

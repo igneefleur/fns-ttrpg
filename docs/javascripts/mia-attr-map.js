@@ -16,9 +16,12 @@
  *     la reconstruction champ par champ n'est qu'un repli.
  *   - NATIFS (repli + macros) : un attribut par valeur/collection.
  *   - MIROIR (écrits seulement si `card` fourni) : valeurs DÉRIVÉES pour les
- *     macros et barres de jetons Roll20 — caractéristiques TOTALES
- *     (@{perso|mia_body}), PV courant/max, vitesse. Non relus (recalculés
- *     par le créateur).
+ *     macros et barres de jetons Roll20 — caractéristiques et compétences
+ *     TOTALES (@{perso|mia_for}, @{perso|mia_comp_phy}), PV et endurance
+ *     courants/max, prestige, initiative, vitesse, poids, charge et
+ *     récupération. Non relus (le créateur les recalcule), et jamais écrits
+ *     par-dessus une donnée : leurs noms viennent des SIGLES des règles, que
+ *     la fiche ne fige nulle part.
  *
  * LE PIÈGE QUE CE MODULE DOIT ÉVITER (3.0.0). Jusqu'ici, un mia_state
  * impossible à lire (il suffit qu'un joueur tape un caractère dans l'onglet
@@ -51,8 +54,8 @@
   // mia_version. Le manifeste en est la source unique quand il est là ; la
   // constante n'est qu'un repli (node, et l'amorceur de secours qui charge
   // sans manifeste).
-  // Le « b » final marque la branche beta : le joueur voit sur quel site
-  // il est. Il ne change PAS le rang du numéro (« 1.0.1b » et « 1.0.1 » sont la
+  // Le « b » final marque la branche beta : le joueur voit sur quel site il
+  // est. Il ne change PAS le rang du numéro (« 1.0.1b » et « 1.0.1 » sont la
   // même version, la beta étant ce que le stable recevra à la fusion) : ce qui
   // compare des versions doit donc l'ôter avant de lire les nombres.
   var RELEASE_DEFAUT = "1.0.0";
@@ -93,7 +96,8 @@
   }
 
   // champ d'état scalaire -> [suffixe, type]
-  //   n = nombre, s = chaîne libre, b = booléen,
+  //   n = nombre, s = chaîne libre, b = booléen (plus aucun champ racine n'en
+  //       est un ; le type reste, pour ne pas avoir à le réinventer),
   //   N = nombre NULLABLE : "" vaut null et non 0 (les « forcé » du MJ, où
   //       vide veut dire « valeur calculée » — les confondre avec 0 clouerait
   //       les PV max à zéro sur le chemin de repli).
@@ -103,42 +107,56 @@
     ["portrait", "portrait", "s"], ["defaut", "defaut", "s"],
     ["background", "background", "s"], ["notes", "notes", "s"],
     ["inventaire", "inventaire", "s"], ["de", "de", "s"],
-    ["xpTotal", "xp_total", "n"], ["narration", "narration", "n"],
+    ["xpTotal", "xp_total", "n"],
+    // LE PRESTIGE, qui plafonne chaque caractéristique. Trois attributs, parce
+    // que l'état porte trois leviers et pas un de plus : la valeur notée, son
+    // modificateur, son forçage. Le prestige EFFECTIF, lui, est une valeur
+    // dérivée : il part dans le miroir sous « mia_prestige » et ne se relit
+    // jamais — d'où le suffixe « _base » ici, qui laisse le nom court au
+    // chiffre que les macros veulent vraiment.
+    ["prestige", "prestige_base", "n"],
+    ["prestigeMod", "prestige_mod", "n"],
+    ["prestigeForce", "prestige_force", "N"],
+    // Les valeurs dérivées que le MJ remplace net. Toutes NULLABLES, et pour
+    // la même raison : vide veut dire « laisse la fiche calculer ».
     ["pvMaxOverride", "pv_max_force", "N"],
+    ["enduranceMaxOverride", "endurance_max_force", "N"],
     ["vitesseOverride", "vitesse_force", "N"],
-    ["regenOverride", "regen_force", "N"],
-    ["langueBase", "langue_base", "s"],
-    // budget de points de création (bloc Création des Options) : un
-    // modificateur du barème, et un forçage nullable comme les autres
-    ["ptsCreaMod", "pts_crea_mod", "n"],
-    ["ptsCreaForce", "pts_crea_force", "N"],
-    // Reliquat de la case « Sans limite », retirée le 2026-08-04 : le champ ne
-    // sert plus qu'à RELIRE une fiche d'avant, que normalize() convertit alors
-    // en plafonds forcés. Il ne vaut plus jamais true à l'écriture.
-    ["sansLimite", "sans_limite", "b"],
+    ["initiativeOverride", "initiative_force", "N"],
+    ["chargeOverride", "charge_force", "N"],
+    ["recupOverride", "recup_force", "N"],
     ["v", "version", "n"], ["rel", "release", "s"]
   ];
 
   // champ d'état collection (objet/tableau) -> suffixe (stocké en JSON)
   var COLLECTIONS = [
     ["qualites", "qualites"], ["avantages", "avantages"],
-    ["caracsBase", "caracs_base"], ["caracsXp", "caracs_xp"],
-    // Tous les leviers des Options voyagent, y compris sur le chemin de repli.
-    // Les seconds modificateurs et les forçages de caractéristiques manquaient
-    // ici depuis leur création : une fiche reconstruite sans mia_state les
-    // perdait en silence, alors même qu'ils changent des totaux affichés.
+    // LES CARACTÉRISTIQUES, sigle -> points achetés. Aucun sigle n'est écrit
+    // ici, et c'est la même décision que dans blank() : DATA n'est jamais
+    // chargé de ce côté-ci du pont, donc la table voyage telle quelle, ses
+    // clés avec. Une liste en dur divergerait de la page de règles au premier
+    // sigle ajouté, sans que rien ne le dise.
+    ["caracs", "caracs"],
+    // Tous les leviers des Options voyagent, y compris sur le chemin de repli :
+    // ils changent des totaux affichés, et une fiche reconstruite sans eux
+    // mentirait en silence.
     ["caracsMod", "caracs_mod"], ["caracsMod2", "caracs_mod2"],
     ["caracsForce", "caracs_force"],
     ["caracsXpForce", "caracs_xp_force"],
     ["caracsXpMod", "caracs_xp_mod"], ["caracsXpMod2", "caracs_xp_mod2"],
-    // plafond par caractéristique (bloc Création) : modificateur et forçage
+    // plafond par caractéristique : ce que le prestige donne, relevé ou
+    // remplacé caractéristique par caractéristique
     ["caracsPlafondMod", "caracs_plafond_mod"],
     ["caracsPlafondForce", "caracs_plafond_force"],
+    // LES COMPÉTENCES, sigle -> points investis. Mêmes leviers, mêmes raisons.
+    ["comps", "competences"],
     ["compsMod", "comps_mod"], ["compsMod2", "comps_mod2"],
     ["compsForce", "comps_force"], ["compsXpForce", "comps_xp_force"],
     ["compsXpMod", "comps_xp_mod"], ["compsXpMod2", "comps_xp_mod2"],
-    ["comps", "competences"], ["customComps", "comp_perso"],
-    ["langues", "langues"], ["armesComps", "armes_comps"],
+    // LES SPÉCIALITÉS sont une LISTE et non une table : le joueur les nomme
+    // lui-même. Chacune porte ses propres leviers ({ nom, carac, comp, pts,
+    // mod, mod2, force, xpForce }), donc tout tient dans ce seul attribut.
+    ["specialites", "specialites"],
     ["armes", "armes"], ["armures", "armures"],
     ["inv", "inventaire_sys"],
     ["divers", "divers"],
@@ -200,59 +218,91 @@
       v: SCHEMA_DEFAUT, rel: RELEASE_DEFAUT,
       name: "", portrait: "", espece: "", age: "", sexe: "", genre: "",
       defaut: "", qualites: ["", ""], background: "", notes: "",
-      avantages: [], sansLimite: false,
-      caracsPlafondMod: { Mind: 0, Body: 0, Prestance: 0 },
-      caracsPlafondForce: {},
-      ptsCreaMod: 0, ptsCreaForce: null,
-      caracsBase: { Mind: 0, Body: 0, Prestance: 0 },
-      caracsXp: { Mind: 0, Body: 0, Prestance: 0 },
-      caracsMod: { Mind: 0, Body: 0, Prestance: 0 },
-      caracsMod2: { Mind: 0, Body: 0, Prestance: 0 },
-      caracsForce: {}, caracsXpForce: {},
-      caracsXpMod: { Mind: 0, Body: 0, Prestance: 0 },
-      caracsXpMod2: { Mind: 0, Body: 0, Prestance: 0 },
-      compsMod: {}, compsMod2: {}, compsXpMod2: {},
-      xpTotal: 500,
-      comps: {}, customComps: [],
-      compsForce: {}, compsXpForce: {}, compsXpMod: {},
-      pv: null, narration: 3,
+      avantages: [],
+
+      // LE PRESTIGE et le plafond qu'il pose sur chaque caractéristique, que
+      // l'avantage ou l'arbitrage peut relever une par une.
+      prestige: 0, prestigeMod: 0, prestigeForce: null,
+      caracsPlafondMod: {}, caracsPlafondForce: {},
+
+      // TABLES VIDES, exactement comme dans le bundle. Leurs clés sont les
+      // sigles des règles (FOR, DEX…, PHY, COM…), que seul DATA connaît — et
+      // DATA n'est JAMAIS chargé ici, du côté Roll20. Les écrire en dur les
+      // ferait diverger de la page de règles au premier sigle ajouté ; une clé
+      // absente vaut zéro, et c'est tout ce dont la reconstruction a besoin.
+      caracs: {}, caracsMod: {}, caracsMod2: {},
+      caracsForce: {}, caracsXpForce: {}, caracsXpMod: {}, caracsXpMod2: {},
+
+      comps: {}, compsMod: {}, compsMod2: {},
+      compsForce: {}, compsXpForce: {}, compsXpMod: {}, compsXpMod2: {},
+
+      specialites: [],
+
+      xpTotal: 0,
+
+      // courants nullables : null veut dire « au maximum », jamais zéro
+      pv: null, endurance: null,
       armes: [], armures: [], inventaire: "",
       inv: {
         texte: [], groupes: ["Sur soi"], objets: [],
         // comptes : un drapeau « ce groupe pèse sur le personnage » par groupe,
-        // dans un tableau PARALLÈLE à groupes. vign : la colonne des vignettes
-        // du registre. Deux clés du bundle, donc deux clés d'ici : une clé de
+        // dans un tableau PARALLÈLE à groupes. opts : les réglages d'affichage
+        // du module. Deux clés du bundle, donc deux clés d'ici : une clé de
         // `inv` absente de ce miroir serait une perte sèche au repli.
         comptes: [true],
-        opts: { cols: 4, nom: true, qte: true, poids: false, total: true, vign: true }
+        opts: { cols: 4, nom: true, qte: true, poids: false, total: true }
       },
-      divers: { pvMax: [0, 0, 0], regen: [0, 0, 0], vitesse: [0, 0, 0] },
-      pvMaxOverride: null,
-      vitesseOverride: null,
-      regenOverride: null,
-      langues: [], langueBase: "",
-      armesComps: [],
-      de: "1d100",
+      // Les valeurs dérivées que le MJ peut décaler (trois modificateurs
+      // chacune) ou remplacer net.
+      divers: {
+        pvMax: [0, 0, 0], endurance: [0, 0, 0], vitesse: [0, 0, 0],
+        initiative: [0, 0, 0], charge: [0, 0, 0], recup: [0, 0, 0]
+      },
+      pvMaxOverride: null, enduranceMaxOverride: null, vitesseOverride: null,
+      initiativeOverride: null, chargeOverride: null, recupOverride: null,
+
       // Le rangement des modules et ce que les modules gardent pour eux.
       // Quatre clés RACINE, toutes avec un défaut vide : les ajouter ne fait
       // pas monter le schéma (normalize() complète une clé absente et ne purge
       // aucune clé racine inconnue), mais les omettre ici les perdrait sur le
       // chemin de repli.
       //
-      // Les quatre sont maintenant dans le blank() du bundle aussi, à
-      // l'identique. Le sens qu'il faut vérifier à chaque ajout est celui-ci :
-      // une clé racine du bundle absente d'ici serait une perte sèche au repli.
+      // Le sens qu'il faut vérifier à chaque ajout est celui-ci : une clé
+      // racine du bundle absente d'ici serait une perte sèche au repli.
       // L'inverse (une clé d'ici que le bundle ignore) reste sans danger : la
       // carte la fait voyager et normalize() ne purge pas les clés racine.
       //
       // modules part VIDE : sa forme, { ordre: [], place: {} }, ne se
       // matérialise que le jour où le joueur range quelque chose.
-      modules: {}, modData: {}, modActifs: {}, mods: []
+      modData: {}, modActifs: {}, modules: {}, mods: [],
+      // La part ALÉATOIRE d'un jet, et rien d'autre : le reste de l'expression
+      // (le bonus, la limite, le kl1) se bâtit dans le bundle. Ce littéral doit
+      // suivre DE_DEFAUT de src/fiche/socle/020-version.js.
+      de: "d100"
     };
   }
 
   function num(v) { var n = parseFloat(v); return isFinite(n) ? n : 0; }
   function str(v) { return v == null ? "" : String(v); }
+
+  // Le nom d'ATTRIBUT que porte un sigle de règle. Les sigles sont en
+  // capitales et peuvent être accentués (DÉT) : un nom d'Attribute Roll20
+  // accentué se tape de travers dans une macro et se recopie plus mal encore.
+  // On le ramène donc à l'alphabet nu, ici et une seule fois — deux sigles qui
+  // ne différeraient que par un accent se confondraient, mais aucun jeu
+  // n'écrit deux sigles pareils.
+  var SANS_ACCENT = {
+    "À": "A", "Á": "A", "Â": "A", "Ä": "A", "Ç": "C", "È": "E", "É": "E",
+    "Ê": "E", "Ë": "E", "Ì": "I", "Í": "I", "Î": "I", "Ï": "I", "Ñ": "N",
+    "Ò": "O", "Ó": "O", "Ô": "O", "Ö": "O", "Ù": "U", "Ú": "U", "Û": "U",
+    "Ü": "U", "Ý": "Y", "Ÿ": "Y"
+  };
+  function sigleAttr(code) {
+    var s = String(code == null ? "" : code).toUpperCase(), r = "", i;
+    for (i = 0; i < s.length; i++) r += (SANS_ACCENT[s.charAt(i)] || s.charAt(i));
+    return r.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+  }
+
 
   // Copie de l'inventaire SANS les vignettes en data: pour l'attribut de repli
   // mia_inventaire_sys : mia_state (source de vérité) les porte déjà, les
@@ -335,22 +385,51 @@
       if (state[d[0]] === undefined) return;
       put(d[1], JSON.stringify(state[d[0]]));
     });
-    // PV courant nullable : conservé à l'exact (null = « au maximum »)
-    put("etat_courant", JSON.stringify({ pv: state.pv == null ? null : state.pv }));
+    // PV et endurance courants, nullables : conservés à l'exact (null = « au
+    // maximum »). Ils ne passent pas par SCALARS parce que leurs noms courts,
+    // mia_pv et mia_endurance, appartiennent aux barres de jetons du miroir —
+    // qui, elles, remplacent un null par le maximum et perdraient la nuance.
+    put("etat_courant", JSON.stringify({
+      pv: state.pv == null ? null : state.pv,
+      endurance: state.endurance == null ? null : state.endurance
+    }));
 
     // ---- miroir dérivé (macros / barres de jetons), seulement si la carte est fournie ----
+    // Il s'écrit APRÈS les attributs de données, et ne les écrase JAMAIS : ses
+    // noms de sigles viennent de la page de règles, qui peut en ajouter ou en
+    // renommer. Un sigle qui tomberait sur un nom déjà pris (« de », « mods »…)
+    // perd son miroir, jamais la donnée — seule celle-ci se relit.
+    function miroirSigles(table, prefixe) {
+      if (!table || typeof table !== "object") return;
+      Object.keys(table).forEach(function (code) {
+        var s = sigleAttr(code);
+        if (!s) return;
+        s = prefixe + s;
+        if (Object.prototype.hasOwnProperty.call(out, PREFIX + s)) return;
+        put(s, table[code]);
+      });
+    }
     if (card) {
-      var cc = card.caracs || {};
-      put("mind", cc.Mind);
-      put("body", cc.Body);
-      put("prestance", cc.Prestance);
       var cb = card.combat || {};
-      put("pv", cb.pv == null ? cb.pvMax : cb.pv, cb.pvMax);   // barre de jeton : PV courant / max
-      put("vitesse", cb.vitesse);
+      // barres de jetons : courant / max. Un courant null veut dire « au
+      // maximum » côté fiche, quand une barre Roll20 vide, elle, se lirait
+      // zéro : on écrit donc le maximum plutôt que rien.
+      put("pv", cb.pv == null ? cb.pvMax : cb.pv, cb.pvMax);
+      put("endurance", cb.endurance == null ? cb.enduranceMax : cb.endurance, cb.enduranceMax);
+      // le prestige EFFECTIF, celui qui plafonne les caractéristiques
+      if (card.prestige !== undefined) put("prestige", card.prestige);
       // utilisables dans les macros Roll20 : @{Perso|mia_initiative}, etc.
       if (cb.initiative !== undefined) put("initiative", cb.initiative);
-      if (cb.regen !== undefined) put("regen", cb.regen);
+      if (cb.vitesse !== undefined) put("vitesse", cb.vitesse);
       if (cb.poids !== undefined) put("poids", cb.poids);
+      if (cb.charge !== undefined) put("charge", cb.charge);
+      if (cb.recup !== undefined) put("recup", cb.recup);
+      // Les totaux par SIGLE. Les compétences prennent un préfixe à elles :
+      // rien n'interdit aux règles de donner un jour le même sigle à une
+      // caractéristique et à une compétence, et le total de l'une écraserait
+      // alors celui de l'autre sans que personne ne s'en aperçoive.
+      miroirSigles(card.caracs, "");
+      miroirSigles(card.comps, "comp_");
     }
     return out;
   }
@@ -412,7 +491,11 @@
     if (ec !== undefined && ec !== "") {
       try {
         var o2 = JSON.parse(ec);
+        // une clé absente vaut null, c'est-à-dire « au maximum », et non zéro :
+        // un mia_etat_courant écrit avant l'endurance ne porte que les PV, et
+        // le lire comme un zéro coucherait le personnage à l'ouverture
         s.pv = (o2 && o2.pv != null) ? o2.pv : null;
+        s.endurance = (o2 && o2.endurance != null) ? o2.endurance : null;
       } catch (e) {}
     }
     return s;

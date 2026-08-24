@@ -10,7 +10,7 @@
  * passifs d'une compétence et son art (au stade Artiste).
  * Chaque module éditable porte un rouage (mode édition par module) : la
  * construction du personnage est verrouillée hors édition, seuls les gestes
- * de jeu restent actifs (jets, tchat, PV, narration, quantités, notes).
+ * de jeu restent actifs (jets, tchat, PV, endurance, quantités, notes).
  *
  * Le contenu des règles (caractéristiques, listes de compétences, stades,
  * vitesses, difficultés, blessures, courbes d'armes/armures, actions) vient de
@@ -77,24 +77,54 @@
   var RELEASE = "1.0.0";
   var SCHEMA = 1;
 
-  var XP_CREATION = 500;      // xp de départ (le total reste modifiable)
-  // Les deux barèmes de la création. Ce ne sont plus des murs : le bloc
-  // Création des Options les décale ou les remplace, fiche par fiche (et pour
-  // le plafond, caractéristique par caractéristique).
-  var PTS_CREATION = 120;     // points de caractéristiques à la création
-  var CARAC_MAX = 80;         // plafond d'une caractéristique
-  var CARAC_PAS = 5;          // +5 par achat d'xp
+  // ---------- ce que la fiche ne décide PAS ----------
+  // Les barèmes du jeu ne sont plus ici : ils viennent de DATA, c'est-à-dire de
+  // la page de règles relue au build par hooks/mia_creation.py. La table
+  // « Valeur / MOD / LIM / XP cumulés » donne les vingt et une lignes déjà
+  // calculées, le prestige donne le plafond, et les multiplicateurs de
+  // l'initiative, de la vitesse, des sauts et de la récupération sont pêchés
+  // dans les formules de la page. Aucun nombre de règle ne s'écrit dans ce
+  // fichier — c'est la seule façon qu'une règle corrigée arrive à l'outil.
+  //
+  // LES REPLIS CI-DESSOUS NE SONT PAS DES RÈGLES : ce sont les valeurs qu'on
+  // sert quand DATA manque (données trop anciennes, fetch expiré, fiche ouverte
+  // hors ligne). Ils évitent une fiche qui ne s'ouvre pas ; ils ne prétendent
+  // pas dire le jeu, et lire une règle ici serait une faute.
+  var REPLI = {
+    prestigeMax: 20,
+    xpComp: 1, xpSpe: 0.25,       // ce que coûte un point de compétence, de spécialité
+    speMarge: 50, speMin: 30,     // plafond d'une spécialité : LIM − 50 − MOD − plafond
+    endurAction: 50,              // endurance dépensable sur une même action
+    iniMult: 2, iniMainsNues: 20,
+    vitesseMult: 2, sautLong: 1.75, sautHaut: 2, recupMult: 2
+  };
+
   var MOD_PAS = 5;            // tous les modificateurs se règlent de 5 en 5
-  var QUART = 4;              // « pas plus d'un quart de l'xp total »
 
-  var ABBR = { Mind: "MIND", Body: "BODY", Prestance: "PRES" };
+  // LES PALIERS DE CHARGE. Leurs SEUILS se lisent dans les données (la table
+  // « Charge / Effets » de la page) ; leurs EFFETS, eux, sont du code, parce
+  // qu'une division par 1,5 ne se lit pas dans une phrase française. Les deux
+  // doivent donc bouger ENSEMBLE : un palier ajouté à la page sans sa ligne ici
+  // s'afficherait au joueur sans rien peser sur ses chiffres.
+  //
+  // Ils se CUMULENT : à 100 % de charge, l'esquive a pris −10, −40 puis −100,
+  // et les sauts ont été divisés par 3 puis par 4.
+  var CHARGE_EFFETS = {
+    50:  { ini: -50,  esq: -10 },
+    75:  { esq: -40,  vitesseDiv: 1.5, sautDiv: 3 },
+    100: { esq: -100, vitesseDiv: 2, iniDiv: 2, sautDiv: 4 }
+  };
+  // La charge frappe « l'esquive », et l'esquive est une SPÉCIALITÉ que le
+  // joueur nomme lui-même. On la reconnaît donc par son nom, à la casse près :
+  // une fiche qui n'en porte pas ne subit simplement rien.
+  var CHARGE_ESQUIVE = "Esquive";
 
-  // LE DÉ DES JETS DE TEST, écrit comme les règles le disent et comme Roll20
-  // le comprend : « 96+ au dé est un coup critique, 5- au dé est un échec
-  // critique ». cs> et cf< sont les annotations de critique de Roll20 : le
-  // résultat s'y colore de lui-même dans le tchat, vert sur un critique et
-  // rouge sur un échec critique, sans que la fiche ait à le calculer.
-  var DE_DEFAUT = "1d100cs>96cf<5";
+  // LE DÉ DES JETS. Un jet MIA n'est pas un dé nu : c'est un couple
+  // « d100 + bonus » et « la limite », dont Roll20 ne garde que le plus bas
+  // (kl1). La limite plafonne donc le résultat, et le tchat l'affiche déjà
+  // plafonné. Ce champ ne porte que la partie ALÉATOIRE ; jetCommande() bâtit
+  // le reste autour d'elle.
+  var DE_DEFAUT = "d100";
 
   // ---------- outils ----------
   function el(tag, cls, txt) {
@@ -153,41 +183,48 @@
   function capFirst(t) { t = String(t == null ? "" : t); return t ? t.charAt(0).toUpperCase() + t.slice(1) : t; }
 
   // ---------- état ----------
+  // LES CARACTÉRISTIQUES ET LES COMPÉTENCES SONT DES OBJETS VIDES, et c'est une
+  // décision, pas un oubli. Leurs clés sont les sigles des règles (FOR, DEX…,
+  // PHY, COM…), que seul DATA connaît — or blank() tourne AUSSI dans
+  // mia-attr-map.js, du côté Roll20, où les données ne sont pas chargées. Une
+  // liste écrite en dur y divergerait de la page de règles au premier sigle
+  // ajouté, sans que rien ne le dise. Tout se lit donc par accesseur, et une
+  // clé absente vaut zéro.
   function blank() {
     return {
       v: SCHEMA, rel: RELEASE,
       name: "", portrait: "", espece: "", age: "", sexe: "", genre: "",
       defaut: "", qualites: ["", ""], background: "", notes: "",
-      avantages: [], sansLimite: false,
-      // Le PLAFOND des caractéristiques et le budget de POINTS DE CRÉATION se
-      // règlent (bloc Création des Options), avec la même grammaire que les
-      // autres leviers : une valeur forcée, ou un modificateur du barème.
-      // Ils remplacent l'ancienne case « Sans limite », qui ne savait que
-      // lever le plafond, et pour les trois caractéristiques à la fois.
-      caracsPlafondMod: { Mind: 0, Body: 0, Prestance: 0 },
-      caracsPlafondForce: {},
-      ptsCreaMod: 0, ptsCreaForce: null,
-      caracsBase: { Mind: 0, Body: 0, Prestance: 0 },
-      caracsXp: { Mind: 0, Body: 0, Prestance: 0 },
-      caracsMod: { Mind: 0, Body: 0, Prestance: 0 },
-      // DEUX modificateurs par valeur, et non un seul : le premier pour
-      // l'équipement, le second pour un art ou une décision du MJ. Un seul
-      // champ obligeait à additionner de tête avant de saisir, et à défaire le
-      // calcul pour retirer l'un des deux.
-      caracsMod2: { Mind: 0, Body: 0, Prestance: 0 },
-      // Les caractéristiques reçoivent les mêmes leviers que les compétences :
-      // total forcé, et coût en xp forcé avec ses deux modificateurs.
-      caracsForce: {}, caracsXpForce: {},
-      caracsXpMod: { Mind: 0, Body: 0, Prestance: 0 },
-      caracsXpMod2: { Mind: 0, Body: 0, Prestance: 0 },
-      compsMod: {}, compsMod2: {}, compsXpMod2: {},
-      xpTotal: XP_CREATION,
-      comps: {}, customComps: [],
-      // leviers du MJ, par compétence (clé « Carac/Nom ») : total forcé
-      // (vide = calculé), coût en xp forcé (vide = calculé), et modificateur
-      // de ce coût
-      compsForce: {}, compsXpForce: {}, compsXpMod: {},
-      pv: null, narration: 3,
+      avantages: [],
+
+      // LE PRESTIGE, qui plafonne CHAQUE caractéristique. Il se force comme le
+      // reste (bloc Création des Options) : une valeur imposée, ou un
+      // modificateur du barème.
+      prestige: 0, prestigeMod: 0, prestigeForce: null,
+      // et le plafond peut se relever caractéristique par caractéristique,
+      // pour l'avantage ou l'arbitrage qui déborde la règle
+      caracsPlafondMod: {}, caracsPlafondForce: {},
+
+      // sigle -> points achetés. Les modificateurs sont DEUX (l'équipement,
+      // puis l'arbitrage) : un seul champ obligeait à additionner de tête
+      // avant de saisir, et à défaire le calcul pour en retirer un.
+      caracs: {}, caracsMod: {}, caracsMod2: {},
+      caracsForce: {}, caracsXpForce: {}, caracsXpMod: {}, caracsXpMod2: {},
+
+      // sigle -> points investis (1 XP le point). Mêmes leviers.
+      comps: {}, compsMod: {}, compsMod2: {},
+      compsForce: {}, compsXpForce: {}, compsXpMod: {}, compsXpMod2: {},
+
+      // LES SPÉCIALITÉS sont une LISTE et non une table : leur nom est libre,
+      // le joueur les crée. Chacune dit de quelle caractéristique et de quelle
+      // compétence elle relève, parce que ces deux-là commandent son plafond et
+      // le jet qui la lance.
+      // { nom, carac, comp, pts, mod, mod2, force, xpForce }
+      specialites: [],
+
+      xpTotal: 0,
+
+      pv: null, endurance: null,
       armes: [], armures: [], inventaire: "",
       // inventaire illustré : groupes, objets, et les réglages d'affichage du
       // module (le poids de MIA est un nombre SANS unité)
@@ -196,42 +233,26 @@
         // Un drapeau « compté » par groupe, dans un tableau PARALLÈLE et non
         // dans le groupe lui-même : inv.groupes est un tableau de CHAÎNES que
         // sept endroits lisent tel quel (bandeau, renommage, menus du tiroir et
-        // du dialogue Prendre, carte de tchat). Le passer en objets obligerait
-        // à un pas de migration avec descente, et une archive qui relirait la
-        // fiche écrirait « [object Object] » dans le tchat d'un joueur. Ici,
-        // rien ne casse : normalize() ne purge pas les clés inconnues de `inv`,
-        // donc une archive 3.0.0 fait voyager `comptes` intact sans savoir le
-        // lire (elle compte simplement tout le poids, ce qui se voit à l'écran
-        // et se répare en rouvrant la fiche).
+        // du dialogue Prendre, carte de tchat).
         comptes: [true],
-        // Les réglages d'affichage des TUILES : combien par ligne, et ce que
-        // leur pied montre. « vign » ne commande plus rien : il servait à la
-        // colonne de vignettes d'un inventaire en lignes, essayé puis retiré.
-        // Il reste écrit dans les personnages déjà enregistrés, donc on le
-        // garde pour ne pas le leur effacer, mais rien ne le lit.
-        opts: { cols: 4, nom: true, qte: true, poids: false, total: true, vign: true }
+        opts: { cols: 4, nom: true, qte: true, poids: false, total: true }
       },
-      divers: { pvMax: [0, 0, 0], regen: [0, 0, 0], vitesse: [0, 0, 0] },
-      pvMaxOverride: null,
-      vitesseOverride: null,
-      regenOverride: null,
-      // langues : des compétences de Mind à part entière (clé « Mind/<nom> »
-      // dans comps), rassemblées dans leur module. langueBase = la langue du
-      // personnage, acquise jusqu'à Expert sans rien coûter.
-      langues: [], langueBase: "",
-      // armes ajoutées par le joueur : des compétences de Body, rassemblées
-      // dans le module Armes avec celles des règles (DATA.compsArmes)
-      armesComps: [],
+
+      // Les valeurs dérivées que le MJ peut décaler (trois modificateurs
+      // chacune) ou remplacer net.
+      divers: {
+        pvMax: [0, 0, 0], endurance: [0, 0, 0], vitesse: [0, 0, 0],
+        initiative: [0, 0, 0], charge: [0, 0, 0], recup: [0, 0, 0]
+      },
+      pvMaxOverride: null, enduranceMaxOverride: null, vitesseOverride: null,
+      initiativeOverride: null, chargeOverride: null, recupOverride: null,
+
       // modules : le coffre privé de chaque module (id -> objet libre) et les
-      // interrupteurs (id -> false pour les seuls modules coupés). Deux clés
-      // RACINE avec un défaut : normalize() les complète, donc le schéma ne
-      // monte pas et une fiche s'ouvre dans les deux sens.
+      // interrupteurs (id -> false pour les seuls modules coupés).
       modData: {}, modActifs: {},
       // disposition des modules ({ ordre: [], place: {} }, éparse : seul ce que
       // le joueur a déplacé y figure) et mods du personnage (leur CODE voyage
-      // avec lui). Deux clés racine de plus, mêmes raisons, même absence de
-      // montée de schéma ; le blank() de mia-attr-map.js les porte déjà, sans
-      // quoi elles se perdraient sur le chemin de repli des Attributes Roll20.
+      // avec lui).
       modules: {}, mods: [],
       de: DE_DEFAUT
     };
@@ -274,228 +295,123 @@
     // La release suit toujours le code qui vient d'écrire : c'est lui qui fait
     // foi. Sur la beta, cela tamponne le suffixe sur n'importe quel personnage
     // seulement ouvert puis réenregistré ; c'est sans danger tant que le
-    // suffixe ne change pas le rang, un « 3.6.0b » rouvert sur le site stable
-    // 3.6.0 ne devant surtout pas passer pour venu du futur.
+    // suffixe ne change pas le rang.
     if (parseInt(s.v, 10) === SCHEMA) s.rel = RELEASE;
-    if (!s.caracsBase || typeof s.caracsBase !== "object") s.caracsBase = b.caracsBase;
-    if (!s.caracsXp || typeof s.caracsXp !== "object") s.caracsXp = b.caracsXp;
-    if (!s.caracsMod || typeof s.caracsMod !== "object") s.caracsMod = b.caracsMod;
-    ["caracsMod2", "caracsXpMod", "caracsXpMod2", "caracsPlafondMod"].forEach(function (k) {
-      if (!s[k] || typeof s[k] !== "object" || Array.isArray(s[k])) s[k] = { Mind: 0, Body: 0, Prestance: 0 };
-    });
-    ["caracsForce", "caracsXpForce", "caracsPlafondForce"].forEach(function (k) {
-      if (!s[k] || typeof s[k] !== "object" || Array.isArray(s[k])) s[k] = {};
-    });
-    // les modificateurs (blocs Options) acceptent les décimales : les sommes
-    // migrées depuis les anciens divers peuvent en porter
+
+    // ---------- outils ----------
+    // les modificateurs (blocs Options) acceptent les décimales
     function modNum(v) {
       var n = parseFloat(v);
       return isFinite(n) ? clamp(Math.round(n * 100) / 100, -999, 999) : 0;
     }
-    ["Mind", "Body", "Prestance"].forEach(function (c) {
-      s.caracsBase[c] = clamp(num(s.caracsBase[c], 0), 0, 999);
-      s.caracsXp[c] = clamp(num(s.caracsXp[c], 0), 0, 99);
-      s.caracsMod[c] = modNum(s.caracsMod[c]);
-      s.caracsMod2[c] = modNum(s.caracsMod2[c]);
-      s.caracsXpMod[c] = modNum(s.caracsXpMod[c]);
-      s.caracsXpMod2[c] = modNum(s.caracsXpMod2[c]);
-      s.caracsPlafondMod[c] = modNum(s.caracsPlafondMod[c]);
-      // forçages : ABSENTS par défaut, une valeur les pose
-      ["caracsForce", "caracsXpForce", "caracsPlafondForce"].forEach(function (k) {
-        if (s[k][c] === undefined || s[k][c] === null || s[k][c] === "") { delete s[k][c]; return; }
-        var n = parseFloat(s[k][c]);
-        if (isFinite(n)) s[k][c] = clamp(Math.round(n), -9999, 9999); else delete s[k][c];
-      });
-    });
-    // budget de points de création : un modificateur, et un forçage qui vaut
-    // null quand il n'y en a pas (même convention que pvMaxOverride)
-    s.ptsCreaMod = modNum(s.ptsCreaMod);
-    if (s.ptsCreaForce === undefined || s.ptsCreaForce === null || s.ptsCreaForce === "") s.ptsCreaForce = null;
-    else {
-      var pcf = parseFloat(s.ptsCreaForce);
-      s.ptsCreaForce = isFinite(pcf) ? clamp(Math.round(pcf), -9999, 9999) : null;
-    }
-    // Migration de l'ancienne case « Sans limite » (retirée le 2026-08-04) :
-    // elle levait le plafond des trois caractéristiques d'un coup. Une fiche
-    // qui la portait cochée garde ses chiffres, plafond forcé assez haut pour
-    // ne jamais mordre — mais SEULEMENT là où le plafond mordrait vraiment.
-    // Sinon la case, cochée « au cas où » sur une fiche que 80 n'a jamais
-    // gênée, laissait trois plafonds forcés à 9999 en travers du bloc.
-    if (s.sansLimite) {
-      ["Mind", "Body", "Prestance"].forEach(function (c) {
-        if (s.caracsPlafondForce[c] !== undefined) return;
-        if (s.caracsBase[c] + CARAC_PAS * s.caracsXp[c] > CARAC_MAX) s.caracsPlafondForce[c] = 9999;
-      });
-    }
-    s.sansLimite = false;
-    // modificateurs divers (3 emplacements : équipement / art / MJ) : seuls
-    // PV max, régén et vitesse en portent encore
-    if (!s.divers || typeof s.divers !== "object" || Array.isArray(s.divers)) s.divers = b.divers;
-    s.divers.pvMax = modArr(s.divers.pvMax);
-    s.divers.regen = modArr(s.divers.regen);
-    s.divers.vitesse = modArr(s.divers.vitesse);
-    if (!s.compsMod || typeof s.compsMod !== "object" || Array.isArray(s.compsMod)) s.compsMod = {};
-    // migration inverse (2026-08-02) : les divers de caractéristiques et de
-    // compétences (essai en ligne du 2026-08-01) redeviennent le modificateur
-    // UNIQUE des blocs Options — leurs sommes s'y replient, rien ne se perd
-    if (s.divers.caracs && typeof s.divers.caracs === "object") {
-      ["Mind", "Body", "Prestance"].forEach(function (c) {
-        var d = modSum(modArr(s.divers.caracs[c]));
-        if (d) s.caracsMod[c] = modNum(s.caracsMod[c] + d);
-      });
-    }
-    delete s.divers.caracs;
-    if (s.divers.comps && typeof s.divers.comps === "object" && !Array.isArray(s.divers.comps)) {
-      Object.keys(s.divers.comps).forEach(function (k) {
-        var d = modSum(modArr(s.divers.comps[k]));
-        if (d) s.compsMod[k] = modNum((parseFloat(s.compsMod[k]) || 0) + d);
-      });
-    }
-    delete s.divers.comps;
-    // modificateur unique par compétence (bloc Options) : clés normalisées
-    // comme les compétences, entrées nulles purgées
-    var cmods = {};
-    Object.keys(s.compsMod).forEach(function (k) {
-      var n = modNum(s.compsMod[k]);
-      if (!n) return;
-      var di = k.indexOf("/");
-      cmods[di > 0 ? k.slice(0, di + 1) + capFirst(k.slice(di + 1)) : k] = n;
-    });
-    s.compsMod = cmods;
-    // leviers du MJ, par compétence : les cartes de forçage acceptent le vide
-    // (= valeur calculée) ; le modificateur de coût, lui, est un nombre
-    function mapNombres(src, force) {
-      var out = {};
-      if (!src || typeof src !== "object" || Array.isArray(src)) return out;
-      Object.keys(src).forEach(function (k) {
-        var v = src[k];
-        if (force && (v === null || v === undefined || v === "")) return;
-        var n = parseFloat(v);
-        if (!isFinite(n)) return;
-        n = clamp(Math.round(n), -9999, 9999);
-        if (!force && !n) return;   // zéro = pas d'entrée
-        var i = k.indexOf("/");
-        out[i > 0 ? k.slice(0, i + 1) + capFirst(k.slice(i + 1)) : k] = n;
-      });
-      return out;
-    }
-    s.compsForce = mapNombres(s.compsForce, true);
-    s.compsXpForce = mapNombres(s.compsXpForce, true);
-    s.compsXpMod = mapNombres(s.compsXpMod, false);
-    // PV max forcé : vide = valeur calculée ; borné comme le reste
-    s.pvMaxOverride = (s.pvMaxOverride === null || s.pvMaxOverride === undefined || s.pvMaxOverride === "")
-      ? null : Math.floor(parseFloat(s.pvMaxOverride));
-    if (s.pvMaxOverride !== null && !isFinite(s.pvMaxOverride)) s.pvMaxOverride = null;
-    if (s.pvMaxOverride !== null) s.pvMaxOverride = clamp(s.pvMaxOverride, 0, 9999);
-    // vitesse et régénération forcées : même règle, la vitesse en décimales
-    // (la table donne des paliers comme 10.5 m)
-    function force(v, dec, max) {
+    // un champ FORCÉ : vide vaut « pas de forçage », et surtout pas zéro
+    function forceVal(v) {
       if (v === null || v === undefined || v === "") return null;
       var n = parseFloat(v);
-      if (!isFinite(n)) return null;
-      return clamp(dec ? Math.round(n * 100) / 100 : Math.floor(n), 0, max);
+      return isFinite(n) ? Math.round(n * 100) / 100 : null;
     }
-    s.vitesseOverride = force(s.vitesseOverride, true, 9999);
-    s.regenOverride = force(s.regenOverride, false, 9999);
-    // langues : noms uniques, capitalisés ; la langue de base doit être l'une
-    // d'elles (sinon la gratuité viserait une langue absente)
-    if (!Array.isArray(s.langues)) s.langues = [];
-    var vues = {};
-    s.langues = s.langues
-      .map(function (n) { return capFirst(String(n == null ? "" : n).trim()); })
-      .filter(function (n) {
-        if (!n || vues[n.toLowerCase()]) return false;
-        vues[n.toLowerCase()] = 1;
-        return true;
-      });
-    s.langueBase = capFirst(String(s.langueBase == null ? "" : s.langueBase).trim());
-    if (s.langueBase && !vues[s.langueBase.toLowerCase()]) s.langueBase = "";
-    // armes ajoutées à la main : noms uniques, et jamais un doublon de celles
-    // des règles (qui sont déjà dans le module)
-    if (!Array.isArray(s.armesComps)) s.armesComps = [];
-    var basiques = {};
-    ((DATA && DATA.compsArmes) || []).forEach(function (n) { basiques[String(n).toLowerCase()] = 1; });
-    var vuesA = {};
-    s.armesComps = s.armesComps
-      .map(function (n) { return capFirst(String(n == null ? "" : n).trim()); })
-      .filter(function (n) {
-        if (!n || vuesA[n.toLowerCase()] || basiques[n.toLowerCase()]) return false;
-        vuesA[n.toLowerCase()] = 1;
-        return true;
-      });
-    if (!Array.isArray(s.qualites)) s.qualites = ["", ""];
-    s.qualites = s.qualites.map(function (q) { return q == null ? "" : String(q); });
-    while (s.qualites.length < 2) s.qualites.push("");
     function objArray(a) {
       if (!Array.isArray(a)) return [];
       return a.filter(function (x) { return x && typeof x === "object"; });
     }
+    function objet(v) {
+      return (v && typeof v === "object" && !Array.isArray(v)) ? v : {};
+    }
+
+    // LES SIGLES VIENNENT DES RÈGLES, JAMAIS D'ICI. Quand DATA manque — fiche
+    // ouverte hors ligne, données trop anciennes, chemin de repli des
+    // Attributes Roll20 — les listes sont VIDES, et c'est la bonne réponse :
+    // on ne touche alors à aucune clé plutôt que d'en inventer huit et
+    // d'effacer ce que le joueur avait. Un état non normalisé se rouvre ; un
+    // état amputé, non.
+    var codesC = champs(), codesK = champsComp();
+    function connu(v, codes) {
+      v = v == null ? "" : String(v);
+      return codes.indexOf(v) >= 0 ? v : "";
+    }
+    // Nettoie une table « sigle -> nombre » SANS y ajouter de clé : une
+    // caractéristique jamais touchée n'a pas à peser dans l'état, les
+    // accesseurs rendent zéro pour elle.
+    function tableNombres(v, borne) {
+      var src = objet(v), out = {};
+      Object.keys(src).forEach(function (k) {
+        var n = borne(src[k]);
+        if (n !== 0 || src[k] === 0) out[k] = n;
+      });
+      return out;
+    }
+    function tableForce(v) {
+      var src = objet(v), out = {};
+      Object.keys(src).forEach(function (k) {
+        var n = forceVal(src[k]);
+        if (n !== null) out[k] = n;
+      });
+      return out;
+    }
+    function entier(v, min, max) { return clamp(num(v, 0), min, max); }
+
+    // ---------- le prestige ----------
+    var pMax = repli("prestigeMax");
+    s.prestige = entier(s.prestige, 0, pMax);
+    s.prestigeMod = modNum(s.prestigeMod);
+    s.prestigeForce = forceVal(s.prestigeForce);
+
+    // ---------- les caractéristiques ----------
+    // La valeur achetée se borne au prestige maximal des règles et non au
+    // prestige du personnage : le plafond est affaire de CALCUL (caracPlafond),
+    // pas de rangement. Un joueur qui redescend son prestige ne doit pas voir
+    // ses achats effacés au premier enregistrement.
+    s.caracs = tableNombres(s.caracs, function (v) { return entier(v, 0, pMax); });
+    ["caracsMod", "caracsMod2", "caracsXpMod", "caracsXpMod2", "caracsPlafondMod"]
+      .forEach(function (k) { s[k] = tableNombres(s[k], modNum); });
+    ["caracsForce", "caracsXpForce", "caracsPlafondForce"]
+      .forEach(function (k) { s[k] = tableForce(s[k]); });
+
+    // ---------- les compétences ----------
+    // Les points ne se bornent pas au plafond ici non plus, et pour la même
+    // raison : compPts() le fait au calcul, et une caractéristique momentanément
+    // baissée ne doit pas coûter au joueur ce qu'il avait investi.
+    s.comps = tableNombres(s.comps, function (v) { return entier(v, 0, 9999); });
+    ["compsMod", "compsMod2", "compsXpMod", "compsXpMod2"]
+      .forEach(function (k) { s[k] = tableNombres(s[k], modNum); });
+    ["compsForce", "compsXpForce"].forEach(function (k) { s[k] = tableForce(s[k]); });
+
+    // ---------- les spécialités ----------
+    // Une spécialité sans caractéristique ni compétence reste dans la fiche : le
+    // joueur vient peut-être de l'ajouter et n'a pas fini de la remplir. Elle ne
+    // vaut simplement rien tant qu'elle n'en désigne pas.
+    s.specialites = objArray(s.specialites).map(function (sp) {
+      return {
+        nom: sp.nom == null ? "" : String(sp.nom),
+        carac: connu(sp.carac, codesC),
+        comp: connu(sp.comp, codesK),
+        pts: entier(sp.pts, 0, 9999),
+        mod: modNum(sp.mod), mod2: modNum(sp.mod2),
+        force: forceVal(sp.force), xpForce: forceVal(sp.xpForce)
+      };
+    });
+
+    // ---------- identité, bio ----------
+    ["name", "portrait", "espece", "age", "sexe", "genre", "defaut", "background", "notes"]
+      .forEach(function (k) { s[k] = s[k] == null ? "" : String(s[k]); });
+    if (!Array.isArray(s.qualites)) s.qualites = ["", ""];
+    s.qualites = s.qualites.map(function (q) { return q == null ? "" : String(q); });
+    while (s.qualites.length < 2) s.qualites.push("");
     s.avantages = objArray(s.avantages);
-    s.customComps = objArray(s.customComps);
-    s.customComps.forEach(function (cc) { if (cc.name) cc.name = capFirst(cc.name); });
     s.armes = objArray(s.armes);
     s.armures = objArray(s.armures);
-    if (typeof s.comps !== "object" || !s.comps) s.comps = {};
-    var comps = {};
-    Object.keys(s.comps).forEach(function (k) {
-      var c = s.comps[k];
-      if (!c || typeof c !== "object") c = {};
-      c.stade = clamp(num(c.stade, 0), 0, DATA ? DATA.stades.length - 1 : 4);
-      // la clé d'état s'appelle « techniques » (historique : elle a déjà été
-      // migrée depuis « passifs », que l'interface réemploie aujourd'hui) ;
-      // chaque entrée est un objet {name, desc} (l'ancien texte simple
-      // devient le nom, description vide)
-      if (!Array.isArray(c.techniques)) c.techniques = Array.isArray(c.passifs) ? c.passifs : [];
-      delete c.passifs;
-      c.techniques = c.techniques.map(function (p) {
-        // cout : coût forcé de CE passif (null = le tarif de base) ; le joueur
-        // peut le régler à droite du nom, en mode édition
-        if (p && typeof p === "object") {
-          var t = { name: String(p.name || ""), desc: String(p.desc || "") };
-          var co = (p.cout === null || p.cout === undefined || p.cout === "") ? null : Math.floor(parseFloat(p.cout));
-          if (co !== null && isFinite(co)) t.cout = clamp(co, 0, 9999);
-          return t;
-        }
-        return { name: p == null ? "" : String(p), desc: "" };
-      });
-      // l'art du stade qui l'ouvre (Art) : {name, desc} ; un art resté vide s'efface
-      if (c.art && typeof c.art === "object") {
-        var aco = (c.art.cout === null || c.art.cout === undefined || c.art.cout === "")
-          ? null : Math.floor(parseFloat(c.art.cout));
-        c.art = { name: String(c.art.name || ""), desc: String(c.art.desc || "") };
-        if (aco !== null && isFinite(aco)) c.art.cout = clamp(aco, 0, 9999);
-        // un art vierge s'efface — son coût forcé n'aurait plus d'objet
-        if (!c.art.name.trim() && !c.art.desc.trim()) delete c.art;
-      } else delete c.art;
-      // migration : noms de compétences capitalisés (« Body/apnée » -> « Body/Apnée »)
-      var i = k.indexOf("/");
-      comps[i > 0 ? k.slice(0, i + 1) + capFirst(k.slice(i + 1)) : k] = c;
+
+    // ---------- les valeurs dérivées ----------
+    s.divers = objet(s.divers);
+    ["pvMax", "endurance", "vitesse", "initiative", "charge", "recup"].forEach(function (k) {
+      var a = Array.isArray(s.divers[k]) ? s.divers[k] : [];
+      s.divers[k] = [modNum(a[0]), modNum(a[1]), modNum(a[2])];
     });
-    s.comps = comps;
-    // renommages de compétences (2026-08-02) : les fiches d'avant migrent
-    // d'elles-mêmes — investissements, modificateurs et leviers du MJ suivent
-    // le nouveau nom, rien ne se perd
-    var RENOMMAGES = {
-      "Body/Se cacher": "Body/Discrétion",
-      "Body/Pique Longue": "Body/Pique longue",
-      "Mind/Histoire Japon": "Mind/Histoire du Japon",
-      "Mind/Se concentrer": "Mind/Concentration",
-      "Mind/Résister à la douleur": "Mind/Résistance à la douleur",
-      "Mind/Garder son calme": "Mind/Sang-froid",
-      "Mind/Observer": "Mind/Observation",
-      "Mind/Utiliser un autre de ses sens que la vue": "Mind/Sens autres que la vue",
-      "Prestance/Déception": "Prestance/Tromperie",
-      "Prestance/Commander": "Prestance/Commandement",
-      "Prestance/Réconforter": "Prestance/Réconfort"
-    };
-    [s.comps, s.compsMod, s.compsForce, s.compsXpForce, s.compsXpMod].forEach(function (m) {
-      Object.keys(RENOMMAGES).forEach(function (vieux) {
-        if (Object.prototype.hasOwnProperty.call(m, vieux)) {
-          if (m[RENOMMAGES[vieux]] === undefined) m[RENOMMAGES[vieux]] = m[vieux];
-          delete m[vieux];
-        }
-      });
-    });
+    ["pvMaxOverride", "enduranceMaxOverride", "vitesseOverride",
+     "initiativeOverride", "chargeOverride", "recupOverride"]
+      .forEach(function (k) { s[k] = forceVal(s[k]); });
+
+    // ---------- l'inventaire ----------
     // inventaire structuré : liste (texte) + objets illustrés par groupes
     // (un tableau passerait le typeof : ses propriétés nommées seraient
     // perdues par JSON.stringify au premier save)
@@ -514,7 +430,7 @@
     s.inv.opts.cols = clamp(num(s.inv.opts.cols, b.inv.opts.cols), 1, 8);
     // chaque réglage garde SON défaut quand il manque (un opts partiel ne doit
     // pas allumer un affichage éteint par défaut)
-    ["nom", "qte", "poids", "total", "vign"].forEach(function (k) {
+    ["nom", "qte", "poids", "total"].forEach(function (k) {
       s.inv.opts[k] = s.inv.opts[k] === undefined ? b.inv.opts[k] : !!s.inv.opts[k];
     });
     if (!Array.isArray(s.inv.groupes)) s.inv.groupes = [];
@@ -525,17 +441,12 @@
     if (!s.inv.groupes.length) s.inv.groupes = ["Sur soi"];
     // Les drapeaux « compté » se recalent sur les groupes à chaque chargement :
     // un tableau plus court se complète (un groupe neuf est PORTÉ, jamais posé,
-    // sinon du poids disparaîtrait en silence), un tableau plus long se coupe
-    // (le groupe a été supprimé ailleurs). C'est un tableau RECONSTRUIT : ne
-    // rien y ranger d'autre.
+    // sinon du poids disparaîtrait en silence), un tableau plus long se coupe.
     if (!Array.isArray(s.inv.comptes)) s.inv.comptes = [];
-    // PLUS DE DRAPEAUX QUE DE GROUPES : un groupe a été supprimé par une version
-    // qui ignore « comptes » (une archive antérieure sait ouvrir ce personnage,
-    // c'est même son rôle). Elle n'a pas retiré le drapeau correspondant, et
-    // personne ne peut plus dire LEQUEL : couper la fin décalerait tous les
-    // suivants, et un sac resterait posé au sol sans que rien ne le montre.
-    // On rend donc tout au poids porté. Perdre un décochage se voit et se
-    // refait ; perdre du poids en silence fausse la fiche sans prévenir.
+    // PLUS DE DRAPEAUX QUE DE GROUPES : personne ne peut plus dire LEQUEL a
+    // sauté, et couper la fin décalerait tous les suivants. On rend donc tout au
+    // poids porté. Perdre un décochage se voit et se refait ; perdre du poids en
+    // silence fausse la fiche sans prévenir.
     if (s.inv.comptes.length > s.inv.groupes.length) s.inv.comptes = [];
     s.inv.comptes = s.inv.groupes.map(function (_, gi) {
       return s.inv.comptes[gi] !== false;
@@ -549,31 +460,29 @@
         img: it.img == null ? "" : String(it.img),
         desc: it.desc == null ? "" : String(it.desc),
         // identifiant libre : c'est LUI qui reconnaît le même objet d'une fiche
-        // à l'autre quand on le donne (deux « Corde » différentes ne se
-        // confondent pas si elles portent des identifiants distincts)
+        // à l'autre quand on le donne
         id: it.id == null ? "" : String(it.id),
         achat: pnum(it.achat),
         vente: pnum(it.vente),
         groupe: clamp(num(it.groupe, 0), 0, s.inv.groupes.length - 1)
       };
     });
-    // migration : l'ancien inventaire en texte libre (une ligne par objet)
-    // devient des lignes de liste, quantité 1 et poids 0
-    if (s.inventaire && typeof s.inventaire === "string" && !s.inv.texte.length) {
+    // l'ancien inventaire en texte libre se fond dans les objets illustrés
+    if (s.inventaire && typeof s.inventaire === "string") {
       s.inventaire.split(/\r?\n/).forEach(function (line) {
         line = line.trim();
-        if (line) s.inv.texte.push({ nom: line, qte: 1, poids: 0, compte: true });
+        if (line) s.inv.objets.push({ nom: line, qte: 1, poids: 0, img: "", desc: "", groupe: 0 });
       });
       s.inventaire = "";
     }
-    // migration : la liste (retirée de la fiche) se fond dans les objets
-    // illustrés, au premier groupe ; sa case « compter le poids » disparaît
     if (s.inv.texte.length) {
       s.inv.texte.forEach(function (it) {
         s.inv.objets.push({ nom: it.nom, qte: it.qte, poids: it.poids, img: "", desc: "", groupe: 0 });
       });
       s.inv.texte = [];
     }
+
+    // ---------- les modules ----------
     // coffres des modules : le contenu appartient au module, la fiche ne juge
     // que la forme. Une entrée qui n'est pas un objet est jetée : elle ferait
     // planter le get() du module sans que personne ne sache pourquoi.
@@ -637,8 +546,7 @@
       // L'id impose son alphabet : il sert de clé partout (avis du navigateur,
       // journal « [mod:<id>] », coffre du module qu'il remplacerait). Même
       // règle que le moteur (idPropre) : les deux chemins doivent donner le
-      // MÊME id, sans quoi l'empreinte changerait selon le chemin pris et le
-      // joueur aurait à réautoriser un mod qu'il connaît déjà.
+      // MÊME id, sans quoi l'empreinte changerait selon le chemin pris.
       m.id = String(m.id == null ? "" : m.id).toLowerCase()
         .replace(/[^a-z0-9-]+/g, "-").replace(/-+/g, "-").replace(/^-+|-+$/g, "");
       m.nom = String(m.nom == null ? "" : m.nom);
@@ -651,13 +559,19 @@
       vusMods[m.id] = 1;
       return true;
     });
-    s.xpTotal = Math.max(0, num(s.xpTotal, XP_CREATION));
-    s.narration = clamp(num(s.narration, 3), 0, 99);
-    s.pv = (s.pv === null || s.pv === undefined || s.pv === "") ? null : parseFloat(s.pv);
-    if (s.pv !== null && !isFinite(s.pv)) s.pv = null;
+
+    // ---------- l'expérience et les deux jauges ----------
+    s.xpTotal = Math.max(0, num(s.xpTotal, 0));
+    // pv et endurance : null veut dire « au maximum », et c'est différent de
+    // zéro. Un personnage neuf est en pleine forme sans qu'on ait à recopier
+    // son maximum dans son état.
+    ["pv", "endurance"].forEach(function (k) {
+      s[k] = (s[k] === null || s[k] === undefined || s[k] === "") ? null : parseFloat(s[k]);
+      if (s[k] !== null && !isFinite(s[k])) s[k] = null;
+    });
+    s.de = s.de == null ? DE_DEFAUT : String(s.de);
     return s;
   }
-
   // ---------- filtres de calcul ----------
   // Un filtre intercepte une valeur DÉRIVÉE (total de caractéristique, PV max,
   // initiative…) juste après son calcul. Le calcul lui-même garde son nom
@@ -666,12 +580,13 @@
   // calcul sans qu'on rouvre ce fichier, et sans avoir à réécrire le module qui
   // affiche la valeur : tout ce qui lit caracTotal() voit le même chiffre.
   //
-  // Les CASCADES sont voulues, et elles tombent toutes seules : pvMaxAuto()
-  // appelle caracTotal(), donc un filtre sur caracTotal se voit dans les PV ;
-  // poidsMalus() appelle poidsPorte() et compValue() appelle poidsMalus(), donc
-  // un filtre sur le poids se voit dans toutes les compétences de Body, dans
-  // l'initiative et dans la vitesse ; xpDepense() appelle compXp(). Les gardes
-  // ci-dessous sont par NOM, jamais globales, pour ne pas couper ces chaînes-là.
+  // Les CASCADES sont voulues, et elles tombent toutes seules : caracMod() lit
+  // caracTotal(), compPlafond() lit caracMod(), spePlafond() lit les deux, et
+  // jetBonus() lit tout le monde — un filtre posé sur la caractéristique se voit
+  // donc jusque dans le jet d'une spécialité. De même, chargeMax() lit
+  // caracMod() et les paliers de charge commandent l'initiative, la vitesse et
+  // les sauts ; xpDepense() appelle compXp(). Les gardes ci-dessous sont par
+  // NOM, jamais globales, pour ne pas couper ces chaînes-là.
   var filtres = {};            // nom -> [{ fn, prop, echecs }], ordre d'enregistrement
   var filtresEnCours = {};     // nom -> 1 pendant sa passe (garde de récursion)
   var FILTRE_FAUTES = 5;       // même seuil que la muselière des modules, même raison
@@ -693,9 +608,16 @@
   // Les dix points de filtre. La table ne sert qu'à prévenir d'un nom mal
   // tapé : un filtre posé sur « pvmax » ne serait jamais appelé, et rien ne le
   // dirait.
+  // ILS SUIVENT LES RÈGLES. Chaque nom est un point de calcul qu'un mod peut
+  // détourner ; ils ont donc changé avec le système, et un mod écrit pour
+  // l'ancien se verra prévenir plutôt que d'agir dans le vide.
   var FILTRES_CONNUS = {
-    caracTotal: 1, compValue: 1, compXp: 1, pvMax: 1, initiative: 1,
-    vitesse: 1, regen: 1, poidsPorte: 1, poidsMalus: 1, xpDepense: 1
+    caracTotal: 1, caracMod: 1, caracLim: 1,
+    compValue: 1, compPlafond: 1, compXp: 1,
+    spePts: 1, spePlafond: 1, jetBonus: 1,
+    pvMax: 1, enduranceMax: 1, enduranceMalus: 1, recupJour: 1,
+    initiative: 1, vitesse: 1,
+    poidsPorte: 1, chargeMax: 1, xpDepense: 1
   };
   // Appartenance RÉELLE à une table nommée par une chaîne venue d'ailleurs (mod,
   // état importé). Sans elle, un nom comme « toString » répond « oui » depuis
@@ -863,29 +785,72 @@
   // Chaque valeur dérivée existe en deux temps : <nom>Brut fait le calcul,
   // <nom> le passe aux filtres. Les fonctions <nom>Auto, elles, sont AUTRE
   // CHOSE : la valeur avant le forçage du MJ, et elles ne bougent pas.
-  // Plafond d'une caractéristique : le barème (80), décalé par le modificateur
-  // du bloc Création, ou remplacé net par un plafond forcé. UN SEUL endroit le
-  // calcule : les garde-fous des boutons, l'infobulle et le champ forcé des
-  // Options lisent tous cette fonction, sinon deux d'entre eux finissent par
-  // dire des chiffres différents du total réellement retenu.
-  function caracPlafondAuto(c) { return CARAC_MAX + (state.caracsPlafondMod[c] || 0); }
+
+  // ---------- ce que disent les règles ----------
+  // Tout ce qui suit LIT les données engendrées par hooks/mia_creation.py
+  // depuis la page de règles. Rien n'est recalculé ici : la table des valeurs
+  // porte déjà le MOD, la LIM et l'XP cumulé de 0 à 20.
+  function regles() { return (typeof DATA === "object" && DATA) || {}; }
+  function repli(cle) {
+    var v = regles()[cle];
+    return (v === undefined || v === null) ? REPLI[cle] : v;
+  }
+  function caracsRegles() { return regles().caracs || []; }
+  function compsRegles() { return regles().comps || []; }
+  // Les sigles des caractéristiques, dans l'ordre de la page. Remplace la
+  // liste écrite en dur qu'était CHAMPS : l'ordre d'affichage est celui des
+  // règles, et une caractéristique ajoutée à la page arrive sans toucher au code.
+  function champs() { return caracsRegles().map(function (c) { return c.code; }); }
+  function champsComp() { return compsRegles().map(function (c) { return c.code; }); }
+  function caracInfo(code) {
+    var l = caracsRegles(), i;
+    for (i = 0; i < l.length; i++) if (l[i].code === code) return l[i];
+    return { code: code, nom: code, groupe: "" };
+  }
+  function compInfo(code) {
+    var l = compsRegles(), i;
+    for (i = 0; i < l.length; i++) if (l[i].code === code) return l[i];
+    return { code: code, nom: code, mod: [], lim: "" };
+  }
+
+  // LA TABLE DES VALEURS, et le seul endroit qui la lise. Une valeur hors table
+  // (un modificateur qui pousse au-delà de 20, un total négatif) se rabat sur la
+  // ligne la plus proche : la fiche ne fabrique pas de MOD que les règles
+  // n'annoncent pas.
+  function ligneValeur(v) {
+    var t = regles().valeurs || [];
+    if (!t.length) return { v: v, mod: 0, lim: 0, xp: 0 };
+    var n = Math.floor(v);
+    if (n <= t[0].v) return t[0];
+    if (n >= t[t.length - 1].v) return t[t.length - 1];
+    for (var i = 0; i < t.length; i++) if (t[i].v === n) return t[i];
+    return t[t.length - 1];
+  }
+
+  // ---------- le prestige ----------
+  function prestigeAuto() { return (state.prestige || 0) + (state.prestigeMod || 0); }
+  function prestige() {
+    if (state.prestigeForce !== null && state.prestigeForce !== undefined) return state.prestigeForce;
+    return prestigeAuto();
+  }
+  // Plafond d'une caractéristique : le prestige, décalé caractéristique par
+  // caractéristique, ou remplacé net. UN SEUL endroit le calcule — les
+  // garde-fous des boutons, l'infobulle et le champ forcé des Options lisent
+  // tous cette fonction, sinon trois chiffres différents finissent à l'écran.
+  function caracPlafondAuto(c) { return prestige() + (state.caracsPlafondMod[c] || 0); }
   function caracPlafond(c) {
     if (state.caracsPlafondForce[c] !== undefined) return state.caracsPlafondForce[c];
     return caracPlafondAuto(c);
   }
-  // budget de points de caractéristiques à la création : même grammaire
-  function ptsCreaAuto() { return PTS_CREATION + (state.ptsCreaMod || 0); }
-  function ptsCreaMax() {
-    if (state.ptsCreaForce !== null && state.ptsCreaForce !== undefined) return state.ptsCreaForce;
-    return ptsCreaAuto();
-  }
+
+  // ---------- les caractéristiques ----------
+  function caracBase(c) { return state.caracs[c] || 0; }
   function caracTotalBrut(c) {
     // total FORCÉ : il court-circuite tout, plafond et modificateurs compris
     if (state.caracsForce[c] !== undefined) return state.caracsForce[c];
-    var v = state.caracsBase[c] + CARAC_PAS * state.caracsXp[c];
-    v = Math.min(v, caracPlafond(c));
+    var v = Math.min(caracBase(c), caracPlafond(c));
     // le modificateur (bloc Options) s'applique APRÈS le plafond : il peut
-    // porter le total au-delà de 80 comme en dessous de 0.
+    // porter le total au-delà du prestige comme en dessous de zéro.
     return v + (state.caracsMod[c] || 0) + (state.caracsMod2[c] || 0);
   }
   function caracTotal(c) {
@@ -894,145 +859,212 @@
     // rappelé des centaines de fois par rafraîchissement
     return aFiltre("caracTotal") ? applique("caracTotal", v, { carac: c }) : v;
   }
-  function stadeInfo(i) { return DATA.stades[clamp(i, 0, DATA.stades.length - 1)]; }
-  // coût d'un passif : son coût forcé s'il en porte un, sinon le tarif de base
-  // (20 xp) — TOUS les passifs sont payants, aucun n'est offert par un stade
-  function techXp(t) {
-    return (t && t.cout !== null && t.cout !== undefined && isFinite(t.cout))
-      ? t.cout : DATA.xpParStade;
+  // LE MODIFICATEUR, qui s'ajoute à tous les jets passant par la
+  // caractéristique, et LA LIMITE, qui les plafonne. Les deux se lisent dans la
+  // table, jamais ne se recalculent.
+  function caracModBrut(c) { return ligneValeur(caracTotal(c)).mod; }
+  function caracMod(c) {
+    var v = caracModBrut(c);
+    return aFiltre("caracMod") ? applique("caracMod", v, { carac: c }) : v;
   }
-  // coût de l'art : rien par défaut (il vient avec son stade), sauf coût forcé
-  function artXp(c) {
-    return (c && c.art && c.art.cout !== null && c.art.cout !== undefined && isFinite(c.art.cout))
-      ? c.art.cout : 0;
+  function caracLimBrut(c) { return ligneValeur(caracTotal(c)).lim; }
+  function caracLim(c) {
+    var v = caracLimBrut(c);
+    return aFiltre("caracLim") ? applique("caracLim", v, { carac: c }) : v;
   }
-  // clés et repères des compétences que la fiche traite à part
-  var INIT_KEY = "Body/Initiative";
-  var LANGUE_CARAC = "Mind";
-  // les compétences d'ARMES sont TOUJOURS des compétences de Body
-  var ARME_CARAC = "Body";
-  function armeKey(nom) { return ARME_CARAC + "/" + nom; }
-  // celles des règles, puis celles que le joueur a ajoutées
-  function armesNoms() {
-    return ((DATA && DATA.compsArmes) || []).concat(state.armesComps);
+  // Ce qu'une caractéristique coûte : l'XP CUMULÉ de sa ligne, et non une somme
+  // de pas. La table porte déjà les 20 XP le +1 jusqu'à 5 puis 40 au-delà, donc
+  // un barème corrigé dans les règles arrive ici sans qu'on rouvre ce fichier.
+  function caracXpAuto(c) {
+    return ligneValeur(caracBase(c)).xp +
+           (state.caracsXpMod[c] || 0) + (state.caracsXpMod2[c] || 0);
   }
-  // Reconnaître une compétence d'arme par sa CLÉ, et surtout pas par le drapeau
-  // « arme » que allComps() pose sur ses items : compValue() ne reçoit jamais
-  // l'item, et ctx.ligneComp construit le sien SANS ce drapeau. Un mod qui
-  // afficherait une ligne de Katana verrait alors le malus de poids tomber sur
-  // une attaque, que la règle exempte. Passer par armesNoms() plutôt que par une
-  // liste figée fait qu'une arme ajoutée par le joueur en est exempte aussitôt.
-  // Une compétence d'arme, c'est-à-dire l'attaque et la parade, que le malus de
-  // poids épargne.
-  //
-  // Les armes des règles font foi. Une arme PERSONNALISÉE, elle, n'exempte que
-  // si son nom ne recouvre pas une compétence de Body existante : sans cette
-  // réserve, un joueur qui baptise son arme « Esquive » ou « Sprint » retirerait
-  // le malus de poids à la compétence du même nom, initiative comprise, et rien
-  // à l'écran ne le dirait.
-  function estArme(key) {
-    var rgl = (DATA && DATA.compsArmes) || [];
-    var i;
-    for (i = 0; i < rgl.length; i++) if (armeKey(rgl[i]) === key) return true;
-    var body = (DATA && DATA.comps && DATA.comps[ARME_CARAC]) || [];
-    for (i = 0; i < state.armesComps.length; i++) {
-      if (armeKey(state.armesComps[i]) !== key) continue;
-      return body.indexOf(state.armesComps[i]) < 0;
-    }
-    return false;
-  }
-  function langueKey(nom) { return LANGUE_CARAC + "/" + nom; }
-  // index du stade « Expert » : la langue du personnage y monte gratuitement
-  function stadeIndex(nom) {
-    for (var i = 0; i < DATA.stades.length; i++) {
-      if ((DATA.stades[i].nom || "").toLowerCase() === nom) return i;
-    }
-    return -1;
-  }
-  function stadeExpert() {
-    var i = stadeIndex("expert");
-    return i >= 0 ? i : Math.max(0, DATA.stades.length - 2);
-  }
-  function compXpBrut(c, key) {
-    // coût forcé (Options) : il court-circuite tout le calcul
-    if (key && state.compsXpForce[key] !== undefined) return state.compsXpForce[key];
-    // la langue du personnage est acquise : ses stades ne coûtent rien
-    // jusqu'à Expert, au-delà seule la différence se paie
-    var stadesDus = c.stade;
-    if (key && state.langueBase && key === langueKey(state.langueBase)) {
-      stadesDus = Math.max(0, c.stade - stadeExpert());
-    }
-    var xp = DATA.xpParStade * stadesDus;
-    // les passifs PRÉSENTS restent facturés même si le stade ne les ouvre
-    // plus (fiches d'avant un déplacement du stade d'ouverture : rien ne
-    // doit disparaître ni se re-créditer en silence)
-    (c.techniques || []).forEach(function (t) { xp += techXp(t); });
-    return xp + artXp(c) +
-           (key ? (state.compsXpMod[key] || 0) + (state.compsXpMod2[key] || 0) : 0);
-  }
-  function compXp(c, key) {
-    var v = compXpBrut(c, key);
-    return aFiltre("compXp") ? applique("compXp", v, { cle: key, comp: c }) : v;
-  }
-  // Ce qu'une caractéristique coûte, forçage et modificateurs compris. Elle
-  // se règle désormais comme une compétence : c'est le même geste pour le MJ.
   function caracXp(c) {
     if (state.caracsXpForce[c] !== undefined) return state.caracsXpForce[c];
-    return DATA.xpParStade * (state.caracsXp[c] || 0) +
-           (state.caracsXpMod[c] || 0) + (state.caracsXpMod2[c] || 0);
+    return caracXpAuto(c);
   }
-  function caracXpAuto(c) {
-    return DATA.xpParStade * (state.caracsXp[c] || 0) +
-           (state.caracsXpMod[c] || 0) + (state.caracsXpMod2[c] || 0);
+
+  // ---------- les compétences ----------
+  // LE PLAFOND DE POINTS : le MOD le plus haut des caractéristiques qui
+  // commandent la compétence. PHY en compte quatre, COM deux, les six autres
+  // une seule — et c'est la page de règles qui le dit, pas ce fichier.
+  function compPlafondBrut(code) {
+    var mods = compInfo(code).mod || [], best = 0;
+    for (var i = 0; i < mods.length; i++) best = Math.max(best, caracMod(mods[i]));
+    return best;
   }
-  function compCap() { return Math.floor(state.xpTotal / QUART); }
-  // le total appelle compXp() et non compXpBrut() : un filtre sur le coût d'une
-  // compétence doit se voir dans l'xp dépensé, sinon les deux chiffres de
-  // l'en-tête se contrediraient
+  function compPlafond(code) {
+    var v = compPlafondBrut(code);
+    return aFiltre("compPlafond") ? applique("compPlafond", v, { cle: code }) : v;
+  }
+  // La caractéristique par DÉFAUT d'une compétence : celle qui fournit le MOD
+  // et la LIM quand le joueur ne demande rien d'autre. Il peut en demander une
+  // autre — c'est tout l'intérêt d'avoir séparé les deux colonnes.
+  function compCarac(code) { return compInfo(code).lim || champs()[0] || ""; }
+  function compPtsBrut(code) {
+    if (state.compsForce[code] !== undefined) return state.compsForce[code];
+    var v = Math.min(state.comps[code] || 0, compPlafond(code));
+    return v + (state.compsMod[code] || 0) + (state.compsMod2[code] || 0);
+  }
+  function compPts(code) {
+    var v = compPtsBrut(code);
+    return aFiltre("compValue") ? applique("compValue", v, { cle: code }) : v;
+  }
+  function compXpAuto(code) {
+    return (state.comps[code] || 0) * repli("xpComp") +
+           (state.compsXpMod[code] || 0) + (state.compsXpMod2[code] || 0);
+  }
+  function compXp(code) {
+    if (state.compsXpForce[code] !== undefined) return state.compsXpForce[code];
+    var v = compXpAuto(code);
+    return aFiltre("compXp") ? applique("compXp", v, { cle: code }) : v;
+  }
+
+  // ---------- les spécialités ----------
+  // Une spécialité relève d'UNE caractéristique et d'UNE compétence, qui ne
+  // sont pas forcément accordées : Esquive tient de DEX, sa compétence COM
+  // plafonne sur le meilleur de DEX et d'AGI. Le plafond de la spécialité les
+  // fait donc entrer tous les deux, chacun compté pour 30 au minimum — sans quoi
+  // on accumulerait des points à 2 en caractéristique pour les emporter à 3.
+  function spePlafondBrut(spe) {
+    if (!spe || !spe.carac) return 0;
+    var min = repli("speMin");
+    var v = caracLim(spe.carac) - repli("speMarge") -
+            Math.max(caracMod(spe.carac), min) -
+            Math.max(spe.comp ? compPlafond(spe.comp) : 0, min);
+    return Math.max(0, v);
+  }
+  function spePlafond(spe) {
+    var v = spePlafondBrut(spe);
+    return aFiltre("spePlafond") ? applique("spePlafond", v, { spe: spe }) : v;
+  }
+  function spePtsBrut(spe) {
+    if (!spe) return 0;
+    if (spe.force !== null && spe.force !== undefined) return spe.force;
+    return Math.min(spe.pts || 0, spePlafond(spe)) + (spe.mod || 0) + (spe.mod2 || 0);
+  }
+  function spePts(spe) {
+    var v = spePtsBrut(spe);
+    return aFiltre("spePts") ? applique("spePts", v, { spe: spe }) : v;
+  }
+  // Un point de spécialité coûte un QUART d'XP : le total est donc décimal, et
+  // c'est voulu. On l'arrondit au centième pour que l'en-tête n'affiche pas
+  // 12.750000000000002.
+  function speXp(spe) {
+    if (!spe) return 0;
+    if (spe.xpForce !== null && spe.xpForce !== undefined) return spe.xpForce;
+    return Math.round((spe.pts || 0) * repli("xpSpe") * 100) / 100;
+  }
+  // Retrouver une spécialité par son nom, pour les formules qui la nomment :
+  // les PV ajoutent « SPÉ PV », la récupération EST une spécialité, et
+  // l'obstination en lance une. La comparaison ignore la casse et les espaces.
+  function speParNom(nom) {
+    var cible = String(nom || "").trim().toLowerCase(), l = state.specialites || [], i;
+    for (i = 0; i < l.length; i++) {
+      if (String(l[i].nom || "").trim().toLowerCase() === cible) return l[i];
+    }
+    return null;
+  }
+  function spePtsParNom(nom) {
+    var s = speParNom(nom);
+    return s ? spePts(s) : 0;
+  }
+
+  // ---------- l'expérience ----------
   function xpDepenseBrut() {
     var xp = 0;
-    ["Mind", "Body", "Prestance"].forEach(function (c) { xp += caracXp(c); });
-    Object.keys(state.comps).forEach(function (k) { xp += compXp(state.comps[k], k); });
-    return xp;
+    champs().forEach(function (c) { xp += caracXp(c); });
+    champsComp().forEach(function (c) { xp += compXp(c); });
+    (state.specialites || []).forEach(function (s) { xp += speXp(s); });
+    return Math.round(xp * 100) / 100;
   }
   function xpDepense() {
     var v = xpDepenseBrut();
     return aFiltre("xpDepense") ? applique("xpDepense", v, {}) : v;
   }
-  function xpRestant() { return state.xpTotal - xpDepense(); }
-  // xp dépensé DANS un champ : la montée de la caractéristique elle-même, plus
-  // toutes les compétences qui s'y rattachent (armes et langues comprises,
-  // elles sont des compétences de Body et de Mind)
+  function xpRestant() { return Math.round((state.xpTotal - xpDepense()) * 100) / 100; }
+  // XP dépensé DANS un champ : la montée de la caractéristique elle-même, plus
+  // les compétences qu'elle commande et les spécialités qui en relèvent. Une
+  // compétence qui plafonne sur plusieurs caractéristiques compte dans celle
+  // qu'elle lance par défaut, pour n'être comptée qu'une fois.
   function xpChamp(carac) {
     var xp = caracXp(carac);
-    Object.keys(state.comps).forEach(function (k) {
-      if (k.slice(0, carac.length + 1) === carac + "/") xp += compXp(state.comps[k], k);
-    });
-    return xp;
+    champsComp().forEach(function (c) { if (compCarac(c) === carac) xp += compXp(c); });
+    (state.specialites || []).forEach(function (s) { if (s.carac === carac) xp += speXp(s); });
+    return Math.round(xp * 100) / 100;
   }
-  function ptsCreation() {
-    return state.caracsBase.Mind + state.caracsBase.Body + state.caracsBase.Prestance;
+  // ---------- le corps ----------
+  // Les valeurs issues d'une division s'arrondissent à l'INFÉRIEUR.
+
+  // PV = (20 + MOD CON + PHY) / 2 + SPÉ PV. « PHY » y désigne les POINTS de la
+  // compétence Physique, pas son jet : c'est ce que le personnage a investi
+  // dedans. La spécialité s'ajoute APRÈS la division, telle qu'elle est écrite.
+  function pvMaxAuto() {
+    var base = (20 + caracMod("CON") + compPts("PHY")) / 2;
+    return Math.floor(base) + spePtsParNom("PV") + modSum(state.divers.pvMax);
   }
-  // PV, régénération et coûts d'xp lisent caracTotal("Body") SANS le malus de
-  // poids, et c'est voulu : la charge ne mord que sur les compétences de Body
-  // (hors armes) et sur la vitesse, or aucun de ces trois-là n'en est. Un sac
-  // lourd ralentit et fait rater, il ne coûte ni points de vie maximum, ni
-  // régénération quotidienne, ni xp.
-  // les valeurs issues d'une division s'arrondissent à l'INFÉRIEUR
-  function pvMaxAuto() { return Math.floor((20 + caracTotal("Body")) / 2) + modSum(state.divers.pvMax); }
-  // PV max : la valeur forcée (Options du bloc PV) court-circuite le calcul
   function pvMaxBrut() { return state.pvMaxOverride !== null ? state.pvMaxOverride : pvMaxAuto(); }
   function pvMax() {
     var v = pvMaxBrut();
     return aFiltre("pvMax") ? applique("pvMax", v, {}) : v;
   }
   function pvCourant() { return state.pv === null ? pvMax() : state.pv; }
-  function regenAuto() { return Math.max(0, Math.floor(caracTotal("Body") / 10) + modSum(state.divers.regen)); }
-  function regenBrut() { return state.regenOverride !== null ? state.regenOverride : regenAuto(); }
-  function regen() {
-    var v = regenBrut();
-    return aFiltre("regen") ? applique("regen", v, {}) : v;
+  // LA BARRE NÉGATIVE. Le personnage meurt à −100 % de ses PV maximaux : le
+  // plancher de la seconde barre est donc l'opposé du maximum.
+  function pvPlancher() { return -pvMax(); }
+  function pvMort() { return pvCourant() <= pvPlancher(); }
+  // Le seuil du jet d'obstination, à faire chaque fois que des dégâts font
+  // passer les PV dans le négatif : la part du maximum déjà creusée, en
+  // pourcents. À −30 sur 60 de maximum, le seuil est 50.
+  function obstinationDD() {
+    var m = pvMax();
+    if (m <= 0 || pvCourant() >= 0) return 0;
+    return Math.round(Math.abs(pvCourant()) / m * 100);
   }
+
+  // ---------- l'endurance ----------
+  // Une réserve égale au MOD CON, qui descend jusqu'à son opposé. Dans le
+  // négatif, sa valeur absolue devient un malus sur TOUS les jets — c'est le
+  // seul malus général du système, et il se lit ici.
+  function enduranceMaxAuto() { return caracMod("CON") + modSum(state.divers.endurance); }
+  function enduranceMaxBrut() {
+    return state.enduranceMaxOverride !== null ? state.enduranceMaxOverride : enduranceMaxAuto();
+  }
+  function enduranceMax() {
+    var v = enduranceMaxBrut();
+    return aFiltre("enduranceMax") ? applique("enduranceMax", v, {}) : v;
+  }
+  function endurancePlancher() { return -enduranceMax(); }
+  function enduranceCourante() {
+    return state.endurance === null ? enduranceMax() : state.endurance;
+  }
+  function enduranceMalusBrut() { return Math.max(0, -enduranceCourante()); }
+  function enduranceMalus() {
+    var v = enduranceMalusBrut();
+    return aFiltre("enduranceMalus") ? applique("enduranceMalus", v, {}) : v;
+  }
+  // À −100 % de sa réserve, le personnage tombe et ne se relève qu'au plein.
+  function enduranceAuTapis() {
+    return enduranceMax() > 0 && enduranceCourante() <= endurancePlancher();
+  }
+
+  // ---------- la récupération ----------
+  // Une spécialité unique, dont le plafond n'est PAS celui des autres : MOD CON
+  // fois le multiplicateur des règles. Elle commande ce qu'on regagne par jour.
+  function recupPlafond() { return caracMod("CON") * repli("recupMult"); }
+  function recupPts() { return Math.min(spePtsParNom("Récupération"), recupPlafond()); }
+  function recupJourAuto() {
+    return Math.floor((caracMod("CON") + recupPts()) / 2) + modSum(state.divers.recup);
+  }
+  function recupJourBrut() {
+    return state.recupOverride !== null ? state.recupOverride : recupJourAuto();
+  }
+  function recupJour() {
+    var v = recupJourBrut();
+    return aFiltre("recupJour") ? applique("recupJour", v, {}) : v;
+  }
+
+  // ---------- la charge ----------
   // Le poids des objets se calcule ICI et nulle part ailleurs : le module
   // d'inventaire lit les mêmes trois fonctions que poidsPorteBrut(). Deux
   // calculs séparés finiraient par se contredire à l'écran (le pied du module
@@ -1058,10 +1090,6 @@
     });
     return Math.round(t * 100) / 100;
   }
-  // Poids porté : tout ce que le personnage a sur lui — armes, armures et
-  // objets de l'inventaire (quantité comprise). C'est la SOURCE du malus, pas le
-  // malus : il s'affiche tel quel partout où il s'affichait, et poidsMalus() en
-  // tire le chiffre qui pénalise réellement les jets.
   function poidsPorteBrut() {
     var t = 0;
     state.armes.forEach(function (a) { t += pnum(a.poids); });
@@ -1075,113 +1103,131 @@
     var v = poidsPorteBrut();
     return aFiltre("poidsPorte") ? applique("poidsPorte", v, {}) : v;
   }
-  // LE MALUS, qui n'est pas le poids : les règles arrondissent le total porté à
-  // la dizaine INFÉRIEURE, si bien qu'un poids de 19 n'ôte que 10 et qu'un poids
-  // de 9 n'ôte rien. Il se dérive de poidsPorte() (le public, pas le brut) pour
-  // qu'un filtre de mod sur le poids se voie dans le malus.
-  //
-  // Math.max(0 : un filtre peut rendre un poids NÉGATIF (applique() ne vérifie
-  // que la finitude), et Math.floor(−5 / 10) × 10 vaut −10, c'est-à-dire un
-  // BONUS de 10 à tous les jets de Body que personne n'a demandé.
-  function poidsMalusBrut() {
-    return Math.max(0, Math.floor(poidsPorte() / 10) * 10);
+  // Ce que le personnage peut porter : le plus haut de ses deux modificateurs
+  // de force et de constitution.
+  function chargeMaxAuto() {
+    return Math.max(caracMod("CON"), caracMod("FOR")) + modSum(state.divers.charge);
   }
-  function poidsMalus() {
-    var v = poidsMalusBrut();
-    return aFiltre("poidsMalus") ? applique("poidsMalus", v, {}) : v;
+  function chargeMaxBrut() {
+    return state.chargeOverride !== null ? state.chargeOverride : chargeMaxAuto();
   }
-  // La caractéristique telle qu'on la LANCE.
-  //
-  // LE POIDS NE PÈSE PLUS SUR LA CARACTÉRISTIQUE (arbitrage du MJ, 2026-08-04) :
-  // lancer Body en direct se fait au total plein. La charge garde ses deux autres
-  // prises, et elles seules : les COMPÉTENCES de Body hors armes (compPoidsMalus)
-  // et la VITESSE, dont le palier se lit sur un Body diminué (bodyVitesse), la
-  // surcharge en plus. Un seul mécanisme par endroit, jamais deux fois le même.
-  //
-  // La fonction reste, plutôt que d'appeler caracTotal partout : elle est le point
-  // unique où la question « ce jet subit-il la charge ? » se pose, l'affichage en
-  // tire le « · poids −N » de la tuile (nul, donc absent), et les mods l'appellent
-  // par l'API. Si l'arbitrage rebasculait, une ligne suffirait.
-  function caracJet(c) {
-    return caracTotal(c);
+  function chargeMax() {
+    var v = chargeMaxBrut();
+    return aFiltre("chargeMax") ? applique("chargeMax", v, {}) : v;
   }
-  // Initiative : une compétence de Body comme les autres, malus de poids compris.
-  function initComp() { return state.comps[INIT_KEY] || blankComp(); }
-  // LE POIDS NE SE SOUSTRAIT PLUS ICI (arbitrage du MJ, 2026-08-04). Body/Initiative
-  // est une compétence de Body : compValue() lui applique déjà le malus, comme à
-  // l'esquive ou à la course, et l'ôter une seconde fois le comptait deux fois.
-  // Un seul mécanisme, appliqué une seule fois.
+  function chargePct() {
+    var m = chargeMax();
+    return m > 0 ? poidsPorte() / m * 100 : (poidsPorte() > 0 ? Infinity : 0);
+  }
+  // LES PALIERS FRANCHIS, du plus bas au plus haut. Ils se CUMULENT : à 100 %,
+  // les trois s'appliquent l'un après l'autre. Les seuils viennent des règles,
+  // leurs effets de CHARGE_EFFETS — les deux doivent bouger ensemble.
+  function chargePaliers() {
+    var pct = chargePct(), out = [];
+    ((regles().charge) || []).forEach(function (p) {
+      if (pct >= p.seuil && CHARGE_EFFETS[p.seuil]) {
+        out.push({ seuil: p.seuil, effets: p.effets, calc: CHARGE_EFFETS[p.seuil] });
+      }
+    });
+    out.sort(function (a, b) { return a.seuil - b.seuil; });
+    return out;
+  }
+  // Le malus que la charge fait peser sur l'esquive, une fois les paliers
+  // additionnés. Les modules et les infobulles le lisent ici plutôt que de le
+  // recomposer, sinon ils finiraient par énumérer un terme que le total n'a pas
+  // subi.
+  function chargeMalusEsquive() {
+    var t = 0;
+    chargePaliers().forEach(function (p) { t += (p.calc.esq || 0); });
+    return t;
+  }
+  // ---------- les jets ----------
+  // UN JET N'EST PAS UN DÉ PLUS UN BONUS : c'est un couple, « d100 + bonus » et
+  // « la limite », dont on garde le PLUS BAS. La limite plafonne donc le
+  // résultat, et Roll20 l'affiche déjà plafonné, sans qu'un joueur ait à
+  // comparer deux nombres au tchat. D'où la forme {…,0d0+LIM}kl1 : le second
+  // terme est un dé à zéro face, c'est-à-dire une constante.
   //
-  // Conséquence voulue : le malus de l'initiative est désormais ARRONDI à la
-  // dizaine inférieure (19 de poids porté valent −10), là où cette ligne
-  // soustrayait le poids exact. La formule des règles (« Initiative = D100 +
-  // Body − poids ») reste vraie : « poids » y désigne ce malus arrondi.
+  // Le MALUS D'ENDURANCE entre ici, et ici seulement : il pèse sur TOUS les
+  // jets, donc l'écrire dans chaque appelant reviendrait à l'oublier une fois.
+  function jetBonusBrut(carac, comp, spe) {
+    var b = caracMod(carac) - enduranceMalus();
+    if (comp) b += compPts(comp);
+    if (spe) b += spePts(spe) + speMalusCharge(spe);
+    return Math.round(b);
+  }
+  function jetBonus(carac, comp, spe) {
+    var v = jetBonusBrut(carac, comp, spe);
+    return aFiltre("jetBonus")
+      ? applique("jetBonus", v, { carac: carac, cle: comp, spe: spe })
+      : v;
+  }
+  // La charge ne mord que sur l'esquive, et l'esquive est une SPÉCIALITÉ : le
+  // malus s'applique donc au jet qui la porte, pas à sa compétence entière.
+  function speMalusCharge(spe) {
+    if (!spe || String(spe.nom || "").trim().toLowerCase() !== CHARGE_ESQUIVE.toLowerCase()) return 0;
+    return chargeMalusEsquive();
+  }
+  // L'expression Roll20 d'un jet, prête à poser entre les doubles crochets.
   //
-  // compValue() (le public, pas le brut) : un filtre sur le total d'une
-  // compétence doit se voir dans l'initiative. L'arrondi au centième reste, les
-  // modificateurs de compétence acceptant les décimales.
+  // LE MODIFICATEUR SAISI À L'ENVOI S'AJOUTE APRÈS LE PLAFOND, hors du groupe.
+  // C'est la règle de l'endurance : ce qu'on dépense « est un bonus qu'on
+  // ajoute à la fin ». La limite borne donc ce que le personnage vaut par
+  // lui-même ; l'endurance est ce par quoi il la dépasse, et c'est tout son
+  // prix. Posé dans le groupe, ce bonus serait rogné et ne servirait à rien
+  // dès qu'un personnage atteint sa limite — c'est-à-dire justement quand il
+  // en aurait besoin.
+  function jetExpr(bonus, lim, avecInput) {
+    var b = Math.round(bonus);
+    return "{" + DE_DEFAUT + (b >= 0 ? "+" : "-") + Math.abs(b) +
+           ",0d0+" + Math.round(lim) + "}kl1" +
+           (avecInput ? ENV_QUERY : "");
+  }
+
+  // ---------- l'initiative ----------
+  // Base MOD AGI × 2. L'équipement s'y ajoute de deux façons qui ne sont PAS
+  // symétriques, et c'est la règle : les BONUS ne comptent que pour ce qui est
+  // porté activement, les MALUS comptent pour tout ce qu'on transporte. Un
+  // personnage qui range une armure dans son sac en garde donc le malus.
+  function equipInitBonus() {
+    var t = 0;
+    function prendre(o) {
+      var v = pnum(o && o.ini);
+      if (!v) return;
+      if (v > 0) { if (o.porte !== false) t += v; }   // bonus : seulement porté
+      else t += v;                                     // malus : toujours
+    }
+    state.armes.forEach(prendre);
+    state.armures.forEach(prendre);
+    return t;
+  }
+  // Mains nues : le bonus des règles, quand aucune arme n'est en main.
+  function mainsNues() {
+    for (var i = 0; i < state.armes.length; i++) if (state.armes[i].porte !== false) return false;
+    return true;
+  }
+  function initiativeAuto() {
+    var v = caracMod("AGI") * repli("iniMult") + equipInitBonus();
+    if (mainsNues()) v += repli("iniMainsNues");
+    chargePaliers().forEach(function (p) {
+      if (p.calc.ini) v += p.calc.ini;
+      if (p.calc.iniDiv) v = v / p.calc.iniDiv;
+    });
+    return Math.floor(v) + modSum(state.divers.initiative);
+  }
   function initiativeBrut() {
-    return Math.round(compValue("Body", initComp(), INIT_KEY) * 100) / 100;
+    return state.initiativeOverride !== null ? state.initiativeOverride : initiativeAuto();
   }
   function initiative() {
     var v = initiativeBrut();
     return aFiltre("initiative") ? applique("initiative", v, {}) : v;
   }
-  // Le Body qui INDEXE la table des vitesses : le POIDS NE S'EN RETRANCHE PLUS
-  // (arbitrage du MJ, 2026-08-04). Porter lourd ne fait plus descendre le
-  // personnage dans la table ; la charge ne touche la vitesse que par la
-  // surcharge ci-dessous, et seulement quand elle dépasse le Body. Un seul
-  // endroit le calcule, l'infobulle de la tuile le lit ici aussi, sinon elle
-  // annoncerait un palier lu sur un autre chiffre que celui qui a servi.
-  function bodyVitesse() { return caracTotal("Body"); }
-  // La surcharge est un MALUS DE VITESSE, et la règle l'énonce désormais comme
-  // tel (« notre vitesse diminue de 3 m »). L'ancienne formulation annonçait la
-  // vitesse RÉSULTANTE (« passe à 6 m ») : elle ne tenait que parce que le poids
-  // ramenait alors le palier au premier, ce qu'il ne fait plus. Un personnage
-  // robuste et surchargé garde donc son palier, moins ces mètres-là.
-  //
-  // La valeur se LIT dans les données plutôt que de s'écrire ici : la fiche ne
-  // porte aucune valeur de règles, et le jour où la phrase change, le malus suit
-  // sans qu'on rouvre ce fichier. Données trop anciennes ou phrase reformulée :
-  // la fiche n'invente rien, la surcharge ne s'applique simplement pas.
-  function surchargeMalus() {
-    var malus = parseFloat(DATA && DATA.vitesseSurcharge);
-    return isFinite(malus) && malus > 0 ? malus : null;
-  }
-  function estSurcharge() {
-    return surchargeMalus() !== null && poidsMalus() > caracTotal("Body");
-  }
-  // la table des règles donne une CHAÎNE (« 10.5 m ») : le palier s'extrait en
-  // nombre pour recevoir les divers, puis se réaffiche avec son unité
-  function vitessePalier() {
-    // arrondi à l'inférieur : un Body décimal (divers) tomberait sinon dans
-    // les trous de la table (39.5 entre les lignes 0-39 et 40-79) et
-    // retomberait sur la DERNIÈRE ligne, la vitesse maximale
-    var b = Math.floor(Math.max(0, bodyVitesse()));   // négatif : 1er palier
-    var rows = DATA.vitesses || [];
-    for (var i = 0; i < rows.length; i++) {
-      var r = rows[i];
-      if (b >= r.min && (r.max === null || b <= r.max)) return r.vitesse;
-    }
-    return rows.length ? rows[rows.length - 1].vitesse : "";
-  }
-  function vitesseBase() {
-    // UNE SEULE PRISE DE LA CHARGE SUR LA VITESSE, et c'est la surcharge : le
-    // palier se lit sur le Body plein, puis, si la charge dépasse ce Body, la
-    // règle retranche ses mètres. Le poids ne fait plus descendre le personnage
-    // dans la table (il le faisait avant l'arbitrage du 2026-08-04, et les deux
-    // effets se cumulaient alors).
-    //
-    // Les modificateurs divers et le forçage du MJ restent en aval : ici comme
-    // partout ailleurs, ils ont le dernier mot.
-    var n = parseFloat(vitessePalier());
-    if (!isFinite(n)) return 0;
-    if (estSurcharge()) n -= surchargeMalus();
-    // jamais négatif : on ne recule pas parce qu'on porte trop
-    return Math.max(0, n);
-  }
+
+  // ---------- la vitesse ----------
   function vitesseAuto() {
-    return Math.max(0, vitesseBase() + modSum(state.divers.vitesse));
+    var v = caracTotal("AGI") * repli("vitesseMult");
+    chargePaliers().forEach(function (p) { if (p.calc.vitesseDiv) v = v / p.calc.vitesseDiv; });
+    return Math.max(0, v + modSum(state.divers.vitesse));
   }
   function vitesseValBrut() {
     return state.vitesseOverride !== null ? state.vitesseOverride : vitesseAuto();
@@ -1194,110 +1240,83 @@
     return aFiltre("vitesse") ? applique("vitesse", v, {}) : v;
   }
   function vitesse() { return fmtP(vitesseVal()) + " m"; }
-  // Le malus de poids RETENU par une compétence, et le seul endroit qui en
-  // décide. Les infobulles le lisent ici plutôt que de le recalculer : sinon
-  // elles finiraient par énumérer un terme que le total n'a pas subi, et la
-  // somme affichée ne se vérifierait plus de tête.
-  //
-  // La règle le retranche « à chaque jet de Body (autre que l'attaque et la
-  // parade) », d'où les trois refus. Les compétences d'arme SONT l'attaque et la
-  // parade. Celles de Mind et de Prestance ne sont pas des jets de Body. Un total
-  // forcé (Options) remplace le calcul entier, malus compris : c'est la règle de
-  // ce champ depuis toujours, et l'infobulle « Total forcé à 50 » mentirait sur
-  // un total affiché à 40.
-  function compPoidsMalus(carac, key) {
-    if (key && state.compsForce[key] !== undefined) return 0;
-    if (carac !== "Body" || (key && estArme(key))) return 0;
-    return poidsMalus();
+
+  // ---------- les sauts ----------
+  // Les deux sauts partagent le diviseur de charge : c'est le même palier qui
+  // les écrase, et la règle ne les sépare qu'au multiplicateur.
+  function sautDiv() {
+    var d = 1;
+    chargePaliers().forEach(function (p) { if (p.calc.sautDiv) d *= p.calc.sautDiv; });
+    return d;
   }
-  // LE POINT DE BRANCHEMENT DU MALUS DE POIDS : le seul endroit qui voie à la
-  // fois la caractéristique et la clé, donc le seul capable d'épargner les
-  // compétences d'arme. Tout ce qui affiche ou lance une compétence passe par là,
-  // l'initiative comprise.
-  function compValueBrut(carac, comp, key) {
-    // total forcé (Options) : il remplace le calcul, modificateur compris
-    if (key && state.compsForce[key] !== undefined) return state.compsForce[key];
-    return caracTotal(carac) + stadeInfo(comp ? comp.stade : 0).bonus +
-           (key ? (state.compsMod[key] || 0) + (state.compsMod2[key] || 0) : 0) -
-           compPoidsMalus(carac, key);
+  function sautLongVal() {
+    return Math.max(0, caracTotal("FOR") * repli("sautLong") / sautDiv());
   }
-  function compValue(carac, comp, key) {
-    var v = compValueBrut(carac, comp, key);
-    return aFiltre("compValue")
-      ? applique("compValue", v, { carac: carac, cle: key, comp: comp })
-      : v;
+  function sautHautVal() {
+    var d = repli("sautHaut") || 1;
+    return Math.max(0, caracTotal("FOR") / d / sautDiv());
   }
-  // Total SANS le forçage : ce que la compétence vaudrait normalement.
-  // « Auto » ne veut pas dire « sans filtre » : ces deux fonctions passent par
-  // les publiques (compValue, compXp), donc un filtre s'y voit aussi. C'est
-  // voulu : ce sont les valeurs de repli affichées à côté des cases de forçage,
-  // et elles doivent parler la même langue que le reste de la fiche. Recopier
-  // le corps du brut donnait deux chiffres pour une seule compétence : la
-  // colonne Total affichait 45 pendant que l'indication du champ « Total forcé »
-  // proposait 40, et le joueur qui recopiait l'indication perdait les 5 points
-  // du filtre sans rien voir. Le forçage s'ôte le temps du calcul, comme pour
-  // l'xp : c'est la seule chose dont ces valeurs doivent se passer.
-  //
-  // finally, et pas une simple ligne de plus : le forçage est une donnée du
-  // PERSONNAGE, retirée le temps d'un calcul. Ces fonctions tournent dans les
-  // hooks de rafraîchissement, où chaque appel est déjà sous try/catch ; un
-  // calcul qui jetterait entre le retrait et la remise ne ferait donc pas de
-  // bruit, mais le chiffre saisi par le joueur serait effacé pour de bon, et le
-  // save() suivant l'emporterait.
-  function compValueAuto(carac, comp, key) {
-    var f = state.compsForce[key];
-    delete state.compsForce[key];
-    try { return compValue(carac, comp, key); }
-    finally { if (f !== undefined) state.compsForce[key] = f; }
-  }
-  function compXpAuto(c, key) {
-    var f = state.compsXpForce[key];
-    delete state.compsXpForce[key];
-    try { return compXp(c, key); }
-    finally { if (f !== undefined) state.compsXpForce[key] = f; }
-  }
-  function blankComp() { return { stade: 0, techniques: [] }; }
+  function sautLong() { return fmtP(sautLongVal()) + " m"; }
+  function sautHaut() { return fmtP(sautHautVal()) + " m"; }
+  // ---------- la liste des compétences ----------
+  // Les huit compétences des règles, dans leur ordre de page. Chaque entrée
+  // porte de quoi l'afficher ET la lancer : son sigle, son nom, la
+  // caractéristique qui la lance par défaut, et celles qui commandent son
+  // plafond de points.
   function allComps() {
-    var out = [];
-    var armes = {};
-    ((DATA && DATA.compsArmes) || []).forEach(function (n) { armes[n] = 1; });
-    CHAMPS.forEach(function (c) {
-      (DATA.comps[c] || []).forEach(function (n) {
-        out.push({ key: c + "/" + n, name: n, carac: c, custom: false,
-                   arme: c === ARME_CARAC && !!armes[n] });
-      });
+    return compsRegles().map(function (c) {
+      return {
+        key: c.code, name: c.nom, code: c.code,
+        carac: compCarac(c.code), caracsPlafond: c.mod || []
+      };
     });
-    // armes ajoutées par le joueur : mêmes compétences de Body, personnalisées
-    state.armesComps.forEach(function (n) {
-      out.push({ key: armeKey(n), name: n, carac: ARME_CARAC, custom: true, arme: true });
+  }
+
+  // ---------- la liste des spécialités ----------
+  // Elles sont la seule partie de la fiche que le joueur peuple lui-même : les
+  // règles disent ce qu'est une spécialité et ce qu'elle coûte, pas lesquelles
+  // existent. On rend donc l'état tel quel, en complétant les champs absents.
+  function blankSpe(nom, carac, comp) {
+    return {
+      nom: nom || "", carac: carac || "", comp: comp || "",
+      pts: 0, mod: 0, mod2: 0, force: null, xpForce: null
+    };
+  }
+  function allSpes() {
+    return (state.specialites || []).map(function (s, i) {
+      return {
+        key: "spe/" + i, index: i, spe: s,
+        name: s.nom || "Sans nom", carac: s.carac || "", comp: s.comp || ""
+      };
     });
-    state.customComps.forEach(function (cc) {
-      if (cc && cc.name) out.push({ key: cc.carac + "/" + cc.name, name: cc.name, carac: cc.carac, custom: true });
-    });
-    // les langues sont des compétences de Mind à part entière : elles doivent
-    // apparaître dans l'onglet Art et dans les modificateurs (Options) comme
-    // les autres. Seule la liste de l'onglet Fiche les écarte, puisqu'elles
-    // ont leur propre module.
-    state.langues.forEach(function (n) {
-      out.push({ key: langueKey(n), name: n, carac: LANGUE_CARAC, custom: true, langue: true });
-    });
-    return out;
   }
 
   // La « carte » : le résumé calculé de la fiche, pour la bibliothèque, le popup
   // de l'extension et les attributs miroir Roll20 (barres de jetons, macros).
+  //
+  // SA FORME EST LUE HORS DE CE FICHIER — par la bibliothèque, par le popup et
+  // par les attributs de repli de mia-attr-map.js. Une clé qui change de nom ici
+  // doit changer là-bas dans le même geste, sans quoi la barre d'un jeton
+  // affiche l'ancienne valeur jusqu'à ce que quelqu'un s'en aperçoive.
   function computeCard() {
+    var caracs = {};
+    champs().forEach(function (c) { caracs[c] = caracTotal(c); });
+    var comps = {};
+    champsComp().forEach(function (c) { comps[c] = compPts(c); });
     return {
       name: state.name || "Sans nom",
-      caracs: { Mind: caracTotal("Mind"), Body: caracTotal("Body"), Prestance: caracTotal("Prestance") },
+      prestige: prestige(),
+      caracs: caracs,
+      comps: comps,
       combat: {
         pv: state.pv === null ? null : pvCourant(), pvMax: pvMax(),
-        vitesse: vitesse(), regen: regen(), initiative: initiative(), poids: poidsPorte()
-      },
-      narration: state.narration
+        endurance: state.endurance === null ? null : enduranceCourante(),
+        enduranceMax: enduranceMax(),
+        initiative: initiative(), vitesse: vitesse(),
+        poids: poidsPorte(), charge: chargeMax(), recup: recupJour()
+      }
     };
   }
-
   // ---------- persistance ----------
   // Le bandeau du dernier enregistrement raté : absent tant que ça passe. Une
   // panne d'enregistrement ne se dit PAS en un éclair de 2.6 s vu une seule
@@ -1447,22 +1466,30 @@
   // (wiki Macros/Initiative : {{Initiative=[[1d20+…&{tracker}]]}}). Posée après
   // « }} », elle s'afficherait en toutes lettres au tchat sans rien compter.
   var ENV_TRACKER = " &{tracker}";
-  function cmdJet(label, value, die, avecInput, caracQ, tracker) {
-    // « + 0 » est du bruit sur les jets d'équipement (dégâts, invu), qui
-    // n'ont jamais de bonus : l'expression part seule.
+  // LE JET DE TEST. L'expression entière est bâtie en amont (jetExpr, ou la
+  // requête de choix de caractéristique) : elle porte déjà le dé, le bonus, la
+  // limite et le kl1. Ce composeur ne fait que l'habiller du gabarit et, pour
+  // l'initiative seule, du compteur de tours.
+  function cmdJetExpr(label, expr, tracker) {
+    // Le libellé passe par envSan comme les titres de cartes, et l'expression
+    // voit ses blancs repliés : un saut de ligne (nom venu d'un import) ferait
+    // une SECONDE ligne au tchat. L'extension refuse une commande multiligne,
+    // et le clic partirait alors sans rien envoyer.
+    var e = String(expr == null ? "" : expr).replace(/\s+/g, " ").trim();
+    return "&{template:default} {{name=" + (envSan(label) || "Jet") +
+           "}} {{Jet=[[" + e + (tracker ? ENV_TRACKER : "") + "]]}}";
+  }
+  // LE JET BRUT : dégâts d'une arme, protection d'une armure. Pas de limite,
+  // pas de modificateur — un dé et, au plus, une constante.
+  function cmdJet(label, value, die) {
+    // « + 0 » est du bruit sur les jets d'équipement, qui n'ont jamais de
+    // bonus : l'expression part seule.
     var v = value ? (value > 0 ? " + " + value : " - " + (-value)) : "";
-    // Le libellé passe par envSan comme les titres de cartes, et le dé voit
-    // ses blancs repliés : un saut de ligne (nom de compétence venu d'un
-    // import, dé recopié depuis une macro) ferait une SECONDE ligne au tchat.
-    // L'extension refuse une commande multiligne, et le clic partirait alors
-    // sans rien envoyer. Les accolades du dé restent : « ?{Dé|1d100} » et
-    // « @{…} » sont des dés légitimes dans Roll20.
+    // Les accolades du dé restent : « ?{Dé|1d100} » et « @{…} » sont des dés
+    // légitimes dans Roll20.
     var de = String(die == null ? "" : die).replace(/\s+/g, " ").trim() || DE_DEFAUT;
     return "&{template:default} {{name=" + (envSan(label) || "Jet") +
-           "}} {{Jet=[[" + de +
-           (caracQ ? " + (" + caracQ + ")" : "") + v +
-           (avecInput ? ENV_QUERY : "") +
-           (tracker ? ENV_TRACKER : "") + "]]}}";
+           "}} {{Jet=[[" + de + v + "]]}}";
   }
   function cmdCarte(title, fields) {
     var cmd = "&{template:default} {{name=" + envSan(title) + "}}";
@@ -1482,37 +1509,67 @@
 
   // ---------- jets ----------
   // Les dés se jettent dans Roll20 : mia-roll20-boot.js (amorce Roll20 servie
-  // par le site) pose window.__miaRoll et le
-  // jet part au TCHAT. Sur le site (pas de Roll20), un clic lance quand même le
-  // dé et montre le résultat dans un toast discret — aucun panneau de jets.
+  // par le site) pose window.__miaRoll et le jet part au TCHAT. Sur le site
+  // (pas de Roll20), un clic lance quand même le dé et montre le résultat dans
+  // un toast discret — aucun panneau de jets.
   function parseDice(expr) {
     var m = /^(\d{1,2})d(\d{1,4})([+-]\d{1,4})?$/i.exec(String(expr || "").replace(/\s/g, ""));
     if (!m) return null;   // expression illisible : doRoll prévient au lieu de lancer autre chose
     return { n: clamp(+m[1], 1, 20), faces: clamp(+m[2], 2, 1000), plus: +(m[3] || 0) };
   }
-  // isCheck : vrai pour un jet de test (carac/compétence) — seuls ces jets
-  // critent (96+/5-). Les jets d'équipement (dégâts, invu) restent des dés bruts.
-  // caracDe : caractéristique propre d'un jet de COMPÉTENCE. Avec le réglage
-  // « Au choix » de la barre d'envoi, la macro Roll20 demande alors quelle
-  // caractéristique porte le jet (la sienne proposée en premier) : le total
-  // envoyé se décompose en (carac choisie) + (stade et modificateur).
-  function caracQuery(propre) {
-    var ordre = [propre].concat(CHAMPS.filter(function (c) { return c !== propre; }));
-    return "?{Caractéristique|" + ordre.map(function (c) { return c + "," + caracTotal(c); }).join("|") + "}";
+
+  // ÉCHAPPER UNE EXPRESSION POUR L'INTÉRIEUR D'UNE REQUÊTE ROLL20. Une requête
+  // ?{…} se découpe sur « | » et sur la PREMIÈRE virgule de chaque option : une
+  // expression de jet, qui porte {…,…}, la casserait donc en deux. Roll20 rend
+  // les entités HTML à leur caractère après avoir résolu la requête, ce qui est
+  // le seul moyen de faire voyager une accolade ou une virgule là-dedans.
+  function echapQuery(expr) {
+    return String(expr)
+      .replace(/\{/g, "&#123;").replace(/\}/g, "&#125;")
+      .replace(/,/g, "&#44;").replace(/\|/g, "&#124;");
   }
-  // tracker : le jet s'inscrit dans le compteur de tours de Roll20 (initiative).
-  function doRoll(label, value, die, isCheck, caracDe, tracker) {
-    die = die || state.de || DE_DEFAUT;
-    // « avec input » ne vaut QUE pour les jets de test : isCheck est vrai
-    // exactement aux caractéristiques et aux compétences, faux aux dégâts et
-    // à l'invulnérabilité — aucun autre filtre à écrire.
-    // Le choix de carac ne vit que sur le canal brut (macro) : les replis
-    // (vieille extension, hors Roll20) partent avec la carac automatique.
-    var q = (isCheck && caracDe && envCaracChoix()) ? caracQuery(caracDe) : null;
-    if (envoyer(cmdJet(label, q ? value - caracTotal(caracDe) : value, die,
-                       isCheck && envInput(), q, tracker))) return;
-    // extension antérieure au canal brut : jet public, sans modificateur — et
-    // sans compteur de tours, ce canal-là n'envoyant pas de commande Roll20
+  // Le réglage « Au choix » de la barre d'envoi : Roll20 demande AVANT de
+  // lancer quelle caractéristique porte le jet, la sienne proposée en premier.
+  //
+  // La requête ne porte pas un nombre mais L'EXPRESSION ENTIÈRE, parce que
+  // changer de caractéristique change à la fois le MOD et la LIMITE. Deux
+  // requêtes séparées poseraient deux questions au joueur, qui pourrait
+  // répondre deux choses différentes et obtenir un jet incohérent.
+  // La requête ne porte que le GROUPE PLAFONNÉ, sans le modificateur d'envoi :
+  // celui-ci s'ajoutant après le plafond, il se pose une seule fois, dehors,
+  // quelle que soit la caractéristique choisie. Une requête dans une requête
+  // n'a donc pas à exister.
+  function caracQuery(propre, comp, spe) {
+    var ordre = [propre].concat(champs().filter(function (c) { return c !== propre; }));
+    var opts = ordre.map(function (c) {
+      return c + "," + echapQuery(jetExpr(jetBonus(c, comp, spe), caracLim(c), false));
+    });
+    return "?{Caractéristique|" + opts.join("|") + "}";
+  }
+
+  // LE JET DE TEST : caractéristique, compétence ou spécialité. C'est le seul
+  // chemin par lequel un jet plafonné part au tchat.
+  function doJet(label, carac, comp, spe, tracker) {
+    var expr = envCaracChoix()
+      ? caracQuery(carac, comp, spe) + (envInput() ? ENV_QUERY : "")
+      : jetExpr(jetBonus(carac, comp, spe), caracLim(carac), envInput());
+    if (envoyer(cmdJetExpr(label, expr, tracker))) return;
+    // Hors Roll20, ou sous une extension antérieure au canal brut : la fiche
+    // lance elle-même et applique le plafond, en le DISANT — un résultat rogné
+    // sans explication passerait pour une faute de calcul.
+    var de = 1 + Math.floor(Math.random() * 100);
+    var bonus = jetBonus(carac, comp, spe), lim = caracLim(carac);
+    var brut = de + bonus, total = Math.min(brut, lim);
+    var det = "dé " + de + (bonus ? " " + (bonus >= 0 ? "+ " : "− ") + Math.abs(bonus) : "");
+    if (total < brut) det += " = " + brut + ", plafonné à " + lim;
+    flash(label + " : " + total + " (" + det + ")");
+  }
+
+  // LE JET BRUT : dégâts d'une arme, protection d'une armure. Ni MOD, ni
+  // plafond, ni requête — c'est un dé, et rien d'autre.
+  function doRoll(label, value, die) {
+    die = die || DE_DEFAUT;
+    if (envoyer(cmdJet(label, value, die))) return;
     if (typeof window !== "undefined" && typeof window.__miaRoll === "function") {
       window.__miaRoll(die, value, label);
       return;
@@ -1531,17 +1588,6 @@
     var sum = dice.reduce(function (a, b) { return a + b; }, 0) + d.plus;
     var total = sum + value;
     var det = "dé " + dice.join(" + ") + (value ? " " + (value >= 0 ? "+ " : "− ") + Math.abs(value) : "");
-    // 96+ au dé : coup critique (le résultat au d100 devient 100) ; 5 ou moins :
-    // échec critique (il devient 0). Les modificateurs (d.plus, valeur) restent.
-    if (isCheck && d.n === 1 && d.faces === 100) {
-      if (dice[0] >= 96) {
-        total = 100 + d.plus + value;
-        det = "coup critique — le dé devient 100";
-      } else if (dice[0] <= 5) {
-        total = 0 + d.plus + value;
-        det = "échec critique — le dé devient 0";
-      }
-    }
     flash(label + " : " + total + " (" + det + ")");
   }
 
@@ -1551,9 +1597,8 @@
   // les valeurs vides sont ignorées.
   // Une étiquette VIDE ("") est volontaire : la carte Roll20 rend alors
   // « {{=texte}} », une ligne pleine largeur sans colonne de libellé. Réservée
-  // aux TEXTES LONGS (effet d'un passif, description d'un art, avantage…),
-  // dont le libellé n'apprend rien que le titre ne dise déjà ; les champs
-  // courts et tabulaires (poids, dégâts, quantité…) gardent le leur.
+  // aux TEXTES LONGS, dont le libellé n'apprend rien que le titre ne dise déjà ;
+  // les champs courts et tabulaires (poids, dégâts, quantité…) gardent le leur.
   // Une seule étiquette vide par carte : le template les indexe par clé.
   function sayChat(title, fields) {
     var clean = (fields || []).filter(function (f) { return f && String(f[1] || "").trim(); });
@@ -1572,7 +1617,6 @@
       sayChat(getTitle(), getFields());
     });
   }
-
   // ---------- refresh ----------
   // Registres de rafraîchissement : les fonctions rappelées à chaque
   // changement d'état. Il y en a UN PAR MODULE, plus un pour ce qui n'est pas
@@ -1768,7 +1812,7 @@
   // Chaque module éditable porte un rouage dans son titre : il déverrouille la
   // CONSTRUCTION du personnage (stades, ajouts, suppressions, textes, divers…).
   // Hors édition, seuls les gestes de JEU restent actifs : jets, tchat, PV
-  // courant, narration, quantités d'objets, notes de session. Les éléments
+  // courant, endurance, quantités d'objets, notes de session. Les éléments
   // .pc-edit-only n'existent qu'en édition ; les champs .pc-edit-field
   // deviennent inertes (disabled + air d'un simple texte). Réglage d'interface
   // pur : ni dans l'état du personnage, ni persisté — chaque chargement
@@ -1930,10 +1974,10 @@
 
   // ---------- en-tête : portrait + identité + compteurs + garde-fous ----------
   // En-tête réduit aux seules infos importantes (2026-08-02) : plus de
-  // portrait ni de cartouche « MIA Système JDR » ; PV, Vitesse et Narration
+  // portrait ni de cartouche « MIA Système JDR » ; PV, endurance et vitesse
   // (doublons en lecture seule de l'onglet Fiche) n'y figurent plus.
   //   Nom | Espèce | Âge | Sexe | Genre
-  //   Création ———— | XP dépensé ———— | XP total
+  //   Prestige | XP dépensé ———— | XP total
   // ---------- barre d'envoi (Roll20 seulement) ----------
   // À qui part la macro, et faut-il demander un modificateur. Geste de JEU :
   // aucun rouage, aucun mode édition. Posée en FRÈRE de .pc-head, jamais dans
@@ -2042,7 +2086,7 @@
     // sans input / avec input : la requête ?{…} n'a de sens que sur un jet de
     // test, elle est donc posée par doRoll et ignorée partout ailleurs
     var sep = el("span", "lbl", "Modificateur");
-    sep.title = "Ne s'applique qu'aux jets de caractéristique et de compétence";
+    sep.title = "S'ajoute APRÈS la limite — c'est par là que passe l'endurance dépensée";
     bar.appendChild(sep);
     var segs2 = el("div", "pc-envoi-segs");
     var bin = [];
@@ -2061,9 +2105,10 @@
     });
     bar.appendChild(segs2);
 
-    // automatique / au choix : sur un jet de COMPÉTENCE, « au choix » fait
-    // demander par Roll20 quelle caractéristique porte le jet (Body / Mind /
-    // Prestance, la sienne en tête) — ex. une Esquive lancée sur la Prestance.
+    // automatique / au choix : sur un jet de COMPÉTENCE ou de SPÉCIALITÉ, « au
+    // choix » fait demander par Roll20 quelle caractéristique porte le jet (les
+    // huit, la sienne en tête). Elle change à la fois le MOD et la LIMITE, d'où
+    // une requête qui porte l'expression entière et non un nombre.
     var sep3 = el("span", "lbl", "Caractéristique");
     sep3.title = "Ne s'applique qu'aux jets de compétence";
     bar.appendChild(sep3);
@@ -2186,7 +2231,13 @@
       });
       return m;
     }
-    mrow.appendChild(meter("Création", ptsCreation, ptsCreaMax));
+    // Le prestige n'est pas une jauge de dépense : c'est un rang, et il se lit
+    // en clair. La jauge, elle, ne dit que l'xp, seule ressource qu'on épuise.
+    mrow.appendChild(fld("Prestige", (function () {
+      var p = el("div", "pc-meter-val");
+      hooks.push(function () { p.textContent = prestige() + " / " + repli("prestigeMax"); });
+      return p;
+    })()));
     mrow.appendChild(meter("XP dépensé", xpDepense, function () { return state.xpTotal; }));
     var xpIn = el("input", null);
     xpIn.type = "number"; xpIn.min = 0; xpIn.step = 5;
@@ -2207,14 +2258,28 @@
     var warns = el("div", "pc-warns");
     hooks.push(function () {
       warns.innerHTML = "";
-      if (ptsCreation() > ptsCreaMax())
-        warns.appendChild(el("div", "pc-warn", "Points de création dépassés : " + ptsCreation() + " / " + ptsCreaMax() + "."));
       if (xpRestant() < 0)
         warns.appendChild(el("div", "pc-warn", "XP dépensé au-delà du total (" + xpDepense() + " / " + state.xpTotal + ")."));
-      var cap = compCap();
-      Object.keys(state.comps).forEach(function (k) {
-        if (compXp(state.comps[k]) > cap)
-          warns.appendChild(el("div", "pc-warn", "« " + k.split("/").slice(1).join("/") + " » dépasse le quart de l'xp total (" + compXp(state.comps[k]) + " / " + cap + " xp)."));
+      // Une caractéristique au-dessus du prestige, des points au-dessus du
+      // plafond : ce sont les deux murs du système, et ils ne se franchissent
+      // que par un forçage du MJ — qu'on ne signale donc pas.
+      champs().forEach(function (c) {
+        if (state.caracsForce[c] !== undefined) return;
+        if (caracBase(c) > caracPlafond(c))
+          warns.appendChild(el("div", "pc-warn", "« " + caracInfo(c).nom + " » dépasse le plafond du prestige (" +
+            caracBase(c) + " / " + caracPlafond(c) + ")."));
+      });
+      champsComp().forEach(function (c) {
+        if (state.compsForce[c] !== undefined) return;
+        if ((state.comps[c] || 0) > compPlafond(c))
+          warns.appendChild(el("div", "pc-warn", "« " + compInfo(c).nom + " » dépasse son plafond de points (" +
+            (state.comps[c] || 0) + " / " + compPlafond(c) + ")."));
+      });
+      (state.specialites || []).forEach(function (sp) {
+        if (!sp.carac || sp.force !== null) return;
+        if ((sp.pts || 0) > spePlafond(sp))
+          warns.appendChild(el("div", "pc-warn", "« " + (sp.nom || "Spécialité") + " » dépasse son plafond (" +
+            (sp.pts || 0) + " / " + spePlafond(sp) + ")."));
       });
     });
     sheet.appendChild(warns);
@@ -2223,7 +2288,6 @@
   // ---------- onglets ----------
   var TABS = [
     { id: "fiche", label: "Fiche" },
-    { id: "art", label: "Art" },
     { id: "equipement", label: "Équipement" },
     { id: "bio", label: "Bio" },
     { id: "options", label: "Options" }
@@ -2329,8 +2393,8 @@
   // qu'un mod n'ait qu'un bloc à fournir sans rien savoir de la charpente.
   var SQUELETTES = {
     fiche: function (pane) {
-      // trois colonnes : narration, caractéristiques, langues | initiative,
-      // vitesse, régén, PV, armes | compétences (Body, Mind, Prestance)
+      // trois colonnes : prestige et caractéristiques | initiative, corps,
+      // PV et endurance | compétences et spécialités
       var cols = el("div", "pc-cols-fiche");
       var c1 = el("div", "pc-col");
       var c2 = el("div", "pc-col");
@@ -2340,9 +2404,6 @@
       cols.appendChild(c3);
       pane.appendChild(cols);
       return { gauche: c1, milieu: c2, droite: c3 };
-    },
-    art: function (pane) {
-      return { seule: pane };   // un seul bloc, sur toute la largeur
     },
     equipement: function (pane) {
       var cols = el("div", "pc-cols2");
@@ -2561,10 +2622,13 @@
   // comme le reste de la fiche au lieu d'inventer son vocabulaire.
   var LIBELLES = {
     nom: "Nom", espece: "Espèce", age: "Âge", sexe: "Sexe", genre: "Genre",
-    pv: "PV", pvMax: "PV max", initiative: "Initiative", vitesse: "Vitesse",
-    regen: "Régén / jour", poids: "Poids porté", narration: "Narration",
-    xpTotal: "XP total", stade: "Stade", total: "Total",
-    competence: "Compétence", art: "Art", passif: "Passif",
+    pv: "PV", pvMax: "PV max", endurance: "Endurance",
+    initiative: "Initiative", vitesse: "Vitesse", recup: "Récupération / jour",
+    poids: "Poids porté", charge: "Charge maximale", prestige: "Prestige",
+    xpTotal: "XP total", total: "Total", mod: "MOD", lim: "LIM",
+    points: "Points", plafond: "Plafond",
+    caracteristique: "Caractéristique", competence: "Compétence",
+    specialite: "Spécialité",
     arme: "Arme", degats: "Dégâts", armure: "Armure",
     quantite: "Quantité", groupe: "Groupe", description: "Description",
     avantage: "Avantage", defaut: "Défaut", qualite: "Qualité",
@@ -2682,14 +2746,23 @@
       // calculs : tous dérivés, donc en lecture seule
       calculs: {
         caracTotal: caracTotal,
-        compValue: compValue,
+        caracMod: caracMod,
+        caracLim: caracLim,
+        compPts: compPts,
+        compPlafond: compPlafond,
+        spePts: spePts,
+        spePlafond: spePlafond,
+        jetBonus: jetBonus,
+        prestige: prestige,
         pvMax: pvMax,
         pvCourant: pvCourant,
+        enduranceMax: enduranceMax,
+        enduranceMalus: enduranceMalus,
+        recupJour: recupJour,
         initiative: initiative,
         vitesse: vitesse,
-        regen: regen,
         poidsPorte: poidsPorte,
-        poidsMalus: poidsMalus
+        chargeMax: chargeMax
       },
       // …et de quoi les CHANGER : un filtre reçoit la valeur calculée et rend
       // celle qu'il veut, pour toute la fiche. Le propriétaire est figé ici, à
@@ -2700,111 +2773,204 @@
       // mise en forme
       fmt: { signe: sign, nombre: fmtP },
       champs: LIBELLES,
-      abbr: function (carac) { return ABBR[carac] || carac; }
+      abbr: function (carac) { return caracInfo(carac).code || carac; },
+      nomDe: function (carac) { return caracInfo(carac).nom || carac; }
     };
   }
 
-  // ---------- onglet Fiche : caractéristiques + combat | compétences ----------
+  // ---------- onglet Fiche : les caractéristiques ----------
+  // LE PRESTIGE OUVRE LE MODULE, et ce n'est pas une question de goût : c'est
+  // lui qui plafonne chacune des huit valeurs. Le lire après elles, ce serait
+  // lire la conséquence avant la cause — un joueur bloqué à 5 ne saurait pas
+  // où regarder.
+  //
+  // Les lignes se rangent par GROUPE, dans l'ordre de champs(), c'est-à-dire
+  // l'ordre de la page de règles. Le titre d'un groupe est le mot des DONNÉES
+  // lui-même : une famille renommée dans les règles arrive ici sans qu'on
+  // rouvre ce fichier, et aucune liste écrite en dur ne peut en diverger.
   function buildCaracs() {
-    // jeu : le total et son jet ; édition : les steppers Création / Achats xp
+    // jeu : la valeur, ses trois chiffres et son jet ; édition : les ± qui la
+    // montent et la descendent, achat par achat
     var b = block("Caractéristiques", null, "caracs");
-    // même ordre que les compétences : Body, puis Mind, puis Prestance
-    CHAMPS.forEach(function (name) {
-      if (!DATA.caracs.some(function (cc) { return cc.name === name; })) return;
+
+    // ---------- le prestige ----------
+    var pRow = el("div", "pc-kv");
+    pRow.appendChild(el("span", "k", "Prestige"));
+    // la valeur affichée est le prestige EFFECTIF (modificateur et forçage des
+    // Options compris), le stepper règle la valeur ACHETÉE : c'est le même
+    // partage que sur les caractéristiques en dessous, et il évite qu'un
+    // prestige forcé se laisse « corriger » par un clic qui ne changerait rien.
+    var pVal = el("span", "pc-cval", "");
+    pRow.appendChild(pVal);
+    var pStep = stepper(
+      function () { return state.prestige || 0; },
+      function (v) {
+        var max = repli("prestigeMax");
+        // le plancher se lit dans les règles quand elles sont là ; REPLI ne le
+        // porte pas, et un undefined rendrait la borne inutile
+        var min = repli("prestigeMin");
+        if (typeof min !== "number") min = 0;
+        // le plafond ne bloque que les HAUSSES : un prestige déjà au-delà
+        // (règles corrigées sous les pieds d'une fiche déjà écrite) redescend
+        // pas à pas au lieu d'être écrasé d'un seul clic
+        var haut = Math.max(max, state.prestige || 0);
+        var n = Math.round(v);
+        if (n > haut) {
+          flash(haut === max
+            ? "Le prestige ne dépasse pas " + max + "."
+            : "Le prestige est déjà au-delà de " + max + " : il ne peut que redescendre.");
+          n = haut;
+        }
+        state.prestige = Math.max(min, n);
+      }, 1, "prestige");
+    pStep.classList.add("pc-edit-only");
+    pRow.appendChild(pStep);
+    pRow.appendChild(el("span", "sp"));
+    var pMax = el("span", "max", "");
+    pRow.appendChild(pMax);
+    hooks.push(function () {
+      var force = state.prestigeForce !== null && state.prestigeForce !== undefined;
+      var d = state.prestigeMod || 0;
+      pVal.textContent = String(prestige());
+      pVal.classList.toggle("adj", force || d !== 0);
+      pVal.title = (force
+                     ? "Prestige forcé (Options) — calculé : " + prestigeAuto()
+                     : (state.prestige || 0) +
+                       (d ? " · modificateur (Options) " + sign(d) : "") +
+                       " = " + prestige()) +
+                   " — il plafonne chaque caractéristique.";
+      pMax.textContent = "/ " + repli("prestigeMax");
+    });
+    b.appendChild(pRow);
+
+    // ---------- une caractéristique ----------
+    function ligne(code) {
+      var info = caracInfo(code);
       var row = el("div", "pc-crow");
+
       var top = el("div", "pc-crow-top");
-      var chip = el("span", "pc-abbr", ABBR[name] || name);
-      chip.title = name;
+      // le sigle est ce que le joueur lit sur ses jets et dans ses règles ; le
+      // nom entier tient dans l'infobulle, pour la colonne trop étroite
+      var chip = el("span", "pc-abbr", code);
+      chip.title = info.nom;
       top.appendChild(chip);
-      // la ligne du nom porte aussi le malus de poids : elle est mise à jour au
-      // rafraîchissement, d'où la référence gardée
-      var nm = el("span", "nm", name);
-      top.appendChild(nm);
+      top.appendChild(el("span", "nm", info.nom));
+      // LA VALEUR EST LE BOUTON DE JET : le geste de cette fiche depuis
+      // toujours est un chiffre qu'on clique, pas un bouton de plus posé à
+      // côté d'un chiffre. doJet est le seul chemin d'un jet de test : il pose
+      // le MOD, la limite et le malus d'endurance sans qu'on ait à y penser.
       var val = el("span", "pc-cval pc-rollable", "");
-      // caracJet, pas caracTotal : ce bouton LANCE la caractéristique, et c'est
-      // caracJet qui dit ce que vaut un jet direct (la charge n'y pèse plus)
-      val.addEventListener("click", function () { doRoll(name, caracJet(name), null, true); });
+      val.addEventListener("click", function () { doJet(info.nom, code, null, null); });
       top.appendChild(val);
       row.appendChild(top);
 
+      // MOD, LIM et XP restent lisibles EN PERMANENCE, rouage fermé : ce sont
+      // eux qu'on cherche en jouant, la valeur n'étant que ce qui les produit.
+      var meta = el("div", "pc-kv");
+      meta.appendChild(el("span", "k", "MOD"));
+      var vMod = el("span", "max", "");
+      meta.appendChild(vMod);
+      meta.appendChild(el("span", "k", "LIM"));
+      var vLim = el("span", "max", "");
+      meta.appendChild(vLim);
+      meta.appendChild(el("span", "sp"));
+      meta.appendChild(el("span", "k", "XP"));
+      var vXp = el("span", "max", "");
+      meta.appendChild(vXp);
+      row.appendChild(meta);
+
+      // LES ± ACHÈTENT LA VALEUR, et rien ne les retient faute d'xp : l'en-tête
+      // AVERTIT dès que le total est dépassé, là où un blocage figerait à zéro
+      // toute fiche remplie à l'envers — les valeurs d'abord, l'xp total
+      // ensuite. Le prestige, lui, borne pour de bon.
       var bot = el("div", "pc-crow-bot pc-edit-only");
-      bot.appendChild(el("span", "lbl", "Création"));
+      bot.appendChild(el("span", "lbl", "Valeur"));
       bot.appendChild(stepper(
-        function () { return state.caracsBase[name]; },
+        function () { return caracBase(code); },
         function (v) {
-          // le plafond ne bloque que les HAUSSES : une base montée au-dessus
-          // du plafond (abaissé ensuite dans les Options) redescend pas à pas,
-          // sans être écrasée au plafond par un simple clic
-          var plaf = caracPlafond(name);
-          var max = Math.max(plaf, state.caracsBase[name]);
-          var val2 = clamp(v, 0, 9999);
-          if (val2 > max) { flash("Plafond de " + plaf + " atteint (Options, bloc Création)."); val2 = max; }
-          state.caracsBase[name] = val2;
-        }, CARAC_PAS, "création"));
-      bot.appendChild(el("span", "lbl", "Achats xp"));
-      var xpStep = el("span", "pc-step");
-      xpStep.appendChild(stepBtn("−", "Rendre " + DATA.xpParStade + " xp", function () {
-        if (state.caracsXp[name] > 0) { state.caracsXp[name]--; refresh(); }
-      }));
-      var cnt = el("span", "v", "");
-      xpStep.appendChild(cnt);
-      xpStep.appendChild(stepBtn("+", "Dépenser " + DATA.xpParStade + " xp", function () {
-        if (xpRestant() < DATA.xpParStade) { flash("XP insuffisant."); return; }
-        // le plafond porte sur base + achats, SANS le modificateur de total
-        // (qui peut porter la valeur au-delà du plafond comme en dessous : le
-        // tester brûlerait de l'xp sous un malus, ou bloquerait à tort sous un
-        // bonus)
-        if (state.caracsBase[name] + CARAC_PAS * (state.caracsXp[name] + 1) > caracPlafond(name)) {
-          flash("Plafond de " + caracPlafond(name) + " atteint (Options, bloc Création).");
-          return;
-        }
-        state.caracsXp[name]++;
-        refresh();
-      }));
-      bot.appendChild(xpStep);
+          // le plafond ne bloque que les HAUSSES : une valeur passée au-dessus
+          // (prestige abaissé après coup, relèvement retiré des Options)
+          // redescend pas à pas au lieu d'être écrasée d'un seul clic
+          var plaf = caracPlafond(code);
+          var haut = Math.max(plaf, caracBase(code));
+          var n = Math.round(v);
+          if (n > haut) {
+            flash(haut === plaf
+              ? "Plafond de " + plaf + " : le prestige plafonne " + code + "."
+              : code + " est déjà au-delà du plafond (" + plaf + ") : il ne peut que redescendre.");
+            n = haut;
+          }
+          state.caracs[code] = Math.max(0, n);
+        }, 1, "valeur"));
       row.appendChild(bot);
 
       hooks.push(function () {
-        var d = (state.caracsMod[name] || 0) + (state.caracsMod2[name] || 0);
-        var brut = state.caracsBase[name] + CARAC_PAS * state.caracsXp[name];
-        var plaf = caracPlafond(name);
-        var plafonne = Math.min(brut, plaf);
-        var force = state.caracsForce[name] !== undefined;
-        // ce que le JET perd par rapport au total : nul depuis que la charge ne
-        // pèse plus sur la caractéristique (elle reste sur les compétences de
-        // Body et sur la vitesse). La ligne demeure parce qu'elle est la seule
-        // à relier l'affichage à caracJet : si l'arbitrage rebasculait, la
-        // mention et l'accent reviendraient d'eux-mêmes.
-        var m = caracTotal(name) - caracJet(name);
-        // Un écart s'écrirait en clair sur la ligne du nom : sans lui, le joueur
-        // verrait un total qui ne correspond ni à sa création ni à ses achats,
-        // sans rien dans le bloc pour dire pourquoi.
-        nm.textContent = name + (m ? " · poids " + sign(-m) : "");
-        val.textContent = String(caracJet(name));
-        val.classList.toggle("adj", d !== 0 || force || m !== 0);
-        // quand le plafond mord, l'écrire en substitution (« plafonné à 80 »)
-        // pour que la somme du tooltip se vérifie de tête ; un total forcé, lui,
-        // remplace la somme (l'afficher quand même la ferait mentir). Le malus de
-        // poids vient APRÈS le forçage : il fixe la caractéristique, pas le jet.
+        var d = (state.caracsMod[code] || 0) + (state.caracsMod2[code] || 0);
+        var force = state.caracsForce[code] !== undefined;
+        var plaf = caracPlafond(code);
+        var base = caracBase(code);
+        var mord = base > plaf;
+        var xpF = state.caracsXpForce[code] !== undefined;
+        var xpD = (state.caracsXpMod[code] || 0) + (state.caracsXpMod2[code] || 0);
+        val.textContent = String(caracTotal(code));
+        val.classList.toggle("adj", force || d !== 0 || mord);
+        // quand le plafond mord, l'écrire en clair (« plafonnée à 12 ») : sans
+        // cela, le joueur voit un total qui ne correspond ni à ce qu'il a
+        // acheté ni à ce qu'il a modifié, et rien ne dit pourquoi. Un total
+        // forcé, lui, REMPLACE la somme : l'afficher quand même la ferait mentir.
         val.title = (force
                       ? "Total forcé (Options)"
-                      : "Création " + state.caracsBase[name] +
-                        " + achats " + (CARAC_PAS * state.caracsXp[name]) +
-                        (brut !== plafonne ? ", plafonné à " + plaf : "") +
+                      : "Valeur " + base +
+                        (mord ? ", plafonnée à " + plaf + " (prestige)" : "") +
                         (d ? " · modificateur (Options) " + sign(d) : "")) +
-                    (m ? " · poids " + sign(-m) : "") +
-                    " = " + caracJet(name) + " — clic : lancer 1d100 + " + name;
-        cnt.textContent = String(state.caracsXp[name]);
+                    " = " + caracTotal(code) +
+                    " — clic : lancer " + DE_DEFAUT + " " + sign(caracMod(code)) +
+                    ", plafonné à " + caracLim(code);
+        vMod.textContent = sign(caracMod(code));
+        vMod.title = "Ce que " + code + " ajoute à ses jets.";
+        vMod.classList.toggle("adj", force || d !== 0 || mord);
+        vLim.textContent = String(caracLim(code));
+        vLim.title = "Aucun jet de " + code + " ne dépasse ce résultat.";
+        vLim.classList.toggle("adj", force || d !== 0 || mord);
+        // l'XP se lit sur la valeur ACHETÉE, jamais sur le total : un
+        // modificateur d'équipement ne se paie pas.
+        vXp.textContent = String(caracXp(code));
+        vXp.classList.toggle("adj", xpF || xpD !== 0);
+        vXp.title = xpF
+          ? "Coût forcé (Options) — calculé : " + caracXpAuto(code)
+          : "XP cumulé de la valeur " + base + ", lu dans la table des règles" +
+            (xpD ? " · modificateur (Options) " + sign(xpD) : "");
       });
-      b.appendChild(row);
+      return row;
+    }
+
+    // ---------- les huit, groupées ----------
+    var groupe = null;
+    champs().forEach(function (code) {
+      var g = caracInfo(code).groupe || "";
+      if (g !== groupe) {
+        groupe = g;
+        // un intertitre discret, et non un bloc de plus : les familles se
+        // lisent d'un coup d'œil sans couper le module en modules séparés,
+        // qu'on pourrait déplacer l'un sans l'autre.
+        if (g) b.appendChild(el("div", "pc-block-note", capFirst(g)));
+      }
+      b.appendChild(ligne(code));
     });
     return b;
   }
 
-  // L'ancien bloc « Combat » est éclaté (2026-08-01) : Vitesse et Régén / jour
-  // forment leur propre élément (tuiles autonomes), PV et Narration ont chacun
-  // leur bloc ; la tuile « XP restant » a disparu, le compteur « XP dépensé »
-  // de l'en-tête la rendait redondante.
+  // ---------- le corps : vitesse, sauts, charge, récupération ----------
+  // Quatre tuiles autonomes plutôt qu'un bloc encadré : chacune est SON module
+  // (rouage flottant, valeur forcée, modificateurs), et la grille à deux
+  // colonnes les tient serrées au milieu de la fiche.
+  //
+  // La charge y entre parce qu'elle commande tout le reste : passé ses paliers,
+  // elle rogne l'initiative, la vitesse, les sauts et l'esquive. Un joueur qui
+  // voit ses chiffres fondre sans lire POURQUOI cherche une panne là où il n'y
+  // a qu'un sac trop lourd — d'où le palier franchi écrit en toutes lettres
+  // sous la valeur, avec la phrase des règles et non une paraphrase.
+  //
   // Valeur forcée d'une tuile : vide = valeur calculée. Même mécanique que le
   // maximum de PV, en version étroite (deux lignes empilées sous la valeur).
   function tuileForce(tile, champ, auto, dec) {
@@ -2834,52 +3000,111 @@
     row.appendChild(multiMod(state.divers, cle));
     tile.appendChild(row);
   }
+  // Le gréement commun d'une tuile réglable. Les Sauts ne l'ont pas : ni les
+  // règles ni l'état ne leur donnent de valeur forcée ni de modificateur, et
+  // leur en fabriquer un ici reviendrait à inventer une règle.
+  function tuileReglable(tile, id, champ, auto, cle, dec) {
+    tile.classList.add("pc-mods-host", "pc-editable");
+    tile.dataset.module = id;
+    var g = gearBtn(tile, id);
+    g.classList.add("pc-gear-float");
+    tile.appendChild(g);
+    tuileForce(tile, champ, auto, dec);
+    tuileMods(tile, cle);
+    return tile;
+  }
+  // Ce que les paliers de charge font à UNE valeur, pour son infobulle. Le tri
+  // par clé de calcul est ce qui empêche l'infobulle de la vitesse d'énumérer
+  // des malus d'esquive : chaque tuile ne raconte que ce qui la concerne.
+  function tuilePaliers(clef, verbe) {
+    var out = [];
+    chargePaliers().forEach(function (p) {
+      if (p.calc[clef]) out.push("charge " + p.seuil + " % : " + verbe + " " + fmtP(p.calc[clef]));
+    });
+    return out;
+  }
 
   function buildVitesse() {
-    // deux tuiles = deux MODULES distincts : chacune porte son propre rouage
-    // flottant (jeu : lecture ; édition : sa valeur forcée et ses modificateurs)
     var tiles = el("div", "pc-bigrow pc-bigrow-2");
 
-    var tv = bigTile("Vitesse", vitesse);
-    tv.classList.add("pc-mods-host", "pc-editable");
-    tv.dataset.module = "vitesse";
-    var gV = gearBtn(tv, "vitesse");
-    gV.classList.add("pc-gear-float");
-    tv.appendChild(gV);
-    tuileForce(tv, "vitesseOverride", vitesseAuto, true);
-    tuileMods(tv, "vitesse");
+    // ---- vitesse ----
+    var tv = tuileReglable(bigTile("Vitesse", vitesse), "vitesse",
+                           "vitesseOverride", vitesseAuto, "vitesse", true);
     hooks.push(function () {
       var d = modSum(state.divers.vitesse);
-      // la charge ne marque la tuile que lorsqu'elle coûte vraiment des mètres,
-      // c'est-à-dire en surcharge : un sac lourd mais porté ne change plus rien
-      var surch = estSurcharge();
-      tv.classList.toggle("adj", state.vitesseOverride !== null || d !== 0 || surch);
-      // D'où sort le chiffre : le palier lu sur le Body (le poids ne l'y descend
-      // plus), puis la surcharge si la charge dépasse ce Body. Sans ce détail, un
-      // joueur surchargé cherche son résultat dans la table et ne l'y trouve pas.
-      var calcul = "Palier de la table (Body " + bodyVitesse() + ") : " + vitessePalier() +
-        (surch ? " · surcharge " + sign(-surchargeMalus()) + " m" : "");
+      var pal = tuilePaliers("vitesseDiv", "divisée par");
+      // la charge ne marque la tuile que lorsqu'elle coûte vraiment des mètres :
+      // un sac lourd mais sous le premier palier ne change rien
+      tv.classList.toggle("adj", state.vitesseOverride !== null || d !== 0 || pal.length > 0);
       tv.title = state.vitesseOverride !== null
-        ? "Vitesse forcée à " + fmtP(state.vitesseOverride) + " m (calculée : " + fmtP(vitesseAuto()) + " m)"
-        : calcul + (d ? " · modificateurs " + sign(d) + " m" : "");
+        ? "Vitesse forcée à " + fmtP(state.vitesseOverride) + " m (calculée : " +
+          fmtP(vitesseAuto()) + " m)"
+        : ["AGI × " + fmtP(repli("vitesseMult")) + " = " +
+           fmtP(caracTotal("AGI") * repli("vitesseMult")) + " m"]
+            .concat(pal, d ? ["modificateurs " + sign(d) + " m"] : []).join(" · ");
     });
     tiles.appendChild(tv);
 
-    var tr = bigTile("Régén / jour", regen);
-    tr.classList.add("pc-mods-host", "pc-editable");
-    tr.dataset.module = "regen";
-    var gR = gearBtn(tr, "regen");
-    gR.classList.add("pc-gear-float");
-    tr.appendChild(gR);
-    tuileForce(tr, "regenOverride", regenAuto, false);
-    tuileMods(tr, "regen");
+    // ---- sauts ----
+    // Une seule tuile pour les deux : le round compte les deux dans le même
+    // déplacement, et c'est le même palier de charge qui les écrase.
+    var ts = bigTile("Sauts long · haut", function () {
+      return sautLong() + " · " + sautHaut();
+    });
     hooks.push(function () {
-      var d = modSum(state.divers.regen);
-      tr.classList.toggle("adj", state.regenOverride !== null || d !== 0);
-      tr.title = state.regenOverride !== null
-        ? "Régénération forcée à " + state.regenOverride + " (calculée : " + regenAuto() + ")"
-        : "Body / 10 = " + Math.floor(caracTotal("Body") / 10) +
-          (d ? " · modificateurs " + sign(d) : "") + " (jamais sous 0)";
+      var pal = tuilePaliers("sautDiv", "divisés par");
+      ts.classList.toggle("adj", pal.length > 0);
+      ts.title = ["Longueur : FOR × " + fmtP(repli("sautLong")) + " m",
+                  "Hauteur : FOR ÷ " + fmtP(repli("sautHaut")) + " m"]
+                   .concat(pal).join(" · ");
+    });
+    tiles.appendChild(ts);
+
+    // ---- charge ----
+    var tc = bigTile("Charge", function () {
+      return fmtP(poidsPorte()) + " / " + fmtP(chargeMax());
+    });
+    // le palier franchi LE PLUS HAUT, avec sa phrase des règles : les paliers se
+    // cumulent, mais celui du dessus est le seul qu'on ne puisse pas deviner
+    var note = el("div", "pc-block-note");
+    note.style.display = "none";
+    tc.appendChild(note);
+    tuileReglable(tc, "charge", "chargeOverride", chargeMaxAuto, "charge", true);
+    hooks.push(function () {
+      var d = modSum(state.divers.charge);
+      var pal = chargePaliers();
+      var haut = pal.length ? pal[pal.length - 1] : null;
+      note.textContent = haut ? haut.seuil + " % — " + haut.effets : "";
+      note.style.display = haut ? "" : "none";
+      tc.classList.toggle("adj", !!haut || state.chargeOverride !== null || d !== 0);
+      var pct = chargePct();
+      tc.title = (state.chargeOverride !== null
+        ? "Charge maximale forcée à " + fmtP(state.chargeOverride) + " (calculée : " +
+          fmtP(chargeMaxAuto()) + ")"
+        : "Le plus haut du MOD CON et du MOD FOR" +
+          (d ? " · modificateurs " + sign(d) : "")) +
+        // une charge maximale nulle rend le pourcentage infini : on le dit au
+        // lieu d'afficher « Infinity % », qui passerait pour une panne
+        (isFinite(pct) ? " · porté : " + Math.round(pct) + " %" : " · aucune charge maximale");
+    });
+    tiles.appendChild(tc);
+
+    // ---- récupération ----
+    var tr = tuileReglable(bigTile("Récup / jour", recupJour), "recup",
+                           "recupOverride", recupJourAuto, "recup", false);
+    hooks.push(function () {
+      var d = modSum(state.divers.recup);
+      tr.classList.toggle("adj", state.recupOverride !== null || d !== 0);
+      tr.title = state.recupOverride !== null
+        ? "Récupération forcée à " + fmtP(state.recupOverride) + " (calculée : " +
+          recupJourAuto() + ")"
+        // RÉCUP est une spécialité, et son plafond n'est pas celui des autres :
+        // le dire ici évite de chercher pourquoi des points achetés ne comptent pas
+        : "(MOD CON + RÉCUP) / 2 = (" + caracMod("CON") + " + " + recupPts() + ") / 2 = " +
+          Math.floor((caracMod("CON") + recupPts()) / 2) +
+          " · spécialité Récupération plafonnée à MOD CON × " + fmtP(repli("recupMult")) +
+          " = " + recupPlafond() +
+          (d ? " · modificateurs " + sign(d) : "");
     });
     tiles.appendChild(tr);
 
@@ -2887,47 +3112,119 @@
   }
 
   // ---------- initiative ----------
-  // Une compétence de Body comme les autres (stade, passifs à Artiste dans
-  // l'onglet Art, modificateur dans Options), malus de poids compris : il lui
-  // arrive par compValue(), comme à l'esquive ou à la course, et la ligne
-  // générique l'affiche déjà, d'où les crochets adj et detail retirés d'ici : ils
-  // parlaient du poids BRUT et le comptaient une seconde fois. Elle a son module
-  // parce qu'elle se lance à chaque combat ; la liste des compétences l'écarte
-  // donc, pour ne pas doubler la même commande.
+  // L'INITIATIVE N'EST PLUS UNE COMPÉTENCE : les règles en font une VALEUR,
+  // MOD AGI × 2, que l'équipement pousse et que la charge écrase. Elle garde
+  // son module parce qu'on la relit à chaque combat, et parce qu'elle est le
+  // seul chiffre de la fiche qui aille au compteur de tours de Roll20.
+  //
+  // AUCUN DÉ NE LA DÉCIDE : personne ne « lance » son initiative dans MIA. Le
+  // bouton porte donc la valeur telle quelle au compteur, sans passer par
+  // doJet, qui bâtirait un d100 que le jeu ne demande nulle part. « 0d0 + n »
+  // est la forme dont le moteur se sert déjà pour faire voyager une constante
+  // dans une expression de jet (jetExpr y pose la limite) ; le drapeau du
+  // compteur s'y attache comme au reste.
+  function initAuCompteur() {
+    var v = initiative();
+    if (envoyer(cmdJetExpr("Initiative", "0d0+" + v, true))) return;
+    flash("Initiative : " + v + " (hors Roll20 : aucun compteur de tours où l'inscrire).");
+  }
+  // D'OÙ SORT LE CHIFFRE, en toutes lettres. Sans ce détail, un personnage
+  // sanglé dans son armure lit une initiative qu'aucune formule de la page ne
+  // rend, et cherche l'erreur là où il n'y a qu'un malus d'équipement. Les
+  // termes absents ne s'écrivent pas : une ligne qui annonce « équipement +0 »
+  // n'apprend rien et pousse le reste hors de la colonne.
+  function initDetail() {
+    var parts = ["MOD AGI × " + fmtP(repli("iniMult")) + " = " +
+                 (caracMod("AGI") * repli("iniMult"))];
+    if (mainsNues()) parts.push("mains nues " + sign(repli("iniMainsNues")));
+    // les bonus ne comptent que porté, les malus comptent toujours : c'est
+    // equipInitBonus() qui tranche, et le total qu'il rend est ce qu'on montre
+    var eq = equipInitBonus();
+    if (eq) parts.push("équipement " + sign(eq));
+    chargePaliers().forEach(function (p) {
+      if (p.calc.ini) parts.push("charge " + p.seuil + " % : " + sign(p.calc.ini));
+      if (p.calc.iniDiv) parts.push("charge " + p.seuil + " % : divisée par " + fmtP(p.calc.iniDiv));
+    });
+    var d = modSum(state.divers.initiative);
+    if (d) parts.push("modificateurs " + sign(d));
+    return parts.join(" · ");
+  }
+
   function buildInitiative() {
-    var initHooks = [];   // registre PROPRE au module : la ligne est reconstruite
-    var b = block("Initiative", null, "initiative", function () { rendre(); });
-    var box = el("div");
-    b.appendChild(box);
-    function rendre() {
-      initHooks.length = 0;   // les hooks de la ligne détruite partent avec elle
-      box.innerHTML = "";
-      box.appendChild(compRow({ key: INIT_KEY, name: "Initiative", carac: "Body", custom: false },
-                              false, {
-        module: "initiative", reg: initHooks,
-        // le seul écart avec une ligne ordinaire : le filtre « initiative » ne
-        // vit que sur cette valeur-là, et la ligne générique le manquerait en
-        // appelant compValue() directement
-        value: function () { return initiative(); },
-        rollLabel: "Initiative"
-      }));
-      applyEdit(b, "initiative");
+    var b = block("Initiative", null, "initiative");
+    var row = el("div", "pc-kv");
+    var val = el("span", "pc-cval");
+    row.appendChild(val);
+    row.appendChild(el("span", "sp"));
+    row.appendChild(miniBtn("Compteur", "Inscrire l'initiative au compteur de tours de Roll20",
+                            initAuCompteur));
+    b.appendChild(row);
+
+    var det = el("div", "pc-block-note");
+    b.appendChild(det);
+
+    // construction : valeur forcée (vide = calculée) + divers, comme les PV.
+    // Le forçage accepte le NÉGATIF, et c'est voulu : deux armures dans le sac
+    // suffisent à passer sous zéro, et un plancher à zéro mentirait sur l'état
+    // d'un personnage qui a tout chargé sur son dos.
+    var mrow = el("div", "pc-pvmax pc-mods-host pc-edit-only");
+    mrow.appendChild(el("span", "lbl", "Forcée"));
+    var force = el("input", "force");
+    force.type = "number"; force.step = "1";
+    force.title = "Vide = initiative calculée (équipement, mains nues, paliers de charge " +
+                  "et modificateurs compris) ; une valeur la force.";
+    force.addEventListener("input", function () {
+      var v = parseFloat(force.value);
+      state.initiativeOverride = isFinite(v) ? clamp(Math.floor(v), -9999, 9999) : null;
       refresh();
-    }
-    hooks.push(function () { initHooks.forEach(function (f) { f(); }); });
-    rendre();
+    });
+    hooks.push(function () {
+      force.placeholder = String(initiativeAuto());
+      if (document.activeElement !== force) {
+        force.value = state.initiativeOverride === null ? "" : state.initiativeOverride;
+      }
+    });
+    mrow.appendChild(force);
+    mrow.appendChild(el("span", "lbl", "Modificateurs"));
+    mrow.appendChild(multiMod(state.divers, "initiative"));
+    mrow.appendChild(el("span", "sp"));
+    b.appendChild(mrow);
+
+    hooks.push(function () {
+      val.textContent = String(initiative());
+      var d = modSum(state.divers.initiative);
+      val.classList.toggle("adj", state.initiativeOverride !== null || d !== 0);
+      det.textContent = state.initiativeOverride !== null
+        ? "Initiative forcée (calculée : " + initiativeAuto() + ")"
+        : initDetail();
+    });
     return b;
   }
 
   // ---------- xp par champ ----------
-  // Où le personnage a mis son xp : la caractéristique elle-même et toutes ses
-  // compétences. Les barres se comparent entre elles (part du dépensé), pas au
-  // total disponible : c'est la répartition qui intéresse.
+  // Où le personnage a mis son xp : la caractéristique elle-même, les
+  // compétences qu'elle commande et les spécialités qui en relèvent. Ce
+  // partage-là est tranché par xpChamp(), pas ici — une compétence que
+  // plusieurs caractéristiques plafonnent ne doit être comptée qu'une fois, et
+  // ce n'est pas à l'affichage d'en décider. Les barres se comparent entre
+  // elles (part du dépensé), pas au total disponible : c'est la répartition
+  // qui intéresse.
   function buildXpChamps() {
-    var b = block("XP par champ", null, null);
-    CHAMPS.forEach(function (carac) {
+    var b = block("XP par champ");
+    // Huit lignes désormais, et non trois : les deux groupes des règles se
+    // séparent d'une bande, sans quoi l'œil ne voit qu'une colonne de huit
+    // barres. Le groupe se lit dans les données ; s'il manque, la bande ne
+    // paraît pas plutôt que de porter un titre vide.
+    var groupe = "";
+    champs().forEach(function (c) {
+      var g = caracInfo(c).groupe || "";
+      if (g && g !== groupe) b.appendChild(el("div", "pc-comp-champ", capFirst(g)));
+      groupe = g;
+
       var row = el("div", "pc-xpchamp");
-      row.appendChild(el("span", "pc-abbr", ABBR[carac] || carac));
+      var chip = el("span", "pc-abbr", c);
+      chip.title = caracInfo(c).nom;
+      row.appendChild(chip);
       var m = el("span", "pc-meter");
       var v = el("b", null, "");
       m.appendChild(v);
@@ -2939,477 +3236,341 @@
       m.appendChild(part);
       row.appendChild(m);
       hooks.push(function () {
-        var xp = xpChamp(carac), tot = xpDepense();
+        var xp = xpChamp(c), tot = xpDepense();
         v.textContent = xp + " xp";
         var p = tot > 0 ? (xp / tot) * 100 : 0;
         fill.style.width = clamp(p, 0, 100) + "%";
         part.textContent = tot > 0 ? Math.round(p) + " %" : "—";
-        row.title = carac + " : " + (DATA.xpParStade * (state.caracsXp[carac] || 0)) +
-                    " xp de caractéristique, " +
-                    (xp - DATA.xpParStade * (state.caracsXp[carac] || 0)) + " xp de compétences";
+        // Le reste, c'est ce que xpChamp() a ramassé AUTOUR de la
+        // caractéristique. Il s'arrondit au centième parce qu'un point de
+        // spécialité coûte un quart d'xp : sans cela, l'infobulle affiche
+        // 3.9999999999999996.
+        var propre = caracXp(c);
+        row.title = caracInfo(c).nom + " : " + propre + " xp de caractéristique, " +
+                    (Math.round((xp - propre) * 100) / 100) +
+                    " xp de compétences et de spécialités";
       });
       b.appendChild(row);
     });
     return b;
   }
 
-  // ---------- compétences d'armes ----------
-  // Toujours des compétences de Body. Celles des règles (DATA.compsArmes) et
-  // celles que le joueur ajoute vivent ensemble ici, et nulle part ailleurs :
-  // la liste générale les écarte pour ne pas doubler la commande du stade.
-  function buildArmesComps() {
-    var armHooks = [];
-    var b = block("Armes", null, "armescomp", function () { rendre(); });
+  // ---------- PV et endurance ----------
+  // DEUX RÉSERVES DE MÊME FORME, et c'est la règle qui le veut : les PV
+  // descendent du maximum jusqu'à son opposé, l'endurance aussi. On les bâtit
+  // donc avec le même outil — le défaut à éviter était de corriger la barre
+  // négative des PV en laissant celle de l'endurance derrière.
+  //
+  // Ce qui relève du JEU reste toujours actif (la valeur courante, le retour au
+  // maximum) : on perd des points de vie en pleine partie, pas en construisant
+  // son personnage. Le rouage ne déverrouille que les deux maximums.
 
-    // mêmes filtres que la liste des compétences : décoché, « Armes
-    // personnalisées » ne laisse que celles des règles ; « Investies
-    // seulement » masque celles où rien n'est posé.
-    var tools = el("div", "pc-comp-tools");
-    // pas de menu des champs ici (une arme est toujours une compétence de
-    // Body) : le filtre prend donc toute la largeur
-    var recherche = champFiltre(function () { return armesFilter; },
-                                function (v) { armesFilter = v; }, "Filtrer les armes…",
-                                function () { rendre(); });
-    if (recherche) {
-      var lineF = el("div", "row");
-      lineF.appendChild(recherche);
-      tools.appendChild(lineF);
-    }
-    var line = el("div", "row");
-    var persoChip = el("span", "pc-chip");
-    persoChip.textContent = "Personnalisées";
-    persoChip.title = "Décoché : seules les armes des règles sont affichées.";
-    persoChip.classList.toggle("on", armesPerso);
-    persoChip.addEventListener("click", function () {
-      armesPerso = !armesPerso;
-      persoChip.classList.toggle("on", armesPerso);
-      rendre();
-    });
-    line.appendChild(persoChip);
-    var onlyChip = el("span", "pc-chip");
-    onlyChip.textContent = "Investies";
-    onlyChip.title = "N'afficher que les armes où un stade, un passif ou un modificateur est posé.";
-    onlyChip.classList.toggle("on", armesOnly);
-    onlyChip.addEventListener("click", function () {
-      armesOnly = !armesOnly;
-      onlyChip.classList.toggle("on", armesOnly);
-      rendre();
-    });
-    line.appendChild(onlyChip);
-    tools.appendChild(line);
-    b.appendChild(tools);
+  // Le signe moins TYPOGRAPHIQUE (U+2212), comme dans sign() : à cette taille,
+  // le trait d'union du clavier passe pour une césure, et un plancher de vie
+  // n'a pas le droit d'être ambigu.
+  function pvFmtNeg(n) { return n < 0 ? "−" + fmtP(-n) : fmtP(n); }
 
-    var box = el("div");
-    b.appendChild(box);
-
-    function rendre() {
-      armHooks.length = 0;
-      box.innerHTML = "";
-      var flt = filtreDe(armesFilter);
-      var noms = armesNoms().filter(function (nom) {
-        var perso = state.armesComps.indexOf(nom) >= 0;
-        if (!armesPerso && perso) return false;
-        if (armesOnly && !compInvestie({ key: armeKey(nom) })) return false;
-        if (flt && nom.toLowerCase().indexOf(flt) < 0) return false;
-        return true;
-      });
-      if (noms.length) {
-        var head = el("div", "pc-comp-row head");
-        head.appendChild(el("span", null, "Arme"));
-        head.appendChild(el("span", null, "Stade"));
-        head.appendChild(el("span", null, "Total"));
-        box.appendChild(head);
-      } else {
-        box.appendChild(el("div", "pc-empty",
-          flt ? "Aucune arme ne correspond."
-              : armesOnly ? "Aucune arme investie." : "Aucune arme."));
-      }
-      noms.forEach(function (nom, i) {
-        var perso = state.armesComps.indexOf(nom) >= 0;
-        box.appendChild(compRow(
-          { key: armeKey(nom), name: nom, carac: ARME_CARAC, custom: perso, arme: true },
-          i % 2 === 1, { module: "armescomp", reg: armHooks, onDrop: rendre }));
-      });
-
-      if (isEdit("armescomp")) {
-        var addRow = el("div", "pc-comp-add");
-        var inp = el("input");
-        inp.type = "text";
-        inp.placeholder = "Nouvelle arme…";
-        addRow.appendChild(inp);
-        addRow.appendChild(miniBtn("+", "Ajouter", function () {
-          var nom = capFirst(inp.value.trim());
-          if (!nom) return;
-          if (allComps().some(function (it) {
-                return it.carac === ARME_CARAC && it.name.toLowerCase() === nom.toLowerCase();
-              })) { flash("« " + nom + " » existe déjà en Body."); return; }
-          state.armesComps.push(nom);
-          // ne jamais ajouter une arme qui resterait invisible
-          if (!armesPerso) { armesPerso = true; persoChip.classList.add("on"); }
-          if (armesOnly) { armesOnly = false; onlyChip.classList.remove("on"); }
-          if (filtreDe(armesFilter)) { armesFilter = ""; if (recherche) recherche.value = ""; }
-          inp.value = "";
-          refresh();
-          rendre();
-          if (optCompsRebuild) optCompsRebuild();
-        }));
-        box.appendChild(addRow);
-      }
-      applyEdit(b, "armescomp");
-      refresh();
-    }
-    hooks.push(function () { armHooks.forEach(function (f) { f(); }); });
-    rendre();
-    return b;
+  // Une barre de jauge, au CSS des compteurs de l'en-tête. Deux réglages se
+  // posent ici plutôt que dans la feuille : .pc-meter .bar est figée à 84 px et
+  // les deux règles qui l'étirent (.pc-id-meters, .pc-xpchamp) nomment leur
+  // hôte, qui n'est pas ce bloc-ci. La largeur FIXE du nombre, elle, garde les
+  // deux barres exactement de même longueur — sans quoi la positive et la
+  // négative ne se compareraient plus d'un coup d'œil, ce qui est tout ce
+  // qu'on leur demande.
+  function pvJauge(rouge) {
+    var m = el("span", "pc-meter");
+    var bar = el("span", "bar");
+    bar.style.flex = "1";
+    bar.style.width = "auto";
+    var f = el("i", rouge ? "over" : null);
+    bar.appendChild(f);
+    m.appendChild(bar);
+    var t = el("b", null, "");
+    t.style.flex = "0 0 5rem";
+    t.style.textAlign = "right";
+    m.appendChild(t);
+    return { el: m, txt: t, fill: f };
+  }
+  // Une ligne d'état qui n'existe que lorsqu'elle a quelque chose à dire : le
+  // texte vide l'efface, ses marges avec.
+  function pvLigne(cls) {
+    var d = el("div", cls);
+    d.style.display = "none";
+    return d;
+  }
+  function pvDit(ligne, texte) {
+    ligne.textContent = texte || "";
+    ligne.style.display = texte ? "" : "none";
   }
 
-  // ---------- langues ----------
-  // Des compétences de Mind, rassemblées dans leur module. La langue du
-  // personnage monte jusqu'à Expert sans rien coûter ; les autres se paient
-  // comme n'importe quelle compétence.
-  function buildLangues() {
-    var langHooks = [];
-    var b = block("Langues", null, "langues", function () { rendre(); });
-
-    var tools = el("div", "pc-comp-tools");
-    // pas de menu des champs (une langue est toujours une compétence de Mind)
-    var recherche = champFiltre(function () { return languesFilter; },
-                                function (v) { languesFilter = v; }, "Filtrer les langues…",
-                                function () { rendre(); });
-    if (recherche) {
-      var lineF = el("div", "row");
-      lineF.appendChild(recherche);
-      tools.appendChild(lineF);
-    }
-    var line = el("div", "row");
-    var persoChip = el("span", "pc-chip");
-    persoChip.textContent = "Personnalisées";
-    // « personnalisée » = apprise en plus ; la langue du personnage, elle, est
-    // acquise, c'est le pendant des compétences des règles dans les autres modules
-    persoChip.title = "Décoché : seule la langue du personnage est affichée.";
-    persoChip.classList.toggle("on", languesPerso);
-    persoChip.addEventListener("click", function () {
-      languesPerso = !languesPerso;
-      persoChip.classList.toggle("on", languesPerso);
-      rendre();
-    });
-    line.appendChild(persoChip);
-    var onlyChip = el("span", "pc-chip");
-    onlyChip.textContent = "Investies";
-    onlyChip.title = "N'afficher que les langues où un stade, un passif ou un modificateur est posé.";
-    onlyChip.classList.toggle("on", languesOnly);
-    onlyChip.addEventListener("click", function () {
-      languesOnly = !languesOnly;
-      onlyChip.classList.toggle("on", languesOnly);
-      rendre();
-    });
-    line.appendChild(onlyChip);
-    tools.appendChild(line);
-    b.appendChild(tools);
-
+  // LA RÉSERVE : la valeur courante au stepper, son maximum, sa barre positive
+  // et sa barre négative. infoMax dit ce que l'infobulle du maximum raconte et
+  // si le chiffre a été retouché ; tout le reste est commun aux deux réserves.
+  function pvReserve(nom, lire, ecrire, maxi, plancher, infoMax) {
     var box = el("div");
-    b.appendChild(box);
-
-    function rendre() {
-      langHooks.length = 0;
-      box.innerHTML = "";
-      var flt = filtreDe(languesFilter);
-      var noms = state.langues.filter(function (nom) {
-        if (!languesPerso && nom !== state.langueBase) return false;
-        if (languesOnly && !compInvestie({ key: langueKey(nom) })) return false;
-        if (flt && nom.toLowerCase().indexOf(flt) < 0) return false;
-        return true;
-      });
-      if (noms.length) {
-        var head = el("div", "pc-comp-row head");
-        head.appendChild(el("span", null, "Langue"));
-        head.appendChild(el("span", null, "Stade"));
-        head.appendChild(el("span", null, "Total"));
-        box.appendChild(head);
-      } else {
-        box.appendChild(el("div", "pc-empty",
-          flt ? "Aucune langue ne correspond."
-              : languesOnly ? "Aucune langue investie."
-              : state.langues.length ? "Aucune langue à afficher."
-              : isEdit("langues")
-                ? "Aucune langue : la première ajoutée devient celle du personnage."
-                : "Aucune langue."));
-      }
-      noms.forEach(function (nom, i) {
-        var item = { key: langueKey(nom), name: nom, carac: LANGUE_CARAC, custom: true, langue: true };
-        var row = compRow(item, i % 2 === 1,
-                          { module: "langues", reg: langHooks, onDrop: rendre });
-        // la langue du personnage se désigne d'un clic : une seule à la fois
-        var etoile = el("button", "pc-lang-base" + (state.langueBase === nom ? " on" : ""), "★");
-        etoile.type = "button";
-        etoile.title = state.langueBase === nom
-          ? "Langue du personnage : acquise jusqu'à Expert sans rien coûter"
-          : "Faire de « " + nom + " » la langue du personnage";
-        etoile.addEventListener("click", function () {
-          if (!isEdit("langues")) return;
-          state.langueBase = state.langueBase === nom ? "" : nom;
-          refresh();
-          rendre();
-        });
-        row.querySelector(".pc-comp-name").insertBefore(etoile, row.querySelector(".pc-comp-label"));
-        box.appendChild(row);
-      });
-
-      if (isEdit("langues")) {
-        var addRow = el("div", "pc-comp-add");
-        var inp = el("input");
-        inp.type = "text";
-        inp.placeholder = state.langues.length ? "Nouvelle langue…" : "Langue du personnage…";
-        addRow.appendChild(inp);
-        addRow.appendChild(miniBtn("+", "Ajouter", function () {
-          var nom = capFirst(inp.value.trim());
-          if (!nom) return;
-          if (allComps().some(function (it) {
-                return it.carac === LANGUE_CARAC && it.name.toLowerCase() === nom.toLowerCase();
-              })) { flash("« " + nom + " » existe déjà en Mind."); return; }
-          state.langues.push(nom);
-          // la première langue est celle du personnage : elle arrive à Expert,
-          // gratuitement — c'est tout l'intérêt de la désigner
-          if (!state.langueBase) {
-            state.langueBase = nom;
-            state.comps[langueKey(nom)] = { stade: stadeExpert(), techniques: [] };
-          }
-          // une langue ajoutée ne doit jamais rester invisible
-          if (!languesPerso) { languesPerso = true; persoChip.classList.add("on"); }
-          if (languesOnly) { languesOnly = false; onlyChip.classList.remove("on"); }
-          if (filtreDe(languesFilter)) { languesFilter = ""; if (recherche) recherche.value = ""; }
-          inp.value = "";
-          refresh();
-          rendre();
-          if (optCompsRebuild) optCompsRebuild();
-        }));
-        box.appendChild(addRow);
-      }
-      applyEdit(b, "langues");
+    var row = el("div", "pc-kv");
+    row.appendChild(el("span", "k", nom));
+    var step = el("span", "pc-step");
+    step.appendChild(stepBtn("−", null, function () { ecrire(lire() - 1); refresh(); }));
+    var inp = el("input", "pc-num");
+    inp.type = "number"; inp.step = "1";
+    inp.addEventListener("input", function () {
+      var v = parseFloat(inp.value);
+      // vide = « au maximum » : c'est ainsi que l'état dit qu'aucun point n'a
+      // encore été perdu, et le maximum peut alors bouger sans traîner
+      ecrire(isFinite(v) ? v : null);
       refresh();
-    }
-    hooks.push(function () { langHooks.forEach(function (f) { f(); }); });
-    rendre();
-    return b;
+    });
+    hooks.push(function () { if (document.activeElement !== inp) inp.value = lire(); });
+    step.appendChild(inp);
+    step.appendChild(stepBtn("+", null, function () { ecrire(lire() + 1); refresh(); }));
+    row.appendChild(step);
+    var mx = el("span", "max", "");
+    row.appendChild(mx);
+    row.appendChild(el("span", "sp"));
+    row.appendChild(miniBtn("Max", "Revenir au maximum", function () { ecrire(null); refresh(); }));
+    box.appendChild(row);
+
+    var pos = pvJauge(false), neg = pvJauge(true);
+    box.appendChild(pos.el);
+    box.appendChild(neg.el);
+    hooks.push(function () {
+      var v = lire(), m = maxi(), p = plancher(), i = infoMax();
+      mx.textContent = "/ " + fmtP(m);
+      mx.classList.toggle("adj", !!i.adj);
+      mx.title = i.titre;
+      // la positive ne montre que ce qui reste au-dessus de zéro, la négative
+      // que ce qui a été creusé en dessous : une seule des deux bouge à la fois
+      pos.txt.textContent = fmtP(Math.max(0, v)) + " / " + fmtP(m);
+      pos.fill.style.width = clamp(m > 0 ? Math.max(0, v) / m * 100 : 0, 0, 100) + "%";
+      neg.txt.textContent = pvFmtNeg(Math.min(0, v)) + " / " + pvFmtNeg(p);
+      neg.fill.style.width = clamp(p < 0 ? Math.min(0, v) / p * 100 : 0, 0, 100) + "%";
+    });
+    return box;
+  }
+
+  // La ligne de construction d'un maximum : la valeur forcée (vide = calculée)
+  // et les trois modificateurs. Les deux réserves ont la même.
+  function pvForceRow(nom, champ, auto, cle, aide) {
+    var row = el("div", "pc-pvmax pc-mods-host pc-edit-only");
+    row.appendChild(el("span", "lbl", nom));
+    var f = el("input", "force");
+    f.type = "number"; f.step = "1"; f.min = "0";
+    f.title = aide;
+    f.addEventListener("input", function () {
+      var v = parseFloat(f.value);
+      state[champ] = isFinite(v) ? clamp(Math.floor(v), 0, 9999) : null;
+      refresh();
+    });
+    hooks.push(function () {
+      f.placeholder = String(auto());
+      if (document.activeElement !== f) f.value = state[champ] === null ? "" : state[champ];
+    });
+    row.appendChild(f);
+    row.appendChild(el("span", "lbl", "Modificateurs"));
+    row.appendChild(multiMod(state.divers, cle));
+    row.appendChild(el("span", "sp"));
+    return row;
   }
 
   function buildPv() {
-    // les PV COURANTS se jouent en temps réel (combat) : stepper et « Max »
-    // restent toujours actifs ; l'édition ne garde que le maximum forcé et
-    // les divers du maximum
-    var b = block("PV", null, "pv");
-    var pvRow = el("div", "pc-kv");
-    var pvStep = el("span", "pc-step");
-    pvStep.appendChild(stepBtn("−", null, function () { state.pv = pvCourant() - 1; refresh(); }));
-    var pvIn = el("input", "pc-num");
-    pvIn.type = "number"; pvIn.step = "1";
-    pvIn.addEventListener("input", function () {
-      var v = parseFloat(pvIn.value);
-      state.pv = isFinite(v) ? v : null;
-      refresh();
-    });
-    hooks.push(function () { if (document.activeElement !== pvIn) pvIn.value = pvCourant(); });
-    pvStep.appendChild(pvIn);
-    pvStep.appendChild(stepBtn("+", null, function () { state.pv = pvCourant() + 1; refresh(); }));
-    pvRow.appendChild(pvStep);
-    var pvM = el("span", "max", "");
-    hooks.push(function () {
+    var b = block("PV et endurance", null, "pv");
+
+    // ---- les points de vie ----
+    b.appendChild(pvReserve("PV", pvCourant, function (v) { state.pv = v; },
+                            pvMax, pvPlancher, function () {
       var d = modSum(state.divers.pvMax);
-      pvM.textContent = "/ " + pvMax();
-      pvM.classList.toggle("adj", state.pvMaxOverride !== null || d !== 0);
-      pvM.title = state.pvMaxOverride !== null
-        ? "Maximum forcé à " + state.pvMaxOverride + " (calculé : " + pvMaxAuto() + ")"
-        : "(20 + Body) / 2 = " + Math.floor((20 + caracTotal("Body")) / 2) +
-          (d ? " · modificateurs " + sign(d) : "");
-    });
-    pvRow.appendChild(pvM);
-    pvRow.appendChild(el("span", "sp"));
-    pvRow.appendChild(miniBtn("Max", "Revenir au maximum", function () { state.pv = null; refresh(); }));
-    b.appendChild(pvRow);
+      return {
+        adj: state.pvMaxOverride !== null || d !== 0,
+        titre: state.pvMaxOverride !== null
+          ? "Maximum forcé à " + state.pvMaxOverride + " (calculé : " + pvMaxAuto() + ")"
+          : "(20 + MOD CON + PHY) / 2 + SPÉ PV = (20 + " + caracMod("CON") + " + " +
+            compPts("PHY") + ") / 2 + " + spePtsParNom("PV") +
+            (d ? " · modificateurs " + sign(d) : "")
+      };
+    }));
+    // LE SEUIL DE L'OBSTINATION ne se montre que dans le négatif : il n'y a
+    // rien à jeter tant que les PV sont positifs. Il bouge à chaque coup reçu,
+    // puisqu'il est la part du maximum déjà creusée, et le joueur doit le lire
+    // au moment où le MJ lui demande le jet.
+    var obst = pvLigne("pc-block-note");
+    b.appendChild(obst);
+    var mort = pvLigne("pc-warn");
+    b.appendChild(mort);
 
-    // maximum : valeur forcée (vide = calculée) + divers — les leviers HxH
-    var mrow = el("div", "pc-pvmax pc-mods-host pc-edit-only");
-    mrow.appendChild(el("span", "lbl", "Forcé"));
-    var force = el("input", "force");
-    force.type = "number"; force.step = "1"; force.min = "0";
-    force.title = "Vide = maximum calculé ((20 + Body) / 2, modificateurs compris) ; " +
-                  "une valeur le force.";
-    force.addEventListener("input", function () {
-      var v = parseFloat(force.value);
-      state.pvMaxOverride = isFinite(v) ? clamp(Math.floor(v), 0, 9999) : null;
-      refresh();
-    });
+    // ---- l'endurance ----
+    b.appendChild(pvReserve("Endurance", enduranceCourante,
+                            function (v) { state.endurance = v; },
+                            enduranceMax, endurancePlancher, function () {
+      var d = modSum(state.divers.endurance);
+      return {
+        adj: state.enduranceMaxOverride !== null || d !== 0,
+        titre: state.enduranceMaxOverride !== null
+          ? "Maximum forcé à " + state.enduranceMaxOverride +
+            " (calculé : " + enduranceMaxAuto() + ")"
+          : "MOD CON = " + caracMod("CON") + (d ? " · modificateurs " + sign(d) : "")
+      };
+    }));
+    // Ce que l'endurance coûte à l'usage : le plafond par action est le seul
+    // chiffre qu'on cherche en pleine partie, et il ne se déduit d'aucun autre
+    // affichage de la fiche.
+    var endDep = el("div", "pc-block-note");
+    b.appendChild(endDep);
+    // le malus général : il pèse sur TOUS les jets, et jetBonus() le retire
+    // déjà de chacun. On l'écrit ici pour qu'un joueur comprenne pourquoi ses
+    // chiffres ont baissé partout à la fois.
+    var endMal = pvLigne("pc-warn");
+    b.appendChild(endMal);
+    var endTapis = pvLigne("pc-warn");
+    b.appendChild(endTapis);
+
+    // ---- construction : les deux maximums ----
+    b.appendChild(pvForceRow("PV max", "pvMaxOverride", pvMaxAuto, "pvMax",
+      "Vide = maximum calculé ((20 + MOD CON + PHY) / 2 + SPÉ PV, modificateurs " +
+      "compris) ; une valeur le force."));
+    b.appendChild(pvForceRow("Endurance max", "enduranceMaxOverride", enduranceMaxAuto,
+      "endurance",
+      "Vide = maximum calculé (MOD CON, modificateurs compris) ; une valeur le force."));
+
     hooks.push(function () {
-      force.placeholder = String(pvMaxAuto());
-      if (document.activeElement !== force) {
-        force.value = state.pvMaxOverride === null ? "" : state.pvMaxOverride;
-      }
+      pvDit(obst, pvCourant() < 0
+        ? "Obstination : jet contre " + obstinationDD() +
+          " chaque fois que des dégâts font passer les PV dans le négatif — raté, " +
+          "le personnage tombe dans les pommes."
+        : "");
+      pvDit(mort, pvMort()
+        ? "Mort : les PV ont atteint " + pvFmtNeg(pvPlancher()) + ", soit −100 % du maximum."
+        : "");
+      endDep.textContent = "Se dépense pour ajouter un bonus, jusqu'à " +
+        repli("endurAction") + " points sur une même action ; se regagne chaque jour.";
+      pvDit(endMal, enduranceMalus()
+        ? "Endurance négative : malus de " + enduranceMalus() + " sur tous les jets."
+        : "");
+      pvDit(endTapis, enduranceAuTapis()
+        ? "Au tapis : l'endurance a atteint " + pvFmtNeg(endurancePlancher()) +
+          " ; le personnage reste dans les pommes jusqu'au retour de sa réserve au maximum."
+        : "");
     });
-    mrow.appendChild(force);
-    mrow.appendChild(el("span", "lbl", "Modificateurs"));
-    mrow.appendChild(multiMod(state.divers, "pvMax"));
-    mrow.appendChild(el("span", "sp"));
-    b.appendChild(mrow);
     return b;
   }
 
-  function buildNarration() {
-    var b = block("Narration");
-    var nRow = el("div", "pc-kv");
-    var nStep = el("span", "pc-step");
-    nStep.appendChild(stepBtn("−", null, function () { state.narration = Math.max(0, state.narration - 1); refresh(); }));
-    var nV = el("span", "v", "");
-    hooks.push(function () { nV.textContent = String(state.narration); });
-    nStep.appendChild(nV);
-    nStep.appendChild(stepBtn("+", null, function () { state.narration++; refresh(); }));
-    nRow.appendChild(nStep);
-    nRow.appendChild(el("span", "sp"));
-    nRow.appendChild(miniBtn("Nouvelle session", "Repartir à 3 points", function () { state.narration = 3; refresh(); }));
-    b.appendChild(nRow);
-    return b;
-  }
-
-  // opts : { module, reg, onDrop } — le module dont le rouage déverrouille la
-  // barre de stade, le registre de hooks où la ligne s'inscrit (celui du module
-  // qui la reconstruit, sinon ses hooks fuiteraient), et le retrait sur mesure.
-  // Par défaut : le module « comps » de l'onglet Fiche.
+  // ---------- la ligne d'une compétence ----------
+  // MÊME CHARPENTE QU'UNE CARACTÉRISTIQUE (.pc-crow), et ce n'est pas une
+  // économie de style : depuis que les stades ont disparu, les deux lignes
+  // portent exactement les mêmes choses — un nombre qu'on achète, un plafond
+  // qui le retient, une limite qui coiffe le jet, et le chiffre lui-même comme
+  // bouton. Deux charpentes pour un même contenu auraient fini par diverger
+  // d'un pixel, puis d'une infobulle.
+  //
+  // opts : { reg } — le registre de rafraîchissement où la ligne s'inscrit,
+  // celui du module qui la bâtit. Une ligne détruite emporte ses fonctions ;
+  // laissées dans le registre du voisin, elles rafraîchiraient un élément qui
+  // n'est plus dans la page. Par défaut : celui des lignes de compétences.
   function compRow(item, odd, opts) {
     opts = opts || {};
-    var mod = opts.module || "comps";
     var reg = opts.reg || compHooks;
-    var comp = function () { return state.comps[item.key] || blankComp(); };
-    var row = el("div", "pc-comp-row" + (odd ? " odd" : ""));
+    // Un appelant peut ne nommer sa ligne que par une clé (ctx.ligneComp d'un
+    // mod) : ce sont les SIGLES que les calculs attendent, et allComps() les
+    // donne dans « code ».
+    var code = item.code || item.key;
+    // La caractéristique par DÉFAUT : celle qui donne le MOD et la LIM du jet.
+    // Le joueur peut en demander une autre au moment de lancer (réglage « Au
+    // choix » de la barre d'envoi) ; c'est doJet qui le lui propose, pas la ligne.
+    var carac = item.carac || compCarac(code);
+    var row = el("div", "pc-crow" + (odd ? " odd" : ""));
 
-    var nameBox = el("span", "pc-comp-name");
-    var label = el("span", "pc-comp-label", item.name);
-    label.title = item.name + " (" + item.carac + ")";
-    nameBox.appendChild(label);
-    if (item.custom) {
-      var del = el("button", "pc-comp-del pc-edit-only", "✕");
-      del.type = "button";
-      del.title = item.langue ? "Retirer cette langue" : "Retirer cette compétence personnalisée";
-      del.addEventListener("click", function () {
-        // la compétence peut porter des données que la ligne ne montre pas
-        // (un art rédigé puis stade redescendu) : confirmer avant d'effacer
-        var c = state.comps[item.key];
-        var garde = [];
-        if (c && c.stade > 0) garde.push("de l'xp investi");
-        if (c && c.techniques && c.techniques.length) garde.push("des passifs");
-        if (porteArt(c)) garde.push("un art");
-        if (state.compsMod[item.key]) garde.push("un modificateur (Options)");
-        if (garde.length &&
-            !confirm("Supprimer « " + item.name + " » effacera aussi " + garde.join(", ") + ". Continuer ?")) return;
-        if (item.langue) {
-          state.langues = state.langues.filter(function (n) { return n !== item.name; });
-          if (state.langueBase === item.name) state.langueBase = "";
-        } else if (item.arme) {
-          state.armesComps = state.armesComps.filter(function (n) { return n !== item.name; });
-        } else {
-          state.customComps = state.customComps.filter(function (cc) { return (cc.carac + "/" + cc.name) !== item.key; });
+    var top = el("div", "pc-crow-top");
+    var chip = el("span", "pc-abbr", code);
+    chip.title = item.name;
+    top.appendChild(chip);
+    top.appendChild(el("span", "nm", item.name));
+    // LA VALEUR EST LE BOUTON DE JET, comme sur une caractéristique. Ce qu'elle
+    // affiche est le BONUS et non les points : c'est lui qui part sur le dé,
+    // points et MOD confondus, et c'est le seul nombre qu'on cherche en jouant.
+    var val = el("span", "pc-cval pc-rollable", "");
+    val.addEventListener("click", function () { doJet(item.name, carac, code, null); });
+    top.appendChild(val);
+    row.appendChild(top);
+
+    // PTS, LIM et XP restent lisibles ROUAGE FERMÉ. Le plafond suit les points
+    // dans la même case : sans lui, on découvre qu'on est au bout quand un « + »
+    // cesse de répondre, ce qui passe pour une panne du bouton.
+    var meta = el("div", "pc-kv");
+    meta.appendChild(el("span", "k", "PTS"));
+    var vPts = el("span", "max", "");
+    meta.appendChild(vPts);
+    meta.appendChild(el("span", "k", "LIM"));
+    var vLim = el("span", "max", "");
+    meta.appendChild(vLim);
+    meta.appendChild(el("span", "sp"));
+    meta.appendChild(el("span", "k", "XP"));
+    var vXp = el("span", "max", "");
+    meta.appendChild(vXp);
+    row.appendChild(meta);
+
+    // LES ± ACHÈTENT LES POINTS, et rien ne les retient faute d'xp : l'en-tête
+    // avertit dès que le total est dépassé, là où un blocage figerait toute
+    // fiche remplie à l'envers — les points d'abord, l'xp total ensuite. Le
+    // plafond, lui, borne pour de bon : il vient des règles.
+    var bot = el("div", "pc-crow-bot pc-edit-only");
+    bot.appendChild(el("span", "lbl", "Points"));
+    bot.appendChild(stepper(
+      function () { return state.comps[code] || 0; },
+      function (v) {
+        // le plafond ne bloque que les HAUSSES : des points investis avant
+        // qu'un malus ne rabaisse la caractéristique redescendent pas à pas au
+        // lieu d'être rognés d'un seul clic, ce qui rendrait l'xp introuvable
+        var plaf = compPlafond(code);
+        var haut = Math.max(plaf, state.comps[code] || 0);
+        var n = Math.round(v);
+        if (n > haut) {
+          flash(haut === plaf
+            ? "Plafond de " + plaf + " : le meilleur MOD des caractéristiques de " + code + "."
+            : code + " est déjà au-delà du plafond (" + plaf + ") : la compétence ne peut que redescendre.");
+          n = haut;
         }
-        delete state.comps[item.key];
-        delete state.compsMod[item.key];   // sinon le modificateur renaîtrait sur une homonyme
-        refresh();
-        if (opts.onDrop) opts.onDrop();
-        rebuildComps();
-        if (optCompsRebuild) optCompsRebuild();
-      });
-      nameBox.appendChild(del);
-    }
-    row.appendChild(nameBox);
-
-    // stade : une barre segmentée [ N | I | M | E | A ] au dégradé qui monte
-    // jusqu'au rouge des caractéristiques ; centrée, toujours au même endroit.
-    // Cliquable seulement en mode édition du module (le coût se règle tout
-    // seul) ; verrouillée, elle reste l'affichage du stade. Les passifs et
-    // l'art se personnalisent dans l'onglet Art.
-    function applyStade(target) {
-      var c = comp();
-      if (target === c.stade) return;
-      var next = { stade: target, techniques: c.techniques.slice() };
-      // l'art suit la compétence : il survit aux allers-retours de stade
-      // (il ne se montre que quand le stade qui l'ouvre est atteint)
-      if (porteArt(c)) next.art = c.art;
-      if (!stadeInfo(target).techniques) {
-        // les passifs rédigés vivent dans l'onglet Art : la ligne ne les
-        // montre pas, on confirme avant de les effacer avec la descente
-        var redigees = c.techniques.filter(function (t) {
-          return String(t.name || "").trim() || String(t.desc || "").trim();
-        }).length;
-        if (redigees &&
-            !confirm("Redescendre « " + item.name + " » à " + stadeInfo(target).nom +
-                     " effacera " + redigees + " passif(s) rédigé(s) (onglet Art). Continuer ?")) return;
-        next.techniques = [];
-      }
-      var delta = compXp(next, item.key) - compXp(c, item.key);
-      if (delta > 0 && xpRestant() < delta) { flash("XP insuffisant."); return; }
-      // le plafond du quart ne bloque que les HAUSSES : on peut toujours redescendre
-      if (delta > 0 && compXp(next, item.key) > compCap()) {
-        flash("Pas plus d'un quart de l'xp total (" + compCap() + " xp) dans une seule compétence.");
-        return;
-      }
-      state.comps[item.key] = next;
-      if (!next.stade && !next.techniques.length && !next.art) delete state.comps[item.key];
-      refresh();
-    }
-    var st = el("span", "pc-stadebar");
-    var segs = [];
-    DATA.stades.forEach(function (sd, i) {
-      var sg = el("button", "seg s" + i, (sd.nom || "?").charAt(0).toUpperCase());
-      sg.type = "button";
-      sg.title = sd.nom + " (" + sign(sd.bonus) + ") — " + (DATA.xpParStade * i) + " xp";
-      sg.addEventListener("click", function () {
-        if (!isEdit(mod)) return;   // construction : mode édition requis
-        applyStade(i);
-      });
-      st.appendChild(sg);
-      segs.push(sg);
-    });
-    row.appendChild(st);
-
-    // le total est un BOUTON de jet, comme la valeur d'une caractéristique.
-    // opts.value permet à un module de compter autrement (l'initiative passe par
-    // son propre filtre) sans dupliquer la ligne.
-    var valeur = opts.value || function (c) { return compValue(item.carac, c, item.key); };
-    var total = el("button", "pc-comp-total pc-comp-roll pc-rollable", "");
-    total.type = "button";
-    total.addEventListener("click", function () {
-      // L'initiative, et elle seule, s'inscrit au compteur de tours de Roll20.
-      // Le drapeau suit la CLÉ de la compétence, pas le module : la ligne est
-      // la même quand le module Initiative est coupé et que Body/Initiative
-      // revient dans la liste des compétences.
-      doRoll(opts.rollLabel || (item.name + " (" + item.carac + ")"), valeur(comp()),
-             null, true, item.carac, item.key === INIT_KEY);
-    });
-    row.appendChild(total);
+        n = Math.max(0, n);
+        // zéro n'est pas une donnée : une clé absente vaut zéro partout
+        // (accesseurs, attributs Roll20), et l'état voyage d'autant plus léger
+        if (n) state.comps[code] = n; else delete state.comps[code];
+      }, 1, "points", reg));
+    row.appendChild(bot);
 
     reg.push(function () {
-      var c = comp();
-      var d = state.compsMod[item.key] || 0;
-      // le malus de poids réellement retenu par cette ligne : zéro hors des jets
-      // de Body, zéro sur une arme, zéro sous un total forcé
-      var m = compPoidsMalus(item.carac, item.key);
-      segs.forEach(function (sg, i) {
-        sg.classList.toggle("on", i <= c.stade);
-        // « cur » MARQUE LE STADE COURANT, et n'a effectivement aucune regle de
-        // style : c'est un REPERE, pas une decoration. Un audit l'a retiree pour
-        // cette raison, et quatre sondes sont tombees — c'est par elle qu'on
-        // lit, de l'exterieur, a quel stade une competence se trouve. Une marque
-        // sans peinture reste une marque.
-        sg.classList.toggle("cur", i === c.stade);
-      });
-      total.textContent = sign(valeur(c));
-      // « zero » dit « rien ne s'ajoute ni ne se retranche à la caractéristique » :
-      // le malus compte, sans quoi une compétence grisée comme inerte afficherait
-      // un total qui bouge à chaque objet rangé dans le sac
-      total.classList.toggle("zero", !c.stade && !d && !m && !opts.value);
-      total.classList.toggle("adj", d !== 0 || m !== 0);
-      total.title = item.carac + " " + sign(caracTotal(item.carac)) +
-                    " · stade " + sign(stadeInfo(c.stade).bonus) +
-                    (d ? " · modificateur (Options) " + sign(d) : "") +
-                    (m ? " · poids " + sign(-m) : "") +
-                    (item.langue && state.langueBase === item.name ? " · langue du personnage (gratuite)" : "") +
-                    " — clic : lancer";
+      var base = state.comps[code] || 0;
+      var plaf = compPlafond(code);
+      var mord = base > plaf;
+      var d = (state.compsMod[code] || 0) + (state.compsMod2[code] || 0);
+      var force = state.compsForce[code] !== undefined;
+      var xpF = state.compsXpForce[code] !== undefined;
+      var xpD = (state.compsXpMod[code] || 0) + (state.compsXpMod2[code] || 0);
+      // le malus d'endurance pèse sur TOUS les jets : il est déjà dans le
+      // bonus, il n'est nommé ici que pour qu'on sache d'où vient l'écart
+      var mal = enduranceMalus();
+      var b = jetBonus(carac, code, null);
+      val.textContent = sign(b);
+      val.classList.toggle("adj", force || d !== 0 || mord || mal !== 0);
+      val.title = (force
+                    ? "Points forcés (Options)"
+                    : "Points " + base +
+                      (mord ? ", plafonnés à " + plaf : "") +
+                      (d ? " · modificateur (Options) " + sign(d) : "")) +
+                  " · " + carac + " " + sign(caracMod(carac)) +
+                  (mal ? " · endurance " + sign(-mal) : "") +
+                  " — clic : lancer " + DE_DEFAUT + " " + sign(b) +
+                  ", plafonné à " + caracLim(carac);
+      vPts.textContent = compPts(code) + " / " + plaf;
+      vPts.classList.toggle("adj", force || d !== 0 || mord);
+      vPts.title = "Points investis, et leur plafond : le meilleur MOD de " +
+                   ((item.caracsPlafond || compInfo(code).mod || []).join(", ") || "ses caractéristiques") + ".";
+      vLim.textContent = String(caracLim(carac));
+      vLim.title = "Aucun jet de " + item.name + " par " + carac + " ne dépasse ce résultat.";
+      vXp.textContent = String(compXp(code));
+      vXp.classList.toggle("adj", xpF || xpD !== 0);
+      vXp.title = xpF
+        ? "Coût forcé (Options) — calculé : " + compXpAuto(code)
+        : "Un point de compétence coûte " + repli("xpComp") + " xp" +
+          (xpD ? " · modificateur (Options) " + sign(xpD) : "");
     });
     return row;
   }
@@ -3450,134 +3611,75 @@
   }
   function filtreDe(v) { return filtreTexteOn() ? String(v || "").trim().toLowerCase() : ""; }
   function compInvestie(it) {
-    var c = state.comps[it.key];
-    // l'art compte : une compétence redescendue qui garde son art reste
-    // visible ; un modificateur (Options) non nul aussi (sinon « Investies
-    // seulement » cache une valeur pourtant modifiée)
-    return !!(c && (c.stade > 0 || (c.techniques && c.techniques.length) || porteArt(c))) ||
+    // Un modificateur non nul compte autant que des points : sinon
+    // « Investies seulement » cacherait la compétence qu'on vient justement de
+    // régler.
+    return (state.comps[it.key] || 0) > 0 ||
            (state.compsMod[it.key] || 0) !== 0 ||
            (state.compsMod2[it.key] || 0) !== 0 ||
-           // un total ou un coût forcé compte aussi : sinon « Investies »
-           // cacherait la compétence qu'on vient justement de régler
            state.compsForce[it.key] !== undefined ||
            state.compsXpForce[it.key] !== undefined ||
            (state.compsXpMod[it.key] || 0) !== 0 ||
            (state.compsXpMod2[it.key] || 0) !== 0;
   }
-  // l'ordre des champs, partout sur la Fiche : Body, puis Mind, puis Prestance
-  var CHAMPS = ["Body", "Mind", "Prestance"];
+  // Une spécialité est « investie » dès qu'elle porte un point ou un réglage :
+  // son existence seule ne suffit pas, le joueur venant peut-être de l'ajouter.
+  function speInvestie(spe) {
+    if (!spe) return false;
+    return (spe.pts || 0) > 0 || (spe.mod || 0) !== 0 || (spe.mod2 || 0) !== 0 ||
+           spe.force !== null || spe.xpForce !== null;
+  }
+  // ---------- onglet Fiche : les compétences ----------
+  // HUIT compétences, celles des règles, dans l'ordre de la page. Le menu des
+  // champs et la puce « Personnalisées » ont disparu avec ce qu'ils réglaient :
+  // il n'y a plus de champ où ranger une compétence, ni de compétence inventée
+  // à ajouter — les langues et les armes, qui étaient les deux listes ouvertes,
+  // n'existent plus. Restent le filtre texte et la puce « Investies », qui
+  // servent surtout à la fiche condensée de Roll20, où la colonne est étroite.
   function rebuildComps() {
     if (!compBox) return;
-    compHooks = [];   // les lignes vont être détruites : leurs hooks avec
+    compHooks = [];   // les lignes vont être détruites : leurs fonctions avec
     compBox.innerHTML = "";
     var flt = filtreDe(compFilter);
-    CHAMPS.forEach(function (carac) {
-      if (filtreChampOn() && compChamp && compChamp !== carac) return;
-      // l'Initiative, les langues et les armes ont leur propre module sur
-      // cette page : les répéter ici ferait deux commandes pour un même stade.
-      // Mais un module COUPÉ rend ses compétences à cette liste : sans quoi
-      // couper « Langues » rendrait les langues du personnage inatteignables.
-      // Aucun calcul ne change, seulement l'endroit où la ligne se lit.
-      var items = allComps().filter(function (it) {
-        if (it.carac !== carac) return false;
-        if (it.key === INIT_KEY) return !actif("initiative");
-        if (it.langue) return !actif("langues");
-        if (it.arme) return !actif("armescomp");
-        return true;
-      });
-      if (!compPerso) items = items.filter(function (it) { return !it.custom; });
-      if (flt) items = items.filter(function (it) { return it.name.toLowerCase().indexOf(flt) >= 0; });
-      if (compOnly) items = items.filter(compInvestie);
-      // ordre alphabétique (français, accents ignorés), comps perso intercalées
-      items.sort(function (a, b) { return a.name.localeCompare(b.name, "fr", { sensitivity: "base" }); });
-      compBox.appendChild(el("div", "pc-comp-champ", carac));
-      if (!items.length) {
-        compBox.appendChild(el("div", "pc-empty",
-          flt ? "Aucune compétence ne correspond."
-              : compOnly ? "Aucune compétence investie." : "—"));
-      } else {
-        var head = el("div", "pc-comp-row head");
-        head.appendChild(el("span", null, "Compétence"));
-        head.appendChild(el("span", null, "Stade"));
-        head.appendChild(el("span", null, "Total"));
-        compBox.appendChild(head);
-        items.forEach(function (it, i) { compBox.appendChild(compRow(it, i % 2 === 1)); });
-      }
-      // ajout d'une compétence personnalisée (les listes des règles sont
-      // ouvertes : « … ») — seulement en mode édition du module
-      if (!isEdit("comps")) return;
-      var addRow = el("div", "pc-comp-add");
-      var inp = el("input");
-      inp.type = "text"; inp.placeholder = "Nouvelle compétence " + carac + "…";
-      addRow.appendChild(inp);
-      addRow.appendChild(miniBtn("+", "Ajouter", function () {
-        var name = capFirst(inp.value.trim());
-        if (!name) return;
-        var exists = allComps().some(function (it) { return it.carac === carac && it.name.toLowerCase() === name.toLowerCase(); });
-        if (exists) { flash("Cette compétence existe déjà."); return; }
-        state.customComps.push({ name: name, carac: carac });
-        // ne jamais ajouter une compétence qui resterait invisible
-        if (!compPerso) {
-          compPerso = true;
-          if (compPersoChip) compPersoChip.classList.add("on");
-        }
-        inp.value = "";
-        refresh();
-        rebuildComps();
-        if (optCompsRebuild) optCompsRebuild();   // la nouvelle comp gagne sa ligne dans Options
-      }));
-      compBox.appendChild(addRow);
-    });
+    var items = allComps();
+    if (flt) items = items.filter(function (it) { return it.name.toLowerCase().indexOf(flt) >= 0; });
+    if (compOnly) items = items.filter(compInvestie);
+    // Aucun tri : l'ordre des règles est celui où le joueur lit ses compétences
+    // dans son livre, et le même que dans le bloc des Options. Un ordre
+    // alphabétique n'aurait de sens que sur une liste qu'on ne connaît pas.
+    if (!items.length) {
+      // Une liste vide n'a pas la même cause selon ce qui l'a vidée, et le
+      // joueur qui ne voit plus ses points doit savoir laquelle : un filtre se
+      // défait, des données absentes se rechargent.
+      compBox.appendChild(el("div", "pc-empty",
+        flt ? "Aucune compétence ne correspond."
+            : compOnly ? "Aucune compétence investie."
+            : "Les règles n'ont pas été chargées."));
+    } else {
+      items.forEach(function (it, i) { compBox.appendChild(compRow(it, i % 2 === 1)); });
+    }
     refresh();
   }
   function buildComps() {
-    // jeu : filtres (outils de vue) et totaux-jets ; édition : stades, ajout
-    // et retrait de compétences perso. Le rouage rebâtit la liste : les
-    // rangées d'ajout n'existent qu'en édition.
-    var b = block("Compétences", null, "comps", function () { rebuildComps(); });
-    // outils sur deux lignes : filtre texte + filtre de champ côte à côte,
-    // puis les deux puces de filtre en dessous
+    // jeu : les points, la limite et le jet ; édition : les ± qui achètent les
+    // points, ligne par ligne
+    var b = block("Compétences", null, "comps");
     var tools = el("div", "pc-comp-tools");
-    var line1 = el("div", "row");
+    var line = el("div", "row");
     var search = champFiltre(function () { return compFilter; },
                              function (v) { compFilter = v; }, null, rebuildComps);
-    if (search) line1.appendChild(search);
-    if (filtreChampOn()) {
-      var champSel = el("select", "pc-select");
-      ["Tous les champs", "Body", "Mind", "Prestance"].forEach(function (ch) {
-        var o = el("option");
-        o.value = ch === "Tous les champs" ? "" : ch;
-        o.textContent = ch;
-        champSel.appendChild(o);
-      });
-      champSel.value = compChamp;
-      champSel.addEventListener("change", function () { compChamp = champSel.value; rebuildComps(); });
-      line1.appendChild(champSel);
-    }
-    if (line1.children.length) tools.appendChild(line1);
-    var line2 = el("div", "row");
-    var persoChip = el("span", "pc-chip");
-    persoChip.textContent = "Personnalisées";
-    persoChip.title = "Décoché : seules les compétences de base du jeu sont affichées.";
-    persoChip.classList.toggle("on", compPerso);
-    persoChip.addEventListener("click", function () {
-      compPerso = !compPerso;
-      persoChip.classList.toggle("on", compPerso);
-      rebuildComps();
-    });
-    compPersoChip = persoChip;
-    line2.appendChild(persoChip);
+    if (search) line.appendChild(search);
     var onlyChip = el("span", "pc-chip");
     onlyChip.textContent = "Investies";
-    onlyChip.title = "N'afficher que les compétences où un stade, un passif ou un modificateur est posé.";
+    onlyChip.title = "N'afficher que les compétences qui portent des points ou un réglage.";
     onlyChip.classList.toggle("on", compOnly);
     onlyChip.addEventListener("click", function () {
       compOnly = !compOnly;
       onlyChip.classList.toggle("on", compOnly);
       rebuildComps();
     });
-    line2.appendChild(onlyChip);
-    tools.appendChild(line2);
+    line.appendChild(onlyChip);
+    tools.appendChild(line);
     b.appendChild(tools);
     compBox = el("div");
     b.appendChild(compBox);
@@ -3585,216 +3687,224 @@
     return b;
   }
 
-  // ---------- onglet Art ----------
-  // La personnalisation d'une compétence vit ICI : au stade qui ouvre les
-  // passifs et l'art (« Artiste » sous les règles actuelles), sa carte porte les
-  // fiches de passifs, le nom et la description de l'art. Aucun
-  // contenu de règles : seulement les données du personnage. La liste se
-  // reconstruit seulement quand les compétences éligibles (ou leur stade)
-  // changent, pas à chaque frappe.
-  // porteArt : la compétence a un art non vide (même si le stade est redescendu)
-  function porteArt(c) {
-    return !!(c && c.art && (String(c.art.name || "").trim() || String(c.art.desc || "").trim()));
-  }
-  function artComps() {
-    // même ordre que la Fiche : Body, puis Mind, puis Prestance, puis alphabétique
-    var rang = {};
-    CHAMPS.forEach(function (ch, i) { rang[ch] = i; });
-    return allComps().filter(function (it) {
-      var c = state.comps[it.key];
-      // les passifs rédigés et l'art restent VISIBLES même si le stade ne les
-      // ouvre plus (stade redescendu, ou stade d'ouverture déplacé) : les
-      // données du joueur ne disparaissent jamais en silence
-      return !!(c && (stadeInfo(c.stade).techniques || stadeInfo(c.stade).art ||
-                      (c.techniques && c.techniques.length) || porteArt(c)));
-    }).sort(function (a, b) {
-      return (rang[a.carac] || 0) - (rang[b.carac] || 0)
-        || a.name.localeCompare(b.name, "fr", { sensitivity: "base" });
-    });
-  }
-  function artStadeNom() {
-    // premier stade qui ouvre quelque chose (techniques ou art)
-    for (var i = 0; i < DATA.stades.length; i++)
-      if (DATA.stades[i].techniques || DATA.stades[i].art) return DATA.stades[i].nom;
-    return null;
-  }
-  function buildArt() {
-    // jeu : lire les arts et passifs, les envoyer au tchat ; édition :
-    // rédiger, ajouter, retirer
-    var b = block("Arts et passifs", null, "arts");
-    var box = el("div", "pc-arts");
+  // ---------- onglet Fiche : les spécialités ----------
+  // C'est la SEULE liste de la fiche que le joueur écrit entièrement. Les
+  // règles disent ce qu'est une spécialité, ce qu'elle coûte et ce qui la
+  // plafonne ; elles ne disent pas lesquelles existent. Le module ne propose
+  // donc aucun catalogue : un nom libre, et deux sigles pour dire de quoi elle
+  // relève.
+  //
+  // Les deux sélecteurs ne sont pas de l'ornement. La caractéristique donne le
+  // MOD et la LIMITE du jet ; la compétence entre dans le plafond de points.
+  // Tant qu'ils sont vides, la ligne ne vaut rien, et elle le MONTRE — un
+  // « — · — » à la place des sigles — plutôt que d'afficher un zéro qu'on
+  // prendrait pour un calcul.
+  function buildSpecialites() {
+    // jeu : les points, la limite et le jet ; édition : le nom, les deux
+    // sigles, les ± et le retrait
+    var b = block("Spécialités", null, "specialites");
+    var box = el("div");
     b.appendChild(box);
-
-    function artCard(it) {
-      var c = state.comps[it.key];
-      var card = el("div", "pc-av pc-art");
-
-      var top = el("div", "pc-art-top");
-      var chip = el("span", "pc-abbr", ABBR[it.carac] || it.carac);
-      chip.title = it.carac;
-      top.appendChild(chip);
-      top.appendChild(el("span", "pc-art-comp", it.name));
-      top.appendChild(el("span", "pc-art-stade", stadeInfo(c.stade).nom));
-      card.appendChild(top);
-
-      // l'art, au stade qui l'ouvre — et un art DÉJÀ rédigé reste visible et
-      // éditable même si le stade ne l'ouvre plus (même échappatoire que les
-      // passifs : les données du joueur ne disparaissent jamais en silence).
-      // Il n'entre dans l'état qu'à la première frappe : un art resté vierge
-      // ne doit pas générer d'écriture (Attributes Roll20) à la simple
-      // ouverture de la fiche.
-      if (stadeInfo(c.stade).art || porteArt(c)) {
-        var a = c.art || { name: "", desc: "" };
-        var keep = function () { c.art = a; };
-        var head = el("div", "pc-av-head");
-        var nm = el("input", "nm pc-edit-field");
-        nm.type = "text"; nm.placeholder = "Nom du passif"; nm.value = a.name || "";
-        nm.addEventListener("input", function () { a.name = nm.value; keep(); save(); });
-        head.appendChild(nm);
-
-        // coût de l'art, à droite de son nom : rien par défaut (il vient avec
-        // son stade), une valeur le force
-        var aCout = el("span", "pc-tech-cout pc-edit-only");
-        var aIn = el("input");
-        aIn.type = "number"; aIn.min = "0"; aIn.step = "5";
-        aIn.placeholder = "0";
-        aIn.value = (a.cout === null || a.cout === undefined) ? "" : a.cout;
-        aIn.addEventListener("input", function () {
-          var v = parseFloat(aIn.value);
-          if (isFinite(v)) a.cout = clamp(Math.floor(v), 0, 9999);
-          else delete a.cout;
-          keep();
-          refresh();
-        });
-        aCout.title = "Coût de l'art — vide = 0 xp (il vient avec son stade) ; une valeur le force.";
-        aCout.appendChild(aIn);
-        aCout.appendChild(el("span", "u", "xp"));
-        head.appendChild(aCout);
-        // la compétence tient dans le titre : la carte n'a plus de colonne de
-        // libellé, sa description occupe toute la largeur
-        head.appendChild(chatBtn(
-          function () { return "Passif — " + (a.name || it.name) + " (" + it.name + ")"; },
-          function () { return [["", a.desc]]; }));
-        head.appendChild(miniBtn("✕", "Effacer cet art", function () {
-          // un texte rédigé ne part pas sur un simple clic (le ✕ jouxte Chat)
-          if ((String(a.name || "").trim() || String(a.desc || "").trim()) &&
-              !confirm("Effacer l'art « " + (a.name || it.name) + " » et sa description ?")) return;
-          delete c.art;
-          refresh();
-          render();
-        }, "danger pc-edit-only"));
-        card.appendChild(head);
-
-        var d = el("textarea", "pc-notes pc-edit-field");
-        d.rows = 5;
-        d.placeholder = "Effet";
-        d.value = a.desc || "";
-        d.addEventListener("input", function () { a.desc = d.value; keep(); save(); });
-        card.appendChild(d);
-      }
-
-      // les passifs, dès le stade qui les ouvre
-      var techBox = el("div", "pc-techniques");
-      card.appendChild(techBox);
-      function renderTechs() {
-        var cc = state.comps[it.key];
-        techBox.innerHTML = "";
-        // même échappatoire que compXp et artComps : des passifs EXISTANTS
-        // restent lisibles, éditables et supprimables même si le stade courant
-        // ne les ouvre plus (fiche migrée : leur stade d'ouverture a bougé)
-        if (!cc || (!stadeInfo(cc.stade).techniques && !(cc.techniques && cc.techniques.length))) return;
-        cc.techniques.forEach(function (t, i) {
-          var tCard = el("div", "pc-av pc-technique");
-          var tHead = el("div", "pc-av-head");
-          var tNm = el("input", "nm pc-edit-field");
-          tNm.type = "text"; tNm.placeholder = "Nom du passif"; tNm.value = t.name || "";
-          tNm.addEventListener("input", function () { t.name = tNm.value; state.comps[it.key] = cc; save(); });
-          tHead.appendChild(tNm);
-
-          // coût du passif, à droite du nom : vide = tarif de base, une valeur
-          // le force (décision du MJ, passif hors barème)
-          var tCout = el("span", "pc-tech-cout pc-edit-only");
-          var cIn = el("input");
-          cIn.type = "number"; cIn.min = "0"; cIn.step = "5";
-          cIn.value = (t.cout === null || t.cout === undefined) ? "" : t.cout;
-          cIn.addEventListener("input", function () {
-            var v = parseFloat(cIn.value);
-            if (isFinite(v)) t.cout = clamp(Math.floor(v), 0, 9999);
-            else delete t.cout;
-            state.comps[it.key] = cc;
-            refresh();
-          });
-          tCout.appendChild(cIn);
-          tCout.appendChild(el("span", "u", "xp"));
-          // état posé ICI (renderTechs se rejoue à chaque ajout, retrait ou
-          // changement de stade) : un hook global fuirait, cette fonction
-          // n'étant pas vidée par mount()
-          cIn.placeholder = String(DATA.xpParStade);
-          tCout.title = "Coût de ce passif — vide = " + DATA.xpParStade +
-                        " xp (tarif de base) ; une valeur le force.";
-          tHead.appendChild(tCout);
-          tHead.appendChild(chatBtn(
-            function () { return "Passif — " + (t.name || it.name) + " (" + it.name + ")"; },
-            function () { return [["", t.desc]]; }));
-          tHead.appendChild(miniBtn("✕", "Retirer ce passif", function () {
-            if ((String(t.name || "").trim() || String(t.desc || "").trim()) &&
-                !confirm("Retirer le passif « " + (t.name || "sans nom") + " » ?")) return;
-            cc.techniques.splice(i, 1); state.comps[it.key] = cc; refresh(); renderTechs();
-          }, "danger pc-edit-only"));
-          tCard.appendChild(tHead);
-          var tD = el("textarea", "pc-notes pc-edit-field");
-          tD.rows = 3;
-          tD.placeholder = "Effet";
-          tD.value = t.desc || "";
-          tD.addEventListener("input", function () { t.desc = tD.value; state.comps[it.key] = cc; save(); });
-          tCard.appendChild(tD);
-          techBox.appendChild(tCard);
-        });
-        // en acheter de NOUVEAUX reste réservé au stade qui les ouvre
-        if (!stadeInfo(cc.stade).techniques) { applyEdit(b, "arts"); return; }
-        // le coût annoncé est celui d'un passif neuf : le tarif de base
-        // (l'art de la compétence est repris dans la comparaison, sinon son
-        // coût forcé fausserait la différence)
-        function avecPassifNeuf() {
-          return { stade: cc.stade, art: cc.art, techniques: cc.techniques.concat([{ name: "", desc: "" }]) };
-        }
-        var prochaine = compXp(avecPassifNeuf()) - compXp(cc);
-        techBox.appendChild(miniBtn("+ passif (" + prochaine + " xp)", null, function () {
-          var test = avecPassifNeuf();
-          var delta = compXp(test) - compXp(cc);
-          if (delta > 0 && xpRestant() < delta) { flash("XP insuffisant."); return; }
-          if (delta > 0 && compXp(test) > compCap()) { flash("Pas plus d'un quart de l'xp total (" + compCap() + " xp) dans une seule compétence."); return; }
-          cc.techniques.push({ name: "", desc: "" }); state.comps[it.key] = cc; refresh(); renderTechs();
-        }, "pc-edit-only"));
-        applyEdit(b, "arts");
-      }
-      renderTechs();
-      return card;
-    }
-
-    function render() {
-      box.innerHTML = "";
-      var items = artComps();
-      if (!items.length) {
-        var nom = artStadeNom();
-        box.appendChild(el("div", "pc-empty",
-          nom ? "Aucune compétence n'a atteint le stade " + nom + "." : "Aucun stade n'ouvre de passif ou d'art."));
-        return;
-      }
-      items.forEach(function (it) { box.appendChild(artCard(it)); });
-      applyEdit(b, "arts");
-    }
-
-    // reconstruire seulement quand les compétences éligibles ou leur stade
-    // changent : les frappes (save sans refresh) ne détruisent pas le focus
-    var lastSig = null;
+    // Les lignes sont détruites et refaites à chaque ajout ou retrait ; le
+    // registre du module, lui, survit au geste. UNE SEULE fonction y entre, qui
+    // rappelle celles des lignes du moment : sans ce détour, les
+    // rafraîchissements des lignes effacées s'y empileraient, chacun tenant une
+    // spécialité que l'état ne porte plus.
+    var lignes = [];
     hooks.push(function () {
-      var sig = artComps().map(function (it) {
-        var c = state.comps[it.key];
-        return it.key + ":" + (c ? c.stade : 0);
-      }).join("|");
-      if (sig !== lastSig) { lastSig = sig; render(); }
+      for (var i = 0; i < lignes.length; i++) lignes[i]();
     });
+
+    // Un sélecteur de sigle. LE SIGLE EST LA VALEUR : c'est lui que l'état
+    // garde et que les calculs lisent ; le nom entier n'est là que pour
+    // choisir. La liste vient des règles, donc une caractéristique renommée
+    // arrive ici sans qu'on rouvre ce fichier.
+    function choixSigle(codes, nomDe, vide, lire, ecrire) {
+      var s = el("select", "pc-select pc-edit-field");
+      var neant = el("option", null, vide);
+      neant.value = "";
+      s.appendChild(neant);
+      codes.forEach(function (c) {
+        var o = el("option", null, c + " — " + nomDe(c));
+        o.value = c;
+        s.appendChild(o);
+      });
+      s.value = lire() || "";
+      s.addEventListener("change", function () { ecrire(s.value); refresh(); });
+      return s;
+    }
+
+    function ligne(it) {
+      // la spécialité VIVANTE, et non l'objet capturé au montage : la liste
+      // peut avoir bougé sous la ligne entre deux rendus
+      var spe = it.spe;
+      var row = el("div", "pc-crow");
+
+      var top = el("div", "pc-crow-top");
+      // le couple « caractéristique · compétence » tient la place du sigle
+      // d'une caractéristique : c'est ce qu'on lit en premier pour savoir ce
+      // que la ligne teste
+      var chip = el("span", "pc-abbr", "");
+      top.appendChild(chip);
+      // LE NOM COMPTE POUR LES CALCULS : trois formules des règles vont
+      // chercher une spécialité par son nom. Il se saisit donc tel quel, sans
+      // capitale forcée ni correction, et l'infobulle dit lesquels sont lus.
+      var nom = el("input", "nm pc-edit-field");
+      nom.type = "text";
+      nom.placeholder = "Nom de la spécialité";
+      nom.title = "Le nom est lu par les règles : « PV » s'ajoute aux points de vie, " +
+                  "« Récupération » et « Esquive » sont reprises par leurs formules.";
+      nom.value = spe.nom || "";
+      nom.addEventListener("input", function () { spe.nom = nom.value; refresh(); });
+      top.appendChild(nom);
+      var val = el("span", "pc-cval pc-rollable", "");
+      val.addEventListener("click", function () {
+        // sans caractéristique, la limite vaut zéro et le jet ne rendrait
+        // jamais que zéro : le dire vaut mieux que de le lancer
+        if (!spe.carac) { flash("Cette spécialité ne dit pas de quelle caractéristique elle tient."); return; }
+        doJet(spe.nom || "Spécialité", spe.carac, spe.comp, spe);
+      });
+      top.appendChild(val);
+      top.appendChild(miniBtn("✕", "Retirer cette spécialité", function () {
+        // des points sont de l'xp dépensé : on ne les efface pas sur un clic
+        // malheureux sans demander
+        if (spe.pts &&
+            !confirm("Retirer « " + (spe.nom || "sans nom") + " » et ses " + spe.pts + " points ?")) return;
+        state.specialites.splice(it.index, 1);
+        rendu();
+        refresh();
+        if (optCompsRebuild) optCompsRebuild();   // sa ligne quitte aussi le bloc des Options
+      }, "danger pc-edit-only"));
+      row.appendChild(top);
+
+      // PTS, LIM et XP restent lisibles rouage fermé, comme sur une
+      // caractéristique : le coût est nommé ici parce qu'un point de
+      // spécialité ne coûte pas un point d'xp, et qu'on l'oublierait.
+      var meta = el("div", "pc-kv");
+      meta.appendChild(el("span", "k", "PTS"));
+      var vPts = el("span", "max", "");
+      meta.appendChild(vPts);
+      meta.appendChild(el("span", "k", "LIM"));
+      var vLim = el("span", "max", "");
+      meta.appendChild(vLim);
+      meta.appendChild(el("span", "sp"));
+      meta.appendChild(el("span", "k", "XP"));
+      var vXp = el("span", "max", "");
+      meta.appendChild(vXp);
+      row.appendChild(meta);
+
+      var bot = el("div", "pc-crow-bot pc-edit-only");
+      bot.appendChild(el("span", "lbl", "Carac"));
+      bot.appendChild(choixSigle(champs(), function (c) { return caracInfo(c).nom; },
+        "— caractéristique —",
+        function () { return spe.carac; },
+        function (v) { spe.carac = v; }));
+      bot.appendChild(el("span", "lbl", "Compétence"));
+      bot.appendChild(choixSigle(champsComp(), function (c) { return compInfo(c).nom; },
+        "— compétence —",
+        function () { return spe.comp; },
+        function (v) { spe.comp = v; }));
+      bot.appendChild(el("span", "lbl", "Points"));
+      bot.appendChild(stepper(
+        function () { return spe.pts || 0; },
+        function (v) {
+          // le plafond ne bloque que les HAUSSES, comme partout ailleurs : il
+          // tient de la limite d'une caractéristique et du plafond d'une
+          // compétence, qui bougent tous deux sous les pieds de la spécialité
+          var plaf = spePlafond(spe);
+          var haut = Math.max(plaf, spe.pts || 0);
+          var n = Math.round(v);
+          if (n > haut) {
+            flash(haut === plaf
+              ? "Plafond de " + plaf + " : la limite de la caractéristique et le plafond de la compétence le fixent."
+              : "Cette spécialité est déjà au-delà de son plafond (" + plaf + ") : elle ne peut que redescendre.");
+            n = haut;
+          }
+          spe.pts = Math.max(0, n);
+        }, 1, "points", lignes));
+      row.appendChild(bot);
+
+      lignes.push(function () {
+        var plaf = spePlafond(spe);
+        var mord = (spe.pts || 0) > plaf;
+        var d = (spe.mod || 0) + (spe.mod2 || 0);
+        var force = spe.force !== null && spe.force !== undefined;
+        var xpF = spe.xpForce !== null && spe.xpForce !== undefined;
+        var mal = enduranceMalus();
+        // la charge ne mord que sur l'esquive, et l'esquive est une spécialité :
+        // un −100 apparu sans être nommé passerait pour une faute de calcul
+        var ch = speMalusCharge(spe);
+        var lim = spe.carac ? caracLim(spe.carac) : 0;
+        var bonus = jetBonus(spe.carac, spe.comp, spe);
+        chip.textContent = (spe.carac || "—") + " · " + (spe.comp || "—");
+        chip.title = (spe.carac ? caracInfo(spe.carac).nom : "aucune caractéristique") +
+                     " · " + (spe.comp ? compInfo(spe.comp).nom : "aucune compétence");
+        val.textContent = spe.carac ? sign(bonus) : "—";
+        val.classList.toggle("adj", force || d !== 0 || mord || mal !== 0 || ch !== 0);
+        val.title = !spe.carac
+          ? "Choisir une caractéristique (rouage) : c'est elle qui donne le MOD et la limite du jet."
+          : (force
+               ? "Points forcés (Options)"
+               : "Points " + (spe.pts || 0) +
+                 (mord ? ", plafonnés à " + plaf : "") +
+                 (d ? " · modificateur (Options) " + sign(d) : "")) +
+            " · " + spe.carac + " " + sign(caracMod(spe.carac)) +
+            (spe.comp ? " · " + spe.comp + " " + sign(compPts(spe.comp)) : "") +
+            (ch ? " · charge " + sign(ch) : "") +
+            (mal ? " · endurance " + sign(-mal) : "") +
+            " — clic : lancer " + DE_DEFAUT + " " + sign(bonus) +
+            ", plafonné à " + lim;
+        vPts.textContent = spePts(spe) + " / " + plaf;
+        vPts.classList.toggle("adj", force || d !== 0 || mord);
+        vPts.title = "Points investis, et leur plafond : la limite de la caractéristique, " +
+                     "moins ce que le MOD et la compétence prennent déjà.";
+        vLim.textContent = spe.carac ? String(lim) : "—";
+        vLim.title = spe.carac
+          ? "Aucun jet de cette spécialité ne dépasse ce résultat."
+          : "Sans caractéristique, la spécialité n'a pas de limite à opposer.";
+        vXp.textContent = String(speXp(spe));
+        vXp.classList.toggle("adj", xpF);
+        vXp.title = xpF
+          ? "Coût forcé (Options)"
+          : "Un point de spécialité coûte " + repli("xpSpe") + " xp.";
+      });
+      return row;
+    }
+
+    function rendu() {
+      box.innerHTML = "";
+      // les fonctions des lignes effacées n'ont plus rien à rafraîchir ; le
+      // tableau est vidé SUR PLACE, celui du registre étant le même objet
+      lignes.length = 0;
+      allSpes().forEach(function (it) { box.appendChild(ligne(it)); });
+      if (!state.specialites.length)
+        box.appendChild(el("div", "pc-empty", "Aucune spécialité."));
+      // LES QUATRE NOMS QUE LES FORMULES APPELLENT. Aucune spécialité n'est
+      // proposée d'office — chacun crée les siennes — mais quatre sont lues PAR
+      // LEUR NOM : les PV en ajoutent une, la récupération en EST une,
+      // l'obstination en lance une, la charge en pénalise une. Écrit autrement,
+      // le nom ne répond pas, et rien à l'écran ne le dirait. On les rappelle
+      // donc ici, et on marque celles qui manquent encore.
+      var nommees = regles().speNommees || [];
+      if (nommees.length) {
+        var absentes = nommees.filter(function (n) { return !speParNom(n); });
+        var note = el("div", "pc-block-note");
+        note.textContent = "Noms lus par les règles : " + nommees.join(", ") +
+          (absentes.length ? " — manquent : " + absentes.join(", ") : " — toutes présentes");
+        note.title = "Ces spécialités-là ne comptent que si leur nom est écrit exactement ainsi.";
+        box.appendChild(note);
+      }
+      box.appendChild(miniBtn("+ Ajouter une spécialité", null, function () {
+        state.specialites.push(blankSpe());
+        rendu();
+        refresh();
+        if (optCompsRebuild) optCompsRebuild();   // la nouvelle gagne sa ligne dans Options
+      }, "pc-edit-only"));
+      // les lignes qui viennent de naître doivent obéir au verrou du bloc :
+      // rien ne le leur dirait avant le prochain rafraîchissement
+      applyEdit(b, "specialites");
+    }
+    rendu();
     return b;
   }
 
@@ -3843,20 +3953,34 @@
           function () {
             // valeurs courtes étiquetées, propriétés (texte long) pleine largeur
             return kind === "arme"
-              ? [["Poids", it.poids], ["Dégâts", it.degats], ["Reach", it.reach], ["", it.props]]
-              : [["Poids", it.poids], ["Invu", it.invu], ["Zones protégées", it.zones]];
+              ? [["Poids", it.poids], ["Ini", it.ini], ["Dégâts", it.degats], ["Reach", it.reach], ["", it.props]]
+              : [["Poids", it.poids], ["Ini", it.ini], ["Invu", it.invu], ["Zones protégées", it.zones]];
           }));
         head.appendChild(miniBtn("✕", "Retirer", function () { items.splice(idx, 1); render(); refresh(); }, "danger pc-edit-only"));
         card.appendChild(head);
 
         var line = el("div", "pc-arme-line");
         line.appendChild(eqField("Poids", it, "poids"));
+        // L'INITIATIVE PORTE DEUX RÈGLES DANS UN SEUL CHAMP, et c'est la case
+        // « porté » qui les départage : un bonus ne compte QUE si l'objet est
+        // porté activement, un malus compte TOUJOURS, même au fond du sac. Le
+        // calcul est dans equipInitBonus() ; ici on ne fait que saisir.
+        line.appendChild(eqField("Ini", it, "ini"));
         if (kind === "arme") {
           line.appendChild(eqField("Dégâts", it, "degats"));
           line.appendChild(eqField("Reach", it, "reach"));
         } else {
           line.appendChild(eqField("Invu", it, "invu"));
         }
+        var porte = el("label", "pc-eq-porte");
+        var pcb = el("input", null);
+        pcb.type = "checkbox";
+        pcb.checked = it.porte !== false;
+        pcb.title = kind === "arme" ? "Arme en main" : "Armure portée";
+        pcb.addEventListener("change", function () { it.porte = pcb.checked; save(); refresh(); });
+        porte.appendChild(pcb);
+        porte.appendChild(el("span", null, kind === "arme" ? "En main" : "Portée"));
+        line.appendChild(porte);
         var chip = el("span", "pc-roll-chip", "Jet");
         chip.title = kind === "arme" ? "Lancer les dégâts" : "Lancer l'invu";
         chip.addEventListener("click", function () {
@@ -4865,6 +4989,12 @@
       auto, titre);
   }
 
+  // ---- modificateurs de caractéristiques ----
+  // Les HUIT des règles, dans leur ordre de page. Même grille au dixième de
+  // rem près que le bloc des compétences : régler une caractéristique et
+  // régler une compétence sont le même geste pour le MJ, il n'a pas à
+  // apprendre deux dispositions. Ni filtre ni puces ici : sur huit lignes
+  // fixées par les règles, ils ne serviraient à rien.
   function buildModCaracs() {
     var bM = block("Modificateurs de caractéristiques");
     var wrap = el("div", "pc-optcomp-wrap");
@@ -4875,7 +5005,7 @@
     var grp = el("div", "pc-optcomp-row grp");
     grp.appendChild(el("span"));
     var gV = el("span", "g", "Valeur");
-    gV.title = "Ce que vaut la caractéristique quand on la lance";
+    gV.title = "Ce que vaut la caractéristique, d'où se lisent son MOD et sa LIM";
     grp.appendChild(gV);
     grp.appendChild(el("span", "rule"));
     var gX = el("span", "g", "Coût en xp");
@@ -4899,74 +5029,84 @@
     });
     box.appendChild(head);
 
-    CHAMPS.forEach(function (name, i) {
-      if (!DATA.caracs.some(function (cc) { return cc.name === name; })) return;
+    champs().forEach(function (c, i) {
       var row = el("div", "pc-optcomp-row pc-mods-host" + (i % 2 === 1 ? " odd" : ""));
       var nameBox = el("span", "pc-comp-name");
-      var chip = el("span", "pc-abbr", ABBR[name] || name);
-      chip.title = name;
+      var chip = el("span", "pc-abbr", c);
+      chip.title = caracInfo(c).nom;
       nameBox.appendChild(chip);
       row.appendChild(nameBox);
 
-      row.appendChild(champForce(state.caracsForce, name,
-        function () {
-          var v = Math.min(state.caracsBase[name] + CARAC_PAS * state.caracsXp[name],
-                           caracPlafond(name));
-          return v + (state.caracsMod[name] || 0) + (state.caracsMod2[name] || 0);
-        },
-        "Total forcé — vide = total calculé (création + achats + modificateurs)."));
-      row.appendChild(champMod(state.caracsMod, name, 999,
+      // Le repère du champ forcé est caracTotal() lui-même, et non la formule
+      // refaite ici : un champ VIDE est justement le cas non forcé, celui où
+      // caracTotal() rend déjà ce que la valeur, le plafond et les
+      // modificateurs donnent. Le repère ne paraît d'ailleurs QUE là.
+      // Recopier le calcul en dupliquerait une règle pour rien.
+      row.appendChild(champForce(state.caracsForce, c,
+        function () { return caracTotal(c); },
+        "Total forcé — vide = total calculé (valeur, plafond, modificateurs)."));
+      row.appendChild(champMod(state.caracsMod, c, 999,
         "Premier modificateur du total — vide = aucun."));
-      row.appendChild(champMod(state.caracsMod2, name, 999,
+      row.appendChild(champMod(state.caracsMod2, c, 999,
         "Second modificateur du total — vide = aucun."));
       var tot = el("span", "pc-comp-total", "");
       row.appendChild(tot);
 
       row.appendChild(el("span", "rule"));
-      row.appendChild(champForce(state.caracsXpForce, name,
-        function () { return caracXpAuto(name); },
-        "Coût en xp forcé — vide = coût calculé (achats et modificateurs)."));
-      row.appendChild(champMod(state.caracsXpMod, name, 9999,
+      row.appendChild(champForce(state.caracsXpForce, c,
+        function () { return caracXpAuto(c); },
+        "Coût en xp forcé — vide = coût calculé (barème des règles et modificateurs)."));
+      row.appendChild(champMod(state.caracsXpMod, c, 9999,
         "Premier modificateur du coût en xp — vide = aucun."));
-      row.appendChild(champMod(state.caracsXpMod2, name, 9999,
+      row.appendChild(champMod(state.caracsXpMod2, c, 9999,
         "Second modificateur du coût en xp — vide = aucun."));
       var cout = el("span", "pc-comp-total", "");
       row.appendChild(cout);
 
       hooks.push(function () {
-        var d = (state.caracsMod[name] || 0) + (state.caracsMod2[name] || 0);
-        var force = state.caracsForce[name];
-        tot.textContent = String(caracTotal(name));
-        tot.classList.toggle("adj", d !== 0 || force !== undefined);
-        tot.title = force !== undefined
-          ? "Total forcé à " + force
-          : "création " + state.caracsBase[name] +
-            " · achats " + (CARAC_PAS * state.caracsXp[name]) +
-            (d ? " · modificateurs " + sign(d) : "");
+        var d = (state.caracsMod[c] || 0) + (state.caracsMod2[c] || 0);
+        var f = state.caracsForce[c];
+        tot.textContent = String(caracTotal(c));
+        tot.classList.toggle("adj", d !== 0 || f !== undefined);
+        // Ce que le MJ règle est une valeur de 0 à 20 ; ce que le joueur
+        // LANCE, ce sont le MOD et la LIM de cette ligne-là. Les deux
+        // s'affichent donc dans la même infobulle, sinon il faut aller les
+        // chercher dans la table des règles pour savoir ce qu'on vient de
+        // changer.
+        tot.title = (f !== undefined
+          ? "Total forcé à " + f
+          : "valeur " + caracBase(c) + " · plafond " + caracPlafond(c) +
+            (d ? " · modificateurs " + sign(d) : "")) +
+          " — MOD " + sign(caracMod(c)) + ", LIM " + caracLim(c);
 
-        var xf = state.caracsXpForce[name];
-        var xm = (state.caracsXpMod[name] || 0) + (state.caracsXpMod2[name] || 0);
-        var xp = caracXp(name);
+        var xf = state.caracsXpForce[c];
+        var xm = (state.caracsXpMod[c] || 0) + (state.caracsXpMod2[c] || 0);
+        var xp = caracXp(c);
         cout.textContent = xp + " xp";
         cout.classList.toggle("zero", !xp);
         cout.classList.toggle("adj", xf !== undefined || xm !== 0);
         cout.title = xf !== undefined
-          ? "Coût forcé à " + xf + " xp (calculé : " + caracXpAuto(name) + " xp)"
-          : "Achats d'xp" + (xm ? " · modificateurs " + sign(xm) + " xp" : "");
+          ? "Coût forcé à " + xf + " xp (calculé : " + caracXpAuto(c) + " xp)"
+          : "XP cumulé de la valeur " + caracBase(c) +
+            (xm ? " · modificateurs " + sign(xm) + " xp" : "");
 
         row.classList.toggle("on", d !== 0 || xm !== 0 ||
-                             force !== undefined || xf !== undefined);
+                             f !== undefined || xf !== undefined);
       });
       box.appendChild(row);
     });
     return bM;
   }
 
-  // ---- création : plafond des caractéristiques et budget de points ----
-  // Ce bloc a remplacé la case « Sans limite » (2026-08-04), qui ne savait que
-  // lever le plafond, et pour les trois caractéristiques à la fois. Mêmes
-  // colonnes que les deux autres grilles de l'onglet, à quatre colonnes au lieu
-  // de dix : un demi-bloc suffit ici (il n'y a pas de coût en xp à régler).
+  // ---- création : le prestige, et le plafond qu'il pose ----
+  // Ce bloc réglait un budget de « points de création » : il n'y en a plus.
+  // MIA ne distribue pas de points au départ, il RANGE le personnage : le
+  // prestige dit son rang, et ce rang plafonne chacune de ses
+  // caractéristiques. Ce sont donc ces deux choses-là que le MJ arbitre ici,
+  // et rien d'autre — la valeur achetée, elle, appartient au joueur et se
+  // règle sur la Fiche.
+  // Mêmes colonnes que les deux autres grilles de l'onglet, à quatre au lieu
+  // de dix : un demi-bloc suffit ici, il n'y a pas de coût en xp à régler.
   function buildCreation() {
     var bC = block("Création");
     var wrap = el("div", "pc-optcomp-wrap");
@@ -4976,7 +5116,7 @@
 
     // Un seul entête pour toute la grille, en tête : les deux bandes qui
     // suivent nomment les rangées, pas les colonnes. D'où « Valeur » et non
-    // « Plafond », qui aurait menti sur la rangée des points de création.
+    // « Plafond », qui aurait menti sur la rangée du prestige.
     var head = el("div", "pc-optcomp-row quatre head");
     [["Réglage", "Ce que la rangée règle"],
      ["Forcé", "Valeur forcée — vide = valeur calculée"],
@@ -4989,301 +5129,411 @@
     box.appendChild(head);
 
     // Les deux sections se titrent comme les champs du bloc des compétences
-    // (« BODY ———— ») : un titre de RANGÉES, à gauche, filet jusqu'au bord.
-    // La bande centrée des autres grilles ne convenait pas ici : elle titre des
-    // COLONNES, et se lisait comme un second entête posé sur les chiffres.
+    // (« Compétences ———— ») : un titre de RANGÉES, à gauche, filet jusqu'au
+    // bord. La bande centrée des autres grilles ne convenait pas ici : elle
+    // titre des COLONNES, et se lisait comme un second entête posé sur les
+    // chiffres.
     function bande(titre, aide) {
       var t = el("div", "pc-comp-champ", titre);
       t.title = aide;
       box.appendChild(t);
     }
 
+    // LE PRESTIGE D'ABORD, le plafond ensuite : le second n'est que le premier
+    // décalé, et la grille se lisait à l'envers quand la cause venait après
+    // l'effet.
+    bande("Prestige",
+          "Le rang du personnage, qui plafonne chacune de ses caractéristiques "
+          + "(0 à " + repli("prestigeMax") + " dans les règles)");
+    var rowP = el("div", "pc-optcomp-row quatre");
+    var nomP = el("span", "pc-comp-name");
+    nomP.appendChild(el("span", "pc-comp-label", "Prestige"));
+    rowP.appendChild(nomP);
+    // Le prestige n'est pas une entrée de table mais une clé de l'état : son
+    // forçage vaut null quand il est absent, là où une table n'a simplement
+    // pas la clé. D'où la forme LIBRE des deux champs, et la traduction
+    // null ↔ vide faite ici.
+    rowP.appendChild(champForceVal(
+      function () { return state.prestigeForce === null ? undefined : state.prestigeForce; },
+      function (v) { state.prestigeForce = v === undefined ? null : v; },
+      prestigeAuto,
+      "Prestige forcé — vide = prestige calculé (acquis + modificateur)."));
+    rowP.appendChild(champModVal(
+      function () { return state.prestigeMod; },
+      function (v) { state.prestigeMod = v; }, 999,
+      "Modificateur du prestige — vide = aucun."));
+    var totP = el("span", "pc-comp-total", "");
+    rowP.appendChild(totP);
+    hooks.push(function () {
+      var m = state.prestigeMod || 0;
+      var f = state.prestigeForce;
+      totP.textContent = String(prestige());
+      totP.classList.toggle("adj", m !== 0 || f !== null);
+      totP.title = f !== null
+        ? "Prestige forcé à " + f
+        : "acquis " + (state.prestige || 0) + (m ? " · modificateur " + sign(m) : "");
+      rowP.classList.toggle("on", m !== 0 || f !== null);
+    });
+    box.appendChild(rowP);
+
     bande("Plafond des caractéristiques",
-          "Ce que création + achats d'xp ne peuvent pas dépasser, "
-          + "caractéristique par caractéristique");
-    CHAMPS.forEach(function (name, i) {
-      if (!DATA.caracs.some(function (cc) { return cc.name === name; })) return;
+          "Ce qu'une caractéristique ne peut pas dépasser : le prestige, "
+          + "relevé ou abaissé caractéristique par caractéristique");
+    // « le plafond de Agilité » : les noms viennent des règles, on n'en connaît
+    // donc pas la liste d'avance et l'élision se décide ici, sur la lettre.
+    function de(nom) {
+      return (/^[aâàäeéèêëiîïoôöuùûü]/i.test(nom) ? "d'" : "de ") + nom;
+    }
+    champs().forEach(function (c, i) {
       var row = el("div", "pc-optcomp-row quatre" + (i % 2 === 1 ? " odd" : ""));
       var nameBox = el("span", "pc-comp-name");
-      var chip = el("span", "pc-abbr", ABBR[name] || name);
-      chip.title = name;
+      var chip = el("span", "pc-abbr", c);
+      chip.title = caracInfo(c).nom;
       nameBox.appendChild(chip);
       row.appendChild(nameBox);
 
-      row.appendChild(champForce(state.caracsPlafondForce, name,
-        function () { return caracPlafondAuto(name); },
-        "Plafond forcé — vide = plafond calculé (" + CARAC_MAX + " + modificateur)."));
+      row.appendChild(champForce(state.caracsPlafondForce, c,
+        function () { return caracPlafondAuto(c); },
+        "Plafond forcé — vide = plafond calculé (prestige + modificateur)."));
       row.appendChild(champModVal(
-        function () { return state.caracsPlafondMod[name]; },
-        function (v) { state.caracsPlafondMod[name] = v; }, 999,
-        "Modificateur du plafond de " + name + " — vide = aucun."));
+        function () { return state.caracsPlafondMod[c]; },
+        function (v) { state.caracsPlafondMod[c] = v; }, 999,
+        "Modificateur du plafond " + de(caracInfo(c).nom) + " — vide = aucun."));
       var tot = el("span", "pc-comp-total", "");
       row.appendChild(tot);
 
       hooks.push(function () {
-        var m = state.caracsPlafondMod[name] || 0;
-        var f = state.caracsPlafondForce[name];
-        tot.textContent = String(caracPlafond(name));
+        var m = state.caracsPlafondMod[c] || 0;
+        var f = state.caracsPlafondForce[c];
+        tot.textContent = String(caracPlafond(c));
         tot.classList.toggle("adj", m !== 0 || f !== undefined);
         tot.title = f !== undefined
           ? "Plafond forcé à " + f
-          : "barème " + CARAC_MAX + (m ? " · modificateur " + sign(m) : "");
+          : "prestige " + prestige() + (m ? " · modificateur " + sign(m) : "");
         row.classList.toggle("on", m !== 0 || f !== undefined);
       });
       box.appendChild(row);
     });
-
-    bande("Points de création",
-          "Le budget que la jauge « Création » de la Fiche mesure");
-    var rowP = el("div", "pc-optcomp-row quatre");
-    var nomP = el("span", "pc-comp-name");
-    nomP.appendChild(el("span", "pc-comp-label", "Points"));
-    rowP.appendChild(nomP);
-    rowP.appendChild(champForceVal(
-      function () { return state.ptsCreaForce === null ? undefined : state.ptsCreaForce; },
-      function (v) { state.ptsCreaForce = v === undefined ? null : v; },
-      ptsCreaAuto,
-      "Budget forcé — vide = budget calculé (" + PTS_CREATION + " + modificateur)."));
-    rowP.appendChild(champModVal(
-      function () { return state.ptsCreaMod; },
-      function (v) { state.ptsCreaMod = v; }, 999,
-      "Modificateur du budget de points de création — vide = aucun."));
-    var totP = el("span", "pc-comp-total", "");
-    rowP.appendChild(totP);
-    hooks.push(function () {
-      var m = state.ptsCreaMod || 0;
-      var f = state.ptsCreaForce;
-      totP.textContent = String(ptsCreaMax());
-      totP.classList.toggle("adj", m !== 0 || f !== null);
-      totP.title = f !== null
-        ? "Budget forcé à " + f
-        : "barème " + PTS_CREATION + (m ? " · modificateur " + sign(m) : "");
-      rowP.classList.toggle("on", m !== 0 || f !== null);
-    });
-    box.appendChild(rowP);
     return bC;
   }
 
-  // ---- modificateurs de compétences ----
-  // le pendant du bloc caractéristiques : UN modificateur par compétence
-  // (équipement, art, décision du MJ confondus), appliqué au total de la
-  // ligne sur la Fiche. Rebâti quand les compétences perso changent
-  // (optCompsRebuild, rappelé par l'ajout et la suppression) ; optHooks
-  // remplace hooks pour ces lignes, sinon chaque rebâti fuirait des hooks.
+  // ---- modificateurs de compétences et de spécialités ----
+  // Le pendant du bloc des caractéristiques, pour les HUIT compétences des
+  // règles et pour les SPÉCIALITÉS. Les deux ne se règlent pas de la même
+  // façon parce qu'elles ne sont pas de la même matière : les compétences sont
+  // une liste fermée, rangée par sigle dans l'état, tandis que les spécialités
+  // sont créées par le joueur, portent leurs leviers sur elles-mêmes, et vont
+  // et viennent. D'où le rebâti (optCompsRebuild, rappelé par le module qui
+  // les ajoute et les supprime) et optHooks, qui remplace hooks pour ces
+  // lignes : sans lui, chaque rebâti fuirait des fonctions de rafraîchissement.
   function buildOptComps() {
-    var bMC = block("Modificateurs de compétences");
-    // mêmes outils que la liste de la Fiche (filtre texte, champ, puces) et
-    // mêmes lignes, mais une grille plus large : nom | modificateurs | total
-    // forcé | total | modificateur de coût | coût forcé | coût.
+    var bMC = block("Modificateurs de compétences", "et spécialités");
+    // Le menu des champs et la puce « Personnalisées » ont disparu avec ce
+    // qu'ils réglaient : il n'y a plus ni champ, ni compétence inventée. Le
+    // filtre texte reste, et la puce « Investies » avec lui : les spécialités
+    // sont une liste libre, et rien ne dit qu'elle sera courte.
     var mcTools = el("div", "pc-comp-tools");
-    var mcLine1 = el("div", "row");
+    var mcLine = el("div", "row");
     var mcSearch = champFiltre(function () { return optFilter; },
                                function (v) { optFilter = v; }, null,
                                function () { optCompsRebuild(); });
-    if (mcSearch) mcLine1.appendChild(mcSearch);
-    if (filtreChampOn()) {
-      var mcChamp = el("select", "pc-select");
-      ["Tous les champs", "Body", "Mind", "Prestance"].forEach(function (ch) {
-        var o = el("option");
-        o.value = ch === "Tous les champs" ? "" : ch;
-        o.textContent = ch;
-        mcChamp.appendChild(o);
-      });
-      mcChamp.value = optChamp;
-      mcChamp.addEventListener("change", function () { optChamp = mcChamp.value; optCompsRebuild(); });
-      mcLine1.appendChild(mcChamp);
-    }
-    if (mcLine1.children.length) mcTools.appendChild(mcLine1);
-    var mcLine2 = el("div", "row");
-    var mcPerso = el("span", "pc-chip");
-    mcPerso.textContent = "Personnalisées";
-    mcPerso.title = "Décoché : seules les compétences de base du jeu sont affichées.";
-    mcPerso.classList.toggle("on", optPerso);
-    mcPerso.addEventListener("click", function () {
-      optPerso = !optPerso;
-      mcPerso.classList.toggle("on", optPerso);
-      optCompsRebuild();
-    });
-    mcLine2.appendChild(mcPerso);
+    if (mcSearch) mcLine.appendChild(mcSearch);
     var mcOnly = el("span", "pc-chip");
     mcOnly.textContent = "Investies";
-    mcOnly.title = "N'afficher que les compétences où un stade, un passif ou un modificateur est posé.";
+    mcOnly.title = "N'afficher que les lignes qui portent des points ou un réglage.";
     mcOnly.classList.toggle("on", optOnly);
     mcOnly.addEventListener("click", function () {
       optOnly = !optOnly;
       mcOnly.classList.toggle("on", optOnly);
       optCompsRebuild();
     });
-    mcLine2.appendChild(mcOnly);
-    mcTools.appendChild(mcLine2);
+    mcLine.appendChild(mcOnly);
+    mcTools.appendChild(mcLine);
     bMC.appendChild(mcTools);
     // la grille des leviers est large : elle défile dans son cadre
     var mcWrap = el("div", "pc-optcomp-wrap");
     var mcBox = el("div");
     mcWrap.appendChild(mcBox);
     bMC.appendChild(mcWrap);
-    // Modificateur d'une ligne de compétence : un champ NU, sans − ni +. Sur
-    // cinquante lignes de sept colonnes, les boutons mangeaient la place et
-    // n'apportaient rien qu'on ne fasse au clavier. Les caractéristiques,
-    // elles, gardent leurs boutons : elles ne sont que trois.
-    function modField(map, key, borne, titre) {
+
+    // Les deux champs de la grille, en version optHooks : ceux de
+    // commun-champs.js écrivent dans « hooks », or ces lignes-ci sont détruites
+    // et recréées à chaque rebâti. Chacun existe en forme LIBRE (lire/écrire),
+    // parce qu'une spécialité n'est PAS une entrée de table : son forçage est
+    // une propriété de l'objet, et il vaut null quand il est absent, là où une
+    // table n'a tout simplement pas la clé. Les deux formes de table ne sont
+    // donc qu'un habillage de la forme libre.
+    //
+    // Modificateur : un champ NU, sans − ni +. Sur une grille de dix colonnes,
+    // les boutons mangeaient la place et n'apportaient rien qu'on ne fasse au
+    // clavier.
+    function optMod(lire, ecrire, borne, titre) {
       var inp = el("input", "pc-num modif");
       inp.type = "number"; inp.step = String(MOD_PAS);
       inp.title = titre;
       inp.addEventListener("input", function () {
         var v = parseFloat(inp.value);
-        if (isFinite(v) && clamp(Math.round(v), -borne, borne)) map[key] = clamp(Math.round(v), -borne, borne);
-        else delete map[key];   // vide ou zéro = pas d'entrée dans l'état
+        ecrire(isFinite(v) ? clamp(Math.round(v), -borne, borne) : 0);
         refresh();
       });
       optHooks.push(function () {
-        if (document.activeElement !== inp) inp.value = map[key] === undefined ? "" : map[key];
+        if (document.activeElement !== inp) inp.value = lire() ? lire() : "";
       });
       return inp;
     }
+    function optModTable(map, cle, borne, titre) {
+      return optMod(function () { return map[cle]; },
+                    function (v) { map[cle] = v; }, borne, titre);
+    }
     // un champ de forçage : vide = valeur calculée, une valeur la remplace
-    function forceField(map, key, auto, titre) {
+    function optForce(lire, ecrire, auto, titre) {
       var inp = el("input", "force");
       inp.type = "number"; inp.step = "1";
       inp.title = titre;
       inp.addEventListener("input", function () {
         var v = parseFloat(inp.value);
-        if (isFinite(v)) map[key] = clamp(Math.round(v), -9999, 9999);
-        else delete map[key];
+        ecrire(isFinite(v) ? clamp(Math.round(v), -9999, 9999) : undefined);
         refresh();
       });
       optHooks.push(function () {
         inp.placeholder = String(auto());
-        if (document.activeElement !== inp) inp.value = map[key] === undefined ? "" : map[key];
+        var cur = lire();
+        if (document.activeElement !== inp) inp.value = cur === undefined ? "" : cur;
       });
       return inp;
     }
+    function optForceTable(map, cle, auto, titre) {
+      return optForce(function () { return map[cle]; },
+                      function (v) { if (v === undefined) delete map[cle]; else map[cle] = v; },
+                      auto, titre);
+    }
+    // le forçage d'une spécialité : même champ, mais null au lieu d'une clé
+    // absente. « lire » prend la spécialité VIVANTE et non celle capturée au
+    // montage, pour que la ligne écrive dans l'état même si la liste a bougé
+    // sous elle entre deux rebâtis.
+    function optForceSpe(vivante, cle, auto, titre) {
+      return optForce(
+        function () { var v = vivante()[cle]; return v === null ? undefined : v; },
+        function (v) { vivante()[cle] = v === undefined ? null : v; },
+        auto, titre);
+    }
+    function optModSpe(vivante, cle, borne, titre) {
+      return optMod(function () { return vivante()[cle]; },
+                    function (v) { vivante()[cle] = v; }, borne, titre);
+    }
+
+    // Deux rangées d'entête par section : les groupes (valeur | coût), puis les
+    // colonnes. Libellés courts — dix colonnes dans une demi-largeur ne
+    // laissent pas la place aux noms complets, que portent les infobulles. La
+    // colonne « rule » est un vrai filet : une colonne de la grille, en place
+    // sur CHAQUE rangée, qui court d'un bord à l'autre du module.
+    function entetes(quoi, aideValeur, cols) {
+      var grp = el("div", "pc-optcomp-row grp");
+      grp.appendChild(el("span"));
+      var gV = el("span", "g", "Valeur");
+      gV.title = aideValeur;
+      grp.appendChild(gV);
+      grp.appendChild(el("span", "rule"));
+      var gX = el("span", "g", "Coût en xp");
+      gX.title = "Ce que " + quoi + " coûte sur l'xp du personnage";
+      grp.appendChild(gX);
+      mcBox.appendChild(grp);
+
+      var head = el("div", "pc-optcomp-row head");
+      cols.forEach(function (h) {
+        if (!h) { head.appendChild(el("span", "rule")); return; }
+        var s = el("span", h[2] || null, h[0]);
+        s.title = h[1];
+        head.appendChild(s);
+      });
+      mcBox.appendChild(head);
+    }
+
     optCompsRebuild = function () {
       optHooks = [];
       mcBox.innerHTML = "";
       var flt = filtreDe(optFilter);
-      var shown = 0;
-      CHAMPS.forEach(function (carac) {
-        if (filtreChampOn() && optChamp && optChamp !== carac) return;
-        var items = allComps().filter(function (it) { return it.carac === carac; });
-        if (!optPerso) items = items.filter(function (it) { return !it.custom; });
-        if (flt) items = items.filter(function (it) { return it.name.toLowerCase().indexOf(flt) >= 0; });
-        if (optOnly) items = items.filter(compInvestie);
-        items.sort(function (a, b) { return a.name.localeCompare(b.name, "fr", { sensitivity: "base" }); });
-        if (!items.length) return;
-        mcBox.appendChild(el("div", "pc-comp-champ", carac));
-        // Deux rangées d'entête : les groupes (valeur | coût), puis les
-        // colonnes. Libellés courts — sept colonnes dans une demi-largeur ne
-        // laissent pas la place aux noms complets, que portent les infobulles.
-        // La colonne « rule » est un vrai filet : une colonne de la grille, en
-        // place sur CHAQUE rangée, qui court d'un bord à l'autre du module.
-        var grp = el("div", "pc-optcomp-row grp");
-        grp.appendChild(el("span"));
-        var gV = el("span", "g", "Valeur");
-        gV.title = "Ce que vaut la compétence quand on la lance";
-        grp.appendChild(gV);
-        grp.appendChild(el("span", "rule"));
-        var gX = el("span", "g", "Coût en xp");
-        gX.title = "Ce que la compétence coûte sur l'xp du personnage";
-        grp.appendChild(gX);
-        mcBox.appendChild(grp);
+      var comps = allComps();
+      var spes = allSpes();
+      if (flt) {
+        comps = comps.filter(function (it) { return it.name.toLowerCase().indexOf(flt) >= 0; });
+        spes = spes.filter(function (it) { return it.name.toLowerCase().indexOf(flt) >= 0; });
+      }
+      if (optOnly) {
+        comps = comps.filter(compInvestie);
+        spes = spes.filter(function (it) { return speInvestie(it.spe); });
+      }
+      // Aucun tri : l'ordre des compétences est celui de la page de règles, et
+      // celui des spécialités celui où le joueur les a créées. Les deux listes
+      // se retrouvent donc ici dans l'ordre où elles se lisent sur la Fiche.
 
-        var head = el("div", "pc-optcomp-row head");
-        [["Compétence", "Nom de la compétence"],
-         ["Forcé", "Total forcé — vide = total calculé"],
-         ["Modif.", "Deux modificateurs du total, qui s'additionnent", "duo"],
-         ["Total", "Total effectif de la compétence"],
-         null,
-         ["Forcé", "Coût en xp forcé — vide = coût calculé"],
-         ["Modif.", "Deux modificateurs du coût en xp, qui s'additionnent", "duo"],
-         ["Coût", "Coût effectif en xp"]].forEach(function (h) {
-          if (!h) { head.appendChild(el("span", "rule")); return; }
-          var s = el("span", h[2] || null, h[0]);
-          s.title = h[1];
-          head.appendChild(s);
-        });
-        mcBox.appendChild(head);
-        items.forEach(function (it, i) {
-          shown++;
+      if (comps.length) {
+        mcBox.appendChild(el("div", "pc-comp-champ", "Compétences"));
+        entetes("la compétence", "Ce que valent les points de la compétence dans un jet",
+          [["Compétence", "Nom de la compétence"],
+           ["Forcé", "Total forcé — vide = total calculé"],
+           ["Modif.", "Deux modificateurs du total, qui s'additionnent", "duo"],
+           ["Total", "Points effectifs de la compétence"],
+           null,
+           ["Forcé", "Coût en xp forcé — vide = coût calculé"],
+           ["Modif.", "Deux modificateurs du coût en xp, qui s'additionnent", "duo"],
+           ["Coût", "Coût effectif en xp"]]);
+        comps.forEach(function (it, i) {
           var row = el("div", "pc-optcomp-row pc-mods-host" + (i % 2 === 1 ? " odd" : ""));
-          var comp = function () { return state.comps[it.key] || blankComp(); };
 
           var nameBox = el("span", "pc-comp-name");
+          var chip = el("span", "pc-abbr", it.code);
+          chip.title = it.name;
+          nameBox.appendChild(chip);
           var label = el("span", "pc-comp-label", it.name);
-          label.title = it.name + " (" + it.carac + ")";
+          label.title = it.name + " — lancée sur " + it.carac;
           nameBox.appendChild(label);
           row.appendChild(nameBox);
 
-          // VALEUR : forcé, puis modificateur, puis le total effectif
-          row.appendChild(forceField(state.compsForce, it.key,
-            function () { return compValueAuto(it.carac, comp(), it.key); },
-            "Total forcé — vide = total calculé (caractéristique + stade + modificateur)."));
-
+          // VALEUR : forcé, puis les deux modificateurs, puis le total
+          // effectif. Le repère du champ forcé est compPts() lui-même : le
+          // champ vide EST le cas non forcé, où compPts() rend déjà ce que les
+          // points, le plafond et les modificateurs donnent.
+          row.appendChild(optForceTable(state.compsForce, it.key,
+            function () { return compPts(it.key); },
+            "Total forcé — vide = total calculé (points, plafond, modificateurs)."));
           // DEUX champs : ils s'additionnent. Un seul obligeait à faire la
           // somme de tête avant de saisir, puis à la défaire pour retirer l'un
           // des deux apports.
-          row.appendChild(modField(state.compsMod, it.key, 999,
+          row.appendChild(optModTable(state.compsMod, it.key, 999,
             "Premier modificateur du total — vide = aucun."));
-          row.appendChild(modField(state.compsMod2, it.key, 999,
+          row.appendChild(optModTable(state.compsMod2, it.key, 999,
             "Second modificateur du total — vide = aucun."));
-
           var tot = el("span", "pc-comp-total", "");
           row.appendChild(tot);
 
           // COÛT EN XP : même ordre, derrière le filet de séparation
           row.appendChild(el("span", "rule"));
-          row.appendChild(forceField(state.compsXpForce, it.key,
-            function () { return compXpAuto(comp(), it.key); },
-            "Coût en xp forcé — vide = coût calculé (stades, passifs, art, modificateur)."));
-
-          row.appendChild(modField(state.compsXpMod, it.key, 9999,
+          row.appendChild(optForceTable(state.compsXpForce, it.key,
+            function () { return compXpAuto(it.key); },
+            "Coût en xp forcé — vide = coût calculé (points achetés et modificateurs)."));
+          row.appendChild(optModTable(state.compsXpMod, it.key, 9999,
             "Premier modificateur du coût en xp — vide = aucun."));
-          row.appendChild(modField(state.compsXpMod2, it.key, 9999,
+          row.appendChild(optModTable(state.compsXpMod2, it.key, 9999,
             "Second modificateur du coût en xp — vide = aucun."));
-
           var cout = el("span", "pc-comp-total", "");
           row.appendChild(cout);
 
           optHooks.push(function () {
-            var c = comp();
+            var pts = state.comps[it.key] || 0;
             var d = (state.compsMod[it.key] || 0) + (state.compsMod2[it.key] || 0);
-            var force = state.compsForce[it.key];
-            // même terme que la colonne Total de l'onglet Fiche : les deux
-            // afficheraient sinon des chiffres différents pour une compétence
-            var m = compPoidsMalus(it.carac, it.key);
-            tot.textContent = sign(compValue(it.carac, c, it.key));
-            tot.classList.toggle("zero", !c.stade && !d && !m && force === undefined);
-            tot.classList.toggle("adj", d !== 0 || m !== 0 || force !== undefined);
-            tot.title = force !== undefined
-              ? "Total forcé à " + sign(force) + " (calculé : " + sign(compValueAuto(it.carac, c, it.key)) + ")"
-              : it.carac + " " + sign(caracTotal(it.carac)) +
-                " · stade " + sign(stadeInfo(c.stade).bonus) +
-                (d ? " · modificateur " + sign(d) : "") +
-                (m ? " · poids " + sign(-m) : "");
+            var f = state.compsForce[it.key];
+            var v = compPts(it.key);
+            tot.textContent = String(v);
+            tot.classList.toggle("zero", !v);
+            tot.classList.toggle("adj", d !== 0 || f !== undefined);
+            // Le plafond paraît dans l'infobulle parce qu'il n'est écrit nulle
+            // part ailleurs dans cette grille : c'est lui, et non le nombre
+            // saisi, qui explique un total qui ne monte plus.
+            tot.title = f !== undefined
+              ? "Total forcé à " + f
+              : "points " + pts + " · plafond " + compPlafond(it.key) +
+                (d ? " · modificateurs " + sign(d) : "");
 
-            var xForce = state.compsXpForce[it.key];
+            var xf = state.compsXpForce[it.key];
             var xm = (state.compsXpMod[it.key] || 0) + (state.compsXpMod2[it.key] || 0);
-            var xp = compXp(c, it.key);
+            var xp = compXp(it.key);
             cout.textContent = xp + " xp";
             cout.classList.toggle("zero", !xp);
-            cout.classList.toggle("adj", xForce !== undefined || xm !== 0);
-            cout.title = xForce !== undefined
-              ? "Coût forcé à " + xForce + " xp (calculé : " + compXpAuto(c, it.key) + " xp)"
-              : "Stades, passifs et art" + (xm ? " · modificateur " + sign(xm) + " xp" : "");
+            cout.classList.toggle("adj", xf !== undefined || xm !== 0);
+            cout.title = xf !== undefined
+              ? "Coût forcé à " + xf + " xp (calculé : " + compXpAuto(it.key) + " xp)"
+              : "points " + pts + " × " + repli("xpComp") + " xp" +
+                (xm ? " · modificateurs " + sign(xm) + " xp" : "");
 
-            // un liseré marque les lignes réglées : sur cinquante compétences,
-            // c'est le seul moyen de retrouver d'un coup d'œil celles qu'on a
-            // touchées
+            // un liseré marque les lignes réglées : c'est le seul moyen de
+            // retrouver d'un coup d'œil celles qu'on a touchées
             row.classList.toggle("on",
-              d !== 0 || force !== undefined || xForce !== undefined || xm !== 0);
+              d !== 0 || xm !== 0 || f !== undefined || xf !== undefined);
           });
           mcBox.appendChild(row);
         });
-      });
-      if (!shown) {
+      }
+
+      if (spes.length) {
+        mcBox.appendChild(el("div", "pc-comp-champ", "Spécialités"));
+        entetes("la spécialité", "Ce que valent les points de la spécialité dans un jet",
+          [["Spécialité", "Nom de la spécialité"],
+           ["Forcé", "Total forcé — vide = total calculé"],
+           ["Modif.", "Deux modificateurs du total, qui s'additionnent", "duo"],
+           ["Total", "Points effectifs de la spécialité"],
+           null,
+           ["Forcé", "Coût en xp forcé — vide = coût calculé"],
+           // Une spécialité n'a PAS de modificateur de coût : l'état ne lui en
+           // porte pas, et on n'en invente pas. Les deux colonnes restent
+           // VIDES au lieu de disparaître, pour que ses chiffres tombent aux
+           // mêmes abscisses que ceux des compétences, juste au-dessus.
+           ["", "", "duo"],
+           ["Coût", "Coût effectif en xp"]]);
+        spes.forEach(function (it, i) {
+          var row = el("div", "pc-optcomp-row pc-mods-host" + (i % 2 === 1 ? " odd" : ""));
+          // la spécialité VIVANTE, relue à chaque geste : la ligne survit à un
+          // rafraîchissement, l'objet capturé au montage pourrait ne plus être
+          // celui de l'état (import, bibliothèque, suppression du voisin)
+          var spe = function () { return state.specialites[it.index] || blankSpe(); };
+
+          var nameBox = el("span", "pc-comp-name");
+          var label = el("span", "pc-comp-label", it.name);
+          label.title = it.name + " — " + (it.carac || "sans caractéristique") +
+                        " · " + (it.comp || "sans compétence");
+          nameBox.appendChild(label);
+          row.appendChild(nameBox);
+
+          row.appendChild(optForceSpe(spe, "force",
+            function () { return spePts(spe()); },
+            "Total forcé — vide = total calculé (points, plafond, modificateurs)."));
+          row.appendChild(optModSpe(spe, "mod", 999,
+            "Premier modificateur du total — vide = aucun."));
+          row.appendChild(optModSpe(spe, "mod2", 999,
+            "Second modificateur du total — vide = aucun."));
+          var tot = el("span", "pc-comp-total", "");
+          row.appendChild(tot);
+
+          row.appendChild(el("span", "rule"));
+          row.appendChild(optForceSpe(spe, "xpForce",
+            function () { return speXp(spe()); },
+            "Coût en xp forcé — vide = coût calculé (points achetés)."));
+          row.appendChild(el("span"));
+          row.appendChild(el("span"));
+          var cout = el("span", "pc-comp-total", "");
+          row.appendChild(cout);
+
+          optHooks.push(function () {
+            var s = spe();
+            var d = (s.mod || 0) + (s.mod2 || 0);
+            var v = spePts(s);
+            tot.textContent = String(v);
+            tot.classList.toggle("zero", !v);
+            tot.classList.toggle("adj", d !== 0 || s.force !== null);
+            tot.title = s.force !== null
+              ? "Total forcé à " + s.force
+              : "points " + (s.pts || 0) + " · plafond " + spePlafond(s) +
+                (d ? " · modificateurs " + sign(d) : "");
+
+            var xp = speXp(s);
+            cout.textContent = xp + " xp";
+            cout.classList.toggle("zero", !xp);
+            cout.classList.toggle("adj", s.xpForce !== null);
+            cout.title = s.xpForce !== null
+              ? "Coût forcé à " + s.xpForce + " xp"
+              : "points " + (s.pts || 0) + " × " + repli("xpSpe") + " xp";
+
+            row.classList.toggle("on",
+              d !== 0 || s.force !== null || s.xpForce !== null);
+          });
+          mcBox.appendChild(row);
+        });
+      }
+
+      if (!comps.length && !spes.length) {
         mcBox.appendChild(el("div", "pc-empty",
-          optOnly ? "Aucune compétence investie ne correspond — décocher « Investies » pour toutes les voir."
-                  : "Aucune compétence ne correspond."));
+          optOnly ? "Rien d'investi ne correspond — décocher « Investies » pour tout voir."
+                  : "Aucune compétence ni spécialité ne correspond."));
       }
       refresh();   // les lignes viennent de naître : leurs totaux se peuplent ici
     };
@@ -6095,18 +6345,19 @@
   // avant d'être touché (appliqueDisposition).
   var MODULES_NATIFS = [
     // ---- onglet Fiche ----
-    { id: "narration",  titre: "Narration",         onglet: "fiche", colonne: "gauche", build: buildNarration },
+    // Les caractéristiques d'abord, prestige en tête : c'est lui qui plafonne
+    // tout le reste, et on le lit avant de lire ce qu'il autorise.
     { id: "caracs",     titre: "Caractéristiques",  onglet: "fiche", colonne: "gauche", build: buildCaracs },
-    { id: "langues",    titre: "Langues",           onglet: "fiche", colonne: "gauche", build: buildLangues },
     { id: "initiative", titre: "Initiative",        onglet: "fiche", colonne: "milieu", build: buildInitiative },
-    // Vitesse et Régén partagent une grille à deux cases qui ne se découpe
-    // pas : elles ne forment qu'UN module, même si chacune garde son rouage
-    { id: "tuiles",     titre: "Vitesse et Régén",  onglet: "fiche", colonne: "milieu", build: buildVitesse },
-    { id: "pv",         titre: "PV",                onglet: "fiche", colonne: "milieu", build: buildPv },
-    { id: "armescomp",  titre: "Armes",             onglet: "fiche", colonne: "milieu", build: buildArmesComps },
+    // Vitesse, sauts, charge et récupération partagent une grille de cases qui
+    // ne se découpe pas : elles ne forment qu'UN module, même si chacune garde
+    // son rouage.
+    { id: "tuiles",     titre: "Corps",             onglet: "fiche", colonne: "milieu", build: buildVitesse },
+    { id: "pv",         titre: "PV et endurance",   onglet: "fiche", colonne: "milieu", build: buildPv },
     { id: "comps",      titre: "Compétences",       onglet: "fiche", colonne: "droite", build: buildComps },
-    // ---- onglet Art ----
-    { id: "arts",       titre: "Arts et passifs",   onglet: "art", colonne: "seule", build: buildArt },
+    // Les spécialités suivent les compétences dont elles relèvent : c'est dans
+    // cet ordre-là qu'on les remplit, et dans cet ordre-là qu'on les lance.
+    { id: "specialites", titre: "Spécialités",      onglet: "fiche", colonne: "droite", build: buildSpecialites },
     // ---- onglet Équipement ----
     { id: "armes",      titre: "Armes",             onglet: "equipement", colonne: "gauche", build: buildArmes },
     { id: "armures",    titre: "Armures",           onglet: "equipement", colonne: "droite", build: buildArmures },
@@ -6421,10 +6672,15 @@
     // lirait les valeurs dans le DOM mesurerait la MISE EN FORME autant que le
     // calcul : « 30 » et « 30 m » se ressemblent trop pour juger d'un filtre.
     __calculs: {
-      caracTotal: caracTotal, caracJet: caracJet, compValue: compValue, compXp: compXp,
+      caracTotal: caracTotal, caracMod: caracMod, caracLim: caracLim,
+      compPts: compPts, compPlafond: compPlafond, compXp: compXp,
+      spePts: spePts, spePlafond: spePlafond, speXp: speXp, jetBonus: jetBonus,
+      prestige: prestige, enduranceMax: enduranceMax, enduranceMalus: enduranceMalus,
+      recupJour: recupJour, chargeMax: chargeMax,
       pvMax: pvMax, pvCourant: pvCourant, initiative: initiative,
-      vitesse: vitesse, vitesseVal: vitesseVal, regen: regen,
-      poidsPorte: poidsPorte, poidsMalus: poidsMalus, xpDepense: xpDepense
+      vitesse: vitesse, vitesseVal: vitesseVal,
+      sautLong: sautLong, sautHaut: sautHaut,
+      poidsPorte: poidsPorte, xpDepense: xpDepense
     },
     // le registre des filtres, à plat et en copie : nom, propriétaire, fautes
     __filtres: function () {

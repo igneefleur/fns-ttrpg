@@ -71,11 +71,10 @@
 :root {
   font-size: 18px;
 
-  /* La palette du livre, jour. Recopiée de docs/stylesheets/mia-narration.css,
-     qui la recopie elle-même de mia-fiche.css : cette page ne charge rien
-     d'autre, elle doit tenir seule. Recopiée mais non complète : on ne garde
-     que les tons dont ce panneau se sert, un ton mort étant un ton qui ment
-     sur ce qu'on peut peindre ici. */
+  /* La palette du livre, jour. Recopiée de docs/stylesheets/mia-fiche.css :
+     cette page ne charge rien d'autre, elle doit tenir seule. Recopiée mais non
+     complète : on ne garde que les tons dont ce panneau se sert, un ton mort
+     étant un ton qui ment sur ce qu'on peut peindre ici. */
   --paper:   #faf6eb;
   --card:    #fffdf6;
   --panel:   #f6efdd;
@@ -241,7 +240,6 @@ html.night .p-titre { color: var(--ink); }
   min-width: 0;
 }
 .p-lib { flex: 1 1 auto; min-width: 0; color: var(--ink); }
-.p-actions { display: inline-flex; align-items: center; gap: .3rem; flex: 0 0 auto; }
 
 /* IL N'Y A PLUS DE .p-note, ET IL NE FAUT PAS EN REMETTRE. Une phrase sous
    chaque réglage pour dire ce qu'il fait, c'est un libellé qui a raté. Ce qui ne
@@ -373,9 +371,9 @@ html.night .p-titre { color: var(--ink); }
 /* ---------------------------------------------------- L'EXTENSION ÉTEINTE */
 
 /* Éteinte, le panneau le MONTRE. Les pièces se grisent et refusent le clic :
-   allumer le plateau d'une extension arrêtée n'a aucun sens, et laisser cliquer
-   ferait croire à un réglage pris en compte. L'Apparence, elle, reste vive :
-   elle habille CE panneau, qu'on doit pouvoir lire éteint comme allumé. */
+   régler une extension arrêtée n'a aucun sens, et laisser cliquer ferait croire
+   à un réglage pris en compte. L'Apparence, elle, reste vive : elle habille CE
+   panneau, qu'on doit pouvoir lire éteint comme allumé. */
 body.p-off #p-pieces {
   opacity: .45;
   pointer-events: none;

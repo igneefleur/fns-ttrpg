@@ -147,8 +147,8 @@ def faute_de_forme(texte):
     if not m:
         return "%r n'est pas un numéro X.Y.Z" % texte
     if m.group(4) not in ("", "b"):
-        return ("%r : le seul suffixe admis est « b », celui de la branche beta "
-                "(« 3.6.0-beta » ou « 3.6.0.1 » n'en sont pas)" % texte)
+        return ("%r : le seul suffixe admis est « b », celui de la branche "
+                "beta (« 3.6.0-beta » ou « 3.6.0.1 » n'en sont pas)" % texte)
     for cran, brut in zip(CRANS, m.group(1, 2, 3)):
         if len(brut) > 1 and brut[0] == "0":
             return ("%r : le %s s'écrit sans zéro en tête, sinon deux textes "
@@ -409,13 +409,12 @@ def manifeste(racine):
         return None
 
 
-def est_beta(racine):
+def branche_beta(racine):
     """True si ce dépôt est la branche BETA, d'après site_url.
 
-    « est_beta » et non « beta » : une Version porte DÉJÀ un attribut « beta »,
-    qui dit le suffixe d'un numéro et non la branche du dépôt. Deux « beta » de
-    sens différent dans le même fichier se seraient confondus au premier coup
-    d'oeil, et c'est justement là que le suffixe se perd.
+    À ne pas confondre avec Version.beta, qui dit tout autre chose : celui-ci
+    juge le DÉPÔT, celui-là le NUMÉRO. C'est justement leur accord que
+    scripts/verif_versions.py contrôle.
 
     Le marqueur est VERSIONNÉ et jamais git : les sondes recopient docs/,
     hooks/, scripts/ et mkdocs.yml dans un bac qui n'est pas un dépôt, et ces
@@ -613,7 +612,7 @@ def decider(racine, cran=None, impose=None, suffixe=None):
         cible = sol
 
     if suffixe is None:
-        c = est_beta(racine)
+        c = branche_beta(racine)
         # mkdocs.yml muet : on garde le suffixe tel quel plutôt que de le
         # retirer par défaut, ce qui ferait passer une beta pour un stable
         suffixe = cible.beta if c is None else c
@@ -681,7 +680,7 @@ def main():
     print("VERSION" + (" (essai)" if a.essai else ""))
     brut = courante(racine)
     v = lire(brut) if brut else None
-    c = est_beta(racine)
+    c = branche_beta(racine)
     print("  courante : %s" % (brut if brut else "aucune (le bundle est muet)"))
     if v:
         print("  ligne    : %s" % v.ligne)

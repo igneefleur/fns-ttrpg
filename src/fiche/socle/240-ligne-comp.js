@@ -1,144 +1,120 @@
-  // opts : { module, reg, onDrop } — le module dont le rouage déverrouille la
-  // barre de stade, le registre de hooks où la ligne s'inscrit (celui du module
-  // qui la reconstruit, sinon ses hooks fuiteraient), et le retrait sur mesure.
-  // Par défaut : le module « comps » de l'onglet Fiche.
+  // ---------- la ligne d'une compétence ----------
+  // MÊME CHARPENTE QU'UNE CARACTÉRISTIQUE (.pc-crow), et ce n'est pas une
+  // économie de style : depuis que les stades ont disparu, les deux lignes
+  // portent exactement les mêmes choses — un nombre qu'on achète, un plafond
+  // qui le retient, une limite qui coiffe le jet, et le chiffre lui-même comme
+  // bouton. Deux charpentes pour un même contenu auraient fini par diverger
+  // d'un pixel, puis d'une infobulle.
+  //
+  // opts : { reg } — le registre de rafraîchissement où la ligne s'inscrit,
+  // celui du module qui la bâtit. Une ligne détruite emporte ses fonctions ;
+  // laissées dans le registre du voisin, elles rafraîchiraient un élément qui
+  // n'est plus dans la page. Par défaut : celui des lignes de compétences.
   function compRow(item, odd, opts) {
     opts = opts || {};
-    var mod = opts.module || "comps";
     var reg = opts.reg || compHooks;
-    var comp = function () { return state.comps[item.key] || blankComp(); };
-    var row = el("div", "pc-comp-row" + (odd ? " odd" : ""));
+    // Un appelant peut ne nommer sa ligne que par une clé (ctx.ligneComp d'un
+    // mod) : ce sont les SIGLES que les calculs attendent, et allComps() les
+    // donne dans « code ».
+    var code = item.code || item.key;
+    // La caractéristique par DÉFAUT : celle qui donne le MOD et la LIM du jet.
+    // Le joueur peut en demander une autre au moment de lancer (réglage « Au
+    // choix » de la barre d'envoi) ; c'est doJet qui le lui propose, pas la ligne.
+    var carac = item.carac || compCarac(code);
+    var row = el("div", "pc-crow" + (odd ? " odd" : ""));
 
-    var nameBox = el("span", "pc-comp-name");
-    var label = el("span", "pc-comp-label", item.name);
-    label.title = item.name + " (" + item.carac + ")";
-    nameBox.appendChild(label);
-    if (item.custom) {
-      var del = el("button", "pc-comp-del pc-edit-only", "✕");
-      del.type = "button";
-      del.title = item.langue ? "Retirer cette langue" : "Retirer cette compétence personnalisée";
-      del.addEventListener("click", function () {
-        // la compétence peut porter des données que la ligne ne montre pas
-        // (un art rédigé puis stade redescendu) : confirmer avant d'effacer
-        var c = state.comps[item.key];
-        var garde = [];
-        if (c && c.stade > 0) garde.push("de l'xp investi");
-        if (c && c.techniques && c.techniques.length) garde.push("des passifs");
-        if (porteArt(c)) garde.push("un art");
-        if (state.compsMod[item.key]) garde.push("un modificateur (Options)");
-        if (garde.length &&
-            !confirm("Supprimer « " + item.name + " » effacera aussi " + garde.join(", ") + ". Continuer ?")) return;
-        if (item.langue) {
-          state.langues = state.langues.filter(function (n) { return n !== item.name; });
-          if (state.langueBase === item.name) state.langueBase = "";
-        } else if (item.arme) {
-          state.armesComps = state.armesComps.filter(function (n) { return n !== item.name; });
-        } else {
-          state.customComps = state.customComps.filter(function (cc) { return (cc.carac + "/" + cc.name) !== item.key; });
+    var top = el("div", "pc-crow-top");
+    var chip = el("span", "pc-abbr", code);
+    chip.title = item.name;
+    top.appendChild(chip);
+    top.appendChild(el("span", "nm", item.name));
+    // LA VALEUR EST LE BOUTON DE JET, comme sur une caractéristique. Ce qu'elle
+    // affiche est le BONUS et non les points : c'est lui qui part sur le dé,
+    // points et MOD confondus, et c'est le seul nombre qu'on cherche en jouant.
+    var val = el("span", "pc-cval pc-rollable", "");
+    val.addEventListener("click", function () { doJet(item.name, carac, code, null); });
+    top.appendChild(val);
+    row.appendChild(top);
+
+    // PTS, LIM et XP restent lisibles ROUAGE FERMÉ. Le plafond suit les points
+    // dans la même case : sans lui, on découvre qu'on est au bout quand un « + »
+    // cesse de répondre, ce qui passe pour une panne du bouton.
+    var meta = el("div", "pc-kv");
+    meta.appendChild(el("span", "k", "PTS"));
+    var vPts = el("span", "max", "");
+    meta.appendChild(vPts);
+    meta.appendChild(el("span", "k", "LIM"));
+    var vLim = el("span", "max", "");
+    meta.appendChild(vLim);
+    meta.appendChild(el("span", "sp"));
+    meta.appendChild(el("span", "k", "XP"));
+    var vXp = el("span", "max", "");
+    meta.appendChild(vXp);
+    row.appendChild(meta);
+
+    // LES ± ACHÈTENT LES POINTS, et rien ne les retient faute d'xp : l'en-tête
+    // avertit dès que le total est dépassé, là où un blocage figerait toute
+    // fiche remplie à l'envers — les points d'abord, l'xp total ensuite. Le
+    // plafond, lui, borne pour de bon : il vient des règles.
+    var bot = el("div", "pc-crow-bot pc-edit-only");
+    bot.appendChild(el("span", "lbl", "Points"));
+    bot.appendChild(stepper(
+      function () { return state.comps[code] || 0; },
+      function (v) {
+        // le plafond ne bloque que les HAUSSES : des points investis avant
+        // qu'un malus ne rabaisse la caractéristique redescendent pas à pas au
+        // lieu d'être rognés d'un seul clic, ce qui rendrait l'xp introuvable
+        var plaf = compPlafond(code);
+        var haut = Math.max(plaf, state.comps[code] || 0);
+        var n = Math.round(v);
+        if (n > haut) {
+          flash(haut === plaf
+            ? "Plafond de " + plaf + " : le meilleur MOD des caractéristiques de " + code + "."
+            : code + " est déjà au-delà du plafond (" + plaf + ") : la compétence ne peut que redescendre.");
+          n = haut;
         }
-        delete state.comps[item.key];
-        delete state.compsMod[item.key];   // sinon le modificateur renaîtrait sur une homonyme
-        refresh();
-        if (opts.onDrop) opts.onDrop();
-        rebuildComps();
-        if (optCompsRebuild) optCompsRebuild();
-      });
-      nameBox.appendChild(del);
-    }
-    row.appendChild(nameBox);
-
-    // stade : une barre segmentée [ N | I | M | E | A ] au dégradé qui monte
-    // jusqu'au rouge des caractéristiques ; centrée, toujours au même endroit.
-    // Cliquable seulement en mode édition du module (le coût se règle tout
-    // seul) ; verrouillée, elle reste l'affichage du stade. Les passifs et
-    // l'art se personnalisent dans l'onglet Art.
-    function applyStade(target) {
-      var c = comp();
-      if (target === c.stade) return;
-      var next = { stade: target, techniques: c.techniques.slice() };
-      // l'art suit la compétence : il survit aux allers-retours de stade
-      // (il ne se montre que quand le stade qui l'ouvre est atteint)
-      if (porteArt(c)) next.art = c.art;
-      if (!stadeInfo(target).techniques) {
-        // les passifs rédigés vivent dans l'onglet Art : la ligne ne les
-        // montre pas, on confirme avant de les effacer avec la descente
-        var redigees = c.techniques.filter(function (t) {
-          return String(t.name || "").trim() || String(t.desc || "").trim();
-        }).length;
-        if (redigees &&
-            !confirm("Redescendre « " + item.name + " » à " + stadeInfo(target).nom +
-                     " effacera " + redigees + " passif(s) rédigé(s) (onglet Art). Continuer ?")) return;
-        next.techniques = [];
-      }
-      var delta = compXp(next, item.key) - compXp(c, item.key);
-      if (delta > 0 && xpRestant() < delta) { flash("XP insuffisant."); return; }
-      // le plafond du quart ne bloque que les HAUSSES : on peut toujours redescendre
-      if (delta > 0 && compXp(next, item.key) > compCap()) {
-        flash("Pas plus d'un quart de l'xp total (" + compCap() + " xp) dans une seule compétence.");
-        return;
-      }
-      state.comps[item.key] = next;
-      if (!next.stade && !next.techniques.length && !next.art) delete state.comps[item.key];
-      refresh();
-    }
-    var st = el("span", "pc-stadebar");
-    var segs = [];
-    DATA.stades.forEach(function (sd, i) {
-      var sg = el("button", "seg s" + i, (sd.nom || "?").charAt(0).toUpperCase());
-      sg.type = "button";
-      sg.title = sd.nom + " (" + sign(sd.bonus) + ") — " + (DATA.xpParStade * i) + " xp";
-      sg.addEventListener("click", function () {
-        if (!isEdit(mod)) return;   // construction : mode édition requis
-        applyStade(i);
-      });
-      st.appendChild(sg);
-      segs.push(sg);
-    });
-    row.appendChild(st);
-
-    // le total est un BOUTON de jet, comme la valeur d'une caractéristique.
-    // opts.value permet à un module de compter autrement (l'initiative passe par
-    // son propre filtre) sans dupliquer la ligne.
-    var valeur = opts.value || function (c) { return compValue(item.carac, c, item.key); };
-    var total = el("button", "pc-comp-total pc-comp-roll pc-rollable", "");
-    total.type = "button";
-    total.addEventListener("click", function () {
-      // L'initiative, et elle seule, s'inscrit au compteur de tours de Roll20.
-      // Le drapeau suit la CLÉ de la compétence, pas le module : la ligne est
-      // la même quand le module Initiative est coupé et que Body/Initiative
-      // revient dans la liste des compétences.
-      doRoll(opts.rollLabel || (item.name + " (" + item.carac + ")"), valeur(comp()),
-             null, true, item.carac, item.key === INIT_KEY);
-    });
-    row.appendChild(total);
+        n = Math.max(0, n);
+        // zéro n'est pas une donnée : une clé absente vaut zéro partout
+        // (accesseurs, attributs Roll20), et l'état voyage d'autant plus léger
+        if (n) state.comps[code] = n; else delete state.comps[code];
+      }, 1, "points", reg));
+    row.appendChild(bot);
 
     reg.push(function () {
-      var c = comp();
-      var d = state.compsMod[item.key] || 0;
-      // le malus de poids réellement retenu par cette ligne : zéro hors des jets
-      // de Body, zéro sur une arme, zéro sous un total forcé
-      var m = compPoidsMalus(item.carac, item.key);
-      segs.forEach(function (sg, i) {
-        sg.classList.toggle("on", i <= c.stade);
-        // « cur » MARQUE LE STADE COURANT, et n'a effectivement aucune regle de
-        // style : c'est un REPERE, pas une decoration. Un audit l'a retiree pour
-        // cette raison, et quatre sondes sont tombees — c'est par elle qu'on
-        // lit, de l'exterieur, a quel stade une competence se trouve. Une marque
-        // sans peinture reste une marque.
-        sg.classList.toggle("cur", i === c.stade);
-      });
-      total.textContent = sign(valeur(c));
-      // « zero » dit « rien ne s'ajoute ni ne se retranche à la caractéristique » :
-      // le malus compte, sans quoi une compétence grisée comme inerte afficherait
-      // un total qui bouge à chaque objet rangé dans le sac
-      total.classList.toggle("zero", !c.stade && !d && !m && !opts.value);
-      total.classList.toggle("adj", d !== 0 || m !== 0);
-      total.title = item.carac + " " + sign(caracTotal(item.carac)) +
-                    " · stade " + sign(stadeInfo(c.stade).bonus) +
-                    (d ? " · modificateur (Options) " + sign(d) : "") +
-                    (m ? " · poids " + sign(-m) : "") +
-                    (item.langue && state.langueBase === item.name ? " · langue du personnage (gratuite)" : "") +
-                    " — clic : lancer";
+      var base = state.comps[code] || 0;
+      var plaf = compPlafond(code);
+      var mord = base > plaf;
+      var d = (state.compsMod[code] || 0) + (state.compsMod2[code] || 0);
+      var force = state.compsForce[code] !== undefined;
+      var xpF = state.compsXpForce[code] !== undefined;
+      var xpD = (state.compsXpMod[code] || 0) + (state.compsXpMod2[code] || 0);
+      // le malus d'endurance pèse sur TOUS les jets : il est déjà dans le
+      // bonus, il n'est nommé ici que pour qu'on sache d'où vient l'écart
+      var mal = enduranceMalus();
+      var b = jetBonus(carac, code, null);
+      val.textContent = sign(b);
+      val.classList.toggle("adj", force || d !== 0 || mord || mal !== 0);
+      val.title = (force
+                    ? "Points forcés (Options)"
+                    : "Points " + base +
+                      (mord ? ", plafonnés à " + plaf : "") +
+                      (d ? " · modificateur (Options) " + sign(d) : "")) +
+                  " · " + carac + " " + sign(caracMod(carac)) +
+                  (mal ? " · endurance " + sign(-mal) : "") +
+                  " — clic : lancer " + DE_DEFAUT + " " + sign(b) +
+                  ", plafonné à " + caracLim(carac);
+      vPts.textContent = compPts(code) + " / " + plaf;
+      vPts.classList.toggle("adj", force || d !== 0 || mord);
+      vPts.title = "Points investis, et leur plafond : le meilleur MOD de " +
+                   ((item.caracsPlafond || compInfo(code).mod || []).join(", ") || "ses caractéristiques") + ".";
+      vLim.textContent = String(caracLim(carac));
+      vLim.title = "Aucun jet de " + item.name + " par " + carac + " ne dépasse ce résultat.";
+      vXp.textContent = String(compXp(code));
+      vXp.classList.toggle("adj", xpF || xpD !== 0);
+      vXp.title = xpF
+        ? "Coût forcé (Options) — calculé : " + compXpAuto(code)
+        : "Un point de compétence coûte " + repli("xpComp") + " xp" +
+          (xpD ? " · modificateur (Options) " + sign(xpD) : "");
     });
     return row;
   }

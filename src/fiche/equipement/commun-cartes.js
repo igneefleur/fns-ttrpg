@@ -43,20 +43,34 @@
           function () {
             // valeurs courtes étiquetées, propriétés (texte long) pleine largeur
             return kind === "arme"
-              ? [["Poids", it.poids], ["Dégâts", it.degats], ["Reach", it.reach], ["", it.props]]
-              : [["Poids", it.poids], ["Invu", it.invu], ["Zones protégées", it.zones]];
+              ? [["Poids", it.poids], ["Ini", it.ini], ["Dégâts", it.degats], ["Reach", it.reach], ["", it.props]]
+              : [["Poids", it.poids], ["Ini", it.ini], ["Invu", it.invu], ["Zones protégées", it.zones]];
           }));
         head.appendChild(miniBtn("✕", "Retirer", function () { items.splice(idx, 1); render(); refresh(); }, "danger pc-edit-only"));
         card.appendChild(head);
 
         var line = el("div", "pc-arme-line");
         line.appendChild(eqField("Poids", it, "poids"));
+        // L'INITIATIVE PORTE DEUX RÈGLES DANS UN SEUL CHAMP, et c'est la case
+        // « porté » qui les départage : un bonus ne compte QUE si l'objet est
+        // porté activement, un malus compte TOUJOURS, même au fond du sac. Le
+        // calcul est dans equipInitBonus() ; ici on ne fait que saisir.
+        line.appendChild(eqField("Ini", it, "ini"));
         if (kind === "arme") {
           line.appendChild(eqField("Dégâts", it, "degats"));
           line.appendChild(eqField("Reach", it, "reach"));
         } else {
           line.appendChild(eqField("Invu", it, "invu"));
         }
+        var porte = el("label", "pc-eq-porte");
+        var pcb = el("input", null);
+        pcb.type = "checkbox";
+        pcb.checked = it.porte !== false;
+        pcb.title = kind === "arme" ? "Arme en main" : "Armure portée";
+        pcb.addEventListener("change", function () { it.porte = pcb.checked; save(); refresh(); });
+        porte.appendChild(pcb);
+        porte.appendChild(el("span", null, kind === "arme" ? "En main" : "Portée"));
+        line.appendChild(porte);
         var chip = el("span", "pc-roll-chip", "Jet");
         chip.title = kind === "arme" ? "Lancer les dégâts" : "Lancer l'invu";
         chip.addEventListener("click", function () {

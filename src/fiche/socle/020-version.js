@@ -24,22 +24,52 @@
   var RELEASE = "1.0.0";
   var SCHEMA = 1;
 
-  var XP_CREATION = 500;      // xp de départ (le total reste modifiable)
-  // Les deux barèmes de la création. Ce ne sont plus des murs : le bloc
-  // Création des Options les décale ou les remplace, fiche par fiche (et pour
-  // le plafond, caractéristique par caractéristique).
-  var PTS_CREATION = 120;     // points de caractéristiques à la création
-  var CARAC_MAX = 80;         // plafond d'une caractéristique
-  var CARAC_PAS = 5;          // +5 par achat d'xp
+  // ---------- ce que la fiche ne décide PAS ----------
+  // Les barèmes du jeu ne sont plus ici : ils viennent de DATA, c'est-à-dire de
+  // la page de règles relue au build par hooks/mia_creation.py. La table
+  // « Valeur / MOD / LIM / XP cumulés » donne les vingt et une lignes déjà
+  // calculées, le prestige donne le plafond, et les multiplicateurs de
+  // l'initiative, de la vitesse, des sauts et de la récupération sont pêchés
+  // dans les formules de la page. Aucun nombre de règle ne s'écrit dans ce
+  // fichier — c'est la seule façon qu'une règle corrigée arrive à l'outil.
+  //
+  // LES REPLIS CI-DESSOUS NE SONT PAS DES RÈGLES : ce sont les valeurs qu'on
+  // sert quand DATA manque (données trop anciennes, fetch expiré, fiche ouverte
+  // hors ligne). Ils évitent une fiche qui ne s'ouvre pas ; ils ne prétendent
+  // pas dire le jeu, et lire une règle ici serait une faute.
+  var REPLI = {
+    prestigeMax: 20,
+    xpComp: 1, xpSpe: 0.25,       // ce que coûte un point de compétence, de spécialité
+    speMarge: 50, speMin: 30,     // plafond d'une spécialité : LIM − 50 − MOD − plafond
+    endurAction: 50,              // endurance dépensable sur une même action
+    iniMult: 2, iniMainsNues: 20,
+    vitesseMult: 2, sautLong: 1.75, sautHaut: 2, recupMult: 2
+  };
+
   var MOD_PAS = 5;            // tous les modificateurs se règlent de 5 en 5
-  var QUART = 4;              // « pas plus d'un quart de l'xp total »
 
-  var ABBR = { Mind: "MIND", Body: "BODY", Prestance: "PRES" };
+  // LES PALIERS DE CHARGE. Leurs SEUILS se lisent dans les données (la table
+  // « Charge / Effets » de la page) ; leurs EFFETS, eux, sont du code, parce
+  // qu'une division par 1,5 ne se lit pas dans une phrase française. Les deux
+  // doivent donc bouger ENSEMBLE : un palier ajouté à la page sans sa ligne ici
+  // s'afficherait au joueur sans rien peser sur ses chiffres.
+  //
+  // Ils se CUMULENT : à 100 % de charge, l'esquive a pris −10, −40 puis −100,
+  // et les sauts ont été divisés par 3 puis par 4.
+  var CHARGE_EFFETS = {
+    50:  { ini: -50,  esq: -10 },
+    75:  { esq: -40,  vitesseDiv: 1.5, sautDiv: 3 },
+    100: { esq: -100, vitesseDiv: 2, iniDiv: 2, sautDiv: 4 }
+  };
+  // La charge frappe « l'esquive », et l'esquive est une SPÉCIALITÉ que le
+  // joueur nomme lui-même. On la reconnaît donc par son nom, à la casse près :
+  // une fiche qui n'en porte pas ne subit simplement rien.
+  var CHARGE_ESQUIVE = "Esquive";
 
-  // LE DÉ DES JETS DE TEST, écrit comme les règles le disent et comme Roll20
-  // le comprend : « 96+ au dé est un coup critique, 5- au dé est un échec
-  // critique ». cs> et cf< sont les annotations de critique de Roll20 : le
-  // résultat s'y colore de lui-même dans le tchat, vert sur un critique et
-  // rouge sur un échec critique, sans que la fiche ait à le calculer.
-  var DE_DEFAUT = "1d100cs>96cf<5";
+  // LE DÉ DES JETS. Un jet MIA n'est pas un dé nu : c'est un couple
+  // « d100 + bonus » et « la limite », dont Roll20 ne garde que le plus bas
+  // (kl1). La limite plafonne donc le résultat, et le tchat l'affiche déjà
+  // plafonné. Ce champ ne porte que la partie ALÉATOIRE ; jetCommande() bâtit
+  // le reste autour d'elle.
+  var DE_DEFAUT = "d100";
 

@@ -39,8 +39,8 @@ copies : il vérifie que chacune est À JOUR par rapport à ses morceaux, et ref
 le paquet sinon.
 
 La bascule ne prend effet qu'au RECHARGEMENT de la page Roll20 : une copie déjà
-réveillée garde son onglet, ses écouteurs et son panneau, et le pont d20 déjà
-posé dans le monde principal n'est pas démontable.
+réveillée garde son onglet et ses écouteurs, et le pont d20 déjà posé dans le
+monde principal n'est pas démontable.
 
 Les deux parties écrivent les MÊMES Attributes du MÊME personnage. Séparer le
 code ne sépare pas les fiches : une fiche créée en beta est vue comme existante
@@ -50,16 +50,14 @@ en stable, et une régression du site de chantier abîme les mêmes personnages.
 
 Partagées :
 
-- `popup/` — le popup (lien des règles, case du mode beta, case du plateau).
+- `popup/` — le popup (lien des règles, mode nuit, case du mode beta).
   L'extension NE LIT PLUS LE SITE. Un `content-mia.js` recopiait les fiches
   calculées du localStorage du site vers `browser.storage.local` toutes les
   trois secondes ; personne n'a jamais relu ce qu'il y déposait, et il coûtait
   au manifeste trois adresses d'hôte de plus à faire accepter par Mozilla.
 - `creator.html` — la coquille de l'onglet : une iframe vers la fiche du site,
   charId passé dans le hash (`#c=<id>`). Immunisée contre la CSP de Roll20.
-- `panneau.html` — la coquille générique des panneaux flottants (le plateau de
-  Narration aujourd'hui) ; la page à montrer est nommée dans le hash (`#p=`).
-- `shell-loader.js` — ajoute à ces deux pages la balise `<script>` de la bonne
+- `shell-loader.js` — ajoute à cette page la balise `<script>` de la bonne
   coquille, d'après le mode écrit dans le hash (`&m=`). Aucun script en ligne,
   aucun eval : une page d'extension ne les accepte pas.
 - `parties.js` — les deux numéros du projet, montrés par le popup. Le manifeste,
@@ -78,8 +76,8 @@ Dédoublées dans `stable/` et `beta/` :
   lit/écrit les Attributes `mia_*` (écritures throttlées et silencieuses) ; dans
   un popout, se rabat sur le Campaign de `window.opener`. Une seule copie est
   jamais chargée : l'adresse se choisit à l'exécution.
-- `creator-shell.js`, `panneau-shell.js` — chacune pointe son iframe vers un
-  seul site. Une seule des deux est jamais chargée.
+- `creator-shell.js` — pointe son iframe vers un seul site. Une seule des deux
+  copies est jamais chargée.
 
 Le reste vit CÔTÉ SITE (`docs/`) : `roll20-fiche.html` (page affichée),
 `javascripts/mia-roll20-boot.js` (shims `__mia*`, poignée de main
@@ -92,7 +90,7 @@ load/hydrate/save), `javascripts/mia-attr-map.js` (état <-> Attributes),
 de l'extension, qui remplacent l'adresse du site quel que soit le mode :
 
 - `mia_sheet_url` — l'adresse de la fiche (ex. un mkdocs serve local) ;
-- `mia_site_url` — la racine du site pour les panneaux.
+- `mia_site_url` — la racine du site pour les coquilles.
 
 Oubliées en place, elles peuvent faire afficher le site stable sous un onglet
 « Fiche MIA beta » : c'est assumé, ce sont des clés de dépannage.

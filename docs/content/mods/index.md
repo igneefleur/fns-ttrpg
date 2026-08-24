@@ -33,9 +33,9 @@ personnage, que la fiche exécute à chaque ouverture. Rien ne se compile et rie
 ne s'installe sur la machine ; le code est du texte, rangé dans le personnage,
 exécuté tel quel.
 
-Cette page décrit l'interface publique de la fiche 3 : l'objet `Mia`, le
+Cette page décrit l'interface publique de la fiche 1 : l'objet `Mia`, le
 contexte reçu par un module, les filtres de calcul, et les deux blocs de
-l'onglet Options qui les gouvernent. Le 3 est le premier nombre de la release,
+l'onglet Options qui les gouvernent. Le 1 est le premier nombre de la release,
 celui que rend `Mia.version` ; il ne se confond pas avec le schéma de l'état,
 qui compte la forme des données et monte de son côté.
 
@@ -209,14 +209,14 @@ natif comme mod, et c'est le contrat public de la fiche 3.
 | Entrée | Ce que c'est |
 | --- | --- |
 | `ctx.id` | l'identifiant du module, tel qu'il s'est enregistré. |
-| `ctx.version` | la release de la fiche qui l'exécute, telle qu'elle est publiée, suffixe beta compris, et qui se compare [nombre par nombre](#versions). |
+| `ctx.version` | la release de la fiche qui l'exécute, telle qu'elle est publiée, suffixe de beta compris, et qui se compare [nombre par nombre](#versions). |
 
 ### Données
 
 | Entrée | Ce que c'est |
 | --- | --- |
 | `ctx.state` | l'état du personnage, l'objet vivant. |
-| `ctx.data` | le jeu de données des règles chargé par la fiche : compétences, armes, avantages, stades. En lecture. |
+| `ctx.data` | le jeu de données des règles chargé par la fiche : caractéristiques, compétences, table des MOD et des LIM, paliers de charge. En lecture. |
 | `ctx.donnees.get()` | le coffre privé du module : son objet à lui, rangé dans le personnage sous son identifiant. Un objet vide tant que rien n'a été rangé sous cet identifiant. |
 | `ctx.donnees.set(o)` | remplace ce coffre. `null` le vide ; ce qui n'est pas un objet est refusé, comme un objet circulaire : l'erreur part au module, jamais à la sauvegarde du personnage. |
 
@@ -247,7 +247,7 @@ natif comme mod, et c'est le contrat public de la fiche 3.
 | `ctx.bouton(libelle, infobulle, action)` | bouton de la fiche. |
 | `ctx.pas(lire, ecrire, pas)` | compteur « − valeur + », champ du milieu éditable. Il rafraîchit à chaque clic. |
 | `ctx.tuile(libelle, valeur, action)` | grande tuile chiffrée ; `valeur` est une fonction, rappelée à chaque rafraîchissement, et `action` est facultative. |
-| `ctx.ligneComp(carac, nom)` | ligne de compétence complète : pastille de caractéristique, stade, total, jet. |
+| `ctx.ligneComp(sigle)` | ligne de compétence complète : sigle, points, plafond, limite, jet. |
 | `ctx.filtre(libelle, lire, ecrire)` | puce de filtre, comme celles des modules Armes et Compétences. Sans rapport avec les filtres de calcul, plus bas. |
 | `ctx.dialogue(titre, corps, valider)` | fenêtre modale. `corps` est un élément ; `valider` est appelée au clic sur Valider, et garder le dialogue ouvert se dit en rendant `false`. Rend un objet qui porte `fermer()`. C'est le seul moyen de poser une question : `prompt()` et `confirm()` ne fonctionnent pas dans la fiche, qui vit dans une iframe d'un autre site. |
 | `ctx.message(texte)` | bandeau passager, en bas de la fiche. |
@@ -268,21 +268,30 @@ les filtres.
 
 | Entrée | Ce que c'est |
 | --- | --- |
-| `ctx.calculs.caracTotal(nom)` | le total d'une caractéristique : `"Body"`, `"Mind"`, `"Prestance"`. C'est la caractéristique nue, sans le malus de poids, celle dont sortent les PV et la régénération. |
-| `ctx.calculs.compValue(carac, comp, cle)` | le total d'une compétence, modificateurs, total forcé et malus de poids compris. `comp` est l'objet de compétence du personnage, `cle` la clé qui le désigne, de la forme `"Body/Initiative"`. |
+| `ctx.calculs.caracTotal(sigle)` | la valeur d'une caractéristique, modificateurs et forçage compris : `"FOR"`, `"DEX"`, `"AGI"`, `"CON"`, `"MEN"`, `"PRE"`, `"SEN"`, `"DÉT"`. |
+| `ctx.calculs.caracMod(sigle)` | son MOD, c'est-à-dire ce qui s'ajoute à tout jet passant par elle. |
+| `ctx.calculs.caracLim(sigle)` | sa LIM, le résultat le plus haut qu'un tel jet puisse atteindre. |
+| `ctx.calculs.compPts(sigle)` | les points d'une compétence : `"PHY"`, `"COM"`, `"CLA"`, `"CRÉ"`, `"INT"`, `"SOC"`, `"PER"`, `"VOL"`. |
+| `ctx.calculs.compPlafond(sigle)` | ce qu'elle peut porter au plus, c'est-à-dire le MOD le plus haut de ses caractéristiques. |
+| `ctx.calculs.spePts(spe)` | les points d'une spécialité, telle qu'elle figure dans `ctx.state.specialites`. |
+| `ctx.calculs.spePlafond(spe)` | ce qu'elle peut porter au plus. |
+| `ctx.calculs.jetBonus(carac, comp, spe)` | tout ce qui s'ajoute au d100 pour ce jet, malus d'endurance compris. `comp` et `spe` peuvent manquer. |
+| `ctx.calculs.prestige()` | le prestige, qui plafonne chaque caractéristique. |
 | `ctx.calculs.pvMax()` | les PV maximum, valeur forcée comprise. |
 | `ctx.calculs.pvCourant()` | les PV du moment. |
-| `ctx.calculs.initiative()` | l'initiative, malus de poids déduit. |
-| `ctx.calculs.vitesse()` | la vitesse, unité comprise : une chaîne, par exemple `"10.5 m"`. |
-| `ctx.calculs.regen()` | la régénération. |
+| `ctx.calculs.enduranceMax()` | la réserve d'endurance. |
+| `ctx.calculs.enduranceMalus()` | ce qu'une endurance négative retranche à tous les jets. |
+| `ctx.calculs.recupJour()` | les PV regagnés par jour. |
+| `ctx.calculs.initiative()` | l'initiative, équipement et paliers de charge compris. |
+| `ctx.calculs.vitesse()` | la vitesse, unité comprise : une chaîne, par exemple `"10 m"`. |
 | `ctx.calculs.poidsPorte()` | le poids porté. |
-| `ctx.calculs.poidsMalus()` | le malus que ce poids inflige, arrondi à la dizaine inférieure. |
+| `ctx.calculs.chargeMax()` | ce que le personnage peut porter au plus. |
 
 <div class="mods-code" markdown>
 
 ```
-var cle = "Body/Initiative";
-var v = ctx.calculs.compValue("Body", ctx.state.comps[cle], cle);
+var bonus = ctx.calculs.jetBonus("DEX", "COM", null);
+var lim = ctx.calculs.caracLim("DEX");
 ```
 
 </div>
@@ -318,7 +327,7 @@ Mia.filtre("pvMax", function (valeur, infos) {
 
 // un mod qui ne touche qu'une caractéristique
 Mia.filtre("caracTotal", function (valeur, infos) {
-  return infos.carac === "Body" ? valeur + 5 : valeur;
+  return infos.carac === "CON" ? valeur + 1 : valeur;
 });
 ```
 
@@ -329,15 +338,23 @@ en rendre un.
 
 | Nom | Valeur filtrée | Deuxième argument |
 | --- | --- | --- |
-| `caracTotal` | le total d'une caractéristique | `{ carac }`, l'un des trois noms : Body, Mind, Prestance |
-| `compValue` | le total d'une compétence | `{ carac, cle, comp }` |
-| `compXp` | le coût en xp d'une compétence | `{ cle, comp }` |
+| `caracTotal` | la valeur d'une caractéristique | `{ carac }`, un des huit sigles |
+| `caracMod` | son MOD | `{ carac }` |
+| `caracLim` | sa LIM | `{ carac }` |
+| `compValue` | les points d'une compétence | `{ cle }`, un des huit sigles |
+| `compPlafond` | ce qu'une compétence peut porter au plus | `{ cle }` |
+| `compXp` | le coût en xp d'une compétence | `{ cle }` |
+| `spePts` | les points d'une spécialité | `{ spe }` |
+| `spePlafond` | ce qu'une spécialité peut porter au plus | `{ spe }` |
+| `jetBonus` | tout ce qui s'ajoute au d100 | `{ carac, cle, spe }` |
 | `pvMax` | les PV maximum | `{}` |
+| `enduranceMax` | la réserve d'endurance | `{}` |
+| `enduranceMalus` | ce qu'une endurance négative retranche à tous les jets | `{}` |
+| `recupJour` | les PV regagnés par jour | `{}` |
 | `initiative` | l'initiative | `{}` |
 | `vitesse` | la vitesse en mètres, avant que l'unité ne s'y ajoute | `{}` |
-| `regen` | la régénération | `{}` |
 | `poidsPorte` | le poids porté | `{}` |
-| `poidsMalus` | le malus de poids, une fois le poids porté arrondi à la dizaine inférieure | `{}` |
+| `chargeMax` | la charge maximale | `{}` |
 | `xpDepense` | l'xp dépensé | `{}` |
 
 Depuis un module, `ctx.filtreCalcul` fait la même chose, le propriétaire étant

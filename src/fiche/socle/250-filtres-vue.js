@@ -34,19 +34,21 @@
   }
   function filtreDe(v) { return filtreTexteOn() ? String(v || "").trim().toLowerCase() : ""; }
   function compInvestie(it) {
-    var c = state.comps[it.key];
-    // l'art compte : une compétence redescendue qui garde son art reste
-    // visible ; un modificateur (Options) non nul aussi (sinon « Investies
-    // seulement » cache une valeur pourtant modifiée)
-    return !!(c && (c.stade > 0 || (c.techniques && c.techniques.length) || porteArt(c))) ||
+    // Un modificateur non nul compte autant que des points : sinon
+    // « Investies seulement » cacherait la compétence qu'on vient justement de
+    // régler.
+    return (state.comps[it.key] || 0) > 0 ||
            (state.compsMod[it.key] || 0) !== 0 ||
            (state.compsMod2[it.key] || 0) !== 0 ||
-           // un total ou un coût forcé compte aussi : sinon « Investies »
-           // cacherait la compétence qu'on vient justement de régler
            state.compsForce[it.key] !== undefined ||
            state.compsXpForce[it.key] !== undefined ||
            (state.compsXpMod[it.key] || 0) !== 0 ||
            (state.compsXpMod2[it.key] || 0) !== 0;
   }
-  // l'ordre des champs, partout sur la Fiche : Body, puis Mind, puis Prestance
-  var CHAMPS = ["Body", "Mind", "Prestance"];
+  // Une spécialité est « investie » dès qu'elle porte un point ou un réglage :
+  // son existence seule ne suffit pas, le joueur venant peut-être de l'ajouter.
+  function speInvestie(spe) {
+    if (!spe) return false;
+    return (spe.pts || 0) > 0 || (spe.mod || 0) !== 0 || (spe.mod2 || 0) !== 0 ||
+           spe.force !== null || spe.xpForce !== null;
+  }

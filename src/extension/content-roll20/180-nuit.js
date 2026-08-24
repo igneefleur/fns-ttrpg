@@ -5,16 +5,15 @@
   // n'enlève ni un onglet, ni un écouteur, ni un pont, et ne peut donc pas
   // laisser Roll20 dans un état où il n'était pas prévu.
   //
-  // L'extinction (miaOff) et l'interrupteur du plateau ne sont volontairement
-  // PAS relus ici : ils démontent, et démonter à chaud est ce qui casse (voir
-  // la garde, tout en bas, pour ce que « éteindre » peut et ne peut pas).
+  // L'extinction (miaOff) n'est volontairement PAS relue ici : elle démonte, et
+  // démonter à chaud est ce qui casse (voir la garde, tout en bas, pour ce que
+  // « éteindre » peut et ne peut pas).
   //
   // La fiche servie par le site n'est pas repeinte : ce serait la RECHARGER
   // sous les doigts du joueur, au milieu d'une saisie. Elle a son propre
   // réglage dans son onglet Options, et prendra celui du popup à sa prochaine
   // ouverture.
   function repeintTout() {
-    panRepeint();
     var n = document.querySelectorAll(".mia-create, .mia-creator-frame");
     for (var i = 0; i < n.length; i++) poseNuit(n[i]);
   }

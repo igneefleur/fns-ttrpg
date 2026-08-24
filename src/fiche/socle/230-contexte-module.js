@@ -8,10 +8,13 @@
   // comme le reste de la fiche au lieu d'inventer son vocabulaire.
   var LIBELLES = {
     nom: "Nom", espece: "Espèce", age: "Âge", sexe: "Sexe", genre: "Genre",
-    pv: "PV", pvMax: "PV max", initiative: "Initiative", vitesse: "Vitesse",
-    regen: "Régén / jour", poids: "Poids porté", narration: "Narration",
-    xpTotal: "XP total", stade: "Stade", total: "Total",
-    competence: "Compétence", art: "Art", passif: "Passif",
+    pv: "PV", pvMax: "PV max", endurance: "Endurance",
+    initiative: "Initiative", vitesse: "Vitesse", recup: "Récupération / jour",
+    poids: "Poids porté", charge: "Charge maximale", prestige: "Prestige",
+    xpTotal: "XP total", total: "Total", mod: "MOD", lim: "LIM",
+    points: "Points", plafond: "Plafond",
+    caracteristique: "Caractéristique", competence: "Compétence",
+    specialite: "Spécialité",
     arme: "Arme", degats: "Dégâts", armure: "Armure",
     quantite: "Quantité", groupe: "Groupe", description: "Description",
     avantage: "Avantage", defaut: "Défaut", qualite: "Qualité",
@@ -129,14 +132,23 @@
       // calculs : tous dérivés, donc en lecture seule
       calculs: {
         caracTotal: caracTotal,
-        compValue: compValue,
+        caracMod: caracMod,
+        caracLim: caracLim,
+        compPts: compPts,
+        compPlafond: compPlafond,
+        spePts: spePts,
+        spePlafond: spePlafond,
+        jetBonus: jetBonus,
+        prestige: prestige,
         pvMax: pvMax,
         pvCourant: pvCourant,
+        enduranceMax: enduranceMax,
+        enduranceMalus: enduranceMalus,
+        recupJour: recupJour,
         initiative: initiative,
         vitesse: vitesse,
-        regen: regen,
         poidsPorte: poidsPorte,
-        poidsMalus: poidsMalus
+        chargeMax: chargeMax
       },
       // …et de quoi les CHANGER : un filtre reçoit la valeur calculée et rend
       // celle qu'il veut, pour toute la fiche. Le propriétaire est figé ici, à
@@ -147,7 +159,8 @@
       // mise en forme
       fmt: { signe: sign, nombre: fmtP },
       champs: LIBELLES,
-      abbr: function (carac) { return ABBR[carac] || carac; }
+      abbr: function (carac) { return caracInfo(carac).code || carac; },
+      nomDe: function (carac) { return caracInfo(carac).nom || carac; }
     };
   }
 

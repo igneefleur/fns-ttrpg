@@ -7,14 +7,10 @@
  * Deux rôles selon la frame (le script tourne all_frames) :
  *  - FRAME DU HAUT (app.roll20.net/editor) : injecte roll20-page.js dans le MONDE
  *    PRINCIPAL (là où vit window.d20 / window.Campaign, invisible du content-script) ;
- *    ce page-script lit/écrit les attributs à la demande. C'est aussi elle qui pose
- *    le BOUTON DU PLATEAU dans la barre d'outils de Roll20 et le cadre du plateau
- *    de Narration, ancré à cette barre ou détaché.
+ *    ce page-script lit/écrit les attributs à la demande.
  *  - FRAME DE LA FEUILLE (iframe du dialogue de perso) : pose l'onglet « Fiche MIA »
  *    entre « Feuille de personnage » et « Bio & Info ». Au clic : si le perso a déjà
  *    une fiche MIA -> monte l'iframe de la coquille ; sinon -> bouton « Créer fiche MIA ».
- *    SAUF sur le personnage « Narration », qui porte le plateau et pas un personnage :
- *    l'onglet ne s'y pose pas (voir estPlateau).
  *
  * Cas particulier : la fiche OUVERTE EN FENÊTRE SÉPARÉE (bouton popout ->
  * app.roll20.net/editor/character/<campagne>/<perso>/...). Roll20 y sert le MÊME
@@ -38,11 +34,10 @@
  * trois, pas une de plus : tout le reste doit rester rigoureusement identique
  * d'un côté et de l'autre.
  *
- * RÉGLAGES. Ce fichier ne fait que LIRE le stockage, jamais écrire ailleurs que
- * dans la géométrie du plateau ; le popup est le seul poste d'aiguillage.
- * Il lit miaOff (éteinte : rien ne se réveille), miaBeta (quelle moitié parle),
- * miaNuit (« auto » | « jour » | « nuit », qui décide du n=1/0 envoyé aux pages
- * du site et de la couleur du cadre flottant) et l'interrupteur du plateau.
+ * RÉGLAGES. Ce fichier ne fait que LIRE le stockage, jamais écrire : le popup
+ * est le seul poste d'aiguillage. Il lit miaOff (éteinte : rien ne se réveille),
+ * miaBeta (quelle moitié parle) et miaNuit (« auto » | « jour » | « nuit », qui
+ * décide du n=1/0 envoyé aux pages du site et de la couleur de nos boîtes).
  * Tout cela se lit à la garde, tout en bas, où l'inventaire est détaillé.
  *
  * TOUTE CORRECTION DE SÛRETÉ DOIT ÊTRE APPLIQUÉE AUX DEUX COPIES. La liste
