@@ -18,10 +18,10 @@
   // l'écran de version ne paraît plus qu'au désaccord de schéma.
   //
   // Le suffixe « b » marque la branche beta, pour que le joueur voie sur quel
-  // site il est. Il ne change PAS le rang : « 3.6.0b » et « 3.6.0 » sont de
+  // site il est. Il ne change PAS le rang : « 1.0.1b » et « 1.0.1 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (MiaMods.compareVersions tient cette règle).
-  var RELEASE = "1.0.0b";
+  var RELEASE = "1.0.1b";
   var SCHEMA = 1;
 
   // ---------- ce que la fiche ne décide PAS ----------
