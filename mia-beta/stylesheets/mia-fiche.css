@@ -94,7 +94,7 @@ html.night body:has(#perso-atelier) .md-container { background: #0e0e0e !importa
      (min(…, 100%)) : sur un écran plus petit elle se replie comme avant. */
   --pc-sheet-w: 62rem;
   --pc-trio-w: 8.7rem;   /* trois cases égales : voir .pc-trio */
-  --pc-quint-w: 14.5rem; /* cinq cases égales, même largeur de case */
+  --pc-quint-w: 11.6rem; /* quatre cases égales, même largeur de case */
   --pc-paire-w: 5.8rem;  /* deux cases, la même encore : les deux sigles */
 
   color: var(--ink);
@@ -443,11 +443,13 @@ html.night .pc-warn.doux { color: #ffbc33; background: rgba(255, 188, 51, .13); 
   --taille-case: clamp(.5rem, 35cqw, .88rem);
   --taille-etiquette: clamp(.36rem, 19cqw, .48rem);
 }
-/* CINQ CASES au lieu de trois, même largeur de case : une spécialité tient de
-   ses propres points, du MOD de sa caractéristique et des points de sa
-   compétence, elle est coiffée par une limite, et on lui pose un bonus. Cinq
-   nombres, cinq colonnes — et la même case que partout ailleurs, pour que l'œil
-   retrouve le même pas d'une liste à l'autre. */
+/* QUATRE CASES sous le rouage, TROIS en jouant, et la MÊME case que partout
+   ailleurs dans les deux cas — c'est la seule chose qui compte : l'œil doit
+   retrouver le même pas d'une liste à l'autre ET d'un mode à l'autre.
+   La largeur du bloc suit donc le NOMBRE DE CASES VISIBLES, et rien d'autre.
+   La case a valu cinq largeurs de trop pendant une version : le plafond était
+   parti sans que la largeur suive, et le chiffre grossissait en ouvrant le
+   rouage. */
 /* LA MÊME CASE QUE LE TRIO, ET C'EST UN CALCUL, PAS UN RÉGLAGE À L'ŒIL.
    Le trio prend 60 % de SA colonne pour trois cases : une case vaut donc
    20 % d'une colonne de caractéristiques. (Ce n'est pas plus : au plus serré
@@ -457,30 +459,30 @@ html.night .pc-warn.doux { color: #ffbc33; background: rgba(255, 188, 51, .13); 
    donc du RAPPORT entre les deux colonnes, qui change avec le nombre de
    colonnes de l'onglet :
 
-     trois colonnes  la sienne vaut DEUX quarts  ->  5 × 20 / 2 = 50 %
+     trois colonnes  la sienne vaut DEUX quarts  ->  4 × 20 / 2 = 40 %
      deux colonnes   elle occupe toute la largeur, les autres une moitié
-                     (rapport ~2,05)             ->  48,8 %
-     une colonne     les deux colonnes n'en font qu'une (rapport 1) -> 100 %
+                     (rapport ~2,05)             ->  39,04 %
+     une colonne     les deux colonnes n'en font qu'une (rapport 1) -> 80 %
 
    Sans cela, un chiffre de spécialité s'affichait à 19 px là où le même chiffre
    de caractéristique s'affichait à 13 px, côte à côte, sur la même feuille. */
-.pc-trio.cinq { width: min(var(--pc-quint-w, 14.5rem), 100cqw); }
+.pc-trio.cinq { width: min(var(--pc-quint-w, 11.6rem), 80cqw); }
 /* HORS ÉDITION, LE BLOC D'UNE SPÉCIALITÉ NE MONTRE QUE TROIS CASES — total,
    limite, bonus — et il doit donc RÉTRÉCIR avec son contenu. Sans cela ses
    trois cases se partageraient la largeur de cinq et redeviendraient plus
    grandes que celles des deux autres listes : exactement le défaut corrigé en
-   1.4.2b. Trois cinquièmes de la part du quintuple, à chaque mode. */
+   1.4.2b. Trois quarts de la part d'édition, à chacun des trois modes. */
 .pc-editable:not(.editing) .pc-trio.cinq { width: min(var(--pc-trio-w, 8.7rem), 60cqw); }
 /* DEUX CASES, celles des sigles, prises sur la même mesure : deux cinquièmes de
    la part du quintuple, puisque c'est le même pas de case. */
 .pc-trio.deux { width: min(var(--pc-paire-w, 5.8rem), 40cqw); }
 @container feuille (min-width: 26rem) {
-  .pc-trio.cinq { width: min(var(--pc-quint-w, 14.5rem), 48.8cqw); }
+  .pc-trio.cinq { width: min(var(--pc-quint-w, 11.6rem), 39.04cqw); }
   .pc-editable:not(.editing) .pc-trio.cinq { width: min(var(--pc-trio-w, 8.7rem), 29.28cqw); }
   .pc-trio.deux { width: min(var(--pc-paire-w, 5.8rem), 19.52cqw); }
 }
 @container feuille (min-width: 38rem) {
-  .pc-trio.cinq { width: min(var(--pc-quint-w, 14.5rem), 50cqw); }
+  .pc-trio.cinq { width: min(var(--pc-quint-w, 11.6rem), 40cqw); }
   .pc-editable:not(.editing) .pc-trio.cinq { width: min(var(--pc-trio-w, 8.7rem), 30cqw); }
   .pc-trio.deux { width: min(var(--pc-paire-w, 5.8rem), 20cqw); }
 }
@@ -649,9 +651,9 @@ html.night .pc-warn.doux { color: #ffbc33; background: rgba(255, 188, 51, .13); 
   }
   /* le couple reste en haut, avec le nom, et garde le pas des cases du bas */
   .pc-block[data-module="specialites"] .pc-crow-top > .pc-trio.deux {
-    width: min(var(--pc-paire-w, 5.8rem), calc((100cqw - 1.4rem) * 2 / 5));
+    width: min(var(--pc-paire-w, 5.8rem), calc((100cqw - 1.4rem) * 2 / 4));
   }
-  .pc-trio { width: min(var(--pc-trio-w, 8.7rem), calc((100cqw - 1.4rem) * 3 / 5)); }
+  .pc-trio { width: min(var(--pc-trio-w, 8.7rem), calc((100cqw - 1.4rem) * 3 / 4)); }
 }
 
 .pc-trio.adj .v { color: var(--red-deep); }
