@@ -207,6 +207,7 @@
   }
   function speRetire(spe) {
     if (!spe || !spe.carac) return 0;
+    if (state.ecartCoupe) return 0;   // règle suspendue pour ce personnage
     var haut = Math.max(0, caracLimNat(spe.carac) - ecartMin(spe.carac));
     return Math.max(0, speTotalNat(spe) - haut);
   }

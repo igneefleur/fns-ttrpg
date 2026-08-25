@@ -74,6 +74,34 @@
       });
   }
 
+  // ---- couper la règle de l'écart ----
+  // UN INTERRUPTEUR, ET IL PORTE SUR TOUT LE PERSONNAGE. Les trois leviers
+  // ci-dessus DÉCALENT ; celui-ci SUSPEND. Il est à part pour cette raison, et
+  // pas seulement parce qu'il n'a pas de ligne par caractéristique : décaler un
+  // seuil et suspendre une règle ne se font pas dans le même état d'esprit, et
+  // on ne coche pas l'un en croyant régler l'autre.
+  function buildEcartCoupe() {
+    var b = block("Règle de l'écart");
+    b.appendChild(el("div", "pc-block-note",
+      "Coupée, aucun total de spécialité n'est ramené — quelle que soit sa limite."));
+    var row = el("div", "pc-kv");
+    var lab = el("label", "pc-case-mot");
+    var boite = el("input");
+    boite.type = "checkbox";
+    boite.title = "Coché, la règle de l'écart ne retire plus rien à ce personnage.";
+    boite.addEventListener("change", function () {
+      state.ecartCoupe = boite.checked;
+      save();
+      refresh();
+    });
+    hooks.push(function () { boite.checked = !!state.ecartCoupe; });
+    lab.appendChild(boite);
+    lab.appendChild(el("span", "t", "Couper la règle pour ce personnage"));
+    row.appendChild(lab);
+    b.appendChild(row);
+    return b;
+  }
+
   function buildEcartCaracs() {
     // L'ÉCART MINIMUM entre le total d'une spécialité et la limite naturelle.
     return levierCarac("Écart des spécialités",

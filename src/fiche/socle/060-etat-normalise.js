@@ -117,6 +117,7 @@
     s.armures = objArray(s.armures);
 
     // ---------- les valeurs dérivées ----------
+    s.ecartCoupe = !!s.ecartCoupe;
     s.divers = objet(s.divers);
     ["pvMax", "endurance", "vitesse", "initiative", "charge", "recup",
      "sautLong", "sautHaut"].forEach(function (k) {

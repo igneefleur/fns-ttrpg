@@ -37,6 +37,11 @@
       //                  spécialité sous son minimum (voir speTotal)
       //   caracsEcartMod ce qui s'ajoute à l'écart minimum lui-même
       caracsModMod: {}, caracsLimMod: {}, caracsEcartMod: {},
+      // LA RÈGLE DE L'ÉCART, COUPÉE. Les trois leviers ci-dessus DÉCALENT ;
+      // celui-ci SUSPEND, et pour tout le personnage : plus rien n'est retiré
+      // à aucune spécialité. C'est pour la construction que la règle ordinaire
+      // ne sait pas décrire.
+      ecartCoupe: false,
       caracsXpForce: {}, caracsXpMod: {}, caracsXpMod2: {},
 
       // sigle -> points investis (1 XP le point). Mêmes leviers.

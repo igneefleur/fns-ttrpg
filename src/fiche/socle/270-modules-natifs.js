@@ -71,6 +71,7 @@
     { id: "limcaracs",  titre: "Limite des caractéristiques", onglet: "options", colonne: "gauche", build: buildLimCaracs },
     { id: "modcaracs",  titre: "Modificateur des caractéristiques", onglet: "options", colonne: "gauche", build: buildModCaracs },
     { id: "ecartcaracs", titre: "Écart des spécialités", onglet: "options", colonne: "gauche", build: buildEcartCaracs },
+    { id: "ecartcoupe", titre: "Règle de l'écart", onglet: "options", colonne: "gauche", build: buildEcartCoupe },
     { id: "xpcaracs",   titre: "Coût en xp des caractéristiques", onglet: "options", colonne: "gauche", build: buildXpCaracs },
     { id: "xpchamps",   titre: "XP par champ",      onglet: "options", colonne: "droite", build: buildXpChamps },
     // Création passe à DROITE, et ce n'est pas un choix de goût : mesuré sous

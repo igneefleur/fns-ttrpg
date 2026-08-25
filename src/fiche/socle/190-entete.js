@@ -313,6 +313,12 @@
           warns.appendChild(el("div", "pc-warn", "« " + compInfo(c).nom + " » dépasse son plafond de points (" +
             (state.comps[c] || 0) + " / " + compPlafond(c) + ")."));
       });
+      // COUPÉE, LA RÈGLE LE DIT. Une règle suspendue en silence est la pire
+      // des trappes : six mois plus tard, personne ne se souvient d'avoir
+      // coché la case et les totaux paraissent faux.
+      if (state.ecartCoupe)
+        warns.appendChild(el("div", "pc-warn doux",
+          "Règle de l'écart coupée : aucun total de spécialité n'est ramené."));
       // L'ÉCART D'UNE SPÉCIALITÉ. Rien n'est bloqué à l'achat : quand l'écart
       // avec la limite descendrait sous son minimum, c'est le total employé au
       // jet qui est ramené. Ce n'est donc pas une faute — d'où le jaune — mais
