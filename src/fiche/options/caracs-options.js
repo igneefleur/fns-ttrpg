@@ -61,7 +61,11 @@
       // alors le focus, Entrée et Espace sans qu'on écrive une ligne pour ça.
       var bouton = el("button", "pc-tab", nom);
       bouton.type = "button";
-      bouton.title = aide;
+      // UNE INFOBULLE SEULEMENT QUAND LE MOT EST ABRÉGÉ, et elle ne dit alors
+      // que le mot entier. Les cinq en portaient une qui récitait la règle
+      // (« ce qui coiffe le résultat du jet ») : la fiche ne récite pas les
+      // règles, elle porte l'état du personnage.
+      if (aide) bouton.title = aide;
       bouton.addEventListener("click", function () { montre(i); });
       bouton.addEventListener("keydown", function (e) {
         var d = e.key === "ArrowRight" ? 1 : (e.key === "ArrowLeft" ? -1 : 0);
@@ -78,11 +82,12 @@
       pages.push({ bouton: bouton, page: page });
     }
 
-    // La note d'un onglet dit ce que CE levier fait, et lui seul : c'est la
-    // seule chose qui distingue cinq grilles qui se ressemblent.
-    function note(hote, texte) {
-      hote.appendChild(el("div", "pc-block-note", texte));
-    }
+    // AUCUNE NOTE SOUS LES ONGLETS, ET C'EST UNE RÈGLE DE LA FICHE : elle ne
+    // récite pas les règles, elle porte l'état du personnage. Ce que chaque
+    // levier fait se lit dans le NOM de son onglet et dans les entêtes de sa
+    // grille ; ce dont on a besoin en réglant un champ tient dans l'infobulle
+    // de ce champ. Une phrase de règle posée là est du texte de livre dans un
+    // outil, et elle vieillit sans que personne s'en aperçoive.
     // LA GRILLE, ET SON DÉFILEMENT. Les colonnes d'une grille d'Options ont une
     // largeur en rem, pas en parts : sous une certaine largeur de colonne, elles
     // ne rentrent plus, et c'est voulu — un champ de saisie qui se réduit à deux
@@ -126,8 +131,7 @@
     // Le sigle, ce qu'on décale, ce que ça donne. Deux onglets s'en servent —
     // le modificateur et la limite — et ils ne diffèrent que par la clé d'état
     // qu'ils écrivent et par le nombre qu'ils affichent en regard.
-    function levier(hote, texte, mot, aide, champ, borne, rendu) {
-      note(hote, texte);
+    function levier(hote, mot, aide, champ, borne, rendu) {
       var box = grille(hote);
       entete(box, "trois", [["Carac.", "Caractéristique"],
                             ["Décal.", "Décalage — vide = aucun"],
@@ -158,8 +162,7 @@
     function de(nom) {
       return (/^[aâàäeéèêëiîïoôöuùûü]/i.test(nom) ? "d'" : "de ") + nom;
     }
-    onglet("Plafond", "Ce qu'une caractéristique ne peut pas dépasser", function (p) {
-      note(p, "Le prestige plafonne chaque caractéristique. Ce qui suit relève ou abaisse ce plafond, caractéristique par caractéristique.");
+    onglet("Plafond", "", function (p) {
       var box = grille(p);
       entete(box, "quatre", [["Carac.", "Caractéristique"],
                              ["Forcé", "Plafond forcé — vide = plafond calculé"],
@@ -169,7 +172,7 @@
         var row = rangee(box, "quatre", c, i);
         row.appendChild(champForce(state.caracsPlafondForce, c,
           function () { return caracPlafondAuto(c); },
-          "Plafond forcé — vide = plafond calculé (prestige + modificateur)."));
+          "Plafond forcé — vide = plafond calculé."));
         row.appendChild(champMod(state.caracsPlafondMod, c, 999,
           "Modificateur du plafond " + de(caracInfo(c).nom) + " — vide = aucun."));
         var tot = el("span", "pc-comp-total", "");
@@ -190,8 +193,7 @@
     // ---------- XP ----------
     // CE QU'ELLES COÛTENT, ET RIEN D'AUTRE. Le coût se lit sur la valeur
     // ACHETÉE, jamais sur le total : un bonus d'équipement ne se paie pas.
-    onglet("XP", "Ce qu'une caractéristique coûte", function (p) {
-      note(p, "Coût en xp de la valeur achetée. Vide = le barème des règles.");
+    onglet("XP", "", function (p) {
       var box = grille(p);
       entete(box, "xp", [["Carac.", "Caractéristique"],
                          ["Forcé", "Coût en xp forcé — vide = coût calculé"],
@@ -201,7 +203,7 @@
         var row = rangee(box, "xp pc-mods-host", c, i);
         row.appendChild(champForce(state.caracsXpForce, c,
           function () { return caracXpAuto(c); },
-          "Coût en xp forcé — vide = coût calculé (barème des règles et modificateurs)."));
+          "Coût en xp forcé — vide = coût calculé."));
         row.appendChild(champMod(state.caracsXpMod, c, 9999,
           "Premier modificateur du coût en xp — vide = aucun."));
         row.appendChild(champMod(state.caracsXpMod2, c, 9999,
@@ -225,9 +227,8 @@
     });
 
     // ---------- Modificateur ----------
-    onglet("Modif.", "Ce que la caractéristique ajoute au jet", function (p) {
-      levier(p, "Décale le modificateur sans toucher à la valeur ni à la limite.",
-        ["MOD", "Modificateur effectif, celui qui s'ajoute au jet"],
+    onglet("Modif.", "Modificateur", function (p) {
+      levier(p, ["MOD", "Modificateur effectif"],
         "Décalage du modificateur — vide = aucun.",
         "caracsModMod", 999,
         function (c) {
@@ -242,9 +243,8 @@
     // LA LIMITE SEULE, et c'est le seul levier qui resserre l'écart d'une
     // spécialité sous son minimum : le rabattage se calcule sur la limite
     // NATURELLE, que celui-ci ne touche pas (voir caracLimNat).
-    onglet("Limite", "Ce qui coiffe le résultat du jet", function (p) {
-      levier(p, "Décale la limite sans toucher à la valeur : c'est le seul levier qui resserre l'écart d'une spécialité.",
-        ["Limite", "Limite effective, celle qui coiffe le jet"],
+    onglet("Limite", "", function (p) {
+      levier(p, ["Limite", "Limite effective"],
         "Décalage de la limite — vide = aucun.",
         "caracsLimMod", 9999,
         function (c) {
@@ -265,8 +265,7 @@
     // d'esprit. Le motif tient toujours, mais on ne le cherche nulle part
     // ailleurs qu'à l'endroit où l'on règle l'écart : il ouvre l'onglet, avant
     // les huit lignes, et ce qu'il coupe se lit juste en dessous.
-    onglet("Écart", "L'écart minimum qu'une spécialité doit garder", function (p) {
-      note(p, "Écart minimum entre le total d'une spécialité et la limite de sa caractéristique. Vide = celui des règles.");
+    onglet("Écart", "", function (p) {
       var row = el("div", "pc-kv");
       var lab = el("label", "pc-case-mot");
       var boite = el("input");
@@ -285,12 +284,12 @@
 
       var box = grille(p);
       entete(box, "paire", [["Carac.", "Caractéristique"],
-                            ["Écart", "Vide = l'écart des règles"]]);
+                            ["Écart", "Vide = valeur par défaut"]]);
       champs().forEach(function (c, i) {
         var row2 = rangee(box, "paire", c, i);
         row2.appendChild(champForce(state.caracsEcart, c,
           function () { return repli("speMarge"); },
-          "Écart minimum — vide = celui des règles."));
+          "Écart minimum — vide = valeur par défaut."));
         hooks.push(function () {
           row2.classList.toggle("on", state.caracsEcart[c] !== undefined);
         });
