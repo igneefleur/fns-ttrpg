@@ -41,7 +41,7 @@
     caracTotal: 1, caracMod: 1, caracLim: 1, ecartMin: 1,
     compValue: 1, compPlafond: 1, compXp: 1,
     spePts: 1, speTotal: 1, jetBonus: 1,
-    pvMax: 1, enduranceMax: 1, enduranceMalus: 1, recupJour: 1,
+    pvMax: 1, enduranceMax: 1, enduranceMalus: 1, recupJour: 1, recupEnduranceJour: 1,
     initiative: 1, vitesse: 1, sautLong: 1, sautHaut: 1,
     poidsPorte: 1, chargeMax: 1, xpDepense: 1
   };

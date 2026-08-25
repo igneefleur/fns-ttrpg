@@ -16,8 +16,8 @@
     refresh();
   }
   function buildComps() {
-    // jeu : les points, la limite et le jet ; édition : les ± qui achètent les
-    // points, ligne par ligne
+    // jeu : le total, la limite et le bonus ; édition : les mêmes cases, deux
+    // d'entre elles ouvertes à la saisie
     var b = block("Compétences", null, "comps");
     // l'entête des trois colonnes, du même squelette que le trio des lignes :
     // c'est ce qui garantit que chaque mot tombe en face de sa colonne
@@ -32,7 +32,7 @@
     // lit ce que la compétence DONNE — son total au dé, la limite qui le
     // coiffe ; en construisant, ce qu'on y a MIS et ce qu'on peut y mettre.
     // Deux mots dans la même case, dont un seul s'affiche.
-    [["Tot", "Val"], ["Lim", "Max"], "Bonus"].forEach(function (k) {
+    [["Tot", "Val"], ["Lim", "Max"], ["Bonus", "Bon"]].forEach(function (k) {
       var c = el("span", "c");
       if (typeof k === "string") c.appendChild(el("span", "k", k));
       else {

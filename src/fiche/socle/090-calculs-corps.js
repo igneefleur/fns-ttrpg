@@ -68,6 +68,17 @@
     var v = recupJourBrut();
     return aFiltre("recupJour") ? applique("recupJour", v, {}) : v;
   }
+  // L'ENDURANCE SE REGAGNE EN ENTIER. Deux fois son maximum, dit la règle : la
+  // réserve court de −max à +max, donc deux fois le maximum est exactement ce
+  // qu'il faut pour la remplir depuis le fond. Une nuit suffit, quel que soit
+  // l'état où l'on s'est couché.
+  function recupEnduranceJourBrut() {
+    return Math.floor(enduranceMax() * repli("recupEndurMult"));
+  }
+  function recupEnduranceJour() {
+    var v = recupEnduranceJourBrut();
+    return aFiltre("recupEnduranceJour") ? applique("recupEnduranceJour", v, {}) : v;
+  }
 
   // ---------- la charge ----------
   // Le poids des objets se calcule ICI et nulle part ailleurs : le module

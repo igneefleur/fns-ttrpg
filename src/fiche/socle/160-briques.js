@@ -49,6 +49,54 @@
     w.appendChild(stepBtn("+", title ? "+ " + step : null, function () { set(get() + step); refresh(); }));
     return w;
   }
+  // ---------- les cases d'un bloc de nombres ----------
+  // TROIS FORMES, UNE SEULE BOÎTE. Les trois listes de la fiche s'en servent :
+  // sans cela leurs lignes n'auraient pas la même hauteur, et la ligne changerait
+  // d'épaisseur en ouvrant le rouage.
+  //
+  // caseTexte   un nombre, rien d'autre
+  // caseDouble  deux nombres, un par mode — la feuille n'en montre qu'un
+  // caseSaisie  un TEXTE en jouant, un CHAMP sous le rouage. Les deux, et pas
+  //             seulement le champ : un champ de type nombre ne sait pas écrire
+  //             « +25 » et porte des compteurs que Roll20 n'a nulle part.
+  function caseVide(hote, cls) {
+    var c = el("span", "c" + (cls ? " " + cls : ""));
+    hote.appendChild(c);
+    return c;
+  }
+  function caseTexte(hote, cls) {
+    var c = caseVide(hote, cls);
+    var v = el("span", "v", "");
+    c.appendChild(v);
+    return v;
+  }
+  function caseDouble(hote, cls) {
+    var c = caseVide(hote, cls);
+    var a = el("span", "v pc-jeu-only", "");
+    var b = el("span", "v pc-edit-only", "");
+    c.appendChild(a); c.appendChild(b);
+    return [a, b];
+  }
+  // Le champ ne se réécrit JAMAIS sous les doigts : tant qu'il a le focus, ce
+  // qu'on tape y reste tel quel.
+  function caseSaisie(hote, lire, ecrire, aide, reg) {
+    var c = caseVide(hote, "reglable");
+    var t = el("span", "v pc-jeu-only", "");
+    var i = el("input", "v pc-edit-only pc-case-champ pc-edit-field");
+    i.type = "number"; i.step = "1";
+    i.title = aide;
+    i.addEventListener("input", function () {
+      var v = parseInt(i.value, 10);
+      if (isFinite(v)) { ecrire(v); refresh(); }
+    });
+    (reg || hooks).push(function () {
+      if (document.activeElement !== i) i.value = lire();
+    });
+    c.appendChild(t);
+    c.appendChild(i);
+    return { txt: t, champ: i };
+  }
+
   // trois petits champs ± (équipement / art / décision du MJ), sommés dans la
   // valeur effective ; discrets, révélés au survol de l'hôte (.pc-mods-host).
   var MMOD_SLOTS = ["équipement", "art", "autre"];

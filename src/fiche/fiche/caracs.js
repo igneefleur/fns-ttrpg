@@ -7,8 +7,8 @@
   // caractéristique, il les plafonne toutes. Il se saisit dans l'en-tête, à
   // côté de l'XP total — les deux mêmes choses, ce que le meneur accorde.
   function buildCaracs() {
-    // jeu : le sigle et son trio ; édition : les ± qui achètent la valeur, et
-    // ce qu'elle a coûté
+    // jeu : le sigle et son trio ; édition : les mêmes cases, dont deux
+    // s'ouvrent à la saisie
     var b = block("Caractéristiques", null, "caracs");
 
     // ---------- l'entête des trois colonnes ----------
@@ -44,79 +44,47 @@
       top.appendChild(chip);
       top.appendChild(el("span", "sp"));
 
-      // LE TRIO EST LE BOUTON DE JET, d'un seul tenant. Les trois nombres se
-      // lisent dans l'ordre où ils se composent — la valeur qu'on a achetée, le
-      // modificateur qu'elle donne au jet, la limite qui le coiffe — et aucun
-      // ne veut rien dire sans les deux autres : c'est donc le BLOC qui lance,
-      // et non l'un des trois. doJet est le seul chemin d'un jet de test : il
-      // pose le MOD, la limite et le malus d'endurance sans qu'on y pense.
-      var trio = el("span", "pc-trio pc-rollable");
-      function case3() {
-        var c = el("span", "c");
-        var v = el("span", "v", "");
-        c.appendChild(v);
-        trio.appendChild(c);
-        return v;
-      }
+      // ON NE LANCE PAS UNE CARACTÉRISTIQUE. Un jet part toujours d'une
+      // compétence ou d'une spécialité — la caractéristique n'y entre que par
+      // son MOD et sa limite. Le bloc ne se clique donc pas : il n'a ni
+      // curseur, ni survol, ni action.
+      var trio = el("span", "pc-trio");
       // TROIS NOMBRES, ET ILS DISENT UNE SEULE CHOSE : ce que la
       // caractéristique VAUT. Ce qu'elle DONNE au jet — son modificateur, sa
       // limite — ne s'écrit plus ici : les deux se lisent dans la table des
       // règles, et la compétence qui en relève les porte déjà sur sa propre
       // ligne. L'infobulle du bloc les rappelle, et le jet les emploie.
-      var vVal = case3();
-      var vBon = case3();
-      var vTot = case3();
-      // rouage ouvert, on construit : le bloc ne lance pas (voir specialites.js)
-    trio.addEventListener("click", function () {
-      if (isEdit("caracs")) return;
-      doJet(code, code, null, null);
-    });
-      top.appendChild(trio);
-      row.appendChild(top);
-
-      // LES ± ACHÈTENT LA VALEUR, et rien ne les retient faute d'xp : l'en-tête
-      // AVERTIT dès que le total est dépassé, là où un blocage figerait à zéro
-      // toute fiche remplie à l'envers — les valeurs d'abord, l'xp total
-      // ensuite. Le prestige, lui, borne pour de bon.
       //
-      // L'XP EST ICI, ET NON EN PERMANENCE : ce qu'une caractéristique a coûté
-      // ne se lit qu'en construisant le personnage. En jouant, il n'apprend
-      // rien et prend une ligne.
-      var bot = el("div", "pc-crow-bot pc-edit-only");
-      bot.appendChild(el("span", "lbl", "Valeur"));
-      bot.appendChild(stepper(
+      // DEUX SE SAISISSENT DANS LEUR CASE. Le rang de construction qui portait
+      // leurs ± a disparu avec : la ligne garde la même hauteur, rouage ouvert
+      // ou fermé, et la même que celle d'une spécialité.
+      var vVal = caseSaisie(trio,
         function () { return caracBase(code); },
         function (v) {
           // le plafond ne bloque que les HAUSSES : une valeur passée au-dessus
-          // (prestige abaissé après coup, relèvement retiré des Options)
-          // redescend pas à pas au lieu d'être écrasée d'un seul clic
+          // (prestige abaissé après coup) redescend pas à pas au lieu d'être
+          // écrasée d'un seul clic
           var plaf = caracPlafond(code);
           var haut = Math.max(plaf, caracBase(code));
           var n = Math.round(v);
-          if (n > haut) {
-            flash(haut === plaf
-              ? "Plafond de " + plaf + "."
-              : code + " est au-delà du plafond (" + plaf + ").");
-            n = haut;
-          }
+          if (n > haut) { flash("Plafond de " + plaf + "."); n = haut; }
           state.caracs[code] = Math.max(0, n);
-        }, 1, "valeur"));
-      // LE BONUS EST ICI, ET PLUS DANS LES OPTIONS. C'est ce qui décale la
-      // VALEUR — donc, par la table, le MOD et la LIMITE ensemble. Il se pose
-      // après le plafond du prestige, et peut donc le dépasser.
-      bot.appendChild(el("span", "lbl", "Bonus"));
-      bot.appendChild(stepper(
+        }, "Valeur achetée");
+      var vBon = caseSaisie(trio,
         function () { return state.caracsBonus[code] || 0; },
         function (v) {
           var n = clamp(Math.round(v), -999, 999);
           if (n) state.caracsBonus[code] = n; else delete state.caracsBonus[code];
-        }, 1, "bonus"));
-      bot.appendChild(el("span", "lbl", "XP"));
-      var vXp = el("span", "max", "");
-      vXp.style.justifySelf = "end";
-      bot.appendChild(vXp);
-      row.appendChild(bot);
+        }, "Bonus de la caractéristique");
+      var vTot = caseTexte(trio);
+      top.appendChild(trio);
+      row.appendChild(top);
 
+      // L'XP N'EST PLUS ÉCRITE SUR LA LIGNE. Elle prenait un rang entier sous
+      // les nombres, uniquement en édition — donc une ligne qui changeait de
+      // hauteur au clic du rouage. Ce qu'une caractéristique coûte se lit dans
+      // le total de l'en-tête, qui avertit dès qu'il est dépassé ; le détail par
+      // caractéristique appartient au calibrage, pas à la fiche en jeu.
       hooks.push(function () {
         var d = state.caracsBonus[code] || 0;
         var dm = state.caracsModMod[code] || 0;
@@ -124,14 +92,12 @@
         var plaf = caracPlafond(code);
         var base = caracBase(code);
         var mord = base > plaf;
-        var xpF = state.caracsXpForce[code] !== undefined;
-        var xpD = (state.caracsXpMod[code] || 0) + (state.caracsXpMod2[code] || 0);
         var retouche = d !== 0 || dm !== 0 || dl !== 0 || mord;
         // LA VALEUR EST CELLE QU'ON A ACHETÉE, le bonus ce qui s'y ajoute, le
         // total leur somme — c'est de ce total-là que la table tire le MOD et
         // la limite du jet.
-        vVal.textContent = String(Math.min(base, plaf));
-        vBon.textContent = sign(d);
+        vVal.txt.textContent = String(Math.min(base, plaf));
+        vBon.txt.textContent = sign(d);
         vTot.textContent = String(caracTotal(code));
         trio.classList.toggle("adj", retouche);
         // quand le plafond mord, le dire : sans cela, le joueur voit un total
@@ -143,14 +109,7 @@
                      (d ? " · bonus " + sign(d) : "") +
                      (dm ? " · MOD décalé de " + sign(dm) + " (Options)" : "") +
                      (dl ? " · limite décalée de " + sign(dl) + " (Options)" : "") +
-                     " — clic : lancer " + DE_DEFAUT + " " + sign(caracMod(code)) +
-                     ", plafonné à " + caracLim(code);
-        // l'XP se lit sur la valeur ACHETÉE, jamais sur le total : un
-        // modificateur d'équipement ne se paie pas.
-        vXp.textContent = String(caracXp(code));
-        vXp.classList.toggle("adj", xpF || xpD !== 0);
-        vXp.title = xpF ? "Coût forcé (Options) — calculé : " + caracXpAuto(code)
-                        : (xpD ? "Modificateur (Options) " + sign(xpD) : "");
+                     " — MOD " + sign(caracMod(code)) + ", LIM " + caracLim(code);
       });
       return row;
     }

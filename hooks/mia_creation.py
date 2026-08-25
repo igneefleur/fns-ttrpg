@@ -163,6 +163,9 @@ def _extract(docs_dir):
         "sautLong": _un(text, r"Saut en longueur = FOR\s*×\s*([\d,\.]+)", 1.75),
         "sautHaut": _un(text, r"Saut en hauteur = FOR\s*÷\s*([\d,\.]+)", 2),
         "recupMult": _un(text, r"Elle monte jusqu'à MOD CON\s*×\s*(\d+)", 2),
+        # l'endurance se regagne en ENTIER : deux fois son maximum, ce qui
+        # couvre exactement la course de −max à +max
+        "recupEndurMult": _un(text, r"Endurance regagnée par jour = endurance max\s*×\s*([\d,\.]+)", 2),
     }
 
     # LES CONTRÔLES. Une table renommée rend une liste VIDE sans rien lever :

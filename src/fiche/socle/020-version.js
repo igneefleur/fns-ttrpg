@@ -21,7 +21,7 @@
   // site il est. Il ne change PAS le rang : « 1.0.1b » et « 1.0.1 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (MiaMods.compareVersions tient cette règle).
-  var RELEASE = "1.11.0b";
+  var RELEASE = "1.12.0b";
   var SCHEMA = 1;
 
   // ---------- ce que la fiche ne décide PAS ----------
@@ -44,7 +44,7 @@
     endurAction: 50,              // endurance dépensable sur une même action
     iniMult: 2, iniMainsNues: 20,
     vitesseCarre: true, vitesseMult: 2,   // « AGI × AGI » ; le second ne sert que si la page repasse à « AGI × n »
-    sautLong: 1.75, sautHaut: 2, recupMult: 2
+    sautLong: 1.75, sautHaut: 2, recupMult: 2, recupEndurMult: 2
   };
 
   var MOD_PAS = 5;            // tous les modificateurs se règlent de 5 en 5

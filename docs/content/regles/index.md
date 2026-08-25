@@ -298,6 +298,8 @@ blessures. Elle monte jusqu'à MOD CON × 2.
 
 <p class="formula">PV regagnés par jour = (MOD CON + RÉCUP) / 2</p>
 
+<p class="formula">Endurance regagnée par jour = endurance max × 2</p>
+
 </div>
 
 </div>
