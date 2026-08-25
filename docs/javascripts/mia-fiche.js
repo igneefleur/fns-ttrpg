@@ -74,7 +74,7 @@
   // site il est. Il ne change PAS le rang : « 1.0.1b » et « 1.0.1 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (MiaMods.compareVersions tient cette règle).
-  var RELEASE = "1.9.0b";
+  var RELEASE = "1.9.1b";
   var SCHEMA = 1;
 
   // ---------- ce que la fiche ne décide PAS ----------
@@ -2400,12 +2400,8 @@
           warns.appendChild(el("div", "pc-warn", "« " + compInfo(c).nom + " » dépasse son plafond de points (" +
             (state.comps[c] || 0) + " / " + compPlafond(c) + ")."));
       });
-      // COUPÉE, LA RÈGLE LE DIT. Une règle suspendue en silence est la pire
-      // des trappes : six mois plus tard, personne ne se souvient d'avoir
-      // coché la case et les totaux paraissent faux.
-      if (state.ecartCoupe)
-        warns.appendChild(el("div", "pc-warn doux",
-          "Règle de l'écart coupée : aucun total de spécialité n'est ramené."));
+      // AUCUN BANDEAU POUR LA RÈGLE COUPÉE : c'est un réglage volontaire, pas
+      // un état du personnage. Les garde-fous ne portent que ce qui cloche.
       // L'ÉCART D'UNE SPÉCIALITÉ. Rien n'est bloqué à l'achat : quand l'écart
       // avec la limite descendrait sous son minimum, c'est le total employé au
       // jet qui est ramené. Ce n'est donc pas une faute — d'où le jaune — mais
@@ -5215,6 +5211,9 @@
   // pas seulement parce qu'il n'a pas de ligne par caractéristique : décaler un
   // seuil et suspendre une règle ne se font pas dans le même état d'esprit, et
   // on ne coche pas l'un en croyant régler l'autre.
+  //
+  // Il ne pose AUCUN avertissement en tête de fiche : c'est un réglage voulu,
+  // pas un état du personnage. Ce qu'il fait se lit ici, là où on le coche.
   function buildEcartCoupe() {
     var b = block("Règle de l'écart");
     b.appendChild(el("div", "pc-block-note",

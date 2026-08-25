@@ -80,6 +80,9 @@
   // pas seulement parce qu'il n'a pas de ligne par caractéristique : décaler un
   // seuil et suspendre une règle ne se font pas dans le même état d'esprit, et
   // on ne coche pas l'un en croyant régler l'autre.
+  //
+  // Il ne pose AUCUN avertissement en tête de fiche : c'est un réglage voulu,
+  // pas un état du personnage. Ce qu'il fait se lit ici, là où on le coche.
   function buildEcartCoupe() {
     var b = block("Règle de l'écart");
     b.appendChild(el("div", "pc-block-note",
