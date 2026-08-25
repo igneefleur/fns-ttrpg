@@ -74,7 +74,7 @@
   // site il est. Il ne change PAS le rang : « 1.0.1b » et « 1.0.1 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (MiaMods.compareVersions tient cette règle).
-  var RELEASE = "1.5.0b";
+  var RELEASE = "1.5.1b";
   var SCHEMA = 1;
 
   // ---------- ce que la fiche ne décide PAS ----------
@@ -2886,7 +2886,11 @@
       var vVal = case3();
       var vMod = case3();
       var vLim = case3();
-      trio.addEventListener("click", function () { doJet(code, code, null, null); });
+      // rouage ouvert, on construit : le bloc ne lance pas (voir specialites.js)
+    trio.addEventListener("click", function () {
+      if (isEdit("caracs")) return;
+      doJet(code, code, null, null);
+    });
       top.appendChild(trio);
       row.appendChild(top);
 
@@ -3483,7 +3487,11 @@
     var vPts = case3();
     var vMod = case3();
     var vLim = case3();
-    trio.addEventListener("click", function () { doJet(code, carac, code, null); });
+    // rouage ouvert, on construit : le bloc ne lance pas (voir specialites.js)
+    trio.addEventListener("click", function () {
+      if (isEdit("comps")) return;
+      doJet(code, carac, code, null);
+    });
     top.appendChild(trio);
     row.appendChild(top);
 
@@ -3822,6 +3830,10 @@
         function (v) { spe.bonus = clamp(Math.round(v), -999, 999); },
         "Bonus de la spécialité");
       quint.addEventListener("click", function (e) {
+        // ROUAGE OUVERT, ON CONSTRUIT : le bloc ne lance pas. Il porte
+        // maintenant des champs, et un clic à côté de l'un d'eux enverrait un
+        // jet au tchat sans qu'on l'ait voulu.
+        if (isEdit("specialites")) return;
         // un clic DANS un champ édite, il ne lance pas. Hors édition les champs
         // sont inertes (pointer-events: none) et le clic revient bien au bloc.
         var t = e.target && e.target.tagName;

@@ -469,6 +469,28 @@ html.night body:has(#perso-atelier) .md-container { background: #0e0e0e !importa
   .pc-trio.cinq { width: min(var(--pc-quint-w, 14.5rem), 50cqw); }
   .pc-trio.deux { width: min(var(--pc-paire-w, 5.8rem), 20cqw); }
 }
+/* LE NOM D'UNE SPÉCIALITÉ EST UN NOM QU'ON ÉCRIT, et il se règle comme tous
+   les autres de la fiche — celui d'une arme, celui d'un avantage : fond
+   transparent, un filet dessous, l'encre du texte, et le filet passe au rouge
+   quand on y est. Il héritait jusqu'ici de « .pc-crow-top .nm », écrite pour le
+   nom FIXE d'une compétence : petit, gris, sans filet ni fond — un champ qui
+   n'avait l'air de rien et qui n'allait avec rien.
+   Hors édition, la règle commune des champs verrouillés efface le filet : le
+   nom se lit alors comme un simple texte, à l'encre pleine. */
+.pc-block[data-module="specialites"] .pc-crow-top > input.nm {
+  flex: 1 1 auto; min-width: 0;
+  border: none; border-bottom: 1px solid var(--line-2); border-radius: 0;
+  background: transparent; color: var(--ink);
+  font-family: inherit; font-size: var(--fs-value); font-weight: 600;
+  line-height: 1.25; padding: .04rem .14rem .06rem;
+}
+.pc-block[data-module="specialites"] .pc-crow-top > input.nm:focus {
+  outline: none; border-bottom: 2px solid var(--red);
+}
+.pc-block[data-module="specialites"] .pc-crow-top > input.nm::placeholder {
+  color: var(--ink-3); font-weight: 400; font-style: italic;
+}
+
 /* le couple ne se lance pas : il identifie. Pas de curseur, pas de survol. */
 .pc-trio.deux .v { color: var(--ink-2); font-weight: 600; }
 
@@ -596,8 +618,11 @@ html.night body:has(#perso-atelier) .md-container { background: #0e0e0e !importa
 }
 
 .pc-trio.adj .v { color: var(--red-deep); }
-.pc-trio.pc-rollable:hover { border-color: var(--red); }
-.pc-trio.pc-rollable:hover .v { color: var(--red); }
+/* Le survol ne promet le jet que HORS édition : rouage ouvert, le bloc ne
+   lance plus, et rien ne doit laisser croire le contraire. */
+.pc-editable:not(.editing) .pc-trio.pc-rollable:hover { border-color: var(--red); }
+.pc-editable:not(.editing) .pc-trio.pc-rollable:hover .v { color: var(--red); }
+.pc-editable.editing .pc-rollable { cursor: default; }
 
 /* édition d'une carac : grille étiquette | stepper, une paire par ligne
    (le flex en vrac sautait à la ligne au milieu d'un groupe en colonne étroite) */
