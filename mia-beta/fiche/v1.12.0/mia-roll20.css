@@ -1,0 +1,54 @@
+/* Appoint iframe Roll20 — ce que la fiche a de particulier quand elle tourne
+ * DANS le dialogue de personnage de Roll20, plutôt que sur le site.
+ *
+ * Ce fichier vivait dans un <style> de roll20-fiche.html. Il en est sorti
+ * parce que cette page est devenue un AMORCEUR GELÉ : la coquille signée la
+ * charge sans aucun ?v= (extension/firefox/creator-shell.js), GitHub Pages la
+ * sert avec dix minutes de cache, et une version périmée de cette page ne doit
+ * jamais pouvoir figer un style. Désormais c'est le manifeste qui nomme ce
+ * fichier, et le manifeste, lui, se relit sans cache.
+ *
+ * LARGEUR DE RÉFÉRENCE : le demi-écran (~940 px de fenêtre). La racine passe
+ * de 22 px (site) à 18 px : la feuille y gagne un cinquième de place en rem,
+ * et ses trois colonnes tiennent donc plus bas. Au-delà, rien à régler ici :
+ * depuis la 1.2.1b, le nombre de colonnes et ce qui tient dedans se décident
+ * sur la LARGEUR RÉELLE de la feuille et de chaque colonne (@container), pas
+ * sur celle de la fenêtre. Une iframe large comme on veut est précisément le
+ * cas qu'aucun @media ne savait traiter. */
+
+/* mia-fiche.css épingle la racine du site à 22 px (html:has(#perso-atelier)
+   !important) : on la contre-épingle ICI, même sélecteur + !important, et ce
+   fichier est posé APRÈS dans le manifeste, donc il gagne. Ne pas revenir à un
+   simple `html {}`. */
+html, html:has(#perso-atelier) { font-size: 18px !important; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: #ededed;   /* plan de travail (côtés), comme le site */
+  /* La pile est RECOPIÉE, et non lue dans une variable : celle de la feuille
+     est posée sur .perso-atelier, qui n'existe pas encore quand l'amorceur
+     affiche son message d'attente. Deux lignes en double valent mieux qu'un
+     message servi dans la police du navigateur. */
+  font-family: "Proxima Nova", proxima-nova, "IBM Plex Sans", "Segoe UI", system-ui, "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+.perso-atelier { min-height: 100vh; overflow-x: hidden; }
+
+/* La feuille garde sa largeur NATIVE (50rem) et se centre (margin auto du
+   site) ; dans un dialogue plus étroit elle se comprime au lieu de défiler
+   (le site, lui, défile). box-sizing border-box : le padding est INCLUS dans
+   la largeur, sinon il déborde à droite. */
+.perso-atelier .pc-sheet { max-width: 100%; box-sizing: border-box; }
+
+/* PLUS AUCUN PALIER ICI. Il y avait un @media 36em–44em qui rétablissait trois
+   colonnes que le site, lui, avait repliées — un rattrapage devenu faux : les
+   colonnes se décident maintenant sur la largeur de la FEUILLE, qui est la même
+   information des deux côtés. Le laisser imposait trois colonnes à des largeurs
+   où elles ne tiennent plus, et avec des proportions qui ne sont plus les
+   bonnes. */
+
+/* message d'attente, d'orientation ou d'avertissement, posé par l'amorceur et
+   retiré par l'amorce à l'hydratation */
+#mia-roll20-note {
+  max-width: 24rem; margin: 2.2rem auto; padding: 0 1rem;
+  font-size: .78rem; line-height: 1.5; color: #625b65; text-align: center;
+}
+#mia-roll20-note a { color: #d72f2f; }
