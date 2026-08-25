@@ -53,7 +53,7 @@
     
       <link rel="stylesheet" href="../../stylesheets/mia.css?v=1">
     
-      <link rel="stylesheet" href="../../stylesheets/mia-fiche.css?v=20">
+      <link rel="stylesheet" href="../../stylesheets/mia-fiche.css?v=21">
     
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -1790,10 +1790,6 @@ les filtres.</p>
 <td>les points d'une spécialité, telle qu'elle figure dans <code>ctx.state.specialites</code>.</td>
 </tr>
 <tr>
-<td><code>ctx.calculs.spePlafond(spe)</code></td>
-<td>ce qu'elle peut porter au plus.</td>
-</tr>
-<tr>
 <td><code>ctx.calculs.jetBonus(carac, comp, spe)</code></td>
 <td>tout ce qui s'ajoute au d100 pour ce jet, malus d'endurance compris. <code>comp</code> et <code>spe</code> peuvent manquer.</td>
 </tr>
@@ -1954,11 +1950,6 @@ en rendre un.</p>
 <tr>
 <td><code>spePts</code></td>
 <td>les points d'une spécialité</td>
-<td><code>{ spe }</code></td>
-</tr>
-<tr>
-<td><code>spePlafond</code></td>
-<td>ce qu'une spécialité peut porter au plus</td>
 <td><code>{ spe }</code></td>
 </tr>
 <tr>
@@ -2575,11 +2566,11 @@ d'atteinte que parce qu'elle est d'une autre origine que la fiche.</p>
       
         <script src="../../javascripts/night.js"></script>
       
-        <script src="../../javascripts/mia-migrations.js?v=20"></script>
+        <script src="../../javascripts/mia-migrations.js?v=21"></script>
       
-        <script src="../../javascripts/mia-mods.js?v=20"></script>
+        <script src="../../javascripts/mia-mods.js?v=21"></script>
       
-        <script src="../../javascripts/mia-fiche.js?v=20"></script>
+        <script src="../../javascripts/mia-fiche.js?v=21"></script>
       
         <script src="../../javascripts/copybtn.js"></script>
       
