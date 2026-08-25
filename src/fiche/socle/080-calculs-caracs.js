@@ -84,22 +84,14 @@
     var v = caracModBrut(c);
     return aFiltre("caracMod") ? applique("caracMod", v, { carac: c }) : v;
   }
-  // DEUX LIMITES, ET IL EN FAUT DEUX.
+  // DEUX LIMITES, mais pas pour la raison qu'on croirait.
   //
-  // La limite NATURELLE est celle que la caractéristique donne, telle quelle.
-  // C'est contre elle que le total d'une spécialité se rabat : l'écart entre
-  // les deux ne descend pas sous son minimum.
-  //
-  // La limite EFFECTIVE est la naturelle plus le levier du meneur. C'est elle
-  // qui coiffe le jet.
-  //
-  // Les confondre ferait disparaître ce que la règle autorise expressément au
-  // meneur : abaisser la SEULE limite pour resserrer l'écart sous son minimum.
-  // Si le rabattage se calculait sur la limite effective, il suivrait ce malus
-  // et l'écart resterait à son minimum — le levier n'aurait aucun effet.
-  // Un malus posé sur la CARACTÉRISTIQUE, lui, abaisse la limite naturelle :
-  // le rabattage le suit, et l'écart tient. C'est la différence que la règle
-  // fait entre « malus aux stats » et « malus à la limite ».
+  // La NATURELLE est celle que la table donne pour la valeur ; l'EFFECTIVE est
+  // la naturelle plus le levier du meneur, et c'est elle qui coiffe le jet.
+  // La distinction ne sert PAS au rabattage — dès qu'un levier est posé, il
+  // n'y a plus de rabattage du tout (voir speTotal) — mais à le DIRE : le bloc
+  // des Options montre l'une et l'autre, sans quoi on ne saurait pas ce que le
+  // décalage a décalé.
   function caracLimNatBrut(c) { return ligneValeur(caracTotal(c)).lim; }
   function caracLimNat(c) {
     var v = caracLimNatBrut(c);
@@ -194,15 +186,29 @@
   }
   // ET SON RABATTAGE. Rien n'est bloqué à l'achat : on met dans une spécialité
   // ce qu'on veut. C'est le total EMPLOYÉ AU JET qui redescend, pour que
-  // l'écart avec la limite naturelle tienne son minimum.
+  // l'écart avec la limite tienne son minimum.
   //
-  // Le rabattage se calcule sur la limite NATURELLE, jamais sur l'effective :
-  // voir caracLimNat. Et il ne peut que faire DESCENDRE — un écart déjà plus
-  // grand que le minimum ne remonte personne.
+  // ON NE RAMÈNE QUE LE CAS NATUREL, et c'est toute la règle : dès que le
+  // meneur a touché à la caractéristique (son bonus) ou à sa limite, l'écart
+  // n'est plus tenu. C'est précisément ce que ces deux leviers servent à faire
+  // — les poser, c'est décider que ce personnage-là sort du cas ordinaire.
+  // Le levier d'ÉCART, lui, ne suspend rien : il déplace le seuil, et le
+  // rabattage se fait alors sur ce seuil-là.
+  //
+  // Le rabattage ne peut que faire DESCENDRE : un écart déjà plus grand que le
+  // minimum ne remonte personne.
+  function speRabattu(spe) {
+    if (!spe || !spe.carac) return false;
+    if (state.caracsBonus[spe.carac]) return false;
+    if (state.caracsLimMod[spe.carac]) return false;
+    return true;
+  }
   function speTotal(spe) {
     if (!spe || !spe.carac) return 0;
-    var haut = Math.max(0, caracLimNat(spe.carac) - ecartMin(spe.carac));
-    var v = Math.min(speTotalBrut(spe), haut);
+    var v = speTotalBrut(spe);
+    if (speRabattu(spe)) {
+      v = Math.min(v, Math.max(0, caracLim(spe.carac) - ecartMin(spe.carac)));
+    }
     return aFiltre("speTotal") ? applique("speTotal", v, { spe: spe }) : v;
   }
 

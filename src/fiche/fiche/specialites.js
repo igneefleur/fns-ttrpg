@@ -317,7 +317,7 @@
         vTot.classList.toggle("adj", !!rabat);
         vTot.title = rabat
           ? "Ramené de " + brut + " — écart " + ecartMin(spe.carac) +
-            " sous la limite " + caracLimNat(spe.carac) + "."
+            " sous la limite " + caracLim(spe.carac) + "."
           : "";
         vLim.textContent = spe.carac ? String(lim) : "—";
         vBon.txt.textContent = sign(spe.bonus || 0);

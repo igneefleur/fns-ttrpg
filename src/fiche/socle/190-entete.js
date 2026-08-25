@@ -326,7 +326,7 @@
         // lit deux fois avant de vouloir dire quelque chose.
         warns.appendChild(el("div", "pc-warn doux", "« " + (sp.nom || "Spécialité") +
           " » : total ramené de " + brut + " à " + tot +
-          " (écart " + ecartMin(sp.carac) + " sous la limite " + caracLimNat(sp.carac) + ")."));
+          " (écart " + ecartMin(sp.carac) + " sous la limite " + caracLim(sp.carac) + ")."));
       });
     });
     sheet.appendChild(warns);
