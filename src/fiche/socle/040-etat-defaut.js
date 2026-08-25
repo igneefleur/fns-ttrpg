@@ -47,7 +47,10 @@
       caracsXpForce: {}, caracsXpMod: {}, caracsXpMod2: {},
 
       // sigle -> points investis (1 XP le point). Mêmes leviers.
-      comps: {}, compsMod: {}, compsMod2: {},
+      // LE BONUS d'une compétence, réglé sur la FICHE comme celui d'une
+      // caractéristique. Il s'ajoute APRÈS le plafond : il peut donc porter la
+      // compétence au-delà de ce que le MOD de sa caractéristique permet.
+      comps: {}, compsBonus: {}, compsMod: {}, compsMod2: {},
       compsForce: {}, compsXpForce: {}, compsXpMod: {}, compsXpMod2: {},
 
       // LES SPÉCIALITÉS sont une LISTE et non une table : leur nom est libre,

@@ -41,6 +41,7 @@
       return v;
     }
     var vPts = case3();
+    var vBon = case3();
     var vMod = case3();
     var vLim = case3();
     // rouage ouvert, on construit : le bloc ne lance pas (voir specialites.js)
@@ -80,6 +81,13 @@
         // (accesseurs, attributs Roll20), et l'état voyage d'autant plus léger
         if (n) state.comps[code] = n; else delete state.comps[code];
       }, 1, "points", reg));
+    bot.appendChild(el("span", "lbl", "Bonus"));
+    bot.appendChild(stepper(
+      function () { return state.compsBonus[code] || 0; },
+      function (v) {
+        var n = clamp(Math.round(v), -999, 999);
+        if (n) state.compsBonus[code] = n; else delete state.compsBonus[code];
+      }, 1, "bonus", reg));
     bot.appendChild(el("span", "lbl", "Plafond"));
     var vPlaf = el("span", "max", "");
     vPlaf.style.justifySelf = "end";
@@ -102,7 +110,10 @@
       // bonus, il n'est nommé ici que pour qu'on sache d'où vient l'écart
       var mal = enduranceMalus();
       var b = jetBonus(carac, code, null);
-      vPts.textContent = String(compPts(code));
+      // les points ACHETÉS d'un côté, le bonus de l'autre : les deux
+      // additionnés font ce que la compétence apporte au jet.
+      vPts.textContent = String(Math.min(base, plaf));
+      vBon.textContent = sign(state.compsBonus[code] || 0);
       vMod.textContent = sign(caracMod(carac));
       vLim.textContent = String(caracLim(carac));
       trio.classList.toggle("adj", force || d !== 0 || mord || mal !== 0);

@@ -84,7 +84,7 @@
     // raison : compPts() le fait au calcul, et une caractéristique momentanément
     // baissée ne doit pas coûter au joueur ce qu'il avait investi.
     s.comps = tableNombres(s.comps, function (v) { return entier(v, 0, 9999); });
-    ["compsMod", "compsMod2", "compsXpMod", "compsXpMod2"]
+    ["compsBonus", "compsMod", "compsMod2", "compsXpMod", "compsXpMod2"]
       .forEach(function (k) { s[k] = tableNombres(s[k], modNum); });
     ["compsForce", "compsXpForce"].forEach(function (k) { s[k] = tableForce(s[k]); });
 

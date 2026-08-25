@@ -23,7 +23,7 @@
     var tete = el("div", "pc-crow-top pc-caracs-tete");
     tete.appendChild(el("span", "sp"));
     var teteTrio = el("span", "pc-trio tete");
-    ["Val", "Mod", "Lim"].forEach(function (k) {
+    ["Val", "Bonus", "Mod", "Lim"].forEach(function (k) {
       var c = el("span", "c");
       c.appendChild(el("span", "k", k));
       teteTrio.appendChild(c);
@@ -59,6 +59,7 @@
         return v;
       }
       var vVal = case3();
+      var vBon = case3();
       var vMod = case3();
       var vLim = case3();
       // rouage ouvert, on construit : le bloc ne lance pas (voir specialites.js)
@@ -122,7 +123,11 @@
         var xpF = state.caracsXpForce[code] !== undefined;
         var xpD = (state.caracsXpMod[code] || 0) + (state.caracsXpMod2[code] || 0);
         var retouche = d !== 0 || dm !== 0 || dl !== 0 || mord;
-        vVal.textContent = String(caracTotal(code));
+        // LA VALEUR EST CELLE QU'ON A ACHETÉE, et le bonus se lit à côté : les
+        // deux additionnés donnent le total dont la table tire le MOD et la
+        // LIM. Afficher le total ici, le bonus étant montré, le dirait deux fois.
+        vVal.textContent = String(Math.min(base, plaf));
+        vBon.textContent = sign(d);
         vMod.textContent = sign(caracMod(code));
         vLim.textContent = String(caracLim(code));
         trio.classList.toggle("adj", retouche);

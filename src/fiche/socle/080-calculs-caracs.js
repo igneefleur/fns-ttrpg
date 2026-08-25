@@ -144,7 +144,9 @@
   function compPtsBrut(code) {
     if (state.compsForce[code] !== undefined) return state.compsForce[code];
     var v = Math.min(state.comps[code] || 0, compPlafond(code));
-    return v + (state.compsMod[code] || 0) + (state.compsMod2[code] || 0);
+    // le bonus s'applique APRÈS le plafond, comme celui d'une caractéristique
+    return v + (state.compsBonus[code] || 0) +
+           (state.compsMod[code] || 0) + (state.compsMod2[code] || 0);
   }
   function compPts(code) {
     var v = compPtsBrut(code);
