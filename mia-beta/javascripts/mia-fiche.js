@@ -74,7 +74,7 @@
   // site il est. Il ne change PAS le rang : « 1.0.1b » et « 1.0.1 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (MiaMods.compareVersions tient cette règle).
-  var RELEASE = "1.13.0b";
+  var RELEASE = "1.13.1b";
   var SCHEMA = 1;
 
   // ---------- ce que la fiche ne décide PAS ----------
@@ -5140,6 +5140,21 @@
     b.appendChild(bande);
     b.appendChild(corps);
 
+    // L'ORDRE DES CINQ SUIT CELUI DE LA VIE D'UNE CARACTÉRISTIQUE, et il se
+    // lit en deux temps. D'abord ce qui touche à la VALEUR qu'on achète : ce
+    // qu'elle peut atteindre (plafond), ce qu'elle coûte pour y aller (xp).
+    // Ensuite ce que la caractéristique DONNE une fois achetée : ce qu'elle
+    // ajoute au jet (modificateur), ce qui coiffe le résultat (limite), et
+    // l'écart que cette limite impose aux spécialités — chacun découlant du
+    // précédent. Mettre le coût en dernier séparait les deux seules choses qui
+    // parlent de la valeur, et laissait l'xp orphelin derrière une chaîne où
+    // il n'entre pas.
+    //
+    // « Modif. » ET NON « MODIFICATEUR » : c'est le mot qu'emploient déjà les
+    // entêtes des grilles, et le seul des cinq qui ne tenait pas dans une bande
+    // à parts égales — il forçait son onglet à être plus large que les quatre
+    // autres, ce qui est exactement ce qu'on ne veut pas.
+    //
     // L'ONGLET OUVERT NE S'ENREGISTRE PAS, et c'est voulu : ce n'est pas un état
     // du personnage — deux fiches du même personnage n'ont pas à s'ouvrir sur le
     // même réglage — et ce n'est pas non plus une préférence qui mérite sa clé
@@ -5292,8 +5307,45 @@
       });
     });
 
+    // ---------- XP ----------
+    // CE QU'ELLES COÛTENT, ET RIEN D'AUTRE. Le coût se lit sur la valeur
+    // ACHETÉE, jamais sur le total : un bonus d'équipement ne se paie pas.
+    onglet("XP", "Ce qu'une caractéristique coûte", function (p) {
+      note(p, "Coût en xp de la valeur achetée. Vide = le barème des règles.");
+      var box = grille(p);
+      entete(box, "xp", [["Carac.", "Caractéristique"],
+                         ["Forcé", "Coût en xp forcé — vide = coût calculé"],
+                         ["Modif.", "Deux modificateurs du coût en xp, qui s'additionnent", "duo"],
+                         ["Coût", "Coût effectif en xp"]]);
+      champs().forEach(function (c, i) {
+        var row = rangee(box, "xp pc-mods-host", c, i);
+        row.appendChild(champForce(state.caracsXpForce, c,
+          function () { return caracXpAuto(c); },
+          "Coût en xp forcé — vide = coût calculé (barème des règles et modificateurs)."));
+        row.appendChild(champMod(state.caracsXpMod, c, 9999,
+          "Premier modificateur du coût en xp — vide = aucun."));
+        row.appendChild(champMod(state.caracsXpMod2, c, 9999,
+          "Second modificateur du coût en xp — vide = aucun."));
+        var cout = el("span", "pc-comp-total", "");
+        row.appendChild(cout);
+        hooks.push(function () {
+          var xf = state.caracsXpForce[c];
+          var xm = (state.caracsXpMod[c] || 0) + (state.caracsXpMod2[c] || 0);
+          var xp = caracXp(c);
+          cout.textContent = xp + " xp";
+          cout.classList.toggle("zero", !xp);
+          cout.classList.toggle("adj", xf !== undefined || xm !== 0);
+          cout.title = xf !== undefined
+            ? "Coût forcé à " + xf + " xp (calculé : " + caracXpAuto(c) + " xp)"
+            : "XP cumulé de la valeur " + caracBase(c) +
+              (xm ? " · modificateurs " + sign(xm) + " xp" : "");
+          row.classList.toggle("on", xm !== 0 || xf !== undefined);
+        });
+      });
+    });
+
     // ---------- Modificateur ----------
-    onglet("Modificateur", "Ce que la caractéristique ajoute au jet", function (p) {
+    onglet("Modif.", "Ce que la caractéristique ajoute au jet", function (p) {
       levier(p, "Décale le modificateur sans toucher à la valeur ni à la limite.",
         ["MOD", "Modificateur effectif, celui qui s'ajoute au jet"],
         "Décalage du modificateur — vide = aucun.",
@@ -5361,43 +5413,6 @@
           "Écart minimum — vide = celui des règles."));
         hooks.push(function () {
           row2.classList.toggle("on", state.caracsEcart[c] !== undefined);
-        });
-      });
-    });
-
-    // ---------- XP ----------
-    // CE QU'ELLES COÛTENT, ET RIEN D'AUTRE. Le coût se lit sur la valeur
-    // ACHETÉE, jamais sur le total : un bonus d'équipement ne se paie pas.
-    onglet("XP", "Ce qu'une caractéristique coûte", function (p) {
-      note(p, "Coût en xp de la valeur achetée. Vide = le barème des règles.");
-      var box = grille(p);
-      entete(box, "xp", [["Carac.", "Caractéristique"],
-                         ["Forcé", "Coût en xp forcé — vide = coût calculé"],
-                         ["Modif.", "Deux modificateurs du coût en xp, qui s'additionnent", "duo"],
-                         ["Coût", "Coût effectif en xp"]]);
-      champs().forEach(function (c, i) {
-        var row = rangee(box, "xp pc-mods-host", c, i);
-        row.appendChild(champForce(state.caracsXpForce, c,
-          function () { return caracXpAuto(c); },
-          "Coût en xp forcé — vide = coût calculé (barème des règles et modificateurs)."));
-        row.appendChild(champMod(state.caracsXpMod, c, 9999,
-          "Premier modificateur du coût en xp — vide = aucun."));
-        row.appendChild(champMod(state.caracsXpMod2, c, 9999,
-          "Second modificateur du coût en xp — vide = aucun."));
-        var cout = el("span", "pc-comp-total", "");
-        row.appendChild(cout);
-        hooks.push(function () {
-          var xf = state.caracsXpForce[c];
-          var xm = (state.caracsXpMod[c] || 0) + (state.caracsXpMod2[c] || 0);
-          var xp = caracXp(c);
-          cout.textContent = xp + " xp";
-          cout.classList.toggle("zero", !xp);
-          cout.classList.toggle("adj", xf !== undefined || xm !== 0);
-          cout.title = xf !== undefined
-            ? "Coût forcé à " + xf + " xp (calculé : " + caracXpAuto(c) + " xp)"
-            : "XP cumulé de la valeur " + caracBase(c) +
-              (xm ? " · modificateurs " + sign(xm) + " xp" : "");
-          row.classList.toggle("on", xm !== 0 || xf !== undefined);
         });
       });
     });
