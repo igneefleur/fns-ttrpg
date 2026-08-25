@@ -74,7 +74,7 @@
   // site il est. Il ne change PAS le rang : « 1.0.1b » et « 1.0.1 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (MiaMods.compareVersions tient cette règle).
-  var RELEASE = "1.8.1b";
+  var RELEASE = "1.8.2b";
   var SCHEMA = 1;
 
   // ---------- ce que la fiche ne décide PAS ----------
@@ -633,7 +633,7 @@
   // détourner ; ils ont donc changé avec le système, et un mod écrit pour
   // l'ancien se verra prévenir plutôt que d'agir dans le vide.
   var FILTRES_CONNUS = {
-    caracTotal: 1, caracMod: 1, caracLim: 1, caracLimNat: 1, ecartMin: 1,
+    caracTotal: 1, caracMod: 1, caracLim: 1, ecartMin: 1,
     compValue: 1, compPlafond: 1, compXp: 1,
     spePts: 1, speTotal: 1, jetBonus: 1,
     pvMax: 1, enduranceMax: 1, enduranceMalus: 1, recupJour: 1,
@@ -881,27 +881,25 @@
   // LE MODIFICATEUR, qui s'ajoute à tous les jets passant par la
   // caractéristique, et LA LIMITE, qui les plafonne. Les deux se lisent dans la
   // table, jamais ne se recalculent.
+  // LA VALEUR NATURELLE : ce que la caractéristique vaut sans le bonus. Elle
+  // ne sert qu'à la règle de l'écart, qui se calcule sur l'état d'AVANT les
+  // leviers (voir speRetire).
+  function caracValeurNat(c) { return Math.min(caracBase(c), caracPlafond(c)); }
+  function caracModNat(c) { return ligneValeur(caracValeurNat(c)).mod; }
+  function caracLimNat(c) { return ligneValeur(caracValeurNat(c)).lim; }
+  // Ce que la TABLE donne pour la valeur courante, bonus compris — avant le
+  // levier du meneur. C'est ce que le bloc des Options montre à côté du
+  // décalage, pour qu'on voie ce que le décalage a décalé.
+  function caracModTable(c) { return ligneValeur(caracTotal(c)).mod; }
+  function caracLimTable(c) { return ligneValeur(caracTotal(c)).lim; }
   function caracModBrut(c) {
-    return ligneValeur(caracTotal(c)).mod + (state.caracsModMod[c] || 0);
+    return caracModTable(c) + (state.caracsModMod[c] || 0);
   }
   function caracMod(c) {
     var v = caracModBrut(c);
     return aFiltre("caracMod") ? applique("caracMod", v, { carac: c }) : v;
   }
-  // DEUX LIMITES, mais pas pour la raison qu'on croirait.
-  //
-  // La NATURELLE est celle que la table donne pour la valeur ; l'EFFECTIVE est
-  // la naturelle plus le levier du meneur, et c'est elle qui coiffe le jet.
-  // La distinction ne sert PAS au rabattage — dès qu'un levier est posé, il
-  // n'y a plus de rabattage du tout (voir speTotal) — mais à le DIRE : le bloc
-  // des Options montre l'une et l'autre, sans quoi on ne saurait pas ce que le
-  // décalage a décalé.
-  function caracLimNatBrut(c) { return ligneValeur(caracTotal(c)).lim; }
-  function caracLimNat(c) {
-    var v = caracLimNatBrut(c);
-    return aFiltre("caracLimNat") ? applique("caracLimNat", v, { carac: c }) : v;
-  }
-  function caracLimBrut(c) { return caracLimNat(c) + (state.caracsLimMod[c] || 0); }
+  function caracLimBrut(c) { return caracLimTable(c) + (state.caracsLimMod[c] || 0); }
   function caracLim(c) {
     var v = caracLimBrut(c);
     return aFiltre("caracLim") ? applique("caracLim", v, { carac: c }) : v;
@@ -989,30 +987,36 @@
     return spePts(spe) + caracMod(spe.carac) + (spe.comp ? compPts(spe.comp) : 0);
   }
   // ET SON RABATTAGE. Rien n'est bloqué à l'achat : on met dans une spécialité
-  // ce qu'on veut. C'est le total EMPLOYÉ AU JET qui redescend, pour que
-  // l'écart avec la limite tienne son minimum.
+  // ce qu'on veut. C'est le total EMPLOYÉ AU JET qui redescend.
   //
-  // ON NE RAMÈNE QUE LE CAS NATUREL, et c'est toute la règle : dès que le
-  // meneur a touché à la caractéristique (son bonus) ou à sa limite, l'écart
-  // n'est plus tenu. C'est précisément ce que ces deux leviers servent à faire
-  // — les poser, c'est décider que ce personnage-là sort du cas ordinaire.
-  // Le levier d'ÉCART, lui, ne suspend rien : il déplace le seuil, et le
-  // rabattage se fait alors sur ce seuil-là.
+  // CE QUE LA RÈGLE RETIRE SE CALCULE UNE FOIS, SUR L'ÉTAT NATUREL — la
+  // caractéristique sans son bonus, sa limite sans décalage — puis se CONSERVE
+  // tel quel. Les leviers du meneur s'appliquent par-dessus, ils ne le
+  // recalculent pas.
   //
-  // Le rabattage ne peut que faire DESCENDRE : un écart déjà plus grand que le
-  // minimum ne remonte personne.
-  function speRabattu(spe) {
-    if (!spe || !spe.carac) return false;
-    if (state.caracsBonus[spe.carac]) return false;
-    if (state.caracsLimMod[spe.carac]) return false;
-    return true;
+  // C'est de là que sortent, d'une seule règle, les deux exceptions que le
+  // système admet :
+  //   — le meneur abaisse la SEULE limite : le retrait ne bouge pas, donc
+  //     l'écart se resserre sous son minimum ;
+  //   — le meneur abaisse la CARACTÉRISTIQUE : le total baisse, le retrait ne
+  //     bouge pas, l'écart se resserre aussi.
+  // Recalculer le retrait après coup effacerait les deux : l'écart reviendrait
+  // à son minimum et les leviers n'auraient servi à rien.
+  //
+  // Le levier d'ÉCART, lui, entre bien dans le calcul : il ne suspend pas la
+  // règle, il en déplace le seuil.
+  function speTotalNat(spe) {
+    if (!spe || !spe.carac) return 0;
+    return spePts(spe) + caracModNat(spe.carac) + (spe.comp ? compPts(spe.comp) : 0);
+  }
+  function speRetire(spe) {
+    if (!spe || !spe.carac) return 0;
+    var haut = Math.max(0, caracLimNat(spe.carac) - ecartMin(spe.carac));
+    return Math.max(0, speTotalNat(spe) - haut);
   }
   function speTotal(spe) {
     if (!spe || !spe.carac) return 0;
-    var v = speTotalBrut(spe);
-    if (speRabattu(spe)) {
-      v = Math.min(v, Math.max(0, caracLim(spe.carac) - ecartMin(spe.carac)));
-    }
+    var v = speTotalBrut(spe) - speRetire(spe);
     return aFiltre("speTotal") ? applique("speTotal", v, { spe: spe }) : v;
   }
 
@@ -2396,7 +2400,7 @@
       (state.specialites || []).forEach(function (sp) {
         if (!sp.carac) return;
         var brut = speTotalBrut(sp), tot = speTotal(sp);
-        if (tot >= brut) return;
+        if (speRetire(sp) <= 0) return;
         // On dit ce qui a été RETIRÉ, pas l'écart qu'on aurait eu : celui-là
         // est négatif dès que le total passe la limite, et un « écart −40 » se
         // lit deux fois avant de vouloir dire quelque chose.
@@ -4039,7 +4043,7 @@
         // s'ajoute : le MOD d'une caractéristique, le bonus.
         var brut = speTotalBrut(spe);
         var tot = speTotal(spe);
-        var rabat = spe.carac && tot < brut;
+        var rabat = spe.carac && speRetire(spe) > 0;
         vTot.textContent = spe.carac ? String(tot).replace("-", "−") : "—";
         vTot.classList.toggle("adj", !!rabat);
         vTot.title = rabat
@@ -5173,7 +5177,7 @@
       function (c) {
         var d = state.caracsLimMod[c] || 0;
         return { texte: String(caracLim(c)),
-                 titre: "Naturelle " + caracLimNat(c) + (d ? " · décalage " + sign(d) : "") };
+                 titre: "De la table " + caracLimTable(c) + (d ? " · décalage " + sign(d) : "") };
       });
   }
 
@@ -5187,7 +5191,7 @@
       function (c) {
         var d = state.caracsModMod[c] || 0;
         return { texte: sign(caracMod(c)),
-                 titre: "Lu dans la table " + sign(caracMod(c) - d) +
+                 titre: "De la table " + sign(caracModTable(c)) +
                         (d ? " · décalage " + sign(d) : "") };
       });
   }

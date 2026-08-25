@@ -55,7 +55,7 @@
       function (c) {
         var d = state.caracsLimMod[c] || 0;
         return { texte: String(caracLim(c)),
-                 titre: "Naturelle " + caracLimNat(c) + (d ? " · décalage " + sign(d) : "") };
+                 titre: "De la table " + caracLimTable(c) + (d ? " · décalage " + sign(d) : "") };
       });
   }
 
@@ -69,7 +69,7 @@
       function (c) {
         var d = state.caracsModMod[c] || 0;
         return { texte: sign(caracMod(c)),
-                 titre: "Lu dans la table " + sign(caracMod(c) - d) +
+                 titre: "De la table " + sign(caracModTable(c)) +
                         (d ? " · décalage " + sign(d) : "") };
       });
   }

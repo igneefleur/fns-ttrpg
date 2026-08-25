@@ -38,7 +38,7 @@
   // détourner ; ils ont donc changé avec le système, et un mod écrit pour
   // l'ancien se verra prévenir plutôt que d'agir dans le vide.
   var FILTRES_CONNUS = {
-    caracTotal: 1, caracMod: 1, caracLim: 1, caracLimNat: 1, ecartMin: 1,
+    caracTotal: 1, caracMod: 1, caracLim: 1, ecartMin: 1,
     compValue: 1, compPlafond: 1, compXp: 1,
     spePts: 1, speTotal: 1, jetBonus: 1,
     pvMax: 1, enduranceMax: 1, enduranceMalus: 1, recupJour: 1,

@@ -320,7 +320,7 @@
       (state.specialites || []).forEach(function (sp) {
         if (!sp.carac) return;
         var brut = speTotalBrut(sp), tot = speTotal(sp);
-        if (tot >= brut) return;
+        if (speRetire(sp) <= 0) return;
         // On dit ce qui a été RETIRÉ, pas l'écart qu'on aurait eu : celui-là
         // est négatif dès que le total passe la limite, et un « écart −40 » se
         // lit deux fois avant de vouloir dire quelque chose.

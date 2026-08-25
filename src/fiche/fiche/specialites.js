@@ -312,7 +312,7 @@
         // s'ajoute : le MOD d'une caractéristique, le bonus.
         var brut = speTotalBrut(spe);
         var tot = speTotal(spe);
-        var rabat = spe.carac && tot < brut;
+        var rabat = spe.carac && speRetire(spe) > 0;
         vTot.textContent = spe.carac ? String(tot).replace("-", "−") : "—";
         vTot.classList.toggle("adj", !!rabat);
         vTot.title = rabat
