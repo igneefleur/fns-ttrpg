@@ -154,8 +154,7 @@ fin = lf
   src/fiche/bio/notes.js
   src/fiche/options/jets.js
   src/fiche/options/commun-champs.js
-  src/fiche/options/modcaracs.js
-  src/fiche/options/leviers-carac.js
+  src/fiche/options/caracs-options.js
   src/fiche/options/creation.js
   src/fiche/options/optcomps.js
   src/fiche/options/filtres.js

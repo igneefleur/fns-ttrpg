@@ -32,7 +32,7 @@
     // lit ce que la compétence DONNE — son total au dé, la limite qui le
     // coiffe ; en construisant, ce qu'on y a MIS et ce qu'on peut y mettre.
     // Deux mots dans la même case, dont un seul s'affiche.
-    [["Tot", "Val"], ["Lim", "Max"], ["Bonus", "Bon"]].forEach(function (k) {
+    [["Total", "Valeur"], ["Limite", "Maximum"], "Bonus"].forEach(function (k) {
       var c = el("span", "c");
       if (typeof k === "string") c.appendChild(el("span", "k", k));
       else {

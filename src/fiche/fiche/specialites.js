@@ -35,9 +35,11 @@
     // c'est ce que la spécialité VAUT (total), ce qui la coiffe (limite) et ce
     // qu'on lui a posé (bonus). Ses points propres n'intéressent qu'au moment
     // de les acheter, et n'apparaissent qu'alors.
-    // « Lim » et non « Limite » : les caractéristiques et les compétences
-    // écrivent « LIM », et trois listes qui nomment la même chose de deux
-    // façons se lisent moins bien qu'une abréviation.
+    // LE MOT ENTIER DANS LES TROIS LISTES : « LIMITE » et non « LIM »,
+    // « VALEUR » et non « VAL ». L'entête ne paraît qu'une fois par bloc et la
+    // place y est ; ce sont les NOMBRES qui doivent être serrés, pas les mots
+    // qui disent lesquels. Seuls « CARAC » et « COMP » restent abrégés — les
+    // écrire en entier demanderait deux fois la largeur d'une case.
     function teteBloc(cls, mots) {
       var t = el("span", "pc-trio " + cls + " tete");
       mots.forEach(function (k) {
@@ -49,7 +51,7 @@
       tete.appendChild(t);
     }
     teteBloc("deux", ["Carac", "Comp"]);
-    teteBloc("cinq", [["Val"], "Total", "Lim", "Bonus"]);
+    teteBloc("cinq", [["Valeur"], "Total", "Limite", "Bonus"]);
     b.appendChild(tete);
     b.appendChild(box);
     // Les lignes sont détruites et refaites à chaque ajout ou retrait ; le

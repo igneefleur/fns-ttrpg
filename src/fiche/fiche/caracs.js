@@ -20,10 +20,15 @@
     // Une seule fois, en tête : répétées sur chacune des huit lignes, elles
     // disaient vingt-quatre fois ce que trois mots suffisent à dire, et
     // noyaient les nombres qu'on vient lire.
+    //
+    // LE MOT ENTIER, ET JAMAIS L'ABRÉGÉ. « VAL », « BON », « TOT » ne coûtaient
+    // rien à écrire mais se lisaient trois fois : la place existe, l'entête ne
+    // paraît qu'une fois pour huit lignes, et un mot entier n'a pas besoin
+    // d'être appris. La règle vaut pour les trois listes de la fiche.
     var tete = el("div", "pc-crow-top pc-caracs-tete");
     tete.appendChild(el("span", "sp"));
     var teteTrio = el("span", "pc-trio tete");
-    ["Val", "Bon", "Tot"].forEach(function (k) {
+    ["Valeur", "Bonus", "Total"].forEach(function (k) {
       var c = el("span", "c");
       c.appendChild(el("span", "k", k));
       teteTrio.appendChild(c);
