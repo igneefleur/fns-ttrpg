@@ -74,7 +74,7 @@
   // site il est. Il ne change PAS le rang : « 1.0.1b » et « 1.0.1 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (MiaMods.compareVersions tient cette règle).
-  var RELEASE = "1.13.2b";
+  var RELEASE = "1.13.3b";
   var SCHEMA = 1;
 
   // ---------- ce que la fiche ne décide PAS ----------
@@ -5380,28 +5380,12 @@
     // Le champ montre en filigrane celui des règles, et l'effacer y revient.
     // Deux colonnes suffisent donc — une troisième répéterait le champ.
     //
-    // L'INTERRUPTEUR EST ICI, EN TÊTE. Il était un bloc à lui seul, au motif que
-    // décaler un seuil et SUSPENDRE une règle ne se font pas dans le même état
-    // d'esprit. Le motif tient toujours, mais on ne le cherche nulle part
-    // ailleurs qu'à l'endroit où l'on règle l'écart : il ouvre l'onglet, avant
-    // les huit lignes, et ce qu'il coupe se lit juste en dessous.
+    // L'INTERRUPTEUR QUI SUSPEND LA RÈGLE N'EST PAS ICI, et il a fait l'aller-
+    // retour : rangé un temps en tête de cet onglet, il en est ressorti. Les
+    // cinq onglets DÉCALENT un seuil, caractéristique par caractéristique ; lui
+    // SUSPEND la règle pour le personnage entier. Il a son bloc (voir
+    // ecart-regle.js), et cet onglet ne porte que les huit valeurs.
     onglet("Écart", "", function (p) {
-      var row = el("div", "pc-kv");
-      var lab = el("label", "pc-case-mot");
-      var boite = el("input");
-      boite.type = "checkbox";
-      boite.title = "Coché, la règle de l'écart ne retire plus rien à ce personnage.";
-      boite.addEventListener("change", function () {
-        state.ecartCoupe = boite.checked;
-        save();
-        refresh();
-      });
-      hooks.push(function () { boite.checked = !!state.ecartCoupe; });
-      lab.appendChild(boite);
-      lab.appendChild(el("span", "t", "Couper la règle pour ce personnage"));
-      row.appendChild(lab);
-      p.appendChild(row);
-
       var box = grille(p);
       entete(box, "paire", [["Carac.", "Caractéristique"],
                             ["Écart", "Vide = valeur par défaut"]]);
@@ -5417,6 +5401,35 @@
     });
 
     montre(0);
+    return b;
+  }
+  // ---- la règle de l'écart : un interrupteur, et rien d'autre ----
+  // UN BLOC À LUI SEUL, ET IL LE REDEVIENT. Il avait été rangé en tête de
+  // l'onglet Écart du bloc des caractéristiques, au motif qu'on ne le cherche
+  // nulle part ailleurs qu'à l'endroit où l'écart se règle. C'était une erreur
+  // de nature : les cinq onglets d'à côté DÉCALENT un seuil, caractéristique
+  // par caractéristique ; celui-ci SUSPEND une règle, pour le personnage
+  // entier. On ne coche pas l'un en croyant régler l'autre, et un réglage qui
+  // porte sur toute la fiche n'a pas à se cacher dans l'onglet d'une des huit.
+  //
+  // Il ne pose AUCUN avertissement en tête de fiche : c'est un réglage voulu,
+  // pas un état du personnage. Ce qu'il fait se lit ici, là où on le coche.
+  function buildEcartRegle() {
+    var b = block("Règle de l'écart");
+    var row = el("div", "pc-kv");
+    var lab = el("label", "pc-case-mot");
+    var boite = el("input");
+    boite.type = "checkbox";
+    boite.addEventListener("change", function () {
+      state.ecartCoupe = boite.checked;
+      save();
+      refresh();
+    });
+    hooks.push(function () { boite.checked = !!state.ecartCoupe; });
+    lab.appendChild(boite);
+    lab.appendChild(el("span", "t", "Désactiver la règle d'écart pour ce personnage"));
+    row.appendChild(lab);
+    b.appendChild(row);
     return b;
   }
   // ---- création : le prestige, et lui seul ----
@@ -6662,9 +6675,16 @@
     // sous Firefox : 1481 px à gauche contre 1231 à droite, soit 250 d'écart, et
     // c'est la GAUCHE qui dépasse. Le rééquilibrer demanderait d'envoyer à
     // droite un bloc court (« Jets » suffirait, à 70 px près) : ça ne se décide
-    // pas dans un commentaire, et le bloc reste où il est en attendant. Il tient
-    // d'ailleurs de l'xp autant que « XP par champ », son voisin du dessus.
+    // pas dans un commentaire, et le bloc reste où il est en attendant. (Depuis,
+    // la « Règle de l'écart » est venue à droite : l'écart est retombé à 153.)
+    // Il tient d'ailleurs de l'xp autant que « XP par champ », son voisin.
     { id: "creation",   titre: "Création",          onglet: "options", colonne: "droite", build: buildCreation },
+    // À DROITE, et pour deux raisons qui vont ensemble. La première tient à ce
+    // qu'il EST : un interrupteur qui suspend une règle pour tout le
+    // personnage, quand la gauche porte les leviers qui décalent un seuil
+    // caractéristique par caractéristique. La seconde est une mesure : la
+    // gauche dépassait la droite de 250 px, elle n'en dépasse plus que 153.
+    { id: "ecartcoupe", titre: "Règle de l'écart",   onglet: "options", colonne: "droite", build: buildEcartRegle },
     { id: "filtres",    titre: "Outils de filtre",  onglet: "options", colonne: "droite", build: buildFiltres },
     // « Affichage » n'existe que dans Roll20 : à gauche, il y compense les deux
     // blocs de réglages que porte la droite, et son absence sur le site laisse
