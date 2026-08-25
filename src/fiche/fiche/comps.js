@@ -24,7 +24,11 @@
     var tete = el("div", "pc-crow-top pc-caracs-tete");
     tete.appendChild(el("span", "sp"));
     var teteTrio = el("span", "pc-trio tete");
-    ["Val", "Mod", "Lim"].forEach(function (k) {
+    // « CARAC » ET NON « MOD » : dans une compétence, ce nombre n'est pas SON
+    // modificateur, c'est celui de la caractéristique dont elle relève. Le mot
+    // dit donc d'où il vient. (Sur une caractéristique, « MOD » reste juste :
+    // c'est le sien.)
+    ["Val", "Carac", "Lim"].forEach(function (k) {
       var c = el("span", "c");
       c.appendChild(el("span", "k", k));
       teteTrio.appendChild(c);

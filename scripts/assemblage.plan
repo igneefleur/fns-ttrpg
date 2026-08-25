@@ -143,13 +143,10 @@ fin = lf
   src/fiche/socle/250-filtres-vue.js
   src/fiche/fiche/comps.js
   src/fiche/fiche/specialites.js
-  src/fiche/equipement/commun-cartes.js
   src/fiche/equipement/inv-echange.js
   src/fiche/socle/260-dialogue.js
   src/fiche/equipement/inv-don.js
   src/fiche/equipement/inv-objets.js
-  src/fiche/equipement/armes.js
-  src/fiche/equipement/armures.js
   src/fiche/equipement/inv.js
   src/fiche/bio/perso.js
   src/fiche/bio/avantages.js

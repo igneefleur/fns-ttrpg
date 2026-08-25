@@ -63,6 +63,22 @@
       for (var i = 0; i < lignes.length; i++) lignes[i]();
     });
 
+    // LE RANGEMENT AU GLISSER-DÉPOSER. C'est la seule liste de la fiche dont
+    // l'ORDRE appartient au joueur : les caractéristiques et les compétences
+    // suivent celui des règles, les spécialités suivent celui qu'il leur donne.
+    // Glisser-déposer natif du navigateur, comme le plan des modules : aucune
+    // bibliothèque, et ça marche tel quel dans l'iframe Roll20.
+    // « pris » porte l'index dans l'ÉTAT, jamais le rang à l'écran : la liste
+    // peut être filtrée, et un rang d'écran ne dirait alors pas où ranger.
+    var pris = null;
+    function eteintDepot() {
+      var l = box.querySelectorAll(".pc-crow");
+      for (var i = 0; i < l.length; i++) {
+        l[i].classList.remove("avant");
+        l[i].classList.remove("apres");
+      }
+    }
+
     // LE SIGLE SE CHOISIT DANS SA PROPRE CASE. Il n'y a plus de ligne « Carac »
     // ni de ligne « Compétence » sous le rouage : la case qui MONTRE le sigle
     // est celle qui le CHANGE, et deux lignes de moins rendent le bloc lisible.
@@ -117,6 +133,39 @@
       var row = el("div", "pc-crow");
 
       var top = el("div", "pc-crow-top");
+      // LA CROIX D'ABORD, TOUT À GAUCHE : c'est le geste qu'on cherche des yeux
+      // quand on veut retirer une ligne, et il n'a pas à se chercher au bout.
+      // Un point d'arrêt de plus le protège : des points sont de l'xp dépensé.
+      top.appendChild(miniBtn("✕", "Retirer cette spécialité", function () {
+        if (spe.pts &&
+            !confirm("Retirer « " + (spe.nom || "sans nom") + " » et ses " + spe.pts + " points ?")) return;
+        state.specialites.splice(it.index, 1);
+        rendu();
+        refresh();
+        if (optCompsRebuild) optCompsRebuild();   // sa ligne quitte aussi le bloc des Options
+      }, "danger pc-croix pc-edit-only"));
+      // LA POIGNÉE. Elle seule se glisse — pas la ligne entière : le nom est un
+      // champ de saisie, et une ligne « draggable » interdirait d'y sélectionner
+      // un mot à la souris.
+      var poignee = el("span", "pc-poignee pc-edit-only");
+      poignee.title = "Glisser pour ranger cette spécialité";
+      poignee.draggable = true;
+      poignee.addEventListener("dragstart", function (ev) {
+        pris = it.index;
+        row.classList.add("pris");
+        try {
+          ev.dataTransfer.effectAllowed = "move";
+          // Firefox refuse de commencer un glissement sans donnée posée
+          ev.dataTransfer.setData("text/plain", String(it.index));
+          if (ev.dataTransfer.setDragImage) ev.dataTransfer.setDragImage(row, 16, 12);
+        } catch (e) {}
+      });
+      poignee.addEventListener("dragend", function () {
+        pris = null;
+        row.classList.remove("pris");
+        eteintDepot();
+      });
+      top.appendChild(poignee);
       // AUCUN SIGLE À GAUCHE. Le couple « caractéristique · compétence » y
       // tenait la place qu'un sigle occupe sur une caractéristique — mais ici
       // il ne nommait pas la ligne, il répétait ce que les colonnes MOD et
@@ -211,37 +260,53 @@
       top.appendChild(quint);
       row.appendChild(top);
 
-      // QUATRE LIGNES DE MOINS. La caractéristique, la compétence, les points
-      // et le bonus se règlent maintenant DANS leur case, et le plafond s'y
-      // lit ; ce rang ne garde que ce qu'aucune case ne peut porter.
-      var bot = el("div", "pc-crow-bot pc-edit-only");
-      // LE COÛT EST NOMMÉ ICI, avec le reste de la construction : un point de
-      // spécialité ne coûte pas un point d'xp, et on ne le regarde qu'en
-      // achetant. En jouant, ce qu'on cherche est sur la ligne du haut.
-      bot.appendChild(el("span", "lbl", "XP"));
-      var vXp = el("span", "max", "");
-      bot.appendChild(vXp);
-      // le retrait descend avec le reste : c'est un geste de construction, et
-      // le laisser en haut décalait le quintuple d'une ligne à l'autre selon
-      // que le rouage était ouvert ou fermé
-      bot.appendChild(miniBtn("✕ Retirer", "Retirer cette spécialité", function () {
-        // des points sont de l'xp dépensé : on ne les efface pas sur un clic
-        // malheureux sans demander
-        if (spe.pts &&
-            !confirm("Retirer « " + (spe.nom || "sans nom") + " » et ses " + spe.pts + " points ?")) return;
-        state.specialites.splice(it.index, 1);
+      // La MOITIÉ survolée décide : au-dessus, la ligne prise se pose avant ;
+      // en dessous, après. Le liseré le montre pendant qu'on tient.
+      function moitieBasse(ev) {
+        var r = row.getBoundingClientRect();
+        return ev.clientY >= r.top + r.height / 2;
+      }
+      row.addEventListener("dragover", function (ev) {
+        if (pris === null || pris === it.index) return;
+        ev.preventDefault();            // sans ça, le navigateur refuse le dépôt
+        try { ev.dataTransfer.dropEffect = "move"; } catch (e) {}
+        eteintDepot();
+        row.classList.add(moitieBasse(ev) ? "apres" : "avant");
+      });
+      row.addEventListener("dragleave", function (ev) {
+        if (ev.target === row) { row.classList.remove("avant"); row.classList.remove("apres"); }
+      });
+      row.addEventListener("drop", function (ev) {
+        ev.preventDefault();
+        var src = pris;
+        if (src === null) {
+          try { src = parseInt(ev.dataTransfer.getData("text/plain"), 10); } catch (e) { src = NaN; }
+        }
+        eteintDepot();
+        if (!isFinite(src) || src === it.index) return;
+        var cible = it.index + (moitieBasse(ev) ? 1 : 0);
+        var l = state.specialites;
+        var obj = l.splice(src, 1)[0];
+        if (!obj) return;
+        // le retrait a décalé tout ce qui suivait : la cible avec, si elle était
+        // après la source
+        if (src < cible) cible--;
+        l.splice(clamp(cible, 0, l.length), 0, obj);
         rendu();
         refresh();
-        if (optCompsRebuild) optCompsRebuild();   // sa ligne quitte aussi le bloc des Options
-      }, "danger"));
-      row.appendChild(bot);
+        if (optCompsRebuild) optCompsRebuild();   // l'ordre du bloc des Options suit
+      });
+
+      // PLUS DE RANG DE CONSTRUCTION. Tout s'y est vidé : les quatre réglages
+      // sont passés dans leurs cases, le retrait est monté à gauche de la
+      // ligne, et le coût en xp en est retiré — on le lit au compteur de
+      // l'en-tête et, ligne par ligne, dans le bloc des Options.
 
       lignes.push(function () {
         var plaf = spePlafond(spe);
         var mord = (spe.pts || 0) > plaf;
         var d = (spe.mod || 0) + (spe.mod2 || 0);
         var force = spe.force !== null && spe.force !== undefined;
-        var xpF = spe.xpForce !== null && spe.xpForce !== undefined;
         var mal = enduranceMalus();
         // la charge ne mord que sur l'esquive, et l'esquive est une spécialité :
         // un −100 apparu sans être nommé passerait pour une faute de calcul
@@ -291,9 +356,6 @@
             (mal ? " · endurance " + sign(-mal) : "") +
             " — clic : lancer " + DE_DEFAUT + " " + sign(bonus) +
             ", plafonné à " + lim;
-        vXp.textContent = String(speXp(spe));
-        vXp.classList.toggle("adj", xpF);
-        vXp.title = xpF ? "Coût forcé (Options)" : "";
       });
       return row;
     }

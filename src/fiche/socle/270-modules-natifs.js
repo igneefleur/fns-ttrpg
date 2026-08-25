@@ -40,8 +40,8 @@
     // n'a pas de fin. Elles étouffaient sous un tiers de feuille.
     { id: "specialites", titre: "Spécialités",      onglet: "fiche", colonne: "droite", build: buildSpecialites },
     // ---- onglet Équipement ----
-    { id: "armes",      titre: "Armes",             onglet: "equipement", colonne: "gauche", build: buildArmes },
-    { id: "armures",    titre: "Armures",           onglet: "equipement", colonne: "droite", build: buildArmures },
+    // PLUS D'ARMES NI D'ARMURES : les deux modules ont été retirés le
+    // 25/08/2026. Ce qu'on porte se tient dans l'inventaire, qui pèse déjà.
     { id: "inv",        titre: "Inventaire",        onglet: "equipement", colonne: "bas",    build: buildInv },
     // ---- onglet Bio ----
     { id: "perso",      titre: "Personnalité",      onglet: "bio", colonne: "gauche", build: buildPerso },
