@@ -43,7 +43,11 @@
     var vPts = case3();
     var vMod = case3();
     var vLim = case3();
-    trio.addEventListener("click", function () { doJet(code, carac, code, null); });
+    // rouage ouvert, on construit : le bloc ne lance pas (voir specialites.js)
+    trio.addEventListener("click", function () {
+      if (isEdit("comps")) return;
+      doJet(code, carac, code, null);
+    });
     top.appendChild(trio);
     row.appendChild(top);
 

@@ -195,6 +195,10 @@
         function (v) { spe.bonus = clamp(Math.round(v), -999, 999); },
         "Bonus de la spécialité");
       quint.addEventListener("click", function (e) {
+        // ROUAGE OUVERT, ON CONSTRUIT : le bloc ne lance pas. Il porte
+        // maintenant des champs, et un clic à côté de l'un d'eux enverrait un
+        // jet au tchat sans qu'on l'ait voulu.
+        if (isEdit("specialites")) return;
         // un clic DANS un champ édite, il ne lance pas. Hors édition les champs
         // sont inertes (pointer-events: none) et le clic revient bien au bloc.
         var t = e.target && e.target.tagName;

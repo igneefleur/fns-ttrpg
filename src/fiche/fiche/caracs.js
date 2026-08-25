@@ -61,7 +61,11 @@
       var vVal = case3();
       var vMod = case3();
       var vLim = case3();
-      trio.addEventListener("click", function () { doJet(code, code, null, null); });
+      // rouage ouvert, on construit : le bloc ne lance pas (voir specialites.js)
+    trio.addEventListener("click", function () {
+      if (isEdit("caracs")) return;
+      doJet(code, code, null, null);
+    });
       top.appendChild(trio);
       row.appendChild(top);
 
