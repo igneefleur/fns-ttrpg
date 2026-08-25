@@ -452,7 +452,19 @@ html.night body:has(#perso-atelier) .md-container { background: #0e0e0e !importa
 }
 /* le couple ne se lance pas : il identifie. Pas de curseur, pas de survol. */
 .pc-trio.deux .v { color: var(--ink-2); font-weight: 600; }
-.pc-trio > .c + .c { border-left: 1px solid var(--line-2); }
+/* LES DEUX CADRES D'UNE LIGNE DE SPÉCIALITÉ FONT LA MÊME HAUTEUR. C'est la
+   seule ligne de la fiche qui en porte deux côte à côte, et chacun prenait
+   jusqu'ici la hauteur de SON contenu : 27,53 px contre 27,67, mesuré. Un
+   septième de pixel suffit à faire tomber les deux bords sur deux pixels
+   d'écran différents, et l'un des cadres paraît alors décalé sur l'autre.
+   Posé sur les seules spécialités : ailleurs, un cadre est seul sur sa ligne
+   et l'étirer ne ferait que le grandir sans rien aligner. */
+.pc-block[data-module="specialites"] .pc-crow-top > .pc-trio { align-self: stretch; }
+/* Le filet est posé sur TOUTES les cases, transparent sur la première : sans
+   cela elle avait un pixel de contenu de plus que ses voisines, donc un chiffre
+   d'une fraction de point plus gros — la taille se réglant sur la case. */
+.pc-trio > .c { border-left: 1px solid transparent; }
+.pc-trio > .c + .c { border-left-color: var(--line-2); }
 .pc-trio .k {
   font-size: clamp(.36rem, 19cqw, .48rem); font-weight: 700; letter-spacing: .07em;
   text-transform: uppercase; color: var(--ink-3);
