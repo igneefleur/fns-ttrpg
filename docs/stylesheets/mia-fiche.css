@@ -240,9 +240,24 @@ html.night body:has(#perso-atelier) .md-container { background: #0e0e0e !importa
    gauche, et ne se replient que lorsque la colonne l'exige vraiment.
    Aucun palier écrit à la main : c'est flex-wrap qui décide, et il décide
    sur la place réelle. */
-.pc-tabs.mini { gap: .15rem; padding: .15rem; margin: .1rem 0 .35rem; border-radius: 7px; }
+/* UNE GRILLE, ET NON UN FLEX, ET C'EST CE QUI REND LES ONGLETS ÉGAUX.
+   En flex, des parts égales donnent bien la même largeur — tant que tout tient
+   sur une ligne. Dès que la bande se replie, le dernier onglet reste SEUL sur
+   son rang et s'étire sur toute la largeur : mesuré, quatre onglets à 73 px et
+   un cinquième à 303. Une grille à colonnes égales, elle, garde ses colonnes
+   d'un rang à l'autre : l'onglet qui passe à la ligne occupe une case, pas un
+   rang. « auto-fit » fait tenir autant de colonnes que la place le permet et
+   replie le reste — aucun palier écrit à la main.
+   LE PLANCHER EST EN REM (3), et il le faut : « auto-fit » exige une mesure
+   définie, et le rem suit la racine — 22 px sur le site, 18 dans l'iframe
+   Roll20. Le plus long des cinq mots (« Plafond ») en demande 2,7 : la marge
+   est mince, c'est pourquoi « Modificateur » s'abrège en « Modif. ». */
+.pc-tabs.mini {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(3rem, 1fr));
+  gap: .15rem; padding: .15rem; margin: .1rem 0 .35rem; border-radius: 7px;
+}
 .pc-tabs.mini > .pc-tab {
-  flex: 0 1 auto; padding: .2rem .45rem; border-radius: 5px; font-size: .58rem;
+  min-width: 0; padding: .2rem .3rem; border-radius: 5px; font-size: .58rem;
 }
 /* le focus se voit, sinon la bande au clavier est un déplacement à l'aveugle ;
    même marque que partout ailleurs dans la feuille */
