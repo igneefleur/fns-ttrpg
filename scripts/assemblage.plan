@@ -155,6 +155,7 @@ fin = lf
   src/fiche/options/jets.js
   src/fiche/options/commun-champs.js
   src/fiche/options/caracs-options.js
+  src/fiche/options/ecart-regle.js
   src/fiche/options/creation.js
   src/fiche/options/optcomps.js
   src/fiche/options/filtres.js

@@ -260,28 +260,12 @@
     // Le champ montre en filigrane celui des règles, et l'effacer y revient.
     // Deux colonnes suffisent donc — une troisième répéterait le champ.
     //
-    // L'INTERRUPTEUR EST ICI, EN TÊTE. Il était un bloc à lui seul, au motif que
-    // décaler un seuil et SUSPENDRE une règle ne se font pas dans le même état
-    // d'esprit. Le motif tient toujours, mais on ne le cherche nulle part
-    // ailleurs qu'à l'endroit où l'on règle l'écart : il ouvre l'onglet, avant
-    // les huit lignes, et ce qu'il coupe se lit juste en dessous.
+    // L'INTERRUPTEUR QUI SUSPEND LA RÈGLE N'EST PAS ICI, et il a fait l'aller-
+    // retour : rangé un temps en tête de cet onglet, il en est ressorti. Les
+    // cinq onglets DÉCALENT un seuil, caractéristique par caractéristique ; lui
+    // SUSPEND la règle pour le personnage entier. Il a son bloc (voir
+    // ecart-regle.js), et cet onglet ne porte que les huit valeurs.
     onglet("Écart", "", function (p) {
-      var row = el("div", "pc-kv");
-      var lab = el("label", "pc-case-mot");
-      var boite = el("input");
-      boite.type = "checkbox";
-      boite.title = "Coché, la règle de l'écart ne retire plus rien à ce personnage.";
-      boite.addEventListener("change", function () {
-        state.ecartCoupe = boite.checked;
-        save();
-        refresh();
-      });
-      hooks.push(function () { boite.checked = !!state.ecartCoupe; });
-      lab.appendChild(boite);
-      lab.appendChild(el("span", "t", "Couper la règle pour ce personnage"));
-      row.appendChild(lab);
-      p.appendChild(row);
-
       var box = grille(p);
       entete(box, "paire", [["Carac.", "Caractéristique"],
                             ["Écart", "Vide = valeur par défaut"]]);

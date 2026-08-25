@@ -86,9 +86,16 @@
     // sous Firefox : 1481 px à gauche contre 1231 à droite, soit 250 d'écart, et
     // c'est la GAUCHE qui dépasse. Le rééquilibrer demanderait d'envoyer à
     // droite un bloc court (« Jets » suffirait, à 70 px près) : ça ne se décide
-    // pas dans un commentaire, et le bloc reste où il est en attendant. Il tient
-    // d'ailleurs de l'xp autant que « XP par champ », son voisin du dessus.
+    // pas dans un commentaire, et le bloc reste où il est en attendant. (Depuis,
+    // la « Règle de l'écart » est venue à droite : l'écart est retombé à 153.)
+    // Il tient d'ailleurs de l'xp autant que « XP par champ », son voisin.
     { id: "creation",   titre: "Création",          onglet: "options", colonne: "droite", build: buildCreation },
+    // À DROITE, et pour deux raisons qui vont ensemble. La première tient à ce
+    // qu'il EST : un interrupteur qui suspend une règle pour tout le
+    // personnage, quand la gauche porte les leviers qui décalent un seuil
+    // caractéristique par caractéristique. La seconde est une mesure : la
+    // gauche dépassait la droite de 250 px, elle n'en dépasse plus que 153.
+    { id: "ecartcoupe", titre: "Règle de l'écart",   onglet: "options", colonne: "droite", build: buildEcartRegle },
     { id: "filtres",    titre: "Outils de filtre",  onglet: "options", colonne: "droite", build: buildFiltres },
     // « Affichage » n'existe que dans Roll20 : à gauche, il y compense les deux
     // blocs de réglages que porte la droite, et son absence sur le site laisse
