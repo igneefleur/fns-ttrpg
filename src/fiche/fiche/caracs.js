@@ -96,6 +96,16 @@
           }
           state.caracs[code] = Math.max(0, n);
         }, 1, "valeur"));
+      // LE BONUS EST ICI, ET PLUS DANS LES OPTIONS. C'est ce qui décale la
+      // VALEUR — donc, par la table, le MOD et la LIMITE ensemble. Il se pose
+      // après le plafond du prestige, et peut donc le dépasser.
+      bot.appendChild(el("span", "lbl", "Bonus"));
+      bot.appendChild(stepper(
+        function () { return state.caracsBonus[code] || 0; },
+        function (v) {
+          var n = clamp(Math.round(v), -999, 999);
+          if (n) state.caracsBonus[code] = n; else delete state.caracsBonus[code];
+        }, 1, "bonus"));
       bot.appendChild(el("span", "lbl", "XP"));
       var vXp = el("span", "max", "");
       vXp.style.justifySelf = "end";
@@ -103,14 +113,15 @@
       row.appendChild(bot);
 
       hooks.push(function () {
-        var d = (state.caracsMod[code] || 0) + (state.caracsMod2[code] || 0);
-        var force = state.caracsForce[code] !== undefined;
+        var d = state.caracsBonus[code] || 0;
+        var dm = state.caracsModMod[code] || 0;
+        var dl = state.caracsLimMod[code] || 0;
         var plaf = caracPlafond(code);
         var base = caracBase(code);
         var mord = base > plaf;
         var xpF = state.caracsXpForce[code] !== undefined;
         var xpD = (state.caracsXpMod[code] || 0) + (state.caracsXpMod2[code] || 0);
-        var retouche = force || d !== 0 || mord;
+        var retouche = d !== 0 || dm !== 0 || dl !== 0 || mord;
         vVal.textContent = String(caracTotal(code));
         vMod.textContent = sign(caracMod(code));
         vLim.textContent = String(caracLim(code));
@@ -119,11 +130,11 @@
         // qui ne correspond ni à ce qu'il a acheté ni à ce qu'il a modifié, et
         // rien ne dit pourquoi. Un total forcé, lui, REMPLACE la somme :
         // l'afficher quand même la ferait mentir.
-        trio.title = (force
-                       ? "Total forcé (Options)"
-                       : "Valeur " + base +
-                         (mord ? ", plafonnée à " + plaf : "") +
-                         (d ? " · modificateur (Options) " + sign(d) : "")) +
+        trio.title = "Valeur " + base +
+                     (mord ? ", plafonnée à " + plaf : "") +
+                     (d ? " · bonus " + sign(d) : "") +
+                     (dm ? " · MOD décalé de " + sign(dm) + " (Options)" : "") +
+                     (dl ? " · limite décalée de " + sign(dl) + " (Options)" : "") +
                      " — clic : lancer " + DE_DEFAUT + " " + sign(caracMod(code)) +
                      ", plafonné à " + caracLim(code);
         // l'XP se lit sur la valeur ACHETÉE, jamais sur le total : un

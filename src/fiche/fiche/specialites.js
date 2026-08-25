@@ -302,16 +302,23 @@
         var compC = spe.comp ? compPts(spe.comp) : 0;
         vPts.txt.textContent = String(spePts(spe));
         if (document.activeElement !== vPts.champ) vPts.champ.value = spe.pts || 0;
-        // LE TOTAL : ce que la spécialité vaut en tout, ses points plus ce que
-        // sa caractéristique et sa compétence y ajoutent.
+        // LE TOTAL EST CELUI QU'ON LANCE, donc le RABATTU : si l'écart avec la
+        // limite descendait sous son minimum, c'est le nombre déjà ramené qui
+        // s'affiche. Montrer celui d'avant afficherait un chiffre que le dé ne
+        // verra jamais.
         //
         // SANS SIGNE. Ce n'est pas un terme qu'on ajoute à quelque chose — c'est
         // une valeur, comme la limite à côté. Le « + » ne se met qu'à ce qui
-        // s'ajoute : le MOD d'une caractéristique, le bonus. Le signe moins
-        // reste typographique si un modificateur des Options passe le total
-        // sous zéro.
-        var tot = spePts(spe) + modC + compC;
+        // s'ajoute : le MOD d'une caractéristique, le bonus.
+        var brut = speTotalBrut(spe);
+        var tot = speTotal(spe);
+        var rabat = spe.carac && tot < brut;
         vTot.textContent = spe.carac ? String(tot).replace("-", "−") : "—";
+        vTot.classList.toggle("adj", !!rabat);
+        vTot.title = rabat
+          ? "Ramené de " + brut + " — écart " + ecartMin(spe.carac) +
+            " sous la limite " + caracLimNat(spe.carac) + "."
+          : "";
         vLim.textContent = spe.carac ? String(lim) : "—";
         vBon.txt.textContent = sign(spe.bonus || 0);
         if (document.activeElement !== vBon.champ) vBon.champ.value = spe.bonus || 0;
@@ -324,6 +331,7 @@
                  (d ? " · modificateur (Options) " + sign(d) : "")) +
             " · " + spe.carac + " " + sign(caracMod(spe.carac)) +
             (spe.comp ? " · " + spe.comp + " " + sign(compPts(spe.comp)) : "") +
+            (rabat ? " · total ramené de " + brut + " à " + tot : "") +
             ((spe.bonus || 0) ? " · bonus " + sign(spe.bonus) : "") +
             (ch ? " · charge " + sign(ch) : "") +
             (mal ? " · endurance " + sign(-mal) : "") +

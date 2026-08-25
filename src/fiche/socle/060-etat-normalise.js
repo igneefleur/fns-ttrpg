@@ -73,9 +73,10 @@
     // pas de rangement. Un joueur qui redescend son prestige ne doit pas voir
     // ses achats effacés au premier enregistrement.
     s.caracs = tableNombres(s.caracs, function (v) { return entier(v, 0, pMax); });
-    ["caracsMod", "caracsMod2", "caracsXpMod", "caracsXpMod2", "caracsPlafondMod"]
+    ["caracsBonus", "caracsModMod", "caracsLimMod", "caracsEcartMod",
+     "caracsXpMod", "caracsXpMod2", "caracsPlafondMod"]
       .forEach(function (k) { s[k] = tableNombres(s[k], modNum); });
-    ["caracsForce", "caracsXpForce", "caracsPlafondForce"]
+    ["caracsXpForce", "caracsPlafondForce"]
       .forEach(function (k) { s[k] = tableForce(s[k]); });
 
     // ---------- les compétences ----------

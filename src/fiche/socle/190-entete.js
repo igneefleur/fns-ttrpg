@@ -299,10 +299,10 @@
       if (xpRestant() < 0)
         warns.appendChild(el("div", "pc-warn", "XP dépensé au-delà du total (" + xpDepense() + " / " + state.xpTotal + ")."));
       // Une caractéristique au-dessus du prestige, des points au-dessus du
-      // plafond : ce sont les deux murs du système, et ils ne se franchissent
-      // que par un forçage du MJ — qu'on ne signale donc pas.
+      // plafond : ce sont les deux murs du système. Le BONUS peut porter le
+      // total au-delà sans que ce soit une faute — l'avertissement porte donc
+      // sur la valeur ACHETÉE, jamais sur le total.
       champs().forEach(function (c) {
-        if (state.caracsForce[c] !== undefined) return;
         if (caracBase(c) > caracPlafond(c))
           warns.appendChild(el("div", "pc-warn", "« " + caracInfo(c).nom + " » dépasse le plafond du prestige (" +
             caracBase(c) + " / " + caracPlafond(c) + ")."));
@@ -313,17 +313,20 @@
           warns.appendChild(el("div", "pc-warn", "« " + compInfo(c).nom + " » dépasse son plafond de points (" +
             (state.comps[c] || 0) + " / " + compPlafond(c) + ")."));
       });
-      // UNE SPÉCIALITÉ N'A PLUS DE PLAFOND, mais elle a toujours une limite —
-      // celle de sa caractéristique, qui rogne le jet. Approcher cette limite
-      // n'est pas une faute : c'est un avertissement, donc du jaune et non du
-      // rouge. Au-delà, chaque point acheté ne rapporte plus rien.
+      // L'ÉCART D'UNE SPÉCIALITÉ. Rien n'est bloqué à l'achat : quand l'écart
+      // avec la limite descendrait sous son minimum, c'est le total employé au
+      // jet qui est ramené. Ce n'est donc pas une faute — d'où le jaune — mais
+      // il faut le DIRE, sinon des points achetés disparaissent en silence.
       (state.specialites || []).forEach(function (sp) {
         if (!sp.carac) return;
-        var lim = caracLim(sp.carac);
-        var tot = spePts(sp) + caracMod(sp.carac) + (sp.comp ? compPts(sp.comp) : 0);
-        if (tot > lim - repli("speMarge"))
-          warns.appendChild(el("div", "pc-warn doux", "« " + (sp.nom || "Spécialité") +
-            " » approche de sa limite (" + tot + " / " + lim + ")."));
+        var brut = speTotalBrut(sp), tot = speTotal(sp);
+        if (tot >= brut) return;
+        // On dit ce qui a été RETIRÉ, pas l'écart qu'on aurait eu : celui-là
+        // est négatif dès que le total passe la limite, et un « écart −40 » se
+        // lit deux fois avant de vouloir dire quelque chose.
+        warns.appendChild(el("div", "pc-warn doux", "« " + (sp.nom || "Spécialité") +
+          " » : total ramené de " + brut + " à " + tot +
+          " (écart " + ecartMin(sp.carac) + " sous la limite " + caracLimNat(sp.carac) + ")."));
       });
     });
     sheet.appendChild(warns);

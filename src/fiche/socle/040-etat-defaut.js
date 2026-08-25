@@ -24,8 +24,20 @@
       // sigle -> points achetés. Les modificateurs sont DEUX (l'équipement,
       // puis l'arbitrage) : un seul champ obligeait à additionner de tête
       // avant de saisir, et à défaire le calcul pour en retirer un.
-      caracs: {}, caracsMod: {}, caracsMod2: {},
-      caracsForce: {}, caracsXpForce: {}, caracsXpMod: {}, caracsXpMod2: {},
+      // LE BONUS s'ajoute à la VALEUR, après le plafond du prestige : il peut
+      // donc porter une caractéristique au-delà de ce que le prestige permet,
+      // comme en dessous de zéro. Il se règle sur la FICHE, dans le module des
+      // caractéristiques, et non plus dans les Options.
+      caracs: {}, caracsBonus: {},
+      // LES TROIS LEVIERS DU MENEUR, un par caractéristique. Ils ne touchent
+      // ni la valeur ni ce qu'elle a coûté : ils décalent ce qu'elle DONNE.
+      //   caracsModMod   ce qui s'ajoute au MOD lu dans la table
+      //   caracsLimMod   ce qui s'ajoute à la LIMITE — et à elle SEULE, ce qui
+      //                  est le seul moyen de resserrer l'écart d'une
+      //                  spécialité sous son minimum (voir speTotal)
+      //   caracsEcartMod ce qui s'ajoute à l'écart minimum lui-même
+      caracsModMod: {}, caracsLimMod: {}, caracsEcartMod: {},
+      caracsXpForce: {}, caracsXpMod: {}, caracsXpMod2: {},
 
       // sigle -> points investis (1 XP le point). Mêmes leviers.
       comps: {}, compsMod: {}, compsMod2: {},

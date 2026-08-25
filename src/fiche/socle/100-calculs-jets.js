@@ -7,14 +7,22 @@
   //
   // Le MALUS D'ENDURANCE entre ici, et ici seulement : il pèse sur TOUS les
   // jets, donc l'écrire dans chaque appelant reviendrait à l'oublier une fois.
-  // LE BONUS D'UNE SPÉCIALITÉ s'ajoute ici, en dernier : c'est une valeur EN
-  // PLUS, qui part de zéro, et non un terme du calcul de base. Elle entre DANS
-  // le groupe, donc sous la limite : dépasser la limite reste le privilège de
-  // l'endurance, et d'elle seule (voir jetExpr).
+  // UNE SPÉCIALITÉ NE S'ADDITIONNE PAS TERME À TERME : son total est déjà
+  // composé — ses points, le MOD de sa caractéristique, les points de sa
+  // compétence — et surtout déjà RABATTU par la règle de l'écart. Le
+  // recomposer ici rendrait le rabattage sans effet.
+  //
+  // Ce qui vient APRÈS le total, et qui n'entre donc pas dans le rabattage :
+  // le bonus de la ligne, le malus de charge sur l'esquive, et le malus
+  // d'endurance — qui pèse sur TOUS les jets, donc l'écrire dans chaque
+  // appelant reviendrait à l'oublier une fois.
   function jetBonusBrut(carac, comp, spe) {
-    var b = caracMod(carac) - enduranceMalus();
-    if (comp) b += compPts(comp);
-    if (spe) b += spePts(spe) + speMalusCharge(spe) + (spe.bonus || 0);
+    var b = -enduranceMalus();
+    if (spe) b += speTotal(spe) + (spe.bonus || 0) + speMalusCharge(spe);
+    else {
+      b += caracMod(carac);
+      if (comp) b += compPts(comp);
+    }
     return Math.round(b);
   }
   function jetBonus(carac, comp, spe) {

@@ -65,7 +65,13 @@
     // L'ordre de déclaration EST l'ordre d'affichage, colonne par colonne.
     { id: "jets",       titre: "Jets",              onglet: "options", colonne: "gauche", build: buildJets },
     { id: "actions",    titre: "Fiche",             onglet: "options", colonne: "droite", build: buildActions },
-    { id: "modcaracs",  titre: "Modificateurs de caractéristiques", onglet: "options", colonne: "gauche", build: buildModCaracs },
+    // LES TROIS LEVIERS DU MENEUR, à gauche avec le reste de ce qui touche aux
+    // caractéristiques. La valeur, elle, ne se règle plus ici : elle a sa case
+    // Bonus sur la fiche.
+    { id: "limcaracs",  titre: "Limite des caractéristiques", onglet: "options", colonne: "gauche", build: buildLimCaracs },
+    { id: "modcaracs",  titre: "Modificateur des caractéristiques", onglet: "options", colonne: "gauche", build: buildModCaracs },
+    { id: "ecartcaracs", titre: "Écart des spécialités", onglet: "options", colonne: "gauche", build: buildEcartCaracs },
+    { id: "xpcaracs",   titre: "Coût en xp des caractéristiques", onglet: "options", colonne: "gauche", build: buildXpCaracs },
     { id: "xpchamps",   titre: "XP par champ",      onglet: "options", colonne: "droite", build: buildXpChamps },
     // Création passe à DROITE, et ce n'est pas un choix de goût : mesuré sous
     // Firefox, les deux longues listes du bas démarraient à 139 px d'écart avec

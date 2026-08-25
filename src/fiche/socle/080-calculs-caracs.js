@@ -63,12 +63,10 @@
   // ---------- les caractéristiques ----------
   function caracBase(c) { return state.caracs[c] || 0; }
   function caracTotalBrut(c) {
-    // total FORCÉ : il court-circuite tout, plafond et modificateurs compris
-    if (state.caracsForce[c] !== undefined) return state.caracsForce[c];
     var v = Math.min(caracBase(c), caracPlafond(c));
-    // le modificateur (bloc Options) s'applique APRÈS le plafond : il peut
-    // porter le total au-delà du prestige comme en dessous de zéro.
-    return v + (state.caracsMod[c] || 0) + (state.caracsMod2[c] || 0);
+    // le BONUS s'applique APRÈS le plafond : il peut porter le total au-delà
+    // du prestige comme en dessous de zéro.
+    return v + (state.caracsBonus[c] || 0);
   }
   function caracTotal(c) {
     var v = caracTotalBrut(c);
@@ -79,15 +77,46 @@
   // LE MODIFICATEUR, qui s'ajoute à tous les jets passant par la
   // caractéristique, et LA LIMITE, qui les plafonne. Les deux se lisent dans la
   // table, jamais ne se recalculent.
-  function caracModBrut(c) { return ligneValeur(caracTotal(c)).mod; }
+  function caracModBrut(c) {
+    return ligneValeur(caracTotal(c)).mod + (state.caracsModMod[c] || 0);
+  }
   function caracMod(c) {
     var v = caracModBrut(c);
     return aFiltre("caracMod") ? applique("caracMod", v, { carac: c }) : v;
   }
-  function caracLimBrut(c) { return ligneValeur(caracTotal(c)).lim; }
+  // DEUX LIMITES, ET IL EN FAUT DEUX.
+  //
+  // La limite NATURELLE est celle que la caractéristique donne, telle quelle.
+  // C'est contre elle que le total d'une spécialité se rabat : l'écart entre
+  // les deux ne descend pas sous son minimum.
+  //
+  // La limite EFFECTIVE est la naturelle plus le levier du meneur. C'est elle
+  // qui coiffe le jet.
+  //
+  // Les confondre ferait disparaître ce que la règle autorise expressément au
+  // meneur : abaisser la SEULE limite pour resserrer l'écart sous son minimum.
+  // Si le rabattage se calculait sur la limite effective, il suivrait ce malus
+  // et l'écart resterait à son minimum — le levier n'aurait aucun effet.
+  // Un malus posé sur la CARACTÉRISTIQUE, lui, abaisse la limite naturelle :
+  // le rabattage le suit, et l'écart tient. C'est la différence que la règle
+  // fait entre « malus aux stats » et « malus à la limite ».
+  function caracLimNatBrut(c) { return ligneValeur(caracTotal(c)).lim; }
+  function caracLimNat(c) {
+    var v = caracLimNatBrut(c);
+    return aFiltre("caracLimNat") ? applique("caracLimNat", v, { carac: c }) : v;
+  }
+  function caracLimBrut(c) { return caracLimNat(c) + (state.caracsLimMod[c] || 0); }
   function caracLim(c) {
     var v = caracLimBrut(c);
     return aFiltre("caracLim") ? applique("caracLim", v, { carac: c }) : v;
+  }
+  // L'ÉCART MINIMUM entre le total d'une spécialité et la limite naturelle de
+  // sa caractéristique. Le nombre vient des règles ; le meneur peut le décaler,
+  // caractéristique par caractéristique.
+  function ecartMinBrut(c) { return repli("speMarge") + (state.caracsEcartMod[c] || 0); }
+  function ecartMin(c) {
+    var v = ecartMinBrut(c);
+    return aFiltre("ecartMin") ? applique("ecartMin", v, { carac: c }) : v;
   }
   // Ce qu'une caractéristique coûte : l'XP CUMULÉ de sa ligne, et non une somme
   // de pas. La table porte déjà les 20 XP le +1 jusqu'à 5 puis 40 au-delà, donc
@@ -157,6 +186,26 @@
     var v = spePtsBrut(spe);
     return aFiltre("spePts") ? applique("spePts", v, { spe: spe }) : v;
   }
+  // LE TOTAL D'UNE SPÉCIALITÉ : ses points, le MOD de sa caractéristique, les
+  // points de sa compétence. C'est ce nombre-là que la règle de l'écart borne.
+  function speTotalBrut(spe) {
+    if (!spe || !spe.carac) return 0;
+    return spePts(spe) + caracMod(spe.carac) + (spe.comp ? compPts(spe.comp) : 0);
+  }
+  // ET SON RABATTAGE. Rien n'est bloqué à l'achat : on met dans une spécialité
+  // ce qu'on veut. C'est le total EMPLOYÉ AU JET qui redescend, pour que
+  // l'écart avec la limite naturelle tienne son minimum.
+  //
+  // Le rabattage se calcule sur la limite NATURELLE, jamais sur l'effective :
+  // voir caracLimNat. Et il ne peut que faire DESCENDRE — un écart déjà plus
+  // grand que le minimum ne remonte personne.
+  function speTotal(spe) {
+    if (!spe || !spe.carac) return 0;
+    var haut = Math.max(0, caracLimNat(spe.carac) - ecartMin(spe.carac));
+    var v = Math.min(speTotalBrut(spe), haut);
+    return aFiltre("speTotal") ? applique("speTotal", v, { spe: spe }) : v;
+  }
+
   // Un point de spécialité coûte un QUART d'XP : le total est donc décimal, et
   // c'est voulu. On l'arrondit au centième pour que l'en-tête n'affiche pas
   // 12.750000000000002.
