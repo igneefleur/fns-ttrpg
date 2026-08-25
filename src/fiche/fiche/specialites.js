@@ -31,13 +31,17 @@
     // lignes : c'est ce qui garantit que chaque mot tombe en face de sa colonne
     var tete = el("div", "pc-crow-top pc-caracs-tete");
     tete.appendChild(el("span", "sp"));
-    var teteQuint = el("span", "pc-trio cinq tete");
-    ["Val", "Mod", "Comp", "Lim", "Bonus"].forEach(function (k) {
-      var c = el("span", "c");
-      c.appendChild(el("span", "k", k));
-      teteQuint.appendChild(c);
-    });
-    tete.appendChild(teteQuint);
+    function teteBloc(cls, mots) {
+      var t = el("span", "pc-trio " + cls + " tete");
+      mots.forEach(function (k) {
+        var c = el("span", "c");
+        c.appendChild(el("span", "k", k));
+        t.appendChild(c);
+      });
+      tete.appendChild(t);
+    }
+    teteBloc("deux", ["Carac", "Comp"]);
+    teteBloc("cinq", ["Val", "Mod", "Comp", "Lim", "Bonus"]);
     b.appendChild(tete);
     b.appendChild(box);
     // Les lignes sont détruites et refaites à chaque ajout ou retrait ; le
@@ -91,6 +95,22 @@
       nom.value = spe.nom || "";
       nom.addEventListener("input", function () { spe.nom = nom.value; refresh(); });
       top.appendChild(nom);
+      // LE COUPLE DES SIGLES, dans la même case que les nombres qui suivent.
+      // Il dit de quoi la spécialité relève ; il ne se clique pas et ne se
+      // saisit pas — les deux sélecteurs vivent sous le rouage —, mais il se
+      // lit à la même hauteur et sur le même pas que le reste de la ligne.
+      var paire = el("span", "pc-trio deux");
+      function case2() {
+        var c = el("span", "c");
+        var v = el("span", "v", "");
+        c.appendChild(v);
+        paire.appendChild(c);
+        return v;
+      }
+      var vCar = case2();
+      var vCmp = case2();
+      top.appendChild(paire);
+
       // LES CINQ NOMBRES D'UN SEUL TENANT, et c'est le bloc ENTIER qui lance.
       // Une spécialité en demande deux de plus qu'une compétence, et les deux se
       // méritent : ses propres points ne font pas seuls le jet — le MOD de sa
@@ -197,6 +217,10 @@
         var ch = speMalusCharge(spe);
         var lim = spe.carac ? caracLim(spe.carac) : 0;
         var bonus = jetBonus(spe.carac, spe.comp, spe);
+        vCar.textContent = spe.carac || "—";
+        vCmp.textContent = spe.comp || "—";
+        paire.title = (spe.carac ? caracInfo(spe.carac).nom : "aucune caractéristique") +
+                      " · " + (spe.comp ? compInfo(spe.comp).nom : "aucune compétence");
         // LES CINQ CASES, dans l'ordre où la phrase se compose : ce que la
         // spécialité vaut à elle seule, ce que sa caractéristique y ajoute, ce
         // que sa compétence y ajoute, ce qui coiffe le résultat, et le bonus
@@ -207,12 +231,9 @@
         vLim.textContent = spe.carac ? String(lim) : "—";
         vBon.textContent = sign(spe.bonus || 0);
         quint.classList.toggle("adj", force || d !== 0 || mord || mal !== 0 || ch !== 0);
-        // l'infobulle porte seule, désormais, de QUOI la spécialité relève :
-        // les deux sigles ont quitté la ligne
         quint.title = !spe.carac
           ? "Cette spécialité ne dit pas de quelle caractéristique elle tient."
-          : (spe.carac + (spe.comp ? " · " + spe.comp : "") + " — ") +
-            (force
+          : (force
                ? "Points forcés (Options)"
                : "Points " + (spe.pts || 0) +
                  (mord ? ", plafonnés à " + plaf : "") +

@@ -95,6 +95,7 @@ html.night body:has(#perso-atelier) .md-container { background: #0e0e0e !importa
   --pc-sheet-w: 62rem;
   --pc-trio-w: 8.7rem;   /* trois cases égales : voir .pc-trio */
   --pc-quint-w: 14.5rem; /* cinq cases égales, même largeur de case */
+  --pc-paire-w: 5.8rem;  /* deux cases, la même encore : les deux sigles */
 
   color: var(--ink);
   background: var(--bg-side);
@@ -438,12 +439,19 @@ html.night body:has(#perso-atelier) .md-container { background: #0e0e0e !importa
    Sans cela, un chiffre de spécialité s'affichait à 19 px là où le même chiffre
    de caractéristique s'affichait à 13 px, côte à côte, sur la même feuille. */
 .pc-trio.cinq { width: min(var(--pc-quint-w, 14.5rem), 96.67cqw); }
+/* DEUX CASES, celles des sigles, prises sur la même mesure : deux cinquièmes de
+   la part du quintuple, puisque c'est le même pas de case. */
+.pc-trio.deux { width: min(var(--pc-paire-w, 5.8rem), 38.67cqw); }
 @container feuille (min-width: 26rem) {
   .pc-trio.cinq { width: min(var(--pc-quint-w, 14.5rem), 47.2cqw); }
+  .pc-trio.deux { width: min(var(--pc-paire-w, 5.8rem), 18.88cqw); }
 }
 @container feuille (min-width: 38rem) {
   .pc-trio.cinq { width: min(var(--pc-quint-w, 14.5rem), 48.33cqw); }
+  .pc-trio.deux { width: min(var(--pc-paire-w, 5.8rem), 19.33cqw); }
 }
+/* le couple ne se lance pas : il identifie. Pas de curseur, pas de survol. */
+.pc-trio.deux .v { color: var(--ink-2); font-weight: 600; }
 .pc-trio > .c + .c { border-left: 1px solid var(--line-2); }
 .pc-trio .k {
   font-size: clamp(.36rem, 19cqw, .48rem); font-weight: 700; letter-spacing: .07em;
@@ -476,13 +484,18 @@ html.night body:has(#perso-atelier) .md-container { background: #0e0e0e !importa
 }
 /* colonne étroite (iframe Roll20 réduite, téléphone) : le trio et le sigle se
    serrent plutôt que de pousser le bloc hors de sa colonne. */
-/* COLONNE TROP ÉTROITE POUR UNE SEULE LIGNE : le quintuple d'une spécialité
-   descend d'un cran et prend toute la largeur. Il le fait POUR L'ENTÊTE COMME
-   POUR LES LIGNES — c'est le même sélecteur, et c'est la seule façon que les
-   cinq mots restent en face des cinq nombres. Une spécialité porte, en plus de
-   ses cinq cases, un nom qu'on écrit : à un moment, les deux ne tiennent plus
-   côte à côte. */
-@container colonne (max-width: 17rem) {
+/* FEUILLE À UNE SEULE COLONNE : le quintuple descend d'un cran et prend la
+   largeur du bloc, le couple des sigles restant en haut avec le nom. Il le fait
+   POUR L'ENTÊTE COMME POUR LES LIGNES — c'est le même sélecteur, et c'est la
+   seule façon que les mots restent en face des nombres.
+   LE PALIER EST CELUI DE LA FEUILLE, ET NON DE LA COLONNE, pour deux raisons
+   qui vont ensemble : sur une feuille à une colonne, les parts en cqw ne
+   rétrécissent plus rien (une colonne pleine largeur les laisse à leur maximum),
+   si bien que sept cases et un nom finissent par déborder ; et c'est le seul cas
+   où les trois colonnes ont la MÊME largeur, ce qui rend exacte la règle
+   ci-dessous, par laquelle le trio prend trois cinquièmes de la mesure que le
+   quintuple vient de fixer. */
+@container feuille (max-width: 25.9rem) {
   .pc-block[data-module="specialites"] .pc-crow-top { flex-wrap: wrap; }
   /* Passé à la ligne, le quintuple a toute la largeur du bloc — et c'est LUI
      qui manque de place le premier, puisqu'il porte cinq cases là où le trio en
@@ -494,14 +507,11 @@ html.night body:has(#perso-atelier) .md-container { background: #0e0e0e !importa
     width: min(var(--pc-quint-w, 14.5rem), calc(100cqw - 1.4rem));
     margin-left: auto; margin-top: .12rem;
   }
-  /* ET SEULEMENT LÀ OÙ LES COLONNES SONT ÉGALES, c'est-à-dire quand l'onglet
-     n'en a plus qu'une. Ailleurs, une colonne de caractéristiques est étroite
-     SANS que celle des spécialités le soit : rétrécir le trio pour un quintuple
-     qui, lui, ne manque de rien, c'est refaire l'écart dans l'autre sens — il
-     est monté à 10 % avant que cette garde ne soit posée. */
-  @container feuille (max-width: 25.9rem) {
-    .pc-trio { width: min(var(--pc-trio-w, 8.7rem), calc((100cqw - 1.4rem) * 3 / 5)); }
+  /* le couple reste en haut, avec le nom, et garde le pas des cases du bas */
+  .pc-block[data-module="specialites"] .pc-crow-top > .pc-trio.deux {
+    width: min(var(--pc-paire-w, 5.8rem), calc((100cqw - 1.4rem) * 2 / 5));
   }
+  .pc-trio { width: min(var(--pc-trio-w, 8.7rem), calc((100cqw - 1.4rem) * 3 / 5)); }
 }
 
 .pc-trio.adj .v { color: var(--red-deep); }
