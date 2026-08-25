@@ -101,9 +101,13 @@
     return aFiltre("caracLim") ? applique("caracLim", v, { carac: c }) : v;
   }
   // L'ÉCART MINIMUM entre le total d'une spécialité et la limite naturelle de
-  // sa caractéristique. Le nombre vient des règles ; le meneur peut le décaler,
-  // caractéristique par caractéristique.
-  function ecartMinBrut(c) { return repli("speMarge") + (state.caracsEcartMod[c] || 0); }
+  // sa caractéristique. Le nombre vient des règles ; le meneur peut le
+  // REMPLACER, caractéristique par caractéristique — une valeur, et non un
+  // décalage : on pense « l'écart doit être de 30 », pas « je décale de −20 ».
+  function ecartMinBrut(c) {
+    var f = state.caracsEcart[c];
+    return f === undefined ? repli("speMarge") : f;
+  }
   function ecartMin(c) {
     var v = ecartMinBrut(c);
     return aFiltre("ecartMin") ? applique("ecartMin", v, { carac: c }) : v;

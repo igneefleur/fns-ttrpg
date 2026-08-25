@@ -994,6 +994,9 @@ html.night .pc-warn.doux { color: #ffbc33; background: rgba(255, 188, 51, .13); 
 .pc-optcomp-row.quatre { grid-template-columns: minmax(3.2rem, 1.4fr) 2.6rem 2.9rem 2.8rem; }
 /* Les trois blocs de leviers : le sigle, le décalage, ce que ça donne. */
 .pc-optcomp-row.trois { grid-template-columns: minmax(3.2rem, 1.6fr) 2.6rem 3.2rem; }
+/* L'écart demande une VALEUR, pas un décalage : son champ dit tout, il n'y a
+   pas de troisième colonne à lui donner. */
+.pc-optcomp-row.paire { grid-template-columns: minmax(3.2rem, 1fr) 2.6rem; }
 /* Le coût en xp, qui a perdu la moitié « valeur » de son ancienne grille. */
 .pc-optcomp-row.xp { grid-template-columns: minmax(3.2rem, 1.4fr) 1.7rem 1.4rem 1.4rem 2.3rem; }
 /* rangée des groupes : deux titres de trois colonnes, de part et d'autre */

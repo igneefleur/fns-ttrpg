@@ -74,7 +74,7 @@
   // site il est. Il ne change PAS le rang : « 1.0.1b » et « 1.0.1 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (MiaMods.compareVersions tient cette règle).
-  var RELEASE = "1.9.1b";
+  var RELEASE = "1.9.2b";
   var SCHEMA = 1;
 
   // ---------- ce que la fiche ne décide PAS ----------
@@ -220,8 +220,10 @@
       //   caracsLimMod   ce qui s'ajoute à la LIMITE — et à elle SEULE, ce qui
       //                  est le seul moyen de resserrer l'écart d'une
       //                  spécialité sous son minimum (voir speTotal)
-      //   caracsEcartMod ce qui s'ajoute à l'écart minimum lui-même
-      caracsModMod: {}, caracsLimMod: {}, caracsEcartMod: {},
+      //   caracsEcart    l'écart minimum lui-même — une VALEUR et non un
+      //                  décalage : on pense « l'écart doit être de 30 », pas
+      //                  « je décale de −20 ». Vide = celui des règles.
+      caracsModMod: {}, caracsLimMod: {}, caracsEcart: {},
       // LA RÈGLE DE L'ÉCART, COUPÉE. Les trois leviers ci-dessus DÉCALENT ;
       // celui-ci SUSPEND, et pour tout le personnage : plus rien n'est retiré
       // à aucune spécialité. C'est pour la construction que la règle ordinaire
@@ -382,10 +384,10 @@
     // pas de rangement. Un joueur qui redescend son prestige ne doit pas voir
     // ses achats effacés au premier enregistrement.
     s.caracs = tableNombres(s.caracs, function (v) { return entier(v, 0, pMax); });
-    ["caracsBonus", "caracsModMod", "caracsLimMod", "caracsEcartMod",
+    ["caracsBonus", "caracsModMod", "caracsLimMod",
      "caracsXpMod", "caracsXpMod2", "caracsPlafondMod"]
       .forEach(function (k) { s[k] = tableNombres(s[k], modNum); });
-    ["caracsXpForce", "caracsPlafondForce"]
+    ["caracsEcart", "caracsXpForce", "caracsPlafondForce"]
       .forEach(function (k) { s[k] = tableForce(s[k]); });
 
     // ---------- les compétences ----------
@@ -911,9 +913,13 @@
     return aFiltre("caracLim") ? applique("caracLim", v, { carac: c }) : v;
   }
   // L'ÉCART MINIMUM entre le total d'une spécialité et la limite naturelle de
-  // sa caractéristique. Le nombre vient des règles ; le meneur peut le décaler,
-  // caractéristique par caractéristique.
-  function ecartMinBrut(c) { return repli("speMarge") + (state.caracsEcartMod[c] || 0); }
+  // sa caractéristique. Le nombre vient des règles ; le meneur peut le
+  // REMPLACER, caractéristique par caractéristique — une valeur, et non un
+  // décalage : on pense « l'écart doit être de 30 », pas « je décale de −20 ».
+  function ecartMinBrut(c) {
+    var f = state.caracsEcart[c];
+    return f === undefined ? repli("speMarge") : f;
+  }
   function ecartMin(c) {
     var v = ecartMinBrut(c);
     return aFiltre("ecartMin") ? applique("ecartMin", v, { carac: c }) : v;
@@ -5236,17 +5242,43 @@
     return b;
   }
 
+  // L'ÉCART MINIMUM entre le total d'une spécialité et la limite de sa
+  // caractéristique. SEUL DES QUATRE BLOCS À DEMANDER UNE VALEUR et non un
+  // décalage, et c'est voulu : on pense « l'écart doit être de 30 », jamais
+  // « je décale de −20 ». Le champ montre en filigrane celui des règles, et
+  // l'effacer y revient. Deux colonnes suffisent donc — une troisième
+  // répéterait ce que le champ dit déjà.
   function buildEcartCaracs() {
-    // L'ÉCART MINIMUM entre le total d'une spécialité et la limite naturelle.
-    return levierCarac("Écart des spécialités",
-      "Décale l'écart minimum entre le total d'une spécialité et la limite de sa caractéristique.",
-      ["Écart", "Écart minimum effectif"],
-      "caracsEcartMod", null, 999,
-      function (c) {
-        var d = state.caracsEcartMod[c] || 0;
-        return { texte: String(ecartMin(c)),
-                 titre: "Des règles " + (ecartMin(c) - d) + (d ? " · décalage " + sign(d) : "") };
+    var b = block("Écart des spécialités");
+    b.appendChild(el("div", "pc-block-note",
+      "Écart minimum entre le total d'une spécialité et la limite de sa caractéristique. Vide = celui des règles."));
+    var box = el("div");
+    b.appendChild(box);
+
+    var head = el("div", "pc-optcomp-row paire head");
+    [["Carac.", "Caractéristique"], ["Écart", "Vide = l'écart des règles"]].forEach(function (h) {
+      var sp = el("span", null, h[0]);
+      sp.title = h[1];
+      head.appendChild(sp);
+    });
+    box.appendChild(head);
+
+    champs().forEach(function (c, i) {
+      var row = el("div", "pc-optcomp-row paire" + (i % 2 === 1 ? " odd" : ""));
+      var nameBox = el("span", "pc-comp-name");
+      var chip = el("span", "pc-abbr", c);
+      chip.title = caracInfo(c).nom;
+      nameBox.appendChild(chip);
+      row.appendChild(nameBox);
+      row.appendChild(champForce(state.caracsEcart, c,
+        function () { return repli("speMarge"); },
+        "Écart minimum — vide = celui des règles."));
+      hooks.push(function () {
+        row.classList.toggle("on", state.caracsEcart[c] !== undefined);
       });
+      box.appendChild(row);
+    });
+    return b;
   }
   // ---- création : le prestige, et le plafond qu'il pose ----
   // Ce bloc réglait un budget de « points de création » : il n'y en a plus.

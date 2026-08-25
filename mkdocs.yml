@@ -42,14 +42,14 @@ extra_css:
   - stylesheets/extra.css?v=13
   - stylesheets/night.css
   - stylesheets/mia.css?v=1 # variantes propres à la branche mia (gabarit des tables anima)
-  - stylesheets/mia-fiche.css?v=28
+  - stylesheets/mia-fiche.css?v=29
 extra_javascript:
   - javascripts/continuous.js
   - javascripts/nav-drawer.js
   - javascripts/night.js
-  - javascripts/mia-migrations.js?v=28 # moteur de migration : AVANT le bundle, qui l'appelle
-  - javascripts/mia-mods.js?v=28       # moteur de mods : AVANT le bundle aussi, et facultatif (sans lui, la fiche s'ouvre sans mods)
-  - javascripts/mia-fiche.js?v=28
+  - javascripts/mia-migrations.js?v=29 # moteur de migration : AVANT le bundle, qui l'appelle
+  - javascripts/mia-mods.js?v=29       # moteur de mods : AVANT le bundle aussi, et facultatif (sans lui, la fiche s'ouvre sans mods)
+  - javascripts/mia-fiche.js?v=29
   - javascripts/copybtn.js
 hooks:
   - hooks/mia_creation.py

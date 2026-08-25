@@ -105,15 +105,41 @@
     return b;
   }
 
+  // L'ÉCART MINIMUM entre le total d'une spécialité et la limite de sa
+  // caractéristique. SEUL DES QUATRE BLOCS À DEMANDER UNE VALEUR et non un
+  // décalage, et c'est voulu : on pense « l'écart doit être de 30 », jamais
+  // « je décale de −20 ». Le champ montre en filigrane celui des règles, et
+  // l'effacer y revient. Deux colonnes suffisent donc — une troisième
+  // répéterait ce que le champ dit déjà.
   function buildEcartCaracs() {
-    // L'ÉCART MINIMUM entre le total d'une spécialité et la limite naturelle.
-    return levierCarac("Écart des spécialités",
-      "Décale l'écart minimum entre le total d'une spécialité et la limite de sa caractéristique.",
-      ["Écart", "Écart minimum effectif"],
-      "caracsEcartMod", null, 999,
-      function (c) {
-        var d = state.caracsEcartMod[c] || 0;
-        return { texte: String(ecartMin(c)),
-                 titre: "Des règles " + (ecartMin(c) - d) + (d ? " · décalage " + sign(d) : "") };
+    var b = block("Écart des spécialités");
+    b.appendChild(el("div", "pc-block-note",
+      "Écart minimum entre le total d'une spécialité et la limite de sa caractéristique. Vide = celui des règles."));
+    var box = el("div");
+    b.appendChild(box);
+
+    var head = el("div", "pc-optcomp-row paire head");
+    [["Carac.", "Caractéristique"], ["Écart", "Vide = l'écart des règles"]].forEach(function (h) {
+      var sp = el("span", null, h[0]);
+      sp.title = h[1];
+      head.appendChild(sp);
+    });
+    box.appendChild(head);
+
+    champs().forEach(function (c, i) {
+      var row = el("div", "pc-optcomp-row paire" + (i % 2 === 1 ? " odd" : ""));
+      var nameBox = el("span", "pc-comp-name");
+      var chip = el("span", "pc-abbr", c);
+      chip.title = caracInfo(c).nom;
+      nameBox.appendChild(chip);
+      row.appendChild(nameBox);
+      row.appendChild(champForce(state.caracsEcart, c,
+        function () { return repli("speMarge"); },
+        "Écart minimum — vide = celui des règles."));
+      hooks.push(function () {
+        row.classList.toggle("on", state.caracsEcart[c] !== undefined);
       });
+      box.appendChild(row);
+    });
+    return b;
   }
