@@ -31,17 +31,26 @@
     // lignes : c'est ce qui garantit que chaque mot tombe en face de sa colonne
     var tete = el("div", "pc-crow-top pc-caracs-tete");
     tete.appendChild(el("span", "sp"));
+    // DEUX COLONNES CHANGENT DE SENS SOUS LE ROUAGE, et leur intitulé avec :
+    // en jouant on lit ce que la spécialité APPORTE au jet (le MOD de sa
+    // caractéristique, les points de sa compétence) ; en construisant on lit ce
+    // qui la BORNE et ce qu'elle vaut en tout. Deux mots dans la même case,
+    // dont un seul s'affiche — c'est la feuille qui choisit, pas le code.
     function teteBloc(cls, mots) {
       var t = el("span", "pc-trio " + cls + " tete");
       mots.forEach(function (k) {
         var c = el("span", "c");
-        c.appendChild(el("span", "k", k));
+        if (typeof k === "string") c.appendChild(el("span", "k", k));
+        else {
+          c.appendChild(el("span", "k pc-jeu-only", k[0]));
+          c.appendChild(el("span", "k pc-edit-only", k[1]));
+        }
         t.appendChild(c);
       });
       tete.appendChild(t);
     }
     teteBloc("deux", ["Carac", "Comp"]);
-    teteBloc("cinq", ["Val", "Mod", "Comp", "Lim", "Bonus"]);
+    teteBloc("cinq", ["Val", ["Mod", "Plafond"], ["Comp", "Total"], "Lim", "Bonus"]);
     b.appendChild(tete);
     b.appendChild(box);
     // Les lignes sont détruites et refaites à chaque ajout ou retrait ; le
@@ -54,23 +63,51 @@
       for (var i = 0; i < lignes.length; i++) lignes[i]();
     });
 
-    // Un sélecteur de sigle. LE SIGLE EST LA VALEUR : c'est lui que l'état
-    // garde et que les calculs lisent ; le nom entier n'est là que pour
-    // choisir. La liste vient des règles, donc une caractéristique renommée
-    // arrive ici sans qu'on rouvre ce fichier.
-    function choixSigle(codes, nomDe, vide, lire, ecrire) {
-      var s = el("select", "pc-select pc-edit-field");
-      var neant = el("option", null, vide);
+    // LE SIGLE SE CHOISIT DANS SA PROPRE CASE. Il n'y a plus de ligne « Carac »
+    // ni de ligne « Compétence » sous le rouage : la case qui MONTRE le sigle
+    // est celle qui le CHANGE, et deux lignes de moins rendent le bloc lisible.
+    // LE SIGLE EST LA VALEUR : c'est lui que l'état garde et que les calculs
+    // lisent. Le nom entier ne s'écrit pas dans la liste — il tiendrait mal
+    // dans une case, et le sigle suffit — mais il reste en infobulle de chaque
+    // choix. La liste vient des règles : une caractéristique renommée arrive
+    // ici sans qu'on rouvre ce fichier.
+    function caseSigle(hote, codes, nomDe, lire, ecrire) {
+      var c = el("span", "c reglable");
+      var s = el("select", "v pc-case-champ pc-edit-field");
+      var neant = el("option", null, "—");
       neant.value = "";
       s.appendChild(neant);
-      codes.forEach(function (c) {
-        var o = el("option", null, c + " — " + nomDe(c));
-        o.value = c;
+      codes.forEach(function (code) {
+        var o = el("option", null, code);
+        o.value = code;
+        o.title = nomDe(code);
         s.appendChild(o);
       });
-      s.value = lire() || "";
       s.addEventListener("change", function () { ecrire(s.value); refresh(); });
+      c.appendChild(s);
+      hote.appendChild(c);
       return s;
+    }
+    // Un nombre qui se saisit dans sa case. Le champ ne se réécrit JAMAIS sous
+    // les doigts : tant qu'il a le focus, ce qu'on tape reste tel quel.
+    function caseNombre(hote, lire, ecrire, aide) {
+      var c = el("span", "c reglable");
+      // EN JOUANT, UN TEXTE ; EN CONSTRUISANT, UN CHAMP. Un champ de type
+      // nombre ne sait pas écrire « +25 » et porte des compteurs que Roll20
+      // n'a nulle part : la lecture garde donc sa mise en forme, et seule
+      // l'édition montre le champ.
+      var t = el("span", "v pc-jeu-only", "");
+      var i = el("input", "v pc-edit-only pc-case-champ pc-edit-field");
+      i.type = "number"; i.step = "1";
+      i.title = aide;
+      i.addEventListener("input", function () {
+        var v = parseInt(i.value, 10);
+        if (isFinite(v)) { ecrire(v); refresh(); }
+      });
+      c.appendChild(t);
+      c.appendChild(i);
+      hote.appendChild(c);
+      return { txt: t, champ: i };
     }
 
     function ligne(it) {
@@ -96,19 +133,15 @@
       nom.addEventListener("input", function () { spe.nom = nom.value; refresh(); });
       top.appendChild(nom);
       // LE COUPLE DES SIGLES, dans la même case que les nombres qui suivent.
-      // Il dit de quoi la spécialité relève ; il ne se clique pas et ne se
-      // saisit pas — les deux sélecteurs vivent sous le rouage —, mais il se
-      // lit à la même hauteur et sur le même pas que le reste de la ligne.
+      // Il dit de quoi la spécialité relève, et sous le rouage c'est LUI qui le
+      // règle : chaque case est son propre sélecteur.
       var paire = el("span", "pc-trio deux");
-      function case2() {
-        var c = el("span", "c");
-        var v = el("span", "v", "");
-        c.appendChild(v);
-        paire.appendChild(c);
-        return v;
-      }
-      var vCar = case2();
-      var vCmp = case2();
+      var selCar = caseSigle(paire, champs(), function (c) { return caracInfo(c).nom; },
+                             function () { return spe.carac; },
+                             function (v) { spe.carac = v; });
+      var selCmp = caseSigle(paire, champsComp(), function (c) { return compInfo(c).nom; },
+                             function () { return spe.comp; },
+                             function (v) { spe.comp = v; });
       top.appendChild(paire);
 
       // LES CINQ NOMBRES D'UN SEUL TENANT, et c'est le bloc ENTIER qui lance.
@@ -124,38 +157,23 @@
         quint.appendChild(c);
         return v;
       }
-      var vPts = case5();
-      var vMod = case5();
-      var vComp = case5();
-      var vLim = case5();
-      var vBon = case5();
-      quint.addEventListener("click", function () {
-        // sans caractéristique, la limite vaut zéro et le jet ne rendrait
-        // jamais que zéro : le dire vaut mieux que de le lancer
-        if (!spe.carac) { flash("Cette spécialité ne dit pas de quelle caractéristique elle tient."); return; }
-        doJet(spe.nom || "Spécialité", spe.carac, spe.comp, spe);
-      });
-      top.appendChild(quint);
-      row.appendChild(top);
-
-      var bot = el("div", "pc-crow-bot pc-edit-only");
-      bot.appendChild(el("span", "lbl", "Carac"));
-      bot.appendChild(choixSigle(champs(), function (c) { return caracInfo(c).nom; },
-        "— caractéristique —",
-        function () { return spe.carac; },
-        function (v) { spe.carac = v; }));
-      bot.appendChild(el("span", "lbl", "Compétence"));
-      bot.appendChild(choixSigle(champsComp(), function (c) { return compInfo(c).nom; },
-        "— compétence —",
-        function () { return spe.comp; },
-        function (v) { spe.comp = v; }));
-      bot.appendChild(el("span", "lbl", "Points"));
-      bot.appendChild(stepper(
+      // Une case qui dit une chose en jouant et une autre en construisant. Les
+      // deux valeurs sont écrites à chaque rafraîchissement ; c'est la feuille
+      // qui n'en montre qu'une, selon l'état du rouage.
+      function case5double() {
+        var c = el("span", "c");
+        var a = el("span", "v pc-jeu-only", "");
+        var b2 = el("span", "v pc-edit-only", "");
+        c.appendChild(a); c.appendChild(b2);
+        quint.appendChild(c);
+        return [a, b2];
+      }
+      // LES POINTS SE SAISISSENT DANS LEUR CASE. Le plafond ne bloque que les
+      // HAUSSES : des points acquis avant qu'un malus ne rabaisse la
+      // caractéristique redescendent pas à pas au lieu d'être rognés d'un coup.
+      var vPts = caseNombre(quint,
         function () { return spe.pts || 0; },
         function (v) {
-          // le plafond ne bloque que les HAUSSES, comme partout ailleurs : il
-          // tient de la limite d'une caractéristique et du plafond d'une
-          // compétence, qui bougent tous deux sous les pieds de la spécialité
           var plaf = spePlafond(spe);
           var haut = Math.max(plaf, spe.pts || 0);
           var n = Math.round(v);
@@ -166,33 +184,43 @@
             n = haut;
           }
           spe.pts = Math.max(0, n);
-        }, 1, "points", lignes));
-      // LE BONUS : une valeur EN PLUS, qui part de zéro. Elle ne se déduit de
-      // rien — ni des points, ni de la caractéristique, ni de la compétence —
-      // et c'est pour cela qu'elle se saisit, au pas des modificateurs.
-      bot.appendChild(el("span", "lbl", "Bonus"));
-      bot.appendChild(stepper(
+        }, "Points de la spécialité");
+      var cMod = case5double();
+      var cComp = case5double();
+      var vLim = case5();
+      // LE BONUS aussi : une valeur EN PLUS, qui part de zéro, que rien ne
+      // déduit — et qui se saisit donc là où elle se lit.
+      var vBon = caseNombre(quint,
         function () { return spe.bonus || 0; },
         function (v) { spe.bonus = clamp(Math.round(v), -999, 999); },
-        MOD_PAS, "bonus", lignes));
-      bot.appendChild(el("span", "lbl", "Plafond"));
-      var vPlaf = el("span", "max", "");
-      vPlaf.style.justifySelf = "end";
-      bot.appendChild(vPlaf);
+        "Bonus de la spécialité");
+      quint.addEventListener("click", function (e) {
+        // un clic DANS un champ édite, il ne lance pas. Hors édition les champs
+        // sont inertes (pointer-events: none) et le clic revient bien au bloc.
+        var t = e.target && e.target.tagName;
+        if (t === "INPUT" || t === "SELECT" || t === "OPTION") return;
+        // sans caractéristique, la limite vaut zéro et le jet ne rendrait
+        // jamais que zéro : le dire vaut mieux que de le lancer
+        if (!spe.carac) { flash("Cette spécialité ne dit pas de quelle caractéristique elle tient."); return; }
+        doJet(spe.nom || "Spécialité", spe.carac, spe.comp, spe);
+      });
+      top.appendChild(quint);
+      row.appendChild(top);
+
+      // QUATRE LIGNES DE MOINS. La caractéristique, la compétence, les points
+      // et le bonus se règlent maintenant DANS leur case, et le plafond s'y
+      // lit ; ce rang ne garde que ce qu'aucune case ne peut porter.
+      var bot = el("div", "pc-crow-bot pc-edit-only");
       // LE COÛT EST NOMMÉ ICI, avec le reste de la construction : un point de
       // spécialité ne coûte pas un point d'xp, et on ne le regarde qu'en
       // achetant. En jouant, ce qu'on cherche est sur la ligne du haut.
       bot.appendChild(el("span", "lbl", "XP"));
       var vXp = el("span", "max", "");
-      vXp.style.justifySelf = "end";
       bot.appendChild(vXp);
       // le retrait descend avec le reste : c'est un geste de construction, et
       // le laisser en haut décalait le quintuple d'une ligne à l'autre selon
       // que le rouage était ouvert ou fermé
-      var sup = el("span");
-      sup.style.gridColumn = "1 / -1";
-      sup.style.justifySelf = "end";
-      sup.appendChild(miniBtn("✕ Retirer", "Retirer cette spécialité", function () {
+      bot.appendChild(miniBtn("✕ Retirer", "Retirer cette spécialité", function () {
         // des points sont de l'xp dépensé : on ne les efface pas sur un clic
         // malheureux sans demander
         if (spe.pts &&
@@ -202,7 +230,6 @@
         refresh();
         if (optCompsRebuild) optCompsRebuild();   // sa ligne quitte aussi le bloc des Options
       }, "danger"));
-      bot.appendChild(sup);
       row.appendChild(bot);
 
       lignes.push(function () {
@@ -217,19 +244,34 @@
         var ch = speMalusCharge(spe);
         var lim = spe.carac ? caracLim(spe.carac) : 0;
         var bonus = jetBonus(spe.carac, spe.comp, spe);
-        vCar.textContent = spe.carac || "—";
-        vCmp.textContent = spe.comp || "—";
+        // UN CHAMP NE SE RÉÉCRIT JAMAIS SOUS LES DOIGTS : tant qu'il a le
+        // focus, ce qu'on tape y reste tel quel.
+        if (document.activeElement !== selCar) selCar.value = spe.carac || "";
+        if (document.activeElement !== selCmp) selCmp.value = spe.comp || "";
         paire.title = (spe.carac ? caracInfo(spe.carac).nom : "aucune caractéristique") +
                       " · " + (spe.comp ? compInfo(spe.comp).nom : "aucune compétence");
         // LES CINQ CASES, dans l'ordre où la phrase se compose : ce que la
         // spécialité vaut à elle seule, ce que sa caractéristique y ajoute, ce
         // que sa compétence y ajoute, ce qui coiffe le résultat, et le bonus
         // qu'on lui a posé.
-        vPts.textContent = String(spePts(spe));
-        vMod.textContent = spe.carac ? sign(caracMod(spe.carac)) : "—";
-        vComp.textContent = spe.comp ? sign(compPts(spe.comp)) : "—";
+        //
+        // DEUX D'ENTRE ELLES CHANGENT DE SENS SOUS LE ROUAGE. En jouant on lit
+        // ce que la spécialité APPORTE au jet ; en construisant, ce qui la
+        // BORNE (son plafond) et ce qu'elle vaut EN TOUT (val + mod + comp).
+        // Les quatre valeurs sont écrites à chaque fois : c'est la feuille qui
+        // n'en montre que deux.
+        var modC = spe.carac ? caracMod(spe.carac) : 0;
+        var compC = spe.comp ? compPts(spe.comp) : 0;
+        vPts.txt.textContent = String(spePts(spe));
+        if (document.activeElement !== vPts.champ) vPts.champ.value = spe.pts || 0;
+        cMod[0].textContent = spe.carac ? sign(modC) : "—";
+        cMod[1].textContent = String(plaf);
+        cMod[1].classList.toggle("adj", mord);
+        cComp[0].textContent = spe.comp ? sign(compC) : "—";
+        cComp[1].textContent = sign(spePts(spe) + modC + compC);
         vLim.textContent = spe.carac ? String(lim) : "—";
-        vBon.textContent = sign(spe.bonus || 0);
+        vBon.txt.textContent = sign(spe.bonus || 0);
+        if (document.activeElement !== vBon.champ) vBon.champ.value = spe.bonus || 0;
         quint.classList.toggle("adj", force || d !== 0 || mord || mal !== 0 || ch !== 0);
         quint.title = !spe.carac
           ? "Cette spécialité ne dit pas de quelle caractéristique elle tient."
@@ -245,8 +287,6 @@
             (mal ? " · endurance " + sign(-mal) : "") +
             " — clic : lancer " + DE_DEFAUT + " " + sign(bonus) +
             ", plafonné à " + lim;
-        vPlaf.textContent = String(plaf);
-        vPlaf.classList.toggle("adj", mord);
         vXp.textContent = String(speXp(spe));
         vXp.classList.toggle("adj", xpF);
         vXp.title = xpF ? "Coût forcé (Options)" : "";
