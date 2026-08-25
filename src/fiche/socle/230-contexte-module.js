@@ -137,7 +137,6 @@
         compPts: compPts,
         compPlafond: compPlafond,
         spePts: spePts,
-        spePlafond: spePlafond,
         jetBonus: jetBonus,
         prestige: prestige,
         pvMax: pvMax,

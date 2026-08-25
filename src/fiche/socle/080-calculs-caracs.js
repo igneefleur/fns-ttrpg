@@ -143,22 +143,15 @@
   // plafonne sur le meilleur de DEX et d'AGI. Le plafond de la spécialité les
   // fait donc entrer tous les deux, chacun compté pour 30 au minimum — sans quoi
   // on accumulerait des points à 2 en caractéristique pour les emporter à 3.
-  function spePlafondBrut(spe) {
-    if (!spe || !spe.carac) return 0;
-    var min = repli("speMin");
-    var v = caracLim(spe.carac) - repli("speMarge") -
-            Math.max(caracMod(spe.carac), min) -
-            Math.max(spe.comp ? compPlafond(spe.comp) : 0, min);
-    return Math.max(0, v);
-  }
-  function spePlafond(spe) {
-    var v = spePlafondBrut(spe);
-    return aFiltre("spePlafond") ? applique("spePlafond", v, { spe: spe }) : v;
-  }
+  // AUCUN PLAFOND SUR UNE SPÉCIALITÉ. On y met ce qu'on veut : rien ne borne
+  // les points, ni au calcul ni à la saisie. Ce qui reste de l'ancienne borne,
+  // c'est un AVERTISSEMENT — jaune, dans les garde-fous de l'en-tête — dès que
+  // le total dépasse la limite moins la marge des règles : au-delà, la limite
+  // rogne le jet et les points achetés ne rapportent plus rien.
   function spePtsBrut(spe) {
     if (!spe) return 0;
     if (spe.force !== null && spe.force !== undefined) return spe.force;
-    return Math.min(spe.pts || 0, spePlafond(spe)) + (spe.mod || 0) + (spe.mod2 || 0);
+    return (spe.pts || 0) + (spe.mod || 0) + (spe.mod2 || 0);
   }
   function spePts(spe) {
     var v = spePtsBrut(spe);

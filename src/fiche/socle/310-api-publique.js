@@ -59,7 +59,7 @@
     __calculs: {
       caracTotal: caracTotal, caracMod: caracMod, caracLim: caracLim,
       compPts: compPts, compPlafond: compPlafond, compXp: compXp,
-      spePts: spePts, spePlafond: spePlafond, speXp: speXp, jetBonus: jetBonus,
+      spePts: spePts, speXp: speXp, jetBonus: jetBonus,
       prestige: prestige, enduranceMax: enduranceMax, enduranceMalus: enduranceMalus,
       recupJour: recupJour, chargeMax: chargeMax,
       pvMax: pvMax, pvCourant: pvCourant, initiative: initiative,

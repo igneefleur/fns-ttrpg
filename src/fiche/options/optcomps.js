@@ -280,7 +280,7 @@
             tot.classList.toggle("adj", d !== 0 || s.force !== null);
             tot.title = s.force !== null
               ? "Total forcé à " + s.force
-              : "points " + (s.pts || 0) + " · plafond " + spePlafond(s) +
+              : "points " + (s.pts || 0) +
                 (d ? " · modificateurs " + sign(d) : "");
 
             var xp = speXp(s);

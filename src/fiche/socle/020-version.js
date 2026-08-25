@@ -21,7 +21,7 @@
   // site il est. Il ne change PAS le rang : « 1.0.1b » et « 1.0.1 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (MiaMods.compareVersions tient cette règle).
-  var RELEASE = "1.6.2b";
+  var RELEASE = "1.7.0b";
   var SCHEMA = 1;
 
   // ---------- ce que la fiche ne décide PAS ----------
@@ -40,7 +40,7 @@
   var REPLI = {
     prestigeMax: 20,
     xpComp: 1, xpSpe: 0.25,       // ce que coûte un point de compétence, de spécialité
-    speMarge: 50, speMin: 30,     // plafond d'une spécialité : LIM − 50 − MOD − plafond
+    speMarge: 50,                 // la marge sous la limite au-delà de laquelle on avertit
     endurAction: 50,              // endurance dépensable sur une même action
     iniMult: 2, iniMainsNues: 20,
     vitesseCarre: true, vitesseMult: 2,   // « AGI × AGI » ; le second ne sert que si la page repasse à « AGI × n »

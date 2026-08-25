@@ -313,11 +313,17 @@
           warns.appendChild(el("div", "pc-warn", "« " + compInfo(c).nom + " » dépasse son plafond de points (" +
             (state.comps[c] || 0) + " / " + compPlafond(c) + ")."));
       });
+      // UNE SPÉCIALITÉ N'A PLUS DE PLAFOND, mais elle a toujours une limite —
+      // celle de sa caractéristique, qui rogne le jet. Approcher cette limite
+      // n'est pas une faute : c'est un avertissement, donc du jaune et non du
+      // rouge. Au-delà, chaque point acheté ne rapporte plus rien.
       (state.specialites || []).forEach(function (sp) {
-        if (!sp.carac || sp.force !== null) return;
-        if ((sp.pts || 0) > spePlafond(sp))
-          warns.appendChild(el("div", "pc-warn", "« " + (sp.nom || "Spécialité") + " » dépasse son plafond (" +
-            (sp.pts || 0) + " / " + spePlafond(sp) + ")."));
+        if (!sp.carac) return;
+        var lim = caracLim(sp.carac);
+        var tot = spePts(sp) + caracMod(sp.carac) + (sp.comp ? compPts(sp.comp) : 0);
+        if (tot > lim - repli("speMarge"))
+          warns.appendChild(el("div", "pc-warn doux", "« " + (sp.nom || "Spécialité") +
+            " » approche de sa limite (" + tot + " / " + lim + ")."));
       });
     });
     sheet.appendChild(warns);

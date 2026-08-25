@@ -274,7 +274,6 @@ les filtres.
 | `ctx.calculs.compPts(sigle)` | les points d'une compétence : `"PHY"`, `"COM"`, `"CLA"`, `"CRÉ"`, `"INT"`, `"SOC"`, `"PER"`, `"VOL"`. |
 | `ctx.calculs.compPlafond(sigle)` | ce qu'elle peut porter au plus, c'est-à-dire le MOD le plus haut de ses caractéristiques. |
 | `ctx.calculs.spePts(spe)` | les points d'une spécialité, telle qu'elle figure dans `ctx.state.specialites`. |
-| `ctx.calculs.spePlafond(spe)` | ce qu'elle peut porter au plus. |
 | `ctx.calculs.jetBonus(carac, comp, spe)` | tout ce qui s'ajoute au d100 pour ce jet, malus d'endurance compris. `comp` et `spe` peuvent manquer. |
 | `ctx.calculs.prestige()` | le prestige, qui plafonne chaque caractéristique. |
 | `ctx.calculs.pvMax()` | les PV maximum, valeur forcée comprise. |
@@ -347,7 +346,6 @@ en rendre un.
 | `compPlafond` | ce qu'une compétence peut porter au plus | `{ cle }` |
 | `compXp` | le coût en xp d'une compétence | `{ cle }` |
 | `spePts` | les points d'une spécialité | `{ spe }` |
-| `spePlafond` | ce qu'une spécialité peut porter au plus | `{ spe }` |
 | `jetBonus` | tout ce qui s'ajoute au d100 | `{ carac, cle, spe }` |
 | `pvMax` | les PV maximum | `{}` |
 | `enduranceMax` | la réserve d'endurance | `{}` |

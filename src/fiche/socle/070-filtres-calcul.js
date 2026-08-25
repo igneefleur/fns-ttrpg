@@ -7,7 +7,7 @@
   // affiche la valeur : tout ce qui lit caracTotal() voit le même chiffre.
   //
   // Les CASCADES sont voulues, et elles tombent toutes seules : caracMod() lit
-  // caracTotal(), compPlafond() lit caracMod(), spePlafond() lit les deux, et
+  // caracTotal(), compPlafond() lit caracMod(), et
   // jetBonus() lit tout le monde — un filtre posé sur la caractéristique se voit
   // donc jusque dans le jet d'une spécialité. De même, chargeMax() lit
   // caracMod() et les paliers de charge commandent l'initiative, la vitesse et
@@ -40,7 +40,7 @@
   var FILTRES_CONNUS = {
     caracTotal: 1, caracMod: 1, caracLim: 1,
     compValue: 1, compPlafond: 1, compXp: 1,
-    spePts: 1, spePlafond: 1, jetBonus: 1,
+    spePts: 1, jetBonus: 1,
     pvMax: 1, enduranceMax: 1, enduranceMalus: 1, recupJour: 1,
     initiative: 1, vitesse: 1, sautLong: 1, sautHaut: 1,
     poidsPorte: 1, chargeMax: 1, xpDepense: 1

@@ -1,12 +1,12 @@
   // ---------- onglet Fiche : les spécialités ----------
   // C'est la SEULE liste de la fiche que le joueur écrit entièrement. Les
   // règles disent ce qu'est une spécialité, ce qu'elle coûte et ce qui la
-  // plafonne ; elles ne disent pas lesquelles existent. Le module ne propose
+  // coûte ; elles ne disent pas lesquelles existent. Le module ne propose
   // donc aucun catalogue : un nom libre, et deux sigles pour dire de quoi elle
   // relève.
   //
   // Les deux sélecteurs ne sont pas de l'ornement. La caractéristique donne le
-  // MOD et la LIMITE du jet ; la compétence entre dans le plafond de points.
+  // MOD et la LIMITE du jet ; la compétence ajoute ses points au total.
   // Tant qu'ils sont vides, la ligne ne vaut rien, et elle le MONTRE — un
   // « — · — » à la place des sigles — plutôt que d'afficher un zéro qu'on
   // prendrait pour un calcul.
@@ -33,8 +33,8 @@
     tete.appendChild(el("span", "sp"));
     // EN JOUANT, TROIS NOMBRES ; SOUS LE ROUAGE, CINQ. Ce qu'on lit en jouant,
     // c'est ce que la spécialité VAUT (total), ce qui la coiffe (limite) et ce
-    // qu'on lui a posé (bonus). Le détail — ses points propres, son plafond —
-    // n'intéresse qu'au moment de l'acheter, et n'apparaît qu'alors.
+    // qu'on lui a posé (bonus). Ses points propres n'intéressent qu'au moment
+    // de les acheter, et n'apparaissent qu'alors.
     // « Lim » et non « Limite » : les caractéristiques et les compétences
     // écrivent « LIM », et trois listes qui nomment la même chose de deux
     // façons se lisent moins bien qu'une abréviation.
@@ -49,7 +49,7 @@
       tete.appendChild(t);
     }
     teteBloc("deux", ["Carac", "Comp"]);
-    teteBloc("cinq", [["Val"], ["Plafond"], "Total", "Lim", "Bonus"]);
+    teteBloc("cinq", [["Val"], "Total", "Lim", "Bonus"]);
     b.appendChild(tete);
     b.appendChild(box);
     // Les lignes sont détruites et refaites à chaque ajout ou retrait ; le
@@ -205,24 +205,13 @@
         quint.appendChild(c);
         return v;
       }
-      // LES POINTS SE SAISISSENT DANS LEUR CASE. Le plafond ne bloque que les
-      // HAUSSES : des points acquis avant qu'un malus ne rabaisse la
-      // caractéristique redescendent pas à pas au lieu d'être rognés d'un coup.
+      // LES POINTS SE SAISISSENT DANS LEUR CASE, ET RIEN NE LES BORNE : une
+      // spécialité n'a plus de plafond. Le garde-fou de l'en-tête avertit,
+      // en jaune, quand le total approche de la limite — il n'interdit rien.
       var vPts = caseNombre(quint,
         function () { return spe.pts || 0; },
-        function (v) {
-          var plaf = spePlafond(spe);
-          var haut = Math.max(plaf, spe.pts || 0);
-          var n = Math.round(v);
-          if (n > haut) {
-            flash(haut === plaf
-              ? "Plafond de " + plaf + "."
-              : "Cette spécialité est déjà au-delà de son plafond (" + plaf + ") : elle ne peut que redescendre.");
-            n = haut;
-          }
-          spe.pts = Math.max(0, n);
-        }, "Points de la spécialité", "pc-edit-only");
-      var vPlaf = case5("pc-edit-only");
+        function (v) { spe.pts = Math.max(0, Math.round(v)); },
+        "Points de la spécialité", "pc-edit-only");
       var vTot = case5();
       var vLim = case5();
       // LE BONUS aussi : une valeur EN PLUS, qui part de zéro, que rien ne
@@ -291,8 +280,6 @@
       // l'en-tête et, ligne par ligne, dans le bloc des Options.
 
       lignes.push(function () {
-        var plaf = spePlafond(spe);
-        var mord = (spe.pts || 0) > plaf;
         var d = (spe.mod || 0) + (spe.mod2 || 0);
         var force = spe.force !== null && spe.force !== undefined;
         var mal = enduranceMalus();
@@ -308,21 +295,13 @@
         paire.title = (spe.carac ? caracInfo(spe.carac).nom : "aucune caractéristique") +
                       " · " + (spe.comp ? compInfo(spe.comp).nom : "aucune compétence");
         // LES CINQ CASES, dans l'ordre où la phrase se compose : ce que la
-        // spécialité vaut à elle seule, ce que sa caractéristique y ajoute, ce
-        // que sa compétence y ajoute, ce qui coiffe le résultat, et le bonus
-        // qu'on lui a posé.
-        //
-        // DEUX D'ENTRE ELLES CHANGENT DE SENS SOUS LE ROUAGE. En jouant on lit
-        // ce que la spécialité APPORTE au jet ; en construisant, ce qui la
-        // BORNE (son plafond) et ce qu'elle vaut EN TOUT (val + mod + comp).
-        // Les quatre valeurs sont écrites à chaque fois : c'est la feuille qui
-        // n'en montre que deux.
+        // spécialité vaut EN TOUT, ce qui coiffe le résultat, et le bonus
+        // qu'on lui a posé. Sous le rouage s'y ajoute une case : les points
+        // propres, ceux qu'on achète.
         var modC = spe.carac ? caracMod(spe.carac) : 0;
         var compC = spe.comp ? compPts(spe.comp) : 0;
         vPts.txt.textContent = String(spePts(spe));
         if (document.activeElement !== vPts.champ) vPts.champ.value = spe.pts || 0;
-        vPlaf.textContent = String(plaf);
-        vPlaf.classList.toggle("adj", mord);
         // LE TOTAL : ce que la spécialité vaut en tout, ses points plus ce que
         // sa caractéristique et sa compétence y ajoutent.
         //
@@ -336,13 +315,12 @@
         vLim.textContent = spe.carac ? String(lim) : "—";
         vBon.txt.textContent = sign(spe.bonus || 0);
         if (document.activeElement !== vBon.champ) vBon.champ.value = spe.bonus || 0;
-        quint.classList.toggle("adj", force || d !== 0 || mord || mal !== 0 || ch !== 0);
+        quint.classList.toggle("adj", force || d !== 0 || mal !== 0 || ch !== 0);
         quint.title = !spe.carac
           ? "Cette spécialité ne dit pas de quelle caractéristique elle tient."
           : (force
                ? "Points forcés (Options)"
                : "Points " + (spe.pts || 0) +
-                 (mord ? ", plafonnés à " + plaf : "") +
                  (d ? " · modificateur (Options) " + sign(d) : "")) +
             " · " + spe.carac + " " + sign(caracMod(spe.carac)) +
             (spe.comp ? " · " + spe.comp + " " + sign(compPts(spe.comp)) : "") +
