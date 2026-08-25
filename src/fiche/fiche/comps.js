@@ -28,9 +28,17 @@
     // modificateur, c'est celui de la caractéristique dont elle relève. Le mot
     // dit donc d'où il vient. (Sur une caractéristique, « MOD » reste juste :
     // c'est le sien.)
-    ["Val", "Bonus", "Carac", "Lim"].forEach(function (k) {
+    // DEUX DES TROIS COLONNES CHANGENT DE SENS SOUS LE ROUAGE. En jouant on
+    // lit ce que la compétence DONNE — son total au dé, la limite qui le
+    // coiffe ; en construisant, ce qu'on y a MIS et ce qu'on peut y mettre.
+    // Deux mots dans la même case, dont un seul s'affiche.
+    [["Tot", "Val"], ["Lim", "Max"], "Bonus"].forEach(function (k) {
       var c = el("span", "c");
-      c.appendChild(el("span", "k", k));
+      if (typeof k === "string") c.appendChild(el("span", "k", k));
+      else {
+        c.appendChild(el("span", "k pc-jeu-only", k[0]));
+        c.appendChild(el("span", "k pc-edit-only", k[1]));
+      }
       teteTrio.appendChild(c);
     });
     tete.appendChild(teteTrio);

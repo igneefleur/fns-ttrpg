@@ -40,10 +40,20 @@
       trio.appendChild(c);
       return v;
     }
-    var vPts = case3();
-    var vBon = case3();
-    var vMod = case3();
-    var vLim = case3();
+    // Une case qui dit une chose en jouant et une autre en construisant. Les
+    // deux valeurs sont écrites à chaque rafraîchissement ; c'est la feuille
+    // qui n'en montre qu'une, selon l'état du rouage.
+    function case3double() {
+      var c = el("span", "c");
+      var a = el("span", "v pc-jeu-only", "");
+      var b = el("span", "v pc-edit-only", "");
+      c.appendChild(a); c.appendChild(b);
+      trio.appendChild(c);
+      return [a, b];
+    }
+    var cTot = case3double();   // total au dé  /  valeur appliquée
+    var cLim = case3double();   // limite du jet /  maximum qu'on peut mettre
+    var vBon = case3();         // le bonus, dans les deux modes
     // rouage ouvert, on construit : le bloc ne lance pas (voir specialites.js)
     trio.addEventListener("click", function () {
       if (isEdit("comps")) return;
@@ -88,10 +98,6 @@
         var n = clamp(Math.round(v), -999, 999);
         if (n) state.compsBonus[code] = n; else delete state.compsBonus[code];
       }, 1, "bonus", reg));
-    bot.appendChild(el("span", "lbl", "Plafond"));
-    var vPlaf = el("span", "max", "");
-    vPlaf.style.justifySelf = "end";
-    bot.appendChild(vPlaf);
     bot.appendChild(el("span", "lbl", "XP"));
     var vXp = el("span", "max", "");
     vXp.style.justifySelf = "end";
@@ -110,12 +116,16 @@
       // bonus, il n'est nommé ici que pour qu'on sache d'où vient l'écart
       var mal = enduranceMalus();
       var b = jetBonus(carac, code, null);
-      // les points ACHETÉS d'un côté, le bonus de l'autre : les deux
-      // additionnés font ce que la compétence apporte au jet.
-      vPts.textContent = String(Math.min(base, plaf));
-      vBon.textContent = sign(state.compsBonus[code] || 0);
-      vMod.textContent = sign(caracMod(carac));
-      vLim.textContent = String(caracLim(carac));
+      // LE TOTAL EST CELUI QUI PART AU DÉ, bonus EXCLU : le bonus a sa propre
+      // case, et l'additionner ici le compterait deux fois. C'est la même
+      // lecture que sur une spécialité — total, limite, bonus.
+      var bon = state.compsBonus[code] || 0;
+      cTot[0].textContent = String(caracMod(carac) + compPts(code) - bon);
+      cTot[1].textContent = String(compPts(code) - bon);
+      cLim[0].textContent = String(caracLim(carac));
+      cLim[1].textContent = String(plaf);
+      cLim[1].classList.toggle("adj", mord);
+      vBon.textContent = sign(bon);
       trio.classList.toggle("adj", force || d !== 0 || mord || mal !== 0);
       trio.title = (force
                      ? "Points forcés (Options)"
@@ -125,8 +135,6 @@
                    (mal ? " · endurance " + sign(-mal) : "") +
                    " — clic : lancer " + DE_DEFAUT + " " + sign(b) +
                    ", plafonné à " + caracLim(carac);
-      vPlaf.textContent = String(plaf);
-      vPlaf.classList.toggle("adj", mord);
       vXp.textContent = String(compXp(code));
       vXp.classList.toggle("adj", xpF || xpD !== 0);
       vXp.title = xpF ? "Coût forcé (Options) — calculé : " + compXpAuto(code)

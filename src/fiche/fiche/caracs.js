@@ -23,7 +23,7 @@
     var tete = el("div", "pc-crow-top pc-caracs-tete");
     tete.appendChild(el("span", "sp"));
     var teteTrio = el("span", "pc-trio tete");
-    ["Val", "Bonus", "Mod", "Lim"].forEach(function (k) {
+    ["Val", "Bon", "Tot"].forEach(function (k) {
       var c = el("span", "c");
       c.appendChild(el("span", "k", k));
       teteTrio.appendChild(c);
@@ -58,10 +58,14 @@
         trio.appendChild(c);
         return v;
       }
+      // TROIS NOMBRES, ET ILS DISENT UNE SEULE CHOSE : ce que la
+      // caractéristique VAUT. Ce qu'elle DONNE au jet — son modificateur, sa
+      // limite — ne s'écrit plus ici : les deux se lisent dans la table des
+      // règles, et la compétence qui en relève les porte déjà sur sa propre
+      // ligne. L'infobulle du bloc les rappelle, et le jet les emploie.
       var vVal = case3();
       var vBon = case3();
-      var vMod = case3();
-      var vLim = case3();
+      var vTot = case3();
       // rouage ouvert, on construit : le bloc ne lance pas (voir specialites.js)
     trio.addEventListener("click", function () {
       if (isEdit("caracs")) return;
@@ -123,13 +127,12 @@
         var xpF = state.caracsXpForce[code] !== undefined;
         var xpD = (state.caracsXpMod[code] || 0) + (state.caracsXpMod2[code] || 0);
         var retouche = d !== 0 || dm !== 0 || dl !== 0 || mord;
-        // LA VALEUR EST CELLE QU'ON A ACHETÉE, et le bonus se lit à côté : les
-        // deux additionnés donnent le total dont la table tire le MOD et la
-        // LIM. Afficher le total ici, le bonus étant montré, le dirait deux fois.
+        // LA VALEUR EST CELLE QU'ON A ACHETÉE, le bonus ce qui s'y ajoute, le
+        // total leur somme — c'est de ce total-là que la table tire le MOD et
+        // la limite du jet.
         vVal.textContent = String(Math.min(base, plaf));
         vBon.textContent = sign(d);
-        vMod.textContent = sign(caracMod(code));
-        vLim.textContent = String(caracLim(code));
+        vTot.textContent = String(caracTotal(code));
         trio.classList.toggle("adj", retouche);
         // quand le plafond mord, le dire : sans cela, le joueur voit un total
         // qui ne correspond ni à ce qu'il a acheté ni à ce qu'il a modifié, et
