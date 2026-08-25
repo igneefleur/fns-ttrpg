@@ -522,6 +522,15 @@ html.night .pc-warn.doux { color: #ffbc33; background: rgba(255, 188, 51, .13); 
   font-family: inherit; font-size: var(--taille-case); font-weight: inherit; line-height: inherit;
   text-align: center; text-align-last: center;
   padding: 0; border-radius: 0;
+  /* MÊME HAUTEUR QUE LE TEXTE QU'IL REMPLACE, et il faut le lui imposer : un
+     select natif porte sa propre hauteur minimale, un champ nombre aussi, et
+     l'un comme l'autre dépassent la boîte d'un simple mot. La case grandissait
+     donc en édition, le cadre avec, et toute la ligne — c'est ce qui faisait
+     « changer de taille » en ouvrant le rouage, alors que la taille du chiffre,
+     elle, n'avait pas bougé d'un centième.
+     1,1em de SA police : exactement la boîte d'un .v, qui hérite du
+     line-height 1.1 du bloc. */
+  height: 1.1em; line-height: 1.1; box-sizing: border-box;
 }
 /* les compteurs d'un champ nombre sont dessinés par le navigateur : ils ne
    ressemblent à rien de ce que Roll20 emploie, et ils élargissent la case */
@@ -621,39 +630,32 @@ html.night .pc-warn.doux { color: #ffbc33; background: rgba(255, 188, 51, .13); 
    ci-dessous, par laquelle le trio prend trois cinquièmes de la mesure que le
    quintuple vient de fixer. */
 @container feuille (max-width: 25.9rem) {
+  /* LES DEUX BLOCS DESCENDENT ENSEMBLE AU SECOND RANG, et c'est ce qui les
+     aligne par construction : le nom prend le premier rang à lui seul, et dans
+     l'entête c'est le ressort qui le prend. Faute de quoi l'entête, qui n'a ni
+     nom ni croix ni poignée à porter, se repliait à un autre moment que les
+     lignes — ou pas du tout — et les mots cessaient de tomber en face des
+     nombres.
+     SIX CASES SUR CE SECOND RANG : deux pour les sigles, quatre pour les
+     valeurs (trois en jouant). La case vaut donc le sixième de la ligne, et le
+     trio des deux autres listes, qui garde son sigle sur le même rang, en
+     prend trois — la même case, partout, dans les deux modes. */
   .pc-block[data-module="specialites"] .pc-crow-top { flex-wrap: wrap; }
-  /* Passé à la ligne, le quintuple a toute la largeur du bloc — et c'est LUI
-     qui manque de place le premier, puisqu'il porte cinq cases là où le trio en
-     porte trois. C'est donc lui qui fixe la mesure, et le trio qui le suit :
-     trois cinquièmes de la même largeur, pour que la case reste la même dans
-     les trois listes. À cette étroitesse, toutes les colonnes sont d'égale
-     largeur (une seule colonne empilée), ce qui rend la règle exacte. */
-  /* flex-basis: 100% — CE QUI FORCE LE PASSAGE À LA LIGNE, et le force à
-     l'entête comme aux lignes. Sans lui, l'entête (qui ne porte pas de nom à
-     écrire) trouvait encore la place de tout tenir sur un rang quand les lignes
-     s'étaient déjà repliées : les mots ne tombaient plus en face des nombres.
-     La largeur visible reste imposée par max-width, et la marge automatique la
-     pousse à droite. */
-  /* le couple reste seul avec le nom sur le premier rang : la marge
-     automatique le colle à droite DES DEUX CÔTÉS — la ligne, qui a un nom à
-     pousser, et l'entête, qui n'a qu'un ressort. Sans elle, l'un se collait à
-     droite et l'autre restait à gauche. */
-  .pc-block[data-module="specialites"] .pc-crow-top > .pc-trio.deux { margin-left: auto; }
-  .pc-block[data-module="specialites"] .pc-crow-top > .pc-trio.cinq {
-    /* 0 0 100%, ET AUCUN PLAFOND DE LARGEUR. Les deux comptent, et le second
-       plus encore : une largeur maximale entre dans le calcul de la taille de
-       base d'un élément flexible, donc dans la décision de couper la ligne.
-       Plafonné, le bloc « tenait » et l'entête ne se repliait plus — le couple
-       des sigles restait à gauche pendant que celui des lignes partait à
-       droite. Sans plafond, il prend toute la ligne, et le trio des deux autres
-       listes s'aligne dessus par la règle plus bas (trois cinquièmes). */
-    flex: 0 0 100%; width: auto; margin-top: .12rem;
-  }
-  /* le couple reste en haut, avec le nom, et garde le pas des cases du bas */
+  .pc-block[data-module="specialites"] .pc-crow-top > input.nm,
+  .pc-block[data-module="specialites"] .pc-caracs-tete > .sp { flex: 1 1 100%; }
   .pc-block[data-module="specialites"] .pc-crow-top > .pc-trio.deux {
-    width: min(var(--pc-paire-w, 5.8rem), calc((100cqw - 1.4rem) * 2 / 4));
+    margin-left: auto; margin-top: .12rem;
+    width: min(var(--pc-paire-w, 5.8rem), calc((100cqw - 2rem) * 2 / 6));
   }
-  .pc-trio { width: min(var(--pc-trio-w, 8.7rem), calc((100cqw - 1.4rem) * 3 / 4)); }
+  .pc-block[data-module="specialites"] .pc-crow-top > .pc-trio.cinq {
+    margin-top: .12rem;
+    width: min(var(--pc-quint-w, 11.6rem), calc((100cqw - 2rem) * 4 / 6));
+  }
+  .pc-editable:not(.editing) .pc-block[data-module="specialites"] .pc-crow-top > .pc-trio.cinq,
+  .pc-block[data-module="specialites"]:not(.editing) .pc-crow-top > .pc-trio.cinq {
+    width: min(var(--pc-trio-w, 8.7rem), calc((100cqw - 2rem) * 3 / 6));
+  }
+  .pc-trio { width: min(var(--pc-trio-w, 8.7rem), calc((100cqw - 2rem) * 3 / 6)); }
 }
 
 .pc-trio.adj .v { color: var(--red-deep); }
