@@ -458,15 +458,23 @@ html.night body:has(#perso-atelier) .md-container { background: #0e0e0e !importa
    Sans cela, un chiffre de spécialité s'affichait à 19 px là où le même chiffre
    de caractéristique s'affichait à 13 px, côte à côte, sur la même feuille. */
 .pc-trio.cinq { width: min(var(--pc-quint-w, 14.5rem), 100cqw); }
+/* HORS ÉDITION, LE BLOC D'UNE SPÉCIALITÉ NE MONTRE QUE TROIS CASES — total,
+   limite, bonus — et il doit donc RÉTRÉCIR avec son contenu. Sans cela ses
+   trois cases se partageraient la largeur de cinq et redeviendraient plus
+   grandes que celles des deux autres listes : exactement le défaut corrigé en
+   1.4.2b. Trois cinquièmes de la part du quintuple, à chaque mode. */
+.pc-editable:not(.editing) .pc-trio.cinq { width: min(var(--pc-trio-w, 8.7rem), 60cqw); }
 /* DEUX CASES, celles des sigles, prises sur la même mesure : deux cinquièmes de
    la part du quintuple, puisque c'est le même pas de case. */
 .pc-trio.deux { width: min(var(--pc-paire-w, 5.8rem), 40cqw); }
 @container feuille (min-width: 26rem) {
   .pc-trio.cinq { width: min(var(--pc-quint-w, 14.5rem), 48.8cqw); }
+  .pc-editable:not(.editing) .pc-trio.cinq { width: min(var(--pc-trio-w, 8.7rem), 29.28cqw); }
   .pc-trio.deux { width: min(var(--pc-paire-w, 5.8rem), 19.52cqw); }
 }
 @container feuille (min-width: 38rem) {
   .pc-trio.cinq { width: min(var(--pc-quint-w, 14.5rem), 50cqw); }
+  .pc-editable:not(.editing) .pc-trio.cinq { width: min(var(--pc-trio-w, 8.7rem), 30cqw); }
   .pc-trio.deux { width: min(var(--pc-paire-w, 5.8rem), 20cqw); }
 }
 /* LE NOM D'UNE SPÉCIALITÉ EST UN NOM QU'ON ÉCRIT, et il se règle comme tous
@@ -557,6 +565,10 @@ html.night body:has(#perso-atelier) .md-container { background: #0e0e0e !importa
    première, elle ajoutait trois boîtes d'un pixel dont la somme dépassait le
    cadre au sous-pixel près. Une ombre interne ne compte dans aucune mesure. */
 .pc-trio > .c + .c { box-shadow: inset 1px 0 0 var(--line-2); }
+/* Le filet se pose entre deux cases — mais « entre » se lit sur le DOM, pas sur
+   ce qui est affiché : hors édition, la première case VISIBLE en héritait d'un,
+   doublant le bord du cadre. */
+.pc-editable:not(.editing) .pc-trio > .c.pc-edit-only + .c { box-shadow: none; }
 .pc-trio .k {
   font-size: var(--taille-etiquette); font-weight: 700; letter-spacing: .07em;
   text-transform: uppercase; color: var(--ink-3);
