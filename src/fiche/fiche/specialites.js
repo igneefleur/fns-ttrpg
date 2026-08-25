@@ -31,26 +31,25 @@
     // lignes : c'est ce qui garantit que chaque mot tombe en face de sa colonne
     var tete = el("div", "pc-crow-top pc-caracs-tete");
     tete.appendChild(el("span", "sp"));
-    // DEUX COLONNES CHANGENT DE SENS SOUS LE ROUAGE, et leur intitulé avec :
-    // en jouant on lit ce que la spécialité APPORTE au jet (le MOD de sa
-    // caractéristique, les points de sa compétence) ; en construisant on lit ce
-    // qui la BORNE et ce qu'elle vaut en tout. Deux mots dans la même case,
-    // dont un seul s'affiche — c'est la feuille qui choisit, pas le code.
+    // EN JOUANT, TROIS NOMBRES ; SOUS LE ROUAGE, CINQ. Ce qu'on lit en jouant,
+    // c'est ce que la spécialité VAUT (total), ce qui la coiffe (limite) et ce
+    // qu'on lui a posé (bonus). Le détail — ses points propres, son plafond —
+    // n'intéresse qu'au moment de l'acheter, et n'apparaît qu'alors.
+    // « Lim » et non « Limite » : les caractéristiques et les compétences
+    // écrivent « LIM », et trois listes qui nomment la même chose de deux
+    // façons se lisent moins bien qu'une abréviation.
     function teteBloc(cls, mots) {
       var t = el("span", "pc-trio " + cls + " tete");
       mots.forEach(function (k) {
-        var c = el("span", "c");
-        if (typeof k === "string") c.appendChild(el("span", "k", k));
-        else {
-          c.appendChild(el("span", "k pc-jeu-only", k[0]));
-          c.appendChild(el("span", "k pc-edit-only", k[1]));
-        }
+        var edit = typeof k !== "string";
+        var c = el("span", "c" + (edit ? " pc-edit-only" : ""));
+        c.appendChild(el("span", "k", edit ? k[0] : k));
         t.appendChild(c);
       });
       tete.appendChild(t);
     }
     teteBloc("deux", ["Carac", "Comp"]);
-    teteBloc("cinq", ["Val", ["Mod", "Plafond"], ["Comp", "Total"], "Lim", "Bonus"]);
+    teteBloc("cinq", [["Val"], ["Plafond"], "Total", "Lim", "Bonus"]);
     b.appendChild(tete);
     b.appendChild(box);
     // Les lignes sont détruites et refaites à chaque ajout ou retrait ; le
@@ -106,8 +105,8 @@
     }
     // Un nombre qui se saisit dans sa case. Le champ ne se réécrit JAMAIS sous
     // les doigts : tant qu'il a le focus, ce qu'on tape reste tel quel.
-    function caseNombre(hote, lire, ecrire, aide) {
-      var c = el("span", "c reglable");
+    function caseNombre(hote, lire, ecrire, aide, cls) {
+      var c = el("span", "c reglable" + (cls ? " " + cls : ""));
       // EN JOUANT, UN TEXTE ; EN CONSTRUISANT, UN CHAMP. Un champ de type
       // nombre ne sait pas écrire « +25 » et porte des compteurs que Roll20
       // n'a nulle part : la lecture garde donc sa mise en forme, et seule
@@ -199,23 +198,12 @@
       // caractéristique et les points de sa compétence y entrent aussi, et ce
       // sont eux qui disent d'où elle tient.
       var quint = el("span", "pc-trio cinq pc-rollable");
-      function case5() {
-        var c = el("span", "c");
+      function case5(cls) {
+        var c = el("span", "c" + (cls ? " " + cls : ""));
         var v = el("span", "v", "");
         c.appendChild(v);
         quint.appendChild(c);
         return v;
-      }
-      // Une case qui dit une chose en jouant et une autre en construisant. Les
-      // deux valeurs sont écrites à chaque rafraîchissement ; c'est la feuille
-      // qui n'en montre qu'une, selon l'état du rouage.
-      function case5double() {
-        var c = el("span", "c");
-        var a = el("span", "v pc-jeu-only", "");
-        var b2 = el("span", "v pc-edit-only", "");
-        c.appendChild(a); c.appendChild(b2);
-        quint.appendChild(c);
-        return [a, b2];
       }
       // LES POINTS SE SAISISSENT DANS LEUR CASE. Le plafond ne bloque que les
       // HAUSSES : des points acquis avant qu'un malus ne rabaisse la
@@ -233,9 +221,9 @@
             n = haut;
           }
           spe.pts = Math.max(0, n);
-        }, "Points de la spécialité");
-      var cMod = case5double();
-      var cComp = case5double();
+        }, "Points de la spécialité", "pc-edit-only");
+      var vPlaf = case5("pc-edit-only");
+      var vTot = case5();
       var vLim = case5();
       // LE BONUS aussi : une valeur EN PLUS, qui part de zéro, que rien ne
       // déduit — et qui se saisit donc là où elle se lit.
@@ -333,11 +321,11 @@
         var compC = spe.comp ? compPts(spe.comp) : 0;
         vPts.txt.textContent = String(spePts(spe));
         if (document.activeElement !== vPts.champ) vPts.champ.value = spe.pts || 0;
-        cMod[0].textContent = spe.carac ? sign(modC) : "—";
-        cMod[1].textContent = String(plaf);
-        cMod[1].classList.toggle("adj", mord);
-        cComp[0].textContent = spe.comp ? sign(compC) : "—";
-        cComp[1].textContent = sign(spePts(spe) + modC + compC);
+        vPlaf.textContent = String(plaf);
+        vPlaf.classList.toggle("adj", mord);
+        // LE TOTAL : ce que la spécialité vaut en tout, ses points plus ce que
+        // sa caractéristique et sa compétence y ajoutent.
+        vTot.textContent = spe.carac ? sign(spePts(spe) + modC + compC) : "—";
         vLim.textContent = spe.carac ? String(lim) : "—";
         vBon.txt.textContent = sign(spe.bonus || 0);
         if (document.activeElement !== vBon.champ) vBon.champ.value = spe.bonus || 0;
