@@ -74,7 +74,7 @@
   // site il est. Il ne change PAS le rang : « 1.0.1b » et « 1.0.1 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (MiaMods.compareVersions tient cette règle).
-  var RELEASE = "1.6.1b";
+  var RELEASE = "1.6.2b";
   var SCHEMA = 1;
 
   // ---------- ce que la fiche ne décide PAS ----------
@@ -3964,7 +3964,14 @@
         vPlaf.classList.toggle("adj", mord);
         // LE TOTAL : ce que la spécialité vaut en tout, ses points plus ce que
         // sa caractéristique et sa compétence y ajoutent.
-        vTot.textContent = spe.carac ? sign(spePts(spe) + modC + compC) : "—";
+        //
+        // SANS SIGNE. Ce n'est pas un terme qu'on ajoute à quelque chose — c'est
+        // une valeur, comme la limite à côté. Le « + » ne se met qu'à ce qui
+        // s'ajoute : le MOD d'une caractéristique, le bonus. Le signe moins
+        // reste typographique si un modificateur des Options passe le total
+        // sous zéro.
+        var tot = spePts(spe) + modC + compC;
+        vTot.textContent = spe.carac ? String(tot).replace("-", "−") : "—";
         vLim.textContent = spe.carac ? String(lim) : "—";
         vBon.txt.textContent = sign(spe.bonus || 0);
         if (document.activeElement !== vBon.champ) vBon.champ.value = spe.bonus || 0;

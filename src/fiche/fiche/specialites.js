@@ -325,7 +325,14 @@
         vPlaf.classList.toggle("adj", mord);
         // LE TOTAL : ce que la spécialité vaut en tout, ses points plus ce que
         // sa caractéristique et sa compétence y ajoutent.
-        vTot.textContent = spe.carac ? sign(spePts(spe) + modC + compC) : "—";
+        //
+        // SANS SIGNE. Ce n'est pas un terme qu'on ajoute à quelque chose — c'est
+        // une valeur, comme la limite à côté. Le « + » ne se met qu'à ce qui
+        // s'ajoute : le MOD d'une caractéristique, le bonus. Le signe moins
+        // reste typographique si un modificateur des Options passe le total
+        // sous zéro.
+        var tot = spePts(spe) + modC + compC;
+        vTot.textContent = spe.carac ? String(tot).replace("-", "−") : "—";
         vLim.textContent = spe.carac ? String(lim) : "—";
         vBon.txt.textContent = sign(spe.bonus || 0);
         if (document.activeElement !== vBon.champ) vBon.champ.value = spe.bonus || 0;
