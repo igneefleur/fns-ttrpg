@@ -53,7 +53,7 @@
     
       <link rel="stylesheet" href="../../stylesheets/mia.css?v=1">
     
-      <link rel="stylesheet" href="../../stylesheets/mia-fiche.css?v=49">
+      <link rel="stylesheet" href="../../stylesheets/mia-fiche.css?v=50">
     
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -1806,6 +1806,10 @@ les filtres.</p>
 <td>les points d'une spécialité, telle qu'elle figure dans <code>ctx.state.specialites</code>.</td>
 </tr>
 <tr>
+<td><code>ctx.calculs.spePlafond(spe)</code></td>
+<td>le plafond que le meneur lui a posé, s'il en a posé un ; sinon celui qui mordrait.</td>
+</tr>
+<tr>
 <td><code>ctx.calculs.speBonus(spe)</code></td>
 <td>son bonus, qui n'entre PAS dans <code>speTotal</code> — <code>jetBonus</code> l'ajoute lui-même.</td>
 </tr>
@@ -2586,11 +2590,11 @@ d'atteinte que parce qu'elle est d'une autre origine que la fiche.</p>
       
         <script src="../../javascripts/night.js"></script>
       
-        <script src="../../javascripts/mia-migrations.js?v=49"></script>
+        <script src="../../javascripts/mia-migrations.js?v=50"></script>
       
-        <script src="../../javascripts/mia-mods.js?v=49"></script>
+        <script src="../../javascripts/mia-mods.js?v=50"></script>
       
-        <script src="../../javascripts/mia-fiche.js?v=49"></script>
+        <script src="../../javascripts/mia-fiche.js?v=50"></script>
       
         <script src="../../javascripts/copybtn.js"></script>
       
