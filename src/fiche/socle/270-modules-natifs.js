@@ -39,6 +39,9 @@
     // un nom qu'on écrit, deux sigles à choisir et un filtre, sur une liste qui
     // n'a pas de fin. Elles étouffaient sous un tiers de feuille.
     { id: "specialites", titre: "Spécialités",      onglet: "fiche", colonne: "droite", build: buildSpecialites },
+    // ---- onglet Art ----
+    { id: "arts",       titre: "Techniques et passifs", onglet: "art",  colonne: "seule",  build: buildArt },
+
     // ---- onglet Équipement ----
     // PLUS D'ARMES NI D'ARMURES : les deux modules ont été retirés le
     // 25/08/2026. Ce qu'on porte se tient dans l'inventaire, qui pèse déjà.

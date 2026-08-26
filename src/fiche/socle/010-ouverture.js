@@ -6,8 +6,14 @@
  * valeurs cliquables pour lancer les jets, journal de jets flottant.
  * La Fiche a trois colonnes (caractéristiques | combat | compétences), tout
  * dans l'ordre Body, Mind, Prestance ; une ligne par compétence (nom | stade
- * en menu | total-jet). L'onglet Art porte la personnalisation : les
- * passifs d'une compétence et son art (au stade Artiste).
+ * en menu | total-jet). L'onglet Art porte les TECHNIQUES et les PASSIFS :
+ * une liste libre, une entrée par art, chacune avec son effet de base et ses
+ * améliorations. Une technique coûte de l'endurance à l'emploi, un passif non ;
+ * pour le reste les deux sont identiques.
+ *
+ * ATTENTION : tout ce qui suit ce paragraphe décrit encore les règles de JJK
+ * (trois caractéristiques, stades, 120 points à la création) et non celles de
+ * MIA. C'est un fossile, à reprendre en entier — pas au détour d'un ajout.
  * Chaque module éditable porte un rouage (mode édition par module) : la
  * construction du personnage est verrouillée hors édition, seuls les gestes
  * de jeu restent actifs (jets, tchat, PV, endurance, quantités, notes).

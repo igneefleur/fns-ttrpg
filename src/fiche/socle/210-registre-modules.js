@@ -83,6 +83,14 @@
       pane.appendChild(cols);
       return { gauche: c1, milieu: c2, droite: c3 };
     },
+    // UNE SEULE COLONNE, ET C'EST LE PANNEAU LUI-MÊME. Rendre le panneau plutôt
+    // qu'un enfant est ce qui marque la colonne « pleine largeur » : le plan des
+    // modules le reconnaît en comparant c[k] === pane (voir squeletteColonnes).
+    // Un art porte des descriptions et des macros — deux colonnes les
+    // couperaient en deux pour rien.
+    art: function (pane) {
+      return { seule: pane };
+    },
     equipement: function (pane) {
       var cols = el("div", "pc-cols2");
       var left = el("div", "pc-col");

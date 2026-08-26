@@ -251,6 +251,45 @@
       return o;
     });
 
+    // ---------- les arts : techniques et passifs ----------
+    // RANGEMENT PROFOND, comme les spécialités et non comme les avantages :
+    // un art porte des nombres, une liste imbriquée et un type fermé. Le
+    // rangement plat des avantages (objArray seul) laisserait passer un
+    // « ameliorations: "trois" » venu d'un JSON écrit à la main, et le rendu
+    // exploserait dessus.
+    //
+    // UNE ENTRÉE INCOMPLÈTE RESTE DANS LA FICHE : le joueur vient peut-être de
+    // l'ajouter et n'a pas fini de la remplir. Elle ne vaut simplement rien.
+    function effetArt(e) {
+      e = objet(e);
+      return {
+        nom: e.nom == null ? "" : String(e.nom),
+        // les deux coûts acceptent les DÉCIMALES et le négatif : l'xp est
+        // décimale depuis les spécialités, et un meneur peut vouloir rendre ce
+        // qu'un avantage avait pris
+        avantage: nombreBorne(e.avantage, 999),
+        xp: nombreBorne(e.xp, 9999),
+        desc: e.desc == null ? "" : String(e.desc),
+        macro: e.macro == null ? "" : String(e.macro)
+      };
+    }
+    s.arts = objArray(s.arts).map(function (a) {
+      // LE TYPE EST FERMÉ. Un art sans type est plus probablement une technique
+      // inachevée qu'un passif : le rangement le tranche une fois pour toutes,
+      // à chaque enregistrement.
+      var t = a.type === "passif" ? "passif" : "technique";
+      var o = {
+        type: t,
+        nom: a.nom == null ? "" : String(a.nom),
+        base: effetArt(a.base),
+        ameliorations: objArray(a.ameliorations).map(effetArt)
+      };
+      // un passif ne coûte pas d'endurance : la clé n'existe PAS chez lui,
+      // sinon un art basculé de technique à passif la laisserait traîner
+      if (t === "technique") o.endurance = entier(a.endurance, -9999, 9999);
+      return o;
+    });
+
     // ---------- identité, bio ----------
     ["name", "portrait", "espece", "age", "sexe", "genre", "defaut", "background", "notes"]
       .forEach(function (k) { s[k] = s[k] == null ? "" : String(s[k]); });

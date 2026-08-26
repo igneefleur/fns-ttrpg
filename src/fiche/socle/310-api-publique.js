@@ -65,6 +65,7 @@
       compCarac: compCarac, ecartComp: ecartComp, ecartSpe: ecartSpe,
       compLim: compLim, speLim: speLim, limiteJet: limiteJet,
       spePts: spePts, speXp: speXp, speBonus: speBonus, jetBonus: jetBonus,
+      artXp: artXp, artAvantage: artAvantage, artsXp: artsXp, artsAvantage: artsAvantage,
       spePlafond: spePlafond, spePlafondPose: spePlafondPose,
       speTotal: speTotal, speRetire: speRetire,
       ecartMin: ecartMin,

@@ -150,6 +150,8 @@
         compPlafond: compPlafond,
         spePts: spePts,
         spePlafond: spePlafond,
+        artXp: artXp,
+        artAvantage: artAvantage,
         speBonus: speBonus,
         jetBonus: jetBonus,
         prestige: prestige,

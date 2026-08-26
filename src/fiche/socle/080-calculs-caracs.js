@@ -585,12 +585,45 @@
     return s ? spePts(s) : 0;
   }
 
+  // ---------- les arts ----------
+  // CE QU'UN ART COÛTE, effets compris : celui de base et toutes les
+  // améliorations. Les deux monnaies se comptent pareil, elles ne diffèrent que
+  // par le champ lu.
+  //
+  // TOUT CE QUI EST ÉCRIT EST ACQUIS : une amélioration qui figure sur la fiche
+  // est une amélioration que le personnage a. Il n'y a pas de liste de courses.
+  function artSomme(a, champ) {
+    if (!a) return 0;
+    var t = (a.base && a.base[champ]) || 0, l = a.ameliorations || [], i;
+    for (i = 0; i < l.length; i++) t += (l[i] && l[i][champ]) || 0;
+    return Math.round(t * 100) / 100;
+  }
+  function artXp(a) { return artSomme(a, "xp"); }
+  function artAvantage(a) { return artSomme(a, "avantage"); }
+  function artsXp() {
+    var t = 0, l = state.arts || [], i;
+    for (i = 0; i < l.length; i++) t += artXp(l[i]);
+    return Math.round(t * 100) / 100;
+  }
+  // AUCUN BUDGET D'AVANTAGE N'EXISTE : la page de règles ne dit pas un mot du
+  // mot « avantage » comme monnaie. On totalise donc sans rien comparer — et le
+  // jour où un total sera décidé, c'est ici qu'il se branchera.
+  function artsAvantage() {
+    var t = 0, l = state.arts || [], i;
+    for (i = 0; i < l.length; i++) t += artAvantage(l[i]);
+    return Math.round(t * 100) / 100;
+  }
+
   // ---------- l'expérience ----------
   function xpDepenseBrut() {
     var xp = 0;
     champs().forEach(function (c) { xp += caracXp(c); });
     champsComp().forEach(function (c) { xp += compXp(c); });
     (state.specialites || []).forEach(function (s) { xp += speXp(s); });
+    // LES ARTS COMPTENT, eux aussi : un coût qui n'entre pas dans le total
+    // n'est pas un coût. Ils n'entrent en revanche pas dans xpChamp, qui
+    // répartit l'xp par caractéristique — un art ne relève d'aucune.
+    xp += artsXp();
     return Math.round(xp * 100) / 100;
   }
   function xpDepense() {

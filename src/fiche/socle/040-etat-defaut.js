@@ -25,6 +25,11 @@
       // donc porter une caractéristique au-delà de ce que le prestige permet,
       // comme en dessous de zéro. Il se règle sur la FICHE, dans le module des
       // caractéristiques, et non plus dans les Options.
+      // LES ARTS : techniques et passifs, une liste libre que le joueur remplit.
+      // Clé RACINE, et c'est délibéré — normalize() complète l'état reçu sans
+      // jamais reconstruire sa racine, donc une version qui ne connaît pas les
+      // arts les garde intacts au lieu de les jeter.
+      arts: [],
       caracs: {}, caracsBonus: {},
 
       // LES CINQ LEVIERS DU MENEUR, ET UNE SEULE CLÉ POUR LES CINQ. Ils ne
