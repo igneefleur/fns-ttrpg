@@ -287,6 +287,6 @@
       s[k] = (s[k] === null || s[k] === undefined || s[k] === "") ? null : parseFloat(s[k]);
       if (s[k] !== null && !isFinite(s[k])) s[k] = null;
     });
-    s.de = s.de == null ? DE_DEFAUT : String(s.de);
+    s.de = s.de == null ? DE_TEST_DEFAUT : String(s.de);
     return s;
   }

@@ -58,7 +58,7 @@
   // est. Il ne change PAS le rang du numéro (« 1.0.1b » et « 1.0.1 » sont la
   // même version, la beta étant ce que le stable recevra à la fusion) : ce qui
   // compare des versions doit donc l'ôter avant de lire les nombres.
-  var RELEASE_DEFAUT = "1.13.3b";
+  var RELEASE_DEFAUT = "1.13.4b";
   // Entier INDÉPENDANT de la release : il ne monte qu'au changement de forme de
   // l'état du personnage, jamais parce que le majeur a bougé. Le manifeste
   // publie les deux séparément, et c'est ce repli-ci que l'amorce prend quand le
@@ -289,8 +289,9 @@
       modData: {}, modActifs: {}, modules: {}, mods: [],
       // La part ALÉATOIRE d'un jet, et rien d'autre : le reste de l'expression
       // (le bonus, la limite, le kl1) se bâtit dans le bundle. Ce littéral doit
-      // suivre DE_DEFAUT de src/fiche/socle/020-version.js.
-      de: "d100"
+      // suivre DE_TEST_DEFAUT de src/fiche/socle/020-version.js — le dé ET ses
+      // deux seuils de critique, que Roll20 lit dans « cs> » et « cf< ».
+      de: "1d100cs>96cf<5"
     };
   }
 

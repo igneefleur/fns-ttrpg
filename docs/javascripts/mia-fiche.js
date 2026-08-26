@@ -74,7 +74,7 @@
   // site il est. Il ne change PAS le rang : « 1.0.1b » et « 1.0.1 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (MiaMods.compareVersions tient cette règle).
-  var RELEASE = "1.13.3b";
+  var RELEASE = "1.13.4b";
   var SCHEMA = 1;
 
   // ---------- ce que la fiche ne décide PAS ----------
@@ -121,11 +121,26 @@
   var CHARGE_ESQUIVE = "Esquive";
 
   // LE DÉ DES JETS. Un jet MIA n'est pas un dé nu : c'est un couple
-  // « d100 + bonus » et « la limite », dont Roll20 ne garde que le plus bas
+  // « 1d100 + bonus » et « la limite », dont Roll20 ne garde que le plus bas
   // (kl1). La limite plafonne donc le résultat, et le tchat l'affiche déjà
-  // plafonné. Ce champ ne porte que la partie ALÉATOIRE ; jetCommande() bâtit
-  // le reste autour d'elle.
-  var DE_DEFAUT = "d100";
+  // plafonné. Ce champ ne porte que la partie ALÉATOIRE ; jetExpr() bâtit le
+  // reste autour d'elle.
+  var DE_DEFAUT = "1d100";
+
+  // LES DEUX SEUILS DU CRITIQUE : échec de 1 à 5, réussite de 96 à 100. Écrits
+  // en marqueurs Roll20 (« cs> » la réussite critique, « cf< » l'échec), ils
+  // font surligner le dé dans le tchat — c'est Roll20 qui les rend, la fiche ne
+  // fait que les transporter.
+  //
+  // CES DEUX NOMBRES SONT ÉCRITS ICI, ET ILS NE DEVRAIENT PAS L'ÊTRE. Tout le
+  // reste des chiffres du jeu vient de la page de règles, relue au build ; le
+  // critique, lui, n'y est pas encore écrit. Le jour où la page le dira, ces
+  // deux-là doivent partir dans DATA comme les autres — sans quoi une règle
+  // corrigée dans le livre laisserait l'outil sur l'ancienne.
+  var CRIT_REUSSITE = 96;
+  var CRIT_ECHEC = 5;
+  var CRIT_DEFAUT = "cs>" + CRIT_REUSSITE + "cf<" + CRIT_ECHEC;
+  var DE_TEST_DEFAUT = DE_DEFAUT + CRIT_DEFAUT;
 
   // ---------- outils ----------
   function el(tag, cls, txt) {
@@ -279,7 +294,7 @@
       // le joueur a déplacé y figure) et mods du personnage (leur CODE voyage
       // avec lui).
       modules: {}, mods: [],
-      de: DE_DEFAUT
+      de: DE_TEST_DEFAUT
     };
   }
   // Toute donnée entrante (localStorage, import JSON, Attributes Roll20) passe
@@ -601,7 +616,7 @@
       s[k] = (s[k] === null || s[k] === undefined || s[k] === "") ? null : parseFloat(s[k]);
       if (s[k] !== null && !isFinite(s[k])) s[k] = null;
     });
-    s.de = s.de == null ? DE_DEFAUT : String(s.de);
+    s.de = s.de == null ? DE_TEST_DEFAUT : String(s.de);
     return s;
   }
   // ---------- filtres de calcul ----------
@@ -1291,9 +1306,14 @@
   // prix. Posé dans le groupe, ce bonus serait rogné et ne servirait à rien
   // dès qu'un personnage atteint sa limite — c'est-à-dire justement quand il
   // en aurait besoin.
+  //
+  // LE DÉ EST CELUI DU RÉGLAGE, ET NON LA CONSTANTE. Le champ « Dé des jets de
+  // test » écrivait dans l'état sans que rien ne le lise : on pouvait y mettre
+  // ce qu'on voulait, la fiche lançait toujours le même dé. Il commande
+  // maintenant ce qu'elle lance, marqueurs de critique compris.
   function jetExpr(bonus, lim, avecInput) {
     var b = Math.round(bonus);
-    return "{" + DE_DEFAUT + (b >= 0 ? "+" : "-") + Math.abs(b) +
+    return "{" + deTest() + (b >= 0 ? "+" : "-") + Math.abs(b) +
            ",0d0+" + Math.round(lim) + "}kl1" +
            (avecInput ? ENV_QUERY : "");
   }
@@ -1652,6 +1672,23 @@
   // par le site) pose window.__miaRoll et le jet part au TCHAT. Sur le site
   // (pas de Roll20), un clic lance quand même le dé et montre le résultat dans
   // un toast discret — aucun panneau de jets.
+  // CE QUE LA FICHE LANCE POUR UN JET DE TEST : le dé du réglage, ou celui des
+  // règles. Une seule fonction le dit, pour que l'expression envoyée au tchat,
+  // le tirage local et les infobulles ne puissent pas se contredire.
+  function deTest() { return (state && state.de) || DE_TEST_DEFAUT; }
+  // LE MÊME, DÉBARRASSÉ DE SES MARQUEURS. « cs> » et « cf< » ne parlent qu'à
+  // Roll20 : ni parseDice ni une infobulle n'en font quoi que ce soit, et
+  // « 1d100cs>96cf<5 » écrit dans une phrase se lit très mal.
+  function deNu(expr) {
+    return String(expr == null ? "" : expr).replace(/c[sf][<>]=?\d+/gi, "").trim();
+  }
+  // LES DEUX SEUILS PORTÉS PAR UNE EXPRESSION, s'ils y sont. C'est le joueur qui
+  // écrit son dé : on lit ses seuils à lui, jamais ceux des règles.
+  function seuilsCrit(expr) {
+    var s = String(expr == null ? "" : expr);
+    var r = /cs>=?(\d+)/i.exec(s), e = /cf<=?(\d+)/i.exec(s);
+    return { reussite: r ? +r[1] : null, echec: e ? +e[1] : null };
+  }
   function parseDice(expr) {
     var m = /^(\d{1,2})d(\d{1,4})([+-]\d{1,4})?$/i.exec(String(expr || "").replace(/\s/g, ""));
     if (!m) return null;   // expression illisible : doRoll prévient au lieu de lancer autre chose
@@ -1697,11 +1734,21 @@
     // Hors Roll20, ou sous une extension antérieure au canal brut : la fiche
     // lance elle-même et applique le plafond, en le DISANT — un résultat rogné
     // sans explication passerait pour une faute de calcul.
-    var de = 1 + Math.floor(Math.random() * 100);
+    // LE MÊME DÉ QUE DANS ROLL20, et ses seuils. Le tirage local jetait un d100
+    // écrit en dur : une fiche réglée sur un autre dé donnait ici un résultat
+    // qui ne pouvait pas arriver là-bas.
+    var d = parseDice(deNu(deTest())) || { n: 1, faces: 100, plus: 0 };
+    var de = d.plus, i;
+    for (i = 0; i < d.n; i++) de += 1 + Math.floor(Math.random() * d.faces);
     var bonus = jetBonus(carac, comp, spe), lim = caracLim(carac);
     var brut = de + bonus, total = Math.min(brut, lim);
     var det = "dé " + de + (bonus ? " " + (bonus >= 0 ? "+ " : "− ") + Math.abs(bonus) : "");
     if (total < brut) det += " = " + brut + ", plafonné à " + lim;
+    // le critique se lit sur LE DÉ, jamais sur le total : c'est le dé qui est
+    // critique, et le plafond n'y change rien
+    var seuils = seuilsCrit(deTest());
+    if (seuils.reussite !== null && de >= seuils.reussite) det += " · réussite critique";
+    else if (seuils.echec !== null && de <= seuils.echec) det += " · échec critique";
     flash(label + " : " + total + " (" + det + ")");
   }
 
@@ -3701,7 +3748,7 @@
                        (mord ? ", plafonnés à " + plaf : "") +
                        (d ? " · modificateur (Options) " + sign(d) : "")) +
                    (mal ? " · endurance " + sign(-mal) : "") +
-                   " — clic : lancer " + DE_DEFAUT + " " + sign(b) +
+                   " — clic : lancer " + deNu(deTest()) + " " + sign(b) +
                    ", plafonné à " + caracLim(carac);
     });
     return row;
@@ -4123,7 +4170,7 @@
             ((spe.bonus || 0) ? " · bonus " + sign(spe.bonus) : "") +
             (ch ? " · charge " + sign(ch) : "") +
             (mal ? " · endurance " + sign(-mal) : "") +
-            " — clic : lancer " + DE_DEFAUT + " " + sign(bonus) +
+            " — clic : lancer " + deNu(deTest()) + " " + sign(bonus) +
             ", plafonné à " + lim;
       });
       return row;
@@ -5046,18 +5093,17 @@
     var bJ = block("Jets");
     var de = el("input", "de");
     de.type = "text";
-    de.title = "Ce que la fiche lance pour un jet de test. Écrit en macro Roll20 : " +
-               "cs> marque le coup critique, cf< l'échec critique.";
-    de.value = state.de || DE_DEFAUT;
-    de.addEventListener("input", function () { state.de = de.value || DE_DEFAUT; save(); });
-    hooks.push(function () { if (document.activeElement !== de) de.value = state.de || DE_DEFAUT; });
+    de.title = "Ce que la fiche lance pour un jet de test, en macro Roll20.";
+    de.value = deTest();
+    de.addEventListener("input", function () { state.de = de.value || DE_TEST_DEFAUT; save(); });
+    hooks.push(function () { if (document.activeElement !== de) de.value = deTest(); });
     // Le champ et son bouton sur la MÊME ligne : le champ prend toute la place
     // que le bouton lui laisse. Sous le champ, le bouton occupait une rangée
     // entière pour un mot, et le bloc en paraissait deux fois plus haut.
     var ligneDe = el("div", "pc-jet-de");
     ligneDe.appendChild(fld("Dé des jets de test", de));
-    ligneDe.appendChild(miniBtn("Réinitialiser", "Revenir au dé des règles : " + DE_DEFAUT,
-      function () { state.de = DE_DEFAUT; refresh(); }));
+    ligneDe.appendChild(miniBtn("Réinitialiser", "Revenir à " + DE_TEST_DEFAUT,
+      function () { state.de = DE_TEST_DEFAUT; refresh(); }));
     bJ.appendChild(ligneDe);
     return bJ;
   }

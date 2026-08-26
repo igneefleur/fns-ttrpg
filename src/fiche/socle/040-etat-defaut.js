@@ -94,6 +94,6 @@
       // le joueur a déplacé y figure) et mods du personnage (leur CODE voyage
       // avec lui).
       modules: {}, mods: [],
-      de: DE_DEFAUT
+      de: DE_TEST_DEFAUT
     };
   }

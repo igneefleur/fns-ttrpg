@@ -337,7 +337,7 @@
             ((spe.bonus || 0) ? " · bonus " + sign(spe.bonus) : "") +
             (ch ? " · charge " + sign(ch) : "") +
             (mal ? " · endurance " + sign(-mal) : "") +
-            " — clic : lancer " + DE_DEFAUT + " " + sign(bonus) +
+            " — clic : lancer " + deNu(deTest()) + " " + sign(bonus) +
             ", plafonné à " + lim;
       });
       return row;

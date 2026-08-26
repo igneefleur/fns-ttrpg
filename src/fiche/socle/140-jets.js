@@ -3,6 +3,23 @@
   // par le site) pose window.__miaRoll et le jet part au TCHAT. Sur le site
   // (pas de Roll20), un clic lance quand même le dé et montre le résultat dans
   // un toast discret — aucun panneau de jets.
+  // CE QUE LA FICHE LANCE POUR UN JET DE TEST : le dé du réglage, ou celui des
+  // règles. Une seule fonction le dit, pour que l'expression envoyée au tchat,
+  // le tirage local et les infobulles ne puissent pas se contredire.
+  function deTest() { return (state && state.de) || DE_TEST_DEFAUT; }
+  // LE MÊME, DÉBARRASSÉ DE SES MARQUEURS. « cs> » et « cf< » ne parlent qu'à
+  // Roll20 : ni parseDice ni une infobulle n'en font quoi que ce soit, et
+  // « 1d100cs>96cf<5 » écrit dans une phrase se lit très mal.
+  function deNu(expr) {
+    return String(expr == null ? "" : expr).replace(/c[sf][<>]=?\d+/gi, "").trim();
+  }
+  // LES DEUX SEUILS PORTÉS PAR UNE EXPRESSION, s'ils y sont. C'est le joueur qui
+  // écrit son dé : on lit ses seuils à lui, jamais ceux des règles.
+  function seuilsCrit(expr) {
+    var s = String(expr == null ? "" : expr);
+    var r = /cs>=?(\d+)/i.exec(s), e = /cf<=?(\d+)/i.exec(s);
+    return { reussite: r ? +r[1] : null, echec: e ? +e[1] : null };
+  }
   function parseDice(expr) {
     var m = /^(\d{1,2})d(\d{1,4})([+-]\d{1,4})?$/i.exec(String(expr || "").replace(/\s/g, ""));
     if (!m) return null;   // expression illisible : doRoll prévient au lieu de lancer autre chose
@@ -48,11 +65,21 @@
     // Hors Roll20, ou sous une extension antérieure au canal brut : la fiche
     // lance elle-même et applique le plafond, en le DISANT — un résultat rogné
     // sans explication passerait pour une faute de calcul.
-    var de = 1 + Math.floor(Math.random() * 100);
+    // LE MÊME DÉ QUE DANS ROLL20, et ses seuils. Le tirage local jetait un d100
+    // écrit en dur : une fiche réglée sur un autre dé donnait ici un résultat
+    // qui ne pouvait pas arriver là-bas.
+    var d = parseDice(deNu(deTest())) || { n: 1, faces: 100, plus: 0 };
+    var de = d.plus, i;
+    for (i = 0; i < d.n; i++) de += 1 + Math.floor(Math.random() * d.faces);
     var bonus = jetBonus(carac, comp, spe), lim = caracLim(carac);
     var brut = de + bonus, total = Math.min(brut, lim);
     var det = "dé " + de + (bonus ? " " + (bonus >= 0 ? "+ " : "− ") + Math.abs(bonus) : "");
     if (total < brut) det += " = " + brut + ", plafonné à " + lim;
+    // le critique se lit sur LE DÉ, jamais sur le total : c'est le dé qui est
+    // critique, et le plafond n'y change rien
+    var seuils = seuilsCrit(deTest());
+    if (seuils.reussite !== null && de >= seuils.reussite) det += " · réussite critique";
+    else if (seuils.echec !== null && de <= seuils.echec) det += " · échec critique";
     flash(label + " : " + total + " (" + det + ")");
   }
 

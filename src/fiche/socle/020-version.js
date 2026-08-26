@@ -21,7 +21,7 @@
   // site il est. Il ne change PAS le rang : « 1.0.1b » et « 1.0.1 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (MiaMods.compareVersions tient cette règle).
-  var RELEASE = "1.13.3b";
+  var RELEASE = "1.13.4b";
   var SCHEMA = 1;
 
   // ---------- ce que la fiche ne décide PAS ----------
@@ -68,9 +68,24 @@
   var CHARGE_ESQUIVE = "Esquive";
 
   // LE DÉ DES JETS. Un jet MIA n'est pas un dé nu : c'est un couple
-  // « d100 + bonus » et « la limite », dont Roll20 ne garde que le plus bas
+  // « 1d100 + bonus » et « la limite », dont Roll20 ne garde que le plus bas
   // (kl1). La limite plafonne donc le résultat, et le tchat l'affiche déjà
-  // plafonné. Ce champ ne porte que la partie ALÉATOIRE ; jetCommande() bâtit
-  // le reste autour d'elle.
-  var DE_DEFAUT = "d100";
+  // plafonné. Ce champ ne porte que la partie ALÉATOIRE ; jetExpr() bâtit le
+  // reste autour d'elle.
+  var DE_DEFAUT = "1d100";
+
+  // LES DEUX SEUILS DU CRITIQUE : échec de 1 à 5, réussite de 96 à 100. Écrits
+  // en marqueurs Roll20 (« cs> » la réussite critique, « cf< » l'échec), ils
+  // font surligner le dé dans le tchat — c'est Roll20 qui les rend, la fiche ne
+  // fait que les transporter.
+  //
+  // CES DEUX NOMBRES SONT ÉCRITS ICI, ET ILS NE DEVRAIENT PAS L'ÊTRE. Tout le
+  // reste des chiffres du jeu vient de la page de règles, relue au build ; le
+  // critique, lui, n'y est pas encore écrit. Le jour où la page le dira, ces
+  // deux-là doivent partir dans DATA comme les autres — sans quoi une règle
+  // corrigée dans le livre laisserait l'outil sur l'ancienne.
+  var CRIT_REUSSITE = 96;
+  var CRIT_ECHEC = 5;
+  var CRIT_DEFAUT = "cs>" + CRIT_REUSSITE + "cf<" + CRIT_ECHEC;
+  var DE_TEST_DEFAUT = DE_DEFAUT + CRIT_DEFAUT;
 

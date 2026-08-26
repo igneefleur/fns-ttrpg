@@ -46,9 +46,14 @@
   // prix. Posé dans le groupe, ce bonus serait rogné et ne servirait à rien
   // dès qu'un personnage atteint sa limite — c'est-à-dire justement quand il
   // en aurait besoin.
+  //
+  // LE DÉ EST CELUI DU RÉGLAGE, ET NON LA CONSTANTE. Le champ « Dé des jets de
+  // test » écrivait dans l'état sans que rien ne le lise : on pouvait y mettre
+  // ce qu'on voulait, la fiche lançait toujours le même dé. Il commande
+  // maintenant ce qu'elle lance, marqueurs de critique compris.
   function jetExpr(bonus, lim, avecInput) {
     var b = Math.round(bonus);
-    return "{" + DE_DEFAUT + (b >= 0 ? "+" : "-") + Math.abs(b) +
+    return "{" + deTest() + (b >= 0 ? "+" : "-") + Math.abs(b) +
            ",0d0+" + Math.round(lim) + "}kl1" +
            (avecInput ? ENV_QUERY : "");
   }

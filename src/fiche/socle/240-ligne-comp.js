@@ -102,7 +102,7 @@
                        (mord ? ", plafonnés à " + plaf : "") +
                        (d ? " · modificateur (Options) " + sign(d) : "")) +
                    (mal ? " · endurance " + sign(-mal) : "") +
-                   " — clic : lancer " + DE_DEFAUT + " " + sign(b) +
+                   " — clic : lancer " + deNu(deTest()) + " " + sign(b) +
                    ", plafonné à " + caracLim(carac);
     });
     return row;
