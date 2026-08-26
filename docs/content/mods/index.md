@@ -278,6 +278,7 @@ les filtres.
 | `ctx.calculs.compBonus(sigle)` | son bonus seul. `compValeur + compBonus` redonne `compPts`. |
 | `ctx.calculs.compPlafond(sigle)` | ce qu'elle peut porter au plus, c'est-à-dire le MOD le plus haut de ses caractéristiques. |
 | `ctx.calculs.spePts(spe)` | les points d'une spécialité, telle qu'elle figure dans `ctx.state.specialites`. |
+| `ctx.calculs.spePlafond(spe)` | le plafond que le meneur lui a posé, s'il en a posé un ; sinon celui qui mordrait. |
 | `ctx.calculs.speBonus(spe)` | son bonus, qui n'entre PAS dans `speTotal` — `jetBonus` l'ajoute lui-même. |
 | `ctx.calculs.jetBonus(carac, comp, spe)` | tout ce qui s'ajoute au d100 pour ce jet, malus d'endurance compris. `comp` et `spe` peuvent manquer. |
 | `ctx.calculs.prestige()` | le prestige, qui plafonne chaque caractéristique. |

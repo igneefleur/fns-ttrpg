@@ -64,6 +64,7 @@
       compValeur: compValeur, compValeurBrut: compValeurBrut, compBonus: compBonus,
       compCarac: compCarac, ecartComp: ecartComp, ecartSpe: ecartSpe,
       spePts: spePts, speXp: speXp, speBonus: speBonus, jetBonus: jetBonus,
+      spePlafond: spePlafond, spePlafondPose: spePlafondPose,
       speTotal: speTotal, speRetire: speRetire,
       ecartMin: ecartMin,
       prestige: prestige, enduranceMax: enduranceMax, enduranceMalus: enduranceMalus,

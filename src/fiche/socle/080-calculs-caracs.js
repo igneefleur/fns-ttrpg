@@ -327,19 +327,44 @@
   // c'est un AVERTISSEMENT — jaune, dans les garde-fous de l'en-tête — dès que
   // le total dépasse la limite moins la marge des règles : au-delà, la limite
   // rogne le jet et les points achetés ne rapportent plus rien.
+  // ---------- LE PLAFOND D'UNE SPÉCIALITÉ ----------
+  // LES RÈGLES NE LUI EN DONNENT AUCUN, et c'est pourquoi la coiffe NE MORD QUE
+  // si le meneur a réglé quelque chose. Sans réglage, une spécialité n'est
+  // bornée par rien — exactement comme avant —, et ce qui la retient reste la
+  // règle de l'écart, qui rabat le TOTAL et non les points.
+  //
+  // FAIRE MORDRE UNE COIFFE PAR DÉFAUT AURAIT ÉTÉ UN CHANGEMENT DE RÈGLE : la
+  // spécialité à 200 points d'une fiche réelle, dont la compétence plafonne à
+  // 70, serait tombée à 70 sans que personne ne l'ait demandé.
+  //
+  // LA BASE EST CELLE DE SA COMPÉTENCE, et sans compétence le MOD de sa
+  // caractéristique — c'est-à-dire ce que serait le plafond d'une compétence
+  // qui n'en relèverait que d'une. Elle ne mord pas ; elle donne au meneur le
+  // nombre à partir duquel il règle, et les huit boîtes le déplacent.
+  function spePlafondSocle(spe, carac, comp) {
+    var k = speComp(spe, comp);
+    if (k) return compPlafond(k);
+    var c = speCarac(spe, carac);
+    return c ? caracMod(c) : 0;
+  }
+  function spePlafondAuto(spe) { return chaineAuto(lireSpe("plafond", spe), spePlafondSocle(spe)); }
+  function spePlafond(spe) { return chaine(lireSpe("plafond", spe), spePlafondSocle(spe)); }
+  // POSÉ OU NON : un plafond que personne n'a touché n'existe pas.
+  function spePlafondPose(spe) { return levierRegleDe(lireSpe("plafond", spe)); }
+  function speCoiffe(spe, v) {
+    return spePlafondPose(spe) ? Math.min(v, spePlafond(spe)) : v;
+  }
+
   function spePtsSocle(spe) { return (spe && spe.pts) || 0; }
   function spePtsAuto(spe) { return chaineAuto(lireSpe("valeur", spe), spePtsSocle(spe)); }
   function spePtsBrut(spe) {
     if (!spe) return 0;
-    return chaine(lireSpe("valeur", spe), spePtsSocle(spe));
+    return speCoiffe(spe, chaine(lireSpe("valeur", spe), spePtsSocle(spe)));
   }
   function spePts(spe) {
     var v = spePtsBrut(spe);
     return aFiltre("spePts") ? applique("spePts", v, { spe: spe }) : v;
   }
-  // PAS DE COIFFE ICI, et ce n'est pas un oubli : une spécialité n'a pas de
-  // plafond. Ce qui la borne est la règle de l'écart, qui rabat le TOTAL et non
-  // les points — voir speRetire.
   //
   // LE BONUS D'UNE SPÉCIALITÉ NE PASSE PAS PAR speTotal, et il ne le peut pas :
   // il s'ajoute APRÈS le rabattage de l'écart (voir 100-calculs-jets.js). Le
@@ -446,7 +471,11 @@
   // faisait RIEN pour une spécialité rabattue — un levier qui ne change rien
   // n'est pas un levier.
   function compPtsNat(code) { return Math.min(state.comps[code] || 0, compPlafond(code)); }
-  function spePtsNat(spe) { return (spe && spe.pts) || 0; }
+  // LA COIFFE ENTRE DANS L'ÉTAT NATUREL, comme celle d'une caractéristique et
+  // celle d'une compétence : sans elle, rogner les points ferait baisser le
+  // total brut ET le total naturel de la même quantité, le retrait ne bougerait
+  // pas, et la coiffe n'aurait servi à rien.
+  function spePtsNat(spe) { return speCoiffe(spe, (spe && spe.pts) || 0); }
   function speTotalNat(spe, carac, comp) {
     var c = speCarac(spe, carac);
     if (!spe || !c) return 0;

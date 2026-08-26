@@ -186,9 +186,10 @@
     var LEVIER_BORNE = { valeur: 999, plafond: 999, bonus: 999,
                          xp: 9999, mod: 999, lim: 9999, ecart: 9999 };
     var COMP_BORNE = { valeur: 999, plafond: 999, bonus: 999, xp: 9999, ecart: 9999 };
-    // UNE SPÉCIALITÉ N'A PAS DE PLAFOND : les règles n'en donnent aucun, et
-    // l'absence de « plafond » dans cette table n'est pas un oubli.
-    var SPE_BORNE = { valeur: 999, bonus: 999, xp: 9999, ecart: 9999 };
+    // UNE SPÉCIALITÉ N'A PAS DE PLAFOND que les règles donnent — mais elle a
+    // le levier, parce qu'un avantage peut lui en imposer un. Il ne mord que
+    // s'il est réglé (voir spePlafond).
+    var SPE_BORNE = { valeur: 999, plafond: 999, bonus: 999, xp: 9999, ecart: 9999 };
     s.caracsLeviers = tableLeviers(s.caracsLeviers, LEVIER_BORNE);
 
     // ---------- les compétences ----------

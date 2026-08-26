@@ -1,25 +1,33 @@
   // ---- outils de filtre ----
-  // Une seule puce depuis que le filtre ne sert plus qu'aux spécialités : le
-  // sélecteur de champ réglait une liste déroulante qui n'existe plus. Coupée,
-  // la case de recherche DISPARAÎT et cesse d'agir — un filtre invisible qui
-  // masque encore des lignes serait un piège. Réglage d'affichage, donc local
-  // au navigateur ; il ne suit pas le personnage.
+  // TROIS PUCES, et elles ne servent qu'aux spécialités : c'est la seule liste
+  // ouverte de la fiche, la seule qui puisse devenir assez longue pour qu'on
+  // s'y perde. Éteinte, une puce fait DISPARAÎTRE son outil et cesser d'agir —
+  // un filtre invisible qui masque encore des lignes serait un piège. Réglages
+  // d'affichage, donc locaux au navigateur ; ils ne suivent pas le personnage.
   function buildFiltres() {
     var bF = block("Outils de filtre");
     var fRow = el("div", "pc-comp-tools");
     var fLine = el("div", "row");
-    var chip = el("span", "pc-chip");
-    chip.textContent = "Champ de recherche";
-    chip.title = "La case où l'on tape pour filtrer les spécialités. " +
-                 "Éteinte : l'outil disparaît, et ne filtre plus rien.";
-    chip.classList.toggle("on", filtreTexteOn());
-    chip.addEventListener("click", function () {
-      var on = filtreTexteOn();
-      lset(FILTRES.texte, on ? "0" : "1");
-      chip.classList.toggle("on", !on);
-      remount();   // l'outil vit dans d'autres onglets : tout se rebâtit
-    });
-    fLine.appendChild(chip);
+    function puce(cle, mot, aide) {
+      var chip = el("span", "pc-chip");
+      chip.textContent = mot;
+      chip.title = aide;
+      function on() { return lpref(cle, "1") !== "0"; }
+      chip.classList.toggle("on", on());
+      chip.addEventListener("click", function () {
+        var etait = on();
+        lset(cle, etait ? "0" : "1");
+        chip.classList.toggle("on", !etait);
+        remount();   // l'outil vit dans un autre onglet : tout se rebâtit
+      });
+      fLine.appendChild(chip);
+    }
+    puce(FILTRES.texte, "Champ de recherche",
+         "La case où l'on tape pour filtrer les spécialités.");
+    puce(FILTRES.carac, "Caractéristique",
+         "Le sélecteur qui ne garde que les spécialités d'une caractéristique.");
+    puce(FILTRES.comp, "Compétence",
+         "Le sélecteur qui ne garde que les spécialités d'une compétence.");
     fRow.appendChild(fLine);
     bF.appendChild(fRow);
     return bF;

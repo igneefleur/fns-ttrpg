@@ -144,6 +144,7 @@
         compBonus: compBonus,
         compPlafond: compPlafond,
         spePts: spePts,
+        spePlafond: spePlafond,
         speBonus: speBonus,
         jetBonus: jetBonus,
         prestige: prestige,

@@ -89,7 +89,6 @@
     // pas dans un commentaire, et le bloc reste où il est en attendant. (Depuis,
     // la « Règle de l'écart » est venue à droite : l'écart est retombé à 153.)
     // Il tient d'ailleurs de l'xp autant que « XP par champ », son voisin.
-    { id: "creation",   titre: "Création",          onglet: "options", colonne: "droite", build: buildCreation },
     // À DROITE, et pour deux raisons qui vont ensemble. La première tient à ce
     // qu'il EST : un interrupteur qui suspend une règle pour tout le
     // personnage, quand la gauche porte les leviers qui décalent un seuil

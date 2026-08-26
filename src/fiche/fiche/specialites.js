@@ -25,8 +25,24 @@
                              function (v) { speFilter = v; }, null,
                              function () { rendu(); });
     if (search) line.appendChild(search);
+    // LES DEUX SÉLECTEURS, chacun coupable à part depuis les Options. Leurs
+    // libellés nomment la colonne — « Carac. », « Comp. » — parce qu'une liste
+    // repliée sur « — » ne dirait pas sur quoi elle porte.
+    var noms = {}, nomsK = {};
+    champs().forEach(function (c) { noms[c] = caracInfo(c).nom; });
+    champsComp().forEach(function (k) { nomsK[k] = compInfo(k).nom; });
+    if (filtreCaracOn()) {
+      line.appendChild(selFiltre(champs(), "Carac.", noms,
+        function () { return speFiltreCarac; },
+        function (v) { speFiltreCarac = v; }, function () { rendu(); }));
+    }
+    if (filtreCompOn()) {
+      line.appendChild(selFiltre(champsComp(), "Comp.", nomsK,
+        function () { return speFiltreComp; },
+        function (v) { speFiltreComp = v; }, function () { rendu(); }));
+    }
     tools.appendChild(line);
-    if (search) b.appendChild(tools);
+    if (line.children.length) b.appendChild(tools);
     // l'entête des cinq colonnes, du même squelette que le quintuple des
     // lignes : c'est ce qui garantit que chaque mot tombe en face de sa colonne
     var tete = el("div", "pc-crow-top pc-caracs-tete");
@@ -358,11 +374,7 @@
       // les fonctions des lignes effacées n'ont plus rien à rafraîchir ; le
       // tableau est vidé SUR PLACE, celui du registre étant le même objet
       lignes.length = 0;
-      var flt = filtreDe(speFilter);
-      var items = allSpes();
-      if (flt) items = items.filter(function (it) {
-        return it.name.toLowerCase().indexOf(flt) >= 0;
-      });
+      var items = filtreSpes(allSpes());
       items.forEach(function (it) { box.appendChild(ligne(it)); });
       if (!items.length) box.appendChild(el("div", "pc-empty", "—"));
       box.appendChild(miniBtn("+ Ajouter une spécialité", null, function () {

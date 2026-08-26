@@ -3,22 +3,20 @@
   // spécialité n'est pas une compétence : sa liste est OUVERTE, elle se nomme au
   // lieu de porter un sigle, et elle se rebâtit à chaque ajout.
   //
-  // QUATRE ONGLETS : Valeur, Bonus, XP, Écart.
+  // CINQ ONGLETS : Valeur, Plafond, Bonus, XP, Écart — le même ordre que les
+  // deux autres blocs, « Valeur » à gauche de « Plafond ».
   //
-  // PAS DE COIFFE ENTRE LES DEUX PREMIERS, et c'est la seule différence avec les
-  // deux autres blocs : une spécialité n'a pas de plafond. Ce qui la borne est
-  // la règle de l'écart, qui rabat le TOTAL et non ses points.
+  // SON PLAFOND NE MORD QUE S'IL EST RÉGLÉ, et c'est la seule différence avec
+  // les deux autres blocs : les règles n'en donnent aucun à une spécialité. Le
+  // nombre montré est celui qui mordrait, non celui qui mord.
   //
   // LE BONUS A SA CHAÎNE À LUI, et il ne pouvait pas entrer dans celle de la
   // valeur : il s'ajoute APRÈS le rabattage de l'écart, et l'y faire entrer
   // ferait rabattre la spécialité par son propre bonus.
   //
-  // CE QUI N'A PAS D'ONGLET, ET POURQUOI :
-  //   — le PLAFOND : les règles n'en donnent aucun à une spécialité. Ce qui en
-  //     tient lieu est l'avertissement de l'en-tête quand l'écart se resserre ;
-  //   — la CARACTÉRISTIQUE et la COMPÉTENCE : deux sélecteurs les portent déjà
-  //     sur la ligne de la Fiche, et deux endroits pour dire la même chose
-  //     finissent par se contredire.
+  // CE QUI N'A TOUJOURS PAS D'ONGLET : la CARACTÉRISTIQUE et la COMPÉTENCE.
+  // Deux sélecteurs les portent déjà sur la ligne de la Fiche, et deux endroits
+  // pour dire la même chose finissent par se contredire.
   function buildOptSpes() {
     var b = block("Spécialités");
     var bande = bandeOnglets(b);
@@ -103,6 +101,20 @@
         return { texte: String(spePts(sp)),
                  titre: chaineTexteDe(B.lire("valeur", vivante(i)), "points achetés :",
                                       (sp && sp.pts) || 0) };
+      });
+
+    // ---------- Plafond ----------
+    // LA BASE VIENT DE SA COMPÉTENCE, et sans compétence du MOD de sa
+    // caractéristique. Tant qu'aucune boîte n'est réglée, rien ne mord.
+    tab("Plafond", "", "plafond", ["Plafond", "Plafond effectif des points"], 999,
+      spePlafondAuto,
+      function (sp, i) {
+        var pose = sp ? spePlafondPose(sp) : false;
+        return { texte: sp && pose ? String(spePlafond(sp)) : "—", zero: !pose,
+                 titre: chaineTexteDe(B.lire("plafond", vivante(i)),
+                                      sp && sp.comp ? "de " + sp.comp + " :"
+                                                    : "de " + ((sp && sp.carac) || "—") + " :",
+                                      sp ? spePlafondSocle(sp) : 0) };
       });
 
     // ---------- Bonus ----------
