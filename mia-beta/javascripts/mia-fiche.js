@@ -74,7 +74,7 @@
   // site il est. Il ne change PAS le rang : « 1.0.1b » et « 1.0.1 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (MiaMods.compareVersions tient cette règle).
-  var RELEASE = "1.19.0b";
+  var RELEASE = "1.19.1b";
   var SCHEMA = 4;
 
   // ---------- ce que la fiche ne décide PAS ----------
@@ -4908,6 +4908,21 @@
       // les lignes qui viennent de naître doivent obéir au verrou du bloc :
       // rien ne le leur dirait avant le prochain rafraîchissement
       applyEdit(b, "specialites");
+      // ET ELLES DOIVENT ÊTRE REMPLIES. Les lignes naissent VIDES : leurs
+      // nombres, leurs deux sigles et leurs infobulles ne s'écrivent que dans
+      // la fonction poussée au registre, et ce registre n'est joué que par
+      // refresh(). Trois des quatre appelants de rendu() enchaînent sur
+      // refresh() — pas le FILTRE, qui ne doit rien enregistrer : filtrer
+      // laissait donc les rangées survivantes avec des tirets à la place des
+      // sigles et des cases vides à la place des nombres.
+      //
+      // On rejoue ici, et non chez l'appelant : un appelant peut oublier, une
+      // fin de rendu() ne le peut pas. Les trois autres rejouent une fois de
+      // plus au rafraîchissement suivant, ce qui ne coûte que d'écrire deux
+      // fois les mêmes nombres.
+      for (var i = 0; i < lignes.length; i++) {
+        try { lignes[i](); } catch (e) { /* la muselière juge à la passe suivante */ }
+      }
     }
     rendu();
     return b;
