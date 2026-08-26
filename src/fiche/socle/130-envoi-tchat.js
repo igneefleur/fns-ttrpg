@@ -11,6 +11,7 @@
     dest: "mia-r20-envoi-dest",   // nom d'affichage du destinataire
     input: "mia-r20-envoi-input", // "0" (sans) | "1" (avec)
     carac: "mia-r20-envoi-carac", // "0" (automatique) | "1" (carac au choix au lancer)
+    comp: "mia-r20-envoi-comp",   // idem pour la compétence, spécialités seules
     noms: "mia-r20-envoi-noms"    // liste de secours, si Roll20 ne la donne pas
   };
   function lpref(k, def) {
@@ -24,6 +25,7 @@
   function envDest() { return lpref(ENVOI.dest, ""); }
   function envInput() { return lpref(ENVOI.input, "0") === "1"; }
   function envCaracChoix() { return lpref(ENVOI.carac, "0") === "1"; }
+  function envCompChoix() { return lpref(ENVOI.comp, "0") === "1"; }
   // Même assainissement que l'extension (content-roll20.js) : sur le canal brut
   // elle n'en fait aucun, une accolade ou un retour à la ligne d'un texte de
   // fiche casserait la carte.

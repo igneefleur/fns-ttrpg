@@ -17,14 +17,18 @@
   // d'endurance — qui pèse sur TOUS les jets, donc l'écrire dans chaque
   // appelant reviendrait à l'oublier une fois.
   //
-  // LA CARACTÉRISTIQUE PASSE JUSQU'AU TOTAL, et il a fallu un défaut de partie
-  // pour s'en apercevoir : sous « Au choix », le plafond du jet employait la
-  // caractéristique choisie pendant que le total, lui, restait sur celle de la
-  // spécialité — retrait de l'écart compris. Un joueur gardait donc un retrait
-  // calculé sous une limite qui n'était plus la sienne.
+  // LA CARACTÉRISTIQUE ET LA COMPÉTENCE PASSENT JUSQU'AU TOTAL, et il a fallu un
+  // défaut de partie pour s'en apercevoir : sous « Au choix », le plafond du jet
+  // employait la caractéristique choisie pendant que le total, lui, restait sur
+  // celle de la spécialité — retrait de l'écart compris. Un joueur gardait donc
+  // un retrait calculé sous une limite qui n'était plus la sienne.
+  //
+  // Pour une COMPÉTENCE, le second argument EST le jet : le choisir autre n'a
+  // pas de sens, on lancerait l'autre compétence. Il ne sert donc qu'aux
+  // spécialités, et c'est ce que dit la barre d'envoi.
   function jetBonusBrut(carac, comp, spe) {
     var b = -enduranceMalus();
-    if (spe) b += speTotal(spe, carac) + (spe.bonus || 0) + speMalusCharge(spe);
+    if (spe) b += speTotal(spe, carac, comp) + (spe.bonus || 0) + speMalusCharge(spe);
     else {
       b += caracMod(carac);
       if (comp) b += compPts(comp);

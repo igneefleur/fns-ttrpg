@@ -137,7 +137,7 @@
         var tb = tableAjout(src[b], borne);
         if (Object.keys(tb).length) out[b] = tb;
       });
-      ["m1", "m2"].forEach(function (b) {
+      ["m1", "m2", "m3", "m4"].forEach(function (b) {
         var tb = tableMult(src[b]);
         if (Object.keys(tb).length) out[b] = tb;
       });

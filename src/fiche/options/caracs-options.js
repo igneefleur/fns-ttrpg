@@ -8,11 +8,14 @@
   // LES CINQ ONGLETS PORTENT LA MÊME GRILLE, et c'est tout le sujet : ce qui
   // change de l'un à l'autre, ce n'est pas le geste, c'est ce sur quoi il porte.
   //
-  //     Carac. | Forcé | ＋ ＋ | × × | ＋ ＋ | ce que ça donne
+  //     Carac. | Forcé | ＋ ＋ | × × | ＋ ＋ | × × | ce que ça donne
   //
   // soit, de gauche à droite, la chaîne elle-même (voir levierChaine dans
   // 080-calculs-caracs.js) : le forcé s'il est rempli, sinon deux ajouts sur la
-  // base, deux facteurs, deux ajouts qui ne se multiplient plus.
+  // base, deux facteurs, deux ajouts, deux facteurs encore — QUATRE groupes,
+  // parce que trois ne savent pas tout dire : un ajout posé après la dernière
+  // multiplication ne pouvait plus être multiplié, et « ajoute 20 puis double
+  // le tout » n'avait aucune écriture.
   //
   // AUCUN NE TOUCHE À LA VALEUR ACHETÉE : elle se décale sur la Fiche, dans la
   // case Bonus du module des caractéristiques. Ici on règle ce que la
@@ -178,7 +181,7 @@
     // ils ne comptent pas. Un forçage, si — forcer une valeur à zéro est un
     // réglage, et le seul moyen d'obtenir zéro à coup sûr.
     var BOITES = [["force", null], ["a1", 0], ["a2", 0], ["m1", 1], ["m2", 1],
-                  ["a3", 0], ["a4", 0]];
+                  ["a3", 0], ["a4", 0], ["m3", 1], ["m4", 1]];
     function levierRegle(nom, c) {
       var l = state.caracsLeviers && state.caracsLeviers[nom];
       if (!l) return false;
@@ -201,7 +204,8 @@
       if (f !== undefined) return "Forcé à " + f;
       var out = motBase + " " + base;
       [["a1", " · ", 0], ["a2", " · ", 0], ["m1", " · ×", 1], ["m2", " · ×", 1],
-       ["a3", " · ", 0], ["a4", " · ", 0]].forEach(function (d) {
+       ["a3", " · ", 0], ["a4", " · ", 0], ["m3", " · ×", 1], ["m4", " · ×", 1]]
+        .forEach(function (d) {
         var tb = l && l[d[0]];
         var v = tb && tb[c];
         // le neutre ne se dit pas : « de la table 400 · +0 » se lit deux fois
@@ -217,7 +221,7 @@
     // nom du levier dans l'état, le mot de la dernière colonne, la borne de ses
     // ajouts, et ce que ce dernier nombre affiche.
     //
-    // LES ENTÊTES DES SIX CHAMPS SONT DES SIGNES, et il n'y a pas d'alternative
+    // LES ENTÊTES DES HUIT CHAMPS SONT DES SIGNES, et il n'y a pas d'alternative
     // honnête : la colonne fait 1,4 rem, aucun mot n'y tient, et deux « MODIF. »
     // de suite ne diraient pas lequel vient avant l'autre. « ＋ » et « × »
     // disent ce que la case CONTIENT — un nombre qui s'ajoute, un nombre qui
@@ -232,7 +236,9 @@
         null,
         ["×", "Deux facteurs — vide = ×1", "duo op"],
         null,
-        ["＋", "Deux nombres qui s'ajoutent après les facteurs", "duo op"],
+        ["＋", "Deux nombres qui s'ajoutent après les premiers facteurs", "duo op"],
+        null,
+        ["×", "Deux facteurs de plus — vide = ×1", "duo op"],
         mot
       ]);
       champs().forEach(function (c, i) {
@@ -250,6 +256,8 @@
         ["m1", "m2"].forEach(function (bx) { row.appendChild(champFacteur(nom, bx, c)); });
         row.appendChild(el("span", "rule"));
         ["a3", "a4"].forEach(function (bx) { row.appendChild(champAjout(nom, bx, c, borne)); });
+        row.appendChild(el("span", "rule"));
+        ["m3", "m4"].forEach(function (bx) { row.appendChild(champFacteur(nom, bx, c)); });
         var out = el("span", "pc-comp-total", "");
         row.appendChild(out);
         hooks.push(function () {

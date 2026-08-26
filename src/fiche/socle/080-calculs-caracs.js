@@ -49,17 +49,21 @@
   // modificateur, la limite et l'écart se règlent du même geste :
   //
   //     le forcé, s'il est rempli
-  //     sinon ((base + a1 + a2) × m1 × m2) + a3 + a4
+  //     sinon (((base + a1 + a2) × m1 × m2) + a3 + a4) × m3 × m4
   //
   // « base » est ce que la RÈGLE donne pour ce levier, et rien d'autre : le
   // prestige, l'xp cumulé de la ligne, le MOD de la table, sa limite, l'écart
   // des règles.
   //
   // L'ORDRE DANS UN GROUPE EST SANS EFFET — l'addition commute, la
-  // multiplication associe. C'est la coupure en TROIS groupes qui fait tout, et
+  // multiplication associe. C'est la coupure en QUATRE groupes qui fait tout, et
   // la grille des Options la montre telle quelle, de gauche à droite : deux
-  // ajouts qui portent sur la base, deux facteurs qui portent sur ce qu'ils
-  // trouvent, deux ajouts qui ne se multiplient plus.
+  // ajouts sur la base, deux facteurs, deux ajouts, deux facteurs encore.
+  //
+  // QUATRE GROUPES, ET NON TROIS, parce que trois ne savent pas tout dire : un
+  // ajout posé APRÈS la dernière multiplication ne pouvait plus être multiplié,
+  // et « ajoute 20 puis double le tout » n'avait aucune écriture. Alterner deux
+  // fois les deux opérations donne toutes les combinaisons.
   function levierBoite(nom, boite, c) {
     var l = state.caracsLeviers && state.caracsLeviers[nom];
     var tb = l && l[boite];
@@ -81,9 +85,10 @@
   // La chaîne SANS le forçage : c'est elle que le champ « Forcé » montre en
   // filigrane, et c'est ce que les fonctions <nom>Auto rendent.
   function levierAuto(nom, c, base) {
-    var v = ((base + levierAdd(nom, "a1", c) + levierAdd(nom, "a2", c)) *
-             levierMul(nom, "m1", c) * levierMul(nom, "m2", c)) +
-            levierAdd(nom, "a3", c) + levierAdd(nom, "a4", c);
+    var v = (((base + levierAdd(nom, "a1", c) + levierAdd(nom, "a2", c)) *
+              levierMul(nom, "m1", c) * levierMul(nom, "m2", c)) +
+             levierAdd(nom, "a3", c) + levierAdd(nom, "a4", c)) *
+            levierMul(nom, "m3", c) * levierMul(nom, "m4", c);
     // UN RÉSULTAT NON FINI REND LA BASE. applique() refuse déjà ce qu'un FILTRE
     // rend d'infini ou d'illisible, mais elle ne voit pas ce qui se fabrique
     // ici : un NaN né dans la chaîne traverserait la fiche entière sans un mot.
@@ -247,12 +252,26 @@
   function speCarac(spe, carac) {
     return carac || (spe && spe.carac) || "";
   }
+  // ET LA COMPÉTENCE EMPLOYÉE, pour la même raison : le réglage « Compétence :
+  // au choix » de la barre d'envoi fait demander à Roll20 LAQUELLE porte le
+  // jet. Une spécialité rangée sous Combat peut très bien partir sous
+  // Physique, et ce sont alors les points de CELLE-CI qui entrent dans le
+  // total — donc aussi dans ce que la règle de l'écart ramène.
+  //
+  // La chaîne vide est une réponse LÉGITIME : une spécialité peut ne relever
+  // d'aucune compétence, et on peut vouloir la lancer sans. D'où le second
+  // argument testé sur « undefined » et non sur sa vérité.
+  function speComp(spe, comp) {
+    if (comp !== undefined && comp !== null) return comp;
+    return (spe && spe.comp) || "";
+  }
   // LE TOTAL D'UNE SPÉCIALITÉ : ses points, le MOD de la caractéristique
   // employée, les points de sa compétence. C'est ce nombre-là que la règle de
   // l'écart borne.
-  function speTotalBrut(spe, carac) {
+  function speTotalBrut(spe, carac, comp) {
     if (!spe || !speCarac(spe, carac)) return 0;
-    return spePts(spe) + caracMod(speCarac(spe, carac)) + (spe.comp ? compPts(spe.comp) : 0);
+    var k = speComp(spe, comp);
+    return spePts(spe) + caracMod(speCarac(spe, carac)) + (k ? compPts(k) : 0);
   }
   // ET SON RABATTAGE. Rien n'est bloqué à l'achat : on met dans une spécialité
   // ce qu'on veut. C'est le total EMPLOYÉ AU JET qui redescend.
@@ -277,23 +296,25 @@
   // LE RETRAIT SE CALCULE SOUS LA CARACTÉRISTIQUE EMPLOYÉE, et c'est tout le
   // sujet du défaut corrigé : c'est SA limite qui décide s'il y a lieu de
   // ramener quelque chose. Une caractéristique plus haute ne ramène rien.
-  function speTotalNat(spe, carac) {
+  function speTotalNat(spe, carac, comp) {
     var c = speCarac(spe, carac);
     if (!spe || !c) return 0;
-    return spePts(spe) + caracModNat(c) + (spe.comp ? compPts(spe.comp) : 0);
+    var k = speComp(spe, comp);
+    return spePts(spe) + caracModNat(c) + (k ? compPts(k) : 0);
   }
-  function speRetire(spe, carac) {
+  function speRetire(spe, carac, comp) {
     var c = speCarac(spe, carac);
     if (!spe || !c) return 0;
     if (state.ecartCoupe) return 0;   // règle suspendue pour ce personnage
     var haut = Math.max(0, caracLimNat(c) - ecartMin(c));
-    return Math.max(0, speTotalNat(spe, c) - haut);
+    return Math.max(0, speTotalNat(spe, c, comp) - haut);
   }
-  function speTotal(spe, carac) {
+  function speTotal(spe, carac, comp) {
     var c = speCarac(spe, carac);
     if (!spe || !c) return 0;
-    var v = speTotalBrut(spe, c) - speRetire(spe, c);
-    return aFiltre("speTotal") ? applique("speTotal", v, { spe: spe, carac: c }) : v;
+    var k = speComp(spe, comp);
+    var v = speTotalBrut(spe, c, k) - speRetire(spe, c, k);
+    return aFiltre("speTotal") ? applique("speTotal", v, { spe: spe, carac: c, comp: k }) : v;
   }
 
   // Un point de spécialité coûte un QUART d'XP : le total est donc décimal, et

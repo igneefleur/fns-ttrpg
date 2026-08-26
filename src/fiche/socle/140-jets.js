@@ -36,30 +36,65 @@
       .replace(/\{/g, "&#123;").replace(/\}/g, "&#125;")
       .replace(/,/g, "&#44;").replace(/\|/g, "&#124;");
   }
-  // Le réglage « Au choix » de la barre d'envoi : Roll20 demande AVANT de
-  // lancer quelle caractéristique porte le jet, la sienne proposée en premier.
+  // Les réglages « Au choix » de la barre d'envoi : Roll20 demande AVANT de
+  // lancer ce qui porte le jet — la caractéristique, la compétence, ou les deux
+  // — celle de la ligne proposée en premier.
   //
-  // La requête ne porte pas un nombre mais L'EXPRESSION ENTIÈRE, parce que
-  // changer de caractéristique change à la fois le MOD et la LIMITE. Deux
-  // requêtes séparées poseraient deux questions au joueur, qui pourrait
-  // répondre deux choses différentes et obtenir un jet incohérent.
+  // LA REQUÊTE NE PORTE PAS UN NOMBRE MAIS L'EXPRESSION ENTIÈRE, parce que
+  // changer de caractéristique change à la fois le MOD et la LIMITE, et que
+  // changer de compétence change le total — donc aussi ce que la règle de
+  // l'écart en retire. Rien de tout cela ne s'additionne terme à terme.
+  //
+  // ET UNE SEULE REQUÊTE, MÊME QUAND LES DEUX SONT AU CHOIX : deux requêtes
+  // poseraient deux questions dont les réponses devraient ensuite se combiner
+  // en arithmétique, ce que la macro ne sait pas faire ; et une requête dans
+  // une requête n'existe pas dans Roll20. On énumère donc les COUPLES. Huit
+  // caractéristiques et neuf compétences (la sienne comprise, plus « aucune »
+  // quand la spécialité n'en relève pas) font au pire soixante-douze options —
+  // c'est beaucoup à dérouler, mais c'est exact, et cela ne se produit que si
+  // l'on a demandé les deux.
+  //
   // La requête ne porte que le GROUPE PLAFONNÉ, sans le modificateur d'envoi :
   // celui-ci s'ajoutant après le plafond, il se pose une seule fois, dehors,
-  // quelle que soit la caractéristique choisie. Une requête dans une requête
-  // n'a donc pas à exister.
-  function caracQuery(propre, comp, spe) {
-    var ordre = [propre].concat(champs().filter(function (c) { return c !== propre; }));
-    var opts = ordre.map(function (c) {
-      return c + "," + echapQuery(jetExpr(jetBonus(c, comp, spe), caracLim(c), false));
+  // quel que soit le couple choisi.
+  //
+  // LE CHOIX DE COMPÉTENCE NE VAUT QUE POUR UNE SPÉCIALITÉ. Sur un jet de
+  // compétence, la compétence EST le jet : en choisir une autre reviendrait à
+  // lancer l'autre, ce qui se fait en cliquant sur sa ligne.
+  function choixQuery(carac, comp, spe) {
+    var surCarac = envCaracChoix();
+    var surComp = envCompChoix() && !!spe;
+    var cs = surCarac
+      ? [carac].concat(champs().filter(function (c) { return c !== carac; }))
+      : [carac];
+    var ks;
+    if (!surComp) ks = [comp];
+    else {
+      // « — » est la réponse « aucune compétence », et elle est légitime : une
+      // spécialité peut ne relever d'aucune, et on peut vouloir la lancer sans.
+      var propre = comp || "";
+      ks = [propre].concat(champsComp().filter(function (k) { return k !== propre; }));
+      if (propre !== "") ks.push("");
+    }
+    var opts = [];
+    cs.forEach(function (c) {
+      ks.forEach(function (k) {
+        var nom = surCarac && surComp ? c + "·" + (k || "—")
+                : (surCarac ? c : (k || "—"));
+        opts.push(nom + "," + echapQuery(jetExpr(jetBonus(c, k, spe), caracLim(c), false)));
+      });
     });
-    return "?{Caractéristique|" + opts.join("|") + "}";
+    var titre = surCarac && surComp ? "Caractéristique et compétence"
+              : (surCarac ? "Caractéristique" : "Compétence");
+    return "?{" + titre + "|" + opts.join("|") + "}";
   }
 
   // LE JET DE TEST : caractéristique, compétence ou spécialité. C'est le seul
   // chemin par lequel un jet plafonné part au tchat.
   function doJet(label, carac, comp, spe, tracker) {
-    var expr = envCaracChoix()
-      ? caracQuery(carac, comp, spe) + (envInput() ? ENV_QUERY : "")
+    var demande = envCaracChoix() || (envCompChoix() && !!spe);
+    var expr = demande
+      ? choixQuery(carac, comp, spe) + (envInput() ? ENV_QUERY : "")
       : jetExpr(jetBonus(carac, comp, spe), caracLim(carac), envInput());
     if (envoyer(cmdJetExpr(label, expr, tracker))) return;
     // Hors Roll20, ou sous une extension antérieure au canal brut : la fiche
