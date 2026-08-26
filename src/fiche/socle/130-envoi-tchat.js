@@ -53,10 +53,6 @@
     }
     return "";
   }
-  // Requête Roll20 : résolue côté client à l'envoi, donc seulement parce que
-  // l'extension écrit dans la zone de saisie du tchat. Les parenthèses laissent
-  // saisir un modificateur négatif sans ambiguïté (« + (-5) »).
-  var ENV_QUERY = " + (?{Modificateur|0})";
   // Option de jet Roll20 : le résultat s'inscrit dans le compteur de tours, à
   // la ligne du token sélectionné (créée si elle manque). Réservée à
   // l'initiative, seul jet dont dépend une place au tour.

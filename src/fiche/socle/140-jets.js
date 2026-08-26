@@ -26,42 +26,15 @@
     return { n: clamp(+m[1], 1, 20), faces: clamp(+m[2], 2, 1000), plus: +(m[3] || 0) };
   }
 
-  // ÉCHAPPER UNE EXPRESSION POUR L'INTÉRIEUR D'UNE REQUÊTE ROLL20. Une requête
-  // ?{…} se découpe sur « | » et sur la PREMIÈRE virgule de chaque option : une
-  // expression de jet, qui porte {…,…}, la casserait donc en deux. Roll20 rend
-  // les entités HTML à leur caractère après avoir résolu la requête, ce qui est
-  // le seul moyen de faire voyager une accolade ou une virgule là-dedans.
-  function echapQuery(expr) {
-    return String(expr)
-      .replace(/\{/g, "&#123;").replace(/\}/g, "&#125;")
-      .replace(/,/g, "&#44;").replace(/\|/g, "&#124;");
-  }
-  // Le réglage « Au choix » de la barre d'envoi : Roll20 demande AVANT de
-  // lancer quelle caractéristique porte le jet, la sienne proposée en premier.
+  // ---------- CE QUI SE DEMANDE AVANT DE LANCER, ET QUI SE DEMANDE ICI ----------
+  // UNE SEULE BOÎTE, DANS LA FICHE, ET PLUS AUCUNE REQUÊTE ROLL20. C'est une
+  // question de cohérence avant tout : dès qu'UNE des trois questions doit se
+  // poser dans la fiche, les poser ailleurs en même temps ferait répondre à
+  // deux endroits pour un seul jet.
   //
-  // LA REQUÊTE NE PORTE PAS UN NOMBRE MAIS L'EXPRESSION ENTIÈRE, parce que
-  // changer de caractéristique change à la fois le MOD et la LIMITE. Deux
-  // requêtes séparées poseraient deux questions au joueur, qui pourrait
-  // répondre deux choses différentes et obtenir un jet incohérent.
-  //
-  // La requête ne porte que le GROUPE PLAFONNÉ, sans le modificateur d'envoi :
-  // celui-ci s'ajoutant après le plafond, il se pose une seule fois, dehors,
-  // quelle que soit la caractéristique choisie.
-  //
-  // LA COMPÉTENCE, ELLE, NE PASSE PAS PAR ROLL20, et c'est une contrainte de
-  // son moteur de dés, pas un choix : voir demandeComp() plus bas.
-  function caracQuery(propre, comp, spe) {
-    var ordre = [propre].concat(champs().filter(function (c) { return c !== propre; }));
-    var opts = ordre.map(function (c) {
-      return c + "," + echapQuery(jetExpr(jetBonus(c, comp, spe), caracLim(c), false));
-    });
-    return "?{Caractéristique|" + opts.join("|") + "}";
-  }
-
-  // ---------- LA COMPÉTENCE SE DEMANDE DANS LA FICHE ----------
-  // ET ROLL20 N'Y EST POUR RIEN : son moteur de dés ne sait pas écrire ce
-  // qu'il faudrait. Éprouvé en partie, pas déduit :
-  //
+  // ET LA COMPÉTENCE DOIT S'Y POSER — le moteur de dés de Roll20 ne sait pas
+  // écrire ce qu'il faudrait, et c'est mesuré dans une vraie partie, pas
+  // déduit :
   //   — un groupe DANS un groupe est refusé (« Cannot mix sum and M rolls in a
   //     roll group »), et un groupe comme terme d'une somme aussi. Or la règle
   //     de l'écart en demande deux : un « plus bas des deux » pour ramener le
@@ -69,60 +42,88 @@
   //   — une requête DANS une requête, écrite en entités, n'est pas relue :
   //     « There was an error with your formula » ;
   //   — un même dé ne peut pas apparaître à deux endroits d'un groupe.
+  // Il ne restait donc, côté Roll20, qu'à énumérer les COUPLES dans une requête
+  // unique : huit caractéristiques par neuf compétences, soixante-douze
+  // réponses à dérouler. Exact, et inutilisable.
   //
-  // Il ne restait donc que d'énumérer les COUPLES dans une seule requête — huit
-  // caractéristiques par neuf compétences, soixante-douze réponses à dérouler.
-  // Exact, et inutilisable.
-  //
-  // La fiche pose donc la question elle-même, au clic, là où le joueur est
-  // déjà. Roll20 ne garde que la caractéristique, dont l'expression entière
-  // tient dans huit réponses. Deux questions, courtes, et un jet exact.
-  function demandeComp(spe, suite) {
-    var propre = spe.comp || "";
-    var liste = [propre].concat(champsComp().filter(function (k) { return k !== propre; }));
-    if (propre !== "") liste.push("");
+  // Ce qu'on y gagne, au passage : la fiche CONNAÎT la réponse. Elle peut donc
+  // envoyer une expression entièrement calculée — pas de requête, pas
+  // d'échappement, pas d'entités, et une macro de soixante-seize signes au lieu
+  // de quatre mille.
+  function demandeJet(label, carac, comp, spe, suite) {
+    var surCarac = envCaracChoix();
+    var surComp = envCompChoix() && !!spe;
+    var surModif = envInput();
+    if (!surCarac && !surComp && !surModif) { suite(carac, comp, 0); return; }
+
     var corps = el("div", "pc-modal-body");
-    var choix = el("div", "pc-choix-comp");
-    var pris = propre;
-    var btns = [];
-    liste.forEach(function (k) {
-      // « — » est une réponse LÉGITIME : une spécialité peut ne relever
-      // d'aucune compétence, et on peut vouloir la lancer sans.
-      var b = el("button", "pc-modal-choix" + (k === propre ? " on" : ""), k || "—");
-      b.type = "button";
-      b.title = k ? compInfo(k).nom : "Sans compétence";
-      b.addEventListener("click", function () {
-        pris = k;
-        btns.forEach(function (x) { x.classList.remove("on"); });
-        b.classList.add("on");
+    var prisC = carac, prisK = comp, modif = null;
+
+    // Une rangée de sigles : on choisit d'un clic, et celui de la ligne est
+    // allumé. Une liste déroulante demanderait deux clics pour la même chose.
+    function rangee(titre, codes, courant, nomDe, poser) {
+      corps.appendChild(el("div", "pc-comp-champ", titre));
+      var g = el("div", "pc-choix-jet");
+      var btns = [];
+      codes.forEach(function (k) {
+        var b = el("button", "pc-modal-choix" + (k === courant ? " on" : ""), k || "—");
+        b.type = "button";
+        b.title = k ? nomDe(k) : "Sans compétence";
+        b.addEventListener("click", function () {
+          poser(k);
+          btns.forEach(function (x) { x.classList.remove("on"); });
+          b.classList.add("on");
+        });
+        btns.push(b);
+        g.appendChild(b);
       });
-      btns.push(b);
-      choix.appendChild(b);
-    });
-    corps.appendChild(choix);
-    dialogue("Quelle compétence pour « " + (spe.nom || "Spécialité") + " » ?",
-             corps, function () { suite(pris); }, "Lancer");
+      corps.appendChild(g);
+    }
+
+    if (surCarac) {
+      var cs = [carac].concat(champs().filter(function (c) { return c !== carac; }));
+      rangee("Caractéristique", cs, carac,
+             function (c) { return caracInfo(c).nom; },
+             function (c) { prisC = c; });
+    }
+    if (surComp) {
+      // « — » est une réponse LÉGITIME : une spécialité peut ne relever d'aucune
+      // compétence, et on peut vouloir la lancer sans.
+      var propre = spe.comp || "";
+      var ks = [propre].concat(champsComp().filter(function (k) { return k !== propre; }));
+      if (propre !== "") ks.push("");
+      rangee("Compétence", ks, propre,
+             function (k) { return compInfo(k).nom; },
+             function (k) { prisK = k; });
+    }
+    var champModif = null;
+    if (surModif) {
+      // LE MODIFICATEUR S'AJOUTE APRÈS LE PLAFOND, hors du groupe : c'est la
+      // règle de l'endurance — ce qu'on dépense « est un bonus qu'on ajoute à
+      // la fin », et la limite borne ce que le personnage vaut par lui-même.
+      champModif = el("input", "pc-num");
+      champModif.type = "number";
+      champModif.step = "1";
+      champModif.value = "0";
+      corps.appendChild(fld("Modificateur", champModif));
+    }
+    dialogue("Lancer « " + (label || "jet") + " »", corps, function () {
+      modif = champModif ? Math.round(parseFloat(champModif.value) || 0) : 0;
+      suite(prisC, prisK, modif);
+    }, "Lancer");
   }
 
   // LE JET DE TEST : caractéristique, compétence ou spécialité. C'est le seul
   // chemin par lequel un jet plafonné part au tchat.
   function doJet(label, carac, comp, spe, tracker) {
-    // LA COMPÉTENCE D'ABORD, ET DANS LA FICHE. Une fois choisie, on reprend au
-    // MÊME endroit, avec elle.
-    //
-    // ON NE SE RAPPELLE PAS doJet : le réglage serait toujours armé, la
-    // question se reposerait, et la boîte se rouvrirait sans fin. Le reste du
-    // jet vit donc dans lance(), qu'on appelle des deux côtés.
-    if (spe && envCompChoix()) {
-      demandeComp(spe, function (k) { lance(k); });
-      return;
-    }
-    lance(comp);
+    // ON DEMANDE, PUIS ON LANCE. Et l'on ne se rappelle PAS doJet : les réglages
+    // seraient toujours armés, les questions se reposeraient, et la boîte se
+    // rouvrirait sans fin. Le reste du jet vit donc dans lance().
+    demandeJet(label, carac, comp, spe, lance);
+    return;
 
-    function lance(comp) {
-      var expr = envCaracChoix()
-        ? caracQuery(carac, comp, spe) + (envInput() ? ENV_QUERY : "")
-        : jetExpr(jetBonus(carac, comp, spe), caracLim(carac), envInput());
+    function lance(carac, comp, modif) {
+      var expr = jetExpr(jetBonus(carac, comp, spe), caracLim(carac), modif);
       if (envoyer(cmdJetExpr(label, expr, tracker))) return;
       // Hors Roll20, ou sous une extension antérieure au canal brut : la fiche
       // lance elle-même et applique le plafond, en le DISANT — un résultat rogné
@@ -134,9 +135,10 @@
       var de = d.plus, i;
       for (i = 0; i < d.n; i++) de += 1 + Math.floor(Math.random() * d.faces);
       var bonus = jetBonus(carac, comp, spe), lim = caracLim(carac);
-      var brut = de + bonus, total = Math.min(brut, lim);
+      var brut = de + bonus, total = Math.min(brut, lim) + (modif || 0);
       var det = "dé " + de + (bonus ? " " + (bonus >= 0 ? "+ " : "− ") + Math.abs(bonus) : "");
-      if (total < brut) det += " = " + brut + ", plafonné à " + lim;
+      if (Math.min(brut, lim) < brut) det += " = " + brut + ", plafonné à " + lim;
+      if (modif) det += " · modificateur " + sign(modif);
       // le critique se lit sur LE DÉ, jamais sur le total : c'est le dé qui est
       // critique, et le plafond n'y change rien
       var seuils = seuilsCrit(deTest());

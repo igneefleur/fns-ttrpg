@@ -109,15 +109,17 @@
     });
     bar.appendChild(editNoms);
 
-    // sans input / avec input : la requête ?{…} n'a de sens que sur un jet de
-    // test, elle est donc posée par doRoll et ignorée partout ailleurs
+    // sans input / avec input : le modificateur ne vaut que sur un jet de TEST
+    // (caractéristique, compétence, spécialité), pas sur un jet brut. La fiche
+    // le demande dans la même boîte que le reste, et l'envoie en NOMBRE : ce
+    // fut une requête Roll20, elle ne l'est plus — voir demandeJet.
     var sep = el("span", "lbl", "Modificateur");
     sep.title = "S'ajoute APRÈS la limite — c'est par là que passe l'endurance dépensée";
     bar.appendChild(sep);
     var segs2 = el("div", "pc-envoi-segs");
     var bin = [];
     [["0", "Sans input", "Le jet part tel quel"],
-     ["1", "Avec input", "Roll20 demande un modificateur avant de lancer"]].forEach(function (o) {
+     ["1", "Avec input", "La fiche demande un modificateur avant de lancer"]].forEach(function (o) {
       var b = el("button", "seg" + ((envInput() ? "1" : "0") === o[0] ? " on" : ""), o[1]);
       b.type = "button";
       b.title = o[2];
@@ -132,16 +134,19 @@
     bar.appendChild(segs2);
 
     // automatique / au choix : sur un jet de COMPÉTENCE ou de SPÉCIALITÉ, « au
-    // choix » fait demander par Roll20 quelle caractéristique porte le jet (les
-    // huit, la sienne en tête). Elle change à la fois le MOD et la LIMITE, d'où
-    // une requête qui porte l'expression entière et non un nombre.
+    // choix » fait demander par LA FICHE quelle caractéristique porte le jet
+    // (les huit, la sienne en tête).
+    //
+    // DANS LA FICHE, ET NON PLUS DANS ROLL20, parce que la compétence, elle, ne
+    // PEUT pas s'y demander (voir demandeJet) : poser une question ici et
+    // l'autre là-bas ferait répondre à deux endroits pour un seul jet.
     var sep3 = el("span", "lbl", "Caractéristique");
     sep3.title = "Ne s'applique qu'aux jets de compétence";
     bar.appendChild(sep3);
     var segs3 = el("div", "pc-envoi-segs");
     var cbtn = [];
     [["0", "Automatique", "La compétence part avec sa caractéristique"],
-     ["1", "Au choix", "Roll20 demande quelle caractéristique utiliser avant de lancer"]].forEach(function (o) {
+     ["1", "Au choix", "La fiche demande quelle caractéristique employer avant de lancer"]].forEach(function (o) {
       var b = el("button", "seg" + ((envCaracChoix() ? "1" : "0") === o[0] ? " on" : ""), o[1]);
       b.type = "button";
       b.title = o[2];
@@ -158,10 +163,11 @@
     // LE MÊME, POUR LA COMPÉTENCE, et il ne vaut que pour les SPÉCIALITÉS : sur
     // un jet de compétence, la compétence EST le jet.
     //
-    // CELLE-CI SE DEMANDE DANS LA FICHE, ET NON DANS ROLL20 : son moteur de
-    // dés ne sait pas écrire deux plafonds imbriqués, et la seule forme qu'il
-    // accepte énumère les soixante-douze couples dans une liste unique. La
-    // fiche pose la question au clic, Roll20 garde la caractéristique.
+    // ET C'EST ELLE QUI A TOUT FAIT DESCENDRE DANS LA FICHE : le moteur de dés
+    // de Roll20 ne sait pas écrire deux plafonds imbriqués, et la seule forme
+    // qu'il accepte énumère les soixante-douze couples dans une liste unique.
+    // Une fois cette question-là posée dans la fiche, les deux autres l'y
+    // rejoignent — on ne répond pas à deux endroits pour un seul jet.
     var sep4 = el("span", "lbl", "Compétence");
     sep4.title = "Ne s'applique qu'aux jets de spécialité";
     bar.appendChild(sep4);

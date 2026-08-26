@@ -21,7 +21,7 @@
   // site il est. Il ne change PAS le rang : « 1.0.1b » et « 1.0.1 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (MiaMods.compareVersions tient cette règle).
-  var RELEASE = "1.15.3b";
+  var RELEASE = "1.16.0b";
   var SCHEMA = 2;
 
   // ---------- ce que la fiche ne décide PAS ----------

@@ -61,11 +61,17 @@
   // test » écrivait dans l'état sans que rien ne le lise : on pouvait y mettre
   // ce qu'on voulait, la fiche lançait toujours le même dé. Il commande
   // maintenant ce qu'elle lance, marqueurs de critique compris.
-  function jetExpr(bonus, lim, avecInput) {
+  //
+  // LE MODIFICATEUR EST UN NOMBRE, ET NON PLUS UNE REQUÊTE. La fiche le demande
+  // elle-même, comme le reste : elle envoie donc une expression entièrement
+  // calculée, sans requête ni entité — soixante-seize signes au lieu de quatre
+  // mille, et rien à échapper.
+  function jetExpr(bonus, lim, modif) {
     var b = Math.round(bonus);
+    var m = Math.round(modif || 0);
     return "{" + deTest() + (b >= 0 ? "+" : "-") + Math.abs(b) +
            ",0d0+" + Math.round(lim) + "}kl1" +
-           (avecInput ? ENV_QUERY : "");
+           (m ? (m > 0 ? "+" : "-") + Math.abs(m) : "");
   }
 
   // ---------- l'initiative ----------
