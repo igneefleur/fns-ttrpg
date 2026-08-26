@@ -457,6 +457,12 @@
         Object.keys(src).forEach(function (c) {
           var v = src[c];
           if (typeof v !== "number" || !isFinite(v)) return;
+          // UN AJOUT DE ZÉRO NE PASSE PAS. Le schéma 1 gardait un zéro
+          // explicite dans ses tables de modificateurs — une case tapée puis
+          // vidée — et il n'y faisait rien. Transporté ici, il ferait d'une
+          // boîte vide une boîte RÉGLÉE, et la fiche marquerait le levier
+          // comme retouché sans que rien le soit.
+          if (v === 0 && d[2] !== "force") return;
           if (!lv[d[1]]) lv[d[1]] = {};
           if (!lv[d[1]][d[2]]) lv[d[1]][d[2]] = {};
           // ce qui est déjà là a été écrit par la version d'arrivée : il gagne
