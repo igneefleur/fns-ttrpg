@@ -315,6 +315,29 @@
       ? applique("ecartComp", v, { cle: code, carac: carac || compCarac(code) })
       : v;
   }
+  // LA LIMITE D'UNE COMPÉTENCE : celle de la caractéristique EMPLOYÉE, passée
+  // par sa chaîne à elle. C'est le DEUXIÈME étage d'une cascade bâtie sur celle
+  // de l'écart, et pour la même raison : les trois étages mesurent la MÊME
+  // chose — un résultat de jet —, donc l'un peut servir de base au suivant.
+  //
+  // (C'est ce qui distingue la limite du PLAFOND, qui ne cascade pas : le
+  // plafond d'une caractéristique est une VALEUR, celui d'une compétence un
+  // NOMBRE DE POINTS. Deux unités, aucune base commune.)
+  //
+  // RIEN NE BOUGE TANT QUE PERSONNE NE RÈGLE : sans levier, chaque étage rend
+  // sa base telle quelle, et le jet est coiffé comme avant.
+  function compLimAuto(code, carac) {
+    return chaineAuto(lireComp("lim", code), caracLim(carac || compCarac(code)));
+  }
+  function compLimBrut(code, carac) {
+    return chaine(lireComp("lim", code), caracLim(carac || compCarac(code)));
+  }
+  function compLim(code, carac) {
+    var v = compLimBrut(code, carac);
+    return aFiltre("compLim")
+      ? applique("compLim", v, { cle: code, carac: carac || compCarac(code) })
+      : v;
+  }
 
   // ---------- les spécialités ----------
   // Une spécialité relève d'UNE caractéristique et d'UNE compétence, qui ne
@@ -431,6 +454,42 @@
       ? applique("ecartSpe", v, { spe: spe, carac: speCarac(spe, carac), comp: speComp(spe, comp) })
       : v;
   }
+  // LA LIMITE D'UNE SPÉCIALITÉ, DERNIER MAILLON : celle de la compétence
+  // EMPLOYÉE, passée par sa chaîne à elle. SANS COMPÉTENCE — réponse légitime —
+  // l'étage du milieu n'existe pas et la base est celle de la caractéristique,
+  // directement. Exactement la cascade de l'écart, et strictement descendante.
+  function speLimBase(spe, carac, comp) {
+    var c = speCarac(spe, carac), k = speComp(spe, comp);
+    return k ? compLim(k, c) : caracLim(c);
+  }
+  function speLimAuto(spe, carac, comp) {
+    return chaineAuto(lireSpe("lim", spe), speLimBase(spe, carac, comp));
+  }
+  function speLimBrut(spe, carac, comp) {
+    return chaine(lireSpe("lim", spe), speLimBase(spe, carac, comp));
+  }
+  function speLim(spe, carac, comp) {
+    var v = speLimBrut(spe, carac, comp);
+    return aFiltre("speLim")
+      ? applique("speLim", v, { spe: spe, carac: speCarac(spe, carac), comp: speComp(spe, comp) })
+      : v;
+  }
+  // LA LIMITE QUI COIFFE UN JET, en bout de chaîne : celle de la spécialité
+  // s'il y en a une, sinon celle de la compétence, sinon celle de la
+  // caractéristique. UN SEUL endroit la décide — la ligne, le jet et
+  // l'infobulle lisent tous celui-ci, sinon trois nombres différents finissent
+  // à l'écran pour un même jet.
+  //
+  // LE RABATTAGE DE L'ÉCART NE LA LIT PAS : il se calcule sur caracLimNat, la
+  // limite d'avant les leviers (voir speRetire). C'est ce qui permet au meneur
+  // d'abaisser une limite sans que le retrait bouge — et c'était déjà vrai du
+  // levier de limite des caractéristiques.
+  function limiteJet(carac, comp, spe) {
+    if (spe) return speLim(spe, carac, comp);
+    if (comp) return compLim(comp, carac);
+    return caracLim(carac);
+  }
+
   // LE TOTAL D'UNE SPÉCIALITÉ : ses points, le MOD de la caractéristique
   // employée, les points de sa compétence. C'est ce nombre-là que la règle de
   // l'écart borne.

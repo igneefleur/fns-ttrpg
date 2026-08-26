@@ -63,6 +63,7 @@
       compPts: compPts, compPlafond: compPlafond, compXp: compXp,
       compValeur: compValeur, compValeurBrut: compValeurBrut, compBonus: compBonus,
       compCarac: compCarac, ecartComp: ecartComp, ecartSpe: ecartSpe,
+      compLim: compLim, speLim: speLim, limiteJet: limiteJet,
       spePts: spePts, speXp: speXp, speBonus: speBonus, jetBonus: jetBonus,
       spePlafond: spePlafond, spePlafondPose: spePlafondPose,
       speTotal: speTotal, speRetire: speRetire,

@@ -13,10 +13,14 @@
   // spécialités (l'écart). « Valeur » est à GAUCHE de « Plafond » parce que le
   // plafond mord sur ce que la valeur a produit, et non l'inverse.
   //
-  // POURQUOI PAS D'ONGLET « LIMITE » : une compétence n'en a pas. Le jet est
-  // coiffé par la limite de la caractéristique employée, et c'est elle qu'on
-  // règle dans le bloc d'à côté. Ni « MOD » : une compétence apporte des POINTS,
-  // et le mot « CARAC » de sa ligne dit bien que le modificateur vient d'ailleurs.
+  // « LIMITE » EST UN ÉTAGE, PAS UNE VALEUR PROPRE : une compétence n'a pas de
+  // limite à elle, elle DÉCALE celle de la caractéristique employée, et passe
+  // la sienne à ses spécialités. Même cascade que l'écart, et pour la même
+  // raison : les trois étages mesurent un résultat de jet, donc l'un peut
+  // servir de base au suivant.
+  //
+  // PAS D'ONGLET « MOD » en revanche : une compétence apporte des POINTS, et le
+  // mot « CARAC » de sa ligne dit bien que le modificateur vient d'ailleurs.
   function buildOptComps() {
     var b = block("Compétences");
     var bande = bandeOnglets(b);
@@ -161,6 +165,18 @@
         var xp = compXp(k);
         return { texte: xp + " xp", zero: !xp,
                  titre: chaineTexteDe(lireComp("xp", k), "points achetés :", compXpSocle(k)) };
+      });
+
+    // ---------- Limite ----------
+    // DEUXIÈME ÉTAGE DE SA CASCADE : la base est la limite de la
+    // caractéristique qui lance la compétence, et ce qu'on règle ici descend
+    // sur les spécialités qui en relèvent.
+    tab("Limite", "", "lim", ["Limite", "Limite effective du jet"], 9999,
+      function (k) { return compLimAuto(k); },
+      function (k) {
+        return { texte: String(compLim(k)),
+                 titre: chaineTexteDe(lireComp("lim", k),
+                                      "de " + compCarac(k) + " :", caracLim(compCarac(k))) };
       });
 
     // ---------- Écart ----------

@@ -129,7 +129,7 @@
     return;
 
     function lance(carac, comp, modif) {
-      var expr = jetExpr(jetBonus(carac, comp, spe), caracLim(carac), modif);
+      var expr = jetExpr(jetBonus(carac, comp, spe), limiteJet(carac, comp, spe), modif);
       if (envoyer(cmdJetExpr(label, expr, tracker))) return;
       // Hors Roll20, ou sous une extension antérieure au canal brut : la fiche
       // lance elle-même et applique le plafond, en le DISANT — un résultat rogné
@@ -140,7 +140,7 @@
       var d = parseDice(deNu(deTest())) || { n: 1, faces: 100, plus: 0 };
       var de = d.plus, i;
       for (i = 0; i < d.n; i++) de += 1 + Math.floor(Math.random() * d.faces);
-      var bonus = jetBonus(carac, comp, spe), lim = caracLim(carac);
+      var bonus = jetBonus(carac, comp, spe), lim = limiteJet(carac, comp, spe);
       var brut = de + bonus, total = Math.min(brut, lim) + (modif || 0);
       var det = "dé " + de + (bonus ? " " + (bonus >= 0 ? "+ " : "− ") + Math.abs(bonus) : "");
       if (Math.min(brut, lim) < brut) det += " = " + brut + ", plafonné à " + lim;

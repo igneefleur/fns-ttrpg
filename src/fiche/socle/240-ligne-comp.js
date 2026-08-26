@@ -113,7 +113,7 @@
       var bon = compBonus(code);
       var db = bon - compBonusSocle(code);
       vVal.txt.textContent = String(caracMod(c) + compPts(code) - bon);
-      cLim[0].textContent = String(caracLim(c));
+      cLim[0].textContent = String(compLim(code, c));
       cLim[1].textContent = String(plaf);
       cLim[1].classList.toggle("adj", mord);
       vBon.txt.textContent = sign(bon);
@@ -129,7 +129,7 @@
                    (db ? " · bonus décalé de " + sign(db) + " (Options)" : "") +
                    (mal ? " · endurance " + sign(-mal) : "") +
                    " — clic : lancer " + deNu(deTest()) + " " + sign(b) +
-                   ", plafonné à " + caracLim(c);
+                   ", plafonné à " + compLim(code, c);
     });
     return row;
   }

@@ -139,6 +139,11 @@
         caracBonus: caracBonus,
         caracMod: caracMod,
         caracLim: caracLim,
+        // les deux étages sous elle : une compétence décale la limite de sa
+        // caractéristique, une spécialité décale celle de sa compétence
+        compLim: compLim,
+        speLim: speLim,
+        limiteJet: limiteJet,
         compPts: compPts,
         compValeur: compValeur,
         compBonus: compBonus,

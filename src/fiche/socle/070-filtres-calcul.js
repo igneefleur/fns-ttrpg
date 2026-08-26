@@ -38,7 +38,7 @@
   // détourner ; ils ont donc changé avec le système, et un mod écrit pour
   // l'ancien se verra prévenir plutôt que d'agir dans le vide.
   var FILTRES_CONNUS = {
-    caracTotal: 1, caracMod: 1, caracLim: 1, ecartMin: 1,
+    caracTotal: 1, caracMod: 1, caracLim: 1, compLim: 1, speLim: 1, ecartMin: 1,
     // L'ÉCART CASCADE SUR TROIS ÉTAGES, donc trois points de filtre distincts :
     // la garde de récursion se fait par NOM, et un seul nom pour les trois
     // rendrait le brut sur les deux autres dès que l'un est en cours.

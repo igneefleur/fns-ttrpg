@@ -305,7 +305,7 @@
         // la charge ne mord que sur l'esquive, et l'esquive est une spécialité :
         // un −100 apparu sans être nommé passerait pour une faute de calcul
         var ch = speMalusCharge(spe);
-        var lim = spe.carac ? caracLim(spe.carac) : 0;
+        var lim = spe.carac ? speLim(spe) : 0;
         var bonus = jetBonus(spe.carac, spe.comp, spe);
         // UN CHAMP NE SE RÉÉCRIT JAMAIS SOUS LES DOIGTS : tant qu'il a le
         // focus, ce qu'on tape y reste tel quel.

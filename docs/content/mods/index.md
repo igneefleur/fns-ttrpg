@@ -273,6 +273,9 @@ les filtres.
 | `ctx.calculs.caracBonus(sigle)` | son bonus seul, une fois passé par les réglages du meneur. `caracValeur + caracBonus` redonne `caracTotal`. |
 | `ctx.calculs.caracMod(sigle)` | son MOD, c'est-à-dire ce qui s'ajoute à tout jet passant par elle. |
 | `ctx.calculs.caracLim(sigle)` | sa LIM, le résultat le plus haut qu'un tel jet puisse atteindre. |
+| `ctx.calculs.compLim(sigle, carac)` | la LIM d'une compétence : celle de sa caractéristique, décalée par ses propres réglages. `carac` peut manquer. |
+| `ctx.calculs.speLim(spe, carac, comp)` | la LIM d'une spécialité : celle de sa compétence, décalée par les siens. Les deux derniers peuvent manquer. |
+| `ctx.calculs.limiteJet(carac, comp, spe)` | celle des trois qui coiffe VRAIMENT ce jet-là. C'est elle que la fiche emploie. |
 | `ctx.calculs.compPts(sigle)` | les points d'une compétence : `"PHY"`, `"COM"`, `"CLA"`, `"CRÉ"`, `"INT"`, `"SOC"`, `"PER"`, `"VOL"`. |
 | `ctx.calculs.compValeur(sigle)` | sa valeur seule, coiffée par son plafond. |
 | `ctx.calculs.compBonus(sigle)` | son bonus seul. `compValeur + compBonus` redonne `compPts`. |

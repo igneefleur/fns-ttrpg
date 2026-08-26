@@ -3,8 +3,9 @@
   // spécialité n'est pas une compétence : sa liste est OUVERTE, elle se nomme au
   // lieu de porter un sigle, et elle se rebâtit à chaque ajout.
   //
-  // CINQ ONGLETS : Valeur, Plafond, Bonus, XP, Écart — le même ordre que les
-  // deux autres blocs, « Valeur » à gauche de « Plafond ».
+  // SIX ONGLETS : Valeur, Plafond, Bonus, XP, Limite, Écart — le même ordre
+  // que les deux autres blocs, « Valeur » à gauche de « Plafond », et la limite
+  // juste avant l'écart, qui en découle.
   //
   // SON PLAFOND NE MORD QUE S'IL EST RÉGLÉ, et c'est la seule différence avec
   // les deux autres blocs : les règles n'en donnent aucun à une spécialité. Le
@@ -139,6 +140,20 @@
         return { texte: xp + " xp", zero: !xp,
                  titre: chaineTexteDe(B.lire("xp", vivante(i)), "points achetés :",
                                       speXpSocle(sp)) };
+      });
+
+    // ---------- Limite ----------
+    // DERNIER ÉTAGE DE SA CASCADE : la base est la limite de sa compétence,
+    // qui tient elle-même celle de sa caractéristique. Sans compétence, la base
+    // est celle de la caractéristique, directement.
+    tab("Limite", "", "lim", ["Limite", "Limite effective du jet"], 9999,
+      function (sp) { return speLimAuto(sp); },
+      function (sp, i) {
+        var mot = sp && sp.comp ? "de " + sp.comp + " :"
+                                : "de " + ((sp && sp.carac) || "—") + " :";
+        return { texte: String(sp ? speLim(sp) : 0),
+                 titre: chaineTexteDe(B.lire("lim", vivante(i)), mot,
+                                      sp ? speLimBase(sp) : 0) };
       });
 
     // ---------- Écart ----------
