@@ -60,6 +60,8 @@
       caracTotal: caracTotal, caracMod: caracMod, caracLim: caracLim,
       compPts: compPts, compPlafond: compPlafond, compXp: compXp,
       spePts: spePts, speXp: speXp, jetBonus: jetBonus,
+      speTotal: speTotal, speRetire: speRetire,
+      ecartMin: ecartMin,
       prestige: prestige, enduranceMax: enduranceMax, enduranceMalus: enduranceMalus,
       recupJour: recupJour, chargeMax: chargeMax,
       pvMax: pvMax, pvCourant: pvCourant, initiative: initiative,
