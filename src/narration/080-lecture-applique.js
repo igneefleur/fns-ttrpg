@@ -1,7 +1,13 @@
 
   function applique(attrs, d) {
     ditMenage(d);
+    // Le pont dit ce qu'il sait faire ; on le retient une fois pour toutes, et
+    // la trace de dépannage le porte. « false » ici veut dire : ce joueur ne
+    // verra JAMAIS bouger le plateau des autres tant que son extension n'est pas
+    // à jour — c'est le premier fait à vérifier devant une panne de ce genre.
+    if (d && pontResync === null) { pontResync = d.resync === true; }
     trace("lecture", { pontSur: (d && d.sur), pontRaison: (d && d.raison),
+                       pontResync: pontResync,
                        nbAttrs: attrs ? Object.keys(attrs).length : 0,
                        ecrits: resumeEcrits(d && d.ecrits) });
     try {

@@ -33,10 +33,28 @@
   // page-ci change sans signature. On envoie donc la liste, et le pont ne
   // détruit rien sans elle.
   var MENAGE_GARDE = [A_CONF, A_PT, A_BG];
+  // ON DEMANDE À VOIR LES AUTRES. « load » seul ne rend que ce que ce client-ci
+  // tient déjà ; « resync » lui fait d'abord poser la question au serveur. Deux
+  // choses distinctes, et c'est toute la réparation : sans la seconde, un
+  // plateau relit sa propre copie et paraît immobile pendant que les autres
+  // jouent.
+  //
+  // Ce n'est pas demandé à chaque tour : le pont refuserait de toute façon
+  // d'aller plus vite que son propre plancher, et le lui demander pour rien
+  // n'apprend rien à personne. La demande arrive donc à SA cadence, et la
+  // lecture qui suit — celle d'après, le temps que le serveur réponde — porte ce
+  // qu'ont fait les autres.
+  var resyncQuand = 0;
+  // Ce pont-ci sait-il seulement aller chercher ? Un paquet signé plus ancien ne
+  // le sait pas, et il n'y a alors rien à faire depuis ici : le noter permet au
+  // moins de le DIRE, au lieu de laisser croire que le plateau est à jour.
+  var pontResync = null;
   function demandeEtat() {
     if (!charId) { return; }
+    var n = Date.now(), rs = false;
+    if (n - resyncQuand >= RESYNC) { resyncQuand = n; rs = true; }
     post({ type: "load", charId: charId, allege: fondsTenus === true,
-           menageGarde: MENAGE_GARDE });
+           menageGarde: MENAGE_GARDE, resync: rs });
   }
   // Une écriture = un lot d'attributs. On note ce qu'on vient d'écrire : l'écho
   // met un aller-retour à revenir, et sans cette note la relecture suivante

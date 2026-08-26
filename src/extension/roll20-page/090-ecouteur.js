@@ -70,6 +70,13 @@
         // toutes les 500 ms, le Campaign peut arriver après nous)
         var chl = getChar(d.charId);
         if (!chl) return;
+        // LA PAGE DEMANDE, LE PONT BORNE — voir resynchronise(). Le fetch est
+        // asynchrone : ce qu'il rapporte ne paraîtra qu'à la lecture SUIVANTE,
+        // et c'est très bien, le plateau relit de toute façon toutes les 1,2 s.
+        // Seul le plateau est concerné : les fiches de personnage ont leur
+        // dialogue ouvert et sous les yeux de leur joueur, elles n'ont jamais
+        // montré cette panne, et rien ne justifie de leur coûter une requête.
+        if (d.resync === true && d.charId === narrId) { resynchronise(chl); }
         var rl = { type: "hydrate", charId: d.charId, attrs: readAll(d.charId) };
         // CE QUE VAUT CETTE LECTURE, dit avec elle. Seul le plateau est concerné :
         // pour tout autre personnage la fiche est ouverte, donc les attributs
@@ -87,6 +94,12 @@
           // que ce pont-ci sait alléger. Mais on n'allège QUE s'il l'a demandé
           // (d.allege), parce que le pont est signé et lui non : voir allege().
           rl.omis = d.allege === true ? allege(rl.attrs, ev.source, d.complet === true) : [];
+          // CE PONT-CI SAIT ALLER RECHERCHER. Sa seule présence le dit, comme
+          // « omis » dit qu'il sait alléger : devant un pont plus ancien, le
+          // champ manque, et la page sait alors que sa demande de
+          // resynchronisation n'a été entendue par personne — au lieu de croire
+          // qu'elle voit les autres joueurs alors qu'elle relit sa propre copie.
+          rl.resync = true;
           // Le relevé de la dernière écriture voyage avec la lecture : c'est le
           // seul moyen, sans compte Roll20, de savoir si le modèle a pris notre
           // valeur. Vidé une fois transmis, pour ne rien répéter.
