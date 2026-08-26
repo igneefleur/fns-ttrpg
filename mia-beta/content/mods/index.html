@@ -53,7 +53,7 @@
     
       <link rel="stylesheet" href="../../stylesheets/mia.css?v=1">
     
-      <link rel="stylesheet" href="../../stylesheets/mia-fiche.css?v=48">
+      <link rel="stylesheet" href="../../stylesheets/mia-fiche.css?v=49">
     
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -1767,7 +1767,15 @@ les filtres.</p>
 <tbody>
 <tr>
 <td><code>ctx.calculs.caracTotal(sigle)</code></td>
-<td>la valeur d'une caractéristique, modificateurs et forçage compris : <code>"FOR"</code>, <code>"DEX"</code>, <code>"AGI"</code>, <code>"CON"</code>, <code>"MEN"</code>, <code>"PRE"</code>, <code>"SEN"</code>, <code>"DÉT"</code>.</td>
+<td>la valeur d'une caractéristique, tout compris : <code>"FOR"</code>, <code>"DEX"</code>, <code>"AGI"</code>, <code>"CON"</code>, <code>"MEN"</code>, <code>"PRE"</code>, <code>"SEN"</code>, <code>"DÉT"</code>.</td>
+</tr>
+<tr>
+<td><code>ctx.calculs.caracValeur(sigle)</code></td>
+<td>sa valeur seule, une fois passée par les réglages du meneur et coiffée par son plafond.</td>
+</tr>
+<tr>
+<td><code>ctx.calculs.caracBonus(sigle)</code></td>
+<td>son bonus seul, une fois passé par les réglages du meneur. <code>caracValeur + caracBonus</code> redonne <code>caracTotal</code>.</td>
 </tr>
 <tr>
 <td><code>ctx.calculs.caracMod(sigle)</code></td>
@@ -1782,12 +1790,24 @@ les filtres.</p>
 <td>les points d'une compétence : <code>"PHY"</code>, <code>"COM"</code>, <code>"CLA"</code>, <code>"CRÉ"</code>, <code>"INT"</code>, <code>"SOC"</code>, <code>"PER"</code>, <code>"VOL"</code>.</td>
 </tr>
 <tr>
+<td><code>ctx.calculs.compValeur(sigle)</code></td>
+<td>sa valeur seule, coiffée par son plafond.</td>
+</tr>
+<tr>
+<td><code>ctx.calculs.compBonus(sigle)</code></td>
+<td>son bonus seul. <code>compValeur + compBonus</code> redonne <code>compPts</code>.</td>
+</tr>
+<tr>
 <td><code>ctx.calculs.compPlafond(sigle)</code></td>
 <td>ce qu'elle peut porter au plus, c'est-à-dire le MOD le plus haut de ses caractéristiques.</td>
 </tr>
 <tr>
 <td><code>ctx.calculs.spePts(spe)</code></td>
 <td>les points d'une spécialité, telle qu'elle figure dans <code>ctx.state.specialites</code>.</td>
+</tr>
+<tr>
+<td><code>ctx.calculs.speBonus(spe)</code></td>
+<td>son bonus, qui n'entre PAS dans <code>speTotal</code> — <code>jetBonus</code> l'ajoute lui-même.</td>
 </tr>
 <tr>
 <td><code>ctx.calculs.jetBonus(carac, comp, spe)</code></td>
@@ -2566,11 +2586,11 @@ d'atteinte que parce qu'elle est d'une autre origine que la fiche.</p>
       
         <script src="../../javascripts/night.js"></script>
       
-        <script src="../../javascripts/mia-migrations.js?v=48"></script>
+        <script src="../../javascripts/mia-migrations.js?v=49"></script>
       
-        <script src="../../javascripts/mia-mods.js?v=48"></script>
+        <script src="../../javascripts/mia-mods.js?v=49"></script>
       
-        <script src="../../javascripts/mia-fiche.js?v=48"></script>
+        <script src="../../javascripts/mia-fiche.js?v=49"></script>
       
         <script src="../../javascripts/copybtn.js"></script>
       
