@@ -1122,7 +1122,16 @@ html.night .pc-warn.doux { color: #ffbc33; background: rgba(255, 188, 51, .13); 
 /* « Aucune compétence » tient le rang entier : neuvième d'une grille qui en
    range quatre de front, il laissait sinon un vide à sa droite qu'on lit comme
    un oubli. La largeur lui donne du même coup la place de se nommer. */
-.pc-choix-jet > .pc-modal-choix.large { grid-column: 1 / -1; }
+/* CENTRÉS, ET C'EST LA GRILLE QUI L'IMPOSE. Le bouton de dialogue ordinaire
+   aligne son texte à GAUCHE — juste pour une phrase qui remplit sa ligne, faux
+   pour un sigle de trois lettres dans une case de soixante-neuf pixels, qui
+   paraît alors collé au bord. */
+.pc-choix-jet > .pc-modal-choix { text-align: center; }
+/* Le rang entier, et le mot en capitales : c'est une RÉPONSE comme les huit
+   autres, pas une note en bas de liste, et les huit autres sont des sigles. */
+.pc-choix-jet > .pc-modal-choix.large {
+  grid-column: 1 / -1; text-transform: uppercase; letter-spacing: .06em;
+}
 .pc-optcomp-wrap { overflow-x: auto; }
 .pc-optcomp-row {
   display: grid; align-items: center; gap: .12rem;
