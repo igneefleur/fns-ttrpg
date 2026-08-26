@@ -1,30 +1,30 @@
 {
   "_lisezmoi": "Manifeste de la fiche JJK. C'est LUI qui dit quoi charger. roll20-fiche.html est un amorceur gelé, servi sans ?v= par la coquille signée et gardé dix minutes par GitHub Pages : il ne peut donc pas nommer les fichiers lui-même sans risquer de les figer. Ce manifeste, lui, se relit sans cache à chaque ouverture. Toutes les URL sont RELATIVES à la racine du site ; une URL absolue est refusée.",
   "_versions": "release et schema sont DEUX numéros indépendants, et ce manifeste est la seule autorité sur les deux. release est le numéro publié, X.Y.Z, chaque nombre de 0 à 999 avec retenue ; le site beta y colle un b, que le site public ne porte jamais et qui NE CHANGE PAS LE RANG (3.6.0b et 3.6.0 sont de même rang, la beta étant ce que le public recevra à la fusion). schema est un entier qui ne monte QUE lorsque la forme de l'état du personnage change : il ne se déduit plus du premier nombre de la release, et le jour où l'un bouge sans l'autre, c'est schema qui fait foi. blocage dit ce qui fait paraître l'écran de version : \"schema\" ne le sort qu'au désaccord de SCHÉMA, pour qu'un correctif de CSS ne barre pas le passage à toute une table ; \"release\" le sortait à chaque numéro publié, ce qui était intenable. Le code doit retomber sur \"schema\" quand ce manifeste manque, sinon un fetch expiré ressort l'écran chez tout le monde. Les trois porteurs du numéro (ce manifeste, RELEASE de jjk-fiche.js, RELEASE_DEFAUT de jjk-attr-map.js) montent ENSEMBLE, suffixe compris : scripts/verif_versions.py refuse le contraire.",
-  "release": "3.6.0b",
+  "release": "3.6.1b",
   "schema": 3,
   "blocage": "schema",
   "amorce": [
-    "javascripts/jjk-attr-map.js?v=59",
-    "javascripts/jjk-roll20-boot.js?v=59"
+    "javascripts/jjk-attr-map.js?v=60",
+    "javascripts/jjk-roll20-boot.js?v=60"
   ],
   "narration": {
     "js": [
-      "javascripts/jjk-narration.js?v=59"
+      "javascripts/jjk-narration.js?v=60"
     ],
     "css": [
-      "stylesheets/jjk-narration.css?v=59"
+      "stylesheets/jjk-narration.css?v=60"
     ]
   },
   "bundle": {
     "js": [
-      "javascripts/jjk-migrations.js?v=59",
-      "javascripts/jjk-mods.js?v=59",
-      "javascripts/jjk-fiche.js?v=59"
+      "javascripts/jjk-migrations.js?v=60",
+      "javascripts/jjk-mods.js?v=60",
+      "javascripts/jjk-fiche.js?v=60"
     ],
     "css": [
-      "stylesheets/jjk-fiche.css?v=59",
-      "stylesheets/jjk-roll20.css?v=59"
+      "stylesheets/jjk-fiche.css?v=60",
+      "stylesheets/jjk-roll20.css?v=60"
     ],
     "data": null
   },

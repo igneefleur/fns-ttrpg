@@ -74,7 +74,7 @@
   // site il est. Il ne change PAS le rang : « 3.6.0b » et « 3.6.0 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (JjkMods.compareVersions tient cette règle).
-  var RELEASE = "3.6.0b";
+  var RELEASE = "3.6.1b";
   var SCHEMA = 3;
 
   var XP_CREATION = 500;      // xp de départ (le total reste modifiable)
@@ -486,9 +486,25 @@
       "Mind/Utiliser un autre de ses sens que la vue": "Mind/Sens autres que la vue",
       "Prestance/Déception": "Prestance/Tromperie",
       "Prestance/Commander": "Prestance/Commandement",
-      "Prestance/Réconforter": "Prestance/Réconfort"
+      "Prestance/Réconforter": "Prestance/Réconfort",
+      // 26/08/2026, à la demande de l'auteur des règles
+      "Mind/Politique régionale/nationale": "Mind/Politique du Japon"
     };
-    [s.comps, s.compsMod, s.compsForce, s.compsXpForce, s.compsXpMod].forEach(function (m) {
+    // LES SEPT CARTES, ET NON CINQ. compsMod2 et compsXpMod2 sont le SECOND
+    // levier du MJ : ils portent les mêmes clés que les autres et s'ajoutent à
+    // eux dans les calculs (voir 110-calculs-comps.js et 080-calculs-caracs.js).
+    // Les oublier ici faisait perdre ce second levier à chaque renommage — pour
+    // les onze de 2026-08-02 comme pour celui d'aujourd'hui. Le commentaire
+    // ci-dessus promet que « rien ne se perd » : il ne devient vrai que
+    // maintenant.
+    // ET L'ON VÉRIFIE QUE LA CARTE EXISTE. Les cinq premières sont normalisées
+    // plus haut (lignes 69 et 114-116) et sont donc sûres ; les deux « 2 » ne
+    // le sont PAS — rien ne les crée avant ce point sur un état venu de Roll20.
+    // Sans ce garde, hasOwnProperty.call(undefined, …) lèverait, et c'est toute
+    // la fiche qui ne s'ouvrirait plus.
+    [s.comps, s.compsMod, s.compsMod2, s.compsForce,
+     s.compsXpForce, s.compsXpMod, s.compsXpMod2].forEach(function (m) {
+      if (!m || typeof m !== "object") return;
       Object.keys(RENOMMAGES).forEach(function (vieux) {
         if (Object.prototype.hasOwnProperty.call(m, vieux)) {
           if (m[RENOMMAGES[vieux]] === undefined) m[RENOMMAGES[vieux]] = m[vieux];
