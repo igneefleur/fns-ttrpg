@@ -42,14 +42,14 @@ extra_css:
   - stylesheets/extra.css?v=13
   - stylesheets/night.css
   - stylesheets/jjk.css?v=1 # variantes propres à la branche jjk (gabarit des tables anima)
-  - stylesheets/jjk-fiche.css?v=58
+  - stylesheets/jjk-fiche.css?v=59
 extra_javascript:
   - javascripts/continuous.js
   - javascripts/nav-drawer.js
   - javascripts/night.js
-  - javascripts/jjk-migrations.js?v=58 # moteur de migration : AVANT le bundle, qui l'appelle
-  - javascripts/jjk-mods.js?v=58       # moteur de mods : AVANT le bundle aussi, et facultatif (sans lui, la fiche s'ouvre sans mods)
-  - javascripts/jjk-fiche.js?v=58
+  - javascripts/jjk-migrations.js?v=59 # moteur de migration : AVANT le bundle, qui l'appelle
+  - javascripts/jjk-mods.js?v=59       # moteur de mods : AVANT le bundle aussi, et facultatif (sans lui, la fiche s'ouvre sans mods)
+  - javascripts/jjk-fiche.js?v=59
   - javascripts/copybtn.js
 hooks:
   - hooks/jjk_creation.py

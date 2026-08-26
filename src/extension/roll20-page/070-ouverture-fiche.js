@@ -200,3 +200,43 @@
     s.sur = false; s.echec = false;
   }
 
+  // ---------- LA COLLECTION NE SE MET PAS À JOUR TOUTE SEULE ----------
+  // MESURÉ, à deux clients sur une vraie partie : un attribut écrit par l'un, et
+  // ACCEPTÉ par le serveur, n'arrive JAMAIS chez l'autre. Douze secondes
+  // d'observation, rien — ni sur une création, ni sur une modification. Un seul
+  // attribs.fetch(), et la valeur est là.
+  //
+  // La collection d'Attributes est donc un INSTANTANÉ, pas un abonnement :
+  // ouvrir la fiche la remplit UNE FOIS, et plus rien ne la nourrit ensuite.
+  // C'est l'unique cause du plateau qui ne bougeait pas chez les autres joueurs.
+  // Chacun relisait fidèlement, toutes les 1,2 s, la copie figée qu'il tenait
+  // depuis son arrivée dans la partie ; seul un rechargement complet la
+  // renouvelait, et c'est bien ce que les joueurs avaient fini par faire.
+  //
+  // C'ÉTAIT LE PARI QUI MANQUAIT. Plus haut, ce fichier explique qu'on laisse la
+  // fiche OUVERTE plutôt que de la refermer, « rien ne garantissant qu'une
+  // collection reste synchronisée avec Firebase une fois la fiche fermée ». La
+  // mesure tranche : elle ne l'est pas davantage fiche ouverte. Laisser ouvert
+  // ne coûte rien et reste bien ; cela ne suffisait simplement pas.
+  //
+  // LE PONT FOURNIT LE GESTE, LA PAGE CHOISIT QUAND. Un fetch rapporte TOUS les
+  // attributs du personnage, fonds de zone compris : sa cadence est un réglage,
+  // et un réglage n'a pas sa place dans un paquet signé — la page du plateau se
+  // déploie en un après-midi, ce fichier-ci demande une signature. Le pont se
+  // borne donc à refuser de marteler, et ne conclut rien.
+  //
+  // LE FETCH FUSIONNE, IL NE REMPLACE PAS : mesuré, 295 attributs deviennent 296
+  // et aucun ne disparaît le temps de la requête. C'est ce qui rend l'opération
+  // sûre ici — une collection vidée un instant ferait créer un HOMONYME à la
+  // première écriture qui tomberait dans le trou, et les homonymes sont
+  // exactement la plaie que le ménage, plus bas, passe son temps à réparer.
+  var RESYNC_MIN = 1500;    // ms : plancher, quoi que demande la page
+  var resyncQuand = {};     // charId -> quand on l'a demandé pour la dernière fois
+  function resynchronise(ch) {
+    if (!ch || !ch.attribs || typeof ch.attribs.fetch !== "function") return false;
+    var n = Date.now();
+    if (n - (resyncQuand[ch.id] || 0) < RESYNC_MIN) return false;
+    resyncQuand[ch.id] = n;
+    try { ch.attribs.fetch(); return true; } catch (e) { return false; }
+  }
+
