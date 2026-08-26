@@ -79,7 +79,15 @@ def _table_rows(text, header_re):
 # des compétences à part entière (stade, passifs à Artiste), sur décision de
 # l'utilisateur. On les ajoute ICI plutôt que dans la page : les règles sont
 # celles d'un ami et ne se réécrivent pas.
-COMPS_FICHE = {"Body": ["Initiative", "Esquive", "Évasion"]}
+#
+# Les quatre suivantes (Réflexe, Auspice, Bestiaire, Instinct) sont ajoutées à
+# la demande de l'utilisateur, le 26/08/2026, et n'ont pas d'entrée dans la page
+# de règles. Même raison de les mettre ICI : la page est celle d'un ami, et l'on
+# n'écrit pas dans son texte pour nos besoins. « Acrobatie » était demandée avec
+# elles ; elle figure DÉJÀ dans la liste Body de la page, et _comps() l'aurait
+# de toute façon refusée en double.
+COMPS_FICHE = {"Body": ["Initiative", "Esquive", "Évasion", "Réflexe"],
+               "Mind": ["Auspice", "Bestiaire", "Instinct"]}
 
 # Compétences d'ARMES : elles vivent dans leur propre module de la fiche, pas
 # dans la liste générale. Toujours des compétences de Body. Le joueur peut en
