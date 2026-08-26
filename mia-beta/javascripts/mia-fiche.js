@@ -74,7 +74,7 @@
   // site il est. Il ne change PAS le rang : « 1.0.1b » et « 1.0.1 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (MiaMods.compareVersions tient cette règle).
-  var RELEASE = "1.15.0b";
+  var RELEASE = "1.15.1b";
   var SCHEMA = 2;
 
   // ---------- ce que la fiche ne décide PAS ----------
@@ -1479,6 +1479,55 @@
     if (!spe || String(spe.nom || "").trim().toLowerCase() !== CHARGE_ESQUIVE.toLowerCase()) return 0;
     return chargeMalusEsquive();
   }
+  // ---------- LE JET D'UNE SPÉCIALITÉ, EN PIÈCES DÉTACHÉES ----------
+  // POUR QUE ROLL20 PUISSE POSER DEUX QUESTIONS AU LIEU D'UNE. Quand la
+  // caractéristique ET la compétence sont « au choix », énumérer les couples
+  // donne une liste de soixante-douze réponses : exact, et inutilisable. Deux
+  // requêtes séparées demandent, elles, que la macro sache RECOMPOSER le jet à
+  // partir de deux réponses indépendantes — ce que la forme habituelle ne
+  // permet pas, parce que la règle de l'écart ne s'additionne pas.
+  //
+  // Elle se réécrit pourtant, et c'est tout ce qu'il fallait :
+  //
+  //     total = points + MOD(c) + points(k) − max(0, points + MODnat(c) + points(k) − H(c))
+  //           = D(c) + min(A(c) + K(k), H(c))
+  //
+  //   avec  A(c) = points de la spécialité + MOD NATUREL de la caractéristique
+  //         H(c) = sa limite naturelle moins l'écart minimum (le plafond du total)
+  //         D(c) = ce que les leviers du meneur ajoutent au MOD
+  //         K(k) = les points de la compétence employée
+  //
+  // La caractéristique donne A, H, D et sa limite ; la compétence donne K, et
+  // K SEUL — un nombre, à un seul endroit. Le jet devient alors
+  //
+  //     min( LIM(c) , dé + P + D(c) + min( A(c) + K(k) , H(c) ) )
+  //
+  // que Roll20 écrit avec deux groupes « kl1 » (garder le plus bas), et où tout
+  // ce qui dépend de la caractéristique est CONTIGU — donc tient dans une seule
+  // réponse de requête, la compétence n'ayant plus qu'à s'insérer là où K va.
+  //
+  // P est ce qui vient APRÈS le total et n'entre donc pas dans le rabattage :
+  // le bonus de la ligne, le malus de charge, le malus d'endurance.
+  function jetPieces(spe, carac, comp) {
+    var pts = spePts(spe);
+    return {
+      P: Math.round((spe.bonus || 0) + speMalusCharge(spe) - enduranceMalus()),
+      A: pts + caracModNat(carac),
+      // règle suspendue : plus rien n'est jamais ramené, donc pas de plafond.
+      // Un nombre franchement hors d'atteinte vaut mieux qu'une seconde forme
+      // d'expression à écrire et à vérifier.
+      H: state.ecartCoupe ? 9999999 : Math.max(0, caracLimNat(carac) - ecartMin(carac)),
+      D: Math.round(caracMod(carac) - caracModNat(carac)),
+      L: Math.round(caracLim(carac)),
+      K: comp ? compPts(comp) : 0
+    };
+  }
+  // Ce que la décomposition prédit, pour la sonde qui la compare au jet réel.
+  function jetPiecesTotal(spe, carac, comp, de) {
+    var q = jetPieces(spe, carac, comp);
+    return Math.min(q.L, de + q.P + q.D + Math.min(q.A + q.K, q.H));
+  }
+
   // L'expression Roll20 d'un jet, prête à poser entre les doubles crochets.
   //
   // LE MODIFICATEUR SAISI À L'ENVOI S'AJOUTE APRÈS LE PLAFOND, hors du groupe.
@@ -1898,14 +1947,17 @@
   // changer de compétence change le total — donc aussi ce que la règle de
   // l'écart en retire. Rien de tout cela ne s'additionne terme à terme.
   //
-  // ET UNE SEULE REQUÊTE, MÊME QUAND LES DEUX SONT AU CHOIX : deux requêtes
-  // poseraient deux questions dont les réponses devraient ensuite se combiner
-  // en arithmétique, ce que la macro ne sait pas faire ; et une requête dans
-  // une requête n'existe pas dans Roll20. On énumère donc les COUPLES. Huit
-  // caractéristiques et neuf compétences (la sienne comprise, plus « aucune »
-  // quand la spécialité n'en relève pas) font au pire soixante-douze options —
-  // c'est beaucoup à dérouler, mais c'est exact, et cela ne se produit que si
-  // l'on a demandé les deux.
+  // DEUX QUESTIONS QUAND LES DEUX SONT AU CHOIX, et non une de soixante-douze
+  // couples. La macro sait recomposer le jet à partir de deux réponses
+  // indépendantes dès lors qu'on lui écrit la forme décomposée (voir jetPieces,
+  // 100-calculs-jets.js) : tout ce qui dépend de la caractéristique y est
+  // CONTIGU, et la compétence n'insère plus qu'un nombre, à un seul endroit.
+  //
+  // D'où la découpe : la réponse de la caractéristique porte le début de
+  // l'expression, accolades comprises et échappées ; la compétence donne son
+  // nombre ; et la fermeture, elle, est écrite en clair — deux « } » que rien
+  // ne colle l'un à l'autre, ce qui compte parce qu'un « }} » fermerait le
+  // champ du gabarit.
   //
   // La requête ne porte que le GROUPE PLAFONNÉ, sans le modificateur d'envoi :
   // celui-ci s'ajoutant après le plafond, il se pose une seule fois, dehors,
@@ -1929,17 +1981,39 @@
       ks = [propre].concat(champsComp().filter(function (k) { return k !== propre; }));
       if (propre !== "") ks.push("");
     }
+    // LES DEUX : deux requêtes, et la forme décomposée.
+    //
+    // ELLE NE VAUT QUE SI PERSONNE N'A DÉTOURNÉ LE TOTAL. Un mod qui filtre
+    // « speTotal » ou « jetBonus » peut rendre n'importe quoi de n'importe
+    // quoi : la décomposition ne le prédirait pas. Dans ce cas seulement, on
+    // retombe sur l'énumération des couples, qui appelle jetBonus pour chacun
+    // et reste donc exacte quoi qu'un mod fasse.
+    if (surCarac && surComp && !aFiltre("speTotal") && !aFiltre("jetBonus")) {
+      var qCar = cs.map(function (c) {
+        var q = jetPieces(spe, c, comp);
+        // { 0d0+LIM , dé ±(P+D) + { 0d0+H , A+   ← la compétence continue ici
+        // « +0 » est du bruit dans une macro qu'on relit parfois à la main
+        var pd = q.P + q.D;
+        var tete = "{0d0+" + q.L + "," + deTest() + (pd ? sign(pd) : "") +
+                   "+{0d0+" + q.H + "," + q.A + "+";
+        return c + "," + echapQuery(tete);
+      });
+      var qCmp = ks.map(function (k) {
+        return (k || "—") + "," + (k ? compPts(k) : 0);
+      });
+      return "?{Caractéristique|" + qCar.join("|") + "}" +
+             "?{Compétence|" + qCmp.join("|") + "}" +
+             "}kl1}kl1";
+    }
     var opts = [];
     cs.forEach(function (c) {
       ks.forEach(function (k) {
-        var nom = surCarac && surComp ? c + "·" + (k || "—")
-                : (surCarac ? c : (k || "—"));
-        opts.push(nom + "," + echapQuery(jetExpr(jetBonus(c, k, spe), caracLim(c), false)));
+        opts.push((surCarac ? c : (k || "—")) + "," +
+                  echapQuery(jetExpr(jetBonus(c, k, spe), caracLim(c), false)));
       });
     });
-    var titre = surCarac && surComp ? "Caractéristique et compétence"
-              : (surCarac ? "Caractéristique" : "Compétence");
-    return "?{" + titre + "|" + opts.join("|") + "}";
+    return "?{" + (surCarac ? "Caractéristique" : "Compétence") + "|" +
+           opts.join("|") + "}";
   }
 
   // LE JET DE TEST : caractéristique, compétence ou spécialité. C'est le seul
@@ -7360,6 +7434,7 @@
     __calculs: {
       caracTotal: caracTotal, caracMod: caracMod, caracLim: caracLim,
       caracPlafond: caracPlafond, caracXp: caracXp,
+      jetPiecesTotal: jetPiecesTotal,
       compPts: compPts, compPlafond: compPlafond, compXp: compXp,
       spePts: spePts, speXp: speXp, jetBonus: jetBonus,
       speTotal: speTotal, speRetire: speRetire,
