@@ -53,7 +53,7 @@
     
       <link rel="stylesheet" href="../../stylesheets/mia.css?v=1">
     
-      <link rel="stylesheet" href="../../stylesheets/mia-fiche.css?v=51">
+      <link rel="stylesheet" href="../../stylesheets/mia-fiche.css?v=52">
     
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -1786,6 +1786,18 @@ les filtres.</p>
 <td>sa LIM, le résultat le plus haut qu'un tel jet puisse atteindre.</td>
 </tr>
 <tr>
+<td><code>ctx.calculs.compLim(sigle, carac)</code></td>
+<td>la LIM d'une compétence : celle de sa caractéristique, décalée par ses propres réglages. <code>carac</code> peut manquer.</td>
+</tr>
+<tr>
+<td><code>ctx.calculs.speLim(spe, carac, comp)</code></td>
+<td>la LIM d'une spécialité : celle de sa compétence, décalée par les siens. Les deux derniers peuvent manquer.</td>
+</tr>
+<tr>
+<td><code>ctx.calculs.limiteJet(carac, comp, spe)</code></td>
+<td>celle des trois qui coiffe VRAIMENT ce jet-là. C'est elle que la fiche emploie.</td>
+</tr>
+<tr>
 <td><code>ctx.calculs.compPts(sigle)</code></td>
 <td>les points d'une compétence : <code>"PHY"</code>, <code>"COM"</code>, <code>"CLA"</code>, <code>"CRÉ"</code>, <code>"INT"</code>, <code>"SOC"</code>, <code>"PER"</code>, <code>"VOL"</code>.</td>
 </tr>
@@ -2590,11 +2602,11 @@ d'atteinte que parce qu'elle est d'une autre origine que la fiche.</p>
       
         <script src="../../javascripts/night.js"></script>
       
-        <script src="../../javascripts/mia-migrations.js?v=51"></script>
+        <script src="../../javascripts/mia-migrations.js?v=52"></script>
       
-        <script src="../../javascripts/mia-mods.js?v=51"></script>
+        <script src="../../javascripts/mia-mods.js?v=52"></script>
       
-        <script src="../../javascripts/mia-fiche.js?v=51"></script>
+        <script src="../../javascripts/mia-fiche.js?v=52"></script>
       
         <script src="../../javascripts/copybtn.js"></script>
       
