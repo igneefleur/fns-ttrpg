@@ -45,14 +45,17 @@
   // changer de compétence change le total — donc aussi ce que la règle de
   // l'écart en retire. Rien de tout cela ne s'additionne terme à terme.
   //
-  // ET UNE SEULE REQUÊTE, MÊME QUAND LES DEUX SONT AU CHOIX : deux requêtes
-  // poseraient deux questions dont les réponses devraient ensuite se combiner
-  // en arithmétique, ce que la macro ne sait pas faire ; et une requête dans
-  // une requête n'existe pas dans Roll20. On énumère donc les COUPLES. Huit
-  // caractéristiques et neuf compétences (la sienne comprise, plus « aucune »
-  // quand la spécialité n'en relève pas) font au pire soixante-douze options —
-  // c'est beaucoup à dérouler, mais c'est exact, et cela ne se produit que si
-  // l'on a demandé les deux.
+  // DEUX QUESTIONS QUAND LES DEUX SONT AU CHOIX, et non une de soixante-douze
+  // couples. La macro sait recomposer le jet à partir de deux réponses
+  // indépendantes dès lors qu'on lui écrit la forme décomposée (voir jetPieces,
+  // 100-calculs-jets.js) : tout ce qui dépend de la caractéristique y est
+  // CONTIGU, et la compétence n'insère plus qu'un nombre, à un seul endroit.
+  //
+  // D'où la découpe : la réponse de la caractéristique porte le début de
+  // l'expression, accolades comprises et échappées ; la compétence donne son
+  // nombre ; et la fermeture, elle, est écrite en clair — deux « } » que rien
+  // ne colle l'un à l'autre, ce qui compte parce qu'un « }} » fermerait le
+  // champ du gabarit.
   //
   // La requête ne porte que le GROUPE PLAFONNÉ, sans le modificateur d'envoi :
   // celui-ci s'ajoutant après le plafond, il se pose une seule fois, dehors,
@@ -76,17 +79,39 @@
       ks = [propre].concat(champsComp().filter(function (k) { return k !== propre; }));
       if (propre !== "") ks.push("");
     }
+    // LES DEUX : deux requêtes, et la forme décomposée.
+    //
+    // ELLE NE VAUT QUE SI PERSONNE N'A DÉTOURNÉ LE TOTAL. Un mod qui filtre
+    // « speTotal » ou « jetBonus » peut rendre n'importe quoi de n'importe
+    // quoi : la décomposition ne le prédirait pas. Dans ce cas seulement, on
+    // retombe sur l'énumération des couples, qui appelle jetBonus pour chacun
+    // et reste donc exacte quoi qu'un mod fasse.
+    if (surCarac && surComp && !aFiltre("speTotal") && !aFiltre("jetBonus")) {
+      var qCar = cs.map(function (c) {
+        var q = jetPieces(spe, c, comp);
+        // { 0d0+LIM , dé ±(P+D) + { 0d0+H , A+   ← la compétence continue ici
+        // « +0 » est du bruit dans une macro qu'on relit parfois à la main
+        var pd = q.P + q.D;
+        var tete = "{0d0+" + q.L + "," + deTest() + (pd ? sign(pd) : "") +
+                   "+{0d0+" + q.H + "," + q.A + "+";
+        return c + "," + echapQuery(tete);
+      });
+      var qCmp = ks.map(function (k) {
+        return (k || "—") + "," + (k ? compPts(k) : 0);
+      });
+      return "?{Caractéristique|" + qCar.join("|") + "}" +
+             "?{Compétence|" + qCmp.join("|") + "}" +
+             "}kl1}kl1";
+    }
     var opts = [];
     cs.forEach(function (c) {
       ks.forEach(function (k) {
-        var nom = surCarac && surComp ? c + "·" + (k || "—")
-                : (surCarac ? c : (k || "—"));
-        opts.push(nom + "," + echapQuery(jetExpr(jetBonus(c, k, spe), caracLim(c), false)));
+        opts.push((surCarac ? c : (k || "—")) + "," +
+                  echapQuery(jetExpr(jetBonus(c, k, spe), caracLim(c), false)));
       });
     });
-    var titre = surCarac && surComp ? "Caractéristique et compétence"
-              : (surCarac ? "Caractéristique" : "Compétence");
-    return "?{" + titre + "|" + opts.join("|") + "}";
+    return "?{" + (surCarac ? "Caractéristique" : "Compétence") + "|" +
+           opts.join("|") + "}";
   }
 
   // LE JET DE TEST : caractéristique, compétence ou spécialité. C'est le seul
