@@ -45,17 +45,34 @@
   // changer de compétence change le total — donc aussi ce que la règle de
   // l'écart en retire. Rien de tout cela ne s'additionne terme à terme.
   //
-  // DEUX QUESTIONS QUAND LES DEUX SONT AU CHOIX, et non une de soixante-douze
-  // couples. La macro sait recomposer le jet à partir de deux réponses
-  // indépendantes dès lors qu'on lui écrit la forme décomposée (voir jetPieces,
+  // DEUX QUESTIONS QUAND LES DEUX SONT AU CHOIX, ET QUAND ROLL20 LE PERMET.
+  // La macro sait recomposer le jet à partir de deux réponses indépendantes
+  // dès lors qu'on lui écrit la forme décomposée (voir jetPieces,
   // 100-calculs-jets.js) : tout ce qui dépend de la caractéristique y est
   // CONTIGU, et la compétence n'insère plus qu'un nombre, à un seul endroit.
+  // La réponse de la caractéristique porte le début de l'expression, accolades
+  // comprises et échappées ; la compétence donne son nombre ; la fermeture est
+  // écrite en clair — deux « } » que rien ne colle l'un à l'autre, ce qui
+  // compte parce qu'un « }} » fermerait le champ du gabarit.
   //
-  // D'où la découpe : la réponse de la caractéristique porte le début de
-  // l'expression, accolades comprises et échappées ; la compétence donne son
-  // nombre ; et la fermeture, elle, est écrite en clair — deux « } » que rien
-  // ne colle l'un à l'autre, ce qui compte parce qu'un « }} » fermerait le
-  // champ du gabarit.
+  // MAIS ROLL20 REFUSE UN GROUPE DANS UN GROUPE, et c'est mesuré dans une vraie
+  // partie, pas déduit : « /r {0d0+250,1d100+{0d0+200,150+100}kl1}kl1 » répond
+  // « Cannot mix sum and M rolls in a roll group ». Un groupe comme TERME d'une
+  // somme est refusé de même. Or c'est exactement ce que demande la règle de
+  // l'écart : un premier « plus bas des deux » pour ramener le total, un second
+  // pour le plafond du jet.
+  //
+  // (Les deux autres voies ont été éprouvées et sont mortes aussi : une requête
+  // DANS une requête, écrite en entités, n'est pas relue par Roll20 — elle rend
+  // « There was an error with your formula ». Et rien ne permet de faire
+  // apparaître le même dé à deux endroits d'un groupe.)
+  //
+  // Reste ce qui EST possible, et qui couvre le cas où la règle ne mord pas :
+  // si AUCUNE compétence offerte ne peut déclencher le rabattage — parce que le
+  // total le plus fort reste sous le plafond de l'écart —, alors il n'y a plus
+  // qu'un seul « plus bas des deux » à écrire, et les deux questions tiennent.
+  // Sinon on énumère les couples : c'est long, mais c'est juste, et c'est la
+  // seule forme que le moteur de dés accepte.
   //
   // La requête ne porte que le GROUPE PLAFONNÉ, sans le modificateur d'envoi :
   // celui-ci s'ajoutant après le plafond, il se pose une seule fois, dehors,
@@ -86,31 +103,45 @@
     // quoi : la décomposition ne le prédirait pas. Dans ce cas seulement, on
     // retombe sur l'énumération des couples, qui appelle jetBonus pour chacun
     // et reste donc exacte quoi qu'un mod fasse.
-    if (surCarac && surComp && !aFiltre("speTotal") && !aFiltre("jetBonus")) {
+    // AUCUN RABATTAGE POSSIBLE ? Alors deux questions suffisent. On le vérifie
+    // sur le PIRE cas : la compétence la plus fournie de la liste, contre le
+    // plafond de chaque caractéristique offerte. Il suffit d'un couple qui
+    // mordrait pour que la forme courte cesse d'être exacte.
+    var kMax = 0;
+    ks.forEach(function (k) { if (k) { kMax = Math.max(kMax, compPts(k)); } });
+    var sansRabat = surCarac && surComp && !aFiltre("speTotal") && !aFiltre("jetBonus") &&
+      cs.every(function (c) {
+        var q = jetPieces(spe, c, comp);
+        return q.A + kMax <= q.H;
+      });
+    if (sansRabat) {
       var qCar = cs.map(function (c) {
         var q = jetPieces(spe, c, comp);
-        // { 0d0+LIM , dé ±(P+D) + { 0d0+H , A+   ← la compétence continue ici
+        // { 0d0+LIM , dé ±(P+D) + A+   ← la compétence ajoute son nombre ici
         // « +0 » est du bruit dans une macro qu'on relit parfois à la main
         var pd = q.P + q.D;
         var tete = "{0d0+" + q.L + "," + deTest() + (pd ? sign(pd) : "") +
-                   "+{0d0+" + q.H + "," + q.A + "+";
+                   "+" + q.A + "+";
         return c + "," + echapQuery(tete);
       });
       var qCmp = ks.map(function (k) {
         return (k || "—") + "," + (k ? compPts(k) : 0);
       });
       return "?{Caractéristique|" + qCar.join("|") + "}" +
-             "?{Compétence|" + qCmp.join("|") + "}" +
-             "}kl1}kl1";
+             "?{Compétence|" + qCmp.join("|") + "}" + "}kl1";
     }
     var opts = [];
     cs.forEach(function (c) {
       ks.forEach(function (k) {
-        opts.push((surCarac ? c : (k || "—")) + "," +
-                  echapQuery(jetExpr(jetBonus(c, k, spe), caracLim(c), false)));
+        // le libellé dit ce qu'on choisit : le couple quand les deux sont
+        // offerts, sans quoi soixante-douze lignes portent le même mot
+        var nom = surCarac && surComp ? c + "·" + (k || "—")
+                : (surCarac ? c : (k || "—"));
+        opts.push(nom + "," + echapQuery(jetExpr(jetBonus(c, k, spe), caracLim(c), false)));
       });
     });
-    return "?{" + (surCarac ? "Caractéristique" : "Compétence") + "|" +
+    return "?{" + (surCarac && surComp ? "Caractéristique et compétence"
+                 : (surCarac ? "Caractéristique" : "Compétence")) + "|" +
            opts.join("|") + "}";
   }
 
