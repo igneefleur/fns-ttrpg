@@ -72,6 +72,21 @@
   var A_PT = PREF + "pt_";
   var A_BG = PREF + "bg_";  // le fond importé d'une place, un attribut chacun
   var POLL = 1200;          // ms entre deux relectures
+  // ms entre deux RESYNCHRONISATIONS, c'est-à-dire entre deux vraies questions
+  // posées au serveur de Roll20. Relire ne suffit pas : la collection
+  // d'attributs qu'un client tient est un INSTANTANÉ, que rien ne nourrit — un
+  // jeton poussé par un autre joueur n'y arrive jamais tout seul (mesuré à deux
+  // clients : douze secondes, aucune remontée, ni sur une création ni sur une
+  // modification). Sans cette demande, chaque joueur relisait indéfiniment la
+  // copie figée qu'il tenait depuis son arrivée dans la partie.
+  //
+  // C'EST LE SEUL RÉGLAGE DE LA RÉACTIVITÉ DU PLATEAU, et il est ICI, dans la
+  // page, parce qu'une page se déploie en un après-midi quand le pont demande
+  // une signature. Le pont refuse d'aller plus vite que 1500 ms, quoi qu'on lui
+  // demande ; en dessous de cette valeur on n'y gagne donc rien. Au-dessus, on
+  // échange de la réactivité contre du trafic : une demande rapporte TOUS les
+  // attributs du personnage, fonds de zone compris.
+  var RESYNC = 1500;
   var GARDE = 4000;         // ms pendant lesquelles une écriture locale prime sur l'écho
   var PONT_PAS = 60;        // ms entre deux écritures d'attribut, côté pont
   var ATTENTE_PONT = 2500;  // ms avant de déclarer que Roll20 ne répond pas
@@ -228,10 +243,28 @@
   // page-ci change sans signature. On envoie donc la liste, et le pont ne
   // détruit rien sans elle.
   var MENAGE_GARDE = [A_CONF, A_PT, A_BG];
+  // ON DEMANDE À VOIR LES AUTRES. « load » seul ne rend que ce que ce client-ci
+  // tient déjà ; « resync » lui fait d'abord poser la question au serveur. Deux
+  // choses distinctes, et c'est toute la réparation : sans la seconde, un
+  // plateau relit sa propre copie et paraît immobile pendant que les autres
+  // jouent.
+  //
+  // Ce n'est pas demandé à chaque tour : le pont refuserait de toute façon
+  // d'aller plus vite que son propre plancher, et le lui demander pour rien
+  // n'apprend rien à personne. La demande arrive donc à SA cadence, et la
+  // lecture qui suit — celle d'après, le temps que le serveur réponde — porte ce
+  // qu'ont fait les autres.
+  var resyncQuand = 0;
+  // Ce pont-ci sait-il seulement aller chercher ? Un paquet signé plus ancien ne
+  // le sait pas, et il n'y a alors rien à faire depuis ici : le noter permet au
+  // moins de le DIRE, au lieu de laisser croire que le plateau est à jour.
+  var pontResync = null;
   function demandeEtat() {
     if (!charId) { return; }
+    var n = Date.now(), rs = false;
+    if (n - resyncQuand >= RESYNC) { resyncQuand = n; rs = true; }
     post({ type: "load", charId: charId, allege: fondsTenus === true,
-           menageGarde: MENAGE_GARDE });
+           menageGarde: MENAGE_GARDE, resync: rs });
   }
   // Une écriture = un lot d'attributs. On note ce qu'on vient d'écrire : l'écho
   // met un aller-retour à revenir, et sans cette note la relecture suivante
@@ -454,7 +487,13 @@
 
   function applique(attrs, d) {
     ditMenage(d);
+    // Le pont dit ce qu'il sait faire ; on le retient une fois pour toutes, et
+    // la trace de dépannage le porte. « false » ici veut dire : ce joueur ne
+    // verra JAMAIS bouger le plateau des autres tant que son extension n'est pas
+    // à jour — c'est le premier fait à vérifier devant une panne de ce genre.
+    if (d && pontResync === null) { pontResync = d.resync === true; }
     trace("lecture", { pontSur: (d && d.sur), pontRaison: (d && d.raison),
+                       pontResync: pontResync,
                        nbAttrs: attrs ? Object.keys(attrs).length : 0,
                        ecrits: resumeEcrits(d && d.ecrits) });
     try {
