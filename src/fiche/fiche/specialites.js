@@ -143,7 +143,7 @@
         state.specialites.splice(it.index, 1);
         rendu();
         refresh();
-        if (optCompsRebuild) optCompsRebuild();   // sa ligne quitte aussi le bloc des Options
+        if (optSpesRebuild) optSpesRebuild();   // sa ligne quitte aussi le bloc des Options
       }, "danger pc-croix pc-edit-only"));
       // LA POIGNÉE. Elle seule se glisse — pas la ligne entière : le nom est un
       // champ de saisie, et une ligne « draggable » interdirait d'y sélectionner
@@ -273,7 +273,7 @@
         l.splice(clamp(cible, 0, l.length), 0, obj);
         rendu();
         refresh();
-        if (optCompsRebuild) optCompsRebuild();   // l'ordre du bloc des Options suit
+        if (optSpesRebuild) optSpesRebuild();   // l'ordre du bloc des Options suit
       });
 
       // PLUS DE RANG DE CONSTRUCTION. Tout s'y est vidé : les quatre réglages
@@ -282,8 +282,9 @@
       // l'en-tête et, ligne par ligne, dans le bloc des Options.
 
       lignes.push(function () {
-        var d = (spe.mod || 0) + (spe.mod2 || 0);
-        var force = spe.force !== null && spe.force !== undefined;
+        // même lecture qu'ailleurs : le RÉSULTAT du levier, pas une de ses cases
+        var d = spePtsBrut(spe) - (spe.pts || 0);
+        var force = lireSpe("valeur", spe)("force") !== undefined;
         var mal = enduranceMalus();
         // la charge ne mord que sur l'esquive, et l'esquive est une spécialité :
         // un −100 apparu sans être nommé passerait pour une faute de calcul
@@ -359,7 +360,7 @@
         state.specialites.push(blankSpe());
         rendu();
         refresh();
-        if (optCompsRebuild) optCompsRebuild();   // la nouvelle gagne sa ligne dans Options
+        if (optSpesRebuild) optSpesRebuild();   // la nouvelle gagne sa ligne dans Options
       }, "pc-edit-only"));
       // les lignes qui viennent de naître doivent obéir au verrou du bloc :
       // rien ne le leur dirait avant le prochain rafraîchissement

@@ -154,10 +154,12 @@ fin = lf
   src/fiche/bio/notes.js
   src/fiche/options/jets.js
   src/fiche/options/commun-champs.js
+  src/fiche/options/commun-leviers.js
   src/fiche/options/caracs-options.js
   src/fiche/options/ecart-regle.js
   src/fiche/options/creation.js
   src/fiche/options/optcomps.js
+  src/fiche/options/optspes.js
   src/fiche/options/filtres.js
   src/fiche/options/affichage.js
   src/fiche/options/actions.js

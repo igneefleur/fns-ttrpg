@@ -106,7 +106,16 @@
     // le titre dit ce que le bloc AFFICHE : « Compétences » le confondait avec
     // celui de l'onglet Fiche, dans le plan comme partout où les modules se
     // nomment
-    { id: "optcomps",   titre: "Modificateurs de compétences", onglet: "options", colonne: "droite", build: buildOptComps }
+    { id: "optcomps",  titre: "Réglages des compétences", onglet: "options", colonne: "droite", build: buildOptComps },
+    // UN BLOC À ELLES. Les spécialités partageaient la grille des compétences ;
+    // elles ont maintenant leurs propres onglets, et il le fallait : leur liste
+    // est OUVERTE, elle se rebâtit, et elles se nomment au lieu de porter un
+    // sigle.
+    //
+    // L'ID DES COMPÉTENCES NE CHANGE PAS, et c'est délibéré : state.modActifs
+    // garde à jamais un « false », que personne ne relit. Renommer l'id ferait
+    // RÉAPPARAÎTRE allumé un bloc que le joueur avait coupé.
+    { id: "optspes",   titre: "Réglages des spécialités", onglet: "options", colonne: "droite", build: buildOptSpes }
   ];
   modules = MODULES_NATIFS.slice();
 

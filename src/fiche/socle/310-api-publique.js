@@ -60,6 +60,7 @@
       caracTotal: caracTotal, caracMod: caracMod, caracLim: caracLim,
       caracPlafond: caracPlafond, caracXp: caracXp,
       compPts: compPts, compPlafond: compPlafond, compXp: compXp,
+      compCarac: compCarac, ecartComp: ecartComp, ecartSpe: ecartSpe,
       spePts: spePts, speXp: speXp, jetBonus: jetBonus,
       speTotal: speTotal, speRetire: speRetire,
       ecartMin: ecartMin,

@@ -94,10 +94,16 @@ var TEMOINS = {
     caracs: { FOR: 8, DEX: 14, "DÉT": 20 },
     caracsBonus: { DEX: 5 },
     ecartCoupe: false,
-    comps: { PHY: 40, COM: 15 }, compsBonus: {}, compsMod: {}, compsMod2: {},
-    compsForce: {}, compsXpForce: {}, compsXpMod: {}, compsXpMod2: {},
+    // NI LES SIX TABLES DU SCHÉMA 2, NI compsLeviers DU SCHÉMA 3 : ce témoin est
+    // estampillé de TOUS les schémas tour à tour, et l'aller-retour est exigé
+    // dans les deux sens. Porter une forme datée le rendrait chimérique dans
+    // l'autre. Le pas se contrôle plus bas, à part.
+    comps: { PHY: 40, COM: 15 }, compsBonus: {},
     specialites: [
-      { nom: "Esquive", carac: "DEX", comp: "COM", pts: 60, mod: 0, mod2: 0, bonus: 5, force: null, xpForce: null }
+      // LA FORME DU SCHÉMA 3 : ni « mod », ni « mod2 », ni les deux forçages —
+      // le pas 2 → 3 les a rangés dans « leviers ». Les porter ici ferait de ce
+      // témoin une chimère, comme pour les compétences juste au-dessus.
+      { nom: "Esquive", carac: "DEX", comp: "COM", pts: 60, bonus: 5 }
     ],
     inv: { texte: [], groupes: ["Sur soi"], objets: [], opts: { cols: 4, nom: true, qte: true, poids: false, total: true } },
     xpTotal: 1200, pv: 18, endurance: -4, de: "1d100cs>96cf<5"
@@ -114,10 +120,12 @@ var TEMOINS = {
     caracsBase: { Mind: 30, Body: 55, Prestance: 35 },
     caracsXp: { Mind: 2, Body: 4, Prestance: 0 },
     caracsMod: { Mind: 0, Body: 5, Prestance: -5 },
-    compsMod: { "Body/Pique longue": 10, "Mind/Sang-froid": -5 },
-    compsForce: { "Body/Discrétion": 40 },
-    compsXpForce: {},
-    compsXpMod: { "Mind/Concentration": -20 },
+    // LES QUATRE CLÉS DE COMPÉTENCE ONT ÉTÉ RETIRÉES DE CE TÉMOIN, et ce n'est
+    // pas une facilité : héritées de JJK, elles portent les MÊMES NOMS que
+    // celles que le pas 2 → 3 déplace. Un état estampillé du schéma 3 qui les
+    // porterait encore est une chimère — le pas les migrerait, et l'aller-retour
+    // ne pourrait pas être neutre. Le pas lui-même se contrôle plus bas, à part,
+    // sur des états qui ont chacun leur schéma pour de bon.
     comps: {
       "Body/Pique longue": {
         stade: 3,
@@ -372,6 +380,105 @@ ok(MiaMigr.resume(1, MAX + 5) === null, "résumé : un trajet impossible rend nu
   // ne parle pas de ça. MAX est toujours un schéma valide, chaîne vide comprise.
   var memeSchema = MiaMigr.appliquer({ v: MAX, name: "A" }, MAX, MAX);
   ok(memeSchema.ok && memeSchema.journal.length === 0, "appliquer : de == vers ne joue aucun pas");
+})();
+
+// ------------------------------ 6. le pas 3, dans les deux sens, en detail
+// MEME RAISON QU'AU BLOC 5 : les temoins du bloc 2 ne peuvent pas controler un
+// pas, puisqu'ils sont estampilles de tous les schemas tour a tour. On part
+// donc de deux etats qui ont chacun le leur pour de bon.
+(function () {
+  var M = MiaMigr;
+
+  // ---- 2 -> 3 : les six tables et les quatre champs vont dans la bonne boite ----
+  var v2 = {
+    v: 2, name: "Riko",
+    comps: { PHY: 40 }, compsBonus: { PHY: 5 },
+    compsForce: { PHY: 120 }, compsMod: { PHY: -10, COM: 0 }, compsMod2: { COM: 15 },
+    compsXpForce: { COM: 60 }, compsXpMod: { PHY: -20 }, compsXpMod2: {},
+    specialites: [
+      { nom: "Esquive", carac: "DEX", comp: "COM", pts: 60, bonus: 5,
+        mod: -10, mod2: 0, force: null, xpForce: 12 },
+      { nom: "PV", carac: "CON", comp: "PHY", pts: 20, bonus: 0,
+        mod: 0, mod2: 0, force: null, xpForce: null }
+    ]
+  };
+  var fige2 = JSON.stringify(v2);
+  var m = M.appliquer(copie(v2), 2, 3);
+  ok(m.ok, "pas 3 : la montee doit passer (" + (m.erreur && m.erreur.message) + ")");
+  if (m.ok) {
+    var lv = m.state.compsLeviers || {};
+    ok(JSON.stringify(lv.valeur && lv.valeur.force) === '{"PHY":120}', "pas 3 : valeur forcee d'une competence");
+    ok(JSON.stringify(lv.valeur && lv.valeur.a1) === '{"PHY":-10}', "pas 3 : decalage de valeur -> a1 (et le zero de COM ne passe pas)");
+    ok(JSON.stringify(lv.valeur && lv.valeur.a2) === '{"COM":15}', "pas 3 : second decalage -> a2");
+    ok(JSON.stringify(lv.xp && lv.xp.force) === '{"COM":60}', "pas 3 : cout force");
+    ok(JSON.stringify(lv.xp && lv.xp.a1) === '{"PHY":-20}', "pas 3 : modificateur de cout -> a1");
+    ok(m.state.compsMod === undefined, "pas 3 : les anciennes tables doivent partir de la racine");
+    ok(JSON.stringify(m.state.comps) === '{"PHY":40}', "pas 3 : les points achetes ne bougent pas");
+    ok(JSON.stringify(m.state.compsBonus) === '{"PHY":5}', "pas 3 : le bonus ne bouge pas");
+    var s0 = m.state.specialites[0], s1 = m.state.specialites[1];
+    ok(s0.leviers && s0.leviers.valeur && s0.leviers.valeur.a1 === -10, "pas 3 : le decalage d'une specialite -> a1");
+    ok(s0.leviers && s0.leviers.xp && s0.leviers.xp.force === 12, "pas 3 : le cout force d'une specialite");
+    ok(s0.mod === undefined && s0.force === undefined, "pas 3 : les anciens champs quittent l'objet");
+    ok(s0.pts === 60 && s0.bonus === 5, "pas 3 : les points et le bonus d'une specialite ne bougent pas");
+    ok(s1.leviers === undefined, "pas 3 : une specialite sans reglage ne porte pas de leviers");
+    ok(JSON.stringify(v2) === fige2, "pas 3 : l'etat d'origine ne doit pas etre modifie");
+
+    var r = M.appliquer(m.state, 3, 2);
+    ok(r.ok, "pas 3 : la descente doit passer");
+    if (r.ok) ok(egal(sansQuand(r.state), sansQuand(copie(v2))),
+                 "pas 3 : 2->3->2 doit tout rendre, zeros compris — " +
+                 ecart(sansQuand(r.state), sansQuand(copie(v2))));
+  }
+
+  // ---- 3 -> 2 : ce que le schema 2 ne porte pas va au grenier ----
+  var v3 = {
+    v: 3, name: "Riko",
+    comps: { PHY: 40 },
+    compsLeviers: {
+      valeur: { a1: { PHY: -10 }, m1: { PHY: 2 } },
+      plafond: { a1: { COM: 30 } },
+      ecart: { force: { COM: 25 } }
+    },
+    specialites: [
+      { nom: "Esquive", carac: "DEX", comp: "COM", pts: 60, bonus: 0,
+        leviers: { valeur: { a1: -10, m2: 3 }, ecart: { force: 30 } } }
+    ]
+  };
+  var fige3 = JSON.stringify(v3);
+  var d = M.appliquer(copie(v3), 3, 2);
+  ok(d.ok, "pas 3 : la descente d'un etat natif doit passer");
+  if (d.ok) {
+    ok(JSON.stringify(d.state.compsMod) === '{"PHY":-10}', "pas 3 : a1 de valeur redescend");
+    ok(d.state.compsLeviers === undefined, "pas 3 : la table neuve doit partir");
+    ok(d.state.specialites[0].mod === -10, "pas 3 : a1 d'une specialite redescend");
+    ok(d.state.specialites[0].leviers === undefined, "pas 3 : les leviers quittent l'objet");
+    var g = d.state.grenier && d.state.grenier["3"];
+    ok(!!g, "pas 3 : ce que le schema 2 ne porte pas doit aller au grenier");
+    ok(g && g.compsLeviers && JSON.stringify(g.compsLeviers.plafond) === '{"a1":{"COM":30}}',
+       "pas 3 : un levier de plafond au grenier");
+    ok(g && g.compsLeviers && JSON.stringify(g.compsLeviers.ecart) === '{"force":{"COM":25}}',
+       "pas 3 : un ecart de competence au grenier");
+    ok(g && Array.isArray(g.spes) && g.spes[0] && g.spes[0].reste &&
+       JSON.stringify(g.spes[0].reste.ecart) === '{"force":30}',
+       "pas 3 : l'ecart d'une specialite au grenier");
+    ok(JSON.stringify(v3) === fige3, "pas 3 : l'etat d'origine ne doit pas etre modifie");
+
+    var r2 = M.appliquer(d.state, 2, 3);
+    ok(r2.ok, "pas 3 : la remontee doit passer");
+    if (r2.ok) ok(egal(sansQuand(r2.state), sansQuand(copie(v3))),
+                  "pas 3 : 3->2->3 doit tout rendre — " +
+                  ecart(sansQuand(r2.state), sansQuand(copie(v3))));
+  }
+
+  // ---- la garde de longueur : une specialite ajoutee pendant la descente ----
+  var d2 = M.appliquer(copie(v3), 3, 2);
+  if (d2.ok) {
+    d2.state.specialites.push({ nom: "Neuve", carac: "", comp: "", pts: 0, bonus: 0 });
+    var r3 = M.appliquer(d2.state, 2, 3);
+    ok(r3.ok, "pas 3 : la remontee doit passer meme si la liste a change");
+    ok(r3.ok && r3.pertes && r3.pertes.length > 0,
+       "pas 3 : une liste de longueur differente doit etre DITE, pas appliquee en silence");
+  }
 })();
 
 // ---------------------------------------------------------------- verdict

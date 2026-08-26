@@ -341,7 +341,8 @@
             caracBase(c) + " / " + caracPlafond(c) + ")."));
       });
       champsComp().forEach(function (c) {
-        if (state.compsForce[c] !== undefined) return;
+        // un total forcé ne « dépasse » rien : le plafond ne le borne plus
+        if (compPtsBrut(c) !== compPtsAuto(c) && lireComp("valeur", c)("force") !== undefined) return;
         if ((state.comps[c] || 0) > compPlafond(c))
           warns.appendChild(el("div", "pc-warn", "« " + compInfo(c).nom + " » dépasse son plafond de points (" +
             (state.comps[c] || 0) + " / " + compPlafond(c) + ")."));

@@ -57,14 +57,32 @@
       // LE BONUS d'une compétence, réglé sur la FICHE comme celui d'une
       // caractéristique. Il s'ajoute APRÈS le plafond : il peut donc porter la
       // compétence au-delà de ce que le MOD de sa caractéristique permet.
-      comps: {}, compsBonus: {}, compsMod: {}, compsMod2: {},
-      compsForce: {}, compsXpForce: {}, compsXpMod: {}, compsXpMod2: {},
+      comps: {}, compsBonus: {},
+      // LA SURCHARGE, ET JAMAIS LA RÈGLE. Clé absente = ce que dit la page de
+      // règles. Recopier la règle dans l'état figerait une compétence sur
+      // l'ancienne liste le jour où la page change — et DATA n'existe pas du
+      // côté Roll20, donc rien ne pourrait la relire pour comparer.
+      //
+      // Elles existent parce qu'un AVANTAGE change une fiche : un avantage n'est
+      // que du texte, et rien d'autre que ces réglages ne peut faire entrer sa
+      // conséquence chiffrée.
+      compsCarac: {}, compsCaracsPlafond: {},
+      // LES QUATRE LEVIERS D'UNE COMPÉTENCE, même forme que caracsLeviers :
+      // levier, puis boîte, puis sigle. Ni « mod » ni « lim » : une compétence
+      // apporte des POINTS, et son jet est coiffé par la limite de sa
+      // caractéristique.
+      compsLeviers: {},
 
       // LES SPÉCIALITÉS sont une LISTE et non une table : leur nom est libre,
       // le joueur les crée. Chacune dit de quelle caractéristique et de quelle
       // compétence elle relève, parce que ces deux-là commandent son plafond et
       // le jet qui la lance.
-      // { nom, carac, comp, pts, mod, mod2, force, xpForce }
+      // { nom, carac, comp, pts, bonus, leviers }
+      //
+      // SES LEVIERS VIVENT SUR ELLE, et non dans une table à part : une
+      // spécialité n'a pour identité que son RANG dans la liste, et ce rang se
+      // décale au premier ajout comme au premier glissement. Son nom ne vaut pas
+      // mieux — il est libre, parfois vide, parfois en double.
       specialites: [],
 
       xpTotal: 0,

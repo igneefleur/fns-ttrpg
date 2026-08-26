@@ -127,49 +127,109 @@
     // LA BORNE SUIT L'ÉCHELLE DU LEVIER : un plafond et un modificateur se
     // comptent en dizaines, une limite et un coût en xp en milliers. Les
     // facteurs, eux, ont la leur (MULT_BORNE), parce qu'ils MULTIPLIENT.
+    // UNE TABLE DE LEVIERS : levier, puis boîte, puis sigle. Deux porteurs s'en
+    // servent — les caractéristiques et les compétences — et le troisième, la
+    // spécialité, a sa propre forme, sans le niveau du sigle (voir plus bas).
+    function tableLeviers(v, bornes) {
+      var lvSrc = objet(v), lv = {};
+      Object.keys(bornes).forEach(function (nom) {
+        var src = objet(lvSrc[nom]), out = {}, borne = bornes[nom];
+        var f = tableForce(src.force);
+        if (Object.keys(f).length) out.force = f;
+        ["a1", "a2", "a3", "a4"].forEach(function (b) {
+          var tb = tableAjout(src[b], borne);
+          if (Object.keys(tb).length) out[b] = tb;
+        });
+        ["m1", "m2", "m3", "m4"].forEach(function (b) {
+          var tb = tableMult(src[b]);
+          if (Object.keys(tb).length) out[b] = tb;
+        });
+        if (Object.keys(out).length) lv[nom] = out;
+      });
+      return lv;
+    }
+    // LES LEVIERS D'UNE SPÉCIALITÉ : la même chaîne, MAIS sans le niveau du
+    // sigle — la spécialité EST déjà l'individu. D'où ce second rangeur, qui
+    // range des NOMBRES là où l'autre range des tables.
+    function leviersPlats(v, bornes) {
+      var src = objet(v), out = {};
+      Object.keys(bornes).forEach(function (nom) {
+        var b = objet(src[nom]), o = {}, borne = bornes[nom];
+        var f = forceVal(b.force);
+        if (f !== null) o.force = f;
+        ["a1", "a2", "a3", "a4"].forEach(function (x) {
+          var n = nombreBorne(b[x], borne);
+          if (n !== 0) o[x] = n;
+        });
+        ["m1", "m2", "m3", "m4"].forEach(function (x) {
+          var n = multNum(b[x]);
+          if (n !== null && n !== 1) o[x] = n;
+        });
+        if (Object.keys(o).length) out[nom] = o;
+      });
+      return out;
+    }
     var LEVIER_BORNE = { plafond: 999, xp: 9999, mod: 999, lim: 9999, ecart: 9999 };
-    var lvSrc = objet(s.caracsLeviers), lv = {};
-    Object.keys(LEVIER_BORNE).forEach(function (nom) {
-      var src = objet(lvSrc[nom]), out = {}, borne = LEVIER_BORNE[nom];
-      var f = tableForce(src.force);
-      if (Object.keys(f).length) out.force = f;
-      ["a1", "a2", "a3", "a4"].forEach(function (b) {
-        var tb = tableAjout(src[b], borne);
-        if (Object.keys(tb).length) out[b] = tb;
-      });
-      ["m1", "m2", "m3", "m4"].forEach(function (b) {
-        var tb = tableMult(src[b]);
-        if (Object.keys(tb).length) out[b] = tb;
-      });
-      if (Object.keys(out).length) lv[nom] = out;
-    });
-    s.caracsLeviers = lv;
+    var COMP_BORNE = { plafond: 999, valeur: 999, xp: 9999, ecart: 9999 };
+    var SPE_BORNE = { valeur: 999, xp: 9999, ecart: 9999 };
+    s.caracsLeviers = tableLeviers(s.caracsLeviers, LEVIER_BORNE);
 
     // ---------- les compétences ----------
     // Les points ne se bornent pas au plafond ici non plus, et pour la même
     // raison : compPts() le fait au calcul, et une caractéristique momentanément
     // baissée ne doit pas coûter au joueur ce qu'il avait investi.
     s.comps = tableNombres(s.comps, function (v) { return entier(v, 0, 9999); });
-    ["compsBonus", "compsMod", "compsMod2", "compsXpMod", "compsXpMod2"]
-      .forEach(function (k) { s[k] = tableNombres(s[k], modNum); });
-    ["compsForce", "compsXpForce"].forEach(function (k) { s[k] = tableForce(s[k]); });
+    s.compsBonus = tableNombres(s.compsBonus, modNum);
+    s.compsLeviers = tableLeviers(s.compsLeviers, COMP_BORNE);
+
+    // LES DEUX SURCHARGES. Quand DATA manque — fiche ouverte hors ligne,
+    // données trop anciennes —, on ne touche à RIEN : connu() rendrait "" sur
+    // une liste vide et EFFACERAIT ce que le meneur a réglé. Un état non
+    // normalisé se rouvre ; un état amputé, non.
+    if (codesC.length) {
+      var cSrc = objet(s.compsCarac), cOut = {};
+      Object.keys(cSrc).forEach(function (k) {
+        var v = connu(cSrc[k], codesC);
+        if (v) cOut[k] = v;
+      });
+      s.compsCarac = cOut;
+      var pSrc = objet(s.compsCaracsPlafond), pOut = {};
+      Object.keys(pSrc).forEach(function (k) {
+        if (!Array.isArray(pSrc[k])) return;
+        // L'ORDRE EST CELUI DES RÈGLES, jamais celui des clics : deux
+        // personnages réglés pareil doivent porter la même chaîne.
+        var liste = [];
+        codesC.forEach(function (c) { if (pSrc[k].indexOf(c) >= 0) liste.push(c); });
+        // LE TABLEAU VIDE SE GARDE : « rien ne commande ce plafond » n'est PAS
+        // la même réponse que « les règles ». Trois états, trois réponses.
+        pOut[k] = liste;
+      });
+      s.compsCaracsPlafond = pOut;
+    }
 
     // ---------- les spécialités ----------
     // Une spécialité sans caractéristique ni compétence reste dans la fiche : le
     // joueur vient peut-être de l'ajouter et n'a pas fini de la remplir. Elle ne
     // vaut simplement rien tant qu'elle n'en désigne pas.
     s.specialites = objArray(s.specialites).map(function (sp) {
-      return {
+      var o = {
         nom: sp.nom == null ? "" : String(sp.nom),
         carac: connu(sp.carac, codesC),
         comp: connu(sp.comp, codesK),
         pts: entier(sp.pts, 0, 9999),
-        mod: modNum(sp.mod), mod2: modNum(sp.mod2),
         // le bonus de la spécialité : une valeur EN PLUS, qui part de zéro et
-        // qu'on peut vouloir négative (un malus permanent)
-        bonus: modNum(sp.bonus),
-        force: forceVal(sp.force), xpForce: forceVal(sp.xpForce)
+        // qu'on peut vouloir négative (un malus permanent).
+        //
+        // IL RESTE HORS DE LA CHAÎNE, et ce n'est pas un oubli : il s'ajoute
+        // APRÈS le rabattage de l'écart. L'y faire entrer ferait rabattre la
+        // spécialité par son propre bonus.
+        bonus: modNum(sp.bonus)
       };
+      // épars comme le reste : une spécialité que personne n'a réglée ne porte
+      // pas de clé « leviers »
+      var lv = leviersPlats(sp.leviers, SPE_BORNE);
+      if (Object.keys(lv).length) o.leviers = lv;
+      return o;
     });
 
     // ---------- identité, bio ----------

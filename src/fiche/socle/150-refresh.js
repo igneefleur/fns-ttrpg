@@ -13,8 +13,12 @@
   var regsModules = {};         // id -> tableau de fonctions (ordre de montage)
   var hooks = regHors;
   var compHooks = [];           // lignes de compétences, vidées par rebuildComps()
-  var optHooks = [];            // bloc Options « Modificateurs de compétences », rebâtissable
-  var optCompsRebuild = null;   // posé par le module « optcomps » ; rappelé quand les comps perso changent
+  // LE BLOC REBÂTISSABLE EST CELUI DES SPÉCIALITÉS, et non plus celui des
+  // compétences : depuis que les deux sont séparés, c'est la liste OUVERTE qui
+  // se rebâtit. Les compétences sont huit, connues d'avance, et repassent par
+  // « hooks » comme n'importe quel module.
+  var optSpesHooks = [];        // bloc Options « Spécialités », rebâtissable
+  var optSpesRebuild = null;    // posé par le module « optspes » ; rappelé quand la liste change
 
   function regModule(id) {
     if (!regsModules[id]) regsModules[id] = [];
@@ -64,7 +68,7 @@
     // donc même muselière) mais vivent à part, leurs lignes étant détruites et
     // recréées sans que le module le soit
     joue("comps", compHooks, bilan);
-    joue("optcomps", optHooks, bilan);
+    joue("optspes", optSpesHooks, bilan);
     Object.keys(bilan).forEach(function (id) {
       var e = etatModule(id);
       if (e.musele) return;

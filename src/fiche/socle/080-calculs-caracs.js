@@ -64,31 +64,29 @@
   // ajout posé APRÈS la dernière multiplication ne pouvait plus être multiplié,
   // et « ajoute 20 puis double le tout » n'avait aucune écriture. Alterner deux
   // fois les deux opérations donne toutes les combinaisons.
-  function levierBoite(nom, boite, c) {
-    var l = state.caracsLeviers && state.caracsLeviers[nom];
-    var tb = l && l[boite];
-    var v = tb && tb[c];
+  //
+  // LA CHAÎNE NE SAIT PAS OÙ DORMENT SES NOMBRES, et c'est ce qui permet aux
+  // trois porteurs de la partager. Une caractéristique range les siens dans une
+  // table à trois niveaux (levier, boîte, sigle) ; une compétence dans une table
+  // sœur ; une SPÉCIALITÉ les porte sur elle-même, sans niveau de sigle — elle
+  // EST déjà l'individu, et son seul identifiant serait son rang dans un tableau
+  // qui se réordonne. On sépare donc le CALCUL de l'endroit où l'on range :
+  // chaîne() ne reçoit qu'une fonction qui rend une boîte.
+  function boiteNombre(v) {
     return (typeof v === "number" && isFinite(v)) ? v : undefined;
   }
   // UN AJOUT VIDE VAUT ZÉRO, UN FACTEUR VIDE VAUT UN, et c'est toute la
   // différence entre les deux. Lire un facteur absent comme un zéro mettrait la
-  // caractéristique à zéro au premier champ qu'on tape puis qu'on efface.
-  function levierAdd(nom, boite, c) {
-    var v = levierBoite(nom, boite, c);
-    return v === undefined ? 0 : v;
-  }
-  function levierMul(nom, boite, c) {
-    var v = levierBoite(nom, boite, c);
-    return v === undefined ? 1 : v;
-  }
-  function levierForce(nom, c) { return levierBoite(nom, "force", c); }
+  // valeur à zéro au premier champ qu'on tape puis qu'on efface.
+  function chaineAdd(v) { return v === undefined ? 0 : v; }
+  function chaineMul(v) { return v === undefined ? 1 : v; }
   // La chaîne SANS le forçage : c'est elle que le champ « Forcé » montre en
   // filigrane, et c'est ce que les fonctions <nom>Auto rendent.
-  function levierAuto(nom, c, base) {
-    var v = (((base + levierAdd(nom, "a1", c) + levierAdd(nom, "a2", c)) *
-              levierMul(nom, "m1", c) * levierMul(nom, "m2", c)) +
-             levierAdd(nom, "a3", c) + levierAdd(nom, "a4", c)) *
-            levierMul(nom, "m3", c) * levierMul(nom, "m4", c);
+  function chaineAuto(lire, base) {
+    var v = (((base + chaineAdd(lire("a1")) + chaineAdd(lire("a2"))) *
+              chaineMul(lire("m1")) * chaineMul(lire("m2"))) +
+             chaineAdd(lire("a3")) + chaineAdd(lire("a4"))) *
+            chaineMul(lire("m3")) * chaineMul(lire("m4"));
     // UN RÉSULTAT NON FINI REND LA BASE. applique() refuse déjà ce qu'un FILTRE
     // rend d'infini ou d'illisible, mais elle ne voit pas ce qui se fabrique
     // ici : un NaN né dans la chaîne traverserait la fiche entière sans un mot.
@@ -99,10 +97,34 @@
     // décision. Ce qui doit être entier l'est chez celui qui le consomme.
     return Math.round(v * 100) / 100;
   }
-  function levierChaine(nom, c, base) {
-    var f = levierForce(nom, c);
-    return f === undefined ? levierAuto(nom, c, base) : f;
+  function chaine(lire, base) {
+    var f = lire("force");
+    return f === undefined ? chaineAuto(lire, base) : f;
   }
+  // ---------- les trois porteurs ----------
+  function lireCarac(nom, c) {
+    return function (boite) {
+      var l = state.caracsLeviers && state.caracsLeviers[nom];
+      var tb = l && l[boite];
+      return boiteNombre(tb && tb[c]);
+    };
+  }
+  function lireComp(nom, code) {
+    return function (boite) {
+      var l = state.compsLeviers && state.compsLeviers[nom];
+      var tb = l && l[boite];
+      return boiteNombre(tb && tb[code]);
+    };
+  }
+  function lireSpe(nom, spe) {
+    return function (boite) {
+      var l = spe && spe.leviers && spe.leviers[nom];
+      return boiteNombre(l && l[boite]);
+    };
+  }
+  // Les deux raccourcis des caractéristiques, qui gardent leurs appelants.
+  function levierAuto(nom, c, base) { return chaineAuto(lireCarac(nom, c), base); }
+  function levierChaine(nom, c, base) { return chaine(lireCarac(nom, c), base); }
 
   // ---------- le prestige ----------
   function prestigeAuto() { return (state.prestige || 0) + (state.prestigeMod || 0); }
@@ -182,38 +204,83 @@
   // LE PLAFOND DE POINTS : le MOD le plus haut des caractéristiques qui
   // commandent la compétence. PHY en compte quatre, COM deux, les six autres
   // une seule — et c'est la page de règles qui le dit, pas ce fichier.
-  function compPlafondBrut(code) {
-    var mods = compInfo(code).mod || [], best = 0;
+  // LES CARACTÉRISTIQUES QUI COMMANDENT LE PLAFOND. Les règles le disent ; le
+  // meneur peut le dire autrement POUR CE PERSONNAGE — un avantage change une
+  // fiche, et rien d'autre que ces réglages ne peut le faire entrer, puisqu'un
+  // avantage n'est que du texte.
+  //
+  // L'ÉTAT NE PORTE QUE LA SURCHARGE, jamais une copie des règles : sans quoi
+  // une compétence dont la page change resterait sur l'ancienne liste, sans un
+  // mot. Trois réponses, et non deux :
+  //   clé absente        ce que disent les règles
+  //   tableau non vide   celles-là
+  //   tableau VIDE       rien ne commande ce plafond — c'est un réglage, pas
+  //                      un oubli, et il vaut alors zéro
+  function compsPlafondDe(code) {
+    var tb = state.compsCaracsPlafond;
+    if (tb && aClef(tb, code) && Array.isArray(tb[code])) return tb[code];
+    return compInfo(code).mod || [];
+  }
+  function compPlafondSocle(code) {
+    var mods = compsPlafondDe(code), best = 0;
     for (var i = 0; i < mods.length; i++) best = Math.max(best, caracMod(mods[i]));
     return best;
   }
+  function compPlafondAuto(code) { return chaineAuto(lireComp("plafond", code), compPlafondSocle(code)); }
+  function compPlafondBrut(code) { return chaine(lireComp("plafond", code), compPlafondSocle(code)); }
   function compPlafond(code) {
     var v = compPlafondBrut(code);
     return aFiltre("compPlafond") ? applique("compPlafond", v, { cle: code }) : v;
   }
   // La caractéristique par DÉFAUT d'une compétence : celle qui fournit le MOD
   // et la LIM quand le joueur ne demande rien d'autre. Il peut en demander une
-  // autre — c'est tout l'intérêt d'avoir séparé les deux colonnes.
-  function compCarac(code) { return compInfo(code).lim || champs()[0] || ""; }
-  function compPtsBrut(code) {
-    if (state.compsForce[code] !== undefined) return state.compsForce[code];
-    var v = Math.min(state.comps[code] || 0, compPlafond(code));
-    // le bonus s'applique APRÈS le plafond, comme celui d'une caractéristique
-    return v + (state.compsBonus[code] || 0) +
-           (state.compsMod[code] || 0) + (state.compsMod2[code] || 0);
+  // autre au moment du jet — c'est tout l'intérêt d'avoir séparé les deux
+  // colonnes. Même règle que le plafond : la surcharge seule, le repli sur les
+  // règles quand elle manque.
+  function compCarac(code) {
+    var v = state.compsCarac && state.compsCarac[code];
+    if (v) return v;
+    return compInfo(code).lim || champs()[0] || "";
   }
+  function compPtsSocle(code) {
+    // le bonus s'applique APRÈS le plafond, comme celui d'une caractéristique
+    return Math.min(state.comps[code] || 0, compPlafond(code)) +
+           (state.compsBonus[code] || 0);
+  }
+  function compPtsAuto(code) { return chaineAuto(lireComp("valeur", code), compPtsSocle(code)); }
+  function compPtsBrut(code) { return chaine(lireComp("valeur", code), compPtsSocle(code)); }
   function compPts(code) {
     var v = compPtsBrut(code);
     return aFiltre("compValue") ? applique("compValue", v, { cle: code }) : v;
   }
-  function compXpAuto(code) {
-    return (state.comps[code] || 0) * repli("xpComp") +
-           (state.compsXpMod[code] || 0) + (state.compsXpMod2[code] || 0);
-  }
+  function compXpSocle(code) { return (state.comps[code] || 0) * repli("xpComp"); }
+  function compXpAuto(code) { return chaineAuto(lireComp("xp", code), compXpSocle(code)); }
+  // LE FORÇAGE SE TESTE DANS LE BRUT, comme partout ailleurs. Il se testait ici
+  // APRÈS le filtre : un coût forcé sautait applique(), et coupait en silence
+  // tout mod qui filtre « compXp ».
+  function compXpBrut(code) { return chaine(lireComp("xp", code), compXpSocle(code)); }
   function compXp(code) {
-    if (state.compsXpForce[code] !== undefined) return state.compsXpForce[code];
-    var v = compXpAuto(code);
+    var v = compXpBrut(code);
     return aFiltre("compXp") ? applique("compXp", v, { cle: code }) : v;
+  }
+  // L'ÉCART D'UNE COMPÉTENCE : celui de la caractéristique EMPLOYÉE, passé par
+  // sa chaîne à elle.
+  //
+  // BÂTI SUR compCarac(code) SEUL, ON REJOUERAIT LE DÉFAUT SIGNALÉ EN PARTIE :
+  // sous « Au choix », le jet part sous une caractéristique et le seuil
+  // viendrait d'une autre. La grille des Options, elle, n'a pas de jet en
+  // cours : elle montre celui de la caractéristique par défaut.
+  function ecartCompAuto(code, carac) {
+    return chaineAuto(lireComp("ecart", code), ecartMin(carac || compCarac(code)));
+  }
+  function ecartCompBrut(code, carac) {
+    return chaine(lireComp("ecart", code), ecartMin(carac || compCarac(code)));
+  }
+  function ecartComp(code, carac) {
+    var v = ecartCompBrut(code, carac);
+    return aFiltre("ecartComp")
+      ? applique("ecartComp", v, { cle: code, carac: carac || compCarac(code) })
+      : v;
   }
 
   // ---------- les spécialités ----------
@@ -227,10 +294,10 @@
   // c'est un AVERTISSEMENT — jaune, dans les garde-fous de l'en-tête — dès que
   // le total dépasse la limite moins la marge des règles : au-delà, la limite
   // rogne le jet et les points achetés ne rapportent plus rien.
+  function spePtsAuto(spe) { return chaineAuto(lireSpe("valeur", spe), (spe && spe.pts) || 0); }
   function spePtsBrut(spe) {
     if (!spe) return 0;
-    if (spe.force !== null && spe.force !== undefined) return spe.force;
-    return (spe.pts || 0) + (spe.mod || 0) + (spe.mod2 || 0);
+    return chaine(lireSpe("valeur", spe), spe.pts || 0);
   }
   function spePts(spe) {
     var v = spePtsBrut(spe);
@@ -264,6 +331,32 @@
   function speComp(spe, comp) {
     if (comp !== undefined && comp !== null) return comp;
     return (spe && spe.comp) || "";
+  }
+  // L'ÉCART D'UNE SPÉCIALITÉ, DERNIER MAILLON : celui de la compétence
+  // EMPLOYÉE, passé par sa chaîne à elle. SANS COMPÉTENCE — et c'est une
+  // réponse légitime, voir juste au-dessus — il n'y a pas d'étage du milieu :
+  // la base est celle de la caractéristique, directement, et non un étage
+  // fictif qui rendrait toujours la même chose.
+  //
+  // LA CASCADE EST STRICTEMENT DESCENDANTE : ecartSpe → ecartComp → ecartMin →
+  // l'écart des règles. Rien ne remonte, jamais. La garde de récursion des
+  // filtres ne protège QUE les filtres : un cycle écrit ICI ferait exploser la
+  // pile sans qu'aucune garde ne le voie.
+  function ecartSpeBase(spe, carac, comp) {
+    var c = speCarac(spe, carac), k = speComp(spe, comp);
+    return k ? ecartComp(k, c) : ecartMin(c);
+  }
+  function ecartSpeAuto(spe, carac, comp) {
+    return chaineAuto(lireSpe("ecart", spe), ecartSpeBase(spe, carac, comp));
+  }
+  function ecartSpeBrut(spe, carac, comp) {
+    return chaine(lireSpe("ecart", spe), ecartSpeBase(spe, carac, comp));
+  }
+  function ecartSpe(spe, carac, comp) {
+    var v = ecartSpeBrut(spe, carac, comp);
+    return aFiltre("ecartSpe")
+      ? applique("ecartSpe", v, { spe: spe, carac: speCarac(spe, carac), comp: speComp(spe, comp) })
+      : v;
   }
   // LE TOTAL D'UNE SPÉCIALITÉ : ses points, le MOD de la caractéristique
   // employée, les points de sa compétence. C'est ce nombre-là que la règle de
@@ -306,7 +399,10 @@
     var c = speCarac(spe, carac);
     if (!spe || !c) return 0;
     if (state.ecartCoupe) return 0;   // règle suspendue pour ce personnage
-    var haut = Math.max(0, caracLimNat(c) - ecartMin(c));
+    // L'ÉCART EST CELUI DE LA SPÉCIALITÉ, en bout de cascade — et non plus
+    // celui de sa caractéristique. « comp » passe BRUT, pour que la base de
+    // l'écart et le total résolvent la compétence par le même chemin.
+    var haut = Math.max(0, caracLimNat(c) - ecartSpe(spe, c, comp));
     return Math.max(0, speTotalNat(spe, c, comp) - haut);
   }
   function speTotal(spe, carac, comp) {
@@ -320,10 +416,13 @@
   // Un point de spécialité coûte un QUART d'XP : le total est donc décimal, et
   // c'est voulu. On l'arrondit au centième pour que l'en-tête n'affiche pas
   // 12.750000000000002.
+  function speXpSocle(spe) {
+    return Math.round(((spe && spe.pts) || 0) * repli("xpSpe") * 100) / 100;
+  }
+  function speXpAuto(spe) { return chaineAuto(lireSpe("xp", spe), speXpSocle(spe)); }
   function speXp(spe) {
     if (!spe) return 0;
-    if (spe.xpForce !== null && spe.xpForce !== undefined) return spe.xpForce;
-    return Math.round((spe.pts || 0) * repli("xpSpe") * 100) / 100;
+    return chaine(lireSpe("xp", spe), speXpSocle(spe));
   }
   // Retrouver une spécialité par son nom, pour les formules qui la nomment :
   // les PV ajoutent « SPÉ PV », la récupération EST une spécialité, et

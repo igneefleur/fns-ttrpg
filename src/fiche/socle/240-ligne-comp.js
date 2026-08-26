@@ -80,8 +80,11 @@
       var base = state.comps[code] || 0;
       var plaf = compPlafond(code);
       var mord = base > plaf;
-      var d = (state.compsMod[code] || 0) + (state.compsMod2[code] || 0);
-      var force = state.compsForce[code] !== undefined;
+      // LE LEVIER SE LIT PAR SON RÉSULTAT, et non par une de ses neuf cases :
+      // un facteur ou un ajout de fin décalent la valeur sans toucher à celle
+      // qu'on lisait ici, et la pastille « retouché » restait éteinte.
+      var d = compPtsBrut(code) - compPtsSocle(code);
+      var force = lireComp("valeur", code)("force") !== undefined;
       // le malus d'endurance pèse sur TOUS les jets : il est déjà dans le
       // bonus, il n'est nommé ici que pour qu'on sache d'où vient l'écart
       var mal = enduranceMalus();
