@@ -69,10 +69,18 @@
           // le plafond ne bloque que les HAUSSES : une valeur passée au-dessus
           // (prestige abaissé après coup) redescend pas à pas au lieu d'être
           // écrasée d'un seul clic
+          //
+          // ET IL NE BLOQUE PLUS RIEN DÈS QU'UN LEVIER DE VALEUR S'INTERPOSE :
+          // la coiffe tombe sur le RÉSULTAT de la chaîne, pas sur ce qu'on
+          // tape. Sous un facteur d'un demi, s'arrêter au plafond empêcherait
+          // d'acheter assez pour l'atteindre. Le garde-fou de l'en-tête, lui,
+          // dit toujours la vérité — il lit la sortie.
           var plaf = caracPlafond(code);
-          var haut = Math.max(plaf, caracBase(code));
           var n = Math.round(v);
-          if (n > haut) { flash("Plafond de " + plaf + "."); n = haut; }
+          if (!levierRegleDe(lireCarac("valeur", code))) {
+            var haut = Math.max(plaf, caracBase(code));
+            if (n > haut) { flash("Plafond de " + plaf + "."); n = haut; }
+          }
           state.caracs[code] = Math.max(0, n);
         }, "Valeur achetée");
       var vBon = caseSaisie(trio,
@@ -91,30 +99,41 @@
       // le total de l'en-tête, qui avertit dès qu'il est dépassé ; le détail par
       // caractéristique appartient au calibrage, pas à la fiche en jeu.
       hooks.push(function () {
-        var d = state.caracsBonus[code] || 0;
-        // LE LEVIER SE LIT PAR SON RÉSULTAT, et non par une de ses sept cases :
-        // un facteur ou un ajout de fin décalent le MOD sans toucher à celle
+        // LES DEUX CASES MONTRENT CE QUI COMPTE VRAIMENT, LEVIER COMPRIS : la
+        // valeur coiffée et le bonus tel que sa chaîne le rend. Lire l'état brut
+        // ici afficherait un nombre que le jet n'emploie pas, et le trio ne
+        // s'additionnerait plus jusqu'au total écrit juste à côté.
+        var base = caracBase(code);
+        var vBrut = caracValeurBrut(code);
+        var d = caracBonus(code);
+        // LE LEVIER SE LIT PAR SON RÉSULTAT, et non par une de ses neuf cases :
+        // un facteur ou un ajout de fin décalent le nombre sans toucher à celle
         // qu'on lisait ici, et la pastille « retouché » restait éteinte.
+        var dv = vBrut - base;
+        var db = d - caracBonusSocle(code);
         var dm = caracModBrut(code) - caracModTable(code);
         var dl = caracLimBrut(code) - caracLimTable(code);
         var plaf = caracPlafond(code);
-        var base = caracBase(code);
-        var mord = base > plaf;
-        var retouche = d !== 0 || dm !== 0 || dl !== 0 || mord;
+        // LE PLAFOND MORD SUR CE QUE LE LEVIER A PRODUIT, jamais sur ce qui a
+        // été acheté : une valeur poussée au-dessus par un levier est rognée
+        // comme une autre, et une valeur ramenée en dessous ne l'est plus.
+        var mord = vBrut > plaf;
+        var retouche = d !== 0 || dv !== 0 || db !== 0 || dm !== 0 || dl !== 0 || mord;
         // LA VALEUR EST CELLE QU'ON A ACHETÉE, le bonus ce qui s'y ajoute, le
         // total leur somme — c'est de ce total-là que la table tire le MOD et
         // la limite du jet.
-        vVal.txt.textContent = String(Math.min(base, plaf));
+        vVal.txt.textContent = String(caracValeur(code));
         vBon.txt.textContent = sign(d);
         vTot.textContent = String(caracTotal(code));
         trio.classList.toggle("adj", retouche);
         // quand le plafond mord, le dire : sans cela, le joueur voit un total
         // qui ne correspond ni à ce qu'il a acheté ni à ce qu'il a modifié, et
-        // rien ne dit pourquoi. Un total forcé, lui, REMPLACE la somme :
-        // l'afficher quand même la ferait mentir.
+        // rien ne dit pourquoi.
         trio.title = "Valeur " + base +
+                     (dv ? " · valeur décalée de " + sign(dv) + " (Options)" : "") +
                      (mord ? ", plafonnée à " + plaf : "") +
                      (d ? " · bonus " + sign(d) : "") +
+                     (db ? " (décalé de " + sign(db) + ", Options)" : "") +
                      (dm ? " · MOD décalé de " + sign(dm) + " (Options)" : "") +
                      (dl ? " · limite décalée de " + sign(dl) + " (Options)" : "") +
                      " — MOD " + sign(caracMod(code)) + ", LIM " + caracLim(code);

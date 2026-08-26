@@ -335,17 +335,20 @@
       // plafond : ce sont les deux murs du système. Le BONUS peut porter le
       // total au-delà sans que ce soit une faute — l'avertissement porte donc
       // sur la valeur ACHETÉE, jamais sur le total.
+      // ON AVERTIT SUR CE QUE LE LEVIER A PRODUIT, FORÇAGE COMPRIS. Un total
+      // forcé était exempté du garde-fou tant que le plafond ne le bornait
+      // plus ; il le borne maintenant, donc il peut le dépasser, donc il faut
+      // le DIRE — sans quoi des points disparaîtraient en silence, ce que ces
+      // bandeaux existent précisément pour empêcher.
       champs().forEach(function (c) {
-        if (caracBase(c) > caracPlafond(c))
+        if (caracValeurBrut(c) > caracPlafond(c))
           warns.appendChild(el("div", "pc-warn", "« " + caracInfo(c).nom + " » dépasse le plafond du prestige (" +
-            caracBase(c) + " / " + caracPlafond(c) + ")."));
+            caracValeurBrut(c) + " / " + caracPlafond(c) + ")."));
       });
       champsComp().forEach(function (c) {
-        // un total forcé ne « dépasse » rien : le plafond ne le borne plus
-        if (compPtsBrut(c) !== compPtsAuto(c) && lireComp("valeur", c)("force") !== undefined) return;
-        if ((state.comps[c] || 0) > compPlafond(c))
+        if (compValeurBrut(c) > compPlafond(c))
           warns.appendChild(el("div", "pc-warn", "« " + compInfo(c).nom + " » dépasse son plafond de points (" +
-            (state.comps[c] || 0) + " / " + compPlafond(c) + ")."));
+            compValeurBrut(c) + " / " + compPlafond(c) + ")."));
       });
       // AUCUN BANDEAU POUR LA RÈGLE COUPÉE : c'est un réglage volontaire, pas
       // un état du personnage. Les garde-fous ne portent que ce qui cloche.
@@ -360,9 +363,16 @@
         // On dit ce qui a été RETIRÉ, pas l'écart qu'on aurait eu : celui-là
         // est négatif dès que le total passe la limite, et un « écart −40 » se
         // lit deux fois avant de vouloir dire quelque chose.
+        //
+        // LES DEUX NOMBRES SONT CEUX QUI ONT SERVI, et ils ne l'étaient pas :
+        // le message nommait l'écart de la CARACTÉRISTIQUE et sa limite
+        // COURANTE, quand speRetire emploie l'écart de la SPÉCIALITÉ — bout de
+        // la cascade — et la limite NATURELLE. Un bonus de caractéristique
+        // suffisait à les séparer, et le joueur ne pouvait plus refaire la
+        // soustraction qu'on lui montrait.
         warns.appendChild(el("div", "pc-warn doux", "« " + (sp.nom || "Spécialité") +
           " » : total ramené de " + brut + " à " + tot +
-          " (écart " + ecartMin(sp.carac) + " sous la limite " + caracLim(sp.carac) + ")."));
+          " (écart " + ecartSpe(sp) + " sous la limite " + caracLimNat(sp.carac) + ")."));
       });
     });
     sheet.appendChild(warns);

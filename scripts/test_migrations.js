@@ -555,6 +555,141 @@ var duree = Math.round(process.uptime() * 1000);
   }
 })();
 
+
+// --------------------------- 7. le pas 4, dans les deux sens, en détail
+// LES TÉMOINS GÉNÉRIQUES NE PEUVENT PAS LE CONTRÔLER, et c'est la leçon du pas
+// précédent : ils estampillent le MÊME état de tous les schémas et exigent
+// l'aller-retour dans les deux sens, donc aucun ne peut porter une forme datée.
+// D'où ce bloc, avec des états qui ont chacun leur schéma pour de bon.
+//
+// CE QUE LE PAS FAIT : le levier « valeur » d'une compétence portait sur le
+// TOUT — coiffe et bonus compris. Ses huit boîtes de calcul passent donc au
+// levier « bonus », le seul qui s'applique encore après la coiffe ; son
+// FORÇAGE reste à la valeur, où il dit toujours « cette compétence vaut F ».
+//
+// ATTENTION : une boîte de compétence porte une TABLE de sigles, pas un nombre.
+(function () {
+  var M = MiaMigr;
+
+  // ---- 3 -> 4 : les boîtes de calcul vont au bonus, le forçage reste ----
+  var v3 = {
+    v: 3, name: "Riko",
+    compsLeviers: {
+      valeur: { force: { PHY: 90 }, a1: { COM: 10 }, m1: { CLA: 2 } },
+      plafond: { a1: { PHY: 5 } },
+      xp: { a2: { COM: 3 } },
+      ecart: { force: { PHY: 40 } }
+    },
+    caracsLeviers: { mod: { a1: { FOR: -10 } } },
+    specialites: [{ nom: "Esquive", carac: "DEX", comp: "COM", pts: 40, bonus: 3 }]
+  };
+  var fige3 = JSON.stringify(v3);
+  var m = M.appliquer(copie(v3), 3, 4);
+  ok(m.ok, "pas 4 : la montée doit passer (" + (m.erreur && m.erreur.message) + ")");
+  if (m.ok) {
+    var lv = m.state.compsLeviers || {};
+    ok(JSON.stringify(lv.valeur) === '{"force":{"PHY":90}}',
+       "pas 4 : le forçage RESTE à la valeur, et lui seul");
+    ok(lv.bonus && JSON.stringify(lv.bonus.a1) === '{"COM":10}',
+       "pas 4 : l'ajout passe au bonus");
+    ok(lv.bonus && JSON.stringify(lv.bonus.m1) === '{"CLA":2}',
+       "pas 4 : le facteur passe au bonus");
+    ok(lv.bonus && lv.bonus.force === undefined,
+       "pas 4 : le bonus ne doit PAS recevoir le forçage");
+    ok(JSON.stringify(lv.plafond) === '{"a1":{"PHY":5}}',
+       "pas 4 : le plafond ne bouge pas");
+    ok(JSON.stringify(lv.xp) === '{"a2":{"COM":3}}', "pas 4 : l'xp ne bouge pas");
+    ok(JSON.stringify(lv.ecart) === '{"force":{"PHY":40}}', "pas 4 : l'écart ne bouge pas");
+    ok(JSON.stringify(m.state.caracsLeviers) === '{"mod":{"a1":{"FOR":-10}}}',
+       "pas 4 : les leviers de caractéristique ne bougent pas");
+    ok(JSON.stringify(v3) === fige3, "pas 4 : l'état d'origine ne doit pas être modifié");
+
+    var r = M.appliquer(m.state, 4, 3);
+    ok(r.ok, "pas 4 : la descente doit passer");
+    if (r.ok) ok(egal(sansQuand(r.state), sansQuand(copie(v3))),
+                 "pas 4 : 3->4->3 doit tout rendre — " + ecart(sansQuand(r.state), sansQuand(copie(v3))));
+  }
+
+  // ---- 4 -> 3 : ce que le schéma 3 ne sait pas porter va au grenier ----
+  // LES DEUX RÉGLAGES NEUFS : les boîtes de calcul de la VALEUR (là-bas, elles
+  // portaient sur le tout, donc elles n'ont pas cette place) et le FORÇAGE du
+  // bonus (il n'existait pas). Le reste se reconstruit.
+  var v4 = {
+    v: 4, name: "Riko",
+    compsLeviers: {
+      valeur: { a1: { PHY: 7 }, force: { COM: 50 } },
+      bonus: { force: { CLA: 12 }, a2: { PHY: 3 }, m3: { COM: 0.5 } }
+    },
+    // CES TROIS-LÀ N'ONT AUCUNE PLACE AU SCHÉMA 3 non plus, et la descente les
+    // RANGE : les laisser ne les protégerait de rien, puisque la normalisation
+    // du schéma 3 reconstruit ces tables sans eux.
+    caracsLeviers: { valeur: { a1: { FOR: 4 } }, bonus: { force: { DEX: 8 } } },
+    specialites: [{ nom: "Esquive", carac: "DEX", comp: "COM", pts: 40, bonus: 3,
+                    leviers: { bonus: { a1: 6 } } }]
+  };
+  var fige4 = JSON.stringify(v4);
+  var d = M.appliquer(copie(v4), 4, 3);
+  ok(d.ok, "pas 4 : la descente d'un état natif doit passer");
+  if (d.ok) {
+    var lv2 = d.state.compsLeviers || {};
+    ok(lv2.bonus === undefined, "pas 4 : le levier de bonus doit partir");
+    ok(lv2.valeur && JSON.stringify(lv2.valeur.force) === '{"COM":50}',
+       "pas 4 : le forçage de la valeur redescend tel quel");
+    ok(lv2.valeur && JSON.stringify(lv2.valeur.a2) === '{"PHY":3}',
+       "pas 4 : un ajout du bonus redescend dans la valeur");
+    ok(lv2.valeur && JSON.stringify(lv2.valeur.m3) === '{"COM":0.5}',
+       "pas 4 : un facteur du bonus redescend dans la valeur");
+    ok(lv2.valeur && lv2.valeur.a1 === undefined,
+       "pas 4 : l'ajout NEUF de la valeur ne redescend pas — il va au grenier");
+    var g = d.state.grenier && d.state.grenier["4"] && d.state.grenier["4"].comps4;
+    ok(!!g, "pas 4 : ce que le schéma 3 ne porte pas doit aller au grenier");
+    ok(g && JSON.stringify(g.valeurAM) === '{"a1":{"PHY":7}}',
+       "pas 4 : l'ajout neuf de la valeur au grenier");
+    ok(g && JSON.stringify(g.bonusForce) === '{"CLA":12}',
+       "pas 4 : le forçage du bonus au grenier");
+    ok(JSON.stringify(d.state.caracsLeviers) === '{}',
+       "pas 4 : les leviers NEUFS d'une caractéristique quittent la table");
+    ok(g && JSON.stringify(g.carac_valeur) === '{"a1":{"FOR":4}}',
+       "pas 4 : le levier de valeur d'une caractéristique au grenier");
+    ok(g && JSON.stringify(g.carac_bonus) === '{"force":{"DEX":8}}',
+       "pas 4 : le levier de bonus d'une caractéristique au grenier");
+    ok(d.state.specialites && d.state.specialites[0] &&
+       d.state.specialites[0].leviers === undefined,
+       "pas 4 : la spécialité vidée de son seul levier ne garde pas de table vide");
+    ok(g && JSON.stringify(g.spesBonus) === '[{"a1":6}]',
+       "pas 4 : le levier de bonus d'une spécialité au grenier, par RANG");
+    ok(JSON.stringify(v4) === fige4, "pas 4 : l'état d'origine ne doit pas être modifié");
+
+    var r2 = M.appliquer(d.state, 3, 4);
+    ok(r2.ok, "pas 4 : la remontée doit passer");
+    if (r2.ok) ok(egal(sansQuand(r2.state), sansQuand(copie(v4))),
+                  "pas 4 : 4->3->4 doit tout rendre — " + ecart(sansQuand(r2.state), sansQuand(copie(v4))));
+  }
+
+  // ---- un état SANS levier de compétence traverse sans une trace ----
+  var nu = { v: 3, name: "Nanachi", comps: { PHY: 40 } };
+  var mn = M.appliquer(copie(nu), 3, 4);
+  ok(mn.ok && mn.state.compsLeviers === undefined,
+     "pas 4 : un état sans levier ne doit pas se voir poser de table vide");
+  if (mn.ok) {
+    var rn = M.appliquer(mn.state, 4, 3);
+    ok(rn.ok && egal(sansQuand(rn.state), sansQuand(copie(nu))),
+       "pas 4 : un état sans levier fait l'aller-retour sans une trace");
+  }
+
+  // ---- un levier de valeur SANS forçage ne laisse pas de table vide ----
+  var sf = { v: 3, name: "Reg", compsLeviers: { valeur: { a1: { PHY: 10 } } } };
+  var ms = M.appliquer(copie(sf), 3, 4);
+  ok(ms.ok, "pas 4 : la montée sans forçage doit passer");
+  if (ms.ok) {
+    ok(ms.state.compsLeviers && ms.state.compsLeviers.valeur === undefined,
+       "pas 4 : la valeur vidée de ses boîtes doit disparaître, pas rester vide");
+    var rs = M.appliquer(ms.state, 4, 3);
+    ok(rs.ok && egal(sansQuand(rs.state), sansQuand(copie(sf))),
+       "pas 4 : aller-retour sans forçage — " + (rs.ok ? ecart(sansQuand(rs.state), sansQuand(copie(sf))) : ""));
+  }
+})();
+
 if (echecs.length) {
   console.error("MIGRATIONS : " + echecs.length + " échec(s) sur " + faits + " vérifications (" + duree + " ms)");
   echecs.forEach(function (e) { console.error("  - " + e); });

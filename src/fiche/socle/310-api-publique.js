@@ -59,9 +59,11 @@
     __calculs: {
       caracTotal: caracTotal, caracMod: caracMod, caracLim: caracLim,
       caracPlafond: caracPlafond, caracXp: caracXp,
+      caracValeur: caracValeur, caracValeurBrut: caracValeurBrut, caracBonus: caracBonus,
       compPts: compPts, compPlafond: compPlafond, compXp: compXp,
+      compValeur: compValeur, compValeurBrut: compValeurBrut, compBonus: compBonus,
       compCarac: compCarac, ecartComp: ecartComp, ecartSpe: ecartSpe,
-      spePts: spePts, speXp: speXp, jetBonus: jetBonus,
+      spePts: spePts, speXp: speXp, speBonus: speBonus, jetBonus: jetBonus,
       speTotal: speTotal, speRetire: speRetire,
       ecartMin: ecartMin,
       prestige: prestige, enduranceMax: enduranceMax, enduranceMalus: enduranceMalus,

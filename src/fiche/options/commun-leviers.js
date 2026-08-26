@@ -55,6 +55,9 @@
         pages[j].bouton.focus();
       });
       bande.appendChild(bouton);
+      // LE COMPTE PART DANS LE HTML : le CSS ne sait pas compter ses enfants, et
+      // c'est lui qui décide comment couper une bande longue en deux rangs.
+      bande.setAttribute("data-n", String(pages.length + 1));
       var page = el("div", "pc-souspage");
       bati(page);
       corps.appendChild(page);
@@ -243,7 +246,7 @@
     var reg = opts.reg || hooks;
     enteteOpt(box, opts.cls, [
       opts.entete || ["Nom", "Ce que la rangée règle"],
-      ["Forcé", "Valeur imposée — vide = valeur calculée"],
+      ["Forcé", "Valeur imposée — vide = valeur calculée", "fo"],
       ["＋", "Deux nombres qui s'ajoutent avant les facteurs", "duo op"],
       null,
       ["×", "Deux facteurs — vide = ×1", "duo op"],

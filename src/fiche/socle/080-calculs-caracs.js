@@ -139,14 +139,33 @@
   function caracPlafondAuto(c) { return levierAuto("plafond", c, prestige()); }
   function caracPlafond(c) { return levierChaine("plafond", c, prestige()); }
 
+  // ---------- LES TROIS ÉTAGES D'UNE VALEUR ----------
+  // LES TROIS FAMILLES SE CALCULENT DU MÊME GESTE, et dans cet ordre :
+  //
+  //     VALEUR   = chaîne(« valeur », base = ce qui est acheté)
+  //     COIFFÉE  = min(VALEUR, PLAFOND)
+  //     BONUS    = chaîne(« bonus », base = le bonus de la Fiche)
+  //     TOTAL    = COIFFÉE + BONUS
+  //
+  // LE PLAFOND PASSE APRÈS LE LEVIER, et c'est tout le point : une valeur MÊME
+  // MODIFIÉE ne dépasse pas son plafond. Le meneur qui veut passer outre lève le
+  // plafond — il a son onglet à côté, et le dire deux fois au même endroit
+  // rendrait la fiche illisible.
+  //
+  // LE BONUS S'AJOUTE APRÈS LA COIFFE, et lui n'est borné par rien : c'est ce
+  // qui distingue un équipement d'un point acheté. Il a donc sa chaîne à lui, et
+  // non une case dans celle de la valeur — sans quoi le plafond le mangerait.
+  //
   // ---------- les caractéristiques ----------
   function caracBase(c) { return state.caracs[c] || 0; }
-  function caracTotalBrut(c) {
-    var v = Math.min(caracBase(c), caracPlafond(c));
-    // le BONUS s'applique APRÈS le plafond : il peut porter le total au-delà
-    // du prestige comme en dessous de zéro.
-    return v + (state.caracsBonus[c] || 0);
-  }
+  function caracValeurAuto(c) { return levierAuto("valeur", c, caracBase(c)); }
+  function caracValeurBrut(c) { return levierChaine("valeur", c, caracBase(c)); }
+  // LA VALEUR COIFFÉE : le plafond mord sur ce que le levier a produit.
+  function caracValeur(c) { return Math.min(caracValeurBrut(c), caracPlafond(c)); }
+  function caracBonusSocle(c) { return state.caracsBonus[c] || 0; }
+  function caracBonusAuto(c) { return levierAuto("bonus", c, caracBonusSocle(c)); }
+  function caracBonus(c) { return levierChaine("bonus", c, caracBonusSocle(c)); }
+  function caracTotalBrut(c) { return caracValeur(c) + caracBonus(c); }
   function caracTotal(c) {
     var v = caracTotalBrut(c);
     // le test évite de fabriquer l'objet d'infos pour rien : ce calcul-là est
@@ -159,6 +178,11 @@
   // LA VALEUR NATURELLE : ce que la caractéristique vaut sans le bonus. Elle
   // ne sert qu'à la règle de l'écart, qui se calcule sur l'état d'AVANT les
   // leviers (voir speRetire).
+  //
+  // ELLE NE PASSE PAS PAR LE LEVIER DE VALEUR, et c'est délibéré : la règle de
+  // l'écart lit ce que le JOUEUR a acheté, jamais ce que le meneur a accordé.
+  // Sans quoi un levier posé pour dépanner un personnage lui reprendrait d'une
+  // main ce qu'il lui donne de l'autre, en rabattant ses spécialités.
   function caracValeurNat(c) { return Math.min(caracBase(c), caracPlafond(c)); }
   function caracModNat(c) { return ligneValeur(caracValeurNat(c)).mod; }
   function caracLimNat(c) { return ligneValeur(caracValeurNat(c)).lim; }
@@ -242,13 +266,22 @@
     if (v) return v;
     return compInfo(code).lim || champs()[0] || "";
   }
-  function compPtsSocle(code) {
-    // le bonus s'applique APRÈS le plafond, comme celui d'une caractéristique
-    return Math.min(state.comps[code] || 0, compPlafond(code)) +
-           (state.compsBonus[code] || 0);
-  }
-  function compPtsAuto(code) { return chaineAuto(lireComp("valeur", code), compPtsSocle(code)); }
-  function compPtsBrut(code) { return chaine(lireComp("valeur", code), compPtsSocle(code)); }
+  // LES TROIS ÉTAGES, ICI AUSSI. Le levier de valeur porte sur les points
+  // ACHETÉS, et le plafond mord sur ce qu'il produit : « même modifiée, la
+  // valeur ne dépasse pas le plafond ».
+  //
+  // C'ÉTAIT L'INVERSE, ET C'ÉTAIT FAUX : la chaîne partait d'une base déjà
+  // coiffée ET déjà bonifiée, et son résultat n'était re-coiffé par rien. Un
+  // levier de +10 sur une compétence à 100 points plafonnée à 70 rendait 80 —
+  // il payait un plafond que le joueur avait déjà dépassé.
+  function compValeurSocle(code) { return state.comps[code] || 0; }
+  function compValeurAuto(code) { return chaineAuto(lireComp("valeur", code), compValeurSocle(code)); }
+  function compValeurBrut(code) { return chaine(lireComp("valeur", code), compValeurSocle(code)); }
+  function compValeur(code) { return Math.min(compValeurBrut(code), compPlafond(code)); }
+  function compBonusSocle(code) { return state.compsBonus[code] || 0; }
+  function compBonusAuto(code) { return chaineAuto(lireComp("bonus", code), compBonusSocle(code)); }
+  function compBonus(code) { return chaine(lireComp("bonus", code), compBonusSocle(code)); }
+  function compPtsBrut(code) { return compValeur(code) + compBonus(code); }
   function compPts(code) {
     var v = compPtsBrut(code);
     return aFiltre("compValue") ? applique("compValue", v, { cle: code }) : v;
@@ -294,14 +327,29 @@
   // c'est un AVERTISSEMENT — jaune, dans les garde-fous de l'en-tête — dès que
   // le total dépasse la limite moins la marge des règles : au-delà, la limite
   // rogne le jet et les points achetés ne rapportent plus rien.
-  function spePtsAuto(spe) { return chaineAuto(lireSpe("valeur", spe), (spe && spe.pts) || 0); }
+  function spePtsSocle(spe) { return (spe && spe.pts) || 0; }
+  function spePtsAuto(spe) { return chaineAuto(lireSpe("valeur", spe), spePtsSocle(spe)); }
   function spePtsBrut(spe) {
     if (!spe) return 0;
-    return chaine(lireSpe("valeur", spe), spe.pts || 0);
+    return chaine(lireSpe("valeur", spe), spePtsSocle(spe));
   }
   function spePts(spe) {
     var v = spePtsBrut(spe);
     return aFiltre("spePts") ? applique("spePts", v, { spe: spe }) : v;
+  }
+  // PAS DE COIFFE ICI, et ce n'est pas un oubli : une spécialité n'a pas de
+  // plafond. Ce qui la borne est la règle de l'écart, qui rabat le TOTAL et non
+  // les points — voir speRetire.
+  //
+  // LE BONUS D'UNE SPÉCIALITÉ NE PASSE PAS PAR speTotal, et il ne le peut pas :
+  // il s'ajoute APRÈS le rabattage de l'écart (voir 100-calculs-jets.js). Le
+  // faire entrer dans le total ferait rabattre la spécialité par son propre
+  // bonus. Il a donc sa chaîne, appliquée là où il tombe.
+  function speBonusSocle(spe) { return (spe && spe.bonus) || 0; }
+  function speBonusAuto(spe) { return chaineAuto(lireSpe("bonus", spe), speBonusSocle(spe)); }
+  function speBonus(spe) {
+    if (!spe) return 0;
+    return chaine(lireSpe("bonus", spe), speBonusSocle(spe));
   }
   // LA CARACTÉRISTIQUE EMPLOYÉE, qui n'est pas toujours celle de la spécialité.
   // Le réglage « Au choix » de la barre d'envoi fait demander à Roll20, avant
@@ -389,11 +437,21 @@
   // LE RETRAIT SE CALCULE SOUS LA CARACTÉRISTIQUE EMPLOYÉE, et c'est tout le
   // sujet du défaut corrigé : c'est SA limite qui décide s'il y a lieu de
   // ramener quelque chose. Une caractéristique plus haute ne ramène rien.
+  //
+  // ET « NATUREL » VAUT POUR LES TROIS TERMES, pas seulement pour le MOD. Il
+  // prenait spePts (déjà passé par le levier de valeur) et compPts (déjà coiffé
+  // ET déjà bonifié) : un bonus de compétence montait donc dans les DEUX totaux
+  // à la fois, le brut et le naturel, et le rabattage le remangeait en entier.
+  // L'onglet « Bonus » des compétences agissait pour une caractéristique et ne
+  // faisait RIEN pour une spécialité rabattue — un levier qui ne change rien
+  // n'est pas un levier.
+  function compPtsNat(code) { return Math.min(state.comps[code] || 0, compPlafond(code)); }
+  function spePtsNat(spe) { return (spe && spe.pts) || 0; }
   function speTotalNat(spe, carac, comp) {
     var c = speCarac(spe, carac);
     if (!spe || !c) return 0;
     var k = speComp(spe, comp);
-    return spePts(spe) + caracModNat(c) + (k ? compPts(k) : 0);
+    return spePtsNat(spe) + caracModNat(c) + (k ? compPtsNat(k) : 0);
   }
   function speRetire(spe, carac, comp) {
     var c = speCarac(spe, carac);

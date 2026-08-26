@@ -112,11 +112,20 @@
     s.prestigeForce = forceVal(s.prestigeForce);
 
     // ---------- les caractéristiques ----------
-    // La valeur achetée se borne au prestige maximal des règles et non au
-    // prestige du personnage : le plafond est affaire de CALCUL (caracPlafond),
-    // pas de rangement. Un joueur qui redescend son prestige ne doit pas voir
-    // ses achats effacés au premier enregistrement.
-    s.caracs = tableNombres(s.caracs, function (v) { return entier(v, 0, pMax); });
+    // Le plafond est affaire de CALCUL (caracPlafond), pas de rangement : un
+    // joueur qui redescend son prestige ne doit pas voir ses achats effacés au
+    // premier enregistrement.
+    //
+    // ET LA BORNE NE PEUT PLUS ÊTRE LE PRESTIGE MAXIMAL DES RÈGLES. Depuis que
+    // la coiffe tombe sur la SORTIE de la chaîne, un levier qui divise rend
+    // légitime d'acheter au-delà : sous un facteur d'un demi, il faut 40 pour
+    // atteindre 20. La saisie l'accepte (voir caracs.js) — si le rangement,
+    // lui, ramenait à 20, la moitié disparaîtrait au rechargement, sans un
+    // bandeau, sans un éclair, sans une ligne d'xp qui bouge.
+    //
+    // UN RANGEMENT NE DOIT JAMAIS ÊTRE PLUS SÉVÈRE QUE LA SAISIE. Même borne
+    // que les points d'une compétence, pour la même raison.
+    s.caracs = tableNombres(s.caracs, function (v) { return entier(v, 0, 9999); });
     s.caracsBonus = tableNombres(s.caracsBonus, modNum);
 
     // ---------- les cinq leviers ----------
@@ -169,9 +178,17 @@
       });
       return out;
     }
-    var LEVIER_BORNE = { plafond: 999, xp: 9999, mod: 999, lim: 9999, ecart: 9999 };
-    var COMP_BORNE = { plafond: 999, valeur: 999, xp: 9999, ecart: 9999 };
-    var SPE_BORNE = { valeur: 999, xp: 9999, ecart: 9999 };
+    // CES TROIS TABLES SONT LE CATALOGUE DES LEVIERS, et rien d'autre ne
+    // l'est : tableLeviers et leviersPlats bouclent sur les BORNES et non sur
+    // l'état, donc un levier dont le nom manque ici est jeté EN SILENCE au
+    // premier rangement — écrit dans la page, disparu au rechargement.
+    // Un levier qui s'ajoute s'inscrit ici d'abord.
+    var LEVIER_BORNE = { valeur: 999, plafond: 999, bonus: 999,
+                         xp: 9999, mod: 999, lim: 9999, ecart: 9999 };
+    var COMP_BORNE = { valeur: 999, plafond: 999, bonus: 999, xp: 9999, ecart: 9999 };
+    // UNE SPÉCIALITÉ N'A PAS DE PLAFOND : les règles n'en donnent aucun, et
+    // l'absence de « plafond » dans cette table n'est pas un oubli.
+    var SPE_BORNE = { valeur: 999, bonus: 999, xp: 9999, ecart: 9999 };
     s.caracsLeviers = tableLeviers(s.caracsLeviers, LEVIER_BORNE);
 
     // ---------- les compétences ----------
@@ -220,9 +237,10 @@
         // le bonus de la spécialité : une valeur EN PLUS, qui part de zéro et
         // qu'on peut vouloir négative (un malus permanent).
         //
-        // IL RESTE HORS DE LA CHAÎNE, et ce n'est pas un oubli : il s'ajoute
-        // APRÈS le rabattage de l'écart. L'y faire entrer ferait rabattre la
-        // spécialité par son propre bonus.
+        // IL A SA PROPRE CHAÎNE, et il n'entre pas dans celle de la valeur :
+        // il s'ajoute APRÈS le rabattage de l'écart, et l'y faire entrer
+        // ferait rabattre la spécialité par son propre bonus. C'est ce nombre
+        // qui en est la BASE — le levier « bonus » se règle par-dessus.
         bonus: modNum(sp.bonus)
       };
       // épars comme le reste : une spécialité que personne n'a réglée ne porte

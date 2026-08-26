@@ -318,14 +318,22 @@
         var rabat = spe.carac && speRetire(spe) > 0;
         vTot.textContent = spe.carac ? String(tot).replace("-", "−") : "—";
         vTot.classList.toggle("adj", !!rabat);
+        // LES DEUX NOMBRES SONT CEUX QUI ONT SERVI : l'écart de la SPÉCIALITÉ,
+        // bout de la cascade, et la limite NATURELLE — ceux que speRetire
+        // emploie, et non ceux de la caractéristique telle qu'elle se lit.
         vTot.title = rabat
-          ? "Ramené de " + brut + " — écart " + ecartMin(spe.carac) +
-            " sous la limite " + caracLim(spe.carac) + "."
+          ? "Ramené de " + brut + " — écart " + ecartSpe(spe) +
+            " sous la limite " + caracLimNat(spe.carac) + "."
           : "";
         vLim.textContent = spe.carac ? String(lim) : "—";
-        vBon.txt.textContent = sign(spe.bonus || 0);
+        // LA CASE MONTRE LE BONUS TEL QUE SA CHAÎNE LE REND ; le CHAMP, lui,
+        // garde ce qui a été saisi — c'est lui qu'on modifie, et il est la base
+        // de la chaîne.
+        var bon = speBonus(spe);
+        var db = bon - speBonusSocle(spe);
+        vBon.txt.textContent = sign(bon);
         if (document.activeElement !== vBon.champ) vBon.champ.value = spe.bonus || 0;
-        quint.classList.toggle("adj", force || d !== 0 || mal !== 0 || ch !== 0);
+        quint.classList.toggle("adj", force || d !== 0 || db !== 0 || mal !== 0 || ch !== 0);
         quint.title = !spe.carac
           ? "Cette spécialité ne dit pas de quelle caractéristique elle tient."
           : (force
@@ -335,7 +343,8 @@
             " · " + spe.carac + " " + sign(caracMod(spe.carac)) +
             (spe.comp ? " · " + spe.comp + " " + sign(compPts(spe.comp)) : "") +
             (rabat ? " · total ramené de " + brut + " à " + tot : "") +
-            ((spe.bonus || 0) ? " · bonus " + sign(spe.bonus) : "") +
+            (bon ? " · bonus " + sign(bon) : "") +
+            (db ? " (décalé de " + sign(db) + ", Options)" : "") +
             (ch ? " · charge " + sign(ch) : "") +
             (mal ? " · endurance " + sign(-mal) : "") +
             " — clic : lancer " + deNu(deTest()) + " " + sign(bonus) +

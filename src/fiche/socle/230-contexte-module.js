@@ -132,11 +132,19 @@
       // calculs : tous dérivés, donc en lecture seule
       calculs: {
         caracTotal: caracTotal,
+        // les deux étages sous le total : la valeur coiffée et le bonus, tels
+        // que leurs chaînes les rendent. Un module qui les recalculerait à
+        // partir de l'état brut sauterait les leviers du meneur.
+        caracValeur: caracValeur,
+        caracBonus: caracBonus,
         caracMod: caracMod,
         caracLim: caracLim,
         compPts: compPts,
+        compValeur: compValeur,
+        compBonus: compBonus,
         compPlafond: compPlafond,
         spePts: spePts,
+        speBonus: speBonus,
         jetBonus: jetBonus,
         prestige: prestige,
         pvMax: pvMax,

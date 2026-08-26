@@ -28,7 +28,7 @@
   // spécialités, et c'est ce que dit la barre d'envoi.
   function jetBonusBrut(carac, comp, spe) {
     var b = -enduranceMalus();
-    if (spe) b += speTotal(spe, carac, comp) + (spe.bonus || 0) + speMalusCharge(spe);
+    if (spe) b += speTotal(spe, carac, comp) + speBonus(spe) + speMalusCharge(spe);
     else {
       b += caracMod(carac);
       if (comp) b += compPts(comp);

@@ -20,7 +20,14 @@
     // La caractéristique par DÉFAUT : celle qui donne le MOD et la LIM du jet.
     // Le joueur peut en demander une autre au moment de lancer (réglage « Au
     // choix » de la barre d'envoi) ; c'est doJet qui le lui propose, pas la ligne.
-    var carac = item.carac || compCarac(code);
+    //
+    // ELLE SE LIT VIVANTE, jamais figée au montage : l'onglet « Carac. » des
+    // Options la change pour ce personnage, et rien ne rebâtit les lignes de
+    // compétence — elles continuaient d'afficher le MOD et la LIM de l'ancienne
+    // et de lancer sous elle, pendant que le bloc des Options montrait déjà la
+    // nouvelle. Un appelant qui NOMME sa caractéristique (un mod) garde la
+    // sienne : c'est un choix, pas un défaut.
+    function carac() { return item.carac || compCarac(code); }
     var row = el("div", "pc-crow" + (odd ? " odd" : ""));
 
     var top = el("div", "pc-crow-top");
@@ -47,10 +54,14 @@
         // le plafond ne bloque que les HAUSSES : des points investis avant
         // qu'un malus ne rabaisse la caractéristique redescendent pas à pas au
         // lieu d'être rognés d'un seul clic, ce qui rendrait l'xp introuvable
+        // ET IL NE BLOQUE PLUS RIEN DÈS QU'UN LEVIER DE VALEUR S'INTERPOSE :
+        // la coiffe tombe sur le RÉSULTAT de la chaîne, pas sur ce qu'on tape.
         var plaf = compPlafond(code);
-        var haut = Math.max(plaf, state.comps[code] || 0);
         var n = Math.round(v);
-        if (n > haut) { flash("Plafond de " + plaf + "."); n = haut; }
+        if (!levierRegleDe(lireComp("valeur", code))) {
+          var haut = Math.max(plaf, state.comps[code] || 0);
+          if (n > haut) { flash("Plafond de " + plaf + "."); n = haut; }
+        }
         n = Math.max(0, n);
         // zéro n'est pas une donnée : une clé absente vaut zéro partout
         // (accesseurs, attributs Roll20), et l'état voyage d'autant plus léger
@@ -66,7 +77,7 @@
     // rouage ouvert, on construit : le bloc ne lance pas (voir specialites.js)
     trio.addEventListener("click", function () {
       if (isEdit("comps")) return;
-      doJet(code, carac, code, null);
+      doJet(code, carac(), code, null);
     });
     top.appendChild(trio);
     row.appendChild(top);
@@ -79,34 +90,46 @@
     reg.push(function () {
       var base = state.comps[code] || 0;
       var plaf = compPlafond(code);
-      var mord = base > plaf;
+      var vBrut = compValeurBrut(code);
+      // LE PLAFOND MORD SUR CE QUE LE LEVIER A PRODUIT, et non sur ce qui a été
+      // acheté : « même modifiée, la valeur ne dépasse pas le plafond ».
+      var mord = vBrut > plaf;
       // LE LEVIER SE LIT PAR SON RÉSULTAT, et non par une de ses neuf cases :
       // un facteur ou un ajout de fin décalent la valeur sans toucher à celle
       // qu'on lisait ici, et la pastille « retouché » restait éteinte.
-      var d = compPtsBrut(code) - compPtsSocle(code);
+      var d = vBrut - base;
       var force = lireComp("valeur", code)("force") !== undefined;
       // le malus d'endurance pèse sur TOUS les jets : il est déjà dans le
       // bonus, il n'est nommé ici que pour qu'on sache d'où vient l'écart
       var mal = enduranceMalus();
-      var b = jetBonus(carac, code, null);
+      var c = carac();
+      var b = jetBonus(c, code, null);
       // LE TOTAL EST CELUI QUI PART AU DÉ, bonus EXCLU : le bonus a sa propre
       // case, et l'additionner ici le compterait deux fois. C'est la même
       // lecture que sur une spécialité — total, limite, bonus.
-      var bon = state.compsBonus[code] || 0;
-      vVal.txt.textContent = String(caracMod(carac) + compPts(code) - bon);
-      cLim[0].textContent = String(caracLim(carac));
+      // LE BONUS AFFICHÉ EST CELUI QUE SA CHAÎNE REND — le même que celui que
+      // compPts a mis dedans, sans quoi la soustraction ci-dessous ne rendrait
+      // ni le total du dé ni le total hors bonus.
+      var bon = compBonus(code);
+      var db = bon - compBonusSocle(code);
+      vVal.txt.textContent = String(caracMod(c) + compPts(code) - bon);
+      cLim[0].textContent = String(caracLim(c));
       cLim[1].textContent = String(plaf);
       cLim[1].classList.toggle("adj", mord);
       vBon.txt.textContent = sign(bon);
-      trio.classList.toggle("adj", force || d !== 0 || mord || mal !== 0);
+      trio.classList.toggle("adj", force || d !== 0 || db !== 0 || mord || mal !== 0);
       trio.title = (force
-                     ? "Points forcés (Options)"
+                     ? "Points forcés à " + vBrut + " (Options)"
                      : "Points " + base +
-                       (mord ? ", plafonnés à " + plaf : "") +
                        (d ? " · modificateur (Options) " + sign(d) : "")) +
+                   // LE PLAFOND SE DIT MÊME SUR UN FORÇAGE : il le rogne aussi,
+                   // désormais, et taire la coiffe ferait disparaître des points
+                   // sans un mot.
+                   (mord ? ", plafonnés à " + plaf : "") +
+                   (db ? " · bonus décalé de " + sign(db) + " (Options)" : "") +
                    (mal ? " · endurance " + sign(-mal) : "") +
                    " — clic : lancer " + deNu(deTest()) + " " + sign(b) +
-                   ", plafonné à " + caracLim(carac);
+                   ", plafonné à " + caracLim(c);
     });
     return row;
   }

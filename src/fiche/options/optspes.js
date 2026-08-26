@@ -3,28 +3,35 @@
   // spécialité n'est pas une compétence : sa liste est OUVERTE, elle se nomme au
   // lieu de porter un sigle, et elle se rebâtit à chaque ajout.
   //
-  // TROIS ONGLETS. « Valeur » n'était pas dans la demande, et il faut le dire :
-  // sans lui, les points d'une spécialité — son forçage et ses deux décalages —
-  // n'auraient plus d'interface DU TOUT. Ils ne sont pas sur la Fiche, qui ne
-  // porte que les points achetés et le bonus.
+  // QUATRE ONGLETS : Valeur, Bonus, XP, Écart.
+  //
+  // PAS DE COIFFE ENTRE LES DEUX PREMIERS, et c'est la seule différence avec les
+  // deux autres blocs : une spécialité n'a pas de plafond. Ce qui la borne est
+  // la règle de l'écart, qui rabat le TOTAL et non ses points.
+  //
+  // LE BONUS A SA CHAÎNE À LUI, et il ne pouvait pas entrer dans celle de la
+  // valeur : il s'ajoute APRÈS le rabattage de l'écart, et l'y faire entrer
+  // ferait rabattre la spécialité par son propre bonus.
   //
   // CE QUI N'A PAS D'ONGLET, ET POURQUOI :
   //   — le PLAFOND : les règles n'en donnent aucun à une spécialité. Ce qui en
   //     tient lieu est l'avertissement de l'en-tête quand l'écart se resserre ;
   //   — la CARACTÉRISTIQUE et la COMPÉTENCE : deux sélecteurs les portent déjà
   //     sur la ligne de la Fiche, et deux endroits pour dire la même chose
-  //     finissent par se contredire ;
-  //   — le BONUS : il s'ajoute APRÈS le rabattage de l'écart. L'entrer dans une
-  //     chaîne de levier ferait rabattre la spécialité par son propre bonus.
+  //     finissent par se contredire.
   function buildOptSpes() {
     var b = block("Spécialités");
     var bande = bandeOnglets(b);
     var B = boitesSpe();
-    // LA LISTE EST OUVERTE : elle se rebâtit. Le registre du rebâti est
-    // REMPLACÉ à chaque fois, donc il se remet à vide AVANT qu'un seul champ ne
-    // s'y inscrive — sans quoi les champs poussent dans l'ancien tableau, que
-    // plus personne ne joue.
-    var boites = [];
+    // LE REGISTRE EST CELUI DU SOCLE, « optSpesHooks », et surtout pas un
+    // tableau à nous : refresh() ne joue que les registres qu'il connaît
+    // (voir 150-refresh.js). Un tableau local recueillait bien les fonctions,
+    // et PERSONNE ne les appelait — le bloc restait vide, sans une faute, sans
+    // un message : les champs s'affichaient, aucun nombre n'y entrait jamais.
+    //
+    // LA LISTE EST OUVERTE : elle se rebâtit, donc le registre se remet à vide
+    // AVANT qu'un seul champ ne s'y inscrive — sans quoi les fonctions des
+    // lignes détruites rafraîchiraient des éléments qui ont quitté la page.
 
     // LA SPÉCIALITÉ SE PREND VIVANTE, jamais capturée au montage : la liste
     // bouge sous la ligne (ajout, suppression, glissement), et une référence
@@ -58,22 +65,35 @@
             entete: ["Spé.", "Spécialité"],
             lignes: liste,
             rangee: function (hote, cls, ligne, i) {
-              return rangeeNom(hote, cls, ligne.nom, i, ligne.titre);
+              var row = rangeeNom(hote, cls, ligne.nom, i, ligne.titre);
+              // LE NOM SE RELIT À CHAQUE PASSE : rangeeNom l'écrit une fois, et
+              // renommer une spécialité ne rebâtit rien. Le bloc gardait donc
+              // l'ancien nom jusqu'au prochain ajout ou retrait.
+              var lab = row.querySelector(".pc-comp-label");
+              if (lab) optSpesHooks.push(function () {
+                var sp = (state.specialites || [])[ligne.index];
+                if (!sp) return;
+                var n = sp.nom || "Sans nom";
+                if (lab.textContent !== n) lab.textContent = n;
+                lab.title = n + (sp.carac || sp.comp
+                  ? " — " + (sp.carac || "—") + " · " + (sp.comp || "—") : "");
+              });
+              return row;
             },
             lire: function (i) { return B.lire(nom, vivante(i)); },
             ecrire: function (i, boite, v) { B.ecrire(nom, boite, vivante(i), v); },
             mot: mot, borne: borne,
             auto: function (i) { return auto((state.specialites || [])[i]); },
             rendu: function (i) { return rendu((state.specialites || [])[i], i); },
-            reg: boites
+            reg: optSpesHooks
           });
         }
         bati();
         rebatis.push(bati);
       });
     }
-    // Les quatre onglets se rebâtissent ensemble : une spécialité ajoutée
-    // apparaît partout, pas seulement dans celui qu'on regarde.
+    // Les onglets se rebâtissent ENSEMBLE : une spécialité ajoutée apparaît
+    // partout, pas seulement dans celui qu'on regarde.
     var rebatis = [];
 
     // ---------- Valeur ----------
@@ -83,6 +103,18 @@
         return { texte: String(spePts(sp)),
                  titre: chaineTexteDe(B.lire("valeur", vivante(i)), "points achetés :",
                                       (sp && sp.pts) || 0) };
+      });
+
+    // ---------- Bonus ----------
+    // CE QUI S'AJOUTE APRÈS LE RABATTAGE DE L'ÉCART. La base est la case Bonus
+    // de la ligne, sur la Fiche.
+    tab("Bonus", "", "bonus", ["Bonus", "Bonus effectif"], 999,
+      speBonusAuto,
+      function (sp, i) {
+        var b = speBonus(sp);
+        return { texte: sign(b), zero: !b,
+                 titre: chaineTexteDe(B.lire("bonus", vivante(i)), "de la Fiche",
+                                      speBonusSocle(sp)) };
       });
 
     // ---------- XP ----------
@@ -113,8 +145,16 @@
 
     // Le rebâti que la Fiche appelle quand la liste change.
     optSpesRebuild = function () {
-      boites.length = 0;
+      optSpesHooks.length = 0;
       rebatis.forEach(function (f) { f(); });
+      // ET ON REJOUE CE QU'ON VIENT D'INSCRIRE. Les trois appelants (ajout,
+      // retrait, glissement) lancent refresh() PUIS ce rebâti : les fonctions
+      // fraîches naissent donc après la passe, et le bloc restait entièrement
+      // vide — neuf champs sans un chiffre, sans même le filigrane — jusqu'à
+      // la frappe suivante.
+      for (var i = 0; i < optSpesHooks.length; i++) {
+        try { optSpesHooks[i](); } catch (e) { /* la muselière jugera à la passe suivante */ }
+      }
     };
     bande.montre(0);
     return b;
