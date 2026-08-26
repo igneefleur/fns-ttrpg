@@ -23,6 +23,24 @@
       var n = parseFloat(v);
       return isFinite(n) ? clamp(Math.round(n * 100) / 100, -borne, borne) : 0;
     }
+    // UN LEVIER QUI NE CHANGE RIEN N'EST PAS UN LEVIER, et les deux tables
+    // ci-dessous l'appliquent : un ajout de ZÉRO et un facteur de UN sont le
+    // NEUTRE de leur opération, ils ne se rangent donc pas.
+    //
+    // C'EST UN DÉFAUT SIGNALÉ EN PARTIE. tableNombres garde un zéro explicite
+    // (« n !== 0 || src[k] === 0 »), ce qui est juste pour un modificateur
+    // ordinaire mais pas ici : une case tapée puis vidée laissait « 0 » dans
+    // l'état, et la fiche marquait la limite et le coût en xp comme RETOUCHÉS
+    // alors que rien ne l'était. Le joueur voyait du rouge sans avoir rien
+    // réglé, et rien ne lui disait quoi défaire.
+    function tableAjout(v, borne) {
+      var src = objet(v), out = {};
+      Object.keys(src).forEach(function (k) {
+        var n = nombreBorne(src[k], borne);
+        if (n !== 0) out[k] = n;
+      });
+      return out;
+    }
     // UN FACTEUR : vide vaut UN, jamais zéro. Il se range donc comme un forçage
     // (clé absente = pas de valeur) et surtout PAS comme un modificateur, qui
     // garde un zéro explicite — un facteur à zéro annulerait la
@@ -36,7 +54,8 @@
       var src = objet(v), out = {};
       Object.keys(src).forEach(function (k) {
         var n = multNum(src[k]);
-        if (n !== null) out[k] = n;
+        // ×1 ne multiplie rien : même sort qu'un ajout de zéro
+        if (n !== null && n !== 1) out[k] = n;
       });
       return out;
     }
@@ -115,7 +134,7 @@
       var f = tableForce(src.force);
       if (Object.keys(f).length) out.force = f;
       ["a1", "a2", "a3", "a4"].forEach(function (b) {
-        var tb = tableNombres(src[b], function (x) { return nombreBorne(x, borne); });
+        var tb = tableAjout(src[b], borne);
         if (Object.keys(tb).length) out[b] = tb;
       });
       ["m1", "m2"].forEach(function (b) {

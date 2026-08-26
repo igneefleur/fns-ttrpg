@@ -170,16 +170,24 @@
         lv[nom][boite][c] = v;
       };
     }
-    // Une boîte est-elle réglée, quelle qu'elle soit ? C'est ce qui allume la
-    // barre rouge de la rangée : on n'en regarde plus une seule, comme du temps
-    // où il n'y avait qu'un décalage.
-    var BOITES = ["force", "a1", "a2", "m1", "m2", "a3", "a4"];
+    // UNE BOÎTE QUI NE CHANGE RIEN NE COMPTE PAS. C'est ce qui allume la barre
+    // rouge de la rangée et le rouge du dernier nombre — et ce doit être vrai
+    // quand quelque chose est RÉGLÉ, pas quand une clé traîne.
+    //
+    // Un ajout de zéro et un facteur de un sont le NEUTRE de leur opération :
+    // ils ne comptent pas. Un forçage, si — forcer une valeur à zéro est un
+    // réglage, et le seul moyen d'obtenir zéro à coup sûr.
+    var BOITES = [["force", null], ["a1", 0], ["a2", 0], ["m1", 1], ["m2", 1],
+                  ["a3", 0], ["a4", 0]];
     function levierRegle(nom, c) {
       var l = state.caracsLeviers && state.caracsLeviers[nom];
       if (!l) return false;
       for (var i = 0; i < BOITES.length; i++) {
-        var tb = l[BOITES[i]];
-        if (tb && tb[c] !== undefined) return true;
+        var tb = l[BOITES[i][0]];
+        var v = tb && tb[c];
+        if (v === undefined) continue;
+        if (BOITES[i][1] !== null && v === BOITES[i][1]) continue;
+        return true;
       }
       return false;
     }
@@ -192,11 +200,13 @@
       var f = l && l.force && l.force[c];
       if (f !== undefined) return "Forcé à " + f;
       var out = motBase + " " + base;
-      [["a1", " · "], ["a2", " · "], ["m1", " · ×"], ["m2", " · ×"],
-       ["a3", " · "], ["a4", " · "]].forEach(function (d) {
+      [["a1", " · ", 0], ["a2", " · ", 0], ["m1", " · ×", 1], ["m2", " · ×", 1],
+       ["a3", " · ", 0], ["a4", " · ", 0]].forEach(function (d) {
         var tb = l && l[d[0]];
         var v = tb && tb[c];
-        if (v === undefined) return;
+        // le neutre ne se dit pas : « de la table 400 · +0 » se lit deux fois
+        // avant de vouloir dire qu'il ne s'est rien passé
+        if (v === undefined || v === d[2]) return;
         out += d[1] + (d[0].charAt(0) === "m" ? v : sign(v));
       });
       return out;

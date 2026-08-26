@@ -74,7 +74,7 @@
   // site il est. Il ne change PAS le rang : « 1.0.1b » et « 1.0.1 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (MiaMods.compareVersions tient cette règle).
-  var RELEASE = "1.14.0b";
+  var RELEASE = "1.14.1b";
   var SCHEMA = 2;
 
   // ---------- ce que la fiche ne décide PAS ----------
@@ -364,6 +364,24 @@
       var n = parseFloat(v);
       return isFinite(n) ? clamp(Math.round(n * 100) / 100, -borne, borne) : 0;
     }
+    // UN LEVIER QUI NE CHANGE RIEN N'EST PAS UN LEVIER, et les deux tables
+    // ci-dessous l'appliquent : un ajout de ZÉRO et un facteur de UN sont le
+    // NEUTRE de leur opération, ils ne se rangent donc pas.
+    //
+    // C'EST UN DÉFAUT SIGNALÉ EN PARTIE. tableNombres garde un zéro explicite
+    // (« n !== 0 || src[k] === 0 »), ce qui est juste pour un modificateur
+    // ordinaire mais pas ici : une case tapée puis vidée laissait « 0 » dans
+    // l'état, et la fiche marquait la limite et le coût en xp comme RETOUCHÉS
+    // alors que rien ne l'était. Le joueur voyait du rouge sans avoir rien
+    // réglé, et rien ne lui disait quoi défaire.
+    function tableAjout(v, borne) {
+      var src = objet(v), out = {};
+      Object.keys(src).forEach(function (k) {
+        var n = nombreBorne(src[k], borne);
+        if (n !== 0) out[k] = n;
+      });
+      return out;
+    }
     // UN FACTEUR : vide vaut UN, jamais zéro. Il se range donc comme un forçage
     // (clé absente = pas de valeur) et surtout PAS comme un modificateur, qui
     // garde un zéro explicite — un facteur à zéro annulerait la
@@ -377,7 +395,8 @@
       var src = objet(v), out = {};
       Object.keys(src).forEach(function (k) {
         var n = multNum(src[k]);
-        if (n !== null) out[k] = n;
+        // ×1 ne multiplie rien : même sort qu'un ajout de zéro
+        if (n !== null && n !== 1) out[k] = n;
       });
       return out;
     }
@@ -456,7 +475,7 @@
       var f = tableForce(src.force);
       if (Object.keys(f).length) out.force = f;
       ["a1", "a2", "a3", "a4"].forEach(function (b) {
-        var tb = tableNombres(src[b], function (x) { return nombreBorne(x, borne); });
+        var tb = tableAjout(src[b], borne);
         if (Object.keys(tb).length) out[b] = tb;
       });
       ["m1", "m2"].forEach(function (b) {
@@ -5501,16 +5520,24 @@
         lv[nom][boite][c] = v;
       };
     }
-    // Une boîte est-elle réglée, quelle qu'elle soit ? C'est ce qui allume la
-    // barre rouge de la rangée : on n'en regarde plus une seule, comme du temps
-    // où il n'y avait qu'un décalage.
-    var BOITES = ["force", "a1", "a2", "m1", "m2", "a3", "a4"];
+    // UNE BOÎTE QUI NE CHANGE RIEN NE COMPTE PAS. C'est ce qui allume la barre
+    // rouge de la rangée et le rouge du dernier nombre — et ce doit être vrai
+    // quand quelque chose est RÉGLÉ, pas quand une clé traîne.
+    //
+    // Un ajout de zéro et un facteur de un sont le NEUTRE de leur opération :
+    // ils ne comptent pas. Un forçage, si — forcer une valeur à zéro est un
+    // réglage, et le seul moyen d'obtenir zéro à coup sûr.
+    var BOITES = [["force", null], ["a1", 0], ["a2", 0], ["m1", 1], ["m2", 1],
+                  ["a3", 0], ["a4", 0]];
     function levierRegle(nom, c) {
       var l = state.caracsLeviers && state.caracsLeviers[nom];
       if (!l) return false;
       for (var i = 0; i < BOITES.length; i++) {
-        var tb = l[BOITES[i]];
-        if (tb && tb[c] !== undefined) return true;
+        var tb = l[BOITES[i][0]];
+        var v = tb && tb[c];
+        if (v === undefined) continue;
+        if (BOITES[i][1] !== null && v === BOITES[i][1]) continue;
+        return true;
       }
       return false;
     }
@@ -5523,11 +5550,13 @@
       var f = l && l.force && l.force[c];
       if (f !== undefined) return "Forcé à " + f;
       var out = motBase + " " + base;
-      [["a1", " · "], ["a2", " · "], ["m1", " · ×"], ["m2", " · ×"],
-       ["a3", " · "], ["a4", " · "]].forEach(function (d) {
+      [["a1", " · ", 0], ["a2", " · ", 0], ["m1", " · ×", 1], ["m2", " · ×", 1],
+       ["a3", " · ", 0], ["a4", " · ", 0]].forEach(function (d) {
         var tb = l && l[d[0]];
         var v = tb && tb[c];
-        if (v === undefined) return;
+        // le neutre ne se dit pas : « de la table 400 · +0 » se lit deux fois
+        // avant de vouloir dire qu'il ne s'est rien passé
+        if (v === undefined || v === d[2]) return;
         out += d[1] + (d[0].charAt(0) === "m" ? v : sign(v));
       });
       return out;
