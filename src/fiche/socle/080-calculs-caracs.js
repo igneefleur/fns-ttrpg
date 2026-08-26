@@ -44,21 +44,73 @@
     return t[t.length - 1];
   }
 
+  // ---------- LES CINQ LEVIERS DU MENEUR ----------
+  // UNE SEULE CHAÎNE, LA MÊME POUR LES CINQ. Le plafond, le coût en xp, le
+  // modificateur, la limite et l'écart se règlent du même geste :
+  //
+  //     le forcé, s'il est rempli
+  //     sinon ((base + a1 + a2) × m1 × m2) + a3 + a4
+  //
+  // « base » est ce que la RÈGLE donne pour ce levier, et rien d'autre : le
+  // prestige, l'xp cumulé de la ligne, le MOD de la table, sa limite, l'écart
+  // des règles.
+  //
+  // L'ORDRE DANS UN GROUPE EST SANS EFFET — l'addition commute, la
+  // multiplication associe. C'est la coupure en TROIS groupes qui fait tout, et
+  // la grille des Options la montre telle quelle, de gauche à droite : deux
+  // ajouts qui portent sur la base, deux facteurs qui portent sur ce qu'ils
+  // trouvent, deux ajouts qui ne se multiplient plus.
+  function levierBoite(nom, boite, c) {
+    var l = state.caracsLeviers && state.caracsLeviers[nom];
+    var tb = l && l[boite];
+    var v = tb && tb[c];
+    return (typeof v === "number" && isFinite(v)) ? v : undefined;
+  }
+  // UN AJOUT VIDE VAUT ZÉRO, UN FACTEUR VIDE VAUT UN, et c'est toute la
+  // différence entre les deux. Lire un facteur absent comme un zéro mettrait la
+  // caractéristique à zéro au premier champ qu'on tape puis qu'on efface.
+  function levierAdd(nom, boite, c) {
+    var v = levierBoite(nom, boite, c);
+    return v === undefined ? 0 : v;
+  }
+  function levierMul(nom, boite, c) {
+    var v = levierBoite(nom, boite, c);
+    return v === undefined ? 1 : v;
+  }
+  function levierForce(nom, c) { return levierBoite(nom, "force", c); }
+  // La chaîne SANS le forçage : c'est elle que le champ « Forcé » montre en
+  // filigrane, et c'est ce que les fonctions <nom>Auto rendent.
+  function levierAuto(nom, c, base) {
+    var v = ((base + levierAdd(nom, "a1", c) + levierAdd(nom, "a2", c)) *
+             levierMul(nom, "m1", c) * levierMul(nom, "m2", c)) +
+            levierAdd(nom, "a3", c) + levierAdd(nom, "a4", c);
+    // UN RÉSULTAT NON FINI REND LA BASE. applique() refuse déjà ce qu'un FILTRE
+    // rend d'infini ou d'illisible, mais elle ne voit pas ce qui se fabrique
+    // ici : un NaN né dans la chaîne traverserait la fiche entière sans un mot.
+    if (!isFinite(v)) return base;
+    // ARRONDI AU CENTIÈME, ET À LA TOUTE FIN. Les leviers acceptent les
+    // décimales depuis toujours ; arrondir entre les deux facteurs empilerait
+    // deux erreurs, et arrondir à l'unité mentirait sur l'xp, décimal par
+    // décision. Ce qui doit être entier l'est chez celui qui le consomme.
+    return Math.round(v * 100) / 100;
+  }
+  function levierChaine(nom, c, base) {
+    var f = levierForce(nom, c);
+    return f === undefined ? levierAuto(nom, c, base) : f;
+  }
+
   // ---------- le prestige ----------
   function prestigeAuto() { return (state.prestige || 0) + (state.prestigeMod || 0); }
   function prestige() {
     if (state.prestigeForce !== null && state.prestigeForce !== undefined) return state.prestigeForce;
     return prestigeAuto();
   }
-  // Plafond d'une caractéristique : le prestige, décalé caractéristique par
-  // caractéristique, ou remplacé net. UN SEUL endroit le calcule — les
-  // garde-fous des boutons, l'infobulle et le champ forcé des Options lisent
-  // tous cette fonction, sinon trois chiffres différents finissent à l'écran.
-  function caracPlafondAuto(c) { return prestige() + (state.caracsPlafondMod[c] || 0); }
-  function caracPlafond(c) {
-    if (state.caracsPlafondForce[c] !== undefined) return state.caracsPlafondForce[c];
-    return caracPlafondAuto(c);
-  }
+  // Plafond d'une caractéristique : le prestige, passé par la chaîne du levier.
+  // UN SEUL endroit le calcule — les garde-fous des boutons, l'infobulle et le
+  // champ forcé des Options lisent tous cette fonction, sinon trois chiffres
+  // différents finissent à l'écran.
+  function caracPlafondAuto(c) { return levierAuto("plafond", c, prestige()); }
+  function caracPlafond(c) { return levierChaine("plafond", c, prestige()); }
 
   // ---------- les caractéristiques ----------
   function caracBase(c) { return state.caracs[c] || 0; }
@@ -84,30 +136,33 @@
   function caracModNat(c) { return ligneValeur(caracValeurNat(c)).mod; }
   function caracLimNat(c) { return ligneValeur(caracValeurNat(c)).lim; }
   // Ce que la TABLE donne pour la valeur courante, bonus compris — avant le
-  // levier du meneur. C'est ce que le bloc des Options montre à côté du
-  // décalage, pour qu'on voie ce que le décalage a décalé.
+  // levier du meneur. C'est la BASE de la chaîne, et c'est ce que le bloc des
+  // Options montre en filigrane du champ forcé.
   function caracModTable(c) { return ligneValeur(caracTotal(c)).mod; }
   function caracLimTable(c) { return ligneValeur(caracTotal(c)).lim; }
-  function caracModBrut(c) {
-    return caracModTable(c) + (state.caracsModMod[c] || 0);
-  }
+  // LE FORÇAGE SE TESTE DANS LE BRUT, ET NON APRÈS LE FILTRE : posé dans
+  // caracMod(), il sauterait applique() et couperait en silence tout mod déjà
+  // écrit. Testé ici, un mod garde le dernier mot sur un MOD forcé —
+  // exactement ce qu'il voit aujourd'hui d'un MOD décalé.
+  function caracModAuto(c) { return levierAuto("mod", c, caracModTable(c)); }
+  function caracModBrut(c) { return levierChaine("mod", c, caracModTable(c)); }
   function caracMod(c) {
     var v = caracModBrut(c);
     return aFiltre("caracMod") ? applique("caracMod", v, { carac: c }) : v;
   }
-  function caracLimBrut(c) { return caracLimTable(c) + (state.caracsLimMod[c] || 0); }
+  function caracLimAuto(c) { return levierAuto("lim", c, caracLimTable(c)); }
+  function caracLimBrut(c) { return levierChaine("lim", c, caracLimTable(c)); }
   function caracLim(c) {
     var v = caracLimBrut(c);
     return aFiltre("caracLim") ? applique("caracLim", v, { carac: c }) : v;
   }
   // L'ÉCART MINIMUM entre le total d'une spécialité et la limite naturelle de
-  // sa caractéristique. Le nombre vient des règles ; le meneur peut le
-  // REMPLACER, caractéristique par caractéristique — une valeur, et non un
-  // décalage : on pense « l'écart doit être de 30 », pas « je décale de −20 ».
-  function ecartMinBrut(c) {
-    var f = state.caracsEcart[c];
-    return f === undefined ? repli("speMarge") : f;
-  }
+  // sa caractéristique. La base vient des règles ; le meneur la passe par la
+  // même chaîne que les quatre autres leviers — et son « forcé » est l'ancienne
+  // case unique, une VALEUR et non un décalage : on pense « l'écart doit être
+  // de 30 », pas « je décale de −20 ».
+  function ecartMinAuto(c) { return levierAuto("ecart", c, repli("speMarge")); }
+  function ecartMinBrut(c) { return levierChaine("ecart", c, repli("speMarge")); }
   function ecartMin(c) {
     var v = ecartMinBrut(c);
     return aFiltre("ecartMin") ? applique("ecartMin", v, { carac: c }) : v;
@@ -115,14 +170,8 @@
   // Ce qu'une caractéristique coûte : l'XP CUMULÉ de sa ligne, et non une somme
   // de pas. La table porte déjà les 20 XP le +1 jusqu'à 5 puis 40 au-delà, donc
   // un barème corrigé dans les règles arrive ici sans qu'on rouvre ce fichier.
-  function caracXpAuto(c) {
-    return ligneValeur(caracBase(c)).xp +
-           (state.caracsXpMod[c] || 0) + (state.caracsXpMod2[c] || 0);
-  }
-  function caracXp(c) {
-    if (state.caracsXpForce[c] !== undefined) return state.caracsXpForce[c];
-    return caracXpAuto(c);
-  }
+  function caracXpAuto(c) { return levierAuto("xp", c, ligneValeur(caracBase(c)).xp); }
+  function caracXp(c) { return levierChaine("xp", c, ligneValeur(caracBase(c)).xp); }
 
   // ---------- les compétences ----------
   // LE PLAFOND DE POINTS : le MOD le plus haut des caractéristiques qui

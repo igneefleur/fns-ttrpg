@@ -17,9 +17,6 @@
       // reste (bloc Création des Options) : une valeur imposée, ou un
       // modificateur du barème.
       prestige: 0, prestigeMod: 0, prestigeForce: null,
-      // et le plafond peut se relever caractéristique par caractéristique,
-      // pour l'avantage ou l'arbitrage qui déborde la règle
-      caracsPlafondMod: {}, caracsPlafondForce: {},
 
       // sigle -> points achetés. Les modificateurs sont DEUX (l'équipement,
       // puis l'arbitrage) : un seul champ obligeait à additionner de tête
@@ -29,22 +26,32 @@
       // comme en dessous de zéro. Il se règle sur la FICHE, dans le module des
       // caractéristiques, et non plus dans les Options.
       caracs: {}, caracsBonus: {},
-      // LES TROIS LEVIERS DU MENEUR, un par caractéristique. Ils ne touchent
-      // ni la valeur ni ce qu'elle a coûté : ils décalent ce qu'elle DONNE.
-      //   caracsModMod   ce qui s'ajoute au MOD lu dans la table
-      //   caracsLimMod   ce qui s'ajoute à la LIMITE — et à elle SEULE, ce qui
-      //                  est le seul moyen de resserrer l'écart d'une
-      //                  spécialité sous son minimum (voir speTotal)
-      //   caracsEcart    l'écart minimum lui-même — une VALEUR et non un
-      //                  décalage : on pense « l'écart doit être de 30 », pas
-      //                  « je décale de −20 ». Vide = celui des règles.
-      caracsModMod: {}, caracsLimMod: {}, caracsEcart: {},
-      // LA RÈGLE DE L'ÉCART, COUPÉE. Les trois leviers ci-dessus DÉCALENT ;
+
+      // LES CINQ LEVIERS DU MENEUR, ET UNE SEULE CLÉ POUR LES CINQ. Ils ne
+      // touchent ni la valeur achetée ni le bonus qu'elle porte sur la fiche :
+      // ils règlent ce que la caractéristique DONNE (son modificateur, sa
+      // limite, l'écart qu'elle impose aux spécialités), ce qui la BORNE (son
+      // plafond) et ce qu'elle COÛTE.
+      //
+      // Chacun porte la même chaîne, par caractéristique :
+      //   force            une valeur imposée, qui court-circuite tout
+      //   a1 a2  m1 m2  a3 a4   sinon ((base + a1 + a2) × m1 × m2) + a3 + a4
+      //
+      // ÉPARSE À TOUS LES NIVEAUX, et c'est ce qui la rend tenable : un levier
+      // auquel personne n'a touché ne pèse pas un octet. La table entière
+      // voyage dans UN attribut Roll20 — huit clés plates par boîte en auraient
+      // fait trente-cinq, à recopier à la main dans trois fichiers que rien ne
+      // contrôle.
+      //
+      // « ecart » porte l'écart minimum d'une spécialité, et son « force » est
+      // l'ancienne case : une VALEUR et non un décalage — on pense « l'écart
+      // doit être de 30 », pas « je décale de −20 ».
+      caracsLeviers: {},
+      // LA RÈGLE DE L'ÉCART, SUSPENDUE. Les cinq leviers ci-dessus DÉCALENT ;
       // celui-ci SUSPEND, et pour tout le personnage : plus rien n'est retiré
       // à aucune spécialité. C'est pour la construction que la règle ordinaire
       // ne sait pas décrire.
       ecartCoupe: false,
-      caracsXpForce: {}, caracsXpMod: {}, caracsXpMod2: {},
 
       // sigle -> points investis (1 XP le point). Mêmes leviers.
       // LE BONUS d'une compétence, réglé sur la FICHE comme celui d'une

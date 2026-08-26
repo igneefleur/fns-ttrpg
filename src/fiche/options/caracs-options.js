@@ -1,13 +1,18 @@
   // ---- onglet Options : LES CARACTÉRISTIQUES, TOUT CE QUI SE RÈGLE ----
   // UN SEUL BLOC, ET CINQ ONGLETS DEDANS. Il y avait quatre blocs — plafond,
-  // modificateur, limite, écart — plus l'interrupteur de la règle de l'écart et
-  // le coût en xp, soit six titres pour une seule et même chose : régler les
-  // huit caractéristiques. La colonne des Options en était pleine, et il fallait
-  // se rappeler lequel des six on cherche avant de savoir où regarder.
+  // modificateur, limite, écart — plus le coût en xp, soit cinq titres pour un
+  // seul et même geste : régler les huit caractéristiques. La colonne des
+  // Options en était pleine, et il fallait se rappeler lequel des cinq on
+  // cherche avant de savoir où regarder.
   //
-  // Le geste est le même dans les cinq : on prend une caractéristique et on
-  // décale ce qu'elle donne. Ce qui change d'un onglet à l'autre, c'est ce qu'on
-  // décale — donc un onglet PAR MODIFICATION, jamais par caractéristique.
+  // LES CINQ ONGLETS PORTENT LA MÊME GRILLE, et c'est tout le sujet : ce qui
+  // change de l'un à l'autre, ce n'est pas le geste, c'est ce sur quoi il porte.
+  //
+  //     Carac. | Forcé | ＋ ＋ | × × | ＋ ＋ | ce que ça donne
+  //
+  // soit, de gauche à droite, la chaîne elle-même (voir levierChaine dans
+  // 080-calculs-caracs.js) : le forcé s'il est rempli, sinon deux ajouts sur la
+  // base, deux facteurs, deux ajouts qui ne se multiplient plus.
   //
   // AUCUN NE TOUCHE À LA VALEUR ACHETÉE : elle se décale sur la Fiche, dans la
   // case Bonus du module des caractéristiques. Ici on règle ce que la
@@ -88,13 +93,12 @@
     // grille ; ce dont on a besoin en réglant un champ tient dans l'infobulle
     // de ce champ. Une phrase de règle posée là est du texte de livre dans un
     // outil, et elle vieillit sans que personne s'en aperçoive.
+
     // LA GRILLE, ET SON DÉFILEMENT. Les colonnes d'une grille d'Options ont une
     // largeur en rem, pas en parts : sous une certaine largeur de colonne, elles
     // ne rentrent plus, et c'est voulu — un champ de saisie qui se réduit à deux
     // millimètres ne sert plus à rien. L'enveloppe laisse alors défiler la
-    // grille sur le côté. (Les grilles se serrent quand même sous 380 px de
-    // fenêtre — un défaut que ces blocs avaient déjà, et qui n'est pas de
-    // celui-ci : mesuré identique avant la fusion.)
+    // grille sur le côté.
     function grille(hote) {
       var wrap = el("div", "pc-optcomp-wrap");
       var box = el("div");
@@ -104,9 +108,15 @@
     }
     // L'entête d'une grille : les mêmes colonnes que le bloc des compétences,
     // pour n'avoir qu'une disposition à apprendre dans tout l'onglet.
+    //
+    // UN MOT NUL POSE UN FILET, et non un entête vide : la grille des leviers
+    // porte deux colonnes d'un pixel qui séparent les trois groupes, et un
+    // entête de texte à leur place décalerait tout d'une colonne. C'est déjà ce
+    // que fait la grille des compétences.
     function entete(hote, cls, mots) {
       var head = el("div", "pc-optcomp-row " + cls + " head");
       mots.forEach(function (h) {
+        if (!h) { head.appendChild(el("span", "rule")); return; }
         var sp = el("span", h[2] || null, h[0]);
         sp.title = h[1];
         head.appendChild(sp);
@@ -127,115 +137,172 @@
       return row;
     }
 
-    // ---------- un levier de décalage : trois colonnes ----------
-    // Le sigle, ce qu'on décale, ce que ça donne. Deux onglets s'en servent —
-    // le modificateur et la limite — et ils ne diffèrent que par la clé d'état
-    // qu'ils écrivent et par le nombre qu'ils affichent en regard.
-    function levier(hote, mot, aide, champ, borne, rendu) {
-      var box = grille(hote);
-      entete(box, "trois", [["Carac.", "Caractéristique"],
-                            ["Décal.", "Décalage — vide = aucun"],
-                            mot]);
+    // ---------- LIRE ET ÉCRIRE UNE BOÎTE, SANS RIEN MATÉRIALISER ----------
+    // On ne passe PAS par champMod(map, clé, …), qui exige une table existante :
+    // l'appeler au montage créerait les trente-cinq sous-tables chez tout
+    // personnage qui ouvre simplement les Options, et l'état, qui voyage dans un
+    // seul attribut Roll20, s'alourdirait de trente-cinq objets vides pour rien.
+    //
+    // On emploie donc les formes LIBRES (champModVal, champForceVal,
+    // champMultVal) avec deux fermetures qui ne créent qu'à l'écriture — et qui
+    // DÉFONT le chemin quand la dernière valeur s'en va.
+    function boiteLire(nom, boite) {
+      return function (c) {
+        var l = state.caracsLeviers && state.caracsLeviers[nom];
+        var tb = l && l[boite];
+        var v = tb && tb[c];
+        return (typeof v === "number" && isFinite(v)) ? v : undefined;
+      };
+    }
+    function boiteEcrire(nom, boite) {
+      return function (c, v) {
+        if (!state.caracsLeviers || typeof state.caracsLeviers !== "object") state.caracsLeviers = {};
+        var lv = state.caracsLeviers;
+        if (v === undefined || v === null) {
+          if (!lv[nom] || !lv[nom][boite]) return;
+          delete lv[nom][boite][c];
+          if (!Object.keys(lv[nom][boite]).length) delete lv[nom][boite];
+          if (!Object.keys(lv[nom]).length) delete lv[nom];
+          return;
+        }
+        if (!lv[nom]) lv[nom] = {};
+        if (!lv[nom][boite]) lv[nom][boite] = {};
+        lv[nom][boite][c] = v;
+      };
+    }
+    // Une boîte est-elle réglée, quelle qu'elle soit ? C'est ce qui allume la
+    // barre rouge de la rangée : on n'en regarde plus une seule, comme du temps
+    // où il n'y avait qu'un décalage.
+    var BOITES = ["force", "a1", "a2", "m1", "m2", "a3", "a4"];
+    function levierRegle(nom, c) {
+      var l = state.caracsLeviers && state.caracsLeviers[nom];
+      if (!l) return false;
+      for (var i = 0; i < BOITES.length; i++) {
+        var tb = l[BOITES[i]];
+        if (tb && tb[c] !== undefined) return true;
+      }
+      return false;
+    }
+    // CE QUE LA CHAÎNE A FAIT, RELU DANS L'ORDRE : la base d'abord, puis chaque
+    // boîte réglée. C'est l'infobulle du dernier nombre, et la seule façon
+    // honnête de dire d'où il sort — une phrase écrite d'avance mentirait dès
+    // qu'un facteur est posé.
+    function chaineTexte(nom, c, motBase, base) {
+      var l = state.caracsLeviers && state.caracsLeviers[nom];
+      var f = l && l.force && l.force[c];
+      if (f !== undefined) return "Forcé à " + f;
+      var out = motBase + " " + base;
+      [["a1", " · "], ["a2", " · "], ["m1", " · ×"], ["m2", " · ×"],
+       ["a3", " · "], ["a4", " · "]].forEach(function (d) {
+        var tb = l && l[d[0]];
+        var v = tb && tb[c];
+        if (v === undefined) return;
+        out += d[1] + (d[0].charAt(0) === "m" ? v : sign(v));
+      });
+      return out;
+    }
+
+    // ---------- UN LEVIER : LA GRILLE DES NEUF COLONNES ----------
+    // Les cinq onglets l'appellent, et ne diffèrent que par quatre choses : le
+    // nom du levier dans l'état, le mot de la dernière colonne, la borne de ses
+    // ajouts, et ce que ce dernier nombre affiche.
+    //
+    // LES ENTÊTES DES SIX CHAMPS SONT DES SIGNES, et il n'y a pas d'alternative
+    // honnête : la colonne fait 1,4 rem, aucun mot n'y tient, et deux « MODIF. »
+    // de suite ne diraient pas lequel vient avant l'autre. « ＋ » et « × »
+    // disent ce que la case CONTIENT — un nombre qui s'ajoute, un nombre qui
+    // multiplie — et rien de plus ; « avant » et « après » diraient où la case
+    // tombe dans un calcul, c'est-à-dire la règle, qui n'a pas sa place ici.
+    function grilleLevier(page, nom, mot, borne, auto, rendu) {
+      var box = grille(page);
+      entete(box, "levier", [
+        ["Carac.", "Caractéristique"],
+        ["Forcé", "Valeur imposée — vide = valeur calculée"],
+        ["＋", "Deux nombres qui s'ajoutent avant les facteurs", "duo op"],
+        null,
+        ["×", "Deux facteurs — vide = ×1", "duo op"],
+        null,
+        ["＋", "Deux nombres qui s'ajoutent après les facteurs", "duo op"],
+        mot
+      ]);
       champs().forEach(function (c, i) {
-        var row = rangee(box, "trois", c, i);
-        row.appendChild(champMod(state[champ], c, borne, aide));
+        var row = rangee(box, "levier", c, i);
+        // le forçage court-circuite tout le reste ; son filigrane montre ce que
+        // la chaîne donnerait sans lui
+        var lireF = boiteLire(nom, "force"), ecrF = boiteEcrire(nom, "force");
+        row.appendChild(champForceVal(
+          function () { return lireF(c); },
+          function (v) { ecrF(c, v); },
+          function () { return auto(c); },
+          "Valeur imposée — vide = valeur calculée."));
+        ["a1", "a2"].forEach(function (bx) { row.appendChild(champAjout(nom, bx, c, borne)); });
+        row.appendChild(el("span", "rule"));
+        ["m1", "m2"].forEach(function (bx) { row.appendChild(champFacteur(nom, bx, c)); });
+        row.appendChild(el("span", "rule"));
+        ["a3", "a4"].forEach(function (bx) { row.appendChild(champAjout(nom, bx, c, borne)); });
         var out = el("span", "pc-comp-total", "");
         row.appendChild(out);
         hooks.push(function () {
-          var d = state[champ][c] || 0;
           var r = rendu(c);
+          var regle = levierRegle(nom, c);
           out.textContent = r.texte;
-          out.classList.toggle("adj", d !== 0);
+          out.classList.toggle("adj", regle);
+          if (r.zero !== undefined) out.classList.toggle("zero", r.zero);
           out.title = r.titre;
-          row.classList.toggle("on", d !== 0);
+          row.classList.toggle("on", regle);
         });
       });
+    }
+    function champAjout(nom, boite, c, borne) {
+      var lire = boiteLire(nom, boite), ecr = boiteEcrire(nom, boite);
+      return champModVal(
+        function () { return lire(c); },
+        function (v) { ecr(c, v ? v : undefined); }, borne,
+        "Nombre qui s'ajoute — vide = aucun.");
+    }
+    function champFacteur(nom, boite, c) {
+      var lire = boiteLire(nom, boite), ecr = boiteEcrire(nom, boite);
+      return champMultVal(
+        function () { return lire(c); },
+        function (v) { ecr(c, v); },
+        "Facteur — vide = ×1.");
     }
 
     // ---------- Plafond ----------
-    // CE QU'UNE CARACTÉRISTIQUE NE PEUT PAS DÉPASSER. Il vient du prestige, qui
-    // range le personnage ; on le relève ou on l'abaisse ici, caractéristique
-    // par caractéristique. Le prestige lui-même reste dans « Création » : il
-    // n'appartient à aucune des huit, il les coiffe toutes.
-    // « le plafond de Agilité » : les noms viennent des règles, on n'en connaît
-    // donc pas la liste d'avance et l'élision se décide ici, sur la lettre.
-    function de(nom) {
-      return (/^[aâàäeéèêëiîïoôöuùûü]/i.test(nom) ? "d'" : "de ") + nom;
-    }
+    // CE QU'UNE CARACTÉRISTIQUE NE PEUT PAS DÉPASSER. La base est le prestige,
+    // qui range le personnage ; on la relève ou on l'abaisse ici,
+    // caractéristique par caractéristique. Le prestige lui-même reste dans
+    // « Création » : il n'appartient à aucune des huit, il les coiffe toutes.
     onglet("Plafond", "", function (p) {
-      var box = grille(p);
-      entete(box, "quatre", [["Carac.", "Caractéristique"],
-                             ["Forcé", "Plafond forcé — vide = plafond calculé"],
-                             ["Modif.", "Modificateur du plafond — vide = aucun"],
-                             ["Plafond", "Plafond effectif"]]);
-      champs().forEach(function (c, i) {
-        var row = rangee(box, "quatre", c, i);
-        row.appendChild(champForce(state.caracsPlafondForce, c,
-          function () { return caracPlafondAuto(c); },
-          "Plafond forcé — vide = plafond calculé."));
-        row.appendChild(champMod(state.caracsPlafondMod, c, 999,
-          "Modificateur du plafond " + de(caracInfo(c).nom) + " — vide = aucun."));
-        var tot = el("span", "pc-comp-total", "");
-        row.appendChild(tot);
-        hooks.push(function () {
-          var m = state.caracsPlafondMod[c] || 0;
-          var f = state.caracsPlafondForce[c];
-          tot.textContent = String(caracPlafond(c));
-          tot.classList.toggle("adj", m !== 0 || f !== undefined);
-          tot.title = f !== undefined
-            ? "Plafond forcé à " + f
-            : "prestige " + prestige() + (m ? " · modificateur " + sign(m) : "");
-          row.classList.toggle("on", m !== 0 || f !== undefined);
+      grilleLevier(p, "plafond", ["Plafond", "Plafond effectif"], 999,
+        caracPlafondAuto,
+        function (c) {
+          return { texte: String(caracPlafond(c)),
+                   titre: chaineTexte("plafond", c, "prestige", prestige()) };
         });
-      });
     });
 
     // ---------- XP ----------
-    // CE QU'ELLES COÛTENT, ET RIEN D'AUTRE. Le coût se lit sur la valeur
-    // ACHETÉE, jamais sur le total : un bonus d'équipement ne se paie pas.
+    // CE QU'ELLE COÛTE, ET RIEN D'AUTRE. Le coût se lit sur la valeur ACHETÉE,
+    // jamais sur le total : un bonus d'équipement ne se paie pas.
     onglet("XP", "", function (p) {
-      var box = grille(p);
-      entete(box, "xp", [["Carac.", "Caractéristique"],
-                         ["Forcé", "Coût en xp forcé — vide = coût calculé"],
-                         ["Modif.", "Deux modificateurs du coût en xp, qui s'additionnent", "duo"],
-                         ["Coût", "Coût effectif en xp"]]);
-      champs().forEach(function (c, i) {
-        var row = rangee(box, "xp pc-mods-host", c, i);
-        row.appendChild(champForce(state.caracsXpForce, c,
-          function () { return caracXpAuto(c); },
-          "Coût en xp forcé — vide = coût calculé."));
-        row.appendChild(champMod(state.caracsXpMod, c, 9999,
-          "Premier modificateur du coût en xp — vide = aucun."));
-        row.appendChild(champMod(state.caracsXpMod2, c, 9999,
-          "Second modificateur du coût en xp — vide = aucun."));
-        var cout = el("span", "pc-comp-total", "");
-        row.appendChild(cout);
-        hooks.push(function () {
-          var xf = state.caracsXpForce[c];
-          var xm = (state.caracsXpMod[c] || 0) + (state.caracsXpMod2[c] || 0);
+      grilleLevier(p, "xp", ["Coût", "Coût effectif en xp"], 9999,
+        caracXpAuto,
+        function (c) {
           var xp = caracXp(c);
-          cout.textContent = xp + " xp";
-          cout.classList.toggle("zero", !xp);
-          cout.classList.toggle("adj", xf !== undefined || xm !== 0);
-          cout.title = xf !== undefined
-            ? "Coût forcé à " + xf + " xp (calculé : " + caracXpAuto(c) + " xp)"
-            : "XP cumulé de la valeur " + caracBase(c) +
-              (xm ? " · modificateurs " + sign(xm) + " xp" : "");
-          row.classList.toggle("on", xm !== 0 || xf !== undefined);
+          return { texte: xp + " xp", zero: !xp,
+                   titre: chaineTexte("xp", c, "valeur " + caracBase(c) + " :",
+                                      ligneValeur(caracBase(c)).xp) };
         });
-      });
     });
 
     // ---------- Modificateur ----------
     onglet("Modif.", "Modificateur", function (p) {
-      levier(p, ["MOD", "Modificateur effectif"],
-        "Décalage du modificateur — vide = aucun.",
-        "caracsModMod", 999,
+      grilleLevier(p, "mod", ["MOD", "Modificateur effectif"], 999,
+        caracModAuto,
         function (c) {
-          var d = state.caracsModMod[c] || 0;
           return { texte: sign(caracMod(c)),
-                   titre: "De la table " + sign(caracModTable(c)) +
-                          (d ? " · décalage " + sign(d) : "") };
+                   titre: chaineTexte("mod", c, "de la table", caracModTable(c)) };
         });
     });
 
@@ -244,40 +311,30 @@
     // spécialité sous son minimum : le rabattage se calcule sur la limite
     // NATURELLE, que celui-ci ne touche pas (voir caracLimNat).
     onglet("Limite", "", function (p) {
-      levier(p, ["Limite", "Limite effective"],
-        "Décalage de la limite — vide = aucun.",
-        "caracsLimMod", 9999,
+      grilleLevier(p, "lim", ["Limite", "Limite effective"], 9999,
+        caracLimAuto,
         function (c) {
-          var d = state.caracsLimMod[c] || 0;
           return { texte: String(caracLim(c)),
-                   titre: "De la table " + caracLimTable(c) + (d ? " · décalage " + sign(d) : "") };
+                   titre: chaineTexte("lim", c, "de la table", caracLimTable(c)) };
         });
     });
 
     // ---------- Écart ----------
-    // SEUL DES CINQ ONGLETS À DEMANDER UNE VALEUR et non un décalage, et c'est
-    // voulu : on pense « l'écart doit être de 30 », jamais « je décale de −20 ».
-    // Le champ montre en filigrane celui des règles, et l'effacer y revient.
-    // Deux colonnes suffisent donc — une troisième répéterait le champ.
+    // SON FORÇAGE EST L'ANCIENNE CASE UNIQUE : une valeur, et non un décalage —
+    // on pense « l'écart doit être de 30 », jamais « je décale de −20 ». Elle a
+    // glissé en colonne « Forcé » sans changer de nature, ce qui est ce qui rend
+    // la reprise des anciennes fiches sûre.
     //
-    // L'INTERRUPTEUR QUI SUSPEND LA RÈGLE N'EST PAS ICI, et il a fait l'aller-
-    // retour : rangé un temps en tête de cet onglet, il en est ressorti. Les
-    // cinq onglets DÉCALENT un seuil, caractéristique par caractéristique ; lui
-    // SUSPEND la règle pour le personnage entier. Il a son bloc (voir
-    // ecart-regle.js), et cet onglet ne porte que les huit valeurs.
+    // L'interrupteur qui SUSPEND la règle n'est pas ici : il a son bloc (voir
+    // ecart-regle.js). Les cinq onglets décalent un seuil, caractéristique par
+    // caractéristique ; lui suspend la règle pour le personnage entier.
     onglet("Écart", "", function (p) {
-      var box = grille(p);
-      entete(box, "paire", [["Carac.", "Caractéristique"],
-                            ["Écart", "Vide = valeur par défaut"]]);
-      champs().forEach(function (c, i) {
-        var row2 = rangee(box, "paire", c, i);
-        row2.appendChild(champForce(state.caracsEcart, c,
-          function () { return repli("speMarge"); },
-          "Écart minimum — vide = valeur par défaut."));
-        hooks.push(function () {
-          row2.classList.toggle("on", state.caracsEcart[c] !== undefined);
+      grilleLevier(p, "ecart", ["Écart", "Écart minimum effectif"], 9999,
+        ecartMinAuto,
+        function (c) {
+          return { texte: String(ecartMin(c)),
+                   titre: chaineTexte("ecart", c, "des règles", repli("speMarge")) };
         });
-      });
     });
 
     montre(0);

@@ -47,6 +47,30 @@
     });
     return inp;
   }
+  // UN CHAMP DE FACTEUR : vide vaut ×1, et surtout pas zéro. Calqué sur le champ
+  // de forçage et non sur celui de modificateur, parce que c'est le NEUTRE qui
+  // change — un modificateur vide vaut 0, un facteur vide vaut 1, et un champ
+  // qui écrirait 0 en s'effaçant annulerait la caractéristique.
+  //
+  // LE PAS EST LIBRE : les flèches d'un champ réglé de 5 en 5 (MOD_PAS)
+  // sauteraient de ×1 à ×6. Et le forçage, lui, arrondit à l'entier — il ne
+  // convenait pas non plus, ×1,5 doit pouvoir se saisir.
+  function champMultVal(lire, ecrire, titre) {
+    var inp = el("input", "pc-num modif mult");
+    inp.type = "number"; inp.step = "any";
+    inp.title = titre;
+    inp.addEventListener("input", function () {
+      var v = parseFloat(inp.value);
+      ecrire(isFinite(v) ? clamp(Math.round(v * 100) / 100, -MULT_BORNE, MULT_BORNE) : undefined);
+      refresh();
+    });
+    hooks.push(function () {
+      inp.placeholder = "1";
+      var cur = lire();
+      if (document.activeElement !== inp) inp.value = cur === undefined ? "" : cur;
+    });
+    return inp;
+  }
   function champForce(map, cle, auto, titre) {
     return champForceVal(
       function () { return map[cle]; },

@@ -92,8 +92,11 @@
       // caractéristique appartient au calibrage, pas à la fiche en jeu.
       hooks.push(function () {
         var d = state.caracsBonus[code] || 0;
-        var dm = state.caracsModMod[code] || 0;
-        var dl = state.caracsLimMod[code] || 0;
+        // LE LEVIER SE LIT PAR SON RÉSULTAT, et non par une de ses sept cases :
+        // un facteur ou un ajout de fin décalent le MOD sans toucher à celle
+        // qu'on lisait ici, et la pastille « retouché » restait éteinte.
+        var dm = caracModBrut(code) - caracModTable(code);
+        var dl = caracLimBrut(code) - caracLimTable(code);
         var plaf = caracPlafond(code);
         var base = caracBase(code);
         var mord = base > plaf;

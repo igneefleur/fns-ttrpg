@@ -21,8 +21,8 @@
   // site il est. Il ne change PAS le rang : « 1.0.1b » et « 1.0.1 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (MiaMods.compareVersions tient cette règle).
-  var RELEASE = "1.13.5b";
-  var SCHEMA = 1;
+  var RELEASE = "1.14.0b";
+  var SCHEMA = 2;
 
   // ---------- ce que la fiche ne décide PAS ----------
   // Les barèmes du jeu ne sont plus ici : ils viennent de DATA, c'est-à-dire de
@@ -48,6 +48,11 @@
   };
 
   var MOD_PAS = 5;            // tous les modificateurs se règlent de 5 en 5
+  // LA BORNE D'UN FACTEUR, et elle n'est pas celle d'un ajout. Les ajouts vont
+  // jusqu'à 999 ou 9999 selon l'échelle du levier ; un facteur, lui, MULTIPLIE :
+  // ×999 sur une limite de 1000 en ferait 999 000, ce qui ne veut rien dire. Cent
+  // fois la valeur des règles est déjà au-delà de tout ce qu'une partie demande.
+  var MULT_BORNE = 100;
 
   // LES PALIERS DE CHARGE. Leurs SEUILS se lisent dans les données (la table
   // « Charge / Effets » de la page) ; leurs EFFETS, eux, sont du code, parce

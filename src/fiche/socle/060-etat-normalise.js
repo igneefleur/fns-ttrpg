@@ -15,6 +15,31 @@
       var n = parseFloat(v);
       return isFinite(n) ? clamp(Math.round(n * 100) / 100, -999, 999) : 0;
     }
+    // LE MÊME, MAIS À LA BORNE DU LEVIER. modNum rabote à ±999 quelle que soit
+    // la borne du champ : la limite, le coût en xp et l'écart acceptent 9999 au
+    // clavier et se faisaient rogner au premier enregistrement. Défaut ancien,
+    // corrigé ici plutôt que recopié trente-cinq fois.
+    function nombreBorne(v, borne) {
+      var n = parseFloat(v);
+      return isFinite(n) ? clamp(Math.round(n * 100) / 100, -borne, borne) : 0;
+    }
+    // UN FACTEUR : vide vaut UN, jamais zéro. Il se range donc comme un forçage
+    // (clé absente = pas de valeur) et surtout PAS comme un modificateur, qui
+    // garde un zéro explicite — un facteur à zéro annulerait la
+    // caractéristique, et c'est ce qu'on obtiendrait en tapant puis effaçant.
+    function multNum(v) {
+      if (v === null || v === undefined || v === "") return null;
+      var n = parseFloat(v);
+      return isFinite(n) ? clamp(Math.round(n * 100) / 100, -MULT_BORNE, MULT_BORNE) : null;
+    }
+    function tableMult(v) {
+      var src = objet(v), out = {};
+      Object.keys(src).forEach(function (k) {
+        var n = multNum(src[k]);
+        if (n !== null) out[k] = n;
+      });
+      return out;
+    }
     // un champ FORCÉ : vide vaut « pas de forçage », et surtout pas zéro
     function forceVal(v) {
       if (v === null || v === undefined || v === "") return null;
@@ -73,11 +98,33 @@
     // pas de rangement. Un joueur qui redescend son prestige ne doit pas voir
     // ses achats effacés au premier enregistrement.
     s.caracs = tableNombres(s.caracs, function (v) { return entier(v, 0, pMax); });
-    ["caracsBonus", "caracsModMod", "caracsLimMod",
-     "caracsXpMod", "caracsXpMod2", "caracsPlafondMod"]
-      .forEach(function (k) { s[k] = tableNombres(s[k], modNum); });
-    ["caracsEcart", "caracsXpForce", "caracsPlafondForce"]
-      .forEach(function (k) { s[k] = tableForce(s[k]); });
+    s.caracsBonus = tableNombres(s.caracsBonus, modNum);
+
+    // ---------- les cinq leviers ----------
+    // ÉPARS À TOUS LES NIVEAUX, sur le patron de s.modules.place : on valide ce
+    // qui est là, on ne matérialise rien. Un levier auquel personne n'a touché
+    // n'existe pas, et la table entière voyage dans un seul attribut Roll20.
+    //
+    // LA BORNE SUIT L'ÉCHELLE DU LEVIER : un plafond et un modificateur se
+    // comptent en dizaines, une limite et un coût en xp en milliers. Les
+    // facteurs, eux, ont la leur (MULT_BORNE), parce qu'ils MULTIPLIENT.
+    var LEVIER_BORNE = { plafond: 999, xp: 9999, mod: 999, lim: 9999, ecart: 9999 };
+    var lvSrc = objet(s.caracsLeviers), lv = {};
+    Object.keys(LEVIER_BORNE).forEach(function (nom) {
+      var src = objet(lvSrc[nom]), out = {}, borne = LEVIER_BORNE[nom];
+      var f = tableForce(src.force);
+      if (Object.keys(f).length) out.force = f;
+      ["a1", "a2", "a3", "a4"].forEach(function (b) {
+        var tb = tableNombres(src[b], function (x) { return nombreBorne(x, borne); });
+        if (Object.keys(tb).length) out[b] = tb;
+      });
+      ["m1", "m2"].forEach(function (b) {
+        var tb = tableMult(src[b]);
+        if (Object.keys(tb).length) out[b] = tb;
+      });
+      if (Object.keys(out).length) lv[nom] = out;
+    });
+    s.caracsLeviers = lv;
 
     // ---------- les compétences ----------
     // Les points ne se bornent pas au plafond ici non plus, et pour la même

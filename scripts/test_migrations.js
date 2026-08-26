@@ -76,6 +76,32 @@ function ecart(a, b, chemin) {
 // normalize() reconstruit (techniques, art, objets d'inventaire, leviers du
 // MJ) qui perdent des données quand un pas est mal écrit.
 var TEMOINS = {
+  // LES DEUX PREMIERS TÉMOINS SONT HÉRITÉS DE JJK, et c'est pour ça qu'il en
+  // fallait un troisième : ils portent caracsBase, customComps, des techniques
+  // et des armes, c'est-à-dire des structures qui n'existent nulle part dans
+  // MIA. L'aller-retour du premier pas MIA tournerait à vide sur eux et
+  // passerait sans rien prouver.
+  //
+  // Celui-ci porte les structures de MIA : le prestige, les huit sigles, une
+  // spécialité. Il ne porte AUCUN levier, et c'est délibéré : le test
+  // estampille le même témoin de tous les schémas et exige l'aller-retour dans
+  // les deux sens, si bien qu'un état porteur d'une forme datée serait une
+  // chimère dans l'autre. Le pas lui-même se contrôle plus bas, à part, dans
+  // les deux sens et sur des états qui ont chacun leur schéma pour de bon.
+  "fiche MIA, leviers remplis": {
+    v: 1, name: "Riko", espece: "Humaine", age: "12",
+    prestige: 12, prestigeMod: 2, prestigeForce: null,
+    caracs: { FOR: 8, DEX: 14, "DÉT": 20 },
+    caracsBonus: { DEX: 5 },
+    ecartCoupe: false,
+    comps: { PHY: 40, COM: 15 }, compsBonus: {}, compsMod: {}, compsMod2: {},
+    compsForce: {}, compsXpForce: {}, compsXpMod: {}, compsXpMod2: {},
+    specialites: [
+      { nom: "Esquive", carac: "DEX", comp: "COM", pts: 60, mod: 0, mod2: 0, bonus: 5, force: null, xpForce: null }
+    ],
+    inv: { texte: [], groupes: ["Sur soi"], objets: [], opts: { cols: 4, nom: true, qte: true, poids: false, total: true } },
+    xpTotal: 1200, pv: 18, endurance: -4, de: "1d100cs>96cf<5"
+  },
   "fiche vierge": {
     v: 1, name: "", caracsBase: { Mind: 0, Body: 0, Prestance: 0 },
     comps: {}, customComps: [], avantages: [], armes: [], armures: [],
@@ -350,6 +376,78 @@ ok(MiaMigr.resume(1, MAX + 5) === null, "résumé : un trajet impossible rend nu
 
 // ---------------------------------------------------------------- verdict
 var duree = Math.round(process.uptime() * 1000);
+// ------------------------------ 5. le pas 2, dans les deux sens, en détail
+// LES TÉMOINS DU BLOC 2 NE PEUVENT PAS CONTRÔLER UN PAS, et il faut le dire :
+// le test y estampille le MÊME état de tous les schémas et exige l'aller-retour
+// dans les deux sens. Un état qui porte une forme datée est donc une chimère
+// dans l'autre sens, et le seul témoin qui passe est celui qu'aucun pas ne
+// touche. C'est pourquoi ce bloc-ci existe : deux états qui ont chacun leur
+// schéma pour de bon, et l'on vérifie ce que le pas FAIT, pas seulement qu'il
+// se défait.
+(function () {
+  var M = MiaMigr;
+
+  // ---- 1 -> 2 : les huit clés vont dans la bonne boîte ----
+  var v1 = {
+    v: 1, name: "Riko",
+    caracsPlafondForce: { "DÉT": 18 }, caracsPlafondMod: { FOR: 3 },
+    caracsXpForce: { FOR: 120 }, caracsXpMod: { DEX: -20 }, caracsXpMod2: { "DÉT": 15 },
+    caracsModMod: { DEX: -10 }, caracsLimMod: { FOR: 50, DEX: -25 },
+    caracsEcart: { DEX: 30, "DÉT": 0 }
+  };
+  var fige1 = JSON.stringify(v1);
+  var m = M.appliquer(copie(v1), 1, 2);
+  ok(m.ok, "pas 2 : la montée doit passer (" + (m.erreur && m.erreur.message) + ")");
+  if (m.ok) {
+    var lv = m.state.caracsLeviers || {};
+    ok(JSON.stringify(lv.plafond && lv.plafond.force) === '{"DÉT":18}', "pas 2 : plafond forcé");
+    ok(JSON.stringify(lv.plafond && lv.plafond.a1) === '{"FOR":3}', "pas 2 : plafond décalé -> a1");
+    ok(JSON.stringify(lv.xp && lv.xp.force) === '{"FOR":120}', "pas 2 : xp forcé");
+    ok(JSON.stringify(lv.xp && lv.xp.a1) === '{"DEX":-20}', "pas 2 : premier modificateur d'xp -> a1");
+    ok(JSON.stringify(lv.xp && lv.xp.a2) === '{"DÉT":15}', "pas 2 : second modificateur d'xp -> a2");
+    ok(JSON.stringify(lv.mod && lv.mod.a1) === '{"DEX":-10}', "pas 2 : décalage du MOD -> a1");
+    ok(JSON.stringify(lv.lim && lv.lim.a1) === '{"FOR":50,"DEX":-25}', "pas 2 : décalage de la limite -> a1");
+    // CELLE-CI EST LA SEULE QUI DEMANDE DE RÉFLÉCHIR : l'écart n'était pas un
+    // décalage mais une VALEUR. Rangé en « a1 », un écart réglé à 30 en
+    // donnerait 80.
+    ok(JSON.stringify(lv.ecart && lv.ecart.force) === '{"DEX":30,"DÉT":0}', "pas 2 : l'écart est un FORÇAGE, pas un ajout");
+    ok(lv.ecart && lv.ecart.a1 === undefined, "pas 2 : l'écart ne doit rien poser en a1");
+    ok(m.state.caracsEcart === undefined, "pas 2 : les anciennes clés doivent partir de la racine");
+    ok(JSON.stringify(v1) === fige1, "pas 2 : l'état d'origine ne doit pas être modifié");
+
+    var r = M.appliquer(m.state, 2, 1);
+    ok(r.ok, "pas 2 : la descente doit passer");
+    if (r.ok) ok(egal(sansQuand(r.state), sansQuand(copie(v1))), "pas 2 : 1->2->1 doit rendre les huit clés — " + ecart(sansQuand(r.state), sansQuand(copie(v1))));
+  }
+
+  // ---- 2 -> 1 : les boîtes que le schéma 1 ne sait pas porter vont au grenier ----
+  var v2 = {
+    v: 2, name: "Riko",
+    caracsLeviers: {
+      plafond: { a1: { FOR: 3 }, m1: { DEX: 1.5 } },
+      mod: { a1: { DEX: -10 }, m2: { FOR: 2 }, a3: { "DÉT": -7 } },
+      xp: { a2: { "DÉT": 15 }, a4: { FOR: 5 } }
+    }
+  };
+  var fige2 = JSON.stringify(v2);
+  var d = M.appliquer(copie(v2), 2, 1);
+  ok(d.ok, "pas 2 : la descente d'un état natif doit passer");
+  if (d.ok) {
+    ok(JSON.stringify(d.state.caracsPlafondMod) === '{"FOR":3}', "pas 2 : a1 du plafond redescend");
+    ok(JSON.stringify(d.state.caracsModMod) === '{"DEX":-10}', "pas 2 : a1 du MOD redescend");
+    ok(d.state.caracsLeviers === undefined, "pas 2 : la table neuve doit partir");
+    var g = d.state.grenier && d.state.grenier["2"] && d.state.grenier["2"].caracsLeviers;
+    ok(!!g, "pas 2 : ce que le schéma 1 ne porte pas doit aller au grenier");
+    ok(g && g.plafond && JSON.stringify(g.plafond.m1) === '{"DEX":1.5}', "pas 2 : un facteur au grenier");
+    ok(g && g.mod && JSON.stringify(g.mod.a3) === '{"DÉT":-7}', "pas 2 : un ajout de fin au grenier");
+    ok(JSON.stringify(v2) === fige2, "pas 2 : l'état d'origine ne doit pas être modifié");
+
+    var r2 = M.appliquer(d.state, 1, 2);
+    ok(r2.ok, "pas 2 : la remontée doit passer");
+    if (r2.ok) ok(egal(sansQuand(r2.state), sansQuand(copie(v2))), "pas 2 : 2->1->2 doit tout rendre — " + ecart(sansQuand(r2.state), sansQuand(copie(v2))));
+  }
+})();
+
 if (echecs.length) {
   console.error("MIGRATIONS : " + echecs.length + " échec(s) sur " + faits + " vérifications (" + duree + " ms)");
   echecs.forEach(function (e) { console.error("  - " + e); });

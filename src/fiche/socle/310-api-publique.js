@@ -58,6 +58,7 @@
     // calcul : « 30 » et « 30 m » se ressemblent trop pour juger d'un filtre.
     __calculs: {
       caracTotal: caracTotal, caracMod: caracMod, caracLim: caracLim,
+      caracPlafond: caracPlafond, caracXp: caracXp,
       compPts: compPts, compPlafond: compPlafond, compXp: compXp,
       spePts: spePts, speXp: speXp, jetBonus: jetBonus,
       speTotal: speTotal, speRetire: speRetire,
