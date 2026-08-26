@@ -74,7 +74,7 @@
   // site il est. Il ne change PAS le rang : « 1.0.1b » et « 1.0.1 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (MiaMods.compareVersions tient cette règle).
-  var RELEASE = "1.13.4b";
+  var RELEASE = "1.13.5b";
   var SCHEMA = 1;
 
   // ---------- ce que la fiche ne décide PAS ----------
@@ -1012,11 +1012,28 @@
     var v = spePtsBrut(spe);
     return aFiltre("spePts") ? applique("spePts", v, { spe: spe }) : v;
   }
-  // LE TOTAL D'UNE SPÉCIALITÉ : ses points, le MOD de sa caractéristique, les
-  // points de sa compétence. C'est ce nombre-là que la règle de l'écart borne.
-  function speTotalBrut(spe) {
-    if (!spe || !spe.carac) return 0;
-    return spePts(spe) + caracMod(spe.carac) + (spe.comp ? compPts(spe.comp) : 0);
+  // LA CARACTÉRISTIQUE EMPLOYÉE, qui n'est pas toujours celle de la spécialité.
+  // Le réglage « Au choix » de la barre d'envoi fait demander à Roll20, avant
+  // de lancer, LAQUELLE porte le jet : une spécialité rangée sous DEX peut
+  // très bien partir sous FOR. Tout ce qui suit accepte donc une
+  // caractéristique en second argument, et retombe sur la sienne sans elle.
+  //
+  // C'EST UN DÉFAUT SIGNALÉ EN PARTIE, et il coûtait des points pour de bon :
+  // une spécialité ramenée par la règle de l'écart sous SA caractéristique
+  // gardait son retrait quand on la lançait sous une AUTRE, plus haute — donc
+  // sous une limite qui ne la ramenait pas. Le joueur perdait un retrait que
+  // rien ne justifiait plus, et le plafond du jet, lui, employait bien la
+  // caractéristique choisie : les deux moitiés du calcul ne parlaient pas de
+  // la même.
+  function speCarac(spe, carac) {
+    return carac || (spe && spe.carac) || "";
+  }
+  // LE TOTAL D'UNE SPÉCIALITÉ : ses points, le MOD de la caractéristique
+  // employée, les points de sa compétence. C'est ce nombre-là que la règle de
+  // l'écart borne.
+  function speTotalBrut(spe, carac) {
+    if (!spe || !speCarac(spe, carac)) return 0;
+    return spePts(spe) + caracMod(speCarac(spe, carac)) + (spe.comp ? compPts(spe.comp) : 0);
   }
   // ET SON RABATTAGE. Rien n'est bloqué à l'achat : on met dans une spécialité
   // ce qu'on veut. C'est le total EMPLOYÉ AU JET qui redescend.
@@ -1037,20 +1054,27 @@
   //
   // Le levier d'ÉCART, lui, entre bien dans le calcul : il ne suspend pas la
   // règle, il en déplace le seuil.
-  function speTotalNat(spe) {
-    if (!spe || !spe.carac) return 0;
-    return spePts(spe) + caracModNat(spe.carac) + (spe.comp ? compPts(spe.comp) : 0);
+  //
+  // LE RETRAIT SE CALCULE SOUS LA CARACTÉRISTIQUE EMPLOYÉE, et c'est tout le
+  // sujet du défaut corrigé : c'est SA limite qui décide s'il y a lieu de
+  // ramener quelque chose. Une caractéristique plus haute ne ramène rien.
+  function speTotalNat(spe, carac) {
+    var c = speCarac(spe, carac);
+    if (!spe || !c) return 0;
+    return spePts(spe) + caracModNat(c) + (spe.comp ? compPts(spe.comp) : 0);
   }
-  function speRetire(spe) {
-    if (!spe || !spe.carac) return 0;
+  function speRetire(spe, carac) {
+    var c = speCarac(spe, carac);
+    if (!spe || !c) return 0;
     if (state.ecartCoupe) return 0;   // règle suspendue pour ce personnage
-    var haut = Math.max(0, caracLimNat(spe.carac) - ecartMin(spe.carac));
-    return Math.max(0, speTotalNat(spe) - haut);
+    var haut = Math.max(0, caracLimNat(c) - ecartMin(c));
+    return Math.max(0, speTotalNat(spe, c) - haut);
   }
-  function speTotal(spe) {
-    if (!spe || !spe.carac) return 0;
-    var v = speTotalBrut(spe) - speRetire(spe);
-    return aFiltre("speTotal") ? applique("speTotal", v, { spe: spe }) : v;
+  function speTotal(spe, carac) {
+    var c = speCarac(spe, carac);
+    if (!spe || !c) return 0;
+    var v = speTotalBrut(spe, c) - speRetire(spe, c);
+    return aFiltre("speTotal") ? applique("speTotal", v, { spe: spe, carac: c }) : v;
   }
 
   // Un point de spécialité coûte un QUART d'XP : le total est donc décimal, et
@@ -1276,9 +1300,15 @@
   // le bonus de la ligne, le malus de charge sur l'esquive, et le malus
   // d'endurance — qui pèse sur TOUS les jets, donc l'écrire dans chaque
   // appelant reviendrait à l'oublier une fois.
+  //
+  // LA CARACTÉRISTIQUE PASSE JUSQU'AU TOTAL, et il a fallu un défaut de partie
+  // pour s'en apercevoir : sous « Au choix », le plafond du jet employait la
+  // caractéristique choisie pendant que le total, lui, restait sur celle de la
+  // spécialité — retrait de l'écart compris. Un joueur gardait donc un retrait
+  // calculé sous une limite qui n'était plus la sienne.
   function jetBonusBrut(carac, comp, spe) {
     var b = -enduranceMalus();
-    if (spe) b += speTotal(spe) + (spe.bonus || 0) + speMalusCharge(spe);
+    if (spe) b += speTotal(spe, carac) + (spe.bonus || 0) + speMalusCharge(spe);
     else {
       b += caracMod(carac);
       if (comp) b += compPts(comp);
@@ -7015,6 +7045,8 @@
       caracTotal: caracTotal, caracMod: caracMod, caracLim: caracLim,
       compPts: compPts, compPlafond: compPlafond, compXp: compXp,
       spePts: spePts, speXp: speXp, jetBonus: jetBonus,
+      speTotal: speTotal, speRetire: speRetire,
+      ecartMin: ecartMin,
       prestige: prestige, enduranceMax: enduranceMax, enduranceMalus: enduranceMalus,
       recupJour: recupJour, chargeMax: chargeMax,
       pvMax: pvMax, pvCourant: pvCourant, initiative: initiative,
