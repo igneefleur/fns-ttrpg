@@ -1110,10 +1110,19 @@ html.night .pc-warn.doux { color: #ffbc33; background: rgba(255, 188, 51, .13); 
 /* CE QU'ON CHOISIT AU MOMENT DU JET : des sigles, en grille, celui de la ligne
    allumé. Rien de plus — on choisit et on lance, et une liste déroulante
    demanderait deux clics là où il en faut un. */
+/* QUATRE PAR RANGÉE, ET C'EST UN COMPTE, PAS UNE ADAPTATION. « auto-fit » en
+   rangeait trois dans une boîte de 297 px : les huit sigles tombaient en
+   3 + 3 + 2, et la rangée du milieu finissait sur un trou. Quatre colonnes
+   donnent deux rangées pleines, et la neuvième réponse a le rang suivant pour
+   elle seule. */
 .pc-choix-jet {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(3.2rem, 1fr));
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: .3rem; margin: .2rem 0 .35rem;
 }
+/* « Aucune compétence » tient le rang entier : neuvième d'une grille qui en
+   range quatre de front, il laissait sinon un vide à sa droite qu'on lit comme
+   un oubli. La largeur lui donne du même coup la place de se nommer. */
+.pc-choix-jet > .pc-modal-choix.large { grid-column: 1 / -1; }
 .pc-optcomp-wrap { overflow-x: auto; }
 .pc-optcomp-row {
   display: grid; align-items: center; gap: .12rem;

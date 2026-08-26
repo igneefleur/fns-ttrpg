@@ -66,9 +66,15 @@
       var g = el("div", "pc-choix-jet");
       var btns = [];
       codes.forEach(function (k) {
-        var b = el("button", "pc-modal-choix" + (k === courant ? " on" : ""), k || "—");
+        // LE « SANS » PREND TOUT LE RANG, et il porte son nom en entier. Neuvième
+        // d'une grille qui en range quatre par rangée, un tiret seul laissait un
+        // vide à sa droite et se lisait comme un oubli. Il tient maintenant la
+        // largeur, ce qui donne la place d'écrire ce dont il s'agit.
+        var vide = (k === "");
+        var b = el("button", "pc-modal-choix" + (k === courant ? " on" : "") +
+                  (vide ? " large" : ""), vide ? "Aucune compétence" : k);
         b.type = "button";
-        b.title = k ? nomDe(k) : "Sans compétence";
+        b.title = k ? nomDe(k) : "La spécialité part sans les points d'une compétence";
         b.addEventListener("click", function () {
           poser(k);
           btns.forEach(function (x) { x.classList.remove("on"); });
