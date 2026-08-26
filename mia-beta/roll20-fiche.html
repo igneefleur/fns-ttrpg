@@ -54,7 +54,12 @@
     var DEFAUT = {
       amorce: ["javascripts/mia-attr-map.js", "javascripts/mia-roll20-boot.js"],
       bundle: {
-        js: ["javascripts/mia-fiche.js"],
+        // mia-migrations.js EN TÊTE, et il y manquait. Le repli ne le nommait
+        // pas : trois secondes sans manifeste et window.MiaMigr n'existait
+        // pas, donc migre() rendait l'état tel quel — un personnage d'un
+        // schéma antérieur s'ouvrait sans être migré, en silence. Il vient
+        // AVANT le bundle, qui l'appelle au premier chargement d'état.
+        js: ["javascripts/mia-migrations.js", "javascripts/mia-fiche.js"],
         css: ["stylesheets/mia-fiche.css", "stylesheets/mia-roll20.css"],
         data: null
       }
