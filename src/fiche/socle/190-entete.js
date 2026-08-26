@@ -156,17 +156,19 @@
     bar.appendChild(segs3);
 
     // LE MÊME, POUR LA COMPÉTENCE, et il ne vaut que pour les SPÉCIALITÉS : sur
-    // un jet de compétence, la compétence EST le jet. Changer de compétence
-    // change les points qui entrent dans le total d'une spécialité, donc aussi
-    // ce que la règle de l'écart en retire — d'où, là encore, une requête qui
-    // porte l'expression entière.
+    // un jet de compétence, la compétence EST le jet.
+    //
+    // CELLE-CI SE DEMANDE DANS LA FICHE, ET NON DANS ROLL20 : son moteur de
+    // dés ne sait pas écrire deux plafonds imbriqués, et la seule forme qu'il
+    // accepte énumère les soixante-douze couples dans une liste unique. La
+    // fiche pose la question au clic, Roll20 garde la caractéristique.
     var sep4 = el("span", "lbl", "Compétence");
     sep4.title = "Ne s'applique qu'aux jets de spécialité";
     bar.appendChild(sep4);
     var segs4 = el("div", "pc-envoi-segs");
     var kbtn = [];
     [["0", "Automatique", "La spécialité part avec sa compétence"],
-     ["1", "Au choix", "Roll20 demande quelle compétence utiliser avant de lancer"]].forEach(function (o) {
+     ["1", "Au choix", "La fiche demande quelle compétence employer avant de lancer"]].forEach(function (o) {
       var b = el("button", "seg" + ((envCompChoix() ? "1" : "0") === o[0] ? " on" : ""), o[1]);
       b.type = "button";
       b.title = o[2];

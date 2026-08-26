@@ -47,55 +47,6 @@
     if (!spe || String(spe.nom || "").trim().toLowerCase() !== CHARGE_ESQUIVE.toLowerCase()) return 0;
     return chargeMalusEsquive();
   }
-  // ---------- LE JET D'UNE SPÉCIALITÉ, EN PIÈCES DÉTACHÉES ----------
-  // POUR QUE ROLL20 PUISSE POSER DEUX QUESTIONS AU LIEU D'UNE. Quand la
-  // caractéristique ET la compétence sont « au choix », énumérer les couples
-  // donne une liste de soixante-douze réponses : exact, et inutilisable. Deux
-  // requêtes séparées demandent, elles, que la macro sache RECOMPOSER le jet à
-  // partir de deux réponses indépendantes — ce que la forme habituelle ne
-  // permet pas, parce que la règle de l'écart ne s'additionne pas.
-  //
-  // Elle se réécrit pourtant, et c'est tout ce qu'il fallait :
-  //
-  //     total = points + MOD(c) + points(k) − max(0, points + MODnat(c) + points(k) − H(c))
-  //           = D(c) + min(A(c) + K(k), H(c))
-  //
-  //   avec  A(c) = points de la spécialité + MOD NATUREL de la caractéristique
-  //         H(c) = sa limite naturelle moins l'écart minimum (le plafond du total)
-  //         D(c) = ce que les leviers du meneur ajoutent au MOD
-  //         K(k) = les points de la compétence employée
-  //
-  // La caractéristique donne A, H, D et sa limite ; la compétence donne K, et
-  // K SEUL — un nombre, à un seul endroit. Le jet devient alors
-  //
-  //     min( LIM(c) , dé + P + D(c) + min( A(c) + K(k) , H(c) ) )
-  //
-  // que Roll20 écrit avec deux groupes « kl1 » (garder le plus bas), et où tout
-  // ce qui dépend de la caractéristique est CONTIGU — donc tient dans une seule
-  // réponse de requête, la compétence n'ayant plus qu'à s'insérer là où K va.
-  //
-  // P est ce qui vient APRÈS le total et n'entre donc pas dans le rabattage :
-  // le bonus de la ligne, le malus de charge, le malus d'endurance.
-  function jetPieces(spe, carac, comp) {
-    var pts = spePts(spe);
-    return {
-      P: Math.round((spe.bonus || 0) + speMalusCharge(spe) - enduranceMalus()),
-      A: pts + caracModNat(carac),
-      // règle suspendue : plus rien n'est jamais ramené, donc pas de plafond.
-      // Un nombre franchement hors d'atteinte vaut mieux qu'une seconde forme
-      // d'expression à écrire et à vérifier.
-      H: state.ecartCoupe ? 9999999 : Math.max(0, caracLimNat(carac) - ecartMin(carac)),
-      D: Math.round(caracMod(carac) - caracModNat(carac)),
-      L: Math.round(caracLim(carac)),
-      K: comp ? compPts(comp) : 0
-    };
-  }
-  // Ce que la décomposition prédit, pour la sonde qui la compare au jet réel.
-  function jetPiecesTotal(spe, carac, comp, de) {
-    var q = jetPieces(spe, carac, comp);
-    return Math.min(q.L, de + q.P + q.D + Math.min(q.A + q.K, q.H));
-  }
-
   // L'expression Roll20 d'un jet, prête à poser entre les doubles crochets.
   //
   // LE MODIFICATEUR SAISI À L'ENVOI S'AJOUTE APRÈS LE PLAFOND, hors du groupe.

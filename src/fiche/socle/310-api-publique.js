@@ -59,7 +59,6 @@
     __calculs: {
       caracTotal: caracTotal, caracMod: caracMod, caracLim: caracLim,
       caracPlafond: caracPlafond, caracXp: caracXp,
-      jetPiecesTotal: jetPiecesTotal,
       compPts: compPts, compPlafond: compPlafond, compXp: compXp,
       spePts: spePts, speXp: speXp, jetBonus: jetBonus,
       speTotal: speTotal, speRetire: speRetire,

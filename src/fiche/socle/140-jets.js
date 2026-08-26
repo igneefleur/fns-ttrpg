@@ -36,142 +36,114 @@
       .replace(/\{/g, "&#123;").replace(/\}/g, "&#125;")
       .replace(/,/g, "&#44;").replace(/\|/g, "&#124;");
   }
-  // Les réglages « Au choix » de la barre d'envoi : Roll20 demande AVANT de
-  // lancer ce qui porte le jet — la caractéristique, la compétence, ou les deux
-  // — celle de la ligne proposée en premier.
+  // Le réglage « Au choix » de la barre d'envoi : Roll20 demande AVANT de
+  // lancer quelle caractéristique porte le jet, la sienne proposée en premier.
   //
   // LA REQUÊTE NE PORTE PAS UN NOMBRE MAIS L'EXPRESSION ENTIÈRE, parce que
-  // changer de caractéristique change à la fois le MOD et la LIMITE, et que
-  // changer de compétence change le total — donc aussi ce que la règle de
-  // l'écart en retire. Rien de tout cela ne s'additionne terme à terme.
-  //
-  // DEUX QUESTIONS QUAND LES DEUX SONT AU CHOIX, ET QUAND ROLL20 LE PERMET.
-  // La macro sait recomposer le jet à partir de deux réponses indépendantes
-  // dès lors qu'on lui écrit la forme décomposée (voir jetPieces,
-  // 100-calculs-jets.js) : tout ce qui dépend de la caractéristique y est
-  // CONTIGU, et la compétence n'insère plus qu'un nombre, à un seul endroit.
-  // La réponse de la caractéristique porte le début de l'expression, accolades
-  // comprises et échappées ; la compétence donne son nombre ; la fermeture est
-  // écrite en clair — deux « } » que rien ne colle l'un à l'autre, ce qui
-  // compte parce qu'un « }} » fermerait le champ du gabarit.
-  //
-  // MAIS ROLL20 REFUSE UN GROUPE DANS UN GROUPE, et c'est mesuré dans une vraie
-  // partie, pas déduit : « /r {0d0+250,1d100+{0d0+200,150+100}kl1}kl1 » répond
-  // « Cannot mix sum and M rolls in a roll group ». Un groupe comme TERME d'une
-  // somme est refusé de même. Or c'est exactement ce que demande la règle de
-  // l'écart : un premier « plus bas des deux » pour ramener le total, un second
-  // pour le plafond du jet.
-  //
-  // (Les deux autres voies ont été éprouvées et sont mortes aussi : une requête
-  // DANS une requête, écrite en entités, n'est pas relue par Roll20 — elle rend
-  // « There was an error with your formula ». Et rien ne permet de faire
-  // apparaître le même dé à deux endroits d'un groupe.)
-  //
-  // Reste ce qui EST possible, et qui couvre le cas où la règle ne mord pas :
-  // si AUCUNE compétence offerte ne peut déclencher le rabattage — parce que le
-  // total le plus fort reste sous le plafond de l'écart —, alors il n'y a plus
-  // qu'un seul « plus bas des deux » à écrire, et les deux questions tiennent.
-  // Sinon on énumère les couples : c'est long, mais c'est juste, et c'est la
-  // seule forme que le moteur de dés accepte.
+  // changer de caractéristique change à la fois le MOD et la LIMITE. Deux
+  // requêtes séparées poseraient deux questions au joueur, qui pourrait
+  // répondre deux choses différentes et obtenir un jet incohérent.
   //
   // La requête ne porte que le GROUPE PLAFONNÉ, sans le modificateur d'envoi :
   // celui-ci s'ajoutant après le plafond, il se pose une seule fois, dehors,
-  // quel que soit le couple choisi.
+  // quelle que soit la caractéristique choisie.
   //
-  // LE CHOIX DE COMPÉTENCE NE VAUT QUE POUR UNE SPÉCIALITÉ. Sur un jet de
-  // compétence, la compétence EST le jet : en choisir une autre reviendrait à
-  // lancer l'autre, ce qui se fait en cliquant sur sa ligne.
-  function choixQuery(carac, comp, spe) {
-    var surCarac = envCaracChoix();
-    var surComp = envCompChoix() && !!spe;
-    var cs = surCarac
-      ? [carac].concat(champs().filter(function (c) { return c !== carac; }))
-      : [carac];
-    var ks;
-    if (!surComp) ks = [comp];
-    else {
-      // « — » est la réponse « aucune compétence », et elle est légitime : une
-      // spécialité peut ne relever d'aucune, et on peut vouloir la lancer sans.
-      var propre = comp || "";
-      ks = [propre].concat(champsComp().filter(function (k) { return k !== propre; }));
-      if (propre !== "") ks.push("");
-    }
-    // LES DEUX : deux requêtes, et la forme décomposée.
-    //
-    // ELLE NE VAUT QUE SI PERSONNE N'A DÉTOURNÉ LE TOTAL. Un mod qui filtre
-    // « speTotal » ou « jetBonus » peut rendre n'importe quoi de n'importe
-    // quoi : la décomposition ne le prédirait pas. Dans ce cas seulement, on
-    // retombe sur l'énumération des couples, qui appelle jetBonus pour chacun
-    // et reste donc exacte quoi qu'un mod fasse.
-    // AUCUN RABATTAGE POSSIBLE ? Alors deux questions suffisent. On le vérifie
-    // sur le PIRE cas : la compétence la plus fournie de la liste, contre le
-    // plafond de chaque caractéristique offerte. Il suffit d'un couple qui
-    // mordrait pour que la forme courte cesse d'être exacte.
-    var kMax = 0;
-    ks.forEach(function (k) { if (k) { kMax = Math.max(kMax, compPts(k)); } });
-    var sansRabat = surCarac && surComp && !aFiltre("speTotal") && !aFiltre("jetBonus") &&
-      cs.every(function (c) {
-        var q = jetPieces(spe, c, comp);
-        return q.A + kMax <= q.H;
-      });
-    if (sansRabat) {
-      var qCar = cs.map(function (c) {
-        var q = jetPieces(spe, c, comp);
-        // { 0d0+LIM , dé ±(P+D) + A+   ← la compétence ajoute son nombre ici
-        // « +0 » est du bruit dans une macro qu'on relit parfois à la main
-        var pd = q.P + q.D;
-        var tete = "{0d0+" + q.L + "," + deTest() + (pd ? sign(pd) : "") +
-                   "+" + q.A + "+";
-        return c + "," + echapQuery(tete);
-      });
-      var qCmp = ks.map(function (k) {
-        return (k || "—") + "," + (k ? compPts(k) : 0);
-      });
-      return "?{Caractéristique|" + qCar.join("|") + "}" +
-             "?{Compétence|" + qCmp.join("|") + "}" + "}kl1";
-    }
-    var opts = [];
-    cs.forEach(function (c) {
-      ks.forEach(function (k) {
-        // le libellé dit ce qu'on choisit : le couple quand les deux sont
-        // offerts, sans quoi soixante-douze lignes portent le même mot
-        var nom = surCarac && surComp ? c + "·" + (k || "—")
-                : (surCarac ? c : (k || "—"));
-        opts.push(nom + "," + echapQuery(jetExpr(jetBonus(c, k, spe), caracLim(c), false)));
-      });
+  // LA COMPÉTENCE, ELLE, NE PASSE PAS PAR ROLL20, et c'est une contrainte de
+  // son moteur de dés, pas un choix : voir demandeComp() plus bas.
+  function caracQuery(propre, comp, spe) {
+    var ordre = [propre].concat(champs().filter(function (c) { return c !== propre; }));
+    var opts = ordre.map(function (c) {
+      return c + "," + echapQuery(jetExpr(jetBonus(c, comp, spe), caracLim(c), false));
     });
-    return "?{" + (surCarac && surComp ? "Caractéristique et compétence"
-                 : (surCarac ? "Caractéristique" : "Compétence")) + "|" +
-           opts.join("|") + "}";
+    return "?{Caractéristique|" + opts.join("|") + "}";
+  }
+
+  // ---------- LA COMPÉTENCE SE DEMANDE DANS LA FICHE ----------
+  // ET ROLL20 N'Y EST POUR RIEN : son moteur de dés ne sait pas écrire ce
+  // qu'il faudrait. Éprouvé en partie, pas déduit :
+  //
+  //   — un groupe DANS un groupe est refusé (« Cannot mix sum and M rolls in a
+  //     roll group »), et un groupe comme terme d'une somme aussi. Or la règle
+  //     de l'écart en demande deux : un « plus bas des deux » pour ramener le
+  //     total, un second pour le plafond du jet ;
+  //   — une requête DANS une requête, écrite en entités, n'est pas relue :
+  //     « There was an error with your formula » ;
+  //   — un même dé ne peut pas apparaître à deux endroits d'un groupe.
+  //
+  // Il ne restait donc que d'énumérer les COUPLES dans une seule requête — huit
+  // caractéristiques par neuf compétences, soixante-douze réponses à dérouler.
+  // Exact, et inutilisable.
+  //
+  // La fiche pose donc la question elle-même, au clic, là où le joueur est
+  // déjà. Roll20 ne garde que la caractéristique, dont l'expression entière
+  // tient dans huit réponses. Deux questions, courtes, et un jet exact.
+  function demandeComp(spe, suite) {
+    var propre = spe.comp || "";
+    var liste = [propre].concat(champsComp().filter(function (k) { return k !== propre; }));
+    if (propre !== "") liste.push("");
+    var corps = el("div", "pc-modal-body");
+    var choix = el("div", "pc-choix-comp");
+    var pris = propre;
+    var btns = [];
+    liste.forEach(function (k) {
+      // « — » est une réponse LÉGITIME : une spécialité peut ne relever
+      // d'aucune compétence, et on peut vouloir la lancer sans.
+      var b = el("button", "pc-modal-choix" + (k === propre ? " on" : ""), k || "—");
+      b.type = "button";
+      b.title = k ? compInfo(k).nom : "Sans compétence";
+      b.addEventListener("click", function () {
+        pris = k;
+        btns.forEach(function (x) { x.classList.remove("on"); });
+        b.classList.add("on");
+      });
+      btns.push(b);
+      choix.appendChild(b);
+    });
+    corps.appendChild(choix);
+    dialogue("Quelle compétence pour « " + (spe.nom || "Spécialité") + " » ?",
+             corps, function () { suite(pris); }, "Lancer");
   }
 
   // LE JET DE TEST : caractéristique, compétence ou spécialité. C'est le seul
   // chemin par lequel un jet plafonné part au tchat.
   function doJet(label, carac, comp, spe, tracker) {
-    var demande = envCaracChoix() || (envCompChoix() && !!spe);
-    var expr = demande
-      ? choixQuery(carac, comp, spe) + (envInput() ? ENV_QUERY : "")
-      : jetExpr(jetBonus(carac, comp, spe), caracLim(carac), envInput());
-    if (envoyer(cmdJetExpr(label, expr, tracker))) return;
-    // Hors Roll20, ou sous une extension antérieure au canal brut : la fiche
-    // lance elle-même et applique le plafond, en le DISANT — un résultat rogné
-    // sans explication passerait pour une faute de calcul.
-    // LE MÊME DÉ QUE DANS ROLL20, et ses seuils. Le tirage local jetait un d100
-    // écrit en dur : une fiche réglée sur un autre dé donnait ici un résultat
-    // qui ne pouvait pas arriver là-bas.
-    var d = parseDice(deNu(deTest())) || { n: 1, faces: 100, plus: 0 };
-    var de = d.plus, i;
-    for (i = 0; i < d.n; i++) de += 1 + Math.floor(Math.random() * d.faces);
-    var bonus = jetBonus(carac, comp, spe), lim = caracLim(carac);
-    var brut = de + bonus, total = Math.min(brut, lim);
-    var det = "dé " + de + (bonus ? " " + (bonus >= 0 ? "+ " : "− ") + Math.abs(bonus) : "");
-    if (total < brut) det += " = " + brut + ", plafonné à " + lim;
-    // le critique se lit sur LE DÉ, jamais sur le total : c'est le dé qui est
-    // critique, et le plafond n'y change rien
-    var seuils = seuilsCrit(deTest());
-    if (seuils.reussite !== null && de >= seuils.reussite) det += " · réussite critique";
-    else if (seuils.echec !== null && de <= seuils.echec) det += " · échec critique";
-    flash(label + " : " + total + " (" + det + ")");
+    // LA COMPÉTENCE D'ABORD, ET DANS LA FICHE. Une fois choisie, on reprend au
+    // MÊME endroit, avec elle.
+    //
+    // ON NE SE RAPPELLE PAS doJet : le réglage serait toujours armé, la
+    // question se reposerait, et la boîte se rouvrirait sans fin. Le reste du
+    // jet vit donc dans lance(), qu'on appelle des deux côtés.
+    if (spe && envCompChoix()) {
+      demandeComp(spe, function (k) { lance(k); });
+      return;
+    }
+    lance(comp);
+
+    function lance(comp) {
+      var expr = envCaracChoix()
+        ? caracQuery(carac, comp, spe) + (envInput() ? ENV_QUERY : "")
+        : jetExpr(jetBonus(carac, comp, spe), caracLim(carac), envInput());
+      if (envoyer(cmdJetExpr(label, expr, tracker))) return;
+      // Hors Roll20, ou sous une extension antérieure au canal brut : la fiche
+      // lance elle-même et applique le plafond, en le DISANT — un résultat rogné
+      // sans explication passerait pour une faute de calcul.
+      // LE MÊME DÉ QUE DANS ROLL20, et ses seuils. Le tirage local jetait un d100
+      // écrit en dur : une fiche réglée sur un autre dé donnait ici un résultat
+      // qui ne pouvait pas arriver là-bas.
+      var d = parseDice(deNu(deTest())) || { n: 1, faces: 100, plus: 0 };
+      var de = d.plus, i;
+      for (i = 0; i < d.n; i++) de += 1 + Math.floor(Math.random() * d.faces);
+      var bonus = jetBonus(carac, comp, spe), lim = caracLim(carac);
+      var brut = de + bonus, total = Math.min(brut, lim);
+      var det = "dé " + de + (bonus ? " " + (bonus >= 0 ? "+ " : "− ") + Math.abs(bonus) : "");
+      if (total < brut) det += " = " + brut + ", plafonné à " + lim;
+      // le critique se lit sur LE DÉ, jamais sur le total : c'est le dé qui est
+      // critique, et le plafond n'y change rien
+      var seuils = seuilsCrit(deTest());
+      if (seuils.reussite !== null && de >= seuils.reussite) det += " · réussite critique";
+      else if (seuils.echec !== null && de <= seuils.echec) det += " · échec critique";
+      flash(label + " : " + total + " (" + det + ")");
+    }
   }
 
   // LE JET BRUT : dégâts d'une arme, protection d'une armure. Ni MOD, ni
