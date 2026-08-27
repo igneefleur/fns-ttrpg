@@ -772,10 +772,13 @@ html.night .pc-warn.doux { color: #ffbc33; background: rgba(255, 188, 51, .13); 
 /* pendant le glissement : la ligne prise s'efface, celle qu'on survole montre
    de quel côté l'autre va se poser */
 .pc-block[data-module="specialites"] .pc-crow.pris,
+.pc-block[data-module="langues"] .pc-crow.pris,
 .pc-block[data-module="arts"] .pc-art.pris { opacity: .4; }
 .pc-block[data-module="specialites"] .pc-crow.avant,
+.pc-block[data-module="langues"] .pc-crow.avant,
 .pc-block[data-module="arts"] .pc-art.avant { box-shadow: inset 0 2px 0 var(--red); }
 .pc-block[data-module="specialites"] .pc-crow.apres,
+.pc-block[data-module="langues"] .pc-crow.apres,
 .pc-block[data-module="arts"] .pc-art.apres { box-shadow: inset 0 -2px 0 var(--red); }
 .pc-editable.editing .pc-trio select.pc-case-champ { cursor: pointer; }
 .pc-editable.editing .pc-trio input.pc-case-champ { cursor: text; }
