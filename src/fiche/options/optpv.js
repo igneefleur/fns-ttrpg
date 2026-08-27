@@ -16,7 +16,10 @@
     grilleLevier(b, {
       cls: "levier",
       entete: ["Réglage", "Ce que la rangée règle"],
-      lignes: [{ cle: "pvMax", nom: "PV max", titre: "Le maximum de points de vie" }],
+      // LA RANGÉE S'APPELLE « Maximum », ET NON « PV max » : le titre du bloc
+      // dit déjà de quelle réserve il s'agit, et la colonne des noms est étroite
+      // — « Endurance max » s'y faisait couper dans le module jumeau.
+      lignes: [{ cle: "pvMax", nom: "Maximum", titre: "Le maximum de points de vie" }],
       rangee: function (hote, cls, ligne, i) {
         return rangeeNom(hote, cls, ligne.nom, i, ligne.titre);
       },

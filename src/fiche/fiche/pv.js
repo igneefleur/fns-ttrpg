@@ -1,22 +1,33 @@
   // ---------- les réserves : PV et endurance ----------
-  // LE CADRE EST CELUI DE TOUS LES AUTRES MODULES, titre en haut à gauche et
-  // filet rouge dessous. J'ai essayé de l'en sortir — nom en petites capitales
-  // sur la ligne du nombre, carte sans titre — et c'était une faute : le titre
-  // n'est pas une décoration, c'est ce qui dit qu'on regarde les PV. Sans lui on
-  // ne sait plus ce qu'on lit.
+  // MODULE ENTIÈREMENT REFAIT, et non retouché. Il a fallu trois essais pour
+  // comprendre que « changer le style » ne voulait dire ni « grossir les
+  // boutons », ni « sortir le module de la feuille », ni « changer la barre » :
+  // il voulait dire refaire le module.
   //
-  // CE QUI CHANGE EST DEDANS, et rien d'autre :
-  //   — UN SEUL RANG : moins, la valeur, son maximum, plus, et le retour au
-  //     maximum poussé à droite. L'ancienne forme les éparpillait sur deux rangs
-  //     dont l'un ne portait qu'une barre de quatre pixels ;
-  //   — LA VALEUR EST PLUS GROSSE que les autres champs de la fiche, sans être
-  //     énorme : c'est la seule qui change à chaque coup reçu, mais elle
-  //     n'écrase pas ses voisines pour autant ;
-  //   — LA JAUGE EST DANS LE CONTENU, pleine largeur, à sa place sous le rang
-  //     qu'elle résume. Elle faisait 84 px de large et 4 px de haut, perdue au
-  //     bout d'une ligne.
+  // CE QU'IL EST DEVENU :
   //
-  // AUCUN ROUAGE SUR LES PV. Tout ce que le bloc porte relève du JEU : on perd
+  //     ┌───────────────────────────────┐
+  //     │ PV                   40 / 119 │  ← BANDEAU : l'identité et la valeur
+  //     ├───────────────────────────────┤
+  //     │ ▪▪▪▪▪▪▪▫▫▫▫▫▫▫▫▫▫▫▫▫          │  ← la réserve, en blocs
+  //     │  −5  −1  +1  +5        [Max]  │  ← les gestes du jeu
+  //     └───────────────────────────────┘
+  //
+  //   — LE NOM ET LA VALEUR SONT DANS UN MÊME BANDEAU, en haut, sur fond plein.
+  //     Le titre souligné de rouge des autres modules annonce une LISTE ; ici il
+  //     n'y a pas de liste, il y a un nombre, et le nom doit se lire avec lui.
+  //     C'est ce bandeau qui dit qu'on regarde les PV — sans titre du tout, on
+  //     ne le savait plus, et c'était la faute de l'essai précédent.
+  //   — LA JAUGE EST EN BLOCS, collée sous le bandeau, pleine largeur. Un trait
+  //     continu se lit comme un chargement ; des blocs se comptent, et le bloc
+  //     est la même unité que les points qu'on perd un par un.
+  //   — QUATRE PAS AU LIEU DE DEUX. On encaisse douze points de dégâts, pas un :
+  //     cliquer douze fois sur « − » n'était pas un geste de jeu. −5 et +5
+  //     s'ajoutent aux unités, et « Max » ferme le rang.
+  //   — SOUS ZÉRO, LE BANDEAU ENTIER PASSE AU ROUGE. C'est un état du
+  //     personnage ; le dire par un seul chiffre rouge, c'était le murmurer.
+  //
+  // AUCUN ROUAGE SUR LES PV. Tout ce que le module porte relève du JEU : on perd
   // des points de vie en pleine partie, on revient au maximum après une nuit. Ce
   // qui se CONSTRUIT — le maximum — s'est retiré dans l'onglet Options, où il a
   // la même chaîne de leviers que le reste de la fiche.
@@ -26,16 +37,18 @@
   // n'a pas le droit d'être ambigu.
   function pvFmtNeg(n) { return n < 0 ? "−" + fmtP(-n) : fmtP(n); }
 
-  // Rend { el, etat } : le corps de la réserve, et la pastille d'état que le
-  // module remplit lui-même (« Mort », « Au tapis »).
+  // Rend { el, etat } : le module entier, et la pastille d'état que l'appelant
+  // remplit lui-même (« Mort », « Au tapis »).
   function pvReserve(nom, lire, ecrire, maxi, plancher, infoMax) {
-    var box = el("div", "pc-res");
+    var box = el("div", "pc-block pc-vital");
 
-    var rang = el("div", "pc-res-rang");
-    rang.appendChild(pvPas("−", "Un de moins", function () { ecrire(lire() - 1); refresh(); }));
-
-    var val = el("span", "pc-res-val");
-    var inp = el("input", "pc-res-num");
+    // ---- le bandeau : l'identité et la valeur ----
+    var tete = el("div", "pc-vital-tete");
+    tete.appendChild(el("span", "pc-vital-nom", nom));
+    var etat = el("span", "pc-vital-etat", "");
+    tete.appendChild(etat);
+    var val = el("span", "pc-vital-val");
+    var inp = el("input", "pc-vital-num");
     inp.type = "number";
     inp.step = "1";
     inp.setAttribute("aria-label", nom);
@@ -47,20 +60,25 @@
       refresh();
     });
     val.appendChild(inp);
-    var mx = el("span", "pc-res-max", "");
+    var mx = el("span", "pc-vital-max", "");
     val.appendChild(mx);
-    rang.appendChild(val);
+    tete.appendChild(val);
+    box.appendChild(tete);
 
-    rang.appendChild(pvPas("+", "Un de plus", function () { ecrire(lire() + 1); refresh(); }));
-    var etat = el("span", "pc-res-etat", "");
-    rang.appendChild(etat);
-    rang.appendChild(miniBtn("Max", "Revenir au maximum", function () { ecrire(null); refresh(); }));
-    box.appendChild(rang);
-
-    var jauge = el("span", "pc-res-jauge");
+    // ---- la réserve, en blocs ----
+    var jauge = el("span", "pc-vital-jauge");
     var fill = el("i");
     jauge.appendChild(fill);
     box.appendChild(jauge);
+
+    // ---- les gestes du jeu ----
+    var cmd = el("div", "pc-vital-cmd");
+    [[-5, "Cinq de moins"], [-1, "Un de moins"],
+     [1, "Un de plus"], [5, "Cinq de plus"]].forEach(function (p) {
+      cmd.appendChild(pvPas(p[0], p[1], function () { ecrire(lire() + p[0]); refresh(); }));
+    });
+    cmd.appendChild(miniBtn("Max", "Revenir au maximum", function () { ecrire(null); refresh(); }));
+    box.appendChild(cmd);
 
     hooks.push(function () {
       var v = lire(), m = maxi(), p = plancher(), i = infoMax();
@@ -73,21 +91,21 @@
       // été creusé. Deux barres empilées obligeaient à chercher laquelle
       // bougeait avant de lire combien, et l'une était toujours vide.
       var neg = v < 0;
-      inp.classList.toggle("over", neg);
+      box.classList.toggle("over", neg);
       fill.classList.toggle("over", neg);
       fill.style.marginLeft = neg ? "auto" : "0";
       fill.style.width = clamp(neg ? (p < 0 ? v / p * 100 : 0)
                                    : (m > 0 ? v / m * 100 : 0), 0, 100) + "%";
       // la jauge porte SON infobulle : c'est le seul endroit où le plancher
-      // négatif se nomme, le rang du dessus n'annonçant que le maximum
+      // négatif se nomme, le bandeau n'annonçant que le maximum
       jauge.title = nom + " " + pvFmtNeg(v) + " / " + pvFmtNeg(neg ? p : m);
     });
     return { el: box, etat: etat };
   }
-  // Les deux pas, à la taille d'un bouton de stepper : ils ne grossissent pas
-  // parce que la valeur a grossi.
-  function pvPas(txt, aide, fn) {
-    var b = el("button", "pc-res-pas", txt);
+  // Un pas : le nombre qu'il ajoute est SON libellé. « −5 » dit ce qu'il fait,
+  // là où une flèche demande de deviner de combien.
+  function pvPas(n, aide, fn) {
+    var b = el("button", "pc-vital-pas", n > 0 ? "+" + n : "−" + Math.abs(n));
     b.type = "button";
     b.title = aide;
     b.addEventListener("click", fn);
@@ -95,8 +113,6 @@
   }
 
   function buildPv() {
-    // PAS DE TROISIÈME ARGUMENT : le cadre, oui ; le rouage, non.
-    var b = block("PV");
     var r = pvReserve("PV", pvCourant, function (v) { state.pv = v; },
                       pvMax, pvPlancher, function () {
       var pose = levierRegleDe(lireReserve("pvMax"));
@@ -107,12 +123,10 @@
           : ""
       };
     });
-    b.appendChild(r.el);
     // un ÉTAT du personnage, et rien d'autre : un fait sur lui, au même titre
     // que ses PV. La règle qui le produit n'a pas à être ici.
     hooks.push(function () {
       r.etat.textContent = pvMort() ? "Mort" : "";
-      r.etat.classList.toggle("grave", pvMort());
     });
-    return b;
+    return r.el;
   }

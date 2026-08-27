@@ -253,8 +253,11 @@
 
     // ---------- les leviers des réserves ----------
     // MÊME CATALOGUE QUE LES AUTRES : un levier dont le nom manque ici est jeté
-    // en silence. « pvMax » y est ; « enduranceMax » l'attend.
-    var RESERVE_BORNE = { pvMax: 9999 };
+    // en silence. « enduranceMax » y est entré le jour où l'endurance a reçu sa
+    // chaîne, et la migration du schéma 6 rangeait dans le vide tant qu'il n'y
+    // était pas : la fiche s'ouvrait, l'état montait, et le levier disparaissait
+    // au premier enregistrement. Écrit dans la page, disparu au rechargement.
+    var RESERVE_BORNE = { pvMax: 9999, enduranceMax: 9999 };
     s.reservesLeviers = leviersPlats(s.reservesLeviers, RESERVE_BORNE);
 
     // ---------- les langues ----------
@@ -323,14 +326,15 @@
     // « pvMax » N'EST PLUS DE LA LISTE : son maximum est passé dans la chaîne
     // des leviers de réserve (schéma 5). L'y laisser reposait un [0,0,0] mort
     // après chaque migration, qui voyageait jusque dans les Attributs Roll20.
-    ["endurance", "vitesse", "initiative", "charge", "recup",
+    ["vitesse", "initiative", "charge", "recup",
      "sautLong", "sautHaut"].forEach(function (k) {
       var a = Array.isArray(s.divers[k]) ? s.divers[k] : [];
       s.divers[k] = [modNum(a[0]), modNum(a[1]), modNum(a[2])];
     });
-    // « pvMaxOverride » non plus, et pour la même raison : le forçage du
-    // maximum de PV est devenu la case « Forcé » de sa chaîne.
-    ["enduranceMaxOverride", "vitesseOverride",
+    // « pvMaxOverride » ET « enduranceMaxOverride » non plus, et pour la même
+    // raison : le forçage du maximum des deux réserves est devenu la case
+    // « Forcé » de leur chaîne.
+    ["vitesseOverride",
      "initiativeOverride", "chargeOverride", "recupOverride",
      "sautLongOverride", "sautHautOverride"]
       .forEach(function (k) { s[k] = forceVal(s[k]); });

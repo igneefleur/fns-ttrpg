@@ -118,14 +118,15 @@
       // Les valeurs dérivées que le MJ peut décaler (trois modificateurs
       // chacune) ou remplacer net.
       divers: {
-        pvMax: [0, 0, 0], endurance: [0, 0, 0], vitesse: [0, 0, 0],
+        pvMax: [0, 0, 0], vitesse: [0, 0, 0],
         initiative: [0, 0, 0], charge: [0, 0, 0], recup: [0, 0, 0],
         sautLong: [0, 0, 0], sautHaut: [0, 0, 0]
       },
-      // PAS DE « pvMaxOverride » : le forçage du maximum de PV est devenu la
-      // case « Forcé » de sa chaîne (schéma 5). Le laisser ici le reposait à
-      // null après chaque migration, et la clé morte voyageait.
-      enduranceMaxOverride: null, vitesseOverride: null,
+      // PAS DE « pvMaxOverride » NI DE « enduranceMaxOverride » : le forçage du
+      // maximum des deux réserves est devenu la case « Forcé » de leur chaîne
+      // (schémas 5 et 6). Les laisser ici les reposait à null après chaque
+      // migration, et les clés mortes voyageaient.
+      vitesseOverride: null,
       initiativeOverride: null, chargeOverride: null, recupOverride: null,
       sautLongOverride: null, sautHautOverride: null,
 

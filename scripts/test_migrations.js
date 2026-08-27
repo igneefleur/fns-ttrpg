@@ -787,6 +787,105 @@ var duree = Math.round(process.uptime() * 1000);
   }
 })();
 
+// ---------- LE PAS 6, EN PROPRE ----------
+// LE CALQUE DU PAS 5 SUR L'AUTRE RÉSERVE, et il se contrôle pareil. Un point
+// lui est propre et n'existait pas au pas 5 : les deux réserves partagent LA
+// MÊME TABLE « reservesLeviers ». La descente du 6 doit donc y laisser
+// « pvMax » intact et n'emporter que « enduranceMax » — c'est le seul endroit
+// où un pas peut manger le travail d'un autre.
+(function () {
+  var M = MiaMigr;
+
+  // ---- 5 -> 6 : le forçage et les trois modificateurs entrent dans la chaîne ----
+  var v5 = {
+    v: 5, name: "Riko",
+    enduranceMaxOverride: 12,
+    divers: { endurance: [4, 0, -1], vitesse: [0, 0, 0] },
+    reservesLeviers: { pvMax: { force: 90, a1: 7 } }
+  };
+  var fige5 = JSON.stringify(v5);
+  var m = M.appliquer(copie(v5), 5, 6);
+  ok(m.ok, "pas 6 : la montée doit passer (" + (m.erreur && m.erreur.message) + ")");
+  if (m.ok) {
+    var mx = (m.state.reservesLeviers || {}).enduranceMax || {};
+    ok(mx.force === 12, "pas 6 : le maximum forcé devient le forçage de la chaîne");
+    ok(mx.a1 === 4, "pas 6 : le premier modificateur -> a1");
+    ok(mx.a2 === undefined, "pas 6 : un modificateur de ZÉRO ne se range pas");
+    ok(mx.a3 === -1, "pas 6 : le troisième modificateur -> a3, signe compris");
+    ok(m.state.enduranceMaxOverride === undefined, "pas 6 : l'ancienne clé quitte la racine");
+    ok(m.state.divers && m.state.divers.endurance === undefined,
+       "pas 6 : les trois cases quittent « divers »");
+    var pv = (m.state.reservesLeviers || {}).pvMax || {};
+    ok(pv.force === 90 && pv.a1 === 7,
+       "pas 6 : les leviers des PV ne bougent pas — la table est commune");
+    ok(JSON.stringify(v5) === fige5, "pas 6 : l'état d'origine ne doit pas être modifié");
+
+    var r = M.appliquer(m.state, 6, 5);
+    ok(r.ok, "pas 6 : la descente doit passer");
+    if (r.ok) ok(egal(sansQuand(r.state), sansQuand(copie(v5))),
+                 "pas 6 : 5->6->5 doit tout rendre — " + ecart(sansQuand(r.state), sansQuand(copie(v5))));
+  }
+
+  // ---- 6 -> 5 : ce que trois cases ne savent pas porter va au grenier ----
+  var v6 = {
+    v: 6, name: "Riko",
+    reservesLeviers: { enduranceMax: { force: 20, a1: 3, m1: 2, a4: 6, m3: 0.5 } },
+    divers: {}
+  };
+  var fige6 = JSON.stringify(v6);
+  var d = M.appliquer(copie(v6), 6, 5);
+  ok(d.ok, "pas 6 : la descente d'un état natif doit passer");
+  if (d.ok) {
+    ok(d.state.enduranceMaxOverride === 20, "pas 6 : le forçage redescend en enduranceMaxOverride");
+    ok(JSON.stringify(d.state.divers.endurance) === "[3,0,0]",
+       "pas 6 : a1 redescend dans la première case, les autres à zéro");
+    ok(d.state.reservesLeviers === undefined,
+       "pas 6 : la table vidée s'en va, le schéma 5 ne connaît plus rien dedans");
+    var g = d.state.grenier && d.state.grenier["6"] && d.state.grenier["6"].end6reste;
+    ok(!!g, "pas 6 : les boîtes que trois cases ne portent pas vont au grenier");
+    ok(g && g.m1 === 2 && g.a4 === 6 && g.m3 === 0.5,
+       "pas 6 : un facteur, un ajout de fin et un second facteur au grenier");
+    ok(JSON.stringify(v6) === fige6, "pas 6 : l'état d'origine ne doit pas être modifié");
+
+    var r2 = M.appliquer(d.state, 5, 6);
+    ok(r2.ok, "pas 6 : la remontée doit passer");
+    if (r2.ok) ok(egal(sansQuand(r2.state), sansQuand(copie(v6))),
+                  "pas 6 : 6->5->6 doit tout rendre — " + ecart(sansQuand(r2.state), sansQuand(copie(v6))));
+  }
+
+  // ---- LA TABLE COMMUNE SURVIT À LA DESCENTE DU 6 ----
+  // le seul piège propre à ce pas : « pvMax » appartient au 5, et le 6 n'a pas
+  // le droit d'emporter la table avec lui parce qu'il a vidé SA clé.
+  var duo = { v: 6, reservesLeviers: { pvMax: { a1: 5 }, enduranceMax: { a1: 2 } } };
+  var dd = M.appliquer(copie(duo), 6, 5);
+  ok(dd.ok && dd.state.reservesLeviers && dd.state.reservesLeviers.pvMax &&
+     dd.state.reservesLeviers.pvMax.a1 === 5,
+     "pas 6 : la descente laisse « pvMax » dans la table commune");
+  ok(dd.ok && dd.state.reservesLeviers && dd.state.reservesLeviers.enduranceMax === undefined,
+     "pas 6 : la descente n'emporte que « enduranceMax »");
+
+  // ---- un état SANS aucun réglage d'endurance traverse sans une trace ----
+  var nu = { v: 5, name: "Nanachi", endurance: 3 };
+  var mn = M.appliquer(copie(nu), 5, 6);
+  ok(mn.ok && mn.state.reservesLeviers === undefined,
+     "pas 6 : un état sans réglage ne doit pas se voir poser de table vide");
+  if (mn.ok) {
+    var rn = M.appliquer(mn.state, 6, 5);
+    ok(rn.ok && egal(sansQuand(rn.state), sansQuand(copie(nu))),
+       "pas 6 : un état sans réglage fait l'aller-retour sans une trace");
+  }
+
+  // ---- LE CHIFFRE NE BOUGE PAS, et c'est la promesse du pas ----
+  var av = 4 + 0 + (-1);
+  var mm = M.appliquer(copie({ v: 5, divers: { endurance: [4, 0, -1] } }), 5, 6);
+  if (mm.ok) {
+    var b = mm.state.reservesLeviers.enduranceMax;
+    var ap = (b.a1 || 0) + (b.a2 || 0) + (b.a3 || 0);
+    ok(av === ap, "pas 6 : la somme des trois modificateurs est celle des trois ajouts (" +
+                  av + " / " + ap + ")");
+  }
+})();
+
 if (echecs.length) {
   console.error("MIGRATIONS : " + echecs.length + " échec(s) sur " + faits + " vérifications (" + duree + " ms)");
   echecs.forEach(function (e) { console.error("  - " + e); });

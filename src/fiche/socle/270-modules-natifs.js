@@ -101,8 +101,11 @@
     // caractéristique par caractéristique. La seconde est une mesure : la
     // gauche dépassait la droite de 250 px, elle n'en dépasse plus que 153.
     // LE MAXIMUM D'UNE RÉSERVE SE RÈGLE ICI, et plus dans son bloc de la Fiche :
-    // c'est ce qui a permis aux PV de perdre leur rouage.
+    // c'est ce qui a permis aux deux réserves de perdre leur rouage.
+    // DEUX MODULES ET NON UN : sur la Fiche, les PV et l'endurance se déplacent
+    // et se coupent séparément ; leurs réglages font de même.
     { id: "optpv",      titre: "PV",                onglet: "options", colonne: "droite", build: buildOptPv },
+    { id: "optendur",   titre: "Endurance",         onglet: "options", colonne: "droite", build: buildOptEndurance },
     { id: "ecartcoupe", titre: "Règle de l'écart",   onglet: "options", colonne: "droite", build: buildEcartRegle },
     { id: "filtres",    titre: "Outils de filtre",  onglet: "options", colonne: "droite", build: buildFiltres },
     // « Affichage » n'existe que dans Roll20 : à gauche, il y compense les deux

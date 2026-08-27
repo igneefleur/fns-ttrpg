@@ -6,67 +6,37 @@
   //
   // Tout son gréement est celui des PV (pvReserve, pvForceRow) : deux réserves
   // qui se ressemblent doivent se ressembler jusque dans le code, sans quoi
-  // l'une finit corrigée et l'autre non. Elle prend donc la nouvelle forme du
-  // même geste — le chiffre en grand, la jauge épaisse, l'état à gauche.
+  // l'une finit corrigée et l'autre non. Elle prend donc le module refait tel
+  // quel — bandeau, jauge en blocs, quatre pas.
   //
-  // ELLE GARDE SON ROUAGE POUR L'INSTANT, et c'est le seul écart : son maximum
-  // se règle encore ici, à l'ancienne (une valeur forcée et trois
-  // modificateurs), quand celui des PV est passé dans l'onglet Options avec la
-  // chaîne complète. Le lui donner aussi est la suite prévue ; laisser son
-  // réglage sans interface entre-temps aurait été pire que l'écart.
-  // LA LIGNE DE CONSTRUCTION D'UN MAXIMUM, À L'ANCIENNE : une valeur forcée
-  // (vide = calculée) et trois modificateurs. Elle vivait dans pv.js, du temps
-  // où les deux réserves s'en servaient ; les PV sont passés à la chaîne, elle
-  // déménage donc chez son dernier usager.
+  // AUCUN ROUAGE, PAS PLUS QUE SUR LES PV. Son maximum se construit dans
+  // l'onglet Options, avec la même chaîne de leviers ; ne reste ici que ce qui
+  // se joue — la réserve qu'on entame et qu'on refait.
   //
-  // ELLE PARTIRA AVEC LUI. Quand l'endurance aura sa chaîne, cette fonction
-  // n'aura plus d'appelant et s'en ira — comme celle des PV s'en est allée.
-  function pvForceRow(nom, champ, auto, cle, aide) {
-    var row = el("div", "pc-pvmax pc-mods-host pc-edit-only");
-    row.appendChild(el("span", "lbl", nom));
-    var f = el("input", "force");
-    f.type = "number"; f.step = "1"; f.min = "0";
-    f.title = aide;
-    f.addEventListener("input", function () {
-      var v = parseFloat(f.value);
-      state[champ] = isFinite(v) ? clamp(Math.floor(v), 0, 9999) : null;
-      refresh();
-    });
-    hooks.push(function () {
-      f.placeholder = String(auto());
-      if (document.activeElement !== f) f.value = state[champ] === null ? "" : state[champ];
-    });
-    row.appendChild(f);
-    row.appendChild(el("span", "lbl", "Modificateurs"));
-    row.appendChild(multiMod(state.divers, cle));
-    row.appendChild(el("span", "sp"));
-    return row;
-  }
+  // AVEC LUI S'EN EST ALLÉE « pvForceRow », la ligne de réglage à l'ancienne
+  // (une valeur forcée, trois modificateurs). Elle vivait dans pv.js, avait
+  // déménagé ici quand les PV étaient passés à la chaîne, et n'avait plus
+  // d'appelant du jour où l'endurance l'a suivie.
 
   function buildEndurance() {
-    // LE CADRE NORMAL, ET SON ROUAGE DANS LE TITRE, comme partout ailleurs. Le
-    // temps d'un essai la carte s'en était passée et le rouage avait dû se
-    // loger dans le coin des commandes : sans titre, on ne savait plus ce qu'on
-    // lisait.
-    var b = block("Endurance", null, "endurance");
+    // LE MÊME MODULE QUE LES PV, jusqu'au bandeau : deux réserves qui se lisent
+    // pareil doivent se lire pareil, sans quoi l'une finit soignée et l'autre
+    // négligée.
     var r = pvReserve("Endurance", enduranceCourante,
                       function (v) { state.endurance = v; },
                       enduranceMax, endurancePlancher, function () {
-      var d = modSum(state.divers.endurance);
+      var pose = levierRegleDe(lireReserve("enduranceMax"));
       return {
-        adj: state.enduranceMaxOverride !== null || d !== 0,
-        titre: state.enduranceMaxOverride !== null
-          ? "Maximum forcé à " + state.enduranceMaxOverride +
-            " (calculé : " + enduranceMaxAuto() + ")"
-          : (d ? "Modificateurs " + sign(d) : "")
+        adj: pose,
+        titre: pose
+          ? chaineTexteDe(lireReserve("enduranceMax"), "des règles", enduranceMaxAuto())
+          : ""
       };
     });
-    b.appendChild(r.el);
-    b.appendChild(pvForceRow("Endurance max", "enduranceMaxOverride", enduranceMaxAuto,
-                             "endurance", "Vide = calculé ; une valeur le force."));
+    // un ÉTAT du personnage, et rien d'autre. La règle qui le produit — le
+    // malus général, la chute à moins cent pour cent — n'a pas à être ici.
     hooks.push(function () {
       r.etat.textContent = enduranceAuTapis() ? "Au tapis" : "";
-      r.etat.classList.toggle("grave", enduranceAuTapis());
     });
-    return b;
+    return r.el;
   }

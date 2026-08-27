@@ -39,42 +39,6 @@
     if (!lv[nom]) lv[nom] = {};
     lv[nom][boite] = v;
   }
-  // ON NE MATÉRIALISE RIEN, ET L'ON DÉFAIT LE CHEMIN quand la dernière valeur
-  // s'en va : une table vide voyagerait jusque dans les Attributs Roll20 pour
-  // ne rien dire. Même geste que boitesTable et boitesSpe (voir
-  // commun-leviers.js), à un niveau de moins.
-  function ecrireReserve(nom, boite, v) {
-    if (!state.reservesLeviers || typeof state.reservesLeviers !== "object") {
-      state.reservesLeviers = {};
-    }
-    var lv = state.reservesLeviers;
-    if (v === undefined || v === null) {
-      if (!lv[nom]) return;
-      delete lv[nom][boite];
-      if (!Object.keys(lv[nom]).length) delete lv[nom];
-      return;
-    }
-    if (!lv[nom]) lv[nom] = {};
-    lv[nom][boite] = v;
-  }
-  // ON NE MATÉRIALISE RIEN, ET L'ON DÉFAIT LE CHEMIN quand la dernière valeur
-  // s'en va : une table vide voyagerait jusque dans les Attributs Roll20 pour
-  // ne rien dire. Même geste que boitesTable et boitesSpe (voir
-  // commun-leviers.js), à un niveau de moins.
-  function ecrireReserve(nom, boite, v) {
-    if (!state.reservesLeviers || typeof state.reservesLeviers !== "object") {
-      state.reservesLeviers = {};
-    }
-    var lv = state.reservesLeviers;
-    if (v === undefined || v === null) {
-      if (!lv[nom]) return;
-      delete lv[nom][boite];
-      if (!Object.keys(lv[nom]).length) delete lv[nom];
-      return;
-    }
-    if (!lv[nom]) lv[nom] = {};
-    lv[nom][boite] = v;
-  }
   function pvMaxChaineAuto() { return chaineAuto(lireReserve("pvMax"), pvMaxAuto()); }
   function pvMaxBrut() { return chaine(lireReserve("pvMax"), pvMaxAuto()); }
   function pvMax() {
@@ -99,9 +63,14 @@
   // Une réserve égale au MOD CON, qui descend jusqu'à son opposé. Dans le
   // négatif, sa valeur absolue devient un malus sur TOUS les jets — c'est le
   // seul malus général du système, et il se lit ici.
-  function enduranceMaxAuto() { return caracMod("CON") + modSum(state.divers.endurance); }
+  // CE QUE LES RÈGLES DONNENT, et rien d'autre — comme pour les PV. Les trois
+  // modificateurs « divers » qui s'y ajoutaient sont passés dans la chaîne.
+  function enduranceMaxAuto() { return caracMod("CON"); }
+  function enduranceMaxChaineAuto() {
+    return chaineAuto(lireReserve("enduranceMax"), enduranceMaxAuto());
+  }
   function enduranceMaxBrut() {
-    return state.enduranceMaxOverride !== null ? state.enduranceMaxOverride : enduranceMaxAuto();
+    return chaine(lireReserve("enduranceMax"), enduranceMaxAuto());
   }
   function enduranceMax() {
     var v = enduranceMaxBrut();
