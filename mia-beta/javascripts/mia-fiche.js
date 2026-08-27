@@ -80,7 +80,7 @@
   // site il est. Il ne change PAS le rang : « 1.0.1b » et « 1.0.1 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (MiaMods.compareVersions tient cette règle).
-  var RELEASE = "1.21.0b";
+  var RELEASE = "1.21.1b";
   var SCHEMA = 4;
 
   // ---------- ce que la fiche ne décide PAS ----------
@@ -5234,7 +5234,7 @@
       d.rows = 3;
       d.placeholder = "Ce que fait l'effet";
       d.value = e.desc || "";
-      d.addEventListener("input", function () { e.desc = d.value; save(); });
+      d.addEventListener("input", function () { e.desc = d.value; majVides(); save(); });
       c.appendChild(d);
 
       // ---- la macro liée ----
@@ -5246,7 +5246,7 @@
       mc.type = "text";
       mc.placeholder = "Macro liée — partira telle quelle dans le tchat";
       mc.value = e.macro || "";
-      mc.addEventListener("input", function () { e.macro = mc.value; save(); });
+      mc.addEventListener("input", function () { e.macro = mc.value; majVides(); save(); });
       ligne.appendChild(mc);
       // LE BOUTON RESTE EN JEU, lui : c'est le geste qu'on fait à table. Il ne
       // porte pas pc-edit-only, et son champ, verrouillé hors construction, se
@@ -5261,18 +5261,29 @@
         }, "primary"));
       c.appendChild(ligne);
 
+      // EN JOUANT, UN CHAMP VIDE DISPARAÎT. Une zone de texte grise sans un mot
+      // dedans et un bouton « Lancer » qui n'a rien à lancer occupent la moitié
+      // d'une carte pour ne rien dire. En construisant ils reviennent : c'est là
+      // qu'on les remplit.
+      //
+      // CE CALCUL SE FAIT LÀ OÙ L'ON TAPE, et pas seulement au registre. Le
+      // registre n'est joué que par refresh(), et un champ de TEXTE appelle
+      // save() — jamais refresh(), qui reconstruirait la liste sous les doigts.
+      // La marque restait donc posée sur une description qu'on venait d'écrire,
+      // et seul un coût tapé par-dessus — lui rafraîchit — la faisait
+      // disparaître. « Ni avantage ni xp, donc pas de description » : le défaut
+      // était là, et il liait deux choses qui n'ont rien à voir.
+      function majVides() {
+        d.classList.toggle("vide", !String(e.desc || "").trim());
+        ligne.classList.toggle("vide", !String(e.macro || "").trim());
+      }
       // les champs se relisent à chaque passe, SAUF celui qu'on est en train de
       // taper : un champ réécrit sous les doigts perd le curseur
       lignes.push(function () {
         if (document.activeElement !== nm) nm.value = e.nom || "";
         if (document.activeElement !== d) d.value = e.desc || "";
         if (document.activeElement !== mc) mc.value = e.macro || "";
-        // EN JOUANT, UN CHAMP VIDE DISPARAÎT. Une zone de texte grise sans un
-        // mot dedans et un bouton « Lancer » qui n'a rien à lancer occupent la
-        // moitié d'une carte pour ne rien dire. En construisant ils reviennent,
-        // évidemment : c'est là qu'on les remplit.
-        d.classList.toggle("vide", !String(e.desc || "").trim());
-        ligne.classList.toggle("vide", !String(e.macro || "").trim());
+        majVides();
       });
       return c;
     }
