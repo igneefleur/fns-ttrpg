@@ -276,25 +276,14 @@ html.night body:has(#perso-atelier) .md-container { background: #0e0e0e !importa
   color: var(--ink-3); font-variant-numeric: tabular-nums; white-space: nowrap;
 }
 .pc-vital-max.adj { color: var(--red); }
-/* LA JAUGE EST EN BLOCS, et elle court d'un bord à l'autre. Un trait continu,
-   c'est ce que porte n'importe quelle barre de chargement ; des BLOCS se
-   comptent, et le bloc est la même unité que les points qu'on perd un par un.
-   VINGT BLOCS EXACTEMENT, quelle que soit la largeur : le masque se répète à un
-   vingtième de la largeur, si bien qu'aucun bloc n'est coupé au bout. Un dégradé
-   répétitif en pixels, lui, laissait toujours un moignon.
-   LE BLOC EST CENTRÉ DANS SON PAS, et non calé à gauche : calé, la barre
-   commençait pile au bord gauche et finissait par un vide au bord droit, ce qui
-   la faisait paraître de travers. Centré, elle respire pareil des deux côtés. */
+/* LA JAUGE EST UNE BARRE PLEINE, et elle court d'un bord à l'autre.
+   ELLE A ÉTÉ SEGMENTÉE EN VINGT BLOCS le temps d'un essai, par un masque répété
+   au vingtième de la largeur — l'idée était qu'une réserve se compte au lieu de
+   se jauger. REFUSÉ, et le refus est écrit ici pour que personne ne le retente :
+   « pas des pointillés ». Le trait plein reste. */
 .pc-vital-jauge {
-  --seg: 20;
   display: flex; width: 100%; height: .5rem;
   background: var(--line-2); overflow: hidden;
-  -webkit-mask-image: linear-gradient(90deg, transparent 0 12%, #000 12% 88%, transparent 88% 100%);
-  mask-image: linear-gradient(90deg, transparent 0 12%, #000 12% 88%, transparent 88% 100%);
-  -webkit-mask-size: calc(100% / var(--seg)) 100%;
-  mask-size: calc(100% / var(--seg)) 100%;
-  -webkit-mask-repeat: repeat;
-  mask-repeat: repeat;
 }
 .pc-vital-jauge > i { display: block; height: 100%; background: var(--ok); transition: width .15s; }
 .pc-vital-jauge > i.over { background: var(--red); }
@@ -302,20 +291,31 @@ html.night body:has(#perso-atelier) .md-container { background: #0e0e0e !importa
 /* LES GESTES DU JEU, sur un rang. Les quatre pas se partagent la largeur à parts
    égales et le retour au maximum ferme le rang : c'est une barre d'actions, pas
    deux flèches collées à un chiffre. */
-.pc-vital-cmd { display: flex; align-items: center; gap: .22rem; padding: .34rem .4rem .38rem; }
-/* CHAQUE PAS DIT DE COMBIEN IL AVANCE. On encaisse douze points de dégâts, pas
-   un : deux flèches obligeaient à douze clics, et ne disaient pas leur pas. */
-.pc-vital-pas {
-  flex: 1 1 0; min-width: 0; padding: .2rem 0;
+/* LE RANG NE DÉBORDE JAMAIS. À 940 px, la colonne du milieu fait deux cent
+   quatorze pixels et les deux boutons en mangent cent quarante : le champ n'a
+   plus que le reste, et c'est à LUI de rétrécir. Mesuré : treize pixels
+   dépassaient avant que sa largeur minimale ne cède.
+   flex-wrap est la ceinture : si une police de repli élargissait les libellés,
+   le rang passerait à la ligne plutôt que de faire défiler la page en travers. */
+.pc-vital-cmd { display: flex; flex-wrap: wrap; align-items: center; gap: .18rem; padding: .34rem .4rem .38rem; }
+.pc-vital-cmd > .pc-mini { padding-inline: .4rem; }
+/* LE CHAMP DE VARIATION prend toute la place que les deux boutons lui laissent :
+   c'est lui qu'on vise, et le nombre qu'on y tape peut avoir quatre chiffres et
+   un signe. Des boutons de pas fixes tenaient sa place et ne savaient dire que
+   quatre nombres sur tous ceux qu'une partie réclame. */
+.pc-vital-delta {
+  flex: 1 1 auto; min-width: 2.2rem; width: 2.2rem; padding: .2rem .3rem;
   border: 1px solid var(--line-2); border-radius: 5px;
-  background: var(--card); color: var(--ink-2);
-  font: inherit; font-size: .68rem; font-weight: 700; line-height: 1;
-  font-variant-numeric: tabular-nums; cursor: pointer;
-  transition: background .12s, border-color .12s, color .12s;
+  background: var(--card); color: var(--ink);
+  font: inherit; font-size: .7rem; font-weight: 700; line-height: 1.15;
+  text-align: center; font-variant-numeric: tabular-nums;
+  -moz-appearance: textfield; appearance: textfield;
+  transition: border-color .12s, box-shadow .12s;
 }
-.pc-vital-pas:hover { border-color: var(--red); color: var(--red); background: var(--wash); }
-.pc-vital-pas:focus-visible { outline: none; border-color: var(--red); box-shadow: 0 0 0 2px var(--wash); }
-.pc-vital-cmd > .pc-mini { flex: 0 0 auto; margin-left: .18rem; }
+.pc-vital-delta::-webkit-inner-spin-button, .pc-vital-delta::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.pc-vital-delta::placeholder { color: var(--ink-3); font-weight: 600; }
+.pc-vital-delta:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 2px var(--wash); }
+.pc-vital-cmd > .pc-mini { flex: 0 0 auto; }
 
 /* l'état ne paraît que s'il a quelque chose à dire : vide, ni place ni marge */
 .pc-vital-etat:empty { display: none; }

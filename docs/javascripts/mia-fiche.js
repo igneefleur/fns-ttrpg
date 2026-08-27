@@ -80,7 +80,7 @@
   // site il est. Il ne change PAS le rang : « 1.0.1b » et « 1.0.1 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (MiaMods.compareVersions tient cette règle).
-  var RELEASE = "1.24.0b";
+  var RELEASE = "1.24.1b";
   var SCHEMA = 6;
 
   // ---------- ce que la fiche ne décide PAS ----------
@@ -4389,8 +4389,8 @@
   //     ┌───────────────────────────────┐
   //     │ PV                   40 / 119 │  ← BANDEAU : l'identité et la valeur
   //     ├───────────────────────────────┤
-  //     │ ▪▪▪▪▪▪▪▫▫▫▫▫▫▫▫▫▫▫▫▫          │  ← la réserve, en blocs
-  //     │  −5  −1  +1  +5        [Max]  │  ← les gestes du jeu
+  //     │ ███████                       │  ← la réserve
+  //     │  [ ± ]  [Appliquer]     [Max]  │  ← les gestes du jeu
   //     └───────────────────────────────┘
   //
   //   — LE NOM ET LA VALEUR SONT DANS UN MÊME BANDEAU, en haut, sur fond plein.
@@ -4398,12 +4398,13 @@
   //     n'y a pas de liste, il y a un nombre, et le nom doit se lire avec lui.
   //     C'est ce bandeau qui dit qu'on regarde les PV — sans titre du tout, on
   //     ne le savait plus, et c'était la faute de l'essai précédent.
-  //   — LA JAUGE EST EN BLOCS, collée sous le bandeau, pleine largeur. Un trait
-  //     continu se lit comme un chargement ; des blocs se comptent, et le bloc
-  //     est la même unité que les points qu'on perd un par un.
-  //   — QUATRE PAS AU LIEU DE DEUX. On encaisse douze points de dégâts, pas un :
-  //     cliquer douze fois sur « − » n'était pas un geste de jeu. −5 et +5
-  //     s'ajoutent aux unités, et « Max » ferme le rang.
+  //   — LA JAUGE EST UNE BARRE PLEINE, collée sous le bandeau, pleine largeur.
+  //     Elle a été segmentée en vingt blocs le temps d'un essai : refusé, et le
+  //     refus est écrit ici pour que personne ne le retente.
+  //   — ON TAPE LA VARIATION, ON NE LA CLIQUE PAS. Des boutons de pas fixes
+  //     (−5, −1, +1, +5) demandaient encore trois clics pour treize points, et
+  //     n'importe quel autre nombre était hors de leur portée. Un champ prend
+  //     LE nombre reçu — 13 comme −7 — et le bouton l'applique d'un coup.
   //   — SOUS ZÉRO, LE BANDEAU ENTIER PASSE AU ROUGE. C'est un état du
   //     personnage ; le dire par un seul chiffre rouge, c'était le murmurer.
   //
@@ -4452,11 +4453,31 @@
     box.appendChild(jauge);
 
     // ---- les gestes du jeu ----
+    // ---- les gestes du jeu ----
+    // LE CHAMP PORTE UNE VARIATION, PAS UNE VALEUR. On y tape ce qu'on encaisse
+    // ou ce qu'on regagne, signe compris, et le bouton l'ajoute à la réserve.
+    // Il se vide alors : rien n'y reste à traîner, si bien qu'appuyer deux fois
+    // de suite ne peut pas appliquer deux fois le même nombre par mégarde.
     var cmd = el("div", "pc-vital-cmd");
-    [[-5, "Cinq de moins"], [-1, "Un de moins"],
-     [1, "Un de plus"], [5, "Cinq de plus"]].forEach(function (p) {
-      cmd.appendChild(pvPas(p[0], p[1], function () { ecrire(lire() + p[0]); refresh(); }));
+    var delta = el("input", "pc-vital-delta");
+    delta.type = "number";
+    delta.step = "1";
+    delta.placeholder = "±";
+    delta.setAttribute("aria-label", nom + " à ajouter ou retirer");
+    function appliqueDelta() {
+      var d = parseFloat(delta.value);
+      if (!isFinite(d) || !d) return;      // vide, illisible ou zéro : rien à faire
+      ecrire(lire() + Math.round(d));
+      delta.value = "";
+      refresh();
+    }
+    // ENTRÉE VAUT LE BOUTON : on tape le nombre et on valide sans quitter le
+    // clavier, ce qui est le geste réel en pleine partie.
+    delta.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") { e.preventDefault(); appliqueDelta(); }
     });
+    cmd.appendChild(delta);
+    cmd.appendChild(miniBtn("Appliquer", "Ajouter cette variation", appliqueDelta));
     cmd.appendChild(miniBtn("Max", "Revenir au maximum", function () { ecrire(null); refresh(); }));
     box.appendChild(cmd);
 
@@ -4482,16 +4503,6 @@
     });
     return { el: box, etat: etat };
   }
-  // Un pas : le nombre qu'il ajoute est SON libellé. « −5 » dit ce qu'il fait,
-  // là où une flèche demande de deviner de combien.
-  function pvPas(n, aide, fn) {
-    var b = el("button", "pc-vital-pas", n > 0 ? "+" + n : "−" + Math.abs(n));
-    b.type = "button";
-    b.title = aide;
-    b.addEventListener("click", fn);
-    return b;
-  }
-
   function buildPv() {
     var r = pvReserve("PV", pvCourant, function (v) { state.pv = v; },
                       pvMax, pvPlancher, function () {
