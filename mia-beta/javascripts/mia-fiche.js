@@ -80,7 +80,7 @@
   // site il est. Il ne change PAS le rang : « 1.0.1b » et « 1.0.1 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (MiaMods.compareVersions tient cette règle).
-  var RELEASE = "1.24.2b";
+  var RELEASE = "1.24.3b";
   var SCHEMA = 6;
 
   // ---------- ce que la fiche ne décide PAS ----------
@@ -4549,7 +4549,12 @@
     // LE MÊME MODULE QUE LES PV, jusqu'au bandeau : deux réserves qui se lisent
     // pareil doivent se lire pareil, sans quoi l'une finit soignée et l'autre
     // négligée.
-    var r = pvReserve("Endurance", enduranceCourante,
+    // « END », ET NON « ENDURANCE ». Le bandeau porte le nom À CÔTÉ de la
+    // valeur, sur un seul rang : le mot entier prenait la moitié d'une colonne
+    // de deux cent quatorze pixels et devait s'abréger tout seul, en « ENDU... ».
+    // Abrégé franchement, il tient, et il se lit comme les sigles des
+    // caractéristiques et des compétences qui remplissent le reste de la feuille.
+    var r = pvReserve("END", enduranceCourante,
                       function (v) { state.endurance = v; },
                       enduranceMax, endurancePlancher, function () {
       var pose = levierRegleDe(lireReserve("enduranceMax"));
@@ -7819,28 +7824,33 @@
     bande.montre(0);
     return b;
   }
-  // ---- onglet Options : LE MAXIMUM DE PV ----
-  // UN SEUL RÉGLAGE, ET C'EST TOUT CE QU'UNE RÉSERVE EN A : son maximum. Pas
-  // d'onglets, donc, ni de troisième niveau dans l'état — le nom du levier fait
-  // l'identité, comme sur une spécialité.
+  // ---- onglet Options : LE MAXIMUM DES DEUX RÉSERVES ----
+  // UN SEUL MODULE POUR LES DEUX, et non un par réserve. Ils ont vécu séparés
+  // le temps d'une version, par symétrie avec la Fiche où les PV et l'END sont
+  // bien deux modules — mais là-bas ils portent chacun une valeur qui bouge en
+  // pleine partie, et ici ils ne portent qu'une rangée de réglage. Deux blocs
+  // d'une rangée chacun, c'était deux fois un titre et deux fois un en-tête de
+  // colonnes pour deux lignes de contenu.
+  //
+  // UNE RÉSERVE N'A QU'UNE CHOSE À RÉGLER : son maximum. Pas de troisième
+  // niveau dans l'état, donc — le nom du levier fait l'identité, comme sur une
+  // spécialité, et la clé de la rangée suffit à dire de quelle réserve il s'agit.
   //
   // MÊME CHAÎNE QUE PARTOUT : un forçage, deux ajouts, deux facteurs, deux
-  // ajouts, deux facteurs. Elle remplace les trois modificateurs « divers » et
-  // la valeur forcée qui vivaient sur la Fiche : trois cases ne savent pas dire
-  // « la moitié », et rien ne les distinguait des sept autres jeux de trois
-  // cases éparpillés dans l'ancienne fiche.
+  // ajouts, deux facteurs. Elle remplace, pour chacune, les trois modificateurs
+  // « divers » et la valeur forcée qui vivaient sur la Fiche.
   //
-  // C'EST POUR ÇA QUE LES PV ONT PERDU LEUR ROUAGE : ce qui se construisait
+  // C'EST POUR ÇA QUE NI LES PV NI L'END N'ONT DE ROUAGE : ce qui se construit
   // dans leur bloc est ici, et il ne leur reste que ce qui se joue.
-  function buildOptPv() {
-    var b = block("PV");
+  function buildOptReserves() {
+    var b = block("PV et END");
     grilleLevier(b, {
       cls: "levier",
-      entete: ["Réglage", "Ce que la rangée règle"],
-      // LA RANGÉE S'APPELLE « Maximum », ET NON « PV max » : le titre du bloc
-      // dit déjà de quelle réserve il s'agit, et la colonne des noms est étroite
-      // — « Endurance max » s'y faisait couper dans le module jumeau.
-      lignes: [{ cle: "pvMax", nom: "Maximum", titre: "Le maximum de points de vie" }],
+      entete: ["Réserve", "Ce que la rangée règle"],
+      lignes: [
+        { cle: "pvMax", nom: "PV", titre: "Le maximum de points de vie" },
+        { cle: "enduranceMax", nom: "END", titre: "Le maximum d'endurance" }
+      ],
       rangee: function (hote, cls, ligne, i) {
         return rangeeNom(hote, cls, ligne.nom, i, ligne.titre);
       },
@@ -7848,46 +7858,18 @@
       ecrire: function (k, boite, v) { ecrireReserve(k, boite, v); },
       mot: ["Max", "Maximum effectif"],
       borne: 9999,
-      auto: function () { return pvMaxChaineAuto(); },
-      rendu: function () {
-        return { texte: String(pvMax()),
-                 titre: chaineTexteDe(lireReserve("pvMax"), "des règles", pvMaxAuto()) };
-      }
-    });
-    return b;
-  }
-  // ---- onglet Options : LE MAXIMUM D'ENDURANCE ----
-  // LE JUMEAU DE « optpv », sur l'autre réserve. Deux modules et non deux
-  // rangées d'un seul : sur la Fiche, les PV et l'endurance sont deux modules
-  // qui se déplacent et se coupent séparément ; leurs réglages font de même.
-  //
-  // MÊME CHAÎNE QUE PARTOUT : un forçage, deux ajouts, deux facteurs, deux
-  // ajouts, deux facteurs. Elle remplace les trois modificateurs « divers » et
-  // la valeur forcée qui vivaient sur la Fiche.
-  //
-  // C'EST POUR ÇA QUE L'ENDURANCE A PERDU SON ROUAGE : ce qui se construisait
-  // dans son bloc est ici, et il ne lui reste que ce qui se joue.
-  function buildOptEndurance() {
-    var b = block("Endurance");
-    grilleLevier(b, {
-      cls: "levier",
-      entete: ["Réglage", "Ce que la rangée règle"],
-      // « Maximum », comme chez les PV : le titre du bloc dit la réserve, et la
-      // colonne des noms est trop étroite pour « Endurance max ».
-      lignes: [{ cle: "enduranceMax", nom: "Maximum",
-                 titre: "Le maximum d'endurance" }],
-      rangee: function (hote, cls, ligne, i) {
-        return rangeeNom(hote, cls, ligne.nom, i, ligne.titre);
+      // grilleLevier passe la CLÉ de la rangée à ses deux rappels : c'est elle,
+      // et non l'ordre des lignes, qui dit à quelle réserve on répond.
+      auto: function (k) {
+        return k === "pvMax" ? pvMaxChaineAuto() : enduranceMaxChaineAuto();
       },
-      lire: function (k) { return lireReserve(k); },
-      ecrire: function (k, boite, v) { ecrireReserve(k, boite, v); },
-      mot: ["Max", "Maximum effectif"],
-      borne: 9999,
-      auto: function () { return enduranceMaxChaineAuto(); },
-      rendu: function () {
-        return { texte: String(enduranceMax()),
-                 titre: chaineTexteDe(lireReserve("enduranceMax"), "des règles",
-                                      enduranceMaxAuto()) };
+      rendu: function (k) {
+        var pv = k === "pvMax";
+        return {
+          texte: String(pv ? pvMax() : enduranceMax()),
+          titre: chaineTexteDe(lireReserve(k), "des règles",
+                               pv ? pvMaxAuto() : enduranceMaxAuto())
+        };
       }
     });
     return b;
@@ -8721,7 +8703,7 @@
     // DEUX RÉSERVES, DEUX MODULES : même forme, mais on ne les lit pas au même
     // moment, et elles se déplacent — ou se coupent — l'une sans l'autre.
     { id: "pv",         titre: "PV",                onglet: "fiche", colonne: "milieu", build: buildPv },
-    { id: "endurance",  titre: "Endurance",         onglet: "fiche", colonne: "milieu", build: buildEndurance },
+    { id: "endurance",  titre: "END",               onglet: "fiche", colonne: "milieu", build: buildEndurance },
     // Les spécialités ont la colonne large POUR ELLES SEULES : cinq nombres,
     // un nom qu'on écrit, deux sigles à choisir et un filtre, sur une liste qui
     // n'a pas de fin. Elles étouffaient sous un tiers de feuille.
@@ -8784,12 +8766,12 @@
     // personnage, quand la gauche porte les leviers qui décalent un seuil
     // caractéristique par caractéristique. La seconde est une mesure : la
     // gauche dépassait la droite de 250 px, elle n'en dépasse plus que 153.
-    // LE MAXIMUM D'UNE RÉSERVE SE RÈGLE ICI, et plus dans son bloc de la Fiche :
-    // c'est ce qui a permis aux deux réserves de perdre leur rouage.
-    // DEUX MODULES ET NON UN : sur la Fiche, les PV et l'endurance se déplacent
-    // et se coupent séparément ; leurs réglages font de même.
-    { id: "optpv",      titre: "PV",                onglet: "options", colonne: "droite", build: buildOptPv },
-    { id: "optendur",   titre: "Endurance",         onglet: "options", colonne: "droite", build: buildOptEndurance },
+    // LE MAXIMUM DES RÉSERVES SE RÈGLE ICI, et plus dans leur bloc de la Fiche :
+    // c'est ce qui leur a permis de perdre leur rouage.
+    // UN SEUL MODULE POUR LES DEUX : ils en ont eu un chacun le temps d'une
+    // version, par symétrie avec la Fiche, mais deux blocs d'UNE rangée faisaient
+    // deux titres et deux en-têtes pour deux lignes de contenu.
+    { id: "optreserves", titre: "PV et END",        onglet: "options", colonne: "droite", build: buildOptReserves },
     { id: "ecartcoupe", titre: "Règle de l'écart",   onglet: "options", colonne: "droite", build: buildEcartRegle },
     { id: "filtres",    titre: "Outils de filtre",  onglet: "options", colonne: "droite", build: buildFiltres },
     // « Affichage » n'existe que dans Roll20 : à gauche, il y compense les deux

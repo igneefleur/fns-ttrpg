@@ -300,13 +300,16 @@ html.night body:has(#perso-atelier) .md-container { background: #0e0e0e !importa
    flex-wrap est la ceinture : si une police de repli élargissait le libellé,
    le rang passerait à la ligne plutôt que de faire défiler la page en travers. */
 .pc-vital-cmd { display: flex; flex-wrap: wrap; align-items: center; gap: .18rem; padding: .34rem .4rem .38rem; }
-.pc-vital-cmd > .pc-mini { padding-inline: .4rem; }
-/* LE CHAMP DE VARIATION prend toute la place que les deux boutons lui laissent :
-   c'est lui qu'on vise, et le nombre qu'on y tape peut avoir quatre chiffres et
-   un signe. Des boutons de pas fixes tenaient sa place et ne savaient dire que
-   quatre nombres sur tous ceux qu'une partie réclame. */
+/* UN TIERS POUR LE CHAMP, DEUX TIERS POUR LE BOUTON. Les deux ont une base de
+   zéro et se partagent la place au rapport de leur étirement : 1 et 2. Le champ
+   ne reçoit qu'un nombre de quatre chiffres et un signe, quand le bouton porte
+   un mot ; à places égales, le champ paraît trop gros.
+   LE BOUTON GARDE SA LARGEUR MINIMALE DE CONTENU (min-width reste « auto ») :
+   si la colonne devenait si étroite que deux tiers ne suffisent plus à « Appliquer »,
+   c'est le champ qui cède, jamais le mot qui se fait couper. */
+.pc-vital-cmd > .pc-mini { flex: 2 2 0; padding-inline: .4rem; }
 .pc-vital-delta {
-  flex: 1 1 auto; min-width: 2.2rem; width: 2.2rem; padding: .2rem .3rem;
+  flex: 1 1 0; min-width: 1.8rem; padding: .2rem .3rem;
   border: 1px solid var(--line-2); border-radius: 5px;
   background: var(--card); color: var(--ink);
   font: inherit; font-size: .7rem; font-weight: 700; line-height: 1.15;
@@ -317,7 +320,6 @@ html.night body:has(#perso-atelier) .md-container { background: #0e0e0e !importa
 .pc-vital-delta::-webkit-inner-spin-button, .pc-vital-delta::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 .pc-vital-delta::placeholder { color: var(--ink-3); font-weight: 600; }
 .pc-vital-delta:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 2px var(--wash); }
-.pc-vital-cmd > .pc-mini { flex: 0 0 auto; }
 
 /* l'état ne paraît que s'il a quelque chose à dire : vide, ni place ni marge */
 .pc-vital-etat:empty { display: none; }
