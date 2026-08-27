@@ -839,8 +839,12 @@ var duree = Math.round(process.uptime() * 1000);
     ok(d.state.enduranceMaxOverride === 20, "pas 6 : le forçage redescend en enduranceMaxOverride");
     ok(JSON.stringify(d.state.divers.endurance) === "[3,0,0]",
        "pas 6 : a1 redescend dans la première case, les autres à zéro");
-    ok(d.state.reservesLeviers === undefined,
-       "pas 6 : la table vidée s'en va, le schéma 5 ne connaît plus rien dedans");
+    // LA TABLE RESTE, MÊME VIDE. Elle a sa place au schéma 5 — blank() la porte
+    // et normalize() la repose sans condition — et c'est ce qui distingue ce
+    // pas du 5, qui descend vers un schéma 4 où elle n'existe pas. La faire
+    // disparaître rendait un état que le schéma 5 n'écrit jamais.
+    ok(d.state.reservesLeviers && !Object.keys(d.state.reservesLeviers).length,
+       "pas 6 : la table vidée reste, le schéma 5 la connaît");
     var g = d.state.grenier && d.state.grenier["6"] && d.state.grenier["6"].end6reste;
     ok(!!g, "pas 6 : les boîtes que trois cases ne portent pas vont au grenier");
     ok(g && g.m1 === 2 && g.a4 === 6 && g.m3 === 0.5,
@@ -874,6 +878,53 @@ var duree = Math.round(process.uptime() * 1000);
     ok(rn.ok && egal(sansQuand(rn.state), sansQuand(copie(nu))),
        "pas 6 : un état sans réglage fait l'aller-retour sans une trace");
   }
+
+  // ---- LA TABLE COMMUNE EXISTE AU SCHÉMA 5, et l'aller-retour doit la rendre ----
+  // C'EST LE DÉFAUT QU'UNE REVUE A TROUVÉ ET QUE CE BANC NE VOYAIT PAS : aucun
+  // état témoin ne portait « reservesLeviers », alors que blank() la pose et que
+  // normalize() la repose SANS CONDITION — cent pour cent des fiches réelles au
+  // schéma 5 l'ont, le plus souvent vide. La descente du 6 l'effaçait, et le
+  // casier « end6 », déjà pris par la montée, ne pouvait plus le noter.
+  var FORMES_5 = [
+    ["table vide, forçage nul", { v: 5, name: "Riko", enduranceMaxOverride: null,
+      divers: { endurance: [0, 0, 0], vitesse: [0, 0, 0] }, reservesLeviers: {} }],
+    ["pvMax seul, rien en END", { v: 5, name: "Riko",
+      divers: { vitesse: [0, 0, 0] }, reservesLeviers: { pvMax: { a1: 5 } } }],
+    ["table vide sans divers", { v: 5, name: "Riko", reservesLeviers: {} }],
+    ["forçage et trois modificateurs", { v: 5, name: "Riko", enduranceMaxOverride: 12,
+      divers: { endurance: [4, 0, -1] }, reservesLeviers: {} }]
+  ];
+  FORMES_5.forEach(function (f) {
+    var m6 = M.appliquer(copie(f[1]), 5, 6);
+    ok(m6.ok, "pas 6 : " + f[0] + " doit monter");
+    if (!m6.ok) return;
+    var r5 = M.appliquer(m6.state, 6, 5);
+    ok(r5.ok && egal(sansQuand(r5.state), sansQuand(copie(f[1]))),
+       "pas 6 : 5->6->5 exact — " + f[0] + " — " +
+       ecart(sansQuand(r5.state), sansQuand(copie(f[1]))));
+  });
+
+  var FORMES_6 = [
+    ["leviers END complets", { v: 6, name: "Riko", divers: {},
+      reservesLeviers: { enduranceMax: { force: 20, a1: 3, m1: 2, a4: 6, m3: 0.5 } } }],
+    ["END sans forçage", { v: 6, name: "Riko", divers: {},
+      reservesLeviers: { enduranceMax: { a1: 3 } } }],
+    ["END hors des trois cases", { v: 6, name: "Riko", divers: {},
+      reservesLeviers: { enduranceMax: { m1: 2, a4: 6 } } }],
+    ["table présente et vide", { v: 6, name: "Riko", divers: {}, reservesLeviers: {} }],
+    ["PV seul", { v: 6, name: "Riko", divers: {}, reservesLeviers: { pvMax: { a1: 5 } } }]
+  ];
+  FORMES_6.forEach(function (f) {
+    var d5 = M.appliquer(copie(f[1]), 6, 5);
+    ok(d5.ok, "pas 6 : " + f[0] + " doit descendre");
+    if (!d5.ok) return;
+    ok(d5.state.reservesLeviers !== undefined,
+       "pas 6 : " + f[0] + " — la table reste au schéma 5, même vidée");
+    var r6 = M.appliquer(d5.state, 5, 6);
+    ok(r6.ok && egal(sansQuand(r6.state), sansQuand(copie(f[1]))),
+       "pas 6 : 6->5->6 exact — " + f[0] + " — " +
+       ecart(sansQuand(r6.state), sansQuand(copie(f[1]))));
+  });
 
   // ---- LE CHIFFRE NE BOUGE PAS, et c'est la promesse du pas ----
   var av = 4 + 0 + (-1);

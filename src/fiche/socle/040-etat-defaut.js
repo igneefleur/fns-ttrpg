@@ -117,8 +117,15 @@
 
       // Les valeurs dérivées que le MJ peut décaler (trois modificateurs
       // chacune) ou remplacer net.
+      //
+      // NI « pvMax » NI « endurance » : les trois modificateurs des deux
+      // réserves sont passés dans leur chaîne de leviers (schémas 5 et 6), et
+      // normalize() a cessé de les reconstruire en même temps. « pvMax » était
+      // pourtant resté ici un schéma de trop : chaque personnage neuf écrivait
+      // un [0, 0, 0] mort qui voyageait jusque dans les Attributs Roll20, et
+      // les deux moitiés d'un même geste vivaient dans deux états opposés.
       divers: {
-        pvMax: [0, 0, 0], vitesse: [0, 0, 0],
+        vitesse: [0, 0, 0],
         initiative: [0, 0, 0], charge: [0, 0, 0], recup: [0, 0, 0],
         sautLong: [0, 0, 0], sautHaut: [0, 0, 0]
       },

@@ -1130,15 +1130,14 @@
         s.reservesLeviers = lv;
       }
       // QUI REVIENT NE RANGE RIEN : la descente a laissé de quoi se reconnaître.
+      // LE CASIER NE PORTE QU'UNE SEULE NOTE, celle de la montée. La descente
+      // n'y écrit plus rien : elle repose la table telle quelle et n'a donc
+      // aucun souvenir à confier.
       if (reprise === undefined) {
         var etat = {};
         if (avaitForce) etat.force = true;
         if (avaitTab) etat.tab = true;
         if (Object.keys(etat).length) ctx.grenier("end6", etat);
-      } else if (estTable(reprise) && reprise.avaitTable &&
-                 !Object.prototype.hasOwnProperty.call(s, "reservesLeviers")) {
-        // la table existait avant la descente, VIDE : on la repose telle quelle
-        s.reservesLeviers = {};
       }
       return s;
     },
@@ -1149,8 +1148,13 @@
       var max = estTable(lv.enduranceMax) ? lv.enduranceMax : {};
 
       // ON ÉCRIT, ON N'EFFACE PAS : une clé qu'on n'a pas produite reste.
-      if (typeof max.force === "number" && isFinite(max.force)) s.enduranceMaxOverride = max.force;
-      else if (estTable(repris) && repris.force) s.enduranceMaxOverride = null;
+      // « signe » retient si l'on a VRAIMENT posé une clé de schéma 5 : c'est la
+      // seule chose qui vaille d'être signée plus bas.
+      var signe = false;
+      if (typeof max.force === "number" && isFinite(max.force)) {
+        s.enduranceMaxOverride = max.force;
+        signe = true;
+      } else if (estTable(repris) && repris.force) s.enduranceMaxOverride = null;
 
       var pose = false, tab = [0, 0, 0];
       END_5_6.forEach(function (p) {
@@ -1160,6 +1164,7 @@
       if (pose || (estTable(repris) && repris.tab)) {
         if (!estTable(s.divers)) s.divers = {};
         s.divers.endurance = tab;
+        if (pose) signe = true;
       }
 
       // LES BOÎTES QUE LE SCHÉMA 5 NE SAIT PAS PORTER vont au grenier : les deux
@@ -1173,11 +1178,39 @@
       if (Object.keys(reste).length) ctx.grenier("end6reste", reste);
       delete lv.enduranceMax;
       // ON NE TOUCHE PAS À « pvMax » : la table est commune aux deux réserves,
-      // et le pas 5 est seul juge de ce qui lui appartient. Elle ne s'en va donc
-      // que si elle est VIDE — c'est-à-dire si les PV n'y ont rien posé.
-      if (Object.keys(lv).length) s.reservesLeviers = lv;
+      // et le pas 5 est seul juge de ce qui lui appartient.
+      //
+      // ET ON NE SUPPRIME PAS LA TABLE QUAND ELLE SE VIDE. C'était le geste du
+      // pas 5, recopié ici sans voir que le décor avait changé sous lui : le
+      // pas 5 descend vers un schéma 4 où « reservesLeviers » N'EXISTE PAS,
+      // tandis que le 6 descend vers un schéma 5 où blank() la porte et où
+      // normalize() la repose SANS CONDITION. Cent pour cent des fiches réelles
+      // au schéma 5 ont donc cette table, souvent vide : la retirer rendait un
+      // état que le schéma 5 n'écrit jamais.
+      //
+      // IL N'Y A PLUS RIEN À RANGER AU GRENIER NON PLUS, et c'est le fond de
+      // l'affaire. Le casier « end6 » portait DEUX notes de nature différente :
+      // { force, tab } à la montée, { avaitTable } à la descente. Un casier est
+      // à usage unique : quand la montée avait posé la sienne — c'est-à-dire
+      // pour toute fiche venue du schéma 5 — la descente la consommait et ne
+      // pouvait plus écrire la seconde. Elle effaçait alors la table sans
+      // laisser de trace, et la remontée ne la reposait pas.
+      if (avaitTable || Object.keys(lv).length) s.reservesLeviers = lv;
       else delete s.reservesLeviers;
-      if (repris === undefined && avaitTable) ctx.grenier("end6", { avaitTable: true });
+      // LA DESCENTE SIGNE SON PASSAGE, et c'est la seule chose que le casier
+      // porte de sa part : « les clés de schéma 5 que tu vas lire, c'est moi
+      // qui les ai écrites ». Sans cette signature, la remontée prendrait
+      // l'état pour une vraie fiche de schéma 5 et rangerait une note dont
+      // l'état d'origine, lui, n'avait pas : 6 -> 5 -> 6 rendrait un grenier
+      // de plus. On ne signe QUE si l'on n'a rien repris — sinon c'est qu'une
+      // vraie fiche de schéma 5 est montée avant nous, et le 5 qu'on rend est
+      // le sien, pas le nôtre.
+      //
+      // ET L'ON NE SIGNE QUE CE QU'ON A ÉCRIT. Une fiche sans aucun levier
+      // d'endurance descend sans rien poser : signer là laissait un casier
+      // derrière toutes les fiches du monde, et l'aller-retour X -> 6 -> X
+      // cessait d'être neutre pour celles qui n'avaient jamais touché à rien.
+      if (repris === undefined && signe) ctx.grenier("end6", { descendu: true });
       return s;
     }
   });

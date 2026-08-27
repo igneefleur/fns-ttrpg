@@ -108,6 +108,16 @@
     hooks.push(function () {
       var v = lire(), m = maxi(), p = plancher(), i = infoMax();
       if (document.activeElement !== inp) inp.value = v;
+      // LE CHAMP SE MESURE À SA VALEUR. Un <input> ne déborde pas, il ROGNE : une
+      // largeur fixe coupait le dernier chiffre dès que la valeur portait un
+      // signe et trois chiffres, et le module a justement été refait POUR
+      // l'état sous zéro, où le signe est là par définition. Aucune largeur
+      // fixe ne pouvait suffire non plus : la chaîne de leviers laisse un
+      // maximum monter aussi haut qu'on veut.
+      // ON COMPTE LES SIGNES, PAS LES PIXELS. Les chiffres sont à chasse fixe
+      // (tabular-nums) et valent donc un « ch » chacun ; le moins en vaut moins,
+      // ce qui laisse un peu d'air plutôt que d'en manquer.
+      inp.style.width = Math.max(3.4, String(inp.value).length + 0.3) + "ch";
       mx.textContent = "/ " + fmtP(m);
       mx.classList.toggle("adj", !!i.adj);
       mx.title = i.titre;

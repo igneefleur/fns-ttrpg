@@ -239,8 +239,13 @@ html.night body:has(#perso-atelier) .md-container { background: #0e0e0e !importa
 /* LE BANDEAU. Le nom et la valeur se lisent d'un seul mouvement de l'œil : c'est
    lui qui dit qu'on regarde les PV, rôle que tenait le titre. Le fond plein le
    détache du corps de la carte sans qu'il ait besoin d'un filet rouge. */
+/* flex-wrap est la ceinture, comme sur le rang des gestes. Le champ de la
+   valeur grandit avec son contenu, et le nom cède avant elle — mais le nom ne
+   peut céder qu'une fois, et la pastille d'état, elle, ne cède pas. Mesuré : à
+   940 px, « Mort » plus six signes de valeur débordaient de quatre pixels. La
+   valeur passe alors à la ligne au lieu de faire défiler la page en travers. */
 .pc-vital-tete {
-  display: flex; align-items: baseline; gap: .4rem;
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: .4rem;
   padding: .3rem .55rem .32rem;
   background: var(--panel); border-bottom: 1px solid var(--line-2);
 }
@@ -262,7 +267,14 @@ html.night body:has(#perso-atelier) .md-container { background: #0e0e0e !importa
    n'est pas une seconde valeur, c'est l'échelle de la première. */
 .pc-vital-val { flex: 0 0 auto; margin-left: auto; display: inline-flex; align-items: baseline; gap: .2rem; }
 /* DEUX FOIS UNE CASE. C'est le seul nombre de la carte, et le seul de la feuille
-   qui change en pleine partie — il n'a personne à écraser. */
+   qui change en pleine partie — il n'a personne à écraser.
+   LA LARGEUR POSÉE ICI N'EST QU'UN PLANCHER : c'est pvReserve() qui l'ajuste à
+   chaque rafraîchissement, sur la longueur de la valeur. Un <input> ne déborde
+   pas, il ROGNE — à 3,4ch fixes, « -119 » demandait 79 pixels pour 73, et la
+   valeur se faisait couper net à 1440 comme à 480 px. Aucune largeur fixe ne
+   pouvait faire l'affaire : la chaîne de leviers laisse un maximum monter
+   aussi haut qu'on veut, donc c'est au contenu de commander.
+   La règle du bandeau, elle, ne bouge pas : c'est le NOM qui cède. */
 .pc-vital-num {
   flex: 0 0 auto; width: 3.4ch; border: none; background: transparent; color: var(--ink);
   font: inherit; font-size: calc(var(--taille-case, .72rem) * 1.85); font-weight: 800;
