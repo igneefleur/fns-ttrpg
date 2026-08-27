@@ -35,6 +35,10 @@
       // spécialité — elles ont leur module, et une entrée qui paraîtrait dans
       // les deux listes finirait par s'y contredire.
       langues: [],
+      // LES LEVIERS DES RÉSERVES, une table à deux niveaux (levier, boîte). Les
+      // PV et l'endurance n'ont chacun qu'UNE chose à régler — leur maximum —,
+      // donc pas de troisième niveau : le nom du levier fait l'identité.
+      reservesLeviers: {},
       caracs: {}, caracsBonus: {},
 
       // LES CINQ LEVIERS DU MENEUR, ET UNE SEULE CLÉ POUR LES CINQ. Ils ne
@@ -118,7 +122,10 @@
         initiative: [0, 0, 0], charge: [0, 0, 0], recup: [0, 0, 0],
         sautLong: [0, 0, 0], sautHaut: [0, 0, 0]
       },
-      pvMaxOverride: null, enduranceMaxOverride: null, vitesseOverride: null,
+      // PAS DE « pvMaxOverride » : le forçage du maximum de PV est devenu la
+      // case « Forcé » de sa chaîne (schéma 5). Le laisser ici le reposait à
+      // null après chaque migration, et la clé morte voyageait.
+      enduranceMaxOverride: null, vitesseOverride: null,
       initiativeOverride: null, chargeOverride: null, recupOverride: null,
       sautLongOverride: null, sautHautOverride: null,
 

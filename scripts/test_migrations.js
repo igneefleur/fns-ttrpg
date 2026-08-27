@@ -149,8 +149,13 @@ var TEMOINS = {
       ],
       opts: { cols: 3, nom: true, qte: true, poids: true, total: true }
     },
-    divers: { pvMax: [0, 5, 0], regen: [0, 0, 0], vitesse: [1.5, 0, 0] },
-    pvMaxOverride: null, vitesseOverride: 10.5, regenOverride: null,
+    // NI « divers.pvMax » NI « pvMaxOverride » ICI : le pas 5 les déplace, et
+    // ce témoin est estampillé de TOUS les schémas tour à tour. Une forme datée
+    // y devient une chimère dans l'autre sens — c'est la leçon des pas 2 et 3,
+    // et elle vaut à chaque pas qui déménage quelque chose. Le pas 5 a son bloc
+    // dédié, plus bas.
+    divers: { regen: [0, 0, 0], vitesse: [1.5, 0, 0] },
+    vitesseOverride: 10.5, regenOverride: null,
     pv: 37, endurance: -4, xpTotal: 620, de: "d100"
   },
   // Une fiche déjà passée par le moteur : grenier et journal en place, pour
@@ -687,6 +692,98 @@ var duree = Math.round(process.uptime() * 1000);
     var rs = M.appliquer(ms.state, 4, 3);
     ok(rs.ok && egal(sansQuand(rs.state), sansQuand(copie(sf))),
        "pas 4 : aller-retour sans forçage — " + (rs.ok ? ecart(sansQuand(rs.state), sansQuand(copie(sf))) : ""));
+  }
+})();
+
+
+// --------------------------- 8. le pas 5, dans les deux sens, en détail
+// MÊME RAISON QU'AUX PAS 2, 3 ET 4 : les témoins généraux ne peuvent pas
+// contrôler un pas, puisqu'ils sont estampillés de tous les schémas tour à
+// tour. C'est d'ailleurs pour ce pas-ci que le témoin « fiche jouée » a dû
+// perdre « divers.pvMax » et « pvMaxOverride » : il les portait, et l'aller-
+// retour cessait d'être exact dans un sens sur deux.
+(function () {
+  var M = MiaMigr;
+
+  // ---- 4 -> 5 : le forçage et les trois modificateurs entrent dans la chaîne ----
+  var v4 = {
+    v: 4, name: "Riko",
+    pvMaxOverride: 90,
+    divers: { pvMax: [7, 0, -3], endurance: [1, 0, 0], vitesse: [0, 0, 0] },
+    enduranceMaxOverride: 12
+  };
+  var fige4 = JSON.stringify(v4);
+  var m = M.appliquer(copie(v4), 4, 5);
+  ok(m.ok, "pas 5 : la montée doit passer (" + (m.erreur && m.erreur.message) + ")");
+  if (m.ok) {
+    var mx = (m.state.reservesLeviers || {}).pvMax || {};
+    ok(mx.force === 90, "pas 5 : le maximum forcé devient le forçage de la chaîne");
+    ok(mx.a1 === 7, "pas 5 : le premier modificateur -> a1");
+    ok(mx.a2 === undefined, "pas 5 : un modificateur de ZÉRO ne se range pas");
+    ok(mx.a3 === -3, "pas 5 : le troisième modificateur -> a3, signe compris");
+    ok(m.state.pvMaxOverride === undefined, "pas 5 : l'ancienne clé quitte la racine");
+    ok(m.state.divers && m.state.divers.pvMax === undefined,
+       "pas 5 : les trois cases quittent « divers »");
+    ok(m.state.divers && JSON.stringify(m.state.divers.endurance) === "[1,0,0]",
+       "pas 5 : l'endurance de « divers » ne bouge PAS — ce n'est pas son tour");
+    ok(m.state.enduranceMaxOverride === 12,
+       "pas 5 : le maximum d'endurance ne bouge pas non plus");
+    ok(JSON.stringify(v4) === fige4, "pas 5 : l'état d'origine ne doit pas être modifié");
+
+    var r = M.appliquer(m.state, 5, 4);
+    ok(r.ok, "pas 5 : la descente doit passer");
+    if (r.ok) ok(egal(sansQuand(r.state), sansQuand(copie(v4))),
+                 "pas 5 : 4->5->4 doit tout rendre — " + ecart(sansQuand(r.state), sansQuand(copie(v4))));
+  }
+
+  // ---- 5 -> 4 : ce que trois cases ne savent pas porter va au grenier ----
+  var v5 = {
+    v: 5, name: "Riko",
+    reservesLeviers: { pvMax: { force: 80, a1: 5, m1: 2, a4: 9, m3: 0.5 } },
+    divers: { endurance: [0, 0, 0] }
+  };
+  var fige5 = JSON.stringify(v5);
+  var d = M.appliquer(copie(v5), 5, 4);
+  ok(d.ok, "pas 5 : la descente d'un état natif doit passer");
+  if (d.ok) {
+    ok(d.state.pvMaxOverride === 80, "pas 5 : le forçage redescend en pvMaxOverride");
+    ok(JSON.stringify(d.state.divers.pvMax) === "[5,0,0]",
+       "pas 5 : a1 redescend dans la première case, les autres à zéro");
+    ok(d.state.reservesLeviers === undefined,
+       "pas 5 : la table vidée s'en va, le schéma 4 ne la connaît pas");
+    var g = d.state.grenier && d.state.grenier["5"] && d.state.grenier["5"].pv5reste;
+    ok(!!g, "pas 5 : les boîtes que trois cases ne portent pas vont au grenier");
+    ok(g && g.m1 === 2 && g.a4 === 9 && g.m3 === 0.5,
+       "pas 5 : un facteur, un ajout de fin et un second facteur au grenier");
+    ok(JSON.stringify(v5) === fige5, "pas 5 : l'état d'origine ne doit pas être modifié");
+
+    var r2 = M.appliquer(d.state, 4, 5);
+    ok(r2.ok, "pas 5 : la remontée doit passer");
+    if (r2.ok) ok(egal(sansQuand(r2.state), sansQuand(copie(v5))),
+                  "pas 5 : 5->4->5 doit tout rendre — " + ecart(sansQuand(r2.state), sansQuand(copie(v5))));
+  }
+
+  // ---- un état SANS aucun réglage de PV traverse sans une trace ----
+  var nu = { v: 4, name: "Nanachi", pv: 12 };
+  var mn = M.appliquer(copie(nu), 4, 5);
+  ok(mn.ok && mn.state.reservesLeviers === undefined,
+     "pas 5 : un état sans réglage ne doit pas se voir poser de table vide");
+  if (mn.ok) {
+    var rn = M.appliquer(mn.state, 5, 4);
+    ok(rn.ok && egal(sansQuand(rn.state), sansQuand(copie(nu))),
+       "pas 5 : un état sans réglage fait l'aller-retour sans une trace");
+  }
+
+  // ---- LE CHIFFRE NE BOUGE PAS, et c'est la promesse du pas ----
+  // trois modificateurs qui s'additionnent à la base d'un côté, trois ajouts
+  // qui s'y additionnent de l'autre : même somme, à la virgule près.
+  var av = 7 + 0 + (-3);
+  var mm = M.appliquer(copie({ v: 4, divers: { pvMax: [7, 0, -3] } }), 4, 5);
+  if (mm.ok) {
+    var b = mm.state.reservesLeviers.pvMax;
+    var ap = (b.a1 || 0) + (b.a2 || 0) + (b.a3 || 0);
+    ok(av === ap, "pas 5 : la somme des trois modificateurs est celle des trois ajouts (" +
+                  av + " / " + ap + ")");
   }
 })();
 

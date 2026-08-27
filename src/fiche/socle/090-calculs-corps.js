@@ -4,11 +4,79 @@
   // PV = (20 + MOD CON + PHY) / 2 + SPÉ PV. « PHY » y désigne les POINTS de la
   // compétence Physique, pas son jet : c'est ce que le personnage a investi
   // dedans. La spécialité s'ajoute APRÈS la division, telle qu'elle est écrite.
+  // LE LEVIER D'UNE RÉSERVE : la même chaîne que partout ailleurs, à ceci près
+  // qu'une réserve n'a qu'UNE chose à régler — son maximum. Pas de troisième
+  // niveau, donc : le nom du levier fait l'identité, comme sur une spécialité.
+  function lireReserve(nom) {
+    return function (boite) {
+      var l = state.reservesLeviers && state.reservesLeviers[nom];
+      return boiteNombre(l && l[boite]);
+    };
+  }
+  // CE QUE LES RÈGLES DONNENT, et rien d'autre. Les trois modificateurs de
+  // « divers » qui s'y ajoutaient sont passés dans la chaîne : ils y font ce
+  // qu'ils faisaient, plus les facteurs et les deux groupes que trois cases ne
+  // savaient pas dire.
   function pvMaxAuto() {
     var base = (20 + caracMod("CON") + compPts("PHY")) / 2;
-    return Math.floor(base) + spePtsParNom("PV") + modSum(state.divers.pvMax);
+    return Math.floor(base) + spePtsParNom("PV");
   }
-  function pvMaxBrut() { return state.pvMaxOverride !== null ? state.pvMaxOverride : pvMaxAuto(); }
+  // ON NE MATÉRIALISE RIEN, ET L'ON DÉFAIT LE CHEMIN quand la dernière valeur
+  // s'en va : une table vide voyagerait jusque dans les Attributs Roll20 pour
+  // ne rien dire. Même geste que boitesTable et boitesSpe (voir
+  // commun-leviers.js), à un niveau de moins.
+  function ecrireReserve(nom, boite, v) {
+    if (!state.reservesLeviers || typeof state.reservesLeviers !== "object") {
+      state.reservesLeviers = {};
+    }
+    var lv = state.reservesLeviers;
+    if (v === undefined || v === null) {
+      if (!lv[nom]) return;
+      delete lv[nom][boite];
+      if (!Object.keys(lv[nom]).length) delete lv[nom];
+      return;
+    }
+    if (!lv[nom]) lv[nom] = {};
+    lv[nom][boite] = v;
+  }
+  // ON NE MATÉRIALISE RIEN, ET L'ON DÉFAIT LE CHEMIN quand la dernière valeur
+  // s'en va : une table vide voyagerait jusque dans les Attributs Roll20 pour
+  // ne rien dire. Même geste que boitesTable et boitesSpe (voir
+  // commun-leviers.js), à un niveau de moins.
+  function ecrireReserve(nom, boite, v) {
+    if (!state.reservesLeviers || typeof state.reservesLeviers !== "object") {
+      state.reservesLeviers = {};
+    }
+    var lv = state.reservesLeviers;
+    if (v === undefined || v === null) {
+      if (!lv[nom]) return;
+      delete lv[nom][boite];
+      if (!Object.keys(lv[nom]).length) delete lv[nom];
+      return;
+    }
+    if (!lv[nom]) lv[nom] = {};
+    lv[nom][boite] = v;
+  }
+  // ON NE MATÉRIALISE RIEN, ET L'ON DÉFAIT LE CHEMIN quand la dernière valeur
+  // s'en va : une table vide voyagerait jusque dans les Attributs Roll20 pour
+  // ne rien dire. Même geste que boitesTable et boitesSpe (voir
+  // commun-leviers.js), à un niveau de moins.
+  function ecrireReserve(nom, boite, v) {
+    if (!state.reservesLeviers || typeof state.reservesLeviers !== "object") {
+      state.reservesLeviers = {};
+    }
+    var lv = state.reservesLeviers;
+    if (v === undefined || v === null) {
+      if (!lv[nom]) return;
+      delete lv[nom][boite];
+      if (!Object.keys(lv[nom]).length) delete lv[nom];
+      return;
+    }
+    if (!lv[nom]) lv[nom] = {};
+    lv[nom][boite] = v;
+  }
+  function pvMaxChaineAuto() { return chaineAuto(lireReserve("pvMax"), pvMaxAuto()); }
+  function pvMaxBrut() { return chaine(lireReserve("pvMax"), pvMaxAuto()); }
   function pvMax() {
     var v = pvMaxBrut();
     return aFiltre("pvMax") ? applique("pvMax", v, {}) : v;

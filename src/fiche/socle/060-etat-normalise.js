@@ -251,6 +251,12 @@
       return o;
     });
 
+    // ---------- les leviers des réserves ----------
+    // MÊME CATALOGUE QUE LES AUTRES : un levier dont le nom manque ici est jeté
+    // en silence. « pvMax » y est ; « enduranceMax » l'attend.
+    var RESERVE_BORNE = { pvMax: 9999 };
+    s.reservesLeviers = leviersPlats(s.reservesLeviers, RESERVE_BORNE);
+
     // ---------- les langues ----------
     // Deux champs, et rien d'autre : le NIVEAU se déduit des points, il ne se
     // range pas. Le ranger serait s'exposer à ce qu'il contredise un jour ce
@@ -314,12 +320,17 @@
     // ---------- les valeurs dérivées ----------
     s.ecartCoupe = !!s.ecartCoupe;
     s.divers = objet(s.divers);
-    ["pvMax", "endurance", "vitesse", "initiative", "charge", "recup",
+    // « pvMax » N'EST PLUS DE LA LISTE : son maximum est passé dans la chaîne
+    // des leviers de réserve (schéma 5). L'y laisser reposait un [0,0,0] mort
+    // après chaque migration, qui voyageait jusque dans les Attributs Roll20.
+    ["endurance", "vitesse", "initiative", "charge", "recup",
      "sautLong", "sautHaut"].forEach(function (k) {
       var a = Array.isArray(s.divers[k]) ? s.divers[k] : [];
       s.divers[k] = [modNum(a[0]), modNum(a[1]), modNum(a[2])];
     });
-    ["pvMaxOverride", "enduranceMaxOverride", "vitesseOverride",
+    // « pvMaxOverride » non plus, et pour la même raison : le forçage du
+    // maximum de PV est devenu la case « Forcé » de sa chaîne.
+    ["enduranceMaxOverride", "vitesseOverride",
      "initiativeOverride", "chargeOverride", "recupOverride",
      "sautLongOverride", "sautHautOverride"]
       .forEach(function (k) { s[k] = forceVal(s[k]); });

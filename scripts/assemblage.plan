@@ -161,6 +161,7 @@ fin = lf
   src/fiche/options/ecart-regle.js
   src/fiche/options/optcomps.js
   src/fiche/options/optspes.js
+  src/fiche/options/optpv.js
   src/fiche/options/filtres.js
   src/fiche/options/affichage.js
   src/fiche/options/actions.js

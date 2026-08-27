@@ -4,14 +4,50 @@
   // qu'on encaisse, l'endurance pendant qu'on décide de forcer. Séparées, elles
   // se déplacent l'une sans l'autre, et se coupent l'une sans l'autre.
   //
-  // Tout son gréement est celui des PV (pvReserve, pvForceRow, pvLigne) : deux
-  // réserves qui se ressemblent doivent se ressembler jusque dans le code, sans
-  // quoi l'une finit corrigée et l'autre non.
+  // Tout son gréement est celui des PV (pvReserve, pvForceRow) : deux réserves
+  // qui se ressemblent doivent se ressembler jusque dans le code, sans quoi
+  // l'une finit corrigée et l'autre non. Elle prend donc la nouvelle forme du
+  // même geste — le chiffre en grand, la jauge épaisse, l'état à gauche.
+  //
+  // ELLE GARDE SON ROUAGE POUR L'INSTANT, et c'est le seul écart : son maximum
+  // se règle encore ici, à l'ancienne (une valeur forcée et trois
+  // modificateurs), quand celui des PV est passé dans l'onglet Options avec la
+  // chaîne complète. Le lui donner aussi est la suite prévue ; laisser son
+  // réglage sans interface entre-temps aurait été pire que l'écart.
+  // LA LIGNE DE CONSTRUCTION D'UN MAXIMUM, À L'ANCIENNE : une valeur forcée
+  // (vide = calculée) et trois modificateurs. Elle vivait dans pv.js, du temps
+  // où les deux réserves s'en servaient ; les PV sont passés à la chaîne, elle
+  // déménage donc chez son dernier usager.
+  //
+  // ELLE PARTIRA AVEC LUI. Quand l'endurance aura sa chaîne, cette fonction
+  // n'aura plus d'appelant et s'en ira — comme celle des PV s'en est allée.
+  function pvForceRow(nom, champ, auto, cle, aide) {
+    var row = el("div", "pc-pvmax pc-mods-host pc-edit-only");
+    row.appendChild(el("span", "lbl", nom));
+    var f = el("input", "force");
+    f.type = "number"; f.step = "1"; f.min = "0";
+    f.title = aide;
+    f.addEventListener("input", function () {
+      var v = parseFloat(f.value);
+      state[champ] = isFinite(v) ? clamp(Math.floor(v), 0, 9999) : null;
+      refresh();
+    });
+    hooks.push(function () {
+      f.placeholder = String(auto());
+      if (document.activeElement !== f) f.value = state[champ] === null ? "" : state[champ];
+    });
+    row.appendChild(f);
+    row.appendChild(el("span", "lbl", "Modificateurs"));
+    row.appendChild(multiMod(state.divers, cle));
+    row.appendChild(el("span", "sp"));
+    return row;
+  }
+
   function buildEndurance() {
     var b = block("Endurance", null, "endurance");
-    b.appendChild(pvReserve("Endurance", enduranceCourante,
-                            function (v) { state.endurance = v; },
-                            enduranceMax, endurancePlancher, function () {
+    var r = pvReserve("Endurance", enduranceCourante,
+                      function (v) { state.endurance = v; },
+                      enduranceMax, endurancePlancher, function () {
       var d = modSum(state.divers.endurance);
       return {
         adj: state.enduranceMaxOverride !== null || d !== 0,
@@ -20,11 +56,13 @@
             " (calculé : " + enduranceMaxAuto() + ")"
           : (d ? "Modificateurs " + sign(d) : "")
       };
-    }));
-    var tapis = pvLigne("pc-warn");
-    b.appendChild(tapis);
+    });
+    b.appendChild(r.el);
     b.appendChild(pvForceRow("Endurance max", "enduranceMaxOverride", enduranceMaxAuto,
                              "endurance", "Vide = calculé ; une valeur le force."));
-    hooks.push(function () { pvDit(tapis, enduranceAuTapis() ? "Au tapis" : ""); });
+    hooks.push(function () {
+      r.etat.textContent = enduranceAuTapis() ? "Au tapis" : "";
+      r.etat.classList.toggle("grave", enduranceAuTapis());
+    });
     return b;
   }
