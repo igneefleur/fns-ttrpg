@@ -22,7 +22,12 @@
     // LE MÊME MODULE QUE LES PV, jusqu'au bandeau : deux réserves qui se lisent
     // pareil doivent se lire pareil, sans quoi l'une finit soignée et l'autre
     // négligée.
-    var r = pvReserve("Endurance", enduranceCourante,
+    // « END », ET NON « ENDURANCE ». Le bandeau porte le nom À CÔTÉ de la
+    // valeur, sur un seul rang : le mot entier prenait la moitié d'une colonne
+    // de deux cent quatorze pixels et devait s'abréger tout seul, en « ENDU... ».
+    // Abrégé franchement, il tient, et il se lit comme les sigles des
+    // caractéristiques et des compétences qui remplissent le reste de la feuille.
+    var r = pvReserve("END", enduranceCourante,
                       function (v) { state.endurance = v; },
                       enduranceMax, endurancePlancher, function () {
       var pose = levierRegleDe(lireReserve("enduranceMax"));

@@ -37,7 +37,7 @@
     // DEUX RÉSERVES, DEUX MODULES : même forme, mais on ne les lit pas au même
     // moment, et elles se déplacent — ou se coupent — l'une sans l'autre.
     { id: "pv",         titre: "PV",                onglet: "fiche", colonne: "milieu", build: buildPv },
-    { id: "endurance",  titre: "Endurance",         onglet: "fiche", colonne: "milieu", build: buildEndurance },
+    { id: "endurance",  titre: "END",               onglet: "fiche", colonne: "milieu", build: buildEndurance },
     // Les spécialités ont la colonne large POUR ELLES SEULES : cinq nombres,
     // un nom qu'on écrit, deux sigles à choisir et un filtre, sur une liste qui
     // n'a pas de fin. Elles étouffaient sous un tiers de feuille.
@@ -100,12 +100,12 @@
     // personnage, quand la gauche porte les leviers qui décalent un seuil
     // caractéristique par caractéristique. La seconde est une mesure : la
     // gauche dépassait la droite de 250 px, elle n'en dépasse plus que 153.
-    // LE MAXIMUM D'UNE RÉSERVE SE RÈGLE ICI, et plus dans son bloc de la Fiche :
-    // c'est ce qui a permis aux deux réserves de perdre leur rouage.
-    // DEUX MODULES ET NON UN : sur la Fiche, les PV et l'endurance se déplacent
-    // et se coupent séparément ; leurs réglages font de même.
-    { id: "optpv",      titre: "PV",                onglet: "options", colonne: "droite", build: buildOptPv },
-    { id: "optendur",   titre: "Endurance",         onglet: "options", colonne: "droite", build: buildOptEndurance },
+    // LE MAXIMUM DES RÉSERVES SE RÈGLE ICI, et plus dans leur bloc de la Fiche :
+    // c'est ce qui leur a permis de perdre leur rouage.
+    // UN SEUL MODULE POUR LES DEUX : ils en ont eu un chacun le temps d'une
+    // version, par symétrie avec la Fiche, mais deux blocs d'UNE rangée faisaient
+    // deux titres et deux en-têtes pour deux lignes de contenu.
+    { id: "optreserves", titre: "PV et END",        onglet: "options", colonne: "droite", build: buildOptReserves },
     { id: "ecartcoupe", titre: "Règle de l'écart",   onglet: "options", colonne: "droite", build: buildEcartRegle },
     { id: "filtres",    titre: "Outils de filtre",  onglet: "options", colonne: "droite", build: buildFiltres },
     // « Affichage » n'existe que dans Roll20 : à gauche, il y compense les deux
