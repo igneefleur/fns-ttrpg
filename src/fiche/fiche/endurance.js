@@ -44,7 +44,9 @@
   }
 
   function buildEndurance() {
-    var b = block("Endurance", null, "endurance");
+    // LA MÊME CARTE QUE LES PV, et son rouage dans le coin : la carte n'a plus
+    // de titre où le poser. Il vivra le temps que l'endurance ait sa chaîne.
+    var gear = null;
     var r = pvReserve("Endurance", enduranceCourante,
                       function (v) { state.endurance = v; },
                       enduranceMax, endurancePlancher, function () {
@@ -56,13 +58,16 @@
             " (calculé : " + enduranceMaxAuto() + ")"
           : (d ? "Modificateurs " + sign(d) : "")
       };
-    });
-    b.appendChild(r.el);
-    b.appendChild(pvForceRow("Endurance max", "enduranceMaxOverride", enduranceMaxAuto,
-                             "endurance", "Vide = calculé ; une valeur le force."));
+    }, (gear = el("span", "pc-res-gear")));
+    // block() posait la classe et le rouage ; la carte les prend elle-même
+    r.el.classList.add("pc-editable");
+    r.el.dataset.module = "endurance";
+    gear.appendChild(gearBtn(r.el, "endurance"));
+    r.el.appendChild(pvForceRow("Endurance max", "enduranceMaxOverride", enduranceMaxAuto,
+                                "endurance", "Vide = calculé ; une valeur le force."));
     hooks.push(function () {
       r.etat.textContent = enduranceAuTapis() ? "Au tapis" : "";
       r.etat.classList.toggle("grave", enduranceAuTapis());
     });
-    return b;
+    return r.el;
   }
