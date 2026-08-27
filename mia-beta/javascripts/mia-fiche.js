@@ -80,7 +80,7 @@
   // site il est. Il ne change PAS le rang : « 1.0.1b » et « 1.0.1 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (MiaMods.compareVersions tient cette règle).
-  var RELEASE = "1.24.3b";
+  var RELEASE = "1.24.4b";
   var SCHEMA = 6;
 
   // ---------- ce que la fiche ne décide PAS ----------
@@ -334,8 +334,15 @@
 
       // Les valeurs dérivées que le MJ peut décaler (trois modificateurs
       // chacune) ou remplacer net.
+      //
+      // NI « pvMax » NI « endurance » : les trois modificateurs des deux
+      // réserves sont passés dans leur chaîne de leviers (schémas 5 et 6), et
+      // normalize() a cessé de les reconstruire en même temps. « pvMax » était
+      // pourtant resté ici un schéma de trop : chaque personnage neuf écrivait
+      // un [0, 0, 0] mort qui voyageait jusque dans les Attributs Roll20, et
+      // les deux moitiés d'un même geste vivaient dans deux états opposés.
       divers: {
-        pvMax: [0, 0, 0], vitesse: [0, 0, 0],
+        vitesse: [0, 0, 0],
         initiative: [0, 0, 0], charge: [0, 0, 0], recup: [0, 0, 0],
         sautLong: [0, 0, 0], sautHaut: [0, 0, 0]
       },
@@ -4488,6 +4495,16 @@
     hooks.push(function () {
       var v = lire(), m = maxi(), p = plancher(), i = infoMax();
       if (document.activeElement !== inp) inp.value = v;
+      // LE CHAMP SE MESURE À SA VALEUR. Un <input> ne déborde pas, il ROGNE : une
+      // largeur fixe coupait le dernier chiffre dès que la valeur portait un
+      // signe et trois chiffres, et le module a justement été refait POUR
+      // l'état sous zéro, où le signe est là par définition. Aucune largeur
+      // fixe ne pouvait suffire non plus : la chaîne de leviers laisse un
+      // maximum monter aussi haut qu'on veut.
+      // ON COMPTE LES SIGNES, PAS LES PIXELS. Les chiffres sont à chasse fixe
+      // (tabular-nums) et valent donc un « ch » chacun ; le moins en vaut moins,
+      // ce qui laisse un peu d'air plutôt que d'en manquer.
+      inp.style.width = Math.max(3.4, String(inp.value).length + 0.3) + "ch";
       mx.textContent = "/ " + fmtP(m);
       mx.classList.toggle("adj", !!i.adj);
       mx.title = i.titre;

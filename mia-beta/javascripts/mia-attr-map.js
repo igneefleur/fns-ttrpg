@@ -58,7 +58,7 @@
   // est. Il ne change PAS le rang du numéro (« 1.0.1b » et « 1.0.1 » sont la
   // même version, la beta étant ce que le stable recevra à la fusion) : ce qui
   // compare des versions doit donc l'ôter avant de lire les nombres.
-  var RELEASE_DEFAUT = "1.24.3b";
+  var RELEASE_DEFAUT = "1.24.4b";
   // Entier INDÉPENDANT de la release : il ne monte qu'au changement de forme de
   // l'état du personnage, jamais parce que le majeur a bougé. Le manifeste
   // publie les deux séparément, et c'est ce repli-ci que l'amorce prend quand le
@@ -234,6 +234,27 @@
     ["compsXpMod", "comps_xp_mod"], ["compsXpMod2", "comps_xp_mod2"]
   ];
 
+  // LES SCALAIRES QU'ON NE PUBLIE PLUS, ET QU'ON LIT ENCORE. Le pendant de
+  // COLLECTIONS_HERITAGE pour les valeurs simples : le forçage du maximum des
+  // deux réserves est passé dans leur chaîne de leviers (schémas 5 et 6), et
+  // ces deux lignes ont quitté SCALARS avec lui.
+  //
+  // LES RETIRER DES DEUX CÔTÉS ÉTAIT UNE PERTE SÈCHE, et le chemin est celui-ci :
+  // reconstruire() sert quand « mia_state » manque — le cas que ce fichier
+  // documente lui-même comme fréquent, l'attribut pesant des centaines de
+  // kilo-octets et des joueurs le vidant à la main. Il relève alors les
+  // attributs un par un, et ceux-là ont été ÉCRITS AU SCHÉMA 5 ou 4, avec
+  // dedans le maximum que le meneur avait imposé. Ne plus les lire, c'était
+  // ouvrir la fiche sans ce maximum et laisser la migration ne rien trouver à
+  // reprendre : le chiffre du meneur disparaissait sans un mot.
+  //
+  // ON LES LIT, ON NE LES ÉCRIT PAS. La chaîne les range dans
+  // « reservesLeviers », qui voyage, lui, dans les COLLECTIONS.
+  var SCALARS_HERITAGE = [
+    ["pvMaxOverride", "pv_max_force", "N"],
+    ["enduranceMaxOverride", "endurance_max_force", "N"]
+  ];
+
   var COLLECTIONS_OPT = [
     ["grenier", "grenier"],
     ["vHist", "v_hist"]
@@ -294,7 +315,7 @@
       // Les valeurs dérivées que le MJ peut décaler (trois modificateurs
       // chacune) ou remplacer net.
       divers: {
-        pvMax: [0, 0, 0], vitesse: [0, 0, 0],
+        vitesse: [0, 0, 0],
         initiative: [0, 0, 0], charge: [0, 0, 0], recup: [0, 0, 0],
         sautLong: [0, 0, 0], sautHaut: [0, 0, 0]
       },
@@ -539,6 +560,15 @@
       var v = cur(d[1]);
       if (v === undefined || v === "") return;
       try { var o = JSON.parse(v); if (o != null) { s[d[0]] = o; herite = true; } } catch (e) {}
+    });
+    // ET LES DEUX FORÇAGES DE RÉSERVE, s'ils sont encore là : on les repose à la
+    // racine pour que le pas 5 ou le pas 6 les reprenne. Un attribut VIDE ne
+    // compte pas — c'est ce qu'écrit une fiche qui les a déjà migrés.
+    SCALARS_HERITAGE.forEach(function (d) {
+      var v = cur(d[1]);
+      if (v === undefined || v === "" || v == null || !isFinite(parseFloat(v))) return;
+      s[d[0]] = num(v);
+      herite = true;
     });
     if (herite && cur("version") === undefined) s.v = 1;
     var ec = cur("etat_courant");
