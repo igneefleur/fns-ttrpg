@@ -607,6 +607,12 @@ html.night .pc-warn.doux { color: #ffbc33; background: rgba(255, 188, 51, .13); 
      58cqw est une part de LA COLONNE, la même pour l'entête et pour les huit
      lignes : elles ne peuvent plus se décaler, et la ligne ne peut plus sortir
      de son bloc quelle que soit la largeur. */
+  /* SOIXANTE, ET ON N'Y TOUCHE PAS. J'ai essayé soixante-quatre pour donner
+     trois pixels de plus au mot « PLAFOND » : mesuré, ça fait SOIXANTE-QUATRE
+     débordements à 900 px de fenêtre et quatre désalignements à 1000. C'est
+     exactement ce dont le paragraphe ci-dessus prévient — un palier réglé à la
+     main se trompe aux frontières. La place d'un mot d'entête se prend sur son
+     interlettrage, jamais sur cette mesure-là. */
   width: min(var(--pc-trio-w, 11.6rem), 60cqw); box-sizing: border-box;
   background: var(--panel); border: 1px solid var(--line-2); border-radius: 5px;
   overflow: hidden; line-height: 1.1;
@@ -734,13 +740,15 @@ html.night .pc-warn.doux { color: #ffbc33; background: rgba(255, 188, 51, .13); 
    poignée se retrouvaient seules sur leur rang. */
 .pc-block[data-module="langues"] .pc-crow-top { flex-wrap: wrap; }
 .pc-block[data-module="langues"] .pc-crow-top > input.nm { flex: 1 1 0; }
-/* TRENTE-SIX CENTIÈMES ET NON QUARANTE : mesuré, il manquait DIX pixels au nom
-   sous le rouage pour écrire « Commun » en entier, et les deux cases en avaient
-   de reste — un nombre de quatre chiffres y tient encore. En jouant, la croix
-   et la poignée s'en vont et le nom a toute la place (98 px pour 92 voulus). */
+/* TRENTE-HUIT CENTIÈMES, ET C'EST UN ÉQUILIBRE MESURÉ. À quarante, il manquait
+   dix pixels au nom sous le rouage ; à trente-six, « NIVEAU » ne passait plus
+   qu'à 2,8 px du filet. Trente-huit donne 3,8 px au mot, laisse « 1000 » au
+   large dans sa case, et ne coûte au nom que deux pixels qu'il n'avait de toute
+   façon pas de quoi employer. En jouant, la croix et la poignée s'en vont et le
+   nom a toute la place (107 px pour 100 voulus). */
 .pc-block[data-module="langues"] .pc-crow-top > .pc-trio,
 .pc-block[data-module="langues"] .pc-caracs-tete > .pc-trio {
-  margin-left: auto; width: min(var(--pc-paire-w, 5.8rem), 36cqw);
+  margin-left: auto; width: min(var(--pc-paire-w, 5.8rem), 38cqw);
 }
 /* ET LES MARGES INTERNES DES CASES SE RESSERRENT, faute de quoi les dix pixels
    rendus au nom se reprennent sur les chiffres : à MEN 20 la limite atteint
@@ -835,8 +843,14 @@ html.night .pc-warn.doux { color: #ffbc33; background: rgba(255, 188, 51, .13); 
    ce qui est affiché : hors édition, la première case VISIBLE en héritait d'un,
    doublant le bord du cadre. */
 .pc-editable:not(.editing) .pc-trio > .c.pc-edit-only + .c { box-shadow: none; }
+/* L'INTERLETTRAGE COÛTE AUX MOTS LONGS, ET C'EST EUX QUI MANQUENT DE PLACE.
+   À .07em, « PLAFOND » prenait 41,5 px dans une case de 42,6 et commençait à
+   six dixièmes de pixel du filet ; « NIVEAU », 34,3 dans 37,9, à 1,8 px. Sept
+   lettres, c'est 5,4 px de blanc ajouté — plus que ce qui manquait.
+   À .03em les deux respirent (2,1 px et 3,1 px du filet), et sur les mots
+   courts, qui avaient de la marge, la différence ne se voit pas. */
 .pc-trio .k {
-  font-size: var(--taille-etiquette, .42rem); font-weight: 700; letter-spacing: .07em;
+  font-size: var(--taille-etiquette, .42rem); font-weight: 700; letter-spacing: .02em;
   text-transform: uppercase; color: var(--ink-3);
 }
 /* le nombre rétrécit AVEC SA CASE — celle-ci, pas la colonne : une taille figée
