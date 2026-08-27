@@ -694,8 +694,14 @@ html.night .pc-warn.doux { color: #ffbc33; background: rgba(255, 188, 51, .13); 
    nom FIXE d'une compétence : petit, gris, sans filet ni fond — un champ qui
    n'avait l'air de rien et qui n'allait avec rien.
    Hors édition, la règle commune des champs verrouillés efface le filet : le
-   nom se lit alors comme un simple texte, à l'encre pleine. */
-.pc-block[data-module="specialites"] .pc-crow-top > input.nm {
+   nom se lit alors comme un simple texte, à l'encre pleine.
+
+   ET LES LANGUES SONT DES SPÉCIALITÉS, donc leur nom aussi. Elles étaient
+   tombées sur la règle du nom de compétence exactement comme les spécialités
+   avant elles, et pour la même raison : la règle était scellée à un seul
+   module. Toute liste dont le nom S'ÉCRIT doit figurer ici. */
+.pc-block[data-module="specialites"] .pc-crow-top > input.nm,
+.pc-block[data-module="langues"] .pc-crow-top > input.nm {
   flex: 1 1 auto; min-width: 0;
   border: none; border-bottom: 1px solid var(--line-2); border-radius: 0;
   background: transparent; color: var(--ink);
@@ -709,12 +715,35 @@ html.night .pc-warn.doux { color: #ffbc33; background: rgba(255, 188, 51, .13); 
   line-height: 1.1; padding: .1rem .14rem .12rem;
   height: var(--haut-case, 1.05rem); box-sizing: border-box;
 }
-.pc-block[data-module="specialites"] .pc-crow-top > input.nm:focus {
+.pc-block[data-module="specialites"] .pc-crow-top > input.nm:focus,
+.pc-block[data-module="langues"] .pc-crow-top > input.nm:focus {
   outline: none; border-bottom: 2px solid var(--red);
 }
-.pc-block[data-module="specialites"] .pc-crow-top > input.nm::placeholder {
+.pc-block[data-module="specialites"] .pc-crow-top > input.nm::placeholder,
+.pc-block[data-module="langues"] .pc-crow-top > input.nm::placeholder {
   color: var(--ink-3); font-weight: 400; font-style: italic;
 }
+/* UNE LANGUE N'A QU'UN QUART DE COLONNE là où une spécialité en a la moitié, et
+   sa ligne porte pourtant autant de choses : une croix, une poignée, un nom
+   qu'on ÉCRIT et trois cases. Le trio prend près de six dixièmes de la colonne,
+   les deux boutons le reste — il ne restait au nom qu'un trait de deux pixels.
+   SOUS LE ROUAGE, LE TRIO DESCEND D'UN RANG. La rupture est un élément du HTML
+   et non une règle de plus : elle porte pc-edit-only, donc elle DISPARAÎT en
+   jouant, avec la croix et la poignée, et la ligne redevient d'un seul rang, à
+   la hauteur exacte de celles des caractéristiques et des compétences.
+   L'entête, lui, ne porte ni nom ni boutons : son trio tient sur son rang, et
+   comme les deux sont poussés à droite sur la même largeur, les mots tombent
+   en face des nombres dans les deux modes. */
+.pc-block[data-module="langues"] .pc-crow-top { flex-wrap: wrap; }
+/* BASE NULLE, ET NON « auto » : dans un rang qui peut se replier, un nom long
+   passe à la ligne AVANT de rétrécir — le navigateur décide du repli sur la
+   base, et ne rétrécit qu'ensuite. La croix et la poignée restaient alors
+   seules sur leur rang. Avec une base nulle, le nom partage toujours le leur et
+   s'étire sur ce qui reste. */
+.pc-block[data-module="langues"] .pc-crow-top > input.nm { flex: 1 1 0; }
+.pc-block[data-module="langues"] .pc-crow-top > .pc-rupture { flex: 1 1 100%; height: 0; }
+.pc-block[data-module="langues"] .pc-crow-top > .pc-trio { margin-left: auto; }
+.pc-block[data-module="langues"].editing .pc-crow-top > .pc-trio { margin-top: .1rem; }
 
 /* le couple ne se lance pas : il identifie. Pas de curseur, pas de survol. */
 .pc-trio.deux .v { color: var(--ink-2); font-weight: 600; }
