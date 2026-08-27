@@ -291,11 +291,13 @@ html.night body:has(#perso-atelier) .md-container { background: #0e0e0e !importa
 /* LES GESTES DU JEU, sur un rang. Les quatre pas se partagent la largeur à parts
    égales et le retour au maximum ferme le rang : c'est une barre d'actions, pas
    deux flèches collées à un chiffre. */
-/* LE RANG NE DÉBORDE JAMAIS. À 940 px, la colonne du milieu fait deux cent
-   quatorze pixels et les deux boutons en mangent cent quarante : le champ n'a
-   plus que le reste, et c'est à LUI de rétrécir. Mesuré : treize pixels
-   dépassaient avant que sa largeur minimale ne cède.
-   flex-wrap est la ceinture : si une police de repli élargissait les libellés,
+/* LE RANG NE DÉBORDE JAMAIS. Il a porté deux boutons, qui mangeaient cent
+   quarante des deux cent quatorze pixels de la colonne du milieu à 940 px et
+   faisaient dépasser le champ de treize : c'est à LUI de rétrécir, jamais au
+   rang de déborder. Il n'en reste qu'un, la place est large — la règle tient
+   quand même, parce que le jour où l'on rajoutera quelque chose ici, elle
+   servira.
+   flex-wrap est la ceinture : si une police de repli élargissait le libellé,
    le rang passerait à la ligne plutôt que de faire défiler la page en travers. */
 .pc-vital-cmd { display: flex; flex-wrap: wrap; align-items: center; gap: .18rem; padding: .34rem .4rem .38rem; }
 .pc-vital-cmd > .pc-mini { padding-inline: .4rem; }

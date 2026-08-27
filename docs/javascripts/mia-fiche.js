@@ -80,7 +80,7 @@
   // site il est. Il ne change PAS le rang : « 1.0.1b » et « 1.0.1 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (MiaMods.compareVersions tient cette règle).
-  var RELEASE = "1.24.1b";
+  var RELEASE = "1.24.2b";
   var SCHEMA = 6;
 
   // ---------- ce que la fiche ne décide PAS ----------
@@ -4390,7 +4390,7 @@
   //     │ PV                   40 / 119 │  ← BANDEAU : l'identité et la valeur
   //     ├───────────────────────────────┤
   //     │ ███████                       │  ← la réserve
-  //     │  [ ± ]  [Appliquer]     [Max]  │  ← les gestes du jeu
+  //     │  [   ±   ]      [Appliquer]  │  ← le geste du jeu
   //     └───────────────────────────────┘
   //
   //   — LE NOM ET LA VALEUR SONT DANS UN MÊME BANDEAU, en haut, sur fond plein.
@@ -4405,6 +4405,11 @@
   //     (−5, −1, +1, +5) demandaient encore trois clics pour treize points, et
   //     n'importe quel autre nombre était hors de leur portée. Un champ prend
   //     LE nombre reçu — 13 comme −7 — et le bouton l'applique d'un coup.
+  //   — UN SEUL GESTE DANS LE RANG. Un bouton « Max » y a vécu deux versions ;
+  //     il est parti. LE RETOUR AU MAXIMUM N'EST PAS PERDU POUR AUTANT : vider
+  //     le champ de la valeur, dans le bandeau, remet la réserve au plein —
+  //     c'est ce que veut dire un « pv » nul dans l'état, et c'est le même
+  //     geste que le bouton faisait. Ne pas réintroduire le bouton.
   //   — SOUS ZÉRO, LE BANDEAU ENTIER PASSE AU ROUGE. C'est un état du
   //     personnage ; le dire par un seul chiffre rouge, c'était le murmurer.
   //
@@ -4478,7 +4483,6 @@
     });
     cmd.appendChild(delta);
     cmd.appendChild(miniBtn("Appliquer", "Ajouter cette variation", appliqueDelta));
-    cmd.appendChild(miniBtn("Max", "Revenir au maximum", function () { ecrire(null); refresh(); }));
     box.appendChild(cmd);
 
     hooks.push(function () {
