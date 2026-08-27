@@ -258,13 +258,28 @@ html.night body:has(#perso-atelier) .md-container { background: #0e0e0e !importa
 .pc-res-max.adj { color: var(--red); }
 /* le retour au maximum ferme le rang, à droite */
 .pc-res-rang > .pc-mini { margin-left: auto; flex: 0 0 auto; }
-/* LA JAUGE EST DANS LE CONTENU, pleine largeur, sous le rang qu'elle résume.
-   Elle faisait 84 px de large et 4 px de haut, perdue au bout d'une ligne. */
+/* LA JAUGE EST SEGMENTÉE, et c'est là qu'est le changement de style. Un trait
+   continu, c'est ce que porte n'importe quelle barre de progression de n'importe
+   quelle page : on le lit comme un chargement. Des BLOCS se lisent comme une
+   réserve — on les compte du coin de l'œil, on voit d'un coup ce qu'il en reste,
+   et la case est la même que celle des points qu'on perd un par un.
+   VINGT BLOCS EXACTEMENT, bord à bord, quelle que soit la largeur : le masque
+   se répète à un vingtième de la largeur, si bien qu'aucun bloc n'est coupé au
+   bout. Un dégradé répétitif en pixels, lui, laissait toujours un moignon.
+   Elle est DANS le contenu, pleine largeur, sous le rang qu'elle résume — elle
+   faisait 84 px de large et 4 px de haut, perdue au bout d'une ligne. */
 .pc-res-jauge {
-  display: flex; width: 100%; height: .32rem; border-radius: 999px;
-  background: var(--stripe); overflow: hidden;
+  --seg: 20;
+  display: flex; width: 100%; height: .46rem;
+  background: var(--line-2); overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, #000 0 74%, transparent 74% 100%);
+  mask-image: linear-gradient(90deg, #000 0 74%, transparent 74% 100%);
+  -webkit-mask-size: calc(100% / var(--seg)) 100%;
+  mask-size: calc(100% / var(--seg)) 100%;
+  -webkit-mask-repeat: repeat;
+  mask-repeat: repeat;
 }
-.pc-res-jauge > i { display: block; height: 100%; background: var(--ok); border-radius: 999px; transition: width .15s; }
+.pc-res-jauge > i { display: block; height: 100%; background: var(--ok); transition: width .15s; }
 .pc-res-jauge > i.over { background: var(--red); }
 /* l'état ne paraît que s'il a quelque chose à dire : vide, ni place ni marge */
 .pc-res-etat:empty { display: none; }
