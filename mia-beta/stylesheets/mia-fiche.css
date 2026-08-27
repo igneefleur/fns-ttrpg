@@ -740,22 +740,25 @@ html.night .pc-warn.doux { color: #ffbc33; background: rgba(255, 188, 51, .13); 
    poignée se retrouvaient seules sur leur rang. */
 .pc-block[data-module="langues"] .pc-crow-top { flex-wrap: wrap; }
 .pc-block[data-module="langues"] .pc-crow-top > input.nm { flex: 1 1 0; }
-/* TRENTE-HUIT CENTIÈMES, ET C'EST UN ÉQUILIBRE MESURÉ. À quarante, il manquait
-   dix pixels au nom sous le rouage ; à trente-six, « NIVEAU » ne passait plus
-   qu'à 2,8 px du filet. Trente-huit donne 3,8 px au mot, laisse « 1000 » au
-   large dans sa case, et ne coûte au nom que deux pixels qu'il n'avait de toute
-   façon pas de quoi employer. En jouant, la croix et la poignée s'en vont et le
-   nom a toute la place (107 px pour 100 voulus). */
+/* QUARANTE CENTIÈMES, ET CE N'EST PAS UN RÉGLAGE : c'est LES DEUX TIERS des
+   soixante que prennent les trois cases d'une caractéristique ou d'une
+   compétence. Deux cases y font donc exactement la largeur de leurs trois, et
+   la dernière tombe sur la dernière.
+   J'AVAIS ESSAYÉ 38 ET 36 pour donner des pixels au nom, et c'était prendre le
+   problème par le mauvais bout : une case a UNE largeur sur toute la feuille —
+   c'est la règle qui fait que les nombres de trois listes empilées dans la même
+   colonne tombent les uns sous les autres. Rognée de deux centièmes, la case
+   des langues décalait tout le bloc et le regard le voyait tout de suite,
+   même si chaque mot restait centré dans sa propre case au dixième de pixel.
+   Le nom y perd ; c'est le prix, et il se paie sous le rouage seulement. */
 .pc-block[data-module="langues"] .pc-crow-top > .pc-trio,
 .pc-block[data-module="langues"] .pc-caracs-tete > .pc-trio {
-  margin-left: auto; width: min(var(--pc-paire-w, 5.8rem), 38cqw);
+  margin-left: auto; width: min(var(--pc-paire-w, 5.8rem), 40cqw);
 }
-/* ET LES MARGES INTERNES DES CASES SE RESSERRENT, faute de quoi les dix pixels
-   rendus au nom se reprennent sur les chiffres : à MEN 20 la limite atteint
-   1000, et « 1000 » débordait de trois pixels d'une case rétrécie. Le compte y
-   est — texte 34 px, marges 3,5 px, case 38 px — et c'est la seule liste de la
-   fiche assez serrée pour que trois pixels décident. */
-.pc-block[data-module="langues"] .pc-trio > .c { padding-left: .08rem; padding-right: .08rem; }
+/* LES MARGES INTERNES REPRENNENT LA MESURE COMMUNE. Je les avais resserrées
+   pour rendre trois pixels au nom quand la case était rognée ; la case ayant
+   retrouvé sa largeur, elles n'ont plus de raison d'être — et une case qui a la
+   bonne largeur mais pas les bonnes marges se lit encore de travers. */
 
 /* le couple ne se lance pas : il identifie. Pas de curseur, pas de survol. */
 .pc-trio.deux .v { color: var(--ink-2); font-weight: 600; }
