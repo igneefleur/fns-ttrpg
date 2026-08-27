@@ -80,7 +80,7 @@
   // site il est. Il ne change PAS le rang : « 1.0.1b » et « 1.0.1 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (MiaMods.compareVersions tient cette règle).
-  var RELEASE = "1.22.0b";
+  var RELEASE = "1.22.1b";
   var SCHEMA = 4;
 
   // ---------- ce que la fiche ne décide PAS ----------
@@ -4866,6 +4866,21 @@
       for (var i = 0; i < lignes.length; i++) lignes[i]();
     });
 
+    // L'ORDRE APPARTIENT AU JOUEUR : rien dans les règles ne dit dans quel ordre
+    // ses langues se lisent. On glisse la POIGNÉE, jamais la ligne entière — le
+    // nom est un champ de saisie, et une ligne « draggable » interdirait d'y
+    // sélectionner un mot à la souris.
+    //
+    // « pris » porte l'index dans l'ÉTAT, jamais le rang à l'écran.
+    var pris = null;
+    function eteintDepot() {
+      var l = box.querySelectorAll(".pc-crow");
+      for (var i = 0; i < l.length; i++) {
+        l[i].classList.remove("avant");
+        l[i].classList.remove("apres");
+      }
+    }
+
     function ligne(it, odd) {
       // la langue VIVANTE, jamais capturée : la liste bouge sous la ligne
       var l = it.langue;
@@ -4886,6 +4901,26 @@
         }
         retire(it.index);
       }, "danger pc-croix pc-edit-only"));
+
+      var poignee = el("span", "pc-poignee pc-edit-only");
+      poignee.title = "Glisser pour ranger cette langue";
+      poignee.draggable = true;
+      poignee.addEventListener("dragstart", function (ev) {
+        pris = it.index;
+        row.classList.add("pris");
+        try {
+          ev.dataTransfer.effectAllowed = "move";
+          // Firefox refuse de commencer un glissement sans donnée posée
+          ev.dataTransfer.setData("text/plain", String(it.index));
+          if (ev.dataTransfer.setDragImage) ev.dataTransfer.setDragImage(row, 16, 12);
+        } catch (e) {}
+      });
+      poignee.addEventListener("dragend", function () {
+        pris = null;
+        row.classList.remove("pris");
+        eteintDepot();
+      });
+      top.appendChild(poignee);
 
       var nom = el("input", "nm pc-edit-field");
       nom.type = "text";
@@ -4910,6 +4945,42 @@
       var vNiv = caseTexte(trio);
       top.appendChild(trio);
       row.appendChild(top);
+
+      // La MOITIÉ survolée décide : au-dessus, la ligne prise se pose avant ;
+      // en dessous, après. Le liseré le montre pendant qu'on tient.
+      function moitieBasse(ev) {
+        var r = row.getBoundingClientRect();
+        return ev.clientY >= r.top + r.height / 2;
+      }
+      row.addEventListener("dragover", function (ev) {
+        if (pris === null || pris === it.index) return;
+        ev.preventDefault();            // sans ça, le navigateur refuse le dépôt
+        try { ev.dataTransfer.dropEffect = "move"; } catch (e) {}
+        eteintDepot();
+        row.classList.add(moitieBasse(ev) ? "apres" : "avant");
+      });
+      row.addEventListener("dragleave", function (ev) {
+        if (ev.target === row) { row.classList.remove("avant"); row.classList.remove("apres"); }
+      });
+      row.addEventListener("drop", function (ev) {
+        ev.preventDefault();
+        var src = pris;
+        if (src === null) {
+          try { src = parseInt(ev.dataTransfer.getData("text/plain"), 10); } catch (e) { src = NaN; }
+        }
+        eteintDepot();
+        if (!isFinite(src) || src === it.index) return;
+        var cible = it.index + (moitieBasse(ev) ? 1 : 0);
+        var lst = state.langues;
+        var obj = lst.splice(src, 1)[0];
+        if (!obj) return;
+        // le retrait a décalé tout ce qui suivait : la cible avec, si elle était
+        // après la source
+        if (src < cible) cible--;
+        lst.splice(clamp(cible, 0, lst.length), 0, obj);
+        rendu();
+        refresh();
+      });
 
       lignes.push(function () {
         var c = langueCarac();
