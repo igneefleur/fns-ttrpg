@@ -80,7 +80,7 @@
   // site il est. Il ne change PAS le rang : « 1.0.1b » et « 1.0.1 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (MiaMods.compareVersions tient cette règle).
-  var RELEASE = "1.22.1b";
+  var RELEASE = "1.22.2b";
   var SCHEMA = 4;
 
   // ---------- ce que la fiche ne décide PAS ----------
@@ -4929,8 +4929,22 @@
       // UN NOM S'ENREGISTRE SANS RAFRAÎCHIR : rien ne se calcule à partir de
       // lui, et refresh() reconstruirait la liste sous les doigts.
       nom.addEventListener("input", function () { l.nom = nom.value; save(); });
+      // AUCUN RESSORT ENTRE LE NOM ET LE TRIO, et c'est ce qui fait toute la
+      // différence : une ligne de COMPÉTENCE en porte un, parce que son nom est
+      // une pastille de largeur fixe et qu'il faut bien quelque chose pour
+      // pousser le trio à droite. Ici le nom S'ÉCRIT — c'est LUI qui prend la
+      // place, comme sur une ligne de spécialité. Un ressort à côté la lui
+      // disputait, et sous le rouage, entre une croix, une poignée et trois
+      // cases, il ne lui restait qu'un trait de deux pixels.
       top.appendChild(nom);
-      top.appendChild(el("span", "sp"));
+      // UNE RUPTURE, ET ELLE NE PARAÎT QUE SOUS LE ROUAGE. Un quart de colonne
+      // ne porte pas, sur un même rang, une croix, une poignée, un nom qu'on
+      // écrit et trois cases : le trio prend près de six dixièmes de la colonne,
+      // les deux boutons le reste, et il ne restait au nom qu'un trait. Le trio
+      // descend donc d'un rang pendant qu'on construit. En jouant, la croix et
+      // la poignée disparaissent, cette rupture avec elles, et la ligne
+      // retrouve la hauteur de celles du dessus.
+      top.appendChild(el("span", "pc-rupture pc-edit-only"));
 
       var trio = el("span", "pc-trio");
       var vTot = caseSaisie(trio,
