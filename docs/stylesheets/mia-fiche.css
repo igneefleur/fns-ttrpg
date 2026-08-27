@@ -269,34 +269,20 @@ html.night body:has(#perso-atelier) .md-container { background: #0e0e0e !importa
 .pc-res-pas:focus-visible { outline: none; border-color: var(--red); box-shadow: 0 0 0 2px var(--wash); }
 .pc-res-gear { display: inline-flex; }
 .pc-res-gear .pc-gear { position: static; }
-/* LA CARTE EST LA JAUGE, et c'est tout le parti pris. Pas de barre, pas de
-   filet : le fond lui-même se remplit jusqu'au rapport, et l'on sait où l'on en
-   est sans lire un chiffre. C'est ce qui éloigne le plus cette carte des autres
-   modules, qui sont tous des listes encadrées.
-   LE BORD DU REMPLISSAGE S'ÉTEINT EN DÉGRADÉ sur son dernier quart : une arête
-   franche traverse la carte à la verticale et coupe les chiffres au couteau dès
-   que le rapport tombe au milieu. Le dégradé garde la lecture d'un coup d'œil
-   et perd le tranchant.
-   ELLE NE PREND AUCUN CLIC : pointer-events la traverse, sinon elle mangerait
-   les boutons qu'elle recouvre. */
+/* LA JAUGE EST UN SOCLE, ET RIEN DE PLUS. J'ai essayé de faire remplir la carte
+   ENTIÈRE par le rapport, fond compris : c'est illisible, et ça a été refusé
+   net. Une jauge est une jauge — un trait fin, en bas, qui ne se dispute rien
+   avec le texte posé au-dessus.
+   Elle est hors du flux du contenu, collée aux trois bords bas, et épouse les
+   coins arrondis de la carte. */
 .pc-res-jauge {
-  position: absolute; inset: 0; display: flex; align-items: stretch;
-  border-radius: inherit; background: transparent; pointer-events: none;
+  position: absolute; left: 0; right: 0; bottom: 0;
+  display: flex; height: .28rem; background: var(--stripe);
 }
-.pc-res-jauge > i {
-  display: block; height: 100%; opacity: .16; transition: width .15s;
-  background: linear-gradient(90deg, var(--ok) 0%, var(--ok) 74%, transparent 100%);
-}
-/* sous zéro, le remplissage part de la DROITE : le dégradé se retourne avec lui */
-.pc-res-jauge > i.over {
-  background: linear-gradient(270deg, var(--red) 0%, var(--red) 74%, transparent 100%);
-  opacity: .2;
-}
-/* le contenu passe AU-DESSUS du fond */
-.pc-res-haut, .pc-res-etat, .pc-block.pc-res .pc-pvmax { position: relative; z-index: 1; }
+.pc-res-jauge > i { display: block; height: 100%; background: var(--ok); transition: width .15s; }
+.pc-res-jauge > i.over { background: var(--red); }
 /* SOUS ZÉRO, LE CADRE PASSE AU ROUGE : c'est un état du personnage, pas un
-   chiffre de plus. Le fond, lui, est déjà rouge par la jauge — le teinter en
-   plus donnerait deux rouges superposés. */
+   chiffre de plus. */
 .pc-block.pc-res.over { border-color: var(--red); }
 /* l'état ne paraît que s'il a quelque chose à dire : vide, ni place ni marge */
 .pc-res-etat:empty { display: none; }
