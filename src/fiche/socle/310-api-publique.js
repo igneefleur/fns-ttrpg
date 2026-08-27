@@ -66,6 +66,7 @@
       compLim: compLim, speLim: speLim, limiteJet: limiteJet,
       spePts: spePts, speXp: speXp, speBonus: speBonus, jetBonus: jetBonus,
       artXp: artXp, artAvantage: artAvantage, artsXp: artsXp, artsAvantage: artsAvantage,
+      langueTotal: langueTotal, langueNiveau: langueNiveau, langueXp: langueXp, languesXp: languesXp,
       spePlafond: spePlafond, spePlafondPose: spePlafondPose,
       speTotal: speTotal, speRetire: speRetire,
       ecartMin: ecartMin,

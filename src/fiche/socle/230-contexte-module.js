@@ -150,6 +150,8 @@
         compPlafond: compPlafond,
         spePts: spePts,
         spePlafond: spePlafond,
+        langueTotal: langueTotal,
+        langueNiveau: langueNiveau,
         artXp: artXp,
         artAvantage: artAvantage,
         speBonus: speBonus,

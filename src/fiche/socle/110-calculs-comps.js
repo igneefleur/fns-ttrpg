@@ -31,6 +31,19 @@
     });
   }
 
+  // ---------- les langues ----------
+  // Même nature que les spécialités — une liste que le joueur peuple lui-même,
+  // dont les règles ne disent pas lesquelles existent. Deux champs suffisent :
+  // le niveau se DÉDUIT des points, il ne se range pas.
+  function blankLangue(nom) {
+    return { nom: nom || "", pts: 0 };
+  }
+  function allLangues() {
+    return (state.langues || []).map(function (l, i) {
+      return { key: "langue/" + i, index: i, langue: l, name: l.nom || "Sans nom" };
+    });
+  }
+
   // ---------- les arts : techniques et passifs ----------
   // MÊME NATURE QUE LES SPÉCIALITÉS — une liste que le joueur peuple lui-même,
   // dont les règles ne disent rien. D'où les mêmes trois pièces : une fabrique,

@@ -585,6 +585,52 @@
     return s ? spePts(s) : 0;
   }
 
+  // ---------- les langues ----------
+  // UNE SPÉCIALITÉ « PASSIVE » : elle n'ajoute PAS le modificateur de sa
+  // caractéristique. Là où speTotal fait « points + MOD + points de la
+  // compétence », une langue ne vaut que ses points. Elle ne se lance pas, elle
+  // se possède.
+  //
+  // MAIS ELLE RESPECTE LA LIMITE de sa caractéristique, et c'est le seul
+  // emprunt qu'elle lui fait. On coiffe donc, on ne rabat pas : la règle de
+  // l'écart borne un total À DISTANCE de la limite (voir speRetire), et ce n'est
+  // pas ce qui a été demandé ici — c'est la limite elle-même qui borne.
+  function langueCarac() { return repli("langueCarac"); }
+  function langueSeuils() {
+    var s = repli("langueNiveaux");
+    return Array.isArray(s) ? s : [];
+  }
+  function languePts(l) { return (l && l.pts) || 0; }
+  function langueTotalBrut(l) {
+    var c = langueCarac();
+    if (!c) return languePts(l);
+    return Math.min(languePts(l), caracLim(c));
+  }
+  function langueTotal(l) {
+    var v = langueTotalBrut(l);
+    return aFiltre("langueTotal") ? applique("langueTotal", v, { langue: l }) : v;
+  }
+  // LE NIVEAU SE LIT SUR LE TOTAL, jamais sur les points achetés : une langue
+  // ramenée par la limite ne vaut que ce qu'elle vaut, et annoncer un niveau
+  // qu'elle n'atteint plus serait mentir.
+  //
+  // ZÉRO VEUT DIRE « AUCUN NIVEAU », pas « niveau zéro » : on peut mettre des
+  // points dans une langue sans avoir encore atteint le premier seuil.
+  function langueNiveau(l) {
+    var t = langueTotal(l), s = langueSeuils(), n = 0, i;
+    for (i = 0; i < s.length; i++) if (t >= s[i]) n = i + 1;
+    return n;
+  }
+  // Un point de langue coûte comme un point de spécialité : c'en est une.
+  function langueXp(l) {
+    return Math.round(languePts(l) * repli("xpSpe") * 100) / 100;
+  }
+  function languesXp() {
+    var t = 0, l = state.langues || [], i;
+    for (i = 0; i < l.length; i++) t += langueXp(l[i]);
+    return Math.round(t * 100) / 100;
+  }
+
   // ---------- les arts ----------
   // CE QU'UN ART COÛTE, effets compris : celui de base et toutes les
   // améliorations. Les deux monnaies se comptent pareil, elles ne diffèrent que
@@ -624,6 +670,11 @@
     // n'est pas un coût. Ils n'entrent en revanche pas dans xpChamp, qui
     // répartit l'xp par caractéristique — un art ne relève d'aucune.
     xp += artsXp();
+    // LES LANGUES COMPTENT AUSSI : ce sont des spécialités, leurs points se
+    // paient. Elles n'entrent pas dans xpChamp, qui répartit par
+    // caractéristique — il faudrait décider si MEN les porte, et personne ne
+    // l'a demandé.
+    xp += languesXp();
     return Math.round(xp * 100) / 100;
   }
   function xpDepense() {

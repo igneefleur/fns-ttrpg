@@ -21,7 +21,7 @@
   // site il est. Il ne change PAS le rang : « 1.0.1b » et « 1.0.1 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (MiaMods.compareVersions tient cette règle).
-  var RELEASE = "1.21.1b";
+  var RELEASE = "1.22.0b";
   var SCHEMA = 4;
 
   // ---------- ce que la fiche ne décide PAS ----------
@@ -41,6 +41,12 @@
     prestigeMax: 20,
     xpComp: 1, xpSpe: 0.25,       // ce que coûte un point de compétence, de spécialité
     speMarge: 50,                 // la marge sous la limite au-delà de laquelle on avertit
+    // LES LANGUES. La page de règles n'en dit pas un mot : ni la
+    // caractéristique dont elles relèvent, ni les seuils de leurs trois
+    // niveaux. Ces deux-là sont donc posés ICI, faute de mieux — et le jour où
+    // la page les dira, DATA prendra le dessus sans qu'on rouvre un fichier.
+    langueCarac: "MEN",
+    langueNiveaux: [100, 150, 200],
     endurAction: 50,              // endurance dépensable sur une même action
     iniMult: 2, iniMainsNues: 20,
     vitesseCarre: true, vitesseMult: 2,   // « AGI × AGI » ; le second ne sert que si la page repasse à « AGI × n »

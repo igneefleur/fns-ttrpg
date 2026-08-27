@@ -30,6 +30,11 @@
       // jamais reconstruire sa racine, donc une version qui ne connaît pas les
       // arts les garde intacts au lieu de les jeter.
       arts: [],
+      // LES LANGUES : des spécialités « passives », qui n'ajoutent pas le MOD
+      // de leur caractéristique. Liste à part et non un drapeau sur une
+      // spécialité — elles ont leur module, et une entrée qui paraîtrait dans
+      // les deux listes finirait par s'y contredire.
+      langues: [],
       caracs: {}, caracsBonus: {},
 
       // LES CINQ LEVIERS DU MENEUR, ET UNE SEULE CLÉ POUR LES CINQ. Ils ne

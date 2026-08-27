@@ -23,6 +23,9 @@
     // sont deux listes de huit lignes, de la même forme, qu'on lit l'une après
     // l'autre — la compétence dit à quelle caractéristique elle emprunte.
     { id: "comps",      titre: "Compétences",       onglet: "fiche", colonne: "gauche", build: buildComps },
+    // LES LANGUES SUIVENT LES COMPÉTENCES, dans la même colonne : ce sont des
+    // spécialités passives de MEN, et on les lit après ce dont elles relèvent.
+    { id: "langues",    titre: "Langues",           onglet: "fiche", colonne: "gauche", build: buildLangues },
     // Initiative et récupération vont ensemble : deux valeurs qu'on relit, et
     // qui portent chacune le bouton qui en fait quelque chose.
     { id: "initiative", titre: "Initiative",        onglet: "fiche", colonne: "milieu", build: buildInitiative },

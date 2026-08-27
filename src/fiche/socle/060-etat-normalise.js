@@ -251,6 +251,17 @@
       return o;
     });
 
+    // ---------- les langues ----------
+    // Deux champs, et rien d'autre : le NIVEAU se déduit des points, il ne se
+    // range pas. Le ranger serait s'exposer à ce qu'il contredise un jour ce
+    // que les points disent.
+    s.langues = objArray(s.langues).map(function (l) {
+      return {
+        nom: l.nom == null ? "" : String(l.nom),
+        pts: entier(l.pts, 0, 9999)
+      };
+    });
+
     // ---------- les arts : techniques et passifs ----------
     // RANGEMENT PROFOND, comme les spécialités et non comme les avantages :
     // un art porte des nombres, une liste imbriquée et un type fermé. Le
