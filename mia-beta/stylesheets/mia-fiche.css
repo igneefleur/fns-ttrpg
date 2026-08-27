@@ -217,34 +217,33 @@ html.night body:has(#perso-atelier) .md-container { background: #0e0e0e !importa
 
 
 /* ---- UNE RÉSERVE : PV, endurance ----
-   TROIS RANGS, ET LE CHIFFRE EST LE PREMIER. C'est la seule valeur d'un
-   personnage qui change à chaque coup reçu, et l'ancienne forme la donnait à la
-   taille de tous les autres champs de la fiche, avec un « / 95 » aussi gros
-   qu'elle et un filet de quatre pixels pour toute jauge. Elle passe au double,
-   au centre, entre deux boutons qu'on vise sans regarder.
-   TOUT SE MESURE SUR LA CASE de la colonne (--taille-case), comme le reste de
-   la feuille : la réserve grandit et rétrécit avec ses voisines au lieu de
-   suivre une échelle à elle. */
-.pc-res { display: flex; flex-direction: column; gap: .3rem; padding: .1rem 0 .05rem; }
-.pc-res-haut { display: flex; align-items: center; justify-content: center; gap: .5rem; }
-/* les deux boutons : plus gros que ceux d'un stepper ordinaire — on les vise
-   vite et souvent, et ils encadrent un chiffre de trois fois leur taille */
-.pc-res-pas {
-  flex: 0 0 auto; width: 1.5rem; height: 1.5rem; border-radius: 50%; padding: 0;
-  border: 1px solid var(--line); background: var(--card); color: var(--ink-2);
-  font-weight: 700; font-size: 1rem; line-height: 1; cursor: pointer;
-  display: inline-grid; place-items: center;
-  transition: background .12s, border-color .12s, color .12s;
+   ELLE N'A PAS LE CADRE DES AUTRES MODULES, et c'est délibéré. Un bloc ordinaire
+   porte son titre en haut à gauche, souligné de rouge, avec le contenu dessous :
+   c'est juste pour une LISTE, où le titre annonce des rangs. Une réserve n'est
+   pas une liste — c'est UN nombre, et le nom de ce nombre tient sur la même
+   ligne que lui.
+   D'où deux rangs seulement, et la jauge en SOCLE : pleine largeur, collée au
+   bord bas, elle ferme la carte au lieu de traîner une ligne de plus au milieu
+   du contenu. */
+.pc-block.pc-res {
+  position: relative; overflow: hidden;
+  display: flex; flex-direction: column; gap: .18rem;
+  padding: .4rem .55rem .5rem;
 }
-.pc-res-pas:hover { border-color: var(--red); color: var(--red); background: var(--wash); }
-.pc-res-pas:focus-visible { outline: none; border-color: var(--red); box-shadow: 0 0 0 2px var(--wash); }
+.pc-res-haut { display: flex; align-items: baseline; gap: .4rem; flex-wrap: wrap; }
+/* LE NOM EN PETITES CAPITALES : il n'annonce rien, il ÉTIQUETTE. Même taille et
+   même encre que les mots d'entête des listes, pour qu'il se lise comme eux. */
+.pc-res-nom {
+  flex: 0 0 auto; font-size: var(--taille-etiquette, .42rem); font-weight: 800;
+  letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3);
+}
 /* LE CHIFFRE ET SON MAXIMUM SUR LA MÊME LIGNE DE BASE : le maximum n'est pas
    une seconde valeur, c'est l'échelle de la première. */
-.pc-res-val { display: inline-flex; align-items: baseline; gap: .18rem; min-width: 0; }
+.pc-res-val { display: inline-flex; align-items: baseline; gap: .16rem; min-width: 0; }
 .pc-res-num {
   width: 3.2ch; min-width: 0; border: none; background: transparent; color: var(--ink);
-  font: inherit; font-size: calc(var(--taille-case, .72rem) * 2); font-weight: 800;
-  text-align: right; padding: 0; font-variant-numeric: tabular-nums; line-height: 1.05;
+  font: inherit; font-size: calc(var(--taille-case, .72rem) * 1.7); font-weight: 800;
+  text-align: right; padding: 0; font-variant-numeric: tabular-nums; line-height: 1;
   -moz-appearance: textfield; appearance: textfield;
 }
 .pc-res-num::-webkit-inner-spin-button, .pc-res-num::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
@@ -257,27 +256,60 @@ html.night body:has(#perso-atelier) .md-container { background: #0e0e0e !importa
   color: var(--ink-3); font-variant-numeric: tabular-nums; white-space: nowrap;
 }
 .pc-res-max.adj { color: var(--red); }
-/* LA JAUGE PREND TOUTE LA LARGEUR ET S'ÉPAISSIT : elle se lit du coin de l'œil,
-   sans compter. Le remplissage est en flex pour que la barre rouge puisse se
-   coller à droite d'une marge automatique, sans une classe de plus. */
-.pc-res-jauge {
-  display: flex; width: 100%; height: .45rem; border-radius: 999px;
-  background: var(--stripe); overflow: hidden;
+/* les commandes, poussées à droite et à leur taille ordinaire */
+.pc-res-cmd { margin-left: auto; display: inline-flex; align-items: center; gap: .22rem; }
+.pc-res-pas {
+  flex: 0 0 auto; width: 1.05rem; height: 1.05rem; border-radius: 50%; padding: 0;
+  border: 1px solid var(--line); background: var(--card); color: var(--ink-2);
+  font-weight: 700; font-size: .74rem; line-height: 1; cursor: pointer;
+  display: inline-grid; place-items: center;
+  transition: background .12s, border-color .12s, color .12s;
 }
-.pc-res-jauge > i { display: block; height: 100%; background: var(--ok); border-radius: 999px; transition: width .15s; }
-.pc-res-jauge > i.over { background: var(--red); }
-/* le troisième rang : l'état à gauche, le retour au maximum à droite */
-.pc-res-bas { display: flex; align-items: center; gap: .35rem; }
-.pc-res-bas > .pc-mini { margin-left: auto; flex: 0 0 auto; }
-/* IL NE PARAÎT QUE S'IL A QUELQUE CHOSE À DIRE : vide, il ne prend ni place ni
-   marge, et le bouton reste seul à droite. */
+.pc-res-pas:hover { border-color: var(--red); color: var(--red); background: var(--wash); }
+.pc-res-pas:focus-visible { outline: none; border-color: var(--red); box-shadow: 0 0 0 2px var(--wash); }
+.pc-res-gear { display: inline-flex; }
+.pc-res-gear .pc-gear { position: static; }
+/* LA CARTE EST LA JAUGE, et c'est tout le parti pris. Pas de barre, pas de
+   filet : le fond lui-même se remplit jusqu'au rapport, et l'on sait où l'on en
+   est sans lire un chiffre. C'est ce qui éloigne le plus cette carte des autres
+   modules, qui sont tous des listes encadrées.
+   LE BORD DU REMPLISSAGE S'ÉTEINT EN DÉGRADÉ sur son dernier quart : une arête
+   franche traverse la carte à la verticale et coupe les chiffres au couteau dès
+   que le rapport tombe au milieu. Le dégradé garde la lecture d'un coup d'œil
+   et perd le tranchant.
+   ELLE NE PREND AUCUN CLIC : pointer-events la traverse, sinon elle mangerait
+   les boutons qu'elle recouvre. */
+.pc-res-jauge {
+  position: absolute; inset: 0; display: flex; align-items: stretch;
+  border-radius: inherit; background: transparent; pointer-events: none;
+}
+.pc-res-jauge > i {
+  display: block; height: 100%; opacity: .16; transition: width .15s;
+  background: linear-gradient(90deg, var(--ok) 0%, var(--ok) 74%, transparent 100%);
+}
+/* sous zéro, le remplissage part de la DROITE : le dégradé se retourne avec lui */
+.pc-res-jauge > i.over {
+  background: linear-gradient(270deg, var(--red) 0%, var(--red) 74%, transparent 100%);
+  opacity: .2;
+}
+/* le contenu passe AU-DESSUS du fond */
+.pc-res-haut, .pc-res-etat, .pc-block.pc-res .pc-pvmax { position: relative; z-index: 1; }
+/* SOUS ZÉRO, LE CADRE PASSE AU ROUGE : c'est un état du personnage, pas un
+   chiffre de plus. Le fond, lui, est déjà rouge par la jauge — le teinter en
+   plus donnerait deux rouges superposés. */
+.pc-block.pc-res.over { border-color: var(--red); }
+/* l'état ne paraît que s'il a quelque chose à dire : vide, ni place ni marge */
 .pc-res-etat:empty { display: none; }
 .pc-res-etat {
+  align-self: flex-start;
   font-size: var(--taille-etiquette, .42rem); font-weight: 800; letter-spacing: .06em;
   text-transform: uppercase; color: var(--ink-3);
-  border: 1px solid var(--line-2); border-radius: 999px; padding: .1rem .45rem;
+  border: 1px solid var(--line-2); border-radius: 999px; padding: .06rem .4rem;
 }
-.pc-res-etat.grave { color: var(--red); border-color: var(--red); background: var(--wash); }
+.pc-res-etat.grave { color: var(--red); border-color: var(--red); background: var(--card); }
+/* la ligne de construction de l'endurance, tant qu'elle en a une : elle ne doit
+   pas passer sous la jauge */
+.pc-block.pc-res .pc-pvmax { margin-bottom: .1rem; }
 
 /* ---- onglets : contrôle segmenté ---- */
 .pc-tabs { display: flex; flex-wrap: wrap; gap: .2rem; margin: .5rem 0 .3rem; padding: .2rem; background: var(--panel); border: 1px solid var(--hair); border-radius: 9px; }
