@@ -32,7 +32,11 @@
     // lit ce que la compétence DONNE — son total au dé, la limite qui le
     // coiffe ; en construisant, ce qu'on y a MIS et ce qu'on peut y mettre.
     // Deux mots dans la même case, dont un seul s'affiche.
-    [["Total", "Valeur"], ["Limite", "Maximum"], "Bonus"].forEach(function (k) {
+    // « PLAFOND » ET NON « MAXIMUM » : c'est le mot employé partout ailleurs —
+    // dans les trois blocs d'Options, dans les garde-fous de l'en-tête, dans les
+    // infobulles. Deux mots pour la même chose finissent par passer pour deux
+    // choses.
+    [["Total", "Valeur"], ["Limite", "Plafond"], "Bonus"].forEach(function (k) {
       var c = el("span", "c");
       if (typeof k === "string") c.appendChild(el("span", "k", k));
       else {

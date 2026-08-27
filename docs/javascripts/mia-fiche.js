@@ -80,7 +80,7 @@
   // site il est. Il ne change PAS le rang : « 1.0.1b » et « 1.0.1 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (MiaMods.compareVersions tient cette règle).
-  var RELEASE = "1.22.2b";
+  var RELEASE = "1.22.3b";
   var SCHEMA = 4;
 
   // ---------- ce que la fiche ne décide PAS ----------
@@ -4800,7 +4800,11 @@
     // lit ce que la compétence DONNE — son total au dé, la limite qui le
     // coiffe ; en construisant, ce qu'on y a MIS et ce qu'on peut y mettre.
     // Deux mots dans la même case, dont un seul s'affiche.
-    [["Total", "Valeur"], ["Limite", "Maximum"], "Bonus"].forEach(function (k) {
+    // « PLAFOND » ET NON « MAXIMUM » : c'est le mot employé partout ailleurs —
+    // dans les trois blocs d'Options, dans les garde-fous de l'en-tête, dans les
+    // infobulles. Deux mots pour la même chose finissent par passer pour deux
+    // choses.
+    [["Total", "Valeur"], ["Limite", "Plafond"], "Bonus"].forEach(function (k) {
       var c = el("span", "c");
       if (typeof k === "string") c.appendChild(el("span", "k", k));
       else {
@@ -4838,10 +4842,12 @@
     var tete = el("div", "pc-crow-top pc-caracs-tete");
     tete.appendChild(el("span", "sp"));
     var teteTrio = el("span", "pc-trio tete");
-    // LA PREMIÈRE CASE CHANGE DE SENS SOUS LE ROUAGE, comme celle d'une
-    // compétence : en jouant on lit ce que la langue VAUT, en construisant ce
-    // qu'on y a MIS. Les deux ne diffèrent que si la limite mord.
-    [["Total", "Points"], "Limite", "Niveau"].forEach(function (k) {
+    // DEUX CASES, ET LES DEUX CHANGENT DE SENS SOUS LE ROUAGE. En jouant on lit
+    // ce que la langue VAUT et le rang que ça lui donne ; en construisant, ce
+    // qu'on y a MIS et ce qu'elle ne peut pas dépasser. La limite ne sert qu'à
+    // celui qui achète — l'afficher en jeu prenait une case pour rien, et cette
+    // case manquait au nom.
+    [["Total", "Valeur"], ["Niveau", "Limite"]].forEach(function (k) {
       var c = el("span", "c");
       if (typeof k === "string") c.appendChild(el("span", "k", k));
       else {
@@ -4937,15 +4943,10 @@
       // disputait, et sous le rouage, entre une croix, une poignée et trois
       // cases, il ne lui restait qu'un trait de deux pixels.
       top.appendChild(nom);
-      // UNE RUPTURE, ET ELLE NE PARAÎT QUE SOUS LE ROUAGE. Un quart de colonne
-      // ne porte pas, sur un même rang, une croix, une poignée, un nom qu'on
-      // écrit et trois cases : le trio prend près de six dixièmes de la colonne,
-      // les deux boutons le reste, et il ne restait au nom qu'un trait. Le trio
-      // descend donc d'un rang pendant qu'on construit. En jouant, la croix et
-      // la poignée disparaissent, cette rupture avec elles, et la ligne
-      // retrouve la hauteur de celles du dessus.
-      top.appendChild(el("span", "pc-rupture pc-edit-only"));
 
+      // DEUX CASES ET NON TROIS, et c'est ce qui rend le nom lisible : trois
+      // cases prenaient près de six dixièmes d'un quart de colonne, la croix et
+      // la poignée le reste, et il ne restait au nom qu'un trait de deux pixels.
       var trio = el("span", "pc-trio");
       var vTot = caseSaisie(trio,
         function () { return l.pts || 0; },
@@ -4955,8 +4956,11 @@
           // liste, elle ne vaut simplement rien
           l.pts = n;
         }, "Points mis dans cette langue", lignes);
-      var vLim = caseTexte(trio);
-      var vNiv = caseTexte(trio);
+      // LA SECONDE CASE DIT DEUX CHOSES SELON LE MOMENT : le NIVEAU quand on
+      // joue — c'est le seul chiffre qui compte à table —, la LIMITE quand on
+      // construit, puisque c'est elle qui borne ce qu'on achète.
+      var cNivLim = caseDouble(trio);
+      var vNiv = cNivLim[0], vLim = cNivLim[1];
       top.appendChild(trio);
       row.appendChild(top);
 
