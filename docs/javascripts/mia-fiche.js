@@ -80,7 +80,7 @@
   // site il est. Il ne change PAS le rang : « 1.0.1b » et « 1.0.1 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (MiaMods.compareVersions tient cette règle).
-  var RELEASE = "1.31.0b";
+  var RELEASE = "1.31.1b";
   var SCHEMA = 8;
 
   // ---------- ce que la fiche ne décide PAS ----------
@@ -1885,6 +1885,28 @@
   // la lit aussi : les deux doivent chercher la même chose.
   var PV_NOMS = ["PV"];
   var RECUP_NOMS = ["RÉCUP PV", "RÉCUP", "Récupération"];
+  // LES DEUX SPÉCIALITÉS QUE LE MODULE VITALITÉ PORTE. Elles vivent dans
+  // state.specialites comme les autres — c'est là que le moteur les cherche par
+  // leur nom — mais leur LIGNE est celle de Vitalité, et d'elle seule.
+  //
+  // POURQUOI LA LISTE DES SPÉCIALITÉS NE LES MONTRE PAS : deux endroits pour un
+  // même nombre, c'est une occasion de les voir se contredire ; et le second
+  // permettait surtout de les RENOMMER ou de les RETIRER, ce qui décroche la
+  // formule des PV ou de la récupération sans un mot ni un chiffre qui bouge.
+  //
+  // On compare comme speParNom : sans les espaces de bordure, sans la casse,
+  // MAIS AVEC LES ACCENTS — les deux appariements doivent voir la même chose,
+  // sans quoi une ligne se cacherait d'un côté et compterait de l'autre.
+  function speDeVitalite(s) {
+    var n = String((s && s.nom) || "").trim().toLowerCase(), i;
+    for (i = 0; i < PV_NOMS.length; i++) {
+      if (n === PV_NOMS[i].trim().toLowerCase()) return true;
+    }
+    for (i = 0; i < RECUP_NOMS.length; i++) {
+      if (n === RECUP_NOMS[i].trim().toLowerCase()) return true;
+    }
+    return false;
+  }
   function spePtsParNoms(noms) {
     for (var i = 0; i < noms.length; i++) {
       var s = speParNom(noms[i]);
@@ -5788,7 +5810,12 @@
       // les fonctions des lignes effacées n'ont plus rien à rafraîchir ; le
       // tableau est vidé SUR PLACE, celui du registre étant le même objet
       lignes.length = 0;
-      var items = filtreSpes(allSpes());
+      // LES DEUX SPÉCIALITÉS DE VITALITÉ NE PARAISSENT PAS ICI : leur ligne est
+      // celle de ce module-là. Elles restent dans l'état, comptent leur xp et
+      // nourrissent leurs formules — elles n'ont simplement pas deux lignes.
+      var items = filtreSpes(allSpes().filter(function (it) {
+        return !speDeVitalite(it.spe);
+      }));
       items.forEach(function (it) { box.appendChild(ligne(it)); });
       if (!items.length) box.appendChild(el("div", "pc-empty", "—"));
       box.appendChild(miniBtn("+ Ajouter une spécialité", null, function () {

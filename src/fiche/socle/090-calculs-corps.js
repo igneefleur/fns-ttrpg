@@ -32,6 +32,28 @@
   // la lit aussi : les deux doivent chercher la même chose.
   var PV_NOMS = ["PV"];
   var RECUP_NOMS = ["RÉCUP PV", "RÉCUP", "Récupération"];
+  // LES DEUX SPÉCIALITÉS QUE LE MODULE VITALITÉ PORTE. Elles vivent dans
+  // state.specialites comme les autres — c'est là que le moteur les cherche par
+  // leur nom — mais leur LIGNE est celle de Vitalité, et d'elle seule.
+  //
+  // POURQUOI LA LISTE DES SPÉCIALITÉS NE LES MONTRE PAS : deux endroits pour un
+  // même nombre, c'est une occasion de les voir se contredire ; et le second
+  // permettait surtout de les RENOMMER ou de les RETIRER, ce qui décroche la
+  // formule des PV ou de la récupération sans un mot ni un chiffre qui bouge.
+  //
+  // On compare comme speParNom : sans les espaces de bordure, sans la casse,
+  // MAIS AVEC LES ACCENTS — les deux appariements doivent voir la même chose,
+  // sans quoi une ligne se cacherait d'un côté et compterait de l'autre.
+  function speDeVitalite(s) {
+    var n = String((s && s.nom) || "").trim().toLowerCase(), i;
+    for (i = 0; i < PV_NOMS.length; i++) {
+      if (n === PV_NOMS[i].trim().toLowerCase()) return true;
+    }
+    for (i = 0; i < RECUP_NOMS.length; i++) {
+      if (n === RECUP_NOMS[i].trim().toLowerCase()) return true;
+    }
+    return false;
+  }
   function spePtsParNoms(noms) {
     for (var i = 0; i < noms.length; i++) {
       var s = speParNom(noms[i]);

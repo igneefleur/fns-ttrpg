@@ -378,7 +378,12 @@
       // les fonctions des lignes effacées n'ont plus rien à rafraîchir ; le
       // tableau est vidé SUR PLACE, celui du registre étant le même objet
       lignes.length = 0;
-      var items = filtreSpes(allSpes());
+      // LES DEUX SPÉCIALITÉS DE VITALITÉ NE PARAISSENT PAS ICI : leur ligne est
+      // celle de ce module-là. Elles restent dans l'état, comptent leur xp et
+      // nourrissent leurs formules — elles n'ont simplement pas deux lignes.
+      var items = filtreSpes(allSpes().filter(function (it) {
+        return !speDeVitalite(it.spe);
+      }));
       items.forEach(function (it) { box.appendChild(ligne(it)); });
       if (!items.length) box.appendChild(el("div", "pc-empty", "—"));
       box.appendChild(miniBtn("+ Ajouter une spécialité", null, function () {
