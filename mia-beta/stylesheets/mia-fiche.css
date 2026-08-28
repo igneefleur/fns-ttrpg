@@ -851,6 +851,22 @@ html.night .pc-warn.doux { color: #ffbc33; background: rgba(255, 188, 51, .13); 
 .pc-block[data-module="vitalite"] .pc-caracs-tete > .pc-trio {
   margin-left: auto; width: min(var(--pc-solo-w, 2.9rem), 20cqw);
 }
+/* LE LABEL EST UN NOM DE SPÉCIALITÉ, et il doit en avoir l'air : ce sont deux
+   spécialités, pas deux compléments d'une autre liste. Il tombait sur
+   « .pc-crow-top .nm », écrite pour le nom FIXE d'une compétence — petit, gris,
+   à côté de nombres à pleine encre. La même faute avait déjà été faite sur les
+   spécialités, puis sur les langues.
+   IL NE S'ÉCRIT PAS, LUI, et c'est la seule différence : pas de filet dessous,
+   puisqu'il n'y a rien à y taper. C'est exactement l'air qu'a un nom de
+   spécialité hors édition, où la règle commune des champs verrouillés efface
+   déjà son trait. */
+.pc-block[data-module="vitalite"] .pc-crow-top > .nm {
+  flex: 1 1 auto; min-width: 0;
+  color: var(--ink);
+  font-family: inherit; font-size: var(--taille-case, .72rem); font-weight: 600;
+  line-height: 1.1; padding: .1rem .14rem .12rem;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 
 /* LE NOM D'UNE SPÉCIALITÉ EST UN NOM QU'ON ÉCRIT, et il se règle comme tous
    les autres de la fiche — celui d'une arme, celui d'un avantage : fond
