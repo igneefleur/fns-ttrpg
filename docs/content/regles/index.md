@@ -164,7 +164,7 @@ Les points de vie sont bien souvent le dernier rempart entre votre personnage et
 
 <div class="formula" markdown>
 
-<p class="formula">PV = (20 + MOD CON + PHY) / 2 + SPÉ PV</p>
+<p class="formula">PV = (20 + MOD CON + PHY) × 2 + SPÉ PV</p>
 
 </div>
 

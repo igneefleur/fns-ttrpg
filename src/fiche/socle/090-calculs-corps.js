@@ -1,9 +1,13 @@
   // ---------- le corps ----------
   // Les valeurs issues d'une division s'arrondissent à l'INFÉRIEUR.
 
-  // PV = (20 + MOD CON + PHY) / 2 + SPÉ PV. « PHY » y désigne les POINTS de la
+  // PV = (20 + MOD CON + PHY) × 2 + SPÉ PV. « PHY » y désigne les POINTS de la
   // compétence Physique, pas son jet : c'est ce que le personnage a investi
-  // dedans. La spécialité s'ajoute APRÈS la division, telle qu'elle est écrite.
+  // dedans. La spécialité s'ajoute APRÈS le facteur, telle qu'elle est écrite.
+  //
+  // LE PLANCHER RESTE, bien qu'un produit d'entiers soit entier : les leviers
+  // de l'onglet Options acceptent les décimales, et un facteur d'un demi posé
+  // sur le MOD CON ou sur les points de PHY ferait rentrer une virgule ici.
   // LE LEVIER D'UNE RÉSERVE : la même chaîne que partout ailleurs, à ceci près
   // qu'une réserve n'a qu'UNE chose à régler — son maximum. Pas de troisième
   // niveau, donc : le nom du levier fait l'identité, comme sur une spécialité.
@@ -36,7 +40,7 @@
     return 0;
   }
   function pvMaxAuto() {
-    var base = (20 + caracMod("CON") + compPts("PHY")) / 2;
+    var base = (20 + caracMod("CON") + compPts("PHY")) * 2;
     return Math.floor(base) + spePtsParNoms(PV_NOMS);
   }
   // ON NE MATÉRIALISE RIEN, ET L'ON DÉFAIT LE CHEMIN quand la dernière valeur
