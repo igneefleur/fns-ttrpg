@@ -153,7 +153,6 @@ def _extract(docs_dir):
 
         # --- l'initiative, la vitesse, les sauts, la récupération ---
         "iniMult": _un(text, r"Initiative = MOD AGI\s*×\s*(\d+)", 2),
-        "iniMainsNues": _un(text, r"mains nues, elle y ajoute\s*(\d+)", 20),
         # LA VITESSE EST UN CARRÉ : « AGI × AGI ». Il n'y a donc pas de
         # multiplicateur à lire, mais une forme à reconnaître — et si la page
         # revenait un jour à « AGI × n », le carré retomberait à faux et le

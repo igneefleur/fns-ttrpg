@@ -21,7 +21,7 @@
   // site il est. Il ne change PAS le rang : « 1.0.1b » et « 1.0.1 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (MiaMods.compareVersions tient cette règle).
-  var RELEASE = "1.31.1b";
+  var RELEASE = "1.32.0b";
   var SCHEMA = 8;
 
   // ---------- ce que la fiche ne décide PAS ----------
@@ -52,7 +52,7 @@
     // quelque part. Même remarque que ci-dessus — la page n'en dit rien.
     langueGratuit: 100,
     endurAction: 50,              // endurance dépensable sur une même action
-    iniMult: 2, iniMainsNues: 20,
+    iniMult: 2,
     vitesseCarre: true, vitesseMult: 2,   // « AGI × AGI » ; le second ne sert que si la page repasse à « AGI × n »
     sautLong: 1.75, sautHaut: 2, recupEndurMult: 2
   };

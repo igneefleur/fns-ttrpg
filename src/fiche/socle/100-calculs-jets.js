@@ -91,14 +91,16 @@
     state.armures.forEach(prendre);
     return t;
   }
-  // Mains nues : le bonus des règles, quand aucune arme n'est en main.
-  function mainsNues() {
-    for (var i = 0; i < state.armes.length; i++) if (state.armes[i].porte !== false) return false;
-    return true;
-  }
+  // PLUS DE BONUS À MAINS NUES ICI. La règle existe toujours — la page la dit —
+  // mais la fiche ne la pose plus toute seule : c'est au joueur de l'ajouter,
+  // dans l'onglet Options, comme n'importe quel autre décalage.
+  //
+  // ELLE ÉTAIT DEVENUE PERMANENTE, ET C'EST CE QUI L'A TUÉE : le module des
+  // armes a été retiré le 25/08/2026, si bien que « state.armes » ne se
+  // remplissait plus. mainsNues() rendait donc TOUJOURS vrai, et les vingt
+  // points s'ajoutaient à tout le monde, arme au poing comprise.
   function initiativeAuto() {
     var v = caracMod("AGI") * repli("iniMult") + equipInitBonus();
-    if (mainsNues()) v += repli("iniMainsNues");
     chargePaliers().forEach(function (p) {
       if (p.calc.ini) v += p.calc.ini;
       if (p.calc.iniDiv) v = v / p.calc.iniDiv;

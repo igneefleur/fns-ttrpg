@@ -4,16 +4,23 @@
   // qu'on la relit à chaque combat, et parce qu'elle est le seul chiffre de la
   // fiche qui aille au compteur de tours de Roll20.
   //
-  // AUCUN DÉ NE LA DÉCIDE : personne ne « lance » son initiative dans MIA. Le
-  // bouton porte donc la valeur telle quelle au compteur, sans passer par
-  // doJet, qui bâtirait un d100 que le jeu ne demande nulle part. « 0d0 + n »
-  // est la forme dont le moteur se sert déjà pour faire voyager une constante
-  // dans une expression de jet (jetExpr y pose la limite) ; le drapeau du
-  // compteur s'y attache comme au reste.
+  // ELLE SE LANCE : un d100, plus la valeur. Le bouton portait la valeur nue au
+  // compteur, par un « 0d0 + n » qui faisait voyager une constante dans une
+  // expression de jet — c'était une lecture déguisée en jet, et deux
+  // personnages de même agilité agissaient toujours dans le même ordre.
+  //
+  // LE DÉ EST UN d100 NU, sans les seuils de critique du dé de test : on ne
+  // réussit ni ne rate une initiative, on la compare.
+  //
+  // LE SIGNE SE POSE À LA MAIN : une valeur négative — deux armures dans le sac
+  // suffisent — donnerait « 1d100+-5 », que le moteur de dés de Roll20 refuse.
+  function initExpr(v) {
+    return "1d100" + (v < 0 ? "-" + fmtP(-v) : "+" + fmtP(v));
+  }
   function initAuCompteur() {
     var v = initiative();
-    if (envoyer(cmdJetExpr("Initiative", "0d0+" + v, true))) return;
-    flash("Initiative : " + v + " (hors Roll20 : aucun compteur de tours où l'inscrire).");
+    if (envoyer(cmdJetExpr("Initiative", initExpr(v), true))) return;
+    flash("Initiative " + sign(v) + " : hors Roll20, aucun dé à lancer ni compteur où l'inscrire.");
   }
 
   // AUCUN ROUAGE : ce qui se CONSTRUIT — la valeur forcée, les modificateurs —
@@ -26,7 +33,7 @@
     var val = el("span", "pc-cval");
     row.appendChild(val);
     row.appendChild(el("span", "sp"));
-    row.appendChild(miniBtn("Compteur", "Inscrire l'initiative au compteur de tours de Roll20",
+    row.appendChild(miniBtn("Lancer", "Lancer 1d100 + l'initiative, et l'inscrire au compteur de tours de Roll20",
                             initAuCompteur));
     b.appendChild(row);
 
