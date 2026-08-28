@@ -5,11 +5,20 @@
   // dérouler tout le bloc.
   //
   //   ┌──────────────────────────────┐
-  //   │ Vitalité                     │
+  //   │ Vitalité                   ⚙ │
   //   │                       VALEUR │
   //   │ PV                    [  12] │
   //   │ Récupération          [   4] │
   //   └──────────────────────────────┘
+  //
+  // UNE SEULE COLONNE, LA MÊME DANS LES DEUX MODES — et c'est cela seul qui
+  // distingue ce bloc de celui des Spécialités, dont la colonne « Valeur »
+  // n'existe que sous le rouage et qui en montre trois autres à côté. Ici on
+  // lit la valeur en jouant et on la règle en construisant, au même endroit.
+  //
+  // MAIS LE ROUAGE RESTE, parce que la valeur d'une spécialité S'ACHÈTE : c'est
+  // de la construction, et toute la fiche la met sous le rouage. Un bloc qui
+  // laisserait acheter des points en pleine partie serait le seul.
   //
   // LE NOM EST L'IDENTITÉ, ET C'EST FRAGILE. speParNom() apparie sur le nom mis
   // en minuscules et débarrassé de ses espaces de bordure — mais PAS de ses
@@ -18,10 +27,6 @@
   // de touche. Ce module écrit les noms tels que le moteur les cherche, et les
   // affiche tels quels : montrer « Récup. » ici et créer « Récupération » dans
   // la liste aurait fait deux choses de la même.
-  //
-  // UNE SEULE CASE, LA MÊME DANS LES DEUX MODES. Le bloc n'a donc PAS de
-  // rouage : il ne montre rien de plus en construisant qu'en jouant, et un
-  // rouage qui ne change rien est un bouton qui ment.
   var VITALES = [
     { nom: "PV", aide: "Points achetés dans la spécialité « PV »" },
     { nom: "Récupération", aide: "Points achetés dans la spécialité « Récupération »" }
@@ -49,40 +54,15 @@
     return s;
   }
 
-  // UNE CASE À UN SEUL NŒUD, et c'est tout ce qui la sépare de caseSaisie :
-  // celle-ci fabrique un texte pour le jeu et un champ pour l'édition, et
-  // bascule de l'un à l'autre sous le rouage. Ici les deux modes montrent la
-  // MÊME case, il faut donc un champ qui vive tout le temps.
-  //
-  // NI « pc-edit-only » NI « pc-edit-field » : ces deux classes ne veulent rien
-  // dire hors d'un bloc à rouage, et la seconde grimerait le champ en texte
-  // mort dès qu'un bloc voisin serait verrouillé.
-  function vitaleCase(hote, lire, ecrire, aide) {
-    var c = el("span", "c reglable");
-    var i = el("input", "v pc-case-champ");
-    i.type = "number";
-    i.step = "1";
-    i.min = "0";
-    i.title = aide;
-    i.addEventListener("input", function () {
-      var v = parseInt(i.value, 10);
-      if (isFinite(v)) { ecrire(v); refresh(); }
-    });
-    c.appendChild(i);
-    hote.appendChild(c);
-    // Le champ ne se réécrit JAMAIS sous les doigts : tant qu'il a le focus, ce
-    // qu'on tape y reste tel quel.
-    hooks.push(function () {
-      if (document.activeElement !== i) i.value = lire();
-    });
-    return i;
-  }
-
   function buildVitalite() {
-    var b = block("Vitalité");
+    var b = block("Vitalité", null, "vitalite");
 
     // L'entête d'une seule colonne, sur le même squelette que le trio des
     // lignes : c'est ce qui garantit que le mot tombe en face des nombres.
+    // UN SEUL MOT, ET NON DEUX : les colonnes des Langues changent de sens sous
+    // le rouage — « Total » devient « Valeur » — parce qu'elles ne disent pas
+    // la même chose selon le moment. Celle-ci dit la même en jouant et en
+    // construisant, et un second mot aurait laissé croire le contraire.
     var tete = el("div", "pc-crow-top pc-caracs-tete");
     tete.appendChild(el("span", "sp"));
     var teteTrio = el("span", "pc-trio tete");
@@ -105,24 +85,37 @@
       nom.title = def.nom;
       top.appendChild(nom);
       var trio = el("span", "pc-trio");
-      vitaleCase(trio,
+      var v = caseSaisie(trio,
         function () {
           var s = speVitale(def.nom, false);
           return s ? (s.pts || 0) : 0;
         },
-        function (v) {
-          var n = Math.max(0, Math.round(v));
+        function (n) {
+          var pts = Math.max(0, Math.round(n));
           // ZÉRO NE CRÉE RIEN. Remettre à zéro une spécialité qui n'existe pas
           // n'est pas un achat : la faire naître pour porter un zéro laisserait
           // une ligne vide dans le bloc des Spécialités au premier passage du
           // curseur. Une spécialité DÉJÀ là, elle, reste à zéro comme une
           // langue sans point reste dans sa liste.
-          var s = speVitale(def.nom, n > 0);
-          if (s) s.pts = n;
+          var s = speVitale(def.nom, pts > 0);
+          if (s) s.pts = pts;
         }, def.aide);
       top.appendChild(trio);
       row.appendChild(top);
       b.appendChild(row);
+
+      // EN JOUANT ON LIT CE QUE LA SPÉCIALITÉ VAUT, en construisant ce qu'on y
+      // a MIS — et les deux ne sont pas le même nombre dès qu'un levier de
+      // l'onglet Options s'interpose. Le champ montre donc la base achetée, le
+      // texte le résultat de la chaîne, et la teinte dit qu'ils diffèrent :
+      // c'est le geste de toute la fiche.
+      hooks.push(function () {
+        var s = speVitale(def.nom, false);
+        var pts = s ? (s.pts || 0) : 0;
+        var vaut = s ? spePts(s) : 0;
+        v.txt.textContent = String(vaut);
+        v.txt.classList.toggle("adj", vaut !== pts);
+      });
     });
 
     return b;
