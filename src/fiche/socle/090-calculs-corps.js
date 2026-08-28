@@ -17,9 +17,27 @@
   // « divers » qui s'y ajoutaient sont passés dans la chaîne : ils y font ce
   // qu'ils faisaient, plus les facteurs et les deux groupes que trois cases ne
   // savaient pas dire.
+  // LES NOMS SOUS LESQUELS LE MOTEUR RECONNAÎT SES DEUX SPÉCIALITÉS, et l'ordre
+  // compte : le PREMIER est celui qu'on ÉCRIT, les suivants ceux qu'on ACCEPTE
+  // ENCORE. « RÉCUP » s'est appelée « Récupération » jusqu'à la 1.25.2b, et une
+  // fiche qui perdrait sa récupération sans un mot serait pire qu'un nom vieilli.
+  //
+  // speParNom() n'ôte PAS les accents : « Recuperation » n'est donc pas
+  // « Récupération », et il n'y a pas de rattrapage à espérer de ce côté-là.
+  // C'est cette liste, et elle seule, qui dit ce qui compte. Le module Vitalité
+  // la lit aussi : les deux doivent chercher la même chose.
+  var PV_NOMS = ["PV"];
+  var RECUP_NOMS = ["RÉCUP", "Récupération"];
+  function spePtsParNoms(noms) {
+    for (var i = 0; i < noms.length; i++) {
+      var s = speParNom(noms[i]);
+      if (s) return spePts(s);
+    }
+    return 0;
+  }
   function pvMaxAuto() {
     var base = (20 + caracMod("CON") + compPts("PHY")) / 2;
-    return Math.floor(base) + spePtsParNom("PV");
+    return Math.floor(base) + spePtsParNoms(PV_NOMS);
   }
   // ON NE MATÉRIALISE RIEN, ET L'ON DÉFAIT LE CHEMIN quand la dernière valeur
   // s'en va : une table vide voyagerait jusque dans les Attributs Roll20 pour
@@ -94,7 +112,7 @@
   // Une spécialité unique, dont le plafond n'est PAS celui des autres : MOD CON
   // fois le multiplicateur des règles. Elle commande ce qu'on regagne par jour.
   function recupPlafond() { return caracMod("CON") * repli("recupMult"); }
-  function recupPts() { return Math.min(spePtsParNom("Récupération"), recupPlafond()); }
+  function recupPts() { return Math.min(spePtsParNoms(RECUP_NOMS), recupPlafond()); }
   function recupJourAuto() {
     return Math.floor((caracMod("CON") + recupPts()) / 2) + modSum(state.divers.recup);
   }

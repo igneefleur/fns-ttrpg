@@ -80,7 +80,7 @@
   // site il est. Il ne change PAS le rang : « 1.0.1b » et « 1.0.1 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (MiaMods.compareVersions tient cette règle).
-  var RELEASE = "1.25.1b";
+  var RELEASE = "1.25.2b";
   var SCHEMA = 6;
 
   // ---------- ce que la fiche ne décide PAS ----------
@@ -1822,9 +1822,27 @@
   // « divers » qui s'y ajoutaient sont passés dans la chaîne : ils y font ce
   // qu'ils faisaient, plus les facteurs et les deux groupes que trois cases ne
   // savaient pas dire.
+  // LES NOMS SOUS LESQUELS LE MOTEUR RECONNAÎT SES DEUX SPÉCIALITÉS, et l'ordre
+  // compte : le PREMIER est celui qu'on ÉCRIT, les suivants ceux qu'on ACCEPTE
+  // ENCORE. « RÉCUP » s'est appelée « Récupération » jusqu'à la 1.25.2b, et une
+  // fiche qui perdrait sa récupération sans un mot serait pire qu'un nom vieilli.
+  //
+  // speParNom() n'ôte PAS les accents : « Recuperation » n'est donc pas
+  // « Récupération », et il n'y a pas de rattrapage à espérer de ce côté-là.
+  // C'est cette liste, et elle seule, qui dit ce qui compte. Le module Vitalité
+  // la lit aussi : les deux doivent chercher la même chose.
+  var PV_NOMS = ["PV"];
+  var RECUP_NOMS = ["RÉCUP", "Récupération"];
+  function spePtsParNoms(noms) {
+    for (var i = 0; i < noms.length; i++) {
+      var s = speParNom(noms[i]);
+      if (s) return spePts(s);
+    }
+    return 0;
+  }
   function pvMaxAuto() {
     var base = (20 + caracMod("CON") + compPts("PHY")) / 2;
-    return Math.floor(base) + spePtsParNom("PV");
+    return Math.floor(base) + spePtsParNoms(PV_NOMS);
   }
   // ON NE MATÉRIALISE RIEN, ET L'ON DÉFAIT LE CHEMIN quand la dernière valeur
   // s'en va : une table vide voyagerait jusque dans les Attributs Roll20 pour
@@ -1899,7 +1917,7 @@
   // Une spécialité unique, dont le plafond n'est PAS celui des autres : MOD CON
   // fois le multiplicateur des règles. Elle commande ce qu'on regagne par jour.
   function recupPlafond() { return caracMod("CON") * repli("recupMult"); }
-  function recupPts() { return Math.min(spePtsParNom("Récupération"), recupPlafond()); }
+  function recupPts() { return Math.min(spePtsParNoms(RECUP_NOMS), recupPlafond()); }
   function recupJourAuto() {
     return Math.floor((caracMod("CON") + recupPts()) / 2) + modSum(state.divers.recup);
   }
@@ -4947,12 +4965,17 @@
   // en minuscules et débarrassé de ses espaces de bordure — mais PAS de ses
   // accents. « Recuperation » n'est donc pas « Récupération », et un joueur qui
   // renomme sa ligne dans le bloc des Spécialités casse l'appariement d'un coup
-  // de touche. Ce module écrit les noms tels que le moteur les cherche, et les
-  // affiche tels quels : montrer « Récup. » ici et créer « Récupération » dans
-  // la liste aurait fait deux choses de la même.
+  // de touche.
+  //
+  // LES NOMS VIENNENT DU MOTEUR, et de nulle part ailleurs : PV_NOMS et
+  // RECUP_NOMS sont déclarés là où les formules les lisent
+  // (090-calculs-corps.js). Ce module ne pouvait pas tenir sa propre liste —
+  // deux listes qui disent la même chose finissent par ne plus la dire.
+  // Le PREMIER nom est celui qu'on écrit et qu'on affiche ; les suivants sont
+  // les anciens, qu'on trouve encore et qu'on laisse tels quels.
   var VITALES = [
-    { nom: "PV", aide: "Points achetés dans la spécialité « PV »" },
-    { nom: "Récupération", aide: "Points achetés dans la spécialité « Récupération »" }
+    { noms: PV_NOMS, aide: "Points achetés dans cette spécialité" },
+    { noms: RECUP_NOMS, aide: "Points achetés dans cette spécialité" }
   ];
 
   // La spécialité vivante, et rien de capturé : la liste se réordonne au
@@ -4963,10 +4986,14 @@
   // dans l'état à la seule ouverture de la fiche écrirait chez des personnages
   // qui n'y ont jamais touché, et les ferait reparaître à chaque montage chez
   // qui les aurait retirées — un bloc qu'on ne peut pas vider.
-  function speVitale(nom, creer) {
-    var s = speParNom(nom);
+  function speVitale(noms, creer) {
+    var s = null, i;
+    // ON CHERCHE SOUS TOUS LES NOMS ACCEPTÉS, et l'on écrit sous le premier :
+    // une fiche qui porte l'ancien nom se règle ICI, sans se voir pousser une
+    // seconde ligne qui la doublerait dans l'xp sans rien produire de plus.
+    for (i = 0; i < noms.length && !s; i++) s = speParNom(noms[i]);
     if (s || !creer) return s;
-    s = blankSpe(nom);
+    s = blankSpe(noms[0]);
     state.specialites.push(s);
     // LES DEUX LISTES QUI LA MONTRENT DOIVENT LA VOIR. Ni l'une ni l'autre ne
     // se refait toute seule : la liste de la Fiche a son rebâti, le bloc
@@ -5004,13 +5031,13 @@
       // LE NOM EST FIXE, comme celui d'une compétence : il se lit, il ne
       // s'écrit pas. C'est dans le bloc des Spécialités qu'on le renomme — et
       // le renommer, ici comme là-bas, décroche la spécialité de sa formule.
-      var nom = el("span", "nm", def.nom);
-      nom.title = def.nom;
+      var nom = el("span", "nm", def.noms[0]);
+      nom.title = def.noms[0];
       top.appendChild(nom);
       var trio = el("span", "pc-trio");
       var v = caseSaisie(trio,
         function () {
-          var s = speVitale(def.nom, false);
+          var s = speVitale(def.noms, false);
           return s ? (s.pts || 0) : 0;
         },
         function (n) {
@@ -5020,7 +5047,7 @@
           // une ligne vide dans le bloc des Spécialités au premier passage du
           // curseur. Une spécialité DÉJÀ là, elle, reste à zéro comme une
           // langue sans point reste dans sa liste.
-          var s = speVitale(def.nom, pts > 0);
+          var s = speVitale(def.noms, pts > 0);
           if (s) s.pts = pts;
         }, def.aide);
       top.appendChild(trio);
@@ -5033,7 +5060,7 @@
       // texte le résultat de la chaîne, et la teinte dit qu'ils diffèrent :
       // c'est le geste de toute la fiche.
       hooks.push(function () {
-        var s = speVitale(def.nom, false);
+        var s = speVitale(def.noms, false);
         var pts = s ? (s.pts || 0) : 0;
         var vaut = s ? spePts(s) : 0;
         v.txt.textContent = String(vaut);
