@@ -54,8 +54,11 @@
     // 25/08/2026. Ce qu'on porte se tient dans l'inventaire, qui pèse déjà.
     { id: "inv",        titre: "Inventaire",        onglet: "equipement", colonne: "bas",    build: buildInv },
     // ---- onglet Bio ----
-    { id: "perso",      titre: "Personnalité",      onglet: "bio", colonne: "gauche", build: buildPerso },
+    // LES DÉSAVANTAGES SOUS LES AVANTAGES, et ils fonctionnent pareil : une
+    // même fabrique les monte tous les deux (bioCartes), parce que deux listes
+    // qui se ressemblent doivent se ressembler jusque dans le code.
     { id: "avantages",  titre: "Avantages",         onglet: "bio", colonne: "gauche", build: buildAvantages },
+    { id: "desavantages", titre: "Désavantages",  onglet: "bio", colonne: "gauche", build: buildDesavantages },
     { id: "bg",         titre: "Background",        onglet: "bio", colonne: "droite", build: buildBackground },
     { id: "notes",      titre: "Notes",             onglet: "bio", colonne: "droite", build: buildNotes },
     // ---- onglet Options ----

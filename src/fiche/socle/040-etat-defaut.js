@@ -11,7 +11,7 @@
       v: SCHEMA, rel: RELEASE,
       name: "", portrait: "", espece: "", age: "", sexe: "", genre: "",
       defaut: "", qualites: ["", ""], background: "", notes: "",
-      avantages: [],
+      avantages: [], desavantages: [],
 
       // LE PRESTIGE, qui plafonne CHAQUE caractéristique. Il se force comme le
       // reste (bloc Création des Options) : une valeur imposée, ou un

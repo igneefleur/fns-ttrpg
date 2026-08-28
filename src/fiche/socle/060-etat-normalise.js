@@ -328,7 +328,10 @@
     if (!Array.isArray(s.qualites)) s.qualites = ["", ""];
     s.qualites = s.qualites.map(function (q) { return q == null ? "" : String(q); });
     while (s.qualites.length < 2) s.qualites.push("");
+    // DEUX LISTES JUMELLES, MÊME RANGEMENT. Un désavantage est du texte comme
+    // un avantage : « objArray » suffit, il n'y a aucun nombre à borner.
     s.avantages = objArray(s.avantages);
+    s.desavantages = objArray(s.desavantages);
     s.armes = objArray(s.armes);
     s.armures = objArray(s.armures);
 

@@ -151,7 +151,6 @@ fin = lf
   src/fiche/equipement/inv-don.js
   src/fiche/equipement/inv-objets.js
   src/fiche/equipement/inv.js
-  src/fiche/bio/perso.js
   src/fiche/bio/avantages.js
   src/fiche/bio/bg.js
   src/fiche/bio/notes.js
