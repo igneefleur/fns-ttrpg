@@ -80,7 +80,7 @@
   // site il est. Il ne change PAS le rang : « 1.0.1b » et « 1.0.1 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (MiaMods.compareVersions tient cette règle).
-  var RELEASE = "1.29.0b";
+  var RELEASE = "1.29.1b";
   var SCHEMA = 7;
 
   // ---------- ce que la fiche ne décide PAS ----------
@@ -4194,7 +4194,11 @@
         // total leur somme — c'est de ce total-là que la table tire le MOD et
         // la limite du jet.
         vVal.txt.textContent = String(caracValeur(code));
+      // UNE VALEUR NEUTRE SE RETIRE. Un bonus de zéro ne dit rien : il occupe une
+      // case parce que la colonne existe, pas parce qu'il a quelque chose à
+      // annoncer. Grisé, il laisse le regard aux nombres qui, eux, pièsent.
         vBon.txt.textContent = sign(d);
+        vBon.txt.classList.toggle("zero", !d);
         vTot.textContent = String(caracTotal(code));
         trio.classList.toggle("adj", retouche);
         // quand le plafond mord, le dire : sans cela, le joueur voit un total
@@ -4736,6 +4740,8 @@
       hooks.push(function () {
         var pose = state.recupMulti && state.recupMulti[cle] !== undefined;
         t.textContent = "×" + fmtP(recupMulti(cle));
+        // ×1 est le neutre du facteur : il se retire comme un bonus de zéro.
+        t.classList.toggle("zero", recupMulti(cle) === 1);
         i.placeholder = "1";
         if (document.activeElement !== i) {
           i.value = pose ? state.recupMulti[cle] : "";
@@ -4944,7 +4950,11 @@
       cLim[0].textContent = String(compLim(code, c));
       cLim[1].textContent = String(plaf);
       cLim[1].classList.toggle("adj", mord);
+      // UNE VALEUR NEUTRE SE RETIRE. Un bonus de zéro ne dit rien : il occupe une
+      // case parce que la colonne existe, pas parce qu'il a quelque chose à
+      // annoncer. Grisé, il laisse le regard aux nombres qui, eux, pièsent.
       vBon.txt.textContent = sign(bon);
+      vBon.txt.classList.toggle("zero", !bon);
       trio.classList.toggle("adj", force || d !== 0 || db !== 0 || mord || mal !== 0);
       trio.title = (force
                      ? "Points forcés à " + vBrut + " (Options)"
@@ -5804,7 +5814,11 @@
         // de la chaîne.
         var bon = speBonus(spe);
         var db = bon - speBonusSocle(spe);
+      // UNE VALEUR NEUTRE SE RETIRE. Un bonus de zéro ne dit rien : il occupe une
+      // case parce que la colonne existe, pas parce qu'il a quelque chose à
+      // annoncer. Grisé, il laisse le regard aux nombres qui, eux, pièsent.
         vBon.txt.textContent = sign(bon);
+        vBon.txt.classList.toggle("zero", !bon);
         if (document.activeElement !== vBon.champ) vBon.champ.value = spe.bonus || 0;
         quint.classList.toggle("adj", force || d !== 0 || db !== 0 || mal !== 0 || ch !== 0);
         quint.title = !spe.carac
@@ -9016,18 +9030,21 @@
     // avoir sous la main sans la dérouler.
     { id: "vitalite",   titre: "Vitalité",          onglet: "fiche", colonne: "gauche", build: buildVitalite },
     { id: "langues",    titre: "Langues",           onglet: "fiche", colonne: "gauche", build: buildLangues },
-    // Initiative et récupération vont ensemble : deux valeurs qu'on relit, et
-    // qui portent chacune le bouton qui en fait quelque chose.
+    // L'ORDRE DE CETTE COLONNE SUIT CE QU'ON Y FAIT : on lance l'initiative, on
+    // lit ce qu'il reste dans les deux réserves, puis ce qui les remplit, puis
+    // ce que le corps peut faire.
     { id: "initiative", titre: "Initiative",        onglet: "fiche", colonne: "milieu", build: buildInitiative },
-    { id: "recup",      titre: "Récup / jour",      onglet: "fiche", colonne: "milieu", build: buildRecup },
-    // Vitesse, charge et les deux sauts partagent une grille de cases qui ne se
-    // découpe pas : elles ne forment qu'UN module, même si chacune garde son
-    // rouage.
-    { id: "tuiles",     titre: "Corps",             onglet: "fiche", colonne: "milieu", build: buildVitesse },
     // DEUX RÉSERVES, DEUX MODULES : même forme, mais on ne les lit pas au même
     // moment, et elles se déplacent — ou se coupent — l'une sans l'autre.
     { id: "pv",         titre: "PV",                onglet: "fiche", colonne: "milieu", build: buildPv },
     { id: "endurance",  titre: "END",               onglet: "fiche", colonne: "milieu", build: buildEndurance },
+    // La récupération vient APRÈS les deux réserves qu'elle remplit : elle ne
+    // veut rien dire avant qu'on sache ce qu'il y a dedans.
+    { id: "recup",      titre: "RÉCUP / Jour",      onglet: "fiche", colonne: "milieu", build: buildRecup },
+    // Vitesse, charge et les deux sauts partagent une grille de cases qui ne se
+    // découpe pas : elles ne forment qu'UN module, même si chacune garde son
+    // rouage.
+    { id: "tuiles",     titre: "Corps",             onglet: "fiche", colonne: "milieu", build: buildVitesse },
     // Les spécialités ont la colonne large POUR ELLES SEULES : cinq nombres,
     // un nom qu'on écrit, deux sigles à choisir et un filtre, sur une liste qui
     // n'a pas de fin. Elles étouffaient sous un tiers de feuille.

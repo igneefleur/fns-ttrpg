@@ -1120,6 +1120,14 @@ html.night .pc-warn.doux { color: #ffbc33; background: rgba(255, 188, 51, .13); 
 }
 
 .pc-trio.adj .v { color: var(--red-deep); }
+/* LA VALEUR NEUTRE SE RETIRE : un bonus de zéro, un facteur de un. Ils occupent
+   une case parce que la colonne existe, pas parce qu'ils ont quelque chose à
+   annoncer — grisés et allégés, ils laissent le regard aux nombres qui pèsent.
+   La règle vient APRÈS celle de « .adj », à spécificité égale, et gagne donc :
+   un bloc dont le TOTAL est déplacé n'a pas de raison de teindre en rouge un
+   bonus qui, lui, vaut toujours zéro. C'est le même gris que « .zero » pose
+   déjà sur les totaux nuls des blocs d'Options. */
+.pc-trio .v.zero { color: var(--ink-3); font-weight: 400; }
 /* Le survol ne promet le jet que HORS édition : rouage ouvert, le bloc ne
    lance plus, et rien ne doit laisser croire le contraire. */
 .pc-editable:not(.editing) .pc-trio.pc-rollable:hover { border-color: var(--red); }
