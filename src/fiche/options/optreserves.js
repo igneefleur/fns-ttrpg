@@ -1,50 +1,68 @@
-  // ---- onglet Options : LE MAXIMUM DES DEUX RÉSERVES ----
-  // UN SEUL MODULE POUR LES DEUX, et non un par réserve. Ils ont vécu séparés
-  // le temps d'une version, par symétrie avec la Fiche où les PV et l'END sont
-  // bien deux modules — mais là-bas ils portent chacun une valeur qui bouge en
-  // pleine partie, et ici ils ne portent qu'une rangée de réglage. Deux blocs
-  // d'une rangée chacun, c'était deux fois un titre et deux fois un en-tête de
-  // colonnes pour deux lignes de contenu.
+  // ---- onglet Options : LES DEUX RÉSERVES ET CE QUI LES REMPLIT ----
+  // LA FABRIQUE COMMUNE DES BLOCS DE LEVIERS. Les deux blocs de cet onglet ne
+  // diffèrent que par leur titre et la liste de leurs rangées ; tout le reste —
+  // la grille, les neuf boîtes, la colonne de résultat, les infobulles — est le
+  // même geste. Deux blocs qui se ressemblent doivent se ressembler JUSQUE DANS
+  // LE CODE, sans quoi l'un finit corrigé et l'autre non.
   //
-  // UNE RÉSERVE N'A QU'UNE CHOSE À RÉGLER : son maximum. Pas de troisième
-  // niveau dans l'état, donc — le nom du levier fait l'identité, comme sur une
-  // spécialité, et la clé de la rangée suffit à dire de quelle réserve il s'agit.
-  //
-  // MÊME CHAÎNE QUE PARTOUT : un forçage, deux ajouts, deux facteurs, deux
-  // ajouts, deux facteurs. Elle remplace, pour chacune, les trois modificateurs
-  // « divers » et la valeur forcée qui vivaient sur la Fiche.
-  //
-  // C'EST POUR ÇA QUE NI LES PV NI L'END N'ONT DE ROUAGE : ce qui se construit
-  // dans leur bloc est ici, et il ne leur reste que ce qui se joue.
-  function buildOptReserves() {
-    var b = block("PV et END");
+  // UNE RANGÉE PORTE : sa clé de levier, son nom, ce qu'elle règle, la fonction
+  // qui rend la valeur EFFECTIVE et celle qui rend la BASE des règles. La clé
+  // doit figurer dans RESERVE_BORNE (060-etat-normalise.js) : un levier absent
+  // du catalogue est jeté EN SILENCE au premier rangement.
+  function blocLeviers(titre, table) {
+    function ligneDe(k) {
+      for (var i = 0; i < table.length; i++) if (table[i].cle === k) return table[i];
+      return null;
+    }
+    var b = block(titre);
     grilleLevier(b, {
       cls: "levier",
-      entete: ["Réserve", "Ce que la rangée règle"],
-      lignes: [
-        { cle: "pvMax", nom: "PV", titre: "Le maximum de points de vie" },
-        { cle: "enduranceMax", nom: "END", titre: "Le maximum d'endurance" }
-      ],
+      entete: ["Valeur", "Ce que la rangée règle"],
+      lignes: table.map(function (d) {
+        return { cle: d.cle, nom: d.nom, titre: d.titre };
+      }),
       rangee: function (hote, cls, ligne, i) {
         return rangeeNom(hote, cls, ligne.nom, i, ligne.titre);
       },
       lire: function (k) { return lireReserve(k); },
       ecrire: function (k, boite, v) { ecrireReserve(k, boite, v); },
-      mot: ["Max", "Maximum effectif"],
+      // « Total » et non « Max » : la moitié de ces rangées ne sont pas des
+      // maximums mais ce qu'on regagne en un jour.
+      mot: ["Total", "Valeur effective"],
       borne: 9999,
       // grilleLevier passe la CLÉ de la rangée à ses deux rappels : c'est elle,
-      // et non l'ordre des lignes, qui dit à quelle réserve on répond.
+      // et non l'ordre des lignes, qui dit à quelle valeur on répond.
       auto: function (k) {
-        return k === "pvMax" ? pvMaxChaineAuto() : enduranceMaxChaineAuto();
+        var d = ligneDe(k);
+        return d ? chaineAuto(lireReserve(k), d.auto()) : 0;
       },
       rendu: function (k) {
-        var pv = k === "pvMax";
-        return {
-          texte: String(pv ? pvMax() : enduranceMax()),
-          titre: chaineTexteDe(lireReserve(k), "des règles",
-                               pv ? pvMaxAuto() : enduranceMaxAuto())
-        };
+        var d = ligneDe(k);
+        if (!d) return { texte: "0", titre: "" };
+        return { texte: String(fmtP(d.val())),
+                 titre: chaineTexteDe(lireReserve(k), "des règles", d.auto()) };
       }
     });
     return b;
+  }
+
+  // LES DEUX RÉSERVES ET LEUR RÉCUPÉRATION, dans le même bloc : ce qu'on regagne
+  // par jour ne veut rien dire loin de la réserve qu'il remplit.
+  var RESERVES = [
+    { cle: "pvMax", nom: "PV", titre: "Le maximum de points de vie",
+      val: function () { return pvMax(); },
+      auto: function () { return pvMaxAuto(); } },
+    { cle: "enduranceMax", nom: "END", titre: "Le maximum d'endurance",
+      val: function () { return enduranceMax(); },
+      auto: function () { return enduranceMaxAuto(); } },
+    { cle: "recupJour", nom: "Récup PV", titre: "Les points de vie regagnés par jour",
+      val: function () { return recupJour(); },
+      auto: function () { return recupJourAuto(); } },
+    { cle: "recupEnd", nom: "Récup END", titre: "L'endurance regagnée par jour",
+      val: function () { return recupEnduranceJour(); },
+      auto: function () { return recupEnduranceJourAuto(); } }
+  ];
+
+  function buildOptReserves() {
+    return blocLeviers("PV et END", RESERVES);
   }

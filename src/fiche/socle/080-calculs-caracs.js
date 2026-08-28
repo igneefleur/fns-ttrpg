@@ -621,9 +621,38 @@
     for (i = 0; i < s.length; i++) if (t >= s[i]) n = i + 1;
     return n;
   }
+  // LA LANGUE MATERNELLE NE S'ACHÈTE PAS. Ses cent premiers points sont ceux
+  // qu'on a en naissant quelque part : le personnage les porte sans les payer.
+  //
+  // C'EST LA PLUS HAUTE QUI EN PROFITE, et non la première de la liste. L'ordre
+  // des langues appartient au joueur — il les glisse à la souris — et faire
+  // dépendre un coût d'un rangement rendrait l'xp différente d'un glissement à
+  // l'autre, sans qu'aucun chiffre ne bouge à l'écran.
+  //
+  // À ÉGALITÉ, LA PREMIÈRE GAGNE, et c'est le seul endroit où l'ordre compte :
+  // deux langues à cent points donnent le même total quelle que soit celle qu'on
+  // exempte, la comparaison stricte suffit donc à rendre le calcul stable.
+  function langueNative() {
+    var l = state.langues || [], best = null, i;
+    for (i = 0; i < l.length; i++) {
+      if (!best || languePts(l[i]) > languePts(best)) best = l[i];
+    }
+    return best;
+  }
+  // ET JAMAIS PLUS QUE CE QU'ELLE PORTE : cinquante points achetés ne se voient
+  // pas rembourser cent.
+  function langueFranchise(l) {
+    if (!l || l !== langueNative()) return 0;
+    var f = repli("langueGratuit");
+    return Math.min(languePts(l), typeof f === "number" && isFinite(f) ? f : 0);
+  }
   // Un point de langue coûte comme un point de spécialité : c'en est une.
+  // LA FRANCHISE SE PREND SUR LES POINTS, PAS SUR L'XP : c'est cent POINTS qui
+  // ne se paient pas, et le taux s'applique ensuite — le jour où la page
+  // changerait le prix d'un point, la langue maternelle resterait gratuite.
   function langueXp(l) {
-    return Math.round(languePts(l) * repli("xpSpe") * 100) / 100;
+    var pts = Math.max(0, languePts(l) - langueFranchise(l));
+    return Math.round(pts * repli("xpSpe") * 100) / 100;
   }
   function languesXp() {
     var t = 0, l = state.langues || [], i;

@@ -21,7 +21,7 @@
   // site il est. Il ne change PAS le rang : « 1.0.1b » et « 1.0.1 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (MiaMods.compareVersions tient cette règle).
-  var RELEASE = "1.30.0b";
+  var RELEASE = "1.31.0b";
   var SCHEMA = 8;
 
   // ---------- ce que la fiche ne décide PAS ----------
@@ -47,6 +47,10 @@
     // la page les dira, DATA prendra le dessus sans qu'on rouvre un fichier.
     langueCarac: "MEN",
     langueNiveaux: [100, 150, 200],
+    // LA LANGUE MATERNELLE NE S'ACHÈTE PAS : les cent premiers points de la
+    // langue la plus haute ne coûtent rien. Le personnage les a en naissant
+    // quelque part. Même remarque que ci-dessus — la page n'en dit rien.
+    langueGratuit: 100,
     endurAction: 50,              // endurance dépensable sur une même action
     iniMult: 2, iniMainsNues: 20,
     vitesseCarre: true, vitesseMult: 2,   // « AGI × AGI » ; le second ne sert que si la page repasse à « AGI × n »
