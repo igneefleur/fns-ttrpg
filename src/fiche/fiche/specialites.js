@@ -402,6 +402,13 @@
         try { lignes[i](); } catch (e) { /* la muselière juge à la passe suivante */ }
       }
     }
+    // LE REBÂTI QUE LES AUTRES MODULES APPELLENT quand la liste change sous
+    // eux. Le bloc d'Options avait le sien depuis toujours ; celui-ci manquait,
+    // et une spécialité créée ailleurs restait invisible dans cette liste
+    // jusqu'au remontage entier. Il est remis à zéro à chaque montage
+    // (320-montage.js), sans quoi un module coupé laisserait derrière lui une
+    // clôture qui écrit dans un DOM mort.
+    speFicheRebuild = rendu;
     rendu();
     return b;
   }

@@ -142,6 +142,7 @@ fin = lf
   src/fiche/socle/240-ligne-comp.js
   src/fiche/socle/250-filtres-vue.js
   src/fiche/fiche/comps.js
+  src/fiche/fiche/vitalite.js
   src/fiche/fiche/langues.js
   src/fiche/fiche/specialites.js
   src/fiche/art/arts.js

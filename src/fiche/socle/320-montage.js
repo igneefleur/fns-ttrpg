@@ -58,6 +58,7 @@
     compHooks = [];
     optSpesHooks = [];
     optSpesRebuild = null;
+    speFicheRebuild = null;
     // Filtres et table des modules : même remise à zéro, même raison. Ce sont
     // les mods et les modules qui les repeuplent, à chaque montage. Sans elle,
     // un mod désinstallé garderait pour toujours la place du module natif qu'il

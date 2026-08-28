@@ -19,6 +19,10 @@
   // « hooks » comme n'importe quel module.
   var optSpesHooks = [];        // bloc Options « Spécialités », rebâtissable
   var optSpesRebuild = null;    // posé par le module « optspes » ; rappelé quand la liste change
+  // ET SON PENDANT SUR LA FICHE. Le bloc d'Options avait seul son rebâti, si
+  // bien qu'une spécialité ajoutée d'ailleurs paraissait là-bas et pas ici :
+  // la liste de la Fiche ne se refaisait qu'au remontage entier.
+  var speFicheRebuild = null;   // posé par le module « specialites »
 
   function regModule(id) {
     if (!regsModules[id]) regsModules[id] = [];

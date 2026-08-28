@@ -25,6 +25,10 @@
     { id: "comps",      titre: "Compétences",       onglet: "fiche", colonne: "gauche", build: buildComps },
     // LES LANGUES SUIVENT LES COMPÉTENCES, dans la même colonne : ce sont des
     // spécialités passives de MEN, et on les lit après ce dont elles relèvent.
+    // AU-DESSUS DES LANGUES, et dans la même colonne : les deux blocs sont de
+    // la même farine — une poignée de spécialités tirées de la liste pour les
+    // avoir sous la main sans la dérouler.
+    { id: "vitalite",   titre: "Vitalité",          onglet: "fiche", colonne: "gauche", build: buildVitalite },
     { id: "langues",    titre: "Langues",           onglet: "fiche", colonne: "gauche", build: buildLangues },
     // Initiative et récupération vont ensemble : deux valeurs qu'on relit, et
     // qui portent chacune le bouton qui en fait quelque chose.
