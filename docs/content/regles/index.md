@@ -290,7 +290,7 @@ Trois paliers pèsent sur le personnage, et leurs effets se cumulent.
 ### La récupération
 
 La récupération est une spécialité unique : elle dit votre capacité à récupérer de vos
-blessures. Elle monte jusqu'à MOD CON × 2.
+blessures.
 
 </div>
 

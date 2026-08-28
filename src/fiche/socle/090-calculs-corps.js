@@ -113,10 +113,18 @@
   }
 
   // ---------- la récupération ----------
-  // Une spécialité unique, dont le plafond n'est PAS celui des autres : MOD CON
-  // fois le multiplicateur des règles. Elle commande ce qu'on regagne par jour.
-  function recupPlafond() { return caracMod("CON") * repli("recupMult"); }
-  function recupPts() { return Math.min(spePtsParNoms(RECUP_NOMS), recupPlafond()); }
+  // Une spécialité unique : elle commande ce qu'on regagne par jour.
+  //
+  // ELLE N'A PAS DE PLAFOND, ET LES PV NON PLUS. La page portait « Elle monte
+  // jusqu'à MOD CON × 2 », et le moteur rabattait donc les points achetés à
+  // deux fois le MOD : un personnage à 280 points n'en voyait compter que 70,
+  // les 210 autres payés en xp pour rien, et RIEN sur la fiche ne le disait.
+  // Ni la règle ni le rabattage ne sont restés.
+  //
+  // Aucune des deux spécialités nommées n'est donc coiffée ici. Il leur reste
+  // le plafond COMMUN à toutes les spécialités, celui de la chaîne de leviers
+  // (speCoiffe), qui ne mord que s'il est réglé dans l'onglet Options.
+  function recupPts() { return spePtsParNoms(RECUP_NOMS); }
   function recupJourAuto() {
     return Math.floor((caracMod("CON") + recupPts()) / 2) + modSum(state.divers.recup);
   }

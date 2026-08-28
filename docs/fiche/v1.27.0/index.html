@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Fiche MIA 1.27.0 (archive)</title>
+  <!-- ARCHIVE GELÉE de la ligne 1.27.0 (schéma 6), produite par
+       scripts/archive_fiche.py. Ne rien modifier ici à la main : le jour où
+       un joueur rouvre un personnage dans cette version, c'est ce dossier
+       qui doit répondre exactement ce qu'il répondait le jour de la sortie.
+
+       Aucun ?v= : le chemin est immuable, donc rien ne change jamais, donc il
+       n'y a aucun cache à casser. -->
+  <link rel="stylesheet" href="../../stylesheets/fonts.css">
+  <link rel="stylesheet" href="mia-fiche.css">
+  <link rel="stylesheet" href="mia-roll20.css">
+</head>
+<body>
+  <div id="perso-atelier">
+    <noscript>La fiche a besoin de JavaScript.</noscript>
+  </div>
+  <script>
+  // JOUR / NUIT avant le premier rendu, même règle que l'amorceur : indice
+  // n=1/0 du hash, sinon la préférence locale, sinon le thème du navigateur.
+  (function () {
+    "use strict";
+    try {
+      var h = location.hash || "";
+      var p = null;
+      try { p = localStorage.getItem("mia-r20-night"); } catch (e) {}
+      var on = p === "1" ? true : p === "0" ? false
+             : /[#&]n=1/.test(h) ? true : /[#&]n=0/.test(h) ? false
+             : !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+      document.documentElement.classList.toggle("night", on);
+    } catch (e) {}
+  })();
+  // LE RACCORD QUI FAIT L'ARCHIVE. Sans lui, le bundle retombe sur le
+  // mia-creation.json de la RACINE du site, c'est-à-dire sur les règles
+  // d'aujourd'hui : la fiche s'ouvrirait sans erreur et mentirait.
+  window.__miaDataUrl = "mia-creation.json";
+  </script>
+  <script src="mia-attr-map.js"></script>
+  <script src="mia-migrations.js"></script>
+  <script src="mia-mods.js"></script>
+  <script src="mia-fiche.js"></script>
+</body>
+</html>
