@@ -123,7 +123,11 @@
         // total leur somme — c'est de ce total-là que la table tire le MOD et
         // la limite du jet.
         vVal.txt.textContent = String(caracValeur(code));
+      // UNE VALEUR NEUTRE SE RETIRE. Un bonus de zéro ne dit rien : il occupe une
+      // case parce que la colonne existe, pas parce qu'il a quelque chose à
+      // annoncer. Grisé, il laisse le regard aux nombres qui, eux, pièsent.
         vBon.txt.textContent = sign(d);
+        vBon.txt.classList.toggle("zero", !d);
         vTot.textContent = String(caracTotal(code));
         trio.classList.toggle("adj", retouche);
         // quand le plafond mord, le dire : sans cela, le joueur voit un total

@@ -116,7 +116,11 @@
       cLim[0].textContent = String(compLim(code, c));
       cLim[1].textContent = String(plaf);
       cLim[1].classList.toggle("adj", mord);
+      // UNE VALEUR NEUTRE SE RETIRE. Un bonus de zéro ne dit rien : il occupe une
+      // case parce que la colonne existe, pas parce qu'il a quelque chose à
+      // annoncer. Grisé, il laisse le regard aux nombres qui, eux, pièsent.
       vBon.txt.textContent = sign(bon);
+      vBon.txt.classList.toggle("zero", !bon);
       trio.classList.toggle("adj", force || d !== 0 || db !== 0 || mord || mal !== 0);
       trio.title = (force
                      ? "Points forcés à " + vBrut + " (Options)"

@@ -347,7 +347,11 @@
         // de la chaîne.
         var bon = speBonus(spe);
         var db = bon - speBonusSocle(spe);
+      // UNE VALEUR NEUTRE SE RETIRE. Un bonus de zéro ne dit rien : il occupe une
+      // case parce que la colonne existe, pas parce qu'il a quelque chose à
+      // annoncer. Grisé, il laisse le regard aux nombres qui, eux, pièsent.
         vBon.txt.textContent = sign(bon);
+        vBon.txt.classList.toggle("zero", !bon);
         if (document.activeElement !== vBon.champ) vBon.champ.value = spe.bonus || 0;
         quint.classList.toggle("adj", force || d !== 0 || db !== 0 || mal !== 0 || ch !== 0);
         quint.title = !spe.carac

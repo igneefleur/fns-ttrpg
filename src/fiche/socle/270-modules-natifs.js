@@ -30,18 +30,21 @@
     // avoir sous la main sans la dérouler.
     { id: "vitalite",   titre: "Vitalité",          onglet: "fiche", colonne: "gauche", build: buildVitalite },
     { id: "langues",    titre: "Langues",           onglet: "fiche", colonne: "gauche", build: buildLangues },
-    // Initiative et récupération vont ensemble : deux valeurs qu'on relit, et
-    // qui portent chacune le bouton qui en fait quelque chose.
+    // L'ORDRE DE CETTE COLONNE SUIT CE QU'ON Y FAIT : on lance l'initiative, on
+    // lit ce qu'il reste dans les deux réserves, puis ce qui les remplit, puis
+    // ce que le corps peut faire.
     { id: "initiative", titre: "Initiative",        onglet: "fiche", colonne: "milieu", build: buildInitiative },
-    { id: "recup",      titre: "Récup / jour",      onglet: "fiche", colonne: "milieu", build: buildRecup },
-    // Vitesse, charge et les deux sauts partagent une grille de cases qui ne se
-    // découpe pas : elles ne forment qu'UN module, même si chacune garde son
-    // rouage.
-    { id: "tuiles",     titre: "Corps",             onglet: "fiche", colonne: "milieu", build: buildVitesse },
     // DEUX RÉSERVES, DEUX MODULES : même forme, mais on ne les lit pas au même
     // moment, et elles se déplacent — ou se coupent — l'une sans l'autre.
     { id: "pv",         titre: "PV",                onglet: "fiche", colonne: "milieu", build: buildPv },
     { id: "endurance",  titre: "END",               onglet: "fiche", colonne: "milieu", build: buildEndurance },
+    // La récupération vient APRÈS les deux réserves qu'elle remplit : elle ne
+    // veut rien dire avant qu'on sache ce qu'il y a dedans.
+    { id: "recup",      titre: "RÉCUP / Jour",      onglet: "fiche", colonne: "milieu", build: buildRecup },
+    // Vitesse, charge et les deux sauts partagent une grille de cases qui ne se
+    // découpe pas : elles ne forment qu'UN module, même si chacune garde son
+    // rouage.
+    { id: "tuiles",     titre: "Corps",             onglet: "fiche", colonne: "milieu", build: buildVitesse },
     // Les spécialités ont la colonne large POUR ELLES SEULES : cinq nombres,
     // un nom qu'on écrit, deux sigles à choisir et un filtre, sur une liste qui
     // n'a pas de fin. Elles étouffaient sous un tiers de feuille.

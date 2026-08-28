@@ -70,6 +70,8 @@
       hooks.push(function () {
         var pose = state.recupMulti && state.recupMulti[cle] !== undefined;
         t.textContent = "×" + fmtP(recupMulti(cle));
+        // ×1 est le neutre du facteur : il se retire comme un bonus de zéro.
+        t.classList.toggle("zero", recupMulti(cle) === 1);
         i.placeholder = "1";
         if (document.activeElement !== i) {
           i.value = pose ? state.recupMulti[cle] : "";
