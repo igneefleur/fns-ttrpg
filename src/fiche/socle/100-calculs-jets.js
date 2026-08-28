@@ -26,14 +26,41 @@
   // Pour une COMPÉTENCE, le second argument EST le jet : le choisir autre n'a
   // pas de sens, on lancerait l'autre compétence. Il ne sert donc qu'aux
   // spécialités, et c'est ce que dit la barre d'envoi.
+  // CE QUI ENTRE DANS LE GROUPE, c'est-à-dire ce que la LIMITE borne : ce que le
+  // personnage vaut par lui-même. Le BONUS n'en est pas — voir jetBonusHors.
   function jetBonusBrut(carac, comp, spe) {
     var b = -enduranceMalus();
-    if (spe) b += speTotal(spe, carac, comp) + speBonus(spe) + speMalusCharge(spe);
+    if (spe) b += speTotal(spe, carac, comp) + speMalusCharge(spe);
     else {
       b += caracMod(carac);
-      if (comp) b += compPts(comp);
+      if (comp) b += compPts(comp) - compBonus(comp);
     }
     return Math.round(b);
+  }
+  // ET CE QUI RESTE DEHORS : le bonus de la spécialité ou de la compétence qu'on
+  // lance. Il s'ajoute APRÈS le plafond, hors du groupe — « {…}kl1 + BONUS ».
+  //
+  // C'EST TOUT SON SENS : la limite dit ce qu'un personnage peut par lui-même,
+  // le bonus est ce par quoi il la dépasse. Posé dans le groupe, il était rogné
+  // et ne servait à rien dès que le personnage atteignait sa limite — c'est-à-
+  // dire justement quand il en avait besoin. Le modificateur d'endurance sort
+  // par la même porte, et pour la même raison.
+  //
+  // LE BONUS DU JET QU'ON LANCE, ET LUI SEUL : celui de la spécialité si l'on
+  // lance une spécialité, celui de la compétence si l'on lance une compétence.
+  // Le bonus d'une CARACTÉRISTIQUE ne passe pas par ici : il monte sa valeur,
+  // donc son MOD et sa LIM, par la table des règles — il déplace la limite au
+  // lieu de la franchir.
+  function jetBonusHorsBrut(carac, comp, spe) {
+    if (spe) return Math.round(speBonus(spe));
+    if (comp) return Math.round(compBonus(comp));
+    return 0;
+  }
+  function jetBonusHors(carac, comp, spe) {
+    var v = jetBonusHorsBrut(carac, comp, spe);
+    return aFiltre("jetBonusHors")
+      ? applique("jetBonusHors", v, { carac: carac, cle: comp, spe: spe })
+      : v;
   }
   function jetBonus(carac, comp, spe) {
     var v = jetBonusBrut(carac, comp, spe);
@@ -66,11 +93,16 @@
   // elle-même, comme le reste : elle envoie donc une expression entièrement
   // calculée, sans requête ni entité — soixante-seize signes au lieu de quatre
   // mille, et rien à échapper.
-  function jetExpr(bonus, lim, modif) {
+  // DEUX TERMES SORTENT DU GROUPE, et non plus un seul : le BONUS de ce qu'on
+  // lance, puis le modificateur saisi à l'envoi. Ils s'écrivent à la suite,
+  // chacun avec son signe — « {…}kl1 + BONUS + MODIF ».
+  function jetExpr(bonus, lim, modif, bonusHors) {
     var b = Math.round(bonus);
+    var h = Math.round(bonusHors || 0);
     var m = Math.round(modif || 0);
     return "{" + deTest() + (b >= 0 ? "+" : "-") + Math.abs(b) +
            ",0d0+" + Math.round(lim) + "}kl1" +
+           (h ? (h > 0 ? "+" : "-") + Math.abs(h) : "") +
            (m ? (m > 0 ? "+" : "-") + Math.abs(m) : "");
   }
 
