@@ -136,20 +136,20 @@
   }
   // CE QUE LES RÈGLES DONNENT, avant le multiplicateur du joueur.
   function recupJourSocle() {
-    return Math.floor((caracMod("CON") + recupPts()) / 2) + modSum(state.divers.recup);
+    return Math.floor((caracMod("CON") + recupPts()) / 2);
   }
-  // LE MULTIPLICATEUR VIENT À LA TOUTE FIN, sur le total déjà formé — après la
-  // division ET après les modificateurs, sans quoi il ne multiplierait qu'une
-  // partie de ce qu'on lit.
+  // LE MULTIPLICATEUR VIENT À LA TOUTE FIN DU CALCUL, sur le total déjà formé.
   function recupJourAuto() {
     return Math.floor(recupJourSocle() * recupMulti("pv"));
   }
-  // UNE VALEUR FORCÉE REMPLACE LE CALCUL, multiplicateur compris : c'est la
-  // grammaire de toute la fiche (voir chaine(), qui court-circuite ses facteurs
-  // dès qu'un forçage est posé). Forcer à dix et lire vingt serait un forçage
-  // qui ne force rien.
+  // PUIS LA CHAÎNE DE LEVIERS, par-dessus tout le reste. Elle a remplacé la
+  // valeur forcée et les trois modificateurs qui vivaient sur la Fiche : elle
+  // fait ce qu'ils faisaient, plus les facteurs et les deux groupes que trois
+  // cases ne savaient pas dire. Son forçage court-circuite tout, multiplicateur
+  // compris — c'est la grammaire de chaine(), et forcer à dix pour lire vingt
+  // serait un forçage qui ne force rien.
   function recupJourBrut() {
-    return state.recupOverride !== null ? state.recupOverride : recupJourAuto();
+    return chaine(lireReserve("recupJour"), recupJourAuto());
   }
   function recupJour() {
     var v = recupJourBrut();
@@ -159,8 +159,11 @@
   // réserve court de −max à +max, donc deux fois le maximum est exactement ce
   // qu'il faut pour la remplir depuis le fond. Une nuit suffit, quel que soit
   // l'état où l'on s'est couché.
-  function recupEnduranceJourBrut() {
+  function recupEnduranceJourAuto() {
     return Math.floor(enduranceMax() * repli("recupEndurMult") * recupMulti("end"));
+  }
+  function recupEnduranceJourBrut() {
+    return chaine(lireReserve("recupEnd"), recupEnduranceJourAuto());
   }
   function recupEnduranceJour() {
     var v = recupEnduranceJourBrut();
@@ -209,10 +212,10 @@
   // Ce que le personnage peut porter : le plus haut de ses deux modificateurs
   // de force et de constitution.
   function chargeMaxAuto() {
-    return Math.max(caracMod("CON"), caracMod("FOR")) + modSum(state.divers.charge);
+    return Math.max(caracMod("CON"), caracMod("FOR"));
   }
   function chargeMaxBrut() {
-    return state.chargeOverride !== null ? state.chargeOverride : chargeMaxAuto();
+    return chaine(lireReserve("charge"), chargeMaxAuto());
   }
   function chargeMax() {
     var v = chargeMaxBrut();

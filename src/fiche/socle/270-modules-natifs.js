@@ -116,6 +116,11 @@
     // version, par symétrie avec la Fiche, mais deux blocs d'UNE rangée faisaient
     // deux titres et deux en-têtes pour deux lignes de contenu.
     { id: "optreserves", titre: "PV et END",        onglet: "options", colonne: "droite", build: buildOptReserves },
+    // ET TOUT LE RESTE DE CE QUI SE CALCULE : l'initiative, les deux
+    // récupérations, la vitesse, la charge et les deux sauts. Sept petites
+    // machines à peine différentes, éparpillées dans trois modules de la Fiche,
+    // n'en font plus qu'une.
+    { id: "optderives", titre: "Valeurs dérivées",   onglet: "options", colonne: "droite", build: buildOptDerives },
     { id: "ecartcoupe", titre: "Règle de l'écart",   onglet: "options", colonne: "droite", build: buildEcartRegle },
     { id: "filtres",    titre: "Outils de filtre",  onglet: "options", colonne: "droite", build: buildFiltres },
     // « Affichage » n'existe que dans Roll20 : à gauche, il y compense les deux

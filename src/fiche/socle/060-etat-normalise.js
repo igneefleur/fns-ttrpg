@@ -257,7 +257,18 @@
     // chaîne, et la migration du schéma 6 rangeait dans le vide tant qu'il n'y
     // était pas : la fiche s'ouvrait, l'état montait, et le levier disparaissait
     // au premier enregistrement. Écrit dans la page, disparu au rechargement.
-    var RESERVE_BORNE = { pvMax: 9999, enduranceMax: 9999 };
+    // LE CATALOGUE DE TOUTES LES VALEURS DÉRIVÉES. La table s'appelle encore
+    // « reservesLeviers » parce qu'elle n'a d'abord porté que les deux réserves
+    // (schémas 5 et 6) ; elle les porte toutes depuis le 8. La renommer aurait
+    // coûté un pas de plus et cassé les macros Roll20 qui lisent
+    // « mia_reserves_leviers ».
+    // UN NOM QUI MANQUE ICI EST JETÉ EN SILENCE au premier rangement : c'est le
+    // défaut qui a coûté le levier d'endurance au schéma 6.
+    var RESERVE_BORNE = {
+      pvMax: 9999, enduranceMax: 9999,
+      initiative: 9999, recupJour: 9999, recupEnd: 9999,
+      vitesse: 9999, charge: 9999, sautLong: 9999, sautHaut: 9999
+    };
     s.reservesLeviers = leviersPlats(s.reservesLeviers, RESERVE_BORNE);
     // LE MULTIPLICATEUR DE RÉCUPÉRATION, même geste et même piège : la boucle va
     // sur le CATALOGUE et non sur l'état, donc une troisième réserve écrite
@@ -337,22 +348,12 @@
 
     // ---------- les valeurs dérivées ----------
     s.ecartCoupe = !!s.ecartCoupe;
-    s.divers = objet(s.divers);
-    // « pvMax » N'EST PLUS DE LA LISTE : son maximum est passé dans la chaîne
-    // des leviers de réserve (schéma 5). L'y laisser reposait un [0,0,0] mort
-    // après chaque migration, qui voyageait jusque dans les Attributs Roll20.
-    ["vitesse", "initiative", "charge", "recup",
-     "sautLong", "sautHaut"].forEach(function (k) {
-      var a = Array.isArray(s.divers[k]) ? s.divers[k] : [];
-      s.divers[k] = [modNum(a[0]), modNum(a[1]), modNum(a[2])];
-    });
-    // « pvMaxOverride » ET « enduranceMaxOverride » non plus, et pour la même
-    // raison : le forçage du maximum des deux réserves est devenu la case
-    // « Forcé » de leur chaîne.
-    ["vitesseOverride",
-     "initiativeOverride", "chargeOverride", "recupOverride",
-     "sautLongOverride", "sautHautOverride"]
-      .forEach(function (k) { s[k] = forceVal(s[k]); });
+    // PLUS DE TABLE « divers », ET PLUS UNE SEULE VALEUR FORCÉE À LA RACINE.
+    // Toutes les valeurs dérivées sont passées dans la même chaîne de leviers
+    // (schémas 5, 6 et 8), rangée plus haut dans « reservesLeviers ». Les
+    // reconstruire ici reposait des [0,0,0] et des null morts après chaque
+    // migration, qui voyageaient jusque dans les Attributs Roll20.
+
 
     // ---------- l'inventaire ----------
     // inventaire structuré : liste (texte) + objets illustrés par groupes

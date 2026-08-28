@@ -21,6 +21,10 @@
   // LE MULTIPLICATEUR VIENT À LA TOUTE FIN du calcul de sa réserve, et il vaut
   // UN tant qu'on n'y touche pas. Il ne se range dans l'état que s'il change
   // quelque chose, comme les facteurs de la chaîne de leviers.
+  // AUCUN ROUAGE NON PLUS : la valeur forcée et les trois modificateurs sont
+  // passés dans l'onglet Options. Le MULTIPLICATEUR, lui, reste ici : ce n'est
+  // pas un réglage de construction mais un facteur qu'on lit à côté du total,
+  // et il se voit dans les deux modes.
   function buildRecup() {
     var b = block("RÉCUP / Jour", null, "recup");
 
@@ -102,13 +106,10 @@
         // « .pc-trio.adj .v » qui la porte, et une classe posée sur le « .v »
         // ne correspondait à rien. Le bloc entier vire, multiplicateur ET total,
         // parce que c'est bien le total que le facteur déplace.
-        var d = modSum(state.divers.recup);
-        var pose = recupMulti(def.cle) !== 1 ||
-                   (def.cle === "pv" && (state.recupOverride !== null || d !== 0));
+        var lev = def.cle === "pv" ? "recupJour" : "recupEnd";
+        var pose = recupMulti(def.cle) !== 1 || levierRegleDe(lireReserve(lev));
         trio.classList.toggle("adj", pose);
-        tot.title = def.cle === "pv" && state.recupOverride !== null
-          ? "Forçée (calculée : " + recupJourAuto() + ")"
-          : def.aide;
+        tot.title = def.aide;
       });
     });
 
@@ -133,32 +134,6 @@
       flash(dit.join(" · "));
     }));
     b.appendChild(geste);
-
-    // LA CONSTRUCTION DE LA SEULE RANGÉE PV : une valeur forcée (vide =
-    // calculée) et trois modificateurs. Les libellés le disent, maintenant que
-    // les rangées sont nommées — sans quoi on ne saurait pas laquelle des deux
-    // cette ligne règle, ce qui était précisément le défaut du module.
-    var mrow = el("div", "pc-pvmax pc-mods-host pc-edit-only");
-    mrow.appendChild(el("span", "lbl", "PV forcés"));
-    var force = el("input", "force");
-    force.type = "number"; force.step = "1"; force.min = "0";
-    force.title = "Vide = calculée ; une valeur la force.";
-    force.addEventListener("input", function () {
-      var v = parseFloat(force.value);
-      state.recupOverride = isFinite(v) ? clamp(Math.floor(v), 0, 9999) : null;
-      refresh();
-    });
-    hooks.push(function () {
-      force.placeholder = String(recupJourAuto());
-      if (document.activeElement !== force) {
-        force.value = state.recupOverride === null ? "" : state.recupOverride;
-      }
-    });
-    mrow.appendChild(force);
-    mrow.appendChild(el("span", "lbl", "PV modificateurs"));
-    mrow.appendChild(multiMod(state.divers, "recup"));
-    mrow.appendChild(el("span", "sp"));
-    b.appendChild(mrow);
 
     return b;
   }

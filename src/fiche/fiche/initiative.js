@@ -16,8 +16,12 @@
     flash("Initiative : " + v + " (hors Roll20 : aucun compteur de tours où l'inscrire).");
   }
 
+  // AUCUN ROUAGE : ce qui se CONSTRUIT — la valeur forcée, les modificateurs —
+  // s'est retiré dans l'onglet Options, où l'initiative a la même chaîne de
+  // leviers que tout le reste. Il ne reste ici que ce qui se JOUE : le chiffre
+  // qu'on relit à chaque combat, et le bouton qui l'inscrit au compteur.
   function buildInitiative() {
-    var b = block("Initiative", null, "initiative");
+    var b = block("Initiative");
     var row = el("div", "pc-kv");
     var val = el("span", "pc-cval");
     row.appendChild(val);
@@ -26,37 +30,11 @@
                             initAuCompteur));
     b.appendChild(row);
 
-
-    // construction : valeur forcée (vide = calculée) + divers, comme les PV.
-    // Le forçage accepte le NÉGATIF, et c'est voulu : deux armures dans le sac
-    // suffisent à passer sous zéro, et un plancher à zéro mentirait sur l'état
-    // d'un personnage qui a tout chargé sur son dos.
-    var mrow = el("div", "pc-pvmax pc-mods-host pc-edit-only");
-    mrow.appendChild(el("span", "lbl", "Forcée"));
-    var force = el("input", "force");
-    force.type = "number"; force.step = "1";
-    force.title = "Vide = calculée ; une valeur la force.";
-    force.addEventListener("input", function () {
-      var v = parseFloat(force.value);
-      state.initiativeOverride = isFinite(v) ? clamp(Math.floor(v), -9999, 9999) : null;
-      refresh();
-    });
-    hooks.push(function () {
-      force.placeholder = String(initiativeAuto());
-      if (document.activeElement !== force) {
-        force.value = state.initiativeOverride === null ? "" : state.initiativeOverride;
-      }
-    });
-    mrow.appendChild(force);
-    mrow.appendChild(el("span", "lbl", "Modificateurs"));
-    mrow.appendChild(multiMod(state.divers, "initiative"));
-    mrow.appendChild(el("span", "sp"));
-    b.appendChild(mrow);
-
     hooks.push(function () {
       val.textContent = String(initiative());
-      var d = modSum(state.divers.initiative);
-      val.classList.toggle("adj", state.initiativeOverride !== null || d !== 0);
+      // la teinte dit qu'un levier mord, comme partout ailleurs
+      val.classList.toggle("adj", levierRegleDe(lireReserve("initiative")));
+      val.title = chaineTexteDe(lireReserve("initiative"), "des règles", initiativeAuto());
     });
     return b;
   }

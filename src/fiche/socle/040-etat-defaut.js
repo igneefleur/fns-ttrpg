@@ -124,12 +124,8 @@
       // pourtant resté ici un schéma de trop : chaque personnage neuf écrivait
       // un [0, 0, 0] mort qui voyageait jusque dans les Attributs Roll20, et
       // les deux moitiés d'un même geste vivaient dans deux états opposés.
-      divers: {
-        vitesse: [0, 0, 0],
-        initiative: [0, 0, 0], charge: [0, 0, 0], recup: [0, 0, 0],
-        sautLong: [0, 0, 0], sautHaut: [0, 0, 0]
-      },
-      // PAS DE « pvMaxOverride » NI DE « enduranceMaxOverride » : le forçage du
+
+      // PAS UNE SEULE VALEUR FORCÉE ICI : le forçage du
       // maximum des deux réserves est devenu la case « Forcé » de leur chaîne
       // (schémas 5 et 6). Les laisser ici les reposait à null après chaque
       // migration, et les clés mortes voyageaient.
@@ -139,9 +135,6 @@
       // complète et ne purge aucune clé racine inconnue, elle n'a donc pas
       // besoin d'un pas de schéma.
       recupMulti: {},
-      vitesseOverride: null,
-      initiativeOverride: null, chargeOverride: null, recupOverride: null,
-      sautLongOverride: null, sautHautOverride: null,
 
       // modules : le coffre privé de chaque module (id -> objet libre) et les
       // interrupteurs (id -> false pour les seuls modules coupés).

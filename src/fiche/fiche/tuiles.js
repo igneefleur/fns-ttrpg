@@ -1,54 +1,17 @@
   // ---------- le corps : vitesse, charge, sauts ----------
-  // Quatre tuiles autonomes plutôt qu'un bloc encadré : chacune est SON module
-  // (rouage flottant, valeur forcée, modificateurs), et la grille à deux
+  // Quatre tuiles autonomes plutôt qu'un bloc encadré, et la grille à deux
   // colonnes les tient serrées au milieu de la fiche.
   //
   // La charge y entre parce qu'elle commande tout le reste : passé ses paliers,
   // elle rogne l'initiative, la vitesse, les sauts et l'esquive. Quand elle
   // mord, les tuiles atteintes se marquent — c'est tout ce que la fiche en dit.
   //
-  // Valeur forcée d'une tuile : vide = valeur calculée. Même mécanique que le
-  // maximum de PV, en version étroite (deux lignes empilées sous la valeur).
-  function tuileForce(tile, champ, auto, dec) {
-    var row = el("div", "pc-bigedit pc-edit-only");
-    row.appendChild(el("span", "lbl", "Forcé"));
-    var inp = el("input", "force");
-    inp.type = "number"; inp.min = "0";
-    inp.step = dec ? "0.5" : "1";
-    inp.title = "Vide = calculée ; une valeur la force.";
-    inp.addEventListener("input", function () {
-      var v = parseFloat(inp.value);
-      state[champ] = isFinite(v)
-        ? clamp(dec ? Math.round(v * 100) / 100 : Math.floor(v), 0, 9999)
-        : null;
-      refresh();
-    });
-    hooks.push(function () {
-      inp.placeholder = fmtP(auto());
-      if (document.activeElement !== inp) inp.value = state[champ] === null ? "" : state[champ];
-    });
-    row.appendChild(inp);
-    tile.appendChild(row);
-  }
-  function tuileMods(tile, cle) {
-    var row = el("div", "pc-bigedit pc-edit-only");
-    row.appendChild(el("span", "lbl", "Modificateurs"));
-    row.appendChild(multiMod(state.divers, cle));
-    tile.appendChild(row);
-  }
-  // Le gréement commun d'une tuile réglable. LES QUATRE L'ONT : ce sont quatre
-  // valeurs dérivées de la même façon, que les mêmes paliers de charge rognent,
-  // et une seule qui refuserait le décalage du MJ serait un trou, pas un choix.
-  function tuileReglable(tile, id, champ, auto, cle, dec) {
-    tile.classList.add("pc-mods-host", "pc-editable");
-    tile.dataset.module = id;
-    var g = gearBtn(tile, id);
-    g.classList.add("pc-gear-float");
-    tile.appendChild(g);
-    tuileForce(tile, champ, auto, dec);
-    tuileMods(tile, cle);
-    return tile;
-  }
+  // PLUS AUCUN ROUAGE SUR LES QUATRE. Chacune portait le sien, avec une valeur
+  // forcée et trois modificateurs : quatre petites machines à peine différentes
+  // de celles de l'initiative et de la récupération. Toutes se règlent
+  // désormais dans l'onglet Options, par la même chaîne de leviers que le reste
+  // de la fiche. Il ne reste ici que ce qui se lit.
+  //
   // Ce que les paliers de charge font à UNE valeur, pour son infobulle. Le tri
   // par clé de calcul est ce qui empêche l'infobulle de la vitesse d'énumérer
   // des malus d'esquive : chaque tuile ne raconte que ce qui la concerne.
@@ -58,6 +21,14 @@
       if (p.calc[clef]) out.push("charge " + p.seuil + " % : " + verbe + " " + fmtP(p.calc[clef]));
     });
     return out;
+  }
+  // CE QUE LE LEVIER DIT DE CETTE TUILE, en une ligne. La même infobulle que
+  // les blocs d'Options composent pour leur colonne de résultat : le joueur y
+  // lit d'où vient l'écart entre ce que les règles donnent et ce qu'il voit.
+  function tuileLevier(cle, auto) {
+    return levierRegleDe(lireReserve(cle))
+      ? chaineTexteDe(lireReserve(cle), "des règles", auto())
+      : "";
   }
 
   function buildVitesse() {
@@ -69,18 +40,14 @@
     var tiles = el("div", "pc-bigrow pc-bigrow-2");
 
     // ---- vitesse ----
-    var tv = tuileReglable(bigTile("Vitesse", vitesse), "vitesse",
-                           "vitesseOverride", vitesseAuto, "vitesse", true);
+    var tv = bigTile("Vitesse", vitesse);
     hooks.push(function () {
-      var d = modSum(state.divers.vitesse);
       var pal = tuilePaliers("vitesseDiv", "divisée par");
+      var lev = tuileLevier("vitesse", vitesseAuto);
       // la charge ne marque la tuile que lorsqu'elle coûte vraiment des mètres :
       // un sac lourd mais sous le premier palier ne change rien
-      tv.classList.toggle("adj", state.vitesseOverride !== null || d !== 0 || pal.length > 0);
-      tv.title = state.vitesseOverride !== null
-        ? "Vitesse forcée à " + fmtP(state.vitesseOverride) + " m (calculée : " +
-          fmtP(vitesseAuto()) + " m)"
-        : pal.concat(d ? ["modificateurs " + sign(d) + " m"] : []).join(" · ");
+      tv.classList.toggle("adj", !!lev || pal.length > 0);
+      tv.title = pal.concat(lev ? [lev] : []).join(" · ");
     });
     tiles.appendChild(tv);
 
@@ -88,16 +55,12 @@
     var tc = bigTile("Charge", function () {
       return fmtP(poidsPorte()) + " / " + fmtP(chargeMax());
     });
-    tuileReglable(tc, "charge", "chargeOverride", chargeMaxAuto, "charge", true);
     hooks.push(function () {
-      var d = modSum(state.divers.charge);
       var haut = chargePaliers().length;
-      tc.classList.toggle("adj", !!haut || state.chargeOverride !== null || d !== 0);
+      var lev = tuileLevier("charge", chargeMaxAuto);
+      tc.classList.toggle("adj", !!haut || !!lev);
       var pct = chargePct();
-      tc.title = (state.chargeOverride !== null
-        ? "Charge maximale forcée à " + fmtP(state.chargeOverride) + " (calculée : " +
-          fmtP(chargeMaxAuto()) + ")"
-        : (d ? "Modificateurs " + sign(d) : "")) +
+      tc.title = (lev ? lev : "") +
         // une charge maximale nulle rend le pourcentage infini : on le dit au
         // lieu d'afficher « Infinity % », qui passerait pour une panne
         (isFinite(pct) ? " · porté : " + Math.round(pct) + " %" : " · aucune charge maximale");
@@ -105,20 +68,17 @@
     tiles.appendChild(tc);
 
     // ---- les deux sauts ----
-    // Chacun est son module, comme la vitesse et la charge : rouage, valeur
-    // forcée, modificateurs. Ils partagent le diviseur de charge mais rien
-    // d'autre, et se règlent donc séparément.
-    [["Saut longueur", sautLong, "sautLong", "sautLongOverride", sautLongAuto],
-     ["Saut hauteur",  sautHaut, "sautHaut", "sautHautOverride", sautHautAuto]
+    // Ils partagent le diviseur de charge mais rien d'autre, et se règlent donc
+    // séparément — dans l'onglet Options, comme les deux autres.
+    [["Saut longueur", sautLong, "sautLong", sautLongAuto],
+     ["Saut hauteur",  sautHaut, "sautHaut", sautHautAuto]
     ].forEach(function (o) {
-      var ts = tuileReglable(bigTile(o[0], o[1]), o[2], o[3], o[4], o[2], true);
+      var ts = bigTile(o[0], o[1]);
       hooks.push(function () {
-        var d = modSum(state.divers[o[2]]);
         var pal = tuilePaliers("sautDiv", "divisés par");
-        ts.classList.toggle("adj", state[o[3]] !== null || d !== 0 || pal.length > 0);
-        ts.title = state[o[3]] !== null
-          ? o[0] + " forcé à " + fmtP(state[o[3]]) + " m (calculé : " + fmtP(o[4]()) + " m)"
-          : pal.concat(d ? ["modificateurs " + sign(d) + " m"] : []).join(" · ");
+        var lev = tuileLevier(o[2], o[3]);
+        ts.classList.toggle("adj", !!lev || pal.length > 0);
+        ts.title = pal.concat(lev ? [lev] : []).join(" · ");
       });
       tiles.appendChild(ts);
     });

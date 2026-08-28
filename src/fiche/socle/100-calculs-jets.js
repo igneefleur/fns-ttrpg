@@ -103,10 +103,10 @@
       if (p.calc.ini) v += p.calc.ini;
       if (p.calc.iniDiv) v = v / p.calc.iniDiv;
     });
-    return Math.floor(v) + modSum(state.divers.initiative);
+    return Math.floor(v);
   }
   function initiativeBrut() {
-    return state.initiativeOverride !== null ? state.initiativeOverride : initiativeAuto();
+    return chaine(lireReserve("initiative"), initiativeAuto());
   }
   function initiative() {
     var v = initiativeBrut();
@@ -121,10 +121,10 @@
     var agi = caracTotal("AGI");
     var v = repli("vitesseCarre") ? agi * agi : agi * repli("vitesseMult");
     chargePaliers().forEach(function (p) { if (p.calc.vitesseDiv) v = v / p.calc.vitesseDiv; });
-    return Math.max(0, v + modSum(state.divers.vitesse));
+    return Math.max(0, v);
   }
   function vitesseValBrut() {
-    return state.vitesseOverride !== null ? state.vitesseOverride : vitesseAuto();
+    return Math.max(0, chaine(lireReserve("vitesse"), vitesseAuto()));
   }
   // le filtre porte sur le NOMBRE de mètres, jamais sur la chaîne rendue par
   // vitesse() : un mod qui double la vitesse fait une multiplication, pas une
@@ -151,10 +151,10 @@
   // vitesse : ce sont des mètres qu'on ajoute, pas un facteur qu'on rogne.
   function sautLongAuto() {
     var v = caracTotal("FOR") * repli("sautLong") / sautDiv();
-    return Math.max(0, v + modSum(state.divers.sautLong));
+    return Math.max(0, v);
   }
   function sautLongValBrut() {
-    return state.sautLongOverride !== null ? state.sautLongOverride : sautLongAuto();
+    return Math.max(0, chaine(lireReserve("sautLong"), sautLongAuto()));
   }
   function sautLongVal() {
     var v = sautLongValBrut();
@@ -163,10 +163,10 @@
   function sautHautAuto() {
     var d = repli("sautHaut") || 1;
     var v = caracTotal("FOR") / d / sautDiv();
-    return Math.max(0, v + modSum(state.divers.sautHaut));
+    return Math.max(0, v);
   }
   function sautHautValBrut() {
-    return state.sautHautOverride !== null ? state.sautHautOverride : sautHautAuto();
+    return Math.max(0, chaine(lireReserve("sautHaut"), sautHautAuto()));
   }
   function sautHautVal() {
     var v = sautHautValBrut();

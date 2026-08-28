@@ -149,13 +149,15 @@ var TEMOINS = {
       ],
       opts: { cols: 3, nom: true, qte: true, poids: true, total: true }
     },
-    // NI « divers.pvMax » NI « pvMaxOverride » ICI : le pas 5 les déplace, et
-    // ce témoin est estampillé de TOUS les schémas tour à tour. Une forme datée
-    // y devient une chimère dans l'autre sens — c'est la leçon des pas 2 et 3,
-    // et elle vaut à chaque pas qui déménage quelque chose. Le pas 5 a son bloc
-    // dédié, plus bas.
-    divers: { regen: [0, 0, 0], vitesse: [1.5, 0, 0] },
-    vitesseOverride: 10.5, regenOverride: null,
+    // PLUS AUCUNE FORME DATÉE ICI, et la liste n'a fait que s'allonger : ni
+    // « divers », ni une seule valeur forcée. Les pas 5, 6 et 8 les déménagent
+    // tous, et ce témoin est estampillé de TOUS les schémas tour à tour — une
+    // forme datée y devient une chimère dans l'autre sens. C'est la leçon des
+    // pas 2 et 3, et elle vaut à chaque pas qui déménage quelque chose. Chacun
+    // a son bloc dédié, plus bas.
+    // « regen », lui, reste : c'est une clé INCONNUE du moteur, et elle est ici
+    // pour vérifier qu'aucun pas ne la mange en passant.
+    divers: { regen: [0, 0, 0] },
     pv: 37, endurance: -4, xpTotal: 620, de: "d100"
   },
   // Une fiche déjà passée par le moteur : grenier et journal en place, pour

@@ -162,6 +162,7 @@ fin = lf
   src/fiche/options/optcomps.js
   src/fiche/options/optspes.js
   src/fiche/options/optreserves.js
+  src/fiche/options/optderives.js
   src/fiche/options/filtres.js
   src/fiche/options/affichage.js
   src/fiche/options/actions.js
