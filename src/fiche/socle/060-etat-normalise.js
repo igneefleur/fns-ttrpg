@@ -259,6 +259,18 @@
     // au premier enregistrement. Écrit dans la page, disparu au rechargement.
     var RESERVE_BORNE = { pvMax: 9999, enduranceMax: 9999 };
     s.reservesLeviers = leviersPlats(s.reservesLeviers, RESERVE_BORNE);
+    // LE MULTIPLICATEUR DE RÉCUPÉRATION, même geste et même piège : la boucle va
+    // sur le CATALOGUE et non sur l'état, donc une troisième réserve écrite
+    // ailleurs serait jetée ici sans un mot. Un facteur de UN ne se range pas.
+    var RECUP_MULTI = ["pv", "end"];
+    (function () {
+      var src = objet(s.recupMulti), o = {};
+      RECUP_MULTI.forEach(function (k) {
+        var n = multNum(src[k]);
+        if (n !== null && n !== 1) o[k] = n;
+      });
+      s.recupMulti = o;
+    })();
 
     // ---------- les langues ----------
     // Deux champs, et rien d'autre : le NIVEAU se déduit des points, il ne se

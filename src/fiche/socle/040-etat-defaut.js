@@ -133,6 +133,12 @@
       // maximum des deux réserves est devenu la case « Forcé » de leur chaîne
       // (schémas 5 et 6). Les laisser ici les reposait à null après chaque
       // migration, et les clés mortes voyageaient.
+      // LE MULTIPLICATEUR DE RÉCUPÉRATION, une réserve à la fois. ÉPARSE : un
+      // facteur de UN est le neutre de son opération et ne se range pas, comme
+      // ceux de la chaîne de leviers. Clé RACINE à défaut vide : normalize() la
+      // complète et ne purge aucune clé racine inconnue, elle n'a donc pas
+      // besoin d'un pas de schéma.
+      recupMulti: {},
       vitesseOverride: null,
       initiativeOverride: null, chargeOverride: null, recupOverride: null,
       sautLongOverride: null, sautHautOverride: null,

@@ -23,7 +23,7 @@
   // savaient pas dire.
   // LES NOMS SOUS LESQUELS LE MOTEUR RECONNAÎT SES DEUX SPÉCIALITÉS, et l'ordre
   // compte : le PREMIER est celui qu'on ÉCRIT, les suivants ceux qu'on ACCEPTE
-  // ENCORE. « RÉCUP » s'est appelée « Récupération » jusqu'à la 1.25.2b, et une
+  // ENCORE. « RÉCUP » s'est appelée « Récupération » puis « RÉCUP », et une
   // fiche qui perdrait sa récupération sans un mot serait pire qu'un nom vieilli.
   //
   // speParNom() n'ôte PAS les accents : « Recuperation » n'est donc pas
@@ -31,7 +31,7 @@
   // C'est cette liste, et elle seule, qui dit ce qui compte. Le module Vitalité
   // la lit aussi : les deux doivent chercher la même chose.
   var PV_NOMS = ["PV"];
-  var RECUP_NOMS = ["RÉCUP", "Récupération"];
+  var RECUP_NOMS = ["RÉCUP PV", "RÉCUP", "Récupération"];
   function spePtsParNoms(noms) {
     for (var i = 0; i < noms.length; i++) {
       var s = speParNom(noms[i]);
@@ -125,9 +125,29 @@
   // le plafond COMMUN à toutes les spécialités, celui de la chaîne de leviers
   // (speCoiffe), qui ne mord que s'il est réglé dans l'onglet Options.
   function recupPts() { return spePtsParNoms(RECUP_NOMS); }
-  function recupJourAuto() {
+  // LE MULTIPLICATEUR DE CHAQUE RÉSERVE, et il vaut UN tant qu'on n'y touche pas.
+  // Il ne se range dans l'état que s'il change quelque chose : un facteur de un
+  // est le neutre de son opération, comme les facteurs de la chaîne de leviers.
+  // « pv » et « end » sont le CATALOGUE, et normalize() ne connaît qu'eux : un
+  // troisième nom écrit ici serait jeté en silence au premier rangement.
+  function recupMulti(cle) {
+    var m = state.recupMulti && state.recupMulti[cle];
+    return typeof m === "number" && isFinite(m) ? m : 1;
+  }
+  // CE QUE LES RÈGLES DONNENT, avant le multiplicateur du joueur.
+  function recupJourSocle() {
     return Math.floor((caracMod("CON") + recupPts()) / 2) + modSum(state.divers.recup);
   }
+  // LE MULTIPLICATEUR VIENT À LA TOUTE FIN, sur le total déjà formé — après la
+  // division ET après les modificateurs, sans quoi il ne multiplierait qu'une
+  // partie de ce qu'on lit.
+  function recupJourAuto() {
+    return Math.floor(recupJourSocle() * recupMulti("pv"));
+  }
+  // UNE VALEUR FORCÉE REMPLACE LE CALCUL, multiplicateur compris : c'est la
+  // grammaire de toute la fiche (voir chaine(), qui court-circuite ses facteurs
+  // dès qu'un forçage est posé). Forcer à dix et lire vingt serait un forçage
+  // qui ne force rien.
   function recupJourBrut() {
     return state.recupOverride !== null ? state.recupOverride : recupJourAuto();
   }
@@ -140,7 +160,7 @@
   // qu'il faut pour la remplir depuis le fond. Une nuit suffit, quel que soit
   // l'état où l'on s'est couché.
   function recupEnduranceJourBrut() {
-    return Math.floor(enduranceMax() * repli("recupEndurMult"));
+    return Math.floor(enduranceMax() * repli("recupEndurMult") * recupMulti("end"));
   }
   function recupEnduranceJour() {
     var v = recupEnduranceJourBrut();

@@ -937,6 +937,89 @@ var duree = Math.round(process.uptime() * 1000);
   }
 })();
 
+// ---------- LE PAS 7, EN PROPRE ----------
+// UN RENOMMAGE, ET C'EST TOUT CE QU'IL FAUT CONTRÔLER : que les points et les
+// leviers ne bougent pas, que la PREMIÈRE seule soit renommée (speParNom ne lit
+// qu'elle), et que la descente rende le nom d'AVANT et non un nom canonique.
+(function () {
+  var M = MiaMigr;
+
+  function spe(nom, pts, lev) {
+    var o = { nom: nom, carac: "", comp: "", pts: pts || 0, bonus: 0 };
+    if (lev) o.leviers = lev;
+    return o;
+  }
+
+  // ---- les deux anciens noms montent, et redescendent tels qu'ils étaient ----
+  [["RÉCUP", "le nom du schéma 6"], ["Récupération", "le nom d'avant le 6"]].forEach(function (c) {
+    var v6 = { v: 6, name: "Riko", specialites: [
+      spe("Esquive", 60), spe(c[0], 280, { valeur: { a1: 5 } }) ] };
+    var m = M.appliquer(copie(v6), 6, 7);
+    ok(m.ok, "pas 7 : " + c[1] + " doit monter");
+    if (!m.ok) return;
+    ok(m.state.specialites[1].nom === "RÉCUP PV",
+       "pas 7 : " + c[1] + " devient « RÉCUP PV »");
+    ok(m.state.specialites[1].pts === 280,
+       "pas 7 : " + c[1] + " garde ses points");
+    ok(m.state.specialites[1].leviers && m.state.specialites[1].leviers.valeur.a1 === 5,
+       "pas 7 : " + c[1] + " garde ses leviers");
+    ok(m.state.specialites[0].nom === "Esquive",
+       "pas 7 : " + c[1] + " ne touche pas aux autres spécialités");
+    var d = M.appliquer(m.state, 7, 6);
+    ok(d.ok && egal(sansQuand(d.state), sansQuand(copie(v6))),
+       "pas 7 : 6->7->6 exact — " + c[1] + " — " +
+       ecart(sansQuand(d.state), sansQuand(copie(v6))));
+  });
+
+  // ---- LA PREMIÈRE SEULE. speParNom rend la première et le moteur ignore la
+  // seconde : les renommer toutes deux fabriquerait deux « RÉCUP PV », dont
+  // l'une coûterait de l'xp sans rien produire. ----
+  var deux = { v: 6, name: "Riko",
+               specialites: [spe("RÉCUP", 100), spe("Récupération", 50)] };
+  var md = M.appliquer(copie(deux), 6, 7);
+  ok(md.ok && md.state.specialites[0].nom === "RÉCUP PV" &&
+     md.state.specialites[1].nom === "Récupération",
+     "pas 7 : la PREMIÈRE seule est renommée");
+  if (md.ok) {
+    var rd = M.appliquer(md.state, 7, 6);
+    ok(rd.ok && egal(sansQuand(rd.state), sansQuand(copie(deux))),
+       "pas 7 : 6->7->6 exact avec deux candidates — " +
+       ecart(sansQuand(rd.state), sansQuand(copie(deux))));
+  }
+
+  // ---- une fiche NÉE au 7 redescend sous le nom que le 6 savait lire ----
+  var v7 = { v: 7, name: "Riko", specialites: [spe("RÉCUP PV", 42)] };
+  var d7 = M.appliquer(copie(v7), 7, 6);
+  ok(d7.ok && d7.state.specialites[0].nom === "RÉCUP",
+     "pas 7 : sans souvenir, la descente rend le nom du schéma 6");
+  if (d7.ok) {
+    var r7 = M.appliquer(d7.state, 6, 7);
+    ok(r7.ok && egal(sansQuand(r7.state), sansQuand(copie(v7))),
+       "pas 7 : 7->6->7 exact — " + ecart(sansQuand(r7.state), sansQuand(copie(v7))));
+  }
+
+  // ---- aucune spécialité de récupération : rien ne se passe, rien ne se range ----
+  var nu = { v: 6, name: "Nanachi", specialites: [spe("Esquive", 60)] };
+  var mn = M.appliquer(copie(nu), 6, 7);
+  ok(mn.ok && mn.state.grenier === undefined,
+     "pas 7 : sans candidate, aucun casier n'est posé");
+  if (mn.ok) {
+    var rn = M.appliquer(mn.state, 7, 6);
+    ok(rn.ok && egal(sansQuand(rn.state), sansQuand(copie(nu))),
+       "pas 7 : sans candidate, l'aller-retour ne laisse pas une trace");
+  }
+
+  // ---- la casse et les espaces ne comptent pas, les ACCENTS si ----
+  var casse = { v: 6, name: "Riko", specialites: [spe("  récup  ", 10)] };
+  var mc = M.appliquer(copie(casse), 6, 7);
+  ok(mc.ok && mc.state.specialites[0].nom === "RÉCUP PV",
+     "pas 7 : la casse et les espaces de bordure ne comptent pas");
+  var sansAcc = { v: 6, name: "Riko", specialites: [spe("RECUP", 10)] };
+  var ma = M.appliquer(copie(sansAcc), 6, 7);
+  ok(ma.ok && ma.state.specialites[0].nom === "RECUP",
+     "pas 7 : sans accent, ce n'est PAS la même — speParNom ne les ôte pas non plus");
+})();
+
 if (echecs.length) {
   console.error("MIGRATIONS : " + echecs.length + " échec(s) sur " + faits + " vérifications (" + duree + " ms)");
   echecs.forEach(function (e) { console.error("  - " + e); });
