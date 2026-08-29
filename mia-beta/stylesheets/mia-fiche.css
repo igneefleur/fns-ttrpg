@@ -356,30 +356,25 @@ html.night body:has(#perso-atelier) .md-container { background: #0e0e0e !importa
    porte donc que des gestes de jeu, et n'a rien à déverrouiller. */
 
 /* LA CASE D'UNE ATTAQUE EST CELLE DE SA COLONNE, et non celle du bloc large.
-   Les mesures génériques de « .cinq » et « .deux » sont taillées pour la
-   colonne LARGE, où vivent les spécialités ; portées telles quelles au milieu,
-   elles donnaient quatre cases de trente-deux pixels et les mots « LIMITE » et
-   « DÉGÂTS » s'y chevauchaient.
+   Les mesures génériques du « .pc-trio » sont taillées pour la colonne LARGE,
+   où vivent les spécialités ; portées telles quelles au milieu, elles donnaient
+   des cases de trente-deux pixels où « LIMITE » et « DÉGÂTS » se chevauchaient.
    VINGT POUR CENT DE LA COLONNE PAR CASE, comme les réserves et la récupération
-   juste au-dessus : deux cases pour les sigles, quatre pour les nombres. La case
-   redevient la même d'un bloc à l'autre dans cette colonne, ce qui est tout ce
-   que l'invariant demande.
+   juste au-dessus : trois cases pour le jet à gauche, une pour les dégâts à
+   droite. La case redevient la même d'un bloc à l'autre dans cette colonne, ce
+   qui est tout ce que l'invariant demande, et les deux blocs se lisent alignés
+   sur la même trame que le module du dessus.
    ET AUCUN PALIER, comme ses voisines : un bloc qui se donne sa largeur par son
    nom court-circuite les paliers de la classe, il doit donc s'en passer tout à
-   fait — y compris le rétrécissement de « .cinq » hors édition, qui n'existe
-   que parce qu'une spécialité y cache sa colonne « Valeur ». Une attaque montre
-   ses quatre nombres dans les deux modes. */
-.pc-block[data-module="attaques"] .pc-crow-top > .pc-trio.cinq,
-.pc-block[data-module="attaques"] .pc-caracs-tete > .pc-trio.cinq,
-.pc-block[data-module="attaques"]:not(.editing) .pc-trio.cinq {
-  width: min(var(--pc-quint-w, 11.6rem), 80cqw);
+   fait. Une attaque montre ses nombres dans les deux modes. */
+.pc-block[data-module="attaques"] .pc-crow-top > .pc-trio {
+  width: min(var(--pc-trio-w, 8.7rem), 60cqw);
 }
-.pc-block[data-module="attaques"] .pc-crow-top > .pc-trio.deux,
-.pc-block[data-module="attaques"] .pc-caracs-tete > .pc-trio.deux {
-  width: min(var(--pc-paire-w, 5.8rem), 40cqw);
+.pc-block[data-module="attaques"] .pc-crow-top > .pc-trio.att-deg {
+  width: min(var(--pc-solo-w, 2.9rem), 20cqw);
 }
 
-/* LES MOTS DES QUATRE NOMBRES SE COLLENT À EUX. Ils sont dans l'attaque et non
+/* LES MOTS SE COLLENT À LEURS NOMBRES. Ils sont dans l'attaque et non
    dans l'entête du bloc : c'est un rang à part entière, mais il ne doit pas
    respirer comme un rang de données — sans quoi les mots flotteraient au milieu
    au lieu de coiffer leurs nombres. */
