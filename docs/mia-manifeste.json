@@ -1,22 +1,22 @@
 {
   "_lisezmoi": "Manifeste de la fiche MIA. C'est LUI qui dit quoi charger. roll20-fiche.html est un amorceur gelé, servi sans ?v= par la coquille signée et gardé dix minutes par GitHub Pages : il ne peut donc pas nommer les fichiers lui-même sans risquer de les figer. Ce manifeste, lui, se relit sans cache à chaque ouverture. Toutes les URL sont RELATIVES à la racine du site ; une URL absolue est refusée.",
   "_versions": "release et schema sont DEUX numéros indépendants, et ce manifeste est la seule autorité sur les deux. release est le numéro publié, X.Y.Z, chaque nombre de 0 à 999 avec retenue ; le site beta y colle un b, que le site public ne porte jamais et qui NE CHANGE PAS LE RANG (1.0.1b et 1.0.1 sont de même rang, la beta étant ce que le public recevra à la fusion). schema est un entier qui ne monte QUE lorsque la forme de l'état du personnage change : il ne se déduit plus du premier nombre de la release, et le jour où l'un bouge sans l'autre, c'est schema qui fait foi. blocage dit ce qui fait paraître l'écran de version : \"schema\" ne le sort qu'au désaccord de SCHÉMA, pour qu'un correctif de CSS ne barre pas le passage à toute une table ; \"release\" le sortait à chaque numéro publié, ce qui était intenable. Le code doit retomber sur \"schema\" quand ce manifeste manque, sinon un fetch expiré ressort l'écran chez tout le monde. Les trois porteurs du numéro (ce manifeste, RELEASE de mia-fiche.js, RELEASE_DEFAUT de mia-attr-map.js) montent ENSEMBLE, suffixe compris : scripts/verif_versions.py refuse le contraire.",
-  "release": "1.34.0b",
+  "release": "1.35.0b",
   "schema": 8,
   "blocage": "schema",
   "amorce": [
-    "javascripts/mia-attr-map.js?v=84",
-    "javascripts/mia-roll20-boot.js?v=84"
+    "javascripts/mia-attr-map.js?v=85",
+    "javascripts/mia-roll20-boot.js?v=85"
   ],
   "bundle": {
     "js": [
-      "javascripts/mia-migrations.js?v=84",
-      "javascripts/mia-mods.js?v=84",
-      "javascripts/mia-fiche.js?v=84"
+      "javascripts/mia-migrations.js?v=85",
+      "javascripts/mia-mods.js?v=85",
+      "javascripts/mia-fiche.js?v=85"
     ],
     "css": [
-      "stylesheets/mia-fiche.css?v=84",
-      "stylesheets/mia-roll20.css?v=84"
+      "stylesheets/mia-fiche.css?v=85",
+      "stylesheets/mia-roll20.css?v=85"
     ],
     "data": null
   },
@@ -510,6 +510,20 @@
       ],
       "attrmap": "fiche/v1.34.0/mia-attr-map.js",
       "data": "fiche/v1.34.0/mia-creation.json"
+    },
+    "1.35.0": {
+      "schema": 8,
+      "js": [
+        "fiche/v1.35.0/mia-migrations.js",
+        "fiche/v1.35.0/mia-mods.js",
+        "fiche/v1.35.0/mia-fiche.js"
+      ],
+      "css": [
+        "fiche/v1.35.0/mia-fiche.css",
+        "fiche/v1.35.0/mia-roll20.css"
+      ],
+      "attrmap": "fiche/v1.35.0/mia-attr-map.js",
+      "data": "fiche/v1.35.0/mia-creation.json"
     }
   }
 }
