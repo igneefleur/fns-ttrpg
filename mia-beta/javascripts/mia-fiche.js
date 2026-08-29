@@ -80,7 +80,7 @@
   // site il est. Il ne change PAS le rang : « 1.0.1b » et « 1.0.1 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (MiaMods.compareVersions tient cette règle).
-  var RELEASE = "1.35.0b";
+  var RELEASE = "1.35.1b";
   var SCHEMA = 8;
 
   // ---------- ce que la fiche ne décide PAS ----------
@@ -4551,12 +4551,14 @@
   function buildAttaques() {
     var b = block("Attaques", null, "attaques");
 
-    // L'entête ne coiffe que le bloc des NOMBRES : les deux sigles du rang du
-    // dessus se nomment eux-mêmes.
+    // L'ENTÊTE DU BLOC NE NOMME QUE LES DEUX SIGLES, parce que ce sont les
+    // seules cases qui tombent sous lui. Les quatre nombres vivent DEUX rangs
+    // plus bas : leurs mots les suivent au lieu de flotter au-dessus d'autre
+    // chose — un mot d'entête qui ne surplombe pas ce qu'il nomme ne sert à rien.
     var tete = el("div", "pc-crow-top pc-caracs-tete");
     tete.appendChild(el("span", "sp"));
-    var teteTrio = el("span", "pc-trio cinq tete");
-    ["Total", "Limite", "Bonus", "Dégâts"].forEach(function (k) {
+    var teteTrio = el("span", "pc-trio deux tete");
+    ["Carac", "Comp"].forEach(function (k) {
       var c = el("span", "c");
       c.appendChild(el("span", "k", k));
       teteTrio.appendChild(c);
@@ -4591,9 +4593,26 @@
       haut.appendChild(paire);
       row.appendChild(haut);
 
-      // ---- second rang : les quatre nombres, et le bloc ENTIER lance ----
+      // ---- deuxième rang : les mots des quatre nombres ----
+      // ILS APPARTIENNENT À L'ATTAQUE, pas au bloc : ils se posent juste
+      // au-dessus des nombres qu'ils nomment, et non deux rangs plus haut où
+      // ils auraient coiffé les sigles.
+      var mots = el("div", "pc-crow-top pc-att-mots");
+      var motsTrio = el("span", "pc-trio cinq tete");
+      ["Total", "Limite", "Bonus", "Dégâts"].forEach(function (k) {
+        var c = el("span", "c");
+        c.appendChild(el("span", "k", k));
+        motsTrio.appendChild(c);
+      });
+      mots.appendChild(motsTrio);
+      mots.appendChild(el("span", "sp"));
+      row.appendChild(mots);
+
+      // ---- troisième rang : les quatre nombres, et le bloc ENTIER lance ----
+      // À GAUCHE, sous leurs mots : le nom et les sigles tiennent le rang du
+      // haut et se rangent à droite ; les nombres ont le leur et commencent au
+      // bord. Un ressort les aurait poussés sous les sigles, loin de leurs mots.
       var bas = el("div", "pc-crow-top");
-      bas.appendChild(el("span", "sp"));
       var quad = el("span", "pc-trio cinq pc-rollable");
       var vTot = attCase(quad), vLim = attCase(quad),
           vBon = attCase(quad), vDeg = attCase(quad);
@@ -4616,6 +4635,7 @@
         });
       });
       bas.appendChild(quad);
+      bas.appendChild(el("span", "sp"));
       row.appendChild(bas);
 
       // ---- ce qui se construit ----
