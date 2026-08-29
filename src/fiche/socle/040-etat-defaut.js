@@ -12,6 +12,12 @@
       name: "", portrait: "", espece: "", age: "", sexe: "", genre: "",
       defaut: "", qualites: ["", ""], background: "", notes: "",
       avantages: [], desavantages: [],
+      // LES ATTAQUES : { nom, spe, bonus, degats }. « spe » porte le NOM de la
+      // spécialité, comme les formules nommées du moteur — c'est ce que le joueur
+      // lit et ce que speParNom() sait retrouver. Clé RACINE à défaut vide :
+      // normalize() la complète et ne purge aucune clé racine inconnue, elle n'a
+      // donc pas besoin d'un pas de schéma.
+      attaques: [],
 
       // LE PRESTIGE, qui plafonne CHAQUE caractéristique. Il se force comme le
       // reste (bloc Création des Options) : une valeur imposée, ou un

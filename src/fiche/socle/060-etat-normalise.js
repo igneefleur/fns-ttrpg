@@ -343,6 +343,17 @@
     // un avantage : « objArray » suffit, il n'y a aucun nombre à borner.
     s.avantages = objArray(s.avantages);
     s.desavantages = objArray(s.desavantages);
+    // LES ATTAQUES SE RANGENT EN PROFONDEUR, contrairement aux avantages : elles
+    // portent deux NOMBRES, et un nombre qui entre sans être borné ressort dans
+    // une expression de dés envoyée à Roll20.
+    s.attaques = objArray(s.attaques).map(function (a) {
+      return {
+        nom: a.nom == null ? "" : String(a.nom),
+        spe: a.spe == null ? "" : String(a.spe),
+        bonus: entier(a.bonus, -9999, 9999),
+        degats: entier(a.degats, 0, 9999)
+      };
+    });
     s.armes = objArray(s.armes);
     s.armures = objArray(s.armures);
 

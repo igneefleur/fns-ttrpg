@@ -45,6 +45,9 @@
     // découpe pas : elles ne forment qu'UN module, même si chacune garde son
     // rouage.
     { id: "tuiles",     titre: "Corps",             onglet: "fiche", colonne: "milieu", build: buildVitesse },
+    // LES ATTAQUES FERMENT LA COLONNE, sous les sauts : ce sont des cartes de
+    // résolution, pas des valeurs qu'on relit — on y va quand on frappe.
+    { id: "attaques",   titre: "Attaques",          onglet: "fiche", colonne: "milieu", build: buildAttaques },
     // Les spécialités ont la colonne large POUR ELLES SEULES : cinq nombres,
     // un nom qu'on écrit, deux sigles à choisir et un filtre, sur une liste qui
     // n'a pas de fin. Elles étouffaient sous un tiers de feuille.

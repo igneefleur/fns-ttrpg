@@ -134,6 +134,7 @@ fin = lf
   src/fiche/socle/230-contexte-module.js
   src/fiche/fiche/caracs.js
   src/fiche/fiche/tuiles.js
+  src/fiche/fiche/attaques.js
   src/fiche/fiche/initiative.js
   src/fiche/options/xpchamps.js
   src/fiche/fiche/pv.js
