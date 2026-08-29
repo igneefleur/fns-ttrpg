@@ -355,24 +355,35 @@ html.night body:has(#perso-atelier) .md-container { background: #0e0e0e !importa
    l'onglet Options, avec la chaîne de leviers de toute la fiche. Ce module ne
    porte donc que des gestes de jeu, et n'a rien à déverrouiller. */
 
-/* LES QUATRE NOMBRES D'UNE ATTAQUE NE RÉTRÉCISSENT PAS HORS ÉDITION. Le bloc
-   « cinq » se resserre à trois cases quand le rouage est fermé, parce qu'une
-   spécialité y cache sa colonne « Valeur ». Une attaque, elle, montre ses quatre
-   nombres dans les deux modes : sans cette reprise, ses cases seraient écrasées
-   d'un tiers dès qu'on referme le rouage. */
+/* LA CASE D'UNE ATTAQUE EST CELLE DE SA COLONNE, et non celle du bloc large.
+   Les mesures génériques de « .cinq » et « .deux » sont taillées pour la
+   colonne LARGE, où vivent les spécialités ; portées telles quelles au milieu,
+   elles donnaient quatre cases de trente-deux pixels et les mots « LIMITE » et
+   « DÉGÂTS » s'y chevauchaient.
+   VINGT POUR CENT DE LA COLONNE PAR CASE, comme les réserves et la récupération
+   juste au-dessus : deux cases pour les sigles, quatre pour les nombres. La case
+   redevient la même d'un bloc à l'autre dans cette colonne, ce qui est tout ce
+   que l'invariant demande.
+   ET AUCUN PALIER, comme ses voisines : un bloc qui se donne sa largeur par son
+   nom court-circuite les paliers de la classe, il doit donc s'en passer tout à
+   fait — y compris le rétrécissement de « .cinq » hors édition, qui n'existe
+   que parce qu'une spécialité y cache sa colonne « Valeur ». Une attaque montre
+   ses quatre nombres dans les deux modes. */
+.pc-block[data-module="attaques"] .pc-crow-top > .pc-trio.cinq,
+.pc-block[data-module="attaques"] .pc-caracs-tete > .pc-trio.cinq,
 .pc-block[data-module="attaques"]:not(.editing) .pc-trio.cinq {
   width: min(var(--pc-quint-w, 11.6rem), 80cqw);
 }
-@container feuille (min-width: 26rem) {
-  .pc-block[data-module="attaques"]:not(.editing) .pc-trio.cinq {
-    width: min(var(--pc-quint-w, 11.6rem), 39.06cqw);
-  }
+.pc-block[data-module="attaques"] .pc-crow-top > .pc-trio.deux,
+.pc-block[data-module="attaques"] .pc-caracs-tete > .pc-trio.deux {
+  width: min(var(--pc-paire-w, 5.8rem), 40cqw);
 }
-@container feuille (min-width: 38rem) {
-  .pc-block[data-module="attaques"]:not(.editing) .pc-trio.cinq {
-    width: min(var(--pc-quint-w, 11.6rem), 40cqw);
-  }
-}
+
+/* LES MOTS DES QUATRE NOMBRES SE COLLENT À EUX. Ils sont dans l'attaque et non
+   dans l'entête du bloc : c'est un rang à part entière, mais il ne doit pas
+   respirer comme un rang de données — sans quoi les mots flotteraient au milieu
+   au lieu de coiffer leurs nombres. */
+.pc-att-mots { padding-bottom: 0; margin-bottom: -.14rem; }
 
 /* LA RANGÉE DE RÉGLAGE D'UNE ATTAQUE porte quatre choses là où les autres en
    portent deux : un sélecteur de spécialité et deux nombres. Elle passe donc à
