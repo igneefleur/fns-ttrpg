@@ -133,21 +133,10 @@
   function buildAttaques() {
     var b = block("Attaques", null, "attaques");
 
-    // L'ENTÊTE DU BLOC NE NOMME QUE LES DEUX SIGLES, parce que ce sont les
-    // seules cases qui tombent sous lui. Les quatre nombres vivent DEUX rangs
-    // plus bas : leurs mots les suivent au lieu de flotter au-dessus d'autre
-    // chose — un mot d'entête qui ne surplombe pas ce qu'il nomme ne sert à rien.
-    var tete = el("div", "pc-crow-top pc-caracs-tete");
-    tete.appendChild(el("span", "sp"));
-    var teteTrio = el("span", "pc-trio deux tete");
-    ["Carac", "Comp"].forEach(function (k) {
-      var c = el("span", "c");
-      c.appendChild(el("span", "k", k));
-      teteTrio.appendChild(c);
-    });
-    tete.appendChild(teteTrio);
-    b.appendChild(tete);
-
+    // PAS D'ENTÊTE DE BLOC. Il ne coiffait plus que les deux sigles, et les
+    // sigles eux-mêmes sont partis : ils prenaient la moitié d'un rang pour dire
+    // ce que le nom de la spécialité dit déjà, et ce que la carte redit au jet.
+    // Les mots des nombres, eux, vivent dans chaque attaque, collés aux leurs.
     var box = el("div");
     b.appendChild(box);
 
@@ -162,7 +151,7 @@
     function ligne(a, i) {
       var row = el("div", "pc-crow" + (i % 2 === 1 ? " odd" : ""));
 
-      // ---- premier rang : le nom, et ce dont l'attaque relève ----
+      // ---- premier rang : le nom, seul ----
       var haut = el("div", "pc-crow-top");
       var nom = el("input", "nm pc-edit-field");
       nom.type = "text"; nom.placeholder = "Nom de l'attaque"; nom.value = a.nom || "";
@@ -170,35 +159,12 @@
       // lui, et refresh() reconstruirait la liste sous les doigts.
       nom.addEventListener("input", function () { a.nom = nom.value; save(); });
       haut.appendChild(nom);
-      var paire = el("span", "pc-trio deux");
-      var vCar = attCase(paire), vCmp = attCase(paire);
-      haut.appendChild(paire);
       row.appendChild(haut);
 
-      // ---- deuxième rang : les mots des quatre nombres ----
-      // ILS APPARTIENNENT À L'ATTAQUE, pas au bloc : ils se posent juste
-      // au-dessus des nombres qu'ils nomment, et non deux rangs plus haut où
-      // ils auraient coiffé les sigles.
-      var mots = el("div", "pc-crow-top pc-att-mots");
-      var motsTrio = el("span", "pc-trio cinq tete");
-      ["Total", "Limite", "Bonus", "Dégâts"].forEach(function (k) {
-        var c = el("span", "c");
-        c.appendChild(el("span", "k", k));
-        motsTrio.appendChild(c);
-      });
-      mots.appendChild(motsTrio);
-      mots.appendChild(el("span", "sp"));
-      row.appendChild(mots);
-
-      // ---- troisième rang : les quatre nombres, et le bloc ENTIER lance ----
-      // À GAUCHE, sous leurs mots : le nom et les sigles tiennent le rang du
-      // haut et se rangent à droite ; les nombres ont le leur et commencent au
-      // bord. Un ressort les aurait poussés sous les sigles, loin de leurs mots.
-      var bas = el("div", "pc-crow-top");
-      var quad = el("span", "pc-trio cinq pc-rollable");
-      var vTot = attCase(quad), vLim = attCase(quad),
-          vBon = attCase(quad), vDeg = attCase(quad);
-      quad.addEventListener("click", function (e) {
+      // LANCER, ET TOUT CE QUI L'EN EMPÊCHE. Les DEUX blocs de nombres le
+      // portent : ils disent la même attaque, et rien ne justifierait qu'un clic
+      // sur les dégâts ne fasse rien.
+      function lance(e) {
         // ROUAGE OUVERT, ON CONSTRUIT : le bloc ne lance pas.
         if (isEdit("attaques")) return;
         var t = e.target && e.target.tagName;
@@ -215,9 +181,42 @@
           if (!m) return;
           if (!envoyer(attCarte(a, m, modif))) flash("Hors Roll20 : la carte ne peut pas partir.");
         });
-      });
-      bas.appendChild(quad);
+      }
+      function mot(hote, k) {
+        var c = el("span", "c");
+        c.appendChild(el("span", "k", k));
+        hote.appendChild(c);
+      }
+
+      // ---- deuxième rang : les mots ----
+      // ILS APPARTIENNENT À L'ATTAQUE, pas à un entête de bloc : ils se posent
+      // juste au-dessus des nombres qu'ils nomment. Un mot d'entête qui ne
+      // surplombe pas ce qu'il annonce ne sert à rien.
+      var mots = el("div", "pc-crow-top pc-att-mots");
+      var motsG = el("span", "pc-trio tete");
+      mot(motsG, "Total"); mot(motsG, "Limite"); mot(motsG, "Bonus");
+      mots.appendChild(motsG);
+      mots.appendChild(el("span", "sp"));
+      var motsD = el("span", "pc-trio att-deg tete");
+      mot(motsD, "Dégâts");
+      mots.appendChild(motsD);
+      row.appendChild(mots);
+
+      // ---- troisième rang : les nombres, en DEUX blocs ----
+      // CE QUI SERT À TOUCHER À GAUCHE, CE QU'ON INFLIGE À DROITE. Les trois
+      // premiers composent le jet et se lisent ensemble ; les dégâts n'entrent
+      // pas dans ce calcul — ils en attendent le résultat. Un bloc à part le dit
+      // mieux qu'une quatrième case dans le même cadre.
+      var bas = el("div", "pc-crow-top");
+      var trio = el("span", "pc-trio pc-rollable");
+      var vTot = attCase(trio), vLim = attCase(trio), vBon = attCase(trio);
+      trio.addEventListener("click", lance);
+      bas.appendChild(trio);
       bas.appendChild(el("span", "sp"));
+      var solo = el("span", "pc-trio att-deg pc-rollable");
+      var vDeg = attCase(solo);
+      solo.addEventListener("click", lance);
+      bas.appendChild(solo);
       row.appendChild(bas);
 
       // ---- ce qui se construit ----
@@ -265,17 +264,17 @@
 
       lignes.push(function () {
         var n = attNombres(a);
-        vCar.textContent = n && n.carac ? n.carac : "—";
-        vCmp.textContent = n && n.comp ? n.comp : "—";
         vTot.textContent = n ? String(fmtP(n.total)) : "—";
         vLim.textContent = n ? String(fmtP(n.lim)) : "—";
         vBon.textContent = n ? sign(Math.round(n.bonus)) : "—";
         vDeg.textContent = String(pnum(a.degats));
         // le neutre se retire, comme partout ailleurs sur la feuille
         vBon.classList.toggle("zero", !!n && !Math.round(n.bonus));
-        quad.title = n
+        var aide = n
           ? (a.nom || "Attaque") + " — clic : envoyer la carte au tchat"
           : "Choisir une spécialité pour cette attaque";
+        trio.title = aide;
+        solo.title = aide;
       });
       return row;
     }
