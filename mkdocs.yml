@@ -21,6 +21,21 @@ nav:
       - Le Combat:
           - Portées: content/regles/combat/portees.md
           - Armes: content/regles/combat/armes.md
+      - Techniques:
+          - Cercle de feu: content/regles/techniques/cercle-feu.md
+          - Cercle de glace: content/regles/techniques/cercle-glace.md
+          - Cercle d'air: content/regles/techniques/cercle-air.md
+          - Cercle de terre: content/regles/techniques/cercle-terre.md
+          - Runes: content/regles/techniques/runes.md
+          - Totems: content/regles/techniques/totems.md
+          - Spellblade: content/regles/techniques/spellblade.md
+          - Moine: content/regles/techniques/moine.md
+          - Barbare: content/regles/techniques/barbare.md
+          - Speedster: content/regles/techniques/speedster.md
+      - Équipement: content/regles/equipement.md
+      - Fabrication: content/regles/fabrication.md
+      - Installations: content/regles/installations.md
+      - Vivre: content/regles/vivre.md
   # La fiche de personnage, servie par le site et non par l'extension : la même
   # page monte la fiche ici, hors Roll20, et dans l'iframe de la coquille signée.
   - Personnage: personnage/index.md
@@ -49,9 +64,10 @@ extra:
   generator: false   # supprime le « Made with Material for MkDocs »
 extra_css:
   - stylesheets/fonts.css   # @font-face auto-hébergés : doit être chargée en premier
-  - stylesheets/extra.css?v=13
-  - stylesheets/night.css
-  - stylesheets/armes.css?v=1
+  - stylesheets/extra.css?v=18
+  - stylesheets/night.css?v=18
+  - stylesheets/armes.css?v=5
+  - stylesheets/cartes.css?v=23
   # LES ?v= DE LA FICHE SE MONTENT PAR OUTIL, JAMAIS À LA MAIN, et tous
   # ensemble : scripts/release_fiche.py les pose ici ET dans
   # docs/owd-manifeste.json, sur un seul numéro commun. Le site charge la fiche
@@ -73,10 +89,8 @@ hooks:
   - hooks/armes.py
   # Produit owd-creation.json depuis docs/content/regles/ : le barème des rangs,
   # les formules des capacités, les caractéristiques, les armes et leurs paliers.
-  # Les données viennent des règles, jamais du code. Une page ABSENTE (chapitre
-  # pas encore écrit ou pas encore committé) voit sa section omise et le hook le
-  # dit au journal ; une page PRÉSENTE mais illisible casse le build, parce que
-  # c'est une règle qui a changé de forme sans qu'il le sache.
+  # Les données viennent des règles, jamais du code — et ce hook s'arrête plutôt
+  # que de deviner ce qu'il n'a pas su lire.
   - hooks/owd_creation.py
 plugins:
   - search
