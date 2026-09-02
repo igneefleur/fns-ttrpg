@@ -1,0 +1,7 @@
+graft_frame
+add_background
+add_frame
+add_grain
+
+source: hide_brut.png
+script: peau_cuir.py

@@ -1,0 +1,5 @@
+remove_logo
+tint_glass_green(calibrated 274,256,199)
+
+source: Gemini_Generated_Image_m802cxm802cxm802.png
+script: lot2.py

@@ -411,6 +411,32 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
 .md-typeset .grade-table table:not([class]) td:nth-child(3) { width: 8%; text-align: center; white-space: nowrap; }
 .md-typeset .grade-table table:not([class]) th:nth-child(4),
 .md-typeset .grade-table table:not([class]) td:nth-child(4) { width: 63%; }
+/* Tables du froid et du chaud (capacites-physiques.md) : 4 colonnes dont la dernière
+   porte une phrase entière. Sans largeurs, le table-layout: fixed de .cols les fait
+   toutes à 25 % et l'effet se casse sur cinq lignes pendant que Niveau garde du vide.
+   min-width: 0 sur les th : Material les plancherait à 5rem, ce que Firefox applique. */
+.md-typeset .expo-table table:not([class]) th { min-width: 0; }
+.md-typeset .expo-table table:not([class]) th:nth-child(1),
+.md-typeset .expo-table table:not([class]) td:nth-child(1) { width: 12%; }
+.md-typeset .expo-table table:not([class]) th:nth-child(2) { width: 16%; }
+.md-typeset .expo-table table:not([class]) td:nth-child(2) { width: 16%; white-space: nowrap; }
+.md-typeset .expo-table table:not([class]) th:nth-child(3),
+.md-typeset .expo-table table:not([class]) td:nth-child(3) { width: 19%; }
+.md-typeset .expo-table table:not([class]) th:nth-child(4),
+.md-typeset .expo-table table:not([class]) td:nth-child(4) { width: 53%; }
+/* Table de régénération (capacites-physiques.md) : 2 colonnes, un numéro et une cadence.
+   Sans largeurs, le fixed de .cols donne 50/50 et le numéro garde la moitié pour rien. */
+.md-typeset .regen-table table:not([class]) th { min-width: 0; }
+.md-typeset .regen-table table:not([class]) th:nth-child(1),
+.md-typeset .regen-table table:not([class]) td:nth-child(1) { width: 22%; }
+.md-typeset .regen-table table:not([class]) th:nth-child(2),
+.md-typeset .regen-table table:not([class]) td:nth-child(2) { width: 78%; }
+/* Traits horizontaux entre unités de temps, même filet que les séparateurs de colonne :
+   le niveau 0 est seul, puis quatre niveaux par unité, soit une ligne sur quatre à
+   partir de la deuxième. */
+.md-typeset .regen-table table:not([class]) tbody tr:nth-child(4n+2) td {
+  border-top: 2px solid #e6dcc1;
+}
 /* (bloc .armes retiré : les tables d'armes sont régies par le bloc .cj-modules.anima.armes plus bas, en !important) */
 /* Tableaux de la page Éclat (apprentissage, niveau/prestige par âge) : colonnes
    régulières, première colonne (Éclat) étroite. Ces tables ont 8 ou 9 colonnes,
@@ -1063,6 +1089,10 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
   font-size: 0.66rem;
   margin: 0.3rem 0 0.7rem;
 }
+/* Deux formules qui se suivent forment une paire (la formule d'une réserve et sa
+   récupération, la satiété et l'hydratation) : on resserre pour qu'elles se lisent ensemble
+   au lieu de paraître deux règles sans rapport. */
+.md-typeset p.formula + p.formula { margin-top: -0.35rem; }
 
 /* Paragraphes en blocs insécables : ne se coupent pas au changement de colonne ;
    le titre reste collé à son contenu. */

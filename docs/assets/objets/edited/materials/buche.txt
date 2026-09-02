@@ -1,0 +1,9 @@
+remove_background
+match_chroma
+add_shadow
+add_background
+add_frame
+add_grain
+
+source: Gemini_Generated_Image_r94emlr94emlr94e.png
+script: bois.py

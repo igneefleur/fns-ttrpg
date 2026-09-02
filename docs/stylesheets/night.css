@@ -328,6 +328,48 @@ html.night .md-typeset .sommeil table:not([class]) td:nth-child(5) {
   border-left-color: #3c3527;
 }
 
+/* Table de récupération : les traits séparant les unités de temps. Le #e6dcc1
+   d'extra.css est un filet crème sur un fond presque noir, beaucoup trop dur. Ce
+   ton reste d'un cran au-dessus des filets de ligne (#3c3527), donc lisible comme
+   séparateur, sans trancher. */
+html.night .md-typeset .regen-table table:not([class]) tbody tr:nth-child(4n+2) td {
+  border-top-color: #4a4132;
+}
+
+/* Carte d'objet : les filets clairs de la tête et des lignes de chiffres passent au
+   ton sombre, et le libellé au gris secondaire de la nuit. */
+html.night .md-typeset .mcard.objet .objet-tete { border-bottom-color: #3c3527; }
+html.night .md-typeset .mcard.objet .objet-img { border-color: #4a4132; }
+html.night .md-typeset .mcard.objet .objet-stats > div,
+html.night .md-typeset .mcard.fab .objet-stats > div { border-bottom-color: #3c3527; }
+
+/* Carte de fabrication : même traitement que la carte d'objet — filets et cadres
+   de vignette au ton sombre. La pastille de quantité, elle, doit rester LISIBLE
+   sur des icônes qui ne changent pas avec le thème : elle garde donc un fond
+   opaque, simplement retourné, sombre à texte clair. */
+html.night .md-typeset .mcard.fab .fab-eq { border-bottom-color: #3c3527; }
+
+/* Les étapes : filet et texte de description au ton nuit. */
+html.night .md-typeset .mcard.fab .etapes { border-top-color: #3c3527; }
+html.night .md-typeset .mcard.objet .loyers { border-bottom-color: #3c3527; }
+
+/* Le filet qui sépare le produit des matières, même ton que les autres séparateurs. */
+html.night .md-typeset .mcard.fab .fab-eq .barre { background: #3c3527; }
+
+/* Carte de technique : seuls ses deux filets sont à basculer. Le bandeau suit
+   var(--green-header), le libellé var(--green-section), et la pastille de type
+   garde ses couleurs fixes dans les deux thèmes. */
+html.night .md-typeset .mcard.tech .tc-act { border-bottom-color: #3c3527; }
+html.night .md-typeset .mcard.tech .tc-case + .tc-case { border-left-color: #3c3527; }
+html.night .md-typeset .mcard.fab .fab-v img { border-color: #4a4132; }
+html.night .md-typeset .mcard.fab .objet-stats + p,
+html.night .md-typeset .mcard.fab .etapes + p { border-top-color: #3c3527; }
+html.night .md-typeset .mcard.fab .fab-v .q {
+  color: #e8dfc8;
+  background: #2a2419;
+  border-color: #5b5140;
+}
+
 /* Effets par zone (.zones : cartes Agripper, Maîtriser, Soumettre, Assommer) :
    pastilles et filets clairs → sombres, texte → clair, étiquettes → secondaire. */
 html.night .md-typeset .zones .zone { border-top-color: #3c3527; }

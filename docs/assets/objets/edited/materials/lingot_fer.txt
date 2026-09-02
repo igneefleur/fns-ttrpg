@@ -1,0 +1,5 @@
+tint_iron
+add_frame
+
+source: Gold_Ingot.png
+script: lingot3.py

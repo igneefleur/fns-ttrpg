@@ -8,7 +8,7 @@ Un personnage agit par actions. La plupart des actions réclament des dés d'act
 
 ### Les dés d'action
 
-Tous les dés du jeu sont des dés à six faces.
+Tous les dés du jeu sont des dés à huit faces.
 
 Au début de son tour, un personnage reçoit 5 dés d'action. Ce sont eux qu'il engage pour agir, et ce sont eux qu'il lance quand son action demande un jet.
 
@@ -26,31 +26,41 @@ Employer une compétence se résout en trois temps : on fixe d'abord la difficul
 
 La difficulté ne tient pas à la compétence employée mais à ce que le personnage cherche à en faire : une même compétence sert des gestes faciles et des gestes presque hors d'atteinte. Chaque emploi a donc sa difficulté propre.
 
-Une attaque portée avec une arme a une difficulté de base comprise entre 4 et 10, donnée par le geste employé dans le répertoire de cette [arme](../combat/armes.md). Une même arme n'a donc pas une difficulté mais autant que de gestes : estoquer et balayer ne demandent pas la même adresse.
+Une difficulté prend l'une de deux formes. Un seuil se franchit : le personnage lance les dés qu'il a engagés, et leur somme doit l'atteindre. Un coût se paie : le personnage consomme les dés demandés, et l'action se fait.
 
 </div>
 
-La situation ajuste ensuite cette difficulté de base, à la hausse comme à la baisse. Les modificateurs s'additionnent, et leur somme donne la difficulté du jet.
+Une attaque portée avec une arme a un seuil de base compris entre 5 et 13, donné par le geste employé dans le répertoire de cette [arme](../combat/armes.md). Une même arme n'a donc pas un seuil mais autant que de gestes : estoquer et balayer ne demandent pas la même adresse.
 
-<p class="formula">Difficulté = difficulté de base + modificateurs de la situation</p>
+La situation ajuste ensuite ce seuil de base, à la hausse comme à la baisse. Les modificateurs s'additionnent, et leur somme donne le seuil du jet.
+
+<p class="formula">Seuil = seuil de base + modificateurs de la situation</p>
 
 La distance, elle, n'est pas un modificateur. Elle décide d'autre chose, en amont : quel geste le personnage peut employer. Chaque geste d'une arme couvre les cases qu'il couvre, et un adversaire qu'aucun geste n'atteint ne peut pas être attaqué, quelle que soit la difficulté qu'on voudrait y mettre. Se rapprocher ou s'écarter ne rend donc pas le coup plus dur : cela change le coup lui-même.
 
 ### Le jet
 
-Un personnage engage 0 à 2 dés d'action pour employer une compétence.
+Un personnage engage 0 à 3 dés d'action pour employer une compétence, selon le [rang](competences.md#le-rang) qu'il y possède.
 
 Sans aucun dé, il échoue automatiquement : le jet n'a pas lieu.
 
-Avec un dé ou deux, il les lance et en fait la somme. Cette somme est le résultat du jet.
+Avec un dé ou plus, il les lance, en fait la somme et y ajoute le bonus que son rang lui accorde. Le total est le résultat du jet.
 
-<p class="formula">Résultat = somme des dés d'action engagés</p>
+<p class="formula">Résultat = somme des dés d'action engagés + bonus de rang</p>
 
-Le jet réussit si le résultat atteint la difficulté, et échoue s'il reste en dessous.
+Le jet réussit si le résultat atteint le seuil, et échoue s'il reste en dessous.
 
 <div class="memo" markdown>
 
-Exemple. Un personnage attaque à l'épée. Sa cible se tient assez loin pour que la taille ne porte pas, mais l'estoc l'atteint : c'est donc ce geste-là, dont la difficulté de base est 5. Le sol est couvert d'éboulis et le meneur ajoute 2 : la difficulté monte à 7. Le personnage engage deux de ses dés d'action et obtient 4 et 5, soit 9 : il touche. Avec un seul dé, il lui aurait fallu un 7 sur six faces, hors d'atteinte.
+Exemple. Un personnage attaque à l'épée. Sa cible se tient assez loin pour que la taille ne porte pas, mais l'estoc l'atteint : c'est donc ce geste-là, dont le seuil de base est 6. Le sol est couvert d'éboulis et le MJ ajoute 2 : le seuil monte à 8. Le personnage engage deux de ses dés d'action et obtient 4 et 5, soit 9 : il touche. Avec un seul dé, il lui aurait fallu un 8, la seule face qui l'atteigne.
+
+</div>
+
+<div class="keep" markdown>
+
+### Le coût
+
+Un coût s'écrit en dés d'action. Le personnage les consomme, et l'action se fait : elle ne demande aucun jet et ne peut pas échouer.
 
 </div>
 

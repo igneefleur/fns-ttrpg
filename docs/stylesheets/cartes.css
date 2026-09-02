@@ -1,0 +1,569 @@
+/* ============================================================
+   cartes.css — Compléments aux cartes de règle du livre Outward
+   ------------------------------------------------------------
+   Les cartes gardent l'aspect commun au site : le parchemin, les
+   angles arrondis et le vert des titres viennent de .mcard, dans
+   extra.css, et rien ici ne les redéfinit. Ce fichier n'ajoute
+   que la ligne de rang, qui porte à gauche le rang et son nom, à
+   droite ce qu'il coûte.
+
+   Fichier séparé d'extra.css à dessein : extra.css est la feuille
+   héritée, commune aux deux livres, et plusieurs sessions y
+   écrivent.
+   ============================================================ */
+
+/* Ligne de rang : le titre de palier de .mcard.art, mis en ligne pour que le
+   coût vienne se ranger à droite. Le filet court alors sur toute la largeur
+   de la carte, et non sous le seul texte comme le fait le palier des arts. */
+.md-typeset .mcard.art.rangs p.palier {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  /* Les capitales forcées sont proscrites dans le corps du livre ; Cinzel
+     donne déjà la haute casse qu'il faut. */
+  text-transform: none;
+  font-size: 0.62rem;
+}
+
+/* C'est le NOM qui porte la ligne, et le numéro qui l'indexe : le joueur retient
+   « il est maître », pas « il est au rang 3 ». Le numéro passe donc en second
+   plan, plus petit et atténué, et le nom prend la taille et la graisse.
+
+   Numéro du rang. En police de TEXTE et non en Cinzel, dont le 1 est un « I »
+   inscriptionnel : « Rang 1 » s'y lisait « Rang I » à côté des rangs 2, 3 et 4
+   en chiffres arabes. */
+.md-typeset .mcard.art.rangs p.palier .rg {
+  /* Police de TEXTE, comme tout le reste de la carte : aucun changement de
+     police n'est admis ici. La lisibilité se règle donc par la GRAISSE.
+     Mesuré à l'écran, sur le parchemin : en graisse normale l'index plafonne à
+     3.2:1 même à pleine couleur, parce qu'un serif de 11 px n'a alors aucun
+     pixel plein et n'est qu'antialiasing. En 600 le trait se remplit. */
+  font-family: 'Symboles JDR', 'Alegreya', 'EB Garamond', Garamond, serif;
+  font-weight: 600;
+  font-size: 0.58rem;
+  letter-spacing: 0.015em;
+  /* AUCUNE opacité ici. À 0.58, le vert se délavait jusqu'à 1.87:1, illisible ;
+     le défaut ne se voyait pas en mode nuit, où l'olive est claire sur fond
+     sombre. La hiérarchie tient à la taille et à la graisse du NOM, qui est
+     plus gros, jamais à un affadissement de l'index. */
+}
+
+/* Nom du rang : le terme que l'on retient. Casse naturelle et police de texte,
+   jamais les capitales espacées de Cinzel, qui ont déjà été écartées ici. La
+   marge automatique absorbe l'espace libre et renvoie le coût à droite. */
+.md-typeset .mcard.art.rangs p.palier .nom {
+  font-family: 'Symboles JDR', 'Alegreya', 'EB Garamond', Garamond, serif;
+  font-style: normal;
+  font-weight: 700;
+  font-size: 0.78rem;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  opacity: 1;
+}
+/* L'ordre visuel est celui de la source : nom, index, coût. La marge
+   automatique se porte donc sur l'index, dernier élément du groupe de gauche,
+   et renvoie le bloc de coût contre le bord droit. */
+.md-typeset .mcard.art.rangs p.palier .rg { margin-right: auto; }
+
+/* Bloc de coût : la rupture à gauche, l'XP à droite. La colonne de rupture
+   existe même quand aucune n'est demandée, ce qui garde l'XP aligné d'un rang
+   à l'autre. Les deux colonnes sont assignées EXPLICITEMENT : sans cela, le
+   placement automatique enverrait l'XP seul dans la colonne étroite sur les
+   quatre rangs qui ne coûtent aucune rupture. */
+.md-typeset .mcard.art.rangs p.palier .cout {
+  display: grid;
+  grid-template-columns: 1.75rem max-content;
+  align-items: baseline;
+  gap: 0.35rem;
+  font-family: 'Symboles JDR', 'Alegreya', 'EB Garamond', Garamond, serif;
+  font-weight: 700;
+  font-size: 0.58rem;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  /* Pas d'opacité : à 0.85 l'XP tombait à 3.29:1 sur le parchemin. Même défaut
+     que l'index de rang, même remède. Aucune opacité nulle part dans cette
+     carte : ce qui doit passer au second plan le fait par la taille. */
+}
+.md-typeset .mcard.art.rangs p.palier .xp { grid-column: 2; text-align: right; }
+
+/* Points de rupture, à droite de l'XP. Le chiffre est suivi d'un maillon de
+   chaîne. Ce maillon est un SVG inline et non un caractère : la police de
+   symboles du site est sous-ensemblée (U+25B0-25B1, U+25CB, U+25CF,
+   U+2605-2606, U+2726-2727) et ne porte pas U+26D3, si bien qu'un ⛓ tomberait
+   sur l'emoji couleur du système. Le masque prend currentColor, donc le vert
+   du jour comme l'olive de la nuit, sans une ligne de plus dans night.css. */
+.md-typeset .mcard.art.rangs p.palier .rup {
+  grid-column: 1;
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: flex-start;
+  gap: 0.28em;
+  /* Police de TEXTE, comme toute la carte : aucune linéale nulle part. */
+  font-family: 'Symboles JDR', 'Alegreya', 'EB Garamond', Garamond, serif;
+  font-weight: 600;
+  font-size: 0.58rem;
+  font-variant-numeric: lining-nums;
+}
+.md-typeset .mcard.art.rangs p.palier .rup::after {
+  content: '';
+  display: inline-block;
+  /* Calé sur la hauteur du CHIFFRE, pas sur le cadratin : les chiffres
+     d'Alegreya montent à environ 0.68 em, et un pictogramme d'un em entier
+     écrasait le « 1 » posé à côté. Le rapport 1.045 est celui du fichier
+     (23 x 22 px), pour ne pas déformer le dessin. */
+  width: 0.79em;
+  height: 0.76em;
+  transform: translateY(0.04em);
+  background-color: currentColor;
+  -webkit-mask: var(--rupture) center / contain no-repeat;
+  mask: var(--rupture) center / contain no-repeat;
+}
+
+/* Le maillon brisé du jeu, posé en MASQUE et non en image : seul son canal
+   alpha est employé, la couleur venant de currentColor. Le pictogramme suit
+   donc le vert du jour et l'olive de la nuit sans une ligne dans night.css,
+   là où l'icône d'origine est bronze et jurerait sur les deux fonds.
+
+   docs/assets/rupture.png est dérivé de l'icône Breakthrough d'Outward : alpha
+   seul, halo coupé sous 60/255 (il traînait une auréole à 12-25 % autour du
+   glyphe), et boîte rognée pour que le dessin remplisse sa case. Le fichier
+   pèse 535 octets. Ne pas le remplacer par le PNG brut du wiki. */
+:root {
+  --rupture: url('../assets/rupture.png');
+}
+
+/* Pas de filet sous le titre de la carte : la ligne du premier rang en porte
+   déjà un, et les deux se suivaient à quelques pixels. Celui des cartes d'arts
+   sépare un en-tête d'un corps de prose ; ici le corps commence par un filet,
+   et le doublon ne sépare plus rien. */
+.md-typeset .mcard.art.rangs > p:first-child {
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: 0.3rem;
+}
+
+/* Descriptions resserrées : la carte en aligne cinq d'affilée. */
+.md-typeset .mcard.art.rangs > p:not(.palier):not(:first-child) {
+  margin-bottom: 0.34rem;
+}
+
+/* Carte d'un objet d'équipement, bâtie comme une fiche d'inventaire : en tête,
+   l'illustration à gauche et les chiffres à sa droite, séparés du corps par un
+   filet ; sous le filet, la description en pleine largeur.
+
+   Le flottant a été essayé d'abord et retiré : la prose s'enroulait mal autour de
+   la vignette, une ligne courte suivie d'une ligne pleine. Une boîte flex pour la
+   tête, et la description dessous, laissent les deux respirer. */
+.md-typeset .mcard.objet .objet-tete {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  margin-bottom: 0.45rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid #e8e1cf;
+}
+/* L'icône du jeu est sombre et déjà cernée d'un halo ; on la laisse telle quelle,
+   elle se lit comme une vignette encadrée sur le parchemin. */
+.md-typeset .mcard.objet .objet-img {
+  flex: 0 0 auto;
+  width: 5rem;
+  margin: 0;
+  border: 1px solid #cfc6ad;
+  border-radius: 2px;
+  display: block;
+}
+/* Les chiffres : libellé à gauche, valeur à droite, une ligne par donnée, séparées
+   d'un pointillé. Texte ordinaire des deux côtés, à la taille de la prose de la
+   carte : ni couleur, ni graisse, ni Cinzel. Deux couleurs et une police d'affiche
+   ont été essayées et retirées — le vert se disputait le nom de l'objet, et la
+   Cinzel, police de capitales, gonflait « 0.3 kg » en « 0.3 KG ». C'est
+   l'alignement à droite, et lui seul, qui rend la fiche lisible. */
+.md-typeset .mcard.objet .objet-stats { flex: 1 1 auto; min-width: 0; }
+.md-typeset .mcard.objet .objet-stats > div,
+.md-typeset .mcard.fab .objet-stats > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.4rem;
+  padding: 0.1rem 0;
+  font-size: 0.66rem;
+  border-bottom: 1px dotted #e2dac6;
+}
+.md-typeset .mcard.objet .objet-stats > div:last-child,
+.md-typeset .mcard.fab .objet-stats > div:last-child { border-bottom: none; }
+.md-typeset .mcard.objet .objet-stats span:last-child,
+.md-typeset .mcard.fab .objet-stats span:last-child { white-space: nowrap; }
+
+/* Une valeur trop longue pour tenir sur la ligne se casse elle-même et reste
+   alignée à droite : le nowrap ci-dessus la pousserait hors de la carte. */
+.md-typeset .mcard.fab .objet-stats span.deux {
+  white-space: normal;
+  text-align: right;
+}
+/* La pièce d'argent, posée après un prix. Elle est en fond CSS et non en <img> : le
+   chemin part alors de la feuille et non de la page, donc rien à réécrire selon la
+   profondeur du fichier. Même procédé que le maillon brisé plus haut. */
+.md-typeset .mcard.objet .objet-stats .argent::after,
+.md-typeset .mcard.objet .loyers .argent::after {
+  content: "";
+  display: inline-block;
+  width: 0.56rem;
+  height: 0.66rem;
+  margin-left: 0.26rem;
+  vertical-align: -0.1em;
+  background: url('../assets/objets/argent.gif') center / contain no-repeat;
+}
+
+/* ============================================================
+   Carte de FABRICATION — l'équation d'abord, les conditions ensuite
+
+   Elle se lit comme une addition : le produit à gauche du signe égal, les
+   intrants à droite, chacun portant sa quantité sur sa vignette. Le bloc de
+   conditions réemploie .objet-stats, pour qu'une carte de recette et une carte
+   d'objet se lisent exactement de la même façon.
+   ============================================================ */
+.md-typeset .mcard.fab .fab-eq {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  /* Le PRODUIT est calé à gauche, pas centré : le filet tombe alors à la même
+     abscisse sur toutes les cartes, et l'œil descend la page en suivant une
+     seule colonne. Ce sont les ingrédients qui se centrent, dans ce qui reste. */
+  justify-content: flex-start;
+  gap: 0.15rem 0.28rem;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid #e8e1cf;
+}
+
+/* Une case : la vignette, le nom dessous. Largeur FIXE, pour que les noms longs
+   se coupent en deux lignes au lieu d'écarter les vignettes les unes des autres. */
+.md-typeset .mcard.fab .fab-c {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 2.9rem;
+}
+.md-typeset .mcard.fab .fab-v {
+  position: relative;
+  display: block;
+  width: 2.9rem;
+}
+.md-typeset .mcard.fab .fab-v img {
+  display: block;
+  width: 100%;
+  margin: 0;
+  border: 1px solid #cfc6ad;
+  border-radius: 2px;
+}
+
+/* La quantité, en bas à droite de la vignette et DÉBORDANT d'un cheveu. Posée à
+   l'intérieur, elle se perdait sur les icônes claires — le sable en tête, dont
+   le coin bas-droit est presque blanc. Le débord la détache du cadre sans mordre
+   sur la case voisine, l'écart entre colonnes étant plus large que lui. */
+.md-typeset .mcard.fab .fab-v .q {
+  position: absolute;
+  right: -0.16rem;
+  bottom: -0.16rem;
+  min-width: 0.92rem;
+  padding: 0 0.15rem;
+  font-size: 0.55rem;
+  line-height: 0.92rem;
+  text-align: center;
+  color: #33291a;
+  background: #f4efdf;
+  border: 1px solid #b9ad8f;
+  border-radius: 2px;
+}
+.md-typeset .mcard.fab .fab-c .n {
+  margin-top: 0.24rem;
+  font-size: 0.54rem;
+  line-height: 1.15;
+  text-align: center;
+}
+
+/* Les signes = et +. Ils se calent sur le MILIEU DE LA VIGNETTE, jamais sur le
+   milieu de la case : la case porte un nom dessous dont la hauteur varie avec le
+   nombre de lignes, et un centrage sur la case ferait danser les signes d'une
+   carte à l'autre. La vignette fait 2.9rem de large pour un rapport 84 x 128,
+   soit 4.42rem de haut ; sa moitié tombe à 2.21rem, moins la demi-hauteur du
+   signe. */
+/* Note de recette, posée sous le bloc de conditions : une précision qui ne tient
+   ni dans l'équation ni dans une ligne de condition. Le filet la détache du
+   tableau, sans quoi elle se lit comme une sixième condition — vu à l'écran. */
+.md-typeset .mcard.fab .objet-stats + p,
+.md-typeset .mcard.fab .etapes + p {
+  margin-top: 0.5rem;
+  padding-top: 0.45rem;
+  border-top: 1px solid #e8e1cf;
+}
+
+.md-typeset .mcard.fab .fab-eq .op {
+  flex: 0 0 auto;
+  margin-top: 1.9rem;
+  font-size: 0.8rem;
+  line-height: 1;
+  opacity: 0.75;
+}
+
+/* ============================================================
+   LE FILET DE L'ÉQUATION — il remplace le signe = , qui ne disait rien.
+   Sur une recette à un seul ingrédient, deux vignettes de même taille se
+   faisaient face autour d'un signe muet : rien ne marquait laquelle sortait
+   de l'atelier. Vu sur la carte du cuir, où les deux images sont du cuir brun.
+   Le filet coupe franchement ce qu'on obtient de ce qu'il faut.
+
+   `align-self: stretch` le fait courir sur toute la hauteur de la ligne, noms
+   compris ; sans lui il se calerait sur la seule vignette et flotterait.
+
+   Les ingrédients sont groupés dans .fab-in pour qu'ils se replient ENTRE EUX
+   sur un écran étroit. Sans ce groupe, le repli laisse le filet en bout de
+   ligne, orphelin, à séparer le produit de rien.
+   ============================================================ */
+.md-typeset .mcard.fab .fab-eq .barre {
+  flex: 0 0 auto;
+  align-self: stretch;
+  width: 1px;
+  margin: 0 0.5rem;
+  background: #d8cfb6;
+}
+
+/* ============================================================
+   LES ÉTAPES — la ligne « Temps » a éclaté en une suite d'étapes, chacune avec
+   son nom, ce qu'il faut y faire, et ce qu'elle prend. Une seule ligne de temps
+   ne pouvait pas dire qu'une recette de tannage compte QUATRE moments de nature
+   différente, dont deux d'attente. La tête reprend le filet pointillé des
+   conditions, pour que la carte se lise toujours de la même façon.
+   ============================================================ */
+/* Le bloc est DÉTACHÉ du tableau de conditions : filet plein, libellé, et
+   surtout PAS le filet pointillé des conditions — avec lui, les étapes se
+   lisaient comme quatre conditions de plus. Le compteur dit que l'ordre compte. */
+.md-typeset .mcard.fab .etapes {
+  margin-top: 0.6rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #e8e1cf;
+  counter-reset: etape;
+}
+.md-typeset .mcard.fab .etapes::before {
+  content: "Étapes";
+  display: block;
+  margin-bottom: 0.4rem;
+  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.md-typeset .mcard.fab .etape + .etape { margin-top: 0.5rem; }
+
+.md-typeset .mcard.fab .etape .et {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-size: 0.66rem;
+}
+.md-typeset .mcard.fab .etape .et span:first-child { flex: 0 0 auto; font-weight: 700; }
+.md-typeset .mcard.fab .etape .et span:last-child { text-align: right; }
+.md-typeset .mcard.fab .etape .et span:first-child::before {
+  counter-increment: etape;
+  content: counter(etape) ". ";
+}
+
+.md-typeset .mcard.fab .etape p {
+  margin: 0.1rem 0 0;
+  padding-left: 0.95rem;
+  font-size: 0.66rem;
+  line-height: 1.35;
+}
+
+.md-typeset .mcard.fab .fab-in {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  /* flex:1 lui donne tout l'espace restant à droite du filet ; le centrage joue
+     donc à l'intérieur de CET espace, et non sur la largeur entière de la carte. */
+  flex: 1 1 auto;
+  justify-content: center;
+  gap: 0.15rem 0.28rem;
+}
+
+
+/* ============================================================
+   LES LOYERS D'UNE INSTALLATION — un bloc à part, sur le modèle des étapes.
+   Mêlés au tableau de conditions, les tarifs se lisaient comme des conditions
+   de plus : « Fusion » avait l'air d'une caractéristique du four, pas d'un prix.
+   Le filet, le libellé et le nom en gras les rangent avec les étapes qu'ils
+   facturent — et les libellés SONT les noms d'étape, ce qui fait le lien.
+   ============================================================ */
+.md-typeset .mcard.objet .loyers {
+  /* PAS de filet en haut : l'en-tête se referme déjà par le sien, et les deux
+     traits se suivaient à deux lignes d'intervalle. Le bloc n'est donc bordé
+     qu'en bas, ce qui suffit à le détacher de la description. */
+  margin-top: 0;
+}
+.md-typeset .mcard.objet .loyers::before {
+  content: "Loyers";
+  display: block;
+  margin-bottom: 0.4rem;
+  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.md-typeset .mcard.objet .loyers > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.1rem 0;
+  font-size: 0.66rem;
+}
+.md-typeset .mcard.objet .loyers > div span:first-child { flex: 0 0 auto; font-weight: 700; }
+.md-typeset .mcard.objet .loyers > div span:last-child { text-align: right; }
+
+/* Le bloc se referme comme l'en-tête, sans quoi la description se colle au
+   dernier loyer et la carte n'a plus de respiration. */
+.md-typeset .mcard.objet .loyers {
+  margin-bottom: 0.45rem;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid #e8e1cf;
+}
+
+/* Titre de famille du chapitre d'equipement. Le h2 traverse deja les deux
+   colonnes (extra.css) ; on ne lui ajoute que le centrage et l'air qu'il faut
+   au-dessus de la premiere carte. Le filet du separateur suffit a fermer la
+   famille precedente, donc pas de bordure ici.
+
+   Classe dediee plutot que .cols h2 : extra.css est commun aux trois livres et
+   plusieurs pages s'en servent pour des titres de section alignes a gauche. */
+.md-typeset .cols h2.cat {
+  column-span: all;
+  text-align: center;
+  margin: 0.2rem 0 1.1rem;
+  letter-spacing: 0.04em;
+}
+
+/* ============================================================
+   Carte de technique — .mcard.tech
+   ------------------------------------------------------------
+   Une technique tient ENTIÈREMENT dans son cadre : ce qu'elle
+   coûte à obtenir, ce qu'elle demande pour s'activer, ce qu'elle
+   produit. La page qui la porte n'écrit rien autour d'elle.
+
+   Trois bandes, de haut en bas :
+     1. le bandeau, qui porte le type puis le nom ;
+     2. la bande d'activation, sur toute la largeur ;
+     3. le corps, en cellules séparées d'un filet vertical.
+
+   Le parchemin, le cadre, les angles et leur bascule de nuit
+   viennent de .mcard (extra.css). Cette carte n'annule que le
+   rembourrage, sans quoi le bandeau ne toucherait pas les bords.
+   ============================================================ */
+.md-typeset .mcard.tech {
+  padding: 0;
+  overflow: hidden;   /* le bandeau doit être coupé par les angles arrondis */
+}
+
+/* 1. Le bandeau. Le nom est en Cinzel, comme le titre de toutes les autres
+   cartes du livre, et le fond reprend le vert des en-têtes de table. */
+.md-typeset .mcard.tech .tc-tete {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0.24rem 0.42rem;
+  background: var(--green-header);
+  /* Crème FIXE et non var(--paper) : la nuit renverse le papier en #201c15,
+     ce qui poserait du sombre sur le vert sombre du bandeau. Le vert, lui,
+     bascule tout seul, donc les deux thèmes tiennent avec une seule règle. */
+  color: #faf6eb;
+  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  line-height: 1.2;
+}
+
+/* Le type de la technique, en pastille inversée à gauche du nom. Ses deux
+   couleurs sont fixes dans les deux thèmes puisque son fond l'est : le vert
+   clair de la nuit sur du crème serait illisible. */
+.md-typeset .mcard.tech .tc-type {
+  flex: 0 0 auto;
+  padding: 0.04rem 0.24rem;
+  border-radius: 2px;
+  background: #faf6eb;
+  color: #4a5a45;
+  font-size: 0.56rem;
+  letter-spacing: 0.08em;
+}
+
+/* 2. La bande d'activation : ce qu'il faut dépenser pour employer la
+   technique, d'un seul tenant sur toute la largeur de la carte. */
+.md-typeset .mcard.tech .tc-act {
+  margin: 0;
+  padding: 0.26rem 0.42rem;
+  border-bottom: 1px solid #d9d2bf;
+  font-size: 0.66rem;
+  line-height: 1.34;
+}
+
+/* 3. Le corps. Deux cellules de largeur égale, séparées d'un filet : à gauche
+   ce que la technique demande, à droite ce qu'elle donne. minmax(0, 1fr)
+   plutôt que 1fr : sans cela une valeur insécable élargit sa colonne et le
+   filet cesse de tomber au milieu d'une carte à l'autre. */
+.md-typeset .mcard.tech .tc-corps {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+.md-typeset .mcard.tech .tc-case {
+  padding: 0.28rem 0.42rem 0.34rem;
+  font-size: 0.66rem;
+  line-height: 1.34;
+}
+.md-typeset .mcard.tech .tc-case + .tc-case { border-left: 1px solid #d9d2bf; }
+.md-typeset .mcard.tech .tc-case p { margin: 0; }
+/* Une cellule porte parfois plusieurs champs : ils se suivent, séparés d'un
+   simple blanc, sans filet qui alourdirait une carte déjà cloisonnée. */
+.md-typeset .mcard.tech .tc-case p + p { margin-top: 0.26rem; }
+
+/* Libellé de champ. Police de TEXTE et casse naturelle : les capitales forcées
+   sont proscrites dans le livre, et la Cinzel les rendrait de fait. La
+   hiérarchie tient donc à la taille, à la graisse et au vert. */
+.md-typeset .mcard.tech .lib {
+  font-family: 'Symboles JDR', 'Alegreya', 'EB Garamond', Garamond, serif;
+  font-weight: 700;
+  font-size: 0.58rem;
+  letter-spacing: 0.015em;
+  color: var(--green-section);
+}
+/* Dans les cellules, le libellé prend sa ligne et la valeur passe dessous ;
+   dans la bande d'activation, tout tient sur une seule ligne. */
+.md-typeset .mcard.tech .tc-case .lib { display: block; }
+
+/* Point de rupture dans une carte de technique : le chiffre, puis le maillon
+   brisé à la place du mot. Même pictogramme et même mécanique que la carte de
+   compétence — un MASQUE qui prend currentColor, donc rien à ajouter dans
+   night.css — mais calé sur le texte de la cellule et non sur la ligne de rang,
+   dont il ne peut pas reprendre les règles : elles sont scellées à
+   .mcard.art.rangs p.palier. */
+.md-typeset .mcard.tech .rup {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.28em;
+  font-variant-numeric: lining-nums;
+}
+.md-typeset .mcard.tech .rup::after {
+  content: '';
+  display: inline-block;
+  /* Calé sur la hauteur du CHIFFRE et non sur le cadratin, et au rapport du
+     fichier (23 x 22 px) pour ne pas déformer le dessin. */
+  width: 0.79em;
+  height: 0.76em;
+  transform: translateY(0.04em);
+  background-color: currentColor;
+  -webkit-mask: var(--rupture) center / contain no-repeat;
+  mask: var(--rupture) center / contain no-repeat;
+}

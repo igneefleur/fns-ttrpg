@@ -1,0 +1,9 @@
+remove_background(paper)
+add_shadow
+add_background
+add_frame
+add_grain
+tint_glass_blue(calibrated 273,254,215)
+
+source: Gemini_Generated_Image_986lvy986lvy986l.png
+script: corr.py

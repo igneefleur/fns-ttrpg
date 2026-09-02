@@ -30,7 +30,7 @@ Un personnage est toujours dans une seule intensité à la fois : celle de son e
 
 Ce que l'activité coûte et ce qu'elle rend se comptent à la minute, et la minute entière prend l'intensité de l'effort le plus intense qui y a été fourni. Un round de coups ou de course dans une minute de marche fait de cette minute une minute d'activité lourde.
 
-Pour classer une activité, on la compare aux exemples ci-dessous ; en cas de doute, le meneur tranche.
+Pour classer une activité, on la compare aux exemples ci-dessous ; en cas de doute, le MJ tranche.
 
 <div class="defs" markdown>
 
@@ -85,7 +85,7 @@ Exemple. Un personnage à l'allure intermédiaire franchit 6 pas par round et co
 
 #### Le terrain difficile
 
-Entrer dans certaines [cases](../combat/portees.md) coûte plus d'un pas : la boue, les éboulis, la neige, les ronciers, les décombres. Le meneur les désigne.
+Entrer dans certaines [cases](../combat/portees.md) coûte plus d'un pas : la boue, les éboulis, la neige, les ronciers, les décombres. Le MJ les désigne.
 
 <div class="defs" markdown>
 
