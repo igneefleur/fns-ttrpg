@@ -1,0 +1,13 @@
+{
+ "Fendant à la tête": "1d2:passe>1d:passe>1:passe>2:frappe",
+ "Fendant en diagonale à l'épaule": "1d:passe>1:passe>2:frappe>1g:passe>2g:frappe",
+ "Fendant de revers au cou": "1g:passe>1:passe>1d:passe>2d:frappe>2d2:frappe",
+ "Taille en travers aux côtes": "1d2:passe>1d:passe>2d2:frappe>2d:frappe>1:passe>2:frappe>1g:passe",
+ "Taille de revers en travers": "1g:passe>2g:frappe>1:passe>2:frappe>1d:passe>2d:frappe",
+ "Taille montante au flanc": "1d:frappe>2d:frappe>1:passe>1g:passe",
+ "Taille aux mains": {
+  "trajet": "1g:passe>1:frappe>1d:passe",
+  "garde": "7>6"
+ },
+ "Coup du dos du fer au casque": "1g:frappe>1:passe"
+}

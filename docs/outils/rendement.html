@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rendement des recettes — Outward</title>
+<style>
+  :root{
+    --fond:#f2ede1; --carte:#faf6ec; --encre:#2f2a21; --pale:#7a7264;
+    --filet:#ddd4bf; --vert:#5a7d2a; --gain:#2f6b2f; --perte:#9d3520;
+    --tete:#6b7f45;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#1b1812; --carte:#232019; --encre:#e6dfcd; --pale:#9c9280;
+      --filet:#3c3527; --gain:#7fb069; --perte:#d1705c; --tete:#9db668;
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#1b1812; --carte:#232019; --encre:#e6dfcd; --pale:#9c9280;
+    --filet:#3c3527; --gain:#7fb069; --perte:#d1705c; --tete:#9db668;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; padding:1.6rem 1.2rem 4rem; background:var(--fond); color:var(--encre);
+    font:16px/1.55 Garamond,'EB Garamond',Georgia,serif;
+  }
+  .page{max-width:74rem;margin:0 auto}
+  h1{font-size:1.9rem;letter-spacing:.04em;text-align:center;margin:.2rem 0 .3rem;font-variant:small-caps}
+  .sous{text-align:center;color:var(--pale);margin:0 0 1.8rem;font-size:.92rem}
+  h2{
+    font-size:1.15rem;letter-spacing:.05em;font-variant:small-caps;color:var(--tete);
+    margin:2.2rem 0 .2rem;padding-bottom:.25rem;border-bottom:1px solid var(--filet);
+  }
+  .desc{color:var(--pale);font-size:.88rem;margin:.15rem 0 .7rem}
+  table{width:100%;border-collapse:collapse;background:var(--carte);
+    border:1px solid var(--filet);border-radius:5px;overflow:hidden}
+  th,td{padding:.3rem .6rem;font-size:.86rem;border-bottom:1px solid var(--filet)}
+  th{font-variant:small-caps;letter-spacing:.04em;color:var(--pale);font-weight:600;
+     text-align:right;background:rgba(127,127,127,.06)}
+  th:first-child,td:first-child{text-align:left}
+  td{text-align:right;font-variant-numeric:tabular-nums}
+  tr:last-child td{border-bottom:none}
+  tfoot td{font-weight:700;border-top:2px solid var(--filet)}
+  .g{color:var(--gain)} .p{color:var(--perte)} .n{color:var(--pale)}
+  .note{background:rgba(127,127,127,.07);border-left:3px solid var(--filet);
+    padding:.5rem .9rem;margin:1rem 0;font-size:.88rem}
+  .note b{color:var(--tete)}
+  #etat{text-align:center;color:var(--pale);padding:2rem;font-size:.95rem}
+  details{margin-top:2.5rem;font-size:.84rem;color:var(--pale)}
+  summary{cursor:pointer;font-variant:small-caps;letter-spacing:.04em}
+  details table{margin-top:.6rem}
+  @media (max-width:700px){ th,td{padding:.25rem .35rem;font-size:.78rem} }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Rendement des recettes</h1>
+  <p class="sous">Lu directement dans le livre — prix, recettes, capacités et loyers.
+     Rien n’est recopié ici : changez une valeur dans les règles, rechargez cette page.</p>
+  <div id="etat">Lecture du livre…</div>
+  <div id="sortie" hidden></div>
+  <details id="controle" hidden>
+    <summary>Ce que la page a lu</summary>
+    <div id="lu"></div>
+  </details>
+</div>
+
+<script>
+'use strict';
+/* ------------------------------------------------------------------ lecture
+   On lit les PAGES RENDUES, pas les fichiers source : mkdocs transforme les
+   .md en .html, et le markdown n'est plus servi. Le DOM des cartes est donc
+   la seule source fiable. */
+const RACINE = '../content/regles/';
+const H = 1, J = 24, SEM = 168;
+
+async function dom(page){
+  const r = await fetch(RACINE + page + '/');
+  if(!r.ok) throw new Error(page + ' : ' + r.status);
+  return new DOMParser().parseFromString(await r.text(), 'text/html');
+}
+
+const nombre = t => { const m = (t||'').match(/-?\d+/); return m ? +m[0] : null; };
+
+/* « 20 minutes », « 1 jour », « 2 semaines » -> heures */
+function heures(t){
+  const m = (t||'').match(/(\d+)\s*(minute|heure|jour|semaine)/);
+  if(!m) return 0;
+  return +m[1] * ({minute:1/60, heure:H, jour:J, semaine:SEM})[m[2]];
+}
+
+/* Le temps d'une étape : sa durée totale, et la part en activité.
+   Deux écritures possibles, et la seconde est le cœur du modèle :
+     « 20 minutes en activité légère »        -> travail pur
+     « 1 jour / dont 20 minutes … au début »  -> attente CONTENANT du travail
+     « 1 jour d'attente »                     -> attente pure                */
+function tempsEtape(txt){
+  const parts = txt.split(/dont/i);
+  const total = heures(parts[0]);
+  if(parts.length > 1) return {total, actif:heures(parts[1]), nature:'A'};
+  if(/attente/i.test(parts[0])) return {total, actif:0, nature:'A'};
+  return {total, actif:total, nature:'T'};
+}
+
+/* « 1 toutes les 8 heures », « 3 par heure », « 1 par semaine », « 1 🪙 les 8 heures » */
+function tarif(txt){
+  const t = txt.replace(/\s+/g,' ').trim();
+  const tar = nombre(t) ?? 1;
+  let m = t.match(/(toutes? les|les) (\d+)?\s*(minute|heure|jour|semaine)s?/);
+  if(m) return {tarif:tar, unite:(+(m[2]||1)) * ({minute:1/60,heure:H,jour:J,semaine:SEM})[m[3]]};
+  m = t.match(/par (minute|heure|jour|semaine)s?/);
+  if(m) return {tarif:tar, unite:({minute:1/60,heure:H,jour:J,semaine:SEM})[m[1]]};
+  return {tarif:tar, unite:H};
+}
+
+/* On prend le DEUXIÈME span de PREMIER NIVEAU, jamais le dernier descendant.
+   Un prix s'écrit de trois façons dans le livre :
+       <span class="argent">6</span>                  nu
+       <span><span class="argent">5</span></span>     enveloppé
+       <span><span class="argent">1</span> les 10</span>   au lot
+   Prendre le dernier descendant rend « 1 » dans le troisième cas et perd le
+   « les 10 » : la cendre ressortait vingt fois trop chère. */
+function stats(carte){
+  const o = {};
+  carte.querySelectorAll('.objet-stats > div').forEach(d => {
+    const s = d.querySelectorAll(':scope > span');
+    if(s.length >= 2) o[s[0].textContent.trim()] = s[1].textContent.replace(/\s+/g, ' ').trim();
+  });
+  return o;
+}
+
+/* « 2 les 10 » vaut 0,2 la pièce. Un prix au lot ne s'achète pas à l'unité,
+   mais tout le calcul se fait sur des totaux : la fraction ne gêne personne. */
+function prixLu(txt){
+  if(!txt || txt === '—') return null;
+  const m = txt.match(/(\d+)\s+les\s+(\d+)/);
+  return m ? +m[1] / +m[2] : nombre(txt);
+}
+const titre = c => (c.querySelector('strong')||{}).textContent?.trim() || '';
+
+async function lireObjets(){
+  const d = await dom('equipement'), obj = {};
+  d.querySelectorAll('.mcard.objet').forEach(c => {
+    const s = stats(c), nom = titre(c);
+    if(!nom) return;
+    obj[nom] = {achat: prixLu(s['Achat']), type: s['Type'] || ''};
+  });
+  return obj;
+}
+
+async function lireInstallations(){
+  const d = await dom('installations'), inst = {};
+  d.querySelectorAll('.mcard.objet').forEach(c => {
+    const s = stats(c), nom = titre(c);
+    const loyers = [...c.querySelectorAll('.loyers > div')].map(l => {
+      const sp = l.querySelectorAll(':scope > span');
+      return {etape: sp[0].textContent.trim(), ...tarif(sp[1].textContent)};
+    });
+    if(!nom || !loyers.length) return;
+    inst[nom] = {capacite: nombre(s['Capacité']) || 1,
+                 combustibleTexte: s['Combustible'] || '', loyers};
+  });
+  return inst;
+}
+
+async function lireRecettes(){
+  const d = await dom('fabrication'), rec = [];
+  d.querySelectorAll('.mcard.fab').forEach(c => {
+    const eq = c.querySelector('.fab-eq'); if(!eq) return;
+    const sortie = eq.querySelector('.fab-c');
+    const produit = sortie.querySelector('.n').textContent.trim();
+    const nb = nombre(sortie.querySelector('.q').textContent) || 1;
+    const entrees = [...eq.querySelectorAll('.fab-in .fab-c')].map(e => ({
+      nom: e.querySelector('.n').textContent.trim(),
+      nb: nombre(e.querySelector('.q').textContent) || 1}));
+    const s = stats(c);
+    const etapes = [...c.querySelectorAll('.etapes .etape .et')].map(e => {
+      const sp = e.querySelectorAll('span');
+      return {nom: sp[0].textContent.trim(),
+              ...tempsEtape(sp[1].innerHTML.replace(/<br\s*\/?>/gi, ' / '))};
+    });
+    rec.push({nom: titre(c), produit, nb, entrees, etapes,
+              installation: s['Installation'] === '—' ? null : s['Installation']});
+  });
+  return rec;
+}
+
+/* ------------------------------------------------------------------ calcul */
+let OBJ, INST, REC;
+
+/* Les équations abrègent : elles disent « Fiole » là où la carte s'appelle
+   « Fiole en verre », « Charretée » pour « Charretée de charbon ». Sans ce
+   raccord, aucun prix ne se rattache et tout le tableau part en négatif.
+
+   On compare des mots dépouillés — sans accent, sans pluriel, sans le « e »
+   du féminin — et l'on retient la carte qui contient TOUS les mots de
+   l'abrégé en ajoutant le moins de mots à elle : « Fiole » va donc à
+   « Fiole en verre » et non à « Fiole en verre bleuté ». */
+const RESOLU = new Map();
+function mots(s){
+  return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')
+          .split(/[^a-z0-9]+/).filter(Boolean)
+          /* On rabote TOUS les e et s de queue, jamais en dessous de quatre
+             lettres. Sans cela « bleutée » devient bleute et « bleuté » bleut :
+             deux mots qui ne se rejoignent jamais, et la fiole bleutée perd son
+             prix. */
+          .map(m => { while(m.length > 4 && /[es]$/.test(m)) m = m.slice(0, -1); return m; });
+}
+function resoudre(label){
+  if(RESOLU.has(label)) return RESOLU.get(label);
+  let trouve = OBJ[label] ? label : null;
+  if(!trouve){
+    const cible = mots(label);
+    let best = null, meilleur = null;
+    for(const nom in OBJ){
+      const m = mots(nom);
+      if(!cible.every(c => m.includes(c))) continue;
+      /* À égalité de mots ajoutés, on prend celui dont le premier mot de
+         l'abrégé vient le plus tôt : « Charbon » désigne « Charbon de bois »
+         et non « Charretée de charbon », qui le contient aussi. */
+      const note = [m.length - cible.length, m.indexOf(cible[0])];
+      if(!meilleur || note[0] < meilleur[0] ||
+         (note[0] === meilleur[0] && note[1] < meilleur[1])){ meilleur = note; best = nom; }
+    }
+    trouve = best;
+  }
+  RESOLU.set(label, trouve);
+  return trouve;
+}
+const prix = nom => { const c = resoudre(nom); return c ? OBJ[c].achat : null; };
+
+/* La vente se compte sur le LOT : un tiers du prix d'achat total, arrondi bas. */
+const vente = (nom, n) => { const a = prix(nom); return a ? Math.floor(n*a/3) : 0; };
+const achat = (nom, n) => { const a = prix(nom); return a === null ? 0 : a*n; };
+
+/* Le combustible se paie une fois par fournée. Son texte nomme un objet du
+   livre — « 6 demi-stères », « 1 charretée de charbon » — dont on va chercher
+   le prix, plutôt que de le recopier ici. */
+function combustible(txt){
+  if(!txt) return 0;
+  const n = nombre(txt) || 1;
+  const p = prix(txt.replace(/^\s*\d+\s*/, ''));   // « 6 demi-stères » -> le prix d'un
+  return p ? n * p : 0;
+}
+
+/* Un loyer de TRAVAIL se paie au temps total — durée × recettes — puis par
+   unité entamée. Un loyer d'ATTENTE une seule fois, quelle que soit la charge :
+   douze peaux trempent ensemble. */
+function loyer(recette, n){
+  const inst = INST[recette.installation];
+  if(!inst) return 0;
+  let t = 0;
+  for(const e of recette.etapes){
+    const l = inst.loyers.find(x => x.etape === e.nom);
+    if(!l) continue;
+    const duree = e.nature === 'T' ? e.total * n : e.total;
+    t += Math.ceil(duree / l.unite) * l.tarif;
+  }
+  return t;
+}
+
+/* Le coût des matières. Ramassées, elles coûtent ce qu'on renonce à en tirer,
+   c'est-à-dire leur VENTE. Achetées, elles coûtent leur ACHAT. */
+function matieres(recette, n, achete){
+  let t = 0;
+  for(const e of recette.entrees){
+    if(achete) t += achat(e.nom, e.nb*n);
+    else t += vente(e.nom, e.nb*n);
+  }
+  return t;
+}
+
+function gain(recette, part, loue, achete){
+  const cap = INST[recette.installation]?.capacite || 12;
+  const n = Math.max(1, Math.round(cap*part));
+  const m = matieres(recette, n, achete);
+  const c = combustible(INST[recette.installation]?.combustibleTexte);
+  const v = vente(recette.produit, recette.nb*n);
+  const res = v - m - c - (loue ? loyer(recette, n) : 0);
+  return {n, g: res < 0 ? Math.ceil(res) : Math.floor(res)};
+}
+
+/* ------------------------------------------------------------------- rendu */
+const cel = v => v === null ? '<td class="n">—</td>'
+  : `<td class="${v>0?'g':v<0?'p':'n'}">${v>0?'+':''}${v}</td>`;
+
+function tableProfil(titreTxt, desc, loue, achete, parts){
+  let columns = [0, ...parts]; // 0 -> n=1
+  let cum = columns.map(() => 0), lignes = '';
+  for(const r of REC){
+    let tds = '';
+    for(let i=0; i < columns.length; i++){
+      if(r.installation === null && i > 0) { tds += '<td class="n">—</td>'; continue; }
+      const {g} = gain(r, columns[i], loue, achete);
+      tds += cel(g);
+      if(g !== null) cum[i] += g;
+    }
+    lignes += `<tr><td>${r.nom}</td>${tds}</tr>`;
+  }
+  const ent = columns.map(p => p===0 ? '<th>1</th>' : `<th>${Math.round(p*100)} %</th>`).join('');
+  return `<h2>${titreTxt}</h2><p class="desc">${desc}</p>
+    <table><thead><tr><th>recette</th>${ent}</tr></thead><tbody>${lignes}</tbody>
+    </table>`;
+}
+
+function tableIdiot(){
+  let lignes = '';
+  const vus = new Set();
+  for(const r of REC){
+    if(vus.has(r.produit)) continue; vus.add(r.produit);
+    const a = OBJ[r.produit]?.achat;
+    lignes += `<tr><td>${r.produit}</td><td class="n">${a ?? '—'}</td>` +
+      `<td class="n">${a ? Math.floor(a/3) : '—'}</td>` +
+      cel(a ? Math.floor(a/3) - a : null) + '</tr>';
+  }
+  return `<h2>L’idiot</h2><p class="desc">Il achète l’objet fini et le revend aussitôt.
+    Il perd les deux tiers à chaque fois, par la seule règle de la vente.</p>
+    <table><thead><tr><th>objet</th><th>achat</th><th>vente</th><th>gain</th></tr></thead>
+    <tbody>${lignes}</tbody></table>`;
+}
+
+function tableInvestisseur(){
+  let lignes = '', tot = 0;
+  for(const nom in INST){
+    const inst = INST[nom];
+    const r = REC.find(x => x.installation === nom);
+    if(!r) continue;
+    const l = loyer(r, inst.capacite);
+    tot += l;
+    lignes += `<tr><td>${nom}</td><td class="n">${inst.capacite}</td>` +
+      `<td class="n">${r.nom}</td>${cel(l)}</tr>`;
+  }
+  return `<h2>L’investisseur</h2><p class="desc">Il possède l’installation et la loue.
+    Il ne ramasse rien, n’achète rien, ne fabrique rien : il encaisse le loyer d’une
+    fournée pleine. Aucune charge partielle à montrer — le locataire paie, lui reçoit.</p>
+    <table><thead><tr><th>installation</th><th>capacité</th><th>recette menée</th>
+    <th>loyer encaissé</th></tr></thead><tbody>${lignes}</tbody>
+    <tfoot><tr><td>cumul</td><td></td><td></td>${cel(tot)}</tr></tfoot></table>`;
+}
+
+function tableSeuils(){
+  let lignes = '';
+  for(const r of REC){
+    const cap = INST[r.installation]?.capacite || 12;
+    let s = null;
+    for(let n = 1; n <= cap; n++){
+      const {g} = gain(r, n/cap, true, false);
+      if(g !== null && g > 0){ s = `${n} sur ${cap}`; break; }
+    }
+    lignes += `<tr><td>${r.nom}</td><td class="n">${s || 'jamais'}</td>` +
+      `<td class="${s?'g':'p'}">${s ? Math.round(100*(+s.split(' ')[0])/cap) + ' %' : '—'}</td></tr>`;
+  }
+  return `<h2>Le seuil de bascule</h2><p class="desc">La charge minimale à partir de
+    laquelle l’aventurier gagne quelque chose. C’est le combustible qui la fixe :
+    ce qui brûle avant la première pièce doit être amorti.</p>
+    <table><thead><tr><th>recette</th><th>charge minimale</th><th></th></tr></thead>
+    <tbody>${lignes}</tbody></table>`;
+}
+
+function tableLu(){
+  let o = '<table><thead><tr><th>objet</th><th>achat</th><th>vente</th></tr></thead><tbody>';
+  for(const n in OBJ) o += `<tr><td>${n}</td><td>${OBJ[n].achat ?? '—'}</td>` +
+    `<td>${OBJ[n].achat ? Math.floor(OBJ[n].achat/3) : '—'}</td></tr>`;
+  o += '</tbody></table><table><thead><tr><th>installation</th><th>capacité</th>' +
+       '<th>combustible</th><th>loyers</th></tr></thead><tbody>';
+  for(const n in INST) o += `<tr><td>${n}</td><td>${INST[n].capacite}</td>` +
+    `<td>${combustible(INST[n].combustibleTexte)}</td><td>${INST[n].loyers.length}</td></tr>`;
+  return o + '</tbody></table>';
+}
+
+(async () => {
+  try{
+    [OBJ, INST, REC] = await Promise.all([lireObjets(), lireInstallations(), lireRecettes()]);
+    const P = [1/3, 2/3, 1];
+    document.getElementById('sortie').innerHTML =
+      `<div class="note"><b>La règle du gain.</b> Ce qu’on fabrique moins ce qu’on
+        y a mis. Une matière <b>ramassée</b> n’est pas gratuite : elle coûte ce qu’on
+        renonce à en tirer, donc sa vente. Une matière <b>achetée</b> coûte son prix,
+        trois fois plus. Le combustible se paie une fois par fournée, le loyer de
+        travail au temps total, le loyer d’attente une seule fois.</div>` +
+      tableProfil('L’aventurier', 'Il loue l’installation et ramasse tout lui-même — ' +
+        'y compris le cuir dont il fera une gourde : il le récupère, il ne le tanne pas.',
+        true, false, P) +
+      tableProfil('L’aventurier vétéran', 'Il possède son installation et ramasse tout. ' +
+        'Même travail que l’aventurier, sans le loyer.', false, false, P) +
+      tableProfil('L’artisan', 'Il possède son installation et achète ses matières. ' +
+        'Il ne ramasse rien.', false, true, P) +
+      tableProfil('Le client', 'Il loue et achète tout au marchand. Il ne possède rien, ' +
+        'ne ramasse rien, et paie trois fois ce que valent ses matières. ' +
+        'Onze recettes lui sont fermées : ce qui se ramasse ne se vend pas.',
+        true, true, P) +
+      tableInvestisseur() + tableIdiot() + tableSeuils();
+    document.getElementById('lu').innerHTML = tableLu();
+    document.getElementById('etat').hidden = true;
+    document.getElementById('sortie').hidden = false;
+    document.getElementById('controle').hidden = false;
+  }catch(e){
+    document.getElementById('etat').textContent =
+      'Lecture impossible : ' + e.message + '. Cette page doit être servie par mkdocs, ' +
+      'au même endroit que le livre.';
+  }
+})();
+</script>
+</body>
+</html>
