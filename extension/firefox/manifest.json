@@ -41,11 +41,13 @@
         "https://app.roll20.net/*"
       ],
       "js": [
+        "des3d.js",
         "stable/content-roll20.js",
         "beta/content-roll20.js"
       ],
       "css": [
-        "overlay.css"
+        "overlay.css",
+        "des3d.css"
       ],
       "run_at": "document_idle",
       "all_frames": true,

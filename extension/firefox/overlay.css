@@ -139,7 +139,33 @@
   background: var(--paper); color: var(--ink);
   border: 1px solid var(--line); border-radius: 8px;
   box-shadow: 0 6px 22px var(--ombre-portee);
-  font: 13px/1.35 'Alegreya', 'EB Garamond', Garamond, 'Times New Roman', serif;
+/* LA POLICE EST CELLE DE ROLL20, ET ON NE LA NOMME PAS.
+ *
+ * Tout ce que ce fichier habille est posé DANS la page de Roll20 : la carte de
+ * dés du tchat, le panneau de Camp, la boîte de création. Ces éléments héritent
+ * donc naturellement de la police de leur hôte, et `font-family: inherit` suffit
+ * à les mettre à la sienne — non pas une police qui lui ressemble, LA sienne,
+ * quelle qu'elle soit et quoi qu'elle devienne.
+ *
+ * POURQUOI L'HÉRITAGE PLUTÔT QUE LE NOM. Nommer une pile de polices, c'est
+ * recopier une décision qui appartient à Roll20 : le jour où ils changent — et
+ * ils l'ont déjà fait — la copie ment, sans que rien ne le signale. L'héritage
+ * ne peut pas mentir. Il ne demande aucune veille, aucun paquet re-signé, et il
+ * vaut pour les deux thèmes de Roll20 comme pour les feuilles communautaires qui
+ * imposent la leur.
+ *
+ * CE QU'ON PERD, et c'est assumé : Alegreya et Cinzel, les deux polices du livre
+ * Outward, ne paraissent plus dans le tchat. Une carte qui parle une autre langue
+ * typographique que la conversation où elle s'insère se lit comme un corps
+ * étranger — c'est joli et c'est faux. Elles restent le livre ; le tchat reste
+ * Roll20.
+ *
+ * CE QUI RESTE ÉCRIT ICI : la TAILLE, la GRAISSE et l'INTERLETTRAGE. Ce sont des
+ * grandeurs de mise en page, pas d'identité, et il faut les tenir pour que la
+ * carte garde sa hiérarchie — un titre plus petit que son corps ne devient pas
+ * juste parce que la police est la bonne. */
+  font-size: 13px; line-height: 1.35;
+  font-family: inherit;
 }
 /* la barre de titre : l'en-tête d'une section du livre, fond --panel et filet
    dessous, avec le petit trait vert qui signe les titres de la fiche */
@@ -162,7 +188,7 @@
 .owd-panneau.owd-panneau-ancre > .owd-panneau-tete::after { left: 28px; }
 .owd-panneau-titre {
   flex: 1 1 auto; min-width: 0;
-  font-family: 'Cinzel', 'Alegreya', Garamond, 'Times New Roman', serif;
+  font-family: inherit;
   font-weight: 700; font-size: 12px; letter-spacing: .06em; color: var(--ink-2);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
@@ -177,7 +203,8 @@
   flex: 0 0 auto; width: 20px; height: 18px; padding: 0; cursor: pointer;
   background: var(--card); color: var(--ink-2);
   border: 1px solid var(--line-2); border-radius: 5px;
-  font: 700 13px/1 'Alegreya', Garamond, 'Times New Roman', serif, sans-serif;
+  font-weight: 700; font-size: 13px; line-height: 1;
+  font-family: inherit;
   transition: background .12s, border-color .12s, color .12s;
 }
 .owd-panneau-btn:hover { background: var(--panel); border-color: var(--line); color: var(--ink); }
@@ -237,11 +264,12 @@
   background: var(--card); color: var(--ink);
   border: 1px solid var(--line-2); border-radius: 8px;
   box-shadow: 0 1px 3px var(--ombre);
-  font: 14px/1.5 'Alegreya', 'EB Garamond', Garamond, 'Times New Roman', serif;
+  font-size: 14px; line-height: 1.5;
+  font-family: inherit;
 }
 .owd-create-title {
   position: relative; display: inline-block; margin: 0 0 10px; padding-bottom: 7px;
-  font-family: 'Cinzel', 'Alegreya', Garamond, 'Times New Roman', serif;
+  font-family: inherit;
   font-weight: 700; font-size: 17px; letter-spacing: .05em; color: var(--ink-2);
 }
 .owd-create-title::after {
@@ -258,7 +286,8 @@
   margin-top: 14px; padding: 9px 20px 10px; cursor: pointer;
   background: #46543b; color: #fff8f0;
   border: 1px solid #2f3b28; border-radius: 7px;
-  font: 700 14px/1.2 'Alegreya', 'EB Garamond', Garamond, 'Times New Roman', serif;
+  font-weight: 700; font-size: 14px; line-height: 1.2;
+  font-family: inherit;
   letter-spacing: .02em;
   box-shadow: 0 1px 3px var(--ombre);
   transition: background .12s;
@@ -293,7 +322,7 @@
   border-radius: 6px;
   padding: 7px 9px 8px;
   box-shadow: 0 1px 3px var(--ombre);
-  font-family: 'Alegreya', 'EB Garamond', Garamond, 'Times New Roman', serif;
+  font-family: inherit;
   color: var(--ink);
 }
 
@@ -303,7 +332,7 @@
   border-bottom: 1px solid var(--line-2);
 }
 .owd-des-titre {
-  font-family: 'Cinzel', 'Trajan Pro', Georgia, serif;
+  font-family: inherit;
   font-size: 12px; letter-spacing: .06em; color: var(--vert);
 }
 .owd-des-compte { font-size: 11px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
@@ -312,126 +341,47 @@
    un tchat réduit à sa colonne minimale. Le gap vertical laisse la place aux
    dés qui dépassent un peu de leur case pendant la culbute. */
 .owd-des-piste {
-  display: flex; flex-wrap: wrap; gap: 16px 14px;
+  display: flex; flex-wrap: wrap; gap: 22px 14px;
   justify-content: center; align-items: center;
   padding: 6px 0 4px;
 }
 
-/* ---- la scène et le cube ----
-   LA SCÈNE PORTE LA PERSPECTIVE, LE CUBE PORTE LA ROTATION. Les séparer n'est
-   pas un raffinement : une perspective posée sur l'élément qui tourne tournerait
-   avec lui, et le dé s'aplatirait à mi-culbute. */
+/* ---- la place du dé dans la carte ----
+   LA BOÎTE NE DIMENSIONNE PLUS RIEN, et c'est le changement. Elle portait la
+   taille et la perspective du cube à points ; le dé en volume les porte
+   lui-même, et il le doit — sa hauteur vaut deux APOTHÈMES, une grandeur qui
+   change d'un solide à l'autre, qu'aucune règle écrite ici ne saurait deviner.
+   Un d4 et un d20 de même rayon n'ont pas la même hauteur de boîte.
+   Reste l'alignement : les dés se posent sur une même ligne de sol, donc par le
+   BAS, jamais par leur milieu. */
 .owd-de {
   position: relative;
-  width: 44px; height: 44px;
-  perspective: 320px;
   flex: 0 0 auto;
-}
-.owd-cube {
-  position: absolute; inset: 0;
-  transform-style: preserve-3d;
-  will-change: transform;
+  display: flex;
+  align-items: flex-end;
 }
 
-/* UNE FACE — ET LES TROIS PARADES CONTRE LES JOINTURES OUVERTES.
-   « On voit entre les faces » est LE défaut du cube en CSS, et il a trois causes
-   qui se cumulent. Elles sont traitées ici, ensemble, parce qu'aucune ne suffit
-   seule. Ne pas en retirer une en croyant simplifier.
-
-   1. L'ANTICRÉNELAGE. Deux faces qui se rejoignent exactement sont lissées
-      chacune de son côté, et il reste une ligne d'un pixel à demi transparente
-      par où l'on voit le fond. La parade est le RECOUVREMENT : les faces sont
-      dessinées un pixel plus grandes que le cube et décalées d'un demi-pixel,
-      si bien qu'elles se chevauchent au lieu de se toucher. C'est pour cela que
-      la taille écrite ici (45) n'est pas l'arête (44) : ce n'est pas une faute.
-
-   2. LES COINS ARRONDIS. Ils sont l'essentiel du dé — un cube à angles vifs se
-      lit comme une boîte — mais chaque arrondi retire de la matière aux huit
-      coins du cube, et il y reste un trou. La parade est la PLAQUE DE FOND, le
-      ::before ci-dessous, posé un pixel EN RETRAIT derrière sa face : les
-      plaques de deux faces voisines se croisent près du coin et le bouchent.
-      C'est exactement ce que fait le pen d'origine, et c'est la pièce que la
-      première version d'ici avait laissée tomber.
-
-   3. backface-visibility: hidden. Elle cachait les trois faces arrière, qui ne
-      pouvaient donc plus servir de fond aux jointures. Elle est retirée : les
-      faces sont opaques, les avant recouvrent les arrière, et les arrière
-      bouchent ce qui dépasse. */
-.owd-cube-f {
-  position: absolute;
-  box-sizing: border-box;
-  width: 45px; height: 45px;          /* l'arête + 1 : voir la parade 1 */
-  left: -0.5px; top: -0.5px;
-  border-radius: 9px;
-  background: #f6f2e6;
-  border: 1px solid #e0d8c2;
-  box-shadow: inset 0 0 6px rgba(120, 104, 66, .18);
-}
-/* la plaque de fond : même découpe, un pixel derrière, opaque. Elle ne se voit
-   jamais de face — elle ne sert qu'à ce qu'on ne voie pas à travers le dé. */
-.owd-cube-f::before {
-  content: ""; position: absolute; inset: -1px;
-  border-radius: 10px;
-  background: #efe9d8;
-  transform: translateZ(-1px);
-}
-
-/* UN POINT. left/top sont posés en ligne, en pourcentage de la face (le quart,
-   le milieu, les trois quarts) ; translate le recentre sur lui-même. Le dé
-   change alors d'arête sans qu'aucune coordonnée ne soit à reprendre. */
-.owd-cube-p {
-  position: absolute;
-  width: 8px; height: 8px;
-  margin: -4px 0 0 -4px;
-  border-radius: 50%;
-  background: #2f2a1c;
-  box-shadow: inset 0 -1px 1px rgba(255, 255, 255, .25);
-}
-
-/* L'or du livre quand le dé montre son maximum, un ton éteint sur le 1. Ni l'un
-   ni l'autre ne dit « réussite » ou « échec » : un dé d'action ne réussit rien
-   tout seul, c'est le seuil du geste qui en décide. */
-.owd-de-haut .owd-cube-f { background: #f2dcae; border-color: #dcc287; }
-.owd-de-haut .owd-cube-f::before { background: #e8cf9c; }
-.owd-de-haut .owd-cube-p { background: #6b4f13; }
-.owd-de-bas .owd-cube-f { background: #ebe7dd; border-color: #d7d1c2; }
-.owd-de-bas .owd-cube-f::before { background: #e0dcd0; }
-.owd-de-bas .owd-cube-p { background: #6e6a5e; }
-
-/* LA NUIT ASSOMBRIT L'IVOIRE, elle ne l'inverse pas : un dé reste un objet clair
-   posé dans une pièce sombre. Ce qui change vraiment, c'est le fond de la carte. */
-.owd-des.owd-nuit .owd-cube-f { background: #ddd5c0; border-color: #b9ae93; }
-.owd-des.owd-nuit .owd-cube-f::before { background: #cec5ac; }
-.owd-des.owd-nuit .owd-de-haut .owd-cube-f { background: #dcc48f; border-color: #b99f66; }
-
-/* LE JETON : tout ce qui n'est pas un d6 aujourd'hui. Il porte son chiffre et ne
-   prétend à aucune forme — mieux vaut avouer qu'on ne sait pas encore dessiner
-   ce dé-là que faire passer un cube pour un d20. */
-.owd-de-jeton .owd-cube {
-  border-radius: 50%;
-  background: #ece6d6;
-  border: 2px solid #cfc4a8;
-  box-sizing: border-box;
+/* LE JETON : ce que la carte ne sait pas dessiner s'affiche QUAND MÊME, en
+   pastille ronde portant son chiffre — une somme, un jet modifié, un d100. Il
+   n'anime pas et ne se coche pas ; il ne prétend à rien d'autre qu'à montrer le
+   résultat, qui lui est exact. Il vaut mieux qu'un blanc : sans lui, un seul jet
+   inconnu au milieu de cinq d8 faisait disparaître la carte entière. */
+.owd-jeton {
+  width: 44px; height: 44px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-}
-.owd-des.owd-nuit .owd-de-jeton .owd-cube { background: #cdc3a8; border-color: #9d937a; }
-.owd-de-n {
-  font-family: 'Cinzel', 'Trajan Pro', Georgia, serif;
-  font-size: 15px; line-height: 1; color: #392f1c;
+  font-family: inherit; font-size: 17px; font-weight: 700;
+  color: var(--ink); background: var(--line-2);
+  border: 1px solid var(--line-2);
   font-variant-numeric: tabular-nums;
 }
 
-/* ---- la valeur en clair ----
-   Des points se comptent mal du coin de l'oeil, et une capture d'écran du tchat
-   doit rester exploitable. Chaque chiffre a la largeur d'un dé : il tombe donc
-   sous le sien. */
 .owd-des-chiffres {
   display: flex; flex-wrap: wrap; gap: 16px 14px;
   justify-content: center; margin-top: 8px;
 }
 .owd-des-chiffre {
   min-width: 44px; text-align: center;
-  font-family: 'Cinzel', 'Trajan Pro', Georgia, serif;
+  font-family: inherit;
   font-size: 15px; color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
@@ -445,12 +395,23 @@
   display: flex; gap: 12px; align-items: center; justify-content: center;
   margin-top: 8px; padding-top: 5px; border-top: 1px solid var(--line-2);
 }
-.owd-des-info { font-size: 11px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.owd-des-info {
+  font-size: 11px; color: var(--ink-2); font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* LE PIED PORTE TROIS COMMANDES DEPUIS QU'ON PEUT RELANCER, et la colonne du
+   tchat n'en fait que 320 px au plus étroit. Sans ces deux règles, les libellés
+   se cassent en deux — « re- / animer » — et le pied devient illisible : ce sont
+   les MOTS qui doivent rester entiers, et la LIGNE qui doit avoir le droit de se
+   replier. L'inverse de ce que fait un flex par défaut. */
+.owd-des-pied { flex-wrap: wrap; row-gap: 5px; }
+.owd-des-rejouer { white-space: nowrap; }
 
 /* RE-ANIMER. Discret : il rejoue une animation, il ne relance aucun dé, et un
    bouton trop visible dans un tchat de jeu laisserait croire le contraire. */
 .owd-des-rejouer {
-  font-family: 'Cinzel', Garamond, Georgia, serif;
+  font-family: inherit;
   font-size: 10px; letter-spacing: .04em;
   color: var(--ink-2); background: transparent;
   border: 1px solid var(--line-2); border-radius: 4px;
@@ -458,20 +419,107 @@
 }
 .owd-des-rejouer:hover { opacity: 1; border-color: var(--vert); color: var(--vert); }
 
-/* le message d'origine, replié : on peut toujours vérifier un jet contesté */
+/* LE MESSAGE D'ORIGINE, CACHÉ MAIS PRÉSENT : on peut toujours vérifier un jet
+   contesté, et le jour où cette réécriture se trompera, l'original sera là pour
+   le dire. Ce n'est plus un <details> avec son propre libellé — c'est une boîte
+   que le bouton « détail Roll20 » du pied de carte montre ou cache. */
 .owd-des-repli { margin-top: 5px; }
-.owd-des-repli > summary {
-  cursor: pointer; font-size: 10px; color: var(--ink-2);
-  list-style: none; opacity: .7;
+.owd-des-repli[hidden] { display: none; }
+
+/* LE DÉ QU'ON PEUT CHOISIR. Le bouton n'ajoute AUCUNE boîte : il épouse le dé,
+   sans fond ni bordure au repos, pour que rien ne change tant qu'on n'a rien
+   choisi. Ce qui marque le choix est un anneau, posé DERRIÈRE le dé par une
+   ombre portée, et un léger recul — un dé choisi est un dé qu'on a mis de côté
+   pour le relancer, pas un dé qu'on a sélectionné dans une liste. */
+/* L'ÉTUI TIENT LE DÉ ET SON BOUTON CÔTE À CÔTE, l'un sur l'autre. Il a la
+   boîte de la scène ; le bouton, lui, déborde en haut et en bas jusqu'à la
+   sphère circonscrite, et c'est voulu — le dé aussi déborde. */
+.owd-de-case {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-end;
 }
-.owd-des-repli > summary:hover { opacity: 1; }
-.owd-des-repli > summary::-webkit-details-marker { display: none; }
+
+/* LE BOUTON EST VIDE, SE POSE SUR LE DÉ, ET NE MONTRE RIEN.
+   Il enfermait la scène 3D — sous-arbre `contain: layout`, contexte 3D, faces
+   réécrites à chaque image —, et c'était la seule chose qui le distinguait des
+   boutons du pied, dont on sait qu'ils répondent dans Roll20. Vide, il leur est
+   identique.
+   IL EST AU-DESSUS : dernier enfant positionné de l'étui, donc dernier peint et
+   premier touché par le hit-test. Sa taille est écrite par le script — deux
+   rayons, la boîte de la sphère circonscrite —, la feuille ne pouvant pas la
+   deviner.
+   MAIS IL NE PORTE PLUS AUCUN DÉCOR. Un anneau dessiné là se peint PAR-DESSUS
+   le dé et le ronge. Le décor est descendu sur `.owd-de-halo`, plus bas. */
+.owd-de-choix {
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  padding: 0; border: 0; background: transparent;
+  cursor: pointer;
+}
+.owd-de-choix:focus-visible { outline: 2px solid var(--vert); outline-offset: 2px; }
+
+/* LE HALO — LE DÉCOR, ET IL PASSE SOUS LE DÉ.
+   Premier enfant de l'étui, donc premier peint : le dé se dessine par-dessus et
+   garde ses arêtes. Il occupe le même carré que la cible du clic — deux rayons,
+   la sphère circonscrite —, si bien que ce qu'on voit s'allumer est exactement
+   ce qu'on peut cliquer.
+   L'ÉTAT VIENT DE L'ÉTUI, pas du bouton : `:hover` remonte à tous les ancêtres
+   de l'élément survolé, et la classe de sélection est posée par le script. Un
+   frère ne se sélectionne pas depuis un frère sans `:has()`, et il n'y a aucune
+   raison d'en dépendre pour si peu. */
+.owd-de-halo {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 46px; height: 46px;          /* deux rayons — voir DE_RAYON */
+  transform: translate(-50%, -50%);
+  border-radius: 14px;
+  background: transparent;
+  transition: background-color .14s, box-shadow .14s;
+  pointer-events: none;               /* le clic appartient au bouton */
+}
+.owd-de-case:hover .owd-de-halo {
+  background: rgb(70 84 59 / .09);
+  box-shadow: inset 0 0 0 1px rgb(70 84 59 / .28);
+}
+.owd-de-case.owd-choisi .owd-de-halo {
+  background: rgb(70 84 59 / .15);
+  box-shadow: inset 0 0 0 2px var(--vert), 0 0 0 4px rgb(70 84 59 / .13);
+}
+.owd-des.owd-nuit .owd-de-case:hover .owd-de-halo {
+  background: rgb(255 255 255 / .07);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / .22);
+}
+.owd-des.owd-nuit .owd-de-case.owd-choisi .owd-de-halo {
+  background: rgb(255 255 255 / .11);
+  box-shadow: inset 0 0 0 2px var(--vert), 0 0 0 4px rgb(255 255 255 / .10);
+}
+
+/* RELANCER : la seule commande de la carte qui ÉCRIVE au tchat, donc la seule
+   qui doive se distinguer des deux autres. Éteinte tant qu'aucun dé n'est
+   choisi — un bouton qui ne ferait rien vaut mieux absent qu'inerte. */
+.owd-des-relancer[disabled] { opacity: .35; cursor: default; }
+.owd-des-relancer:not([disabled]) {
+  opacity: 1; color: var(--vert); border-color: var(--vert);
+}
+.owd-des-relancer:not([disabled]):hover { background: rgb(70 84 59 / .12); }
+
+/* Le bouton de détail porte le même habit que « re-animer » — ce sont deux
+   commandes de même rang, dans le même pied. Seule sa couleur d'accent diffère,
+   pour que l'œil ne les confonde pas au moment de cliquer. */
+.owd-des-detail:hover { border-color: var(--ink-2); color: var(--ink); }
+.owd-des-detail[aria-expanded="true"] {
+  opacity: 1; border-color: var(--ink-2); color: var(--ink);
+}
 
 /* QUI DEMANDE MOINS DE MOUVEMENT N'EN AURA PAS — mais la coupure est DANS LE JS,
    pas ici, parce que la culbute est lancée par element.animate() : une animation
    du moteur d'animations web ne se laisse pas éteindre par une media query, qui
-   ne gouverne que ce que la feuille déclare. Voir moinsDeMouvement(). Le dé se
-   pose alors directement sur sa face — même valeur, même lecture. */
+   ne gouverne que ce que la feuille déclare. Le moteur des dés l'interroge
+   lui-même, à chaque dé : voir moinsDeMouvement() dans des3d.js. Le dé se pose
+   alors directement sur sa face — même valeur, même lecture. */
 @media (prefers-reduced-motion: reduce) {
-  .owd-cube { transition: none !important; }
+  .owd-de-halo { transition: none !important; }
 }

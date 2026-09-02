@@ -1,0 +1,154 @@
+/* LES DÉS EN VOLUME — la mise en page, compagne de des3d.js.
+ *
+ * Les valeurs viennent de la page d'essai `owd-d6/d6.html` du dépôt, où elles
+ * sont éprouvées ; les noms de classes, eux, sont préfixés `owd-d3-` comme tout
+ * ce que cette extension pose dans le DOM de Roll20. Les commentaires qui
+ * suivent disent ce qu'on ne peut PAS changer sans casser le rendu — chacun
+ * répare une chose qui a réellement cassé.
+ *
+ * Tout est en unités relatives à deux variables posées par le script :
+ *   --diam   deux rayons du solide, en pixels
+ *   --arete  deux apothèmes : la largeur du dé posé à plat, dont l'ombre a besoin
+ * Aucune règle ici ne fixe une taille en dur : le script décide, la feuille suit.
+ */
+
+/* LA SCÈNE. Sa hauteur vaut deux apothèmes, et c'est ce qui fait de son bord bas
+   la LIGNE DE SOL : le centre du solide est au centre de la boîte, son point le
+   plus bas retombe exactement un apothème dessous. Le solide déborde
+   latéralement, ce qui est sans conséquence puisque rien ne rogne. */
+.owd-d3 {
+  position: relative;
+  display: inline-block;
+  vertical-align: bottom;
+
+  /* `flat` et non `preserve-3d` : la scène porte la perspective, le contexte 3D
+     commence au-dessous d'elle. */
+  transform-style: flat;
+
+  /* CONFINEMENT — et surtout PAS `paint`. Écrire une transformation sur un dé
+     oblige le navigateur à se demander qui d'autre en dépend ; `contain` répond
+     à sa place. Mais `paint` découperait le sous-arbre à la boîte de l'élément,
+     or le dé en perspective déborde de sa scène de plusieurs pixels en haut, en
+     bas et sur les côtés : il serait rogné. */
+  contain: layout style;
+
+  /* Héritées, et posées ICI plutôt que sur la face : ces valeurs ne changent
+     jamais, mais toute déclaration portant une `var()` est re-substituée à
+     chaque restylage de l'élément qui la porte — et une face est restylée à
+     chaque image, la scène jamais. */
+  color: var(--encre-de, #2b2c31);
+
+  /* Le tchat de Roll20 a ses propres règles de texte ; le dé n'en veut aucune. */
+  line-height: 1;
+  text-align: initial;
+}
+
+/* LE VOL. L'écrasement au contact pivote depuis le BAS : sans cette origine, le
+   dé monterait de la moitié de sa compression et décollerait du sol à l'instant
+   précis où il devrait y être collé. La translation, elle, est insensible à
+   l'origine — les deux tiennent donc sur un seul élément.
+   Le script écrit ici un `translate3d` dont le troisième terme est la
+   PROFONDEUR : il traverse la perspective de la scène, et c'est elle seule qui
+   le rend visible — le dé grossit en venant vers l'œil. */
+.owd-d3-vol {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transform-origin: 50% 100%;
+}
+
+/* LE DÉ. `transform-origin` reste au centre de la boîte : toute la construction
+   suppose que la rotation se fait autour du centre du solide. Le modifier casse
+   tout, sans le moindre signe. */
+.owd-d3-de {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+}
+
+/* LA FACE EST UN CARRÉ DE DEUX RAYONS, centré sur le centre du solide, que sa
+   matrice emmène sur son plan et que `clip-path` découpe à sa forme. Elle n'est
+   PAS `inset: 0` de la boîte : la scène vaut deux apothèmes en hauteur, et une
+   face n'y tiendrait pas. */
+.owd-d3-f {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: var(--diam); height: var(--diam);
+  margin-left: calc(var(--diam) / -2);
+  margin-top: calc(var(--diam) / -2);
+
+  display: grid;
+  place-items: center;
+
+  /* UN APLAT, ET RIEN D'AUTRE : ni flaque spéculaire, ni chanfrein, ni dégradé.
+     Ce n'est pas une simplification de rendu, c'est le modèle — l'éclairement
+     d'une face ne dépend que de son inclinaison vers l'œil, donc il est constant
+     sur toute sa surface. Ce que cela retire de la peinture, l'ombrage doit le
+     rendre : c'est l'ÉCART entre deux aplats voisins qui trace l'arête, et lui
+     seul. */
+  background-color: var(--ton, #e7e2d6);
+
+  /* JOINTURES — l'ÉTALEMENT. Ne pas retirer. Une ombre sans flou ni décalage, à
+     la couleur EXACTE de cette face, peinte hors de la boîte et transformée avec
+     elle : la fuite d'un pixel entre deux faces voisines se remplit du bon ton
+     au lieu de laisser voir le fond. */
+  box-shadow: 0 0 0 1px var(--ton, #e7e2d6);
+
+  /* LE CHIFFRE PREND LA POLICE DE ROLL20, comme tout le reste de ce que
+     l'extension pose dans sa page. Il portait une grotesque industrielle choisie
+     pour ses chiffres carrés — la DIN — et c'était le meilleur choix DANS
+     L'ABSOLU ; ce n'est pas le bon ICI. Un dé qui écrit ses chiffres dans une
+     police que la conversation n'emploie nulle part se lit comme une image
+     collée, et l'écart se voit d'autant plus que le chiffre est gros.
+     `font-variant-numeric` reste, et il fait le vrai travail : chiffres
+     bas-de-casse interdits, chasse fixe. Une police d'interface qui donnerait un
+     « 1 » plus étroit qu'un « 8 » ferait danser les dés d'une valeur à l'autre. */
+  font-family: inherit;
+  font-variant-numeric: lining-nums tabular-nums;
+  font-weight: 700;    /* 800 fermerait le compte du 6 ; 500 disparaîtrait sur
+                          les faces les moins éclairées. */
+  line-height: 1;
+  user-select: none;
+
+  /* JOINTURES — L'ÉLIMINATION DES FACES ARRIÈRE. Obligatoire, et le raisonnement
+     de salon dit le contraire. Mesuré dans Firefox : dès qu'une face n'est plus
+     exactement sa boîte de bordure — et l'ombre à étalement ci-dessus suffit —
+     le tri en profondeur du contexte `preserve-3d` DÉCROCHE et les faces
+     retombent dans l'ordre du document. Les faces arrière sont alors peintes
+     par-dessus les faces avant : on voit l'intérieur du dé. Avec `hidden`, le
+     rendu est juste dans les deux cas — si le tri fonctionne, on ne supprime que
+     ce qu'il aurait caché ; s'il décroche, il ne reste que les faces avant, qui
+     ne se recouvrent pas. */
+  backface-visibility: hidden;
+}
+
+/* LE CHIFFRE est du contenu EN FLUX, jamais un pseudo-élément ni rien de
+   positionné : le contenu en ligne se peint avant les descendants positionnés,
+   donc rien ne peut passer devant lui. */
+.owd-d3-n {
+  display: block;
+  color: inherit;
+}
+
+/* LES OMBRES. Deux ellipses plates, hors du contexte 3D — un `filter:
+   drop-shadow` sur le dé aplatirait le solide. Le script leur refait à la main
+   la projection que la perspective donne au dé, et leur centre tombe sur le
+   POINT DE CONTACT, c'est-à-dire le bord bas de la scène : d'où le `bottom` qui
+   retire la demi-hauteur de l'ellipse, puisque c'est son centre qu'on place. */
+.owd-d3-ombre {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--arete) * -.15);
+  width: var(--arete);
+  height: calc(var(--arete) * .30);   /* ellipse aplatie : le rapport encode
+                                         l'angle de vue de la table */
+  pointer-events: none;
+}
+.owd-d3-ombre--large {
+  background: radial-gradient(74% 74% at 50% 50%,
+    rgb(0 0 0 / .30) 0%, rgb(0 0 0 / .15) 44%, rgb(0 0 0 / 0) 100%);
+}
+.owd-d3-ombre--nette {
+  background: radial-gradient(45% 45% at 50% 50%,
+    rgb(0 0 0 / .60) 0%, rgb(0 0 0 / .38) 52%, rgb(0 0 0 / 0) 100%);
+}
