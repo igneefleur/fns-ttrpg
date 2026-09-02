@@ -298,6 +298,13 @@ def chiffres_html(brut, a_du_blanc, base=None):
     Le multiplicateur appartient au COUP, la base à l'ARME : changer la base
     recalcule toute l'arme, ce qui est la raison d'être d'une base. La moitié
     blanche reste calculée, jamais écrite.
+
+    La valeur verte doit être PAIRE, puisque la blanche en vaut la moitié. Avec
+    des multiplicateurs par dixièmes, cela n'arrive tout seul que si la base est
+    divisible par 20 — 11 étant premier avec 20, aucune autre base ne donne un
+    entier pair à tous les multiplicateurs de 0,8 à 1,5. Comme les bases 22 et 24
+    sont voulues, le produit est ARRONDI au pair le plus proche. L'écart ne
+    dépasse jamais 1, et il vaut mieux qu'un plafond de trois bases possibles.
     """
     m = re.match(r"^\s*([\d.]+)\s+(CON|PER|TRA)\s*(?:/\s*(CON|PER|TRA)\s*)?$", brut)
     if not m:
@@ -318,11 +325,7 @@ def chiffres_html(brut, a_du_blanc, base=None):
                 f"multiplicateur {mult} hors de la fourchette : de 0,8 à 1,5")
         if abs(round(mult * 10) - mult * 10) > 1e-9:
             raise ErreurCoup(f"multiplicateur {mult} : le pas est de un dixième")
-        exact = base * mult
-        if abs(round(exact) - exact) > 1e-9:
-            raise ErreurCoup(
-                f"base {base} × {mult} = {exact} : la valeur doit être entière")
-        vert = round(exact)
+        vert = 2 * int(base * mult / 2.0 + 0.5)
     if vert % 2:
         raise ErreurCoup(
             f"dégâts verts impairs ({vert}) : la case blanche en vaut la moitié, "
@@ -349,6 +352,25 @@ def chiffres_html(brut, a_du_blanc, base=None):
     return html + ")</span></p>"
 
 
+def defense_html(esquive, parade):
+    """Ce qu'il en coûte d'échapper au coup.
+
+    Deux difficultés, et elles ne disent pas la même chose : on ESQUIVE ce qui
+    est lent — le corps a le temps de se déplacer — et on PARE ce qui est léger,
+    puisqu'un fer arrête un fer mais n'arrête pas une masse. Un coup vif et
+    lourd est donc redoutable des deux façons, un coup lent et léger ne l'est
+    d'aucune. Les deux valeurs appartiennent au COUP, non à l'arme qui le pare.
+    """
+    if esquive is None and parade is None:
+        return ""
+    bouts = []
+    if esquive is not None:
+        bouts.append(f'<span class="df-esq">esquive <b>{int(esquive)}</b></span>')
+    if parade is not None:
+        bouts.append(f'<span class="df-par">parade <b>{int(parade)}</b></span>')
+    return '<p class="geste-defense">' + "".join(bouts) + "</p>"
+
+
 def _rendu(attrs, base=None):
     """Ce qui se dessine avant le nom, et ce qui se pose après."""
     trajet = attrs.get("trajet")
@@ -360,6 +382,9 @@ def _rendu(attrs, base=None):
     a_du_blanc = any(b.endswith(":passe") for b in trajet.split(">"))
     if "degats" in attrs:
         apres.append(chiffres_html(attrs["degats"], a_du_blanc, base))
+
+    if "esquive" in attrs or "parade" in attrs:
+        apres.append(defense_html(attrs.get("esquive"), attrs.get("parade")))
 
     if "garde" in attrs:
         svg, _, _ = garde_svg(attrs["garde"])

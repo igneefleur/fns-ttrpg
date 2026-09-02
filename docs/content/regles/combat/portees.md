@@ -36,7 +36,7 @@ Au pas, les mêmes portées se répartissent sur quatre paliers. La mesure a don
 |:---:|---|
 | 0 | coude, genou, tête, lutte |
 | 1 | corps à corps, dague |
-| 2 | épée, hache, masse |
+| 2 | épée, rapière, hache, masse |
 | 3 | grande épée, grande hache, grand marteau |
 | 4 | lance, hallebarde |
 

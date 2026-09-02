@@ -176,6 +176,28 @@
   color: inherit;
 }
 
+/* ── Les deux défenses ──
+   Ce qu'il en coûte d'échapper au coup. Elles se posent sous les dégâts, dans
+   la même fonte et plus discrètes : on lit d'abord ce que le coup fait, ensuite
+   ce qu'il faut pour y échapper. Les deux se lisent d'un bloc, séparées par un
+   simple blanc — le point médian formait ici la même file de points noirs en
+   travers de la rangée que celle qu'on a retirée des dégâts. */
+.md-typeset .geste-defense {
+  margin: 0.05rem 0 0;
+  font-family: 'Roboto Mono', ui-monospace, monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  opacity: 0.72;
+}
+.md-typeset .geste-defense b {
+  font-weight: 700;
+  opacity: 1;
+}
+.md-typeset .geste-defense .df-par::before {
+  content: '3';
+}
+
 /* ── La garde ──
    Le carré des positions de mains, SANS AUCUN CHIFFRE : un numéro de case ne dit
    rien à qui lit, le dessin dit tout. Cercle vide au départ, disque plein à
