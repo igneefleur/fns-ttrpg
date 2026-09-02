@@ -6,8 +6,9 @@
  * mêmes rayons, le même contrôle segmenté d'onglets et le même en-tête que la
  * fiche JJK. Ce qui change tient en trois choses, et rien d'autre :
  *
- *   1. l'ACCENT est VERT (--accent / --accent-deep) et non carmin, et le
- *      DANGER en est séparé (--danger) : un avertissement vert ne se lit pas ;
+ *   1. l'ACCENT est L'OR du wiki d'Outward (--accent / --accent-deep) et non
+ *      carmin, et le DANGER en est séparé (--danger) : un avertissement doré
+ *      ne se lit pas ;
  *   2. la barre des rangs a SIX crans (.s0….s5) et non cinq — Outward compte
  *      six rangs, de « non initié » à « Rang Max » ;
  *   3. la barre d'exposition (.pc-expobar) est neuve : elle est SIGNÉE, du
@@ -51,48 +52,71 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
    du camp (--oc-*), afin que le camp et la fiche ne soient pas de deux nuances
    de papier différentes à l'écran, côte à côte, dans Roll20.
 
+   LA PALETTE EST CELLE DU WIKI D'OUTWARD : noir, blanc et or, rien d'autre.
+   Le jour est BLANC (papier #ffffff, encre #1a1a1a), la nuit est NOIRE (papier
+   #0d0d0d, encre #e6e6e6), et l'or fait les deux modes. L'or du wiki, #ffd77f,
+   est éclatant sur du sombre (12:1 sur le papier de nuit) et illisible sur du
+   blanc (1,4:1) : de JOUR tout texte doré prend donc l'or ASSOMBRI (#7a5c10,
+   6,2:1 sur blanc ; #6b5210, 7,4:1 pour l'accent appuyé), et l'or vif ne
+   revient qu'avec la nuit. C'est toute la logique d'inversion du bloc de nuit,
+   en bas de fichier.
+
    L'échelle typographique, elle, est reprise TELLE QUELLE de JJK. Ces huit
    nombres font la densité de la fiche ; les changer, c'est refaire l'erreur.
    ============================================================ */
 .perso-fiche {
-  --paper:   #faf6eb;   /* la feuille (site : héritée d'extra.css ; iframe : ce repli) */
-  --bg-side: #e4ddcd;   /* le plan de travail */
-  --card:    #fffdf6;   /* cartes de section */
-  --panel:   #f2ecdd;   /* encadrés doux, tuiles chiffrées  (= --oc-papier-2) */
-  --stripe:  #e8e0cb;   /* zébrage des lignes               (= --oc-papier-3) */
-  --hair:    #e3dcc8;   /* filets fins                      (= --oc-ligne-2) */
-  --line:    #cfc7b1;   /* bordures et soulignés            (= --oc-ligne) */
-  --line-2:  #d9d0ba;   /* bordures de cartes (entre les deux filets ci-dessus) */
-  --ink:     #1d1d1d;   /* Outward garde l'encre neutre du site (JJK la chauffe) */
-  --ink-2:   #4d4a42;
-  --ink-3:   #837c6a;
+  --paper:   #ffffff;   /* la feuille (site : héritée d'extra.css ; iframe : ce repli) */
+  --bg-side: #e9e7e2;   /* le plan de travail, gris clair autour de la feuille */
+  --card:    #ffffff;   /* cartes de section : blanches comme la feuille, tenues par leur filet */
+  --panel:   #f5f2ea;   /* encadrés doux, tuiles chiffrées  (= --row-a du livre) */
+  --stripe:  #edeae2;   /* zébrage des lignes, un cran sous le panneau */
+  --hair:    #e8e4d8;   /* filets fins */
+  --line:    #ddd6c6;   /* bordures et soulignés            (= --trait du livre) */
+  --line-2:  #e3ddcf;   /* bordures de cartes (entre les deux filets ci-dessus) */
+  --ink:     #1a1a1a;   /* l'encre du livre, la même de jour que sur le site */
+  --ink-2:   #5f5f5f;   /* texte atténué                    (= --ink-2 du livre, 6,9:1) */
+  --ink-3:   #737373;   /* libellés et légendes : le plus pâle qui tienne 4,7:1 sur blanc */
 
-  /* L'ACCENT EST VERT. Il dit « ceci est actif, ceci est modifié, ceci est
-     visé » — jamais « attention ». C'est le vert de section du livre. */
-  --accent:      #63755e;
-  --accent-deep: #46543b;
-  --wash:        rgba(99, 117, 94, .12);   /* le voile de l'accent */
+  /* L'ACCENT EST L'OR. Il dit « ceci est actif, ceci est modifié, ceci est
+     visé » — jamais « attention ». De jour c'est l'or ASSOMBRI du livre : il
+     porte du texte sur le papier blanc (6,2:1) et reçoit du blanc quand il
+     sert de fond (6,2:1 aussi). L'or appuyé, plus grave, tient les fonds
+     pleins et les valeurs modifiées (7,4:1). */
+  --accent:      #7a5c10;
+  --accent-deep: #6b5210;
+  --wash:        rgba(255, 215, 127, .30);   /* le voile de l'accent : l'or vif dilué, #fff3d9 sur blanc */
 
   /* LE DANGER EST SÉPARÉ DE L'ACCENT, et c'est la raison d'être de ces deux
      jetons : en JJK l'accent carmin faisait les deux offices, ce qu'un accent
-     vert ne peut pas faire — un avertissement vert ne se lit pas. Tout ce qui
-     alerte passe ici : .pc-warn, .pc-btn.danger, .pc-mini.danger,
-     [data-panne], [data-musele], .pc-modrow[data-etat="panne"], le
-     dépassement d'un compteur, et le liseré de .pc-avis. */
+     doré ne peut pas faire — un avertissement doré ne se lit pas, et l'or dit
+     déjà « actif » partout ailleurs. Tout ce qui alerte passe ici : .pc-warn,
+     .pc-btn.danger, .pc-mini.danger, [data-panne], [data-musele],
+     .pc-modrow[data-etat="panne"], le dépassement d'un compteur, et le liseré
+     de .pc-avis. Le carmin est le SEUL écart à la palette noir-blanc-or, et il
+     est gardé tel quel : une alerte doit sortir du thème pour se voir. */
   --danger:      #b0402c;   /* = --oc-rouille */
   --danger-deep: #8c2f1e;
   --wash-danger: rgba(176, 64, 44, .10);
 
   /* L'exposition d'Outward va du froid au chaud : la barre signée a besoin de
-     ses deux bouts, et aucune autre pièce de la fiche ne s'en sert. */
+     ses deux bouts, et aucune autre pièce de la fiche ne s'en sert. Ces deux
+     jetons ne sont pas décoratifs — ils portent un SENS opposé — et restent
+     donc hors de la palette dorée. */
   --froid: #4a6f96;
   --chaud: #b5702c;
 
-  /* L'or : l'XP et la pièce d'argent. Sert de remplissage aux compteurs de
-     budget qui ne mesurent pas une santé mais une DÉPENSE (.pc-meter.or). */
+  /* L'or de la DÉPENSE : l'XP et la pièce d'argent. Sert de remplissage aux
+     compteurs de budget qui ne mesurent pas une santé mais ce qui a été payé
+     (.pc-meter.or). Ocre moyen, volontairement plus clair et plus terne que
+     l'or de --ok : les deux barres sont dorées, et c'est leur VALEUR qui les
+     sépare d'un coup d'œil. */
   --or: #a9862f;
 
-  --ok: #4f7a3a;        /* la barre pleine d'un compteur ordinaire */
+  /* La barre pleine d'un compteur ordinaire — l'ancien « or positif ». De
+     jour elle prend l'or de titre et NON l'or vif : sur la zébrure #edeae2 qui
+     lui sert de rail, #ffd77f ne donne que 1,1:1 et la jauge disparaîtrait.
+     L'or vif lui revient de nuit, où il tranche sur le noir. */
+  --ok: #7a5c10;
 
   /* échelle typographique dense — reprise telle quelle de JJK */
   --fs-label: .54rem;
@@ -107,7 +131,13 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
   color: var(--ink);
   background: var(--bg-side);
   min-height: 74vh;
-  font-family: 'Alegreya', 'EB Garamond', Garamond, serif;
+  /* LA PILE DE ROLL20. Proxima Nova est la police du corps de Roll20 (mesurée
+     sur une vraie partie) ; sous licence Adobe, elle est NOMMÉE et jamais
+     servie, et Nunito Sans — SIL OFL, auto-hébergée par fonts.css — la
+     remplace chez qui ne l'a pas. 'Symboles JDR' n'existe pas dans l'iframe :
+     ce sont les faces à symboles rattachées à 'Nunito Sans' (fonts.css) qui
+     rendent les ○ ● posés par owd-fiche.js. */
+  font-family: 'Proxima Nova', proxima-nova, 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: var(--fs-body);
   line-height: 1.4;
   padding-bottom: 3rem;
@@ -121,20 +151,25 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
    l'onglet Options. */
 .perso-fiche .pc-top {
   display: flex; align-items: center; gap: .5rem; flex-wrap: wrap;
-  padding: .5rem 1.1rem; background: #e7dfc9; border-bottom: 1px solid #d7cdb2;
+  /* un gris à peine plus clair que le plan de travail (#e9e7e2) : la barre se
+     détache sans devenir une seconde feuille */
+  padding: .5rem 1.1rem; background: #f2f0ec; border-bottom: 1px solid #ddd6c6;
 }
-.pc-top-title { font-family: 'Cinzel', serif; font-weight: 600; font-size: 1.02rem; letter-spacing: .06em; color: #47543e; }
-.pc-top-hint { font-size: .72rem; color: #8c8574; }
+/* le seul texte doré de la barre, en or de titre : 6,2:1 sur ce gris clair */
+.pc-top-title { font-family: 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif; font-weight: 600; font-size: 1.02rem; letter-spacing: .06em; color: #7a5c10; }
+.pc-top-hint { font-size: .72rem; color: #737373; }
 .pc-btn {
-  padding: .3rem .75rem; border: 1px solid #cabf9f; border-radius: 7px;
-  background: #fdfaf1; color: #5b564a; font: inherit; font-size: .75rem; cursor: pointer;
+  padding: .3rem .75rem; border: 1px solid #ddd6c6; border-radius: 7px;
+  background: #ffffff; color: #5f5f5f; font: inherit; font-size: .75rem; cursor: pointer;
   transition: background .12s, border-color .12s, color .12s;
 }
-.pc-btn:hover { background: #fff; border-color: #a99e7f; color: #2a2820; }
+/* le bouton est blanc au repos : c'est donc le SURVOL qui se teinte, d'un
+   voile d'or vif et d'un filet en or de titre */
+.pc-btn:hover { background: #fff3d9; border-color: #7a5c10; color: #1a1a1a; }
 .pc-btn.danger { color: var(--danger); }
 .pc-btn.danger:hover { border-color: var(--danger); background: var(--wash-danger); color: var(--danger-deep); }
 .pc-top .pc-lib { margin-left: auto; display: flex; gap: .35rem; align-items: center; flex-wrap: wrap; }
-.pc-top .pc-lib select { max-width: 220px; padding: .3rem .5rem; border: 1px solid #cabf9f; border-radius: 7px; background: #fdfaf1; color: #2a2820; font: inherit; font-size: .75rem; }
+.pc-top .pc-lib select { max-width: 220px; padding: .3rem .5rem; border: 1px solid #ddd6c6; border-radius: 7px; background: #ffffff; color: #1a1a1a; font: inherit; font-size: .75rem; }
 /* SEUL point de bascule en px du fichier, et il est réservé à cette barre :
    partout ailleurs, c'est 44em. */
 @media (max-width: 700px) {
@@ -173,7 +208,7 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
   position: absolute; left: 0; top: calc(100% + .2rem); z-index: 5; width: 11rem;
   border: 1px solid var(--line); border-radius: 5px; background: var(--card);
   color: var(--ink); font: inherit; font-size: .6rem; padding: .18rem .3rem;
-  box-shadow: 0 2px 8px rgba(60, 48, 18, .18); box-sizing: border-box;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .18); box-sizing: border-box;   /* ombre neutre : la palette n'a plus de brun */
 }
 .pc-portrait-edit:focus { outline: none; border-color: var(--accent); }
 
@@ -226,8 +261,11 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
   font-weight: 600; font-size: .7rem; letter-spacing: .02em; color: var(--ink-2);
   transition: background .12s, color .12s, box-shadow .12s;
 }
-.pc-tab:hover { background: rgba(90, 70, 30, .07); color: var(--ink); }
-.pc-tab.on { background: var(--accent); color: #fff; box-shadow: 0 1px 4px rgba(70, 84, 59, .30); }
+/* survol : un voile d'or de titre, assez pâle pour rester un survol */
+.pc-tab:hover { background: rgba(122, 92, 16, .08); color: var(--ink); }
+/* onglet actif : fond d'or de titre et texte BLANC (6,2:1) — l'or vif y
+   mettrait un blanc à 1,4:1, illisible */
+.pc-tab.on { background: var(--accent); color: #fff; box-shadow: 0 1px 4px rgba(0, 0, 0, .18); }
 .pc-tab.on:hover { background: var(--accent-deep); color: #fff; }
 
 /* ---- barre d'envoi (Roll20) : destinataire + modificateur + dés engagés ----
@@ -302,19 +340,20 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
 .pc-block {
   min-width: 0; background: var(--card);
   border: 1px solid var(--line-2); border-radius: 8px;
-  box-shadow: 0 1px 2px rgba(60, 48, 18, .05);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .05);   /* ombre neutre, sans teinte */
   padding: .35rem .5rem .5rem;
 }
 .pc-block-title {
   position: relative; display: flex; align-items: baseline; gap: .4rem;
   margin: 0 0 .35rem; padding: .04rem 0 .2rem;
   border-bottom: 1px solid var(--hair);
-  font-family: 'Cinzel', serif; font-weight: 700;
+  font-family: 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif; font-weight: 700;
   font-size: var(--fs-title); letter-spacing: .04em; color: var(--ink-2); line-height: 1.1;
 }
-/* le tiret d'accent : la signature visuelle du bloc */
+/* le tiret d'accent : la signature visuelle du bloc. Un FILET, pas du texte —
+   il porte donc l'or sans contrainte de lisibilité. */
 .pc-block-title::after { content: ""; position: absolute; left: 0; bottom: -1px; width: 1.4rem; height: 1.5px; background: var(--accent); border-radius: 2px; }
-.pc-block-title small { font-family: 'Alegreya', Garamond, serif; font-weight: 600; font-size: var(--fs-label); letter-spacing: 0; color: var(--ink-3); margin-left: auto; text-align: right; white-space: nowrap; flex: 0 0 auto; }
+.pc-block-title small { font-family: 'Proxima Nova', proxima-nova, 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: 600; font-size: var(--fs-label); letter-spacing: 0; color: var(--ink-3); margin-left: auto; text-align: right; white-space: nowrap; flex: 0 0 auto; }
 .pc-block-note { font-size: var(--fs-meta); color: var(--ink-3); margin: .12rem 0 .3rem; line-height: 1.3; }
 
 /* ---- mode édition par module ----
@@ -372,7 +411,9 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
 .pc-crow-top { display: flex; align-items: center; gap: .35rem; }
 /* la pastille du sigle (FOR DEX INT FER VIG END RES CHA), son title porte le
    libellé accentué — les CLÉS de l'état, elles, sont sans accent */
-.pc-abbr { display: inline-block; box-sizing: border-box; min-width: 2.6rem; background: var(--accent-deep); color: #eef2e6; font-weight: 700; font-size: .58rem; letter-spacing: .01em; padding: .14rem .3rem; border-radius: 4px; text-align: center; white-space: nowrap; }
+/* pavé d'or appuyé, texte BLANC : 7,4:1 — c'est le fond le plus sombre que la
+   fiche pose de jour, et le blanc est ce qui s'y lit le mieux */
+.pc-abbr { display: inline-block; box-sizing: border-box; min-width: 2.6rem; background: var(--accent-deep); color: #fff; font-weight: 700; font-size: .58rem; letter-spacing: .01em; padding: .14rem .3rem; border-radius: 4px; text-align: center; white-space: nowrap; }
 .pc-crow-top .nm { flex: 1 1 auto; min-width: 0; font-size: var(--fs-meta); color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pc-cval {
   min-width: 2rem; text-align: center; font-size: 1rem; font-weight: 700; color: var(--ink);
@@ -484,7 +525,7 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
    TEXTE LIBRE du joueur : ce n'est pas une règle, c'est son rangement. */
 .pc-comp-champ {
   display: flex; align-items: center; gap: .45rem; margin: .4rem 0 .1rem; padding: .05rem .05rem;
-  font-family: 'Cinzel', serif; font-weight: 700; font-size: .62rem; letter-spacing: .04em; color: var(--ink-2);
+  font-family: 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif; font-weight: 700; font-size: .62rem; letter-spacing: .04em; color: var(--ink-2);
   white-space: nowrap;
 }
 .pc-comp-champ::after { content: ""; flex: 1; height: 1px; background: var(--hair); }
@@ -529,7 +570,11 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
 /* ---- barre des rangs : SIX crans [ N | I | A | M | E | R ] ----
    Non initié, Initié, Apprenti, Maître, Expert, Rang Max. JJK en a cinq : le
    dégradé (--panel, puis trois tons, puis l'accent appuyé) est RÉÉTALÉ sur six,
-   jour ET nuit, en vert.
+   jour ET nuit, EN OR — du papier vers l'or le plus grave.
+   L'encre BASCULE en cours de rampe, et c'est voulu : les crans clairs (s1 à
+   s3) gardent l'encre du livre, les deux derniers (s4, s5) passent au blanc
+   parce que leur or est trop foncé pour porter du noir. Le blanc sur #8a6a18
+   donne 5,1:1, sur l'or appuyé 7,3:1 ; l'encre sur #e6cd85 en donne 11.
    .on marque tout cran atteint (i <= rang) ; .cur marque le rang courant
    (i === rang) et N'A DÉLIBÉRÉMENT AUCUNE RÈGLE DE STYLE : c'est un repère
    lisible de l'extérieur (sondes, mods). Un audit l'avait retirée en JJK et
@@ -546,11 +591,11 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
 .pc-stadebar .seg:first-child { border-left-width: 1px; border-radius: 4px 0 0 4px; }
 .pc-stadebar .seg:last-child { border-radius: 0 4px 4px 0; }
 .pc-stadebar .seg.on.s0 { background: var(--panel); color: var(--ink-2); }
-.pc-stadebar .seg.on.s1 { background: #dfe4d4; color: var(--ink); border-color: #cbd3bd; }
-.pc-stadebar .seg.on.s2 { background: #c2ccb4; color: var(--ink); border-color: #adba9c; }
-.pc-stadebar .seg.on.s3 { background: #9aab8e; color: #fff; border-color: #85987a; }
-.pc-stadebar .seg.on.s4 { background: #6f8663; color: #fff; border-color: #5e7452; }
-.pc-stadebar .seg.on.s5 { background: var(--accent-deep); color: #eef2e6; border-color: var(--accent-deep); }
+.pc-stadebar .seg.on.s1 { background: #fbf1da; color: var(--ink); border-color: #f0e3c0; }
+.pc-stadebar .seg.on.s2 { background: #f4e3b4; color: var(--ink); border-color: #e7d59b; }
+.pc-stadebar .seg.on.s3 { background: #e6cd85; color: var(--ink); border-color: #d7bd6e; }
+.pc-stadebar .seg.on.s4 { background: #8a6a18; color: #fff; border-color: #77590f; }
+.pc-stadebar .seg.on.s5 { background: var(--accent-deep); color: #fff; border-color: var(--accent-deep); }
 .pc-editable.editing .pc-stadebar .seg:hover { border-color: var(--accent); }
 /* verrouillé : le clic ne fait rien (garde-fou côté JS) mais le survol garde
    son infobulle — c'est elle qui donne le nom complet du rang */
@@ -608,7 +653,7 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
 .pc-mmod::-webkit-inner-spin-button, .pc-mmod::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 .pc-mmod:focus { outline: none; border-bottom: 2px solid var(--accent); }
 /* ÉCART ASSUMÉ avec JJK, où un modificateur négatif prenait l'accent carmin :
-   ici l'accent est vert et sert déjà à dire « modifié » (.adj). Un −3 en vert
+   ici l'accent est l'or et sert déjà à dire « modifié » (.adj). Un −3 doré
    serait indiscernable d'un +3. Le négatif prend donc le danger — c'est la
    seule fois où le danger ne signale pas une panne, et c'est délibéré. */
 .pc-mmod.neg { color: var(--danger); }
@@ -996,7 +1041,7 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
   box-shadow: 0 6px 26px rgba(0, 0, 0, .35); padding: .6rem .7rem .55rem;
 }
 .pc-modal-title {
-  font-family: 'Cinzel', serif; font-weight: 700; font-size: var(--fs-title);
+  font-family: 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif; font-weight: 700; font-size: var(--fs-title);
   color: var(--ink-2); border-bottom: 1px solid var(--hair); padding-bottom: .2rem; margin-bottom: .4rem;
 }
 .pc-modal-body { display: flex; flex-direction: column; gap: .35rem; }
@@ -1167,7 +1212,7 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
    compétences, pour que les deux longues listes se lisent de la même façon */
 .pc-modgroupe {
   display: flex; align-items: center; gap: .45rem; margin: .4rem 0 .1rem; padding: .05rem;
-  font-family: 'Cinzel', serif; font-weight: 700; font-size: .62rem;
+  font-family: 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif; font-weight: 700; font-size: .62rem;
   letter-spacing: .04em; color: var(--ink-2); white-space: nowrap;
 }
 .pc-modgroupe::after { content: ""; flex: 1; height: 1px; background: var(--hair); }
@@ -1192,7 +1237,7 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
 .pc-flash {
   position: fixed; left: 50%; bottom: 1.2rem; transform: translateX(-50%);
   background: #2a2620; color: #f3ecdd; font-size: .72rem;
-  font-family: 'Alegreya', Garamond, serif;
+  font-family: 'Proxima Nova', proxima-nova, 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   padding: .4rem .9rem; border-radius: 7px; opacity: 0;
   transition: opacity .25s; pointer-events: none; z-index: 60;
   box-shadow: 0 4px 14px rgba(0, 0, 0, .3);
@@ -1200,7 +1245,7 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
 .pc-flash.on { opacity: 1; }
 
 /* ============================================================
-   Mode nuit — papier sombre, encre claire, même vert
+   Mode nuit — papier sombre, encre claire, même or
 
    RIEN de la fiche ne vit dans night.css, et rien ne doit y aller : tout le
    mode nuit tient ici, en deux temps.
@@ -1214,25 +1259,25 @@ html.night .perso-fiche {
   /* mêmes papiers nuit que le livre (night.css) et que le camp (owd-camp.css) :
      le --paper local, qui n'est qu'un repli de l'iframe, masquerait sinon la
      feuille sombre du site */
-  --paper:   #201c15;
-  --bg-side: #14110c;
-  --card:    #262119;
+  --paper:   #0d0d0d;
+  --bg-side: #000000;
+  --card:    #1a1a1a;
   --panel:   #2e2820;
   --stripe:  #2b261d;
   --hair:    #39332a;
-  --line:    #3c3527;
-  --line-2:  #453e31;
-  --ink:     #e8dfcb;
-  --ink-2:   #b7ad97;
-  --ink-3:   #8f8672;
+  --line:    #3a3a3a;
+  --line-2:  #3a3a3a;
+  --ink:     #e6e6e6;
+  --ink-2:   #9a9384;
+  --ink-3:   #9a9384;
 
   /* L'accent s'INVERSE de nuit : --accent-deep devient plus CLAIR que
-     --accent, parce que de nuit c'est un ton de TEXTE (le vert de titre du
+     --accent, parce que de nuit c'est un ton de TEXTE (le or de titre du
      livre) là où de jour c'est un ton de fond. Les deux jetons gardent leur
      rôle — « l'accent » et « l'accent appuyé » — mais les surfaces qui les
      emploient en FOND doivent changer d'encre : voir le bloc juste dessous. */
-  --accent:      #9fb37e;
-  --accent-deep: #adc08c;
+  --accent:      #ffd77f;
+  --accent-deep: #ffd77f;
   --wash:        rgba(159, 179, 126, .18);
 
   --danger:      #cf8368;
@@ -1241,8 +1286,8 @@ html.night .perso-fiche {
 
   --froid: #7fa6cd;
   --chaud: #d59a56;
-  --or:    #c9a24e;
-  --ok:    #9fb37e;
+  --or:    #ffd77f;
+  --ok:    #ffd77f;
 }
 
 /* DE NUIT, L'ACCENT EST CLAIR : tout ce qui le porte en FOND doit passer à une
@@ -1259,23 +1304,23 @@ html.night .pc-mini.primary:hover { color: #1e2318; }
 html.night .pc-tab.on { box-shadow: 0 1px 4px rgba(0, 0, 0, .45); }
 
 /* les couleurs en dur, une par une */
-html.night .perso-fiche .pc-top { background: #201c15; border-bottom-color: #3c3527; }
-html.night .pc-top-title { color: #adc08c; }
-html.night .pc-top-hint { color: #8f8672; }
-html.night .pc-btn { background: #2a2519; border-color: #3c3527; color: #b7ad97; }
-html.night .pc-btn:hover { background: #332d20; color: #e8dfcb; }
-html.night .pc-top .pc-lib select { background: #2a2519; border-color: #3c3527; color: #e8dfcb; }
+html.night .perso-fiche .pc-top { background: #0d0d0d; border-bottom-color: #3a3a3a; }
+html.night .pc-top-title { color: #ffd77f; }
+html.night .pc-top-hint { color: #9a9384; }
+html.night .pc-btn { background: #1a1a1a; border-color: #3a3a3a; color: #9a9384; }
+html.night .pc-btn:hover { background: #332d20; color: #e6e6e6; }
+html.night .pc-top .pc-lib select { background: #1a1a1a; border-color: #3a3a3a; color: #e6e6e6; }
 html.night .pc-sheet { box-shadow: 0 6px 26px rgba(0, 0, 0, .5); }
 html.night .pc-tab:hover { background: rgba(233, 224, 204, .07); }
 html.night .pc-mini:hover { background: #332d20; }
 html.night .pc-block-title { color: var(--ink); }
 /* la pastille du sigle garde un FOND sombre : --accent-deep, clair de nuit,
    n'en ferait plus un pavé mais un aplat lumineux dans une colonne dense */
-html.night .pc-abbr { background: #46543b; color: #dfe7d2; }
-/* dégradé des six rangs, tons nuit : la barre monte du papier vers le vert
+html.night .pc-abbr { background: #6b5a2e; color: #dfe7d2; }
+/* dégradé des six rangs, tons nuit : la barre monte du papier vers l'or
    pâle, en gardant les mêmes six paliers qu'au jour */
-html.night .pc-stadebar .seg.on.s1 { background: #333c2b; color: #e8dfcb; border-color: #414b36; }
-html.night .pc-stadebar .seg.on.s2 { background: #3f4b33; color: #e8dfcb; border-color: #4d5b3e; }
-html.night .pc-stadebar .seg.on.s3 { background: #4d5b3e; color: #eef2e6; border-color: #5d6d4b; }
-html.night .pc-stadebar .seg.on.s4 { background: #5d6d4b; color: #eef2e6; border-color: #6f8663; }
-html.night .pc-stadebar .seg.on.s5 { background: #6f8663; color: #eef2e6; border-color: #6f8663; }
+html.night .pc-stadebar .seg.on.s1 { background: #2a2415; color: #e6e6e6; border-color: #3a3220; }
+html.night .pc-stadebar .seg.on.s2 { background: #3a3220; color: #e6e6e6; border-color: #4a3f28; }
+html.night .pc-stadebar .seg.on.s3 { background: #4a3f28; color: #eef2e6; border-color: #6b5a2e; }
+html.night .pc-stadebar .seg.on.s4 { background: #6b5a2e; color: #eef2e6; border-color: #6b5a2e; }
+html.night .pc-stadebar .seg.on.s5 { background: #6b5a2e; color: #eef2e6; border-color: #6b5a2e; }

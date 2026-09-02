@@ -28,30 +28,57 @@
 /* ═══ 1. La palette ══════════════════════════════════════════════════════ */
 
 :root {
-  --oc-papier:   #faf6eb;   /* le fond du panneau */
-  --oc-papier-2: #f2ecdd;   /* un bloc posé dessus */
-  --oc-papier-3: #e8e0cb;   /* un pavé teinté, une ligne paire */
-  --oc-encre:    #1d1d1d;
-  --oc-encre-2:  #4d4a42;   /* prose secondaire */
-  --oc-encre-3:  #837c6a;   /* libellés, unités, ce qui ne se lit pas */
+  /* LE JOUR EST BLANC, sans la moindre teinture : le panneau est une feuille
+     de bureau, pas une vieille page. Les trois papiers ne sont qu'un écart de
+     gris — assez pour qu'un bloc posé sur le fond se voie sans qu'un trait
+     soit nécessaire, jamais assez pour qu'on les nomme une couleur. */
+  --oc-papier:   #ffffff;   /* le fond du panneau, et celui des champs */
+  --oc-papier-2: #f5f2ea;   /* un bloc posé dessus : bouton, case, ligne paire */
+  --oc-papier-3: #e9e7e2;   /* le pavé du bandeau d'avertissement */
+  --oc-encre:    #1a1a1a;   /* le texte courant — 17:1 sur le papier */
+  --oc-encre-2:  #5f5f5f;   /* prose secondaire — 6,4:1 */
+  --oc-encre-3:  #6e6e6e;   /* libellés, unités, ce qui ne se lit pas : 5,1:1,
+                               le plus pâle qui tienne encore les 4,5:1 */
 
-  --oc-vert:        #63755e;
-  --oc-vert-clair:  #82997b;
-  --oc-vert-sombre: #46543b;
-  --oc-vert-pale:   #d6e2d0;
+  /* L'OR DU WIKI D'OUTWARD, EN QUATRE CRANS. Le piège tient en une phrase :
+     l'or vif #ffd77f est superbe sur du noir et illisible sur du blanc, où il
+     ne fait que 1,4:1. Le jour, tout ce qui PORTE DU TEXTE prend donc l'or
+     sombre, et l'or vif attend la nuit — c'est la seule raison pour laquelle
+     ces quatre variables ne se contentent pas d'être quatre nuances. */
+  --oc-or-titre:  #7a5c10;  /* l'or qui peut porter du texte : 6,2:1 sur blanc */
+  --oc-or-vif:    #ffd77f;  /* l'or du wiki tel quel — n'est servi QUE la nuit */
+  --oc-or-fort:   #6b5210;  /* l'accent le plus dense : 7,4:1 sur blanc */
+  --oc-or-pale:   #fbf1d9;  /* le lavis d'or : un FOND, jamais un texte */
 
-  --oc-or:      #a9862f;
-  --oc-rouille: #b0402c;
-  --oc-froid:   #4a6f96;
-  --oc-chaud:   #b5702c;
+  --oc-or:      #7a5c10;    /* le filet du bandeau. Même or que les titres, et
+                               non l'or vif : sur un pavé clair, une barre de
+                               #ffd77f tombe à 1,1:1 et disparaît. */
+  --oc-rouille: #b0402c;    /* déclarée, pas encore servie : la brûlure */
+  --oc-froid:   #4a6f96;    /* le bleu du froid — 5,2:1 sur blanc */
+  --oc-chaud:   #a5601f;    /* l'orange du chaud, assombri d'un cran depuis
+                               l'orange d'avant : celui-là ne faisait que 4,0:1
+                               sur le blanc, sous les 4,5:1 exigés */
 
-  --oc-ligne:   #cfc7b1;
-  --oc-ligne-2: #e3dcc8;
-  --oc-ombre:   rgba(40, 34, 20, .14);
-  --oc-focus:   rgba(99, 117, 94, .40);
+  --oc-ligne:   #ddd6c6;    /* le filet ordinaire, celui du livre */
+  --oc-ligne-2: #ebe7dd;    /* le filet le plus discret, entre deux blocs */
+  --oc-ombre:   rgba(26, 26, 26, .14);   /* déclarée, pas encore servie */
+  --oc-focus:   rgba(122, 92, 16, .40);  /* l'anneau de focus, l'or des titres
+                                            passé au même voile qu'avant */
 
-  --oc-serif: 'Alegreya', 'EB Garamond', Garamond, 'Times New Roman', serif;
-  --oc-titre: 'Cinzel', 'Alegreya', Garamond, serif;
+  /* LA POLICE EST CELLE DE ROLL20, relevée sur une vraie partie : Proxima Nova
+     pour le corps, Proxima Nova Condensed pour les titres de panneau. Adobe
+     n'en autorise pas le téléchargement — on la NOMME en tête de pile, et
+     Nunito Sans, sous licence SIL OFL et servie par fonts.css, prend le relais
+     chez qui ne l'a pas. Le camp est le seul écran du dépôt qui s'affiche DANS
+     Roll20 : la pile y retombe sur la police de l'hôte, et le panneau se lit
+     comme le reste de la table.
+     'Symboles JDR' N'OUVRE PAS ces deux piles, contrairement au reste du dépôt.
+     Sa @font-face est dans extra.css, et roll20-camp.html ne charge que
+     fonts.css et cette feuille : la nommer ici serait nommer une absente.
+     Les deux NOMS de variable ne bougent pas, pour ne rien casser ailleurs ;
+     ni l'un ni l'autre n'a plus rien d'un serif. */
+  --oc-serif: 'Proxima Nova', proxima-nova, 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --oc-titre: 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
 
   --oc-r: 3px;              /* le rayon des coins, partout le même */
 }
@@ -61,27 +88,34 @@
    plus bas est une teinte qui rate la nuit, et le camp est justement la page
    qu'on regarde le plus souvent de nuit. */
 html.night {
-  --oc-papier:   #201c15;
-  --oc-papier-2: #262119;
-  --oc-papier-3: #2e2820;
-  --oc-encre:    #e8dfcb;
-  --oc-encre-2:  #b7ad97;
-  --oc-encre-3:  #8f8672;
+  /* LA NUIT EST NOIRE, celle du wiki d'Outward : le fond descend au #0d0d0d et
+     les trois papiers remontent par paliers de gris pur, sans une trace de
+     chaleur. C'est le mode où l'or vif prend enfin sa place. */
+  --oc-papier:   #0d0d0d;
+  --oc-papier-2: #1a1a1a;
+  --oc-papier-3: #262626;
+  --oc-encre:    #e6e6e6;   /* 15:1 sur le fond */
+  --oc-encre-2:  #9a9384;   /* 6,4:1 — la seule encre qui garde un grain chaud */
+  --oc-encre-3:  #8c8578;   /* 5,5:1, et 4,9:1 sur un bloc */
 
-  --oc-vert:        #9fb37e;
-  --oc-vert-clair:  #adc08c;
-  --oc-vert-sombre: #6f8663;
-  --oc-vert-pale:   #33402c;
+  /* La nuit, les trois ors qui portent du texte se rejoignent sur l'or vif :
+     rien ne l'assombrit plus, puisqu'il n'y a plus de blanc dessous. Seul
+     --oc-or-fort garde un cran de moins, sans quoi le survol du bouton plein
+     ne se verrait pas — il passerait d'un or à exactement le même. */
+  --oc-or-titre:  #ffd77f;
+  --oc-or-vif:    #ffd77f;
+  --oc-or-fort:   #e0b45e;  /* l'or du wiki d'un cran plus dense : l'enfoncé */
+  --oc-or-pale:   #332a17;  /* le lavis devient une braise : un FOND, encore */
 
-  --oc-or:      #c9a24e;
+  --oc-or:      #ffd77f;    /* le filet du bandeau, l'or vif sans retenue */
   --oc-rouille: #cf8368;
-  --oc-froid:   #7fa6cd;
-  --oc-chaud:   #d59a56;
+  --oc-froid:   #7fa6cd;    /* 7,6:1 sur le fond */
+  --oc-chaud:   #d59a56;    /* 8,7:1 sur le fond */
 
-  --oc-ligne:   #3c3527;
-  --oc-ligne-2: #2e2920;
+  --oc-ligne:   #3a3a3a;
+  --oc-ligne-2: #2a2a2a;
   --oc-ombre:   rgba(0, 0, 0, .45);
-  --oc-focus:   rgba(159, 179, 126, .40);
+  --oc-focus:   rgba(255, 215, 127, .40);
 }
 
 /* ═══ 2. La page ═════════════════════════════════════════════════════════ */
@@ -172,7 +206,9 @@ body {
   cursor: pointer;
   line-height: 0;
 }
-.oc-nuit:hover { border-color: var(--oc-vert); color: var(--oc-vert); }
+/* Le survol dore le bouton, trait et icône ensemble : l'or des titres le jour
+   (5,6:1 sur le bloc), l'or vif la nuit — la variable bascule, pas la règle. */
+.oc-nuit:hover { border-color: var(--oc-or-titre); color: var(--oc-or-titre); }
 .oc-nuit svg { width: 100%; height: 100%; fill: currentColor; }
 .oc-nuit .oc-soleil { display: none; }
 html.night .oc-nuit .oc-croissant { display: none; }
@@ -209,9 +245,11 @@ html.night .oc-nuit .oc-soleil { display: block; }
   font-weight: 600;
   letter-spacing: .08em;
   text-transform: uppercase;
-  color: var(--oc-vert-sombre);
+  color: var(--oc-or-fort);
 }
-html.night .oc-titre { color: var(--oc-vert-clair); }
+/* La nuit seule sert l'or vif : sur le blanc du jour il tomberait à 1,4:1, et
+   un titre de bloc est justement ce qu'on lit en diagonale. */
+html.night .oc-titre { color: var(--oc-or-vif); }
 
 .oc-note {
   margin: .45rem 0 0;
@@ -235,20 +273,23 @@ html.night .oc-titre { color: var(--oc-vert-clair); }
   cursor: pointer;
   white-space: nowrap;
 }
-.oc-btn:hover { border-color: var(--oc-vert); background: var(--oc-vert-pale); }
+.oc-btn:hover { border-color: var(--oc-or-titre); background: var(--oc-or-pale); }
 .oc-btn:focus-visible { outline: 2px solid var(--oc-focus); outline-offset: 1px; }
 /* Le pas en arrière ne se cherche pas : il rattrape un clic de trop, il n'est
    pas une commande ordinaire. Il reste lisible, mais ne tire pas l'œil. */
 .oc-arriere { color: var(--oc-encre-3); }
 /* Le seul bouton plein du panneau, et il n'apparaît que sur un écran d'état :
    deux boutons pleins à l'écran, et aucun des deux n'est plus « le » bouton. */
+/* Il se remplit de l'or qui porte du texte, et son libellé prend la couleur du
+   papier : blanc sur l'or sombre le jour (6,2:1), noir sur l'or vif la nuit
+   (14:1). Le survol l'enfonce d'un cran dans les deux modes. */
 .oc-btn-fort {
   margin-top: .7rem;
-  border-color: var(--oc-vert-sombre);
-  background: var(--oc-vert);
+  border-color: var(--oc-or-fort);
+  background: var(--oc-or-titre);
   color: var(--oc-papier);
 }
-.oc-btn-fort:hover { background: var(--oc-vert-sombre); color: var(--oc-papier); }
+.oc-btn-fort:hover { background: var(--oc-or-fort); color: var(--oc-papier); }
 
 /* Les pas de l'horloge s'enroulent : à 260 px ils tiennent sur deux lignes, à
    380 sur une seule. Aucune largeur n'est imposée — le châssis décide. */
@@ -284,14 +325,15 @@ html.night .oc-titre { color: var(--oc-vert-clair); }
   font-family: var(--oc-serif);
   font-size: .88rem;
 }
-.oc-champ:focus { outline: 2px solid var(--oc-focus); outline-offset: 0; border-color: var(--oc-vert); }
+.oc-champ:focus { outline: 2px solid var(--oc-focus); outline-offset: 0; border-color: var(--oc-or-titre); }
 .oc-court { flex: 0 0 5rem; }
 
 /* ═══ 8. L'air ═══════════════════════════════════════════════════════════ */
 
 /* Le second grand nombre du panneau, et le seul qui change de couleur : le
-   froid tire au bleu, le chaud à la rouille, la zone au vert. C'est la seule
-   information qu'on doit pouvoir lire du coin de l'œil. */
+   froid tire au bleu, le chaud à l'orange, la zone tenable à l'or. C'est la
+   seule information qu'on doit pouvoir lire du coin de l'œil — les trois
+   teintes tiennent donc les 4,5:1 sur leur fond, dans les deux modes. */
 .oc-air {
   font-family: var(--oc-titre);
   font-size: 1.35rem;
@@ -301,7 +343,7 @@ html.night .oc-titre { color: var(--oc-vert-clair); }
 }
 .oc-air-froid { color: var(--oc-froid); }
 .oc-air-chaud { color: var(--oc-chaud); }
-.oc-air-zone  { color: var(--oc-vert); }
+.oc-air-zone  { color: var(--oc-or-titre); }
 
 .oc-repere {
   margin: .2rem 0 0;
@@ -363,19 +405,22 @@ html.night .oc-titre { color: var(--oc-vert-clair); }
   text-align: left;
   cursor: pointer;
 }
-.oc-case:hover { border-color: var(--oc-vert); }
+.oc-case:hover { border-color: var(--oc-or-titre); }
 .oc-case:focus-visible { outline: 2px solid var(--oc-focus); outline-offset: 1px; }
 .oc-case-nom { font-size: .86rem; }
 .oc-case-etat { font-size: .74rem; font-style: italic; color: var(--oc-encre-3); }
 /* Allumé, monté, à portée : la case posée se distingue par son fond ET par son
-   trait, jamais par la seule couleur — le panneau se regarde de loin, sur un
-   écran quelconque, et le vert seul ne suffirait pas à le dire. */
+   trait, et son état perd l'italique par-dessus le marché — jamais par la
+   seule couleur. Le panneau se regarde de loin, sur un écran quelconque, et
+   l'or seul ne suffirait pas à le dire. */
 .oc-case-on {
-  border-color: var(--oc-vert);
-  background: var(--oc-vert-pale);
+  border-color: var(--oc-or-titre);
+  background: var(--oc-or-pale);
 }
-.oc-case-on .oc-case-etat { color: var(--oc-vert-sombre); font-style: normal; }
-html.night .oc-case-on .oc-case-etat { color: var(--oc-vert-clair); }
+/* L'état s'écrit dans l'or le plus dense sur le lavis clair (6,6:1) et dans
+   l'or vif sur la braise de la nuit (10:1). */
+.oc-case-on .oc-case-etat { color: var(--oc-or-fort); font-style: normal; }
+html.night .oc-case-on .oc-case-etat { color: var(--oc-or-vif); }
 
 /* ═══ 11. Le camp figé ═══════════════════════════════════════════════════ */
 

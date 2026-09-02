@@ -1030,7 +1030,9 @@ function construirePalette(hex) {
    même dé, plus sombre. La plus petite distance entre deux dés vaut 0,066 sous
    daltonisme, contre 0,045 avec la palette terne. */
 var COULEURS_DES = {
-  d4:  { jour: "#00B24A", nuit: "#007E32" },   /* vert */
+  d4:  { jour: "#8a6a1c", nuit: "#ffd77f" },   /* or : le d4 de Roll20 est VERT
+                                                 (#00B24A / #007E32), et le livre
+                                                 n'en veut plus nulle part */
   d6:  { jour: "#00BCD0", nuit: "#007784" },   /* cyan */
   d8:  { jour: "#FB7800", nuit: "#B35400" },   /* orange */
   d10: { jour: "#FF52A8", nuit: "#9E005E" },   /* rose */

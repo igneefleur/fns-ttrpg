@@ -260,7 +260,7 @@ def garde_svg(brut):
     if depart == arrivee:
         # Les mains ne bougent pas : un point, et il n'y a rien d'autre à lire.
         out.append(f'<circle class="gd-fixe" cx="{ax:.1f}" cy="{ay:.1f}" r="2.6" '
-                   f'fill="var(--green-title)"/>')
+                   f'fill="var(--or-fort)"/>')
     else:
         # SEULE la flèche dit le mouvement. On avait posé en plus un cercle au
         # départ et un disque à l'arrivée : à 1,6 rem les trois se marchent
@@ -280,7 +280,7 @@ def garde_svg(brut):
         # deux cases voisines le fût ne fait que cinq unités.
         barbe = min(3.0, 0.42 * math.hypot(px - qx, py - qy))
         rec, ouv = barbe * 0.848, barbe * 0.530    # ouverte à 32°
-        trait = ('fill="none" stroke="var(--green-title)" stroke-width="1.7" '
+        trait = ('fill="none" stroke="var(--or-fort)" stroke-width="1.7" '
                  'stroke-linecap="round" stroke-linejoin="round"')
         out.append(f'<path class="gd-fleche" d="M {qx:.2f} {qy:.2f} '
                    f'L {px:.2f} {py:.2f}" {trait}/>')

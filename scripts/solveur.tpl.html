@@ -1,50 +1,72 @@
 <title>Solveur d'enchaînements</title>
 <style>
-/* ───────── Mêmes jetons que l'éditeur de trajet : c'est le même outil, il doit
-   se lire pareil. Une couleur en plus, et une seule : l'ennemi. */
+/* ───────── Mêmes jetons que l'éditeur de trajet et que le banc des armes :
+   c'est le même outil, il doit se lire pareil. Une couleur en plus, et une
+   seule : l'ennemi.
+
+   La palette vient du wiki d'Outward — feuille BLANCHE le jour, NOIRE la nuit,
+   et l'or partout où quelque chose compte. Les noms de jetons disent un rôle et
+   non une teinte : ils n'ont donc pas bougé, sauf l'accent, devenu --or. Cette
+   page n'est pas servie par mkdocs et n'a pas le bouton du site : elle suit le
+   thème du SYSTÈME, d'où prefers-color-scheme. Le bloc [data-theme] qui suit
+   reste pour le jour où elle serait enchâssée dans le livre. */
 :root {
-  --papier:      #F1EDE3;
-  --papier-haut: #FBF8F1;
-  --creux:       #E4DED0;
-  --encre:       #23211C;
-  --encre-pale:  #6E6959;
-  --trait:       #CFC7B4;
-  --vert:        #3D6B41;
-  --vert-pale:   #DCE7DB;
-  --alerte:      #9A4423;
-  --orange:      #B4682E;
-  --sang:        #8C3A2A;
-  --ombre:       0 1px 2px rgba(35, 33, 28, .09), 0 8px 24px rgba(35, 33, 28, .07);
+  --papier:      #ffffff;  /* la feuille : fond de page */
+  --papier-haut: #ffffff;  /* les cartes ; le jour, c'est le filet et l'ombre qui
+                              les détachent, pas la teinte */
+  --creux:       #e9e7e2;  /* le renfoncement : case libre, en-tête de ligne, bloc, code */
+  --encre:       #1a1a1a;  /* le texte courant, 16,9:1 sur la feuille */
+  --encre-pale:  #5f5f5f;  /* le texte atténué, 6,4:1 — et 5,2:1 sur le creux */
+  --trait:       #ddd6c6;  /* le filet ordinaire ; il ne porte jamais de texte */
+  --or:          #7a5c10;  /* l'accent : titre, dégâts, totaux, flèches des gardes.
+                              6,2:1 sur blanc. L'or vif du wiki, #ffd77f, n'y tient
+                              que 1,4:1 : illisible le jour, il attend la nuit. */
+  --or-pale:     #f8efd9;  /* le même or lavé, pour un aplat derrière du texte ;
+                              aucune règle ne s'en sert encore, le jeton est posé */
+  --alerte:      #9A4423;  /* le coup interrompu, 6,5:1 sur blanc */
+  --orange:      #B4682E;  /* le contour de sa propre case, un ton en deçà de l'alerte */
+  --sang:        #8C3A2A;  /* l'ennemi : la seule couleur qui ne soit ni encre ni or */
+  --ombre:       0 1px 2px rgba(0, 0, 0, .09), 0 8px 24px rgba(0, 0, 0, .07);
+  /* La pile de Roll20, mesurée sur une vraie partie : Proxima Nova au corps, sa
+     condensée aux titres. Sous licence Adobe, elle ne se télécharge pas — on la
+     NOMME, et Nunito Sans prend le relais chez qui ne l'a pas. Pas de
+     'Symboles JDR' : cette famille maison n'est servie qu'avec le livre, et
+     cette page ne l'est pas. Le monospace, lui, ne change pas : il aligne des
+     chiffres, ce n'est pas une affaire de style. */
+  --corps: 'Proxima Nova', proxima-nova, 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --titres: 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
 }
+/* La nuit : la feuille passe au noir du wiki et l'or vif reprend sa place —
+   14:1 sur ce fond, il porte le texte sans réserve. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --papier:      #171814;
-    --papier-haut: #1F211C;
-    --creux:       #24261F;
-    --encre:       #E7E3D6;
-    --encre-pale:  #9A9482;
-    --trait:       #3A3D33;
-    --vert:        #6FA875;
-    --vert-pale:   #26311F;
+    --papier:      #0d0d0d;
+    --papier-haut: #1a1a1a;
+    --creux:       #262626;
+    --encre:       #e6e6e6;
+    --encre-pale:  #9a9384;
+    --trait:       #3a3a3a;
+    --or:          #ffd77f;
+    --or-pale:     #2a2313;
     --alerte:      #D98456;
     --orange:      #E09A57;
     --sang:        #D9755E;
-    --ombre:       0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px rgba(0, 0, 0, .3);
+    --ombre:       0 1px 2px rgba(0, 0, 0, .6), 0 8px 24px rgba(0, 0, 0, .45);
   }
 }
 :root[data-theme="dark"] {
-  --papier:      #171814;
-  --papier-haut: #1F211C;
-  --creux:       #24261F;
-  --encre:       #E7E3D6;
-  --encre-pale:  #9A9482;
-  --trait:       #3A3D33;
-  --vert:        #6FA875;
-  --vert-pale:   #26311F;
+  --papier:      #0d0d0d;
+  --papier-haut: #1a1a1a;
+  --creux:       #262626;
+  --encre:       #e6e6e6;
+  --encre-pale:  #9a9384;
+  --trait:       #3a3a3a;
+  --or:          #ffd77f;
+  --or-pale:     #2a2313;
   --alerte:      #D98456;
   --orange:      #E09A57;
   --sang:        #D9755E;
-  --ombre:       0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px rgba(0, 0, 0, .3);
+  --ombre:       0 1px 2px rgba(0, 0, 0, .6), 0 8px 24px rgba(0, 0, 0, .45);
 }
 
 * { box-sizing: border-box; }
@@ -53,18 +75,19 @@ body {
   padding: clamp(1rem, 3vw, 2.5rem);
   background: var(--papier);
   color: var(--encre);
-  font: 400 16px/1.55 "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  font: 400 16px/1.55 var(--corps);
   -webkit-font-smoothing: antialiased;
 }
 .enveloppe { max-width: 1240px; margin: 0 auto; }
 
 h1 {
   margin: 0 0 .3rem;
+  font-family: var(--titres);
   font-size: clamp(1.3rem, 2.6vw, 1.75rem);
   font-weight: 600;
   font-variant: small-caps;
   letter-spacing: .06em;
-  color: var(--vert);
+  color: var(--or);
   text-wrap: balance;
 }
 .sous { margin: 0; max-width: 66ch; color: var(--encre-pale); font-size: .92rem; }
@@ -121,7 +144,7 @@ select, button {
 }
 select { width: 100%; font-weight: 400; }
 select:focus-visible, button:focus-visible { outline: 2px solid var(--alerte); outline-offset: 1px; }
-button:hover { border-color: var(--vert); }
+button:hover { border-color: var(--or); }
 
 .etat {
   margin: .75rem 0 0;
@@ -141,14 +164,14 @@ button:hover { border-color: var(--vert); }
   padding: .26rem .4rem;
   border: 1px solid var(--trait);
   border-radius: 3px;
-  font: 400 .74rem/1.2 "Iowan Old Style", Georgia, serif;
+  font: 400 .74rem/1.2 var(--corps);
 }
 .coup .g, .coup .d {
   font: 700 .68rem/1 ui-monospace, Menlo, Consolas, monospace;
   font-variant-numeric: tabular-nums;
 }
 .coup .g { color: var(--encre-pale); }
-.coup .d { color: var(--vert); }
+.coup .d { color: var(--or); }
 
 /* ───────── Les résultats */
 .res { display: grid; gap: .5rem; }
@@ -185,7 +208,7 @@ button:hover { border-color: var(--vert); }
 .duo .total {
   float: right;
   font-size: .8rem;
-  color: var(--vert);
+  color: var(--or);
   font-variant-numeric: tabular-nums;
 }
 /* Un coup par ligne, et le pas entre deux lignes : une suite se lit de haut en
@@ -211,7 +234,7 @@ button:hover { border-color: var(--vert); }
   border-radius: 3px;
   background: var(--creux);
 }
-.bloc .nm { font: 400 .68rem/1.2 "Iowan Old Style", Georgia, serif; }
+.bloc .nm { font: 400 .68rem/1.2 var(--corps); }
 /* L'interruption se dit sous le nom : un cadre seul se laisse manquer. */
 .bloc .ko {
   display: block;
@@ -226,7 +249,7 @@ button:hover { border-color: var(--vert); }
 .bloc .vl {
   text-align: center;
   font: 700 .72rem/1.2 ui-monospace, Menlo, Consolas, monospace;
-  color: var(--vert);
+  color: var(--or);
   font-variant-numeric: tabular-nums;
 }
 .bloc.coupe { background: transparent; border-color: var(--alerte); border-style: dashed; }
@@ -367,7 +390,7 @@ code {
   const CREUX = 'fill="var(--encre)" fill-opacity="0.1"';
 
   function fleche(ax, ay, bx, by, retrait, couleur) {
-    const TRAIT = trait(couleur || "var(--vert)");
+    const TRAIT = trait(couleur || "var(--or)");
     const e = retrait === undefined ? 1.5 : retrait;
     const d = Math.hypot(bx - ax, by - ay), ux = (bx - ax) / d, uy = (by - ay) / d;
     const nx = -uy, ny = ux;
@@ -382,7 +405,7 @@ code {
            `${f(py - uy * rec - ny * ouv)}" ${TRAIT}/>`;
   }
   const point = (cx, cy, r, couleur) =>
-    `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${couleur || "var(--vert)"}"/>`;
+    `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${couleur || "var(--or)"}"/>`;
 
   const RANG = { 0: "au-dessus des épaules", 1: "à hauteur de poitrine", 2: "sous la ceinture" };
   const COTE = { 0: "à gauche", 1: "dans l'axe", 2: "à droite" };
@@ -393,7 +416,7 @@ code {
      dessine dans la couleur d'alerte, pour que le pictogramme le dise lui-même
      et pas seulement l'étiquette à côté. */
   function gardeSvg(dep, arr, coupe) {
-    const c = coupe ? "var(--alerte)" : "var(--vert)";
+    const c = coupe ? "var(--alerte)" : "var(--or)";
     const dit = coupe ? `Coup interrompu : la garde est renvoyée au centre, ${ditGarde(5)}.`
               : dep === arr ? `Part et finit dans la même garde, ${ditGarde(dep)}.`
                             : `Part ${ditGarde(dep)}, finit ${ditGarde(arr)}.`;

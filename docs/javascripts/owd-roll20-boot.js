@@ -344,37 +344,78 @@
   // ces bandeaux doivent pouvoir s'afficher même quand la feuille n'a pas été
   // chargée (manifeste en repli, réseau coupé en cours de route) — or c'est
   // précisément dans ces moments qu'ils ont quelque chose à dire.
+  //
+  // Conséquence : les couleurs sont ici EN DUR, jamais en var(). Aucune
+  // variable de palette n'est garantie dans ce cadre — extra.css et night.css
+  // ne sont pas du bundle de l'iframe, et owd-fiche.css pose les siennes sur
+  // .perso-fiche, que ni le bandeau ni l'écran ne touchent (ils vivent au-dessus
+  // et à côté de la fiche, souvent AVANT qu'elle existe). Ce sont donc les
+  // valeurs du wiki d'Outward recopiées, les mêmes que celles de :root et de
+  // html.night body dans extra.css / night.css :
+  //   jour  feuille #ffffff · pourtour #e9e7e2 · encre #1a1a1a · pavé #f5f2ea
+  //         filet doré #e0cfa0 · or de texte #7a5c10
+  //   nuit  feuille #0d0d0d · pourtour #000000 · encre #e6e6e6 · pavé #1a1a1a
+  //         filet doré #6b5a2e
+  //   les deux : le bandeau #262626 et l'or du wiki #ffd77f, qui donne 11:1 sur
+  //         ce gris, 15,3:1 sur le noir, et 12,7:1 en FOND sous une encre
+  //         sombre — jamais en texte sur du clair, où il tombe à 1,4:1.
+  // Le rouge #a5342c et son voile ne sont pas de la palette : ils disent le
+  // danger, et rien d'autre dans ces deux pièces ne porte de couleur.
   var CSS_BANDEAU =
+    // Le bandeau est SOMBRE de jour comme de nuit, comme l'en-tête du site et
+    // comme le châssis du wiki : c'est le fond sur lequel l'or se lit le mieux,
+    // et une alerte n'a pas à changer de nature quand on change de mode.
     "#owd-bandeau{position:sticky;top:0;z-index:50;display:flex;flex-wrap:wrap;align-items:center;" +
-    "gap:.5rem;padding:.5rem .7rem;background:#e9e0c9;color:#3a3428;border-bottom:1px solid #c3b795;" +
-    "font-family:'Alegreya','EB Garamond',Garamond,serif;font-size:.72rem;line-height:1.45}" +
+    "gap:.5rem;padding:.5rem .7rem;background:#262626;color:#ffd77f;border-bottom:1px solid #6b5a2e;" +
+    "font-family:'Proxima Nova',proxima-nova,'Nunito Sans','Helvetica Neue',Helvetica,Arial,sans-serif;" +
+    "font-size:.72rem;line-height:1.45}" +
     "#owd-bandeau .owd-bandeau-txt{flex:1 1 14rem;min-width:0}" +
-    "#owd-bandeau .owd-bandeau-btn{flex:0 0 auto;padding:.2rem .6rem;border:1px solid #c3b795;" +
-    "border-radius:.2rem;background:#faf6eb;color:#3a3428;font:inherit;cursor:pointer}" +
-    "#owd-bandeau .owd-bandeau-btn:hover{background:#fff}" +
-    "html.night #owd-bandeau{background:#2a2519;color:#e8dfcb;border-bottom-color:#3c3527}" +
-    "html.night #owd-bandeau .owd-bandeau-btn{background:#201c15;color:#e8dfcb;border-color:#3c3527}" +
+    // Bouton creusé DANS le bandeau : un cran plus noir que lui, cerné d'un
+    // filet doré. L'or y donne 14:1 ; le survol éclaircit le fond, pas le texte.
+    "#owd-bandeau .owd-bandeau-btn{flex:0 0 auto;padding:.2rem .6rem;border:1px solid #6b5a2e;" +
+    "border-radius:.2rem;background:#0d0d0d;color:#ffd77f;font:inherit;cursor:pointer}" +
+    "#owd-bandeau .owd-bandeau-btn:hover{background:#3a3a3a}" +
+    // Les deux règles de nuit du bandeau redisent exactement le jour : elles
+    // sont gardées parce que le sélecteur html.night est le seul endroit d'où
+    // le bandeau pourrait un jour diverger, et qu'on ne le retrouverait plus.
+    "html.night #owd-bandeau{background:#262626;color:#ffd77f;border-bottom-color:#6b5a2e}" +
+    "html.night #owd-bandeau .owd-bandeau-btn{background:#0d0d0d;color:#ffd77f;border-color:#6b5a2e}" +
     // Écran de version : il RECOUVRE la page (position fixed, z-index au-dessus
     // du bandeau) parce qu'il n'annonce pas, il barre le passage. La fiche
     // n'est pas derrière : elle n'est pas encore chargée.
+    // Le pourtour de l'écran est celui du plan de travail, la boîte celui de la
+    // feuille : blanche le jour, à peine au-dessus du noir la nuit. Son filet
+    // est DORÉ (#e0cfa0), la seule touche d'or que porte un fond clair.
     "#owd-ecran{position:fixed;top:0;left:0;right:0;bottom:0;z-index:80;overflow:auto;" +
-    "padding:1rem;background:#e4ddcd;color:#1d1d1d;" +
-    "font-family:'Alegreya','EB Garamond',Garamond,serif;font-size:.8rem;line-height:1.5}" +
-    "#owd-ecran .owd-ecran-boite{box-sizing:border-box;max-width:34rem;margin:0 auto;background:#faf6eb;" +
-    "border:1px solid #c3b795;border-radius:.3rem;padding:.9rem 1rem}" +
+    "padding:1rem;background:#e9e7e2;color:#1a1a1a;" +
+    "font-family:'Proxima Nova',proxima-nova,'Nunito Sans','Helvetica Neue',Helvetica,Arial,sans-serif;" +
+    "font-size:.8rem;line-height:1.5}" +
+    "#owd-ecran .owd-ecran-boite{box-sizing:border-box;max-width:34rem;margin:0 auto;background:#ffffff;" +
+    "border:1px solid #e0cfa0;border-radius:.3rem;padding:.9rem 1rem}" +
+    // Écran d'échec : le filet doré cède au rouge, et la boîte prend son voile.
     "#owd-ecran.owd-ecran-rouge .owd-ecran-boite{border-color:#a5342c;background:#fdf1ec}" +
-    "#owd-ecran h1{margin:0 0 .5rem;font-family:'Cinzel',serif;font-size:1.15rem;line-height:1.25}" +
+    // Titres : la Condensed de Roll20 d'abord, comme les titres de ses panneaux.
+    "#owd-ecran h1{margin:0 0 .5rem;font-family:'Proxima Nova Condensed','Proxima Nova',proxima-nova," +
+    "'Nunito Sans',Helvetica,Arial,sans-serif;font-size:1.15rem;line-height:1.25}" +
     "#owd-ecran h2{margin:.85rem 0 .25rem;font-size:.88rem}" +
     "#owd-ecran p{margin:.35rem 0}" +
     "#owd-ecran ul{margin:.3rem 0;padding-left:1.1rem}" +
     "#owd-ecran li{margin:.25rem 0}" +
     "#owd-ecran .owd-ecran-vers{display:flex;flex-wrap:wrap;gap:.2rem 1.4rem;margin:.5rem 0;" +
-    "padding:.35rem .6rem;background:#e9e0c9;border-radius:.2rem}" +
+    // Le pavé des numéros de version : la zébrure impaire du site (#f5f2ea le
+    // jour, #1a1a1a la nuit), assez pour se détacher de la feuille sans filet.
+    "padding:.35rem .6rem;background:#f5f2ea;border-radius:.2rem}" +
     "#owd-ecran .owd-ecran-actions{display:flex;flex-wrap:wrap;gap:.5rem;margin:.85rem 0 .4rem}" +
-    "#owd-ecran button{padding:.35rem .7rem;border:1px solid #c3b795;border-radius:.2rem;" +
-    "background:#faf6eb;color:#3a3428;font:inherit;cursor:pointer}" +
-    "#owd-ecran button:hover:not([disabled]){background:#fff}" +
-    "#owd-ecran button.owd-ecran-primaire{background:#46543b;color:#faf6eb;border-color:#46543b}" +
+    // Bouton ordinaire : la feuille elle-même, cernée du filet doré. Le fond
+    // étant déjà blanc, c'est le survol qui s'assombrit d'un cran (#f5f2ea) :
+    // un survol qui éclaircirait vers le blanc pur ne se verrait plus.
+    "#owd-ecran button{padding:.35rem .7rem;border:1px solid #e0cfa0;border-radius:.2rem;" +
+    "background:#ffffff;color:#1a1a1a;font:inherit;cursor:pointer}" +
+    "#owd-ecran button:hover:not([disabled]){background:#f5f2ea}" +
+    // Bouton principal : PLEIN d'or vif, sous une encre sombre — 12,7:1. C'est
+    // le seul emploi permis de #ffd77f près d'un fond clair : en fond, jamais
+    // en texte. Il ne change pas de mode, l'or n'a qu'une valeur.
+    "#owd-ecran button.owd-ecran-primaire{background:#ffd77f;color:#1a1a1a;border-color:#ffd77f}" +
     "#owd-ecran button[disabled]{opacity:.45;cursor:not-allowed}" +
     "#owd-ecran .owd-ecran-note{font-size:.72rem;opacity:.85}" +
     "#owd-ecran label.owd-ecran-epingle{display:block;margin:.2rem 0}" +
@@ -382,13 +423,18 @@
     // l'iframe Roll20, où la feuille de la fiche n'est pas toujours chargée.
     "#owd-ecran textarea{box-sizing:border-box;width:100%;min-height:8rem;margin-top:.3rem;" +
     "font-family:'Roboto Mono',monospace;font-size:.66rem}" +
-    "html.night #owd-ecran{background:#14110c;color:#e8dfcb}" +
-    "html.night #owd-ecran .owd-ecran-boite{background:#201c15;border-color:#3c3527}" +
+    // Nuit : le noir du wiki au pourtour, la feuille juste au-dessus pour s'en
+    // détacher sans devenir grise, et le filet doré qui s'assombrit (#6b5a2e)
+    // puisqu'il n'a plus le blanc à trancher.
+    "html.night #owd-ecran{background:#000000;color:#e6e6e6}" +
+    "html.night #owd-ecran .owd-ecran-boite{background:#0d0d0d;border-color:#6b5a2e}" +
     "html.night #owd-ecran.owd-ecran-rouge .owd-ecran-boite{background:#2e1d1a;border-color:#a5342c}" +
-    "html.night #owd-ecran .owd-ecran-vers{background:#2a2519}" +
-    "html.night #owd-ecran button{background:#2a2519;color:#e8dfcb;border-color:#3c3527}" +
-    "html.night #owd-ecran button.owd-ecran-primaire{background:#adc08c;color:#201c15;border-color:#adc08c}" +
-    "html.night #owd-ecran textarea{background:#14110c;color:#e8dfcb;border-color:#3c3527}";
+    "html.night #owd-ecran .owd-ecran-vers{background:#1a1a1a}" +
+    "html.night #owd-ecran button{background:#1a1a1a;color:#e6e6e6;border-color:#6b5a2e}" +
+    // Le bouton principal garde son or plein : sur du noir, l'encre sombre qu'il
+    // porte descend à #0d0d0d, la feuille de nuit, plutôt que le gris du jour.
+    "html.night #owd-ecran button.owd-ecran-primaire{background:#ffd77f;color:#0d0d0d;border-color:#ffd77f}" +
+    "html.night #owd-ecran textarea{background:#0d0d0d;color:#e6e6e6;border-color:#3a3a3a}";
   function poserStyles() {
     if (document.getElementById("owd-bandeau-css")) return;
     var s = document.createElement("style");

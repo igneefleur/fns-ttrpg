@@ -1,11 +1,24 @@
 /* ============================================================
    cartes.css — Compléments aux cartes de règle du livre Outward
    ------------------------------------------------------------
-   Les cartes gardent l'aspect commun au site : le parchemin, les
-   angles arrondis et le vert des titres viennent de .mcard, dans
-   extra.css, et rien ici ne les redéfinit. Ce fichier n'ajoute
-   que la ligne de rang, qui porte à gauche le rang et son nom, à
-   droite ce qu'il coûte.
+   Les cartes gardent l'aspect commun au site : la feuille
+   (--paper, blanche le jour et #0d0d0d la nuit), les angles
+   arrondis et l'or des titres (--or-titre) viennent de .mcard,
+   dans extra.css, et rien ici ne les redéfinit. Ce fichier
+   n'ajoute que la ligne de rang, qui porte à gauche le rang et
+   son nom, à droite ce qu'il coûte.
+
+   AUCUNE couleur en dur dans cette feuille : tout passe par les
+   variables de la palette relevée sur le wiki d'Outward, seules à
+   savoir basculer du jour à la nuit. Deux filets pour deux rôles,
+   et s'y tenir :
+     --trait     ce qui SÉPARE deux blocs de texte (filet neutre) ;
+     --trait-or  ce qui ENCADRE ou porte du sens — cadre de
+                 vignette, barre de l'équation, cloisons de la
+                 carte de technique. C'est la touche dorée du
+                 thème (#e0cfa0 le jour, #6b5a2e la nuit), et
+                 jamais du texte : l'or ne porte pas de lettre
+                 sur un fond clair.
 
    Fichier séparé d'extra.css à dessein : extra.css est la feuille
    héritée, commune aux deux livres, et plusieurs sessions y
@@ -20,8 +33,9 @@
   align-items: baseline;
   justify-content: space-between;
   gap: 0.5rem;
-  /* Les capitales forcées sont proscrites dans le corps du livre ; Cinzel
-     donne déjà la haute casse qu'il faut. */
+  /* Les capitales forcées sont proscrites dans le corps du livre, et la pile de
+     titres de Roll20 (Proxima Nova Condensed) rend la casse telle qu'elle est
+     écrite. La déclaration reste posée pour qu'aucun héritage ne la remette. */
   text-transform: none;
   font-size: 0.62rem;
 }
@@ -30,30 +44,40 @@
    « il est maître », pas « il est au rang 3 ». Le numéro passe donc en second
    plan, plus petit et atténué, et le nom prend la taille et la graisse.
 
-   Numéro du rang. En police de TEXTE et non en Cinzel, dont le 1 est un « I »
-   inscriptionnel : « Rang 1 » s'y lisait « Rang I » à côté des rangs 2, 3 et 4
-   en chiffres arabes. */
+   Numéro du rang. Le livre entier tient désormais sur la pile de Roll20 —
+   Proxima Nova, Nunito Sans en secours chez qui n'a pas la première — et la
+   question de la police ne se pose donc plus ici. Elle s'est posée longtemps :
+   l'ancienne police de titres donnait un « I » inscriptionnel pour le 1, et
+   « Rang 1 » s'y lisait « Rang I » à côté des rangs 2, 3 et 4 en chiffres
+   arabes. La déclaration reste, pour que la carte ne dépende pas de ce dont
+   elle hérite. */
 .md-typeset .mcard.art.rangs p.palier .rg {
   /* Police de TEXTE, comme tout le reste de la carte : aucun changement de
      police n'est admis ici. La lisibilité se règle donc par la GRAISSE.
-     Mesuré à l'écran, sur le parchemin : en graisse normale l'index plafonne à
-     3.2:1 même à pleine couleur, parce qu'un serif de 11 px n'a alors aucun
-     pixel plein et n'est qu'antialiasing. En 600 le trait se remplit. */
-  font-family: 'Symboles JDR', 'Alegreya', 'EB Garamond', Garamond, serif;
+     L'index fait 0.58rem, soit onze pixels environ : en graisse normale, un
+     trait de cette taille n'a presque aucun pixel plein et n'est
+     qu'antialiasing — il plafonnait alors à 3.2:1, mesuré à l'écran sous
+     l'ancienne palette. En 600 le trait se remplit. La mesure n'a pas été
+     refaite sur le blanc du jour ; la graisse ne coûte rien et reste. */
+  font-family: 'Symboles JDR', 'Proxima Nova', proxima-nova, 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-weight: 600;
   font-size: 0.58rem;
   letter-spacing: 0.015em;
-  /* AUCUNE opacité ici. À 0.58, le vert se délavait jusqu'à 1.87:1, illisible ;
-     le défaut ne se voyait pas en mode nuit, où l'olive est claire sur fond
-     sombre. La hiérarchie tient à la taille et à la graisse du NOM, qui est
-     plus gros, jamais à un affadissement de l'index. */
+  /* AUCUNE opacité ici. L'index hérite de la couleur du palier, qui est l'or des
+     titres (--or-titre : #7a5c10 le jour, 6,2:1 sur blanc ; #ffd77f la nuit) ;
+     à 0.58 d'opacité il se délavait jusqu'à 1.87:1, illisible. Le défaut ne se
+     voyait pas en mode nuit, où le texte est clair sur fond noir et où
+     l'affadissement pardonne — c'est bien le jour qu'il faut regarder. La
+     hiérarchie tient à la taille et à la graisse du NOM, qui est plus gros,
+     jamais à un affadissement de l'index. */
 }
 
-/* Nom du rang : le terme que l'on retient. Casse naturelle et police de texte,
-   jamais les capitales espacées de Cinzel, qui ont déjà été écartées ici. La
-   marge automatique absorbe l'espace libre et renvoie le coût à droite. */
+/* Nom du rang : le terme que l'on retient. Casse naturelle et pile de texte,
+   jamais de capitales espacées : elles ont déjà été écartées ici, du temps où
+   une police de titres les rendait d'office. La marge automatique absorbe
+   l'espace libre et renvoie le coût à droite. */
 .md-typeset .mcard.art.rangs p.palier .nom {
-  font-family: 'Symboles JDR', 'Alegreya', 'EB Garamond', Garamond, serif;
+  font-family: 'Symboles JDR', 'Proxima Nova', proxima-nova, 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-style: normal;
   font-weight: 700;
   font-size: 0.78rem;
@@ -77,14 +101,16 @@
   grid-template-columns: 1.75rem max-content;
   align-items: baseline;
   gap: 0.35rem;
-  font-family: 'Symboles JDR', 'Alegreya', 'EB Garamond', Garamond, serif;
+  font-family: 'Symboles JDR', 'Proxima Nova', proxima-nova, 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-weight: 700;
   font-size: 0.58rem;
   letter-spacing: 0.01em;
   white-space: nowrap;
-  /* Pas d'opacité : à 0.85 l'XP tombait à 3.29:1 sur le parchemin. Même défaut
-     que l'index de rang, même remède. Aucune opacité nulle part dans cette
-     carte : ce qui doit passer au second plan le fait par la taille. */
+  /* Pas d'opacité : à 0.85 l'XP tombait à 3.29:1 sous l'ancienne palette, et le
+     jour actuel n'est pas plus indulgent — l'or des titres part de 6,2:1 sur
+     blanc, et 0.85 d'opacité le ramène à 4,47:1 (calculé), soit sous le seuil.
+     Même défaut que l'index de rang, même remède. Aucune opacité nulle part dans
+     cette carte : ce qui doit passer au second plan le fait par la taille. */
 }
 .md-typeset .mcard.art.rangs p.palier .xp { grid-column: 2; text-align: right; }
 
@@ -92,16 +118,17 @@
    chaîne. Ce maillon est un SVG inline et non un caractère : la police de
    symboles du site est sous-ensemblée (U+25B0-25B1, U+25CB, U+25CF,
    U+2605-2606, U+2726-2727) et ne porte pas U+26D3, si bien qu'un ⛓ tomberait
-   sur l'emoji couleur du système. Le masque prend currentColor, donc le vert
-   du jour comme l'olive de la nuit, sans une ligne de plus dans night.css. */
+   sur l'emoji couleur du système. Le masque prend currentColor, donc l'or des
+   titres dont la ligne hérite — #7a5c10 le jour, #ffd77f la nuit — sans une
+   ligne de plus dans night.css. */
 .md-typeset .mcard.art.rangs p.palier .rup {
   grid-column: 1;
   display: inline-flex;
   align-items: baseline;
   justify-content: flex-start;
   gap: 0.28em;
-  /* Police de TEXTE, comme toute la carte : aucune linéale nulle part. */
-  font-family: 'Symboles JDR', 'Alegreya', 'EB Garamond', Garamond, serif;
+  /* Même pile que toute la carte : aucun changement de police nulle part. */
+  font-family: 'Symboles JDR', 'Proxima Nova', proxima-nova, 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-weight: 600;
   font-size: 0.58rem;
   font-variant-numeric: lining-nums;
@@ -109,10 +136,12 @@
 .md-typeset .mcard.art.rangs p.palier .rup::after {
   content: '';
   display: inline-block;
-  /* Calé sur la hauteur du CHIFFRE, pas sur le cadratin : les chiffres
-     d'Alegreya montent à environ 0.68 em, et un pictogramme d'un em entier
-     écrasait le « 1 » posé à côté. Le rapport 1.045 est celui du fichier
-     (23 x 22 px), pour ne pas déformer le dessin. */
+  /* Calé sur la hauteur du CHIFFRE, pas sur le cadratin : un pictogramme d'un em
+     entier écrasait le « 1 » posé à côté. Les deux valeurs ont été réglées sur
+     les chiffres de l'ancienne police de texte, qui montaient à environ 0.68 em ;
+     la pile de Roll20 n'a pas été remesurée à l'écran, et c'est ici que le
+     maillon se recalerait s'il paraissait petit ou trop haut. Le rapport 1.045
+     est celui du fichier (23 x 22 px), pour ne pas déformer le dessin. */
   width: 0.79em;
   height: 0.76em;
   transform: translateY(0.04em);
@@ -122,9 +151,10 @@
 }
 
 /* Le maillon brisé du jeu, posé en MASQUE et non en image : seul son canal
-   alpha est employé, la couleur venant de currentColor. Le pictogramme suit
-   donc le vert du jour et l'olive de la nuit sans une ligne dans night.css,
-   là où l'icône d'origine est bronze et jurerait sur les deux fonds.
+   alpha est employé, la couleur venant de currentColor. Le pictogramme prend
+   donc l'or du texte qui le porte, dans les deux thèmes, sans une ligne dans
+   night.css — là où l'icône d'origine est d'un bronze fixe, plus terne que l'or
+   du wiki (#ffd77f) et trop sombre pour tenir sur le noir de la nuit.
 
    docs/assets/rupture.png est dérivé de l'icône Breakthrough d'Outward : alpha
    seul, halo coupé sous 60/255 (il traînait une auréole à 12-25 % autour du
@@ -162,23 +192,28 @@
   gap: 0.7rem;
   margin-bottom: 0.45rem;
   padding-bottom: 0.4rem;
-  border-bottom: 1px solid #e8e1cf;
+  border-bottom: 1px solid var(--trait);
 }
 /* L'icône du jeu est sombre et déjà cernée d'un halo ; on la laisse telle quelle,
-   elle se lit comme une vignette encadrée sur le parchemin. */
+   elle se lit comme une vignette encadrée sur la feuille. Son cadre prend le
+   filet DORÉ et non le filet neutre : c'est un encadrement, pas une séparation,
+   et l'or (#e0cfa0 le jour, #6b5a2e la nuit) est la touche du thème. */
 .md-typeset .mcard.objet .objet-img {
   flex: 0 0 auto;
   width: 5rem;
   margin: 0;
-  border: 1px solid #cfc6ad;
+  border: 1px solid var(--trait-or);
   border-radius: 2px;
   display: block;
 }
 /* Les chiffres : libellé à gauche, valeur à droite, une ligne par donnée, séparées
-   d'un pointillé. Texte ordinaire des deux côtés, à la taille de la prose de la
-   carte : ni couleur, ni graisse, ni Cinzel. Deux couleurs et une police d'affiche
-   ont été essayées et retirées — le vert se disputait le nom de l'objet, et la
-   Cinzel, police de capitales, gonflait « 0.3 kg » en « 0.3 KG ». C'est
+   d'un pointillé neutre (--trait, qui SÉPARE ; l'or est réservé aux cadres).
+   Texte ordinaire des deux côtés, à la taille de la prose de la carte : ni
+   couleur, ni graisse, ni police de titres. Deux couleurs et une police
+   d'affiche ont été essayées et retirées — la couleur des titres se disputait le
+   nom de l'objet, et la police de titres d'alors, faite de capitales, gonflait
+   « 0.3 kg » en « 0.3 KG ». Le livre n'a plus qu'une pile et la seconde faute
+   n'est plus possible, mais la première le reste : ici, aucune couleur. C'est
    l'alignement à droite, et lui seul, qui rend la fiche lisible. */
 .md-typeset .mcard.objet .objet-stats { flex: 1 1 auto; min-width: 0; }
 .md-typeset .mcard.objet .objet-stats > div,
@@ -189,7 +224,7 @@
   gap: 0.4rem;
   padding: 0.1rem 0;
   font-size: 0.66rem;
-  border-bottom: 1px dotted #e2dac6;
+  border-bottom: 1px dotted var(--trait);
 }
 .md-typeset .mcard.objet .objet-stats > div:last-child,
 .md-typeset .mcard.fab .objet-stats > div:last-child { border-bottom: none; }
@@ -235,7 +270,7 @@
   gap: 0.15rem 0.28rem;
   margin-bottom: 0.5rem;
   padding-bottom: 0.45rem;
-  border-bottom: 1px solid #e8e1cf;
+  border-bottom: 1px solid var(--trait);
 }
 
 /* Une case : la vignette, le nom dessous. Largeur FIXE, pour que les noms longs
@@ -255,14 +290,20 @@
   display: block;
   width: 100%;
   margin: 0;
-  border: 1px solid #cfc6ad;
+  border: 1px solid var(--trait-or);
   border-radius: 2px;
 }
 
 /* La quantité, en bas à droite de la vignette et DÉBORDANT d'un cheveu. Posée à
    l'intérieur, elle se perdait sur les icônes claires — le sable en tête, dont
    le coin bas-droit est presque blanc. Le débord la détache du cadre sans mordre
-   sur la case voisine, l'écart entre colonnes étant plus large que lui. */
+   sur la case voisine, l'écart entre colonnes étant plus large que lui.
+
+   Ses trois couleurs sont celles des bandeaux, et c'est voulu : --bandeau
+   (#262626) et --or-vif / --sur-bandeau (#ffd77f) valent la MÊME chose le jour
+   et la nuit. La pastille chevauche une image, qui ne bascule pas ; elle ne
+   doit donc pas basculer non plus. Or vif sur gris très sombre : 11:1, et l'or
+   vif est ici à sa place puisqu'il porte du texte sur du sombre. */
 .md-typeset .mcard.fab .fab-v .q {
   position: absolute;
   right: -0.16rem;
@@ -272,9 +313,9 @@
   font-size: 0.55rem;
   line-height: 0.92rem;
   text-align: center;
-  color: #33291a;
-  background: #f4efdf;
-  border: 1px solid #b9ad8f;
+  color: var(--sur-bandeau);
+  background: var(--bandeau);
+  border: 1px solid var(--or-vif);
   border-radius: 2px;
 }
 .md-typeset .mcard.fab .fab-c .n {
@@ -297,7 +338,7 @@
 .md-typeset .mcard.fab .etapes + p {
   margin-top: 0.5rem;
   padding-top: 0.45rem;
-  border-top: 1px solid #e8e1cf;
+  border-top: 1px solid var(--trait);
 }
 
 .md-typeset .mcard.fab .fab-eq .op {
@@ -321,13 +362,18 @@
    Les ingrédients sont groupés dans .fab-in pour qu'ils se replient ENTRE EUX
    sur un écran étroit. Sans ce groupe, le repli laisse le filet en bout de
    ligne, orphelin, à séparer le produit de rien.
+
+   Il porte le filet DORÉ (--trait-or) et non le filet neutre : il ne sépare pas
+   deux blocs de texte, il tient le sens de la carte — ce qui sort de l'atelier
+   d'un côté, ce qu'il faut y mettre de l'autre. L'or le dit, sur le blanc du
+   jour comme sur le noir de la nuit.
    ============================================================ */
 .md-typeset .mcard.fab .fab-eq .barre {
   flex: 0 0 auto;
   align-self: stretch;
   width: 1px;
   margin: 0 0.5rem;
-  background: #d8cfb6;
+  background: var(--trait-or);
 }
 
 /* ============================================================
@@ -343,14 +389,14 @@
 .md-typeset .mcard.fab .etapes {
   margin-top: 0.6rem;
   padding-top: 0.5rem;
-  border-top: 1px solid #e8e1cf;
+  border-top: 1px solid var(--trait);
   counter-reset: etape;
 }
 .md-typeset .mcard.fab .etapes::before {
   content: "Étapes";
   display: block;
   margin-bottom: 0.4rem;
-  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-family: 'Symboles JDR', 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
   font-size: 0.62rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -408,7 +454,7 @@
   content: "Loyers";
   display: block;
   margin-bottom: 0.4rem;
-  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-family: 'Symboles JDR', 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
   font-size: 0.62rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -429,7 +475,7 @@
 .md-typeset .mcard.objet .loyers {
   margin-bottom: 0.45rem;
   padding-bottom: 0.45rem;
-  border-bottom: 1px solid #e8e1cf;
+  border-bottom: 1px solid var(--trait);
 }
 
 /* Titre de famille du chapitre d'equipement. Le h2 traverse deja les deux
@@ -458,54 +504,67 @@
      2. la bande d'activation, sur toute la largeur ;
      3. le corps, en cellules séparées d'un filet vertical.
 
-   Le parchemin, le cadre, les angles et leur bascule de nuit
+   La feuille, le cadre, les angles et leur bascule de nuit
    viennent de .mcard (extra.css). Cette carte n'annule que le
    rembourrage, sans quoi le bandeau ne toucherait pas les bords.
+
+   C'est la carte la plus dorée du livre, et c'est assumé : bandeau
+   sombre à texte or, pastille de type en or plein, cloisons au
+   filet doré. Les trois se répondent ; un filet neutre au milieu
+   de tout cela ferait un accroc.
    ============================================================ */
 .md-typeset .mcard.tech {
   padding: 0;
   overflow: hidden;   /* le bandeau doit être coupé par les angles arrondis */
 }
 
-/* 1. Le bandeau. Le nom est en Cinzel, comme le titre de toutes les autres
-   cartes du livre, et le fond reprend le vert des en-têtes de table. */
+/* 1. Le bandeau. Le nom est dans la pile de titres de Roll20 (Proxima Nova
+   Condensed), comme le titre de toutes les autres cartes du livre, et le fond
+   reprend le gris presque noir des en-têtes de table (--bandeau, #262626). */
 .md-typeset .mcard.tech .tc-tete {
   display: flex;
   align-items: center;
   gap: 0.4rem;
   margin: 0;
   padding: 0.24rem 0.42rem;
-  background: var(--green-header);
-  /* Crème FIXE et non var(--paper) : la nuit renverse le papier en #201c15,
-     ce qui poserait du sombre sur le vert sombre du bandeau. Le vert, lui,
-     bascule tout seul, donc les deux thèmes tiennent avec une seule règle. */
-  color: #faf6eb;
-  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  background: var(--bandeau);
+  /* --sur-bandeau et non var(--paper) : le papier se renverse la nuit et
+     poserait du sombre sur un fond déjà sombre. Le bandeau, lui, vaut #262626
+     dans les deux thèmes, et ce qui s'écrit dessus est l'or du wiki (#ffd77f),
+     lui aussi identique jour et nuit : 11:1, et une seule règle pour les deux
+     thèmes. */
+  color: var(--sur-bandeau);
+  font-family: 'Symboles JDR', 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.05em;
   line-height: 1.2;
 }
 
-/* Le type de la technique, en pastille inversée à gauche du nom. Ses deux
-   couleurs sont fixes dans les deux thèmes puisque son fond l'est : le vert
-   clair de la nuit sur du crème serait illisible. */
+/* Le type de la technique, en pastille inversée à gauche du nom : l'or plein
+   porte le gris presque noir du bandeau, quand le nom fait l'inverse à côté.
+   Ses deux couleurs valent la même chose dans les deux thèmes, comme le bandeau
+   qui les porte, et le rapport est le même : 11:1. C'est le seul emploi permis
+   de l'or vif — il est le FOND, pas la lettre ; en texte sur du blanc il
+   tomberait à 1,4:1. */
 .md-typeset .mcard.tech .tc-type {
   flex: 0 0 auto;
   padding: 0.04rem 0.24rem;
   border-radius: 2px;
-  background: #faf6eb;
-  color: #4a5a45;
+  background: var(--or-vif);
+  color: var(--bandeau);
   font-size: 0.56rem;
   letter-spacing: 0.08em;
 }
 
 /* 2. La bande d'activation : ce qu'il faut dépenser pour employer la
-   technique, d'un seul tenant sur toute la largeur de la carte. */
+   technique, d'un seul tenant sur toute la largeur de la carte. Son filet est
+   doré comme les cloisons du corps : ces trois traits sont la charpente de la
+   carte et prolongent le bandeau, ils ne séparent pas de la prose. */
 .md-typeset .mcard.tech .tc-act {
   margin: 0;
   padding: 0.26rem 0.42rem;
-  border-bottom: 1px solid #d9d2bf;
+  border-bottom: 1px solid var(--trait-or);
   font-size: 0.66rem;
   line-height: 1.34;
 }
@@ -523,21 +582,23 @@
   font-size: 0.66rem;
   line-height: 1.34;
 }
-.md-typeset .mcard.tech .tc-case + .tc-case { border-left: 1px solid #d9d2bf; }
+.md-typeset .mcard.tech .tc-case + .tc-case { border-left: 1px solid var(--trait-or); }
 .md-typeset .mcard.tech .tc-case p { margin: 0; }
 /* Une cellule porte parfois plusieurs champs : ils se suivent, séparés d'un
    simple blanc, sans filet qui alourdirait une carte déjà cloisonnée. */
 .md-typeset .mcard.tech .tc-case p + p { margin-top: 0.26rem; }
 
-/* Libellé de champ. Police de TEXTE et casse naturelle : les capitales forcées
-   sont proscrites dans le livre, et la Cinzel les rendrait de fait. La
-   hiérarchie tient donc à la taille, à la graisse et au vert. */
+/* Libellé de champ. Pile de TEXTE et casse naturelle : les capitales forcées
+   sont proscrites dans le livre. La hiérarchie tient donc à la taille, à la
+   graisse et à l'or des titres (--or-titre : #7a5c10 le jour, 6,2:1 sur le
+   blanc de la feuille ; #ffd77f la nuit, sur le noir). Jamais l'or vif ici :
+   ces libellés sont posés sur la feuille, pas sur un bandeau. */
 .md-typeset .mcard.tech .lib {
-  font-family: 'Symboles JDR', 'Alegreya', 'EB Garamond', Garamond, serif;
+  font-family: 'Symboles JDR', 'Proxima Nova', proxima-nova, 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-weight: 700;
   font-size: 0.58rem;
   letter-spacing: 0.015em;
-  color: var(--green-section);
+  color: var(--or-titre);
 }
 /* Dans les cellules, le libellé prend sa ligne et la valeur passe dessous ;
    dans la bande d'activation, tout tient sur une seule ligne. */

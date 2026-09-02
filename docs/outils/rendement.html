@@ -5,30 +5,52 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Rendement des recettes — Outward</title>
 <style>
+  /* La palette du wiki d'Outward : feuille BLANCHE le jour, NOIRE la nuit, et
+     l'or pour les titres et pour ce qui rapporte. Comme les deux autres pages
+     d'outils, celle-ci n'est pas servie avec le bouton du site : elle suit le
+     thème du SYSTÈME, d'où le bloc prefers-color-scheme. Le bloc [data-theme]
+     qui le double sert le jour où la page serait enchâssée dans le livre.
+     Les jetons nomment un rôle, pas une teinte ; seul l'accent est renommé.
+     La pile de polices est celle de Roll20 : Proxima Nova, sous licence Adobe,
+     ne se télécharge pas — on la NOMME, et Nunito Sans prend le relais. */
   :root{
-    --fond:#f2ede1; --carte:#faf6ec; --encre:#2f2a21; --pale:#7a7264;
-    --filet:#ddd4bf; --vert:#5a7d2a; --gain:#2f6b2f; --perte:#9d3520;
-    --tete:#6b7f45;
+    --fond:#ffffff;   /* la feuille : le fond de page */
+    --carte:#ffffff;  /* le fond des tableaux ; le jour, c'est le filet qui les cerne */
+    --encre:#1a1a1a;  /* le texte courant, 16,9:1 sur la feuille */
+    --pale:#5f5f5f;   /* les légendes, les cellules muettes, 6,4:1 */
+    --filet:#ddd6c6;  /* le filet ; il ne porte jamais de texte */
+    --or:#7a5c10;     /* l'accent, 6,2:1 sur blanc. L'or vif du wiki, #ffd77f, n'y
+                         tient que 1,4:1 : il est réservé à la nuit. */
+    --gain:#6b5210;   /* ce qui rapporte, 7,4:1 : l'or un ton plus grave que les titres */
+    --perte:#9d3520;  /* ce qui coûte, 7,1:1 ; la seule couleur qui ne soit pas de l'or */
+    --tete:#7a5c10;   /* les titres de section et les mots en gras des encadrés */
+    --corps:'Proxima Nova',proxima-nova,'Nunito Sans','Helvetica Neue',Helvetica,Arial,sans-serif;
+    --titres:'Proxima Nova Condensed','Proxima Nova',proxima-nova,'Nunito Sans',Helvetica,Arial,sans-serif;
   }
+  /* La nuit : la feuille passe au noir du wiki, les tableaux se lèvent d'un
+     cheveu au-dessus, et l'or vif reprend sa place — 14:1 sur ce fond, il porte
+     le texte sans réserve. Gain et titres s'y confondent, et c'est voulu :
+     seule la perte tranche. */
   @media (prefers-color-scheme: dark){
     :root:not([data-theme="light"]){
-      --fond:#1b1812; --carte:#232019; --encre:#e6dfcd; --pale:#9c9280;
-      --filet:#3c3527; --gain:#7fb069; --perte:#d1705c; --tete:#9db668;
+      --fond:#0d0d0d; --carte:#1a1a1a; --encre:#e6e6e6; --pale:#9a9384;
+      --filet:#3a3a3a; --or:#ffd77f; --gain:#ffd77f; --perte:#d1705c; --tete:#ffd77f;
     }
   }
   :root[data-theme="dark"]{
-    --fond:#1b1812; --carte:#232019; --encre:#e6dfcd; --pale:#9c9280;
-    --filet:#3c3527; --gain:#7fb069; --perte:#d1705c; --tete:#9db668;
+    --fond:#0d0d0d; --carte:#1a1a1a; --encre:#e6e6e6; --pale:#9a9384;
+    --filet:#3a3a3a; --or:#ffd77f; --gain:#ffd77f; --perte:#d1705c; --tete:#ffd77f;
   }
   *{box-sizing:border-box}
   body{
     margin:0; padding:1.6rem 1.2rem 4rem; background:var(--fond); color:var(--encre);
-    font:16px/1.55 Garamond,'EB Garamond',Georgia,serif;
+    font:16px/1.55 var(--corps);
   }
   .page{max-width:74rem;margin:0 auto}
-  h1{font-size:1.9rem;letter-spacing:.04em;text-align:center;margin:.2rem 0 .3rem;font-variant:small-caps}
+  h1{font-family:var(--titres);font-size:1.9rem;letter-spacing:.04em;text-align:center;margin:.2rem 0 .3rem;font-variant:small-caps}
   .sous{text-align:center;color:var(--pale);margin:0 0 1.8rem;font-size:.92rem}
   h2{
+    font-family:var(--titres);
     font-size:1.15rem;letter-spacing:.05em;font-variant:small-caps;color:var(--tete);
     margin:2.2rem 0 .2rem;padding-bottom:.25rem;border-bottom:1px solid var(--filet);
   }
@@ -43,7 +65,10 @@
   tr:last-child td{border-bottom:none}
   tfoot td{font-weight:700;border-top:2px solid var(--filet)}
   .g{color:var(--gain)} .p{color:var(--perte)} .n{color:var(--pale)}
-  .note{background:rgba(127,127,127,.07);border-left:3px solid var(--filet);
+  /* Le seul aplat de la page, et sa seule barre d'accent : l'encadré de règle
+     se signale par un filet d'or à gauche, là où il n'avait qu'un filet
+     ordinaire qui ne se voyait pas. */
+  .note{background:rgba(127,127,127,.07);border-left:3px solid var(--or);
     padding:.5rem .9rem;margin:1rem 0;font-size:.88rem}
   .note b{color:var(--tete)}
   #etat{text-align:center;color:var(--pale);padding:2rem;font-size:.95rem}

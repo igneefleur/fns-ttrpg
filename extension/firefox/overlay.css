@@ -6,21 +6,26 @@
 
    PALETTE DU SITE OUTWARD, jour et nuit, recopiée de docs/stylesheets/extra.css
    et docs/stylesheets/night.css : ce fichier est signé, il ne peut rien charger
-   du site, et il doit tenir seul. L'accent d'Outward est le VERT OLIVE du livre
-   (--green-section), là où les autres jeux du dépôt ont un carmin : ne pas
+   du site, et il doit tenir seul. C'est la palette du WIKI D'OUTWARD, et elle
+   tient en trois mots : NOIR, BLANC ET OR. Le jour est une feuille blanche à
+   texte sombre, la nuit une feuille noire à texte clair, et l'or traverse les
+   deux — #ffd77f, la couleur des liens du wiki, gardé tel quel sur le sombre
+   (14:1 sur notre --card de nuit) et ASSOMBRI à #7a5c10 dès qu'il porte du
+   texte sur du blanc, où le vif ne vaudrait que 1,4:1 et ne se lirait pas.
+   Aucun or nulle part. Les autres jeux du dépôt ont un carmin : ne pas
    recopier un rouge d'une feuille voisine, il n'appartient pas à ce livre-ci.
    Les formes, elles, sont celles de la fiche : une carte, c'est un fond --card,
    un filet --line-2, huit pixels de rayon et une ombre à peine posée ; un titre
-   de section, c'est un petit trait vert sous un texte espacé.
+   de section, c'est un petit trait doré sous un texte espacé.
 
-   LES POLICES DU LIVRE NE SONT PAS LÀ, et il faut le dire plutôt que de le
-   laisser croire : Alegreya et Cinzel sont servies par le site, une feuille
-   injectée dans Roll20 ne peut pas aller les chercher (la CSP de Roll20 refuse
-   la police d'une autre origine), et le paquet ne les embarque QUE pour le
-   popup, qui est une page d'extension. On les NOMME quand même, en tête de
-   pile : le joueur qui les a installées les verra, les autres auront la
-   meilleure sérif de leur machine. Le contenu des iframes, lui, a bien les
-   vraies polices, puisqu'il vient du site. */
+   AUCUNE POLICE N'EST NOMMÉE ICI, ET C'EST DEVENU LA MÊME RÉPONSE QUE CELLE DU
+   LIVRE. Le livre a quitté les sérifs : son corps est désormais la pile de
+   Roll20 elle-même — 'Proxima Nova' en tête, Nunito Sans auto-hébergée pour qui
+   ne l'a pas. Tout ce que cette feuille dessine étant posé DANS la page de
+   Roll20, en hériter revient à écrire la police du livre sans la nommer ni la
+   charger — ce qu'une feuille injectée ne pourrait de toute façon pas faire, la
+   CSP de Roll20 refusant la police d'une autre origine. Le détail du raisonnement
+   est dans le long commentaire de .owd-panneau, plus bas. */
 
 /* onglet « Fiche Outward » : un vrai <li><a> cloné des onglets natifs (il hérite
    donc du style de Roll20, onglet actif compris). On n'ajoute que le curseur. */
@@ -60,31 +65,31 @@
    Elle ne traverse aucune iframe, donc ni la fiche ni le camp, qui sont des
    documents servis par le site et portent leur propre palette. */
 .owd-panneau, .owd-create, .owd-creator-frame, .owd-des {
-  --paper:    #faf6eb;
-  --bg-side:  #e4ddcd;
-  --card:     #fffdf6;
-  --panel:    #f6efdd;
-  --line:     #c6bb9f;
-  --line-2:   #d6cbb1;
-  --ink:      #1d1d1d;
-  --ink-2:    #453d2d;
-  --vert:     #63755e;
+  --paper:    #ffffff;
+  --bg-side:  #e9e7e2;
+  --card:     #ffffff;
+  --panel:    #f5f2ea;
+  --line:     #ddd6c6;
+  --line-2:   #ddd6c6;
+  --ink:      #1a1a1a;
+  --ink-2:    #3a3a3a;
+  --or:     #7a5c10;
   --ombre:    rgba(60, 48, 18, .10);
   --ombre-portee: rgba(0, 0, 0, .28);
 }
 .owd-panneau.owd-nuit, .owd-create.owd-nuit, .owd-creator-frame.owd-nuit, .owd-des.owd-nuit {
-  --paper:    #201c15;
-  --bg-side:  #14110c;
-  --card:     #2a2519;
-  --panel:    #241f16;
-  --line:     #3c3527;
-  --line-2:   #453e31;
-  --ink:      #e8dfcb;
-  --ink-2:    #a89e88;
-  /* L'olive S'ÉCLAIRCIT la nuit : c'est un ton de TRAIT sur fond sombre, pas
-     un ton « plus foncé ». Le #63755e du jour, posé sur #201c15, ne se
+  --paper:    #0d0d0d;
+  --bg-side:  #000000;
+  --card:     #1a1a1a;
+  --panel:    #1a1a1a;
+  --line:     #3a3a3a;
+  --line-2:   #3a3a3a;
+  --ink:      #e6e6e6;
+  --ink-2:    #9a9384;
+  /* L'or S'ÉCLAIRCIT la nuit : c'est un ton de TRAIT sur fond sombre, pas
+     un ton « plus foncé ». Le #7a5c10 du jour, posé sur #0d0d0d, ne se
      distinguerait plus du filet. */
-  --vert:     #9fb37e;
+  --or:     #ffd77f;
   --ombre:    rgba(0, 0, 0, .35);
   --ombre-portee: rgba(0, 0, 0, .60);
 }
@@ -143,21 +148,7 @@
  *
  * Tout ce que ce fichier habille est posé DANS la page de Roll20 : la carte de
  * dés du tchat, le panneau de Camp, la boîte de création. Ces éléments héritent
- * donc naturellement de la police de leur hôte, et `font-family: inherit` suffit
- * à les mettre à la sienne — non pas une police qui lui ressemble, LA sienne,
- * quelle qu'elle soit et quoi qu'elle devienne.
- *
- * POURQUOI L'HÉRITAGE PLUTÔT QUE LE NOM. Nommer une pile de polices, c'est
- * recopier une décision qui appartient à Roll20 : le jour où ils changent — et
- * ils l'ont déjà fait — la copie ment, sans que rien ne le signale. L'héritage
- * ne peut pas mentir. Il ne demande aucune veille, aucun paquet re-signé, et il
- * vaut pour les deux thèmes de Roll20 comme pour les feuilles communautaires qui
- * imposent la leur.
- *
- * CE QU'ON PERD, et c'est assumé : Alegreya et Cinzel, les deux polices du livre
- * Outward, ne paraissent plus dans le tchat. Une carte qui parle une autre langue
- * typographique que la conversation où elle s'insère se lit comme un corps
- * étranger — c'est joli et c'est faux. Elles restent le livre ; le tchat reste
+ * donc naturellement de la police de leur hôte, et `font-family: 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif; le tchat reste
  * Roll20.
  *
  * CE QUI RESTE ÉCRIT ICI : la TAILLE, la GRAISSE et l'INTERLETTRAGE. Ce sont des
@@ -168,7 +159,7 @@
   font-family: inherit;
 }
 /* la barre de titre : l'en-tête d'une section du livre, fond --panel et filet
-   dessous, avec le petit trait vert qui signe les titres de la fiche */
+   dessous, avec le petit trait or qui signe les titres de la fiche */
 .owd-panneau-tete {
   position: relative;
   flex: 0 0 auto; display: flex; align-items: center; gap: 6px;
@@ -183,7 +174,7 @@
 .owd-panneau.owd-panneau-ancre > .owd-panneau-tete { padding-left: 28px; }
 .owd-panneau-tete::after {
   content: ""; position: absolute; left: 10px; bottom: -1px;
-  width: 22px; height: 1.5px; background: var(--vert); border-radius: 2px;
+  width: 22px; height: 1.5px; background: var(--or); border-radius: 2px;
 }
 .owd-panneau.owd-panneau-ancre > .owd-panneau-tete::after { left: 28px; }
 .owd-panneau-titre {
@@ -210,12 +201,12 @@
 .owd-panneau-btn:hover { background: var(--panel); border-color: var(--line); color: var(--ink); }
 /* le panneau se prend à la souris, mais le repli doit rester atteignable au
    clavier : sans contour visible, la tabulation traverse le panneau à l'aveugle */
-.owd-panneau-btn:focus-visible { outline: 2px solid var(--vert); outline-offset: 1px; }
+.owd-panneau-btn:focus-visible { outline: 2px solid var(--or); outline-offset: 1px; }
 .owd-panneau-corps { flex: 1 1 auto; min-height: 0; background: var(--bg-side); }
 .owd-panneau-frame { display: block; width: 100%; height: 100%; border: 0; }
 /* replié : l'étiquette seule, posée dans un coin ; l'iframe reste en place mais
    n'est plus montrée (la détruire coûterait une place dans la table des
-   liaisons du pont, voir content-roll20.js). Le filet et le trait vert
+   liaisons du pont, voir content-roll20.js). Le filet et le trait or
    disparaissent : ils soulignent un contenu qui n'est plus là. */
 .owd-panneau-replie .owd-panneau-corps,
 .owd-panneau-replie .owd-panneau-grip { display: none; }
@@ -256,7 +247,7 @@
 
 /* ---- écran « pas encore de fiche » + bouton de création ----
    Une carte du livre, posée au milieu du pane : fond --card, filet --line-2,
-   titre en capitales espacées sous son trait vert. Elle remplace le bloc de
+   titre en capitales espacées sous son trait or. Elle remplace le bloc de
    texte gris clair qui n'appartiendrait à rien. */
 .owd-create {
   box-sizing: border-box; max-width: 26rem; margin: 22px auto; padding: 18px 22px 22px;
@@ -274,26 +265,26 @@
 }
 .owd-create-title::after {
   content: ""; position: absolute; left: 50%; bottom: 0; margin-left: -13px;
-  width: 26px; height: 1.5px; background: var(--vert); border-radius: 2px;
+  width: 26px; height: 1.5px; background: var(--or); border-radius: 2px;
 }
 .owd-create-msg { margin: 0; color: var(--ink-2); font-size: 13px; }
-/* L'olive de ce bouton ne suit PAS la nuit, et c'est mesuré : le --vert du
+/* L'or de ce bouton ne suit PAS la nuit, et c'est mesuré : le --or du
    livre s'éclaircit la nuit parce qu'il y sert de couleur de TRAIT sur fond
-   sombre, et du blanc cassé posé dessus tomberait sous le seuil. L'olive
+   sombre, et du blanc cassé posé dessus tomberait sous le seuil. L'or
    profond du jour tient 8.1 pour 1 contre le blanc cassé, de jour comme de
-   nuit, et reste le vert du livre. */
+   nuit, et reste l'or du livre. */
 .owd-create-btn {
   margin-top: 14px; padding: 9px 20px 10px; cursor: pointer;
-  background: #46543b; color: #fff8f0;
-  border: 1px solid #2f3b28; border-radius: 7px;
+  background: #6b5a2e; color: #e6e6e6;
+  border: 1px solid #2a2415; border-radius: 7px;
   font-weight: 700; font-size: 14px; line-height: 1.2;
   font-family: inherit;
   letter-spacing: .02em;
   box-shadow: 0 1px 3px var(--ombre);
   transition: background .12s;
 }
-.owd-create-btn:hover { background: #2f3b28; }
-.owd-create-btn:focus-visible { outline: 2px solid var(--vert); outline-offset: 2px; }
+.owd-create-btn:hover { background: #2a2415; }
+.owd-create-btn:focus-visible { outline: 2px solid var(--or); outline-offset: 2px; }
 
 /* ---- les dés d'action, rhabillés dans le tchat ----
    content-roll20.js repère le gabarit « OWD Action Dice » et glisse cette carte
@@ -333,7 +324,7 @@
 }
 .owd-des-titre {
   font-family: inherit;
-  font-size: 12px; letter-spacing: .06em; color: var(--vert);
+  font-size: 12px; letter-spacing: .06em; color: var(--or);
 }
 .owd-des-compte { font-size: 11px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
 
@@ -417,7 +408,7 @@
   border: 1px solid var(--line-2); border-radius: 4px;
   padding: 1px 7px; cursor: pointer; opacity: .75;
 }
-.owd-des-rejouer:hover { opacity: 1; border-color: var(--vert); color: var(--vert); }
+.owd-des-rejouer:hover { opacity: 1; border-color: var(--or); color: var(--or); }
 
 /* LE MESSAGE D'ORIGINE, CACHÉ MAIS PRÉSENT : on peut toujours vérifier un jet
    contesté, et le jour où cette réécriture se trompera, l'original sera là pour
@@ -459,7 +450,7 @@
   padding: 0; border: 0; background: transparent;
   cursor: pointer;
 }
-.owd-de-choix:focus-visible { outline: 2px solid var(--vert); outline-offset: 2px; }
+.owd-de-choix:focus-visible { outline: 2px solid var(--or); outline-offset: 2px; }
 
 /* LE HALO — LE DÉCOR, ET IL PASSE SOUS LE DÉ.
    Premier enfant de l'étui, donc premier peint : le dé se dessine par-dessus et
@@ -486,7 +477,7 @@
 }
 .owd-de-case.owd-choisi .owd-de-halo {
   background: rgb(70 84 59 / .15);
-  box-shadow: inset 0 0 0 2px var(--vert), 0 0 0 4px rgb(70 84 59 / .13);
+  box-shadow: inset 0 0 0 2px var(--or), 0 0 0 4px rgb(70 84 59 / .13);
 }
 .owd-des.owd-nuit .owd-de-case:hover .owd-de-halo {
   background: rgb(255 255 255 / .07);
@@ -494,7 +485,7 @@
 }
 .owd-des.owd-nuit .owd-de-case.owd-choisi .owd-de-halo {
   background: rgb(255 255 255 / .11);
-  box-shadow: inset 0 0 0 2px var(--vert), 0 0 0 4px rgb(255 255 255 / .10);
+  box-shadow: inset 0 0 0 2px var(--or), 0 0 0 4px rgb(255 255 255 / .10);
 }
 
 /* RELANCER : la seule commande de la carte qui ÉCRIVE au tchat, donc la seule
@@ -502,7 +493,7 @@
    choisi — un bouton qui ne ferait rien vaut mieux absent qu'inerte. */
 .owd-des-relancer[disabled] { opacity: .35; cursor: default; }
 .owd-des-relancer:not([disabled]) {
-  opacity: 1; color: var(--vert); border-color: var(--vert);
+  opacity: 1; color: var(--or); border-color: var(--or);
 }
 .owd-des-relancer:not([disabled]):hover { background: rgb(70 84 59 / .12); }
 

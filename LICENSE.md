@@ -37,7 +37,7 @@ présente licence** : ils restent régis par la leur, et rien ici n'y déroge.
 
 | Composant | Emplacement | Licence |
 |---|---|---|
-| Alegreya, Cinzel, EB Garamond, IBM Plex Sans, Roboto Mono, Noto Sans Symbols 2, Noto Sans Math | `docs/assets/fonts/` | SIL Open Font License 1.1 ; textes dans [`docs/assets/fonts/licences/`](docs/assets/fonts/licences/), détails dans le [LISEZMOI](docs/assets/fonts/LISEZMOI.md) |
+| Alegreya, Cinzel, EB Garamond, IBM Plex Sans, Roboto Mono, Nunito Sans, Noto Sans Symbols 2, Noto Sans Math | `docs/assets/fonts/` | SIL Open Font License 1.1 ; textes dans [`docs/assets/fonts/licences/`](docs/assets/fonts/licences/), détails dans le [LISEZMOI](docs/assets/fonts/LISEZMOI.md) |
 | Material for MkDocs | dépendance de construction | MIT |
 | MkDocs | dépendance de construction | BSD-2-Clause |
 
