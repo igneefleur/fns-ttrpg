@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "2.9.0b";
+  var RELEASE = "2.9.1b";
   var SCHEMA = 3;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -3900,7 +3900,6 @@
       return v;
     }
     var vZone = caseStat("idéal °C"), vInt = caseStat("intensité");
-    res.appendChild(stat);
 
     var cmd = el("div", "pc-vital-cmd");
     var delta = el("input", "pc-vital-delta");
@@ -3922,6 +3921,8 @@
     cmd.appendChild(delta);
     cmd.appendChild(miniBtn("Appliquer", "Ajouter cette variation", applique));
     res.appendChild(cmd);
+    // sous le geste : la barre, puis [± Appliquer], puis la zone et l'intensité
+    res.appendChild(stat);
     box.appendChild(res);
 
     hooks.push(function () {
