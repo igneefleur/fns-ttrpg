@@ -712,8 +712,15 @@ def _temps(txt):
     if bouge != tranche or _ecrit(ret.group(2), "exposition : son retour") != tranche:
         raise ErreurRegles("exposition : sa cadence n'est pas la tranche de l'effort")
 
+    # « Une place se libère toutes les dix minutes » : la digestion.
+    dig = _un(r"(\w+) places? se libèr(?:e|ent) toutes les (\w+) minutes", _section(txt, "La contenance", "contenance"),
+              "contenance : la digestion")
+    digestion = {"places": _ecrit(dig.group(1), "contenance : les places libérées"),
+                 "minutes": _ecrit(dig.group(2), "contenance : la cadence")}
+
     return {
         "tranche": tranche,
+        "digestion": digestion,
         "efforts": [{"cle": c, "nom": n, "repos": repos[c], "survie": survie[c], "degres": degres[c]}
                     for c, n in zip(cles, noms)],
         "regen": regen,
