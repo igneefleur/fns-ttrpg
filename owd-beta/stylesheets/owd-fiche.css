@@ -480,8 +480,13 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
 }
 /* Sous zéro, le bandeau entier passe au rouge. Un rouge FIXE et sombre, comme
    le bandeau reste sombre dans les deux modes : le texte blanc s'y lit toujours. */
-.pc-vital.over .pc-vital-tete { background: #6e2415; border-bottom-color: var(--danger); }
-.pc-vital.over .pc-vital-nom, .pc-vital.over .pc-vital-num, .pc-vital.over .pc-vital-max { color: #fff; }
+.pc-vital-res.over .pc-vital-tete { background: #6e2415; border-bottom-color: var(--danger); }
+.pc-vital-res.over .pc-vital-nom, .pc-vital-res.over .pc-vital-num, .pc-vital-res.over .pc-vital-max { color: #fff; }
+/* Plusieurs réserves dans une carte (Survie) : chaque bandeau reprend à zéro,
+   séparé du geste de la précédente par un filet. */
+.pc-vital-res + .pc-vital-res { border-top: 1px solid var(--line); }
+/* Le pied d'une carte de réserves retrouve la marge que la carte a perdue. */
+.pc-vital-pied { padding: 0 .4rem .38rem; margin-top: 0; }
 
 /* ---- mode édition par module ----
    Un rouage dans le titre déverrouille la CONSTRUCTION du module ; hors
