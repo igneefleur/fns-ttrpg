@@ -175,6 +175,13 @@
     delete s.inv.groupes;
     delete s.inv.comptes;
     if (!Array.isArray(s.inv.objets)) s.inv.objets = [];
+    // LE PRIX DE VENTE AUTOMATIQUE (null) n'existait pas : un champ laissé vide
+    // s'enregistrait 0. Tout 0 d'avant veut donc dire « non rempli », et passe
+    // une fois pour toutes en automatique ; venteAuto marque ce passage fait.
+    if (!s.inv.venteAuto) {
+      s.inv.objets.forEach(function (o) { if (o && typeof o === "object" && pnum(o.vente) === 0) o.vente = null; });
+      s.inv.venteAuto = 1;
+    }
     s.inv.objets = s.inv.objets.filter(function (o) { return o && typeof o === "object"; }).map(function (o) {
       var a = o.arme && typeof o.arme === "object" && !Array.isArray(o.arme) ? o.arme : null;
       return {
@@ -188,7 +195,7 @@
         // « volume », la clé garde son nom, qui voyage dans les Attributes
         places: pnum(o.places),
         nourri: !!o.nourri,
-        achat: pnum(o.achat), vente: pnum(o.vente),
+        achat: pnum(o.achat), vente: venteNum(o.vente),
         desc: o.desc == null ? "" : String(o.desc),
         ou: INV_LIEUX.indexOf(o.ou) >= 0 ? o.ou : "sac",
         rapide: !!o.rapide,

@@ -27,6 +27,14 @@
     var n = parseFloat(String(v == null ? "" : v).replace(",", "."));
     return isFinite(n) && n >= 0 ? Math.round(n * 100) / 100 : 0;
   }
+  // PRIX DE VENTE d'un objet : null veut dire « automatique », le tiers du
+  // prix d'achat arrondi à l'inférieur. Un nombre saisi, 0 compris, prime.
+  function venteNum(v) {
+    return v == null || String(v).trim() === "" ? null : pnum(v);
+  }
+  function prixVente(it) {
+    return it.vente == null ? Math.max(0, Math.floor(pnum(it.achat) / 3)) : pnum(it.vente);
+  }
   // nombre SIGNÉ (l'exposition va de −120 à +120) : même tolérance, sans plancher
   function snum(v) {
     var n = parseFloat(String(v == null ? "" : v).replace(",", "."));

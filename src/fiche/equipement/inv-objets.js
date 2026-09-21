@@ -253,7 +253,7 @@
       var add = el("div", "pc-obj-addtile pc-edit-only", "+");
       add.title = "Ajouter un objet dans « " + titre + " »";
       add.addEventListener("click", function () {
-        var o = { id: "", nom: "", img: "", qte: 1, poids: 0, encombre: 0, places: 0, nourri: false, achat: 0, vente: 0,
+        var o = { id: "", nom: "", img: "", qte: 1, poids: 0, encombre: 0, places: 0, nourri: false, achat: 0, vente: null,
                   desc: "", ou: ou, rapide: false, vet: "", poches: 0, froid: 0, chaud: 0,
                   sac: false, cap: 0, arme: null };
         items.push(o);
@@ -304,7 +304,7 @@
       if (sel && items.indexOf(sel) < 0) sel = null;
       var fantome = !sel;
       panel.classList.toggle("fantome", fantome);
-      var it = sel || { id: "", nom: "", img: "", qte: 0, poids: 0, encombre: 0, places: 0, achat: 0, vente: 0,
+      var it = sel || { id: "", nom: "", img: "", qte: 0, poids: 0, encombre: 0, places: 0, achat: 0, vente: null,
                         desc: "", ou: "sac", rapide: false, vet: "", poches: 0, froid: 0, chaud: 0,
                         sac: false, cap: 0, arme: null };
 
@@ -475,10 +475,21 @@
 
       // achat / vente, en pièces d'argent : la monnaie du livre est NOMMÉE
       var prix = el("div", "pc-obj-pair");
-      [["achat", "Prix d'achat"], ["vente", "Prix de vente"]].forEach(function (c) {
-        prix.appendChild(champNombre(c[1], function () { return it[c[0]]; },
-          function (v) { it[c[0]] = pnum(v); }, c[1] + " en " + monnaie(true)));
-      });
+      prix.appendChild(champNombre("Prix d'achat", function () { return it.achat; },
+        function (v) { it.achat = pnum(v); majVente(); }, "Prix d'achat en " + monnaie(true)));
+      // le prix de vente laissé vide est AUTOMATIQUE ; un nombre saisi, 0
+      // compris, s'affiche tel quel
+      var vIn = el("input", "pc-edit-field");
+      vIn.type = "text"; vIn.inputMode = "decimal";
+      vIn.placeholder = "automatique";
+      function majVente() {
+        if (document.activeElement !== vIn) vIn.value = it.vente == null ? "" : fmtP(it.vente);
+        vIn.title = "Prix de vente en " + monnaie(true) + (it.vente == null ? " : " + fmtP(prixVente(it)) : "");
+      }
+      majVente();
+      vIn.addEventListener("input", function () { it.vente = venteNum(vIn.value); save(); refresh(); majVente(); });
+      vIn.addEventListener("blur", majVente);
+      prix.appendChild(fld("Prix de vente", vIn));
       body.appendChild(prix);
 
       // identifiant et image : de la construction, en édition seulement.
@@ -486,7 +497,7 @@
       // le donne.
       var pairE = el("div", "pc-obj-pair pc-edit-only");
       var idIn = el("input", "pc-edit-field");
-      idIn.type = "text"; idIn.placeholder = "libre (ex. corde-chanvre)";
+      idIn.type = "text"; idIn.placeholder = "ex. iron_sword";
       idIn.value = it.id || "";
       idIn.addEventListener("input", function () { it.id = idIn.value; save(); });
       pairE.appendChild(fld("Identifiant", idIn));
@@ -552,7 +563,7 @@
             ["Poids", it.poids ? fmtP(it.poids) + (q > 1 ? " (total " + fmtP(q * it.poids) + ")" : "") : ""],
             ["Encombrance", it.encombre ? fmtP(it.encombre) + " eb" : ""],
             ["Volume", it.nourri && it.places ? fmtP(it.places) : ""],
-            ["Valeur", it.vente ? "vente " + fmtP(it.vente) + (it.achat ? " · achat " + fmtP(it.achat) : "")
+            ["Valeur", prixVente(it) ? "vente " + fmtP(prixVente(it)) + (it.achat ? " · achat " + fmtP(it.achat) : "")
                                 : (it.achat ? "achat " + fmtP(it.achat) : "")],
             ["", it.desc]
           ];

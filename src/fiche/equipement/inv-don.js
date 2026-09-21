@@ -34,8 +34,9 @@
     var p = {
       n: String(it.nom || ""), q: Math.max(0, pnum(qte)) || 1, p: pnum(it.poids),
       l: pnum(it.places), d: String(it.desc || ""), k: String(it.id || ""),
-      a: pnum(it.achat), v: pnum(it.vente)
+      a: pnum(it.achat)
     };
+    if (it.vente != null) p.v = pnum(it.vente);   // absent : automatique
     if (it.rapide) p.r = 1;
     var img = String(it.img || "");
     if (img && (img.length <= IMG_MAX || !/^data:/.test(img))) p.i = img;
@@ -48,7 +49,7 @@
     return {
       nom: String(o.n || "Objet"), qte: Math.max(0, pnum(o.q)) || 1, poids: pnum(o.p),
       places: pnum(o.l), desc: String(o.d || ""), img: String(o.i || ""),
-      id: String(o.k || ""), achat: pnum(o.a), vente: pnum(o.v), rapide: !!o.r
+      id: String(o.k || ""), achat: pnum(o.a), vente: venteNum(o.v), rapide: !!o.r
     };
   }
 
@@ -135,7 +136,11 @@
         (recu.id ? " — même identifiant" : "") + " : les quantités s'additionnent."));
       [["nom", "Nom"], ["img", "Image"], ["poids", "Poids"], ["places", "Volume"],
        ["desc", "Description"], ["achat", "Achat"], ["vente", "Vente"]].forEach(function (c) {
-        var mien = String(jumeau[c[0]] || ""), neuf = String(recu[c[0]] || "");
+        function dit(o) {
+          if (c[0] === "vente") return o.vente == null ? "automatique" : fmtP(o.vente);
+          return String(o[c[0]] || "");
+        }
+        var mien = dit(jumeau), neuf = dit(recu);
         if (mien === neuf || (!mien && !neuf)) return;
         choix[c[0]] = "mien";
         var bloc = el("div", "pc-modal-conflit");

@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "2.4.2b";
+  var RELEASE = "2.4.3b";
   var SCHEMA = 3;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -157,6 +157,14 @@
   function pnum(v) {
     var n = parseFloat(String(v == null ? "" : v).replace(",", "."));
     return isFinite(n) && n >= 0 ? Math.round(n * 100) / 100 : 0;
+  }
+  // PRIX DE VENTE d'un objet : null veut dire « automatique », le tiers du
+  // prix d'achat arrondi à l'inférieur. Un nombre saisi, 0 compris, prime.
+  function venteNum(v) {
+    return v == null || String(v).trim() === "" ? null : pnum(v);
+  }
+  function prixVente(it) {
+    return it.vente == null ? Math.max(0, Math.floor(pnum(it.achat) / 3)) : pnum(it.vente);
   }
   // nombre SIGNÉ (l'exposition va de −120 à +120) : même tolérance, sans plancher
   function snum(v) {
@@ -688,6 +696,13 @@
     delete s.inv.groupes;
     delete s.inv.comptes;
     if (!Array.isArray(s.inv.objets)) s.inv.objets = [];
+    // LE PRIX DE VENTE AUTOMATIQUE (null) n'existait pas : un champ laissé vide
+    // s'enregistrait 0. Tout 0 d'avant veut donc dire « non rempli », et passe
+    // une fois pour toutes en automatique ; venteAuto marque ce passage fait.
+    if (!s.inv.venteAuto) {
+      s.inv.objets.forEach(function (o) { if (o && typeof o === "object" && pnum(o.vente) === 0) o.vente = null; });
+      s.inv.venteAuto = 1;
+    }
     s.inv.objets = s.inv.objets.filter(function (o) { return o && typeof o === "object"; }).map(function (o) {
       var a = o.arme && typeof o.arme === "object" && !Array.isArray(o.arme) ? o.arme : null;
       return {
@@ -701,7 +716,7 @@
         // « volume », la clé garde son nom, qui voyage dans les Attributes
         places: pnum(o.places),
         nourri: !!o.nourri,
-        achat: pnum(o.achat), vente: pnum(o.vente),
+        achat: pnum(o.achat), vente: venteNum(o.vente),
         desc: o.desc == null ? "" : String(o.desc),
         ou: INV_LIEUX.indexOf(o.ou) >= 0 ? o.ou : "sac",
         rapide: !!o.rapide,
@@ -4651,8 +4666,9 @@
     var p = {
       n: String(it.nom || ""), q: Math.max(0, pnum(qte)) || 1, p: pnum(it.poids),
       l: pnum(it.places), d: String(it.desc || ""), k: String(it.id || ""),
-      a: pnum(it.achat), v: pnum(it.vente)
+      a: pnum(it.achat)
     };
+    if (it.vente != null) p.v = pnum(it.vente);   // absent : automatique
     if (it.rapide) p.r = 1;
     var img = String(it.img || "");
     if (img && (img.length <= IMG_MAX || !/^data:/.test(img))) p.i = img;
@@ -4665,7 +4681,7 @@
     return {
       nom: String(o.n || "Objet"), qte: Math.max(0, pnum(o.q)) || 1, poids: pnum(o.p),
       places: pnum(o.l), desc: String(o.d || ""), img: String(o.i || ""),
-      id: String(o.k || ""), achat: pnum(o.a), vente: pnum(o.v), rapide: !!o.r
+      id: String(o.k || ""), achat: pnum(o.a), vente: venteNum(o.v), rapide: !!o.r
     };
   }
 
@@ -4752,7 +4768,11 @@
         (recu.id ? " — même identifiant" : "") + " : les quantités s'additionnent."));
       [["nom", "Nom"], ["img", "Image"], ["poids", "Poids"], ["places", "Volume"],
        ["desc", "Description"], ["achat", "Achat"], ["vente", "Vente"]].forEach(function (c) {
-        var mien = String(jumeau[c[0]] || ""), neuf = String(recu[c[0]] || "");
+        function dit(o) {
+          if (c[0] === "vente") return o.vente == null ? "automatique" : fmtP(o.vente);
+          return String(o[c[0]] || "");
+        }
+        var mien = dit(jumeau), neuf = dit(recu);
         if (mien === neuf || (!mien && !neuf)) return;
         choix[c[0]] = "mien";
         var bloc = el("div", "pc-modal-conflit");
@@ -5251,7 +5271,7 @@
       var add = el("div", "pc-obj-addtile pc-edit-only", "+");
       add.title = "Ajouter un objet dans « " + titre + " »";
       add.addEventListener("click", function () {
-        var o = { id: "", nom: "", img: "", qte: 1, poids: 0, encombre: 0, places: 0, nourri: false, achat: 0, vente: 0,
+        var o = { id: "", nom: "", img: "", qte: 1, poids: 0, encombre: 0, places: 0, nourri: false, achat: 0, vente: null,
                   desc: "", ou: ou, rapide: false, vet: "", poches: 0, froid: 0, chaud: 0,
                   sac: false, cap: 0, arme: null };
         items.push(o);
@@ -5302,7 +5322,7 @@
       if (sel && items.indexOf(sel) < 0) sel = null;
       var fantome = !sel;
       panel.classList.toggle("fantome", fantome);
-      var it = sel || { id: "", nom: "", img: "", qte: 0, poids: 0, encombre: 0, places: 0, achat: 0, vente: 0,
+      var it = sel || { id: "", nom: "", img: "", qte: 0, poids: 0, encombre: 0, places: 0, achat: 0, vente: null,
                         desc: "", ou: "sac", rapide: false, vet: "", poches: 0, froid: 0, chaud: 0,
                         sac: false, cap: 0, arme: null };
 
@@ -5473,10 +5493,21 @@
 
       // achat / vente, en pièces d'argent : la monnaie du livre est NOMMÉE
       var prix = el("div", "pc-obj-pair");
-      [["achat", "Prix d'achat"], ["vente", "Prix de vente"]].forEach(function (c) {
-        prix.appendChild(champNombre(c[1], function () { return it[c[0]]; },
-          function (v) { it[c[0]] = pnum(v); }, c[1] + " en " + monnaie(true)));
-      });
+      prix.appendChild(champNombre("Prix d'achat", function () { return it.achat; },
+        function (v) { it.achat = pnum(v); majVente(); }, "Prix d'achat en " + monnaie(true)));
+      // le prix de vente laissé vide est AUTOMATIQUE ; un nombre saisi, 0
+      // compris, s'affiche tel quel
+      var vIn = el("input", "pc-edit-field");
+      vIn.type = "text"; vIn.inputMode = "decimal";
+      vIn.placeholder = "automatique";
+      function majVente() {
+        if (document.activeElement !== vIn) vIn.value = it.vente == null ? "" : fmtP(it.vente);
+        vIn.title = "Prix de vente en " + monnaie(true) + (it.vente == null ? " : " + fmtP(prixVente(it)) : "");
+      }
+      majVente();
+      vIn.addEventListener("input", function () { it.vente = venteNum(vIn.value); save(); refresh(); majVente(); });
+      vIn.addEventListener("blur", majVente);
+      prix.appendChild(fld("Prix de vente", vIn));
       body.appendChild(prix);
 
       // identifiant et image : de la construction, en édition seulement.
@@ -5484,7 +5515,7 @@
       // le donne.
       var pairE = el("div", "pc-obj-pair pc-edit-only");
       var idIn = el("input", "pc-edit-field");
-      idIn.type = "text"; idIn.placeholder = "libre (ex. corde-chanvre)";
+      idIn.type = "text"; idIn.placeholder = "ex. iron_sword";
       idIn.value = it.id || "";
       idIn.addEventListener("input", function () { it.id = idIn.value; save(); });
       pairE.appendChild(fld("Identifiant", idIn));
@@ -5550,7 +5581,7 @@
             ["Poids", it.poids ? fmtP(it.poids) + (q > 1 ? " (total " + fmtP(q * it.poids) + ")" : "") : ""],
             ["Encombrance", it.encombre ? fmtP(it.encombre) + " eb" : ""],
             ["Volume", it.nourri && it.places ? fmtP(it.places) : ""],
-            ["Valeur", it.vente ? "vente " + fmtP(it.vente) + (it.achat ? " · achat " + fmtP(it.achat) : "")
+            ["Valeur", prixVente(it) ? "vente " + fmtP(prixVente(it)) + (it.achat ? " · achat " + fmtP(it.achat) : "")
                                 : (it.achat ? "achat " + fmtP(it.achat) : "")],
             ["", it.desc]
           ];
