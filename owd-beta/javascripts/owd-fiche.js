@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "1.12.0b";
+  var RELEASE = "1.13.0b";
   var SCHEMA = 2;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -366,6 +366,11 @@
       // passer le temps ; rien d'autre ne les lit.
       effort: "leger", temperature: 20,
 
+      // ---- l'effondrement ----
+      // Les niveaux d'effondrement que le JOUEUR ajoute à ceux des réserves
+      // (ligne « Autre » du module) : ce que la fiche ne sait pas compter.
+      effAutre: 0,
+
       // ---- les dés d'action ----
       // La taille de chaque dé d'action, dans l'ordre du module Actions : 4, 6,
       // 8, 10 ou 12. Vide au départ — un dé sans taille posée prend celle des
@@ -518,6 +523,7 @@
     if (!s.de) s.de = DE_DEFAUT;
     s.xpTotal = Math.max(0, num(s.xpTotal, 0));
     s.effort = String(s.effort == null ? "" : s.effort) || b.effort;
+    s.effAutre = clamp(Math.round(num(s.effAutre, 0)), 0, 99);
     s.desTailles = Array.isArray(s.desTailles)
       ? s.desTailles.slice(0, 99).map(function (t) {
           t = num(t, 0);
@@ -1212,6 +1218,7 @@
   function effondrementAuto() {
     var t = 0;
     effReserves().forEach(function (cle) { t += effNiveauDe(cle); });
+    t += Math.max(0, num(state.effAutre, 0));
     return clamp(Math.floor(t), 0, effPlafond());
   }
   // Le seul levier qui joue sur un NIVEAU et non sur des points : le MJ y pose
@@ -3708,6 +3715,11 @@
   // ---- 7. Effondrement ----
   //     [      EFFONDREMENT      ]
   //     [  MAX PV  ] [  MAX PE  ]
+  //     REPOS          [0]
+  //     SATIÉTÉ        [0]
+  //     HYDRATATION    [0]
+  //     EXPOSITION     [0]
+  //     AUTRE          [x]   ← saisi par le joueur
   // Le niveau, puis ce qu'il laisse des deux maximums. La TABLE des dix lignes
   // du livre n'apparaît nulle part : l'infobulle du niveau décompose ce que
   // chaque réserve y apporte, et le DOM ne montre que l'état du personnage.
@@ -3729,13 +3741,48 @@
     r.appendChild(tE);
     b.appendChild(r);
 
+    // LES CAUSES, une ligne par réserve que les règles comptent, dans leur
+    // ordre, puis « Autre », que le joueur remplit. Les noms sont ceux des
+    // bandeaux de Survie.
+    var NOMS = { pr: "Repos", ps: "Satiété", ph: "Hydratation", expo: "Exposition" };
+    var causes = el("div", "pc-eff-causes");
+    var vals = {};
+    effReserves().forEach(function (cle) {
+      var ligne = el("div", "pc-eff-cause");
+      ligne.appendChild(el("span", "k", NOMS[cle] || libCap(cle, cle)));
+      var v = el("span", "v", "");
+      ligne.appendChild(v);
+      vals[cle] = v;
+      causes.appendChild(ligne);
+    });
+    var autre = el("div", "pc-eff-cause");
+    autre.appendChild(el("span", "k", "Autre"));
+    var inp = el("input", "v");
+    inp.type = "number"; inp.min = "0"; inp.step = "1";
+    inp.setAttribute("aria-label", "Autre effondrement");
+    inp.addEventListener("input", function () {
+      var n = parseInt(inp.value, 10);
+      state.effAutre = isFinite(n) ? clamp(n, 0, 99) : 0;
+      refresh();
+    });
+    autre.appendChild(inp);
+    causes.appendChild(autre);
+    b.appendChild(causes);
+
     hooks.push(function () {
       var parts = [], somme = 0;
       effReserves().forEach(function (cle) {
         var n = effNiveauDe(cle);
         somme += n;
         parts.push(libCap(cle, cle).toLowerCase() + " " + n);
+        if (vals[cle]) {
+          vals[cle].textContent = String(n);
+          vals[cle].classList.toggle("zero", !n);
+        }
       });
+      var a = Math.max(0, num(state.effAutre, 0));
+      if (a) { somme += a; parts.push("autre " + a); }
+      if (document.activeElement !== inp) inp.value = a;
       var e = effondrement();
       tN.classList.toggle("adj", e > 0);
       tV.classList.toggle("adj", e > 0);
