@@ -1,5 +1,19 @@
 [
 {
+"short": "5c70e24",
+"author": "Théo Cavaillès",
+"date": "2026-09-21T14:42:38+02:00",
+"message": "Les caractéristiques se répartissent à la création et s'achètent à l'expérience",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/5c70e248d689a8c44c1756b41766c90c9a0bdc4a",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/base/caracteristiques.md",
+"url": "content/regles/base/caracteristiques/"
+}
+]
+},
+{
 "short": "cea2a94",
 "author": "Théo Cavaillès",
 "date": "2026-09-21T12:19:44+02:00",
@@ -260,20 +274,6 @@
 "date": "2026-08-17T14:39:53+02:00",
 "message": "Aucun enchaînement naturel de la hache ne dépasse cinq coups",
 "url": "https://github.com/igneefleur/fns-ttrpg/commit/0d9ca84c229eea7ddd6e6a32c3db8a8d2bdbec23",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/combat/armes.md",
-"url": "content/regles/combat/armes/"
-}
-]
-},
-{
-"short": "86d4eff",
-"author": "Théo Cavaillès",
-"date": "2026-08-17T14:24:18+02:00",
-"message": "La hache tranche, donc elle balaie — jusqu'à trois hommes",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/86d4eff48e86870e176bab4c5042f42b466b48b2",
 "files": [
 {
 "status": "modified",

@@ -80,6 +80,37 @@
   }
  ],
  "moyenneHumaine": 20,
+ "creation": {
+  "points": 160,
+  "min": 0,
+  "max": 50
+ },
+ "progressionCarac": {
+  "tranches": [
+   {
+    "de": 1,
+    "a": 50,
+    "xp": 5
+   },
+   {
+    "de": 51,
+    "a": 100,
+    "xp": 6
+   },
+   {
+    "de": 101,
+    "a": 150,
+    "xp": 7
+   },
+   {
+    "de": 151,
+    "a": 200,
+    "xp": 8
+   }
+  ],
+  "pas": 1,
+  "largeur": 50
+ },
  "rangs": [
   {
    "rang": 0,
