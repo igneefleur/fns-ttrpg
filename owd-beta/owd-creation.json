@@ -233,10 +233,10 @@
    "cle": "ps",
    "libelle": "Points de satiété",
    "abbr": "PS",
-   "base": 1200,
+   "base": 1000,
    "carac": "Endurance",
    "facteur": 10,
-   "formule": "Points de satiété = 1200 + Endurance × 10"
+   "formule": "Points de satiété = 1000 + Endurance × 10"
   },
   {
    "cle": "ph",
