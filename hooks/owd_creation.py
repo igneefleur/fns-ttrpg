@@ -142,7 +142,7 @@ HORS_CAPACITE = {
     "Recuperation naturelle eveille",
     "Recuperation naturelle endormi",
     "Le ventre digere 1 de volume toutes les dix minutes",
-    "Paliers",
+    "Intensite",
 }
 
 
@@ -720,7 +720,7 @@ def _temps(txt):
     manque = [c for c in cles if c not in degres]
     if manque:
         raise ErreurRegles(f"climat : aucun degré pour {', '.join(manque)}")
-    pal = _un(r"Paliers = écart ÷ (\d+), arrondi au (supérieur|inférieur)", clim, "climat : les paliers")
+    pal = _un(r"Intensité = écart ÷ (\d+), arrondi au (supérieur|inférieur)", clim, "climat : l'intensité")
 
     regen = []
     for niv, cad in re.findall(r"^\|\s*(\d+)\s*\|\s*([^|\n]+?)\s*\|\s*$",
@@ -732,7 +732,7 @@ def _temps(txt):
         raise ErreurRegles("récupération : aucune ligne lisible")
 
     expo = _section(txt, "L'exposition", "exposition")
-    bouge = _ecrit(_un(r"Toutes les (\w+) minutes, elle bouge d'autant de points que le personnage a de",
+    bouge = _ecrit(_un(r"Toutes les (\w+) minutes, elle bouge d'autant de points que l'\[?intensité",
                        expo, "exposition : sa cadence").group(1), "exposition : sa cadence")
     ret = _un(r"revient vers zéro de (\d+) % toutes les (\w+) minutes", expo, "exposition : son retour")
     if bouge != tranche or _ecrit(ret.group(2), "exposition : son retour") != tranche:

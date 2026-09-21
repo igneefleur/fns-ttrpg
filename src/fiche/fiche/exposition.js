@@ -48,6 +48,19 @@
     jauge.appendChild(el("b", "pc-expo-zero"));
     res.appendChild(jauge);
 
+    // LA ZONE IDÉALE (en température de l'air, selon l'effort du module
+    // Effort et Temps) et l'INTENSITÉ de froid ou de chaud qu'il subit
+    var stat = el("div", "pc-stat pc-expo-stat");
+    function caseStat(k) {
+      var c = el("div", "c"), v = el("span", "v", "");
+      c.appendChild(v);
+      c.appendChild(el("span", "k", k));
+      stat.appendChild(c);
+      return v;
+    }
+    var vZone = caseStat("idéal °C"), vInt = caseStat("intensité");
+    res.appendChild(stat);
+
     var cmd = el("div", "pc-vital-cmd");
     var delta = el("input", "pc-vital-delta");
     delta.type = "number";
@@ -83,6 +96,13 @@
       fill.className = v < 0 ? "froid" : v > 0 ? "chaud" : "";
       fill.style.left = (v < 0 ? 50 - part : 50) + "%";
       fill.style.width = part + "%";
+      var z = zoneIdeale();
+      // le VRAI moins, comme au livre : « −5 à 7 »
+      function deg(n) { return fmtP(n).replace("-", "−"); }
+      vZone.textContent = z ? deg(z.bas) + " à " + deg(z.haut) : "—";
+      var p = paliersClimat();
+      vInt.textContent = p < 0 ? "Froid " + (-p) : p > 0 ? "Chaud " + p : "Aucune";
+      vInt.className = "v" + (p < 0 ? " froid" : p > 0 ? " chaud" : "");
       jauge.title = "Exposition " + (v < 0 ? "−" + fmtP(-v) : fmtP(v)) + " sur ±" + fmtP(m) +
                     " · niveau d'effondrement " + effNiveauDe("expo");
     });

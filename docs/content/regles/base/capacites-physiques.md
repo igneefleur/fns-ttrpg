@@ -435,9 +435,9 @@ On ajoute des degrés à la température selon l'intensité de l'[effort](#leffo
 
 <div class="keep" markdown>
 
-Un personnage qui se tient hors de sa zone subit des paliers de froid ou de chaleur, un par tranche de 4 degrés d'écart entamée.
+Un personnage qui se tient hors de sa zone subit une intensité de froid ou de chaleur, qui monte de 1 par tranche de 4 degrés d'écart entamée.
 
-<p class="formula">Paliers = écart ÷ 4, arrondi au supérieur</p>
+<p class="formula">Intensité = écart ÷ 4, arrondi au supérieur</p>
 
 </div>
 
@@ -447,23 +447,23 @@ L'exposition mesure ce que le froid ou le chaud a déjà fait au corps. Elle par
 
 <p class="formula">Exposition = de −(100 + Résistance) à +(100 + Résistance)</p>
 
-Toutes les dix minutes, elle bouge d'autant de points que le personnage a de [paliers](#le-climat). Chaque tranche de 10 % franchie lui donne un niveau d'[effondrement](#leffondrement). Tant qu'il se tient dans sa zone, elle revient vers zéro de 10 % toutes les dix minutes.
+Toutes les dix minutes, elle bouge d'autant de points que l'[intensité](#le-climat) de froid ou de chaleur du personnage. Chaque tranche de 10 % franchie lui donne un niveau d'[effondrement](#leffondrement). Tant qu'il se tient dans sa zone, elle revient vers zéro de 10 % toutes les dix minutes.
 
 <div class="memo" markdown>
 
 Exemple. Un personnage ordinaire, qui porte 20 en Résistance, a une exposition qui va de −120 à +120, et chaque niveau d'effondrement lui coûte 12 points.
 
-Nu et immobile à 5 °C, il est à 23 degrés sous sa borne, donc à 6 paliers. Son exposition descend de 6 toutes les dix minutes : premier niveau au bout de vingt minutes, effondrement au bout de trois heures vingt.
+Nu et immobile à 5 °C, il est à 23 degrés sous sa borne, donc à une intensité de 6. Son exposition descend de 6 toutes les dix minutes : premier niveau au bout de vingt minutes, effondrement au bout de trois heures vingt.
 
-Vêtu de quoi valoir 8 degrés contre le froid, il voit sa borne tomber à 20 °C, l'écart à 15 degrés et les paliers à 4. Le même froid ne le prend plus qu'en cinq heures.
+Vêtu de quoi valoir 8 degrés contre le froid, il voit sa borne tomber à 20 °C, l'écart à 15 degrés et l'intensité à 4. Le même froid ne le prend plus qu'en cinq heures.
 
 </div>
 
 <div class="memo" markdown>
 
-Exemple. Le même personnage, nu, à 15 °C : à l'arrêt il subit 4 paliers, mais en effort intermédiaire il ressent 30 °C et n'en subit aucun.
+Exemple. Le même personnage, nu, à 15 °C : à l'arrêt il subit une intensité de 4, mais en effort intermédiaire il ressent 30 °C et n'en subit aucune.
 
-À l'inverse, à 40 °C, il subit 2 paliers immobile et 6 en effort intermédiaire.
+À l'inverse, à 40 °C, il subit une intensité de 2 immobile et de 6 en effort intermédiaire.
 
 </div>
 
@@ -537,7 +537,7 @@ La table ci-dessous donne la température de l'air selon le milieu, le jour et l
 
 <div class="memo" markdown>
 
-Exemple. Le désert bascule de 24 degrés entre le jour et la nuit. Un personnage ordinaire, nu et au repos, s'y tient à 10 degrés de sa zone dans les deux cas : il subit 3 paliers de chaleur à 42 °C le jour, et 3 paliers de froid à 18 °C la nuit.
+Exemple. Le désert bascule de 24 degrés entre le jour et la nuit. Un personnage ordinaire, nu et au repos, s'y tient à 10 degrés de sa zone dans les deux cas : il subit une intensité de chaleur de 3 à 42 °C le jour, et une intensité de froid de 3 à 18 °C la nuit.
 
 </div>
 

@@ -31,7 +31,15 @@
     });
     return out === null ? null : (niveau < 0 ? -out : out);
   }
-  // Les paliers de froid (négatifs) ou de chaud (positifs) du personnage, à
+  // LA ZONE IDÉALE, en température de l'AIR : sa zone de confort (le corps nu
+  // plus ce qu'il porte), moins les degrés que son effort lui ajoute.
+  function zoneIdeale() {
+    var z = confort(), e = effortDe(state.effort);
+    if (!z || !e) return null;
+    var d = num(e.degres, 0);
+    return { bas: z.bas - d, haut: z.haut - d };
+  }
+  // L'INTENSITÉ de froid (négative) ou de chaud (positive) du personnage, à
   // la température de l'air et à l'effort qu'il fournit.
   function paliersClimat() {
     var t = tempsDef(), z = confort(), e = effortDe(state.effort);
