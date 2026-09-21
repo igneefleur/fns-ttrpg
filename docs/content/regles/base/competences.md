@@ -4,7 +4,7 @@ Une compétence mesure ce qu'un personnage sait faire. Elle couvre un large doma
 
 <div class="cols" markdown>
 
-Chaque compétence d'un personnage porte un rang. Ce chapitre définit ce que donne le [rang](#le-rang), le [Rang 0](#le-rang-0) de celui qui n'a rien appris, et ce que coûte de [gagner un rang](#gagner-un-rang). La façon d'employer une compétence, de fixer sa difficulté et de lancer les dés est donnée avec les [actions](actions.md).
+Chaque compétence d'un personnage porte un rang. Ce chapitre définit ce que donne le [rang](#le-rang), le [Rang 0](#le-rang-0) de celui qui n'a rien appris, ce que coûte de [gagner un rang](#gagner-un-rang), et combien de rangs un personnage peut [porter en tout](#la-limite-des-rangs). La façon d'employer une compétence, de fixer sa difficulté et de lancer les dés est donnée avec les [actions](actions.md).
 
 <div class="keep" markdown>
 
@@ -57,6 +57,20 @@ Le personnage engage 3 dés d'action au plus pour employer la compétence, et aj
 <div class="memo" markdown>
 
 Exemple. Un personnage attaque à l'épée, d'un geste dont le seuil est 11. Non initié, son dé unique monte à 8 et le seuil lui reste hors d'atteinte. Initié, il lance deux dés et touche un peu moins d'une fois sur trois. Expert, il ajoute 3 à sa somme et touche deux fois sur trois. Après la rupture, il lance trois dés et manque une fois sur quinze.
+
+</div>
+
+<div class="keep" markdown>
+
+### La limite des rangs {#la-limite-des-rangs}
+
+Un personnage ne peut pas porter plus de rangs de compétence que le cinquième de la somme de ses [caractéristiques](caracteristiques.md).
+
+<p class="formula">Rangs de compétence au plus = somme des caractéristiques ÷ 5, arrondi à l'inférieur</p>
+
+Chaque rang compte : une compétence au Rang 1 compte pour 1, une compétence au Rang 2 pour 2, une compétence au Rang Max pour 5. La somme des caractéristiques compte leurs points de création et les points achetés avec l'expérience.
+
+Un rang obtenu sans dépenser de points d'expérience ne compte pas dans cette limite.
 
 </div>
 

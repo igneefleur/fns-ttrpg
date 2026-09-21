@@ -90,8 +90,15 @@
     function applyRang(cible) {
       var c = compDe(item.id);
       if (!c || cible === compRang(c)) return;
-      var deltaXp = xpJusque(cible) - xpJusque(compRang(c));
+      // Les rangs offerts ne coûtent rien et ne comptent pas dans la limite.
+      var off = compOffertsBrut(c);
+      var deltaXp = xpJusque(Math.max(cible, off)) - xpJusque(Math.max(compRang(c), off));
       var deltaRup = ruptureJusque(cible) - ruptureJusque(compRang(c));
+      var lim = limiteRangs("competences");
+      if (lim !== null && cible > compRang(c) &&
+          compRangsComptes() + rangsComptesEntre(compRang(c), cible, off) > lim) {
+        flash("Limite de rangs de compétence atteinte."); return;
+      }
       if (deltaXp > 0 && xpRestant() < deltaXp) { flash("XP insuffisant."); return; }
       if (deltaRup > 0 && ruptureRestante() < deltaRup) { flash("Aucun point de rupture disponible."); return; }
       // REDESCENDRE REND l'XP et le point de rupture, et DESCENDRE AU RANG 0 NE

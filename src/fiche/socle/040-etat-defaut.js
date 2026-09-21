@@ -96,16 +96,21 @@
       comps: [],
       // LES LEVIERS DES COMPÉTENCES, même table à trois niveaux, indexée par
       // l'ID de la compétence et jamais par son nom — un nom se renomme, un
-      // levier ne doit pas se perdre avec. DEUX leviers :
-      //   bonus  ce que la compétence ajoute au jet
-      //   des    combien de dés d'action elle laisse engager
+      // levier ne doit pas se perdre avec. CINQ leviers :
+      //   bonus    ce que la compétence ajoute au jet
+      //   des      combien de dés d'action elle laisse engager
+      //   xp       ce que ses rangs ont coûté
+      //   rupture  ce que ses rangs ont engagé
+      //   offerts  combien de ses premiers rangs ont été reçus sans XP
       compsLeviers: {},
 
       // ---- techniques ----
       // Les rangs d'une technique LUI APPARTIENNENT : les règles le disent, la
       // fiche ne les barème donc pas et se contente de les compter.
-      // Une entrée : { id, nom, rang, rangs, xp, rupture, desc }.
+      // Une entrée : { id, nom, rang, rangs, xp, offert, rupture, desc }.
       //   rangs   combien de rangs cette technique-là possède
+      //   offert  combien de ses PREMIERS rangs ont été reçus sans XP : ils
+      //           n'entrent pas dans la limite des rangs de technique
       //   xp      ce que le joueur a payé pour elle, saisi (aucune règle ne le fixe)
       //   rupture combien de points de rupture elle a demandés
       techniques: [],

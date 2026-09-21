@@ -18,6 +18,20 @@ Une technique compte cinq rangs au plus, et rien ne l'oblige à les avoir tous. 
 
 Un personnage monte les rangs d'une technique dans l'ordre. Il ne peut pas en sauter un.
 
+<div class="keep" markdown>
+
+### La limite des rangs {#la-limite-des-rangs}
+
+Un personnage ne peut pas porter plus de rangs de technique que le dixième de la somme de ses [caractéristiques](caracteristiques.md).
+
+<p class="formula">Rangs de technique au plus = somme des caractéristiques ÷ 10, arrondi à l'inférieur</p>
+
+Chaque rang compte : une technique au Rang 2 compte pour 2, et une technique de trois rangs prise jusqu'à son Rang Max compte pour 3. La somme des caractéristiques compte leurs points de création et les points achetés avec l'expérience.
+
+Un rang obtenu sans dépenser de points d'expérience ne compte pas dans cette limite.
+
+</div>
+
 ### Les points de rupture
 
 Un rang de technique peut demander un point de rupture. La technique nomme celui de ses rangs qui le demande, et un rang qui n'en demande aucun s'obtient sans en dépenser. Le Rang Max d'une compétence en demande toujours un.

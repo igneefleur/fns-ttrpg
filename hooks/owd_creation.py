@@ -288,6 +288,17 @@ def _progression(txt):
     return {"tranches": tranches, "pas": pas, "largeur": largeur}
 
 
+def _limite(txt, quoi):
+    """« Rangs de X au plus = somme des caractéristiques ÷ 5, arrondi à
+    l'inférieur » : le diviseur, et le sens de l'arrondi. La formule est
+    relue telle quelle ; une autre forme (un facteur, une base) arrête le
+    build plutôt que de se lire à moitié."""
+    m = _un(r'<p class="formula">Rangs de ' + quoi + r" au plus = somme des caractéristiques"
+            r" ÷ (\d+), arrondi à l'(inférieur|supérieur)</p>", txt,
+            f"limite des rangs de {quoi}")
+    return {"diviseur": int(m.group(1)), "arrondi": _ARRONDI[m.group(2)]}
+
+
 # ----------------------------------------------------------------------
 # Rangs de compétence
 # ----------------------------------------------------------------------
@@ -660,6 +671,17 @@ def _jeu(docs):
 
     if comp_md is not None:
         jeu["rangs"] = _rangs(comp_md)
+
+    # Combien de rangs un personnage porte en tout, compétences et techniques,
+    # rapporté à la somme de ses caractéristiques. Chaque limite suit son
+    # chapitre : l'absence de l'un ne prive pas l'autre.
+    limites = {}
+    if comp_md is not None:
+        limites["competences"] = _limite(comp_md, "compétence")
+    if tech_md is not None:
+        limites["techniques"] = _limite(tech_md, "technique")
+    if limites:
+        jeu["limites"] = limites
 
     # Les dés tiennent de DEUX chapitres : les faces, la dotation du tour et le
     # plafond d'une compétence viennent des actions ; le plafond d'une technique

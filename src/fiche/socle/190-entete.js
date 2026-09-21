@@ -229,6 +229,12 @@
     if (creation()) mrow.appendChild(meter("Création", creationDepense, creationPoints));
     mrow.appendChild(meter("XP dépensé", xpDepense, function () { return state.xpTotal; },
       "Ce que les rangs de compétence, les techniques et les caractéristiques ont coûté"));
+    if (limiteRangs("competences") !== null)
+      mrow.appendChild(meter("Compétences", compRangsComptes,
+        function () { return limiteRangs("competences"); }, "Rangs de compétence"));
+    if (limiteRangs("techniques") !== null)
+      mrow.appendChild(meter("Techniques", techRangsComptes,
+        function () { return limiteRangs("techniques"); }, "Rangs de technique"));
     mrow.appendChild(meter("Rupture", ruptureDepense, ruptureMax,
       "Points de rupture engagés par les Rangs Max et par les techniques"));
     var xpIn = el("input");
@@ -270,6 +276,12 @@
             return libCarac(c) + " " + fmtP(caracBase(c));
           }).join(", ") + ".");
       }
+      [["competences", compRangsComptes, "compétence"],
+       ["techniques", techRangsComptes, "technique"]].forEach(function (x) {
+        var lim = limiteRangs(x[0]);
+        if (lim !== null && x[1]() > lim)
+          dire("Rangs de " + x[2] + " au-delà de la limite (" + fmtP(x[1]()) + " / " + fmtP(lim) + ").");
+      });
       if (ruptureRestante() < 0)
         dire("Points de rupture engagés au-delà du compte (" + fmtP(ruptureDepense()) +
              " / " + fmtP(ruptureMax()) + ").");

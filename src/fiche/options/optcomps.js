@@ -6,6 +6,7 @@
   //   Bonus    ce qu'elle ajoute au jet
   //   Dés      combien de dés d'action elle laisse engager
   //   XP       ce que ses rangs ont coûté
+  //   Offerts  combien de ses premiers rangs ont été reçus sans XP
   //   Rupture  ce que ses rangs ont engagé
   //
   // La liste est OUVERTE (le joueur nomme ses compétences) et FILTRÉE : le bloc
@@ -132,6 +133,17 @@
           titre: chaineTexteDe(lireComp("xp", c.id),
                                "rangs pris jusqu'au rang " + compRang(c) + " :",
                                compXpAuto(c))
+        };
+      });
+
+    onglet("Offerts", "", "offerts", ["Rangs", "Rangs offerts"], 99,
+      function () { return 0; },
+      function (c) {
+        if (!c) return { texte: "—", titre: "" };
+        return {
+          texte: fmtP(compOffertsBrut(c)),
+          zero: !compOffertsBrut(c),
+          titre: chaineTexteDe(lireComp("offerts", c.id), "rangs offerts :", 0)
         };
       });
 

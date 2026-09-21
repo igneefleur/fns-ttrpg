@@ -26,6 +26,12 @@
         sg.title = "Rang " + i + " de « " + (t.nom || "cette technique") + " »";
         sg.addEventListener("click", function () {
           if (!isEdit("techniques")) return;
+          var lim = limiteRangs("techniques");
+          if (lim !== null && i > t.rang &&
+              techRangsComptes() + rangsComptesEntre(t.rang, i, num(t.offert, 0)) > lim) {
+            flash("Limite de rangs de technique atteinte.");
+            return;
+          }
           t.rang = i;
           refresh();
           rendre();
@@ -89,6 +95,8 @@
       ligne.appendChild(nombre("XP", function () { return t.xp; },
         function (v) { t.xp = v; }, 0, 99999,
         "Ce que cette technique a coûté — aucune règle ne le fixe, c'est la décision de la table."));
+      ligne.appendChild(nombre("Offerts", function () { return num(t.offert, 0); },
+        function (v) { t.offert = Math.min(v, t.rangs); }, 0, 20, "Rangs offerts"));
       ligne.appendChild(nombre("Rupture", function () { return t.rupture; },
         function (v) { t.rupture = v; }, 0, 99,
         "Combien de points de rupture cette technique a demandés."));
@@ -108,7 +116,7 @@
       state.techniques.forEach(function (t) { box.appendChild(carte(t)); });
       if (!state.techniques.length) box.appendChild(el("div", "pc-empty", "Aucune technique."));
       box.appendChild(miniBtn("+ Ajouter une technique", null, function () {
-        state.techniques.push({ id: uid("t"), nom: "", rang: 0, rangs: 1, xp: 0, rupture: 0, desc: "" });
+        state.techniques.push({ id: uid("t"), nom: "", rang: 0, rangs: 1, xp: 0, offert: 0, rupture: 0, desc: "" });
         refresh();
         rendre();
       }, "pc-edit-only"));

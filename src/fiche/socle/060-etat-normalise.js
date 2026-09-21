@@ -93,6 +93,7 @@
           rangs: nb,
           rang: clamp(num(t.rang, 0), 0, nb),
           xp: Math.max(0, num(t.xp, 0)),
+          offert: clamp(num(t.offert, 0), 0, nb),
           rupture: clamp(num(t.rupture, 0), 0, 99),
           desc: String(t.desc == null ? "" : t.desc)
         };
@@ -269,7 +270,7 @@
   // levier — l'échelle de ce qu'il règle, pas un plafond de jeu.
   var CARAC_LEVIERS = { total: 9999, xp: 99999 };
   var CAP_LEVIERS = { max: 99999 };
-  var COMP_LEVIERS = { bonus: 999, des: 99, xp: 9999, rupture: 99 };
+  var COMP_LEVIERS = { bonus: 999, des: 99, xp: 9999, rupture: 99, offerts: 99 };
 
   var BOITES_AJOUT = ["a1", "a2", "a3", "a4"];
   var BOITES_FACTEUR = ["m1", "m2", "m3", "m4"];
