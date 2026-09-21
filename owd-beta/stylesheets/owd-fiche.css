@@ -262,6 +262,24 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
 /* variante « dépense » : l'XP et la rupture ne mesurent pas une santé mais ce
    qui a été payé. L'or les distingue d'un coup d'œil des jauges de vie. */
 .pc-meter.or .bar > i { background: var(--or); }
+/* LE COMPTEUR EN PIÈCES (avantages, rupture) : une pièce par point, pleine
+   quand il est dépensé, vide quand il reste ; celles de trop en danger. */
+.pc-id-meters .pc-meter.pc-meter-pieces { flex: 0 1 auto; }
+.pc-pieces { display: inline-flex; flex-wrap: wrap; align-items: center; gap: .22rem; color: var(--or); }
+.pc-piece { display: inline-block; box-sizing: border-box; }
+.pc-piece.over { color: var(--danger); }
+/* les avantages : des carrés, cernés quand vides, pleins quand dépensés */
+.pc-pieces.carres .pc-piece { width: .62rem; height: .62rem; border: 1.5px solid currentColor; border-radius: 2px; }
+.pc-pieces.carres .pc-piece.plein { background: currentColor; }
+/* la rupture : le maillon brisé du livre (docs/assets/rupture.png), posé en
+   MASQUE pour prendre currentColor ; vide, il n'est qu'une ombre du plein. Au
+   rapport du fichier, 23 x 22 px. */
+.pc-pieces.chaines .pc-piece {
+  width: .84rem; height: .8rem; background-color: currentColor; opacity: .25;
+  -webkit-mask: url('../assets/rupture.png') center / contain no-repeat;
+  mask: url('../assets/rupture.png') center / contain no-repeat;
+}
+.pc-pieces.chaines .pc-piece.plein, .pc-pieces.chaines .pc-piece.over { opacity: 1; }
 
 /* ---- onglets : contrôle segmenté ----
    TROIS onglets en Outward (Fiche, Inventaire, Options), et exactement le
