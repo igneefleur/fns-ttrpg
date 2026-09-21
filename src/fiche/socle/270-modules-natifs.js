@@ -14,7 +14,11 @@
     { id: "caracs",       titre: "Caractéristiques", onglet: "fiche", colonne: "gauche", build: buildCaracs },
     { id: "corps",        titre: "Corps",            onglet: "fiche", colonne: "gauche", build: buildCorps },
     { id: "rupture",      titre: "Rupture",          onglet: "fiche", colonne: "gauche", build: buildRupture },
-    { id: "vitales",      titre: "Vitalité",         onglet: "fiche", colonne: "milieu", build: buildVitales },
+    // TROIS RÉSERVES, TROIS MODULES : même forme, mais on ne les lit pas au
+    // même moment, et elles se déplacent — ou se coupent — l'une sans l'autre.
+    { id: "pv",           titre: "PV",               onglet: "fiche", colonne: "milieu", build: buildPv },
+    { id: "pe",           titre: "PE",               onglet: "fiche", colonne: "milieu", build: buildPe },
+    { id: "pm",           titre: "PM",               onglet: "fiche", colonne: "milieu", build: buildPm },
     { id: "survie",       titre: "Survie",           onglet: "fiche", colonne: "milieu", build: buildSurvie },
     { id: "exposition",   titre: "Exposition",       onglet: "fiche", colonne: "milieu", build: buildExposition },
     { id: "effondrement", titre: "Effondrement",     onglet: "fiche", colonne: "milieu", build: buildEffondrement },
