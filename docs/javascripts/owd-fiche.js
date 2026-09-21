@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "2.8.0b";
+  var RELEASE = "2.9.0b";
   var SCHEMA = 3;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -1736,9 +1736,21 @@
     var ressenti = num(state.temperature, 0) + num(e.degres, 0);
     var div = Math.max(1, num(t.paliers.diviseur, 1));
     var arr = t.paliers.arrondi === "bas" ? Math.floor : Math.ceil;
-    if (ressenti < z.bas) return -arr((z.bas - ressenti) / div);
-    if (ressenti > z.haut) return arr((ressenti - z.haut) / div);
+    // l'intensité ne dépasse pas le maximum des règles
+    var im = t.intensite ? num(t.intensite.max, 0) : 0;
+    function borne(k) { return im > 0 ? Math.min(k, im) : k; }
+    if (ressenti < z.bas) return -borne(arr((z.bas - ressenti) / div));
+    if (ressenti > z.haut) return borne(arr((ressenti - z.haut) / div));
     return 0;
+  }
+  // LE PLAFOND D'EXPOSITION d'une intensité, en points (positif) : jusque-là,
+  // et pas plus loin, l'exposition peut aller du côté de l'intensité subie.
+  // Sans table dans les règles, aucun plafond : l'exposition va jusqu'au bout.
+  function plafondExpo(intensite) {
+    var t = tempsDef(), m = expoMax(), k = Math.abs(intensite);
+    var pl = t && t.intensite && t.intensite.plafonds;
+    if (!pl || !aClef(pl, String(k))) return m;
+    return m * num(pl[String(k)], 100) / 100;
   }
   // Le facteur de dépense d'une réserve, selon le niveau de froid ou de chaud
   // que l'exposition a atteint.
@@ -1833,8 +1845,15 @@
         cumul.ph += rSurvie * tr * facteurDepense("ph");
       }
       var p = paliersClimat(), m = expoMax(), x = num(state.etat.expo, 0);
-      if (p) x = clamp(x + p, -m, m);
-      else {
+      if (p) {
+        // vers l'intensité subie, JUSQU'À son plafond ; déjà au-delà, elle
+        // revient vers lui à la cadence de retour
+        var cap = plafondExpo(p) * (p < 0 ? -1 : 1);
+        var rp = m * num(t.intensite ? t.intensite.retour : t.expoRetour, 0) / 100;
+        if (p < 0) x = x < cap ? Math.min(cap, x + rp) : Math.max(cap, x + p);
+        else x = x > cap ? Math.max(cap, x - rp) : Math.min(cap, x + p);
+        x = clamp(x, -m, m);
+      } else {
         var retour = m * num(t.expoRetour, 0) / 100;
         x = x > 0 ? Math.max(0, x - retour) : Math.min(0, x + retour);
       }

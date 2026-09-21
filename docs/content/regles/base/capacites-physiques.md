@@ -439,6 +439,8 @@ Un personnage qui se tient hors de sa zone subit une intensité de froid ou de c
 
 <p class="formula">Intensité = écart ÷ 4, arrondi au supérieur</p>
 
+L'intensité ne dépasse jamais 10.
+
 </div>
 
 ### L'exposition
@@ -447,15 +449,36 @@ L'exposition mesure ce que le froid ou le chaud a déjà fait au corps. Elle par
 
 <p class="formula">Exposition = de −(100 + Résistance) à +(100 + Résistance)</p>
 
-Toutes les dix minutes, elle bouge d'autant de points que l'[intensité](#le-climat) de froid ou de chaleur du personnage. Chaque tranche de 10 % franchie lui donne un niveau d'[effondrement](#leffondrement). Tant qu'il se tient dans sa zone, elle revient vers zéro de 10 % toutes les dix minutes.
+Toutes les dix minutes, elle bouge d'autant de points que l'[intensité](#le-climat) de froid ou de chaleur du personnage, sans dépasser le plafond de cette intensité. Chaque tranche de 10 % franchie lui donne un niveau d'[effondrement](#leffondrement). Tant qu'il se tient dans sa zone, elle revient vers zéro de 10 % toutes les dix minutes.
+
+Le plafond se compte du côté de l'intensité subie : sous zéro pour le froid, au-dessus pour le chaud. Une exposition déjà au-delà du plafond revient vers lui de 10 % toutes les dix minutes.
+
+La table ci-dessous donne le plafond de l'exposition selon l'intensité.
+
+<div class="sepia-table" markdown>
+
+| Intensité | Plafond |
+|:---:|:---:|
+| 1 | 10 % |
+| 2 | 20 % |
+| 3 | 30 % |
+| 4 | 40 % |
+| 5 | 50 % |
+| 6 | 60 % |
+| 7 | 70 % |
+| 8 | 80 % |
+| 9 | 90 % |
+| 10 | 100 % |
+
+</div>
 
 <div class="memo" markdown>
 
 Exemple. Un personnage ordinaire, qui porte 20 en Résistance, a une exposition qui va de −120 à +120, et chaque niveau d'effondrement lui coûte 12 points.
 
-Nu et immobile à 5 °C, il est à 23 degrés sous sa borne, donc à une intensité de 6. Son exposition descend de 6 toutes les dix minutes : premier niveau au bout de vingt minutes, effondrement au bout de trois heures vingt.
+Nu et immobile à 5 °C, il est à 23 degrés sous sa borne, donc à une intensité de 6. Son exposition descend de 6 toutes les dix minutes jusqu'à son plafond, −72 : premier niveau au bout de vingt minutes, et six niveaux au bout de deux heures, où elle s'arrête.
 
-Vêtu de quoi valoir 8 degrés contre le froid, il voit sa borne tomber à 20 °C, l'écart à 15 degrés et l'intensité à 4. Le même froid ne le prend plus qu'en cinq heures.
+Vêtu de quoi valoir 8 degrés contre le froid, il voit sa borne tomber à 20 °C, l'écart à 15 degrés et l'intensité à 4. Le même froid ne lui coûte plus que quatre niveaux, atteints au bout de deux heures.
 
 </div>
 

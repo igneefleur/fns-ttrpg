@@ -721,6 +721,7 @@ def _temps(txt):
     if manque:
         raise ErreurRegles(f"climat : aucun degré pour {', '.join(manque)}")
     pal = _un(r"Intensité = écart ÷ (\d+), arrondi au (supérieur|inférieur)", clim, "climat : l'intensité")
+    int_max = int(_un(r"L'intensité ne dépasse jamais (\d+)", clim, "climat : l'intensité maximale").group(1))
 
     regen = []
     for niv, cad in re.findall(r"^\|\s*(\d+)\s*\|\s*([^|\n]+?)\s*\|\s*$",
@@ -737,6 +738,19 @@ def _temps(txt):
     ret = _un(r"revient vers zéro de (\d+) % toutes les (\w+) minutes", expo, "exposition : son retour")
     if bouge != tranche or _ecrit(ret.group(2), "exposition : son retour") != tranche:
         raise ErreurRegles("exposition : sa cadence n'est pas la tranche de l'effort")
+    # LE PLAFOND de chaque intensité (« | 3 | 30 % | »), lu dans la table qui
+    # suit sa phrase d'annonce, et le retour d'une exposition qui le dépasse
+    tab = expo[_un(r"donne le plafond de l'exposition selon l'intensité", expo,
+                   "exposition : la table des plafonds").end():]
+    plafonds = {}
+    for k, pct in re.findall(r"^\|\s*(\d+)\s*\|\s*(\d+) %\s*\|\s*$", tab.split("</div>")[0], re.M):
+        plafonds[str(int(k))] = int(pct)
+    if sorted(int(k) for k in plafonds) != list(range(1, int_max + 1)):
+        raise ErreurRegles(f"exposition : la table des plafonds ne va pas de 1 à {int_max}")
+    ret_pl = _un(r"revient vers lui de (\d+) % toutes les (\w+) minutes", expo,
+                 "exposition : le retour au plafond")
+    if _ecrit(ret_pl.group(2), "exposition : le retour au plafond") != tranche:
+        raise ErreurRegles("exposition : le retour au plafond n'est pas la tranche de l'effort")
 
     # « Le ventre digère 1 de volume toutes les dix minutes » : la digestion.
     dig = _un(r"digère (\d+) de volume toutes les (\w+) minutes", _section(txt, "La contenance", "contenance"),
@@ -752,6 +766,9 @@ def _temps(txt):
         "regen": regen,
         "paliers": {"diviseur": int(pal.group(1)), "arrondi": _ARRONDI[pal.group(2)]},
         "expoRetour": int(ret.group(1)),
+        # l'intensité maximale, le plafond d'exposition de chaque intensité
+        # (en %), et le retour d'une exposition qui dépasse son plafond
+        "intensite": {"max": int_max, "plafonds": plafonds, "retour": int(ret_pl.group(1))},
         "accelere": {"froid": _effets_expo(txt, "Le froid"), "chaud": _effets_expo(txt, "Le chaud")},
     }
 
