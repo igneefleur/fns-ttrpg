@@ -537,6 +537,14 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
 }
 .pc-desaction-pas:disabled { opacity: .35; cursor: default; }
 .pc-mini.pc-desaction-envoi { display: block; width: 100%; }
+/* L'EXPOSITION : la barre des réserves, mais signée. Le remplissage est posé
+   en absolu depuis le milieu (gauche pour le froid, droite pour le chaud), et le
+   trait du zéro reste visible au centre, par-dessus. */
+.pc-expo-jauge { position: relative; }
+.pc-expo-jauge > i { position: absolute; top: 0; bottom: 0; width: 0; }
+.pc-expo-jauge > i.froid { background: var(--froid); }
+.pc-expo-jauge > i.chaud { background: var(--chaud); }
+.pc-expo-zero { position: absolute; top: 0; bottom: 0; left: calc(50% - 1px); width: 2px; background: var(--ink-3); }
 /* Le pied d'une carte de réserves retrouve la marge que la carte a perdue. */
 .pc-vital-pied { padding: 0 .4rem .38rem; margin-top: 0; }
 
