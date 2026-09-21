@@ -1,4 +1,5 @@
-  // ---- 2. Corps : charge, accès rapides, contenance, innocence ----
+  // ---- 2. Corps : charge, accès rapides, contenance, dés d'action ----
+  // (l'innocence a son propre module, sur le modèle des PV : voir vitales.js)
   function buildCorps() {
     var b = block("Corps", null, "corps");
 
@@ -34,8 +35,8 @@
     r1.appendChild(tC);
     b.appendChild(r1);
 
-    // Deuxième rangée : ce que le corps donne au tour, et l'innocence.
-    var r2 = el("div", "pc-bigrow pc-bigrow-2");
+    // Deuxième rangée : ce que le corps donne au tour, sur toute la largeur.
+    var r2 = el("div", "pc-bigrow pc-bigrow-1");
     var tD = bigTile("DÉS D'ACTION", function () { return fmtP(desAction()); });
     tD.classList.add("pc-mods-host");
     tuileForce(tD, "desAction", desActionAuto);
@@ -47,25 +48,6 @@
     });
     r2.appendChild(tD);
 
-    var tPI = bigTile(abbrCap("pi", "PI"), function () {
-      return fmtP(courant("pi")) + " / " + fmtP(piMax());
-    });
-    tPI.classList.add("pc-mods-host");
-    var pasPI = el("div", "pc-bigedit");
-    pasPI.appendChild(stepper(
-      function () { return courant("pi"); },
-      function (v) { state.etat.pi = Math.round(v * 100) / 100; },
-      1, libCap("pi", "PI")));
-    tPI.appendChild(pasPI);
-    tuileForce(tPI, "pi", piMaxAuto);
-    tuileMods(tPI, "pi");
-    hooks.push(function () {
-      tPI.classList.toggle("adj", capForce("pi"));
-      tPI.title = libCap("pi", "Points d'innocence") + " — " +
-                  (capForce("pi") ? "maximum forcé (calculé : " + fmtP(piMaxAuto()) + ")"
-                                  : provenanceCap("pi")());
-    });
-    r2.appendChild(tPI);
     b.appendChild(r2);
     return b;
   }

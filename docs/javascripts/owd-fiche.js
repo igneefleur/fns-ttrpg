@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "1.14.1b";
+  var RELEASE = "1.15.0b";
   var SCHEMA = 2;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -3385,7 +3385,8 @@
     });
     return b;
   }
-  // ---- 2. Corps : charge, accès rapides, contenance, innocence ----
+  // ---- 2. Corps : charge, accès rapides, contenance, dés d'action ----
+  // (l'innocence a son propre module, sur le modèle des PV : voir vitales.js)
   function buildCorps() {
     var b = block("Corps", null, "corps");
 
@@ -3421,8 +3422,8 @@
     r1.appendChild(tC);
     b.appendChild(r1);
 
-    // Deuxième rangée : ce que le corps donne au tour, et l'innocence.
-    var r2 = el("div", "pc-bigrow pc-bigrow-2");
+    // Deuxième rangée : ce que le corps donne au tour, sur toute la largeur.
+    var r2 = el("div", "pc-bigrow pc-bigrow-1");
     var tD = bigTile("DÉS D'ACTION", function () { return fmtP(desAction()); });
     tD.classList.add("pc-mods-host");
     tuileForce(tD, "desAction", desActionAuto);
@@ -3434,25 +3435,6 @@
     });
     r2.appendChild(tD);
 
-    var tPI = bigTile(abbrCap("pi", "PI"), function () {
-      return fmtP(courant("pi")) + " / " + fmtP(piMax());
-    });
-    tPI.classList.add("pc-mods-host");
-    var pasPI = el("div", "pc-bigedit");
-    pasPI.appendChild(stepper(
-      function () { return courant("pi"); },
-      function (v) { state.etat.pi = Math.round(v * 100) / 100; },
-      1, libCap("pi", "PI")));
-    tPI.appendChild(pasPI);
-    tuileForce(tPI, "pi", piMaxAuto);
-    tuileMods(tPI, "pi");
-    hooks.push(function () {
-      tPI.classList.toggle("adj", capForce("pi"));
-      tPI.title = libCap("pi", "Points d'innocence") + " — " +
-                  (capForce("pi") ? "maximum forcé (calculé : " + fmtP(piMaxAuto()) + ")"
-                                  : provenanceCap("pi")());
-    });
-    r2.appendChild(tPI);
     b.appendChild(r2);
     return b;
   }
@@ -3584,6 +3566,12 @@
     // un ÉTAT du personnage, le même que dit l'avertissement de l'en-tête
     hooks.push(function () { r.etat.textContent = peMax() <= 0 ? "Inconscient" : ""; });
     return seule(r);
+  }
+  // LES POINTS D'INNOCENCE, même module que les PV. Ils ne remontent pas au
+  // repos, mais cela ne change rien au geste : on y tape ce qui se perd ou se
+  // regagne.
+  function buildPi() {
+    return seule(reserveVitale("pi", provenanceCap("pi")));
   }
   function buildPm() {
     return seule(reserveVitale("pm", function () { return "Maximum calculé : " + fmtP(autoDe("pm")); }));
@@ -7022,6 +7010,7 @@
     { id: "caracs",       titre: "Caractéristiques", onglet: "fiche", colonne: "gauche", build: buildCaracs },
     { id: "effort",       titre: "Temps",            onglet: "fiche", colonne: "gauche", build: buildEffort },
     { id: "survie",       titre: "Survie",           onglet: "fiche", colonne: "gauche", build: buildSurvie },
+    { id: "pi",           titre: "PI",               onglet: "fiche", colonne: "gauche", build: buildPi },
     { id: "corps",        titre: "Corps",            onglet: "fiche", colonne: "gauche", build: buildCorps },
     // TROIS RÉSERVES, TROIS MODULES : même forme, mais on ne les lit pas au
     // même moment, et elles se déplacent — ou se coupent — l'une sans l'autre.

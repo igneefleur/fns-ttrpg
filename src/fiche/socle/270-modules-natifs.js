@@ -14,6 +14,7 @@
     { id: "caracs",       titre: "Caractéristiques", onglet: "fiche", colonne: "gauche", build: buildCaracs },
     { id: "effort",       titre: "Temps",            onglet: "fiche", colonne: "gauche", build: buildEffort },
     { id: "survie",       titre: "Survie",           onglet: "fiche", colonne: "gauche", build: buildSurvie },
+    { id: "pi",           titre: "PI",               onglet: "fiche", colonne: "gauche", build: buildPi },
     { id: "corps",        titre: "Corps",            onglet: "fiche", colonne: "gauche", build: buildCorps },
     // TROIS RÉSERVES, TROIS MODULES : même forme, mais on ne les lit pas au
     // même moment, et elles se déplacent — ou se coupent — l'une sans l'autre.

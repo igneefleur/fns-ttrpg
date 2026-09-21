@@ -126,6 +126,12 @@
     hooks.push(function () { r.etat.textContent = peMax() <= 0 ? "Inconscient" : ""; });
     return seule(r);
   }
+  // LES POINTS D'INNOCENCE, même module que les PV. Ils ne remontent pas au
+  // repos, mais cela ne change rien au geste : on y tape ce qui se perd ou se
+  // regagne.
+  function buildPi() {
+    return seule(reserveVitale("pi", provenanceCap("pi")));
+  }
   function buildPm() {
     return seule(reserveVitale("pm", function () { return "Maximum calculé : " + fmtP(autoDe("pm")); }));
   }
