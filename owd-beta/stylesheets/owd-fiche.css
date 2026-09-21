@@ -1208,6 +1208,19 @@ html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où 
 }
 .pc-obj-ghead .nmedit:focus { outline: none; border-bottom: 2px solid var(--accent); }
 .pc-obj-tiles { display: flex; flex-wrap: wrap; gap: .3rem; --obj-cols: 4; border-radius: 6px; }
+/* SUR SOI : huit cases toujours là, cinq par ligne au plus, de la taille d'une
+   tuile. Une case vide montre son nom en creux ; celle qui accepte l'objet
+   qu'on glisse s'allume. */
+.pc-inv-cases { display: flex; flex-wrap: wrap; gap: .3rem; margin-bottom: .3rem; }
+.pc-inv-case { width: calc((100% - .3rem * 4) / 5); box-sizing: border-box; border-radius: 7px; }
+.pc-inv-case > .pc-obj-tile { width: 100%; }
+.pc-inv-case.over { outline: 2px dashed var(--accent); outline-offset: 1px; }
+.pc-inv-vide {
+  aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center; text-align: center;
+  box-sizing: border-box; padding: .2rem; border: 1px dashed var(--line-2); border-radius: 7px;
+  color: var(--ink-3); font-size: .56rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+}
+.pc-obj-ghead > .pds.over { color: var(--danger); font-weight: 700; }
 .pc-obj-tiles.over { outline: 1px dashed var(--accent); outline-offset: 2px; }
 .pc-obj-tile {
   width: calc((100% - .3rem * (var(--obj-cols) - 1)) / var(--obj-cols));

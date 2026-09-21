@@ -77,8 +77,8 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "1.16.0b";
-  var SCHEMA = 2;
+  var RELEASE = "2.0.0b";
+  var SCHEMA = 3;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
   // caractéristiques est ouverte mais serrée (20 est la moyenne humaine), un
@@ -446,19 +446,20 @@
       vetements: [],
       argent: 0,             // pièces d'argent : la monnaie du livre, nommée
 
-      // Inventaire illustré. `groupes` est un tableau de CHAÎNES et `comptes`
-      // un tableau PARALLÈLE de booléens : décocher pose le groupe au sol — son
-      // poids sort de la charge, ses objets restent entiers, consultables,
-      // déplaçables et donnables. Supprimer un groupe splice les DEUX.
-      // Un objet : { id, nom, img, qte, poids, places, achat, vente, desc,
-      //              grp, rapide }.
-      //   places  la contenance qu'occupe ce qu'on avale (règle du livre)
-      //   rapide  l'objet tient dans un accès rapide : il compte alors contre
-      //           Dextérité ÷ 4, et pas seulement contre la charge
+      // Inventaire : TROIS GROUPES FIXES (schéma 3). Chaque objet a un
+      // emplacement « ou » : une des huit cases de Sur soi (INV_CASES), les
+      // poches ou le sac. Un objet : { id, nom, img, qte, poids, places, achat,
+      //   vente, desc, ou, rapide, vet, poches, froid, chaud, sac, cap, arme }.
+      //   vet     type de vêtement (tete, mains, haut, bas, pieds) ou ""
+      //   poches  ce qu'un vêtement porté ajoute aux Poches, en kg
+      //   froid / chaud  sa protection, comptée s'il est porté dans sa case
+      //   sac / cap      c'est un sac à dos, et ce qu'il peut contenir en kg
+      //   arme    null, ou { prise, parade, reduction, comp, gestes }
+      //   rapide  l'objet se saisit rapidement (compte contre les accès rapides)
       //   id      c'est LUI qui reconnaît le même objet d'une fiche à l'autre
       inv: {
-        groupes: ["Sur soi"], comptes: [true], objets: [],
-        opts: { cols: 4, nom: true, qte: true, poids: false, total: true, vign: true }
+        objets: [],
+        opts: { cols: 5, nom: true, qte: true, poids: false, total: true, vign: true }
       },
 
       // ---- le dé des jets ----
@@ -506,6 +507,27 @@
   // La validation est PROFONDE ; elle ne PURGE AUCUNE clé racine inconnue,
   // c'est ce qui permet à un mod et à une version future de faire voyager
   // leurs données sans que la fiche les efface au passage.
+  // LES EMPLACEMENTS DE L'INVENTAIRE. Les huit cases de Sur soi, dans l'ordre
+  // de l'écran (les trois de la première ligne, puis les cinq vêtements), puis
+  // les deux groupes libres.
+  var INV_VETEMENTS = ["tete", "mains", "haut", "bas", "pieds"];
+  var INV_CASES = ["mainG", "mainD", "dos"].concat(INV_VETEMENTS);
+  var INV_LIEUX = INV_CASES.concat(["poches", "sac"]);
+  function normGestes(liste) {
+    return (Array.isArray(liste) ? liste : []).filter(function (g) { return g && typeof g === "object"; })
+      .map(function (g) {
+        return {
+          id: String(g.id || "") || uid("g"),
+          nom: String(g.nom == null ? "" : g.nom),
+          seuil: String(g.seuil == null ? "" : g.seuil),
+          portee: String(g.portee == null ? "" : g.portee),
+          degats: String(g.degats == null ? "" : g.degats),
+          type: String(g.type == null ? "" : g.type),
+          degatsDemi: String(g.degatsDemi == null ? "" : g.degatsDemi),
+          typeDemi: String(g.typeDemi == null ? "" : g.typeDemi)
+        };
+      });
+  }
   function normalize(s) {
     var b = blank();
     if (!s || typeof s !== "object") return b;
@@ -629,18 +651,7 @@
         // l'ID d'une compétence, jamais son nom : le nom se renomme
         comp: String(a.comp == null ? "" : a.comp),
         note: String(a.note == null ? "" : a.note),
-        gestes: gestes.filter(function (g) { return g && typeof g === "object"; }).map(function (g) {
-          return {
-            id: String(g.id || "") || uid("g"),
-            nom: String(g.nom == null ? "" : g.nom),
-            seuil: String(g.seuil == null ? "" : g.seuil),
-            portee: String(g.portee == null ? "" : g.portee),
-            degats: String(g.degats == null ? "" : g.degats),
-            type: String(g.type == null ? "" : g.type),
-            degatsDemi: String(g.degatsDemi == null ? "" : g.degatsDemi),
-            typeDemi: String(g.typeDemi == null ? "" : g.typeDemi)
-          };
-        })
+        gestes: normGestes(gestes)
       };
     });
     // une arme qui pointe sur une compétence disparue perd son lien plutôt que
@@ -662,29 +673,19 @@
     // ---- inventaire illustré ----
     if (!s.inv || typeof s.inv !== "object" || Array.isArray(s.inv)) s.inv = b.inv;
     if (!s.inv.opts || typeof s.inv.opts !== "object" || Array.isArray(s.inv.opts)) s.inv.opts = b.inv.opts;
-    s.inv.opts.cols = clamp(num(s.inv.opts.cols, b.inv.opts.cols), 1, 8);
+    s.inv.opts.cols = clamp(num(s.inv.opts.cols, b.inv.opts.cols), 1, 5);
     // chaque réglage garde SON défaut quand il manque (un opts partiel ne doit
     // pas allumer un affichage éteint par défaut)
     ["nom", "qte", "poids", "total", "vign"].forEach(function (k) {
       s.inv.opts[k] = s.inv.opts[k] === undefined ? b.inv.opts[k] : !!s.inv.opts[k];
     });
-    if (!Array.isArray(s.inv.groupes)) s.inv.groupes = [];
-    s.inv.groupes = s.inv.groupes.map(function (g) {
-      g = g == null ? "" : String(g).trim();
-      return g || "Groupe";
-    });
-    if (!s.inv.groupes.length) s.inv.groupes = ["Sur soi"];
-    // Les drapeaux « compté » se recalent sur les groupes à chaque chargement :
-    // un tableau plus court se complète (un groupe neuf est PORTÉ, jamais posé,
-    // sinon du poids disparaîtrait en silence) ; PLUS de drapeaux que de
-    // groupes veut dire qu'une version qui ignore « comptes » a supprimé un
-    // groupe sans retirer le sien, et plus personne ne peut dire lequel : on
-    // rend tout au poids porté. Perdre un décochage se voit et se refait ;
-    // perdre du poids en silence fausse la fiche sans prévenir.
-    if (!Array.isArray(s.inv.comptes) || s.inv.comptes.length > s.inv.groupes.length) s.inv.comptes = [];
-    s.inv.comptes = s.inv.groupes.map(function (_, gi) { return s.inv.comptes[gi] !== false; });
+    // Les anciens groupes libres ne survivent pas : le schéma 3 les a remis au
+    // grenier, et l'emplacement « ou » les remplace.
+    delete s.inv.groupes;
+    delete s.inv.comptes;
     if (!Array.isArray(s.inv.objets)) s.inv.objets = [];
     s.inv.objets = s.inv.objets.filter(function (o) { return o && typeof o === "object"; }).map(function (o) {
+      var a = o.arme && typeof o.arme === "object" && !Array.isArray(o.arme) ? o.arme : null;
       return {
         id: String(o.id == null ? "" : o.id),   // LIBRE et facultatif : c'est le joueur qui le pose
         nom: o.nom == null ? "" : String(o.nom),
@@ -694,9 +695,34 @@
         places: pnum(o.places),
         achat: pnum(o.achat), vente: pnum(o.vente),
         desc: o.desc == null ? "" : String(o.desc),
-        grp: clamp(num(o.grp, 0), 0, s.inv.groupes.length - 1),
-        rapide: !!o.rapide
+        ou: INV_LIEUX.indexOf(o.ou) >= 0 ? o.ou : "sac",
+        rapide: !!o.rapide,
+        vet: INV_VETEMENTS.indexOf(o.vet) >= 0 ? o.vet : "",
+        poches: pnum(o.poches),
+        froid: snum(o.froid), chaud: snum(o.chaud),
+        sac: !!o.sac,
+        cap: pnum(o.cap),
+        arme: a ? {
+          prise: String(a.prise == null ? "" : a.prise),
+          parade: String(a.parade == null ? "" : a.parade),
+          reduction: String(a.reduction == null ? "" : a.reduction),
+          // l'ID d'une compétence, jamais son nom : le nom se renomme
+          comp: a.comp && vusComps[a.comp] ? String(a.comp) : "",
+          gestes: normGestes(a.gestes)
+        } : null
       };
+    });
+    // UNE CASE, UN OBJET, ET LE BON : une case de vêtement ne prend que son
+    // type de vêtement, la case du sac à dos qu'un sac. Ce qui n'y a pas sa
+    // place, ou arrive second, retourne au sac plutôt que de disparaître.
+    var prises = {};
+    s.inv.objets.forEach(function (o) {
+      if (INV_CASES.indexOf(o.ou) < 0) return;
+      var ok = !prises[o.ou] &&
+               (INV_VETEMENTS.indexOf(o.ou) < 0 || o.vet === o.ou) &&
+               (o.ou !== "dos" || o.sac);
+      if (ok) prises[o.ou] = 1;
+      else o.ou = "sac";
     });
 
     // ---- coffres, interrupteurs, disposition, mods ----
@@ -1302,40 +1328,48 @@
   }
   function courant(cle) { return courantBrut(cle); }
 
-  // ---- charge, accès rapides, contenance ----
-  function invCompte(gi) { return state.inv.comptes[gi] !== false; }
-  function poidsGroupe(gi) {
+  // ---- charge, poches, sac, accès rapides ----
+  // L'inventaire a trois groupes fixes (Sur soi, Poches, Sac à dos) et TOUT ce
+  // qu'il porte pèse : la charge compare le poids total à ce que la Force
+  // porte. Les poches et le sac ont en plus chacun leur capacité, qui vient de
+  // ce que le personnage porte : les poches des vêtements dans leur case, et
+  // le sac posé dans la case du sac à dos.
+  function poidsDe(o) { return pnum(o.qte) * pnum(o.poids); }
+  function poidsOu(test) {
     var t = 0;
-    state.inv.objets.forEach(function (o) { if (o.grp === gi) t += pnum(o.qte) * pnum(o.poids); });
+    state.inv.objets.forEach(function (o) { if (test(o.ou)) t += poidsDe(o); });
     return Math.round(t * 100) / 100;
   }
-  // porte = true : ce qui est SUR le personnage ; false : ce qu'il a posé.
-  function poidsObjets(porte) {
+  function poidsPoches() { return poidsOu(function (ou) { return ou === "poches"; }); }
+  function poidsSac() { return poidsOu(function (ou) { return ou === "sac"; }); }
+  function objetEn(cas) {
+    var out = null;
+    state.inv.objets.forEach(function (o) { if (!out && o.ou === cas) out = o; });
+    return out;
+  }
+  // un vêtement PORTÉ : dans la case de son type
+  function vetementsPortes() {
+    return state.inv.objets.filter(function (o) { return o.vet && o.ou === o.vet; });
+  }
+  function capPoches() {
     var t = 0;
-    state.inv.groupes.forEach(function (_, gi) {
-      if (invCompte(gi) === porte) t += poidsGroupe(gi);
-    });
+    vetementsPortes().forEach(function (o) { t += pnum(o.poches); });
     return Math.round(t * 100) / 100;
+  }
+  function capSac() {
+    var s = objetEn("dos");
+    return s && s.sac ? pnum(s.cap) : 0;
   }
   // Le poids porté se calcule ICI et nulle part ailleurs : le module
-  // d'inventaire lit les mêmes fonctions. Deux calculs séparés finiraient par
-  // se contredire à l'écran, le pied du module annonçant un chiffre et la jauge
-  // de charge un autre, ce qui est pire que l'absence du réglage.
-  function poidsPorteBrut() {
-    var t = poidsObjets(true);
-    state.vetements.forEach(function (v) { if (v.porte) t += pnum(v.poids); });
-    return Math.round(t * 100) / 100;
-  }
+  // d'inventaire lit les mêmes fonctions.
+  function poidsPorteBrut() { return poidsOu(function () { return true; }); }
   function poidsPorte() { return pub("poidsPorte", poidsPorteBrut(), {}); }
-  // Les objets marqués « accès rapide », comptés à l'unité et non à la
-  // quantité : un carquois de vingt flèches occupe UN accès, pas vingt. Les
-  // groupes posés au sol n'en occupent aucun — ce qui est au sol ne se dégaine
-  // pas.
+  // Les objets marqués « prise rapide », comptés à l'unité et non à la
+  // quantité : un carquois de vingt flèches occupe UN accès, pas vingt. Qu'ils
+  // soient dans les poches ou dans le sac ne change rien.
   function accesPris() {
     var n = 0;
-    state.inv.objets.forEach(function (o) {
-      if (o.rapide && invCompte(o.grp) && pnum(o.qte) > 0) n++;
-    });
+    state.inv.objets.forEach(function (o) { if (o.rapide && pnum(o.qte) > 0) n++; });
     return n;
   }
   // La contenance OCCUPÉE se compte à la main (le pas du bloc Corps) : la fiche
@@ -1476,9 +1510,10 @@
   // viennent des règles (owd-creation.json), les degrés de protection de ce
   // qu'il porte. Les bornes nues ne sont jamais montrées seules : ce serait une
   // règle affichée.
+  // la protection des VÊTEMENTS PORTÉS, dans la case de leur type
   function protection(champ) {
     var t = 0;
-    state.vetements.forEach(function (v) { if (v.porte) t += snum(v[champ]); });
+    vetementsPortes().forEach(function (o) { t += snum(o[champ]); });
     return Math.round(t * 10) / 10;
   }
   // ---- le temps qui passe ----
@@ -2712,6 +2747,10 @@
         dire("Points d'endurance au maximum de zéro : le personnage est inconscient.");
       if (poidsPorte() > charge())
         dire("Charge dépassée : " + fmtP(poidsPorte()) + " pour " + fmtP(charge()) + ".");
+      if (poidsPoches() > capPoches())
+        dire("Poches trop chargées : " + fmtP(poidsPoches()) + " kg pour " + fmtP(capPoches()) + ".");
+      if (poidsSac() > capSac())
+        dire("Sac à dos trop chargé : " + fmtP(poidsSac()) + " kg pour " + fmtP(capSac()) + ".");
       if (accesPris() > accesRapides())
         dire("Accès rapides dépassés : " + accesPris() + " pour " + accesRapides() + ".");
       if (contenancePrise() > contenance())
@@ -4062,14 +4101,14 @@
       if (compRupture(item) > 0) perdu.push(fmtP(compRupture(item)) + " point de rupture");
       if (levierRegleDe(lireComp("bonus", item.id)) || levierRegleDe(lireComp("des", item.id)))
         perdu.push("ses leviers (Options)");
-      var armes = state.armes.filter(function (a) { return a.comp === item.id; });
+      var armes = state.inv.objets.filter(function (o) { return o.arme && o.arme.comp === item.id; });
       if (armes.length) perdu.push("le lien de " + armes.length + (armes.length > 1 ? " armes" : " arme"));
       function retire() {
         state.comps = state.comps.filter(function (c) { return c.id !== item.id; });
         ["compsMod", "compsMod2", "compsForce", "compsDesForce"].forEach(function (k) {
           delete state[k][item.id];
         });
-        state.armes.forEach(function (a) { if (a.comp === item.id) a.comp = ""; });
+        state.inv.objets.forEach(function (o) { if (o.arme && o.arme.comp === item.id) o.arme.comp = ""; });
         refresh();
         if (opts.onDrop) opts.onDrop();
         rebuildComps();
@@ -4679,7 +4718,7 @@
   function recevoirObjet(payload) {
     var recu = unpackObjet(payload);
     if (!recu) { flash("Objet illisible (message abîmé)."); return; }
-    var G = state.inv.groupes, items = state.inv.objets;
+    var items = state.inv.objets;
     // Reconnaissance : d'abord l'IDENTIFIANT (deux homonymes distincts ne
     // fusionnent pas), à défaut le nom, insensible à la casse.
     var jumeau = null;
@@ -4705,9 +4744,9 @@
     var gSel = null;
     if (!jumeau) {
       gSel = el("select");
-      G.forEach(function (gn, gi) {
-        var o = el("option", null, gn);
-        o.value = String(gi);
+      [["sac", "Sac à dos"], ["poches", "Poches"]].forEach(function (g) {
+        var o = el("option", null, g[1]);
+        o.value = g[0];
         gSel.appendChild(o);
       });
       corps.appendChild(fld("Ranger dans", gSel));
@@ -4761,8 +4800,9 @@
         items.push({
           id: recu.id, nom: recu.nom, img: recu.img, qte: q, poids: recu.poids,
           places: recu.places, achat: recu.achat, vente: recu.vente, desc: recu.desc,
-          grp: gSel ? clamp(num(gSel.value, 0), 0, G.length - 1) : 0,
-          rapide: recu.rapide
+          ou: gSel && gSel.value === "poches" ? "poches" : "sac",
+          rapide: recu.rapide, vet: "", poches: 0, froid: 0, chaud: 0,
+          sac: false, cap: 0, arme: null
         });
       }
       refresh();
@@ -4773,10 +4813,12 @@
 
   // ================= ONGLET INVENTAIRE =================
 
-  // ---- 10. Armes ----
-  // Une arme est un RÉPERTOIRE, pas une attaque : sa ligne (prise, parade,
-  // réduction, compétence qui porte le jet) et ses GESTES, un par façon de
-  // frapper. Les dégâts d'Outward sont des nombres FIXES : le jeton « Dégâts »
+  // ---- 10. Armes : la propriété « arme » d'un objet ----
+  // Il n'y a plus de module Armes : une arme est un OBJET de l'inventaire qui
+  // porte une propriété « arme ». Ce fichier dessine cette propriété dans le
+  // détail de l'objet. Une arme est un RÉPERTOIRE, pas une attaque : sa ligne
+  // (prise, parade, réduction, compétence qui porte le jet) et ses GESTES, un
+  // par façon de frapper. Les dégâts d'Outward sont des nombres FIXES : le jeton « Dégâts »
   // ENVOIE une carte, il ne lance rien — un « jet de dégâts » serait une règle
   // inventée, et c'est la coupure à ne pas rater.
   function champTexte(libelle, obj, cle, large, titre) {
@@ -4788,10 +4830,9 @@
     i.addEventListener("input", function () { obj[cle] = i.value; save(); });
     return fld(libelle, i, large ? "w" : null);
   }
-  function buildArmes() {
-    var b = block("Armes", null, "armes", function () { rendre(); });
-    var box = el("div");
-    b.appendChild(box);
+  // `it` est l'objet ; `a` = it.arme ; `rendre` redessine le détail.
+  function carteArme(it, rendre) {
+    var a = it.arme;
 
     // Le préréglage : choisir une arme du livre remplit parade et réduction.
     // C'EST UN RACCOURCI DE SAISIE, PAS UNE CONTRAINTE — les champs restent
@@ -4812,7 +4853,7 @@
         armesData().forEach(function (x) { if (x.cle === s.value) d = x; });
         s.value = "";
         if (!d) return;
-        if (!String(a.nom || "").trim()) a.nom = d.nom;
+        if (!String(it.nom || "").trim()) it.nom = d.nom;
         a.parade = String(d.parade);
         a.reduction = String(d.reduction);
         refresh();
@@ -4854,34 +4895,20 @@
     function carte(a) {
       var card = el("div", "pc-arme");
       var head = el("div", "pc-arme-head");
-      var nm = el("input", "nm pc-edit-field");
-      nm.type = "text"; nm.placeholder = "Nom de l'arme"; nm.value = a.nom || "";
-      nm.addEventListener("input", function () { a.nom = nm.value; save(); });
-      head.appendChild(nm);
+      head.appendChild(el("span", "nm", it.nom || "Arme"));
       head.appendChild(chatBtn(
-        function () { return "Arme — " + (a.nom || "sans nom"); },
+        function () { return "Arme — " + (it.nom || "sans nom"); },
         function () {
           var c = compArme(a);
           return [
             ["Prise", a.prise], ["Parade", a.parade], ["Réduction", a.reduction],
             ["Compétence", c ? (c.nom + " " + sign(compBonus(c))) : ""],
-            // les gestes en champ SANS libellé : c'est le texte long de la carte
             ["", a.gestes.map(function (g) {
               return (g.nom || "geste") + " — seuil " + (g.seuil || "?") +
                      " · " + (g.portee || "?") + " pas · " + (g.degats || "?") + " " + (g.type || "");
             }).join(" | ")]
           ];
         }));
-      head.appendChild(miniBtn("✕", "Retirer cette arme", function () {
-        function retire() {
-          state.armes = state.armes.filter(function (x) { return x.id !== a.id; });
-          refresh();
-          rendre();
-        }
-        if (!String(a.nom || "").trim() && !a.gestes.length) { retire(); return; }
-        confirmer("Retirer une arme", "Retirer « " + (a.nom || "cette arme") + " » et ses gestes ?",
-                  "Retirer", retire);
-      }, "danger pc-edit-only"));
       card.appendChild(head);
 
       var l1 = el("div", "pc-arme-line");
@@ -4891,7 +4918,7 @@
         "Ce que cette arme retire aux dégâts qu'elle pare."));
       l1.appendChild(fld("Compétence", selComp(a), "w"));
       var chipP = el("span", "pc-roll-chip", "Parade");
-      chipP.addEventListener("click", function () { jetArme(a, "Parade — " + (a.nom || "arme")); });
+      chipP.addEventListener("click", function () { jetArme(a, "Parade — " + (it.nom || "arme")); });
       l1.appendChild(chipP);
       var preregl = fld("Préréglage", selArme(a));
       preregl.classList.add("pc-edit-only");
@@ -4919,7 +4946,7 @@
         lg.appendChild(selType(g, "typeDemi"));
         var chipA = el("span", "pc-roll-chip", "Attaque");
         chipA.addEventListener("click", function () {
-          jetArme(a, (a.nom || "Arme") + " — " + (g.nom || "attaque"));
+          jetArme(a, (it.nom || "Arme") + " — " + (g.nom || "attaque"));
         });
         lg.appendChild(chipA);
         // LES DÉGÂTS NE SE LANCENT PAS : ce sont des nombres fixes. Le jeton
@@ -4927,7 +4954,7 @@
         var chipD = el("span", "pc-roll-chip", "Dégâts");
         chipD.title = "Envoyer les dégâts au tchat — ils sont fixes, ils ne se lancent pas.";
         chipD.addEventListener("click", function () {
-          sayChat("Dégâts — " + (g.nom || a.nom || "geste"), [
+          sayChat("Dégâts — " + (g.nom || it.nom || "geste"), [
             ["Pleins", (g.degats || "") + (g.type ? " " + g.type : "")],
             ["Moitié", (g.degatsDemi || "") + (g.typeDemi ? " " + g.typeDemi : "")],
             ["Portée", g.portee ? g.portee + " pas" : ""],
@@ -4975,204 +5002,48 @@
       return fld("Type", s);
     }
 
-    function rendre() {
-      box.innerHTML = "";
-      state.armes.forEach(function (a) { box.appendChild(carte(a)); });
-      if (!state.armes.length) box.appendChild(el("div", "pc-empty", "Aucune arme."));
-      box.appendChild(miniBtn("+ Ajouter une arme", null, function () {
-        state.armes.push({ id: uid("a"), nom: "", prise: "", parade: "", reduction: "",
-                           comp: "", note: "", gestes: [] });
-        refresh();
-        rendre();
-      }, "pc-edit-only"));
-      applyEdit(b, "armes");
-    }
-    rendre();
-    return b;
+    return carte(a);
   }
-
-  // ---- 11. Charge et contenance ----
-  // Les trois limites du corps, en jauges lisibles. Aucun rouage n'est
-  // nécessaire pour LIRE ; les forçages vivent dans le bloc Corps, et le
-  // rouage n'est là que pour les modificateurs de poids.
-  function buildCharge() {
-    var b = block("Charge et contenance", null, "charge");
-    function jaugeLimite(libelle, pris, total, unite) {
-      var m = el("span", "pc-meter");
-      m.appendChild(el("span", null, libelle));
-      var v = el("b", null, "");
-      m.appendChild(v);
-      var bar = el("span", "bar");
-      var fill = el("i");
-      bar.appendChild(fill);
-      m.appendChild(bar);
-      hooks.push(function () {
-        var p = pris(), t = total();
-        v.textContent = fmtP(p) + " / " + fmtP(t) + (unite ? " " + unite : "");
-        var over = p > t;
-        v.classList.toggle("over", over);
-        fill.classList.toggle("over", over);
-        fill.style.width = clamp(t ? (p / t) * 100 : 0, 0, 100) + "%";
-      });
-      b.appendChild(m);
-      return m;
-    }
-    jaugeLimite("Charge", poidsPorte, charge);
-    jaugeLimite("Accès rapides", accesPris, accesRapides);
-    jaugeLimite("Contenance", contenancePrise, contenance);
-    var mrow = el("div", "pc-pvmax pc-mods-host pc-edit-only");
-    mrow.appendChild(el("span", "lbl", "Charge"));
-    mrow.appendChild(multiModBoite("capsLeviers", "max", "charge"));
-    mrow.appendChild(el("span", "sp"));
-    b.appendChild(mrow);
-    // La fiche COMPTE et AVERTIT, elle n'interdit rien : une fiche qui refuse
-    // une saisie oblige le joueur à mentir à sa fiche.
-    b.appendChild(note("Le poids porté vient des groupes cochés de l'inventaire et des vêtements portés."));
-    return b;
-  }
-
-  // ---- 12. Vêtements ----
-  function buildVetements() {
-    var b = block("Vêtements", null, "vetements", function () { rendre(); });
-    var box = el("div");
-    b.appendChild(box);
-    var pied = el("div", "pc-comp-tools");
-    var resume = el("div", "row");
-    var tot = el("span", "pc-comp-total", "");
-    resume.appendChild(tot);
-    resume.appendChild(chatBtn(
-      function () {
-        return "Protections — froid " + sign(protection("froid")) + " · chaud " + sign(protection("chaud"));
-      },
-      function () {
-        var c = confort();
-        return [["Froid", sign(protection("froid"))], ["Chaud", sign(protection("chaud"))],
-                ["Zone de confort", c ? fmtP(c.bas) + " à " + fmtP(c.haut) + " °C" : ""],
-                ["Poids porté", fmtP(protectionPoids())]];
-      }));
-    pied.appendChild(resume);
-    b.appendChild(pied);
-
-    function protectionPoids() {
-      var t = 0;
-      state.vetements.forEach(function (v) { if (v.porte) t += pnum(v.poids); });
-      return Math.round(t * 100) / 100;
-    }
-    function nombre(libelle, v, cle, titre) {
-      var i = el("input", "pc-edit-field");
-      i.type = "number"; i.step = "any";
-      i.value = v[cle] ? fmtP(v[cle]) : "";
-      i.placeholder = "0";
-      i.title = titre;
-      i.addEventListener("input", function () {
-        v[cle] = cle === "poids" ? pnum(i.value) : snum(i.value);
-        refresh();
-      });
-      return fld(libelle, i);
-    }
-    function rendre() {
-      box.innerHTML = "";
-      state.vetements.forEach(function (v) {
-        var l = el("div", "pc-arme-line");
-        l.appendChild(champTexte("Pièce", v, "nom", true));
-        l.appendChild(nombre("Froid", v, "froid", "Degrés de protection contre le froid."));
-        l.appendChild(nombre("Chaud", v, "chaud", "Degrés de protection contre le chaud."));
-        l.appendChild(nombre("Poids", v, "poids", "Ce que la pièce pèse quand elle est portée."));
-        var kv = el("div", "pc-kv");
-        var lab = el("label", null, "");
-        var cb = el("input");
-        cb.type = "checkbox";
-        cb.checked = !!v.porte;
-        cb.title = "Décoché, la pièce est dans le sac : elle ne protège plus, et son poids passe " +
-                   "avec le groupe qui la contient.";
-        cb.addEventListener("change", function () { v.porte = cb.checked; refresh(); });
-        lab.appendChild(cb);
-        lab.appendChild(el("span", null, " porté"));
-        kv.appendChild(lab);
-        l.appendChild(kv);
-        l.appendChild(miniBtn("✕", "Retirer cette pièce", function () {
-          state.vetements = state.vetements.filter(function (x) { return x.id !== v.id; });
-          refresh();
-          rendre();
-        }, "danger pc-edit-only"));
-        box.appendChild(l);
-      });
-      if (!state.vetements.length) box.appendChild(el("div", "pc-empty", "Aucun vêtement."));
-      box.appendChild(miniBtn("+ Ajouter", null, function () {
-        state.vetements.push({ id: uid("v"), nom: "", froid: 0, chaud: 0, poids: 0, porte: true, note: "" });
-        refresh();
-        rendre();
-      }, "pc-edit-only"));
-      applyEdit(b, "vetements");
-    }
-    hooks.push(function () {
-      var c = confort();
-      tot.textContent = "Protection froid " + sign(protection("froid")) +
-                        " · chaud " + sign(protection("chaud")) +
-                        (c ? " · confort " + fmtP(c.bas) + " à " + fmtP(c.haut) + " °C" : "");
-      tot.title = c
-        ? "La zone où le personnage habillé est à l'aise, calculée depuis les degrés de ce qu'il porte."
-        : "La zone de confort demande les bornes du corps nu, que le jeu de données n'a pas fournies.";
-    });
-    rendre();
-    return b;
-  }
-
-  // ---- 13. Bourse ----
-  function buildBourse() {
-    var b = block("Bourse", null, "bourse");
-    var row = el("div", "pc-kv");
-    // Geste de JEU : toujours actif, jamais sous le rouage. On dépense en jeu.
-    row.appendChild(stepper(
-      function () { return state.argent; },
-      function (v) { state.argent = Math.max(0, Math.round(v * 100) / 100); },
-      1, monnaie(true)));
-    row.appendChild(el("span", "k", monnaie(true)));
-    row.appendChild(el("span", "sp"));
-    row.appendChild(chatBtn(
-      function () { return "Bourse — " + fmtP(state.argent) + " " + monnaie(state.argent !== 1); },
-      function () { return [[capFirst(monnaie(true)), fmtP(state.argent)]]; }));
-    b.appendChild(row);
-    return b;
-  }
-  // ---- 14. Inventaire illustré (pleine largeur) ----
-  // Des TUILES carrées rangées par groupes (Sur soi, Sacoche…), et le détail de
-  // l'objet choisi dans la colonne de droite. On glisse une tuile d'un groupe à
-  // l'autre.
+  // ---- 14. Inventaire (pleine largeur) ----
+  // TROIS GROUPES FIXES, et rien d'autre dans l'onglet Équipement :
   //
-  // Le bandeau d'un groupe porte à droite son POIDS et sa case « Compté » :
-  // décochée, le groupe est POSÉ AU SOL — son poids sort de la charge, mais ses
-  // objets restent entiers, consultables, déplaçables et donnables. Le drapeau
-  // vit dans state.inv.comptes, parallèle aux groupes.
+  //   SUR SOI     [main gauche] [main droite] [sac à dos]
+  //               [tête] [mains] [haut] [bas] [pieds]
+  //   POCHES      ce que les vêtements portés laissent emporter (en kg)
+  //   SAC À DOS   ce que le sac porté laisse emporter (en kg)
+  //
+  // Les huit cases de Sur soi sont TOUJOURS là, vides ou pleines ; une case
+  // de vêtement ne prend que son type de vêtement, la case du sac à dos qu'un
+  // sac. Poches et sac à dos se remplissent de tuiles, cinq par ligne au plus.
+  // Le détail de l'objet choisi occupe la colonne de droite : c'est là qu'on
+  // dit ce qu'est un objet (vêtement, sac à dos, arme) et où il se trouve.
   //
   // Les images importées d'un fichier sont réduites en vignette pour tenir dans
   // la fiche (et dans les Attributes Roll20) ; préférer une URL quand c'est
   // possible.
+  var INV_NOMS = {
+    mainG: "Main gauche", mainD: "Main droite", dos: "Sac à dos",
+    tete: "Tête", mains: "Mains", haut: "Haut", bas: "Bas", pieds: "Pieds",
+    poches: "Poches", sac: "Sac à dos"
+  };
+  // Un objet peut-il aller là ? Les mains, les poches et le sac prennent
+  // tout ; la case du sac à dos, un sac ; une case de vêtement, son type.
+  function lieuPermis(o, ou) {
+    if (ou === "poches" || ou === "sac" || ou === "mainG" || ou === "mainD") return true;
+    if (ou === "dos") return !!o.sac;
+    return o.vet === ou;
+  }
   function invObjets(container, renderRef) {
-    var G = state.inv.groupes;
     var items = state.inv.objets;
     var O = state.inv.opts;
-    var sel = null;          // index dans items de l'objet affiché au panneau
-    var dragIdx = null;
-    var editGi = null;       // groupe à ouvrir en édition de nom au prochain render
-    var tileRefs = {};       // idx -> { nom, badge, poids } pour maj sans re-render
-    // Les poids des bandeaux se rafraîchissent SANS re-render : saisir un poids
-    // dans le panneau recréerait sinon la tuile en cours d'édition, et le champ
-    // frappé perdrait le focus au premier caractère.
-    var grpPoids = [];
+    var sel = null;          // l'OBJET affiché au panneau
+    var drag = null;         // l'objet qu'on glisse
+    var panelHooks = [];     // ce que le panneau rafraîchit, vidé à chaque rendu
 
     // réglages d'affichage du module, en mode édition seulement
+    // CINQ PAR LIGNE, fixe : les tuiles des poches et du sac ont la taille des
+    // cases de Sur soi, qui sont cinq sur leur ligne de vêtements.
     var optRow = el("div", "pc-obj-opts pc-edit-only");
-    var colIn = el("input", "n");
-    colIn.type = "number"; colIn.min = "1"; colIn.max = "8"; colIn.step = "1";
-    colIn.value = O.cols;
-    colIn.title = "Objets par ligne";
-    colIn.addEventListener("input", function () {
-      O.cols = clamp(num(colIn.value, 4), 1, 8);
-      render();
-      refresh();
-    });
-    optRow.appendChild(fld("Par ligne", colIn));
     [["nom", "Nom"], ["qte", "Quantité"], ["poids", "Poids"], ["total", "Total"]].forEach(function (o) {
       var chip = el("span", "pc-chip");
       chip.textContent = o[1];
@@ -5194,17 +5065,12 @@
     wrap.appendChild(leftBox);
     wrap.appendChild(panel);
     var tot = el("div", "pc-inv-total");
+    var majGroupes = [];     // les poids des bandeaux, rafraîchis sans re-rendu
 
-    // Le pied distingue ce que le personnage PORTE de ce qu'il a POSÉ : un
-    // total unique laisserait croire qu'un sac décoché pèse encore, ou qu'il a
-    // disparu. Il dit aussi la contenance, l'autre limite d'Outward.
     function updateTotal() {
       tot.style.display = O.total ? "" : "none";
-      grpPoids.forEach(function (f) { f(); });
-      var porte = poidsObjets(true), pose = poidsObjets(false);
-      tot.textContent = "Objets portés : " + fmtP(porte) + " kg" +
-        (pose ? " · posés : " + fmtP(pose) + " kg" : "") +
-        " · contenance : " + fmtP(contenancePrise()) + "/" + fmtP(contenance());
+      majGroupes.forEach(function (f) { f(); });
+      tot.textContent = "Poids porté : " + fmtP(poidsPorte()) + " / " + fmtP(charge()) + " kg";
     }
 
     function vignette(file, cb) {
@@ -5227,45 +5093,33 @@
       r.readAsDataURL(file);
     }
 
-    function moveTo(from, gi, cible) {
-      // déplace items[from] dans le groupe gi, juste avant `cible` (null : à la
-      // fin). La position se recalcule APRÈS le retrait : retirer l'objet
-      // déplacé décale les index de tout ce qui le suivait.
-      var moved = items.splice(from, 1)[0];
-      moved.grp = gi;
-      var at = cible ? items.indexOf(cible) : -1;
-      if (at < 0) items.push(moved);
-      else items.splice(at, 0, moved);
-      sel = items.indexOf(moved);
+    // DÉPLACER un objet vers `ou`, juste avant `cible` (null : à la fin). Une
+    // case déjà prise ÉCHANGE : ce qu'elle tenait part là d'où l'objet vient,
+    // ou au sac s'il n'y a pas sa place.
+    function deplace(o, ou, cible) {
+      if (!lieuPermis(o, ou)) { flash("« " + INV_NOMS[ou] + " » ne prend pas cet objet."); return false; }
+      if (INV_CASES.indexOf(ou) >= 0) {
+        var occupant = objetEn(ou);
+        if (occupant && occupant !== o) occupant.ou = lieuPermis(occupant, o.ou) ? o.ou : "sac";
+      }
+      o.ou = ou;
+      if (cible !== undefined) {
+        items.splice(items.indexOf(o), 1);
+        var at = cible ? items.indexOf(cible) : -1;
+        if (at < 0) items.push(o);
+        else items.splice(at, 0, o);
+      }
+      return true;
     }
 
-    function tile(it, idx) {
-      var t = el("div", "pc-obj-tile" + (sel === idx ? " sel" : ""));
+    function tile(it) {
+      var t = el("div", "pc-obj-tile" + (sel === it ? " sel" : ""));
       if (it.img) {
         var im = el("img");
         im.alt = ""; im.draggable = false;
         im.src = it.img;
         t.appendChild(im);
       } else t.appendChild(el("div", "pc-obj-ph", "?"));
-      var del = el("button", "pc-obj-del pc-edit-only", "✕");
-      del.type = "button";
-      del.title = "Retirer cet objet";
-      del.addEventListener("click", function (e) {
-        e.stopPropagation();
-        function retire() {
-          var ici = items.indexOf(it);
-          items.splice(ici, 1);
-          if (sel === ici) sel = null;
-          else if (sel !== null && sel > ici) sel--;
-          render();
-          refresh();
-        }
-        if (!(it.nom || it.desc)) { retire(); return; }
-        confirmer("Retirer un objet",
-                  "Retirer « " + (it.nom || "cet objet") + " » de l'inventaire ?",
-                  "Retirer", retire);
-      });
-      t.appendChild(del);
       var foot = el("div", "pc-obj-foot");
       var nom = el("span", "nm", it.nom || "Objet");
       if (!O.nom) nom.style.display = "none";
@@ -5277,196 +5131,163 @@
       var badge = el("span", "qte", "×" + fmtP(it.qte));
       if (!O.qte) badge.style.display = "none";
       foot.appendChild(badge);
-      // pied inutile si tout est masqué : la tuile reste une vignette nette
       if (!O.nom && !O.poids && !O.qte) foot.style.display = "none";
       t.appendChild(foot);
-      tileRefs[idx] = { nom: nom, badge: badge, poids: poids };
-      // un objet en accès rapide se reconnaît d'un coup d'œil : c'est ce qu'on
-      // cherche quand on cherche à dégainer
-      if (it.rapide) {
-        t.classList.add("rapide");
-        t.title = (it.nom || "Objet") + " — accès rapide";
-      }
+      t.title = (it.nom || "Objet") + (it.rapide ? " — prise rapide" : "");
+      if (it.rapide) t.classList.add("rapide");
 
-      t.addEventListener("click", function () { sel = idx; render(); });
+      t.addEventListener("click", function (e) { e.stopPropagation(); sel = it; render(); });
       t.draggable = true;
       t.addEventListener("dragstart", function (e) {
-        // réordonner et changer de groupe = construction : mode édition requis
+        // ranger = construction : mode édition requis
         if (!isEdit("inv")) { e.preventDefault(); return; }
-        dragIdx = idx;
+        drag = it;
         t.classList.add("drag");
         try { e.dataTransfer.setData("text/plain", ""); e.dataTransfer.effectAllowed = "move"; } catch (err) {}
       });
-      t.addEventListener("dragend", function () { dragIdx = null; render(); });
-      t.addEventListener("dragover", function (e) {
-        if (dragIdx === null) return;
-        // lâcher sur soi-même : cible invalide, et on N'EN LAISSE PAS le
-        // conteneur du groupe la valider (sinon l'objet saute en fin de groupe)
-        if (dragIdx === idx) { e.stopPropagation(); return; }
-        e.preventDefault();
-        e.stopPropagation();
-        var r = t.getBoundingClientRect();
-        var avant = e.clientX < r.left + r.width / 2;
-        t.classList.toggle("over-l", avant);
-        t.classList.toggle("over-r", !avant);
-      });
-      t.addEventListener("dragleave", function () { t.classList.remove("over-l", "over-r"); });
-      t.addEventListener("drop", function (e) {
-        if (dragIdx === null) return;
-        if (dragIdx === idx) { e.stopPropagation(); return; }
-        e.preventDefault();
-        e.stopPropagation();
-        var r = t.getBoundingClientRect();
-        var avant = e.clientX < r.left + r.width / 2;
-        var from = dragIdx; dragIdx = null;
-        // déposer à DROITE d'une tuile = s'insérer avant la suivante du groupe.
-        // L'objet déplacé est exclu du calcul : sinon il serait sa propre cible
-        // et moveTo, qui le retire d'abord, l'expédierait en fin de groupe.
-        var cible = it;
-        if (!avant) {
-          var deplace = items[from];
-          var suivants = items.filter(function (x) { return x.grp === it.grp && x !== deplace; });
-          var k = suivants.indexOf(it);
-          cible = k >= 0 && k + 1 < suivants.length ? suivants[k + 1] : null;
-        }
-        moveTo(from, it.grp, cible);
-        render();
-        refresh();
-      });
+      t.addEventListener("dragend", function () { drag = null; render(); });
+      // dans les poches et le sac, déposer SUR une tuile range avant ou après
+      // elle ; dans une case, c'est la case qui reçoit
+      if (it.ou === "poches" || it.ou === "sac") {
+        t.addEventListener("dragover", function (e) {
+          if (!drag || drag === it) return;
+          e.preventDefault();
+          e.stopPropagation();
+          var r = t.getBoundingClientRect();
+          var avant = e.clientX < r.left + r.width / 2;
+          t.classList.toggle("over-l", avant);
+          t.classList.toggle("over-r", !avant);
+        });
+        t.addEventListener("dragleave", function () { t.classList.remove("over-l", "over-r"); });
+        t.addEventListener("drop", function (e) {
+          if (!drag || drag === it) return;
+          e.preventDefault();
+          e.stopPropagation();
+          var r = t.getBoundingClientRect();
+          var avant = e.clientX < r.left + r.width / 2;
+          var o = drag; drag = null;
+          var cible = it;
+          if (!avant) {
+            var suivants = items.filter(function (x) { return x.ou === it.ou && x !== o; });
+            var k = suivants.indexOf(it);
+            cible = k >= 0 && k + 1 < suivants.length ? suivants[k + 1] : null;
+          }
+          if (deplace(o, it.ou, cible)) { sel = o; refresh(); }
+          render();
+        });
+      }
       return t;
     }
 
-    function groupBox(gi) {
-      var g = el("div", "pc-obj-group");
-      var head = el("div", "pc-obj-ghead");
-      var name = el("span", "nm", G[gi]);
-      name.title = isEdit("inv") ? "Double-clic : renommer le groupe" : G[gi];
-      // édition EN PLACE, jamais prompt() : dans Roll20 la fiche est une iframe
-      // d'une autre origine, où Chrome fait échouer prompt() en silence
-      function editName() {
-        var inp = el("input", "nmedit");
-        inp.type = "text";
-        inp.value = G[gi];
-        inp.addEventListener("keydown", function (e) {
-          if (e.key === "Enter") { e.preventDefault(); inp.blur(); }
-          else if (e.key === "Escape") { inp.value = G[gi]; inp.blur(); }
-        });
-        inp.addEventListener("blur", function () {
-          G[gi] = inp.value.trim() || G[gi];
-          render();
-          refresh();
-        });
-        head.replaceChild(inp, name);
-        setTimeout(function () { inp.focus(); inp.select(); }, 0);
-      }
-      name.addEventListener("dblclick", function () { if (isEdit("inv")) editName(); });
-      head.appendChild(name);
-      if (editGi === gi) { editGi = null; editName(); }
-
-      var pdsG = el("span", "pds");
-      pdsG.title = "Poids de ce groupe";
-      head.appendChild(pdsG);
-      // LA CASE ET SON MOT FORMENT UN SEUL BOUTON : une case nue de douze
-      // pixels ne pardonne pas au tactile.
-      var caseG = el("label", "pc-obj-cnt");
-      var boite = el("input");
-      boite.type = "checkbox";
-      boite.checked = invCompte(gi);
-      boite.title = "Décoché, ce groupe est posé au sol : il ne compte plus dans la charge.";
-      boite.addEventListener("change", function () {
-        state.inv.comptes[gi] = boite.checked;
-        g.classList.toggle("pose", !boite.checked);
-        majPoids();
-        updateTotal();
-        save();
-        refresh();          // la charge vient de bouger : les jauges suivent
+    // une CASE de Sur soi : l'objet qu'elle tient, ou son nom en creux
+    function caseSurSoi(ou) {
+      var c = el("div", "pc-inv-case");
+      c.dataset.ou = ou;
+      var o = objetEn(ou);
+      if (o) c.appendChild(tile(o));
+      else c.appendChild(el("div", "pc-inv-vide", INV_NOMS[ou]));
+      c.title = INV_NOMS[ou];
+      c.addEventListener("dragover", function (e) {
+        if (!drag || !lieuPermis(drag, ou)) return;
+        e.preventDefault();
+        c.classList.add("over");
       });
-      caseG.appendChild(boite);
-      caseG.appendChild(el("span", "t", "Compté"));
-      head.appendChild(caseG);
-      // Le poids d'un groupe posé s'écrit entre parenthèses : il existe, il est
-      // rangé, mais il ne pèse pas. Rien ne disparaît de l'écran.
-      function majPoids() {
-        var p = poidsGroupe(gi);
-        pdsG.textContent = invCompte(gi) ? fmtP(p) : "(" + fmtP(p) + ")";
-        pdsG.classList.toggle("off", !invCompte(gi));
-      }
-      majPoids();
-      grpPoids.push(majPoids);
-      if (!invCompte(gi)) g.classList.add("pose");
+      c.addEventListener("dragleave", function () { c.classList.remove("over"); });
+      c.addEventListener("drop", function (e) {
+        if (!drag) return;
+        e.preventDefault();
+        var d = drag; drag = null;
+        if (deplace(d, ou)) { sel = d; refresh(); }
+        render();
+      });
+      return c;
+    }
 
-      if (G.length > 1) {
-        var delG = el("button", "x pc-edit-only", "✕");
-        delG.type = "button";
-        delG.title = "Supprimer le groupe (ses objets rejoignent le premier groupe)";
-        delG.addEventListener("click", function () {
-          function supprime() {
-            G.splice(gi, 1);
-            // le drapeau part AVEC son groupe : le laisser décalerait tous les
-            // suivants, et un sac resterait posé au sol sans rien pour le dire
-            state.inv.comptes.splice(gi, 1);
-            items.forEach(function (it) {
-              if (it.grp === gi) it.grp = 0;
-              else if (it.grp > gi) it.grp--;
-            });
-            sel = null;
-            render();
-            refresh();
-          }
-          var dedans = 0;
-          items.forEach(function (it) { if (it.grp === gi) dedans++; });
-          if (!dedans) { supprime(); return; }
-          confirmer("Supprimer un groupe",
-                    "« " + G[gi] + " » contient " + dedans + (dedans > 1 ? " objets" : " objet") +
-                    ". Ils rejoindront « " + G[0] + " ».",
-                    "Supprimer", supprime);
-        });
-        head.appendChild(delG);
-      }
-      g.appendChild(head);
+    function bandeau(titre, pds) {
+      var head = el("div", "pc-obj-ghead");
+      head.appendChild(el("span", "nm", titre));
+      if (pds) head.appendChild(pds);
+      return head;
+    }
 
+    function groupeSurSoi() {
+      var g = el("div", "pc-obj-group");
+      g.appendChild(bandeau("Sur soi"));
+      var l1 = el("div", "pc-inv-cases");
+      ["mainG", "mainD", "dos"].forEach(function (ou) { l1.appendChild(caseSurSoi(ou)); });
+      var l2 = el("div", "pc-inv-cases");
+      INV_VETEMENTS.forEach(function (ou) { l2.appendChild(caseSurSoi(ou)); });
+      g.appendChild(l1);
+      g.appendChild(l2);
+      return g;
+    }
+
+    // POCHES et SAC À DOS : des tuiles, et le poids contre la capacité
+    function groupeLibre(ou, titre, poids, cap) {
+      var g = el("div", "pc-obj-group");
+      var pds = el("span", "pds");
+      pds.title = "Poids contre capacité";
+      function maj() {
+        var p = poids(), c = cap();
+        pds.textContent = fmtP(p) + " / " + fmtP(c) + " kg";
+        pds.classList.toggle("over", p > c);
+      }
+      maj();
+      majGroupes.push(maj);
+      g.appendChild(bandeau(titre, pds));
       var tiles = el("div", "pc-obj-tiles");
-      tiles.style.setProperty("--obj-cols", O.cols);
-      items.forEach(function (it, idx) { if (it.grp === gi) tiles.appendChild(tile(it, idx)); });
+      tiles.style.setProperty("--obj-cols", 5);
+      items.forEach(function (it) { if (it.ou === ou) tiles.appendChild(tile(it)); });
       var add = el("div", "pc-obj-addtile pc-edit-only", "+");
-      add.title = "Ajouter un objet dans « " + G[gi] + " »";
+      add.title = "Ajouter un objet dans « " + titre + " »";
       add.addEventListener("click", function () {
-        items.push({ id: "", nom: "", img: "", qte: 1, poids: 0, places: 0,
-                     achat: 0, vente: 0, desc: "", grp: gi, rapide: false });
-        sel = items.length - 1;
+        var o = { id: "", nom: "", img: "", qte: 1, poids: 0, places: 0, achat: 0, vente: 0,
+                  desc: "", ou: ou, rapide: false, vet: "", poches: 0, froid: 0, chaud: 0,
+                  sac: false, cap: 0, arme: null };
+        items.push(o);
+        sel = o;
         render();
         refresh();
       });
       tiles.appendChild(add);
-      // déposer dans le vide du groupe : l'objet rejoint la fin de ce groupe
       tiles.addEventListener("dragover", function (e) {
-        if (dragIdx === null) return;
+        if (!drag) return;
         e.preventDefault();
         tiles.classList.add("over");
       });
       tiles.addEventListener("dragleave", function () { tiles.classList.remove("over"); });
       tiles.addEventListener("drop", function (e) {
-        if (dragIdx === null) return;
+        if (!drag) return;
         e.preventDefault();
-        var from = dragIdx; dragIdx = null;
-        moveTo(from, gi, null);
+        var o = drag; drag = null;
+        if (deplace(o, ou, null)) { sel = o; refresh(); }
         render();
-        refresh();
       });
       g.appendChild(tiles);
       return g;
     }
 
+    // ---- le détail de l'objet ----
+    function champNombre(libelle, lire, ecrire, titre) {
+      var i = el("input", "pc-edit-field");
+      i.type = "text"; i.inputMode = "decimal";
+      i.value = lire() ? fmtP(lire()) : "";
+      i.placeholder = "0";
+      if (titre) i.title = titre;
+      i.addEventListener("input", function () { ecrire(i.value); save(); updateTotal(); refresh(); });
+      i.addEventListener("blur", function () { i.value = lire() ? fmtP(lire()) : ""; });
+      return fld(libelle, i);
+    }
     function renderPanel() {
       panel.innerHTML = "";
-      if (sel === null || !items[sel]) {
+      if (!sel || items.indexOf(sel) < 0) {
+        sel = null;
         panel.appendChild(el("div", "pc-obj-empty", isEdit("inv")
           ? "Choisir un objet, ou en ajouter un avec « + »."
           : "Choisir un objet."));
         return;
       }
-      var it = items[sel];
-      var refs = function () { return tileRefs[sel]; };
+      var it = sel;
 
       var imgbox = el("div", "pc-obj-imgbox");
       if (it.img) { var im = el("img"); im.alt = ""; im.src = it.img; imgbox.appendChild(im); }
@@ -5478,11 +5299,8 @@
       var nm = el("input", "nm pc-edit-field");
       nm.type = "text"; nm.placeholder = "Nom de l'objet";
       nm.value = it.nom;
-      nm.addEventListener("input", function () {
-        it.nom = nm.value;
-        if (refs()) refs().nom.textContent = it.nom || "Objet";
-        save();
-      });
+      nm.addEventListener("input", function () { it.nom = nm.value; save(); });
+      nm.addEventListener("change", function () { render(); });
       body.appendChild(nm);
 
       // quantité : curseur + champ, décimale (une demi-ration, 2.5 m de corde)
@@ -5500,7 +5318,6 @@
         if (+slider.max < it.qte) slider.max = String(it.qte);
         if (document.activeElement !== slider) slider.value = it.qte;
         if (document.activeElement !== qIn) qIn.value = it.qte;
-        if (refs()) refs().badge.textContent = "×" + fmtP(it.qte);
         majAct();
         majPile();
         save(); updateTotal();
@@ -5512,82 +5329,125 @@
       qRow.appendChild(qIn);
       body.appendChild(fld("Quantité", qRow));
 
+      // poids et EMPLACEMENT : seuls les lieux qui acceptent l'objet sont offerts
       var pair = el("div", "pc-obj-pair");
-      var pd = el("input", "pc-edit-field");
-      pd.type = "text"; pd.inputMode = "decimal";
-      pd.value = it.poids ? fmtP(it.poids) : "";
-      pd.placeholder = "0";
-      pd.addEventListener("input", function () {
-        it.poids = pnum(pd.value);
-        if (refs()) refs().poids.textContent = it.poids ? fmtP(it.poids) : "";
-        majPile();
-        save(); updateTotal();
-        refresh();
+      pair.appendChild(champNombre("Poids", function () { return it.poids; },
+        function (v) { it.poids = pnum(v); majPile(); }));
+      var ouSel = el("select", "pc-edit-field");
+      INV_LIEUX.forEach(function (ou) {
+        if (!lieuPermis(it, ou) && it.ou !== ou) return;
+        var o = el("option", null, ou === "sac" ? "Sac à dos (contenu)" : INV_NOMS[ou]);
+        o.value = ou;
+        if (ou === it.ou) o.selected = true;
+        ouSel.appendChild(o);
       });
-      pd.addEventListener("blur", function () { pd.value = it.poids ? fmtP(it.poids) : ""; });
-      pair.appendChild(fld("Poids", pd));
-      var gSel = el("select", "pc-edit-field");
-      G.forEach(function (gn, gi) {
-        var o = el("option", null, gn);
-        o.value = String(gi);
-        if (gi === it.grp) o.selected = true;
-        gSel.appendChild(o);
-      });
-      gSel.addEventListener("change", function () {
-        moveTo(sel, clamp(num(gSel.value, 0), 0, G.length - 1), null);
+      ouSel.addEventListener("change", function () {
+        deplace(it, ouSel.value, null);
         render();
         refresh();
       });
-      pair.appendChild(fld("Groupe", gSel));
+      pair.appendChild(fld("Emplacement", ouSel));
       body.appendChild(pair);
 
-      // PLACES DE CONTENANCE et ACCÈS RAPIDE : les deux limites propres à
-      // Outward. Les places disent ce que l'objet occuperait une fois avalé ;
-      // l'accès rapide dit qu'il se dégaine sans fouiller.
+      // CE QU'EST L'OBJET : un objet simple, un vêtement ou un sac à dos ; et,
+      // en plus, une arme ou non. Changer de nature renvoie au sac un objet
+      // qui n'a plus sa place dans sa case.
       var pair2 = el("div", "pc-obj-pair");
-      var pl = el("input", "pc-edit-field");
-      pl.type = "text"; pl.inputMode = "decimal";
-      pl.value = it.places ? fmtP(it.places) : "";
-      pl.placeholder = "0";
-      pl.title = "La contenance qu'occupe cet objet une fois avalé.";
-      pl.addEventListener("input", function () { it.places = pnum(pl.value); save(); });
-      pl.addEventListener("blur", function () { pl.value = it.places ? fmtP(it.places) : ""; });
-      pair2.appendChild(fld("Places", pl));
+      var nat = el("select", "pc-edit-field");
+      [["", "Objet"], ["vet", "Vêtement"], ["sac", "Sac à dos"]].forEach(function (n) {
+        var o = el("option", null, n[1]);
+        o.value = n[0];
+        if ((n[0] === "vet" && it.vet) || (n[0] === "sac" && it.sac && !it.vet) ||
+            (!n[0] && !it.vet && !it.sac)) o.selected = true;
+        nat.appendChild(o);
+      });
+      nat.addEventListener("change", function () {
+        it.sac = nat.value === "sac";
+        it.vet = nat.value === "vet" ? (it.vet || "haut") : "";
+        if (!lieuPermis(it, it.ou)) it.ou = "sac";
+        render();
+        refresh();
+      });
+      pair2.appendChild(fld("Nature", nat));
+      var kvA = el("div", "pc-kv");
+      var labA = el("label", null, "");
+      var cbA = el("input", "pc-edit-field");
+      cbA.type = "checkbox";
+      cbA.checked = !!it.arme;
+      cbA.addEventListener("change", function () {
+        it.arme = cbA.checked ? (it.arme || { prise: "", parade: "", reduction: "", comp: "", gestes: [] }) : null;
+        render();
+        refresh();
+      });
+      labA.appendChild(cbA);
+      labA.appendChild(el("span", null, " arme"));
+      kvA.appendChild(labA);
+      pair2.appendChild(kvA);
+      body.appendChild(pair2);
+
+      if (it.vet) {
+        var pv = el("div", "pc-obj-pair");
+        var typ = el("select", "pc-edit-field");
+        INV_VETEMENTS.forEach(function (v) {
+          var o = el("option", null, INV_NOMS[v]);
+          o.value = v;
+          if (v === it.vet) o.selected = true;
+          typ.appendChild(o);
+        });
+        typ.addEventListener("change", function () {
+          it.vet = typ.value;
+          if (!lieuPermis(it, it.ou)) it.ou = "sac";
+          render();
+          refresh();
+        });
+        pv.appendChild(fld("Se porte", typ));
+        pv.appendChild(champNombre("Poches", function () { return it.poches; },
+          function (v) { it.poches = pnum(v); }, "Ce que ce vêtement porté ajoute aux Poches, en kg"));
+        body.appendChild(pv);
+        var pp = el("div", "pc-obj-pair");
+        pp.appendChild(champNombre("Froid", function () { return it.froid; },
+          function (v) { it.froid = snum(v); }, "Protection contre le froid, en degrés"));
+        pp.appendChild(champNombre("Chaud", function () { return it.chaud; },
+          function (v) { it.chaud = snum(v); }, "Protection contre le chaud, en degrés"));
+        body.appendChild(pp);
+      }
+      if (it.sac) {
+        var ps = el("div", "pc-obj-pair");
+        ps.appendChild(champNombre("Capacité", function () { return it.cap; },
+          function (v) { it.cap = pnum(v); }, "Ce que ce sac porte, en kg"));
+        body.appendChild(ps);
+      }
+
+      // PLACES DE CONTENANCE et PRISE RAPIDE
+      var pair3 = el("div", "pc-obj-pair");
+      pair3.appendChild(champNombre("Places", function () { return it.places; },
+        function (v) { it.places = pnum(v); }, "La contenance qu'occupe cet objet une fois avalé."));
       var kvR = el("div", "pc-kv");
       var labR = el("label", null, "");
       var cbR = el("input");
       cbR.type = "checkbox";
       cbR.checked = !!it.rapide;
-      cbR.title = "L'objet tient dans un accès rapide : il compte alors contre la Dextérité, " +
-                  "et pas seulement contre la charge.";
       cbR.addEventListener("change", function () {
         it.rapide = cbR.checked;
         render();
         refresh();
       });
       labR.appendChild(cbR);
-      labR.appendChild(el("span", null, " accès rapide"));
+      labR.appendChild(el("span", null, " prise rapide"));
       kvR.appendChild(labR);
-      pair2.appendChild(kvR);
-      body.appendChild(pair2);
+      pair3.appendChild(kvR);
+      body.appendChild(pair3);
 
       // achat / vente, en pièces d'argent : la monnaie du livre est NOMMÉE
       var prix = el("div", "pc-obj-pair");
       [["achat", "Achat"], ["vente", "Vente"]].forEach(function (c) {
-        var inp = el("input", "pc-edit-field");
-        inp.type = "text"; inp.inputMode = "decimal";
-        inp.value = it[c[0]] ? fmtP(it[c[0]]) : "";
-        inp.placeholder = "0";
-        inp.title = c[1] + " en " + monnaie(true);
-        inp.addEventListener("input", function () { it[c[0]] = pnum(inp.value); save(); });
-        inp.addEventListener("blur", function () { inp.value = it[c[0]] ? fmtP(it[c[0]]) : ""; });
-        prix.appendChild(fld(c[1], inp));
+        prix.appendChild(champNombre(c[1], function () { return it[c[0]]; },
+          function (v) { it[c[0]] = pnum(v); }, c[1] + " en " + monnaie(true)));
       });
       body.appendChild(prix);
 
       // identifiant : c'est LUI qui reconnaît le même objet d'une fiche à
-      // l'autre quand on le donne (deux « Corde » sans rapport ne fusionnent
-      // pas si elles portent des identifiants différents)
+      // l'autre quand on le donne
       var idIn = el("input", "pc-edit-field");
       idIn.type = "text"; idIn.placeholder = "libre (ex. corde-chanvre)";
       idIn.value = it.id || "";
@@ -5611,7 +5471,7 @@
       file.type = "file"; file.accept = "image/*"; file.style.display = "none";
       file.addEventListener("change", function () {
         var f = file.files && file.files[0];
-        file.value = "";   // vidé tout de suite : re-choisir le MÊME fichier redéclenche change
+        file.value = "";
         if (!f) return;
         vignette(f, function (data) { it.img = data; render(); refresh(); });
       });
@@ -5626,6 +5486,16 @@
       desc.value = it.desc;
       desc.addEventListener("input", function () { it.desc = desc.value; save(); });
       body.appendChild(fld("Description", desc, "w"));
+
+      // L'ARME : ses gestes et ses jets, sous l'objet. Ses rafraîchissements
+      // vont au registre du PANNEAU, vidé à chaque rendu : sinon chaque clic
+      // sur une tuile laisserait des fonctions pointer sur un détail disparu.
+      if (it.arme) {
+        var ancien = hooks;
+        hooks = panelHooks;
+        try { body.appendChild(carteArme(it, function () { render(); })); }
+        finally { hooks = ancien; }
+      }
 
       // quantité d'ACTION : combien d'exemplaires les boutons ci-dessous
       // traitent. Elle ne touche pas la pile tant qu'on n'agit pas.
@@ -5652,20 +5522,20 @@
         function () {
           var q = bornerAct();
           return [
-            ["Groupe", G[it.grp]],
+            ["Emplacement", INV_NOMS[it.ou]],
             ["Quantité", fmtP(q) + (q < it.qte ? " (sur " + fmtP(it.qte) + ")" : "")],
             ["Poids", it.poids ? fmtP(it.poids) + (q > 1 ? " (total " + fmtP(q * it.poids) + ")" : "") : ""],
             ["Places", it.places ? fmtP(it.places) : ""],
             ["Valeur", it.vente ? "vente " + fmtP(it.vente) + (it.achat ? " · achat " + fmtP(it.achat) : "")
                                 : (it.achat ? "achat " + fmtP(it.achat) : "")],
-            ["", it.desc]   // texte long : pleine largeur, sans libellé
+            ["", it.desc]
           ];
         }));
       actions.appendChild(miniBtn("Donner", "Donner cette quantité à un autre joueur", function () {
         donnerDialogue(it, bornerAct());
       }));
       function retireQte(q, tout) {
-        if (tout) { items.splice(sel, 1); sel = null; }
+        if (tout) { items.splice(items.indexOf(it), 1); sel = null; }
         else it.qte = Math.round((it.qte - q) * 100) / 100;
         render();
         refresh();
@@ -5686,25 +5556,21 @@
     }
 
     function render() {
-      tileRefs = {};
-      grpPoids = [];
+      majGroupes = [];
+      panelHooks.length = 0;
       leftBox.innerHTML = "";
-      G.forEach(function (_, gi) { leftBox.appendChild(groupBox(gi)); });
-      var addG = miniBtn("+ Groupe", "Ajouter un groupe d'objets", function () {
-        G.push("Groupe");
-        // le drapeau naît AVEC son groupe : un groupe neuf est PORTÉ, jamais
-        // posé, et le tableau reste parallèle à celui des groupes
-        state.inv.comptes.push(true);
-        editGi = G.length - 1;   // le nouveau groupe s'ouvre en édition de nom
-        render();
-        refresh();
-      }, "pc-edit-only");
-      addG.classList.add("pc-obj-addgroup");
-      leftBox.appendChild(addG);
+      leftBox.appendChild(groupeSurSoi());
+      leftBox.appendChild(groupeLibre("poches", "Poches", poidsPoches, capPoches));
+      leftBox.appendChild(groupeLibre("sac", "Sac à dos", poidsSac, capSac));
       renderPanel();
       updateTotal();
       applyEdit(container, "inv");
+      panelHooks.forEach(function (f) { try { f(); } catch (e) {} });
     }
+    hooks.push(function () {
+      updateTotal();
+      panelHooks.forEach(function (f) { try { f(); } catch (e) {} });
+    });
     if (renderRef) renderRef.fn = render;
     invRender = render;   // un objet reçu du tchat redessine l'inventaire
     render();
@@ -5714,7 +5580,7 @@
   function buildInv() {
     // le rouage re-rend l'inventaire : messages et titres suivent le mode
     var ref = { fn: null };
-    var b = block("Inventaire", "objets par groupes", "inv", function () {
+    var b = block("Inventaire", null, "inv", function () {
       if (ref.fn) ref.fn();
     });
     invObjets(b, ref);
@@ -7084,10 +6950,6 @@
     // Fiche, c'est-à-dire là où personne n'allait la chercher.
     { id: "techniques",   titre: "Techniques",       onglet: "art", colonne: "seule",  build: buildTechniques },
     // ---- onglet Équipement ----
-    { id: "armes",        titre: "Armes",            onglet: "equipement", colonne: "gauche", build: buildArmes },
-    { id: "charge",       titre: "Charge et contenance", onglet: "equipement", colonne: "droite", build: buildCharge },
-    { id: "vetements",    titre: "Vêtements",        onglet: "equipement", colonne: "droite", build: buildVetements },
-    { id: "bourse",       titre: "Bourse",           onglet: "equipement", colonne: "droite", build: buildBourse },
     { id: "inv",          titre: "Inventaire",       onglet: "equipement", colonne: "bas",    build: buildInv },
     // ---- onglet Bio ----
     // La prose, dans son propre onglet : ce qui se lit ne se met pas devant ce
