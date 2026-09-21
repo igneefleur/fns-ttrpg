@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "2.7.0b";
+  var RELEASE = "2.7.1b";
   var SCHEMA = 3;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -374,10 +374,9 @@
       // l'air en °C. Le module Temps s'en sert pour faire
       // passer le temps ; rien d'autre ne les lit.
       effort: "leger", temperature: 20,
-      // L'allure (clé d'une allure des règles : repos, legere, intermediaire,
-      // lourde) et son cran, pour celle qui se prend par crans. Le module
-      // Mouvement en tire les pas par round.
-      allure: "legere", allureCran: 1,
+      // Le CRAN de l'allure lourde, la seule qui se prend par crans. L'allure
+      // elle-même est l'effort ci-dessus : le module Mouvement en tire les pas.
+      allureCran: 1,
 
       // ---- l'effondrement ----
       // Les niveaux d'effondrement que le JOUEUR ajoute à ceux des réserves
@@ -587,7 +586,7 @@
     if (!s.de) s.de = DE_DEFAUT;
     s.xpTotal = Math.max(0, num(s.xpTotal, 0));
     s.effort = String(s.effort == null ? "" : s.effort) || b.effort;
-    s.allure = String(s.allure == null ? "" : s.allure) || b.allure;
+    delete s.allure;   // l'allure est l'effort : elle n'a pas de clé à elle
     s.allureCran = clamp(num(s.allureCran, 1), 1, 99);
     s.effAutre = clamp(Math.round(num(s.effAutre, 0)), 0, 99);
     s.desTailles = Array.isArray(s.desTailles)
@@ -3893,30 +3892,23 @@
     return box;
   }
   // ---- Mouvement ----
-  // L'allure que prend le personnage, et le nombre de pas qu'elle lui donne
-  // par round. L'allure lourde se prend par crans, chacun avec son coût en
-  // dés d'action et en PE. Aucune règle n'est écrite ici : les allures, leurs
-  // pas et leurs coûts viennent des données (clé « mouvement »).
+  // Les pas par round que donne l'EFFORT choisi dans le module Temps : l'effort
+  // y est l'allure, on ne la choisit pas deux fois. Endormi, le personnage n'a
+  // pas d'allure, donc aucun pas. L'allure lourde se prend par crans, chacun
+  // avec son coût en dés d'action et en PE : c'est le seul choix de ce module.
+  // Aucune règle n'est écrite ici : les allures, leurs pas et leurs coûts
+  // viennent des données (clé « mouvement »).
   function mouvementListe() { var m = D().mouvement; return Array.isArray(m) ? m : []; }
-  function allureDe(cle) {
-    var out = null;
-    mouvementListe().forEach(function (a) { if (a.cle === cle) out = a; });
-    return out || mouvementListe()[0] || null;
+  // l'allure de l'effort courant : « leger » est l'allure « legere », « lourd »
+  // la « lourde » ; le sommeil n'en a aucune
+  function allureCourante() {
+    var e = String(state.effort || ""), out = null;
+    if (!e) return null;
+    mouvementListe().forEach(function (a) { if (!out && a.cle.indexOf(e) === 0) out = a; });
+    return out;
   }
   function buildMouvement() {
     var b = block("Mouvement");
-
-    // les allures, un bouton chacune, dans l'ordre des règles
-    var bande = el("div", "pc-tabs mini pc-efforts");
-    var boutons = [];
-    mouvementListe().forEach(function (a) {
-      var bt = el("button", "pc-tab", capFirst(a.nom));
-      bt.type = "button";
-      bt.addEventListener("click", function () { state.allure = a.cle; refresh(); });
-      bande.appendChild(bt);
-      boutons.push([bt, a.cle]);
-    });
-    b.appendChild(bande);
 
     // les crans, pour l'allure qui en a plusieurs
     var crans = el("div", "pc-tabs mini pc-efforts pc-crans");
@@ -3937,10 +3929,10 @@
       return t.join(" · ");
     }
     hooks.push(function () {
-      var a = allureDe(state.allure);
-      boutons.forEach(function (x) { x[0].classList.toggle("on", a && x[1] === a.cle); });
+      var a = allureCourante();
       crans.innerHTML = "";
-      if (!a) { pas.textContent = "—"; cout.textContent = ""; return; }
+      crans.style.display = a && a.crans.length > 1 ? "" : "none";
+      if (!a) { pas.textContent = "0"; cout.textContent = ""; return; }
       var k = clamp(num(state.allureCran, 1), 1, a.crans.length);
       if (a.crans.length > 1) {
         a.crans.forEach(function (c, i) {
@@ -3950,7 +3942,6 @@
           crans.appendChild(bt);
         });
       }
-      crans.style.display = a.crans.length > 1 ? "" : "none";
       var c = a.crans[k - 1];
       pas.textContent = String(c.pas);
       cout.textContent = libCout(c) ? "coût : " + libCout(c) : "";
