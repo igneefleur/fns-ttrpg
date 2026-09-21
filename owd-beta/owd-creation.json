@@ -506,6 +506,72 @@
    ]
   }
  },
+ "mouvement": [
+  {
+   "cle": "repos",
+   "nom": "repos",
+   "crans": [
+    {
+     "pas": 0,
+     "des": 0,
+     "pe": 0
+    }
+   ]
+  },
+  {
+   "cle": "legere",
+   "nom": "légère",
+   "crans": [
+    {
+     "pas": 3,
+     "des": 0,
+     "pe": 0
+    }
+   ]
+  },
+  {
+   "cle": "intermediaire",
+   "nom": "intermédiaire",
+   "crans": [
+    {
+     "pas": 6,
+     "des": 0,
+     "pe": 0
+    }
+   ]
+  },
+  {
+   "cle": "lourde",
+   "nom": "lourde",
+   "crans": [
+    {
+     "pas": 9,
+     "des": 1,
+     "pe": 0
+    },
+    {
+     "pas": 12,
+     "des": 2,
+     "pe": 5
+    },
+    {
+     "pas": 15,
+     "des": 3,
+     "pe": 10
+    },
+    {
+     "pas": 18,
+     "des": 4,
+     "pe": 15
+    },
+    {
+     "pas": 21,
+     "des": 5,
+     "pe": 20
+    }
+   ]
+  }
+ ],
  "pas": 0.75,
  "monnaie": {
   "nom": "pièce d'argent",
