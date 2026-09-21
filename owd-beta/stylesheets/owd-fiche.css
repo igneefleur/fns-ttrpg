@@ -224,7 +224,10 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
 /* 2e ligne de l'identité : compteurs XP dépensé / Rupture (barres étirées) +
    le champ XP total. Pleine largeur de la grille de 12. */
 .pc-id-meters { grid-column: 1 / -1; display: flex; align-items: flex-end; gap: .4rem 1.1rem; flex-wrap: wrap; margin-top: .15rem; }
-.pc-id-meters .pc-meter { flex: 1 1 9rem; min-width: 0; }
+.pc-id-meters .pc-meter { flex: 1 1 auto; min-width: 0; }
+/* Le libellé et le compte ne se cassent jamais : un compteur de trop passe à la
+   ligne entier, plutôt que d'écrire « 160 / » au-dessus de « 160 ». */
+.pc-id-meters .pc-meter > span:first-child, .pc-id-meters .pc-meter b { white-space: nowrap; }
 .pc-id-meters .pc-meter .bar { flex: 1; width: auto; min-width: 3rem; }
 .pc-id-meters .pc-f { flex: 0 0 5.5rem; }
 .pc-id { flex: 1; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: .35rem .6rem; align-content: start; }

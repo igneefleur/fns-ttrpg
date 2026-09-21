@@ -1,5 +1,24 @@
 [
 {
+"short": "dbf3176",
+"author": "Théo Cavaillès",
+"date": "2026-09-21T14:56:40+02:00",
+"message": "Les rangs de compétence et de technique sont limités par la somme des caractéristiques",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/dbf3176ecf7190a9871cb2b6b99c39056d4ad5ed",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/base/competences.md",
+"url": "content/regles/base/competences/"
+},
+{
+"status": "modified",
+"filename": "content/regles/base/techniques.md",
+"url": "content/regles/base/techniques/"
+}
+]
+},
+{
 "short": "a3e437d",
 "author": "Théo Cavaillès",
 "date": "2026-09-21T14:46:19+02:00",
@@ -260,20 +279,6 @@
 "date": "2026-08-17T14:45:23+02:00",
 "message": "La taille basse retrouve sa portée, qu'elle n'aurait pas dû perdre",
 "url": "https://github.com/igneefleur/fns-ttrpg/commit/3fabc9028549990f3afc9276374fee5084f3d109",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/combat/armes.md",
-"url": "content/regles/combat/armes/"
-}
-]
-},
-{
-"short": "02c68fa",
-"author": "Théo Cavaillès",
-"date": "2026-08-17T14:42:09+02:00",
-"message": "Le croc de la barbe passe SOUS l'écu, il ne frappe pas avec",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/02c68fa0448ca48e1fc7bdfbd51f5e10b3a66943",
 "files": [
 {
 "status": "modified",

@@ -55,7 +55,7 @@
     
       <link rel="stylesheet" href="../../../../stylesheets/cartes.css?v=24">
     
-      <link rel="stylesheet" href="../../../../stylesheets/owd-fiche.css?v=6">
+      <link rel="stylesheet" href="../../../../stylesheets/owd-fiche.css?v=7">
     
     <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -616,6 +616,17 @@
     <span class="md-ellipsis">
       
         Gagner un rang
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#la-limite-des-rangs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        La limite des rangs
       
     </span>
   </a>
@@ -1439,6 +1450,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#la-limite-des-rangs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        La limite des rangs
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1459,7 +1481,7 @@
 <h1 id="competences">Compétences</h1>
 <p>Une compétence mesure ce qu'un personnage sait faire. Elle couvre un large domaine et sert à tout ce qui s'y rattache : frapper d'une arme, escalader une paroi, soigner une plaie.</p>
 <div class="cols">
-<p>Chaque compétence d'un personnage porte un rang. Ce chapitre définit ce que donne le <a href="#le-rang">rang</a>, le <a href="#le-rang-0">Rang 0</a> de celui qui n'a rien appris, et ce que coûte de <a href="#gagner-un-rang">gagner un rang</a>. La façon d'employer une compétence, de fixer sa difficulté et de lancer les dés est donnée avec les <a href="../actions/">actions</a>.</p>
+<p>Chaque compétence d'un personnage porte un rang. Ce chapitre définit ce que donne le <a href="#le-rang">rang</a>, le <a href="#le-rang-0">Rang 0</a> de celui qui n'a rien appris, ce que coûte de <a href="#gagner-un-rang">gagner un rang</a>, et combien de rangs un personnage peut <a href="#la-limite-des-rangs">porter en tout</a>. La façon d'employer une compétence, de fixer sa difficulté et de lancer les dés est donnée avec les <a href="../actions/">actions</a>.</p>
 <div class="keep">
 <h3 id="le-rang">Le rang</h3>
 <p>Le rang d'une compétence donne deux valeurs : le nombre de dés d'action que le personnage engage au plus pour l'employer, et le bonus qu'il ajoute au résultat de son jet.</p>
@@ -1487,6 +1509,13 @@
 </div>
 <div class="memo">
 <p>Exemple. Un personnage attaque à l'épée, d'un geste dont le seuil est 11. Non initié, son dé unique monte à 8 et le seuil lui reste hors d'atteinte. Initié, il lance deux dés et touche un peu moins d'une fois sur trois. Expert, il ajoute 3 à sa somme et touche deux fois sur trois. Après la rupture, il lance trois dés et manque une fois sur quinze.</p>
+</div>
+<div class="keep">
+<h3 id="la-limite-des-rangs">La limite des rangs</h3>
+<p>Un personnage ne peut pas porter plus de rangs de compétence que le cinquième de la somme de ses <a href="../caracteristiques/">caractéristiques</a>.</p>
+<p class="formula">Rangs de compétence au plus = somme des caractéristiques ÷ 5, arrondi à l'inférieur</p>
+<p>Chaque rang compte : une compétence au Rang 1 compte pour 1, une compétence au Rang 2 pour 2, une compétence au Rang Max pour 5. La somme des caractéristiques compte leurs points de création et les points achetés avec l'expérience.</p>
+<p>Un rang obtenu sans dépenser de points d'expérience ne compte pas dans cette limite.</p>
 </div>
 </div>
 
@@ -1590,11 +1619,11 @@
       
         <script src="../../../../javascripts/night.js"></script>
       
-        <script src="../../../../javascripts/owd-migrations.js?v=6"></script>
+        <script src="../../../../javascripts/owd-migrations.js?v=7"></script>
       
-        <script src="../../../../javascripts/owd-mods.js?v=6"></script>
+        <script src="../../../../javascripts/owd-mods.js?v=7"></script>
       
-        <script src="../../../../javascripts/owd-fiche.js?v=6"></script>
+        <script src="../../../../javascripts/owd-fiche.js?v=7"></script>
       
         <script src="../../../../javascripts/copybtn.js"></script>
       

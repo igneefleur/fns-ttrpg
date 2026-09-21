@@ -173,6 +173,16 @@
    "initiale": "R"
   }
  ],
+ "limites": {
+  "competences": {
+   "diviseur": 5,
+   "arrondi": "bas"
+  },
+  "techniques": {
+   "diviseur": 10,
+   "arrondi": "bas"
+  }
+ },
  "des": {
   "faces": 8,
   "actionParTour": 5,
