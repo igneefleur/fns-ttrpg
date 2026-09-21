@@ -1167,9 +1167,13 @@ html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où 
 .pc-inv-total { text-align: right; font-size: .58rem; color: var(--ink-3); margin-top: .3rem; font-variant-numeric: tabular-nums; }
 
 /* ---- inventaire : objets illustrés (tuiles par groupes + panneau) ---- */
-.pc-obj-wrap { display: flex; gap: .6rem; align-items: flex-start; }
-.pc-obj-left { flex: 1 1 62%; min-width: 0; display: flex; flex-direction: column; gap: .45rem; }
-.pc-obj-panel { flex: 0 0 34%; min-width: 0; border: 1px solid var(--line-2); border-radius: 8px; background: var(--card); overflow: hidden; box-sizing: border-box; }
+/* LE MODULE PREND TOUTE LA HAUTEUR DISPONIBLE (--inv-h, posée par le script),
+   et chaque colonne défile dans la sienne. Le panneau de droite garde toujours
+   cette taille, qu'il montre un objet ou le fantôme. */
+.pc-obj-wrap { display: flex; gap: .6rem; align-items: stretch; height: var(--inv-h, auto); }
+.pc-obj-left { flex: 1 1 62%; min-width: 0; display: flex; flex-direction: column; gap: .45rem; overflow-y: auto; }
+.pc-obj-panel { flex: 0 0 34%; min-width: 0; border: 1px solid var(--line-2); border-radius: 8px; background: var(--card); overflow-y: auto; box-sizing: border-box; }
+.pc-obj-panel.fantome .pc-obj-body, .pc-obj-panel.fantome .pc-obj-imgbox { opacity: .45; }
 .pc-obj-ghead { display: flex; align-items: center; gap: .3rem; margin-bottom: .2rem; }
 .pc-obj-ghead .nm {
   font-size: .54rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
@@ -1303,7 +1307,7 @@ html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où 
 @media (max-width: 44em) {
   /* align-items: stretch : en colonne, le flex-start hérité rétrécirait les
      enfants à leur contenu (tuiles en pourcentage -> quasi nulles) */
-  .pc-obj-wrap { flex-direction: column; align-items: stretch; }
+  .pc-obj-wrap { flex-direction: column; align-items: stretch; height: auto; }
   .pc-obj-left { width: 100%; }
   .pc-obj-panel { flex: 1 1 auto; width: 100%; }
 }
