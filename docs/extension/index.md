@@ -35,13 +35,24 @@ ne perd rien, et les autres joueurs ne voient aucune différence.
 .md-typeset .ext-card ol.ext-steps li { margin:.24rem 0; text-align:left; }
 .ext-url { display:inline-flex; align-items:center; gap:.3rem; }
 .ext-url code { white-space:nowrap; }
+/* Le petit bouton « copier » : du texte doré cerné d'un filet discret, fond
+   transparent — il emprunte donc la feuille, blanche le jour et noire la nuit.
+   var(--or-fort) bascule tout seul avec le mode (#6b5210 le jour, 7,4:1 sur
+   blanc ; #ffd77f la nuit, l'or du wiki tel quel). Le repli codé en dur est
+   celui du JOUR : il ne sert que si extra.css manque, et un or de nuit posé là
+   serait illisible sur la page claire qui reste. Le filet garde la variable
+   Material, qui suit le mode elle aussi ; seul son repli codé en dur passe à
+   #ddd6c6, le filet ordinaire du livre (--trait du jour). */
 .md-typeset .ext-copy {
-  font-family:'Cinzel', Garamond, serif; font-size:.6rem; letter-spacing:.03em;
-  border:1px solid var(--md-default-fg-color--lightest,#d9d2bf); border-radius:4px;
-  background:transparent; color:var(--green-title,#667861); padding:.06rem .42rem; cursor:pointer;
+  font-family:'Symboles JDR', 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
+  font-size:.6rem; letter-spacing:.03em;
+  border:1px solid var(--md-default-fg-color--lightest,#ddd6c6); border-radius:4px;
+  background:transparent; color:var(--or-fort,#6b5210); padding:.06rem .42rem; cursor:pointer;
 }
-.md-typeset .ext-copy:hover { border-color:var(--green-title,#667861); }
-.md-typeset .ext-copy.ok { border-color:var(--green-title,#667861); font-weight:700; }
+/* Au survol et une fois copié, le filet prend la couleur du texte : c'est le
+   seul retour visuel du bouton, il ne bouge pas d'un pixel. */
+.md-typeset .ext-copy:hover { border-color:var(--or-fort,#6b5210); }
+.md-typeset .ext-copy.ok { border-color:var(--or-fort,#6b5210); font-weight:700; }
 </style>
 
 <div class="ext-grid">

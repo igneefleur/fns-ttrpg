@@ -1,0 +1,4 @@
+tint_glass_green
+
+source: Gemini_Generated_Image_4pwycc4pwycc4pwy.jpg
+script: pot2.py

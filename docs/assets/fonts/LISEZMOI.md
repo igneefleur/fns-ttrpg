@@ -10,13 +10,14 @@ main : relancer le script.
 
 ## Les polices et leurs licences
 
-Les sept sont sous **SIL Open Font License 1.1**. Le texte complet de chaque
+Les huit sont sous **SIL Open Font License 1.1**. Le texte complet de chaque
 licence est dans `licences/`, comme l'OFL l'exige dès lors qu'on redistribue les
 fichiers de police.
 
 | Police | Rôle | Copyright | Licence |
 |---|---|---|---|
-| Alegreya | corps du livre + interface | Copyright 2011 The Alegreya Project Authors (huertatipografica) | [OFL 1.1](licences/alegreya-OFL.txt) |
+| Nunito Sans | corps du livre et titres — le relais libre de Proxima Nova, la police de Roll20 | Copyright 2016 The Nunito Sans Project Authors (Fonthausen) | [OFL 1.1](licences/nunito-sans-OFL.txt) |
+| Alegreya | ancien corps du livre, gardée en repli | Copyright 2011 The Alegreya Project Authors (huertatipografica) | [OFL 1.1](licences/alegreya-OFL.txt) |
 | Cinzel | titres du livre | Copyright 2020 The Cinzel Project Authors (NDISCOVER) | [OFL 1.1](licences/cinzel-OFL.txt) |
 | EB Garamond | repli et Forge | Copyright 2017 The EB Garamond Project Authors (octaviopardo) | [OFL 1.1](licences/eb-garamond-OFL.txt) |
 | IBM Plex Sans | interface de l'Atelier | Copyright © 2017 IBM Corp., avec nom réservé « Plex » | [OFL 1.1](licences/ibm-plex-sans-OFL.txt) |
@@ -65,3 +66,16 @@ français (le œ est dans « latin ») et évite de trimballer le cyrillique, le
 et le vietnamien. Pour les symboles, le sous-ensemble ne contient que les
 caractères réellement employés par le livre. Les `unicode-range` des `@font-face`
 font que le navigateur ne télécharge que les fichiers dont il a besoin.
+
+## La police de Roll20, et pourquoi elle n'est pas ici
+
+Le livre demande la police de Roll20. Mesurée sur une vraie partie, c'est **Proxima Nova**
+au corps et **Proxima Nova Condensed** aux titres. Elle est sous licence Adobe, et la
+feuille de Roll20 qui la sert le dit en toutes lettres : *ALL FONTS ARE COPYRIGHTED,
+COMMERCIAL FONTS USED WITH PERMISSION. DO NOT DOWNLOAD THESE FONTS AND USE THEM OUTSIDE OF
+THE ROLL20 SITE!* Elle ne peut donc pas être auto-hébergée ici.
+
+Elle est **nommée en tête de chaque pile** : qui l'a installée, ou qui lit la surcouche à
+l'intérieur de Roll20, voit la vraie. Pour tous les autres, c'est **Nunito Sans** qui rend,
+sous OFL et servie d'ici. C'est la pile que le projet vttinker emploie déjà pour son propre
+site, et Nunito est mesurément présente dans les pages de Roll20.

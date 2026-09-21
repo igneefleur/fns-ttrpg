@@ -1,14 +1,14 @@
 /* Panneau de l'extension — la même main que le livre Outward.
  *
  * CE QUI EST REPRIS DU LIVRE, et pourquoi : la palette parchemin (jour et
- * nuit), les cartes à filet sur une feuille claire, le petit tiret olive sous
+ * nuit), les cartes à filet sur une feuille claire, le petit tiret or sous
  * chaque titre de bloc, les libellés minuscules en capitales espacées face aux
  * valeurs, l'accent réservé à quatre situations (le tiret, le segment actif, le
  * focus, l'alerte). Une extension qui a l'air d'un réglage de navigateur et un
  * livre qui a l'air d'un livre ne se ressembleraient en rien ; celui-ci
  * ressemble au livre.
  *
- * L'ACCENT D'OUTWARD EST L'OLIVE, jamais un carmin : c'est --green-section
+ * L'ACCENT D'OUTWARD EST L'OR, jamais un carmin : c'est --or-section
  * (docs/stylesheets/extra.css) et son éclaircissement de nuit
  * (docs/stylesheets/night.css). Les autres jeux du dépôt ont un rouge, et leurs
  * feuilles se ressemblent assez pour qu'on recopie l'une pour l'autre sans s'en
@@ -55,14 +55,14 @@
  * Alegreya Project Authors ; Cinzel, copyright 2020 The Cinzel Project Authors.
  * Texte des licences : fonts/licences/, dans le paquet. */
 @font-face {
-  font-family: 'Alegreya';
+  font-family: 'Proxima Nova', proxima-nova, 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-style: normal;
   font-weight: 400 900;
   font-display: block;
   src: url('../fonts/alegreya-latin.woff2') format('woff2');
 }
 @font-face {
-  font-family: 'Cinzel';
+  font-family: 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
   font-style: normal;
   font-weight: 400 900;
   font-display: block;
@@ -81,31 +81,31 @@
      page ne charge rien d'autre, elle doit tenir seule. Recopiée mais non
      complète : on ne garde que les tons dont ce panneau se sert, un ton mort
      étant un ton qui ment sur ce qu'on peut peindre ici. */
-  --paper:   #faf6eb;
-  --card:    #fffdf6;
-  --panel:   #f6efdd;
+  --paper:   #ffffff;
+  --card:    #ffffff;
+  --panel:   #f5f2ea;
   --hair:    #e2d8c0;
-  --line:    #c6bb9f;
-  --line-2:  #d6cbb1;
-  --ink:     #1d1d1d;
-  --ink-2:   #453d2d;
+  --line:    #ddd6c6;
+  --line-2:  #ddd6c6;
+  --ink:     #1a1a1a;
+  --ink-2:   #3a3a3a;
   --ink-3:   #746a54;
-  /* DEUX OLIVES, ET LEURS NOMS DISENT LEUR EMPLOI, non leur clarté : --vert est
-     le ton de BORDURE et de REMPLISSAGE, --vert-txt le ton de TEXTE. Les deux
+  /* DEUX ORS, ET LEURS NOMS DISENT LEUR EMPLOI, non leur clarté : --or est
+     le ton de BORDURE et de REMPLISSAGE, --or-txt le ton de TEXTE. Les deux
      s'inversent d'ailleurs entre le jour et la nuit, et un nom comme « foncé »
-     mentirait donc la moitié du temps. --vert-txt mesure 8.0:1 sur --card. */
-  --vert:    #63755e;
-  --vert-txt:#46543b;
+     mentirait donc la moitié du temps. --or-txt mesure 8.0:1 sur --card. */
+  --or:    #7a5c10;
+  --or-txt:#6b5a2e;
   --wash:    rgba(99, 117, 94, .12);
-  /* Le vert franc de l'état, et non l'olive de l'accent : la pastille répond
-     « oui, ça marche », elle ne décore pas. Deux verts sur la même barre se
+  /* L'or franc de l'état, et non l'or de l'accent : la pastille répond
+     « oui, ça marche », elle ne décore pas. Deux ors sur la même barre se
      distinguent parce que l'un est gris et l'autre pas. */
-  --ok:      #4f7a3a;
+  --ok:      #7a5c10;
   /* Le remplissage d'un contrôle actif et le texte qu'il porte. De jour, blanc
-     sur --vert-txt mesure 8.1:1. De nuit, la même paire est illisible : le fond
+     sur --or-txt mesure 8.1:1. De nuit, la même paire est illisible : le fond
      doit rester sombre et le texte devenir clair, d'où la paire du livre de
-     nuit, #e8dfcb sur #46543b, mesurée 6.1:1. */
-  --actif-fond: var(--vert-txt);
+     nuit, #e6e6e6 sur #6b5a2e, mesurée 6.1:1. */
+  --actif-fond: var(--or-txt);
   --actif-txt:  #fff;
 
   --fs-label: .58rem;   /* 10.4 px — capitales espacées */
@@ -126,28 +126,28 @@ html.night {
      anneaux de focus du système) restent clairs sur un fond sombre. Il est posé
      sur la racine et non sur un scope, parce qu'ici toute la page est sombre. */
   color-scheme: dark;
-  --paper:   #201c15;
-  --card:    #2a2519;
-  --panel:   #241f16;
+  --paper:   #0d0d0d;
+  --card:    #1a1a1a;
+  --panel:   #1a1a1a;
   --hair:    #322c21;
   --line:    #4f4838;
-  --line-2:  #3c3527;
-  --ink:     #e8dfcb;
-  --ink-2:   #a89e88;
-  /* Le « texte discret » du site vaut #867c68 ; à 11.2 px sur --paper il mesure
+  --line-2:  #3a3a3a;
+  --ink:     #e6e6e6;
+  --ink-2:   #9a9384;
+  /* Le « texte discret » du site vaut #9a9384 ; à 11.2 px sur --paper il mesure
      4.1:1, sous le seuil AA, et tout le pied de ce panneau est écrit à cette
      taille-là. Il est donc éclairci ici, et seulement ici : la page du site,
      qui l'emploie plus gros, garde le sien. */
   --ink-3:   #978d77;
-  /* L'olive S'ÉCLAIRCIT la nuit, dans les deux rôles : sur fond sombre un
+  /* L'or S'ÉCLAIRCIT la nuit, dans les deux rôles : sur fond sombre un
      trait doit être clair pour se voir, et un texte clair pour se lire.
-     --vert-txt mesure 7.8:1 sur --card. */
-  --vert:    #9fb37e;
-  --vert-txt:#adc08c;
-  --wash:    rgba(159, 179, 126, .18);
-  --ok:      #8fb36a;
-  --actif-fond: #46543b;
-  --actif-txt:  #e8dfcb;
+     --or-txt mesure 7.8:1 sur --card. */
+  --or:    #ffd77f;
+  --or-txt:#ffd77f;
+  --wash:    rgba(255, 215, 127, .18);
+  --ok:      #ffd77f;
+  --actif-fond: #6b5a2e;
+  --actif-txt:  #e6e6e6;
 }
 
 body {
@@ -159,23 +159,25 @@ body {
   padding: 0 0 .45rem;
   background: var(--paper);
   color: var(--ink);
-  font-family: 'Alegreya', 'EB Garamond', Garamond, Georgia, 'Times New Roman', serif;
+  font-family: 'Proxima Nova', proxima-nova, 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: var(--fs-body);
   line-height: 1.35;
 }
 
 /* ------------------------------------------------------------------ EN-TÊTE */
 
+/* LE BANDEAU DU POPUP, comme celui du panneau et la bande d'onglets de la
+   fiche : fond sombre, nom du personnage en or. */
 .p-tete {
   display: flex; align-items: center; gap: .35rem;
   padding: .34rem .5rem .3rem;
-  background: var(--panel);
-  border-bottom: 1px solid var(--line-2);
+  background: #262626;
+  border-bottom: 1px solid #262626;
 }
 .p-nom {
-  font-family: 'Cinzel', 'Trajan Pro', Georgia, serif;
+  font-family: 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
   font-weight: 700; font-size: .82rem; letter-spacing: .04em;
-  color: var(--ink); line-height: 1.1;
+  color: #ffd77f; line-height: 1.1;
   /* Cinzel à .68rem donnerait 12.2 px, et cette capitale ne se lit plus guère
      en dessous ; le titre du panneau est donc monté à .82rem (14.8 px). */
 }
@@ -232,22 +234,19 @@ body.p-off .p-etat { color: var(--ink-3); }
 }
 
 /* L'en-tête de bloc, signature du projet : Cinzel, un filet, et le petit tiret
-   olive de 1.4rem posé dessus, à gauche. */
+   or de 1.4rem posé dessus, à gauche. */
+/* UN TITRE EST DORÉ ET SE SOULIGNE D'UN FILET D'OR sur toute sa largeur :
+   c'est le titre d'une carte du livre, et celui d'un bloc de la fiche. */
 .p-titre {
   position: relative;
-  margin: 0 0 .3rem; padding: .02rem 0 .18rem;
-  border-bottom: 1px solid var(--hair);
-  font-family: 'Cinzel', 'Trajan Pro', Georgia, serif;
+  margin: 0 0 .28rem; padding: .02rem 0 .22rem;
+  border-bottom: 1px solid #e0cfa0;
+  font-family: 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
   font-weight: 700; font-size: var(--fs-title);
   letter-spacing: .04em; line-height: 1.1;
-  color: var(--ink-2);
+  color: #6b5210;
 }
-html.night .p-titre { color: var(--ink); }
-.p-titre::after {
-  content: ""; position: absolute; left: 0; bottom: -1px;
-  width: 1.4rem; height: 1.5px;
-  background: var(--vert); border-radius: 2px;
-}
+html.night .p-titre { color: #ffd77f; border-bottom-color: #6b5a2e; }
 
 .p-ligne {
   display: flex; align-items: center; gap: .4rem;
@@ -278,7 +277,7 @@ html.night .p-titre { color: var(--ink); }
   color: var(--ink); line-height: 1.15;
 }
 
-/* L'interrupteur. L'olive d'un contrôle actif, comme le segment actif d'un
+/* L'interrupteur. L'or d'un contrôle actif, comme le segment actif d'un
    contrôle segmenté ou l'onglet en service : c'est l'une des quatre situations
    où l'accent a le droit de paraître. Éteint, il retombe sur --panel cerclé de
    --line, et ne crie pas. */
@@ -307,7 +306,7 @@ html.night .p-titre { color: var(--ink); }
 }
 [aria-checked="true"] > .p-sw,
 .p-sw[aria-checked="true"] {
-  background: var(--vert); border-color: var(--vert-txt);
+  background: var(--or); border-color: var(--or-txt);
 }
 
 /* Le petit interrupteur des pièces : même objet, deux tiers de la taille. */
@@ -371,18 +370,18 @@ html.night .p-titre { color: var(--ink); }
 .p-liens a:focus-visible,
 .p-details > summary:focus-visible {
   outline: none;
-  border-color: var(--vert);
+  border-color: var(--or);
   box-shadow: 0 0 0 2px var(--wash);
 }
 /* L'interrupteur général n'a pas de bordure à verdir : le halo seul flotterait
    autour d'un bouton transparent. Il prend donc un liseré franc, et sa pastille
    verdit avec lui. */
 .p-maitre:focus-visible {
-  outline: 2px solid var(--vert);
+  outline: 2px solid var(--or);
   outline-offset: 2px;
   border-radius: 5px;
 }
-.p-maitre:focus-visible .p-sw { border-color: var(--vert); }
+.p-maitre:focus-visible .p-sw { border-color: var(--or); }
 
 /* ---------------------------------------------------- L'EXTENSION ÉTEINTE */
 
@@ -457,15 +456,15 @@ body.p-off #p-pieces .p-titre { color: var(--ink-3); }
 }
 .p-liens a:hover { border-color: var(--line); color: var(--ink); }
 
-/* L'alerte du livre, à l'identique : un liseré olive à gauche, un fond --wash,
+/* L'alerte du livre, à l'identique : un liseré or à gauche, un fond --wash,
    aucun cadre complet. Elle ne paraît que si une clé de dépannage est posée, ce
    qui est presque toujours un oubli. */
 .p-alerte {
   margin: .3rem 0 0; padding: .14rem .4rem .18rem;
   background: var(--wash);
-  border-left: 2px solid var(--vert);
+  border-left: 2px solid var(--or);
   border-radius: 0 4px 4px 0;
-  color: var(--vert-txt);
+  color: var(--or-txt);
   font-size: var(--fs-meta); font-weight: 600; line-height: 1.25;
   /* Une clé de dépannage porte une adresse, et une adresse n'a pas d'espace où
      se couper : sans cela elle passe sous le bord de la fenêtre. */

@@ -43,18 +43,20 @@
   // l'amorceur : elle s'exécute AVANT le premier rendu. Passée à l'amorce, qui
   // n'arrive qu'après la lecture du manifeste, elle ferait clignoter la fiche
   // en clair avant de basculer en sombre. La règle ne changera plus :
-  // préférence locale, sinon l'indice n=1/0 du hash (posé par l'extension
-  // d'après le thème de Roll20), sinon le thème du navigateur. L'amorce la
-  // rejoue.
+  // préférence locale, et À DÉFAUT LA NUIT : dans Roll20 la fiche est noire et
+  // or, comme le wiki d'Outward dont elle porte la palette. « auto » — suivre
+  // le thème de Roll20 par l'indice n=1/0 du hash — reste possible, mais c'est
+  // désormais un choix EXPLICITE, rangé tel quel. L'amorce rejoue la règle.
   (function () {
     "use strict";
     try {
       var h = location.hash || "";
       var p = null;
       try { p = localStorage.getItem("owd-r20-night"); } catch (e) {}
-      var on = p === "1" ? true : p === "0" ? false
-             : /[#&]n=1/.test(h) ? true : /[#&]n=0/.test(h) ? false
-             : !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+      var on = p === "0" ? false
+             : p === "auto" ? (/[#&]n=1/.test(h) ? true : /[#&]n=0/.test(h) ? false
+                 : !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches))
+             : true;
       document.documentElement.classList.toggle("night", on);
     } catch (e) {}
   })();

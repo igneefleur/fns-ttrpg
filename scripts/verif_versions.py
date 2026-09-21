@@ -52,6 +52,7 @@ import argparse
 import json
 import os
 import re
+import subprocess
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -78,6 +79,12 @@ MIGRATIONS = os.path.join(RACINE, "docs", "javascripts", "owd-migrations.js")
 EXT_MANIFESTS = [os.path.join(RACINE, "extension", "firefox", "manifest.json"),
                  os.path.join(RACINE, "extension", "chrome", "manifest.json")]
 EXT_SIGNEE = os.path.join(RACINE, "docs", "download", "ext-signed.json")
+# Tous les fichiers servis ne sont pas dans docs/ : certains n'existent QU'APRÈS
+# la construction, engendrés par un hook mkdocs (owd-creation.json, que
+# hooks/owd_creation.py dérive des règles ; changelog.json). Les chercher sur le
+# disque les déclarerait manquants à chaque fois, et ce script bloque une
+# publication : la faute serait fausse et la seule issue serait de le contourner.
+HOOKS = os.path.join(RACINE, "hooks")
 
 fautes = []
 notes = []
@@ -124,6 +131,42 @@ def chaine_migrations(src):
 
 
 # ------------------------------------------------------- URL du manifeste
+def fichiers_engendres():
+    """Les fichiers qu'un hook mkdocs ajoute AU BUILD, à la racine du site.
+
+    On les lit dans hooks/*.py au motif « File.generated(config, X » : X est
+    soit la chaîne elle-même, soit le nom d'une constante déclarée en tête du
+    même fichier (owd_creation.py passe par CIBLE). Lire les hooks plutôt que
+    tenir une liste ici est le seul moyen que le contrôle suive le jour où un
+    hook change sa cible : une liste recopiée vieillirait en silence, et ce
+    script dirait « rien à signaler » sur un fichier que personne ne sert plus.
+    On n'IMPORTE pas les hooks — ce script ne doit dépendre que de la
+    bibliothèque standard, et importer un hook exigerait mkdocs.
+    """
+    engendres = set()
+    if not os.path.isdir(HOOKS):
+        return engendres
+    for nom in sorted(os.listdir(HOOKS)):
+        if not nom.endswith(".py"):
+            continue
+        src = V.lire_fichier(os.path.join(HOOKS, nom))
+        for arg in re.findall(r"File\.generated\(\s*config\s*,\s*([^,)]+)", src):
+            arg = arg.strip()
+            lit = re.match(r"""^["'](.+?)["']$""", arg)
+            if lit:
+                engendres.add(lit.group(1))
+                continue
+            # une constante : on la résout dans le hook qui la nomme
+            const = re.search(r"""^%s\s*=\s*["'](.+?)["']""" % re.escape(arg),
+                              src, re.M)
+            if const:
+                engendres.add(const.group(1))
+            else:
+                notes.append("hooks/%s : cible de File.generated illisible (%s), "
+                             "son fichier n'est pas contrôlé" % (nom, arg))
+    return engendres
+
+
 def relative(u):
     """Même règle que sure() dans roll20-fiche.html : pas de schéma, pas de
     « // » en tête, pas de remontée de dossier."""
@@ -303,6 +346,31 @@ def controle_extension():
 
 
 # ------------------------------------------------------------------ marche
+def controle_assemblage(racine):
+    """Le fichier servi correspond-il encore à ses morceaux ?
+
+    IL VÉRIFIE, IL NE RÉPARE JAMAIS. Un déploiement qui rafistole en passant
+    publie autre chose que ce qu'on a relu : on arrête, on nomme l'écart, et
+    c'est l'auteur qui relance l'assemblage.
+    """
+    plan = os.path.join(racine, "scripts", "assemblage.plan")
+    if not os.path.exists(plan):
+        return True, "pas de plan d'assemblage : rien à vérifier"
+    argv = [sys.executable, os.path.join("scripts", "assembler.py"), "--verifie"]
+    env = dict(os.environ, PYTHONIOENCODING="utf-8")
+    try:
+        r = subprocess.run(argv, cwd=racine, capture_output=True, text=True,
+                           encoding="utf-8", errors="replace", env=env)
+    except OSError as e:
+        return False, "l'assembleur n'a pas pu démarrer : %s" % e
+    if r.returncode:
+        detail = [l.strip() for l in ((r.stdout or "") + (r.stderr or "")).splitlines()
+                  if "ecart" in l.lower() or "ARRET" in l or "octet" in l.lower()]
+        return False, ("le fichier servi ne correspond plus à ses morceaux"
+                       + (" — " + detail[0] if detail else ""))
+    return True, "fichiers servis conformes à leurs morceaux"
+
+
 def main():
     for chemin in (BUNDLE, MANIFESTE, MKDOCS):
         if not os.path.exists(chemin):
@@ -447,6 +515,13 @@ def main():
 
     controle_extension()
 
+    # 4 bis. LE FICHIER SERVI CONTRE SES MORCEAUX. La fiche est un assemblage
+    # depuis qu'elle vit sous src/ : publier un bundle qui ne correspond plus à
+    # ses sources, c'est déployer un code que personne n'a relu. Le contrôle
+    # vérifie, il ne répare jamais.
+    ok_asm, mot_asm = controle_assemblage(RACINE)
+    (notes if ok_asm else fautes).append(mot_asm)
+
     # 5. ?v= : mkdocs.yml et le manifeste doivent dire la même chose
     mk = V.serials_mkdocs(V.lire_fichier(MKDOCS))
     urls = urls_du_manifeste(man)
@@ -465,14 +540,23 @@ def main():
     notes.append("?v= : %d fichier(s) nommé(s) des deux côtés, sur %d URL(s) au manifeste" % (communs, len(urls)))
 
     # 6. URL relatives, et qui désignent un fichier réellement publié
+    engendres = fichiers_engendres()
     for ou, u in urls:
         if not relative(u):
             fautes.append("manifeste : URL non relative en %s (%s), l'amorceur la refuserait et "
                           "retomberait sur son repli sans ?v=" % (ou, u))
             continue
-        cible = os.path.join(DOCS, V.sans_v(u).replace("/", os.sep))
+        rel = V.sans_v(u)
+        # Un fichier engendré au build n'est pas sur le disque et n'a pas à y
+        # être : il paraît à la racine du site, servi comme les autres.
+        if rel in engendres:
+            continue
+        cible = os.path.join(DOCS, rel.replace("/", os.sep))
         if not os.path.exists(cible):
-            fautes.append("manifeste : %s nomme docs/%s, qui n'existe pas" % (ou, V.sans_v(u)))
+            fautes.append("manifeste : %s nomme docs/%s, qui n'existe pas" % (ou, rel))
+    if engendres:
+        notes.append("engendrés au build, non cherchés sur le disque : %s"
+                     % ", ".join(sorted(engendres)))
 
     return rendre()
 

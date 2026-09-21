@@ -1,0 +1,437 @@
+"""Cartes d'armes : dessine au build le trajet, la garde et le pas de chaque coup.
+
+Un coup ne se pose pas sur une zone : il PARCOURT l'espace, case après case, dans
+l'ordre, et s'interrompt sur le premier corps rencontré. Chaque coup porte donc,
+dans le markdown, quatre attributs.
+
+    data-trajet="1:passe>2:frappe"    les étapes ordonnées
+    data-degats="20 TRA / CON"        20 sur la case verte, la moitié sur la blanche
+    data-garde="3>8"                  d'où partent les mains, où elles finissent
+
+LE TRAJET. Chaque étape vaut :
+    frappe   la case visée : dégâts pleins, et le coup POURSUIT sa course
+    passe    l'arme y passe à hauteur de corps : un corps qui s'y tient prend la
+             MOITIÉ des dégâts, et le coup s'arrête là, le reste étant annulé
+
+NOMMAGE DES CASES, le porteur au centre regardant vers le haut :
+    soi              sa propre case
+    1, 2, 3, 4       droit devant, à N pas
+    2d               un cran à droite le long de l'anneau
+    2d2, 3g5         deux crans à droite, cinq crans à gauche
+    2dd, 3ggg        ancienne écriture, toujours acceptée : autant de crans que
+                     de lettres
+
+On tourne AUTOUR du porteur : l'anneau N porte 6N cases et on les atteint toutes,
+de 0 (droit devant) à 3N (droit derrière), dans un sens comme dans l'autre. Un
+grand geste arme derrière une épaule et sort derrière l'autre : ses cases de
+départ et de fin sont donc à côté du porteur et dans son dos, et le livre doit
+savoir les nommer. Au-delà de 3N crans on a fait le tour, et le hook le refuse.
+
+Une case vaut UN PAS, soit 0.75 m. Les hexagones sont à SOMMET PLAT : c'est la
+seule orientation qui offre une case droit devant, ce qu'un trajet orienté exige.
+
+LES DÉGÂTS. La valeur écrite est celle de la case VERTE, et elle est paire. Celle
+de la case blanche vaut la moitié : elle n'est pas écrite, elle est calculée ici,
+et l'invariant ne peut donc pas dériver. Le TYPE peut différer d'une couleur à
+l'autre, parce que ce n'est pas la même partie de l'arme qui touche : le fil
+tranche, la pointe perce, la hampe et le pommeau écrasent.
+
+LA GARDE. Un carré de neuf cases figure un plan vertical devant le porteur et
+donne la position de ses MAINS. Rangs : au-dessus des épaules, entre épaules et
+ceinture, sous la ceinture. Colonnes : sa gauche, son axe, sa droite.
+
+    1 2 3
+    4 5 6
+    7 8 9
+
+Le dessin se fait ici plutôt qu'en JavaScript : le SVG part dans la page
+construite, donc il s'affiche sans script, se retrouvera dans le PDF, et se
+vérifie en lisant le HTML.
+"""
+
+import math
+import re
+
+RAYON_CASE = 10.0   # rayon du cercle circonscrit d'un hexagone, en unités SVG
+PORTEE_MAX = 4      # rayon de la carte, en cases : la lance et la hallebarde
+SQ3 = math.sqrt(3.0)
+
+ETAPE = re.compile(r"^(soi|(\d+)(g*|d*)(\d*))$")
+TYPES = ("CON", "PER", "TRA")
+
+# L'ouverture d'un coup et son nom : la carte se pose avant le nom, les chiffres
+# et la garde juste après, le reste du bloc étant écrit à la main.
+COUP = re.compile(
+    r'(<div class="geste"((?:\s+data-[a-z]+="[^"]*")+)>)'
+    r'(\s*<p class="geste-nom">.*?</p>)', re.S
+)
+ATTR = re.compile(r'data-([a-z]+)="([^"]*)"')
+
+# Le nom français reçoit sa propre boîte. Sans elle il ne peut pas tenir une
+# hauteur fixe, et le terme qui le suit se pose alors plus haut sur les cartes
+# au nom court que sur celles au nom long : les sous-titres ne s'alignent plus
+# d'une colonne à l'autre.
+NOM = re.compile(r'(<p class="geste-nom">)(.*?)(<em>.*?</em>)?(</p>)', re.S)
+
+
+# Un coup cité dans un enchaînement : il ne porte que son nom et sa garde, et
+# c'est la garde qu'on lit, puisque c'est elle qui décide de ce qui peut suivre.
+ENCHAINE = re.compile(
+    r'(<span class="combo-coup"((?:\s+data-[a-z]+="[^"]*")+)>)(.*?)(</span>)', re.S)
+
+
+def _nom_html(bloc):
+    def enveloppe(m):
+        return (f'{m.group(1)}<span class="geste-appel">{m.group(2).strip()}'
+                f'</span>{m.group(3) or ""}{m.group(4)}')
+    return NOM.sub(enveloppe, bloc, count=1)
+
+
+
+class ErreurCoup(Exception):
+    """Une donnée de coup invalide : le build s'arrête plutôt que de mentir."""
+
+
+def _sommets(cx, cy, rayon):
+    """Hexagone à sommet plat : le premier sommet est à l'est."""
+    return " ".join(
+        f"{cx + rayon * math.cos(math.radians(60 * i)):.2f},"
+        f"{cy + rayon * math.sin(math.radians(60 * i)):.2f}"
+        for i in range(6)
+    )
+
+
+def _distance(q, r):
+    return (abs(q) + abs(q + r) + abs(r)) // 2
+
+
+def _centre(q, r):
+    return RAYON_CASE * 1.5 * q, RAYON_CASE * SQ3 * (r + q / 2.0)
+
+
+def _anneau(n):
+    """Les 6N cases de l'anneau N, rangées à partir de droit devant, dans le sens
+    des aiguilles. Elles ne sont PAS également espacées en azimut — l'hexagone a
+    des coins — d'où le tri plutôt qu'un calcul d'angle."""
+    if n in _ANNEAUX:
+        return _ANNEAUX[n]
+    cells = [(q, r) for q in range(-n, n + 1) for r in range(-n, n + 1)
+             if _distance(q, r) == n]
+    cells.sort(key=lambda c: math.atan2(*(lambda x, y: (x, -y))(*_centre(*c))))
+    i0 = min(range(len(cells)),
+             key=lambda i: abs(math.atan2(*(lambda x, y: (x, -y))(*_centre(*cells[i])))))
+    _ANNEAUX[n] = cells[i0:] + cells[:i0]
+    return _ANNEAUX[n]
+
+
+_ANNEAUX = {}
+
+
+def _case(nom):
+    """Coordonnées axiales d'une case nommée, le porteur regardant vers le haut.
+
+    La case de devant est (0, -N) ; on tourne ensuite AUTOUR du porteur, d'un
+    cran par lettre ou par le nombre qui suit la lettre. L'anneau N porte 6N
+    cases, et 3N crans mènent droit derrière.
+    """
+    m = ETAPE.match(nom.strip())
+    if not m:
+        return None
+    if m.group(1) == "soi":
+        return (0, 0)
+    n, cote, compte = int(m.group(2)), m.group(3), m.group(4)
+    if compte and len(cote) != 1:
+        raise ErreurCoup(
+            f"case « {nom} » : un nombre de crans se met après UNE seule lettre, "
+            f"comme 2d3 ou 3g5")
+    k = int(compte) if compte else len(cote)
+    if cote.startswith("g"):
+        k = -k
+    if abs(k) > 3 * n:
+        raise ErreurCoup(
+            f"case « {nom} » : {abs(k)} crans sur l'anneau {n}, or {3 * n} crans "
+            f"mènent déjà droit derrière et on a fait le tour")
+    return _anneau(n)[k % (6 * n)]
+
+
+def _trajet(brut):
+    """Étapes ordonnées : [(coordonnées, rôle, rang), ...]."""
+    etapes = []
+    for i, bout in enumerate(brut.split(">")):
+        if ":" not in bout:
+            continue
+        nom, _, role = bout.partition(":")
+        c = _case(nom)
+        if c is None:
+            raise ErreurCoup(f"case inconnue « {nom} » dans le trajet « {brut} »")
+        role = role.strip()
+        if role not in ("frappe", "passe"):
+            raise ErreurCoup(f"rôle inconnu « {role} » dans le trajet « {brut} »")
+        etapes.append((c, role, i + 1))
+    return etapes
+
+
+def carte_svg(brut):
+    etapes = _trajet(brut)
+    par_case = {c: (role, rang) for c, role, rang in etapes}
+
+    largeur = RAYON_CASE * (1.5 * PORTEE_MAX + 1)
+    hauteur = RAYON_CASE * SQ3 * (PORTEE_MAX + 0.5)
+    out = [
+        f'<svg class="geste-carte" role="img" aria-label="Trajet du coup : {brut}" '
+        f'viewBox="{-largeur:.1f} {-hauteur:.1f} {2 * largeur:.1f} {2 * hauteur:.1f}">'
+    ]
+
+    for q in range(-PORTEE_MAX, PORTEE_MAX + 1):
+        for r in range(-PORTEE_MAX, PORTEE_MAX + 1):
+            if _distance(q, r) > PORTEE_MAX:
+                continue
+            cx, cy = _centre(q, r)
+            role, _ = par_case.get((q, r), (None, None))
+            classe = {"frappe": "hx-frappe", "passe": "hx-passe"}.get(role, "hx-vide")
+            out.append(
+                f'<polygon class="{classe}" points="{_sommets(cx, cy, RAYON_CASE - 0.7)}"/>'
+            )
+
+    # Le rang de chaque étape, posé par-dessus les cases : c'est l'ordre dans
+    # lequel le coup les traverse, et donc l'ordre où il s'interrompt.
+    # La case du porteur porte son rang comme les autres : depuis que le triangle
+    # a disparu, un coup au contact s'y lit.
+    for (q, r), role, rang in etapes:
+        cx, cy = _centre(q, r)
+        out.append(
+            f'<text class="hx-rang hx-rang--{role}" x="{cx:.2f}" y="{cy:.2f}" '
+            f'dy="0.34em">{rang}</text>'
+        )
+
+    # La case du porteur : un contour, et rien dans la case. Le triangle qui s'y
+    # tenait la bouchait, or elle est frappable — un coup au contact s'y porte —
+    # et il faut l'y voir. L'orientation ne se marque PAS ici : le texte dit déjà
+    # que le porteur regarde vers le haut, et l'arête doublée qu'on avait essayée
+    # ne faisait qu'alourdir la carte.
+    s = RAYON_CASE - 0.7
+    out.append(f'<polygon class="hx-soi" points="{_sommets(0, 0, s)}"/>')
+    out.append("</svg>")
+    return "".join(out)
+
+
+def _garde_centre(i):
+    col, rang = (i - 1) % 3, (i - 1) // 3
+    return 4.0 + 8.0 * col, 4.0 + 8.0 * rang
+
+
+# Les neuf gardes, dites en toutes lettres : le carré ne porte AUCUN chiffre,
+# un numéro de case ne voulant rien dire pour qui lit. Ces libellés ne servent
+# qu'à l'aria-label, pour qui n'a pas l'image.
+_HAUTEUR = {0: "au-dessus des épaules", 1: "à hauteur de poitrine",
+            2: "sous la ceinture"}
+_COTE = {0: "à gauche", 1: "dans l'axe", 2: "à droite"}
+
+
+def _dit_garde(i):
+    return f"mains {_HAUTEUR[(i - 1) // 3]}, {_COTE[(i - 1) % 3]}"
+
+
+def garde_svg(brut):
+    """Le carré des gardes : départ cerclé, arrivée pleine, flèche entre les deux."""
+    bouts = [b.strip() for b in brut.split(">")]
+    if len(bouts) != 2 or not all(b.isdigit() and 1 <= int(b) <= 9 for b in bouts):
+        raise ErreurCoup(f"garde illisible « {brut} » : attendu « n>n », de 1 à 9")
+    depart, arrivee = int(bouts[0]), int(bouts[1])
+
+    dit = (f"Part de la garde {_dit_garde(depart)}, "
+           f"finit {_dit_garde(arrivee)}" if depart != arrivee
+           else f"Part et finit dans la même garde, {_dit_garde(depart)}")
+    out = [f'<svg class="garde-carre" role="img" aria-label="{dit}." '
+           f'viewBox="0 0 24 24">']
+    # Les couleurs sont posées EN ATTRIBUT sur les formes, pas seulement en
+    # feuille de style. Une forme SVG sans règle se remplit en NOIR par défaut :
+    # tant qu'un navigateur sert un armes.css d'avant l'ajout d'une classe, le
+    # signe apparaît en noir. L'attribut est battu par la moindre règle CSS,
+    # donc il ne gêne rien et il sauve le dessin quand la feuille manque.
+    for i in range(1, 10):
+        cx, cy = _garde_centre(i)
+        out.append(f'<rect class="gd-case" x="{cx - 3.4:.1f}" y="{cy - 3.4:.1f}" '
+                   f'width="6.8" height="6.8" rx="1" '
+                   f'fill="var(--ink)" fill-opacity="0.08"/>')
+
+    ax, ay = _garde_centre(depart)
+    bx, by = _garde_centre(arrivee)
+    if depart == arrivee:
+        # Les mains ne bougent pas : un point, et il n'y a rien d'autre à lire.
+        out.append(f'<circle class="gd-fixe" cx="{ax:.1f}" cy="{ay:.1f}" r="2.6" '
+                   f'fill="var(--or-fort)"/>')
+    else:
+        # SEULE la flèche dit le mouvement. On avait posé en plus un cercle au
+        # départ et un disque à l'arrivée : à 1,6 rem les trois se marchent
+        # dessus, la flèche disparaît sous les pastilles et les pastilles ne se
+        # distinguent plus l'une de l'autre. Elle va donc d'un centre à l'autre.
+        d = math.hypot(bx - ax, by - ay)
+        ux, uy = (bx - ax) / d, (by - ay) / d
+        nx, ny = -uy, ux
+        # Le fût court d'un centre de case à l'autre, à peine retiré des deux
+        # bouts, et la tête est un V tracé du MÊME trait. Une tête pleine, à
+        # cette taille, se lit comme une tache : la première version lui donnait
+        # 3,8 de long pour un fût de 2,6 entre deux cases voisines, ce qui ne
+        # faisait plus une flèche mais un triangle posé sur un moignon.
+        qx, qy = ax + ux * 1.5, ay + uy * 1.5      # naissance du fût
+        px, py = bx - ux * 1.5, by - uy * 1.5      # pointe
+        # La barbe suit la longueur, sinon elle mange les flèches courtes : entre
+        # deux cases voisines le fût ne fait que cinq unités.
+        barbe = min(3.0, 0.42 * math.hypot(px - qx, py - qy))
+        rec, ouv = barbe * 0.848, barbe * 0.530    # ouverte à 32°
+        trait = ('fill="none" stroke="var(--or-fort)" stroke-width="1.7" '
+                 'stroke-linecap="round" stroke-linejoin="round"')
+        out.append(f'<path class="gd-fleche" d="M {qx:.2f} {qy:.2f} '
+                   f'L {px:.2f} {py:.2f}" {trait}/>')
+        out.append(
+            f'<path class="gd-pointe" d="M {px - ux * rec + nx * ouv:.2f} '
+            f'{py - uy * rec + ny * ouv:.2f} L {px:.2f} {py:.2f} '
+            f'L {px - ux * rec - nx * ouv:.2f} {py - uy * rec - ny * ouv:.2f}" {trait}/>')
+    out.append("</svg>")
+    return "".join(out), depart, arrivee
+
+
+def chiffres_html(brut, a_du_blanc, base=None):
+    """« 20 TRA / CON », ou « 1.5 TRA / CON » quand l'arme déclare une base.
+
+    Le multiplicateur appartient au COUP, la base à l'ARME : changer la base
+    recalcule toute l'arme, ce qui est la raison d'être d'une base. La moitié
+    blanche reste calculée, jamais écrite.
+
+    La valeur verte doit être PAIRE, puisque la blanche en vaut la moitié. Avec
+    des multiplicateurs par dixièmes, cela n'arrive tout seul que si la base est
+    divisible par 20 — 11 étant premier avec 20, aucune autre base ne donne un
+    entier pair à tous les multiplicateurs de 0,8 à 1,5. Comme les bases 22 et 24
+    sont voulues, le produit est ARRONDI au pair le plus proche. L'écart ne
+    dépasse jamais 1, et il vaut mieux qu'un plafond de trois bases possibles.
+    """
+    m = re.match(r"^\s*([\d.]+)\s+(CON|PER|TRA)\s*(?:/\s*(CON|PER|TRA)\s*)?$", brut)
+    if not m:
+        raise ErreurCoup(
+            f"dégâts illisibles « {brut} » : attendu « N TYPE » ou « N TYPE / TYPE »")
+    tv, tb = m.group(2), m.group(3)
+    mult = None
+    if base is None:
+        if "." in m.group(1):
+            raise ErreurCoup(
+                f"« {brut} » : multiplicateur donné, mais l'arme ne déclare "
+                f"aucune base ; il lui faut data-base sur son bloc")
+        vert = int(m.group(1))
+    else:
+        mult = float(m.group(1))
+        if not (0.8 - 1e-9 <= mult <= 1.5 + 1e-9):
+            raise ErreurCoup(
+                f"multiplicateur {mult} hors de la fourchette : de 0,8 à 1,5")
+        if abs(round(mult * 10) - mult * 10) > 1e-9:
+            raise ErreurCoup(f"multiplicateur {mult} : le pas est de un dixième")
+        vert = 2 * int(base * mult / 2.0 + 0.5)
+    if vert % 2:
+        raise ErreurCoup(
+            f"dégâts verts impairs ({vert}) : la case blanche en vaut la moitié, "
+            f"la valeur verte doit être paire")
+    if a_du_blanc and tb is None:
+        raise ErreurCoup(
+            f"« {brut} » : ce coup a des cases blanches, il lui faut un second type")
+    if not a_du_blanc and tb is not None:
+        raise ErreurCoup(
+            f"« {brut} » : ce coup n'a aucune case blanche, le second type est de trop")
+    if mult is None:
+        html = f'<p class="geste-chiffres"><b>{vert}</b> {tv}'
+        if tb:
+            html += f'<span class="dg-passe"><b>{vert // 2}</b> {tb}</span>'
+        return html + "</p>"
+
+    # Le multiplicateur d'abord, puisque c'est lui qui appartient au coup ; la
+    # valeur qu'il donne vient après, entre parenthèses.
+    dit = f"{mult:.1f}".replace(".", ",")
+    html = (f'<p class="geste-chiffres"><b>×{dit}</b>'
+            f'<span class="dg-val">({vert} {tv}')
+    if tb:
+        html += f'<span class="dg-passe">{vert // 2} {tb}</span>'
+    return html + ")</span></p>"
+
+
+def defense_html(esquive, parade):
+    """Ce qu'il en coûte d'échapper au coup.
+
+    Deux difficultés, et elles ne disent pas la même chose : on ESQUIVE ce qui
+    est lent — le corps a le temps de se déplacer — et on PARE ce qui est léger,
+    puisqu'un fer arrête un fer mais n'arrête pas une masse. Un coup vif et
+    lourd est donc redoutable des deux façons, un coup lent et léger ne l'est
+    d'aucune. Les deux valeurs appartiennent au COUP, non à l'arme qui le pare.
+    """
+    if esquive is None and parade is None:
+        return ""
+    bouts = []
+    if esquive is not None:
+        bouts.append(f'<span class="df-esq">esquive <b>{int(esquive)}</b></span>')
+    if parade is not None:
+        bouts.append(f'<span class="df-par">parade <b>{int(parade)}</b></span>')
+    return '<p class="geste-defense">' + "".join(bouts) + "</p>"
+
+
+def _rendu(attrs, base=None):
+    """Ce qui se dessine avant le nom, et ce qui se pose après."""
+    trajet = attrs.get("trajet")
+    if not trajet:
+        return "", ""
+    avant = carte_svg(trajet)
+
+    apres = []
+    a_du_blanc = any(b.endswith(":passe") for b in trajet.split(">"))
+    if "degats" in attrs:
+        apres.append(chiffres_html(attrs["degats"], a_du_blanc, base))
+
+    if "esquive" in attrs or "parade" in attrs:
+        apres.append(defense_html(attrs.get("esquive"), attrs.get("parade")))
+
+    if "garde" in attrs:
+        svg, _, _ = garde_svg(attrs["garde"])
+        apres.append(f'<p class="geste-garde">{svg}</p>')
+
+    return avant, "".join(apres)
+
+
+# Une arme peut déclarer sa base de dégâts. Ses coups portent alors un
+# multiplicateur au lieu d'une valeur, et la base se pose d'elle-même dans le
+# bandeau : elle n'est écrite qu'une fois, donc elle ne peut pas dériver.
+ARME = re.compile(r'<div class="arme"((?:\s+data-[a-z]+="[^"]*")*)>')
+PORTEE = re.compile(r'(<span class="arme-portee">)')
+
+
+def on_page_content(html, page, config, files):
+    if 'data-trajet="' not in html:
+        return html
+
+    def rendre(m, base=None):
+        attrs = dict(ATTR.findall(m.group(2)))
+        try:
+            avant, apres = _rendu(attrs, base)
+        except ErreurCoup as e:
+            raise ErreurCoup(f"{page.file.src_path} : {e}") from None
+        return m.group(1) + avant + _nom_html(m.group(3)) + apres
+
+    def enchaine(m):
+        attrs = dict(ATTR.findall(m.group(2)))
+        try:
+            svg, _, _ = garde_svg(attrs["garde"])
+        except ErreurCoup as e:
+            raise ErreurCoup(f"{page.file.src_path} : enchaînement, {e}") from None
+        # Le carré se pose SOUS le nom du coup, donc après lui dans le document.
+        return m.group(1) + m.group(3) + svg + m.group(4)
+
+    # On découpe arme par arme : chacune emporte sa base, ou n'en a pas.
+    bouts, out = re.split(r'(<div class="arme"(?:\s+data-[a-z]+="[^"]*")*>)', html), []
+    base = None
+    for bout in bouts:
+        m = ARME.fullmatch(bout)
+        if m:
+            a = dict(ATTR.findall(m.group(1)))
+            base = int(a["base"]) if "base" in a else None
+            out.append(bout)
+            continue
+        if base is not None:
+            bout = PORTEE.sub(r'\1dégâts %d · ' % base, bout, count=1)
+        out.append(COUP.sub(lambda x, b=base: rendre(x, b), bout))
+    return ENCHAINE.sub(enchaine, "".join(out))

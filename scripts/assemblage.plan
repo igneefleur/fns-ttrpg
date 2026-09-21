@@ -1,0 +1,93 @@
+# LE PLAN D'ASSEMBLAGE : quels fichiers servis, faits de quels morceaux, dans
+# quel ordre. Déplacer un module, c'est déplacer une ligne.
+#
+#     python scripts/assembler.py            assemble et écrit
+#     python scripts/assembler.py --verifie   compare, n'écrit rien, sort 1
+#
+# UN MORCEAU N'EST PAS UN FICHIER JAVASCRIPT. Coupé dans une fonction anonyme,
+# il n'est valide qu'une fois collé : « node --check » ne vaut que pour le
+# fichier ASSEMBLÉ, jamais pour un morceau.
+#
+# LES SOURCES VIVENT SOUS src/, PAS SOUS extension/. Ce n'est pas un rangement,
+# c'est une sûreté : build_extension.py emporte dans le paquet signé TOUT ce qui
+# se trouve sous extension/firefox/, déclaré ou non. Un morceau posé là partirait
+# chez Mozilla, et ce serait un fichier JavaScript invalide.
+#
+# L'EXTENSION N'EST PAS ASSEMBLÉE ICI, et c'est délibéré. Le paquet Outward est
+# SIGNÉ et gelé : ses quatre fichiers ne se touchent qu'au prix d'une
+# re-signature chez Mozilla, dont le quota est très serré. La fiche, elle, est
+# servie par le site — c'est ce qui permet de la refaire entièrement sans
+# toucher au paquet.
+
+
+# LA FICHE DE PERSONNAGE. Le socle d'abord (amorce, état, calculs communs,
+# entêtes et onglets), puis un fichier par MODULE, rangé sous le nom de
+# l'onglet où il paraît : c'est la table des matières que le gros fichier
+# portait dans sa tête, et qu'on peut maintenant lire d'un coup d'oeil.
+#
+# owd-fiche.js NE PORTE PAS de marque d'ordre des octets (contrairement à celui
+# de MIA) : « bom = non » est donc une mesure, pas une préférence.
+[docs/javascripts/owd-fiche.js]
+bom = non
+fin = lf
+  src/fiche/socle/010-ouverture.js
+  src/fiche/socle/020-version.js
+  src/fiche/socle/030-outils.js
+  src/fiche/socle/035-donnees.js
+  src/fiche/socle/040-etat-defaut.js
+  src/fiche/socle/050-etat-migration.js
+  src/fiche/socle/060-etat-normalise.js
+  src/fiche/socle/070-filtres-calcul.js
+  src/fiche/socle/080-calculs-capacites.js
+  src/fiche/socle/090-calculs-comps.js
+  src/fiche/socle/100-calculs-climat.js
+  src/fiche/socle/110-calculs-carte.js
+  src/fiche/socle/120-persistance.js
+  src/fiche/socle/130-envoi-tchat.js
+  src/fiche/socle/140-jets.js
+  src/fiche/socle/150-refresh.js
+  src/fiche/socle/160-briques.js
+  src/fiche/socle/170-edition.js
+  src/fiche/socle/180-barre-outils.js
+  src/fiche/socle/190-entete.js
+  src/fiche/socle/200-onglets.js
+  src/fiche/socle/210-registre-modules.js
+  src/fiche/socle/220-pannes-modules.js
+  src/fiche/socle/230-contexte-module.js
+  src/fiche/fiche/commun-jauges.js
+  src/fiche/fiche/caracs.js
+  src/fiche/fiche/effort.js
+  src/fiche/fiche/vitales.js
+  src/fiche/fiche/survie.js
+  src/fiche/fiche/exposition.js
+  src/fiche/fiche/effondrement.js
+  src/fiche/fiche/contenance.js
+  src/fiche/fiche/desaction.js
+  src/fiche/fiche/comps.js
+  src/fiche/art/techniques.js
+  src/fiche/bio/bg.js
+  src/fiche/bio/avantages.js
+  src/fiche/bio/notes.js
+  src/fiche/socle/260-dialogue.js
+  src/fiche/equipement/inv-don.js
+  src/fiche/equipement/armes.js
+  src/fiche/equipement/inv-objets.js
+  src/fiche/equipement/inv.js
+  src/fiche/options/jets.js
+  src/fiche/options/commun-champs.js
+  src/fiche/options/commun-leviers.js
+  src/fiche/options/optcaracs.js
+  src/fiche/options/affichage.js
+  src/fiche/options/actions.js
+  src/fiche/options/rupture.js
+  src/fiche/options/optcaps.js
+  src/fiche/options/optcomps.js
+  src/fiche/options/filtres.js
+  src/fiche/options/modules.js
+  src/fiche/options/mods.js
+  src/fiche/socle/270-modules-natifs.js
+  src/fiche/socle/280-moteur-mods.js
+  src/fiche/socle/290-disposition.js
+  src/fiche/socle/300-consentement.js
+  src/fiche/socle/310-api-publique.js
+  src/fiche/socle/320-montage.js

@@ -1,0 +1,9 @@
+remove_background
+rotate
+add_shadow
+add_background
+add_frame
+add_grain
+
+source: hidev2.png
+script: ours3.py

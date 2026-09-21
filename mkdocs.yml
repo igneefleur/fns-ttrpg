@@ -4,12 +4,35 @@ site_url: https://igneefleur.github.io/fns-ttrpg/owd/
 # Voir LICENSE.md : tous droits réservés sur les apports originaux ; œuvre de fan,
 # sans lien avec les ayants droit d'Outward.
 copyright: © 2026 IgneeFleur. Tous droits réservés. Œuvre de fan, non affiliée à Nine Dots Studio.
+# Le lisez-moi des polices accompagne les fichiers .woff2 et leurs licences ; il
+# n'a rien à faire dans le site publié, où mkdocs en ferait une page.
+#
+# LES PAGES DE RÈGLES PAS ENCORE PUBLIÉES. Elles restent dans la branche, car
+# hooks/owd_creation.py et hooks/armes.py les lisent sur le disque pour donner
+# à la fiche ses données ; elles ne sont simplement pas construites. Un lien
+# d'une page publiée vers l'une d'elles devient du texte (hooks/pages_retenues.py).
+exclude_docs: |
+  assets/fonts/LISEZMOI.md
+  assets/objets/README.md
+  content/regles/index.md
+  content/regles/base/actions.md
+  content/regles/base/techniques.md
+  content/regles/base/caracteristiques.md
+  content/regles/base/avantages.md
+  content/regles/combat/armes.md
+  content/regles/techniques/
+  content/regles/fabrication.md
+  content/regles/installations.md
+  content/regles/vivre.md
 nav:
   - Accueil: index.md
   - Règles:
-      - content/regles/index.md
+      - Les Bases:
+          - Compétences: content/regles/base/competences.md
+          - Capacités physiques: content/regles/base/capacites-physiques.md
       - Le Combat:
           - Portées: content/regles/combat/portees.md
+      - Équipement: content/regles/equipement.md
   # La fiche de personnage, servie par le site et non par l'extension : la même
   # page monte la fiche ici, hors Roll20, et dans l'iframe de la coquille signée.
   - Personnage: personnage/index.md
@@ -37,26 +60,43 @@ theme:
 extra:
   generator: false   # supprime le « Made with Material for MkDocs »
 extra_css:
-  - stylesheets/fonts.css   # @font-face auto-hébergés : doit être chargée en premier
-  - stylesheets/extra.css?v=13
-  - stylesheets/night.css
+  - stylesheets/fonts.css?v=2   # @font-face auto-hébergés : doit être chargée en premier
+  - stylesheets/extra.css?v=19
+  - stylesheets/night.css?v=19
+  - stylesheets/armes.css?v=6
+  - stylesheets/cartes.css?v=24
   # LES ?v= DE LA FICHE SE MONTENT PAR OUTIL, JAMAIS À LA MAIN, et tous
   # ensemble : scripts/release_fiche.py les pose ici ET dans
   # docs/owd-manifeste.json, sur un seul numéro commun. Le site charge la fiche
   # par ces deux listes, Roll20 la charge par le manifeste ; deux clés de cache
   # qui divergent, et les deux mondes font tourner deux codes en croyant faire
   # tourner le même. Un fichier monté d'un seul côté ne se voit pas.
-  - stylesheets/owd-fiche.css?v=1
+  - stylesheets/owd-fiche.css?v=44
+  - stylesheets/owd-des3d.css?v=44  # les dés en volume, pris dans l'extension (hooks/des3d.py)
 extra_javascript:
   - javascripts/changelog.js
   - javascripts/continuous.js
   - javascripts/nav-drawer.js
   - javascripts/night.js
-  - javascripts/owd-migrations.js?v=1 # moteur de migration : AVANT le bundle, qui l'appelle
-  - javascripts/owd-fiche.js?v=1
+  - javascripts/owd-migrations.js?v=44 # moteur de migration : AVANT le bundle, qui l'appelle
+  - javascripts/owd-mods.js?v=44       # moteur de mods : AVANT la fiche, qui l'interroge (et facultatif de naissance)
+  - javascripts/owd-des3d.js?v=44    # moteur des dés en volume : AVANT la fiche, qui s'en sert
+  - javascripts/owd-fiche.js?v=44
   - javascripts/copybtn.js
 hooks:
   - hooks/changelog.py
+  # Les liens vers une page de règles retenue (exclude_docs) deviennent du
+  # texte : sans lui, le site publié mènerait à des pages absentes.
+  - hooks/pages_retenues.py
+  - hooks/armes.py
+  # Produit owd-creation.json depuis docs/content/regles/ : le barème des rangs,
+  # les formules des capacités, les caractéristiques, les armes et leurs paliers.
+  # Les données viennent des règles, jamais du code — et ce hook s'arrête plutôt
+  # que de deviner ce qu'il n'a pas su lire.
+  - hooks/owd_creation.py
+  # Sert au site le moteur des dés en volume de l'extension (des3d.js et .css),
+  # lu à sa seule source : la fiche montre ses dés d'action avec.
+  - hooks/des3d.py
 plugins:
   - search
 markdown_extensions:

@@ -1,5 +1,10 @@
 ﻿/* ============================================================
-   Thème HxH JDR — parchemin + verts, Cinzel / EB Garamond.
+   Thème Outward — noir, blanc et or, dans la pile de polices de Roll20.
+
+   Les couleurs sont celles du wiki d'Outward : la feuille est BLANCHE le jour
+   et NOIRE la nuit (night.css rebascule les variables), le texte suit, et l'or
+   #ffd77f du wiki fait tous les accents. Aucun or, aucun parchemin : le fond
+   du jour est du blanc pur, pas de la crème.
 
    Sommaire :
      1. Variables
@@ -14,13 +19,25 @@
     10. Page d'accueil : changelog
    ============================================================ */
 
-/* Les polices (Alegreya, Cinzel, EB Garamond, IBM Plex Sans, Roboto Mono) sont
+/* Les polices (Nunito Sans, Roboto Mono, et les faces de symboles) sont
    AUTO-HÉBERGÉES : leurs @font-face sont dans stylesheets/fonts.css, chargée avant
    ce fichier. Plus aucune requête vers Google (l'IP du visiteur ne part plus chez
-   un tiers) et le build du PDF ne dépend plus du réseau. */
+   un tiers) et le build du PDF ne dépend plus du réseau.
+
+   LES DEUX PILES DU LIVRE, mesurées sur une vraie partie Roll20, qui emploie
+   Proxima Nova pour le corps et Proxima Nova Condensed pour les titres de
+   panneau. Proxima Nova est sous licence Adobe et la feuille de Roll20 en
+   interdit le téléchargement : on la NOMME en tête de pile (elle sert chez qui
+   l'a déjà) et Nunito Sans, sous SIL OFL et auto-hébergée ici, la remplace
+   partout ailleurs. Aucune serif : Alegreya, Cinzel et EB Garamond ont quitté
+   le livre.
+     corps  : 'Symboles JDR', 'Proxima Nova', proxima-nova, 'Nunito Sans',
+              'Helvetica Neue', Helvetica, Arial, sans-serif
+     titres : 'Symboles JDR', 'Proxima Nova Condensed', 'Proxima Nova',
+              proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif */
 
 /* Symboles de notation du livre (● ○ utilité, ★ ☆ illégalité, ✦ ✧ paliers,
-   ▰ ▱ jauges) : absents d'Alegreya et de Cinzel, ils rendraient à la taille
+   ▰ ▱ jauges) : absents de Proxima Nova comme de Nunito Sans, ils rendraient à la taille
    brute de la police de symboles, trop grosse face au texte. Ces faces dédiées
    les servent depuis la Noto Sans Symbols 2 auto-hébergée (la même que les
    faces « symboles figés » de fonts.css) et règlent leur taille via
@@ -45,26 +62,43 @@
 
 /* ---------- 1. Variables ---------- */
 :root {
-  --green-title:   #667861;
-  --green-section: #63755e;
-  --green-header:  #82997b;
-  --row-a:         #d6e2d0;
-  --row-b:         #e9f0e6;
-  --ink:           #1d1d1d;
-  --paper:         #faf6eb;  /* crème chaud (feuille de lecture) */
-  --bg-side:       #e4ddcd;  /* fond sombre des côtés */
+  /* ---- L'OR ----
+     #ffd77f est l'or du wiki d'Outward, relevé sur sa feuille de thème : c'est
+     la couleur de TOUS ses liens (--theme-link-color). Il est gardé tel quel
+     partout où il se pose sur du sombre, où il donne 15,3:1. Sur le blanc du
+     mode jour il ne vaut que 1,4:1 : le texte doré du jour prend donc un or
+     ASSOMBRI, mesuré à 6,2:1 sur blanc et 7,4:1 pour l'accent fort. Le vif
+     reste alors pour ce qui ne porte pas de texte — filets, pastilles, jauges.
+     Aucun or nulle part : la palette du livre est noir, blanc et or. */
+  --or-vif:        #ffd77f;  /* l'or du wiki, tel quel */
+  --or-fort:       #6b5210;  /* accent fort : 7,4:1 sur blanc */
+  --or-titre:      #7a5c10;  /* titres et texte doré : 6,2:1 sur blanc */
+  --trait-or:      #e0cfa0;  /* filet doré clair, jamais du texte */
+  --bandeau:       #262626;  /* fond des bandeaux et des en-têtes de table */
+  --sur-bandeau:   #ffd77f;  /* ce qui s'écrit sur un bandeau */
 
-  --md-primary-fg-color:        var(--green-section);
-  --md-primary-fg-color--light: var(--green-header);
-  --md-primary-fg-color--dark:  var(--green-title);
-  --md-accent-fg-color:         var(--green-title);
+  --row-a:         #f5f2ea;
+  --row-b:         #ffffff;
+  --ink:           #1a1a1a;
+  --ink-2:         #5f5f5f;  /* texte atténué */
+  --trait:         #ddd6c6;  /* filets ordinaires */
+  --paper:         #ffffff;  /* la feuille de lecture est BLANCHE le jour */
+  --bg-side:       #e9e7e2;  /* plan de travail, autour de la feuille */
+
+  /* L'en-tête du site et ses onglets sont SOMBRES dans les deux modes, comme
+     le châssis du wiki : c'est là que l'or se lit le mieux, et cela donne au
+     site la même charpente de jour comme de nuit. */
+  --md-primary-fg-color:        var(--bandeau);
+  --md-primary-fg-color--light: #3a3a3a;
+  --md-primary-fg-color--dark:  #1a1a1a;
+  --md-accent-fg-color:         var(--or-titre);
   --md-default-bg-color:        var(--paper);
   --md-typeset-color:           var(--ink);
 
   /* Polices de l'interface Material. mkdocs.yml pose `font: false` pour couper
      l'auto-chargement Google Fonts ; Material n'injecte donc plus ces variables
      et on les redéclare ici, pointant sur les polices auto-hébergées (fonts.css). */
-  --md-text-font: 'Symboles JDR', 'Alegreya';
+  --md-text-font: 'Symboles JDR', 'Proxima Nova', proxima-nova, 'Nunito Sans';
   --md-code-font: 'Roboto Mono';
 }
 
@@ -97,7 +131,7 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
 .md-typeset li,
 .md-typeset td,
 .md-typeset th {
-  font-family: 'Symboles JDR', 'Alegreya', 'EB Garamond', Garamond, serif;
+  font-family: 'Symboles JDR', 'Proxima Nova', proxima-nova, 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 .md-typeset {
   font-size: 0.72rem;
@@ -113,12 +147,12 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
 .md-typeset h4,
 .md-typeset h5,
 .md-typeset h6 {
-  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-family: 'Symboles JDR', 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
   font-weight: 700;
-  color: var(--green-section);
+  color: var(--or-titre);
 }
 .md-typeset h1 {
-  color: var(--green-title);
+  color: var(--or-fort);
   font-style: italic;
   text-align: center;
 }
@@ -144,8 +178,8 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
 }
 
 .md-typeset blockquote {
-  border-left: 2px solid #e0dccd;
-  color: #555;
+  border-left: 2px solid var(--trait);
+  color: var(--ink-2);
   font-style: italic;
 }
 
@@ -207,10 +241,10 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
   break-after: avoid; /* l'entrée de glossaire reste collée à sa description */
   break-inside: avoid;
 }
-/* Encart de référence (rappel du modèle de combat) : fond léger, filet vert à gauche. */
+/* Encart de référence (rappel du modèle de combat) : fond léger, filet or à gauche. */
 .md-typeset .rappel {
   background: rgba(127, 127, 127, 0.08);
-  border-left: 3px solid var(--green-title, #5a7d2a);
+  border-left: 3px solid var(--or-fort, #6b5210);
   border-radius: 4px;
   padding: 0.2rem 1rem 0.6rem;
   margin: 1rem 0 1.6rem;
@@ -221,7 +255,7 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
 /* Encart « Pour mémoire » : notes de contexte (physiologie, réalité) hors règles. */
 .md-typeset .memo {
   background: rgba(127, 127, 127, 0.06);
-  border-left: 3px solid #cfc8b8;
+  border-left: 3px solid var(--trait);
   border-radius: 4px;
   padding: 0.5rem 1rem;
   margin: 1rem 0 1.4rem;
@@ -258,7 +292,7 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
 .md-typeset .cols hr {
   column-span: all;
   border: none;
-  border-top: 1px solid #cfc8b8;
+  border-top: 1px solid var(--trait);
   margin: 0.5rem 0 1rem;
 }
 
@@ -283,8 +317,8 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
 .md-typeset .cols .portrait .frame img {
   width: 100%;
   display: block;
-  border: 1px solid #cfc8b8;
-  background: #fff;
+  border: 1px solid var(--trait);
+  background: var(--paper);
   padding: 5px;
   box-shadow: 0 1px 5px rgba(0, 0, 0, .15);
 }
@@ -296,7 +330,7 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
   max-width: calc(100% - 14px);
   box-sizing: border-box;
   padding: 1px 5px;
-  font-family: 'Symboles JDR', 'Alegreya', 'EB Garamond', Garamond, serif;
+  font-family: 'Symboles JDR', 'Proxima Nova', proxima-nova, 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 0.5rem;
   line-height: 1.4;
   color: #fff;
@@ -314,10 +348,10 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
 .md-typeset .cols .portrait em {
   display: block;
   margin-top: 0.35rem;
-  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-family: 'Symboles JDR', 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
   font-style: normal;
   font-size: 0.66rem;
-  color: var(--green-section);
+  color: var(--or-titre);
 }
 
 /* ---------- 5. Tableaux ---------- */
@@ -411,6 +445,32 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
 .md-typeset .grade-table table:not([class]) td:nth-child(3) { width: 8%; text-align: center; white-space: nowrap; }
 .md-typeset .grade-table table:not([class]) th:nth-child(4),
 .md-typeset .grade-table table:not([class]) td:nth-child(4) { width: 63%; }
+/* Tables du froid et du chaud (capacites-physiques.md) : 4 colonnes dont la dernière
+   porte une phrase entière. Sans largeurs, le table-layout: fixed de .cols les fait
+   toutes à 25 % et l'effet se casse sur cinq lignes pendant que Niveau garde du vide.
+   min-width: 0 sur les th : Material les plancherait à 5rem, ce que Firefox applique. */
+.md-typeset .expo-table table:not([class]) th { min-width: 0; }
+.md-typeset .expo-table table:not([class]) th:nth-child(1),
+.md-typeset .expo-table table:not([class]) td:nth-child(1) { width: 12%; }
+.md-typeset .expo-table table:not([class]) th:nth-child(2) { width: 16%; }
+.md-typeset .expo-table table:not([class]) td:nth-child(2) { width: 16%; white-space: nowrap; }
+.md-typeset .expo-table table:not([class]) th:nth-child(3),
+.md-typeset .expo-table table:not([class]) td:nth-child(3) { width: 19%; }
+.md-typeset .expo-table table:not([class]) th:nth-child(4),
+.md-typeset .expo-table table:not([class]) td:nth-child(4) { width: 53%; }
+/* Table de régénération (capacites-physiques.md) : 2 colonnes, un numéro et une cadence.
+   Sans largeurs, le fixed de .cols donne 50/50 et le numéro garde la moitié pour rien. */
+.md-typeset .regen-table table:not([class]) th { min-width: 0; }
+.md-typeset .regen-table table:not([class]) th:nth-child(1),
+.md-typeset .regen-table table:not([class]) td:nth-child(1) { width: 22%; }
+.md-typeset .regen-table table:not([class]) th:nth-child(2),
+.md-typeset .regen-table table:not([class]) td:nth-child(2) { width: 78%; }
+/* Traits horizontaux entre unités de temps, même filet que les séparateurs de colonne :
+   le niveau 0 est seul, puis quatre niveaux par unité, soit une ligne sur quatre à
+   partir de la deuxième. */
+.md-typeset .regen-table table:not([class]) tbody tr:nth-child(4n+2) td {
+  border-top: 2px solid var(--trait);
+}
 /* (bloc .armes retiré : les tables d'armes sont régies par le bloc .cj-modules.anima.armes plus bas, en !important) */
 /* Tableaux de la page Éclat (apprentissage, niveau/prestige par âge) : colonnes
    régulières, première colonne (Éclat) étroite. Ces tables ont 8 ou 9 colonnes,
@@ -440,31 +500,31 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
   width: 3rem !important;
 }
 /* Page Éclat : chaque palier dans une petite carte parchemin (façon .mcard), qui
-   flotte dans le multicol. Le « Éclat N » est sur sa propre ligne, en vert Cinzel,
+   flotte dans le multicol. Le « Éclat N » est sur sa propre ligne, en or Cinzel,
    suivi d'un saut de ligne avant la description. Sans aucune majuscule. */
 .md-typeset .eclat-card {
-  background: #fbf9f1;
-  border: 1px solid #d9d2bf;
+  background: var(--row-a);
+  border: 1px solid var(--trait);
   border-radius: 5px;
   padding: 0.45rem 0.6rem 0.5rem;
   margin: 0 0 0.6rem;
   -webkit-column-break-inside: avoid;
   break-inside: avoid;
-  box-shadow: 0 1px 2px rgba(60, 50, 20, 0.06);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 .md-typeset .eclat-card p {
   margin: 0;
 }
 .md-typeset .eclat-card p strong:first-child {
   display: block;
-  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-family: 'Symboles JDR', 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
   font-weight: 700;
-  color: var(--green-title);
+  color: var(--or-fort);
   letter-spacing: 0.02em;
   margin-bottom: 0.15rem;
 }
 /* « Les deux Éclats » : entrées de définition alignées, façon lignes de tableau
-   mais sans tableau. Le terme à gauche en vert Cinzel, la description à droite,
+   mais sans tableau. Le terme à gauche en or Cinzel, la description à droite,
    un filet fin séparant les entrées. Pleine largeur via le bloc .span. */
 .md-typeset .eclat-defs {
   display: grid;
@@ -474,13 +534,13 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
 }
 .md-typeset .eclat-defs dt,
 .md-typeset .eclat-defs dd {
-  border-top: 1px solid #e0dccd;
+  border-top: 1px solid var(--trait);
   padding: 0.4rem 0;
 }
 .md-typeset .eclat-defs dt {
-  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-family: 'Symboles JDR', 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
   font-weight: 700;
-  color: var(--green-title);
+  color: var(--or-fort);
   letter-spacing: 0.02em;
 }
 .md-typeset .eclat-defs dd {
@@ -493,12 +553,12 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
 .md-typeset .cj-modules h3,
 .md-typeset .cj-modules h4 {
   font-size: 0.78rem;
-  color: var(--green-title);
+  color: var(--or-fort);
   letter-spacing: 0.03em;
   margin-top: 1rem;
   margin-bottom: 0.3rem;
   padding-bottom: 0.12rem;
-  border-bottom: 1px solid #cfc8b8;
+  border-bottom: 1px solid var(--trait-or);
 }
 /* Colonnes de coût (DC, UA, MA, EC) : étroites et centrées, comme les
    colonnes Coût/GN d'ANIMA ; la colonne effet occupe le reste. */
@@ -534,26 +594,26 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
    sans fond spécial), jamais les autres tables du livre. ── */
 .md-typeset .cj-modules.anima h3,
 .md-typeset .cj-modules.anima h4 {
-  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
-  color: #8a4632;
+  font-family: 'Symboles JDR', 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
+  color: var(--or-titre);
   font-variant: small-caps;
   letter-spacing: 0.06em;
-  border-bottom: 2px solid #c9a86a;
+  border-bottom: 2px solid var(--or-titre);
 }
 /* En-tête : pas de fond plein, juste le libellé brun et un filet ; il reçoit la
    même crème que les zébrures pour rester dans la trame. */
 .md-typeset .cj-modules.anima table:not([class]) th {
-  background: #fbf7ec;
-  color: #4a3520;
-  border-bottom: 1px solid #b39a68;
+  background: var(--row-b);
+  color: var(--or-titre);
+  border-bottom: 1px solid var(--trait-or);
 }
 .md-typeset .cj-modules.anima table:not([class]) td {
-  border-bottom: 1px solid #e6dcc1;
+  border-bottom: 1px solid var(--trait);
 }
 /* Zébrure crème pour TOUTES les lignes du corps, y compris les lignes de
    catégorie (qui ne reçoivent donc aucun fond particulier). */
-.md-typeset .cj-modules.anima table:not([class]) tbody tr:nth-child(odd)  td { background: #f5efdc; }
-.md-typeset .cj-modules.anima table:not([class]) tbody tr:nth-child(even) td { background: #fbf7ec; }
+.md-typeset .cj-modules.anima table:not([class]) tbody tr:nth-child(odd)  td { background: var(--row-a); }
+.md-typeset .cj-modules.anima table:not([class]) tbody tr:nth-child(even) td { background: var(--row-b); }
 /* Colonnes unifiées Effet | DI | CAR | UA | MA | AE : la colonne Effet prend la
    place restante (sinon six colonnes débordent), les cinq autres restent étroites. */
 .md-typeset .cj-modules.anima table:not([class]) th:nth-child(1) { width: auto !important; }
@@ -565,7 +625,7 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
 .md-typeset .cj-modules.anima table:not([class]) td:nth-child(3),
 .md-typeset .cj-modules.anima table:not([class]) th:nth-child(5),
 .md-typeset .cj-modules.anima table:not([class]) td:nth-child(5) {
-  border-right: 1px solid #c9b88f;
+  border-right: 1px solid var(--trait-or);
 }
 /* Paragraphes de la zone modules : par défaut traités comme des définitions de
    propriété (petits, en retrait avec un filet) ; la description, juste après le
@@ -578,7 +638,7 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
 /* Bloc d'entrées sous un tableau : une seule barre grise continue à gauche,
    plutôt qu'une barre par paragraphe. Utilisable hors conjuration (ex. états). */
 .md-typeset .defs {
-  border-left: 2px solid #e0dccd;
+  border-left: 2px solid var(--trait);
   padding-left: 0.7rem;
   margin: 0.4rem 0 0.6rem;
 }
@@ -590,7 +650,7 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
   margin: 0.1rem 0 0.5rem;
 }
 /* Variante « titre » des définitions : le nom passe en titre sur sa propre ligne
-   (en vert), la description vient dessous. Pour bien distinguer les manœuvres. */
+   (en or), la description vient dessous. Pour bien distinguer les manœuvres. */
 .md-typeset .defs.titled {
   border-left: none;
   padding-left: 0;
@@ -601,9 +661,9 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
 }
 .md-typeset .defs.titled p strong:first-child {
   display: block;
-  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-family: 'Symboles JDR', 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
   font-weight: 700;
-  color: var(--green-title, #5a7d2a);
+  color: var(--or-fort, #6b5210);
   font-size: 0.82rem;
   letter-spacing: 0.04em;
   margin-bottom: 0.05rem;
@@ -611,10 +671,10 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
 /* Ligne de prérequis sous le nom de manœuvre : Cinzel gris, plus petit. */
 .md-typeset .defs.titled p .prereq {
   display: block;
-  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-family: 'Symboles JDR', 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
   font-weight: 400;
   font-style: normal;
-  color: #8a8478;
+  color: var(--ink-2);
   font-size: 0.6rem;
   letter-spacing: 0.03em;
   margin-bottom: 0.2rem;
@@ -622,13 +682,13 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
 /* Cartes de manœuvres : chaque manœuvre est un <div class="mcard"> (parchemin),
    ce qui autorise paragraphes et vraies listes à puces lisibles à l'intérieur. */
 .md-typeset .mcard {
-  background: #fbf9f1;
-  border: 1px solid #d9d2bf;
+  background: var(--row-a);
+  border: 1px solid var(--trait);
   border-radius: 5px;
   padding: 0.5rem 0.7rem 0.55rem;
   margin: 0 0 0.7rem;
   break-inside: avoid;
-  box-shadow: 0 1px 2px rgba(60, 50, 20, 0.06);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 .md-typeset .mcard p {
   font-size: 0.66rem;
@@ -637,21 +697,21 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
 .md-typeset .mcard p:last-child { margin-bottom: 0; }
 .md-typeset .mcard > p:first-child strong:first-child {
   display: block;
-  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-family: 'Symboles JDR', 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
   font-weight: 700;
-  color: var(--green-title);
+  color: var(--or-fort);
   font-size: 0.84rem;
   letter-spacing: 0.04em;
-  border-bottom: 1px solid #e8e1cf;
+  border-bottom: 1px solid var(--trait-or);
   padding-bottom: 0.22rem;
   margin-bottom: 0.28rem;
 }
 .md-typeset .mcard .prereq {
   display: block;
-  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-family: 'Symboles JDR', 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
   font-weight: 600;
   font-style: normal;
-  color: #8a8478;
+  color: var(--ink-2);
   font-size: 0.58rem;
   letter-spacing: 0.03em;
   margin-bottom: 0.1rem;
@@ -659,7 +719,7 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
 /* ====== Page États : blocs façon « statblock » (bandeau de titre coloré + corps compact) ====== */
 .md-typeset .sblock {
   break-inside: avoid;
-  border: 1px solid #d9d2bf;
+  border: 1px solid var(--trait);
   border-radius: 4px;
   margin: 0 0 0.55rem;
   overflow: hidden;
@@ -670,15 +730,15 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
 .md-typeset .sblock > p:first-child {
   margin: 0 0 0.35rem;
   padding: 0.24rem 0.5rem;
-  background: var(--green-header);
+  background: var(--bandeau);
 }
 .md-typeset .sblock > p:first-child strong:first-child {
   display: block;
-  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-family: 'Symboles JDR', 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
   font-weight: 700;
   font-size: 0.8rem;
   letter-spacing: 0.06em;
-  color: #fdfaf1;
+  color: var(--sur-bandeau);
 }
 /* Corps : retrait latéral pour tout sauf le bandeau */
 .md-typeset .sblock > :not(:first-child) {
@@ -689,13 +749,13 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
 .md-typeset .sblock > p:last-child { margin-bottom: 0.4rem; }
 /* Paliers (Prise, Paralysie, Mutisme, Immobilisé, Abri) */
 .md-typeset .sblock .palier {
-  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-family: 'Symboles JDR', 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
   font-weight: 700;
   font-size: 0.68rem;
-  color: var(--green-section);
+  color: var(--or-titre);
   margin: 0.1rem 0 0.28rem;
   padding-top: 0.32rem;
-  border-top: 1px solid #e8e1cf;
+  border-top: 1px solid var(--trait-or);
 }
 /* Puces de modificateurs chiffrés */
 .md-typeset .sblock .smods {
@@ -711,19 +771,19 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
   gap: 0.18rem;
   padding: 0.05rem 0.18rem;
   border-radius: 3px;
-  background: #f4e8e1;
+  background: rgba(127, 127, 127, 0.12);
   font-size: 0.6rem;
-  color: #4a4436;
+  color: var(--ink);
   white-space: nowrap;
 }
 .md-typeset .sblock .smod b {
-  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-family: 'Symboles JDR', 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
   font-weight: 700;
   font-size: 0.7rem;
-  color: #a1462f;
+  color: var(--or-titre);
 }
-.md-typeset .sblock .smod.pos { background: #e7efdf; }
-.md-typeset .sblock .smod.pos b { color: #587a45; }
+.md-typeset .sblock .smod.pos { background: rgba(255, 215, 127, 0.22); }
+.md-typeset .sblock .smod.pos b { color: var(--or-fort); }
 .md-typeset .mcard ul {
   margin: 0.15rem 0 0.2rem;
   padding-left: 1rem;
@@ -739,14 +799,14 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
 .md-typeset .zones { margin: 0.25rem 0 0.1rem; }
 .md-typeset .zones .zone {
   padding: 0.3rem 0 0.26rem;
-  border-top: 1px solid #e8e1cf;
+  border-top: 1px solid var(--trait);
 }
 .md-typeset .zones .zone:last-child { padding-bottom: 0.05rem; }
 /* Filet de clôture sous le dernier groupe, seulement si du texte suit encore
    dans la carte (si le composant clôt la carte, pas de filet). */
 .md-typeset .zones:not(:last-child) .zone:last-child {
   padding-bottom: 0.3rem;
-  border-bottom: 1px solid #e8e1cf;
+  border-bottom: 1px solid var(--trait);
 }
 .md-typeset .zones p { margin: 0; font-size: 0.66rem; }
 /* Retrait suspendu : les lignes repliées (pastilles ou texte) s'alignent sous la
@@ -760,14 +820,14 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
   display: inline-block;
   padding: 0 0.34rem 0.03rem;
   margin: 0 0.16rem 0.1rem 0;
-  border: 1px solid #ddd5c2;
+  border: 1px solid var(--trait);
   border-radius: 999px;
-  background: #f3efe0;
-  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  background: rgba(127, 127, 127, 0.12);
+  font-family: 'Symboles JDR', 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
   font-weight: 600;
   font-size: 0.56rem;
   letter-spacing: 0.05em;
-  color: #4a4436;
+  color: var(--ink);
   white-space: nowrap;
 }
 .md-typeset .zones .zone-effet {
@@ -780,11 +840,11 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
 .md-typeset .zones .zlbl {
   display: inline-block;
   min-width: 3.6rem;
-  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-family: 'Symboles JDR', 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
   font-weight: 600;
   font-size: 0.54rem;
   letter-spacing: 0.05em;
-  color: #8a8478;
+  color: var(--ink-2);
   margin-right: 0.25rem;
 }
 /* text-indent s'hérite : sans remise à zéro, le retrait suspendu du paragraphe
@@ -796,7 +856,7 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
 .md-typeset .mcard hr {
   column-span: none;
   border: none;
-  border-top: 1px solid #ded5c0;
+  border-top: 1px solid var(--trait);
   margin: 0.45rem 0;
 }
 /* Cartes d'arts martiaux : en-tête (nom + aspect) centré et dominant, séparé d'un filet. */
@@ -804,7 +864,7 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
   text-align: center;
   margin-bottom: 0.5rem;
   padding-bottom: 0.32rem;
-  border-bottom: 1px solid #ded5c0;
+  border-bottom: 1px solid var(--trait-or);
 }
 .md-typeset .mcard.art > p:first-child strong:first-child {
   display: block;
@@ -827,15 +887,15 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
    pour que le filet épouse la largeur du texte). Subordonné à l'en-tête centré. */
 .md-typeset .mcard.art p.palier {
   display: table;
-  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-family: 'Symboles JDR', 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--green-section);
+  color: var(--or-titre);
   font-size: 0.58rem;
   margin: 0.55rem 0 0.12rem;
   padding-bottom: 0.1rem;
-  border-bottom: 1px solid #ded5c0;
+  border-bottom: 1px solid var(--trait-or);
 }
 
 /* Cartes de glossaire : titre, description + exemples à gauche, image carrée à droite. */
@@ -846,20 +906,20 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
   margin: 0.6rem 0 1rem;
 }
 .md-typeset .gcard {
-  background: #fbf9f1;
-  border: 1px solid #d9d2bf;
+  background: var(--row-a);
+  border: 1px solid var(--trait);
   border-radius: 5px;
   padding: 0.45rem 0.6rem 0.55rem;
-  box-shadow: 0 1px 2px rgba(60, 50, 20, 0.06);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 .md-typeset .gcard > p:first-child {
-  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-family: 'Symboles JDR', 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
   font-weight: 700;
-  color: var(--green-title);
+  color: var(--or-fort);
   font-size: 0.82rem;
   letter-spacing: 0.03em;
   margin: 0 0 0.35rem;
-  border-bottom: 1px solid #e8e1cf;
+  border-bottom: 1px solid var(--trait-or);
   padding-bottom: 0.2rem;
 }
 .md-typeset .gcard-body {
@@ -878,15 +938,15 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
   width: 8.5rem;
   height: 8.5rem;
   border-radius: 4px;
-  border: 1px solid #d9d2bf;
+  border: 1px solid var(--trait);
   object-fit: cover;
 }
 .md-typeset .gcard-img.ph {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #efeada;
-  color: #9a9078;
+  background: rgba(127, 127, 127, 0.12);
+  color: var(--ink-2);
   font-size: 0.55rem;
   text-align: center;
   padding: 2px;
@@ -905,7 +965,7 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
 .md-typeset .gcard-fig figcaption {
   font-size: 0.42rem;
   line-height: 1.2;
-  color: #9a9078;
+  color: var(--ink-2);
   margin-top: 3px;
 }
 
@@ -929,10 +989,10 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
   margin: 0;
   max-height: 72vh;
   overflow: hidden;
-  box-shadow: 0 4px 14px rgba(40, 30, 10, 0.22);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
 }
 .md-typeset .gloss-source td.gloss-trigger { cursor: help; }
-.md-typeset .gloss-source td.gloss-trigger:hover { background: #f3edda; }
+.md-typeset .gloss-source td.gloss-trigger:hover { background: rgba(255, 215, 127, 0.22); }
 
 /* Glossaire général : liens inline discrets. La couleur du corps est gardée ; seul un
    soulignement pointillé signale le terme, pour ne pas noyer la page de bleu. */
@@ -940,12 +1000,12 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
 .md-typeset a.gloss-link:visited {
   color: inherit;
   text-decoration: none;
-  border-bottom: 1px dotted var(--green-header);
+  border-bottom: 1px dotted var(--or-titre);
   cursor: help;
 }
 .md-typeset a.gloss-link:hover {
-  color: var(--green-section);
-  border-bottom-color: var(--green-section);
+  color: var(--or-titre);
+  border-bottom-color: var(--or-titre);
 }
 /* Ancre invisible : la navigation vers un terme s'arrête un peu au-dessus du bloc. */
 .gloss-anchor {
@@ -960,15 +1020,15 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
 /* ---- Compétences : modules ---- */
 .md-typeset .comp h4 {
   font-size: 0.8rem;
-  color: var(--green-title);
-  border-bottom: 1px solid #cfc8b8;
+  color: var(--or-fort);
+  border-bottom: 1px solid var(--trait-or);
   padding-bottom: 0.12rem;
   margin: 0.1rem 0 0.3rem;
 }
 .md-typeset .comp .groupes {
   font-size: 0.6rem;
   font-style: italic;
-  color: #9b9686;
+  color: var(--ink-2);
   line-height: 1.35;
   margin: 0.2rem 0 0.3rem;
 }
@@ -1022,7 +1082,7 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
   font-size: 0.9em;
 }
 /* Tables façon « armes » : même habillage sépia que les tables .cj-modules.anima
-   (en-tête crème à texte brun + zébrures crème + filets), au lieu de l'en-tête vert
+   (en-tête crème à texte brun + zébrures crème + filets), au lieu de l'en-tête or
    plein par défaut. Couvre les récaps de compétences (.comp-recap), la table de
    difficulté (.diff-table), les tables des capacités physiques (.gloss-source) et
    toute table enveloppée dans .sepia-table. Seules les couleurs changent ; les
@@ -1031,38 +1091,42 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
 .md-typeset .diff-table table:not([class]) th,
 .md-typeset .gloss-source table:not([class]) th,
 .md-typeset .sepia-table table:not([class]) th {
-  background: #fbf7ec;
-  color: #4a3520;
-  border-bottom: 1px solid #b39a68;
+  background: var(--row-b);
+  color: var(--or-titre);
+  border-bottom: 1px solid var(--trait-or);
 }
 .md-typeset .comp-recap table:not([class]) td,
 .md-typeset .diff-table table:not([class]) td,
 .md-typeset .gloss-source table:not([class]) td,
 .md-typeset .sepia-table table:not([class]) td {
-  border-bottom: 1px solid #e6dcc1;
+  border-bottom: 1px solid var(--trait);
 }
 .md-typeset .comp-recap table:not([class]) tbody tr:nth-child(odd)  td,
 .md-typeset .diff-table table:not([class]) tbody tr:nth-child(odd)  td,
 .md-typeset .gloss-source table:not([class]) tbody tr:nth-child(odd)  td,
-.md-typeset .sepia-table table:not([class]) tbody tr:nth-child(odd)  td { background: #f5efdc; }
+.md-typeset .sepia-table table:not([class]) tbody tr:nth-child(odd)  td { background: var(--row-a); }
 .md-typeset .comp-recap table:not([class]) tbody tr:nth-child(even) td,
 .md-typeset .diff-table table:not([class]) tbody tr:nth-child(even) td,
 .md-typeset .gloss-source table:not([class]) tbody tr:nth-child(even) td,
-.md-typeset .sepia-table table:not([class]) tbody tr:nth-child(even) td { background: #fbf7ec; }
+.md-typeset .sepia-table table:not([class]) tbody tr:nth-child(even) td { background: var(--row-b); }
 /* Table du sommeil : trait vertical séparant le bloc veille (colonnes 5-6,
    « Avant de pouvoir redormir » et « Avant d'être fatigué », rejeté à droite)
-   du bloc sommeil / activité. */
+   du bloc sommeil / effort. */
 .md-typeset .sommeil table:not([class]) th:nth-child(5),
 .md-typeset .sommeil table:not([class]) td:nth-child(5) {
-  border-left: 2px solid #e6dcc1;
+  border-left: 2px solid var(--trait);
 }
 /* Formule (difficulté…) : ligne grise en italique sous un tableau. */
 .md-typeset p.formula {
   font-style: italic;
-  color: #9b9686;
+  color: var(--ink-2);
   font-size: 0.66rem;
   margin: 0.3rem 0 0.7rem;
 }
+/* Deux formules qui se suivent forment une paire (la formule d'une réserve et sa
+   récupération, la satiété et l'hydratation) : on resserre pour qu'elles se lisent ensemble
+   au lieu de paraître deux règles sans rapport. */
+.md-typeset p.formula + p.formula { margin-top: -0.35rem; }
 
 /* Paragraphes en blocs insécables : ne se coupent pas au changement de colonne ;
    le titre reste collé à son contenu. */
@@ -1084,17 +1148,17 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
   break-inside: avoid;
   margin: 0.2rem 0 1.15rem;
   padding: 0.5rem 0.85rem 0.55rem;
-  background: #f4eeda;
-  border: 1px solid #d8ceb2;
-  border-left: 4px solid var(--green-title);
+  background: var(--row-a);
+  border: 1px solid var(--trait);
+  border-left: 4px solid var(--or-fort);
   border-radius: 5px;
-  box-shadow: 0 1px 2px rgba(60, 50, 20, 0.06);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 .md-typeset .optrule > p:first-child strong:first-child {
   display: block;
-  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-family: 'Symboles JDR', 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
   font-weight: 700;
-  color: var(--green-title);
+  color: var(--or-fort);
   font-size: 0.8rem;
   letter-spacing: 0.05em;
   margin-bottom: 0.22rem;
@@ -1113,12 +1177,12 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
   margin: 0 0 1.4rem;
 }
 .md-typeset .wzone-titre {
-  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
-  color: var(--green-title);
+  font-family: 'Symboles JDR', 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
+  color: var(--or-fort);
   font-size: 0.82rem;
   margin: 0 0 0.45rem;
   padding-bottom: 0.12rem;
-  border-bottom: 1px solid #cfc8b8;
+  border-bottom: 1px solid var(--trait-or);
   break-after: avoid;
 }
 /* Par zone : degrés 1 2 puis 3 4 par lignes de deux, le 5 centré seul (flex 2 par ligne). */
@@ -1132,10 +1196,10 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
 
 /* ---- La fiche ---- */
 .md-typeset .wfiche {
-  --g: #7c9275;
+  --g: #806224;
   flex: 0 0 calc((100% - 0.55rem) / 2);
-  background: #fffdf6;
-  border: 1px solid #ded7c5;
+  background: var(--row-a);
+  border: 1px solid var(--trait);
   border-left: 3px solid var(--g);
   border-radius: 3px;
   padding: 0.4rem 0.55rem 0.5rem;
@@ -1144,22 +1208,22 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
   line-height: 1.32;
   text-align: left;
 }
-.md-typeset .wfiche[data-deg="1"] { --g: #7c9275; }
-.md-typeset .wfiche[data-deg="2"] { --g: #968d52; }
-.md-typeset .wfiche[data-deg="3"] { --g: #c0853b; }
-.md-typeset .wfiche[data-deg="4"] { --g: #b26a3a; }
-.md-typeset .wfiche[data-deg="5"] { --g: #9c4a42; }
+.md-typeset .wfiche[data-deg="1"] { --g: #806224; }
+.md-typeset .wfiche[data-deg="2"] { --g: #97591f; }
+.md-typeset .wfiche[data-deg="3"] { --g: #a04720; }
+.md-typeset .wfiche[data-deg="4"] { --g: #9c3520; }
+.md-typeset .wfiche[data-deg="5"] { --g: #8c2420; }
 
 /* ---- 6e case : « perte du membre », carte parchemin claire assortie au fond ---- */
 .md-typeset .wfiche.wperte {
-  background: linear-gradient(#fbf6e9, #f3ecd8);
-  border: 1px solid #ddd3ba;
-  border-left: 3px solid #b0a274;
+  background: linear-gradient(var(--row-b), var(--row-a));
+  border: 1px solid var(--trait);
+  border-left: 3px solid var(--or-fort);
 }
 .md-typeset .wperte .wf-head { display: block; margin: 0 0 0.32rem; }
 .md-typeset .wperte .wf-nom {
   font-size: 0.72rem;
-  border-bottom: 1px solid #d8cdae;
+  border-bottom: 1px solid var(--trait-or);
   padding-bottom: 0.18rem;
 }
 .md-typeset .wperte .wf-effet {
@@ -1173,9 +1237,9 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
 .md-typeset .wperte-img .wf-img {
   flex: 1;
   min-height: 4rem;
-  border: 1px dashed #cabf9e;
+  border: 1px dashed var(--trait);
   border-radius: 3px;
-  background: rgba(176, 162, 116, 0.05);
+  background: rgba(127, 127, 127, 0.06);
 }
 
 /* ---- En-tête : sceau de cire + nom + jauge ---- */
@@ -1195,21 +1259,21 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-family: 'Symboles JDR', 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
   font-weight: 700;
   font-size: 0.85rem;
-  color: #fdfaf1;
+  color: #ffffff;
   background: var(--g);
   border-radius: 50%;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .35), 0 1px 1px rgba(0, 0, 0, .25);
 }
 .md-typeset .wf-nom {
   grid-area: nom;
-  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-family: 'Symboles JDR', 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
   font-weight: 600;
   font-size: 0.7rem;
   line-height: 1.15;
-  color: var(--green-section);
+  color: var(--or-titre);
   margin: 0;
 }
 .md-typeset .wf-jauge {
@@ -1224,33 +1288,33 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
 .md-typeset .wf-effet {
   margin: 0 0 0.35rem;
   padding: 0.25rem 0.4rem;
-  background: #f6f1e2;
+  background: rgba(127, 127, 127, 0.12);
   border-radius: 2px;
 }
 
-/* ---- Soins : étiquettes Cinzel grises, test isolé en vert ---- */
+/* ---- Soins : étiquettes Cinzel grises, test isolé en or ---- */
 .md-typeset .wf-soins {
   margin: 0;
-  border-top: 1px dotted #d8d1bf;
+  border-top: 1px dotted var(--trait);
   padding-top: 0.32rem;
 }
 .md-typeset .wf-soin { margin: 0 0 0.4rem; }
 .md-typeset .wf-soin:last-child { margin-bottom: 0; }
 .md-typeset .wf-lbl {
   display: block;
-  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-family: 'Symboles JDR', 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
   font-size: 0.54rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #9b9686;
+  color: var(--ink-2);
 }
-/* Méthode de soin : tout le jet en gras vert (compétence + parenthèse +
+/* Méthode de soin : tout le jet en gras or (compétence + parenthèse +
    difficulté, ou « Repos : N jours »), pas seulement le mot « Médecine ». */
 .md-typeset .wf-roll {
   display: block;
   line-height: 1.25;
   font-weight: 600;
-  color: var(--green-section);
+  color: var(--or-titre);
 }
 .md-typeset .wf-test { font-weight: inherit; color: inherit; }
 .md-typeset .wf-desc {
@@ -1258,8 +1322,8 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
   line-height: 1.32;
   margin-top: 0.05rem;
 }
-/* « aucun » : ni gras ni vert, mention discrète. */
-.md-typeset .wf-roll.wf-aucun { font-weight: normal; color: #a59f8e; font-style: italic; }
+/* « aucun » : ni gras ni or, mention discrète. */
+.md-typeset .wf-roll.wf-aucun { font-weight: normal; color: var(--ink-2); font-style: italic; }
 
 /* ============================================================
    Impression / export PDF.
@@ -1316,17 +1380,17 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
    donnant les formules exactes (effet, DC, UA) pour extrapoler au-delà des paliers. */
 .md-typeset .cj-modules p.formula {
   font-size: 0.58rem;
-  color: #9b9686;
+  color: var(--ink-2);
   margin: 0.1rem 0 0.4rem;
 }
 /* Ligne « TYPE : … » sous le titre : étiquette grise en Cinzel, en majuscules,
    indiquant quels types de conjuration peuvent prendre ce module. */
 .md-typeset .cj-modules .mod-type {
-  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-family: 'Symboles JDR', 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
   font-size: 0.58rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #9b9686;
+  color: var(--ink-2);
   margin: 0 0 0.4rem;
   padding-left: 0;
   border-left: none;
@@ -1351,10 +1415,10 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
 .md-typeset .cols table:not([class]):has(th:nth-child(3)):not(:has(th:nth-child(4))) th:nth-child(3) { width: 20%; text-align: center; }
 .md-typeset .cols table:not([class]):has(th:nth-child(3)):not(:has(th:nth-child(4))) td:nth-child(3) { text-align: center; }
 
-/* En-têtes : verts, à la ligne. */
+/* En-têtes : ors, à la ligne. */
 .md-typeset table:not([class]) th {
-  background: var(--green-header);
-  color: #fff;
+  background: var(--bandeau);
+  color: var(--sur-bandeau);
   font-weight: 600;
   text-align: center;
   white-space: normal;
@@ -1380,14 +1444,14 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
 .md-typeset table:not([class]) tbody tr:nth-child(even) td { background: var(--row-b); }
 
 /* Tables dans une carte (ex. les rayons de l'En) : style épuré façon liste, entièrement
-   transparent (Material pose un fond sur l'élément table lui-même), sans en-tête vert
+   transparent (Material pose un fond sur l'élément table lui-même), sans en-tête or
    plein ni zébrures — l'en-tête se réduit à un filet, le fond reste celui de la carte. */
 .md-typeset .mcard table:not([class]) { background: none; }
 .md-typeset .mcard table:not([class]) th {
   background: none;
-  color: #4a4538;
+  color: var(--ink);
   text-align: left;
-  border-bottom: 1px solid #ded5c0;
+  border-bottom: 1px solid var(--trait-or);
 }
 .md-typeset .mcard table:not([class]) td {
   background: none;
@@ -1396,7 +1460,7 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
 .md-typeset .mcard table:not([class]) tbody tr:nth-child(odd)  td,
 .md-typeset .mcard table:not([class]) tbody tr:nth-child(even) td {
   background: none;
-  border-bottom: 1px solid #ece7d8;
+  border-bottom: 1px solid var(--trait);
 }
 /* Pas de changement de cellule au survol dans ces tableaux de carte. */
 .md-typeset .mcard table:not([class]) tr:hover,
@@ -1410,15 +1474,15 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
 .md-typeset .annexe-dnd table:not([class]) { background: none; }
 .md-typeset .annexe-dnd table:not([class]) th {
   background: none;
-  color: #4a4538;
+  color: var(--ink);
   text-align: left;
-  border-bottom: 1px solid #ded5c0;
+  border-bottom: 1px solid var(--trait-or);
 }
 .md-typeset .annexe-dnd table:not([class]) td { background: none; }
 .md-typeset .annexe-dnd table:not([class]) tbody tr:nth-child(odd)  td,
 .md-typeset .annexe-dnd table:not([class]) tbody tr:nth-child(even) td {
   background: none;
-  border-bottom: 1px solid #ece7d8;
+  border-bottom: 1px solid var(--trait);
 }
 .md-typeset .annexe-dnd table:not([class]) tr:hover,
 .md-typeset .annexe-dnd table:not([class]) tr:hover td,
@@ -1431,15 +1495,15 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
 
 /* ---------- 6. En-tête & onglets (style 5e.tools) ---------- */
 .md-header {
-  background-color: var(--green-title);
+  background-color: var(--bandeau);
   box-shadow: none;
 }
 .md-header__title {
-  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-family: 'Symboles JDR', 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
   font-weight: 700;
 }
 .md-tabs {
-  background-color: var(--green-section);
+  background-color: var(--bandeau);
   border-top: 1px solid rgba(255, 255, 255, .12);
 }
 .md-tabs__list {
@@ -1455,12 +1519,12 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
   margin: 0 .1rem;
 }
 .md-tabs__link {
-  font-family: 'Symboles JDR', 'Alegreya', 'EB Garamond', Garamond, serif;
+  font-family: 'Symboles JDR', 'Proxima Nova', proxima-nova, 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: .72rem;
   margin: 0;
   padding: .18rem .7rem;
   opacity: 1;
-  color: #fff;
+  color: var(--sur-bandeau);
   border: 1px solid rgba(255, 255, 255, .35);
   border-radius: 3px;
   background-color: rgba(255, 255, 255, .06);
@@ -1472,8 +1536,8 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
   opacity: 1;
 }
 .md-tabs__link--active {
-  background-color: var(--green-header);
-  border-color: #fff;
+  background-color: rgba(255, 215, 127, 0.16);
+  border-color: var(--or-vif);
   font-weight: 600;
 }
 
@@ -1493,17 +1557,17 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
   line-height: 1.3;
 }
 .md-nav__title {
-  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-family: 'Symboles JDR', 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
   font-size: 0.7rem;
-  color: var(--green-section);
+  color: var(--or-titre);
 }
 .md-nav__link--active,
 .md-nav__link--active > * {
-  color: var(--green-title) !important;
+  color: var(--or-fort) !important;
   font-weight: 600;
 }
 .md-nav__link:hover {
-  color: var(--green-title);
+  color: var(--or-fort);
 }
 
 /* ---------- 8. Arbre custom du livre (continuous.js) ---------- */
@@ -1521,7 +1585,7 @@ html.book-loading .md-content__inner {
   visibility: hidden;
 }
 .book-nav {
-  font-family: 'Symboles JDR', 'Alegreya', 'EB Garamond', Garamond, serif;
+  font-family: 'Symboles JDR', 'Proxima Nova', proxima-nova, 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 0.7rem;
   line-height: 1.3;
   padding: 0.6rem 0.7rem;
@@ -1538,38 +1602,38 @@ html.book-loading .md-content__inner {
 .book-group-title {
   display: block;
   padding: 0.2rem 0;
-  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-family: 'Symboles JDR', 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
   font-weight: 400;
   font-size: 0.72rem;
-  color: var(--green-section);
+  color: var(--or-titre);
   text-decoration: none;
   cursor: pointer;
 }
 .book-group.active > .book-group-title,
 .book-group-title:hover {
-  color: var(--green-title);
+  color: var(--or-fort);
 }
 /* Scopé sous .book-nav pour battre `.book-nav ul { padding/margin: 0 }` en
    spécificité — sinon l'indentation des pages est écrasée. */
 .book-nav .book-group-pages {
   margin: 0 0 0.35rem 0.35rem;
   padding-left: 0.7rem;
-  border-left: 1px solid #d8e0d3;
+  border-left: 1px solid var(--trait);
 }
 
 .book-chapter > .book-link {
   display: block;
   padding: 0.2rem 0;
-  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-family: 'Symboles JDR', 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
   font-weight: 400;
   font-size: 0.72rem;
-  color: var(--green-section);
+  color: var(--or-titre);
   text-decoration: none;
   cursor: pointer;
 }
 .book-chapter > .book-link:hover,
 .book-chapter.active > .book-link {
-  color: var(--green-title);
+  color: var(--or-fort);
 }
 /* Sous-sections : visibles uniquement pour le chapitre actif. */
 .book-sections {
@@ -1583,18 +1647,18 @@ html.book-loading .md-content__inner {
   display: block;
   padding: 0.12rem 0 0.12rem 0.7rem;
   margin-left: 0.15rem;
-  border-left: 1px solid #cdd8c8;
-  color: #5a5a5a;
+  border-left: 1px solid var(--trait);
+  color: var(--ink-2);
   text-decoration: none;
   cursor: pointer;
 }
 .book-sec:hover {
-  color: var(--green-title);
-  border-left-color: var(--green-header);
+  color: var(--or-fort);
+  border-left-color: var(--or-titre);
 }
 .book-sec.active {
-  color: var(--green-title);
-  border-left-color: var(--green-title);
+  color: var(--or-fort);
+  border-left-color: var(--or-fort);
   font-weight: 600;
 }
 
@@ -1637,7 +1701,7 @@ html.book-loading .md-content__inner {
 }
 /* Surbrillance temporaire du titre ciblé après un clic dans l'arbre. */
 @keyframes cont-flash-anim {
-  0%   { background-color: rgba(130, 153, 123, 0.55); }
+  0%   { background-color: rgba(255, 215, 127, 0.45); }
   100% { background-color: transparent; }
 }
 .md-typeset .cont-flash {
@@ -1656,9 +1720,9 @@ html.book-loading .md-content__inner {
   margin-top: 1rem;
 }
 .md-typeset .cl-commit {
-  background: #fff;
-  border: 1px solid #d3ddcd;
-  border-left: 3px solid var(--green-header);
+  background: var(--row-a);
+  border: 1px solid var(--trait);
+  border-left: 3px solid var(--trait-or);
   border-radius: 3px;
   padding: .5rem .7rem;
 }
@@ -1670,17 +1734,17 @@ html.book-loading .md-content__inner {
 }
 .md-typeset .cl-msg {
   font-weight: 600;
-  color: var(--green-section);
+  color: var(--or-titre);
 }
 .md-typeset .cl-sha {
   font-family: 'Roboto Mono', monospace;
   font-size: .68rem;
-  color: #8a8a8a;
+  color: var(--ink-2);
   flex-shrink: 0;
 }
 .md-typeset .cl-meta {
   font-size: .68rem;
-  color: #777;
+  color: var(--ink-2);
   margin: .1rem 0 .35rem;
 }
 .md-typeset .cl-files {
@@ -1700,17 +1764,17 @@ html.book-loading .md-content__inner {
   padding: 0;
   font-family: inherit;
   font-size: .72rem;
-  color: var(--green-section);
-  border-bottom: 1px dotted var(--green-header);
+  color: var(--or-titre);
+  border-bottom: 1px dotted var(--or-titre);
 }
 .md-typeset .cl-link {
   font-size: .72rem;
-  color: var(--green-section);
+  color: var(--or-titre);
   text-decoration: none;
-  border-bottom: 1px dotted var(--green-header);
+  border-bottom: 1px dotted var(--or-titre);
 }
 .md-typeset .cl-link:hover {
-  color: var(--green-title);
+  color: var(--or-fort);
   border-bottom-style: solid;
 }
 .md-typeset .cl-status {
@@ -1724,19 +1788,19 @@ html.book-loading .md-content__inner {
   border-radius: 2px;
   color: #fff;
 }
-.md-typeset .cl-added    { background: #5a8a5a; }
-.md-typeset .cl-modified { background: #b08a3e; }
-.md-typeset .cl-removed  { background: #a85a52; }
-.md-typeset .cl-renamed  { background: #5a7a9a; }
-.md-typeset .cl-info  { color: #777; font-style: italic; }
-.md-typeset .cl-error { color: #a85a52; }
+.md-typeset .cl-added    { background: #6b5210; }
+.md-typeset .cl-modified { background: #a06c12; }
+.md-typeset .cl-removed  { background: #8c2420; }
+.md-typeset .cl-renamed  { background: #4a4a4a; }
+.md-typeset .cl-info  { color: var(--ink-2); font-style: italic; }
+.md-typeset .cl-error { color: #8c2420; }
 /* Entrée « modifications en cours » (non committées) : barre jaune pleine */
 .md-typeset .cl-commit.cl-pending {
-  border-left: 3px solid #e0a800;
-  background: #fffdf6;
+  border-left: 3px solid var(--or-fort);
+  background: var(--row-a);
 }
 .md-typeset .cl-pending-tag {
-  background: #b08a3e;
+  background: #a06c12;
   color: #fff;
   border-radius: 2px;
   padding: .03rem .3rem;
@@ -1746,38 +1810,99 @@ html.book-loading .md-content__inner {
   letter-spacing: .04em;
 }
 
-/* ARMES-COMME-MODULES */
-/* Tables des familles d'armes présentées façon module de Nen (encadré sépia
-   d'Anima) : l'habillage (en-tête brun, zébrures crème) vient de .cj-modules
-   .anima. Ici on écarte le gabarit 6 colonnes des modules et on REMET les
-   largeurs et l'alignement d'origine des tables d'armes (11 colonnes, Prix
-   inséré avant Propriétés), en !important pour passer devant les règles
-   !important des modules. */
+/* ── Tables des ARMES : habillage sépia hérité de .cj-modules.anima (en-tête
+   brun, zébrures crème), gabarit propre par-dessus. Cinq colonnes : Arme,
+   Portée, Dégâts, Mains, Difficulté. Le nom prend la place restante et reste à
+   gauche, les quatre valeurs sont étroites et centrées.
+
+   Comme la table des portées, ces blocs se placent HORS du conteneur .cols et
+   prennent toute la largeur de la page. Le !important est nécessaire pour
+   passer devant les largeurs !important du gabarit des modules (73/64/9 %),
+   taillées pour les tables de coûts.
+
+   HUIT colonnes : Arme, Portée, Dégâts, Type, Mains, Attaque, Parade,
+   Réduction. Deux filets verticaux les groupent : après la Portée, qui vient de
+   l'autre table et se lit contre elle, et après l'Attaque, qui sépare ce que
+   l'arme fait de ce qu'elle encaisse. */
 .md-typeset .cj-modules.anima.armes table:not([class]) {
   table-layout: fixed !important;
+  width: 100%;
+}
+.md-typeset .cj-modules.anima.armes table:not([class]) th,
+.md-typeset .cj-modules.anima.armes table:not([class]) td {
+  border-right: none !important;   /* neutralise les filets 3ᵉ/5ᵉ colonne des tables de coûts */
+  text-align: center !important;
+  white-space: normal !important;
+  overflow-wrap: break-word;
+  vertical-align: middle;
+  font-variant: normal !important;
+  letter-spacing: normal !important;
+  color: inherit !important;
 }
 .md-typeset .cj-modules.anima.armes table:not([class]) th:nth-child(1),
-.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(1) { width: 13% !important; text-align: left !important; }   /* Arme */
+.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(1) { width: 24% !important; text-align: left !important; }   /* Arme */
 .md-typeset .cj-modules.anima.armes table:not([class]) th:nth-child(2),
-.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(2) { width: 4%  !important; text-align: center !important; font-size: inherit !important; color: inherit !important; }   /* AM */
+.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(2) { width: 8%  !important; }   /* Portée */
 .md-typeset .cj-modules.anima.armes table:not([class]) th:nth-child(3),
-.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(3) { width: 10% !important; text-align: center !important; border-right: none !important; }   /* Portée */
+.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(3) { width: 8%  !important; }   /* Dégâts */
 .md-typeset .cj-modules.anima.armes table:not([class]) th:nth-child(4),
-.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(4) { width: 7%  !important; text-align: center !important; }   /* Munitions */
+.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(4) { width: 13% !important; }   /* Type */
 .md-typeset .cj-modules.anima.armes table:not([class]) th:nth-child(5),
-.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(5) { width: 7%  !important; text-align: center !important; border-right: none !important; }   /* Mains */
+.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(5) { width: 15% !important; }   /* Mains */
 .md-typeset .cj-modules.anima.armes table:not([class]) th:nth-child(6),
-.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(6) { width: 5%  !important; text-align: center !important; }   /* Dégâts */
+.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(6) { width: 11% !important; }   /* Attaque */
 .md-typeset .cj-modules.anima.armes table:not([class]) th:nth-child(7),
-.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(7) { width: 6%  !important; text-align: center !important; font-variant: normal !important; letter-spacing: normal !important; }   /* Mod. dégâts */
+.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(7) { width: 11% !important; }   /* Parade */
 .md-typeset .cj-modules.anima.armes table:not([class]) th:nth-child(8),
-.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(8) { width: 5%  !important; text-align: center !important; font-variant: normal !important; letter-spacing: normal !important; }   /* Type */
-.md-typeset .cj-modules.anima.armes table:not([class]) th:nth-child(9),
-.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(9) { width: 8%  !important; text-align: center !important; white-space: nowrap; }   /* Illégalité */
-.md-typeset .cj-modules.anima.armes table:not([class]) th:nth-child(10),
-.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(10) { width: 8% !important; text-align: center !important; border-right: none !important; white-space: nowrap; }   /* Prix */
-.md-typeset .cj-modules.anima.armes table:not([class]) th:nth-child(11),
-.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(11) { width: 27% !important; text-align: left !important; }   /* Propriétés */
+.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(8) { width: 10% !important; }   /* Réduction */
+/* Les deux filets de groupement, posés apres la Portee et apres l'Attaque. */
+.md-typeset .cj-modules.anima.armes table:not([class]) th:nth-child(2),
+.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(2),
+.md-typeset .cj-modules.anima.armes table:not([class]) th:nth-child(6),
+.md-typeset .cj-modules.anima.armes table:not([class]) td:nth-child(6) {
+  border-right: 1px solid var(--trait-or) !important;
+}
+
+/* ── Table des PORTÉES : même habillage sépia que les tables d'armes (en-tête
+   brun, zébrures crème, hérités de .cj-modules.anima), mais son propre gabarit.
+   Il en fallait un : les largeurs de .armes sont taillées pour onze colonnes
+   nommées (Arme, AM, Portée, Munitions…) et produiraient ici une table fausse.
+   Sept colonnes : le nom de l'arme, puis les six distances, de la case 0 à la
+   case 5. Table-layout fixe et largeurs sommées à 100 % pour que la table fasse
+   pile la largeur disponible et ne déborde jamais.
+
+   Comme les tables d'armes, ce bloc se place HORS du conteneur .cols : il prend
+   alors toute la largeur de la page au lieu d'une seule colonne. La taille de
+   texte et les marges internes restent celles dont il hérite, exactement comme
+   .armes, pour que les deux tables se ressemblent à l'écran. */
+.md-typeset .cj-modules.anima.portees table:not([class]) {
+  table-layout: fixed !important;
+  width: 100%;
+}
+.md-typeset .cj-modules.anima.portees table:not([class]) th,
+.md-typeset .cj-modules.anima.portees table:not([class]) td {
+  border-right: none !important;   /* neutralise les filets 3ᵉ/5ᵉ colonne des tables de coûts */
+  text-align: center !important;
+  white-space: normal !important;
+  overflow-wrap: break-word;
+  vertical-align: middle;
+  font-variant: normal !important;
+  letter-spacing: normal !important;
+  color: inherit !important;
+}
+/* Le nom de l'arme prend la place restante et reste aligné à gauche : c'est la
+   seule colonne de texte, les six autres ne portent qu'un signe. Sur toute la
+   largeur de page, une colonne large tient les noms composés sans les couper. */
+.md-typeset .cj-modules.anima.portees table:not([class]) th:nth-child(1),
+.md-typeset .cj-modules.anima.portees table:not([class]) td:nth-child(1) { width: 34% !important; text-align: left !important; }
+.md-typeset .cj-modules.anima.portees table:not([class]) th:nth-child(n+2),
+.md-typeset .cj-modules.anima.portees table:not([class]) td:nth-child(n+2) { width: 11% !important; }
+/* Filet après la case 0 : elle ne mesure pas une distance mais l'état d'un corps
+   collé au sien, et se lit à part des cinq distances qui suivent. */
+.md-typeset .cj-modules.anima.portees table:not([class]) th:nth-child(2),
+.md-typeset .cj-modules.anima.portees table:not([class]) td:nth-child(2) {
+  border-right: 1px solid var(--trait-or) !important;
+}
 
 /* ── Page « Formes du vivant » : matrices larges, MÊME mécanisme que les tables
    d'armes — table-layout FIXE + largeurs de colonnes explicites en %, sommées à
@@ -1865,10 +1990,10 @@ html.book-loading .md-content__inner {
   padding: 0.14rem 0.02rem !important;
   font-weight: 600;
 }
-/* Grille de couleur continue. Couleurs OPAQUES (la transparence délavait le vert vers
+/* Grille de couleur continue. Couleurs OPAQUES (la transparence délavait l'or vers
    le parchemin et laissait voir le fond aux jointures = les traits blancs). En plus de
    border-collapse, un box-shadow de 1px de la MÊME couleur bouche toute jointure
-   sous-pixel. Vert pour les trois sens ACTIFS (primaire → tertiaire, soutenu → clair),
+   sous-pixel. Or pour les trois sens ACTIFS (primaire → tertiaire, soutenu → clair),
    gris pour les NON-actifs (latent, puis inexistant sans lettre). Sombre : night.css. */
 .md-typeset .cj-modules.anima.formes.sens-grille table:not([class]) {
   border-collapse: collapse !important;
@@ -1878,13 +2003,13 @@ html.book-loading .md-content__inner {
    sans bordure. */
 .md-typeset .cj-modules.anima.formes.sens-grille table:not([class]) th { border: none !important; background: var(--paper) !important; box-shadow: 0 0 0 1px var(--paper); }
 .md-typeset .cj-modules.anima.formes.sens-grille table:not([class]) td { border: none !important; }
-/* Dégradé séquentiel vert, foncé (primaire) → très clair (inexistant). box-shadow de
+/* Dégradé séquentiel or, foncé (primaire) → très clair (inexistant). box-shadow de
    la même teinte pour souder les jointures. Texte crème sur les deux plus foncés. */
-.md-typeset .cj-modules.anima.formes.sens-grille table:not([class]) td.p { background: #3a6b47 !important; color: #f4efdf !important; box-shadow: 0 0 0 1px #3a6b47; }
-.md-typeset .cj-modules.anima.formes.sens-grille table:not([class]) td.s { background: #5e9160 !important; color: #f4efdf !important; box-shadow: 0 0 0 1px #5e9160; }
-.md-typeset .cj-modules.anima.formes.sens-grille table:not([class]) td.t { background: #92bd86 !important; box-shadow: 0 0 0 1px #92bd86; }
-.md-typeset .cj-modules.anima.formes.sens-grille table:not([class]) td.l { background: #c2d8ae !important; box-shadow: 0 0 0 1px #c2d8ae; }
-.md-typeset .cj-modules.anima.formes.sens-grille table:not([class]) td.i { background: #e6eed9 !important; box-shadow: 0 0 0 1px #e6eed9; }
+.md-typeset .cj-modules.anima.formes.sens-grille table:not([class]) td.p { background: #6b5210 !important; color: #ffffff !important; box-shadow: 0 0 0 1px #6b5210; }
+.md-typeset .cj-modules.anima.formes.sens-grille table:not([class]) td.s { background: #8a6c25 !important; color: #ffffff !important; box-shadow: 0 0 0 1px #8a6c25; }
+.md-typeset .cj-modules.anima.formes.sens-grille table:not([class]) td.t { background: #c2a559 !important; box-shadow: 0 0 0 1px #c2a559; }
+.md-typeset .cj-modules.anima.formes.sens-grille table:not([class]) td.l { background: #e0cfa0 !important; box-shadow: 0 0 0 1px #e0cfa0; }
+.md-typeset .cj-modules.anima.formes.sens-grille table:not([class]) td.i { background: #f4e9cd !important; box-shadow: 0 0 0 1px #f4e9cd; }
 .md-typeset .cj-modules.anima.formes.mat-ext table:not([class]) th:nth-child(1),
 .md-typeset .cj-modules.anima.formes.mat-ext table:not([class]) td:nth-child(1) { width: 24% !important; }
 .md-typeset .cj-modules.anima.formes.mat-ext table:not([class]) th:not(:first-child),
@@ -2014,10 +2139,10 @@ html.book-loading .md-content__inner {
     z-index: 1;
     margin: 0;
     padding: 0.5rem 0.8rem;
-    font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+    font-family: 'Symboles JDR', 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
     font-size: 0.72rem;
-    color: #fff;
-    background: var(--green-title);
+    color: var(--sur-bandeau);
+    background: var(--bandeau);
     cursor: pointer;
   }
   .book-mode .md-sidebar--primary .md-nav__title::after {
@@ -2061,12 +2186,12 @@ html.book-loading .md-content__inner {
 .md-typeset .sens-niveau {
   margin: 0.4rem 0 0.1rem;
   padding-top: 0.34rem;
-  border-top: 1px solid #e8e1cf;
+  border-top: 1px solid var(--trait);
 }
 .md-typeset .sens-niveau:not(:last-child) {
   margin-bottom: 0.42rem;
   padding-bottom: 0.34rem;
-  border-bottom: 1px solid #e8e1cf;
+  border-bottom: 1px solid var(--trait);
 }
 .md-typeset .sens-niveau p {
   margin: 0 0 0.3rem;
@@ -2076,11 +2201,11 @@ html.book-loading .md-content__inner {
 .md-typeset .sens-niveau p:last-child { margin-bottom: 0; }
 .md-typeset .sens-niveau .zlbl {
   display: block;
-  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-family: 'Symboles JDR', 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
   font-weight: 600;
   font-size: 0.54rem;
   letter-spacing: 0.05em;
-  color: #8a8478;
+  color: var(--ink-2);
   margin: 0 0 0.12rem;
 }
 /* nowrap : un nom de sens ne se coupe jamais à l'intérieur de sa pastille. */
@@ -2136,11 +2261,11 @@ html.book-loading .md-content__inner {
 /* Trait plus sombre entre les groupes de paliers (Basique 1-3 / Avancé 4-6 /
    Expert 7-9) : au-dessus des lignes des paliers 4 et 7 (ligne 1 = palier 0). */
 .md-typeset .cols [data-cols="aura"] table:not([class]) tbody tr:nth-child(5) td,
-.md-typeset .cols [data-cols="aura"] table:not([class]) tbody tr:nth-child(8) td { border-top: 1px solid #999; }
+.md-typeset .cols [data-cols="aura"] table:not([class]) tbody tr:nth-child(8) td { border-top: 1px solid var(--ink-2); }
 /* Table des grades du Mage noir : même trait au-dessus des grades que l'art gravit
    (Déchet de la société, Mage noir, Transcendant : lignes 2, 4 et 12). */
 .md-typeset .cols [data-cols="grades"] table:not([class]) tbody tr:nth-child(2) td,
 .md-typeset .cols [data-cols="grades"] table:not([class]) tbody tr:nth-child(4) td,
-.md-typeset .cols [data-cols="grades"] table:not([class]) tbody tr:nth-child(12) td { border-top: 1px solid #999; }
+.md-typeset .cols [data-cols="grades"] table:not([class]) tbody tr:nth-child(12) td { border-top: 1px solid var(--ink-2); }
 .md-typeset .cols [data-cols="aura"] table:not([class]) th:nth-child(1),
 .md-typeset .cols [data-cols="aura"] table:not([class]) th:nth-child(2) { font-size: 0.55rem !important; }

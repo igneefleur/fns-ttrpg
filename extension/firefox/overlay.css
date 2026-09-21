@@ -6,21 +6,26 @@
 
    PALETTE DU SITE OUTWARD, jour et nuit, recopiée de docs/stylesheets/extra.css
    et docs/stylesheets/night.css : ce fichier est signé, il ne peut rien charger
-   du site, et il doit tenir seul. L'accent d'Outward est le VERT OLIVE du livre
-   (--green-section), là où les autres jeux du dépôt ont un carmin : ne pas
+   du site, et il doit tenir seul. C'est la palette du WIKI D'OUTWARD, et elle
+   tient en trois mots : NOIR, BLANC ET OR. Le jour est une feuille blanche à
+   texte sombre, la nuit une feuille noire à texte clair, et l'or traverse les
+   deux — #ffd77f, la couleur des liens du wiki, gardé tel quel sur le sombre
+   (14:1 sur notre --card de nuit) et ASSOMBRI à #7a5c10 dès qu'il porte du
+   texte sur du blanc, où le vif ne vaudrait que 1,4:1 et ne se lirait pas.
+   Aucun or nulle part. Les autres jeux du dépôt ont un carmin : ne pas
    recopier un rouge d'une feuille voisine, il n'appartient pas à ce livre-ci.
    Les formes, elles, sont celles de la fiche : une carte, c'est un fond --card,
    un filet --line-2, huit pixels de rayon et une ombre à peine posée ; un titre
-   de section, c'est un petit trait vert sous un texte espacé.
+   de section, c'est un petit trait doré sous un texte espacé.
 
-   LES POLICES DU LIVRE NE SONT PAS LÀ, et il faut le dire plutôt que de le
-   laisser croire : Alegreya et Cinzel sont servies par le site, une feuille
-   injectée dans Roll20 ne peut pas aller les chercher (la CSP de Roll20 refuse
-   la police d'une autre origine), et le paquet ne les embarque QUE pour le
-   popup, qui est une page d'extension. On les NOMME quand même, en tête de
-   pile : le joueur qui les a installées les verra, les autres auront la
-   meilleure sérif de leur machine. Le contenu des iframes, lui, a bien les
-   vraies polices, puisqu'il vient du site. */
+   AUCUNE POLICE N'EST NOMMÉE ICI, ET C'EST DEVENU LA MÊME RÉPONSE QUE CELLE DU
+   LIVRE. Le livre a quitté les sérifs : son corps est désormais la pile de
+   Roll20 elle-même — 'Proxima Nova' en tête, Nunito Sans auto-hébergée pour qui
+   ne l'a pas. Tout ce que cette feuille dessine étant posé DANS la page de
+   Roll20, en hériter revient à écrire la police du livre sans la nommer ni la
+   charger — ce qu'une feuille injectée ne pourrait de toute façon pas faire, la
+   CSP de Roll20 refusant la police d'une autre origine. Le détail du raisonnement
+   est dans le long commentaire de .owd-panneau, plus bas. */
 
 /* onglet « Fiche Outward » : un vrai <li><a> cloné des onglets natifs (il hérite
    donc du style de Roll20, onglet actif compris). On n'ajoute que le curseur. */
@@ -59,32 +64,32 @@
    entière du livre : une variable posée ici n'est lue que par cette feuille.
    Elle ne traverse aucune iframe, donc ni la fiche ni le camp, qui sont des
    documents servis par le site et portent leur propre palette. */
-.owd-panneau, .owd-create, .owd-creator-frame {
-  --paper:    #faf6eb;
-  --bg-side:  #e4ddcd;
-  --card:     #fffdf6;
-  --panel:    #f6efdd;
-  --line:     #c6bb9f;
-  --line-2:   #d6cbb1;
-  --ink:      #1d1d1d;
-  --ink-2:    #453d2d;
-  --vert:     #63755e;
+.owd-panneau, .owd-create, .owd-creator-frame, .owd-des {
+  --paper:    #ffffff;
+  --bg-side:  #e9e7e2;
+  --card:     #ffffff;
+  --panel:    #f5f2ea;
+  --line:     #ddd6c6;
+  --line-2:   #ddd6c6;
+  --ink:      #1a1a1a;
+  --ink-2:    #3a3a3a;
+  --or:     #7a5c10;
   --ombre:    rgba(60, 48, 18, .10);
   --ombre-portee: rgba(0, 0, 0, .28);
 }
-.owd-panneau.owd-nuit, .owd-create.owd-nuit, .owd-creator-frame.owd-nuit {
-  --paper:    #201c15;
-  --bg-side:  #14110c;
-  --card:     #2a2519;
-  --panel:    #241f16;
-  --line:     #3c3527;
-  --line-2:   #453e31;
-  --ink:      #e8dfcb;
-  --ink-2:    #a89e88;
-  /* L'olive S'ÉCLAIRCIT la nuit : c'est un ton de TRAIT sur fond sombre, pas
-     un ton « plus foncé ». Le #63755e du jour, posé sur #201c15, ne se
+.owd-panneau.owd-nuit, .owd-create.owd-nuit, .owd-creator-frame.owd-nuit, .owd-des.owd-nuit {
+  --paper:    #0d0d0d;
+  --bg-side:  #000000;
+  --card:     #1a1a1a;
+  --panel:    #1a1a1a;
+  --line:     #3a3a3a;
+  --line-2:   #3a3a3a;
+  --ink:      #e6e6e6;
+  --ink-2:    #9a9384;
+  /* L'or S'ÉCLAIRCIT la nuit : c'est un ton de TRAIT sur fond sombre, pas
+     un ton « plus foncé ». Le #7a5c10 du jour, posé sur #0d0d0d, ne se
      distinguerait plus du filet. */
-  --vert:     #9fb37e;
+  --or:     #ffd77f;
   --ombre:    rgba(0, 0, 0, .35);
   --ombre-portee: rgba(0, 0, 0, .60);
 }
@@ -139,15 +144,28 @@
   background: var(--paper); color: var(--ink);
   border: 1px solid var(--line); border-radius: 8px;
   box-shadow: 0 6px 22px var(--ombre-portee);
-  font: 13px/1.35 'Alegreya', 'EB Garamond', Garamond, 'Times New Roman', serif;
+/* LA POLICE EST CELLE DE ROLL20, ET ON NE LA NOMME PAS.
+ *
+ * Tout ce que ce fichier habille est posé DANS la page de Roll20 : la carte de
+ * dés du tchat, le panneau de Camp, la boîte de création. Ces éléments héritent
+ * donc naturellement de la police de leur hôte, et `font-family: 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif; le tchat reste
+ * Roll20.
+ *
+ * CE QUI RESTE ÉCRIT ICI : la TAILLE, la GRAISSE et l'INTERLETTRAGE. Ce sont des
+ * grandeurs de mise en page, pas d'identité, et il faut les tenir pour que la
+ * carte garde sa hiérarchie — un titre plus petit que son corps ne devient pas
+ * juste parce que la police est la bonne. */
+  font-size: 13px; line-height: 1.35;
+  font-family: inherit;
 }
-/* la barre de titre : l'en-tête d'une section du livre, fond --panel et filet
-   dessous, avec le petit trait vert qui signe les titres de la fiche */
+/* LA BARRE DE TITRE EST UN BANDEAU, comme la charpente du wiki d'Outward et
+   comme la bande d'onglets de la fiche : fond sombre, titre d'or. C'est la
+   seule surface où l'or vif se lit de jour (12,7:1 contre 1,4:1 sur blanc). */
 .owd-panneau-tete {
   position: relative;
   flex: 0 0 auto; display: flex; align-items: center; gap: 6px;
   padding: 4px 5px 4px 10px; cursor: move; user-select: none;
-  background: var(--panel); border-bottom: 1px solid var(--line-2);
+  background: #262626; border-bottom: 1px solid #262626;
 }
 /* ANCRÉ, LE TITRE RECULE D'UNE TABULATION. Collé à la boîte à outils, il
    commencerait juste contre elle et se ferait manger par son ombre : les
@@ -155,15 +173,10 @@
    l'en dégager, et seulement dans ce cas — flottant, le panneau n'a rien à sa
    gauche et un décalage ne serait qu'un trou. */
 .owd-panneau.owd-panneau-ancre > .owd-panneau-tete { padding-left: 28px; }
-.owd-panneau-tete::after {
-  content: ""; position: absolute; left: 10px; bottom: -1px;
-  width: 22px; height: 1.5px; background: var(--vert); border-radius: 2px;
-}
-.owd-panneau.owd-panneau-ancre > .owd-panneau-tete::after { left: 28px; }
 .owd-panneau-titre {
   flex: 1 1 auto; min-width: 0;
-  font-family: 'Cinzel', 'Alegreya', Garamond, 'Times New Roman', serif;
-  font-weight: 700; font-size: 12px; letter-spacing: .06em; color: var(--ink-2);
+  font-family: inherit;
+  font-weight: 700; font-size: 12px; letter-spacing: .06em; color: #ffd77f;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 /* les deux boutons de la barre de titre (détacher, fermer) ont la forme des
@@ -173,22 +186,25 @@
    est en sérif : les deux flèches d'ancrage (⇱ ⇲) n'existent dans aucune police
    du livre, et c'est le repli glyphe par glyphe du navigateur qui les dessine.
    Sans ce dernier recours nommé, un carré vide remplacerait le bouton. */
+/* Les deux boutons vivent DANS le bandeau : ils en prennent les couleurs,
+   sinon deux pastilles claires y feraient deux trous. */
 .owd-panneau-btn {
   flex: 0 0 auto; width: 20px; height: 18px; padding: 0; cursor: pointer;
-  background: var(--card); color: var(--ink-2);
-  border: 1px solid var(--line-2); border-radius: 5px;
-  font: 700 13px/1 'Alegreya', Garamond, 'Times New Roman', serif, sans-serif;
+  background: rgba(255, 215, 127, .10); color: #ffd77f;
+  border: 1px solid rgba(255, 215, 127, .35); border-radius: 5px;
+  font-weight: 700; font-size: 13px; line-height: 1;
+  font-family: inherit;
   transition: background .12s, border-color .12s, color .12s;
 }
 .owd-panneau-btn:hover { background: var(--panel); border-color: var(--line); color: var(--ink); }
 /* le panneau se prend à la souris, mais le repli doit rester atteignable au
    clavier : sans contour visible, la tabulation traverse le panneau à l'aveugle */
-.owd-panneau-btn:focus-visible { outline: 2px solid var(--vert); outline-offset: 1px; }
+.owd-panneau-btn:focus-visible { outline: 2px solid var(--or); outline-offset: 1px; }
 .owd-panneau-corps { flex: 1 1 auto; min-height: 0; background: var(--bg-side); }
 .owd-panneau-frame { display: block; width: 100%; height: 100%; border: 0; }
 /* replié : l'étiquette seule, posée dans un coin ; l'iframe reste en place mais
    n'est plus montrée (la détruire coûterait une place dans la table des
-   liaisons du pont, voir content-roll20.js). Le filet et le trait vert
+   liaisons du pont, voir content-roll20.js). Le filet et le trait or
    disparaissent : ils soulignent un contenu qui n'est plus là. */
 .owd-panneau-replie .owd-panneau-corps,
 .owd-panneau-replie .owd-panneau-grip { display: none; }
@@ -229,7 +245,7 @@
 
 /* ---- écran « pas encore de fiche » + bouton de création ----
    Une carte du livre, posée au milieu du pane : fond --card, filet --line-2,
-   titre en capitales espacées sous son trait vert. Elle remplace le bloc de
+   titre en capitales espacées sous son trait or. Elle remplace le bloc de
    texte gris clair qui n'appartiendrait à rien. */
 .owd-create {
   box-sizing: border-box; max-width: 26rem; margin: 22px auto; padding: 18px 22px 22px;
@@ -237,31 +253,264 @@
   background: var(--card); color: var(--ink);
   border: 1px solid var(--line-2); border-radius: 8px;
   box-shadow: 0 1px 3px var(--ombre);
-  font: 14px/1.5 'Alegreya', 'EB Garamond', Garamond, 'Times New Roman', serif;
+  font-size: 14px; line-height: 1.5;
+  font-family: inherit;
 }
 .owd-create-title {
   position: relative; display: inline-block; margin: 0 0 10px; padding-bottom: 7px;
-  font-family: 'Cinzel', 'Alegreya', Garamond, 'Times New Roman', serif;
+  font-family: inherit;
   font-weight: 700; font-size: 17px; letter-spacing: .05em; color: var(--ink-2);
 }
 .owd-create-title::after {
   content: ""; position: absolute; left: 50%; bottom: 0; margin-left: -13px;
-  width: 26px; height: 1.5px; background: var(--vert); border-radius: 2px;
+  width: 26px; height: 1.5px; background: var(--or); border-radius: 2px;
 }
 .owd-create-msg { margin: 0; color: var(--ink-2); font-size: 13px; }
-/* L'olive de ce bouton ne suit PAS la nuit, et c'est mesuré : le --vert du
+/* L'or de ce bouton ne suit PAS la nuit, et c'est mesuré : le --or du
    livre s'éclaircit la nuit parce qu'il y sert de couleur de TRAIT sur fond
-   sombre, et du blanc cassé posé dessus tomberait sous le seuil. L'olive
+   sombre, et du blanc cassé posé dessus tomberait sous le seuil. L'or
    profond du jour tient 8.1 pour 1 contre le blanc cassé, de jour comme de
-   nuit, et reste le vert du livre. */
+   nuit, et reste l'or du livre. */
 .owd-create-btn {
   margin-top: 14px; padding: 9px 20px 10px; cursor: pointer;
-  background: #46543b; color: #fff8f0;
-  border: 1px solid #2f3b28; border-radius: 7px;
-  font: 700 14px/1.2 'Alegreya', 'EB Garamond', Garamond, 'Times New Roman', serif;
+  background: #6b5a2e; color: #e6e6e6;
+  border: 1px solid #2a2415; border-radius: 7px;
+  font-weight: 700; font-size: 14px; line-height: 1.2;
+  font-family: inherit;
   letter-spacing: .02em;
   box-shadow: 0 1px 3px var(--ombre);
   transition: background .12s;
 }
-.owd-create-btn:hover { background: #2f3b28; }
-.owd-create-btn:focus-visible { outline: 2px solid var(--vert); outline-offset: 2px; }
+.owd-create-btn:hover { background: #2a2415; }
+.owd-create-btn:focus-visible { outline: 2px solid var(--or); outline-offset: 2px; }
+
+/* ---- les dés d'action, rhabillés dans le tchat ----
+   content-roll20.js repère le gabarit « OWD Action Dice » et glisse cette carte
+   AVANT lui, en repliant l'original dans un <details>.
+
+   LE DÉ SUIT « 3D Dice with CSS » de jico (codepen.io/jico/pen/wvMpgog) : un
+   cube de six faces, des coins ARRONDIS, et des POINTS. La version précédente
+   découpait des triangles au clip-path et les orientait par décomposition
+   d'Euler : géométriquement juste, illisible à l'écran. Ce sont les coins
+   arrondis et les points qui font reconnaître un dé, pas la trigonométrie.
+
+   TOUT EST PRÉFIXÉ .owd-, ET C'EST VITAL ICI PLUS QU'AILLEURS : cette feuille
+   est injectée dans toutes les frames de Roll20, et le tchat est l'endroit où
+   les feuilles de personnage de la communauté déversent leurs propres styles.
+   Un sélecteur générique (.dice, .face, .dot) y trouverait des victimes.
+
+   Les tailles sont en px : le tchat de Roll20 impose sa racine, qui n'est pas la
+   nôtre, et un dé en rem changerait de taille selon le zoom de l'interface.
+   L'ARÊTE EST ÉCRITE DEUX FOIS, ici et dans CUBE du code : c'est le seul nombre
+   partagé, et les deux doivent bouger ensemble. */
+.owd-des-hote { margin: .25em 0; }
+
+.owd-des {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 7px 9px 8px;
+  box-shadow: 0 1px 3px var(--ombre);
+  font-family: inherit;
+  color: var(--ink);
+}
+
+.owd-des-tete {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 8px; padding-bottom: 5px; margin-bottom: 10px;
+  border-bottom: 1px solid var(--line-2);
+}
+.owd-des-titre {
+  font-family: inherit;
+  font-size: 12px; letter-spacing: .06em; color: var(--or);
+}
+.owd-des-compte { font-size: 11px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+
+/* La piste enveloppe : cinq dés tiennent en ligne dans un tchat large, pas dans
+   un tchat réduit à sa colonne minimale. Le gap vertical laisse la place aux
+   dés qui dépassent un peu de leur case pendant la culbute. */
+.owd-des-piste {
+  display: flex; flex-wrap: wrap; gap: 22px 14px;
+  justify-content: center; align-items: center;
+  padding: 6px 0 4px;
+}
+
+/* ---- la place du dé dans la carte ----
+   LA BOÎTE NE DIMENSIONNE PLUS RIEN, et c'est le changement. Elle portait la
+   taille et la perspective du cube à points ; le dé en volume les porte
+   lui-même, et il le doit — sa hauteur vaut deux APOTHÈMES, une grandeur qui
+   change d'un solide à l'autre, qu'aucune règle écrite ici ne saurait deviner.
+   Un d4 et un d20 de même rayon n'ont pas la même hauteur de boîte.
+   Reste l'alignement : les dés se posent sur une même ligne de sol, donc par le
+   BAS, jamais par leur milieu. */
+.owd-de {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-end;
+}
+
+/* LE JETON : ce que la carte ne sait pas dessiner s'affiche QUAND MÊME, en
+   pastille ronde portant son chiffre — une somme, un jet modifié, un d100. Il
+   n'anime pas et ne se coche pas ; il ne prétend à rien d'autre qu'à montrer le
+   résultat, qui lui est exact. Il vaut mieux qu'un blanc : sans lui, un seul jet
+   inconnu au milieu de cinq d8 faisait disparaître la carte entière. */
+.owd-jeton {
+  width: 44px; height: 44px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: inherit; font-size: 17px; font-weight: 700;
+  color: var(--ink); background: var(--line-2);
+  border: 1px solid var(--line-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.owd-des-chiffres {
+  display: flex; flex-wrap: wrap; gap: 16px 14px;
+  justify-content: center; margin-top: 8px;
+}
+.owd-des-chiffre {
+  min-width: 44px; text-align: center;
+  font-family: inherit;
+  font-size: 15px; color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.owd-des-chiffre-haut { color: #8a6a1c; font-weight: 700; }
+.owd-des.owd-nuit .owd-des-chiffre-haut { color: #d9b45f; }
+.owd-des-chiffre-bas { color: var(--ink-2); opacity: .7; }
+
+/* le pied : la somme, le meilleur, et le bouton — tous en retrait. La somme et
+   le meilleur ne sont PAS des résultats. */
+.owd-des-pied {
+  display: flex; gap: 12px; align-items: center; justify-content: center;
+  margin-top: 8px; padding-top: 5px; border-top: 1px solid var(--line-2);
+}
+.owd-des-info {
+  font-size: 11px; color: var(--ink-2); font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* LE PIED PORTE TROIS COMMANDES DEPUIS QU'ON PEUT RELANCER, et la colonne du
+   tchat n'en fait que 320 px au plus étroit. Sans ces deux règles, les libellés
+   se cassent en deux — « re- / animer » — et le pied devient illisible : ce sont
+   les MOTS qui doivent rester entiers, et la LIGNE qui doit avoir le droit de se
+   replier. L'inverse de ce que fait un flex par défaut. */
+.owd-des-pied { flex-wrap: wrap; row-gap: 5px; justify-content: space-between; }
+/* deux groupes insécables : les résultats, puis Détails et relancer côte à côte */
+.owd-des-groupe { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+.owd-des-rejouer { white-space: nowrap; }
+
+/* RE-ANIMER. Discret : il rejoue une animation, il ne relance aucun dé, et un
+   bouton trop visible dans un tchat de jeu laisserait croire le contraire. */
+.owd-des-rejouer {
+  font-family: inherit;
+  font-size: 10px; letter-spacing: .04em;
+  color: var(--ink-2); background: transparent;
+  border: 1px solid var(--line-2); border-radius: 4px;
+  padding: 1px 7px; cursor: pointer; opacity: .75;
+}
+.owd-des-rejouer:hover { opacity: 1; border-color: var(--or); color: var(--or); }
+
+/* LE MESSAGE D'ORIGINE, CACHÉ MAIS PRÉSENT : on peut toujours vérifier un jet
+   contesté, et le jour où cette réécriture se trompera, l'original sera là pour
+   le dire. Ce n'est plus un <details> avec son propre libellé — c'est une boîte
+   que le bouton « détail Roll20 » du pied de carte montre ou cache. */
+.owd-des-repli { margin-top: 5px; }
+.owd-des-repli[hidden] { display: none; }
+
+/* LE DÉ QU'ON PEUT CHOISIR. Le bouton n'ajoute AUCUNE boîte : il épouse le dé,
+   sans fond ni bordure au repos, pour que rien ne change tant qu'on n'a rien
+   choisi. Ce qui marque le choix est un anneau, posé DERRIÈRE le dé par une
+   ombre portée, et un léger recul — un dé choisi est un dé qu'on a mis de côté
+   pour le relancer, pas un dé qu'on a sélectionné dans une liste. */
+/* L'ÉTUI TIENT LE DÉ ET SON BOUTON CÔTE À CÔTE, l'un sur l'autre. Il a la
+   boîte de la scène ; le bouton, lui, déborde en haut et en bas jusqu'à la
+   sphère circonscrite, et c'est voulu — le dé aussi déborde. */
+.owd-de-case {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-end;
+}
+
+/* LE BOUTON EST VIDE, SE POSE SUR LE DÉ, ET NE MONTRE RIEN.
+   Il enfermait la scène 3D — sous-arbre `contain: layout`, contexte 3D, faces
+   réécrites à chaque image —, et c'était la seule chose qui le distinguait des
+   boutons du pied, dont on sait qu'ils répondent dans Roll20. Vide, il leur est
+   identique.
+   IL EST AU-DESSUS : dernier enfant positionné de l'étui, donc dernier peint et
+   premier touché par le hit-test. Sa taille est écrite par le script — deux
+   rayons, la boîte de la sphère circonscrite —, la feuille ne pouvant pas la
+   deviner.
+   MAIS IL NE PORTE PLUS AUCUN DÉCOR. Un anneau dessiné là se peint PAR-DESSUS
+   le dé et le ronge. Le décor est descendu sur `.owd-de-halo`, plus bas. */
+.owd-de-choix {
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  padding: 0; border: 0; background: transparent;
+  cursor: pointer;
+}
+.owd-de-choix:focus-visible { outline: 2px solid var(--or); outline-offset: 2px; }
+
+/* LE HALO — LE DÉCOR, ET IL PASSE SOUS LE DÉ.
+   Premier enfant de l'étui, donc premier peint : le dé se dessine par-dessus et
+   garde ses arêtes. Il occupe le même carré que la cible du clic — deux rayons,
+   la sphère circonscrite —, si bien que ce qu'on voit s'allumer est exactement
+   ce qu'on peut cliquer.
+   L'ÉTAT VIENT DE L'ÉTUI, pas du bouton : `:hover` remonte à tous les ancêtres
+   de l'élément survolé, et la classe de sélection est posée par le script. Un
+   frère ne se sélectionne pas depuis un frère sans `:has()`, et il n'y a aucune
+   raison d'en dépendre pour si peu. */
+.owd-de-halo {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 46px; height: 46px;          /* deux rayons — voir DE_RAYON */
+  transform: translate(-50%, -50%);
+  border-radius: 14px;
+  background: transparent;
+  transition: background-color .14s, box-shadow .14s;
+  pointer-events: none;               /* le clic appartient au bouton */
+}
+.owd-de-case:hover .owd-de-halo {
+  background: rgb(70 84 59 / .09);
+  box-shadow: inset 0 0 0 1px rgb(70 84 59 / .28);
+}
+.owd-de-case.owd-choisi .owd-de-halo {
+  background: rgb(70 84 59 / .15);
+  box-shadow: inset 0 0 0 2px var(--or), 0 0 0 4px rgb(70 84 59 / .13);
+}
+.owd-des.owd-nuit .owd-de-case:hover .owd-de-halo {
+  background: rgb(255 255 255 / .07);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / .22);
+}
+.owd-des.owd-nuit .owd-de-case.owd-choisi .owd-de-halo {
+  background: rgb(255 255 255 / .11);
+  box-shadow: inset 0 0 0 2px var(--or), 0 0 0 4px rgb(255 255 255 / .10);
+}
+
+/* RELANCER : la seule commande de la carte qui ÉCRIVE au tchat, donc la seule
+   qui doive se distinguer des deux autres. Éteinte tant qu'aucun dé n'est
+   choisi — un bouton qui ne ferait rien vaut mieux absent qu'inerte. */
+.owd-des-relancer[disabled] { opacity: .35; cursor: default; }
+.owd-des-relancer:not([disabled]) {
+  opacity: 1; color: var(--or); border-color: var(--or);
+}
+.owd-des-relancer:not([disabled]):hover { background: rgb(70 84 59 / .12); }
+
+/* Le bouton de détail porte le même habit que « re-animer » — ce sont deux
+   commandes de même rang, dans le même pied. Seule sa couleur d'accent diffère,
+   pour que l'œil ne les confonde pas au moment de cliquer. */
+.owd-des-detail:hover { border-color: var(--ink-2); color: var(--ink); }
+.owd-des-detail[aria-expanded="true"] {
+  opacity: 1; border-color: var(--ink-2); color: var(--ink);
+}
+
+/* QUI DEMANDE MOINS DE MOUVEMENT N'EN AURA PAS — mais la coupure est DANS LE JS,
+   pas ici, parce que la culbute est lancée par element.animate() : une animation
+   du moteur d'animations web ne se laisse pas éteindre par une media query, qui
+   ne gouverne que ce que la feuille déclare. Le moteur des dés l'interroge
+   lui-même, à chaque dé : voir moinsDeMouvement() dans des3d.js. Le dé se pose
+   alors directement sur sa face — même valeur, même lecture. */
+@media (prefers-reduced-motion: reduce) {
+  .owd-de-halo { transition: none !important; }
+}

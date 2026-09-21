@@ -1,0 +1,680 @@
+<meta charset="utf-8">
+<title>Les armes au banc</title>
+<style>
+/* Mêmes jetons que l'éditeur de trajet et le solveur : la page appartient à la
+   même famille, elle doit se lire pareil. Rien de neuf sinon la ligne médiane,
+   qui porte le chiffre qui tranche.
+
+   La palette est celle du wiki d'Outward : feuille BLANCHE le jour, NOIRE la
+   nuit, et l'or pour tout ce qui compte. Les jetons gardent leurs noms
+   d'origine — ils disent un rôle, pas une teinte — sauf l'accent, qui devient
+   --or. Ces pages d'outils ne sont pas servies par mkdocs et n'ont pas le
+   bouton du site : elles suivent le thème du SYSTÈME, d'où le bloc
+   prefers-color-scheme. Le bloc [data-theme] qui le suit reste pour le jour où
+   la page serait enchâssée dans le livre. */
+:root {
+  --papier:      #ffffff;  /* la feuille : fond de page, et fond des colonnes */
+  --papier-haut: #ffffff;  /* les surfaces en relief. Le jour, ce sont le filet et
+                              l'ombre qui les détachent, pas la teinte. */
+  --creux:       #e9e7e2;  /* le renfoncement, tel qu'il est posé chez les deux autres
+                              outils ; aucune règle d'ici ne s'en sert encore, le jeton
+                              reste pour que la famille garde le même jeu complet */
+  --encre:       #1a1a1a;  /* le texte courant, 16,9:1 sur la feuille */
+  --encre-pale:  #5f5f5f;  /* le texte atténué et les légendes, 6,4:1 */
+  --trait:       #ddd6c6;  /* le filet ordinaire ; il ne porte jamais de texte */
+  --or:          #7a5c10;  /* l'accent : titre, dégâts, barres, cases atteintes.
+                              6,2:1 sur blanc. L'or vif du wiki, #ffd77f, ne tient
+                              que 1,4:1 sur du blanc : il est illisible le jour et
+                              n'apparaît donc que la nuit, où il est parfait. */
+  --alerte:      #9A4423;  /* l'avertissement, 6,5:1 sur blanc */
+  --sang:        #8C3A2A;  /* l'ennemi posé sur l'empreinte */
+  --ombre:       0 1px 2px rgba(0, 0, 0, .09), 0 8px 24px rgba(0, 0, 0, .07);
+  /* La pile de Roll20, mesurée sur une vraie partie : Proxima Nova au corps,
+     sa condensée aux titres. La fonte est sous licence Adobe et ne se
+     télécharge pas — on la NOMME, et Nunito Sans prend le relais chez qui ne
+     l'a pas. Pas de 'Symboles JDR' ici : cette famille maison n'est servie que
+     par le livre, et cette page ne l'est pas. */
+  --corps: 'Proxima Nova', proxima-nova, 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --titres: 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+/* La nuit : la feuille passe au noir du wiki, et l'or vif reprend sa place —
+   14:1 sur ce fond, il porte le texte sans réserve. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --papier: #0d0d0d; --papier-haut: #1a1a1a; --creux: #262626;
+    --encre: #e6e6e6; --encre-pale: #9a9384; --trait: #3a3a3a;
+    --or: #ffd77f; --alerte: #D98456; --sang: #D9755E;
+    --ombre: 0 1px 2px rgba(0,0,0,.6), 0 8px 24px rgba(0,0,0,.45);
+  }
+}
+:root[data-theme="dark"] {
+  --papier: #0d0d0d; --papier-haut: #1a1a1a; --creux: #262626;
+  --encre: #e6e6e6; --encre-pale: #9a9384; --trait: #3a3a3a;
+  --or: #ffd77f; --alerte: #D98456; --sang: #D9755E;
+  --ombre: 0 1px 2px rgba(0,0,0,.6), 0 8px 24px rgba(0,0,0,.45);
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: clamp(1rem, 3vw, 2.75rem) clamp(1rem, 3vw, 2rem) 4rem;
+  background: var(--papier);
+  color: var(--encre);
+  font: 400 16px/1.6 var(--corps);
+  -webkit-font-smoothing: antialiased;
+}
+/* La largeur suit le nombre d'armes, pas l'inverse : une colonne de tableau
+   demande ses 20,7rem, sinon la colonne des dégâts sort du cadre et se laisse
+   couper par le rouleau. À trois armes cela fait les 62rem d'avant, à quatre
+   les 82,8rem qu'il leur faut, et jamais plus que la place disponible. */
+.env { max-width: min(100%, calc(var(--n, 3) * 20.7rem));
+       margin: 0 auto; display: grid; gap: clamp(2.2rem, 5vw, 3.4rem); }
+
+.tete { display: grid; gap: .7rem; }
+h1 {
+  margin: 0;
+  font: 600 clamp(1.8rem, 5vw, 2.9rem)/1.05 var(--titres);
+  font-variant: small-caps;
+  letter-spacing: .04em;
+  color: var(--or);
+  text-wrap: balance;
+}
+.chapeau { margin: 0; max-width: 60ch; color: var(--encre-pale); font-size: .97rem; }
+.chapeau b { color: var(--encre); font-weight: 600; }
+
+/* L'épine dorsale : une colonne par arme, séparées d'un filet. Le nombre de
+   colonnes est posé en --n par le script, la page ne présume donc pas d'un
+   duel : deux armes ou cinq se rangent de la même façon.
+   Sous 18rem une colonne ne tient plus le tableau des coups : la colonne des
+   dégâts sort du cadre et le rouleau la coupe. Le seuil dépend donc du nombre
+   d'armes, qu'aucune règle @media ne sait lire — c'est la base de flex qui le
+   calcule à sa place. Tant que la ligne fait ses 18rem par arme, la base est
+   négative, donc nulle, et les colonnes se partagent la ligne ; sitôt qu'elle
+   ne les fait plus, la base devient énorme et chaque colonne prend une ligne à
+   elle. Il n'y a jamais de rangée incomplète, à trois armes comme à cinq. */
+.duo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  /* Le filet n'est pas une bordure mais le fond du conteneur vu par un écart
+     d'un pixel : il se met tout seul à la verticale ou à l'horizontale selon le
+     sens de l'empilement. La marge négative rend aux colonnes leur alignement
+     sur le reste de la page, que leur retrait intérieur leur ferait perdre. */
+  gap: 1px;
+  background: var(--trait);
+  margin-inline: calc(-1 * clamp(.7rem, 1.8vw, 1.4rem));
+}
+.duo > .col {
+  flex: 1 1 calc((var(--n, 3) * 18rem - 100%) * 999);
+  min-width: 0;
+  background: var(--papier);
+  padding: .9rem clamp(.7rem, 1.8vw, 1.4rem);
+}
+
+h2 {
+  margin: 0 0 .25rem;
+  font: 700 .74rem/1 var(--mono);
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--encre-pale);
+}
+.dit { margin: 0 0 1.1rem; max-width: 62ch; color: var(--encre-pale); font-size: .93rem; }
+.dit b { color: var(--encre); font-weight: 600; }
+section { display: grid; }
+
+.arme-nom {
+  margin: 0 0 .55rem;
+  font: 600 1.05rem/1.2 var(--titres);
+  font-variant: small-caps;
+  letter-spacing: .05em;
+}
+.arme-nom span { color: var(--encre-pale); font-variant: normal; font-size: .74rem;
+                 letter-spacing: .04em; margin-left: .5rem; }
+
+.bilan { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px;
+         background: var(--trait); border: 1px solid var(--trait); border-radius: 4px;
+         overflow: hidden; box-shadow: var(--ombre); }
+@media (max-width: 620px) { .bilan { grid-template-columns: 1fr; } }
+.bilan > div { background: var(--papier-haut); padding: .85rem 1rem 1rem;
+               display: grid; gap: .35rem; align-content: start; }
+.bilan .q { font: 700 .62rem/1.3 var(--mono); letter-spacing: .13em;
+            text-transform: uppercase; color: var(--encre-pale); }
+.bilan .paire { display: grid; grid-template-columns: 4.6rem auto; gap: 0 .55rem;
+                align-items: baseline; }
+.bilan .et { font: 400 .74rem/1.5 var(--mono); letter-spacing: .04em;
+             color: var(--encre-pale); }
+.bilan .v { font: 700 1.35rem/1.35 var(--mono); font-variant-numeric: tabular-nums; }
+.bilan .n { font-size: .82rem; color: var(--encre-pale); margin-top: .1rem; }
+.gagne { color: var(--or); }
+.perd { color: var(--encre-pale); }
+
+.rouleau { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: .84rem; }
+th, td { padding: .3rem .5rem; text-align: left; border-bottom: 1px solid var(--trait); }
+th { font: 700 .6rem/1.3 var(--mono); letter-spacing: .09em; text-transform: uppercase;
+     color: var(--encre-pale); white-space: nowrap; }
+td.n, th.n { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+td.c, th.c { text-align: center; }
+tbody tr:last-child td { border-bottom: 0; }
+.cs { font: 400 .74rem/1.3 var(--mono); color: var(--encre-pale); }
+.deg { font-weight: 700; color: var(--or); }
+.gd { font: 700 .72rem/1 var(--mono); color: var(--encre-pale); }
+.mu { font: 400 .72rem/1 var(--mono); color: var(--encre-pale); }
+
+.emp { display: block; width: 2.6rem; height: auto; }
+/* Les noms de ces classes viennent du chapitre des armes, où ils désignent la
+   NATURE de la case — visée en plein, ou seulement traversée — et non sa
+   teinte ; ils ne bougeront qu'avec le chapitre, et le script qui les écrit.
+   L'aplat, lui, est l'or de l'accent : plein pour la case visée, à 26 % pour
+   le simple passage, ce qui suffit à les distinguer sur les deux fonds. */
+.hx { stroke: var(--trait); stroke-width: .7; }
+.hx-vide { fill: var(--encre); fill-opacity: .05; }
+.hx-verte { fill: var(--or); }
+.hx-passe { fill: var(--or); fill-opacity: .26; }
+.hx-cible { fill: var(--sang); }
+.hx-soi { fill: none; stroke: var(--encre-pale); stroke-width: 1.4; stroke-dasharray: 2 2; }
+
+.echelle { display: grid; gap: .3rem; margin-top: .2rem; }
+.barre { display: grid; grid-template-columns: 3.6rem minmax(0, 1fr) 2.4rem; gap: .5rem;
+         align-items: center; font: 400 .74rem/1 var(--mono); color: var(--encre-pale); }
+.barre .p { height: .62rem; border-radius: 1px; background: var(--or); opacity: .82; }
+.barre .p.pale { background: var(--encre-pale); opacity: .35; }
+.barre .t { text-align: right; color: var(--encre); font-weight: 700;
+            font-variant-numeric: tabular-nums; }
+
+.forms { display: grid; gap: .55rem; }
+/* L'empreinte à gauche, et tout le reste dans un seul bloc à droite : le nom
+   puis une ligne par arme. Les barres s'empilent au lieu de se partager la
+   largeur, ce qui garde le libellé lisible quel que soit le nombre d'armes.
+   Le corps est un bloc à lui : empiler les lignes dans la grille de .form les
+   faisait se superposer dès qu'il y en avait plus de deux. */
+.form {
+  display: grid;
+  grid-template-columns: 3.2rem minmax(0, 1fr);
+  align-items: center;
+  gap: .7rem;
+  padding: .5rem .65rem;
+  border: 1px solid var(--trait);
+  border-radius: 3px;
+  background: var(--papier-haut);
+}
+.form .corps { display: grid; gap: .35rem; min-width: 0; }
+.form .nom { font-size: .84rem; }
+.form .nom em { font-style: normal; color: var(--encre-pale); font: 400 .72rem/1.4 var(--mono); }
+/* Le libellé porte le nom de l'arme ET le nombre de coups : à 5.6rem, largeur
+   héritée du temps où deux barres se partageaient la ligne, « masse · 4 coups »
+   se coupait en chemin. Les barres étant maintenant empilées, la place est là. */
+.form .cote { display: grid; grid-template-columns: 9.5rem minmax(0, 1fr) auto; gap: .45rem;
+              align-items: center; font: 400 .72rem/1 var(--mono); }
+.form .cote .et { color: var(--encre-pale); letter-spacing: .05em;
+                  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.form .cote .j { height: .5rem; border-radius: 1px; background: var(--encre-pale); opacity: .3; }
+/* Une barre est un span VIDE : restée en ligne, elle n'a ni hauteur ni largeur
+   et ne peignait rien. Son enveloppe, elle, est bloc d'office puisqu'elle est
+   fille d'une grille ; la barre, non. */
+.form .cote .j, .barre .p { display: block; }
+.form .cote.vainq .j { background: var(--or); opacity: .85; }
+.form .cote .v { font-weight: 700; font-variant-numeric: tabular-nums; min-width: 2.4rem;
+                 text-align: right; }
+.form .cote.vainq .v { color: var(--or); }
+.form svg { align-self: center; }
+
+.note { border-left: 3px solid var(--alerte); padding: .1rem 0 .1rem 1rem;
+        display: grid; gap: .55rem; }
+.note p { margin: 0; max-width: 62ch; font-size: .93rem; }
+.note b { font-weight: 600; }
+.note .titre { font: 700 .68rem/1 var(--mono); letter-spacing: .13em;
+               text-transform: uppercase; color: var(--alerte); }
+
+ul.sec { margin: 0; padding-left: 1.1rem; display: grid; gap: .35rem; max-width: 62ch;
+         font-size: .91rem; }
+ul.sec code { font: 400 .82em/1 var(--mono); color: var(--encre-pale); }
+
+.pied { font-size: .78rem; color: var(--encre-pale); border-top: 1px solid var(--trait);
+        padding-top: .8rem; max-width: 62ch; }
+</style>
+
+<div class="env">
+
+<header class="tete">
+  <h1 id="titre"></h1>
+  <p class="chapeau" id="chapeau"></p>
+</header>
+
+<section><div class="bilan" id="bilan"></div></section>
+
+<section>
+  <h2>Ce qu'on mesure</h2>
+  <p class="dit">Un enchaînement <b>s'ouvre et se ferme sur une touche</b>. La garde
+  d'arrivée d'un coup ouvre le suivant, aucun coup ne se répète dans le tour, un pas
+  est permis entre deux coups, la direction ne change pas. Une case blanche rencontrée
+  rend la moitié des dégâts et <b>interrompt</b> : le coup s'arrête là et la garde
+  revient au centre. Un enchaînement dit <em>naturel</em> n'en subit aucune. Les totaux
+  sont les meilleurs que l'arme puisse produire dans le tour, tous placements et tous
+  pas essayés.</p>
+</section>
+
+<section>
+  <h2 id="t-coups"></h2>
+  <p class="dit">L'empreinte donne les cases atteintes : <b>pleines</b>, la partie
+  vulnérante à hauteur de corps ; <b>pâles</b>, le reste du trajet, qui coupe. Le point
+  de vue est celui du porteur, tourné vers le haut.</p>
+  <div class="duo" id="coups"></div>
+</section>
+
+<section>
+  <h2>Un seul ennemi</h2>
+  <p class="dit">Ennemi à deux pas droit devant. La barre est le total du tour selon
+  le nombre de coups engagés.</p>
+  <div class="duo" id="mono"></div>
+</section>
+
+<section>
+  <h2>D'où l'enchaînement peut s'ouvrir</h2>
+  <p class="dit">Toutes les cases d'où un enchaînement peut s'ouvrir, un ennemi seul,
+  du meilleur rendement au moindre. Les cases absentes ne donnent rien : l'arme ne
+  touche pas, ou ne touche qu'en se laissant interrompre.</p>
+  <div class="duo" id="cases"></div>
+</section>
+
+<section>
+  <h2>Plusieurs ennemis</h2>
+  <p class="dit">Toutes les armes sur <b>le même terrain</b> : mêmes ennemis, mêmes cases,
+  et à chacune de faire ce qu'elle peut. La barre vaut le total naturel du tour.</p>
+  <div class="forms" id="formations"></div>
+</section>
+
+<section>
+  <h2>Sur tous les placements possibles</h2>
+  <p class="dit" id="dit-balayage"></p>
+  <div class="rouleau">
+    <table id="balayage"><thead><tr></tr></thead><tbody></tbody></table>
+  </div>
+</section>
+
+<section><div class="note" id="verdict"></div></section>
+
+<p class="pied" id="pied"></p>
+
+</div>
+
+<script id="donnees" type="application/json">__DONNEES__</script>
+<script>
+(function () {
+  "use strict";
+  const D = JSON.parse(document.getElementById("donnees").textContent);
+  const NS = "http://www.w3.org/2000/svg";
+  const ARMES = D.armes;
+  const court = (n) => n.replace(/ à une main| à deux mains/, "");
+  const NOMS = ARMES.map(m => court(m.arme));
+  /* Une liste d'armes se lit « la première, la deuxième et la dernière ». */
+  const liste = (t) => t.length < 2 ? (t[0] || "")
+    : t.slice(0, -1).join(", ") + " et " + t[t.length - 1];
+  const fr = (x) => x.toLocaleString("fr-FR");
+  const dec = (x) => x.toFixed(1).replace(".", ",");
+  const MOTS = ["zéro", "une", "deux", "trois", "quatre", "cinq", "six", "sept",
+                "huit", "neuf", "dix", "onze", "douze", "treize", "quatorze",
+                "quinze", "seize", "dix-sept", "dix-huit", "dix-neuf", "vingt"];
+  const mot = (n) => MOTS[n] || fr(n);
+
+  /* Le genre se lit sur le nom : masculin pour « Corps à corps » et « Grand
+     marteau », féminin partout ailleurs. Seule l'initiale voyelle élide — le h
+     de hache et de hallebarde est aspiré. */
+  function avec(m, majuscule) {
+    const n = court(m.arme).toLowerCase();
+    const masc = /^(corps|grand )/.test(n);
+    const art = /^[aeiouéèàî]/.test(n) ? "l'" : (masc ? "le " : "la ");
+    const s = art + n;
+    return majuscule ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+  }
+
+  const el = (t, k, x) => {
+    const n = document.createElement(t);
+    if (k) n.className = k;
+    if (x != null) n.textContent = x;
+    return n;
+  };
+  const dis = (n, s) => { document.getElementById(n).textContent = s; };
+  const par = (html) => { const p = document.createElement("p"); p.innerHTML = html; return p; };
+
+  /* ── L'empreinte : le porteur au centre, tourné vers le haut ── */
+  function hexa(cx, cy, ray) {
+    let p = "";
+    for (let i = 0; i < 6; i++) {
+      const a = (Math.PI / 180) * 60 * i;
+      p += (i ? "L" : "M") + (cx + ray * Math.cos(a)).toFixed(2) + " " +
+           (cy + ray * Math.sin(a)).toFixed(2);
+    }
+    return p + "Z";
+  }
+  function empreinte(vertes, blanches, cibles, taille) {
+    const s = document.createElementNS(NS, "svg");
+    s.setAttribute("viewBox", "-42 -44 84 88");
+    s.setAttribute("class", "emp");
+    if (taille) s.setAttribute("style", "width:" + taille);
+    s.setAttribute("aria-hidden", "true");
+    for (const nom in D.cases) {
+      const [x, y] = D.cases[nom];
+      const c = document.createElementNS(NS, "path");
+      c.setAttribute("d", hexa(x, y, 9.1));
+      let k = "hx hx-vide";
+      if (cibles && cibles.indexOf(nom) >= 0) k = "hx hx-cible";
+      else if (vertes.indexOf(nom) >= 0) k = "hx hx-verte";
+      else if (blanches.indexOf(nom) >= 0) k = "hx hx-passe";
+      c.setAttribute("class", k);
+      s.appendChild(c);
+    }
+    const soi = document.createElementNS(NS, "path");
+    soi.setAttribute("d", hexa(0, 0, 5.2));
+    soi.setAttribute("class", "hx-soi");
+    s.appendChild(soi);
+    return s;
+  }
+
+  const vertes = (m) => m.coups.reduce((a, c) => a + c.vertes.length, 0);
+  const blanches = (m) => m.coups.reduce((a, c) => a + c.blanches.length, 0);
+  const distinctes = (m) => {
+    const s = {};
+    m.coups.forEach(c => c.vertes.forEach(v => { s[v] = 1; }));
+    return Object.keys(s);
+  };
+  const somme = (m) => m.coups.reduce((a, c) => a + c.deg, 0);
+  const ouvertes = (m) => m.cases.filter(c => c.nat).length;
+
+  /* ── Les coups d'une arme ── */
+  function tableCoups(m, cible) {
+    const box = document.getElementById(cible);
+    const h = el("p", "arme-nom", court(m.arme));
+    h.appendChild(el("span", null, "base " + m.base + " · " + vertes(m) + " vertes sur " +
+                     distinctes(m).length + " cases · " + blanches(m) + " blanches"));
+    box.appendChild(h);
+    const r = el("div", "rouleau"), t = document.createElement("table");
+    t.innerHTML = "<thead><tr><th></th><th>coup</th><th class='c'>garde</th>" +
+                  "<th class='n'>dégâts</th></tr></thead>";
+    const tb = document.createElement("tbody");
+    for (const c of m.coups) {
+      const tr = document.createElement("tr");
+      const t0 = el("td");
+      t0.appendChild(empreinte(c.vertes, c.blanches, null));
+      tr.appendChild(t0);
+      const t1 = el("td");
+      t1.appendChild(document.createTextNode(c.nom));
+      t1.appendChild(document.createElement("br"));
+      t1.appendChild(el("span", "cs", c.vertes.join(" ")));
+      tr.appendChild(t1);
+      const t2 = el("td", "c");
+      t2.appendChild(el("span", "gd", c.garde.replace(">", " → ")));
+      tr.appendChild(t2);
+      const t3 = el("td", "n");
+      if (c.mult) {
+        t3.appendChild(el("span", "mu", "×" + c.mult.toFixed(1).replace(".", ",") + " "));
+      }
+      t3.appendChild(el("span", "deg", String(c.deg)));
+      tr.appendChild(t3);
+      tb.appendChild(tr);
+    }
+    t.appendChild(tb);
+    r.appendChild(t);
+    box.appendChild(r);
+  }
+
+  function echelle(m, cible, plafond) {
+    const box = document.getElementById(cible);
+    box.appendChild(el("p", "arme-nom", court(m.arme)));
+    const e = el("div", "echelle");
+    for (let n = 1; n <= 5; n++) {
+      const v = m.paliers[n] || 0;
+      const b = el("div", "barre");
+      b.appendChild(el("span", null, n + (n > 1 ? " coups" : " coup")));
+      const p = el("span", "p" + (v ? "" : " pale"));
+      p.style.width = Math.max(2, 100 * v / plafond) + "%";
+      const w = el("span");
+      w.appendChild(p);
+      b.appendChild(w);
+      b.appendChild(el("span", "t", String(v)));
+      e.appendChild(b);
+    }
+    box.appendChild(e);
+  }
+
+  function cases(m, cible) {
+    const box = document.getElementById(cible);
+    box.appendChild(el("p", "arme-nom", court(m.arme)));
+    const r = el("div", "rouleau"), t = document.createElement("table");
+    t.innerHTML = "<thead><tr><th>case</th><th class='n'>pas</th>" +
+                  "<th class='n'>naturel</th><th class='n'>interrompu</th></tr></thead>";
+    const tb = document.createElement("tbody");
+    for (const c of m.cases) {
+      const tr = document.createElement("tr");
+      const a = el("td");
+      a.appendChild(el("span", "gd", c.case));
+      tr.appendChild(a);
+      tr.appendChild(el("td", "n", String(c.anneau)));
+      const d = el("td", "n");
+      d.appendChild(el("span", c.nat ? "deg" : "perd", c.nat ? String(c.nat) : "—"));
+      tr.appendChild(d);
+      tr.appendChild(el("td", "n", c.inter > c.nat ? String(c.inter) : "—"));
+      tb.appendChild(tr);
+    }
+    t.appendChild(tb);
+    r.appendChild(t);
+    box.appendChild(r);
+  }
+
+  function formations() {
+    const box = document.getElementById("formations");
+    const haut = Math.max.apply(null, D.duel.formations.map(
+      f => Math.max.apply(null, f.armes.map(x => x.e))));
+    for (const f of D.duel.formations) {
+      const d = el("div", "form");
+      d.appendChild(empreinte([], [], f.cases, "3.2rem"));
+      const corps = el("div", "corps");
+      d.appendChild(corps);
+      const n = el("div", "nom");
+      n.appendChild(document.createTextNode(f.nom.charAt(0).toUpperCase() + f.nom.slice(1)));
+      n.appendChild(document.createTextNode(" "));
+      n.appendChild(el("em", null, "· " + f.cases.join(" ")));
+      corps.appendChild(n);
+      const mieux = Math.max.apply(null, f.armes.map(x => x.e));
+      for (const [nom, v, nb] of f.armes.map((x, i) => [NOMS[i], x.e, x.n])) {
+        const c = el("div", "cote" + (v >= mieux ? " vainq" : ""));
+        c.appendChild(el("span", "et", nom.toLowerCase() + " · " + nb +
+                                       (nb > 1 ? " coups" : " coup")));
+        const w = el("span"), j = el("span", "j");
+        j.style.width = Math.max(2, 100 * v / haut) + "%";
+        w.appendChild(j);
+        c.appendChild(w);
+        c.appendChild(el("span", "v", String(v)));
+        corps.appendChild(c);
+      }
+      box.appendChild(d);
+    }
+  }
+
+  function balayage() {
+    const thead = document.querySelector("#balayage thead tr");
+    const tb = document.querySelector("#balayage tbody");
+    const mots = ["", "un", "deux", "trois", "quatre"];
+    /* Un « devant » par arme, puis une moyenne par arme : les colonnes se
+       posent au montage, la table ne connaît pas d'avance le nombre d'armes. */
+    thead.appendChild(el("th", null, "ennemis"));
+    thead.appendChild(el("th", "n", "terrains utiles"));
+    NOMS.forEach(n => thead.appendChild(el("th", "n", n + " devant")));
+    thead.appendChild(el("th", "n", "égalités"));
+    NOMS.forEach(n => thead.appendChild(el("th", "n", "moyenne " + n.toLowerCase())));
+    let tot = 0;
+    for (const k in D.duel.balayage) {
+      const b = D.duel.balayage[k];
+      tot += b.utiles;
+      const tr = document.createElement("tr");
+      tr.appendChild(el("td", null, mots[k] || k));
+      tr.appendChild(el("td", "n", fr(b.utiles)));
+      const pc = (x) => fr(x) + " (" + Math.round(100 * x / b.utiles) + " %)";
+      b.armes.forEach(x => tr.appendChild(el("td", "n", pc(x.devant))));
+      tr.appendChild(el("td", "n", pc(b.egal)));
+      b.armes.forEach(x => tr.appendChild(el("td", "n", x.moy.toFixed(1))));
+      tb.appendChild(tr);
+    }
+    const k = Math.max.apply(null, Object.keys(D.duel.balayage).map(Number));
+    dis("dit-balayage", "Non plus huit formations choisies, mais tous les placements " +
+        "d'un à " + (mots[k] || k) + " ennemis dans le tour de quatre pas — soit " +
+        fr(tot) + " terrains où l'une au moins des armes peut ouvrir un " +
+        "enchaînement. Un terrain où deux armes arrivent en tête ne compte pour " +
+        "aucune : il va aux égalités.");
+  }
+
+  /* ── Les trois chiffres de tête ── */
+  function bilan() {
+    const box = document.getElementById("bilan");
+    const seul = D.duel.formations.find(f => f.nom === "un seul devant");
+    const trois = D.duel.formations.find(f => f.nom === "trois de front");
+    const k = Math.max.apply(null, Object.keys(D.duel.balayage).map(Number));
+    const bal = D.duel.balayage[k];
+    const trio = [
+      ["Un seul devant", seul.armes.map(x => x.e),
+       liste(seul.armes.map(x => x.n + (x.n > 1 ? " coups" : " coup")))],
+      ["Trois de front", trois.armes.map(x => x.e),
+       liste(trois.armes.map(x => x.n + (x.n > 1 ? " coups" : " coup")))],
+      ["Terrains où l'arme est devant",
+       bal.armes.map(x => Math.round(100 * x.devant / bal.utiles) + " %"),
+       "sur les " + fr(bal.utiles) + " placements de " + mot(k) + " ennemis"]
+    ];
+    for (const [q, vals, n] of trio) {
+      const d = el("div");
+      d.appendChild(el("span", "q", q));
+      const haut = Math.max.apply(null, vals.map(parseFloat));
+      vals.forEach((x, i) => {
+        const p = el("div", "paire");
+        p.appendChild(el("span", "et", NOMS[i].toLowerCase()));
+        p.appendChild(el("span", "v " + (parseFloat(x) >= haut ? "gagne" : "perd"),
+                        String(x)));
+        d.appendChild(p);
+      });
+      d.appendChild(el("span", "n", n));
+      box.appendChild(d);
+    }
+  }
+
+  /* ── Le verdict : tout est calculé, rien n'est affirmé à la main ── */
+  function verdict() {
+    const box = document.getElementById("verdict");
+    box.appendChild(el("p", "titre", "Ce que ça dit"));
+    const k = Math.max.apply(null, Object.keys(D.duel.balayage).map(Number));
+    const bal = D.duel.balayage[k];
+    /* Le classement se fait sur la part de terrains où l'arme passe devant ;
+       la moyenne des dégâts est un autre classement, qui ne tombe pas
+       forcément pareil. */
+    const rang = ARMES.map((m, i) => ({
+      m: m, i: i, nom: NOMS[i],
+      pc: Math.round(100 * bal.armes[i].devant / bal.utiles),
+      moy: bal.armes[i].moy
+    })).sort((x, y) => y.pc - x.pc);
+    const tete = rang[0];
+    const grosse = rang.slice().sort((x, y) => y.moy - x.moy)[0];
+    const autres = rang.slice(1);
+    const cite = (t, f) => liste(t.map(f));
+    const trois = D.duel.formations.find(f => f.nom === "trois de front");
+
+    // Gagner le plus de terrains et rendre le plus de dégâts sont deux choses
+    // différentes : quand elles se contredisent, c'est le fait le plus parlant
+    // de toute la mesure, et la phrase doit le dire au lieu de le masquer.
+    box.appendChild(par(grosse.i === tete.i
+      ? "<b>" + avec(tete.m, true) + " tient le terrain.</b> Elle passe devant sur <b>" +
+        tete.pc + " %</b> des placements de " + mot(k) + " ennemis, contre " +
+        cite(autres, r => "<b>" + r.pc + " %</b> à " + avec(r.m)) +
+        ", et sa moyenne est la plus haute : <b>" + dec(tete.moy) + "</b> contre " +
+        cite(autres, r => "<b>" + dec(r.moy) + "</b>") + "."
+      : "<b>Le compte des terrains et les dégâts ne désignent pas la même arme.</b> " +
+        avec(tete.m, true) + " passe devant sur <b>" + tete.pc + " %</b> des placements de " +
+        mot(k) + " ennemis, contre " + cite(autres, r => "<b>" + r.pc + " %</b> à " + avec(r.m)) +
+        " — mais c'est " + avec(grosse.m) + " qui rend le plus, <b>" + dec(grosse.moy) +
+        "</b> de moyenne contre <b>" + dec(tete.moy) + "</b>. Elle gagne moins souvent et " +
+        "gagne plus gros : c'est le profil d'une arme spécialisée."));
+
+    /* Une figure n'est gagnée que SEULE en tête : à égalité elle n'est à
+       personne, et le compte des figures partagées se dit à part. */
+    const tot = D.duel.formations.length;
+    const prises = rang.map(r => D.duel.formations.filter(f => {
+      const v = f.armes.map(x => x.e);
+      return v[r.i] === Math.max.apply(null, v) &&
+             v.filter(x => x === v[r.i]).length === 1;
+    }));
+    const partagees = tot - prises.reduce((a, t) => a + t.length, 0);
+    box.appendChild(par(
+      "Sur les " + mot(tot) + " figures, " +
+      cite(rang.map((r, j) => ({r: r, t: prises[j]})), x =>
+        avec(x.r.m) + (x.t.length
+          ? " en prend " + mot(x.t.length) + " (" + x.t.map(f => f.nom).join(", ") + ")"
+          : " n'en prend aucune")) +
+      (partagees ? " ; " + (partagees === 1 ? "la dernière est partagée"
+                                            : mot(partagees) + " sont partagées") : "") + "."));
+
+    box.appendChild(par(
+      "La raison tient dans l'empreinte. " +
+      cite(rang, r => avec(r.m, r === rang[0]) + " porte <b>" + vertes(r.m) +
+           " cases vertes</b> sur <b>" + distinctes(r.m).length + "</b> cases distinctes") +
+      ". Et elles traînent " +
+      cite(rang, r => "<b>" + blanches(r.m) + "</b>") + " cases blanches : chaque " +
+      "homme posé hors de la ligne verte interrompt un coup de plus. À trois de front, " +
+      "le compte tombe à " +
+      cite(rang, r => "<b>" + trois.armes[r.i].e + "</b> pour " + avec(r.m)) + "."));
+
+    box.appendChild(par(
+      "Au contact, sur la case adjacente : " +
+      cite(rang, r => "<b>" + (r.m.cases.find(c => c.case === "1") || {nat: 0}).nat +
+           "</b> pour " + avec(r.m)) + ". La somme des dégâts des coups est de " +
+      cite(rang, r => "<b>" + somme(r.m) + "</b>") + ", pour " +
+      cite(rang, r => "<b>" + ouvertes(r.m) + "</b>") +
+      " cases d'où un enchaînement s'ouvre."));
+
+    const arr = ARMES.reduce((a, m) => a.concat(m.arrondis), []);
+    if (arr.length) {
+      box.appendChild(par(
+        "<b>Attention.</b> " + mot(arr.length).charAt(0).toUpperCase() +
+        mot(arr.length).slice(1) + " valeur" + (arr.length > 1 ? "s" : "") +
+        " ne tombe" + (arr.length > 1 ? "nt" : "") + " pas juste avec la base " +
+        "mesurée et " + (arr.length > 1 ? "ont été arrondies" : "a été arrondie") +
+        " au pair le plus proche : " +
+        arr.map(x => x[0] + " (" + String(x[1]).replace(".", ",") + " → " + x[2] + ")")
+           .join(", ") + ". Le hook arrondit lui-même, de la même façon : l'écart ne " +
+        "dépasse jamais 1, et c'est ce qui permet des bases qui ne sont pas des " +
+        "multiples de vingt."));
+    }
+  }
+
+  dis("titre", liste(NOMS) + " au banc");
+  document.title = liste(NOMS) + " au banc";
+  dis("chapeau", "Les " + mot(ARMES.length) + " armes mesurées coup par coup : bases " +
+      liste(ARMES.map(m => String(m.base))) + ", un multiplicateur par coup, une garde " +
+      "de départ et une garde d'arrivée qui commandent les enchaînements. Tout ce qui " +
+      "suit est mesuré et non estimé — le calcul reprend exactement les règles du " +
+      "solveur, et il place jusqu'à " +
+      mot(Math.max.apply(null, Object.keys(D.duel.balayage).map(Number))) +
+      " ennemis au lieu d'un.");
+  dis("t-coups", "Les " + mot(ARMES.reduce((a, m) => a + m.coups.length, 0)) + " coups");
+  dis("pied", "Calculé sur l'état du chapitre des armes, branche owd-beta, par " +
+      "scripts/duel_armes.py. Les totaux sont exacts, non échantillonnés : " +
+      "programmation dynamique sur (position relative des ennemis, garde, coups déjà " +
+      "donnés, dernier coup touchant), tous les pas et tous les placements énumérés.");
+
+  /* Une colonne par arme dans chacun des trois bancs, montées dans l'ordre où
+     les armes ont été mesurées. */
+  document.documentElement.style.setProperty("--n", ARMES.length);
+  const colonne = (parent) => {
+    const c = el("div", "col");
+    c.id = parent + "-" + document.getElementById(parent).children.length;
+    document.getElementById(parent).appendChild(c);
+    return c.id;
+  };
+
+  bilan();
+  ARMES.forEach(m => tableCoups(m, colonne("coups")));
+  const plafond = Math.max.apply(null, ARMES.map(m => m.paliers[5] || 0));
+  ARMES.forEach(m => echelle(m, colonne("mono"), plafond));
+  ARMES.forEach(m => cases(m, colonne("cases")));
+  formations();
+  balayage();
+  verdict();
+})();
+</script>

@@ -1,131 +1,105 @@
 # Portées
 
-Le combat se joue sur une grille dont **chaque case vaut un mètre**, et une case ne
-porte qu'une personne de taille normale. La distance entre deux combattants se compte
-donc en cases pleines : deux adversaires sur des cases voisines sont à une case l'un
-de l'autre, torses écartés d'un mètre.
+<div class="cols" markdown>
 
-La case 0 est la case du combattant lui-même. Elle ne contient une cible que si
-quelque chose se trouve **sur lui** : une créature agrippée à son bras, une entrave à
-trancher, une partie de son propre corps, ou un adversaire entré dans sa case par une
-saisie. Hors de ces cas, la colonne reste vide, et c'est normal.
+La portée d'une arme est la distance à laquelle elle atteint sa cible. Ce chapitre donne la grille sur laquelle cette distance se compte, et la façon de la mesurer. Ce que chaque arme atteint réellement se lit sur son [répertoire de gestes](armes.md), chacun portant sa propre empreinte.
 
-## Mesurer une portée
+<div class="keep" markdown>
 
-La portée d'une arme est un rayon, mesuré depuis le torse de son porteur. Elle
-additionne l'allonge du bras tendu et la part de l'arme qui dépasse le poing — ou qui
-dépasse la **main avant** pour une arme à hampe, dont la prise décale le point d'appui.
+### La grille
 
-<p class="formula">Portée = 0,70 m (bras tendu) + la part de l'arme qui dépasse le poing</p>
+Le combat se joue sur une grille d'hexagones, et **une case vaut un pas**. Le pas dont il s'agit est le pas ordinaire des règlements de marche, qui vaut 0.75 m.
 
-Les deux portées de deux adversaires ne s'additionnent jamais : pour toucher, il faut
-atteindre le corps de l'autre, pas son poing. Seule compte la portée de celui qui
-frappe.
+<div class="memo" markdown>
 
-La portée obtenue se convertit en cases par ces seuils. Ce sont des frontières, pas
-des murs : une arme qui en chevauche une se range par son emploi le plus courant.
+Les règlements s'accordent à peu de chose près : le *gradus* romain valait 0.74 m, le pas ordinaire français 0.75 m, le pas cadencé britannique 0.76 m. Le livre retient 0.75 m, qui est rond et se tient au milieu des trois.
 
-| Portée mesurée | Distance idéale |
-| --- | :---: |
-| moins de 0,70 m | case 0 |
-| de 0,70 m à 1,20 m | 1 case |
-| environ 1,20 m | 2 cases |
-| environ 2,20 m | 3 cases |
-| environ 3,20 m | 4 cases |
-| environ 4,20 m | 5 cases |
-
-## Le barème
-
-Une arme frappe pleinement à sa distance idéale. Plus près, elle touche encore mais
-mal ; plus loin, elle ne touche pas du tout. Cette asymétrie est le cœur de la règle :
-une portée est une limite physique, pas une pénalité. C'est pourquoi aucune arme ne
-subit de malus au-delà de sa distance, et pourquoi le vrai danger d'un combattant armé
-long n'est pas qu'on l'attaque de loin, mais qu'on lui rentre dedans.
-
-**Chaque case en dessous de la distance idéale coûte un cran**, sans plancher. Le pas
-en avant n'entre pas dans ce calcul : se déplacer est une action, pas une indulgence
-de portée.
-
-Trois exceptions, et trois seulement.
-
-**Arme courte qui blesse sans élan.** Aucune dégradation du tout : deux cases pleines
-consécutives. Deux conditions doivent tenir ensemble — l'arme est tenue au poing ou
-fixée au bras, assez courte pour travailler collée au corps ; et elle blesse sans que
-le bras s'étende ni que le geste s'arme, par poussée, piqûre, pression, traction ou
-crochet à bout portant. Le poing nu, le poing américain et le pied en sont exclus :
-toute leur puissance vient de l'élan.
-
-**Arme à deux mains qui frappe par rotation ample.** Deux crans par case au lieu d'un.
-Le critère est l'amplitude, non la longueur ni le nombre de mains : les armes d'hast,
-qu'on raccourcit en glissant les mains le long de la hampe, restent au barème de base.
-
-**Portée idéale de quatre cases ou plus.** L'arme ne sert absolument plus au contact,
-noté d'une croix.
-
-## Table des portées
-
-<div class="defs" markdown>
-
-**0 :** l'arme est à sa distance, frappe pleine, aucun malus.
-
-**−N :** l'arme touche encore, mais mal : N crans de malus.
-
-**× :** trop près, l'arme ne sert plus du tout.
-
-**— :** hors d'atteinte.
+Deux confusions à éviter. Le *passus* romain, qui a donné notre mot et qui fonde le mille, mille pas, est un pas **double** de 1.48 m : le pas simple des Romains est le *gradus*. Et le pas de la marche ordinaire d'un homme, mesuré en laboratoire, est un peu plus court, autour de 0.70 m. Le livre suit donc le règlement, non la promenade.
 
 </div>
 
-| Arme | 0 | 1 | 2 | 3 | 4 | 5 |
-| --- | :---: | :---: | :---: | :---: | :---: | :---: |
-| Lutte, étranglement | 0 | — | — | — | — | — |
-| Morsure | 0 | — | — | — | — | — |
-| Coudes, genoux, tête | 0 | — | — | — | — | — |
-| Saisie, agrippement | 0 | 0 | — | — | — | — |
-| Griffes, cestes lamés | 0 | 0 | — | — | — | — |
-| Couteau, dague, poignard, tanto | 0 | 0 | — | — | — | — |
-| Katar | 0 | 0 | — | — | — | — |
-| Sai, jutte, tonfa | 0 | 0 | — | — | — | — |
-| Poings, poing américain, cestes non lamés | −1 | 0 | — | — | — | — |
-| Kukri, hachette | −1 | 0 | — | — | — | — |
-| Faucille, serpe, kusarigama (côté faucille) | −1 | 0 | — | — | — | — |
-| Pieds | −1 | 0 | — | — | — | — |
-| Épée courte, gladius, wakizashi, machette | −2 | −1 | 0 | — | — | — |
-| Épée d'armes, sabre, cimeterre | −2 | −1 | 0 | — | — | — |
-| Hache à une main, masse, marteau | −2 | −1 | 0 | — | — | — |
-| Gourdin, matraque | −2 | −1 | 0 | — | — | — |
-| Bâton long, bô | −2 | −1 | 0 | — | — | — |
-| Chaîne courte, fléau à une main, nunchaku | −2 | −1 | 0 | — | — | — |
-| Rapière, estoc | −2 | −1 | 0 | — | — | — |
-| Épée longue, épée bâtarde, katana | −4 | −2 | 0 | — | — | — |
-| Épée à deux mains, espadon, nodachi | −4 | −2 | 0 | — | — | — |
-| Hache à deux mains, hache danoise, maillet | −4 | −2 | 0 | — | — | — |
-| Fléau d'armes à deux mains | −4 | −2 | 0 | — | — | — |
-| Lance, épieu | −3 | −2 | −1 | 0 | — | — |
-| Naginata, fauchard, guisarme | −3 | −2 | −1 | 0 | — | — |
-| Hallebarde, bardiche, pertuisane | −3 | −2 | −1 | 0 | — | — |
-| Trident | −3 | −2 | −1 | 0 | — | — |
-| Kusarigama (côté chaîne) | −3 | −2 | −1 | 0 | — | — |
-| Fouet | × | −3 | −2 | −1 | 0 | — |
-| Chaîne longue lestée | × | −3 | −2 | −1 | 0 | — |
-| Lance de cavalerie, couchée | × | −3 | −2 | −1 | 0 | — |
-| Pique | × | −4 | −3 | −2 | −1 | 0 |
+Une case ne porte qu'une seule personne. La distance entre deux combattants se compte en cases pleines : deux adversaires sur des cases voisines sont à un pas l'un de l'autre.
 
-La table entière se régénère de tête à partir du barème et de ses trois exceptions :
-une arme absente de la liste se place en mesurant sa portée, puis en descendant d'un
-cran par case. C'est la contrainte qui a présidé à sa construction, et le meilleur
-moyen d'y ajouter une arme sans la consulter.
+</div>
 
-## Ce que la table raconte
+### Pourquoi le pas et non le mètre
 
-Chaque arme est une bande qui glisse vers la droite sans s'allonger : ce qu'elle gagne
-en distance, elle le perd au contact. Le bord droit n'est qu'une banalité — je ne
-t'atteins pas. Le bord gauche est le vrai sujet : tu es trop près et je ne peux plus
-rien faire.
+Parce que le mètre est trop grossier pour ce qu'on cherche à distinguer.
 
-Le couteau est la seule arme qui ne se dégrade jamais en se rapprochant, et c'est toute
-son identité ; son problème est entièrement de traverser la case où l'épée règne. Le
-kusarigama, lui, n'est pas une exception mais deux armes reliées par une chaîne, chacune
-suivant le barème ordinaire. Et la pique paie quatre cases d'effondrement pour une case
-de domination : injouable en duel, redoutable en formation, où les rangs voisins couvrent
-la zone morte que le piquier ne peut pas défendre.
+Les armes à une main portent de 1.5 à 2 m environ, les grandes armes à deux mains autour de 2.4 m, les armes d'hast autour de 2.8 m. À un mètre par case, ces trois familles s'écrasent sur deux valeurs : l'épée, la hache et la masse tombent avec la dague et les poings, et la différence entre une grande épée et une hallebarde disparaît.
+
+Au pas, les mêmes portées se répartissent sur quatre paliers. La mesure a donc désigné cette taille, et il se trouve qu'elle porte déjà un nom.
+
+<div class="sepia-table" markdown>
+
+| Case | Ce qui y travaille |
+|:---:|---|
+| 0 | coude, genou, tête, lutte |
+| 1 | corps à corps, dague |
+| 2 | épée, rapière, hache, masse |
+| 3 | grande épée, grande hache, grand marteau |
+| 4 | lance, hallebarde |
+
+</div>
+
+### Le palier d'une catégorie
+
+Ce tableau n'est pas un résultat, c'est une règle. Chaque catégorie d'armes tient un palier, et ce palier vaut pour toutes les armes qui y entrent : l'épée porte à deux pas, la grande épée à trois, la lance à quatre, et aucune mesure ne vient les en déloger.
+
+La mesure garde un rôle, mais elle en change. Elle ne dit plus à quelle case un coup se pose ; elle **range les coups d'une même arme les uns par rapport aux autres**, du plus long, qui tient le palier de sa catégorie, au plus court, qui tombe au contact. C'est ainsi que la grande épée frappe à trois pas de ses trois tailles, à deux de son estoc à demi-épée et à un de son coup meurtrier : l'ordre est mesuré, l'échelle est donnée.
+
+<div class="memo" markdown>
+
+Le livre y perd une chose et il faut la dire : deux coups de portée égale, pris dans deux catégories différentes, n'occupent plus la même case. Le fendant de la grande épée et celui de la hache à une main mesurent l'un et l'autre 1,70 m, et le premier frappe désormais à trois pas quand le second frappe à deux.
+
+Le calcul n'était pourtant pas plus juste. Il portait sur une épée à deux mains de 1,20 m, qui est une épée longue et non une grande épée : les Zweihänder du XVI<sup>e</sup> siècle vont de 1,60 à 1,80 m. Le palier les décrit mieux que la mesure ne les décrivait, et le désaccord vient du gabarit retenu, non de la règle.
+
+</div>
+
+### La case 0
+
+La case 0 est la case du combattant lui-même. Elle ne porte une cible que si quelque chose se trouve sur lui : une créature agrippée à son bras, une entrave à trancher, une partie de son propre corps, ou un adversaire entré dans sa case. En dehors de ces cas, aucune attaque ne s'y porte.
+
+### Pourquoi l'hexagone
+
+Ses six voisins sont tous à exactement un pas, là où la diagonale d'un carré en vaut 1.41. Cet écart dépasserait les distinctions que ce chapitre établit. L'hexagone fixe aussi à six le nombre d'adversaires qui peuvent en entourer un seul, ce qui est le chiffre réel.
+
+### Mesurer une portée
+
+La mesure ne décide plus d'une case, elle décide d'un ordre : c'est elle qui dit lequel des coups d'une arme tient son palier et lesquels tombent en deçà. Elle vaut donc encore, et chaque coup du [répertoire](armes.md) porte son calcul.
+
+La portée d'un geste se mesure depuis le torse de son auteur. Elle additionne trois choses : la distance du torse à la main avant, la part de l'arme qui dépasse cette main, et l'engagement du corps dans le coup, le pas ou la fente qui en fait partie.
+
+<p class="formula">Portée = main avant + part de l'arme au-delà + engagement du corps</p>
+
+<div class="defs" markdown>
+
+**La main avant :** 0.70 m pour un estoc à une main, bras tendu et épaule engagée ; 0.60 m pour une taille, dont l'arc n'étend pas complètement le bras ; 0.50 m pour deux mains jointes sur une poignée ; 0.65 m pour deux mains écartées sur une hampe ; 0.55 m quand les mains tiennent la lame.
+
+**L'engagement du corps :** 0.50 m pour un coup porté à fond, 0.18 m pour un coup donné de près, où l'on ne peut plus avancer.
+
+</div>
+
+Un homme en garde ne présente pas sa poitrine mais son épaule, et c'est elle qui mène : le point le plus proche de sa case se tient 0.20 m devant l'axe, valeur qui vaut quelle que soit l'orientation qu'on lui prête, puisque la grille n'en privilégie aucune.
+
+<p class="formula">Une case vaut N × 0.75 m − 0.20 m de portée</p>
+
+Soit 0.55 m à une case, 1.30 m à deux, 2.05 m à trois et 2.80 m à quatre. C'est l'échelle sur laquelle les portées se lisent, et le livre l'a suivie à la lettre tant qu'il assignait les cases au calcul. La main et l'avant-bras avancés vont deux fois plus loin, mais ils ne se comptent pas ici : les frapper est un coup visé, qui relèvera de sa propre règle.
+
+<div class="memo" markdown>
+
+Ces 0.20 m ne sont pas la moitié d'un torse. Sur les 4082 hommes mesurés par ANSUR II, l'épaisseur médiane de la poitrine est de 0.25 m, ce qui donnerait 0.13 m ; mais la largeur aux épaules atteint 0.51 m, soit 0.25 m de plein profil. Le tronc se modélise donc par une ellipse, et son rayon avant, moyenné sur toutes les orientations, vaut 0.196 m d'après ANSUR, 0.188 m d'après la table Pheasant, et 0.182 m sur un gabarit sec d'avant l'ère moderne.
+
+Le livre retient 0.20 m, le haut de ce faisceau. Un livre plus sévère écrirait 0.19 m et aurait tout autant raison : la fourchette défendable va de 0.17 à 0.23 m.
+
+</div>
+
+Les portées de deux adversaires ne s'additionnent jamais. Pour toucher, il faut atteindre le corps de l'autre, pas son arme : seule compte la portée de celui qui frappe.
+
+### Ce que cette mesure ne peut pas faire
+
+Les seuils sont des arbitrages, non des certitudes. Une épée d'armes court de 81 à 107 cm selon l'exemplaire, une hache de 60 à 90 cm de manche : l'écart au sein d'une même catégorie approche la taille d'une case. Plusieurs gestes tombent donc à quelques centimètres d'une frontière, et le livre a tranché du côté généreux, uniformément.
+
+C'est aussi pourquoi ce chapitre ne donne pas de table d'armes. Une arme n'a pas une portée mais autant que de coups, et chaque coup ne frappe qu'une case, celle que son rang lui donne dans sa catégorie. Il porte donc son propre trajet, dessiné sur la [carte de son arme](armes.md) : les cases qu'il traverse avant de frapper, dans l'ordre où il les traverse. Un adversaire qu'aucun coup n'atteint ne peut pas être frappé, et un corps qui se tient sur le trajet reçoit le coup à sa place, pour la moitié de ses dégâts, ce qui met fin à l'attaque.
+
+</div>
