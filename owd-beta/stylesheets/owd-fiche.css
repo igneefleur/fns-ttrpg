@@ -587,17 +587,13 @@ html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où 
 .pc-desaction-pose:hover { border-color: var(--accent); }
 .pc-desaction-de.on .pc-desaction-pose { border-color: var(--or); box-shadow: 0 0 0 2px var(--wash); background: var(--wash); }
 /* UN DÉ UTILISÉ (envoyé, en attente de « Récupérer ») : la case s'enfonce
-   dans le fond, le dé garde sa couleur mais pâlit, et un « ✓ » le marque.
-   Rien de commun avec le dé perdu, hachuré et barré. */
+   dans le fond, le dé garde sa couleur mais pâlit. Rien de commun avec le dé
+   perdu, hachuré et grisé. */
 .pc-desaction-de.utilise .pc-desaction-pose {
   cursor: default; position: relative; background: var(--panel);
   box-shadow: inset 0 2px 5px rgba(0, 0, 0, .18);
 }
 .pc-desaction-de.utilise .pc-desaction-pose > * { opacity: .38; }
-.pc-desaction-de.utilise .pc-desaction-pose::after {
-  content: "✓"; position: absolute; top: .15rem; right: .3rem;
-  font-size: .7rem; font-weight: 800; color: var(--ink-3);
-}
 .pc-desaction-de.utilise .pc-desaction-nom { opacity: .55; }
 /* UN DÉ PERDU au mouvement : hachuré, éteint, et plus rien ne le choisit */
 .pc-desaction-de.perdu .pc-desaction-pose {
@@ -605,7 +601,7 @@ html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où 
   background: repeating-linear-gradient(135deg, var(--panel) 0 5px, var(--stripe) 5px 10px);
 }
 .pc-desaction-de.perdu .pc-desaction-pose > * { opacity: .22; filter: grayscale(1); }
-.pc-desaction-de.perdu .pc-desaction-nom { opacity: .4; text-decoration: line-through; }
+.pc-desaction-de.perdu .pc-desaction-nom { opacity: .4; }
 .pc-desaction-jeton { font-size: var(--fs-hero); font-weight: 800; color: var(--ink); }
 .pc-desaction-taille { display: flex; align-items: center; justify-content: center; gap: .15rem; }
 .pc-desaction-nom { min-width: 2.1em; text-align: center; font-size: .66rem; font-weight: 700; color: var(--ink-2); }
