@@ -55,9 +55,9 @@
     
       <link rel="stylesheet" href="../../../../stylesheets/cartes.css?v=24">
     
-      <link rel="stylesheet" href="../../../../stylesheets/owd-fiche.css?v=73">
+      <link rel="stylesheet" href="../../../../stylesheets/owd-fiche.css?v=74">
     
-      <link rel="stylesheet" href="../../../../stylesheets/owd-des3d.css?v=73">
+      <link rel="stylesheet" href="../../../../stylesheets/owd-des3d.css?v=74">
     
     <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -2371,15 +2371,70 @@
 <div class="keep">
 <p>Un personnage qui se tient hors de sa zone subit une intensité de froid ou de chaleur, qui monte de 1 par tranche de 4 degrés d'écart entamée.</p>
 <p class="formula">Intensité = écart ÷ 4, arrondi au supérieur</p>
+<p>L'intensité ne dépasse jamais 10.</p>
 </div>
 <h3 id="lexposition">L'exposition</h3>
 <p>L'exposition mesure ce que le froid ou le chaud a déjà fait au corps. Elle part de zéro, descend quand le personnage a froid, monte quand il a chaud, et ce qu'elle supporte de part et d'autre découle de sa Résistance.</p>
 <p class="formula">Exposition = de −(100 + Résistance) à +(100 + Résistance)</p>
-<p>Toutes les dix minutes, elle bouge d'autant de points que l'<a href="#le-climat">intensité</a> de froid ou de chaleur du personnage. Chaque tranche de 10 % franchie lui donne un niveau d'<a href="#leffondrement">effondrement</a>. Tant qu'il se tient dans sa zone, elle revient vers zéro de 10 % toutes les dix minutes.</p>
+<p>Toutes les dix minutes, elle bouge d'autant de points que l'<a href="#le-climat">intensité</a> de froid ou de chaleur du personnage, sans dépasser le plafond de cette intensité. Chaque tranche de 10 % franchie lui donne un niveau d'<a href="#leffondrement">effondrement</a>. Tant qu'il se tient dans sa zone, elle revient vers zéro de 10 % toutes les dix minutes.</p>
+<p>Le plafond se compte du côté de l'intensité subie : sous zéro pour le froid, au-dessus pour le chaud. Une exposition déjà au-delà du plafond revient vers lui de 10 % toutes les dix minutes.</p>
+<p>La table ci-dessous donne le plafond de l'exposition selon l'intensité.</p>
+<div class="sepia-table">
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Intensité</th>
+<th style="text-align: center;">Plafond</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">10 %</td>
+</tr>
+<tr>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">20 %</td>
+</tr>
+<tr>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">30 %</td>
+</tr>
+<tr>
+<td style="text-align: center;">4</td>
+<td style="text-align: center;">40 %</td>
+</tr>
+<tr>
+<td style="text-align: center;">5</td>
+<td style="text-align: center;">50 %</td>
+</tr>
+<tr>
+<td style="text-align: center;">6</td>
+<td style="text-align: center;">60 %</td>
+</tr>
+<tr>
+<td style="text-align: center;">7</td>
+<td style="text-align: center;">70 %</td>
+</tr>
+<tr>
+<td style="text-align: center;">8</td>
+<td style="text-align: center;">80 %</td>
+</tr>
+<tr>
+<td style="text-align: center;">9</td>
+<td style="text-align: center;">90 %</td>
+</tr>
+<tr>
+<td style="text-align: center;">10</td>
+<td style="text-align: center;">100 %</td>
+</tr>
+</tbody>
+</table>
+</div>
 <div class="memo">
 <p>Exemple. Un personnage ordinaire, qui porte 20 en Résistance, a une exposition qui va de −120 à +120, et chaque niveau d'effondrement lui coûte 12 points.</p>
-<p>Nu et immobile à 5 °C, il est à 23 degrés sous sa borne, donc à une intensité de 6. Son exposition descend de 6 toutes les dix minutes : premier niveau au bout de vingt minutes, effondrement au bout de trois heures vingt.</p>
-<p>Vêtu de quoi valoir 8 degrés contre le froid, il voit sa borne tomber à 20 °C, l'écart à 15 degrés et l'intensité à 4. Le même froid ne le prend plus qu'en cinq heures.</p>
+<p>Nu et immobile à 5 °C, il est à 23 degrés sous sa borne, donc à une intensité de 6. Son exposition descend de 6 toutes les dix minutes jusqu'à son plafond, −72 : premier niveau au bout de vingt minutes, et six niveaux au bout de deux heures, où elle s'arrête.</p>
+<p>Vêtu de quoi valoir 8 degrés contre le froid, il voit sa borne tomber à 20 °C, l'écart à 15 degrés et l'intensité à 4. Le même froid ne lui coûte plus que quatre niveaux, atteints au bout de deux heures.</p>
 </div>
 <div class="memo">
 <p>Exemple. Le même personnage, nu, à 15 °C : à l'arrêt il subit une intensité de 4, mais en effort intermédiaire il ressent 30 °C et n'en subit aucune.</p>
@@ -2794,13 +2849,13 @@
       
         <script src="../../../../javascripts/night.js"></script>
       
-        <script src="../../../../javascripts/owd-migrations.js?v=73"></script>
+        <script src="../../../../javascripts/owd-migrations.js?v=74"></script>
       
-        <script src="../../../../javascripts/owd-mods.js?v=73"></script>
+        <script src="../../../../javascripts/owd-mods.js?v=74"></script>
       
-        <script src="../../../../javascripts/owd-des3d.js?v=73"></script>
+        <script src="../../../../javascripts/owd-des3d.js?v=74"></script>
       
-        <script src="../../../../javascripts/owd-fiche.js?v=73"></script>
+        <script src="../../../../javascripts/owd-fiche.js?v=74"></script>
       
         <script src="../../../../javascripts/copybtn.js"></script>
       

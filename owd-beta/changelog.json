@@ -1,5 +1,19 @@
 [
 {
+"short": "ebf6943",
+"author": "Théo Cavaillès",
+"date": "2026-09-22T01:32:34+02:00",
+"message": "L'intensité plafonne l'exposition : 10 % par point, jusqu'à 10",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/ebf6943535b4b8c1e4e8880c7119930ef872b0aa",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/base/capacites-physiques.md",
+"url": "content/regles/base/capacites-physiques/"
+}
+]
+},
+{
 "short": "61ae84e",
 "author": "Théo Cavaillès",
 "date": "2026-09-22T01:22:39+02:00",
