@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "1.15.1b";
+  var RELEASE = "1.16.0b";
   var SCHEMA = 2;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -3385,12 +3385,12 @@
     });
     return b;
   }
-  // ---- 2. Corps : charge, accès rapides, contenance, dés d'action ----
+  // ---- 2. Corps : charge, accès rapides, dés d'action ----
   // (l'innocence a son propre module, sur le modèle des PV : voir vitales.js)
   function buildCorps() {
     var b = block("Corps", null, "corps");
 
-    var r1 = el("div", "pc-bigrow");
+    var r1 = el("div", "pc-bigrow pc-bigrow-2");
     function tuileLimite(cle, libelle, pris, total) {
       var t = bigTile(libelle, function () {
         return fmtP(pris()) + " / " + fmtP(total());
@@ -3410,16 +3410,7 @@
     }
     r1.appendChild(tuileLimite("charge", "CHARGE", poidsPorte, charge));
     r1.appendChild(tuileLimite("acces", "ACCÈS RAPIDES", accesPris, accesRapides));
-    // La contenance, elle, porte SON pas : ce qu'on a avalé se compte en jeu,
-    // et le geste doit rester actif hors du rouage.
-    var tC = tuileLimite("contenance", "CONTENANCE", contenancePrise, contenance);
-    var pasC = el("div", "pc-bigedit");
-    pasC.appendChild(stepper(
-      function () { return state.etat.contenance; },
-      function (v) { state.etat.contenance = Math.max(0, Math.round(v * 100) / 100); },
-      1, "contenance occupée"));
-    tC.appendChild(pasC);
-    r1.appendChild(tC);
+    // (la contenance a son propre module, l'estomac : voir contenance.js)
     b.appendChild(r1);
 
     // Deuxième rangée : ce que le corps donne au tour, sur toute la largeur.
@@ -3773,6 +3764,71 @@
         ? chaineTexteDe(lireCap("max", "effondrement"), "calculé", effondrementAuto())
         : parts.join(" · ") + " = " + fmtP(somme) +
           (somme > effPlafond() ? ", plafonné à " + effPlafond() : "");
+    });
+    return b;
+  }
+  // ---- Contenance : l'estomac ----
+  // Un estomac d'une seule couleur, qui se remplit par le bas à mesure que la
+  // contenance occupée monte, et dont la couleur passe du vert au rouge en
+  // approchant du plein. La valeur s'écrit dans l'estomac. Dessous, le geste
+  // de jeu des réserves : on tape ce qu'on avale ou ce qui se libère, et
+  // « Appliquer » l'ajoute.
+  //
+  // L'IMAGE est l'estomac « plasticine » d'Icons8, découpé en DEUX MASQUES
+  // (docs/assets/fiche/) : le contour, peint à l'encre de la fiche, et
+  // l'intérieur, peint d'un ton neutre puis rempli. Des masques et non l'image
+  // telle quelle : c'est ce qui laisse la fiche choisir les couleurs, de jour
+  // comme de nuit.
+  //
+  // Aucun rouage : le maximum se règle dans les Options (Réglages des
+  // capacités, ligne Contenance).
+  function buildContenance() {
+    var b = block("Contenance");
+    var fig = el("div", "pc-estomac");
+    var fond = el("span", "pc-estomac-fond");
+    var plein = el("span", "pc-estomac-plein");
+    var trait = el("span", "pc-estomac-trait");
+    var chiffre = el("span", "pc-estomac-val");
+    var v = el("b", null, "");
+    var mx = el("small", null, "");
+    chiffre.appendChild(v);
+    chiffre.appendChild(mx);
+    fig.appendChild(fond);
+    fig.appendChild(plein);
+    fig.appendChild(trait);
+    fig.appendChild(chiffre);
+    b.appendChild(fig);
+
+    var cmd = el("div", "pc-vital-cmd pc-temps");
+    var delta = el("input", "pc-vital-delta");
+    delta.type = "number";
+    delta.step = "1";
+    delta.placeholder = "±";
+    delta.setAttribute("aria-label", "Contenance à ajouter ou retirer");
+    function applique() {
+      var d = parseFloat(delta.value);
+      if (!isFinite(d) || !d) return;
+      state.etat.contenance = Math.max(0, Math.round((contenancePrise() + d) * 100) / 100);
+      delta.value = "";
+      refresh();
+    }
+    delta.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") { e.preventDefault(); applique(); }
+    });
+    cmd.appendChild(delta);
+    cmd.appendChild(miniBtn("Appliquer", "Ajouter cette variation", applique));
+    b.appendChild(cmd);
+
+    hooks.push(function () {
+      var pris = contenancePrise(), m = contenance();
+      var p = m > 0 ? clamp(pris / m, 0, 1) : (pris > 0 ? 1 : 0);
+      v.textContent = fmtP(pris);
+      mx.textContent = "/ " + fmtP(m);
+      // la hauteur remplie, et la teinte : vert au ventre vide, rouge au plein
+      fig.style.setProperty("--niveau", (p * 100).toFixed(1) + "%");
+      fig.style.setProperty("--teinte", "hsl(" + Math.round(120 - 120 * p) + ", 60%, 42%)");
+      fig.classList.toggle("over", pris > m);
+      fig.title = "Contenance " + fmtP(pris) + " sur " + fmtP(m);
     });
     return b;
   }
@@ -7010,6 +7066,7 @@
     { id: "caracs",       titre: "Caractéristiques", onglet: "fiche", colonne: "gauche", build: buildCaracs },
     { id: "effort",       titre: "Temps",            onglet: "fiche", colonne: "gauche", build: buildEffort },
     { id: "survie",       titre: "Survie",           onglet: "fiche", colonne: "gauche", build: buildSurvie },
+    { id: "exposition",   titre: "Exposition",       onglet: "fiche", colonne: "gauche", build: buildExposition },
     { id: "pi",           titre: "PI",               onglet: "fiche", colonne: "gauche", build: buildPi },
     { id: "corps",        titre: "Corps",            onglet: "fiche", colonne: "gauche", build: buildCorps },
     // TROIS RÉSERVES, TROIS MODULES : même forme, mais on ne les lit pas au
@@ -7018,7 +7075,7 @@
     { id: "pe",           titre: "PE",               onglet: "fiche", colonne: "milieu", build: buildPe },
     { id: "pm",           titre: "PM",               onglet: "fiche", colonne: "milieu", build: buildPm },
     { id: "effondrement", titre: "Effondrement",     onglet: "fiche", colonne: "milieu", build: buildEffondrement },
-    { id: "exposition",   titre: "Exposition",       onglet: "fiche", colonne: "milieu", build: buildExposition },
+    { id: "contenance",   titre: "Contenance",       onglet: "fiche", colonne: "milieu", build: buildContenance },
     { id: "desaction",    titre: "Actions",          onglet: "fiche", colonne: "droite", build: buildDesAction },
     { id: "comps",        titre: "Compétences",      onglet: "fiche", colonne: "droite", build: buildComps },
     // ---- onglet Art ----
