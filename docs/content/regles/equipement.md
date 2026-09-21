@@ -2,8 +2,6 @@
 
 <div class="cols" markdown>
 
-L'équipement est tout ce qu'un personnage emporte : ce qu'il porte sur lui, ce qu'il range dans son sac, ce qu'il boit et ce qu'il mange. Chaque objet tient dans une carte qui donne son poids, son prix et ce qu'il fait.
-
 <div class="keep" markdown>
 
 ### Lire une carte d'objet

@@ -2,26 +2,6 @@
 
 <div class="cols" markdown>
 
-Les capacités physiques mesurent ce que le corps d'un personnage possède sans jet de dé : ce qu'il encaisse, l'éveil qui lui reste, l'effort qu'il fournit, ce qu'il tient sans manger ni boire, ce que son âme supporte, la charge qu'il porte, ce qu'il garde sous la main, ce que le froid et le chaud lui font. Chacune découle d'une [caractéristique](caracteristiques.md) par un calcul.
-
-Sur l'échelle des caractéristiques, 20 est la moyenne humaine.
-
-Ce chapitre en donne dix : les [points de vie](#les-points-de-vie) et les [points de repos](#les-points-de-repos), issus de la Vigueur ; les [points d'endurance](#les-points-dendurance), les [points de satiété et les points d'hydratation](#la-satiete-et-lhydratation), issus de l'Endurance ; les [points d'innocence](#les-points-dinnocence), issus de la Ferveur ; la [charge](#la-charge), issue de la Force ; les [accès rapides](#les-acces-rapides), issus de la Dextérité ; les [points de chance](#les-points-de-chance), issus de la Chance ; l'[exposition](#lexposition), issue de la Résistance. Il définit d'abord ce qu'elles partagent : la [lecture d'une capacité](#lire-une-capacite), l'[effort](#leffort) et la [récupération naturelle](#la-recuperation-naturelle). Il donne aussi les règles qui les mettent en jeu : le [mouvement](#mouvement), la [contenance](#la-contenance), l'[effondrement](#leffondrement) et le [climat](#le-climat).
-
-<div class="keep" markdown>
-
-### Lire une capacité
-
-Une capacité est un nombre que le personnage possède, et qui porte son nom : sa charge, ses accès rapides. On l'obtient de la caractéristique dont elle découle par un calcul, et le résultat s'applique tel quel. Aucun jet n'intervient.
-
-</div>
-
-</div>
-
----
-
-<div class="cols" markdown>
-
 ### L'effort
 
 Un effort est ce qu'un personnage demande à son corps, du sommeil au combat. Il se range en cinq intensités, selon ce qu'il coûte au corps : le sommeil et le repos, puis les efforts léger, intermédiaire et lourd.
