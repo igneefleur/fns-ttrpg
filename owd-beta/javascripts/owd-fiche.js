@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "2.1.4b";
+  var RELEASE = "2.1.5b";
   var SCHEMA = 3;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -5268,6 +5268,12 @@
         refresh();
       });
       tiles.appendChild(add);
+      // LA LIGNE SE COMPLÈTE de cases vides en pointillé, et un groupe vide en
+      // garde une entière : on voit la place qui reste. La case « + » de
+      // l'édition compte dans la ligne.
+      var n = items.filter(function (x) { return x.ou === ou; }).length + (isEdit("inv") ? 1 : 0);
+      var trous = Math.max(5, Math.ceil(n / 5) * 5) - n;
+      for (var k = 0; k < trous; k++) tiles.appendChild(el("div", "pc-obj-tile pc-inv-trou"));
       tiles.addEventListener("dragover", function (e) {
         if (!drag) return;
         e.preventDefault();
