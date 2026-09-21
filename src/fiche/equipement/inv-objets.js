@@ -1,8 +1,8 @@
   // ---- 14. Inventaire (pleine largeur) ----
   // TROIS GROUPES FIXES, et rien d'autre dans l'onglet Équipement :
   //
-  //   SUR SOI     [main gauche] [main droite] [sac à dos]
-  //               [tête] [mains] [haut] [bas] [pieds]
+  //   SUR SOI     [main gauche] [main droite]  ·  ·  [sac à dos]
+  //               [tête] [haut] [mains] [bas] [pieds]
   //   POCHES      ce que les vêtements portés laissent emporter (en kg)
   //   SAC À DOS   ce que le sac porté laisse emporter (en kg)
   //
@@ -208,8 +208,13 @@
     function groupeSurSoi() {
       var g = el("div", "pc-obj-group");
       g.appendChild(bandeau("Sur soi"));
+      // les deux mains à gauche, le sac à dos poussé sur la cinquième case
       var l1 = el("div", "pc-inv-cases");
-      ["mainG", "mainD", "dos"].forEach(function (ou) { l1.appendChild(caseSurSoi(ou)); });
+      l1.appendChild(caseSurSoi("mainG"));
+      l1.appendChild(caseSurSoi("mainD"));
+      l1.appendChild(el("div", "pc-inv-case pc-inv-rien"));
+      l1.appendChild(el("div", "pc-inv-case pc-inv-rien"));
+      l1.appendChild(caseSurSoi("dos"));
       var l2 = el("div", "pc-inv-cases");
       INV_VETEMENTS.forEach(function (ou) { l2.appendChild(caseSurSoi(ou)); });
       g.appendChild(l1);

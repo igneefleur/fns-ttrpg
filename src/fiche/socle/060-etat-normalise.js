@@ -1,7 +1,7 @@
   // LES EMPLACEMENTS DE L'INVENTAIRE. Les huit cases de Sur soi, dans l'ordre
   // de l'écran (les trois de la première ligne, puis les cinq vêtements), puis
   // les deux groupes libres.
-  var INV_VETEMENTS = ["tete", "mains", "haut", "bas", "pieds"];
+  var INV_VETEMENTS = ["tete", "haut", "mains", "bas", "pieds"];
   var INV_CASES = ["mainG", "mainD", "dos"].concat(INV_VETEMENTS);
   var INV_LIEUX = INV_CASES.concat(["poches", "sac"]);
   function normGestes(liste) {

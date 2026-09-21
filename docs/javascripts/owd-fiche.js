@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "2.1.2b";
+  var RELEASE = "2.1.3b";
   var SCHEMA = 3;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -510,7 +510,7 @@
   // LES EMPLACEMENTS DE L'INVENTAIRE. Les huit cases de Sur soi, dans l'ordre
   // de l'écran (les trois de la première ligne, puis les cinq vêtements), puis
   // les deux groupes libres.
-  var INV_VETEMENTS = ["tete", "mains", "haut", "bas", "pieds"];
+  var INV_VETEMENTS = ["tete", "haut", "mains", "bas", "pieds"];
   var INV_CASES = ["mainG", "mainD", "dos"].concat(INV_VETEMENTS);
   var INV_LIEUX = INV_CASES.concat(["poches", "sac"]);
   function normGestes(liste) {
@@ -5019,8 +5019,8 @@
   // ---- 14. Inventaire (pleine largeur) ----
   // TROIS GROUPES FIXES, et rien d'autre dans l'onglet Équipement :
   //
-  //   SUR SOI     [main gauche] [main droite] [sac à dos]
-  //               [tête] [mains] [haut] [bas] [pieds]
+  //   SUR SOI     [main gauche] [main droite]  ·  ·  [sac à dos]
+  //               [tête] [haut] [mains] [bas] [pieds]
   //   POCHES      ce que les vêtements portés laissent emporter (en kg)
   //   SAC À DOS   ce que le sac porté laisse emporter (en kg)
   //
@@ -5226,8 +5226,13 @@
     function groupeSurSoi() {
       var g = el("div", "pc-obj-group");
       g.appendChild(bandeau("Sur soi"));
+      // les deux mains à gauche, le sac à dos poussé sur la cinquième case
       var l1 = el("div", "pc-inv-cases");
-      ["mainG", "mainD", "dos"].forEach(function (ou) { l1.appendChild(caseSurSoi(ou)); });
+      l1.appendChild(caseSurSoi("mainG"));
+      l1.appendChild(caseSurSoi("mainD"));
+      l1.appendChild(el("div", "pc-inv-case pc-inv-rien"));
+      l1.appendChild(el("div", "pc-inv-case pc-inv-rien"));
+      l1.appendChild(caseSurSoi("dos"));
       var l2 = el("div", "pc-inv-cases");
       INV_VETEMENTS.forEach(function (ou) { l2.appendChild(caseSurSoi(ou)); });
       g.appendChild(l1);
