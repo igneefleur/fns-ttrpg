@@ -16,7 +16,6 @@
     { id: "survie",       titre: "Survie",           onglet: "fiche", colonne: "gauche", build: buildSurvie },
     { id: "exposition",   titre: "Exposition",       onglet: "fiche", colonne: "gauche", build: buildExposition },
     { id: "pi",           titre: "PI",               onglet: "fiche", colonne: "gauche", build: buildPi },
-    { id: "corps",        titre: "Corps",            onglet: "fiche", colonne: "gauche", build: buildCorps },
     // TROIS RÉSERVES, TROIS MODULES : même forme, mais on ne les lit pas au
     // même moment, et elles se déplacent — ou se coupent — l'une sans l'autre.
     { id: "pv",           titre: "PV",               onglet: "fiche", colonne: "milieu", build: buildPv },

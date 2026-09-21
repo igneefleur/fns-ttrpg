@@ -17,20 +17,6 @@
     row.appendChild(el("span", "sp"));
     return row;
   }
-  // La même chose en version TUILE : le libellé au-dessus du contrôle, une
-  // tuile étant trop étroite pour « Modificateurs » et trois cases côte à côte.
-  function tuileForce(tile, cle, auto, titre) {
-    var row = el("div", "pc-bigedit pc-edit-only");
-    row.appendChild(el("span", "lbl", "Forcé"));
-    row.appendChild(champForceMax(cle, auto, titre));
-    tile.appendChild(row);
-  }
-  function tuileMods(tile, cle) {
-    var row = el("div", "pc-bigedit pc-edit-only");
-    row.appendChild(el("span", "lbl", "Modificateurs"));
-    row.appendChild(multiModBoite("capsLeviers", "max", cle));
-    tile.appendChild(row);
-  }
 
   // D'où vient un maximum, décomposé pour l'infobulle. La formule VERBATIM du
   // livre est dans les données ; on la cite, on ne la réécrit pas, et on ajoute

@@ -57,7 +57,6 @@ fin = lf
   src/fiche/fiche/commun-jauges.js
   src/fiche/fiche/caracs.js
   src/fiche/fiche/effort.js
-  src/fiche/fiche/corps.js
   src/fiche/fiche/vitales.js
   src/fiche/fiche/survie.js
   src/fiche/fiche/exposition.js
