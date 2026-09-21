@@ -639,6 +639,20 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
 .pc-bigrow-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 /* le niveau d'effondrement tient toute la largeur, au-dessus des deux maximums */
 .pc-big.pc-eff-niveau { margin-bottom: .4rem; }
+/* les causes : le nom à gauche, le niveau dans une case à droite — la case
+   d'« Autre » est un champ, de même taille que les autres */
+.pc-eff-causes { margin-top: .45rem; display: flex; flex-direction: column; gap: .18rem; }
+.pc-eff-cause { display: flex; align-items: center; justify-content: space-between; gap: .4rem; }
+.pc-eff-cause .k { font-size: var(--fs-label); font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); }
+.pc-eff-cause .v {
+  box-sizing: border-box; width: 2.6rem; padding: .1rem .2rem; text-align: center;
+  border: 1px solid var(--line-2); border-radius: 5px; background: var(--card);
+  font: inherit; font-size: .72rem; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums;
+  -moz-appearance: textfield; appearance: textfield;
+}
+.pc-eff-cause .v.zero { color: var(--ink-3); font-weight: 600; }
+.pc-eff-cause input.v::-webkit-inner-spin-button, .pc-eff-cause input.v::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.pc-eff-cause input.v:focus { outline: none; border-color: var(--or); box-shadow: 0 0 0 2px var(--wash); }
 .pc-big { border: 1px solid var(--line-2); border-radius: 7px; background: var(--panel); text-align: center; padding: .28rem .2rem .32rem; transition: border-color .12s; }
 .pc-big .k { display: block; font-size: .5rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); white-space: nowrap; }
 .pc-big .v { display: block; font-size: var(--fs-hero); font-weight: 700; line-height: 1.1; color: var(--ink); font-variant-numeric: tabular-nums; margin-top: .08rem; white-space: nowrap; }

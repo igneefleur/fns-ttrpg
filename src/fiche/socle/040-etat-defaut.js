@@ -66,6 +66,11 @@
       // passer le temps ; rien d'autre ne les lit.
       effort: "leger", temperature: 20,
 
+      // ---- l'effondrement ----
+      // Les niveaux d'effondrement que le JOUEUR ajoute à ceux des réserves
+      // (ligne « Autre » du module) : ce que la fiche ne sait pas compter.
+      effAutre: 0,
+
       // ---- les dés d'action ----
       // La taille de chaque dé d'action, dans l'ordre du module Actions : 4, 6,
       // 8, 10 ou 12. Vide au départ — un dé sans taille posée prend celle des

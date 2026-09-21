@@ -170,6 +170,7 @@
   function effondrementAuto() {
     var t = 0;
     effReserves().forEach(function (cle) { t += effNiveauDe(cle); });
+    t += Math.max(0, num(state.effAutre, 0));
     return clamp(Math.floor(t), 0, effPlafond());
   }
   // Le seul levier qui joue sur un NIVEAU et non sur des points : le MJ y pose
