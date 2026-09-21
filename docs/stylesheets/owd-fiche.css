@@ -1282,14 +1282,18 @@ html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où 
 .pc-obj-foot .pds { font-size: var(--fs-meta); color: var(--ink-3); font-variant-numeric: tabular-nums; flex: 0 0 auto; }
 /* UNE TUILE A LA FORME D'UN OBJET DES RÈGLES, TOUJOURS : le portrait des
    images du livre (84 × 128, soit 21:32), et la taille d'une case vide, quel
-   que soit le nom. L'image prend ce que le pied laisse, entière (contain), et
-   le pied tient sur une seule ligne (le nom s'abrège, il se lit en entier au
-   survol). */
+   que soit le nom. L'image occupe la case ENTIÈRE, et le pied passe PAR-DESSUS
+   son bas, sur un bandeau voilé qui le garde lisible ; il tient sur une seule
+   ligne (le nom s'abrège, il se lit en entier au survol). */
 .pc-obj-wrap { --obj-ratio: 21 / 32; }
-.pc-obj-tile { aspect-ratio: var(--obj-ratio); display: flex; flex-direction: column; }
-.pc-obj-tile > img, .pc-obj-tile > .pc-obj-ph { flex: 1 1 0; min-height: 0; aspect-ratio: auto; height: auto; }
-.pc-obj-tile > img { object-fit: contain; background: var(--panel); }
-.pc-obj-tile > .pc-obj-foot { flex: 0 0 auto; flex-wrap: nowrap; }
+.pc-obj-tile { aspect-ratio: var(--obj-ratio); }
+.pc-obj-tile > img, .pc-obj-tile > .pc-obj-ph {
+  position: absolute; inset: 0; width: 100%; height: 100%; aspect-ratio: auto; object-fit: cover;
+}
+.pc-obj-tile > .pc-obj-foot {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; flex-wrap: nowrap;
+  border-top: none; background: color-mix(in srgb, var(--card) 82%, transparent);
+}
 .pc-obj-tile > .pc-obj-foot .nm { flex: 1 1 0; }
 /* réglages du module, en mode édition (par ligne 1..8, et les puces
    Nom / Quantité / Poids / Total) */
