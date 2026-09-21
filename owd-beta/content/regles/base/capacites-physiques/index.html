@@ -55,9 +55,9 @@
     
       <link rel="stylesheet" href="../../../../stylesheets/cartes.css?v=24">
     
-      <link rel="stylesheet" href="../../../../stylesheets/owd-fiche.css?v=70">
+      <link rel="stylesheet" href="../../../../stylesheets/owd-fiche.css?v=73">
     
-      <link rel="stylesheet" href="../../../../stylesheets/owd-des3d.css?v=70">
+      <link rel="stylesheet" href="../../../../stylesheets/owd-des3d.css?v=73">
     
     <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -2369,21 +2369,21 @@
 <p><strong>Lourd :</strong> 25 degrés de plus.</p>
 </div>
 <div class="keep">
-<p>Un personnage qui se tient hors de sa zone subit des paliers de froid ou de chaleur, un par tranche de 4 degrés d'écart entamée.</p>
-<p class="formula">Paliers = écart ÷ 4, arrondi au supérieur</p>
+<p>Un personnage qui se tient hors de sa zone subit une intensité de froid ou de chaleur, qui monte de 1 par tranche de 4 degrés d'écart entamée.</p>
+<p class="formula">Intensité = écart ÷ 4, arrondi au supérieur</p>
 </div>
 <h3 id="lexposition">L'exposition</h3>
 <p>L'exposition mesure ce que le froid ou le chaud a déjà fait au corps. Elle part de zéro, descend quand le personnage a froid, monte quand il a chaud, et ce qu'elle supporte de part et d'autre découle de sa Résistance.</p>
 <p class="formula">Exposition = de −(100 + Résistance) à +(100 + Résistance)</p>
-<p>Toutes les dix minutes, elle bouge d'autant de points que le personnage a de <a href="#le-climat">paliers</a>. Chaque tranche de 10 % franchie lui donne un niveau d'<a href="#leffondrement">effondrement</a>. Tant qu'il se tient dans sa zone, elle revient vers zéro de 10 % toutes les dix minutes.</p>
+<p>Toutes les dix minutes, elle bouge d'autant de points que l'<a href="#le-climat">intensité</a> de froid ou de chaleur du personnage. Chaque tranche de 10 % franchie lui donne un niveau d'<a href="#leffondrement">effondrement</a>. Tant qu'il se tient dans sa zone, elle revient vers zéro de 10 % toutes les dix minutes.</p>
 <div class="memo">
 <p>Exemple. Un personnage ordinaire, qui porte 20 en Résistance, a une exposition qui va de −120 à +120, et chaque niveau d'effondrement lui coûte 12 points.</p>
-<p>Nu et immobile à 5 °C, il est à 23 degrés sous sa borne, donc à 6 paliers. Son exposition descend de 6 toutes les dix minutes : premier niveau au bout de vingt minutes, effondrement au bout de trois heures vingt.</p>
-<p>Vêtu de quoi valoir 8 degrés contre le froid, il voit sa borne tomber à 20 °C, l'écart à 15 degrés et les paliers à 4. Le même froid ne le prend plus qu'en cinq heures.</p>
+<p>Nu et immobile à 5 °C, il est à 23 degrés sous sa borne, donc à une intensité de 6. Son exposition descend de 6 toutes les dix minutes : premier niveau au bout de vingt minutes, effondrement au bout de trois heures vingt.</p>
+<p>Vêtu de quoi valoir 8 degrés contre le froid, il voit sa borne tomber à 20 °C, l'écart à 15 degrés et l'intensité à 4. Le même froid ne le prend plus qu'en cinq heures.</p>
 </div>
 <div class="memo">
-<p>Exemple. Le même personnage, nu, à 15 °C : à l'arrêt il subit 4 paliers, mais en effort intermédiaire il ressent 30 °C et n'en subit aucun.</p>
-<p>À l'inverse, à 40 °C, il subit 2 paliers immobile et 6 en effort intermédiaire.</p>
+<p>Exemple. Le même personnage, nu, à 15 °C : à l'arrêt il subit une intensité de 4, mais en effort intermédiaire il ressent 30 °C et n'en subit aucune.</p>
+<p>À l'inverse, à 40 °C, il subit une intensité de 2 immobile et de 6 en effort intermédiaire.</p>
 </div>
 <p>Chaque niveau porte un effet, qui dure tant que l'exposition s'y tient et s'ajoute à ceux des niveaux déjà franchis.</p>
 <p>Quand l'exposition revient à zéro, et chaque fois que le personnage dort, il lance 2d8 : un jet égal ou inférieur au numéro du niveau le plus profond qu'il a atteint lui vaut la maladie que ce niveau indique.</p>
@@ -2610,7 +2610,7 @@
 </table>
 </div>
 <div class="memo">
-<p>Exemple. Le désert bascule de 24 degrés entre le jour et la nuit. Un personnage ordinaire, nu et au repos, s'y tient à 10 degrés de sa zone dans les deux cas : il subit 3 paliers de chaleur à 42 °C le jour, et 3 paliers de froid à 18 °C la nuit.</p>
+<p>Exemple. Le désert bascule de 24 degrés entre le jour et la nuit. Un personnage ordinaire, nu et au repos, s'y tient à 10 degrés de sa zone dans les deux cas : il subit une intensité de chaleur de 3 à 42 °C le jour, et une intensité de froid de 3 à 18 °C la nuit.</p>
 </div>
 </div>
 <hr />
@@ -2794,13 +2794,13 @@
       
         <script src="../../../../javascripts/night.js"></script>
       
-        <script src="../../../../javascripts/owd-migrations.js?v=70"></script>
+        <script src="../../../../javascripts/owd-migrations.js?v=73"></script>
       
-        <script src="../../../../javascripts/owd-mods.js?v=70"></script>
+        <script src="../../../../javascripts/owd-mods.js?v=73"></script>
       
-        <script src="../../../../javascripts/owd-des3d.js?v=70"></script>
+        <script src="../../../../javascripts/owd-des3d.js?v=73"></script>
       
-        <script src="../../../../javascripts/owd-fiche.js?v=70"></script>
+        <script src="../../../../javascripts/owd-fiche.js?v=73"></script>
       
         <script src="../../../../javascripts/copybtn.js"></script>
       

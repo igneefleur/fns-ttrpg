@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "2.7.14b";
+  var RELEASE = "2.8.0b";
   var SCHEMA = 3;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -1720,7 +1720,15 @@
     });
     return out === null ? null : (niveau < 0 ? -out : out);
   }
-  // Les paliers de froid (négatifs) ou de chaud (positifs) du personnage, à
+  // LA ZONE IDÉALE, en température de l'AIR : sa zone de confort (le corps nu
+  // plus ce qu'il porte), moins les degrés que son effort lui ajoute.
+  function zoneIdeale() {
+    var z = confort(), e = effortDe(state.effort);
+    if (!z || !e) return null;
+    var d = num(e.degres, 0);
+    return { bas: z.bas - d, haut: z.haut - d };
+  }
+  // L'INTENSITÉ de froid (négative) ou de chaud (positive) du personnage, à
   // la température de l'air et à l'effort qu'il fournit.
   function paliersClimat() {
     var t = tempsDef(), z = confort(), e = effortDe(state.effort);
@@ -3862,6 +3870,19 @@
     jauge.appendChild(el("b", "pc-expo-zero"));
     res.appendChild(jauge);
 
+    // LA ZONE IDÉALE (en température de l'air, selon l'effort du module
+    // Effort et Temps) et l'INTENSITÉ de froid ou de chaud qu'il subit
+    var stat = el("div", "pc-stat pc-expo-stat");
+    function caseStat(k) {
+      var c = el("div", "c"), v = el("span", "v", "");
+      c.appendChild(v);
+      c.appendChild(el("span", "k", k));
+      stat.appendChild(c);
+      return v;
+    }
+    var vZone = caseStat("idéal °C"), vInt = caseStat("intensité");
+    res.appendChild(stat);
+
     var cmd = el("div", "pc-vital-cmd");
     var delta = el("input", "pc-vital-delta");
     delta.type = "number";
@@ -3897,6 +3918,13 @@
       fill.className = v < 0 ? "froid" : v > 0 ? "chaud" : "";
       fill.style.left = (v < 0 ? 50 - part : 50) + "%";
       fill.style.width = part + "%";
+      var z = zoneIdeale();
+      // le VRAI moins, comme au livre : « −5 à 7 »
+      function deg(n) { return fmtP(n).replace("-", "−"); }
+      vZone.textContent = z ? deg(z.bas) + " à " + deg(z.haut) : "—";
+      var p = paliersClimat();
+      vInt.textContent = p < 0 ? "Froid " + (-p) : p > 0 ? "Chaud " + p : "Aucune";
+      vInt.className = "v" + (p < 0 ? " froid" : p > 0 ? " chaud" : "");
       jauge.title = "Exposition " + (v < 0 ? "−" + fmtP(-v) : fmtP(v)) + " sur ±" + fmtP(m) +
                     " · niveau d'effondrement " + effNiveauDe("expo");
     });

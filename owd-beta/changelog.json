@@ -1,5 +1,19 @@
 [
 {
+"short": "61ae84e",
+"author": "Théo Cavaillès",
+"date": "2026-09-22T01:22:39+02:00",
+"message": "Les paliers du climat deviennent l'intensité ; Exposition montre la zone idéale et l'intensité",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/61ae84e9543ac73cf9200564a4c0e3106bd4f04d",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/base/capacites-physiques.md",
+"url": "content/regles/base/capacites-physiques/"
+}
+]
+},
+{
 "short": "385a5c1",
 "author": "Théo Cavaillès",
 "date": "2026-09-21T20:48:45+02:00",
