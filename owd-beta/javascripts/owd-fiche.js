@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "2.7.7b";
+  var RELEASE = "2.7.8b";
   var SCHEMA = 3;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -3921,52 +3921,59 @@
   function buildMouvement() {
     var b = block("Mouvement");
 
-    // LES CRANS, pour l'allure qui en a plusieurs : foncer. Mêmes cases
-    // soudées que les efforts, en parts égales, chacune marquée des pas
-    // qu'elle ajoute à l'allure d'avant (+3 | +6 | +9 | +12 | +15).
-    // Dans l'ordre arrêté par l'auteur : la valeur et « pas / round », la
-    // distance par minute et par heure (comme les tables du livre), puis les
-    // crans, puis leur coût.
-    var aff = el("div", "pc-mouv");
-    var pas = el("b");
-    aff.appendChild(pas);
-    aff.appendChild(el("span", "u", "pas / round"));
-    b.appendChild(aff);
-    var dist = el("div", "pc-mouv-dist");
-    b.appendChild(dist);
+    // UN TABLEAU DE BORD, dans l'ordre arrêté par l'auteur :
+    //   [ pas / round | m / minute | km / heure ]   la grande case d'abord
+    //   [ +3 | +6 | +9 | +12 | +15 ]                les crans, en effort lourd
+    //   [ DA | PE ]                                 ce que le cran coûte
+    // Les cases sont soudées, comme le trio de MIA : la valeur en grand,
+    // l'étiquette en petites capitales dessous.
+    function cases(cls, defs) {
+      var box = el("div", "pc-stat " + cls), out = {};
+      defs.forEach(function (d) {
+        var c = el("div", "c" + (d[2] ? " " + d[2] : ""));
+        var v = el("span", "v", "");
+        c.appendChild(v);
+        c.appendChild(el("span", "k", d[1]));
+        box.appendChild(c);
+        out[d[0]] = v;
+      });
+      b.appendChild(box);
+      return { box: box, v: out };
+    }
+    var dist = cases("pc-mouv-dist", [["pas", "pas / round", "grand"], ["min", "m / min"], ["h", "km / h"]]);
+    // les crans : foncer, chacun marqué des pas qu'il ajoute à l'allure d'avant
     var crans = el("div", "pc-segs pc-crans");
     b.appendChild(crans);
-    var cout = el("div", "pc-mouv-cout");
-    b.appendChild(cout);
+    var cout = cases("pc-mouv-cout", [["da", "dés d'action"], ["pe", "PE"]]);
 
-    function libCout(c) {
-      var t = [];
-      if (c.des) t.push(c.des + "DA");   // dés d'action
-      if (c.pe) t.push(c.pe + " PE");
-      return t.join(" · ");
-    }
     hooks.push(function () {
       var a = allureCourante();
       crans.innerHTML = "";
-      crans.style.display = a && a.crans.length > 1 ? "" : "none";
-      if (!a) { pas.textContent = "0"; cout.textContent = ""; dist.textContent = "0 m / minute · 0 km / heure"; return; }
-      var k = clamp(num(state.allureCran, 1), 1, a.crans.length);
-      if (a.crans.length > 1) {
-        // les pas de l'allure d'avant : le point de départ des crans
-        var liste = mouvementListe(), avant = liste[liste.indexOf(a) - 1];
-        var base = avant ? avant.crans[avant.crans.length - 1].pas : 0;
-        a.crans.forEach(function (c, i) {
-          var bt = el("button", "c" + (i + 1 === k ? " on" : ""), "+" + (c.pas - base));
-          bt.title = libCout(c);
-          bt.type = "button";
-          bt.addEventListener("click", function () { state.allureCran = i + 1; refresh(); });
-          crans.appendChild(bt);
-        });
+      var lourd = !!a && a.crans.length > 1;
+      crans.style.display = lourd ? "" : "none";
+      cout.box.style.display = lourd ? "" : "none";
+      var c = { pas: 0, minute: 0, heure: 0, des: 0, pe: 0 };
+      if (a) {
+        var k = clamp(num(state.allureCran, 1), 1, a.crans.length);
+        c = a.crans[k - 1];
+        if (lourd) {
+          // les pas de l'allure d'avant : le point de départ des crans
+          var liste = mouvementListe(), avant = liste[liste.indexOf(a) - 1];
+          var base = avant ? avant.crans[avant.crans.length - 1].pas : 0;
+          a.crans.forEach(function (x, i) {
+            var bt = el("button", "c" + (i + 1 === k ? " on" : ""), "+" + (x.pas - base));
+            bt.title = x.des + "DA" + (x.pe ? " · " + x.pe + " PE" : "");
+            bt.type = "button";
+            bt.addEventListener("click", function () { state.allureCran = i + 1; refresh(); });
+            crans.appendChild(bt);
+          });
+        }
       }
-      var c = a.crans[k - 1];
-      pas.textContent = String(c.pas);
-      dist.textContent = fmtP(num0(c.minute)) + " m / minute · " + fmtP(num0(c.heure)) + " km / heure";
-      cout.textContent = libCout(c) ? "coût : " + libCout(c) : "";
+      dist.v.pas.textContent = String(c.pas);
+      dist.v.min.textContent = fmtP(num0(c.minute));
+      dist.v.h.textContent = fmtP(num0(c.heure));
+      cout.v.da.textContent = String(c.des || 0);
+      cout.v.pe.textContent = String(c.pe || 0);
     });
     return b;
   }

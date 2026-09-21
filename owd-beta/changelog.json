@@ -144,19 +144,5 @@
 "url": "content/regles/base/caracteristiques/"
 }
 ]
-},
-{
-"short": "5c70e24",
-"author": "Théo Cavaillès",
-"date": "2026-09-21T14:42:38+02:00",
-"message": "Les caractéristiques se répartissent à la création et s'achètent à l'expérience",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/5c70e248d689a8c44c1756b41766c90c9a0bdc4a",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/base/caracteristiques.md",
-"url": "content/regles/base/caracteristiques/"
-}
-]
 }
 ]
