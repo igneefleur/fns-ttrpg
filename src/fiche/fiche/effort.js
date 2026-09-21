@@ -6,6 +6,8 @@
   // tranche. UN NOMBRE NÉGATIF FAIT RECULER LE TEMPS : c'est le rattrapage
   // d'une erreur de saisie. Aucune règle n'est écrite ici : les efforts, les
   // taux et les paliers viennent des données.
+  // l'affichage d'un effort dont le nom ne tient pas dans sa case
+  var EFFORT_COURT = { intermediaire: "Inter" };
   function buildEffort() {
     var b = block("Effort et Temps");
 
@@ -18,7 +20,9 @@
       if (!rang.length) return;
       var bloc = el("div", "pc-segs");
       rang.forEach(function (e) {
-        var bt = el("button", "c", e.nom);
+        // l'étiquette courte voulue par l'auteur ; le nom entier au survol
+        var bt = el("button", "c", EFFORT_COURT[e.cle] || e.nom);
+        bt.title = e.nom;
         bt.type = "button";
         bt.addEventListener("click", function () { state.effort = e.cle; refresh(); });
         bloc.appendChild(bt);
