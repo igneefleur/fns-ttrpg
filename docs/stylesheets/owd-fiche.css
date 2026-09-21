@@ -1225,6 +1225,9 @@ html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où 
   color: var(--ink-3); font-size: .56rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
 }
 .pc-obj-ghead > .pds.over { color: var(--danger); font-weight: 700; }
+/* une case vide de poches ou de sac : la place qui reste, en pointillé */
+.pc-obj-tile.pc-inv-trou { aspect-ratio: 1 / 1; background: transparent; border: 1px dashed var(--line-2); cursor: default; }
+.pc-obj-tile.pc-inv-trou:hover { border-color: var(--line-2); }
 .pc-obj-tiles.over { outline: 1px dashed var(--accent); outline-offset: 2px; }
 .pc-obj-tile {
   width: calc((100% - .3rem * (var(--obj-cols) - 1)) / var(--obj-cols));

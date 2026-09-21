@@ -250,6 +250,12 @@
         refresh();
       });
       tiles.appendChild(add);
+      // LA LIGNE SE COMPLÈTE de cases vides en pointillé, et un groupe vide en
+      // garde une entière : on voit la place qui reste. La case « + » de
+      // l'édition compte dans la ligne.
+      var n = items.filter(function (x) { return x.ou === ou; }).length + (isEdit("inv") ? 1 : 0);
+      var trous = Math.max(5, Math.ceil(n / 5) * 5) - n;
+      for (var k = 0; k < trous; k++) tiles.appendChild(el("div", "pc-obj-tile pc-inv-trou"));
       tiles.addEventListener("dragover", function (e) {
         if (!drag) return;
         e.preventDefault();
