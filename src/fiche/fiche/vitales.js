@@ -26,11 +26,14 @@
   // d'union du clavier passe pour une césure.
   function reserveFmt(n) { return n < 0 ? "−" + fmtP(-n) : fmtP(n); }
 
-  // Rend { el, etat } : le module entier, et la pastille d'état que l'appelant
-  // remplit lui-même.
+  // Rend { el, etat } : UNE réserve (bandeau, barre, geste), et la pastille
+  // d'état que l'appelant remplit lui-même. La CARTE qui la porte est à part
+  // (carteVitale) : PV, PE et PM en ont une chacun, PR, PS et PH en partagent
+  // une.
+  function carteVitale() { return el("div", "pc-block pc-vital"); }
   function reserveVitale(cle, provenance) {
     var nom = abbrCap(cle, cle.toUpperCase());
-    var box = el("div", "pc-block pc-vital");
+    var box = el("div", "pc-vital-res");
 
     var tete = el("div", "pc-vital-tete");
     var n = el("span", "pc-vital-nom", nom);
@@ -110,15 +113,16 @@
       return t;
     };
   }
+  function seule(r) { var c = carteVitale(); c.appendChild(r.el); return c; }
   function buildPv() {
-    return reserveVitale("pv", provenanceEff("pv", "pvParNiveau")).el;
+    return seule(reserveVitale("pv", provenanceEff("pv", "pvParNiveau")));
   }
   function buildPe() {
     var r = reserveVitale("pe", provenanceEff("pe", "peParNiveau"));
     // un ÉTAT du personnage, le même que dit l'avertissement de l'en-tête
     hooks.push(function () { r.etat.textContent = peMax() <= 0 ? "Inconscient" : ""; });
-    return r.el;
+    return seule(r);
   }
   function buildPm() {
-    return reserveVitale("pm", function () { return "Maximum calculé : " + fmtP(autoDe("pm")); }).el;
+    return seule(reserveVitale("pm", function () { return "Maximum calculé : " + fmtP(autoDe("pm")); }));
   }

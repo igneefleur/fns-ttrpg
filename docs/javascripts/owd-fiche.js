@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "1.4.0b";
+  var RELEASE = "1.5.0b";
   var SCHEMA = 2;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -2980,58 +2980,6 @@
     tile.appendChild(row);
   }
 
-  // ---- UNE JAUGE ----
-  // PV, PE, PM, PI, PR, PS, PH : sept fois le même geste, une seule fonction.
-  //   - le pas −/champ/+ est un geste de JEU : toujours actif, jamais sous le
-  //     rouage ;
-  //   - « / max » porte l'accent quand le maximum est forcé ou modifié, et son
-  //     infobulle dit D'OÙ il vient (la formule du livre, décomposée) ;
-  //   - « Max » remet la valeur à null, c'est-à-dire « au maximum » : elle SUIT
-  //     alors le maximum quand il bouge, et celui de PV et PE bouge à chaque
-  //     niveau d'effondrement ;
-  //   - le rouage ne déverrouille que le maximum forcé et ses modificateurs.
-  //
-  // Le nombre affiché est le nombre RÉEL, jamais borné : borner l'affichage
-  // mentirait sur ce que porte le personnage, et les points de mana, dont le
-  // maximum vaut zéro, seraient purement inutilisables. C'est l'ACCENT et
-  // l'avertissement de l'en-tête qui disent le dépassement.
-  function jauge(bloc, cle, opts) {
-    opts = opts || {};
-    var pas = opts.pas || 1;
-    var row = el("div", "pc-kv");
-    var k = el("span", "k", abbrCap(cle, cle.toUpperCase()));
-    k.title = libCap(cle, cle);
-    row.appendChild(k);
-    row.appendChild(stepper(
-      function () { return courant(cle); },
-      function (v) { state.etat[cle] = Math.round(v * 100) / 100; },
-      pas, libCap(cle, cle)));
-    var max = el("span", "max", "");
-    row.appendChild(max);
-    row.appendChild(el("span", "sp"));
-    row.appendChild(miniBtn("Max", "Revenir au maximum", function () {
-      state.etat[cle] = null;
-      refresh();
-    }));
-    bloc.appendChild(row);
-    bloc.appendChild(ligneLeviers(cle, function () { return autoDe(cle); }, opts.titreForce));
-    if (opts.note) bloc.appendChild(note(opts.note));
-    hooks.push(function () {
-      var m = maxDe(cle);
-      var d = 0;
-      var forcee = capForce(cle);
-      var depasse = courant(cle) > m;
-      max.textContent = "/ " + fmtP(m);
-      max.classList.toggle("adj", forcee || d !== 0 || depasse);
-      var t;
-      if (forcee) t = chaineTexteDe(lireCap("max", cle), "calculé", autoDe(cle));
-      else t = opts.provenance ? opts.provenance() : "Maximum calculé";
-      if (d) t += " · modificateurs " + sign(d);
-      if (depasse) t += " — la valeur courante dépasse ce maximum : elle est gardée telle quelle.";
-      max.title = t;
-    });
-    return row;
-  }
   // D'où vient un maximum, décomposé pour l'infobulle. La formule VERBATIM du
   // livre est dans les données ; on la cite, on ne la réécrit pas, et on ajoute
   // ce que la caractéristique du personnage y met aujourd'hui.
@@ -3272,11 +3220,14 @@
   // d'union du clavier passe pour une césure.
   function reserveFmt(n) { return n < 0 ? "−" + fmtP(-n) : fmtP(n); }
 
-  // Rend { el, etat } : le module entier, et la pastille d'état que l'appelant
-  // remplit lui-même.
+  // Rend { el, etat } : UNE réserve (bandeau, barre, geste), et la pastille
+  // d'état que l'appelant remplit lui-même. La CARTE qui la porte est à part
+  // (carteVitale) : PV, PE et PM en ont une chacun, PR, PS et PH en partagent
+  // une.
+  function carteVitale() { return el("div", "pc-block pc-vital"); }
   function reserveVitale(cle, provenance) {
     var nom = abbrCap(cle, cle.toUpperCase());
-    var box = el("div", "pc-block pc-vital");
+    var box = el("div", "pc-vital-res");
 
     var tete = el("div", "pc-vital-tete");
     var n = el("span", "pc-vital-nom", nom);
@@ -3356,27 +3307,30 @@
       return t;
     };
   }
+  function seule(r) { var c = carteVitale(); c.appendChild(r.el); return c; }
   function buildPv() {
-    return reserveVitale("pv", provenanceEff("pv", "pvParNiveau")).el;
+    return seule(reserveVitale("pv", provenanceEff("pv", "pvParNiveau")));
   }
   function buildPe() {
     var r = reserveVitale("pe", provenanceEff("pe", "peParNiveau"));
     // un ÉTAT du personnage, le même que dit l'avertissement de l'en-tête
     hooks.push(function () { r.etat.textContent = peMax() <= 0 ? "Inconscient" : ""; });
-    return r.el;
+    return seule(r);
   }
   function buildPm() {
-    return reserveVitale("pm", function () { return "Maximum calculé : " + fmtP(autoDe("pm")); }).el;
+    return seule(reserveVitale("pm", function () { return "Maximum calculé : " + fmtP(autoDe("pm")); }));
   }
   // ---- 5. Survie : PR, PS, PH ----
+  // LE GRÉEMENT DES RÉSERVES VITALES (vitales.js), mais les trois dans UNE
+  // carte : repos, satiété et hydratation se lisent ensemble, au campement,
+  // et ne se déplacent pas l'une sans l'autre. Aucun rouage : leurs maximums
+  // se règlent dans l'onglet Options, comme ceux des PV.
   function buildSurvie() {
-    var b = block("Survie", null, "survie");
-    // Les nombres sont grands (des centaines, des milliers) : le pas vaut dix,
-    // et le champ du milieu reste saisissable au point près pour le reste.
+    var b = carteVitale();
     ["pr", "ps", "ph"].forEach(function (cle) {
-      jauge(b, cle, { pas: 10, provenance: provenanceCap(cle) });
+      b.appendChild(reserveVitale(cle, provenanceCap(cle)).el);
     });
-    var pied = el("div", "pc-comp-tools");
+    var pied = el("div", "pc-comp-tools pc-vital-pied");
     var ligne = el("div", "row");
     ligne.appendChild(chatBtn(
       function () { return "Survie — " + (state.name || "sans nom"); },
@@ -3392,7 +3346,6 @@
     b.appendChild(pied);
     return b;
   }
-
   // ---- 6. Exposition ----
   // UNE jauge SIGNÉE : de −(borne) à +(borne), zéro au milieu. Aucune table du
   // froid ni du chaud n'est affichée — la fiche compte les degrés, elle ne dit

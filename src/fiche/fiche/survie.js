@@ -1,12 +1,14 @@
   // ---- 5. Survie : PR, PS, PH ----
+  // LE GRÉEMENT DES RÉSERVES VITALES (vitales.js), mais les trois dans UNE
+  // carte : repos, satiété et hydratation se lisent ensemble, au campement,
+  // et ne se déplacent pas l'une sans l'autre. Aucun rouage : leurs maximums
+  // se règlent dans l'onglet Options, comme ceux des PV.
   function buildSurvie() {
-    var b = block("Survie", null, "survie");
-    // Les nombres sont grands (des centaines, des milliers) : le pas vaut dix,
-    // et le champ du milieu reste saisissable au point près pour le reste.
+    var b = carteVitale();
     ["pr", "ps", "ph"].forEach(function (cle) {
-      jauge(b, cle, { pas: 10, provenance: provenanceCap(cle) });
+      b.appendChild(reserveVitale(cle, provenanceCap(cle)).el);
     });
-    var pied = el("div", "pc-comp-tools");
+    var pied = el("div", "pc-comp-tools pc-vital-pied");
     var ligne = el("div", "row");
     ligne.appendChild(chatBtn(
       function () { return "Survie — " + (state.name || "sans nom"); },
@@ -22,4 +24,3 @@
     b.appendChild(pied);
     return b;
   }
-
