@@ -575,6 +575,8 @@ Chaque réserve donne un niveau d'effondrement par tranche de 10 % perdue, ce qu
 
 Le niveau d'effondrement réduit le maximum de points d'endurance de 10 % par niveau, et le maximum de points de vie de 5 %.
 
+Quand un maximum baisse, les points qui le dépassent sont perdus : un personnage à 100 points de vie sur 100 qui gagne un niveau passe à 95 sur 95, et un personnage à 50 sur 100 passe à 50 sur 95. Quand le niveau d'effondrement baisse, le maximum remonte, mais les points perdus ne reviennent pas.
+
 La table ci-dessous donne ce qui reste du maximum de points d'endurance et du maximum de points de vie selon le niveau d'effondrement.
 
 <div class="sepia-table" markdown>

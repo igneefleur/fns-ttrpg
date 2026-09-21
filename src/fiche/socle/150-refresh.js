@@ -52,7 +52,31 @@
       try { reg[i](); } catch (err) { if (!bilan[id]) bilan[id] = err; }
     }
   }
+  // LES PV ET LES PE SUIVENT L'EFFONDREMENT, dans un seul sens. Quand le
+  // niveau monte, le maximum descend et la valeur courante qui le dépasse
+  // descend avec lui (100/100 devient 95/95, 50/100 devient 50/95). Quand il
+  // redescend, le maximum remonte mais PAS la valeur : les points perdus ne
+  // reviennent pas. Une valeur « au maximum » (null) suivrait le maximum en
+  // remontant ; elle se fige donc à l'ancien maximum à ce moment-là.
+  // Seul un changement de NIVEAU joue ici : un maximum baissé par un levier du
+  // MJ ne réécrit rien, comme partout ailleurs dans la fiche.
+  // La mémoire du dernier état vu ne vit qu'en mémoire : la première passe
+  // après un chargement ne fait que la poser.
+  var effVu = null, effMaxVu = {};
+  function suitEffondrement() {
+    var e = effondrement();
+    ["pv", "pe"].forEach(function (k) {
+      var m = maxDe(k), v = state.etat[k], avant = effMaxVu[k];
+      if (effVu !== null && avant !== undefined) {
+        if (e > effVu && v !== null && v > m) state.etat[k] = m;
+        if (e < effVu && v === null && m > avant) state.etat[k] = avant;
+      }
+      effMaxVu[k] = m;
+    });
+    effVu = e;
+  }
   function refresh() {
+    suitEffondrement();
     save();
     var bilan = {};
     joue("", regHors, bilan);

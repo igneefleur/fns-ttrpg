@@ -20,8 +20,8 @@
     { id: "pv",           titre: "PV",               onglet: "fiche", colonne: "milieu", build: buildPv },
     { id: "pe",           titre: "PE",               onglet: "fiche", colonne: "milieu", build: buildPe },
     { id: "pm",           titre: "PM",               onglet: "fiche", colonne: "milieu", build: buildPm },
-    { id: "exposition",   titre: "Exposition",       onglet: "fiche", colonne: "milieu", build: buildExposition },
     { id: "effondrement", titre: "Effondrement",     onglet: "fiche", colonne: "milieu", build: buildEffondrement },
+    { id: "exposition",   titre: "Exposition",       onglet: "fiche", colonne: "milieu", build: buildExposition },
     { id: "comps",        titre: "Compétences",      onglet: "fiche", colonne: "droite", build: buildComps },
     // ---- onglet Art ----
     // Pleine largeur, seul de son onglet : une technique est une CARTE, avec

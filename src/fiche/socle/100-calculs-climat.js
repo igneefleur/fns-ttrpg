@@ -81,7 +81,9 @@
   // recul se calcule à l'envers. Sans lui, une réserve ou une exposition qui a
   // buté sur sa borne ne saurait plus d'où elle venait.
   var journalTemps = [];
-  var TEMPS_CLES = ["pr", "ps", "ph", "expo"];
+  // PV et PE en font partie : l'effondrement que le passage a causé leur a
+  // pris des points, et annuler le passage doit les rendre.
+  var TEMPS_CLES = ["pr", "ps", "ph", "expo", "pv", "pe"];
   function photoTemps() {
     var o = {};
     TEMPS_CLES.forEach(function (k) { o[k] = state.etat[k]; });
@@ -107,6 +109,9 @@
       if (top.n > n || !memePhoto(photoTemps(), top.apres)) break;
       TEMPS_CLES.forEach(function (k) { state.etat[k] = top.avant[k]; });
       journalTemps.pop();
+      // l'effondrement redescend d'un coup : ce n'est pas une récupération,
+      // c'est une annulation — le suivi repart de l'état restauré
+      effVu = null;
       n -= top.n;
       fait += top.n;
     }

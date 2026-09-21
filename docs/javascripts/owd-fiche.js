@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "1.9.0b";
+  var RELEASE = "1.10.0b";
   var SCHEMA = 2;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -1535,7 +1535,9 @@
   // recul se calcule à l'envers. Sans lui, une réserve ou une exposition qui a
   // buté sur sa borne ne saurait plus d'où elle venait.
   var journalTemps = [];
-  var TEMPS_CLES = ["pr", "ps", "ph", "expo"];
+  // PV et PE en font partie : l'effondrement que le passage a causé leur a
+  // pris des points, et annuler le passage doit les rendre.
+  var TEMPS_CLES = ["pr", "ps", "ph", "expo", "pv", "pe"];
   function photoTemps() {
     var o = {};
     TEMPS_CLES.forEach(function (k) { o[k] = state.etat[k]; });
@@ -1561,6 +1563,9 @@
       if (top.n > n || !memePhoto(photoTemps(), top.apres)) break;
       TEMPS_CLES.forEach(function (k) { state.etat[k] = top.avant[k]; });
       journalTemps.pop();
+      // l'effondrement redescend d'un coup : ce n'est pas une récupération,
+      // c'est une annulation — le suivi repart de l'état restauré
+      effVu = null;
       n -= top.n;
       fait += top.n;
     }
@@ -1973,7 +1978,31 @@
       try { reg[i](); } catch (err) { if (!bilan[id]) bilan[id] = err; }
     }
   }
+  // LES PV ET LES PE SUIVENT L'EFFONDREMENT, dans un seul sens. Quand le
+  // niveau monte, le maximum descend et la valeur courante qui le dépasse
+  // descend avec lui (100/100 devient 95/95, 50/100 devient 50/95). Quand il
+  // redescend, le maximum remonte mais PAS la valeur : les points perdus ne
+  // reviennent pas. Une valeur « au maximum » (null) suivrait le maximum en
+  // remontant ; elle se fige donc à l'ancien maximum à ce moment-là.
+  // Seul un changement de NIVEAU joue ici : un maximum baissé par un levier du
+  // MJ ne réécrit rien, comme partout ailleurs dans la fiche.
+  // La mémoire du dernier état vu ne vit qu'en mémoire : la première passe
+  // après un chargement ne fait que la poser.
+  var effVu = null, effMaxVu = {};
+  function suitEffondrement() {
+    var e = effondrement();
+    ["pv", "pe"].forEach(function (k) {
+      var m = maxDe(k), v = state.etat[k], avant = effMaxVu[k];
+      if (effVu !== null && avant !== undefined) {
+        if (e > effVu && v !== null && v > m) state.etat[k] = m;
+        if (e < effVu && v === null && m > avant) state.etat[k] = avant;
+      }
+      effMaxVu[k] = m;
+    });
+    effVu = e;
+  }
   function refresh() {
+    suitEffondrement();
     save();
     var bilan = {};
     joue("", regHors, bilan);
@@ -3665,58 +3694,28 @@
   }
 
   // ---- 7. Effondrement ----
-  // Le calcul que la fiche rend le mieux : quatre réserves qui s'usent, un
-  // niveau par tranche perdue, et deux maximums qui descendent. La TABLE des
-  // dix lignes du livre n'apparaît nulle part : c'est l'infobulle qui
-  // décompose, et le DOM ne montre que l'état du personnage.
+  //     [      EFFONDREMENT      ]
+  //     [  MAX PV  ] [  MAX PE  ]
+  // Le niveau, puis ce qu'il laisse des deux maximums. La TABLE des dix lignes
+  // du livre n'apparaît nulle part : l'infobulle du niveau décompose ce que
+  // chaque réserve y apporte, et le DOM ne montre que l'état du personnage.
   function buildEffondrement() {
     var b = block("Effondrement", null, "effondrement");
-    var r = el("div", "pc-bigrow pc-bigrow-2");
     var tN = bigTile("EFFONDREMENT", function () { return String(effondrement()); });
-    tN.classList.add("pc-mods-host");
+    tN.classList.add("pc-mods-host", "pc-eff-niveau");
     tuileForce(tN, "effondrement", effondrementAuto,
       "Vide = niveau calculé sur les réserves ; une valeur le force.");
     tuileMods(tN, "effondrement");
-    r.appendChild(tN);
-    var tM = bigTile("MAXIMUMS", function () {
-      var pe = num(effDef().peParNiveau, 0) * effondrement();
-      var pv = num(effDef().pvParNiveau, 0) * effondrement();
-      return (100 - clamp(pe, 0, 100)) + " % / " + (100 - clamp(pv, 0, 100)) + " %";
-    });
-    tM.title = "Ce qu'il reste du maximum de points d'endurance et de points de vie.";
-    r.appendChild(tM);
+    b.appendChild(tN);
+    function reste(champ) {
+      return 100 - clamp(num(effDef()[champ], 0) * effondrement(), 0, 100);
+    }
+    var r = el("div", "pc-bigrow pc-bigrow-2");
+    var tV = bigTile("MAX PV", function () { return reste("pvParNiveau") + " %"; });
+    var tE = bigTile("MAX PE", function () { return reste("peParNiveau") + " %"; });
+    r.appendChild(tV);
+    r.appendChild(tE);
     b.appendChild(r);
-
-    // Une ligne par réserve contributrice, dans l'ordre que les règles donnent.
-    var outils = el("div", "pc-comp-tools");
-    var lignes = {};
-    effReserves().forEach(function (cle) {
-      var row = el("div", "row");
-      var nom = el("span", "pc-comp-name");
-      nom.appendChild(el("span", "pc-comp-label", libCap(cle, cle)));
-      row.appendChild(nom);
-      var tot = el("span", "pc-comp-total", "");
-      row.appendChild(tot);
-      lignes[cle] = tot;
-      outils.appendChild(row);
-    });
-    b.appendChild(outils);
-
-    var pied = el("div", "pc-comp-tools");
-    var lg = el("div", "row");
-    lg.appendChild(chatBtn(
-      function () { return "Effondrement — niveau " + effondrement(); },
-      function () {
-        var out = effReserves().map(function (cle) {
-          return [libCap(cle, cle), String(effNiveauDe(cle))];
-        });
-        var pe = num(effDef().peParNiveau, 0) * effondrement();
-        var pv = num(effDef().pvParNiveau, 0) * effondrement();
-        out.push(["Maximums", "PE " + (100 - clamp(pe, 0, 100)) + " % · PV " + (100 - clamp(pv, 0, 100)) + " %"]);
-        return out;
-      }));
-    pied.appendChild(lg);
-    b.appendChild(pied);
 
     hooks.push(function () {
       var parts = [], somme = 0;
@@ -3724,12 +3723,11 @@
         var n = effNiveauDe(cle);
         somme += n;
         parts.push(libCap(cle, cle).toLowerCase() + " " + n);
-        if (lignes[cle]) {
-          lignes[cle].textContent = String(n);
-          lignes[cle].classList.toggle("zero", !n);
-        }
       });
-      tN.classList.toggle("adj", effondrement() > 0);
+      var e = effondrement();
+      tN.classList.toggle("adj", e > 0);
+      tV.classList.toggle("adj", e > 0);
+      tE.classList.toggle("adj", e > 0);
       tN.title = capForce("effondrement")
         ? chaineTexteDe(lireCap("max", "effondrement"), "calculé", effondrementAuto())
         : parts.join(" · ") + " = " + fmtP(somme) +
@@ -3737,7 +3735,6 @@
     });
     return b;
   }
-
   // ---- 8. Compétences ----
   // LES RÈGLES NE DONNENT AUCUNE LISTE DE COMPÉTENCES : le joueur nomme les
   // siennes, et la fiche n'en propose pas — une liste d'exemples passerait pour
@@ -6813,8 +6810,8 @@
     { id: "pv",           titre: "PV",               onglet: "fiche", colonne: "milieu", build: buildPv },
     { id: "pe",           titre: "PE",               onglet: "fiche", colonne: "milieu", build: buildPe },
     { id: "pm",           titre: "PM",               onglet: "fiche", colonne: "milieu", build: buildPm },
-    { id: "exposition",   titre: "Exposition",       onglet: "fiche", colonne: "milieu", build: buildExposition },
     { id: "effondrement", titre: "Effondrement",     onglet: "fiche", colonne: "milieu", build: buildEffondrement },
+    { id: "exposition",   titre: "Exposition",       onglet: "fiche", colonne: "milieu", build: buildExposition },
     { id: "comps",        titre: "Compétences",      onglet: "fiche", colonne: "droite", build: buildComps },
     // ---- onglet Art ----
     // Pleine largeur, seul de son onglet : une technique est une CARTE, avec
