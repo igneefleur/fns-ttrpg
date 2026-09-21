@@ -1187,6 +1187,8 @@ html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où 
   color: var(--ink-2); font-variant-numeric: tabular-nums; flex: 0 0 auto;
 }
 .pc-obj-ghead > .pds.off { font-weight: 400; color: var(--ink-3); }
+/* deux comptes (ep puis eb, au sac) : le second suit le premier, à droite */
+.pc-obj-ghead > .pds + .pds { margin-left: .6rem; }
 /* La case et son mot forment UN seul bouton : cliquer le mot coche aussi, ce
    qu'une case nue de 12 px ne pardonne pas sur un écran tactile. */
 .pc-obj-cnt {
@@ -1221,6 +1223,9 @@ html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où 
 .pc-inv-case.over { outline: 2px dashed var(--accent); outline-offset: 1px; }
 /* la seconde case d'un objet qui en tient deux (robe, arme à deux mains) */
 .pc-inv-case.echo > .pc-obj-tile { opacity: .55; }
+/* les emplacements (ep) de la ceinture et du sac, sur leurs propres lignes */
+.pc-inv-eps { margin-bottom: .3rem; }
+.pc-inv-eps > .pc-inv-cases:last-child { margin-bottom: 0; }
 .pc-inv-vide {
   aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center; text-align: center;
   box-sizing: border-box; padding: .2rem; border: 1px dashed var(--line-2); border-radius: 7px;

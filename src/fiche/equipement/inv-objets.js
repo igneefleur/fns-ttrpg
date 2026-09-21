@@ -1,14 +1,20 @@
   // ---- 14. Inventaire (pleine largeur) ----
-  // TROIS GROUPES FIXES, et rien d'autre dans l'onglet Équipement :
+  // QUATRE GROUPES FIXES, et rien d'autre dans l'onglet Équipement :
   //
-  //   SUR SOI     [main gauche] [main droite]  ·  ·  [sac à dos]
+  //   SUR SOI     [main gauche] [main droite]  ·  [ceinture] [sac à dos]
   //               [tête] [haut] [mains] [bas] [pieds]
-  //   POCHES      ce que les vêtements portés laissent emporter (en eb)
-  //   SAC À DOS   ce que le sac porté laisse emporter (en eb)
+  //               [boucles d'oreilles] [collier] [sous-vêtement] [poignet G] [poignet D]
+  //               [bague G] [bague D] [cheville G] [cheville D] [cape / manteau]
+  //   CEINTURE    les emplacements (ep) de la ceinture portée
+  //   POCHES      ce que les vêtements et accessoires portés laissent emporter (en eb)
+  //   SAC À DOS   les emplacements du sac porté, PUIS ce qu'il contient (en eb)
   //
-  // Les huit cases de Sur soi sont TOUJOURS là, vides ou pleines ; une case
-  // de vêtement ne prend que son type de vêtement, la case du sac à dos qu'un
-  // sac. Poches et sac à dos se remplissent de tuiles, cinq par ligne au plus.
+  // Les cases de Sur soi sont TOUJOURS là, vides ou pleines ; chacune ne prend
+  // que ce qui s'y porte. Un EMPLACEMENT tient un seul exemplaire, jusqu'à
+  // l'encombrance au plus de sa ceinture ou de son sac, et ne compte dans
+  // aucune capacité ; ils se montrent tous, même vides, avant tout le reste et
+  // sur leurs propres lignes. Poches et sac se remplissent de tuiles, cinq par
+  // ligne au plus.
   // Le détail de l'objet choisi occupe la colonne de droite : c'est là qu'on
   // dit ce qu'est un objet (vêtement, sac à dos, arme) et où il se trouve.
   //
@@ -16,16 +22,20 @@
   // la fiche (et dans les Attributes Roll20) ; préférer une URL quand c'est
   // possible.
   var INV_NOMS = {
-    mainG: "Main gauche", mainD: "Main droite", dos: "Sac à dos",
+    mainG: "Main gauche", mainD: "Main droite", ceinture: "Ceinture", dos: "Sac à dos",
     tete: "Tête", mains: "Mains", haut: "Haut", bas: "Bas", pieds: "Pieds",
-    poches: "Poches", sac: "Sac à dos", hautbas: "Haut + Bas"
+    sousvet: "Sous-vêtement", hautbas: "Haut + Bas",
+    oreilles: "Boucles d'oreilles", collier: "Collier",
+    poignetG: "Poignet gauche", poignetD: "Poignet droit",
+    bagueG: "Bague gauche", bagueD: "Bague droite",
+    chevilleG: "Cheville gauche", chevilleD: "Cheville droite", cape: "Cape / manteau",
+    ceint: "Ceinture", sacep: "Sac à dos", poches: "Poches", sac: "Sac à dos"
   };
-  // Un objet peut-il aller là ? Les mains, les poches et le sac prennent
-  // tout ; la case du sac à dos, un sac ; une case de vêtement, son type.
+  // Un objet peut-il aller là ? Les poches et le sac prennent tout ; une case
+  // de Sur soi, ce qui s'y porte. Les emplacements ont leur propre dépôt.
   function lieuPermis(o, ou) {
-    if (ou === "poches" || ou === "sac" || ou === "mainG" || ou === "mainD") return true;
-    if (ou === "dos") return !!o.sac;
-    return o.vet === ou || (o.vet === "hautbas" && (ou === "haut" || ou === "bas"));
+    if (ou === "poches" || ou === "sac") return true;
+    return casePermise(o, ou);
   }
   function invObjets(container, renderRef) {
     var items = state.inv.objets;
@@ -100,6 +110,7 @@
         if (occ && occ !== o && chasses.indexOf(occ) < 0) chasses.push(occ);
       });
       o.ou = dest;
+      o.emp = -1;
       chasses.forEach(function (occ) {
         // l'échange simple : un seul occupant, qui tient là d'où l'objet vient
         var retour = chasses.length === 1 && lieuPermis(occ, vient) &&
@@ -112,7 +123,39 @@
         if (at < 0) items.push(o);
         else items.splice(at, 0, o);
       }
+      rangeEmplacements(items);   // une ceinture ôtée rend ses emplacements
       return true;
+    }
+
+    // POSER dans l'emplacement k de la ceinture (« ceint ») ou du sac
+    // (« sacep ») : UN exemplaire, qu'on détache d'une pile, et pas plus
+    // encombrant que l'emplacement ne l'accepte. Ce qui l'occupait retourne
+    // d'où l'objet vient s'il y tient, au sac sinon.
+    function poseEp(o, lieu, k) {
+      if (!epPermis(o, lieu)) {
+        flash(o === porteurEp(lieu) ? "Un contenant ne s'accroche pas à lui-même."
+          : "Trop encombrant pour cet emplacement (" + fmtP(ebMaxEp(lieu)) + " eb au plus).");
+        return null;
+      }
+      var vient = o.ou, vientK = o.emp;
+      var pose = o;
+      if (pnum(o.qte) > 1) {
+        pose = JSON.parse(JSON.stringify(o));
+        pose.qte = 1;
+        o.qte = Math.round((o.qte - 1) * 100) / 100;
+        items.splice(items.indexOf(o) + 1, 0, pose);
+        vient = null;   // la pile reste où elle est : l'occupant va au sac
+      }
+      var occ = objetEp(lieu, k);
+      pose.ou = lieu;
+      pose.emp = k;
+      if (occ && occ !== pose) {
+        if (vient && INV_EP.indexOf(vient) >= 0 && epPermis(occ, vient)) { occ.ou = vient; occ.emp = vientK; }
+        else if (vient === "poches" || vient === "sac") { occ.ou = vient; occ.emp = -1; }
+        else { occ.ou = "sac"; occ.emp = -1; }
+      }
+      rangeEmplacements(items);
+      return pose;
     }
 
     function tile(it) {
@@ -210,6 +253,44 @@
       return c;
     }
 
+    // un EMPLACEMENT : l'objet qu'il tient, ou l'encombrance qu'il accepte en creux
+    function caseEp(lieu, k) {
+      var c = el("div", "pc-inv-case pc-inv-ep");
+      var o = objetEp(lieu, k);
+      if (o) c.appendChild(tile(o));
+      else c.appendChild(el("div", "pc-inv-vide", "≤ " + fmtP(ebMaxEp(lieu)) + " eb"));
+      c.title = "Emplacement " + (k + 1) + " — " + fmtP(ebMaxEp(lieu)) + " eb au plus, un exemplaire";
+      c.addEventListener("dragover", function (e) {
+        if (!drag || !epPermis(drag, lieu)) return;
+        e.preventDefault();
+        e.stopPropagation();
+        c.classList.add("over");
+      });
+      c.addEventListener("dragleave", function () { c.classList.remove("over"); });
+      c.addEventListener("drop", function (e) {
+        if (!drag) return;
+        e.preventDefault();
+        e.stopPropagation();
+        var d = drag; drag = null;
+        var pose = poseEp(d, lieu, k);
+        if (pose) { sel = pose; refresh(); }
+        render();
+      });
+      return c;
+    }
+    // les emplacements d'un lieu, cinq par ligne, sur leurs PROPRES lignes :
+    // la dernière se complète de blancs, aucun objet libre ne s'y glisse
+    function lignesEp(lieu) {
+      var n = nbEp(lieu), box = el("div", "pc-inv-eps");
+      for (var i = 0; i < n; i += 5) {
+        var l = el("div", "pc-inv-cases");
+        for (var k = i; k < i + 5; k++)
+          l.appendChild(k < n ? caseEp(lieu, k) : el("div", "pc-inv-case pc-inv-rien"));
+        box.appendChild(l);
+      }
+      return box;
+    }
+
     function bandeau(titre, pds) {
       var head = el("div", "pc-obj-ghead");
       head.appendChild(el("span", "nm", titre));
@@ -220,21 +301,48 @@
     function groupeSurSoi() {
       var g = el("div", "pc-obj-group");
       g.appendChild(bandeau("Sur soi"));
-      // les deux mains à gauche, le sac à dos poussé sur la cinquième case
-      var l1 = el("div", "pc-inv-cases");
-      l1.appendChild(caseSurSoi("mainG"));
-      l1.appendChild(caseSurSoi("mainD"));
-      l1.appendChild(el("div", "pc-inv-case pc-inv-rien"));
-      l1.appendChild(el("div", "pc-inv-case pc-inv-rien"));
-      l1.appendChild(caseSurSoi("dos"));
-      var l2 = el("div", "pc-inv-cases");
-      INV_VETEMENTS.forEach(function (ou) { l2.appendChild(caseSurSoi(ou)); });
-      g.appendChild(l1);
-      g.appendChild(l2);
+      // l'ordre arrêté par l'auteur ; null laisse la case vide
+      [["mainG", "mainD", null, "ceinture", "dos"],
+       ["tete", "haut", "mains", "bas", "pieds"],
+       ["oreilles", "collier", "sousvet", "poignetG", "poignetD"],
+       ["bagueG", "bagueD", "chevilleG", "chevilleD", "cape"]].forEach(function (ligne) {
+        var l = el("div", "pc-inv-cases");
+        ligne.forEach(function (ou) {
+          l.appendChild(ou ? caseSurSoi(ou) : el("div", "pc-inv-case pc-inv-rien"));
+        });
+        g.appendChild(l);
+      });
       return g;
     }
 
-    // POCHES et SAC À DOS : des tuiles, et le poids contre la capacité
+    // le compte des emplacements tenus, pour un bandeau
+    function compteEp(lieu) {
+      var pds = el("span", "pds");
+      pds.title = "Emplacements tenus contre emplacements";
+      function maj() {
+        var n = nbEp(lieu), pris = items.filter(function (o) { return o.ou === lieu; }).length;
+        pds.textContent = pris + " / " + n + " ep";
+      }
+      maj();
+      majGroupes.push(maj);
+      return pds;
+    }
+    // CEINTURE : ses emplacements seuls, une ligne en pointillé sans ceinture
+    function groupeCeinture() {
+      var g = el("div", "pc-obj-group");
+      g.appendChild(bandeau("Ceinture", compteEp("ceint")));
+      if (nbEp("ceint")) g.appendChild(lignesEp("ceint"));
+      else {
+        var l = el("div", "pc-obj-tiles");
+        l.style.setProperty("--obj-cols", 5);
+        for (var k = 0; k < 5; k++) l.appendChild(el("div", "pc-obj-tile pc-inv-trou"));
+        g.appendChild(l);
+      }
+      return g;
+    }
+
+    // POCHES et SAC À DOS : des tuiles, et l'encombrance contre la capacité.
+    // Le sac montre D'ABORD ses emplacements, sur leurs propres lignes.
     function groupeLibre(ou, titre, poids, cap) {
       var g = el("div", "pc-obj-group");
       var pds = el("span", "pds");
@@ -246,7 +354,10 @@
       }
       maj();
       majGroupes.push(maj);
-      g.appendChild(bandeau(titre, pds));
+      var head = bandeau(titre, pds);
+      if (ou === "sac" && nbEp("sacep")) head.insertBefore(compteEp("sacep"), pds);
+      g.appendChild(head);
+      if (ou === "sac" && nbEp("sacep")) g.appendChild(lignesEp("sacep"));
       var tiles = el("div", "pc-obj-tiles");
       tiles.style.setProperty("--obj-cols", 5);
       items.forEach(function (it) { if (it.ou === ou) tiles.appendChild(tile(it)); });
@@ -254,8 +365,8 @@
       add.title = "Ajouter un objet dans « " + titre + " »";
       add.addEventListener("click", function () {
         var o = { id: "", nom: "", img: "", qte: 1, poids: 0, encombre: 0, places: 0, nourri: false, achat: 0, vente: null,
-                  desc: "", ou: ou, rapide: false, vet: "", poches: 0, froid: 0, chaud: 0,
-                  sac: false, cap: 0, arme: null };
+                  desc: "", ou: ou, emp: -1, rapide: false, vet: "", acc: "", poches: 0, froid: 0, chaud: 0,
+                  sac: false, cap: 0, ceint: false, ep: 0, ebMax: 0, arme: null };
         items.push(o);
         sel = o;
         render();
@@ -305,8 +416,8 @@
       var fantome = !sel;
       panel.classList.toggle("fantome", fantome);
       var it = sel || { id: "", nom: "", img: "", qte: 0, poids: 0, encombre: 0, places: 0, achat: 0, vente: null,
-                        desc: "", ou: "sac", rapide: false, vet: "", poches: 0, froid: 0, chaud: 0,
-                        sac: false, cap: 0, arme: null };
+                        desc: "", ou: "sac", emp: -1, rapide: false, vet: "", acc: "", poches: 0, froid: 0, chaud: 0,
+                        sac: false, cap: 0, ceint: false, ep: 0, ebMax: 0, arme: null };
 
       var imgbox = el("div", "pc-obj-imgbox");
       if (it.img) { var im = el("img"); im.alt = ""; im.src = it.img; imgbox.appendChild(im); }
@@ -336,8 +447,10 @@
       // changer renvoie au sac un objet qui n'a plus sa place dans sa case.
       var ligneNat = el("div", "pc-obj-pair");
       var nat = el("select", "pc-edit-field");
-      var natureDe = it.arme ? "arme" : it.vet ? "vet" : it.sac ? "sac" : it.nourri ? "nourri" : "";
-      [["", "Objet"], ["nourri", "Nourriture"], ["vet", "Vêtement"], ["sac", "Sac à dos"], ["arme", "Arme"]].forEach(function (n) {
+      var natureDe = it.arme ? "arme" : it.vet ? "vet" : it.acc ? "acc" : it.sac ? "sac" :
+                     it.ceint ? "ceint" : it.nourri ? "nourri" : "";
+      [["", "Objet"], ["nourri", "Nourriture"], ["vet", "Vêtement"], ["acc", "Accessoire"],
+       ["sac", "Sac à dos"], ["ceint", "Ceinture"], ["arme", "Arme"]].forEach(function (n) {
         var o = el("option", null, n[1]);
         o.value = n[0];
         if (n[0] === natureDe) o.selected = true;
@@ -347,9 +460,12 @@
         var v = nat.value;
         it.nourri = v === "nourri";
         it.sac = v === "sac";
+        it.ceint = v === "ceint";
         it.vet = v === "vet" ? (it.vet || "haut") : "";
+        it.acc = v === "acc" ? (it.acc || "collier") : "";
         it.arme = v === "arme" ? (it.arme || { prise: "", parade: "", reduction: "", comp: "", mains: 1, gestes: [] }) : null;
-        if (!lieuPermis(it, it.ou)) it.ou = "sac";
+        if (INV_EP.indexOf(it.ou) < 0 && !lieuPermis(it, it.ou)) it.ou = "sac";
+        rangeEmplacements(items);
         render();
         refresh();
       });
@@ -398,6 +514,47 @@
           function (v) { it.chaud = snum(v); }, "Protection contre le chaud, en degrés"));
         body.appendChild(pp);
       }
+      // l'ACCESSOIRE : sa case, ses poches, sa protection
+      if (it.acc) {
+        var pa = el("div", "pc-obj-pair");
+        var tya = el("select", "pc-edit-field");
+        INV_ACCESSOIRES.forEach(function (v) {
+          var o = el("option", null, INV_NOMS[v]);
+          o.value = v;
+          if (v === it.acc) o.selected = true;
+          tya.appendChild(o);
+        });
+        tya.addEventListener("change", function () {
+          it.acc = tya.value;
+          if (INV_EP.indexOf(it.ou) < 0 && !lieuPermis(it, it.ou)) it.ou = "sac";
+          render();
+          refresh();
+        });
+        pa.appendChild(fld("Se porte", tya));
+        pa.appendChild(champNombre("Poches", function () { return it.poches; },
+          function (v) { it.poches = pnum(v); }, "Ce que cet accessoire porté ajoute aux Poches, en eb"));
+        body.appendChild(pa);
+        var ppa = el("div", "pc-obj-pair");
+        ppa.appendChild(champNombre("Froid", function () { return it.froid; },
+          function (v) { it.froid = snum(v); }, "Protection contre le froid, en degrés"));
+        ppa.appendChild(champNombre("Chaud", function () { return it.chaud; },
+          function (v) { it.chaud = snum(v); }, "Protection contre le chaud, en degrés"));
+        body.appendChild(ppa);
+      }
+      // les EMPLACEMENTS d'une ceinture ou d'un sac : leur nombre, et
+      // l'encombrance au plus de chacun. Les changer redessine les groupes.
+      function champsEp() {
+        var pe = el("div", "pc-obj-pair");
+        pe.appendChild(champNombre("Emplacements", function () { return it.ep; },
+          function (v) { it.ep = Math.floor(pnum(v)); rangeEmplacements(items); }, "Nombre d'emplacements, en ep"));
+        pe.appendChild(champNombre("Eb max", function () { return it.ebMax; },
+          function (v) { it.ebMax = pnum(v); rangeEmplacements(items); }, "Encombrance au plus d'un emplacement, en eb"));
+        Array.prototype.forEach.call(pe.querySelectorAll("input"), function (i) {
+          i.addEventListener("change", function () { render(); });
+        });
+        return pe;
+      }
+      if (it.ceint) body.appendChild(champsEp());
       // la nourriture porte son VOLUME : ce qu'une dose ou une part occupe de
       // contenance une fois avalée
       if (it.nourri) {
@@ -411,6 +568,7 @@
         ps.appendChild(champNombre("Capacité", function () { return it.cap; },
           function (v) { it.cap = pnum(v); }, "Ce que ce sac contient, en eb"));
         body.appendChild(ps);
+        body.appendChild(champsEp());
       }
       // L'ARME : ses gestes et ses jets. Ses rafraîchissements vont au registre
       // du PANNEAU, vidé à chaque rendu : sinon chaque clic sur une tuile
@@ -618,6 +776,7 @@
       panelHooks.length = 0;
       leftBox.innerHTML = "";
       leftBox.appendChild(groupeSurSoi());
+      leftBox.appendChild(groupeCeinture());
       leftBox.appendChild(groupeLibre("poches", "Poches", ebPoches, capPoches));
       leftBox.appendChild(groupeLibre("sac", "Sac à dos", ebSac, capSac));
       renderPanel();

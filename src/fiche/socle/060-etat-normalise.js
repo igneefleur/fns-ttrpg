@@ -1,9 +1,12 @@
-  // LES EMPLACEMENTS DE L'INVENTAIRE. Les huit cases de Sur soi, dans l'ordre
-  // de l'écran (les trois de la première ligne, puis les cinq vêtements), puis
-  // les deux groupes libres.
-  var INV_VETEMENTS = ["tete", "haut", "mains", "bas", "pieds"];
-  var INV_CASES = ["mainG", "mainD", "dos"].concat(INV_VETEMENTS);
-  var INV_LIEUX = INV_CASES.concat(["poches", "sac"]);
+  // LES LIEUX DE L'INVENTAIRE. Les dix-neuf cases de Sur soi (les mains, la
+  // ceinture, le sac à dos, les vêtements, les accessoires), les emplacements
+  // (ep) de la ceinture et du sac à dos, puis les deux groupes libres.
+  var INV_VETEMENTS = ["tete", "haut", "mains", "bas", "pieds", "sousvet"];
+  var INV_ACCESSOIRES = ["oreilles", "collier", "poignetG", "poignetD",
+                         "bagueG", "bagueD", "chevilleG", "chevilleD", "cape"];
+  var INV_CASES = ["mainG", "mainD", "ceinture", "dos"].concat(INV_VETEMENTS, INV_ACCESSOIRES);
+  var INV_EP = ["ceint", "sacep"];
+  var INV_LIEUX = INV_CASES.concat(INV_EP, ["poches", "sac"]);
   function normGestes(liste) {
     return (Array.isArray(liste) ? liste : []).filter(function (g) { return g && typeof g === "object"; })
       .map(function (g) {
@@ -198,12 +201,20 @@
         achat: pnum(o.achat), vente: venteNum(o.vente),
         desc: o.desc == null ? "" : String(o.desc),
         ou: INV_LIEUX.indexOf(o.ou) >= 0 ? o.ou : "sac",
+        // le rang de l'EMPLACEMENT qu'il tient, dans la ceinture ou sur le sac
+        emp: Math.max(-1, Math.floor(num(o.emp, -1))),
         rapide: !!o.rapide,
         vet: INV_VETEMENTS.indexOf(o.vet) >= 0 || o.vet === "hautbas" ? o.vet : "",
         poches: pnum(o.poches),
         froid: snum(o.froid), chaud: snum(o.chaud),
+        acc: INV_ACCESSOIRES.indexOf(o.acc) >= 0 ? o.acc : "",
         sac: !!o.sac,
         cap: pnum(o.cap),
+        ceint: !!o.ceint,
+        // ce qu'une ceinture ou un sac offre d'EMPLACEMENTS, et l'encombrance
+        // au plus qu'un emplacement accepte
+        ep: Math.max(0, Math.floor(pnum(o.ep))),
+        ebMax: pnum(o.ebMax),
         arme: a ? {
           prise: String(a.prise == null ? "" : a.prise),
           parade: String(a.parade == null ? "" : a.parade),
@@ -224,14 +235,13 @@
     var prises = {};
     s.inv.objets.forEach(function (o) {
       if (INV_CASES.indexOf(o.ou) < 0) return;
-      var permis = (o.ou === "mainG" || o.ou === "mainD") || (o.ou === "dos" && o.sac) ||
-                   o.vet === o.ou || (o.vet === "hautbas" && (o.ou === "haut" || o.ou === "bas"));
-      if (!permis) { o.ou = "sac"; return; }
+      if (!casePermise(o, o.ou)) { o.ou = "sac"; return; }
       o.ou = ancrage(o, o.ou);
       var cases = casesDe(o);
       if (cases.some(function (c) { return prises[c]; })) { o.ou = "sac"; return; }
       cases.forEach(function (c) { prises[c] = 1; });
     });
+    rangeEmplacements(s.inv.objets);
 
     // ---- coffres, interrupteurs, disposition, mods ----
     if (!s.modData || typeof s.modData !== "object" || Array.isArray(s.modData)) s.modData = {};

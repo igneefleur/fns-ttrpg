@@ -154,10 +154,15 @@
       //   encombre  l'encombrance de l'objet, en eb : c'est elle, et non le poids,
       //             que limitent les poches et le sac
       //   nourri    c'est de la nourriture ; « places » porte alors son VOLUME
-      //   vet     type de vêtement (tete, mains, haut, bas, pieds) ou ""
-      //   poches  ce qu'un vêtement porté ajoute aux Poches, en kg
+      //   vet     type de vêtement (INV_VETEMENTS, ou hautbas) ou ""
+      //   acc     case d'accessoire (INV_ACCESSOIRES) ou ""
+      //   poches  ce qu'un vêtement ou un accessoire porté ajoute aux Poches, en eb
       //   froid / chaud  sa protection, comptée s'il est porté dans sa case
-      //   sac / cap      c'est un sac à dos, et ce qu'il peut contenir en kg
+      //   sac / cap      c'est un sac à dos, et ce qu'il peut contenir en eb
+      //   ceint   c'est une ceinture
+      //   ep / ebMax     les emplacements d'une ceinture ou d'un sac, et
+      //                  l'encombrance au plus de chacun
+      //   emp     le rang de l'emplacement tenu (ou « ceint » ou « sacep »), -1 sinon
       //   arme    null, ou { prise, parade, reduction, comp, gestes }
       //   rapide  l'objet se saisit rapidement (compte contre les accès rapides)
       //   id      c'est LUI qui reconnaît le même objet d'une fiche à l'autre

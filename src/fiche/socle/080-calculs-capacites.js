@@ -286,6 +286,71 @@
     if (o.arme && o.arme.mains === 2 && (ou === "mainG" || ou === "mainD")) return ["mainG", "mainD"];
     return INV_CASES.indexOf(ou) >= 0 ? [ou] : [];
   }
+  // Une CASE de Sur soi accepte-t-elle cet objet ? Les mains prennent tout ;
+  // la ceinture, une ceinture ; le dos, un sac ; une case de vêtement ou
+  // d'accessoire, ce qui s'y porte.
+  function casePermise(o, ou) {
+    if (ou === "mainG" || ou === "mainD") return true;
+    if (ou === "ceinture") return !!o.ceint;
+    if (ou === "dos") return !!o.sac;
+    if (INV_ACCESSOIRES.indexOf(ou) >= 0) return o.acc === ou;
+    return o.vet === ou || (o.vet === "hautbas" && (ou === "haut" || ou === "bas"));
+  }
+  // LES EMPLACEMENTS (ep) : la ceinture portée et le sac porté en offrent
+  // chacun un nombre, avec l'encombrance au plus qu'un emplacement accepte.
+  // Un emplacement tient UN exemplaire, et ne compte dans aucune capacité.
+  function porteurEp(lieu, objets) {
+    var out = null, cas = lieu === "ceint" ? "ceinture" : "dos";
+    (objets || state.inv.objets).forEach(function (o) {
+      if (!out && o.ou === cas && (lieu === "ceint" ? o.ceint : o.sac)) out = o;
+    });
+    return out;
+  }
+  function nbEp(lieu, objets) { var p = porteurEp(lieu, objets); return p ? p.ep : 0; }
+  function ebMaxEp(lieu, objets) { var p = porteurEp(lieu, objets); return p ? p.ebMax : 0; }
+  function objetEp(lieu, k) {
+    var out = null;
+    state.inv.objets.forEach(function (o) { if (!out && o.ou === lieu && o.emp === k) out = o; });
+    return out;
+  }
+  function epPermis(o, lieu, objets) {
+    return pnum(o.encombre) <= ebMaxEp(lieu, objets) && o !== porteurEp(lieu, objets);
+  }
+  // Ce qui n'a plus d'emplacement valable (ceinture ôtée, rang au-delà du
+  // nombre, trop encombrant, deux au même rang, une pile) retourne au sac.
+  // Un exemplaire qui retourne au sac y REJOINT sa pile, s'il en a une.
+  function rangeEmplacements(objets) {
+    var pris = {}, rendus = [];
+    objets.forEach(function (o) {
+      if (INV_EP.indexOf(o.ou) < 0) { o.emp = -1; return; }
+      var cle = o.ou + o.emp;
+      if (o.emp < 0 || o.emp >= nbEp(o.ou, objets) || pris[cle] ||
+          pnum(o.qte) > 1 || !epPermis(o, o.ou, objets)) {
+        o.ou = "sac"; o.emp = -1;
+        rendus.push(o);
+        return;
+      }
+      pris[cle] = 1;
+    });
+    rendus.forEach(function (o) {
+      var sig = signatureObjet(o), pile = null;
+      objets.forEach(function (x) {
+        if (!pile && x !== o && x.ou === "sac" && signatureObjet(x) === sig) pile = x;
+      });
+      if (!pile) return;
+      pile.qte = Math.round((pnum(pile.qte) + pnum(o.qte)) * 100) / 100;
+      objets.splice(objets.indexOf(o), 1);
+    });
+  }
+  // ce qu'est un objet, sans sa quantité ni sa place : deux piles de même
+  // signature sont le même objet
+  function signatureObjet(o) {
+    var c = {};
+    Object.keys(o).sort().forEach(function (k) {
+      if (k !== "qte" && k !== "ou" && k !== "emp") c[k] = o[k];
+    });
+    return JSON.stringify(c);
+  }
   // la case d'ancrage d'un objet posé en `ou`
   function ancrage(o, ou) {
     var c = casesDe(o, ou);
@@ -296,10 +361,12 @@
     state.inv.objets.forEach(function (o) { if (!out && casesDe(o).indexOf(cas) >= 0) out = o; });
     return out;
   }
-  // un vêtement PORTÉ : dans la case de son type (la robe, en haut)
+  // un vêtement ou un accessoire PORTÉ : dans la case de son type (la robe,
+  // en haut). Poches et protection viennent des deux.
   function vetementsPortes() {
     return state.inv.objets.filter(function (o) {
-      return o.vet && (o.ou === o.vet || (o.vet === "hautbas" && o.ou === "haut"));
+      return (o.vet && (o.ou === o.vet || (o.vet === "hautbas" && o.ou === "haut"))) ||
+             (o.acc && o.ou === o.acc);
     });
   }
   function capPoches() {
