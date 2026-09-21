@@ -77,7 +77,7 @@
   // même version, la beta étant ce que le stable recevra à la fusion) : ce qui
   // compare des versions doit donc l'ôter avant de lire les nombres, et c'est
   // exactement ce que fait OwdMods.compareVersions.
-  var RELEASE_DEFAUT = "1.10.0b";
+  var RELEASE_DEFAUT = "1.11.0b";
   // Entier INDÉPENDANT de la release : il ne monte qu'au changement de forme de
   // l'état du personnage, jamais parce que le majeur a bougé. Ajouter une clé
   // racine avec un défaut n'en est PAS un : normalize() complète une clé
@@ -146,6 +146,8 @@
     // Les points de caractéristique achetés à l'expérience, à part de la
     // répartition de création : les perdre au repli rendrait l'XP dépensé.
     ["caracsXp", "caracs_xp"],
+    // la taille de chaque dé d'action (module Actions)
+    ["desTailles", "des_tailles"],
     // LA TABLE DE LEVIERS des caractéristiques : levier, boîte, caractéristique.
     // Tous les leviers des Options voyagent, y compris sur le chemin de repli :
     // en JJK, les seconds modificateurs et les forçages de caractéristiques ont
@@ -237,6 +239,9 @@
 
       // ---- l'effort et l'air ----
       effort: "leger", temperature: 20,
+
+      // ---- les dés d'action ----
+      desTailles: [],
 
       // ---- caractéristiques ----
       // Les CLÉS sont SANS ACCENT : elles voyagent en nom d'attribut Roll20 et
