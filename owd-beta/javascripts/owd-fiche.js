@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "2.7.12b";
+  var RELEASE = "2.7.13b";
   var SCHEMA = 3;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -4199,6 +4199,10 @@
     var rangee = el("div", "pc-desaction");
     b.appendChild(rangee);
     var choisis = [];
+    // LES DÉS UTILISÉS : envoyés, ils restent inaccessibles jusqu'à ce qu'on
+    // les RÉCUPÈRE. Ce n'est pas le blocage du mouvement (« perdu ») : les deux
+    // se voient différemment.
+    var utilises = [];
     var cases = [];
     var nuitVue = null;
 
@@ -4250,14 +4254,16 @@
       rangee.innerHTML = "";
       cases = [];
       choisis = choisis.slice(0, n);
+      utilises = utilises.slice(0, n);
       for (var i = 0; i < n; i++) (function (i) {
         var col = el("div", "pc-desaction-de");
         var pose = el("button", "pc-desaction-pose");
         pose.type = "button";
         pose.addEventListener("click", function () {
-          if (col.classList.contains("perdu")) return;
+          if (col.classList.contains("perdu") || utilises[i]) return;
           choisis[i] = !choisis[i];
           col.classList.toggle("on", !!choisis[i]);
+          majBoutons();
         });
         col.appendChild(pose);
         var taille = el("div", "pc-desaction-taille");
@@ -4273,6 +4279,7 @@
         taille.appendChild(plus);
         col.appendChild(taille);
         col.classList.toggle("on", !!choisis[i]);
+        col.classList.toggle("utilise", !!utilises[i]);
         rangee.appendChild(col);
         cases.push({ col: col, pose: pose, nom: nom, moins: moins, plus: plus });
         scene(i);
@@ -4282,7 +4289,7 @@
     var envoi = miniBtn("Envoyer", "Lancer les dés sélectionnés", function () {
       var tailles = [];
       cases.forEach(function (c, i) { if (choisis[i]) tailles.push(desTaille(i)); });
-      if (!tailles.length) { flash("Aucun dé sélectionné."); return; }
+      if (!tailles.length) return;
       var cmd = "&{template:default}{{name=OWD Action Dice}}{{rolls=" +
                 tailles.map(function (t) { return "[[1d" + t + "]]"; }).join("") + "}}";
       if (!envoyer(cmd)) {
@@ -4290,12 +4297,31 @@
           return "d" + t + " : " + (1 + Math.floor(Math.random() * t));
         }).join(" · "));
       }
+      // ce qui vient d'être lancé est UTILISÉ jusqu'à « Récupérer »
+      cases.forEach(function (c, i) {
+        if (choisis[i]) { utilises[i] = true; c.col.classList.add("utilise"); }
+        c.col.classList.remove("on");
+      });
       choisis = [];
-      cases.forEach(function (c) { c.col.classList.remove("on"); });
+      majBoutons();
     }, "pc-desaction-envoi");
-    b.appendChild(envoi);
+    var recup = miniBtn("Récupérer", "Rendre les dés utilisés", function () {
+      utilises = [];
+      cases.forEach(function (c) { c.col.classList.remove("utilise"); });
+      majBoutons();
+    }, "pc-desaction-envoi");
+    // ENVOYER ne part qu'avec un dé choisi, RÉCUPÉRER qu'avec un dé utilisé
+    function majBoutons() {
+      envoi.disabled = !choisis.some(function (x, i) { return x && i < cases.length; });
+      recup.disabled = !utilises.some(function (x, i) { return x && i < cases.length; });
+    }
+    var gestes = el("div", "pc-desaction-gestes");
+    gestes.appendChild(envoi);
+    gestes.appendChild(recup);
+    b.appendChild(gestes);
 
     bati();
+    majBoutons();
     // LE MODE NUIT se bascule sans passer par la fiche (night.js, l'amorce
     // Roll20) : on guette la classe de <html> pour repeindre les dés. Le
     // guetteur se débranche de lui-même quand le module a quitté la page.
@@ -4319,6 +4345,7 @@
         c.pose.title = p ? "Dé d'action pris par le mouvement" : "";
         if (p && choisis[i]) { choisis[i] = false; c.col.classList.remove("on"); }
       });
+      majBoutons();
     }
     hooks.push(function () {
       cases.forEach(function (c) { if (!c.centre) centre(c); });
