@@ -22,7 +22,7 @@ L'équipement est tout ce qu'un personnage emporte : ce qu'il porte sur lui, ce 
 
 **La satiété** et **l'hydratation :** ce qu'une dose rend de faim et de soif, en points.
 
-**Les places :** ce qu'une dose ou une part occupe de [contenance](base/capacites-physiques.md#la-contenance) une fois avalée.
+**Le volume :** ce qu'une dose ou une part occupe de [contenance](base/capacites-physiques.md#la-contenance) une fois avalée.
 
 **L'achat :** ce qu'un marchand en demande, en pièces d'argent. Un prix suivi de *les dix* ou *les vingt* se paie au lot, et l'on n'en achète pas moins : une pincée de cendre ne se vend pas, un sac oui. Un tiret veut dire qu'aucun marchand n'en tient. La part de pain est l'étalon du livre, et une pièce d'argent en achète une.
 
@@ -52,7 +52,7 @@ Un contenant se remplit à une source et se vide par doses : ce qu'une dose vers
 
 **Un contenant ne prend que ce que son type nomme.** Les liquides vont à la gourde, à la bouteille et à la fiole ; les poudres à la poche ; ce qui poisse et ce qui graisse au pot, car ni le cuir ni le col étroit ne s'en relaveraient.
 
-Un litre d'eau bu rend 80 points d'[hydratation](base/capacites-physiques.md#la-satiete-et-lhydratation) et occupe 8 places de contenance ; une dose en rend et en occupe sa part, soit 20 points et 2 places pour un quart de litre. Une journée de marche coûte 135 points de [satiété](base/capacites-physiques.md#la-satiete-et-lhydratation), soit trois parts de pain.
+Un litre d'eau bu rend 80 points d'[hydratation](base/capacites-physiques.md#la-satiete-et-lhydratation) et a un volume de 8 ; une dose en rend et en occupe sa part, soit 20 points et un volume de 2 pour un quart de litre. Une journée de marche coûte 135 points de [satiété](base/capacites-physiques.md#la-satiete-et-lhydratation), soit trois parts de pain.
 
 </div>
 
@@ -245,7 +245,7 @@ Un pot de verre bleuté à large gueule, scellé d'un disque de bois et d'un lie
 ![Eau potable](../../assets/objets/edited/liquids/eau_potable.png){ .objet-img }
 <div class="objet-stats">
 <div><span>Hydratation</span><span>20</span></div>
-<div><span>Places</span><span>2</span></div>
+<div><span>Volume</span><span>2</span></div>
 <div><span>Achat</span><span>—</span></div>
 <div><span>Vente</span><span>—</span></div>
 <div><span>Type</span><span>Liquide</span></div>
@@ -265,7 +265,7 @@ Une eau claire et sans odeur, tirée d'une source, d'une fontaine ou d'un puits.
 ![Eau de rivière](../../assets/objets/edited/liquids/eau_riviere.png){ .objet-img }
 <div class="objet-stats">
 <div><span>Hydratation</span><span>20</span></div>
-<div><span>Places</span><span>2</span></div>
+<div><span>Volume</span><span>2</span></div>
 <div><span>Achat</span><span>—</span></div>
 <div><span>Vente</span><span>—</span></div>
 <div><span>Type</span><span>Liquide</span></div>
@@ -287,7 +287,7 @@ L'eau trouble des cours d'eau et des mares, prise telle qu'elle vient. On la boi
 ![Eau salée](../../assets/objets/edited/liquids/eau_salee.png){ .objet-img }
 <div class="objet-stats">
 <div><span>Hydratation</span><span>aucune</span></div>
-<div><span>Places</span><span>2</span></div>
+<div><span>Volume</span><span>2</span></div>
 <div><span>Achat</span><span>—</span></div>
 <div><span>Vente</span><span>—</span></div>
 <div><span>Type</span><span>Liquide</span></div>
@@ -307,7 +307,7 @@ L'eau limpide et amère de la mer et des marais salants. Les cuisiniers la recue
 ![Eau rance](../../assets/objets/edited/liquids/eau_rance.png){ .objet-img }
 <div class="objet-stats">
 <div><span>Hydratation</span><span>20</span></div>
-<div><span>Places</span><span>2</span></div>
+<div><span>Volume</span><span>2</span></div>
 <div><span>Achat</span><span>—</span></div>
 <div><span>Vente</span><span>—</span></div>
 <div><span>Type</span><span>Liquide</span></div>
@@ -458,7 +458,7 @@ Du suif fondu puis battu jusqu'à blanchir, ferme et gras sous le doigt. Les tan
 <div class="objet-stats">
 <div><span>Capacité</span><span>5</span></div>
 <div><span>Satiété</span><span>45</span></div>
-<div><span>Places</span><span>8</span></div>
+<div><span>Volume</span><span>8</span></div>
 <div><span>Poids par part</span><span>0.2 kg</span></div>
 <div><span>Achat</span><span><span class="argent">5</span></span></div>
 <div><span>Vente</span><span><span class="argent">1</span></span></div>

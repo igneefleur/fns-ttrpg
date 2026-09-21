@@ -289,10 +289,10 @@
         dire("Points d'endurance au maximum de zéro : le personnage est inconscient.");
       if (poidsPorte() > charge())
         dire("Charge dépassée : " + fmtP(poidsPorte()) + " pour " + fmtP(charge()) + ".");
-      if (poidsPoches() > capPoches())
-        dire("Poches trop chargées : " + fmtP(poidsPoches()) + " kg pour " + fmtP(capPoches()) + ".");
-      if (poidsSac() > capSac())
-        dire("Sac à dos trop chargé : " + fmtP(poidsSac()) + " kg pour " + fmtP(capSac()) + ".");
+      if (ebPoches() > capPoches())
+        dire("Poches trop pleines : " + fmtP(ebPoches()) + " eb pour " + fmtP(capPoches()) + ".");
+      if (ebSac() > capSac())
+        dire("Sac à dos trop plein : " + fmtP(ebSac()) + " eb pour " + fmtP(capSac()) + ".");
       if (accesPris() > accesRapides())
         dire("Accès rapides dépassés : " + accesPris() + " pour " + accesRapides() + ".");
       if (contenancePrise() > contenance())

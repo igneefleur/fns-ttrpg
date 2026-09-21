@@ -3,8 +3,8 @@
   //
   //   SUR SOI     [main gauche] [main droite]  ·  ·  [sac à dos]
   //               [tête] [haut] [mains] [bas] [pieds]
-  //   POCHES      ce que les vêtements portés laissent emporter (en kg)
-  //   SAC À DOS   ce que le sac porté laisse emporter (en kg)
+  //   POCHES      ce que les vêtements portés laissent emporter (en eb)
+  //   SAC À DOS   ce que le sac porté laisse emporter (en eb)
   //
   // Les huit cases de Sur soi sont TOUJOURS là, vides ou pleines ; une case
   // de vêtement ne prend que son type de vêtement, la case du sac à dos qu'un
@@ -226,10 +226,10 @@
     function groupeLibre(ou, titre, poids, cap) {
       var g = el("div", "pc-obj-group");
       var pds = el("span", "pds");
-      pds.title = "Poids contre capacité";
+      pds.title = "Encombrance contre capacité";
       function maj() {
         var p = poids(), c = cap();
-        pds.textContent = fmtP(p) + " / " + fmtP(c) + " kg";
+        pds.textContent = fmtP(p) + " / " + fmtP(c) + " eb";
         pds.classList.toggle("over", p > c);
       }
       maj();
@@ -241,7 +241,7 @@
       var add = el("div", "pc-obj-addtile pc-edit-only", "+");
       add.title = "Ajouter un objet dans « " + titre + " »";
       add.addEventListener("click", function () {
-        var o = { id: "", nom: "", img: "", qte: 1, poids: 0, encombre: 0, places: 0, achat: 0, vente: 0,
+        var o = { id: "", nom: "", img: "", qte: 1, poids: 0, encombre: 0, places: 0, nourri: false, achat: 0, vente: 0,
                   desc: "", ou: ou, rapide: false, vet: "", poches: 0, froid: 0, chaud: 0,
                   sac: false, cap: 0, arme: null };
         items.push(o);
@@ -324,8 +324,8 @@
       // changer renvoie au sac un objet qui n'a plus sa place dans sa case.
       var ligneNat = el("div", "pc-obj-pair");
       var nat = el("select", "pc-edit-field");
-      var natureDe = it.arme ? "arme" : it.vet ? "vet" : it.sac ? "sac" : "";
-      [["", "Objet"], ["vet", "Vêtement"], ["sac", "Sac à dos"], ["arme", "Arme"]].forEach(function (n) {
+      var natureDe = it.arme ? "arme" : it.vet ? "vet" : it.sac ? "sac" : it.nourri ? "nourri" : "";
+      [["", "Objet"], ["nourri", "Nourriture"], ["vet", "Vêtement"], ["sac", "Sac à dos"], ["arme", "Arme"]].forEach(function (n) {
         var o = el("option", null, n[1]);
         o.value = n[0];
         if (n[0] === natureDe) o.selected = true;
@@ -333,6 +333,7 @@
       });
       nat.addEventListener("change", function () {
         var v = nat.value;
+        it.nourri = v === "nourri";
         it.sac = v === "sac";
         it.vet = v === "vet" ? (it.vet || "haut") : "";
         it.arme = v === "arme" ? (it.arme || { prise: "", parade: "", reduction: "", comp: "", gestes: [] }) : null;
@@ -375,7 +376,7 @@
         });
         pv.appendChild(fld("Se porte", typ));
         pv.appendChild(champNombre("Poches", function () { return it.poches; },
-          function (v) { it.poches = pnum(v); }, "Ce que ce vêtement porté ajoute aux Poches, en kg"));
+          function (v) { it.poches = pnum(v); }, "Ce que ce vêtement porté ajoute aux Poches, en eb"));
         body.appendChild(pv);
         var pp = el("div", "pc-obj-pair");
         pp.appendChild(champNombre("Froid", function () { return it.froid; },
@@ -384,10 +385,18 @@
           function (v) { it.chaud = snum(v); }, "Protection contre le chaud, en degrés"));
         body.appendChild(pp);
       }
+      // la nourriture porte son VOLUME : ce qu'une dose ou une part occupe de
+      // contenance une fois avalée
+      if (it.nourri) {
+        var pn = el("div", "pc-obj-pair");
+        pn.appendChild(champNombre("Volume", function () { return it.places; },
+          function (v) { it.places = pnum(v); }, "Ce qu'une dose ou une part occupe de contenance"));
+        body.appendChild(pn);
+      }
       if (it.sac) {
         var ps = el("div", "pc-obj-pair");
         ps.appendChild(champNombre("Capacité", function () { return it.cap; },
-          function (v) { it.cap = pnum(v); }, "Ce que ce sac porte, en kg"));
+          function (v) { it.cap = pnum(v); }, "Ce que ce sac contient, en eb"));
         body.appendChild(ps);
       }
       // L'ARME : ses gestes et ses jets. Ses rafraîchissements vont au registre
@@ -429,7 +438,7 @@
       pair.appendChild(champNombre("Poids", function () { return it.poids; },
         function (v) { it.poids = pnum(v); }));
       pair.appendChild(champNombre("Encombrance", function () { return it.encombre; },
-        function (v) { it.encombre = pnum(v); }));
+        function (v) { it.encombre = pnum(v); }, "En eb"));
       body.appendChild(pair);
 
       // achat / vente, en pièces d'argent : la monnaie du livre est NOMMÉE
@@ -509,7 +518,8 @@
           return [
             ["Quantité", fmtP(q) + (q < it.qte ? " (sur " + fmtP(it.qte) + ")" : "")],
             ["Poids", it.poids ? fmtP(it.poids) + (q > 1 ? " (total " + fmtP(q * it.poids) + ")" : "") : ""],
-            ["Encombrance", it.encombre ? fmtP(it.encombre) : ""],
+            ["Encombrance", it.encombre ? fmtP(it.encombre) + " eb" : ""],
+            ["Volume", it.nourri && it.places ? fmtP(it.places) : ""],
             ["Valeur", it.vente ? "vente " + fmtP(it.vente) + (it.achat ? " · achat " + fmtP(it.achat) : "")
                                 : (it.achat ? "achat " + fmtP(it.achat) : "")],
             ["", it.desc]
@@ -565,8 +575,8 @@
       panelHooks.length = 0;
       leftBox.innerHTML = "";
       leftBox.appendChild(groupeSurSoi());
-      leftBox.appendChild(groupeLibre("poches", "Poches", poidsPoches, capPoches));
-      leftBox.appendChild(groupeLibre("sac", "Sac à dos", poidsSac, capSac));
+      leftBox.appendChild(groupeLibre("poches", "Poches", ebPoches, capPoches));
+      leftBox.appendChild(groupeLibre("sac", "Sac à dos", ebSac, capSac));
       renderPanel();
       updateTotal();
       applyEdit(container, "inv");

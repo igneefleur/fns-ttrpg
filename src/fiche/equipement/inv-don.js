@@ -133,7 +133,7 @@
       corps.appendChild(el("div", "pc-modal-note",
         "« " + jumeau.nom + " » est déjà dans l'inventaire (" + fmtP(jumeau.qte) + ")" +
         (recu.id ? " — même identifiant" : "") + " : les quantités s'additionnent."));
-      [["nom", "Nom"], ["img", "Image"], ["poids", "Poids"], ["places", "Places"],
+      [["nom", "Nom"], ["img", "Image"], ["poids", "Poids"], ["places", "Volume"],
        ["desc", "Description"], ["achat", "Achat"], ["vente", "Vente"]].forEach(function (c) {
         var mien = String(jumeau[c[0]] || ""), neuf = String(recu[c[0]] || "");
         if (mien === neuf || (!mien && !neuf)) return;

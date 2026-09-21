@@ -195,11 +195,11 @@
     state.etat.expo = state.etat.expo < 0 ? Math.floor(state.etat.expo) : Math.ceil(state.etat.expo);
     return -n * tr;
   }
-  // Les places que la digestion libère en `minutes`.
+  // Le volume que la digestion libère en `minutes`.
   function digere(minutes) {
     var t = tempsDef(), dg = t && t.digestion;
     if (!dg || !dg.minutes) return 0;
-    return num(dg.places, 0) * minutes / num(dg.minutes, 1);
+    return num(dg.volume, 0) * minutes / num(dg.minutes, 1);
   }
   // Combien de tranches dans une heure.
   function tranchesParHeure() { var t = tempsDef(); return t ? Math.max(1, Math.round(60 / num(t.tranche, 10))) : 6; }

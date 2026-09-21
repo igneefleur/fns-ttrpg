@@ -140,7 +140,7 @@ CAPACITES = [
 HORS_CAPACITE = {
     "Recuperation naturelle eveille",
     "Recuperation naturelle endormi",
-    "Une place se libere toutes les dix minutes",
+    "Le ventre digere 1 de volume toutes les dix minutes",
     "Paliers",
 }
 
@@ -408,8 +408,8 @@ def _capacites(txt, caracs):
         gauche, droite = gauche.strip(), droite.strip()
         plat = _plat(gauche)
         if not sep:
-            # Une formule sans « = » (« Une place se libère toutes les dix
-            # minutes ») n'énonce pas une capacité, mais elle doit être NOMMÉE
+            # Une formule sans « = » (« Le ventre digère 1 de volume toutes
+            # les dix minutes ») n'énonce pas une capacité, mais elle doit être NOMMÉE
             # ici, sans quoi une formule nouvelle passerait inaperçue.
             if _plat(brut) in HORS_CAPACITE:
                 continue
@@ -712,10 +712,10 @@ def _temps(txt):
     if bouge != tranche or _ecrit(ret.group(2), "exposition : son retour") != tranche:
         raise ErreurRegles("exposition : sa cadence n'est pas la tranche de l'effort")
 
-    # « Une place se libère toutes les dix minutes » : la digestion.
-    dig = _un(r"(\w+) places? se libèr(?:e|ent) toutes les (\w+) minutes", _section(txt, "La contenance", "contenance"),
+    # « Le ventre digère 1 de volume toutes les dix minutes » : la digestion.
+    dig = _un(r"digère (\d+) de volume toutes les (\w+) minutes", _section(txt, "La contenance", "contenance"),
               "contenance : la digestion")
-    digestion = {"places": _ecrit(dig.group(1), "contenance : les places libérées"),
+    digestion = {"volume": int(dig.group(1)),
                  "minutes": _ecrit(dig.group(2), "contenance : la cadence")}
 
     return {

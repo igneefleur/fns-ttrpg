@@ -17,7 +17,7 @@
     technique: "Technique", arme: "Arme", geste: "Geste", parade: "Parade",
     reduction: "Réduction", degats: "Dégâts", portee: "Portée", seuil: "Seuil",
     vetement: "Vêtement", froid: "Froid", chaud: "Chaud", poids: "Poids",
-    quantite: "Quantité", places: "Places", description: "Description",
+    quantite: "Quantité", places: "Volume", description: "Description",
     argent: "Bourse", xpTotal: "XP total", de: "Dé des jets"
   };
   function contexte(m, reg) {

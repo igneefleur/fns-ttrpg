@@ -184,7 +184,10 @@
         qte: pnum(o.qte === undefined ? 1 : o.qte),
         poids: pnum(o.poids),
         encombre: pnum(o.encombre),
+        // « places » est le nom de CLÉ du volume d'un aliment : le livre dit
+        // « volume », la clé garde son nom, qui voyage dans les Attributes
         places: pnum(o.places),
+        nourri: !!o.nourri,
         achat: pnum(o.achat), vente: pnum(o.vente),
         desc: o.desc == null ? "" : String(o.desc),
         ou: INV_LIEUX.indexOf(o.ou) >= 0 ? o.ou : "sac",

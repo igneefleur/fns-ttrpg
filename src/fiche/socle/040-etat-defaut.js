@@ -151,7 +151,9 @@
       // poches ou le sac. Un objet : { id, nom, img, qte, poids, places, achat,
       //   vente, desc, ou, rapide, vet, poches, froid, chaud, sac, cap, arme,
       //   encombre }.
-      //   encombre  l'encombrance de l'objet (une valeur, qui ne limite encore rien)
+      //   encombre  l'encombrance de l'objet, en eb : c'est elle, et non le poids,
+      //             que limitent les poches et le sac
+      //   nourri    c'est de la nourriture ; « places » porte alors son VOLUME
       //   vet     type de vêtement (tete, mains, haut, bas, pieds) ou ""
       //   poches  ce qu'un vêtement porté ajoute aux Poches, en kg
       //   froid / chaud  sa protection, comptée s'il est porté dans sa case

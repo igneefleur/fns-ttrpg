@@ -409,19 +409,19 @@ Exemple. Un personnage ordinaire, qui porte 20 en Endurance, dispose de 1 200 po
 
 ### La contenance
 
-La contenance est la place qu'un personnage a dans son ventre pour ce qu'il avale. Elle ne découle d'aucune caractéristique et vaut autant pour tout le monde.
+La contenance est le volume qu'un personnage a dans son ventre pour ce qu'il avale. Elle ne découle d'aucune caractéristique et vaut autant pour tout le monde.
 
 <p class="formula">Contenance = 40</p>
 
-Elle s'occupe comme la [charge](#la-charge) se remplit : elle part de zéro, monte à mesure que le personnage avale, et redescend à mesure qu'il digère. Chaque chose avalée y occupe des places, et les garde le temps que le corps met à en venir à bout ; chaque objet porte les siennes, comme il porte son poids.
+Elle s'occupe comme la [charge](#la-charge) se remplit : elle part de zéro, monte à mesure que le personnage avale, et redescend à mesure qu'il digère. Chaque chose avalée y occupe son volume, et le garde le temps que le corps met à en venir à bout ; chaque objet porte le sien, comme il porte son poids.
 
-<p class="formula">Une place se libère toutes les dix minutes</p>
+<p class="formula">Le ventre digère 1 de volume toutes les dix minutes</p>
 
-Un personnage ne peut rien avaler qui ne tienne dans les places qui lui restent. Un ventre plein ne se force pas : il faut attendre.
+Un personnage ne peut rien avaler dont le volume dépasse ce qui lui reste de contenance. Un ventre plein ne se force pas : il faut attendre.
 
 <div class="memo" markdown>
 
-Exemple. Une chose qui occupe 20 places est digérée en trois heures vingt. Un personnage qui en avale deux d'affilée a rempli sa contenance, et il lui faut attendre dix minutes avant de pouvoir reprendre la moindre place.
+Exemple. Une chose d'un volume de 20 est digérée en trois heures vingt. Un personnage qui en avale deux d'affilée a rempli sa contenance, et il lui faut attendre dix minutes avant de pouvoir avaler quoi que ce soit.
 
 </div>
 
