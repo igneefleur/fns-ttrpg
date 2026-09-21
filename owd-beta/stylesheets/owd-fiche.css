@@ -1219,6 +1219,8 @@ html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où 
 .pc-inv-case { width: calc((100% - .3rem * 4) / 5); box-sizing: border-box; border-radius: 7px; }
 .pc-inv-case > .pc-obj-tile { width: 100%; }
 .pc-inv-case.over { outline: 2px dashed var(--accent); outline-offset: 1px; }
+/* la seconde case d'un objet qui en tient deux (robe, arme à deux mains) */
+.pc-inv-case.echo > .pc-obj-tile { opacity: .55; }
 .pc-inv-vide {
   aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center; text-align: center;
   box-sizing: border-box; padding: .2rem; border: 1px dashed var(--line-2); border-radius: 7px;
