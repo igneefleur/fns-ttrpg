@@ -60,6 +60,7 @@ fin = lf
   src/fiche/fiche/vitales.js
   src/fiche/fiche/survie.js
   src/fiche/fiche/exposition.js
+  src/fiche/fiche/mouvement.js
   src/fiche/fiche/effondrement.js
   src/fiche/fiche/contenance.js
   src/fiche/fiche/desaction.js

@@ -670,6 +670,29 @@ def _effets_expo(txt, titre):
     return out
 
 
+def _mouvement(txt):
+    """Les allures de « ### Mouvement » : pour chacune, sa carte « **Allure X** »
+    et les lignes de sa table, « | 2 DÉ et 5 PE | 12 pas | … ». Une allure sans
+    crans (repos, légère, intermédiaire) n'a qu'une ligne, au coût vide ;
+    l'allure lourde en a une par cran."""
+    corps = _section(txt, "Mouvement", "mouvement")
+    allures = []
+    for nom, carte in re.findall(r"\*\*Allure ([^*]+)\*\*(.*?)</div>", corps, re.S):
+        crans = []
+        for cout, pas in re.findall(r"^\|\s*([^|\n]*?)\s*\|\s*(\d+) pas\s*\|", carte, re.M):
+            m = re.fullmatch(r"(?:(\d+) DÉ(?: et (\d+) PE)?)?", cout)
+            if not m:
+                raise ErreurRegles(f"mouvement : coût illisible « {cout} » (allure {nom})")
+            crans.append({"pas": int(pas), "des": int(m.group(1) or 0), "pe": int(m.group(2) or 0)})
+        if not crans:
+            raise ErreurRegles(f"mouvement : l'allure {nom} n'a aucune ligne lisible")
+        nom = re.sub(r"^de\s+", "", nom.strip())   # « Allure de repos » : le repos
+        allures.append({"cle": _plat(nom).lower(), "nom": nom, "crans": crans})
+    if not allures:
+        raise ErreurRegles("mouvement : aucune allure lisible")
+    return allures
+
+
 def _temps(txt):
     """Ce qu'il faut pour faire passer le temps : les cinq efforts, ce que
     chacun coûte en repos, en satiété et en hydratation, les degrés qu'il
@@ -855,6 +878,7 @@ def _jeu(docs):
                  "climat : la zone du corps nu")
         jeu["climat"] = {"nuBas": int(nu.group(1)), "nuHaut": int(nu.group(2))}
         jeu["temps"] = _temps(cap_md)
+        jeu["mouvement"] = _mouvement(cap_md)
 
     if portees_md is not None:
         jeu["pas"] = float(

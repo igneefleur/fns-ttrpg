@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "2.6.8b";
+  var RELEASE = "2.7.0b";
   var SCHEMA = 3;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -374,6 +374,10 @@
       // l'air en °C. Le module Temps s'en sert pour faire
       // passer le temps ; rien d'autre ne les lit.
       effort: "leger", temperature: 20,
+      // L'allure (clé d'une allure des règles : repos, legere, intermediaire,
+      // lourde) et son cran, pour celle qui se prend par crans. Le module
+      // Mouvement en tire les pas par round.
+      allure: "legere", allureCran: 1,
 
       // ---- l'effondrement ----
       // Les niveaux d'effondrement que le JOUEUR ajoute à ceux des réserves
@@ -583,6 +587,8 @@
     if (!s.de) s.de = DE_DEFAUT;
     s.xpTotal = Math.max(0, num(s.xpTotal, 0));
     s.effort = String(s.effort == null ? "" : s.effort) || b.effort;
+    s.allure = String(s.allure == null ? "" : s.allure) || b.allure;
+    s.allureCran = clamp(num(s.allureCran, 1), 1, 99);
     s.effAutre = clamp(Math.round(num(s.effAutre, 0)), 0, 99);
     s.desTailles = Array.isArray(s.desTailles)
       ? s.desTailles.slice(0, 99).map(function (t) {
@@ -3885,6 +3891,71 @@
                     " · niveau d'effondrement " + effNiveauDe("expo");
     });
     return box;
+  }
+  // ---- Mouvement ----
+  // L'allure que prend le personnage, et le nombre de pas qu'elle lui donne
+  // par round. L'allure lourde se prend par crans, chacun avec son coût en
+  // dés d'action et en PE. Aucune règle n'est écrite ici : les allures, leurs
+  // pas et leurs coûts viennent des données (clé « mouvement »).
+  function mouvementListe() { var m = D().mouvement; return Array.isArray(m) ? m : []; }
+  function allureDe(cle) {
+    var out = null;
+    mouvementListe().forEach(function (a) { if (a.cle === cle) out = a; });
+    return out || mouvementListe()[0] || null;
+  }
+  function buildMouvement() {
+    var b = block("Mouvement");
+
+    // les allures, un bouton chacune, dans l'ordre des règles
+    var bande = el("div", "pc-tabs mini pc-efforts");
+    var boutons = [];
+    mouvementListe().forEach(function (a) {
+      var bt = el("button", "pc-tab", capFirst(a.nom));
+      bt.type = "button";
+      bt.addEventListener("click", function () { state.allure = a.cle; refresh(); });
+      bande.appendChild(bt);
+      boutons.push([bt, a.cle]);
+    });
+    b.appendChild(bande);
+
+    // les crans, pour l'allure qui en a plusieurs
+    var crans = el("div", "pc-tabs mini pc-efforts pc-crans");
+    b.appendChild(crans);
+
+    var aff = el("div", "pc-mouv");
+    var pas = el("b");
+    aff.appendChild(pas);
+    aff.appendChild(el("span", "u", "pas par round"));
+    var cout = el("span", "cout");
+    aff.appendChild(cout);
+    b.appendChild(aff);
+
+    function libCout(c) {
+      var t = [];
+      if (c.des) t.push(c.des + " dé" + (c.des > 1 ? "s" : ""));
+      if (c.pe) t.push(c.pe + " PE");
+      return t.join(" · ");
+    }
+    hooks.push(function () {
+      var a = allureDe(state.allure);
+      boutons.forEach(function (x) { x[0].classList.toggle("on", a && x[1] === a.cle); });
+      crans.innerHTML = "";
+      if (!a) { pas.textContent = "—"; cout.textContent = ""; return; }
+      var k = clamp(num(state.allureCran, 1), 1, a.crans.length);
+      if (a.crans.length > 1) {
+        a.crans.forEach(function (c, i) {
+          var bt = el("button", "pc-tab" + (i + 1 === k ? " on" : ""), libCout(c) || String(i + 1));
+          bt.type = "button";
+          bt.addEventListener("click", function () { state.allureCran = i + 1; refresh(); });
+          crans.appendChild(bt);
+        });
+      }
+      crans.style.display = a.crans.length > 1 ? "" : "none";
+      var c = a.crans[k - 1];
+      pas.textContent = String(c.pas);
+      cout.textContent = libCout(c) ? "coût : " + libCout(c) : "";
+    });
+    return b;
   }
   // ---- 7. Effondrement ----
   //     [      EFFONDREMENT      ]
@@ -7396,6 +7467,7 @@
     { id: "pv",           titre: "PV",               onglet: "fiche", colonne: "milieu", build: buildPv },
     { id: "pe",           titre: "PE",               onglet: "fiche", colonne: "milieu", build: buildPe },
     { id: "pm",           titre: "PM",               onglet: "fiche", colonne: "milieu", build: buildPm },
+    { id: "mouvement",    titre: "Mouvement",        onglet: "fiche", colonne: "milieu", build: buildMouvement },
     { id: "effondrement", titre: "Effondrement",     onglet: "fiche", colonne: "milieu", build: buildEffondrement },
     { id: "pi",           titre: "PI",               onglet: "fiche", colonne: "milieu", build: buildPi },
     { id: "contenance",   titre: "Contenance",       onglet: "fiche", colonne: "milieu", build: buildContenance },
