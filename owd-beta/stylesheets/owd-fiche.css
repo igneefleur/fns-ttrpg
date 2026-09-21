@@ -1232,14 +1232,14 @@ html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où 
 .pc-inv-eps { margin-bottom: .3rem; }
 .pc-inv-eps > .pc-inv-cases:last-child { margin-bottom: 0; }
 .pc-inv-vide {
-  aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center; text-align: center;
+  aspect-ratio: var(--obj-ratio); display: flex; align-items: center; justify-content: center; text-align: center;
   box-sizing: border-box; padding: .2rem; border: 1px dashed var(--line-2); border-radius: 7px;
   color: var(--ink-3); font-size: .56rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
   white-space: pre-line;
 }
 .pc-obj-ghead > .pds.over { color: var(--danger); font-weight: 700; }
 /* une case vide de poches ou de sac : la place qui reste, en pointillé */
-.pc-obj-tile.pc-inv-trou { aspect-ratio: 1 / 1; background: transparent; border: 1px dashed var(--line-2); cursor: default; }
+.pc-obj-tile.pc-inv-trou { aspect-ratio: var(--obj-ratio); background: transparent; border: 1px dashed var(--line-2); cursor: default; }
 .pc-obj-tile.pc-inv-trou:hover { border-color: var(--line-2); }
 .pc-obj-tiles.over { outline: 1px dashed var(--accent); outline-offset: 2px; }
 .pc-obj-tile {
@@ -1280,11 +1280,15 @@ html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où 
 .pc-obj-foot .nm { flex: 1 1 3.4rem; min-width: 0; font-size: var(--fs-meta); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pc-obj-foot .qte { font-size: var(--fs-meta); font-weight: 700; color: var(--ink-2); background: var(--panel); border-radius: 3px; padding: 0 .16rem; font-variant-numeric: tabular-nums; }
 .pc-obj-foot .pds { font-size: var(--fs-meta); color: var(--ink-3); font-variant-numeric: tabular-nums; flex: 0 0 auto; }
-/* UNE TUILE EST UN CARRÉ, TOUJOURS : de la taille d'une case vide, quel que
-   soit le nom. L'image prend ce que le pied laisse, et le pied tient sur une
-   seule ligne (le nom s'abrège, il se lit en entier au survol). */
-.pc-obj-tile { aspect-ratio: 1 / 1; display: flex; flex-direction: column; }
+/* UNE TUILE A LA FORME D'UN OBJET DES RÈGLES, TOUJOURS : le portrait des
+   images du livre (84 × 128, soit 21:32), et la taille d'une case vide, quel
+   que soit le nom. L'image prend ce que le pied laisse, entière (contain), et
+   le pied tient sur une seule ligne (le nom s'abrège, il se lit en entier au
+   survol). */
+.pc-obj-wrap { --obj-ratio: 21 / 32; }
+.pc-obj-tile { aspect-ratio: var(--obj-ratio); display: flex; flex-direction: column; }
 .pc-obj-tile > img, .pc-obj-tile > .pc-obj-ph { flex: 1 1 0; min-height: 0; aspect-ratio: auto; height: auto; }
+.pc-obj-tile > img { object-fit: contain; background: var(--panel); }
 .pc-obj-tile > .pc-obj-foot { flex: 0 0 auto; flex-wrap: nowrap; }
 .pc-obj-tile > .pc-obj-foot .nm { flex: 1 1 0; }
 /* réglages du module, en mode édition (par ligne 1..8, et les puces
@@ -1296,14 +1300,14 @@ html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où 
 .pc-obj-pile { font-size: .58rem; color: var(--ink-3); text-align: right; font-variant-numeric: tabular-nums; padding: .1rem 0 0; }
 .pc-obj-addtile {
   width: calc((100% - .3rem * (var(--obj-cols) - 1)) / var(--obj-cols));
-  aspect-ratio: 1 / 1; border: 1px dashed var(--line-2); border-radius: 7px;
+  aspect-ratio: var(--obj-ratio); border: 1px dashed var(--line-2); border-radius: 7px;
   display: flex; align-items: center; justify-content: center;
   color: var(--line); font-size: 1rem; cursor: pointer; transition: .12s; box-sizing: border-box;
 }
 .pc-obj-addtile:hover { border-color: var(--accent); color: var(--accent); }
 .pc-mini.pc-obj-addgroup { align-self: flex-start; }
 .pc-obj-imgbox { background: var(--panel); }
-.pc-obj-imgbox img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block; }
+.pc-obj-imgbox img { width: 100%; aspect-ratio: 1 / 1; object-fit: contain; display: block; }
 .pc-obj-body { padding: .4rem .5rem .5rem; display: flex; flex-direction: column; gap: .32rem; }
 .pc-obj-body > input.nm {
   border: none; border-bottom: 1px solid var(--line); background: transparent;

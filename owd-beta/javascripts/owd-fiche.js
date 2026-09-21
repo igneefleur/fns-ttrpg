@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "2.6.2b";
+  var RELEASE = "2.6.3b";
   var SCHEMA = 3;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -5301,11 +5301,12 @@
         var img = new Image();
         img.onload = function () {
           if (!img.width || !img.height) { flash("Image illisible."); return; }   // ex. SVG sans dimensions
-          var S = 96, c = document.createElement("canvas");
-          c.width = S; c.height = S;
-          var k = Math.max(S / img.width, S / img.height);
+          // le PORTRAIT des images du livre, 84 × 128
+          var W = 84, H = 128, c = document.createElement("canvas");
+          c.width = W; c.height = H;
+          var k = Math.max(W / img.width, H / img.height);
           var w = img.width * k, h = img.height * k;
-          c.getContext("2d").drawImage(img, (S - w) / 2, (S - h) / 2, w, h);
+          c.getContext("2d").drawImage(img, (W - w) / 2, (H - h) / 2, w, h);
           cb(c.toDataURL("image/jpeg", 0.7));
         };
         img.onerror = function () { flash("Image illisible."); };
@@ -5890,7 +5891,7 @@
         vignette(f, function (data) { it.img = data; render(); refresh(); });
       });
       urlFld.appendChild(file);
-      urlFld.appendChild(miniBtn("Fichier…", "Importer une image (réduite en vignette 96 px)",
+      urlFld.appendChild(miniBtn("Fichier…", "Importer une image (réduite en vignette 84 × 128)",
         function () { file.click(); }));
       pairE.appendChild(urlFld);
       body.appendChild(pairE);
