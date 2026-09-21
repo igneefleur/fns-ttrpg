@@ -1,0 +1,8 @@
+remove_background(paper)
+add_shadow
+add_background
+add_frame
+add_grain
+
+source: Gemini_Generated_Image_986lvy986lvy986l.png
+script: verre_casse.py

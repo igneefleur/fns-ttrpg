@@ -1,0 +1,10 @@
+remove_watermark
+remove_background
+add_grain
+add_shadow
+add_background
+add_frame
+add_grain
+
+source: wmremove-transformed(3).png
+script: poix.py

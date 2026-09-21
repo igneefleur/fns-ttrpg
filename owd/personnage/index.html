@@ -11,7 +11,7 @@
         <link rel="canonical" href="https://igneefleur.github.io/fns-ttrpg/owd/personnage/">
       
       
-        <link rel="prev" href="../content/regles/combat/portees/">
+        <link rel="prev" href="../content/regles/equipement/">
       
       
         <link rel="next" href="../extension/">
@@ -45,13 +45,19 @@
       
     
     
-      <link rel="stylesheet" href="../stylesheets/fonts.css">
+      <link rel="stylesheet" href="../stylesheets/fonts.css?v=2">
     
-      <link rel="stylesheet" href="../stylesheets/extra.css?v=13">
+      <link rel="stylesheet" href="../stylesheets/extra.css?v=19">
     
-      <link rel="stylesheet" href="../stylesheets/night.css">
+      <link rel="stylesheet" href="../stylesheets/night.css?v=19">
     
-      <link rel="stylesheet" href="../stylesheets/owd-fiche.css?v=1">
+      <link rel="stylesheet" href="../stylesheets/armes.css?v=6">
+    
+      <link rel="stylesheet" href="../stylesheets/cartes.css?v=24">
+    
+      <link rel="stylesheet" href="../stylesheets/owd-fiche.css?v=44">
+    
+      <link rel="stylesheet" href="../stylesheets/owd-des3d.css?v=44">
     
     <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -222,8 +228,15 @@
   
     
     
+      
+  
+  
+  
+  
+    
+    
       <li class="md-tabs__item">
-        <a href="../content/regles/" class="md-tabs__link">
+        <a href="../content/regles/base/competences/" class="md-tabs__link">
           
   
   
@@ -233,6 +246,9 @@
 
         </a>
       </li>
+    
+  
+
     
   
 
@@ -353,7 +369,7 @@
     
       
         
-          
+      
         
       
         
@@ -374,9 +390,8 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
         
           
-          <div class="md-nav__link md-nav__container">
-            <a href="../content/regles/" class="md-nav__link ">
-              
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
   
   
   <span class="md-ellipsis">
@@ -390,14 +405,8 @@
   
   
 
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
+            <span class="md-nav__icon md-icon"></span>
+          </label>
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2">
@@ -410,6 +419,126 @@
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_1" id="__nav_2_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Les Bases
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Les Bases
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/base/competences/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compétences
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/base/capacites-physiques/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Capacités physiques
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
               
             
               
@@ -499,6 +628,34 @@
           </ul>
         </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/regles/equipement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Équipement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -611,20 +768,9 @@
 
 
 <h1 id="personnage">Personnage</h1>
-<p>La fiche de personnage Outward, montée ici même, hors Roll20 et sans compte : ce
-qui suit est exactement le code que l'<a href="../extension/">extension</a> affiche
-dans une partie, servi par ce site et non par elle. On peut donc s'en servir
-seul, pour préparer un personnage ou simplement regarder ce que donne la fiche.</p>
-<p>Une seule différence, et elle est voulue : ici, le personnage vit dans <strong>ce
-navigateur</strong> ; dans Roll20, il est enregistré dans le personnage lui-même, donc
-partagé avec tous ceux qui le contrôlent.</p>
-<!-- L'id est « perso-fiche », le MEME mot que roll20-fiche.html : c'est par
-     lui que docs/javascripts/owd-fiche.js cherche sa racine de montage, et
-     l'amorceur de Roll20 est gele. Le renommer ici laisse la page blanche,
-     sans erreur a lire. -->
 <div id="perso-fiche">
   <noscript>La fiche de personnage requiert JavaScript.</noscript>
-  <p style="padding:2rem;color:#8a8478">Chargement de la fiche de personnage…</p>
+  <p style="padding:2rem;color:#8a8478">Chargement de la fiche…</p>
 </div>
 
 
@@ -655,7 +801,7 @@ partagé avec tous ceux qui le contrôlent.</p>
       <nav class="md-footer__inner md-grid" aria-label="Pied de page" >
         
           
-          <a href="../content/regles/combat/portees/" class="md-footer__link md-footer__link--prev" aria-label="Précédent: Portées">
+          <a href="../content/regles/equipement/" class="md-footer__link md-footer__link--prev" aria-label="Précédent: Équipement">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -665,7 +811,7 @@ partagé avec tous ceux qui le contrôlent.</p>
                 Précédent
               </span>
               <div class="md-ellipsis">
-                Portées
+                Équipement
               </div>
             </div>
           </a>
@@ -727,9 +873,13 @@ partagé avec tous ceux qui le contrôlent.</p>
       
         <script src="../javascripts/night.js"></script>
       
-        <script src="../javascripts/owd-migrations.js?v=1"></script>
+        <script src="../javascripts/owd-migrations.js?v=44"></script>
       
-        <script src="../javascripts/owd-fiche.js?v=1"></script>
+        <script src="../javascripts/owd-mods.js?v=44"></script>
+      
+        <script src="../javascripts/owd-des3d.js?v=44"></script>
+      
+        <script src="../javascripts/owd-fiche.js?v=44"></script>
       
         <script src="../javascripts/copybtn.js"></script>
       

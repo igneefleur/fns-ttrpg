@@ -1,0 +1,10 @@
+remove_background
+match_chroma
+lighten(0.78)
+add_shadow
+add_background
+add_frame
+add_grain
+
+source: Gemini_Generated_Image_qshpzdqshpzdqshp.png
+script: bois.py

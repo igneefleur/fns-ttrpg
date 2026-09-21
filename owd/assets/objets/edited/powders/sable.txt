@@ -1,0 +1,4 @@
+remove_logo
+
+source: Gemini_Generated_Image_l8by38l8by38l8by.jpeg
+script: lot1.py

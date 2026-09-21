@@ -1,0 +1,8 @@
+match_chroma(0.712)
+add_shadow
+add_background
+add_frame
+add_grain
+
+source: Gemini_Generated_Image_fxsinifxsinifxsi-removebg-preview.png
+script: cuirs3.py

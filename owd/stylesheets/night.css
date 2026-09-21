@@ -1,5 +1,5 @@
 /* ============================================================
-   night.css — Thème sombre « bibliothèque de nuit » (chaud)
+   night.css — Thème sombre, aux couleurs du wiki d'Outward
    Material for MkDocs + feuilles maison (extra.css, atelier.css)
    ------------------------------------------------------------
    Approche : le thème est DESSINÉ, pas filtré.
@@ -11,15 +11,24 @@
    Aucun filtre CSS (invert/hue-rotate) : les images restent fidèles
    et il n'y a aucun texte sombre-sur-sombre.
 
-   Palette partagée :
-     fond page/côtés   #14110c   surface lecture   #201c15
-     carte/bloc        #2a2519   pavé teinté       #241f16
-     texte principal   #e8dfcb   texte atténué     #a89e88
-     texte discret     #867c68   bordure           #3c3527
-     bordure douce     rgba(232,223,203,0.10)
-     olive h1 #adc08c  olive accent #9fb37e  olive sombre #46543b
-     or #c9a24e   rouille #cf8368   vert positif #8fb36a
-     en-tête/onglets   #191510
+   La nuit est NEUTRE : plus aucune teinte dans les gris. Le jour est
+   blanc (extra.css), la nuit est noire, et le SEUL accent coloré des
+   deux thèmes est l'or du wiki #ffd77f, identique de l'un à l'autre.
+   Il n'y a donc ici que deux familles : des gris, et cet or.
+
+   Palette partagée — les quatre fonds, du plus sombre au plus clair :
+     pourtour / canvas    #000000    feuille de lecture   #0d0d0d
+     pavé teinté, zébrure impaire, surface de contrôle    #1a1a1a
+     carte, bandeau, en-tête de table, survol             #262626
+     texte principal      #e6e6e6    texte atténué        #9a9384
+     texte très discret   #8a847a    filet ordinaire      #3a3a3a
+     filet appuyé         #4a4a4a    filet doux   rgba(230,230,230,0.10)
+     or du wiki           #ffd77f    or éclairci (survol, valeurs) #ffe9b8
+     rouille — erreurs, chiffres d'un module              #cf8368
+     en-tête / onglets    #1a1a1a
+   L'or #ffd77f donne 15,3:1 sur le noir et 11:1 sur #262626 : la nuit,
+   il peut PORTER du texte partout — ce que le jour lui interdit, où il
+   ne sert qu'à remplir et où les titres passent par --or-titre.
    ============================================================ */
 
 /* ============================================================
@@ -31,45 +40,55 @@
    [data-md-color-scheme] (0,1,0).
    ============================================================ */
 html.night body {
-  /* extra.css */
-  --paper:        #201c15;
-  --bg-side:      #14110c;
-  --ink:          #e8dfcb;
-  --green-title:  #adc08c;
-  --green-section:#9fb37e;
-  --green-header: #46543b;
-  --row-a:        #26271f;
-  --row-b:        #1f2019;
+  /* extra.css — les valeurs du wiki d'Outward, relevées sur son thème sombre :
+     #000 pour le pourtour, #262626 pour les surfaces secondaires, #e6e6e6 pour
+     le texte, #3a3a3a pour les filets, et son or #ffd77f qui, la nuit, sert
+     partout puisqu'il donne 15,3:1 sur le noir et 11:1 sur le gris de surface.
+     La feuille de lecture est à peine au-dessus du noir pour se détacher du
+     pourtour sans devenir grise. */
+  --paper:        #0d0d0d;
+  --bg-side:      #000000;
+  --ink:          #e6e6e6;
+  --ink-2:        #9a9384;
+  --trait:        #3a3a3a;
+  --or-vif:       #ffd77f;
+  --or-fort:      #ffd77f;
+  --or-titre:     #ffd77f;
+  --trait-or:     #6b5a2e;
+  --bandeau:      #262626;
+  --sur-bandeau:  #ffd77f;
+  --row-a:        #1a1a1a;
+  --row-b:        #0d0d0d;
 
   /* Material */
   --md-default-bg-color:        var(--bg-side);
   --md-default-fg-color:        var(--ink);
   --md-typeset-color:           var(--ink);
-  --md-typeset-a-color:         #adc08c;
-  --md-default-fg-color--light: #c8bfa8;
-  --md-default-fg-color--lighter:  rgba(232,223,203,0.34);
-  --md-default-fg-color--lightest: rgba(232,223,203,0.12);
-  --md-code-bg-color:           #2a2519;
-  --md-code-fg-color:           #e8dfcb;
-  --md-typeset-mark-color:      rgba(201,162,78,0.35);
+  --md-typeset-a-color:         #ffd77f;
+  --md-default-fg-color--light: #b3b3b3;
+  --md-default-fg-color--lighter:  rgba(230,230,230,0.34);
+  --md-default-fg-color--lightest: rgba(230,230,230,0.12);
+  --md-code-bg-color:           #1a1a1a;
+  --md-code-fg-color:           #e6e6e6;
+  --md-typeset-mark-color:      rgba(255,215,127,0.30);
 }
 
 /* Variables de atelier.css — rebasculage central (structure obligatoire).
    NB : ces variables sont aussi codées en dur dans .nen-atelier / .nf-overlay,
    donc elles sont repointées explicitement plus bas (section 6). */
 html.night .nen-atelier {
-  --paper:       #1c1913;
-  --panel:       #17140f;
-  --card:        #252017;
-  --line:        #3a3327;
-  --line-2:      #2b2820;
-  --ink:         #e8dfcb;
-  --ink-2:       #b7ad97;
-  --ink-3:       #8f8672;
-  --accent:      #9fb37e;
-  --accent-deep: #6f8663;
-  --gold:        #c9a24e;
-  --danger:      #c86048;
+  --paper:       #000000;
+  --panel:       #0d0d0d;
+  --card:        #262626;
+  --line:        #3a3a3a;
+  --line-2:      #2b2b2b;
+  --ink:         #e6e6e6;
+  --ink-2:       #9a9384;
+  --ink-3:       #8a847a;
+  --accent:      #ffd77f;
+  --accent-deep: #ffe9b8;
+  --gold:        #ffd77f;
+  --danger:      #cf8368;
 }
 
 /* ============================================================
@@ -77,11 +96,11 @@ html.night .nen-atelier {
    ============================================================ */
 html.night .md-header,
 html.night .md-tabs {
-  background-color: #191510;
-  color: #e8dfcb;
+  background-color: #1a1a1a;
+  color: #e6e6e6;
 }
 html.night .md-tabs__link {
-  color: #dccfb2;
+  color: #cccccc;
 }
 
 /* Barre « lifted » de la nav primaire (Material la peint avec
@@ -90,14 +109,15 @@ html.night .md-sidebar--primary .md-nav__title,
 html.night .md-sidebar--primary .md-nav--lifted > .md-nav__list > .md-nav__item--active > .md-nav__link {
   background-color: var(--bg-side) !important;
   box-shadow: 0 0 0.4rem 0.4rem var(--bg-side) !important;
-  color: var(--green-section);
+  color: var(--or-titre);
 }
 
 /* ============================================================
    3) Composants — textes clairs (anti noir-sur-noir)
    ============================================================ */
 
-/* Texte atténué / secondaire → #a89e88 */
+/* Texte atténué / secondaire → #9a9384, le gris à peine réchauffé du wiki
+   (6,4:1 sur la feuille #0d0d0d, 5:1 sur une carte #262626). */
 html.night .md-typeset .defs.titled p .prereq,
 html.night .md-typeset .mcard .prereq,
 html.night .md-typeset .gcard-fig figcaption,
@@ -110,42 +130,44 @@ html.night .md-typeset .cj-modules .mod-type,
 html.night .md-typeset .cl-sha,
 html.night .md-typeset .cl-meta,
 html.night .md-typeset .cl-info {
-  color: #a89e88;
+  color: #9a9384;
 }
 
-/* Accent rouille servant de texte, trop sombre (#a85a52) → rouille clair */
+/* Le rouge d'erreur du jour est trop sombre sur du noir : la nuit il s'éclaircit
+   en rouille #cf8368, qui donne 6,7:1 sur la feuille. L'or ne convient pas ici —
+   une erreur ne doit pas porter la couleur d'accent du thème. */
 html.night .md-typeset .cl-error {
   color: #cf8368;
 }
 
 /* En-têtes de cartes de manœuvres → texte clair + filet sombre */
 html.night .md-typeset .mcard table:not([class]) th {
-  color: #e8dfcb;
-  border-bottom-color: #3c3527;
+  color: #e6e6e6;
+  border-bottom-color: #3a3a3a;
 }
 
 /* Citation : texte gris → texte atténué (+ bordure sombre) */
 html.night .md-typeset blockquote {
-  border-left-color: #3c3527;
-  color: #a89e88;
+  border-left-color: #3a3a3a;
+  color: #9a9384;
 }
 
 /* ============================================================
-   4) Composants — bordures claires (tan/beige) → #3c3527
+   4) Composants — filets clairs du jour → filet de nuit #3a3a3a
    ============================================================ */
 html.night .md-typeset .memo,
 html.night .md-typeset blockquote {
   /* border-left déjà couvert ci-dessus pour blockquote ; memo ci-dessous */
 }
 html.night .md-typeset .memo {
-  border-left-color: #3c3527;
+  border-left-color: #3a3a3a;
 }
 html.night .md-typeset .cols hr {
-  border-top-color: #3c3527;
+  border-top-color: #3a3a3a;
 }
 html.night .md-typeset .eclat-defs dt,
 html.night .md-typeset .eclat-defs dd {
-  border-top-color: #3c3527;
+  border-top-color: #3a3a3a;
 }
 
 /* Bordures pleines → bordure sombre */
@@ -164,7 +186,7 @@ html.night .md-typeset .gcard > p:first-child,
 html.night .md-typeset .gcard-img,
 html.night .md-typeset .comp h4,
 html.night .md-typeset .wperte-img .wf-img {
-  border-color: #3c3527;
+  border-color: #3a3a3a;
 }
 
 /* Filets bas (bordure-bottom) → bordure sombre */
@@ -174,18 +196,18 @@ html.night .md-typeset .mcard table:not([class]) tbody tr:nth-child(odd) td,
 html.night .md-typeset .mcard table:not([class]) tbody tr:nth-child(even) td,
 html.night .md-typeset .annexe-dnd table:not([class]) tbody tr:nth-child(odd) td,
 html.night .md-typeset .annexe-dnd table:not([class]) tbody tr:nth-child(even) td {
-  border-bottom-color: #3c3527;
+  border-bottom-color: #3a3a3a;
 }
 html.night .md-typeset .annexe-dnd table:not([class]) th {
-  color: #e8dfcb;
-  border-bottom-color: #3c3527;
+  color: #e6e6e6;
+  border-bottom-color: #3a3a3a;
 }
 html.night .md-typeset .annexe-dnd table:not([class]),
 html.night .md-typeset .annexe-dnd table:not([class]) td {
   background: none;
 }
 html.night .md-typeset .wf-soins {
-  border-top-color: #3c3527;
+  border-top-color: #3a3a3a;
 }
 /* Trait de groupe des paliers d'aura (arts sociaux) : version nuit */
 html.night .md-typeset .cols [data-cols="aura"] table:not([class]) tbody tr:nth-child(5) td,
@@ -198,70 +220,72 @@ html.night .md-typeset .cols [data-cols="grades"] table:not([class]) tbody tr:nt
 
 /* Nav / arbre du livre + changelog (filets à gauche) → bordure sombre */
 html.night .book-nav .book-group-pages {
-  border-left-color: #3c3527;
+  border-left-color: #3a3a3a;
 }
 html.night .book-sec {
-  color: #a89e88;
-  border-left-color: #3c3527;
+  color: #9a9384;
+  border-left-color: #3a3a3a;
 }
 
 /* ============================================================
    5) Composants — surfaces claires → surfaces sombres
    ============================================================ */
 
-/* Cartes crème → carte sombre */
+/* Fond des cartes : blanc le jour → #262626 la nuit. C'est le ton le plus clair
+   des quatre fonds ; il pose la carte deux crans au-dessus du pourtour noir, de
+   sorte qu'elle se lise même là où son filet est discret. */
 html.night .md-typeset .mcard,
 html.night .md-typeset .gcard {
-  background: #2a2519;
+  background: #262626;
 }
 
 /* Cadre de portrait : mat blanc → carte sombre (+ bordure sombre) */
 html.night .md-typeset .cols .portrait .frame img {
-  border-color: #3c3527;
-  background: #2a2519;
+  border-color: #3a3a3a;
+  background: #262626;
 }
 
 /* Carte de palier Éclat : fond crème → carte sombre (+ bordure sombre) */
 html.night .md-typeset .eclat-card {
-  background: #2a2519;
-  border-color: #3c3527;
+  background: #262626;
+  border-color: #3a3a3a;
 }
 
 /* Encadré règle optionnelle — bordure-gauche d'accent préservée */
 html.night .md-typeset .optrule {
-  background: #2a2519;
-  border-top-color: #3c3527;
-  border-right-color: #3c3527;
-  border-bottom-color: #3c3527;
+  background: #262626;
+  border-top-color: #3a3a3a;
+  border-right-color: #3a3a3a;
+  border-bottom-color: #3a3a3a;
 }
 
 /* Fiches de blessure */
 html.night .md-typeset .wfiche {
-  background: #2a2519;
-  border-top-color: #3c3527;
-  border-right-color: #3c3527;
-  border-bottom-color: #3c3527;
+  background: #262626;
+  border-top-color: #3a3a3a;
+  border-right-color: #3a3a3a;
+  border-bottom-color: #3a3a3a;
 }
 html.night .md-typeset .wfiche.wperte {
-  background: linear-gradient(#2a2519, #241f16);
-  border-top-color: #3c3527;
-  border-right-color: #3c3527;
-  border-bottom-color: #3c3527;
+  background: linear-gradient(#262626, #1a1a1a);
+  border-top-color: #3a3a3a;
+  border-right-color: #3a3a3a;
+  border-bottom-color: #3a3a3a;
 }
 html.night .md-typeset .wf-effet {
-  background: #241f16;
+  background: #1a1a1a;
 }
 
-/* Carte de commit du changelog — border-left (var(--green-header)) préservée */
+/* Carte de commit du changelog — border-left (var(--bandeau)) préservée */
 html.night .md-typeset .cl-commit {
-  background: #2a2519;
-  border-top-color: #3c3527;
-  border-right-color: #3c3527;
-  border-bottom-color: #3c3527;
+  background: #262626;
+  border-top-color: #3a3a3a;
+  border-right-color: #3a3a3a;
+  border-bottom-color: #3a3a3a;
 }
 /* Variante « modifications en cours » — border-left jaune (#e0a800) préservée */
 html.night .md-typeset .cl-commit.cl-pending {
-  background: #2a2519;
+  background: #262626;
 }
 
 /* ============================================================
@@ -272,108 +296,150 @@ html.night .md-typeset .cl-commit.cl-pending {
 html.night .md-typeset .cj-modules.anima h3,
 html.night .md-typeset .cj-modules.anima h4 {
   color: #cf8368;
-  border-bottom-color: #c9a24e;
+  border-bottom-color: #ffd77f;
 }
 
 /* Tables « anima » : en-tête crème → carte sombre + texte clair */
 html.night .md-typeset .cj-modules.anima table:not([class]) th {
-  background: #2a2519;
-  color: #e8dfcb;
-  border-bottom-color: #3c3527;
+  background: #262626;
+  color: #e6e6e6;
+  border-bottom-color: #3a3a3a;
 }
 html.night .md-typeset .cj-modules.anima table:not([class]) td {
-  border-bottom-color: #3c3527;
+  border-bottom-color: #3a3a3a;
 }
 /* Zébrure crème → zébrure sombre */
-html.night .md-typeset .cj-modules.anima table:not([class]) tbody tr:nth-child(odd)  td { background: #241f16; }
-html.night .md-typeset .cj-modules.anima table:not([class]) tbody tr:nth-child(even) td { background: #2a2519; }
+html.night .md-typeset .cj-modules.anima table:not([class]) tbody tr:nth-child(odd)  td { background: #1a1a1a; }
+html.night .md-typeset .cj-modules.anima table:not([class]) tbody tr:nth-child(even) td { background: #0d0d0d; }
 /* Filets verticaux tan → bordure sombre */
 html.night .md-typeset .cj-modules.anima table:not([class]) th:nth-child(3),
 html.night .md-typeset .cj-modules.anima table:not([class]) td:nth-child(3),
 html.night .md-typeset .cj-modules.anima table:not([class]) th:nth-child(5),
 html.night .md-typeset .cj-modules.anima table:not([class]) td:nth-child(5) {
-  border-right-color: #3c3527;
+  border-right-color: #3a3a3a;
 }
 
 /* Tables façon « armes » (mêmes teintes que les tables anima en mode nuit) :
-   en-tête sombre à texte clair + zébrures sombres, au lieu du vert. Couvre
+   en-tête sombre à texte clair + zébrures sombres, au lieu de l'or. Couvre
    .comp-recap, .diff-table, .gloss-source et .sepia-table. */
 html.night .md-typeset .comp-recap table:not([class]) th,
 html.night .md-typeset .diff-table table:not([class]) th,
 html.night .md-typeset .gloss-source table:not([class]) th,
 html.night .md-typeset .sepia-table table:not([class]) th {
-  background: #2a2519;
-  color: #e8dfcb;
-  border-bottom-color: #3c3527;
+  background: #262626;
+  color: #e6e6e6;
+  border-bottom-color: #3a3a3a;
 }
 html.night .md-typeset .comp-recap table:not([class]) td,
 html.night .md-typeset .diff-table table:not([class]) td,
 html.night .md-typeset .gloss-source table:not([class]) td,
 html.night .md-typeset .sepia-table table:not([class]) td {
-  border-bottom-color: #3c3527;
+  border-bottom-color: #3a3a3a;
 }
 html.night .md-typeset .comp-recap table:not([class]) tbody tr:nth-child(odd)  td,
 html.night .md-typeset .diff-table table:not([class]) tbody tr:nth-child(odd)  td,
 html.night .md-typeset .gloss-source table:not([class]) tbody tr:nth-child(odd)  td,
-html.night .md-typeset .sepia-table table:not([class]) tbody tr:nth-child(odd)  td { background: #241f16; }
+html.night .md-typeset .sepia-table table:not([class]) tbody tr:nth-child(odd)  td { background: #1a1a1a; }
 html.night .md-typeset .comp-recap table:not([class]) tbody tr:nth-child(even) td,
 html.night .md-typeset .diff-table table:not([class]) tbody tr:nth-child(even) td,
 html.night .md-typeset .gloss-source table:not([class]) tbody tr:nth-child(even) td,
-html.night .md-typeset .sepia-table table:not([class]) tbody tr:nth-child(even) td { background: #2a2519; }
+html.night .md-typeset .sepia-table table:not([class]) tbody tr:nth-child(even) td { background: #0d0d0d; }
 
 /* Table du sommeil : le trait vertical séparateur (colonne 5) passe au ton des
    filets sombres, au lieu du clair #e6dcc1 d'extra.css. */
 html.night .md-typeset .sommeil table:not([class]) th:nth-child(5),
 html.night .md-typeset .sommeil table:not([class]) td:nth-child(5) {
-  border-left-color: #3c3527;
+  border-left-color: #3a3a3a;
+}
+
+/* Table de récupération : les traits séparant les unités de temps. Le #e6dcc1
+   d'extra.css est un filet crème sur un fond presque noir, beaucoup trop dur. Ce
+   ton reste d'un cran au-dessus des filets de ligne (#3a3a3a), donc lisible comme
+   séparateur, sans trancher. */
+html.night .md-typeset .regen-table table:not([class]) tbody tr:nth-child(4n+2) td {
+  border-top-color: #4a4a4a;
+}
+
+/* Carte d'objet : les filets clairs de la tête et des lignes de chiffres passent au
+   ton sombre, et le libellé au gris secondaire de la nuit. */
+html.night .md-typeset .mcard.objet .objet-tete { border-bottom-color: #3a3a3a; }
+html.night .md-typeset .mcard.objet .objet-img { border-color: #4a4a4a; }
+html.night .md-typeset .mcard.objet .objet-stats > div,
+html.night .md-typeset .mcard.fab .objet-stats > div { border-bottom-color: #3a3a3a; }
+
+/* Carte de fabrication : même traitement que la carte d'objet — filets et cadres
+   de vignette au ton sombre. La pastille de quantité, elle, doit rester LISIBLE
+   sur des icônes qui ne changent pas avec le thème : elle garde donc un fond
+   opaque, simplement retourné, sombre à texte clair. */
+html.night .md-typeset .mcard.fab .fab-eq { border-bottom-color: #3a3a3a; }
+
+/* Les étapes : filet et texte de description au ton nuit. */
+html.night .md-typeset .mcard.fab .etapes { border-top-color: #3a3a3a; }
+html.night .md-typeset .mcard.objet .loyers { border-bottom-color: #3a3a3a; }
+
+/* Le filet qui sépare le produit des matières, même ton que les autres séparateurs. */
+html.night .md-typeset .mcard.fab .fab-eq .barre { background: #3a3a3a; }
+
+/* Carte de technique : seuls ses deux filets sont à basculer. Le bandeau suit
+   var(--bandeau), le libellé var(--or-titre), et la pastille de type
+   garde ses couleurs fixes dans les deux thèmes. */
+html.night .md-typeset .mcard.tech .tc-act { border-bottom-color: #3a3a3a; }
+html.night .md-typeset .mcard.tech .tc-case + .tc-case { border-left-color: #3a3a3a; }
+html.night .md-typeset .mcard.fab .fab-v img { border-color: #4a4a4a; }
+html.night .md-typeset .mcard.fab .objet-stats + p,
+html.night .md-typeset .mcard.fab .etapes + p { border-top-color: #3a3a3a; }
+html.night .md-typeset .mcard.fab .fab-v .q {
+  color: #e6e6e6;
+  background: #262626;
+  border-color: #5a5a5a;
 }
 
 /* Effets par zone (.zones : cartes Agripper, Maîtriser, Soumettre, Assommer) :
    pastilles et filets clairs → sombres, texte → clair, étiquettes → secondaire. */
-html.night .md-typeset .zones .zone { border-top-color: #3c3527; }
-html.night .md-typeset .zones:not(:last-child) .zone:last-child { border-bottom-color: #3c3527; }
+html.night .md-typeset .zones .zone { border-top-color: #3a3a3a; }
+html.night .md-typeset .zones:not(:last-child) .zone:last-child { border-bottom-color: #3a3a3a; }
 html.night .md-typeset .zchip {
-  background: #241f16;
-  border-color: #3c3527;
-  color: #e8dfcb;
+  background: #1a1a1a;
+  border-color: #3a3a3a;
+  color: #e6e6e6;
 }
-html.night .md-typeset .zones .zlbl { color: #a89e88; }
+html.night .md-typeset .zones .zlbl { color: #9a9384; }
 
 /* Sens de chaque niveau (cartes de la page Sens) : filets clairs → sombres,
    étiquettes → secondaire (les pastilles .zchip sont déjà couvertes ci-dessus). */
-html.night .md-typeset .sens-niveau { border-top-color: #3c3527; }
-html.night .md-typeset .sens-niveau:not(:last-child) { border-bottom-color: #3c3527; }
-html.night .md-typeset .sens-niveau .zlbl { color: #a89e88; }
+html.night .md-typeset .sens-niveau { border-top-color: #3a3a3a; }
+html.night .md-typeset .sens-niveau:not(:last-child) { border-bottom-color: #3a3a3a; }
+html.night .md-typeset .sens-niveau .zlbl { color: #9a9384; }
 
-/* Matrice des sens (page Formes du vivant) : dégradé vert clair (primaire) → foncé
+/* Matrice des sens (page Formes du vivant) : dégradé or clair (primaire) → foncé
    (inexistant), adapté au fond sombre ; box-shadow de la même couleur pour souder les
    jointures. Les en-têtes prennent var(--paper) via extra.css (fond page sombre). */
-html.night .md-typeset .cj-modules.anima.formes.sens-grille table:not([class]) td.p { background: #63a06d !important; color: #121a12 !important; box-shadow: 0 0 0 1px #63a06d; }
-html.night .md-typeset .cj-modules.anima.formes.sens-grille table:not([class]) td.s { background: #4c7d52 !important; box-shadow: 0 0 0 1px #4c7d52; }
-html.night .md-typeset .cj-modules.anima.formes.sens-grille table:not([class]) td.t { background: #3a5d3e !important; box-shadow: 0 0 0 1px #3a5d3e; }
-html.night .md-typeset .cj-modules.anima.formes.sens-grille table:not([class]) td.l { background: #2f452f !important; box-shadow: 0 0 0 1px #2f452f; }
-html.night .md-typeset .cj-modules.anima.formes.sens-grille table:not([class]) td.i { background: #28352a !important; box-shadow: 0 0 0 1px #28352a; }
+html.night .md-typeset .cj-modules.anima.formes.sens-grille table:not([class]) td.p { background: #ffd77f !important; color: #1a1a1a !important; box-shadow: 0 0 0 1px #ffd77f; }
+html.night .md-typeset .cj-modules.anima.formes.sens-grille table:not([class]) td.s { background: #7a5f2c !important; box-shadow: 0 0 0 1px #7a5f2c; }
+html.night .md-typeset .cj-modules.anima.formes.sens-grille table:not([class]) td.t { background: #55431f !important; box-shadow: 0 0 0 1px #55431f; }
+html.night .md-typeset .cj-modules.anima.formes.sens-grille table:not([class]) td.l { background: #33291a !important; box-shadow: 0 0 0 1px #33291a; }
+html.night .md-typeset .cj-modules.anima.formes.sens-grille table:not([class]) td.i { background: #1a1a1a !important; box-shadow: 0 0 0 1px #1a1a1a; }
 
 /* Puces de modificateurs (.smod) : pavé clair → pavé sombre, texte → clair */
 html.night .md-typeset .sblock .smod {
-  background: #241f16;
-  color: #e8dfcb;
+  background: #1a1a1a;
+  color: #e6e6e6;
 }
 html.night .md-typeset .sblock .smod.pos {
-  background: #241f16;
+  background: #1a1a1a;
 }
 html.night .md-typeset .sblock .smod b { color: #cf8368; }
-html.night .md-typeset .sblock .smod.pos b { color: #8fb36a; }
+html.night .md-typeset .sblock .smod.pos b { color: #ffd77f; }
 
 /* Placeholder d'image de glossaire : crème → pavé sombre, gris → secondaire */
 html.night .md-typeset .gcard-img.ph {
-  background: #241f16;
-  color: #a89e88;
+  background: #1a1a1a;
+  color: #9a9384;
 }
 
 /* Survol d'une cellule de glossaire : surbrillance crème → sombre */
 html.night .md-typeset .gloss-source td.gloss-trigger:hover {
-  background: #2a2519;
+  background: #262626;
 }
 
 /* ============================================================
@@ -384,33 +450,33 @@ html.night .md-typeset .gloss-source td.gloss-trigger:hover {
    la palette sombre (valeurs exactes de la palette partagée).
    ============================================================ */
 html.night .nen-atelier {
-  --paper:       #14110c;   /* fond page / canvas (était #faf6ea) */
-  --panel:       #201c15;   /* barres, palettes, inspecteur (était #f2ecd8) */
-  --card:        #2a2519;   /* nœuds, cartes surélevées (était #fcf9f0) */
-  --line:        #3c3527;   /* bordure (était #d7cfb8) */
-  --line-2:      rgba(232,223,203,0.10); /* bordure douce (était #e7e0ca) */
-  --ink:         #e8dfcb;   /* texte principal (était #2a2820) */
-  --ink-2:       #a89e88;   /* texte secondaire (était #5b564a) */
-  --ink-3:       #867c68;   /* texte très discret (était #8c8574) */
-  --accent:      #9fb37e;   /* olive accent (était #5d6f57) */
-  --accent-deep: #adc08c;   /* olive titres/valeurs (était #46543d) */
-  --gold:        #c9a24e;   /* or (était #b8863b) */
+  --paper:       #000000;   /* fond page / canvas (était #faf6ea) */
+  --panel:       #0d0d0d;   /* barres, palettes, inspecteur (était #f2ecd8) */
+  --card:        #262626;   /* nœuds, cartes surélevées (était #fcf9f0) */
+  --line:        #3a3a3a;   /* bordure (était #d7cfb8) */
+  --line-2:      rgba(230,230,230,0.10); /* bordure douce (était #e7e0ca) */
+  --ink:         #e6e6e6;   /* texte principal (était #2a2820) */
+  --ink-2:       #9a9384;   /* texte secondaire (était #5b564a) */
+  --ink-3:       #8a847a;   /* texte très discret (était #5f5f5f) */
+  --accent:      #ffd77f;   /* or accent (était #6b5a2e) */
+  --accent-deep: #ffe9b8;   /* or titres/valeurs (était #4a3f28) */
+  --gold:        #ffd77f;   /* or (était #b8863b) */
   --danger:      #cf8368;   /* rouille (était #b0402c) */
 }
 html.night .nf-overlay {
-  --card:        #2a2519;
-  --panel:       #201c15;
-  --line:        #3c3527;
-  --line-2:      rgba(232,223,203,0.10);
-  --ink:         #e8dfcb;
-  --ink-2:       #a89e88;
-  --ink-3:       #867c68;
-  --accent:      #9fb37e;
-  --accent-deep: #adc08c;
+  --card:        #262626;
+  --panel:       #0d0d0d;
+  --line:        #3a3a3a;
+  --line-2:      rgba(230,230,230,0.10);
+  --ink:         #e6e6e6;
+  --ink-2:       #9a9384;
+  --ink-3:       #8a847a;
+  --accent:      #ffd77f;
+  --accent-deep: #ffe9b8;
 }
 
 /* Ascenseur */
-html.night .nen-atelier ::-webkit-scrollbar-thumb { background: #3c3527; }
+html.night .nen-atelier ::-webkit-scrollbar-thumb { background: #3a3a3a; }
 
 /* Surfaces de contrôle (crème → pavé teinté) */
 html.night .nf-btn,
@@ -419,62 +485,62 @@ html.night .nf-search,
 html.night .nf-pill,
 html.night .nf-menu-item,
 html.night .nf-cond .nf-x,
-html.night .nf-chip { background: #241f16; }
+html.night .nf-chip { background: #1a1a1a; }
 
 /* États survolés / sélectionnés (blanc → carte plus claire) */
 html.night .nf-pill:hover,
-html.night .nf-menu-item.sel { background: #2a2519; }
-html.night .nf-btn:hover { background: #2a2519; border-color: #3c3527; }
+html.night .nf-menu-item.sel { background: #262626; }
+html.night .nf-btn:hover { background: #262626; border-color: #3a3a3a; }
 
 /* Champs de saisie (puits blanc → surface enfoncée) */
 html.night .nf-menu-search,
 html.night .nf-node-body select,
 html.night .nf-node-body input[type=text],
-html.night .nf-node-body input[type=number] { background: #201c15; }
+html.night .nf-node-body input[type=number] { background: #0d0d0d; }
 
 /* Fantôme de glisser-déposer (hors .nen-atelier, valeurs littérales) */
 html.night .nf-ghost {
-  background: #2a2519;
-  color: #e8dfcb;
-  border-color: #3c3527;
+  background: #262626;
+  color: #e6e6e6;
+  border-color: #3a3a3a;
   border-left-color: var(--fg-raccord); /* accent de raccord préservé */
 }
-html.night .nf-ghost.over { outline-color: #9fb37e; }
+html.night .nf-ghost.over { outline-color: #ffd77f; }
 
-/* Câbles / arêtes (olive sombre → olive lisible sur canvas noir) */
+/* Câbles / arêtes (or sombre → or lisible sur canvas noir) */
 html.night .nf-edges path,
-html.night .nf-edges path.chain { stroke: #9fb37e; }
+html.night .nf-edges path.chain { stroke: #ffd77f; }
 html.night .nf-edges path.chain:hover,
-html.night .nf-edges path.t-cap:hover { stroke: #adc08c; }
+html.night .nf-edges path.t-cap:hover { stroke: #ffe9b8; }
 
 /* Message d'état vide */
-html.night .nf-empty { color: #a89e88; }
+html.night .nf-empty { color: #9a9384; }
 
 /* Grille de points du canvas (pointillé clair → pointillé discret sombre) */
 html.night .nf-canvas {
   background:
-    radial-gradient(circle at 1px 1px, rgba(232,223,203,0.06) 1.1px, transparent 1.6px) 0 0 / 24px 24px,
+    radial-gradient(circle at 1px 1px, rgba(230,230,230,0.06) 1.1px, transparent 1.6px) 0 0 / 24px 24px,
     var(--paper);
 }
 
 /* Bande des prises (dégradé crème → dégradé sombre) */
-html.night .nf-slots { background: linear-gradient(#241f16, #201c15); }
+html.night .nf-slots { background: linear-gradient(#1a1a1a, #0d0d0d); }
 
 /* Encart de référence (boîte or clair → boîte sombre, texte or éclairci) */
-html.night .nf-reflink { background: #241f16; border-color: #3c3527; color: #c9a24e; }
-html.night .nf-reflink b { color: #c9a24e; }
-html.night .nf-reflink.off { color: #a89e88; }
+html.night .nf-reflink { background: #1a1a1a; border-color: #3a3a3a; color: #ffd77f; }
+html.night .nf-reflink b { color: #ffd77f; }
+html.night .nf-reflink.off { color: #9a9384; }
 
 /* Bouton × d'une condition, au survol */
-html.night .nf-cond .nf-x:hover { background: #2a2519; border-color: #3c3527; }
+html.night .nf-cond .nf-x:hover { background: #262626; border-color: #3a3a3a; }
 
 /* Valeur chiffrée d'une ligne de module (rouille sombre → rouille lisible) */
 html.night .nf-mod-line .val { color: #cf8368; }
 
 /* Compléments : surfaces claires codées en dur oubliées + textes posés
-   sur l'accent (devenu olive clair, donc texte foncé pour le contraste). */
+   sur l'accent (devenu or clair, donc texte foncé pour le contraste). */
 html.night .nf-cible {            /* cible d'une capacité (socle) — #f4efe0 */
-  background: #241f16;
+  background: #1a1a1a;
 }
 html.night .nf-warn {             /* avertissement — #f6e6df + texte #8f3320 */
   background: #33221c;
@@ -486,13 +552,13 @@ html.night .nf-warn-soft {        /* mise en garde jaune : version nuit */
   color: #d8b95c;
   border-color: #4a4126;
 }
-html.night .nf-btn.primary,       /* texte clair sur bouton d'accent olive */
+html.night .nf-btn.primary,       /* texte clair sur bouton d'accent or */
 html.night .nf-chip.on {
-  color: #1c1913;
+  color: #1a1a1a;
 }
 html.night .nf-node-body input,   /* filet de sécurité : tout champ de saisie */
 html.night .nf-node-body textarea {
-  background: #201c15;
+  background: #0d0d0d;
   color: var(--ink);
 }
 
@@ -500,24 +566,24 @@ html.night .nf-node-body textarea {
    oubliées ci-dessus (elles n'utilisent pas les variables, restaient blanches). */
 
 /* Légende de l'option choisie dans un tableau de nœud (fond crème #f7f3e7) */
-html.night .nf-optdef { background: #241f16; }
+html.night .nf-optdef { background: #1a1a1a; }
 
 /* Tableau d'options intégré au nœud (.nf-tgrid) : cellule éditable (.v.val) et
    lignes cumulables (.rcell.opt) au fond BLANC codé en dur → surfaces sombres.
-   L'état coché (.rcell.opt.on) garde son vert var(--sel-on). */
-html.night .nf-tgrid .v.val { background: #201c15; }
-html.night .nf-tgrid-rows .rcell.opt { background: #241f16; }
-html.night .nf-tgrid-rows .rcell.opt:hover { background: #2a2519; }
+   L'état coché (.rcell.opt.on) garde son or var(--sel-on). */
+html.night .nf-tgrid .v.val { background: #0d0d0d; }
+html.night .nf-tgrid-rows .rcell.opt { background: #1a1a1a; }
+html.night .nf-tgrid-rows .rcell.opt:hover { background: #262626; }
 
 /* Zone de saisie des conditions (textarea au fond blanc) */
-html.night .nf-ta { background: #201c15; color: var(--ink); }
+html.night .nf-ta { background: #0d0d0d; color: var(--ink); }
 
 /* Valeurs chiffrées rouille codées en dur (#9c5a3c) → rouille lisible sur fond noir */
 html.night .nf-totals .grand .num,
 html.night .nf-devrow .di { color: #cf8368; }
 
 /* Ascenseur au survol (crème → teinté) */
-html.night .nen-atelier ::-webkit-scrollbar-thumb:hover { background: #4a4436; }
+html.night .nen-atelier ::-webkit-scrollbar-thumb:hover { background: #4a4a4a; }
 
 /* ============================================================
    8) Icône du bouton nuit/jour

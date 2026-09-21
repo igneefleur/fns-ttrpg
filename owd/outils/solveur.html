@@ -1,0 +1,671 @@
+<title>Solveur d'enchaînements</title>
+<style>
+/* ───────── Mêmes jetons que l'éditeur de trajet et que le banc des armes :
+   c'est le même outil, il doit se lire pareil. Une couleur en plus, et une
+   seule : l'ennemi.
+
+   La palette vient du wiki d'Outward — feuille BLANCHE le jour, NOIRE la nuit,
+   et l'or partout où quelque chose compte. Les noms de jetons disent un rôle et
+   non une teinte : ils n'ont donc pas bougé, sauf l'accent, devenu --or. Cette
+   page n'est pas servie par mkdocs et n'a pas le bouton du site : elle suit le
+   thème du SYSTÈME, d'où prefers-color-scheme. Le bloc [data-theme] qui suit
+   reste pour le jour où elle serait enchâssée dans le livre. */
+:root {
+  --papier:      #ffffff;  /* la feuille : fond de page */
+  --papier-haut: #ffffff;  /* les cartes ; le jour, c'est le filet et l'ombre qui
+                              les détachent, pas la teinte */
+  --creux:       #e9e7e2;  /* le renfoncement : case libre, en-tête de ligne, bloc, code */
+  --encre:       #1a1a1a;  /* le texte courant, 16,9:1 sur la feuille */
+  --encre-pale:  #5f5f5f;  /* le texte atténué, 6,4:1 — et 5,2:1 sur le creux */
+  --trait:       #ddd6c6;  /* le filet ordinaire ; il ne porte jamais de texte */
+  --or:          #7a5c10;  /* l'accent : titre, dégâts, totaux, flèches des gardes.
+                              6,2:1 sur blanc. L'or vif du wiki, #ffd77f, n'y tient
+                              que 1,4:1 : illisible le jour, il attend la nuit. */
+  --or-pale:     #f8efd9;  /* le même or lavé, pour un aplat derrière du texte ;
+                              aucune règle ne s'en sert encore, le jeton est posé */
+  --alerte:      #9A4423;  /* le coup interrompu, 6,5:1 sur blanc */
+  --orange:      #B4682E;  /* le contour de sa propre case, un ton en deçà de l'alerte */
+  --sang:        #8C3A2A;  /* l'ennemi : la seule couleur qui ne soit ni encre ni or */
+  --ombre:       0 1px 2px rgba(0, 0, 0, .09), 0 8px 24px rgba(0, 0, 0, .07);
+  /* La pile de Roll20, mesurée sur une vraie partie : Proxima Nova au corps, sa
+     condensée aux titres. Sous licence Adobe, elle ne se télécharge pas — on la
+     NOMME, et Nunito Sans prend le relais chez qui ne l'a pas. Pas de
+     'Symboles JDR' : cette famille maison n'est servie qu'avec le livre, et
+     cette page ne l'est pas. Le monospace, lui, ne change pas : il aligne des
+     chiffres, ce n'est pas une affaire de style. */
+  --corps: 'Proxima Nova', proxima-nova, 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --titres: 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
+}
+/* La nuit : la feuille passe au noir du wiki et l'or vif reprend sa place —
+   14:1 sur ce fond, il porte le texte sans réserve. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --papier:      #0d0d0d;
+    --papier-haut: #1a1a1a;
+    --creux:       #262626;
+    --encre:       #e6e6e6;
+    --encre-pale:  #9a9384;
+    --trait:       #3a3a3a;
+    --or:          #ffd77f;
+    --or-pale:     #2a2313;
+    --alerte:      #D98456;
+    --orange:      #E09A57;
+    --sang:        #D9755E;
+    --ombre:       0 1px 2px rgba(0, 0, 0, .6), 0 8px 24px rgba(0, 0, 0, .45);
+  }
+}
+:root[data-theme="dark"] {
+  --papier:      #0d0d0d;
+  --papier-haut: #1a1a1a;
+  --creux:       #262626;
+  --encre:       #e6e6e6;
+  --encre-pale:  #9a9384;
+  --trait:       #3a3a3a;
+  --or:          #ffd77f;
+  --or-pale:     #2a2313;
+  --alerte:      #D98456;
+  --orange:      #E09A57;
+  --sang:        #D9755E;
+  --ombre:       0 1px 2px rgba(0, 0, 0, .6), 0 8px 24px rgba(0, 0, 0, .45);
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: clamp(1rem, 3vw, 2.5rem);
+  background: var(--papier);
+  color: var(--encre);
+  font: 400 16px/1.55 var(--corps);
+  -webkit-font-smoothing: antialiased;
+}
+.enveloppe { max-width: 1240px; margin: 0 auto; }
+
+h1 {
+  margin: 0 0 .3rem;
+  font-family: var(--titres);
+  font-size: clamp(1.3rem, 2.6vw, 1.75rem);
+  font-weight: 600;
+  font-variant: small-caps;
+  letter-spacing: .06em;
+  color: var(--or);
+  text-wrap: balance;
+}
+.sous { margin: 0; max-width: 66ch; color: var(--encre-pale); font-size: .92rem; }
+
+.grille {
+  display: grid;
+  grid-template-columns: minmax(0, 21rem) minmax(0, 1fr);
+  gap: clamp(1rem, 2.2vw, 1.8rem);
+  align-items: start;
+  margin-top: 1.5rem;
+}
+@media (max-width: 900px) { .grille { grid-template-columns: 1fr; } }
+
+.carte {
+  background: var(--papier-haut);
+  border: 1px solid var(--trait);
+  border-radius: 4px;
+  box-shadow: var(--ombre);
+  padding: 1rem 1.1rem 1.15rem;
+}
+.pile { display: grid; gap: clamp(.8rem, 1.6vw, 1.1rem); }
+
+h2 {
+  margin: 0 0 .7rem;
+  font: 700 .72rem/1 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-variant: small-caps;
+  letter-spacing: .13em;
+  text-transform: lowercase;
+  color: var(--encre-pale);
+}
+
+#plateau { display: block; width: 100%; height: auto; touch-action: manipulation; }
+.hx { transition: fill .09s ease; cursor: pointer; }
+.hx-libre  { fill: var(--creux); }
+.hx-dos    { fill: var(--encre); fill-opacity: .055; }
+.hx:hover  { fill: var(--sang); fill-opacity: .22; }
+.hx:focus-visible { outline: none; stroke: var(--alerte); stroke-width: 2.2; }
+.hx-cible  { fill: var(--sang); }
+.hx-soi    { fill: none; stroke: var(--orange); stroke-width: 1.5; pointer-events: none; }
+.etiq {
+  font: 700 6.5px/1 ui-monospace, Menlo, Consolas, monospace;
+  text-anchor: middle; pointer-events: none; fill: var(--encre-pale); opacity: .5;
+}
+.etiq-cible { fill: var(--papier-haut); opacity: 1; }
+
+select, button {
+  font: 600 .78rem/1 ui-monospace, Menlo, Consolas, monospace;
+  padding: .5rem .7rem;
+  border: 1px solid var(--trait);
+  border-radius: 3px;
+  background: var(--papier-haut);
+  color: var(--encre);
+  cursor: pointer;
+}
+select { width: 100%; font-weight: 400; }
+select:focus-visible, button:focus-visible { outline: 2px solid var(--alerte); outline-offset: 1px; }
+button:hover { border-color: var(--or); }
+
+.etat {
+  margin: .75rem 0 0;
+  font: 400 .76rem/1.5 ui-monospace, Menlo, Consolas, monospace;
+  color: var(--encre-pale);
+  font-variant-numeric: tabular-nums;
+}
+.etat b { color: var(--encre); }
+
+/* ───────── Les coups de l'arme */
+.coups { display: grid; gap: .22rem; }
+.coup {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: .5rem;
+  align-items: baseline;
+  padding: .26rem .4rem;
+  border: 1px solid var(--trait);
+  border-radius: 3px;
+  font: 400 .74rem/1.2 var(--corps);
+}
+.coup .g, .coup .d {
+  font: 700 .68rem/1 ui-monospace, Menlo, Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+}
+.coup .g { color: var(--encre-pale); }
+.coup .d { color: var(--or); }
+
+/* ───────── Les résultats */
+.res { display: grid; gap: .5rem; }
+.ligne {
+  border: 1px solid var(--trait);
+  border-radius: 3px;
+  background: var(--papier-haut);
+  overflow: hidden;
+}
+.ligne > .tete {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: .6rem;
+  padding: .32rem .6rem;
+  background: var(--creux);
+  font: 700 .7rem/1 ui-monospace, Menlo, Consolas, monospace;
+  letter-spacing: .04em;
+  color: var(--encre-pale);
+}
+.ligne > .tete b { color: var(--encre); font-size: .78rem; }
+.duo { display: grid; grid-template-columns: 1fr 1fr; }
+@media (max-width: 720px) { .duo { grid-template-columns: 1fr; } }
+.duo > div { padding: .5rem .6rem .6rem; min-width: 0; }
+.duo > div + div { border-left: 1px solid var(--trait); }
+@media (max-width: 720px) { .duo > div + div { border-left: 0; border-top: 1px solid var(--trait); } }
+.duo h3 {
+  margin: 0 0 .4rem;
+  font: 700 .62rem/1 ui-monospace, Menlo, Consolas, monospace;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--encre-pale);
+}
+.duo .total {
+  float: right;
+  font-size: .8rem;
+  color: var(--or);
+  font-variant-numeric: tabular-nums;
+}
+/* Un coup par ligne, et le pas entre deux lignes : une suite se lit de haut en
+   bas comme elle se joue. Toutes les boîtes tiennent la même hauteur, celle de
+   la plus longue suite, pour qu'on compare une ligne à l'autre sans que le
+   regard ait à se déplacer. La hauteur est MESURÉE après rendu, jamais
+   calculée : elle reste juste quelle que soit la police servie. */
+.corps { display: block; }
+.suite { display: flex; flex-direction: column; gap: .1rem; align-items: stretch; }
+.pas { align-self: center; display: flex; }
+.pas svg { display: block; width: 1.55rem; height: 1.55rem; }
+
+/* Trois colonnes tenues : le nom pousse, la garde et les dégâts gardent une
+   largeur fixe, si bien que d'une ligne à l'autre et d'une suite à l'autre
+   tout tombe sur le même aplomb. Les dégâts se lisent centrés dans la leur. */
+.bloc {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 1.55rem 2.9rem;
+  gap: .45rem;
+  align-items: center;
+  padding: .2rem .42rem;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: var(--creux);
+}
+.bloc .nm { font: 400 .68rem/1.2 var(--corps); }
+/* L'interruption se dit sous le nom : un cadre seul se laisse manquer. */
+.bloc .ko {
+  display: block;
+  margin-top: .06rem;
+  font: 700 .55rem/1.3 ui-monospace, Menlo, Consolas, monospace;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--alerte);
+}
+.bloc .gd { display: flex; justify-content: center; }
+.bloc .gd svg { display: block; width: 1.55rem; height: 1.55rem; }
+.bloc .vl {
+  text-align: center;
+  font: 700 .72rem/1.2 ui-monospace, Menlo, Consolas, monospace;
+  color: var(--or);
+  font-variant-numeric: tabular-nums;
+}
+.bloc.coupe { background: transparent; border-color: var(--alerte); border-style: dashed; }
+.bloc.coupe .vl { color: var(--alerte); }
+.bloc.sec { background: transparent; border-color: var(--trait); border-style: dotted; }
+.bloc.sec .nm, .bloc.sec .vl { color: var(--encre-pale); }
+.rien { margin: 0; font-size: .76rem; color: var(--encre-pale); }
+
+footer {
+  margin-top: 1.8rem;
+  padding-top: .9rem;
+  border-top: 1px solid var(--trait);
+  font-size: .8rem;
+  color: var(--encre-pale);
+  max-width: 76ch;
+}
+code {
+  font: 400 .88em/1 ui-monospace, Menlo, Consolas, monospace;
+  background: var(--creux);
+  padding: .12em .34em;
+  border-radius: 2px;
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="enveloppe">
+  <header>
+    <h1>Solveur d'enchaînements</h1>
+    <p class="sous">Posez l'ennemi sur une case, choisissez une arme : le solveur cherche
+      la meilleure suite de coups pour chaque nombre d'attaques. Un coup s'enchaîne quand
+      sa garde de départ est la garde d'arrivée du précédent ; aucun coup ne se répète dans
+      le tour ; entre deux coups on peut faire <strong>un pas</strong>, et l'on ne change
+      jamais de direction. Toucher une demi-verte <strong>interrompt</strong> le coup :
+      moitié des dégâts, et la garde repasse au centre.</p>
+  </header>
+
+  <div class="grille">
+    <div class="pile">
+      <section class="carte" aria-label="Le terrain">
+        <h2>l'ennemi · cliquez une case</h2>
+        <svg id="plateau" viewBox="-100 -95 200 190" role="application"
+             aria-label="Grille hexagonale, cliquez une case pour y poser l'ennemi"></svg>
+        <p class="etat" id="etat"></p>
+      </section>
+
+      <section class="carte" aria-label="L'arme">
+        <h2>l'arme</h2>
+        <select id="arme" aria-label="Choix de l'arme"></select>
+        <div class="coups" id="coups" style="margin-top:.6rem;"></div>
+      </section>
+    </div>
+
+    <section class="carte" aria-label="Résultats">
+      <h2>les meilleures suites, par nombre d'attaques</h2>
+      <div class="res" id="res"></div>
+    </section>
+  </div>
+
+  <footer>
+    <p style="margin:0 0 .5rem;"><strong>Comment un coup se résout.</strong> On parcourt son
+      trajet dans l'ordre. La première case où se tient l'ennemi décide de tout : verte, il
+      prend les dégâts pleins et le coup va au bout, la garde finit où elle est déclarée ;
+      demi-verte, il prend la moitié et le coup s'arrête là, la garde repasse en 5. Si
+      l'ennemi n'est sur aucune case du trajet, le coup ne touche rien mais se termine
+      normalement.</p>
+    <p style="margin:0 0 .5rem;"><strong>Un enchaînement s'ouvre et se ferme sur un coup qui
+      touche.</strong> On ne le commence pas en frappant dans le vide pour se placer : si
+      aucun coup n'atteint l'ennemi d'où l'on est, il n'y a pas d'enchaînement, et il faut
+      d'abord marcher. Il ne se termine pas non plus dans le vide : un coup qui ne touche
+      rien ne compte pas comme dernier, et la suite s'arrête à la dernière touche. Au milieu,
+      en revanche, un coup peut très bien ne rien atteindre — il sert alors à porter la garde
+      jusqu'au suivant, et il est marqué comme tel.</p>
+    <p style="margin:0 0 .5rem;"><strong>Le pas.</strong> Entre deux coups, on peut avancer
+      d'une case dans l'une des six directions, ou rester. Comme la direction du regard ne
+      change jamais, un pas déplace l'ennemi d'autant dans le repère de l'arme : c'est ce qui
+      permet de le faire passer d'une case verte à une autre, ou de le sortir d'une case qui
+      interromprait.</p>
+    <p style="margin:0 0 .5rem;"><strong>Naturel ou interrompu.</strong> La colonne de
+      gauche n'accepte aucune interruption : tous les coups vont au bout. Celle de droite les
+      autorise. Un coup interrompu est encadré de pointillés, un coup qui ne touche rien
+      s'écrit d'un tiret.</p>
+    <p style="margin:0;"><strong>Le total ne monte pas toujours.</strong> Chaque ligne donne
+      le meilleur pour EXACTEMENT ce nombre d'attaques, et rien ne dit qu'une suite plus
+      longue existe à partir de la meilleure suite courte. À l'épée, l'ennemi posé en
+      <code>3d3</code> : deux attaques donnent 20, trois n'en donnent aucune. Les seules qui
+      l'atteignent en un pas sont les deux tailles horizontales, elles finissent en garde 6,
+      et le seul coup qui parte de 6 est celui qu'on vient de donner.</p>
+  </footer>
+</div>
+
+<script>window.__ARMES__=[{"arme":"Corps à corps","base":null,"coups":[{"nom":"Coup de coude en descente","terme":null,"trajet":"1d:passe>1:frappe>soi:passe","garde":"3>5","plein":8,"att":6},{"nom":"Coup de poing à la mâchoire","terme":null,"trajet":"1:frappe>1g:passe","garde":"2>4","plein":6,"att":4},{"nom":"Coup de poing sous l'oreille","terme":null,"trajet":"1g2:passe>1g:passe>1:frappe","garde":"1>3","plein":6,"att":7},{"nom":"Croc-en-jambe","terme":"gambarola","trajet":"1:passe>soi:frappe","garde":"5>8","plein":2,"att":8},{"nom":"Coup de poing en travers, aux côtes","terme":null,"trajet":"1g:passe>1:frappe>1d:passe","garde":"5>1","plein":4,"att":5},{"nom":"Les deux paumes au visage","terme":null,"trajet":"soi:frappe>1:passe","garde":"8>2","plein":2,"att":5},{"nom":"Coup de pied aux parties","terme":null,"trajet":"soi:passe>1:frappe","garde":"5>5","plein":4,"att":6},{"nom":"Coup de genou aux parties","terme":null,"trajet":"1d3:passe>soi:frappe","garde":"5>8","plein":2,"att":5}]},{"arme":"Dague","base":null,"coups":[{"nom":"Estoc descendant, main haute","terme":"fendente","trajet":"soi:passe>1d:passe>1:frappe","garde":"3>6","plein":8,"att":5},{"nom":"Estoc oblique descendant du côté de l'arme","terme":null,"trajet":"1d2:passe>1d:passe>1:frappe","garde":"3>4","plein":8,"att":6},{"nom":"Estoc oblique descendant de revers","terme":null,"trajet":"1g:passe>1:frappe>1d:passe","garde":"1>6","plein":6,"att":8},{"nom":"Estoc latéral du côté droit","terme":"la dritta parte","trajet":"1d:passe>1:frappe>soi:passe","garde":"6>5","plein":6,"att":5},{"nom":"Estoc latéral de revers","terme":"de la parte reversa","trajet":"1g2:passe>1g:passe>1:frappe","garde":"4>5","plein":6,"att":7},{"nom":"Estoc par le milieu, ligne basse","terme":null,"trajet":"1:frappe>1g:passe","garde":"8>5","plein":8,"att":5},{"nom":"Estoc au corps à corps","terme":null,"trajet":"1d:passe>soi:frappe","garde":"5>5","plein":10,"att":6},{"nom":"Coup de rondelle au visage","terme":null,"trajet":"soi:frappe>1:passe","garde":"5>3","plein":8,"att":5}]},{"arme":"Épée à une main","base":20,"coups":[{"nom":"Fendant d'aplomb","terme":"colpo fendente","trajet":"1:passe>2:frappe","garde":"2>8","plein":30,"att":5},{"nom":"Fendant en diagonale","terme":"sgualimbro","trajet":"1d:passe>2d:frappe>1:passe>2:frappe>2g:frappe>1g:frappe","garde":"3>7","plein":22,"att":5},{"nom":"Taille horizontale du côté droit","terme":"mandritto tondo (o traverso)","trajet":"1d2:passe>2d3:passe>1d:passe>2d2:frappe>1:passe>2d:frappe>2:frappe>2g:frappe>1g:passe","garde":"6>4","plein":20,"att":7},{"nom":"Taille horizontale de revers","terme":"riverso tondo","trajet":"1g:passe>2g:passe>1:passe>2:frappe>2d:frappe>1d:passe>2d2:frappe>2d3:frappe>1d2:passe","garde":"4>6","plein":20,"att":8},{"nom":"Taille montante du côté droit","terme":"ridoppio","trajet":"1d2:passe>1d:frappe>2d:frappe>1:passe>2:frappe>2g:passe","garde":"9>1","plein":26,"att":7},{"nom":"Taille montante de revers","terme":"colpo sottano","trajet":"1g2:passe>1g:frappe>2g:frappe>1:passe>2:frappe","garde":"7>5","plein":24,"att":8},{"nom":"Estoc à fond","terme":"punta","trajet":"1:passe>2:frappe","garde":"5>5","plein":28,"att":6},{"nom":"Coup de pommeau au visage","terme":"knopfslac","trajet":"1:frappe","garde":"5>2","plein":18,"att":5}]},{"arme":"Hache à une main","base":22,"coups":[{"nom":"Fendant à la tête","terme":null,"trajet":"1d2:passe>1d:passe>1:passe>2:frappe","garde":"3>8","plein":34,"att":5},{"nom":"Fendant en diagonale à l'épaule","terme":null,"trajet":"1d2:passe>1d:passe>1:passe>2:frappe>2g:frappe>1g:passe","garde":"3>7","plein":28,"att":5},{"nom":"Fendant de revers au cou","terme":null,"trajet":"1g:passe>1:passe>2d:frappe>1d:passe>2d2:frappe>2d3:passe>1d2:passe","garde":"1>9","plein":28,"att":7},{"nom":"Taille en travers aux côtes","terme":null,"trajet":"1d2:passe>2d3:passe>1d:passe>2d2:passe>2d:frappe>1:passe>2:frappe>2g:frappe>1g:passe","garde":"6>4","plein":26,"att":6},{"nom":"Taille de revers en travers","terme":null,"trajet":"1g:passe>2g:passe>1:passe>2:frappe>2d:frappe>1d:passe>2d2:frappe>2d3:passe>1d2:passe","garde":"4>6","plein":26,"att":8},{"nom":"Taille montante au flanc","terme":null,"trajet":"1g2:passe>1g:frappe>2g:frappe>1:passe>2:frappe>2d:passe>1d:passe","garde":"7>3","plein":26,"att":7},{"nom":"Taille montante de revers sous l'écu","terme":null,"trajet":"1d2:passe>1d:frappe>2d:frappe>1:passe>2:frappe>2g:passe","garde":"9>4","plein":26,"att":8},{"nom":"Coup du dos du fer au casque","terme":null,"trajet":"1g:passe>1:frappe>2d:frappe>2:passe","garde":"4>5","plein":18,"att":6}]},{"arme":"Masse à une main","base":24,"coups":[{"nom":"Fendant à la tête","terme":null,"trajet":"1:passe>2:frappe","garde":"2>8","plein":36,"att":5},{"nom":"Fendant d'enfilade","terme":null,"trajet":"1d:passe>1:frappe>2:frappe","garde":"3>8","plein":32,"att":6},{"nom":"Frappe diagonale à la clavicule","terme":null,"trajet":"1:passe>1g:passe>2g:frappe","garde":"8>7","plein":34,"att":5},{"nom":"Frappe diagonale de revers","terme":null,"trajet":"1g:passe>1:passe>2d:frappe","garde":"1>9","plein":34,"att":7},{"nom":"Frappe montante au flanc","terme":null,"trajet":"1d2:passe>1d:frappe>2d:frappe>1:passe>1g:passe","garde":"9>1","plein":28,"att":7},{"nom":"Frappe montante de revers sous l'écu","terme":null,"trajet":"1g2:passe>1g:frappe>2g:frappe>1:passe>1d:passe","garde":"7>6","plein":28,"att":8},{"nom":"Frappe à la main d'arme","terme":null,"trajet":"1g:passe>1:frappe>2d:frappe>1d:passe","garde":"4>3","plein":22,"att":8},{"nom":"Frappe de revers au casque","terme":null,"trajet":"1g:passe>2g2:frappe>1:passe","garde":"1>8","plein":22,"att":6}]},{"arme":"Rapière","base":22,"coups":[{"nom":"Estoc en prime","terme":"prima","trajet":"1:passe>2:frappe","garde":"2>2","plein":30,"att":5},{"nom":"Estoc en tierce","terme":"terza","trajet":"1:passe>2:frappe","garde":"5>5","plein":30,"att":4},{"nom":"Estoc en seconde","terme":"seconda","trajet":"1:passe>2:frappe","garde":"8>5","plein":34,"att":4},{"nom":"Estoc en dégagement du dehors","terme":"cavazione di fuori","trajet":"1d:passe>1:passe>2d:passe>2:frappe","garde":"6>2","plein":30,"att":6},{"nom":"Estoc en dégagement du dedans","terme":"cavazione di dentro","trajet":"1g:passe>1:passe>2g:passe>2:frappe","garde":"1>2","plein":30,"att":6},{"nom":"Estoc au flanc","terme":"stoccata al fianco","trajet":"1d:passe>1:passe>2d:frappe","garde":"3>6","plein":30,"att":5},{"nom":"Estoc de revers à la gorge","terme":"punta riversa","trajet":"1:passe>2g:frappe","garde":"5>1","plein":30,"att":5},{"nom":"Coup de coquille au visage","terme":"pomo","trajet":"1:frappe","garde":"5>2","plein":18,"att":4}]},{"arme":"Grande épée à deux mains","base":null,"coups":[{"nom":"Taille verticale au sommet du crâne","terme":"Schaitelhaw","trajet":"3:frappe>2:passe>1:passe","garde":"2>8","plein":28,"att":7},{"nom":"Fendant de colère","terme":"Zornhaw","trajet":"1d3:passe>1:passe>2:passe>3:frappe","garde":"3>5","plein":26,"att":6},{"nom":"Coup tordu aux mains","terme":"Krumphaw","trajet":"1g2:passe>1g:passe>2g:frappe","garde":"4>3","plein":16,"att":7},{"nom":"Taille du milieu","terme":"Mittelhauw","trajet":"1d2:passe>1d:passe>2d2:passe>2d:passe>3d2:frappe>1:passe>3d:frappe>2:passe>3:frappe>3g:frappe>2g:passe>1g:passe>3g2:frappe>2g2:passe","garde":"6>4","plein":12,"att":8},{"nom":"Taille en travers","terme":"Zwerchhaw","trajet":"1d:passe>2d2:frappe>2d:frappe>1:passe>2:frappe","garde":"3>2","plein":14,"att":8},{"nom":"Coup louche à la gorge","terme":"Schielhaw","trajet":"1d:passe>1:passe>2:frappe>2d:passe","garde":"3>6","plein":20,"att":8},{"nom":"Estoc à demi-épée","terme":"Halbschwert / Ansetzen","trajet":"1d:passe>1:frappe","garde":"5>5","plein":18,"att":6},{"nom":"Coup meurtrier au pommeau","terme":"Mordschlag / Mordstreich","trajet":"soi:passe>1:frappe","garde":"3>5","plein":24,"att":7}]},{"arme":"Grande hache à deux mains","base":null,"coups":[{"nom":"Fendant à pleine volée","terme":null,"trajet":"1:passe>soi:passe>3:frappe>2:frappe","garde":"3>8","plein":26,"att":8},{"nom":"Fendant court à l'épaule","terme":null,"trajet":"1d:passe>soi:passe>1:frappe","garde":"3>6","plein":24,"att":5},{"nom":"Fendant à la tête de la monture","terme":null,"trajet":"1g:passe>1:passe>2:frappe","garde":"3>5","plein":22,"att":7},{"nom":"Volée à plat à la ceinture","terme":null,"trajet":"1d2:passe>1d:passe>2d2:passe>2d:passe>2:frappe","garde":"6>4","plein":20,"att":6},{"nom":"Revers à plat au col","terme":null,"trajet":"1g2:passe>1g:passe>2g:passe>2:frappe>1d:passe","garde":"1>3","plein":16,"att":7},{"nom":"Montante sous le menton","terme":null,"trajet":"1d2:passe>soi:passe>1:frappe","garde":"8>1","plein":18,"att":6},{"nom":"Croc de la corne sur le bouclier","terme":null,"trajet":"soi:passe>1:passe>2:frappe>1g:passe","garde":"5>7","plein":6,"att":8},{"nom":"Poussée de la hampe en travers","terme":null,"trajet":"2:passe>1:passe>1g:passe>1d:passe>soi:frappe","garde":"8>5","plein":4,"att":6}]},{"arme":"Grand marteau","base":null,"coups":[{"nom":"Tour de bras du mail sur la tête","terme":"tour de bras","trajet":"1:passe>soi:passe>1d3:passe>2:frappe","garde":"3>5","plein":32,"att":5},{"nom":"Coup de bec au genou","terme":"coup du becq de faulcon","trajet":"1d3:passe>1:frappe","garde":"5>8","plein":14,"att":7},{"nom":"Estoc de la queue au pied","terme":"estocq de la queue au pie","trajet":"2:frappe>1:passe>soi:passe","garde":"5>8","plein":6,"att":4},{"nom":"Mail donné en travers","terme":null,"trajet":"1d2:passe>1g:passe>2d3:passe>1g2:passe>2d2:passe>2d:passe>1d3:passe>2:frappe>2g:passe","garde":"3>4","plein":24,"att":6},{"nom":"Mail de revers","terme":null,"trajet":"1g2:passe>1d:passe>1g:passe>1d2:passe>2g:passe>2:frappe>1d3:passe>2d:passe","garde":"4>6","plein":18,"att":7},{"nom":"Estoc de la queue au visage","terme":"estocq de la queue en coulant","trajet":"1d3:passe>1:passe>2:passe>soi:passe>3:frappe","garde":"6>5","plein":20,"att":5},{"nom":"Estoc de la dague au visage","terme":"estocq de la dague","trajet":"1d3:passe>1:passe>2:frappe>soi:passe","garde":"6>5","plein":16,"att":4},{"nom":"Croc de la queue derrière la jambe","terme":null,"trajet":"1d2:passe>soi:passe>1d:passe>1g2:passe>1:frappe>1d3:passe","garde":"8>4","plein":4,"att":8}]},{"arme":"Lance à deux mains","base":null,"coups":[{"nom":"Estoc à fond","terme":"punta","trajet":"soi:passe>1:passe>2:passe>3:passe>4:frappe","garde":"6>5","plein":24,"att":6},{"nom":"Estoc plongeant","terme":null,"trajet":"1d2:passe>soi:passe>1:passe>2g:passe>3g:frappe","garde":"3>5","plein":20,"att":5},{"nom":"Estoc de revers","terme":null,"trajet":"1g2:passe>soi:passe>1:passe>2d:passe>3d:frappe","garde":"1>6","plein":16,"att":6},{"nom":"Battre et frapper","terme":"rebatter e ferire","trajet":"3d:passe>2d:passe>1d:passe>soi:passe>1:passe>2:passe>3:frappe>1d2:passe","garde":"6>5","plein":16,"att":6},{"nom":"Battement de revers","terme":null,"trajet":"3g2:passe>2g:passe>1g:passe>soi:passe>1:passe>2:passe>3:frappe>1d3:passe","garde":"4>3","plein":14,"att":6},{"nom":"Estoc à lance raccourcie","terme":"curta lanza","trajet":"1d3:passe>soi:passe>1:passe>2:frappe","garde":"8>5","plein":12,"att":5},{"nom":"Estoc à lance filée","terme":null,"trajet":"3:passe>1d3:passe>2:passe>2d6:passe>1:frappe","garde":"5>4","plein":10,"att":7},{"nom":"Coup de talon","terme":"pedale","trajet":"3:passe>soi:passe>1:frappe>2d6:passe","garde":"5>5","plein":14,"att":6}]},{"arme":"Hallebarde","base":null,"coups":[{"nom":"Taille haute d'aplomb","terme":"Oberhauw","trajet":"1:passe>soi:passe>3:frappe>2:frappe","garde":"5>8","plein":18,"att":5},{"nom":"Taille du fer en croix","terme":"Kreutzhauw von oben","trajet":"2g4:passe>1g2:passe>1d:passe>soi:passe>1g:passe>2g2:passe>3g3:passe>4g4:frappe>4g3:frappe>3g2:passe>2g:passe>4g2:frappe>1:passe>3g:passe>4g:frappe>2:passe>3:passe>4:frappe>4d:frappe>3d:passe>2d:passe>4d2:frappe>3d2:passe>4d3:frappe>2d2:passe>3d3:passe>4d4:frappe>2d3:passe>2d4:passe>1d2:passe","garde":"1>9","plein":12,"att":8},{"nom":"Arrachement au croc","terme":"Reissen","trajet":"3:frappe>2:passe>1:passe>soi:passe>2g:passe>1d3:passe>1g:passe","garde":"5>7","plein":4,"att":6},{"nom":"Entrée au talon","terme":"hinder Ort","trajet":"soi:passe>1d:passe>1:frappe>2d6:passe","garde":"2>8","plein":14,"att":6},{"nom":"Taille moyenne en travers","terme":"Mittelhauw","trajet":"2g2:passe>1d2:passe>2g:frappe>2:frappe>2d:frappe>1g2:passe","garde":"7>6","plein":14,"att":6},{"nom":"Taille montante au fer","terme":"Underhauw","trajet":"soi:passe>2d:passe>3:frappe>2g:frappe","garde":"8>1","plein":16,"att":6},{"nom":"Estoc au visage","terme":"Stechen gegen seinem gesicht","trajet":"soi:passe>1g:passe>1:passe>2g:passe>2:passe>3:passe>4:frappe","garde":"7>5","plein":22,"att":6},{"nom":"Poussée du fer au cou","terme":"die Helleparten vornen an Halß setzen","trajet":"3:passe>2:passe>1:frappe>soi:passe>1d3:passe>2d6:passe","garde":"5>8","plein":6,"att":7}]}];</script>
+<script>
+(function () {
+  "use strict";
+  const ARMES = window.__ARMES__;
+  const R = 10, SQ3 = Math.sqrt(3), RMAX = 4, PORTEE = 8;
+  const NS = "http://www.w3.org/2000/svg";
+  const svg = document.getElementById("plateau");
+
+  /* ── Géométrie, la même que l'éditeur de trajet ── */
+  const centre = (q, r) => [R * 1.5 * q, R * SQ3 * (r + q / 2)];
+  const dist = (q, r) => (Math.abs(q) + Math.abs(q + r) + Math.abs(r)) / 2;
+  const angle = (q, r) => { const [x, y] = centre(q, r); return Math.atan2(x, -y) * 180 / Math.PI; };
+  const ANN = {};
+  function anneau(n) {
+    if (ANN[n]) return ANN[n];
+    const c = [];
+    for (let q = -n; q <= n; q++) for (let r = -n; r <= n; r++) if (dist(q, r) === n) c.push([q, r]);
+    c.sort((a, b) => angle(...a) - angle(...b));
+    let i0 = 0;
+    for (let i = 1; i < c.length; i++) if (Math.abs(angle(...c[i])) < Math.abs(angle(...c[i0]))) i0 = i;
+    return (ANN[n] = c.slice(i0).concat(c.slice(0, i0)));
+  }
+  const coord = (n, k) => n === 0 ? [0, 0] : anneau(n)[((k % (6 * n)) + 6 * n) % (6 * n)];
+  const nomDe = (n, k) => n === 0 ? "soi" : k === 0 ? String(n)
+                        : n + (k > 0 ? "d" : "g") + (Math.abs(k) > 1 ? Math.abs(k) : "");
+  function lire(s) {
+    s = s.trim();
+    if (s === "soi") return [0, 0];
+    const m = /^(\d+)(g*|d*)(\d*)$/.exec(s);
+    if (!m) return null;
+    const n = +m[1], L = m[2], c = m[3];
+    if (c && L.length !== 1) return null;
+    let k = c ? +c : L.length;
+    if (L.startsWith("g")) k = -k;
+    if (n < 1 || n > RMAX || Math.abs(k) > 3 * n) return null;
+    return coord(n, k);
+  }
+  const PAS = [[0, 0], [1, 0], [1, -1], [0, -1], [-1, 0], [-1, 1], [0, 1]];
+
+  /* ── Les deux pictogrammes ────────────────────────────────────────────────
+     Le carré des gardes, comme au livre, et le dessin du pas, qui lui répond :
+     mêmes hexagones que le plateau, même trait, même tête de flèche. Un point
+     quand rien ne bouge, une flèche quand quelque chose bouge, jamais les deux.
+     Les couleurs sont posées en attribut sur les formes : une forme SVG sans
+     règle se remplit en noir, et rien ici ne doit dépendre d'une feuille. ── */
+  const trait = c => `fill="none" stroke="${c}" stroke-width="1.7" ` +
+                     `stroke-linecap="round" stroke-linejoin="round"`;
+  const CREUX = 'fill="var(--encre)" fill-opacity="0.1"';
+
+  function fleche(ax, ay, bx, by, retrait, couleur) {
+    const TRAIT = trait(couleur || "var(--or)");
+    const e = retrait === undefined ? 1.5 : retrait;
+    const d = Math.hypot(bx - ax, by - ay), ux = (bx - ax) / d, uy = (by - ay) / d;
+    const nx = -uy, ny = ux;
+    const qx = ax + ux * e, qy = ay + uy * e;
+    const px = bx - ux * e, py = by - uy * e;
+    const barbe = Math.min(3, 0.42 * Math.hypot(px - qx, py - qy));
+    const rec = barbe * 0.848, ouv = barbe * 0.53;
+    const f = n => n.toFixed(2);
+    return `<path d="M ${f(qx)} ${f(qy)} L ${f(px)} ${f(py)}" ${TRAIT}/>` +
+           `<path d="M ${f(px - ux * rec + nx * ouv)} ${f(py - uy * rec + ny * ouv)} ` +
+           `L ${f(px)} ${f(py)} L ${f(px - ux * rec - nx * ouv)} ` +
+           `${f(py - uy * rec - ny * ouv)}" ${TRAIT}/>`;
+  }
+  const point = (cx, cy, r, couleur) =>
+    `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${couleur || "var(--or)"}"/>`;
+
+  const RANG = { 0: "au-dessus des épaules", 1: "à hauteur de poitrine", 2: "sous la ceinture" };
+  const COTE = { 0: "à gauche", 1: "dans l'axe", 2: "à droite" };
+  const ditGarde = i => `mains ${RANG[(i - 1) / 3 | 0]}, ${COTE[(i - 1) % 3]}`;
+  const gCentre = i => [4 + 8 * ((i - 1) % 3), 4 + 8 * ((i - 1) / 3 | 0)];
+
+  /* Quand le coup a été COUPÉ, la garde n'est pas allée où elle voulait : on la
+     dessine dans la couleur d'alerte, pour que le pictogramme le dise lui-même
+     et pas seulement l'étiquette à côté. */
+  function gardeSvg(dep, arr, coupe) {
+    const c = coupe ? "var(--alerte)" : "var(--or)";
+    const dit = coupe ? `Coup interrompu : la garde est renvoyée au centre, ${ditGarde(5)}.`
+              : dep === arr ? `Part et finit dans la même garde, ${ditGarde(dep)}.`
+                            : `Part ${ditGarde(dep)}, finit ${ditGarde(arr)}.`;
+    let s = `<svg viewBox="0 0 24 24" role="img" aria-label="${dit}">`;
+    for (let i = 1; i <= 9; i++) {
+      const [cx, cy] = gCentre(i);
+      s += `<rect x="${(cx - 3.4).toFixed(1)}" y="${(cy - 3.4).toFixed(1)}" ` +
+           `width="6.8" height="6.8" rx="1" ${CREUX}/>`;
+    }
+    const [ax, ay] = gCentre(dep), [bx, by] = gCentre(arr);
+    s += dep === arr ? point(ax, ay, 2.6, c) : fleche(ax, ay, bx, by, undefined, c);
+    return s + "</svg>";
+  }
+
+  /* Sept hexagones : sa case et les six où le pas peut la porter. */
+  const RP = 4.6;
+  function pasSvg(p) {
+    const c = (q, r) => [RP * 1.5 * q, RP * SQ3 * (r + q / 2)];
+    const som = (cx, cy) => {
+      let t = "";
+      for (let i = 0; i < 6; i++) {
+        const a = Math.PI / 180 * 60 * i;
+        t += (cx + (RP - .35) * Math.cos(a)).toFixed(2) + "," +
+             (cy + (RP - .35) * Math.sin(a)).toFixed(2) + " ";
+      }
+      return t.trim();
+    };
+    const dit = p ? "Un pas." : "Aucun pas.";
+    let s = `<svg viewBox="-12 -12 24 24" role="img" aria-label="${dit}">`;
+    for (const [q, r] of PAS) {
+      const [cx, cy] = c(q, r);
+      s += `<polygon points="${som(cx, cy)}" ${CREUX}/>`;
+    }
+    if (!p) return s + point(0, 0, 2.2) + "</svg>";
+    // Un pas ne franchit qu'une case : la flèche n'a qu'une largeur d'hexagone
+    // pour se dire, on l'entame donc moins que celle des gardes.
+    const [bx, by] = c(PAS[p][0], PAS[p][1]);
+    return s + fleche(0, 0, bx, by, 0.9) + "</svg>";
+  }
+
+  /* ── Le plateau : une case porte l'ennemi ── */
+  const cases = new Map();
+  function sommets(cx, cy, ray) {
+    let p = "";
+    for (let i = 0; i < 6; i++) {
+      const a = Math.PI / 180 * 60 * i;
+      p += (cx + ray * Math.cos(a)).toFixed(2) + "," + (cy + ray * Math.sin(a)).toFixed(2) + " ";
+    }
+    return p.trim();
+  }
+  const NOMS = new Map();
+  for (let n = 1; n <= RMAX; n++) for (let k = -3 * n; k <= 3 * n; k++) {
+    const [q, r] = coord(n, k), cle = q + "," + r, v = NOMS.get(cle);
+    if (v && Math.abs(v.k) <= Math.abs(k)) continue;
+    NOMS.set(cle, { n, k, nom: nomDe(n, k) });
+  }
+  NOMS.set("0,0", { n: 0, k: 0, nom: "soi" });
+
+  let cible = "0,-2";          // deux pas droit devant
+  for (let q = -RMAX; q <= RMAX; q++) for (let r = -RMAX; r <= RMAX; r++) {
+    if (dist(q, r) > RMAX) continue;
+    const cle = q + "," + r, [cx, cy] = centre(q, r), info = NOMS.get(cle);
+    if (!info) continue;
+    const dos = Math.abs(angle(q, r)) > 60.5;
+    const poly = document.createElementNS(NS, "polygon");
+    poly.setAttribute("points", sommets(cx, cy, R - .7));
+    poly.setAttribute("class", "hx " + (dos ? "hx-dos" : "hx-libre"));
+    poly.setAttribute("tabindex", "0");
+    poly.setAttribute("role", "button");
+    poly.setAttribute("aria-label", "poser l'ennemi en " + info.nom);
+    poly.addEventListener("click", () => { cible = cle; rendre(); });
+    poly.addEventListener("keydown", e => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); cible = cle; rendre(); }
+    });
+    svg.appendChild(poly);
+    const t = document.createElementNS(NS, "text");
+    t.setAttribute("class", "etiq");
+    t.setAttribute("x", cx.toFixed(2));
+    t.setAttribute("y", cy.toFixed(2));
+    t.setAttribute("dy", "0.34em");
+    t.textContent = info.nom;
+    svg.appendChild(t);
+    cases.set(cle, { poly, txt: t, dos, nom: info.nom });
+  }
+  const contour = document.createElementNS(NS, "polygon");
+  contour.setAttribute("class", "hx-soi");
+  contour.setAttribute("points", sommets(0, 0, R - .7));
+  svg.appendChild(contour);
+
+  /* ── Le solveur ───────────────────────────────────────────────────────────
+     État : (position de l'ennemi dans le repère de l'arme, garde, coups déjà
+     donnés). On avance par nombre de coups, en gardant pour chaque état le
+     meilleur total, et de quoi remonter la suite. ── */
+  function prepare(arme) {
+    return arme.coups.map(c => {
+      const et = c.trajet.split(">").map(x => {
+        const [nm, role] = x.split(":");
+        const p = lire(nm);
+        return p ? { q: p[0], r: p[1], frappe: role === "frappe" } : null;
+      }).filter(Boolean);
+      const [dep, arr] = c.garde.split(">").map(Number);
+      return { nom: c.nom, terme: c.terme, dep, arr, plein: c.plein,
+               moitie: Math.floor(c.plein / 2), et, garde: c.garde };
+    });
+    }
+
+  function resoudre(coup, q, r) {
+    for (const e of coup.et)
+      if (e.q === q && e.r === r)
+        return e.frappe ? { deg: coup.plein, coupe: false } : { deg: coup.moitie, coupe: true };
+    return { deg: 0, coupe: false };
+  }
+
+  /* L'état porte tout ce dont la suite dépend : où est l'ennemi, la garde, les
+     coups déjà donnés, et si le DERNIER a touché. Ce dernier bit fait partie de
+     la clef : une suite qui finit à vide ne compte pas, mais elle peut encore
+     se prolonger, il ne faut donc pas qu'elle chasse celle qui finit sur une
+     touche, ni l'inverse. */
+  function chercher(coups, q0, r0, permet) {
+    const N = coups.length;
+    const cle = v => v.q + "," + v.r + "," + v.g + "," + v.u + "," + v.t;
+    const ajoute = (m, v) => {
+      const c = cle(v), o = m.get(c);
+      if (!o || o.tot < v.tot) m.set(c, v);
+    };
+    let front = new Map();
+    for (let k = 0; k < N; k++) {
+      const res = resoudre(coups[k], q0, r0);
+      // Un enchaînement s'OUVRE sur un coup qui touche : on ne le commence pas
+      // en frappant dans le vide pour se placer.
+      if (!res.deg) continue;
+      if (res.coupe && !permet) continue;
+      const g = res.coupe ? 5 : coups[k].arr;
+      for (let p = 0; p < PAS.length; p++) {
+        const q = q0 - PAS[p][0], r = r0 - PAS[p][1];
+        if (dist(q, r) > PORTEE) continue;
+        ajoute(front, { q, r, g, u: 1 << k, t: 1, tot: res.deg,
+                        tr: [{ k, ...res, pas: p }] });
+      }
+    }
+    const best = [];
+    let n = 1;
+    while (front.size && n <= N) {
+      // ... et il se FERME sur un coup qui touche : les suites qui finissent
+      // à vide ne sont pas retenues, seulement prolongées.
+      let m = null;
+      for (const v of front.values()) if (v.t && (!m || v.tot > m.tot)) m = v;
+      best[n] = m ? { tot: m.tot, tr: m.tr } : null;
+      const suiv = new Map();
+      for (const v of front.values()) {
+        for (let k = 0; k < N; k++) {
+          if (v.u & (1 << k) || coups[k].dep !== v.g) continue;
+          const res = resoudre(coups[k], v.q, v.r);
+          if (res.coupe && !permet) continue;
+          const g2 = res.coupe ? 5 : coups[k].arr;
+          for (let p = 0; p < PAS.length; p++) {
+            const q2 = v.q - PAS[p][0], r2 = v.r - PAS[p][1];
+            if (dist(q2, r2) > PORTEE) continue;
+            ajoute(suiv, { q: q2, r: r2, g: g2, u: v.u | (1 << k),
+                           t: res.deg ? 1 : 0, tot: v.tot + res.deg,
+                           tr: v.tr.concat([{ k, ...res, pas: p }]) });
+          }
+        }
+      }
+      front = suiv;
+      n++;
+    }
+    return best;
+  }
+
+  /* ── Rendu ── */
+  const selArme = document.getElementById("arme");
+  ARMES.forEach((a, i) => {
+    const o = document.createElement("option");
+    o.value = String(i);
+    o.textContent = a.arme;
+    selArme.appendChild(o);
+  });
+  selArme.value = String(ARMES.findIndex(a => a.arme.startsWith("Épée")));
+  selArme.addEventListener("change", rendre);
+
+  function suiteHtml(tr, coups) {
+    const out = [];
+    tr.forEach((e, i) => {
+      const c = coups[e.k];
+      const cl = e.coupe ? "bloc coupe" : (e.deg ? "bloc" : "bloc sec");
+      const tag = e.coupe ? `<span class="ko">⊘ interrompu</span>` : "";
+      out.push(`<span class="${cl}"><span class="nm">${c.nom}${tag}</span>` +
+               `<span class="gd">${gardeSvg(c.dep, e.coupe ? 5 : c.arr, e.coupe)}</span>` +
+               `<span class="vl">${e.deg || "—"}</span></span>`);
+      if (i < tr.length - 1) out.push(`<span class="pas">${pasSvg(e.pas)}</span>`);
+    });
+    return `<div class="suite">${out.join("")}</div>`;
+  }
+
+  /* La plus haute suite donne sa hauteur à toutes : on la MESURE, on ne la
+     calcule pas, sinon une police servie autrement la ferait mentir. */
+  function egaliser() {
+    const corps = [...document.querySelectorAll(".corps")];
+    corps.forEach(c => { c.style.minHeight = ""; });
+    const h = Math.max(0, ...corps.map(c => c.getBoundingClientRect().height));
+    corps.forEach(c => { c.style.minHeight = h.toFixed(1) + "px"; });
+  }
+
+  function rendre() {
+    const arme = ARMES[+selArme.value];
+    const coups = prepare(arme);
+    for (const [cle, c] of cases) {
+      c.poly.setAttribute("class", "hx " + (cle === cible ? "hx-cible" : (c.dos ? "hx-dos" : "hx-libre")));
+      c.txt.setAttribute("class", "etiq" + (cle === cible ? " etiq-cible" : ""));
+    }
+    const [cq, cr] = cible.split(",").map(Number);
+    document.getElementById("etat").innerHTML =
+      `ennemi en <b>${cases.get(cible).nom}</b> · arme <b>${arme.arme}</b>` +
+      (arme.base ? ` · base <b>${arme.base}</b>` : "");
+
+    document.getElementById("coups").innerHTML = coups.map(c => {
+      const t = resoudre(c, cq, cr);
+      const d = t.coupe ? `${t.deg} coupé` : (t.deg ? String(t.deg) : "—");
+      return `<div class="coup"><span>${c.nom}</span><span class="g">${c.garde}</span>` +
+             `<span class="d">${d}</span></div>`;
+    }).join("");
+
+    const nat = chercher(coups, cq, cr, false);
+    const inter = chercher(coups, cq, cr, true);
+    const nmax = Math.max(nat.length, inter.length) - 1;
+    const res = [];
+    for (let n = 1; n <= nmax; n++) {
+      const a = nat[n], b = inter[n];
+      if (!a && !b) continue;
+      res.push(`<div class="ligne"><div class="tete"><span><b>${n}</b> attaque${n > 1 ? "s" : ""}</span></div>` +
+        `<div class="duo"><div><h3>naturel<span class="total">${a ? a.tot : "—"}</span></h3>` +
+        `<div class="corps">` + (a ? suiteHtml(a.tr, coups) : `<p class="rien">aucune suite</p>`) + `</div></div>` +
+        `<div><h3>avec interruption<span class="total">${b ? b.tot : "—"}</span></h3>` +
+        `<div class="corps">` + (b ? suiteHtml(b.tr, coups) : `<p class="rien">aucune suite</p>`) + `</div></div>` +
+        `</div></div>`);
+    }
+    const touche = coups.some(c => resoudre(c, cq, cr).deg > 0);
+    document.getElementById("res").innerHTML = res.join("") ||
+      `<p class="rien">${touche
+        ? "Aucune suite : le premier coup touche, mais rien ne peut le suivre."
+        : "Aucun enchaînement : d'où vous êtes, <strong>aucun coup ne touche</strong> " +
+          "l'ennemi, et un enchaînement s'ouvre sur un coup qui touche."}</p>`;
+    egaliser();
+  }
+
+  addEventListener("resize", egaliser);
+
+  rendre();
+})();
+</script>

@@ -1,0 +1,622 @@
+{
+ "_lisezmoi": "Produit au build par hooks/owd_creation.py depuis docs/content/regles/. Ne pas editer a la main : la prochaine construction l'ecrase.",
+ "caracs": [
+  {
+   "cle": "Force",
+   "libelle": "Force",
+   "abbr": "FOR",
+   "famille": "maitrise",
+   "ouvre": "les armes de puissance",
+   "donne": [
+    "charge"
+   ]
+  },
+  {
+   "cle": "Dexterite",
+   "libelle": "Dextérité",
+   "abbr": "DEX",
+   "famille": "maitrise",
+   "ouvre": "les armes de finesse",
+   "donne": [
+    "acces"
+   ]
+  },
+  {
+   "cle": "Intelligence",
+   "libelle": "Intelligence",
+   "abbr": "INT",
+   "famille": "maitrise",
+   "ouvre": "les sorts du savoir, ceux des runes et des lignes telluriques",
+   "donne": []
+  },
+  {
+   "cle": "Ferveur",
+   "libelle": "Ferveur",
+   "abbr": "FER",
+   "famille": "maitrise",
+   "ouvre": "les rituels, ceux des bienfaits, des totems et des maléfices",
+   "donne": [
+    "pi"
+   ]
+  },
+  {
+   "cle": "Vigueur",
+   "libelle": "Vigueur",
+   "abbr": "VIG",
+   "famille": "reserve",
+   "donne": [
+    "pv",
+    "pr"
+   ]
+  },
+  {
+   "cle": "Endurance",
+   "libelle": "Endurance",
+   "abbr": "END",
+   "famille": "reserve",
+   "donne": [
+    "pe",
+    "ps",
+    "ph"
+   ]
+  },
+  {
+   "cle": "Resistance",
+   "libelle": "Résistance",
+   "abbr": "RES",
+   "famille": "reserve",
+   "donne": [
+    "expo"
+   ]
+  },
+  {
+   "cle": "Chance",
+   "libelle": "Chance",
+   "abbr": "CHA",
+   "famille": "reserve",
+   "donne": [
+    "pc"
+   ]
+  }
+ ],
+ "moyenneHumaine": 20,
+ "creation": {
+  "points": 160,
+  "min": 0,
+  "max": 50
+ },
+ "progressionCarac": {
+  "tranches": [
+   {
+    "de": 1,
+    "a": 100,
+    "xp": 5
+   },
+   {
+    "de": 101,
+    "a": 200,
+    "xp": 6
+   },
+   {
+    "de": 201,
+    "a": 300,
+    "xp": 7
+   },
+   {
+    "de": 301,
+    "a": 400,
+    "xp": 8
+   }
+  ],
+  "pas": 1,
+  "largeur": 100
+ },
+ "avantages": {
+  "points": 4
+ },
+ "rangs": [
+  {
+   "rang": 0,
+   "nom": "Non initié",
+   "designation": "Rang 0",
+   "des": 1,
+   "bonus": 0,
+   "xp": 0,
+   "rupture": 0,
+   "initiale": "N"
+  },
+  {
+   "rang": 1,
+   "nom": "Initié",
+   "designation": "Rang 1",
+   "des": 2,
+   "bonus": 0,
+   "xp": 25,
+   "rupture": 0,
+   "initiale": "I"
+  },
+  {
+   "rang": 2,
+   "nom": "Apprenti",
+   "designation": "Rang 2",
+   "des": 2,
+   "bonus": 1,
+   "xp": 25,
+   "rupture": 0,
+   "initiale": "A"
+  },
+  {
+   "rang": 3,
+   "nom": "Maître",
+   "designation": "Rang 3",
+   "des": 2,
+   "bonus": 2,
+   "xp": 25,
+   "rupture": 0,
+   "initiale": "M"
+  },
+  {
+   "rang": 4,
+   "nom": "Expert",
+   "designation": "Rang 4",
+   "des": 2,
+   "bonus": 3,
+   "xp": 25,
+   "rupture": 0,
+   "initiale": "E"
+  },
+  {
+   "rang": 5,
+   "nom": "Rupture",
+   "designation": "Rang Max",
+   "des": 3,
+   "bonus": 3,
+   "xp": 50,
+   "rupture": 1,
+   "initiale": "R"
+  }
+ ],
+ "limites": {
+  "competences": {
+   "diviseur": 5,
+   "arrondi": "bas"
+  },
+  "techniques": {
+   "diviseur": 10,
+   "arrondi": "bas"
+  }
+ },
+ "des": {
+  "faces": 8,
+  "actionParTour": 5,
+  "compMax": 3,
+  "techniqueMax": 5
+ },
+ "rupture": {
+  "points": 3
+ },
+ "capacites": [
+  {
+   "cle": "pv",
+   "libelle": "Points de vie",
+   "abbr": "PV",
+   "base": 80,
+   "carac": "Vigueur",
+   "facteur": 1,
+   "formule": "Points de vie = 80 + Vigueur"
+  },
+  {
+   "cle": "pe",
+   "libelle": "Points d'endurance",
+   "abbr": "PE",
+   "base": 80,
+   "carac": "Endurance",
+   "facteur": 1,
+   "formule": "Points d'endurance = 80 + Endurance"
+  },
+  {
+   "cle": "pi",
+   "libelle": "Points d'innocence",
+   "abbr": "PI",
+   "base": 80,
+   "carac": "Ferveur",
+   "facteur": 1,
+   "formule": "Points d'innocence = 80 + Ferveur"
+  },
+  {
+   "cle": "pr",
+   "libelle": "Points de repos",
+   "abbr": "PR",
+   "base": 600,
+   "carac": "Vigueur",
+   "facteur": 10,
+   "formule": "Points de repos = 600 + Vigueur × 10"
+  },
+  {
+   "cle": "ps",
+   "libelle": "Points de satiété",
+   "abbr": "PS",
+   "base": 1000,
+   "carac": "Endurance",
+   "facteur": 10,
+   "formule": "Points de satiété = 1000 + Endurance × 10"
+  },
+  {
+   "cle": "ph",
+   "libelle": "Points d'hydratation",
+   "abbr": "PH",
+   "base": 200,
+   "carac": "Endurance",
+   "facteur": 10,
+   "formule": "Points d'hydratation = 200 + Endurance × 10"
+  },
+  {
+   "cle": "charge",
+   "libelle": "Charge",
+   "abbr": "CHG",
+   "base": 30,
+   "carac": "Force",
+   "facteur": 1,
+   "formule": "Charge = 30 + Force"
+  },
+  {
+   "cle": "acces",
+   "libelle": "Accès rapides",
+   "abbr": "ACC",
+   "base": 0,
+   "carac": "Dexterite",
+   "formule": "Accès rapides = Dextérité ÷ 5, arrondi à l'inférieur",
+   "diviseur": 5,
+   "arrondi": "bas"
+  },
+  {
+   "cle": "pc",
+   "libelle": "Points de chance",
+   "abbr": "PC",
+   "base": 0,
+   "carac": "Chance",
+   "formule": "Points de chance = Chance ÷ 5, arrondi à l'inférieur",
+   "diviseur": 5,
+   "arrondi": "bas"
+  },
+  {
+   "cle": "contenance",
+   "libelle": "Contenance",
+   "abbr": "CTN",
+   "base": 40,
+   "carac": null,
+   "facteur": 0,
+   "formule": "Contenance = 40"
+  },
+  {
+   "cle": "expo",
+   "libelle": "Exposition",
+   "abbr": "EXP",
+   "base": 100,
+   "carac": "Resistance",
+   "facteur": 1,
+   "formule": "Exposition = de −(100 + Résistance) à +(100 + Résistance)",
+   "signe": true
+  },
+  {
+   "cle": "pm",
+   "libelle": "Points de mana",
+   "abbr": "PM",
+   "base": 0,
+   "carac": null,
+   "facteur": 0,
+   "formule": null
+  }
+ ],
+ "effondrement": {
+  "tranche": 10,
+  "plafond": 10,
+  "peParNiveau": 10,
+  "pvParNiveau": 5,
+  "reserves": [
+   "pr",
+   "ps",
+   "ph",
+   "expo"
+  ]
+ },
+ "climat": {
+  "nuBas": 28,
+  "nuHaut": 32
+ },
+ "temps": {
+  "tranche": 10,
+  "digestion": {
+   "volume": 1,
+   "minutes": 10
+  },
+  "efforts": [
+   {
+    "cle": "sommeil",
+    "nom": "Sommeil",
+    "repos": 7,
+    "survie": -3,
+    "degres": 0
+   },
+   {
+    "cle": "repos",
+    "nom": "Repos",
+    "repos": -4,
+    "survie": -4,
+    "degres": 0
+   },
+   {
+    "cle": "leger",
+    "nom": "Léger",
+    "repos": -5,
+    "survie": -5,
+    "degres": 5
+   },
+   {
+    "cle": "intermediaire",
+    "nom": "Intermédiaire",
+    "repos": -6,
+    "survie": -6,
+    "degres": 15
+   },
+   {
+    "cle": "lourd",
+    "nom": "Lourd",
+    "repos": -8,
+    "survie": -7,
+    "degres": 25
+   }
+  ],
+  "regen": [
+   {
+    "points": 0,
+    "minutes": 1,
+    "niveau": 0
+   },
+   {
+    "points": 5,
+    "minutes": 480,
+    "niveau": 1
+   },
+   {
+    "points": 10,
+    "minutes": 480,
+    "niveau": 2
+   },
+   {
+    "points": 15,
+    "minutes": 480,
+    "niveau": 3
+   },
+   {
+    "points": 20,
+    "minutes": 480,
+    "niveau": 4
+   },
+   {
+    "points": 5,
+    "minutes": 60,
+    "niveau": 5
+   },
+   {
+    "points": 10,
+    "minutes": 60,
+    "niveau": 6
+   },
+   {
+    "points": 15,
+    "minutes": 60,
+    "niveau": 7
+   },
+   {
+    "points": 20,
+    "minutes": 60,
+    "niveau": 8
+   },
+   {
+    "points": 5,
+    "minutes": 10,
+    "niveau": 9
+   },
+   {
+    "points": 10,
+    "minutes": 10,
+    "niveau": 10
+   },
+   {
+    "points": 15,
+    "minutes": 10,
+    "niveau": 11
+   },
+   {
+    "points": 20,
+    "minutes": 10,
+    "niveau": 12
+   },
+   {
+    "points": 5,
+    "minutes": 1,
+    "niveau": 13
+   },
+   {
+    "points": 10,
+    "minutes": 1,
+    "niveau": 14
+   },
+   {
+    "points": 15,
+    "minutes": 1,
+    "niveau": 15
+   },
+   {
+    "points": 20,
+    "minutes": 1,
+    "niveau": 16
+   },
+   {
+    "points": 5,
+    "minutes": null,
+    "niveau": 17
+   },
+   {
+    "points": 10,
+    "minutes": null,
+    "niveau": 18
+   },
+   {
+    "points": 15,
+    "minutes": null,
+    "niveau": 19
+   },
+   {
+    "points": 20,
+    "minutes": null,
+    "niveau": 20
+   }
+  ],
+  "paliers": {
+   "diviseur": 4,
+   "arrondi": "haut"
+  },
+  "expoRetour": 10,
+  "accelere": {
+   "froid": [
+    {
+     "niveau": 2,
+     "reserve": "ps",
+     "facteur": 2
+    },
+    {
+     "niveau": 4,
+     "reserve": "ps",
+     "facteur": 4
+    }
+   ],
+   "chaud": [
+    {
+     "niveau": 2,
+     "reserve": "ph",
+     "facteur": 2
+    },
+    {
+     "niveau": 4,
+     "reserve": "ph",
+     "facteur": 4
+    }
+   ]
+  }
+ },
+ "pas": 0.75,
+ "monnaie": {
+  "nom": "pièce d'argent",
+  "pluriel": "pièces d'argent",
+  "venteSurAchat": 3
+ },
+ "armes": [
+  {
+   "cle": "corps-a-corps",
+   "nom": "Corps à corps",
+   "categorie": "Armes à un pas",
+   "parade": 9,
+   "reduction": 4,
+   "palier": 1
+  },
+  {
+   "cle": "dague",
+   "nom": "Dague",
+   "categorie": "Armes à un pas",
+   "parade": 8,
+   "reduction": 6,
+   "palier": 1
+  },
+  {
+   "cle": "epee",
+   "nom": "Épée à une main",
+   "categorie": "Armes à deux pas",
+   "parade": 5,
+   "reduction": 14,
+   "palier": 2
+  },
+  {
+   "cle": "hache",
+   "nom": "Hache à une main",
+   "categorie": "Armes à deux pas",
+   "parade": 7,
+   "reduction": 10,
+   "palier": 2
+  },
+  {
+   "cle": "masse",
+   "nom": "Masse à une main",
+   "categorie": "Armes à deux pas",
+   "parade": 6,
+   "reduction": 10,
+   "palier": 2
+  },
+  {
+   "cle": "rapiere",
+   "nom": "Rapière",
+   "categorie": "Armes à deux pas",
+   "parade": 4,
+   "reduction": 12,
+   "palier": 2
+  },
+  {
+   "cle": "grande-epee",
+   "nom": "Grande épée à deux mains",
+   "categorie": "Armes à trois pas",
+   "parade": 4,
+   "reduction": 20,
+   "palier": 3
+  },
+  {
+   "cle": "grande-hache",
+   "nom": "Grande hache à deux mains",
+   "categorie": "Armes à trois pas",
+   "parade": 7,
+   "reduction": 16,
+   "palier": 3
+  },
+  {
+   "cle": "grand-marteau",
+   "nom": "Grand marteau",
+   "categorie": "Armes à trois pas",
+   "parade": 5,
+   "reduction": 18,
+   "palier": 3
+  },
+  {
+   "cle": "lance",
+   "nom": "Lance à deux mains",
+   "categorie": "Armes à quatre pas",
+   "parade": 6,
+   "reduction": 12,
+   "palier": 4
+  },
+  {
+   "cle": "hallebarde",
+   "nom": "Hallebarde",
+   "categorie": "Armes à quatre pas",
+   "parade": 5,
+   "reduction": 16,
+   "palier": 4
+  }
+ ],
+ "typesDegats": [
+  {
+   "cle": "TRA",
+   "libelle": "TRA",
+   "dit": "Le fil tranche"
+  },
+  {
+   "cle": "PER",
+   "libelle": "PER",
+   "dit": "la pointe perce"
+  },
+  {
+   "cle": "CON",
+   "libelle": "CON",
+   "dit": "une hampe, un manche, un plat ou un pommeau écrasent"
+  }
+ ]
+}

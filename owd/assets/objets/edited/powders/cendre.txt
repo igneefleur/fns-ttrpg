@@ -1,0 +1,4 @@
+none
+
+source: wmremove-transformed(2).png
+script: none
