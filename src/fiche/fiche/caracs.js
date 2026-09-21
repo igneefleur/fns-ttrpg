@@ -16,11 +16,52 @@
       top.appendChild(val);
       row.appendChild(top);
 
+      // DEUX CHAMPS, et pas un : la répartition de création et les points
+      // achetés à l'expérience. Le premier se contrôle contre le budget et les
+      // bornes des règles, le second contre l'XP restant — au prix du point
+      // que chacun fait atteindre. Le MJ passe outre par les Options.
       var bot = el("div", "pc-crow-bot pc-edit-only");
-      bot.appendChild(el("span", "lbl", "Valeur"));
+      bot.appendChild(el("span", "lbl", "Création"));
       bot.appendChild(stepper(
-        function () { return caracVal(name); },
-        function (v) { state.caracs[name] = clamp(Math.round(v), -9999, 9999); },
+        function () { return caracBase(name); },
+        function (v) {
+          var avant = caracBase(name), cr = creation();
+          v = Math.round(v);
+          if (!isFinite(v) || v === avant) return;
+          if (cr) {
+            v = clamp(v, num(cr.min, 0), num(cr.max, 9999));
+            // Monter ne prend que ce qui reste du budget ; descendre est
+            // toujours permis, même sur une fiche déjà au-delà.
+            if (v > avant) {
+              var libre = creationPoints() - creationDepense() + avant;
+              if (v > libre) v = Math.max(avant, libre);
+              if (v <= avant) { flash("Points de création épuisés."); return; }
+            }
+          }
+          state.caracs[name] = clamp(v, -9999, 9999);
+        },
+        1, libCarac(name)));
+      bot.appendChild(el("span", "lbl", "Expérience"));
+      bot.appendChild(stepper(
+        function () { return caracAchat(name); },
+        function (v) {
+          var avant = caracAchat(name), apres = Math.max(0, Math.round(v));
+          if (!isFinite(apres) || apres === avant) return;
+          if (apres > avant) {
+            var b = caracBase(name), cout = 0, i, p;
+            for (i = avant + 1; i <= apres; i++) {
+              p = prixPointCarac(b + i);
+              if (p === null) return;
+              cout += p;
+            }
+            if (xpRestant() < cout) { flash("XP insuffisant."); return; }
+          }
+          // REDESCENDRE REND l'XP : le coût se recalcule de l'état, rien n'est
+          // à rembourser à la main.
+          if (!state.caracsXp) state.caracsXp = {};
+          if (apres > 0) state.caracsXp[name] = apres;
+          else delete state.caracsXp[name];
+        },
         1, libCarac(name)));
       row.appendChild(bot);
 

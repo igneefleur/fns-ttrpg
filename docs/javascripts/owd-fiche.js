@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "1.1.2b";
+  var RELEASE = "1.2.0b";
   var SCHEMA = 2;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -324,7 +324,8 @@
       // ---- expérience ----
       // Les règles ne donnent AUCUNE dotation de départ : le total part à zéro
       // et se saisit dans l'en-tête. Le dépensé, lui, se CALCULE (rangs des
-      // compétences + coût saisi des techniques) et ne se range jamais ici :
+      // compétences + coût saisi des techniques + points de caractéristique
+      // achetés) et ne se range jamais ici :
       // deux endroits pour dire la même chose finiraient par se contredire.
       xpTotal: 0,
 
@@ -336,6 +337,13 @@
       // n'en invente pas — aucune borne haute n'est écrite ici.
       caracs: { Force: 20, Dexterite: 20, Intelligence: 20, Ferveur: 20,
                 Vigueur: 20, Endurance: 20, Resistance: 20, Chance: 20 },
+      // LES POINTS ACHETÉS À L'EXPÉRIENCE, par caractéristique, à part de la
+      // répartition de création que porte `caracs`. Deux cartes et non une
+      // valeur : le prix d'un point dépend de la valeur qu'il fait atteindre,
+      // et la création se contrôle contre son propre budget. Le coût en XP se
+      // CALCULE (owd-creation.json, progressionCarac) et ne se range jamais.
+      // ÉPARSE : une caractéristique à 0 point acheté n'y figure pas.
+      caracsXp: {},
       // LES LEVIERS DU MENEUR, en TABLE À TROIS NIVEAUX : levier, puis boîte,
       // puis caractéristique. Un seul levier ici, « total », et ses neuf boîtes :
       //     forçage  |  a1 a2  ×  m1 m2  |  a3 a4  ×  m3 m4
@@ -506,6 +514,16 @@
     Object.keys(s.caracs).forEach(function (k) { if (listeCaracs.indexOf(k) < 0) listeCaracs.push(k); });
     listeCaracs.forEach(function (c) {
       s.caracs[c] = clamp(num(s.caracs[c], moyenne), -9999, 9999);
+    });
+    // Les points achetés : entiers positifs, et un zéro ne s'écrit pas. Une
+    // clé qui n'est plus une caractéristique connue est GARDÉE, comme dans
+    // `caracs` : on ne jette pas ce que le joueur a payé.
+    var achats = (s.caracsXp && typeof s.caracsXp === "object" && !Array.isArray(s.caracsXp))
+      ? s.caracsXp : {};
+    s.caracsXp = {};
+    Object.keys(achats).forEach(function (c) {
+      var n = clamp(Math.round(num(achats[c], 0)), 0, 99999);
+      if (n > 0) s.caracsXp[c] = n;
     });
     // LES LEVIERS. Le rangement boucle sur le CATALOGUE, jamais sur l'état : un
     // levier dont le nom n'est pas au catalogue disparaît au premier
@@ -734,7 +752,7 @@
   // le catalogue, c'est écrire un réglage qui disparaît au rechargement sans
   // qu'aucune erreur ne paraisse. La valeur est la BORNE des ajouts de ce
   // levier — l'échelle de ce qu'il règle, pas un plafond de jeu.
-  var CARAC_LEVIERS = { total: 9999 };
+  var CARAC_LEVIERS = { total: 9999, xp: 99999 };
   var CAP_LEVIERS = { max: 99999 };
   var COMP_LEVIERS = { bonus: 999, des: 99, xp: 9999, rupture: 99 };
 
@@ -1046,8 +1064,57 @@
   function lireComp(nom, id) { return lireTable("compsLeviers", nom, id); }
 
   // ---- caractéristiques ----
-  function caracVal(c) { return num(state.caracs[c], 0); }
+  // La valeur d'une caractéristique : sa part de création plus les points
+  // achetés à l'expérience. C'est elle qui entre dans la chaîne des leviers.
+  function caracBase(c) { return num(state.caracs[c], 0); }
+  function caracAchat(c) { return Math.max(0, Math.round(num((state.caracsXp || {})[c], 0))); }
+  function caracVal(c) { return caracBase(c) + caracAchat(c); }
   function caracAuto(c) { return caracVal(c); }
+
+  // ---- création ----
+  // Budget et bornes viennent des règles. Sans elles, aucun contrôle : la
+  // fiche n'invente pas une répartition que le livre ne donne pas.
+  function creation() {
+    var cr = D().creation;
+    return (cr && typeof cr === "object") ? cr : null;
+  }
+  function creationPoints() { var cr = creation(); return cr ? num(cr.points, 0) : 0; }
+  function creationDepense() {
+    var t = 0;
+    caracsOrdre().forEach(function (c) { t += caracBase(c); });
+    return t;
+  }
+
+  // ---- progression à l'expérience ----
+  // Le prix du point qui porte la caractéristique à `v`. La table des règles
+  // donne ses tranches ; au-delà, la pente qu'elles annoncent. null quand les
+  // règles manquent : un point sans prix connu ne s'achète pas.
+  function prixPointCarac(v) {
+    var p = D().progressionCarac, tr = p && Array.isArray(p.tranches) ? p.tranches : [];
+    if (!tr.length) return null;
+    var i, t;
+    for (i = 0; i < tr.length; i++) {
+      t = tr[i];
+      if (v >= num(t.de, 0) && v <= num(t.a, 0)) return num(t.xp, 0);
+    }
+    if (v < num(tr[0].de, 0)) return num(tr[0].xp, 0);
+    var der = tr[tr.length - 1], larg = Math.max(1, num(p.largeur, 1));
+    return num(der.xp, 0) + num(p.pas, 0) * Math.ceil((v - num(der.a, 0)) / larg);
+  }
+  // Ce que coûtent les points achetés d'une caractéristique, de sa valeur de
+  // création jusqu'à sa valeur actuelle.
+  function caracXpDe(c) {
+    var b = caracBase(c), n = caracAchat(c), t = 0, i, p;
+    for (i = 1; i <= n; i++) { p = prixPointCarac(b + i); t += p === null ? 0 : p; }
+    return t;
+  }
+  // Le coût effectif : celui des règles, passé à la chaîne du levier « xp ».
+  function caracXp(c) { return chaine(lireCarac("xp", c), caracXpDe(c)); }
+  function caracsXpDepense() {
+    var t = 0;
+    caracsOrdre().forEach(function (c) { t += caracXp(c); });
+    return t;
+  }
   function caracTotalBrut(c) { return chaine(lireCarac("total", c), caracVal(c)); }
   function caracTotal(c) { return pub("caracTotal", caracTotalBrut(c), { carac: c }); }
 
@@ -1305,7 +1372,7 @@
     var xp = 0;
     state.comps.forEach(function (c) { xp += compXp(c); });
     state.techniques.forEach(function (t) { xp += techXp(t); });
-    return xp;
+    return xp + caracsXpDepense();
   }
   function xpDepense() { return pub("xpDepense", xpDepenseBrut(), {}); }
   function xpRestant() { return state.xpTotal - xpDepense(); }
@@ -2297,8 +2364,9 @@
       });
       return m;
     }
+    if (creation()) mrow.appendChild(meter("Création", creationDepense, creationPoints));
     mrow.appendChild(meter("XP dépensé", xpDepense, function () { return state.xpTotal; },
-      "Ce que les rangs de compétence et les techniques ont coûté"));
+      "Ce que les rangs de compétence, les techniques et les caractéristiques ont coûté"));
     mrow.appendChild(meter("Rupture", ruptureDepense, ruptureMax,
       "Points de rupture engagés par les Rangs Max et par les techniques"));
     var xpIn = el("input");
@@ -2327,6 +2395,19 @@
       function dire(t) { warns.appendChild(el("div", "pc-warn", t)); }
       if (xpRestant() < 0)
         dire("XP dépensé au-delà du total (" + fmtP(xpDepense()) + " / " + fmtP(state.xpTotal) + ").");
+      if (creation()) {
+        if (creationDepense() > creationPoints())
+          dire("Points de création répartis au-delà du compte (" + fmtP(creationDepense()) +
+               " / " + fmtP(creationPoints()) + ").");
+        var hors = caracsOrdre().filter(function (c) {
+          var v = caracBase(c);
+          return v < num(creation().min, 0) || v > num(creation().max, 9999);
+        });
+        if (hors.length)
+          dire("Création hors des bornes : " + hors.map(function (c) {
+            return libCarac(c) + " " + fmtP(caracBase(c));
+          }).join(", ") + ".");
+      }
       if (ruptureRestante() < 0)
         dire("Points de rupture engagés au-delà du compte (" + fmtP(ruptureDepense()) +
              " / " + fmtP(ruptureMax()) + ").");
@@ -2783,7 +2864,8 @@
       },
       // calculs : tous dérivés, donc en lecture seule
       calculs: {
-        caracTotal: caracTotal, compBonus: compBonus, compDes: compDes, compXp: compXp,
+        caracTotal: caracTotal, caracXp: caracXp, creationDepense: creationDepense,
+        compBonus: compBonus, compDes: compDes, compXp: compXp,
         pvMax: pvMax, peMax: peMax, pmMax: pmMax, piMax: piMax,
         prMax: prMax, psMax: psMax, phMax: phMax,
         charge: charge, accesRapides: accesRapides, contenance: contenance,
@@ -2918,11 +3000,52 @@
       top.appendChild(val);
       row.appendChild(top);
 
+      // DEUX CHAMPS, et pas un : la répartition de création et les points
+      // achetés à l'expérience. Le premier se contrôle contre le budget et les
+      // bornes des règles, le second contre l'XP restant — au prix du point
+      // que chacun fait atteindre. Le MJ passe outre par les Options.
       var bot = el("div", "pc-crow-bot pc-edit-only");
-      bot.appendChild(el("span", "lbl", "Valeur"));
+      bot.appendChild(el("span", "lbl", "Création"));
       bot.appendChild(stepper(
-        function () { return caracVal(name); },
-        function (v) { state.caracs[name] = clamp(Math.round(v), -9999, 9999); },
+        function () { return caracBase(name); },
+        function (v) {
+          var avant = caracBase(name), cr = creation();
+          v = Math.round(v);
+          if (!isFinite(v) || v === avant) return;
+          if (cr) {
+            v = clamp(v, num(cr.min, 0), num(cr.max, 9999));
+            // Monter ne prend que ce qui reste du budget ; descendre est
+            // toujours permis, même sur une fiche déjà au-delà.
+            if (v > avant) {
+              var libre = creationPoints() - creationDepense() + avant;
+              if (v > libre) v = Math.max(avant, libre);
+              if (v <= avant) { flash("Points de création épuisés."); return; }
+            }
+          }
+          state.caracs[name] = clamp(v, -9999, 9999);
+        },
+        1, libCarac(name)));
+      bot.appendChild(el("span", "lbl", "Expérience"));
+      bot.appendChild(stepper(
+        function () { return caracAchat(name); },
+        function (v) {
+          var avant = caracAchat(name), apres = Math.max(0, Math.round(v));
+          if (!isFinite(apres) || apres === avant) return;
+          if (apres > avant) {
+            var b = caracBase(name), cout = 0, i, p;
+            for (i = avant + 1; i <= apres; i++) {
+              p = prixPointCarac(b + i);
+              if (p === null) return;
+              cout += p;
+            }
+            if (xpRestant() < cout) { flash("XP insuffisant."); return; }
+          }
+          // REDESCENDRE REND l'XP : le coût se recalcule de l'état, rien n'est
+          // à rembourser à la main.
+          if (!state.caracsXp) state.caracsXp = {};
+          if (apres > 0) state.caracsXp[name] = apres;
+          else delete state.caracsXp[name];
+        },
         1, libCarac(name)));
       row.appendChild(bot);
 
@@ -5401,37 +5524,54 @@
   // une caractéristique, une compétence ou un maximum sont le même geste, et le
   // meneur n'a pas à apprendre trois dispositions.
   //
-  // UN SEUL LEVIER ICI, « total », parce qu'une caractéristique d'Outward n'a
-  // qu'une valeur dérivée. Pas de coût en xp : elles ne s'achètent pas. Le jour
-  // où une règle en donnera une seconde, ce bloc prendra une bande d'onglets
-  // comme celui des compétences, et rien d'autre ne bougera.
+  // DEUX LEVIERS, donc une bande d'onglets comme celle des compétences :
+  //   Total  la valeur de la caractéristique
+  //   XP     ce que ses points achetés à l'expérience ont coûté
   function buildModCaracs() {
     var b = block("Réglages des caractéristiques");
     var B = boitesTable("caracsLeviers");
-    grilleLevier(b, {
-      cls: "levier",
-      entete: ["Carac.", "Caractéristique"],
-      lignes: caracsOrdre().map(function (name) {
-        return { cle: name, nom: abbrCarac(name), titre: libCarac(name) };
-      }),
-      rangee: function (hote, cls, ligne, i) {
-        return rangeeSigle(hote, cls, ligne.nom, i, ligne.titre);
-      },
-      lire: function (c) { return B.lire("total", c); },
-      ecrire: function (c, boite, v) { B.ecrire("total", boite, c, v); },
-      mot: ["Total", "Total effectif de la caractéristique"],
-      borne: 9999,
-      auto: function (c) { return caracAuto(c); },
-      rendu: function (c) {
+    var bande = bandeOnglets(b);
+    function onglet(titre, nom, mot, borne, auto, rendu) {
+      bande.onglet(titre, "", function (page) {
+        grilleLevier(page, {
+          cls: "levier",
+          entete: ["Carac.", "Caractéristique"],
+          lignes: caracsOrdre().map(function (name) {
+            return { cle: name, nom: abbrCarac(name), titre: libCarac(name) };
+          }),
+          rangee: function (hote, cls, ligne, i) {
+            return rangeeSigle(hote, cls, ligne.nom, i, ligne.titre);
+          },
+          lire: function (c) { return B.lire(nom, c); },
+          ecrire: function (c, boite, v) { B.ecrire(nom, boite, c, v); },
+          mot: mot,
+          borne: borne,
+          auto: auto,
+          rendu: rendu
+        });
+      });
+    }
+    onglet("Total", "total", ["Total", "Total effectif de la caractéristique"], 9999,
+      function (c) { return caracAuto(c); },
+      function (c) {
         return {
           texte: fmtP(caracTotal(c)),
           titre: chaineTexteDe(lireCarac("total", c), "valeur", caracVal(c))
         };
-      }
-    });
+      });
+    onglet("XP", "xp", ["Coût", "Coût effectif en xp"], 99999,
+      function (c) { return caracXpDe(c); },
+      function (c) {
+        return {
+          texte: fmtP(caracXp(c)),
+          zero: !caracXp(c),
+          titre: chaineTexteDe(lireCarac("xp", c), fmtP(caracAchat(c)) + " points achetés :",
+                               caracXpDe(c))
+        };
+      });
+    bande.montre(0);
     return b;
   }
-
   // ---- 17. Affichage (Roll20 seulement) ----
   // window.__owdNight n'existe que sous roll20-fiche.html : sur le site, le
   // bouton d'en-tête gère déjà la nuit.
@@ -6576,7 +6716,8 @@
     // risques. Ils existent parce qu'une sonde qui lirait les valeurs dans le
     // DOM mesurerait la MISE EN FORME autant que le calcul.
     __calculs: {
-      caracTotal: caracTotal, compBonus: compBonus, compDes: compDes, compXp: compXp,
+      caracTotal: caracTotal, caracXp: caracXp, creationDepense: creationDepense,
+      compBonus: compBonus, compDes: compDes, compXp: compXp,
       pvMax: pvMax, peMax: peMax, pmMax: pmMax, piMax: piMax,
       prMax: prMax, psMax: psMax, phMax: phMax,
       charge: charge, accesRapides: accesRapides, contenance: contenance,

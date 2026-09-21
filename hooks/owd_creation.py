@@ -245,6 +245,49 @@ def _caracs(txt):
     return out
 
 
+def _creation(txt):
+    """« répartit 160 points entre les huit caractéristiques. Chacune reçoit de
+    0 à 50 points » : le budget de départ et les deux bornes d'une
+    caractéristique à la création."""
+    corps = _section(txt, "La création", "création")
+    budget = int(_un(r"répartit (\d+) points", corps, "création : le budget").group(1))
+    b = _un(r"reçoit de (\d+) à (\d+) points", corps, "création : les bornes")
+    mini, maxi = int(b.group(1)), int(b.group(2))
+    if mini > maxi:
+        raise ErreurRegles(f"création : la borne basse ({mini}) dépasse la haute ({maxi})")
+    return {"points": budget, "min": mini, "max": maxi}
+
+
+# « | 51 à 100 | 6 XP | »
+_TRANCHE = re.compile(r"^\|\s*(\d+) à (\d+)\s*\|\s*(\d+) XP\s*\|\s*$", re.M)
+
+
+def _progression(txt):
+    """Le prix d'un point de caractéristique, selon la valeur qu'il fait
+    atteindre. La table donne les premières tranches ; la phrase qui la suit
+    donne la pente au-delà. Les deux doivent dire la même chose : des tranches
+    contiguës, de même largeur, dont le prix monte du même pas que la phrase
+    annonce. Sinon la fiche prolongerait une table que le livre ne prolonge
+    pas, et le build s'arrête."""
+    corps = _section(txt, "Monter une caractéristique", "progression")
+    tranches = [{"de": int(a), "a": int(b), "xp": int(x)}
+                for a, b, x in _TRANCHE.findall(corps)]
+    if not tranches:
+        raise ErreurRegles("progression : aucune tranche lisible dans la table")
+    suite = _un(r"augmente de (\d+) XP à chaque tranche de (\d+)", corps,
+                "progression : la pente au-delà de la table")
+    pas, largeur = int(suite.group(1)), int(suite.group(2))
+    for i, t in enumerate(tranches):
+        if t["a"] - t["de"] + 1 != largeur:
+            raise ErreurRegles(
+                f"progression : la tranche {t['de']} à {t['a']} n'a pas la largeur "
+                f"{largeur} que la phrase annonce")
+        if i and (t["de"] != tranches[i - 1]["a"] + 1 or t["xp"] != tranches[i - 1]["xp"] + pas):
+            raise ErreurRegles(
+                f"progression : la tranche {t['de']} à {t['a']} ne suit pas la précédente")
+    return {"tranches": tranches, "pas": pas, "largeur": largeur}
+
+
 # ----------------------------------------------------------------------
 # Rangs de compétence
 # ----------------------------------------------------------------------
@@ -612,6 +655,8 @@ def _jeu(docs):
         jeu["caracs"] = caracs
         jeu["moyenneHumaine"] = int(_un(r"(\d+) est la moyenne humaine", carac_md,
                                         "la moyenne humaine").group(1))
+        jeu["creation"] = _creation(carac_md)
+        jeu["progressionCarac"] = _progression(carac_md)
 
     if comp_md is not None:
         jeu["rangs"] = _rangs(comp_md)

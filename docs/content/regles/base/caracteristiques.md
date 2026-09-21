@@ -38,4 +38,37 @@ La Résistance mesure ce que le corps repousse : le froid, la chaleur, la maladi
 
 La Chance donne une réserve que le personnage dépense pour infléchir un résultat.
 
+<div class="keep" markdown>
+
+### La création {#la-creation}
+
+À la création, le joueur répartit 160 points entre les huit caractéristiques. Chacune reçoit de 0 à 50 points.
+
+</div>
+
+<div class="keep" markdown>
+
+### Monter une caractéristique {#monter-une-caracteristique}
+
+Une caractéristique monte d'un point à la fois, contre des points d'expérience. Le prix d'un point dépend de la valeur que la caractéristique atteint avec lui.
+
+La table ci-dessous donne le prix d'un point selon la valeur atteinte.
+
+| Valeur atteinte | Prix d'un point |
+|---|---|
+| 1 à 50 | 5 XP |
+| 51 à 100 | 6 XP |
+| 101 à 150 | 7 XP |
+| 151 à 200 | 8 XP |
+
+Au-delà de 200, le prix d'un point augmente de 1 XP à chaque tranche de 50.
+
+</div>
+
+<div class="memo" markdown>
+
+Exemple. Un personnage mène sa Force de 48 à 52. Les points qui la portent à 49 et à 50 coûtent 5 XP chacun, ceux qui la portent à 51 et à 52 coûtent 6 XP chacun : 22 XP en tout.
+
+</div>
+
 </div>

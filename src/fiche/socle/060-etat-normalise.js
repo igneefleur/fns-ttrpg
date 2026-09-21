@@ -30,6 +30,16 @@
     listeCaracs.forEach(function (c) {
       s.caracs[c] = clamp(num(s.caracs[c], moyenne), -9999, 9999);
     });
+    // Les points achetés : entiers positifs, et un zéro ne s'écrit pas. Une
+    // clé qui n'est plus une caractéristique connue est GARDÉE, comme dans
+    // `caracs` : on ne jette pas ce que le joueur a payé.
+    var achats = (s.caracsXp && typeof s.caracsXp === "object" && !Array.isArray(s.caracsXp))
+      ? s.caracsXp : {};
+    s.caracsXp = {};
+    Object.keys(achats).forEach(function (c) {
+      var n = clamp(Math.round(num(achats[c], 0)), 0, 99999);
+      if (n > 0) s.caracsXp[c] = n;
+    });
     // LES LEVIERS. Le rangement boucle sur le CATALOGUE, jamais sur l'état : un
     // levier dont le nom n'est pas au catalogue disparaît au premier
     // enregistrement, sans un mot. C'est le prix d'un état qui ne grossit pas
@@ -257,7 +267,7 @@
   // le catalogue, c'est écrire un réglage qui disparaît au rechargement sans
   // qu'aucune erreur ne paraisse. La valeur est la BORNE des ajouts de ce
   // levier — l'échelle de ce qu'il règle, pas un plafond de jeu.
-  var CARAC_LEVIERS = { total: 9999 };
+  var CARAC_LEVIERS = { total: 9999, xp: 99999 };
   var CAP_LEVIERS = { max: 99999 };
   var COMP_LEVIERS = { bonus: 999, des: 99, xp: 9999, rupture: 99 };
 

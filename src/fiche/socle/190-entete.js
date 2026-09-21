@@ -226,8 +226,9 @@
       });
       return m;
     }
+    if (creation()) mrow.appendChild(meter("Création", creationDepense, creationPoints));
     mrow.appendChild(meter("XP dépensé", xpDepense, function () { return state.xpTotal; },
-      "Ce que les rangs de compétence et les techniques ont coûté"));
+      "Ce que les rangs de compétence, les techniques et les caractéristiques ont coûté"));
     mrow.appendChild(meter("Rupture", ruptureDepense, ruptureMax,
       "Points de rupture engagés par les Rangs Max et par les techniques"));
     var xpIn = el("input");
@@ -256,6 +257,19 @@
       function dire(t) { warns.appendChild(el("div", "pc-warn", t)); }
       if (xpRestant() < 0)
         dire("XP dépensé au-delà du total (" + fmtP(xpDepense()) + " / " + fmtP(state.xpTotal) + ").");
+      if (creation()) {
+        if (creationDepense() > creationPoints())
+          dire("Points de création répartis au-delà du compte (" + fmtP(creationDepense()) +
+               " / " + fmtP(creationPoints()) + ").");
+        var hors = caracsOrdre().filter(function (c) {
+          var v = caracBase(c);
+          return v < num(creation().min, 0) || v > num(creation().max, 9999);
+        });
+        if (hors.length)
+          dire("Création hors des bornes : " + hors.map(function (c) {
+            return libCarac(c) + " " + fmtP(caracBase(c));
+          }).join(", ") + ".");
+      }
       if (ruptureRestante() < 0)
         dire("Points de rupture engagés au-delà du compte (" + fmtP(ruptureDepense()) +
              " / " + fmtP(ruptureMax()) + ").");

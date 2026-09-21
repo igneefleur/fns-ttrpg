@@ -50,7 +50,8 @@
     // risques. Ils existent parce qu'une sonde qui lirait les valeurs dans le
     // DOM mesurerait la MISE EN FORME autant que le calcul.
     __calculs: {
-      caracTotal: caracTotal, compBonus: compBonus, compDes: compDes, compXp: compXp,
+      caracTotal: caracTotal, caracXp: caracXp, creationDepense: creationDepense,
+      compBonus: compBonus, compDes: compDes, compXp: compXp,
       pvMax: pvMax, peMax: peMax, pmMax: pmMax, piMax: piMax,
       prMax: prMax, psMax: psMax, phMax: phMax,
       charge: charge, accesRapides: accesRapides, contenance: contenance,

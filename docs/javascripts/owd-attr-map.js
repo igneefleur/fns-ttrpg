@@ -77,7 +77,7 @@
   // même version, la beta étant ce que le stable recevra à la fusion) : ce qui
   // compare des versions doit donc l'ôter avant de lire les nombres, et c'est
   // exactement ce que fait OwdMods.compareVersions.
-  var RELEASE_DEFAUT = "1.1.2b";
+  var RELEASE_DEFAUT = "1.2.0b";
   // Entier INDÉPENDANT de la release : il ne monte qu'au changement de forme de
   // l'état du personnage, jamais parce que le majeur a bougé. Ajouter une clé
   // racine avec un défaut n'en est PAS un : normalize() complète une clé
@@ -142,6 +142,9 @@
   // champ d'état collection (objet/tableau) -> suffixe (stocké en JSON)
   var COLLECTIONS = [
     ["caracs", "caracs"],
+    // Les points de caractéristique achetés à l'expérience, à part de la
+    // répartition de création : les perdre au repli rendrait l'XP dépensé.
+    ["caracsXp", "caracs_xp"],
     // LA TABLE DE LEVIERS des caractéristiques : levier, boîte, caractéristique.
     // Tous les leviers des Options voyagent, y compris sur le chemin de repli :
     // en JJK, les seconds modificateurs et les forçages de caractéristiques ont
@@ -225,7 +228,8 @@
       // ---- expérience ----
       // Les règles ne donnent AUCUNE dotation de départ : le total part à zéro
       // et se saisit dans l'en-tête. Le dépensé, lui, se CALCULE (rangs des
-      // compétences + coût saisi des techniques) et ne se range jamais dans
+      // compétences + coût saisi des techniques + points de caractéristique
+      // achetés) et ne se range jamais dans
       // l'état : deux endroits pour dire la même chose finiraient par se
       // contredire.
       xpTotal: 0,
@@ -238,9 +242,10 @@
       // n'en invente pas — aucune borne haute n'est écrite ici.
       caracs: { Force: 20, Dexterite: 20, Intelligence: 20, Ferveur: 20,
                 Vigueur: 20, Endurance: 20, Resistance: 20, Chance: 20 },
-      // LES LEVIERS DES CARACTÉRISTIQUES, même table à trois niveaux. Un seul
-      // levier, « total » : une caractéristique d'Outward n'a qu'une valeur
-      // dérivée.
+      // Les points achetés à l'expérience, épars : { Force: 3 }.
+      caracsXp: {},
+      // LES LEVIERS DES CARACTÉRISTIQUES, même table à trois niveaux. Deux
+      // leviers : « total », et « xp » pour le coût des points achetés.
       caracsLeviers: {},
 
       // ---- ce que le personnage porte à l'instant ----

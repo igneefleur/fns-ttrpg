@@ -49,8 +49,57 @@
   function lireComp(nom, id) { return lireTable("compsLeviers", nom, id); }
 
   // ---- caractéristiques ----
-  function caracVal(c) { return num(state.caracs[c], 0); }
+  // La valeur d'une caractéristique : sa part de création plus les points
+  // achetés à l'expérience. C'est elle qui entre dans la chaîne des leviers.
+  function caracBase(c) { return num(state.caracs[c], 0); }
+  function caracAchat(c) { return Math.max(0, Math.round(num((state.caracsXp || {})[c], 0))); }
+  function caracVal(c) { return caracBase(c) + caracAchat(c); }
   function caracAuto(c) { return caracVal(c); }
+
+  // ---- création ----
+  // Budget et bornes viennent des règles. Sans elles, aucun contrôle : la
+  // fiche n'invente pas une répartition que le livre ne donne pas.
+  function creation() {
+    var cr = D().creation;
+    return (cr && typeof cr === "object") ? cr : null;
+  }
+  function creationPoints() { var cr = creation(); return cr ? num(cr.points, 0) : 0; }
+  function creationDepense() {
+    var t = 0;
+    caracsOrdre().forEach(function (c) { t += caracBase(c); });
+    return t;
+  }
+
+  // ---- progression à l'expérience ----
+  // Le prix du point qui porte la caractéristique à `v`. La table des règles
+  // donne ses tranches ; au-delà, la pente qu'elles annoncent. null quand les
+  // règles manquent : un point sans prix connu ne s'achète pas.
+  function prixPointCarac(v) {
+    var p = D().progressionCarac, tr = p && Array.isArray(p.tranches) ? p.tranches : [];
+    if (!tr.length) return null;
+    var i, t;
+    for (i = 0; i < tr.length; i++) {
+      t = tr[i];
+      if (v >= num(t.de, 0) && v <= num(t.a, 0)) return num(t.xp, 0);
+    }
+    if (v < num(tr[0].de, 0)) return num(tr[0].xp, 0);
+    var der = tr[tr.length - 1], larg = Math.max(1, num(p.largeur, 1));
+    return num(der.xp, 0) + num(p.pas, 0) * Math.ceil((v - num(der.a, 0)) / larg);
+  }
+  // Ce que coûtent les points achetés d'une caractéristique, de sa valeur de
+  // création jusqu'à sa valeur actuelle.
+  function caracXpDe(c) {
+    var b = caracBase(c), n = caracAchat(c), t = 0, i, p;
+    for (i = 1; i <= n; i++) { p = prixPointCarac(b + i); t += p === null ? 0 : p; }
+    return t;
+  }
+  // Le coût effectif : celui des règles, passé à la chaîne du levier « xp ».
+  function caracXp(c) { return chaine(lireCarac("xp", c), caracXpDe(c)); }
+  function caracsXpDepense() {
+    var t = 0;
+    caracsOrdre().forEach(function (c) { t += caracXp(c); });
+    return t;
+  }
   function caracTotalBrut(c) { return chaine(lireCarac("total", c), caracVal(c)); }
   function caracTotal(c) { return pub("caracTotal", caracTotalBrut(c), { carac: c }); }
 

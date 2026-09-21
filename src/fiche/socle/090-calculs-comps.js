@@ -60,7 +60,7 @@
     var xp = 0;
     state.comps.forEach(function (c) { xp += compXp(c); });
     state.techniques.forEach(function (t) { xp += techXp(t); });
-    return xp;
+    return xp + caracsXpDepense();
   }
   function xpDepense() { return pub("xpDepense", xpDepenseBrut(), {}); }
   function xpRestant() { return state.xpTotal - xpDepense(); }

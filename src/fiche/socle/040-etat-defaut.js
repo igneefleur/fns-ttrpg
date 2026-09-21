@@ -24,7 +24,8 @@
       // ---- expérience ----
       // Les règles ne donnent AUCUNE dotation de départ : le total part à zéro
       // et se saisit dans l'en-tête. Le dépensé, lui, se CALCULE (rangs des
-      // compétences + coût saisi des techniques) et ne se range jamais ici :
+      // compétences + coût saisi des techniques + points de caractéristique
+      // achetés) et ne se range jamais ici :
       // deux endroits pour dire la même chose finiraient par se contredire.
       xpTotal: 0,
 
@@ -36,6 +37,13 @@
       // n'en invente pas — aucune borne haute n'est écrite ici.
       caracs: { Force: 20, Dexterite: 20, Intelligence: 20, Ferveur: 20,
                 Vigueur: 20, Endurance: 20, Resistance: 20, Chance: 20 },
+      // LES POINTS ACHETÉS À L'EXPÉRIENCE, par caractéristique, à part de la
+      // répartition de création que porte `caracs`. Deux cartes et non une
+      // valeur : le prix d'un point dépend de la valeur qu'il fait atteindre,
+      // et la création se contrôle contre son propre budget. Le coût en XP se
+      // CALCULE (owd-creation.json, progressionCarac) et ne se range jamais.
+      // ÉPARSE : une caractéristique à 0 point acheté n'y figure pas.
+      caracsXp: {},
       // LES LEVIERS DU MENEUR, en TABLE À TROIS NIVEAUX : levier, puis boîte,
       // puis caractéristique. Un seul levier ici, « total », et ses neuf boîtes :
       //     forçage  |  a1 a2  ×  m1 m2  |  a3 a4  ×  m3 m4

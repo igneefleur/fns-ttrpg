@@ -8,34 +8,51 @@
   // une caractéristique, une compétence ou un maximum sont le même geste, et le
   // meneur n'a pas à apprendre trois dispositions.
   //
-  // UN SEUL LEVIER ICI, « total », parce qu'une caractéristique d'Outward n'a
-  // qu'une valeur dérivée. Pas de coût en xp : elles ne s'achètent pas. Le jour
-  // où une règle en donnera une seconde, ce bloc prendra une bande d'onglets
-  // comme celui des compétences, et rien d'autre ne bougera.
+  // DEUX LEVIERS, donc une bande d'onglets comme celle des compétences :
+  //   Total  la valeur de la caractéristique
+  //   XP     ce que ses points achetés à l'expérience ont coûté
   function buildModCaracs() {
     var b = block("Réglages des caractéristiques");
     var B = boitesTable("caracsLeviers");
-    grilleLevier(b, {
-      cls: "levier",
-      entete: ["Carac.", "Caractéristique"],
-      lignes: caracsOrdre().map(function (name) {
-        return { cle: name, nom: abbrCarac(name), titre: libCarac(name) };
-      }),
-      rangee: function (hote, cls, ligne, i) {
-        return rangeeSigle(hote, cls, ligne.nom, i, ligne.titre);
-      },
-      lire: function (c) { return B.lire("total", c); },
-      ecrire: function (c, boite, v) { B.ecrire("total", boite, c, v); },
-      mot: ["Total", "Total effectif de la caractéristique"],
-      borne: 9999,
-      auto: function (c) { return caracAuto(c); },
-      rendu: function (c) {
+    var bande = bandeOnglets(b);
+    function onglet(titre, nom, mot, borne, auto, rendu) {
+      bande.onglet(titre, "", function (page) {
+        grilleLevier(page, {
+          cls: "levier",
+          entete: ["Carac.", "Caractéristique"],
+          lignes: caracsOrdre().map(function (name) {
+            return { cle: name, nom: abbrCarac(name), titre: libCarac(name) };
+          }),
+          rangee: function (hote, cls, ligne, i) {
+            return rangeeSigle(hote, cls, ligne.nom, i, ligne.titre);
+          },
+          lire: function (c) { return B.lire(nom, c); },
+          ecrire: function (c, boite, v) { B.ecrire(nom, boite, c, v); },
+          mot: mot,
+          borne: borne,
+          auto: auto,
+          rendu: rendu
+        });
+      });
+    }
+    onglet("Total", "total", ["Total", "Total effectif de la caractéristique"], 9999,
+      function (c) { return caracAuto(c); },
+      function (c) {
         return {
           texte: fmtP(caracTotal(c)),
           titre: chaineTexteDe(lireCarac("total", c), "valeur", caracVal(c))
         };
-      }
-    });
+      });
+    onglet("XP", "xp", ["Coût", "Coût effectif en xp"], 99999,
+      function (c) { return caracXpDe(c); },
+      function (c) {
+        return {
+          texte: fmtP(caracXp(c)),
+          zero: !caracXp(c),
+          titre: chaineTexteDe(lireCarac("xp", c), fmtP(caracAchat(c)) + " points achetés :",
+                               caracXpDe(c))
+        };
+      });
+    bande.montre(0);
     return b;
   }
-

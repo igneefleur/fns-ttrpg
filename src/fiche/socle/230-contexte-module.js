@@ -111,7 +111,8 @@
       },
       // calculs : tous dérivés, donc en lecture seule
       calculs: {
-        caracTotal: caracTotal, compBonus: compBonus, compDes: compDes, compXp: compXp,
+        caracTotal: caracTotal, caracXp: caracXp, creationDepense: creationDepense,
+        compBonus: compBonus, compDes: compDes, compXp: compXp,
         pvMax: pvMax, peMax: peMax, pmMax: pmMax, piMax: piMax,
         prMax: prMax, psMax: psMax, phMax: phMax,
         charge: charge, accesRapides: accesRapides, contenance: contenance,
