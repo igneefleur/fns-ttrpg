@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "2.0.0b";
+  var RELEASE = "2.1.0b";
   var SCHEMA = 3;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -1591,7 +1591,7 @@
   var journalTemps = [];
   // PV et PE en font partie : l'effondrement que le passage a causé leur a
   // pris des points, et annuler le passage doit les rendre.
-  var TEMPS_CLES = ["pr", "ps", "ph", "expo", "pv", "pe"];
+  var TEMPS_CLES = ["pr", "ps", "ph", "expo", "pv", "pe", "contenance"];
   function photoTemps() {
     var o = {};
     TEMPS_CLES.forEach(function (k) { o[k] = state.etat[k]; });
@@ -1651,6 +1651,10 @@
       state.etat.expo = x;
     }
     ["pr", "ps", "ph"].forEach(function (k) { bougeReserve(k, cumul[k]); });
+    // LA DIGESTION : la contenance occupée se libère à sa cadence, sans passer
+    // sous zéro. Arrondie contre le joueur comme le reste : ce qui se libère
+    // descend à l'entier.
+    state.etat.contenance = Math.max(0, num(state.etat.contenance, 0) - Math.floor(digere(n * tr)));
     // l'exposition s'arrondit en s'éloignant de zéro : contre le joueur, là aussi
     state.etat.expo = state.etat.expo < 0 ? Math.floor(state.etat.expo) : Math.ceil(state.etat.expo);
     return n * tr;
@@ -1693,8 +1697,16 @@
       }
     }
     ["pr", "ps", "ph"].forEach(function (k) { reculeReserve(k, cumul[k]); });
+    state.etat.contenance = Math.min(contenance(),
+      num(state.etat.contenance, 0) + Math.floor(digere(n * tr)));
     state.etat.expo = state.etat.expo < 0 ? Math.floor(state.etat.expo) : Math.ceil(state.etat.expo);
     return -n * tr;
+  }
+  // Les places que la digestion libère en `minutes`.
+  function digere(minutes) {
+    var t = tempsDef(), dg = t && t.digestion;
+    if (!dg || !dg.minutes) return 0;
+    return num(dg.places, 0) * minutes / num(dg.minutes, 1);
   }
   // Combien de tranches dans une heure.
   function tranchesParHeure() { var t = tempsDef(); return t ? Math.max(1, Math.round(60 / num(t.tranche, 10))) : 6; }
