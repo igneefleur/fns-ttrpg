@@ -56,7 +56,7 @@
       b.appendChild(box);
       return { box: box, v: out };
     }
-    var dist = cases("pc-mouv-dist", [["pas", "pas / round", "grand"], ["min", "m / min"], ["h", "km / h"]]);
+    var dist = cases("pc-mouv-dist", [["pas", "pas / rnd", "grand"], ["min", "m / min"], ["h", "km / h"]]);
     // les crans : foncer, chacun marqué des pas qu'il ajoute à l'allure d'avant
     var crans = el("div", "pc-segs pc-crans");
     b.appendChild(crans);
