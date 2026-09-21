@@ -1,9 +1,9 @@
-  // ---- 2. Corps : charge, accès rapides, contenance, dés d'action ----
+  // ---- 2. Corps : charge, accès rapides, dés d'action ----
   // (l'innocence a son propre module, sur le modèle des PV : voir vitales.js)
   function buildCorps() {
     var b = block("Corps", null, "corps");
 
-    var r1 = el("div", "pc-bigrow");
+    var r1 = el("div", "pc-bigrow pc-bigrow-2");
     function tuileLimite(cle, libelle, pris, total) {
       var t = bigTile(libelle, function () {
         return fmtP(pris()) + " / " + fmtP(total());
@@ -23,16 +23,7 @@
     }
     r1.appendChild(tuileLimite("charge", "CHARGE", poidsPorte, charge));
     r1.appendChild(tuileLimite("acces", "ACCÈS RAPIDES", accesPris, accesRapides));
-    // La contenance, elle, porte SON pas : ce qu'on a avalé se compte en jeu,
-    // et le geste doit rester actif hors du rouage.
-    var tC = tuileLimite("contenance", "CONTENANCE", contenancePrise, contenance);
-    var pasC = el("div", "pc-bigedit");
-    pasC.appendChild(stepper(
-      function () { return state.etat.contenance; },
-      function (v) { state.etat.contenance = Math.max(0, Math.round(v * 100) / 100); },
-      1, "contenance occupée"));
-    tC.appendChild(pasC);
-    r1.appendChild(tC);
+    // (la contenance a son propre module, l'estomac : voir contenance.js)
     b.appendChild(r1);
 
     // Deuxième rangée : ce que le corps donne au tour, sur toute la largeur.

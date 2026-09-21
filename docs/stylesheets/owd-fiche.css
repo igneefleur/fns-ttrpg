@@ -442,7 +442,8 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
 .pc-vital-res.t-pv { --teinte: #881112; }
 .pc-vital-res.t-pe { --teinte: #AA872E; }
 .pc-vital-res.t-pm { --teinte: #286CA4; }
-.pc-vital-res.t-pi { --teinte: #C2185B; }
+.pc-vital-res.t-pi { --teinte: #C2185B; }   /* rose le jour… */
+html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où le blanc se voit */
 .pc-vital-res.t-pr { --teinte: #6A4C93; }
 .pc-vital-res.t-ps { --teinte: #B5652B; }
 .pc-vital-res.t-ph { --teinte: #2A9D8F; }
@@ -546,6 +547,36 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
 .pc-expo-jauge > i.froid { background: var(--froid); }
 .pc-expo-jauge > i.chaud { background: var(--chaud); }
 .pc-expo-zero { position: absolute; top: 0; bottom: 0; left: calc(50% - 1px); width: 2px; background: var(--ink-3); }
+/* ---- Contenance : l'estomac ----
+   Trois couches sous le même cadre : l'intérieur d'un ton neutre, le même
+   intérieur rempli par le bas jusqu'à --niveau dans la --teinte du moment, et
+   le contour à l'encre. Les deux masques viennent de l'image d'Icons8. */
+.pc-estomac { position: relative; width: 60%; max-width: 9rem; margin: .1rem auto .2rem; aspect-ratio: 320 / 324; }
+.pc-estomac > span { position: absolute; inset: 0; }
+.pc-estomac > span.pc-estomac-val { inset: auto; left: 70%; top: 60%; }
+.pc-estomac-fond, .pc-estomac-plein {
+  -webkit-mask: url("../assets/fiche/estomac-interieur.png") center / contain no-repeat;
+          mask: url("../assets/fiche/estomac-interieur.png") center / contain no-repeat;
+}
+.pc-estomac-fond { background: var(--line-2); }
+.pc-estomac-plein {
+  background: linear-gradient(to top, var(--teinte, #3a9a3a) var(--niveau, 0%), transparent var(--niveau, 0%));
+  transition: background .2s;
+}
+.pc-estomac-trait {
+  background: var(--ink);
+  -webkit-mask: url("../assets/fiche/estomac-contour.png") center / contain no-repeat;
+          mask: url("../assets/fiche/estomac-contour.png") center / contain no-repeat;
+}
+/* la valeur, posée dans le corps de l'estomac (à droite et en bas de l'image) */
+.pc-estomac-val {
+  transform: translate(-50%, -50%);
+  display: flex; flex-direction: column; align-items: center; line-height: 1; text-align: center;
+  color: var(--ink); text-shadow: 0 0 3px var(--panel), 0 0 6px var(--panel);
+}
+.pc-estomac-val b { font-size: var(--fs-hero); font-weight: 800; font-variant-numeric: tabular-nums; }
+.pc-estomac-val small { font-size: var(--fs-label); font-weight: 700; color: var(--ink-2); }
+.pc-estomac.over .pc-estomac-val b { color: var(--danger); }
 /* Le pied d'une carte de réserves retrouve la marge que la carte a perdue. */
 .pc-vital-pied { padding: 0 .4rem .38rem; margin-top: 0; }
 

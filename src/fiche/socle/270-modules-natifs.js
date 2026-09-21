@@ -14,6 +14,7 @@
     { id: "caracs",       titre: "Caractéristiques", onglet: "fiche", colonne: "gauche", build: buildCaracs },
     { id: "effort",       titre: "Temps",            onglet: "fiche", colonne: "gauche", build: buildEffort },
     { id: "survie",       titre: "Survie",           onglet: "fiche", colonne: "gauche", build: buildSurvie },
+    { id: "exposition",   titre: "Exposition",       onglet: "fiche", colonne: "gauche", build: buildExposition },
     { id: "pi",           titre: "PI",               onglet: "fiche", colonne: "gauche", build: buildPi },
     { id: "corps",        titre: "Corps",            onglet: "fiche", colonne: "gauche", build: buildCorps },
     // TROIS RÉSERVES, TROIS MODULES : même forme, mais on ne les lit pas au
@@ -22,7 +23,7 @@
     { id: "pe",           titre: "PE",               onglet: "fiche", colonne: "milieu", build: buildPe },
     { id: "pm",           titre: "PM",               onglet: "fiche", colonne: "milieu", build: buildPm },
     { id: "effondrement", titre: "Effondrement",     onglet: "fiche", colonne: "milieu", build: buildEffondrement },
-    { id: "exposition",   titre: "Exposition",       onglet: "fiche", colonne: "milieu", build: buildExposition },
+    { id: "contenance",   titre: "Contenance",       onglet: "fiche", colonne: "milieu", build: buildContenance },
     { id: "desaction",    titre: "Actions",          onglet: "fiche", colonne: "droite", build: buildDesAction },
     { id: "comps",        titre: "Compétences",      onglet: "fiche", colonne: "droite", build: buildComps },
     // ---- onglet Art ----

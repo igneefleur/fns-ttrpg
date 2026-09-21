@@ -62,6 +62,7 @@ fin = lf
   src/fiche/fiche/survie.js
   src/fiche/fiche/exposition.js
   src/fiche/fiche/effondrement.js
+  src/fiche/fiche/contenance.js
   src/fiche/fiche/desaction.js
   src/fiche/fiche/comps.js
   src/fiche/art/techniques.js
