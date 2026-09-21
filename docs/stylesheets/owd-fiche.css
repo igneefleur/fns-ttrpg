@@ -377,7 +377,7 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
 .pc-pane > .pc-block + .pc-block { margin-top: var(--gut); }
 /* Fiche : trois colonnes (caractéristiques et corps | vitalité et survie |
    compétences, la plus sollicitée par la ligne nom | rang | total) */
-.pc-cols-fiche { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gut); align-items: start; }
+.pc-cols-fiche { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 2fr); gap: var(--gut); align-items: start; }
 /* Point de bascule UNIQUE de la feuille : 44em. La bascule 60em a été
    supprimée et ne revient pas. */
 @media (max-width: 44em) {
