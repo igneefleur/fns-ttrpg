@@ -17,8 +17,10 @@
   function buildMouvement() {
     var b = block("Mouvement");
 
-    // les crans, pour l'allure qui en a plusieurs
-    var crans = el("div", "pc-tabs mini pc-efforts pc-crans");
+    // LES CRANS, pour l'allure qui en a plusieurs : foncer. Mêmes cases
+    // soudées que les efforts, en parts égales, chacune marquée des pas
+    // qu'elle ajoute à l'allure d'avant (+3 | +6 | +9 | +12 | +15).
+    var crans = el("div", "pc-segs pc-crans");
     b.appendChild(crans);
 
     var aff = el("div", "pc-mouv");
@@ -42,8 +44,12 @@
       if (!a) { pas.textContent = "0"; cout.textContent = ""; return; }
       var k = clamp(num(state.allureCran, 1), 1, a.crans.length);
       if (a.crans.length > 1) {
+        // les pas de l'allure d'avant : le point de départ des crans
+        var liste = mouvementListe(), avant = liste[liste.indexOf(a) - 1];
+        var base = avant ? avant.crans[avant.crans.length - 1].pas : 0;
         a.crans.forEach(function (c, i) {
-          var bt = el("button", "pc-tab" + (i + 1 === k ? " on" : ""), libCout(c) || String(i + 1));
+          var bt = el("button", "c" + (i + 1 === k ? " on" : ""), "+" + (c.pas - base));
+          bt.title = libCout(c);
           bt.type = "button";
           bt.addEventListener("click", function () { state.allureCran = i + 1; refresh(); });
           crans.appendChild(bt);
