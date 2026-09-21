@@ -1171,7 +1171,12 @@ html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où 
    et chaque colonne défile dans la sienne. Le panneau de droite garde toujours
    cette taille, qu'il montre un objet ou le fantôme. */
 .pc-obj-wrap { display: flex; gap: .6rem; align-items: stretch; height: var(--inv-h, auto); }
-.pc-obj-left { flex: 1 1 62%; min-width: 0; display: flex; flex-direction: column; gap: .45rem; overflow-y: auto; }
+/* La barre de défilement a sa PROPRE gouttière, à droite des cases : sans
+   elle, la barre en surimpression (Firefox, macOS) passait sur la cinquième
+   colonne. Toujours réservée, les cases ne changent pas de taille selon qu'il
+   y a de quoi défiler ou non. */
+.pc-obj-left { flex: 1 1 62%; min-width: 0; display: flex; flex-direction: column; gap: .45rem; overflow-y: auto;
+  box-sizing: border-box; scrollbar-gutter: stable; padding-right: .5rem; }
 .pc-obj-panel { flex: 0 0 34%; min-width: 0; border: 1px solid var(--line-2); border-radius: 8px; background: var(--card); overflow-y: auto; box-sizing: border-box; }
 .pc-obj-panel.fantome .pc-obj-body, .pc-obj-panel.fantome .pc-obj-imgbox { opacity: .45; }
 .pc-obj-ghead { display: flex; align-items: center; gap: .3rem; margin-bottom: .2rem; }
