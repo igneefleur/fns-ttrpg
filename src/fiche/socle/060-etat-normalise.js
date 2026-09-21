@@ -4,9 +4,21 @@
   var INV_VETEMENTS = ["tete", "haut", "mains", "bas", "pieds", "sousvet"];
   var INV_ACCESSOIRES = ["oreilles", "collier", "poignetG", "poignetD",
                          "bagueG", "bagueD", "chevilleG", "chevilleD", "cape"];
+  // Le TYPE d'un accessoire ne dit pas le côté : une bague va à gauche comme
+  // à droite. Chaque type, et les cases qu'il accepte.
+  var INV_ACC_TYPES = {
+    oreilles: ["oreilles"], collier: ["collier"], poignet: ["poignetG", "poignetD"],
+    bague: ["bagueG", "bagueD"], cheville: ["chevilleG", "chevilleD"], cape: ["cape"]
+  };
   var INV_CASES = ["mainG", "mainD", "ceinture", "dos"].concat(INV_VETEMENTS, INV_ACCESSOIRES);
   var INV_EP = ["ceint", "sacep"];
   var INV_LIEUX = INV_CASES.concat(INV_EP, ["poches", "sac"]);
+  function accType(v) {
+    if (aClef(INV_ACC_TYPES, v)) return v;
+    var t = "";
+    Object.keys(INV_ACC_TYPES).forEach(function (k) { if (INV_ACC_TYPES[k].indexOf(v) >= 0) t = k; });
+    return t;
+  }
   function normGestes(liste) {
     return (Array.isArray(liste) ? liste : []).filter(function (g) { return g && typeof g === "object"; })
       .map(function (g) {
@@ -207,7 +219,8 @@
         vet: INV_VETEMENTS.indexOf(o.vet) >= 0 || o.vet === "hautbas" ? o.vet : "",
         poches: pnum(o.poches),
         froid: snum(o.froid), chaud: snum(o.chaud),
-        acc: INV_ACCESSOIRES.indexOf(o.acc) >= 0 ? o.acc : "",
+        // un type (bague) ; une case d'avant (bagueG) redevient son type
+        acc: accType(o.acc),
         sac: !!o.sac,
         cap: pnum(o.cap),
         ceint: !!o.ceint,

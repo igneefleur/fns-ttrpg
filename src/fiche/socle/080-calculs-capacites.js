@@ -293,7 +293,7 @@
     if (ou === "mainG" || ou === "mainD") return true;
     if (ou === "ceinture") return !!o.ceint;
     if (ou === "dos") return !!o.sac;
-    if (INV_ACCESSOIRES.indexOf(ou) >= 0) return o.acc === ou;
+    if (INV_ACCESSOIRES.indexOf(ou) >= 0) return !!o.acc && (INV_ACC_TYPES[o.acc] || []).indexOf(ou) >= 0;
     return o.vet === ou || (o.vet === "hautbas" && (ou === "haut" || ou === "bas"));
   }
   // LES EMPLACEMENTS (ep) : la ceinture portée et le sac porté en offrent
@@ -366,7 +366,7 @@
   function vetementsPortes() {
     return state.inv.objets.filter(function (o) {
       return (o.vet && (o.ou === o.vet || (o.vet === "hautbas" && o.ou === "haut"))) ||
-             (o.acc && o.ou === o.acc);
+             (o.acc && INV_ACCESSOIRES.indexOf(o.ou) >= 0 && casePermise(o, o.ou));
     });
   }
   function capPoches() {

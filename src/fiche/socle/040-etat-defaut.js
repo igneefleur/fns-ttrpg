@@ -155,7 +155,7 @@
       //             que limitent les poches et le sac
       //   nourri    c'est de la nourriture ; « places » porte alors son VOLUME
       //   vet     type de vêtement (INV_VETEMENTS, ou hautbas) ou ""
-      //   acc     case d'accessoire (INV_ACCESSOIRES) ou ""
+      //   acc     type d'accessoire (INV_ACC_TYPES : bague, poignet…, sans côté) ou ""
       //   poches  ce qu'un vêtement ou un accessoire porté ajoute aux Poches, en eb
       //   froid / chaud  sa protection, comptée s'il est porté dans sa case
       //   sac / cap      c'est un sac à dos, et ce qu'il peut contenir en eb

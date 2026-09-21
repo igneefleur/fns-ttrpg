@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "2.5.1b";
+  var RELEASE = "2.5.2b";
   var SCHEMA = 3;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -463,7 +463,7 @@
       //             que limitent les poches et le sac
       //   nourri    c'est de la nourriture ; « places » porte alors son VOLUME
       //   vet     type de vêtement (INV_VETEMENTS, ou hautbas) ou ""
-      //   acc     case d'accessoire (INV_ACCESSOIRES) ou ""
+      //   acc     type d'accessoire (INV_ACC_TYPES : bague, poignet…, sans côté) ou ""
       //   poches  ce qu'un vêtement ou un accessoire porté ajoute aux Poches, en eb
       //   froid / chaud  sa protection, comptée s'il est porté dans sa case
       //   sac / cap      c'est un sac à dos, et ce qu'il peut contenir en eb
@@ -530,9 +530,21 @@
   var INV_VETEMENTS = ["tete", "haut", "mains", "bas", "pieds", "sousvet"];
   var INV_ACCESSOIRES = ["oreilles", "collier", "poignetG", "poignetD",
                          "bagueG", "bagueD", "chevilleG", "chevilleD", "cape"];
+  // Le TYPE d'un accessoire ne dit pas le côté : une bague va à gauche comme
+  // à droite. Chaque type, et les cases qu'il accepte.
+  var INV_ACC_TYPES = {
+    oreilles: ["oreilles"], collier: ["collier"], poignet: ["poignetG", "poignetD"],
+    bague: ["bagueG", "bagueD"], cheville: ["chevilleG", "chevilleD"], cape: ["cape"]
+  };
   var INV_CASES = ["mainG", "mainD", "ceinture", "dos"].concat(INV_VETEMENTS, INV_ACCESSOIRES);
   var INV_EP = ["ceint", "sacep"];
   var INV_LIEUX = INV_CASES.concat(INV_EP, ["poches", "sac"]);
+  function accType(v) {
+    if (aClef(INV_ACC_TYPES, v)) return v;
+    var t = "";
+    Object.keys(INV_ACC_TYPES).forEach(function (k) { if (INV_ACC_TYPES[k].indexOf(v) >= 0) t = k; });
+    return t;
+  }
   function normGestes(liste) {
     return (Array.isArray(liste) ? liste : []).filter(function (g) { return g && typeof g === "object"; })
       .map(function (g) {
@@ -733,7 +745,8 @@
         vet: INV_VETEMENTS.indexOf(o.vet) >= 0 || o.vet === "hautbas" ? o.vet : "",
         poches: pnum(o.poches),
         froid: snum(o.froid), chaud: snum(o.chaud),
-        acc: INV_ACCESSOIRES.indexOf(o.acc) >= 0 ? o.acc : "",
+        // un type (bague) ; une case d'avant (bagueG) redevient son type
+        acc: accType(o.acc),
         sac: !!o.sac,
         cap: pnum(o.cap),
         ceint: !!o.ceint,
@@ -1411,7 +1424,7 @@
     if (ou === "mainG" || ou === "mainD") return true;
     if (ou === "ceinture") return !!o.ceint;
     if (ou === "dos") return !!o.sac;
-    if (INV_ACCESSOIRES.indexOf(ou) >= 0) return o.acc === ou;
+    if (INV_ACCESSOIRES.indexOf(ou) >= 0) return !!o.acc && (INV_ACC_TYPES[o.acc] || []).indexOf(ou) >= 0;
     return o.vet === ou || (o.vet === "hautbas" && (ou === "haut" || ou === "bas"));
   }
   // LES EMPLACEMENTS (ep) : la ceinture portée et le sac porté en offrent
@@ -1484,7 +1497,7 @@
   function vetementsPortes() {
     return state.inv.objets.filter(function (o) {
       return (o.vet && (o.ou === o.vet || (o.vet === "hautbas" && o.ou === "haut"))) ||
-             (o.acc && o.ou === o.acc);
+             (o.acc && INV_ACCESSOIRES.indexOf(o.ou) >= 0 && casePermise(o, o.ou));
     });
   }
   function capPoches() {
@@ -5129,6 +5142,7 @@
     poignetG: "Poignet gauche", poignetD: "Poignet droit",
     bagueG: "Bague gauche", bagueD: "Bague droite",
     chevilleG: "Cheville gauche", chevilleD: "Cheville droite", cape: "Cape",
+    poignet: "Poignet", bague: "Bague", cheville: "Cheville",
     ceint: "Ceinture", sacep: "Sac à dos", poches: "Poches", sac: "Sac à dos"
   };
   // le nom d'une case vide coupé à la main : les deux côtés d'une paire se
@@ -5624,7 +5638,7 @@
       if (it.acc) {
         var pa = el("div", "pc-obj-pair");
         var tya = el("select", "pc-edit-field");
-        INV_ACCESSOIRES.forEach(function (v) {
+        Object.keys(INV_ACC_TYPES).forEach(function (v) {
           var o = el("option", null, INV_NOMS[v]);
           o.value = v;
           if (v === it.acc) o.selected = true;

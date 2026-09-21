@@ -29,6 +29,7 @@
     poignetG: "Poignet gauche", poignetD: "Poignet droit",
     bagueG: "Bague gauche", bagueD: "Bague droite",
     chevilleG: "Cheville gauche", chevilleD: "Cheville droite", cape: "Cape",
+    poignet: "Poignet", bague: "Bague", cheville: "Cheville",
     ceint: "Ceinture", sacep: "Sac à dos", poches: "Poches", sac: "Sac à dos"
   };
   // le nom d'une case vide coupé à la main : les deux côtés d'une paire se
@@ -524,7 +525,7 @@
       if (it.acc) {
         var pa = el("div", "pc-obj-pair");
         var tya = el("select", "pc-edit-field");
-        INV_ACCESSOIRES.forEach(function (v) {
+        Object.keys(INV_ACC_TYPES).forEach(function (v) {
           var o = el("option", null, INV_NOMS[v]);
           o.value = v;
           if (v === it.acc) o.selected = true;
