@@ -1,96 +1,90 @@
   // ---- 6. Exposition ----
-  // UNE jauge SIGNÉE : de −(borne) à +(borne), zéro au milieu. Aucune table du
-  // froid ni du chaud n'est affichée — la fiche compte les degrés, elle ne dit
-  // pas ce qu'il en coûte.
+  // LE GRÉEMENT DES RÉSERVES (vitales.js), mais SIGNÉ :
+  //
+  //     ┌───────────────────────────────┐
+  //     │ EXPOSITION          −30 / ±120 │  ← bandeau : l'identité et la valeur
+  //     ├───────────────────────────────┤
+  //     │ froid ██████|        chaud     │  ← la barre part du MILIEU
+  //     │  [   ±   ]      [Appliquer]    │  ← le geste du jeu
+  //     └───────────────────────────────┘
+  //
+  // Zéro est au centre et la barre y est vide : c'est l'état stable. Elle
+  // pousse vers la gauche quand le personnage a froid, vers la droite quand il
+  // a chaud, aux couleurs du froid et du chaud. Vider la valeur la remet à
+  // zéro. Aucun rouage : la borne se règle dans les Options (Réglages des
+  // capacités), et aucune table du froid ni du chaud n'est affichée.
+  //
+  // CE MODULE A ÉTÉ REFAIT parce que l'ancien lisait une variable qui n'existait
+  // pas dans son rafraîchissement : il levait à chaque passage, se faisait
+  // museler au cinquième (le filet rouge à sa gauche), et ses − et + semblaient
+  // morts puisque plus rien ne se redessinait.
   function buildExposition() {
-    var b = block("Exposition", null, "exposition");
-    var row = el("div", "pc-kv");
-    var k = el("span", "k", abbrCap("expo", "EXP"));
-    k.title = libCap("expo", "Exposition");
-    row.appendChild(k);
-    row.appendChild(stepper(
-      function () { return state.etat.expo; },
-      function (v) { state.etat.expo = Math.round(v * 100) / 100; },
-      5, "exposition"));
-    var max = el("span", "max", "");
-    row.appendChild(max);
-    row.appendChild(el("span", "sp"));
-    row.appendChild(miniBtn("Zéro", "Revenir à une exposition nulle", function () {
-      state.etat.expo = 0;
+    var box = el("div", "pc-block pc-vital");
+    var res = el("div", "pc-vital-res pc-expo-res");
+
+    var tete = el("div", "pc-vital-tete");
+    var nom = el("span", "pc-vital-nom", "Exposition");
+    tete.appendChild(nom);
+    var val = el("span", "pc-vital-val");
+    var inp = el("input", "pc-vital-num");
+    inp.type = "number";
+    inp.step = "1";
+    inp.setAttribute("aria-label", "Exposition");
+    inp.addEventListener("input", function () {
+      var v = parseFloat(inp.value);
+      state.etat.expo = isFinite(v) ? Math.round(v * 100) / 100 : 0;
       refresh();
-    }));
-    b.appendChild(row);
+    });
+    val.appendChild(inp);
+    var mx = el("span", "pc-vital-max", "");
+    val.appendChild(mx);
+    tete.appendChild(val);
+    res.appendChild(tete);
 
-    // La barre BIDIRECTIONNELLE : un remplissage qui part du milieu vers le
-    // froid ou vers le chaud, l'axe du zéro par-dessus, le curseur au-dessus de
-    // tout. Grammaire pc-, classe neuve — JJK n'a rien de signé à montrer.
-    //
-    // LES TROIS NOMS SONT CEUX DE LA FEUILLE, et l'ORDRE compte. « fill » et
-    // « cur » sont attendus en ENFANTS DIRECTS de .pc-expobar : glisser le
-    // remplissage DANS l'axe le noierait dans un trait d'un pixel, et le
-    // rebaptiser « curseur » lui retirerait sa position absolue — dans les deux
-    // cas la jauge paraît vide, sans la moindre erreur à lire. Les trois se
-    // suivent dans l'ordre de peinture : le trait du zéro reste lisible sur le
-    // remplissage, et le curseur sur les deux.
-    var barre = el("div", "pc-expobar");
-    var rempli = el("i", "fill");
-    barre.appendChild(rempli);
-    var axe = el("span", "axe");
-    barre.appendChild(axe);
-    var curseur = el("span", "cur");
-    barre.appendChild(curseur);
-    b.appendChild(barre);
+    // la barre : un remplissage qui part du milieu, et le trait du zéro
+    var jauge = el("span", "pc-vital-jauge pc-expo-jauge");
+    var fill = el("i");
+    jauge.appendChild(fill);
+    jauge.appendChild(el("b", "pc-expo-zero"));
+    res.appendChild(jauge);
 
-    // Les deux bouts, aux couleurs de la jauge (.pc-expo-ends, déjà dessiné par
-    // la feuille). Une barre SIGNÉE ne dit pas d'elle-même de quel côté elle
-    // penche : sans ces deux mots, il faut deviner que la gauche est le froid,
-    // et un curseur posé à gauche se lit à l'envers. Deux mots, et AUCUNE
-    // règle — la fiche nomme le sens, elle ne dit pas ce que le froid coûte.
-    var bouts = el("div", "pc-expo-ends");
-    bouts.appendChild(el("span", "f", "Froid"));
-    bouts.appendChild(el("span", "c", "Chaud"));
-    b.appendChild(bouts);
-
-    b.appendChild(ligneLeviers("expo", expoMaxAuto,
-      "Vide = borne calculée ; une valeur la force. La borne basse est l'opposée de la haute."));
-
-    var pied = el("div", "pc-comp-tools");
-    var ligne = el("div", "row");
-    ligne.appendChild(chatBtn(
-      function () { return "Exposition — " + fmtP(state.etat.expo) + " / " + fmtP(expoMax()); },
-      function () {
-        return [["Niveau apporté", String(effNiveauDe("expo"))],
-                ["Effondrement", String(effondrement())]];
-      }));
-    pied.appendChild(ligne);
-    b.appendChild(pied);
+    var cmd = el("div", "pc-vital-cmd");
+    var delta = el("input", "pc-vital-delta");
+    delta.type = "number";
+    delta.step = "1";
+    delta.placeholder = "±";
+    delta.setAttribute("aria-label", "Exposition à ajouter ou retirer");
+    function applique() {
+      var d = parseFloat(delta.value);
+      if (!isFinite(d) || !d) return;
+      var m = expoMax();
+      state.etat.expo = Math.round(clamp(num(state.etat.expo, 0) + d, -m, m) * 100) / 100;
+      delta.value = "";
+      refresh();
+    }
+    delta.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") { e.preventDefault(); applique(); }
+    });
+    cmd.appendChild(delta);
+    cmd.appendChild(miniBtn("Appliquer", "Ajouter cette variation", applique));
+    res.appendChild(cmd);
+    box.appendChild(res);
 
     hooks.push(function () {
-      var m = expoMax();
-      var v = state.etat.expo;
-      max.textContent = "± " + fmtP(m);
-      max.classList.toggle("adj", capForce("expo") || Math.abs(v) > m);
-      max.title = (capForce("expo")
-        ? "Bornes forcées à ± " + fmtP(m) + " (calculées : ± " + fmtP(expoMaxAuto()) + ")"
-        : provenanceCap("expo")()) +
-        (d ? " · modificateurs " + sign(d) : "") +
-        " — niveau d'effondrement apporté : " + effNiveauDe("expo");
-      // Remplissage à partir du milieu, dans le sens du signe. Le POINT
-      // D'ANCRAGE vient de la feuille et non d'ici : .fill.froid est accroché
-      // par right:50 %, .fill.chaud par left:50 %. Poser un `left` en JS
-      // écraserait l'ancrage du froid et ferait pousser la barre du mauvais
-      // côté ; seule la LARGEUR se calcule, en pour-cent de la demi-barre.
+      var m = expoMax(), v = num(state.etat.expo, 0);
+      if (document.activeElement !== inp) inp.value = v;
+      inp.style.width = Math.max(3.4, String(inp.value).length + 0.3) + "ch";
+      mx.textContent = "/ ±" + fmtP(m);
+      mx.classList.toggle("adj", capForce("expo") || Math.abs(v) > m);
+      mx.title = capForce("expo")
+        ? chaineTexteDe(lireCap("max", "expo"), "calculé", expoMaxAuto())
+        : provenanceCap("expo")();
       var part = m > 0 ? clamp(Math.abs(v) / m, 0, 1) * 50 : 0;
-      rempli.classList.toggle("froid", v < 0);
-      rempli.classList.toggle("chaud", v > 0);
-      rempli.style.width = part + "%";
-      // Le curseur est un TRAIT de deux pixels, pas une étiquette : la barre
-      // est haute d'un demi-cadratin et coupe ce qui déborde, si bien qu'un
-      // nombre écrit ici serait rogné. La valeur se lit au pas juste au-dessus,
-      // et le maximum à côté ; le curseur ne porte que la position.
-      curseur.style.left = clamp(50 + (m > 0 ? (v / m) * 50 : 0), 0, 100) + "%";
-      curseur.title = "Exposition " + fmtP(v) + " sur ± " + fmtP(m);
+      fill.className = v < 0 ? "froid" : v > 0 ? "chaud" : "";
+      fill.style.left = (v < 0 ? 50 - part : 50) + "%";
+      fill.style.width = part + "%";
+      jauge.title = "Exposition " + (v < 0 ? "−" + fmtP(-v) : fmtP(v)) + " sur ±" + fmtP(m) +
+                    " · niveau d'effondrement " + effNiveauDe("expo");
     });
-    return b;
+    return box;
   }
-
