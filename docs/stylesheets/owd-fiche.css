@@ -282,13 +282,24 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
 .pc-segs > .c:hover { background: var(--stripe); color: var(--ink); }
 .pc-segs > .c.on { background: var(--accent); color: var(--card); box-shadow: none; }
 /* MOUVEMENT : les pas par round en grand, le coût du cran à droite */
-.pc-crans { margin-top: .3rem; }
-.pc-mouv { display: flex; flex-wrap: wrap; align-items: baseline; gap: .1rem .4rem; margin-top: .45rem; }
-.pc-mouv b { font-size: 1.5rem; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; line-height: 1; }
-.pc-mouv .u { font-size: var(--fs-meta); color: var(--ink-3); white-space: nowrap; }
-.pc-mouv-dist { margin-top: .15rem; font-size: var(--fs-meta); color: var(--ink-3); font-variant-numeric: tabular-nums; }
-.pc-mouv-cout { margin-top: .3rem; font-size: var(--fs-meta); color: var(--ink-2); font-weight: 700; }
-.pc-mouv-cout:empty { display: none; }
+/* MOUVEMENT : un tableau de bord en cases soudées (le trio de MIA) — la
+   valeur en grand, l'étiquette en petites capitales dessous. La case des pas
+   est la plus large et la plus forte : c'est elle qu'on lit en combat. */
+.pc-stat {
+  display: flex; align-items: stretch; box-sizing: border-box; width: 100%;
+  background: var(--panel); border: 1px solid var(--line-2); border-radius: 5px;
+  overflow: hidden; line-height: 1.1; margin-top: .3rem;
+}
+.pc-stat > .c {
+  flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: .12rem; padding: .35rem .2rem .3rem; text-align: center;
+}
+.pc-stat > .c + .c { box-shadow: inset 1px 0 0 var(--line-2); }
+.pc-stat > .c.grand { flex-grow: 1.2; background: var(--card); }
+.pc-stat .v { font-size: .9rem; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+.pc-stat > .c.grand .v { font-size: 1.45rem; color: var(--accent); }
+.pc-stat .k { font-size: .5rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); white-space: nowrap; }
+.pc-crans > .c { font-size: .66rem; letter-spacing: 0; text-transform: none; font-variant-numeric: tabular-nums; }
 /* LE COMPTEUR EN PIÈCES (avantages, rupture) : une pièce par point, pleine
    quand il est dépensé, vide quand il reste ; celles de trop en danger. */
 .pc-id-meters .pc-meter.pc-meter-pieces { flex: 0 1 auto; }
