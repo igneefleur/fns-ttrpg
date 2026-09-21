@@ -326,8 +326,8 @@
     var search = champFiltre(function () { return compFilter; },
                              function (v) { compFilter = v; }, "Filtrer les compétences…", rebuildComps);
     if (search) l1.appendChild(search);
-    if (l1.children.length) tools.appendChild(l1);
-    var l2 = el("div", "row");
+    // LE FILTRE ET LA PUCE SUR UNE MÊME LIGNE, à parts égales : la rangée est
+    // une grille à colonnes 1fr, chacun y prend sa moitié
     var puce = el("span", "pc-chip", "Investies");
     puce.title = "N'afficher que les compétences où un rang, un modificateur ou un forçage est posé.";
     puce.classList.toggle("on", compOnly);
@@ -336,8 +336,8 @@
       puce.classList.toggle("on", compOnly);
       rebuildComps();
     });
-    l2.appendChild(puce);
-    tools.appendChild(l2);
+    l1.appendChild(puce);
+    tools.appendChild(l1);
     b.appendChild(tools);
     compBox = el("div");
     b.appendChild(compBox);
