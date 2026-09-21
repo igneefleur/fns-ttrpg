@@ -321,6 +321,184 @@
   "nuBas": 28,
   "nuHaut": 32
  },
+ "temps": {
+  "tranche": 10,
+  "efforts": [
+   {
+    "cle": "sommeil",
+    "nom": "Sommeil",
+    "repos": 7,
+    "survie": -3,
+    "degres": 0
+   },
+   {
+    "cle": "repos",
+    "nom": "Repos",
+    "repos": -4,
+    "survie": -4,
+    "degres": 0
+   },
+   {
+    "cle": "leger",
+    "nom": "Léger",
+    "repos": -5,
+    "survie": -5,
+    "degres": 5
+   },
+   {
+    "cle": "intermediaire",
+    "nom": "Intermédiaire",
+    "repos": -6,
+    "survie": -6,
+    "degres": 15
+   },
+   {
+    "cle": "lourd",
+    "nom": "Lourd",
+    "repos": -8,
+    "survie": -7,
+    "degres": 25
+   }
+  ],
+  "regen": [
+   {
+    "points": 0,
+    "minutes": 1,
+    "niveau": 0
+   },
+   {
+    "points": 5,
+    "minutes": 480,
+    "niveau": 1
+   },
+   {
+    "points": 10,
+    "minutes": 480,
+    "niveau": 2
+   },
+   {
+    "points": 15,
+    "minutes": 480,
+    "niveau": 3
+   },
+   {
+    "points": 20,
+    "minutes": 480,
+    "niveau": 4
+   },
+   {
+    "points": 5,
+    "minutes": 60,
+    "niveau": 5
+   },
+   {
+    "points": 10,
+    "minutes": 60,
+    "niveau": 6
+   },
+   {
+    "points": 15,
+    "minutes": 60,
+    "niveau": 7
+   },
+   {
+    "points": 20,
+    "minutes": 60,
+    "niveau": 8
+   },
+   {
+    "points": 5,
+    "minutes": 10,
+    "niveau": 9
+   },
+   {
+    "points": 10,
+    "minutes": 10,
+    "niveau": 10
+   },
+   {
+    "points": 15,
+    "minutes": 10,
+    "niveau": 11
+   },
+   {
+    "points": 20,
+    "minutes": 10,
+    "niveau": 12
+   },
+   {
+    "points": 5,
+    "minutes": 1,
+    "niveau": 13
+   },
+   {
+    "points": 10,
+    "minutes": 1,
+    "niveau": 14
+   },
+   {
+    "points": 15,
+    "minutes": 1,
+    "niveau": 15
+   },
+   {
+    "points": 20,
+    "minutes": 1,
+    "niveau": 16
+   },
+   {
+    "points": 5,
+    "minutes": null,
+    "niveau": 17
+   },
+   {
+    "points": 10,
+    "minutes": null,
+    "niveau": 18
+   },
+   {
+    "points": 15,
+    "minutes": null,
+    "niveau": 19
+   },
+   {
+    "points": 20,
+    "minutes": null,
+    "niveau": 20
+   }
+  ],
+  "paliers": {
+   "diviseur": 4,
+   "arrondi": "haut"
+  },
+  "expoRetour": 10,
+  "accelere": {
+   "froid": [
+    {
+     "niveau": 2,
+     "reserve": "ps",
+     "facteur": 2
+    },
+    {
+     "niveau": 4,
+     "reserve": "ps",
+     "facteur": 4
+    }
+   ],
+   "chaud": [
+    {
+     "niveau": 2,
+     "reserve": "ph",
+     "facteur": 2
+    },
+    {
+     "niveau": 4,
+     "reserve": "ph",
+     "facteur": 4
+    }
+   ]
+  }
+ },
  "pas": 0.75,
  "monnaie": {
   "nom": "pièce d'argent",

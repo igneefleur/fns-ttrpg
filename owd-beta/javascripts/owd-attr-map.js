@@ -77,7 +77,7 @@
   // même version, la beta étant ce que le stable recevra à la fusion) : ce qui
   // compare des versions doit donc l'ôter avant de lire les nombres, et c'est
   // exactement ce que fait OwdMods.compareVersions.
-  var RELEASE_DEFAUT = "1.6.1b";
+  var RELEASE_DEFAUT = "1.7.0b";
   // Entier INDÉPENDANT de la release : il ne monte qu'au changement de forme de
   // l'état du personnage, jamais parce que le majeur a bougé. Ajouter une clé
   // racine avec un défaut n'en est PAS un : normalize() complète une clé
@@ -123,7 +123,7 @@
   //       veut dire « valeur calculée » — les confondre avec 0 clouerait une
   //       capacité à zéro sur le chemin de repli).
   //
-  // TREIZE, et pas un de plus. Les leviers du MJ ne sont PAS ici : ils vivent
+  // QUINZE, et pas un de plus. Les leviers du MJ ne sont PAS ici : ils vivent
   // tous dans la table éparse `capsLeviers`. Une capacité de plus
   // n'ajoute alors ni clé racine, ni suffixe, ni ligne dans cette table — et
   // surtout, aucun d'eux ne vient disputer au MIROIR les suffixes que les
@@ -135,6 +135,7 @@
     ["background", "background", "s"], ["notes", "notes", "s"],
     ["de", "de", "s"],
     ["xpTotal", "xp_total", "n"],
+    ["effort", "effort", "s"], ["temperature", "temperature", "n"],
     ["argent", "argent", "n"],
     ["v", "version", "n"], ["rel", "release", "s"]
   ];
@@ -233,6 +234,9 @@
       // l'état : deux endroits pour dire la même chose finiraient par se
       // contredire.
       xpTotal: 0,
+
+      // ---- l'effort et l'air ----
+      effort: "leger", temperature: 20,
 
       // ---- caractéristiques ----
       // Les CLÉS sont SANS ACCENT : elles voyagent en nom d'attribut Roll20 et
