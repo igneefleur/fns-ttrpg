@@ -38,7 +38,9 @@
     }
   }
   function buildDesAction() {
-    var b = block("Actions");
+    // LE ROUAGE garde la TAILLE des dés : c'est de la construction. Choisir
+    // des dés et les envoyer se joue, et reste ouvert hors édition.
+    var b = block("Actions", null, "desaction");
     var rangee = el("div", "pc-desaction");
     b.appendChild(rangee);
     var choisis = [];
@@ -78,6 +80,7 @@
       c.plus.disabled = TAILLES_DES.indexOf(t) >= TAILLES_DES.length - 1;
     }
     function change(i, sens) {
+      if (!isEdit("desaction")) return;
       var k = TAILLES_DES.indexOf(desTaille(i)) + sens;
       if (k < 0 || k >= TAILLES_DES.length) return;
       var tab = (state.desTailles || []).slice();
@@ -102,11 +105,11 @@
         });
         col.appendChild(pose);
         var taille = el("div", "pc-desaction-taille");
-        var moins = el("button", "pc-desaction-pas", "−");
+        var moins = el("button", "pc-desaction-pas pc-edit-only", "−");
         moins.type = "button";
         moins.addEventListener("click", function () { change(i, -1); });
         var nom = el("span", "pc-desaction-nom", "");
-        var plus = el("button", "pc-desaction-pas", "+");
+        var plus = el("button", "pc-desaction-pas pc-edit-only", "+");
         plus.type = "button";
         plus.addEventListener("click", function () { change(i, +1); });
         taille.appendChild(moins);

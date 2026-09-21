@@ -10,12 +10,12 @@
   // du livre n'apparaît nulle part : l'infobulle du niveau décompose ce que
   // chaque réserve y apporte, et le DOM ne montre que l'état du personnage.
   function buildEffondrement() {
-    var b = block("Effondrement", null, "effondrement");
+    // AUCUN ROUAGE : le module ne montre que l'état du personnage, et la ligne
+    // « Autre » se remplit en jouant. Forcer le niveau se fait dans les Options
+    // (Réglages des capacités, ligne Effondrement).
+    var b = block("Effondrement");
     var tN = bigTile("EFFONDREMENT", function () { return String(effondrement()); });
-    tN.classList.add("pc-mods-host", "pc-eff-niveau");
-    tuileForce(tN, "effondrement", effondrementAuto,
-      "Vide = niveau calculé sur les réserves ; une valeur le force.");
-    tuileMods(tN, "effondrement");
+    tN.classList.add("pc-eff-niveau");
     b.appendChild(tN);
     function reste(champ) {
       return 100 - clamp(num(effDef()[champ], 0) * effondrement(), 0, 100);

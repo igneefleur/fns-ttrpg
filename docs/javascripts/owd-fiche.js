@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "1.14.0b";
+  var RELEASE = "1.14.1b";
   var SCHEMA = 2;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -3718,12 +3718,12 @@
   // du livre n'apparaît nulle part : l'infobulle du niveau décompose ce que
   // chaque réserve y apporte, et le DOM ne montre que l'état du personnage.
   function buildEffondrement() {
-    var b = block("Effondrement", null, "effondrement");
+    // AUCUN ROUAGE : le module ne montre que l'état du personnage, et la ligne
+    // « Autre » se remplit en jouant. Forcer le niveau se fait dans les Options
+    // (Réglages des capacités, ligne Effondrement).
+    var b = block("Effondrement");
     var tN = bigTile("EFFONDREMENT", function () { return String(effondrement()); });
-    tN.classList.add("pc-mods-host", "pc-eff-niveau");
-    tuileForce(tN, "effondrement", effondrementAuto,
-      "Vide = niveau calculé sur les réserves ; une valeur le force.");
-    tuileMods(tN, "effondrement");
+    tN.classList.add("pc-eff-niveau");
     b.appendChild(tN);
     function reste(champ) {
       return 100 - clamp(num(effDef()[champ], 0) * effondrement(), 0, 100);
@@ -3828,7 +3828,9 @@
     }
   }
   function buildDesAction() {
-    var b = block("Actions");
+    // LE ROUAGE garde la TAILLE des dés : c'est de la construction. Choisir
+    // des dés et les envoyer se joue, et reste ouvert hors édition.
+    var b = block("Actions", null, "desaction");
     var rangee = el("div", "pc-desaction");
     b.appendChild(rangee);
     var choisis = [];
@@ -3868,6 +3870,7 @@
       c.plus.disabled = TAILLES_DES.indexOf(t) >= TAILLES_DES.length - 1;
     }
     function change(i, sens) {
+      if (!isEdit("desaction")) return;
       var k = TAILLES_DES.indexOf(desTaille(i)) + sens;
       if (k < 0 || k >= TAILLES_DES.length) return;
       var tab = (state.desTailles || []).slice();
@@ -3892,11 +3895,11 @@
         });
         col.appendChild(pose);
         var taille = el("div", "pc-desaction-taille");
-        var moins = el("button", "pc-desaction-pas", "−");
+        var moins = el("button", "pc-desaction-pas pc-edit-only", "−");
         moins.type = "button";
         moins.addEventListener("click", function () { change(i, -1); });
         var nom = el("span", "pc-desaction-nom", "");
-        var plus = el("button", "pc-desaction-pas", "+");
+        var plus = el("button", "pc-desaction-pas pc-edit-only", "+");
         plus.type = "button";
         plus.addEventListener("click", function () { change(i, +1); });
         taille.appendChild(moins);
