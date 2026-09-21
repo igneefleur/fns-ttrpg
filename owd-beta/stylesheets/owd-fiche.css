@@ -409,6 +409,80 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
 .pc-block-title small { font-family: 'Proxima Nova', proxima-nova, 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: 600; font-size: var(--fs-label); letter-spacing: 0; color: var(--ink-3); margin-left: auto; text-align: right; white-space: nowrap; flex: 0 0 auto; }
 .pc-block-note { font-size: var(--fs-meta); color: var(--ink-3); margin: .12rem 0 .3rem; line-height: 1.3; }
 
+/* ---------- les réserves : PV, PE, PM ----------
+     ┌──────────────────────────────┐
+     │ PV                   40 / 119 │  le BANDEAU : le nom ET la valeur
+     ├──────────────────────────────┤
+     │ ███████                       │  la réserve, barre pleine
+     │  [   ±   ]      [Appliquer]  │  le geste du jeu
+     └──────────────────────────────┘
+   Le gréement des réserves de la fiche MIA. Trois bandes pleine largeur : la
+   carte perd sa marge intérieure et chaque bande porte la sienne. */
+.pc-block.pc-vital { padding: 0; overflow: hidden; }
+/* flex-wrap est la ceinture : si la valeur et la pastille ne tiennent plus, la
+   valeur passe à la ligne plutôt que de faire défiler la page en travers. */
+.pc-vital-tete {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: .4rem;
+  padding: .3rem .55rem .32rem;
+  background: var(--bandeau); border-bottom: 1px solid var(--trait-or);
+}
+/* Le nom est une étiquette : s'il faut céder, c'est lui qui cède, jamais la
+   valeur — un nombre coupé se lit faux. */
+.pc-vital-nom {
+  flex: 0 1 auto; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-family: 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
+  font-weight: 800; font-size: var(--fs-label); letter-spacing: .09em; text-transform: uppercase;
+  color: var(--sur-bandeau); line-height: 1.1;
+}
+.pc-vital-val { flex: 0 0 auto; margin-left: auto; display: inline-flex; align-items: baseline; gap: .2rem; }
+/* La largeur n'est qu'un plancher : reserveVitale() l'ajuste au nombre de signes. */
+.pc-vital-num {
+  flex: 0 0 auto; width: 3.4ch; border: none; background: transparent; color: #fff;
+  font: inherit; font-size: calc(var(--fs-value) * 1.85); font-weight: 800;
+  text-align: right; padding: 0; font-variant-numeric: tabular-nums; line-height: 1;
+  -moz-appearance: textfield; appearance: textfield;
+}
+.pc-vital-num::-webkit-inner-spin-button, .pc-vital-num::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.pc-vital-num:focus { outline: none; }
+.pc-vital-max {
+  font-size: var(--fs-label); font-weight: 700; letter-spacing: .02em;
+  color: #bdbdbd; font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.pc-vital-max.adj { color: var(--sur-bandeau); }
+/* Une barre PLEINE : la version segmentée a été refusée sur la fiche MIA. */
+.pc-vital-jauge { display: flex; width: 100%; height: .5rem; background: var(--line-2); overflow: hidden; }
+.pc-vital-jauge > i { display: block; height: 100%; background: var(--or); transition: width .15s; }
+.pc-vital-jauge > i.over { background: var(--danger); }
+/* Un tiers pour le champ, deux tiers pour le bouton ; le bouton garde sa
+   largeur de contenu, c'est le champ qui cède. */
+.pc-vital-cmd { display: flex; flex-wrap: wrap; align-items: center; gap: .18rem; padding: .34rem .4rem .38rem; }
+.pc-vital-cmd > .pc-mini { flex: 2 2 0; padding-inline: .4rem; }
+.pc-vital-delta {
+  flex: 1 1 0; min-width: 1.8rem; padding: .2rem .3rem;
+  border: 1px solid var(--line-2); border-radius: 5px;
+  background: var(--card); color: var(--ink);
+  font: inherit; font-size: .7rem; font-weight: 700; line-height: 1.15;
+  text-align: center; font-variant-numeric: tabular-nums;
+  -moz-appearance: textfield; appearance: textfield;
+  transition: border-color .12s, box-shadow .12s;
+}
+.pc-vital-delta::-webkit-inner-spin-button, .pc-vital-delta::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.pc-vital-delta::placeholder { color: var(--ink-3); font-weight: 600; }
+.pc-vital-delta:focus { outline: none; border-color: var(--or); box-shadow: 0 0 0 2px var(--wash); }
+.pc-vital-etat:empty { display: none; }
+.pc-vital-etat {
+  flex: 0 0 auto; align-self: center;
+  font-size: var(--fs-label); font-weight: 800; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--danger);
+  border: 1px solid var(--danger); border-radius: 999px; padding: .06rem .4rem;
+  background: var(--card);
+}
+/* Sous zéro, le bandeau entier passe au rouge. Un rouge FIXE et sombre, comme
+   le bandeau reste sombre dans les deux modes : le texte blanc s'y lit toujours. */
+.pc-vital.over .pc-vital-tete { background: #6e2415; border-bottom-color: var(--danger); }
+.pc-vital.over .pc-vital-nom, .pc-vital.over .pc-vital-num, .pc-vital.over .pc-vital-max { color: #fff; }
+
 /* ---- mode édition par module ----
    Un rouage dans le titre déverrouille la CONSTRUCTION du module ; hors
    édition, seuls les gestes de JEU restent actifs (jets, tchat, points de vie,
