@@ -27,25 +27,32 @@
       1, "°C"));
     b.appendChild(air);
 
-    var cmd = el("div", "pc-vital-cmd pc-temps");
-    var nb = el("input", "pc-vital-delta");
-    nb.type = "number"; nb.min = "1"; nb.step = "1";
-    nb.placeholder = "× " + (tempsDef() ? tempsDef().tranche : 10) + " min";
-    nb.setAttribute("aria-label", "Tranches de dix minutes à faire passer");
-    function applique() {
-      var n = parseInt(nb.value, 10);
-      if (!isFinite(n) || n < 1) return;
-      var min = avancerTemps(n);
-      nb.value = "";
-      refresh();
-      if (min) flash(min + " minutes écoulées.");
+    // DEUX GESTES, un par unité : des tranches de dix minutes, ou des heures.
+    // Une heure vaut ses tranches, passées une à une comme les autres.
+    function geste(unite, parUnite, etiquette) {
+      var cmd = el("div", "pc-vital-cmd pc-temps");
+      var nb = el("input", "pc-vital-delta");
+      nb.type = "number"; nb.min = "1"; nb.step = "1";
+      nb.placeholder = unite;
+      nb.setAttribute("aria-label", etiquette);
+      function applique() {
+        var n = parseInt(nb.value, 10);
+        if (!isFinite(n) || n < 1) return;
+        var min = avancerTemps(n * parUnite());
+        nb.value = "";
+        refresh();
+        if (min) flash(min + " minutes écoulées.");
+      }
+      nb.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") { e.preventDefault(); applique(); }
+      });
+      cmd.appendChild(nb);
+      cmd.appendChild(miniBtn("Appliquer", "Faire passer ce temps", applique));
+      b.appendChild(cmd);
     }
-    nb.addEventListener("keydown", function (e) {
-      if (e.key === "Enter") { e.preventDefault(); applique(); }
-    });
-    cmd.appendChild(nb);
-    cmd.appendChild(miniBtn("Appliquer", "Faire passer ce temps", applique));
-    b.appendChild(cmd);
+    geste("× " + (tempsDef() ? tempsDef().tranche : 10) + " min", function () { return 1; },
+          "Tranches de dix minutes à faire passer");
+    geste("× 1 h", tranchesParHeure, "Heures à faire passer");
 
     hooks.push(function () {
       boutons.forEach(function (x) { x[0].classList.toggle("on", x[1] === state.effort); });

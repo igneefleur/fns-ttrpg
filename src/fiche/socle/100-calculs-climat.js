@@ -54,30 +54,37 @@
     });
     return f;
   }
-  // Une réserve qui bouge de `delta` : elle ne dépasse pas son maximum en
-  // remontant, ne passe pas sous zéro en descendant, et ne corrige jamais une
-  // valeur déjà hors de ces bornes. Revenue au maximum, elle redevient null
-  // et suit le maximum quand il bouge.
+  // Une réserve qui bouge de `delta` sur tout le temps écoulé. ARRONDI CONTRE
+  // LE JOUEUR, décidé par l'auteur : une perte s'arrondit au supérieur
+  // (4,17 perdus = 5), un gain à l'inférieur — c'est le RÉSULTAT qui descend à
+  // l'entier, ce qui efface aussi les décimales d'une fiche d'avant. Elle ne dépasse pas
+  // son maximum en remontant, ne passe pas sous zéro en descendant, et ne
+  // corrige jamais une valeur déjà hors de ces bornes. Revenue au maximum,
+  // elle redevient null et suit le maximum quand il bouge.
   function bougeReserve(cle, delta) {
-    var cur = courant(cle), m = maxDe(cle), v = cur + delta;
+    if (!delta) return;
+    var cur = courant(cle), m = maxDe(cle);
+    var v = Math.floor(cur + delta);
     if (delta > 0) v = Math.max(cur, Math.min(v, m));
-    else if (delta < 0) v = Math.min(cur, Math.max(v, 0));
-    // pas d'arrondi ici : il se fait UNE fois, après toutes les tranches, sans
-    // quoi l'écart de chaque tranche s'accumulerait
+    else v = Math.min(cur, Math.max(v, 0));
     state.etat[cle] = v >= m && cur <= m ? null : v;
   }
   // Fait passer `n` tranches (de dix minutes) une à une : chaque tranche lit le
-  // niveau d'exposition où la précédente l'a laissée. Rend les minutes écoulées.
+  // niveau d'exposition où la précédente l'a laissée. Les réserves cumulent
+  // leur variation sur tout le temps et ne l'arrondissent qu'à la fin : c'est
+  // la perte du temps ENTIER qui s'arrondit, pas celle de chaque tranche.
+  // Rend les minutes écoulées.
   function avancerTemps(n) {
     var t = tempsDef(), e = effortDe(state.effort);
     if (!t || !e) return 0;
     var tr = num(t.tranche, 10), i;
     var rRepos = regenParMinute(num(e.repos, 0)), rSurvie = regenParMinute(num(e.survie, 0));
+    var cumul = { pr: 0, ps: 0, ph: 0 };
     for (i = 0; i < n; i++) {
-      if (rRepos !== null) bougeReserve("pr", rRepos * tr);
+      if (rRepos !== null) cumul.pr += rRepos * tr;
       if (rSurvie !== null) {
-        bougeReserve("ps", rSurvie * tr * facteurDepense("ps"));
-        bougeReserve("ph", rSurvie * tr * facteurDepense("ph"));
+        cumul.ps += rSurvie * tr * facteurDepense("ps");
+        cumul.ph += rSurvie * tr * facteurDepense("ph");
       }
       var p = paliersClimat(), m = expoMax(), x = num(state.etat.expo, 0);
       if (p) x = clamp(x + p, -m, m);
@@ -87,11 +94,13 @@
       }
       state.etat.expo = x;
     }
-    ["pr", "ps", "ph", "expo"].forEach(function (k) {
-      if (state.etat[k] !== null) state.etat[k] = Math.round(state.etat[k] * 100) / 100;
-    });
+    ["pr", "ps", "ph"].forEach(function (k) { bougeReserve(k, cumul[k]); });
+    // l'exposition s'arrondit en s'éloignant de zéro : contre le joueur, là aussi
+    state.etat.expo = state.etat.expo < 0 ? Math.floor(state.etat.expo) : Math.ceil(state.etat.expo);
     return n * tr;
   }
+  // Combien de tranches dans une heure.
+  function tranchesParHeure() { var t = tempsDef(); return t ? Math.max(1, Math.round(60 / num(t.tranche, 10))) : 6; }
   function confort() {
     var c = climatDef();
     if (c.nuBas === undefined || c.nuHaut === undefined) return null;
