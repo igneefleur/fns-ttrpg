@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "2.7.5b";
+  var RELEASE = "2.7.6b";
   var SCHEMA = 3;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -3923,20 +3923,21 @@
     // LES CRANS, pour l'allure qui en a plusieurs : foncer. Mêmes cases
     // soudées que les efforts, en parts égales, chacune marquée des pas
     // qu'elle ajoute à l'allure d'avant (+3 | +6 | +9 | +12 | +15).
-    var crans = el("div", "pc-segs pc-crans");
-    b.appendChild(crans);
-
+    // Dans l'ordre arrêté par l'auteur : la valeur et « pas / round », puis
+    // les crans dessous, puis leur coût.
     var aff = el("div", "pc-mouv");
     var pas = el("b");
     aff.appendChild(pas);
-    aff.appendChild(el("span", "u", "pas par round"));
-    var cout = el("span", "cout");
-    aff.appendChild(cout);
+    aff.appendChild(el("span", "u", "pas / round"));
     b.appendChild(aff);
+    var crans = el("div", "pc-segs pc-crans");
+    b.appendChild(crans);
+    var cout = el("div", "pc-mouv-cout");
+    b.appendChild(cout);
 
     function libCout(c) {
       var t = [];
-      if (c.des) t.push(c.des + " dé" + (c.des > 1 ? "s" : ""));
+      if (c.des) t.push(c.des + "DA");   // dés d'action
       if (c.pe) t.push(c.pe + " PE");
       return t.join(" · ");
     }
