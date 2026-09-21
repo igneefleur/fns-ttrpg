@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "2.6.0b";
+  var RELEASE = "2.6.1b";
   var SCHEMA = 3;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -2871,19 +2871,23 @@
       });
       return m;
     }
+    // DEUX LIGNES, dans l'ordre arrêté par l'auteur :
+    //   Création | XP dépensé | XP total
+    //   Avantage | Rupture | Compétences | Techniques
+    var mrow2 = el("div", "pc-id-meters");
     if (creation()) mrow.appendChild(meter("Création", creationDepense, creationPoints));
-    if (avantagePoints() !== null)
-      mrow.appendChild(meter("Avantage", avantageDepense, avantagePoints, "Points d'avantage"));
     mrow.appendChild(meter("XP dépensé", xpDepense, function () { return state.xpTotal; },
       "Ce que les rangs de compétence, les techniques et les caractéristiques ont coûté"));
+    if (avantagePoints() !== null)
+      mrow2.appendChild(meter("Avantage", avantageDepense, avantagePoints, "Points d'avantage"));
+    mrow2.appendChild(meter("Rupture", ruptureDepense, ruptureMax,
+      "Points de rupture engagés par les Rangs Max et par les techniques"));
     if (limiteRangs("competences") !== null)
-      mrow.appendChild(meter("Compétences", compRangsComptes,
+      mrow2.appendChild(meter("Compétences", compRangsComptes,
         function () { return limiteRangs("competences"); }, "Rangs de compétence"));
     if (limiteRangs("techniques") !== null)
-      mrow.appendChild(meter("Techniques", techRangsComptes,
+      mrow2.appendChild(meter("Techniques", techRangsComptes,
         function () { return limiteRangs("techniques"); }, "Rangs de technique"));
-    mrow.appendChild(meter("Rupture", ruptureDepense, ruptureMax,
-      "Points de rupture engagés par les Rangs Max et par les techniques"));
     var xpIn = el("input");
     xpIn.type = "number"; xpIn.min = 0; xpIn.step = 25;
     xpIn.value = state.xpTotal;
@@ -2894,6 +2898,7 @@
     hooks.push(function () { if (document.activeElement !== xpIn) xpIn.value = state.xpTotal; });
     mrow.appendChild(fld("XP total", xpIn));
     idBox.appendChild(mrow);
+    idBox.appendChild(mrow2);
 
     head.appendChild(idBox);
     sheet.appendChild(head);
