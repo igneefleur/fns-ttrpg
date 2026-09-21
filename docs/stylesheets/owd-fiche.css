@@ -1230,6 +1230,7 @@ html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où 
   aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center; text-align: center;
   box-sizing: border-box; padding: .2rem; border: 1px dashed var(--line-2); border-radius: 7px;
   color: var(--ink-3); font-size: .56rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  white-space: pre-line;
 }
 .pc-obj-ghead > .pds.over { color: var(--danger); font-weight: 700; }
 /* une case vide de poches ou de sac : la place qui reste, en pointillé */

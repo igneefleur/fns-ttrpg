@@ -4,7 +4,7 @@
   //   SUR SOI     [main gauche] [main droite]  ·  [ceinture] [sac à dos]
   //               [tête] [haut] [mains] [bas] [pieds]
   //               [boucles d'oreilles] [collier] [sous-vêtement] [poignet G] [poignet D]
-  //               [bague G] [bague D] [cheville G] [cheville D] [cape / manteau]
+  //               [bague G] [bague D] [cheville G] [cheville D] [cape]
   //   CEINTURE    les emplacements (ep) de la ceinture portée
   //   POCHES      ce que les vêtements et accessoires portés laissent emporter (en eb)
   //   SAC À DOS   les emplacements du sac porté, PUIS ce qu'il contient (en eb)
@@ -28,8 +28,14 @@
     oreilles: "Boucles d'oreilles", collier: "Collier",
     poignetG: "Poignet gauche", poignetD: "Poignet droit",
     bagueG: "Bague gauche", bagueD: "Bague droite",
-    chevilleG: "Cheville gauche", chevilleD: "Cheville droite", cape: "Cape / manteau",
+    chevilleG: "Cheville gauche", chevilleD: "Cheville droite", cape: "Cape",
     ceint: "Ceinture", sacep: "Sac à dos", poches: "Poches", sac: "Sac à dos"
+  };
+  // le nom d'une case vide coupé à la main : les deux côtés d'une paire se
+  // coupent au même endroit, jamais l'un seul parce que l'autre tient
+  var CASE_LIGNES = {
+    poignetG: "Poignet\ngauche", poignetD: "Poignet\ndroit",
+    chevilleG: "Cheville\ngauche", chevilleD: "Cheville\ndroite"
   };
   // Un objet peut-il aller là ? Les poches et le sac prennent tout ; une case
   // de Sur soi, ce qui s'y porte. Les emplacements ont leur propre dépôt.
@@ -235,7 +241,7 @@
         c.appendChild(tile(o));
         // la SECONDE case d'un objet qui en tient deux : le même objet, en écho
         if (o.ou !== ou) c.classList.add("echo");
-      } else c.appendChild(el("div", "pc-inv-vide", INV_NOMS[ou]));
+      } else c.appendChild(el("div", "pc-inv-vide", CASE_LIGNES[ou] || INV_NOMS[ou]));
       c.title = INV_NOMS[ou];
       c.addEventListener("dragover", function (e) {
         if (!drag || !lieuPermis(drag, ou)) return;
