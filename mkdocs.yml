@@ -74,15 +74,17 @@ extra_css:
   # par ces deux listes, Roll20 la charge par le manifeste ; deux clés de cache
   # qui divergent, et les deux mondes font tourner deux codes en croyant faire
   # tourner le même. Un fichier monté d'un seul côté ne se voit pas.
-  - stylesheets/owd-fiche.css?v=16
+  - stylesheets/owd-fiche.css?v=17
+  - stylesheets/owd-des3d.css?v=17  # les dés en volume, pris dans l'extension (hooks/des3d.py)
 extra_javascript:
   - javascripts/changelog.js
   - javascripts/continuous.js
   - javascripts/nav-drawer.js
   - javascripts/night.js
-  - javascripts/owd-migrations.js?v=16 # moteur de migration : AVANT le bundle, qui l'appelle
-  - javascripts/owd-mods.js?v=16       # moteur de mods : AVANT la fiche, qui l'interroge (et facultatif de naissance)
-  - javascripts/owd-fiche.js?v=16
+  - javascripts/owd-migrations.js?v=17 # moteur de migration : AVANT le bundle, qui l'appelle
+  - javascripts/owd-mods.js?v=17       # moteur de mods : AVANT la fiche, qui l'interroge (et facultatif de naissance)
+  - javascripts/owd-des3d.js?v=17    # moteur des dés en volume : AVANT la fiche, qui s'en sert
+  - javascripts/owd-fiche.js?v=17
   - javascripts/copybtn.js
 hooks:
   - hooks/changelog.py
@@ -92,6 +94,9 @@ hooks:
   # Les données viennent des règles, jamais du code — et ce hook s'arrête plutôt
   # que de deviner ce qu'il n'a pas su lire.
   - hooks/owd_creation.py
+  # Sert au site le moteur des dés en volume de l'extension (des3d.js et .css),
+  # lu à sa seule source : la fiche montre ses dés d'action avec.
+  - hooks/des3d.py
 plugins:
   - search
 markdown_extensions:

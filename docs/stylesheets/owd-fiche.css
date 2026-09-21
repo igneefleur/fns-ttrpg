@@ -511,6 +511,28 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
   background: var(--stripe); color: var(--ink-2);
   font-size: .7rem; font-weight: 700; line-height: 1.15; white-space: nowrap;
 }
+/* ---- Actions : les dés d'action ----
+   Une colonne par dé, à parts égales : le dé en volume, puis sa taille entre
+   deux pas. Un dé sélectionné porte l'anneau d'or. */
+.pc-desaction { display: flex; gap: .3rem; justify-content: space-between; margin: .15rem 0 .4rem; }
+.pc-desaction-de { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: .2rem; }
+.pc-desaction-pose {
+  display: flex; align-items: flex-end; justify-content: center;
+  width: 100%; min-height: 3.6rem; padding: .3rem 0 .35rem;
+  border: 1px solid var(--line-2); border-radius: 7px; background: var(--card);
+  cursor: pointer; transition: border-color .12s, box-shadow .12s;
+}
+.pc-desaction-pose:hover { border-color: var(--accent); }
+.pc-desaction-de.on .pc-desaction-pose { border-color: var(--or); box-shadow: 0 0 0 2px var(--wash); background: var(--wash); }
+.pc-desaction-jeton { font-size: var(--fs-hero); font-weight: 800; color: var(--ink); }
+.pc-desaction-taille { display: flex; align-items: center; justify-content: center; gap: .15rem; }
+.pc-desaction-nom { min-width: 2.1em; text-align: center; font-size: .66rem; font-weight: 700; color: var(--ink-2); }
+.pc-desaction-pas {
+  width: 1.05rem; height: 1.05rem; padding: 0; border: 1px solid var(--line-2); border-radius: 50%;
+  background: var(--panel); color: var(--ink-2); font: inherit; font-size: .62rem; line-height: 1; cursor: pointer;
+}
+.pc-desaction-pas:disabled { opacity: .35; cursor: default; }
+.pc-mini.pc-desaction-envoi { display: block; width: 100%; }
 /* Le pied d'une carte de réserves retrouve la marge que la carte a perdue. */
 .pc-vital-pied { padding: 0 .4rem .38rem; margin-top: 0; }
 

@@ -66,6 +66,12 @@
       // passer le temps ; rien d'autre ne les lit.
       effort: "leger", temperature: 20,
 
+      // ---- les dés d'action ----
+      // La taille de chaque dé d'action, dans l'ordre du module Actions : 4, 6,
+      // 8, 10 ou 12. Vide au départ — un dé sans taille posée prend celle des
+      // règles (le d8).
+      desTailles: [],
+
       // ---- ce que le personnage porte à l'instant ----
       // null = « au maximum » : la valeur SUIT le maximum quand il bouge, ce
       // qu'un nombre figé ne ferait pas — et le maximum de PV et de PE bouge

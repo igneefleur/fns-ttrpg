@@ -82,6 +82,10 @@ FICHIERS = [
     "javascripts/owd-fiche.js",
     "stylesheets/owd-fiche.css",
     "stylesheets/owd-roll20.css",
+    # le moteur des dés en volume, ENGENDRÉ au build par hooks/des3d.py depuis
+    # l'extension : un correctif du moteur doit atteindre la fiche, pas son cache
+    "javascripts/owd-des3d.js",
+    "stylesheets/owd-des3d.css",
     # le panneau de Camp : servi par le même site, à travers la même coquille
     # signée, il doit monter avec les autres — un ?v= figé aurait l'air de
     # protéger sans rien protéger

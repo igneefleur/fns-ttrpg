@@ -15,6 +15,12 @@
     if (!s.de) s.de = DE_DEFAUT;
     s.xpTotal = Math.max(0, num(s.xpTotal, 0));
     s.effort = String(s.effort == null ? "" : s.effort) || b.effort;
+    s.desTailles = Array.isArray(s.desTailles)
+      ? s.desTailles.slice(0, 99).map(function (t) {
+          t = num(t, 0);
+          return [4, 6, 8, 10, 12].indexOf(t) >= 0 ? t : null;
+        })
+      : [];
     s.temperature = clamp(Math.round(num(s.temperature, b.temperature) * 10) / 10, -999, 999);
     s.argent = pnum(s.argent);
 
