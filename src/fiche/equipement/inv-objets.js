@@ -132,9 +132,10 @@
 
       t.addEventListener("click", function (e) { e.stopPropagation(); sel = it; render(); });
       t.draggable = true;
+      // RANGER SE JOUE : on passe l'épée d'une main à l'autre, on range une
+      // fiole dans les poches en pleine partie. Le glisser-déposer marche donc
+      // hors du mode édition comme dedans.
       t.addEventListener("dragstart", function (e) {
-        // ranger = construction : mode édition requis
-        if (!isEdit("inv")) { e.preventDefault(); return; }
         drag = it;
         t.classList.add("drag");
         try { e.dataTransfer.setData("text/plain", ""); e.dataTransfer.effectAllowed = "move"; } catch (err) {}
@@ -327,7 +328,8 @@
       var pair = el("div", "pc-obj-pair");
       pair.appendChild(champNombre("Poids", function () { return it.poids; },
         function (v) { it.poids = pnum(v); majPile(); }));
-      var ouSel = el("select", "pc-edit-field");
+      // l'emplacement se change en jouant, comme au glisser-déposer
+      var ouSel = el("select");
       INV_LIEUX.forEach(function (ou) {
         if (!lieuPermis(it, ou) && it.ou !== ou) return;
         var o = el("option", null, ou === "sac" ? "Sac à dos (contenu)" : INV_NOMS[ou]);
