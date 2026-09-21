@@ -65,9 +65,10 @@
       // l'air en °C. Le module Temps s'en sert pour faire
       // passer le temps ; rien d'autre ne les lit.
       effort: "leger", temperature: 20,
-      // Le CRAN de l'allure lourde, la seule qui se prend par crans. L'allure
-      // elle-même est l'effort ci-dessus : le module Mouvement en tire les pas.
-      allureCran: 1,
+      // L'ALLURE du module Mouvement (clé d'un effort des règles : on peut
+      // aller moins vite que l'effort qu'on fournit) et le CRAN de l'allure
+      // lourde, la seule qui se prend par crans.
+      allure: "leger", allureCran: 1,
 
       // ---- l'effondrement ----
       // Les niveaux d'effondrement que le JOUEUR ajoute à ceux des réserves
