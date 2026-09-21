@@ -50,7 +50,7 @@ Un contenant se remplit à une source et se vide par doses : ce qu'une dose vers
 
 **Un contenant ne prend que ce que son type nomme.** Les liquides vont à la gourde, à la bouteille et à la fiole ; les poudres à la poche ; ce qui poisse et ce qui graisse au pot, car ni le cuir ni le col étroit ne s'en relaveraient.
 
-Un litre d'eau bu rend 80 points d'[hydratation](base/capacites-physiques.md#la-satiete-et-lhydratation) et occupe 12 places de contenance ; une dose en rend et en occupe sa part, soit 20 points et 3 places pour un quart de litre. Une journée de marche coûte 135 points de [satiété](base/capacites-physiques.md#la-satiete-et-lhydratation), soit trois parts de pain.
+Un litre d'eau bu rend 80 points d'[hydratation](base/capacites-physiques.md#la-satiete-et-lhydratation) et occupe 8 places de contenance ; une dose en rend et en occupe sa part, soit 20 points et 2 places pour un quart de litre. Une journée de marche coûte 135 points de [satiété](base/capacites-physiques.md#la-satiete-et-lhydratation), soit trois parts de pain.
 
 </div>
 

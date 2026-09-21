@@ -411,7 +411,7 @@ Exemple. Un personnage ordinaire, qui porte 20 en Endurance, dispose de 1 200 po
 
 La contenance est la place qu'un personnage a dans son ventre pour ce qu'il avale. Elle ne découle d'aucune caractéristique et vaut autant pour tout le monde.
 
-<p class="formula">Contenance = 60</p>
+<p class="formula">Contenance = 40</p>
 
 Elle s'occupe comme la [charge](#la-charge) se remplit : elle part de zéro, monte à mesure que le personnage avale, et redescend à mesure qu'il digère. Chaque chose avalée y occupe des places, et les garde le temps que le corps met à en venir à bout ; chaque objet porte les siennes, comme il porte son poids.
 
@@ -421,7 +421,7 @@ Un personnage ne peut rien avaler qui ne tienne dans les places qui lui restent.
 
 <div class="memo" markdown>
 
-Exemple. Une chose qui occupe 30 places est digérée en cinq heures. Un personnage qui en avale deux d'affilée a rempli sa contenance, et il lui faut attendre dix minutes avant de pouvoir reprendre la moindre place.
+Exemple. Une chose qui occupe 20 places est digérée en trois heures vingt. Un personnage qui en avale deux d'affilée a rempli sa contenance, et il lui faut attendre dix minutes avant de pouvoir reprendre la moindre place.
 
 </div>
 
