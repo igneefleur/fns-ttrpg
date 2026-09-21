@@ -15,13 +15,13 @@
     { id: "effort",       titre: "Temps",            onglet: "fiche", colonne: "gauche", build: buildEffort },
     { id: "survie",       titre: "Survie",           onglet: "fiche", colonne: "gauche", build: buildSurvie },
     { id: "exposition",   titre: "Exposition",       onglet: "fiche", colonne: "gauche", build: buildExposition },
-    { id: "pi",           titre: "PI",               onglet: "fiche", colonne: "gauche", build: buildPi },
     // TROIS RÉSERVES, TROIS MODULES : même forme, mais on ne les lit pas au
     // même moment, et elles se déplacent — ou se coupent — l'une sans l'autre.
     { id: "pv",           titre: "PV",               onglet: "fiche", colonne: "milieu", build: buildPv },
     { id: "pe",           titre: "PE",               onglet: "fiche", colonne: "milieu", build: buildPe },
     { id: "pm",           titre: "PM",               onglet: "fiche", colonne: "milieu", build: buildPm },
     { id: "effondrement", titre: "Effondrement",     onglet: "fiche", colonne: "milieu", build: buildEffondrement },
+    { id: "pi",           titre: "PI",               onglet: "fiche", colonne: "milieu", build: buildPi },
     { id: "contenance",   titre: "Contenance",       onglet: "fiche", colonne: "milieu", build: buildContenance },
     { id: "desaction",    titre: "Actions",          onglet: "fiche", colonne: "droite", build: buildDesAction },
     { id: "comps",        titre: "Compétences",      onglet: "fiche", colonne: "droite", build: buildComps },
