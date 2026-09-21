@@ -495,7 +495,7 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
 /* Plusieurs réserves dans une carte (Survie) : chaque bandeau reprend à zéro,
    séparé du geste de la précédente par un filet. */
 .pc-vital-res + .pc-vital-res { border-top: 1px solid var(--line); }
-/* Effort et température : les cinq efforts se partagent la largeur, et le
+/* Temps : les cinq efforts se partagent la largeur, et le
    geste du temps reprend celui des réserves, sans leur marge latérale. */
 /* Une RANGÉE SOUPLE et non la grille des sous-onglets : les cinq ne tiennent
    pas sur une ligne de la colonne, et un mot ne se coupe jamais — un bouton
@@ -503,6 +503,14 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
 .pc-tabs.mini.pc-efforts { display: flex; flex-wrap: wrap; }
 .pc-tabs.mini.pc-efforts > .pc-tab { flex: 1 1 auto; white-space: nowrap; padding-inline: .35rem; }
 .pc-vital-cmd.pc-temps { padding: .35rem 0 0; }
+/* L'UNITÉ EST UNE CASE, entre le champ et le bouton, de même largeur sur les
+   deux lignes : les deux « Appliquer » s'alignent l'un sous l'autre. */
+.pc-temps-unite {
+  flex: 0 0 2.6rem; box-sizing: border-box; text-align: center;
+  padding: .2rem .2rem; border: 1px solid var(--line-2); border-radius: 5px;
+  background: var(--stripe); color: var(--ink-2);
+  font-size: .7rem; font-weight: 700; line-height: 1.15; white-space: nowrap;
+}
 /* Le pied d'une carte de réserves retrouve la marge que la carte a perdue. */
 .pc-vital-pied { padding: 0 .4rem .38rem; margin-top: 0; }
 
