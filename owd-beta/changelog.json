@@ -111,24 +111,5 @@
 "url": "content/regles/base/capacites-physiques/"
 }
 ]
-},
-{
-"short": "dbf3176",
-"author": "Théo Cavaillès",
-"date": "2026-09-21T14:56:40+02:00",
-"message": "Les rangs de compétence et de technique sont limités par la somme des caractéristiques",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/dbf3176ecf7190a9871cb2b6b99c39056d4ad5ed",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/base/competences.md",
-"url": "content/regles/base/competences/"
-},
-{
-"status": "modified",
-"filename": "content/regles/base/techniques.md",
-"url": "content/regles/base/techniques/"
-}
-]
 }
 ]
