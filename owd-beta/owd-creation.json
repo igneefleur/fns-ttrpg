@@ -280,10 +280,10 @@
    "cle": "contenance",
    "libelle": "Contenance",
    "abbr": "CTN",
-   "base": 60,
+   "base": 40,
    "carac": null,
    "facteur": 0,
-   "formule": "Contenance = 60"
+   "formule": "Contenance = 40"
   },
   {
    "cle": "expo",
