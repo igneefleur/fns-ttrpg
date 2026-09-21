@@ -623,7 +623,7 @@ html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où 
 .pc-expo-jauge > i.chaud { background: var(--chaud); }
 .pc-expo-zero { position: absolute; top: 0; bottom: 0; left: calc(50% - 1px); width: 2px; background: var(--ink-3); }
 /* la zone idéale et l'intensité, en cases soudées sous la barre */
-.pc-expo-stat { margin: .35rem .4rem 0; width: auto; }
+.pc-expo-stat { margin: 0 .4rem .4rem; width: auto; }
 .pc-expo-stat .v.froid { color: var(--froid); }
 .pc-expo-stat .v.chaud { color: var(--chaud); }
 /* ---- Contenance : l'estomac ----

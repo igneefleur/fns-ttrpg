@@ -59,7 +59,6 @@
       return v;
     }
     var vZone = caseStat("idéal °C"), vInt = caseStat("intensité");
-    res.appendChild(stat);
 
     var cmd = el("div", "pc-vital-cmd");
     var delta = el("input", "pc-vital-delta");
@@ -81,6 +80,8 @@
     cmd.appendChild(delta);
     cmd.appendChild(miniBtn("Appliquer", "Ajouter cette variation", applique));
     res.appendChild(cmd);
+    // sous le geste : la barre, puis [± Appliquer], puis la zone et l'intensité
+    res.appendChild(stat);
     box.appendChild(res);
 
     hooks.push(function () {
