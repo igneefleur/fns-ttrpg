@@ -74,7 +74,50 @@
   // leur variation sur tout le temps et ne l'arrondissent qu'à la fin : c'est
   // la perte du temps ENTIER qui s'arrondit, pas celle de chaque tranche.
   // Rend les minutes écoulées.
+  // LE JOURNAL DU TEMPS : l'état d'avant et d'après chaque passage, en
+  // mémoire seulement (il ne survit pas au rechargement). Reculer restaure
+  // l'état d'avant tant que la fiche est restée telle que le passage l'a
+  // laissée ; sinon — une valeur retouchée à la main, une page rechargée — le
+  // recul se calcule à l'envers. Sans lui, une réserve ou une exposition qui a
+  // buté sur sa borne ne saurait plus d'où elle venait.
+  var journalTemps = [];
+  var TEMPS_CLES = ["pr", "ps", "ph", "expo"];
+  function photoTemps() {
+    var o = {};
+    TEMPS_CLES.forEach(function (k) { o[k] = state.etat[k]; });
+    return o;
+  }
+  function memePhoto(a, b) {
+    return TEMPS_CLES.every(function (k) { return a[k] === b[k]; });
+  }
   function avancerTemps(n) {
+    if (n < 0) return reculerTemps(-n);
+    var avant = photoTemps();
+    var min = avancerTempsCalcul(n);
+    if (min) {
+      journalTemps.push({ n: n, avant: avant, apres: photoTemps() });
+      if (journalTemps.length > 50) journalTemps.shift();
+    }
+    return min;
+  }
+  function reculerTemps(n) {
+    var t = tempsDef(), tr = t ? num(t.tranche, 10) : 10, fait = 0, top;
+    while (n > 0 && journalTemps.length) {
+      top = journalTemps[journalTemps.length - 1];
+      if (top.n > n || !memePhoto(photoTemps(), top.apres)) break;
+      TEMPS_CLES.forEach(function (k) { state.etat[k] = top.avant[k]; });
+      journalTemps.pop();
+      n -= top.n;
+      fait += top.n;
+    }
+    if (n > 0) {
+      journalTemps = [];
+      var r = reculerTempsCalcul(n);
+      if (!r) return -fait * tr;
+    }
+    return -(fait + n) * tr;
+  }
+  function avancerTempsCalcul(n) {
     var t = tempsDef(), e = effortDe(state.effort);
     if (!t || !e) return 0;
     var tr = num(t.tranche, 10), i;
@@ -98,6 +141,47 @@
     // l'exposition s'arrondit en s'éloignant de zéro : contre le joueur, là aussi
     state.etat.expo = state.etat.expo < 0 ? Math.floor(state.etat.expo) : Math.ceil(state.etat.expo);
     return n * tr;
+  }
+  // LE TEMPS QUI RECULE, quand le journal ne suffit pas : l'inverse
+  // d'avancerTempsCalcul. Les tranches se défont de la dernière à la première : chacune
+  // rend d'abord à l'exposition ce que la tranche lui avait fait, puis lit
+  // CETTE exposition pour savoir à quel rythme la réserve s'était dépensée.
+  // Les arrondis sont les miroirs de ceux de l'aller (une perte au supérieur
+  // se rend au supérieur), si bien qu'avancer puis reculer du même temps, à
+  // effort et température inchangés, ramène la fiche où elle était — sauf si
+  // une réserve avait buté sur zéro ou sur son maximum, ce que rien ne garde.
+  // Rend les minutes reculées, en négatif.
+  function reculeReserve(cle, delta) {
+    if (!delta) return;
+    var cur = courant(cle), m = maxDe(cle);
+    var v = Math.ceil(cur - delta);
+    if (delta > 0) v = Math.min(cur, Math.max(v, 0));
+    else v = Math.max(cur, Math.min(v, m));
+    state.etat[cle] = v >= m && cur <= m ? null : v;
+  }
+  function reculerTempsCalcul(n) {
+    var t = tempsDef(), e = effortDe(state.effort);
+    if (!t || !e) return 0;
+    var tr = num(t.tranche, 10), i;
+    var rRepos = regenParMinute(num(e.repos, 0)), rSurvie = regenParMinute(num(e.survie, 0));
+    var cumul = { pr: 0, ps: 0, ph: 0 };
+    for (i = 0; i < n; i++) {
+      var p = paliersClimat(), m = expoMax(), x = num(state.etat.expo, 0);
+      if (p) x = clamp(x - p, -m, m);
+      else if (x) {
+        var retour = m * num(t.expoRetour, 0) / 100;
+        x = clamp(x + (x > 0 ? retour : -retour), -m, m);
+      }
+      state.etat.expo = x;
+      if (rRepos !== null) cumul.pr += rRepos * tr;
+      if (rSurvie !== null) {
+        cumul.ps += rSurvie * tr * facteurDepense("ps");
+        cumul.ph += rSurvie * tr * facteurDepense("ph");
+      }
+    }
+    ["pr", "ps", "ph"].forEach(function (k) { reculeReserve(k, cumul[k]); });
+    state.etat.expo = state.etat.expo < 0 ? Math.floor(state.etat.expo) : Math.ceil(state.etat.expo);
+    return -n * tr;
   }
   // Combien de tranches dans une heure.
   function tranchesParHeure() { var t = tempsDef(); return t ? Math.max(1, Math.round(60 / num(t.tranche, 10))) : 6; }

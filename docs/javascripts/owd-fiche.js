@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "1.8.1b";
+  var RELEASE = "1.9.0b";
   var SCHEMA = 2;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -362,7 +362,7 @@
       // ---- l'effort et l'air ----
       // L'effort que le personnage fournit (clé d'un effort des règles :
       // sommeil, repos, leger, intermediaire, lourd) et la température de
-      // l'air en °C. Le module Effort et température s'en sert pour faire
+      // l'air en °C. Le module Temps s'en sert pour faire
       // passer le temps ; rien d'autre ne les lit.
       effort: "leger", temperature: 20,
 
@@ -1528,7 +1528,50 @@
   // leur variation sur tout le temps et ne l'arrondissent qu'à la fin : c'est
   // la perte du temps ENTIER qui s'arrondit, pas celle de chaque tranche.
   // Rend les minutes écoulées.
+  // LE JOURNAL DU TEMPS : l'état d'avant et d'après chaque passage, en
+  // mémoire seulement (il ne survit pas au rechargement). Reculer restaure
+  // l'état d'avant tant que la fiche est restée telle que le passage l'a
+  // laissée ; sinon — une valeur retouchée à la main, une page rechargée — le
+  // recul se calcule à l'envers. Sans lui, une réserve ou une exposition qui a
+  // buté sur sa borne ne saurait plus d'où elle venait.
+  var journalTemps = [];
+  var TEMPS_CLES = ["pr", "ps", "ph", "expo"];
+  function photoTemps() {
+    var o = {};
+    TEMPS_CLES.forEach(function (k) { o[k] = state.etat[k]; });
+    return o;
+  }
+  function memePhoto(a, b) {
+    return TEMPS_CLES.every(function (k) { return a[k] === b[k]; });
+  }
   function avancerTemps(n) {
+    if (n < 0) return reculerTemps(-n);
+    var avant = photoTemps();
+    var min = avancerTempsCalcul(n);
+    if (min) {
+      journalTemps.push({ n: n, avant: avant, apres: photoTemps() });
+      if (journalTemps.length > 50) journalTemps.shift();
+    }
+    return min;
+  }
+  function reculerTemps(n) {
+    var t = tempsDef(), tr = t ? num(t.tranche, 10) : 10, fait = 0, top;
+    while (n > 0 && journalTemps.length) {
+      top = journalTemps[journalTemps.length - 1];
+      if (top.n > n || !memePhoto(photoTemps(), top.apres)) break;
+      TEMPS_CLES.forEach(function (k) { state.etat[k] = top.avant[k]; });
+      journalTemps.pop();
+      n -= top.n;
+      fait += top.n;
+    }
+    if (n > 0) {
+      journalTemps = [];
+      var r = reculerTempsCalcul(n);
+      if (!r) return -fait * tr;
+    }
+    return -(fait + n) * tr;
+  }
+  function avancerTempsCalcul(n) {
     var t = tempsDef(), e = effortDe(state.effort);
     if (!t || !e) return 0;
     var tr = num(t.tranche, 10), i;
@@ -1552,6 +1595,47 @@
     // l'exposition s'arrondit en s'éloignant de zéro : contre le joueur, là aussi
     state.etat.expo = state.etat.expo < 0 ? Math.floor(state.etat.expo) : Math.ceil(state.etat.expo);
     return n * tr;
+  }
+  // LE TEMPS QUI RECULE, quand le journal ne suffit pas : l'inverse
+  // d'avancerTempsCalcul. Les tranches se défont de la dernière à la première : chacune
+  // rend d'abord à l'exposition ce que la tranche lui avait fait, puis lit
+  // CETTE exposition pour savoir à quel rythme la réserve s'était dépensée.
+  // Les arrondis sont les miroirs de ceux de l'aller (une perte au supérieur
+  // se rend au supérieur), si bien qu'avancer puis reculer du même temps, à
+  // effort et température inchangés, ramène la fiche où elle était — sauf si
+  // une réserve avait buté sur zéro ou sur son maximum, ce que rien ne garde.
+  // Rend les minutes reculées, en négatif.
+  function reculeReserve(cle, delta) {
+    if (!delta) return;
+    var cur = courant(cle), m = maxDe(cle);
+    var v = Math.ceil(cur - delta);
+    if (delta > 0) v = Math.min(cur, Math.max(v, 0));
+    else v = Math.max(cur, Math.min(v, m));
+    state.etat[cle] = v >= m && cur <= m ? null : v;
+  }
+  function reculerTempsCalcul(n) {
+    var t = tempsDef(), e = effortDe(state.effort);
+    if (!t || !e) return 0;
+    var tr = num(t.tranche, 10), i;
+    var rRepos = regenParMinute(num(e.repos, 0)), rSurvie = regenParMinute(num(e.survie, 0));
+    var cumul = { pr: 0, ps: 0, ph: 0 };
+    for (i = 0; i < n; i++) {
+      var p = paliersClimat(), m = expoMax(), x = num(state.etat.expo, 0);
+      if (p) x = clamp(x - p, -m, m);
+      else if (x) {
+        var retour = m * num(t.expoRetour, 0) / 100;
+        x = clamp(x + (x > 0 ? retour : -retour), -m, m);
+      }
+      state.etat.expo = x;
+      if (rRepos !== null) cumul.pr += rRepos * tr;
+      if (rSurvie !== null) {
+        cumul.ps += rSurvie * tr * facteurDepense("ps");
+        cumul.ph += rSurvie * tr * facteurDepense("ph");
+      }
+    }
+    ["pr", "ps", "ph"].forEach(function (k) { reculeReserve(k, cumul[k]); });
+    state.etat.expo = state.etat.expo < 0 ? Math.floor(state.etat.expo) : Math.ceil(state.etat.expo);
+    return -n * tr;
   }
   // Combien de tranches dans une heure.
   function tranchesParHeure() { var t = tempsDef(); return t ? Math.max(1, Math.round(60 / num(t.tranche, 10))) : 6; }
@@ -3188,14 +3272,16 @@
     return b;
   }
 
-  // ---- Effort et température ----
+  // ---- Temps ----
   // L'effort que fournit le personnage et l'air qu'il respire, puis le geste
-  // qui fait passer le temps : on tape un nombre de tranches de dix minutes,
-  // et « Appliquer » fait bouger repos, satiété, hydratation et exposition
-  // comme les règles le disent, tranche après tranche. Aucune règle n'est
-  // écrite ici : les efforts, les taux et les paliers viennent des données.
+  // qui fait passer le temps : on tape un nombre de tranches de dix minutes
+  // (m) ou d'heures (h), et « Appliquer » fait bouger repos, satiété,
+  // hydratation et exposition comme les règles le disent, tranche après
+  // tranche. UN NOMBRE NÉGATIF FAIT RECULER LE TEMPS : c'est le rattrapage
+  // d'une erreur de saisie. Aucune règle n'est écrite ici : les efforts, les
+  // taux et les paliers viennent des données.
   function buildEffort() {
-    var b = block("Effort et température");
+    var b = block("Temps");
 
     // les efforts, un bouton chacun, dans l'ordre des règles
     var bande = el("div", "pc-tabs mini pc-efforts");
@@ -3217,32 +3303,34 @@
       1, "°C"));
     b.appendChild(air);
 
-    // DEUX GESTES, un par unité : des tranches de dix minutes, ou des heures.
-    // Une heure vaut ses tranches, passées une à une comme les autres.
+    // DEUX GESTES, un par unité : « 10 m », des tranches de dix minutes ;
+    // « 1 h », des heures, qui valent leurs tranches passées une à une.
     function geste(unite, parUnite, etiquette) {
       var cmd = el("div", "pc-vital-cmd pc-temps");
       var nb = el("input", "pc-vital-delta");
-      nb.type = "number"; nb.min = "1"; nb.step = "1";
-      nb.placeholder = unite;
+      nb.type = "number"; nb.step = "1";
+      nb.placeholder = "±";
       nb.setAttribute("aria-label", etiquette);
       function applique() {
         var n = parseInt(nb.value, 10);
-        if (!isFinite(n) || n < 1) return;
+        if (!isFinite(n) || !n) return;
         var min = avancerTemps(n * parUnite());
         nb.value = "";
         refresh();
-        if (min) flash(min + " minutes écoulées.");
+        if (min > 0) flash(min + " minutes écoulées.");
+        else if (min < 0) flash(-min + " minutes reculées.");
       }
       nb.addEventListener("keydown", function (e) {
         if (e.key === "Enter") { e.preventDefault(); applique(); }
       });
       cmd.appendChild(nb);
+      cmd.appendChild(el("span", "pc-temps-unite", unite));
       cmd.appendChild(miniBtn("Appliquer", "Faire passer ce temps", applique));
       b.appendChild(cmd);
     }
-    geste("× " + (tempsDef() ? tempsDef().tranche : 10) + " min", function () { return 1; },
-          "Tranches de dix minutes à faire passer");
-    geste("× 1 h", tranchesParHeure, "Heures à faire passer");
+    geste((tempsDef() ? tempsDef().tranche : 10) + " m", function () { return 1; },
+          "Tranches de dix minutes, en plus ou en moins");
+    geste("1 h", tranchesParHeure, "Heures, en plus ou en moins");
 
     hooks.push(function () {
       boutons.forEach(function (x) { x[0].classList.toggle("on", x[1] === state.effort); });
@@ -6717,7 +6805,7 @@
   var MODULES_NATIFS = [
     // ---- onglet Fiche ----
     { id: "caracs",       titre: "Caractéristiques", onglet: "fiche", colonne: "gauche", build: buildCaracs },
-    { id: "effort",       titre: "Effort et température", onglet: "fiche", colonne: "gauche", build: buildEffort },
+    { id: "effort",       titre: "Temps",            onglet: "fiche", colonne: "gauche", build: buildEffort },
     { id: "survie",       titre: "Survie",           onglet: "fiche", colonne: "gauche", build: buildSurvie },
     { id: "corps",        titre: "Corps",            onglet: "fiche", colonne: "gauche", build: buildCorps },
     // TROIS RÉSERVES, TROIS MODULES : même forme, mais on ne les lit pas au

@@ -62,7 +62,7 @@
       // ---- l'effort et l'air ----
       // L'effort que le personnage fournit (clé d'un effort des règles :
       // sommeil, repos, leger, intermediaire, lourd) et la température de
-      // l'air en °C. Le module Effort et température s'en sert pour faire
+      // l'air en °C. Le module Temps s'en sert pour faire
       // passer le temps ; rien d'autre ne les lit.
       effort: "leger", temperature: 20,
 
