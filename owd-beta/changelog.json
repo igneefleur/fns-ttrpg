@@ -1,5 +1,19 @@
 [
 {
+"short": "a3e437d",
+"author": "Théo Cavaillès",
+"date": "2026-09-21T14:46:19+02:00",
+"message": "Le prix d'un point de caractéristique change par tranche de 100 et non de 50",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/a3e437db00153cd7873e54a4a543c104a7ca8d79",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/base/caracteristiques.md",
+"url": "content/regles/base/caracteristiques/"
+}
+]
+},
+{
 "short": "5c70e24",
 "author": "Théo Cavaillès",
 "date": "2026-09-21T14:42:38+02:00",
@@ -260,20 +274,6 @@
 "date": "2026-08-17T14:42:09+02:00",
 "message": "Le croc de la barbe passe SOUS l'écu, il ne frappe pas avec",
 "url": "https://github.com/igneefleur/fns-ttrpg/commit/02c68fa0448ca48e1fc7bdfbd51f5e10b3a66943",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/combat/armes.md",
-"url": "content/regles/combat/armes/"
-}
-]
-},
-{
-"short": "0d9ca84",
-"author": "Théo Cavaillès",
-"date": "2026-08-17T14:39:53+02:00",
-"message": "Aucun enchaînement naturel de la hache ne dépasse cinq coups",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/0d9ca84c229eea7ddd6e6a32c3db8a8d2bdbec23",
 "files": [
 {
 "status": "modified",
