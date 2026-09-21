@@ -424,7 +424,7 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
 .pc-vital-tete {
   display: flex; flex-wrap: wrap; align-items: baseline; gap: .4rem;
   padding: .3rem .55rem .32rem;
-  background: var(--bandeau); border-bottom: 1px solid var(--trait-or);
+  background: transparent;
 }
 /* Le nom est une étiquette : s'il faut céder, c'est lui qui cède, jamais la
    valeur — un nombre coupé se lit faux. */
@@ -433,18 +433,22 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   font-family: 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
   font-weight: 800; font-size: var(--fs-label); letter-spacing: .09em; text-transform: uppercase;
-  color: var(--teinte, var(--sur-bandeau)); line-height: 1.1;
+  color: var(--ink); line-height: 1.1;
 }
-/* LES TEINTES DU JEU. PV, PE et PM portent la couleur de leur barre dans
-   Outward, les mêmes en mode nuit : c'est la couleur de la ressource, pas un
-   accent de la fiche. */
+/* LES TEINTES, sur la BARRE seule : le texte suit l'encre de la fiche, noir de
+   jour et blanc de nuit, comme le titre des modules. PV, PE et PM portent la
+   couleur de leur barre dans Outward ; Repos, Satiété et Hydratation en ont
+   une chacune, distincte des trois premières. */
 .pc-vital-res.t-pv { --teinte: #881112; }
 .pc-vital-res.t-pe { --teinte: #AA872E; }
 .pc-vital-res.t-pm { --teinte: #286CA4; }
+.pc-vital-res.t-pr { --teinte: #6A4C93; }
+.pc-vital-res.t-ps { --teinte: #B5652B; }
+.pc-vital-res.t-ph { --teinte: #2A9D8F; }
 .pc-vital-val { flex: 0 0 auto; margin-left: auto; display: inline-flex; align-items: baseline; gap: .2rem; }
 /* La largeur n'est qu'un plancher : reserveVitale() l'ajuste au nombre de signes. */
 .pc-vital-num {
-  flex: 0 0 auto; width: 3.4ch; border: none; background: transparent; color: #fff;
+  flex: 0 0 auto; width: 3.4ch; border: none; background: transparent; color: var(--ink);
   font: inherit; font-size: calc(var(--fs-value) * 1.85); font-weight: 800;
   text-align: right; padding: 0; font-variant-numeric: tabular-nums; line-height: 1;
   -moz-appearance: textfield; appearance: textfield;
@@ -453,9 +457,9 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
 .pc-vital-num:focus { outline: none; }
 .pc-vital-max {
   font-size: var(--fs-label); font-weight: 700; letter-spacing: .02em;
-  color: #bdbdbd; font-variant-numeric: tabular-nums; white-space: nowrap;
+  color: var(--ink-3); font-variant-numeric: tabular-nums; white-space: nowrap;
 }
-.pc-vital-max.adj { color: var(--teinte, var(--sur-bandeau)); }
+.pc-vital-max.adj { color: var(--danger); }
 /* Une barre PLEINE : la version segmentée a été refusée sur la fiche MIA. */
 .pc-vital-jauge { display: flex; width: 100%; height: .5rem; background: var(--line-2); overflow: hidden; }
 .pc-vital-jauge > i { display: block; height: 100%; background: var(--teinte, var(--or)); transition: width .15s; }
