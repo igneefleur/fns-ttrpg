@@ -379,7 +379,7 @@ Exemple. Un personnage ordinaire, qui porte 20 en Dextérité, garde 4 objets so
 
 Les points de satiété et les points d'hydratation mesurent ce qu'un personnage tient sans manger et sans boire. Ils découlent de l'Endurance.
 
-<p class="formula">Points de satiété = 1200 + Endurance × 10</p>
+<p class="formula">Points de satiété = 1000 + Endurance × 10</p>
 
 <p class="formula">Points d'hydratation = 200 + Endurance × 10</p>
 
@@ -403,7 +403,7 @@ Pour récupérer des points de satiété et des points d'hydratation, un personn
 
 <div class="memo" markdown>
 
-Exemple. Un personnage ordinaire, qui porte 20 en Endurance, dispose de 1 400 points de satiété et de 400 points d'hydratation. Une journée ordinaire, huit heures de sommeil, huit d'effort intermédiaire et huit d'effort léger, lui en coûte 135 de chaque. S'il ne s'hydrate pas et ne se nourrit pas, son hydratation est vide au bout d'un peu moins de trois jours, et sa satiété au bout d'un peu plus de dix.
+Exemple. Un personnage ordinaire, qui porte 20 en Endurance, dispose de 1 200 points de satiété et de 400 points d'hydratation. Une journée ordinaire, huit heures de sommeil, huit d'effort intermédiaire et huit d'effort léger, lui en coûte 135 de chaque. S'il ne s'hydrate pas et ne se nourrit pas, son hydratation est vide au bout d'un peu moins de trois jours, et sa satiété au bout d'un peu moins de neuf.
 
 </div>
 

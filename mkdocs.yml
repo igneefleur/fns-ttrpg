@@ -74,15 +74,15 @@ extra_css:
   # par ces deux listes, Roll20 la charge par le manifeste ; deux clés de cache
   # qui divergent, et les deux mondes font tourner deux codes en croyant faire
   # tourner le même. Un fichier monté d'un seul côté ne se voit pas.
-  - stylesheets/owd-fiche.css?v=13
+  - stylesheets/owd-fiche.css?v=14
 extra_javascript:
   - javascripts/changelog.js
   - javascripts/continuous.js
   - javascripts/nav-drawer.js
   - javascripts/night.js
-  - javascripts/owd-migrations.js?v=13 # moteur de migration : AVANT le bundle, qui l'appelle
-  - javascripts/owd-mods.js?v=13       # moteur de mods : AVANT la fiche, qui l'interroge (et facultatif de naissance)
-  - javascripts/owd-fiche.js?v=13
+  - javascripts/owd-migrations.js?v=14 # moteur de migration : AVANT le bundle, qui l'appelle
+  - javascripts/owd-mods.js?v=14       # moteur de mods : AVANT la fiche, qui l'interroge (et facultatif de naissance)
+  - javascripts/owd-fiche.js?v=14
   - javascripts/copybtn.js
 hooks:
   - hooks/changelog.py
