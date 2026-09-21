@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "1.11.1b";
+  var RELEASE = "1.12.0b";
   var SCHEMA = 2;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -3794,11 +3794,34 @@
     var cases = [];
     var nuitVue = null;
 
+    // LE CHIFFRE AU MILIEU. Centrer la SCÈNE ne suffit pas : chaque solide y
+    // est posé sur sa ligne de sol, et la face qu'on lit n'est ni au centre de
+    // sa boîte ni au même endroit d'un solide à l'autre (le d4 montre sa face
+    // haute, le d8 et le d10 une face penchée). On mesure donc le chiffre de la
+    // face lue et l'on déplace le dé pour qu'il tombe au centre de la case.
+    // Une case invisible (onglet fermé) ne se mesure pas : le centrage attend
+    // alors le premier rafraîchissement où elle se montre.
+    function centre(c) {
+      var sc = c.pose.querySelector(".owd-d3");
+      if (!sc) { c.centre = true; return; }
+      sc.style.transform = "";
+      var faces = sc.querySelectorAll(".owd-d3-f");
+      var f = faces[c.valeur - 1], n = f && f.querySelector(".owd-d3-n");
+      var boite = c.pose.getBoundingClientRect();
+      if (!n || !boite.width) { c.centre = false; return; }
+      var r = n.getBoundingClientRect();
+      var dx = (boite.left + boite.width / 2) - (r.left + r.width / 2);
+      var dy = (boite.top + boite.height / 2) - (r.top + r.height / 2);
+      sc.style.transform = "translate(" + dx.toFixed(1) + "px, " + dy.toFixed(1) + "px)";
+      c.centre = true;
+    }
     function scene(i) {
       var c = cases[i], t = desTaille(i);
       c.pose.innerHTML = "";
+      c.valeur = t;
       var n = deImmobile(t, t, i, 22);
       c.pose.appendChild(n || el("span", "pc-desaction-jeton", String(t)));
+      centre(c);
       c.nom.textContent = "d" + t;
       c.moins.disabled = TAILLES_DES.indexOf(t) <= 0;
       c.plus.disabled = TAILLES_DES.indexOf(t) >= TAILLES_DES.length - 1;
@@ -3875,6 +3898,7 @@
       guet.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
     }
     hooks.push(function () {
+      cases.forEach(function (c) { if (!c.centre) centre(c); });
       // le nombre de dés suit la capacité (un levier du MJ peut la changer) ;
       // le mode nuit repeint les dés, qui prennent leur couleur de nuit
       var nuit = document.documentElement.classList.contains("night");

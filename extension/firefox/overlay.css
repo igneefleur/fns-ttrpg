@@ -394,7 +394,9 @@
    se cassent en deux — « re- / animer » — et le pied devient illisible : ce sont
    les MOTS qui doivent rester entiers, et la LIGNE qui doit avoir le droit de se
    replier. L'inverse de ce que fait un flex par défaut. */
-.owd-des-pied { flex-wrap: wrap; row-gap: 5px; }
+.owd-des-pied { flex-wrap: wrap; row-gap: 5px; justify-content: space-between; }
+/* deux groupes insécables : les résultats, puis Détails et relancer côte à côte */
+.owd-des-groupe { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
 .owd-des-rejouer { white-space: nowrap; }
 
 /* RE-ANIMER. Discret : il rejoue une animation, il ne relance aucun dé, et un

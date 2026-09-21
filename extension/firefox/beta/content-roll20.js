@@ -369,10 +369,16 @@ if (typeof browser === "undefined") { var browser = chrome; }
   // jour la garde en jour. C'est voulu, le réglage le plus précis gagne ; le
   // camp, lui, n'a pas de préférence à lui et suit le popup.
   var NUIT_ORDRE = "auto";
+  // LA NUIT DE LA FICHE, quand elle en a annoncé une (message « nuit » de son
+  // iframe). En « auto », c'est ELLE qui décide, avant le mode de Roll20 : les
+  // cartes de dés que la fiche envoie se lisent à côté d'elle, et une fiche de
+  // nuit qui fait tomber des cartes de jour dans le tchat n'a aucun sens.
+  var NUIT_FICHE = null;
   function normNuit(v) { return v === "jour" || v === "nuit" ? v : "auto"; }
   function nuitEffective() {
     if (NUIT_ORDRE === "nuit") return true;
     if (NUIT_ORDRE === "jour") return false;
+    if (NUIT_FICHE !== null) return NUIT_FICHE;
     return detectNight();
   }
   // Nos boîtes portent leur nuit sur elles-mêmes (.owd-nuit), jamais sur la
@@ -885,10 +891,9 @@ if (typeof browser === "undefined") { var browser = chrome; }
     // déjà servi et en déduit qu'un nouveau geste commence.
     var lot = (window.OwdDes3d && window.OwdDes3d.lot) ? window.OwdDes3d.lot() : null;
     var piste = el("div", "owd-des-piste");
-    var rejeux = [], somme = 0, haut = 0, choisis = [], choix = [];
+    var somme = 0, haut = 0, choisis = [], choix = [];
     for (i = 0; i < liste.length; i++) {
       var de = desFace(liste[i], i, lot);
-      rejeux.push(de.rejoue);
       somme += liste[i].valeur;
       if (liste[i].valeur > haut) haut = liste[i].valeur;
       choisis.push(false);
@@ -985,19 +990,16 @@ if (typeof browser === "undefined") { var browser = chrome; }
     pied.appendChild(el("span", "owd-des-info", "somme " + somme));
     pied.appendChild(el("span", "owd-des-info", "meilleur " + haut));
 
-    // RE-ANIMER. Le bouton ne relance AUCUN dé : il rejoue la culbute sur les
-    // mêmes valeurs, qui sont déjà dans le DOM et viennent de Roll20. Le dire
-    // dans l'infobulle n'est pas une politesse — un bouton qui a l'air de
-    // relancer un jet, dans un tchat de jeu, est une accusation de triche en
-    // puissance.
-    var rej = el("button", "owd-des-rejouer", "re-animer");
-    rej.type = "button";
-    rej.setAttribute("title", "Rejoue l'animation. Les valeurs ne changent pas : elles viennent de Roll20.");
-    rej.addEventListener("click", function (ev) {
-      ev.preventDefault(); ev.stopPropagation();
-      for (var k = 0; k < rejeux.length; k++) rejeux[k]();
-    });
-    pied.appendChild(rej);
+    // PLUS DE « RE-ANIMER » (retiré à la demande de l'auteur, 21/09/2026) : il
+    // ne servait à rien, et sa place revient aux deux commandes utiles, qui
+    // tiennent désormais sur une même ligne. Le pied a DEUX GROUPES qui ne se
+    // cassent pas : les résultats, puis les commandes ; s'il manque de place,
+    // c'est le groupe entier qui passe à la ligne, jamais un bouton seul.
+    var infos = el("span", "owd-des-groupe");
+    while (pied.firstChild) infos.appendChild(pied.firstChild);
+    pied.appendChild(infos);
+    var cmds = el("span", "owd-des-groupe");
+    pied.appendChild(cmds);
 
     // LE DÉTAIL DE ROLL20, PAR UN BOUTON DE LA CARTE. Le message d'origine était
     // replié dans un <details> posé SOUS la carte, avec son propre libellé : deux
@@ -1005,11 +1007,11 @@ if (typeof browser === "undefined") { var browser = chrome; }
     // qu'un. Le bouton rejoint donc « re-animer » dans le pied, et le <details>
     // devient une simple boîte que ce bouton montre ou cache.
     // C'est `desRhabille` qui les marie : lui seul a les deux sous la main.
-    var det = el("button", "owd-des-rejouer owd-des-detail", "détail Roll20");
+    var det = el("button", "owd-des-rejouer owd-des-detail", "Détails");
     det.type = "button";
     det.setAttribute("aria-expanded", "false");
     det.setAttribute("title", "Montre le message que Roll20 a réellement écrit.");
-    pied.appendChild(det);
+    cmds.appendChild(det);
 
     // RELANCER LES DÉS CHOISIS, ET EUX SEULS.
     //
@@ -1064,7 +1066,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
       }
       majRelance();
     });
-    pied.appendChild(rel);
+    cmds.appendChild(rel);
 
     function majRelance() {
       var k, n = 0;
@@ -1814,7 +1816,9 @@ if (typeof browser === "undefined") { var browser = chrome; }
   // ouverture.
   function repeintTout() {
     panRepeint();
-    var n = document.querySelectorAll(".owd-create, .owd-creator-frame");
+    // les cartes de dés déjà posées prennent le fond du mode ; leurs dés gardent
+    // la teinte de leur naissance, les suivants naîtront dans le bon mode
+    var n = document.querySelectorAll(".owd-create, .owd-creator-frame, .owd-des");
     for (var i = 0; i < n.length; i++) poseNuit(n[i]);
   }
   function ecouteNuit() {
@@ -1899,6 +1903,11 @@ if (typeof browser === "undefined") { var browser = chrome; }
             if (d.replie != null) { panOuvre(!d.replie); return; }
             panApplique();
             panRange();
+            return;
+          }
+          if (d.type === "nuit") {
+            NUIT_FICHE = !!d.on;
+            repeintTout();
             return;
           }
           if (d.type === "need-bridge") injectPageScript();
