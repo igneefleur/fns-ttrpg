@@ -1,5 +1,24 @@
 [
 {
+"short": "385a5c1",
+"author": "Théo Cavaillès",
+"date": "2026-09-21T20:48:45+02:00",
+"message": "Capacités physiques et équipement perdent leur introduction",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/385a5c13145300a0adbe33f5e60618d5924f4288",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/base/capacites-physiques.md",
+"url": "content/regles/base/capacites-physiques/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipement.md",
+"url": "content/regles/equipement/"
+}
+]
+},
+{
 "short": "9b53944",
 "author": "Théo Cavaillès",
 "date": "2026-09-21T20:36:21+02:00",
@@ -245,50 +264,6 @@
 "status": "added",
 "filename": "content/regles/techniques/totems.md",
 "url": "content/regles/techniques/totems/"
-}
-]
-},
-{
-"short": "a92a4e1",
-"author": "Théo Cavaillès",
-"date": "2026-09-02T14:26:22+02:00",
-"message": "Quatre chapitres neufs : l'équipement, la fabrication, les installations, vivre",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/a92a4e13c36f15eec6455dd595ff903da26730e6",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/base/actions.md",
-"url": "content/regles/base/actions/"
-},
-{
-"status": "modified",
-"filename": "content/regles/base/capacites-physiques.md",
-"url": "content/regles/base/capacites-physiques/"
-},
-{
-"status": "added",
-"filename": "content/regles/equipement.md",
-"url": "content/regles/equipement/"
-},
-{
-"status": "added",
-"filename": "content/regles/fabrication.md",
-"url": "content/regles/fabrication/"
-},
-{
-"status": "modified",
-"filename": "content/regles/index.md",
-"url": "content/regles/"
-},
-{
-"status": "added",
-"filename": "content/regles/installations.md",
-"url": "content/regles/installations/"
-},
-{
-"status": "added",
-"filename": "content/regles/vivre.md",
-"url": "content/regles/vivre/"
 }
 ]
 }
