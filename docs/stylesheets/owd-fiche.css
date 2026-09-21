@@ -262,6 +262,26 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
 /* variante « dépense » : l'XP et la rupture ne mesurent pas une santé mais ce
    qui a été payé. L'or les distingue d'un coup d'œil des jauges de vie. */
 .pc-meter.or .bar > i { background: var(--or); }
+/* LES EFFORTS, en CASES SOUDÉES : le trio de MIA (un cadre sur le fond de
+   panneau, des cases égales séparées d'un filet, le mot en petites capitales)
+   dont une case est choisie. Une ligne par rang d'efforts. */
+.pc-segs {
+  display: flex; align-items: stretch; box-sizing: border-box; width: 100%;
+  background: var(--panel); border: 1px solid var(--line-2); border-radius: 5px;
+  overflow: hidden; line-height: 1.1; margin-top: .3rem;
+}
+.pc-segs > .c {
+  /* chaque case part de la largeur de son mot, et le reste se partage : un
+     mot long (INTERMÉDIAIRE) ne se coupe jamais dans la colonne étroite */
+  flex: 1 1 auto; min-width: 0; border: none; background: transparent; cursor: pointer;
+  padding: .32rem .3rem; font: inherit; font-size: .56rem; font-weight: 700;
+  letter-spacing: .03em; text-transform: uppercase; color: var(--ink-3);
+  white-space: nowrap;
+  transition: background .12s, color .12s;
+}
+.pc-segs > .c + .c { box-shadow: inset 1px 0 0 var(--line-2); }
+.pc-segs > .c:hover { background: var(--stripe); color: var(--ink); }
+.pc-segs > .c.on { background: var(--accent); color: var(--card); box-shadow: none; }
 /* MOUVEMENT : les pas par round en grand, le coût du cran à droite */
 .pc-crans { margin-top: .3rem; }
 .pc-mouv { display: flex; flex-wrap: wrap; align-items: baseline; gap: .1rem .4rem; margin-top: .45rem; }

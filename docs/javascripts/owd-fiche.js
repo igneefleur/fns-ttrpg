@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "2.7.1b";
+  var RELEASE = "2.7.2b";
   var SCHEMA = 3;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -3580,19 +3580,25 @@
   // d'une erreur de saisie. Aucune règle n'est écrite ici : les efforts, les
   // taux et les paliers viennent des données.
   function buildEffort() {
-    var b = block("Temps");
+    var b = block("Effort et Temps");
 
-    // les efforts, un bouton chacun, dans l'ordre des règles
-    var bande = el("div", "pc-tabs mini pc-efforts");
+    // LES EFFORTS, en cases soudées comme le trio de MIA, sur deux lignes
+    // arrêtées par l'auteur : [sommeil | repos], puis [léger | intermédiaire |
+    // lourd]. Les deux premiers efforts des règles font la première ligne.
     var boutons = [];
-    effortsListe().forEach(function (e) {
-      var bt = el("button", "pc-tab", e.nom);
-      bt.type = "button";
-      bt.addEventListener("click", function () { state.effort = e.cle; refresh(); });
-      bande.appendChild(bt);
-      boutons.push([bt, e.cle]);
+    var liste = effortsListe();
+    [liste.slice(0, 2), liste.slice(2)].forEach(function (rang) {
+      if (!rang.length) return;
+      var bloc = el("div", "pc-segs");
+      rang.forEach(function (e) {
+        var bt = el("button", "c", e.nom);
+        bt.type = "button";
+        bt.addEventListener("click", function () { state.effort = e.cle; refresh(); });
+        bloc.appendChild(bt);
+        boutons.push([bt, e.cle]);
+      });
+      b.appendChild(bloc);
     });
-    b.appendChild(bande);
 
     var air = el("div", "pc-crow-bot");
     air.appendChild(el("span", "lbl", "Température"));
@@ -7450,7 +7456,7 @@
   var MODULES_NATIFS = [
     // ---- onglet Fiche ----
     { id: "caracs",       titre: "Caractéristiques", onglet: "fiche", colonne: "gauche", build: buildCaracs },
-    { id: "effort",       titre: "Temps",            onglet: "fiche", colonne: "gauche", build: buildEffort },
+    { id: "effort",       titre: "Effort et Temps",  onglet: "fiche", colonne: "gauche", build: buildEffort },
     { id: "survie",       titre: "Survie",           onglet: "fiche", colonne: "gauche", build: buildSurvie },
     { id: "exposition",   titre: "Exposition",       onglet: "fiche", colonne: "gauche", build: buildExposition },
     // TROIS RÉSERVES, TROIS MODULES : même forme, mais on ne les lit pas au

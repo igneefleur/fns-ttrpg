@@ -12,7 +12,7 @@
   var MODULES_NATIFS = [
     // ---- onglet Fiche ----
     { id: "caracs",       titre: "Caractéristiques", onglet: "fiche", colonne: "gauche", build: buildCaracs },
-    { id: "effort",       titre: "Temps",            onglet: "fiche", colonne: "gauche", build: buildEffort },
+    { id: "effort",       titre: "Effort et Temps",  onglet: "fiche", colonne: "gauche", build: buildEffort },
     { id: "survie",       titre: "Survie",           onglet: "fiche", colonne: "gauche", build: buildSurvie },
     { id: "exposition",   titre: "Exposition",       onglet: "fiche", colonne: "gauche", build: buildExposition },
     // TROIS RÉSERVES, TROIS MODULES : même forme, mais on ne les lit pas au
