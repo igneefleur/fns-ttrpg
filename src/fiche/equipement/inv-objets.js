@@ -280,14 +280,15 @@
     }
     function renderPanel() {
       panel.innerHTML = "";
-      if (!sel || items.indexOf(sel) < 0) {
-        sel = null;
-        panel.appendChild(el("div", "pc-obj-empty", isEdit("inv")
-          ? "Choisir un objet, ou en ajouter un avec « + »."
-          : "Choisir un objet."));
-        return;
-      }
-      var it = sel;
+      // SANS OBJET CHOISI, le panneau montre un objet FANTÔME : la même fiche,
+      // vide et inerte. Le panneau garde ainsi sa forme et sa taille, et l'on
+      // voit d'avance ce qu'un objet porte.
+      if (sel && items.indexOf(sel) < 0) sel = null;
+      var fantome = !sel;
+      panel.classList.toggle("fantome", fantome);
+      var it = sel || { id: "", nom: "", img: "", qte: 0, poids: 0, places: 0, achat: 0, vente: 0,
+                        desc: "", ou: "sac", rapide: false, vet: "", poches: 0, froid: 0, chaud: 0,
+                        sac: false, cap: 0, arme: null };
 
       var imgbox = el("div", "pc-obj-imgbox");
       if (it.img) { var im = el("img"); im.alt = ""; im.src = it.img; imgbox.appendChild(im); }
@@ -297,7 +298,7 @@
       var body = el("div", "pc-obj-body");
 
       var nm = el("input", "nm pc-edit-field");
-      nm.type = "text"; nm.placeholder = "Nom de l'objet";
+      nm.type = "text"; nm.placeholder = fantome ? "Aucun objet" : "Nom de l'objet";
       nm.value = it.nom;
       nm.addEventListener("input", function () { it.nom = nm.value; save(); });
       nm.addEventListener("change", function () { render(); });
@@ -309,7 +310,7 @@
       slider.type = "range"; slider.min = "0";
       slider.max = String(Math.max(10, it.qte));
       slider.value = it.qte;
-      slider.step = "any";
+      slider.step = "1";   // à l'UNITÉ : on ne prend pas 3,27 fioles au curseur
       var qIn = el("input", "n");
       qIn.type = "number"; qIn.min = "0"; qIn.step = "any";
       qIn.value = it.qte;
@@ -323,7 +324,7 @@
         save(); updateTotal();
         refresh();   // le poids porté vient de bouger : la charge suit
       }
-      slider.addEventListener("input", function () { setQte(parseFloat(slider.value)); });
+      slider.addEventListener("input", function () { setQte(Math.round(parseFloat(slider.value))); });
       qIn.addEventListener("input", function () { setQte(parseFloat(qIn.value)); });
       qRow.appendChild(slider);
       qRow.appendChild(qIn);
@@ -467,7 +468,7 @@
       url.type = "text"; url.placeholder = "https://…";
       url.value = /^data:/.test(it.img) ? "" : it.img;
       url.addEventListener("change", function () { it.img = url.value.trim(); render(); refresh(); });
-      var urlFld = fld("Image (URL)", url);
+      var urlFld = fld("Image (URL)", url, "pc-edit-only");
       var file = el("input");
       file.type = "file"; file.accept = "image/*"; file.style.display = "none";
       file.addEventListener("change", function () {
@@ -491,6 +492,12 @@
       // L'ARME : ses gestes et ses jets, sous l'objet. Ses rafraîchissements
       // vont au registre du PANNEAU, vidé à chaque rendu : sinon chaque clic
       // sur une tuile laisserait des fonctions pointer sur un détail disparu.
+      if (fantome) {
+        Array.prototype.forEach.call(body.querySelectorAll("input, select, textarea, button"),
+          function (x) { x.disabled = true; });
+        panel.appendChild(body);
+        return;
+      }
       if (it.arme) {
         var ancien = hooks;
         hooks = panelHooks;
@@ -556,6 +563,25 @@
       panel.appendChild(body);
     }
 
+    // TOUTE LA HAUTEUR DE LA FENÊTRE (la page du site, ou l'iframe de Roll20),
+    // moins le titre du module et son pied : défilé jusqu'à lui, le module
+    // occupe l'écran entier, et ses deux colonnes défilent chacune dans cette
+    // hauteur. Une fenêtre trop basse garde un plancher ; le module invisible
+    // (onglet fermé) ne se mesure pas.
+    function ajusteHauteur() {
+      if (!wrap.isConnected || !wrap.offsetParent) return;
+      // l'en-tête FIXE du site (absent dans Roll20) couvre le haut de l'écran
+      var fixe = document.querySelector(".md-header");
+      var autour = (wrap.getBoundingClientRect().top - container.getBoundingClientRect().top) +
+                   tot.offsetHeight + 28 + (fixe ? fixe.offsetHeight : 0);
+      var h = Math.max(420, Math.floor(window.innerHeight - autour));
+      wrap.style.setProperty("--inv-h", h + "px");
+    }
+    window.addEventListener("resize", ajusteHauteur);
+    if (window.IntersectionObserver) {
+      new IntersectionObserver(function (e) { if (e[0] && e[0].isIntersecting) ajusteHauteur(); })
+        .observe(wrap);
+    }
     function render() {
       majGroupes = [];
       panelHooks.length = 0;
@@ -569,6 +595,7 @@
       panelHooks.forEach(function (f) { try { f(); } catch (e) {} });
     }
     hooks.push(function () {
+      ajusteHauteur();
       updateTotal();
       panelHooks.forEach(function (f) { try { f(); } catch (e) {} });
     });
