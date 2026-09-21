@@ -77,13 +77,18 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "1.1.0b";
-  var SCHEMA = 1;
+  var RELEASE = "1.1.2b";
+  var SCHEMA = 2;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
   // caractéristiques est ouverte mais serrée (20 est la moyenne humaine), un
   // pas de 5 y serait un bond.
   var MOD_PAS = 1;
+
+  // La borne d'un FACTEUR de la chaîne à neuf boîtes. Elle n'est pas celle d'un
+  // ajout : ×1000 sur un maximum de points de repos dépasserait le million, et
+  // un nombre qu'on ne peut plus lire n'est plus un réglage.
+  var MULT_BORNE = 999;
 
   // LES HUIT CARACTÉRISTIQUES. Les CLÉS sont SANS ACCENT : elles voyagent en
   // nom d'attribut Roll20 et en fragment de macro (@{Perso|owd_resistance}),
@@ -331,16 +336,20 @@
       // n'en invente pas — aucune borne haute n'est écrite ici.
       caracs: { Force: 20, Dexterite: 20, Intelligence: 20, Ferveur: 20,
                 Vigueur: 20, Endurance: 20, Resistance: 20, Chance: 20 },
-      // DEUX modificateurs qui s'additionnent (équipement / décision du MJ) :
-      // un seul champ obligeait à sommer de tête avant d'écrire.
-      caracsMod: { Force: 0, Dexterite: 0, Intelligence: 0, Ferveur: 0,
-                   Vigueur: 0, Endurance: 0, Resistance: 0, Chance: 0 },
-      caracsMod2: { Force: 0, Dexterite: 0, Intelligence: 0, Ferveur: 0,
-                    Vigueur: 0, Endurance: 0, Resistance: 0, Chance: 0 },
-      // ÉPARSE, et NULLABLE par l'absence : une clé présente REMPLACE la somme,
-      // elle ne s'y ajoute pas. Absente n'est pas 0 — confondre les deux
-      // clouerait une caractéristique à zéro sur le chemin de repli.
-      caracsForce: {},
+      // LES LEVIERS DU MENEUR, en TABLE À TROIS NIVEAUX : levier, puis boîte,
+      // puis caractéristique. Un seul levier ici, « total », et ses neuf boîtes :
+      //     forçage  |  a1 a2  ×  m1 m2  |  a3 a4  ×  m3 m4
+      // soit  (((base + a1 + a2) × m1 × m2) + a3 + a4) × m3 × m4,
+      // et le forçage court-circuite tout.
+      //
+      // QUATRE GROUPES ET NON TROIS : trois ne savent pas dire « ajoute 20 puis
+      // double le tout ». L'ordre DANS un groupe, lui, est sans effet.
+      //
+      // ÉPARSE À SES TROIS NIVEAUX : rien ne se matérialise à la lecture, et le
+      // chemin se DÉFAIT quand sa dernière valeur s'en va. Sans quoi ouvrir les
+      // Options écrirait toutes les sous-tables dans un personnage qui voyage
+      // dans UN attribut Roll20.
+      caracsLeviers: {},
 
       // ---- ce que le personnage porte à l'instant ----
       // null = « au maximum » : la valeur SUIT le maximum quand il bouge, ce
@@ -351,29 +360,17 @@
       // Un courant supérieur à son maximum est signalé mais JAMAIS réécrit :
       // l'écraser perdrait la valeur le jour où le maximum remonte.
       etat: { pv: null, pe: null, pm: null, pi: null,
-              pr: null, ps: null, ph: null,
+              pr: null, ps: null, ph: null, pc: null,
               expo: 0, contenance: 0, rupture: null },
 
-      // Maximums FORCÉS, épars : une clé présente remplace le calcul, une clé
-      // absente laisse calculer. Une SEULE carte pour les treize capacités
-      // plutôt que treize champs : une capacité de plus n'ajoute alors ni clé
-      // racine, ni attribut Roll20, ni ligne de carte d'attributs.
-      // Clés connues : pv pe pm pi pr ps ph charge acces contenance expo
+      // LES LEVIERS DES CAPACITÉS, même table à trois niveaux : levier, boîte,
+      // puis clé de capacité. Un seul levier, « max », qui porte le MAXIMUM de
+      // chacune. Une SEULE table pour les quinze capacités plutôt que quinze
+      // champs : une capacité de plus n'ajoute alors ni clé racine, ni attribut
+      // Roll20, ni ligne de carte d'attributs.
+      // Clés connues : pv pe pm pi pr ps ph pc charge acces contenance expo
       // rupture desAction effondrement.
-      maxForce: {},
-
-      // Modificateurs à TROIS emplacements (MMOD_SLOTS = équipement / technique
-      // / autre), le geste de la fiche HxH : fantômes au repos, révélés par le
-      // survol de leur hôte, sommés dans la valeur effective.
-      divers: {
-        pv: [0, 0, 0], pe: [0, 0, 0], pm: [0, 0, 0], pi: [0, 0, 0],
-        pr: [0, 0, 0], ps: [0, 0, 0], ph: [0, 0, 0],
-        charge: [0, 0, 0], acces: [0, 0, 0], contenance: [0, 0, 0],
-        expo: [0, 0, 0], rupture: [0, 0, 0], desAction: [0, 0, 0],
-        // Le seul modificateur qui joue sur un NIVEAU et non sur des points :
-        // le MJ y pose l'effondrement que les quatre réserves ne savent pas dire.
-        effondrement: [0, 0, 0]
-      },
+      capsLeviers: {},
 
       // ---- compétences ----
       // LES RÈGLES NE DONNENT AUCUNE LISTE DE COMPÉTENCES : le joueur les nomme
@@ -389,10 +386,12 @@
       //          owd-creation.json, jamais d'une table écrite ici.
       // L'ordre du tableau EST l'ordre d'affichage dans son groupe.
       comps: [],
-      // Cartes ÉPARSES indexées par l'ID de la compétence, jamais par son nom.
-      compsMod: {}, compsMod2: {},
-      compsForce: {},        // bonus TOTAL forcé : remplace rang + modificateurs
-      compsDesForce: {},     // nombre de dés engageables forcé : remplace le rang
+      // LES LEVIERS DES COMPÉTENCES, même table à trois niveaux, indexée par
+      // l'ID de la compétence et jamais par son nom — un nom se renomme, un
+      // levier ne doit pas se perdre avec. DEUX leviers :
+      //   bonus  ce que la compétence ajoute au jet
+      //   des    combien de dés d'action elle laisse engager
+      compsLeviers: {},
 
       // ---- techniques ----
       // Les rangs d'une technique LUI APPARTIENNENT : les règles le disent, la
@@ -499,10 +498,6 @@
     // aujourd'hui : une caractéristique ajoutée demain arrive à sa valeur
     // moyenne sans migration ni montée de schéma.
     if (!s.caracs || typeof s.caracs !== "object" || Array.isArray(s.caracs)) s.caracs = b.caracs;
-    ["caracsMod", "caracsMod2"].forEach(function (k) {
-      if (!s[k] || typeof s[k] !== "object" || Array.isArray(s[k])) s[k] = {};
-    });
-    if (!s.caracsForce || typeof s.caracsForce !== "object" || Array.isArray(s.caracsForce)) s.caracsForce = {};
     var moyenne = num(D().moyenneHumaine, 20);
     var listeCaracs = CARACS.slice();
     caracsData().forEach(function (c) {
@@ -511,16 +506,17 @@
     Object.keys(s.caracs).forEach(function (k) { if (listeCaracs.indexOf(k) < 0) listeCaracs.push(k); });
     listeCaracs.forEach(function (c) {
       s.caracs[c] = clamp(num(s.caracs[c], moyenne), -9999, 9999);
-      s.caracsMod[c] = modNombre(s.caracsMod[c]);
-      s.caracsMod2[c] = modNombre(s.caracsMod2[c]);
     });
-    // forçages : ABSENTS par défaut, une valeur les pose. Le vide EFFACE la clé
-    // (absent = calculé) ; y ranger 0 clouerait la caractéristique à zéro.
-    s.caracsForce = carteForcages(s.caracsForce);
+    // LES LEVIERS. Le rangement boucle sur le CATALOGUE, jamais sur l'état : un
+    // levier dont le nom n'est pas au catalogue disparaît au premier
+    // enregistrement, sans un mot. C'est le prix d'un état qui ne grossit pas
+    // tout seul, et c'est pourquoi le catalogue se tient à jour AVANT d'écrire
+    // le module qui pose le levier.
+    s.caracsLeviers = tableLeviers(s.caracsLeviers, CARAC_LEVIERS);
 
     // ---- valeurs courantes ----
     if (!s.etat || typeof s.etat !== "object" || Array.isArray(s.etat)) s.etat = b.etat;
-    ["pv", "pe", "pm", "pi", "pr", "ps", "ph", "rupture"].forEach(function (k) {
+    ["pv", "pe", "pm", "pi", "pr", "ps", "ph", "pc", "rupture"].forEach(function (k) {
       var v = s.etat[k];
       if (v === null || v === undefined || v === "") { s.etat[k] = null; return; }
       var n = parseFloat(v);
@@ -530,16 +526,10 @@
     s.etat.expo = clamp(snum(s.etat.expo), -99999, 99999);
     s.etat.contenance = clamp(pnum(s.etat.contenance), 0, 99999);
 
-    // ---- maximums forcés et modificateurs ----
-    s.maxForce = carteForcages(s.maxForce);
-    if (!s.divers || typeof s.divers !== "object" || Array.isArray(s.divers)) s.divers = b.divers;
-    Object.keys(b.divers).forEach(function (k) { s.divers[k] = modArr(s.divers[k]); });
-    // une capacité ajoutée par les règles reçoit son emplacement de
-    // modificateurs sans qu'on rouvre ce fichier
-    capacites().forEach(function (c) {
-      if (c && c.cle && !Array.isArray(s.divers[c.cle])) s.divers[c.cle] = [0, 0, 0];
-      else if (c && c.cle) s.divers[c.cle] = modArr(s.divers[c.cle]);
-    });
+    // ---- les leviers des capacités ----
+    // Aucune liste de clés n'est imposée : une capacité ajoutée demain dans les
+    // règles reçoit ses neuf boîtes sans qu'on rouvre ce fichier.
+    s.capsLeviers = tableLeviers(s.capsLeviers, CAP_LEVIERS);
 
     // ---- compétences ----
     if (!Array.isArray(s.comps)) s.comps = [];
@@ -555,18 +545,9 @@
         rang: clamp(num(c.rang, 0), 0, rangs().length ? rangMax() : 5)
       };
     });
-    ["compsMod", "compsMod2"].forEach(function (k) {
-      s[k] = carteNombres(s[k]);
-    });
-    s.compsForce = carteForcages(s.compsForce);
-    s.compsDesForce = carteForcages(s.compsDesForce);
-    // Les cartes éparses ne parlent que de compétences qui existent : une clé
-    // orpheline (compétence supprimée par une version qui l'ignorait)
-    // ressusciterait son modificateur sur la prochaine compétence à recevoir
-    // le même id, ce qui n'arrive jamais — mais elle voyagerait pour rien.
-    ["compsMod", "compsMod2", "compsForce", "compsDesForce"].forEach(function (k) {
-      Object.keys(s[k]).forEach(function (id) { if (!vusComps[id]) delete s[k][id]; });
-    });
+    // Les leviers ne parlent que de compétences qui existent : une clé orpheline
+    // (compétence supprimée par une version qui l'ignorait) voyagerait pour rien.
+    s.compsLeviers = tableLeviers(s.compsLeviers, COMP_LEVIERS, vusComps);
 
     // ---- techniques ----
     if (!Array.isArray(s.techniques)) s.techniques = [];
@@ -747,6 +728,74 @@
   }
   // Carte de FORÇAGES : le vide EFFACE la clé (absent = calculé), une valeur la
   // pose. Zéro est une valeur légitime — « forcé à 0 » n'est pas « pas forcé ».
+  // ---------- LES TROIS CATALOGUES DE LEVIERS ----------
+  // UN LEVIER ABSENT D'ICI EST JETÉ EN SILENCE au premier rangement : le
+  // rangement boucle sur ces tables, jamais sur l'état. Écrire le module avant
+  // le catalogue, c'est écrire un réglage qui disparaît au rechargement sans
+  // qu'aucune erreur ne paraisse. La valeur est la BORNE des ajouts de ce
+  // levier — l'échelle de ce qu'il règle, pas un plafond de jeu.
+  var CARAC_LEVIERS = { total: 9999 };
+  var CAP_LEVIERS = { max: 99999 };
+  var COMP_LEVIERS = { bonus: 999, des: 99, xp: 9999, rupture: 99 };
+
+  var BOITES_AJOUT = ["a1", "a2", "a3", "a4"];
+  var BOITES_FACTEUR = ["m1", "m2", "m3", "m4"];
+
+  // Une table de leviers : levier -> boîte -> clé. Trois niveaux, tous ÉPARS.
+  //
+  // LES NEUTRES NE SE RANGENT PAS, et ils ne sont pas les mêmes : un ajout de
+  // zéro et un facteur de un ne changent rien, donc ils s'effacent ; un FORÇAGE
+  // à zéro, lui, se range — c'est le seul moyen d'obtenir zéro à coup sûr, et
+  // le confondre avec « pas de forçage » perdrait le réglage.
+  //
+  // `cles`, s'il est donné, est la table des clés encore vivantes : tout ce qui
+  // ne s'y trouve plus s'en va.
+  function tableLeviers(src, bornes, cles) {
+    var out = {};
+    if (!src || typeof src !== "object" || Array.isArray(src)) src = {};
+    Object.keys(bornes).forEach(function (nom) {
+      var t = src[nom];
+      if (!t || typeof t !== "object" || Array.isArray(t)) return;
+      var borne = bornes[nom];
+      var boites = {};
+      var pose = function (boite, cle, v) {
+        if (!boites[boite]) boites[boite] = {};
+        boites[boite][cle] = v;
+      };
+      var force = t.force;
+      if (force && typeof force === "object" && !Array.isArray(force)) {
+        Object.keys(force).forEach(function (cle) {
+          if (cles && !cles[cle]) return;
+          var v = parseFloat(force[cle]);
+          if (!isFinite(v)) return;          // vide = pas de forçage
+          pose("force", cle, clamp(Math.round(v * 100) / 100, -99999, 99999));
+        });
+      }
+      BOITES_AJOUT.forEach(function (boite) {
+        var m = t[boite];
+        if (!m || typeof m !== "object" || Array.isArray(m)) return;
+        Object.keys(m).forEach(function (cle) {
+          if (cles && !cles[cle]) return;
+          var v = parseFloat(m[cle]);
+          if (!isFinite(v) || v === 0) return;   // un ajout de zéro n'est pas un réglage
+          pose(boite, cle, clamp(Math.round(v * 100) / 100, -borne, borne));
+        });
+      });
+      BOITES_FACTEUR.forEach(function (boite) {
+        var m = t[boite];
+        if (!m || typeof m !== "object" || Array.isArray(m)) return;
+        Object.keys(m).forEach(function (cle) {
+          if (cles && !cles[cle]) return;
+          var v = parseFloat(m[cle]);
+          if (!isFinite(v) || v === 1) return;   // un facteur de un n'est pas un réglage
+          pose(boite, cle, clamp(Math.round(v * 100) / 100, -MULT_BORNE, MULT_BORNE));
+        });
+      });
+      if (Object.keys(boites).length) out[nom] = boites;
+    });
+    return out;
+  }
+
   function carteForcages(src) {
     var out = {};
     if (!src || typeof src !== "object" || Array.isArray(src)) return out;
@@ -805,7 +854,7 @@
   // rien ne le dirait. Un nom hors table passe quand même, avec un avertissement.
   var FILTRES_CONNUS = {
     caracTotal: 1, compBonus: 1, compDes: 1, compXp: 1,
-    pvMax: 1, peMax: 1, pmMax: 1, piMax: 1, prMax: 1, psMax: 1, phMax: 1,
+    pvMax: 1, peMax: 1, pmMax: 1, piMax: 1, prMax: 1, psMax: 1, phMax: 1, pcMax: 1,
     charge: 1, accesRapides: 1, contenance: 1, expoMax: 1, effondrement: 1,
     poidsPorte: 1, desAction: 1, ruptureMax: 1, xpDepense: 1
   };
@@ -953,16 +1002,53 @@
   // placeholder du champ « Forcé », et ce que dit l'infobulle quand un forçage
   // est en place.
 
+  // ---- LA CHAÎNE À NEUF BOÎTES ----
+  // Toute valeur dérivée de la fiche passe par elle, et elle ne sait rien
+  // d'Outward : elle prend une base et rend un nombre.
+  //
+  //     le forçage, s'il est posé — il court-circuite TOUT
+  //     sinon  (((base + a1 + a2) × m1 × m2) + a3 + a4) × m3 × m4
+  //
+  // QUATRE GROUPES ET NON TROIS : trois ne savent pas dire « ajoute 20 puis
+  // double le tout ». L'ordre DANS un groupe, lui, est sans effet.
+  //
+  // La chaîne ne sait pas où dorment ses nombres : elle ne reçoit qu'une
+  // fonction qui rend une boîte. Trois lecteurs la nourrissent — les
+  // caractéristiques, les capacités, les compétences — et un quatrième
+  // s'écrirait sans toucher à ces lignes.
+  function chaineAdd(v) { return v === undefined ? 0 : v; }
+  function chaineMul(v) { return v === undefined ? 1 : v; }
+  function chaineAuto(lire, base) {
+    var v = (((base + chaineAdd(lire("a1")) + chaineAdd(lire("a2"))) *
+              chaineMul(lire("m1")) * chaineMul(lire("m2"))) +
+             chaineAdd(lire("a3")) + chaineAdd(lire("a4"))) *
+            chaineMul(lire("m3")) * chaineMul(lire("m4"));
+    // un NaN né ici traverserait la fiche entière sans qu'on sache d'où il vient
+    if (!isFinite(v)) return base;
+    return Math.round(v * 100) / 100;   // arrondi au centième, À LA TOUTE FIN
+  }
+  function chaine(lire, base) {
+    var f = lire("force");
+    return f === undefined ? chaineAuto(lire, base) : f;
+  }
+  // Les trois lecteurs. Chacun rend une fonction qui prend un nom de boîte :
+  // c'est ce que la chaîne, les infobulles et levierRegleDe() attendent.
+  function lireTable(nomTable, nom, cle) {
+    return function (boite) {
+      var t = state[nomTable] && state[nomTable][nom];
+      var tb = t && t[boite];
+      var v = tb && tb[cle];
+      return (typeof v === "number" && isFinite(v)) ? v : undefined;
+    };
+  }
+  function lireCarac(nom, c) { return lireTable("caracsLeviers", nom, c); }
+  function lireCap(nom, cle) { return lireTable("capsLeviers", nom, cle); }
+  function lireComp(nom, id) { return lireTable("compsLeviers", nom, id); }
+
   // ---- caractéristiques ----
   function caracVal(c) { return num(state.caracs[c], 0); }
-  function caracMods(c) { return (state.caracsMod[c] || 0) + (state.caracsMod2[c] || 0); }
-  function caracAuto(c) { return caracVal(c) + caracMods(c); }
-  function caracTotalBrut(c) {
-    // total FORCÉ : il court-circuite tout, modificateurs compris. L'afficher
-    // en somme le ferait mentir, d'où l'infobulle « Total forcé (Options) ».
-    if (state.caracsForce[c] !== undefined) return state.caracsForce[c];
-    return caracAuto(c);
-  }
+  function caracAuto(c) { return caracVal(c); }
+  function caracTotalBrut(c) { return chaine(lireCarac("total", c), caracVal(c)); }
   function caracTotal(c) { return pub("caracTotal", caracTotalBrut(c), { carac: c }); }
 
   // ---- capacités dérivées ----
@@ -989,16 +1075,15 @@
         }
       }
     }
-    return v + modSum(state.divers[cle]);
+    return v;
   }
   // Le maximum EFFECTIF d'une capacité : le forçage du MJ s'il existe, la
   // valeur calculée sinon. `auto` est passée à part parce que PV et PE portent
   // en plus le poids de l'effondrement.
-  function capMax(cle, auto) {
-    if (state.maxForce[cle] !== undefined) return state.maxForce[cle];
-    return auto();
-  }
-  function capForce(cle) { return state.maxForce[cle] !== undefined; }
+  function capMax(cle, auto) { return chaine(lireCap("max", cle), auto()); }
+  // « réglé » ne veut pas dire « forcé » : un facteur ou un ajout comptent
+  // autant. C'est ce que la fiche marque d'un point d'encre appuyée.
+  function capForce(cle) { return levierRegleDe(lireCap("max", cle)); }
 
   // ---- effondrement ----
   // Un niveau par tranche de 10 % PERDUE sur les réserves que les règles
@@ -1033,14 +1118,13 @@
   function effondrementAuto() {
     var t = 0;
     effReserves().forEach(function (cle) { t += effNiveauDe(cle); });
-    // le seul modificateur qui joue sur un NIVEAU et non sur des points
-    t += modSum(state.divers.effondrement);
     return clamp(Math.floor(t), 0, effPlafond());
   }
+  // Le seul levier qui joue sur un NIVEAU et non sur des points : le MJ y pose
+  // l'effondrement que les quatre réserves ne savent pas dire.
   function effondrementBrut() {
-    if (state.maxForce.effondrement !== undefined)
-      return clamp(Math.floor(state.maxForce.effondrement), 0, effPlafond());
-    return effondrementAuto();
+    return clamp(Math.floor(chaine(lireCap("max", "effondrement"), effondrementAuto())),
+                 0, effPlafond());
   }
   function effondrement() { return pub("effondrement", effondrementBrut(), {}); }
   // Ce que l'effondrement laisse d'un maximum, en pour cent. À appliquer sur le
@@ -1073,6 +1157,8 @@
   function psMax() { return pub("psMax", capMax("ps", psMaxAuto), {}); }
   function phMaxAuto() { return capAuto("ph"); }
   function phMax() { return pub("phMax", capMax("ph", phMaxAuto), {}); }
+  function pcMaxAuto() { return capAuto("pc"); }
+  function pcMax() { return pub("pcMax", capMax("pc", pcMaxAuto), {}); }
   function chargeAuto() { return capAuto("charge"); }
   function charge() { return pub("charge", capMax("charge", chargeAuto), {}); }
   function accesAuto() { return capAuto("acces"); }
@@ -1081,9 +1167,9 @@
   function contenance() { return pub("contenance", capMax("contenance", contenanceAuto), {}); }
   function expoMaxAuto() { return capAuto("expo"); }
   function expoMax() { return pub("expoMax", capMax("expo", expoMaxAuto), {}); }
-  function ruptureMaxAuto() { return rupturePoints() + modSum(state.divers.rupture); }
+  function ruptureMaxAuto() { return rupturePoints(); }
   function ruptureMax() { return pub("ruptureMax", capMax("rupture", ruptureMaxAuto), {}); }
-  function desActionAuto() { return desActionBase() + modSum(state.divers.desAction); }
+  function desActionAuto() { return desActionBase(); }
   function desAction() { return pub("desAction", capMax("desAction", desActionAuto), {}); }
 
   // La table des maximums, par clé d'état : un seul endroit où le nom d'une
@@ -1091,14 +1177,14 @@
   // du MJ la lisent tous — deux tables se seraient contredites.
   var MAX_DE = {
     pv: pvMax, pe: peMax, pm: pmMax, pi: piMax,
-    pr: prMax, ps: psMax, ph: phMax,
+    pr: prMax, ps: psMax, ph: phMax, pc: pcMax,
     charge: charge, acces: accesRapides, contenance: contenance,
     expo: expoMax, rupture: ruptureMax, desAction: desAction,
     effondrement: function () { return effPlafond(); }
   };
   var AUTO_DE = {
     pv: pvMaxAuto, pe: peMaxAuto, pm: pmMaxAuto, pi: piMaxAuto,
-    pr: prMaxAuto, ps: psMaxAuto, ph: phMaxAuto,
+    pr: prMaxAuto, ps: psMaxAuto, ph: phMaxAuto, pc: pcMaxAuto,
     charge: chargeAuto, acces: accesAuto, contenance: contenanceAuto,
     expo: expoMaxAuto, rupture: ruptureMaxAuto, desAction: desActionAuto,
     effondrement: effondrementAuto
@@ -1168,43 +1254,47 @@
   // forcé par le MJ. Le joueur peut toujours en engager moins (barre d'envoi,
   // segment « Dés engagés ») : c'est un plafond, pas une obligation.
   function compDesBrut(c) {
-    if (c && state.compsDesForce[c.id] !== undefined) return Math.floor(state.compsDesForce[c.id]);
-    return num(rangInfo(compRang(c)).des, 0);
+    if (!c) return 0;
+    return Math.floor(chaine(lireComp("des", c.id), num(rangInfo(compRang(c)).des, 0)));
   }
   function compDes(c) { return pub("compDes", compDesBrut(c), { comp: c }); }
-  function compMods(c) {
-    if (!c) return 0;
-    return (state.compsMod[c.id] || 0) + (state.compsMod2[c.id] || 0);
-  }
-  // Le BONUS d'une compétence : celui de son rang, plus les modificateurs — ou
-  // le total forcé, qui remplace les deux.
-  function compBonusAuto(c) { return num(rangInfo(compRang(c)).bonus, 0) + compMods(c); }
+  // Le BONUS d'une compétence : celui de son rang, passé à la chaîne.
+  function compBonusAuto(c) { return num(rangInfo(compRang(c)).bonus, 0); }
   function compBonusBrut(c) {
-    if (c && state.compsForce[c.id] !== undefined) return state.compsForce[c.id];
-    return compBonusAuto(c);
+    if (!c) return 0;
+    return chaine(lireComp("bonus", c.id), compBonusAuto(c));
   }
   function compBonus(c) { return pub("compBonus", compBonusBrut(c), { comp: c }); }
   // Ce qu'une compétence a coûté : la somme des rangs pris, prix par prix. Les
   // prix viennent des règles, jamais d'ici.
-  function compXpBrut(c) {
+  function compXpAuto(c) {
     var xp = 0, r = rangs(), i;
     for (i = 1; i <= compRang(c) && i < r.length; i++) xp += num(r[i].xp, 0);
     return xp;
   }
+  function compXpBrut(c) {
+    if (!c) return 0;
+    return chaine(lireComp("xp", c.id), compXpAuto(c));
+  }
   function compXp(c) { return pub("compXp", compXpBrut(c), { comp: c }); }
   // Les points de rupture qu'une compétence engage : ceux de ses rangs.
-  function compRupture(c) {
+  function compRuptureAuto(c) {
     var t = 0, r = rangs(), i;
     for (i = 1; i <= compRang(c) && i < r.length; i++) t += num(r[i].rupture, 0);
     return t;
+  }
+  function compRupture(c) {
+    if (!c) return 0;
+    return chaine(lireComp("rupture", c.id), compRuptureAuto(c));
   }
   // Une compétence est INVESTIE dès que quelque chose y est posé : un rang, un
   // modificateur, un forçage. Sans ce dernier point, la puce « Investies »
   // cacherait la compétence qu'on vient justement de régler.
   function compInvestie(c) {
-    return compRang(c) > 0 || compMods(c) !== 0 ||
-           state.compsForce[c.id] !== undefined ||
-           state.compsDesForce[c.id] !== undefined;
+    if (!c) return false;
+    return compRang(c) > 0 ||
+           levierRegleDe(lireComp("bonus", c.id)) ||
+           levierRegleDe(lireComp("des", c.id));
   }
   function compGroupe(c) { return String(c.groupe || "").trim(); }
 
@@ -1268,6 +1358,7 @@
         pr: state.etat.pr, prMax: prMax(),
         ps: state.etat.ps, psMax: psMax(),
         ph: state.etat.ph, phMax: phMax(),
+        pc: state.etat.pc, pcMax: pcMax(),
         expo: state.etat.expo, expoMax: expoMax(),
         charge: charge(), chargePorte: poidsPorte(),
         acces: accesRapides(), accesPris: accesPris(),
@@ -1656,7 +1747,7 @@
     return b;
   }
   // stepper −/champ/+ : le champ du milieu reste saisissable au point près, ce
-  // qui compte sur les grands nombres d'Outward (960 points de repos ne se
+  // qui compte sur les grands nombres d'Outward (1600 points de satiété ne se
   // remontent pas de 10 en 10 à la main).
   function stepper(get, set, step, title, reg) {
     var w = el("span", "pc-step");
@@ -1679,6 +1770,127 @@
   // trois petits champs ± (équipement / technique / décision du MJ), sommés
   // dans la valeur effective ; discrets, révélés au survol de l'hôte
   // (.pc-mods-host).
+  // ---------- les cases d'un bloc de nombres ----------
+  // TROIS FORMES, UNE SEULE BOÎTE. Les trois listes de la fiche s'en servent :
+  // sans cela leurs lignes n'auraient pas la même hauteur, et la ligne changerait
+  // d'épaisseur en ouvrant le rouage.
+  //
+  // caseTexte   un nombre, rien d'autre
+  // caseDouble  deux nombres, un par mode — la feuille n'en montre qu'un
+  // caseSaisie  un TEXTE en jouant, un CHAMP sous le rouage. Les deux, et pas
+  //             seulement le champ : un champ de type nombre ne sait pas écrire
+  //             « +25 » et porte des compteurs que Roll20 n'a nulle part.
+  function caseVide(hote, cls) {
+    var c = el("span", "c" + (cls ? " " + cls : ""));
+    hote.appendChild(c);
+    return c;
+  }
+  function caseTexte(hote, cls) {
+    var c = caseVide(hote, cls);
+    var v = el("span", "v", "");
+    c.appendChild(v);
+    return v;
+  }
+  function caseDouble(hote, cls) {
+    var c = caseVide(hote, cls);
+    var a = el("span", "v pc-jeu-only", "");
+    var b = el("span", "v pc-edit-only", "");
+    c.appendChild(a); c.appendChild(b);
+    return [a, b];
+  }
+  // Le champ ne se réécrit JAMAIS sous les doigts : tant qu'il a le focus, ce
+  // qu'on tape y reste tel quel.
+  function caseSaisie(hote, lire, ecrire, aide, reg) {
+    var c = caseVide(hote, "reglable");
+    var t = el("span", "v pc-jeu-only", "");
+    var i = el("input", "v pc-edit-only pc-case-champ pc-edit-field");
+    i.type = "number"; i.step = "1";
+    i.title = aide;
+    i.addEventListener("input", function () {
+      var v = parseInt(i.value, 10);
+      if (isFinite(v)) { ecrire(v); refresh(); }
+    });
+    (reg || hooks).push(function () {
+      if (document.activeElement !== i) i.value = lire();
+    });
+    c.appendChild(t);
+    c.appendChild(i);
+    return { txt: t, champ: i };
+  }
+  // ---------- écrire dans une boîte de la chaîne ----------
+  // Le pendant des trois lecteurs (lireCarac, lireCap, lireComp) : ces deux-là
+  // ÉCRIVENT, et ils ne créent rien tant qu'on ne leur donne rien. Le chemin se
+  // DÉFAIT quand sa dernière valeur s'en va — sans quoi ouvrir un rouage
+  // écrirait trois sous-tables vides dans un personnage qui voyage dans UN
+  // attribut Roll20.
+  function ecrireBoite(nomTable, levier, boite, cle, v) {
+    if (!state[nomTable] || typeof state[nomTable] !== "object") state[nomTable] = {};
+    var lv = state[nomTable];
+    if (v === undefined || v === null) {
+      if (!lv[levier] || !lv[levier][boite]) return;
+      delete lv[levier][boite][cle];
+      if (!Object.keys(lv[levier][boite]).length) delete lv[levier][boite];
+      if (!Object.keys(lv[levier]).length) delete lv[levier];
+      return;
+    }
+    if (!lv[levier]) lv[levier] = {};
+    if (!lv[levier][boite]) lv[levier][boite] = {};
+    lv[levier][boite][cle] = v;
+  }
+  // Le champ « Forcé » d'une valeur : vide = valeur CALCULÉE (le filigrane la
+  // montre), une valeur la FORCE. Zéro est une valeur, et c'est le seul moyen
+  // d'obtenir zéro à coup sûr.
+  function champForceBoite(nomTable, levier, cle, auto, titre, reg) {
+    var lire = lireTable(nomTable, levier, cle);
+    var inp = el("input", "force");
+    inp.type = "number"; inp.step = "any";
+    inp.title = titre || "Vide = valeur calculée ; une valeur la force.";
+    inp.addEventListener("input", function () {
+      var v = parseFloat(String(inp.value).replace(",", "."));
+      ecrireBoite(nomTable, levier, "force", cle,
+                  isFinite(v) ? clamp(Math.round(v * 100) / 100, -99999, 99999) : undefined);
+      refresh();
+    });
+    (reg || hooks).push(function () {
+      inp.placeholder = fmtP(auto());
+      var cur = lire("force");
+      if (document.activeElement !== inp) inp.value = cur === undefined ? "" : cur;
+    });
+    return inp;
+  }
+  // Les trois emplacements de modificateur, fantômes au repos : ils écrivent
+  // dans les trois PREMIERS ajouts de la chaîne. Le quatrième et les quatre
+  // facteurs ne se règlent qu'en Options — la fiche ne porte que le geste
+  // courant, le tableau de bord complet est ailleurs.
+  var MMOD_BOITES = ["a1", "a2", "a3"];
+  function multiModBoite(nomTable, levier, cle, reg) {
+    var wrap = el("span", "pc-mmods");
+    for (var i = 0; i < MMOD_BOITES.length; i++) (function (i) {
+      var boite = MMOD_BOITES[i];
+      var lire = lireTable(nomTable, levier, cle);
+      var inp = el("input", "pc-mmod");
+      inp.type = "number"; inp.step = "any"; inp.placeholder = "0";
+      inp.title = "Bonus ou malus divers (" + MMOD_SLOTS[i] + ") — emplacement " +
+                  (i + 1) + " sur " + MMOD_SLOTS.length + " ; les modificateurs s'additionnent.";
+      inp.addEventListener("input", function () {
+        var n = parseFloat(String(inp.value).replace(",", "."));
+        ecrireBoite(nomTable, levier, boite, cle,
+                    isFinite(n) && n !== 0 ? clamp(Math.round(n * 100) / 100, -9999, 9999) : undefined);
+        inp.classList.toggle("neg", n < 0);
+        refresh();
+      });
+      (reg || hooks).push(function () {
+        var v = lire(boite);
+        if (document.activeElement !== inp) {
+          inp.value = v === undefined ? "" : v;
+          inp.classList.toggle("neg", v !== undefined && v < 0);
+        }
+      });
+      wrap.appendChild(inp);
+    })(i);
+    return wrap;
+  }
+
   function multiMod(map, key, reg) {
     var wrap = el("span", "pc-mmods");
     function arr() {
@@ -2136,11 +2348,24 @@
   }
 
   // ---------- onglets ----------
-  // TROIS, et l'auteur les a nommés. Le contrôle segmenté est celui de JJK,
-  // repris tel quel.
+  // CINQ, et chacun tient une seule sorte de chose. Le contrôle segmenté est
+  // celui de JJK, repris tel quel.
+  //
+  //   Fiche       ce qui se lit en jouant : caractéristiques, réserves, corps
+  //   Art         les techniques, qui sont des CARTES et n'ont pas de colonne
+  //   Équipement  ce qui se porte : armes, vêtements, bourse, inventaire
+  //   Bio         la prose, qu'on ne consulte pas en combat
+  //   Options     les leviers du meneur et les réglages de la fiche
+  //
+  // POURQUOI CINQ ET NON TROIS : les techniques, la bio et les notes vivaient
+  // en pleine largeur SOUS l'onglet Fiche, c'est-à-dire sous huit blocs qu'il
+  // fallait dépasser pour les atteindre. Une carte de technique n'a rien à
+  // faire derrière une jauge de satiété.
   var TABS = [
     { id: "fiche", label: "Fiche" },
-    { id: "inventaire", label: "Inventaire" },
+    { id: "art", label: "Art" },
+    { id: "equipement", label: "Équipement" },
+    { id: "bio", label: "Bio" },
     { id: "options", label: "Options" }
   ];
   function buildTabs(sheet) {
@@ -2243,6 +2468,8 @@
   // s'étalent sous les trois colonnes, le CSS le porte déjà
   // (.pc-cols-fiche + .pc-block { margin-top: var(--gut) }).
   var SQUELETTES = {
+    // TROIS COLONNES, et pas de rangée pleine largeur : ce qui s'y trouvait est
+    // parti dans ses propres onglets.
     fiche: function (pane) {
       var cols = el("div", "pc-cols-fiche");
       var c1 = el("div", "pc-col");
@@ -2252,30 +2479,48 @@
       cols.appendChild(c2);
       cols.appendChild(c3);
       pane.appendChild(cols);
-      return { gauche: c1, milieu: c2, droite: c3, bas: pane };
+      return { gauche: c1, milieu: c2, droite: c3 };
     },
-    inventaire: function (pane) {
+    // UNE SEULE COLONNE, et c'est le PANNEAU lui-même : une carte de technique
+    // porte cinq champs et une macro, elle ne tient pas dans un tiers de
+    // feuille. Rendre le panneau au lieu d'un enfant est la convention qui dit
+    // « pleine largeur » — le plan des modules la reconnaît et dessine alors sa
+    // propre rangée.
+    art: function (pane) {
+      return { seule: pane };
+    },
+    equipement: function (pane) {
       var cols = el("div", "pc-cols2");
-      var left = el("div", "pc-col");
-      var right = el("div", "pc-col");
-      cols.appendChild(left);
-      cols.appendChild(right);
+      var c1 = el("div", "pc-col");
+      var c2 = el("div", "pc-col");
+      cols.appendChild(c1);
+      cols.appendChild(c2);
       pane.appendChild(cols);
-      return { gauche: left, droite: right, bas: pane };
+      return { gauche: c1, droite: c2, bas: pane };
+    },
+    bio: function (pane) {
+      var cols = el("div", "pc-cols2");
+      var c1 = el("div", "pc-col");
+      var c2 = el("div", "pc-col");
+      cols.appendChild(c1);
+      cols.appendChild(c2);
+      pane.appendChild(cols);
+      return { gauche: c1, droite: c2 };
     },
     options: function (pane) {
       var cols = el("div", "pc-cols2");
-      var a = el("div", "pc-col");
-      var b = el("div", "pc-col");
-      cols.appendChild(a);
-      cols.appendChild(b);
+      var c1 = el("div", "pc-col");
+      var c2 = el("div", "pc-col");
+      cols.appendChild(c1);
+      cols.appendChild(c2);
       pane.appendChild(cols);
-      return { gauche: a, droite: b };
+      return { gauche: c1, droite: c2 };
     }
   };
   // Libellés COURTS : ils coiffent une colonne du plan, qui est étroite.
   var LIB_COLONNES = {
-    gauche: "Gauche", milieu: "Milieu", droite: "Droite", bas: "Pleine largeur"
+    gauche: "Gauche", milieu: "Milieu", droite: "Droite",
+    seule: "Pleine largeur", bas: "Pleine largeur"
   };
 
   // L'interrupteur du module. SEULS les modules COUPÉS figurent dans
@@ -2561,21 +2806,8 @@
   // Vide = valeur CALCULÉE (le placeholder la montre en filigrane), une valeur
   // la FORCE. C'est le contrat de tous les champs « Forcé » de la fiche.
   function champForceMax(cle, auto, titre, reg) {
-    var inp = el("input", "force");
-    inp.type = "number"; inp.step = "any";
-    inp.title = titre || "Vide = maximum calculé (modificateurs compris) ; une valeur le force.";
-    inp.addEventListener("input", function () {
-      var v = parseFloat(String(inp.value).replace(",", "."));
-      if (isFinite(v)) state.maxForce[cle] = clamp(Math.round(v * 100) / 100, -99999, 99999);
-      else delete state.maxForce[cle];   // le vide EFFACE : absent = calculé
-      refresh();
-    });
-    (reg || hooks).push(function () {
-      inp.placeholder = fmtP(auto());
-      if (document.activeElement !== inp)
-        inp.value = state.maxForce[cle] === undefined ? "" : state.maxForce[cle];
-    });
-    return inp;
+    return champForceBoite("capsLeviers", "max", cle, auto,
+      titre || "Vide = maximum calculé (modificateurs compris) ; une valeur le force.", reg);
   }
   // La ligne « Forcé + Modificateurs » sous une jauge, en mode édition.
   function ligneLeviers(cle, auto, titre) {
@@ -2583,7 +2815,7 @@
     row.appendChild(el("span", "lbl", "Forcé"));
     row.appendChild(champForceMax(cle, auto, titre));
     row.appendChild(el("span", "lbl", "Modificateurs"));
-    row.appendChild(multiMod(state.divers, cle));
+    row.appendChild(multiModBoite("capsLeviers", "max", cle));
     row.appendChild(el("span", "sp"));
     return row;
   }
@@ -2598,7 +2830,7 @@
   function tuileMods(tile, cle) {
     var row = el("div", "pc-bigedit pc-edit-only");
     row.appendChild(el("span", "lbl", "Modificateurs"));
-    row.appendChild(multiMod(state.divers, cle));
+    row.appendChild(multiModBoite("capsLeviers", "max", cle));
     tile.appendChild(row);
   }
 
@@ -2640,13 +2872,13 @@
     if (opts.note) bloc.appendChild(note(opts.note));
     hooks.push(function () {
       var m = maxDe(cle);
-      var d = modSum(state.divers[cle]);
+      var d = 0;
       var forcee = capForce(cle);
       var depasse = courant(cle) > m;
       max.textContent = "/ " + fmtP(m);
       max.classList.toggle("adj", forcee || d !== 0 || depasse);
       var t;
-      if (forcee) t = "Maximum forcé à " + fmtP(state.maxForce[cle]) + " (calculé : " + fmtP(autoDe(cle)) + ")";
+      if (forcee) t = chaineTexteDe(lireCap("max", cle), "calculé", autoDe(cle));
       else t = opts.provenance ? opts.provenance() : "Maximum calculé";
       if (d) t += " · modificateurs " + sign(d);
       if (depasse) t += " — la valeur courante dépasse ce maximum : elle est gardée telle quelle.";
@@ -2695,18 +2927,14 @@
       row.appendChild(bot);
 
       hooks.push(function () {
-        var d = caracMods(name);
-        var forcee = state.caracsForce[name] !== undefined;
+        var regle = levierRegleDe(lireCarac("total", name));
         val.textContent = String(caracTotal(name));
-        val.classList.toggle("adj", d !== 0 || forcee);
-        // Un total forcé REMPLACE la somme au lieu de s'y ajouter : l'afficher
-        // quand même la ferait mentir.
-        val.title = forcee
-          ? "Total forcé (Options) : " + fmtP(state.caracsForce[name]) +
-            " — calculé : " + fmtP(caracAuto(name))
-          : "Valeur " + fmtP(caracVal(name)) +
-            (d ? " · modificateurs " + sign(d) : "") +
-            " = " + fmtP(caracTotal(name));
+        val.classList.toggle("adj", regle);
+        // L'infobulle RELIT LA CHAÎNE dans l'ordre et ne dit que ce qui a
+        // bougé : une phrase écrite d'avance mentirait dès qu'un facteur est
+        // posé, et un total forcé REMPLACE la somme au lieu de s'y ajouter.
+        val.title = chaineTexteDe(lireCarac("total", name), "valeur", caracVal(name)) +
+                    (regle ? " = " + fmtP(caracTotal(name)) : "");
       });
       b.appendChild(row);
     });
@@ -2737,7 +2965,7 @@
       tuileMods(t, cle);
       hooks.push(function () {
         var over = pris() > total();
-        t.classList.toggle("adj", over || capForce(cle) || modSum(state.divers[cle]) !== 0);
+        t.classList.toggle("adj", over || capForce(cle));
         t.title = libCap(cle, libelle) + " : " + fmtP(pris()) + " sur " + fmtP(total()) +
                   (over ? " — dépassé" : "") +
                   (capForce(cle) ? " · maximum forcé (calculé : " + fmtP(autoDe(cle)) + ")"
@@ -2766,7 +2994,7 @@
     tuileForce(tD, "desAction", desActionAuto);
     tuileMods(tD, "desAction");
     hooks.push(function () {
-      tD.classList.toggle("adj", capForce("desAction") || modSum(state.divers.desAction) !== 0);
+      tD.classList.toggle("adj", capForce("desAction"));
       tD.title = "Dés d'action reçus par tour" +
                  (capForce("desAction") ? " — forcé (calculé : " + fmtP(desActionAuto()) + ")" : "");
     });
@@ -2785,7 +3013,7 @@
     tuileForce(tPI, "pi", piMaxAuto);
     tuileMods(tPI, "pi");
     hooks.push(function () {
-      tPI.classList.toggle("adj", capForce("pi") || modSum(state.divers.pi) !== 0);
+      tPI.classList.toggle("adj", capForce("pi"));
       tPI.title = libCap("pi", "Points d'innocence") + " — " +
                   (capForce("pi") ? "maximum forcé (calculé : " + fmtP(piMaxAuto()) + ")"
                                   : provenanceCap("pi")());
@@ -2818,12 +3046,11 @@
     b.appendChild(ligneLeviers("rupture", ruptureMaxAuto,
       "Vide = nombre de points calculé (celui du livre, modificateurs compris) ; une valeur le force."));
     hooks.push(function () {
-      var d = modSum(state.divers.rupture);
       max.textContent = "/ " + fmtP(ruptureMax());
-      max.classList.toggle("adj", capForce("rupture") || d !== 0);
+      max.classList.toggle("adj", capForce("rupture"));
       max.title = capForce("rupture")
-        ? "Nombre forcé à " + fmtP(state.maxForce.rupture) + " (calculé : " + fmtP(ruptureMaxAuto()) + ")"
-        : "Points de rupture du personnage" + (d ? " · modificateurs " + sign(d) : "");
+        ? chaineTexteDe(lireCap("max", "rupture"), "calculé", ruptureMaxAuto())
+        : "Points de rupture du personnage";
       n.textContent = "Engagés : " + fmtP(ruptureComps()) + " par les rangs de compétence, " +
                       fmtP(ruptureTechs()) + " par les techniques.";
     });
@@ -2855,13 +3082,12 @@
     // owd-creation.json, pas une ligne de JavaScript.
     jauge(b, "pm", {
       pas: 1,
-      titreForce: "Aucune formule ne donne le maximum de points de mana : ce champ permet d'en poser un.",
-      provenance: function () {
-        return "Aucune formule ne donne le maximum de points de mana : il vaut 0 tant qu'une " +
-               "règle ne le fixe pas. Le champ Forcé (rouage) permet d'en poser un.";
-      },
-      note: "Le maximum de points de mana vaut 0 : aucune règle publiée ne le donne. " +
-            "Les points saisis restent comptés, et le rouage permet de forcer un maximum."
+      titreForce: "Vide = maximum calculé ; une valeur le force.",
+      // AUCUNE NOTE, ET AUCUNE INFOBULLE QUI GLOSE. Le maximum vaut zéro tant
+      // qu'aucune formule ne le donne, et c'est le zéro affiché qui le dit :
+      // l'écrire en toutes lettres serait réciter le livre dans l'outil, et
+      // cette phrase-là vieillirait sans que la fiche plante.
+      provenance: function () { return "Maximum calculé : " + fmtP(autoDe("pm")); }
     });
     var pied = el("div", "pc-comp-tools");
     var ligne = el("div", "row");
@@ -2979,9 +3205,8 @@
     hooks.push(function () {
       var m = expoMax();
       var v = state.etat.expo;
-      var d = modSum(state.divers.expo);
       max.textContent = "± " + fmtP(m);
-      max.classList.toggle("adj", capForce("expo") || d !== 0 || Math.abs(v) > m);
+      max.classList.toggle("adj", capForce("expo") || Math.abs(v) > m);
       max.title = (capForce("expo")
         ? "Bornes forcées à ± " + fmtP(m) + " (calculées : ± " + fmtP(expoMaxAuto()) + ")"
         : provenanceCap("expo")()) +
@@ -3071,11 +3296,9 @@
           lignes[cle].classList.toggle("zero", !n);
         }
       });
-      var d = modSum(state.divers.effondrement);
-      if (d) { parts.push("modificateurs " + sign(d)); somme += d; }
       tN.classList.toggle("adj", effondrement() > 0);
       tN.title = capForce("effondrement")
-        ? "Niveau forcé à " + fmtP(state.maxForce.effondrement) + " (calculé : " + effondrementAuto() + ")"
+        ? chaineTexteDe(lireCap("max", "effondrement"), "calculé", effondrementAuto())
         : parts.join(" · ") + " = " + fmtP(somme) +
           (somme > effPlafond() ? ", plafonné à " + effPlafond() : "");
     });
@@ -3145,9 +3368,8 @@
       var perdu = [];
       if (compRang(item) > 0) perdu.push(fmtP(compXp(item)) + " XP investis");
       if (compRupture(item) > 0) perdu.push(fmtP(compRupture(item)) + " point de rupture");
-      if (compMods(item) !== 0) perdu.push("des modificateurs (Options)");
-      if (state.compsForce[item.id] !== undefined || state.compsDesForce[item.id] !== undefined)
-        perdu.push("des valeurs forcées (Options)");
+      if (levierRegleDe(lireComp("bonus", item.id)) || levierRegleDe(lireComp("des", item.id)))
+        perdu.push("ses leviers (Options)");
       var armes = state.armes.filter(function (a) { return a.comp === item.id; });
       if (armes.length) perdu.push("le lien de " + armes.length + (armes.length > 1 ? " armes" : " arme"));
       function retire() {
@@ -3250,9 +3472,8 @@
     reg.push(function () {
       var c = compDe(item.id) || item;
       var rang = compRang(c);
-      var d = compMods(c);
-      var forcee = state.compsForce[c.id] !== undefined;
-      var desForce = state.compsDesForce[c.id] !== undefined;
+      var regle = levierRegleDe(lireComp("bonus", c.id));
+      var desRegle = levierRegleDe(lireComp("des", c.id));
       segs.forEach(function (sg, i) {
         sg.classList.toggle("on", i <= rang);
         // « cur » MARQUE le rang courant et n'a AUCUNE règle de style : c'est
@@ -3263,15 +3484,14 @@
       });
       var b = compBonus(c), n = compDes(c);
       total.textContent = sign(b);
-      total.classList.toggle("zero", !rang && !d && !forcee);
-      total.classList.toggle("adj", d !== 0 || forcee || desForce);
+      total.classList.toggle("zero", !rang && !regle);
+      total.classList.toggle("adj", regle || desRegle);
       var info = rangInfo(rang);
-      total.title = (forcee
-        ? "Bonus forcé à " + sign(state.compsForce[c.id])
-        : "Rang " + rang + " (" + (info.nom || "?") + ") " + sign(num(info.bonus, 0)) +
-          (d ? " · modificateurs (Options) " + sign(d) : "") +
-          " = " + sign(b)) +
-        (desForce ? " · dés forcés à " + n : "") +
+      total.title = chaineTexteDe(lireComp("bonus", c.id),
+                                  "rang " + rang + " (" + (info.nom || "?") + ")",
+                                  sign(num(info.bonus, 0))) +
+        (regle ? " = " + sign(b) : "") +
+        (desRegle ? " · dés " + n : "") +
         " — clic : lancer " + deDe(n) + " " + sign(b);
       label.title = (c.nom || "Sans nom") + " · rang " + rang +
                     (info.nom ? " (" + info.nom + ")" : "") +
@@ -4095,7 +4315,7 @@
     jaugeLimite("Contenance", contenancePrise, contenance);
     var mrow = el("div", "pc-pvmax pc-mods-host pc-edit-only");
     mrow.appendChild(el("span", "lbl", "Charge"));
-    mrow.appendChild(multiMod(state.divers, "charge"));
+    mrow.appendChild(multiModBoite("capsLeviers", "max", "charge"));
     mrow.appendChild(el("span", "sp"));
     b.appendChild(mrow);
     // La fiche COMPTE et AVERTIT, elle n'interdit rien : une fiche qui refuse
@@ -4813,8 +5033,8 @@
     ligne.appendChild(miniBtn("Réinitialiser", "Revenir au dé du livre : " + deDe(1),
       function () { state.de = deDe(1); refresh(); }));
     b.appendChild(ligne);
-    b.appendChild(note("Tous les dés du jeu sont des dés à " + faces() +
-                       " faces ; ce champ reste un réglage de table."));
+    // Pas de note : ce que le champ contient se lit dans le champ, et dire
+    // combien de faces ont les dés du jeu, c'est réciter la règle.
     return b;
   }
 
@@ -4865,6 +5085,26 @@
       function (v) { if (v === undefined) delete map[cle]; else map[cle] = v; },
       auto, titre, reg);
   }
+  // Un champ de FACTEUR : vide = ×1, jamais ×0. Il se calque sur le champ de
+  // forçage et NON sur celui de modificateur : bâti sur le second, il écrirait
+  // zéro en s'effaçant et annulerait la valeur qu'il devait seulement laisser
+  // tranquille. Son pas est libre, des flèches de 1 en 1 sautant de ×1 à ×6.
+  function champMultVal(lire, ecrire, titre, reg) {
+    var inp = el("input", "pc-num modif mult");
+    inp.type = "number"; inp.step = "any";
+    inp.title = titre;
+    inp.addEventListener("input", function () {
+      var v = parseFloat(String(inp.value).replace(",", "."));
+      ecrire(isFinite(v) ? clamp(Math.round(v * 100) / 100, -MULT_BORNE, MULT_BORNE) : undefined);
+      refresh();
+    });
+    (reg || hooks).push(function () {
+      inp.placeholder = "1";
+      var cur = lire();
+      if (document.activeElement !== inp) inp.value = cur === undefined ? "" : cur;
+    });
+    return inp;
+  }
   // L'entête d'une grille de leviers. Libellés COURTS : quatre colonnes dans
   // une demi-largeur ne laissent pas la place aux noms complets, que portent
   // les infobulles.
@@ -4879,50 +5119,315 @@
     return head;
   }
 
-  // ---- 16. Modificateurs de caractéristiques ----
-  // MÊME GRILLE que les compétences et les capacités, et c'est voulu : régler
-  // une caractéristique et régler une compétence sont le même geste pour le MJ,
-  // il n'a pas à apprendre deux dispositions. Pas de colonne « coût en xp » :
-  // les caractéristiques d'Outward ne s'achètent pas.
-  function buildModCaracs() {
-    var b = block("Modificateurs de caractéristiques");
+  // ---- la machinerie commune aux blocs de leviers de l'onglet Options ----
+  // TROIS BLOCS PORTENT LA MÊME CHOSE : les caractéristiques, les compétences,
+  // les capacités. Chacun range ses réglages dans sa propre table à trois
+  // niveaux, mais le GESTE est identique : une bande d'onglets, une grille par
+  // onglet, et sur chaque rangée la chaîne à neuf boîtes.
+  //
+  // LA CHAÎNE EST UNE MÉCANIQUE, PAS UNE RÈGLE. Elle ne sait rien d'Outward :
+  // elle prend une base, lui applique un forçage, ou quatre ajouts et quatre
+  // facteurs, et rend un nombre. C'est ce qui permet de la poser sur n'importe
+  // quelle valeur dérivée sans rouvrir ce fichier, et c'est pourquoi elle vaut
+  // pour une caractéristique comme pour un maximum de points de vie.
+  //
+  // Trois modules ne peuvent pas partager des fermetures : sans ce fichier, la
+  // même centaine de lignes serait recopiée trois fois, et corrigée une fois
+  // sur trois.
+
+  // ---------- la bande d'onglets ----------
+  // Rend { onglet, montre } : le bloc en garde ce qu'il veut. L'ONGLET OUVERT
+  // NE S'ENREGISTRE PAS — ce n'est pas un état du personnage, et deux fiches du
+  // même personnage n'ont pas à s'ouvrir sur le même réglage. On rouvre sur le
+  // premier, comme un rouage d'édition se referme au rechargement.
+  function bandeOnglets(bloc) {
+    var bande = el("div", "pc-tabs mini");
+    var corps = el("div");
+    bloc.appendChild(bande);
+    bloc.appendChild(corps);
+    var pages = [];
+    function montre(i) {
+      pages.forEach(function (p, j) {
+        p.bouton.classList.toggle("on", j === i);
+        p.page.classList.toggle("on", j === i);
+        // UN SEUL ARRÊT DE TABULATION POUR TOUTE LA BANDE. Cinq boutons
+        // focalisables, ce sont cinq tabulations entre le titre du bloc et le
+        // premier champ qu'on vient régler : la bande coûterait plus cher à
+        // traverser qu'à employer. On entre sur l'onglet ouvert, les flèches
+        // font le reste.
+        p.bouton.tabIndex = j === i ? 0 : -1;
+      });
+    }
+    function onglet(nom, aide, bati) {
+      var i = pages.length;
+      // UN BOUTON, ET NON UN DIV. Les onglets de la feuille sont des div et ne
+      // s'atteignent qu'à la souris ; les segments de la barre d'envoi sont des
+      // boutons, et c'est ce précédent-là qui vaut ici. Le navigateur donne
+      // alors le focus, Entrée et Espace sans qu'on écrive une ligne pour ça.
+      var bouton = el("button", "pc-tab", nom);
+      bouton.type = "button";
+      // UNE INFOBULLE SEULEMENT QUAND LE MOT EST ABRÉGÉ, et elle ne dit alors
+      // que le mot entier : la fiche ne récite pas les règles.
+      if (aide) bouton.title = aide;
+      bouton.addEventListener("click", function () { montre(i); });
+      bouton.addEventListener("keydown", function (e) {
+        var d = e.key === "ArrowRight" ? 1 : (e.key === "ArrowLeft" ? -1 : 0);
+        if (!d) return;
+        e.preventDefault();
+        var j = (i + d + pages.length) % pages.length;
+        montre(j);
+        pages[j].bouton.focus();
+      });
+      bande.appendChild(bouton);
+      // LE COMPTE PART DANS LE HTML : le CSS ne sait pas compter ses enfants, et
+      // c'est lui qui décide comment couper une bande longue en deux rangs.
+      bande.setAttribute("data-n", String(pages.length + 1));
+      var page = el("div", "pc-souspage");
+      bati(page);
+      corps.appendChild(page);
+      pages.push({ bouton: bouton, page: page });
+    }
+    return { onglet: onglet, montre: montre };
+  }
+
+  // ---------- la grille, son entête, ses rangées ----------
+  // LA GRILLE ET SON DÉFILEMENT. Les colonnes d'une grille d'Options ont une
+  // largeur en rem, pas en parts : sous une certaine largeur de colonne, elles
+  // ne rentrent plus, et c'est voulu — un champ de saisie qui se réduit à deux
+  // millimètres ne sert plus à rien. L'enveloppe laisse alors défiler.
+  function grilleOpt(hote) {
     var wrap = el("div", "pc-optcomp-wrap");
     var box = el("div");
     wrap.appendChild(box);
-    b.appendChild(wrap);
-    entete(box, [
-      ["Carac.", "Caractéristique"],
-      ["Forcé", "Total forcé — vide = total calculé"],
-      ["Modif.", "Deux modificateurs du total, qui s'additionnent", "duo"],
-      ["Total", "Total effectif de la caractéristique"]
-    ]);
-    caracsOrdre().forEach(function (name, i) {
-      var row = el("div", "pc-optcomp-row quatre pc-mods-host" + (i % 2 === 1 ? " odd" : ""));
-      var nameBox = el("span", "pc-comp-name");
-      var chip = el("span", "pc-abbr", abbrCarac(name));
-      chip.title = libCarac(name);
-      nameBox.appendChild(chip);
-      row.appendChild(nameBox);
-      row.appendChild(champForce(state.caracsForce, name,
-        function () { return caracAuto(name); },
-        "Total forcé — vide = total calculé (valeur + modificateurs)."));
-      row.appendChild(champMod(state.caracsMod, name, 9999, "Premier modificateur du total — vide = aucun."));
-      row.appendChild(champMod(state.caracsMod2, name, 9999, "Second modificateur du total — vide = aucun."));
-      var tot = el("span", "pc-comp-total", "");
-      row.appendChild(tot);
-      hooks.push(function () {
-        var d = caracMods(name);
-        var f = state.caracsForce[name];
-        tot.textContent = String(caracTotal(name));
-        tot.classList.toggle("adj", d !== 0 || f !== undefined);
-        tot.title = f !== undefined
-          ? "Total forcé à " + fmtP(f) + " (calculé : " + fmtP(caracAuto(name)) + ")"
-          : "valeur " + fmtP(caracVal(name)) + (d ? " · modificateurs " + sign(d) : "");
-        // liseré à gauche dès qu'un levier est posé : une ligne réglée s'allume
-        // sans décaler ses voisines
-        row.classList.toggle("on", d !== 0 || f !== undefined);
+    hote.appendChild(wrap);
+    return box;
+  }
+  // UN MOT NUL POSE UN FILET, et non un entête vide : la grille des leviers
+  // porte des colonnes d'un pixel qui séparent les groupes, et un entête de
+  // texte à leur place décalerait tout d'une colonne.
+  function enteteOpt(hote, cls, mots) {
+    var head = el("div", "pc-optcomp-row " + cls + " head");
+    mots.forEach(function (h) {
+      if (!h) { head.appendChild(el("span", "rule")); return; }
+      var sp = el("span", h[2] || null, h[0]);
+      sp.title = h[1];
+      head.appendChild(sp);
+    });
+    hote.appendChild(head);
+    return head;
+  }
+  function rangeeOpt(hote, cls, i) {
+    var row = el("div", "pc-optcomp-row " + cls + (i % 2 === 1 ? " odd" : ""));
+    hote.appendChild(row);
+    return row;
+  }
+  // Une rangée qui se nomme par un SIGLE : caractéristiques et compétences. Le
+  // nom entier tient dans l'infobulle — la colonne est trop étroite pour
+  // « Détermination ».
+  function rangeeSigle(hote, cls, code, i, nom) {
+    var row = rangeeOpt(hote, cls, i);
+    var nameBox = el("span", "pc-comp-name");
+    var chip = el("span", "pc-abbr", code);
+    chip.title = nom || code;
+    nameBox.appendChild(chip);
+    row.appendChild(nameBox);
+    return row;
+  }
+  // Une rangée qui se nomme par un NOM : les spécialités, qui n'ont pas de
+  // sigle. Le nom se coupe à l'ellipse et se lit entier en infobulle.
+  function rangeeNom(hote, cls, nom, i, titre) {
+    var row = rangeeOpt(hote, cls, i);
+    var nameBox = el("span", "pc-comp-name");
+    var lab = el("span", "pc-comp-label", nom || "Sans nom");
+    lab.title = titre || nom || "";
+    nameBox.appendChild(lab);
+    row.appendChild(nameBox);
+    return row;
+  }
+
+  // ---------- lire et écrire une boîte, sans rien matérialiser ----------
+  // On ne passe PAS par champMod(map, clé, …), qui exige une table existante :
+  // l'appeler au montage créerait toutes les sous-tables chez tout personnage
+  // qui ouvre simplement les Options, et l'état, qui voyage dans un seul
+  // attribut Roll20, s'alourdirait d'objets vides pour rien.
+  //
+  // Ces fermetures ne créent qu'à l'écriture, et DÉFONT le chemin quand la
+  // dernière valeur s'en va.
+  function boitesTable(nomTable) {
+    return {
+      lire: function (nom, cle) {
+        return function (boite) {
+          var t = state[nomTable] && state[nomTable][nom];
+          var tb = t && t[boite];
+          var v = tb && tb[cle];
+          return (typeof v === "number" && isFinite(v)) ? v : undefined;
+        };
+      },
+      ecrire: function (nom, boite, cle, v) {
+        if (!state[nomTable] || typeof state[nomTable] !== "object") state[nomTable] = {};
+        var lv = state[nomTable];
+        if (v === undefined || v === null) {
+          if (!lv[nom] || !lv[nom][boite]) return;
+          delete lv[nom][boite][cle];
+          if (!Object.keys(lv[nom][boite]).length) delete lv[nom][boite];
+          if (!Object.keys(lv[nom]).length) delete lv[nom];
+          return;
+        }
+        if (!lv[nom]) lv[nom] = {};
+        if (!lv[nom][boite]) lv[nom][boite] = {};
+        lv[nom][boite][cle] = v;
+      }
+    };
+  }
+  // ---------- ce qui compte comme « réglé », et ce que la chaîne a fait ----------
+  // UNE BOÎTE QUI NE CHANGE RIEN NE COMPTE PAS : un ajout de zéro et un facteur
+  // de un sont le NEUTRE de leur opération. Un forçage, si — forcer une valeur
+  // à zéro est un réglage, et le seul moyen d'obtenir zéro à coup sûr.
+  var BOITES_LEV = [["force", null], ["a1", 0], ["a2", 0], ["m1", 1], ["m2", 1],
+                    ["a3", 0], ["a4", 0], ["m3", 1], ["m4", 1]];
+  function levierRegleDe(lire) {
+    for (var i = 0; i < BOITES_LEV.length; i++) {
+      var v = lire(BOITES_LEV[i][0]);
+      if (v === undefined) continue;
+      if (BOITES_LEV[i][1] !== null && v === BOITES_LEV[i][1]) continue;
+      return true;
+    }
+    return false;
+  }
+  // CE QUE LA CHAÎNE A FAIT, RELU DANS L'ORDRE : la base d'abord, puis chaque
+  // boîte réglée. C'est l'infobulle du dernier nombre, et la seule façon
+  // honnête de dire d'où il sort — une phrase écrite d'avance mentirait dès
+  // qu'un facteur est posé.
+  function chaineTexteDe(lire, motBase, base) {
+    var f = lire("force");
+    if (f !== undefined) return "Forcé à " + f;
+    var out = motBase + " " + base;
+    [["a1", " · ", 0], ["a2", " · ", 0], ["m1", " · ×", 1], ["m2", " · ×", 1],
+     ["a3", " · ", 0], ["a4", " · ", 0], ["m3", " · ×", 1], ["m4", " · ×", 1]]
+      .forEach(function (d) {
+        var v = lire(d[0]);
+        // le neutre ne se dit pas : « de la table 400 · +0 » se lit deux fois
+        // avant de vouloir dire qu'il ne s'est rien passé
+        if (v === undefined || v === d[2]) return;
+        out += d[1] + (d[0].charAt(0) === "m" ? v : sign(v));
       });
-      box.appendChild(row);
+    return out;
+  }
+
+  // ---------- LA GRILLE D'UN LEVIER ----------
+  // Les onglets des trois blocs l'appellent, et ne diffèrent que par ce qu'ils
+  // lui passent.
+  //
+  // LES ENTÊTES DES HUIT CHAMPS SONT DES SIGNES, et il n'y a pas d'alternative
+  // honnête : la colonne fait 1,25 rem, aucun mot n'y tient, et deux « MODIF. »
+  // de suite ne diraient pas lequel vient avant l'autre. « ＋ » et « × » disent
+  // ce que la case CONTIENT ; « avant » et « après » diraient où elle tombe
+  // dans un calcul, c'est-à-dire la règle, qui n'a pas sa place ici.
+  //
+  // opts :
+  //   cls     la classe de grille ("levier")
+  //   lignes  [{ cle, nom, titre }] — ce qui va en colonne de gauche
+  //   rangee  (hote, cls, ligne, i) -> l'élément de rangée
+  //   lire    (cle) -> (boîte) -> nombre|undefined
+  //   ecrire  (cle, boîte, v) ; v undefined DÉFAIT le chemin
+  //   mot     [libellé, infobulle] de la dernière colonne
+  //   borne   999 ou 9999, l'échelle des ajouts
+  //   auto    (cle) -> le filigrane du champ forcé
+  //   rendu   (cle) -> { texte, titre, zero }
+  //   reg     le registre de rafraîchissement où pousser
+  function grilleLevier(page, opts) {
+    var box = grilleOpt(page);
+    var reg = opts.reg || hooks;
+    enteteOpt(box, opts.cls, [
+      opts.entete || ["Nom", "Ce que la rangée règle"],
+      ["Forcé", "Valeur imposée — vide = valeur calculée", "fo"],
+      ["＋", "Deux nombres qui s'ajoutent avant les facteurs", "duo op"],
+      null,
+      ["×", "Deux facteurs — vide = ×1", "duo op"],
+      null,
+      ["＋", "Deux nombres qui s'ajoutent après les premiers facteurs", "duo op"],
+      null,
+      ["×", "Deux facteurs de plus — vide = ×1", "duo op"],
+      opts.mot
+    ]);
+    opts.lignes.forEach(function (ligne, i) {
+      var cle = ligne.cle;
+      var lire = opts.lire(cle);
+      var row = opts.rangee(box, opts.cls, ligne, i);
+      row.appendChild(champForceVal(
+        function () { return lire("force"); },
+        function (v) { opts.ecrire(cle, "force", v); },
+        function () { return opts.auto(cle); },
+        "Valeur imposée — vide = valeur calculée.", reg));
+      ["a1", "a2"].forEach(function (bx) { row.appendChild(ajout(bx)); });
+      row.appendChild(el("span", "rule"));
+      ["m1", "m2"].forEach(function (bx) { row.appendChild(facteur(bx)); });
+      row.appendChild(el("span", "rule"));
+      ["a3", "a4"].forEach(function (bx) { row.appendChild(ajout(bx)); });
+      row.appendChild(el("span", "rule"));
+      ["m3", "m4"].forEach(function (bx) { row.appendChild(facteur(bx)); });
+      var out = el("span", "pc-comp-total", "");
+      row.appendChild(out);
+      reg.push(function () {
+        var r = opts.rendu(cle);
+        var regle = levierRegleDe(opts.lire(cle));
+        out.textContent = r.texte;
+        out.classList.toggle("adj", regle);
+        if (r.zero !== undefined) out.classList.toggle("zero", r.zero);
+        out.title = r.titre;
+        row.classList.toggle("on", regle);
+      });
+      function ajout(bx) {
+        return champModVal(
+          function () { return opts.lire(cle)(bx); },
+          function (v) { opts.ecrire(cle, bx, v ? v : undefined); }, opts.borne,
+          "Nombre qui s'ajoute — vide = aucun.", reg);
+      }
+      function facteur(bx) {
+        return champMultVal(
+          function () { return opts.lire(cle)(bx); },
+          function (v) { opts.ecrire(cle, bx, v); },
+          "Facteur — vide = ×1.", reg);
+      }
+    });
+  }
+  // ---- 16. Réglages des caractéristiques ----
+  // LE TABLEAU DE BORD DU MENEUR, première moitié. Une rangée par
+  // caractéristique, et sur chaque rangée la chaîne à neuf boîtes :
+  //
+  //     forçage  |  ＋ ＋  ×  × ×  |  ＋ ＋  ×  × ×
+  //
+  // MÊME GRILLE que les compétences et les capacités, et c'est voulu : régler
+  // une caractéristique, une compétence ou un maximum sont le même geste, et le
+  // meneur n'a pas à apprendre trois dispositions.
+  //
+  // UN SEUL LEVIER ICI, « total », parce qu'une caractéristique d'Outward n'a
+  // qu'une valeur dérivée. Pas de coût en xp : elles ne s'achètent pas. Le jour
+  // où une règle en donnera une seconde, ce bloc prendra une bande d'onglets
+  // comme celui des compétences, et rien d'autre ne bougera.
+  function buildModCaracs() {
+    var b = block("Réglages des caractéristiques");
+    var B = boitesTable("caracsLeviers");
+    grilleLevier(b, {
+      cls: "levier",
+      entete: ["Carac.", "Caractéristique"],
+      lignes: caracsOrdre().map(function (name) {
+        return { cle: name, nom: abbrCarac(name), titre: libCarac(name) };
+      }),
+      rangee: function (hote, cls, ligne, i) {
+        return rangeeSigle(hote, cls, ligne.nom, i, ligne.titre);
+      },
+      lire: function (c) { return B.lire("total", c); },
+      ecrire: function (c, boite, v) { B.ecrire("total", boite, c, v); },
+      mot: ["Total", "Total effectif de la caractéristique"],
+      borne: 9999,
+      auto: function (c) { return caracAuto(c); },
+      rendu: function (c) {
+        return {
+          texte: fmtP(caracTotal(c)),
+          titre: chaineTexteDe(lireCarac("total", c), "valeur", caracVal(c))
+        };
+      }
     });
     return b;
   }
@@ -4979,80 +5484,92 @@
     return b;
   }
 
-  // ---- 21. Modificateurs de capacités ----
-  // LE TABLEAU DE BORD DU MJ : une rangée par capacité dérivée, forçage,
-  // modificateurs, total. C'est le même geste que pour une caractéristique ou
-  // une compétence.
+  // ---- 21. Réglages des capacités ----
+  // LE TABLEAU DE BORD DU MENEUR, seconde moitié : une rangée par valeur
+  // dérivée du corps, et la même chaîne à neuf boîtes que les caractéristiques
+  // et les compétences.
+  //
+  // C'est ICI, et nulle part ailleurs, qu'on impose un maximum : les champs
+  // « Forcé » des blocs de la Fiche écrivent dans la MÊME boîte (capsLeviers,
+  // levier « max », boîte « force »), et les trois emplacements qu'ils portent
+  // sont les trois premiers ajouts de cette chaîne. Deux endroits pour la même
+  // donnée finiraient par se contredire ; il n'y en a qu'un.
+  //
+  // L'ORDRE EST CELUI DE LA FICHE : les jauges d'abord, les limites du corps
+  // ensuite, les compteurs à la fin. La liste est écrite ici parce qu'elle
+  // range ET nomme ce que le livre laisse sans ordre ; les libellés, eux,
+  // viennent des règles (libCap) dès qu'elles les donnent.
   function buildOptCaps() {
-    var b = block("Modificateurs de capacités");
-    var wrap = el("div", "pc-optcomp-wrap");
-    var box = el("div");
-    wrap.appendChild(box);
-    b.appendChild(wrap);
-    entete(box, [
-      ["Capacité", "La valeur dérivée à régler"],
-      ["Forcé", "Valeur forcée — vide = valeur calculée"],
-      ["Modif.", "Trois modificateurs, qui s'additionnent", "duo"],
-      ["Total", "Valeur effective"]
-    ]);
-    // L'ordre est celui de la fiche : les jauges d'abord, les limites du corps
-    // ensuite, les compteurs à la fin.
+    var b = block("Réglages des capacités");
+    var B = boitesTable("capsLeviers");
     var LIGNES = [
       ["pv", "Points de vie"], ["pe", "Points d'endurance"], ["pm", "Points de mana"],
       ["pi", "Points d'innocence"], ["pr", "Points de repos"], ["ps", "Points de satiété"],
-      ["ph", "Points d'hydratation"], ["charge", "Charge"], ["acces", "Accès rapides"],
+      ["ph", "Points d'hydratation"], ["pc", "Points de chance"],
+      ["charge", "Charge"], ["acces", "Accès rapides"],
       ["contenance", "Contenance"], ["expo", "Exposition"], ["rupture", "Rupture"],
       ["desAction", "Dés d'action"], ["effondrement", "Effondrement"]
     ];
-    LIGNES.forEach(function (L, i) {
-      var cle = L[0];
-      var row = el("div", "pc-optcomp-row quatre pc-mods-host" + (i % 2 === 1 ? " odd" : ""));
-      var nameBox = el("span", "pc-comp-name");
-      var lab = el("span", "pc-comp-label", libCap(cle, L[1]));
-      lab.title = libCap(cle, L[1]);
-      nameBox.appendChild(lab);
-      row.appendChild(nameBox);
-      row.appendChild(champForce(state.maxForce, cle, function () { return autoDe(cle); },
-        "Valeur forcée — vide = valeur calculée (formule du livre et modificateurs)."));
-      // Trois emplacements ici aussi : ce sont les MÊMES que ceux des blocs de
-      // la Fiche, pas un second jeu — deux endroits pour la même donnée
-      // finiraient par se contredire.
-      var mm = multiMod(state.divers, cle);
-      // La colonne « Modif. » de l'entête coiffe DEUX pistes de la grille (c'est
-      // ce que fait .duo) : la cellule qui porte les trois emplacements doit
-      // s'étendre autant, sinon la rangée se décale d'une colonne par rapport à
-      // son entête. Posé en clair plutôt que par une classe, parce que
-      // l'alignement d'une grille ne doit dépendre d'aucune feuille : la fiche
-      // s'ouvre aussi quand le CSS n'a pas été chargé.
-      mm.classList.add("duo");
-      mm.style.gridColumn = "span 2";
-      row.appendChild(mm);
-      var tot = el("span", "pc-comp-total", "");
-      row.appendChild(tot);
-      hooks.push(function () {
-        var d = modSum(state.divers[cle]);
-        var f = state.maxForce[cle];
-        tot.textContent = fmtP(maxDe(cle));
-        tot.classList.toggle("adj", d !== 0 || f !== undefined);
-        tot.title = f !== undefined
-          ? "Valeur forcée à " + fmtP(f) + " (calculée : " + fmtP(autoDe(cle)) + ")"
-          : (capDef(cle) && capDef(cle).formule ? capDef(cle).formule : "Valeur calculée") +
-            (d ? " · modificateurs " + sign(d) : "");
-        row.classList.toggle("on", d !== 0 || f !== undefined);
-      });
-      box.appendChild(row);
+    grilleLevier(b, {
+      cls: "levier",
+      entete: ["Capacité", "La valeur dérivée à régler"],
+      lignes: LIGNES.map(function (L) {
+        return { cle: L[0], nom: libCap(L[0], L[1]), titre: libCap(L[0], L[1]) };
+      }),
+      rangee: function (hote, cls, ligne, i) {
+        return rangeeNom(hote, cls, ligne.nom, i, ligne.titre);
+      },
+      lire: function (cle) { return B.lire("max", cle); },
+      ecrire: function (cle, boite, v) { B.ecrire("max", boite, cle, v); },
+      mot: ["Total", "Valeur effective"],
+      borne: 99999,
+      // L'EFFONDREMENT N'EST PAS UN MAXIMUM, C'EST UN NIVEAU. Sa ligne montre
+      // donc ce que le personnage SUBIT, pas le plafond de l'échelle : les deux
+      // se lisaient côte à côte dans la même rangée, le filigrane disant 0 et
+      // le total disant 10.
+      auto: function (cle) {
+        return cle === "effondrement" ? effondrementAuto() : autoDe(cle);
+      },
+      rendu: function (cle) {
+        var d = capDef(cle);
+        return {
+          texte: fmtP(cle === "effondrement" ? effondrement() : maxDe(cle)),
+          // La formule du livre est ce que la capacité vaut AVANT tout réglage :
+          // c'est la base de la chaîne, et la dire n'est pas réciter une règle,
+          // c'est dire d'où sort le nombre qu'on lit.
+          titre: chaineTexteDe(lireCap("max", cle),
+                               d && d.formule ? d.formule + " :" : "calculé",
+                               fmtP(cle === "effondrement" ? effondrementAuto() : autoDe(cle)))
+        };
+      }
     });
     return b;
   }
 
-  // ---- 22. Modificateurs de compétences ----
-  // Le pendant du bloc précédent, compétence par compétence. Ses variables de
-  // vue lui sont PROPRES (optFilter, optOnly) : on ne cherche pas la même chose
-  // ici que dans l'onglet Fiche. Rebâti par optCompsRebuild, qui vide optHooks
-  // à chaque passe (sinon chaque rebâti fuirait des hooks) et finit par
-  // refresh() pour peupler les totaux qui viennent de naître.
+  // ---- 22. Réglages des compétences ----
+  // Le pendant des deux blocs précédents, compétence par compétence, et le seul
+  // des trois à porter une BANDE D'ONGLETS : une compétence a quatre valeurs
+  // dérivées, là où une caractéristique n'en a qu'une.
+  //
+  //   Bonus    ce qu'elle ajoute au jet
+  //   Dés      combien de dés d'action elle laisse engager
+  //   XP       ce que ses rangs ont coûté
+  //   Rupture  ce que ses rangs ont engagé
+  //
+  // La liste est OUVERTE (le joueur nomme ses compétences) et FILTRÉE : le bloc
+  // se rebâtit donc, et ses fonctions de rafraîchissement vivent dans un
+  // registre à lui, `optHooks`, vidé à chaque passe — sinon chaque rebâti
+  // fuirait des hooks qui pointent sur un DOM disparu.
+  //
+  // LES QUATRE ONGLETS SE REBÂTISSENT ENSEMBLE, et le rejeu final est
+  // obligatoire : les appelants lancent refresh() PUIS le rebâti, donc les
+  // fonctions fraîches naîtraient après la passe et les totaux resteraient
+  // vides jusqu'au prochain geste.
+  //
+  // Ses variables de vue lui sont PROPRES (optFilter, optOnly) : on ne cherche
+  // pas la même chose ici que dans l'onglet Fiche.
   function buildOptComps() {
-    var b = block("Modificateurs de compétences");
+    var b = block("Réglages des compétences");
     var tools = el("div", "pc-comp-tools");
     var l1 = el("div", "row");
     var search = champFiltre(function () { return optFilter; },
@@ -5062,7 +5579,7 @@
     if (l1.children.length) tools.appendChild(l1);
     var l2 = el("div", "row");
     var puce = el("span", "pc-chip", "Investies");
-    puce.title = "N'afficher que les compétences où un rang, un modificateur ou un forçage est posé.";
+    puce.title = "N'afficher que les compétences où un rang ou un levier est posé.";
     puce.classList.toggle("on", optOnly);
     puce.addEventListener("click", function () {
       optOnly = !optOnly;
@@ -5072,76 +5589,125 @@
     l2.appendChild(puce);
     tools.appendChild(l2);
     b.appendChild(tools);
-    var wrap = el("div", "pc-optcomp-wrap");
-    var box = el("div");
-    wrap.appendChild(box);
-    b.appendChild(wrap);
 
-    optCompsRebuild = function () {
-      optHooks = [];
-      box.innerHTML = "";
+    var bande = bandeOnglets(b);
+    var B = boitesTable("compsLeviers");
+    var rebatis = [];
+
+    // Ce que les quatre onglets montrent, dans l'ordre de la vie d'une
+    // compétence : ce qu'elle DONNE (bonus, dés), puis ce qu'elle COÛTE
+    // (xp, rupture).
+    function onglet(titre, aide, nom, mot, borne, auto, rendu) {
+      bande.onglet(titre, aide, function (page) {
+        var corps = el("div");
+        page.appendChild(corps);
+        function bati() {
+          corps.innerHTML = "";
+          var liste = compsVisibles();
+          if (!liste.length) { corps.appendChild(el("div", "pc-empty", motVide())); return; }
+          grilleLevier(corps, {
+            cls: "levier",
+            entete: ["Comp.", "Compétence"],
+            lignes: liste.map(function (c) {
+              return { cle: c.id, nom: c.nom || "Sans nom",
+                       titre: (c.nom || "Sans nom") + " · " + (compGroupe(c) || "sans groupe") };
+            }),
+            rangee: function (hote, cls, ligne, i) {
+              return rangeeNom(hote, cls, ligne.nom, i, ligne.titre);
+            },
+            lire: function (id) { return B.lire(nom, id); },
+            ecrire: function (id, boite, v) { B.ecrire(nom, boite, id, v); },
+            mot: mot, borne: borne,
+            auto: function (id) { return auto(compDe(id)); },
+            rendu: function (id) { return rendu(compDe(id)); },
+            reg: optHooks
+          });
+        }
+        bati();
+        rebatis.push(bati);
+      });
+    }
+
+    function compsVisibles() {
       var flt = filtreDe(optFilter);
-      var liste = state.comps.filter(function (c) {
+      return state.comps.filter(function (c) {
         if (optOnly && !compInvestie(c)) return false;
         if (flt && pli(c.nom).indexOf(flt) < 0 && pli(c.groupe).indexOf(flt) < 0) return false;
         return true;
       });
-      if (!liste.length) {
-        box.appendChild(el("div", "pc-empty",
-          !state.comps.length ? "Aucune compétence sur cette fiche."
-            : flt ? "Aucune compétence ne correspond à la recherche."
-                  : "Aucune compétence investie : la puce « Investies » masque les autres."));
-        refresh();
-        return;
+    }
+    function motVide() {
+      var flt = filtreDe(optFilter);
+      return !state.comps.length ? "Aucune compétence sur cette fiche."
+        : flt ? "Aucune compétence ne correspond à la recherche."
+              : "Aucune compétence investie : la puce « Investies » masque les autres.";
+    }
+
+    onglet("Bonus", "", "bonus", ["Bonus", "Bonus effectif au jet"], 999,
+      function (c) { return compBonusAuto(c); },
+      function (c) {
+        if (!c) return { texte: "—", titre: "" };
+        var rang = compRang(c), info = rangInfo(rang);
+        return {
+          texte: sign(compBonus(c)),
+          zero: !rang && !levierRegleDe(lireComp("bonus", c.id)),
+          titre: chaineTexteDe(lireComp("bonus", c.id),
+                               "rang " + rang + " (" + (info.nom || "?") + ")",
+                               sign(num(info.bonus, 0)))
+        };
+      });
+
+    onglet("Dés", "", "des", ["Dés", "Dés d'action engageables"], 99,
+      function (c) { return c ? num(rangInfo(compRang(c)).des, 0) : 0; },
+      function (c) {
+        if (!c) return { texte: "—", titre: "" };
+        var rang = compRang(c);
+        return {
+          texte: fmtP(compDes(c)),
+          zero: !compDes(c),
+          titre: chaineTexteDe(lireComp("des", c.id), "rang " + rang + " :",
+                               num(rangInfo(rang).des, 0))
+        };
+      });
+
+    onglet("XP", "", "xp", ["Coût", "Coût effectif en xp"], 9999,
+      function (c) { return compXpAuto(c); },
+      function (c) {
+        if (!c) return { texte: "—", titre: "" };
+        return {
+          texte: fmtP(compXp(c)),
+          zero: !compXp(c),
+          titre: chaineTexteDe(lireComp("xp", c.id),
+                               "rangs pris jusqu'au rang " + compRang(c) + " :",
+                               compXpAuto(c))
+        };
+      });
+
+    onglet("Rupture", "", "rupture", ["Points", "Points de rupture engagés"], 99,
+      function (c) { return compRuptureAuto(c); },
+      function (c) {
+        if (!c) return { texte: "—", titre: "" };
+        return {
+          texte: fmtP(compRupture(c)),
+          zero: !compRupture(c),
+          titre: chaineTexteDe(lireComp("rupture", c.id),
+                               "rangs pris jusqu'au rang " + compRang(c) + " :",
+                               compRuptureAuto(c))
+        };
+      });
+
+    optCompsRebuild = function () {
+      optHooks.length = 0;
+      rebatis.forEach(function (f) { f(); });
+      // Les fonctions qui viennent de naître n'ont pas été jouées par la passe
+      // en cours : sans ce rejeu, les totaux restent vides jusqu'au geste
+      // suivant, et le bloc a l'air cassé.
+      for (var i = 0; i < optHooks.length; i++) {
+        try { optHooks[i](); } catch (e) { /* une rangée fautive n'emporte pas le bloc */ }
       }
-      var head = el("div", "pc-optcomp-row head");
-      [["Compétence", "Nom de la compétence"],
-       ["Dés", "Nombre de dés engageables forcé — vide = celui du rang"],
-       ["Bonus", "Bonus total forcé — vide = rang et modificateurs"],
-       ["Modif.", "Deux modificateurs du bonus, qui s'additionnent", "duo"],
-       ["Total", "Bonus effectif"]].forEach(function (h) {
-        var sp = el("span", h[2] || null, h[0]);
-        sp.title = h[1];
-        head.appendChild(sp);
-      });
-      box.appendChild(head);
-      liste.forEach(function (c, i) {
-        var row = el("div", "pc-optcomp-row pc-mods-host" + (i % 2 === 1 ? " odd" : ""));
-        var nameBox = el("span", "pc-comp-name");
-        var lab = el("span", "pc-comp-label", c.nom || "Sans nom");
-        lab.title = (c.nom || "Sans nom") + " · " + (compGroupe(c) || "sans groupe");
-        nameBox.appendChild(lab);
-        row.appendChild(nameBox);
-        row.appendChild(champForce(state.compsDesForce, c.id,
-          function () { return num(rangInfo(compRang(c)).des, 0); },
-          "Dés engageables forcés — vide = ceux du rang.", optHooks));
-        row.appendChild(champForce(state.compsForce, c.id,
-          function () { return compBonusAuto(c); },
-          "Bonus total forcé — vide = bonus du rang et modificateurs.", optHooks));
-        row.appendChild(champMod(state.compsMod, c.id, 9999,
-          "Premier modificateur du bonus — vide = aucun.", optHooks));
-        row.appendChild(champMod(state.compsMod2, c.id, 9999,
-          "Second modificateur du bonus — vide = aucun.", optHooks));
-        var tot = el("span", "pc-comp-total", "");
-        row.appendChild(tot);
-        optHooks.push(function () {
-          var d = compMods(c);
-          var f = state.compsForce[c.id];
-          tot.textContent = sign(compBonus(c));
-          tot.classList.toggle("zero", !compRang(c) && !d && f === undefined);
-          tot.classList.toggle("adj", d !== 0 || f !== undefined);
-          tot.title = f !== undefined
-            ? "Bonus forcé à " + sign(f) + " (calculé : " + sign(compBonusAuto(c)) + ")"
-            : "rang " + compRang(c) + " " + sign(num(rangInfo(compRang(c)).bonus, 0)) +
-              (d ? " · modificateurs " + sign(d) : "");
-          row.classList.toggle("on", d !== 0 || f !== undefined ||
-                                     state.compsDesForce[c.id] !== undefined);
-        });
-        box.appendChild(row);
-      });
-      refresh();   // peupler les totaux qui viennent de naître
     };
-    optCompsRebuild();
+
+    bande.montre(0);
     return b;
   }
 
@@ -5739,26 +6305,30 @@
     { id: "exposition",   titre: "Exposition",       onglet: "fiche", colonne: "milieu", build: buildExposition },
     { id: "effondrement", titre: "Effondrement",     onglet: "fiche", colonne: "milieu", build: buildEffondrement },
     { id: "comps",        titre: "Compétences",      onglet: "fiche", colonne: "droite", build: buildComps },
-    // pleine largeur, sous les trois colonnes
-    { id: "techniques",   titre: "Techniques",       onglet: "fiche", colonne: "bas",    build: buildTechniques },
-    // la prose, tout en bas : ce qui se lit ne se met pas devant ce qui se
-    // joue, et ces deux zones sont les seules de la fiche qu'on ne consulte pas
-    // en combat. « bg » porte le nom de son champ d'état, comme en JJK.
-    { id: "bg",           titre: "Bio",              onglet: "fiche", colonne: "bas",    build: buildBio },
-    { id: "notes",        titre: "Notes",            onglet: "fiche", colonne: "bas",    build: buildNotes },
-    // ---- onglet Inventaire ----
-    { id: "armes",        titre: "Armes",            onglet: "inventaire", colonne: "gauche", build: buildArmes },
-    { id: "charge",       titre: "Charge et contenance", onglet: "inventaire", colonne: "droite", build: buildCharge },
-    { id: "vetements",    titre: "Vêtements",        onglet: "inventaire", colonne: "droite", build: buildVetements },
-    { id: "bourse",       titre: "Bourse",           onglet: "inventaire", colonne: "droite", build: buildBourse },
-    { id: "inv",          titre: "Inventaire",       onglet: "inventaire", colonne: "bas",    build: buildInv },
+    // ---- onglet Art ----
+    // Pleine largeur, seul de son onglet : une technique est une CARTE, avec
+    // ses rangs, son coût et son effet. Elle vivait sous les huit blocs de la
+    // Fiche, c'est-à-dire là où personne n'allait la chercher.
+    { id: "techniques",   titre: "Techniques",       onglet: "art", colonne: "seule",  build: buildTechniques },
+    // ---- onglet Équipement ----
+    { id: "armes",        titre: "Armes",            onglet: "equipement", colonne: "gauche", build: buildArmes },
+    { id: "charge",       titre: "Charge et contenance", onglet: "equipement", colonne: "droite", build: buildCharge },
+    { id: "vetements",    titre: "Vêtements",        onglet: "equipement", colonne: "droite", build: buildVetements },
+    { id: "bourse",       titre: "Bourse",           onglet: "equipement", colonne: "droite", build: buildBourse },
+    { id: "inv",          titre: "Inventaire",       onglet: "equipement", colonne: "bas",    build: buildInv },
+    // ---- onglet Bio ----
+    // La prose, dans son propre onglet : ce qui se lit ne se met pas devant ce
+    // qui se joue, et ces deux zones sont les seules de la fiche qu'on ne
+    // consulte pas en combat. « bg » porte le nom de son champ d'état.
+    { id: "bg",           titre: "Bio",              onglet: "bio", colonne: "gauche", build: buildBio },
+    { id: "notes",        titre: "Notes",            onglet: "bio", colonne: "droite", build: buildNotes },
     // ---- onglet Options ----
     // Deux colonnes qui se répondent : à gauche ce qui touche aux valeurs et au
     // dispositif, à droite ce qui touche à la fiche et aux longues listes.
     { id: "jets",         titre: "Jets",             onglet: "options", colonne: "gauche", build: buildJets },
     { id: "actions",      titre: "Fiche",            onglet: "options", colonne: "droite", build: buildActions },
-    { id: "modcaracs",    titre: "Modificateurs de caractéristiques", onglet: "options", colonne: "gauche", build: buildModCaracs },
-    { id: "optcaps",      titre: "Modificateurs de capacités", onglet: "options", colonne: "droite", build: buildOptCaps },
+    { id: "modcaracs",    titre: "Réglages des caractéristiques", onglet: "options", colonne: "gauche", build: buildModCaracs },
+    { id: "optcaps",      titre: "Réglages des capacités", onglet: "options", colonne: "droite", build: buildOptCaps },
     // « Affichage » n'existe que dans Roll20 ; son absence sur le site laisse
     // les deux colonnes à égalité.
     { id: "affichage",    titre: "Affichage",        onglet: "options", colonne: "gauche", build: buildAffichage, pour: affichagePresent },
@@ -5768,7 +6338,7 @@
     // le titre dit ce que le bloc AFFICHE : « Compétences » le confondrait avec
     // celui de l'onglet Fiche, dans le plan comme partout où les modules se
     // nomment
-    { id: "optcomps",     titre: "Modificateurs de compétences", onglet: "options", colonne: "droite", build: buildOptComps }
+    { id: "optcomps",     titre: "Réglages des compétences", onglet: "options", colonne: "droite", build: buildOptComps }
   ];
   modules = MODULES_NATIFS.slice();
 

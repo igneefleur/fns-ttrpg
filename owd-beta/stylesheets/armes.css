@@ -6,8 +6,12 @@
    inflige, et ce qu'il fait.
 
    Toutes les couleurs passent par les variables de extra.css, que night.css
-   redéfinit : le mode nuit suit sans une règle en plus. Le bloc se pose HORS du
-   conteneur .cols, comme les tables du livre.
+   redéfinit : le mode nuit suit sans une règle en plus. La feuille est BLANCHE
+   le jour (--paper #ffffff) et NOIRE la nuit (#0d0d0d), l'encre bascule avec
+   elle, et l'or du wiki d'Outward porte tous les accents — --or-fort, qui vaut
+   #6b5210 le jour (7,4:1 sur le blanc, donc lisible en texte) et #ffd77f la
+   nuit. Les filets prennent --trait-or, un or PÂLE qui ne porte jamais de
+   texte. Le bloc se pose HORS du conteneur .cols, comme les tables du livre.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .md-typeset .armes-grille {
@@ -17,11 +21,14 @@
   margin: 1rem 0 1.6rem;
 }
 
-/* ── La carte d'une catégorie ── */
+/* ── La carte d'une catégorie ──
+   Un filet doré pâle (--trait-or) fait tout le tour, et la tranche gauche passe
+   à l'or fort : c'est l'accent qui signale la carte de loin, et le seul or assez
+   sombre pour se détacher de la feuille blanche du mode jour. */
 .md-typeset .arme {
   padding: 0.7rem 0.95rem 0.9rem;
-  border: 1px solid var(--green-header);
-  border-left: 3px solid var(--green-title);
+  border: 1px solid var(--trait-or);
+  border-left: 3px solid var(--or-fort);
   border-radius: 3px;
   background: var(--paper);
   break-inside: avoid;
@@ -35,16 +42,16 @@
   gap: 0.3rem 0.9rem;
   margin: 0 0 0.6rem;
   padding-bottom: 0.25rem;
-  border-bottom: 1px solid var(--green-header);
-  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  border-bottom: 1px solid var(--trait-or);
+  font-family: 'Symboles JDR', 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
   font-size: 0.85rem;
   font-variant: small-caps;
   letter-spacing: 0.05em;
-  color: var(--green-title);
+  color: var(--or-fort);
 }
 .md-typeset .arme-portee {
   flex: none;
-  font-family: 'Symboles JDR', 'Alegreya', Georgia, serif;
+  font-family: 'Symboles JDR', 'Proxima Nova', proxima-nova, 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 0.62rem;
   font-variant: normal;
   letter-spacing: 0.02em;
@@ -70,6 +77,32 @@
   text-align: center;
 }
 
+/* ── L'alignement d'une carte à l'autre ──
+   Chaque geste prend SIX rangées du conteneur et les partage avec ses voisines :
+   l'empreinte, le nom, les dégâts, la garde, la difficulté et la source se
+   posent donc exactement à la même hauteur d'une carte à l'autre. La rangée de
+   la source prend d'elle-même la hauteur de la plus longue source de l'arme,
+   sans qu'on ait à la chiffrer. L'écart des rangées devient l'écart INTERNE
+   d'une carte, et l'air entre deux rangées de cartes se reprend sous la source.
+   Là où subgrid manque, la colonne flex ci-dessus reste en place : les cartes
+   se décalent comme avant, ce n'est pas aligné mais ce n'est pas cassé. */
+@supports (grid-template-rows: subgrid) {
+  .md-typeset .gestes {
+    row-gap: 0.18rem;
+  }
+  .md-typeset .geste {
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-row: span 6;
+  }
+  .md-typeset svg.geste-carte {
+    margin-inline: auto;
+  }
+  .md-typeset .geste-source {
+    margin-bottom: 0.55rem;
+  }
+}
+
 .md-typeset svg.geste-carte {
   display: block;
   width: 100%;
@@ -77,21 +110,34 @@
   height: auto;
 }
 
+/* Le nom tient DEUX LIGNES quoi qu'il arrive, et s'y centre quand il n'en
+   remplit qu'une. C'est sa boîte qui porte la hauteur, pas le titre entier :
+   sinon un nom court remonterait le terme avec lui, et les sous-titres ne
+   s'aligneraient plus d'une colonne à l'autre. */
 .md-typeset .geste-nom {
+  display: flex;
+  flex-direction: column;
   margin: 0.1rem 0 0;
-  font-family: 'Symboles JDR', 'Cinzel', Garamond, serif;
+  font-family: 'Symboles JDR', 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
   font-size: 0.7rem;
   font-variant: small-caps;
   letter-spacing: 0.04em;
   line-height: 1.15;
-  color: var(--green-title);
+  color: var(--or-fort);
 }
+.md-typeset .geste-appel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.3em; /* deux lignes : 2 × line-height */
+}
+
 /* Le terme technique de la source, sous le nom francais : c'est lui qui permet
    de remonter au traite, et il ne doit pas concurrencer le nom du livre. */
 .md-typeset .geste-nom em {
   display: block;
   margin-top: 0.08rem;
-  font-family: 'Symboles JDR', 'Alegreya', Georgia, serif;
+  font-family: 'Symboles JDR', 'Proxima Nova', proxima-nova, 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 0.56rem;
   font-variant: normal;
   font-style: italic;
@@ -101,9 +147,10 @@
   opacity: 0.6;
 }
 
-/* Les dégâts : deux valeurs, la pleine sur la case verte et la moitié sur la
-   blanche, cette dernière en retrait puisqu'elle n'arrive qu'à l'accident. Le
-   type peut différer, ce n'est pas la même partie de l'arme qui touche. */
+/* Les dégâts : deux valeurs, la pleine sur la case d'or plein et la moitié sur
+   la case d'or pâli, cette dernière en retrait puisqu'elle n'arrive qu'à
+   l'accident. Le type peut différer, ce n'est pas la même partie de l'arme qui
+   touche. La valeur pleine passe à l'or fort, l'autre reste à l'encre. */
 .md-typeset .geste-chiffres {
   margin: 0;
   font-family: 'Roboto Mono', ui-monospace, monospace;
@@ -113,18 +160,50 @@
 }
 .md-typeset .geste-chiffres b {
   font-weight: 700;
-  color: var(--green-title);
+  color: var(--or-fort);
+}
+/* Quand l'arme déclare une base, le coup ne porte plus qu'un MULTIPLICATEUR,
+   et la valeur qu'il donne le suit entre parenthèses. C'est le multiplicateur
+   qu'on lit d'abord : il dit ce que le geste fait de l'arme. */
+.md-typeset .geste-chiffres .dg-val {
+  margin-left: 0.3em;
+  opacity: 0.8;
 }
 .md-typeset .geste-chiffres .dg-passe {
   opacity: 0.62;
 }
+/* Un simple blanc, et rien d'autre. Il y avait ici un point médian : aligné sur
+   toutes les cartes par le subgrid, il formait une file de points noirs en
+   travers de la rangée des flèches. La demi-valeur est déjà en retrait, elle
+   n'a pas besoin qu'on la sépare d'un signe. */
 .md-typeset .geste-chiffres .dg-passe::before {
-  content: '\2002·\2002';
-  opacity: 0.7;
+  content: '\2003';
 }
 .md-typeset .geste-chiffres .dg-passe b {
   font-weight: 400;
   color: inherit;
+}
+
+/* ── Les deux défenses ──
+   Ce qu'il en coûte d'échapper au coup. Elles se posent sous les dégâts, dans
+   la même fonte et plus discrètes : on lit d'abord ce que le coup fait, ensuite
+   ce qu'il faut pour y échapper. Les deux se lisent d'un bloc, séparées par un
+   simple blanc — le point médian formait ici la même file de points noirs en
+   travers de la rangée que celle qu'on a retirée des dégâts. */
+.md-typeset .geste-defense {
+  margin: 0.05rem 0 0;
+  font-family: 'Roboto Mono', ui-monospace, monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  opacity: 0.72;
+}
+.md-typeset .geste-defense b {
+  font-weight: 700;
+  opacity: 1;
+}
+.md-typeset .geste-defense .df-par::before {
+  content: '3';
 }
 
 /* ── La garde ──
@@ -140,32 +219,107 @@
 }
 .md-typeset svg.garde-carre {
   flex: none;
-  width: 1.6rem;
-  height: 1.6rem;
+  width: 1.9rem;
+  height: 1.9rem;
 }
 .md-typeset svg.garde-carre .gd-case {
   fill: var(--ink);
   fill-opacity: 0.08;
 }
-.md-typeset svg.garde-carre .gd-depart {
-  fill: var(--paper);
-  stroke: var(--green-title);
-  stroke-width: 1.4;
+/* Un point quand les mains ne bougent pas, UNE FLÈCHE quand elles bougent, et
+   jamais les deux : le point et la flèche ensemble se cachaient l'un l'autre.
+   Le fût et la tête sont tracés du même trait, la tête en V et non pleine :
+   un triangle plein, à cette taille, se lit comme une tache. Les deux prennent
+   l'or fort, qui se retourne avec le thème — sombre sur la feuille blanche,
+   #ffd77f sur la noire — là où les neuf cases restent, elles, de l'encre. */
+.md-typeset svg.garde-carre .gd-fixe {
+  fill: var(--or-fort);
 }
-.md-typeset svg.garde-carre .gd-arrivee {
-  fill: var(--green-title);
-}
-.md-typeset svg.garde-carre .gd-fleche {
-  stroke: var(--green-title);
-  stroke-width: 1.2;
-  stroke-opacity: 0.6;
-  fill: none;
-}
+.md-typeset svg.garde-carre .gd-fleche,
 .md-typeset svg.garde-carre .gd-pointe {
-  fill: var(--green-title);
-  fill-opacity: 0.6;
+  fill: none;
+  stroke: var(--or-fort);
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
+/* De nuit l'encre est CLAIRE : les neuf cases à 8 % s'effacent sur le fond
+   sombre, et la flèche flotte alors sans grille pour la lire. Même écart sur
+   les cases vides de l'empreinte, réglées elles aussi sur l'encre. */
+html.night .md-typeset svg.garde-carre .gd-case {
+  fill-opacity: 0.17;
+}
+html.night .md-typeset svg.geste-carte .hx-vide {
+  fill-opacity: 0.12;
+}
+
+
+/* ── Les enchaînements ──
+   La garde d'arrivée d'un coup ouvre le suivant : c'est tout le système, et il
+   ne se lit qu'en voyant les carrés se répondre d'un coup à l'autre. On les
+   pose donc côte à côte, du plus court enchaînement au plus long. */
+.md-typeset .combos {
+  margin: 0.9rem 0 0;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--trait-or);
+}
+.md-typeset .combos-nom {
+  margin: 0 0 0.45rem;
+  font-family: 'Symboles JDR', 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
+  font-size: 0.72rem;
+  font-variant: small-caps;
+  letter-spacing: 0.05em;
+  color: var(--or-fort);
+}
+.md-typeset .combos-regle {
+  margin-left: 0.5rem;
+  font-family: 'Symboles JDR', 'Proxima Nova', proxima-nova, 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 0.58rem;
+  font-variant: normal;
+  letter-spacing: 0;
+  color: var(--ink);
+  opacity: 0.62;
+}
+.md-typeset .combo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.2rem 0.55rem;
+  padding: 0.35rem 0;
+  border-top: 1px dotted var(--md-default-fg-color--lightest, rgba(29, 29, 29, 0.14));
+}
+.md-typeset .combos .combo:first-of-type {
+  border-top: 0;
+}
+.md-typeset .combo-long {
+  flex: none;
+  width: 4rem;
+  padding-top: 0.55rem;
+  font-family: 'Roboto Mono', ui-monospace, monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  opacity: 0.55;
+}
+.md-typeset .combo-coup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.05rem;
+  width: 5.4rem;
+  text-align: center;
+  font-family: 'Symboles JDR', 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
+  font-size: 0.55rem;
+  font-variant: small-caps;
+  letter-spacing: 0.03em;
+  line-height: 1.15;
+  color: var(--or-fort);
+}
+.md-typeset .combo-coup svg.garde-carre {
+  width: 1.5rem;
+  height: 1.5rem;
+}
 
 /* La difficulté d'attaque appartient au geste, pas à l'arme : estoquer et
    balayer ne demandent pas la même adresse. Elle se pose sous les dégâts, en
@@ -179,15 +333,6 @@
   opacity: 0.66;
 }
 
-.md-typeset .geste-note {
-  margin: 0.1rem 0 0;
-  font-size: 0.58rem;
-  line-height: 1.35;
-  color: var(--ink);
-  opacity: 0.72;
-  text-wrap: balance;
-}
-
 /* ── L'empreinte ──
    Trois états seulement : la case couverte par le geste, la case du personnage,
    et le reste de la grille, qui n'est là que pour donner l'échelle. */
@@ -199,17 +344,21 @@
   fill: var(--ink);
   fill-opacity: 0.055;
 }
-/* Vert plein : la case VISEE, degats pleins, et le coup poursuit sa course.
-   DEMI-VERT : l'arme y PASSE a hauteur de corps ; qui s'y tient prend la moitie
-   des degats et arrete le coup, le reste du trajet etant annule. Le meme vert a
-   la moitie de sa densite, ce qui dit la regle sans legende : moitie de teinte,
-   moitie de degats. Aucun contour ici — il est reserve a la case du porteur. */
+/* OR PLEIN : la case VISEE, degats pleins, et le coup poursuit sa course.
+   OR PALI : l'arme y PASSE a hauteur de corps ; qui s'y tient prend la moitie
+   des degats et arrete le coup, le reste du trajet etant annule. Le meme or
+   (--or-fort) a moins du tiers de sa densite, ce qui dit la regle sans legende :
+   moitie de teinte, moitie de degats. La bascule jour/nuit ne change rien a la
+   lecture : l'or fort est sombre sur la feuille blanche, clair sur la noire, et
+   des deux cotes la case pleine tranche sur les cases vides, qui ne sont que de
+   l'encre a quelques pour cent. Aucun contour ici — il est reserve a la case du
+   porteur. */
 .md-typeset svg.geste-carte .hx-frappe {
-  fill: var(--green-title);
+  fill: var(--or-fort);
   fill-opacity: 0.92;
 }
 .md-typeset svg.geste-carte .hx-passe {
-  fill: var(--green-title);
+  fill: var(--or-fort);
   fill-opacity: 0.30;
 }
 
@@ -231,21 +380,29 @@
   text-anchor: middle;
   pointer-events: none;
 }
+/* Sur l'or plein, le chiffre se creuse dans la couleur de la feuille : blanc le
+   jour, noir la nuit, donc toujours l'oppose de la case qu'il occupe. */
 .md-typeset svg.geste-carte .hx-rang--frappe { fill: var(--paper); }
-/* Sur le demi-vert, c'est l'encre qui porte : elle tient de jour comme de nuit,
-   la ou un vert sur du vert clair se perdrait. */
+/* Sur l'or pali, c'est l'encre qui porte : elle bascule avec le fond et tient
+   donc de jour comme de nuit, la ou de l'or sur de l'or dilue se perdrait. */
 .md-typeset svg.geste-carte .hx-rang--passe  { fill: var(--ink); }
 
 
-/* L'orange du porteur. Le livre n'en avait pas : c'est la seule couleur qui ne
-   soit ni le vert des coups ni l'encre du texte, et elle ne sert qu'a ca. */
+/* L'orange du porteur. C'est la seule couleur de la feuille qui ne soit ni l'or
+   des coups ni l'encre du texte, et elle ne sert qu'a ca : une terre cuite le
+   jour (#b4682e, 4,2:1 sur le blanc — c'est un contour et non du texte, le seuil
+   des objets graphiques est a 3:1), eclaircie la nuit (#d99552, 7,7:1 sur le
+   noir de la feuille) pour rester visible sur les deux fonds. Assez loin de l'or
+   pour qu'on ne confonde pas la case qu'on occupe avec celle qu'on frappe. */
 body {
   --orange-soi: #b4682e;
 }
 html.night body {
   --orange-soi: #d99552;
 }
-/* Légende des deux états, posée sous le chapeau du chapitre. */
+/* Légende des deux états, posée sous le chapeau du chapitre. Les deux pastilles
+   reprennent l'or des cases — pleine pour la frappe, à trois dixièmes pour le
+   passage — sans quoi la légende ne dirait plus la carte. */
 .md-typeset .gestes-legende {
   display: flex;
   flex-wrap: wrap;
@@ -261,10 +418,10 @@ html.night body {
   margin-right: 0.35rem;
   vertical-align: -0.14rem;
   border-radius: 2px;
-  background: var(--green-title);
+  background: var(--or-fort);
 }
 .md-typeset .gestes-legende .lg-passe {
-  background: var(--green-title);
+  background: var(--or-fort);
   opacity: 0.3;
 }
 /* La case du porteur : le meme contour orange que sur les cartes, regulier. */

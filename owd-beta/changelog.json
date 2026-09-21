@@ -1,39 +1,181 @@
 [
 {
-"short": "67cd839",
+"short": "cea2a94",
 "author": "Théo Cavaillès",
-"date": "2026-08-11T20:15:58+02:00",
-"message": "Les quatre chapitres des Bases entrent au dépôt, et la fiche cesse d'afficher zéro",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/67cd839975b7b62d05e8c8a445b607d95e7725b0",
+"date": "2026-09-21T12:19:44+02:00",
+"message": "La fiche passe au noir et or du wiki, et se decoupe en morceaux",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/cea2a949525f1edecd3ccbb15440d3fbd669a3f6",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/base/actions.md",
+"url": "content/regles/base/actions/"
+},
+{
+"status": "modified",
+"filename": "content/regles/base/capacites-physiques.md",
+"url": "content/regles/base/capacites-physiques/"
+},
+{
+"status": "modified",
+"filename": "content/regles/combat/armes.md",
+"url": "content/regles/combat/armes/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipement.md",
+"url": "content/regles/equipement/"
+},
+{
+"status": "modified",
+"filename": "content/regles/fabrication.md",
+"url": "content/regles/fabrication/"
+},
+{
+"status": "modified",
+"filename": "content/regles/index.md",
+"url": "content/regles/"
+},
+{
+"status": "modified",
+"filename": "content/regles/installations.md",
+"url": "content/regles/installations/"
+},
+{
+"status": "modified",
+"filename": "content/regles/vivre.md",
+"url": "content/regles/vivre/"
+}
+]
+},
+{
+"short": "fd0740c",
+"author": "Théo Cavaillès",
+"date": "2026-09-02T14:26:31+02:00",
+"message": "Le chapitre des techniques, et les quatre runes",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/fd0740cf33145a62527f0737ce7477c4389c9800",
 "files": [
 {
 "status": "added",
+"filename": "content/regles/techniques/barbare.md",
+"url": "content/regles/techniques/barbare/"
+},
+{
+"status": "added",
+"filename": "content/regles/techniques/cercle-air.md",
+"url": "content/regles/techniques/cercle-air/"
+},
+{
+"status": "added",
+"filename": "content/regles/techniques/cercle-feu.md",
+"url": "content/regles/techniques/cercle-feu/"
+},
+{
+"status": "added",
+"filename": "content/regles/techniques/cercle-glace.md",
+"url": "content/regles/techniques/cercle-glace/"
+},
+{
+"status": "added",
+"filename": "content/regles/techniques/cercle-terre.md",
+"url": "content/regles/techniques/cercle-terre/"
+},
+{
+"status": "added",
+"filename": "content/regles/techniques/moine.md",
+"url": "content/regles/techniques/moine/"
+},
+{
+"status": "added",
+"filename": "content/regles/techniques/runes.md",
+"url": "content/regles/techniques/runes/"
+},
+{
+"status": "added",
+"filename": "content/regles/techniques/speedster.md",
+"url": "content/regles/techniques/speedster/"
+},
+{
+"status": "added",
+"filename": "content/regles/techniques/spellblade.md",
+"url": "content/regles/techniques/spellblade/"
+},
+{
+"status": "added",
+"filename": "content/regles/techniques/totems.md",
+"url": "content/regles/techniques/totems/"
+}
+]
+},
+{
+"short": "a92a4e1",
+"author": "Théo Cavaillès",
+"date": "2026-09-02T14:26:22+02:00",
+"message": "Quatre chapitres neufs : l'équipement, la fabrication, les installations, vivre",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/a92a4e13c36f15eec6455dd595ff903da26730e6",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/base/actions.md",
+"url": "content/regles/base/actions/"
+},
+{
+"status": "modified",
 "filename": "content/regles/base/capacites-physiques.md",
 "url": "content/regles/base/capacites-physiques/"
 },
 {
 "status": "added",
-"filename": "content/regles/base/caracteristiques.md",
-"url": "content/regles/base/caracteristiques/"
+"filename": "content/regles/equipement.md",
+"url": "content/regles/equipement/"
 },
 {
 "status": "added",
-"filename": "content/regles/base/competences.md",
-"url": "content/regles/base/competences/"
+"filename": "content/regles/fabrication.md",
+"url": "content/regles/fabrication/"
+},
+{
+"status": "modified",
+"filename": "content/regles/index.md",
+"url": "content/regles/"
 },
 {
 "status": "added",
-"filename": "content/regles/base/techniques.md",
-"url": "content/regles/base/techniques/"
+"filename": "content/regles/installations.md",
+"url": "content/regles/installations/"
+},
+{
+"status": "added",
+"filename": "content/regles/vivre.md",
+"url": "content/regles/vivre/"
 }
 ]
 },
 {
-"short": "ef4a314",
+"short": "a0230b1",
 "author": "Théo Cavaillès",
-"date": "2026-08-10T23:42:50+02:00",
-"message": "Le coup de pommeau reçoit un nom, déclaré construit",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/ef4a3140b6897519042bfb75ef2d3b879e70840b",
+"date": "2026-09-02T14:26:04+02:00",
+"message": "Chaque coup porte son esquive et sa parade, et la rapière entre au chapitre",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/a0230b1f22b88f8265be0cbdd94e6ff95762ffa8",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/combat/armes.md",
+"url": "content/regles/combat/armes/"
+},
+{
+"status": "modified",
+"filename": "content/regles/combat/portees.md",
+"url": "content/regles/combat/portees/"
+}
+]
+},
+{
+"short": "606eba1",
+"author": "Théo Cavaillès",
+"date": "2026-08-17T15:57:16+02:00",
+"message": "La hache perd sa case du porteur et gagne une taille aux mains",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/606eba14e4b24b96eca0b2edce554994d02353da",
 "files": [
 {
 "status": "modified",
@@ -43,11 +185,11 @@
 ]
 },
 {
-"short": "04d387d",
+"short": "5819b86",
 "author": "Théo Cavaillès",
-"date": "2026-08-10T23:36:51+02:00",
-"message": "La taille du poignet cède la place au coup de pommeau",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/04d387d40d92e759abbea049ef4ecebfdb9ce318",
+"date": "2026-08-17T15:47:48+02:00",
+"message": "Le croc cède la place à un estoc de la corne",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/5819b860fe2c6a6276ba62f10ed6a831e9096af6",
 "files": [
 {
 "status": "modified",
@@ -57,11 +199,11 @@
 ]
 },
 {
-"short": "1e96fe1",
+"short": "c6f9f85",
 "author": "Théo Cavaillès",
-"date": "2026-08-10T23:24:04+02:00",
-"message": "L'épée se range par type d'attaque : les tailles, puis les estocs",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/1e96fe17924657ee53852998f0244bab4df2729b",
+"date": "2026-08-17T15:15:35+02:00",
+"message": "Aucun coup de hache ne frappe plus à travers quelqu'un",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/c6f9f854593627fea8c865ba3f8bde622374c13d",
 "files": [
 {
 "status": "modified",
@@ -71,11 +213,11 @@
 ]
 },
 {
-"short": "f8c356d",
+"short": "30f040e",
 "author": "Théo Cavaillès",
-"date": "2026-08-10T23:22:20+02:00",
-"message": "L'épée range ses coups par dégâts décroissants, comme cinq autres catégories",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/f8c356dedc1b61fdb1db8745c6d736460ab4dc9e",
+"date": "2026-08-17T14:52:02+02:00",
+"message": "La hache devient une arme de deux pas, comme l'épée",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/30f040eb0cfab7be9ae70860eea1a043fac1cd1c",
 "files": [
 {
 "status": "modified",
@@ -85,11 +227,11 @@
 ]
 },
 {
-"short": "28f8eab",
+"short": "3fabc90",
 "author": "Théo Cavaillès",
-"date": "2026-08-10T23:20:20+02:00",
-"message": "La poussée d'épée et bocle sort : ce n'était pas un coup",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/28f8eab703ebfa29e4d259c543a0fe2c0dee8302",
+"date": "2026-08-17T14:45:23+02:00",
+"message": "La taille basse retrouve sa portée, qu'elle n'aurait pas dû perdre",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/3fabc9028549990f3afc9276374fee5084f3d109",
 "files": [
 {
 "status": "modified",
@@ -99,11 +241,11 @@
 ]
 },
 {
-"short": "4c9a6e6",
+"short": "02c68fa",
 "author": "Théo Cavaillès",
-"date": "2026-08-10T23:11:51+02:00",
-"message": "Trois coups complètent l'épée : la diagonale, la pointe haute et le poignet",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/4c9a6e6e0238a2ea06e47d16c58173b6ba3f6b66",
+"date": "2026-08-17T14:42:09+02:00",
+"message": "Le croc de la barbe passe SOUS l'écu, il ne frappe pas avec",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/02c68fa0448ca48e1fc7bdfbd51f5e10b3a66943",
 "files": [
 {
 "status": "modified",
@@ -113,11 +255,11 @@
 ]
 },
 {
-"short": "2b9acd6",
+"short": "0d9ca84",
 "author": "Théo Cavaillès",
-"date": "2026-08-10T22:51:42+02:00",
-"message": "Trois termes techniques de l'épée cessent de dire ce que leur folio ne dit pas",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/2b9acd6368d01be765a530d50d14512c5d96f2db",
+"date": "2026-08-17T14:39:53+02:00",
+"message": "Aucun enchaînement naturel de la hache ne dépasse cinq coups",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/0d9ca84c229eea7ddd6e6a32c3db8a8d2bdbec23",
 "files": [
 {
 "status": "modified",
@@ -127,53 +269,11 @@
 ]
 },
 {
-"short": "7a6c251",
+"short": "86d4eff",
 "author": "Théo Cavaillès",
-"date": "2026-08-10T22:35:25+02:00",
-"message": "Le fendant citait un seuil que le modèle n'emploie plus",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/7a6c2519d5870da2119302d67a37b6e1e8a2035a",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/combat/armes.md",
-"url": "content/regles/combat/armes/"
-}
-]
-},
-{
-"short": "18f7644",
-"author": "Théo Cavaillès",
-"date": "2026-08-10T22:00:56+02:00",
-"message": "La taille ronde décale sa fenêtre de plein rayon de trente degrés",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/18f7644c309d7005d6b0a1ac1b97efc992c339b6",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/combat/armes.md",
-"url": "content/regles/combat/armes/"
-}
-]
-},
-{
-"short": "6b28041",
-"author": "Théo Cavaillès",
-"date": "2026-08-10T21:56:19+02:00",
-"message": "La taille montante récupère sa case à moins trente degrés",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/6b280417a81a13552e808255bfeeff6d899b0bcf",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/combat/armes.md",
-"url": "content/regles/combat/armes/"
-}
-]
-},
-{
-"short": "9f7b4ee",
-"author": "Théo Cavaillès",
-"date": "2026-08-10T20:40:04+02:00",
-"message": "Les quarante-six notes rejoignent leurs cartes, et les gardes tiennent",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/9f7b4ee41d6978fbd8147a62d14abc95094276f2",
+"date": "2026-08-17T14:24:18+02:00",
+"message": "La hache tranche, donc elle balaie — jusqu'à trois hommes",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/86d4eff48e86870e176bab4c5042f42b466b48b2",
 "files": [
 {
 "status": "modified",

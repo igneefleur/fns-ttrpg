@@ -1,0 +1,10 @@
+remove_background(saturation)
+despeckle
+add_grain
+add_shadow
+add_background
+add_frame
+add_grain
+
+source: 59271.webp
+script: poix.py

@@ -7,8 +7,8 @@
  * soi.
  *
  * POURQUOI CE PANNEAU EXISTE. Dans Outward, tout ce qui coûte quelque chose se
- * compte par tranches de DIX MINUTES : les points de repos, la satiété,
- * l'hydratation, l'exposition. Et ce qui décide de la dépense — l'heure, donc
+ * compte dans la durée : les points de repos, la satiété et l'hydratation par
+ * leur niveau de récupération, l'exposition par tranches de DIX MINUTES. Et ce qui décide de la dépense — l'heure, donc
  * le jour ou la nuit, et le milieu, donc la température de l'air — est le même
  * pour toute la troupe. Chacun le tenant dans son coin, la table dérivait :
  * l'un comptait deux heures de marche, l'autre trois, et personne ne savait
@@ -17,7 +17,7 @@
  *
  * CE QUE CE N'EST PAS. Une fiche de personnage, ni un calculateur. Le panneau
  * ne connaît PERSONNE : ni les vêtements, ni les protections, ni l'intensité
- * d'activité de qui que ce soit. Il donne la température de l'air et le repère
+ * d'effort de qui que ce soit. Il donne la température de l'air et le repère
  * du corps nu au repos ; chaque joueur y ajoute ses protections et son
  * intensité sur SA fiche, où ces nombres vivent. Rien de ce qui est ici n'a de
  * conséquence automatique sur une fiche : c'est le MJ qui applique.
@@ -63,10 +63,10 @@
  * dessus, et rien ne revient jamais.
  *
  * LES NOMBRES DU LIVRE SONT RECOPIÉS ICI, ET C'EST LE SEUL ENDROIT OÙ ILS LE
- * SONT. Deux tables : les milieux et leurs températures, les quatre intensités
+ * SONT. Deux tables : les milieux et leurs températures, les cinq intensités
  * et ce qu'elles coûtent en dix minutes. Toutes deux viennent de
  * docs/content/regles/base/capacites-physiques.md, sections « Le climat des
- * milieux » et « L'activité ». LE LIVRE FAIT FOI : le jour où l'une de ces
+ * milieux » et « L'effort ». LE LIVRE FAIT FOI : le jour où l'une de ces
  * lignes y change, elle change ici dans le même geste, et un panneau qui
  * annoncerait une autre température que le chapitre serait pire qu'un panneau
  * qui n'annonce rien.
@@ -106,9 +106,9 @@
   var ATTENTE_PONT = 2500;      // ms avant de déclarer que Roll20 ne répond pas
 
   // ---------- les nombres du livre ----------
-  // Le pas de TOUT ce qui se compte dans la durée : points de repos, satiété,
-  // hydratation, exposition. L'horloge du camp ne connaît pas d'autre unité, et
-  // c'est voulu — une minute isolée n'a aucun sens dans ce livre.
+  // Le pas de l'horloge du camp, et celui de l'exposition. Les réserves, elles,
+  // se lisent en niveaux de récupération : voir INTENSITES. Une minute isolée
+  // n'a aucun sens dans ce livre, et le panneau n'en connaît pas.
   var PAS = 10;
   // « Le jour court de cinq heures du matin à dix heures du soir ; le reste est
   // la nuit. » (Le climat des milieux)
@@ -136,16 +136,17 @@
     { cle: "desert",      nom: "Désert",                   jour:  42, nuit:  18 }
   ];
 
-  // Les quatre intensités, et ce que coûtent DIX MINUTES à chacune. Rappel pur :
+  // Les cinq efforts, et le NIVEAU de récupération que chacun donne. Rappel pur :
   // le panneau ne l'applique à personne, il le pose sous les yeux de la table.
-  //   repos    points de repos, gagnés (+) ou perdus (−)  — Les points de repos
-  //   ventre   points de satiété ET d'hydratation, perdus — La satiété et l'hydratation
+  //   repos    niveau des points de repos                 — Les points de repos
+  //   ventre   niveau de la satiété ET de l'hydratation   — La satiété et l'hydratation
   //   degres   degrés ajoutés à la température            — Le climat
   var INTENSITES = [
-    { nom: "Repos",         repos:  3, ventre: 1, degres:  0 },
-    { nom: "Légère",        repos: -1, ventre: 1, degres:  5 },
-    { nom: "Intermédiaire", repos: -2, ventre: 2, degres: 15 },
-    { nom: "Lourde",        repos: -4, ventre: 4, degres: 25 }
+    { nom: "Sommeil",       repos:  7, ventre: -3, degres:  0 },
+    { nom: "Repos",         repos: -4, ventre: -4, degres:  0 },
+    { nom: "Léger",         repos: -5, ventre: -5, degres:  5 },
+    { nom: "Intermédiaire", repos: -6, ventre: -6, degres: 15 },
+    { nom: "Lourd",         repos: -8, ventre: -7, degres: 25 }
   ];
 
   // Les installations du camp. Elles ne portent AUCUNE règle — le livre ne donne
@@ -241,10 +242,16 @@
     // localStorage peut manquer dans une iframe tierce dont les cookies sont
     // bloqués : la lecture lève, et le camp doit alors simplement suivre Roll20
     // au lieu de ne pas démarrer.
-    try { var v = localStorage.getItem(NUIT_CLE); return v === "1" || v === "0" ? v : "auto"; }
-    catch (e) { return "auto"; }
+    try {
+      var v = localStorage.getItem(NUIT_CLE);
+      return (v === "1" || v === "0" || v === "auto") ? v : "1";
+    } catch (e) { return "1"; }
   }
-  function nuitActive() { var p = nuitPref(); return p === "1" || (p === "auto" && NUIT_INDICE); }
+  // À DÉFAUT LA NUIT : le panneau est noir et or dans Roll20, comme la fiche.
+  function nuitActive() {
+    var p = nuitPref();
+    return p === "0" ? false : p === "auto" ? !!NUIT_INDICE : true;
+  }
   function appliqueNuit() {
     var on = nuitActive();
     document.documentElement.classList.toggle("night", on);
@@ -264,7 +271,8 @@
   }
   function poseNuit(v) {
     try {
-      if (v === "1" || v === "0") localStorage.setItem(NUIT_CLE, v);
+      // « auto » se RANGE, il ne s'efface pas : une clé absente vaut la nuit.
+      if (v === "1" || v === "0" || v === "auto") localStorage.setItem(NUIT_CLE, v);
       else localStorage.removeItem(NUIT_CLE);
     } catch (e) {}
     appliqueNuit();
@@ -828,11 +836,11 @@
 
     // --- ce que coûtent dix minutes ---
     var bc = el("section", "oc-bloc");
-    bc.appendChild(el("h2", "oc-titre", "Dix minutes"));
+    bc.appendChild(el("h2", "oc-titre", "L'effort"));
     var tab = el("table", "oc-table");
     var thead = el("thead");
     var tr = el("tr");
-    ["Intensité", "Repos", "Ventre", "Degrés"].forEach(function (t) {
+    ["Effort", "Repos", "Ventre", "Degrés"].forEach(function (t) {
       tr.appendChild(el("th", null, t));
     });
     thead.appendChild(tr);
@@ -841,18 +849,19 @@
     INTENSITES.forEach(function (it) {
       var l = el("tr");
       l.appendChild(el("td", "oc-nom", it.nom));
-      // Le repos se GAGNE au repos et se PERD ailleurs : le signe est porté à
+      // Un niveau positif remplit, un niveau négatif vide : le signe est porté à
       // l'écran, faute de quoi la colonne se lirait à l'envers une fois sur deux.
       l.appendChild(el("td", null, (it.repos > 0 ? "+" : "−") + Math.abs(it.repos)));
-      l.appendChild(el("td", null, "−" + it.ventre));
+      l.appendChild(el("td", null, (it.ventre > 0 ? "+" : "−") + Math.abs(it.ventre)));
       l.appendChild(el("td", null, "+" + it.degres));
       tb.appendChild(l);
     });
     tab.appendChild(tb);
     bc.appendChild(tab);
     bc.appendChild(el("p", "oc-note",
-      "Le ventre compte pour la satiété comme pour l'hydratation. Les degrés "
-      + "s'ajoutent à l'air avant de mesurer l'écart à la zone."));
+      "Le repos et le ventre sont des niveaux de récupération, à lire dans la "
+      + "table du livre ; le ventre vaut pour la satiété comme pour l'hydratation. "
+      + "Les degrés s'ajoutent à l'air avant de mesurer l'écart à la zone."));
     racine.appendChild(bc);
 
     // --- le camp ---

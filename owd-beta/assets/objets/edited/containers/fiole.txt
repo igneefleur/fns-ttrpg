@@ -1,0 +1,5 @@
+restored_from_project_original
+reseat_on_background
+
+source: image d origine du projet (objets_avant)
+script: corr.py

@@ -1,8 +1,5 @@
 {
  "_lisezmoi": "Produit au build par hooks/owd_creation.py depuis docs/content/regles/. Ne pas editer a la main : la prochaine construction l'ecrase.",
- "_absents": [
-  "equipement.md"
- ],
  "caracs": [
   {
    "cle": "Force",
@@ -77,7 +74,9 @@
    "libelle": "Chance",
    "abbr": "CHA",
    "famille": "reserve",
-   "donne": []
+   "donne": [
+    "pc"
+   ]
   }
  ],
  "moyenneHumaine": 20,
@@ -144,9 +143,9 @@
   }
  ],
  "des": {
-  "faces": 6,
+  "faces": 8,
   "actionParTour": 5,
-  "compMax": 2,
+  "compMax": 3,
   "techniqueMax": 5
  },
  "rupture": {
@@ -184,28 +183,28 @@
    "cle": "pr",
    "libelle": "Points de repos",
    "abbr": "PR",
-   "base": 800,
+   "base": 600,
    "carac": "Vigueur",
-   "facteur": 8,
-   "formule": "Points de repos = 800 + Vigueur × 8"
+   "facteur": 10,
+   "formule": "Points de repos = 600 + Vigueur × 10"
   },
   {
    "cle": "ps",
    "libelle": "Points de satiété",
    "abbr": "PS",
-   "base": 1600,
+   "base": 1200,
    "carac": "Endurance",
-   "facteur": 16,
-   "formule": "Points de satiété = 1600 + Endurance × 16"
+   "facteur": 10,
+   "formule": "Points de satiété = 1200 + Endurance × 10"
   },
   {
    "cle": "ph",
    "libelle": "Points d'hydratation",
    "abbr": "PH",
-   "base": 400,
+   "base": 200,
    "carac": "Endurance",
-   "facteur": 4,
-   "formule": "Points d'hydratation = 400 + Endurance × 4"
+   "facteur": 10,
+   "formule": "Points d'hydratation = 200 + Endurance × 10"
   },
   {
    "cle": "charge",
@@ -222,8 +221,18 @@
    "abbr": "ACC",
    "base": 0,
    "carac": "Dexterite",
-   "formule": "Accès rapides = Dextérité ÷ 4, arrondi à l'inférieur",
-   "diviseur": 4,
+   "formule": "Accès rapides = Dextérité ÷ 5, arrondi à l'inférieur",
+   "diviseur": 5,
+   "arrondi": "bas"
+  },
+  {
+   "cle": "pc",
+   "libelle": "Points de chance",
+   "abbr": "PC",
+   "base": 0,
+   "carac": "Chance",
+   "formule": "Points de chance = Chance ÷ 5, arrondi à l'inférieur",
+   "diviseur": 5,
    "arrondi": "bas"
   },
   {
@@ -272,11 +281,16 @@
   "nuHaut": 32
  },
  "pas": 0.75,
+ "monnaie": {
+  "nom": "pièce d'argent",
+  "pluriel": "pièces d'argent",
+  "venteSurAchat": 3
+ },
  "armes": [
   {
    "cle": "corps-a-corps",
    "nom": "Corps à corps",
-   "categorie": "Corps à corps",
+   "categorie": "Armes à un pas",
    "parade": 9,
    "reduction": 4,
    "palier": 1
@@ -284,7 +298,7 @@
   {
    "cle": "dague",
    "nom": "Dague",
-   "categorie": "Armes à une main",
+   "categorie": "Armes à un pas",
    "parade": 8,
    "reduction": 6,
    "palier": 1
@@ -292,7 +306,7 @@
   {
    "cle": "epee",
    "nom": "Épée à une main",
-   "categorie": "Armes à une main",
+   "categorie": "Armes à deux pas",
    "parade": 5,
    "reduction": 14,
    "palier": 2
@@ -300,7 +314,7 @@
   {
    "cle": "hache",
    "nom": "Hache à une main",
-   "categorie": "Armes à une main",
+   "categorie": "Armes à deux pas",
    "parade": 7,
    "reduction": 10,
    "palier": 2
@@ -308,15 +322,23 @@
   {
    "cle": "masse",
    "nom": "Masse à une main",
-   "categorie": "Armes à une main",
+   "categorie": "Armes à deux pas",
    "parade": 6,
    "reduction": 10,
    "palier": 2
   },
   {
+   "cle": "rapiere",
+   "nom": "Rapière",
+   "categorie": "Armes à deux pas",
+   "parade": 4,
+   "reduction": 12,
+   "palier": 2
+  },
+  {
    "cle": "grande-epee",
    "nom": "Grande épée à deux mains",
-   "categorie": "Armes à deux mains",
+   "categorie": "Armes à trois pas",
    "parade": 4,
    "reduction": 20,
    "palier": 3
@@ -324,7 +346,7 @@
   {
    "cle": "grande-hache",
    "nom": "Grande hache à deux mains",
-   "categorie": "Armes à deux mains",
+   "categorie": "Armes à trois pas",
    "parade": 7,
    "reduction": 16,
    "palier": 3
@@ -332,7 +354,7 @@
   {
    "cle": "grand-marteau",
    "nom": "Grand marteau",
-   "categorie": "Armes à deux mains",
+   "categorie": "Armes à trois pas",
    "parade": 5,
    "reduction": 18,
    "palier": 3
@@ -340,7 +362,7 @@
   {
    "cle": "lance",
    "nom": "Lance à deux mains",
-   "categorie": "Armes à deux mains",
+   "categorie": "Armes à quatre pas",
    "parade": 6,
    "reduction": 12,
    "palier": 4
@@ -348,7 +370,7 @@
   {
    "cle": "hallebarde",
    "nom": "Hallebarde",
-   "categorie": "Armes d'hast",
+   "categorie": "Armes à quatre pas",
    "parade": 5,
    "reduction": 16,
    "palier": 4

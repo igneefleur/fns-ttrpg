@@ -1,0 +1,5 @@
+remove_game_dose_bar(recompose_on_clean_waterskin)
+graft_indicator
+
+source: wiki_River_Water.png
+script: lot1.py

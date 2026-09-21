@@ -61,9 +61,12 @@
       // localStorage lève dans une iframe tierce dont les cookies sont
       // bloqués : le panneau doit alors suivre Roll20, pas refuser de s'ouvrir.
       try { p = localStorage.getItem("owd-r20-night-camp"); } catch (e) {}
-      var on = p === "1" ? true : p === "0" ? false
-             : /[#&]n=1/.test(h) ? true : /[#&]n=0/.test(h) ? false
-             : !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+      // À DÉFAUT LA NUIT, comme la fiche : les deux panneaux d'Outward sont
+      // noirs et or dans Roll20, et « auto » est un choix explicite.
+      var on = p === "0" ? false
+             : p === "auto" ? (/[#&]n=1/.test(h) ? true : /[#&]n=0/.test(h) ? false
+                 : !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches))
+             : true;
       document.documentElement.classList.toggle("night", on);
     } catch (e) {}
   })();

@@ -22,15 +22,25 @@
 html, html:has(#perso-fiche) { font-size: 18px !important; }
 html, body { margin: 0; padding: 0; }
 body {
-  background: #e4ddcd;   /* plan de travail (côtés), comme le site */
-  font-family: 'Alegreya', 'EB Garamond', Garamond, serif;
+  background: #e9e7e2;   /* --bg-side du jour : le plan de travail (côtés),
+                            comme le site. La feuille, elle, est en #ffffff ;
+                            ce pourtour se tient juste en dessous pour qu'elle
+                            s'en détache — aucune teinte, un gris pur. */
+  /* La pile de Roll20, relevée sur une vraie partie : Proxima Nova au corps.
+     Elle est sous licence Adobe et ne se télécharge pas — on la NOMME, et
+     Nunito Sans (SIL OFL, auto-hébergée par fonts.css, que l'amorceur charge
+     lui-même en <link>) la remplace chez qui ne l'a pas. Pas de 'Symboles JDR'
+     en tête ici : cette face vit dans extra.css, qui n'est PAS du bundle de
+     l'iframe — l'écrire donnerait une famille inconnue, pas un repli. */
+  font-family: 'Proxima Nova', proxima-nova, 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 /* La racine .perso-fiche recouvre tout le cadre et porte déjà --bg-side, mais
    elle n'existe qu'APRÈS le montage : entre l'amorceur et l'hydratation, c'est
    ce fond-ci qu'on voit derrière la note. Sans cette ligne, une fiche ouverte
-   de nuit s'annonce par un rectangle crème. L'amorceur pose .night sur <html>
-   avant le premier rendu, donc la règle s'applique dès la première image. */
-html.night body { background: #14110c; }
+   de nuit s'annonce par un rectangle presque blanc. L'amorceur pose .night sur
+   <html> avant le premier rendu, donc la règle s'applique dès la première
+   image. #000000 est le pourtour du wiki d'Outward, relevé sur son thème. */
+html.night body { background: #000000; }
 .perso-fiche { min-height: 100vh; overflow-x: hidden; }
 
 /* La feuille garde sa largeur NATIVE (50rem) et se centre (margin auto du
@@ -56,8 +66,15 @@ html.night body { background: #14110c; }
    retiré par l'amorce à l'hydratation. L'id est GELÉ dans roll20-fiche.html. */
 #owd-roll20-note {
   max-width: 24rem; margin: 2.2rem auto; padding: 0 1rem;
-  font-size: .72rem; line-height: 1.5; color: #4c463a; text-align: center;
+  /* --ink-2 du jour : c'est une légende, pas du texte courant, mais elle reste
+     à 5,2:1 sur le #e9e7e2 du fond — au-dessus des 4,5:1 exigés. */
+  font-size: .72rem; line-height: 1.5; color: #5f5f5f; text-align: center;
 }
-#owd-roll20-note a { color: #667861; }
-html.night #owd-roll20-note { color: #b7ad97; }
-html.night #owd-roll20-note a { color: #adc08c; }
+/* --or-titre : l'or du wiki ASSOMBRI, le seul qui porte du texte sur un fond
+   clair (5,1:1 ici). L'or vif #ffd77f ne vaudrait que 1,4:1 sur du blanc : il
+   est interdit au texte du jour, et ne sert qu'aux filets et aux fonds. */
+#owd-roll20-note a { color: #7a5c10; }
+html.night #owd-roll20-note { color: #9a9384; }   /* --ink-2 de nuit, 6,9:1 sur le noir */
+/* De nuit l'or reprend sa valeur de wiki, #ffd77f tel quel : 15,3:1 sur le
+   noir du pourtour. C'est la couleur de TOUS les liens du wiki d'Outward. */
+html.night #owd-roll20-note a { color: #ffd77f; }

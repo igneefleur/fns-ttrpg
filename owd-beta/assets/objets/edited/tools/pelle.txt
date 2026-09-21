@@ -1,0 +1,12 @@
+remove_background
+rotate_to_pickaxe_angle(13deg)
+scale_by_head_width
+cap_highlights
+add_grain
+add_shadow
+add_background
+add_frame
+add_grain
+
+source: 20220712122336-jpg.jpg
+script: pelle.py
