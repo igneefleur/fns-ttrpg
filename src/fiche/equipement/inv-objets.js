@@ -427,10 +427,8 @@
                         desc: "", ou: "sac", emp: -1, rapide: false, vet: "", acc: "", poches: 0, froid: 0, chaud: 0,
                         sac: false, cap: 0, ceint: false, ep: 0, ebMax: 0, arme: null };
 
-      var imgbox = el("div", "pc-obj-imgbox");
-      if (it.img) { var im = el("img"); im.alt = ""; im.src = it.img; imgbox.appendChild(im); }
-      else imgbox.appendChild(el("div", "pc-obj-ph big", "?"));
-      panel.appendChild(imgbox);
+      // AUCUNE IMAGE AU PANNEAU, consigne de l'auteur : l'image se voit sur la
+      // tuile, le panneau ne porte que le détail.
 
       var body = el("div", "pc-obj-body");
 
