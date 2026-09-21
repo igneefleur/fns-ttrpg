@@ -226,6 +226,29 @@
       });
       return m;
     }
+    // UN COMPTEUR EN PIÈCES, pour ce qui se compte à l'unité : autant de pièces
+    // que de points, pleines pour ceux dépensés, vides pour ceux qui restent,
+    // et celles de trop en danger. Carrés pour les avantages, maillons de
+    // chaîne (le pictogramme de rupture du livre) pour la rupture.
+    function pieces(label, getUsed, getTotal, forme, titre) {
+      var m = el("span", "pc-meter pc-meter-pieces");
+      m.appendChild(el("span", null, label));
+      var b = el("b", null, "");
+      m.appendChild(b);
+      var box = el("span", "pc-pieces " + forme);
+      m.appendChild(box);
+      if (titre) m.title = titre;
+      hooks.push(function () {
+        var used = getUsed(), total = getTotal();
+        b.textContent = fmtP(used) + " / " + fmtP(total);
+        b.classList.toggle("over", used > total);
+        var pleins = Math.floor(used), n = Math.min(40, Math.max(Math.floor(total), pleins));
+        box.innerHTML = "";
+        for (var i = 0; i < n; i++)
+          box.appendChild(el("i", "pc-piece" + (i < pleins ? " plein" : "") + (i >= total ? " over" : "")));
+      });
+      return m;
+    }
     // DEUX LIGNES, dans l'ordre arrêté par l'auteur :
     //   Création | XP dépensé | XP total
     //   Avantage | Rupture | Compétences | Techniques
@@ -234,8 +257,8 @@
     mrow.appendChild(meter("XP dépensé", xpDepense, function () { return state.xpTotal; },
       "Ce que les rangs de compétence, les techniques et les caractéristiques ont coûté"));
     if (avantagePoints() !== null)
-      mrow2.appendChild(meter("Avantage", avantageDepense, avantagePoints, "Points d'avantage"));
-    mrow2.appendChild(meter("Rupture", ruptureDepense, ruptureMax,
+      mrow2.appendChild(pieces("Avantage", avantageDepense, avantagePoints, "carres", "Points d'avantage"));
+    mrow2.appendChild(pieces("Rupture", ruptureDepense, ruptureMax, "chaines",
       "Points de rupture engagés par les Rangs Max et par les techniques"));
     if (limiteRangs("competences") !== null)
       mrow2.appendChild(meter("Compétences", compRangsComptes,
