@@ -158,54 +158,5 @@
 "url": "content/regles/base/caracteristiques/"
 }
 ]
-},
-{
-"short": "cea2a94",
-"author": "Théo Cavaillès",
-"date": "2026-09-21T12:19:44+02:00",
-"message": "La fiche passe au noir et or du wiki, et se decoupe en morceaux",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/cea2a949525f1edecd3ccbb15440d3fbd669a3f6",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/base/actions.md",
-"url": "content/regles/base/actions/"
-},
-{
-"status": "modified",
-"filename": "content/regles/base/capacites-physiques.md",
-"url": "content/regles/base/capacites-physiques/"
-},
-{
-"status": "modified",
-"filename": "content/regles/combat/armes.md",
-"url": "content/regles/combat/armes/"
-},
-{
-"status": "modified",
-"filename": "content/regles/equipement.md",
-"url": "content/regles/equipement/"
-},
-{
-"status": "modified",
-"filename": "content/regles/fabrication.md",
-"url": "content/regles/fabrication/"
-},
-{
-"status": "modified",
-"filename": "content/regles/index.md",
-"url": "content/regles/"
-},
-{
-"status": "modified",
-"filename": "content/regles/installations.md",
-"url": "content/regles/installations/"
-},
-{
-"status": "modified",
-"filename": "content/regles/vivre.md",
-"url": "content/regles/vivre/"
-}
-]
 }
 ]

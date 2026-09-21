@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "2.7.6b";
+  var RELEASE = "2.7.7b";
   var SCHEMA = 3;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -3917,19 +3917,23 @@
     mouvementListe().forEach(function (a) { if (!out && a.cle.indexOf(e) === 0) out = a; });
     return out;
   }
+  function num0(v) { var n = parseFloat(v); return isFinite(n) ? n : 0; }
   function buildMouvement() {
     var b = block("Mouvement");
 
     // LES CRANS, pour l'allure qui en a plusieurs : foncer. Mêmes cases
     // soudées que les efforts, en parts égales, chacune marquée des pas
     // qu'elle ajoute à l'allure d'avant (+3 | +6 | +9 | +12 | +15).
-    // Dans l'ordre arrêté par l'auteur : la valeur et « pas / round », puis
-    // les crans dessous, puis leur coût.
+    // Dans l'ordre arrêté par l'auteur : la valeur et « pas / round », la
+    // distance par minute et par heure (comme les tables du livre), puis les
+    // crans, puis leur coût.
     var aff = el("div", "pc-mouv");
     var pas = el("b");
     aff.appendChild(pas);
     aff.appendChild(el("span", "u", "pas / round"));
     b.appendChild(aff);
+    var dist = el("div", "pc-mouv-dist");
+    b.appendChild(dist);
     var crans = el("div", "pc-segs pc-crans");
     b.appendChild(crans);
     var cout = el("div", "pc-mouv-cout");
@@ -3945,7 +3949,7 @@
       var a = allureCourante();
       crans.innerHTML = "";
       crans.style.display = a && a.crans.length > 1 ? "" : "none";
-      if (!a) { pas.textContent = "0"; cout.textContent = ""; return; }
+      if (!a) { pas.textContent = "0"; cout.textContent = ""; dist.textContent = "0 m / minute · 0 km / heure"; return; }
       var k = clamp(num(state.allureCran, 1), 1, a.crans.length);
       if (a.crans.length > 1) {
         // les pas de l'allure d'avant : le point de départ des crans
@@ -3961,6 +3965,7 @@
       }
       var c = a.crans[k - 1];
       pas.textContent = String(c.pas);
+      dist.textContent = fmtP(num0(c.minute)) + " m / minute · " + fmtP(num0(c.heure)) + " km / heure";
       cout.textContent = libCout(c) ? "coût : " + libCout(c) : "";
     });
     return b;
