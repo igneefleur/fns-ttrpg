@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "2.7.9b";
+  var RELEASE = "2.7.10b";
   var SCHEMA = 3;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -3960,7 +3960,7 @@
       b.appendChild(box);
       return { box: box, v: out };
     }
-    var dist = cases("pc-mouv-dist", [["pas", "pas / round", "grand"], ["min", "m / min"], ["h", "km / h"]]);
+    var dist = cases("pc-mouv-dist", [["pas", "pas / rnd", "grand"], ["min", "m / min"], ["h", "km / h"]]);
     // les crans : foncer, chacun marqué des pas qu'il ajoute à l'allure d'avant
     var crans = el("div", "pc-segs pc-crans");
     b.appendChild(crans);

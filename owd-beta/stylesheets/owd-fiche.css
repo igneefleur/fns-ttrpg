@@ -295,7 +295,7 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
   justify-content: center; gap: .12rem; padding: .35rem .2rem .3rem; text-align: center;
 }
 .pc-stat > .c + .c { box-shadow: inset 1px 0 0 var(--line-2); }
-.pc-stat > .c.grand { flex-grow: 1.2; background: var(--card); }
+.pc-stat > .c.grand { background: var(--card); }
 .pc-stat .v { font-size: .9rem; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
 .pc-stat > .c.grand .v { font-size: 1.45rem; color: var(--accent); }
 .pc-stat .k { font-size: .5rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); white-space: nowrap; }
