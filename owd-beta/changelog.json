@@ -130,19 +130,5 @@
 "url": "content/regles/base/techniques/"
 }
 ]
-},
-{
-"short": "a3e437d",
-"author": "Théo Cavaillès",
-"date": "2026-09-21T14:46:19+02:00",
-"message": "Le prix d'un point de caractéristique change par tranche de 100 et non de 50",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/a3e437db00153cd7873e54a4a543c104a7ca8d79",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/base/caracteristiques.md",
-"url": "content/regles/base/caracteristiques/"
-}
-]
 }
 ]

@@ -77,7 +77,7 @@
   // même version, la beta étant ce que le stable recevra à la fusion) : ce qui
   // compare des versions doit donc l'ôter avant de lire les nombres, et c'est
   // exactement ce que fait OwdMods.compareVersions.
-  var RELEASE_DEFAUT = "2.7.8b";
+  var RELEASE_DEFAUT = "2.7.9b";
   // Entier INDÉPENDANT de la release : il ne monte qu'au changement de forme de
   // l'état du personnage, jamais parce que le majeur a bougé. Ajouter une clé
   // racine avec un défaut n'en est PAS un : normalize() complète une clé
@@ -137,7 +137,7 @@
     ["xpTotal", "xp_total", "n"],
     ["effAutre", "eff_autre", "n"],
     ["effort", "effort", "s"], ["temperature", "temperature", "n"],
-    ["allureCran", "allure_cran", "n"],
+    ["allure", "allure", "s"], ["allureCran", "allure_cran", "n"],
     ["argent", "argent", "n"],
     ["v", "version", "n"], ["rel", "release", "s"]
   ];
@@ -242,7 +242,7 @@
 
       // ---- l'effort et l'air ----
       effort: "leger", temperature: 20,
-      allureCran: 1,
+      allure: "leger", allureCran: 1,
 
       // ---- l'effondrement ----
       effAutre: 0,
