@@ -645,7 +645,7 @@
       armes.forEach(function (a, i) {
         if (!a || typeof a !== "object") return;
         objets.push({ id: PREFIXES.arme + (a.id || i), nom: a.nom || "", img: "", qte: 1,
-                      poids: 0, places: 0, achat: 0, vente: 0, desc: a.note || "",
+                      poids: 0, places: 0, achat: 0, vente: null, desc: a.note || "",
                       ou: "sac", rapide: false,
                       arme: { prise: a.prise || "", parade: a.parade || "",
                               reduction: a.reduction || "", comp: a.comp || "",
@@ -655,14 +655,14 @@
       vets.forEach(function (v, i) {
         if (!v || typeof v !== "object") return;
         objets.push({ id: PREFIXES.vet + (v.id || i), nom: v.nom || "", img: "", qte: 1,
-                      poids: Number(v.poids) || 0, places: 0, achat: 0, vente: 0,
+                      poids: Number(v.poids) || 0, places: 0, achat: 0, vente: null,
                       desc: v.note || "", ou: "sac", rapide: false,
                       vet: "", froid: Number(v.froid) || 0, chaud: Number(v.chaud) || 0 });
       });
       var argent = Number(s.argent) || 0;
       if (argent > 0)
         objets.push({ id: PREFIXES.argent, nom: "Pièces d'argent", img: "", qte: argent,
-                      poids: 0, places: 0, achat: 0, vente: 0, desc: "", ou: "sac",
+                      poids: 0, places: 0, achat: 0, vente: null, desc: "", ou: "sac",
                       rapide: false });
       ctx.grenier("tableaux", { armes: armes, vetements: vets, argent: argent });
       inv.objets = objets;
