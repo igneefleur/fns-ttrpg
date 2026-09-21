@@ -442,6 +442,7 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
 .pc-vital-res.t-pv { --teinte: #881112; }
 .pc-vital-res.t-pe { --teinte: #AA872E; }
 .pc-vital-res.t-pm { --teinte: #286CA4; }
+.pc-vital-res.t-pi { --teinte: #C2185B; }
 .pc-vital-res.t-pr { --teinte: #6A4C93; }
 .pc-vital-res.t-ps { --teinte: #B5652B; }
 .pc-vital-res.t-ph { --teinte: #2A9D8F; }
@@ -645,6 +646,7 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
 /* ---- tuiles de grande valeur ---- */
 .pc-bigrow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .4rem; }
 .pc-bigrow-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.pc-bigrow-1 { grid-template-columns: minmax(0, 1fr); margin-top: .4rem; }
 /* le niveau d'effondrement tient toute la largeur, au-dessus des deux maximums */
 .pc-big.pc-eff-niveau { margin-bottom: .4rem; }
 /* les causes : le nom à gauche, le niveau dans une case à droite — la case
