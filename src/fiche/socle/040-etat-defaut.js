@@ -59,6 +59,13 @@
       // dans UN attribut Roll20.
       caracsLeviers: {},
 
+      // ---- l'effort et l'air ----
+      // L'effort que le personnage fournit (clé d'un effort des règles :
+      // sommeil, repos, leger, intermediaire, lourd) et la température de
+      // l'air en °C. Le module Effort et température s'en sert pour faire
+      // passer le temps ; rien d'autre ne les lit.
+      effort: "leger", temperature: 20,
+
       // ---- ce que le personnage porte à l'instant ----
       // null = « au maximum » : la valeur SUIT le maximum quand il bouge, ce
       // qu'un nombre figé ne ferait pas — et le maximum de PV et de PE bouge

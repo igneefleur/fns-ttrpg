@@ -14,6 +14,8 @@
       .forEach(function (k) { s[k] = s[k] == null ? "" : String(s[k]); });
     if (!s.de) s.de = DE_DEFAUT;
     s.xpTotal = Math.max(0, num(s.xpTotal, 0));
+    s.effort = String(s.effort == null ? "" : s.effort) || b.effort;
+    s.temperature = clamp(Math.round(num(s.temperature, b.temperature) * 10) / 10, -999, 999);
     s.argent = pnum(s.argent);
 
     // ---- caractéristiques ----

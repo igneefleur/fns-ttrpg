@@ -608,6 +608,122 @@ def _types_degats(armes_md):
 
 
 # ----------------------------------------------------------------------
+# Le temps qui passe : effort, récupération, climat
+# ----------------------------------------------------------------------
+
+def _niveau(txt):
+    """« +7 », « −4 » : un niveau de récupération signé."""
+    return int(txt.replace("−", "-").replace("+", ""))
+
+
+def _table_effort(corps, efforts, quoi):
+    """Une table « | Effort | Niveau | » : le niveau de chaque effort. Chacun des
+    efforts du chapitre doit y paraître, et rien d'autre."""
+    lignes = re.findall(r"^\|\s*([^|]+?)\s*\|\s*([+−-]?\d+)\s*\|\s*$", corps, re.M)
+    out = {}
+    for nom, niv in lignes:
+        cle = _cle(nom)
+        if cle not in efforts:
+            raise ErreurRegles(f"{quoi} : « {nom} » n'est pas un effort du chapitre")
+        out[cle] = _niveau(niv)
+    manque = [e for e in efforts if e not in out]
+    if manque:
+        raise ErreurRegles(f"{quoi} : aucun niveau pour {', '.join(manque)}")
+    return out
+
+
+# « 5 toutes les 8 heures », « 10 par heure », « 15 toutes les 10 minutes »,
+# « 5 par minute », « 5 par round », « aucune »
+def _cadence(txt, quoi):
+    t = txt.strip()
+    if t == "aucune":
+        return {"points": 0, "minutes": 1}
+    m = re.fullmatch(r"(\d+) toutes les (\d+) (heures|minutes)", t)
+    if m:
+        return {"points": int(m.group(1)),
+                "minutes": int(m.group(2)) * (60 if m.group(3) == "heures" else 1)}
+    m = re.fullmatch(r"(\d+) par (heure|minute)", t)
+    if m:
+        return {"points": int(m.group(1)), "minutes": 60 if m.group(2) == "heure" else 1}
+    m = re.fullmatch(r"(\d+) par round", t)
+    if m:
+        # le livre ne dit pas ici combien dure un round en minutes : la cadence
+        # sort sans durée, et la fiche ne s'en sert pas pour faire passer le temps
+        return {"points": int(m.group(1)), "minutes": None}
+    raise ErreurRegles(f"{quoi} : « {t} » n'est pas une cadence que ce hook sache lire")
+
+
+def _effets_expo(txt, titre):
+    """Les réserves qu'un niveau de froid ou de chaud fait se dépenser plus
+    vite : « la satiété se dépense deux fois plus vite »."""
+    m = _un(r"^####\s+" + re.escape(titre) + r"\s*$", txt, f"exposition : « {titre} »", re.M)
+    suite = re.search(r"^#{3,4}\s+", txt[m.end():], re.M)
+    corps = txt[m.end(): m.end() + (suite.start() if suite else len(txt))]
+    out = []
+    for niv, effet in re.findall(r"^\|\s*(\d+)\s*\|[^|\n]*\|[^|\n]*\|\s*([^|\n]*?)\s*\|\s*$", corps, re.M):
+        e = re.search(r"(la satiété|l'hydratation) se dépense (\w+) fois plus vite", effet)
+        if e:
+            out.append({"niveau": int(niv),
+                        "reserve": "ps" if e.group(1) == "la satiété" else "ph",
+                        "facteur": _ecrit(e.group(2), f"exposition, {titre}, niveau {niv}")})
+    return out
+
+
+def _temps(txt):
+    """Ce qu'il faut pour faire passer le temps : les cinq efforts, ce que
+    chacun coûte en repos, en satiété et en hydratation, les degrés qu'il
+    ajoute, la cadence de chaque niveau de récupération, les paliers du climat,
+    le retour de l'exposition, et les niveaux qui accélèrent la dépense."""
+    sec = _section(txt, "L'effort", "effort")
+    noms = re.findall(r'<div class="mcard" markdown>\s*\*\*([^*]+)\*\*', sec)
+    annonce = _ecrit(_un(r"se range en (\w+) intensités", sec, "effort : leur nombre").group(1),
+                     "effort : leur nombre")
+    if len(noms) != annonce:
+        raise ErreurRegles(f"effort : {len(noms)} cartes pour {annonce} intensités annoncées")
+    tranche = _ecrit(_un(r"L'intensité se fixe par tranche de (\w+) minutes", sec,
+                         "effort : la tranche").group(1), "effort : la tranche")
+    cles = [_cle(n) for n in noms]
+
+    repos = _table_effort(_section(txt, "Les points de repos", "repos"), cles, "repos")
+    survie = _table_effort(_section(txt, "La satiété et l'hydratation", "satiété"), cles, "satiété")
+
+    clim = _section(txt, "Le climat", "climat")
+    degres = {}
+    for nom, aucun, n in re.findall(r"\*\*([^*:]+?) :\*\* (aucun degré|(\d+) degrés) de plus", clim):
+        degres[_cle(nom)] = 0 if aucun.startswith("aucun") else int(n)
+    manque = [c for c in cles if c not in degres]
+    if manque:
+        raise ErreurRegles(f"climat : aucun degré pour {', '.join(manque)}")
+    pal = _un(r"Paliers = écart ÷ (\d+), arrondi au (supérieur|inférieur)", clim, "climat : les paliers")
+
+    regen = []
+    for niv, cad in re.findall(r"^\|\s*(\d+)\s*\|\s*([^|\n]+?)\s*\|\s*$",
+                               _section(txt, "La récupération naturelle", "récupération"), re.M):
+        c = _cadence(cad, f"récupération, niveau {niv}")
+        c["niveau"] = int(niv)
+        regen.append(c)
+    if not regen:
+        raise ErreurRegles("récupération : aucune ligne lisible")
+
+    expo = _section(txt, "L'exposition", "exposition")
+    bouge = _ecrit(_un(r"Toutes les (\w+) minutes, elle bouge d'autant de points que le personnage a de",
+                       expo, "exposition : sa cadence").group(1), "exposition : sa cadence")
+    ret = _un(r"revient vers zéro de (\d+) % toutes les (\w+) minutes", expo, "exposition : son retour")
+    if bouge != tranche or _ecrit(ret.group(2), "exposition : son retour") != tranche:
+        raise ErreurRegles("exposition : sa cadence n'est pas la tranche de l'effort")
+
+    return {
+        "tranche": tranche,
+        "efforts": [{"cle": c, "nom": n, "repos": repos[c], "survie": survie[c], "degres": degres[c]}
+                    for c, n in zip(cles, noms)],
+        "regen": regen,
+        "paliers": {"diviseur": int(pal.group(1)), "arrondi": _ARRONDI[pal.group(2)]},
+        "expoRetour": int(ret.group(1)),
+        "accelere": {"froid": _effets_expo(txt, "Le froid"), "chaud": _effets_expo(txt, "Le chaud")},
+    }
+
+
+# ----------------------------------------------------------------------
 # Assemblage
 # ----------------------------------------------------------------------
 
@@ -724,6 +840,7 @@ def _jeu(docs):
         nu = _un(r"corps nu est à l'aise de (\d+) à (\d+) °C", cap_md,
                  "climat : la zone du corps nu")
         jeu["climat"] = {"nuBas": int(nu.group(1)), "nuHaut": int(nu.group(2))}
+        jeu["temps"] = _temps(cap_md)
 
     if portees_md is not None:
         jeu["pas"] = float(
