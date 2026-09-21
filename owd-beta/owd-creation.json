@@ -324,7 +324,7 @@
  "temps": {
   "tranche": 10,
   "digestion": {
-   "places": 1,
+   "volume": 1,
    "minutes": 10
   },
   "efforts": [

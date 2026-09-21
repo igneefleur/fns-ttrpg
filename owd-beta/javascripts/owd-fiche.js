@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "2.2.0b";
+  var RELEASE = "2.3.0b";
   var SCHEMA = 3;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -451,7 +451,9 @@
       // poches ou le sac. Un objet : { id, nom, img, qte, poids, places, achat,
       //   vente, desc, ou, rapide, vet, poches, froid, chaud, sac, cap, arme,
       //   encombre }.
-      //   encombre  l'encombrance de l'objet (une valeur, qui ne limite encore rien)
+      //   encombre  l'encombrance de l'objet, en eb : c'est elle, et non le poids,
+      //             que limitent les poches et le sac
+      //   nourri    c'est de la nourriture ; « places » porte alors son VOLUME
       //   vet     type de vêtement (tete, mains, haut, bas, pieds) ou ""
       //   poches  ce qu'un vêtement porté ajoute aux Poches, en kg
       //   froid / chaud  sa protection, comptée s'il est porté dans sa case
@@ -695,7 +697,10 @@
         qte: pnum(o.qte === undefined ? 1 : o.qte),
         poids: pnum(o.poids),
         encombre: pnum(o.encombre),
+        // « places » est le nom de CLÉ du volume d'un aliment : le livre dit
+        // « volume », la clé garde son nom, qui voyage dans les Attributes
         places: pnum(o.places),
+        nourri: !!o.nourri,
         achat: pnum(o.achat), vente: pnum(o.vente),
         desc: o.desc == null ? "" : String(o.desc),
         ou: INV_LIEUX.indexOf(o.ou) >= 0 ? o.ou : "sac",
@@ -1343,8 +1348,16 @@
     state.inv.objets.forEach(function (o) { if (test(o.ou)) t += poidsDe(o); });
     return Math.round(t * 100) / 100;
   }
-  function poidsPoches() { return poidsOu(function (ou) { return ou === "poches"; }); }
-  function poidsSac() { return poidsOu(function (ou) { return ou === "sac"; }); }
+  // Les poches et le sac ne se limitent pas en poids mais en ENCOMBRANCE
+  // (eb) : ce qu'ils contiennent se compare, en eb, à ce que valent les poches
+  // des vêtements portés et le sac porté.
+  function ebOu(ou) {
+    var t = 0;
+    state.inv.objets.forEach(function (o) { if (o.ou === ou) t += pnum(o.qte) * pnum(o.encombre); });
+    return Math.round(t * 100) / 100;
+  }
+  function ebPoches() { return ebOu("poches"); }
+  function ebSac() { return ebOu("sac"); }
   function objetEn(cas) {
     var out = null;
     state.inv.objets.forEach(function (o) { if (!out && o.ou === cas) out = o; });
@@ -1705,11 +1718,11 @@
     state.etat.expo = state.etat.expo < 0 ? Math.floor(state.etat.expo) : Math.ceil(state.etat.expo);
     return -n * tr;
   }
-  // Les places que la digestion libère en `minutes`.
+  // Le volume que la digestion libère en `minutes`.
   function digere(minutes) {
     var t = tempsDef(), dg = t && t.digestion;
     if (!dg || !dg.minutes) return 0;
-    return num(dg.places, 0) * minutes / num(dg.minutes, 1);
+    return num(dg.volume, 0) * minutes / num(dg.minutes, 1);
   }
   // Combien de tranches dans une heure.
   function tranchesParHeure() { var t = tempsDef(); return t ? Math.max(1, Math.round(60 / num(t.tranche, 10))) : 6; }
@@ -2762,10 +2775,10 @@
         dire("Points d'endurance au maximum de zéro : le personnage est inconscient.");
       if (poidsPorte() > charge())
         dire("Charge dépassée : " + fmtP(poidsPorte()) + " pour " + fmtP(charge()) + ".");
-      if (poidsPoches() > capPoches())
-        dire("Poches trop chargées : " + fmtP(poidsPoches()) + " kg pour " + fmtP(capPoches()) + ".");
-      if (poidsSac() > capSac())
-        dire("Sac à dos trop chargé : " + fmtP(poidsSac()) + " kg pour " + fmtP(capSac()) + ".");
+      if (ebPoches() > capPoches())
+        dire("Poches trop pleines : " + fmtP(ebPoches()) + " eb pour " + fmtP(capPoches()) + ".");
+      if (ebSac() > capSac())
+        dire("Sac à dos trop plein : " + fmtP(ebSac()) + " eb pour " + fmtP(capSac()) + ".");
       if (accesPris() > accesRapides())
         dire("Accès rapides dépassés : " + accesPris() + " pour " + accesRapides() + ".");
       if (contenancePrise() > contenance())
@@ -3121,7 +3134,7 @@
     technique: "Technique", arme: "Arme", geste: "Geste", parade: "Parade",
     reduction: "Réduction", degats: "Dégâts", portee: "Portée", seuil: "Seuil",
     vetement: "Vêtement", froid: "Froid", chaud: "Chaud", poids: "Poids",
-    quantite: "Quantité", places: "Places", description: "Description",
+    quantite: "Quantité", places: "Volume", description: "Description",
     argent: "Bourse", xpTotal: "XP total", de: "Dé des jets"
   };
   function contexte(m, reg) {
@@ -4773,7 +4786,7 @@
       corps.appendChild(el("div", "pc-modal-note",
         "« " + jumeau.nom + " » est déjà dans l'inventaire (" + fmtP(jumeau.qte) + ")" +
         (recu.id ? " — même identifiant" : "") + " : les quantités s'additionnent."));
-      [["nom", "Nom"], ["img", "Image"], ["poids", "Poids"], ["places", "Places"],
+      [["nom", "Nom"], ["img", "Image"], ["poids", "Poids"], ["places", "Volume"],
        ["desc", "Description"], ["achat", "Achat"], ["vente", "Vente"]].forEach(function (c) {
         var mien = String(jumeau[c[0]] || ""), neuf = String(recu[c[0]] || "");
         if (mien === neuf || (!mien && !neuf)) return;
@@ -5024,8 +5037,8 @@
   //
   //   SUR SOI     [main gauche] [main droite]  ·  ·  [sac à dos]
   //               [tête] [haut] [mains] [bas] [pieds]
-  //   POCHES      ce que les vêtements portés laissent emporter (en kg)
-  //   SAC À DOS   ce que le sac porté laisse emporter (en kg)
+  //   POCHES      ce que les vêtements portés laissent emporter (en eb)
+  //   SAC À DOS   ce que le sac porté laisse emporter (en eb)
   //
   // Les huit cases de Sur soi sont TOUJOURS là, vides ou pleines ; une case
   // de vêtement ne prend que son type de vêtement, la case du sac à dos qu'un
@@ -5247,10 +5260,10 @@
     function groupeLibre(ou, titre, poids, cap) {
       var g = el("div", "pc-obj-group");
       var pds = el("span", "pds");
-      pds.title = "Poids contre capacité";
+      pds.title = "Encombrance contre capacité";
       function maj() {
         var p = poids(), c = cap();
-        pds.textContent = fmtP(p) + " / " + fmtP(c) + " kg";
+        pds.textContent = fmtP(p) + " / " + fmtP(c) + " eb";
         pds.classList.toggle("over", p > c);
       }
       maj();
@@ -5262,7 +5275,7 @@
       var add = el("div", "pc-obj-addtile pc-edit-only", "+");
       add.title = "Ajouter un objet dans « " + titre + " »";
       add.addEventListener("click", function () {
-        var o = { id: "", nom: "", img: "", qte: 1, poids: 0, encombre: 0, places: 0, achat: 0, vente: 0,
+        var o = { id: "", nom: "", img: "", qte: 1, poids: 0, encombre: 0, places: 0, nourri: false, achat: 0, vente: 0,
                   desc: "", ou: ou, rapide: false, vet: "", poches: 0, froid: 0, chaud: 0,
                   sac: false, cap: 0, arme: null };
         items.push(o);
@@ -5345,8 +5358,8 @@
       // changer renvoie au sac un objet qui n'a plus sa place dans sa case.
       var ligneNat = el("div", "pc-obj-pair");
       var nat = el("select", "pc-edit-field");
-      var natureDe = it.arme ? "arme" : it.vet ? "vet" : it.sac ? "sac" : "";
-      [["", "Objet"], ["vet", "Vêtement"], ["sac", "Sac à dos"], ["arme", "Arme"]].forEach(function (n) {
+      var natureDe = it.arme ? "arme" : it.vet ? "vet" : it.sac ? "sac" : it.nourri ? "nourri" : "";
+      [["", "Objet"], ["nourri", "Nourriture"], ["vet", "Vêtement"], ["sac", "Sac à dos"], ["arme", "Arme"]].forEach(function (n) {
         var o = el("option", null, n[1]);
         o.value = n[0];
         if (n[0] === natureDe) o.selected = true;
@@ -5354,6 +5367,7 @@
       });
       nat.addEventListener("change", function () {
         var v = nat.value;
+        it.nourri = v === "nourri";
         it.sac = v === "sac";
         it.vet = v === "vet" ? (it.vet || "haut") : "";
         it.arme = v === "arme" ? (it.arme || { prise: "", parade: "", reduction: "", comp: "", gestes: [] }) : null;
@@ -5396,7 +5410,7 @@
         });
         pv.appendChild(fld("Se porte", typ));
         pv.appendChild(champNombre("Poches", function () { return it.poches; },
-          function (v) { it.poches = pnum(v); }, "Ce que ce vêtement porté ajoute aux Poches, en kg"));
+          function (v) { it.poches = pnum(v); }, "Ce que ce vêtement porté ajoute aux Poches, en eb"));
         body.appendChild(pv);
         var pp = el("div", "pc-obj-pair");
         pp.appendChild(champNombre("Froid", function () { return it.froid; },
@@ -5405,10 +5419,18 @@
           function (v) { it.chaud = snum(v); }, "Protection contre le chaud, en degrés"));
         body.appendChild(pp);
       }
+      // la nourriture porte son VOLUME : ce qu'une dose ou une part occupe de
+      // contenance une fois avalée
+      if (it.nourri) {
+        var pn = el("div", "pc-obj-pair");
+        pn.appendChild(champNombre("Volume", function () { return it.places; },
+          function (v) { it.places = pnum(v); }, "Ce qu'une dose ou une part occupe de contenance"));
+        body.appendChild(pn);
+      }
       if (it.sac) {
         var ps = el("div", "pc-obj-pair");
         ps.appendChild(champNombre("Capacité", function () { return it.cap; },
-          function (v) { it.cap = pnum(v); }, "Ce que ce sac porte, en kg"));
+          function (v) { it.cap = pnum(v); }, "Ce que ce sac contient, en eb"));
         body.appendChild(ps);
       }
       // L'ARME : ses gestes et ses jets. Ses rafraîchissements vont au registre
@@ -5450,7 +5472,7 @@
       pair.appendChild(champNombre("Poids", function () { return it.poids; },
         function (v) { it.poids = pnum(v); }));
       pair.appendChild(champNombre("Encombrance", function () { return it.encombre; },
-        function (v) { it.encombre = pnum(v); }));
+        function (v) { it.encombre = pnum(v); }, "En eb"));
       body.appendChild(pair);
 
       // achat / vente, en pièces d'argent : la monnaie du livre est NOMMÉE
@@ -5530,7 +5552,8 @@
           return [
             ["Quantité", fmtP(q) + (q < it.qte ? " (sur " + fmtP(it.qte) + ")" : "")],
             ["Poids", it.poids ? fmtP(it.poids) + (q > 1 ? " (total " + fmtP(q * it.poids) + ")" : "") : ""],
-            ["Encombrance", it.encombre ? fmtP(it.encombre) : ""],
+            ["Encombrance", it.encombre ? fmtP(it.encombre) + " eb" : ""],
+            ["Volume", it.nourri && it.places ? fmtP(it.places) : ""],
             ["Valeur", it.vente ? "vente " + fmtP(it.vente) + (it.achat ? " · achat " + fmtP(it.achat) : "")
                                 : (it.achat ? "achat " + fmtP(it.achat) : "")],
             ["", it.desc]
@@ -5586,8 +5609,8 @@
       panelHooks.length = 0;
       leftBox.innerHTML = "";
       leftBox.appendChild(groupeSurSoi());
-      leftBox.appendChild(groupeLibre("poches", "Poches", poidsPoches, capPoches));
-      leftBox.appendChild(groupeLibre("sac", "Sac à dos", poidsSac, capSac));
+      leftBox.appendChild(groupeLibre("poches", "Poches", ebPoches, capPoches));
+      leftBox.appendChild(groupeLibre("sac", "Sac à dos", ebSac, capSac));
       renderPanel();
       updateTotal();
       applyEdit(container, "inv");
