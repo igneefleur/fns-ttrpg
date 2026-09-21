@@ -3,9 +3,10 @@
   // viennent des règles (owd-creation.json), les degrés de protection de ce
   // qu'il porte. Les bornes nues ne sont jamais montrées seules : ce serait une
   // règle affichée.
+  // la protection des VÊTEMENTS PORTÉS, dans la case de leur type
   function protection(champ) {
     var t = 0;
-    state.vetements.forEach(function (v) { if (v.porte) t += snum(v[champ]); });
+    vetementsPortes().forEach(function (o) { t += snum(o[champ]); });
     return Math.round(t * 10) / 10;
   }
   // ---- le temps qui passe ----

@@ -63,14 +63,14 @@
       if (compRupture(item) > 0) perdu.push(fmtP(compRupture(item)) + " point de rupture");
       if (levierRegleDe(lireComp("bonus", item.id)) || levierRegleDe(lireComp("des", item.id)))
         perdu.push("ses leviers (Options)");
-      var armes = state.armes.filter(function (a) { return a.comp === item.id; });
+      var armes = state.inv.objets.filter(function (o) { return o.arme && o.arme.comp === item.id; });
       if (armes.length) perdu.push("le lien de " + armes.length + (armes.length > 1 ? " armes" : " arme"));
       function retire() {
         state.comps = state.comps.filter(function (c) { return c.id !== item.id; });
         ["compsMod", "compsMod2", "compsForce", "compsDesForce"].forEach(function (k) {
           delete state[k][item.id];
         });
-        state.armes.forEach(function (a) { if (a.comp === item.id) a.comp = ""; });
+        state.inv.objets.forEach(function (o) { if (o.arme && o.arme.comp === item.id) o.arme.comp = ""; });
         refresh();
         if (opts.onDrop) opts.onDrop();
         rebuildComps();

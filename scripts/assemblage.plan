@@ -71,9 +71,6 @@ fin = lf
   src/fiche/socle/260-dialogue.js
   src/fiche/equipement/inv-don.js
   src/fiche/equipement/armes.js
-  src/fiche/equipement/charge.js
-  src/fiche/equipement/vetements.js
-  src/fiche/equipement/bourse.js
   src/fiche/equipement/inv-objets.js
   src/fiche/equipement/inv.js
   src/fiche/options/jets.js

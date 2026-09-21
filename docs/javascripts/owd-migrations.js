@@ -599,6 +599,114 @@
     return table && typeof table === "object" ? Object.keys(table).length : 0;
   }
 
+  /* ------------------------------------------------------------------
+   * PAS 3 — L'INVENTAIRE PREND SES TROIS GROUPES FIXES
+   *
+   * En schema 2, l'equipement vivait en quatre endroits : des groupes d'objets
+   * LIBRES (inv.groupes, un indice « grp » par objet), un tableau d'armes, un
+   * tableau de vetements et une bourse. En schema 3, tout est OBJET, et chaque
+   * objet a un EMPLACEMENT (« ou ») : une des huit cases de Sur soi (mainG,
+   * mainD, dos, tete, mains, haut, bas, pieds), les poches ou le sac. Une arme
+   * est un objet qui porte une propriete « arme » ; un vetement, un objet qui
+   * porte un type (« vet ») et sa protection ; les pieces d'argent, un objet.
+   *
+   * A la montee, tout arrive dans le SAC : un vetement ancien ne dit pas ou il
+   * se porte, et la fiche ne le devine pas. Les objets nes d'une arme, d'un
+   * vetement ou de la bourse portent un identifiant « owd-… » que la descente
+   * reconnait pour les rendre a leur tableau ; les groupes libres et
+   * l'indice de chaque objet attendent au grenier.
+   * ------------------------------------------------------------------ */
+  var PREFIXES = { arme: "owd-arme:", vet: "owd-vet:", argent: "owd-argent" };
+  OwdMigr.ajouter({
+    schema: 3,
+    titre: "Inventaire : trois groupes fixes, et tout devient objet",
+    notes: "L'inventaire passe a trois groupes fixes : Sur soi (mains, sac a dos, " +
+           "tete, mains, haut, bas, pieds), Poches et Sac a dos. Les armes, les " +
+           "vetements et les pieces de la bourse deviennent des objets de " +
+           "l'inventaire, ranges dans le sac : chaque vetement est a remettre dans " +
+           "sa case pour proteger du froid et du chaud. En redescendant, armes, " +
+           "vetements et bourse reprennent leur place, et les groupes d'objets " +
+           "d'avant sont rendus.",
+
+    monter: function (s, ctx) {
+      var inv = s.inv && typeof s.inv === "object" ? s.inv : { objets: [] };
+      var objets = Array.isArray(inv.objets) ? inv.objets : [];
+      ctx.grenier("groupes", {
+        groupes: Array.isArray(inv.groupes) ? inv.groupes : null,
+        comptes: Array.isArray(inv.comptes) ? inv.comptes : null,
+        grp: objets.map(function (o) { return o && typeof o === "object" ? o.grp : 0; })
+      });
+      objets.forEach(function (o) {
+        if (!o || typeof o !== "object") return;
+        o.ou = "sac";
+        delete o.grp;
+      });
+      var armes = Array.isArray(s.armes) ? s.armes : [];
+      armes.forEach(function (a, i) {
+        if (!a || typeof a !== "object") return;
+        objets.push({ id: PREFIXES.arme + (a.id || i), nom: a.nom || "", img: "", qte: 1,
+                      poids: 0, places: 0, achat: 0, vente: 0, desc: a.note || "",
+                      ou: "sac", rapide: false,
+                      arme: { prise: a.prise || "", parade: a.parade || "",
+                              reduction: a.reduction || "", comp: a.comp || "",
+                              gestes: Array.isArray(a.gestes) ? a.gestes : [] } });
+      });
+      var vets = Array.isArray(s.vetements) ? s.vetements : [];
+      vets.forEach(function (v, i) {
+        if (!v || typeof v !== "object") return;
+        objets.push({ id: PREFIXES.vet + (v.id || i), nom: v.nom || "", img: "", qte: 1,
+                      poids: Number(v.poids) || 0, places: 0, achat: 0, vente: 0,
+                      desc: v.note || "", ou: "sac", rapide: false,
+                      vet: "", froid: Number(v.froid) || 0, chaud: Number(v.chaud) || 0 });
+      });
+      var argent = Number(s.argent) || 0;
+      if (argent > 0)
+        objets.push({ id: PREFIXES.argent, nom: "Pièces d'argent", img: "", qte: argent,
+                      poids: 0, places: 0, achat: 0, vente: 0, desc: "", ou: "sac",
+                      rapide: false });
+      ctx.grenier("tableaux", { armes: armes, vetements: vets, argent: argent });
+      inv.objets = objets;
+      delete inv.groupes;
+      delete inv.comptes;
+      s.inv = inv;
+      s.armes = [];
+      s.vetements = [];
+      s.argent = 0;
+      ctx.log("inventaire : " + armes.length + " arme(s), " + vets.length +
+              " vetement(s) et la bourse deviennent des objets");
+      return s;
+    },
+
+    descendre: function (s, ctx) {
+      var inv = s.inv && typeof s.inv === "object" ? s.inv : { objets: [] };
+      var objets = Array.isArray(inv.objets) ? inv.objets : [];
+      var tab = ctx.reprendre("tableaux") || {};
+      var grp = ctx.reprendre("groupes") || {};
+      // les objets nes d'une arme, d'un vetement ou de la bourse retournent a
+      // leur tableau ; les autres gardent leur rang, et leur groupe d'avant
+      // quand le grenier le connait
+      var restent = objets.filter(function (o) {
+        var id = o && typeof o === "object" ? String(o.id || "") : "";
+        return !(id.indexOf(PREFIXES.arme) === 0 || id.indexOf(PREFIXES.vet) === 0 ||
+                 id === PREFIXES.argent);
+      });
+      var groupes = Array.isArray(grp.groupes) && grp.groupes.length ? grp.groupes : ["Sur soi"];
+      restent.forEach(function (o, i) {
+        var g = Array.isArray(grp.grp) ? Number(grp.grp[i]) : 0;
+        o.grp = isFinite(g) && g >= 0 && g < groupes.length ? g : 0;
+        ["ou", "vet", "poches", "froid", "chaud", "sac", "cap", "arme"].forEach(function (k) { delete o[k]; });
+      });
+      inv.objets = restent;
+      inv.groupes = groupes;
+      inv.comptes = Array.isArray(grp.comptes) ? grp.comptes : groupes.map(function () { return true; });
+      s.inv = inv;
+      s.armes = Array.isArray(tab.armes) ? tab.armes : [];
+      s.vetements = Array.isArray(tab.vetements) ? tab.vetements : [];
+      s.argent = Number(tab.argent) || 0;
+      return s;
+    }
+  });
+
   global.OwdMigr = OwdMigr;
   if (typeof module === "object" && module && module.exports) module.exports = OwdMigr;
 })(typeof window !== "undefined" ? window : (typeof global !== "undefined" ? global : this));

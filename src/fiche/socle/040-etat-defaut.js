@@ -146,19 +146,20 @@
       vetements: [],
       argent: 0,             // pièces d'argent : la monnaie du livre, nommée
 
-      // Inventaire illustré. `groupes` est un tableau de CHAÎNES et `comptes`
-      // un tableau PARALLÈLE de booléens : décocher pose le groupe au sol — son
-      // poids sort de la charge, ses objets restent entiers, consultables,
-      // déplaçables et donnables. Supprimer un groupe splice les DEUX.
-      // Un objet : { id, nom, img, qte, poids, places, achat, vente, desc,
-      //              grp, rapide }.
-      //   places  la contenance qu'occupe ce qu'on avale (règle du livre)
-      //   rapide  l'objet tient dans un accès rapide : il compte alors contre
-      //           Dextérité ÷ 4, et pas seulement contre la charge
+      // Inventaire : TROIS GROUPES FIXES (schéma 3). Chaque objet a un
+      // emplacement « ou » : une des huit cases de Sur soi (INV_CASES), les
+      // poches ou le sac. Un objet : { id, nom, img, qte, poids, places, achat,
+      //   vente, desc, ou, rapide, vet, poches, froid, chaud, sac, cap, arme }.
+      //   vet     type de vêtement (tete, mains, haut, bas, pieds) ou ""
+      //   poches  ce qu'un vêtement porté ajoute aux Poches, en kg
+      //   froid / chaud  sa protection, comptée s'il est porté dans sa case
+      //   sac / cap      c'est un sac à dos, et ce qu'il peut contenir en kg
+      //   arme    null, ou { prise, parade, reduction, comp, gestes }
+      //   rapide  l'objet se saisit rapidement (compte contre les accès rapides)
       //   id      c'est LUI qui reconnaît le même objet d'une fiche à l'autre
       inv: {
-        groupes: ["Sur soi"], comptes: [true], objets: [],
-        opts: { cols: 4, nom: true, qte: true, poids: false, total: true, vign: true }
+        objets: [],
+        opts: { cols: 5, nom: true, qte: true, poids: false, total: true, vign: true }
       },
 
       // ---- le dé des jets ----

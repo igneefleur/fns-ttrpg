@@ -1,3 +1,24 @@
+  // LES EMPLACEMENTS DE L'INVENTAIRE. Les huit cases de Sur soi, dans l'ordre
+  // de l'écran (les trois de la première ligne, puis les cinq vêtements), puis
+  // les deux groupes libres.
+  var INV_VETEMENTS = ["tete", "mains", "haut", "bas", "pieds"];
+  var INV_CASES = ["mainG", "mainD", "dos"].concat(INV_VETEMENTS);
+  var INV_LIEUX = INV_CASES.concat(["poches", "sac"]);
+  function normGestes(liste) {
+    return (Array.isArray(liste) ? liste : []).filter(function (g) { return g && typeof g === "object"; })
+      .map(function (g) {
+        return {
+          id: String(g.id || "") || uid("g"),
+          nom: String(g.nom == null ? "" : g.nom),
+          seuil: String(g.seuil == null ? "" : g.seuil),
+          portee: String(g.portee == null ? "" : g.portee),
+          degats: String(g.degats == null ? "" : g.degats),
+          type: String(g.type == null ? "" : g.type),
+          degatsDemi: String(g.degatsDemi == null ? "" : g.degatsDemi),
+          typeDemi: String(g.typeDemi == null ? "" : g.typeDemi)
+        };
+      });
+  }
   function normalize(s) {
     var b = blank();
     if (!s || typeof s !== "object") return b;
@@ -121,18 +142,7 @@
         // l'ID d'une compétence, jamais son nom : le nom se renomme
         comp: String(a.comp == null ? "" : a.comp),
         note: String(a.note == null ? "" : a.note),
-        gestes: gestes.filter(function (g) { return g && typeof g === "object"; }).map(function (g) {
-          return {
-            id: String(g.id || "") || uid("g"),
-            nom: String(g.nom == null ? "" : g.nom),
-            seuil: String(g.seuil == null ? "" : g.seuil),
-            portee: String(g.portee == null ? "" : g.portee),
-            degats: String(g.degats == null ? "" : g.degats),
-            type: String(g.type == null ? "" : g.type),
-            degatsDemi: String(g.degatsDemi == null ? "" : g.degatsDemi),
-            typeDemi: String(g.typeDemi == null ? "" : g.typeDemi)
-          };
-        })
+        gestes: normGestes(gestes)
       };
     });
     // une arme qui pointe sur une compétence disparue perd son lien plutôt que
@@ -154,29 +164,19 @@
     // ---- inventaire illustré ----
     if (!s.inv || typeof s.inv !== "object" || Array.isArray(s.inv)) s.inv = b.inv;
     if (!s.inv.opts || typeof s.inv.opts !== "object" || Array.isArray(s.inv.opts)) s.inv.opts = b.inv.opts;
-    s.inv.opts.cols = clamp(num(s.inv.opts.cols, b.inv.opts.cols), 1, 8);
+    s.inv.opts.cols = clamp(num(s.inv.opts.cols, b.inv.opts.cols), 1, 5);
     // chaque réglage garde SON défaut quand il manque (un opts partiel ne doit
     // pas allumer un affichage éteint par défaut)
     ["nom", "qte", "poids", "total", "vign"].forEach(function (k) {
       s.inv.opts[k] = s.inv.opts[k] === undefined ? b.inv.opts[k] : !!s.inv.opts[k];
     });
-    if (!Array.isArray(s.inv.groupes)) s.inv.groupes = [];
-    s.inv.groupes = s.inv.groupes.map(function (g) {
-      g = g == null ? "" : String(g).trim();
-      return g || "Groupe";
-    });
-    if (!s.inv.groupes.length) s.inv.groupes = ["Sur soi"];
-    // Les drapeaux « compté » se recalent sur les groupes à chaque chargement :
-    // un tableau plus court se complète (un groupe neuf est PORTÉ, jamais posé,
-    // sinon du poids disparaîtrait en silence) ; PLUS de drapeaux que de
-    // groupes veut dire qu'une version qui ignore « comptes » a supprimé un
-    // groupe sans retirer le sien, et plus personne ne peut dire lequel : on
-    // rend tout au poids porté. Perdre un décochage se voit et se refait ;
-    // perdre du poids en silence fausse la fiche sans prévenir.
-    if (!Array.isArray(s.inv.comptes) || s.inv.comptes.length > s.inv.groupes.length) s.inv.comptes = [];
-    s.inv.comptes = s.inv.groupes.map(function (_, gi) { return s.inv.comptes[gi] !== false; });
+    // Les anciens groupes libres ne survivent pas : le schéma 3 les a remis au
+    // grenier, et l'emplacement « ou » les remplace.
+    delete s.inv.groupes;
+    delete s.inv.comptes;
     if (!Array.isArray(s.inv.objets)) s.inv.objets = [];
     s.inv.objets = s.inv.objets.filter(function (o) { return o && typeof o === "object"; }).map(function (o) {
+      var a = o.arme && typeof o.arme === "object" && !Array.isArray(o.arme) ? o.arme : null;
       return {
         id: String(o.id == null ? "" : o.id),   // LIBRE et facultatif : c'est le joueur qui le pose
         nom: o.nom == null ? "" : String(o.nom),
@@ -186,9 +186,34 @@
         places: pnum(o.places),
         achat: pnum(o.achat), vente: pnum(o.vente),
         desc: o.desc == null ? "" : String(o.desc),
-        grp: clamp(num(o.grp, 0), 0, s.inv.groupes.length - 1),
-        rapide: !!o.rapide
+        ou: INV_LIEUX.indexOf(o.ou) >= 0 ? o.ou : "sac",
+        rapide: !!o.rapide,
+        vet: INV_VETEMENTS.indexOf(o.vet) >= 0 ? o.vet : "",
+        poches: pnum(o.poches),
+        froid: snum(o.froid), chaud: snum(o.chaud),
+        sac: !!o.sac,
+        cap: pnum(o.cap),
+        arme: a ? {
+          prise: String(a.prise == null ? "" : a.prise),
+          parade: String(a.parade == null ? "" : a.parade),
+          reduction: String(a.reduction == null ? "" : a.reduction),
+          // l'ID d'une compétence, jamais son nom : le nom se renomme
+          comp: a.comp && vusComps[a.comp] ? String(a.comp) : "",
+          gestes: normGestes(a.gestes)
+        } : null
       };
+    });
+    // UNE CASE, UN OBJET, ET LE BON : une case de vêtement ne prend que son
+    // type de vêtement, la case du sac à dos qu'un sac. Ce qui n'y a pas sa
+    // place, ou arrive second, retourne au sac plutôt que de disparaître.
+    var prises = {};
+    s.inv.objets.forEach(function (o) {
+      if (INV_CASES.indexOf(o.ou) < 0) return;
+      var ok = !prises[o.ou] &&
+               (INV_VETEMENTS.indexOf(o.ou) < 0 || o.vet === o.ou) &&
+               (o.ou !== "dos" || o.sac);
+      if (ok) prises[o.ou] = 1;
+      else o.ou = "sac";
     });
 
     // ---- coffres, interrupteurs, disposition, mods ----

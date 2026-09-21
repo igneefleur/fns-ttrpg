@@ -32,10 +32,6 @@
     // Fiche, c'est-à-dire là où personne n'allait la chercher.
     { id: "techniques",   titre: "Techniques",       onglet: "art", colonne: "seule",  build: buildTechniques },
     // ---- onglet Équipement ----
-    { id: "armes",        titre: "Armes",            onglet: "equipement", colonne: "gauche", build: buildArmes },
-    { id: "charge",       titre: "Charge et contenance", onglet: "equipement", colonne: "droite", build: buildCharge },
-    { id: "vetements",    titre: "Vêtements",        onglet: "equipement", colonne: "droite", build: buildVetements },
-    { id: "bourse",       titre: "Bourse",           onglet: "equipement", colonne: "droite", build: buildBourse },
     { id: "inv",          titre: "Inventaire",       onglet: "equipement", colonne: "bas",    build: buildInv },
     // ---- onglet Bio ----
     // La prose, dans son propre onglet : ce qui se lit ne se met pas devant ce

@@ -1,9 +1,11 @@
   // ================= ONGLET INVENTAIRE =================
 
-  // ---- 10. Armes ----
-  // Une arme est un RÉPERTOIRE, pas une attaque : sa ligne (prise, parade,
-  // réduction, compétence qui porte le jet) et ses GESTES, un par façon de
-  // frapper. Les dégâts d'Outward sont des nombres FIXES : le jeton « Dégâts »
+  // ---- 10. Armes : la propriété « arme » d'un objet ----
+  // Il n'y a plus de module Armes : une arme est un OBJET de l'inventaire qui
+  // porte une propriété « arme ». Ce fichier dessine cette propriété dans le
+  // détail de l'objet. Une arme est un RÉPERTOIRE, pas une attaque : sa ligne
+  // (prise, parade, réduction, compétence qui porte le jet) et ses GESTES, un
+  // par façon de frapper. Les dégâts d'Outward sont des nombres FIXES : le jeton « Dégâts »
   // ENVOIE une carte, il ne lance rien — un « jet de dégâts » serait une règle
   // inventée, et c'est la coupure à ne pas rater.
   function champTexte(libelle, obj, cle, large, titre) {
@@ -15,10 +17,9 @@
     i.addEventListener("input", function () { obj[cle] = i.value; save(); });
     return fld(libelle, i, large ? "w" : null);
   }
-  function buildArmes() {
-    var b = block("Armes", null, "armes", function () { rendre(); });
-    var box = el("div");
-    b.appendChild(box);
+  // `it` est l'objet ; `a` = it.arme ; `rendre` redessine le détail.
+  function carteArme(it, rendre) {
+    var a = it.arme;
 
     // Le préréglage : choisir une arme du livre remplit parade et réduction.
     // C'EST UN RACCOURCI DE SAISIE, PAS UNE CONTRAINTE — les champs restent
@@ -39,7 +40,7 @@
         armesData().forEach(function (x) { if (x.cle === s.value) d = x; });
         s.value = "";
         if (!d) return;
-        if (!String(a.nom || "").trim()) a.nom = d.nom;
+        if (!String(it.nom || "").trim()) it.nom = d.nom;
         a.parade = String(d.parade);
         a.reduction = String(d.reduction);
         refresh();
@@ -81,34 +82,20 @@
     function carte(a) {
       var card = el("div", "pc-arme");
       var head = el("div", "pc-arme-head");
-      var nm = el("input", "nm pc-edit-field");
-      nm.type = "text"; nm.placeholder = "Nom de l'arme"; nm.value = a.nom || "";
-      nm.addEventListener("input", function () { a.nom = nm.value; save(); });
-      head.appendChild(nm);
+      head.appendChild(el("span", "nm", it.nom || "Arme"));
       head.appendChild(chatBtn(
-        function () { return "Arme — " + (a.nom || "sans nom"); },
+        function () { return "Arme — " + (it.nom || "sans nom"); },
         function () {
           var c = compArme(a);
           return [
             ["Prise", a.prise], ["Parade", a.parade], ["Réduction", a.reduction],
             ["Compétence", c ? (c.nom + " " + sign(compBonus(c))) : ""],
-            // les gestes en champ SANS libellé : c'est le texte long de la carte
             ["", a.gestes.map(function (g) {
               return (g.nom || "geste") + " — seuil " + (g.seuil || "?") +
                      " · " + (g.portee || "?") + " pas · " + (g.degats || "?") + " " + (g.type || "");
             }).join(" | ")]
           ];
         }));
-      head.appendChild(miniBtn("✕", "Retirer cette arme", function () {
-        function retire() {
-          state.armes = state.armes.filter(function (x) { return x.id !== a.id; });
-          refresh();
-          rendre();
-        }
-        if (!String(a.nom || "").trim() && !a.gestes.length) { retire(); return; }
-        confirmer("Retirer une arme", "Retirer « " + (a.nom || "cette arme") + " » et ses gestes ?",
-                  "Retirer", retire);
-      }, "danger pc-edit-only"));
       card.appendChild(head);
 
       var l1 = el("div", "pc-arme-line");
@@ -118,7 +105,7 @@
         "Ce que cette arme retire aux dégâts qu'elle pare."));
       l1.appendChild(fld("Compétence", selComp(a), "w"));
       var chipP = el("span", "pc-roll-chip", "Parade");
-      chipP.addEventListener("click", function () { jetArme(a, "Parade — " + (a.nom || "arme")); });
+      chipP.addEventListener("click", function () { jetArme(a, "Parade — " + (it.nom || "arme")); });
       l1.appendChild(chipP);
       var preregl = fld("Préréglage", selArme(a));
       preregl.classList.add("pc-edit-only");
@@ -146,7 +133,7 @@
         lg.appendChild(selType(g, "typeDemi"));
         var chipA = el("span", "pc-roll-chip", "Attaque");
         chipA.addEventListener("click", function () {
-          jetArme(a, (a.nom || "Arme") + " — " + (g.nom || "attaque"));
+          jetArme(a, (it.nom || "Arme") + " — " + (g.nom || "attaque"));
         });
         lg.appendChild(chipA);
         // LES DÉGÂTS NE SE LANCENT PAS : ce sont des nombres fixes. Le jeton
@@ -154,7 +141,7 @@
         var chipD = el("span", "pc-roll-chip", "Dégâts");
         chipD.title = "Envoyer les dégâts au tchat — ils sont fixes, ils ne se lancent pas.";
         chipD.addEventListener("click", function () {
-          sayChat("Dégâts — " + (g.nom || a.nom || "geste"), [
+          sayChat("Dégâts — " + (g.nom || it.nom || "geste"), [
             ["Pleins", (g.degats || "") + (g.type ? " " + g.type : "")],
             ["Moitié", (g.degatsDemi || "") + (g.typeDemi ? " " + g.typeDemi : "")],
             ["Portée", g.portee ? g.portee + " pas" : ""],
@@ -202,19 +189,5 @@
       return fld("Type", s);
     }
 
-    function rendre() {
-      box.innerHTML = "";
-      state.armes.forEach(function (a) { box.appendChild(carte(a)); });
-      if (!state.armes.length) box.appendChild(el("div", "pc-empty", "Aucune arme."));
-      box.appendChild(miniBtn("+ Ajouter une arme", null, function () {
-        state.armes.push({ id: uid("a"), nom: "", prise: "", parade: "", reduction: "",
-                           comp: "", note: "", gestes: [] });
-        refresh();
-        rendre();
-      }, "pc-edit-only"));
-      applyEdit(b, "armes");
-    }
-    rendre();
-    return b;
+    return carte(a);
   }
-

@@ -93,7 +93,7 @@
   function recevoirObjet(payload) {
     var recu = unpackObjet(payload);
     if (!recu) { flash("Objet illisible (message abîmé)."); return; }
-    var G = state.inv.groupes, items = state.inv.objets;
+    var items = state.inv.objets;
     // Reconnaissance : d'abord l'IDENTIFIANT (deux homonymes distincts ne
     // fusionnent pas), à défaut le nom, insensible à la casse.
     var jumeau = null;
@@ -119,9 +119,9 @@
     var gSel = null;
     if (!jumeau) {
       gSel = el("select");
-      G.forEach(function (gn, gi) {
-        var o = el("option", null, gn);
-        o.value = String(gi);
+      [["sac", "Sac à dos"], ["poches", "Poches"]].forEach(function (g) {
+        var o = el("option", null, g[1]);
+        o.value = g[0];
         gSel.appendChild(o);
       });
       corps.appendChild(fld("Ranger dans", gSel));
@@ -175,8 +175,9 @@
         items.push({
           id: recu.id, nom: recu.nom, img: recu.img, qte: q, poids: recu.poids,
           places: recu.places, achat: recu.achat, vente: recu.vente, desc: recu.desc,
-          grp: gSel ? clamp(num(gSel.value, 0), 0, G.length - 1) : 0,
-          rapide: recu.rapide
+          ou: gSel && gSel.value === "poches" ? "poches" : "sac",
+          rapide: recu.rapide, vet: "", poches: 0, froid: 0, chaud: 0,
+          sac: false, cap: 0, arme: null
         });
       }
       refresh();

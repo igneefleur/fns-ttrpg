@@ -254,40 +254,48 @@
   }
   function courant(cle) { return courantBrut(cle); }
 
-  // ---- charge, accès rapides, contenance ----
-  function invCompte(gi) { return state.inv.comptes[gi] !== false; }
-  function poidsGroupe(gi) {
+  // ---- charge, poches, sac, accès rapides ----
+  // L'inventaire a trois groupes fixes (Sur soi, Poches, Sac à dos) et TOUT ce
+  // qu'il porte pèse : la charge compare le poids total à ce que la Force
+  // porte. Les poches et le sac ont en plus chacun leur capacité, qui vient de
+  // ce que le personnage porte : les poches des vêtements dans leur case, et
+  // le sac posé dans la case du sac à dos.
+  function poidsDe(o) { return pnum(o.qte) * pnum(o.poids); }
+  function poidsOu(test) {
     var t = 0;
-    state.inv.objets.forEach(function (o) { if (o.grp === gi) t += pnum(o.qte) * pnum(o.poids); });
+    state.inv.objets.forEach(function (o) { if (test(o.ou)) t += poidsDe(o); });
     return Math.round(t * 100) / 100;
   }
-  // porte = true : ce qui est SUR le personnage ; false : ce qu'il a posé.
-  function poidsObjets(porte) {
+  function poidsPoches() { return poidsOu(function (ou) { return ou === "poches"; }); }
+  function poidsSac() { return poidsOu(function (ou) { return ou === "sac"; }); }
+  function objetEn(cas) {
+    var out = null;
+    state.inv.objets.forEach(function (o) { if (!out && o.ou === cas) out = o; });
+    return out;
+  }
+  // un vêtement PORTÉ : dans la case de son type
+  function vetementsPortes() {
+    return state.inv.objets.filter(function (o) { return o.vet && o.ou === o.vet; });
+  }
+  function capPoches() {
     var t = 0;
-    state.inv.groupes.forEach(function (_, gi) {
-      if (invCompte(gi) === porte) t += poidsGroupe(gi);
-    });
+    vetementsPortes().forEach(function (o) { t += pnum(o.poches); });
     return Math.round(t * 100) / 100;
+  }
+  function capSac() {
+    var s = objetEn("dos");
+    return s && s.sac ? pnum(s.cap) : 0;
   }
   // Le poids porté se calcule ICI et nulle part ailleurs : le module
-  // d'inventaire lit les mêmes fonctions. Deux calculs séparés finiraient par
-  // se contredire à l'écran, le pied du module annonçant un chiffre et la jauge
-  // de charge un autre, ce qui est pire que l'absence du réglage.
-  function poidsPorteBrut() {
-    var t = poidsObjets(true);
-    state.vetements.forEach(function (v) { if (v.porte) t += pnum(v.poids); });
-    return Math.round(t * 100) / 100;
-  }
+  // d'inventaire lit les mêmes fonctions.
+  function poidsPorteBrut() { return poidsOu(function () { return true; }); }
   function poidsPorte() { return pub("poidsPorte", poidsPorteBrut(), {}); }
-  // Les objets marqués « accès rapide », comptés à l'unité et non à la
-  // quantité : un carquois de vingt flèches occupe UN accès, pas vingt. Les
-  // groupes posés au sol n'en occupent aucun — ce qui est au sol ne se dégaine
-  // pas.
+  // Les objets marqués « prise rapide », comptés à l'unité et non à la
+  // quantité : un carquois de vingt flèches occupe UN accès, pas vingt. Qu'ils
+  // soient dans les poches ou dans le sac ne change rien.
   function accesPris() {
     var n = 0;
-    state.inv.objets.forEach(function (o) {
-      if (o.rapide && invCompte(o.grp) && pnum(o.qte) > 0) n++;
-    });
+    state.inv.objets.forEach(function (o) { if (o.rapide && pnum(o.qte) > 0) n++; });
     return n;
   }
   // La contenance OCCUPÉE se compte à la main (le pas du bloc Corps) : la fiche
