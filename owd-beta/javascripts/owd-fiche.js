@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "2.3.0b";
+  var RELEASE = "2.3.1b";
   var SCHEMA = 3;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -3266,20 +3266,6 @@
     row.appendChild(el("span", "sp"));
     return row;
   }
-  // La même chose en version TUILE : le libellé au-dessus du contrôle, une
-  // tuile étant trop étroite pour « Modificateurs » et trois cases côte à côte.
-  function tuileForce(tile, cle, auto, titre) {
-    var row = el("div", "pc-bigedit pc-edit-only");
-    row.appendChild(el("span", "lbl", "Forcé"));
-    row.appendChild(champForceMax(cle, auto, titre));
-    tile.appendChild(row);
-  }
-  function tuileMods(tile, cle) {
-    var row = el("div", "pc-bigedit pc-edit-only");
-    row.appendChild(el("span", "lbl", "Modificateurs"));
-    row.appendChild(multiModBoite("capsLeviers", "max", cle));
-    tile.appendChild(row);
-  }
 
   // D'où vient un maximum, décomposé pour l'infobulle. La formule VERBATIM du
   // livre est dans les données ; on la cite, on ne la réécrit pas, et on ajoute
@@ -3452,51 +3438,6 @@
     });
     return b;
   }
-  // ---- 2. Corps : charge, accès rapides, dés d'action ----
-  // (l'innocence a son propre module, sur le modèle des PV : voir vitales.js)
-  function buildCorps() {
-    var b = block("Corps", null, "corps");
-
-    var r1 = el("div", "pc-bigrow pc-bigrow-2");
-    function tuileLimite(cle, libelle, pris, total) {
-      var t = bigTile(libelle, function () {
-        return fmtP(pris()) + " / " + fmtP(total());
-      });
-      t.classList.add("pc-mods-host");
-      tuileForce(t, cle, function () { return autoDe(cle); });
-      tuileMods(t, cle);
-      hooks.push(function () {
-        var over = pris() > total();
-        t.classList.toggle("adj", over || capForce(cle));
-        t.title = libCap(cle, libelle) + " : " + fmtP(pris()) + " sur " + fmtP(total()) +
-                  (over ? " — dépassé" : "") +
-                  (capForce(cle) ? " · maximum forcé (calculé : " + fmtP(autoDe(cle)) + ")"
-                                 : " · " + provenanceCap(cle)());
-      });
-      return t;
-    }
-    r1.appendChild(tuileLimite("charge", "CHARGE", poidsPorte, charge));
-    r1.appendChild(tuileLimite("acces", "ACCÈS RAPIDES", accesPris, accesRapides));
-    // (la contenance a son propre module, l'estomac : voir contenance.js)
-    b.appendChild(r1);
-
-    // Deuxième rangée : ce que le corps donne au tour, sur toute la largeur.
-    var r2 = el("div", "pc-bigrow pc-bigrow-1");
-    var tD = bigTile("DÉS D'ACTION", function () { return fmtP(desAction()); });
-    tD.classList.add("pc-mods-host");
-    tuileForce(tD, "desAction", desActionAuto);
-    tuileMods(tD, "desAction");
-    hooks.push(function () {
-      tD.classList.toggle("adj", capForce("desAction"));
-      tD.title = "Dés d'action reçus par tour" +
-                 (capForce("desAction") ? " — forcé (calculé : " + fmtP(desActionAuto()) + ")" : "");
-    });
-    r2.appendChild(tD);
-
-    b.appendChild(r2);
-    return b;
-  }
-
   // ---- 4. Les trois réserves : PV, PE, PM ----
   // TROIS MODULES ET NON UN BLOC. Les réserves ont la même forme, mais on ne
   // les lit pas au même moment — les PV quand on encaisse, les PE quand on
@@ -6984,7 +6925,6 @@
     { id: "survie",       titre: "Survie",           onglet: "fiche", colonne: "gauche", build: buildSurvie },
     { id: "exposition",   titre: "Exposition",       onglet: "fiche", colonne: "gauche", build: buildExposition },
     { id: "pi",           titre: "PI",               onglet: "fiche", colonne: "gauche", build: buildPi },
-    { id: "corps",        titre: "Corps",            onglet: "fiche", colonne: "gauche", build: buildCorps },
     // TROIS RÉSERVES, TROIS MODULES : même forme, mais on ne les lit pas au
     // même moment, et elles se déplacent — ou se coupent — l'une sans l'autre.
     { id: "pv",           titre: "PV",               onglet: "fiche", colonne: "milieu", build: buildPv },
