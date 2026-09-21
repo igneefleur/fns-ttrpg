@@ -1302,9 +1302,12 @@ html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où 
 .pc-obj-qrow input.n:focus { outline: none; border-bottom: 2px solid var(--accent); }
 .pc-obj-pair { display: flex; gap: .5rem; }
 .pc-obj-pair .pc-f { flex: 1; }
-.pc-obj-actions { display: flex; gap: .35rem; justify-content: flex-end; align-items: flex-end; margin-top: .1rem; }
-/* quantité traitée par les boutons de la ligne : étroite, collée à gauche */
-.pc-obj-actions .pc-f.qact { flex: 0 0 3.6rem; margin-right: auto; }
+/* [quantité] [Montrer] [Donner] [Supprimer] : une GRILLE, la quantité étroite et
+   les trois boutons à parts égales — rien ne déborde du panneau */
+.pc-obj-actions { display: grid; grid-template-columns: 2.8rem repeat(3, minmax(0, 1fr)); gap: .3rem; align-items: end; margin-top: .1rem; }
+.pc-obj-actions .pc-f.qact { min-width: 0; }
+.pc-obj-actions .pc-f.qact input { width: 100%; box-sizing: border-box; }
+.pc-obj-actions > button { min-width: 0; padding-inline: .2rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pc-obj-empty { padding: 1.2rem .6rem; text-align: center; color: var(--ink-3); font-style: italic; font-size: .62rem; }
 /* même point de bascule que le mobile de la feuille (44em, pas 700px) */
 @media (max-width: 44em) {
