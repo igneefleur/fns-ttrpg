@@ -1,6 +1,11 @@
-  // ---- 3. Rupture ----
+  // ---- Rupture ----
+  // UN MODULE D'OPTION : les points de rupture se dépensent en prenant un Rang
+  // Max ou un rang de technique, et l'en-tête en tient le compte. Ce bloc ne
+  // sert qu'à FORCER les points disponibles quand la table en décide
+  // autrement ; « Max » rend la main au calcul. Leur nombre au plus se règle
+  // dans les Réglages des capacités, à la ligne Rupture.
   function buildRupture() {
-    var b = block("Rupture", null, "rupture");
+    var b = block("Rupture");
     var row = el("div", "pc-kv");
     row.appendChild(stepper(
       function () { return state.etat.rupture === null ? ruptureRestante() : state.etat.rupture; },
@@ -9,26 +14,17 @@
     var max = el("span", "max", "");
     row.appendChild(max);
     row.appendChild(el("span", "sp"));
-    // « Max » remet à null : la valeur suit alors ce que les rangs et les
-    // techniques laissent, sans qu'on ait à la recalculer de tête.
-    row.appendChild(miniBtn("Max", "Revenir à ce que les rangs et les techniques laissent", function () {
+    row.appendChild(miniBtn("Max", "Revenir au calcul", function () {
       state.etat.rupture = null;
       refresh();
     }));
     b.appendChild(row);
-    var n = note("");
-    b.appendChild(n);
-    b.appendChild(ligneLeviers("rupture", ruptureMaxAuto,
-      "Vide = nombre de points calculé (celui du livre, modificateurs compris) ; une valeur le force."));
     hooks.push(function () {
       max.textContent = "/ " + fmtP(ruptureMax());
       max.classList.toggle("adj", capForce("rupture"));
       max.title = capForce("rupture")
         ? chaineTexteDe(lireCap("max", "rupture"), "calculé", ruptureMaxAuto())
-        : "Points de rupture du personnage";
-      n.textContent = "Engagés : " + fmtP(ruptureComps()) + " par les rangs de compétence, " +
-                      fmtP(ruptureTechs()) + " par les techniques.";
+        : "";
     });
     return b;
   }
-

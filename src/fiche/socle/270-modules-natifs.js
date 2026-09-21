@@ -12,14 +12,13 @@
   var MODULES_NATIFS = [
     // ---- onglet Fiche ----
     { id: "caracs",       titre: "Caractéristiques", onglet: "fiche", colonne: "gauche", build: buildCaracs },
+    { id: "survie",       titre: "Survie",           onglet: "fiche", colonne: "gauche", build: buildSurvie },
     { id: "corps",        titre: "Corps",            onglet: "fiche", colonne: "gauche", build: buildCorps },
-    { id: "rupture",      titre: "Rupture",          onglet: "fiche", colonne: "gauche", build: buildRupture },
     // TROIS RÉSERVES, TROIS MODULES : même forme, mais on ne les lit pas au
     // même moment, et elles se déplacent — ou se coupent — l'une sans l'autre.
     { id: "pv",           titre: "PV",               onglet: "fiche", colonne: "milieu", build: buildPv },
     { id: "pe",           titre: "PE",               onglet: "fiche", colonne: "milieu", build: buildPe },
     { id: "pm",           titre: "PM",               onglet: "fiche", colonne: "milieu", build: buildPm },
-    { id: "survie",       titre: "Survie",           onglet: "fiche", colonne: "milieu", build: buildSurvie },
     { id: "exposition",   titre: "Exposition",       onglet: "fiche", colonne: "milieu", build: buildExposition },
     { id: "effondrement", titre: "Effondrement",     onglet: "fiche", colonne: "milieu", build: buildEffondrement },
     { id: "comps",        titre: "Compétences",      onglet: "fiche", colonne: "droite", build: buildComps },
@@ -47,6 +46,8 @@
     { id: "actions",      titre: "Fiche",            onglet: "options", colonne: "droite", build: buildActions },
     { id: "modcaracs",    titre: "Réglages des caractéristiques", onglet: "options", colonne: "gauche", build: buildModCaracs },
     { id: "optcaps",      titre: "Réglages des capacités", onglet: "options", colonne: "droite", build: buildOptCaps },
+    // les points de rupture DISPONIBLES, à forcer : un réglage, pas un geste de jeu
+    { id: "rupture",      titre: "Rupture",          onglet: "options", colonne: "gauche", build: buildRupture },
     // « Affichage » n'existe que dans Roll20 ; son absence sur le site laisse
     // les deux colonnes à égalité.
     { id: "affichage",    titre: "Affichage",        onglet: "options", colonne: "gauche", build: buildAffichage, pour: affichagePresent },

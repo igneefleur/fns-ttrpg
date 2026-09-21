@@ -433,8 +433,14 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   font-family: 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
   font-weight: 800; font-size: var(--fs-label); letter-spacing: .09em; text-transform: uppercase;
-  color: var(--sur-bandeau); line-height: 1.1;
+  color: var(--teinte, var(--sur-bandeau)); line-height: 1.1;
 }
+/* LES TEINTES DU JEU. PV, PE et PM portent la couleur de leur barre dans
+   Outward, les mêmes en mode nuit : c'est la couleur de la ressource, pas un
+   accent de la fiche. */
+.pc-vital-res.t-pv { --teinte: #881112; }
+.pc-vital-res.t-pe { --teinte: #AA872E; }
+.pc-vital-res.t-pm { --teinte: #286CA4; }
 .pc-vital-val { flex: 0 0 auto; margin-left: auto; display: inline-flex; align-items: baseline; gap: .2rem; }
 /* La largeur n'est qu'un plancher : reserveVitale() l'ajuste au nombre de signes. */
 .pc-vital-num {
@@ -449,10 +455,10 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
   font-size: var(--fs-label); font-weight: 700; letter-spacing: .02em;
   color: #bdbdbd; font-variant-numeric: tabular-nums; white-space: nowrap;
 }
-.pc-vital-max.adj { color: var(--sur-bandeau); }
+.pc-vital-max.adj { color: var(--teinte, var(--sur-bandeau)); }
 /* Une barre PLEINE : la version segmentée a été refusée sur la fiche MIA. */
 .pc-vital-jauge { display: flex; width: 100%; height: .5rem; background: var(--line-2); overflow: hidden; }
-.pc-vital-jauge > i { display: block; height: 100%; background: var(--or); transition: width .15s; }
+.pc-vital-jauge > i { display: block; height: 100%; background: var(--teinte, var(--or)); transition: width .15s; }
 .pc-vital-jauge > i.over { background: var(--danger); }
 /* Un tiers pour le champ, deux tiers pour le bouton ; le bouton garde sa
    largeur de contenu, c'est le champ qui cède. */

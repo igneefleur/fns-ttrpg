@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "1.5.0b";
+  var RELEASE = "1.6.0b";
   var SCHEMA = 2;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -3158,40 +3158,6 @@
     return b;
   }
 
-  // ---- 3. Rupture ----
-  function buildRupture() {
-    var b = block("Rupture", null, "rupture");
-    var row = el("div", "pc-kv");
-    row.appendChild(stepper(
-      function () { return state.etat.rupture === null ? ruptureRestante() : state.etat.rupture; },
-      function (v) { state.etat.rupture = Math.round(v); },
-      1, "points de rupture"));
-    var max = el("span", "max", "");
-    row.appendChild(max);
-    row.appendChild(el("span", "sp"));
-    // « Max » remet à null : la valeur suit alors ce que les rangs et les
-    // techniques laissent, sans qu'on ait à la recalculer de tête.
-    row.appendChild(miniBtn("Max", "Revenir à ce que les rangs et les techniques laissent", function () {
-      state.etat.rupture = null;
-      refresh();
-    }));
-    b.appendChild(row);
-    var n = note("");
-    b.appendChild(n);
-    b.appendChild(ligneLeviers("rupture", ruptureMaxAuto,
-      "Vide = nombre de points calculé (celui du livre, modificateurs compris) ; une valeur le force."));
-    hooks.push(function () {
-      max.textContent = "/ " + fmtP(ruptureMax());
-      max.classList.toggle("adj", capForce("rupture"));
-      max.title = capForce("rupture")
-        ? chaineTexteDe(lireCap("max", "rupture"), "calculé", ruptureMaxAuto())
-        : "Points de rupture du personnage";
-      n.textContent = "Engagés : " + fmtP(ruptureComps()) + " par les rangs de compétence, " +
-                      fmtP(ruptureTechs()) + " par les techniques.";
-    });
-    return b;
-  }
-
   // ---- 4. Les trois réserves : PV, PE, PM ----
   // TROIS MODULES ET NON UN BLOC. Les réserves ont la même forme, mais on ne
   // les lit pas au même moment — les PV quand on encaisse, les PE quand on
@@ -3225,9 +3191,12 @@
   // (carteVitale) : PV, PE et PM en ont une chacun, PR, PS et PH en partagent
   // une.
   function carteVitale() { return el("div", "pc-block pc-vital"); }
-  function reserveVitale(cle, provenance) {
-    var nom = abbrCap(cle, cle.toUpperCase());
-    var box = el("div", "pc-vital-res");
+  // `nom` remplace le sigle des règles dans le bandeau, quand la fiche en
+  // veut un autre (Repos plutôt que PR) ; la clé, elle, pose la TEINTE de la
+  // réserve (classe t-<clé>, couleurs dans la feuille de style).
+  function reserveVitale(cle, provenance, nomAffiche) {
+    var nom = nomAffiche || abbrCap(cle, cle.toUpperCase());
+    var box = el("div", "pc-vital-res t-" + cle);
 
     var tete = el("div", "pc-vital-tete");
     var n = el("span", "pc-vital-nom", nom);
@@ -3325,10 +3294,12 @@
   // carte : repos, satiété et hydratation se lisent ensemble, au campement,
   // et ne se déplacent pas l'une sans l'autre. Aucun rouage : leurs maximums
   // se règlent dans l'onglet Options, comme ceux des PV.
+  // Les bandeaux disent le mot entier, et non le sigle des règles : la carte
+  // n'a que ces trois-là, ils y tiennent.
   function buildSurvie() {
     var b = carteVitale();
-    ["pr", "ps", "ph"].forEach(function (cle) {
-      b.appendChild(reserveVitale(cle, provenanceCap(cle)).el);
+    [["pr", "Repos"], ["ps", "Satiété"], ["ph", "Hydratation"]].forEach(function (x) {
+      b.appendChild(reserveVitale(x[0], provenanceCap(x[0]), x[1]).el);
     });
     var pied = el("div", "pc-comp-tools pc-vital-pied");
     var ligne = el("div", "row");
@@ -5727,6 +5698,36 @@
     return b;
   }
 
+  // ---- Rupture ----
+  // UN MODULE D'OPTION : les points de rupture se dépensent en prenant un Rang
+  // Max ou un rang de technique, et l'en-tête en tient le compte. Ce bloc ne
+  // sert qu'à FORCER les points disponibles quand la table en décide
+  // autrement ; « Max » rend la main au calcul. Leur nombre au plus se règle
+  // dans les Réglages des capacités, à la ligne Rupture.
+  function buildRupture() {
+    var b = block("Rupture");
+    var row = el("div", "pc-kv");
+    row.appendChild(stepper(
+      function () { return state.etat.rupture === null ? ruptureRestante() : state.etat.rupture; },
+      function (v) { state.etat.rupture = Math.round(v); },
+      1, "points de rupture"));
+    var max = el("span", "max", "");
+    row.appendChild(max);
+    row.appendChild(el("span", "sp"));
+    row.appendChild(miniBtn("Max", "Revenir au calcul", function () {
+      state.etat.rupture = null;
+      refresh();
+    }));
+    b.appendChild(row);
+    hooks.push(function () {
+      max.textContent = "/ " + fmtP(ruptureMax());
+      max.classList.toggle("adj", capForce("rupture"));
+      max.title = capForce("rupture")
+        ? chaineTexteDe(lireCap("max", "rupture"), "calculé", ruptureMaxAuto())
+        : "";
+    });
+    return b;
+  }
   // ---- 21. Réglages des capacités ----
   // LE TABLEAU DE BORD DU MENEUR, seconde moitié : une rangée par valeur
   // dérivée du corps, et la même chaîne à neuf boîtes que les caractéristiques
@@ -6553,14 +6554,13 @@
   var MODULES_NATIFS = [
     // ---- onglet Fiche ----
     { id: "caracs",       titre: "Caractéristiques", onglet: "fiche", colonne: "gauche", build: buildCaracs },
+    { id: "survie",       titre: "Survie",           onglet: "fiche", colonne: "gauche", build: buildSurvie },
     { id: "corps",        titre: "Corps",            onglet: "fiche", colonne: "gauche", build: buildCorps },
-    { id: "rupture",      titre: "Rupture",          onglet: "fiche", colonne: "gauche", build: buildRupture },
     // TROIS RÉSERVES, TROIS MODULES : même forme, mais on ne les lit pas au
     // même moment, et elles se déplacent — ou se coupent — l'une sans l'autre.
     { id: "pv",           titre: "PV",               onglet: "fiche", colonne: "milieu", build: buildPv },
     { id: "pe",           titre: "PE",               onglet: "fiche", colonne: "milieu", build: buildPe },
     { id: "pm",           titre: "PM",               onglet: "fiche", colonne: "milieu", build: buildPm },
-    { id: "survie",       titre: "Survie",           onglet: "fiche", colonne: "milieu", build: buildSurvie },
     { id: "exposition",   titre: "Exposition",       onglet: "fiche", colonne: "milieu", build: buildExposition },
     { id: "effondrement", titre: "Effondrement",     onglet: "fiche", colonne: "milieu", build: buildEffondrement },
     { id: "comps",        titre: "Compétences",      onglet: "fiche", colonne: "droite", build: buildComps },
@@ -6588,6 +6588,8 @@
     { id: "actions",      titre: "Fiche",            onglet: "options", colonne: "droite", build: buildActions },
     { id: "modcaracs",    titre: "Réglages des caractéristiques", onglet: "options", colonne: "gauche", build: buildModCaracs },
     { id: "optcaps",      titre: "Réglages des capacités", onglet: "options", colonne: "droite", build: buildOptCaps },
+    // les points de rupture DISPONIBLES, à forcer : un réglage, pas un geste de jeu
+    { id: "rupture",      titre: "Rupture",          onglet: "options", colonne: "gauche", build: buildRupture },
     // « Affichage » n'existe que dans Roll20 ; son absence sur le site laisse
     // les deux colonnes à égalité.
     { id: "affichage",    titre: "Affichage",        onglet: "options", colonne: "gauche", build: buildAffichage, pour: affichagePresent },

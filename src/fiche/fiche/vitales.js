@@ -31,9 +31,12 @@
   // (carteVitale) : PV, PE et PM en ont une chacun, PR, PS et PH en partagent
   // une.
   function carteVitale() { return el("div", "pc-block pc-vital"); }
-  function reserveVitale(cle, provenance) {
-    var nom = abbrCap(cle, cle.toUpperCase());
-    var box = el("div", "pc-vital-res");
+  // `nom` remplace le sigle des règles dans le bandeau, quand la fiche en
+  // veut un autre (Repos plutôt que PR) ; la clé, elle, pose la TEINTE de la
+  // réserve (classe t-<clé>, couleurs dans la feuille de style).
+  function reserveVitale(cle, provenance, nomAffiche) {
+    var nom = nomAffiche || abbrCap(cle, cle.toUpperCase());
+    var box = el("div", "pc-vital-res t-" + cle);
 
     var tete = el("div", "pc-vital-tete");
     var n = el("span", "pc-vital-nom", nom);

@@ -57,7 +57,6 @@ fin = lf
   src/fiche/fiche/commun-jauges.js
   src/fiche/fiche/caracs.js
   src/fiche/fiche/corps.js
-  src/fiche/fiche/rupture.js
   src/fiche/fiche/vitales.js
   src/fiche/fiche/survie.js
   src/fiche/fiche/exposition.js
@@ -80,6 +79,7 @@ fin = lf
   src/fiche/options/optcaracs.js
   src/fiche/options/affichage.js
   src/fiche/options/actions.js
+  src/fiche/options/rupture.js
   src/fiche/options/optcaps.js
   src/fiche/options/optcomps.js
   src/fiche/options/filtres.js
