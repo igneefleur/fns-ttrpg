@@ -1,5 +1,19 @@
 [
 {
+"short": "860848f",
+"author": "Théo Cavaillès",
+"date": "2026-09-21T18:10:22+02:00",
+"message": "Le pain et les eaux portent leurs places de contenance",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/860848f08e23e262ed47496200e8b7f98ebfa1c9",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/equipement.md",
+"url": "content/regles/equipement/"
+}
+]
+},
+{
 "short": "64e5620",
 "author": "Théo Cavaillès",
 "date": "2026-09-21T18:07:23+02:00",
@@ -270,20 +284,6 @@
 "date": "2026-08-17T15:57:16+02:00",
 "message": "La hache perd sa case du porteur et gagne une taille aux mains",
 "url": "https://github.com/igneefleur/fns-ttrpg/commit/606eba14e4b24b96eca0b2edce554994d02353da",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/combat/armes.md",
-"url": "content/regles/combat/armes/"
-}
-]
-},
-{
-"short": "5819b86",
-"author": "Théo Cavaillès",
-"date": "2026-08-17T15:47:48+02:00",
-"message": "Le croc cède la place à un estoc de la corne",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/5819b860fe2c6a6276ba62f10ed6a831e9096af6",
 "files": [
 {
 "status": "modified",
