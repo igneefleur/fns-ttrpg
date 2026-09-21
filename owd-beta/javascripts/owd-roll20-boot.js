@@ -126,6 +126,9 @@
     var p = nightPref();
     var on = p === "0" ? false : p === "auto" ? (NIGHT_HINT === true) : true;
     document.documentElement.classList.toggle("night", on);
+    // la surcouche peint les cartes de dés du tchat comme la fiche : elle doit
+    // donc connaître son mode, à l'ouverture comme à chaque bascule
+    post({ type: "nuit", on: on });
   }
   window.__owdNight = {
     pref: nightPref,          // "auto" | "0" (jour) | "1" (nuit)
