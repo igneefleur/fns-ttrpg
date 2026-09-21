@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "2.1.5b";
+  var RELEASE = "2.2.0b";
   var SCHEMA = 3;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -449,7 +449,9 @@
       // Inventaire : TROIS GROUPES FIXES (schéma 3). Chaque objet a un
       // emplacement « ou » : une des huit cases de Sur soi (INV_CASES), les
       // poches ou le sac. Un objet : { id, nom, img, qte, poids, places, achat,
-      //   vente, desc, ou, rapide, vet, poches, froid, chaud, sac, cap, arme }.
+      //   vente, desc, ou, rapide, vet, poches, froid, chaud, sac, cap, arme,
+      //   encombre }.
+      //   encombre  l'encombrance de l'objet (une valeur, qui ne limite encore rien)
       //   vet     type de vêtement (tete, mains, haut, bas, pieds) ou ""
       //   poches  ce qu'un vêtement porté ajoute aux Poches, en kg
       //   froid / chaud  sa protection, comptée s'il est porté dans sa case
@@ -692,6 +694,7 @@
         img: o.img == null ? "" : String(o.img),
         qte: pnum(o.qte === undefined ? 1 : o.qte),
         poids: pnum(o.poids),
+        encombre: pnum(o.encombre),
         places: pnum(o.places),
         achat: pnum(o.achat), vente: pnum(o.vente),
         desc: o.desc == null ? "" : String(o.desc),
@@ -5259,7 +5262,7 @@
       var add = el("div", "pc-obj-addtile pc-edit-only", "+");
       add.title = "Ajouter un objet dans « " + titre + " »";
       add.addEventListener("click", function () {
-        var o = { id: "", nom: "", img: "", qte: 1, poids: 0, places: 0, achat: 0, vente: 0,
+        var o = { id: "", nom: "", img: "", qte: 1, poids: 0, encombre: 0, places: 0, achat: 0, vente: 0,
                   desc: "", ou: ou, rapide: false, vet: "", poches: 0, froid: 0, chaud: 0,
                   sac: false, cap: 0, arme: null };
         items.push(o);
@@ -5310,7 +5313,7 @@
       if (sel && items.indexOf(sel) < 0) sel = null;
       var fantome = !sel;
       panel.classList.toggle("fantome", fantome);
-      var it = sel || { id: "", nom: "", img: "", qte: 0, poids: 0, places: 0, achat: 0, vente: 0,
+      var it = sel || { id: "", nom: "", img: "", qte: 0, poids: 0, encombre: 0, places: 0, achat: 0, vente: 0,
                         desc: "", ou: "sac", rapide: false, vet: "", poches: 0, froid: 0, chaud: 0,
                         sac: false, cap: 0, arme: null };
 
@@ -5321,6 +5324,16 @@
 
       var body = el("div", "pc-obj-body");
 
+      // L'ORDRE DU DÉTAIL, arrêté par l'auteur :
+      //   NOM
+      //   NATURE | prise rapide      (puis ce que la nature demande)
+      //   QUANTITÉ
+      //   POIDS | ENCOMBRANCE
+      //   ACHAT | VENTE
+      //   IDENTIFIANT | IMAGE (URL)  (en édition seulement)
+      //   DESCRIPTION
+      //   [quantité] [Montrer] [Donner] [Supprimer]
+      // L'emplacement ne s'y choisit pas : on range au glisser-déposer.
       var nm = el("input", "nm pc-edit-field");
       nm.type = "text"; nm.placeholder = fantome ? "Aucun objet" : "Nom de l'objet";
       nm.value = it.nom;
@@ -5328,89 +5341,44 @@
       nm.addEventListener("change", function () { render(); });
       body.appendChild(nm);
 
-      // quantité : curseur + champ, décimale (une demi-ration, 2.5 m de corde)
-      var qRow = el("div", "pc-obj-qrow");
-      var slider = el("input");
-      slider.type = "range"; slider.min = "0";
-      slider.max = String(Math.max(10, it.qte));
-      slider.value = it.qte;
-      slider.step = "1";   // à l'UNITÉ : on ne prend pas 3,27 fioles au curseur
-      var qIn = el("input", "n");
-      qIn.type = "number"; qIn.min = "0"; qIn.step = "any";
-      qIn.value = it.qte;
-      function setQte(v) {
-        it.qte = isFinite(v) && v >= 0 ? Math.round(v * 100) / 100 : 0;
-        if (+slider.max < it.qte) slider.max = String(it.qte);
-        if (document.activeElement !== slider) slider.value = it.qte;
-        if (document.activeElement !== qIn) qIn.value = it.qte;
-        majAct();
-        majPile();
-        save(); updateTotal();
-        refresh();   // le poids porté vient de bouger : la charge suit
-      }
-      slider.addEventListener("input", function () { setQte(Math.round(parseFloat(slider.value))); });
-      qIn.addEventListener("input", function () { setQte(parseFloat(qIn.value)); });
-      qRow.appendChild(slider);
-      qRow.appendChild(qIn);
-      body.appendChild(fld("Quantité", qRow));
-
-      // poids et EMPLACEMENT : seuls les lieux qui acceptent l'objet sont offerts
-      var pair = el("div", "pc-obj-pair");
-      pair.appendChild(champNombre("Poids", function () { return it.poids; },
-        function (v) { it.poids = pnum(v); majPile(); }));
-      // l'emplacement se change en jouant, comme au glisser-déposer
-      var ouSel = el("select");
-      INV_LIEUX.forEach(function (ou) {
-        if (!lieuPermis(it, ou) && it.ou !== ou) return;
-        var o = el("option", null, ou === "sac" ? "Sac à dos (contenu)" : INV_NOMS[ou]);
-        o.value = ou;
-        if (ou === it.ou) o.selected = true;
-        ouSel.appendChild(o);
-      });
-      ouSel.addEventListener("change", function () {
-        deplace(it, ouSel.value, null);
-        render();
-        refresh();
-      });
-      pair.appendChild(fld("Emplacement", ouSel));
-      body.appendChild(pair);
-
-      // CE QU'EST L'OBJET : un objet simple, un vêtement ou un sac à dos ; et,
-      // en plus, une arme ou non. Changer de nature renvoie au sac un objet
-      // qui n'a plus sa place dans sa case.
-      var pair2 = el("div", "pc-obj-pair");
+      // NATURE : objet, vêtement, sac à dos ou arme — une seule à la fois. En
+      // changer renvoie au sac un objet qui n'a plus sa place dans sa case.
+      var ligneNat = el("div", "pc-obj-pair");
       var nat = el("select", "pc-edit-field");
-      [["", "Objet"], ["vet", "Vêtement"], ["sac", "Sac à dos"]].forEach(function (n) {
+      var natureDe = it.arme ? "arme" : it.vet ? "vet" : it.sac ? "sac" : "";
+      [["", "Objet"], ["vet", "Vêtement"], ["sac", "Sac à dos"], ["arme", "Arme"]].forEach(function (n) {
         var o = el("option", null, n[1]);
         o.value = n[0];
-        if ((n[0] === "vet" && it.vet) || (n[0] === "sac" && it.sac && !it.vet) ||
-            (!n[0] && !it.vet && !it.sac)) o.selected = true;
+        if (n[0] === natureDe) o.selected = true;
         nat.appendChild(o);
       });
       nat.addEventListener("change", function () {
-        it.sac = nat.value === "sac";
-        it.vet = nat.value === "vet" ? (it.vet || "haut") : "";
+        var v = nat.value;
+        it.sac = v === "sac";
+        it.vet = v === "vet" ? (it.vet || "haut") : "";
+        it.arme = v === "arme" ? (it.arme || { prise: "", parade: "", reduction: "", comp: "", gestes: [] }) : null;
         if (!lieuPermis(it, it.ou)) it.ou = "sac";
         render();
         refresh();
       });
-      pair2.appendChild(fld("Nature", nat));
-      var kvA = el("div", "pc-kv");
-      var labA = el("label", null, "");
-      var cbA = el("input", "pc-edit-field");
-      cbA.type = "checkbox";
-      cbA.checked = !!it.arme;
-      cbA.addEventListener("change", function () {
-        it.arme = cbA.checked ? (it.arme || { prise: "", parade: "", reduction: "", comp: "", gestes: [] }) : null;
+      ligneNat.appendChild(fld("Nature", nat));
+      var kvR = el("div", "pc-kv");
+      var labR = el("label", null, "");
+      var cbR = el("input", "pc-edit-field");
+      cbR.type = "checkbox";
+      cbR.checked = !!it.rapide;
+      cbR.addEventListener("change", function () {
+        it.rapide = cbR.checked;
         render();
         refresh();
       });
-      labA.appendChild(cbA);
-      labA.appendChild(el("span", null, " arme"));
-      kvA.appendChild(labA);
-      pair2.appendChild(kvA);
-      body.appendChild(pair2);
+      labR.appendChild(cbR);
+      labR.appendChild(el("span", null, " prise rapide"));
+      kvR.appendChild(labR);
+      ligneNat.appendChild(kvR);
+      body.appendChild(ligneNat);
 
+      // ce que la nature demande, juste sous elle
       if (it.vet) {
         var pv = el("div", "pc-obj-pair");
         var typ = el("select", "pc-edit-field");
@@ -5443,56 +5411,70 @@
           function (v) { it.cap = pnum(v); }, "Ce que ce sac porte, en kg"));
         body.appendChild(ps);
       }
+      // L'ARME : ses gestes et ses jets. Ses rafraîchissements vont au registre
+      // du PANNEAU, vidé à chaque rendu : sinon chaque clic sur une tuile
+      // laisserait des fonctions pointer sur un détail disparu.
+      if (it.arme && !fantome) {
+        var ancien = hooks;
+        hooks = panelHooks;
+        try { body.appendChild(carteArme(it, function () { render(); })); }
+        finally { hooks = ancien; }
+      }
 
-      // PLACES DE CONTENANCE et PRISE RAPIDE
-      var pair3 = el("div", "pc-obj-pair");
-      pair3.appendChild(champNombre("Places", function () { return it.places; },
-        function (v) { it.places = pnum(v); }, "La contenance qu'occupe cet objet une fois avalé."));
-      var kvR = el("div", "pc-kv");
-      var labR = el("label", null, "");
-      var cbR = el("input");
-      cbR.type = "checkbox";
-      cbR.checked = !!it.rapide;
-      cbR.addEventListener("change", function () {
-        it.rapide = cbR.checked;
-        render();
-        refresh();
-      });
-      labR.appendChild(cbR);
-      labR.appendChild(el("span", null, " prise rapide"));
-      kvR.appendChild(labR);
-      pair3.appendChild(kvR);
-      body.appendChild(pair3);
+      // quantité : curseur à l'unité + champ, décimal (une demi-ration)
+      var qRow = el("div", "pc-obj-qrow");
+      var slider = el("input");
+      slider.type = "range"; slider.min = "0";
+      slider.max = String(Math.max(10, it.qte));
+      slider.value = it.qte;
+      slider.step = "1";   // à l'UNITÉ : on ne prend pas 3,27 fioles au curseur
+      var qIn = el("input", "n");
+      qIn.type = "number"; qIn.min = "0"; qIn.step = "any";
+      qIn.value = it.qte;
+      function setQte(v) {
+        it.qte = isFinite(v) && v >= 0 ? Math.round(v * 100) / 100 : 0;
+        if (+slider.max < it.qte) slider.max = String(it.qte);
+        if (document.activeElement !== slider) slider.value = it.qte;
+        if (document.activeElement !== qIn) qIn.value = it.qte;
+        majAct();
+        save(); updateTotal();
+        refresh();   // le poids porté vient de bouger : la charge suit
+      }
+      slider.addEventListener("input", function () { setQte(Math.round(parseFloat(slider.value))); });
+      qIn.addEventListener("input", function () { setQte(parseFloat(qIn.value)); });
+      qRow.appendChild(slider);
+      qRow.appendChild(qIn);
+      body.appendChild(fld("Quantité", qRow));
+
+      var pair = el("div", "pc-obj-pair");
+      pair.appendChild(champNombre("Poids", function () { return it.poids; },
+        function (v) { it.poids = pnum(v); }));
+      pair.appendChild(champNombre("Encombrance", function () { return it.encombre; },
+        function (v) { it.encombre = pnum(v); }));
+      body.appendChild(pair);
 
       // achat / vente, en pièces d'argent : la monnaie du livre est NOMMÉE
       var prix = el("div", "pc-obj-pair");
-      [["achat", "Achat"], ["vente", "Vente"]].forEach(function (c) {
+      [["achat", "Prix d'achat"], ["vente", "Prix de vente"]].forEach(function (c) {
         prix.appendChild(champNombre(c[1], function () { return it[c[0]]; },
           function (v) { it[c[0]] = pnum(v); }, c[1] + " en " + monnaie(true)));
       });
       body.appendChild(prix);
 
-      // identifiant : c'est LUI qui reconnaît le même objet d'une fiche à
-      // l'autre quand on le donne
+      // identifiant et image : de la construction, en édition seulement.
+      // L'identifiant reconnaît le même objet d'une fiche à l'autre quand on
+      // le donne.
+      var pairE = el("div", "pc-obj-pair pc-edit-only");
       var idIn = el("input", "pc-edit-field");
       idIn.type = "text"; idIn.placeholder = "libre (ex. corde-chanvre)";
       idIn.value = it.id || "";
       idIn.addEventListener("input", function () { it.id = idIn.value; save(); });
-      body.appendChild(fld("Identifiant", idIn, "w pc-edit-only"));
-
-      var pile = el("div", "pc-obj-pile");
-      function majPile() {
-        pile.textContent = "Total : " + fmtP(it.qte * it.poids) + " kg";
-        pile.style.display = it.poids ? "" : "none";
-      }
-      majPile();
-      body.appendChild(pile);
-
+      pairE.appendChild(fld("Identifiant", idIn));
       var url = el("input", "pc-edit-field");
       url.type = "text"; url.placeholder = "https://…";
       url.value = /^data:/.test(it.img) ? "" : it.img;
       url.addEventListener("change", function () { it.img = url.value.trim(); render(); refresh(); });
-      var urlFld = fld("Image (URL)", url, "pc-edit-only");
+      var urlFld = fld("Image (URL)", url);
       var file = el("input");
       file.type = "file"; file.accept = "image/*"; file.style.display = "none";
       file.addEventListener("change", function () {
@@ -5503,8 +5485,9 @@
       });
       urlFld.appendChild(file);
       urlFld.appendChild(miniBtn("Fichier…", "Importer une image (réduite en vignette 96 px)",
-        function () { file.click(); }, "pc-edit-only"));
-      body.appendChild(urlFld);
+        function () { file.click(); }));
+      pairE.appendChild(urlFld);
+      body.appendChild(pairE);
 
       var desc = el("textarea", "pc-notes pc-edit-field");
       desc.rows = 3;
@@ -5513,27 +5496,18 @@
       desc.addEventListener("input", function () { it.desc = desc.value; save(); });
       body.appendChild(fld("Description", desc, "w"));
 
-      // L'ARME : ses gestes et ses jets, sous l'objet. Ses rafraîchissements
-      // vont au registre du PANNEAU, vidé à chaque rendu : sinon chaque clic
-      // sur une tuile laisserait des fonctions pointer sur un détail disparu.
       if (fantome) {
         Array.prototype.forEach.call(body.querySelectorAll("input, select, textarea, button"),
           function (x) { x.disabled = true; });
         panel.appendChild(body);
         return;
       }
-      if (it.arme) {
-        var ancien = hooks;
-        hooks = panelHooks;
-        try { body.appendChild(carteArme(it, function () { render(); })); }
-        finally { hooks = ancien; }
-      }
 
-      // quantité d'ACTION : combien d'exemplaires les boutons ci-dessous
-      // traitent. Elle ne touche pas la pile tant qu'on n'agit pas.
+      // quantité d'ACTION : combien d'exemplaires les boutons traitent. Elle
+      // ne touche pas la pile tant qu'on n'agit pas.
       var actQte = el("input", "n");
       actQte.type = "number"; actQte.min = "0"; actQte.step = "any";
-      actQte.title = "Quantité traitée par les boutons ci-dessous";
+      actQte.title = "Quantité traitée par les boutons";
       function bornerAct() {
         var v = pnum(actQte.value);
         if (!v || v > it.qte) v = it.qte;
@@ -5549,20 +5523,21 @@
 
       var actions = el("div", "pc-obj-actions");
       actions.appendChild(fld("Quantité", actQte, "qact"));
-      actions.appendChild(chatBtn(
+      var montrer = chatBtn(
         function () { return "Objet — " + (it.nom || "objet"); },
         function () {
           var q = bornerAct();
           return [
-            ["Emplacement", INV_NOMS[it.ou]],
             ["Quantité", fmtP(q) + (q < it.qte ? " (sur " + fmtP(it.qte) + ")" : "")],
             ["Poids", it.poids ? fmtP(it.poids) + (q > 1 ? " (total " + fmtP(q * it.poids) + ")" : "") : ""],
-            ["Places", it.places ? fmtP(it.places) : ""],
+            ["Encombrance", it.encombre ? fmtP(it.encombre) : ""],
             ["Valeur", it.vente ? "vente " + fmtP(it.vente) + (it.achat ? " · achat " + fmtP(it.achat) : "")
                                 : (it.achat ? "achat " + fmtP(it.achat) : "")],
             ["", it.desc]
           ];
-        }));
+        });
+      montrer.textContent = "Montrer";
+      actions.appendChild(montrer);
       actions.appendChild(miniBtn("Donner", "Donner cette quantité à un autre joueur", function () {
         donnerDialogue(it, bornerAct());
       }));
@@ -5572,17 +5547,17 @@
         render();
         refresh();
       }
-      actions.appendChild(miniBtn("Retirer", "Retirer cette quantité (tout : l'objet disparaît)", function () {
+      actions.appendChild(miniBtn("Supprimer", "Supprimer cette quantité (tout : l'objet disparaît)", function () {
         var q = bornerAct();
         var tout = q >= it.qte;
         if (tout && (it.nom || it.desc)) {
-          confirmer("Retirer un objet",
-                    "Retirer « " + (it.nom || "cet objet") + " » de l'inventaire ?",
-                    "Retirer", function () { retireQte(q, true); });
+          confirmer("Supprimer un objet",
+                    "Supprimer « " + (it.nom || "cet objet") + " » de l'inventaire ?",
+                    "Supprimer", function () { retireQte(q, true); });
           return;
         }
         retireQte(q, tout);
-      }, "danger pc-edit-only"));
+      }, "danger"));
       body.appendChild(actions);
       panel.appendChild(body);
     }

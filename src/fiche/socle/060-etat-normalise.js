@@ -183,6 +183,7 @@
         img: o.img == null ? "" : String(o.img),
         qte: pnum(o.qte === undefined ? 1 : o.qte),
         poids: pnum(o.poids),
+        encombre: pnum(o.encombre),
         places: pnum(o.places),
         achat: pnum(o.achat), vente: pnum(o.vente),
         desc: o.desc == null ? "" : String(o.desc),

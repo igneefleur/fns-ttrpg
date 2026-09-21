@@ -149,7 +149,9 @@
       // Inventaire : TROIS GROUPES FIXES (schéma 3). Chaque objet a un
       // emplacement « ou » : une des huit cases de Sur soi (INV_CASES), les
       // poches ou le sac. Un objet : { id, nom, img, qte, poids, places, achat,
-      //   vente, desc, ou, rapide, vet, poches, froid, chaud, sac, cap, arme }.
+      //   vente, desc, ou, rapide, vet, poches, froid, chaud, sac, cap, arme,
+      //   encombre }.
+      //   encombre  l'encombrance de l'objet (une valeur, qui ne limite encore rien)
       //   vet     type de vêtement (tete, mains, haut, bas, pieds) ou ""
       //   poches  ce qu'un vêtement porté ajoute aux Poches, en kg
       //   froid / chaud  sa protection, comptée s'il est porté dans sa case
