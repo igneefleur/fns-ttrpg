@@ -1,5 +1,19 @@
 [
 {
+"short": "4762b1b",
+"author": "Théo Cavaillès",
+"date": "2026-09-21T15:48:09+02:00",
+"message": "L'effondrement emporte les PV et les PE qui dépassent, et ne les rend pas",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/4762b1bc6ddce634ae358e0aaff8a15199978f7e",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/base/capacites-physiques.md",
+"url": "content/regles/base/capacites-physiques/"
+}
+]
+},
+{
 "short": "cfa6728",
 "author": "Théo Cavaillès",
 "date": "2026-09-21T15:34:46+02:00",
@@ -265,20 +279,6 @@
 "date": "2026-08-17T15:15:35+02:00",
 "message": "Aucun coup de hache ne frappe plus à travers quelqu'un",
 "url": "https://github.com/igneefleur/fns-ttrpg/commit/c6f9f854593627fea8c865ba3f8bde622374c13d",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/combat/armes.md",
-"url": "content/regles/combat/armes/"
-}
-]
-},
-{
-"short": "30f040e",
-"author": "Théo Cavaillès",
-"date": "2026-08-17T14:52:02+02:00",
-"message": "La hache devient une arme de deux pas, comme l'épée",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/30f040eb0cfab7be9ae70860eea1a043fac1cd1c",
 "files": [
 {
 "status": "modified",
