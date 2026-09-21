@@ -276,14 +276,31 @@
   }
   function ebPoches() { return ebOu("poches"); }
   function ebSac() { return ebOu("sac"); }
+  // LES CASES QU'OCCUPE UN OBJET. D'ordinaire une seule, celle de son
+  // emplacement ; mais un vêtement « Haut + Bas » (une robe) tient le haut ET
+  // le bas, et une arme à deux mains les deux mains. Son emplacement « ou »
+  // est alors la case d'ANCRAGE (haut, main droite), l'autre suit.
+  function casesDe(o, ou) {
+    ou = ou || o.ou;
+    if (o.vet === "hautbas" && (ou === "haut" || ou === "bas")) return ["haut", "bas"];
+    if (o.arme && o.arme.mains === 2 && (ou === "mainG" || ou === "mainD")) return ["mainG", "mainD"];
+    return INV_CASES.indexOf(ou) >= 0 ? [ou] : [];
+  }
+  // la case d'ancrage d'un objet posé en `ou`
+  function ancrage(o, ou) {
+    var c = casesDe(o, ou);
+    return c.length > 1 ? (o.vet === "hautbas" ? "haut" : "mainD") : ou;
+  }
   function objetEn(cas) {
     var out = null;
-    state.inv.objets.forEach(function (o) { if (!out && o.ou === cas) out = o; });
+    state.inv.objets.forEach(function (o) { if (!out && casesDe(o).indexOf(cas) >= 0) out = o; });
     return out;
   }
-  // un vêtement PORTÉ : dans la case de son type
+  // un vêtement PORTÉ : dans la case de son type (la robe, en haut)
   function vetementsPortes() {
-    return state.inv.objets.filter(function (o) { return o.vet && o.ou === o.vet; });
+    return state.inv.objets.filter(function (o) {
+      return o.vet && (o.ou === o.vet || (o.vet === "hautbas" && o.ou === "haut"));
+    });
   }
   function capPoches() {
     var t = 0;

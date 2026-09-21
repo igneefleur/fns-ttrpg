@@ -192,7 +192,7 @@
         desc: o.desc == null ? "" : String(o.desc),
         ou: INV_LIEUX.indexOf(o.ou) >= 0 ? o.ou : "sac",
         rapide: !!o.rapide,
-        vet: INV_VETEMENTS.indexOf(o.vet) >= 0 ? o.vet : "",
+        vet: INV_VETEMENTS.indexOf(o.vet) >= 0 || o.vet === "hautbas" ? o.vet : "",
         poches: pnum(o.poches),
         froid: snum(o.froid), chaud: snum(o.chaud),
         sac: !!o.sac,
@@ -203,6 +203,8 @@
           reduction: String(a.reduction == null ? "" : a.reduction),
           // l'ID d'une compétence, jamais son nom : le nom se renomme
           comp: a.comp && vusComps[a.comp] ? String(a.comp) : "",
+          // à une main ou à deux : à deux, l'arme tient les deux mains
+          mains: num(a.mains, 1) === 2 ? 2 : 1,
           gestes: normGestes(a.gestes)
         } : null
       };
@@ -210,14 +212,18 @@
     // UNE CASE, UN OBJET, ET LE BON : une case de vêtement ne prend que son
     // type de vêtement, la case du sac à dos qu'un sac. Ce qui n'y a pas sa
     // place, ou arrive second, retourne au sac plutôt que de disparaître.
+    // Un objet à DEUX cases (robe, arme à deux mains) les prend toutes deux,
+    // ancré sur la sienne ; qu'une seule soit déjà prise, et il retourne au sac.
     var prises = {};
     s.inv.objets.forEach(function (o) {
       if (INV_CASES.indexOf(o.ou) < 0) return;
-      var ok = !prises[o.ou] &&
-               (INV_VETEMENTS.indexOf(o.ou) < 0 || o.vet === o.ou) &&
-               (o.ou !== "dos" || o.sac);
-      if (ok) prises[o.ou] = 1;
-      else o.ou = "sac";
+      var permis = (o.ou === "mainG" || o.ou === "mainD") || (o.ou === "dos" && o.sac) ||
+                   o.vet === o.ou || (o.vet === "hautbas" && (o.ou === "haut" || o.ou === "bas"));
+      if (!permis) { o.ou = "sac"; return; }
+      o.ou = ancrage(o, o.ou);
+      var cases = casesDe(o);
+      if (cases.some(function (c) { return prises[c]; })) { o.ou = "sac"; return; }
+      cases.forEach(function (c) { prises[c] = 1; });
     });
 
     // ---- coffres, interrupteurs, disposition, mods ----

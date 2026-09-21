@@ -18,14 +18,14 @@
   var INV_NOMS = {
     mainG: "Main gauche", mainD: "Main droite", dos: "Sac à dos",
     tete: "Tête", mains: "Mains", haut: "Haut", bas: "Bas", pieds: "Pieds",
-    poches: "Poches", sac: "Sac à dos"
+    poches: "Poches", sac: "Sac à dos", hautbas: "Haut + Bas"
   };
   // Un objet peut-il aller là ? Les mains, les poches et le sac prennent
   // tout ; la case du sac à dos, un sac ; une case de vêtement, son type.
   function lieuPermis(o, ou) {
     if (ou === "poches" || ou === "sac" || ou === "mainG" || ou === "mainD") return true;
     if (ou === "dos") return !!o.sac;
-    return o.vet === ou;
+    return o.vet === ou || (o.vet === "hautbas" && (ou === "haut" || ou === "bas"));
   }
   function invObjets(container, renderRef) {
     var items = state.inv.objets;
@@ -89,14 +89,23 @@
 
     // DÉPLACER un objet vers `ou`, juste avant `cible` (null : à la fin). Une
     // case déjà prise ÉCHANGE : ce qu'elle tenait part là d'où l'objet vient,
-    // ou au sac s'il n'y a pas sa place.
+    // ou au sac s'il n'y a pas sa place. Un objet à deux cases (robe, arme à
+    // deux mains) libère les DEUX, et ce qui les tenait part au sac.
     function deplace(o, ou, cible) {
       if (!lieuPermis(o, ou)) { flash("« " + INV_NOMS[ou] + " » ne prend pas cet objet."); return false; }
-      if (INV_CASES.indexOf(ou) >= 0) {
-        var occupant = objetEn(ou);
-        if (occupant && occupant !== o) occupant.ou = lieuPermis(occupant, o.ou) ? o.ou : "sac";
-      }
-      o.ou = ou;
+      var dest = ancrage(o, ou), cases = casesDe(o, dest), vient = o.ou;
+      var chasses = [];
+      cases.forEach(function (c) {
+        var occ = objetEn(c);
+        if (occ && occ !== o && chasses.indexOf(occ) < 0) chasses.push(occ);
+      });
+      o.ou = dest;
+      chasses.forEach(function (occ) {
+        // l'échange simple : un seul occupant, qui tient là d'où l'objet vient
+        var retour = chasses.length === 1 && lieuPermis(occ, vient) &&
+                     casesDe(occ, vient).every(function (c) { return casesDe(o).indexOf(c) < 0; });
+        occ.ou = retour ? ancrage(occ, vient) : "sac";
+      });
       if (cible !== undefined) {
         items.splice(items.indexOf(o), 1);
         var at = cible ? items.indexOf(cible) : -1;
@@ -179,8 +188,11 @@
       var c = el("div", "pc-inv-case");
       c.dataset.ou = ou;
       var o = objetEn(ou);
-      if (o) c.appendChild(tile(o));
-      else c.appendChild(el("div", "pc-inv-vide", INV_NOMS[ou]));
+      if (o) {
+        c.appendChild(tile(o));
+        // la SECONDE case d'un objet qui en tient deux : le même objet, en écho
+        if (o.ou !== ou) c.classList.add("echo");
+      } else c.appendChild(el("div", "pc-inv-vide", INV_NOMS[ou]));
       c.title = INV_NOMS[ou];
       c.addEventListener("dragover", function (e) {
         if (!drag || !lieuPermis(drag, ou)) return;
@@ -336,7 +348,7 @@
         it.nourri = v === "nourri";
         it.sac = v === "sac";
         it.vet = v === "vet" ? (it.vet || "haut") : "";
-        it.arme = v === "arme" ? (it.arme || { prise: "", parade: "", reduction: "", comp: "", gestes: [] }) : null;
+        it.arme = v === "arme" ? (it.arme || { prise: "", parade: "", reduction: "", comp: "", mains: 1, gestes: [] }) : null;
         if (!lieuPermis(it, it.ou)) it.ou = "sac";
         render();
         refresh();
@@ -362,7 +374,7 @@
       if (it.vet) {
         var pv = el("div", "pc-obj-pair");
         var typ = el("select", "pc-edit-field");
-        INV_VETEMENTS.forEach(function (v) {
+        INV_VETEMENTS.concat(["hautbas"]).forEach(function (v) {
           var o = el("option", null, INV_NOMS[v]);
           o.value = v;
           if (v === it.vet) o.selected = true;
@@ -371,6 +383,7 @@
         typ.addEventListener("change", function () {
           it.vet = typ.value;
           if (!lieuPermis(it, it.ou)) it.ou = "sac";
+          else if (INV_CASES.indexOf(it.ou) >= 0) deplace(it, it.ou);   // la robe prend aussi le bas
           render();
           refresh();
         });
@@ -402,6 +415,25 @@
       // L'ARME : ses gestes et ses jets. Ses rafraîchissements vont au registre
       // du PANNEAU, vidé à chaque rendu : sinon chaque clic sur une tuile
       // laisserait des fonctions pointer sur un détail disparu.
+      if (it.arme) {
+        var pm = el("div", "pc-obj-pair");
+        var mains = el("select", "pc-edit-field");
+        [[1, "1 main"], [2, "2 mains"]].forEach(function (m) {
+          var o = el("option", null, m[1]);
+          o.value = String(m[0]);
+          if (m[0] === (it.arme.mains || 1)) o.selected = true;
+          mains.appendChild(o);
+        });
+        mains.addEventListener("change", function () {
+          it.arme.mains = mains.value === "2" ? 2 : 1;
+          // tenue en main, elle prend (ou rend) l'autre main tout de suite
+          if (it.ou === "mainG" || it.ou === "mainD") deplace(it, it.ou);
+          render();
+          refresh();
+        });
+        pm.appendChild(fld("Se porte", mains));
+        body.appendChild(pm);
+      }
       if (it.arme && !fantome) {
         var ancien = hooks;
         hooks = panelHooks;
