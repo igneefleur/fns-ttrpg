@@ -56,18 +56,18 @@ La table ci-dessous donne le prix d'un point selon la valeur atteinte.
 
 | Valeur atteinte | Prix d'un point |
 |---|---|
-| 1 à 50 | 5 XP |
-| 51 à 100 | 6 XP |
-| 101 à 150 | 7 XP |
-| 151 à 200 | 8 XP |
+| 1 à 100 | 5 XP |
+| 101 à 200 | 6 XP |
+| 201 à 300 | 7 XP |
+| 301 à 400 | 8 XP |
 
-Au-delà de 200, le prix d'un point augmente de 1 XP à chaque tranche de 50.
+Au-delà de 400, le prix d'un point augmente de 1 XP à chaque tranche de 100.
 
 </div>
 
 <div class="memo" markdown>
 
-Exemple. Un personnage mène sa Force de 48 à 52. Les points qui la portent à 49 et à 50 coûtent 5 XP chacun, ceux qui la portent à 51 et à 52 coûtent 6 XP chacun : 22 XP en tout.
+Exemple. Un personnage mène sa Force de 98 à 102. Les points qui la portent à 99 et à 100 coûtent 5 XP chacun, ceux qui la portent à 101 et à 102 coûtent 6 XP chacun : 22 XP en tout.
 
 </div>
 
