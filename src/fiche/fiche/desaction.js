@@ -100,6 +100,7 @@
         var pose = el("button", "pc-desaction-pose");
         pose.type = "button";
         pose.addEventListener("click", function () {
+          if (col.classList.contains("perdu")) return;
           choisis[i] = !choisis[i];
           col.classList.toggle("on", !!choisis[i]);
         });
@@ -151,6 +152,19 @@
       });
       guet.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
     }
+    // LES DÉS PERDUS au mouvement (foncer coûte des dés d'action) : les
+    // derniers de la rangée, de droite à gauche, grisés et hachurés, et qu'on
+    // ne peut plus choisir. Un dé choisi qui se perd est désélectionné.
+    function marquePerdus() {
+      var perdus = Math.min(cases.length, desPerdusMouvement());
+      cases.forEach(function (c, i) {
+        var p = i >= cases.length - perdus;
+        c.col.classList.toggle("perdu", p);
+        c.pose.disabled = p;
+        c.pose.title = p ? "Dé d'action pris par le mouvement" : "";
+        if (p && choisis[i]) { choisis[i] = false; c.col.classList.remove("on"); }
+      });
+    }
     hooks.push(function () {
       cases.forEach(function (c) { if (!c.centre) centre(c); });
       // le nombre de dés suit la capacité (un levier du MJ peut la changer) ;
@@ -160,6 +174,7 @@
         nuitVue = nuit;
         bati();
       }
+      marquePerdus();
     });
     return b;
   }

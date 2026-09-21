@@ -15,6 +15,14 @@
     mouvementListe().forEach(function (a) { if (!out && a.cle.indexOf(e) === 0) out = a; });
     return out;
   }
+  // Les DÉS D'ACTION que l'allure prend ce round (le coût du cran, à l'allure
+  // lourde) : le module Actions les bloque, de droite à gauche.
+  function desPerdusMouvement() {
+    var a = allureCourante();
+    if (!a || a.crans.length < 2) return 0;
+    var c = a.crans[clamp(num(state.allureCran, 1), 1, a.crans.length) - 1];
+    return Math.max(0, Math.floor(num0(c.des)));
+  }
   function num0(v) { var n = parseFloat(v); return isFinite(n) ? n : 0; }
   function buildMouvement() {
     var b = block("Mouvement");

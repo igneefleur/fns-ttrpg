@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "2.7.10b";
+  var RELEASE = "2.7.11b";
   var SCHEMA = 3;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -3919,6 +3919,14 @@
     mouvementListe().forEach(function (a) { if (!out && a.cle.indexOf(e) === 0) out = a; });
     return out;
   }
+  // Les DÉS D'ACTION que l'allure prend ce round (le coût du cran, à l'allure
+  // lourde) : le module Actions les bloque, de droite à gauche.
+  function desPerdusMouvement() {
+    var a = allureCourante();
+    if (!a || a.crans.length < 2) return 0;
+    var c = a.crans[clamp(num(state.allureCran, 1), 1, a.crans.length) - 1];
+    return Math.max(0, Math.floor(num0(c.des)));
+  }
   function num0(v) { var n = parseFloat(v); return isFinite(n) ? n : 0; }
   function buildMouvement() {
     var b = block("Mouvement");
@@ -4247,6 +4255,7 @@
         var pose = el("button", "pc-desaction-pose");
         pose.type = "button";
         pose.addEventListener("click", function () {
+          if (col.classList.contains("perdu")) return;
           choisis[i] = !choisis[i];
           col.classList.toggle("on", !!choisis[i]);
         });
@@ -4298,6 +4307,19 @@
       });
       guet.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
     }
+    // LES DÉS PERDUS au mouvement (foncer coûte des dés d'action) : les
+    // derniers de la rangée, de droite à gauche, grisés et hachurés, et qu'on
+    // ne peut plus choisir. Un dé choisi qui se perd est désélectionné.
+    function marquePerdus() {
+      var perdus = Math.min(cases.length, desPerdusMouvement());
+      cases.forEach(function (c, i) {
+        var p = i >= cases.length - perdus;
+        c.col.classList.toggle("perdu", p);
+        c.pose.disabled = p;
+        c.pose.title = p ? "Dé d'action pris par le mouvement" : "";
+        if (p && choisis[i]) { choisis[i] = false; c.col.classList.remove("on"); }
+      });
+    }
     hooks.push(function () {
       cases.forEach(function (c) { if (!c.centre) centre(c); });
       // le nombre de dés suit la capacité (un levier du MJ peut la changer) ;
@@ -4307,6 +4329,7 @@
         nuitVue = nuit;
         bati();
       }
+      marquePerdus();
     });
     return b;
   }
