@@ -133,6 +133,11 @@
       //   rupture combien de points de rupture elle a demandés
       techniques: [],
 
+      // ---- avantages ----
+      // Une entrée : { nom, cout, desc }. Le coût, en points d'avantage, se
+      // compte contre ceux que le livre donne à la création.
+      avantages: [],
+
       // ---- équipement ----
       // Une arme est un RÉPERTOIRE, pas une attaque : sa ligne (prise, parade,
       // réduction, compétence qui porte le jet) et ses gestes.

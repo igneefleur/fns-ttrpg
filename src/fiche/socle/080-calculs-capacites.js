@@ -63,6 +63,17 @@
     var cr = D().creation;
     return (cr && typeof cr === "object") ? cr : null;
   }
+  // Les POINTS D'AVANTAGE que le livre donne, et ce que coûtent les avantages
+  // pris. Sans la page du livre, la fiche ne compte rien : null.
+  function avantagePoints() {
+    var a = D().avantages;
+    return (a && typeof a === "object") ? num(a.points, 0) : null;
+  }
+  function avantageDepense() {
+    var t = 0;
+    state.avantages.forEach(function (a) { t += pnum(a.cout); });
+    return Math.round(t * 100) / 100;
+  }
   function creationPoints() { var cr = creation(); return cr ? num(cr.points, 0) : 0; }
   function creationDepense() {
     var t = 0;

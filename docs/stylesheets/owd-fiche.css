@@ -1386,6 +1386,13 @@ html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où 
   padding: .03rem .1rem .08rem;
 }
 .pc-av-head input.nm:focus { outline: none; border-bottom: 2px solid var(--accent); }
+/* le coût d'un avantage, à droite de son nom */
+.pc-av-head input.cout {
+  flex: 0 0 2.4rem; width: 2.4rem; min-width: 0; text-align: center; border: none; border-bottom: 1px solid var(--line);
+  background: transparent; color: var(--ink); font: inherit; font-size: .74rem; font-weight: 700;
+  padding: .03rem .1rem .08rem; font-variant-numeric: tabular-nums;
+}
+.pc-av-head input.cout:focus { outline: none; border-bottom: 2px solid var(--accent); }
 /* zone de texte posée dans un champ étiqueté */
 .pc-f > .pc-notes { min-height: 2.6rem; font-size: .7rem; }
 /* bouton « Chat » d'un champ étiqueté : rangé sous la zone, à droite */

@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "2.5.2b";
+  var RELEASE = "2.6.0b";
   var SCHEMA = 3;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -441,6 +441,11 @@
       //   rupture combien de points de rupture elle a demandés
       techniques: [],
 
+      // ---- avantages ----
+      // Une entrée : { nom, cout, desc }. Le coût, en points d'avantage, se
+      // compte contre ceux que le livre donne à la création.
+      avantages: [],
+
       // ---- équipement ----
       // Une arme est un RÉPERTOIRE, pas une attaque : sa ligne (prise, parade,
       // réduction, compétence qui porte le jet) et ses gestes.
@@ -652,6 +657,16 @@
     // Les leviers ne parlent que de compétences qui existent : une clé orpheline
     // (compétence supprimée par une version qui l'ignorait) voyagerait pour rien.
     s.compsLeviers = tableLeviers(s.compsLeviers, COMP_LEVIERS, vusComps);
+
+    // ---- avantages ----
+    if (!Array.isArray(s.avantages)) s.avantages = [];
+    s.avantages = s.avantages.filter(function (a) { return a && typeof a === "object"; }).map(function (a) {
+      return {
+        nom: String(a.nom == null ? "" : a.nom),
+        cout: pnum(a.cout),
+        desc: String(a.desc == null ? "" : a.desc)
+      };
+    });
 
     // ---- techniques ----
     if (!Array.isArray(s.techniques)) s.techniques = [];
@@ -1193,6 +1208,17 @@
   function creation() {
     var cr = D().creation;
     return (cr && typeof cr === "object") ? cr : null;
+  }
+  // Les POINTS D'AVANTAGE que le livre donne, et ce que coûtent les avantages
+  // pris. Sans la page du livre, la fiche ne compte rien : null.
+  function avantagePoints() {
+    var a = D().avantages;
+    return (a && typeof a === "object") ? num(a.points, 0) : null;
+  }
+  function avantageDepense() {
+    var t = 0;
+    state.avantages.forEach(function (a) { t += pnum(a.cout); });
+    return Math.round(t * 100) / 100;
   }
   function creationPoints() { var cr = creation(); return cr ? num(cr.points, 0) : 0; }
   function creationDepense() {
@@ -2846,6 +2872,8 @@
       return m;
     }
     if (creation()) mrow.appendChild(meter("Création", creationDepense, creationPoints));
+    if (avantagePoints() !== null)
+      mrow.appendChild(meter("Avantage", avantageDepense, avantagePoints, "Points d'avantage"));
     mrow.appendChild(meter("XP dépensé", xpDepense, function () { return state.xpTotal; },
       "Ce que les rangs de compétence, les techniques et les caractéristiques ont coûté"));
     if (limiteRangs("competences") !== null)
@@ -2895,6 +2923,9 @@
             return libCarac(c) + " " + fmtP(caracBase(c));
           }).join(", ") + ".");
       }
+      if (avantagePoints() !== null && avantageDepense() > avantagePoints())
+        dire("Points d'avantage dépensés au-delà du compte (" + fmtP(avantageDepense()) +
+             " / " + fmtP(avantagePoints()) + ").");
       [["competences", compRangsComptes, "compétence"],
        ["techniques", techRangsComptes, "technique"]].forEach(function (x) {
         var lim = limiteRangs(x[0]);
@@ -4671,6 +4702,67 @@
     // le rouage peut être déjà ouvert au remontage : sans cet appel le champ
     // resterait grisé jusqu'au premier refresh()
     applyEdit(b, "bg");
+    return b;
+  }
+  // ---------- avantages ----------
+  // LA MÊME CARTE QUE DANS MIA : le nom, puis la description. Outward y ajoute
+  // le COÛT, en points d'avantage, à droite du nom : c'est lui que l'en-tête
+  // additionne contre les points que donne le livre.
+  //
+  // UN AVANTAGE EST DU TEXTE : { nom, cout, desc } et rien d'autre. Aucune
+  // conséquence chiffrée n'entre par là — elle passe par un réglage de
+  // l'onglet Options, qui est le seul endroit où un nombre se règle.
+  function buildAvantages() {
+    var b = block("Avantages", null, "avantages");
+    var box = el("div");
+    b.appendChild(box);
+    function rendu() {
+      box.innerHTML = "";
+      state.avantages.forEach(function (a, i) {
+        var card = el("div", "pc-av");
+        var head = el("div", "pc-av-head");
+        var n = el("input", "nm pc-edit-field");
+        n.type = "text"; n.placeholder = "Nom"; n.value = a.nom || "";
+        // UN NOM S'ENREGISTRE SANS RAFRAÎCHIR : rien ne se calcule à partir de
+        // lui, et refresh() reconstruirait la liste sous les doigts.
+        n.addEventListener("input", function () { a.nom = n.value; save(); });
+        head.appendChild(n);
+        var c = el("input", "cout pc-edit-field");
+        c.type = "text"; c.inputMode = "numeric"; c.placeholder = "0";
+        c.value = a.cout ? fmtP(a.cout) : "";
+        c.title = "Coût, en points d'avantage";
+        c.addEventListener("input", function () { a.cout = pnum(c.value); save(); refresh(); });
+        c.addEventListener("blur", function () { c.value = a.cout ? fmtP(a.cout) : ""; });
+        head.appendChild(c);
+        head.appendChild(chatBtn(
+          function () { return "Avantage — " + (a.nom || "sans nom"); },
+          function () { return [["Coût", a.cout ? fmtP(a.cout) : ""], ["", a.desc]]; }));
+        head.appendChild(miniBtn("✕", "Retirer", function () {
+          state.avantages.splice(i, 1);
+          rendu();
+          refresh();
+        }, "danger pc-edit-only"));
+        card.appendChild(head);
+        var d = el("textarea", "pc-notes pc-edit-field");
+        d.rows = 3;
+        d.placeholder = "Description";
+        d.value = a.desc || "";
+        d.addEventListener("input", function () { a.desc = d.value; save(); });
+        card.appendChild(d);
+        box.appendChild(card);
+      });
+      if (!state.avantages.length) box.appendChild(el("div", "pc-empty", "Aucun avantage."));
+      box.appendChild(miniBtn("+ Ajouter un avantage", null, function () {
+        state.avantages.push({ nom: "", cout: 0, desc: "" });
+        rendu();
+        refresh();
+      }, "pc-edit-only"));
+      // LA LISTE SE REFAIT ENTIÈREMENT à chaque ajout et à chaque retrait : les
+      // cartes neuves naissent hors du mode courant, et c'est applyEdit qui les
+      // y remet.
+      applyEdit(b, "avantages");
+    }
+    rendu();
     return b;
   }
   function buildNotes() {
@@ -7293,6 +7385,7 @@
     // qui se joue, et ces deux zones sont les seules de la fiche qu'on ne
     // consulte pas en combat. « bg » porte le nom de son champ d'état.
     { id: "bg",           titre: "Bio",              onglet: "bio", colonne: "gauche", build: buildBio },
+    { id: "avantages",    titre: "Avantages",        onglet: "bio", colonne: "gauche", build: buildAvantages },
     { id: "notes",        titre: "Notes",            onglet: "bio", colonne: "droite", build: buildNotes },
     // ---- onglet Options ----
     // Deux colonnes qui se répondent : à gauche ce qui touche aux valeurs et au

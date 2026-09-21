@@ -127,6 +127,16 @@
     // (compétence supprimée par une version qui l'ignorait) voyagerait pour rien.
     s.compsLeviers = tableLeviers(s.compsLeviers, COMP_LEVIERS, vusComps);
 
+    // ---- avantages ----
+    if (!Array.isArray(s.avantages)) s.avantages = [];
+    s.avantages = s.avantages.filter(function (a) { return a && typeof a === "object"; }).map(function (a) {
+      return {
+        nom: String(a.nom == null ? "" : a.nom),
+        cout: pnum(a.cout),
+        desc: String(a.desc == null ? "" : a.desc)
+      };
+    });
+
     // ---- techniques ----
     if (!Array.isArray(s.techniques)) s.techniques = [];
     s.techniques = s.techniques.filter(function (t) { return t && typeof t === "object"; })

@@ -77,7 +77,7 @@
   // même version, la beta étant ce que le stable recevra à la fusion) : ce qui
   // compare des versions doit donc l'ôter avant de lire les nombres, et c'est
   // exactement ce que fait OwdMods.compareVersions.
-  var RELEASE_DEFAUT = "2.5.2b";
+  var RELEASE_DEFAUT = "2.6.0b";
   // Entier INDÉPENDANT de la release : il ne monte qu'au changement de forme de
   // l'état du personnage, jamais parce que le majeur a bougé. Ajouter une clé
   // racine avec un défaut n'en est PAS un : normalize() complète une clé
@@ -169,6 +169,7 @@
     // LA TABLE DE LEVIERS des compétences : bonus, dés, xp et rupture.
     ["compsLeviers", "comps_leviers"],
     ["techniques", "techniques"],
+    ["avantages", "avantages"],
     ["armes", "armes"], ["vetements", "vetements"],
     ["inv", "inventaire"],
     // Les quatre clés du dispositif de modules et de mods.
@@ -294,6 +295,11 @@
       // fiche ne les barème donc pas et se contente de les compter.
       // Une entrée : { id, nom, rang, rangs, xp, rupture, desc }.
       techniques: [],
+
+      // ---- avantages ----
+      // Une entrée : { nom, cout, desc }. Le coût, en points d'avantage, se
+      // compte contre ceux que le livre donne à la création.
+      avantages: [],
 
       // ---- équipement ----
       // Une arme est un RÉPERTOIRE, pas une attaque : sa ligne (prise, parade,

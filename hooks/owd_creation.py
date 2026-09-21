@@ -94,6 +94,7 @@ LISEZMOI = (
 # l'assembler dans _jeu() le ferait lire pour rien.
 PAGES = (
     "base/caracteristiques.md",
+    "base/avantages.md",
     "base/competences.md",
     "base/techniques.md",
     "base/actions.md",
@@ -750,6 +751,7 @@ def _jeu(docs):
     absents = [rel for rel in PAGES if src[rel] is None]
 
     carac_md = src["base/caracteristiques.md"]
+    av_md = src["base/avantages.md"]
     comp_md = src["base/competences.md"]
     tech_md = src["base/techniques.md"]
     act_md = src["base/actions.md"]
@@ -791,6 +793,11 @@ def _jeu(docs):
                                         "la moyenne humaine").group(1))
         jeu["creation"] = _creation(carac_md)
         jeu["progressionCarac"] = _progression(carac_md)
+
+    # « le joueur reçoit 4 points d'avantage » : le budget des avantages
+    if av_md is not None:
+        jeu["avantages"] = {"points": int(_un(r"reçoit (\d+) points d'avantage", av_md,
+                                              "avantages : les points").group(1))}
 
     if comp_md is not None:
         jeu["rangs"] = _rangs(comp_md)

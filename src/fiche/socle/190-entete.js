@@ -227,6 +227,8 @@
       return m;
     }
     if (creation()) mrow.appendChild(meter("Création", creationDepense, creationPoints));
+    if (avantagePoints() !== null)
+      mrow.appendChild(meter("Avantage", avantageDepense, avantagePoints, "Points d'avantage"));
     mrow.appendChild(meter("XP dépensé", xpDepense, function () { return state.xpTotal; },
       "Ce que les rangs de compétence, les techniques et les caractéristiques ont coûté"));
     if (limiteRangs("competences") !== null)
@@ -276,6 +278,9 @@
             return libCarac(c) + " " + fmtP(caracBase(c));
           }).join(", ") + ".");
       }
+      if (avantagePoints() !== null && avantageDepense() > avantagePoints())
+        dire("Points d'avantage dépensés au-delà du compte (" + fmtP(avantageDepense()) +
+             " / " + fmtP(avantagePoints()) + ").");
       [["competences", compRangsComptes, "compétence"],
        ["techniques", techRangsComptes, "technique"]].forEach(function (x) {
         var lim = limiteRangs(x[0]);

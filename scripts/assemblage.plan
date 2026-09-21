@@ -66,6 +66,7 @@ fin = lf
   src/fiche/fiche/comps.js
   src/fiche/art/techniques.js
   src/fiche/bio/bg.js
+  src/fiche/bio/avantages.js
   src/fiche/bio/notes.js
   src/fiche/socle/260-dialogue.js
   src/fiche/equipement/inv-don.js

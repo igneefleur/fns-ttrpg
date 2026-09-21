@@ -37,6 +37,7 @@
     // qui se joue, et ces deux zones sont les seules de la fiche qu'on ne
     // consulte pas en combat. « bg » porte le nom de son champ d'état.
     { id: "bg",           titre: "Bio",              onglet: "bio", colonne: "gauche", build: buildBio },
+    { id: "avantages",    titre: "Avantages",        onglet: "bio", colonne: "gauche", build: buildAvantages },
     { id: "notes",        titre: "Notes",            onglet: "bio", colonne: "droite", build: buildNotes },
     // ---- onglet Options ----
     // Deux colonnes qui se répondent : à gauche ce qui touche aux valeurs et au
