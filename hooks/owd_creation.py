@@ -679,11 +679,13 @@ def _mouvement(txt):
     allures = []
     for nom, carte in re.findall(r"\*\*Allure ([^*]+)\*\*(.*?)</div>", corps, re.S):
         crans = []
-        for cout, pas in re.findall(r"^\|\s*([^|\n]*?)\s*\|\s*(\d+) pas\s*\|", carte, re.M):
+        for cout, pas, minute, heure in re.findall(
+                r"^\|\s*([^|\n]*?)\s*\|\s*(\d+) pas\s*\|\s*([\d.]+) m\s*\|\s*([\d.]+) km\s*\|", carte, re.M):
             m = re.fullmatch(r"(?:(\d+) DÉ(?: et (\d+) PE)?)?", cout)
             if not m:
                 raise ErreurRegles(f"mouvement : coût illisible « {cout} » (allure {nom})")
-            crans.append({"pas": int(pas), "des": int(m.group(1) or 0), "pe": int(m.group(2) or 0)})
+            crans.append({"pas": int(pas), "des": int(m.group(1) or 0), "pe": int(m.group(2) or 0),
+                          "minute": float(minute), "heure": float(heure)})
         if not crans:
             raise ErreurRegles(f"mouvement : l'allure {nom} n'a aucune ligne lisible")
         nom = re.sub(r"^de\s+", "", nom.strip())   # « Allure de repos » : le repos
