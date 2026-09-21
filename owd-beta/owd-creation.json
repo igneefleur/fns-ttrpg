@@ -111,6 +111,9 @@
   "pas": 1,
   "largeur": 100
  },
+ "avantages": {
+  "points": 4
+ },
  "rangs": [
   {
    "rang": 0,

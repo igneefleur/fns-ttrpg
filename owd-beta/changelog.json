@@ -1,5 +1,19 @@
 [
 {
+"short": "9b53944",
+"author": "Théo Cavaillès",
+"date": "2026-09-21T20:36:21+02:00",
+"message": "Les avantages : une page au livre, un module dans Bio, un compteur à l'en-tête",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/9b5394402a77d3632a9d1f1030842e2b81381874",
+"files": [
+{
+"status": "added",
+"filename": "content/regles/base/avantages.md",
+"url": "content/regles/base/avantages/"
+}
+]
+},
+{
 "short": "d0e798b",
 "author": "Théo Cavaillès",
 "date": "2026-09-21T19:31:30+02:00",
@@ -275,25 +289,6 @@
 "status": "added",
 "filename": "content/regles/vivre.md",
 "url": "content/regles/vivre/"
-}
-]
-},
-{
-"short": "a0230b1",
-"author": "Théo Cavaillès",
-"date": "2026-09-02T14:26:04+02:00",
-"message": "Chaque coup porte son esquive et sa parade, et la rapière entre au chapitre",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/a0230b1f22b88f8265be0cbdd94e6ff95762ffa8",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/combat/armes.md",
-"url": "content/regles/combat/armes/"
-},
-{
-"status": "modified",
-"filename": "content/regles/combat/portees.md",
-"url": "content/regles/combat/portees/"
 }
 ]
 }
