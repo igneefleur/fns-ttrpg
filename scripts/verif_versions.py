@@ -52,6 +52,7 @@ import argparse
 import json
 import os
 import re
+import subprocess
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -345,6 +346,31 @@ def controle_extension():
 
 
 # ------------------------------------------------------------------ marche
+def controle_assemblage(racine):
+    """Le fichier servi correspond-il encore à ses morceaux ?
+
+    IL VÉRIFIE, IL NE RÉPARE JAMAIS. Un déploiement qui rafistole en passant
+    publie autre chose que ce qu'on a relu : on arrête, on nomme l'écart, et
+    c'est l'auteur qui relance l'assemblage.
+    """
+    plan = os.path.join(racine, "scripts", "assemblage.plan")
+    if not os.path.exists(plan):
+        return True, "pas de plan d'assemblage : rien à vérifier"
+    argv = [sys.executable, os.path.join("scripts", "assembler.py"), "--verifie"]
+    env = dict(os.environ, PYTHONIOENCODING="utf-8")
+    try:
+        r = subprocess.run(argv, cwd=racine, capture_output=True, text=True,
+                           encoding="utf-8", errors="replace", env=env)
+    except OSError as e:
+        return False, "l'assembleur n'a pas pu démarrer : %s" % e
+    if r.returncode:
+        detail = [l.strip() for l in ((r.stdout or "") + (r.stderr or "")).splitlines()
+                  if "ecart" in l.lower() or "ARRET" in l or "octet" in l.lower()]
+        return False, ("le fichier servi ne correspond plus à ses morceaux"
+                       + (" — " + detail[0] if detail else ""))
+    return True, "fichiers servis conformes à leurs morceaux"
+
+
 def main():
     for chemin in (BUNDLE, MANIFESTE, MKDOCS):
         if not os.path.exists(chemin):
@@ -488,6 +514,13 @@ def main():
                       % ", ".join(sorted(arch)))
 
     controle_extension()
+
+    # 4 bis. LE FICHIER SERVI CONTRE SES MORCEAUX. La fiche est un assemblage
+    # depuis qu'elle vit sous src/ : publier un bundle qui ne correspond plus à
+    # ses sources, c'est déployer un code que personne n'a relu. Le contrôle
+    # vérifie, il ne répare jamais.
+    ok_asm, mot_asm = controle_assemblage(RACINE)
+    (notes if ok_asm else fautes).append(mot_asm)
 
     # 5. ?v= : mkdocs.yml et le manifeste doivent dire la même chose
     mk = V.serials_mkdocs(V.lire_fichier(MKDOCS))

@@ -348,6 +348,26 @@ def main():
 
     print("PUBLICATION DE LA FICHE" + (" (essai)" if a.essai else ""))
 
+    # 0. L'ASSEMBLAGE, AVANT MÊME DE LIRE LE NUMÉRO.
+    #
+    # RELEASE et SCHEMA se lisent dans le fichier SERVI, qui est désormais un
+    # PRODUIT : le lire avant d'assembler, c'est lire l'état d'avant la dernière
+    # correction. Et publier sans assembler livrerait un bundle qui ne
+    # correspond plus à ses morceaux, sans qu'aucun contrôle ne le dise.
+    #
+    # EN ESSAI, ON VÉRIFIE SANS ÉCRIRE : un écart signalé là veut dire que la
+    # publication réelle changerait le fichier servi, et c'est exactement ce
+    # qu'un essai doit montrer AVANT.
+    argv = [sys.executable, os.path.join("scripts", "assembler.py")]
+    if a.essai:
+        argv.append("--verifie")
+    if not lancer("assemblage des fichiers servis", argv, racine):
+        print("      l'assemblage n'a pas conclu : rien n'est publié")
+        return 1
+    # Le numéro s'écrit dans le MORCEAU de version : le fichier servi doit être
+    # recollé APRÈS, sinon il annonce encore l'ancien et le contrôle le dit.
+    reassembler = [sys.executable, os.path.join("scripts", "assembler.py")]
+
     bundle = os.path.join(racine, V.BUNDLE)
     if not os.path.exists(bundle):
         print("  bundle introuvable : " + V.BUNDLE.replace(os.sep, "/"))
@@ -404,6 +424,10 @@ def main():
             release = cible.texte()
 
     # 3. LE SCHÉMA du manifeste, posé par l'outil et non à la main.
+    if not a.essai and not lancer("réassemblage après le numéro", reassembler, racine):
+        print("      le réassemblage n'a pas conclu : rien n'est publié")
+        return 1
+
     print("")
     print("  --- schéma %d au manifeste" % schema)
     change, faute = poser_schema(racine, schema, essai=a.essai)

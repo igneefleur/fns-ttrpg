@@ -1,0 +1,76 @@
+  // ---------- persistance ----------
+  // Le bandeau du dernier enregistrement raté : absent tant que ça passe. Une
+  // panne d'enregistrement ne se dit PAS en un éclair de 2,6 s vu une seule
+  // fois : la fiche continuerait de s'afficher, parfaitement normale, pendant
+  // qu'une session entière de travail se perd à la fermeture. Tant que ça ne
+  // repasse pas, le bandeau reste.
+  var elSavePanne = null;
+  function save() {
+    // La mise en forme se fait HORS du try du stockage, et son échec se dit
+    // autrement. Un mod qui range une donnée circulaire dans ctx.state fait
+    // jeter stringify : setItem n'est alors jamais atteint, donc sous Roll20 le
+    // cache mémoire du pont n'est même pas à jour, donc aucune écriture
+    // programmée, ni accusé de réception, ni chien de garde, ni bandeau de
+    // perte. Rien ne s'enregistrerait plus et rien ne le dirait.
+    var json = null, panne = "";
+    try { json = JSON.stringify(state); }
+    catch (e) {
+      panne = "La fiche ne peut plus se mettre en forme pour l'enregistrement (" + messageErreur(e) +
+              "). Un mod a sans doute rangé une donnée qui se contient elle-même : plus rien n'est enregistré.";
+    }
+    if (json !== null) {
+      try { STORE.setItem("owd-perso", json); }
+      catch (e2) { panne = "Impossible d'enregistrer (stockage plein ou bloqué) : exporter la fiche en JSON."; }
+    }
+    montrePanneSave(panne);
+    var cards;
+    try { cards = JSON.parse(STORE.getItem("owd-cards")) || {}; } catch (e3) { cards = {}; }
+    var card;
+    try { card = computeCard(); } catch (e4) { card = null; }
+    if (card) {
+      card.id = "_current";
+      cards._current = card;
+      try { STORE.setItem("owd-cards", JSON.stringify(cards)); } catch (e5) {}
+    }
+  }
+  function montrePanneSave(msg) {
+    if (!msg) {
+      if (elSavePanne && elSavePanne.parentNode) elSavePanne.parentNode.removeChild(elSavePanne);
+      return;
+    }
+    if (!appEl) return;   // pas encore monté : le prochain enregistrement le posera
+    if (!elSavePanne) {
+      // SA PROPRE CLASSE, en plus de la commune : .pc-avis est réservée au
+      // bandeau de consentement des mods, les deux peuvent coexister, et sans
+      // marque distincte ni le code ni une sonde ne sait lequel il tient.
+      elSavePanne = el("div", "pc-avis pc-avis-save");
+      elSavePanne.appendChild(el("div", "pc-avis-txt", ""));
+    }
+    var txt = elSavePanne.firstChild;
+    if (txt.textContent !== msg) txt.textContent = msg;
+    // save() part à chaque frappe : ne toucher au DOM que si le bandeau n'est
+    // pas déjà à sa place, sinon chaque lettre tapée le déplacerait.
+    if (elSavePanne.parentNode === appEl) return;
+    // la feuille est cherchée parmi les enfants DIRECTS : insertBefore veut un
+    // repère qui soit bien un enfant de appEl, et un querySelector qui
+    // descendrait dans l'arbre jetterait au lieu de poser le bandeau
+    var avant = null, k;
+    for (k = 0; k < appEl.children.length; k++)
+      if (appEl.children[k].className === "pc-sheet") { avant = appEl.children[k]; break; }
+    appEl.insertBefore(elSavePanne, avant);
+  }
+  function load() {
+    try { return normalize(JSON.parse(STORE.getItem("owd-perso"))); }
+    catch (e) { return null; }
+  }
+  function curTab() { try { return STORE.getItem("owd-tab") || "fiche"; } catch (e) { return "fiche"; } }
+  function setTab(id) { try { STORE.setItem("owd-tab", id); } catch (e) {} }
+
+  // bibliothèque (site seulement : dans Roll20, une fiche par personnage)
+  var PKEY = "owd-persos";
+  function loadPersos() {
+    try { var a = JSON.parse(STORE.getItem(PKEY)); return Array.isArray(a) ? a : []; }
+    catch (e) { return []; }
+  }
+  function savePersos(a) { try { STORE.setItem(PKEY, JSON.stringify(a)); } catch (e) {} }
+

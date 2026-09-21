@@ -17,8 +17,8 @@ personnage : celles qui ouvrent ses armes et sa magie, et celles qui disent ce q
 son corps tient.
 
 Les [capacités physiques](base/capacites-physiques.md) donnent les nombres qui en
-découlent, ses jauges, sa charge et ses accès rapides, et les quatre intensités
-d'activité par lesquelles passe tout ce qu'il fait de son corps.
+découlent, ses jauges, sa charge et ses accès rapides, et les cinq intensités
+d'effort par lesquelles passe tout ce qu'il fait de son corps.
 
 Les [portées](combat/portees.md) donnent la grille, où une case vaut un pas, et la
 façon de mesurer ce qu'une arme atteint.

@@ -12,7 +12,7 @@ Un personnage qui s'arrête quelque part paie pour y rester : il mange tous les 
 
 **La pièce d'argent :** la monnaie du livre. Elle achète une part de pain, et c'est à cette part que se mesure tout le reste.
 
-**La journée :** ce qu'un homme mange en un jour, soit quatre parts de pain. Une journée de marche coûte 192 points de [satiété](base/capacites-physiques.md#la-satiete-et-lhydratation), et quatre parts les rendent.
+**La journée :** ce qu'un homme mange en un jour, soit trois parts de pain. Une journée de marche coûte 135 points de [satiété](base/capacites-physiques.md#la-satiete-et-lhydratation), et trois parts les rendent.
 
 **Le mois :** trente jours, dont vingt et un se travaillent. Les dimanches et les fêtes ne rapportent rien.
 
@@ -70,7 +70,7 @@ La table ci-dessous donne ce que rapporte une journée de travail selon le rang 
 
 </div>
 
-Une journée de gages occupe le personnage du matin au soir et le laisse à l'activité [légère](base/capacites-physiques.md#lactivite). Il ne peut pas la mener en même temps qu'une [fabrication](fabrication.md) qui réclame de l'activité, mais rien ne l'empêche de la mener pendant qu'une étape d'attente court.
+Une journée de gages occupe le personnage du matin au soir et le laisse à l'[effort léger](base/capacites-physiques.md#leffort). Il ne peut pas la mener en même temps qu'une [fabrication](fabrication.md) qui réclame de l'effort, mais rien ne l'empêche de la mener pendant qu'une étape d'attente court.
 
 Le mois se compte sur vingt et un jours ouvrés. Un personnage qui travaille moins touche à proportion des jours qu'il donne.
 

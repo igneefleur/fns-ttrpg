@@ -58,7 +58,7 @@ Deux conséquences à la table, et elles sont voulues.
 
 **On ne frappe pas dans le dos de son propre camp.** Un allié posté derrière l'épaule d'arme arrête le geste avant qu'il ne parte, et le prend pour la moitié. La place qu'on occupe autour d'un porteur de grande arme cesse d'être indifférente.
 
-**Les armes longues paient devant comme derrière.** L'estoc de lance qui vise à quatre pas rencontre d'abord celui qui se tient à deux ; sa volte de talon, elle, balaie trois pas devant avant de revenir frapper tout près. C'est le prix de l'allonge dans une mêlée serrée, et c'est ce qui rend le corps à corps jouable contre elle.
+**Les armes longues menacent devant comme derrière.** L'estoc de lance qui vise à quatre pas rencontre d'abord celui qui se tient à deux ; sa volte de talon, elle, balaie trois pas devant avant de revenir frapper tout près. C'est ce que l'allonge coûte dans une mêlée serrée, et c'est ce qui rend le corps à corps jouable contre elle.
 
 Deux cases n'entrent jamais. Celle que l'arme **survole**, au-dessus de 1,90 m, où elle ne rencontre personne. Et celle qu'occupe une partie **plaquée contre le porteur** et emportée par lui : un pommeau contre la hanche, une hampe qui glisse entre les mains, ce n'est pas une arme en mouvement.
 

@@ -158,13 +158,14 @@
   font-size: 13px; line-height: 1.35;
   font-family: inherit;
 }
-/* la barre de titre : l'en-tête d'une section du livre, fond --panel et filet
-   dessous, avec le petit trait or qui signe les titres de la fiche */
+/* LA BARRE DE TITRE EST UN BANDEAU, comme la charpente du wiki d'Outward et
+   comme la bande d'onglets de la fiche : fond sombre, titre d'or. C'est la
+   seule surface où l'or vif se lit de jour (12,7:1 contre 1,4:1 sur blanc). */
 .owd-panneau-tete {
   position: relative;
   flex: 0 0 auto; display: flex; align-items: center; gap: 6px;
   padding: 4px 5px 4px 10px; cursor: move; user-select: none;
-  background: var(--panel); border-bottom: 1px solid var(--line-2);
+  background: #262626; border-bottom: 1px solid #262626;
 }
 /* ANCRÉ, LE TITRE RECULE D'UNE TABULATION. Collé à la boîte à outils, il
    commencerait juste contre elle et se ferait manger par son ombre : les
@@ -172,15 +173,10 @@
    l'en dégager, et seulement dans ce cas — flottant, le panneau n'a rien à sa
    gauche et un décalage ne serait qu'un trou. */
 .owd-panneau.owd-panneau-ancre > .owd-panneau-tete { padding-left: 28px; }
-.owd-panneau-tete::after {
-  content: ""; position: absolute; left: 10px; bottom: -1px;
-  width: 22px; height: 1.5px; background: var(--or); border-radius: 2px;
-}
-.owd-panneau.owd-panneau-ancre > .owd-panneau-tete::after { left: 28px; }
 .owd-panneau-titre {
   flex: 1 1 auto; min-width: 0;
   font-family: inherit;
-  font-weight: 700; font-size: 12px; letter-spacing: .06em; color: var(--ink-2);
+  font-weight: 700; font-size: 12px; letter-spacing: .06em; color: #ffd77f;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 /* les deux boutons de la barre de titre (détacher, fermer) ont la forme des
@@ -190,10 +186,12 @@
    est en sérif : les deux flèches d'ancrage (⇱ ⇲) n'existent dans aucune police
    du livre, et c'est le repli glyphe par glyphe du navigateur qui les dessine.
    Sans ce dernier recours nommé, un carré vide remplacerait le bouton. */
+/* Les deux boutons vivent DANS le bandeau : ils en prennent les couleurs,
+   sinon deux pastilles claires y feraient deux trous. */
 .owd-panneau-btn {
   flex: 0 0 auto; width: 20px; height: 18px; padding: 0; cursor: pointer;
-  background: var(--card); color: var(--ink-2);
-  border: 1px solid var(--line-2); border-radius: 5px;
+  background: rgba(255, 215, 127, .10); color: #ffd77f;
+  border: 1px solid rgba(255, 215, 127, .35); border-radius: 5px;
   font-weight: 700; font-size: 13px; line-height: 1;
   font-family: inherit;
   transition: background .12s, border-color .12s, color .12s;

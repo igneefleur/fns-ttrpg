@@ -82,6 +82,15 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
      porte du texte sur le papier blanc (6,2:1) et reçoit du blanc quand il
      sert de fond (6,2:1 aussi). L'or appuyé, plus grave, tient les fonds
      pleins et les valeurs modifiées (7,4:1). */
+  /* LES TROIS JETONS DU LIVRE QUI MANQUAIENT, relevés dans extra.css et
+     employés tels quels : le filet doré clair, qui souligne un titre de carte
+     et un entête de table sans jamais porter de texte ; le bandeau sombre du
+     wiki ; et l'or vif, qui est le SEUL or lisible dessus (12,7:1) et le seul
+     endroit où il peut s'écrire de jour. */
+  --trait-or:    #e0cfa0;
+  --bandeau:     #262626;
+  --sur-bandeau: #ffd77f;
+
   --accent:      #7a5c10;
   --accent-deep: #6b5210;
   --wash:        rgba(255, 215, 127, .30);   /* le voile de l'accent : l'or vif dilué, #fff3d9 sur blanc */
@@ -254,19 +263,61 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
 /* ---- onglets : contrôle segmenté ----
    TROIS onglets en Outward (Fiche, Inventaire, Options), et exactement le
    contrôle de JJK : mêmes rayons, mêmes tailles, même geste. */
-.pc-tabs { display: flex; gap: .2rem; margin: .5rem 0 .3rem; padding: .2rem; background: var(--panel); border: 1px solid var(--hair); border-radius: 9px; }
+.pc-tabs {
+  display: flex; gap: .2rem; margin: .5rem 0 .3rem; padding: .2rem;
+  background: var(--bandeau); border: 1px solid var(--bandeau); border-radius: 9px;
+}
 .pc-tab {
   flex: 1 1 auto; text-align: center; cursor: pointer; user-select: none;
   border-radius: 7px; padding: .3rem .7rem; border: 1px solid transparent;
-  font-weight: 600; font-size: .7rem; letter-spacing: .02em; color: var(--ink-2);
+  font-family: 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
+  font-weight: 700; font-size: .7rem; letter-spacing: .04em;
+  /* l'or vif ATTÉNUÉ : un onglet fermé se lit sans se disputer l'attention
+     avec l'ouvert, et reste à 6,9:1 sur le bandeau */
+  color: rgba(255, 215, 127, .62);
   transition: background .12s, color .12s, box-shadow .12s;
 }
-/* survol : un voile d'or de titre, assez pâle pour rester un survol */
-.pc-tab:hover { background: rgba(122, 92, 16, .08); color: var(--ink); }
-/* onglet actif : fond d'or de titre et texte BLANC (6,2:1) — l'or vif y
-   mettrait un blanc à 1,4:1, illisible */
-.pc-tab.on { background: var(--accent); color: #fff; box-shadow: 0 1px 4px rgba(0, 0, 0, .18); }
-.pc-tab.on:hover { background: var(--accent-deep); color: #fff; }
+.pc-tab:hover { background: rgba(255, 215, 127, .12); color: var(--sur-bandeau); }
+/* L'ONGLET OUVERT PREND L'OR PLEIN, avec de l'encre sombre dessus : 12,7:1,
+   le plus fort contraste des deux palettes. */
+.pc-tab.on {
+  background: var(--sur-bandeau); color: #1a1a1a;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .28);
+}
+.pc-tab.on:hover { background: #ffe9b8; color: #1a1a1a; }
+
+/* ---- la bande de SOUS-onglets d'un bloc d'Options ----
+   Une GRILLE à colonnes égales, et non une rangée souple : en flex, un onglet
+   long prend la place des courts et la bande bouge d'un bloc à l'autre. Une
+   grille garde ses colonnes d'un rang à l'autre — l'onglet qui passe à la
+   ligne occupe une case, pas un rang. « auto-fit » fait tenir autant de
+   colonnes que la place le permet et replie le reste, sans palier écrit à la
+   main.
+   LE PLANCHER EST EN REM, et il le faut : « auto-fit » exige une mesure
+   définie, et le rem suit la racine — 22 px sur le site, 18 dans l'iframe
+   Roll20. Le plus long des quatre mots (« Rupture ») en demande 2,9.
+   Le nombre d'onglets vient du HTML (data-n) : le CSS ne sait pas compter ses
+   propres enfants. */
+.pc-tabs.mini {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(3rem, 1fr));
+  gap: .15rem; padding: .15rem; margin: .1rem 0 .35rem; border-radius: 7px;
+}
+.pc-tabs.mini > .pc-tab {
+  min-width: 0; padding: .2rem .3rem; border-radius: 5px; font-size: .58rem;
+  background: transparent; border: 1px solid transparent;
+}
+.pc-tabs.mini > .pc-tab.on { background: var(--sur-bandeau); color: #1a1a1a; }
+/* le focus se voit, sinon la bande au clavier est un déplacement à l'aveugle */
+.pc-tabs.mini > .pc-tab:focus-visible {
+  outline: none; border-color: var(--sur-bandeau);
+  box-shadow: 0 0 0 2px rgba(255, 215, 127, .35);
+}
+/* Une page de sous-onglet : celle qu'on montre, et les trois autres. Elles
+   restent dans la page, et leurs rafraîchissements avec — les tenir à jour ne
+   coûte rien, et l'onglet qu'on ouvre est juste à l'heure au lieu de se bâtir
+   sous les doigts. */
+.pc-souspage { display: none; }
+.pc-souspage.on { display: block; }
 
 /* ---- barre d'envoi (Roll20) : destinataire + modificateur + dés engagés ----
    Posée entre l'en-tête et les avertissements, JAMAIS dans .pc-id (la grille
@@ -338,21 +389,20 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
 
 /* ---- bloc de section = UN MODULE ---- */
 .pc-block {
-  min-width: 0; background: var(--card);
-  border: 1px solid var(--line-2); border-radius: 8px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, .05);   /* ombre neutre, sans teinte */
-  padding: .35rem .5rem .5rem;
+  min-width: 0; background: var(--panel);
+  border: 1px solid var(--line); border-radius: 5px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .08);
+  padding: .5rem .7rem .55rem;
 }
 .pc-block-title {
   position: relative; display: flex; align-items: baseline; gap: .4rem;
-  margin: 0 0 .35rem; padding: .04rem 0 .2rem;
-  border-bottom: 1px solid var(--hair);
+  margin: 0 0 .28rem; padding: .04rem 0 .22rem;
+  border-bottom: 1px solid var(--trait-or);
   font-family: 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif; font-weight: 700;
-  font-size: var(--fs-title); letter-spacing: .04em; color: var(--ink-2); line-height: 1.1;
+  font-size: var(--fs-title); letter-spacing: .04em; color: var(--accent-deep); line-height: 1.1;
 }
 /* le tiret d'accent : la signature visuelle du bloc. Un FILET, pas du texte —
    il porte donc l'or sans contrainte de lisibilité. */
-.pc-block-title::after { content: ""; position: absolute; left: 0; bottom: -1px; width: 1.4rem; height: 1.5px; background: var(--accent); border-radius: 2px; }
 .pc-block-title small { font-family: 'Proxima Nova', proxima-nova, 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: 600; font-size: var(--fs-label); letter-spacing: 0; color: var(--ink-3); margin-left: auto; text-align: right; white-space: nowrap; flex: 0 0 auto; }
 .pc-block-note { font-size: var(--fs-meta); color: var(--ink-3); margin: .12rem 0 .3rem; line-height: 1.3; }
 
@@ -824,6 +874,31 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
    capacités. Pas de colonne « coût en XP » : les caractéristiques d'Outward ne
    s'achètent pas, et une capacité se dérive, elle ne se paie pas. */
 .pc-optcomp-row.quatre { grid-template-columns: minmax(3.2rem, 1.4fr) 2.2rem 1.7rem 1.7rem 2.4rem; }
+/* LA GRILLE DES LEVIERS : une seule pour les trois blocs d'Options, et c'est
+   ce qui fait que leurs entêtes et leurs chiffres tombent aux mêmes abscisses.
+   Neuf colonnes de contenu et trois filets —
+     nom | forcé | ＋ ＋ | × × | ＋ ＋ | × × | ce que ça donne
+   Les huit champs du milieu sont à 1.25rem : c'est ce qu'on peut reprendre à
+   chacun sans qu'un nombre à trois chiffres cesse de se lire. Le nom, le
+   forçage et le dernier nombre ont rendu le reste.
+   En dessous de la largeur où les quatorze colonnes tiennent, l'enveloppe
+   défile : un champ de saisie réduit à deux millimètres ne sert plus à rien. */
+.pc-optcomp-row.levier {
+  grid-template-columns:
+    minmax(2.6rem, 1fr) 1.8rem 1.25rem 1.25rem 1px 1.25rem 1.25rem 1px 1.25rem 1.25rem 1px 1.25rem 1.25rem 2.4rem;
+}
+/* Un entête qui est un SIGNE et non un mot : à .5rem, « ＋ » et « × » se
+   perdent. Ils reprennent la taille d'un nombre, sans l'interlettre des
+   majuscules. */
+.pc-optcomp-row.head > .op { font-size: .72rem; letter-spacing: 0; }
+/* LE FILIGRANE D'UN FACTEUR DIT « 1 », ET IL DOIT SE FAIRE OUBLIER. C'est le
+   NEUTRE : il ne dit pas ce que la case vaut, il dit qu'elle est vide. Écrit du
+   même gras que les nombres réglés, il se lirait comme un réglage, et huit
+   colonnes de « 1 » couvriraient les deux ou trois chiffres qui, eux, comptent. */
+.pc-optcomp-row .pc-num.mult { font-variant-numeric: tabular-nums; }
+.pc-optcomp-row .pc-num.mult::placeholder {
+  font-weight: 400; color: var(--ink-3); opacity: .4;
+}
 /* rangée de titre de groupe : elle prend TOUTE la largeur, quelle que soit la
    variante de grille. 1 / -1 plutôt qu'un span chiffré — c'est ce qui permet
    aux deux grilles ci-dessus de le partager sans se contredire. */
@@ -866,8 +941,12 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
 .pc-optcomp-row.head > .duo { grid-column: span 2; }
 .pc-optcomp-row.head > span {
   font-size: .5rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
-  color: var(--ink-3); text-align: center; white-space: nowrap; overflow: hidden; min-width: 0;
+  color: var(--accent); text-align: center; white-space: nowrap; overflow: hidden; min-width: 0;
 }
+/* L'entête d'une grille se détache par un FILET DORÉ, comme celui d'une table
+   du livre : c'est le même geste, et la grille cesse de flotter au-dessus de
+   ses rangées. */
+.pc-optcomp-row.head { border-bottom: 1px solid var(--trait-or); border-radius: 0; }
 .pc-optcomp-row.head > span:first-child { text-align: left; }
 .pc-optcomp-row .pc-step { justify-self: center; }
 .pc-optcomp-row input.force {
@@ -1259,17 +1338,21 @@ html.night .perso-fiche {
   /* mêmes papiers nuit que le livre (night.css) et que le camp (owd-camp.css) :
      le --paper local, qui n'est qu'un repli de l'iframe, masquerait sinon la
      feuille sombre du site */
-  --paper:   #0d0d0d;
-  --bg-side: #000000;
-  --card:    #1a1a1a;
-  --panel:   #2e2820;
-  --stripe:  #2b261d;
-  --hair:    #39332a;
-  --line:    #3a3a3a;
+  --paper:   #0d0d0d;   /* la feuille de lecture */
+  --bg-side: #000000;   /* le pourtour */
+  --card:    #1a1a1a;   /* les surfaces de contrôle : champs, pavés, tuiles */
+  --panel:   #262626;   /* LA CARTE : celle d'un bloc, celle du livre */
+  --stripe:  #1a1a1a;   /* la zébrure, un cran sous la carte */
+  --hair:    rgba(230, 230, 230, .10);   /* le filet doux du livre */
+  --line:    #3a3a3a;   /* le filet ordinaire */
   --line-2:  #3a3a3a;
   --ink:     #e6e6e6;
   --ink-2:   #9a9384;
-  --ink-3:   #9a9384;
+  --ink-3:   #8a847a;   /* le texte très discret du livre */
+
+  /* LE FILET DORÉ DE NUIT est plus grave que celui du jour : sur du #262626,
+     le #e0cfa0 du jour ferait un trait presque blanc. */
+  --trait-or:    #6b5a2e;
 
   /* L'accent s'INVERSE de nuit : --accent-deep devient plus CLAIR que
      --accent, parce que de nuit c'est un ton de TEXTE (le or de titre du
@@ -1278,7 +1361,10 @@ html.night .perso-fiche {
      emploient en FOND doivent changer d'encre : voir le bloc juste dessous. */
   --accent:      #ffd77f;
   --accent-deep: #ffd77f;
-  --wash:        rgba(159, 179, 126, .18);
+  /* LE VOILE DE L'ACCENT EST DORÉ, et il l'a toujours été de jour. Il était
+     resté VERT ici — un vert de sauge hérité d'avant la palette du wiki, dans
+     un projet où le vert est proscrit. */
+  --wash:        rgba(255, 215, 127, .18);
 
   --danger:      #cf8368;
   --danger-deep: #e09a82;

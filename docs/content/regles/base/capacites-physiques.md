@@ -6,7 +6,7 @@ Les capacités physiques mesurent ce que le corps d'un personnage possède sans 
 
 Sur l'échelle des caractéristiques, 20 est la moyenne humaine.
 
-Ce chapitre en donne neuf : les [points de vie](#les-points-de-vie) et les [points de repos](#les-points-de-repos), issus de la Vigueur ; les [points d'endurance](#les-points-dendurance), les [points de satiété et les points d'hydratation](#la-satiete-et-lhydratation), issus de l'Endurance ; les [points d'innocence](#les-points-dinnocence), issus de la Ferveur ; la [charge](#la-charge), issue de la Force ; les [accès rapides](#les-acces-rapides), issus de la Dextérité ; l'[exposition](#lexposition), issue de la Résistance. Il définit d'abord ce qu'elles partagent : la [lecture d'une capacité](#lire-une-capacite), l'[activité](#lactivite) et la [récupération naturelle](#la-recuperation-naturelle). Il donne aussi les règles qui les mettent en jeu : le [déplacement](#le-deplacement), la [contenance](#la-contenance), l'[effondrement](#leffondrement) et le [climat](#le-climat).
+Ce chapitre en donne dix : les [points de vie](#les-points-de-vie) et les [points de repos](#les-points-de-repos), issus de la Vigueur ; les [points d'endurance](#les-points-dendurance), les [points de satiété et les points d'hydratation](#la-satiete-et-lhydratation), issus de l'Endurance ; les [points d'innocence](#les-points-dinnocence), issus de la Ferveur ; la [charge](#la-charge), issue de la Force ; les [accès rapides](#les-acces-rapides), issus de la Dextérité ; les [points de chance](#les-points-de-chance), issus de la Chance ; l'[exposition](#lexposition), issue de la Résistance. Il définit d'abord ce qu'elles partagent : la [lecture d'une capacité](#lire-une-capacite), l'[effort](#leffort) et la [récupération naturelle](#la-recuperation-naturelle). Il donne aussi les règles qui les mettent en jeu : le [mouvement](#mouvement), la [contenance](#la-contenance), l'[effondrement](#leffondrement) et le [climat](#le-climat).
 
 <div class="keep" markdown>
 
@@ -22,82 +22,66 @@ Une capacité est un nombre que le personnage possède, et qui porte son nom : s
 
 <div class="cols" markdown>
 
-### L'activité
+### L'effort
 
-Une activité est tout ce qu'un personnage fait de son corps, du repos au combat. On ne classe pas le geste lui-même, mais l'effort qu'il demande, en quatre intensités : le repos, puis les activités légère, intermédiaire et lourde.
+Un effort est ce qu'un personnage demande à son corps, du sommeil au combat. Il se range en cinq intensités, selon ce qu'il coûte au corps : le sommeil et le repos, puis les efforts léger, intermédiaire et lourd.
 
-Un personnage est toujours dans une seule intensité à la fois : celle de son effort le plus intense du moment. S'il fait plusieurs choses en même temps, seule la plus exigeante compte.
+C'est la situation dans laquelle le personnage est et ce qu'il fait qui définissent l'effort dans lequel il est. S'il est dans plusieurs situations, ou qu'il effectue plusieurs choses à la fois, c'est ce qui a la plus grande intensité qui définit dans quel effort il est.
 
-Ce que l'activité coûte et ce qu'elle rend se comptent à la minute, et la minute entière prend l'intensité de l'effort le plus intense qui y a été fourni. Un round de coups ou de course dans une minute de marche fait de cette minute une minute d'activité lourde.
+<div class="memo" markdown>
 
-Pour classer une activité, on la compare aux exemples ci-dessous ; en cas de doute, le MJ tranche.
-
-<div class="defs" markdown>
-
-**Repos :** le personnage dort, ou reste assis sans rien faire d'autre que reprendre haleine.
-
-**Légère :** un effort minime, soutenu toute la journée sans peine. C'est l'intensité ordinaire d'une journée éveillée. Par exemple : marcher d'un pas tranquille ; cuisiner, monter ou lever un campement, réparer son équipement ; monter la garde ; lire une carte, converser.
-
-**Intermédiaire :** un effort moyen, tenable de longues heures avec des pauses. Le personnage transpire et fournit un travail réel sans se mettre à bout. Par exemple : marcher sac au dos, gravir une pente, nager, ramer ; fendre du bois, creuser, forger ; porter longtemps un fardeau qui pèse.
-
-**Lourde :** un gros effort à pleine puissance, à l'intensité maximale du corps. Le personnage se dépense sans retenue et ne tient ce rythme qu'un temps. Par exemple : combattre ; trottiner ou foncer ; forcer un effort au-delà de ce que le corps donne d'ordinaire.
+Exemple. Un personnage lit un livre, qui est un effort léger, et il est en combat, qui est un effort lourd. Il est donc en effort lourd.
 
 </div>
 
-### Le déplacement
+L'intensité se fixe par tranche de dix minutes, et la tranche entière prend celle de l'effort le plus intense qui y a été fourni.
 
-Un personnage se déplace à l'allure de son [activité](#lactivite), qui donne le nombre de [pas](../combat/portees.md) qu'il franchit dans un round. Les allures légère et intermédiaire ne coûtent rien. L'allure lourde s'achète, et se prend par crans.
+<div class="memo" markdown>
+
+Exemple. Un personnage donne un round de coups, ou de course, au milieu de dix minutes de marche. Ces dix minutes comptent tout entières comme un effort lourd.
+
+</div>
+
+Pour classer un effort, on le compare aux exemples ci-dessous. En cas de doute, c'est le MJ qui tranche.
 
 <div class="mcard" markdown>
-**Allure**
+**Sommeil**
 
-La table ci-dessous donne la distance que le personnage franchit sans rien dépenser selon son allure, par round, par minute et par heure.
-
-| Allure | Par round | Par minute | Par heure |
-|---|:---:|:---:|:---:|
-| Légère | 3 pas | 45 m | 2 700 m |
-| Intermédiaire | 6 pas | 90 m | 5 400 m |
+Le personnage dort.
 
 </div>
 
 <div class="mcard" markdown>
-**Allure lourde**
+**Repos**
 
-Elle ne se prend qu'en la payant, et chaque cran coûte un [dé d'action](actions.md#les-des-daction) et 5 points d'endurance de plus que le précédent. Le dernier cran prend les cinq dés d'action du tour.
-
-La table ci-dessous donne la distance que le personnage franchit selon le cran qu'il paie, par round, par minute et par heure.
-
-| Coût | Par round | Par minute | Par heure |
-|---|:---:|:---:|:---:|
-| 1 DÉ | 9 pas | 135 m | 8 100 m |
-| 2 DÉ et 5 PE | 12 pas | 180 m | 10 800 m |
-| 3 DÉ et 10 PE | 15 pas | 225 m | 13 500 m |
-| 4 DÉ et 15 PE | 18 pas | 270 m | 16 200 m |
-| 5 DÉ et 20 PE | 21 pas | 315 m | 18 900 m |
+Le personnage est assis ou allongé. Il ne fait rien qui puisse le fatiguer physiquement ou mentalement.
 
 </div>
 
-<div class="memo" markdown>
+<div class="mcard" markdown>
+**Léger**
 
-Exemple. Un personnage à l'allure intermédiaire franchit 6 pas par round et couvre 5 400 m dans l'heure. Pour porter un message, il fonce : il y laisse deux de ses cinq dés d'action et 5 points d'endurance à chaque round, mais il avance de 12 pas.
+Le personnage fournit un effort minime, du corps ou de la tête. Il peut le tenir toute la journée sans peine, et c'est l'intensité ordinaire d'une journée éveillée.
 
-</div>
-
-#### Le terrain difficile
-
-Entrer dans certaines [cases](../combat/portees.md) coûte plus d'un pas : la boue, les éboulis, la neige, les ronciers, les décombres. Le MJ les désigne.
-
-<div class="defs" markdown>
-
-**Terrain difficile :** y entrer coûte 2 pas.
-
-**Terrain très difficile :** y entrer coûte 3 pas.
+Par exemple : marcher d'un pas tranquille ; cuisiner, monter ou lever un campement, réparer son équipement ; monter la garde ; lire une carte, converser.
 
 </div>
 
-<div class="memo" markdown>
+<div class="mcard" markdown>
+**Intermédiaire**
 
-Exemple. Un personnage à l'allure intermédiaire dispose de 6 pas. Sur un terrain difficile, il n'avance que de 3 cases ; sur un terrain très difficile, de 2.
+Le personnage fournit un travail réel et transpire, sans aller au bout de ses forces. Il peut le tenir de longues heures, à condition de faire des pauses.
+
+Par exemple : marcher sac au dos, gravir une pente, nager, ramer ; fendre du bois, creuser, forger ; porter longtemps un fardeau qui pèse.
+
+</div>
+
+<div class="mcard" markdown>
+**Lourd**
+
+Le personnage se dépense sans retenue, à la pleine puissance de son corps. Il ne tient ce rythme qu'un temps.
+
+Par exemple : combattre ; trottiner ou foncer ; forcer un effort au-delà de ce que le corps donne d'ordinaire.
 
 </div>
 
@@ -105,106 +89,29 @@ Exemple. Un personnage à l'allure intermédiaire dispose de 6 pas. Sur un terra
 
 Les points de repos mesurent l'éveil qui reste à un personnage avant que le sommeil ne le prenne. Ils découlent de la Vigueur.
 
-<p class="formula">Points de repos = 800 + Vigueur × 8</p>
+<p class="formula">Points de repos = 600 + Vigueur × 10</p>
 
-Un personnage en dépense toutes les dix minutes qu'il passe éveillé, et en regagne toutes les dix minutes qu'il passe à se reposer. Le prix de ces dix minutes suit l'intensité de son [activité](#lactivite).
+L'[effort](#leffort) du personnage donne le niveau de [récupération naturelle](#la-recuperation-naturelle) de ses points de repos. Le sommeil seul le rend positif : partout ailleurs, la réserve se vide.
 
-<div class="defs" markdown>
+**S'endormir.** Un personnage ne peut pas s'endormir naturellement tant qu'il lui reste plus de 90 % de ses points de repos.
 
-**Repos :** 3 points de repos gagnés.
-
-**Légère :** 1 point de repos perdu.
-
-**Intermédiaire :** 2 points de repos perdus.
-
-**Lourde :** 4 points de repos perdus.
-
-</div>
-
-Un personnage ne peut pas s'endormir tant qu'il lui reste plus de 90 % de ses points de repos.
-
-<div class="memo" markdown>
-
-Exemple. Un personnage ordinaire, qui porte 20 en Vigueur, dispose de 960 points de repos. Une journée ordinaire les lui rend tous : huit heures de sommeil en rendent 144, et huit heures d'activité intermédiaire avec huit d'activité légère en coûtent autant. S'il ne dort pas du tout, il tient cinq jours.
-
-Il lui faut en avoir dépensé 96 avant de trouver le sommeil : seize heures d'activité légère, huit d'activité intermédiaire, ou quatre de combat.
-
-</div>
-
-### La satiété et l'hydratation
-
-Les points de satiété et les points d'hydratation mesurent ce qu'un personnage tient sans manger et sans boire. Ils découlent de l'Endurance.
-
-<p class="formula">Points de satiété = 1600 + Endurance × 16</p>
-
-<p class="formula">Points d'hydratation = 400 + Endurance × 4</p>
-
-Ils se dépensent toutes les dix minutes : 1 point au repos comme en activité légère, 2 en intermédiaire, 4 en lourde. Manger rend les points de satiété, boire rend les points d'hydratation.
-
-<div class="memo" markdown>
-
-Exemple. Un personnage ordinaire, qui porte 20 en Endurance, dispose de 1 920 points de satiété et de 480 points d'hydratation. Une journée ordinaire, huit heures de sommeil, huit d'activité intermédiaire et huit d'activité légère, lui en coûte 192 de chaque : son hydratation est vide au bout de deux jours et demi, et sa satiété au bout de dix.
-
-</div>
-
-### La contenance
-
-La contenance est la place qu'un personnage a dans son ventre pour ce qu'il avale. Elle ne découle d'aucune caractéristique et vaut autant pour tout le monde.
-
-<p class="formula">Contenance = 60</p>
-
-Elle s'occupe comme la [charge](#la-charge) se remplit : elle part de zéro, monte à mesure que le personnage avale, et redescend à mesure qu'il digère. Chaque chose avalée y occupe des places, et les garde le temps que le corps met à en venir à bout ; chaque objet porte les siennes, comme il porte son poids.
-
-<p class="formula">Une place se libère toutes les dix minutes</p>
-
-Un personnage ne peut rien avaler qui ne tienne dans les places qui lui restent. Un ventre plein ne se force pas : il faut attendre.
-
-<div class="memo" markdown>
-
-Exemple. Une chose qui occupe 30 places est digérée en cinq heures. Un personnage qui en avale deux d'affilée a rempli sa contenance, et il lui faut attendre dix minutes avant de pouvoir reprendre la moindre place.
-
-</div>
-
-### L'effondrement
-
-Les manques des [points de repos](#les-points-de-repos), des [points de satiété et des points d'hydratation](#la-satiete-et-lhydratation) se comptent sur une seule échelle, l'effondrement. L'[exposition](#lexposition) au froid et au chaud s'y compte aussi.
-
-Chaque réserve donne un niveau d'effondrement par tranche de 10 % perdue, ce qui fait dix niveaux, le dernier lorsqu'elle est vide. Les niveaux de toutes les réserves s'additionnent, sans jamais dépasser dix.
-
-Le niveau d'effondrement réduit le maximum de points d'endurance de 10 % par niveau, et le maximum de points de vie de 5 %.
-
-La table ci-dessous donne ce qui reste du maximum de points d'endurance et du maximum de points de vie selon le niveau d'effondrement.
+La table ci-dessous donne le niveau de récupération des points de repos selon l'effort.
 
 <div class="sepia-table" markdown>
 
-| Niveau | PE MAX | PV MAX |
-|:---:|:---:|:---:|
-| 1 | 90 % | 95 % |
-| 2 | 80 % | 90 % |
-| 3 | 70 % | 85 % |
-| 4 | 60 % | 80 % |
-| 5 | 50 % | 75 % |
-| 6 | 40 % | 70 % |
-| 7 | 30 % | 65 % |
-| 8 | 20 % | 60 % |
-| 9 | 10 % | 55 % |
-| 10 | 0 % | 50 % |
-
-</div>
-
-Un personnage dont le maximum de points d'endurance atteint zéro tombe inconscient.
-
-<div class="memo" markdown>
-
-Exemple. Un personnage ordinaire qui dort et mange, mais ne boit plus, gagne un niveau d'effondrement toutes les six heures. Au bout de deux jours et demi il atteint le dixième niveau et s'effondre.
-
-Le même, s'il ne mange pas non plus, gagne en plus un niveau par jour : il s'effondre alors au bout de deux jours.
+| Effort | Niveau |
+|---|:---:|
+| Sommeil | +7 |
+| Repos | −4 |
+| Léger | −5 |
+| Intermédiaire | −6 |
+| Lourd | −8 |
 
 </div>
 
 <div class="memo" markdown>
 
-Exemple. Au niveau 10, ce personnage n'a plus que 50 points de vie sur les 100 qu'il portait. Une grande hache, qui inflige 32 dégâts de taille, le tue en deux coups au lieu de quatre.
+Exemple. Un personnage ordinaire, qui porte 20 en Vigueur, dispose de 800 points de repos. Si dans une journée il effectue huit heures d'effort intermédiaire avec huit d'effort léger, il devra dormir huit heures pour récupérer les points perdus. Aussi, il lui faut avoir dépensé au moins 80 points avant de trouver le sommeil : seize heures d'effort léger, huit d'effort intermédiaire, ou quatre heures d'effort lourd.
 
 </div>
 
@@ -250,11 +157,19 @@ Un niveau négatif se lit dans la même table, mais la réserve se vide au lieu 
 
 Chaque réserve porte deux récupérations naturelles, l'une pour le personnage éveillé et l'autre pour le personnage endormi. Chacune est un niveau, qui se lit dans la table ci-dessus.
 
+Les points de repos, les points de satiété et les points d'hydratation font exception : leur niveau ne tient pas au sommeil mais à l'[effort](#leffort) du personnage, et chacune de ces réserves donne le sien.
+
 <div class="memo" markdown>
 
 Exemple. La récupération naturelle endormi des points de mana est de −5, soit 5 points perdus par heure. Une nuit de huit heures en coûte donc 40.
 
 </div>
+
+</div>
+
+---
+
+<div class="cols" markdown>
 
 ### Les points de vie
 
@@ -280,15 +195,15 @@ Les points d'endurance mesurent le souffle dont un personnage dispose pour l'eff
 
 <p class="formula">Points d'endurance = 80 + Endurance</p>
 
-Les points d'endurance reviennent en tout temps, et les deux [récupérations naturelles](#la-recuperation-naturelle) du personnage valent autant l'une que l'autre : il se refait le souffle en dormant comme en veillant. Une minute d'activité lourde fait seule exception et n'en rend aucun ; le compte reprend dès la minute où il redescend d'intensité.
+Les points d'endurance reviennent en tout temps, et les deux [récupérations naturelles](#la-recuperation-naturelle) du personnage valent autant l'une que l'autre : il se refait le souffle en dormant comme en veillant. Les dix minutes d'effort lourd font seules exception et n'en rendent aucun ; le compte reprend à la tranche suivante.
 
-<p class="formula">Récupération naturelle éveillé = 13</p>
+<p class="formula">Récupération naturelle éveillé = 10</p>
 
-<p class="formula">Récupération naturelle endormi = 13</p>
+<p class="formula">Récupération naturelle endormi = 10</p>
 
 <div class="memo" markdown>
 
-Exemple. Un personnage fonce le temps d'un seul round, puis marche le reste de la minute. Il paie les 5 points d'endurance de sa course, et cette minute ne lui en rend aucun, puisqu'elle compte tout entière comme de l'activité lourde. Sa course lui aura donc coûté 10 points.
+Exemple. Un personnage fonce le temps d'un seul round, puis marche le reste des dix minutes. Il dépense les 5 points d'endurance de sa course, et ces dix minutes ne lui en rendent aucun, puisqu'elles comptent tout entières comme de l'effort lourd. Sa course lui aura donc coûté 15 points.
 
 </div>
 
@@ -320,6 +235,122 @@ Les deux [récupérations naturelles](#la-recuperation-naturelle) des points d'i
 
 <p class="formula">Récupération naturelle endormi = 0</p>
 
+</div>
+
+---
+
+<div class="cols" markdown>
+
+### Mouvement
+
+Un personnage se déplace à l'allure qu'il veut. Cette allure définit le nombre de [pas](../combat/portees.md) qu'il peut franchir dans un round, et l'intensité minimale de son [effort](#leffort). Il y a quatre allures : le repos, puis les allures légère, intermédiaire et lourde.
+
+Lorsqu'un personnage dort, il n'a pas d'allure. Il n'a donc aucun mouvement.
+
+<div class="mcard" markdown>
+**Allure de repos**
+
+Le personnage ne se déplace pas. Il reste assis, ou il dort.
+
+La table ci-dessous donne la distance qu'il franchit à cette allure, par round, par minute et par heure.
+
+| Coût | Par round | Par minute | Par heure |
+|---|:---:|:---:|:---:|
+|  | 0 pas | 0 m | 0 km |
+
+</div>
+
+<div class="mcard" markdown>
+**Allure légère**
+
+Le personnage marche d'un pas tranquille. Il peut tenir cette allure toute la journée sans peine.
+
+La table ci-dessous donne la distance qu'il franchit à cette allure, par round, par minute et par heure.
+
+| Coût | Par round | Par minute | Par heure |
+|---|:---:|:---:|:---:|
+|  | 3 pas | 45 m | 2.7 km |
+
+</div>
+
+<div class="mcard" markdown>
+**Allure intermédiaire**
+
+Le personnage marche vite, grimpe, ou nage. Il tient généralement cette allure de longues heures avec quelques pauses.
+
+La table ci-dessous donne la distance qu'il franchit à cette allure, par round, par minute et par heure.
+
+| Coût | Par round | Par minute | Par heure |
+|---|:---:|:---:|:---:|
+|  | 6 pas | 90 m | 5.4 km |
+
+</div>
+
+<div class="mcard" markdown>
+**Allure lourde**
+
+Le personnage trottine ou fonce, à pleine puissance, et ne tient ce rythme qu'un temps. Cette allure se prend par crans : chaque cran donne 3 pas de plus que le précédent.
+
+La table ci-dessous donne le coût en [dés d'action](actions.md#les-des-daction) et en points d'endurance par round, et la distance que le personnage franchit selon le cran qu'il prend, par round, par minute et par heure.
+
+| Coût | Par round | Par minute | Par heure |
+|---|:---:|:---:|:---:|
+| 1 DÉ | 9 pas | 135 m | 8.1 km |
+| 2 DÉ et 5 PE | 12 pas | 180 m | 10.8 km |
+| 3 DÉ et 10 PE | 15 pas | 225 m | 13.5 km |
+| 4 DÉ et 15 PE | 18 pas | 270 m | 16.2 km |
+| 5 DÉ et 20 PE | 21 pas | 315 m | 18.9 km |
+
+</div>
+
+#### Le terrain difficile
+
+Entrer dans certaines [cases](../combat/portees.md) coûte plus d'un pas. Un terrain difficile coûte 2 pas, un terrain très difficile en coûte 3. Le MJ tranche pour ce que la table ne nomme pas.
+
+La table ci-dessous donne le coût d'entrée d'une case selon le terrain.
+
+<div class="sepia-table" markdown>
+
+| Terrain | Coût |
+|---|:---:|
+| Herbe, terre battue, dalles, sable ferme | 1 pas |
+| Sous-bois, fougères hautes, blé sur pied | 2 pas |
+| Boue, sable mou, neige jusqu'aux genoux | 2 pas |
+| Éboulis, décombres, racines et souches | 2 pas |
+| Ronciers, taillis serré | 2 pas |
+| Eau jusqu'aux cuisses, pente raide | 2 pas |
+| Marécage, tourbière, congère | 3 pas |
+| Eau jusqu'à la poitrine, courant | 3 pas |
+| Éboulis en pente, paroi à mains nues | 3 pas |
+
+</div>
+
+<div class="memo" markdown>
+
+Exemple. Un personnage à l'allure intermédiaire dispose de 6 pas. Sur un terrain difficile, il n'avance que de 3 cases ; sur un terrain très difficile, de 2.
+
+</div>
+
+</div>
+
+---
+
+<div class="cols" markdown>
+
+### Les points de chance
+
+Les points de chance mesurent ce qu'un personnage peut infléchir en sa faveur. Ils découlent de la Chance.
+
+<p class="formula">Points de chance = Chance ÷ 5, arrondi à l'inférieur</p>
+
+Le personnage en dépense pour infléchir un résultat.
+
+<div class="memo" markdown>
+
+Exemple. Un personnage ordinaire, qui porte 20 en Chance, dispose de 4 points de chance. Il lui en faut 25 pour en avoir 5.
+
+</div>
+
 ### La charge
 
 La charge est le poids que le personnage porte sans en être gêné. Elle découle de la Force. Au-delà, il ralentit.
@@ -330,11 +361,67 @@ La charge est le poids que le personnage porte sans en être gêné. Elle décou
 
 Les accès rapides sont les objets que le personnage garde sur lui et saisit sans rien fouiller. Ils découlent de la Dextérité. Tout le reste voyage dans son sac, et un sac se pose ou se jette.
 
-<p class="formula">Accès rapides = Dextérité ÷ 4, arrondi à l'inférieur</p>
+<p class="formula">Accès rapides = Dextérité ÷ 5, arrondi à l'inférieur</p>
 
 <div class="memo" markdown>
 
-Exemple. Un personnage ordinaire, qui porte 20 en Dextérité, garde 5 objets sous la main. Il lui en faut 24 pour en garder 6.
+Exemple. Un personnage ordinaire, qui porte 20 en Dextérité, garde 4 objets sous la main. Il lui en faut 25 pour en garder 5.
+
+</div>
+
+</div>
+
+---
+
+<div class="cols" markdown>
+
+### La satiété et l'hydratation
+
+Les points de satiété et les points d'hydratation mesurent ce qu'un personnage tient sans manger et sans boire. Ils découlent de l'Endurance.
+
+<p class="formula">Points de satiété = 1200 + Endurance × 10</p>
+
+<p class="formula">Points d'hydratation = 200 + Endurance × 10</p>
+
+L'[effort](#leffort) du personnage donne le niveau de [récupération naturelle](#la-recuperation-naturelle) de ces deux réserves, le même pour l'une et pour l'autre. Il est toujours négatif : elles ne se remplissent qu'en mangeant et en buvant.
+
+La table ci-dessous donne le niveau de récupération des points de satiété et des points d'hydratation selon l'effort.
+
+<div class="sepia-table" markdown>
+
+| Effort | Niveau |
+|---|:---:|
+| Sommeil | −3 |
+| Repos | −4 |
+| Léger | −5 |
+| Intermédiaire | −6 |
+| Lourd | −7 |
+
+</div>
+
+Pour récupérer des points de satiété et des points d'hydratation, un personnage peut simplement manger et boire.
+
+<div class="memo" markdown>
+
+Exemple. Un personnage ordinaire, qui porte 20 en Endurance, dispose de 1 400 points de satiété et de 400 points d'hydratation. Une journée ordinaire, huit heures de sommeil, huit d'effort intermédiaire et huit d'effort léger, lui en coûte 135 de chaque. S'il ne s'hydrate pas et ne se nourrit pas, son hydratation est vide au bout d'un peu moins de trois jours, et sa satiété au bout d'un peu plus de dix.
+
+</div>
+
+### La contenance
+
+La contenance est la place qu'un personnage a dans son ventre pour ce qu'il avale. Elle ne découle d'aucune caractéristique et vaut autant pour tout le monde.
+
+<p class="formula">Contenance = 60</p>
+
+Elle s'occupe comme la [charge](#la-charge) se remplit : elle part de zéro, monte à mesure que le personnage avale, et redescend à mesure qu'il digère. Chaque chose avalée y occupe des places, et les garde le temps que le corps met à en venir à bout ; chaque objet porte les siennes, comme il porte son poids.
+
+<p class="formula">Une place se libère toutes les dix minutes</p>
+
+Un personnage ne peut rien avaler qui ne tienne dans les places qui lui restent. Un ventre plein ne se force pas : il faut attendre.
+
+<div class="memo" markdown>
+
+Exemple. Une chose qui occupe 30 places est digérée en cinq heures. Un personnage qui en avale deux d'affilée a rempli sa contenance, et il lui faut attendre dix minutes avant de pouvoir reprendre la moindre place.
 
 </div>
 
@@ -350,17 +437,19 @@ Le climat donne la zone de température où le corps d'un personnage tient sans 
 
 Un corps nu est à l'aise de 28 à 32 °C. Chaque vêtement porte deux nombres comptés en degrés, une protection contre le froid et une protection contre la chaleur. La protection contre le froid abaisse la borne basse, celle contre la chaleur relève la borne haute. Tout ce que le personnage porte s'additionne.
 
-On ajoute des degrés à la température selon l'intensité de l'[activité](#lactivite).
+On ajoute des degrés à la température selon l'intensité de l'[effort](#leffort).
 
 <div class="defs" markdown>
 
+**Sommeil :** aucun degré de plus.
+
 **Repos :** aucun degré de plus.
 
-**Légère :** 5 degrés de plus.
+**Léger :** 5 degrés de plus.
 
 **Intermédiaire :** 15 degrés de plus.
 
-**Lourde :** 25 degrés de plus.
+**Lourd :** 25 degrés de plus.
 
 </div>
 
@@ -392,9 +481,9 @@ Vêtu de quoi valoir 8 degrés contre le froid, il voit sa borne tomber à 20 °
 
 <div class="memo" markdown>
 
-Exemple. Le même personnage, nu, à 15 °C : à l'arrêt il subit 4 paliers, mais en activité intermédiaire il ressent 30 °C et n'en subit aucun.
+Exemple. Le même personnage, nu, à 15 °C : à l'arrêt il subit 4 paliers, mais en effort intermédiaire il ressent 30 °C et n'en subit aucun.
 
-À l'inverse, à 40 °C, il subit 2 paliers immobile et 6 en activité intermédiaire.
+À l'inverse, à 40 °C, il subit 2 paliers immobile et 6 en effort intermédiaire.
 
 </div>
 
@@ -433,10 +522,10 @@ La table ci-dessous donne l'exposition, la maladie et l'effet selon le niveau de
 |:---:|:---:|:---:|---|
 | 1 | +10 % | | |
 | 2 | +20 % | insolation | l'hydratation se dépense deux fois plus vite |
-| 3 | +30 % | insolation | les PE ne reviennent plus que toutes les 10 minutes |
+| 3 | +30 % | insolation | les PE ne reviennent plus que toutes les heures |
 | 4 | +40 % | insolation | l'hydratation se dépense quatre fois plus vite |
 | 5 | +50 % | fièvre | |
-| 6 | +60 % | fièvre | les PE ne reviennent plus que toutes les heures |
+| 6 | +60 % | fièvre | les PE ne reviennent plus que toutes les 8 heures |
 | 7 | +70 % | fièvre | le personnage ne peut pas dormir |
 | 8 | +80 % | brûlures | |
 | 9 | +90 % | brûlures | les PE ne reviennent plus |
@@ -469,6 +558,55 @@ La table ci-dessous donne la température de l'air selon le milieu, le jour et l
 <div class="memo" markdown>
 
 Exemple. Le désert bascule de 24 degrés entre le jour et la nuit. Un personnage ordinaire, nu et au repos, s'y tient à 10 degrés de sa zone dans les deux cas : il subit 3 paliers de chaleur à 42 °C le jour, et 3 paliers de froid à 18 °C la nuit.
+
+</div>
+
+</div>
+
+---
+
+<div class="cols" markdown>
+
+### L'effondrement
+
+Les manques des [points de repos](#les-points-de-repos), des [points de satiété et des points d'hydratation](#la-satiete-et-lhydratation) se comptent sur une seule échelle, l'effondrement. L'[exposition](#lexposition) au froid et au chaud s'y compte aussi.
+
+Chaque réserve donne un niveau d'effondrement par tranche de 10 % perdue, ce qui fait dix niveaux, le dernier lorsqu'elle est vide. Les niveaux de toutes les réserves s'additionnent, sans jamais dépasser dix.
+
+Le niveau d'effondrement réduit le maximum de points d'endurance de 10 % par niveau, et le maximum de points de vie de 5 %.
+
+La table ci-dessous donne ce qui reste du maximum de points d'endurance et du maximum de points de vie selon le niveau d'effondrement.
+
+<div class="sepia-table" markdown>
+
+| Niveau | PE MAX | PV MAX |
+|:---:|:---:|:---:|
+| 1 | 90 % | 95 % |
+| 2 | 80 % | 90 % |
+| 3 | 70 % | 85 % |
+| 4 | 60 % | 80 % |
+| 5 | 50 % | 75 % |
+| 6 | 40 % | 70 % |
+| 7 | 30 % | 65 % |
+| 8 | 20 % | 60 % |
+| 9 | 10 % | 55 % |
+| 10 | 0 % | 50 % |
+
+</div>
+
+Un personnage dont le maximum de points d'endurance atteint zéro tombe inconscient.
+
+<div class="memo" markdown>
+
+Exemple. Un personnage ordinaire qui dort et mange, mais ne boit plus, gagne un niveau d'effondrement toutes les sept heures. Au bout d'un peu moins de trois jours il atteint le dixième niveau et s'effondre.
+
+Le même, s'il ne mange pas non plus, gagne en plus un niveau par jour : il s'effondre alors au bout d'un peu plus de deux jours.
+
+</div>
+
+<div class="memo" markdown>
+
+Exemple. Au niveau 10, ce personnage n'a plus que 50 points de vie sur les 100 qu'il portait. Une grande hache, qui inflige 32 dégâts de taille, le tue en deux coups au lieu de quatre.
 
 </div>
 

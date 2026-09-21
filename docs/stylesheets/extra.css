@@ -1111,7 +1111,7 @@ a.md-header-nav__button[href$="livre-de-regles.pdf"] {
 .md-typeset .sepia-table table:not([class]) tbody tr:nth-child(even) td { background: var(--row-b); }
 /* Table du sommeil : trait vertical séparant le bloc veille (colonnes 5-6,
    « Avant de pouvoir redormir » et « Avant d'être fatigué », rejeté à droite)
-   du bloc sommeil / activité. */
+   du bloc sommeil / effort. */
 .md-typeset .sommeil table:not([class]) th:nth-child(5),
 .md-typeset .sommeil table:not([class]) td:nth-child(5) {
   border-left: 2px solid var(--trait);

@@ -127,6 +127,7 @@ CAPACITES = [
     ("Points d'hydratation", "ph", "PH"),
     ("Charge", "charge", "CHG"),
     ("Accès rapides", "acces", "ACC"),
+    ("Points de chance", "pc", "PC"),
     ("Contenance", "contenance", "CTN"),
     ("Exposition", "expo", "EXP"),
     # Nommee par le chapitre, sans formule : voir le docstring.

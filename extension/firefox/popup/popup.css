@@ -144,7 +144,7 @@ html.night {
      --or-txt mesure 7.8:1 sur --card. */
   --or:    #ffd77f;
   --or-txt:#ffd77f;
-  --wash:    rgba(159, 179, 126, .18);
+  --wash:    rgba(255, 215, 127, .18);
   --ok:      #ffd77f;
   --actif-fond: #6b5a2e;
   --actif-txt:  #e6e6e6;
@@ -166,16 +166,18 @@ body {
 
 /* ------------------------------------------------------------------ EN-TÊTE */
 
+/* LE BANDEAU DU POPUP, comme celui du panneau et la bande d'onglets de la
+   fiche : fond sombre, nom du personnage en or. */
 .p-tete {
   display: flex; align-items: center; gap: .35rem;
   padding: .34rem .5rem .3rem;
-  background: var(--panel);
-  border-bottom: 1px solid var(--line-2);
+  background: #262626;
+  border-bottom: 1px solid #262626;
 }
 .p-nom {
   font-family: 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
   font-weight: 700; font-size: .82rem; letter-spacing: .04em;
-  color: var(--ink); line-height: 1.1;
+  color: #ffd77f; line-height: 1.1;
   /* Cinzel à .68rem donnerait 12.2 px, et cette capitale ne se lit plus guère
      en dessous ; le titre du panneau est donc monté à .82rem (14.8 px). */
 }
@@ -233,21 +235,18 @@ body.p-off .p-etat { color: var(--ink-3); }
 
 /* L'en-tête de bloc, signature du projet : Cinzel, un filet, et le petit tiret
    or de 1.4rem posé dessus, à gauche. */
+/* UN TITRE EST DORÉ ET SE SOULIGNE D'UN FILET D'OR sur toute sa largeur :
+   c'est le titre d'une carte du livre, et celui d'un bloc de la fiche. */
 .p-titre {
   position: relative;
-  margin: 0 0 .3rem; padding: .02rem 0 .18rem;
-  border-bottom: 1px solid var(--hair);
+  margin: 0 0 .28rem; padding: .02rem 0 .22rem;
+  border-bottom: 1px solid #e0cfa0;
   font-family: 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
   font-weight: 700; font-size: var(--fs-title);
   letter-spacing: .04em; line-height: 1.1;
-  color: var(--ink-2);
+  color: #6b5210;
 }
-html.night .p-titre { color: var(--ink); }
-.p-titre::after {
-  content: ""; position: absolute; left: 0; bottom: -1px;
-  width: 1.4rem; height: 1.5px;
-  background: var(--or); border-radius: 2px;
-}
+html.night .p-titre { color: #ffd77f; border-bottom-color: #6b5a2e; }
 
 .p-ligne {
   display: flex; align-items: center; gap: .4rem;

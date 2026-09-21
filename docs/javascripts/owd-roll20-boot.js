@@ -95,11 +95,19 @@
   // ---------- mode jour / nuit ----------
   // Le CSS nuit existe déjà dans la feuille de la fiche (html.night …) ; ici on
   // ne fait que poser la classe. Préférence locale à CE navigateur (vrai
-  // localStorage de la page, pas le shim) : "1" nuit, "0" jour, absente = auto.
+  // localStorage de la page, pas le shim) : "1" nuit, "0" jour, "auto" suit
+  // Roll20, ABSENTE = NUIT.
+  //
+  // LA NUIT EST LE DÉFAUT DANS ROLL20, et c'est une décision : la fiche y vit
+  // à côté d'un plateau sombre, et c'est là que la palette du wiki d'Outward
+  // veut être — fond noir, encre claire, touches d'or.
+  //
   // L'« auto » suit ROLL20 : l'extension détecte le mode sombre de Roll20 au
   // montage de la fiche et le passe par le hash (n=1/0). Une extension plus
   // ancienne n'envoie pas d'indice : repli sur le mode sombre du navigateur
-  // (prefers-color-scheme).
+  // (prefers-color-scheme). Il se RANGE désormais tel quel — sans cela,
+  // choisir « Selon Roll20 » reviendrait à n'avoir rien choisi, donc à la
+  // nuit, et le réglage n'aurait servi à rien.
   // L'onglet Options de la fiche expose ce réglage via window.__owdNight.
   var NIGHT_KEY = "owd-r20-night";
   var NIGHT_HINT = (function () {
@@ -109,12 +117,14 @@
     catch (e) { return false; }
   })();
   function nightPref() {
-    try { var v = localStorage.getItem(NIGHT_KEY); return v === "1" || v === "0" ? v : "auto"; }
-    catch (e) { return "auto"; }
+    try {
+      var v = localStorage.getItem(NIGHT_KEY);
+      return (v === "1" || v === "0" || v === "auto") ? v : "1";
+    } catch (e) { return "1"; }
   }
   function applyNight() {
     var p = nightPref();
-    var on = p === "1" || (p === "auto" && NIGHT_HINT === true);
+    var on = p === "0" ? false : p === "auto" ? (NIGHT_HINT === true) : true;
     document.documentElement.classList.toggle("night", on);
   }
   window.__owdNight = {
@@ -122,7 +132,8 @@
     auto: NIGHT_HINT,         // ce que donne l'« auto » (mode de Roll20 ; repli navigateur)
     set: function (v) {
       try {
-        if (v === "1" || v === "0") localStorage.setItem(NIGHT_KEY, v);
+        // « auto » se RANGE, il ne s'efface pas : une clé absente vaut la nuit.
+        if (v === "1" || v === "0" || v === "auto") localStorage.setItem(NIGHT_KEY, v);
         else localStorage.removeItem(NIGHT_KEY);
       } catch (e) {}
       applyNight();

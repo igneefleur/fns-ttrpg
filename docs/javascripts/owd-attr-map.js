@@ -25,9 +25,10 @@
  * toute clé de blank() figure dans SCALARS ou dans COLLECTIONS, et AUCUN
  * suffixe ne sert deux fois. Un miroir qui reprendrait le nom d'un scalaire
  * l'écraserait en silence, et le repli relirait la valeur DÉRIVÉE en croyant
- * relire la saisie. C'est pour tenir cette règle sans exception que les treize
- * maximums forcés vivent dans UNE collection éparse (`maxForce`) et les dix
- * valeurs courantes dans UNE autre (`etat`, suffixe `etat_courant`) : les
+ * relire la saisie. C'est pour tenir cette règle sans exception que les leviers
+ * du meneur vivent dans TROIS tables éparses (`caracsLeviers`, `capsLeviers`,
+ * `compsLeviers`) et les onze valeurs courantes dans UNE autre (`etat`,
+ * suffixe `etat_courant`) : les
  * suffixes owd_pv, owd_pe, owd_charge… restent alors libres pour le MIROIR,
  * qui est justement ce que les barres de jetons veulent lire.
  *
@@ -76,7 +77,7 @@
   // même version, la beta étant ce que le stable recevra à la fusion) : ce qui
   // compare des versions doit donc l'ôter avant de lire les nombres, et c'est
   // exactement ce que fait OwdMods.compareVersions.
-  var RELEASE_DEFAUT = "1.1.0b";
+  var RELEASE_DEFAUT = "1.1.2b";
   // Entier INDÉPENDANT de la release : il ne monte qu'au changement de forme de
   // l'état du personnage, jamais parce que le majeur a bougé. Ajouter une clé
   // racine avec un défaut n'en est PAS un : normalize() complète une clé
@@ -84,7 +85,7 @@
   // s'ouvre dans les deux sens sans migration. Le manifeste publie les deux
   // numéros séparément, et c'est ce repli-ci que l'amorce prend quand le
   // manifeste manque.
-  var SCHEMA_DEFAUT = 1;
+  var SCHEMA_DEFAUT = 2;
 
   // Release EFFECTIVE : celle du code qui TOURNE, pas celle que le site publie.
   //
@@ -122,8 +123,8 @@
   //       veut dire « valeur calculée » — les confondre avec 0 clouerait une
   //       capacité à zéro sur le chemin de repli).
   //
-  // TREIZE, et pas un de plus. Les maximums forcés du MJ ne sont PAS ici :
-  // ils vivent tous dans la collection éparse `maxForce`. Une capacité de plus
+  // TREIZE, et pas un de plus. Les leviers du MJ ne sont PAS ici : ils vivent
+  // tous dans la table éparse `capsLeviers`. Une capacité de plus
   // n'ajoute alors ni clé racine, ni suffixe, ni ligne dans cette table — et
   // surtout, aucun d'eux ne vient disputer au MIROIR les suffixes que les
   // barres de jetons lisent.
@@ -141,28 +142,25 @@
   // champ d'état collection (objet/tableau) -> suffixe (stocké en JSON)
   var COLLECTIONS = [
     ["caracs", "caracs"],
-    // Deux modificateurs qui s'additionnent (équipement / décision du MJ), et
-    // un forçage épars où une clé présente REMPLACE la somme. Tous les leviers
-    // des Options voyagent, y compris sur le chemin de repli : en JJK, les
-    // seconds modificateurs et les forçages de caractéristiques ont manqué ici
-    // depuis leur création, et une fiche reconstruite sans jjk_state les
-    // perdait en silence alors même qu'ils changent des totaux affichés.
-    ["caracsMod", "caracs_mod"], ["caracsMod2", "caracs_mod2"],
-    ["caracsForce", "caracs_force"],
+    // LA TABLE DE LEVIERS des caractéristiques : levier, boîte, caractéristique.
+    // Tous les leviers des Options voyagent, y compris sur le chemin de repli :
+    // en JJK, les seconds modificateurs et les forçages de caractéristiques ont
+    // manqué ici depuis leur création, et une fiche reconstruite sans jjk_state
+    // les perdait en silence alors même qu'ils changent des totaux affichés.
+    ["caracsLeviers", "caracs_leviers"],
     // Les VALEURS COURANTES des jauges, toutes ensemble et à l'exact :
     // null = « au maximum » se conserve, ce qu'un attribut de nombre perdrait
     // (il rendrait 0, c'est-à-dire un personnage vidé de tout).
     ["etat", "etat_courant"],
-    // Les maximums forcés, épars. Absent = calculé, et ce n'est PAS 0.
-    ["maxForce", "max_force"],
-    // Les modificateurs à trois emplacements de toutes les capacités.
-    ["divers", "divers"],
+    // LA TABLE DE LEVIERS des capacités : le forçage d'un maximum, ses quatre
+    // ajouts et ses quatre facteurs, pour les quinze capacités à la fois.
+    ["capsLeviers", "caps_leviers"],
     // Le tableau des compétences, à id stable : c'est LUI la liste, les règles
     // d'Outward n'en donnant aucune. Le perdre au repli effacerait des noms que
     // le joueur seul a écrits, et que rien d'autre ne sait redire.
     ["comps", "competences"],
-    ["compsMod", "comps_mod"], ["compsMod2", "comps_mod2"],
-    ["compsForce", "comps_force"], ["compsDesForce", "comps_des_force"],
+    // LA TABLE DE LEVIERS des compétences : bonus, dés, xp et rupture.
+    ["compsLeviers", "comps_leviers"],
     ["techniques", "techniques"],
     ["armes", "armes"], ["vetements", "vetements"],
     ["inv", "inventaire"],
@@ -240,13 +238,10 @@
       // n'en invente pas — aucune borne haute n'est écrite ici.
       caracs: { Force: 20, Dexterite: 20, Intelligence: 20, Ferveur: 20,
                 Vigueur: 20, Endurance: 20, Resistance: 20, Chance: 20 },
-      caracsMod: { Force: 0, Dexterite: 0, Intelligence: 0, Ferveur: 0,
-                   Vigueur: 0, Endurance: 0, Resistance: 0, Chance: 0 },
-      caracsMod2: { Force: 0, Dexterite: 0, Intelligence: 0, Ferveur: 0,
-                    Vigueur: 0, Endurance: 0, Resistance: 0, Chance: 0 },
-      // ÉPARSE, et NULLABLE par l'absence : une clé présente REMPLACE la somme,
-      // elle ne s'y ajoute pas. Absente n'est pas 0.
-      caracsForce: {},
+      // LES LEVIERS DES CARACTÉRISTIQUES, même table à trois niveaux. Un seul
+      // levier, « total » : une caractéristique d'Outward n'a qu'une valeur
+      // dérivée.
+      caracsLeviers: {},
 
       // ---- ce que le personnage porte à l'instant ----
       // null = « au maximum » : la valeur SUIT le maximum quand il bouge, ce
@@ -255,23 +250,14 @@
       // expo et contenance partent de 0, qui est une VRAIE valeur (exposition
       // nulle, ventre vide) et non un repli : elles ne sont donc pas nullables.
       etat: { pv: null, pe: null, pm: null, pi: null,
-              pr: null, ps: null, ph: null,
+              pr: null, ps: null, ph: null, pc: null,
               expo: 0, contenance: 0, rupture: null },
 
-      // Maximums FORCÉS, épars : une clé présente remplace le calcul, une clé
-      // absente laisse calculer. Clés connues : pv pe pm pi pr ps ph charge
-      // acces contenance expo rupture desAction effondrement.
-      maxForce: {},
-
-      // Modificateurs à TROIS emplacements (équipement / technique / autre).
-      divers: {
-        pv: [0, 0, 0], pe: [0, 0, 0], pm: [0, 0, 0], pi: [0, 0, 0],
-        pr: [0, 0, 0], ps: [0, 0, 0], ph: [0, 0, 0],
-        charge: [0, 0, 0], acces: [0, 0, 0], contenance: [0, 0, 0],
-        expo: [0, 0, 0], rupture: [0, 0, 0], desAction: [0, 0, 0],
-        // Le seul modificateur qui joue sur un NIVEAU et non sur des points.
-        effondrement: [0, 0, 0]
-      },
+      // LES LEVIERS DES CAPACITÉS, table à trois niveaux : levier, boîte, clé.
+      // Un seul levier, « max », qui porte le maximum de chacune. Clés connues :
+      // pv pe pm pi pr ps ph pc charge acces contenance expo rupture desAction
+      // effondrement.
+      capsLeviers: {},
 
       // ---- compétences ----
       // LES RÈGLES NE DONNENT AUCUNE LISTE DE COMPÉTENCES : le joueur les nomme
@@ -280,10 +266,10 @@
       // ses modificateurs du même geste, sans un mot.
       // Une entrée : { id, nom, groupe, rang }, rang entier de 0 à 5.
       comps: [],
-      // Cartes ÉPARSES indexées par l'ID de la compétence, jamais par son nom.
-      compsMod: {}, compsMod2: {},
-      compsForce: {},        // bonus TOTAL forcé : remplace rang + modificateurs
-      compsDesForce: {},     // nombre de dés engageables forcé : remplace le rang
+      // LES LEVIERS DES COMPÉTENCES, indexés par l'ID de la compétence et jamais
+      // par son nom — un nom se renomme, un levier ne doit pas se perdre avec.
+      // Quatre leviers : bonus, dés, xp, rupture.
+      compsLeviers: {},
 
       // ---- techniques ----
       // Les rangs d'une technique LUI APPARTIENNENT : les règles le disent, la

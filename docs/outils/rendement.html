@@ -115,9 +115,9 @@ function heures(t){
   return +m[1] * ({minute:1/60, heure:H, jour:J, semaine:SEM})[m[2]];
 }
 
-/* Le temps d'une étape : sa durée totale, et la part en activité.
+/* Le temps d'une étape : sa durée totale, et la part en effort.
    Deux écritures possibles, et la seconde est le cœur du modèle :
-     « 20 minutes en activité légère »        -> travail pur
+     « 20 minutes en effort léger »        -> travail pur
      « 1 jour / dont 20 minutes … au début »  -> attente CONTENANT du travail
      « 1 jour d'attente »                     -> attente pure                */
 function tempsEtape(txt){

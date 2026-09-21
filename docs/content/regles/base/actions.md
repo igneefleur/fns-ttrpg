@@ -26,7 +26,7 @@ Employer une compétence se résout en trois temps : on fixe d'abord la difficul
 
 La difficulté ne tient pas à la compétence employée mais à ce que le personnage cherche à en faire : une même compétence sert des gestes faciles et des gestes presque hors d'atteinte. Chaque emploi a donc sa difficulté propre.
 
-Une difficulté prend l'une de deux formes. Un seuil se franchit : le personnage lance les dés qu'il a engagés, et leur somme doit l'atteindre. Un coût se paie : le personnage consomme les dés demandés, et l'action se fait.
+Une difficulté prend l'une de deux formes. Un seuil se franchit : le personnage lance les dés qu'il a engagés, et leur somme doit l'atteindre. Un coût se dépense : le personnage consomme les dés demandés, et l'action se fait.
 
 </div>
 

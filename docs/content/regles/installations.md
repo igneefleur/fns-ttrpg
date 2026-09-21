@@ -32,7 +32,7 @@ Les étapes d'une recette se lisent sur sa carte, au chapitre de la [fabrication
 
 Les étapes d'attente se paient une fois pour toute la fournée, quelle qu'en soit la charge : douze peaux attendent au même prix qu'une seule. Les étapes de travail, elles, se paient au temps total, soit la durée de l'étape multipliée par le nombre de recettes de la fournée.
 
-**Une étape qui contient de l'activité se paie comme une attente.** L'installation est prise tout du long, que le personnage y travaille ou non : son loyer suit sa durée entière, une seule fois pour la fournée.
+**Une étape qui contient de l'effort se paie comme une attente.** L'installation est prise tout du long, que le personnage y travaille ou non : son loyer suit sa durée entière, une seule fois pour la fournée.
 
 Une fournée mixte paie chaque attente à la plus longue durée qu'elle porte.
 

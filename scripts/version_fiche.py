@@ -75,11 +75,14 @@ CRANS = ("majeur", "moyen", "petit")
 # ANNONCE, et RELEASE_DEFAUT est ce que la fiche INSCRIT dans le personnage
 # quand le manifeste n'a pas répondu.
 #
-# LE BUNDLE S'ÉCRIT DIRECTEMENT, il n'est le produit d'aucun assembleur : la
-# branche sœur découpe le sien en morceaux et doit poser le numéro dans la
-# SOURCE, faute de quoi le prochain collage ramènerait l'ancien numéro sans un
-# mot. Ici le fichier servi est le fichier écrit, et poser() n'a qu'une porte.
+# CE QUI TOURNE, ET CE QU'ON ÉCRIT, NE SONT PLUS LE MÊME FICHIER. Le bundle est
+# ENGENDRÉ par scripts/assembler.py à partir des morceaux de src/ : y écrire
+# RELEASE, c'est écrire dans un produit, et le prochain collage ramènerait
+# l'ancien numéro sans un mot. On ÉCRIT donc dans le morceau de version, et on
+# RELIT le fichier servi — c'est lui qui tourne, et c'est ce qu'il annonce qui
+# fait foi.
 BUNDLE = os.path.join("docs", "javascripts", "owd-fiche.js")
+BUNDLE_SRC = os.path.join("src", "fiche", "socle", "020-version.js")
 ATTRMAP = os.path.join("docs", "javascripts", "owd-attr-map.js")
 MANIFESTE = os.path.join("docs", "owd-manifeste.json")
 MKDOCS = "mkdocs.yml"
@@ -460,11 +463,16 @@ def poser(racine, texte, essai=False):
     """
     touches, absents = [], []
 
-    b = os.path.join(racine, BUNDLE)
+    # LE MORCEAU s'il existe, le fichier servi sinon (dépôt pas encore découpé).
+    b = os.path.join(racine, BUNDLE_SRC)
+    quoi = "morceau de version"
+    if not os.path.exists(b):
+        b = os.path.join(racine, BUNDLE)
+        quoi = "bundle"
     if not os.path.exists(b):
         absents.append("bundle")
     elif _poser_js(b, _RELEASE_JS, texte, essai):
-        touches.append("bundle")
+        touches.append(quoi)
 
     a = os.path.join(racine, ATTRMAP)
     if not os.path.exists(a):

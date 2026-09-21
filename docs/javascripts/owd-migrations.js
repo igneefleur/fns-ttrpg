@@ -391,6 +391,214 @@
    * fiche déjà migrée trouve un moteur qui la redescendrait.
    * ------------------------------------------------------------------ */
 
+  /* ------------------------------------------------------------------
+   * PAS 2 — LES SIX CARTES PLATES DEVIENNENT TROIS TABLES DE LEVIERS
+   *
+   * En schema 1, chaque valeur reglable portait ses reglages dans sa propre
+   * carte : caracsMod, caracsMod2, caracsForce pour les caracteristiques ;
+   * compsMod, compsMod2, compsForce, compsDesForce pour les competences ;
+   * maxForce et divers[3] pour les capacites. Neuf cartes, trois grammaires,
+   * et un forcage qui ne savait pas se multiplier.
+   *
+   * En schema 2, tout passe par UNE chaine a neuf boites, la meme pour les
+   * trois familles :
+   *     forcage | a1 a2 * m1 m2 | a3 a4 * m3 m4
+   * rangee dans caracsLeviers, compsLeviers et capsLeviers, chacune a trois
+   * niveaux : levier -> boite -> cle.
+   *
+   * L'ALLER EST EXACT, LE RETOUR AUSSI, et c'est ce que le grenier garantit :
+   * les boites que le schema 1 ne sait pas porter (a4, m1 a m4, et les leviers
+   * xp et rupture des competences) y sont rangees a la descente et reprises a
+   * la remontee. Sans lui, redescendre une fiche pour la donner a un joueur
+   * reste en 1.0.0b lui couterait en silence tout ce qui a ete regle depuis.
+   * ------------------------------------------------------------------ */
+  OwdMigr.ajouter({
+    schema: 2,
+    titre: "Leviers : une chaine unique pour les caracteristiques, les competences et les capacites",
+    notes: "Les modificateurs et les forcages changent de rangement : ils passent " +
+           "de neuf cartes separees a trois tables de leviers, ou chaque valeur " +
+           "recoit un forcage, quatre ajouts et quatre facteurs. Aucun reglage " +
+           "n'est perdu. En redescendant, les facteurs et les ajouts que la " +
+           "version 1 ne sait pas porter sont mis de cote et rendus a la remontee.",
+
+    monter: function (s, ctx) {
+      // --- caracteristiques : les deux modificateurs deviennent a1 et a2 ---
+      var caracs = {};
+      poseCarte(caracs, "force", s.caracsForce);
+      poseCarte(caracs, "a1", s.caracsMod);
+      poseCarte(caracs, "a2", s.caracsMod2);
+      s.caracsLeviers = fusionne(s.caracsLeviers, "total", caracs);
+
+      // --- competences : bonus d'un cote, des de l'autre ---
+      var bonus = {};
+      poseCarte(bonus, "force", s.compsForce);
+      poseCarte(bonus, "a1", s.compsMod);
+      poseCarte(bonus, "a2", s.compsMod2);
+      var des = {};
+      poseCarte(des, "force", s.compsDesForce);
+      s.compsLeviers = fusionne(s.compsLeviers, "bonus", bonus);
+      s.compsLeviers = fusionne(s.compsLeviers, "des", des);
+
+      // --- capacites : le forcage et les TROIS emplacements ---
+      var caps = {};
+      poseCarte(caps, "force", s.maxForce);
+      if (s.divers && typeof s.divers === "object") {
+        ["a1", "a2", "a3"].forEach(function (boite, i) {
+          var m = {};
+          Object.keys(s.divers).forEach(function (cle) {
+            var arr = s.divers[cle];
+            var v = Array.isArray(arr) ? Number(arr[i]) : 0;
+            if (isFinite(v) && v !== 0) m[cle] = v;
+          });
+          poseCarte(caps, boite, m);
+        });
+      }
+      s.capsLeviers = fusionne(s.capsLeviers, "max", caps);
+
+      // LA FORME EXACTE DE L'ANCIENNE TABLE, mise de cote pour la descente. Une
+      // capacite dont les trois emplacements valaient zero n'a laisse aucune
+      // trace dans la chaine (un ajout de zero n'est pas un reglage) : sans
+      // cette liste, elle ne reviendrait pas, et l'aller-retour ne serait plus
+      // exact au sens strict.
+      ctx.grenier("diversCles", Object.keys(s.divers && typeof s.divers === "object" ? s.divers : {}));
+
+      // Ce que la version 1 portait et que la 2 ne porte plus.
+      ["caracsMod", "caracsMod2", "caracsForce",
+       "compsMod", "compsMod2", "compsForce", "compsDesForce",
+       "maxForce", "divers"].forEach(function (k) { delete s[k]; });
+
+      // Les points de chance entrent dans l'etat : la jauge part AU MAXIMUM,
+      // comme les sept autres reserves, et null le dit.
+      if (s.etat && typeof s.etat === "object" && s.etat.pc === undefined) s.etat.pc = null;
+
+      // Ce que le grenier avait mis de cote lors d'une descente precedente :
+      // il revient exactement la ou il etait.
+      var garde = ctx.reprendre("boitesHautes");
+      if (garde && typeof garde === "object") {
+        ["caracsLeviers", "compsLeviers", "capsLeviers"].forEach(function (t) {
+          if (garde[t]) s[t] = fusionneTable(s[t], garde[t]);
+        });
+      }
+      ctx.log("leviers : " + compte(s.caracsLeviers) + " caracteristique(s), " +
+              compte(s.compsLeviers) + " competence(s), " + compte(s.capsLeviers) + " capacite(s)");
+      return s;
+    },
+
+    descendre: function (s, ctx) {
+      var garde = { caracsLeviers: {}, compsLeviers: {}, capsLeviers: {} };
+
+      // --- caracteristiques ---
+      s.caracsForce = carteDe(s.caracsLeviers, "total", "force");
+      s.caracsMod = carteDe(s.caracsLeviers, "total", "a1");
+      s.caracsMod2 = carteDe(s.caracsLeviers, "total", "a2");
+      garde.caracsLeviers = resteDe(s.caracsLeviers, { total: ["force", "a1", "a2"] });
+
+      // --- competences ---
+      s.compsForce = carteDe(s.compsLeviers, "bonus", "force");
+      s.compsMod = carteDe(s.compsLeviers, "bonus", "a1");
+      s.compsMod2 = carteDe(s.compsLeviers, "bonus", "a2");
+      s.compsDesForce = carteDe(s.compsLeviers, "des", "force");
+      garde.compsLeviers = resteDe(s.compsLeviers,
+                                   { bonus: ["force", "a1", "a2"], des: ["force"] });
+
+      // --- capacites ---
+      s.maxForce = carteDe(s.capsLeviers, "max", "force");
+      var divers = {};
+      ["a1", "a2", "a3"].forEach(function (boite, i) {
+        var m = carteDe(s.capsLeviers, "max", boite);
+        Object.keys(m).forEach(function (cle) {
+          if (!divers[cle]) divers[cle] = [0, 0, 0];
+          divers[cle][i] = m[cle];
+        });
+      });
+      // Les cles que la montee avait relevees reviennent, meme neutres : c'est
+      // la forme de la table qui est rendue, pas seulement ses valeurs.
+      var cles = ctx.reprendre("diversCles");
+      if (Array.isArray(cles))
+        cles.forEach(function (cle) { if (!divers[cle]) divers[cle] = [0, 0, 0]; });
+      s.divers = divers;
+      garde.capsLeviers = resteDe(s.capsLeviers, { max: ["force", "a1", "a2", "a3"] });
+
+      ["caracsLeviers", "compsLeviers", "capsLeviers"].forEach(function (k) { delete s[k]; });
+      if (s.etat && typeof s.etat === "object") delete s.etat.pc;
+
+      // LE GRENIER PORTE LE NUMERO DU PAS : monter() et descendre() du MEME pas
+      // partagent le casier, et c'est ce qui rend l'aller-retour exact.
+      if (compte(garde.caracsLeviers) || compte(garde.compsLeviers) || compte(garde.capsLeviers)) {
+        ctx.grenier("boitesHautes", garde);
+        ctx.log("mis de cote : les boites que la version 1 ne sait pas porter");
+      }
+      return s;
+    }
+  });
+
+  // ---- les outils du pas 2 ----
+  // Une carte plate { cle: nombre } devient une boite de la chaine. Un zero ne
+  // se range pas : c'est le neutre d'un ajout, et le ranger ferait croire a un
+  // reglage. Un FORCAGE a zero, lui, passe — il est le seul moyen d'obtenir
+  // zero a coup sur.
+  function poseCarte(dest, boite, carte) {
+    if (!carte || typeof carte !== "object" || Array.isArray(carte)) return;
+    var m = {};
+    Object.keys(carte).forEach(function (cle) {
+      var v = Number(carte[cle]);
+      if (!isFinite(v)) return;
+      if (v === 0 && boite !== "force") return;
+      m[cle] = v;
+    });
+    if (Object.keys(m).length) dest[boite] = m;
+  }
+  function fusionne(table, levier, boites) {
+    if (!table || typeof table !== "object" || Array.isArray(table)) table = {};
+    if (!Object.keys(boites).length) return table;
+    var t = table[levier] && typeof table[levier] === "object" ? table[levier] : {};
+    Object.keys(boites).forEach(function (boite) {
+      var d = t[boite] && typeof t[boite] === "object" ? t[boite] : {};
+      Object.keys(boites[boite]).forEach(function (cle) { d[cle] = boites[boite][cle]; });
+      t[boite] = d;
+    });
+    table[levier] = t;
+    return table;
+  }
+  function fusionneTable(table, ajout) {
+    if (!table || typeof table !== "object" || Array.isArray(table)) table = {};
+    Object.keys(ajout).forEach(function (levier) {
+      table = fusionne(table, levier, ajout[levier]);
+    });
+    return table;
+  }
+  function carteDe(table, levier, boite) {
+    var t = table && table[levier];
+    var b = t && t[boite];
+    var out = {};
+    if (b && typeof b === "object" && !Array.isArray(b))
+      Object.keys(b).forEach(function (cle) {
+        var v = Number(b[cle]);
+        if (isFinite(v)) out[cle] = v;
+      });
+    return out;
+  }
+  // Tout ce que la version d'en dessous ne sait pas porter : les boites hors
+  // liste, et les leviers entiers qu'elle ignore.
+  function resteDe(table, connus) {
+    var out = {};
+    if (!table || typeof table !== "object") return out;
+    Object.keys(table).forEach(function (levier) {
+      var boites = table[levier];
+      if (!boites || typeof boites !== "object") return;
+      Object.keys(boites).forEach(function (boite) {
+        var gardees = connus[levier];
+        if (gardees && gardees.indexOf(boite) >= 0) return;
+        if (!out[levier]) out[levier] = {};
+        out[levier][boite] = boites[boite];
+      });
+    });
+    return out;
+  }
+  function compte(table) {
+    return table && typeof table === "object" ? Object.keys(table).length : 0;
+  }
+
   global.OwdMigr = OwdMigr;
   if (typeof module === "object" && module && module.exports) module.exports = OwdMigr;
 })(typeof window !== "undefined" ? window : (typeof global !== "undefined" ? global : this));

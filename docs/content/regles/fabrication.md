@@ -20,7 +20,7 @@ Fabriquer, c'est défaire des matières pour en faire un objet. Chaque recette t
 
 **Les outils :** ce qu'il faut tenir en main — la trousse d'un métier, qui contient tout ce que ses recettes réclament, ou l'outil que la recette nomme. Ils ne se consomment pas et ne s'usent pas. Un tiret veut dire que l'installation fournit tout, ou qu'il n'y a rien à tenir.
 
-**Les étapes :** ce qu'il faut faire, dans l'ordre, chacune avec ce qu'elle prend de temps et l'[activité](base/capacites-physiques.md#lactivite) qu'elle réclame. Une étape marquée *d'attente* n'en réclame aucune : elle court toute seule et le personnage vaque où il veut. Une étape qui n'en réclame que sur une part de sa durée le dit, et le reste court seul de la même façon. Le temps court même quand le jet échoue.
+**Les étapes :** ce qu'il faut faire, dans l'ordre, chacune avec ce qu'elle prend de temps et l'[effort](base/capacites-physiques.md#leffort) qu'elle réclame. Une étape marquée *d'attente* n'en réclame aucun : elle court toute seule et le personnage vaque où il veut. Une étape qui n'en réclame que sur une part de sa durée le dit, et le reste court seul de la même façon. Le temps court même quand le jet échoue.
 
 </div>
 
@@ -79,13 +79,13 @@ Une recette en donne trois, et le four en mène neuf par fournée : on ne fond p
 </div>
 
 <div class="etapes">
-<div class="etape"><div class="et"><span>Frittage</span><span>1 jour<br>dont 20 minutes en activité légère au début</span></div>
+<div class="etape"><div class="et"><span>Frittage</span><span>1 jour<br>dont 20 minutes en effort léger au début</span></div>
 <p>Mêler le sable et la cendre à parts mesurées et étaler le mélange sur la sole du four, puis le laisser griller une nuit et un jour, remué de loin en loin, jusqu'à ce qu'il cesse de mousser.</p></div>
-<div class="etape"><div class="et"><span>Fusion</span><span>1 jour<br>dont 20 minutes en activité intermédiaire au début</span></div>
+<div class="etape"><div class="et"><span>Fusion</span><span>1 jour<br>dont 20 minutes en effort intermédiaire au début</span></div>
 <p>Tirer la fritte de la sole et l'enfourner au creuset. Le four fait ensuite le reste : la matière se vitrifie, on en écume le fiel, puis elle s'affine et s'éclaircit.</p></div>
-<div class="etape"><div class="et"><span>Soufflage</span><span>1 heure en activité intermédiaire</span></div>
+<div class="etape"><div class="et"><span>Soufflage</span><span>1 heure en effort intermédiaire</span></div>
 <p>Cueillir le verre au bout de la canne, souffler la paraison et la façonner, puis reprendre la pièce au pontil pour en ouvrir le col.</p></div>
-<div class="etape"><div class="et"><span>Recuit</span><span>8 heures<br>dont 10 minutes en activité légère au début</span></div>
+<div class="etape"><div class="et"><span>Recuit</span><span>8 heures<br>dont 10 minutes en effort léger au début</span></div>
 <p>Les pièces gagnent la bouche à recuire et y refroidissent lentement, rangées sans se toucher.</p></div>
 </div>
 
@@ -116,13 +116,13 @@ Une recette en donne trois, et le four en mène neuf par fournée : on ne fond p
 </div>
 
 <div class="etapes">
-<div class="etape"><div class="et"><span>Frittage</span><span>1 jour<br>dont 20 minutes en activité légère au début</span></div>
+<div class="etape"><div class="et"><span>Frittage</span><span>1 jour<br>dont 20 minutes en effort léger au début</span></div>
 <p>Mêler le sable et la cendre à parts mesurées et étaler le mélange sur la sole du four, puis le laisser griller une nuit et un jour, remué de loin en loin, jusqu'à ce qu'il cesse de mousser.</p></div>
-<div class="etape"><div class="et"><span>Fusion</span><span>1 jour<br>dont 20 minutes en activité intermédiaire au début</span></div>
+<div class="etape"><div class="et"><span>Fusion</span><span>1 jour<br>dont 20 minutes en effort intermédiaire au début</span></div>
 <p>Tirer la fritte de la sole et l'enfourner au creuset. Le four fait ensuite le reste : la matière se vitrifie, on en écume le fiel, puis elle s'affine et s'éclaircit.</p></div>
-<div class="etape"><div class="et"><span>Soufflage</span><span>1 heure en activité intermédiaire</span></div>
+<div class="etape"><div class="et"><span>Soufflage</span><span>1 heure en effort intermédiaire</span></div>
 <p>Cueillir le verre au bout de la canne, souffler la paraison et la façonner, puis reprendre la pièce au pontil pour en ouvrir le col.</p></div>
-<div class="etape"><div class="et"><span>Recuit</span><span>8 heures<br>dont 10 minutes en activité légère au début</span></div>
+<div class="etape"><div class="et"><span>Recuit</span><span>8 heures<br>dont 10 minutes en effort léger au début</span></div>
 <p>Les pièces gagnent la bouche à recuire et y refroidissent lentement, rangées sans se toucher.</p></div>
 </div>
 
@@ -165,13 +165,13 @@ Il faut deux fois moins de matière pour un litre en bouteille que pour un litre
 </div>
 
 <div class="etapes">
-<div class="etape"><div class="et"><span>Frittage</span><span>1 jour<br>dont 20 minutes en activité légère au début</span></div>
+<div class="etape"><div class="et"><span>Frittage</span><span>1 jour<br>dont 20 minutes en effort léger au début</span></div>
 <p>Mêler le sable et la cendre à parts mesurées et étaler le mélange sur la sole du four, puis le laisser griller une nuit et un jour, remué de loin en loin, jusqu'à ce qu'il cesse de mousser.</p></div>
-<div class="etape"><div class="et"><span>Fusion</span><span>1 jour<br>dont 20 minutes en activité intermédiaire au début</span></div>
+<div class="etape"><div class="et"><span>Fusion</span><span>1 jour<br>dont 20 minutes en effort intermédiaire au début</span></div>
 <p>Tirer la fritte de la sole et l'enfourner au creuset. Le four fait ensuite le reste : la matière se vitrifie, on en écume le fiel, puis elle s'affine et s'éclaircit.</p></div>
-<div class="etape"><div class="et"><span>Soufflage</span><span>1 heure en activité intermédiaire</span></div>
+<div class="etape"><div class="et"><span>Soufflage</span><span>1 heure en effort intermédiaire</span></div>
 <p>Cueillir le verre au bout de la canne, souffler la paraison et la façonner, puis reprendre la pièce au pontil pour en ouvrir le col. Une bouteille demande plusieurs cueillées.</p></div>
-<div class="etape"><div class="et"><span>Recuit</span><span>8 heures<br>dont 10 minutes en activité légère au début</span></div>
+<div class="etape"><div class="et"><span>Recuit</span><span>8 heures<br>dont 10 minutes en effort léger au début</span></div>
 <p>Les pièces gagnent la bouche à recuire et y refroidissent lentement, rangées sans se toucher.</p></div>
 </div>
 
@@ -202,13 +202,13 @@ Il faut deux fois moins de matière pour un litre en bouteille que pour un litre
 </div>
 
 <div class="etapes">
-<div class="etape"><div class="et"><span>Frittage</span><span>1 jour<br>dont 20 minutes en activité légère au début</span></div>
+<div class="etape"><div class="et"><span>Frittage</span><span>1 jour<br>dont 20 minutes en effort léger au début</span></div>
 <p>Mêler le sable et la cendre à parts mesurées et étaler le mélange sur la sole du four, puis le laisser griller une nuit et un jour, remué de loin en loin, jusqu'à ce qu'il cesse de mousser.</p></div>
-<div class="etape"><div class="et"><span>Fusion</span><span>1 jour<br>dont 20 minutes en activité intermédiaire au début</span></div>
+<div class="etape"><div class="et"><span>Fusion</span><span>1 jour<br>dont 20 minutes en effort intermédiaire au début</span></div>
 <p>Tirer la fritte de la sole et l'enfourner au creuset. Le four fait ensuite le reste : la matière se vitrifie, on en écume le fiel, puis elle s'affine et s'éclaircit.</p></div>
-<div class="etape"><div class="et"><span>Soufflage</span><span>1 heure en activité intermédiaire</span></div>
+<div class="etape"><div class="et"><span>Soufflage</span><span>1 heure en effort intermédiaire</span></div>
 <p>Cueillir le verre au bout de la canne, souffler la paraison et la façonner, puis reprendre la pièce au pontil pour en ouvrir le col. Une bouteille demande plusieurs cueillées.</p></div>
-<div class="etape"><div class="et"><span>Recuit</span><span>8 heures<br>dont 10 minutes en activité légère au début</span></div>
+<div class="etape"><div class="et"><span>Recuit</span><span>8 heures<br>dont 10 minutes en effort léger au début</span></div>
 <p>Les pièces gagnent la bouche à recuire et y refroidissent lentement, rangées sans se toucher.</p></div>
 </div>
 
@@ -251,13 +251,13 @@ Ce qui poisse ne se verse pas et ne se rince pas. Il faut une gueule où la main
 </div>
 
 <div class="etapes">
-<div class="etape"><div class="et"><span>Frittage</span><span>1 jour<br>dont 20 minutes en activité légère au début</span></div>
+<div class="etape"><div class="et"><span>Frittage</span><span>1 jour<br>dont 20 minutes en effort léger au début</span></div>
 <p>Mêler le sable et la cendre à parts mesurées et étaler le mélange sur la sole du four, puis le laisser griller une nuit et un jour, remué de loin en loin, jusqu'à ce qu'il cesse de mousser.</p></div>
-<div class="etape"><div class="et"><span>Fusion</span><span>1 jour<br>dont 20 minutes en activité intermédiaire au début</span></div>
+<div class="etape"><div class="et"><span>Fusion</span><span>1 jour<br>dont 20 minutes en effort intermédiaire au début</span></div>
 <p>Tirer la fritte de la sole et l'enfourner au creuset. Le four fait ensuite le reste : la matière se vitrifie, on en écume le fiel, puis elle s'affine et s'éclaircit.</p></div>
-<div class="etape"><div class="et"><span>Soufflage</span><span>1 heure en activité intermédiaire</span></div>
+<div class="etape"><div class="et"><span>Soufflage</span><span>1 heure en effort intermédiaire</span></div>
 <p>Cueillir le verre au bout de la canne, souffler la paraison et l'asseoir à plat, puis la reprendre au pontil et ouvrir la gueule à la pince jusqu'au diamètre du ventre.</p></div>
-<div class="etape"><div class="et"><span>Recuit</span><span>8 heures<br>dont 10 minutes en activité légère au début</span></div>
+<div class="etape"><div class="et"><span>Recuit</span><span>8 heures<br>dont 10 minutes en effort léger au début</span></div>
 <p>Les pièces gagnent la bouche à recuire et y refroidissent lentement, rangées sans se toucher.</p></div>
 </div>
 
@@ -288,13 +288,13 @@ Ce qui poisse ne se verse pas et ne se rince pas. Il faut une gueule où la main
 </div>
 
 <div class="etapes">
-<div class="etape"><div class="et"><span>Frittage</span><span>1 jour<br>dont 20 minutes en activité légère au début</span></div>
+<div class="etape"><div class="et"><span>Frittage</span><span>1 jour<br>dont 20 minutes en effort léger au début</span></div>
 <p>Mêler le sable et la cendre à parts mesurées et étaler le mélange sur la sole du four, puis le laisser griller une nuit et un jour, remué de loin en loin, jusqu'à ce qu'il cesse de mousser.</p></div>
-<div class="etape"><div class="et"><span>Fusion</span><span>1 jour<br>dont 20 minutes en activité intermédiaire au début</span></div>
+<div class="etape"><div class="et"><span>Fusion</span><span>1 jour<br>dont 20 minutes en effort intermédiaire au début</span></div>
 <p>Tirer la fritte de la sole et l'enfourner au creuset. Le four fait ensuite le reste : la matière se vitrifie, on en écume le fiel, puis elle s'affine et s'éclaircit.</p></div>
-<div class="etape"><div class="et"><span>Soufflage</span><span>1 heure en activité intermédiaire</span></div>
+<div class="etape"><div class="et"><span>Soufflage</span><span>1 heure en effort intermédiaire</span></div>
 <p>Cueillir le verre au bout de la canne, souffler la paraison et l'asseoir à plat, puis la reprendre au pontil et ouvrir la gueule à la pince jusqu'au diamètre du ventre.</p></div>
-<div class="etape"><div class="et"><span>Recuit</span><span>8 heures<br>dont 10 minutes en activité légère au début</span></div>
+<div class="etape"><div class="et"><span>Recuit</span><span>8 heures<br>dont 10 minutes en effort léger au début</span></div>
 <p>Les pièces gagnent la bouche à recuire et y refroidissent lentement, rangées sans se toucher.</p></div>
 </div>
 
@@ -335,9 +335,9 @@ Il en faut six fois son poids en bois, et l'on n'y gagne rien d'autre que la cha
 </div>
 
 <div class="etapes">
-<div class="etape"><div class="et"><span>Cuisson</span><span>1 jour<br>dont 20 minutes en activité légère au début</span></div>
+<div class="etape"><div class="et"><span>Cuisson</span><span>1 jour<br>dont 20 minutes en effort léger au début</span></div>
 <p>Coucher la bûche dans une fosse sur un lit de braise et la couvrir de terre sans laisser d'air. Le feu couve alors sous la terre et chasse du bois tout ce qui n'est pas charbon.</p></div>
-<div class="etape"><div class="et"><span>Défournement</span><span>10 minutes en activité légère</span></div>
+<div class="etape"><div class="et"><span>Défournement</span><span>10 minutes en effort léger</span></div>
 <p>Rouvrir la fosse, tirer le charbon au râble et noyer les reprises à l'eau.</p></div>
 </div>
 
@@ -362,11 +362,11 @@ Il en faut six fois son poids en bois, et l'on n'y gagne rien d'autre que la cha
 </div>
 
 <div class="etapes">
-<div class="etape"><div class="et"><span>Cuisson</span><span>4 jours<br>dont 4 heures en activité intermédiaire au début</span></div>
+<div class="etape"><div class="et"><span>Cuisson</span><span>4 jours<br>dont 4 heures en effort intermédiaire au début</span></div>
 <p>Monter le bois en dôme serré autour de la cheminée et l'habiller de mousse et de terre. Le feu couve ensuite sans flamme, et la fumée passe du blanc au bleu quand le bois est fait.</p></div>
-<div class="etape"><div class="et"><span>Refroidissement</span><span>2 jours<br>dont 10 minutes en activité légère au début</span></div>
+<div class="etape"><div class="et"><span>Refroidissement</span><span>2 jours<br>dont 10 minutes en effort léger au début</span></div>
 <p>Boucher les évents un à un, puis laisser la meule s'éteindre et rendre sa chaleur.</p></div>
-<div class="etape"><div class="et"><span>Défournement</span><span>1 heure en activité intermédiaire</span></div>
+<div class="etape"><div class="et"><span>Défournement</span><span>1 heure en effort intermédiaire</span></div>
 <p>Ouvrir la meule par tranches, tirer le charbon au râble et noyer les reprises à l'eau.</p></div>
 <div class="etape"><div class="et"><span>Ressuyage</span><span>2 semaines d'attente</span></div>
 <p>Le charbon reste à l'air jusqu'à ce qu'il cesse de fumer.</p></div>
@@ -407,15 +407,15 @@ Ce fer-là ne se trempe pas : une lame de fer nu tient son fil du corroyage et d
 </div>
 
 <div class="etapes">
-<div class="etape"><div class="et"><span>Grillage</span><span>4 heures<br>dont 20 minutes en activité légère au début</span></div>
+<div class="etape"><div class="et"><span>Grillage</span><span>4 heures<br>dont 20 minutes en effort léger au début</span></div>
 <p>Étaler le minerai sur un lit de braise à l'air libre, puis le laisser rougir jusqu'à ce qu'il se fendille.</p></div>
-<div class="etape"><div class="et"><span>Concassage</span><span>30 minutes en activité intense</span></div>
+<div class="etape"><div class="et"><span>Concassage</span><span>30 minutes en effort intense</span></div>
 <p>Casser la roche grillée à la masse et trier les morceaux à la grosseur d'une noix.</p></div>
-<div class="etape"><div class="et"><span>Réduction</span><span>8 heures<br>dont 1 heure en activité intermédiaire au début</span></div>
+<div class="etape"><div class="et"><span>Réduction</span><span>8 heures<br>dont 1 heure en effort intermédiaire au début</span></div>
 <p>Emplir la cuve par couches alternées de charbon et de minerai, une poignée à la fois, sans jamais découvrir le lit. La soufflerie tient ensuite le vent, la scorie coule par le trou du bas et le fer prend au fond de la cuve.</p></div>
-<div class="etape"><div class="et"><span>Extraction</span><span>30 minutes en activité intense</span></div>
+<div class="etape"><div class="et"><span>Extraction</span><span>30 minutes en effort intense</span></div>
 <p>Abattre le devant du fourneau et tirer la loupe rouge au ringard.</p></div>
-<div class="etape"><div class="et"><span>Cinglage</span><span>3 heures en activité intense</span></div>
+<div class="etape"><div class="et"><span>Cinglage</span><span>3 heures en effort intense</span></div>
 <p>Battre la loupe au marteau tant qu'elle est rouge, la replier sur elle-même et la reprendre au feu autant de fois qu'il faut, jusqu'à ce qu'elle cesse de cracher.</p></div>
 </div>
 
@@ -440,19 +440,19 @@ Ce fer-là ne se trempe pas : une lame de fer nu tient son fil du corroyage et d
 </div>
 
 <div class="etapes">
-<div class="etape"><div class="et"><span>Étirage</span><span>4 heures en activité intense</span></div>
+<div class="etape"><div class="et"><span>Étirage</span><span>4 heures en effort intense</span></div>
 <p>Souder les deux lingots au blanc soudant et étirer la masse en une languette plus longue que la lame voulue.</p></div>
-<div class="etape"><div class="et"><span>Corroyage</span><span>6 heures en activité intense</span></div>
+<div class="etape"><div class="et"><span>Corroyage</span><span>6 heures en effort intense</span></div>
 <p>Replier la languette sur elle-même et la ressouder, sept ou huit fois, en tournant le pli d'un quart à chaque reprise.</p></div>
-<div class="etape"><div class="et"><span>Mise en forme</span><span>6 heures en activité intense</span></div>
+<div class="etape"><div class="et"><span>Mise en forme</span><span>6 heures en effort intense</span></div>
 <p>Descendre la lame en épaisseur du talon vers la pointe, lever les tranchants, réserver la soie.</p></div>
-<div class="etape"><div class="et"><span>Recuit</span><span>8 heures<br>dont 10 minutes en activité légère au début</span></div>
+<div class="etape"><div class="et"><span>Recuit</span><span>8 heures<br>dont 10 minutes en effort léger au début</span></div>
 <p>La lame refroidit enfouie dans la cendre chaude, sans courant d'air.</p></div>
-<div class="etape"><div class="et"><span>Émouture</span><span>10 heures en activité intense</span></div>
+<div class="etape"><div class="et"><span>Émouture</span><span>10 heures en effort intense</span></div>
 <p>Creuser les plats à la meule et remonter le fil à la pierre, en retournant la lame à chaque passe pour la garder droite.</p></div>
-<div class="etape"><div class="et"><span>Polissage</span><span>6 heures en activité intense</span></div>
+<div class="etape"><div class="et"><span>Polissage</span><span>6 heures en effort intense</span></div>
 <p>Reprendre la lame aux pierres de plus en plus fines, jusqu'à ce qu'elle rende l'image.</p></div>
-<div class="etape"><div class="et"><span>Montage</span><span>3 heures en activité intermédiaire</span></div>
+<div class="etape"><div class="et"><span>Montage</span><span>3 heures en effort intermédiaire</span></div>
 <p>Percer la croix et l'enfiler à chaud sur la soie, monter la poignée de bois et la cercler de cuir, puis river le pommeau.</p></div>
 </div>
 
@@ -491,13 +491,13 @@ Le moulin moud soixante kilos par fournée, de quoi tenir le four quatre fois.
 </div>
 
 <div class="etapes">
-<div class="etape"><div class="et"><span>Battage</span><span>2 heures en activité intense</span></div>
+<div class="etape"><div class="et"><span>Battage</span><span>2 heures en effort intense</span></div>
 <p>Étendre les gerbes déliées sur l'aire et les battre au fléau jusqu'à ce que le grain quitte l'épi, puis retirer la paille à la fourche.</p></div>
-<div class="etape"><div class="et"><span>Vannage</span><span>1 heure en activité intermédiaire</span></div>
+<div class="etape"><div class="et"><span>Vannage</span><span>1 heure en effort intermédiaire</span></div>
 <p>Jeter le grain en l'air au van, face au vent : la balle s'envole et le grain retombe.</p></div>
-<div class="etape"><div class="et"><span>Mouture</span><span>3 heures en activité intermédiaire</span></div>
+<div class="etape"><div class="et"><span>Mouture</span><span>3 heures en effort intermédiaire</span></div>
 <p>Verser le grain à la trémie et le laisser passer entre les meules, en reprenant l'écartement chaque fois que la mouture chauffe.</p></div>
-<div class="etape"><div class="et"><span>Blutage</span><span>1 heure en activité légère</span></div>
+<div class="etape"><div class="et"><span>Blutage</span><span>1 heure en effort léger</span></div>
 <p>Passer la mouture au bluteau et en séparer la farine du son.</p></div>
 </div>
 
@@ -522,15 +522,15 @@ Le moulin moud soixante kilos par fournée, de quoi tenir le four quatre fois.
 </div>
 
 <div class="etapes">
-<div class="etape"><div class="et"><span>Pétrissage</span><span>1 heure en activité intense</span></div>
+<div class="etape"><div class="et"><span>Pétrissage</span><span>1 heure en effort intense</span></div>
 <p>Délayer la farine, le levain et l'eau salée, puis travailler la pâte au poing jusqu'à ce qu'elle se décolle du pétrin.</p></div>
 <div class="etape"><div class="et"><span>Pointage</span><span>3 heures d'attente</span></div>
 <p>La pâte lève une première fois sous un linge, à l'abri des courants d'air.</p></div>
-<div class="etape"><div class="et"><span>Façonnage</span><span>1 heure en activité intermédiaire</span></div>
+<div class="etape"><div class="et"><span>Façonnage</span><span>1 heure en effort intermédiaire</span></div>
 <p>Rompre la pâte, la peser en pâtons, les rouler serré et les coucher sur la toile farinée.</p></div>
 <div class="etape"><div class="et"><span>Apprêt</span><span>2 heures d'attente</span></div>
 <p>Les pâtons regonflent jusqu'à garder l'empreinte du doigt.</p></div>
-<div class="etape"><div class="et"><span>Cuisson</span><span>1 heure<br>dont 30 minutes en activité intermédiaire au début</span></div>
+<div class="etape"><div class="et"><span>Cuisson</span><span>1 heure<br>dont 30 minutes en effort intermédiaire au début</span></div>
 <p>Lamer les pâtons, les glisser au four à la pelle et jeter l'eau sur la sole pour la buée. Le four rend alors la chaleur qu'il a prise, la croûte se colore et le pain sonne creux.</p></div>
 </div>
 
@@ -571,23 +571,23 @@ Le poil ne part pas à l'eau claire. Il faut de la cendre, et le lait qu'elle do
 </div>
 
 <div class="etapes">
-<div class="etape"><div class="et"><span>Reverdissage</span><span>1 jour<br>dont 10 minutes en activité légère au début</span></div>
+<div class="etape"><div class="et"><span>Reverdissage</span><span>1 jour<br>dont 10 minutes en effort léger au début</span></div>
 <p>Dérouler la peau, la plonger dans l'eau claire et la charger pour qu'elle reste immergée. Elle reboit et regonfle jusqu'à retrouver la souplesse du frais ; on change l'eau une fois ou deux.</p></div>
-<div class="etape"><div class="et"><span>Pelanage</span><span>1 semaine<br>dont 10 minutes en activité légère au début</span></div>
+<div class="etape"><div class="et"><span>Pelanage</span><span>1 semaine<br>dont 10 minutes en effort léger au début</span></div>
 <p>Sortir la peau de l'eau et la coucher au lait de cendre, qui la gonfle et descelle le poil.</p></div>
-<div class="etape"><div class="et"><span>Ébourrage</span><span>20 minutes en activité intermédiaire</span></div>
+<div class="etape"><div class="et"><span>Ébourrage</span><span>20 minutes en effort intermédiaire</span></div>
 <p>Pousser le poil au couteau sur le chevalet, du collet à la queue.</p></div>
-<div class="etape"><div class="et"><span>Écharnage</span><span>20 minutes en activité intermédiaire</span></div>
+<div class="etape"><div class="et"><span>Écharnage</span><span>20 minutes en effort intermédiaire</span></div>
 <p>Retourner la peau et racler la chair et la graisse au couteau à deux poignées, puis la remettre à l'eau courante.</p></div>
 <div class="etape"><div class="et"><span>Rinçage</span><span>1 jour d'attente</span></div>
 <p>L'eau courante emporte l'alcali resté dans la fibre, jusqu'à ce que la peau ait dégonflé.</p></div>
-<div class="etape"><div class="et"><span>Bain</span><span>2 semaines<br>dont 30 minutes en activité intermédiaire au début</span></div>
+<div class="etape"><div class="et"><span>Bain</span><span>2 semaines<br>dont 30 minutes en effort intermédiaire au début</span></div>
 <p>Coucher la peau à plat dans la fosse, poudrée de tan à chaque pli. Le tanin la traverse ensuite, et l'on n'y touche plus.</p></div>
-<div class="etape"><div class="et"><span>Nourriture</span><span>1 heure en activité intermédiaire</span></div>
+<div class="etape"><div class="et"><span>Nourriture</span><span>1 heure en effort intermédiaire</span></div>
 <p>Sortir le cuir de la fosse, le laver à l'eau claire, l'essorer à l'étire et le graisser encore humide.</p></div>
 <div class="etape"><div class="et"><span>Séchage</span><span>1 semaine d'attente</span></div>
 <p>Le pendre à l'ombre, loin du soleil et du gel.</p></div>
-<div class="etape"><div class="et"><span>Palissonnage</span><span>1 heure en activité intermédiaire</span></div>
+<div class="etape"><div class="et"><span>Palissonnage</span><span>1 heure en effort intermédiaire</span></div>
 <p>Tirer le cuir sec en tous sens sur le palisson jusqu'à ce qu'il s'assouplisse.</p></div>
 </div>
 
@@ -616,23 +616,23 @@ Le poil ne part pas à l'eau claire. Il faut de la cendre, et le lait qu'elle do
 </div>
 
 <div class="etapes">
-<div class="etape"><div class="et"><span>Reverdissage</span><span>1 jour<br>dont 20 minutes en activité légère au début</span></div>
+<div class="etape"><div class="et"><span>Reverdissage</span><span>1 jour<br>dont 20 minutes en effort léger au début</span></div>
 <p>Dérouler la peau, la plonger dans l'eau claire et la charger pour qu'elle reste immergée. Elle reboit et regonfle jusqu'à retrouver la souplesse du frais ; on change l'eau une fois ou deux.</p></div>
-<div class="etape"><div class="et"><span>Pelanage</span><span>2 semaines<br>dont 20 minutes en activité légère au début</span></div>
+<div class="etape"><div class="et"><span>Pelanage</span><span>2 semaines<br>dont 20 minutes en effort léger au début</span></div>
 <p>Sortir la peau de l'eau et la coucher au lait de cendre, qui la gonfle et descelle le poil.</p></div>
-<div class="etape"><div class="et"><span>Ébourrage</span><span>30 minutes en activité intermédiaire</span></div>
+<div class="etape"><div class="et"><span>Ébourrage</span><span>30 minutes en effort intermédiaire</span></div>
 <p>Pousser le poil au couteau sur le chevalet, du collet à la queue.</p></div>
-<div class="etape"><div class="et"><span>Écharnage</span><span>30 minutes en activité intermédiaire</span></div>
+<div class="etape"><div class="et"><span>Écharnage</span><span>30 minutes en effort intermédiaire</span></div>
 <p>Retourner la peau et racler la chair et la graisse au couteau à deux poignées, puis la remettre à l'eau courante.</p></div>
 <div class="etape"><div class="et"><span>Rinçage</span><span>1 jour d'attente</span></div>
 <p>L'eau courante emporte l'alcali resté dans la fibre, jusqu'à ce que la peau ait dégonflé.</p></div>
-<div class="etape"><div class="et"><span>Bain</span><span>4 semaines<br>dont 1 heure en activité intermédiaire au début</span></div>
+<div class="etape"><div class="et"><span>Bain</span><span>4 semaines<br>dont 1 heure en effort intermédiaire au début</span></div>
 <p>Coucher la peau à plat dans la fosse, poudrée de tan à chaque pli. Le tanin la traverse ensuite, et l'on n'y touche plus.</p></div>
-<div class="etape"><div class="et"><span>Nourriture</span><span>2 heures en activité intermédiaire</span></div>
+<div class="etape"><div class="et"><span>Nourriture</span><span>2 heures en effort intermédiaire</span></div>
 <p>Sortir le cuir de la fosse, le laver à l'eau claire, l'essorer à l'étire et le graisser encore humide.</p></div>
 <div class="etape"><div class="et"><span>Séchage</span><span>1 semaine d'attente</span></div>
 <p>Le pendre à l'ombre, loin du soleil et du gel.</p></div>
-<div class="etape"><div class="et"><span>Palissonnage</span><span>2 heures en activité intermédiaire</span></div>
+<div class="etape"><div class="et"><span>Palissonnage</span><span>2 heures en effort intermédiaire</span></div>
 <p>Tirer le cuir sec en tous sens sur le palisson jusqu'à ce qu'il s'assouplisse.</p></div>
 </div>
 
@@ -661,23 +661,23 @@ Le poil ne part pas à l'eau claire. Il faut de la cendre, et le lait qu'elle do
 </div>
 
 <div class="etapes">
-<div class="etape"><div class="et"><span>Reverdissage</span><span>2 jours<br>dont 30 minutes en activité légère au début</span></div>
+<div class="etape"><div class="et"><span>Reverdissage</span><span>2 jours<br>dont 30 minutes en effort léger au début</span></div>
 <p>Dérouler la peau, la plonger dans l'eau claire et la charger pour qu'elle reste immergée. Elle reboit et regonfle jusqu'à retrouver la souplesse du frais ; on change l'eau une fois ou deux.</p></div>
-<div class="etape"><div class="et"><span>Pelanage</span><span>4 semaines<br>dont 30 minutes en activité légère au début</span></div>
+<div class="etape"><div class="et"><span>Pelanage</span><span>4 semaines<br>dont 30 minutes en effort léger au début</span></div>
 <p>Sortir la peau de l'eau et la coucher au lait de cendre, qui la gonfle et descelle le poil.</p></div>
-<div class="etape"><div class="et"><span>Ébourrage</span><span>1 heure en activité intermédiaire</span></div>
+<div class="etape"><div class="et"><span>Ébourrage</span><span>1 heure en effort intermédiaire</span></div>
 <p>Pousser le poil au couteau sur le chevalet, du collet à la queue.</p></div>
-<div class="etape"><div class="et"><span>Écharnage</span><span>1 heure en activité intermédiaire</span></div>
+<div class="etape"><div class="et"><span>Écharnage</span><span>1 heure en effort intermédiaire</span></div>
 <p>Retourner la peau et racler la chair et la graisse au couteau à deux poignées, puis la remettre à l'eau courante.</p></div>
 <div class="etape"><div class="et"><span>Rinçage</span><span>2 jours d'attente</span></div>
 <p>L'eau courante emporte l'alcali resté dans la fibre, jusqu'à ce que la peau ait dégonflé.</p></div>
-<div class="etape"><div class="et"><span>Bain</span><span>8 semaines<br>dont 2 heures en activité intermédiaire au début</span></div>
+<div class="etape"><div class="et"><span>Bain</span><span>8 semaines<br>dont 2 heures en effort intermédiaire au début</span></div>
 <p>Coucher la peau à plat dans la fosse, poudrée de tan à chaque pli. Le tanin la traverse ensuite, et l'on n'y touche plus.</p></div>
-<div class="etape"><div class="et"><span>Nourriture</span><span>4 heures en activité intermédiaire</span></div>
+<div class="etape"><div class="et"><span>Nourriture</span><span>4 heures en effort intermédiaire</span></div>
 <p>Sortir le cuir de la fosse, le laver à l'eau claire, l'essorer à l'étire et le graisser encore humide.</p></div>
 <div class="etape"><div class="et"><span>Séchage</span><span>1 semaine d'attente</span></div>
 <p>Le pendre à l'ombre, loin du soleil et du gel.</p></div>
-<div class="etape"><div class="et"><span>Palissonnage</span><span>4 heures en activité intermédiaire</span></div>
+<div class="etape"><div class="et"><span>Palissonnage</span><span>4 heures en effort intermédiaire</span></div>
 <p>Tirer le cuir sec en tous sens sur le palisson jusqu'à ce qu'il s'assouplisse.</p></div>
 </div>
 
@@ -714,7 +714,7 @@ Il faut tailler dans le plein pour obtenir des pièces franches, et la moitié d
 </div>
 
 <div class="etapes">
-<div class="etape"><div class="et"><span>Coupe</span><span>20 minutes en activité légère</span></div>
+<div class="etape"><div class="et"><span>Coupe</span><span>20 minutes en effort léger</span></div>
 <p>Tracer les pièces en évitant les défauts de la peau, puis couper au couteau.</p></div>
 </div>
 
@@ -739,7 +739,7 @@ Il faut tailler dans le plein pour obtenir des pièces franches, et la moitié d
 </div>
 
 <div class="etapes">
-<div class="etape"><div class="et"><span>Coupe</span><span>30 minutes en activité légère</span></div>
+<div class="etape"><div class="et"><span>Coupe</span><span>30 minutes en effort léger</span></div>
 <p>Tracer les pièces en évitant les défauts de la peau, puis couper au couteau.</p></div>
 </div>
 
@@ -778,7 +778,7 @@ On la sèche pleine d'eau pour qu'elle prenne son ventre, et on ne la poisse qu'
 </div>
 
 <div class="etapes">
-<div class="etape"><div class="et"><span>Couture</span><span>2 heures en activité légère</span></div>
+<div class="etape"><div class="et"><span>Couture</span><span>2 heures en effort léger</span></div>
 <p>Percer les trous à l'alêne, coudre au point sellier et passer le cordon.</p></div>
 </div>
 
@@ -805,13 +805,13 @@ On la sèche pleine d'eau pour qu'elle prenne son ventre, et on ne la poisse qu'
 </div>
 
 <div class="etapes">
-<div class="etape"><div class="et"><span>Détrempe</span><span>4 heures<br>dont 10 minutes en activité légère au début</span></div>
+<div class="etape"><div class="et"><span>Détrempe</span><span>4 heures<br>dont 10 minutes en effort léger au début</span></div>
 <p>Plonger le cuir dans l'eau tiède et le charger pour qu'il reste immergé, puis le laisser boire jusqu'à ce qu'il plie sans marquer.</p></div>
-<div class="etape"><div class="et"><span>Couture</span><span>6 heures en activité légère</span></div>
+<div class="etape"><div class="et"><span>Couture</span><span>6 heures en effort léger</span></div>
 <p>Tailler les deux pans et le goulot, percer les trous à l'alêne, coudre à l'envers en repassant chaque rang, puis retourner l'outre et sertir le goulot.</p></div>
 <div class="etape"><div class="et"><span>Séchage</span><span>3 jours d'attente</span></div>
 <p>L'emplir d'eau pour qu'elle prenne son ventre, la suspendre et la laisser sécher jusqu'au cœur.</p></div>
-<div class="etape"><div class="et"><span>Poissage</span><span>1 heure en activité intermédiaire</span></div>
+<div class="etape"><div class="et"><span>Poissage</span><span>1 heure en effort intermédiaire</span></div>
 <p>Faire fondre la poix, la verser dans l'outre sèche et la tourner pour qu'elle en tapisse tout l'intérieur.</p></div>
 </div>
 

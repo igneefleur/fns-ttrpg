@@ -46,11 +46,11 @@ Se servir d'un consommable tiré du sac revient donc à deux dés d'action, et �
 
 C'est la [contenance](base/capacites-physiques.md#la-contenance) qui borne ce qu'un personnage avale, dans un round comme dans une journée.
 
-Un contenant se remplit à une source et se vide par doses : ce qu'une dose verse est le volume du contenant divisé par son nombre de doses. Ce qui n'est pas liquide se compte autrement, une dose y valant une unité de ce qu'on y range et non une gorgée. Remplir un contenant à une source demande une minute d'[activité légère](base/capacites-physiques.md#lactivite).
+Un contenant se remplit à une source et se vide par doses : ce qu'une dose verse est le volume du contenant divisé par son nombre de doses. Ce qui n'est pas liquide se compte autrement, une dose y valant une unité de ce qu'on y range et non une gorgée. Remplir un contenant à une source demande une minute d'[effort léger](base/capacites-physiques.md#leffort).
 
 **Un contenant ne prend que ce que son type nomme.** Les liquides vont à la gourde, à la bouteille et à la fiole ; les poudres à la poche ; ce qui poisse et ce qui graisse au pot, car ni le cuir ni le col étroit ne s'en relaveraient.
 
-Un litre d'eau bu rend 80 points d'[hydratation](base/capacites-physiques.md#la-satiete-et-lhydratation) et occupe 12 places de contenance ; une dose en rend et en occupe sa part, soit 20 points et 3 places pour un quart de litre. Une journée de marche coûte 192 points de [satiété](base/capacites-physiques.md#la-satiete-et-lhydratation), soit quatre parts de pain.
+Un litre d'eau bu rend 80 points d'[hydratation](base/capacites-physiques.md#la-satiete-et-lhydratation) et occupe 12 places de contenance ; une dose en rend et en occupe sa part, soit 20 points et 3 places pour un quart de litre. Une journée de marche coûte 135 points de [satiété](base/capacites-physiques.md#la-satiete-et-lhydratation), soit trois parts de pain.
 
 </div>
 
@@ -451,7 +451,7 @@ Du suif fondu puis battu jusqu'à blanchir, ferme et gras sous le doigt. Les tan
 ![Pain](../../assets/objets/edited/food/pain.png){ .objet-img }
 <div class="objet-stats">
 <div><span>Capacité</span><span>5</span></div>
-<div><span>Satiété</span><span>48</span></div>
+<div><span>Satiété</span><span>45</span></div>
 <div><span>Poids par part</span><span>0.2 kg</span></div>
 <div><span>Achat</span><span><span class="argent">5</span></span></div>
 <div><span>Vente</span><span><span class="argent">1</span></span></div>
