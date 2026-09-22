@@ -790,6 +790,11 @@ def _jeu(docs):
     ce sont celles-là qui piègent — voir leurs commentaires.
     """
     src = {rel: _lire_opt(docs, rel) for rel in PAGES}
+    # Le chapitre des armes se réécrit depuis zéro : présent mais sans une
+    # seule ligne d'arme, il est en chantier, et il compte comme absent — la
+    # fiche sort sans armes et l'avertissement le dit, au lieu que _armes lève.
+    if src["combat/armes.md"] is not None and not _ARME.search(src["combat/armes.md"]):
+        src["combat/armes.md"] = None
     absents = [rel for rel in PAGES if src[rel] is None]
 
     carac_md = src["base/caracteristiques.md"]
