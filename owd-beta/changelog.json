@@ -1,5 +1,19 @@
 [
 {
+"short": "4a8600d",
+"author": "Théo Cavaillès",
+"date": "2026-09-22T19:17:03+02:00",
+"message": "Les revers de l'épée et du sabre passent par le talon avant d'atteindre 2d2",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/4a8600dc64cde8fccf11aeb701f14c575f3bc253",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/combat/armes.md",
+"url": "content/regles/combat/armes/"
+}
+]
+},
+{
 "short": "1b7d36c",
 "author": "Théo Cavaillès",
 "date": "2026-09-22T19:11:15+02:00",
@@ -145,20 +159,6 @@
 "date": "2026-09-22T18:26:20+02:00",
 "message": "Les quatre attaques de la hache",
 "url": "https://github.com/igneefleur/fns-ttrpg/commit/a59b4f2fbd290801e0a27d79973b4d1e87e528ab",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/combat/armes.md",
-"url": "content/regles/combat/armes/"
-}
-]
-},
-{
-"short": "e530bb5",
-"author": "Théo Cavaillès",
-"date": "2026-09-22T18:24:37+02:00",
-"message": "Lire une arme : une phrase par entrée",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/e530bb50d82543154eb8ab620a168e6d0be79122",
 "files": [
 {
 "status": "modified",
