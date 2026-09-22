@@ -1,5 +1,19 @@
 [
 {
+"short": "0ba6a60",
+"author": "Théo Cavaillès",
+"date": "2026-09-22T18:27:39+02:00",
+"message": "Les quatre attaques de la masse",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/0ba6a6085dd591c895db7b5edd94635990735cd0",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/combat/armes.md",
+"url": "content/regles/combat/armes/"
+}
+]
+},
+{
 "short": "a59b4f2",
 "author": "Théo Cavaillès",
 "date": "2026-09-22T18:26:20+02:00",
@@ -155,20 +169,6 @@
 "date": "2026-09-22T01:32:34+02:00",
 "message": "L'intensité plafonne l'exposition : 10 % par point, jusqu'à 10",
 "url": "https://github.com/igneefleur/fns-ttrpg/commit/ebf6943535b4b8c1e4e8880c7119930ef872b0aa",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/base/capacites-physiques.md",
-"url": "content/regles/base/capacites-physiques/"
-}
-]
-},
-{
-"short": "61ae84e",
-"author": "Théo Cavaillès",
-"date": "2026-09-22T01:22:39+02:00",
-"message": "Les paliers du climat deviennent l'intensité ; Exposition montre la zone idéale et l'intensité",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/61ae84e9543ac73cf9200564a4c0e3106bd4f04d",
 "files": [
 {
 "status": "modified",
