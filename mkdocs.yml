@@ -67,7 +67,7 @@ extra_css:
   - stylesheets/fonts.css?v=2   # @font-face auto-hébergés : doit être chargée en premier
   - stylesheets/extra.css?v=19
   - stylesheets/night.css?v=19
-  - stylesheets/armes.css?v=6
+  - stylesheets/armes.css?v=7
   - stylesheets/cartes.css?v=24
   # LES ?v= DE LA FICHE SE MONTENT PAR OUTIL, JAMAIS À LA MAIN, et tous
   # ensemble : scripts/release_fiche.py les pose ici ET dans
