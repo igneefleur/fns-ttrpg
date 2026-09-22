@@ -8,21 +8,21 @@
 
 <div class="defs" markdown>
 
-**L'attaque :** la difficulté du [jet d'attaque](../base/actions.md) porté avec l'arme.
+**L'attaque :** la difficulté du [jet d'attaque](../base/actions.md).
 
-**Les hits :** le nombre de cibles qu'une attaque de l'arme touche.
+**Les hits :** le nombre de cibles qu'une attaque de l'arme peut toucher au maximum.
 
-**Les dégâts :** une base, puis des MOD. Le MOD d'une caractéristique vaut cette caractéristique divisée par 5, arrondie à l'inférieur. Dans une formule, DEX désigne le MOD de Dextérité et FOR le MOD de Force.
+**Les dégâts :** une base plus des MOD. Un MOD vaut la caractéristique divisée par 5, arrondie à l'inférieur.
 
-**Les types :** TRA tranche, PER perce, CON écrase. Le premier type s'applique aux dégâts pleins, le second à la moitié des dégâts. La moitié s'arrondit à l'inférieur.
+**Les types :** TRA tranche, PER perce, CON écrase. Le premier vaut pour les dégâts pleins, le second pour la moitié.
 
-**La parade :** la difficulté du [jet de parade](../base/actions.md) porté avec l'arme.
+**La parade :** la difficulté du [jet de parade](../base/actions.md).
 
-**La réduction :** ce qu'une parade réussie retire aux dégâts subis.
+**La réduction :** ce qu'une parade réussie retire aux dégâts.
 
-**DEX et FOR :** la Dextérité et la Force qu'un personnage doit avoir pour employer l'arme.
+**DEX et FOR :** la Dextérité et la Force minimales pour employer l'arme.
 
-**Les attaques :** les gestes que l'arme permet. Chacune porte son trajet sur une carte où le porteur occupe le centre et regarde vers le haut, chaque case valant un pas. Les cases foncées sont frappées et prennent les dégâts pleins, les cases claires sont traversées et prennent la moitié des dégâts. Les numéros donnent l'ordre dans lequel l'arme passe.
+**Les attaques :** le porteur est au centre et regarde vers le haut. Une case foncée prend les dégâts pleins, une case claire la moitié. Les numéros donnent l'ordre.
 
 </div>
 
@@ -34,13 +34,13 @@
 
 <div class="defs" markdown>
 
-**La portée normale :** la distance, en pas, jusqu'à laquelle l'attaque se lit dans la colonne Attaque.
+**La portée normale :** jusqu'à cette distance, en pas, l'attaque est celle de la colonne Attaque.
 
-**La portée max :** la distance, en pas, au-delà de laquelle l'arme n'atteint plus rien. Entre la portée normale et la portée max, l'attaque se lit dans la colonne Attaque max.
+**La portée max :** au-delà de la portée normale et jusqu'à cette distance, l'attaque est celle de la colonne Attaque max.
 
-**La munition :** ce que l'arme consomme à chaque tir. Une arme sans munition se lance elle-même, puis se ramasse.
+**La munition :** ce que consomme chaque tir.
 
-**Le rechargement :** le coût en dés d'action à payer après chaque tir, avant le suivant.
+**Le rechargement :** les dés d'action à dépenser après chaque tir.
 
 </div>
 
