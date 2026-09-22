@@ -1,5 +1,19 @@
 [
 {
+"short": "d057a39",
+"author": "Théo Cavaillès",
+"date": "2026-09-22T18:20:30+02:00",
+"message": "Les quatre attaques du sabre",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/d057a39a630a246dde9cc0869887b2e7126aa21c",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/combat/armes.md",
+"url": "content/regles/combat/armes/"
+}
+]
+},
+{
 "short": "05ad1ee",
 "author": "Théo Cavaillès",
 "date": "2026-09-22T18:16:45+02:00",
@@ -166,20 +180,6 @@
 "filename": "content/regles/base/capacites-physiques.md",
 "url": "content/regles/base/capacites-physiques/"
 },
-{
-"status": "modified",
-"filename": "content/regles/equipement.md",
-"url": "content/regles/equipement/"
-}
-]
-},
-{
-"short": "860848f",
-"author": "Théo Cavaillès",
-"date": "2026-09-21T18:10:22+02:00",
-"message": "Le pain et les eaux portent leurs places de contenance",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/860848f08e23e262ed47496200e8b7f98ebfa1c9",
-"files": [
 {
 "status": "modified",
 "filename": "content/regles/equipement.md",
