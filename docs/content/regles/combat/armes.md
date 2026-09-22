@@ -257,6 +257,24 @@ Une arme à distance ne pare pas.
 </div>
 
 <div class="arme">
+<p class="arme-nom">Lance</p>
+<div class="gestes">
+<div class="geste" data-trajet="1:passe>2:passe>3:frappe">
+<p class="geste-nom">Estoc</p>
+</div>
+<div class="geste" data-trajet="1d:passe>2d:passe>3d:passe>1:passe>2:passe>3:frappe">
+<p class="geste-nom">Estoc du côté droit</p>
+</div>
+<div class="geste" data-trajet="1g:passe>2g:passe>3g:passe>1:passe>2:passe>3:frappe">
+<p class="geste-nom">Estoc de revers</p>
+</div>
+<div class="geste" data-trajet="1:frappe">
+<p class="geste-nom">Coup de talon</p>
+</div>
+</div>
+</div>
+
+<div class="arme">
 <p class="arme-nom">Grand sabre</p>
 <div class="gestes">
 <div class="geste" data-trajet="1d:passe>2d2:passe>3d2:passe>2d:passe>1:passe>3d:frappe>2:frappe>3:frappe>3g:frappe>2g:frappe>1g:passe>3g2:passe>2g2:passe">
