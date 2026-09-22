@@ -22,6 +22,8 @@
 
 **DEX et FOR :** la Dextérité et la Force qu'un personnage doit avoir pour employer l'arme.
 
+**Les attaques :** les gestes que l'arme permet. Chacune porte son trajet sur une carte où le porteur occupe le centre et regarde vers le haut, chaque case valant un pas. Les cases foncées sont frappées et prennent les dégâts pleins, les cases claires sont traversées et prennent la moitié des dégâts. Les numéros donnent l'ordre dans lequel l'arme passe.
+
 </div>
 
 </div>
@@ -151,5 +153,39 @@ Une arme à distance ne pare pas.
 | Arbalète | 10 | 40 | 13 | 90 | 35 + DEX + DEX + DEX | PER | carreaux | 1 DA | 20 | 10 |
 | Arbalète lourde | 11 | 60 | 14 | 120 | 45 + DEX + DEX + DEX | PER | carreaux | 2 DA | 20 | 10 |
 | Mousquet | 12 | 30 | 15 | 70 | 90 + DEX + DEX + DEX | PER | balles | 5 DA | 30 | |
+
+</div>
+
+## Attaques
+
+<div class="gestes-legende">
+  <span><i class="lg-soi"></i>la case du porteur, qui regarde vers le haut</span>
+  <span><i></i>la case frappée, dégâts pleins</span>
+  <span><i class="lg-passe"></i>la case traversée, moitié des dégâts</span>
+</div>
+
+<div class="armes-grille">
+
+<div class="arme">
+<p class="arme-nom">Épée</p>
+<div class="gestes">
+<div class="geste" data-trajet="1d:passe>2d2:frappe>2d:frappe>1:passe>2:frappe>2g:passe>1g:passe">
+<p class="geste-nom">Taille horizontale du côté droit</p>
+<p class="geste-diff">3 hits</p>
+</div>
+<div class="geste" data-trajet="1g:passe>2g:passe>1:passe>2:frappe>2d:frappe>2d2:frappe>1d:passe">
+<p class="geste-nom">Taille horizontale de revers</p>
+<p class="geste-diff">3 hits</p>
+</div>
+<div class="geste" data-trajet="1:passe>2:frappe">
+<p class="geste-nom">Estoc</p>
+<p class="geste-diff">1 hit</p>
+</div>
+<div class="geste" data-trajet="1:frappe">
+<p class="geste-nom">Coup de pommeau</p>
+<p class="geste-diff">1 hit</p>
+</div>
+</div>
+</div>
 
 </div>

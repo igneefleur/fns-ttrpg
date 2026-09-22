@@ -53,7 +53,7 @@ import math
 import re
 
 RAYON_CASE = 10.0   # rayon du cercle circonscrit d'un hexagone, en unités SVG
-PORTEE_MAX = 4      # rayon de la carte, en cases : la lance et la hallebarde
+PORTEE_MAX = 3      # rayon de la carte, en cases : la portée des plus longues armes
 SQ3 = math.sqrt(3.0)
 
 ETAPE = re.compile(r"^(soi|(\d+)(g*|d*)(\d*))$")
