@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "2.6.1";
+  var RELEASE = "2.9.1b";
   var SCHEMA = 3;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -153,10 +153,11 @@
   }
   function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
   function num(v, d) { var n = parseInt(v, 10); return isNaN(n) ? d : n; }
-  // poids, quantités, prix : décimal positif, virgule tolérée, arrondi au centième
+  // poids, encombrance, quantités, prix : décimal positif, virgule tolérée,
+  // arrondi au MILLIÈME (un objet peut peser 0.001 kg)
   function pnum(v) {
     var n = parseFloat(String(v == null ? "" : v).replace(",", "."));
-    return isFinite(n) && n >= 0 ? Math.round(n * 100) / 100 : 0;
+    return isFinite(n) && n >= 0 ? Math.round(n * 1000) / 1000 : 0;
   }
   // PRIX DE VENTE d'un objet : null veut dire « automatique », le tiers du
   // prix d'achat arrondi à l'inférieur. Un nombre saisi, 0 compris, prime.
@@ -172,7 +173,7 @@
     return isFinite(n) ? Math.round(n * 100) / 100 : 0;
   }
   // affichage : point décimal, sans zéros de traîne (« 0.5 », « 3 »)
-  function fmtP(n) { return String(Math.round(n * 100) / 100); }
+  function fmtP(n) { return String(Math.round(n * 1000) / 1000); }
   // modificateurs divers : TOUJOURS un tableau de 3 emplacements, sommés dans
   // la valeur effective. modArr assainit ce qui entre, modSum totalise.
   function modArr(a) {
@@ -373,6 +374,10 @@
       // l'air en °C. Le module Temps s'en sert pour faire
       // passer le temps ; rien d'autre ne les lit.
       effort: "leger", temperature: 20,
+      // L'ALLURE du module Mouvement (clé d'un effort des règles : on peut
+      // aller moins vite que l'effort qu'on fournit) et le CRAN de l'allure
+      // lourde, la seule qui se prend par crans.
+      allure: "leger", allureCran: 1,
 
       // ---- l'effondrement ----
       // Les niveaux d'effondrement que le JOUEUR ajoute à ceux des réserves
@@ -582,6 +587,8 @@
     if (!s.de) s.de = DE_DEFAUT;
     s.xpTotal = Math.max(0, num(s.xpTotal, 0));
     s.effort = String(s.effort == null ? "" : s.effort) || b.effort;
+    s.allure = String(s.allure == null ? "" : s.allure) || b.allure;
+    s.allureCran = clamp(num(s.allureCran, 1), 1, 99);
     s.effAutre = clamp(Math.round(num(s.effAutre, 0)), 0, 99);
     s.desTailles = Array.isArray(s.desTailles)
       ? s.desTailles.slice(0, 99).map(function (t) {
@@ -1421,7 +1428,7 @@
   function poidsOu(test) {
     var t = 0;
     state.inv.objets.forEach(function (o) { if (test(o.ou)) t += poidsDe(o); });
-    return Math.round(t * 100) / 100;
+    return Math.round(t * 1000) / 1000;
   }
   // Les poches et le sac ne se limitent pas en poids mais en ENCOMBRANCE
   // (eb) : ce qu'ils contiennent se compare, en eb, à ce que valent les poches
@@ -1429,7 +1436,7 @@
   function ebOu(ou) {
     var t = 0;
     state.inv.objets.forEach(function (o) { if (o.ou === ou) t += pnum(o.qte) * pnum(o.encombre); });
-    return Math.round(t * 100) / 100;
+    return Math.round(t * 1000) / 1000;
   }
   function ebPoches() { return ebOu("poches"); }
   function ebSac() { return ebOu("sac"); }
@@ -1529,7 +1536,7 @@
   function capPoches() {
     var t = 0;
     vetementsPortes().forEach(function (o) { t += pnum(o.poches); });
-    return Math.round(t * 100) / 100;
+    return Math.round(t * 1000) / 1000;
   }
   function capSac() {
     var s = objetEn("dos");
@@ -1713,7 +1720,15 @@
     });
     return out === null ? null : (niveau < 0 ? -out : out);
   }
-  // Les paliers de froid (négatifs) ou de chaud (positifs) du personnage, à
+  // LA ZONE IDÉALE, en température de l'AIR : sa zone de confort (le corps nu
+  // plus ce qu'il porte), moins les degrés que son effort lui ajoute.
+  function zoneIdeale() {
+    var z = confort(), e = effortDe(state.effort);
+    if (!z || !e) return null;
+    var d = num(e.degres, 0);
+    return { bas: z.bas - d, haut: z.haut - d };
+  }
+  // L'INTENSITÉ de froid (négative) ou de chaud (positive) du personnage, à
   // la température de l'air et à l'effort qu'il fournit.
   function paliersClimat() {
     var t = tempsDef(), z = confort(), e = effortDe(state.effort);
@@ -1721,9 +1736,21 @@
     var ressenti = num(state.temperature, 0) + num(e.degres, 0);
     var div = Math.max(1, num(t.paliers.diviseur, 1));
     var arr = t.paliers.arrondi === "bas" ? Math.floor : Math.ceil;
-    if (ressenti < z.bas) return -arr((z.bas - ressenti) / div);
-    if (ressenti > z.haut) return arr((ressenti - z.haut) / div);
+    // l'intensité ne dépasse pas le maximum des règles
+    var im = t.intensite ? num(t.intensite.max, 0) : 0;
+    function borne(k) { return im > 0 ? Math.min(k, im) : k; }
+    if (ressenti < z.bas) return -borne(arr((z.bas - ressenti) / div));
+    if (ressenti > z.haut) return borne(arr((ressenti - z.haut) / div));
     return 0;
+  }
+  // LE PLAFOND D'EXPOSITION d'une intensité, en points (positif) : jusque-là,
+  // et pas plus loin, l'exposition peut aller du côté de l'intensité subie.
+  // Sans table dans les règles, aucun plafond : l'exposition va jusqu'au bout.
+  function plafondExpo(intensite) {
+    var t = tempsDef(), m = expoMax(), k = Math.abs(intensite);
+    var pl = t && t.intensite && t.intensite.plafonds;
+    if (!pl || !aClef(pl, String(k))) return m;
+    return m * num(pl[String(k)], 100) / 100;
   }
   // Le facteur de dépense d'une réserve, selon le niveau de froid ou de chaud
   // que l'exposition a atteint.
@@ -1818,8 +1845,15 @@
         cumul.ph += rSurvie * tr * facteurDepense("ph");
       }
       var p = paliersClimat(), m = expoMax(), x = num(state.etat.expo, 0);
-      if (p) x = clamp(x + p, -m, m);
-      else {
+      if (p) {
+        // vers l'intensité subie, JUSQU'À son plafond ; déjà au-delà, elle
+        // revient vers lui à la cadence de retour
+        var cap = plafondExpo(p) * (p < 0 ? -1 : 1);
+        var rp = m * num(t.intensite ? t.intensite.retour : t.expoRetour, 0) / 100;
+        if (p < 0) x = x < cap ? Math.min(cap, x + rp) : Math.max(cap, x + p);
+        else x = x > cap ? Math.max(cap, x - rp) : Math.min(cap, x + p);
+        x = clamp(x, -m, m);
+      } else {
         var retour = m * num(t.expoRetour, 0) / 100;
         x = x > 0 ? Math.max(0, x - retour) : Math.min(0, x + retour);
       }
@@ -2871,6 +2905,29 @@
       });
       return m;
     }
+    // UN COMPTEUR EN PIÈCES, pour ce qui se compte à l'unité : autant de pièces
+    // que de points, pleines pour ceux dépensés, vides pour ceux qui restent,
+    // et celles de trop en danger. Carrés pour les avantages, maillons de
+    // chaîne (le pictogramme de rupture du livre) pour la rupture.
+    function pieces(label, getUsed, getTotal, forme, titre) {
+      var m = el("span", "pc-meter pc-meter-pieces");
+      m.appendChild(el("span", null, label));
+      var b = el("b", null, "");
+      m.appendChild(b);
+      var box = el("span", "pc-pieces " + forme);
+      m.appendChild(box);
+      if (titre) m.title = titre;
+      hooks.push(function () {
+        var used = getUsed(), total = getTotal();
+        b.textContent = fmtP(used) + " / " + fmtP(total);
+        b.classList.toggle("over", used > total);
+        var pleins = Math.floor(used), n = Math.min(40, Math.max(Math.floor(total), pleins));
+        box.innerHTML = "";
+        for (var i = 0; i < n; i++)
+          box.appendChild(el("i", "pc-piece" + (i < pleins ? " plein" : "") + (i >= total ? " over" : "")));
+      });
+      return m;
+    }
     // DEUX LIGNES, dans l'ordre arrêté par l'auteur :
     //   Création | XP dépensé | XP total
     //   Avantage | Rupture | Compétences | Techniques
@@ -2879,8 +2936,8 @@
     mrow.appendChild(meter("XP dépensé", xpDepense, function () { return state.xpTotal; },
       "Ce que les rangs de compétence, les techniques et les caractéristiques ont coûté"));
     if (avantagePoints() !== null)
-      mrow2.appendChild(meter("Avantage", avantageDepense, avantagePoints, "Points d'avantage"));
-    mrow2.appendChild(meter("Rupture", ruptureDepense, ruptureMax,
+      mrow2.appendChild(pieces("Avantage", avantageDepense, avantagePoints, "carres", "Points d'avantage"));
+    mrow2.appendChild(pieces("Rupture", ruptureDepense, ruptureMax, "chaines",
       "Points de rupture engagés par les Rangs Max et par les techniques"));
     if (limiteRangs("competences") !== null)
       mrow2.appendChild(meter("Compétences", compRangsComptes,
@@ -3550,20 +3607,30 @@
   // tranche. UN NOMBRE NÉGATIF FAIT RECULER LE TEMPS : c'est le rattrapage
   // d'une erreur de saisie. Aucune règle n'est écrite ici : les efforts, les
   // taux et les paliers viennent des données.
+  // l'affichage d'un effort dont le nom ne tient pas dans sa case
+  var EFFORT_COURT = { intermediaire: "Inter" };
   function buildEffort() {
-    var b = block("Temps");
+    var b = block("Effort et Temps");
 
-    // les efforts, un bouton chacun, dans l'ordre des règles
-    var bande = el("div", "pc-tabs mini pc-efforts");
+    // LES EFFORTS, en cases soudées comme le trio de MIA, sur deux lignes
+    // arrêtées par l'auteur : [sommeil | repos], puis [léger | intermédiaire |
+    // lourd]. Les deux premiers efforts des règles font la première ligne.
     var boutons = [];
-    effortsListe().forEach(function (e) {
-      var bt = el("button", "pc-tab", e.nom);
-      bt.type = "button";
-      bt.addEventListener("click", function () { state.effort = e.cle; refresh(); });
-      bande.appendChild(bt);
-      boutons.push([bt, e.cle]);
+    var liste = effortsListe();
+    [liste.slice(0, 2), liste.slice(2)].forEach(function (rang) {
+      if (!rang.length) return;
+      var bloc = el("div", "pc-segs");
+      rang.forEach(function (e) {
+        // l'étiquette courte voulue par l'auteur ; le nom entier au survol
+        var bt = el("button", "c", EFFORT_COURT[e.cle] || e.nom);
+        bt.title = e.nom;
+        bt.type = "button";
+        bt.addEventListener("click", function () { state.effort = e.cle; refresh(); });
+        bloc.appendChild(bt);
+        boutons.push([bt, e.cle]);
+      });
+      b.appendChild(bloc);
     });
-    b.appendChild(bande);
 
     var air = el("div", "pc-crow-bot");
     air.appendChild(el("span", "lbl", "Température"));
@@ -3822,6 +3889,18 @@
     jauge.appendChild(el("b", "pc-expo-zero"));
     res.appendChild(jauge);
 
+    // LA ZONE IDÉALE (en température de l'air, selon l'effort du module
+    // Effort et Temps) et l'INTENSITÉ de froid ou de chaud qu'il subit
+    var stat = el("div", "pc-stat pc-expo-stat");
+    function caseStat(k) {
+      var c = el("div", "c"), v = el("span", "v", "");
+      c.appendChild(v);
+      c.appendChild(el("span", "k", k));
+      stat.appendChild(c);
+      return v;
+    }
+    var vZone = caseStat("idéal °C"), vInt = caseStat("intensité");
+
     var cmd = el("div", "pc-vital-cmd");
     var delta = el("input", "pc-vital-delta");
     delta.type = "number";
@@ -3842,6 +3921,8 @@
     cmd.appendChild(delta);
     cmd.appendChild(miniBtn("Appliquer", "Ajouter cette variation", applique));
     res.appendChild(cmd);
+    // sous le geste : la barre, puis [± Appliquer], puis la zone et l'intensité
+    res.appendChild(stat);
     box.appendChild(res);
 
     hooks.push(function () {
@@ -3857,10 +3938,121 @@
       fill.className = v < 0 ? "froid" : v > 0 ? "chaud" : "";
       fill.style.left = (v < 0 ? 50 - part : 50) + "%";
       fill.style.width = part + "%";
+      var z = zoneIdeale();
+      // le VRAI moins, comme au livre : « −5 à 7 »
+      function deg(n) { return fmtP(n).replace("-", "−"); }
+      vZone.textContent = z ? deg(z.bas) + " à " + deg(z.haut) : "—";
+      var p = paliersClimat();
+      vInt.textContent = p < 0 ? "Froid " + (-p) : p > 0 ? "Chaud " + p : "Aucune";
+      vInt.className = "v" + (p < 0 ? " froid" : p > 0 ? " chaud" : "");
       jauge.title = "Exposition " + (v < 0 ? "−" + fmtP(-v) : fmtP(v)) + " sur ±" + fmtP(m) +
                     " · niveau d'effondrement " + effNiveauDe("expo");
     });
     return box;
+  }
+  // ---- Mouvement ----
+  // Les pas par round que donne l'ALLURE, choisie ici avec les mêmes cases que
+  // l'effort : on peut se déplacer moins vite que l'effort qu'on fournit, les
+  // deux ne se confondent donc pas. Endormi, le personnage n'a pas d'allure,
+  // donc aucun pas. L'allure lourde se prend par crans, chacun
+  // avec son coût en dés d'action et en PE : c'est le seul choix de ce module.
+  // Aucune règle n'est écrite ici : les allures, leurs pas et leurs coûts
+  // viennent des données (clé « mouvement »).
+  function mouvementListe() { var m = D().mouvement; return Array.isArray(m) ? m : []; }
+  // l'allure de l'effort courant : « leger » est l'allure « legere », « lourd »
+  // la « lourde » ; le sommeil n'en a aucune
+  function allureCourante() {
+    var e = String(state.allure || ""), out = null;
+    if (!e) return null;
+    mouvementListe().forEach(function (a) { if (!out && a.cle.indexOf(e) === 0) out = a; });
+    return out;
+  }
+  // Les DÉS D'ACTION que l'allure prend ce round (le coût du cran, à l'allure
+  // lourde) : le module Actions les bloque, de droite à gauche.
+  function desPerdusMouvement() {
+    var a = allureCourante();
+    if (!a || a.crans.length < 2) return 0;
+    var c = a.crans[clamp(num(state.allureCran, 1), 1, a.crans.length) - 1];
+    return Math.max(0, Math.floor(num0(c.des)));
+  }
+  function num0(v) { var n = parseFloat(v); return isFinite(n) ? n : 0; }
+  function buildMouvement() {
+    var b = block("Mouvement");
+
+    // L'ALLURE, en cases soudées sur deux lignes, comme les efforts du module
+    // Effort et Temps : [sommeil | repos], puis [léger | inter | lourd].
+    var boutons = [];
+    var liste = effortsListe();
+    [liste.slice(0, 2), liste.slice(2)].forEach(function (rang) {
+      if (!rang.length) return;
+      var bloc = el("div", "pc-segs");
+      rang.forEach(function (e) {
+        var bt = el("button", "c", EFFORT_COURT[e.cle] || e.nom);
+        bt.title = e.nom;
+        bt.type = "button";
+        bt.addEventListener("click", function () { state.allure = e.cle; refresh(); });
+        bloc.appendChild(bt);
+        boutons.push([bt, e.cle]);
+      });
+      b.appendChild(bloc);
+    });
+
+    // UN TABLEAU DE BORD, dans l'ordre arrêté par l'auteur :
+    //   [ pas / round | m / minute | km / heure ]   la grande case d'abord
+    //   [ +3 | +6 | +9 | +12 | +15 ]                les crans, en effort lourd
+    //   [ DA | PE ]                                 ce que le cran coûte
+    // Les cases sont soudées, comme le trio de MIA : la valeur en grand,
+    // l'étiquette en petites capitales dessous.
+    function cases(cls, defs) {
+      var box = el("div", "pc-stat " + cls), out = {};
+      defs.forEach(function (d) {
+        var c = el("div", "c" + (d[2] ? " " + d[2] : ""));
+        var v = el("span", "v", "");
+        c.appendChild(v);
+        c.appendChild(el("span", "k", d[1]));
+        box.appendChild(c);
+        out[d[0]] = v;
+      });
+      b.appendChild(box);
+      return { box: box, v: out };
+    }
+    var dist = cases("pc-mouv-dist", [["pas", "pas / rnd", "grand"], ["min", "m / min"], ["h", "km / h"]]);
+    // les crans : foncer, chacun marqué des pas qu'il ajoute à l'allure d'avant
+    var crans = el("div", "pc-segs pc-crans");
+    b.appendChild(crans);
+    var cout = cases("pc-mouv-cout", [["da", "dés d'action"], ["pe", "PE"]]);
+
+    hooks.push(function () {
+      boutons.forEach(function (x) { x[0].classList.toggle("on", x[1] === state.allure); });
+      var a = allureCourante();
+      crans.innerHTML = "";
+      var lourd = !!a && a.crans.length > 1;
+      crans.style.display = lourd ? "" : "none";
+      cout.box.style.display = lourd ? "" : "none";
+      var c = { pas: 0, minute: 0, heure: 0, des: 0, pe: 0 };
+      if (a) {
+        var k = clamp(num(state.allureCran, 1), 1, a.crans.length);
+        c = a.crans[k - 1];
+        if (lourd) {
+          // les pas de l'allure d'avant : le point de départ des crans
+          var liste = mouvementListe(), avant = liste[liste.indexOf(a) - 1];
+          var base = avant ? avant.crans[avant.crans.length - 1].pas : 0;
+          a.crans.forEach(function (x, i) {
+            var bt = el("button", "c" + (i + 1 === k ? " on" : ""), "+" + (x.pas - base));
+            bt.title = x.des + "DA" + (x.pe ? " · " + x.pe + " PE" : "");
+            bt.type = "button";
+            bt.addEventListener("click", function () { state.allureCran = i + 1; refresh(); });
+            crans.appendChild(bt);
+          });
+        }
+      }
+      dist.v.pas.textContent = String(c.pas);
+      dist.v.min.textContent = fmtP(num0(c.minute));
+      dist.v.h.textContent = fmtP(num0(c.heure));
+      cout.v.da.textContent = String(c.des || 0);
+      cout.v.pe.textContent = String(c.pe || 0);
+    });
+    return b;
   }
   // ---- 7. Effondrement ----
   //     [      EFFONDREMENT      ]
@@ -4055,6 +4247,10 @@
     var rangee = el("div", "pc-desaction");
     b.appendChild(rangee);
     var choisis = [];
+    // LES DÉS UTILISÉS : envoyés, ils restent inaccessibles jusqu'à ce qu'on
+    // les RÉCUPÈRE. Ce n'est pas le blocage du mouvement (« perdu ») : les deux
+    // se voient différemment.
+    var utilises = [];
     var cases = [];
     var nuitVue = null;
 
@@ -4106,13 +4302,16 @@
       rangee.innerHTML = "";
       cases = [];
       choisis = choisis.slice(0, n);
+      utilises = utilises.slice(0, n);
       for (var i = 0; i < n; i++) (function (i) {
         var col = el("div", "pc-desaction-de");
         var pose = el("button", "pc-desaction-pose");
         pose.type = "button";
         pose.addEventListener("click", function () {
+          if (col.classList.contains("perdu") || utilises[i]) return;
           choisis[i] = !choisis[i];
           col.classList.toggle("on", !!choisis[i]);
+          majBoutons();
         });
         col.appendChild(pose);
         var taille = el("div", "pc-desaction-taille");
@@ -4128,6 +4327,7 @@
         taille.appendChild(plus);
         col.appendChild(taille);
         col.classList.toggle("on", !!choisis[i]);
+        col.classList.toggle("utilise", !!utilises[i]);
         rangee.appendChild(col);
         cases.push({ col: col, pose: pose, nom: nom, moins: moins, plus: plus });
         scene(i);
@@ -4137,7 +4337,7 @@
     var envoi = miniBtn("Envoyer", "Lancer les dés sélectionnés", function () {
       var tailles = [];
       cases.forEach(function (c, i) { if (choisis[i]) tailles.push(desTaille(i)); });
-      if (!tailles.length) { flash("Aucun dé sélectionné."); return; }
+      if (!tailles.length) return;
       var cmd = "&{template:default}{{name=OWD Action Dice}}{{rolls=" +
                 tailles.map(function (t) { return "[[1d" + t + "]]"; }).join("") + "}}";
       if (!envoyer(cmd)) {
@@ -4145,12 +4345,31 @@
           return "d" + t + " : " + (1 + Math.floor(Math.random() * t));
         }).join(" · "));
       }
+      // ce qui vient d'être lancé est UTILISÉ jusqu'à « Récupérer »
+      cases.forEach(function (c, i) {
+        if (choisis[i]) { utilises[i] = true; c.col.classList.add("utilise"); }
+        c.col.classList.remove("on");
+      });
       choisis = [];
-      cases.forEach(function (c) { c.col.classList.remove("on"); });
+      majBoutons();
     }, "pc-desaction-envoi");
-    b.appendChild(envoi);
+    var recup = miniBtn("Récupérer", "Rendre les dés utilisés", function () {
+      utilises = [];
+      cases.forEach(function (c) { c.col.classList.remove("utilise"); });
+      majBoutons();
+    }, "pc-desaction-envoi");
+    // ENVOYER ne part qu'avec un dé choisi, RÉCUPÉRER qu'avec un dé utilisé
+    function majBoutons() {
+      envoi.disabled = !choisis.some(function (x, i) { return x && i < cases.length; });
+      recup.disabled = !utilises.some(function (x, i) { return x && i < cases.length; });
+    }
+    var gestes = el("div", "pc-desaction-gestes");
+    gestes.appendChild(envoi);
+    gestes.appendChild(recup);
+    b.appendChild(gestes);
 
     bati();
+    majBoutons();
     // LE MODE NUIT se bascule sans passer par la fiche (night.js, l'amorce
     // Roll20) : on guette la classe de <html> pour repeindre les dés. Le
     // guetteur se débranche de lui-même quand le module a quitté la page.
@@ -4162,6 +4381,20 @@
       });
       guet.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
     }
+    // LES DÉS PERDUS au mouvement (foncer coûte des dés d'action) : les
+    // derniers de la rangée, de droite à gauche, grisés et hachurés, et qu'on
+    // ne peut plus choisir. Un dé choisi qui se perd est désélectionné.
+    function marquePerdus() {
+      var perdus = Math.min(cases.length, desPerdusMouvement());
+      cases.forEach(function (c, i) {
+        var p = i >= cases.length - perdus;
+        c.col.classList.toggle("perdu", p);
+        c.pose.disabled = p;
+        c.pose.title = p ? "Dé d'action pris par le mouvement" : "";
+        if (p && choisis[i]) { choisis[i] = false; c.col.classList.remove("on"); }
+      });
+      majBoutons();
+    }
     hooks.push(function () {
       cases.forEach(function (c) { if (!c.centre) centre(c); });
       // le nombre de dés suit la capacité (un levier du MJ peut la changer) ;
@@ -4171,6 +4404,7 @@
         nuitVue = nuit;
         bati();
       }
+      marquePerdus();
     });
     return b;
   }
@@ -5301,11 +5535,12 @@
         var img = new Image();
         img.onload = function () {
           if (!img.width || !img.height) { flash("Image illisible."); return; }   // ex. SVG sans dimensions
-          var S = 96, c = document.createElement("canvas");
-          c.width = S; c.height = S;
-          var k = Math.max(S / img.width, S / img.height);
+          // le PORTRAIT des images du livre, 84 × 128
+          var W = 84, H = 128, c = document.createElement("canvas");
+          c.width = W; c.height = H;
+          var k = Math.max(W / img.width, H / img.height);
           var w = img.width * k, h = img.height * k;
-          c.getContext("2d").drawImage(img, (S - w) / 2, (S - h) / 2, w, h);
+          c.getContext("2d").drawImage(img, (W - w) / 2, (H - h) / 2, w, h);
           cb(c.toDataURL("image/jpeg", 0.7));
         };
         img.onerror = function () { flash("Image illisible."); };
@@ -5636,10 +5871,8 @@
                         desc: "", ou: "sac", emp: -1, rapide: false, vet: "", acc: "", poches: 0, froid: 0, chaud: 0,
                         sac: false, cap: 0, ceint: false, ep: 0, ebMax: 0, arme: null };
 
-      var imgbox = el("div", "pc-obj-imgbox");
-      if (it.img) { var im = el("img"); im.alt = ""; im.src = it.img; imgbox.appendChild(im); }
-      else imgbox.appendChild(el("div", "pc-obj-ph big", "?"));
-      panel.appendChild(imgbox);
+      // AUCUNE IMAGE AU PANNEAU, consigne de l'auteur : l'image se voit sur la
+      // tuile, le panneau ne porte que le détail.
 
       var body = el("div", "pc-obj-body");
 
@@ -5890,7 +6123,7 @@
         vignette(f, function (data) { it.img = data; render(); refresh(); });
       });
       urlFld.appendChild(file);
-      urlFld.appendChild(miniBtn("Fichier…", "Importer une image (réduite en vignette 96 px)",
+      urlFld.appendChild(miniBtn("Fichier…", "Importer une image (réduite en vignette 84 × 128)",
         function () { file.click(); }));
       pairE.appendChild(urlFld);
       body.appendChild(pairE);
@@ -7365,7 +7598,7 @@
   var MODULES_NATIFS = [
     // ---- onglet Fiche ----
     { id: "caracs",       titre: "Caractéristiques", onglet: "fiche", colonne: "gauche", build: buildCaracs },
-    { id: "effort",       titre: "Temps",            onglet: "fiche", colonne: "gauche", build: buildEffort },
+    { id: "effort",       titre: "Effort et Temps",  onglet: "fiche", colonne: "gauche", build: buildEffort },
     { id: "survie",       titre: "Survie",           onglet: "fiche", colonne: "gauche", build: buildSurvie },
     { id: "exposition",   titre: "Exposition",       onglet: "fiche", colonne: "gauche", build: buildExposition },
     // TROIS RÉSERVES, TROIS MODULES : même forme, mais on ne les lit pas au
@@ -7373,6 +7606,7 @@
     { id: "pv",           titre: "PV",               onglet: "fiche", colonne: "milieu", build: buildPv },
     { id: "pe",           titre: "PE",               onglet: "fiche", colonne: "milieu", build: buildPe },
     { id: "pm",           titre: "PM",               onglet: "fiche", colonne: "milieu", build: buildPm },
+    { id: "mouvement",    titre: "Mouvement",        onglet: "fiche", colonne: "milieu", build: buildMouvement },
     { id: "effondrement", titre: "Effondrement",     onglet: "fiche", colonne: "milieu", build: buildEffondrement },
     { id: "pi",           titre: "PI",               onglet: "fiche", colonne: "milieu", build: buildPi },
     { id: "contenance",   titre: "Contenance",       onglet: "fiche", colonne: "milieu", build: buildContenance },

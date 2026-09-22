@@ -1,5 +1,8 @@
 {
  "_lisezmoi": "Produit au build par hooks/owd_creation.py depuis docs/content/regles/. Ne pas editer a la main : la prochaine construction l'ecrase.",
+ "_absents": [
+  "combat/armes.md"
+ ],
  "caracs": [
   {
    "cle": "Force",
@@ -479,6 +482,22 @@
    "arrondi": "haut"
   },
   "expoRetour": 10,
+  "intensite": {
+   "max": 10,
+   "plafonds": {
+    "1": 10,
+    "2": 20,
+    "3": 30,
+    "4": 40,
+    "5": 50,
+    "6": 60,
+    "7": 70,
+    "8": 80,
+    "9": 90,
+    "10": 100
+   },
+   "retour": 10
+  },
   "accelere": {
    "froid": [
     {
@@ -506,117 +525,91 @@
    ]
   }
  },
- "pas": 0.75,
+ "mouvement": [
+  {
+   "cle": "repos",
+   "nom": "repos",
+   "crans": [
+    {
+     "pas": 0,
+     "des": 0,
+     "pe": 0,
+     "minute": 0.0,
+     "heure": 0.0
+    }
+   ]
+  },
+  {
+   "cle": "legere",
+   "nom": "légère",
+   "crans": [
+    {
+     "pas": 3,
+     "des": 0,
+     "pe": 0,
+     "minute": 45.0,
+     "heure": 2.7
+    }
+   ]
+  },
+  {
+   "cle": "intermediaire",
+   "nom": "intermédiaire",
+   "crans": [
+    {
+     "pas": 6,
+     "des": 0,
+     "pe": 0,
+     "minute": 90.0,
+     "heure": 5.4
+    }
+   ]
+  },
+  {
+   "cle": "lourde",
+   "nom": "lourde",
+   "crans": [
+    {
+     "pas": 9,
+     "des": 1,
+     "pe": 0,
+     "minute": 135.0,
+     "heure": 8.1
+    },
+    {
+     "pas": 12,
+     "des": 2,
+     "pe": 5,
+     "minute": 180.0,
+     "heure": 10.8
+    },
+    {
+     "pas": 15,
+     "des": 3,
+     "pe": 10,
+     "minute": 225.0,
+     "heure": 13.5
+    },
+    {
+     "pas": 18,
+     "des": 4,
+     "pe": 15,
+     "minute": 270.0,
+     "heure": 16.2
+    },
+    {
+     "pas": 21,
+     "des": 5,
+     "pe": 20,
+     "minute": 315.0,
+     "heure": 18.9
+    }
+   ]
+  }
+ ],
  "monnaie": {
   "nom": "pièce d'argent",
   "pluriel": "pièces d'argent",
   "venteSurAchat": 3
- },
- "armes": [
-  {
-   "cle": "corps-a-corps",
-   "nom": "Corps à corps",
-   "categorie": "Armes à un pas",
-   "parade": 9,
-   "reduction": 4,
-   "palier": 1
-  },
-  {
-   "cle": "dague",
-   "nom": "Dague",
-   "categorie": "Armes à un pas",
-   "parade": 8,
-   "reduction": 6,
-   "palier": 1
-  },
-  {
-   "cle": "epee",
-   "nom": "Épée à une main",
-   "categorie": "Armes à deux pas",
-   "parade": 5,
-   "reduction": 14,
-   "palier": 2
-  },
-  {
-   "cle": "hache",
-   "nom": "Hache à une main",
-   "categorie": "Armes à deux pas",
-   "parade": 7,
-   "reduction": 10,
-   "palier": 2
-  },
-  {
-   "cle": "masse",
-   "nom": "Masse à une main",
-   "categorie": "Armes à deux pas",
-   "parade": 6,
-   "reduction": 10,
-   "palier": 2
-  },
-  {
-   "cle": "rapiere",
-   "nom": "Rapière",
-   "categorie": "Armes à deux pas",
-   "parade": 4,
-   "reduction": 12,
-   "palier": 2
-  },
-  {
-   "cle": "grande-epee",
-   "nom": "Grande épée à deux mains",
-   "categorie": "Armes à trois pas",
-   "parade": 4,
-   "reduction": 20,
-   "palier": 3
-  },
-  {
-   "cle": "grande-hache",
-   "nom": "Grande hache à deux mains",
-   "categorie": "Armes à trois pas",
-   "parade": 7,
-   "reduction": 16,
-   "palier": 3
-  },
-  {
-   "cle": "grand-marteau",
-   "nom": "Grand marteau",
-   "categorie": "Armes à trois pas",
-   "parade": 5,
-   "reduction": 18,
-   "palier": 3
-  },
-  {
-   "cle": "lance",
-   "nom": "Lance à deux mains",
-   "categorie": "Armes à quatre pas",
-   "parade": 6,
-   "reduction": 12,
-   "palier": 4
-  },
-  {
-   "cle": "hallebarde",
-   "nom": "Hallebarde",
-   "categorie": "Armes à quatre pas",
-   "parade": 5,
-   "reduction": 16,
-   "palier": 4
-  }
- ],
- "typesDegats": [
-  {
-   "cle": "TRA",
-   "libelle": "TRA",
-   "dit": "Le fil tranche"
-  },
-  {
-   "cle": "PER",
-   "libelle": "PER",
-   "dit": "la pointe perce"
-  },
-  {
-   "cle": "CON",
-   "libelle": "CON",
-   "dit": "une hampe, un manche, un plat ou un pommeau écrasent"
-  }
- ]
+ }
 }

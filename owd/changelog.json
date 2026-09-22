@@ -1,269 +1,169 @@
 [
 {
-"short": "385a5c1",
+"short": "1575fd4",
 "author": "Théo Cavaillès",
-"date": "2026-09-21T20:48:45+02:00",
-"message": "Capacités physiques et équipement perdent leur introduction",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/385a5c13145300a0adbe33f5e60618d5924f4288",
+"date": "2026-09-22T19:41:10+02:00",
+"message": "La masse frappe en fin de rotation, comme le grand marteau",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/1575fd4dff8d0ac44bf745e581356cfcd83005b0",
 "files": [
-{
-"status": "modified",
-"filename": "content/regles/base/capacites-physiques.md",
-"url": "content/regles/base/capacites-physiques/"
-},
-{
-"status": "modified",
-"filename": "content/regles/equipement.md",
-"url": "content/regles/equipement/"
-}
-]
-},
-{
-"short": "9b53944",
-"author": "Théo Cavaillès",
-"date": "2026-09-21T20:36:21+02:00",
-"message": "Les avantages : une page au livre, un module dans Bio, un compteur à l'en-tête",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/9b5394402a77d3632a9d1f1030842e2b81381874",
-"files": [
-{
-"status": "added",
-"filename": "content/regles/base/avantages.md",
-"url": "content/regles/base/avantages/"
-}
-]
-},
-{
-"short": "d0e798b",
-"author": "Théo Cavaillès",
-"date": "2026-09-21T19:31:30+02:00",
-"message": "La contenance se mesure en volume ; poches et sac se limitent en encombrance",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/d0e798b40e5658ff77a09e7aaddbed7287c6e90c",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/base/capacites-physiques.md",
-"url": "content/regles/base/capacites-physiques/"
-},
-{
-"status": "modified",
-"filename": "content/regles/equipement.md",
-"url": "content/regles/equipement/"
-}
-]
-},
-{
-"short": "860848f",
-"author": "Théo Cavaillès",
-"date": "2026-09-21T18:10:22+02:00",
-"message": "Le pain et les eaux portent leurs places de contenance",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/860848f08e23e262ed47496200e8b7f98ebfa1c9",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/equipement.md",
-"url": "content/regles/equipement/"
-}
-]
-},
-{
-"short": "64e5620",
-"author": "Théo Cavaillès",
-"date": "2026-09-21T18:07:23+02:00",
-"message": "La contenance passe à 40, et l'eau à 8 places le litre",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/64e5620529815462a13d110a22eda01c046f8759",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/base/capacites-physiques.md",
-"url": "content/regles/base/capacites-physiques/"
-},
-{
-"status": "modified",
-"filename": "content/regles/equipement.md",
-"url": "content/regles/equipement/"
-}
-]
-},
-{
-"short": "4762b1b",
-"author": "Théo Cavaillès",
-"date": "2026-09-21T15:48:09+02:00",
-"message": "L'effondrement emporte les PV et les PE qui dépassent, et ne les rend pas",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/4762b1bc6ddce634ae358e0aaff8a15199978f7e",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/base/capacites-physiques.md",
-"url": "content/regles/base/capacites-physiques/"
-}
-]
-},
-{
-"short": "cfa6728",
-"author": "Théo Cavaillès",
-"date": "2026-09-21T15:34:46+02:00",
-"message": "La satiété vaut 1000 + Endurance × 10",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/cfa6728b26be85ae8723a02b313fc2265cf2c52a",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/base/capacites-physiques.md",
-"url": "content/regles/base/capacites-physiques/"
-}
-]
-},
-{
-"short": "dbf3176",
-"author": "Théo Cavaillès",
-"date": "2026-09-21T14:56:40+02:00",
-"message": "Les rangs de compétence et de technique sont limités par la somme des caractéristiques",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/dbf3176ecf7190a9871cb2b6b99c39056d4ad5ed",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/base/competences.md",
-"url": "content/regles/base/competences/"
-},
-{
-"status": "modified",
-"filename": "content/regles/base/techniques.md",
-"url": "content/regles/base/techniques/"
-}
-]
-},
-{
-"short": "a3e437d",
-"author": "Théo Cavaillès",
-"date": "2026-09-21T14:46:19+02:00",
-"message": "Le prix d'un point de caractéristique change par tranche de 100 et non de 50",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/a3e437db00153cd7873e54a4a543c104a7ca8d79",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/base/caracteristiques.md",
-"url": "content/regles/base/caracteristiques/"
-}
-]
-},
-{
-"short": "5c70e24",
-"author": "Théo Cavaillès",
-"date": "2026-09-21T14:42:38+02:00",
-"message": "Les caractéristiques se répartissent à la création et s'achètent à l'expérience",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/5c70e248d689a8c44c1756b41766c90c9a0bdc4a",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/base/caracteristiques.md",
-"url": "content/regles/base/caracteristiques/"
-}
-]
-},
-{
-"short": "cea2a94",
-"author": "Théo Cavaillès",
-"date": "2026-09-21T12:19:44+02:00",
-"message": "La fiche passe au noir et or du wiki, et se decoupe en morceaux",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/cea2a949525f1edecd3ccbb15440d3fbd669a3f6",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/base/actions.md",
-"url": "content/regles/base/actions/"
-},
-{
-"status": "modified",
-"filename": "content/regles/base/capacites-physiques.md",
-"url": "content/regles/base/capacites-physiques/"
-},
 {
 "status": "modified",
 "filename": "content/regles/combat/armes.md",
 "url": "content/regles/combat/armes/"
-},
-{
-"status": "modified",
-"filename": "content/regles/equipement.md",
-"url": "content/regles/equipement/"
-},
-{
-"status": "modified",
-"filename": "content/regles/fabrication.md",
-"url": "content/regles/fabrication/"
-},
-{
-"status": "modified",
-"filename": "content/regles/index.md",
-"url": "content/regles/"
-},
-{
-"status": "modified",
-"filename": "content/regles/installations.md",
-"url": "content/regles/installations/"
-},
-{
-"status": "modified",
-"filename": "content/regles/vivre.md",
-"url": "content/regles/vivre/"
 }
 ]
 },
 {
-"short": "fd0740c",
+"short": "4a8600d",
 "author": "Théo Cavaillès",
-"date": "2026-09-02T14:26:31+02:00",
-"message": "Le chapitre des techniques, et les quatre runes",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/fd0740cf33145a62527f0737ce7477c4389c9800",
+"date": "2026-09-22T19:17:03+02:00",
+"message": "Les revers de l'épée et du sabre passent par le talon avant d'atteindre 2d2",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/4a8600dc64cde8fccf11aeb701f14c575f3bc253",
 "files": [
 {
-"status": "added",
-"filename": "content/regles/techniques/barbare.md",
-"url": "content/regles/techniques/barbare/"
+"status": "modified",
+"filename": "content/regles/combat/armes.md",
+"url": "content/regles/combat/armes/"
+}
+]
 },
 {
-"status": "added",
-"filename": "content/regles/techniques/cercle-air.md",
-"url": "content/regles/techniques/cercle-air/"
+"short": "1b7d36c",
+"author": "Théo Cavaillès",
+"date": "2026-09-22T19:11:15+02:00",
+"message": "Les quatre attaques de la dague et du gantelet",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/1b7d36cabbb1ee4daa714d24e9f9bc1d6bbe43c8",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/combat/armes.md",
+"url": "content/regles/combat/armes/"
+}
+]
 },
 {
-"status": "added",
-"filename": "content/regles/techniques/cercle-feu.md",
-"url": "content/regles/techniques/cercle-feu/"
+"short": "6f782c2",
+"author": "Théo Cavaillès",
+"date": "2026-09-22T19:10:33+02:00",
+"message": "Le gantelet se porte à une main, donc au singulier",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/6f782c2efc44a186a41e695ecf63a99ca594c496",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/combat/armes.md",
+"url": "content/regles/combat/armes/"
+}
+]
 },
 {
-"status": "added",
-"filename": "content/regles/techniques/cercle-glace.md",
-"url": "content/regles/techniques/cercle-glace/"
+"short": "121e1cc",
+"author": "Théo Cavaillès",
+"date": "2026-09-22T18:58:08+02:00",
+"message": "Les quatre attaques du grand marteau",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/121e1cc10744d65910b71e7a01a241d3d16c640b",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/combat/armes.md",
+"url": "content/regles/combat/armes/"
+}
+]
 },
 {
-"status": "added",
-"filename": "content/regles/techniques/cercle-terre.md",
-"url": "content/regles/techniques/cercle-terre/"
+"short": "f85f56c",
+"author": "Théo Cavaillès",
+"date": "2026-09-22T18:56:39+02:00",
+"message": "Les quatre attaques de la hallebarde",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/f85f56c19bc9d6a591b3d1f51662a3742a8806d1",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/combat/armes.md",
+"url": "content/regles/combat/armes/"
+}
+]
 },
 {
-"status": "added",
-"filename": "content/regles/techniques/moine.md",
-"url": "content/regles/techniques/moine/"
+"short": "1782ec8",
+"author": "Théo Cavaillès",
+"date": "2026-09-22T18:55:55+02:00",
+"message": "Les quatre attaques de la lance",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/1782ec875dabd1564ca011d017d07a958bf16107",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/combat/armes.md",
+"url": "content/regles/combat/armes/"
+}
+]
 },
 {
-"status": "added",
-"filename": "content/regles/techniques/runes.md",
-"url": "content/regles/techniques/runes/"
+"short": "aecabc1",
+"author": "Théo Cavaillès",
+"date": "2026-09-22T18:54:49+02:00",
+"message": "Les quatre attaques de la faux de guerre",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/aecabc14dab457cf0b486e1d74325db8a6309ad9",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/combat/armes.md",
+"url": "content/regles/combat/armes/"
+}
+]
 },
 {
-"status": "added",
-"filename": "content/regles/techniques/speedster.md",
-"url": "content/regles/techniques/speedster/"
+"short": "1c77afd",
+"author": "Théo Cavaillès",
+"date": "2026-09-22T18:51:20+02:00",
+"message": "Les quatre attaques de la grande hache",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/1c77afd7d0fce3fec71ae9269092317c8eafe460",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/combat/armes.md",
+"url": "content/regles/combat/armes/"
+}
+]
 },
 {
-"status": "added",
-"filename": "content/regles/techniques/spellblade.md",
-"url": "content/regles/techniques/spellblade/"
+"short": "52ad56d",
+"author": "Théo Cavaillès",
+"date": "2026-09-22T18:49:47+02:00",
+"message": "Les quatre attaques du grand sabre",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/52ad56dcbf82366bed889fd74b231c0484b123b3",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/combat/armes.md",
+"url": "content/regles/combat/armes/"
+}
+]
 },
 {
-"status": "added",
-"filename": "content/regles/techniques/totems.md",
-"url": "content/regles/techniques/totems/"
+"short": "ad962e0",
+"author": "Théo Cavaillès",
+"date": "2026-09-22T18:48:05+02:00",
+"message": "Les quatre attaques de la grande épée",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/ad962e0e9be49921e7642f7b7e15381ff2bb29b0",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/combat/armes.md",
+"url": "content/regles/combat/armes/"
+}
+]
+},
+{
+"short": "0ba6a60",
+"author": "Théo Cavaillès",
+"date": "2026-09-22T18:27:39+02:00",
+"message": "Les quatre attaques de la masse",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/0ba6a6085dd591c895db7b5edd94635990735cd0",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/combat/armes.md",
+"url": "content/regles/combat/armes/"
 }
 ]
 }
