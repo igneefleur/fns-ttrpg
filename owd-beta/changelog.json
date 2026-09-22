@@ -1,5 +1,29 @@
 [
 {
+"short": "9e6fc58",
+"author": "Théo Cavaillès",
+"date": "2026-09-22T18:00:53+02:00",
+"message": "La page des portées quitte le livre",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/9e6fc589caffc3e1f8ddf46151c764e75263eac8",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/base/capacites-physiques.md",
+"url": "content/regles/base/capacites-physiques/"
+},
+{
+"status": "removed",
+"filename": "content/regles/combat/portees.md",
+"url": null
+},
+{
+"status": "modified",
+"filename": "content/regles/index.md",
+"url": "content/regles/"
+}
+]
+},
+{
 "short": "87e1786",
 "author": "Théo Cavaillès",
 "date": "2026-09-22T17:47:33+02:00",
@@ -137,20 +161,6 @@
 "status": "modified",
 "filename": "content/regles/equipement.md",
 "url": "content/regles/equipement/"
-}
-]
-},
-{
-"short": "4762b1b",
-"author": "Théo Cavaillès",
-"date": "2026-09-21T15:48:09+02:00",
-"message": "L'effondrement emporte les PV et les PE qui dépassent, et ne les rend pas",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/4762b1bc6ddce634ae358e0aaff8a15199978f7e",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/base/capacites-physiques.md",
-"url": "content/regles/base/capacites-physiques/"
 }
 ]
 }
