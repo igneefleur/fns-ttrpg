@@ -169,7 +169,7 @@ Une arme à distance ne pare pas.
 <div class="arme">
 <p class="arme-nom">Épée</p>
 <div class="gestes">
-<div class="geste" data-trajet="1d:passe>2d2:frappe>2d:frappe>1:passe>2:frappe>2g:passe>1g:passe">
+<div class="geste" data-trajet="1d:passe>2d2:passe>2d:frappe>1:passe>2:frappe>2g:frappe>1g:passe">
 <p class="geste-nom">Taille horizontale du côté droit</p>
 <p class="geste-diff">3 hits</p>
 </div>
