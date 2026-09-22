@@ -275,7 +275,7 @@
   function poidsOu(test) {
     var t = 0;
     state.inv.objets.forEach(function (o) { if (test(o.ou)) t += poidsDe(o); });
-    return Math.round(t * 100) / 100;
+    return Math.round(t * 1000) / 1000;
   }
   // Les poches et le sac ne se limitent pas en poids mais en ENCOMBRANCE
   // (eb) : ce qu'ils contiennent se compare, en eb, à ce que valent les poches
@@ -283,7 +283,7 @@
   function ebOu(ou) {
     var t = 0;
     state.inv.objets.forEach(function (o) { if (o.ou === ou) t += pnum(o.qte) * pnum(o.encombre); });
-    return Math.round(t * 100) / 100;
+    return Math.round(t * 1000) / 1000;
   }
   function ebPoches() { return ebOu("poches"); }
   function ebSac() { return ebOu("sac"); }
@@ -383,7 +383,7 @@
   function capPoches() {
     var t = 0;
     vetementsPortes().forEach(function (o) { t += pnum(o.poches); });
-    return Math.round(t * 100) / 100;
+    return Math.round(t * 1000) / 1000;
   }
   function capSac() {
     var s = objetEn("dos");

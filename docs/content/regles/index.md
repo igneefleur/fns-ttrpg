@@ -20,11 +20,8 @@ Les [capacités physiques](base/capacites-physiques.md) donnent les nombres qui 
 découlent, ses jauges, sa charge et ses accès rapides, et les cinq intensités
 d'effort par lesquelles passe tout ce qu'il fait de son corps.
 
-Les [portées](combat/portees.md) donnent la grille, où une case vaut un pas, et la
-façon de mesurer ce qu'une arme atteint.
-
-Les [armes](combat/armes.md) les rangent en dix catégories et donnent, pour chacune,
-le répertoire de gestes qu'elle permet, chacun avec son empreinte sur la grille.
+Les [armes](combat/armes.md) donnent, pour chaque arme, son attaque, ses dégâts, sa
+parade, et la Dextérité et la Force qu'elle demande.
 
 L'[équipement](equipement.md) donne le catalogue des objets : ce que chacun pèse, ce
 qu'il vaut, ce qu'il fait, et la façon de lire une carte d'objet.

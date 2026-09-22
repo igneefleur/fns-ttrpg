@@ -24,7 +24,7 @@ CE QUE CE HOOK NE FAIT PAS, ET C'EST VOULU
     livre. La fiche laisse donc le joueur nommer les siennes.
 
 UNE PAGE ABSENTE N'EST PAS UNE PAGE FAUSSE, ET C'EST TOUTE LA DIFFÉRENCE
-  Les huit chapitres lus ici ne sont pas tous écrits, et ceux qui le sont ne
+  Les sept chapitres lus ici ne sont pas tous écrits, et ceux qui le sont ne
   sont pas tous committés : la CI ne voit que l'arbre du dépôt, où un chapitre
   en cours de rédaction n'existe pas. Un chapitre qui MANQUE ne fait donc pas
   tomber le build — sa section est simplement omise du JSON, et `_absents` la
@@ -88,7 +88,7 @@ LISEZMOI = (
     "Ne pas editer a la main : la prochaine construction l'ecrase."
 )
 
-# Les huit chapitres dont ce hook tire le jeu de données, dans l'ordre du livre.
+# Les sept chapitres dont ce hook tire le jeu de données, dans l'ordre du livre.
 # Cette liste est la SEULE à les nommer : elle sert à les lire, à dresser
 # « _absents » et à nommer les manquants dans le journal. En ajouter un ici sans
 # l'assembler dans _jeu() le ferait lire pour rien.
@@ -99,7 +99,6 @@ PAGES = (
     "base/techniques.md",
     "base/actions.md",
     "base/capacites-physiques.md",
-    "combat/portees.md",
     "combat/armes.md",
     "equipement.md",
 )
@@ -142,7 +141,7 @@ HORS_CAPACITE = {
     "Recuperation naturelle eveille",
     "Recuperation naturelle endormi",
     "Le ventre digere 1 de volume toutes les dix minutes",
-    "Paliers",
+    "Intensite",
 }
 
 
@@ -670,6 +669,31 @@ def _effets_expo(txt, titre):
     return out
 
 
+def _mouvement(txt):
+    """Les allures de « ### Mouvement » : pour chacune, sa carte « **Allure X** »
+    et les lignes de sa table, « | 2 DÉ et 5 PE | 12 pas | … ». Une allure sans
+    crans (repos, légère, intermédiaire) n'a qu'une ligne, au coût vide ;
+    l'allure lourde en a une par cran."""
+    corps = _section(txt, "Mouvement", "mouvement")
+    allures = []
+    for nom, carte in re.findall(r"\*\*Allure ([^*]+)\*\*(.*?)</div>", corps, re.S):
+        crans = []
+        for cout, pas, minute, heure in re.findall(
+                r"^\|\s*([^|\n]*?)\s*\|\s*(\d+) pas\s*\|\s*([\d.]+) m\s*\|\s*([\d.]+) km\s*\|", carte, re.M):
+            m = re.fullmatch(r"(?:(\d+) DÉ(?: et (\d+) PE)?)?", cout)
+            if not m:
+                raise ErreurRegles(f"mouvement : coût illisible « {cout} » (allure {nom})")
+            crans.append({"pas": int(pas), "des": int(m.group(1) or 0), "pe": int(m.group(2) or 0),
+                          "minute": float(minute), "heure": float(heure)})
+        if not crans:
+            raise ErreurRegles(f"mouvement : l'allure {nom} n'a aucune ligne lisible")
+        nom = re.sub(r"^de\s+", "", nom.strip())   # « Allure de repos » : le repos
+        allures.append({"cle": _plat(nom).lower(), "nom": nom, "crans": crans})
+    if not allures:
+        raise ErreurRegles("mouvement : aucune allure lisible")
+    return allures
+
+
 def _temps(txt):
     """Ce qu'il faut pour faire passer le temps : les cinq efforts, ce que
     chacun coûte en repos, en satiété et en hydratation, les degrés qu'il
@@ -695,7 +719,8 @@ def _temps(txt):
     manque = [c for c in cles if c not in degres]
     if manque:
         raise ErreurRegles(f"climat : aucun degré pour {', '.join(manque)}")
-    pal = _un(r"Paliers = écart ÷ (\d+), arrondi au (supérieur|inférieur)", clim, "climat : les paliers")
+    pal = _un(r"Intensité = écart ÷ (\d+), arrondi au (supérieur|inférieur)", clim, "climat : l'intensité")
+    int_max = int(_un(r"L'intensité ne dépasse jamais (\d+)", clim, "climat : l'intensité maximale").group(1))
 
     regen = []
     for niv, cad in re.findall(r"^\|\s*(\d+)\s*\|\s*([^|\n]+?)\s*\|\s*$",
@@ -707,11 +732,24 @@ def _temps(txt):
         raise ErreurRegles("récupération : aucune ligne lisible")
 
     expo = _section(txt, "L'exposition", "exposition")
-    bouge = _ecrit(_un(r"Toutes les (\w+) minutes, elle bouge d'autant de points que le personnage a de",
+    bouge = _ecrit(_un(r"Toutes les (\w+) minutes, elle bouge d'autant de points que l'\[?intensité",
                        expo, "exposition : sa cadence").group(1), "exposition : sa cadence")
     ret = _un(r"revient vers zéro de (\d+) % toutes les (\w+) minutes", expo, "exposition : son retour")
     if bouge != tranche or _ecrit(ret.group(2), "exposition : son retour") != tranche:
         raise ErreurRegles("exposition : sa cadence n'est pas la tranche de l'effort")
+    # LE PLAFOND de chaque intensité (« | 3 | 30 % | »), lu dans la table qui
+    # suit sa phrase d'annonce, et le retour d'une exposition qui le dépasse
+    tab = expo[_un(r"donne le plafond de l'exposition selon l'intensité", expo,
+                   "exposition : la table des plafonds").end():]
+    plafonds = {}
+    for k, pct in re.findall(r"^\|\s*(\d+)\s*\|\s*(\d+) %\s*\|\s*$", tab.split("</div>")[0], re.M):
+        plafonds[str(int(k))] = int(pct)
+    if sorted(int(k) for k in plafonds) != list(range(1, int_max + 1)):
+        raise ErreurRegles(f"exposition : la table des plafonds ne va pas de 1 à {int_max}")
+    ret_pl = _un(r"revient vers lui de (\d+) % toutes les (\w+) minutes", expo,
+                 "exposition : le retour au plafond")
+    if _ecrit(ret_pl.group(2), "exposition : le retour au plafond") != tranche:
+        raise ErreurRegles("exposition : le retour au plafond n'est pas la tranche de l'effort")
 
     # « Le ventre digère 1 de volume toutes les dix minutes » : la digestion.
     dig = _un(r"digère (\d+) de volume toutes les (\w+) minutes", _section(txt, "La contenance", "contenance"),
@@ -727,6 +765,9 @@ def _temps(txt):
         "regen": regen,
         "paliers": {"diviseur": int(pal.group(1)), "arrondi": _ARRONDI[pal.group(2)]},
         "expoRetour": int(ret.group(1)),
+        # l'intensité maximale, le plafond d'exposition de chaque intensité
+        # (en %), et le retour d'une exposition qui dépasse son plafond
+        "intensite": {"max": int_max, "plafonds": plafonds, "retour": int(ret_pl.group(1))},
         "accelere": {"froid": _effets_expo(txt, "Le froid"), "chaud": _effets_expo(txt, "Le chaud")},
     }
 
@@ -748,6 +789,11 @@ def _jeu(docs):
     ce sont celles-là qui piègent — voir leurs commentaires.
     """
     src = {rel: _lire_opt(docs, rel) for rel in PAGES}
+    # Le chapitre des armes se réécrit depuis zéro : présent mais sans une
+    # seule ligne d'arme, il est en chantier, et il compte comme absent — la
+    # fiche sort sans armes et l'avertissement le dit, au lieu que _armes lève.
+    if src["combat/armes.md"] is not None and not _ARME.search(src["combat/armes.md"]):
+        src["combat/armes.md"] = None
     absents = [rel for rel in PAGES if src[rel] is None]
 
     carac_md = src["base/caracteristiques.md"]
@@ -756,7 +802,9 @@ def _jeu(docs):
     tech_md = src["base/techniques.md"]
     act_md = src["base/actions.md"]
     cap_md = src["base/capacites-physiques.md"]
-    portees_md = src["combat/portees.md"]
+    # La page des portées a été retirée du livre : le pas et les paliers
+    # ne se lisent plus nulle part, et leurs sections sortent du jeu.
+    portees_md = None
     armes_md = src["combat/armes.md"]
     equip_md = src["equipement.md"]
 
@@ -855,6 +903,7 @@ def _jeu(docs):
                  "climat : la zone du corps nu")
         jeu["climat"] = {"nuBas": int(nu.group(1)), "nuHaut": int(nu.group(2))}
         jeu["temps"] = _temps(cap_md)
+        jeu["mouvement"] = _mouvement(cap_md)
 
     if portees_md is not None:
         jeu["pas"] = float(

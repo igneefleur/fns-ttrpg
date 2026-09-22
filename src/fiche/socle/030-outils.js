@@ -22,10 +22,11 @@
   }
   function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
   function num(v, d) { var n = parseInt(v, 10); return isNaN(n) ? d : n; }
-  // poids, quantités, prix : décimal positif, virgule tolérée, arrondi au centième
+  // poids, encombrance, quantités, prix : décimal positif, virgule tolérée,
+  // arrondi au MILLIÈME (un objet peut peser 0.001 kg)
   function pnum(v) {
     var n = parseFloat(String(v == null ? "" : v).replace(",", "."));
-    return isFinite(n) && n >= 0 ? Math.round(n * 100) / 100 : 0;
+    return isFinite(n) && n >= 0 ? Math.round(n * 1000) / 1000 : 0;
   }
   // PRIX DE VENTE d'un objet : null veut dire « automatique », le tiers du
   // prix d'achat arrondi à l'inférieur. Un nombre saisi, 0 compris, prime.
@@ -41,7 +42,7 @@
     return isFinite(n) ? Math.round(n * 100) / 100 : 0;
   }
   // affichage : point décimal, sans zéros de traîne (« 0.5 », « 3 »)
-  function fmtP(n) { return String(Math.round(n * 100) / 100); }
+  function fmtP(n) { return String(Math.round(n * 1000) / 1000); }
   // modificateurs divers : TOUJOURS un tableau de 3 emplacements, sommés dans
   // la valeur effective. modArr assainit ce qui entre, modSum totalise.
   function modArr(a) {

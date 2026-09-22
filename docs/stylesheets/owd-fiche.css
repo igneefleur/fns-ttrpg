@@ -262,6 +262,62 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
 /* variante « dépense » : l'XP et la rupture ne mesurent pas une santé mais ce
    qui a été payé. L'or les distingue d'un coup d'œil des jauges de vie. */
 .pc-meter.or .bar > i { background: var(--or); }
+/* LES EFFORTS, en CASES SOUDÉES : le trio de MIA (un cadre sur le fond de
+   panneau, des cases égales séparées d'un filet, le mot en petites capitales)
+   dont une case est choisie. Une ligne par rang d'efforts. */
+.pc-segs {
+  display: flex; align-items: stretch; box-sizing: border-box; width: 100%;
+  background: var(--panel); border: 1px solid var(--line-2); border-radius: 5px;
+  overflow: hidden; line-height: 1.1; margin-top: .3rem;
+}
+.pc-segs > .c {
+  /* PARTS ÉGALES : 1/2 | 1/2 puis 1/3 | 1/3 | 1/3, le mot centré dans la sienne */
+  flex: 1 1 0; min-width: 0; text-align: center; border: none; background: transparent; cursor: pointer;
+  padding: .32rem .3rem; font: inherit; font-size: .56rem; font-weight: 700;
+  letter-spacing: .03em; text-transform: uppercase; color: var(--ink-3);
+  white-space: nowrap;
+  transition: background .12s, color .12s;
+}
+.pc-segs > .c + .c { box-shadow: inset 1px 0 0 var(--line-2); }
+.pc-segs > .c:hover { background: var(--stripe); color: var(--ink); }
+.pc-segs > .c.on { background: var(--accent); color: var(--card); box-shadow: none; }
+/* MOUVEMENT : les pas par round en grand, le coût du cran à droite */
+/* MOUVEMENT : un tableau de bord en cases soudées (le trio de MIA) — la
+   valeur en grand, l'étiquette en petites capitales dessous. La case des pas
+   est la plus large et la plus forte : c'est elle qu'on lit en combat. */
+.pc-stat {
+  display: flex; align-items: stretch; box-sizing: border-box; width: 100%;
+  background: var(--panel); border: 1px solid var(--line-2); border-radius: 5px;
+  overflow: hidden; line-height: 1.1; margin-top: .3rem;
+}
+.pc-stat > .c {
+  flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: .12rem; padding: .35rem .2rem .3rem; text-align: center;
+}
+.pc-stat > .c + .c { box-shadow: inset 1px 0 0 var(--line-2); }
+.pc-stat > .c.grand { background: var(--card); }
+.pc-stat .v { font-size: .9rem; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+.pc-stat > .c.grand .v { color: var(--accent); }   /* même TAILLE que ses voisines : seule la couleur la distingue */
+.pc-stat .k { font-size: .5rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); white-space: nowrap; }
+.pc-crans > .c { font-size: .66rem; letter-spacing: 0; text-transform: none; font-variant-numeric: tabular-nums; }
+/* LE COMPTEUR EN PIÈCES (avantages, rupture) : une pièce par point, pleine
+   quand il est dépensé, vide quand il reste ; celles de trop en danger. */
+.pc-id-meters .pc-meter.pc-meter-pieces { flex: 0 1 auto; }
+.pc-pieces { display: inline-flex; flex-wrap: wrap; align-items: center; gap: .22rem; color: var(--or); }
+.pc-piece { display: inline-block; box-sizing: border-box; }
+.pc-piece.over { color: var(--danger); }
+/* les avantages : des carrés, cernés quand vides, pleins quand dépensés */
+.pc-pieces.carres .pc-piece { width: .62rem; height: .62rem; border: 1.5px solid currentColor; border-radius: 2px; }
+.pc-pieces.carres .pc-piece.plein { background: currentColor; }
+/* la rupture : le maillon brisé du livre (docs/assets/rupture.png), posé en
+   MASQUE pour prendre currentColor ; vide, il n'est qu'une ombre du plein. Au
+   rapport du fichier, 23 x 22 px. */
+.pc-pieces.chaines .pc-piece {
+  width: .84rem; height: .8rem; background-color: currentColor; opacity: .25;
+  -webkit-mask: url('../assets/rupture.png') center / contain no-repeat;
+  mask: url('../assets/rupture.png') center / contain no-repeat;
+}
+.pc-pieces.chaines .pc-piece.plein, .pc-pieces.chaines .pc-piece.over { opacity: 1; }
 
 /* ---- onglets : contrôle segmenté ----
    TROIS onglets en Outward (Fiche, Inventaire, Options), et exactement le
@@ -530,6 +586,22 @@ html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où 
 }
 .pc-desaction-pose:hover { border-color: var(--accent); }
 .pc-desaction-de.on .pc-desaction-pose { border-color: var(--or); box-shadow: 0 0 0 2px var(--wash); background: var(--wash); }
+/* UN DÉ UTILISÉ (envoyé, en attente de « Récupérer ») : la case s'enfonce
+   dans le fond, le dé garde sa couleur mais pâlit. Rien de commun avec le dé
+   perdu, hachuré et grisé. */
+.pc-desaction-de.utilise .pc-desaction-pose {
+  cursor: default; position: relative; background: var(--panel);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, .18);
+}
+.pc-desaction-de.utilise .pc-desaction-pose > * { opacity: .38; }
+.pc-desaction-de.utilise .pc-desaction-nom { opacity: .55; }
+/* UN DÉ PERDU au mouvement : hachuré, éteint, et plus rien ne le choisit */
+.pc-desaction-de.perdu .pc-desaction-pose {
+  cursor: not-allowed; border-style: dashed; border-color: var(--line-2);
+  background: repeating-linear-gradient(135deg, var(--panel) 0 5px, var(--stripe) 5px 10px);
+}
+.pc-desaction-de.perdu .pc-desaction-pose > * { opacity: .22; filter: grayscale(1); }
+.pc-desaction-de.perdu .pc-desaction-nom { opacity: .4; }
 .pc-desaction-jeton { font-size: var(--fs-hero); font-weight: 800; color: var(--ink); }
 .pc-desaction-taille { display: flex; align-items: center; justify-content: center; gap: .15rem; }
 .pc-desaction-nom { min-width: 2.1em; text-align: center; font-size: .66rem; font-weight: 700; color: var(--ink-2); }
@@ -538,7 +610,10 @@ html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où 
   background: var(--panel); color: var(--ink-2); font: inherit; font-size: .62rem; line-height: 1; cursor: pointer;
 }
 .pc-desaction-pas:disabled { opacity: .35; cursor: default; }
+/* Envoyer | Récupérer : deux moitiés égales */
+.pc-desaction-gestes { display: grid; grid-template-columns: 1fr 1fr; gap: .3rem; }
 .pc-mini.pc-desaction-envoi { display: block; width: 100%; }
+.pc-mini.pc-desaction-envoi:disabled { opacity: .4; cursor: default; }
 /* L'EXPOSITION : la barre des réserves, mais signée. Le remplissage est posé
    en absolu depuis le milieu (gauche pour le froid, droite pour le chaud), et le
    trait du zéro reste visible au centre, par-dessus. */
@@ -547,6 +622,10 @@ html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où 
 .pc-expo-jauge > i.froid { background: var(--froid); }
 .pc-expo-jauge > i.chaud { background: var(--chaud); }
 .pc-expo-zero { position: absolute; top: 0; bottom: 0; left: calc(50% - 1px); width: 2px; background: var(--ink-3); }
+/* la zone idéale et l'intensité, en cases soudées sous la barre */
+.pc-expo-stat { margin: 0 .4rem .4rem; width: auto; }
+.pc-expo-stat .v.froid { color: var(--froid); }
+.pc-expo-stat .v.chaud { color: var(--chaud); }
 /* ---- Contenance : l'estomac ----
    Trois couches sous le même cadre : l'intérieur d'un ton neutre, le même
    intérieur rempli par le bas jusqu'à --niveau dans la --teinte du moment, et
@@ -1170,8 +1249,16 @@ html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où 
 /* LE MODULE PREND TOUTE LA HAUTEUR DISPONIBLE (--inv-h, posée par le script),
    et chaque colonne défile dans la sienne. Le panneau de droite garde toujours
    cette taille, qu'il montre un objet ou le fantôme. */
-.pc-obj-wrap { display: flex; gap: .6rem; align-items: stretch; height: var(--inv-h, auto); }
-.pc-obj-left { flex: 1 1 62%; min-width: 0; display: flex; flex-direction: column; gap: .45rem; overflow-y: auto; }
+/* L'écart entre les deux colonnes est porté par la GOUTTIÈRE de gauche (sa
+   marge intérieure, puis la barre) : la barre se range contre le panneau, sans
+   un vide inutilisé à sa droite. */
+.pc-obj-wrap { display: flex; gap: .15rem; align-items: stretch; height: var(--inv-h, auto); }
+/* La barre de défilement a sa PROPRE gouttière, à droite des cases : sans
+   elle, la barre en surimpression (Firefox, macOS) passait sur la cinquième
+   colonne. Toujours réservée, les cases ne changent pas de taille selon qu'il
+   y a de quoi défiler ou non. */
+.pc-obj-left { flex: 1 1 62%; min-width: 0; display: flex; flex-direction: column; gap: .45rem; overflow-y: auto;
+  box-sizing: border-box; scrollbar-gutter: stable; padding-right: .45rem; }
 .pc-obj-panel { flex: 0 0 34%; min-width: 0; border: 1px solid var(--line-2); border-radius: 8px; background: var(--card); overflow-y: auto; box-sizing: border-box; }
 .pc-obj-panel.fantome .pc-obj-body, .pc-obj-panel.fantome .pc-obj-imgbox { opacity: .45; }
 .pc-obj-ghead { display: flex; align-items: center; gap: .3rem; margin-bottom: .2rem; }
@@ -1227,14 +1314,14 @@ html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où 
 .pc-inv-eps { margin-bottom: .3rem; }
 .pc-inv-eps > .pc-inv-cases:last-child { margin-bottom: 0; }
 .pc-inv-vide {
-  aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center; text-align: center;
+  aspect-ratio: var(--obj-ratio); display: flex; align-items: center; justify-content: center; text-align: center;
   box-sizing: border-box; padding: .2rem; border: 1px dashed var(--line-2); border-radius: 7px;
   color: var(--ink-3); font-size: .56rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
   white-space: pre-line;
 }
 .pc-obj-ghead > .pds.over { color: var(--danger); font-weight: 700; }
 /* une case vide de poches ou de sac : la place qui reste, en pointillé */
-.pc-obj-tile.pc-inv-trou { aspect-ratio: 1 / 1; background: transparent; border: 1px dashed var(--line-2); cursor: default; }
+.pc-obj-tile.pc-inv-trou { aspect-ratio: var(--obj-ratio); background: transparent; border: 1px dashed var(--line-2); cursor: default; }
 .pc-obj-tile.pc-inv-trou:hover { border-color: var(--line-2); }
 .pc-obj-tiles.over { outline: 1px dashed var(--accent); outline-offset: 2px; }
 .pc-obj-tile {
@@ -1275,12 +1362,20 @@ html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où 
 .pc-obj-foot .nm { flex: 1 1 3.4rem; min-width: 0; font-size: var(--fs-meta); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pc-obj-foot .qte { font-size: var(--fs-meta); font-weight: 700; color: var(--ink-2); background: var(--panel); border-radius: 3px; padding: 0 .16rem; font-variant-numeric: tabular-nums; }
 .pc-obj-foot .pds { font-size: var(--fs-meta); color: var(--ink-3); font-variant-numeric: tabular-nums; flex: 0 0 auto; }
-/* UNE TUILE EST UN CARRÉ, TOUJOURS : de la taille d'une case vide, quel que
-   soit le nom. L'image prend ce que le pied laisse, et le pied tient sur une
-   seule ligne (le nom s'abrège, il se lit en entier au survol). */
-.pc-obj-tile { aspect-ratio: 1 / 1; display: flex; flex-direction: column; }
-.pc-obj-tile > img, .pc-obj-tile > .pc-obj-ph { flex: 1 1 0; min-height: 0; aspect-ratio: auto; height: auto; }
-.pc-obj-tile > .pc-obj-foot { flex: 0 0 auto; flex-wrap: nowrap; }
+/* UNE TUILE A LA FORME D'UN OBJET DES RÈGLES, TOUJOURS : le portrait des
+   images du livre (84 × 128, soit 21:32), et la taille d'une case vide, quel
+   que soit le nom. L'image occupe la case ENTIÈRE, et le pied passe PAR-DESSUS
+   son bas, sur un bandeau voilé qui le garde lisible ; il tient sur une seule
+   ligne (le nom s'abrège, il se lit en entier au survol). */
+.pc-obj-wrap { --obj-ratio: 21 / 32; }
+.pc-obj-tile { aspect-ratio: var(--obj-ratio); }
+.pc-obj-tile > img, .pc-obj-tile > .pc-obj-ph {
+  position: absolute; inset: 0; width: 100%; height: 100%; aspect-ratio: auto; object-fit: cover;
+}
+.pc-obj-tile > .pc-obj-foot {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; flex-wrap: nowrap;
+  border-top: none; background: color-mix(in srgb, var(--card) 82%, transparent);
+}
 .pc-obj-tile > .pc-obj-foot .nm { flex: 1 1 0; }
 /* réglages du module, en mode édition (par ligne 1..8, et les puces
    Nom / Quantité / Poids / Total) */
@@ -1291,14 +1386,14 @@ html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où 
 .pc-obj-pile { font-size: .58rem; color: var(--ink-3); text-align: right; font-variant-numeric: tabular-nums; padding: .1rem 0 0; }
 .pc-obj-addtile {
   width: calc((100% - .3rem * (var(--obj-cols) - 1)) / var(--obj-cols));
-  aspect-ratio: 1 / 1; border: 1px dashed var(--line-2); border-radius: 7px;
+  aspect-ratio: var(--obj-ratio); border: 1px dashed var(--line-2); border-radius: 7px;
   display: flex; align-items: center; justify-content: center;
   color: var(--line); font-size: 1rem; cursor: pointer; transition: .12s; box-sizing: border-box;
 }
 .pc-obj-addtile:hover { border-color: var(--accent); color: var(--accent); }
 .pc-mini.pc-obj-addgroup { align-self: flex-start; }
 .pc-obj-imgbox { background: var(--panel); }
-.pc-obj-imgbox img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block; }
+.pc-obj-imgbox img { width: 100%; aspect-ratio: 1 / 1; object-fit: contain; display: block; }
 .pc-obj-body { padding: .4rem .5rem .5rem; display: flex; flex-direction: column; gap: .32rem; }
 .pc-obj-body > input.nm {
   border: none; border-bottom: 1px solid var(--line); background: transparent;

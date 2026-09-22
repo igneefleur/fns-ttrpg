@@ -19,7 +19,6 @@ exclude_docs: |
   content/regles/base/techniques.md
   content/regles/base/caracteristiques.md
   content/regles/base/avantages.md
-  content/regles/combat/armes.md
   content/regles/techniques/
   content/regles/fabrication.md
   content/regles/installations.md
@@ -31,7 +30,7 @@ nav:
           - Compétences: content/regles/base/competences.md
           - Capacités physiques: content/regles/base/capacites-physiques.md
       - Le Combat:
-          - Portées: content/regles/combat/portees.md
+          - Armes: content/regles/combat/armes.md
       - Équipement: content/regles/equipement.md
   # La fiche de personnage, servie par le site et non par l'extension : la même
   # page monte la fiche ici, hors Roll20, et dans l'iframe de la coquille signée.
@@ -63,7 +62,7 @@ extra_css:
   - stylesheets/fonts.css?v=2   # @font-face auto-hébergés : doit être chargée en premier
   - stylesheets/extra.css?v=19
   - stylesheets/night.css?v=19
-  - stylesheets/armes.css?v=6
+  - stylesheets/armes.css?v=7
   - stylesheets/cartes.css?v=24
   # LES ?v= DE LA FICHE SE MONTENT PAR OUTIL, JAMAIS À LA MAIN, et tous
   # ensemble : scripts/release_fiche.py les pose ici ET dans
@@ -71,17 +70,17 @@ extra_css:
   # par ces deux listes, Roll20 la charge par le manifeste ; deux clés de cache
   # qui divergent, et les deux mondes font tourner deux codes en croyant faire
   # tourner le même. Un fichier monté d'un seul côté ne se voit pas.
-  - stylesheets/owd-fiche.css?v=44
-  - stylesheets/owd-des3d.css?v=44  # les dés en volume, pris dans l'extension (hooks/des3d.py)
+  - stylesheets/owd-fiche.css?v=75
+  - stylesheets/owd-des3d.css?v=75  # les dés en volume, pris dans l'extension (hooks/des3d.py)
 extra_javascript:
   - javascripts/changelog.js
   - javascripts/continuous.js
   - javascripts/nav-drawer.js
   - javascripts/night.js
-  - javascripts/owd-migrations.js?v=44 # moteur de migration : AVANT le bundle, qui l'appelle
-  - javascripts/owd-mods.js?v=44       # moteur de mods : AVANT la fiche, qui l'interroge (et facultatif de naissance)
-  - javascripts/owd-des3d.js?v=44    # moteur des dés en volume : AVANT la fiche, qui s'en sert
-  - javascripts/owd-fiche.js?v=44
+  - javascripts/owd-migrations.js?v=75 # moteur de migration : AVANT le bundle, qui l'appelle
+  - javascripts/owd-mods.js?v=75       # moteur de mods : AVANT la fiche, qui l'interroge (et facultatif de naissance)
+  - javascripts/owd-des3d.js?v=75    # moteur des dés en volume : AVANT la fiche, qui s'en sert
+  - javascripts/owd-fiche.js?v=75
   - javascripts/copybtn.js
 hooks:
   - hooks/changelog.py

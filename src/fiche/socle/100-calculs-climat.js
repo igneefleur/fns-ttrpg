@@ -31,7 +31,15 @@
     });
     return out === null ? null : (niveau < 0 ? -out : out);
   }
-  // Les paliers de froid (négatifs) ou de chaud (positifs) du personnage, à
+  // LA ZONE IDÉALE, en température de l'AIR : sa zone de confort (le corps nu
+  // plus ce qu'il porte), moins les degrés que son effort lui ajoute.
+  function zoneIdeale() {
+    var z = confort(), e = effortDe(state.effort);
+    if (!z || !e) return null;
+    var d = num(e.degres, 0);
+    return { bas: z.bas - d, haut: z.haut - d };
+  }
+  // L'INTENSITÉ de froid (négative) ou de chaud (positive) du personnage, à
   // la température de l'air et à l'effort qu'il fournit.
   function paliersClimat() {
     var t = tempsDef(), z = confort(), e = effortDe(state.effort);
@@ -39,9 +47,21 @@
     var ressenti = num(state.temperature, 0) + num(e.degres, 0);
     var div = Math.max(1, num(t.paliers.diviseur, 1));
     var arr = t.paliers.arrondi === "bas" ? Math.floor : Math.ceil;
-    if (ressenti < z.bas) return -arr((z.bas - ressenti) / div);
-    if (ressenti > z.haut) return arr((ressenti - z.haut) / div);
+    // l'intensité ne dépasse pas le maximum des règles
+    var im = t.intensite ? num(t.intensite.max, 0) : 0;
+    function borne(k) { return im > 0 ? Math.min(k, im) : k; }
+    if (ressenti < z.bas) return -borne(arr((z.bas - ressenti) / div));
+    if (ressenti > z.haut) return borne(arr((ressenti - z.haut) / div));
     return 0;
+  }
+  // LE PLAFOND D'EXPOSITION d'une intensité, en points (positif) : jusque-là,
+  // et pas plus loin, l'exposition peut aller du côté de l'intensité subie.
+  // Sans table dans les règles, aucun plafond : l'exposition va jusqu'au bout.
+  function plafondExpo(intensite) {
+    var t = tempsDef(), m = expoMax(), k = Math.abs(intensite);
+    var pl = t && t.intensite && t.intensite.plafonds;
+    if (!pl || !aClef(pl, String(k))) return m;
+    return m * num(pl[String(k)], 100) / 100;
   }
   // Le facteur de dépense d'une réserve, selon le niveau de froid ou de chaud
   // que l'exposition a atteint.
@@ -136,8 +156,15 @@
         cumul.ph += rSurvie * tr * facteurDepense("ph");
       }
       var p = paliersClimat(), m = expoMax(), x = num(state.etat.expo, 0);
-      if (p) x = clamp(x + p, -m, m);
-      else {
+      if (p) {
+        // vers l'intensité subie, JUSQU'À son plafond ; déjà au-delà, elle
+        // revient vers lui à la cadence de retour
+        var cap = plafondExpo(p) * (p < 0 ? -1 : 1);
+        var rp = m * num(t.intensite ? t.intensite.retour : t.expoRetour, 0) / 100;
+        if (p < 0) x = x < cap ? Math.min(cap, x + rp) : Math.max(cap, x + p);
+        else x = x > cap ? Math.max(cap, x - rp) : Math.min(cap, x + p);
+        x = clamp(x, -m, m);
+      } else {
         var retour = m * num(t.expoRetour, 0) / 100;
         x = x > 0 ? Math.max(0, x - retour) : Math.min(0, x + retour);
       }

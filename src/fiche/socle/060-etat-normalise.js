@@ -51,6 +51,8 @@
     if (!s.de) s.de = DE_DEFAUT;
     s.xpTotal = Math.max(0, num(s.xpTotal, 0));
     s.effort = String(s.effort == null ? "" : s.effort) || b.effort;
+    s.allure = String(s.allure == null ? "" : s.allure) || b.allure;
+    s.allureCran = clamp(num(s.allureCran, 1), 1, 99);
     s.effAutre = clamp(Math.round(num(s.effAutre, 0)), 0, 99);
     s.desTailles = Array.isArray(s.desTailles)
       ? s.desTailles.slice(0, 99).map(function (t) {
