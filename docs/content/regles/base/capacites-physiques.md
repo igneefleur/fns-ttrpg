@@ -223,7 +223,7 @@ Les deux [récupérations naturelles](#la-recuperation-naturelle) des points d'i
 
 ### Mouvement
 
-Un personnage se déplace à l'allure qu'il veut. Cette allure définit le nombre de [pas](../combat/portees.md) qu'il peut franchir dans un round, et l'intensité minimale de son [effort](#leffort). Il y a quatre allures : le repos, puis les allures légère, intermédiaire et lourde.
+Un personnage se déplace à l'allure qu'il veut. Cette allure définit le nombre de pas qu'il peut franchir dans un round, et l'intensité minimale de son [effort](#leffort). Il y a quatre allures : le repos, puis les allures légère, intermédiaire et lourde.
 
 Lorsqu'un personnage dort, il n'a pas d'allure. Il n'a donc aucun mouvement.
 
@@ -285,7 +285,7 @@ La table ci-dessous donne le coût en [dés d'action](actions.md#les-des-daction
 
 #### Le terrain difficile
 
-Entrer dans certaines [cases](../combat/portees.md) coûte plus d'un pas. Un terrain difficile coûte 2 pas, un terrain très difficile en coûte 3. Le MJ tranche pour ce que la table ne nomme pas.
+Entrer dans certaines cases coûte plus d'un pas. Un terrain difficile coûte 2 pas, un terrain très difficile en coûte 3. Le MJ tranche pour ce que la table ne nomme pas.
 
 La table ci-dessous donne le coût d'entrée d'une case selon le terrain.
 

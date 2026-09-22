@@ -20,7 +20,6 @@ nav:
           - Avantages: content/regles/base/avantages.md
           - Capacités physiques: content/regles/base/capacites-physiques.md
       - Le Combat:
-          - Portées: content/regles/combat/portees.md
           - Armes: content/regles/combat/armes.md
       - Techniques:
           - Cercle de feu: content/regles/techniques/cercle-feu.md

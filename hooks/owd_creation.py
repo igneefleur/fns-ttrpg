@@ -24,7 +24,7 @@ CE QUE CE HOOK NE FAIT PAS, ET C'EST VOULU
     livre. La fiche laisse donc le joueur nommer les siennes.
 
 UNE PAGE ABSENTE N'EST PAS UNE PAGE FAUSSE, ET C'EST TOUTE LA DIFFÉRENCE
-  Les huit chapitres lus ici ne sont pas tous écrits, et ceux qui le sont ne
+  Les sept chapitres lus ici ne sont pas tous écrits, et ceux qui le sont ne
   sont pas tous committés : la CI ne voit que l'arbre du dépôt, où un chapitre
   en cours de rédaction n'existe pas. Un chapitre qui MANQUE ne fait donc pas
   tomber le build — sa section est simplement omise du JSON, et `_absents` la
@@ -88,7 +88,7 @@ LISEZMOI = (
     "Ne pas editer a la main : la prochaine construction l'ecrase."
 )
 
-# Les huit chapitres dont ce hook tire le jeu de données, dans l'ordre du livre.
+# Les sept chapitres dont ce hook tire le jeu de données, dans l'ordre du livre.
 # Cette liste est la SEULE à les nommer : elle sert à les lire, à dresser
 # « _absents » et à nommer les manquants dans le journal. En ajouter un ici sans
 # l'assembler dans _jeu() le ferait lire pour rien.
@@ -99,7 +99,6 @@ PAGES = (
     "base/techniques.md",
     "base/actions.md",
     "base/capacites-physiques.md",
-    "combat/portees.md",
     "combat/armes.md",
     "equipement.md",
 )
@@ -803,7 +802,9 @@ def _jeu(docs):
     tech_md = src["base/techniques.md"]
     act_md = src["base/actions.md"]
     cap_md = src["base/capacites-physiques.md"]
-    portees_md = src["combat/portees.md"]
+    # La page des portées a été retirée du livre : le pas et les paliers
+    # ne se lisent plus nulle part, et leurs sections sortent du jeu.
+    portees_md = None
     armes_md = src["combat/armes.md"]
     equip_md = src["equipement.md"]
 

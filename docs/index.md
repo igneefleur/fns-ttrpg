@@ -4,9 +4,7 @@ Adaptation d'Outward en jeu de rôle sur table. Ce site est la **beta** : ce qu'
 lit est en cours d'écriture, se contredit parfois et change sans préavis. La version
 stable vit dans [le dossier voisin](../owd/).
 
-Pour l'instant, presque rien n'est posé — et c'est normal. La première règle écrite est
-celle des [portées](content/regles/combat/portees.md), qui fixe la grille à un mètre par
-case et donne la distance de chaque arme.
+Pour l'instant, presque rien n'est posé — et c'est normal.
 
 ## Dernières modifications
 
