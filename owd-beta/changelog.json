@@ -1,5 +1,19 @@
 [
 {
+"short": "e530bb5",
+"author": "Théo Cavaillès",
+"date": "2026-09-22T18:24:37+02:00",
+"message": "Lire une arme : une phrase par entrée",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/e530bb50d82543154eb8ab620a168e6d0be79122",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/combat/armes.md",
+"url": "content/regles/combat/armes/"
+}
+]
+},
+{
 "short": "8cb950c",
 "author": "Théo Cavaillès",
 "date": "2026-09-22T18:23:24+02:00",
@@ -165,20 +179,6 @@
 "status": "modified",
 "filename": "content/regles/equipement.md",
 "url": "content/regles/equipement/"
-}
-]
-},
-{
-"short": "9b53944",
-"author": "Théo Cavaillès",
-"date": "2026-09-21T20:36:21+02:00",
-"message": "Les avantages : une page au livre, un module dans Bio, un compteur à l'en-tête",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/9b5394402a77d3632a9d1f1030842e2b81381874",
-"files": [
-{
-"status": "added",
-"filename": "content/regles/base/avantages.md",
-"url": "content/regles/base/avantages/"
 }
 ]
 }
