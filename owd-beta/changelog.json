@@ -1,5 +1,19 @@
 [
 {
+"short": "6f782c2",
+"author": "Théo Cavaillès",
+"date": "2026-09-22T19:10:33+02:00",
+"message": "Le gantelet se porte à une main, donc au singulier",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/6f782c2efc44a186a41e695ecf63a99ca594c496",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/combat/armes.md",
+"url": "content/regles/combat/armes/"
+}
+]
+},
+{
 "short": "121e1cc",
 "author": "Théo Cavaillès",
 "date": "2026-09-22T18:58:08+02:00",
@@ -145,20 +159,6 @@
 "date": "2026-09-22T18:23:24+02:00",
 "message": "Les quatre attaques de la rapière",
 "url": "https://github.com/igneefleur/fns-ttrpg/commit/8cb950c6f218a177e2240c0cb68042d3545e7335",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/combat/armes.md",
-"url": "content/regles/combat/armes/"
-}
-]
-},
-{
-"short": "d057a39",
-"author": "Théo Cavaillès",
-"date": "2026-09-22T18:20:30+02:00",
-"message": "Les quatre attaques du sabre",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/d057a39a630a246dde9cc0869887b2e7126aa21c",
 "files": [
 {
 "status": "modified",
