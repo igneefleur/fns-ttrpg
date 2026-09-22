@@ -1,5 +1,19 @@
 [
 {
+"short": "4d02383",
+"author": "Théo Cavaillès",
+"date": "2026-09-22T12:33:45+02:00",
+"message": "La page des armes repart de zéro",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/4d0238384e67e00c910b26820a34ae3a40838389",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/combat/armes.md",
+"url": "content/regles/combat/armes/"
+}
+]
+},
+{
 "short": "ebf6943",
 "author": "Théo Cavaillès",
 "date": "2026-09-22T01:32:34+02:00",
@@ -118,20 +132,6 @@
 "date": "2026-09-21T15:48:09+02:00",
 "message": "L'effondrement emporte les PV et les PE qui dépassent, et ne les rend pas",
 "url": "https://github.com/igneefleur/fns-ttrpg/commit/4762b1bc6ddce634ae358e0aaff8a15199978f7e",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/base/capacites-physiques.md",
-"url": "content/regles/base/capacites-physiques/"
-}
-]
-},
-{
-"short": "cfa6728",
-"author": "Théo Cavaillès",
-"date": "2026-09-21T15:34:46+02:00",
-"message": "La satiété vaut 1000 + Endurance × 10",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/cfa6728b26be85ae8723a02b313fc2265cf2c52a",
 "files": [
 {
 "status": "modified",
