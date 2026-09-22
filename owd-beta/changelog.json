@@ -1,5 +1,19 @@
 [
 {
+"short": "1b7d36c",
+"author": "Théo Cavaillès",
+"date": "2026-09-22T19:11:15+02:00",
+"message": "Les quatre attaques de la dague et du gantelet",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/1b7d36cabbb1ee4daa714d24e9f9bc1d6bbe43c8",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/combat/armes.md",
+"url": "content/regles/combat/armes/"
+}
+]
+},
+{
 "short": "6f782c2",
 "author": "Théo Cavaillès",
 "date": "2026-09-22T19:10:33+02:00",
@@ -145,20 +159,6 @@
 "date": "2026-09-22T18:24:37+02:00",
 "message": "Lire une arme : une phrase par entrée",
 "url": "https://github.com/igneefleur/fns-ttrpg/commit/e530bb50d82543154eb8ab620a168e6d0be79122",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/combat/armes.md",
-"url": "content/regles/combat/armes/"
-}
-]
-},
-{
-"short": "8cb950c",
-"author": "Théo Cavaillès",
-"date": "2026-09-22T18:23:24+02:00",
-"message": "Les quatre attaques de la rapière",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/8cb950c6f218a177e2240c0cb68042d3545e7335",
 "files": [
 {
 "status": "modified",
