@@ -1,5 +1,19 @@
 [
 {
+"short": "1575fd4",
+"author": "Théo Cavaillès",
+"date": "2026-09-22T19:41:10+02:00",
+"message": "La masse frappe en fin de rotation, comme le grand marteau",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/1575fd4dff8d0ac44bf745e581356cfcd83005b0",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/combat/armes.md",
+"url": "content/regles/combat/armes/"
+}
+]
+},
+{
 "short": "4a8600d",
 "author": "Théo Cavaillès",
 "date": "2026-09-22T19:17:03+02:00",
@@ -145,20 +159,6 @@
 "date": "2026-09-22T18:27:39+02:00",
 "message": "Les quatre attaques de la masse",
 "url": "https://github.com/igneefleur/fns-ttrpg/commit/0ba6a6085dd591c895db7b5edd94635990735cd0",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/combat/armes.md",
-"url": "content/regles/combat/armes/"
-}
-]
-},
-{
-"short": "a59b4f2",
-"author": "Théo Cavaillès",
-"date": "2026-09-22T18:26:20+02:00",
-"message": "Les quatre attaques de la hache",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/a59b4f2fbd290801e0a27d79973b4d1e87e528ab",
 "files": [
 {
 "status": "modified",
