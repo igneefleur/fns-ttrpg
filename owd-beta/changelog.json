@@ -1,5 +1,19 @@
 [
 {
+"short": "f85f56c",
+"author": "Théo Cavaillès",
+"date": "2026-09-22T18:56:39+02:00",
+"message": "Les quatre attaques de la hallebarde",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/f85f56c19bc9d6a591b3d1f51662a3742a8806d1",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/combat/armes.md",
+"url": "content/regles/combat/armes/"
+}
+]
+},
+{
 "short": "1782ec8",
 "author": "Théo Cavaillès",
 "date": "2026-09-22T18:55:55+02:00",
@@ -145,20 +159,6 @@
 "date": "2026-09-22T18:16:45+02:00",
 "message": "Les attaques ne portent plus que leur nom",
 "url": "https://github.com/igneefleur/fns-ttrpg/commit/05ad1ee0a7e70ba2f1ae288a9a9157ed85cef4d1",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/combat/armes.md",
-"url": "content/regles/combat/armes/"
-}
-]
-},
-{
-"short": "0649555",
-"author": "Théo Cavaillès",
-"date": "2026-09-22T18:16:13+02:00",
-"message": "La taille horizontale du côté droit frappe 2d, 2 et 2g",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/0649555dc573d307e53e9c90f1fcb55211eddab0",
 "files": [
 {
 "status": "modified",
