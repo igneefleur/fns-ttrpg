@@ -1,5 +1,19 @@
 [
 {
+"short": "aecabc1",
+"author": "Théo Cavaillès",
+"date": "2026-09-22T18:54:49+02:00",
+"message": "Les quatre attaques de la faux de guerre",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/aecabc14dab457cf0b486e1d74325db8a6309ad9",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/combat/armes.md",
+"url": "content/regles/combat/armes/"
+}
+]
+},
+{
 "short": "1c77afd",
 "author": "Théo Cavaillès",
 "date": "2026-09-22T18:51:20+02:00",
@@ -150,30 +164,6 @@
 "status": "modified",
 "filename": "content/regles/combat/armes.md",
 "url": "content/regles/combat/armes/"
-}
-]
-},
-{
-"short": "9e6fc58",
-"author": "Théo Cavaillès",
-"date": "2026-09-22T18:00:53+02:00",
-"message": "La page des portées quitte le livre",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/9e6fc589caffc3e1f8ddf46151c764e75263eac8",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/base/capacites-physiques.md",
-"url": "content/regles/base/capacites-physiques/"
-},
-{
-"status": "removed",
-"filename": "content/regles/combat/portees.md",
-"url": null
-},
-{
-"status": "modified",
-"filename": "content/regles/index.md",
-"url": "content/regles/"
 }
 ]
 }
