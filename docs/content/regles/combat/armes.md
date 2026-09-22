@@ -57,7 +57,7 @@ Une arme à distance ne pare pas.
 | Arme | Attaque | Hits | Dégâts | Types | Parade | Réduction | DEX | FOR |
 |---|:---:|:---:|---|:---:|:---:|---|:---:|:---:|
 | Dague | 6 | 1 | 20 + DEX + DEX | PER / TRA | 5 | 10 + DEX | 20 | |
-| Gantelets | 5 | 1 | 15 + FOR + FOR | CON / CON | 4 | 5 + FOR | | 20 |
+| Gantelet | 5 | 1 | 15 + FOR + FOR | CON / CON | 4 | 5 + FOR | | 20 |
 
 </div>
 
