@@ -1,5 +1,19 @@
 [
 {
+"short": "d3a641a",
+"author": "Théo Cavaillès",
+"date": "2026-09-22T18:08:04+02:00",
+"message": "Les armes reçoivent leurs attaques : les quatre de l'épée, chacune avec son trajet",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/d3a641a4033cdd61cf3a18908c833f35a909f32f",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/combat/armes.md",
+"url": "content/regles/combat/armes/"
+}
+]
+},
+{
 "short": "9e6fc58",
 "author": "Théo Cavaillès",
 "date": "2026-09-22T18:00:53+02:00",
