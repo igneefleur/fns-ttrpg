@@ -1,5 +1,19 @@
 [
 {
+"short": "a59b4f2",
+"author": "Théo Cavaillès",
+"date": "2026-09-22T18:26:20+02:00",
+"message": "Les quatre attaques de la hache",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/a59b4f2fbd290801e0a27d79973b4d1e87e528ab",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/combat/armes.md",
+"url": "content/regles/combat/armes/"
+}
+]
+},
+{
 "short": "e530bb5",
 "author": "Théo Cavaillès",
 "date": "2026-09-22T18:24:37+02:00",
@@ -160,25 +174,6 @@
 "status": "modified",
 "filename": "content/regles/base/capacites-physiques.md",
 "url": "content/regles/base/capacites-physiques/"
-}
-]
-},
-{
-"short": "385a5c1",
-"author": "Théo Cavaillès",
-"date": "2026-09-21T20:48:45+02:00",
-"message": "Capacités physiques et équipement perdent leur introduction",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/385a5c13145300a0adbe33f5e60618d5924f4288",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/base/capacites-physiques.md",
-"url": "content/regles/base/capacites-physiques/"
-},
-{
-"status": "modified",
-"filename": "content/regles/equipement.md",
-"url": "content/regles/equipement/"
 }
 ]
 }
