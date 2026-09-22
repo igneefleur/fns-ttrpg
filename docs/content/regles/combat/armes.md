@@ -220,4 +220,22 @@ Une arme à distance ne pare pas.
 </div>
 </div>
 
+<div class="arme">
+<p class="arme-nom">Hache</p>
+<div class="gestes">
+<div class="geste" data-trajet="1d:passe>2d:frappe>1:passe>2:frappe>2g:passe>1g:passe">
+<p class="geste-nom">Taille horizontale du côté droit</p>
+</div>
+<div class="geste" data-trajet="1g:passe>2g:passe>1:passe>2:frappe>2d:frappe>1d:passe">
+<p class="geste-nom">Taille horizontale de revers</p>
+</div>
+<div class="geste" data-trajet="1d:passe>1:passe>2d:passe>2:frappe">
+<p class="geste-nom">Fendant en diagonale</p>
+</div>
+<div class="geste" data-trajet="1d:passe>1:frappe">
+<p class="geste-nom">Taille courte</p>
+</div>
+</div>
+</div>
+
 </div>
