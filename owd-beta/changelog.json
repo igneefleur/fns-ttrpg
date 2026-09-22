@@ -1,5 +1,19 @@
 [
 {
+"short": "8cb950c",
+"author": "Théo Cavaillès",
+"date": "2026-09-22T18:23:24+02:00",
+"message": "Les quatre attaques de la rapière",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/8cb950c6f218a177e2240c0cb68042d3545e7335",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/combat/armes.md",
+"url": "content/regles/combat/armes/"
+}
+]
+},
+{
 "short": "d057a39",
 "author": "Théo Cavaillès",
 "date": "2026-09-22T18:20:30+02:00",
@@ -165,25 +179,6 @@
 "status": "added",
 "filename": "content/regles/base/avantages.md",
 "url": "content/regles/base/avantages/"
-}
-]
-},
-{
-"short": "d0e798b",
-"author": "Théo Cavaillès",
-"date": "2026-09-21T19:31:30+02:00",
-"message": "La contenance se mesure en volume ; poches et sac se limitent en encombrance",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/d0e798b40e5658ff77a09e7aaddbed7287c6e90c",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/base/capacites-physiques.md",
-"url": "content/regles/base/capacites-physiques/"
-},
-{
-"status": "modified",
-"filename": "content/regles/equipement.md",
-"url": "content/regles/equipement/"
 }
 ]
 }
