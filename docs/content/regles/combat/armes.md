@@ -167,6 +167,24 @@ Une arme à distance ne pare pas.
 <div class="armes-grille">
 
 <div class="arme">
+<p class="arme-nom">Rapière</p>
+<div class="gestes">
+<div class="geste" data-trajet="1:passe>2:frappe">
+<p class="geste-nom">Estocade</p>
+</div>
+<div class="geste" data-trajet="1d:passe>2d:passe>1:passe>2:frappe">
+<p class="geste-nom">Estoc du côté droit</p>
+</div>
+<div class="geste" data-trajet="1g:passe>1:passe>2g:passe>2:frappe">
+<p class="geste-nom">Estoc de revers</p>
+</div>
+<div class="geste" data-trajet="1d:passe>1:frappe">
+<p class="geste-nom">Coup de taille</p>
+</div>
+</div>
+</div>
+
+<div class="arme">
 <p class="arme-nom">Sabre</p>
 <div class="gestes">
 <div class="geste" data-trajet="1d:passe>2d2:passe>2d:frappe>1:passe>2:frappe>2g:passe>1g:passe">
