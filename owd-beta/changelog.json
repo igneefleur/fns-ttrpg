@@ -1,5 +1,19 @@
 [
 {
+"short": "52ad56d",
+"author": "Théo Cavaillès",
+"date": "2026-09-22T18:49:47+02:00",
+"message": "Les quatre attaques du grand sabre",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/52ad56dcbf82366bed889fd74b231c0484b123b3",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/combat/armes.md",
+"url": "content/regles/combat/armes/"
+}
+]
+},
+{
 "short": "ad962e0",
 "author": "Théo Cavaillès",
 "date": "2026-09-22T18:48:05+02:00",
@@ -155,20 +169,6 @@
 "date": "2026-09-22T17:47:33+02:00",
 "message": "Les armes renaissent en tables : corps à corps, boucliers, distance et rechargement",
 "url": "https://github.com/igneefleur/fns-ttrpg/commit/87e1786590bfd89c270a223d29628ac3ee23c4e4",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/combat/armes.md",
-"url": "content/regles/combat/armes/"
-}
-]
-},
-{
-"short": "4d02383",
-"author": "Théo Cavaillès",
-"date": "2026-09-22T12:33:45+02:00",
-"message": "La page des armes repart de zéro",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/4d0238384e67e00c910b26820a34ae3a40838389",
 "files": [
 {
 "status": "modified",
