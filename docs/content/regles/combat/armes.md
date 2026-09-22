@@ -98,8 +98,9 @@ Une arme à distance ne pare pas.
 | Bouclier | Attaque | Hits | Dégâts | Types | Parade | Réduction | DEX | FOR |
 |---|:---:|:---:|---|:---:|:---:|---|:---:|:---:|
 | Bocle | 5 | 1 | 10 + DEX | CON / CON | 7 | 30 + DEX + DEX | 20 | |
-| Rondache | 5 | 1 | 10 + DEX | CON / CON | 6 | 25 + DEX + DEX | 20 | |
+| Rondache | 5 | 1 | 10 + DEX | CON / CON | 6 | 25 + DEX + FOR | 10 | 10 |
 | Targe | 6 | 1 | 15 + DEX | CON / CON | 5 | 20 + DEX + FOR | 10 | 10 |
+| Hoplon | 6 | 1 | 15 + FOR | CON / CON | 5 | 20 + FOR + DEX | 10 | 10 |
 | Écu | 7 | 1 | 20 + FOR | CON / CON | 6 | 25 + FOR + DEX | 10 | 10 |
 | Scutum | 7 | 1 | 20 + FOR | CON / CON | 7 | 30 + FOR + FOR | | 20 |
 
