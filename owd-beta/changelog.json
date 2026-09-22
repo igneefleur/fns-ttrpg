@@ -1,5 +1,19 @@
 [
 {
+"short": "c720f56",
+"author": "Théo Cavaillès",
+"date": "2026-09-22T23:31:59+02:00",
+"message": "La rondache passe en DEX FOR, et l'hoplon fait la paire avec la targe",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/c720f56aef72c4b7d28c2f5f966578698b81bfcf",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/combat/armes.md",
+"url": "content/regles/combat/armes/"
+}
+]
+},
+{
 "short": "1575fd4",
 "author": "Théo Cavaillès",
 "date": "2026-09-22T19:41:10+02:00",
@@ -145,20 +159,6 @@
 "date": "2026-09-22T18:48:05+02:00",
 "message": "Les quatre attaques de la grande épée",
 "url": "https://github.com/igneefleur/fns-ttrpg/commit/ad962e0e9be49921e7642f7b7e15381ff2bb29b0",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/combat/armes.md",
-"url": "content/regles/combat/armes/"
-}
-]
-},
-{
-"short": "0ba6a60",
-"author": "Théo Cavaillès",
-"date": "2026-09-22T18:27:39+02:00",
-"message": "Les quatre attaques de la masse",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/0ba6a6085dd591c895db7b5edd94635990735cd0",
 "files": [
 {
 "status": "modified",
