@@ -1,5 +1,19 @@
 [
 {
+"short": "1782ec8",
+"author": "Théo Cavaillès",
+"date": "2026-09-22T18:55:55+02:00",
+"message": "Les quatre attaques de la lance",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/1782ec875dabd1564ca011d017d07a958bf16107",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/combat/armes.md",
+"url": "content/regles/combat/armes/"
+}
+]
+},
+{
 "short": "aecabc1",
 "author": "Théo Cavaillès",
 "date": "2026-09-22T18:54:49+02:00",
@@ -145,20 +159,6 @@
 "date": "2026-09-22T18:16:13+02:00",
 "message": "La taille horizontale du côté droit frappe 2d, 2 et 2g",
 "url": "https://github.com/igneefleur/fns-ttrpg/commit/0649555dc573d307e53e9c90f1fcb55211eddab0",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/combat/armes.md",
-"url": "content/regles/combat/armes/"
-}
-]
-},
-{
-"short": "d3a641a",
-"author": "Théo Cavaillès",
-"date": "2026-09-22T18:08:04+02:00",
-"message": "Les armes reçoivent leurs attaques : les quatre de l'épée, chacune avec son trajet",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/d3a641a4033cdd61cf3a18908c833f35a909f32f",
 "files": [
 {
 "status": "modified",
