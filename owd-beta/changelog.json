@@ -1,5 +1,19 @@
 [
 {
+"short": "05ad1ee",
+"author": "Théo Cavaillès",
+"date": "2026-09-22T18:16:45+02:00",
+"message": "Les attaques ne portent plus que leur nom",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/05ad1ee0a7e70ba2f1ae288a9a9157ed85cef4d1",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/combat/armes.md",
+"url": "content/regles/combat/armes/"
+}
+]
+},
+{
 "short": "0649555",
 "author": "Théo Cavaillès",
 "date": "2026-09-22T18:16:13+02:00",
@@ -166,25 +180,6 @@
 "message": "Le pain et les eaux portent leurs places de contenance",
 "url": "https://github.com/igneefleur/fns-ttrpg/commit/860848f08e23e262ed47496200e8b7f98ebfa1c9",
 "files": [
-{
-"status": "modified",
-"filename": "content/regles/equipement.md",
-"url": "content/regles/equipement/"
-}
-]
-},
-{
-"short": "64e5620",
-"author": "Théo Cavaillès",
-"date": "2026-09-21T18:07:23+02:00",
-"message": "La contenance passe à 40, et l'eau à 8 places le litre",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/64e5620529815462a13d110a22eda01c046f8759",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/base/capacites-physiques.md",
-"url": "content/regles/base/capacites-physiques/"
-},
 {
 "status": "modified",
 "filename": "content/regles/equipement.md",
