@@ -1,5 +1,19 @@
 [
 {
+"short": "ad962e0",
+"author": "Théo Cavaillès",
+"date": "2026-09-22T18:48:05+02:00",
+"message": "Les quatre attaques de la grande épée",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/ad962e0e9be49921e7642f7b7e15381ff2bb29b0",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/combat/armes.md",
+"url": "content/regles/combat/armes/"
+}
+]
+},
+{
 "short": "0ba6a60",
 "author": "Théo Cavaillès",
 "date": "2026-09-22T18:27:39+02:00",
@@ -160,20 +174,6 @@
 "status": "modified",
 "filename": "content/regles/combat/armes.md",
 "url": "content/regles/combat/armes/"
-}
-]
-},
-{
-"short": "ebf6943",
-"author": "Théo Cavaillès",
-"date": "2026-09-22T01:32:34+02:00",
-"message": "L'intensité plafonne l'exposition : 10 % par point, jusqu'à 10",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/ebf6943535b4b8c1e4e8880c7119930ef872b0aa",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/base/capacites-physiques.md",
-"url": "content/regles/base/capacites-physiques/"
 }
 ]
 }
