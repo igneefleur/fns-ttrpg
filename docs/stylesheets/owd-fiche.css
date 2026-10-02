@@ -503,6 +503,7 @@ html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où 
 .pc-vital-res.t-pr { --teinte: #6A4C93; }
 .pc-vital-res.t-ps { --teinte: #B5652B; }
 .pc-vital-res.t-ph { --teinte: #2A9D8F; }
+.pc-vital-res.t-pc { --teinte: #5B8C2A; }
 .pc-vital-val { flex: 0 0 auto; margin-left: auto; display: inline-flex; align-items: baseline; gap: .2rem; }
 /* La largeur n'est qu'un plancher : reserveVitale() l'ajuste au nombre de signes. */
 .pc-vital-num {

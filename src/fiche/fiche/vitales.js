@@ -132,6 +132,12 @@
   function buildPi() {
     return seule(reserveVitale("pi", provenanceCap("pi")));
   }
+  // LES POINTS DE CHANCE, même module que les PV : un compteur qui se dépense
+  // et se regagne, et dont le maximum vient de la Chance comme les autres
+  // viennent de leur caractéristique.
+  function buildPc() {
+    return seule(reserveVitale("pc", provenanceCap("pc")));
+  }
   function buildPm() {
     return seule(reserveVitale("pm", function () { return "Maximum calculé : " + fmtP(autoDe("pm")); }));
   }

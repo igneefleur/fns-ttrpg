@@ -718,14 +718,20 @@
 
     // ---- vêtements ----
     if (!Array.isArray(s.vetements)) s.vetements = [];
+    var types = ["contondant", "perforant", "tranchant", "feu", "froid", "eclair", "decomposition", "ethere", "brut"];
     s.vetements = s.vetements.filter(function (v) { return v && typeof v === "object"; }).map(function (v) {
-      return {
+      var res = {
         id: String(v.id || "") || uid("v"),
         nom: String(v.nom == null ? "" : v.nom),
         froid: snum(v.froid), chaud: snum(v.chaud), poids: pnum(v.poids),
         porte: v.porte !== false,
         note: String(v.note == null ? "" : v.note)
       };
+      types.forEach(function(t) {
+        res["res_" + t] = snum(v["res_" + t]);
+        res["prot_" + t] = snum(v["prot_" + t]);
+      });
+      return res;
     });
 
     // ---- inventaire illustré ----
@@ -771,6 +777,15 @@
         vet: INV_VETEMENTS.indexOf(o.vet) >= 0 || o.vet === "hautbas" ? o.vet : "",
         poches: pnum(o.poches),
         froid: snum(o.froid), chaud: snum(o.chaud),
+        res_contondant: snum(o.res_contondant), prot_contondant: snum(o.prot_contondant),
+        res_perforant: snum(o.res_perforant), prot_perforant: snum(o.prot_perforant),
+        res_tranchant: snum(o.res_tranchant), prot_tranchant: snum(o.prot_tranchant),
+        res_feu: snum(o.res_feu), prot_feu: snum(o.prot_feu),
+        res_froid: snum(o.res_froid), prot_froid: snum(o.prot_froid),
+        res_eclair: snum(o.res_eclair), prot_eclair: snum(o.prot_eclair),
+        res_decomposition: snum(o.res_decomposition), prot_decomposition: snum(o.prot_decomposition),
+        res_ethere: snum(o.res_ethere), prot_ethere: snum(o.prot_ethere),
+        res_brut: snum(o.res_brut), prot_brut: snum(o.prot_brut),
         // un type (bague) ; une case d'avant (bagueG) redevient son type
         acc: accType(o.acc),
         sac: !!o.sac,
@@ -5877,9 +5892,14 @@
       if (sel && items.indexOf(sel) < 0) sel = null;
       var fantome = !sel;
       panel.classList.toggle("fantome", fantome);
+      var types = ["contondant", "perforant", "tranchant", "feu", "froid", "eclair", "decomposition", "ethere", "brut"];
       var it = sel || { id: "", nom: "", img: "", qte: 0, poids: 0, encombre: 0, places: 0, achat: 0, vente: null,
                         desc: "", ou: "sac", emp: -1, rapide: false, vet: "", acc: "", poches: 0, froid: 0, chaud: 0,
                         sac: false, cap: 0, ceint: false, ep: 0, ebMax: 0, arme: null };
+      types.forEach(function(t) {
+        it["res_" + t] = it["res_" + t] || 0;
+        it["prot_" + t] = it["prot_" + t] || 0;
+      });
 
       // AUCUNE IMAGE AU PANNEAU, consigne de l'auteur : l'image se voit sur la
       // tuile, le panneau ne porte que le détail.
@@ -5924,6 +5944,13 @@
         it.vet = v === "vet" ? (it.vet || "haut") : "";
         it.acc = v === "acc" ? (it.acc || "collier") : "";
         it.arme = v === "arme" ? (it.arme || { prise: "", parade: "", reduction: "", comp: "", mains: 1, gestes: [] }) : null;
+        if (v === "vet" || v === "acc") {
+          var types = ["contondant", "perforant", "tranchant", "feu", "froid", "eclair", "decomposition", "ethere", "brut"];
+          types.forEach(function(t) {
+            it["res_" + t] = it["res_" + t] || 0;
+            it["prot_" + t] = it["prot_" + t] || 0;
+          });
+        }
         if (INV_EP.indexOf(it.ou) < 0 && !lieuPermis(it, it.ou)) it.ou = "sac";
         rangeEmplacements(items);
         render();
@@ -5967,10 +5994,21 @@
         pv.appendChild(champNombre("Poches", function () { return it.poches; },
           function (v) { it.poches = pnum(v); }, "Ce que ce vêtement porté ajoute aux Poches, en eb"));
         body.appendChild(pv);
+
+        var types = ["contondant", "perforant", "tranchant", "feu", "froid", "eclair", "decomposition", "ethere", "brut"];
+        types.forEach(function(t) {
+            var pr = el("div", "pc-obj-pair");
+            pr.appendChild(champNombre("Res " + t, function () { return it["res_" + t]; },
+              function (v) { it["res_" + t] = snum(v); }, "Resistance " + t + " (%)"));
+            pr.appendChild(champNombre("Prot " + t, function () { return it["prot_" + t]; },
+              function (v) { it["prot_" + t] = snum(v); }, "Protection " + t + " (flat)"));
+            body.appendChild(pr);
+        });
+
         var pp = el("div", "pc-obj-pair");
-        pp.appendChild(champNombre("Froid", function () { return it.froid; },
+        pp.appendChild(champNombre("Défense Froid", function () { return it.froid; },
           function (v) { it.froid = snum(v); }, "Protection contre le froid, en degrés"));
-        pp.appendChild(champNombre("Chaud", function () { return it.chaud; },
+        pp.appendChild(champNombre("Défense Chaud", function () { return it.chaud; },
           function (v) { it.chaud = snum(v); }, "Protection contre le chaud, en degrés"));
         body.appendChild(pp);
       }

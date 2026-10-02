@@ -171,20 +171,20 @@ def _trajet(brut):
     return etapes
 
 
-def carte_svg(brut):
+def carte_svg(brut, rayon=PORTEE_MAX):
     etapes = _trajet(brut)
     par_case = {c: (role, rang) for c, role, rang in etapes}
 
-    largeur = RAYON_CASE * (1.5 * PORTEE_MAX + 1)
-    hauteur = RAYON_CASE * SQ3 * (PORTEE_MAX + 0.5)
+    largeur = RAYON_CASE * (1.5 * rayon + 1)
+    hauteur = RAYON_CASE * SQ3 * (rayon + 0.5)
     out = [
         f'<svg class="geste-carte" role="img" aria-label="Trajet du coup : {brut}" '
         f'viewBox="{-largeur:.1f} {-hauteur:.1f} {2 * largeur:.1f} {2 * hauteur:.1f}">'
     ]
 
-    for q in range(-PORTEE_MAX, PORTEE_MAX + 1):
-        for r in range(-PORTEE_MAX, PORTEE_MAX + 1):
-            if _distance(q, r) > PORTEE_MAX:
+    for q in range(-rayon, rayon + 1):
+        for r in range(-rayon, rayon + 1):
+            if _distance(q, r) > rayon:
                 continue
             cx, cy = _centre(q, r)
             role, _ = par_case.get((q, r), (None, None))
@@ -371,12 +371,12 @@ def defense_html(esquive, parade):
     return '<p class="geste-defense">' + "".join(bouts) + "</p>"
 
 
-def _rendu(attrs, base=None):
+def _rendu(attrs, base=None, rayon=PORTEE_MAX):
     """Ce qui se dessine avant le nom, et ce qui se pose après."""
     trajet = attrs.get("trajet")
     if not trajet:
         return "", ""
-    avant = carte_svg(trajet)
+    avant = carte_svg(trajet, rayon)
 
     apres = []
     a_du_blanc = any(b.endswith(":passe") for b in trajet.split(">"))
@@ -404,10 +404,10 @@ def on_page_content(html, page, config, files):
     if 'data-trajet="' not in html:
         return html
 
-    def rendre(m, base=None):
+    def rendre(m, base=None, rayon=PORTEE_MAX):
         attrs = dict(ATTR.findall(m.group(2)))
         try:
-            avant, apres = _rendu(attrs, base)
+            avant, apres = _rendu(attrs, base, rayon)
         except ErreurCoup as e:
             raise ErreurCoup(f"{page.file.src_path} : {e}") from None
         return m.group(1) + avant + _nom_html(m.group(3)) + apres
