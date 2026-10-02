@@ -474,7 +474,8 @@
         it.ceint = v === "ceint";
         it.vet = v === "vet" ? (it.vet || "haut") : "";
         it.acc = v === "acc" ? (it.acc || "collier") : "";
-        it.arme = v === "arme" ? (it.arme || { prise: "", parade: "", reduction: "", comp: "", mains: 1, gestes: [] }) : null;
+        it.arme = v === "arme" ? (it.arme || { attaque: "", degats: "", modsDegats: ["", "", ""],
+          parade: "", reduction: "", modsParade: ["", "", ""], comp: "", type: "", mains: 1 }) : null;
         if (v === "vet" || v === "acc") {
           var types = ["contondant", "perforant", "tranchant", "feu", "froid", "eclair", "decomposition", "ethere", "brut"];
           types.forEach(function(t) {
@@ -599,28 +600,10 @@
         body.appendChild(ps);
         body.appendChild(champsEp());
       }
-      // L'ARME : ses gestes et ses jets. Ses rafraîchissements vont au registre
-      // du PANNEAU, vidé à chaque rendu : sinon chaque clic sur une tuile
-      // laisserait des fonctions pointer sur un détail disparu.
-      if (it.arme) {
-        var pm = el("div", "pc-obj-pair");
-        var mains = el("select", "pc-edit-field");
-        [[1, "1 main"], [2, "2 mains"]].forEach(function (m) {
-          var o = el("option", null, m[1]);
-          o.value = String(m[0]);
-          if (m[0] === (it.arme.mains || 1)) o.selected = true;
-          mains.appendChild(o);
-        });
-        mains.addEventListener("change", function () {
-          it.arme.mains = mains.value === "2" ? 2 : 1;
-          // tenue en main, elle prend (ou rend) l'autre main tout de suite
-          if (it.ou === "mainG" || it.ou === "mainD") deplace(it, it.ou);
-          render();
-          refresh();
-        });
-        pm.appendChild(fld("Se porte", mains));
-        body.appendChild(pm);
-      }
+      // L'ARME : cinq lignes de données, sans gestes ni boutons. Ses
+      // rafraîchissements vont au registre du PANNEAU, vidé à chaque rendu :
+      // sinon chaque clic sur une tuile laisserait des fonctions pointer sur un
+      // détail disparu. Le nombre de mains reste technique et vient du type.
       if (it.arme && !fantome) {
         var ancien = hooks;
         hooks = panelHooks;

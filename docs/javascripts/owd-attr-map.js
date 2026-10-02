@@ -85,7 +85,7 @@
   // s'ouvre dans les deux sens sans migration. Le manifeste publie les deux
   // numéros séparément, et c'est ce repli-ci que l'amorce prend quand le
   // manifeste manque.
-  var SCHEMA_DEFAUT = 5;
+  var SCHEMA_DEFAUT = 6;
 
   // Release EFFECTIVE : celle du code qui TOURNE, pas celle que le site publie.
   //

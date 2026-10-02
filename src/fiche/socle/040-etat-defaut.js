@@ -143,11 +143,8 @@
       avantages: [],
 
       // ---- équipement ----
-      // Une arme est un RÉPERTOIRE, pas une attaque : sa ligne (prise, parade,
-      // réduction, compétence qui porte le jet) et ses gestes.
-      // Une entrée : { id, nom, prise, parade, reduction, comp, note,
-      //   gestes: [{ id, nom, seuil, portee, degats, type, degatsDemi, typeDemi }] }.
-      // `comp` est l'ID d'une entrée de `comps` — jamais son nom, qui se renomme.
+      // Les anciennes armes racine sont conservées pour les archives ; les armes
+      // actives vivent désormais dans inv.objets[].arme (voir plus bas).
       armes: [],
       // Ce que le personnage porte contre le froid et le chaud, compté en
       // degrés, et ce qu'il pèse. Une entrée :
@@ -172,7 +169,8 @@
       //   ep / ebMax     les emplacements d'une ceinture ou d'un sac, et
       //                  l'encombrance au plus de chacun
       //   emp     le rang de l'emplacement tenu (ou « ceint » ou « sacep »), -1 sinon
-      //   arme    null, ou { prise, parade, reduction, comp, gestes }
+      //   arme    null, ou { attaque, degats, modsDegats[3], parade, reduction,
+      //             modsParade[3], comp, type, mains }
       //   rapide  l'objet se saisit rapidement (compte contre les accès rapides)
       //   id      c'est LUI qui reconnaît le même objet d'une fiche à l'autre
       inv: {

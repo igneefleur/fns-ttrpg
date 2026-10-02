@@ -3,7 +3,7 @@
 Le dépôt tient à ce que **les données viennent des règles, jamais du code**.
 Ce hook lit `docs/content/regles/` au build et produit `owd-creation.json`, que
 `owd-fiche.js` charge : le barème des rangs, les formules des capacités, les
-huit caractéristiques, les armes et leurs paliers. Rien de tout cela n'est
+huit caractéristiques et les armes. Rien de tout cela n'est
 recopié à la main dans un fichier JS, et une règle qui change au livre change
 la fiche à la construction suivante.
 
@@ -527,78 +527,129 @@ def _effondrement(txt, capacites):
 # Armes
 # ----------------------------------------------------------------------
 
-_ARME = re.compile(
-    r'<p class="arme-nom">(?P<nom>[^<]+)<span class="arme-portee">'
-    r'parade (?P<p>\d+) · réduction (?P<r>\d+)</span></p>')
+# Le chapitre actuel range les armes dans des TABLES. Le premier titre de
+# colonne peut être « Arme » ou « Bouclier » ; cette présence suffit à dire que
+# le chapitre est assez écrit pour être lu par _armes().
+_ARME = re.compile(r"^\|\s*(?:Arme|Bouclier)\s*\|", re.M)
 
 
-def _paliers(portees):
-    """La table « Case / Ce qui y travaille » : ce qui travaille à N pas.
+def _cellules(ligne):
+    """Une ligne de table Markdown -> cellules, sans les barres extérieures."""
+    return [c.strip() for c in ligne.strip().strip("|").split("|")]
 
-    Ce tableau n'est pas un résultat, c'est une règle : chaque catégorie tient
-    un palier, et ce palier vaut pour toutes les armes qui y entrent.
+
+def _entier_cellule(v, quoi):
+    v = str(v or "").strip()
+    if not re.fullmatch(r"-?\d+", v):
+        raise ErreurRegles(f"{quoi} : « {v} » n'est pas un entier")
+    return int(v)
+
+
+def _formule_arme(v, abbrs, quoi):
+    """« 30 + DEX + FOR » -> base 30 et clés de caractéristiques.
+
+    Le livre écrit les abréviations ; le JSON porte les CLÉS d'état afin que la
+    fiche puisse directement les ranger dans ses trois sélecteurs de MOD.
     """
-    m = _un(r"\|\s*Case\s*\|\s*Ce qui y travaille\s*\|(.+?)\n\n", portees,
-            "paliers : la table des cases", re.S)
-    out = []
-    for case, quoi in re.findall(r"^\|\s*(\d+)\s*\|([^|]+)\|", m.group(1), re.M):
-        for nom in quoi.split(","):
-            nom = _plat(nom).strip().lower()
-            if nom:
-                out.append((nom, int(case)))
-    if not out:
-        raise ErreurRegles("paliers : la table des cases ne donne aucune entrée")
-    # Le plus long d'abord : « grande hache » doit l'emporter sur « hache ».
-    out.sort(key=lambda e: -len(e[0]))
-    return out
+    bouts = [b.strip() for b in str(v or "").split("+") if b.strip()]
+    if not bouts:
+        return 0, []
+    base = _entier_cellule(bouts[0], quoi + " : base")
+    mods = []
+    for b in bouts[1:]:
+        cle = abbrs.get(_plat(b).upper())
+        if not cle:
+            raise ErreurRegles(f"{quoi} : MOD « {b} » inconnu")
+        mods.append(cle)
+    if len(mods) > 3:
+        raise ErreurRegles(f"{quoi} : {len(mods)} MOD, la fiche en porte au plus trois")
+    return base, mods
 
 
-def _armes(armes_md, portees_md):
-    paliers = _paliers(portees_md)
+def _armes(armes_md, caracs):
+    """Lit les tables d'armes du chapitre.
+
+    Chaque TYPE reçoit une clé stable dérivée de son nom. Les valeurs chiffrées
+    sont également transportées : l'inventaire ne les applique PAS comme
+    préréglage, mais le futur module d'attaque pourra confronter une arme aux
+    règles sans relire le Markdown.
+    """
+    abbrs = {str(c.get("abbr", "")).upper(): c.get("cle") for c in (caracs or [])
+             if c and c.get("abbr") and c.get("cle")}
     out, vues = [], {}
-    for m in _ARME.finditer(armes_md):
-        nom = m.group("nom").strip()
-        avant = armes_md[:m.start()]
-        cat = re.findall(r"^##\s+(.+?)\s*$", avant, re.M)
-        if not cat:
-            raise ErreurRegles(f"arme « {nom} » : aucune catégorie ne la précède")
-        plat = _plat(nom).lower()
-        # La clé ET le palier viennent de la table des portées : c'est elle qui
-        # nomme les familles, et c'est donc elle qui les identifie.
-        trouve = next(((k, c) for k, c in paliers if plat.startswith(k)), None)
-        if trouve is None:
-            raise ErreurRegles(
-                f"arme « {nom} » : aucune entrée de la table des cases ne la nomme, "
-                f"son palier serait inventé")
-        cle = _cle(trouve[0])
-        if cle in vues:
-            raise ErreurRegles(
-                f"arme « {nom} » : la clé « {cle} » sert déjà à « {vues[cle]} »")
-        vues[cle] = nom
-        out.append({"cle": cle, "nom": nom, "categorie": cat[-1],
-                    "parade": int(m.group("p")), "reduction": int(m.group("r")),
-                    "palier": trouve[1]})
+    titres = list(re.finditer(r"^##\s+(.+?)\s*$", armes_md, re.M))
+    for i, mt in enumerate(titres):
+        cat = mt.group(1).strip()
+        fin = titres[i + 1].start() if i + 1 < len(titres) else len(armes_md)
+        bloc = armes_md[mt.end():fin]
+        lignes = bloc.splitlines()
+        hi = None
+        for j, ligne in enumerate(lignes):
+            if re.match(r"^\|\s*(?:Arme|Bouclier)\s*\|", ligne):
+                hi = j
+                break
+        if hi is None:
+            continue
+        entetes = _cellules(lignes[hi])
+        cle_entetes = [_plat(h).lower() for h in entetes]
+        try:
+            idx_nom = next(k for k, h in enumerate(cle_entetes) if h in ("arme", "bouclier"))
+        except StopIteration:
+            continue
+        # La ligne suivante est le séparateur |---|. Les données commencent
+        # ensuite et s'arrêtent au premier non-tableau.
+        for ligne in lignes[hi + 2:]:
+            if not ligne.lstrip().startswith("|"):
+                if ligne.strip():
+                    break
+                continue
+            vals = _cellules(ligne)
+            if len(vals) != len(entetes):
+                raise ErreurRegles(f"armes : ligne de table irrégulière dans « {cat} »")
+            nom = vals[idx_nom].strip()
+            if not nom or set(nom) <= {"-", ":"}:
+                continue
+            cle = _cle(nom)
+            if cle in vues:
+                raise ErreurRegles(f"arme « {nom} » : la clé « {cle} » sert déjà à « {vues[cle]} »")
+            vues[cle] = nom
+            ligne_d = {cle_entetes[k]: vals[k] for k in range(len(vals))}
+            d = {"cle": cle, "nom": nom, "categorie": cat}
+
+            # Les armes de trois cases sont les grandes armes de corps à corps ;
+            # les autres catégories indiquent explicitement une/deux mains.
+            plat_cat = _plat(cat).lower()
+            d["mains"] = 2 if ("deux mains" in plat_cat or "3 cases" in plat_cat) else 1
+
+            if ligne_d.get("attaque"):
+                d["attaque"] = _entier_cellule(ligne_d["attaque"], f"arme « {nom} » : attaque")
+            if ligne_d.get("degats"):
+                base, mods = _formule_arme(ligne_d["degats"], abbrs, f"arme « {nom} » : dégâts")
+                d["degats"] = base
+                d["modsDegats"] = mods
+            if ligne_d.get("parade"):
+                d["parade"] = _entier_cellule(ligne_d["parade"], f"arme « {nom} » : parade")
+            if ligne_d.get("reduction"):
+                base, mods = _formule_arme(ligne_d["reduction"], abbrs, f"arme « {nom} » : réduction")
+                d["reduction"] = base
+                d["modsParade"] = mods
+            # Les codes de dégâts restent utiles au futur module, sans être
+            # confondus avec le TYPE d'arme de l'inventaire.
+            brut_types = ligne_d.get("types") or ligne_d.get("type") or ""
+            if brut_types:
+                d["types"] = [x.strip() for x in brut_types.split("/") if x.strip()]
+            out.append(d)
     if not out:
         raise ErreurRegles("armes : aucune ligne d'arme lisible")
     return out
 
 
 def _types_degats(armes_md):
-    """« Le fil tranche (TRA), la pointe perce (PER), … écrasent (CON) ».
-
-    Le livre n'écrit pas d'adjectif : il écrit le CODE et ce qui l'inflige. Le
-    libellé rendu est donc le code, et la phrase voyage sous `dit`.
-    """
-    phrase = _un(r"(Le fil [^.]+\(CON\))", armes_md,
-                 "types de dégâts : la phrase de « Lire un coup »").group(1)
-    # Découpé sur les CODES et non sur les virgules : la dernière proposition
-    # en porte trois (« une hampe, un manche, un plat ou un pommeau écrasent »),
-    # et une coupure à la virgule n'en garderait que le dernier morceau.
-    out = []
-    bouts = re.split(r"\((TRA|PER|CON)\)", phrase)
-    for i in range(1, len(bouts), 2):
-        out.append({"cle": bouts[i], "libelle": bouts[i],
-                    "dit": bouts[i - 1].strip(" ,").strip()})
+    """« TRA tranche, PER perce, CON écrase » : les trois codes du livre."""
+    phrase = _un(r"\*\*Les types\s*:\*\*\s*([^\n]+)", armes_md,
+                 "types de dégâts : la ligne « Les types »").group(1)
+    trouves = re.findall(r"\b(TRA|PER|CON)\s+([^,.;]+)", phrase)
+    out = [{"cle": code, "libelle": code, "dit": dit.strip()} for code, dit in trouves]
     codes = [t["cle"] for t in out]
     if sorted(codes) != ["CON", "PER", "TRA"]:
         raise ErreurRegles(
@@ -920,13 +971,10 @@ def _jeu(docs):
                           "pluriel": re.sub(r"^pièce\b", "pièces", piece),
                           "venteSurAchat": vente}
 
-    # Le palier d'une arme vient de la table des cases, qui vit dans les
-    # portées : sans ce chapitre, `_armes` inventerait la distance à laquelle
-    # chaque famille travaille — donc pas d'armes du tout. Les trois types de
-    # dégâts, eux, ne tiennent qu'au chapitre des armes et sortent quand même.
+    # Les types d'arme et leurs valeurs viennent désormais directement des
+    # tables du chapitre Armes ; la vieille page des portées n'est plus requise.
     if armes_md is not None:
-        if portees_md is not None:
-            jeu["armes"] = _armes(armes_md, portees_md)
+        jeu["armes"] = _armes(armes_md, caracs)
         jeu["typesDegats"] = _types_degats(armes_md)
 
     return jeu

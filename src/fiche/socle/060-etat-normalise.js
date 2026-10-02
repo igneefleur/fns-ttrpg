@@ -38,6 +38,13 @@
         };
       });
   }
+
+  function normModsArme(liste) {
+    if (!Array.isArray(liste)) liste = [];
+    var out = ["", "", ""];
+    for (var i = 0; i < 3; i++) out[i] = liste[i] == null ? "" : String(liste[i]);
+    return out;
+  }
   function normalize(s) {
     var b = blank();
     if (!s || typeof s !== "object") return b;
@@ -260,16 +267,35 @@
         ep: Math.max(0, Math.floor(pnum(o.ep))),
         ebMax: pnum(o.ebMax),
         arme: a ? {
-          prise: String(a.prise == null ? "" : a.prise),
+          attaque: String(a.attaque == null ? "" : a.attaque),
+          degats: String(a.degats == null ? "" : a.degats),
+          modsDegats: normModsArme(a.modsDegats),
           parade: String(a.parade == null ? "" : a.parade),
           reduction: String(a.reduction == null ? "" : a.reduction),
+          modsParade: normModsArme(a.modsParade),
           // l'ID d'une compétence, jamais son nom : le nom se renomme
           comp: a.comp && vusComps[a.comp] ? String(a.comp) : "",
-          // à une main ou à deux : à deux, l'arme tient les deux mains
-          mains: num(a.mains, 1) === 2 ? 2 : 1,
-          gestes: normGestes(a.gestes)
+          // clé stable d'un type d'arme lu dans armes.md ; une valeur inconnue
+          // est conservée pour qu'une archive ou un mod ne perde rien.
+          type: String(a.type == null ? "" : a.type),
+          // donnée technique de placement : la carte ne l'affiche plus.
+          mains: num(a.mains, 1) === 2 ? 2 : 1
         } : null
       };
+    });
+    // Un ancien objet d'arme ne portait pas de type. Quand son nom correspond
+    // exactement à une arme du livre, on peut poser la clé sans inventer : le
+    // nom vient du joueur, la clé et le nombre de mains viennent des règles.
+    s.inv.objets.forEach(function (o) {
+      if (!o.arme) return;
+      var d = null;
+      armesData().forEach(function (x) {
+        if (!d && x && x.cle && ((o.arme.type && x.cle === o.arme.type) ||
+            (!o.arme.type && pli(x.nom) === pli(o.nom)))) d = x;
+      });
+      if (!d) return;
+      if (!o.arme.type) o.arme.type = String(d.cle);
+      if (d.mains === 1 || d.mains === 2) o.arme.mains = d.mains;
     });
     // UNE CASE, UN OBJET, ET LE BON : une case de vêtement ne prend que son
     // type de vêtement, la case du sac à dos qu'un sac. Ce qui n'y a pas sa

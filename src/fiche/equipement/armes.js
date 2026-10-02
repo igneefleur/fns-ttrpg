@@ -1,57 +1,31 @@
   // ================= ONGLET INVENTAIRE =================
 
   // ---- 10. Armes : la propriété « arme » d'un objet ----
-  // Il n'y a plus de module Armes : une arme est un OBJET de l'inventaire qui
-  // porte une propriété « arme ». Ce fichier dessine cette propriété dans le
-  // détail de l'objet. Une arme est un RÉPERTOIRE, pas une attaque : sa ligne
-  // (prise, parade, réduction, compétence qui porte le jet) et ses GESTES, un
-  // par façon de frapper. Les dégâts d'Outward sont des nombres FIXES : le jeton « Dégâts »
-  // ENVOIE une carte, il ne lance rien — un « jet de dégâts » serait une règle
-  // inventée, et c'est la coupure à ne pas rater.
-  function champTexte(libelle, obj, cle, large, titre) {
+  // Il n'y a plus de gestes ni de préréglage dans l'inventaire. Une arme porte
+  // seulement les valeurs qui lui appartiennent : difficulté d'attaque, dégâts
+  // de base et jusqu'à trois caractéristiques qui les modifient ; difficulté de
+  // parade, réduction de base et jusqu'à trois caractéristiques qui la
+  // modifient ; enfin la compétence liée et le TYPE d'arme du livre. Le type
+  // est une clé stable vers DATA.armes : il servira plus tard à retrouver ses
+  // trajets sans recopier les règles dans la fiche.
+  function champArme(libelle, obj, cle, titre) {
     var i = el("input", "pc-edit-field");
     i.type = "text";
-    i.placeholder = libelle;
-    i.value = obj[cle] || "";
+    i.inputMode = "numeric";
+    i.placeholder = "0";
+    i.value = obj[cle] == null ? "" : String(obj[cle]);
     if (titre) i.title = titre;
     i.addEventListener("input", function () { obj[cle] = i.value; save(); });
-    return fld(libelle, i, large ? "w" : null);
+    return fld(libelle, i);
   }
-  // `it` est l'objet ; `a` = it.arme ; `rendre` redessine le détail.
-  function carteArme(it, rendre) {
+
+  function carteArme(it) {
     var a = it.arme;
 
-    // Le préréglage : choisir une arme du livre remplit parade et réduction.
-    // C'EST UN RACCOURCI DE SAISIE, PAS UNE CONTRAINTE — les champs restent
-    // libres, et la liste ne s'affiche pas comme un barème.
-    function selArme(a) {
-      var s = el("select", "pc-select pc-edit-field");
-      var o0 = el("option", null, "— Préréglage —");
-      o0.value = "";
-      s.appendChild(o0);
-      armesData().forEach(function (d) {
-        var o = el("option", null, d.nom);
-        o.value = d.cle;
-        s.appendChild(o);
-      });
-      s.title = "Remplit parade et réduction d'après le livre. Les champs restent modifiables.";
-      s.addEventListener("change", function () {
-        var d = null;
-        armesData().forEach(function (x) { if (x.cle === s.value) d = x; });
-        s.value = "";
-        if (!d) return;
-        if (!String(it.nom || "").trim()) it.nom = d.nom;
-        a.parade = String(d.parade);
-        a.reduction = String(d.reduction);
-        refresh();
-        rendre();
-      });
-      return s;
-    }
-    // Le sélecteur de compétence : alimenté par state.comps, et il range l'ID.
-    function selComp(a) {
+    function selComp() {
       var s = el("select", "pc-select pc-edit-field");
       function remplir() {
+        var valeur = a.comp || "";
         s.innerHTML = "";
         var o0 = el("option", null, "— Aucune —");
         o0.value = "";
@@ -59,135 +33,120 @@
         state.comps.forEach(function (c) {
           var o = el("option", null, c.nom || "Sans nom");
           o.value = c.id;
-          if (c.id === a.comp) o.selected = true;
+          if (c.id === valeur) o.selected = true;
           s.appendChild(o);
         });
       }
       remplir();
-      s.title = "La compétence qui porte le jet de cette arme.";
-      s.addEventListener("change", function () { a.comp = s.value; refresh(); });
+      s.title = "La compétence affiliée à cette arme.";
+      s.addEventListener("change", function () { a.comp = s.value; save(); refresh(); });
       hooks.push(function () { if (document.activeElement !== s) remplir(); });
       return s;
     }
-    // Le bonus et les dés de l'arme viennent de SA compétence : sans lien, le
-    // jet part à zéro dé, et la fiche le dit plutôt que d'en inventer un.
-    function compArme(a) { return a.comp ? compDe(a.comp) : null; }
-    function jetArme(a, libelle) {
-      var c = compArme(a);
-      if (!c) { flash("Cette arme n'est liée à aucune compétence (rouage)."); return; }
-      var n = compDes(c);
-      doRoll(libelle, compBonus(c), deDe(n), true, n);
-    }
 
-    function carte(a) {
-      var card = el("div", "pc-arme");
-      var head = el("div", "pc-arme-head");
-      head.appendChild(el("span", "nm", it.nom || "Arme"));
-      head.appendChild(chatBtn(
-        function () { return "Arme — " + (it.nom || "sans nom"); },
-        function () {
-          var c = compArme(a);
-          return [
-            ["Prise", a.prise], ["Parade", a.parade], ["Réduction", a.reduction],
-            ["Compétence", c ? (c.nom + " " + sign(compBonus(c))) : ""],
-            ["", a.gestes.map(function (g) {
-              return (g.nom || "geste") + " — seuil " + (g.seuil || "?") +
-                     " · " + (g.portee || "?") + " pas · " + (g.degats || "?") + " " + (g.type || "");
-            }).join(" | ")]
-          ];
-        }));
-      card.appendChild(head);
-
-      var l1 = el("div", "pc-arme-line");
-      l1.appendChild(champTexte("Prise", a, "prise", true, "À une main, à deux mains, d'hast…"));
-      l1.appendChild(champTexte("Parade", a, "parade", false, "La difficulté de parade de cette arme."));
-      l1.appendChild(champTexte("Réduction", a, "reduction", false,
-        "Ce que cette arme retire aux dégâts qu'elle pare."));
-      l1.appendChild(fld("Compétence", selComp(a), "w"));
-      var chipP = el("span", "pc-roll-chip", "Parade");
-      chipP.addEventListener("click", function () { jetArme(a, "Parade — " + (it.nom || "arme")); });
-      l1.appendChild(chipP);
-      var preregl = fld("Préréglage", selArme(a));
-      preregl.classList.add("pc-edit-only");
-      l1.appendChild(preregl);
-      card.appendChild(l1);
-      hooks.push(function () {
-        var c = compArme(a);
-        chipP.title = c
-          ? "Lancer la parade : " + deDe(compDes(c)) + " " + sign(compBonus(c)) +
-            " (parade " + (a.parade || "?") + " · réduction " + (a.reduction || "?") + ")"
-          : "Aucune compétence liée : le jet ne peut pas partir.";
-      });
-
-      // ---- les gestes ----
-      a.gestes.forEach(function (g) {
-        var lg = el("div", "pc-arme-line");
-        lg.appendChild(champTexte("Geste", g, "nom", true));
-        lg.appendChild(champTexte("Seuil", g, "seuil", false,
-          "Le seuil d'attaque de ce geste. Il ne part pas dans le jet : Roll20 ne compare pas."));
-        lg.appendChild(champTexte("Portée", g, "portee", false, "En pas."));
-        lg.appendChild(champTexte("Dégâts", g, "degats", false));
-        lg.appendChild(selType(g, "type"));
-        lg.appendChild(champTexte("Moitié", g, "degatsDemi", false,
-          "Ce que le geste inflige sur une case blanche."));
-        lg.appendChild(selType(g, "typeDemi"));
-        var chipA = el("span", "pc-roll-chip", "Attaque");
-        chipA.addEventListener("click", function () {
-          jetArme(a, (it.nom || "Arme") + " — " + (g.nom || "attaque"));
-        });
-        lg.appendChild(chipA);
-        // LES DÉGÂTS NE SE LANCENT PAS : ce sont des nombres fixes. Le jeton
-        // ENVOIE une carte, par sayChat, et non par doRoll.
-        var chipD = el("span", "pc-roll-chip", "Dégâts");
-        chipD.title = "Envoyer les dégâts au tchat — ils sont fixes, ils ne se lancent pas.";
-        chipD.addEventListener("click", function () {
-          sayChat("Dégâts — " + (g.nom || it.nom || "geste"), [
-            ["Pleins", (g.degats || "") + (g.type ? " " + g.type : "")],
-            ["Moitié", (g.degatsDemi || "") + (g.typeDemi ? " " + g.typeDemi : "")],
-            ["Portée", g.portee ? g.portee + " pas" : ""],
-            ["Seuil", g.seuil]
-          ]);
-        });
-        lg.appendChild(chipD);
-        lg.appendChild(miniBtn("✕", "Retirer ce geste", function () {
-          a.gestes = a.gestes.filter(function (x) { return x.id !== g.id; });
-          refresh();
-          rendre();
-        }, "danger pc-edit-only"));
-        card.appendChild(lg);
-        hooks.push(function () {
-          var c = compArme(a);
-          chipA.title = c
-            ? "Lancer l'attaque : " + deDe(compDes(c)) + " " + sign(compBonus(c)) +
-              (g.seuil ? " — seuil " + g.seuil : "")
-            : "Aucune compétence liée : le jet ne peut pas partir.";
-        });
-      });
-      card.appendChild(miniBtn("+ Geste", "Ajouter une façon de frapper", function () {
-        a.gestes.push({ id: uid("g"), nom: "", seuil: "", portee: "", degats: "", type: "",
-                        degatsDemi: "", typeDemi: "" });
-        refresh();
-        rendre();
-      }, "pc-edit-only"));
-      return card;
-    }
-    // Les types de dégâts viennent des règles : tranchant, perforant,
-    // contondant. La liste n'est pas un barème, c'est un vocabulaire.
-    function selType(g, cle) {
+    function selCarac(table, rang) {
       var s = el("select", "pc-select pc-edit-field");
-      var o0 = el("option", null, "—");
-      o0.value = "";
-      s.appendChild(o0);
-      typesDegats().forEach(function (t) {
-        var o = el("option", null, t.cle);
-        o.value = t.cle;
-        o.title = t.libelle;
-        if (g[cle] === t.cle) o.selected = true;
-        s.appendChild(o);
+      function remplir() {
+        var valeur = Array.isArray(a[table]) ? String(a[table][rang] || "") : "";
+        s.innerHTML = "";
+        var o0 = el("option", null, "—");
+        o0.value = "";
+        s.appendChild(o0);
+        caracsOrdre().forEach(function (c) {
+          var o = el("option", null, abbrCarac(c));
+          o.value = c;
+          o.title = libCarac(c);
+          if (c === valeur) o.selected = true;
+          s.appendChild(o);
+        });
+      }
+      remplir();
+      s.title = "Caractéristique ajoutée comme MOD.";
+      s.addEventListener("change", function () {
+        if (!Array.isArray(a[table])) a[table] = ["", "", ""];
+        while (a[table].length < 3) a[table].push("");
+        a[table][rang] = s.value;
+        save();
       });
-      s.addEventListener("change", function () { g[cle] = s.value; save(); });
-      return fld("Type", s);
+      hooks.push(function () { if (document.activeElement !== s) remplir(); });
+      return s;
     }
 
-    return carte(a);
+    function selTypeArme() {
+      var s = el("select", "pc-select pc-edit-field");
+      function remplir() {
+        var valeur = String(a.type || ""), trouve = false, groupes = {};
+        s.innerHTML = "";
+        var o0 = el("option", null, "— Aucun —");
+        o0.value = "";
+        s.appendChild(o0);
+        armesData().forEach(function (d) {
+          if (!d || !d.cle) return;
+          var cat = String(d.categorie || "Armes");
+          if (!groupes[cat]) {
+            groupes[cat] = document.createElement("optgroup");
+            groupes[cat].label = cat;
+            s.appendChild(groupes[cat]);
+          }
+          var o = el("option", null, d.nom || d.cle);
+          o.value = d.cle;
+          if (d.cle === valeur) { o.selected = true; trouve = true; }
+          groupes[cat].appendChild(o);
+        });
+        // Une archive ou un mod peut porter un type que les règles du jour ne
+        // connaissent plus. On le montre au lieu de l'effacer silencieusement.
+        if (valeur && !trouve) {
+          var ancien = el("option", null, valeur + " (inconnu)");
+          ancien.value = valeur;
+          ancien.selected = true;
+          s.appendChild(ancien);
+        }
+      }
+      remplir();
+      s.title = "Type d'arme du livre ; il servira notamment à retrouver ses trajets.";
+      s.addEventListener("change", function () {
+        a.type = s.value;
+        // Le nombre de mains reste une donnée technique de l'inventaire. Quand
+        // le livre le connaît pour ce type, on l'aligne sans afficher un champ
+        // supplémentaire dans la carte de l'arme.
+        armesData().forEach(function (d) {
+          if (d && d.cle === a.type && (d.mains === 1 || d.mains === 2)) a.mains = d.mains;
+        });
+        save();
+        refresh();
+      });
+      hooks.push(function () { if (document.activeElement !== s) remplir(); });
+      return s;
+    }
+
+    function ligne(classe) {
+      return el("div", "pc-arme-line " + classe);
+    }
+
+    var card = el("div", "pc-arme");
+
+    var l1 = ligne("pc-arme-2");
+    l1.appendChild(champArme("Attaque", a, "attaque", "Difficulté du jet d'attaque."));
+    l1.appendChild(champArme("Dégâts", a, "degats", "Dégâts de base de l'arme, avant ses MOD."));
+    card.appendChild(l1);
+
+    var l2 = ligne("pc-arme-3");
+    for (var i = 0; i < 3; i++) l2.appendChild(fld("MOD", selCarac("modsDegats", i)));
+    card.appendChild(l2);
+
+    var l3 = ligne("pc-arme-2");
+    l3.appendChild(champArme("Parade", a, "parade", "Difficulté du jet de parade."));
+    l3.appendChild(champArme("Réduction", a, "reduction", "Réduction de dégâts de base sur une parade réussie."));
+    card.appendChild(l3);
+
+    var l4 = ligne("pc-arme-3");
+    for (var j = 0; j < 3; j++) l4.appendChild(fld("MOD", selCarac("modsParade", j)));
+    card.appendChild(l4);
+
+    var l5 = ligne("pc-arme-2");
+    l5.appendChild(fld("Compétence", selComp()));
+    l5.appendChild(fld("Type", selTypeArme()));
+    card.appendChild(l5);
+
+    return card;
   }

@@ -11,7 +11,7 @@
  *   Fiche       les huit caractéristiques, les capacités dérivées (PV, PE, PM,
  *               PI, PR, PS, PH), l'exposition, l'effondrement, la rupture,
  *               TOUTES les compétences d'un coup, et les techniques ;
- *   Inventaire  armes et gestes, charge et contenance, vêtements, bourse, et
+ *   Inventaire  armes, charge et contenance, vêtements, bourse, et
  *               l'inventaire illustré par groupes ;
  *   Options     les leviers du MJ (forçages et modificateurs), les réglages
  *               d'envoi, l'export/import, le plan des modules et les mods.
