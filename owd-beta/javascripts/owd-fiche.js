@@ -77,8 +77,8 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "2.9.1b";
-  var SCHEMA = 3;
+  var RELEASE = "2.11.0b";
+  var SCHEMA = 4;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
   // caractéristiques est ouverte mais serrée (20 est la moyenne humaine), un
@@ -537,13 +537,17 @@
   // LES LIEUX DE L'INVENTAIRE. Les dix-neuf cases de Sur soi (les mains, la
   // ceinture, le sac à dos, les vêtements, les accessoires), les emplacements
   // (ep) de la ceinture et du sac à dos, puis les deux groupes libres.
-  var INV_VETEMENTS = ["tete", "haut", "mains", "bas", "pieds", "sousvet"];
-  var INV_ACCESSOIRES = ["oreilles", "collier", "poignetG", "poignetD",
+  // Le SOUS-VÊTEMENT est un ACCESSOIRE et non un vêtement : il ne fait pas
+  // partie du set de cinq pièces (tête, haut, mains, bas, pieds) dont se
+  // comptent la réduction et le tier, il se porte EN PLUS.
+  var INV_VETEMENTS = ["tete", "haut", "mains", "bas", "pieds"];
+  var INV_ACCESSOIRES = ["oreilles", "collier", "sousvet", "poignetG", "poignetD",
                          "bagueG", "bagueD", "chevilleG", "chevilleD", "cape"];
   // Le TYPE d'un accessoire ne dit pas le côté : une bague va à gauche comme
   // à droite. Chaque type, et les cases qu'il accepte.
   var INV_ACC_TYPES = {
-    oreilles: ["oreilles"], collier: ["collier"], poignet: ["poignetG", "poignetD"],
+    oreilles: ["oreilles"], collier: ["collier"], sousvet: ["sousvet"],
+    poignet: ["poignetG", "poignetD"],
     bague: ["bagueG", "bagueD"], cheville: ["chevilleG", "chevilleD"], cape: ["cape"]
   };
   var INV_CASES = ["mainG", "mainD", "ceinture", "dos"].concat(INV_VETEMENTS, INV_ACCESSOIRES);
@@ -3808,6 +3812,12 @@
   function buildPi() {
     return seule(reserveVitale("pi", provenanceCap("pi")));
   }
+  // LES POINTS DE CHANCE, même module que les PV : un compteur qui se dépense
+  // et se regagne, et dont le maximum vient de la Chance comme les autres
+  // viennent de leur caractéristique.
+  function buildPc() {
+    return seule(reserveVitale("pc", provenanceCap("pc")));
+  }
   function buildPm() {
     return seule(reserveVitale("pm", function () { return "Maximum calculé : " + fmtP(autoDe("pm")); }));
   }
@@ -5446,7 +5456,7 @@
   // QUATRE GROUPES FIXES, et rien d'autre dans l'onglet Équipement :
   //
   //   SUR SOI     [main gauche] [main droite]  ·  [ceinture] [sac à dos]
-  //               [tête] [haut] [mains] [bas] [pieds]
+  //               [tête] [haut] [mains] [bas] [pieds]        ← les cinq VÊTEMENTS
   //               [boucles d'oreilles] [collier] [sous-vêtement] [poignet G] [poignet D]
   //               [bague G] [bague D] [cheville G] [cheville D] [cape]
   //   CEINTURE    les emplacements (ep) de la ceinture portée
@@ -7609,6 +7619,7 @@
     { id: "mouvement",    titre: "Mouvement",        onglet: "fiche", colonne: "milieu", build: buildMouvement },
     { id: "effondrement", titre: "Effondrement",     onglet: "fiche", colonne: "milieu", build: buildEffondrement },
     { id: "pi",           titre: "PI",               onglet: "fiche", colonne: "milieu", build: buildPi },
+    { id: "pc",           titre: "PC",               onglet: "fiche", colonne: "milieu", build: buildPc },
     { id: "contenance",   titre: "Contenance",       onglet: "fiche", colonne: "milieu", build: buildContenance },
     { id: "desaction",    titre: "Actions",          onglet: "fiche", colonne: "droite", build: buildDesAction },
     { id: "comps",        titre: "Compétences",      onglet: "fiche", colonne: "droite", build: buildComps },
