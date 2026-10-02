@@ -567,13 +567,38 @@ def _formule_arme(v, abbrs, quoi):
 
 
 
-def _attaques_armes(armes_md):
+def _metadonnees_coups(armes_css):
+    """Lit dans armes.css le type de dégâts et le multiplicateur de chaque coup.
+
+    Le livre conserve volontairement ces deux informations dans sa feuille de
+    style : elles sont affichées par ``.geste-nom::after`` et les 84 sélecteurs
+    suivent l'ordre des 14 armes et de leurs six gestes. Le JSON doit transporter
+    EXACTEMENT la même donnée vers la fiche ; la relire ici évite une seconde
+    table de multiplicateurs qui finirait par diverger.
+    """
+    if not armes_css:
+        return {}
+    rx = re.compile(
+        r'\.arme:nth-child\((\d+)\).*?'
+        r'\.geste:nth-child\((\d+)\).*?'
+        r'content:\s*"([A-Z]+)\s*/\s*([A-Z]+)\\A×([0-9.]+)"',
+        re.S)
+    out = {}
+    for ai, gi, touche, passage, mult in rx.findall(armes_css):
+        cle = (int(ai), int(gi))
+        if cle in out:
+            raise ErreurRegles(
+                f"attaques : métadonnées du coup {ai}/{gi} présentes deux fois dans armes.css")
+        out[cle] = {"types": [touche, passage], "mult": float(mult)}
+    return out
+
+
+def _attaques_armes(armes_md, armes_css=None):
     """Lit les six attaques nommées de chaque arme de corps à corps.
 
-    Le Markdown reste la source de vérité : le JSON ne duplique que ce dont la
-    fiche a besoin pour relier un type d'arme à ses cartes. Le trajet ET la
-    garde voyagent avec le nom : le module Attaque dessine donc exactement le
-    même geste que le chapitre des armes, sans relire le Markdown.
+    Le Markdown porte le nom, le trajet et la garde. ``armes.css`` porte les
+    types propres au coup et son multiplicateur de dégâts, car c'est là que le
+    livre les affiche. Le JSON réunit les deux sans inventer de règle.
     """
     m = re.search(r"^##\s+Attaques\s*$", armes_md, re.M)
     if not m:
@@ -581,6 +606,7 @@ def _attaques_armes(armes_md):
     suite = re.search(r"^##\s+", armes_md[m.end():], re.M)
     corps = armes_md[m.end(): m.end() + (suite.start() if suite else len(armes_md))]
     debuts = list(re.finditer(r'<div class="arme">', corps))
+    meta = _metadonnees_coups(armes_css)
     out = {}
     for i, dm in enumerate(debuts):
         fin = debuts[i + 1].start() if i + 1 < len(debuts) else len(corps)
@@ -590,16 +616,27 @@ def _attaques_armes(armes_md):
             raise ErreurRegles("attaques : bloc d'arme sans nom")
         nom_arme = re.sub(r'<[^>]+>', '', nm.group(1)).strip()
         coups = []
-        for gm in re.finditer(
+        for j, gm in enumerate(re.finditer(
                 r'<div class="geste"([^\n]*)>\s*<p class="geste-nom">\s*(.*?)\s*</p>',
-                bloc, re.S):
+                bloc, re.S)):
             attrs = dict(re.findall(r'data-([a-z]+)="([^"]*)"', gm.group(1)))
             nom = re.sub(r'<[^>]+>', '', gm.group(2)).strip()
-            coups.append({"nom": nom, "trajet": attrs.get("trajet", ""),
-                           "garde": attrs.get("garde", "")})
+            coup = {"nom": nom, "trajet": attrs.get("trajet", ""),
+                    "garde": attrs.get("garde", "")}
+            m = meta.get((i + 1, j + 1))
+            if m:
+                coup.update(m)
+            coups.append(coup)
         if len(coups) != 6:
             raise ErreurRegles(
                 f"attaques : « {nom_arme} » en donne {len(coups)} et non six")
+        if armes_css is not None:
+            incomplets = [str(j + 1) for j, c in enumerate(coups)
+                          if "mult" not in c or "types" not in c]
+            if incomplets:
+                raise ErreurRegles(
+                    f"attaques : « {nom_arme} » sans type/multiplicateur CSS pour "
+                    f"le(s) coup(s) {', '.join(incomplets)}")
         cle = _cle(nom_arme)
         if cle in out:
             raise ErreurRegles(f"attaques : l'arme « {nom_arme} » apparaît deux fois")
@@ -607,7 +644,7 @@ def _attaques_armes(armes_md):
     return out
 
 
-def _armes(armes_md, caracs):
+def _armes(armes_md, caracs, armes_css=None):
     """Lit les tables d'armes du chapitre.
 
     Chaque TYPE reçoit une clé stable dérivée de son nom. Les valeurs chiffrées
@@ -683,7 +720,7 @@ def _armes(armes_md, caracs):
     if not out:
         raise ErreurRegles("armes : aucune ligne d'arme lisible")
 
-    attaques = _attaques_armes(armes_md)
+    attaques = _attaques_armes(armes_md, armes_css)
     for d in out:
         if d["cle"] in attaques:
             d["attaques"] = attaques[d["cle"]]
@@ -903,6 +940,16 @@ def _jeu(docs):
     # ne se lisent plus nulle part, et leurs sections sortent du jeu.
     portees_md = None
     armes_md = src["combat/armes.md"]
+    # Les multiplicateurs et types propres aux 84 gestes sont volontairement
+    # affichés par la feuille du chapitre plutôt que recopiés dans armes.md.
+    # Depuis que la fiche les consomme, cette feuille est une partie de la règle
+    # d'attaque : si elle manque, construire 84 coups à ×1 par défaut mentirait.
+    armes_css = None
+    if armes_md is not None:
+        p_armes_css = Path(docs) / "stylesheets/armes.css"
+        if not p_armes_css.is_file():
+            raise ErreurRegles("attaques : stylesheets/armes.css est absent")
+        armes_css = p_armes_css.read_text(encoding="utf-8")
     equip_md = src["equipement.md"]
 
     jeu = {"_lisezmoi": LISEZMOI}
@@ -1020,7 +1067,7 @@ def _jeu(docs):
     # Les types d'arme et leurs valeurs viennent désormais directement des
     # tables du chapitre Armes ; la vieille page des portées n'est plus requise.
     if armes_md is not None:
-        jeu["armes"] = _armes(armes_md, caracs)
+        jeu["armes"] = _armes(armes_md, caracs, armes_css)
         jeu["typesDegats"] = _types_degats(armes_md)
 
     return jeu

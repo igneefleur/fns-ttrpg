@@ -5,31 +5,31 @@
   "schema": 6,
   "blocage": "schema",
   "amorce": [
-    "javascripts/owd-attr-map.js?v=77",
-    "javascripts/owd-roll20-boot.js?v=77"
+    "javascripts/owd-attr-map.js?v=78",
+    "javascripts/owd-roll20-boot.js?v=78"
   ],
   "camp": {
     "js": [
-      "javascripts/owd-camp.js?v=77"
+      "javascripts/owd-camp.js?v=78"
     ],
     "css": [
-      "stylesheets/owd-camp.css?v=77"
+      "stylesheets/owd-camp.css?v=78"
     ]
   },
   "_donnees": "bundle.data nomme le jeu de données que la fiche consomme : owd-creation.json, produit AU BUILD par hooks/owd_creation.py depuis docs/content/regles/. Il porte le barème des rangs, les formules des capacités, les huit caractéristiques, les armes et leurs paliers — rien de tout cela n'est écrit dans owd-fiche.js, et une règle qui change au livre change la fiche à la construction suivante. Il est nommé ICI, avec son ?v=, et non deviné par le code : une ARCHIVE de version chargée par l'amorce doit lire les règles de SON jour, sinon un rang renommé suffit à trahir la version qu'on croit rejouer. La fiche retombe sur le répertoire du site quand ce champ manque, mais c'est un repli, pas le chemin normal.",
   "bundle": {
     "js": [
-      "javascripts/owd-migrations.js?v=77",
-      "javascripts/owd-mods.js?v=77",
-      "javascripts/owd-des3d.js?v=77",
-      "javascripts/owd-fiche.js?v=77"
+      "javascripts/owd-migrations.js?v=78",
+      "javascripts/owd-mods.js?v=78",
+      "javascripts/owd-des3d.js?v=78",
+      "javascripts/owd-fiche.js?v=78"
     ],
     "css": [
-      "stylesheets/owd-fiche.css?v=77",
-      "stylesheets/owd-des3d.css?v=77",
-      "stylesheets/owd-roll20.css?v=77"
+      "stylesheets/owd-fiche.css?v=78",
+      "stylesheets/owd-des3d.css?v=78",
+      "stylesheets/owd-roll20.css?v=78"
     ],
-    "data": "owd-creation.json?v=77"
+    "data": "owd-creation.json?v=78"
   },
   "_archives": "Une archive par LIGNE X.Y, jamais par release : la clé et le dossier porteraient le numéro de la release qui a OUVERT la ligne (fiche/v1.0.0/, clé \"1.0.0\", sans le b de la beta), et un correctif Z ne gèle rien. La recherche se fait donc PAR LIGNE : on réduit la version du personnage à ses deux premiers nombres (\"1.0.4b\" donne 1.0), on garde les clés de même ligne et on retient la plus récente, Z comparé NUMÉRIQUEMENT (un tri de chaînes rangerait 1.0.10 avant 1.0.9), clés parcourues triées et comparaison stricte, si bien qu'à rang égal (\"1.0.2\" et \"1.0.2b\") c'est la plus petite qui tranche et que rien ne dépend de l'ordre des clés du JSON. Un personnage servi par l'archive de sa ligne repart avec le numéro de cette clé, jamais avec le sien : c'est ce numéro que l'amorce pose en release EFFECTIVE, et que la carte d'attributs inscrira dans owd_version.max. Ces entrées seront IMMUABLES : jamais renommées, jamais fusionnées, jamais supprimées, sous peine de casser les personnages déjà épinglés et les manifestes gardés en cache. Le dispositif part ici avec archives VIDE : la 1.0.0b est la première fiche publiée, il n'y a aucune ancienne version à rouvrir, et l'écran de version grise donc « ouvrir avec sa version » en disant pourquoi — c'est le comportement correct, pas un oubli.",
   "archives": {}

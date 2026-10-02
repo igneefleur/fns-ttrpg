@@ -4036,6 +4036,8 @@
     var box = el("div", "pc-attaques");
     b.appendChild(box);
     var ouverts = Object.create(null);   // état d'interface seulement, jamais sauvegardé
+    var orientation = 0;                 // 0 = haut, puis six directions dans le sens horaire
+    var miroirs = Object.create(null);   // par raccourci d'arme : main droite par défaut, gauche en miroir
 
     function armesInventaire() {
       var objets = state.inv && Array.isArray(state.inv.objets) ? state.inv.objets : [];
@@ -4069,17 +4071,36 @@
       });
       return Math.round(total * 1000) / 1000;
     }
-    function typesCoup(def) {
-      var types = def && Array.isArray(def.types) ? def.types : [];
+    function typesCoup(coup, def) {
+      var types = coup && Array.isArray(coup.types) ? coup.types :
+        (def && Array.isArray(def.types) ? def.types : []);
       var touche = types[0] || "—";
       return { touche: touche, passage: types[1] || touche };
     }
+    function multiplicateurCoup(coup) {
+      var n = Number(coup && coup.mult);
+      return isFinite(n) && n > 0 ? n : 1;
+    }
+    function degatsCoup(it, coup) {
+      var base = degatsArme(it), mult = multiplicateurCoup(coup);
+      // Le livre raisonne en dégâts entiers. Touche ET passage s'arrondissent
+      // séparément à l'inférieur après application du multiplicateur. Le petit
+      // epsilon ne change pas la règle : il évite seulement qu'un 1.2 binaire
+      // transforme mathématiquement 42 en 41.999999999.
+      return {
+        mult: mult,
+        touche: Math.floor(base * mult + 1e-9),
+        passage: Math.floor(base * mult / 2 + 1e-9)
+      };
+    }
+    function fmtMult(n) {
+      return "×" + Number(n || 1).toFixed(1);
+    }
     function envoieCoup(entree, it, coup, def) {
-      var types = typesCoup(def);
-      var plein = degatsArme(it);
+      var types = typesCoup(coup, def), dg = degatsCoup(it, coup);
       sayChat((coup && coup.nom ? coup.nom : "Attaque") + " — " + (it.nom || (def && def.nom) || "Arme"), [
-        ["Case de touche", fmtP(plein) + " " + types.touche],
-        ["Case de passage", fmtP(plein / 2) + " " + types.passage]
+        ["Case de touche", fmtP(dg.touche) + " " + types.touche],
+        ["Case de passage", fmtP(dg.passage) + " " + types.passage]
       ]);
     }
 
@@ -4097,6 +4118,17 @@
     }
     function hxDistance(q, r) { return (Math.abs(q) + Math.abs(q + r) + Math.abs(r)) / 2; }
     function hxCentre(q, r) { return [HX_R * 1.5 * q, HX_R * HX_SQ3 * (r + q / 2)]; }
+    function hxTransforme(q, r, ori, miroir) {
+      var nq, nr, i;
+      // Le miroir est fait DANS le repère du porteur, avant sa rotation : sa
+      // gauche et sa droite restent donc sa gauche et sa droite quelle que soit
+      // la direction dans laquelle il regarde.
+      if (miroir) { nq = -q; nr = r + q; q = nq; r = nr; }
+      for (i = 0; i < ori; i++) {
+        nq = -r; nr = q + r; q = nq; r = nr;
+      }
+      return [q, r];
+    }
     function hxAnneau(n) {
       if (HX_ANNEAUX[n]) return HX_ANNEAUX[n];
       var cells = [];
@@ -4129,14 +4161,17 @@
       var anneau = hxAnneau(n);
       return anneau[((k % (6 * n)) + 6 * n) % (6 * n)] || null;
     }
-    function hxEtapes(brut) {
+    function hxEtapes(brut, ori, miroir) {
       var out = [];
       String(brut || "").split(">").forEach(function (bout, i) {
         var p = bout.indexOf(":");
         if (p < 0) return;
         var c = hxCase(bout.slice(0, p));
         var role = bout.slice(p + 1).trim();
-        if (c && (role === "frappe" || role === "passe")) out.push({ q: c[0], r: c[1], role: role, rang: i + 1 });
+        if (c && (role === "frappe" || role === "passe")) {
+          c = hxTransforme(c[0], c[1], ori, miroir);
+          out.push({ q: c[0], r: c[1], role: role, rang: i + 1 });
+        }
       });
       return out;
     }
@@ -4148,8 +4183,8 @@
       }
       return pts.join(" ");
     }
-    function carteHex(brut) {
-      var etapes = hxEtapes(brut), parCase = {};
+    function carteHex(brut, ori, miroir) {
+      var etapes = hxEtapes(brut, ori, miroir), parCase = {};
       etapes.forEach(function (e) { parCase[e.q + "," + e.r] = e; });
       var largeur = HX_R * (1.5 * HX_PORTEE + 1);
       var hauteur = HX_R * HX_SQ3 * (HX_PORTEE + 0.5);
@@ -4173,6 +4208,11 @@
         }, String(e.rang)));
       });
       svg.appendChild(svgEl("polygon", { "class": "hx-soi", points: hxSommets(0, 0, HX_R - 0.7) }));
+      svg.appendChild(svgEl("path", {
+        "class": "hx-visee",
+        d: "M 0 4 L 0 -5 M -2.4 -2.1 L 0 -5 L 2.4 -2.1",
+        transform: "rotate(" + (ori * 60) + " 0 0)"
+      }));
       return svg;
     }
 
@@ -4181,11 +4221,16 @@
       var col = (i - 1) % 3, rang = Math.floor((i - 1) / 3);
       return [4 + 8 * col, 4 + 8 * rang];
     }
-    function gardeSvg(brut) {
+    function miroirGarde(i) {
+      var col = (i - 1) % 3, rang = Math.floor((i - 1) / 3);
+      return rang * 3 + (2 - col) + 1;
+    }
+    function gardeSvg(brut, miroir) {
       var m = /^(\d)\s*>\s*(\d)$/.exec(String(brut || "").trim());
       if (!m) return null;
       var depart = parseInt(m[1], 10), arrivee = parseInt(m[2], 10);
       if (depart < 1 || depart > 9 || arrivee < 1 || arrivee > 9) return null;
+      if (miroir) { depart = miroirGarde(depart); arrivee = miroirGarde(arrivee); }
       var svg = svgEl("svg", { "class": "pc-attaque-garde", role: "img", "aria-label": "Déplacement de la garde", viewBox: "0 0 24 24" });
       for (var i = 1; i <= 9; i++) {
         var c = gardeCentre(i);
@@ -4212,22 +4257,26 @@
     }
 
     function carteCoup(entree, it, coup, def) {
-      var plein = degatsArme(it), types = typesCoup(def);
+      var dg = degatsCoup(it, coup), types = typesCoup(coup, def);
+      var miroir = !!miroirs[entree.id];
       var btn = el("button", "pc-attaque-coup");
       btn.type = "button";
       btn.title = "Envoyer les dégâts dans le tchat";
       btn.addEventListener("click", function () { envoieCoup(entree, it, coup, def); });
-      btn.appendChild(carteHex(coup.trajet));
+      btn.appendChild(carteHex(coup.trajet, orientation, miroir));
 
       var bas = el("div", "pc-attaque-coup-bas");
       var texte = el("div", "pc-attaque-coup-texte");
-      texte.appendChild(el("div", "pc-attaque-coup-nom", coup.nom || "Attaque"));
+      var nom = el("div", "pc-attaque-coup-nom");
+      nom.appendChild(document.createTextNode(coup.nom || "Attaque"));
+      nom.appendChild(el("span", "pc-attaque-mult", fmtMult(dg.mult)));
+      texte.appendChild(nom);
       var chiffres = el("div", "pc-attaque-coup-degats");
-      chiffres.appendChild(el("span", "touche", "Touche " + fmtP(plein) + " " + types.touche));
-      chiffres.appendChild(el("span", "passage", "Passage " + fmtP(plein / 2) + " " + types.passage));
+      chiffres.appendChild(el("span", "touche", "Touche " + fmtP(dg.touche) + " " + types.touche));
+      chiffres.appendChild(el("span", "passage", "Passage " + fmtP(dg.passage) + " " + types.passage));
       texte.appendChild(chiffres);
       bas.appendChild(texte);
-      var garde = gardeSvg(coup.garde);
+      var garde = gardeSvg(coup.garde, miroir);
       if (garde) bas.appendChild(garde);
       btn.appendChild(bas);
       return btn;
@@ -4303,10 +4352,40 @@
       }
 
       var legende = el("div", "pc-attaque-legende");
+      var cles = el("div", "pc-attaque-legende-cles");
       var lgSoi = el("span", null); lgSoi.appendChild(el("i", "soi")); lgSoi.appendChild(document.createTextNode("vous"));
       var lgTouche = el("span", null); lgTouche.appendChild(el("i", "touche")); lgTouche.appendChild(document.createTextNode("touche"));
       var lgPasse = el("span", null); lgPasse.appendChild(el("i", "passe")); lgPasse.appendChild(document.createTextNode("passage"));
-      legende.appendChild(lgSoi); legende.appendChild(lgTouche); legende.appendChild(lgPasse);
+      cles.appendChild(lgSoi); cles.appendChild(lgTouche); cles.appendChild(lgPasse);
+      legende.appendChild(cles);
+
+      var controles = el("div", "pc-attaque-controles");
+      var visee = el("label", "pc-attaque-visee");
+      visee.appendChild(el("span", null, "Visée"));
+      var selOri = el("select", "pc-select pc-attaque-orientation");
+      ["↑", "↗", "↘", "↓", "↙", "↖"].forEach(function (sym, i) {
+        var op = el("option", null, sym); op.value = String(i);
+        if (i === orientation) op.selected = true;
+        selOri.appendChild(op);
+      });
+      selOri.setAttribute("aria-label", "Orientation du personnage");
+      selOri.addEventListener("change", function () {
+        orientation = Math.max(0, Math.min(5, parseInt(selOri.value, 10) || 0));
+        rendre();
+      });
+      visee.appendChild(selOri);
+      controles.appendChild(visee);
+
+      var mir = el("button", "pc-mini pc-attaque-miroir" + (miroirs[entree.id] ? " on" : ""), "⇋ Miroir");
+      mir.type = "button";
+      mir.setAttribute("aria-pressed", miroirs[entree.id] ? "true" : "false");
+      mir.title = miroirs[entree.id] ? "Arme tenue en main gauche : revenir en main droite" : "Passer l'arme de la main droite à la main gauche";
+      mir.addEventListener("click", function () {
+        miroirs[entree.id] = !miroirs[entree.id];
+        rendre();
+      });
+      controles.appendChild(mir);
+      legende.appendChild(controles);
       detail.appendChild(legende);
 
       var grille = el("div", "pc-attaque-coups");
