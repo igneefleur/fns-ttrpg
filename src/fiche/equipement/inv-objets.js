@@ -475,6 +475,13 @@
         it.vet = v === "vet" ? (it.vet || "haut") : "";
         it.acc = v === "acc" ? (it.acc || "collier") : "";
         it.arme = v === "arme" ? (it.arme || { prise: "", parade: "", reduction: "", comp: "", mains: 1, gestes: [] }) : null;
+        if (v === "vet" || v === "acc") {
+          var types = ["contondant", "perforant", "tranchant", "feu", "froid", "eclair", "decomposition", "ethere", "brut"];
+          types.forEach(function(t) {
+            it["res_" + t] = it["res_" + t] || 0;
+            it["prot_" + t] = it["prot_" + t] || 0;
+          });
+        }
         if (INV_EP.indexOf(it.ou) < 0 && !lieuPermis(it, it.ou)) it.ou = "sac";
         rangeEmplacements(items);
         render();
