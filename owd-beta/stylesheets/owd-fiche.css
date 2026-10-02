@@ -1741,3 +1741,17 @@ html.night .pc-stadebar .seg.on.s2 { background: #3a3220; color: #e6e6e6; border
 html.night .pc-stadebar .seg.on.s3 { background: #4a3f28; color: #eef2e6; border-color: #6b5a2e; }
 html.night .pc-stadebar .seg.on.s4 { background: #6b5a2e; color: #eef2e6; border-color: #6b5a2e; }
 html.night .pc-stadebar .seg.on.s5 { background: #6b5a2e; color: #eef2e6; border-color: #6b5a2e; }
+
+/* ---- module Attaque ----
+   Chaque raccourci d'arme affiche les six coups du livre en deux colonnes :
+   deux boutons par ligne, donc exactement 50 % de la largeur utile chacun. */
+.pc-attaques { display: flex; flex-direction: column; gap: .45rem; }
+.pc-attaque-card { border: 1px solid var(--hair); border-radius: 6px; background: var(--card); padding: .42rem .48rem; }
+.pc-attaque-edit { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .35rem; align-items: end; margin-bottom: .35rem; }
+.pc-attaque-edit .pc-f { min-width: 0; }
+.pc-attaque-retire { align-self: end; }
+.pc-attaque-nom { font-size: var(--fs-label); font-weight: 800; color: var(--ink); margin-bottom: .32rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pc-attaque-boutons { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .3rem; }
+.pc-mini.pc-attaque-coup { width: 100%; min-width: 0; white-space: normal; line-height: 1.15; padding: .32rem .36rem; }
+.pc-attaque-vide { margin: .15rem 0 0; }
+.pc-mini.pc-attaque-ajout { align-self: flex-start; }
