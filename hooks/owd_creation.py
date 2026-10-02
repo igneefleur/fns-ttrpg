@@ -571,9 +571,9 @@ def _attaques_armes(armes_md):
     """Lit les six attaques nommées de chaque arme de corps à corps.
 
     Le Markdown reste la source de vérité : le JSON ne duplique que ce dont la
-    fiche a besoin pour relier un type d'arme à ses boutons. Le trajet voyage
-    aussi dès maintenant, sans être encore interprété par le module Attaque ;
-    le futur affichage spatial pourra ainsi se brancher sur la même donnée.
+    fiche a besoin pour relier un type d'arme à ses cartes. Le trajet ET la
+    garde voyagent avec le nom : le module Attaque dessine donc exactement le
+    même geste que le chapitre des armes, sans relire le Markdown.
     """
     m = re.search(r"^##\s+Attaques\s*$", armes_md, re.M)
     if not m:
@@ -595,7 +595,8 @@ def _attaques_armes(armes_md):
                 bloc, re.S):
             attrs = dict(re.findall(r'data-([a-z]+)="([^"]*)"', gm.group(1)))
             nom = re.sub(r'<[^>]+>', '', gm.group(2)).strip()
-            coups.append({"nom": nom, "trajet": attrs.get("trajet", "")})
+            coups.append({"nom": nom, "trajet": attrs.get("trajet", ""),
+                           "garde": attrs.get("garde", "")})
         if len(coups) != 6:
             raise ErreurRegles(
                 f"attaques : « {nom_arme} » en donne {len(coups)} et non six")
