@@ -634,32 +634,62 @@
     {
      "nom": "Estoc",
      "trajet": "1:frappe",
-     "garde": "5>5"
+     "garde": "5>5",
+     "types": [
+      "PER",
+      "PER"
+     ],
+     "mult": 1.4
     },
     {
      "nom": "Estoc du côté droit",
      "trajet": "1d:passe>1:frappe",
-     "garde": "6>3"
+     "garde": "6>3",
+     "types": [
+      "PER",
+      "PER"
+     ],
+     "mult": 1.2
     },
     {
      "nom": "Estoc de revers",
      "trajet": "1g:passe>1:frappe",
-     "garde": "4>1"
+     "garde": "4>1",
+     "types": [
+      "PER",
+      "PER"
+     ],
+     "mult": 1.2
     },
     {
      "nom": "Taille",
      "trajet": "1d:passe>1:frappe>1g:passe",
-     "garde": "6>4"
+     "garde": "6>4",
+     "types": [
+      "TRA",
+      "TRA"
+     ],
+     "mult": 1.0
     },
     {
      "nom": "Taille de revers",
      "trajet": "1g:passe>1:frappe>1d:passe",
-     "garde": "4>6"
+     "garde": "4>6",
+     "types": [
+      "TRA",
+      "TRA"
+     ],
+     "mult": 1.0
     },
     {
      "nom": "Coup de pommeau",
      "trajet": "1:frappe",
-     "garde": "5>2"
+     "garde": "5>2",
+     "types": [
+      "CON",
+      "CON"
+     ],
+     "mult": 0.8
     }
    ]
   },
@@ -687,32 +717,62 @@
     {
      "nom": "Direct",
      "trajet": "1:frappe",
-     "garde": "5>5"
+     "garde": "5>5",
+     "types": [
+      "CON",
+      "CON"
+     ],
+     "mult": 1.4
     },
     {
      "nom": "Crochet",
      "trajet": "1d:passe>1:frappe",
-     "garde": "6>4"
+     "garde": "6>4",
+     "types": [
+      "CON",
+      "CON"
+     ],
+     "mult": 1.2
     },
     {
      "nom": "Revers du poing",
      "trajet": "1g:passe>1:frappe",
-     "garde": "4>6"
+     "garde": "4>6",
+     "types": [
+      "CON",
+      "CON"
+     ],
+     "mult": 1.0
     },
     {
      "nom": "Coup de coude",
      "trajet": "1d:frappe",
-     "garde": "3>6"
+     "garde": "3>6",
+     "types": [
+      "CON",
+      "CON"
+     ],
+     "mult": 1.2
     },
     {
      "nom": "Uppercut",
      "trajet": "1:frappe",
-     "garde": "8>5"
+     "garde": "8>5",
+     "types": [
+      "CON",
+      "CON"
+     ],
+     "mult": 1.0
     },
     {
      "nom": "Coup de paume",
      "trajet": "1g:frappe",
-     "garde": "5>2"
+     "garde": "5>2",
+     "types": [
+      "CON",
+      "CON"
+     ],
+     "mult": 0.8
     }
    ]
   },
@@ -740,32 +800,62 @@
     {
      "nom": "Estoc de tierce",
      "trajet": "1:passe>2:frappe",
-     "garde": "5>6"
+     "garde": "5>6",
+     "types": [
+      "PER",
+      "PER"
+     ],
+     "mult": 1.4
     },
     {
      "nom": "Estoc de quarte",
      "trajet": "1:passe>2:frappe",
-     "garde": "6>4"
+     "garde": "6>4",
+     "types": [
+      "PER",
+      "PER"
+     ],
+     "mult": 1.2
     },
     {
      "nom": "Estoc de seconde",
      "trajet": "1d:passe>2d:passe>1:passe>2:frappe",
-     "garde": "6>3"
+     "garde": "6>3",
+     "types": [
+      "PER",
+      "PER"
+     ],
+     "mult": 1.2
     },
     {
      "nom": "Estoc de prime",
      "trajet": "1g:passe>1:passe>2g:passe>2:frappe",
-     "garde": "4>1"
+     "garde": "4>1",
+     "types": [
+      "PER",
+      "PER"
+     ],
+     "mult": 1.0
     },
     {
      "nom": "Coup de fouet",
      "trajet": "1:passe>2:frappe",
-     "garde": "6>5"
+     "garde": "6>5",
+     "types": [
+      "TRA",
+      "TRA"
+     ],
+     "mult": 1.0
     },
     {
      "nom": "Coup de coquille",
      "trajet": "1:frappe",
-     "garde": "5>2"
+     "garde": "5>2",
+     "types": [
+      "CON",
+      "CON"
+     ],
+     "mult": 0.8
     }
    ]
   },
@@ -793,32 +883,62 @@
     {
      "nom": "Taille horizontale du côté droit",
      "trajet": "1d:passe>2d2:passe>2d:frappe>1:passe>2:frappe>2g:passe>1g:passe",
-     "garde": "6>4"
+     "garde": "6>4",
+     "types": [
+      "TRA",
+      "TRA"
+     ],
+     "mult": 1.4
     },
     {
      "nom": "Taille horizontale de revers",
      "trajet": "1g:passe>2g:passe>1:passe>2:frappe>2d:frappe>1d:passe>2d2:passe",
-     "garde": "4>6"
+     "garde": "4>6",
+     "types": [
+      "TRA",
+      "TRA"
+     ],
+     "mult": 1.2
     },
     {
      "nom": "Taille montante du côté droit",
      "trajet": "1d2:passe>1d:passe>2d:frappe>1:passe>2:frappe>2g:passe",
-     "garde": "9>1"
+     "garde": "9>1",
+     "types": [
+      "TRA",
+      "TRA"
+     ],
+     "mult": 1.2
     },
     {
      "nom": "Taille montante de revers",
      "trajet": "1g2:passe>1g:passe>2g:frappe>1:passe>2:frappe>2d:passe",
-     "garde": "7>5"
+     "garde": "7>5",
+     "types": [
+      "TRA",
+      "TRA"
+     ],
+     "mult": 1.0
     },
     {
      "nom": "Coup de pointe",
      "trajet": "1:passe>2:frappe",
-     "garde": "5>5"
+     "garde": "5>5",
+     "types": [
+      "PER",
+      "PER"
+     ],
+     "mult": 1.0
     },
     {
      "nom": "Coup de manchette",
      "trajet": "1d:passe>1:frappe",
-     "garde": "3>6"
+     "garde": "3>6",
+     "types": [
+      "CON",
+      "CON"
+     ],
+     "mult": 0.8
     }
    ]
   },
@@ -846,32 +966,62 @@
     {
      "nom": "Taille horizontale du côté droit",
      "trajet": "1d:passe>2d2:passe>2d:frappe>1:passe>2:frappe>2g:frappe>1g:passe",
-     "garde": "6>4"
+     "garde": "6>4",
+     "types": [
+      "TRA",
+      "TRA"
+     ],
+     "mult": 1.4
     },
     {
      "nom": "Taille horizontale de revers",
      "trajet": "1g:passe>2g:passe>1:passe>2:frappe>2d:frappe>1d:passe>2d2:frappe",
-     "garde": "4>6"
+     "garde": "4>6",
+     "types": [
+      "TRA",
+      "TRA"
+     ],
+     "mult": 1.2
     },
     {
      "nom": "Taille montante du côté droit",
      "trajet": "1d2:passe>1d:frappe>2d:frappe>1:passe>2:frappe>2g:passe",
-     "garde": "9>1"
+     "garde": "9>1",
+     "types": [
+      "TRA",
+      "TRA"
+     ],
+     "mult": 1.2
     },
     {
      "nom": "Taille montante de revers",
      "trajet": "1g2:passe>1g:frappe>2g:frappe>1:passe>2:frappe>2d:passe",
-     "garde": "7>5"
+     "garde": "7>5",
+     "types": [
+      "TRA",
+      "TRA"
+     ],
+     "mult": 1.0
     },
     {
      "nom": "Estoc",
      "trajet": "1:passe>2:frappe",
-     "garde": "5>5"
+     "garde": "5>5",
+     "types": [
+      "PER",
+      "PER"
+     ],
+     "mult": 1.0
     },
     {
      "nom": "Coup de pommeau",
      "trajet": "1:frappe",
-     "garde": "5>2"
+     "garde": "5>2",
+     "types": [
+      "CON",
+      "CON"
+     ],
+     "mult": 0.8
     }
    ]
   },
@@ -899,32 +1049,62 @@
     {
      "nom": "Taille horizontale du côté droit",
      "trajet": "1d:passe>2d:frappe>1:passe>2:frappe>2g:passe>1g:passe",
-     "garde": "6>4"
+     "garde": "6>4",
+     "types": [
+      "TRA",
+      "CON"
+     ],
+     "mult": 1.2
     },
     {
      "nom": "Taille horizontale de revers",
      "trajet": "1g:passe>2g:passe>1:passe>2:frappe>2d:frappe>1d:passe",
-     "garde": "4>6"
+     "garde": "4>6",
+     "types": [
+      "TRA",
+      "CON"
+     ],
+     "mult": 1.2
     },
     {
      "nom": "Fendant en diagonale",
      "trajet": "1d:passe>1:passe>2d:passe>2:frappe",
-     "garde": "9>1"
+     "garde": "9>1",
+     "types": [
+      "TRA",
+      "CON"
+     ],
+     "mult": 1.4
     },
     {
      "nom": "Taille courte",
      "trajet": "1d:passe>1:frappe",
-     "garde": "5>5"
+     "garde": "5>5",
+     "types": [
+      "TRA",
+      "CON"
+     ],
+     "mult": 1.0
     },
     {
      "nom": "Coup du talon",
      "trajet": "1g:passe>1:frappe",
-     "garde": "3>6"
+     "garde": "3>6",
+     "types": [
+      "CON",
+      "CON"
+     ],
+     "mult": 1.0
     },
     {
      "nom": "Coup de manche",
      "trajet": "1:frappe",
-     "garde": "5>2"
+     "garde": "5>2",
+     "types": [
+      "CON",
+      "CON"
+     ],
+     "mult": 0.8
     }
    ]
   },
@@ -952,32 +1132,62 @@
     {
      "nom": "Frappe horizontale du côté droit",
      "trajet": "1d:passe>2d:passe>1:passe>2:passe>2g:frappe>1g:passe",
-     "garde": "6>4"
+     "garde": "6>4",
+     "types": [
+      "CON",
+      "CON"
+     ],
+     "mult": 1.2
     },
     {
      "nom": "Frappe horizontale de revers",
      "trajet": "1g:passe>2g:passe>1:passe>2:passe>2d:frappe>1d:passe",
-     "garde": "4>6"
+     "garde": "4>6",
+     "types": [
+      "CON",
+      "CON"
+     ],
+     "mult": 1.2
     },
     {
      "nom": "Frappe descendante",
      "trajet": "1d:passe>1:passe>2d:passe>2:frappe",
-     "garde": "9>1"
+     "garde": "9>1",
+     "types": [
+      "CON",
+      "CON"
+     ],
+     "mult": 1.4
     },
     {
      "nom": "Frappe montante",
      "trajet": "1d2:passe>1d:passe>2d:frappe>1:passe>2:frappe",
-     "garde": "7>5"
+     "garde": "7>5",
+     "types": [
+      "CON",
+      "CON"
+     ],
+     "mult": 1.0
     },
     {
      "nom": "Coup d’estoc",
      "trajet": "1:passe>2:frappe",
-     "garde": "5>5"
+     "garde": "5>5",
+     "types": [
+      "CON",
+      "CON"
+     ],
+     "mult": 1.0
     },
     {
      "nom": "Coup de manche",
      "trajet": "1:frappe",
-     "garde": "5>2"
+     "garde": "5>2",
+     "types": [
+      "CON",
+      "CON"
+     ],
+     "mult": 0.8
     }
    ]
   },
@@ -1007,32 +1217,62 @@
     {
      "nom": "Estoc",
      "trajet": "1:passe>2:passe>3:frappe",
-     "garde": "5>5"
+     "garde": "5>5",
+     "types": [
+      "PER",
+      "CON"
+     ],
+     "mult": 1.4
     },
     {
      "nom": "Estoc du côté droit",
      "trajet": "1d:passe>2d:passe>3d:passe>1:passe>2:passe>3:frappe",
-     "garde": "6>3"
+     "garde": "6>3",
+     "types": [
+      "PER",
+      "CON"
+     ],
+     "mult": 1.2
     },
     {
      "nom": "Estoc de revers",
      "trajet": "1g:passe>2g:passe>3g:passe>1:passe>2:passe>3:frappe",
-     "garde": "4>1"
+     "garde": "4>1",
+     "types": [
+      "PER",
+      "CON"
+     ],
+     "mult": 1.2
     },
     {
      "nom": "Balayage",
      "trajet": "1d:passe>2d2:passe>3d2:passe>2d:passe>1:passe>3d:frappe>2:passe>3:frappe>3g:passe>2g:passe>1g:passe",
-     "garde": "6>4"
+     "garde": "6>4",
+     "types": [
+      "CON",
+      "CON"
+     ],
+     "mult": 1.0
     },
     {
      "nom": "Coup de talon",
      "trajet": "1:frappe",
-     "garde": "5>8"
+     "garde": "5>8",
+     "types": [
+      "CON",
+      "CON"
+     ],
+     "mult": 1.0
     },
     {
      "nom": "Coup de hampe",
      "trajet": "1d:passe>1:frappe",
-     "garde": "5>2"
+     "garde": "5>2",
+     "types": [
+      "CON",
+      "CON"
+     ],
+     "mult": 0.8
     }
    ]
   },
@@ -1062,32 +1302,62 @@
     {
      "nom": "Taille horizontale du côté droit",
      "trajet": "1d:passe>2d2:passe>3d2:passe>2d:passe>1:passe>3d:frappe>2:passe>3:frappe>3g:passe>2g:passe>1g:passe>3g2:passe>2g2:passe",
-     "garde": "6>4"
+     "garde": "6>4",
+     "types": [
+      "TRA",
+      "CON"
+     ],
+     "mult": 1.2
     },
     {
      "nom": "Taille horizontale de revers",
      "trajet": "1g:passe>2g2:passe>3g2:passe>2g:passe>1:passe>3g:frappe>2:passe>3:frappe>3d:passe>2d:passe>1d:passe>3d2:passe>2d2:passe",
-     "garde": "4>6"
+     "garde": "4>6",
+     "types": [
+      "TRA",
+      "CON"
+     ],
+     "mult": 1.2
     },
     {
      "nom": "Estoc",
      "trajet": "1:passe>2:passe>3:frappe",
-     "garde": "5>5"
+     "garde": "5>5",
+     "types": [
+      "PER",
+      "CON"
+     ],
+     "mult": 1.0
     },
     {
      "nom": "Fendant",
      "trajet": "1d:passe>1:passe>2d:passe>2:passe>3d:passe>3:frappe",
-     "garde": "9>1"
+     "garde": "9>1",
+     "types": [
+      "TRA",
+      "CON"
+     ],
+     "mult": 1.4
     },
     {
      "nom": "Crochet",
      "trajet": "1d:passe>2d:passe>3d:frappe>2:passe>3:frappe",
-     "garde": "3>6"
+     "garde": "3>6",
+     "types": [
+      "PER",
+      "CON"
+     ],
+     "mult": 1.0
     },
     {
      "nom": "Coup de talon",
      "trajet": "1:frappe",
-     "garde": "5>8"
+     "garde": "5>8",
+     "types": [
+      "CON",
+      "CON"
+     ],
+     "mult": 0.8
     }
    ]
   },
@@ -1117,32 +1387,62 @@
     {
      "nom": "Taille horizontale du côté droit",
      "trajet": "1d:passe>2d2:passe>3d2:passe>2d:passe>1:passe>3d:frappe>2:frappe>3:frappe>3g:frappe>2g:frappe>1g:passe>3g2:passe>2g2:passe",
-     "garde": "6>4"
+     "garde": "6>4",
+     "types": [
+      "TRA",
+      "TRA"
+     ],
+     "mult": 1.4
     },
     {
      "nom": "Taille horizontale de revers",
      "trajet": "1g:passe>2g2:passe>3g2:passe>2g:passe>1:passe>3g:frappe>2:frappe>3:frappe>3d:frappe>2d:frappe>1d:passe>3d2:passe>2d2:passe",
-     "garde": "4>6"
+     "garde": "4>6",
+     "types": [
+      "TRA",
+      "TRA"
+     ],
+     "mult": 1.2
     },
     {
      "nom": "Fendant",
      "trajet": "1d:passe>1:passe>2d:passe>2:passe>3d:passe>3:frappe",
-     "garde": "9>1"
+     "garde": "9>1",
+     "types": [
+      "TRA",
+      "TRA"
+     ],
+     "mult": 1.2
     },
     {
      "nom": "Taille montante",
      "trajet": "1d2:passe>1d:passe>2d:frappe>1:passe>2:frappe>3:frappe",
-     "garde": "7>5"
+     "garde": "7>5",
+     "types": [
+      "TRA",
+      "TRA"
+     ],
+     "mult": 1.0
     },
     {
      "nom": "Coup de pointe",
      "trajet": "1:passe>2:passe>3:frappe",
-     "garde": "5>5"
+     "garde": "5>5",
+     "types": [
+      "PER",
+      "PER"
+     ],
+     "mult": 1.0
     },
     {
      "nom": "Coup de manchette",
      "trajet": "1d:passe>1:frappe",
-     "garde": "3>6"
+     "garde": "3>6",
+     "types": [
+      "CON",
+      "CON"
+     ],
+     "mult": 0.8
     }
    ]
   },
@@ -1172,32 +1472,62 @@
     {
      "nom": "Taille horizontale du côté droit",
      "trajet": "1d:passe>2d2:passe>3d2:passe>2d:passe>1:passe>3d:frappe>2:frappe>3:frappe>3g:frappe>2g:frappe>1g:passe>3g2:frappe>2g2:frappe",
-     "garde": "6>4"
+     "garde": "6>4",
+     "types": [
+      "TRA",
+      "TRA"
+     ],
+     "mult": 1.2
     },
     {
      "nom": "Taille horizontale de revers",
      "trajet": "1g:passe>2g2:passe>3g2:passe>2g:passe>1:passe>3g:frappe>2:frappe>3:frappe>3d:frappe>2d:frappe>1d:passe>3d2:frappe>2d2:frappe",
-     "garde": "4>6"
+     "garde": "4>6",
+     "types": [
+      "TRA",
+      "TRA"
+     ],
+     "mult": 1.2
     },
     {
      "nom": "Fendant",
      "trajet": "1d:passe>1:passe>2d:passe>2:passe>3d:passe>3:frappe>2g:passe>3g:frappe",
-     "garde": "9>1"
+     "garde": "9>1",
+     "types": [
+      "TRA",
+      "TRA"
+     ],
+     "mult": 1.4
     },
     {
      "nom": "Taille montante",
      "trajet": "1d2:passe>1d:passe>2d:frappe>1:passe>2:frappe>3:frappe",
-     "garde": "7>5"
+     "garde": "7>5",
+     "types": [
+      "TRA",
+      "TRA"
+     ],
+     "mult": 1.0
     },
     {
      "nom": "Estoc",
      "trajet": "1:passe>2:passe>3:frappe",
-     "garde": "5>5"
+     "garde": "5>5",
+     "types": [
+      "PER",
+      "PER"
+     ],
+     "mult": 1.0
     },
     {
      "nom": "Coup de pommeau",
      "trajet": "1:frappe",
-     "garde": "5>2"
+     "garde": "5>2",
+     "types": [
+      "CON",
+      "CON"
+     ],
+     "mult": 0.8
     }
    ]
   },
@@ -1227,32 +1557,62 @@
     {
      "nom": "Taille horizontale du côté droit",
      "trajet": "1d:passe>2d2:passe>3d2:passe>2d:passe>1:passe>3d:frappe>2:passe>3:frappe>3g:frappe>2g:passe>1g:passe>3g2:passe>2g2:passe",
-     "garde": "6>4"
+     "garde": "6>4",
+     "types": [
+      "TRA",
+      "CON"
+     ],
+     "mult": 1.2
     },
     {
      "nom": "Taille horizontale de revers",
      "trajet": "1g:passe>2g2:passe>3g2:passe>2g:passe>1:passe>3g:frappe>2:passe>3:frappe>3d:frappe>2d:passe>1d:passe>3d2:passe>2d2:passe",
-     "garde": "4>6"
+     "garde": "4>6",
+     "types": [
+      "TRA",
+      "CON"
+     ],
+     "mult": 1.2
     },
     {
      "nom": "Fendant",
      "trajet": "1d:passe>1:passe>2d:passe>2:passe>3d:passe>3:frappe",
-     "garde": "9>1"
+     "garde": "9>1",
+     "types": [
+      "TRA",
+      "CON"
+     ],
+     "mult": 1.4
     },
     {
      "nom": "Taille courte",
      "trajet": "1d:passe>1:frappe",
-     "garde": "5>5"
+     "garde": "5>5",
+     "types": [
+      "TRA",
+      "CON"
+     ],
+     "mult": 1.0
     },
     {
      "nom": "Coup du talon",
      "trajet": "1g:passe>1:frappe",
-     "garde": "3>6"
+     "garde": "3>6",
+     "types": [
+      "CON",
+      "CON"
+     ],
+     "mult": 1.0
     },
     {
      "nom": "Coup de manche",
      "trajet": "1:frappe",
-     "garde": "5>2"
+     "garde": "5>2",
+     "types": [
+      "CON",
+      "CON"
+     ],
+     "mult": 0.8
     }
    ]
   },
@@ -1282,32 +1642,62 @@
     {
      "nom": "Taille horizontale du côté droit",
      "trajet": "1d:passe>2d2:passe>3d2:passe>2d:passe>1:passe>3d:frappe>2:frappe>3:frappe>3g:passe>2g:passe>1g:passe>3g2:passe>2g2:passe",
-     "garde": "6>4"
+     "garde": "6>4",
+     "types": [
+      "TRA",
+      "CON"
+     ],
+     "mult": 1.2
     },
     {
      "nom": "Taille horizontale de revers",
      "trajet": "1g:passe>2g2:passe>3g2:passe>2g:passe>1:passe>3g:frappe>2:frappe>3:frappe>3d:passe>2d:passe>1d:passe>3d2:passe>2d2:passe",
-     "garde": "4>6"
+     "garde": "4>6",
+     "types": [
+      "TRA",
+      "CON"
+     ],
+     "mult": 1.2
     },
     {
      "nom": "Crochet",
      "trajet": "1d:passe>2d:passe>3d:frappe>2:passe>3:frappe",
-     "garde": "3>6"
+     "garde": "3>6",
+     "types": [
+      "TRA",
+      "CON"
+     ],
+     "mult": 1.4
     },
     {
      "nom": "Fendant",
      "trajet": "1d:passe>1:passe>2d:passe>2:passe>3d:passe>3:frappe",
-     "garde": "9>1"
+     "garde": "9>1",
+     "types": [
+      "TRA",
+      "CON"
+     ],
+     "mult": 1.0
     },
     {
      "nom": "Estoc",
      "trajet": "1:passe>2:passe>3:frappe",
-     "garde": "5>5"
+     "garde": "5>5",
+     "types": [
+      "PER",
+      "CON"
+     ],
+     "mult": 1.0
     },
     {
      "nom": "Coup de hampe",
      "trajet": "1:frappe",
-     "garde": "5>2"
+     "garde": "5>2",
+     "types": [
+      "CON",
+      "CON"
+     ],
+     "mult": 0.8
     }
    ]
   },
@@ -1337,32 +1727,62 @@
     {
      "nom": "Frappe horizontale du côté droit",
      "trajet": "1d:passe>2d2:passe>3d2:passe>2d:passe>1:passe>3d:passe>2:passe>3:passe>3g:passe>2g:passe>1g:passe>3g2:frappe>2g2:passe",
-     "garde": "6>4"
+     "garde": "6>4",
+     "types": [
+      "CON",
+      "CON"
+     ],
+     "mult": 1.2
     },
     {
      "nom": "Frappe horizontale de revers",
      "trajet": "1g:passe>2g2:passe>3g2:passe>2g:passe>1:passe>3g:passe>2:passe>3:passe>3d:passe>2d:passe>1d:passe>3d2:frappe>2d2:passe",
-     "garde": "4>6"
+     "garde": "4>6",
+     "types": [
+      "CON",
+      "CON"
+     ],
+     "mult": 1.2
     },
     {
      "nom": "Frappe descendante",
      "trajet": "1d:passe>1:passe>2d:passe>2:passe>3d:passe>3:frappe",
-     "garde": "9>1"
+     "garde": "9>1",
+     "types": [
+      "CON",
+      "CON"
+     ],
+     "mult": 1.4
     },
     {
      "nom": "Frappe montante",
      "trajet": "1d2:passe>1d:passe>2d:frappe>1:passe>2:frappe>3:frappe",
-     "garde": "7>5"
+     "garde": "7>5",
+     "types": [
+      "CON",
+      "CON"
+     ],
+     "mult": 1.0
     },
     {
      "nom": "Coup d’estoc",
      "trajet": "1:passe>2:passe>3:frappe",
-     "garde": "5>5"
+     "garde": "5>5",
+     "types": [
+      "CON",
+      "CON"
+     ],
+     "mult": 1.0
     },
     {
      "nom": "Coup de manche",
      "trajet": "1:frappe",
-     "garde": "5>2"
+     "garde": "5>2",
+     "types": [
+      "CON",
+      "CON"
+     ],
+     "mult": 0.8
     }
    ]
   },
