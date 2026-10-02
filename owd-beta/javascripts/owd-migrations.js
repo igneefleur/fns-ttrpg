@@ -743,35 +743,64 @@
 
   /* ------------------------------------------------------------------
    * PAS 5 — AJOUT DES RÉSISTANCES ET PROTECTIONS AUX VÊTEMENTS
+   *
+   * Depuis le schéma 3, les vêtements ne vivent plus dans s.vetements :
+   * ce sont des objets de s.inv.objets dont la propriété `vet` est non vide.
+   * En redescendant vers le schéma 4, celui-ci ne sait pas conserver les
+   * nouveaux champs dans normalize(). On les range donc au grenier avant de
+   * les retirer, puis on les restaure si la fiche remonte ensuite en schéma 5.
    * ------------------------------------------------------------------ */
   OwdMigr.ajouter({
     schema: 5,
     titre: "Ajout des résistances et protections aux vêtements",
     notes: "Chaque vêtement gagne des champs de résistance et de protection pour les 9 types de dégâts.",
-    monter: function (s) {
+    monter: function (s, ctx) {
       var types = ["contondant", "perforant", "tranchant", "feu", "froid", "eclair", "decomposition", "ethere", "brut"];
-      var vetements = s && Array.isArray(s.vetements) ? s.vetements : [];
-      vetements.forEach(function (v) {
-        if (v && typeof v === "object") {
-          types.forEach(function(t) {
-            if (v["res_" + t] === undefined) v["res_" + t] = 0;
-            if (v["prot_" + t] === undefined) v["prot_" + t] = 0;
-          });
-        }
+      var objets = s && s.inv && Array.isArray(s.inv.objets) ? s.inv.objets : [];
+      var sauves = ctx.reprendre("resistances-vetements");
+      if (!Array.isArray(sauves)) sauves = [];
+
+      function sauvegardePour(o, index) {
+        var id = o && o.id != null ? String(o.id) : "";
+        var parIndex = null, parId = null;
+        sauves.forEach(function (e) {
+          if (!e || typeof e !== "object") return;
+          if (e.index === index) parIndex = e;
+          if (id && String(e.id || "") === id) parId = e;
+        });
+        return parId || parIndex;
+      }
+
+      objets.forEach(function (o, index) {
+        if (!o || typeof o !== "object" || !o.vet) return;
+        var ancien = sauvegardePour(o, index);
+        types.forEach(function (t) {
+          var rk = "res_" + t, pk = "prot_" + t;
+          if (ancien && ancien.valeurs && ancien.valeurs[rk] !== undefined) o[rk] = ancien.valeurs[rk];
+          else if (o[rk] === undefined) o[rk] = 0;
+          if (ancien && ancien.valeurs && ancien.valeurs[pk] !== undefined) o[pk] = ancien.valeurs[pk];
+          else if (o[pk] === undefined) o[pk] = 0;
+        });
       });
       return s;
     },
-    descendre: function (s) {
+    descendre: function (s, ctx) {
       var types = ["contondant", "perforant", "tranchant", "feu", "froid", "eclair", "decomposition", "ethere", "brut"];
-      var vetements = s && Array.isArray(s.vetements) ? s.vetements : [];
-      vetements.forEach(function (v) {
-        if (v && typeof v === "object") {
-          types.forEach(function(t) {
-            delete v["res_" + t];
-            delete v["prot_" + t];
-          });
-        }
+      var objets = s && s.inv && Array.isArray(s.inv.objets) ? s.inv.objets : [];
+      var sauves = [];
+      objets.forEach(function (o, index) {
+        if (!o || typeof o !== "object" || !o.vet) return;
+        var valeurs = {};
+        types.forEach(function (t) {
+          var rk = "res_" + t, pk = "prot_" + t;
+          valeurs[rk] = o[rk] === undefined ? 0 : o[rk];
+          valeurs[pk] = o[pk] === undefined ? 0 : o[pk];
+          delete o[rk];
+          delete o[pk];
+        });
+        sauves.push({ id: o.id == null ? "" : String(o.id), index: index, valeurs: valeurs });
       });
+      if (sauves.length) ctx.grenier("resistances-vetements", sauves);
       return s;
     }
   });

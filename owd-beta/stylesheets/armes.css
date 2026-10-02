@@ -60,11 +60,12 @@
 }
 
 /* ── Les gestes ──
-   Autant de colonnes que la largeur en permet, chacune assez large pour que
-   l'empreinte reste lisible : c'est elle qu'on lit en premier. */
+   TROIS par rangée, quelle que soit la largeur : une arme porte six attaques,
+   elles se lisent donc en deux rangées de trois, et les colonnes ne bougent
+   plus d'une arme à l'autre. */
 .md-typeset .gestes {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 0.7rem 0.9rem;
 }
 
@@ -106,7 +107,7 @@
 .md-typeset svg.geste-carte {
   display: block;
   width: 100%;
-  max-width: 7.5rem;
+  max-width: 10rem;
   height: auto;
 }
 
@@ -219,8 +220,8 @@
 }
 .md-typeset svg.garde-carre {
   flex: none;
-  width: 1.9rem;
-  height: 1.9rem;
+  width: 2.6rem;
+  height: 2.6rem;
 }
 .md-typeset svg.garde-carre .gd-case {
   fill: var(--ink);
@@ -424,6 +425,24 @@ html.night body {
   background: var(--or-fort);
   opacity: 0.3;
 }
+/* Le carre des mains : neuf cases d'encre pale, comme sur les cartes. La grille
+   est peinte en fond plutot que dessinee, la legende n'ayant qu'une pastille. */
+.md-typeset .gestes-legende .lg-garde {
+  background:
+    linear-gradient(var(--ink), var(--ink)) 0 0 / 0.25rem 0.25rem no-repeat,
+    linear-gradient(var(--ink), var(--ink)) 0.3rem 0 / 0.25rem 0.25rem no-repeat,
+    linear-gradient(var(--ink), var(--ink)) 0.6rem 0 / 0.25rem 0.25rem no-repeat,
+    linear-gradient(var(--ink), var(--ink)) 0 0.3rem / 0.25rem 0.25rem no-repeat,
+    linear-gradient(var(--ink), var(--ink)) 0.3rem 0.3rem / 0.25rem 0.25rem no-repeat,
+    linear-gradient(var(--ink), var(--ink)) 0.6rem 0.3rem / 0.25rem 0.25rem no-repeat,
+    linear-gradient(var(--ink), var(--ink)) 0 0.6rem / 0.25rem 0.25rem no-repeat,
+    linear-gradient(var(--ink), var(--ink)) 0.3rem 0.6rem / 0.25rem 0.25rem no-repeat,
+    linear-gradient(var(--ink), var(--ink)) 0.6rem 0.6rem / 0.25rem 0.25rem no-repeat;
+  background-color: transparent;
+  opacity: 0.4;
+  border-radius: 0;
+}
+
 /* La case du porteur : le meme contour orange que sur les cartes, regulier. */
 .md-typeset .gestes-legende .lg-soi {
   background: transparent;
@@ -433,7 +452,7 @@ html.night body {
 
 /* ── Écrans étroits ── */
 @media screen and (max-width: 44rem) {
-  .md-typeset .gestes { grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr)); }
+  .md-typeset .gestes { grid-template-columns: repeat(3, 1fr); }
   .md-typeset svg.geste-carte { max-width: 6rem; }
 }
 
@@ -478,3 +497,136 @@ html.night body {
   white-space: nowrap;
   overflow-wrap: normal;
 }
+
+
+/* ── Types de dégâts des attaques ───────────────────────────────────────────
+   IMPORTANT : armes.md reste strictement inchangé afin de ne pas perturber
+   le générateur des hexagones, des trajets et des gardes.
+   Ordre : type de la case frappée / type de la case traversée.
+   ────────────────────────────────────────────────────────────────────────── */
+
+.md-typeset .armes-grille > .arme .geste-nom::after {
+  display: block;
+  margin-top: 0.12rem;
+  font-family: 'Roboto Mono', ui-monospace, monospace;
+  font-size: 0.54rem;
+  font-variant: normal;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+  color: var(--ink);
+  opacity: 0.68;
+  white-space: pre-line;
+}
+
+/* Dague */
+.md-typeset .armes-grille > .arme:nth-child(1) .gestes > .geste:nth-child(1) .geste-nom::after { content: "PER / PER\A×1.4"; }
+.md-typeset .armes-grille > .arme:nth-child(1) .gestes > .geste:nth-child(2) .geste-nom::after { content: "PER / PER\A×1.2"; }
+.md-typeset .armes-grille > .arme:nth-child(1) .gestes > .geste:nth-child(3) .geste-nom::after { content: "PER / PER\A×1.2"; }
+.md-typeset .armes-grille > .arme:nth-child(1) .gestes > .geste:nth-child(4) .geste-nom::after { content: "TRA / TRA\A×1.0"; }
+.md-typeset .armes-grille > .arme:nth-child(1) .gestes > .geste:nth-child(5) .geste-nom::after { content: "TRA / TRA\A×1.0"; }
+.md-typeset .armes-grille > .arme:nth-child(1) .gestes > .geste:nth-child(6) .geste-nom::after { content: "CON / CON\A×0.8"; }
+
+/* Gantelet */
+.md-typeset .armes-grille > .arme:nth-child(2) .gestes > .geste:nth-child(1) .geste-nom::after { content: "CON / CON\A×1.4"; }
+.md-typeset .armes-grille > .arme:nth-child(2) .gestes > .geste:nth-child(2) .geste-nom::after { content: "CON / CON\A×1.2"; }
+.md-typeset .armes-grille > .arme:nth-child(2) .gestes > .geste:nth-child(3) .geste-nom::after { content: "CON / CON\A×1.0"; }
+.md-typeset .armes-grille > .arme:nth-child(2) .gestes > .geste:nth-child(4) .geste-nom::after { content: "CON / CON\A×1.2"; }
+.md-typeset .armes-grille > .arme:nth-child(2) .gestes > .geste:nth-child(5) .geste-nom::after { content: "CON / CON\A×1.0"; }
+.md-typeset .armes-grille > .arme:nth-child(2) .gestes > .geste:nth-child(6) .geste-nom::after { content: "CON / CON\A×0.8"; }
+
+/* Rapière */
+.md-typeset .armes-grille > .arme:nth-child(3) .gestes > .geste:nth-child(1) .geste-nom::after { content: "PER / PER\A×1.4"; }
+.md-typeset .armes-grille > .arme:nth-child(3) .gestes > .geste:nth-child(2) .geste-nom::after { content: "PER / PER\A×1.2"; }
+.md-typeset .armes-grille > .arme:nth-child(3) .gestes > .geste:nth-child(3) .geste-nom::after { content: "PER / PER\A×1.2"; }
+.md-typeset .armes-grille > .arme:nth-child(3) .gestes > .geste:nth-child(4) .geste-nom::after { content: "PER / PER\A×1.0"; }
+.md-typeset .armes-grille > .arme:nth-child(3) .gestes > .geste:nth-child(5) .geste-nom::after { content: "TRA / TRA\A×1.0"; }
+.md-typeset .armes-grille > .arme:nth-child(3) .gestes > .geste:nth-child(6) .geste-nom::after { content: "CON / CON\A×0.8"; }
+
+/* Sabre */
+.md-typeset .armes-grille > .arme:nth-child(4) .gestes > .geste:nth-child(1) .geste-nom::after { content: "TRA / TRA\A×1.4"; }
+.md-typeset .armes-grille > .arme:nth-child(4) .gestes > .geste:nth-child(2) .geste-nom::after { content: "TRA / TRA\A×1.2"; }
+.md-typeset .armes-grille > .arme:nth-child(4) .gestes > .geste:nth-child(3) .geste-nom::after { content: "TRA / TRA\A×1.2"; }
+.md-typeset .armes-grille > .arme:nth-child(4) .gestes > .geste:nth-child(4) .geste-nom::after { content: "TRA / TRA\A×1.0"; }
+.md-typeset .armes-grille > .arme:nth-child(4) .gestes > .geste:nth-child(5) .geste-nom::after { content: "PER / PER\A×1.0"; }
+.md-typeset .armes-grille > .arme:nth-child(4) .gestes > .geste:nth-child(6) .geste-nom::after { content: "CON / CON\A×0.8"; }
+
+/* Épée */
+.md-typeset .armes-grille > .arme:nth-child(5) .gestes > .geste:nth-child(1) .geste-nom::after { content: "TRA / TRA\A×1.4"; }
+.md-typeset .armes-grille > .arme:nth-child(5) .gestes > .geste:nth-child(2) .geste-nom::after { content: "TRA / TRA\A×1.2"; }
+.md-typeset .armes-grille > .arme:nth-child(5) .gestes > .geste:nth-child(3) .geste-nom::after { content: "TRA / TRA\A×1.2"; }
+.md-typeset .armes-grille > .arme:nth-child(5) .gestes > .geste:nth-child(4) .geste-nom::after { content: "TRA / TRA\A×1.0"; }
+.md-typeset .armes-grille > .arme:nth-child(5) .gestes > .geste:nth-child(5) .geste-nom::after { content: "PER / PER\A×1.0"; }
+.md-typeset .armes-grille > .arme:nth-child(5) .gestes > .geste:nth-child(6) .geste-nom::after { content: "CON / CON\A×0.8"; }
+
+/* Hache */
+.md-typeset .armes-grille > .arme:nth-child(6) .gestes > .geste:nth-child(1) .geste-nom::after { content: "TRA / CON\A×1.2"; }
+.md-typeset .armes-grille > .arme:nth-child(6) .gestes > .geste:nth-child(2) .geste-nom::after { content: "TRA / CON\A×1.2"; }
+.md-typeset .armes-grille > .arme:nth-child(6) .gestes > .geste:nth-child(3) .geste-nom::after { content: "TRA / CON\A×1.4"; }
+.md-typeset .armes-grille > .arme:nth-child(6) .gestes > .geste:nth-child(4) .geste-nom::after { content: "TRA / CON\A×1.0"; }
+.md-typeset .armes-grille > .arme:nth-child(6) .gestes > .geste:nth-child(5) .geste-nom::after { content: "CON / CON\A×1.0"; }
+.md-typeset .armes-grille > .arme:nth-child(6) .gestes > .geste:nth-child(6) .geste-nom::after { content: "CON / CON\A×0.8"; }
+
+/* Masse */
+.md-typeset .armes-grille > .arme:nth-child(7) .gestes > .geste:nth-child(1) .geste-nom::after { content: "CON / CON\A×1.2"; }
+.md-typeset .armes-grille > .arme:nth-child(7) .gestes > .geste:nth-child(2) .geste-nom::after { content: "CON / CON\A×1.2"; }
+.md-typeset .armes-grille > .arme:nth-child(7) .gestes > .geste:nth-child(3) .geste-nom::after { content: "CON / CON\A×1.4"; }
+.md-typeset .armes-grille > .arme:nth-child(7) .gestes > .geste:nth-child(4) .geste-nom::after { content: "CON / CON\A×1.0"; }
+.md-typeset .armes-grille > .arme:nth-child(7) .gestes > .geste:nth-child(5) .geste-nom::after { content: "CON / CON\A×1.0"; }
+.md-typeset .armes-grille > .arme:nth-child(7) .gestes > .geste:nth-child(6) .geste-nom::after { content: "CON / CON\A×0.8"; }
+
+/* Lance */
+.md-typeset .armes-grille > .arme:nth-child(8) .gestes > .geste:nth-child(1) .geste-nom::after { content: "PER / CON\A×1.4"; }
+.md-typeset .armes-grille > .arme:nth-child(8) .gestes > .geste:nth-child(2) .geste-nom::after { content: "PER / CON\A×1.2"; }
+.md-typeset .armes-grille > .arme:nth-child(8) .gestes > .geste:nth-child(3) .geste-nom::after { content: "PER / CON\A×1.2"; }
+.md-typeset .armes-grille > .arme:nth-child(8) .gestes > .geste:nth-child(4) .geste-nom::after { content: "CON / CON\A×1.0"; }
+.md-typeset .armes-grille > .arme:nth-child(8) .gestes > .geste:nth-child(5) .geste-nom::after { content: "CON / CON\A×1.0"; }
+.md-typeset .armes-grille > .arme:nth-child(8) .gestes > .geste:nth-child(6) .geste-nom::after { content: "CON / CON\A×0.8"; }
+
+/* Hallebarde */
+.md-typeset .armes-grille > .arme:nth-child(9) .gestes > .geste:nth-child(1) .geste-nom::after { content: "TRA / CON\A×1.2"; }
+.md-typeset .armes-grille > .arme:nth-child(9) .gestes > .geste:nth-child(2) .geste-nom::after { content: "TRA / CON\A×1.2"; }
+.md-typeset .armes-grille > .arme:nth-child(9) .gestes > .geste:nth-child(3) .geste-nom::after { content: "PER / CON\A×1.0"; }
+.md-typeset .armes-grille > .arme:nth-child(9) .gestes > .geste:nth-child(4) .geste-nom::after { content: "TRA / CON\A×1.4"; }
+.md-typeset .armes-grille > .arme:nth-child(9) .gestes > .geste:nth-child(5) .geste-nom::after { content: "PER / CON\A×1.0"; }
+.md-typeset .armes-grille > .arme:nth-child(9) .gestes > .geste:nth-child(6) .geste-nom::after { content: "CON / CON\A×0.8"; }
+
+/* Grand sabre */
+.md-typeset .armes-grille > .arme:nth-child(10) .gestes > .geste:nth-child(1) .geste-nom::after { content: "TRA / TRA\A×1.4"; }
+.md-typeset .armes-grille > .arme:nth-child(10) .gestes > .geste:nth-child(2) .geste-nom::after { content: "TRA / TRA\A×1.2"; }
+.md-typeset .armes-grille > .arme:nth-child(10) .gestes > .geste:nth-child(3) .geste-nom::after { content: "TRA / TRA\A×1.2"; }
+.md-typeset .armes-grille > .arme:nth-child(10) .gestes > .geste:nth-child(4) .geste-nom::after { content: "TRA / TRA\A×1.0"; }
+.md-typeset .armes-grille > .arme:nth-child(10) .gestes > .geste:nth-child(5) .geste-nom::after { content: "PER / PER\A×1.0"; }
+.md-typeset .armes-grille > .arme:nth-child(10) .gestes > .geste:nth-child(6) .geste-nom::after { content: "CON / CON\A×0.8"; }
+
+/* Grande épée */
+.md-typeset .armes-grille > .arme:nth-child(11) .gestes > .geste:nth-child(1) .geste-nom::after { content: "TRA / TRA\A×1.2"; }
+.md-typeset .armes-grille > .arme:nth-child(11) .gestes > .geste:nth-child(2) .geste-nom::after { content: "TRA / TRA\A×1.2"; }
+.md-typeset .armes-grille > .arme:nth-child(11) .gestes > .geste:nth-child(3) .geste-nom::after { content: "TRA / TRA\A×1.4"; }
+.md-typeset .armes-grille > .arme:nth-child(11) .gestes > .geste:nth-child(4) .geste-nom::after { content: "TRA / TRA\A×1.0"; }
+.md-typeset .armes-grille > .arme:nth-child(11) .gestes > .geste:nth-child(5) .geste-nom::after { content: "PER / PER\A×1.0"; }
+.md-typeset .armes-grille > .arme:nth-child(11) .gestes > .geste:nth-child(6) .geste-nom::after { content: "CON / CON\A×0.8"; }
+
+/* Grande hache */
+.md-typeset .armes-grille > .arme:nth-child(12) .gestes > .geste:nth-child(1) .geste-nom::after { content: "TRA / CON\A×1.2"; }
+.md-typeset .armes-grille > .arme:nth-child(12) .gestes > .geste:nth-child(2) .geste-nom::after { content: "TRA / CON\A×1.2"; }
+.md-typeset .armes-grille > .arme:nth-child(12) .gestes > .geste:nth-child(3) .geste-nom::after { content: "TRA / CON\A×1.4"; }
+.md-typeset .armes-grille > .arme:nth-child(12) .gestes > .geste:nth-child(4) .geste-nom::after { content: "TRA / CON\A×1.0"; }
+.md-typeset .armes-grille > .arme:nth-child(12) .gestes > .geste:nth-child(5) .geste-nom::after { content: "CON / CON\A×1.0"; }
+.md-typeset .armes-grille > .arme:nth-child(12) .gestes > .geste:nth-child(6) .geste-nom::after { content: "CON / CON\A×0.8"; }
+
+/* Faux de guerre */
+.md-typeset .armes-grille > .arme:nth-child(13) .gestes > .geste:nth-child(1) .geste-nom::after { content: "TRA / CON\A×1.2"; }
+.md-typeset .armes-grille > .arme:nth-child(13) .gestes > .geste:nth-child(2) .geste-nom::after { content: "TRA / CON\A×1.2"; }
+.md-typeset .armes-grille > .arme:nth-child(13) .gestes > .geste:nth-child(3) .geste-nom::after { content: "TRA / CON\A×1.4"; }
+.md-typeset .armes-grille > .arme:nth-child(13) .gestes > .geste:nth-child(4) .geste-nom::after { content: "TRA / CON\A×1.0"; }
+.md-typeset .armes-grille > .arme:nth-child(13) .gestes > .geste:nth-child(5) .geste-nom::after { content: "PER / CON\A×1.0"; }
+.md-typeset .armes-grille > .arme:nth-child(13) .gestes > .geste:nth-child(6) .geste-nom::after { content: "CON / CON\A×0.8"; }
+
+/* Grand marteau */
+.md-typeset .armes-grille > .arme:nth-child(14) .gestes > .geste:nth-child(1) .geste-nom::after { content: "CON / CON\A×1.2"; }
+.md-typeset .armes-grille > .arme:nth-child(14) .gestes > .geste:nth-child(2) .geste-nom::after { content: "CON / CON\A×1.2"; }
+.md-typeset .armes-grille > .arme:nth-child(14) .gestes > .geste:nth-child(3) .geste-nom::after { content: "CON / CON\A×1.4"; }
+.md-typeset .armes-grille > .arme:nth-child(14) .gestes > .geste:nth-child(4) .geste-nom::after { content: "CON / CON\A×1.0"; }
+.md-typeset .armes-grille > .arme:nth-child(14) .gestes > .geste:nth-child(5) .geste-nom::after { content: "CON / CON\A×1.0"; }
+.md-typeset .armes-grille > .arme:nth-child(14) .gestes > .geste:nth-child(6) .geste-nom::after { content: "CON / CON\A×0.8"; }
