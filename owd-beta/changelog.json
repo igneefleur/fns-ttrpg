@@ -1,5 +1,19 @@
 [
 {
+"short": "4d3c10d",
+"author": "Théo Cavaillès",
+"date": "2026-10-02T14:42:16+02:00",
+"message": "Update armes.md",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/4d3c10d96fdc96609cf29e81d289c6d79e768130",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/combat/armes.md",
+"url": "content/regles/combat/armes/"
+}
+]
+},
+{
 "short": "c720f56",
 "author": "Théo Cavaillès",
 "date": "2026-09-22T23:31:59+02:00",
@@ -145,20 +159,6 @@
 "date": "2026-09-22T18:49:47+02:00",
 "message": "Les quatre attaques du grand sabre",
 "url": "https://github.com/igneefleur/fns-ttrpg/commit/52ad56dcbf82366bed889fd74b231c0484b123b3",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/combat/armes.md",
-"url": "content/regles/combat/armes/"
-}
-]
-},
-{
-"short": "ad962e0",
-"author": "Théo Cavaillès",
-"date": "2026-09-22T18:48:05+02:00",
-"message": "Les quatre attaques de la grande épée",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/ad962e0e9be49921e7642f7b7e15381ff2bb29b0",
 "files": [
 {
 "status": "modified",
