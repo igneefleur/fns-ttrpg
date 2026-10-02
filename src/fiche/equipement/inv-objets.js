@@ -537,9 +537,9 @@
         });
 
         var pp = el("div", "pc-obj-pair");
-        pp.appendChild(champNombre("Froid", function () { return it.froid; },
+        pp.appendChild(champNombre("Défense Froid", function () { return it.froid; },
           function (v) { it.froid = snum(v); }, "Protection contre le froid, en degrés"));
-        pp.appendChild(champNombre("Chaud", function () { return it.chaud; },
+        pp.appendChild(champNombre("Défense Chaud", function () { return it.chaud; },
           function (v) { it.chaud = snum(v); }, "Protection contre le chaud, en degrés"));
         body.appendChild(pp);
       }
