@@ -1,8 +1,5 @@
 {
  "_lisezmoi": "Produit au build par hooks/owd_creation.py depuis docs/content/regles/. Ne pas editer a la main : la prochaine construction l'ecrase.",
- "_absents": [
-  "combat/armes.md"
- ],
  "caracs": [
   {
    "cle": "Force",
@@ -611,5 +608,690 @@
   "nom": "pièce d'argent",
   "pluriel": "pièces d'argent",
   "venteSurAchat": 3
- }
+ },
+ "armes": [
+  {
+   "cle": "dague",
+   "nom": "Dague",
+   "categorie": "Armes à 1 case",
+   "mains": 1,
+   "attaque": 6,
+   "degats": 20,
+   "modsDegats": [
+    "Dexterite",
+    "Dexterite"
+   ],
+   "parade": 5,
+   "reduction": 10,
+   "modsParade": [
+    "Dexterite"
+   ],
+   "types": [
+    "PER",
+    "TRA"
+   ]
+  },
+  {
+   "cle": "gantelet",
+   "nom": "Gantelet",
+   "categorie": "Armes à 1 case",
+   "mains": 1,
+   "attaque": 5,
+   "degats": 15,
+   "modsDegats": [
+    "Force",
+    "Force"
+   ],
+   "parade": 4,
+   "reduction": 5,
+   "modsParade": [
+    "Force"
+   ],
+   "types": [
+    "CON",
+    "CON"
+   ]
+  },
+  {
+   "cle": "rapiere",
+   "nom": "Rapière",
+   "categorie": "Armes à 2 cases",
+   "mains": 1,
+   "attaque": 7,
+   "degats": 25,
+   "modsDegats": [
+    "Dexterite",
+    "Dexterite"
+   ],
+   "parade": 6,
+   "reduction": 15,
+   "modsParade": [
+    "Dexterite"
+   ],
+   "types": [
+    "PER",
+    "TRA"
+   ]
+  },
+  {
+   "cle": "sabre",
+   "nom": "Sabre",
+   "categorie": "Armes à 2 cases",
+   "mains": 1,
+   "attaque": 7,
+   "degats": 20,
+   "modsDegats": [
+    "Dexterite",
+    "Dexterite"
+   ],
+   "parade": 5,
+   "reduction": 10,
+   "modsParade": [
+    "Dexterite"
+   ],
+   "types": [
+    "TRA",
+    "TRA"
+   ]
+  },
+  {
+   "cle": "epee",
+   "nom": "Épée",
+   "categorie": "Armes à 2 cases",
+   "mains": 1,
+   "attaque": 8,
+   "degats": 20,
+   "modsDegats": [
+    "Dexterite",
+    "Force"
+   ],
+   "parade": 4,
+   "reduction": 5,
+   "modsParade": [
+    "Dexterite"
+   ],
+   "types": [
+    "TRA",
+    "TRA"
+   ]
+  },
+  {
+   "cle": "hache",
+   "nom": "Hache",
+   "categorie": "Armes à 2 cases",
+   "mains": 1,
+   "attaque": 9,
+   "degats": 30,
+   "modsDegats": [
+    "Force",
+    "Dexterite"
+   ],
+   "parade": 5,
+   "reduction": 10,
+   "modsParade": [
+    "Force"
+   ],
+   "types": [
+    "TRA",
+    "CON"
+   ]
+  },
+  {
+   "cle": "masse",
+   "nom": "Masse",
+   "categorie": "Armes à 2 cases",
+   "mains": 1,
+   "attaque": 9,
+   "degats": 35,
+   "modsDegats": [
+    "Force",
+    "Force"
+   ],
+   "parade": 6,
+   "reduction": 15,
+   "modsParade": [
+    "Force"
+   ],
+   "types": [
+    "CON",
+    "CON"
+   ]
+  },
+  {
+   "cle": "lance",
+   "nom": "Lance",
+   "categorie": "Armes à 3 cases",
+   "mains": 2,
+   "attaque": 10,
+   "degats": 40,
+   "modsDegats": [
+    "Dexterite",
+    "Dexterite",
+    "Dexterite"
+   ],
+   "parade": 8,
+   "reduction": 25,
+   "modsParade": [
+    "Dexterite",
+    "Dexterite"
+   ],
+   "types": [
+    "PER",
+    "CON"
+   ]
+  },
+  {
+   "cle": "hallebarde",
+   "nom": "Hallebarde",
+   "categorie": "Armes à 3 cases",
+   "mains": 2,
+   "attaque": 10,
+   "degats": 35,
+   "modsDegats": [
+    "Dexterite",
+    "Dexterite",
+    "Force"
+   ],
+   "parade": 7,
+   "reduction": 20,
+   "modsParade": [
+    "Dexterite",
+    "Dexterite"
+   ],
+   "types": [
+    "TRA",
+    "CON"
+   ]
+  },
+  {
+   "cle": "grand-sabre",
+   "nom": "Grand sabre",
+   "categorie": "Armes à 3 cases",
+   "mains": 2,
+   "attaque": 10,
+   "degats": 30,
+   "modsDegats": [
+    "Dexterite",
+    "Dexterite",
+    "Force"
+   ],
+   "parade": 6,
+   "reduction": 15,
+   "modsParade": [
+    "Dexterite",
+    "Dexterite"
+   ],
+   "types": [
+    "TRA",
+    "TRA"
+   ]
+  },
+  {
+   "cle": "grande-epee",
+   "nom": "Grande épée",
+   "categorie": "Armes à 3 cases",
+   "mains": 2,
+   "attaque": 11,
+   "degats": 30,
+   "modsDegats": [
+    "Dexterite",
+    "Force",
+    "Dexterite"
+   ],
+   "parade": 5,
+   "reduction": 10,
+   "modsParade": [
+    "Dexterite",
+    "Force"
+   ],
+   "types": [
+    "TRA",
+    "TRA"
+   ]
+  },
+  {
+   "cle": "grande-hache",
+   "nom": "Grande hache",
+   "categorie": "Armes à 3 cases",
+   "mains": 2,
+   "attaque": 12,
+   "degats": 40,
+   "modsDegats": [
+    "Force",
+    "Dexterite",
+    "Force"
+   ],
+   "parade": 6,
+   "reduction": 15,
+   "modsParade": [
+    "Force",
+    "Dexterite"
+   ],
+   "types": [
+    "TRA",
+    "CON"
+   ]
+  },
+  {
+   "cle": "faux-de-guerre",
+   "nom": "Faux de guerre",
+   "categorie": "Armes à 3 cases",
+   "mains": 2,
+   "attaque": 12,
+   "degats": 45,
+   "modsDegats": [
+    "Force",
+    "Force",
+    "Dexterite"
+   ],
+   "parade": 7,
+   "reduction": 20,
+   "modsParade": [
+    "Force",
+    "Force"
+   ],
+   "types": [
+    "TRA",
+    "CON"
+   ]
+  },
+  {
+   "cle": "grand-marteau",
+   "nom": "Grand marteau",
+   "categorie": "Armes à 3 cases",
+   "mains": 2,
+   "attaque": 12,
+   "degats": 50,
+   "modsDegats": [
+    "Force",
+    "Force",
+    "Force"
+   ],
+   "parade": 8,
+   "reduction": 25,
+   "modsParade": [
+    "Force",
+    "Force"
+   ],
+   "types": [
+    "CON",
+    "CON"
+   ]
+  },
+  {
+   "cle": "bocle",
+   "nom": "Bocle",
+   "categorie": "Boucliers à une main",
+   "mains": 1,
+   "attaque": 5,
+   "degats": 10,
+   "modsDegats": [
+    "Dexterite"
+   ],
+   "parade": 7,
+   "reduction": 30,
+   "modsParade": [
+    "Dexterite",
+    "Dexterite"
+   ],
+   "types": [
+    "CON",
+    "CON"
+   ]
+  },
+  {
+   "cle": "rondache",
+   "nom": "Rondache",
+   "categorie": "Boucliers à une main",
+   "mains": 1,
+   "attaque": 5,
+   "degats": 10,
+   "modsDegats": [
+    "Dexterite"
+   ],
+   "parade": 6,
+   "reduction": 25,
+   "modsParade": [
+    "Dexterite",
+    "Force"
+   ],
+   "types": [
+    "CON",
+    "CON"
+   ]
+  },
+  {
+   "cle": "targe",
+   "nom": "Targe",
+   "categorie": "Boucliers à une main",
+   "mains": 1,
+   "attaque": 6,
+   "degats": 15,
+   "modsDegats": [
+    "Dexterite"
+   ],
+   "parade": 5,
+   "reduction": 20,
+   "modsParade": [
+    "Dexterite",
+    "Force"
+   ],
+   "types": [
+    "CON",
+    "CON"
+   ]
+  },
+  {
+   "cle": "hoplon",
+   "nom": "Hoplon",
+   "categorie": "Boucliers à une main",
+   "mains": 1,
+   "attaque": 6,
+   "degats": 15,
+   "modsDegats": [
+    "Force"
+   ],
+   "parade": 5,
+   "reduction": 20,
+   "modsParade": [
+    "Force",
+    "Dexterite"
+   ],
+   "types": [
+    "CON",
+    "CON"
+   ]
+  },
+  {
+   "cle": "ecu",
+   "nom": "Écu",
+   "categorie": "Boucliers à une main",
+   "mains": 1,
+   "attaque": 7,
+   "degats": 20,
+   "modsDegats": [
+    "Force"
+   ],
+   "parade": 6,
+   "reduction": 25,
+   "modsParade": [
+    "Force",
+    "Dexterite"
+   ],
+   "types": [
+    "CON",
+    "CON"
+   ]
+  },
+  {
+   "cle": "scutum",
+   "nom": "Scutum",
+   "categorie": "Boucliers à une main",
+   "mains": 1,
+   "attaque": 7,
+   "degats": 20,
+   "modsDegats": [
+    "Force"
+   ],
+   "parade": 7,
+   "reduction": 30,
+   "modsParade": [
+    "Force",
+    "Force"
+   ],
+   "types": [
+    "CON",
+    "CON"
+   ]
+  },
+  {
+   "cle": "couteau-de-lancer",
+   "nom": "Couteau de lancer",
+   "categorie": "Armes à distance à une main",
+   "mains": 1,
+   "attaque": 6,
+   "degats": 20,
+   "modsDegats": [
+    "Dexterite",
+    "Dexterite"
+   ],
+   "types": [
+    "PER"
+   ]
+  },
+  {
+   "cle": "chakram",
+   "nom": "Chakram",
+   "categorie": "Armes à distance à une main",
+   "mains": 1,
+   "attaque": 8,
+   "degats": 20,
+   "modsDegats": [
+    "Dexterite",
+    "Dexterite"
+   ],
+   "types": [
+    "TRA"
+   ]
+  },
+  {
+   "cle": "fronde",
+   "nom": "Fronde",
+   "categorie": "Armes à distance à une main",
+   "mains": 1,
+   "attaque": 10,
+   "degats": 20,
+   "modsDegats": [
+    "Dexterite",
+    "Force"
+   ],
+   "types": [
+    "CON"
+   ]
+  },
+  {
+   "cle": "hachette-de-lancer",
+   "nom": "Hachette de lancer",
+   "categorie": "Armes à distance à une main",
+   "mains": 1,
+   "attaque": 7,
+   "degats": 20,
+   "modsDegats": [
+    "Force",
+    "Dexterite"
+   ],
+   "types": [
+    "TRA"
+   ]
+  },
+  {
+   "cle": "javelot",
+   "nom": "Javelot",
+   "categorie": "Armes à distance à une main",
+   "mains": 1,
+   "attaque": 8,
+   "degats": 20,
+   "modsDegats": [
+    "Force",
+    "Force"
+   ],
+   "types": [
+    "PER"
+   ]
+  },
+  {
+   "cle": "boomerang",
+   "nom": "Boomerang",
+   "categorie": "Armes à distance à une main",
+   "mains": 1,
+   "attaque": 9,
+   "degats": 20,
+   "modsDegats": [
+    "Force",
+    "Force"
+   ],
+   "types": [
+    "CON"
+   ]
+  },
+  {
+   "cle": "arc-court",
+   "nom": "Arc court",
+   "categorie": "Armes à distance à deux mains",
+   "mains": 2,
+   "attaque": 8,
+   "degats": 30,
+   "modsDegats": [
+    "Dexterite",
+    "Dexterite",
+    "Dexterite"
+   ],
+   "types": [
+    "PER"
+   ]
+  },
+  {
+   "cle": "arc-long",
+   "nom": "Arc long",
+   "categorie": "Armes à distance à deux mains",
+   "mains": 2,
+   "attaque": 11,
+   "degats": 30,
+   "modsDegats": [
+    "Dexterite",
+    "Force",
+    "Dexterite"
+   ],
+   "types": [
+    "PER"
+   ]
+  },
+  {
+   "cle": "grand-boomerang",
+   "nom": "Grand boomerang",
+   "categorie": "Armes à distance à deux mains",
+   "mains": 2,
+   "attaque": 9,
+   "degats": 30,
+   "modsDegats": [
+    "Force",
+    "Dexterite",
+    "Force"
+   ],
+   "types": [
+    "CON"
+   ]
+  },
+  {
+   "cle": "fustibale",
+   "nom": "Fustibale",
+   "categorie": "Armes à distance à deux mains",
+   "mains": 2,
+   "attaque": 10,
+   "degats": 30,
+   "modsDegats": [
+    "Force",
+    "Force",
+    "Force"
+   ],
+   "types": [
+    "CON"
+   ]
+  },
+  {
+   "cle": "arbalete-de-poing",
+   "nom": "Arbalète de poing",
+   "categorie": "Armes à rechargement à une main",
+   "mains": 1,
+   "attaque": 7,
+   "degats": 20,
+   "modsDegats": [
+    "Dexterite",
+    "Dexterite"
+   ],
+   "types": [
+    "PER"
+   ]
+  },
+  {
+   "cle": "pistolet-a-silex",
+   "nom": "Pistolet à silex",
+   "categorie": "Armes à rechargement à une main",
+   "mains": 1,
+   "attaque": 9,
+   "degats": 70,
+   "modsDegats": [
+    "Dexterite",
+    "Dexterite"
+   ],
+   "types": [
+    "PER"
+   ]
+  },
+  {
+   "cle": "arbalete",
+   "nom": "Arbalète",
+   "categorie": "Armes à rechargement à deux mains",
+   "mains": 2,
+   "attaque": 10,
+   "degats": 35,
+   "modsDegats": [
+    "Dexterite",
+    "Dexterite",
+    "Dexterite"
+   ],
+   "types": [
+    "PER"
+   ]
+  },
+  {
+   "cle": "arbalete-lourde",
+   "nom": "Arbalète lourde",
+   "categorie": "Armes à rechargement à deux mains",
+   "mains": 2,
+   "attaque": 11,
+   "degats": 45,
+   "modsDegats": [
+    "Dexterite",
+    "Dexterite",
+    "Dexterite"
+   ],
+   "types": [
+    "PER"
+   ]
+  },
+  {
+   "cle": "mousquet",
+   "nom": "Mousquet",
+   "categorie": "Armes à rechargement à deux mains",
+   "mains": 2,
+   "attaque": 12,
+   "degats": 90,
+   "modsDegats": [
+    "Dexterite",
+    "Dexterite",
+    "Dexterite"
+   ],
+   "types": [
+    "PER"
+   ]
+  }
+ ],
+ "typesDegats": [
+  {
+   "cle": "TRA",
+   "libelle": "TRA",
+   "dit": "tranche"
+  },
+  {
+   "cle": "PER",
+   "libelle": "PER",
+   "dit": "perce"
+  },
+  {
+   "cle": "CON",
+   "libelle": "CON",
+   "dit": "écrase"
+  }
+ ]
 }

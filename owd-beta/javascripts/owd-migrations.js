@@ -805,6 +805,146 @@
     }
   });
 
+
+  /* ------------------------------------------------------------------
+   * PAS 6 — LES ARMES DE L'INVENTAIRE DEVIENNENT DES VALEURS D'ARME
+   *
+   * Le schéma 5 rangeait dans chaque objet arme une prise, une parade, une
+   * réduction, une compétence et une liste de gestes. Le schéma 6 retire les
+   * gestes de l'inventaire : l'arme porte une attaque et des dégâts de base,
+   * trois MOD de dégâts, une parade et une réduction de base, trois MOD de
+   * parade, sa compétence et son type. Le type servira aux trajets dans le
+   * futur module d'attaque.
+   *
+   * La forme ancienne est gardée au grenier : une descente restaure exactement
+   * les gestes et la prise. La forme 6 est elle aussi gardée lors d'une
+   * descente, afin qu'une remontée rende exactement les nouveaux champs.
+   * ------------------------------------------------------------------ */
+  OwdMigr.ajouter({
+    schema: 6,
+    titre: "Les armes de l'inventaire portent leurs valeurs d'attaque et de parade",
+    notes: "Les gestes, le préréglage et la prise quittent la carte d'arme. Chaque arme " +
+           "porte désormais attaque, dégâts de base et trois MOD, parade, réduction de " +
+           "base et trois MOD, puis sa compétence et son type. Les anciennes données " +
+           "restent au grenier pour qu'une redescente rende exactement la fiche d'avant.",
+
+    monter: function (s, ctx) {
+      var objets = s && s.inv && Array.isArray(s.inv.objets) ? s.inv.objets : [];
+      var retour = ctx.reprendre("armes-schema6");
+      if (!Array.isArray(retour)) retour = [];
+      var anciens = [];
+
+      function copie(v) {
+        try { return JSON.parse(JSON.stringify(v)); } catch (e) { return v; }
+      }
+      function trouve(liste, o, index) {
+        var id = o && o.id != null ? String(o.id) : "", parIndex = null, parId = null;
+        liste.forEach(function (e) {
+          if (!e || typeof e !== "object") return;
+          if (e.index === index) parIndex = e;
+          if (id && String(e.id || "") === id) parId = e;
+        });
+        return parId || parIndex;
+      }
+      function formule(v) {
+        var map = { FOR: "Force", DEX: "Dexterite", INT: "Intelligence", FER: "Ferveur",
+                    VIG: "Vigueur", END: "Endurance", RES: "Resistance", CHA: "Chance" };
+        var bouts = String(v == null ? "" : v).split("+").map(function (x) { return x.trim(); })
+          .filter(function (x) { return !!x; });
+        if (!bouts.length) return { base: "", mods: ["", "", ""] };
+        var base = bouts.shift(), mods = [];
+        bouts.forEach(function (x) {
+          var k = map[x.toUpperCase()] || "";
+          if (k && mods.length < 3) mods.push(k);
+        });
+        while (mods.length < 3) mods.push("");
+        return { base: base, mods: mods };
+      }
+
+      objets.forEach(function (o, index) {
+        if (!o || typeof o !== "object" || !o.arme || typeof o.arme !== "object") return;
+        anciens.push({ id: o.id == null ? "" : String(o.id), index: index, arme: copie(o.arme) });
+        var r = trouve(retour, o, index);
+        if (r && r.arme && typeof r.arme === "object") {
+          o.arme = copie(r.arme);
+          return;
+        }
+        var a = o.arme;
+        var g = Array.isArray(a.gestes) && a.gestes.length && a.gestes[0] &&
+                typeof a.gestes[0] === "object" ? a.gestes[0] : {};
+        var dg = formule(g.degats);
+        var rd = formule(a.reduction);
+        o.arme = {
+          attaque: g.seuil == null ? "" : String(g.seuil),
+          degats: dg.base,
+          modsDegats: dg.mods,
+          parade: a.parade == null ? "" : String(a.parade),
+          reduction: rd.base,
+          modsParade: rd.mods,
+          comp: a.comp == null ? "" : String(a.comp),
+          type: "",
+          mains: Number(a.mains) === 2 ? 2 : 1
+        };
+      });
+      if (anciens.length) ctx.grenier("armes-schema5", anciens);
+      return s;
+    },
+
+    descendre: function (s, ctx) {
+      var objets = s && s.inv && Array.isArray(s.inv.objets) ? s.inv.objets : [];
+      var anciens = ctx.reprendre("armes-schema5");
+      if (!Array.isArray(anciens)) anciens = [];
+      var neufs = [];
+      var abbr = { Force: "FOR", Dexterite: "DEX", Intelligence: "INT", Ferveur: "FER",
+                   Vigueur: "VIG", Endurance: "END", Resistance: "RES", Chance: "CHA" };
+
+      function copie(v) {
+        try { return JSON.parse(JSON.stringify(v)); } catch (e) { return v; }
+      }
+      function trouve(liste, o, index) {
+        var id = o && o.id != null ? String(o.id) : "", parIndex = null, parId = null;
+        liste.forEach(function (e) {
+          if (!e || typeof e !== "object") return;
+          if (e.index === index) parIndex = e;
+          if (id && String(e.id || "") === id) parId = e;
+        });
+        return parId || parIndex;
+      }
+      function formule(base, mods) {
+        var out = String(base == null ? "" : base);
+        (Array.isArray(mods) ? mods : []).slice(0, 3).forEach(function (k) {
+          if (abbr[k]) out += (out ? " + " : "") + abbr[k];
+        });
+        return out;
+      }
+
+      objets.forEach(function (o, index) {
+        if (!o || typeof o !== "object" || !o.arme || typeof o.arme !== "object") return;
+        neufs.push({ id: o.id == null ? "" : String(o.id), index: index, arme: copie(o.arme) });
+        var r = trouve(anciens, o, index);
+        if (r && r.arme && typeof r.arme === "object") {
+          o.arme = copie(r.arme);
+          return;
+        }
+        var a = o.arme;
+        var deg = formule(a.degats, a.modsDegats);
+        o.arme = {
+          prise: "",
+          parade: a.parade == null ? "" : String(a.parade),
+          reduction: formule(a.reduction, a.modsParade),
+          comp: a.comp == null ? "" : String(a.comp),
+          mains: Number(a.mains) === 2 ? 2 : 1,
+          gestes: (a.attaque || deg) ? [{
+            id: "", nom: "", seuil: a.attaque == null ? "" : String(a.attaque),
+            portee: "", degats: deg, type: "", degatsDemi: "", typeDemi: ""
+          }] : []
+        };
+      });
+      if (neufs.length) ctx.grenier("armes-schema6", neufs);
+      return s;
+    }
+  });
+
   global.OwdMigr = OwdMigr;
   if (typeof module === "object" && module && module.exports) module.exports = OwdMigr;
 })(typeof window !== "undefined" ? window : (typeof global !== "undefined" ? global : this));
