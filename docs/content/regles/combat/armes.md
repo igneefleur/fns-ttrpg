@@ -163,6 +163,7 @@ Une arme à distance ne pare pas.
   <span><i class="lg-soi"></i>la case du porteur, qui regarde vers le haut</span>
   <span><i></i>la case frappée, dégâts pleins</span>
   <span><i class="lg-passe"></i>la case traversée, moitié des dégâts</span>
+  <span><i class="lg-garde"></i>le carré des mains : d'où elles partent, où elles finissent</span>
 </div>
 
 <div class="armes-grille">
@@ -170,17 +171,23 @@ Une arme à distance ne pare pas.
 <div class="arme">
 <p class="arme-nom">Dague</p>
 <div class="gestes">
-<div class="geste" data-trajet="1:frappe">
+<div class="geste" data-trajet="1:frappe" data-garde="5>5">
 <p class="geste-nom">Estoc</p>
 </div>
-<div class="geste" data-trajet="1d:passe>1:frappe">
+<div class="geste" data-trajet="1d:passe>1:frappe" data-garde="6>3">
 <p class="geste-nom">Estoc du côté droit</p>
 </div>
-<div class="geste" data-trajet="1g:passe>1:frappe">
+<div class="geste" data-trajet="1g:passe>1:frappe" data-garde="4>1">
 <p class="geste-nom">Estoc de revers</p>
 </div>
-<div class="geste" data-trajet="1d:passe>1:frappe>1g:passe">
+<div class="geste" data-trajet="1d:passe>1:frappe>1g:passe" data-garde="6>4">
 <p class="geste-nom">Taille</p>
+</div>
+<div class="geste" data-trajet="1g:passe>1:frappe>1d:passe" data-garde="4>6">
+<p class="geste-nom">Taille de revers</p>
+</div>
+<div class="geste" data-trajet="1:frappe" data-garde="5>2">
+<p class="geste-nom">Coup de pommeau</p>
 </div>
 </div>
 </div>
@@ -188,17 +195,23 @@ Une arme à distance ne pare pas.
 <div class="arme">
 <p class="arme-nom">Gantelet</p>
 <div class="gestes">
-<div class="geste" data-trajet="1:frappe">
+<div class="geste" data-trajet="1:frappe" data-garde="5>5">
 <p class="geste-nom">Direct</p>
 </div>
-<div class="geste" data-trajet="1d:passe>1:frappe">
+<div class="geste" data-trajet="1d:passe>1:frappe" data-garde="6>4">
 <p class="geste-nom">Crochet</p>
 </div>
-<div class="geste" data-trajet="1g:passe>1:frappe">
+<div class="geste" data-trajet="1g:passe>1:frappe" data-garde="4>6">
 <p class="geste-nom">Revers du poing</p>
 </div>
-<div class="geste" data-trajet="1d:frappe">
+<div class="geste" data-trajet="1d:frappe" data-garde="3>6">
 <p class="geste-nom">Coup de coude</p>
+</div>
+<div class="geste" data-trajet="1:frappe" data-garde="8>5">
+<p class="geste-nom">Uppercut</p>
+</div>
+<div class="geste" data-trajet="1g:frappe" data-garde="5>2">
+<p class="geste-nom">Coup de paume</p>
 </div>
 </div>
 </div>
@@ -206,17 +219,23 @@ Une arme à distance ne pare pas.
 <div class="arme">
 <p class="arme-nom">Rapière</p>
 <div class="gestes">
-<div class="geste" data-trajet="1:passe>2:frappe">
-<p class="geste-nom">Estocade</p>
+<div class="geste" data-trajet="1:passe>2:frappe" data-garde="5>6">
+<p class="geste-nom">Estoc de tierce</p>
 </div>
-<div class="geste" data-trajet="1d:passe>2d:passe>1:passe>2:frappe">
-<p class="geste-nom">Estoc du côté droit</p>
+<div class="geste" data-trajet="1:passe>2:frappe" data-garde="6>4">
+<p class="geste-nom">Estoc de quarte</p>
 </div>
-<div class="geste" data-trajet="1g:passe>1:passe>2g:passe>2:frappe">
-<p class="geste-nom">Estoc de revers</p>
+<div class="geste" data-trajet="1d:passe>2d:passe>1:passe>2:frappe" data-garde="6>3">
+<p class="geste-nom">Estoc de seconde</p>
 </div>
-<div class="geste" data-trajet="1d:passe>1:frappe">
-<p class="geste-nom">Coup de taille</p>
+<div class="geste" data-trajet="1g:passe>1:passe>2g:passe>2:frappe" data-garde="4>1">
+<p class="geste-nom">Estoc de prime</p>
+</div>
+<div class="geste" data-trajet="1:passe>2:frappe" data-garde="6>5">
+<p class="geste-nom">Coup de fouet</p>
+</div>
+<div class="geste" data-trajet="1:frappe" data-garde="5>2">
+<p class="geste-nom">Coup de coquille</p>
 </div>
 </div>
 </div>
@@ -224,16 +243,22 @@ Une arme à distance ne pare pas.
 <div class="arme">
 <p class="arme-nom">Sabre</p>
 <div class="gestes">
-<div class="geste" data-trajet="1d:passe>2d2:passe>2d:frappe>1:passe>2:frappe>2g:passe>1g:passe">
+<div class="geste" data-trajet="1d:passe>2d2:passe>2d:frappe>1:passe>2:frappe>2g:passe>1g:passe" data-garde="6>4">
 <p class="geste-nom">Taille horizontale du côté droit</p>
 </div>
-<div class="geste" data-trajet="1g:passe>2g:passe>1:passe>2:frappe>2d:frappe>1d:passe>2d2:passe">
+<div class="geste" data-trajet="1g:passe>2g:passe>1:passe>2:frappe>2d:frappe>1d:passe>2d2:passe" data-garde="4>6">
 <p class="geste-nom">Taille horizontale de revers</p>
 </div>
-<div class="geste" data-trajet="1:passe>2:frappe">
+<div class="geste" data-trajet="1d2:passe>1d:passe>2d:frappe>1:passe>2:frappe>2g:passe" data-garde="9>1">
+<p class="geste-nom">Taille montante du côté droit</p>
+</div>
+<div class="geste" data-trajet="1g2:passe>1g:passe>2g:frappe>1:passe>2:frappe>2d:passe" data-garde="7>5">
+<p class="geste-nom">Taille montante de revers</p>
+</div>
+<div class="geste" data-trajet="1:passe>2:frappe" data-garde="5>5">
 <p class="geste-nom">Coup de pointe</p>
 </div>
-<div class="geste" data-trajet="1d:passe>1:frappe">
+<div class="geste" data-trajet="1d:passe>1:frappe" data-garde="3>6">
 <p class="geste-nom">Coup de manchette</p>
 </div>
 </div>
@@ -242,16 +267,22 @@ Une arme à distance ne pare pas.
 <div class="arme">
 <p class="arme-nom">Épée</p>
 <div class="gestes">
-<div class="geste" data-trajet="1d:passe>2d2:passe>2d:frappe>1:passe>2:frappe>2g:frappe>1g:passe">
+<div class="geste" data-trajet="1d:passe>2d2:passe>2d:frappe>1:passe>2:frappe>2g:frappe>1g:passe" data-garde="6>4">
 <p class="geste-nom">Taille horizontale du côté droit</p>
 </div>
-<div class="geste" data-trajet="1g:passe>2g:passe>1:passe>2:frappe>2d:frappe>1d:passe>2d2:frappe">
+<div class="geste" data-trajet="1g:passe>2g:passe>1:passe>2:frappe>2d:frappe>1d:passe>2d2:frappe" data-garde="4>6">
 <p class="geste-nom">Taille horizontale de revers</p>
 </div>
-<div class="geste" data-trajet="1:passe>2:frappe">
+<div class="geste" data-trajet="1d2:passe>1d:frappe>2d:frappe>1:passe>2:frappe>2g:passe" data-garde="9>1">
+<p class="geste-nom">Taille montante du côté droit</p>
+</div>
+<div class="geste" data-trajet="1g2:passe>1g:frappe>2g:frappe>1:passe>2:frappe>2d:passe" data-garde="7>5">
+<p class="geste-nom">Taille montante de revers</p>
+</div>
+<div class="geste" data-trajet="1:passe>2:frappe" data-garde="5>5">
 <p class="geste-nom">Estoc</p>
 </div>
-<div class="geste" data-trajet="1:frappe">
+<div class="geste" data-trajet="1:frappe" data-garde="5>2">
 <p class="geste-nom">Coup de pommeau</p>
 </div>
 </div>
@@ -260,17 +291,23 @@ Une arme à distance ne pare pas.
 <div class="arme">
 <p class="arme-nom">Hache</p>
 <div class="gestes">
-<div class="geste" data-trajet="1d:passe>2d:frappe>1:passe>2:frappe>2g:passe>1g:passe">
+<div class="geste" data-trajet="1d:passe>2d:frappe>1:passe>2:frappe>2g:passe>1g:passe" data-garde="6>4">
 <p class="geste-nom">Taille horizontale du côté droit</p>
 </div>
-<div class="geste" data-trajet="1g:passe>2g:passe>1:passe>2:frappe>2d:frappe>1d:passe">
+<div class="geste" data-trajet="1g:passe>2g:passe>1:passe>2:frappe>2d:frappe>1d:passe" data-garde="4>6">
 <p class="geste-nom">Taille horizontale de revers</p>
 </div>
-<div class="geste" data-trajet="1d:passe>1:passe>2d:passe>2:frappe">
+<div class="geste" data-trajet="1d:passe>1:passe>2d:passe>2:frappe" data-garde="9>1">
 <p class="geste-nom">Fendant en diagonale</p>
 </div>
-<div class="geste" data-trajet="1d:passe>1:frappe">
+<div class="geste" data-trajet="1d:passe>1:frappe" data-garde="5>5">
 <p class="geste-nom">Taille courte</p>
+</div>
+<div class="geste" data-trajet="1g:passe>1:frappe" data-garde="3>6">
+<p class="geste-nom">Coup du talon</p>
+</div>
+<div class="geste" data-trajet="1:frappe" data-garde="5>2">
+<p class="geste-nom">Coup de manche</p>
 </div>
 </div>
 </div>
@@ -278,16 +315,22 @@ Une arme à distance ne pare pas.
 <div class="arme">
 <p class="arme-nom">Masse</p>
 <div class="gestes">
-<div class="geste" data-trajet="1d:passe>2d:passe>1:passe>2:passe>2g:frappe>1g:passe">
+<div class="geste" data-trajet="1d:passe>2d:passe>1:passe>2:passe>2g:frappe>1g:passe" data-garde="6>4">
 <p class="geste-nom">Frappe horizontale du côté droit</p>
 </div>
-<div class="geste" data-trajet="1g:passe>2g:passe>1:passe>2:passe>2d:frappe>1d:passe">
+<div class="geste" data-trajet="1g:passe>2g:passe>1:passe>2:passe>2d:frappe>1d:passe" data-garde="4>6">
 <p class="geste-nom">Frappe horizontale de revers</p>
 </div>
-<div class="geste" data-trajet="1d:passe>1:passe>2d:passe>2:frappe">
+<div class="geste" data-trajet="1d:passe>1:passe>2d:passe>2:frappe" data-garde="9>1">
 <p class="geste-nom">Frappe descendante</p>
 </div>
-<div class="geste" data-trajet="1:frappe">
+<div class="geste" data-trajet="1d2:passe>1d:passe>2d:frappe>1:passe>2:frappe" data-garde="7>5">
+<p class="geste-nom">Frappe montante</p>
+</div>
+<div class="geste" data-trajet="1:passe>2:frappe" data-garde="5>5">
+<p class="geste-nom">Coup d’estoc</p>
+</div>
+<div class="geste" data-trajet="1:frappe" data-garde="5>2">
 <p class="geste-nom">Coup de manche</p>
 </div>
 </div>
@@ -296,17 +339,23 @@ Une arme à distance ne pare pas.
 <div class="arme">
 <p class="arme-nom">Lance</p>
 <div class="gestes">
-<div class="geste" data-trajet="1:passe>2:passe>3:frappe">
+<div class="geste" data-trajet="1:passe>2:passe>3:frappe" data-garde="5>5">
 <p class="geste-nom">Estoc</p>
 </div>
-<div class="geste" data-trajet="1d:passe>2d:passe>3d:passe>1:passe>2:passe>3:frappe">
+<div class="geste" data-trajet="1d:passe>2d:passe>3d:passe>1:passe>2:passe>3:frappe" data-garde="6>3">
 <p class="geste-nom">Estoc du côté droit</p>
 </div>
-<div class="geste" data-trajet="1g:passe>2g:passe>3g:passe>1:passe>2:passe>3:frappe">
+<div class="geste" data-trajet="1g:passe>2g:passe>3g:passe>1:passe>2:passe>3:frappe" data-garde="4>1">
 <p class="geste-nom">Estoc de revers</p>
 </div>
-<div class="geste" data-trajet="1:frappe">
+<div class="geste" data-trajet="1d:passe>2d2:passe>3d2:passe>2d:passe>1:passe>3d:frappe>2:passe>3:frappe>3g:passe>2g:passe>1g:passe" data-garde="6>4">
+<p class="geste-nom">Balayage</p>
+</div>
+<div class="geste" data-trajet="1:frappe" data-garde="5>8">
 <p class="geste-nom">Coup de talon</p>
+</div>
+<div class="geste" data-trajet="1d:passe>1:frappe" data-garde="5>2">
+<p class="geste-nom">Coup de hampe</p>
 </div>
 </div>
 </div>
@@ -314,16 +363,22 @@ Une arme à distance ne pare pas.
 <div class="arme">
 <p class="arme-nom">Hallebarde</p>
 <div class="gestes">
-<div class="geste" data-trajet="1d:passe>2d2:passe>3d2:passe>2d:passe>1:passe>3d:frappe>2:passe>3:frappe>3g:passe>2g:passe>1g:passe>3g2:passe>2g2:passe">
+<div class="geste" data-trajet="1d:passe>2d2:passe>3d2:passe>2d:passe>1:passe>3d:frappe>2:passe>3:frappe>3g:passe>2g:passe>1g:passe>3g2:passe>2g2:passe" data-garde="6>4">
 <p class="geste-nom">Taille horizontale du côté droit</p>
 </div>
-<div class="geste" data-trajet="1g:passe>2g2:passe>3g2:passe>2g:passe>1:passe>3g:frappe>2:passe>3:frappe>3d:passe>2d:passe>1d:passe>3d2:passe>2d2:passe">
+<div class="geste" data-trajet="1g:passe>2g2:passe>3g2:passe>2g:passe>1:passe>3g:frappe>2:passe>3:frappe>3d:passe>2d:passe>1d:passe>3d2:passe>2d2:passe" data-garde="4>6">
 <p class="geste-nom">Taille horizontale de revers</p>
 </div>
-<div class="geste" data-trajet="1:passe>2:passe>3:frappe">
+<div class="geste" data-trajet="1:passe>2:passe>3:frappe" data-garde="5>5">
 <p class="geste-nom">Estoc</p>
 </div>
-<div class="geste" data-trajet="1:frappe">
+<div class="geste" data-trajet="1d:passe>1:passe>2d:passe>2:passe>3d:passe>3:frappe" data-garde="9>1">
+<p class="geste-nom">Fendant</p>
+</div>
+<div class="geste" data-trajet="1d:passe>2d:passe>3d:frappe>2:passe>3:frappe" data-garde="3>6">
+<p class="geste-nom">Crochet</p>
+</div>
+<div class="geste" data-trajet="1:frappe" data-garde="5>8">
 <p class="geste-nom">Coup de talon</p>
 </div>
 </div>
@@ -332,16 +387,22 @@ Une arme à distance ne pare pas.
 <div class="arme">
 <p class="arme-nom">Grand sabre</p>
 <div class="gestes">
-<div class="geste" data-trajet="1d:passe>2d2:passe>3d2:passe>2d:passe>1:passe>3d:frappe>2:frappe>3:frappe>3g:frappe>2g:frappe>1g:passe>3g2:passe>2g2:passe">
+<div class="geste" data-trajet="1d:passe>2d2:passe>3d2:passe>2d:passe>1:passe>3d:frappe>2:frappe>3:frappe>3g:frappe>2g:frappe>1g:passe>3g2:passe>2g2:passe" data-garde="6>4">
 <p class="geste-nom">Taille horizontale du côté droit</p>
 </div>
-<div class="geste" data-trajet="1g:passe>2g2:passe>3g2:passe>2g:passe>1:passe>3g:frappe>2:frappe>3:frappe>3d:frappe>2d:frappe>1d:passe>3d2:passe>2d2:passe">
+<div class="geste" data-trajet="1g:passe>2g2:passe>3g2:passe>2g:passe>1:passe>3g:frappe>2:frappe>3:frappe>3d:frappe>2d:frappe>1d:passe>3d2:passe>2d2:passe" data-garde="4>6">
 <p class="geste-nom">Taille horizontale de revers</p>
 </div>
-<div class="geste" data-trajet="1:passe>2:passe>3:frappe">
+<div class="geste" data-trajet="1d:passe>1:passe>2d:passe>2:passe>3d:passe>3:frappe" data-garde="9>1">
+<p class="geste-nom">Fendant</p>
+</div>
+<div class="geste" data-trajet="1d2:passe>1d:passe>2d:frappe>1:passe>2:frappe>3:frappe" data-garde="7>5">
+<p class="geste-nom">Taille montante</p>
+</div>
+<div class="geste" data-trajet="1:passe>2:passe>3:frappe" data-garde="5>5">
 <p class="geste-nom">Coup de pointe</p>
 </div>
-<div class="geste" data-trajet="1d:passe>1:frappe">
+<div class="geste" data-trajet="1d:passe>1:frappe" data-garde="3>6">
 <p class="geste-nom">Coup de manchette</p>
 </div>
 </div>
@@ -350,16 +411,22 @@ Une arme à distance ne pare pas.
 <div class="arme">
 <p class="arme-nom">Grande épée</p>
 <div class="gestes">
-<div class="geste" data-trajet="1d:passe>2d2:passe>3d2:passe>2d:passe>1:passe>3d:frappe>2:frappe>3:frappe>3g:frappe>2g:frappe>1g:passe>3g2:frappe>2g2:frappe">
+<div class="geste" data-trajet="1d:passe>2d2:passe>3d2:passe>2d:passe>1:passe>3d:frappe>2:frappe>3:frappe>3g:frappe>2g:frappe>1g:passe>3g2:frappe>2g2:frappe" data-garde="6>4">
 <p class="geste-nom">Taille horizontale du côté droit</p>
 </div>
-<div class="geste" data-trajet="1g:passe>2g2:passe>3g2:passe>2g:passe>1:passe>3g:frappe>2:frappe>3:frappe>3d:frappe>2d:frappe>1d:passe>3d2:frappe>2d2:frappe">
+<div class="geste" data-trajet="1g:passe>2g2:passe>3g2:passe>2g:passe>1:passe>3g:frappe>2:frappe>3:frappe>3d:frappe>2d:frappe>1d:passe>3d2:frappe>2d2:frappe" data-garde="4>6">
 <p class="geste-nom">Taille horizontale de revers</p>
 </div>
-<div class="geste" data-trajet="1d:passe>1:passe>2d:passe>2:passe>3d:passe>3:frappe>2g:passe>3g:frappe">
+<div class="geste" data-trajet="1d:passe>1:passe>2d:passe>2:passe>3d:passe>3:frappe>2g:passe>3g:frappe" data-garde="9>1">
 <p class="geste-nom">Fendant</p>
 </div>
-<div class="geste" data-trajet="1:frappe">
+<div class="geste" data-trajet="1d2:passe>1d:passe>2d:frappe>1:passe>2:frappe>3:frappe" data-garde="7>5">
+<p class="geste-nom">Taille montante</p>
+</div>
+<div class="geste" data-trajet="1:passe>2:passe>3:frappe" data-garde="5>5">
+<p class="geste-nom">Estoc</p>
+</div>
+<div class="geste" data-trajet="1:frappe" data-garde="5>2">
 <p class="geste-nom">Coup de pommeau</p>
 </div>
 </div>
@@ -368,17 +435,23 @@ Une arme à distance ne pare pas.
 <div class="arme">
 <p class="arme-nom">Grande hache</p>
 <div class="gestes">
-<div class="geste" data-trajet="1d:passe>2d2:passe>3d2:passe>2d:passe>1:passe>3d:frappe>2:passe>3:frappe>3g:frappe>2g:passe>1g:passe>3g2:passe>2g2:passe">
+<div class="geste" data-trajet="1d:passe>2d2:passe>3d2:passe>2d:passe>1:passe>3d:frappe>2:passe>3:frappe>3g:frappe>2g:passe>1g:passe>3g2:passe>2g2:passe" data-garde="6>4">
 <p class="geste-nom">Taille horizontale du côté droit</p>
 </div>
-<div class="geste" data-trajet="1g:passe>2g2:passe>3g2:passe>2g:passe>1:passe>3g:frappe>2:passe>3:frappe>3d:frappe>2d:passe>1d:passe>3d2:passe>2d2:passe">
+<div class="geste" data-trajet="1g:passe>2g2:passe>3g2:passe>2g:passe>1:passe>3g:frappe>2:passe>3:frappe>3d:frappe>2d:passe>1d:passe>3d2:passe>2d2:passe" data-garde="4>6">
 <p class="geste-nom">Taille horizontale de revers</p>
 </div>
-<div class="geste" data-trajet="1d:passe>1:passe>2d:passe>2:passe>3d:passe>3:frappe">
+<div class="geste" data-trajet="1d:passe>1:passe>2d:passe>2:passe>3d:passe>3:frappe" data-garde="9>1">
 <p class="geste-nom">Fendant</p>
 </div>
-<div class="geste" data-trajet="1d:passe>1:frappe">
+<div class="geste" data-trajet="1d:passe>1:frappe" data-garde="5>5">
 <p class="geste-nom">Taille courte</p>
+</div>
+<div class="geste" data-trajet="1g:passe>1:frappe" data-garde="3>6">
+<p class="geste-nom">Coup du talon</p>
+</div>
+<div class="geste" data-trajet="1:frappe" data-garde="5>2">
+<p class="geste-nom">Coup de manche</p>
 </div>
 </div>
 </div>
@@ -386,16 +459,22 @@ Une arme à distance ne pare pas.
 <div class="arme">
 <p class="arme-nom">Faux de guerre</p>
 <div class="gestes">
-<div class="geste" data-trajet="1d:passe>2d2:passe>3d2:passe>2d:passe>1:passe>3d:frappe>2:frappe>3:frappe>3g:passe>2g:passe>1g:passe>3g2:passe>2g2:passe">
+<div class="geste" data-trajet="1d:passe>2d2:passe>3d2:passe>2d:passe>1:passe>3d:frappe>2:frappe>3:frappe>3g:passe>2g:passe>1g:passe>3g2:passe>2g2:passe" data-garde="6>4">
 <p class="geste-nom">Taille horizontale du côté droit</p>
 </div>
-<div class="geste" data-trajet="1g:passe>2g2:passe>3g2:passe>2g:passe>1:passe>3g:frappe>2:frappe>3:frappe>3d:passe>2d:passe>1d:passe>3d2:passe>2d2:passe">
+<div class="geste" data-trajet="1g:passe>2g2:passe>3g2:passe>2g:passe>1:passe>3g:frappe>2:frappe>3:frappe>3d:passe>2d:passe>1d:passe>3d2:passe>2d2:passe" data-garde="4>6">
 <p class="geste-nom">Taille horizontale de revers</p>
 </div>
-<div class="geste" data-trajet="1:passe>2:passe>3:frappe">
+<div class="geste" data-trajet="1d:passe>2d:passe>3d:frappe>2:passe>3:frappe" data-garde="3>6">
+<p class="geste-nom">Crochet</p>
+</div>
+<div class="geste" data-trajet="1d:passe>1:passe>2d:passe>2:passe>3d:passe>3:frappe" data-garde="9>1">
+<p class="geste-nom">Fendant</p>
+</div>
+<div class="geste" data-trajet="1:passe>2:passe>3:frappe" data-garde="5>5">
 <p class="geste-nom">Estoc</p>
 </div>
-<div class="geste" data-trajet="1:frappe">
+<div class="geste" data-trajet="1:frappe" data-garde="5>2">
 <p class="geste-nom">Coup de hampe</p>
 </div>
 </div>
@@ -404,16 +483,22 @@ Une arme à distance ne pare pas.
 <div class="arme">
 <p class="arme-nom">Grand marteau</p>
 <div class="gestes">
-<div class="geste" data-trajet="1d:passe>2d2:passe>3d2:passe>2d:passe>1:passe>3d:passe>2:passe>3:passe>3g:passe>2g:passe>1g:passe>3g2:frappe>2g2:passe">
+<div class="geste" data-trajet="1d:passe>2d2:passe>3d2:passe>2d:passe>1:passe>3d:passe>2:passe>3:passe>3g:passe>2g:passe>1g:passe>3g2:frappe>2g2:passe" data-garde="6>4">
 <p class="geste-nom">Frappe horizontale du côté droit</p>
 </div>
-<div class="geste" data-trajet="1g:passe>2g2:passe>3g2:passe>2g:passe>1:passe>3g:passe>2:passe>3:passe>3d:passe>2d:passe>1d:passe>3d2:frappe>2d2:passe">
+<div class="geste" data-trajet="1g:passe>2g2:passe>3g2:passe>2g:passe>1:passe>3g:passe>2:passe>3:passe>3d:passe>2d:passe>1d:passe>3d2:frappe>2d2:passe" data-garde="4>6">
 <p class="geste-nom">Frappe horizontale de revers</p>
 </div>
-<div class="geste" data-trajet="1d:passe>1:passe>2d:passe>2:passe>3d:passe>3:frappe">
+<div class="geste" data-trajet="1d:passe>1:passe>2d:passe>2:passe>3d:passe>3:frappe" data-garde="9>1">
 <p class="geste-nom">Frappe descendante</p>
 </div>
-<div class="geste" data-trajet="1:frappe">
+<div class="geste" data-trajet="1d2:passe>1d:passe>2d:frappe>1:passe>2:frappe>3:frappe" data-garde="7>5">
+<p class="geste-nom">Frappe montante</p>
+</div>
+<div class="geste" data-trajet="1:passe>2:passe>3:frappe" data-garde="5>5">
+<p class="geste-nom">Coup d’estoc</p>
+</div>
+<div class="geste" data-trajet="1:frappe" data-garde="5>2">
 <p class="geste-nom">Coup de manche</p>
 </div>
 </div>
