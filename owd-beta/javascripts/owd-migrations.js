@@ -707,6 +707,75 @@
     }
   });
 
+  // ------------------------------------------------------------------
+  // Schema 4 : le sous-vetement devient un ACCESSOIRE
+  // ------------------------------------------------------------------
+  OwdMigr.ajouter({
+    schema: 4,
+    titre: "Le sous-vetement devient un accessoire",
+    notes: "Le sous-vetement n'est plus un vetement mais un accessoire : le set " +
+           "de vetements fait cinq pieces (tete, haut, mains, bas, pieds), et le " +
+           "sous-vetement se porte en plus. Sa case ne bouge pas, ce qu'il porte " +
+           "non plus (poches, froid, chaud) ; seule sa NATURE change. " +
+           "L'aller-retour est exact : en redescendant il redevient un vetement.",
+
+    monter: function (s) {
+      var objets = s && s.inv && Array.isArray(s.inv.objets) ? s.inv.objets : [];
+      objets.forEach(function (o) {
+        if (o && typeof o === "object" && o.vet === "sousvet") {
+          o.vet = "";
+          o.acc = "sousvet";
+        }
+      });
+      return s;
+    },
+    descendre: function (s) {
+      var objets = s && s.inv && Array.isArray(s.inv.objets) ? s.inv.objets : [];
+      objets.forEach(function (o) {
+        if (o && typeof o === "object" && o.acc === "sousvet") {
+          o.acc = "";
+          o.vet = "sousvet";
+        }
+      });
+      return s;
+    }
+  });
+
+  /* ------------------------------------------------------------------
+   * PAS 5 — AJOUT DES RÉSISTANCES ET PROTECTIONS AUX VÊTEMENTS
+   * ------------------------------------------------------------------ */
+  OwdMigr.ajouter({
+    schema: 5,
+    titre: "Ajout des résistances et protections aux vêtements",
+    notes: "Chaque vêtement gagne des champs de résistance et de protection pour les 9 types de dégâts.",
+    monter: function (s) {
+      var types = ["contondant", "perforant", "tranchant", "feu", "froid", "eclair", "decomposition", "ethere", "brut"];
+      var vetements = s && Array.isArray(s.vetements) ? s.vetements : [];
+      vetements.forEach(function (v) {
+        if (v && typeof v === "object") {
+          types.forEach(function(t) {
+            if (v["res_" + t] === undefined) v["res_" + t] = 0;
+            if (v["prot_" + t] === undefined) v["prot_" + t] = 0;
+          });
+        }
+      });
+      return s;
+    },
+    descendre: function (s) {
+      var types = ["contondant", "perforant", "tranchant", "feu", "froid", "eclair", "decomposition", "ethere", "brut"];
+      var vetements = s && Array.isArray(s.vetements) ? s.vetements : [];
+      vetements.forEach(function (v) {
+        if (v && typeof v === "object") {
+          types.forEach(function(t) {
+            delete v["res_" + t];
+            delete v["prot_" + t];
+          });
+        }
+      });
+      return s;
+    }
+  });
+
   global.OwdMigr = OwdMigr;
   if (typeof module === "object" && module && module.exports) module.exports = OwdMigr;
 })(typeof window !== "undefined" ? window : (typeof global !== "undefined" ? global : this));
