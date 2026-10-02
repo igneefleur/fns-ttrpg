@@ -2,7 +2,7 @@
   // QUATRE GROUPES FIXES, et rien d'autre dans l'onglet Équipement :
   //
   //   SUR SOI     [main gauche] [main droite]  ·  [ceinture] [sac à dos]
-  //               [tête] [haut] [mains] [bas] [pieds]
+  //               [tête] [haut] [mains] [bas] [pieds]        ← les cinq VÊTEMENTS
   //               [boucles d'oreilles] [collier] [sous-vêtement] [poignet G] [poignet D]
   //               [bague G] [bague D] [cheville G] [cheville D] [cape]
   //   CEINTURE    les emplacements (ep) de la ceinture portée
@@ -423,9 +423,14 @@
       if (sel && items.indexOf(sel) < 0) sel = null;
       var fantome = !sel;
       panel.classList.toggle("fantome", fantome);
+      var types = ["contondant", "perforant", "tranchant", "feu", "froid", "eclair", "decomposition", "ethere", "brut"];
       var it = sel || { id: "", nom: "", img: "", qte: 0, poids: 0, encombre: 0, places: 0, achat: 0, vente: null,
                         desc: "", ou: "sac", emp: -1, rapide: false, vet: "", acc: "", poches: 0, froid: 0, chaud: 0,
                         sac: false, cap: 0, ceint: false, ep: 0, ebMax: 0, arme: null };
+      types.forEach(function(t) {
+        it["res_" + t] = it["res_" + t] || 0;
+        it["prot_" + t] = it["prot_" + t] || 0;
+      });
 
       // AUCUNE IMAGE AU PANNEAU, consigne de l'auteur : l'image se voit sur la
       // tuile, le panneau ne porte que le détail.
@@ -519,6 +524,15 @@
         pp.appendChild(champNombre("Chaud", function () { return it.chaud; },
           function (v) { it.chaud = snum(v); }, "Protection contre le chaud, en degrés"));
         body.appendChild(pp);
+        var types = ["contondant", "perforant", "tranchant", "feu", "froid", "eclair", "decomposition", "ethere", "brut"];
+        types.forEach(function(t) {
+            var pr = el("div", "pc-obj-pair");
+            pr.appendChild(champNombre("Res " + t, function () { return it["res_" + t]; },
+              function (v) { it["res_" + t] = snum(v); }, "Resistance " + t + " (%)"));
+            pr.appendChild(champNombre("Prot " + t, function () { return it["prot_" + t]; },
+              function (v) { it["prot_" + t] = snum(v); }, "Protection " + t + " (flat)"));
+            body.appendChild(pr);
+        });
       }
       // l'ACCESSOIRE : sa case, ses poches, sa protection
       if (it.acc) {

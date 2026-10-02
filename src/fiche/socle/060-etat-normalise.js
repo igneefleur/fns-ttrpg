@@ -1,13 +1,17 @@
   // LES LIEUX DE L'INVENTAIRE. Les dix-neuf cases de Sur soi (les mains, la
   // ceinture, le sac à dos, les vêtements, les accessoires), les emplacements
   // (ep) de la ceinture et du sac à dos, puis les deux groupes libres.
-  var INV_VETEMENTS = ["tete", "haut", "mains", "bas", "pieds", "sousvet"];
-  var INV_ACCESSOIRES = ["oreilles", "collier", "poignetG", "poignetD",
+  // Le SOUS-VÊTEMENT est un ACCESSOIRE et non un vêtement : il ne fait pas
+  // partie du set de cinq pièces (tête, haut, mains, bas, pieds) dont se
+  // comptent la réduction et le tier, il se porte EN PLUS.
+  var INV_VETEMENTS = ["tete", "haut", "mains", "bas", "pieds"];
+  var INV_ACCESSOIRES = ["oreilles", "collier", "sousvet", "poignetG", "poignetD",
                          "bagueG", "bagueD", "chevilleG", "chevilleD", "cape"];
   // Le TYPE d'un accessoire ne dit pas le côté : une bague va à gauche comme
   // à droite. Chaque type, et les cases qu'il accepte.
   var INV_ACC_TYPES = {
-    oreilles: ["oreilles"], collier: ["collier"], poignet: ["poignetG", "poignetD"],
+    oreilles: ["oreilles"], collier: ["collier"], sousvet: ["sousvet"],
+    poignet: ["poignetG", "poignetD"],
     bague: ["bagueG", "bagueD"], cheville: ["chevilleG", "chevilleD"], cape: ["cape"]
   };
   var INV_CASES = ["mainG", "mainD", "ceinture", "dos"].concat(INV_VETEMENTS, INV_ACCESSOIRES);
@@ -178,14 +182,20 @@
 
     // ---- vêtements ----
     if (!Array.isArray(s.vetements)) s.vetements = [];
+    var types = ["contondant", "perforant", "tranchant", "feu", "froid", "eclair", "decomposition", "ethere", "brut"];
     s.vetements = s.vetements.filter(function (v) { return v && typeof v === "object"; }).map(function (v) {
-      return {
+      var res = {
         id: String(v.id || "") || uid("v"),
         nom: String(v.nom == null ? "" : v.nom),
         froid: snum(v.froid), chaud: snum(v.chaud), poids: pnum(v.poids),
         porte: v.porte !== false,
         note: String(v.note == null ? "" : v.note)
       };
+      types.forEach(function(t) {
+        res["res_" + t] = snum(v["res_" + t]);
+        res["prot_" + t] = snum(v["prot_" + t]);
+      });
+      return res;
     });
 
     // ---- inventaire illustré ----
@@ -231,6 +241,15 @@
         vet: INV_VETEMENTS.indexOf(o.vet) >= 0 || o.vet === "hautbas" ? o.vet : "",
         poches: pnum(o.poches),
         froid: snum(o.froid), chaud: snum(o.chaud),
+        res_contondant: snum(o.res_contondant), prot_contondant: snum(o.prot_contondant),
+        res_perforant: snum(o.res_perforant), prot_perforant: snum(o.prot_perforant),
+        res_tranchant: snum(o.res_tranchant), prot_tranchant: snum(o.prot_tranchant),
+        res_feu: snum(o.res_feu), prot_feu: snum(o.prot_feu),
+        res_froid: snum(o.res_froid), prot_froid: snum(o.prot_froid),
+        res_eclair: snum(o.res_eclair), prot_eclair: snum(o.prot_eclair),
+        res_decomposition: snum(o.res_decomposition), prot_decomposition: snum(o.prot_decomposition),
+        res_ethere: snum(o.res_ethere), prot_ethere: snum(o.prot_ethere),
+        res_brut: snum(o.res_brut), prot_brut: snum(o.prot_brut),
         // un type (bague) ; une case d'avant (bagueG) redevient son type
         acc: accType(o.acc),
         sac: !!o.sac,
