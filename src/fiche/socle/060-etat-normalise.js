@@ -140,6 +140,16 @@
     // (compétence supprimée par une version qui l'ignorait) voyagerait pour rien.
     s.compsLeviers = tableLeviers(s.compsLeviers, COMP_LEVIERS, vusComps);
 
+    // ---- attaques ----
+    // La référence d'arme est validée APRÈS l'inventaire, parce que les anciens
+    // objets ne portent pas encore nécessairement leur `ref`. Ici on ne fait
+    // qu'assainir la forme et garantir l'identité de chaque raccourci.
+    if (!Array.isArray(s.attaques)) s.attaques = [];
+    s.attaques = s.attaques.filter(function (a) { return a && typeof a === "object"; })
+      .map(function (a) {
+        return { id: String(a.id || "") || uid("atk"), arme: String(a.arme || "") };
+      });
+
     // ---- avantages ----
     if (!Array.isArray(s.avantages)) s.avantages = [];
     s.avantages = s.avantages.filter(function (a) { return a && typeof a === "object"; }).map(function (a) {
@@ -230,6 +240,9 @@
       var a = o.arme && typeof o.arme === "object" && !Array.isArray(o.arme) ? o.arme : null;
       return {
         id: String(o.id == null ? "" : o.id),   // LIBRE et facultatif : c'est le joueur qui le pose
+        // ref ne se donne pas et ne s'affiche pas : il identifie CET objet dans
+        // CETTE fiche pour qu'un module survive à un renommage.
+        ref: String(o.ref == null ? "" : o.ref) || uid("o"),
         nom: o.nom == null ? "" : String(o.nom),
         img: o.img == null ? "" : String(o.img),
         qte: pnum(o.qte === undefined ? 1 : o.qte),
@@ -312,6 +325,10 @@
       cases.forEach(function (c) { prises[c] = 1; });
     });
     rangeEmplacements(s.inv.objets);
+
+    // Une attaque dont l'objet a disparu garde sa référence : en édition le
+    // joueur peut lui choisir une nouvelle arme. On ne la supprime surtout pas
+    // en silence, parce que l'objet peut aussi revenir lors d'un import.
 
     // ---- coffres, interrupteurs, disposition, mods ----
     if (!s.modData || typeof s.modData !== "object" || Array.isArray(s.modData)) s.modData = {};

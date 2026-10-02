@@ -137,6 +137,13 @@
       //   rupture combien de points de rupture elle a demandés
       techniques: [],
 
+      // ---- attaques ----
+      // Les raccourcis de combat du module Attaque. Une entrée ne mémorise
+      // qu'une référence INTERNE vers l'objet d'arme de l'inventaire : toutes
+      // les valeurs (dégâts, MOD, type) restent sur l'objet, leur source unique.
+      // Une entrée : { id, arme }, où arme = inv.objets[].ref.
+      attaques: [],
+
       // ---- avantages ----
       // Une entrée : { nom, cout, desc }. Le coût, en points d'avantage, se
       // compte contre ceux que le livre donne à la création.
@@ -173,6 +180,8 @@
       //             modsParade[3], comp, type, mains }
       //   rapide  l'objet se saisit rapidement (compte contre les accès rapides)
       //   id      c'est LUI qui reconnaît le même objet d'une fiche à l'autre
+      //   ref     identifiant INTERNE de l'objet dans cette fiche ; il sert aux
+      //           modules qui doivent pointer vers cet objet sans dépendre du nom
       inv: {
         objets: [],
         opts: { cols: 5, nom: true, qte: true, poids: false, total: true, vign: true }

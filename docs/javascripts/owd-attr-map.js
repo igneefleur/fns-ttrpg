@@ -170,6 +170,10 @@
     // LA TABLE DE LEVIERS des compétences : bonus, dés, xp et rupture.
     ["compsLeviers", "comps_leviers"],
     ["techniques", "techniques"],
+    // Raccourcis du module Attaque : [{id, arme}], où arme référence le `ref`
+    // interne d'un objet de l'inventaire. Le repli doit les faire voyager avec
+    // l'inventaire, sinon une reconstruction depuis les attributs les perdrait.
+    ["attaques", "attaques"],
     ["avantages", "avantages"],
     ["armes", "armes"], ["vetements", "vetements"],
     ["inv", "inventaire"],
@@ -297,6 +301,9 @@
       // fiche ne les barème donc pas et se contente de les compter.
       // Une entrée : { id, nom, rang, rangs, xp, rupture, desc }.
       techniques: [],
+
+      // ---- attaques ----
+      attaques: [],
 
       // ---- avantages ----
       // Une entrée : { nom, cout, desc }. Le coût, en points d'avantage, se

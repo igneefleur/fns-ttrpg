@@ -566,6 +566,46 @@ def _formule_arme(v, abbrs, quoi):
     return base, mods
 
 
+
+def _attaques_armes(armes_md):
+    """Lit les six attaques nommées de chaque arme de corps à corps.
+
+    Le Markdown reste la source de vérité : le JSON ne duplique que ce dont la
+    fiche a besoin pour relier un type d'arme à ses boutons. Le trajet voyage
+    aussi dès maintenant, sans être encore interprété par le module Attaque ;
+    le futur affichage spatial pourra ainsi se brancher sur la même donnée.
+    """
+    m = re.search(r"^##\s+Attaques\s*$", armes_md, re.M)
+    if not m:
+        return {}
+    suite = re.search(r"^##\s+", armes_md[m.end():], re.M)
+    corps = armes_md[m.end(): m.end() + (suite.start() if suite else len(armes_md))]
+    debuts = list(re.finditer(r'<div class="arme">', corps))
+    out = {}
+    for i, dm in enumerate(debuts):
+        fin = debuts[i + 1].start() if i + 1 < len(debuts) else len(corps)
+        bloc = corps[dm.end():fin]
+        nm = re.search(r'<p class="arme-nom">\s*(.*?)\s*</p>', bloc, re.S)
+        if not nm:
+            raise ErreurRegles("attaques : bloc d'arme sans nom")
+        nom_arme = re.sub(r'<[^>]+>', '', nm.group(1)).strip()
+        coups = []
+        for gm in re.finditer(
+                r'<div class="geste"([^\n]*)>\s*<p class="geste-nom">\s*(.*?)\s*</p>',
+                bloc, re.S):
+            attrs = dict(re.findall(r'data-([a-z]+)="([^"]*)"', gm.group(1)))
+            nom = re.sub(r'<[^>]+>', '', gm.group(2)).strip()
+            coups.append({"nom": nom, "trajet": attrs.get("trajet", "")})
+        if len(coups) != 6:
+            raise ErreurRegles(
+                f"attaques : « {nom_arme} » en donne {len(coups)} et non six")
+        cle = _cle(nom_arme)
+        if cle in out:
+            raise ErreurRegles(f"attaques : l'arme « {nom_arme} » apparaît deux fois")
+        out[cle] = coups
+    return out
+
+
 def _armes(armes_md, caracs):
     """Lit les tables d'armes du chapitre.
 
@@ -641,6 +681,11 @@ def _armes(armes_md, caracs):
             out.append(d)
     if not out:
         raise ErreurRegles("armes : aucune ligne d'arme lisible")
+
+    attaques = _attaques_armes(armes_md)
+    for d in out:
+        if d["cle"] in attaques:
+            d["attaques"] = attaques[d["cle"]]
     return out
 
 
