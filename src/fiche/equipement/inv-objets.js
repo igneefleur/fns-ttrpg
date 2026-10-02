@@ -525,12 +525,7 @@
         pv.appendChild(champNombre("Poches", function () { return it.poches; },
           function (v) { it.poches = pnum(v); }, "Ce que ce vêtement porté ajoute aux Poches, en eb"));
         body.appendChild(pv);
-        var pp = el("div", "pc-obj-pair");
-        pp.appendChild(champNombre("Froid", function () { return it.froid; },
-          function (v) { it.froid = snum(v); }, "Protection contre le froid, en degrés"));
-        pp.appendChild(champNombre("Chaud", function () { return it.chaud; },
-          function (v) { it.chaud = snum(v); }, "Protection contre le chaud, en degrés"));
-        body.appendChild(pp);
+
         var types = ["contondant", "perforant", "tranchant", "feu", "froid", "eclair", "decomposition", "ethere", "brut"];
         types.forEach(function(t) {
             var pr = el("div", "pc-obj-pair");
@@ -540,6 +535,13 @@
               function (v) { it["prot_" + t] = snum(v); }, "Protection " + t + " (flat)"));
             body.appendChild(pr);
         });
+
+        var pp = el("div", "pc-obj-pair");
+        pp.appendChild(champNombre("Froid", function () { return it.froid; },
+          function (v) { it.froid = snum(v); }, "Protection contre le froid, en degrés"));
+        pp.appendChild(champNombre("Chaud", function () { return it.chaud; },
+          function (v) { it.chaud = snum(v); }, "Protection contre le chaud, en degrés"));
+        body.appendChild(pp);
       }
       // l'ACCESSOIRE : sa case, ses poches, sa protection
       if (it.acc) {
