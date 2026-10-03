@@ -1380,15 +1380,18 @@ html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où 
   border-top: none; background: color-mix(in srgb, var(--card) 82%, transparent);
 }
 .pc-obj-tile > .pc-obj-foot .nm { flex: 1 1 0; }
-/* SLOT INTERNE D'UN CONTENANT. Il reste dans l'image, au-dessus du pied :
-   assez grand pour reconnaître le contenu sans masquer la tuile principale. */
+/* SLOT INTERNE D'UN CONTENANT. Un Contenu garde exactement la silhouette
+   portrait des autres objets (21:32), mais en miniature à l'intérieur du
+   Contenant. Le précédent carré à 34 % était trop petit pour reconnaître
+   l'objet ; cette carte occupe presque la moitié de la largeur sans recouvrir
+   le pied de la tuile principale. */
 .pc-obj-content-slot {
   position: absolute; right: .18rem; bottom: 1.25rem; z-index: 3;
-  width: 34%; aspect-ratio: 1 / 1; box-sizing: border-box; overflow: hidden;
+  width: 48%; aspect-ratio: var(--obj-ratio); box-sizing: border-box; overflow: hidden;
   border: 1px dashed color-mix(in srgb, var(--line) 72%, transparent); border-radius: 5px;
   background: color-mix(in srgb, var(--card) 88%, transparent);
   display: flex; align-items: center; justify-content: center;
-  color: var(--ink-3); font-size: .65rem; font-weight: 800;
+  color: var(--ink-3); font-size: .72rem; font-weight: 800;
   cursor: default; box-shadow: 0 1px 3px rgba(0,0,0,.14);
 }
 .pc-obj-content-slot.plein { border-style: solid; cursor: grab; background: var(--card); }
@@ -1401,7 +1404,7 @@ html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où 
 .pc-obj-content-qte {
   position: absolute; right: 1px; bottom: 1px; z-index: 2; padding: 0 .12rem;
   border-radius: 3px; background: color-mix(in srgb, var(--card) 88%, transparent);
-  color: var(--ink-2); font-size: .48rem; font-weight: 800; font-variant-numeric: tabular-nums;
+  color: var(--ink-2); font-size: .54rem; font-weight: 800; font-variant-numeric: tabular-nums;
 }
 /* réglages du module, en mode édition (par ligne 1..8, et les puces
    Nom / Quantité / Poids / Total) */
