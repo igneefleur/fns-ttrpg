@@ -1955,7 +1955,11 @@
    ],
    "types": [
     "CON"
-   ]
+   ],
+   "munition": {
+    "cle": "pierres",
+    "nom": "pierres"
+   }
   },
   {
    "cle": "hachette-de-lancer",
@@ -2016,7 +2020,11 @@
    ],
    "types": [
     "PER"
-   ]
+   ],
+   "munition": {
+    "cle": "fleches",
+    "nom": "flèches"
+   }
   },
   {
    "cle": "arc-long",
@@ -2032,7 +2040,11 @@
    ],
    "types": [
     "PER"
-   ]
+   ],
+   "munition": {
+    "cle": "fleches",
+    "nom": "flèches"
+   }
   },
   {
    "cle": "grand-boomerang",
@@ -2064,7 +2076,11 @@
    ],
    "types": [
     "CON"
-   ]
+   ],
+   "munition": {
+    "cle": "pierres",
+    "nom": "pierres"
+   }
   },
   {
    "cle": "arbalete-de-poing",
@@ -2079,7 +2095,11 @@
    ],
    "types": [
     "PER"
-   ]
+   ],
+   "munition": {
+    "cle": "carreaux",
+    "nom": "carreaux"
+   }
   },
   {
    "cle": "pistolet-a-silex",
@@ -2094,7 +2114,11 @@
    ],
    "types": [
     "PER"
-   ]
+   ],
+   "munition": {
+    "cle": "balles",
+    "nom": "balles"
+   }
   },
   {
    "cle": "arbalete",
@@ -2110,7 +2134,11 @@
    ],
    "types": [
     "PER"
-   ]
+   ],
+   "munition": {
+    "cle": "carreaux",
+    "nom": "carreaux"
+   }
   },
   {
    "cle": "arbalete-lourde",
@@ -2126,7 +2154,11 @@
    ],
    "types": [
     "PER"
-   ]
+   ],
+   "munition": {
+    "cle": "carreaux",
+    "nom": "carreaux"
+   }
   },
   {
    "cle": "mousquet",
@@ -2142,7 +2174,11 @@
    ],
    "types": [
     "PER"
-   ]
+   ],
+   "munition": {
+    "cle": "balles",
+    "nom": "balles"
+   }
   }
  ],
  "typesDegats": [

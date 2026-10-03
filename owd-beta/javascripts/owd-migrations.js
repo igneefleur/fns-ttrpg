@@ -945,6 +945,70 @@
     }
   });
 
+
+  /* ------------------------------------------------------------------
+   * PAS 7 — LES OBJETS PEUVENT ÊTRE DES CONTENANTS
+   *
+   * Le schéma 7 ajoute à chaque objet la chaîne `contenant`. Vide, l'objet
+   * n'est pas un contenant ; sinon elle nomme la catégorie (matière ou
+   * munition). Une descente en schéma 6 ne sait pas porter cette nature : la
+   * valeur est donc rangée au grenier, puis restaurée à l'identique si la fiche
+   * remonte. Les objets du schéma 6 reçoivent simplement une chaîne vide.
+   * ------------------------------------------------------------------ */
+  OwdMigr.ajouter({
+    schema: 7,
+    titre: "Ajout des contenants à l'inventaire",
+    notes: "Un objet peut désormais être un contenant pour liquide, poudre, pâte ou une munition du livre. " +
+           "Les anciennes fiches reçoivent une catégorie vide sans perdre aucune donnée ; une redescente " +
+           "conserve les catégories nouvelles au grenier pour les restaurer ensuite.",
+
+    monter: function (s, ctx) {
+      var objets = s && s.inv && Array.isArray(s.inv.objets) ? s.inv.objets : [];
+      var retour = ctx.reprendre("contenants-schema7");
+      if (!Array.isArray(retour)) retour = [];
+
+      function trouve(o, index) {
+        var ref = o && o.ref != null ? String(o.ref) : "";
+        var id = o && o.id != null ? String(o.id) : "";
+        var parIndex = null, parId = null, parRef = null;
+        retour.forEach(function (e) {
+          if (!e || typeof e !== "object") return;
+          if (e.index === index) parIndex = e;
+          if (id && String(e.id || "") === id) parId = e;
+          if (ref && String(e.ref || "") === ref) parRef = e;
+        });
+        return parRef || parId || parIndex;
+      }
+
+      objets.forEach(function (o, index) {
+        if (!o || typeof o !== "object") return;
+        var r = trouve(o, index);
+        if (r && r.contenant != null) o.contenant = String(r.contenant);
+        else if (o.contenant == null) o.contenant = "";
+      });
+      return s;
+    },
+
+    descendre: function (s, ctx) {
+      var objets = s && s.inv && Array.isArray(s.inv.objets) ? s.inv.objets : [];
+      var sauves = [];
+      objets.forEach(function (o, index) {
+        if (!o || typeof o !== "object") return;
+        if (o.contenant != null && String(o.contenant)) {
+          sauves.push({
+            ref: o.ref == null ? "" : String(o.ref),
+            id: o.id == null ? "" : String(o.id),
+            index: index,
+            contenant: String(o.contenant)
+          });
+        }
+        delete o.contenant;
+      });
+      if (sauves.length) ctx.grenier("contenants-schema7", sauves);
+      return s;
+    }
+  });
+
   global.OwdMigr = OwdMigr;
   if (typeof module === "object" && module && module.exports) module.exports = OwdMigr;
 })(typeof window !== "undefined" ? window : (typeof global !== "undefined" ? global : this));
