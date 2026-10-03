@@ -26,7 +26,7 @@
     { id: "pc",           titre: "PC",               onglet: "fiche", colonne: "milieu", build: buildPc },
     { id: "contenance",   titre: "Contenance",       onglet: "fiche", colonne: "milieu", build: buildContenance },
     { id: "desaction",    titre: "Actions",          onglet: "fiche", colonne: "droite", build: buildDesAction },
-    { id: "attaque",      titre: "Attaque",          onglet: "fiche", colonne: "droite", build: buildAttaque },
+    { id: "attaque",      titre: "Armes",          onglet: "fiche", colonne: "droite", build: buildAttaque },
     { id: "comps",        titre: "Compétences",      onglet: "fiche", colonne: "droite", build: buildComps },
     // ---- onglet Art ----
     // Pleine largeur, seul de son onglet : une technique est une CARTE, avec

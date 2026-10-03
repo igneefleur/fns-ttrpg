@@ -1768,7 +1768,7 @@ html.night .pc-stadebar .seg.on.s3 { background: #4a3f28; color: #eef2e6; border
 html.night .pc-stadebar .seg.on.s4 { background: #6b5a2e; color: #eef2e6; border-color: #6b5a2e; }
 html.night .pc-stadebar .seg.on.s5 { background: #6b5a2e; color: #eef2e6; border-color: #6b5a2e; }
 
-/* ---- module Attaque ----
+/* ---- module Armes ----
    Le module vit sous Actions, dans la grande colonne de droite. Une arme reste
    compacte tant qu'on ne la demande pas ; ouverte, elle montre ses six coups
    en deux colonnes, chacune assez large pour lire l'empreinte hexagonale. */
@@ -1794,6 +1794,25 @@ html.night .pc-stadebar .seg.on.s5 { background: #6b5a2e; color: #eef2e6; border
 .pc-attaque-chevron { width: 1em; text-align: center; color: var(--accent-deep); font-size: .78rem; line-height: 1; }
 
 .pc-attaque-detail { border-top: 1px solid var(--hair); padding: .4rem .48rem .5rem; background: var(--panel); }
+
+.pc-attaque-ressources { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .35rem; margin: 0 0 .4rem; }
+.pc-mini.pc-attaque-toggle { width: 100%; min-height: 1.8rem; }
+.pc-mini.pc-attaque-toggle:only-child { grid-column: 1 / -1; }
+.pc-mini.pc-attaque-toggle.on { background: var(--accent-deep); border-color: var(--accent-deep); color: var(--paper); }
+.pc-attaque-munitions { margin: 0 0 .42rem; }
+.pc-attaque-munitions .pc-f { margin: 0; }
+.pc-attaque-munition { width: 100%; }
+.pc-attaque-section-titre { margin: .08rem 0 .3rem; font-size: var(--fs-meta); font-weight: 800; color: var(--ink-2); }
+.pc-attaque-simple {
+  width: 100%; display: flex; justify-content: space-between; align-items: center; gap: .75rem;
+  border: 1px solid var(--line-2); border-radius: 6px; background: var(--card); color: var(--ink);
+  padding: .58rem .68rem; cursor: pointer; font: inherit; text-align: left;
+}
+.pc-attaque-simple:hover { border-color: var(--accent); background: var(--wash); }
+.pc-attaque-simple:active { transform: translateY(1px); }
+.pc-attaque-simple:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.pc-attaque-simple strong { font-size: var(--fs-label); }
+.pc-attaque-simple span { font-family: 'Roboto Mono', ui-monospace, monospace; font-size: var(--fs-meta); font-weight: 700; }
 .pc-attaque-legende { display: flex; flex-wrap: wrap; gap: .28rem .75rem; align-items: center; justify-content: space-between; margin: 0 0 .35rem; font-size: var(--fs-meta); color: var(--ink-3); }
 .pc-attaque-legende-cles { display: flex; flex-wrap: wrap; gap: .2rem .75rem; align-items: center; }
 .pc-attaque-legende-cles span { display: inline-flex; align-items: center; gap: .25rem; }

@@ -137,11 +137,12 @@
       //   rupture combien de points de rupture elle a demandés
       techniques: [],
 
-      // ---- attaques ----
-      // Les raccourcis de combat du module Attaque. Une entrée ne mémorise
-      // qu'une référence INTERNE vers l'objet d'arme de l'inventaire : toutes
-      // les valeurs (dégâts, MOD, type) restent sur l'objet, leur source unique.
-      // Une entrée : { id, arme }, où arme = inv.objets[].ref.
+      // ---- armes de combat ----
+      // Les raccourcis du module Armes. Une entrée pointe vers l'objet d'arme
+      // de l'inventaire et ne duplique jamais ses valeurs. Elle mémorise aussi
+      // les deux consommations automatiques et, pour une arme à munitions, le
+      // Contenu sélectionné par sa ref interne.
+      // Une entrée : { id, arme, utiliseEndurance, utiliseMunition, munition }.
       attaques: [],
 
       // ---- avantages ----

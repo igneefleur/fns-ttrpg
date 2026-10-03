@@ -147,7 +147,13 @@
     if (!Array.isArray(s.attaques)) s.attaques = [];
     s.attaques = s.attaques.filter(function (a) { return a && typeof a === "object"; })
       .map(function (a) {
-        return { id: String(a.id || "") || uid("atk"), arme: String(a.arme || "") };
+        return {
+          id: String(a.id || "") || uid("atk"),
+          arme: String(a.arme || ""),
+          utiliseEndurance: !!a.utiliseEndurance,
+          utiliseMunition: !!a.utiliseMunition,
+          munition: String(a.munition || "")
+        };
       });
 
     // ---- avantages ----
