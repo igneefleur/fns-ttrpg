@@ -1089,6 +1089,76 @@
     }
   });
 
+
+
+  /* ------------------------------------------------------------------
+   * PAS 9 — RESSOURCES AUTOMATIQUES DU MODULE ARMES
+   *
+   * Une entrée `attaques[]` peut maintenant mémoriser deux interrupteurs :
+   * dépenser les PE de l'attaque, et consommer une munition. `munition` est la
+   * ref interne du Contenu choisi. Le schéma 8 ne connaît pas ces champs : la
+   * descente les met au grenier, puis la remontée les restaure à l'identique.
+   * ------------------------------------------------------------------ */
+  OwdMigr.ajouter({
+    schema: 9,
+    titre: "Le module Armes peut consommer endurance et munitions",
+    notes: "Chaque raccourci d'arme peut mémoriser Utiliser Endurance, Utiliser Munition et la munition sélectionnée. " +
+           "Une ancienne fiche reçoit ces réglages désactivés ; une redescente les conserve au grenier sans perte.",
+
+    monter: function (s, ctx) {
+      var attaques = s && Array.isArray(s.attaques) ? s.attaques : [];
+      var retour = ctx.reprendre("armes-ressources-schema9");
+      if (!Array.isArray(retour)) retour = [];
+
+      function trouve(a, index) {
+        var id = a && a.id != null ? String(a.id) : "", parIndex = null, parId = null;
+        retour.forEach(function (e) {
+          if (!e || typeof e !== "object") return;
+          if (e.index === index) parIndex = e;
+          if (id && String(e.id || "") === id) parId = e;
+        });
+        return parId || parIndex;
+      }
+
+      attaques.forEach(function (a, index) {
+        if (!a || typeof a !== "object") return;
+        var r = trouve(a, index);
+        if (r) {
+          a.utiliseEndurance = !!r.utiliseEndurance;
+          a.utiliseMunition = !!r.utiliseMunition;
+          a.munition = r.munition == null ? "" : String(r.munition);
+        } else {
+          if (a.utiliseEndurance == null) a.utiliseEndurance = false;
+          if (a.utiliseMunition == null) a.utiliseMunition = false;
+          if (a.munition == null) a.munition = "";
+        }
+      });
+      return s;
+    },
+
+    descendre: function (s, ctx) {
+      var attaques = s && Array.isArray(s.attaques) ? s.attaques : [];
+      var sauves = [];
+      attaques.forEach(function (a, index) {
+        if (!a || typeof a !== "object") return;
+        if (a.utiliseEndurance || a.utiliseMunition || String(a.munition || "")) {
+          sauves.push({
+            id: a.id == null ? "" : String(a.id),
+            index: index,
+            utiliseEndurance: !!a.utiliseEndurance,
+            utiliseMunition: !!a.utiliseMunition,
+            munition: a.munition == null ? "" : String(a.munition)
+          });
+        }
+        delete a.utiliseEndurance;
+        delete a.utiliseMunition;
+        delete a.munition;
+      });
+      if (sauves.length) ctx.grenier("armes-ressources-schema9", sauves);
+      return s;
+    }
+  });
+
   global.OwdMigr = OwdMigr;
   if (typeof module === "object" && module && module.exports) module.exports = OwdMigr;
 })(typeof window !== "undefined" ? window : (typeof global !== "undefined" ? global : this));

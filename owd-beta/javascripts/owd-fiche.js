@@ -77,8 +77,8 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "2.14.0b";
-  var SCHEMA = 8;
+  var RELEASE = "2.15.1b";
+  var SCHEMA = 9;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
   // caractéristiques est ouverte mais serrée (20 est la moyenne humaine), un
@@ -446,11 +446,12 @@
       //   rupture combien de points de rupture elle a demandés
       techniques: [],
 
-      // ---- attaques ----
-      // Les raccourcis de combat du module Attaque. Une entrée ne mémorise
-      // qu'une référence INTERNE vers l'objet d'arme de l'inventaire : toutes
-      // les valeurs (dégâts, MOD, type) restent sur l'objet, leur source unique.
-      // Une entrée : { id, arme }, où arme = inv.objets[].ref.
+      // ---- armes de combat ----
+      // Les raccourcis du module Armes. Une entrée pointe vers l'objet d'arme
+      // de l'inventaire et ne duplique jamais ses valeurs. Elle mémorise aussi
+      // les deux consommations automatiques et, pour une arme à munitions, le
+      // Contenu sélectionné par sa ref interne.
+      // Une entrée : { id, arme, utiliseEndurance, utiliseMunition, munition }.
       attaques: [],
 
       // ---- avantages ----
@@ -694,7 +695,13 @@
     if (!Array.isArray(s.attaques)) s.attaques = [];
     s.attaques = s.attaques.filter(function (a) { return a && typeof a === "object"; })
       .map(function (a) {
-        return { id: String(a.id || "") || uid("atk"), arme: String(a.arme || "") };
+        return {
+          id: String(a.id || "") || uid("atk"),
+          arme: String(a.arme || ""),
+          utiliseEndurance: !!a.utiliseEndurance,
+          utiliseMunition: !!a.utiliseMunition,
+          munition: String(a.munition || "")
+        };
       });
 
     // ---- avantages ----
@@ -4070,14 +4077,16 @@
     });
     return box;
   }
-  // ---- Attaque : raccourcis d'arme et lecture des trajets ----
+  // ---- Armes : raccourcis de combat, ressources et lecture des trajets ----
   // Une entrée ne possède AUCUNE valeur de combat : elle pointe vers un objet
   // d'arme de l'inventaire. Le TYPE de cette arme relie l'objet aux six coups
   // du livre (DATA.armes[].attaques), dont le trajet et la garde sont dessinés
   // ici. Le clic sur une carte de coup garde le geste du module précédent : il
   // envoie les dégâts dans le tchat.
   function buildAttaque() {
-    var b = block("Attaque", null, "attaque", function () { rendre(); });
+    // L'id technique reste « attaque » pour préserver les dispositions déjà
+    // sauvegardées ; seul le titre visible du module devient « Armes ».
+    var b = block("Armes", null, "attaque", function () { rendre(); });
     var box = el("div", "pc-attaques");
     b.appendChild(box);
     var ouverts = Object.create(null);   // état d'interface seulement, jamais sauvegardé
@@ -4107,14 +4116,19 @@
       });
       return trouve;
     }
-    function degatsArme(it) {
+    function modsDegatsArme(it) {
       if (!it || !it.arme) return 0;
-      var a = it.arme;
-      var total = snum(a.degats);
+      var a = it.arme, total = 0;
       (Array.isArray(a.modsDegats) ? a.modsDegats : []).slice(0, 3).forEach(function (c) {
+        // Chaque MOD vaut toujours floor(CARAC / 5), indépendamment du
+        // multiplicateur propre au coup.
         if (c) total += Math.floor(caracTotal(c) / 5);
       });
-      return Math.round(total * 1000) / 1000;
+      return total;
+    }
+    function degatsArme(it) {
+      if (!it || !it.arme) return 0;
+      return Math.round((snum(it.arme.degats) + modsDegatsArme(it)) * 1000) / 1000;
     }
     function typesCoup(coup, def) {
       var types = coup && Array.isArray(coup.types) ? coup.types :
@@ -4127,26 +4141,112 @@
       return isFinite(n) && n > 0 ? n : 1;
     }
     function degatsCoup(it, coup) {
-      var base = degatsArme(it), mult = multiplicateurCoup(coup);
-      // Le livre raisonne en dégâts entiers. Touche ET passage s'arrondissent
-      // séparément à l'inférieur après application du multiplicateur. Le petit
-      // epsilon ne change pas la règle : il évite seulement qu'un 1.2 binaire
-      // transforme mathématiquement 42 en 41.999999999.
+      var base = snum(it && it.arme ? it.arme.degats : 0);
+      var mods = modsDegatsArme(it), mult = multiplicateurCoup(coup);
+      // Équilibrage : le multiplicateur du coup ne porte QUE sur les dégâts
+      // de base de l'arme. Les MOD sont ajoutés ensuite, chacun valant
+      // floor(CARAC / 5). Le passage vaut la moitié du résultat final.
+      // L'epsilon évite uniquement les imprécisions binaires de 0.8/1.2/1.4.
+      var touche = Math.floor(base * mult + 1e-9) + mods;
       return {
         mult: mult,
-        touche: Math.floor(base * mult + 1e-9),
-        passage: Math.floor(base * mult / 2 + 1e-9)
+        touche: touche,
+        passage: Math.floor(touche / 2)
       };
     }
     function fmtMult(n) {
       return "×" + Number(n || 1).toFixed(1);
     }
+
+    // ---------- ressources consommées par une attaque ----------
+    function objetInventaire(ref) {
+      var trouve = null, objets = state.inv && Array.isArray(state.inv.objets) ? state.inv.objets : [];
+      objets.forEach(function (o) {
+        if (!trouve && o && String(o.ref || "") === String(ref || "")) trouve = o;
+      });
+      return trouve;
+    }
+    function coutEndurance(it) {
+      // La dépense vient de CET objet d'arme, pas de son type du livre : une
+      // arme personnalisée à difficulté 5 coûte donc bien 5 PE.
+      return Math.max(0, snum(it && it.arme ? it.arme.attaque : 0));
+    }
+    function categorieMunition(def) {
+      return def && def.munition && def.munition.cle ? String(def.munition.cle) : "";
+    }
+    function munitionsCompatibles(def) {
+      var cat = categorieMunition(def), objets = state.inv && Array.isArray(state.inv.objets) ? state.inv.objets : [];
+      if (!cat) return [];
+      return objets.filter(function (o) {
+        return o && String(o.contenu || "") === cat && pnum(o.qte) > 0;
+      });
+    }
+    function contenantDe(o) {
+      if (!o || !o.dans) return null;
+      return objetInventaire(o.dans);
+    }
+    function libelleMunition(o) {
+      var t = (o && o.nom) ? String(o.nom) : "Munition";
+      t += " ×" + fmtP(pnum(o && o.qte));
+      var c = contenantDe(o);
+      if (c) t += " — " + (c.nom || "contenant");
+      return t;
+    }
+    function munitionSelectionnee(entree, def) {
+      var o = objetInventaire(entree && entree.munition);
+      return o && String(o.contenu || "") === categorieMunition(def) ? o : null;
+    }
+    function retireUneMunition(o) {
+      var objets = state.inv && Array.isArray(state.inv.objets) ? state.inv.objets : [];
+      if (!o) return;
+      if (pnum(o.qte) <= 1) {
+        var i = objets.indexOf(o);
+        if (i >= 0) objets.splice(i, 1);
+        return;
+      }
+      o.qte = Math.round((pnum(o.qte) - 1) * 100) / 100;
+    }
+    function prepareRessources(entree, it, def) {
+      var out = { endurance: coutEndurance(it), munition: null };
+      if (entree.utiliseMunition && categorieMunition(def)) {
+        out.munition = munitionSelectionnee(entree, def);
+        if (!out.munition || pnum(out.munition.qte) < 1) {
+          flash("Choisissez une munition disponible avant d'attaquer.");
+          return null;
+        }
+      }
+      return out;
+    }
+    function executeAttaque(entree, it, def, envoyer) {
+      var r = prepareRessources(entree, it, def);
+      if (!r) return;
+      if (entree.utiliseEndurance && r.endurance > 0)
+        state.etat.pe = Math.round((courant("pe") - r.endurance) * 100) / 100;
+      if (entree.utiliseMunition && r.munition) {
+        var ref = String(r.munition.ref || "");
+        retireUneMunition(r.munition);
+        // Si la pile entière vient de disparaître, le sélecteur redevient vide.
+        if (!objetInventaire(ref)) entree.munition = "";
+      }
+      envoyer();
+      refresh();
+    }
     function envoieCoup(entree, it, coup, def) {
-      var types = typesCoup(coup, def), dg = degatsCoup(it, coup);
-      sayChat((coup && coup.nom ? coup.nom : "Attaque") + " — " + (it.nom || (def && def.nom) || "Arme"), [
-        ["Case de touche", fmtP(dg.touche) + " " + types.touche],
-        ["Case de passage", fmtP(dg.passage) + " " + types.passage]
-      ]);
+      executeAttaque(entree, it, def, function () {
+        var types = typesCoup(coup, def), dg = degatsCoup(it, coup);
+        sayChat((coup && coup.nom ? coup.nom : "Attaque") + " — " + (it.nom || (def && def.nom) || "Arme"), [
+          ["Case de touche", fmtP(dg.touche) + " " + types.touche],
+          ["Case de passage", fmtP(dg.passage) + " " + types.passage]
+        ]);
+      });
+    }
+    function envoieAttaqueSimple(entree, it, def) {
+      executeAttaque(entree, it, def, function () {
+        var types = def && Array.isArray(def.types) ? def.types : [], type = types[0] || "—";
+        sayChat("Attaque — " + (it.nom || (def && def.nom) || "Arme"), [
+          ["Dégâts", fmtP(degatsArme(it)) + " " + type]
+        ]);
+      });
     }
 
     // ---------- carte hexagonale ----------
@@ -4355,7 +4455,7 @@
         refresh();
       });
       edit.appendChild(fld("Arme", sel));
-      edit.appendChild(miniBtn("✕", "Retirer cette attaque", function () {
+      edit.appendChild(miniBtn("✕", "Retirer cette arme", function () {
         state.attaques = state.attaques.filter(function (a) { return a.id !== entree.id; });
         refresh();
       }, "danger pc-attaque-retire"));
@@ -4389,13 +4489,63 @@
 
       if (!ouvert) return card;
       var detail = el("div", "pc-attaque-detail");
+
+      // Les deux consommations sont des choix de jeu, sauvegardés PAR raccourci
+      // d'arme. L'endurance existe pour toutes les armes ; la munition seulement
+      // quand le type choisi dans les règles en demande une.
+      var ressources = el("div", "pc-attaque-ressources");
+      function toggleRessource(cle, texte, titre) {
+        var on = !!entree[cle];
+        var bt = el("button", "pc-mini pc-attaque-toggle" + (on ? " on" : ""), texte);
+        bt.type = "button";
+        bt.setAttribute("aria-pressed", on ? "true" : "false");
+        bt.title = titre;
+        bt.addEventListener("click", function () { entree[cle] = !entree[cle]; refresh(); });
+        return bt;
+      }
+      ressources.appendChild(toggleRessource("utiliseEndurance", "Utiliser Endurance",
+        "Dépenser automatiquement autant de PE que la difficulté d'attaque de cette arme."));
+      if (categorieMunition(def))
+        ressources.appendChild(toggleRessource("utiliseMunition", "Utiliser Munition",
+          "Retirer automatiquement une unité de la munition sélectionnée à chaque attaque."));
+      detail.appendChild(ressources);
+
+      if (categorieMunition(def)) {
+        var munBox = el("div", "pc-attaque-munitions");
+        var sm = el("select", "pc-select pc-attaque-munition");
+        var om0 = el("option", null, "— Choisir une munition —"); om0.value = ""; sm.appendChild(om0);
+        var compatibles = munitionsCompatibles(def), trouveMunition = false;
+        compatibles.forEach(function (o) {
+          var op = el("option", null, libelleMunition(o));
+          op.value = assureRef(o);
+          if (op.value === String(entree.munition || "")) { op.selected = true; trouveMunition = true; }
+          sm.appendChild(op);
+        });
+        if (entree.munition && !trouveMunition) {
+          var ancienne = el("option", null, "Munition indisponible");
+          ancienne.value = String(entree.munition); ancienne.selected = true; sm.appendChild(ancienne);
+        }
+        sm.addEventListener("change", function () { entree.munition = sm.value; refresh(); });
+        munBox.appendChild(fld("Munitions", sm));
+        detail.appendChild(munBox);
+      }
+
+      // Les armes de mêlée du livre ont six trajets. Les armes à distance,
+      // boucliers et armes de jet sans trajet gardent néanmoins un vrai bouton
+      // d'attaque : il envoie simplement leurs dégâts de base + MOD et leur type.
       if (coups.length !== 6) {
-        detail.appendChild(el("div", "pc-empty pc-attaque-vide",
-          it.arme.type ? "Ce type d'arme n'a pas six attaques définies." : "Cette arme n'a pas de type défini."));
+        var simple = el("button", "pc-attaque-simple");
+        simple.type = "button";
+        var stypes = def && Array.isArray(def.types) ? def.types : [];
+        simple.appendChild(el("strong", null, "Attaquer"));
+        simple.appendChild(el("span", null, fmtP(degatsArme(it)) + " " + (stypes[0] || "—")));
+        simple.addEventListener("click", function () { envoieAttaqueSimple(entree, it, def); });
+        detail.appendChild(simple);
         card.appendChild(detail);
         return card;
       }
 
+      detail.appendChild(el("div", "pc-attaque-section-titre", "Trajets et Attaques"));
       var legende = el("div", "pc-attaque-legende");
       var cles = el("div", "pc-attaque-legende-cles");
       var lgSoi = el("span", null); lgSoi.appendChild(el("i", "soi")); lgSoi.appendChild(document.createTextNode("vous"));
@@ -4444,9 +4594,9 @@
       box.innerHTML = "";
       if (!Array.isArray(state.attaques)) state.attaques = [];
       state.attaques.forEach(function (a) { box.appendChild(carte(a)); });
-      if (!state.attaques.length) box.appendChild(el("div", "pc-empty", "Aucune attaque."));
-      box.appendChild(miniBtn("+ Ajouter une attaque", null, function () {
-        var a = { id: uid("atk"), arme: "" };
+      if (!state.attaques.length) box.appendChild(el("div", "pc-empty", "Aucune arme."));
+      box.appendChild(miniBtn("+ Ajouter une arme", null, function () {
+        var a = { id: uid("atk"), arme: "", utiliseEndurance: false, utiliseMunition: false, munition: "" };
         state.attaques.push(a);
         ouverts[a.id] = true;
         refresh();
@@ -8315,7 +8465,7 @@
     { id: "pc",           titre: "PC",               onglet: "fiche", colonne: "milieu", build: buildPc },
     { id: "contenance",   titre: "Contenance",       onglet: "fiche", colonne: "milieu", build: buildContenance },
     { id: "desaction",    titre: "Actions",          onglet: "fiche", colonne: "droite", build: buildDesAction },
-    { id: "attaque",      titre: "Attaque",          onglet: "fiche", colonne: "droite", build: buildAttaque },
+    { id: "attaque",      titre: "Armes",          onglet: "fiche", colonne: "droite", build: buildAttaque },
     { id: "comps",        titre: "Compétences",      onglet: "fiche", colonne: "droite", build: buildComps },
     // ---- onglet Art ----
     // Pleine largeur, seul de son onglet : une technique est une CARTE, avec
