@@ -80,6 +80,12 @@
       if (!enRoll20) return;
       it.qte = Math.max(0, Math.round((it.qte - q) * 100) / 100);
       if (!it.qte) {
+        // Un Contenant donné ne peut pas rendre son Contenu invisible : le
+        // protocole de don actuel n'embarque pas les sous-types d'équipement,
+        // donc le contenu reste dans cette fiche et retourne au sac.
+        if (it.contenant && it.ref) state.inv.objets.forEach(function (x) {
+          if (String(x.dans || "") === String(it.ref)) { x.dans = ""; x.ou = "sac"; x.emp = -1; }
+        });
         var i = state.inv.objets.indexOf(it);
         if (i >= 0) state.inv.objets.splice(i, 1);
       }
@@ -178,11 +184,12 @@
         if (!jumeau.id && recu.id) jumeau.id = recu.id;
       } else {
         items.push({
-          id: recu.id, nom: recu.nom, img: recu.img, qte: q, poids: recu.poids,
+          id: recu.id, ref: uid("o"), nom: recu.nom, img: recu.img, qte: q, poids: recu.poids,
           places: recu.places, achat: recu.achat, vente: recu.vente, desc: recu.desc,
-          ou: gSel && gSel.value === "poches" ? "poches" : "sac",
-          rapide: recu.rapide, vet: "", poches: 0, froid: 0, chaud: 0,
-          sac: false, cap: 0, contenant: "", arme: null
+          ou: gSel && gSel.value === "poches" ? "poches" : "sac", emp: -1,
+          rapide: recu.rapide, vet: "", acc: "", poches: 0, froid: 0, chaud: 0,
+          sac: false, cap: 0, ceint: false, ep: 0, ebMax: 0,
+          contenant: "", contenu: "", dans: "", arme: null
         });
       }
       refresh();

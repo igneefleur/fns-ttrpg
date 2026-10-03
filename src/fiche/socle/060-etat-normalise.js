@@ -252,11 +252,14 @@
         // « volume », la clé garde son nom, qui voyage dans les Attributes
         places: pnum(o.places),
         nourri: !!o.nourri,
-        // Nature « contenant » : chaîne stable. Une valeur inconnue est
-        // conservée plutôt qu'effacée, comme pour le type d'arme ; une archive
-        // ou un mod peut connaître une catégorie que les règles du jour n'ont
-        // plus. Vide = ce n'est pas un contenant.
+        // Types « contenant » et « contenu » : la chaîne porte leur catégorie.
+        // Une valeur inconnue est conservée plutôt qu'effacée : une archive ou
+        // un mod peut connaître une catégorie que les règles du jour n'ont plus.
+        // Vide = l'objet n'est pas de ce type. `dans` référence le contenant
+        // interne qui reçoit un Contenu ; ce lien est validé après la passe.
         contenant: o.contenant == null ? "" : String(o.contenant),
+        contenu: o.contenu == null ? "" : String(o.contenu),
+        dans: o.dans == null ? "" : String(o.dans),
         achat: pnum(o.achat), vente: venteNum(o.vente),
         desc: o.desc == null ? "" : String(o.desc),
         ou: INV_LIEUX.indexOf(o.ou) >= 0 ? o.ou : "sac",
@@ -301,6 +304,30 @@
         } : null
       };
     });
+    // Un Contenu imbriqué n'occupe PAS une case normale : son lien `dans`
+    // désigne le `ref` d'un Contenant de même catégorie. Une sauvegarde cassée,
+    // un contenant supprimé ou deux contenus visant le même slot ne doivent pas
+    // rendre l'objet invisible : le lien invalide est simplement libéré au sac.
+    var contenantsParRef = Object.create(null), slotsPris = Object.create(null);
+    s.inv.objets.forEach(function (o) {
+      if (o && o.ref && o.contenant) contenantsParRef[o.ref] = o;
+    });
+    s.inv.objets.forEach(function (o) {
+      if (!o || !o.dans) return;
+      var p = contenantsParRef[o.dans];
+      if (!o.contenu || !p || p === o || String(o.contenu) !== String(p.contenant) || slotsPris[o.dans]) {
+        o.dans = "";
+        o.ou = "sac";
+        o.emp = -1;
+        return;
+      }
+      slotsPris[o.dans] = 1;
+      // `ou` reste un repli compatible avec les anciens schémas ; pendant que
+      // `dans` est posé, l'interface et les calculs d'encombrement l'ignorent.
+      o.ou = "sac";
+      o.emp = -1;
+    });
+
     // Un ancien objet d'arme ne portait pas de type. Quand son nom correspond
     // exactement à une arme du livre, on peut poser la clé sans inventer : le
     // nom vient du joueur, la clé et le nombre de mains viennent des règles.

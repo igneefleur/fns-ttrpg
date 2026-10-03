@@ -1380,6 +1380,29 @@ html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où 
   border-top: none; background: color-mix(in srgb, var(--card) 82%, transparent);
 }
 .pc-obj-tile > .pc-obj-foot .nm { flex: 1 1 0; }
+/* SLOT INTERNE D'UN CONTENANT. Il reste dans l'image, au-dessus du pied :
+   assez grand pour reconnaître le contenu sans masquer la tuile principale. */
+.pc-obj-content-slot {
+  position: absolute; right: .18rem; bottom: 1.25rem; z-index: 3;
+  width: 34%; aspect-ratio: 1 / 1; box-sizing: border-box; overflow: hidden;
+  border: 1px dashed color-mix(in srgb, var(--line) 72%, transparent); border-radius: 5px;
+  background: color-mix(in srgb, var(--card) 88%, transparent);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink-3); font-size: .65rem; font-weight: 800;
+  cursor: default; box-shadow: 0 1px 3px rgba(0,0,0,.14);
+}
+.pc-obj-content-slot.plein { border-style: solid; cursor: grab; background: var(--card); }
+.pc-obj-content-slot.plein:active { cursor: grabbing; }
+.pc-obj-content-slot.over { outline: 2px solid var(--accent); outline-offset: 1px; }
+.pc-obj-content-slot.sel { border-color: var(--accent); box-shadow: 0 0 0 2px var(--wash); }
+.pc-obj-content-slot.drag { opacity: .35; }
+.pc-obj-content-slot > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.pc-obj-content-ph { position: relative; z-index: 1; line-height: 1; }
+.pc-obj-content-qte {
+  position: absolute; right: 1px; bottom: 1px; z-index: 2; padding: 0 .12rem;
+  border-radius: 3px; background: color-mix(in srgb, var(--card) 88%, transparent);
+  color: var(--ink-2); font-size: .48rem; font-weight: 800; font-variant-numeric: tabular-nums;
+}
 /* réglages du module, en mode édition (par ligne 1..8, et les puces
    Nom / Quantité / Poids / Total) */
 .pc-obj-opts { display: flex; flex-wrap: wrap; gap: .3rem .5rem; align-items: flex-end; margin: 0 0 .4rem; }

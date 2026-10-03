@@ -163,12 +163,14 @@
       // emplacement « ou » : une des huit cases de Sur soi (INV_CASES), les
       // poches ou le sac. Un objet : { id, nom, img, qte, poids, places, achat,
       //   vente, desc, ou, rapide, vet, poches, froid, chaud, sac, cap, arme,
-      //   contenant, encombre }.
+      //   contenant, contenu, dans, encombre }.
       //   encombre  l'encombrance de l'objet, en eb : c'est elle, et non le poids,
       //             que limitent les poches et le sac
       //   nourri    c'est de la nourriture ; « places » porte alors son VOLUME
-      //   contenant catégorie de contenant (liquide, poudre, pâte ou munition)
-      //              ou "" si l'objet n'est pas un contenant
+      //   contenant catégorie si le Type est Contenant (liquide, poudre, pâte
+      //              ou munition), "" sinon
+      //   contenu   même catégorie si le Type est Contenu, "" sinon
+      //   dans      ref du Contenant qui reçoit ce Contenu, "" s'il est libre
       //   vet     type de vêtement (INV_VETEMENTS, ou hautbas) ou ""
       //   acc     type d'accessoire (INV_ACC_TYPES : bague, poignet…, sans côté) ou ""
       //   poches  ce qu'un vêtement ou un accessoire porté ajoute aux Poches, en eb

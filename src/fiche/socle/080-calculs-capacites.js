@@ -282,7 +282,11 @@
   // des vêtements portés et le sac porté.
   function ebOu(ou) {
     var t = 0;
-    state.inv.objets.forEach(function (o) { if (o.ou === ou) t += pnum(o.qte) * pnum(o.encombre); });
+    // Un Contenu déjà rangé dans son Contenant n'occupe pas une seconde fois
+    // la capacité du sac ou des poches. Son poids, lui, reste bien porté.
+    state.inv.objets.forEach(function (o) {
+      if (!o.dans && o.ou === ou) t += pnum(o.qte) * pnum(o.encombre);
+    });
     return Math.round(t * 1000) / 1000;
   }
   function ebPoches() { return ebOu("poches"); }
@@ -292,7 +296,9 @@
   // le bas, et une arme à deux mains les deux mains. Son emplacement « ou »
   // est alors la case d'ANCRAGE (haut, main droite), l'autre suit.
   function casesDe(o, ou) {
+    var explicite = !!ou;
     ou = ou || o.ou;
+    if (!explicite && o.dans) return [];
     if (o.vet === "hautbas" && (ou === "haut" || ou === "bas")) return ["haut", "bas"];
     if (o.arme && o.arme.mains === 2 && (ou === "mainG" || ou === "mainD")) return ["mainG", "mainD"];
     return INV_CASES.indexOf(ou) >= 0 ? [ou] : [];
@@ -321,7 +327,9 @@
   function ebMaxEp(lieu, objets) { var p = porteurEp(lieu, objets); return p ? p.ebMax : 0; }
   function objetEp(lieu, k) {
     var out = null;
-    state.inv.objets.forEach(function (o) { if (!out && o.ou === lieu && o.emp === k) out = o; });
+    state.inv.objets.forEach(function (o) {
+      if (!out && !o.dans && o.ou === lieu && o.emp === k) out = o;
+    });
     return out;
   }
   function epPermis(o, lieu, objets) {
@@ -333,6 +341,7 @@
   function rangeEmplacements(objets) {
     var pris = {}, rendus = [];
     objets.forEach(function (o) {
+      if (o.dans) { o.emp = -1; return; }
       if (INV_EP.indexOf(o.ou) < 0) { o.emp = -1; return; }
       var cle = o.ou + o.emp;
       if (o.emp < 0 || o.emp >= nbEp(o.ou, objets) || pris[cle] ||

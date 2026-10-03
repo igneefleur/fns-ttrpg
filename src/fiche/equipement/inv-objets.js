@@ -84,6 +84,65 @@
       tot.textContent = "Poids porté : " + fmtP(poidsPorte()) + " / " + fmtP(charge()) + " kg";
     }
 
+    // ---- Contenants / Contenus -------------------------------------------------
+    // Un Contenant offre UN slot interne. Un Contenu est un objet complet dont
+    // la catégorie doit être exactement celle du Contenant qui le reçoit. Le
+    // lien voyage par `ref`, jamais par le nom affiché : renommer une gourde ne
+    // fait donc pas tomber son eau.
+    function assureRef(o) {
+      if (o && !o.ref) o.ref = uid("o");
+      return o && o.ref ? String(o.ref) : "";
+    }
+    function contenuDans(porteur) {
+      var ref = assureRef(porteur), out = null;
+      if (!ref) return null;
+      items.forEach(function (o) { if (!out && o !== porteur && String(o.dans || "") === ref) out = o; });
+      return out;
+    }
+    function nomCategorie(cle) {
+      var noms = { liquide: "Liquide", poudre: "Poudre", pate: "Pâte" }, trouve = noms[cle] || "";
+      if (trouve) return trouve;
+      armesData().forEach(function (a) {
+        var m = a && a.munition;
+        if (!trouve && m && typeof m === "object" && String(m.cle || "") === String(cle || ""))
+          trouve = String(m.nom || m.cle);
+      });
+      return trouve || String(cle || "");
+    }
+    function compatibleContenu(o, porteur) {
+      return !!(o && o.contenu && porteur && porteur.contenant &&
+                String(o.contenu) === String(porteur.contenant));
+    }
+    function libereContenu(porteur, silencieux) {
+      var ref = porteur && porteur.ref ? String(porteur.ref) : "", n = 0;
+      if (!ref) return 0;
+      items.forEach(function (o) {
+        if (String(o.dans || "") !== ref) return;
+        o.dans = ""; o.ou = "sac"; o.emp = -1; n++;
+      });
+      if (n && !silencieux) flash("Le contenu a été replacé dans le sac à dos.");
+      return n;
+    }
+    function poseContenu(o, porteur) {
+      if (!o || !porteur || o === porteur) return false;
+      if (!o.contenu) { flash("Seul un objet de type Contenu peut être placé ici."); return false; }
+      if (!porteur.contenant) { flash("Cet objet n'est pas un contenant."); return false; }
+      if (!compatibleContenu(o, porteur)) {
+        flash("Ce contenant accepte « " + nomCategorie(porteur.contenant) + " », pas « " +
+              nomCategorie(o.contenu) + " ».");
+        return false;
+      }
+      var occ = contenuDans(porteur);
+      if (occ && occ !== o) { flash("Ce contenant possède déjà un contenu."); return false; }
+      assureRef(o); assureRef(porteur);
+      o.dans = porteur.ref;
+      // `ou` reste un repli lisible par les anciens schémas. Tant que `dans`
+      // est posé, le contenu n'apparaît pas dans le sac et n'en consomme pas
+      // l'encombrement une seconde fois.
+      o.ou = "sac"; o.emp = -1;
+      return true;
+    }
+
     function vignette(file, cb) {
       var r = new FileReader();
       r.onerror = function () { flash("Image illisible."); };
@@ -112,6 +171,8 @@
     function deplace(o, ou, cible) {
       if (!lieuPermis(o, ou)) { flash("« " + INV_NOMS[ou] + " » ne prend pas cet objet."); return false; }
       var dest = ancrage(o, ou), cases = casesDe(o, dest), vient = o.ou;
+      // Tirer un Contenu hors de son petit slot le redevient un objet libre.
+      o.dans = "";
       var chasses = [];
       cases.forEach(function (c) {
         var occ = objetEn(c);
@@ -148,13 +209,20 @@
       var vient = o.ou, vientK = o.emp;
       var pose = o;
       if (pnum(o.qte) > 1) {
+        var refAvant = assureRef(o);
         pose = JSON.parse(JSON.stringify(o));
+        pose.ref = uid("o");
         pose.qte = 1;
         o.qte = Math.round((o.qte - 1) * 100) / 100;
         items.splice(items.indexOf(o) + 1, 0, pose);
+        // Si la pile de contenants portait un contenu, c'est l'exemplaire
+        // effectivement déplacé qui l'emporte ; les deux objets ne partagent
+        // jamais le même ref interne.
+        items.forEach(function (x) { if (String(x.dans || "") === refAvant) x.dans = pose.ref; });
         vient = null;   // la pile reste où elle est : l'occupant va au sac
       }
       var occ = objetEp(lieu, k);
+      pose.dans = "";
       pose.ou = lieu;
       pose.emp = k;
       if (occ && occ !== pose) {
@@ -164,6 +232,50 @@
       }
       rangeEmplacements(items);
       return pose;
+    }
+
+    // Petit slot visible DANS la tuile d'un Contenant. Il est lui-même
+    // draggable quand il est plein : on peut donc sortir son Contenu vers le
+    // sac/les poches ou le déposer dans un autre Contenant compatible.
+    function slotContenant(porteur) {
+      var occ = contenuDans(porteur);
+      var s = el("div", "pc-obj-content-slot" + (occ ? " plein" : " vide") + (sel === occ ? " sel" : ""));
+      s.title = occ ? ((occ.nom || "Contenu") + " — " + nomCategorie(occ.contenu))
+                    : ("Contenu : " + nomCategorie(porteur.contenant));
+      if (occ) {
+        if (occ.img) {
+          var im = el("img"); im.alt = ""; im.draggable = false; im.src = occ.img; s.appendChild(im);
+        } else {
+          var ph = el("span", "pc-obj-content-ph", (nomCategorie(occ.contenu) || "?").slice(0, 1).toUpperCase());
+          s.appendChild(ph);
+        }
+        if (pnum(occ.qte) !== 1) s.appendChild(el("span", "pc-obj-content-qte", "×" + fmtP(occ.qte)));
+        s.draggable = true;
+        s.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); sel = occ; render(); });
+        s.addEventListener("dragstart", function (e) {
+          e.stopPropagation(); drag = occ; s.classList.add("drag");
+          try { e.dataTransfer.setData("text/plain", ""); e.dataTransfer.effectAllowed = "move"; } catch (err) {}
+        });
+        s.addEventListener("dragend", function (e) { e.stopPropagation(); drag = null; render(); });
+      } else {
+        s.appendChild(el("span", "pc-obj-content-ph", "+"));
+      }
+      s.addEventListener("dragover", function (e) {
+        if (!drag || drag === porteur) return;
+        // Le slot intercepte le geste même s'il refuse l'objet : sans cela, le
+        // drop traverserait jusqu'à la grande tuile et réordonnerait le sac.
+        e.preventDefault(); e.stopPropagation();
+        s.classList.toggle("over", compatibleContenu(drag, porteur));
+      });
+      s.addEventListener("dragleave", function (e) { e.stopPropagation(); s.classList.remove("over"); });
+      s.addEventListener("drop", function (e) {
+        if (!drag) return;
+        e.preventDefault(); e.stopPropagation();
+        var d = drag; drag = null;
+        if (poseContenu(d, porteur)) { sel = d; save(); refresh(); }
+        render();
+      });
+      return s;
     }
 
     function tile(it) {
@@ -187,6 +299,7 @@
       foot.appendChild(badge);
       if (!O.nom && !O.poids && !O.qte) foot.style.display = "none";
       t.appendChild(foot);
+      if (it.contenant) t.appendChild(slotContenant(it));
       t.title = (it.nom || "Objet") + (it.rapide ? " — prise rapide" : "");
       if (it.rapide) t.classList.add("rapide");
 
@@ -223,7 +336,7 @@
           var o = drag; drag = null;
           var cible = it;
           if (!avant) {
-            var suivants = items.filter(function (x) { return x.ou === it.ou && x !== o; });
+            var suivants = items.filter(function (x) { return !x.dans && x.ou === it.ou && x !== o; });
             var k = suivants.indexOf(it);
             cible = k >= 0 && k + 1 < suivants.length ? suivants[k + 1] : null;
           }
@@ -368,13 +481,13 @@
       if (ou === "sac" && nbEp("sacep")) g.appendChild(lignesEp("sacep"));
       var tiles = el("div", "pc-obj-tiles");
       tiles.style.setProperty("--obj-cols", 5);
-      items.forEach(function (it) { if (it.ou === ou) tiles.appendChild(tile(it)); });
+      items.forEach(function (it) { if (!it.dans && it.ou === ou) tiles.appendChild(tile(it)); });
       var add = el("div", "pc-obj-addtile pc-edit-only", "+");
       add.title = "Ajouter un objet dans « " + titre + " »";
       add.addEventListener("click", function () {
-        var o = { id: "", nom: "", img: "", qte: 1, poids: 0, encombre: 0, places: 0, nourri: false, achat: 0, vente: null,
+        var o = { id: "", ref: uid("o"), nom: "", img: "", qte: 1, poids: 0, encombre: 0, places: 0, nourri: false, achat: 0, vente: null,
                   desc: "", ou: ou, emp: -1, rapide: false, vet: "", acc: "", poches: 0, froid: 0, chaud: 0,
-                  sac: false, cap: 0, ceint: false, ep: 0, ebMax: 0, contenant: "", arme: null };
+                  sac: false, cap: 0, ceint: false, ep: 0, ebMax: 0, contenant: "", contenu: "", dans: "", arme: null };
         items.push(o);
         sel = o;
         render();
@@ -384,7 +497,7 @@
       // LA LIGNE SE COMPLÈTE de cases vides en pointillé, et un groupe vide en
       // garde une entière : on voit la place qui reste. La case « + » de
       // l'édition compte dans la ligne.
-      var n = items.filter(function (x) { return x.ou === ou; }).length + (isEdit("inv") ? 1 : 0);
+      var n = items.filter(function (x) { return !x.dans && x.ou === ou; }).length + (isEdit("inv") ? 1 : 0);
       var trous = Math.max(5, Math.ceil(n / 5) * 5) - n;
       for (var k = 0; k < trous; k++) tiles.appendChild(el("div", "pc-obj-tile pc-inv-trou"));
       tiles.addEventListener("dragover", function (e) {
@@ -416,14 +529,14 @@
       return fld(libelle, i);
     }
 
-    // Les sous-champs propres à une nature vivent tous dans la même carte.
+    // Les sous-champs propres à un type vivent tous dans la même carte.
     // L'arme avait déjà cette lecture visuelle ; vêtements, accessoires,
-    // nourriture, sacs, ceintures et contenants suivent désormais la même règle.
+    // nourriture, sacs, ceintures, contenants et contenus suivent la même règle.
     function carteNature() { return el("div", "pc-obj-subcard"); }
 
-    function selCategorieContenant(it) {
+    function selCategorieStockage(it, cle) {
       var s = el("select", "pc-select pc-edit-field");
-      var valeur = String(it.contenant || ""), trouve = false;
+      var valeur = String(it[cle] || ""), trouve = false;
       var groupes = [
         { nom: "Matières", choix: [
           { cle: "liquide", nom: "Liquide" },
@@ -461,8 +574,20 @@
         s.appendChild(ancien);
       }
       s.addEventListener("change", function () {
-        it.contenant = s.value;
+        it[cle] = s.value;
+        if (cle === "contenant") {
+          var occ = contenuDans(it);
+          if (occ && !compatibleContenu(occ, it)) libereContenu(it);
+        } else if (cle === "contenu" && it.dans) {
+          var porteur = null;
+          items.forEach(function (x) { if (!porteur && x.ref === it.dans) porteur = x; });
+          if (!porteur || !compatibleContenu(it, porteur)) {
+            it.dans = ""; it.ou = "sac"; it.emp = -1;
+            flash("Le contenu ne correspond plus à son contenant : il retourne au sac à dos.");
+          }
+        }
         save();
+        render();
         refresh();
       });
       return s;
@@ -476,9 +601,9 @@
       var fantome = !sel;
       panel.classList.toggle("fantome", fantome);
       var types = ["contondant", "perforant", "tranchant", "feu", "froid", "eclair", "decomposition", "ethere", "brut"];
-      var it = sel || { id: "", nom: "", img: "", qte: 0, poids: 0, encombre: 0, places: 0, achat: 0, vente: null,
+      var it = sel || { id: "", ref: "", nom: "", img: "", qte: 0, poids: 0, encombre: 0, places: 0, achat: 0, vente: null,
                         desc: "", ou: "sac", emp: -1, rapide: false, vet: "", acc: "", poches: 0, froid: 0, chaud: 0,
-                        sac: false, cap: 0, ceint: false, ep: 0, ebMax: 0, contenant: "", arme: null };
+                        sac: false, cap: 0, ceint: false, ep: 0, ebMax: 0, contenant: "", contenu: "", dans: "", arme: null };
       types.forEach(function(t) {
         it["res_" + t] = it["res_" + t] || 0;
         it["prot_" + t] = it["prot_" + t] || 0;
@@ -491,7 +616,7 @@
 
       // L'ORDRE DU DÉTAIL, arrêté par l'auteur :
       //   NOM
-      //   NATURE | prise rapide      (puis ce que la nature demande)
+      //   TYPE | prise rapide        (puis ce que le type demande)
       //   QUANTITÉ
       //   POIDS | ENCOMBRANCE
       //   ACHAT | VENTE
@@ -506,14 +631,17 @@
       nm.addEventListener("change", function () { render(); });
       body.appendChild(nm);
 
-      // NATURE : objet, vêtement, contenant, sac à dos ou arme — une seule à la fois. En
-      // changer renvoie au sac un objet qui n'a plus sa place dans sa case.
+      // TYPE : une seule nature fonctionnelle à la fois. « Contenant » offre
+      // un slot interne ; « Contenu » est ce qui peut y entrer. Changer de type
+      // ne détruit jamais le contenu : un slot qui disparaît est vidé au sac.
       var ligneNat = el("div", "pc-obj-pair");
       var nat = el("select", "pc-edit-field");
       var natureDe = it.arme ? "arme" : it.vet ? "vet" : it.acc ? "acc" : it.sac ? "sac" :
-                     it.ceint ? "ceint" : it.nourri ? "nourri" : it.contenant ? "contenant" : "";
+                     it.ceint ? "ceint" : it.nourri ? "nourri" : it.contenu ? "contenu" :
+                     it.contenant ? "contenant" : "";
       [["", "Objet"], ["nourri", "Nourriture"], ["vet", "Vêtement"], ["acc", "Accessoire"],
-       ["sac", "Sac à dos"], ["ceint", "Ceinture"], ["contenant", "Contenant"], ["arme", "Arme"]].forEach(function (n) {
+       ["sac", "Sac à dos"], ["ceint", "Ceinture"], ["contenant", "Contenant"],
+       ["contenu", "Contenu"], ["arme", "Arme"]].forEach(function (n) {
         var o = el("option", null, n[1]);
         o.value = n[0];
         if (n[0] === natureDe) o.selected = true;
@@ -521,10 +649,13 @@
       });
       nat.addEventListener("change", function () {
         var v = nat.value;
+        if (it.contenant && v !== "contenant") libereContenu(it, true);
+        if (it.dans && v !== "contenu") { it.dans = ""; it.ou = "sac"; it.emp = -1; }
         it.nourri = v === "nourri";
         it.sac = v === "sac";
         it.ceint = v === "ceint";
         it.contenant = v === "contenant" ? (it.contenant || "liquide") : "";
+        it.contenu = v === "contenu" ? (it.contenu || "liquide") : "";
         it.vet = v === "vet" ? (it.vet || "haut") : "";
         it.acc = v === "acc" ? (it.acc || "collier") : "";
         it.arme = v === "arme" ? (it.arme || { attaque: "", degats: "", modsDegats: ["", "", ""],
@@ -538,10 +669,11 @@
         }
         if (INV_EP.indexOf(it.ou) < 0 && !lieuPermis(it, it.ou)) it.ou = "sac";
         rangeEmplacements(items);
+        save();
         render();
         refresh();
       });
-      ligneNat.appendChild(fld("Nature", nat));
+      ligneNat.appendChild(fld("Type", nat));
       var kvR = el("div", "pc-kv");
       var labR = el("label", null, "");
       var cbR = el("input", "pc-edit-field");
@@ -558,9 +690,9 @@
       ligneNat.appendChild(kvR);
       body.appendChild(ligneNat);
 
-      // ce que la nature demande, juste sous elle. Toutes les natures utilisent
-      // le même cadre visuel que la carte d'arme : un seul bloc contient tous
-      // les sous-champs de la nature, au lieu de lignes flottantes.
+      // ce que le type demande, juste sous lui. Tous les types utilisent le
+      // même cadre visuel que la carte d'arme : un seul bloc contient leurs
+      // sous-champs, au lieu de lignes flottantes.
       if (it.vet) {
         var cv = carteNature();
         var pv = el("div", "pc-obj-pair");
@@ -672,14 +804,22 @@
         body.appendChild(cs);
       }
 
-      // Le CONTENANT ne stocke pour l'instant que ce qu'il est conçu pour
-      // contenir. Les munitions viennent directement des armes du livre.
+      // CONTENANT et CONTENU partagent exactement les mêmes catégories. Le
+      // premier expose un slot sur sa tuile ; le second peut y entrer si et
+      // seulement si les deux chaînes sont identiques.
       if (it.contenant) {
         var ct = carteNature();
         var pct = el("div", "pc-obj-pair");
-        pct.appendChild(fld("Catégorie", selCategorieContenant(it)));
+        pct.appendChild(fld("Catégorie", selCategorieStockage(it, "contenant")));
         ct.appendChild(pct);
         body.appendChild(ct);
+      }
+      if (it.contenu) {
+        var ctu = carteNature();
+        var pctu = el("div", "pc-obj-pair");
+        pctu.appendChild(fld("Catégorie", selCategorieStockage(it, "contenu")));
+        ctu.appendChild(pctu);
+        body.appendChild(ctu);
       }
 
       // L'ARME : cinq lignes de données, sans gestes ni boutons. Ses
@@ -826,8 +966,10 @@
         donnerDialogue(it, bornerAct());
       }));
       function retireQte(q, tout) {
-        if (tout) { items.splice(items.indexOf(it), 1); sel = null; }
-        else it.qte = Math.round((it.qte - q) * 100) / 100;
+        if (tout) {
+          if (it.contenant) libereContenu(it, true);
+          items.splice(items.indexOf(it), 1); sel = null;
+        } else it.qte = Math.round((it.qte - q) * 100) / 100;
         render();
         refresh();
       }

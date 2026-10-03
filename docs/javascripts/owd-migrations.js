@@ -1009,6 +1009,86 @@
     }
   });
 
+
+
+  /* ------------------------------------------------------------------
+   * PAS 8 — CONTENUS IMBRIQUÉS DANS LES CONTENANTS
+   *
+   * Le schéma 8 ajoute le Type « Contenu ». `contenu` porte la même catégorie
+   * que `contenant`, et `dans` référence le `ref` du Contenant qui reçoit
+   * l'objet. Le schéma 7 ne connaît ni l'un ni l'autre : à la descente, ces
+   * deux champs (et le lieu technique d'un contenu imbriqué) vont au grenier.
+   * Le Contenu reste un objet ordinaire au sac, donc aucune donnée générale ne
+   * disparaît et une remontée restaure exactement son slot.
+   * ------------------------------------------------------------------ */
+  OwdMigr.ajouter({
+    schema: 8,
+    titre: "Les contenants peuvent recevoir un contenu compatible",
+    notes: "Un nouveau type Contenu partage les catégories des Contenants. Un Contenu peut être rangé dans " +
+           "le petit emplacement d'un Contenant de même catégorie. Une redescente en schéma 7 garde catégorie " +
+           "et liaison au grenier et remet temporairement l'objet dans le sac, sans perte.",
+
+    monter: function (s, ctx) {
+      var objets = s && s.inv && Array.isArray(s.inv.objets) ? s.inv.objets : [];
+      var retour = ctx.reprendre("contenus-schema8");
+      if (!Array.isArray(retour)) retour = [];
+
+      function trouve(o, index) {
+        var ref = o && o.ref != null ? String(o.ref) : "";
+        var id = o && o.id != null ? String(o.id) : "";
+        var parIndex = null, parId = null, parRef = null;
+        retour.forEach(function (e) {
+          if (!e || typeof e !== "object") return;
+          if (e.index === index) parIndex = e;
+          if (id && String(e.id || "") === id) parId = e;
+          if (ref && String(e.ref || "") === ref) parRef = e;
+        });
+        return parRef || parId || parIndex;
+      }
+
+      objets.forEach(function (o, index) {
+        if (!o || typeof o !== "object") return;
+        var r = trouve(o, index);
+        if (r) {
+          o.contenu = r.contenu == null ? "" : String(r.contenu);
+          o.dans = r.dans == null ? "" : String(r.dans);
+          if (r.ou !== undefined) o.ou = r.ou;
+          if (r.emp !== undefined) o.emp = r.emp;
+        } else {
+          if (o.contenu == null) o.contenu = "";
+          if (o.dans == null) o.dans = "";
+        }
+      });
+      return s;
+    },
+
+    descendre: function (s, ctx) {
+      var objets = s && s.inv && Array.isArray(s.inv.objets) ? s.inv.objets : [];
+      var sauves = [];
+      objets.forEach(function (o, index) {
+        if (!o || typeof o !== "object") return;
+        var contenu = o.contenu == null ? "" : String(o.contenu);
+        var dans = o.dans == null ? "" : String(o.dans);
+        if (contenu || dans) {
+          sauves.push({
+            ref: o.ref == null ? "" : String(o.ref),
+            id: o.id == null ? "" : String(o.id),
+            index: index,
+            contenu: contenu,
+            dans: dans,
+            ou: o.ou,
+            emp: o.emp
+          });
+        }
+        delete o.contenu;
+        delete o.dans;
+        if (dans) { o.ou = "sac"; o.emp = -1; }
+      });
+      if (sauves.length) ctx.grenier("contenus-schema8", sauves);
+      return s;
+    }
+  });
+
   global.OwdMigr = OwdMigr;
   if (typeof module === "object" && module && module.exports) module.exports = OwdMigr;
 })(typeof window !== "undefined" ? window : (typeof global !== "undefined" ? global : this));
