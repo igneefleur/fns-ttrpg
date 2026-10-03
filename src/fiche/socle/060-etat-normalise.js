@@ -252,6 +252,11 @@
         // « volume », la clé garde son nom, qui voyage dans les Attributes
         places: pnum(o.places),
         nourri: !!o.nourri,
+        // Nature « contenant » : chaîne stable. Une valeur inconnue est
+        // conservée plutôt qu'effacée, comme pour le type d'arme ; une archive
+        // ou un mod peut connaître une catégorie que les règles du jour n'ont
+        // plus. Vide = ce n'est pas un contenant.
+        contenant: o.contenant == null ? "" : String(o.contenant),
         achat: pnum(o.achat), vente: venteNum(o.vente),
         desc: o.desc == null ? "" : String(o.desc),
         ou: INV_LIEUX.indexOf(o.ou) >= 0 ? o.ou : "sac",

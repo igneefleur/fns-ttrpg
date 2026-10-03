@@ -374,7 +374,7 @@
       add.addEventListener("click", function () {
         var o = { id: "", nom: "", img: "", qte: 1, poids: 0, encombre: 0, places: 0, nourri: false, achat: 0, vente: null,
                   desc: "", ou: ou, emp: -1, rapide: false, vet: "", acc: "", poches: 0, froid: 0, chaud: 0,
-                  sac: false, cap: 0, ceint: false, ep: 0, ebMax: 0, arme: null };
+                  sac: false, cap: 0, ceint: false, ep: 0, ebMax: 0, contenant: "", arme: null };
         items.push(o);
         sel = o;
         render();
@@ -415,6 +415,58 @@
       i.addEventListener("blur", function () { i.value = lire() ? fmtP(lire()) : ""; });
       return fld(libelle, i);
     }
+
+    // Les sous-champs propres à une nature vivent tous dans la même carte.
+    // L'arme avait déjà cette lecture visuelle ; vêtements, accessoires,
+    // nourriture, sacs, ceintures et contenants suivent désormais la même règle.
+    function carteNature() { return el("div", "pc-obj-subcard"); }
+
+    function selCategorieContenant(it) {
+      var s = el("select", "pc-select pc-edit-field");
+      var valeur = String(it.contenant || ""), trouve = false;
+      var groupes = [
+        { nom: "Matières", choix: [
+          { cle: "liquide", nom: "Liquide" },
+          { cle: "poudre", nom: "Poudre" },
+          { cle: "pate", nom: "Pâte" }
+        ] },
+        { nom: "Munitions", choix: [] }
+      ];
+      var vus = Object.create(null);
+      armesData().forEach(function (a) {
+        var m = a && a.munition;
+        if (!m || typeof m !== "object" || !m.cle || vus[m.cle]) return;
+        vus[m.cle] = 1;
+        groupes[1].choix.push({ cle: String(m.cle), nom: String(m.nom || m.cle) });
+      });
+      groupes[1].choix.sort(function (a, b) { return a.nom.localeCompare(b.nom, "fr"); });
+
+      groupes.forEach(function (g) {
+        if (!g.choix.length) return;
+        var og = document.createElement("optgroup");
+        og.label = g.nom;
+        g.choix.forEach(function (c) {
+          var o = el("option", null, c.nom);
+          o.value = c.cle;
+          if (c.cle === valeur) { o.selected = true; trouve = true; }
+          og.appendChild(o);
+        });
+        s.appendChild(og);
+      });
+      // Même politique que le type d'arme : ne jamais faire disparaître une
+      // ancienne valeur simplement parce que les règles actuelles l'ignorent.
+      if (valeur && !trouve) {
+        var ancien = el("option", null, valeur + " (inconnu)");
+        ancien.value = valeur; ancien.selected = true;
+        s.appendChild(ancien);
+      }
+      s.addEventListener("change", function () {
+        it.contenant = s.value;
+        save();
+        refresh();
+      });
+      return s;
+    }
     function renderPanel() {
       panel.innerHTML = "";
       // SANS OBJET CHOISI, le panneau montre un objet FANTÔME : la même fiche,
@@ -426,7 +478,7 @@
       var types = ["contondant", "perforant", "tranchant", "feu", "froid", "eclair", "decomposition", "ethere", "brut"];
       var it = sel || { id: "", nom: "", img: "", qte: 0, poids: 0, encombre: 0, places: 0, achat: 0, vente: null,
                         desc: "", ou: "sac", emp: -1, rapide: false, vet: "", acc: "", poches: 0, froid: 0, chaud: 0,
-                        sac: false, cap: 0, ceint: false, ep: 0, ebMax: 0, arme: null };
+                        sac: false, cap: 0, ceint: false, ep: 0, ebMax: 0, contenant: "", arme: null };
       types.forEach(function(t) {
         it["res_" + t] = it["res_" + t] || 0;
         it["prot_" + t] = it["prot_" + t] || 0;
@@ -454,14 +506,14 @@
       nm.addEventListener("change", function () { render(); });
       body.appendChild(nm);
 
-      // NATURE : objet, vêtement, sac à dos ou arme — une seule à la fois. En
+      // NATURE : objet, vêtement, contenant, sac à dos ou arme — une seule à la fois. En
       // changer renvoie au sac un objet qui n'a plus sa place dans sa case.
       var ligneNat = el("div", "pc-obj-pair");
       var nat = el("select", "pc-edit-field");
       var natureDe = it.arme ? "arme" : it.vet ? "vet" : it.acc ? "acc" : it.sac ? "sac" :
-                     it.ceint ? "ceint" : it.nourri ? "nourri" : "";
+                     it.ceint ? "ceint" : it.nourri ? "nourri" : it.contenant ? "contenant" : "";
       [["", "Objet"], ["nourri", "Nourriture"], ["vet", "Vêtement"], ["acc", "Accessoire"],
-       ["sac", "Sac à dos"], ["ceint", "Ceinture"], ["arme", "Arme"]].forEach(function (n) {
+       ["sac", "Sac à dos"], ["ceint", "Ceinture"], ["contenant", "Contenant"], ["arme", "Arme"]].forEach(function (n) {
         var o = el("option", null, n[1]);
         o.value = n[0];
         if (n[0] === natureDe) o.selected = true;
@@ -472,6 +524,7 @@
         it.nourri = v === "nourri";
         it.sac = v === "sac";
         it.ceint = v === "ceint";
+        it.contenant = v === "contenant" ? (it.contenant || "liquide") : "";
         it.vet = v === "vet" ? (it.vet || "haut") : "";
         it.acc = v === "acc" ? (it.acc || "collier") : "";
         it.arme = v === "arme" ? (it.arme || { attaque: "", degats: "", modsDegats: ["", "", ""],
@@ -505,8 +558,11 @@
       ligneNat.appendChild(kvR);
       body.appendChild(ligneNat);
 
-      // ce que la nature demande, juste sous elle
+      // ce que la nature demande, juste sous elle. Toutes les natures utilisent
+      // le même cadre visuel que la carte d'arme : un seul bloc contient tous
+      // les sous-champs de la nature, au lieu de lignes flottantes.
       if (it.vet) {
+        var cv = carteNature();
         var pv = el("div", "pc-obj-pair");
         var typ = el("select", "pc-edit-field");
         INV_VETEMENTS.concat(["hautbas"]).forEach(function (v) {
@@ -525,16 +581,16 @@
         pv.appendChild(fld("Se porte", typ));
         pv.appendChild(champNombre("Poches", function () { return it.poches; },
           function (v) { it.poches = pnum(v); }, "Ce que ce vêtement porté ajoute aux Poches, en eb"));
-        body.appendChild(pv);
+        cv.appendChild(pv);
 
         var types = ["contondant", "perforant", "tranchant", "feu", "froid", "eclair", "decomposition", "ethere", "brut"];
         types.forEach(function(t) {
-            var pr = el("div", "pc-obj-pair");
-            pr.appendChild(champNombre("Res " + t, function () { return it["res_" + t]; },
-              function (v) { it["res_" + t] = snum(v); }, "Resistance " + t + " (%)"));
-            pr.appendChild(champNombre("Prot " + t, function () { return it["prot_" + t]; },
-              function (v) { it["prot_" + t] = snum(v); }, "Protection " + t + " (flat)"));
-            body.appendChild(pr);
+          var pr = el("div", "pc-obj-pair");
+          pr.appendChild(champNombre("Res " + t, function () { return it["res_" + t]; },
+            function (v) { it["res_" + t] = snum(v); }, "Resistance " + t + " (%)"));
+          pr.appendChild(champNombre("Prot " + t, function () { return it["prot_" + t]; },
+            function (v) { it["prot_" + t] = snum(v); }, "Protection " + t + " (flat)"));
+          cv.appendChild(pr);
         });
 
         var pp = el("div", "pc-obj-pair");
@@ -542,10 +598,13 @@
           function (v) { it.froid = snum(v); }, "Protection contre le froid, en degrés"));
         pp.appendChild(champNombre("Défense Chaud", function () { return it.chaud; },
           function (v) { it.chaud = snum(v); }, "Protection contre le chaud, en degrés"));
-        body.appendChild(pp);
+        cv.appendChild(pp);
+        body.appendChild(cv);
       }
+
       // l'ACCESSOIRE : sa case, ses poches, sa protection
       if (it.acc) {
+        var ca = carteNature();
         var pa = el("div", "pc-obj-pair");
         var tya = el("select", "pc-edit-field");
         Object.keys(INV_ACC_TYPES).forEach(function (v) {
@@ -563,14 +622,16 @@
         pa.appendChild(fld("Se porte", tya));
         pa.appendChild(champNombre("Poches", function () { return it.poches; },
           function (v) { it.poches = pnum(v); }, "Ce que cet accessoire porté ajoute aux Poches, en eb"));
-        body.appendChild(pa);
+        ca.appendChild(pa);
         var ppa = el("div", "pc-obj-pair");
         ppa.appendChild(champNombre("Froid", function () { return it.froid; },
           function (v) { it.froid = snum(v); }, "Protection contre le froid, en degrés"));
         ppa.appendChild(champNombre("Chaud", function () { return it.chaud; },
           function (v) { it.chaud = snum(v); }, "Protection contre le chaud, en degrés"));
-        body.appendChild(ppa);
+        ca.appendChild(ppa);
+        body.appendChild(ca);
       }
+
       // les EMPLACEMENTS d'une ceinture ou d'un sac : leur nombre, et
       // l'encombrance au plus de chacun. Les changer redessine les groupes.
       function champsEp() {
@@ -584,22 +645,43 @@
         });
         return pe;
       }
-      if (it.ceint) body.appendChild(champsEp());
+      if (it.ceint) {
+        var cc = carteNature();
+        cc.appendChild(champsEp());
+        body.appendChild(cc);
+      }
+
       // la nourriture porte son VOLUME : ce qu'une dose ou une part occupe de
       // contenance une fois avalée
       if (it.nourri) {
+        var cn = carteNature();
         var pn = el("div", "pc-obj-pair");
         pn.appendChild(champNombre("Volume", function () { return it.places; },
           function (v) { it.places = pnum(v); }, "Ce qu'une dose ou une part occupe de contenance"));
-        body.appendChild(pn);
+        cn.appendChild(pn);
+        body.appendChild(cn);
       }
+
       if (it.sac) {
+        var cs = carteNature();
         var ps = el("div", "pc-obj-pair");
         ps.appendChild(champNombre("Capacité", function () { return it.cap; },
           function (v) { it.cap = pnum(v); }, "Ce que ce sac contient, en eb"));
-        body.appendChild(ps);
-        body.appendChild(champsEp());
+        cs.appendChild(ps);
+        cs.appendChild(champsEp());
+        body.appendChild(cs);
       }
+
+      // Le CONTENANT ne stocke pour l'instant que ce qu'il est conçu pour
+      // contenir. Les munitions viennent directement des armes du livre.
+      if (it.contenant) {
+        var ct = carteNature();
+        var pct = el("div", "pc-obj-pair");
+        pct.appendChild(fld("Catégorie", selCategorieContenant(it)));
+        ct.appendChild(pct);
+        body.appendChild(ct);
+      }
+
       // L'ARME : cinq lignes de données, sans gestes ni boutons. Ses
       // rafraîchissements vont au registre du PANNEAU, vidé à chaque rendu :
       // sinon chaque clic sur une tuile laisserait des fonctions pointer sur un

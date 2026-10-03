@@ -182,7 +182,7 @@
           places: recu.places, achat: recu.achat, vente: recu.vente, desc: recu.desc,
           ou: gSel && gSel.value === "poches" ? "poches" : "sac",
           rapide: recu.rapide, vet: "", poches: 0, froid: 0, chaud: 0,
-          sac: false, cap: 0, arme: null
+          sac: false, cap: 0, contenant: "", arme: null
         });
       }
       refresh();

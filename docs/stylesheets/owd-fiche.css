@@ -942,7 +942,10 @@ html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où 
    Cinq lignes fixes : attaque/dégâts ; trois MOD de dégâts ; parade/réduction ;
    trois MOD de parade ; compétence/type. Aucun geste ni bouton ici : le futur
    module d'attaque consommera ces données sans refaire l'inventaire. */
-.pc-arme { border: 1px solid var(--hair); border-radius: 8px; background: var(--card); padding: .35rem .55rem .45rem; margin-bottom: .5rem; }
+.pc-arme, .pc-obj-subcard { border: 1px solid var(--hair); border-radius: 8px; background: var(--card); padding: .35rem .55rem .45rem; margin-bottom: .5rem; }
+.pc-obj-subcard { display: flex; flex-direction: column; gap: .3rem; }
+.pc-obj-subcard .pc-obj-pair { min-width: 0; }
+.pc-obj-subcard .pc-select, .pc-obj-subcard select, .pc-obj-subcard input { min-width: 0; box-sizing: border-box; }
 .pc-arme-line { display: grid; align-items: end; gap: .35rem .6rem; margin-top: .3rem; }
 .pc-arme-line:first-child { margin-top: 0; }
 .pc-arme-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }

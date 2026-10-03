@@ -716,6 +716,14 @@ def _armes(armes_md, caracs, armes_css=None):
             brut_types = ligne_d.get("types") or ligne_d.get("type") or ""
             if brut_types:
                 d["types"] = [x.strip() for x in brut_types.split("/") if x.strip()]
+            # Les munitions ne servent pas qu'aux armes : l'inventaire s'en
+            # sert pour proposer les catégories de contenants à munitions. La
+            # clé est stable/sans accent ; le nom reste exactement celui du
+            # livre pour l'affichage. Une cellule vide signifie qu'aucun
+            # consommable n'est requis et ne produit donc aucune catégorie.
+            brut_munition = (ligne_d.get("munition") or "").strip()
+            if brut_munition:
+                d["munition"] = {"cle": _cle(brut_munition), "nom": brut_munition}
             out.append(d)
     if not out:
         raise ErreurRegles("armes : aucune ligne d'arme lisible")
