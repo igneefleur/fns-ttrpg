@@ -1878,3 +1878,38 @@ html.night .pc-attaque-carte .hx-vide { fill-opacity: .12; }
   .pc-attaque-carte { height: 8rem; }
   .pc-attaque-controles { margin-left: 0; }
 }
+
+/* ---- récupération naturelle ----
+   Même langage que Compétences : recherche + puce, puis groupes par réserve.
+   La colonne est étroite ; une ligne garde donc trois pistes compactes :
+   contexte | niveau | cadence. Le stepper n'apparaît qu'au rouage. */
+.pc-rec-list { display: flex; flex-direction: column; gap: 0; }
+.pc-rec-row {
+  display: grid; grid-template-columns: minmax(0, 1fr) 5.4rem 4.8rem;
+  gap: .18rem .3rem; align-items: center; padding: .14rem .25rem .18rem;
+  font-size: var(--fs-body); border-radius: 4px;
+}
+.pc-rec-row.odd { background: var(--stripe); }
+.pc-rec-row.head {
+  background: var(--card); border-bottom: 1px solid var(--line); border-radius: 0;
+  padding: .2rem .25rem .16rem; font-size: var(--fs-label); font-weight: 700;
+  text-transform: uppercase; letter-spacing: .04em; color: var(--ink-3);
+}
+.pc-rec-row.head > span { min-width: 0; text-align: center; white-space: nowrap; overflow: hidden; }
+.pc-rec-name { min-width: 0; color: var(--ink); overflow: hidden; }
+.pc-rec-name .ctx { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pc-rec-niv, .pc-rec-cad {
+  min-width: 0; text-align: center; font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.pc-rec-niv { font-size: .7rem; font-weight: 700; color: var(--ink); }
+.pc-rec-cad { font-size: .61rem; color: var(--ink-3); }
+.pc-rec-row.context:not(.active) .pc-rec-name { color: var(--ink-2); }
+.pc-rec-row.active { box-shadow: inset 2px 0 0 var(--accent); }
+.pc-rec-row.active .pc-rec-cad { color: var(--accent-deep); font-weight: 700; }
+.pc-rec-row .pc-step { justify-content: center; gap: .16rem; }
+.pc-rec-row .pc-step button { width: .95rem; height: .95rem; font-size: .68rem; }
+.pc-rec-row .pc-step .pc-num { width: 1.85rem; font-size: .68rem; }
+/* Le titre de groupe réutilise pc-comp-champ mais porte ici une abréviation ;
+   l'abréviation ne doit pas pousser le filet hors de la colonne. */
+.pc-rec-list .pc-comp-champ { gap: .3rem; }
+.pc-rec-list .pc-comp-champ .pc-abbr { flex: 0 0 auto; }

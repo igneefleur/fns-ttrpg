@@ -474,6 +474,241 @@
     "niveau": 20
    }
   ],
+  "recuperations": [
+   {
+    "id": "pv:eveille",
+    "reserve": "pv",
+    "contexte": "Éveillé",
+    "condition": "sommeil",
+    "valeur": false,
+    "niveau": 0
+   },
+   {
+    "id": "pv:endormi",
+    "reserve": "pv",
+    "contexte": "Endormi",
+    "condition": "sommeil",
+    "valeur": true,
+    "niveau": 5
+   },
+   {
+    "id": "pe:eveille",
+    "reserve": "pe",
+    "contexte": "Éveillé",
+    "condition": "sommeil",
+    "valeur": false,
+    "niveau": 10
+   },
+   {
+    "id": "pe:endormi",
+    "reserve": "pe",
+    "contexte": "Endormi",
+    "condition": "sommeil",
+    "valeur": true,
+    "niveau": 10
+   },
+   {
+    "id": "pm:eveille",
+    "reserve": "pm",
+    "contexte": "Éveillé",
+    "condition": "sommeil",
+    "valeur": false,
+    "niveau": 0
+   },
+   {
+    "id": "pm:endormi",
+    "reserve": "pm",
+    "contexte": "Endormi",
+    "condition": "sommeil",
+    "valeur": true,
+    "niveau": -5
+   },
+   {
+    "id": "pi:eveille",
+    "reserve": "pi",
+    "contexte": "Éveillé",
+    "condition": "sommeil",
+    "valeur": false,
+    "niveau": 0
+   },
+   {
+    "id": "pi:endormi",
+    "reserve": "pi",
+    "contexte": "Endormi",
+    "condition": "sommeil",
+    "valeur": true,
+    "niveau": 0
+   },
+   {
+    "id": "pr:sommeil",
+    "reserve": "pr",
+    "contexte": "Sommeil",
+    "condition": "effort",
+    "valeur": "sommeil",
+    "niveau": 7
+   },
+   {
+    "id": "ps:sommeil",
+    "reserve": "ps",
+    "contexte": "Sommeil",
+    "condition": "effort",
+    "valeur": "sommeil",
+    "niveau": -3
+   },
+   {
+    "id": "ph:sommeil",
+    "reserve": "ph",
+    "contexte": "Sommeil",
+    "condition": "effort",
+    "valeur": "sommeil",
+    "niveau": -3
+   },
+   {
+    "id": "pr:repos",
+    "reserve": "pr",
+    "contexte": "Repos",
+    "condition": "effort",
+    "valeur": "repos",
+    "niveau": -4
+   },
+   {
+    "id": "ps:repos",
+    "reserve": "ps",
+    "contexte": "Repos",
+    "condition": "effort",
+    "valeur": "repos",
+    "niveau": -4
+   },
+   {
+    "id": "ph:repos",
+    "reserve": "ph",
+    "contexte": "Repos",
+    "condition": "effort",
+    "valeur": "repos",
+    "niveau": -4
+   },
+   {
+    "id": "pr:leger",
+    "reserve": "pr",
+    "contexte": "Léger",
+    "condition": "effort",
+    "valeur": "leger",
+    "niveau": -5
+   },
+   {
+    "id": "ps:leger",
+    "reserve": "ps",
+    "contexte": "Léger",
+    "condition": "effort",
+    "valeur": "leger",
+    "niveau": -5
+   },
+   {
+    "id": "ph:leger",
+    "reserve": "ph",
+    "contexte": "Léger",
+    "condition": "effort",
+    "valeur": "leger",
+    "niveau": -5
+   },
+   {
+    "id": "pr:intermediaire",
+    "reserve": "pr",
+    "contexte": "Intermédiaire",
+    "condition": "effort",
+    "valeur": "intermediaire",
+    "niveau": -6
+   },
+   {
+    "id": "ps:intermediaire",
+    "reserve": "ps",
+    "contexte": "Intermédiaire",
+    "condition": "effort",
+    "valeur": "intermediaire",
+    "niveau": -6
+   },
+   {
+    "id": "ph:intermediaire",
+    "reserve": "ph",
+    "contexte": "Intermédiaire",
+    "condition": "effort",
+    "valeur": "intermediaire",
+    "niveau": -6
+   },
+   {
+    "id": "pr:lourd",
+    "reserve": "pr",
+    "contexte": "Lourd",
+    "condition": "effort",
+    "valeur": "lourd",
+    "niveau": -8
+   },
+   {
+    "id": "ps:lourd",
+    "reserve": "ps",
+    "contexte": "Lourd",
+    "condition": "effort",
+    "valeur": "lourd",
+    "niveau": -7
+   },
+   {
+    "id": "ph:lourd",
+    "reserve": "ph",
+    "contexte": "Lourd",
+    "condition": "effort",
+    "valeur": "lourd",
+    "niveau": -7
+   }
+  ],
+  "recupBloques": [
+   {
+    "reserve": "pe",
+    "effort": "lourd"
+   }
+  ],
+  "recupManqueSommeil": {
+   "id": "pm:eveille",
+   "reserve": "pm",
+   "source": "pr",
+   "tranche": 10,
+   "bonus": 2
+  },
+  "recupExposition": {
+   "froid": [
+    {
+     "niveau": 3,
+     "reserve": "pv",
+     "minutes": 120
+    },
+    {
+     "niveau": 6,
+     "reserve": "pv",
+     "minutes": 240
+    },
+    {
+     "niveau": 9,
+     "reserve": "pv",
+     "aucune": true
+    }
+   ],
+   "chaud": [
+    {
+     "niveau": 3,
+     "reserve": "pe",
+     "minutes": 60
+    },
+    {
+     "niveau": 6,
+     "reserve": "pe",
+     "minutes": 480
+    },
+    {
+     "niveau": 9,
+     "reserve": "pe",
+     "aucune": true
+    }
+   ]
+  },
   "paliers": {
    "diviseur": 4,
    "arrondi": "haut"

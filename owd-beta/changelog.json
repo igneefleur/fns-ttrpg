@@ -1,5 +1,19 @@
 [
 {
+"short": "7180810",
+"author": "Théo Cavaillès",
+"date": "2026-10-05T12:52:46+02:00",
+"message": "Update fns-owd-beta files",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/7180810cea9f3b4ad715940e3668147bdf0b34da",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/base/capacites-physiques.md",
+"url": "content/regles/base/capacites-physiques/"
+}
+]
+},
+{
 "short": "4d3c10d",
 "author": "Théo Cavaillès",
 "date": "2026-10-02T14:42:16+02:00",
@@ -145,20 +159,6 @@
 "date": "2026-09-22T18:51:20+02:00",
 "message": "Les quatre attaques de la grande hache",
 "url": "https://github.com/igneefleur/fns-ttrpg/commit/1c77afd7d0fce3fec71ae9269092317c8eafe460",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/combat/armes.md",
-"url": "content/regles/combat/armes/"
-}
-]
-},
-{
-"short": "52ad56d",
-"author": "Théo Cavaillès",
-"date": "2026-09-22T18:49:47+02:00",
-"message": "Les quatre attaques du grand sabre",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/52ad56dcbf82366bed889fd74b231c0484b123b3",
 "files": [
 {
 "status": "modified",
