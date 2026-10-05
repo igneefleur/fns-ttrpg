@@ -1880,89 +1880,142 @@ html.night .pc-attaque-carte .hx-vide { fill-opacity: .12; }
 }
 
 /* ---- récupération ----
-   Même langage visuel que Compétences / Effondrement : aucune valeur nue.
-   Le libellé de la récupération vit au-dessus ; la grille ne porte QUE les
-   quatre informations de jeu demandées : Active | Niveau | Temps | Type. */
+   LE LANGAGE VISUEL VIENT DES FICHES MIA : quand plusieurs valeurs forment
+   UNE information, elles vivent dans UN SEUL cadre segmenté [ A | B | C ].
+   Ici les quatre quarts sont TOUJOURS strictement égaux :
+       [ ACTIVE | NIVEAU | TEMPS | TYPE ]
+   La largeur ne dépend jamais du contenu, du mode édition ni d'un palier
+   responsive. L'entête reprend exactement le même squelette sans son cadre,
+   donc les quatre mots tombent toujours en face des quatre cases. */
 .pc-rec-list { display: flex; flex-direction: column; gap: 0; }
+
+/* Une réserve = son nom, puis son total de récupération segmenté. Le total
+   prend sa propre ligne : dans la colonne étroite de gauche, le coincer entre
+   « Points de vie » et le bouton + était la principale source d'espaces
+   incohérents et de retours à la ligne. */
 .pc-rec-grouphead {
-  display: flex; align-items: center; gap: .3rem; min-width: 0;
-  margin-top: .22rem; padding: .24rem .05rem .16rem;
+  display: grid; grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center; gap: .16rem .3rem; min-width: 0;
+  margin-top: .3rem; padding: .26rem .08rem .18rem;
   border-bottom: 1px solid var(--line);
 }
 .pc-rec-groupname {
   display: flex; align-items: center; gap: .3rem; min-width: 0;
   color: var(--ink-2); font-size: var(--fs-label); font-weight: 700;
-  letter-spacing: .04em; text-transform: uppercase; white-space: nowrap;
+  letter-spacing: .04em; text-transform: uppercase;
+}
+.pc-rec-groupname > span:last-child {
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .pc-rec-groupname .pc-abbr { flex: 0 0 auto; }
+.pc-rec-addbtn { grid-column: 2; grid-row: 1; margin: 0; }
+
+/* [ cadence | cadence | ... ] : même principe segmenté que les fiches MIA.
+   Les segments se partagent TOUJOURS la largeur disponible à parts égales. */
 .pc-rec-totaux {
-  margin-left: auto; min-width: 0; display: flex; flex-wrap: wrap;
-  justify-content: flex-end; gap: .18rem;
+  grid-column: 1 / -1; grid-row: 2;
+  display: flex; align-items: stretch; width: 100%; min-width: 0;
+  box-sizing: border-box; overflow: hidden;
+  border: 1px solid var(--line-2); border-radius: 5px; background: var(--panel);
 }
 .pc-rec-total {
-  box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center;
-  min-height: 1.18rem; padding: .04rem .25rem;
-  border: 1px solid var(--line-2); border-radius: 5px; background: var(--card);
-  color: var(--accent-deep); font-size: .58rem; font-weight: 700;
+  flex: 1 1 0; min-width: 0; box-sizing: border-box;
+  display: flex; align-items: center; justify-content: center;
+  min-height: 1.22rem; padding: .05rem .08rem;
+  color: var(--accent-deep); font-size: .56rem; font-weight: 700;
   font-variant-numeric: tabular-nums; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
 }
+.pc-rec-total + .pc-rec-total { box-shadow: inset 1px 0 0 var(--line-2); }
 .pc-rec-total.zero { color: var(--ink-3); font-weight: 600; }
-.pc-rec-addbtn { flex: 0 0 auto; margin-left: .06rem; }
 
+/* LE QUATUOR. Pas 2.7rem + .9fr + .9fr + 1.2fr : QUATRE QUARTS, point.
+   C'est le même invariant que les trios/quintuples de MIA. */
 .pc-rec-grid {
-  display: grid;
-  grid-template-columns: 2.7rem minmax(0, .9fr) minmax(0, .9fr) minmax(0, 1.2fr);
-  gap: .24rem; align-items: center; min-width: 0;
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0; align-items: stretch; width: 100%; min-width: 0;
+  box-sizing: border-box; overflow: hidden; line-height: 1.1;
+  border: 1px solid var(--line-2); border-radius: 5px; background: var(--panel);
 }
 .pc-rec-grid.head {
-  padding: .18rem .22rem .12rem; color: var(--ink-3);
-  font-size: var(--fs-label); font-weight: 700; letter-spacing: .035em;
+  margin: .14rem .1rem .04rem; width: auto;
+  border-color: transparent; border-radius: 0; background: transparent;
+  overflow: visible; color: var(--ink-3);
+  font-size: var(--fs-label); font-weight: 700; letter-spacing: .02em;
   text-transform: uppercase;
 }
-.pc-rec-grid.head > span { min-width: 0; text-align: center; white-space: nowrap; overflow: hidden; }
-.pc-rec-entry { padding: .1rem .22rem .2rem; border-radius: 4px; }
+.pc-rec-grid.head > span {
+  min-width: 0; display: flex; align-items: center; justify-content: center;
+  padding: .03rem .06rem; text-align: center; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+}
+
+.pc-rec-entry {
+  padding: .12rem .1rem .22rem; border-radius: 4px;
+  border-bottom: 1px solid var(--hair);
+}
+.pc-rec-entry:last-child { border-bottom: none; }
 .pc-rec-entry.odd { background: var(--stripe); }
 .pc-rec-entry.active { box-shadow: inset 2px 0 0 var(--accent); }
 .pc-rec-label {
   min-width: 0; display: flex; align-items: center; justify-content: space-between;
-  gap: .3rem; padding: .04rem 0 .12rem; color: var(--ink-2);
+  gap: .25rem; padding: .02rem .06rem .1rem; color: var(--ink-2);
   font-size: .62rem; font-weight: 700;
 }
-.pc-rec-label > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pc-rec-name-edit {
-  box-sizing: border-box; width: 100%; min-width: 0; padding: .12rem .32rem;
-  border: 1px solid var(--line-2); border-radius: 5px; background: var(--card);
-  color: var(--ink); font: inherit; font-size: .64rem; font-weight: 700;
+.pc-rec-label > span {
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-.pc-rec-name-edit:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--wash); }
-.pc-rec-cell { min-width: 0; display: flex; align-items: center; justify-content: center; }
-.pc-rec-cell.active-cell { min-height: 1.45rem; }
+.pc-rec-name-edit {
+  box-sizing: border-box; width: 100%; min-width: 0; padding: .08rem .14rem;
+  border: none; border-bottom: 1px solid var(--line); border-radius: 0;
+  background: transparent; color: var(--ink); font: inherit;
+  font-size: .64rem; font-weight: 700;
+}
+.pc-rec-name-edit:focus { outline: none; border-bottom: 2px solid var(--accent); }
+
+/* Une case est un quart du cadre. Les séparateurs sont des ombres INTERNES :
+   une vraie bordure sur les cases suivantes volerait un pixel à certaines
+   colonnes et elles ne seraient plus mathématiquement égales. */
+.pc-rec-cell {
+  min-width: 0; min-height: 1.55rem; padding: .08rem .08rem;
+  box-sizing: border-box; display: flex; align-items: center; justify-content: center;
+}
+.pc-rec-cell + .pc-rec-cell { box-shadow: inset 1px 0 0 var(--line-2); }
+.pc-rec-cell.active-cell { min-height: 1.55rem; }
 .pc-rec-native-active { display: block; width: 100%; height: 1px; }
 .pc-rec-active {
   width: 1rem; height: 1rem; margin: 0; accent-color: var(--accent); cursor: pointer;
 }
-/* Même rectangle arrondi qu'Effondrement : lecture, champ et sélecteur gardent
-   exactement la même hauteur, donc ouvrir le rouage ne fait pas sauter la ligne. */
+
+/* Lecture ET édition occupent LA MÊME case du cadre segmenté. Le nombre n'a
+   donc pas son propre petit rectangle : le rectangle arrondi est le quatuor,
+   exactement comme [ VAL | MOD | LIM ] dans MIA. */
 .pc-rec-box {
-  box-sizing: border-box; width: 100%; min-width: 0; min-height: 1.45rem;
-  display: inline-flex; align-items: center; justify-content: center;
-  padding: .08rem .24rem; border: 1px solid var(--line-2); border-radius: 5px;
-  background: var(--card); color: var(--ink); font: inherit; font-size: .67rem;
-  font-weight: 700; text-align: center; font-variant-numeric: tabular-nums;
+  box-sizing: border-box; width: 100%; min-width: 0; min-height: 1.25rem;
+  display: flex; align-items: center; justify-content: center;
+  padding: .02rem .04rem; border: 0; border-radius: 0; background: transparent;
+  color: var(--ink); font: inherit; font-size: .67rem; font-weight: 700;
+  text-align: center; font-variant-numeric: tabular-nums;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.pc-rec-box.adj { color: var(--accent-deep); border-color: var(--accent); }
+.pc-rec-box.adj { color: var(--accent-deep); }
 input.pc-rec-box { -moz-appearance: textfield; appearance: textfield; }
 input.pc-rec-box::-webkit-inner-spin-button,
 input.pc-rec-box::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 input.pc-rec-box:focus, select.pc-rec-box:focus {
-  outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--wash);
+  outline: none; box-shadow: inset 0 -2px 0 var(--accent);
 }
-select.pc-rec-box { cursor: pointer; padding-right: .12rem; }
+select.pc-rec-box {
+  cursor: pointer; padding: .02rem .04rem;
+  -moz-appearance: none; appearance: none; text-align-last: center;
+}
 .pc-rec-entry.inactive .pc-rec-label { color: var(--ink-3); }
 
+/* Au plus étroit, on réduit seulement la typographie. LA GRILLE RESTE QUATRE
+   QUARTS ÉGAUX : aucun breakpoint n'a le droit de changer cet invariant. */
 @media (max-width: 30em) {
-  .pc-rec-grid { grid-template-columns: 2.45rem minmax(0, .8fr) minmax(0, .8fr) minmax(0, 1.15fr); gap: .16rem; }
-  .pc-rec-box { font-size: .61rem; padding-left: .12rem; padding-right: .12rem; }
-  .pc-rec-total { font-size: .54rem; }
+  .pc-rec-grid.head { font-size: .49rem; }
+  .pc-rec-box { font-size: .61rem; }
+  .pc-rec-total { font-size: .52rem; padding-left: .04rem; padding-right: .04rem; }
 }
+

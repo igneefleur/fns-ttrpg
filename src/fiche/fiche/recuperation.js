@@ -293,7 +293,9 @@
     var s = el("select", "pc-rec-box pc-rec-select"), i, d, o;
     for (i = 0; i < RECUP_DUREES.length; i++) {
       d = RECUP_DUREES[i];
-      o = el("option", null, d.nom); o.value = d.cle; s.appendChild(o);
+      // Comme les cases segmentées de MIA : la valeur fermée reste courte et
+      // lisible dans SON quart de ligne. Le nom complet reste en infobulle.
+      o = el("option", null, d.court); o.value = d.cle; o.title = d.nom; s.appendChild(o);
     }
     s.value = r.type;
     s.addEventListener("change", function () {
