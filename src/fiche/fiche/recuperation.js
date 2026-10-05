@@ -321,21 +321,20 @@
 
   function recupLabelModule(r) {
     var w = el("div", "pc-rec-label");
-    if (!r.perso) {
+    // Même règle que les autres modules : en édition on ne superpose JAMAIS
+    // le texte de jeu et son champ. Une récupération ajoutée montre donc son
+    // INPUT, et seulement lui ; hors édition elle montre son nom, et seulement lui.
+    if (!r.perso || !isEdit("recuperation")) {
       w.appendChild(el("span", null, recupNom(r)));
       return w;
     }
-    var jeu = el("span", "pc-jeu-only", recupNom(r));
-    var ed = el("input", "pc-edit-only pc-rec-name-edit");
+    var ed = el("input", "pc-rec-name-edit");
     ed.type = "text"; ed.value = recupNom(r); ed.setAttribute("aria-label", "Nom de la récupération");
     ed.addEventListener("input", function () { r.nom = ed.value; refresh(); });
     ed.addEventListener("blur", function () { r.nom = capFirst(String(r.nom || "").trim()) || "Récupération"; refresh(); });
-    recupHooks.push(function () {
-      jeu.textContent = recupNom(r);
-      if (document.activeElement !== ed) ed.value = recupNom(r);
-    });
-    w.appendChild(jeu); w.appendChild(ed);
-    var del = el("button", "pc-comp-del pc-edit-only", "✕");
+    recupHooks.push(function () { if (document.activeElement !== ed) ed.value = recupNom(r); });
+    w.appendChild(ed);
+    var del = el("button", "pc-comp-del", "✕");
     del.type = "button"; del.title = "Supprimer cette récupération ajoutée";
     del.addEventListener("click", function () { supprimeRecupAjoutModule(r); });
     w.appendChild(del);
@@ -349,9 +348,13 @@
     var nivCell = el("span", "pc-rec-cell");
     var tempsCell = el("span", "pc-rec-cell");
     var typeCell = el("span", "pc-rec-cell");
-    var nivJeu, nivEdit, tempsJeu, tempsEdit, typeJeu, cb, e;
+    var edit = isEdit("recuperation");
+    var nivJeu = null, tempsJeu = null, typeJeu = null, cb = null, e;
     wrap.appendChild(recupLabelModule(r));
 
+    // « Active » est un vrai contrôle de jeu pour les récupérations ajoutées.
+    // Les récupérations natives restent conditionnées par leurs règles et ne
+    // montrent donc jamais de case à cocher.
     if (r.perso) {
       cb = el("input", "pc-rec-active"); cb.type = "checkbox";
       cb.title = "Activer ou désactiver cette récupération";
@@ -362,33 +365,39 @@
     }
     row.appendChild(actifCell);
 
-    nivJeu = recupBoiteTexteModule(""); nivJeu.classList.add("pc-jeu-only");
-    nivCell.appendChild(nivJeu);
-    if (r.perso) {
-      nivEdit = recupChampNombreModule(function () { return r.niveau; }, function (v) {
-        r.niveau = clamp(Math.round(v), -recupNiveauMaxModule(), recupNiveauMaxModule());
-      }, "Niveau de cette récupération");
+    // Une case = UNE valeur. En jeu : résultat. En édition : input. Jamais les deux.
+    if (edit) {
+      if (r.perso) {
+        nivCell.appendChild(recupChampNombreModule(function () { return r.niveau; }, function (v) {
+          r.niveau = clamp(Math.round(v), -recupNiveauMaxModule(), recupNiveauMaxModule());
+        }, "Niveau de cette récupération"));
+      } else {
+        nivCell.appendChild(recupChampNombreModule(function () { return recupBonusModule(r); }, function (v) {
+          ecritRecupBonusModule(r, v);
+        }, "Bonus au niveau de récupération (la règle de base n'est pas modifiée)"));
+      }
     } else {
-      nivEdit = recupChampNombreModule(function () { return recupBonusModule(r); }, function (v) {
-        ecritRecupBonusModule(r, v);
-      }, "Bonus au niveau de récupération (la règle de base n'est pas modifiée)");
+      nivJeu = recupBoiteTexteModule("");
+      nivCell.appendChild(nivJeu);
     }
-    nivEdit.classList.add("pc-edit-only");
-    nivCell.appendChild(nivEdit);
     row.appendChild(nivCell);
 
     if (r.perso) {
-      tempsJeu = recupBoiteTexteModule(""); tempsJeu.classList.add("pc-jeu-only");
-      tempsEdit = recupChampNombreModule(function () { return fmtP(recupTempsRestantModule(r)); }, function (v) {
-        var d = recupDureeDef(r.type);
-        r.temps = Math.max(0, num(v, 0));
-        r.reste = d.minutes == null ? r.temps : r.temps * d.minutes;
-      }, "Durée restante de cette récupération");
-      tempsEdit.min = "0"; tempsEdit.step = "any"; tempsEdit.classList.add("pc-edit-only");
-      tempsCell.appendChild(tempsJeu); tempsCell.appendChild(tempsEdit);
-      typeJeu = recupBoiteTexteModule(recupDureeDef(r.type).court); typeJeu.classList.add("pc-jeu-only");
-      var typeEdit = recupSelectDureeModule(r); typeEdit.classList.add("pc-edit-only");
-      typeCell.appendChild(typeJeu); typeCell.appendChild(typeEdit);
+      if (edit) {
+        var tempsEdit = recupChampNombreModule(function () { return fmtP(recupTempsRestantModule(r)); }, function (v) {
+          var d = recupDureeDef(r.type);
+          r.temps = Math.max(0, num(v, 0));
+          r.reste = d.minutes == null ? r.temps : r.temps * d.minutes;
+        }, "Durée restante de cette récupération");
+        tempsEdit.min = "0"; tempsEdit.step = "any";
+        tempsCell.appendChild(tempsEdit);
+        typeCell.appendChild(recupSelectDureeModule(r));
+      } else {
+        tempsJeu = recupBoiteTexteModule("");
+        typeJeu = recupBoiteTexteModule(recupDureeDef(r.type).court);
+        tempsCell.appendChild(tempsJeu);
+        typeCell.appendChild(typeJeu);
+      }
     } else {
       tempsCell.appendChild(recupBoiteTexteModule("∞"));
       typeCell.appendChild(recupBoiteTexteModule("—"));
@@ -399,12 +408,12 @@
     recupHooks.push(function () {
       e = recupEtatVueModule(r);
       if (cb) cb.checked = !!r.actif;
-      nivJeu.textContent = sign(e.niveau);
-      nivJeu.classList.toggle("adj", !r.perso && recupBonusModule(r) !== 0);
-      if (r.perso) {
-        tempsJeu.textContent = fmtP(recupTempsRestantModule(r));
-        typeJeu.textContent = recupDureeDef(r.type).court;
+      if (nivJeu) {
+        nivJeu.textContent = sign(e.niveau);
+        nivJeu.classList.toggle("adj", !r.perso && recupBonusModule(r) !== 0);
       }
+      if (tempsJeu) tempsJeu.textContent = fmtP(recupTempsRestantModule(r));
+      if (typeJeu) typeJeu.textContent = recupDureeDef(r.type).court;
       wrap.classList.toggle("active", !!e.actif);
       wrap.classList.toggle("inactive", !e.actif);
       wrap.title = recupLibelle(r) + " · " + recupNom(r) + " · niveau " + sign(e.niveau) +
@@ -453,8 +462,6 @@
     h.appendChild(nom);
     var totals = el("span", "pc-rec-totaux");
     h.appendChild(totals);
-    var add = miniBtn("+", "Ajouter une récupération à " + recupLibelle(ref), function () { ajouteRecupModule(cle); }, "pc-edit-only");
-    add.classList.add("pc-rec-addbtn"); h.appendChild(add);
     recupHooks.push(function () {
       var t = recupTotauxModule(cle), i;
       totals.innerHTML = "";
@@ -462,6 +469,14 @@
       else for (i = 0; i < t.length; i++) totals.appendChild(el("span", "pc-rec-total", t[i].texte));
     });
     return h;
+  }
+
+  function recupPiedReserveModule(cle, ref) {
+    var pied = el("div", "pc-rec-addrow");
+    var add = miniBtn("+", "Ajouter une récupération à " + recupLibelle(ref), function () { ajouteRecupModule(cle); });
+    add.classList.add("pc-rec-addbtn");
+    pied.appendChild(add);
+    return pied;
   }
 
   function rebuildRecuperation() {
@@ -490,14 +505,19 @@
     ordre.forEach(function (cle) {
       var groupe = liste.filter(function (r) { return r.reserve === cle; });
       var ref = groupe[0];
-      recupBox.appendChild(recupEnteteReserveModule(cle, ref));
+      var groupeBox = el("div", "pc-rec-group");
+      groupeBox.appendChild(recupEnteteReserveModule(cle, ref));
       var head = el("div", "pc-rec-grid head");
       head.appendChild(el("span", null, "Active"));
       head.appendChild(el("span", null, "Niveau"));
       head.appendChild(el("span", null, "Temps"));
       head.appendChild(el("span", null, "Type"));
-      recupBox.appendChild(head);
-      groupe.forEach(function (r, j) { recupBox.appendChild(recupRangeeModule(r, j % 2 === 1)); });
+      groupeBox.appendChild(head);
+      groupe.forEach(function (r, j) { groupeBox.appendChild(recupRangeeModule(r, j % 2 === 1)); });
+      // Comme Compétences : l'ajout termine la liste qu'il prolonge. Jamais
+      // dans l'entête, où il coupe la lecture du nom et des totaux.
+      if (isEdit("recuperation")) groupeBox.appendChild(recupPiedReserveModule(cle, ref));
+      recupBox.appendChild(groupeBox);
     });
     recupVueSig = recupSignatureActivesModule();
     joueRecupHooksModule();

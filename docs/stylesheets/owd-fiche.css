@@ -1128,7 +1128,6 @@ html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où 
   display: grid; align-items: center; gap: .12rem;
   grid-template-columns: minmax(3.2rem, 1.2fr) 1.7rem 1.9rem 1.4rem 1.4rem 2.3rem;
   min-width: 0; padding: .1rem .1rem; border-radius: 4px;
-  border-left: 2px solid transparent;
 }
 /* Le filet séparateur est une COLONNE de la grille, étirée sur toute la
    hauteur de chaque rangée : les segments se rejoignent d'une rangée à l'autre
@@ -1180,10 +1179,9 @@ html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où 
   font-size: .52rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
   color: var(--ink-2); border-bottom: 1px solid var(--hair); padding-bottom: .05rem;
 }
-/* une ligne réglée se repère d'un coup d'œil parmi cinquante. Le liseré est
-   réservé en transparent sur TOUTES les lignes : elle s'allume sans décaler
-   ses voisines. */
-.pc-optcomp-row.on { border-left-color: var(--accent); }
+/* Aucun liseré jaune à gauche pour signaler une valeur modifiée : ce marqueur
+   visuel est volontairement banni de la fiche. Les valeurs modifiées restent
+   identifiables par leur propre contenu/couleur, sans « parenthèse » latérale. */
 /* champs compacts : six colonnes doivent tenir dans une demi-largeur. Le
    modificateur est un champ NU (ni − ni +) : sur cinquante lignes, les boutons
    mangeaient la place sans rien apporter. */
@@ -1889,14 +1887,15 @@ html.night .pc-attaque-carte .hx-vide { fill-opacity: .12; }
    donc les quatre mots tombent toujours en face des quatre cases. */
 .pc-rec-list { display: flex; flex-direction: column; gap: 0; }
 
-/* Une réserve = son nom, puis son total de récupération segmenté. Le total
-   prend sa propre ligne : dans la colonne étroite de gauche, le coincer entre
-   « Points de vie » et le bouton + était la principale source d'espaces
-   incohérents et de retours à la ligne. */
+/* Une réserve = son nom, puis son total de récupération segmenté.
+   Rien d'autre ne partage l'entête : le bouton + vit EN BAS de la liste,
+   exactement là où l'utilisateur ajoute la ligne suivante. */
+.pc-rec-group { min-width: 0; }
+.pc-rec-group + .pc-rec-group { margin-top: .48rem; }
 .pc-rec-grouphead {
-  display: grid; grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center; gap: .16rem .3rem; min-width: 0;
-  margin-top: .3rem; padding: .26rem .08rem .18rem;
+  display: grid; grid-template-columns: minmax(0, 1fr);
+  align-items: center; gap: .14rem; min-width: 0;
+  padding: .08rem .08rem .16rem;
   border-bottom: 1px solid var(--line);
 }
 .pc-rec-groupname {
@@ -1908,12 +1907,11 @@ html.night .pc-attaque-carte .hx-vide { fill-opacity: .12; }
   min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .pc-rec-groupname .pc-abbr { flex: 0 0 auto; }
-.pc-rec-addbtn { grid-column: 2; grid-row: 1; margin: 0; }
 
 /* [ cadence | cadence | ... ] : même principe segmenté que les fiches MIA.
    Les segments se partagent TOUJOURS la largeur disponible à parts égales. */
 .pc-rec-totaux {
-  grid-column: 1 / -1; grid-row: 2;
+  grid-column: 1; grid-row: 2;
   display: flex; align-items: stretch; width: 100%; min-width: 0;
   box-sizing: border-box; overflow: hidden;
   border: 1px solid var(--line-2); border-radius: 5px; background: var(--panel);
@@ -1956,7 +1954,6 @@ html.night .pc-attaque-carte .hx-vide { fill-opacity: .12; }
 }
 .pc-rec-entry:last-child { border-bottom: none; }
 .pc-rec-entry.odd { background: var(--stripe); }
-.pc-rec-entry.active { box-shadow: inset 2px 0 0 var(--accent); }
 .pc-rec-label {
   min-width: 0; display: flex; align-items: center; justify-content: space-between;
   gap: .25rem; padding: .02rem .06rem .1rem; color: var(--ink-2);
@@ -2010,6 +2007,12 @@ select.pc-rec-box {
   -moz-appearance: none; appearance: none; text-align-last: center;
 }
 .pc-rec-entry.inactive .pc-rec-label { color: var(--ink-3); }
+
+.pc-rec-addrow {
+  display: flex; justify-content: flex-end; align-items: center;
+  min-width: 0; padding: .18rem .1rem .08rem;
+}
+.pc-rec-addrow .pc-rec-addbtn { margin: 0; min-width: 2rem; }
 
 /* Au plus étroit, on réduit seulement la typographie. LA GRILLE RESTE QUATRE
    QUARTS ÉGAUX : aucun breakpoint n'a le droit de changer cet invariant. */

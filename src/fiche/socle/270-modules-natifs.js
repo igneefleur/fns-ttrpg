@@ -12,7 +12,6 @@
   var MODULES_NATIFS = [
     // ---- onglet Fiche ----
     { id: "caracs",       titre: "Caractéristiques", onglet: "fiche", colonne: "gauche", build: buildCaracs },
-    { id: "recuperation", titre: "Récupération",   onglet: "fiche", colonne: "gauche", build: buildRecuperation },
     { id: "effort",       titre: "Effort et Temps",  onglet: "fiche", colonne: "gauche", build: buildEffort },
     { id: "survie",       titre: "Survie",           onglet: "fiche", colonne: "gauche", build: buildSurvie },
     { id: "exposition",   titre: "Exposition",       onglet: "fiche", colonne: "gauche", build: buildExposition },
@@ -22,6 +21,7 @@
     { id: "pe",           titre: "PE",               onglet: "fiche", colonne: "milieu", build: buildPe },
     { id: "pm",           titre: "PM",               onglet: "fiche", colonne: "milieu", build: buildPm },
     { id: "mouvement",    titre: "Mouvement",        onglet: "fiche", colonne: "milieu", build: buildMouvement },
+    { id: "recuperation", titre: "Récupération",     onglet: "fiche", colonne: "milieu", build: buildRecuperation },
     { id: "effondrement", titre: "Effondrement",     onglet: "fiche", colonne: "milieu", build: buildEffondrement },
     { id: "pi",           titre: "PI",               onglet: "fiche", colonne: "milieu", build: buildPi },
     { id: "pc",           titre: "PC",               onglet: "fiche", colonne: "milieu", build: buildPc },
