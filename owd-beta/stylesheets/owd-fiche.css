@@ -1919,8 +1919,9 @@ html.night .pc-attaque-carte .hx-vide { fill-opacity: .12; }
 .pc-rec-total {
   flex: 1 1 0; min-width: 0; box-sizing: border-box;
   display: flex; align-items: center; justify-content: center;
-  height: 2.3086rem; min-height: 2.3086rem; padding: .35rem .2rem .3rem;
-  color: var(--accent-deep); font-size: .67rem; font-weight: 700;
+  padding: .32rem .3rem;
+  color: var(--accent-deep); font-size: .66rem; font-weight: 700;
+  line-height: 1.1;
   font-variant-numeric: tabular-nums; white-space: nowrap;
   overflow: hidden; text-overflow: ellipsis;
 }
@@ -1973,28 +1974,30 @@ html.night .pc-attaque-carte .hx-vide { fill-opacity: .12; }
    une vraie bordure sur les cases suivantes volerait un pixel à certaines
    colonnes et elles ne seraient plus mathématiquement égales. */
 .pc-rec-cell {
-  min-width: 0; height: 2.3086rem; min-height: 2.3086rem; padding: .35rem .2rem .3rem;
+  min-width: 0; padding: .32rem .3rem;
   box-sizing: border-box; display: flex; align-items: center; justify-content: center;
+  line-height: 1.1;
 }
 .pc-rec-cell + .pc-rec-cell { box-shadow: inset 1px 0 0 var(--line-2); }
 .pc-rec-native-active { display: block; width: 100%; height: 1px; }
 .pc-rec-active {
-  width: 1rem; height: 1rem; margin: 0; accent-color: var(--accent); cursor: pointer;
+  width: .66rem; height: .66rem; margin: 0; accent-color: var(--accent); cursor: pointer;
 }
 
 /* Lecture ET édition occupent LA MÊME case du cadre segmenté. Le nombre n'a
    donc pas son propre petit rectangle : le rectangle arrondi est le quatuor,
    exactement comme [ VAL | MOD | LIM ] dans MIA. */
 .pc-rec-box {
-  box-sizing: border-box; width: 100%; min-width: 0; min-height: 1.25rem;
+  box-sizing: border-box; width: 100%; min-width: 0; min-height: 0;
   display: flex; align-items: center; justify-content: center;
-  padding: .02rem .04rem; border: 0; border-radius: 0; background: transparent;
-  color: var(--ink); font: inherit; font-size: .67rem; font-weight: 700;
+  padding: 0 .04rem; border: 0; border-radius: 0; background: transparent;
+  color: var(--ink); font: inherit; font-size: .66rem; font-weight: 700;
+  line-height: 1.1;
   text-align: center; font-variant-numeric: tabular-nums;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .pc-rec-box.adj { color: var(--accent-deep); }
-.pc-rec-box.infinity { font-size: .9rem; line-height: 1; }
+.pc-rec-box.infinity { font-size: .66rem; line-height: 1.1; transform: scale(1.22); }
 input.pc-rec-box { -moz-appearance: textfield; appearance: textfield; }
 input.pc-rec-box::-webkit-inner-spin-button,
 input.pc-rec-box::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
@@ -2017,7 +2020,7 @@ select.pc-rec-box {
    QUARTS ÉGAUX : aucun breakpoint n'a le droit de changer cet invariant. */
 @media (max-width: 30em) {
   .pc-rec-grid.head { font-size: .49rem; }
-  .pc-rec-box { font-size: .61rem; }
-  .pc-rec-total { font-size: .61rem; padding-left: .2rem; padding-right: .2rem; }
+  .pc-rec-box { font-size: .66rem; }
+  .pc-rec-total { font-size: .66rem; }
 }
 
