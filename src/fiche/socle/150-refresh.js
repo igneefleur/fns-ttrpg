@@ -13,6 +13,7 @@
   var regsModules = {};
   var hooks = regHors;
   var compHooks = [];           // lignes de compétences, vidées par rebuildComps()
+  var recupHooks = [];          // lignes de récupération, vidées par rebuildRecuperation()
   var optHooks = [];            // bloc Options rebâtissable
   var optCompsRebuild = null;   // posé par le module « optcomps »
   // filtres de VUE du bloc Options, propres à lui : les siens ne doivent pas
@@ -84,6 +85,7 @@
     // l'ordre de montage des modules, donc l'affichage ne bouge pas
     Object.keys(regsModules).forEach(function (id) { joue(id, regsModules[id], bilan); });
     joue("comps", compHooks, bilan);
+    joue("recuperation", recupHooks, bilan);
     joue("optcomps", optHooks, bilan);
     Object.keys(bilan).forEach(function (id) {
       var e = etatModule(id);

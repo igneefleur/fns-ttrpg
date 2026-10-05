@@ -811,6 +811,42 @@ def _effets_expo(txt, titre):
     return out
 
 
+def _effets_recup_expo(txt, titre):
+    """Les niveaux d'exposition qui ralentissent ou coupent une récupération.
+
+    Le livre exprime ces effets comme une CADENCE ("les PV ne reviennent plus
+    que toutes les 2 heures") et non comme un niveau de récupération différent.
+    On garde donc la cadence séparée : si le joueur règle le niveau de la
+    récupération dans la fiche, l'exposition continue de ne modifier que son
+    rythme, exactement comme le texte le dit.
+    """
+    m = _un(r"^####\s+" + re.escape(titre) + r"\s*$", txt, f"exposition : « {titre} »", re.M)
+    suite = re.search(r"^#{3,4}\s+", txt[m.end():], re.M)
+    corps = txt[m.end(): m.end() + (suite.start() if suite else len(txt))]
+    out = []
+    for niv, effet in re.findall(r"^\|\s*(\d+)\s*\|[^|\n]*\|[^|\n]*\|\s*([^|\n]*?)\s*\|\s*$", corps, re.M):
+        e = re.search(r"les (PV|PE) ne reviennent plus(?: que toutes les (.+?))?$", effet.strip())
+        if not e:
+            continue
+        item = {"niveau": int(niv), "reserve": "pv" if e.group(1) == "PV" else "pe"}
+        cadence = e.group(2)
+        if cadence is None:
+            item["aucune"] = True
+        else:
+            c = cadence.strip()
+            h = re.fullmatch(r"(?:(\d+) )?heures?(?: de sommeil)?", c)
+            mn = re.fullmatch(r"(?:(\d+) )?minutes?", c)
+            if h:
+                item["minutes"] = int(h.group(1) or 1) * 60
+            elif mn:
+                item["minutes"] = int(mn.group(1) or 1)
+            else:
+                raise ErreurRegles(
+                    f"exposition, {titre}, niveau {niv} : cadence de récupération illisible « {c} »")
+        out.append(item)
+    return out
+
+
 def _mouvement(txt):
     """Les allures de « ### Mouvement » : pour chacune, sa carte « **Allure X** »
     et les lignes de sa table, « | 2 DÉ et 5 PE | 12 pas | … ». Une allure sans
@@ -899,12 +935,63 @@ def _temps(txt):
     digestion = {"volume": int(dig.group(1)),
                  "minutes": _ecrit(dig.group(2), "contenance : la cadence")}
 
+    # RÉCUPÉRATIONS NATURELLES. Les quatre réserves ordinaires donnent leurs
+    # deux niveaux (éveillé / endormi) dans leur section. PR, PS et PH font
+    # exception et suivent directement l'effort : on déroule donc les tables
+    # déjà lues plus haut en entrées du même format. Le module de la fiche peut
+    # alors TOUT afficher et régler sans connaître une seule valeur du livre.
+    recups = []
+    for cle, titre in (("pv", "Les points de vie"),
+                       ("pe", "Les points d'endurance"),
+                       ("pm", "Les points de mana"),
+                       ("pi", "Les points d'innocence")):
+        corps = _section(txt, titre, f"récupération : {titre}")
+        ev = _niveau(_un(r"Récupération naturelle éveillé = ([+−-]?\d+)", corps,
+                         f"récupération : {cle} éveillé").group(1))
+        sl = _niveau(_un(r"Récupération naturelle endormi = ([+−-]?\d+)", corps,
+                         f"récupération : {cle} endormi").group(1))
+        recups.append({"id": f"{cle}:eveille", "reserve": cle, "contexte": "Éveillé",
+                       "condition": "sommeil", "valeur": False, "niveau": ev})
+        recups.append({"id": f"{cle}:endormi", "reserve": cle, "contexte": "Endormi",
+                       "condition": "sommeil", "valeur": True, "niveau": sl})
+
+    for c, n in zip(cles, noms):
+        recups.append({"id": f"pr:{c}", "reserve": "pr", "contexte": n,
+                       "condition": "effort", "valeur": c, "niveau": repos[c]})
+        for r in ("ps", "ph"):
+            recups.append({"id": f"{r}:{c}", "reserve": r, "contexte": n,
+                           "condition": "effort", "valeur": c, "niveau": survie[c]})
+
+    # L'endurance ne récupère pas pendant une tranche d'effort lourd. Cette
+    # exception est une CONDITION d'activité, pas une troisième valeur de PE.
+    pe_sec = _section(txt, "Les points d'endurance", "récupération : endurance")
+    pe_bloque = _un(r"Les (\w+) minutes d'effort ([^ ]+) font seules exception et n'en rendent aucun",
+                    pe_sec, "récupération : exception de l'endurance")
+    if _ecrit(pe_bloque.group(1), "récupération : durée de l'exception PE") != tranche:
+        raise ErreurRegles("récupération : l'exception PE ne dure pas une tranche d'effort")
+    effort_bloque = _cle(pe_bloque.group(2))
+    if effort_bloque not in cles:
+        raise ErreurRegles(f"récupération : effort PE inconnu « {pe_bloque.group(2)} »")
+
+    # Le manque de sommeil modifie UNIQUEMENT la récupération éveillée de mana.
+    # La récupération endormi reste à -5, quel que soit le manque de repos.
+    # On extrait la tranche et le bonus au lieu de figer +2 / 10 % dans le moteur.
+    pm_sec = _section(txt, "Les points de mana", "récupération : mana")
+    mm = _un(r"Chaque tranche de (\d+) % de .*? perdue ajoute (\d+) à la récupération naturelle éveillé du personnage",
+             pm_sec, "récupération : manque de sommeil", re.S)
+
     return {
         "tranche": tranche,
         "digestion": digestion,
         "efforts": [{"cle": c, "nom": n, "repos": repos[c], "survie": survie[c], "degres": degres[c]}
                     for c, n in zip(cles, noms)],
         "regen": regen,
+        "recuperations": recups,
+        "recupBloques": [{"reserve": "pe", "effort": effort_bloque}],
+        "recupManqueSommeil": {"id": "pm:eveille", "reserve": "pm", "source": "pr",
+                                "tranche": int(mm.group(1)), "bonus": int(mm.group(2))},
+        "recupExposition": {"froid": _effets_recup_expo(txt, "Le froid"),
+                            "chaud": _effets_recup_expo(txt, "Le chaud")},
         "paliers": {"diviseur": int(pal.group(1)), "arrondi": _ARRONDI[pal.group(2)]},
         "expoRetour": int(ret.group(1)),
         # l'intensité maximale, le plafond d'exposition de chaque intensité

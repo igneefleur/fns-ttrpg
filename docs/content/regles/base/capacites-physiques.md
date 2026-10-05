@@ -195,7 +195,7 @@ Un personnage reposé ne regagne aucun point de mana, et son sommeil lui en coû
 
 <p class="formula">Récupération naturelle endormi = −5</p>
 
-Le manque de sommeil renverse les deux. Chaque tranche de 10 % de [points de repos](#les-points-de-repos) perdue ajoute 2 à la récupération naturelle éveillé du personnage comme à sa récupération naturelle endormi. Au-delà de trois tranches perdues, sa récupération naturelle endormi devient positive et son sommeil cesse de lui coûter du mana.
+Le manque de sommeil augmente seulement la récupération éveillée. Chaque tranche de 10 % de [points de repos](#les-points-de-repos) perdue ajoute 2 à la récupération naturelle éveillé du personnage. La récupération naturelle endormi reste toujours à −5.
 
 <div class="memo" markdown>
 

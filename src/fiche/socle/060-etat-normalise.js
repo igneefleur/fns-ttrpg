@@ -392,6 +392,15 @@
           vusOrdre[id] = 1;
           return true;
         });
+      // « Récupération » a été ajouté après que certaines fiches ont enregistré
+      // un ordre COMPLET des modules. Non cité, un nouveau module finirait alors
+      // tout en bas de la colonne malgré sa place native sous Caractéristiques.
+      // S'il existe un ordre explicite avec Caractéristiques, on l'insère juste
+      // après ; un ordre partiel qui ne nomme pas Caractéristiques reste intact.
+      if (s.modules.ordre.indexOf("recuperation") < 0) {
+        var iCaracs = s.modules.ordre.indexOf("caracs");
+        if (iCaracs >= 0) s.modules.ordre.splice(iCaracs + 1, 0, "recuperation");
+      }
     }
     if (s.modules.place !== undefined) {
       var src = s.modules.place, place = {};
