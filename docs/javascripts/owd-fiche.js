@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "2.17.1b";
+  var RELEASE = "2.17.2b";
   var SCHEMA = 9;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -3929,8 +3929,8 @@
   // unité de combat : la fiche n'ayant aucun compteur de rounds, elle n'est pas
   // décrémentée par les boutons de temps de 10 minutes / 1 heure.
   var recupBox = null;
-  var recupFilter = "";
   var recupOnly = false;
+  var recupNatives = true;
   var recupVueSig = "";
 
   var RECUP_DUREES = [
@@ -3960,21 +3960,14 @@
   function recupCadenceCourt(c) {
     if (!c || !c.points) return "0";
     var s = c.signe < 0 ? "−" : "+";
-    if (c.minutes == null) return s + fmtP(c.points) + "/round";
-    if (c.minutes === 1) return s + fmtP(c.points) + "/m";
-    if (c.minutes === 10) return s + fmtP(c.points) + "/10 m";
-    if (c.minutes === 60) return s + fmtP(c.points) + "/h";
-    if (c.minutes === 480) return s + fmtP(c.points) + "/8 h";
-    if (c.minutes > 60 && c.minutes % 60 === 0) return s + fmtP(c.points) + "/" + (c.minutes / 60) + " h";
-    return s + fmtP(c.points) + "/" + c.minutes + " m";
+    if (c.minutes == null) return s + fmtP(c.points) + " / round";
+    if (c.minutes === 1) return s + fmtP(c.points) + " / m";
+    if (c.minutes === 10) return s + fmtP(c.points) + " / 10 m";
+    if (c.minutes === 60) return s + fmtP(c.points) + " / h";
+    if (c.minutes === 480) return s + fmtP(c.points) + " / 8 h";
+    if (c.minutes > 60 && c.minutes % 60 === 0) return s + fmtP(c.points) + " / " + (c.minutes / 60) + " h";
+    return s + fmtP(c.points) + " / " + c.minutes + " m";
   }
-  function recupCorrespond(r, flt) {
-    if (!flt) return true;
-    return pli(recupLibelle(r)).indexOf(flt) >= 0 ||
-           pli(recupAbbr(r)).indexOf(flt) >= 0 ||
-           pli(recupNom(r)).indexOf(flt) >= 0;
-  }
-
   // ---- coffre des récupérations ajoutées ----
   function recupAjoutsModule(cree) {
     var d = recupCoffre(cree);
@@ -4186,7 +4179,7 @@
     for (i = 0; i < ordre.length; i++) {
       k = ordre[i]; v = sommes[k];
       if (Math.abs(v) < 1e-9) continue;
-      out.push({ cle: k, valeur: v, texte: sign(v) + "/" + recupTotalLibelleModule(k) });
+      out.push({ cle: k, valeur: v, texte: sign(v) + " / " + recupTotalLibelleModule(k) });
     }
     return out;
   }
@@ -4257,8 +4250,8 @@
     return w;
   }
 
-  function recupRangeeModule(r, odd) {
-    var wrap = el("div", "pc-rec-entry" + (odd ? " odd" : ""));
+  function recupRangeeModule(r) {
+    var wrap = el("div", "pc-rec-entry");
     var row = el("div", "pc-rec-grid");
     var actifCell = el("span", "pc-rec-cell active-cell");
     var nivCell = el("span", "pc-rec-cell");
@@ -4315,7 +4308,7 @@
         typeCell.appendChild(typeJeu);
       }
     } else {
-      tempsCell.appendChild(recupBoiteTexteModule("∞"));
+      tempsCell.appendChild(recupBoiteTexteModule("∞", "infinity"));
       typeCell.appendChild(recupBoiteTexteModule("—"));
     }
     row.appendChild(tempsCell); row.appendChild(typeCell);
@@ -4366,7 +4359,6 @@
       niveau: 0, actif: false, temps: 1, type: d.cle, reste: d.minutes
     });
     if (recupOnly) recupOnly = false;
-    if (filtreDe(recupFilter)) recupFilter = "";
     refresh(); rebuildRecuperation();
   }
 
@@ -4399,37 +4391,40 @@
     if (!recupBox) return;
     recupHooks = [];
     recupBox.innerHTML = "";
-    var flt = filtreDe(recupFilter), toute = recupListeModule();
+    var toute = recupListeModule();
     var liste = toute.filter(function (r) {
       var e = recupEtatVueModule(r);
+      if (!recupNatives && !r.perso) return false;
       if (recupOnly && !e.actif) return false;
-      return recupCorrespond(r, flt);
+      return true;
     });
-    if (!liste.length) {
+    if (!liste.length && !isEdit("recuperation")) {
       recupBox.appendChild(el("div", "pc-empty",
-        flt ? "Aucune récupération ne correspond à la recherche."
-            : recupOnly ? "Aucune récupération n'est active actuellement."
-                        : "Aucune récupération."));
+        recupOnly ? "Aucune récupération n'est active actuellement."
+                  : !recupNatives ? "Aucune récupération ajoutée."
+                                  : "Aucune récupération."));
       recupVueSig = recupSignatureActivesModule();
       return;
     }
 
     var ordre = [], vus = {}, i;
-    for (i = 0; i < liste.length; i++) {
-      if (!vus[liste[i].reserve]) { vus[liste[i].reserve] = 1; ordre.push(liste[i].reserve); }
+    var sourceOrdre = isEdit("recuperation") ? toute : liste;
+    for (i = 0; i < sourceOrdre.length; i++) {
+      if (!vus[sourceOrdre[i].reserve]) { vus[sourceOrdre[i].reserve] = 1; ordre.push(sourceOrdre[i].reserve); }
     }
     ordre.forEach(function (cle) {
       var groupe = liste.filter(function (r) { return r.reserve === cle; });
-      var ref = groupe[0];
+      var ref = groupe[0] || toute.filter(function (r) { return r.reserve === cle; })[0];
+      if (!ref) return;
       var groupeBox = el("div", "pc-rec-group");
       groupeBox.appendChild(recupEnteteReserveModule(cle, ref));
       var head = el("div", "pc-rec-grid head");
-      head.appendChild(el("span", null, "Active"));
-      head.appendChild(el("span", null, "Niveau"));
-      head.appendChild(el("span", null, "Temps"));
-      head.appendChild(el("span", null, "Type"));
+      head.appendChild(el("span", null, "ACT."));
+      head.appendChild(el("span", null, "NIV."));
+      head.appendChild(el("span", null, "TEMPS"));
+      head.appendChild(el("span", null, "TYPE"));
       groupeBox.appendChild(head);
-      groupe.forEach(function (r, j) { groupeBox.appendChild(recupRangeeModule(r, j % 2 === 1)); });
+      groupe.forEach(function (r) { groupeBox.appendChild(recupRangeeModule(r)); });
       // Comme Compétences : l'ajout termine la liste qu'il prolonge. Jamais
       // dans l'entête, où il coupe la lecture du nom et des totaux.
       if (isEdit("recuperation")) groupeBox.appendChild(recupPiedReserveModule(cle, ref));
@@ -4443,10 +4438,6 @@
     var b = block("Récupération", null, "recuperation", function () { rebuildRecuperation(); });
     var tools = el("div", "pc-comp-tools");
     var ligne = el("div", "row");
-    var search = champFiltre(function () { return recupFilter; },
-                             function (v) { recupFilter = v; },
-                             "Filtrer les récupérations…", rebuildRecuperation);
-    if (search) ligne.appendChild(search);
     var actives = el("span", "pc-chip", "Actives");
     actives.title = "N'afficher que les récupérations actuellement actives.";
     actives.classList.toggle("on", recupOnly);
@@ -4456,6 +4447,15 @@
       rebuildRecuperation();
     });
     ligne.appendChild(actives);
+    var natives = el("span", "pc-chip", "Natives");
+    natives.title = "Afficher ou masquer les récupérations natives de la fiche.";
+    natives.classList.toggle("on", recupNatives);
+    natives.addEventListener("click", function () {
+      recupNatives = !recupNatives;
+      natives.classList.toggle("on", recupNatives);
+      rebuildRecuperation();
+    });
+    ligne.appendChild(natives);
     tools.appendChild(ligne);
     b.appendChild(tools);
 
