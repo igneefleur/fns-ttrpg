@@ -1879,37 +1879,90 @@ html.night .pc-attaque-carte .hx-vide { fill-opacity: .12; }
   .pc-attaque-controles { margin-left: 0; }
 }
 
-/* ---- récupération naturelle ----
-   Même langage que Compétences : recherche + puce, puis groupes par réserve.
-   La colonne est étroite ; une ligne garde donc trois pistes compactes :
-   contexte | niveau | cadence. Le stepper n'apparaît qu'au rouage. */
+/* ---- récupération ----
+   Même langage visuel que Compétences / Effondrement : aucune valeur nue.
+   Le libellé de la récupération vit au-dessus ; la grille ne porte QUE les
+   quatre informations de jeu demandées : Active | Niveau | Temps | Type. */
 .pc-rec-list { display: flex; flex-direction: column; gap: 0; }
-.pc-rec-row {
-  display: grid; grid-template-columns: minmax(0, 1fr) 5.4rem 4.8rem;
-  gap: .18rem .3rem; align-items: center; padding: .14rem .25rem .18rem;
-  font-size: var(--fs-body); border-radius: 4px;
+.pc-rec-grouphead {
+  display: flex; align-items: center; gap: .3rem; min-width: 0;
+  margin-top: .22rem; padding: .24rem .05rem .16rem;
+  border-bottom: 1px solid var(--line);
 }
-.pc-rec-row.odd { background: var(--stripe); }
-.pc-rec-row.head {
-  background: var(--card); border-bottom: 1px solid var(--line); border-radius: 0;
-  padding: .2rem .25rem .16rem; font-size: var(--fs-label); font-weight: 700;
-  text-transform: uppercase; letter-spacing: .04em; color: var(--ink-3);
+.pc-rec-groupname {
+  display: flex; align-items: center; gap: .3rem; min-width: 0;
+  color: var(--ink-2); font-size: var(--fs-label); font-weight: 700;
+  letter-spacing: .04em; text-transform: uppercase; white-space: nowrap;
 }
-.pc-rec-row.head > span { min-width: 0; text-align: center; white-space: nowrap; overflow: hidden; }
-.pc-rec-name { min-width: 0; color: var(--ink); overflow: hidden; }
-.pc-rec-name .ctx { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pc-rec-niv, .pc-rec-cad {
-  min-width: 0; text-align: center; font-variant-numeric: tabular-nums; white-space: nowrap;
+.pc-rec-groupname .pc-abbr { flex: 0 0 auto; }
+.pc-rec-totaux {
+  margin-left: auto; min-width: 0; display: flex; flex-wrap: wrap;
+  justify-content: flex-end; gap: .18rem;
 }
-.pc-rec-niv { font-size: .7rem; font-weight: 700; color: var(--ink); }
-.pc-rec-cad { font-size: .61rem; color: var(--ink-3); }
-.pc-rec-row.context:not(.active) .pc-rec-name { color: var(--ink-2); }
-.pc-rec-row.active { box-shadow: inset 2px 0 0 var(--accent); }
-.pc-rec-row.active .pc-rec-cad { color: var(--accent-deep); font-weight: 700; }
-.pc-rec-row .pc-step { justify-content: center; gap: .16rem; }
-.pc-rec-row .pc-step button { width: .95rem; height: .95rem; font-size: .68rem; }
-.pc-rec-row .pc-step .pc-num { width: 1.85rem; font-size: .68rem; }
-/* Le titre de groupe réutilise pc-comp-champ mais porte ici une abréviation ;
-   l'abréviation ne doit pas pousser le filet hors de la colonne. */
-.pc-rec-list .pc-comp-champ { gap: .3rem; }
-.pc-rec-list .pc-comp-champ .pc-abbr { flex: 0 0 auto; }
+.pc-rec-total {
+  box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center;
+  min-height: 1.18rem; padding: .04rem .25rem;
+  border: 1px solid var(--line-2); border-radius: 5px; background: var(--card);
+  color: var(--accent-deep); font-size: .58rem; font-weight: 700;
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.pc-rec-total.zero { color: var(--ink-3); font-weight: 600; }
+.pc-rec-addbtn { flex: 0 0 auto; margin-left: .06rem; }
+
+.pc-rec-grid {
+  display: grid;
+  grid-template-columns: 2.7rem minmax(0, .9fr) minmax(0, .9fr) minmax(0, 1.2fr);
+  gap: .24rem; align-items: center; min-width: 0;
+}
+.pc-rec-grid.head {
+  padding: .18rem .22rem .12rem; color: var(--ink-3);
+  font-size: var(--fs-label); font-weight: 700; letter-spacing: .035em;
+  text-transform: uppercase;
+}
+.pc-rec-grid.head > span { min-width: 0; text-align: center; white-space: nowrap; overflow: hidden; }
+.pc-rec-entry { padding: .1rem .22rem .2rem; border-radius: 4px; }
+.pc-rec-entry.odd { background: var(--stripe); }
+.pc-rec-entry.active { box-shadow: inset 2px 0 0 var(--accent); }
+.pc-rec-label {
+  min-width: 0; display: flex; align-items: center; justify-content: space-between;
+  gap: .3rem; padding: .04rem 0 .12rem; color: var(--ink-2);
+  font-size: .62rem; font-weight: 700;
+}
+.pc-rec-label > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pc-rec-name-edit {
+  box-sizing: border-box; width: 100%; min-width: 0; padding: .12rem .32rem;
+  border: 1px solid var(--line-2); border-radius: 5px; background: var(--card);
+  color: var(--ink); font: inherit; font-size: .64rem; font-weight: 700;
+}
+.pc-rec-name-edit:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--wash); }
+.pc-rec-cell { min-width: 0; display: flex; align-items: center; justify-content: center; }
+.pc-rec-cell.active-cell { min-height: 1.45rem; }
+.pc-rec-native-active { display: block; width: 100%; height: 1px; }
+.pc-rec-active {
+  width: 1rem; height: 1rem; margin: 0; accent-color: var(--accent); cursor: pointer;
+}
+/* Même rectangle arrondi qu'Effondrement : lecture, champ et sélecteur gardent
+   exactement la même hauteur, donc ouvrir le rouage ne fait pas sauter la ligne. */
+.pc-rec-box {
+  box-sizing: border-box; width: 100%; min-width: 0; min-height: 1.45rem;
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: .08rem .24rem; border: 1px solid var(--line-2); border-radius: 5px;
+  background: var(--card); color: var(--ink); font: inherit; font-size: .67rem;
+  font-weight: 700; text-align: center; font-variant-numeric: tabular-nums;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.pc-rec-box.adj { color: var(--accent-deep); border-color: var(--accent); }
+input.pc-rec-box { -moz-appearance: textfield; appearance: textfield; }
+input.pc-rec-box::-webkit-inner-spin-button,
+input.pc-rec-box::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+input.pc-rec-box:focus, select.pc-rec-box:focus {
+  outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--wash);
+}
+select.pc-rec-box { cursor: pointer; padding-right: .12rem; }
+.pc-rec-entry.inactive .pc-rec-label { color: var(--ink-3); }
+
+@media (max-width: 30em) {
+  .pc-rec-grid { grid-template-columns: 2.45rem minmax(0, .8fr) minmax(0, .8fr) minmax(0, 1.15fr); gap: .16rem; }
+  .pc-rec-box { font-size: .61rem; padding-left: .12rem; padding-right: .12rem; }
+  .pc-rec-total { font-size: .54rem; }
+}
