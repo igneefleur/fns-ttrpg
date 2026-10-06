@@ -462,11 +462,11 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
   margin: 0 0 .28rem; padding: .04rem 0 .22rem;
   border-bottom: 1px solid var(--trait-or);
   font-family: 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif; font-weight: 700;
-  font-size: var(--fs-title); letter-spacing: .04em; color: var(--accent-deep); line-height: 1.1;
+  font-size: var(--fs-title); letter-spacing: .04em; color: var(--accent-deep); line-height: 1.1; text-transform: uppercase;
 }
 /* le tiret d'accent : la signature visuelle du bloc. Un FILET, pas du texte —
    il porte donc l'or sans contrainte de lisibilité. */
-.pc-block-title small { font-family: 'Proxima Nova', proxima-nova, 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: 600; font-size: var(--fs-label); letter-spacing: 0; color: var(--ink-3); margin-left: auto; text-align: right; white-space: nowrap; flex: 0 0 auto; }
+.pc-block-title small { text-transform: none; font-family: 'Proxima Nova', proxima-nova, 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: 600; font-size: var(--fs-label); letter-spacing: 0; color: var(--ink-3); margin-left: auto; text-align: right; white-space: nowrap; flex: 0 0 auto; }
 .pc-block-note { font-size: var(--fs-meta); color: var(--ink-3); margin: .12rem 0 .3rem; line-height: 1.3; }
 
 /* ---------- les réserves : PV, PE, PM ----------
@@ -568,6 +568,7 @@ html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où 
 /* TEMPS : même contrôle [ A | B | C ] que les efforts. Le champ, l'unité et
    Appliquer ont donc STRICTEMENT la même hauteur que Sommeil/Repos et
    Léger/Inter/Lourd. */
+.pc-effort-temperature { margin-top: .48rem; }
 .pc-temps-segs { margin-top: .3rem; }
 .pc-temps-segs > .c { box-sizing: border-box; font-size: .66rem; letter-spacing: 0; text-transform: none; }
 .pc-temps-segs > .c:nth-child(1), .pc-temps-segs > .c:nth-child(2) { flex: 0 0 25%; }
@@ -1701,7 +1702,7 @@ html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où 
 .perso-fiche [data-panne="1"] { box-shadow: inset 3px 0 0 var(--danger); }
 .perso-fiche [data-musele="1"] { box-shadow: inset 2px 0 0 var(--danger); }
 /* la mention « module en panne — id » du titre porte l'alerte, pas le fond */
-.perso-fiche [data-panne="1"] .pc-block-title small { color: var(--danger-deep); }
+.perso-fiche [data-panne="1"] .pc-block-title small { text-transform: none; color: var(--danger-deep); }
 
 /* ---- flash ----
    Chip sombre, identique de jour comme de nuit : c'est une notification
@@ -1922,141 +1923,87 @@ html.night .pc-attaque-carte .hx-vide { fill-opacity: .12; }
    responsive. L'entête reprend exactement le même squelette sans son cadre,
    donc les quatre mots tombent toujours en face des quatre cases. */
 .pc-rec-list { display: flex; flex-direction: column; gap: 0; }
+.pc-rec-tools { margin-bottom: .28rem; }
 
-/* Une réserve = son nom, puis son total de récupération segmenté.
-   Rien d'autre ne partage l'entête : le bouton + vit EN BAS de la liste,
-   exactement là où l'utilisateur ajoute la ligne suivante. */
+/* Une réserve tient sur une ligne d'en-tête : nom à gauche, récupération
+   effective totale à droite. Pas de seconde barre, pas de gros pavé. */
 .pc-rec-group { min-width: 0; }
 .pc-rec-group + .pc-rec-group { margin-top: .48rem; }
 .pc-rec-grouphead {
-  display: grid; grid-template-columns: minmax(0, 1fr);
-  align-items: center; gap: .14rem; min-width: 0;
-  padding: .08rem .08rem .16rem;
-  border-bottom: 1px solid var(--line);
-}
-.pc-rec-groupname {
-  display: flex; align-items: center; gap: .3rem; min-width: 0;
-  color: var(--ink-2); font-size: var(--fs-label); font-weight: 700;
-  letter-spacing: .04em; text-transform: uppercase;
-}
-.pc-rec-groupname > span:last-child {
-  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-.pc-rec-groupname .pc-abbr { flex: 0 0 auto; }
-
-/* [ cadence | cadence | ... ] : même principe segmenté que les fiches MIA.
-   Les segments se partagent TOUJOURS la largeur disponible à parts égales. */
-.pc-rec-totaux {
-  grid-column: 1; grid-row: 2;
-  display: flex; align-items: stretch; width: 100%; min-width: 0;
-  box-sizing: border-box; overflow: hidden;
-  border: 1px solid var(--line-2); border-radius: 5px; background: var(--panel);
-}
-.pc-rec-total {
-  flex: 1 1 0; min-width: 0; box-sizing: border-box;
-  display: flex; align-items: center; justify-content: center;
-  padding: .32rem .3rem;
-  color: var(--accent-deep); font-size: .66rem; font-weight: 700;
-  line-height: 1.1;
-  font-variant-numeric: tabular-nums; white-space: nowrap;
-  overflow: hidden; text-overflow: ellipsis;
-}
-.pc-rec-total + .pc-rec-total { box-shadow: inset 1px 0 0 var(--line-2); }
-.pc-rec-total.zero { color: var(--ink-3); font-weight: 600; }
-
-/* LE QUATUOR. Pas 2.7rem + .9fr + .9fr + 1.2fr : QUATRE QUARTS, point.
-   C'est le même invariant que les trios/quintuples de MIA. */
-.pc-rec-grid {
-  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0; align-items: stretch; width: 100%; min-width: 0;
-  box-sizing: border-box; overflow: hidden; line-height: 1.1;
-  border: 1px solid var(--line-2); border-radius: 5px; background: var(--panel);
-}
-.pc-rec-grid.head {
-  margin: .14rem .1rem .04rem; width: auto;
-  border-color: transparent; border-radius: 0; background: transparent;
-  overflow: visible; color: var(--ink-3);
-  font-size: var(--fs-label); font-weight: 700; letter-spacing: .02em;
-  text-transform: uppercase;
-}
-.pc-rec-grid.head > span {
-  min-width: 0; display: flex; align-items: center; justify-content: center;
-  padding: .03rem .06rem; text-align: center; white-space: nowrap;
-  overflow: hidden; text-overflow: ellipsis;
-}
-
-.pc-rec-entry {
-  padding: .12rem .1rem .22rem; border-radius: 4px;
+  display: flex; align-items: center; justify-content: space-between; gap: .55rem;
+  min-width: 0; margin: .38rem .05rem .08rem; padding: .04rem 0 .08rem;
   border-bottom: 1px solid var(--hair);
 }
-.pc-rec-entry:last-child { border-bottom: none; }
-.pc-rec-label {
-  min-width: 0; display: flex; align-items: center; justify-content: space-between;
-  gap: .25rem; padding: .02rem .06rem .1rem; color: var(--ink-2);
-  font-size: .62rem; font-weight: 700;
+.pc-rec-group:first-child .pc-rec-grouphead { margin-top: .08rem; }
+.pc-rec-groupname {
+  display: flex; align-items: center; gap: .3rem; min-width: 0;
+  color: var(--ink-2); font-size: .62rem; font-weight: 700;
+  letter-spacing: .04em; text-transform: uppercase;
 }
-.pc-rec-label > span {
-  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+.pc-rec-groupname .pc-abbr { flex: 0 0 auto; }
+.pc-rec-reserve-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pc-rec-totaux {
+  display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: baseline;
+  gap: .05rem .38rem; min-width: 0; color: var(--accent-deep);
+  font-size: .62rem; font-weight: 700; font-variant-numeric: tabular-nums;
 }
+.pc-rec-total { white-space: nowrap; }
+.pc-rec-total.zero { color: var(--ink-3); font-weight: 600; }
+
+/* Même squelette que Compétences : nom libre, quatre colonnes compactes. */
+.pc-rec-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 3.2rem 3.2rem 3.5rem 4rem;
+  gap: .12rem .3rem; align-items: center;
+  padding: .14rem .25rem .18rem; font-size: var(--fs-body); border-radius: 4px;
+}
+.pc-rec-row.odd { background: var(--stripe); }
+.pc-rec-row.head {
+  background: var(--card); border-bottom: 1px solid var(--line); border-radius: 0;
+  padding: .2rem .25rem .16rem;
+  font-size: var(--fs-label); font-weight: 700; text-transform: uppercase;
+  letter-spacing: .04em; color: var(--ink-3);
+}
+.pc-rec-row.head > span { white-space: nowrap; overflow: hidden; min-width: 0; text-align: center; }
+.pc-rec-row.head > span:first-child { text-align: left; }
+.pc-rec-name { display: flex; align-items: center; min-width: 0; gap: .3rem; }
+.pc-rec-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); }
 .pc-rec-name-edit {
-  box-sizing: border-box; width: 100%; min-width: 0; padding: .08rem .14rem;
+  flex: 1 1 auto; min-width: 0; width: 100%; box-sizing: border-box;
   border: none; border-bottom: 1px solid var(--line); border-radius: 0;
-  background: transparent; color: var(--ink); font: inherit;
-  font-size: .64rem; font-weight: 700;
+  background: transparent; color: var(--ink); font: inherit; font-size: .68rem;
+  padding: .02rem .1rem;
 }
 .pc-rec-name-edit:focus { outline: none; border-bottom: 2px solid var(--accent); }
+.pc-rec-col { min-width: 0; display: flex; align-items: center; justify-content: center; }
+.pc-rec-value {
+  width: 100%; min-width: 0; text-align: center; color: var(--ink);
+  font-size: .68rem; font-weight: 700; line-height: 1.25;
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.pc-rec-value.muted { color: var(--ink-3); font-weight: 600; }
+.pc-rec-value.infinity { font-size: .78rem; line-height: 1; }
+.pc-rec-value.adj { color: var(--accent-deep); }
+.pc-rec-active { width: .82rem; height: .82rem; margin: 0; accent-color: var(--accent-deep); cursor: pointer; }
+.pc-rec-field {
+  width: 100%; min-width: 0; box-sizing: border-box;
+  border: 1px solid var(--line-2); border-radius: 4px;
+  background: var(--card); color: var(--ink); font: inherit;
+  font-size: .66rem; font-weight: 700; line-height: 1.15;
+  text-align: center; padding: .08rem .12rem; font-variant-numeric: tabular-nums;
+}
+.pc-rec-number { -moz-appearance: textfield; appearance: textfield; }
+.pc-rec-number::-webkit-inner-spin-button, .pc-rec-number::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.pc-rec-field:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--wash); }
+.pc-rec-select { cursor: pointer; padding-inline: .05rem; text-align-last: center; }
+.pc-rec-row.inactive .pc-rec-label { color: var(--ink-3); }
 
-/* Une case est un quart du cadre. Les séparateurs sont des ombres INTERNES :
-   une vraie bordure sur les cases suivantes volerait un pixel à certaines
-   colonnes et elles ne seraient plus mathématiquement égales. */
-.pc-rec-cell {
-  min-width: 0; padding: .32rem .3rem;
-  box-sizing: border-box; display: flex; align-items: center; justify-content: center;
-  line-height: 1.1;
-}
-.pc-rec-cell + .pc-rec-cell { box-shadow: inset 1px 0 0 var(--line-2); }
-.pc-rec-native-active { display: block; width: 100%; height: 1px; }
-.pc-rec-active {
-  width: .66rem; height: .66rem; margin: 0; accent-color: var(--accent); cursor: pointer;
+/* Le + termine la liste qu'il prolonge, exactement comme dans Compétences. */
+.pc-rec-add { display: flex; justify-content: flex-end; align-items: center; padding: .2rem .25rem .06rem; }
+.pc-rec-add .pc-rec-addbtn { margin: 0; min-width: 2rem; }
+
+@media (max-width: 44em) {
+  .pc-rec-row { grid-template-columns: minmax(0, 1fr) 3rem 3rem 3.2rem 3.6rem; }
 }
 
-/* Lecture ET édition occupent LA MÊME case du cadre segmenté. Le nombre n'a
-   donc pas son propre petit rectangle : le rectangle arrondi est le quatuor,
-   exactement comme [ VAL | MOD | LIM ] dans MIA. */
-.pc-rec-box {
-  box-sizing: border-box; width: 100%; min-width: 0; min-height: 0;
-  display: flex; align-items: center; justify-content: center;
-  padding: 0 .04rem; border: 0; border-radius: 0; background: transparent;
-  color: var(--ink); font: inherit; font-size: .66rem; font-weight: 700;
-  line-height: 1.1;
-  text-align: center; font-variant-numeric: tabular-nums;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.pc-rec-box.adj { color: var(--accent-deep); }
-.pc-rec-box.infinity { font-size: .66rem; line-height: 1.1; transform: scale(1.22); }
-input.pc-rec-box { -moz-appearance: textfield; appearance: textfield; }
-input.pc-rec-box::-webkit-inner-spin-button,
-input.pc-rec-box::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-input.pc-rec-box:focus, select.pc-rec-box:focus {
-  outline: none; box-shadow: inset 0 -2px 0 var(--accent);
-}
-select.pc-rec-box {
-  cursor: pointer; padding: .02rem .04rem;
-  -moz-appearance: none; appearance: none; text-align-last: center;
-}
-.pc-rec-entry.inactive .pc-rec-label { color: var(--ink-3); }
-
-.pc-rec-addrow {
-  display: flex; justify-content: flex-end; align-items: center;
-  min-width: 0; padding: .18rem .1rem .08rem;
-}
-.pc-rec-addrow .pc-rec-addbtn { margin: 0; min-width: 2rem; }
-
-/* Au plus étroit, on réduit seulement la typographie. LA GRILLE RESTE QUATRE
-   QUARTS ÉGAUX : aucun breakpoint n'a le droit de changer cet invariant. */
-@media (max-width: 30em) {
-  .pc-rec-grid.head { font-size: .49rem; }
-  .pc-rec-box { font-size: .66rem; }
-  .pc-rec-total { font-size: .66rem; }
-}
 
