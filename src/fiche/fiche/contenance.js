@@ -40,6 +40,7 @@
       var d = parseFloat(delta.value);
       if (!isFinite(d) || !d) return;
       state.etat.contenance = Math.max(0, Math.round((contenancePrise() + d) * 100) / 100);
+      if (!(state.etat.contenance > 0)) reinitialiseHorlogeDigestion();
       delta.value = "";
       refresh();
     }

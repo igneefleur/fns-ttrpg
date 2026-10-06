@@ -76,14 +76,22 @@
         })
       : [];
     s.temperature = clamp(Math.round(num(s.temperature, b.temperature) * 10) / 10, -999, 999);
-    // L'horloge est stockée en J/H/M/S, jamais en total de secondes. Une valeur
-    // débordante est simplement reportée vers l'unité supérieure.
-    var h = (s.horloge && typeof s.horloge === "object" && !Array.isArray(s.horloge)) ? s.horloge : {};
-    var hs = Math.max(0, Math.floor(Number(h.secondes) || 0));
-    var hm = Math.max(0, Math.floor(Number(h.minutes) || 0)) + Math.floor(hs / 60); hs %= 60;
-    var hh = Math.max(0, Math.floor(Number(h.heures) || 0)) + Math.floor(hm / 60); hm %= 60;
-    var hj = Math.max(0, Math.floor(Number(h.jours) || 0)) + Math.floor(hh / 24); hh %= 24;
-    s.horloge = { jours: hj, heures: hh, minutes: hm, secondes: hs };
+    // Les horloges sont stockées en J/H/M/S, jamais en total de secondes. Une
+    // valeur débordante est reportée vers l'unité supérieure. Digestion et
+    // Exposition utilisent exactement la même forme que l'horloge du monde.
+    function normaliseHorloge(v, gardeRegime) {
+      var h = (v && typeof v === "object" && !Array.isArray(v)) ? v : {};
+      var hs = Math.max(0, Math.floor(Number(h.secondes) || 0));
+      var hm = Math.max(0, Math.floor(Number(h.minutes) || 0)) + Math.floor(hs / 60); hs %= 60;
+      var hh = Math.max(0, Math.floor(Number(h.heures) || 0)) + Math.floor(hm / 60); hm %= 60;
+      var hj = Math.max(0, Math.floor(Number(h.jours) || 0)) + Math.floor(hh / 24); hh %= 24;
+      var out = { jours: hj, heures: hh, minutes: hm, secondes: hs };
+      if (gardeRegime) out.regime = String(h.regime == null ? "" : h.regime);
+      return out;
+    }
+    s.horloge = normaliseHorloge(s.horloge, false);
+    s.horlogeDigestion = normaliseHorloge(s.horlogeDigestion, false);
+    s.horlogeExposition = normaliseHorloge(s.horlogeExposition, true);
     s.argent = pnum(s.argent);
 
     // ---- caractéristiques ----
@@ -128,6 +136,8 @@
     // expo et contenance ne sont PAS nullables : 0 y est une vraie valeur
     s.etat.expo = clamp(snum(s.etat.expo), -99999, 99999);
     s.etat.contenance = clamp(pnum(s.etat.contenance), 0, 99999);
+    if (!(s.etat.contenance > 0))
+      s.horlogeDigestion = { jours: 0, heures: 0, minutes: 0, secondes: 0 };
 
     // ---- les leviers des capacités ----
     // Aucune liste de clés n'est imposée : une capacité ajoutée demain dans les

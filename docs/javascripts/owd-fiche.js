@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "2.21.1b";
+  var RELEASE = "2.23.0b";
   var SCHEMA = 10;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -374,9 +374,13 @@
       // l'air en °C. Le module Temps s'en sert pour faire
       // passer le temps ; rien d'autre ne les lit.
       effort: "leger", temperature: 20, qualiteSommeil: "confortable",
-      // Horloge interne du monde. Elle reste invisible : quatre champs courts
-      // plutôt qu'un compteur géant de secondes, avec normalisation 24/60/60.
+      // Trois horloges internes invisibles, toutes normalisées J/H/M/S.
+      // `horloge` est le temps du monde. Les deux autres ne tournent que tant
+      // que leur processus est actif : ventre non vide pour la digestion,
+      // régime thermique stable pour l'exposition.
       horloge: { jours: 0, heures: 0, minutes: 0, secondes: 0 },
+      horlogeDigestion: { jours: 0, heures: 0, minutes: 0, secondes: 0 },
+      horlogeExposition: { jours: 0, heures: 0, minutes: 0, secondes: 0, regime: "" },
       // L'ALLURE du module Mouvement (clé d'un effort des règles : on peut
       // aller moins vite que l'effort qu'on fournit) et le CRAN de l'allure
       // lourde, la seule qui se prend par crans.
@@ -627,14 +631,22 @@
         })
       : [];
     s.temperature = clamp(Math.round(num(s.temperature, b.temperature) * 10) / 10, -999, 999);
-    // L'horloge est stockée en J/H/M/S, jamais en total de secondes. Une valeur
-    // débordante est simplement reportée vers l'unité supérieure.
-    var h = (s.horloge && typeof s.horloge === "object" && !Array.isArray(s.horloge)) ? s.horloge : {};
-    var hs = Math.max(0, Math.floor(Number(h.secondes) || 0));
-    var hm = Math.max(0, Math.floor(Number(h.minutes) || 0)) + Math.floor(hs / 60); hs %= 60;
-    var hh = Math.max(0, Math.floor(Number(h.heures) || 0)) + Math.floor(hm / 60); hm %= 60;
-    var hj = Math.max(0, Math.floor(Number(h.jours) || 0)) + Math.floor(hh / 24); hh %= 24;
-    s.horloge = { jours: hj, heures: hh, minutes: hm, secondes: hs };
+    // Les horloges sont stockées en J/H/M/S, jamais en total de secondes. Une
+    // valeur débordante est reportée vers l'unité supérieure. Digestion et
+    // Exposition utilisent exactement la même forme que l'horloge du monde.
+    function normaliseHorloge(v, gardeRegime) {
+      var h = (v && typeof v === "object" && !Array.isArray(v)) ? v : {};
+      var hs = Math.max(0, Math.floor(Number(h.secondes) || 0));
+      var hm = Math.max(0, Math.floor(Number(h.minutes) || 0)) + Math.floor(hs / 60); hs %= 60;
+      var hh = Math.max(0, Math.floor(Number(h.heures) || 0)) + Math.floor(hm / 60); hm %= 60;
+      var hj = Math.max(0, Math.floor(Number(h.jours) || 0)) + Math.floor(hh / 24); hh %= 24;
+      var out = { jours: hj, heures: hh, minutes: hm, secondes: hs };
+      if (gardeRegime) out.regime = String(h.regime == null ? "" : h.regime);
+      return out;
+    }
+    s.horloge = normaliseHorloge(s.horloge, false);
+    s.horlogeDigestion = normaliseHorloge(s.horlogeDigestion, false);
+    s.horlogeExposition = normaliseHorloge(s.horlogeExposition, true);
     s.argent = pnum(s.argent);
 
     // ---- caractéristiques ----
@@ -679,6 +691,8 @@
     // expo et contenance ne sont PAS nullables : 0 y est une vraie valeur
     s.etat.expo = clamp(snum(s.etat.expo), -99999, 99999);
     s.etat.contenance = clamp(pnum(s.etat.contenance), 0, 99999);
+    if (!(s.etat.contenance > 0))
+      s.horlogeDigestion = { jours: 0, heures: 0, minutes: 0, secondes: 0 };
 
     // ---- les leviers des capacités ----
     // Aucune liste de clés n'est imposée : une capacité ajoutée demain dans les
@@ -2133,6 +2147,47 @@
     return apres - avant;
   }
 
+  // Les processus périodiques ont leur PROPRE horloge J/H/M/S. Ce ne sont
+  // pas des reliquats de cadence : ils gardent tout le temps actif écoulé,
+  // quitte à atteindre des jours entiers. Les ticks se détectent en comparant
+  // le nombre de tranches complètes avant/après l'avance.
+  function horlogeProcessus(cle, regime) {
+    var h = state[cle];
+    if (!h || typeof h !== "object" || Array.isArray(h)) {
+      h = { jours: 0, heures: 0, minutes: 0, secondes: 0 };
+      state[cle] = h;
+    }
+    if (regime !== undefined && h.regime == null) h.regime = "";
+    return h;
+  }
+  function secondesHorlogeProcessus(cle) {
+    var h = horlogeProcessus(cle);
+    return ((((Math.max(0, Math.floor(Number(h.jours) || 0)) * 24) +
+              Math.max(0, Math.floor(Number(h.heures) || 0))) * 60 +
+              Math.max(0, Math.floor(Number(h.minutes) || 0))) * 60 +
+              Math.max(0, Math.floor(Number(h.secondes) || 0)));
+  }
+  function poseHorlogeProcessus(cle, total, regime) {
+    total = Math.max(0, Math.floor(Number(total) || 0));
+    var h = horlogeProcessus(cle, regime);
+    h.jours = Math.floor(total / 86400); total %= 86400;
+    h.heures = Math.floor(total / 3600); total %= 3600;
+    h.minutes = Math.floor(total / 60);
+    h.secondes = total % 60;
+    if (regime !== undefined) h.regime = String(regime || "");
+    return h;
+  }
+  function resetHorlogeProcessus(cle, regime) {
+    poseHorlogeProcessus(cle, 0, regime);
+  }
+  function avanceHorlogeProcessus(cle, secondes, regime) {
+    var avant = secondesHorlogeProcessus(cle);
+    var apres = Math.max(0, avant + Math.trunc(Number(secondes) || 0));
+    poseHorlogeProcessus(cle, apres, regime);
+    return { avant: avant, apres: apres };
+  }
+  function reinitialiseHorlogeDigestion() { resetHorlogeProcessus("horlogeDigestion"); }
+
   // ---- moteur discret de récupération ----
   function recupAppliquePas(secondes, sens) {
     var liste = recupListeTemps(), suivi = recupSuivi(true), deltas = {};
@@ -2176,47 +2231,102 @@
     nettoieRecupCoffre();
   }
 
-  // ---- climat et digestion, proportionnels au temps exact ----
-  // Les règles expriment leurs variations sur une tranche de 10 m. On applique
-  // la même variation au prorata des secondes : dix avances de 1 m donnent
-  // exactement le même résultat qu'une avance de 10 m.
-  function appliqueClimatSecondes(secondes, sens) {
-    var t = tempsDef(), e = effortDe(state.effort);
-    if (!t || !e || !(secondes > 0)) return;
+  // ---- exposition et digestion, par tranches complètes ----
+  // Elles suivent la même philosophie que les récupérations : une cadence ne
+  // produit RIEN avant d'être entièrement écoulée. Chacune possède cependant
+  // une vraie horloge J/H/M/S cumulative, indépendante de l'horloge du monde.
+
+  function digestionCadenceSecondes() {
+    var t = tempsDef(), dg = t && t.digestion;
+    if (!dg || !(num(dg.minutes, 0) > 0)) return 0;
+    return Math.max(1, Math.round(num(dg.minutes, 0) * 60));
+  }
+  function appliqueDigestionSecondes(secondes, sens) {
+    var t = tempsDef(), dg = t && t.digestion, cadence = digestionCadenceSecondes();
+    if (!dg || !cadence || !(secondes > 0)) return;
     sens = sens < 0 ? -1 : 1;
-    var base = Math.max(1, num(t.tranche, 10) * 60), part = secondes / base;
-    var p = paliersClimat(), m = expoMax(), x = snum(state.etat.expo);
-    var retourPct = num(t.intensite ? t.intensite.retour : t.expoRetour, 0);
-    var retour = m * retourPct / 100 * part;
+
     if (sens > 0) {
-      if (p) {
-        var cap = plafondExpo(p) * (p < 0 ? -1 : 1);
-        var pas = p * part;
-        if (p < 0) x = x < cap ? Math.min(cap, x + retour) : Math.max(cap, x + pas);
-        else x = x > cap ? Math.max(cap, x - retour) : Math.min(cap, x + pas);
-        x = clamp(x, -m, m);
-      } else {
-        var calme = m * num(t.expoRetour, 0) / 100 * part;
-        x = x > 0 ? Math.max(0, x - calme) : Math.min(0, x + calme);
+      // Ventre vide = aucun processus en cours, donc aucune horloge cachée qui
+      // pourrait offrir un tick immédiat au prochain aliment avalé.
+      if (!(snum(state.etat.contenance) > 0)) { reinitialiseHorlogeDigestion(); return; }
+      var a = avanceHorlogeProcessus("horlogeDigestion", secondes);
+      var ticks = Math.floor(a.apres / cadence) - Math.floor(a.avant / cadence);
+      if (ticks > 0) {
+        var retire = ticks * Math.max(0, num(dg.volume, 0));
+        state.etat.contenance = Math.max(0, Math.round((snum(state.etat.contenance) - retire) * 1000) / 1000);
+        if (!(state.etat.contenance > 0)) reinitialiseHorlogeDigestion();
       }
-      state.etat.contenance = Math.max(0, Math.round((snum(state.etat.contenance) - digereSecondes(secondes)) * 1000) / 1000);
-    } else {
-      // Recul hors journal : miroir volontairement approximatif, comme avant.
-      // Le journal reste la voie exacte dès qu'on annule une avance faite dans
-      // la même session.
-      if (p) x = clamp(x - p * part, -m, m);
-      else if (x) {
-        var calmeR = m * num(t.expoRetour, 0) / 100 * part;
-        x = clamp(x + (x > 0 ? calmeR : -calmeR), -m, m);
-      }
-      state.etat.contenance = Math.min(contenance(), Math.round((snum(state.etat.contenance) + digereSecondes(secondes)) * 1000) / 1000);
+      return;
+    }
+
+    // Le journal restaure exactement une avance faite dans la session. Ce
+    // chemin n'est qu'un repli quand on remonte plus loin : on recule l'horloge
+    // encore active et restitue un volume à chaque frontière de cadence.
+    var avant = secondesHorlogeProcessus("horlogeDigestion");
+    var apres = Math.max(0, avant - secondes);
+    var rticks = Math.floor(avant / cadence) - Math.floor(apres / cadence);
+    poseHorlogeProcessus("horlogeDigestion", apres);
+    if (rticks > 0)
+      state.etat.contenance = Math.min(contenance(), Math.round((snum(state.etat.contenance) + rticks * Math.max(0, num(dg.volume, 0))) * 1000) / 1000);
+  }
+
+  function regimeExposition() {
+    var p = paliersClimat(), x = snum(state.etat.expo);
+    if (p) return "intensite:" + p;
+    if (x < 0) return "retour:froid";
+    if (x > 0) return "retour:chaud";
+    return "";
+  }
+  function appliqueTickExposition() {
+    var t = tempsDef(), p = paliersClimat(), m = expoMax(), x = snum(state.etat.expo);
+    if (!t || !(m > 0)) return;
+    var retourPct = num(t.intensite ? t.intensite.retour : t.expoRetour, 0);
+    var retour = m * retourPct / 100;
+    if (p) {
+      var cap = plafondExpo(p) * (p < 0 ? -1 : 1);
+      if (p < 0) x = x < cap ? Math.min(cap, x + retour) : Math.max(cap, x + p);
+      else x = x > cap ? Math.max(cap, x - retour) : Math.min(cap, x + p);
+      x = clamp(x, -m, m);
+    } else if (x) {
+      var calme = m * num(t.expoRetour, 0) / 100;
+      x = x > 0 ? Math.max(0, x - calme) : Math.min(0, x + calme);
     }
     state.etat.expo = Math.round(x * 1000000) / 1000000;
   }
-  function digereSecondes(secondes) {
-    var t = tempsDef(), dg = t && t.digestion;
-    if (!dg || !dg.minutes) return 0;
-    return num(dg.volume, 0) * secondes / (num(dg.minutes, 1) * 60);
+  function appliqueExpositionSecondes(secondes, sens) {
+    var t = tempsDef();
+    if (!t || !(secondes > 0)) return;
+    var cadence = Math.max(1, Math.round(Math.max(1, num(t.tranche, 10)) * 60));
+    sens = sens < 0 ? -1 : 1;
+
+    if (sens > 0) {
+      var regime = regimeExposition();
+      if (!regime) { resetHorlogeProcessus("horlogeExposition", ""); return; }
+      var h = horlogeProcessus("horlogeExposition", "");
+      if (String(h.regime || "") !== regime) resetHorlogeProcessus("horlogeExposition", regime);
+      var a = avanceHorlogeProcessus("horlogeExposition", secondes, regime);
+      var ticks = Math.floor(a.apres / cadence) - Math.floor(a.avant / cadence);
+      while (ticks-- > 0) appliqueTickExposition();
+      // Un retour qui atteint zéro termine le processus immédiatement. Un
+      // changement d'intensité, lui, ne sera constaté qu'au prochain passage
+      // du temps et repartira alors de zéro.
+      var apresRegime = regimeExposition();
+      if (!apresRegime) resetHorlogeProcessus("horlogeExposition", "");
+      else if (apresRegime !== regime) resetHorlogeProcessus("horlogeExposition", apresRegime);
+      return;
+    }
+
+    // Repli approximatif hors journal : on ne peut pas reconstruire la météo
+    // passée. On recule seulement l'horloge du régime encore connu.
+    var avant = secondesHorlogeProcessus("horlogeExposition");
+    poseHorlogeProcessus("horlogeExposition", Math.max(0, avant - secondes),
+      String(horlogeProcessus("horlogeExposition", "").regime || ""));
+  }
+
+  function appliqueClimatSecondes(secondes, sens) {
+    appliqueExpositionSecondes(secondes, sens);
+    appliqueDigestionSecondes(secondes, sens);
   }
 
   // LE JOURNAL DU TEMPS : une avance complète est photographiée. Reculer la
@@ -2228,7 +2338,12 @@
     try { return JSON.parse(JSON.stringify(v)); } catch (e) { return null; }
   }
   function photoTemps() {
-    var o = { horloge: copieTemps(horlogeCourante()), recuperation: copieTemps(recupCoffre(false)) || {} };
+    var o = {
+      horloge: copieTemps(horlogeCourante()),
+      horlogeDigestion: copieTemps(horlogeProcessus("horlogeDigestion")),
+      horlogeExposition: copieTemps(horlogeProcessus("horlogeExposition", "")),
+      recuperation: copieTemps(recupCoffre(false)) || {}
+    };
     TEMPS_CLES.forEach(function (k) { o[k] = state.etat[k]; });
     return o;
   }
@@ -2236,6 +2351,8 @@
     if (!o) return;
     TEMPS_CLES.forEach(function (k) { state.etat[k] = o[k]; });
     state.horloge = copieTemps(o.horloge) || { jours: 0, heures: 0, minutes: 0, secondes: 0 };
+    state.horlogeDigestion = copieTemps(o.horlogeDigestion) || { jours: 0, heures: 0, minutes: 0, secondes: 0 };
+    state.horlogeExposition = copieTemps(o.horlogeExposition) || { jours: 0, heures: 0, minutes: 0, secondes: 0, regime: "" };
     if (!state.modData || typeof state.modData !== "object" || Array.isArray(state.modData)) state.modData = {};
     if (o.recuperation && Object.keys(o.recuperation).length) state.modData.recuperation = copieTemps(o.recuperation);
     else delete state.modData.recuperation;
@@ -5660,6 +5777,7 @@
       var d = parseFloat(delta.value);
       if (!isFinite(d) || !d) return;
       state.etat.contenance = Math.max(0, Math.round((contenancePrise() + d) * 100) / 100);
+      if (!(state.etat.contenance > 0)) reinitialiseHorlogeDigestion();
       delta.value = "";
       refresh();
     }
