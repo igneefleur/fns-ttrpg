@@ -1,5 +1,19 @@
 [
 {
+"short": "2168e69",
+"author": "Théo Cavaillès",
+"date": "2026-10-07T01:09:31+02:00",
+"message": "Update fns-owd-beta files",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/2168e69f38216c18b1e9acb2e214230598bfa400",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/base/capacites-physiques.md",
+"url": "content/regles/base/capacites-physiques/"
+}
+]
+},
+{
 "short": "6ae8602",
 "author": "Théo Cavaillès",
 "date": "2026-10-06T17:34:06+02:00",
@@ -145,20 +159,6 @@
 "date": "2026-09-22T18:55:55+02:00",
 "message": "Les quatre attaques de la lance",
 "url": "https://github.com/igneefleur/fns-ttrpg/commit/1782ec875dabd1564ca011d017d07a958bf16107",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/combat/armes.md",
-"url": "content/regles/combat/armes/"
-}
-]
-},
-{
-"short": "aecabc1",
-"author": "Théo Cavaillès",
-"date": "2026-09-22T18:54:49+02:00",
-"message": "Les quatre attaques de la faux de guerre",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/aecabc14dab457cf0b486e1d74325db8a6309ad9",
 "files": [
 {
 "status": "modified",

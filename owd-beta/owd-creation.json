@@ -236,19 +236,19 @@
    "cle": "ps",
    "libelle": "Points de satiété",
    "abbr": "PS",
-   "base": 1000,
+   "base": 900,
    "carac": "Endurance",
-   "facteur": 10,
-   "formule": "Points de satiété = 1000 + Endurance × 10"
+   "facteur": 15,
+   "formule": "Points de satiété = 900 + Endurance × 15"
   },
   {
    "cle": "ph",
    "libelle": "Points d'hydratation",
    "abbr": "PH",
-   "base": 200,
+   "base": 300,
    "carac": "Endurance",
-   "facteur": 10,
-   "formule": "Points d'hydratation = 200 + Endurance × 10"
+   "facteur": 5,
+   "formule": "Points d'hydratation = 300 + Endurance × 5"
   },
   {
    "cle": "charge",
