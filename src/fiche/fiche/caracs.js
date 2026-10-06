@@ -14,7 +14,7 @@
       c.appendChild(el("span", "pc-edit-only", edit));
       teteDuo.appendChild(c);
     }
-    teteCase("Valeur", "Création");
+    teteCase("VAL", "Création");
     teteCase("Mod", "XP");
     tete.appendChild(teteDuo);
     b.appendChild(tete);

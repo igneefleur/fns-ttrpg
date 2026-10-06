@@ -52,7 +52,7 @@
     sommeilQualite.style.display = (state.effort === "sommeil" && qualites.length) ? "" : "none";
     b.appendChild(sommeilQualite);
 
-    var air = el("div", "pc-crow-bot");
+    var air = el("div", "pc-crow-bot pc-effort-temperature");
     air.appendChild(el("span", "lbl", "Température"));
     air.appendChild(stepper(
       function () { return num(state.temperature, 0); },
