@@ -375,9 +375,9 @@ Exemple. Un personnage ordinaire, qui porte 20 en Dextérité, garde 4 objets so
 
 Les points de satiété et les points d'hydratation mesurent ce qu'un personnage tient sans manger et sans boire. Ils découlent de l'Endurance.
 
-<p class="formula">Points de satiété = 1000 + Endurance × 10</p>
+<p class="formula">Points de satiété = 900 + Endurance × 15</p>
 
-<p class="formula">Points d'hydratation = 200 + Endurance × 10</p>
+<p class="formula">Points d'hydratation = 300 + Endurance × 5</p>
 
 L'[effort](#leffort) du personnage donne le niveau de [récupération naturelle](#la-recuperation-naturelle) de ces deux réserves, le même pour l'une et pour l'autre. Il est toujours négatif : elles ne se remplissent qu'en mangeant et en buvant.
 

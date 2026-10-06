@@ -461,8 +461,8 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
   position: relative; display: flex; align-items: baseline; gap: .4rem;
   margin: 0 0 .28rem; padding: .04rem 0 .22rem;
   border-bottom: 1px solid var(--trait-or);
-  font-family: 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif; font-weight: 700;
-  font-size: var(--fs-title); letter-spacing: .04em; color: var(--accent-deep); line-height: 1.1; text-transform: uppercase;
+  font-family: 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif; font-weight: 800;
+  font-size: var(--fs-label); letter-spacing: .09em; color: var(--ink); line-height: 1.1; text-transform: uppercase;
 }
 /* le tiret d'accent : la signature visuelle du bloc. Un FILET, pas du texte —
    il porte donc l'or sans contrainte de lisibilité. */
