@@ -62,8 +62,8 @@
 
     // TROIS GESTES, tous branchés sur la même horloge à la seconde.
     function geste(unite, secondesParUnite, etiquette) {
-      var cmd = el("div", "pc-vital-cmd pc-temps");
-      var nb = el("input", "pc-vital-delta");
+      var cmd = el("div", "pc-segs pc-temps-segs");
+      var nb = el("input", "c pc-temps-val");
       nb.type = "number"; nb.step = "1";
       nb.placeholder = "±";
       nb.setAttribute("aria-label", etiquette);
@@ -85,8 +85,12 @@
         if (e.key === "Enter") { e.preventDefault(); applique(); }
       });
       cmd.appendChild(nb);
-      cmd.appendChild(el("span", "pc-temps-unite", unite));
-      cmd.appendChild(miniBtn("Appliquer", "Faire passer ce temps", applique));
+      cmd.appendChild(el("span", "c pc-temps-unite", unite));
+      var appliquer = el("button", "c pc-temps-appliquer", "Appliquer");
+      appliquer.type = "button";
+      appliquer.title = "Faire passer ce temps";
+      appliquer.addEventListener("click", applique);
+      cmd.appendChild(appliquer);
       b.appendChild(cmd);
     }
     geste("1 r", 3, "Rounds de 3 secondes, en plus ou en moins");

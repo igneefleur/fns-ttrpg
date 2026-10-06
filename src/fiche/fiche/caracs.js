@@ -4,16 +4,22 @@
     caracsOrdre().forEach(function (name) {
       var row = el("div", "pc-crow");
       var top = el("div", "pc-crow-top");
-      var chip = el("span", "pc-abbr", abbrCarac(name));
+      var chip = el("span", "pc-abbr pc-carac-abbr", abbrCarac(name));
       chip.title = libCarac(name);
       top.appendChild(chip);
-      top.appendChild(el("span", "nm", libCarac(name)));
-      // LA VALEUR N'EST PAS CLIQUABLE, et ce n'est pas un oubli : dans Outward
-      // une caractéristique n'ouvre pas un jet. Elle ouvre l'usage d'une arme
-      // et fixe ses dégâts ; le jet, lui, est fait de dés d'action et du bonus
-      // de rang, seuls. D'où l'absence de pc-rollable.
-      var val = el("span", "pc-cval", "");
-      top.appendChild(val);
+
+      // COMME LES CONTRÔLES SEGMENTÉS DE LA FICHE : le nom complet n'apporte
+      // rien ici, le sigle suffit. À droite, valeur et modificateur partagent
+      // exactement la même case [ A | B ]. Le modificateur est celui employé
+      // par les armes : floor(CARAC / 5).
+      var duo = el("div", "pc-segs pc-carac-segs");
+      var val = el("span", "c pc-carac-val", "");
+      var mod = el("span", "c pc-carac-mod", "");
+      val.title = "Valeur";
+      mod.title = "Modificateur";
+      duo.appendChild(val);
+      duo.appendChild(mod);
+      top.appendChild(duo);
       row.appendChild(top);
 
       // DEUX CHAMPS, et pas un : la répartition de création et les points
@@ -67,13 +73,17 @@
 
       hooks.push(function () {
         var regle = levierRegleDe(lireCarac("total", name));
-        val.textContent = String(caracTotal(name));
+        var total = caracTotal(name);
+        var bonus = Math.floor(total / 5);
+        val.textContent = String(total);
+        mod.textContent = (bonus > 0 ? "+" : "") + String(bonus);
         val.classList.toggle("adj", regle);
         // L'infobulle RELIT LA CHAÎNE dans l'ordre et ne dit que ce qui a
         // bougé : une phrase écrite d'avance mentirait dès qu'un facteur est
         // posé, et un total forcé REMPLACE la somme au lieu de s'y ajouter.
-        val.title = chaineTexteDe(lireCarac("total", name), "valeur", caracVal(name)) +
-                    (regle ? " = " + fmtP(caracTotal(name)) : "");
+        val.title = "Valeur — " + chaineTexteDe(lireCarac("total", name), "valeur", caracVal(name)) +
+                    (regle ? " = " + fmtP(total) : "");
+        mod.title = "Modificateur — floor(" + total + " / 5) = " + bonus;
       });
       b.appendChild(row);
     });

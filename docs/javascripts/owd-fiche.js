@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "2.19.1b";
+  var RELEASE = "2.20.0b";
   var SCHEMA = 10;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -3913,16 +3913,22 @@
     caracsOrdre().forEach(function (name) {
       var row = el("div", "pc-crow");
       var top = el("div", "pc-crow-top");
-      var chip = el("span", "pc-abbr", abbrCarac(name));
+      var chip = el("span", "pc-abbr pc-carac-abbr", abbrCarac(name));
       chip.title = libCarac(name);
       top.appendChild(chip);
-      top.appendChild(el("span", "nm", libCarac(name)));
-      // LA VALEUR N'EST PAS CLIQUABLE, et ce n'est pas un oubli : dans Outward
-      // une caractéristique n'ouvre pas un jet. Elle ouvre l'usage d'une arme
-      // et fixe ses dégâts ; le jet, lui, est fait de dés d'action et du bonus
-      // de rang, seuls. D'où l'absence de pc-rollable.
-      var val = el("span", "pc-cval", "");
-      top.appendChild(val);
+
+      // COMME LES CONTRÔLES SEGMENTÉS DE LA FICHE : le nom complet n'apporte
+      // rien ici, le sigle suffit. À droite, valeur et modificateur partagent
+      // exactement la même case [ A | B ]. Le modificateur est celui employé
+      // par les armes : floor(CARAC / 5).
+      var duo = el("div", "pc-segs pc-carac-segs");
+      var val = el("span", "c pc-carac-val", "");
+      var mod = el("span", "c pc-carac-mod", "");
+      val.title = "Valeur";
+      mod.title = "Modificateur";
+      duo.appendChild(val);
+      duo.appendChild(mod);
+      top.appendChild(duo);
       row.appendChild(top);
 
       // DEUX CHAMPS, et pas un : la répartition de création et les points
@@ -3976,13 +3982,17 @@
 
       hooks.push(function () {
         var regle = levierRegleDe(lireCarac("total", name));
-        val.textContent = String(caracTotal(name));
+        var total = caracTotal(name);
+        var bonus = Math.floor(total / 5);
+        val.textContent = String(total);
+        mod.textContent = (bonus > 0 ? "+" : "") + String(bonus);
         val.classList.toggle("adj", regle);
         // L'infobulle RELIT LA CHAÎNE dans l'ordre et ne dit que ce qui a
         // bougé : une phrase écrite d'avance mentirait dès qu'un facteur est
         // posé, et un total forcé REMPLACE la somme au lieu de s'y ajouter.
-        val.title = chaineTexteDe(lireCarac("total", name), "valeur", caracVal(name)) +
-                    (regle ? " = " + fmtP(caracTotal(name)) : "");
+        val.title = "Valeur — " + chaineTexteDe(lireCarac("total", name), "valeur", caracVal(name)) +
+                    (regle ? " = " + fmtP(total) : "");
+        mod.title = "Modificateur — floor(" + total + " / 5) = " + bonus;
       });
       b.appendChild(row);
     });
@@ -4562,8 +4572,8 @@
 
     // TROIS GESTES, tous branchés sur la même horloge à la seconde.
     function geste(unite, secondesParUnite, etiquette) {
-      var cmd = el("div", "pc-vital-cmd pc-temps");
-      var nb = el("input", "pc-vital-delta");
+      var cmd = el("div", "pc-segs pc-temps-segs");
+      var nb = el("input", "c pc-temps-val");
       nb.type = "number"; nb.step = "1";
       nb.placeholder = "±";
       nb.setAttribute("aria-label", etiquette);
@@ -4585,8 +4595,12 @@
         if (e.key === "Enter") { e.preventDefault(); applique(); }
       });
       cmd.appendChild(nb);
-      cmd.appendChild(el("span", "pc-temps-unite", unite));
-      cmd.appendChild(miniBtn("Appliquer", "Faire passer ce temps", applique));
+      cmd.appendChild(el("span", "c pc-temps-unite", unite));
+      var appliquer = el("button", "c pc-temps-appliquer", "Appliquer");
+      appliquer.type = "button";
+      appliquer.title = "Faire passer ce temps";
+      appliquer.addEventListener("click", applique);
+      cmd.appendChild(appliquer);
       b.appendChild(cmd);
     }
     geste("1 r", 3, "Rounds de 3 secondes, en plus ou en moins");
