@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "2.19.0b";
+  var RELEASE = "2.19.1b";
   var SCHEMA = 10;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -955,21 +955,19 @@
           vusOrdre[id] = 1;
           return true;
         });
-      // « Récupération » vit désormais dans la colonne du milieu, entre
-      // Mouvement et Effondrement. Une fiche qui ne lui a PAS donné de place
-      // explicite doit suivre ce nouveau rangement natif, y compris si une
-      // ancienne version l'avait injectée automatiquement après Caractéristiques.
-      // Une place explicite, elle, reste souveraine : un joueur qui a déplacé
-      // volontairement le module ne voit pas son choix écrasé.
+      // « Récupération » vit désormais dans la grande colonne de droite,
+      // juste APRÈS Compétences. Une fiche qui ne lui a PAS donné de place
+      // explicite suit ce nouveau rangement natif, même si une version
+      // précédente l'avait injectée automatiquement dans la colonne du milieu.
+      // Une place explicite reste souveraine : un joueur qui a déplacé le
+      // module volontairement ne voit jamais son choix écrasé.
       var placeRecup = s.modules.place && typeof s.modules.place === "object" &&
                        !Array.isArray(s.modules.place) && s.modules.place.recuperation;
       if (!placeRecup) {
         var iRecup = s.modules.ordre.indexOf("recuperation");
         if (iRecup >= 0) s.modules.ordre.splice(iRecup, 1);
-        var iMouv = s.modules.ordre.indexOf("mouvement");
-        var iEff = s.modules.ordre.indexOf("effondrement");
-        if (iMouv >= 0) s.modules.ordre.splice(iMouv + 1, 0, "recuperation");
-        else if (iEff >= 0) s.modules.ordre.splice(iEff, 0, "recuperation");
+        var iComps = s.modules.ordre.indexOf("comps");
+        if (iComps >= 0) s.modules.ordre.splice(iComps + 1, 0, "recuperation");
       }
     }
     if (s.modules.place !== undefined) {
@@ -4538,10 +4536,10 @@
     // QUALITÉ DU SOMMEIL : comme les crans « Foncer » de Mouvement, une
     // seule ligne segmentée, visible uniquement lorsque Sommeil est choisi.
     var qualites = tempsDef() && Array.isArray(tempsDef().qualitesSommeil) ? tempsDef().qualitesSommeil : [];
-    var sommeilQualite = el("div", "pc-segs pc-sommeil-qualite");
+    var sommeilQualite = el("div", "pc-segs pc-crans pc-sommeil-qualite");
     var boutonsQualite = [];
     qualites.forEach(function (q) {
-      var bt = el("button", "c", q.nom);
+      var bt = el("button", "c", (q.mod > 0 ? "+" : "") + q.mod);
       bt.type = "button";
       bt.title = q.nom + (num(q.mod, 0) ? " (" + (q.mod > 0 ? "+" : "") + q.mod + " niveaux)" : " (niveau normal)");
       bt.addEventListener("click", function () {
@@ -9267,7 +9265,6 @@
     { id: "pe",           titre: "PE",               onglet: "fiche", colonne: "milieu", build: buildPe },
     { id: "pm",           titre: "PM",               onglet: "fiche", colonne: "milieu", build: buildPm },
     { id: "mouvement",    titre: "Mouvement",        onglet: "fiche", colonne: "milieu", build: buildMouvement },
-    { id: "recuperation", titre: "Récupération",     onglet: "fiche", colonne: "milieu", build: buildRecuperation },
     { id: "effondrement", titre: "Effondrement",     onglet: "fiche", colonne: "milieu", build: buildEffondrement },
     { id: "pi",           titre: "PI",               onglet: "fiche", colonne: "milieu", build: buildPi },
     { id: "pc",           titre: "PC",               onglet: "fiche", colonne: "milieu", build: buildPc },
@@ -9275,6 +9272,7 @@
     { id: "desaction",    titre: "Actions",          onglet: "fiche", colonne: "droite", build: buildDesAction },
     { id: "attaque",      titre: "Armes",          onglet: "fiche", colonne: "droite", build: buildAttaque },
     { id: "comps",        titre: "Compétences",      onglet: "fiche", colonne: "droite", build: buildComps },
+    { id: "recuperation", titre: "Récupération",     onglet: "fiche", colonne: "droite", build: buildRecuperation },
     // ---- onglet Art ----
     // Pleine largeur, seul de son onglet : une technique est une CARTE, avec
     // ses rangs, son coût et son effet. Elle vivait sous les huit blocs de la
