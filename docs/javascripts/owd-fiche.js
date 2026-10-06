@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "2.18.0b";
+  var RELEASE = "2.19.0b";
   var SCHEMA = 10;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -373,7 +373,7 @@
       // sommeil, repos, leger, intermediaire, lourd) et la température de
       // l'air en °C. Le module Temps s'en sert pour faire
       // passer le temps ; rien d'autre ne les lit.
-      effort: "leger", temperature: 20,
+      effort: "leger", temperature: 20, qualiteSommeil: "confortable",
       // Horloge interne du monde. Elle reste invisible : quatre champs courts
       // plutôt qu'un compteur géant de secondes, avec normalisation 24/60/60.
       horloge: { jours: 0, heures: 0, minutes: 0, secondes: 0 },
@@ -613,6 +613,10 @@
     if (!s.de) s.de = DE_DEFAUT;
     s.xpTotal = Math.max(0, num(s.xpTotal, 0));
     s.effort = String(s.effort == null ? "" : s.effort) || b.effort;
+    s.qualiteSommeil = String(s.qualiteSommeil == null ? "" : s.qualiteSommeil) || b.qualiteSommeil;
+    var qualitesSommeil = D().temps && Array.isArray(D().temps.qualitesSommeil) ? D().temps.qualitesSommeil : [];
+    if (qualitesSommeil.length && !qualitesSommeil.some(function (q) { return q.cle === s.qualiteSommeil; }))
+      s.qualiteSommeil = b.qualiteSommeil;
     s.allure = String(s.allure == null ? "" : s.allure) || b.allure;
     s.allureCran = clamp(num(s.allureCran, 1), 1, 99);
     s.effAutre = clamp(Math.round(num(s.effAutre, 0)), 0, 99);
@@ -1919,6 +1923,16 @@
     var tranches = Math.floor((perdu + 1e-9) / Math.max(1, num(m.tranche, 10)));
     return niveau + tranches * num(m.bonus, 0);
   }
+  function recupQualiteSommeil(niveau, r) {
+    if (!(niveau > 0) || !r) return niveau;
+    var liee = (r.condition === "sommeil" && !!r.valeur) ||
+               (r.condition === "effort" && r.valeur === "sommeil");
+    if (!liee) return niveau;
+    var t = tempsDef(), qs = t && Array.isArray(t.qualitesSommeil) ? t.qualitesSommeil : [];
+    var cle = String(state.qualiteSommeil || "confortable"), mod = 0;
+    qs.forEach(function (q) { if (q.cle === cle) mod = num(q.mod, 0); });
+    return niveau + mod;
+  }
   function recupBloquee(r) {
     var t = tempsDef(), out = false;
     ((t && t.recupBloques) || []).forEach(function (x) {
@@ -1957,7 +1971,8 @@
   // État COMPLET d'une récupération : valeur réglée, modificateurs du
   // personnage et cadence réellement applicable à cet instant.
   function recupEtat(r) {
-    var base = recupNiveauBase(r), niveau = recupManqueSommeil(base, r);
+    var base = recupNiveauBase(r);
+    var niveau = recupQualiteSommeil(recupManqueSommeil(base, r), r);
     var condition = recupCondition(r), bloque = condition && recupBloquee(r);
     var c = recupCadence(niveau), exp = condition ? recupEffetExpo(r.reserve) : null;
     var raison = "";
@@ -4520,6 +4535,25 @@
       b.appendChild(bloc);
     });
 
+    // QUALITÉ DU SOMMEIL : comme les crans « Foncer » de Mouvement, une
+    // seule ligne segmentée, visible uniquement lorsque Sommeil est choisi.
+    var qualites = tempsDef() && Array.isArray(tempsDef().qualitesSommeil) ? tempsDef().qualitesSommeil : [];
+    var sommeilQualite = el("div", "pc-segs pc-sommeil-qualite");
+    var boutonsQualite = [];
+    qualites.forEach(function (q) {
+      var bt = el("button", "c", q.nom);
+      bt.type = "button";
+      bt.title = q.nom + (num(q.mod, 0) ? " (" + (q.mod > 0 ? "+" : "") + q.mod + " niveaux)" : " (niveau normal)");
+      bt.addEventListener("click", function () {
+        if (state.qualiteSommeil !== q.cle) { state.qualiteSommeil = q.cle; recupSynchroniseSuivi(); }
+        refresh();
+      });
+      sommeilQualite.appendChild(bt);
+      boutonsQualite.push([bt, q.cle]);
+    });
+    sommeilQualite.style.display = (state.effort === "sommeil" && qualites.length) ? "" : "none";
+    b.appendChild(sommeilQualite);
+
     var air = el("div", "pc-crow-bot");
     air.appendChild(el("span", "lbl", "Température"));
     air.appendChild(stepper(
@@ -4563,6 +4597,8 @@
 
     hooks.push(function () {
       boutons.forEach(function (x) { x[0].classList.toggle("on", x[1] === state.effort); });
+      sommeilQualite.style.display = (state.effort === "sommeil" && qualites.length) ? "" : "none";
+      boutonsQualite.forEach(function (x) { x[0].classList.toggle("on", x[1] === state.qualiteSommeil); });
     });
     return b;
   }

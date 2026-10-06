@@ -65,6 +65,22 @@ Par exemple : combattre ; trottiner ou foncer ; forcer un effort au-delà de ce 
 
 </div>
 
+### La qualité du sommeil
+
+La qualité du couchage modifie les récupérations naturelles positives du personnage pendant son sommeil. Les récupérations nulles ou négatives ne changent pas.
+
+<div class="sepia-table" markdown>
+
+| Qualité | Modificateur |
+|---|:---:|
+| Précaire | −2 |
+| Rudimentaire | −1 |
+| Confortable | 0 |
+| Luxueux | +1 |
+| Somptueux | +2 |
+
+</div>
+
 ### Les points de repos
 
 Les points de repos mesurent l'éveil qui reste à un personnage avant que le sommeil ne le prenne. Ils découlent de la Vigueur.

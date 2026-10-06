@@ -62,6 +62,10 @@
     if (!s.de) s.de = DE_DEFAUT;
     s.xpTotal = Math.max(0, num(s.xpTotal, 0));
     s.effort = String(s.effort == null ? "" : s.effort) || b.effort;
+    s.qualiteSommeil = String(s.qualiteSommeil == null ? "" : s.qualiteSommeil) || b.qualiteSommeil;
+    var qualitesSommeil = D().temps && Array.isArray(D().temps.qualitesSommeil) ? D().temps.qualitesSommeil : [];
+    if (qualitesSommeil.length && !qualitesSommeil.some(function (q) { return q.cle === s.qualiteSommeil; }))
+      s.qualiteSommeil = b.qualiteSommeil;
     s.allure = String(s.allure == null ? "" : s.allure) || b.allure;
     s.allureCran = clamp(num(s.allureCran, 1), 1, 99);
     s.effAutre = clamp(Math.round(num(s.effAutre, 0)), 0, 99);

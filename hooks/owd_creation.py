@@ -890,6 +890,15 @@ def _temps(txt):
     repos = _table_effort(_section(txt, "Les points de repos", "repos"), cles, "repos")
     survie = _table_effort(_section(txt, "La satiété et l'hydratation", "satiété"), cles, "satiété")
 
+    # QUALITÉ DU SOMMEIL : cinq paliers, chacun décalant les récupérations
+    # positives du sommeil d'un certain nombre de niveaux.
+    qsec = _section(txt, "La qualité du sommeil", "qualité du sommeil")
+    qualites_sommeil = []
+    for nom, mod in re.findall(r"^\|\s*([^|]+?)\s*\|\s*([+−-]?\d+)\s*\|\s*$", qsec, re.M):
+        qualites_sommeil.append({"cle": _plat(nom).lower(), "nom": nom.strip(), "mod": _niveau(mod)})
+    if len(qualites_sommeil) != 5 or not any(q["cle"] == "confortable" and q["mod"] == 0 for q in qualites_sommeil):
+        raise ErreurRegles("qualité du sommeil : cinq paliers sont attendus, avec Confortable à 0")
+
     clim = _section(txt, "Le climat", "climat")
     degres = {}
     for nom, aucun, n in re.findall(r"\*\*([^*:]+?) :\*\* (aucun degré|(\d+) degrés) de plus", clim):
@@ -986,6 +995,7 @@ def _temps(txt):
         "efforts": [{"cle": c, "nom": n, "repos": repos[c], "survie": survie[c], "degres": degres[c]}
                     for c, n in zip(cles, noms)],
         "regen": regen,
+        "qualitesSommeil": qualites_sommeil,
         "recuperations": recups,
         "recupBloques": [{"reserve": "pe", "effort": effort_bloque}],
         "recupManqueSommeil": {"id": "pm:eveille", "reserve": "pm", "source": "pr",

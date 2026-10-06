@@ -33,6 +33,25 @@
       b.appendChild(bloc);
     });
 
+    // QUALITÉ DU SOMMEIL : comme les crans « Foncer » de Mouvement, une
+    // seule ligne segmentée, visible uniquement lorsque Sommeil est choisi.
+    var qualites = tempsDef() && Array.isArray(tempsDef().qualitesSommeil) ? tempsDef().qualitesSommeil : [];
+    var sommeilQualite = el("div", "pc-segs pc-sommeil-qualite");
+    var boutonsQualite = [];
+    qualites.forEach(function (q) {
+      var bt = el("button", "c", q.nom);
+      bt.type = "button";
+      bt.title = q.nom + (num(q.mod, 0) ? " (" + (q.mod > 0 ? "+" : "") + q.mod + " niveaux)" : " (niveau normal)");
+      bt.addEventListener("click", function () {
+        if (state.qualiteSommeil !== q.cle) { state.qualiteSommeil = q.cle; recupSynchroniseSuivi(); }
+        refresh();
+      });
+      sommeilQualite.appendChild(bt);
+      boutonsQualite.push([bt, q.cle]);
+    });
+    sommeilQualite.style.display = (state.effort === "sommeil" && qualites.length) ? "" : "none";
+    b.appendChild(sommeilQualite);
+
     var air = el("div", "pc-crow-bot");
     air.appendChild(el("span", "lbl", "Température"));
     air.appendChild(stepper(
@@ -76,6 +95,8 @@
 
     hooks.push(function () {
       boutons.forEach(function (x) { x[0].classList.toggle("on", x[1] === state.effort); });
+      sommeilQualite.style.display = (state.effort === "sommeil" && qualites.length) ? "" : "none";
+      boutonsQualite.forEach(function (x) { x[0].classList.toggle("on", x[1] === state.qualiteSommeil); });
     });
     return b;
   }

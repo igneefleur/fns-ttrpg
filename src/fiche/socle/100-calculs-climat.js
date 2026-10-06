@@ -82,6 +82,16 @@
     var tranches = Math.floor((perdu + 1e-9) / Math.max(1, num(m.tranche, 10)));
     return niveau + tranches * num(m.bonus, 0);
   }
+  function recupQualiteSommeil(niveau, r) {
+    if (!(niveau > 0) || !r) return niveau;
+    var liee = (r.condition === "sommeil" && !!r.valeur) ||
+               (r.condition === "effort" && r.valeur === "sommeil");
+    if (!liee) return niveau;
+    var t = tempsDef(), qs = t && Array.isArray(t.qualitesSommeil) ? t.qualitesSommeil : [];
+    var cle = String(state.qualiteSommeil || "confortable"), mod = 0;
+    qs.forEach(function (q) { if (q.cle === cle) mod = num(q.mod, 0); });
+    return niveau + mod;
+  }
   function recupBloquee(r) {
     var t = tempsDef(), out = false;
     ((t && t.recupBloques) || []).forEach(function (x) {
@@ -120,7 +130,8 @@
   // État COMPLET d'une récupération : valeur réglée, modificateurs du
   // personnage et cadence réellement applicable à cet instant.
   function recupEtat(r) {
-    var base = recupNiveauBase(r), niveau = recupManqueSommeil(base, r);
+    var base = recupNiveauBase(r);
+    var niveau = recupQualiteSommeil(recupManqueSommeil(base, r), r);
     var condition = recupCondition(r), bloque = condition && recupBloquee(r);
     var c = recupCadence(niveau), exp = condition ? recupEffetExpo(r.reserve) : null;
     var raison = "";
