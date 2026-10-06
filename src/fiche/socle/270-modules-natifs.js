@@ -21,7 +21,6 @@
     { id: "pe",           titre: "PE",               onglet: "fiche", colonne: "milieu", build: buildPe },
     { id: "pm",           titre: "PM",               onglet: "fiche", colonne: "milieu", build: buildPm },
     { id: "mouvement",    titre: "Mouvement",        onglet: "fiche", colonne: "milieu", build: buildMouvement },
-    { id: "recuperation", titre: "Récupération",     onglet: "fiche", colonne: "milieu", build: buildRecuperation },
     { id: "effondrement", titre: "Effondrement",     onglet: "fiche", colonne: "milieu", build: buildEffondrement },
     { id: "pi",           titre: "PI",               onglet: "fiche", colonne: "milieu", build: buildPi },
     { id: "pc",           titre: "PC",               onglet: "fiche", colonne: "milieu", build: buildPc },
@@ -29,6 +28,7 @@
     { id: "desaction",    titre: "Actions",          onglet: "fiche", colonne: "droite", build: buildDesAction },
     { id: "attaque",      titre: "Armes",          onglet: "fiche", colonne: "droite", build: buildAttaque },
     { id: "comps",        titre: "Compétences",      onglet: "fiche", colonne: "droite", build: buildComps },
+    { id: "recuperation", titre: "Récupération",     onglet: "fiche", colonne: "droite", build: buildRecuperation },
     // ---- onglet Art ----
     // Pleine largeur, seul de son onglet : une technique est une CARTE, avec
     // ses rangs, son coût et son effet. Elle vivait sous les huit blocs de la

@@ -36,10 +36,10 @@
     // QUALITÉ DU SOMMEIL : comme les crans « Foncer » de Mouvement, une
     // seule ligne segmentée, visible uniquement lorsque Sommeil est choisi.
     var qualites = tempsDef() && Array.isArray(tempsDef().qualitesSommeil) ? tempsDef().qualitesSommeil : [];
-    var sommeilQualite = el("div", "pc-segs pc-sommeil-qualite");
+    var sommeilQualite = el("div", "pc-segs pc-crans pc-sommeil-qualite");
     var boutonsQualite = [];
     qualites.forEach(function (q) {
-      var bt = el("button", "c", q.nom);
+      var bt = el("button", "c", (q.mod > 0 ? "+" : "") + q.mod);
       bt.type = "button";
       bt.title = q.nom + (num(q.mod, 0) ? " (" + (q.mod > 0 ? "+" : "") + q.mod + " niveaux)" : " (niveau normal)");
       bt.addEventListener("click", function () {

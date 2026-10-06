@@ -404,21 +404,19 @@
           vusOrdre[id] = 1;
           return true;
         });
-      // « Récupération » vit désormais dans la colonne du milieu, entre
-      // Mouvement et Effondrement. Une fiche qui ne lui a PAS donné de place
-      // explicite doit suivre ce nouveau rangement natif, y compris si une
-      // ancienne version l'avait injectée automatiquement après Caractéristiques.
-      // Une place explicite, elle, reste souveraine : un joueur qui a déplacé
-      // volontairement le module ne voit pas son choix écrasé.
+      // « Récupération » vit désormais dans la grande colonne de droite,
+      // juste APRÈS Compétences. Une fiche qui ne lui a PAS donné de place
+      // explicite suit ce nouveau rangement natif, même si une version
+      // précédente l'avait injectée automatiquement dans la colonne du milieu.
+      // Une place explicite reste souveraine : un joueur qui a déplacé le
+      // module volontairement ne voit jamais son choix écrasé.
       var placeRecup = s.modules.place && typeof s.modules.place === "object" &&
                        !Array.isArray(s.modules.place) && s.modules.place.recuperation;
       if (!placeRecup) {
         var iRecup = s.modules.ordre.indexOf("recuperation");
         if (iRecup >= 0) s.modules.ordre.splice(iRecup, 1);
-        var iMouv = s.modules.ordre.indexOf("mouvement");
-        var iEff = s.modules.ordre.indexOf("effondrement");
-        if (iMouv >= 0) s.modules.ordre.splice(iMouv + 1, 0, "recuperation");
-        else if (iEff >= 0) s.modules.ordre.splice(iEff, 0, "recuperation");
+        var iComps = s.modules.ordre.indexOf("comps");
+        if (iComps >= 0) s.modules.ordre.splice(iComps + 1, 0, "recuperation");
       }
     }
     if (s.modules.place !== undefined) {
