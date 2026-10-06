@@ -272,8 +272,10 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
 }
 .pc-segs > .c {
   /* PARTS ÉGALES : 1/2 | 1/2 puis 1/3 | 1/3 | 1/3, le mot centré dans la sienne */
-  flex: 1 1 0; min-width: 0; text-align: center; border: none; background: transparent; cursor: pointer;
-  padding: .32rem .3rem; font: inherit; font-size: .56rem; font-weight: 700;
+  flex: 1 1 0; min-width: 0; height: 1.25rem; box-sizing: border-box;
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  border: none; background: transparent; cursor: pointer;
+  padding: 0 .3rem; font: inherit; font-size: .56rem; font-weight: 700; line-height: 1;
   letter-spacing: .03em; text-transform: uppercase; color: var(--ink-3);
   white-space: nowrap;
   transition: background .12s, color .12s;
@@ -563,15 +565,24 @@ html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où 
    passe à la ligne entier, et chaque rang se partage sa largeur. */
 .pc-tabs.mini.pc-efforts { display: flex; flex-wrap: wrap; }
 .pc-tabs.mini.pc-efforts > .pc-tab { flex: 1 1 auto; white-space: nowrap; padding-inline: .35rem; }
-.pc-vital-cmd.pc-temps { padding: .35rem 0 0; }
-/* L'UNITÉ EST UNE CASE, entre le champ et le bouton, de même largeur sur les
-   deux lignes : les deux « Appliquer » s'alignent l'un sous l'autre. */
-.pc-temps-unite {
-  flex: 0 0 2.6rem; box-sizing: border-box; text-align: center;
-  padding: .2rem .2rem; border: 1px solid var(--line-2); border-radius: 5px;
-  background: var(--stripe); color: var(--ink-2);
-  font-size: .7rem; font-weight: 700; line-height: 1.15; white-space: nowrap;
+/* TEMPS : même contrôle [ A | B | C ] que les efforts. Le champ, l'unité et
+   Appliquer ont donc STRICTEMENT la même hauteur que Sommeil/Repos et
+   Léger/Inter/Lourd. */
+.pc-temps-segs { margin-top: .3rem; }
+.pc-temps-segs > .c { box-sizing: border-box; }
+.pc-temps-segs > input.c {
+  width: 0; height: 1.25rem; border: 0; border-radius: 0; outline: 0;
+  font: inherit; font-size: .56rem; font-weight: 700; line-height: 1;
+  color: var(--ink); cursor: text; font-variant-numeric: tabular-nums;
+  -moz-appearance: textfield; appearance: textfield;
 }
+.pc-temps-segs > input.c::-webkit-inner-spin-button,
+.pc-temps-segs > input.c::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.pc-temps-segs > input.c::placeholder { color: var(--ink-3); opacity: 1; }
+.pc-temps-segs > input.c:focus { background: var(--stripe); color: var(--ink); }
+.pc-temps-segs > .pc-temps-unite { cursor: default; color: var(--ink-2); }
+.pc-temps-segs > .pc-temps-unite:hover { background: transparent; color: var(--ink-2); }
+.pc-temps-segs > .pc-temps-appliquer { cursor: pointer; }
 /* ---- Actions : les dés d'action ----
    Une colonne par dé, à parts égales : le dé en volume, puis sa taille entre
    deux pas. Un dé sélectionné porte l'anneau d'or. */
@@ -714,18 +725,22 @@ html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où 
    ses dégâts. Le jet est fait de dés d'action et du bonus de rang, seuls. */
 .pc-crow { display: flex; flex-direction: column; gap: .1rem; padding: .18rem .1rem .24rem; border-bottom: 1px solid var(--hair); }
 .pc-crow:last-child { border-bottom: none; }
-.pc-crow-top { display: flex; align-items: center; gap: .35rem; }
-/* la pastille du sigle (FOR DEX INT FER VIG END RES CHA), son title porte le
-   libellé accentué — les CLÉS de l'état, elles, sont sans accent */
-/* pavé d'or appuyé, texte BLANC : 7,4:1 — c'est le fond le plus sombre que la
-   fiche pose de jour, et le blanc est ce qui s'y lit le mieux */
+.pc-crow-top { display: grid; grid-template-columns: 2.6rem minmax(0, 1fr); align-items: stretch; gap: .35rem; }
+/* Le sigle est la seule identité visible : le nom complet reste en infobulle.
+   Il prend l'OR CLAIR de la fiche, pas l'ancien pavé ocre sombre. */
 .pc-abbr { display: inline-block; box-sizing: border-box; min-width: 2.6rem; background: var(--accent-deep); color: #fff; font-weight: 700; font-size: .58rem; letter-spacing: .01em; padding: .14rem .3rem; border-radius: 4px; text-align: center; white-space: nowrap; }
-.pc-crow-top .nm { flex: 1 1 auto; min-width: 0; font-size: var(--fs-meta); color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pc-cval {
-  min-width: 2rem; text-align: center; font-size: 1rem; font-weight: 700; color: var(--ink);
-  background: var(--panel); border: 1px solid var(--line-2); border-radius: 5px;
-  padding: .02rem .3rem; font-variant-numeric: tabular-nums; line-height: 1.25;
+.pc-crow .pc-carac-abbr {
+  display: flex; align-items: center; justify-content: center; min-width: 0;
+  height: calc(1.25rem + 2px); padding: 0 .3rem; border: 1px solid var(--trait-or); border-radius: 5px;
+  background: var(--sur-bandeau); color: #1a1a1a;
+  font-size: .56rem; line-height: 1; text-transform: uppercase;
 }
+/* [ VAL | MOD ] : le même contrôle segmenté que Effort et Temps. */
+.pc-carac-segs { margin-top: 0; }
+.pc-carac-segs > .c { cursor: default; font-size: .56rem; letter-spacing: 0; text-transform: none; font-variant-numeric: tabular-nums; color: var(--ink); }
+.pc-carac-segs > .c:hover { background: transparent; color: var(--ink); }
+.pc-carac-segs > .pc-carac-mod { color: var(--ink); }
+.pc-carac-segs > .pc-carac-val.adj { color: var(--ink); }
 /* édition d'une carac : grille étiquette | stepper, une paire par ligne
    (le flex en vrac sautait à la ligne au milieu d'un groupe en colonne étroite) */
 .pc-crow-bot { display: grid; grid-template-columns: max-content 1fr; gap: .14rem .5rem; align-items: center; padding-top: .1rem; }
@@ -1763,6 +1778,7 @@ html.night .pc-block-title { color: var(--ink); }
 /* la pastille du sigle garde un FOND sombre : --accent-deep, clair de nuit,
    n'en ferait plus un pavé mais un aplat lumineux dans une colonne dense */
 html.night .pc-abbr { background: #6b5a2e; color: #dfe7d2; }
+html.night .pc-crow .pc-carac-abbr { background: #ffd77f; color: #1a1a1a; border-color: #6b5a2e; }
 /* dégradé des six rangs, tons nuit : la barre monte du papier vers l'or
    pâle, en gardant les mêmes six paliers qu'au jour */
 html.night .pc-stadebar .seg.on.s1 { background: #2a2415; color: #e6e6e6; border-color: #3a3220; }
