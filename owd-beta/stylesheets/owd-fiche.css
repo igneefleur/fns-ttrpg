@@ -275,7 +275,7 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
   flex: 1 1 0; min-width: 0; height: 1.25rem; box-sizing: border-box;
   display: flex; align-items: center; justify-content: center; text-align: center;
   border: none; background: transparent; cursor: pointer;
-  padding: 0 .3rem; font: inherit; font-size: .56rem; font-weight: 700; line-height: 1;
+  padding: 0 .3rem; font: inherit; font-size: .66rem; font-weight: 700; line-height: 1;
   letter-spacing: .03em; text-transform: uppercase; color: var(--ink-3);
   white-space: nowrap;
   transition: background .12s, color .12s;
@@ -569,10 +569,12 @@ html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où 
    Appliquer ont donc STRICTEMENT la même hauteur que Sommeil/Repos et
    Léger/Inter/Lourd. */
 .pc-temps-segs { margin-top: .3rem; }
-.pc-temps-segs > .c { box-sizing: border-box; }
+.pc-temps-segs > .c { box-sizing: border-box; font-size: .66rem; letter-spacing: 0; text-transform: none; }
+.pc-temps-segs > .c:nth-child(1), .pc-temps-segs > .c:nth-child(2) { flex: 0 0 25%; }
+.pc-temps-segs > .c:nth-child(3) { flex: 0 0 50%; }
 .pc-temps-segs > input.c {
   width: 0; height: 1.25rem; border: 0; border-radius: 0; outline: 0;
-  font: inherit; font-size: .56rem; font-weight: 700; line-height: 1;
+  font: inherit; font-size: .66rem; font-weight: 700; line-height: 1;
   color: var(--ink); cursor: text; font-variant-numeric: tabular-nums;
   -moz-appearance: textfield; appearance: textfield;
 }
@@ -720,32 +722,48 @@ html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où 
    fiche qui n'existe pas, et c'est le commentaire qui se met alors à mentir. */
 
 /* ---- caractéristiques ----
-   Les huit d'Outward. NOTER que .pc-cval n'est PAS .pc-rollable : dans Outward
-   une caractéristique ne se lance pas, elle OUVRE l'usage d'une arme et fixe
-   ses dégâts. Le jet est fait de dés d'action et du bonus de rang, seuls. */
+   Une ligne = le sigle puis DEUX cases soudées. Comme dans MIA, une seule
+   entête reprend exactement le même squelette : [VALEUR | MOD] en jeu,
+   [CRÉATION | XP] sous le rouage. */
 .pc-crow { display: flex; flex-direction: column; gap: .1rem; padding: .18rem .1rem .24rem; border-bottom: 1px solid var(--hair); }
 .pc-crow:last-child { border-bottom: none; }
 .pc-crow-top { display: grid; grid-template-columns: 2.6rem minmax(0, 1fr); align-items: stretch; gap: .35rem; }
-/* Le sigle est la seule identité visible : le nom complet reste en infobulle.
-   Il prend l'OR CLAIR de la fiche, pas l'ancien pavé ocre sombre. */
 .pc-abbr { display: inline-block; box-sizing: border-box; min-width: 2.6rem; background: var(--accent-deep); color: #fff; font-weight: 700; font-size: .58rem; letter-spacing: .01em; padding: .14rem .3rem; border-radius: 4px; text-align: center; white-space: nowrap; }
 .pc-crow .pc-carac-abbr {
   display: flex; align-items: center; justify-content: center; min-width: 0;
   height: calc(1.25rem + 2px); padding: 0 .3rem; border: 1px solid var(--trait-or); border-radius: 5px;
   background: var(--sur-bandeau); color: #1a1a1a;
-  font-size: .56rem; line-height: 1; text-transform: uppercase;
+  font-size: .66rem; line-height: 1; text-transform: uppercase;
 }
-/* [ VAL | MOD ] : le même contrôle segmenté que Effort et Temps. */
+/* Même taille que les crans numériques de la fiche : aucune réduction locale. */
 .pc-carac-segs { margin-top: 0; }
-.pc-carac-segs > .c { cursor: default; font-size: .56rem; letter-spacing: 0; text-transform: none; font-variant-numeric: tabular-nums; color: var(--ink); }
+.pc-carac-segs > .c {
+  cursor: default; font-size: .66rem; letter-spacing: 0; text-transform: none;
+  font-variant-numeric: tabular-nums; color: var(--ink); padding-inline: .16rem;
+}
 .pc-carac-segs > .c:hover { background: transparent; color: var(--ink); }
 .pc-carac-segs > .pc-carac-mod { color: var(--ink); }
 .pc-carac-segs > .pc-carac-val.adj { color: var(--ink); }
-/* édition d'une carac : grille étiquette | stepper, une paire par ligne
-   (le flex en vrac sautait à la ligne au milieu d'un groupe en colonne étroite) */
-.pc-crow-bot { display: grid; grid-template-columns: max-content 1fr; gap: .14rem .5rem; align-items: center; padding-top: .1rem; }
-.pc-crow-bot .pc-step { justify-self: end; }
-.pc-crow-bot .lbl { font-size: .52rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); }
+/* Sous le rouage, la lecture disparaît réellement : une case porte soit son
+   résultat, soit son champ, jamais les deux. */
+.pc-block[data-module="caracs"].editing .pc-jeu-only { display: none !important; }
+.pc-carac-input {
+  width: 100%; min-width: 0; height: 100%; box-sizing: border-box;
+  border: 0; border-radius: 0; background: transparent; color: var(--ink);
+  font: inherit; font-size: .66rem; font-weight: 700; line-height: 1;
+  text-align: center; font-variant-numeric: tabular-nums;
+  -moz-appearance: textfield; appearance: textfield;
+}
+.pc-carac-input::-webkit-inner-spin-button,
+.pc-carac-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.pc-carac-input:focus { outline: none; background: var(--stripe); }
+/* L'entête suit exactement les deux colonnes des lignes, à la manière de MIA,
+   mais sans cadre ni fond : il annonce, il ne constitue pas une valeur. */
+.pc-caracs-tete { padding: 0 .1rem .02rem; border-bottom: 0; }
+.pc-carac-head-spacer { display: block; }
+.pc-carac-head { border-color: transparent; background: transparent; overflow: visible; }
+.pc-carac-head > .c { box-shadow: none !important; color: var(--ink-3); font-size: .52rem; letter-spacing: .04em; text-transform: uppercase; }
+.pc-carac-head > .c:hover { background: transparent; color: var(--ink-3); }
 
 /* ---- stepper −/valeur/+ ---- */
 .pc-step { display: inline-flex; align-items: center; gap: .25rem; }
