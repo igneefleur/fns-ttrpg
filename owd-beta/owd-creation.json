@@ -474,6 +474,33 @@
     "niveau": 20
    }
   ],
+  "qualitesSommeil": [
+   {
+    "cle": "precaire",
+    "nom": "Précaire",
+    "mod": -2
+   },
+   {
+    "cle": "rudimentaire",
+    "nom": "Rudimentaire",
+    "mod": -1
+   },
+   {
+    "cle": "confortable",
+    "nom": "Confortable",
+    "mod": 0
+   },
+   {
+    "cle": "luxueux",
+    "nom": "Luxueux",
+    "mod": 1
+   },
+   {
+    "cle": "somptueux",
+    "nom": "Somptueux",
+    "mod": 2
+   }
+  ],
   "recuperations": [
    {
     "id": "pv:eveille",

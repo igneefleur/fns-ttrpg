@@ -281,6 +281,9 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
 .pc-segs > .c + .c { box-shadow: inset 1px 0 0 var(--line-2); }
 .pc-segs > .c:hover { background: var(--stripe); color: var(--ink); }
 .pc-segs > .c.on { background: var(--accent); color: var(--card); box-shadow: none; }
+/* Effort et Temps : cinq qualités sur une seule ligne, même composant segmenté
+   que les crans de Mouvement ; seul le texte est resserré pour tenir. */
+.pc-sommeil-qualite > .c { padding-left: .08rem; padding-right: .08rem; font-size: .48rem; letter-spacing: 0; }
 /* MOUVEMENT : les pas par round en grand, le coût du cran à droite */
 /* MOUVEMENT : un tableau de bord en cases soudées (le trio de MIA) — la
    valeur en grand, l'étiquette en petites capitales dessous. La case des pas
