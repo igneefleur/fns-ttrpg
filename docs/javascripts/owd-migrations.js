@@ -1159,6 +1159,105 @@
     }
   });
 
+
+  /* ------------------------------------------------------------------
+   * PAS 10 — HORLOGE INTERNE ET RÉCUPÉRATIONS DISCRÈTES
+   *
+   * Le temps possède désormais une horloge J/H/M/S persistante. Les
+   * récupérations ne stockent plus de fractions de points : elles mémorisent
+   * des secondes consécutives actives et ne déclenchent qu'une fois leur
+   * cadence complète atteinte. Les récupérations ajoutées expriment leur durée
+   * restante en secondes afin que les rounds de 3 s soient exacts.
+   * ------------------------------------------------------------------ */
+  OwdMigr.ajouter({
+    schema: 10,
+    titre: "Horloge interne et récupérations par cadence complète",
+    notes: "La fiche ajoute une horloge invisible en jours, heures, minutes et secondes. " +
+           "Les récupérations deviennent discrètes : aucun point n'est accordé avant une cadence complète. " +
+           "Les durées des récupérations ajoutées sont converties en secondes sans perte et les anciens reliquats sont conservés au grenier pour une éventuelle redescente.",
+
+    monter: function (s, ctx) {
+      function dureeSecondes(type) {
+        if (type === "round") return 3;
+        if (type === "minute") return 60;
+        if (type === "10m") return 600;
+        if (type === "1h") return 3600;
+        if (type === "8h") return 28800;
+        return 600;
+      }
+      var h = ctx.reprendre("horloge-schema10");
+      if (h && typeof h === "object" && !Array.isArray(h)) s.horloge = h;
+      else if (!s.horloge || typeof s.horloge !== "object" || Array.isArray(s.horloge))
+        s.horloge = { jours: 0, heures: 0, minutes: 0, secondes: 0 };
+
+      if (!s.modData || typeof s.modData !== "object" || Array.isArray(s.modData)) s.modData = {};
+      var d = s.modData.recuperation;
+      if (!d || typeof d !== "object" || Array.isArray(d)) d = null;
+      var vieuxSuivi = ctx.reprendre("recup-suivi-schema10");
+      var vieuxRestes = ctx.reprendre("recup-restes-schema10");
+      if ((vieuxSuivi && typeof vieuxSuivi === "object") || (vieuxRestes && typeof vieuxRestes === "object")) {
+        if (!d) d = s.modData.recuperation = {};
+        if (vieuxSuivi && typeof vieuxSuivi === "object" && !Array.isArray(vieuxSuivi)) d.suivi = vieuxSuivi;
+      }
+      if (d && d.restes && typeof d.restes === "object" && !Array.isArray(d.restes)) {
+        // Ces fractions appartiennent à l'ancien moteur continu. Elles n'ont
+        // pas d'équivalent fidèle dans le moteur discret ; on les garde pour
+        // une redescente au lieu de les transformer arbitrairement.
+        ctx.grenier("recup-restes-schema10", d.restes);
+        delete d.restes;
+      } else if (vieuxRestes && d) {
+        // `vieuxRestes` vient d'une redescente puis remontée : il doit retourner
+        // au grenier, pas redevenir actif en schéma 10.
+        ctx.grenier("recup-restes-schema10", vieuxRestes);
+      }
+
+      if (d && Array.isArray(d.ajouts)) {
+        d.ajouts.forEach(function (r) {
+          if (!r || typeof r !== "object") return;
+          if (!isFinite(Number(r.resteSecondes))) {
+            var reste = Number(r.reste), sec;
+            if (isFinite(reste)) sec = r.type === "round" ? reste * 3 : reste * 60;
+            else sec = Math.max(0, Number(r.temps) || 0) * dureeSecondes(String(r.type || "10m"));
+            r.resteSecondes = Math.max(0, Math.round(sec));
+          }
+          delete r.reste;
+        });
+      }
+      if (d && !Object.keys(d).length) delete s.modData.recuperation;
+      if (!Object.keys(s.modData).length) s.modData = {};
+      return s;
+    },
+
+    descendre: function (s, ctx) {
+      function ancienReste(r) {
+        var sec = Math.max(0, Number(r.resteSecondes) || 0);
+        return r.type === "round" ? sec / 3 : sec / 60;
+      }
+      if (s.horloge && typeof s.horloge === "object" &&
+          (Number(s.horloge.jours) || Number(s.horloge.heures) || Number(s.horloge.minutes) || Number(s.horloge.secondes)))
+        ctx.grenier("horloge-schema10", s.horloge);
+      delete s.horloge;
+
+      var d = s.modData && typeof s.modData === "object" ? s.modData.recuperation : null;
+      if (d && typeof d === "object" && !Array.isArray(d)) {
+        if (d.suivi && typeof d.suivi === "object" && !Array.isArray(d.suivi)) {
+          ctx.grenier("recup-suivi-schema10", d.suivi);
+          delete d.suivi;
+        }
+        var vieuxRestes = ctx.reprendre("recup-restes-schema10");
+        if (vieuxRestes && typeof vieuxRestes === "object" && !Array.isArray(vieuxRestes)) d.restes = vieuxRestes;
+        if (Array.isArray(d.ajouts)) {
+          d.ajouts.forEach(function (r) {
+            if (!r || typeof r !== "object") return;
+            r.reste = ancienReste(r);
+            delete r.resteSecondes;
+          });
+        }
+      }
+      return s;
+    }
+  });
+
   global.OwdMigr = OwdMigr;
   if (typeof module === "object" && module && module.exports) module.exports = OwdMigr;
 })(typeof window !== "undefined" ? window : (typeof global !== "undefined" ? global : this));

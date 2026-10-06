@@ -21,22 +21,11 @@
     effortsListe().forEach(function (e) { if (e.cle === cle) out = e; });
     return out;
   }
-  // Points par minute d'un niveau de récupération, signés. null si la table
-  // ne donne pas de durée (les cadences au round).
-  function regenParMinute(niveau) {
-    var t = tempsDef(), n = Math.abs(niveau), out = null;
-    if (!t) return null;
-    (t.regen || []).forEach(function (r) {
-      if (r.niveau === n && r.minutes) out = r.points / r.minutes;
-    });
-    return out === null ? null : (niveau < 0 ? -out : out);
-  }
-
   // ---- récupérations naturelles ----
-  // Le LIVRE donne les valeurs ; le personnage ne garde que les corrections
-  // qu'il a posées depuis le module « Récupération ». Elles vivent dans le
-  // coffre du module, déjà persisté dans modData : aucune clé racine nouvelle,
-  // aucune migration de schéma pour une simple valeur réglable.
+  // Les niveaux viennent des règles. Le temps ne les traite plus comme un
+  // débit continu : chaque récupération possède un compteur de secondes
+  // consécutives actives et ne produit son effet qu'à la fin d'une cadence
+  // complète (round, minute, 10 m, heure, 8 h...).
   function recupsListe() {
     var t = tempsDef();
     return t && Array.isArray(t.recuperations) ? t.recuperations : [];
@@ -70,8 +59,8 @@
     if (v === recupNiveauRegle(r)) delete d.niveaux[r.id];
     else d.niveaux[r.id] = v;
     if (!Object.keys(d.niveaux).length) delete d.niveaux;
-    // Ne jamais laisser un coffre vide dans le personnage.
-    if (!Object.keys(d).length) delete state.modData.recuperation;
+    recupOublieSuivi(r.id);
+    nettoieRecupCoffre();
   }
   function recupDefParId(id) {
     var out = null;
@@ -124,9 +113,12 @@
     out.signe = niveau < 0 ? -1 : 1;
     return out;
   }
+  function recupCadenceSecondes(c) {
+    if (!c || !c.points) return 0;
+    return c.minutes == null ? 3 : Math.max(1, Math.round(num(c.minutes, 0) * 60));
+  }
   // État COMPLET d'une récupération : valeur réglée, modificateurs du
-  // personnage et cadence réellement applicable à cet instant. Le module
-  // l'affiche ; le temps utilise exactement la même fonction.
+  // personnage et cadence réellement applicable à cet instant.
   function recupEtat(r) {
     var base = recupNiveauBase(r), niveau = recupManqueSommeil(base, r);
     var condition = recupCondition(r), bloque = condition && recupBloquee(r);
@@ -141,45 +133,70 @@
       exposition: exp, raison: raison
     };
   }
-  function recupDeltaParMinute(e) {
-    if (!e || !e.actif || !e.cadence || !e.cadence.minutes) return null;
-    return e.cadence.signe * e.cadence.points / e.cadence.minutes;
-  }
-  // Fraction de point non encore appliquée. Sans elle, cliquer six fois « 10 m »
-  // à niveau 5 (5 / heure) ne rendrait jamais rien : chaque 0,83 serait perdu
-  // par l'arrondi de la tranche. Le reste voyage avec le personnage dans le
-  // coffre du module et ne banque jamais des points au-delà d'une borne.
-  function recupRestes(cree) {
+
+  // Suivi persistant de la tranche en cours : { id: { secondes, signature } }.
+  // Il ne stocke jamais des fractions de point. Une interruption efface le
+  // compteur de la récupération concernée ; le prochain cycle repart de zéro.
+  function recupSuivi(cree) {
     var d = recupCoffre(cree);
-    if (!d.restes || typeof d.restes !== "object" || Array.isArray(d.restes)) {
+    if (!d.suivi || typeof d.suivi !== "object" || Array.isArray(d.suivi)) {
       if (!cree) return {};
-      d.restes = {};
+      d.suivi = {};
     }
-    return d.restes;
+    return d.suivi;
+  }
+  function recupOublieSuivi(id) {
+    var d = recupCoffre(false);
+    if (!d || !d.suivi) return;
+    delete d.suivi[id];
+    nettoieRecupCoffre();
   }
   function nettoieRecupCoffre() {
     var d = recupCoffre(false);
     if (!d || !state.modData || !state.modData.recuperation) return;
-    if (d.restes && !Object.keys(d.restes).length) delete d.restes;
+    if (d.suivi && !Object.keys(d.suivi).length) delete d.suivi;
     if (d.niveaux && !Object.keys(d.niveaux).length) delete d.niveaux;
+    if (d.restes && !Object.keys(d.restes).length) delete d.restes;
+    if (Array.isArray(d.ajouts) && !d.ajouts.length) delete d.ajouts;
     if (!Object.keys(d).length) delete state.modData.recuperation;
   }
-  function appliqueRecupTemps(cle, delta) {
-    if (!delta) return;
-    var cur = courant(cle), m = maxDe(cle), rs = recupRestes(true);
-    // Une réserve pleine ne stocke pas du soin futur ; une réserve vide ne
-    // stocke pas davantage une perte qui attendrait qu'on la remplisse.
-    if ((delta > 0 && cur >= m) || (delta < 0 && cur <= 0)) { delete rs[cle]; nettoieRecupCoffre(); return; }
-    var total = num(rs[cle], 0) + delta;
-    // floor aussi dans le négatif : −0,83 devient −1, l'arrondi contre le
-    // joueur déjà choisi par la fiche. Le reste positif compense sur les
-    // tranches suivantes et garantit le bon total à la cadence complète.
-    var entier = Math.floor(total + 1e-12);
-    rs[cle] = total - entier;
-    if (Math.abs(rs[cle]) < 1e-9) delete rs[cle];
-    if (entier) bougeReserve(cle, entier);
-    cur = courant(cle);
-    if ((delta > 0 && cur >= m) || (delta < 0 && cur <= 0)) delete rs[cle];
+
+  // Le module Récupération remplace ces quatre crochets pour y joindre ses
+  // récupérations ajoutées et leur durée. Sans lui, le moteur sait déjà faire
+  // tourner toutes les récupérations natives.
+  var recupListeTemps = function () { return recupsListe(); };
+  var recupEtatTemps = function (r) { return recupEtat(r); };
+  var recupSecondesDisponiblesTemps = function (r, e, secondes) { return e && e.actif ? secondes : 0; };
+  var recupApresPasTemps = function () {};
+  var recupFinTemps = function () {};
+
+  function recupFacteurTemps(r) {
+    return r && (r.reserve === "ps" || r.reserve === "ph") ? facteurDepense(r.reserve) : 1;
+  }
+  function recupSignatureTemps(r, e) {
+    var c = e && e.cadence, sec = recupCadenceSecondes(c), f = recupFacteurTemps(r);
+    if (!c || !sec) return "";
+    return [Math.round(num(e.niveau, 0)), c.signe, num(c.points, 0), sec, f].join("|");
+  }
+  function recupDeltaTickTemps(r, e) {
+    var c = e && e.cadence;
+    if (!c) return 0;
+    return c.signe * num(c.points, 0) * recupFacteurTemps(r);
+  }
+  function recupPeutCumulerTemps(r, e) {
+    var d = recupDeltaTickTemps(r, e), cur = courant(r.reserve), m = maxDe(r.reserve);
+    if (d > 0 && cur >= m) return false;
+    if (d < 0 && cur <= 0) return false;
+    return !!d;
+  }
+  function recupSynchroniseSuivi() {
+    var suivi = recupSuivi(false), liste = recupListeTemps(), parId = {};
+    liste.forEach(function (r) { if (r && r.id) parId[r.id] = r; });
+    Object.keys(suivi).forEach(function (id) {
+      var r = parId[id], e = r ? recupEtatTemps(r) : null;
+      if (!r || !e || !e.actif || !recupPeutCumulerTemps(r, e) ||
+          suivi[id].signature !== recupSignatureTemps(r, e)) delete suivi[id];
+    });
     nettoieRecupCoffre();
   }
   // LA ZONE IDÉALE, en température de l'AIR : sa zone de confort (le corps nu
@@ -226,13 +243,8 @@
     });
     return f;
   }
-  // Une réserve qui bouge de `delta` sur tout le temps écoulé. ARRONDI CONTRE
-  // LE JOUEUR, décidé par l'auteur : une perte s'arrondit au supérieur
-  // (4,17 perdus = 5), un gain à l'inférieur — c'est le RÉSULTAT qui descend à
-  // l'entier, ce qui efface aussi les décimales d'une fiche d'avant. Elle ne dépasse pas
-  // son maximum en remontant, ne passe pas sous zéro en descendant, et ne
-  // corrige jamais une valeur déjà hors de ces bornes. Revenue au maximum,
-  // elle redevient null et suit le maximum quand il bouge.
+  // Une réserve qui bouge d'un nombre ENTIER de points. Les récupérations
+  // arrivent désormais ici seulement lorsqu'une cadence complète est atteinte.
   function bougeReserve(cle, delta) {
     if (!delta) return;
     var cur = courant(cle), m = maxDe(cle);
@@ -241,171 +253,220 @@
     else v = Math.min(cur, Math.max(v, 0));
     state.etat[cle] = v >= m && cur <= m ? null : v;
   }
-  // Fait passer `n` tranches (de dix minutes) une à une : chaque tranche lit le
-  // niveau d'exposition où la précédente l'a laissée. Les réserves cumulent
-  // leur variation sur tout le temps et ne l'arrondissent qu'à la fin : c'est
-  // la perte du temps ENTIER qui s'arrondit, pas celle de chaque tranche.
-  // Rend les minutes écoulées.
-  // LE JOURNAL DU TEMPS : l'état d'avant et d'après chaque passage, en
-  // mémoire seulement (il ne survit pas au rechargement). Reculer restaure
-  // l'état d'avant tant que la fiche est restée telle que le passage l'a
-  // laissée ; sinon — une valeur retouchée à la main, une page rechargée — le
-  // recul se calcule à l'envers. Sans lui, une réserve ou une exposition qui a
-  // buté sur sa borne ne saurait plus d'où elle venait.
-  var journalTemps = [];
-  // PV et PE en font partie : l'effondrement que le passage a causé leur a
-  // pris des points, et annuler le passage doit les rendre.
-  var TEMPS_CLES = ["pv", "pe", "pm", "pi", "pr", "ps", "ph", "expo", "contenance"];
-  function photoRestesRecup() {
-    var r = recupRestes(false), o = {};
-    Object.keys(r).forEach(function (k) { o[k] = num(r[k], 0); });
-    return o;
+
+  // ---- horloge interne ----
+  // Stockée en quatre champs normalisés, jamais en compteur géant de secondes.
+  // Les secondes ne servent que temporairement aux additions/soustractions.
+  function horlogeCourante() {
+    if (!state.horloge || typeof state.horloge !== "object" || Array.isArray(state.horloge))
+      state.horloge = { jours: 0, heures: 0, minutes: 0, secondes: 0 };
+    return state.horloge;
   }
-  function restaureRestesRecup(o) {
-    var d = recupCoffre(true);
-    d.restes = {};
-    Object.keys(o || {}).forEach(function (k) { if (num(o[k], 0)) d.restes[k] = num(o[k], 0); });
+  function horlogeVersSecondes(h) {
+    h = h || horlogeCourante();
+    return ((((Math.max(0, Math.floor(Number(h.jours) || 0)) * 24) +
+              Math.max(0, Math.floor(Number(h.heures) || 0))) * 60 +
+              Math.max(0, Math.floor(Number(h.minutes) || 0))) * 60 +
+              Math.max(0, Math.floor(Number(h.secondes) || 0)));
+  }
+  function poseHorlogeDepuisSecondes(total) {
+    total = Math.max(0, Math.floor(Number(total) || 0));
+    var h = horlogeCourante();
+    h.jours = Math.floor(total / 86400); total %= 86400;
+    h.heures = Math.floor(total / 3600); total %= 3600;
+    h.minutes = Math.floor(total / 60);
+    h.secondes = total % 60;
+  }
+  function bougeHorloge(secondes) {
+    var avant = horlogeVersSecondes(), apres = Math.max(0, avant + Math.trunc(Number(secondes) || 0));
+    poseHorlogeDepuisSecondes(apres);
+    return apres - avant;
+  }
+
+  // ---- moteur discret de récupération ----
+  function recupAppliquePas(secondes, sens) {
+    var liste = recupListeTemps(), suivi = recupSuivi(true), deltas = {};
+    var i, r, e, actif, cadence, sig, u, total, ticks, delta;
+    sens = sens < 0 ? -1 : 1;
+    for (i = 0; i < liste.length; i++) {
+      r = liste[i];
+      if (!r || !r.id || !r.reserve) continue;
+      e = recupEtatTemps(r);
+      actif = recupSecondesDisponiblesTemps(r, e, secondes, sens);
+      if (!(actif > 0) || !e || !e.actif || !e.cadence) { delete suivi[r.id]; continue; }
+
+      // La durée d'un effet temporaire s'écoule tant qu'il est actif, même si
+      // la réserve est déjà pleine/vide. En revanche une réserve à sa borne ne
+      // banque jamais une récupération future : son compteur repart de zéro.
+      recupApresPasTemps(r, e, actif, sens);
+      cadence = recupCadenceSecondes(e.cadence);
+      if (!cadence) { delete suivi[r.id]; continue; }
+      sig = recupSignatureTemps(r, e);
+      u = suivi[r.id];
+      if (!u || typeof u !== "object" || u.signature !== sig) u = { secondes: 0, signature: sig };
+
+      if (sens > 0 && !recupPeutCumulerTemps(r, e)) { delete suivi[r.id]; continue; }
+      total = Math.max(0, num(u.secondes, 0));
+      ticks = 0;
+      if (sens > 0) {
+        total += actif;
+        ticks = Math.floor(total / cadence);
+        total -= ticks * cadence;
+      } else {
+        total -= actif;
+        while (total < 0) { total += cadence; ticks++; }
+      }
+      u.secondes = total; u.signature = sig; suivi[r.id] = u;
+      if (ticks) {
+        delta = recupDeltaTickTemps(r, e) * ticks * sens;
+        deltas[r.reserve] = num(deltas[r.reserve], 0) + delta;
+      }
+    }
+    Object.keys(deltas).forEach(function (cle) { bougeReserve(cle, deltas[cle]); });
     nettoieRecupCoffre();
   }
+
+  // ---- climat et digestion, proportionnels au temps exact ----
+  // Les règles expriment leurs variations sur une tranche de 10 m. On applique
+  // la même variation au prorata des secondes : dix avances de 1 m donnent
+  // exactement le même résultat qu'une avance de 10 m.
+  function appliqueClimatSecondes(secondes, sens) {
+    var t = tempsDef(), e = effortDe(state.effort);
+    if (!t || !e || !(secondes > 0)) return;
+    sens = sens < 0 ? -1 : 1;
+    var base = Math.max(1, num(t.tranche, 10) * 60), part = secondes / base;
+    var p = paliersClimat(), m = expoMax(), x = snum(state.etat.expo);
+    var retourPct = num(t.intensite ? t.intensite.retour : t.expoRetour, 0);
+    var retour = m * retourPct / 100 * part;
+    if (sens > 0) {
+      if (p) {
+        var cap = plafondExpo(p) * (p < 0 ? -1 : 1);
+        var pas = p * part;
+        if (p < 0) x = x < cap ? Math.min(cap, x + retour) : Math.max(cap, x + pas);
+        else x = x > cap ? Math.max(cap, x - retour) : Math.min(cap, x + pas);
+        x = clamp(x, -m, m);
+      } else {
+        var calme = m * num(t.expoRetour, 0) / 100 * part;
+        x = x > 0 ? Math.max(0, x - calme) : Math.min(0, x + calme);
+      }
+      state.etat.contenance = Math.max(0, Math.round((snum(state.etat.contenance) - digereSecondes(secondes)) * 1000) / 1000);
+    } else {
+      // Recul hors journal : miroir volontairement approximatif, comme avant.
+      // Le journal reste la voie exacte dès qu'on annule une avance faite dans
+      // la même session.
+      if (p) x = clamp(x - p * part, -m, m);
+      else if (x) {
+        var calmeR = m * num(t.expoRetour, 0) / 100 * part;
+        x = clamp(x + (x > 0 ? calmeR : -calmeR), -m, m);
+      }
+      state.etat.contenance = Math.min(contenance(), Math.round((snum(state.etat.contenance) + digereSecondes(secondes)) * 1000) / 1000);
+    }
+    state.etat.expo = Math.round(x * 1000000) / 1000000;
+  }
+  function digereSecondes(secondes) {
+    var t = tempsDef(), dg = t && t.digestion;
+    if (!dg || !dg.minutes) return 0;
+    return num(dg.volume, 0) * secondes / (num(dg.minutes, 1) * 60);
+  }
+
+  // LE JOURNAL DU TEMPS : une avance complète est photographiée. Reculer la
+  // même durée restaure exactement réserves, exposition, contenance, horloge,
+  // durées temporaires et compteurs de récupération.
+  var journalTemps = [];
+  var TEMPS_CLES = ["pv", "pe", "pm", "pi", "pr", "ps", "ph", "expo", "contenance"];
+  function copieTemps(v) {
+    try { return JSON.parse(JSON.stringify(v)); } catch (e) { return null; }
+  }
   function photoTemps() {
-    var o = { _recup: photoRestesRecup() };
+    var o = { horloge: copieTemps(horlogeCourante()), recuperation: copieTemps(recupCoffre(false)) || {} };
     TEMPS_CLES.forEach(function (k) { o[k] = state.etat[k]; });
     return o;
   }
-  function memePhoto(a, b) {
-    if (!TEMPS_CLES.every(function (k) { return a[k] === b[k]; })) return false;
-    return JSON.stringify(a._recup || {}) === JSON.stringify(b._recup || {});
+  function restaurePhotoTemps(o) {
+    if (!o) return;
+    TEMPS_CLES.forEach(function (k) { state.etat[k] = o[k]; });
+    state.horloge = copieTemps(o.horloge) || { jours: 0, heures: 0, minutes: 0, secondes: 0 };
+    if (!state.modData || typeof state.modData !== "object" || Array.isArray(state.modData)) state.modData = {};
+    if (o.recuperation && Object.keys(o.recuperation).length) state.modData.recuperation = copieTemps(o.recuperation);
+    else delete state.modData.recuperation;
+    effVu = null;
   }
-  function avancerTemps(n) {
-    if (n < 0) return reculerTemps(-n);
-    var avant = photoTemps();
-    var min = avancerTempsCalcul(n);
-    if (min) {
-      journalTemps.push({ n: n, avant: avant, apres: photoTemps() });
+  function memePhotoTemps(a, b) {
+    try { return JSON.stringify(a) === JSON.stringify(b); } catch (e) { return false; }
+  }
+
+  // La plus petite unité du monde est le round : 3 secondes. Toutes les
+  // cadences natives et toutes les durées proposées au module Récupération en
+  // sont des multiples, ce qui rend le calcul exact sans fractions de temps.
+  var PAS_TEMPS_SECONDES = 3;
+  function avancerSecondesCalcul(secondes) {
+    var t = tempsDef(), e = effortDe(state.effort), restant, pas;
+    if (!t || !e) return 0;
+    secondes = Math.max(0, Math.floor(Number(secondes) || 0));
+    restant = secondes;
+    while (restant > 0) {
+      pas = Math.min(PAS_TEMPS_SECONDES, restant);
+      recupAppliquePas(pas, 1);
+      appliqueClimatSecondes(pas, 1);
+      bougeHorloge(pas);
+      restant -= pas;
+    }
+    recupFinTemps(1);
+    return secondes;
+  }
+  function reculerSecondesCalcul(secondes) {
+    var t = tempsDef(), e = effortDe(state.effort), restant, pas, fait = 0;
+    if (!t || !e) return 0;
+    secondes = Math.max(0, Math.floor(Number(secondes) || 0));
+    restant = Math.min(secondes, horlogeVersSecondes());
+    while (restant > 0) {
+      pas = Math.min(PAS_TEMPS_SECONDES, restant);
+      recupAppliquePas(pas, -1);
+      appliqueClimatSecondes(pas, -1);
+      bougeHorloge(-pas);
+      restant -= pas; fait += pas;
+    }
+    recupFinTemps(-1);
+    return -fait;
+  }
+  function avancerSecondes(secondes) {
+    secondes = Math.trunc(Number(secondes) || 0);
+    if (secondes < 0) return reculerSecondes(-secondes);
+    if (!secondes) return 0;
+    var avant = photoTemps(), fait = avancerSecondesCalcul(secondes);
+    if (fait) {
+      journalTemps.push({ secondes: fait, avant: avant, apres: photoTemps() });
       if (journalTemps.length > 50) journalTemps.shift();
     }
-    return min;
+    return fait;
+  }
+  function reculerSecondes(secondes) {
+    secondes = Math.max(0, Math.floor(Number(secondes) || 0));
+    var restant = secondes, fait = 0, top;
+    while (restant > 0 && journalTemps.length) {
+      top = journalTemps[journalTemps.length - 1];
+      if (top.secondes > restant || !memePhotoTemps(photoTemps(), top.apres)) break;
+      restaurePhotoTemps(top.avant);
+      journalTemps.pop();
+      restant -= top.secondes; fait += top.secondes;
+    }
+    if (restant > 0) {
+      journalTemps = [];
+      var r = reculerSecondesCalcul(restant);
+      fait += -r;
+    }
+    return -fait;
+  }
+  // Compatibilité interne avec d'anciens mods : une « tranche » reste la
+  // tranche de règles, mais le vrai moteur est désormais en secondes.
+  function avancerTemps(n) {
+    var t = tempsDef(), tr = t ? Math.max(1, num(t.tranche, 10)) : 10;
+    return avancerSecondes(num(n, 0) * tr * 60) / 60;
   }
   function reculerTemps(n) {
-    var t = tempsDef(), tr = t ? num(t.tranche, 10) : 10, fait = 0, top;
-    while (n > 0 && journalTemps.length) {
-      top = journalTemps[journalTemps.length - 1];
-      if (top.n > n || !memePhoto(photoTemps(), top.apres)) break;
-      TEMPS_CLES.forEach(function (k) { state.etat[k] = top.avant[k]; });
-      restaureRestesRecup(top.avant._recup);
-      journalTemps.pop();
-      // l'effondrement redescend d'un coup : ce n'est pas une récupération,
-      // c'est une annulation — le suivi repart de l'état restauré
-      effVu = null;
-      n -= top.n;
-      fait += top.n;
-    }
-    if (n > 0) {
-      journalTemps = [];
-      var r = reculerTempsCalcul(n);
-      if (!r) return -fait * tr;
-    }
-    return -(fait + n) * tr;
+    var t = tempsDef(), tr = t ? Math.max(1, num(t.tranche, 10)) : 10;
+    return reculerSecondes(num(n, 0) * tr * 60) / 60;
   }
-  function recupDeltasTranche(minutes) {
-    var d = {};
-    recupsListe().forEach(function (r) {
-      var e = recupEtat(r), parMin = recupDeltaParMinute(e);
-      if (parMin === null) return;
-      var v = parMin * minutes;
-      // Satiété et hydratation sont des récupérations NÉGATIVES dont certains
-      // niveaux d'exposition accélèrent la dépense. Le facteur est lui aussi
-      // lu dans les règles.
-      if (r.reserve === "ps" || r.reserve === "ph") v *= facteurDepense(r.reserve);
-      d[r.reserve] = num(d[r.reserve], 0) + v;
-    });
-    return d;
-  }
-  function appliquerDeltasRecup(d, sens) {
-    Object.keys(d).forEach(function (k) { appliqueRecupTemps(k, num(d[k], 0) * (sens || 1)); });
-  }
-  function avancerTempsCalcul(n) {
-    var t = tempsDef(), e = effortDe(state.effort);
-    if (!t || !e) return 0;
-    var tr = num(t.tranche, 10), i;
-    for (i = 0; i < n; i++) {
-      // Les récupérations lisent l'état AU DÉBUT de la tranche. Cela compte
-      // pour le mana (qui dépend du repos perdu) et pour les maladies liées à
-      // l'exposition. Les points sont appliqués avant de passer à la suivante.
-      appliquerDeltasRecup(recupDeltasTranche(tr), 1);
-
-      var p = paliersClimat(), m = expoMax(), x = num(state.etat.expo, 0);
-      if (p) {
-        // vers l'intensité subie, JUSQU'À son plafond ; déjà au-delà, elle
-        // revient vers lui à la cadence de retour
-        var cap = plafondExpo(p) * (p < 0 ? -1 : 1);
-        var rp = m * num(t.intensite ? t.intensite.retour : t.expoRetour, 0) / 100;
-        if (p < 0) x = x < cap ? Math.min(cap, x + rp) : Math.max(cap, x + p);
-        else x = x > cap ? Math.max(cap, x - rp) : Math.min(cap, x + p);
-        x = clamp(x, -m, m);
-      } else {
-        var retour = m * num(t.expoRetour, 0) / 100;
-        x = x > 0 ? Math.max(0, x - retour) : Math.min(0, x + retour);
-      }
-      state.etat.expo = x;
-      // La digestion, elle aussi, se fait tranche par tranche : cela évite
-      // qu'une correction de temps puisse libérer plus que ce que le ventre
-      // contenait au début d'une longue avance.
-      state.etat.contenance = Math.max(0, num(state.etat.contenance, 0) - Math.floor(digere(tr)));
-    }
-    // l'exposition s'arrondit en s'éloignant de zéro : contre le joueur, là aussi
-    state.etat.expo = state.etat.expo < 0 ? Math.floor(state.etat.expo) : Math.ceil(state.etat.expo);
-    return n * tr;
-  }
-  // LE TEMPS QUI RECULE, quand le journal ne suffit pas : l'inverse
-  // d'avancerTempsCalcul. Les tranches se défont de la dernière à la première : chacune
-  // rend d'abord à l'exposition ce que la tranche lui avait fait, puis lit
-  // CETTE exposition pour savoir à quel rythme la réserve s'était dépensée.
-  // Les arrondis sont les miroirs de ceux de l'aller (une perte au supérieur
-  // se rend au supérieur), si bien qu'avancer puis reculer du même temps, à
-  // effort et température inchangés, ramène la fiche où elle était — sauf si
-  // une réserve avait buté sur zéro ou sur son maximum, ce que rien ne garde.
-  // Rend les minutes reculées, en négatif.
-  function reculeReserve(cle, delta) {
-    if (!delta) return;
-    var cur = courant(cle), m = maxDe(cle);
-    var v = Math.ceil(cur - delta);
-    if (delta > 0) v = Math.min(cur, Math.max(v, 0));
-    else v = Math.max(cur, Math.min(v, m));
-    state.etat[cle] = v >= m && cur <= m ? null : v;
-  }
-  function reculerTempsCalcul(n) {
-    var t = tempsDef(), e = effortDe(state.effort);
-    if (!t || !e) return 0;
-    var tr = num(t.tranche, 10), i;
-    for (i = 0; i < n; i++) {
-      // Après un rechargement le journal n'existe plus. On reconstruit alors
-      // une tranche à l'envers : d'abord l'exposition qu'avait le personnage
-      // au début, puis les récupérations correspondantes. Comme auparavant,
-      // une borne atteinte (0 / maximum) ne permet pas de deviner ce qui a été
-      // perdu derrière elle ; le journal reste la voie exacte.
-      var p = paliersClimat(), m = expoMax(), x = num(state.etat.expo, 0);
-      if (p) x = clamp(x - p, -m, m);
-      else if (x) {
-        var retour = m * num(t.expoRetour, 0) / 100;
-        x = clamp(x + (x > 0 ? retour : -retour), -m, m);
-      }
-      state.etat.expo = x;
-      appliquerDeltasRecup(recupDeltasTranche(tr), -1);
-      state.etat.contenance = Math.min(contenance(),
-        num(state.etat.contenance, 0) + Math.floor(digere(tr)));
-    }
-    state.etat.expo = state.etat.expo < 0 ? Math.floor(state.etat.expo) : Math.ceil(state.etat.expo);
-    return -n * tr;
-  }
-  // Le volume que la digestion libère en `minutes`.
-  function digere(minutes) {
-    var t = tempsDef(), dg = t && t.digestion;
-    if (!dg || !dg.minutes) return 0;
-    return num(dg.volume, 0) * minutes / num(dg.minutes, 1);
-  }
-  // Combien de tranches dans une heure.
-  function tranchesParHeure() { var t = tempsDef(); return t ? Math.max(1, Math.round(60 / num(t.tranche, 10))) : 6; }
   function confort() {
     var c = climatDef();
     if (c.nuBas === undefined || c.nuHaut === undefined) return null;

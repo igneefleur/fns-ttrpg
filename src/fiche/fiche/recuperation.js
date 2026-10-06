@@ -8,21 +8,19 @@
   //
   // Les ajouts vivent dans modData.recuperation : c'est le coffre du module,
   // déjà persistant et volontairement extensible. Aucun autre module n'a besoin
-  // de connaître leur forme. Les durées exprimées en minutes / 10 minutes /
-  // heure / 8 heures suivent le passage du temps existant. « Round » reste une
-  // unité de combat : la fiche n'ayant aucun compteur de rounds, elle n'est pas
-  // décrémentée par les boutons de temps de 10 minutes / 1 heure.
+  // de connaître leur forme. Toutes les durées utilisent désormais l'horloge
+  // interne à la seconde : un round vaut 3 s, puis 1 m / 10 m / 1 h / 8 h.
   var recupBox = null;
   var recupOnly = false;
   var recupNatives = true;
   var recupVueSig = "";
 
   var RECUP_DUREES = [
-    { cle: "round", nom: "Round", court: "round", minutes: null },
-    { cle: "minute", nom: "Minute", court: "m", minutes: 1 },
-    { cle: "10m", nom: "10 minutes", court: "10 m", minutes: 10 },
-    { cle: "1h", nom: "1 heure", court: "1 h", minutes: 60 },
-    { cle: "8h", nom: "8 heures", court: "8 h", minutes: 480 }
+    { cle: "round", nom: "Round", court: "round", secondes: 3 },
+    { cle: "minute", nom: "Minute", court: "m", secondes: 60 },
+    { cle: "10m", nom: "10 minutes", court: "10 m", secondes: 600 },
+    { cle: "1h", nom: "1 heure", court: "1 h", secondes: 3600 },
+    { cle: "8h", nom: "8 heures", court: "8 h", secondes: 28800 }
   ];
 
   function recupLibelle(r) {
@@ -66,6 +64,7 @@
     if (!d || !state.modData || !state.modData.recuperation) return;
     if (Array.isArray(d.ajouts) && !d.ajouts.length) delete d.ajouts;
     if (d.niveaux && !Object.keys(d.niveaux).length) delete d.niveaux;
+    if (d.suivi && !Object.keys(d.suivi).length) delete d.suivi;
     if (!Object.keys(d).length) delete state.modData.recuperation;
   }
   function recupNiveauMaxModule() {
@@ -93,9 +92,9 @@
     r.actif = !!r.actif;
     d = recupDureeDef(r.type);
     r.type = d.cle;
-    r.temps = Math.max(0, num(r.temps, 1));
-    if (!isFinite(Number(r.reste))) r.reste = d.minutes == null ? r.temps : r.temps * d.minutes;
-    r.reste = Math.max(0, num(r.reste, d.minutes == null ? r.temps : r.temps * d.minutes));
+    r.temps = Math.max(0, Number(r.temps) || 0);
+    if (!isFinite(Number(r.resteSecondes))) r.resteSecondes = r.temps * d.secondes;
+    r.resteSecondes = Math.max(0, Math.floor(Number(r.resteSecondes) || 0));
     return r;
   }
   function recupAjoutsNormalisesModule() {
@@ -108,12 +107,12 @@
   }
   function recupTempsRestantModule(r) {
     var d = recupDureeDef(r.type);
-    if (d.minutes == null) return Math.max(0, num(r.reste, r.temps));
-    return Math.max(0, num(r.reste, r.temps * d.minutes)) / d.minutes;
+    return d.secondes > 0 ? Math.max(0, Number(r.resteSecondes) || 0) / d.secondes : 0;
   }
   function recupResetDureeModule(r) {
     var d = recupDureeDef(r.type);
-    r.reste = d.minutes == null ? Math.max(0, num(r.temps, 0)) : Math.max(0, num(r.temps, 0)) * d.minutes;
+    r.resteSecondes = Math.max(0, Math.round((Number(r.temps) || 0) * d.secondes));
+    recupOublieSuivi(r.id);
   }
   function recupCustomEtatModule(r) {
     var c = recupCadence(r.niveau), d = recupDureeDef(r.type);
@@ -137,99 +136,40 @@
     return recupsListe().concat(recupAjoutsNormalisesModule());
   }
 
-  // ---- application des récupérations ajoutées au passage du temps ----
-  // On greffe uniquement le module sur le moteur déjà existant : les règles
-  // naturelles restent calculées par recupDeltasTranche() d'origine. Les ajouts
-  // sont sommés au même delta, avec une durée exacte même si elle expire au
-  // milieu d'une tranche de dix minutes.
-  var recupDeltasTrancheBaseModule = recupDeltasTranche;
-  var avancerTempsBaseRecupModule = avancerTemps;
-  var reculerTempsBaseRecupModule = reculerTemps;
-  var recupTempsSensModule = 0;
+  // ---- branchement au moteur temporel discret ----
+  // Le socle gère les ticks des récupérations natives. Le module lui fournit
+  // simplement ses ajouts et leur durée en secondes.
   var recupExpireModule = {};
-  var recupJournalModule = [];
-
-  function recupPhotoAjoutsModule() {
-    try { return JSON.parse(JSON.stringify(recupAjoutsModule(false))); }
-    catch (e) { return []; }
-  }
-  function recupMemeAjoutsModule(a, b) {
-    try { return JSON.stringify(a || []) === JSON.stringify(b || []); }
-    catch (e) { return false; }
-  }
-  function recupRestaureAjoutsModule(a) {
-    var d = recupCoffre(true);
-    d.ajouts = JSON.parse(JSON.stringify(a || []));
-    recupNettoieCoffreModule();
-  }
   function recupPurgeExpiresModule() {
     var ids = recupExpireModule, a, avant;
     if (!Object.keys(ids).length) return;
-    a = recupAjoutsModule(false);
-    avant = a.length;
-    a = a.filter(function (r) { return r && !ids[r.id]; });
-    if (a.length !== avant) {
-      var d = recupCoffre(true);
-      d.ajouts = a;
-    }
+    a = recupAjoutsModule(false); avant = a.length;
+    a = a.filter(function (r) {
+      if (!r || !ids[r.id]) return true;
+      recupOublieSuivi(r.id);
+      return false;
+    });
+    if (a.length !== avant) recupCoffre(true).ajouts = a;
     recupExpireModule = {};
     recupNettoieCoffreModule();
   }
-  recupDeltasTranche = function (minutes) {
-    var deltas = recupDeltasTrancheBaseModule(minutes), ajouts, i, r, e, d, actifMin, parMin;
-    if (!deltas || typeof deltas !== "object") deltas = {};
-    if (!recupTempsSensModule) return deltas;
-    ajouts = recupAjoutsNormalisesModule();
-    for (i = 0; i < ajouts.length; i++) {
-      r = ajouts[i];
-      e = recupCustomEtatModule(r);
-      if (!e.actif || !e.cadence || !e.cadence.minutes) continue;
-      d = recupDureeDef(r.type);
-      actifMin = Math.max(0, num(minutes, 0));
-      if (recupTempsSensModule > 0 && d.minutes != null) {
-        actifMin = Math.min(actifMin, Math.max(0, num(r.reste, 0)));
-      }
-      if (!(actifMin > 0)) continue;
-      parMin = e.cadence.signe * e.cadence.points / e.cadence.minutes;
-      deltas[r.reserve] = num(deltas[r.reserve], 0) + parMin * actifMin;
-      if (recupTempsSensModule > 0 && d.minutes != null) {
-        r.reste = Math.max(0, num(r.reste, 0) - actifMin);
-        if (r.reste <= 1e-9) recupExpireModule[r.id] = true;
-      }
-    }
-    return deltas;
+  recupListeTemps = function () { return recupListeModule(); };
+  recupEtatTemps = function (r) { return recupEtatVueModule(r); };
+  recupSecondesDisponiblesTemps = function (r, e, secondes, sens) {
+    if (!e || !e.actif) return 0;
+    if (!r.perso || sens < 0) return secondes;
+    return Math.min(secondes, Math.max(0, Math.floor(Number(r.resteSecondes) || 0)));
   };
-  avancerTemps = function (n) {
-    var avant, r, apres;
-    if (!(n > 0)) return avancerTempsBaseRecupModule(n);
-    avant = recupPhotoAjoutsModule();
-    recupExpireModule = {};
-    recupTempsSensModule = 1;
-    try { r = avancerTempsBaseRecupModule(n); }
-    finally { recupTempsSensModule = 0; }
-    recupPurgeExpiresModule();
-    apres = recupPhotoAjoutsModule();
-    if (r > 0) {
-      recupJournalModule.push({ n: n, avant: avant, apres: apres });
-      if (recupJournalModule.length > 50) recupJournalModule.shift();
+  recupApresPasTemps = function (r, e, secondes, sens) {
+    if (!r || !r.perso || !e || !e.actif || !(secondes > 0)) return;
+    if (sens > 0) {
+      r.resteSecondes = Math.max(0, Math.floor(Number(r.resteSecondes) || 0) - secondes);
+      if (!r.resteSecondes) recupExpireModule[r.id] = true;
+    } else {
+      r.resteSecondes = Math.max(0, Math.floor(Number(r.resteSecondes) || 0) + secondes);
     }
-    return r;
   };
-  reculerTemps = function (n) {
-    var top = recupJournalModule.length ? recupJournalModule[recupJournalModule.length - 1] : null;
-    var exact = !!(n > 0 && top && top.n === n && recupMemeAjoutsModule(recupPhotoAjoutsModule(), top.apres));
-    var r;
-    recupTempsSensModule = -1;
-    try { r = reculerTempsBaseRecupModule(n); }
-    finally { recupTempsSensModule = 0; }
-    if (exact && r < 0) {
-      recupRestaureAjoutsModule(top.avant);
-      recupJournalModule.pop();
-    } else if (r < 0) {
-      recupJournalModule = [];
-    }
-    return r;
-  };
+  recupFinTemps = function (sens) { if (sens > 0) recupPurgeExpiresModule(); };
 
   // ---- résumé par réserve ----
   function recupTotalCleModule(c) {
@@ -308,6 +248,7 @@
     if (!a.length) return;
     if (d && d.niveaux && d.niveaux[r.id] !== undefined) delete d.niveaux[r.id];
     d.ajouts = a.filter(function (x) { return x && x.id !== r.id; });
+    recupOublieSuivi(r.id);
     recupNettoieCoffreModule();
     refresh(); rebuildRecuperation();
   }
@@ -351,7 +292,9 @@
     if (r.perso) {
       cb = el("input", "pc-rec-active"); cb.type = "checkbox";
       cb.title = "Activer ou désactiver cette récupération";
-      cb.addEventListener("change", function () { r.actif = !!cb.checked; refresh(); rebuildRecuperation(); });
+      cb.addEventListener("change", function () {
+        r.actif = !!cb.checked; recupOublieSuivi(r.id); refresh(); rebuildRecuperation();
+      });
       actifCell.appendChild(cb);
     } else {
       actifCell.appendChild(el("span", "pc-rec-native-active", ""));
@@ -363,6 +306,7 @@
       if (r.perso) {
         nivCell.appendChild(recupChampNombreModule(function () { return r.niveau; }, function (v) {
           r.niveau = clamp(Math.round(v), -recupNiveauMaxModule(), recupNiveauMaxModule());
+          recupOublieSuivi(r.id);
         }, "Niveau de cette récupération"));
       } else {
         nivCell.appendChild(recupChampNombreModule(function () { return recupBonusModule(r); }, function (v) {
@@ -379,8 +323,9 @@
       if (edit) {
         var tempsEdit = recupChampNombreModule(function () { return fmtP(recupTempsRestantModule(r)); }, function (v) {
           var d = recupDureeDef(r.type);
-          r.temps = Math.max(0, num(v, 0));
-          r.reste = d.minutes == null ? r.temps : r.temps * d.minutes;
+          r.temps = Math.max(0, Number(v) || 0);
+          r.resteSecondes = Math.max(0, Math.round(r.temps * d.secondes));
+          recupOublieSuivi(r.id);
         }, "Durée restante de cette récupération");
         tempsEdit.min = "0"; tempsEdit.step = "any";
         tempsCell.appendChild(tempsEdit);
@@ -440,7 +385,7 @@
     var d = recupDureeDef("10m"), a = recupAjoutsModule(true);
     a.push({
       id: uid("r"), perso: true, nom: recupNomNouveauModule(reserve), reserve: reserve,
-      niveau: 0, actif: false, temps: 1, type: d.cle, reste: d.minutes
+      niveau: 0, actif: false, temps: 1, type: d.cle, resteSecondes: d.secondes
     });
     if (recupOnly) recupOnly = false;
     refresh(); rebuildRecuperation();

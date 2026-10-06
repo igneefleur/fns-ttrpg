@@ -1,9 +1,8 @@
   // ---- Temps ----
   // L'effort que fournit le personnage et l'air qu'il respire, puis le geste
-  // qui fait passer le temps : on tape un nombre de tranches de dix minutes
-  // (m) ou d'heures (h), et « Appliquer » fait bouger repos, satiété,
-  // hydratation et exposition comme les règles le disent, tranche après
-  // tranche. UN NOMBRE NÉGATIF FAIT RECULER LE TEMPS : c'est le rattrapage
+  // qui fait passer l'horloge interne : round (3 s), minute ou heure. Le moteur
+  // temporel s'occupe ensuite des récupérations, de la survie et de l'exposition.
+  // UN NOMBRE NÉGATIF FAIT RECULER LE TEMPS : c'est le rattrapage
   // d'une erreur de saisie. Aucune règle n'est écrite ici : les efforts, les
   // taux et les paliers viennent des données.
   // l'affichage d'un effort dont le nom ne tient pas dans sa case
@@ -24,7 +23,10 @@
         var bt = el("button", "c", EFFORT_COURT[e.cle] || e.nom);
         bt.title = e.nom;
         bt.type = "button";
-        bt.addEventListener("click", function () { state.effort = e.cle; refresh(); });
+        bt.addEventListener("click", function () {
+          if (state.effort !== e.cle) { state.effort = e.cle; recupSynchroniseSuivi(); }
+          refresh();
+        });
         bloc.appendChild(bt);
         boutons.push([bt, e.cle]);
       });
@@ -39,9 +41,8 @@
       1, "°C"));
     b.appendChild(air);
 
-    // DEUX GESTES, un par unité : « 10 m », des tranches de dix minutes ;
-    // « 1 h », des heures, qui valent leurs tranches passées une à une.
-    function geste(unite, parUnite, etiquette) {
+    // TROIS GESTES, tous branchés sur la même horloge à la seconde.
+    function geste(unite, secondesParUnite, etiquette) {
       var cmd = el("div", "pc-vital-cmd pc-temps");
       var nb = el("input", "pc-vital-delta");
       nb.type = "number"; nb.step = "1";
@@ -50,11 +51,16 @@
       function applique() {
         var n = parseInt(nb.value, 10);
         if (!isFinite(n) || !n) return;
-        var min = avancerTemps(n * parUnite());
+        var sec = avancerSecondes(n * secondesParUnite);
         nb.value = "";
         refresh();
-        if (min > 0) flash(min + " minutes écoulées.");
-        else if (min < 0) flash(-min + " minutes reculées.");
+        if (!sec) return;
+        var abs = Math.abs(sec), texte;
+        if (abs % 3600 === 0) texte = (abs / 3600) + " h";
+        else if (abs % 60 === 0) texte = (abs / 60) + " m";
+        else if (abs % 3 === 0) texte = (abs / 3) + " r";
+        else texte = abs + " s";
+        flash(texte + (sec > 0 ? " écoulé" : " reculé") + (abs > secondesParUnite ? "s." : "."));
       }
       nb.addEventListener("keydown", function (e) {
         if (e.key === "Enter") { e.preventDefault(); applique(); }
@@ -64,9 +70,9 @@
       cmd.appendChild(miniBtn("Appliquer", "Faire passer ce temps", applique));
       b.appendChild(cmd);
     }
-    geste((tempsDef() ? tempsDef().tranche : 10) + " m", function () { return 1; },
-          "Tranches de dix minutes, en plus ou en moins");
-    geste("1 h", tranchesParHeure, "Heures, en plus ou en moins");
+    geste("1 r", 3, "Rounds de 3 secondes, en plus ou en moins");
+    geste("1 m", 60, "Minutes, en plus ou en moins");
+    geste("1 h", 3600, "Heures, en plus ou en moins");
 
     hooks.push(function () {
       boutons.forEach(function (x) { x[0].classList.toggle("on", x[1] === state.effort); });
