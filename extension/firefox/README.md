@@ -222,3 +222,34 @@ source puis passe par le relais chat existant. Aucun retrait de quantité.
 Les deux variantes d'extension restent identiques hors lignes marquées.
 Les paquets `essai/` sont non signés ; une seule signature ultérieure doit
 regrouper 3.0.0b, 3.1.0b et 3.2.0b. Ne pas remplacer `docs/download/` avant elle.
+
+## Correction du dépôt — version de site 3.2.1b
+
+Une couche fixe de dépôt est posée au-dessus de l'intégralité de `#rightsidebar`,
+dès le message `inventory-drag-start`. Elle n'affecte pas le positionnement
+natif de Roll20. Elle s'efface après dépôt, fin, annulation ou au bout de 30 s.
+Ses événements `dragenter` et `dragover` acceptent le MIME natif des objets OWD.
+Le dépôt natif confirme le jeton auprès de la fiche source. Le repli Firefox
+utilise l'identité déjà reçue lorsque le type est exposé mais les données du
+`DataTransfer` sont masquées entre origines. Les données non vides mais
+malformées restent refusées. Le jeton est consommé une fois dans l'amorce.
+
+Sans barre latérale (notamment popout), aucune couche n'est posée. Le même
+protocole est émis par le module Inventaire, dans la fiche ou le panneau.
+Le correctif nécessite les nouveaux scripts d'extension : avant la signature,
+utiliser le chargement temporaire Firefox via `about:debugging` et le manifest
+du paquet non signé de `essai/`. Recharger Roll20. Une mise à jour du site
+seule ne remplace pas une extension déjà installée.
+
+## Inventaires par onglets — version de site 3.3.0b
+
+Les onglets vivent dans le site (`owd-inventaire.js`) et gardent une fiche
+native par personnage. Toutes restent abonnées au pont ; les relectures sont
+regroupées par personnage puis diffusées à toutes ses frames. Le pont de cette
+version doit donc remplacer celui de 3.2.1b lors de l’essai ou de la signature.
+
+Survol natif de 550 ms, transfert entre inventaires avec confirmation et
+journal de reprise, onglets sans doublon et fermeture après confirmation des
+écritures. Le drag vers le chat conserve le relais et les protections 3.2.1b.
+Voir `PATCH-3.3.0b.md` à la racine pour le protocole d’essai. Les paquets
+`essai/` sont reconstruits sans signature ; `docs/download/` reste intact.

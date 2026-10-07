@@ -3,7 +3,7 @@
     "owd-roll20@igneefleur": {
       "updates": [
         {
-          "version": "3.2.0",
+          "version": "3.3.0",
           "update_link": "https://igneefleur.github.io/fns-ttrpg/owd/download/owd-roll20-firefox.xpi",
           "browser_specific_settings": {
             "gecko": {

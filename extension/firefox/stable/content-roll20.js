@@ -1296,14 +1296,43 @@ if (typeof browser === "undefined") { var browser = chrome; }
   function panRepeint(){Object.keys(outils).forEach(function(k){var p=outils[k];poseNuit(p.box);if(p.frame)p.frame.contentWindow.postMessage({ns:'owd',type:'panel-theme',nuit:nuitEffective()},'*');});}
   function panelMessage(d){var p=outils[d.panel||'monde'];if(!p)return;if(d.nuit!=null)p.box.classList.toggle('owd-nuit',!!d.nuit);
     if(!p.etat.tailleChoisie){if(d.w!=null)p.etat.w=Number(d.w)||p.def.w;if(d.h!=null)p.etat.h=Number(d.h)||p.def.h;}if(d.replie!=null)p.etat.ouvert=!d.replie;applique(p);}
-  // Le vrai drop sur le tchat confirme le partage ; commencer un drag ne publie rien.
-  var objetDrag=null;
-  function chatTarget(n){return n&&n.closest&&n.closest('#textchat,#textchat-input,#textchat-log,.textchatcontainer,.chat-pane,#chat-input');}
-  function dragMessage(ev,d){if(d.type==='inventory-drag-start'&&d.token&&d.ref&&d.charId){objetDrag={source:ev.source,token:d.token,ref:d.ref,charId:d.charId,t:Date.now()};return true;}
-    if(d.type==='inventory-drag-end'){var token=d.token;setTimeout(function(){if(objetDrag&&objetDrag.token===token)objetDrag=null;},1500);return true;}return false;}
-  function chatDropInit(){document.addEventListener('dragover',function(e){if(!objetDrag||!chatTarget(e.target)||Date.now()-objetDrag.t>30000)return;e.preventDefault();if(e.dataTransfer)e.dataTransfer.dropEffect='copy';},true);
-    document.addEventListener('drop',function(e){if(!e.isTrusted||!objetDrag||!chatTarget(e.target))return;var data;try{data=JSON.parse(e.dataTransfer.getData('application/x-owd-item'));}catch(err){return;}
-      if(!data||data.token!==objetDrag.token||Date.now()-objetDrag.t>30000)return;e.preventDefault();e.stopImmediatePropagation();var d=objetDrag;objetDrag=null;d.source.postMessage({ns:'owd',type:'inventory-drop-chat',token:d.token,ref:d.ref,charId:d.charId},'*');},true);}
+  // La barre latérale ENTIÈRE est la cible. Le MIME natif permet d'accepter
+  // dragenter/dragover même si le message de démarrage arrive en retard.
+  var objetDrag=null, dropHint=null, dropHintTimer=null;
+  var ITEM_MIME='application/x-owd-item';
+  function chatTarget(n){return n&&n.closest&&n.closest('.owd-chat-drop-hint,#rightsidebar,#textchat,#textchat-input,#textchat-log,.textchatcontainer,.chat-pane,#chat-input');}
+  function dragItem(e){var types=e.dataTransfer&&e.dataTransfer.types;return !!types&&Array.prototype.indexOf.call(types,ITEM_MIME)>=0;}
+  function hideDropHint(){if(dropHint)dropHint.hidden=true;if(dropHintTimer){clearTimeout(dropHintTimer);dropHintTimer=null;}}
+  function showDropHint(){var sidebar=document.getElementById('rightsidebar')||document.getElementById('textchat');if(!sidebar)return;
+    var r=sidebar.getBoundingClientRect();if(!r.width||!r.height)return;
+    if(!dropHint){dropHint=el('div','owd-chat-drop-hint');dropHint.setAttribute('role','status');dropHint.appendChild(el('span','owd-chat-drop-label','Déposer pour montrer l’objet dans le chat'));document.body.appendChild(dropHint);}
+    dropHint.hidden=false;dropHint.style.left=r.left+'px';dropHint.style.top=r.top+'px';dropHint.style.width=r.width+'px';dropHint.style.height=r.height+'px';
+    if(dropHintTimer)clearTimeout(dropHintTimer);dropHintTimer=setTimeout(hideDropHint,30000);}
+  function dragMessage(ev,d){if(d.type==='inventory-drag-start'&&d.token&&d.ref&&d.charId){objetDrag={source:ev.source,token:d.token,ref:d.ref,charId:d.charId,t:Date.now()};showDropHint();return true;}
+    if(d.type==='inventory-drag-end'){hideDropHint();var token=d.token;setTimeout(function(){if(objetDrag&&objetDrag.token===token)objetDrag=null;},1500);return true;}return false;}
+  function chatDropInit(){
+    function allow(e){if(!chatTarget(e.target)||!dragItem(e))return;e.preventDefault();e.stopImmediatePropagation();e.dataTransfer.dropEffect='copy';showDropHint();}
+    document.addEventListener('dragenter',allow,true);document.addEventListener('dragover',allow,true);
+    document.addEventListener('drop',function(e){hideDropHint();if(!e.isTrusted||!chatTarget(e.target)||!dragItem(e))return;
+      var raw='',data=null;try{raw=e.dataTransfer.getData(ITEM_MIME);}catch(err){}
+      // Firefox expose le type entre origines, mais peut masquer le contenu.
+      // L'identité déjà reçue de la fiche permet de confirmer CE drag natif.
+      if(raw){try{data=JSON.parse(raw);}catch(err){return;}}
+      else if(objetDrag&&Date.now()-objetDrag.t<30000)data={token:objetDrag.token,ref:objetDrag.ref,charId:objetDrag.charId};
+      if(!data||typeof data.token!=='string'||typeof data.ref!=='string'||typeof data.charId!=='string')return;
+      e.preventDefault();e.stopImmediatePropagation();
+      var msg={ns:'owd',type:'inventory-drop-chat',token:data.token,ref:data.ref,charId:data.charId};
+      if(objetDrag&&objetDrag.token===data.token&&Date.now()-objetDrag.t<30000){try{objetDrag.source.postMessage(msg,'*');}catch(err){}}
+      else sheets.forEach(function(w){try{w.postMessage(msg,'*');}catch(err){}});
+      // Chaque amorce vérifie le personnage et SON jeton de drag, et le
+      // consomme une seule fois. Le repli ne partage donc jamais deux cartes.
+      objetDrag=null;
+    },true);
+    document.addEventListener('dragend',hideDropHint,true);
+    document.addEventListener('keydown',function(e){if(e.key==='Escape')hideDropHint();},true);
+    window.addEventListener('blur',hideDropHint);
+    window.addEventListener('resize',function(){if(dropHint&&!dropHint.hidden)showDropHint();});
+  }
 
   // ---------- le seul réglage relu en cours de partie : la nuit ----------
   // Une nuit qui réclame de recharger la partie n'est pas une nuit : on l'allume

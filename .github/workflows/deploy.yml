@@ -74,6 +74,7 @@ jobs:
         run: |
           node scripts/test_sync.js
           node scripts/test_monde.js
+          node scripts/test_inventaire.js
 
       - name: Build
         env:

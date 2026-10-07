@@ -1,11 +1,23 @@
 html,body{height:100%;margin:0;padding:0;font:14px 'Nunito Sans',sans-serif;background:#e9e7e2;color:#242424}
 html.night,html.night body{background:#000;color:#e6e0d4}
 #inventaire-panneau{height:100%;display:flex;flex-direction:column;min-width:0}
-.inventaire-choix{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid #8c806744;flex:none}
-.inventaire-choix select{flex:1;min-width:0;padding:5px;background:inherit;color:inherit;border:1px solid #8c8067;border-radius:3px;font:inherit}
+.inventaire-onglets{display:flex;gap:5px;padding:8px;overflow-x:auto;border-bottom:1px solid #8c806744;flex:none;align-items:center}
+.inventaire-onglet{display:flex;flex:none;border:1px solid #8c8067;border-radius:4px;overflow:hidden}
+.inventaire-onglets button,.inventaire-notice button{font:inherit;background:transparent;color:inherit;border:0;padding:6px 9px;cursor:pointer}
+.inventaire-tab[aria-selected=true]{background:#8c806744;font-weight:bold}
+.inventaire-onglets button:hover,.inventaire-notice button:hover{background:#8c806733}
+.inventaire-onglets button:focus-visible{outline:2px solid #b57a19;outline-offset:-2px}
+.inventaire-onglets button:disabled{opacity:.4;cursor:default}
+.inventaire-fermer{border-left:1px solid #8c806744!important}
+.inventaire-ajouter{border:1px solid #8c8067!important;border-radius:4px;font-size:20px!important;line-height:20px}
+.inventaire-choix{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:20px}
+.inventaire-choix select{min-width:160px;padding:6px;background:inherit;color:inherit;border:1px solid #8c8067;border-radius:3px;font:inherit}
 .inventaire-choix option{background:#e9e7e2;color:#242424}
 .night .inventaire-choix option{background:#171510;color:#e6e0d4}
-.inventaire-notice{padding:10px 16px;line-height:1.5}
-.inventaire-vue{flex:1;min-height:0;position:relative}
-.inventaire-vue iframe{display:block;width:100%;height:100%;border:0}
+.inventaire-notice{padding:8px 12px;margin:0;line-height:1.5;border-bottom:1px solid #8c806744}
+.inventaire-notice button{border:1px solid #8c8067;border-radius:3px}
+.inventaire-vue{flex:1;min-height:0;position:relative;overflow:hidden}
+/* visibility conserve la frame et le drag natif lorsqu'on change d'onglet. */
+.inventaire-frame{position:absolute;inset:0;display:block;width:100%;height:100%;border:0;visibility:hidden;pointer-events:none}
+.inventaire-frame.inventaire-active{visibility:visible;pointer-events:auto}
 [hidden]{display:none!important}

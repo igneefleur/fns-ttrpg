@@ -118,5 +118,8 @@ plusieurs joueurs peuvent modifier des champs différents en même temps,
 et les autres fenêtres reçoivent les changements automatiquement.
 Le personnage doit déjà posséder une fiche Outward.
 
-Pour montrer un objet, glissez sa tuile directement dans le chat Roll20.
+Pour montrer un objet, glissez sa tuile depuis la fiche ou la fenêtre
+Inventaire. Une indication recouvre toute la barre latérale de Roll20 :
+**Déposer pour montrer l’objet dans le chat**. Déposez l'objet dans cette zone.
 Sa carte est envoyée sans retirer l'objet ni changer sa quantité.
+Une fiche ouverte en fenêtre séparée sans barre latérale n'affiche pas cette cible.

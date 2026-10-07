@@ -5,6 +5,48 @@ inventaire, panneau Monde et extension Roll20.
 
 Site bêta : https://igneefleur.github.io/fns-ttrpg/owd-beta/
 
+## Version 3.3.0b — onglets d’inventaire et synchronisation
+
+L’Inventaire de la barre OUTWARD propose des onglets ajoutables et fermables,
+un par personnage accessible, sans doublons. Chaque fiche reste chargée et
+actualisée même quand son onglet est masqué. Les choix sont mémorisés par
+campagne. Survoler un autre onglet avec un objet pendant 550 ms l’active ;
+le dépôt transfère ensuite l’objet et ses contenus dans cet inventaire.
+
+Les relectures Roll20 sont partagées et diffusées à toutes les vues d’un
+personnage. L’avertissement de synchronisation disparaît à la reprise.
+Les transferts attendent les confirmations serveur et conservent un journal
+pour reprendre une opération interrompue. Le drag vers le chat reste actif
+depuis la fiche et la boîte à outils.
+
+Voir [PATCH-3.3.0b.md](PATCH-3.3.0b.md) pour les détails, limites et vérifications.
+**fns-owd-beta-3.3.0b.zip** devient la base du prochain patch ; ce patch
+s’applique au projet complet **3.2.1b**. Aucun paquet signé ni publication.
+Pour tester le nouveau pont, charger temporairement les paquets de `essai/`
+et recharger Roll20 ; le site seul ne remplace pas l’extension installée.
+
+## Version 3.2.1b — dépôt dans le chat
+
+Glisser un objet depuis l'inventaire de la fiche **ou** celui de la boîte à
+outils affiche une couche sur **toute** la barre `#rightsidebar` :
+« Déposer pour montrer l’objet dans le chat ». Cette couche reçoit le dépôt,
+puis disparaît à la fin du glissement. Le partage emploie la carte Montrer et
+ne retire aucune quantité. Le déplacement interne reste disponible.
+
+Firefox peut exposer le type d'un objet glissé entre origines différentes,
+mais rendre son contenu vide à la lecture. Le dépôt utilise alors l'identité
+et le jeton déjà reçus de la fiche au début du glissement ; seule cette fiche
+peut confirmer ce jeton et publier, une seule fois. Si la fenêtre ne contient
+pas de barre latérale (fiche séparée), aucune cible n'est créée.
+
+Le correctif concerne le **code de l'extension**. Pour un essai avant signature,
+charger temporairement l'extension extraite de `essai/owd-roll20-firefox.xpi`
+via `about:debugging` et recharger Roll20. Une mise à jour du site seule ne
+remplace pas les scripts de l'extension déjà installée.
+
+Aucune signature ni publication. **fns-owd-beta-3.2.1b.zip** était la base
+du patch suivant. Le patch s'applique au projet complet 3.2.0b.
+
 ## Version 3.2.0b — outils OUTWARD (schéma de fiche 11)
 
 La barre native Roll20 contient un séparateur **OUTWARD**, puis **Monde**
@@ -33,8 +75,7 @@ partage sa carte « Montrer », sans déduire sa quantité. Le déplacement inte
 
 Aucune publication ni signature. Les paquets de développement sous `essai/`
 regroupent les changements 3.0, 3.1 et 3.2. Les téléchargements signés sont
-conservés jusqu'à la signature commune. **fns-owd-beta-3.2.0b.zip** est la base
-à reprendre pour le prochain patch ; le ZIP du patch s'applique à 3.1.0b.
+conservés jusqu'à la signature commune. La section 3.3.0b indique la base actuelle ; le ZIP du patch 3.2.0b s'applique à 3.1.0b.
 
 ## Version 3.1.0b — Monde (schéma de fiche 11)
 
@@ -178,3 +219,8 @@ serveur Roll20 simulé : choix autorisé, éditions simultanées, fiche complèt
 redimensionnement, retour de la barre, vrai dépôt souris dans le chat,
 changement de personnage et personnage sans fiche. Ces essais ne remplacent
 pas la validation finale dans une partie Roll20 avec l'extension installée.
+
+Le harnais accepte désormais `TEST_BROWSER=firefox` et `CROSS_ORIGIN=1` pour
+séparer Roll20 et les pages de fiche. Il vérifie la couche sur l'intégralité
+de `#rightsidebar`, les dépôts depuis les deux vues et la conservation des
+quantités. Installer le navigateur de test avec `playwright install firefox`.

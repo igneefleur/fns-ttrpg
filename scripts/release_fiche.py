@@ -93,6 +93,7 @@ FICHIERS = [
     "javascripts/owd-monde-data.js",
     "javascripts/owd-monde.js",
     "stylesheets/owd-monde.css",
+    "javascripts/owd-inventaire-data.js",
     "javascripts/owd-inventaire.js",
     "stylesheets/owd-inventaire.css",
     # ENGENDRÉ AU BUILD, et monté quand même. hooks/owd_creation.py le produit
@@ -362,6 +363,8 @@ def main():
 
     # Concurrence et migration : arrêt avant toute écriture de version.
     if not lancer("Monde collaboratif", ["node", "scripts/test_monde.js"], racine):
+        return 1
+    if not lancer("transferts d’inventaire", ["node", "scripts/test_inventaire.js"], racine):
         return 1
     if not lancer("édition collaborative et migrations", ["node", "scripts/test_sync.js"], racine):
         return 1

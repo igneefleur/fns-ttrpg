@@ -498,6 +498,7 @@
       b.id = "owd-bandeau";
       document.body.insertBefore(b, document.body.firstChild);
     }
+    delete b.dataset.owdRaison;
     b.innerHTML = "";
     var p = document.createElement("span");
     p.className = "owd-bandeau-txt";
@@ -1476,7 +1477,11 @@
         accesInventaire = true; document.getElementById("perso-fiche").inert = false; note(null);
       }
       collaborationPont = d.collaboration === 1 && d.resync === true;
-      if (d.fresh === true || !collaborationPont) derniereLecture = Date.now();
+      if (d.fresh === true || !collaborationPont) {
+        derniereLecture = Date.now();
+        var avertissement = document.getElementById('owd-bandeau');
+        if (avertissement && avertissement.dataset.owdRaison === 'sync-timeout') fermerBandeau();
+      }
       if (hydrated) {
         sondeReponse(d.attrs);
         if (collaboration && d.fresh === true && !gele && !collaborationApplique) recoitCollaboration(d.attrs || {});
@@ -1503,6 +1508,7 @@
     dt.setData("application/x-owd-item", JSON.stringify({ref: ref, token: token, charId: CHAR_ID}));
     dt.effectAllowed = "copyMove";
     post({type: "inventory-drag-start", ref: ref, token: token});
+    inventoryParent({type:"inventory-drag-start",ref:ref,token:token});
   };
   document.addEventListener("drop", function () {
     if (objetDrag && objetDrag.active) setTimeout(function () { window.__owdObjetDragFin(); }, 0);
@@ -1510,6 +1516,7 @@
   window.__owdObjetDragFin = function () {
     if (objetDrag) objetDrag.active = false;
     post({type: "inventory-drag-end", token: objetDrag && objetDrag.token});
+    inventoryParent({type:"inventory-drag-end",token:objetDrag && objetDrag.token});
     setTimeout(appliqueDiffere, 100);
   };
   window.addEventListener("message", function (ev) {
@@ -1517,6 +1524,48 @@
     if (d && d.ns === "owd" && d.type === "panel-theme" && (ev.source === window.parent || ev.source === window.top))
       document.documentElement.classList.toggle("night", !!d.nuit);
   });
+
+  function inventoryParent(msg) {msg.ns='owd';msg.charId=CHAR_ID;try{window.parent.postMessage(msg,'*');}catch(e){}}
+  var externalDrag=null;
+  window.addEventListener('message',function(ev){
+    var d=ev.data;if(!window.__owdVueInventaire||!d||d.ns!=='owd'||ev.source!==window.parent)return;
+    if(d.type==='inventory-external-drag'){externalDrag=d.drag||null;return;}
+    if(d.type==='inventory-poll'){post({type:'load',resync:true});if(ready&&!gele)doSave();return;}
+    if(d.type!=='inventory-command')return;
+    var reply={type:'inventory-result',request:d.request};
+    try {
+      var active=ready&&!gele&&accesInventaire&&!!collaboration&&!!window.Owd;
+      if(d.action==='status'||d.action==='check'){
+        var remote=collaboration&&C.read(collaboration.attrs), server=remote&&remote.state;
+        reply.value={ready:active,pending:collaboration?Object.keys(collaboration.pending).length:0,lastRead:derniereLecture};
+        if(d.job&&server&&window.OwdInventoryData){reply.value.received=OwdInventoryData.received(server,d.job);reply.value.committed=OwdInventoryData.committed(server,d.job);reply.value.removed=OwdInventoryData.removed(server,d.job);reply.value.cancelled=OwdInventoryData.cancelled(server,d.job);}
+      } else {
+        if(!active)throw new Error('Inventaire indisponible ou accès retiré.');
+        if(d.action==='describe')reply.value=window.Owd.__objetsTransfert(d.ref);
+        else if(d.action==='prepare')reply.value=window.Owd.__prepareTransfert(d.job);
+        else if(d.action==='import')reply.value=window.Owd.__importeTransfert(d.job);
+        else if(d.action==='commit')reply.value=window.Owd.__confirmeTransfert(d.job);
+        else if(d.action==='remove')reply.value=window.Owd.__retireTransfert(d.job);
+        else if(d.action==='cancel')reply.value=window.Owd.__annuleTransfert(d.job);
+        else if(d.action==='lock'){document.getElementById('perso-fiche').inert=!!d.lock||!accesInventaire;reply.value=true;}
+        else throw new Error('Commande inconnue.');
+        doSave();
+      }
+    }catch(e){reply.error=e.message||String(e);}
+    inventoryParent(reply);
+  });
+  function externalDrop(e){
+    if(!externalDrag||externalDrag.charId===CHAR_ID||!e.dataTransfer||
+        Array.prototype.indexOf.call(e.dataTransfer.types,'application/x-owd-item')<0)return;
+    if(!e.target.closest||!e.target.closest('[data-module="inv"]'))return;
+    e.preventDefault();e.stopImmediatePropagation();e.dataTransfer.dropEffect='move';
+    if(e.type==='drop'&&e.isTrusted){
+      inventoryParent({type:'inventory-tab-drop',drag:externalDrag});externalDrag=null;
+    }
+  }
+  document.addEventListener('dragenter',externalDrop,true);
+  document.addEventListener('dragover',externalDrop,true);
+  document.addEventListener('drop',externalDrop,true);
 
   // ---------- édition collaborative ----------
   function recoitCollaboration(attrs) {
@@ -1560,10 +1609,11 @@
       // Le début d'activation et les lots en attente sont aussi repris après
       // une coupure de réseau, sans dépendre d'une frappe supplémentaire.
       if (collaboration) doSave();
-      if (derniereLecture && Date.now() - derniereLecture > 12000)
+      if (accesInventaire && derniereLecture && Date.now() - derniereLecture > 12000 &&
+          !(document.getElementById('owd-bandeau') && document.getElementById('owd-bandeau').dataset.owdRaison === 'sync-timeout'))
         bandeau("La synchronisation avec Roll20 ne répond plus. Les modifications locales restent en attente ; vous pouvez exporter la fiche.", [
           { texte: "Exporter (JSON)", acte: "export", action: exporter }
-        ]);
+        ]).dataset.owdRaison = "sync-timeout";
     }
   }, 1200);
 

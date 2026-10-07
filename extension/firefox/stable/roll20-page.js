@@ -123,7 +123,8 @@
     var i = srcFrames.indexOf(src);
     if (i >= 0) return srcIds[i] === id;
     menage();
-    if (srcFrames.length >= MAX_SRC) return false;
+    var ca=campaign(), total=ca&&ca.characters&&ca.characters.models&&ca.characters.models.length||0;
+    if (srcFrames.length >= Math.max(MAX_SRC,total*4+32)) return false;
     srcFrames.push(src); srcIds.push(id); srcLourds.push(null);
     return true;
   }
@@ -693,17 +694,43 @@
 
   // Les collections locales ne sont pas un abonnement aux autres joueurs.
   // Le site demande la cadence ; le pont borne les requêtes par personnage.
-  var RESYNC_MIN = 1500, resyncQuand = {};
-  function resynchronise(ch, fini) {
-    if (!ch || !ch.attribs || typeof ch.attribs.fetch !== "function") return false;
-    var n = Date.now();
-    if (n - (resyncQuand[ch.id] || 0) < RESYNC_MIN) return false;
-    resyncQuand[ch.id] = n;
-    try {
-      ch.attribs.fetch({ success: function () { fini(true); }, error: function () { fini(false); } });
-      return true;
-    } catch (e) { return false; }
+  var RESYNC_MIN = 1500, resyncJobs = {}, readSubscriptions = new WeakMap();
+  function publieLecture(ch, ok) {
+    menage(); var attrs = readAll(ch.id), at = Date.now();
+    srcFrames.forEach(function (w, i) {
+      if (srcIds[i] !== ch.id) return;
+      var base = readSubscriptions.get(w); if (!base) return;
+      if (inventoryFrames.has(w) && !inventoryAccess(ch)) {
+        reply({source:w}, {type:'hydrate',charId:ch.id,inventoryAccess:false}); return;
+      }
+      var msg = {}; Object.keys(base).forEach(function(k){msg[k]=base[k];});
+      msg.attrs = attrs; msg.fresh = !!ok; msg.readAt = ok ? at : 0;
+      if (inventoryFrames.has(w)) msg.inventoryAccess = true;
+      reply({source:w}, msg);
+    });
   }
+  function resynchronise(ch) {
+    if (!ch || !ch.attribs || typeof ch.attribs.fetch !== 'function') {
+      if (ch) publieLecture(ch, false); return false;
+    }
+    var job = resyncJobs[ch.id] || (resyncJobs[ch.id] = {last:0,running:false,timer:null,serial:0});
+    if (job.running || job.timer) return true;
+    var delay = RESYNC_MIN - (Date.now() - job.last);
+    if (delay > 0) {job.timer=setTimeout(function(){job.timer=null;resynchronise(ch);},delay);return true;}
+    job.last=Date.now();job.running=true;var serial=++job.serial, timeout;
+    function done(ok){if(serial!==job.serial||!job.running)return;clearTimeout(timeout);job.running=false;publieLecture(ch,ok);}
+    timeout=setTimeout(function(){done(false);},10000);
+    try {ch.attribs.fetch({success:function(){done(true);},error:function(){done(false);}});}
+    catch(e){done(false);}
+    return true;
+  }
+  // Toutes les frames liées restent abonnées, même masquées. La cadence vit
+  // dans la partie, et ne dépend pas des timers d'une iframe en arrière-plan.
+  setInterval(function(){
+    menage();var seen={};srcFrames.forEach(function(w,i){var id=srcIds[i];if(seen[id]||!readSubscriptions.has(w))return;
+      var ch=getChar(id);if(ch && (!inventoryFrames.has(w)||inventoryAccess(ch))){seen[id]=true;resynchronise(ch);}
+    });
+  },1500);
 
   // ---------- le ménage des attributs du camp ----------
   // Deux causes, deux remèdes, et la SEULE opération destructrice de ce fichier
@@ -1009,15 +1036,9 @@
           var _n; for (_n in dernieresEcritures) { if (dernieresEcritures.hasOwnProperty(_n)) { rl.ecrits = dernieresEcritures; break; } }
           dernieresEcritures = {};
         }
-        // Une confirmation collaborative doit venir d'une VRAIE lecture
-        // serveur, jamais du modèle local modifié par un set silencieux.
-        if (d.resync === true && resynchronise(chl, function (ok) {
-          rl.fresh = ok;
-          if (ok) rl.attrs = readAll(d.charId);
-          reply(ev, rl);
-        })) return;
-        rl.fresh = false;
-        reply(ev, rl);
+        readSubscriptions.set(ev.source, rl);
+        if (d.resync === true) {resynchronise(chl);return;}
+        rl.fresh = false;reply(ev,rl);
       } else if (d.type === "save") {
         if (!liee(ev.source, d.charId)) return;
         var inv = inventoryFrames.has(ev.source);

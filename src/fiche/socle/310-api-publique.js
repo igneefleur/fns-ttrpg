@@ -56,6 +56,12 @@
   window.Owd = {
     __recoitEtat: recoitEtatCollaboratif,
     __montreObjet: montreObjet,
+    __objetsTransfert: objetsTransfert,
+    __prepareTransfert: prepareTransfert,
+    __importeTransfert: importeTransfert,
+    __confirmeTransfert: confirmeTransfert,
+    __retireTransfert: retireTransfert,
+    __annuleTransfert: annuleTransfert,
     // Les deux ne se déduisent pas l'un de l'autre : version porte le suffixe
     // de beta le cas échéant, schema est un entier libre. Un mod qui tirerait
     // le schéma du majeur de la version se tromperait à la première
