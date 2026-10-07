@@ -180,8 +180,9 @@
 
     // ---- avantages ----
     if (!Array.isArray(s.avantages)) s.avantages = [];
-    s.avantages = s.avantages.filter(function (a) { return a && typeof a === "object"; }).map(function (a) {
+    s.avantages = s.avantages.filter(function (a) { return a && typeof a === "object"; }).map(function (a, index) {
       return {
+        id: String(a.id || ("av-legacy-" + index)),
         nom: String(a.nom == null ? "" : a.nom),
         cout: pnum(a.cout),
         desc: String(a.desc == null ? "" : a.desc)

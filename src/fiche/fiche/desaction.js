@@ -177,6 +177,7 @@
         if (nuit !== nuitVue) { nuitVue = nuit; bati(); }
       });
       guet.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+      remontageNettoyage.push(function () { guet.disconnect(); });
     }
     // LES DÉS PERDUS au mouvement (foncer coûte des dés d'action) : les
     // derniers de la rangée, de droite à gauche, grisés et hachurés, et qu'on

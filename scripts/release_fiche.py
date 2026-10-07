@@ -70,6 +70,7 @@ RACINE_DEFAUT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # rien ne le dit. Le journal signale d'ailleurs tout fichier de cette liste que
 # ni mkdocs.yml ni le manifeste ne nomment — il est mort ou oublié.
 FICHIERS = [
+    "javascripts/owd-sync.js",
     "javascripts/owd-attr-map.js",
     "javascripts/owd-roll20-boot.js",
     "javascripts/owd-migrations.js",
@@ -89,8 +90,11 @@ FICHIERS = [
     # le panneau de Camp : servi par le même site, à travers la même coquille
     # signée, il doit monter avec les autres — un ?v= figé aurait l'air de
     # protéger sans rien protéger
-    "javascripts/owd-camp.js",
-    "stylesheets/owd-camp.css",
+    "javascripts/owd-monde-data.js",
+    "javascripts/owd-monde.js",
+    "stylesheets/owd-monde.css",
+    "javascripts/owd-inventaire.js",
+    "stylesheets/owd-inventaire.css",
     # ENGENDRÉ AU BUILD, et monté quand même. hooks/owd_creation.py le produit
     # depuis les règles : il n'est donc pas sur le disque, mais il EST servi par
     # le site et nommé au manifeste (bundle.data), et son contenu change dès
@@ -118,6 +122,10 @@ def blocs_a_serial(man):
         man.get("amorce"),
         (man.get("camp") or {}).get("js"),
         (man.get("camp") or {}).get("css"),
+        (man.get("monde") or {}).get("js"),
+        (man.get("monde") or {}).get("css"),
+        (man.get("inventaire") or {}).get("js"),
+        (man.get("inventaire") or {}).get("css"),
         (man.get("bundle") or {}).get("js"),
         (man.get("bundle") or {}).get("css"),
     ]
@@ -351,6 +359,12 @@ def main():
     racine = a.racine
 
     print("PUBLICATION DE LA FICHE" + (" (essai)" if a.essai else ""))
+
+    # Concurrence et migration : arrêt avant toute écriture de version.
+    if not lancer("Monde collaboratif", ["node", "scripts/test_monde.js"], racine):
+        return 1
+    if not lancer("édition collaborative et migrations", ["node", "scripts/test_sync.js"], racine):
+        return 1
 
     # 0. L'ASSEMBLAGE, AVANT MÊME DE LIRE LE NUMÉRO.
     #

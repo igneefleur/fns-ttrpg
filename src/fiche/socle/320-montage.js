@@ -41,6 +41,7 @@
     mount(root);
   }
   function montage(root) {
+    remontageNettoyage.splice(0).forEach(function (f) { try { f(); } catch (e) {} });
     rootEl = root;
     enMontage = true;
     // Tous les registres repartent à vide : les anciens pointent sur un DOM qui
@@ -85,14 +86,19 @@
     var app = el("div", "perso-fiche");
     appEl = app;
 
-    buildTop(app);
+    if (!window.__owdVueInventaire) buildTop(app);
     bandeauAvis(app);
     var sheet = el("div", "pc-sheet");
     app.appendChild(sheet);
     root.appendChild(app);
 
-    buildHead(sheet);
-    monteModules(buildTabs(sheet));
+    if (window.__owdVueInventaire) {
+      app.classList.add("pc-inventaire-seul");
+      monteModules({inventoryRoot: sheet});
+    } else {
+      buildHead(sheet);
+      monteModules(buildTabs(sheet));
+    }
     enMontage = false;   // ce qui s'enregistre après (console) vaut pour le montage suivant
     refresh();
   }

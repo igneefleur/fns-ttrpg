@@ -163,10 +163,11 @@
       if (SQUELETTES[t.id] && panes[t.id]) colonnes[t.id] = SQUELETTES[t.id](panes[t.id]);
     });
     ordreModules().forEach(function (m) {
+      if (panes.inventoryRoot && m.id !== "inv") return;
       // Coupé : pas monté. Ce test passe AVANT celui de l'hôte — un module
       // coupé n'affiche rien parce que le joueur l'a voulu, il n'a pas à porter
       // la mention de ceux qui ne trouvent pas leur place.
-      if (m.id !== MODULE_REGLAGES && !actif(m.id)) return;
+      if (!panes.inventoryRoot && m.id !== MODULE_REGLAGES && !actif(m.id)) return;
       if (!moduleAffichable(m)) return;
       // Onglet ou colonne inconnus : le module est laissé de côté (un mod mal
       // réglé ne doit pas emporter la fiche), mais il est MARQUÉ — sans ce
@@ -175,7 +176,7 @@
       // rendrait une méthode d'Object en guise d'hôte, et le montage tomberait
       // sur le premier appendChild.
       var cols = colonnes[m.onglet];
-      var hote = (cols && aClef(cols, m.colonne)) ? cols[m.colonne] : null;
+      var hote = panes.inventoryRoot || ((cols && aClef(cols, m.colonne)) ? cols[m.colonne] : null);
       if (!hote) { etatModule(m.id).vide = true; return; }
       var reg = regModule(m.id);
       var precedent = hooks;

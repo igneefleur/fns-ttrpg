@@ -284,7 +284,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
   // pont va déjà chercher de quoi ouvrir la fiche), le titre du dialogue, et en
   // fenêtre séparée le titre du document. AUCUN NOM TROUVÉ VAUT « ce n'est pas
   // le camp » : on ne retire jamais un chemin d'accès sur un doute.
-  var CAMP_NOM = "camp";
+  var CAMP_NOM = "monde";
   function docsDeNoms() {
     var out = [];
     function ajoute(d) { try { if (d && out.indexOf(d) < 0) out.push(d); } catch (e) {} }
@@ -316,7 +316,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
   }
   function estCamp(charId) {
     var n = nomJournal(charId) || nomDialogue() || (IS_POPOUT ? document.title : "");
-    return !!n && norm(n) === CAMP_NOM;
+    return !!n && (norm(n) === CAMP_NOM || norm(n) === "camp");
   }
 
   // ---------- montage de l'iframe du créateur / bouton de création ----------
@@ -1231,573 +1231,79 @@ if (typeof browser === "undefined") { var browser = chrome; }
     }, 1000);
   }
 
-  // ---------- le panneau de Camp : ancré à la barre, ou flottant ----------
-  // Un panneau posé DANS la partie, que tous les joueurs voient : l'état du camp
-  // s'y tient, à la vue de tous. Le contenu est servi par le site
-  // (roll20-camp.html) à travers la coquille générique panneau.html : tout ce
-  // qui suit est un CHÂSSIS, et rien d'autre — s'ouvrir, se ranger, s'étirer, se
-  // souvenir. Le camp lui-même peut donc changer autant qu'il voudra sans
-  // re-signature.
-  //
-  // DEUX PLACES, JAMAIS DEUX PANNEAUX. Par défaut il s'ANCRE : un bouton dans la
-  // barre d'outils de Roll20 l'ouvre et le referme, et il se déplie collé à la
-  // barre, sur toute la hauteur, comme les panneaux natifs. Il ne flotte pas,
-  // ne se déplace pas, et ne recouvre pas la carte au hasard de l'endroit où
-  // on l'avait laissé. Qui le préfère détaché a le second choix : le bouton
-  // « Détacher » de sa barre de titre le rend flottant, avec sa place et sa
-  // taille d'avant. C'est LA MÊME BOÎTE et LA MÊME IFRAME dans les deux cas —
-  // on n'en construit jamais deux, ce qui rend l'exigence structurelle plutôt
-  // que surveillée, et évite au passage de rebâtir une fenêtre (voir panRemplit :
-  // chaque fenêtre coûte une place dans la table des liaisons du pont).
-  //
-  // La place par défaut du mode FLOTTANT est mesurée sur l'interface de Roll20 :
-  // la barre d'outils tient la colonne x ∈ [20, 52], et la bande y ∈ [20, 54]
-  // revient aux actions de jeton, qui apparaissent dès qu'un jeton est
-  // sélectionné. Le panneau se pose donc juste à côté et juste en dessous.
+  // OUTWARD : même squelette de séparateur et boutons que VTTK/Roll20.
+  // La hauteur appartient au panneau, jamais à la barre (notamment côté MJ).
   var IS_EDITEUR = IS_TOP && !IS_POPOUT && /^\/editor(\/|$)/.test(location.pathname);
-  // La page servie et la clé de rangement portent le nom du panneau : un
-  // deuxième panneau, un jour, n'aura pas à déloger la place et la taille de
-  // celui-ci — ni à faire re-signer quoi que ce soit pour ça.
-  //
-  // Ces deux clés restent COMMUNES aux deux copies, et c'est un choix : la place
-  // du panneau est une préférence d'affichage, la même main la déplace des deux
-  // côtés, et la suffixer par mode ferait oublier au camp où il était posé à
-  // chaque bascule. PAN_ACTIF, lui, DOIT rester commun : le popup n'a qu'une
-  // case, et une clé par mode ferait qu'éteindre le panneau ne l'éteindrait que
-  // d'un côté.
-  var PAN_PAGE = "roll20-camp.html";
-  var PAN_TITRE = "Camp";
-  var PAN_CLE = "owdPanneau:" + PAN_PAGE;
-  var PAN_ACTIF = "owdPanneauActif";   // interrupteur du popup (absent = allumé)
-  // UN SEUL NOM POUR CET INTERRUPTEUR, et il s'écrit ici exactement comme dans
-  // popup.js : « owdPanneauActif ». C'est le luxe d'une extension neuve — aucun
-  // réglage n'est encore posé chez un joueur, donc il n'y a aucun ancien nom à
-  // ménager, et un second nom lu « au cas où » serait pire qu'inutile : jamais
-  // écrit par le popup, il ne pourrait apparaître que par accident, et il
-  // l'emporterait alors sur le vrai réglage sans le moindre message.
-  // LE JOUR OÙ CE NOM CHANGERA, IL CHANGERA ICI ET DANS popup.js DANS LE MÊME
-  // GESTE : écrit d'un seul côté, c'est une case du popup qui ne fait plus rien,
-  // et personne ne s'en aperçoit avant une vraie partie.
-  //
-  // ATTENTION, PAN_CLE ci-dessus COMMENCE par « owdPanneau » sans être ce
-  // réglage : il s'écrit « owdPanneau:roll20-camp.html » et range la géométrie.
-  // Deux clés distinctes, et storage.local.get ne rend que le nom EXACT, jamais
-  // ce qui commence pareil.
-  // « ancre » entre dans l'état rangé : le choix de la place se retient d'une
-  // session à l'autre, comme le reste. Absent (installation d'avant), il vaut
-  // ancré — c'est la place voulue, le flottant est le second choix.
-  var PAN_DEF = { ouvert: false, ancre: true, x: 62, y: 60, w: 380, h: 330 };
-  var PAN_MIN_W = 260, PAN_MIN_H = 190;
-  var panEtat = null, panBoite = null, panCorps = null, panBtn = null, panBtnAncre = null,
-      panTitre = null, panEcrit = null;
-
-  function panNombre(v, def) { var n = parseInt(v, 10); return isFinite(n) ? n : def; }
-
-  // ---------- le bouton dans la barre d'outils de Roll20 ----------
-  // LE BOUTON EST UN CLONE, jamais un bouton reconstruit à la main, et c'est le
-  // point qui décide de tout le reste. La barre est une application VUE et son
-  // CSS est « scopé » : chaque règle est écrite « .toolbar-button-inner[data-v-
-  // 0dd4681e] », « .grimoire__roll20-icon[data-v-2f0bc668] ». Un bouton
-  // reconstruit porterait les bonnes CLASSES et pas ces attributs : ni la
-  // police d'icônes, ni les marges, ni le fond de l'état actif ne s'y
-  // appliqueraient, et l'icône s'afficherait en toutes lettres. Cloner un
-  // bouton natif emporte les attributs avec, sans avoir à deviner un seul de
-  // ces condensats — qui changent à chaque déploiement de Roll20, alors que ce
-  // fichier est figé par la signature.
-  //
-  // Relevé dans un vrai document (2026) :
-  //   #vm-master-toolbar > #master-toolbar.master-toolbar-outer > .upper-buttons
-  //     > .toolbar-button-outer#select-button
-  //        > .toolbar-button-mid > button.toolbar-button-inner
-  //             > .icon-slot > span.grimoire__roll20-icon
-  // L'icône est le TEXTE de ce span (une ligature de la police d'icônes).
-  //
-  // L'ICÔNE EST NATIVE et discrète : « dualSheets », deux feuillets posés l'un
-  // sur l'autre, relevée dans ce même document donc certainement présente dans
-  // la police. Elle n'est utilisée par aucun bouton de la barre, elle est du
-  // même trait que les autres, et elle ne crie pas.
-  var BARRE_ICONE = "dualSheets";
-  var BARRE_ID = "owd-barre-bouton";
-  var BARRE_TITRE = "Camp";
-  var barreOK = false;     // le bouton a été posé au moins une fois
-  var barreObs = null;
-
-  function barreZone() {
-    return document.querySelector("#master-toolbar .upper-buttons") ||
-           document.querySelector("#vm-master-toolbar .upper-buttons") || null;
-  }
-  // Le modèle à cloner : un bouton SANS sous-menu (pas de caret à retirer), avec
-  // une icône, et surtout VISIBLE. On ne nomme pas #select-button : un
-  // identifiant de Roll20 se renomme, la forme, elle, tient.
-  //
-  // La visibilité n'est pas une coquetterie : la barre porte un
-  // #more-tools-button rangé en « display: none » inline, et le cloner nous
-  // donnerait un bouton invisible — posé, compté comme posé, et introuvable.
-  function barreModele(zone) {
-    var l = zone.querySelectorAll(".toolbar-button-outer");
-    for (var i = 0; i < l.length; i++) {
-      if (l[i].id === BARRE_ID) continue;
-      if (!l[i].offsetWidth && !l[i].offsetHeight) continue;
-      if (l[i].querySelector(".submenu-caret")) continue;
-      if (l[i].querySelector(".icon-slot") && l[i].querySelector("button")) return l[i];
-    }
-    return null;
-  }
-  function barreFabrique(modele) {
-    var n = modele.cloneNode(true);   // cloneNode ne copie AUCUN écouteur : le
-    n.id = BARRE_ID;                  // clone est inerte tant qu'on ne lui en pose pas
-    // L'identifiant SUFFIT à le désigner, et il n'y a rien d'autre à poser :
-    // overlay.css vise « #owd-barre-bouton », et barreModele() reconnaît notre
-    // bouton par son id. Une classe à nous ne serait lue par aucune feuille.
-    // ceinture : un modèle masqué ne doit pas transmettre son invisibilité
-    try { n.style.removeProperty("display"); } catch (e) {}
-    var slot = n.querySelector(".icon-slot");
-    if (slot) {
-      // l'état actif du modèle ne doit pas voyager : notre bouton s'allume
-      // quand NOTRE panneau est ouvert, pas quand l'outil cloné est choisi
-      slot.classList.remove("icon-selected");
-      try { slot.style.removeProperty("background-color"); } catch (e) {}
-    }
-    var caret = n.querySelector(".submenu-caret");
-    if (caret && caret.parentNode) caret.parentNode.removeChild(caret);
-    var icone = n.querySelector(".grimoire__roll20-icon");
-    if (icone) icone.textContent = BARRE_ICONE;
-    var btn = n.querySelector("button");
-    if (btn) {
-      btn.setAttribute("title", BARRE_TITRE);
-      btn.setAttribute("aria-label", BARRE_TITRE);
-      btn.addEventListener("click", function (ev) {
-        ev.preventDefault(); ev.stopPropagation();
-        if (panEtat) panOuvre(!panEtat.ouvert);
-      });
-    }
-    return n;
-  }
-  // Le bouton s'allume comme un outil natif choisi : Roll20 pose .icon-selected
-  // et le fond --vtt-toolbar-active-selection-bg sur la pastille d'icône. On
-  // rejoue exactement ce geste plutôt que d'inventer une couleur à nous, qui
-  // jurerait le jour où Roll20 change de thème.
-  function barrePeint() {
-    var n = document.getElementById(BARRE_ID);
-    var slot = n && n.querySelector(".icon-slot");
-    if (!slot) return;
-    var actif = !!(panEtat && panEtat.ouvert);
-    slot.classList.toggle("icon-selected", actif);
-    try {
-      if (actif) slot.style.setProperty("background-color", "var(--vtt-toolbar-active-selection-bg)");
-      else slot.style.removeProperty("background-color");
-    } catch (e) {}
-  }
-  // Pose, ou repose. Vue reconstruit sa barre (au repli, à un changement
-  // d'outils, à une reconnexion) et emporte notre noeud avec : le guet plus bas
-  // rappelle cette fonction, qui ne fait rien tant que le bouton est en place.
-  function barrePose() {
-    var zone = barreZone();
-    if (!zone) return false;
-    var deja = document.getElementById(BARRE_ID);
-    if (deja && deja.parentNode === zone) { barrePeint(); return true; }
-    var modele = barreModele(zone);
-    if (!modele) return false;
-    if (deja && deja.parentNode) deja.parentNode.removeChild(deja);
-    barreInsere(zone, barreFabrique(modele));
-    barreOK = true;
-    barrePeint();
-    return true;
-  }
-  // DANS « OUTILS », PAS DANS « EFFETS ». Ajouté à la fin de la liste, le bouton
-  // tomberait après effects-button, donc sous l'intitulé « Effets ». La barre
-  // est faite de groupes séparés par des « .spacer-outer » : settings | select,
-  // pan | draw, text, measure, dice | effects, more. Le groupe des outils finit
-  // donc juste avant le séparateur qui précède le bouton des effets.
-  //
-  // On vise ce séparateur-là par le bouton des effets, et non par un rang : un
-  // rang se décale au premier outil que Roll20 ajoute. Si rien n'est reconnu, on
-  // ajoute à la fin : mal placé vaut mieux qu'absent.
-  function barreInsere(zone, noeud) {
-    var ancre = null;
-    try {
-      var eff = zone.querySelector("#effects-button");
-      if (eff) {
-        var p = eff.previousElementSibling;
-        ancre = (p && p.className && String(p.className).indexOf("spacer") >= 0) ? p : eff;
-      }
-      if (!ancre) {
-        var sp = zone.querySelectorAll(".spacer-outer");
-        if (sp.length) ancre = sp[sp.length - 1];
-      }
-    } catch (e) { ancre = null; }
-    if (ancre && ancre.parentNode === zone) zone.insertBefore(noeud, ancre);
-    else zone.appendChild(noeud);
-  }
-  function barreGuet() {
-    if (barreObs) return;
-    var racine = document.getElementById("vm-master-toolbar") ||
-                 document.getElementById("master-toolbar");
-    if (!racine) return;
-    var pendant = false;
-    try {
-      barreObs = new MutationObserver(function () {
-        if (pendant) return;
-        pendant = true;
-        setTimeout(function () {
-          pendant = false;
-          barrePose();
-          // la barre a pu changer de largeur (repli) : le panneau ancré la suit
-          if (panEtat) panApplique();
-        }, 200);
-      });
-      barreObs.observe(racine, { childList: true, subtree: true });
-    } catch (e) {}
-  }
-  // La géométrie de la barre, mesurée et non devinée : c'est elle qui dit où le
-  // panneau ancré commence. Une barre repliée ou pas encore peinte ne compte
-  // pas — le panneau retombe alors sur sa place flottante, plutôt que de se
-  // coller à un fantôme.
-  // COLLÉ VEUT DIRE COLLÉ : zéro pixel entre la barre et le panneau, et pas un
-  // seul pixel DESSOUS non plus.
-  function barreRect() {
-    var b = document.getElementById("master-toolbar") ||
-            document.getElementById("vm-master-toolbar");
-    if (!b || !b.getBoundingClientRect) return null;
-    var r = null;
-    try { r = b.getBoundingClientRect(); } catch (e) { return null; }
-    if (!r || r.width < 8 || r.height < 8) return null;
-    return r;
-  }
-  // La largeur se borne AVANT l'abscisse, et l'abscisse tient compte de la
-  // largeur retenue : les borner séparément laisserait un panneau large posé au
-  // bord droit déborder de la fenêtre (état hérité d'un grand écran, fenêtre
-  // rétrécie ensuite). En hauteur on ne retient que la barre de titre : un
-  // panneau plus haut que la fenêtre doit pouvoir dépasser par le bas, sinon il
-  // remonterait tout seul dès qu'on réduit la fenêtre.
-  function panBorne(e) {
-    var vw = window.innerWidth || 1200, vh = window.innerHeight || 800;
-    e.w = Math.max(PAN_MIN_W, Math.min(e.w, Math.max(PAN_MIN_W, vw - 20)));
-    e.h = Math.max(PAN_MIN_H, Math.min(e.h, Math.max(PAN_MIN_H, vh - 20)));
-    e.x = Math.max(0, Math.min(e.x, Math.max(0, vw - e.w)));
-    e.y = Math.max(0, Math.min(e.y, Math.max(0, vh - 28)));
-    return e;
-  }
-  // L'état ne vaut pas une écriture par pixel parcouru : on attend la fin du
-  // geste (le storage est asynchrone, et Roll20 n'a pas besoin de ça).
-  function panRange() {
-    if (panEcrit) clearTimeout(panEcrit);
-    panEcrit = setTimeout(function () {
-      panEcrit = null;
-      try {
-        var o = {};
-        o[PAN_CLE] = panEtat;
-        browser.storage.local.set(o);
-      } catch (e) {}
-    }, 400);
-  }
-  // ANCRÉ vaut « ancré ET une barre pour s'y coller ». Sans barre, l'état a beau
-  // dire ancré, il n'y a rien où s'accrocher : on retombe sur le flottant, qui
-  // marche partout. C'est ce qui tient la promesse « si la barre n'existe pas,
-  // aucun chemin d'accès existant ne disparaît ».
-  function panAncre() { return !!(panEtat && panEtat.ancre) && !!barreRect(); }
-  // GRAND ET CENTRÉ, LE TEMPS D'UN RÉGLAGE. Une géométrie de PASSAGE : elle
-  // n'est jamais rangée dans le stockage, et panApplique() la retrouve tant
-  // qu'elle est posée. À la fermeture, on la jette et le panneau reprend
-  // exactement la place qu'il avait, ancrée ou flottante.
-  var panGeoGrande = null;
-  function panGrand(on) {
-    if (!on) { panGeoGrande = null; panApplique(); return; }
-    var vw = window.innerWidth || 1200, vh = window.innerHeight || 800;
-    var w = Math.max(PAN_MIN_W, Math.min(760, vw - 80));
-    var h = Math.max(PAN_MIN_H, Math.min(640, vh - 80));
-    panGeoGrande = { x: Math.round((vw - w) / 2), y: Math.round((vh - h) / 2), w: w, h: h };
-    panApplique();
-  }
-  // Collé à la barre, pleine hauteur. La largeur reste celle que le joueur (ou
-  // la page du camp) a demandée, bornée à ce qui tient à droite de la barre.
-  function panGeoAncree() {
-    var vw = window.innerWidth || 1200, vh = window.innerHeight || 800;
-    var r = barreRect();
-    // ON NE GLISSE PAS SOUS LA BARRE. Un chevauchement de dix pixels boucherait
-    // bien le creux du coin arrondi, mais il ferait passer la place du MJ sous
-    // la boîte à outils, ce qui est explicitement exclu. Le creux se règle par
-    // un coin arrondi, pas en poussant le panneau dessous.
-    var x = r ? Math.round(r.right) : PAN_DEF.x;
-    var y = r ? Math.max(0, Math.round(r.top)) : PAN_DEF.y;
-    return {
-      x: x, y: y,
-      w: Math.max(PAN_MIN_W, Math.min(panEtat.w, Math.max(PAN_MIN_W, vw - x - 8))),
-      // LA MÊME HAUTEUR QUE LA BOÎTE À OUTILS, exactement. Un panneau qui prend
-      // toute la fenêtre descend bien plus bas que la barre : posés côte à côte,
-      // les deux ne forment plus un bloc. On suit donc la barre, sans plancher
-      // qui la contredirait — si elle est courte, le panneau est court.
-      h: r ? Math.round(r.height) : Math.max(PAN_MIN_H, vh - y - 8)
-    };
-  }
-  function panApplique() {
-    if (!panBoite) return;
-    var ancre = panAncre() && panEtat.ouvert;
-    // FERMÉ, DEUX VISAGES. Quand la barre porte le bouton, fermer efface le
-    // panneau : c'est le bouton qui le rouvre, une étiquette de plus sur la
-    // carte ne servirait à rien. Sans bouton (barre absente, ou Roll20 qui a
-    // changé de barre), fermer se contente de replier le panneau à son
-    // étiquette — sinon il n'y aurait plus AUCUN moyen de le rouvrir.
-    var efface = !panEtat.ouvert && barreOK;
-    panBoite.style.display = efface ? "none" : "";
-    panBoite.classList.toggle("owd-panneau-ancre", ancre);
-    // Le coin bas-gauche ne s'arrondit que s'il se VOIT : quand la barre descend
-    // jusqu'au bas de la fenêtre, ce coin est hors champ et un arrondi y
-    // dessinerait une encoche dans le vide. Le CSS ne peut pas mesurer la barre,
-    // c'est donc ici qu'on tranche.
-    var rb = ancre ? barreRect() : null;
-    panBoite.classList.toggle("owd-panneau-bas-plein",
-      !!(rb && rb.bottom >= (window.innerHeight || 800) - 4));
-    panBoite.classList.toggle("owd-panneau-replie", !panEtat.ouvert && !efface);
-    // La géométrie de passage (réglages ouverts) l'emporte sur tout : ancré ou
-    // flottant, on veut le dialogue grand et au centre. Elle disparaît d'elle
-    // même à la fermeture, sans avoir rien écrit.
-    var g = panGeoGrande ? panGeoGrande : (ancre ? panGeoAncree() : panEtat);
-    if (panGeoGrande) { panBoite.classList.remove("owd-panneau-ancre"); }
-    panBoite.style.left = g.x + "px";
-    panBoite.style.top = g.y + "px";
-    // replié, le panneau se réduit à son étiquette : une barre de 380 px de
-    // large pour un seul mot occuperait le haut de la carte pour rien
-    panBoite.style.width = panEtat.ouvert ? g.w + "px" : "auto";
-    panBoite.style.height = panEtat.ouvert ? g.h + "px" : "auto";
-    if (panBtn) {
-      panBtn.textContent = barreOK ? "×" : (panEtat.ouvert ? "–" : "+");
-      panBtn.title = barreOK ? "Fermer le panneau"
-                             : (panEtat.ouvert ? "Replier le panneau" : "Déplier le panneau");
-    }
-    // Le bouton « Détacher » n'a de sens que là où il y a une barre : sans
-    // barre, le panneau est déjà flottant et le rester est son seul choix.
-    if (panBtnAncre) {
-      var possible = !!barreRect();
-      panBtnAncre.style.display = possible ? "" : "none";
-      panBtnAncre.textContent = panEtat.ancre ? "⇲" : "⇱";
-      panBtnAncre.title = panEtat.ancre ? "Détacher" : "Ancrer";
-    }
-    barrePeint();
-  }
-  // L'iframe est créée UNE FOIS et ne meurt plus : au repli elle est masquée,
-  // pas détruite. Détruire une fenêtre et en refaire une à chaque pli mange
-  // une place dans la table des liaisons du pont (source <-> personnage), qui
-  // n'en compte que soixante-quatre : au bout d'une soirée de plis, le pont
-  // refuserait tout, panneau ET fiches. Masquée, elle voit sa fenêtre tomber à
-  // zéro pixel, ce que la page distante reconnaît pour cesser d'interroger
-  // Roll20 — cette décision-là lui appartient, et reste donc modifiable sans
-  // signature.
-  function panRemplit() {
-    if (!panCorps || panCorps.firstChild) return;
-    var f = el("iframe", "owd-panneau-frame");
-    f.src = browser.runtime.getURL("panneau.html") +
-            "#p=" + PAN_PAGE + "&n=" + (nuitEffective() ? "1" : "0") + "&m=" + MODE;
-    f.setAttribute("allow", "clipboard-write");
-    panCorps.appendChild(f);
-    // pas d'injection du pont ici : la page distante le réclame elle-même
-    // (need-bridge), et le fichier tient à ne rien injecter de son propre chef
-  }
-  // Le CADRE et le CAMP ne doivent jamais être l'un clair et l'autre sombre.
-  // Le cadre vit ici, le camp est servi par le site et ne lit sa nuit qu'au
-  // chargement, dans le hash : les accorder demande donc de refaire l'iframe,
-  // car changer le seul fragment d'une adresse ne recharge rien (c'est une
-  // navigation dans le même document, la page distante ne s'en aperçoit même
-  // pas). Refaire l'iframe est sans danger tant que la table des liaisons du
-  // pont fait le ménage des fenêtres mortes, et le camp n'a rien à perdre :
-  // son état est rangé dans Roll20, jamais dans la page.
-  function panRepeint() {
-    if (!panBoite) return;
-    poseNuit(panBoite);
-    if (panCorps && panCorps.firstChild) {
-      panCorps.innerHTML = "";
-      panRemplit();
-    }
-  }
-  function panOuvre(ouvert) {
-    panEtat.ouvert = !!ouvert;
-    panApplique();
-    if (panEtat.ouvert) panRemplit();
-    panRange();
-  }
-  // Détacher, puis rattacher. La boîte et l'iframe ne bougent pas : seule leur
-  // géométrie change, et le camp ne s'aperçoit de rien — pas de rechargement,
-  // pas de fenêtre de plus dans la table des liaisons du pont, pas d'instant où
-  // deux panneaux existeraient.
-  function panDetache(ancre) {
-    panEtat.ancre = !!ancre;
-    // DÉTACHÉ, IL NE DOIT PAS TOMBER DERRIÈRE LA BARRE. La place flottante est
-    // mesurée sur la barre d'aujourd'hui (x = 62, juste à sa droite) ; le jour
-    // où Roll20 l'élargit, ou la déplace, ce qu'il a déjà fait, on détacherait
-    // le panneau sous elle, où il aurait l'air d'avoir disparu.
-    // On ne le repousse que s'il le faut, et jamais plus loin que nécessaire.
-    if (!panEtat.ancre) {
-      var r = barreRect();
-      // DÉTACHÉ, on ne glisse pas sous la barre : ce serait le perdre. Le
-      // chevauchement n'a de sens qu'ancré, où la barre le cache exprès.
-      if (r && panEtat.x < r.right) panEtat.x = Math.round(r.right + 4);
-    }
-    panBorne(panEtat);
-    panApplique();
-    panRange();
-  }
-  // Un geste (déplacement ou redimensionnement) se fait à la CAPTURE DE
-  // POINTEUR : la page de Roll20 est pleine d'iframes (chaque dialogue de
-  // personnage en est une), et des écouteurs posés sur le document perdent le
-  // pointeur dès qu'il passe au-dessus de l'une d'elles. Le geste ne se termine
-  // alors jamais : le panneau reste inerte, sans que rien ne le dise. La
-  // capture suit le pointeur partout, y compris hors de la fenêtre, et le
-  // relâchement revient toujours.
-  //
-  // ANCRÉ, LE PANNEAU NE SE DÉPLACE PAS : c'est tout l'objet de l'ancrage, et le
-  // déplacer sous les doigts en ferait un flottant sans le dire. La poignée, en
-  // revanche, reste utile : elle ne règle plus que la LARGEUR, la hauteur étant
-  // celle de la barre.
-  var panGesteEnCours = false;
-  function panGeste(ev, bouge) {
-    if (panGesteEnCours || (ev.button != null && ev.button !== 0)) return;
-    var ancre = panAncre();
-    if (ancre && bouge) return;
-    panGesteEnCours = true;
-    var cible = ev.currentTarget;
-    var x0 = ev.clientX, y0 = ev.clientY;
-    var e0 = { x: panEtat.x, y: panEtat.y, w: panEtat.w, h: panEtat.h };
-    panBoite.classList.add("owd-panneau-geste");
-    function suit(m) {
-      var dx = m.clientX - x0, dy = m.clientY - y0;
-      if (bouge) { panEtat.x = e0.x + dx; panEtat.y = e0.y + dy; }
-      else { panEtat.w = e0.w + dx; if (!ancre) panEtat.h = e0.h + dy; }
-      panBorne(panEtat);
-      panApplique();
-    }
-    function fin() {
-      if (!panGesteEnCours) return;
-      panGesteEnCours = false;
-      cible.removeEventListener("pointermove", suit);
-      cible.removeEventListener("pointerup", fin);
-      cible.removeEventListener("pointercancel", fin);
-      window.removeEventListener("blur", fin);
-      try { cible.releasePointerCapture(ev.pointerId); } catch (e) {}
-      panBoite.classList.remove("owd-panneau-geste");
-      panRange();
-    }
-    try { cible.setPointerCapture(ev.pointerId); } catch (e) {}
-    cible.addEventListener("pointermove", suit);
-    cible.addEventListener("pointerup", fin);
-    cible.addEventListener("pointercancel", fin);
-    window.addEventListener("blur", fin);
-    ev.preventDefault();
-    ev.stopPropagation();
-  }
-  function panMonte(etat) {
-    if (document.getElementById("owd-panneau")) return;
-    panEtat = panBorne(etat);
-    panBoite = poseNuit(el("div", "owd-panneau"));
-    panBoite.id = "owd-panneau";
-
-    var tete = el("div", "owd-panneau-tete");
-    panTitre = el("span", "owd-panneau-titre", PAN_TITRE);
-    tete.appendChild(panTitre);
-    // Deux boutons, et aucune phrase d'explication sous eux : l'infobulle suffit.
-    panBtnAncre = el("button", "owd-panneau-btn", "⇲");
-    panBtnAncre.type = "button";
-    panBtnAncre.addEventListener("pointerdown", function (ev) { ev.stopPropagation(); });
-    panBtnAncre.addEventListener("click", function (ev) {
-      ev.preventDefault(); ev.stopPropagation();
-      panDetache(!panEtat.ancre);
-    });
-    tete.appendChild(panBtnAncre);
-    panBtn = el("button", "owd-panneau-btn", "–");
-    panBtn.type = "button";
-    panBtn.addEventListener("pointerdown", function (ev) { ev.stopPropagation(); });
-    panBtn.addEventListener("click", function (ev) {
-      ev.preventDefault(); ev.stopPropagation();
-      panOuvre(!panEtat.ouvert);
-    });
-    tete.appendChild(panBtn);
-    tete.addEventListener("pointerdown", function (ev) { panGeste(ev, true); });
-    panBoite.appendChild(tete);
-
-    panCorps = el("div", "owd-panneau-corps");
-    panBoite.appendChild(panCorps);
-
-    var grip = el("div", "owd-panneau-grip");
-    grip.title = "Redimensionner";
-    grip.addEventListener("pointerdown", function (ev) { panGeste(ev, false); });
-    panBoite.appendChild(grip);
-
-    document.body.appendChild(panBoite);
-    panApplique();
-    // Rouvert d'une session à l'autre : on attend que la partie ait FINI de
-    // charger avant de monter l'iframe. C'est un événement, pas un nombre de
-    // millisecondes choisi au doigt mouillé — et le pont, lui, n'est pas posé
-    // d'ici du tout.
-    if (panEtat.ouvert) {
-      if (document.readyState === "complete") setTimeout(panRemplit, 400);
-      else window.addEventListener("load", function () { setTimeout(panRemplit, 400); });
-    }
-    window.addEventListener("resize", function () { panBorne(panEtat); panApplique(); });
-  }
-  function panDefaut() {
-    return { ouvert: PAN_DEF.ouvert, ancre: PAN_DEF.ancre,
-             x: PAN_DEF.x, y: PAN_DEF.y, w: PAN_DEF.w, h: PAN_DEF.h };
-  }
-  // Éteint seulement si on l'a dit : la clé absente vaut allumé, une partie
-  // fraîchement installée montre donc le panneau. La comparaison est STRICTE sur
-  // false, et non « !== undefined » : une valeur inattendue laisse le panneau en
-  // place plutôt que de l'escamoter sans qu'on sache pourquoi.
-  function panEteint(r) {
-    if (!r) return false;
-    return r[PAN_ACTIF] === false;
-  }
-  // LA BARRE D'ABORD, LA BOÎTE ENSUITE, et l'ordre compte : c'est la présence du
-  // bouton qui décide de quoi « fermé » a l'air (effacé, ou replié à son
-  // étiquette). Monter la boîte avant de savoir la ferait clignoter d'un état à
-  // l'autre au chargement de la partie. Vue construit sa barre en quelques
-  // centaines de millisecondes ; on lui en laisse huit secondes, puis on monte
-  // sans elle plutôt que d'attendre indéfiniment.
-  //
-  // Le guet, lui, continue après : une barre qui arrive en retard (reconnexion,
-  // changement de page de la partie) trouvera son bouton reposé, et le panneau
-  // s'ancrera à la première ouverture qui suit.
-  function panPrepare(etat) {
-    var essais = 0;
-    (function cherche() {
-      barreGuet();
-      if (barrePose()) { panMonte(etat); return; }
-      if (++essais > 20) {
-        panMonte(etat);
-        // dernier filet : une minute de rappels espacés, au cas où la barre se
-        // peindrait après tout le monde. barrePose() ne fait rien si le bouton
-        // est déjà là, et repeint le panneau s'il vient d'arriver.
-        var n = 0, iv = setInterval(function () {
-          // LE GUET S'ARME ICI AUSSI. S'il n'était appelé que dans la boucle des
-          // vingt essais, une barre peinte après huit secondes — partie lourde,
-          // reconnexion, onglet ouvert en arrière-plan — recevrait bien le bouton
-          // par ce filet, mais plus aucun observateur. Vue le retirerait au
-          // premier re-rendu et il ne reviendrait jamais.
-          barreGuet();
-          if (barrePose()) { panApplique(); clearInterval(iv); return; }
-          if (++n > 30) clearInterval(iv);
-        }, 2000);
-        return;
-      }
-      setTimeout(cherche, 400);
-    })();
-  }
-  function panDemarre() {
-    try {
-      browser.storage.local.get([PAN_CLE, PAN_ACTIF]).then(function (r) {
-        // l'interrupteur du popup : une partie Roll20 qui n'a rien à voir avec
-        // Outward ne doit pas se voir imposer une étiquette à demeure
-        if (panEteint(r)) return;
-        var e = (r && r[PAN_CLE]) || {};
-        panPrepare({
-          ouvert: !!e.ouvert,
-          ancre: e.ancre === undefined ? PAN_DEF.ancre : !!e.ancre,
-          x: panNombre(e.x, PAN_DEF.x), y: panNombre(e.y, PAN_DEF.y),
-          w: panNombre(e.w, PAN_DEF.w), h: panNombre(e.h, PAN_DEF.h)
-        });
-      }, function () { panPrepare(panDefaut()); });
-    } catch (e) {
-      panPrepare(panDefaut());
-    }
-  }
+  var outils = {}, barreObs = null, panelFront = 100020;
+  var OUTILS = [
+    {id:'monde',titre:'Monde',page:'roll20-camp.html',cle:'owdPanneau:roll20-camp.html',w:360,h:350,minW:280,minH:320},
+    {id:'inventaire',titre:'Inventaire',page:'roll20-inventaire.html',cle:'owdPanneau:roll20-inventaire.html',w:850,h:650,minW:340,minH:320}
+  ];
+  function barreZone(){return document.querySelector('#master-toolbar .upper-buttons')||document.querySelector('#vm-master-toolbar .upper-buttons');}
+  function barreRect(){var n=document.getElementById('master-toolbar')||document.getElementById('vm-master-toolbar');return n?n.getBoundingClientRect():null;}
+  function borne(p){var e=p.etat,vw=window.innerWidth||1200,vh=window.innerHeight||800;
+    e.w=Math.max(Math.min(p.def.minW,vw),Math.min(e.w,vw-16));e.h=Math.max(Math.min(p.def.minH,vh),Math.min(e.h,vh-16));
+    e.x=Math.max(8,Math.min(e.x,Math.max(8,vw-e.w-8)));e.y=Math.max(8,Math.min(e.y,Math.max(8,vh-e.h-8)));}
+  function geo(p){borne(p);var e=p.etat,r=barreRect();
+    if(e.ancre&&r&&r.width>8){return {x:Math.max(8,Math.min(Math.round(r.right+16),window.innerWidth-e.w-8)),y:Math.max(8,Math.min(Math.round(r.top+24),window.innerHeight-e.h-8)),w:e.w,h:e.h};}
+    return e;}
+  function range(p){if(p.timer)clearTimeout(p.timer);p.timer=setTimeout(function(){var o={};o[p.def.cle]=p.etat;try{browser.storage.local.set(o);}catch(e){}},400);}
+  function paintButton(p){var n=document.getElementById('owd-outil-'+p.def.id),slot=n&&n.querySelector('.icon-slot');if(!n)return;
+    var b=n.querySelector('button')||n;b.setAttribute('aria-expanded',p.etat.ouvert?'true':'false');
+    if(slot){slot.classList.toggle('icon-selected',p.etat.ouvert);if(p.etat.ouvert)slot.style.setProperty('background-color','var(--vtt-toolbar-active-selection-bg)');else slot.style.removeProperty('background-color');}}
+  function applique(p){if(!p.box)return;var g=geo(p);p.box.hidden=!p.etat.ouvert;p.box.style.display=p.etat.ouvert?'flex':'none';
+    p.box.style.left=g.x+'px';p.box.style.top=g.y+'px';p.box.style.width=g.w+'px';p.box.style.height=g.h+'px';
+    p.anchor.title=p.etat.ancre?'Détacher':'Ancrer';p.anchor.textContent=p.etat.ancre?'⇲':'⇱';paintButton(p);}
+  function remplit(p){if(p.frame)return;p.frame=el('iframe','owd-panneau-frame');p.frame.title=p.def.titre;p.frame.setAttribute('allow','clipboard-write');
+    p.frame.src=browser.runtime.getURL('panneau.html')+'#p='+p.def.page+'&n='+(nuitEffective()?'1':'0')+'&m='+MODE;p.body.appendChild(p.frame);}
+  function ouvre(p,on){if(on)p.box.style.zIndex=String(++panelFront);p.etat.ouvert=!!on;applique(p);if(on)remplit(p);range(p);}
+  function geste(p,e,move){if(e.button!==0)return;e.preventDefault();e.stopPropagation();var target=e.currentTarget,g=geo(p),x=e.clientX,y=e.clientY;
+    if(move){p.etat.ancre=false;p.etat.x=g.x;p.etat.y=g.y;}
+    var start={x:p.etat.x,y:p.etat.y,w:p.etat.w,h:p.etat.h};p.box.classList.add('owd-panneau-geste');
+    try{target.setPointerCapture(e.pointerId);}catch(err){}
+    function drag(ev){var dx=ev.clientX-x,dy=ev.clientY-y;if(move){p.etat.x=start.x+dx;p.etat.y=start.y+dy;}else{p.etat.w=start.w+dx;p.etat.h=start.h+dy;p.etat.tailleChoisie=true;}applique(p);}
+    function end(){target.removeEventListener('pointermove',drag);target.removeEventListener('pointerup',end);target.removeEventListener('pointercancel',end);window.removeEventListener('blur',end);try{target.releasePointerCapture(e.pointerId);}catch(err){}p.box.classList.remove('owd-panneau-geste');range(p);}
+    target.addEventListener('pointermove',drag);target.addEventListener('pointerup',end);target.addEventListener('pointercancel',end);window.addEventListener('blur',end);}
+  function monte(p){p.box=poseNuit(el('div','owd-panneau'));p.box.id=p.def.id==='monde'?'owd-panneau':'owd-panneau-inventaire';p.box.setAttribute('role','dialog');p.box.setAttribute('aria-label',p.def.titre);p.box.addEventListener('pointerdown',function(){p.box.style.zIndex=String(++panelFront);});
+    var head=el('div','owd-panneau-tete');head.appendChild(el('span','owd-panneau-titre',p.def.titre));
+    p.anchor=el('button','owd-panneau-btn','⇲');p.anchor.type='button';p.anchor.setAttribute('aria-label','Ancrer ou détacher '+p.def.titre);
+    p.anchor.addEventListener('pointerdown',function(e){e.stopPropagation();});p.anchor.addEventListener('click',function(){var g=geo(p);p.etat.x=g.x;p.etat.y=g.y;p.etat.ancre=!p.etat.ancre;applique(p);range(p);});head.appendChild(p.anchor);
+    var close=el('button','owd-panneau-btn','×');close.type='button';close.title='Fermer';close.setAttribute('aria-label','Fermer '+p.def.titre);close.addEventListener('pointerdown',function(e){e.stopPropagation();});close.addEventListener('click',function(){ouvre(p,false);});head.appendChild(close);
+    head.addEventListener('pointerdown',function(e){geste(p,e,true);});p.box.appendChild(head);p.body=el('div','owd-panneau-corps');p.box.appendChild(p.body);
+    var grip=el('div','owd-panneau-grip');grip.title='Redimensionner '+p.def.titre;grip.setAttribute('role','separator');grip.setAttribute('aria-label',grip.title);grip.tabIndex=0;
+    grip.addEventListener('pointerdown',function(e){geste(p,e,false);});grip.addEventListener('keydown',function(e){var d={ArrowRight:[20,0],ArrowLeft:[-20,0],ArrowDown:[0,20],ArrowUp:[0,-20]}[e.key];if(d){e.preventDefault();p.etat.w+=d[0];p.etat.h+=d[1];p.etat.tailleChoisie=true;applique(p);range(p);}});p.box.appendChild(grip);document.body.appendChild(p.box);applique(p);if(p.etat.ouvert)remplit(p);}
+  function icon(id){var ns='http://www.w3.org/2000/svg',s=document.createElementNS(ns,'svg');s.setAttribute('viewBox','0 0 24 24');s.setAttribute('width','18');s.setAttribute('height','18');s.setAttribute('fill','currentColor');s.setAttribute('aria-hidden','true');
+    function node(tag,attrs){var n=document.createElementNS(ns,tag);Object.keys(attrs).forEach(function(k){n.setAttribute(k,attrs[k]);});s.appendChild(n);}
+    if(id==='monde'){node('circle',{cx:12,cy:12,r:7});node('ellipse',{cx:12,cy:12,rx:12,ry:3.7,transform:'rotate(-27 12 12)',fill:'none',stroke:'currentColor','stroke-width':2});}
+    else{node('path',{'fill-rule':'evenodd',d:'M8 5V4a4 4 0 0 1 8 0v1a5 5 0 0 1 4 5v9a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3v-9a5 5 0 0 1 4-5Zm2 0h4V4a2 2 0 0 0-4 0v1Zm-2 9v5h8v-5H8Zm1.5 1.5h5v2h-5v-2Z'});}
+    return s;}
+  function barreModele(z){var l=z.querySelectorAll('.toolbar-button-outer');for(var i=0;i<l.length;i++){var n=l[i];if(n.hasAttribute('data-owd-rang')||n.classList.contains('vttk-outil')||(!n.offsetWidth&&!n.offsetHeight))continue;if(n.querySelector('.icon-slot'))return n;}return null;}
+  function insert(z,n,rank){n.setAttribute('data-owd-rang',rank);var ours=z.querySelectorAll('[data-owd-rang]'),before=null;
+    for(var i=0;i<ours.length;i++)if(Number(ours[i].getAttribute('data-owd-rang'))>rank){before=ours[i];break;}
+    if(!before)before=z.querySelector('#more-tools-button');if(before&&before.parentNode===z)z.insertBefore(n,before);else z.appendChild(n);}
+  function barrePose(){var z=barreZone();if(!z)return false;var model=barreModele(z);if(!model)return false;
+    if(!document.getElementById('owd-outils-titre')){var sep=z.querySelector('.spacer-outer:has(.spacer-header)')||z.querySelector('.spacer-outer'),n=sep?sep.cloneNode(true):el('div','spacer-outer');n.id='owd-outils-titre';var mot=n.querySelector('.spacer-header');if(!mot){if(!n.firstChild)n.appendChild(el('div','spacer-inner'));mot=el('div','spacer-header');n.appendChild(mot);}mot.textContent='OUTWARD';insert(z,n,0);}
+    OUTILS.forEach(function(def,i){var p=outils[def.id];if(!p||document.getElementById('owd-outil-'+def.id))return;var n=model.cloneNode(true);n.id='owd-outil-'+def.id;
+      Array.prototype.forEach.call(n.querySelectorAll('[id]'),function(c){c.removeAttribute('id');});var caret=n.querySelector('.submenu-caret');if(caret)caret.remove();var slot=n.querySelector('.icon-slot');slot.classList.remove('icon-selected');slot.style.removeProperty('background-color');
+      var ico=n.querySelector('.grimoire__roll20-icon')||slot;ico.textContent='';ico.appendChild(icon(def.id));
+      var b=n.querySelector('button')||n;b.title=def.titre;b.setAttribute('aria-label',def.titre);if(b===n){b.setAttribute('role','button');b.tabIndex=0;b.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();ouvre(p,!p.etat.ouvert);}});}
+      b.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();ouvre(p,!p.etat.ouvert);});insert(z,n,i+1);paintButton(p);});return true;}
+  function panDemarre(){var keys=['owdPanneauActif'].concat(OUTILS.map(function(d){return d.cle;}));
+    function start(r){r=r||{};OUTILS.forEach(function(d){if(d.id==='monde'&&r.owdPanneauActif===false)return;var e=r[d.cle]||{};var p={def:d,etat:{ouvert:!!e.ouvert,ancre:e.ancre!==false,x:Number(e.x)||80,y:Number(e.y)||60,w:Number(e.w)||d.w,h:e.ancre!==false&&e.tailleChoisie==null?d.h:(Number(e.h)||d.h),tailleChoisie:!!e.tailleChoisie}};outils[d.id]=p;monte(p);});
+      barrePose();var queued=false;barreObs=new MutationObserver(function(){if(queued)return;queued=true;setTimeout(function(){queued=false;barrePose();Object.keys(outils).forEach(function(k){applique(outils[k]);});},150);});barreObs.observe(document.body,{childList:true,subtree:true});
+      window.addEventListener('resize',function(){Object.keys(outils).forEach(function(k){applique(outils[k]);});});}
+    try{browser.storage.local.get(keys).then(start,function(){start({});});}catch(e){start({});}}
+  function panRepeint(){Object.keys(outils).forEach(function(k){var p=outils[k];poseNuit(p.box);if(p.frame)p.frame.contentWindow.postMessage({ns:'owd',type:'panel-theme',nuit:nuitEffective()},'*');});}
+  function panelMessage(d){var p=outils[d.panel||'monde'];if(!p)return;if(d.nuit!=null)p.box.classList.toggle('owd-nuit',!!d.nuit);
+    if(!p.etat.tailleChoisie){if(d.w!=null)p.etat.w=Number(d.w)||p.def.w;if(d.h!=null)p.etat.h=Number(d.h)||p.def.h;}if(d.replie!=null)p.etat.ouvert=!d.replie;applique(p);}
+  // Le vrai drop sur le tchat confirme le partage ; commencer un drag ne publie rien.
+  var objetDrag=null;
+  function chatTarget(n){return n&&n.closest&&n.closest('#textchat,#textchat-input,#textchat-log,.textchatcontainer,.chat-pane,#chat-input');}
+  function dragMessage(ev,d){if(d.type==='inventory-drag-start'&&d.token&&d.ref&&d.charId){objetDrag={source:ev.source,token:d.token,ref:d.ref,charId:d.charId,t:Date.now()};return true;}
+    if(d.type==='inventory-drag-end'){var token=d.token;setTimeout(function(){if(objetDrag&&objetDrag.token===token)objetDrag=null;},1500);return true;}return false;}
+  function chatDropInit(){document.addEventListener('dragover',function(e){if(!objetDrag||!chatTarget(e.target)||Date.now()-objetDrag.t>30000)return;e.preventDefault();if(e.dataTransfer)e.dataTransfer.dropEffect='copy';},true);
+    document.addEventListener('drop',function(e){if(!e.isTrusted||!objetDrag||!chatTarget(e.target))return;var data;try{data=JSON.parse(e.dataTransfer.getData('application/x-owd-item'));}catch(err){return;}
+      if(!data||data.token!==objetDrag.token||Date.now()-objetDrag.t>30000)return;e.preventDefault();e.stopImmediatePropagation();var d=objetDrag;objetDrag=null;d.source.postMessage({ns:'owd',type:'inventory-drop-chat',token:d.token,ref:d.ref,charId:d.charId},'*');},true);}
 
   // ---------- le seul réglage relu en cours de partie : la nuit ----------
   // Une nuit qui réclame de recharger la partie n'est pas une nuit : on l'allume
@@ -1874,37 +1380,9 @@ if (typeof browser === "undefined") { var browser = chrome; }
           // l'intérieur d'une branche qui a déjà comparé d.type, il serait
           // toujours faux, donc du code mort, et le dialogue de réglages
           // resterait serré dans sa colonne sans que rien ne l'explique.
-          if (d.type === "pan-grand") {
-            if (!panEtat) return;
-            panGrand(!!d.grand);
-            return;
-          }
-          // Le panneau règle sa propre taille : c'est LA page servie par le site
-          // qui sait ce qu'elle a à montrer, et le châssis ne doit pas devenir la
-          // pièce qu'il faut re-signer pour élargir un camp. Les valeurs sont
-          // bornées ici, comme tout ce qui vient d'une page.
-          if (d.type === "panneau") {
-            if (!panEtat) return;
-            // le titre appartient à la page : elle peut se renommer sans qu'on
-            // touche à l'extension
-            if (d.titre != null && panTitre) panTitre.textContent = String(d.titre).slice(0, 40);
-            // LA COULEUR DU CADRE SUIT CELLE DU CAMP, dès que le camp la dit. Le
-            // cadre est signé, le camp ne l'est pas : le jour où il se donne un
-            // réglage de nuit à lui, lui seul sait de quelle couleur il s'est
-            // peint. Un cadre qui n'écouterait que le réglage de l'extension
-            // resterait clair autour d'un camp devenu sombre, et c'est
-            // précisément ce qui ne doit jamais arriver. Sans ce message, le
-            // cadre garde le réglage du popup, que le camp suit de toute façon
-            // par défaut.
-            if (d.nuit != null && panBoite) panBoite.classList.toggle("owd-nuit", !!d.nuit);
-            if (d.w != null) panEtat.w = panNombre(d.w, panEtat.w);
-            if (d.h != null) panEtat.h = panNombre(d.h, panEtat.h);
-            panBorne(panEtat);
-            if (d.replie != null) { panOuvre(!d.replie); return; }
-            panApplique();
-            panRange();
-            return;
-          }
+          if (dragMessage(ev,d)) return;
+          if (d.type === "pan-grand") return;
+          if (d.type === "panneau") { panelMessage(d); return; }
           if (d.type === "nuit") {
             NUIT_FICHE = !!d.on;
             repeintTout();
@@ -1929,7 +1407,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
       // popout : la barre d'onglets de la fiche vit dans CE document, on y pose l'onglet.
       if (IS_POPOUT) startScan();
       // la partie elle-même (et elle seule) reçoit le panneau et son bouton
-      if (IS_EDITEUR) panDemarre();
+      if (IS_EDITEUR) { panDemarre(); chatDropInit(); }
     } else {
       startScan();
     }

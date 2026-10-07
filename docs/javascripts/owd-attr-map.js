@@ -11,10 +11,13 @@
  *   - setRelease(r)             : dit quelle release TOURNE (voir release()).
  *
  * TOUS les attributs produits commencent par « owd_ ». Trois familles :
- *   - SOURCE DE VÉRITÉ : `owd_state` porte l'état ENTIER en JSON. C'est lui
- *     qu'on relit pour reconstruire la fiche : il ne dérive JAMAIS quand
- *     owd-fiche.js gagne un champ. attrsToState le préfère à tout le reste ;
- *     la reconstruction champ par champ n'est qu'un repli.
+ *   - COLLABORATION (schéma 11) : OwdSync reconstruit `owd_sync_base` et
+ *     les registres de champ `owd_sync_p_*`. Ce format PRIME s'il est présent.
+ *     Une corruption gèle les écritures, jamais de repli silencieux.
+ *   - SOURCE HISTORIQUE : `owd_state` porte l'état ENTIER en JSON. C'est lui
+ *     qu'on relit AVANT l'activation collaborative : il ne dérive JAMAIS
+ *     quand owd-fiche.js gagne un champ. Il prime sur les natifs historiques,
+ *     mais les registres collaboratifs priment sur lui.
  *   - NATIFS (repli + macros) : un attribut par valeur / collection.
  *   - MIROIR (écrits seulement si `card` est fourni) : valeurs DÉRIVÉES pour
  *     les macros et les barres de jetons — caractéristiques TOTALES
@@ -60,6 +63,7 @@
   "use strict";
 
   var PREFIX = "owd_";
+  var SYNC = root.OwdSync || (typeof module === "object" && module.exports ? require("./owd-sync.js") : null);
 
   // UN SUFFIXE RÉSERVÉ, ET IL N'EST PAS DANS LES TABLES : owd_backup appartient
   // à l'amorce, qui y met la fiche à l'abri avant une montée de version et la
@@ -77,7 +81,7 @@
   // même version, la beta étant ce que le stable recevra à la fusion) : ce qui
   // compare des versions doit donc l'ôter avant de lire les nombres, et c'est
   // exactement ce que fait OwdMods.compareVersions.
-  var RELEASE_DEFAUT = "2.23.0b";
+  var RELEASE_DEFAUT = "3.2.0b";
   // Entier INDÉPENDANT de la release : il ne monte qu'au changement de forme de
   // l'état du personnage, jamais parce que le majeur a bougé. Ajouter une clé
   // racine avec un défaut n'en est PAS un : normalize() complète une clé
@@ -85,7 +89,7 @@
   // s'ouvre dans les deux sens sans migration. Le manifeste publie les deux
   // numéros séparément, et c'est ce repli-ci que l'amorce prend quand le
   // manifeste manque.
-  var SCHEMA_DEFAUT = 10;
+  var SCHEMA_DEFAUT = 11;
 
   // Release EFFECTIVE : celle du code qui TOURNE, pas celle que le site publie.
   //
@@ -615,6 +619,10 @@
   function attrsToState(attrs) {
     attrs = attrs || {};
     var cur = lecteur(attrs);
+    if (SYNC && attrs[SYNC.BASE] && String(attrs[SYNC.BASE].current || "")) {
+      try { return attacher(SYNC.read(attrs).state, null, null); }
+      catch (e) { return attacher(reconstruire(cur), "illisible", "État collaboratif illisible : " + e.message); }
+    }
     var full = cur("state");
 
     if (full !== undefined && full !== "") {
@@ -657,6 +665,10 @@
     attrs = attrs || {};
     var cur = lecteur(attrs);
     var schema = null, rel = null;
+    if (SYNC && attrs[SYNC.BASE] && String(attrs[SYNC.BASE].current || "")) {
+      try { var cs = SYNC.read(attrs).state; return { schema: Number(cs.v), release: cs.rel || null }; }
+      catch (e) { return { schema: Number(cur("version")) || SCHEMA_DEFAUT, release: cur("version", "max") || release() }; }
+    }
 
     var full = cur("state");
     if (full !== undefined && full !== "") {

@@ -1,0 +1,351 @@
+{
+  "base": "3.1.0b",
+  "target": "3.2.0b",
+  "schema": 11,
+  "cache": 98,
+  "installation": "Extraire à la racine du projet 3.1.0b, remplacer les fichiers listés et supprimer les chemins dans deleted. Le ZIP complet est la base du prochain patch.",
+  "changed": [
+    {
+      "path": "PATCH-NOTES-3.2.0b.md",
+      "base_sha256": null,
+      "target_sha256": "82a0c0104040b2db28232afbbfc9aedc4a11b3f33d3eb96934203e3b55894b33"
+    },
+    {
+      "path": "README.md",
+      "base_sha256": "2c51404517eadb69158860623bbae560678cec950294b15b44abd4000561adc9",
+      "target_sha256": "93b63b007950102d5c766495c037e34f2808147d34137bbdd0b43257ce834758"
+    },
+    {
+      "path": "docs/extension/index.md",
+      "base_sha256": "cb1a52178afc33424f341ea4738b2e15418cf592969f317cfda39d05fc601073",
+      "target_sha256": "5829e8beffc5ba1b03ff2c813bca53a1da9d743ade56c67986507df014934940"
+    },
+    {
+      "path": "docs/javascripts/owd-attr-map.js",
+      "base_sha256": "db87da52816982a44e58369ee5e64b9a14426d5f3233f3c013df7ed81e23fdb3",
+      "target_sha256": "8e044de0083e658369b94e4589969dbd7aa78ee09e3e818a308ca04c3ca03316"
+    },
+    {
+      "path": "docs/javascripts/owd-fiche.js",
+      "base_sha256": "65704b8866027476c442205cce5a637093800ce2545a425d84961921596d5829",
+      "target_sha256": "80355f7abec2e6640e2c165dee0dd50b41d341bf81f132368bb41c7f20770857"
+    },
+    {
+      "path": "docs/javascripts/owd-inventaire.js",
+      "base_sha256": null,
+      "target_sha256": "65a2d851d0299a092d62ac68f2f60de1e62b1b5085fc60a4be6c0325a15a7440"
+    },
+    {
+      "path": "docs/javascripts/owd-monde.js",
+      "base_sha256": "6f3a3754a984bfb67aac49a0a84b0eca70822c0a527eca524e67afc3971eedc8",
+      "target_sha256": "6c612d1989a56147370c954201f0016b5a67bcd793cfb3d3db87638dade3b6f5"
+    },
+    {
+      "path": "docs/javascripts/owd-roll20-boot.js",
+      "base_sha256": "b4ae83dcafb6d307c0b9c2aae80f47b2f878a2af82c8af3aba42d76098d55702",
+      "target_sha256": "ea219337193a0e929ecef834fa1e1fd7d0a9b6b4794a877aba03c77611f6700f"
+    },
+    {
+      "path": "docs/owd-manifeste.json",
+      "base_sha256": "c268f83f3a57f5afeb4b9fff57333211691f4e0f6a9014fe9dd214cb91111c51",
+      "target_sha256": "94f238326ce22ca1d5782c86fd4058fc092a1a2d77b62586bd8f16c1f3637481"
+    },
+    {
+      "path": "docs/roll20-inventaire.html",
+      "base_sha256": null,
+      "target_sha256": "9693cb848692491286fd80a26789ccac7b91d6368565d95e7d2fcede0b653c1f"
+    },
+    {
+      "path": "docs/stylesheets/owd-inventaire.css",
+      "base_sha256": null,
+      "target_sha256": "1d33d51d5c517e40adbd92a4b2a39e4d31faa94d0cea011f042f2b0fa4214fa3"
+    },
+    {
+      "path": "docs/stylesheets/owd-roll20.css",
+      "base_sha256": "1e8a11c09746b36ac0112ef4f4f38540373b9ecea30b5b5d01b1793c07f91b8d",
+      "target_sha256": "1a9945fd401acc3e7b7d62bc41e76d624c70c7063e0405c09a4861ade1088a17"
+    },
+    {
+      "path": "essai/owd-roll20-chrome.zip",
+      "base_sha256": "0200e3f9c82605b8a4d3d4847b9f9013ebe8ed8341dfd29254d82d0c568635e7",
+      "target_sha256": "9ebacb68241078e00e40b8edcfdc05b6db5cbb57ee16c21fed16de0509ed20f7"
+    },
+    {
+      "path": "essai/owd-roll20-firefox.xpi",
+      "base_sha256": "d5806a9875a2877f9f7db430c2e4c21772fa54396575aa85fb7a6a3a93bfd11e",
+      "target_sha256": "b650c99b277a9789613fee82ddacd1b5b2ba610b46f715a41287039b6724c9a6"
+    },
+    {
+      "path": "extension/firefox/README.md",
+      "base_sha256": "5eebca7f69526d2bffdb845c125ee573883cab8c66ae0bcb609d527fb3d50c0b",
+      "target_sha256": "2aafb868f5a2b1500a7eb4819e8bc6d21f96961f9c4155d4c05c96784dcdd8a8"
+    },
+    {
+      "path": "extension/firefox/beta/content-roll20.js",
+      "base_sha256": "50d837f86efaec11b324d1c3fa9e3bcd39c386fd7ff0d338819a5af54f28d0e8",
+      "target_sha256": "aa93b9444b7c09d314be4bee33fa3c1faf3107892d9c5ccf42bb3d77fa864447"
+    },
+    {
+      "path": "extension/firefox/beta/panneau-shell.js",
+      "base_sha256": "c3c0de8451e5771aa77f1c5537f898b1dfc784bceca45c1be1bc9d376b607658",
+      "target_sha256": "785a340a8c8201c3b7662968ebbefd9df1c57e272227d4e3898f7d9d84c5e3ea"
+    },
+    {
+      "path": "extension/firefox/beta/roll20-page.js",
+      "base_sha256": "39b01a8c15cb03d5e8b17f8593b0a4d704efd751248adf41e9470607b5d40986",
+      "target_sha256": "288875ce2358df794602ac6eabe0b0bfa420adbf6b4cce5f64b7bb4034978c01"
+    },
+    {
+      "path": "extension/firefox/overlay.css",
+      "base_sha256": "9bdc3b66bf985cca4edc49e9f84a150c09108efedd48a0fd8c757011f0e9be60",
+      "target_sha256": "ea51c1a3fc1971d66b7a22f29d5785d538bf3a6f6aaaa72bb3fd394ce331eccc"
+    },
+    {
+      "path": "extension/firefox/stable/content-roll20.js",
+      "base_sha256": "60bdc0e546459e8fc3eb5b13f4aa4a3e86799c68c7fb97de8d38e910c26d3d9f",
+      "target_sha256": "295cd016ec1cfc261208715f01d353d13bd962133e74883a982b10aa592616b7"
+    },
+    {
+      "path": "extension/firefox/stable/panneau-shell.js",
+      "base_sha256": "2465409a79fb9ef6d020785207a9e06ba29ba701aaf5528884cd83abacbd9366",
+      "target_sha256": "8747c667c603ee19cc2a1f0fb0ddbc643c02a1f03142f19eda77874977d5acbe"
+    },
+    {
+      "path": "extension/firefox/stable/roll20-page.js",
+      "base_sha256": "39b01a8c15cb03d5e8b17f8593b0a4d704efd751248adf41e9470607b5d40986",
+      "target_sha256": "288875ce2358df794602ac6eabe0b0bfa420adbf6b4cce5f64b7bb4034978c01"
+    },
+    {
+      "path": "mkdocs.yml",
+      "base_sha256": "e174b44630da673aecbad87f4935f60933a89e97fca2aedd727b4852f12b7ae6",
+      "target_sha256": "81b978cef5f183e8da0b93a8a336fba21e8fdd9031ad212e58bc26af38a16781"
+    },
+    {
+      "path": "scripts/release_fiche.py",
+      "base_sha256": "6aba64947cd98e86ef1c3e715b4b474383020816ecc4f5a4104707a20e311f86",
+      "target_sha256": "63aae80a4fe553c71b43b492354a893143cc976ea0e63b0b5f7d8de8f98e1510"
+    },
+    {
+      "path": "scripts/test_outils_browser.js",
+      "base_sha256": null,
+      "target_sha256": "53df684726643594acb88f773220a56ea543f87c76a7238ff699f47551595139"
+    },
+    {
+      "path": "scripts/verif_versions.py",
+      "base_sha256": "7a6d3d8e4595c3e6d8935614549ef38c49ae0061825ef5153986ec619e44235f",
+      "target_sha256": "519d088a7918dedeb605b5ab0789ce76c95a696f567f22f30b6d7bc4d6a00f5a"
+    },
+    {
+      "path": "site/404.html",
+      "base_sha256": "6dfefb14d83fd8d32251fe1116c99a7b5590ce379debc4ba9a1437edcb36488e",
+      "target_sha256": "3bb702006e6eb15c5d96eb60ad6765dc6ee35c07dbf731d0a52a703b746d62a5"
+    },
+    {
+      "path": "site/assets/objets/index.html",
+      "base_sha256": "a7609d512479a863abf325415473b73df9c21e2b58ddd75d9a483f57f4c05dac",
+      "target_sha256": "05fcf8475bb94e2fc5a3775b12cab38a4822991b839dd29c01a5e0c2c638fe28"
+    },
+    {
+      "path": "site/content/regles/base/actions/index.html",
+      "base_sha256": "65b1c56f3dc8031116d6df4889ee2dac441e949c40122df4fb7321747b80ac68",
+      "target_sha256": "f4ca43a18489bae7d4ccb92c71131521e5de286a223d50fc01b3537e9beac573"
+    },
+    {
+      "path": "site/content/regles/base/avantages/index.html",
+      "base_sha256": "81f27e772456a9fb0539f3d2ef795f1a57fd26730bfa81f6788e26a797cbc360",
+      "target_sha256": "fd59ba85b07d6118cd8884af5aa9a1c213a449fe31c2ec4cd68dc0c04598e820"
+    },
+    {
+      "path": "site/content/regles/base/capacites-physiques/index.html",
+      "base_sha256": "80bf43f4fde263eeccd428057e7b58a4633d67508b6d1c55b91ab23d6eb24585",
+      "target_sha256": "0fbc56302f6395268f4d4d6ec1172beaea5dcbac17d677a5ee0ef029769336e7"
+    },
+    {
+      "path": "site/content/regles/base/caracteristiques/index.html",
+      "base_sha256": "ad2da54a0c60125a8e4385a9a822d903252924f52b667d32ae5f89f813cf3488",
+      "target_sha256": "1468e2bb8f4e7823b9e1be333d50da12cbd1e3d2dc7e2ef45bb654a9b2a77622"
+    },
+    {
+      "path": "site/content/regles/base/competences/index.html",
+      "base_sha256": "e8f17c2b34630d95fb4a8504e1660d155f3bb8e91326e45261090a444780bc6e",
+      "target_sha256": "1c9fd2f939cf0d16fb7db44d16b4330bf9dcbf2105f4e9303b4c72ddb417e9e0"
+    },
+    {
+      "path": "site/content/regles/base/techniques/index.html",
+      "base_sha256": "b51dab85dc76bd26514f8af0f9522e90bea5608057b2663972ccc35b3e28e77f",
+      "target_sha256": "3459b7ff0d6de775a5c40d2cff1fbc8b867f95cdc79551b02b5bc4b831bfc4dc"
+    },
+    {
+      "path": "site/content/regles/combat/armes/index.html",
+      "base_sha256": "59a6f9281c6ec8877daae43c43bd9535c5f87b65724dfc4e99cb752b14a4679b",
+      "target_sha256": "ff9abeadc92df791f12afce9c3203df379b0a365088950fcb9f3ecb285fb1cac"
+    },
+    {
+      "path": "site/content/regles/equipement/index.html",
+      "base_sha256": "4c3a2f0760361355c067f52d358dad9c818c1de339b906c4ffa8bc2c4b4692d2",
+      "target_sha256": "b400292496aa552d1cc1dd199247e26186db4ffe96fe1452dddde5815c6748f2"
+    },
+    {
+      "path": "site/content/regles/fabrication/index.html",
+      "base_sha256": "caa263a2f24373c4553f6484762f55fb0ae3701ee7d6bdf06fbcbdd430c09b17",
+      "target_sha256": "ec271a9ff7650aa8b51d862aa89bac6f647f7f0dab323e60ad12b5057c449883"
+    },
+    {
+      "path": "site/content/regles/index.html",
+      "base_sha256": "34a3e8e359faad4a30458129e5a99a6405fd62471903d1571f5c755cae16063f",
+      "target_sha256": "ba35fc3f305c569bb422a1d21159f4186f4fd87311dd97012c7d9a2180193b04"
+    },
+    {
+      "path": "site/content/regles/installations/index.html",
+      "base_sha256": "06bff6c3f6b6fd2763c5bc0d0a3f76ca1539cf5bb2f0486e6b45aaa983493e94",
+      "target_sha256": "c0468ad210ea11655802439138170a125d26de6c98883ed6d82737e7a649ac28"
+    },
+    {
+      "path": "site/content/regles/techniques/barbare/index.html",
+      "base_sha256": "2e6d6de5c67e57890f31b0c23a0f8e7846759881e41cf38217ee6d63e5d581f4",
+      "target_sha256": "388e40817fa380aaa3830d725d1e2002ed3a47a8c193b70c6391f5fa432acc8c"
+    },
+    {
+      "path": "site/content/regles/techniques/cercle-air/index.html",
+      "base_sha256": "034c31e1eb3b1387a52e4080e84ef9707b29da56e59dd27e71c12e86e1e3cb9e",
+      "target_sha256": "24782be25746e3ca117819fef166e65ebe34437eda8111905c2e63f204b1dd42"
+    },
+    {
+      "path": "site/content/regles/techniques/cercle-feu/index.html",
+      "base_sha256": "03e3b983df6d7b0c401ca2f7c02d495e707c5910034a8fff6243cbf6d4b4b8f6",
+      "target_sha256": "abb94e9cef0bd74b3c4baab570e27d31e73f5b47b9abdb03f58e37bed81cdd0c"
+    },
+    {
+      "path": "site/content/regles/techniques/cercle-glace/index.html",
+      "base_sha256": "a0bd133801d70bc401b22717a83d317a95186c75e4308ee386862ecc70815cf2",
+      "target_sha256": "d9b4e636af2ac18d960d8006a55c69056dc47aac547c79e34a1b442867aab58c"
+    },
+    {
+      "path": "site/content/regles/techniques/cercle-terre/index.html",
+      "base_sha256": "61ceab4535562c1664a88c8c1e01b224f518bc97b3b44711aff3b505dac39734",
+      "target_sha256": "47a693dd1654029f4ffda8d47b8bec43e887d82ba6d560a9de586605dc58c3af"
+    },
+    {
+      "path": "site/content/regles/techniques/moine/index.html",
+      "base_sha256": "7ef4cbd776703ea9e24986deb7a36f584a12d4406930056183a5eb3e84316ddc",
+      "target_sha256": "e6435808728518efced767ce4a292c3eb309aaa4bb1d6d377476e31f06265d42"
+    },
+    {
+      "path": "site/content/regles/techniques/runes/index.html",
+      "base_sha256": "16ffb9ebe9bad64ae94630fa0e0bb31c1b29160956b32a713a38abb1bfbe422f",
+      "target_sha256": "5f9e25c650b168026a343e8eb8e7183eb99d1639237e50dcc75599555198f0ba"
+    },
+    {
+      "path": "site/content/regles/techniques/speedster/index.html",
+      "base_sha256": "6e52ac7676189972150cda86814a5b7f658f4756426d2dcbb422bae5860a2844",
+      "target_sha256": "f8bf89233c422d8a112d17969e4de85c62e05041f6fca27c5b19a6ce01d246af"
+    },
+    {
+      "path": "site/content/regles/techniques/spellblade/index.html",
+      "base_sha256": "7341ce12dcdf9bf01d288fb4b604eb2be9e7eabdd7fd049eb84551f854d0f0a2",
+      "target_sha256": "45bb83d2aed505e9eaa712c6019b4fec92fe062f6bb0f5c08ac136ff6a4470d1"
+    },
+    {
+      "path": "site/content/regles/techniques/totems/index.html",
+      "base_sha256": "486b8bc669744c1dbe24e6348f18159fdbdc331d803343aca0c325022036723a",
+      "target_sha256": "2215fda5246e8cc399355c75e4cf12c6ecfbb998916c19b8f0c5d96a88d5c3dc"
+    },
+    {
+      "path": "site/content/regles/vivre/index.html",
+      "base_sha256": "1c6a24d9e320e17c63a6afa0fc10615029d7dc73e4083458b0818e5e6d5842a7",
+      "target_sha256": "bb8a60859ab56e8008f7d3e586a3289ac0fc2f8ce23b0006abe8927f55054ec6"
+    },
+    {
+      "path": "site/extension/index.html",
+      "base_sha256": "653caf045d9e904e9ae7f33ed6b2d2a88da20c172c6954563ec76b27cc69d9dd",
+      "target_sha256": "5e5bba7ba0d925a700dc7be743400e55c93f70d1fd82e5bf30da0c72adec365c"
+    },
+    {
+      "path": "site/index.html",
+      "base_sha256": "f3b34a4f0c639f6d6de3b0fa00113f56f3f506d4ec6169bb6ab158fa97f5460a",
+      "target_sha256": "7fc5fbe88dd5324f53dc80160c63b08dd7a0b84f86f9b0f4e83865d7e69eaeb4"
+    },
+    {
+      "path": "site/javascripts/owd-attr-map.js",
+      "base_sha256": "db87da52816982a44e58369ee5e64b9a14426d5f3233f3c013df7ed81e23fdb3",
+      "target_sha256": "8e044de0083e658369b94e4589969dbd7aa78ee09e3e818a308ca04c3ca03316"
+    },
+    {
+      "path": "site/javascripts/owd-fiche.js",
+      "base_sha256": "65704b8866027476c442205cce5a637093800ce2545a425d84961921596d5829",
+      "target_sha256": "80355f7abec2e6640e2c165dee0dd50b41d341bf81f132368bb41c7f20770857"
+    },
+    {
+      "path": "site/javascripts/owd-inventaire.js",
+      "base_sha256": null,
+      "target_sha256": "65a2d851d0299a092d62ac68f2f60de1e62b1b5085fc60a4be6c0325a15a7440"
+    },
+    {
+      "path": "site/javascripts/owd-monde.js",
+      "base_sha256": "6f3a3754a984bfb67aac49a0a84b0eca70822c0a527eca524e67afc3971eedc8",
+      "target_sha256": "6c612d1989a56147370c954201f0016b5a67bcd793cfb3d3db87638dade3b6f5"
+    },
+    {
+      "path": "site/javascripts/owd-roll20-boot.js",
+      "base_sha256": "b4ae83dcafb6d307c0b9c2aae80f47b2f878a2af82c8af3aba42d76098d55702",
+      "target_sha256": "ea219337193a0e929ecef834fa1e1fd7d0a9b6b4794a877aba03c77611f6700f"
+    },
+    {
+      "path": "site/owd-manifeste.json",
+      "base_sha256": "c268f83f3a57f5afeb4b9fff57333211691f4e0f6a9014fe9dd214cb91111c51",
+      "target_sha256": "94f238326ce22ca1d5782c86fd4058fc092a1a2d77b62586bd8f16c1f3637481"
+    },
+    {
+      "path": "site/personnage/index.html",
+      "base_sha256": "dd3e9811ce24d37dc53577517ec2ab5eb20e28fa7ff2d4adc18be510a9dc194e",
+      "target_sha256": "9cd0abf52adf56ed032c5099a4616d090b0518eb8871133faa73bf498c6d97b4"
+    },
+    {
+      "path": "site/roll20-inventaire.html",
+      "base_sha256": null,
+      "target_sha256": "9693cb848692491286fd80a26789ccac7b91d6368565d95e7d2fcede0b653c1f"
+    },
+    {
+      "path": "site/search/search_index.json",
+      "base_sha256": "66e49389fd693605793ccf4d7b582157de31e5250b8f3d0d34648c87cc243388",
+      "target_sha256": "75234af755031370cc8abd89d38bb1f58a6afd2799f3492683f9aa532d80ba4e"
+    },
+    {
+      "path": "site/stylesheets/owd-inventaire.css",
+      "base_sha256": null,
+      "target_sha256": "1d33d51d5c517e40adbd92a4b2a39e4d31faa94d0cea011f042f2b0fa4214fa3"
+    },
+    {
+      "path": "site/stylesheets/owd-roll20.css",
+      "base_sha256": "1e8a11c09746b36ac0112ef4f4f38540373b9ecea30b5b5d01b1793c07f91b8d",
+      "target_sha256": "1a9945fd401acc3e7b7d62bc41e76d624c70c7063e0405c09a4861ade1088a17"
+    },
+    {
+      "path": "src/fiche/equipement/inv-objets.js",
+      "base_sha256": "28db9685b4847ae50aa4d6052cb855c702d23d6437e0ad53b94bba5ee2b80c0c",
+      "target_sha256": "d961e4f08f86e5313aa7e73ccb1726755d1f6b81320687945490156ee640400c"
+    },
+    {
+      "path": "src/fiche/socle/020-version.js",
+      "base_sha256": "7a211ddd76f0caf88d630ec935c5f469d23d92ecfd85bfea6f1a3ef89ab01bce",
+      "target_sha256": "1ca3ea984101d935956cd1a79fb872011d8e34cf1adca6c3626bc00a62e22938"
+    },
+    {
+      "path": "src/fiche/socle/210-registre-modules.js",
+      "base_sha256": "bc4bff062d64e98ac304531630f388005af6d712b48d4ed34a8de928c38229ad",
+      "target_sha256": "9b8f1b1dda1be81d3cef40f5bb93393e31a24f69460ea016e4b3bfdb51f5bf97"
+    },
+    {
+      "path": "src/fiche/socle/310-api-publique.js",
+      "base_sha256": "b93097e7a1286391a4b2b595811edf5e692fb870b65583cb0820b594886a2b6b",
+      "target_sha256": "bed96495b53729654102202c585aa7e7fb7cab2040eeeb17ceeae9efdb7d86b5"
+    },
+    {
+      "path": "src/fiche/socle/320-montage.js",
+      "base_sha256": "ddf5a8e07d253a3e5c70068d8f910a397fee05cde076ed09171e71b03db9dbd9",
+      "target_sha256": "843a38319bb3e5ed515287249d8308a0d9f4f07f255b11569965ab7938760195"
+    }
+  ],
+  "deleted": [],
+  "signed_downloads_unchanged": true
+}

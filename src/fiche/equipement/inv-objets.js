@@ -44,10 +44,26 @@
     if (ou === "poches" || ou === "sac") return true;
     return casePermise(o, ou);
   }
+  function champsObjet(it, q) {
+    return [
+            ["Quantité", fmtP(q) + (q < it.qte ? " (sur " + fmtP(it.qte) + ")" : "")],
+            ["Poids", it.poids ? fmtP(it.poids) + (q > 1 ? " (total " + fmtP(q * it.poids) + ")" : "") : ""],
+            ["Encombrance", it.encombre ? fmtP(it.encombre) + " eb" : ""],
+            ["Volume", it.nourri && it.places ? fmtP(it.places) : ""],
+            ["Valeur", prixVente(it) ? "vente " + fmtP(prixVente(it)) + (it.achat ? " · achat " + fmtP(it.achat) : "")
+                                : (it.achat ? "achat " + fmtP(it.achat) : "")],
+            ["", it.desc]
+          ];
+  }
+  function montreObjet(ref) {
+    var it = state && state.inv && state.inv.objets.filter(function (o) { return o.ref === ref; })[0];
+    if (it) sayChat("Objet — " + (it.nom || "objet"), champsObjet(it, it.qte));
+  }
+  var invSelectionLocale = "";
   function invObjets(container, renderRef) {
     var items = state.inv.objets;
     var O = state.inv.opts;
-    var sel = null;          // l'OBJET affiché au panneau
+    var sel = items.filter(function (o) { return o.ref === invSelectionLocale; })[0] || null;          // l'OBJET affiché au panneau
     var drag = null;         // l'objet qu'on glisse
     var panelHooks = [];     // ce que le panneau rafraîchit, vidé à chaque rendu
 
@@ -254,9 +270,9 @@
         s.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); sel = occ; render(); });
         s.addEventListener("dragstart", function (e) {
           e.stopPropagation(); drag = occ; s.classList.add("drag");
-          try { e.dataTransfer.setData("text/plain", ""); e.dataTransfer.effectAllowed = "move"; } catch (err) {}
+          try { e.dataTransfer.setData("text/plain", ""); e.dataTransfer.effectAllowed = "move"; if (window.__owdObjetDrag) window.__owdObjetDrag(drag.ref, e.dataTransfer); } catch (err) {}
         });
-        s.addEventListener("dragend", function (e) { e.stopPropagation(); drag = null; render(); });
+        s.addEventListener("dragend", function (e) { e.stopPropagation(); drag = null; if (window.__owdObjetDragFin) window.__owdObjetDragFin(); render(); });
       } else {
         s.appendChild(el("span", "pc-obj-content-ph", "+"));
       }
@@ -311,9 +327,9 @@
       t.addEventListener("dragstart", function (e) {
         drag = it;
         t.classList.add("drag");
-        try { e.dataTransfer.setData("text/plain", ""); e.dataTransfer.effectAllowed = "move"; } catch (err) {}
+        try { e.dataTransfer.setData("text/plain", ""); e.dataTransfer.effectAllowed = "move"; if (window.__owdObjetDrag) window.__owdObjetDrag(drag.ref, e.dataTransfer); } catch (err) {}
       });
-      t.addEventListener("dragend", function () { drag = null; render(); });
+      t.addEventListener("dragend", function () { drag = null; if (window.__owdObjetDragFin) window.__owdObjetDragFin(); render(); });
       // dans les poches et le sac, déposer SUR une tuile range avant ou après
       // elle ; dans une case, c'est la case qui reçoit
       if (it.ou === "poches" || it.ou === "sac") {
@@ -598,6 +614,8 @@
       // vide et inerte. Le panneau garde ainsi sa forme et sa taille, et l'on
       // voit d'avance ce qu'un objet porte.
       if (sel && items.indexOf(sel) < 0) sel = null;
+      invSelectionLocale = sel ? sel.ref : "";
+      panel.dataset.syncEntity = invSelectionLocale;
       var fantome = !sel;
       panel.classList.toggle("fantome", fantome);
       var types = ["contondant", "perforant", "tranchant", "feu", "froid", "eclair", "decomposition", "ethere", "brut"];
@@ -950,15 +968,7 @@
         function () { return "Objet — " + (it.nom || "objet"); },
         function () {
           var q = bornerAct();
-          return [
-            ["Quantité", fmtP(q) + (q < it.qte ? " (sur " + fmtP(it.qte) + ")" : "")],
-            ["Poids", it.poids ? fmtP(it.poids) + (q > 1 ? " (total " + fmtP(q * it.poids) + ")" : "") : ""],
-            ["Encombrance", it.encombre ? fmtP(it.encombre) + " eb" : ""],
-            ["Volume", it.nourri && it.places ? fmtP(it.places) : ""],
-            ["Valeur", prixVente(it) ? "vente " + fmtP(prixVente(it)) + (it.achat ? " · achat " + fmtP(it.achat) : "")
-                                : (it.achat ? "achat " + fmtP(it.achat) : "")],
-            ["", it.desc]
-          ];
+          return champsObjet(it, q);
         });
       montrer.textContent = "Montrer";
       actions.appendChild(montrer);
@@ -1003,9 +1013,11 @@
       wrap.style.setProperty("--inv-h", h + "px");
     }
     window.addEventListener("resize", ajusteHauteur);
+    remontageNettoyage.push(function () { window.removeEventListener("resize", ajusteHauteur); });
     if (window.IntersectionObserver) {
-      new IntersectionObserver(function (e) { if (e[0] && e[0].isIntersecting) ajusteHauteur(); })
-        .observe(wrap);
+      var observateurInventaire = new IntersectionObserver(function (e) { if (e[0] && e[0].isIntersecting) ajusteHauteur(); });
+      observateurInventaire.observe(wrap);
+      remontageNettoyage.push(function () { observateurInventaire.disconnect(); });
     }
     function render() {
       majGroupes = [];

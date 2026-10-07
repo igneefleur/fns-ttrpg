@@ -1258,6 +1258,30 @@
     }
   });
 
+  OwdMigr.ajouter({
+    schema: 11,
+    titre: "Édition simultanée de la fiche",
+    notes: "Les modifications sont enregistrées séparément par champ et par entrée. " +
+      "Les avantages reçoivent une identité stable. Une extension Outward compatible est nécessaire dans Roll20.",
+    monter: function (s, ctx) {
+      if (Array.isArray(s.avantages)) {
+        ctx.grenier("avantages-avant11", s.avantages);
+        s.avantages = s.avantages.map(function (a, i) {
+          var o = JSON.parse(JSON.stringify(a));
+          if (o && typeof o === "object" && !o.id) o.id = "av-legacy-" + i;
+          return o;
+        });
+      }
+      return s;
+    },
+    descendre: function (s, ctx) {
+      var original = ctx.reprendre("avantages-avant11");
+      if (original) s.avantages = original;
+      else if (Array.isArray(s.avantages)) s.avantages.forEach(function (a) { if (a) delete a.id; });
+      return s;
+    }
+  });
+
   global.OwdMigr = OwdMigr;
   if (typeof module === "object" && module && module.exports) module.exports = OwdMigr;
 })(typeof window !== "undefined" ? window : (typeof global !== "undefined" ? global : this));

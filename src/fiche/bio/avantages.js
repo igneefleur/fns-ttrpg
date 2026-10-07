@@ -14,6 +14,7 @@
       box.innerHTML = "";
       state.avantages.forEach(function (a, i) {
         var card = el("div", "pc-av");
+        card.dataset.syncEntity = a.id;
         var head = el("div", "pc-av-head");
         var n = el("input", "nm pc-edit-field");
         n.type = "text"; n.placeholder = "Nom"; n.value = a.nom || "";
@@ -47,7 +48,7 @@
       });
       if (!state.avantages.length) box.appendChild(el("div", "pc-empty", "Aucun avantage."));
       box.appendChild(miniBtn("+ Ajouter un avantage", null, function () {
-        state.avantages.push({ nom: "", cout: 0, desc: "" });
+        state.avantages.push({ id: uid("av"), nom: "", cout: 0, desc: "" });
         rendu();
         refresh();
       }, "pc-edit-only"));

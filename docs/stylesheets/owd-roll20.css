@@ -78,3 +78,7 @@ html.night #owd-roll20-note { color: #9a9384; }   /* --ink-2 de nuit, 6,9:1 sur 
 /* De nuit l'or reprend sa valeur de wiki, #ffd77f tel quel : 15,3:1 sur le
    noir du pourtour. C'est la couleur de TOUS les liens du wiki d'Outward. */
 html.night #owd-roll20-note a { color: #ffd77f; }
+
+/* La vue détachée monte uniquement le module natif Inventaire. */
+.pc-inventaire-seul .pc-sheet{width:100%;padding:.65rem;margin:0;min-width:0}
+.pc-inventaire-seul{min-width:0}

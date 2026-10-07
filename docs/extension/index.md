@@ -96,3 +96,27 @@ Ensuite : dans une partie Roll20, ouvrir un personnage et cliquer l'onglet
 personnage n'a pas encore de fiche, un bouton « Créer fiche Outward » en fabrique
 une, enregistrée dans le personnage Roll20 lui-même (partagée avec tous les
 joueurs qui le contrôlent).
+
+
+Le panneau **Monde** de la barre Roll20 affiche uniquement l'horloge
+(jours, heures, minutes, secondes) et la température. Le MJ crée un personnage
+nommé **Monde** et le partage avec les joueurs. L'ancien personnage **Camp**
+reste reconnu : son heure et sa température sont conservées lors du passage à
+Monde. Horloge et température peuvent être modifiées en parallèle, avec une
+mise à jour fréquente chez tous les joueurs.
+
+## Monde et Inventaire
+
+La section **OUTWARD** de la barre Roll20 propose deux boutons : une planète
+pour **Monde**, un sac pour **Inventaire**. Les fenêtres ont une taille propre,
+même sur la barre du MJ. Faites glisser leur bandeau pour les déplacer et
+leur coin inférieur droit pour les agrandir ou les réduire.
+
+Dans Inventaire, choisissez un personnage que vous contrôlez. La fenêtre
+montre seulement son inventaire et utilise les mêmes objets que sa fiche :
+plusieurs joueurs peuvent modifier des champs différents en même temps,
+et les autres fenêtres reçoivent les changements automatiquement.
+Le personnage doit déjà posséder une fiche Outward.
+
+Pour montrer un objet, glissez sa tuile directement dans le chat Roll20.
+Sa carte est envoyée sans retirer l'objet ni changer sa quantité.

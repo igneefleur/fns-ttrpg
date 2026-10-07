@@ -103,6 +103,7 @@
       }
     });
   }
+  var remontageNettoyage = [];
   var rootEl = null;
   var appEl = null;      // le .perso-fiche monté : porte les jetons de couleur
   // Remplacement d'état COMPLET (import, bibliothèque, nouveau personnage) :

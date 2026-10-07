@@ -10,6 +10,7 @@
 
     function carte(t) {
       var card = el("div", "pc-av");
+      card.dataset.syncEntity = t.id;
       var head = el("div", "pc-av-head");
       var nm = el("input", "nm pc-edit-field");
       nm.type = "text"; nm.placeholder = "Nom de la technique"; nm.value = t.nom || "";

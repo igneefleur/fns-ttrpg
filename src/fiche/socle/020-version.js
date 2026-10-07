@@ -13,8 +13,8 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "2.23.0b";
-  var SCHEMA = 10;
+  var RELEASE = "3.2.0b";
+  var SCHEMA = 11;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
   // caractéristiques est ouverte mais serrée (20 est la moyenne humaine), un

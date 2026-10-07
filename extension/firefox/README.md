@@ -4,8 +4,8 @@ Un onglet « Fiche Outward » dans le dialogue de personnage Roll20. L'extension
 est une COQUILLE : la fiche elle-même est SERVIE PAR LE SITE —
 `roll20-fiche.html`, affichée dans une iframe — et se met donc à jour à chaque
 déploiement du site, sans re-signer l'extension. La fiche est persistée dans les
-Attributes Roll20 du personnage (tout préfixé `owd_`, `owd_state` = état entier
-en JSON, source de vérité), donc partagée avec tous les joueurs qui contrôlent ce
+Attributes Roll20 du personnage (tout préfixé `owd_`, `owd_sync_*` = état collaboratif,
+`owd_state` = photographie historique), donc partagée avec tous les joueurs qui contrôlent ce
 personnage. Les jets partent dans le tchat.
 
 ## MODIFIER CE DOSSIER COÛTE UNE SIGNATURE
@@ -74,12 +74,12 @@ en stable, et une régression du site de beta abîme les mêmes personnages.
 Partagées par les deux parties :
 
 - `popup/` — le popup : l'interrupteur général, le mode nuit, le panneau de
-  Camp, la case « Beta », les numéros de version et les deux liens. C'est le SEUL
+  Monde, la case « Beta », les numéros de version et les deux liens. C'est le SEUL
   endroit qui écrive un réglage, et il doit le rester.
 - `creator.html` — la coquille de l'onglet : une iframe vers la fiche du site,
   charId passé dans le hash (`#c=<id>`). Immunisée contre la CSP de Roll20.
 - `panneau.html` — la coquille générique des panneaux flottants (le panneau de
-  Camp aujourd'hui) ; la page à montrer est nommée dans le hash (`#p=`).
+  Monde aujourd'hui) ; la page à montrer est nommée dans le hash (`#p=`).
 - `shell-loader.js` — ajoute à ces deux pages la balise `<script>` de la bonne
   coquille, d'après le mode écrit dans le hash (`&m=`). Aucun script en ligne,
   aucun `eval` : une page d'extension ne les accepte pas (CSP `script-src 'self'`)
@@ -122,7 +122,7 @@ les scripts d'amorce et de correspondance état ↔ Attributes.
 | `owdOff` | absente = extension allumée (test strict sur `true`) |
 | `owdNuit` | absente = `"auto"` |
 | `owdBeta` | absente = partie stable |
-| `owdPanneauActif` | absente = panneau de Camp allumé |
+| `owdPanneauActif` | absente = panneau Monde allumé |
 | `owdPanneau:roll20-camp.html` | la géométrie du panneau, écrite par `content-roll20.js` ; le bouton « Replacer » du popup la SUPPRIME |
 
 ## Dépannage
@@ -165,3 +165,60 @@ change. Le manifeste Firefox, lui, ne nomme que le SVG.
 - **Chrome** : `chrome://extensions` → « Mode développeur » → « Charger
   l'extension non empaquetée » → choisir le dossier construit (celui qui porte
   le manifeste V3), et non `extension/firefox/`.
+
+## Pont collaboratif — site 3.0.0b
+
+Les deux copies de `roll20-page.js` prennent maintenant en charge `load.resync`
+pour chaque personnage auquel la frame est liée. `attribs.fetch()` renouvelle la
+collection ; une réponse `hydrate.fresh` n'est vraie qu'après son succès serveur.
+Le plancher reste 1,5 seconde par personnage. `collaboration: 1` annonce cette
+capacité au site, qui bloque l'édition avec un ancien pont.
+
+Le site écrit les registres `owd_sync_p_*` de champs séparés et garde une
+photographie initiale dans `owd_sync_base`. Le pont reste ignorant du format et
+ne modifie jamais un autre personnage que celui lié à la frame.
+
+Cette modification du paquet nécessite une nouvelle signature via le workflow
+manuel `signer`, ou `scripts/ci_extension.py` avec les clés AMO. Les numéros des
+manifestes et de `parties.js` restent réservés à cet outil. Les binaires signés
+de `docs/download/` n'ont volontairement pas été remplacés par un XPI non signé.
+
+
+## Monde — version de site 3.1.0b
+
+Le popup et la barre affichent **Monde**. La coquille conserve l’adresse
+historique `roll20-camp.html`, également présente sur le site stable.
+`roll20-monde.html` est une adresse supplémentaire de la même interface.
+Le pont choisit le personnage partagé **Monde**, ou à défaut l'ancien **Camp** ;
+ces deux noms sont exclus du créateur de fiches. La clé historique de géométrie
+`owdPanneau:roll20-camp.html` est conservée et le bouton Replacer la réinitialise.
+
+Le nouveau protocole `monde-char` annonce sa capacité avant toute édition.
+Les registres `owd_monde_base` et `owd_monde_p_*` suivent les mêmes règles et
+priorités d'envoi que `owd_sync_*`. Les anciens attributs `owd_camp_*` servent
+seulement à la conversion initiale et restent intacts. Monde affiche seulement
+une horloge J/H/M/S et une température manuelle. La signature manuelle CI doit
+inclure les changements de fiche 3.0.0b et de Monde 3.1.0b en un seul paquet.
+
+## Outils OUTWARD — version de site 3.2.0b
+
+`content-roll20.js` pose un séparateur natif OUTWARD et les outils Monde et
+Inventaire (planète et sac en SVG `currentColor`). Les barres à `div` et à
+`button` sont prises en charge, avec remise en place après un remontage.
+Les cadres indépendants conservent leur géométrie ; ils ne prennent pas la
+hauteur de la barre du MJ. Les iframes restent vivantes lors de la fermeture
+pour confirmer les envois en cours. Le thème est relayé sans rechargement.
+
+`owdPanneau:roll20-inventaire.html` mémorise la géométrie d'Inventaire, en plus
+de la clé historique de Monde. `owdPanneauActif` ne coupe que Monde.
+La coquille générique charge `roll20-inventaire.html`, qui choisit un personnage
+contrôlé et ouvre `roll20-fiche.html#c=…&view=inventaire`. Le pont recontrôle les
+droits et charge les attributs même si la fiche Roll20 n'était pas ouverte.
+Le module natif et les attributs de synchronisation de la fiche sont réutilisés.
+
+Un drag émet une identité d'objet et un jeton temporaire. Seul un dépôt natif
+sur le chat confirme la publication ; la carte est composée dans la fiche
+source puis passe par le relais chat existant. Aucun retrait de quantité.
+Les deux variantes d'extension restent identiques hors lignes marquées.
+Les paquets `essai/` sont non signés ; une seule signature ultérieure doit
+regrouper 3.0.0b, 3.1.0b et 3.2.0b. Ne pas remplacer `docs/download/` avant elle.

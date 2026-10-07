@@ -27,7 +27,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
 (function () {
   "use strict";
   var SITE = "https://igneefleur.github.io/fns-ttrpg/owd/";   // propre à cette copie
-  var DEFAUT = "roll20-camp.html";
+  var DEFAUT = "roll20-camp.html"; // Adresse historique également présente sur le site stable.
 
   // Même règle que l'amorceur du site : une page du site, relative, sans
   // schéma, sans « // » de tête, sans remontée de dossier. Le hash arrive du
@@ -46,6 +46,12 @@ if (typeof browser === "undefined") { var browser = chrome; }
   try { page = m ? decodeURIComponent(m[1]) : ""; } catch (e) { page = ""; }
   if (!sure(page)) page = DEFAUT;
 
+  window.addEventListener("message", function (ev) {
+    var d = ev.data;
+    if (!d || d.ns !== "owd" || d.type !== "panel-theme" || ev.source !== window.parent) return;
+    document.documentElement.classList.toggle("night", !!d.nuit);
+    document.getElementById("owd-remote").contentWindow.postMessage(d, "*");
+  });
   function mount(base) {
     // le hash entier suit : la page distante y lit le thème (n=1/0) comme la fiche
     document.getElementById("owd-remote").src = String(base) + page + hash;

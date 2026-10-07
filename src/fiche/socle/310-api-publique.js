@@ -2,7 +2,60 @@
   // La fiche expose UN objet : c'est par là qu'un mod remplace un module,
   // change la disposition ou détourne un calcul. Elle n'exécute rien
   // d'elle-même. window.__owdModules est un ALIAS du MÊME objet.
+  function recoitEtatCollaboratif(s) {
+    if (!s || parseInt(s.v, 10) !== SCHEMA) throw new Error("Schéma distant incompatible : recharger la fiche.");
+    s = normalize(s);
+    if (JSON.stringify(s) === JSON.stringify(state)) return;
+    var actif = document.activeElement, focus = null, positions = [];
+    function signature(c) { return [c.tagName, c.type || "", c.className, c.getAttribute("placeholder") || "", c.getAttribute("aria-label") || ""].join("|"); }
+    function ancre(c) {
+      var a = c.closest("[data-sync-entity], [data-id], [data-module]") || rootEl;
+      var m = a.closest("[data-module]");
+      return { module: m ? m.dataset.module : "",
+        entity: a.dataset ? (a.dataset.syncEntity || a.dataset.id || "") : "", el: a };
+    }
+    if (actif && rootEl && rootEl.contains(actif) && /^(INPUT|TEXTAREA|SELECT)$/.test(actif.tagName)) {
+      var a = ancre(actif), sig = signature(actif);
+      var semblables = Array.prototype.filter.call(a.el.querySelectorAll("input,textarea,select"), function (c) { return signature(c) === sig; });
+      focus = { module: a.module, entity: a.entity, signature: sig, index: semblables.indexOf(actif),
+        value: actif.value, start: actif.selectionStart, end: actif.selectionEnd, direction: actif.selectionDirection, scroll: actif.scrollTop };
+    }
+    var sx = window.scrollX, sy = window.scrollY;
+    Array.prototype.forEach.call(rootEl.querySelectorAll("[data-module]"), function (m) {
+      Array.prototype.forEach.call(m.querySelectorAll("*"), function (n, i) {
+        if (n.scrollTop || n.scrollLeft) positions.push({ module: m.dataset.module, index: i, top: n.scrollTop, left: n.scrollLeft });
+      });
+    });
+    journalTemps = []; effVu = null; effMaxVu = {};
+    state = normalize(s);
+    remount();
+    positions.forEach(function (p) {
+      var m = Array.prototype.find.call(rootEl.querySelectorAll("[data-module]"), function (n) { return n.dataset.module === p.module; });
+      var n = m && m.querySelectorAll("*")[p.index]; if (n) { n.scrollTop = p.top; n.scrollLeft = p.left; }
+    });
+    if (focus) {
+      var scope = rootEl;
+      if (focus.module) scope = Array.prototype.find.call(rootEl.querySelectorAll("[data-module]"), function (n) { return n.dataset.module === focus.module; });
+      if (scope && focus.entity) scope = Array.prototype.find.call(scope.querySelectorAll("[data-sync-entity], [data-id]"), function (n) { return (n.dataset.syncEntity || n.dataset.id) === focus.entity; });
+      if (scope) {
+        var champs = Array.prototype.filter.call(scope.querySelectorAll("input,textarea,select"), function (c) { return signature(c) === focus.signature; });
+        var c = champs[focus.index];
+        if (c && !c.disabled) {
+          c.focus({ preventScroll: true });
+          // Les commandes ± ne sont pas encore dans l'état. Une saisie locale
+          // reste aussi sous les doigts pendant la réception d'autres champs.
+          c.value = focus.value;
+          try { if (focus.start !== null) c.setSelectionRange(focus.start, focus.end, focus.direction); } catch (e) {}
+          c.scrollTop = focus.scroll;
+        }
+      }
+    }
+    window.scrollTo(sx, sy);
+  }
+
   window.Owd = {
+    __recoitEtat: recoitEtatCollaboratif,
+    __montreObjet: montreObjet,
     // Les deux ne se déduisent pas l'un de l'autre : version porte le suffixe
     // de beta le cas échéant, schema est un entier libre. Un mod qui tirerait
     // le schéma du majeur de la version se tromperait à la première

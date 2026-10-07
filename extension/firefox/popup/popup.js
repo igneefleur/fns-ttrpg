@@ -461,7 +461,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
       // place, sa taille et son repli d'origine, que content-roll20.js reposera
       // au prochain montage.
       try { browser.storage.local.remove(CLE_PAN_GEO); } catch (e) { /* rien à replacer */ }
-      flash("Panneau de camp replacé.");
+      flash("Panneau Monde replacé.");
     });
 
     elBeta.addEventListener("click", function () {

@@ -203,7 +203,7 @@ def urls_du_manifeste(man):
             if re.search(r"\.(js|css|json)(\?|$)", noeud) or "://" in noeud or noeud.startswith("//"):
                 trouvees.append((ou, noeud))
 
-    for cle in ("amorce", "camp", "bundle", "archives"):
+    for cle in ("amorce", "camp", "monde", "inventaire", "bundle", "archives"):
         if cle in man:
             marche(man[cle], cle)
     return trouvees

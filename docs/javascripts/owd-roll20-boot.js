@@ -52,6 +52,7 @@
 (function () {
   "use strict";
   var M = window.OwdAttrMap;
+  var C = window.OwdSync;
 
   // id du personnage Roll20, passé de creator.html au hash de cette page (#c=<id>).
   var CHAR_ID = (function () {
@@ -61,6 +62,8 @@
 
   // Page ouverte directement dans un onglet (hors Roll20) : rien à hydrater,
   // on oriente le visiteur au lieu d'attendre un pont qui ne répondra jamais.
+  window.__owdVueInventaire = /[#&]view=inventaire(?:&|$)/.test(location.hash || "");
+  var objetDrag = null, accesInventaire = true;
   var STANDALONE = (function () { try { return window.top === window; } catch (e) { return false; } })();
 
   var mem = {};                 // cache localStorage
@@ -74,6 +77,14 @@
   var askTimer = null;          // relance de la demande d'hydratation
   var gardeArmee = false;       // le chien de garde ne se lance qu'une fois par session
   var taillesPostees = [];      // tailles récentes de owd_state posté (repère du chien de garde)
+  var collaboration = null, collaborationPont = false, collaborationApplique = false;
+  var derniereLecture = 0, modificationLocale = 0;
+  var synchronisationDifferée = null;
+  // Les formulaires composant du texte (IME) et les modales gardent leur DOM.
+  // La réception continue ; le remontage attend la fin de cette interaction.
+  var composition = false;
+  document.addEventListener("compositionstart", function () { composition = true; });
+  document.addEventListener("compositionend", function () { composition = false; appliqueDiffere(); });
   var gele = false;             // fiche lue à moitié : on n'écrit plus rien (voir hydrate)
 
   // Le shim que le bundle prend en priorité (var STORE = window.__owdLocalStorage
@@ -83,14 +94,20 @@
   // meurent avec la page — c'est voulu.
   window.__owdLocalStorage = {
     getItem: function (k) { return Object.prototype.hasOwnProperty.call(mem, k) ? mem[k] : null; },
-    setItem: function (k, v) { mem[k] = String(v); if (ready && SAVE_KEYS[k]) scheduleSave(); },
+    setItem: function (k, v) {
+      mem[k] = String(v);
+      if (collaboration && !collaborationApplique && k === "owd-perso") {
+        collaboration.capture(JSON.parse(mem[k])); modificationLocale = Date.now();
+      }
+      if (ready && !collaborationApplique && SAVE_KEYS[k]) scheduleSave();
+    },
     removeItem: function (k) { delete mem[k]; },
     clear: function () { mem = {}; },
     key: function (i) { return Object.keys(mem)[i] || null; },
     get length() { return Object.keys(mem).length; }
   };
 
-  function post(msg) { msg.ns = "owd"; msg.charId = CHAR_ID; try { window.top.postMessage(msg, "*"); } catch (e) {} }
+  function post(msg) { msg.ns = "owd"; msg.charId = CHAR_ID; if (window.__owdVueInventaire) msg.inventory = true; try { window.top.postMessage(msg, "*"); } catch (e) {} }
 
   // ---------- mode jour / nuit ----------
   // Le CSS nuit existe déjà dans la feuille de la fiche (html.night …) ; ici on
@@ -202,12 +219,25 @@
     saveTimer = setTimeout(doSave, 400);
   }
   function doSave() {
+    if (!accesInventaire) return;
     saveTimer = null;
     var state;
     try { state = JSON.parse(mem["owd-perso"] || "null"); } catch (e) { return; }
     if (!state) return;
     var card = null;
     try { var cards = JSON.parse(mem["owd-cards"] || "{}"); card = cards && cards._current; } catch (e) {}
+    if (collaboration) {
+      collaboration.capture(state);
+      var lot = collaboration.outgoing();
+      // Macros et barres de jetons restent un MIROIR calculé. Aucune collection
+      // ni photographie complète n'est réécrite par une sauvegarde courante.
+      var tous = M.stateToAttrs(state, card), natifs = M.stateToAttrs(state, null), miroirs = {};
+      Object.keys(tous).forEach(function (n) { if (!Object.prototype.hasOwnProperty.call(natifs, n)) miroirs[n] = tous[n]; });
+      var delta = diff(lastAttrs, miroirs);
+      Object.keys(delta).forEach(function (n) { lot[n] = delta[n]; });
+      if (Object.keys(lot).length) post({ type: "save", attrs: lot });
+      return;
+    }
     var attrs = M.stateToAttrs(state, card);
     // Diff contre ce que Roll20 est CENSÉ contenir : le relu (lastAttrs) plus
     // le lot encore en vol. Le supposer arrivé évite de tout réémettre à
@@ -255,7 +285,7 @@
       cb(null);
     }, 1500);
     sondes.push(s);
-    post({ type: "load" });
+    post({ type: "load", resync: true });
   }
   function sondeReponse(attrs) {
     var q = sondes.slice();
@@ -908,6 +938,12 @@
     // Un double clic sur « mettre à niveau » lancerait deux protocoles, donc
     // deux injections : la fiche se monterait deux fois dans la même page.
     if (bundleCharge || !spec) return;
+    if (C && !collaborationPont) {
+      var b = ecran("Extension Outward à mettre à jour", false);
+      b.appendChild(noeud("p", null, "Cette fiche utilise l'édition simultanée. Installez la nouvelle extension Outward puis rechargez la partie Roll20. Aucune modification n'est envoyée avec l'ancien pont."));
+      boutonExport(zoneActions(b));
+      return;
+    }
     bundleCharge = true;
     fermerEcran();
     // data : le owd-creation.json à lire. Une archive embarque le sien, gelé à
@@ -939,7 +975,20 @@
     var urls = spec.js || [];
     var i = 0;
     function serie() {
-      if (i >= urls.length) { ready = true; post({ type: "mounted" }); return; }
+      if (i >= urls.length) {
+        if (C && collaborationPont && !gele) {
+          collaboration = new C.Session(lastAttrs, JSON.parse(mem["owd-perso"]));
+          // La photographie n'est écrite qu'une fois. Elle est aussi annoncée
+          // au vieux code par owd_state/schema 11, pour empêcher ses écritures.
+          if (!collaboration.hasBase) {
+            var initial = collaboration.outgoing();
+            initial[M.PREFIX + "state"] = { current: JSON.stringify(collaboration.seed), max: "" };
+            initial[M.PREFIX + "version"] = { current: String(collaboration.seed.v), max: M.release() };
+            post({ type: "save", attrs: initial });
+          }
+        }
+        ready = true; post({ type: "mounted" }); scheduleSave(); return;
+      }
       var s = document.createElement("script");
       var u = urls[i++];
       s.src = u;
@@ -1075,6 +1124,12 @@
       // owd_version repart au schéma d'origine, sinon la fiche restaurée serait
       // relue comme une fiche du jour au prochain chargement.
       if (isFinite(sch)) lot[M.PREFIX + "version"] = { current: String(sch), max: "" };
+      if (C && recu && recu[C.BASE]) {
+        lot[C.BASE] = { current: "", max: "" };
+        Object.keys(recu).forEach(function (n) {
+          if (n.indexOf(C.PREFIX) === 0) lot[n] = { current: "", max: "" };
+        });
+      }
       post({ type: "save", attrs: lot });
       confirme(lot, function (ok) {
         if (!ok) {
@@ -1333,6 +1388,7 @@
   // message d'attente / d'orientation de roll20-fiche.html
   function note(html) {
     var n = document.getElementById("owd-roll20-note");
+    if (!n && html != null) { n = document.createElement("div"); n.id = "owd-roll20-note"; document.body.insertBefore(n, document.body.firstChild); }
     if (n) { if (html == null) n.remove(); else n.innerHTML = html; }
   }
 
@@ -1343,6 +1399,10 @@
     if (askTimer) { clearTimeout(askTimer); askTimer = null; }   // plus rien à réclamer
     note(null);
     attrs = attrs || {};
+    if (window.__owdVueInventaire && !attrs.owd_version && !attrs.owd_state && !attrs.owd_sync_base) {
+      hydrated = false; note("Ce personnage n’a pas encore de fiche Outward. Ouvrez sa fiche pour la créer.");
+      askTimer = setTimeout(function () { post({type: "load", resync: true}); }, 2000); return;
+    }
     var state = M.attrsToState(attrs);
     // attrsToState DIT dans quel état il a trouvé la fiche (propriétés non
     // énumérables, donc invisibles au JSON.stringify qui suit) :
@@ -1396,7 +1456,7 @@
 
   window.addEventListener("message", function (ev) {
     var d = ev.data;
-    if (!d || d.ns !== "owd") return;
+    if (!d || d.ns !== "owd" || ev.source !== window.top) return;
     // on n'accepte que l'hydratation de NOTRE personnage (plusieurs fiches peuvent être ouvertes)
     if (d.type === "hydrate" && (!d.charId || d.charId === CHAR_ID)) {
       // ROUTAGE CRITIQUE. Une fois la fiche hydratée, un « hydrate » n'hydrate
@@ -1406,17 +1466,106 @@
       // cours, par un état lu il y a une seconde. Les réponses tardives à la
       // relance d'ouverture arrivent par ce même chemin et se perdent sans
       // dommage : aucune sonde ne les attend.
-      if (hydrated) sondeReponse(d.attrs);
-      else hydrate(d.attrs);
+      if (window.__owdVueInventaire && d.inventoryAccess === false) {
+        accesInventaire = false;
+        document.getElementById("perso-fiche").inert = true;
+        note("Vous n’avez plus accès à l’inventaire de ce personnage.");
+        return;
+      }
+      if (window.__owdVueInventaire && d.inventoryAccess === true && !accesInventaire) {
+        accesInventaire = true; document.getElementById("perso-fiche").inert = false; note(null);
+      }
+      collaborationPont = d.collaboration === 1 && d.resync === true;
+      if (d.fresh === true || !collaborationPont) derniereLecture = Date.now();
+      if (hydrated) {
+        sondeReponse(d.attrs);
+        if (collaboration && d.fresh === true && !gele && !collaborationApplique) recoitCollaboration(d.attrs || {});
+      } else if (!collaborationPont || d.fresh === true) hydrate(d.attrs);
     }
     // objet pris au tchat : diffusé à TOUTES les fiches ouvertes (le lien
     // /owd_take est public, chaque client décide s'il le prend), d'où l'absence
     // de filtre sur charId ; c'est le dialogue de réception qui demande
     // confirmation.
+    else if (d.type === "inventory-drop-chat" && d.charId === CHAR_ID && objetDrag &&
+        d.token === objetDrag.token && d.ref === objetDrag.ref && Date.now() - objetDrag.t < 30000) {
+      objetDrag = null;
+      if (accesInventaire && window.Owd && window.Owd.__montreObjet) window.Owd.__montreObjet(d.ref);
+      appliqueDiffere();
+    }
     else if (d.type === "take" && d.payload) window.__owdTake(d.payload);
     // liste des joueurs connectés, en réponse à __owdPlayers
     else if (d.type === "players-result") playersReply(d.players || []);
   });
+
+  window.__owdObjetDrag = function (ref, dt) {
+    var token = window.crypto && crypto.randomUUID ? crypto.randomUUID() : Date.now() + "-" + Math.random();
+    objetDrag = {ref: ref, token: token, t: Date.now(), active: true};
+    dt.setData("application/x-owd-item", JSON.stringify({ref: ref, token: token, charId: CHAR_ID}));
+    dt.effectAllowed = "copyMove";
+    post({type: "inventory-drag-start", ref: ref, token: token});
+  };
+  document.addEventListener("drop", function () {
+    if (objetDrag && objetDrag.active) setTimeout(function () { window.__owdObjetDragFin(); }, 0);
+  }, true);
+  window.__owdObjetDragFin = function () {
+    if (objetDrag) objetDrag.active = false;
+    post({type: "inventory-drag-end", token: objetDrag && objetDrag.token});
+    setTimeout(appliqueDiffere, 100);
+  };
+  window.addEventListener("message", function (ev) {
+    var d = ev.data;
+    if (d && d.ns === "owd" && d.type === "panel-theme" && (ev.source === window.parent || ev.source === window.top))
+      document.documentElement.classList.toggle("night", !!d.nuit);
+  });
+
+  // ---------- édition collaborative ----------
+  function recoitCollaboration(attrs) {
+    try {
+      // capture() a déjà reçu chaque frappe dans le shim SYNCHRONE, avant le
+      // debounce de sauvegarde : même une réponse arrivée à cet instant la garde.
+      var recu = collaboration.receive(attrs);
+      lastAttrs = attrs;
+      if (!recu) return;
+      if (recu.lost) bandeau("Roll20 n'a pas confirmé certaines modifications. Elles restent dans cette fenêtre et seront renvoyées ; exportez la fiche avant de fermer si le problème persiste.", [
+        { texte: "Exporter (JSON)", acte: "export", action: exporter },
+        { texte: "Masquer", acte: "masquer", action: fermerBandeau }
+      ]);
+      synchronisationDifferée = recu.state;
+      appliqueDiffere();
+      scheduleSave();
+    } catch (err) {
+      gele = true;
+      bandeauGelIllisible("Synchronisation interrompue : " + err.message);
+    }
+  }
+  function appliqueDiffere() {
+    if (!synchronisationDifferée || composition || (objetDrag && objetDrag.active && Date.now() - objetDrag.t < 30000) || document.querySelector(".pc-modal-over") ||
+        !window.Owd || typeof window.Owd.__recoitEtat !== "function") return;
+    var s = synchronisationDifferée;
+    // Rejouer les frappes faites DEPUIS la dernière réception, si une modale a
+    // retardé l'affichage. La base locale du moteur connaît déjà ces frappes.
+    if (modificationLocale) s = C.rebuild(collaboration.local);
+    if (JSON.stringify(s) === mem["owd-perso"]) { synchronisationDifferée = null; return; }
+    collaborationApplique = true;
+    try {
+      window.Owd.__recoitEtat(s);
+      collaboration.local = C.flatten(JSON.parse(mem["owd-perso"]));
+      synchronisationDifferée = null;
+    } finally { collaborationApplique = false; }
+  }
+  setInterval(function () {
+    appliqueDiffere();
+    if (!STANDALONE && hydrated && ready && !gele && collaborationPont) {
+      post({ type: "load", resync: true });
+      // Le début d'activation et les lots en attente sont aussi repris après
+      // une coupure de réseau, sans dépendre d'une frappe supplémentaire.
+      if (collaboration) doSave();
+      if (derniereLecture && Date.now() - derniereLecture > 12000)
+        bandeau("La synchronisation avec Roll20 ne répond plus. Les modifications locales restent en attente ; vous pouvez exporter la fiche.", [
+          { texte: "Exporter (JSON)", acte: "export", action: exporter }
+        ]);
+    }
+  }, 1200);
 
   // La décision de version attend DEUX entrées : les attributs (hydrate) et le
   // manifeste. Cette seconde attente démarre ici, en parallèle de la première.
@@ -1457,7 +1606,7 @@
            "la partie ouverte, ou rouvrir la fiche depuis celle-ci.");
       return;
     }
-    post({ type: "load" });
+    post({ type: "load", resync: true });
     askTimer = setTimeout(ask, 500);
   })();
 })();

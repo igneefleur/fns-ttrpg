@@ -356,18 +356,32 @@
   var queue = [], busy = false;
   // Le filtre de préfixe s'applique À L'ENTRÉE : ce qui n'est pas à nous
   // n'entre même pas dans la file (rien à réexaminer, rien à jeter en route).
-  function enqueue(id, attrs) {
+  function enqueue(id, attrs, inventory) {
     var src = attrs || {}, garde = {};
     Object.keys(src).forEach(function (n) { if (ecrivable(n)) garde[n] = src[n]; });
-    queue.push({ id: id, attrs: garde, tries: 0 });
+    // Coalescer les lots EN ATTENTE : une ancienne photographie de macro
+    // ne doit pas empiler des dizaines de lots derrière une frappe récente.
+    var attente = null;
+    for (var i = 0; i < queue.length; i++) if (queue[i].id === id) { attente = queue[i]; break; }
+    if (attente && inventory) attente.inventory = true;
+    if (attente) Object.keys(garde).forEach(function (n) { attente.attrs[n] = garde[n]; });
+    else if (Object.keys(garde).length) queue.push({ id: id, attrs: garde, tries: 0, inventory: !!inventory });
     pump();
   }
   function pump() {
     if (busy) return;
-    var job = queue.shift();
+    // Une écriture à la fois, avec priorité à la base puis aux registres.
+    // Les miroirs de macros ne bloquent jamais une fiche qui continue à saisir.
+    function priorite(n) { return (n === "owd_sync_base" || n === "owd_monde_base") ? 0 : (n.indexOf("owd_sync_p_") === 0 || n.indexOf("owd_monde_p_") === 0) ? 1 : 2; }
+    var choisi = 0;
+    for (var j = 0; j < queue.length; j++) {
+      if (Object.keys(queue[j].attrs).some(function (n) { return priorite(n) < 2; })) { choisi = j; break; }
+    }
+    var job = queue.splice(choisi, 1)[0];
     if (!job) return;
     busy = true;
     var ch = getChar(job.id);
+    if (job.inventory && !inventoryAccess(ch)) { busy = false; pump(); return; }
     // Deux raisons d'attendre, une seule conduite. Campaign injoignable (opener
     // du popout en cours de rechargement...), ou attributs pas encore chargés
     // par Roll20 : dans le second cas, écrire créerait des doublons dans une
@@ -382,21 +396,14 @@
       if (++job.tries <= 60) { queue.unshift(job); setTimeout(pump, 1000); }
       return;
     }
-    var names = Object.keys(job.attrs), i = 0;
-    function step() {
-      if (!ch || i >= names.length) {
-        // PAS de ch.view.render() ici : re-render déclencherait la mise à jour de fiche
-        // de Roll20 (celle qui plante). Les attributs sont persistés via Firebase ;
-        // l'onglet Attributes se met à jour de lui-même (au pire à la réouverture).
-        busy = false;
-        setTimeout(pump, 0);
-        return;
-      }
-      var name = names[i++];
-      try { writeOne(ch, name, job.attrs[name]); } catch (e) {}
-      setTimeout(step, WRITE_DELAY);   // throttle
-    }
-    step();
+    var names = Object.keys(job.attrs).sort(function (a, b) { return priorite(a) - priorite(b); });
+    var name = names[0], value = job.attrs[name];
+    delete job.attrs[name];
+    if (Object.keys(job.attrs).length) queue.unshift(job);
+    try { if (name) writeOne(ch, name, value); } catch (e) {}
+    // Pas de render Roll20 : la persistance passe par Firebase. Réinsérer le
+    // reste AVANT l'attente permet à enqueue() de remplacer les valeurs périmées.
+    setTimeout(function () { busy = false; pump(); }, WRITE_DELAY);
   }
 
   function reply(ev, msg) { msg.ns = "owd"; try { ev.source.postMessage(msg, "*"); } catch (e) {} }
@@ -429,7 +436,7 @@
   }
 
   // ---------- le camp ----------
-  // Le camp partagé vit dans les Attributes d'un personnage nommé « Camp », que
+  // Le camp partagé vit dans les Attributes d'un personnage nommé « Monde » (ancien « Camp » accepté), que
   // le MJ rend contrôlable par tous les joueurs : c'est le SEUL objet d'une
   // campagne où chacun a lecture et écriture (un joueur ne peut pas lire la
   // fiche d'un autre joueur).
@@ -444,13 +451,17 @@
   // LE NOM EST CELUI QUE LE CONTENT SCRIPT CONNAÎT (content-roll20.js,
   // CAMP_NOM) : la même chaîne, comparée de la même façon, et les deux doivent
   // bouger ensemble.
-  var CAMP_NOM = "camp";
+  var CAMP_NOM = "monde";
   function campChar() {
     var c = campaign(), ms = (c && c.characters && c.characters.models) || [];
+    var ancien = null;
     for (var i = 0; i < ms.length; i++) {
       var n = ms[i].get ? ms[i].get("name") : (ms[i].attributes || {}).name;
-      if (String(n == null ? "" : n).replace(/\s+/g, " ").trim().toLowerCase() === CAMP_NOM) return ms[i];
+      n = String(n == null ? "" : n).replace(/\s+/g, " ").trim().toLowerCase();
+      if (n === CAMP_NOM) return ms[i];
+      if (n === "camp" && !ancien) ancien = ms[i];
     }
+    if (ancien) return ancien;
     return null;
   }
   // Le panneau a besoin de savoir s'il peut pousser les jetons ou seulement les
@@ -461,6 +472,12 @@
   // la liste brute des contrôleurs. C'est la page servie par le site qui tranche
   // — le jour où Roll20 renomme un de ces globaux (aucun n'est documenté), la
   // réparation est un déploiement, pas une signature.
+  var inventoryFrames = new WeakMap();
+  function inventoryAccess(ch) {
+    if (!ch) return false;
+    var d = droits(ch), ids = d.controlledby.split(",").map(function (v) { return v.trim(); });
+    return d.gm || ids.indexOf("all") >= 0 || (!!d.moi && ids.indexOf(d.moi) >= 0);
+  }
   function droits(ch) {
     var d = { gm: false, moi: "", controlledby: "" };
     try { d.gm = window.is_gm === true; } catch (e) {}
@@ -674,6 +691,20 @@
     s.sur = false; s.echec = false;
   }
 
+  // Les collections locales ne sont pas un abonnement aux autres joueurs.
+  // Le site demande la cadence ; le pont borne les requêtes par personnage.
+  var RESYNC_MIN = 1500, resyncQuand = {};
+  function resynchronise(ch, fini) {
+    if (!ch || !ch.attribs || typeof ch.attribs.fetch !== "function") return false;
+    var n = Date.now();
+    if (n - (resyncQuand[ch.id] || 0) < RESYNC_MIN) return false;
+    resyncQuand[ch.id] = n;
+    try {
+      ch.attribs.fetch({ success: function () { fini(true); }, error: function () { fini(false); } });
+      return true;
+    } catch (e) { return false; }
+  }
+
   // ---------- le ménage des attributs du camp ----------
   // Deux causes, deux remèdes, et la SEULE opération destructrice de ce fichier
   // — donc la plus surveillée.
@@ -882,13 +913,13 @@
       if (d.type === "players") { reply(ev, { type: "players-result", players: players() }); return; }
       // le camp ne dépend d'aucun personnage CONNU du panneau : c'est justement
       // ce qu'il vient demander, donc avant le filtre charId
-      if (d.type === "camp-char") {
+      if (d.type === "camp-char" || d.type === "monde-char") {
         // « pas de camp » et « campagne pas encore chargée » ne se disent pas
         // pareil : au démarrage, characters est vide pendant une seconde ou
         // deux, et annoncer l'absence ferait afficher un écran d'erreur pour
         // rien (même prudence que has-sheet, qui répond exists:null).
         var nc = campChar();
-        var rep = { type: "camp-char-result", pret: !!campaign(), charId: null, nom: "" };
+        var rep = { type: d.type === "monde-char" ? "monde-char-result" : "camp-char-result", monde: 1, pret: !!campaign(), charId: null, nom: "" };
         if (nc) {
           rep.charId = nc.id;
           rep.nom = String((nc.get ? nc.get("name") : "") || "");
@@ -908,6 +939,13 @@
         reply(ev, rep);
         return;
       }
+      if (d.type === "inventory-characters") {
+        var ca = campaign(), cs = ca && ca.characters && ca.characters.models || [];
+        reply(ev, {type: "inventory-characters-result", pret: !!ca, campaignId: ca && ca.id || "partie",
+          characters: cs.filter(function (ch) { return inventoryAccess(ch) && !/^(Camp|Monde)$/i.test(String(ch.get("name") || "")); })
+            .map(function (ch) { return {id: ch.id, name: String(ch.get("name") || "Sans nom")}; })});
+        return;
+      }
       if (!d.charId) return;
       if (d.type === "has-sheet") {
         // perso injoignable (Campaign pas prêt, opener fermé...) : exists:null
@@ -923,6 +961,10 @@
         // première demande de cette frame : elle se lie à ce personnage ; une
         // demande ultérieure pour un autre personnage est refusée (verrou 2).
         if (!lier(ev.source, d.charId)) return;
+        if (d.inventory === true) inventoryFrames.set(ev.source, d.charId);
+        if (inventoryFrames.has(ev.source) && !inventoryAccess(getChar(d.charId))) {
+          reply(ev, {type: "hydrate", charId: d.charId, inventoryAccess: false}); return;
+        }
         // LA LISTE DES PRÉFIXES DU CAMP, envoyée par la page qui les écrit.
         // C'est elle qui rend le ménage possible : sans elle, aMoi() garde tout
         // et rien n'est jamais détruit. On ne retient que des chaînes commençant
@@ -940,7 +982,11 @@
         // toutes les 500 ms, le Campaign peut arriver après nous)
         var chl = getChar(d.charId);
         if (!chl) return;
-        var rl = { type: "hydrate", charId: d.charId, attrs: readAll(d.charId) };
+        var rl = { type: "hydrate", charId: d.charId, attrs: readAll(d.charId), resync: true, collaboration: 1 };
+        if (inventoryFrames.has(ev.source)) {
+          rl.inventoryAccess = true;
+          if (etatAttributs(chl) !== "sur") return;
+        }
         // CE QUE VAUT CETTE LECTURE, dit avec elle. Seul le camp est concerné :
         // pour tout autre personnage la fiche est ouverte, donc les attributs
         // chargés, et rien ne change. Une page servie par un site plus ancien
@@ -963,10 +1009,20 @@
           var _n; for (_n in dernieresEcritures) { if (dernieresEcritures.hasOwnProperty(_n)) { rl.ecrits = dernieresEcritures; break; } }
           dernieresEcritures = {};
         }
+        // Une confirmation collaborative doit venir d'une VRAIE lecture
+        // serveur, jamais du modèle local modifié par un set silencieux.
+        if (d.resync === true && resynchronise(chl, function (ok) {
+          rl.fresh = ok;
+          if (ok) rl.attrs = readAll(d.charId);
+          reply(ev, rl);
+        })) return;
+        rl.fresh = false;
         reply(ev, rl);
       } else if (d.type === "save") {
         if (!liee(ev.source, d.charId)) return;
-        enqueue(d.charId, d.attrs);
+        var inv = inventoryFrames.has(ev.source);
+        if (inv && !inventoryAccess(getChar(d.charId))) return;
+        enqueue(d.charId, d.attrs, inv);
       }
     } catch (e) {}
   }, false);

@@ -30,7 +30,7 @@
 
        CE QUI EST FIGÉ ICI L'EST POUR TOUJOURS, en pratique, et c'est la liste
        entière : le nom du fichier de manifeste, le nom du bloc qu'on y lit
-       (camp), l'id de la racine de montage (camp-panneau, que owd-camp.js
+       (camp), l'id de la racine de montage (monde-panneau, que owd-camp.js
        cherche par cet id — les deux côtés doivent dire le même mot), la classe
        jour/nuit (.night sur <html>), la clé locale du jour/nuit
        (owd-r20-night-camp), le marqueur de feuille (data-owd="1"), la feuille
@@ -43,7 +43,7 @@
   <link rel="stylesheet" href="stylesheets/fonts.css">
 </head>
 <body>
-  <div id="camp-panneau"><noscript>Monde a besoin de JavaScript.</noscript></div>
+  <div id="monde-panneau"><noscript>Monde a besoin de JavaScript.</noscript></div>
   <script>
   // JOUR / NUIT, tout de suite. Cette poignée de lignes doit rester ICI, dans
   // l'amorceur : elle s'exécute AVANT le premier rendu. Passée au camp, qui
@@ -92,7 +92,7 @@
     }
     function valide(m) {
       if (!m || typeof m !== "object") return false;
-      var c = m.camp;
+      var c = m.monde || m.camp;
       return !!c && typeof c === "object" && listeSure(c.js) && listeSure(c.css);
     }
 
@@ -121,7 +121,7 @@
       // Le camp y lit la release publiée, pour la dire dans son pied de
       // panneau. Il n'en dépend pas : sans manifeste, il ne dit rien.
       try { window.__owdManifeste = m; } catch (e) {}
-      var c = (m && m.camp) || DEFAUT;
+      var c = (m && (m.monde || m.camp)) || DEFAUT;
       (c.css || []).forEach(css);
       serie(c.js || []);
     }

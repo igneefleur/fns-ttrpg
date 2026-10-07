@@ -67,6 +67,14 @@ jobs:
       - name: Extension Outward — les deux moitiés
         run: python scripts/build_extension.py --verifie
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Édition collaborative et migrations
+        run: |
+          node scripts/test_sync.js
+          node scripts/test_monde.js
+
       - name: Build
         env:
           NO_MKDOCS_2_WARNING: "1"   # coupe l'encadré promo « MkDocs 2.0 » de Material dans les logs

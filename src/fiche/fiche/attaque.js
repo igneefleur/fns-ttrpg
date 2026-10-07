@@ -4,15 +4,16 @@
   // du livre (DATA.armes[].attaques), dont le trajet et la garde sont dessinés
   // ici. Le clic sur une carte de coup garde le geste du module précédent : il
   // envoie les dégâts dans le tchat.
+  var attaqueVue = { ouverts: Object.create(null), orientation: 0, miroirs: Object.create(null) };
   function buildAttaque() {
     // L'id technique reste « attaque » pour préserver les dispositions déjà
     // sauvegardées ; seul le titre visible du module devient « Armes ».
     var b = block("Armes", null, "attaque", function () { rendre(); });
     var box = el("div", "pc-attaques");
     b.appendChild(box);
-    var ouverts = Object.create(null);   // état d'interface seulement, jamais sauvegardé
-    var orientation = 0;                 // 0 = haut, puis six directions dans le sens horaire
-    var miroirs = Object.create(null);   // par raccourci d'arme : main droite par défaut, gauche en miroir
+    var ouverts = attaqueVue.ouverts;   // état d'interface seulement, jamais sauvegardé
+    var orientation = attaqueVue.orientation;                 // 0 = haut, puis six directions dans le sens horaire
+    var miroirs = attaqueVue.miroirs;   // par raccourci d'arme : main droite par défaut, gauche en miroir
 
     function armesInventaire() {
       var objets = state.inv && Array.isArray(state.inv.objets) ? state.inv.objets : [];
@@ -487,6 +488,7 @@
       selOri.setAttribute("aria-label", "Orientation du personnage");
       selOri.addEventListener("change", function () {
         orientation = Math.max(0, Math.min(5, parseInt(selOri.value, 10) || 0));
+        attaqueVue.orientation = orientation;
         rendre();
       });
       visee.appendChild(selOri);

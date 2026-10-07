@@ -191,7 +191,11 @@
     hooks.push(function () { carrePortrait(0); });
     setTimeout(function () { carrePortrait(0); }, 0);
     // suit les redimensionnements (dialogue Roll20, fenêtre séparée)
-    try { new ResizeObserver(function () { carrePortrait(0); }).observe(idBox); } catch (e) {}
+    try {
+      var observateurPortrait = new ResizeObserver(function () { carrePortrait(0); });
+      observateurPortrait.observe(idBox);
+      remontageNettoyage.push(function () { observateurPortrait.disconnect(); });
+    } catch (e) {}
 
     idBox.appendChild(fld("Nom", textInput(function () { return state.name; },
       function (v) { state.name = v; }, "Nom du personnage"), "c4"));
