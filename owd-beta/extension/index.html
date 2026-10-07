@@ -53,9 +53,9 @@
     
       <link rel="stylesheet" href="../stylesheets/cartes.css?v=24">
     
-      <link rel="stylesheet" href="../stylesheets/owd-fiche.css?v=98">
+      <link rel="stylesheet" href="../stylesheets/owd-fiche.css?v=101">
     
-      <link rel="stylesheet" href="../stylesheets/owd-des3d.css?v=98">
+      <link rel="stylesheet" href="../stylesheets/owd-des3d.css?v=101">
     
     <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -1571,8 +1571,11 @@ montre seulement son inventaire et utilise les mêmes objets que sa fiche :
 plusieurs joueurs peuvent modifier des champs différents en même temps,
 et les autres fenêtres reçoivent les changements automatiquement.
 Le personnage doit déjà posséder une fiche Outward.</p>
-<p>Pour montrer un objet, glissez sa tuile directement dans le chat Roll20.
-Sa carte est envoyée sans retirer l'objet ni changer sa quantité.</p>
+<p>Pour montrer un objet, glissez sa tuile depuis la fiche ou la fenêtre
+Inventaire. Une indication recouvre toute la barre latérale de Roll20 :
+<strong>Déposer pour montrer l’objet dans le chat</strong>. Déposez l'objet dans cette zone.
+Sa carte est envoyée sans retirer l'objet ni changer sa quantité.
+Une fiche ouverte en fenêtre séparée sans barre latérale n'affiche pas cette cible.</p>
 
 
 
@@ -1658,13 +1661,15 @@ Sa carte est envoyée sans retirer l'objet ni changer sa quantité.</p>
       
         <script src="../javascripts/night.js"></script>
       
-        <script src="../javascripts/owd-migrations.js?v=98"></script>
+        <script src="../javascripts/owd-migrations.js?v=101"></script>
       
-        <script src="../javascripts/owd-mods.js?v=98"></script>
+        <script src="../javascripts/owd-mods.js?v=101"></script>
       
-        <script src="../javascripts/owd-des3d.js?v=98"></script>
+        <script src="../javascripts/owd-des3d.js?v=101"></script>
       
-        <script src="../javascripts/owd-fiche.js?v=98"></script>
+        <script src="../javascripts/owd-inventaire-data.js?v=101"></script>
+      
+        <script src="../javascripts/owd-fiche.js?v=101"></script>
       
         <script src="../javascripts/copybtn.js"></script>
       
