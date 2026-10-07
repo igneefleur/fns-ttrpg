@@ -5,7 +5,7 @@
   // fiche du preneur. L'ENCODAGE VIT ICI, CÔTÉ SITE : son format peut évoluer
   // sans jamais re-signer l'extension, qui ne fait que relayer.
   var TAKE_CMD = "/owd_take";
-  var IMG_MAX = 4000;   // une vignette plus lourde ne tient pas dans un message
+  var IMG_MAX = 200000;   // plafond des vignettes envoyées au tchat
   function b64encode(txt) {
     try {
       if (typeof TextEncoder !== "undefined") {
@@ -34,13 +34,14 @@
     var p = {
       n: String(it.nom || ""), q: Math.max(0, pnum(qte)) || 1, p: pnum(it.poids),
       l: pnum(it.places), d: String(it.desc || ""), k: String(it.id || ""),
-      a: pnum(it.achat)
+      a: pnum(it.achat), version: 1, s: champsObjet(it, qte)
     };
     if (it.vente != null) p.v = pnum(it.vente);   // absent : automatique
     if (it.rapide) p.r = 1;
     var img = String(it.img || "");
+    try { if(img && !/^data:/.test(img)) img = new URL(img, window.location.href).href; } catch(e) {}
     if (img && (img.length <= IMG_MAX || !/^data:/.test(img))) p.i = img;
-    return b64encode(JSON.stringify(p));
+    return b64encode(JSON.stringify(p)).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/g,"");
   }
   function unpackObjet(b64) {
     var o;
@@ -68,10 +69,8 @@
       // LE NOM PASSE PAR envSan : sans lui, un nom porteur d'une accolade ou
       // d'un saut de ligne compose une commande que l'extension refuse — et
       // l'objet serait quand même retiré de l'inventaire, donc perdu.
-      var cmd = "&{template:default} {{name=Objet donné — " + (envSan(it.nom) || "objet") + "}}" +
-                (q > 1 ? " {{Quantité=" + fmtP(q) + "}}" : "") +
-                (it.desc ? " {{=" + envSan(it.desc) + "}}" : "") +
-                " {{Prendre=[Prendre](" + TAKE_CMD + " " + packObjet(it, q) + ")}}";
+      var cmd = cmdCarte("OWD Item Give", [["Objet", it.nom || "objet"]].concat(
+        champsObjet(it, q), [["Donner", "[Donner](" + TAKE_CMD + " " + packObjet(it, q) + ")"]]));
       var enRoll20 = typeof window.__owdChat === "function";
       if (enRoll20) envoyer(cmd);
       else flash("Hors de Roll20 : rien n'est envoyé au tchat (l'objet reste dans l'inventaire).");

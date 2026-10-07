@@ -5,7 +5,34 @@ inventaire, panneau Monde et extension Roll20.
 
 Site bêta : https://igneefleur.github.io/fns-ttrpg/owd-beta/
 
-## Version 3.5.1b — aperçu partagé des attaques sur la carte
+## Version 3.6.0b — cartes d’objets dans le tchat
+
+Les messages de l’inventaire utilisent désormais **OWD Item Show** et
+**OWD Item Give**. L’extension les présente avec le cadre, la palette jour/nuit,
+le titre et les boutons des dés d’action : image, nom, quantité, description,
+poids unitaire et total, encombrance, prix d’achat et de vente, puis les données
+propres à l’arme, au vêtement, au sac, à la ceinture ou au contenant.
+
+**Détails** déplie le message Roll20 original. **Montrer** ouvre une vue agrandie
+avec l’image et toutes les informations. **Donner** ouvre la réception du don
+existant (quantité et rangement, comme l’ancien lien Prendre). Aucun don
+supplémentaire ne part au clic : le retrait reste celui du dialogue d’inventaire.
+Le protocole de réception reste compatible, y compris les anciens messages.
+Sans extension, le gabarit Roll20 garde le nom de l’objet et ses champs lisibles.
+
+Les cartes reconnaissent le nom exact du gabarit et un payload versionné.
+Les textes ne sont jamais interprétés comme du HTML. Les images HTTP(S) et les
+vignettes PNG/JPEG/WebP/GIF sont acceptées ; une image absente ou en erreur
+laisse une vignette avec l’initiale de l’objet. Les images importées sont incluses
+jusqu’à 200 000 caractères. Un message invalide conserve son rendu Roll20.
+
+**fns-owd-beta-3.6.0b.zip** devient la base ; le patch s’applique à **3.5.2b**.
+Mettre à jour le site et l’extension de `essai/`, puis recharger Roll20.
+Aucune signature ni publication. Tests : `node scripts/test_item_cards.js`,
+`node scripts/test_item_cards_browser.js` avec Playwright et éventuellement
+`CHROMIUM_EXECUTABLE` ou `TEST_BROWSER=firefox`.
+
+## Version 3.5.2b — aperçu partagé des attaques sur la carte
 
 Survolez un coup dans la fenêtre **Attaques**, avec **un token sélectionné**
 et contrôlé par vous, sur une grille hexagonale visible. Le trajet apparaît
@@ -19,6 +46,11 @@ ciblé sur l’aperçu créé par cette vue ; les événements anciens ne peuven
 retirer un aperçu plus récent. Une présence renouvelée pendant le survol et une
 expiration de huit secondes bornent les aperçus orphelins. Le lecteur s’installe
 même si le client n’a ouvert aucune fiche ni aucun panneau.
+
+Le correctif 3.5.2b accepte les coordonnées Roll20 sous forme de nombres ou de
+texte et conserve la file de rendu des aperçus au-dessus de la carte, avec des
+couleurs entièrement opaques. La régression de 3.5.1b est reproduite dans un
+test Babylon/WebGL réel, puis vérifiée avec le correctif.
 
 La géométrie est adaptée des fonctions de VTTinker de Théo Cavaillès. Jumpgate
 utilise le centre synchronisé du token (le groupe de marqueurs décalé sert
@@ -36,10 +68,15 @@ validation (1 024 étapes, coordonnées entières jusqu’à un million, marqueu
 jusqu’à 20 000 caractères) bornent les données reçues, sans fixer une portée de
 jeu. La taille maximale acceptée par Roll20 reste à mesurer en partie réelle.
 
-**fns-owd-beta-3.5.1b.zip** devient la base des prochains patchs ; le ZIP du
-patch s’applique à **3.5.0b**. Le site ET le nouveau pont de l’extension sont
+**fns-owd-beta-3.5.2b.zip** devient la base des prochains patchs ; le ZIP du
+patch s’applique à **3.5.1b**. Le site ET le nouveau pont de l’extension sont
 nécessaires. Tester avec les paquets non signés de `essai/`, puis recharger la
 partie. Aucun fichier de notes de patch ajouté, aucune signature ni publication.
+
+Test graphique réel : `node scripts/test_attack_webgl.js`, avec Playwright,
+`BABYLON_BUNDLE` pointant vers un `babylon.js` local (testé en 8.45.4), et
+`CHROMIUM_EXECUTABLE`. Il vérifie les pixels des deux contours, les intérieurs
+vides, le centre du token et les coordonnées texte sur une carte simulée.
 
 Contrôles supplémentaires : `node scripts/test_attack_map.js`,
 `node scripts/test_attack_scene.js`, et `node scripts/test_attack_map_browser.js`

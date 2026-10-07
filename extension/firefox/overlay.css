@@ -532,3 +532,21 @@
 .owd-chat-drop-zone:last-child{border-bottom:0}
 .owd-chat-drop-zone.over{background:#ffd77f33}
 .owd-chat-drop-zone[data-action=supprimer].over{background:#b0402c66}
+
+/* Item cards share the dice palette, heading and footer. */
+.owd-item-hero{display:flex;gap:12px;align-items:center;margin:6px 0 10px}
+.owd-item-image{width:80px;height:100px;flex:0 0 80px;position:relative;border:1px solid var(--line-2);border-radius:5px;background:var(--card);overflow:hidden;display:grid;place-items:center}
+.owd-item-image img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.owd-item-placeholder{font-size:28px;color:var(--ink-2)}
+.owd-item-heading{min-width:0}.owd-item-name{font-size:15px;font-weight:700;color:var(--ink);overflow-wrap:anywhere;line-height:1.3}
+.owd-item-kind{font-size:11px;color:var(--ink-2);margin-top:5px}
+.owd-item-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 12px;margin:0;font-size:11px}
+.owd-item-fact{min-width:0}.owd-item-fact dt{font-weight:400;color:var(--ink-2);font-size:10px;margin:0}
+.owd-item-fact dd{margin:1px 0 0;color:var(--ink);overflow-wrap:anywhere;line-height:1.35}
+.owd-item-description{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.45;font-size:12px;margin-top:10px;max-height:7.2em;overflow:auto}
+.owd-item-action{color:var(--or);border-color:var(--or);opacity:1}
+.owd-item-dialog{width:min(540px,calc(100vw - 40px));max-height:85vh;overflow:auto;box-sizing:border-box;padding:16px}
+.owd-item-dialog::backdrop{background:rgba(0,0,0,.65)}
+.owd-item-dialog .owd-item-image{width:150px;height:200px;flex-basis:150px}
+.owd-item-dialog .owd-item-description{max-height:none}.owd-item-dialog>button{margin-top:16px}
+@media(max-width:380px){.owd-item-dialog .owd-item-image{width:100px;height:140px;flex-basis:100px}}

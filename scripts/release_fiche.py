@@ -429,6 +429,9 @@ def main():
     if not lancer("dessin et cycle de vie Jumpgate", ["node", "scripts/test_attack_scene.js"], racine):
         return 1
 
+    if not lancer("cartes d’objets et réception compatible", ["node", "scripts/test_item_cards.js"], racine):
+        return 1
+
     # 2. LE NUMÉRO S'ÉCRIT ICI. Il n'y a rien avant lui qui puisse encore
     # arrêter la publication : la seule épreuve qui devrait le précéder est
     # celle du moteur de migrations, et elle n'existera qu'avec le premier pas

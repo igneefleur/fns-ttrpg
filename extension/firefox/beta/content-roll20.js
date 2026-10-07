@@ -644,6 +644,8 @@ if (typeof browser === "undefined") { var browser = chrome; }
       var a = e.target && (e.target.tagName === "A" ? e.target
               : (e.target.closest ? e.target.closest("a") : null));
       if (!a) return;
+      var show = /^\/owd_item_show\s+([A-Za-z0-9+/=_-]+)$/.exec((a.getAttribute("href") || "").trim());
+      if(show){e.preventDefault();e.stopPropagation();var item=itemData(show[1]);if(item)itemView(item);return;}
       var m = TAKE_RE.exec((a.getAttribute("href") || "").trim());
       if (!m) return;
       e.preventDefault(); e.stopPropagation();
@@ -653,6 +655,60 @@ if (typeof browser === "undefined") { var browser = chrome; }
     }, true);
   }
 
+
+  // ---------- item cards: the same shell as OWD Action Dice ----------
+  var ITEM_MARK='data-owd-item',itemCount=0;
+  function itemData(payload){
+    if(typeof payload!=='string'||payload.length>512000||!/^[A-Za-z0-9+/_=-]+$/.test(payload))return null;
+    try{var bin=atob(payload.replace(/-/g,'+').replace(/_/g,'/')),bytes=new Uint8Array(bin.length);
+      for(var i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+      var p=JSON.parse(typeof TextDecoder!=='undefined'?new TextDecoder('utf-8',{fatal:true}).decode(bytes):decodeURIComponent(escape(bin)));
+      if(!p||p.version!==1||typeof p.n!=='string'||typeof p.d!=='string'||p.n.length>1000||p.d.length>16000||!Number.isFinite(p.q)||p.q<=0||!Array.isArray(p.s)||p.s.length>64)return null;
+      if(!p.s.every(function(f){return Array.isArray(f)&&f.length===2&&typeof f[0]==='string'&&typeof f[1]==='string'&&f[0].length<=120&&f[1].length<=16000;}))return null;
+      return p;
+    }catch(e){return null;}
+  }
+  function itemImageURL(raw){
+    if(typeof raw!=='string'||raw.length>200000)return '';
+    if(/^data:image\/(?:png|jpeg|webp|gif);base64,[a-zA-Z0-9+/=]+$/.test(raw))return raw;
+    try{var u=new URL(raw);return /^https?:$/.test(u.protocol)&&!u.username&&!u.password?u.href:'';}catch(e){return '';}
+  }
+  function itemImage(p){var box=el('div','owd-item-image'),src=itemImageURL(p.i);
+    var empty=el('span','owd-item-placeholder',(p.n||'?').slice(0,1).toUpperCase());box.appendChild(empty);
+    if(src){var im=el('img');im.alt=p.n||'Objet';im.loading='lazy';im.referrerPolicy='no-referrer';im.src=src;
+      im.addEventListener('load',function(){empty.hidden=true;});im.addEventListener('error',function(){im.remove();empty.hidden=false;});box.appendChild(im);}
+    return box;
+  }
+  function itemBody(p){var body=el('div','owd-item-body'),hero=el('div','owd-item-hero');hero.appendChild(itemImage(p));
+    var heading=el('div','owd-item-heading');heading.appendChild(el('div','owd-item-name',p.n||'Objet'));
+    var type=p.s.filter(function(f){return f[0]==='Type'||f[0]==='Contenant'||f[0]==='Contenu';}).map(function(f){return f[1];});
+    if(type.length)heading.appendChild(el('div','owd-item-kind',type.join(' · ')));hero.appendChild(heading);body.appendChild(hero);
+    var facts=el('dl','owd-item-facts');p.s.forEach(function(f){if(!f[0]||f[0]==='Quantité'||f[0]==='Type')return;var row=el('div','owd-item-fact');row.appendChild(el('dt',null,f[0]));row.appendChild(el('dd',null,f[1]));facts.appendChild(row);});body.appendChild(facts);
+    if(p.d)body.appendChild(el('div','owd-item-description',p.d));return body;
+  }
+  function itemView(p){var previous=document.activeElement,dialog=poseNuit(el('dialog','owd-des owd-item-dialog'));
+    var head=el('div','owd-des-tete');head.appendChild(el('span','owd-des-titre','Objet'));head.appendChild(el('span','owd-des-compte','× '+p.q));dialog.appendChild(head);dialog.appendChild(itemBody(p));
+    var close=el('button','owd-des-rejouer','Fermer');close.type='button';close.addEventListener('click',function(){dialog.close();});dialog.appendChild(close);
+    dialog.addEventListener('close',function(){dialog.remove();if(previous&&previous.isConnected)previous.focus();});document.body.appendChild(dialog);dialog.showModal();close.focus();
+  }
+  function itemRhabille(tpl){
+    if(!tpl||tpl.hasAttribute(ITEM_MARK))return !!(tpl&&tpl.hasAttribute(ITEM_MARK));
+    var title=tpl.querySelector('caption, .sheet-template-name');if(!title)return false;
+    var name=norm(title.textContent),give=name==='owd item give';if(!give&&name!=='owd item show')return false;
+    var links=tpl.querySelectorAll('a[href]'),payload='',re=give?TAKE_RE:/^\/owd_item_show\s+([A-Za-z0-9+/=_-]+)$/;
+    for(var i=0;i<links.length;i++){var m=re.exec((links[i].getAttribute('href')||'').trim());if(m){payload=m[1];break;}}
+    var data=itemData(payload);if(!data)return false;
+    tpl.setAttribute(ITEM_MARK,'1');
+    try{var host=el('div','owd-des-hote owd-item-host'),card=poseNuit(el('div','owd-des owd-item'));
+      card.dataset.mode=give?'give':'show';var head=el('div','owd-des-tete');head.appendChild(el('span','owd-des-titre',give?'Objet donné':'Objet montré'));head.appendChild(el('span','owd-des-compte','× '+data.q));card.appendChild(head);card.appendChild(itemBody(data));
+      var foot=el('div','owd-des-pied'),detail=el('button','owd-des-rejouer','Détails'),action=el('button','owd-des-rejouer owd-item-action',give?'Donner':'Montrer');detail.type=action.type='button';
+      var fold=el('div','owd-des-repli');fold.id='owd-item-details-'+(++itemCount);fold.hidden=true;detail.setAttribute('aria-controls',fold.id);detail.setAttribute('aria-expanded','false');
+      detail.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();fold.hidden=!fold.hidden;detail.setAttribute('aria-expanded',String(!fold.hidden));});
+      action.title=give?'Ouvrir le don et choisir la quantité à recevoir':'Voir l’image et les informations de l’objet en grand';
+      action.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();if(give){if(!diffuseTake(payload))toast('Ouvre ta fiche Outward, puis reclique « Donner » pour recevoir cet objet.');}else itemView(data);});
+      foot.appendChild(detail);foot.appendChild(action);card.appendChild(foot);host.appendChild(card);host.appendChild(fold);tpl.parentNode.insertBefore(host,tpl);fold.appendChild(tpl);return true;
+    }catch(e){tpl.removeAttribute(ITEM_MARK);return false;}
+  }
 
   // ---------- les dés d'action : rhabiller le message du tchat ----------
   // Roll20 sait lancer, il ne sait pas présenter. La commande que le joueur
@@ -1139,10 +1195,10 @@ if (typeof browser === "undefined") { var browser = chrome; }
   function desBalaye(racine) {
     if (!racine || !racine.querySelectorAll) return;
     var l = racine.querySelectorAll(".sheet-rolltemplate-default:not([" + DES_MARQUE + "])");
-    for (var i = 0; i < l.length; i++) { desSignaleGabarit(l[i]); desRhabille(l[i]); }
+    for (var i = 0; i < l.length; i++) { if(!itemRhabille(l[i])){desSignaleGabarit(l[i]); desRhabille(l[i]);} }
     // le noeud ajouté PEUT être le gabarit lui-même, pas seulement son parent
     if (racine.classList && racine.classList.contains("sheet-rolltemplate-default")) {
-      desSignaleGabarit(racine); desRhabille(racine);
+      if(!itemRhabille(racine)){desSignaleGabarit(racine); desRhabille(racine);}
     }
   }
 
@@ -1188,6 +1244,10 @@ if (typeof browser === "undefined") { var browser = chrome; }
     try {
       desObs = new MutationObserver(function (muts) {
         for (var i = 0; i < muts.length; i++) {
+          var target=muts[i].target;
+          if(target && target.nodeType===1 && target.closest) {
+            var template=target.closest('.sheet-rolltemplate-default');if(template)desBalaye(template);
+          }
           var aj = muts[i].addedNodes;
           for (var j = 0; j < aj.length; j++) {
             if (aj[j].nodeType === 1) desBalaye(aj[j]);

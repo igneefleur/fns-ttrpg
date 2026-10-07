@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "3.5.1b";
+  var RELEASE = "3.6.0b";
   var SCHEMA = 11;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -6685,7 +6685,7 @@
   // fiche du preneur. L'ENCODAGE VIT ICI, CÔTÉ SITE : son format peut évoluer
   // sans jamais re-signer l'extension, qui ne fait que relayer.
   var TAKE_CMD = "/owd_take";
-  var IMG_MAX = 4000;   // une vignette plus lourde ne tient pas dans un message
+  var IMG_MAX = 200000;   // plafond des vignettes envoyées au tchat
   function b64encode(txt) {
     try {
       if (typeof TextEncoder !== "undefined") {
@@ -6714,13 +6714,14 @@
     var p = {
       n: String(it.nom || ""), q: Math.max(0, pnum(qte)) || 1, p: pnum(it.poids),
       l: pnum(it.places), d: String(it.desc || ""), k: String(it.id || ""),
-      a: pnum(it.achat)
+      a: pnum(it.achat), version: 1, s: champsObjet(it, qte)
     };
     if (it.vente != null) p.v = pnum(it.vente);   // absent : automatique
     if (it.rapide) p.r = 1;
     var img = String(it.img || "");
+    try { if(img && !/^data:/.test(img)) img = new URL(img, window.location.href).href; } catch(e) {}
     if (img && (img.length <= IMG_MAX || !/^data:/.test(img))) p.i = img;
-    return b64encode(JSON.stringify(p));
+    return b64encode(JSON.stringify(p)).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/g,"");
   }
   function unpackObjet(b64) {
     var o;
@@ -6748,10 +6749,8 @@
       // LE NOM PASSE PAR envSan : sans lui, un nom porteur d'une accolade ou
       // d'un saut de ligne compose une commande que l'extension refuse — et
       // l'objet serait quand même retiré de l'inventaire, donc perdu.
-      var cmd = "&{template:default} {{name=Objet donné — " + (envSan(it.nom) || "objet") + "}}" +
-                (q > 1 ? " {{Quantité=" + fmtP(q) + "}}" : "") +
-                (it.desc ? " {{=" + envSan(it.desc) + "}}" : "") +
-                " {{Prendre=[Prendre](" + TAKE_CMD + " " + packObjet(it, q) + ")}}";
+      var cmd = cmdCarte("OWD Item Give", [["Objet", it.nom || "objet"]].concat(
+        champsObjet(it, q), [["Donner", "[Donner](" + TAKE_CMD + " " + packObjet(it, q) + ")"]]));
       var enRoll20 = typeof window.__owdChat === "function";
       if (enRoll20) envoyer(cmd);
       else flash("Hors de Roll20 : rien n'est envoyé au tchat (l'objet reste dans l'inventaire).");
@@ -7077,19 +7076,32 @@
     return casePermise(o, ou);
   }
   function champsObjet(it, q) {
-    return [
-            ["Quantité", fmtP(q) + (q < it.qte ? " (sur " + fmtP(it.qte) + ")" : "")],
-            ["Poids", it.poids ? fmtP(it.poids) + (q > 1 ? " (total " + fmtP(q * it.poids) + ")" : "") : ""],
-            ["Encombrance", it.encombre ? fmtP(it.encombre) + " eb" : ""],
-            ["Volume", it.nourri && it.places ? fmtP(it.places) : ""],
-            ["Valeur", prixVente(it) ? "vente " + fmtP(prixVente(it)) + (it.achat ? " · achat " + fmtP(it.achat) : "")
-                                : (it.achat ? "achat " + fmtP(it.achat) : "")],
-            ["", it.desc]
-          ];
+    var fields = [["Quantité", fmtP(q)], ["Poids", fmtP(it.poids || 0) + (q > 1 ? " (total " + fmtP(q * (it.poids || 0)) + ")" : "")],
+      ["Encombrance", fmtP(it.encombre || 0) + " eb"],
+      ["Achat", fmtP(it.achat || 0) + " " + monnaie(true)], ["Vente", fmtP(prixVente(it)) + " " + monnaie(true)]];
+    function add(k,v){if(v!=null && String(v).trim()!=="")fields.push([k,String(v)]);}
+    if(it.arme){var a=it.arme;add("Type",a.type || "Arme");add("Attaque",a.attaque);add("Dégâts",a.degats);
+      add("Mods dégâts",(a.modsDegats||[]).filter(Boolean).join(" · "));add("Parade",a.parade);add("Réduction",a.reduction);
+      add("Mods parade",(a.modsParade||[]).filter(Boolean).join(" · "));
+      var comp=(state.comps||[]).filter(function(c){return c.id===a.comp;})[0];if(comp)add("Compétence",comp.nom);
+    } else if(it.vet)add("Type",INV_NOMS[it.vet] || it.vet);
+    else if(it.acc)add("Type",INV_NOMS[it.acc] || it.acc);
+    else if(it.sac)add("Type","Sac à dos");else if(it.ceint)add("Type","Ceinture");
+    if(it.contenant)add("Contenant",it.contenant);if(it.contenu)add("Contenu",it.contenu);
+    if(it.nourri){add("Type","Nourriture");add("Volume",fmtP(it.places || 0));}
+    if(it.cap)add("Capacité",fmtP(it.cap)+" eb");if(it.ep)add("Emplacements",fmtP(it.ep)+" (max. "+fmtP(it.ebMax || 0)+" eb)");
+    if(it.poches)add("Poches",fmtP(it.poches)+" eb");if(it.froid)add("Protection froid",fmtP(it.froid));if(it.chaud)add("Protection chaleur",fmtP(it.chaud));
+    ["contondant","perforant","tranchant","feu","froid","eclair","decomposition","ethere","brut"].forEach(function(t){
+      var labels={eclair:"éclair",decomposition:"décomposition",ethere:"éthéré"},label=labels[t]||t;
+      if(it["res_"+t])add("Résistance "+label,fmtP(it["res_"+t])+" %");if(it["prot_"+t])add("Protection "+label,fmtP(it["prot_"+t]));
+    });
+    if(it.rapide)add("Accès rapide","Oui");add("",it.desc);return fields;
   }
-  function montreObjet(ref) {
+  function montreObjet(ref, qte) {
     var it = state && state.inv && state.inv.objets.filter(function (o) { return o.ref === ref; })[0];
-    if (it) sayChat("Objet — " + (it.nom || "objet"), champsObjet(it, it.qte));
+    if (it) {var q=qte==null?it.qte:Math.min(pnum(qte),it.qte);if(!q)return;
+      sayChat("OWD Item Show", [["Objet",it.nom || "objet"]].concat(champsObjet(it,q),
+        [["Montrer","[Montrer](/owd_item_show "+packObjet(it,q)+")"]]));}
   }
   function actionObjet(ref, action) {
     function objet() { return state.inv.objets.filter(function (o) { return o.ref === ref; })[0]; }
@@ -8011,13 +8023,9 @@
 
       var actions = el("div", "pc-obj-actions");
       actions.appendChild(fld("Quantité", actQte, "qact"));
-      var montrer = chatBtn(
-        function () { return "Objet — " + (it.nom || "objet"); },
-        function () {
-          var q = bornerAct();
-          return champsObjet(it, q);
-        });
-      montrer.textContent = "Montrer";
+      var montrer = miniBtn("Montrer", "Montrer cet objet dans le tchat", function () {
+        montreObjet(it.ref, bornerAct());
+      });
       actions.appendChild(montrer);
       actions.appendChild(miniBtn("Donner", "Donner cette quantité à un autre joueur", function () {
         donnerDialogue(it, bornerAct());
