@@ -1,0 +1,11 @@
+html,body{height:100%;margin:0;padding:0;font:14px 'Nunito Sans',sans-serif;background:#e9e7e2;color:#242424}
+html.night,html.night body{background:#000;color:#e6e0d4}
+#inventaire-panneau{height:100%;display:flex;flex-direction:column;min-width:0}
+.inventaire-choix{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid #8c806744;flex:none}
+.inventaire-choix select{flex:1;min-width:0;padding:5px;background:inherit;color:inherit;border:1px solid #8c8067;border-radius:3px;font:inherit}
+.inventaire-choix option{background:#e9e7e2;color:#242424}
+.night .inventaire-choix option{background:#171510;color:#e6e0d4}
+.inventaire-notice{padding:10px 16px;line-height:1.5}
+.inventaire-vue{flex:1;min-height:0;position:relative}
+.inventaire-vue iframe{display:block;width:100%;height:100%;border:0}
+[hidden]{display:none!important}

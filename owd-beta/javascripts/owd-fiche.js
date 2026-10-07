@@ -77,8 +77,8 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "2.23.0b";
-  var SCHEMA = 10;
+  var RELEASE = "3.2.0b";
+  var SCHEMA = 11;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
   // caractéristiques est ouverte mais serrée (20 est la moyenne humaine), un
@@ -735,8 +735,9 @@
 
     // ---- avantages ----
     if (!Array.isArray(s.avantages)) s.avantages = [];
-    s.avantages = s.avantages.filter(function (a) { return a && typeof a === "object"; }).map(function (a) {
+    s.avantages = s.avantages.filter(function (a) { return a && typeof a === "object"; }).map(function (a, index) {
       return {
+        id: String(a.id || ("av-legacy-" + index)),
         nom: String(a.nom == null ? "" : a.nom),
         cout: pnum(a.cout),
         desc: String(a.desc == null ? "" : a.desc)
@@ -2819,6 +2820,7 @@
       }
     });
   }
+  var remontageNettoyage = [];
   var rootEl = null;
   var appEl = null;      // le .perso-fiche monté : porte les jetons de couleur
   // Remplacement d'état COMPLET (import, bibliothèque, nouveau personnage) :
@@ -3387,7 +3389,11 @@
     hooks.push(function () { carrePortrait(0); });
     setTimeout(function () { carrePortrait(0); }, 0);
     // suit les redimensionnements (dialogue Roll20, fenêtre séparée)
-    try { new ResizeObserver(function () { carrePortrait(0); }).observe(idBox); } catch (e) {}
+    try {
+      var observateurPortrait = new ResizeObserver(function () { carrePortrait(0); });
+      observateurPortrait.observe(idBox);
+      remontageNettoyage.push(function () { observateurPortrait.disconnect(); });
+    } catch (e) {}
 
     idBox.appendChild(fld("Nom", textInput(function () { return state.name; },
       function (v) { state.name = v; }, "Nom du personnage"), "c4"));
@@ -3750,10 +3756,11 @@
       if (SQUELETTES[t.id] && panes[t.id]) colonnes[t.id] = SQUELETTES[t.id](panes[t.id]);
     });
     ordreModules().forEach(function (m) {
+      if (panes.inventoryRoot && m.id !== "inv") return;
       // Coupé : pas monté. Ce test passe AVANT celui de l'hôte — un module
       // coupé n'affiche rien parce que le joueur l'a voulu, il n'a pas à porter
       // la mention de ceux qui ne trouvent pas leur place.
-      if (m.id !== MODULE_REGLAGES && !actif(m.id)) return;
+      if (!panes.inventoryRoot && m.id !== MODULE_REGLAGES && !actif(m.id)) return;
       if (!moduleAffichable(m)) return;
       // Onglet ou colonne inconnus : le module est laissé de côté (un mod mal
       // réglé ne doit pas emporter la fiche), mais il est MARQUÉ — sans ce
@@ -3762,7 +3769,7 @@
       // rendrait une méthode d'Object en guise d'hôte, et le montage tomberait
       // sur le premier appendChild.
       var cols = colonnes[m.onglet];
-      var hote = (cols && aClef(cols, m.colonne)) ? cols[m.colonne] : null;
+      var hote = panes.inventoryRoot || ((cols && aClef(cols, m.colonne)) ? cols[m.colonne] : null);
       if (!hote) { etatModule(m.id).vide = true; return; }
       var reg = regModule(m.id);
       var precedent = hooks;
@@ -5025,15 +5032,16 @@
   // du livre (DATA.armes[].attaques), dont le trajet et la garde sont dessinés
   // ici. Le clic sur une carte de coup garde le geste du module précédent : il
   // envoie les dégâts dans le tchat.
+  var attaqueVue = { ouverts: Object.create(null), orientation: 0, miroirs: Object.create(null) };
   function buildAttaque() {
     // L'id technique reste « attaque » pour préserver les dispositions déjà
     // sauvegardées ; seul le titre visible du module devient « Armes ».
     var b = block("Armes", null, "attaque", function () { rendre(); });
     var box = el("div", "pc-attaques");
     b.appendChild(box);
-    var ouverts = Object.create(null);   // état d'interface seulement, jamais sauvegardé
-    var orientation = 0;                 // 0 = haut, puis six directions dans le sens horaire
-    var miroirs = Object.create(null);   // par raccourci d'arme : main droite par défaut, gauche en miroir
+    var ouverts = attaqueVue.ouverts;   // état d'interface seulement, jamais sauvegardé
+    var orientation = attaqueVue.orientation;                 // 0 = haut, puis six directions dans le sens horaire
+    var miroirs = attaqueVue.miroirs;   // par raccourci d'arme : main droite par défaut, gauche en miroir
 
     function armesInventaire() {
       var objets = state.inv && Array.isArray(state.inv.objets) ? state.inv.objets : [];
@@ -5508,6 +5516,7 @@
       selOri.setAttribute("aria-label", "Orientation du personnage");
       selOri.addEventListener("change", function () {
         orientation = Math.max(0, Math.min(5, parseInt(selOri.value, 10) || 0));
+        attaqueVue.orientation = orientation;
         rendre();
       });
       visee.appendChild(selOri);
@@ -5980,6 +5989,7 @@
         if (nuit !== nuitVue) { nuitVue = nuit; bati(); }
       });
       guet.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+      remontageNettoyage.push(function () { guet.disconnect(); });
     }
     // LES DÉS PERDUS au mouvement (foncer coûte des dés d'action) : les
     // derniers de la rangée, de droite à gauche, grisés et hachurés, et qu'on
@@ -6382,6 +6392,7 @@
 
     function carte(t) {
       var card = el("div", "pc-av");
+      card.dataset.syncEntity = t.id;
       var head = el("div", "pc-av-head");
       var nm = el("input", "nm pc-edit-field");
       nm.type = "text"; nm.placeholder = "Nom de la technique"; nm.value = t.nom || "";
@@ -6559,6 +6570,7 @@
       box.innerHTML = "";
       state.avantages.forEach(function (a, i) {
         var card = el("div", "pc-av");
+        card.dataset.syncEntity = a.id;
         var head = el("div", "pc-av-head");
         var n = el("input", "nm pc-edit-field");
         n.type = "text"; n.placeholder = "Nom"; n.value = a.nom || "";
@@ -6592,7 +6604,7 @@
       });
       if (!state.avantages.length) box.appendChild(el("div", "pc-empty", "Aucun avantage."));
       box.appendChild(miniBtn("+ Ajouter un avantage", null, function () {
-        state.avantages.push({ nom: "", cout: 0, desc: "" });
+        state.avantages.push({ id: uid("av"), nom: "", cout: 0, desc: "" });
         rendu();
         refresh();
       }, "pc-edit-only"));
@@ -7054,10 +7066,26 @@
     if (ou === "poches" || ou === "sac") return true;
     return casePermise(o, ou);
   }
+  function champsObjet(it, q) {
+    return [
+            ["Quantité", fmtP(q) + (q < it.qte ? " (sur " + fmtP(it.qte) + ")" : "")],
+            ["Poids", it.poids ? fmtP(it.poids) + (q > 1 ? " (total " + fmtP(q * it.poids) + ")" : "") : ""],
+            ["Encombrance", it.encombre ? fmtP(it.encombre) + " eb" : ""],
+            ["Volume", it.nourri && it.places ? fmtP(it.places) : ""],
+            ["Valeur", prixVente(it) ? "vente " + fmtP(prixVente(it)) + (it.achat ? " · achat " + fmtP(it.achat) : "")
+                                : (it.achat ? "achat " + fmtP(it.achat) : "")],
+            ["", it.desc]
+          ];
+  }
+  function montreObjet(ref) {
+    var it = state && state.inv && state.inv.objets.filter(function (o) { return o.ref === ref; })[0];
+    if (it) sayChat("Objet — " + (it.nom || "objet"), champsObjet(it, it.qte));
+  }
+  var invSelectionLocale = "";
   function invObjets(container, renderRef) {
     var items = state.inv.objets;
     var O = state.inv.opts;
-    var sel = null;          // l'OBJET affiché au panneau
+    var sel = items.filter(function (o) { return o.ref === invSelectionLocale; })[0] || null;          // l'OBJET affiché au panneau
     var drag = null;         // l'objet qu'on glisse
     var panelHooks = [];     // ce que le panneau rafraîchit, vidé à chaque rendu
 
@@ -7264,9 +7292,9 @@
         s.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); sel = occ; render(); });
         s.addEventListener("dragstart", function (e) {
           e.stopPropagation(); drag = occ; s.classList.add("drag");
-          try { e.dataTransfer.setData("text/plain", ""); e.dataTransfer.effectAllowed = "move"; } catch (err) {}
+          try { e.dataTransfer.setData("text/plain", ""); e.dataTransfer.effectAllowed = "move"; if (window.__owdObjetDrag) window.__owdObjetDrag(drag.ref, e.dataTransfer); } catch (err) {}
         });
-        s.addEventListener("dragend", function (e) { e.stopPropagation(); drag = null; render(); });
+        s.addEventListener("dragend", function (e) { e.stopPropagation(); drag = null; if (window.__owdObjetDragFin) window.__owdObjetDragFin(); render(); });
       } else {
         s.appendChild(el("span", "pc-obj-content-ph", "+"));
       }
@@ -7321,9 +7349,9 @@
       t.addEventListener("dragstart", function (e) {
         drag = it;
         t.classList.add("drag");
-        try { e.dataTransfer.setData("text/plain", ""); e.dataTransfer.effectAllowed = "move"; } catch (err) {}
+        try { e.dataTransfer.setData("text/plain", ""); e.dataTransfer.effectAllowed = "move"; if (window.__owdObjetDrag) window.__owdObjetDrag(drag.ref, e.dataTransfer); } catch (err) {}
       });
-      t.addEventListener("dragend", function () { drag = null; render(); });
+      t.addEventListener("dragend", function () { drag = null; if (window.__owdObjetDragFin) window.__owdObjetDragFin(); render(); });
       // dans les poches et le sac, déposer SUR une tuile range avant ou après
       // elle ; dans une case, c'est la case qui reçoit
       if (it.ou === "poches" || it.ou === "sac") {
@@ -7608,6 +7636,8 @@
       // vide et inerte. Le panneau garde ainsi sa forme et sa taille, et l'on
       // voit d'avance ce qu'un objet porte.
       if (sel && items.indexOf(sel) < 0) sel = null;
+      invSelectionLocale = sel ? sel.ref : "";
+      panel.dataset.syncEntity = invSelectionLocale;
       var fantome = !sel;
       panel.classList.toggle("fantome", fantome);
       var types = ["contondant", "perforant", "tranchant", "feu", "froid", "eclair", "decomposition", "ethere", "brut"];
@@ -7960,15 +7990,7 @@
         function () { return "Objet — " + (it.nom || "objet"); },
         function () {
           var q = bornerAct();
-          return [
-            ["Quantité", fmtP(q) + (q < it.qte ? " (sur " + fmtP(it.qte) + ")" : "")],
-            ["Poids", it.poids ? fmtP(it.poids) + (q > 1 ? " (total " + fmtP(q * it.poids) + ")" : "") : ""],
-            ["Encombrance", it.encombre ? fmtP(it.encombre) + " eb" : ""],
-            ["Volume", it.nourri && it.places ? fmtP(it.places) : ""],
-            ["Valeur", prixVente(it) ? "vente " + fmtP(prixVente(it)) + (it.achat ? " · achat " + fmtP(it.achat) : "")
-                                : (it.achat ? "achat " + fmtP(it.achat) : "")],
-            ["", it.desc]
-          ];
+          return champsObjet(it, q);
         });
       montrer.textContent = "Montrer";
       actions.appendChild(montrer);
@@ -8013,9 +8035,11 @@
       wrap.style.setProperty("--inv-h", h + "px");
     }
     window.addEventListener("resize", ajusteHauteur);
+    remontageNettoyage.push(function () { window.removeEventListener("resize", ajusteHauteur); });
     if (window.IntersectionObserver) {
-      new IntersectionObserver(function (e) { if (e[0] && e[0].isIntersecting) ajusteHauteur(); })
-        .observe(wrap);
+      var observateurInventaire = new IntersectionObserver(function (e) { if (e[0] && e[0].isIntersecting) ajusteHauteur(); });
+      observateurInventaire.observe(wrap);
+      remontageNettoyage.push(function () { observateurInventaire.disconnect(); });
     }
     function render() {
       majGroupes = [];
@@ -9633,7 +9657,60 @@
   // La fiche expose UN objet : c'est par là qu'un mod remplace un module,
   // change la disposition ou détourne un calcul. Elle n'exécute rien
   // d'elle-même. window.__owdModules est un ALIAS du MÊME objet.
+  function recoitEtatCollaboratif(s) {
+    if (!s || parseInt(s.v, 10) !== SCHEMA) throw new Error("Schéma distant incompatible : recharger la fiche.");
+    s = normalize(s);
+    if (JSON.stringify(s) === JSON.stringify(state)) return;
+    var actif = document.activeElement, focus = null, positions = [];
+    function signature(c) { return [c.tagName, c.type || "", c.className, c.getAttribute("placeholder") || "", c.getAttribute("aria-label") || ""].join("|"); }
+    function ancre(c) {
+      var a = c.closest("[data-sync-entity], [data-id], [data-module]") || rootEl;
+      var m = a.closest("[data-module]");
+      return { module: m ? m.dataset.module : "",
+        entity: a.dataset ? (a.dataset.syncEntity || a.dataset.id || "") : "", el: a };
+    }
+    if (actif && rootEl && rootEl.contains(actif) && /^(INPUT|TEXTAREA|SELECT)$/.test(actif.tagName)) {
+      var a = ancre(actif), sig = signature(actif);
+      var semblables = Array.prototype.filter.call(a.el.querySelectorAll("input,textarea,select"), function (c) { return signature(c) === sig; });
+      focus = { module: a.module, entity: a.entity, signature: sig, index: semblables.indexOf(actif),
+        value: actif.value, start: actif.selectionStart, end: actif.selectionEnd, direction: actif.selectionDirection, scroll: actif.scrollTop };
+    }
+    var sx = window.scrollX, sy = window.scrollY;
+    Array.prototype.forEach.call(rootEl.querySelectorAll("[data-module]"), function (m) {
+      Array.prototype.forEach.call(m.querySelectorAll("*"), function (n, i) {
+        if (n.scrollTop || n.scrollLeft) positions.push({ module: m.dataset.module, index: i, top: n.scrollTop, left: n.scrollLeft });
+      });
+    });
+    journalTemps = []; effVu = null; effMaxVu = {};
+    state = normalize(s);
+    remount();
+    positions.forEach(function (p) {
+      var m = Array.prototype.find.call(rootEl.querySelectorAll("[data-module]"), function (n) { return n.dataset.module === p.module; });
+      var n = m && m.querySelectorAll("*")[p.index]; if (n) { n.scrollTop = p.top; n.scrollLeft = p.left; }
+    });
+    if (focus) {
+      var scope = rootEl;
+      if (focus.module) scope = Array.prototype.find.call(rootEl.querySelectorAll("[data-module]"), function (n) { return n.dataset.module === focus.module; });
+      if (scope && focus.entity) scope = Array.prototype.find.call(scope.querySelectorAll("[data-sync-entity], [data-id]"), function (n) { return (n.dataset.syncEntity || n.dataset.id) === focus.entity; });
+      if (scope) {
+        var champs = Array.prototype.filter.call(scope.querySelectorAll("input,textarea,select"), function (c) { return signature(c) === focus.signature; });
+        var c = champs[focus.index];
+        if (c && !c.disabled) {
+          c.focus({ preventScroll: true });
+          // Les commandes ± ne sont pas encore dans l'état. Une saisie locale
+          // reste aussi sous les doigts pendant la réception d'autres champs.
+          c.value = focus.value;
+          try { if (focus.start !== null) c.setSelectionRange(focus.start, focus.end, focus.direction); } catch (e) {}
+          c.scrollTop = focus.scroll;
+        }
+      }
+    }
+    window.scrollTo(sx, sy);
+  }
+
   window.Owd = {
+    __recoitEtat: recoitEtatCollaboratif,
+    __montreObjet: montreObjet,
     // Les deux ne se déduisent pas l'un de l'autre : version porte le suffixe
     // de beta le cas échéant, schema est un entier libre. Un mod qui tirerait
     // le schéma du majeur de la version se tromperait à la première
@@ -9749,6 +9826,7 @@
     mount(root);
   }
   function montage(root) {
+    remontageNettoyage.splice(0).forEach(function (f) { try { f(); } catch (e) {} });
     rootEl = root;
     enMontage = true;
     // Tous les registres repartent à vide : les anciens pointent sur un DOM qui
@@ -9793,14 +9871,19 @@
     var app = el("div", "perso-fiche");
     appEl = app;
 
-    buildTop(app);
+    if (!window.__owdVueInventaire) buildTop(app);
     bandeauAvis(app);
     var sheet = el("div", "pc-sheet");
     app.appendChild(sheet);
     root.appendChild(app);
 
-    buildHead(sheet);
-    monteModules(buildTabs(sheet));
+    if (window.__owdVueInventaire) {
+      app.classList.add("pc-inventaire-seul");
+      monteModules({inventoryRoot: sheet});
+    } else {
+      buildHead(sheet);
+      monteModules(buildTabs(sheet));
+    }
     enMontage = false;   // ce qui s'enregistre après (console) vaut pour le montage suivant
     refresh();
   }
