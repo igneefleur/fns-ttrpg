@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Attaques Outward sur Roll20</title>
+  <!-- Entrée stable : les ressources évoluent par le bloc inventaire du manifeste. -->
+  
+  <link rel="stylesheet" href="stylesheets/fonts.css">
+</head>
+<body>
+  <div id="inventaire-panneau" data-view="attaques"><noscript>Attaques a besoin de JavaScript.</noscript></div>
+  <script>
+
+  (function () {
+    "use strict";
+    try {
+      var h = location.hash || "";
+      var p = null;
+
+      try { p = localStorage.getItem("owd-r20-night-inventaire"); } catch (e) {}
+
+      var on = p === "0" ? false
+             : p === "auto" ? (/[#&]n=1/.test(h) ? true : /[#&]n=0/.test(h) ? false
+                 : !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches))
+             : true;
+      document.documentElement.classList.toggle("night", on);
+    } catch (e) {}
+  })();
+  (function () {
+    "use strict";
+
+    var DEFAUT = {
+      js: ["javascripts/owd-inventaire.js"],
+      css: ["stylesheets/owd-inventaire.css"]
+    };
+    var DELAI = 3000;   // un fetch qui PEND ne rejette jamais : on le borne
+
+    function sure(u) {
+      return typeof u === "string" && u &&
+             !/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(u) && u.indexOf("//") !== 0 &&
+             u.indexOf("..") < 0;
+    }
+    function listeSure(l) {
+      return Array.isArray(l) && l.length && l.every(sure);
+    }
+    function valide(m) {
+      if (!m || typeof m !== "object") return false;
+      var c = m.inventaire;
+      return !!c && typeof c === "object" && listeSure(c.js) && listeSure(c.css);
+    }
+
+    function css(u) {
+      var l = document.createElement("link");
+      l.rel = "stylesheet";
+      l.href = u;
+      l.setAttribute("data-owd", "1");
+      document.head.appendChild(l);
+    }
+
+    function serie(urls) {
+      var i = 0;
+      (function suivant() {
+        if (i >= urls.length) return;
+        var s = document.createElement("script");
+        s.src = urls[i++];
+        s.onload = suivant;
+        s.onerror = suivant;   // un manquant ne doit pas geler la file
+        document.body.appendChild(s);
+      })();
+    }
+
+    function lancer(m) {
+
+      try { window.__owdManifeste = m; } catch (e) {}
+      var c = (m && (m.inventaire)) || DEFAUT;
+      (c.css || []).forEach(css);
+      serie(c.js || []);
+    }
+
+    var parti = false;
+    function une(m) {
+      if (parti) return;
+      parti = true;
+
+      lancer(valide(m) ? m : { inventaire: DEFAUT });
+    }
+
+    setTimeout(function () { une(null); }, DELAI);
+    try {
+
+      fetch("owd-manifeste.json?t=" + new Date().getTime(), { cache: "no-store" })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(une, function () { une(null); });
+    } catch (e) { une(null); }
+  })();
+  </script>
+</body>
+</html>

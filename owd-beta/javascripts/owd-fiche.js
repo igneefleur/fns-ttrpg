@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "3.3.0b";
+  var RELEASE = "3.5.0b";
   var SCHEMA = 11;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -3756,7 +3756,7 @@
       if (SQUELETTES[t.id] && panes[t.id]) colonnes[t.id] = SQUELETTES[t.id](panes[t.id]);
     });
     ordreModules().forEach(function (m) {
-      if (panes.inventoryRoot && m.id !== "inv") return;
+      if (panes.inventoryRoot && m.id !== (panes.onlyModule || "inv")) return;
       // Coupé : pas monté. Ce test passe AVANT celui de l'hôte — un module
       // coupé n'affiche rien parce que le joueur l'a voulu, il n'a pas à porter
       // la mention de ceux qui ne trouvent pas leur place.
@@ -5203,7 +5203,7 @@
     // Même géométrie que hooks/armes.py : hexagones à sommet plat, le porteur
     // au centre regardant vers le haut, trois anneaux autour de lui.
     var HX_NS = "http://www.w3.org/2000/svg";
-    var HX_R = 10, HX_SQ3 = Math.sqrt(3), HX_PORTEE = 3;
+    var HX_R = 10, HX_SQ3 = Math.sqrt(3);
     var HX_ANNEAUX = {};
     function svgEl(tag, attrs, txt) {
       var n = document.createElementNS(HX_NS, tag);
@@ -5281,15 +5281,16 @@
     function carteHex(brut, ori, miroir) {
       var etapes = hxEtapes(brut, ori, miroir), parCase = {};
       etapes.forEach(function (e) { parCase[e.q + "," + e.r] = e; });
-      var largeur = HX_R * (1.5 * HX_PORTEE + 1);
-      var hauteur = HX_R * HX_SQ3 * (HX_PORTEE + 0.5);
+      var portee = Math.max(1, etapes.reduce(function (n, e) { return Math.max(n, hxDistance(e.q, e.r)); }, 1));
+      var largeur = HX_R * (1.5 * portee + 1);
+      var hauteur = HX_R * HX_SQ3 * (portee + 0.5);
       var svg = svgEl("svg", {
         "class": "pc-attaque-carte", role: "img",
         "aria-label": "Trajet du coup : " + (brut || ""),
         viewBox: (-largeur).toFixed(1) + " " + (-hauteur).toFixed(1) + " " + (2 * largeur).toFixed(1) + " " + (2 * hauteur).toFixed(1)
       });
-      for (var q = -HX_PORTEE; q <= HX_PORTEE; q++) for (var r = -HX_PORTEE; r <= HX_PORTEE; r++) {
-        if (hxDistance(q, r) > HX_PORTEE) continue;
+      for (var q = -portee; q <= portee; q++) for (var r = -portee; r <= portee; r++) {
+        if (hxDistance(q, r) > portee) continue;
         var centre = hxCentre(q, r), e = parCase[q + "," + r];
         svg.appendChild(svgEl("polygon", {
           "class": e ? (e.role === "frappe" ? "hx-frappe" : "hx-passe") : "hx-vide",
@@ -5359,6 +5360,13 @@
       btn.title = "Envoyer les dégâts dans le tchat";
       btn.addEventListener("click", function () { envoieCoup(entree, it, coup, def); });
       btn.appendChild(carteHex(coup.trajet, orientation, miroir));
+      if (window.__owdVueAttaques && window.__owdAttackPreview) {
+        btn.addEventListener("pointerenter", function () {
+          var path = hxEtapes(coup.trajet, 0, false).map(function (e) { return [e.q,e.r,e.role === "frappe" ? "hit" : "pass"]; });
+          if (path.length) window.__owdAttackPreview({mirror:miroir,orientation:orientation,path:path});
+        });
+        btn.addEventListener("pointerleave", function () { window.__owdAttackPreview(null); });
+      }
 
       var bas = el("div", "pc-attaque-coup-bas");
       var texte = el("div", "pc-attaque-coup-texte");
@@ -5542,6 +5550,7 @@
     }
 
     function rendre() {
+      if (window.__owdVueAttaques && window.__owdAttackPreview) window.__owdAttackPreview(null);
       box.innerHTML = "";
       if (!Array.isArray(state.attaques)) state.attaques = [];
       state.attaques.forEach(function (a) { box.appendChild(carte(a)); });
@@ -5554,6 +5563,7 @@
       }, "pc-edit-only pc-attaque-ajout"));
       applyEdit(b, "attaque");
     }
+    if (window.__owdVueAttaques && window.__owdAttackPreview) remontageNettoyage.push(function () { window.__owdAttackPreview(null); });
     rendre();
     hooks.push(rendre);   // une arme modifiée dans l'inventaire se reflète ici immédiatement
     return b;
@@ -7080,6 +7090,21 @@
   function montreObjet(ref) {
     var it = state && state.inv && state.inv.objets.filter(function (o) { return o.ref === ref; })[0];
     if (it) sayChat("Objet — " + (it.nom || "objet"), champsObjet(it, it.qte));
+  }
+  function actionObjet(ref, action) {
+    function objet() { return state.inv.objets.filter(function (o) { return o.ref === ref; })[0]; }
+    var it = objet(); if (!it) return;
+    if (action === "montrer") { montreObjet(ref); return; }
+    if (action === "donner") { donnerDialogue(it, it.qte); return; }
+    if (action !== "supprimer") return;
+    confirmer("Supprimer un objet", "Supprimer « " + (it.nom || "cet objet") + " » de l'inventaire ?", "Supprimer", function () {
+      var actuel = objet(); if (!actuel) return;
+      if (actuel.contenant) state.inv.objets.forEach(function (o) {
+        if (String(o.dans || "") === String(ref)) { o.dans = ""; o.ou = "sac"; o.emp = -1; }
+      });
+      state.inv.objets.splice(state.inv.objets.indexOf(actuel), 1);
+      refresh(); if (invRender) invRender();
+    });
   }
   var invSelectionLocale = "";
   function invObjets(container, renderRef) {
@@ -9758,6 +9783,7 @@
   window.Owd = {
     __recoitEtat: recoitEtatCollaboratif,
     __montreObjet: montreObjet,
+    __actionObjet: actionObjet,
     __objetsTransfert: objetsTransfert,
     __prepareTransfert: prepareTransfert,
     __importeTransfert: importeTransfert,
@@ -9932,7 +9958,7 @@
 
     if (window.__owdVueInventaire) {
       app.classList.add("pc-inventaire-seul");
-      monteModules({inventoryRoot: sheet});
+      monteModules({inventoryRoot: sheet, onlyModule: window.__owdVueAttaques ? "attaque" : "inv"});
     } else {
       buildHead(sheet);
       monteModules(buildTabs(sheet));

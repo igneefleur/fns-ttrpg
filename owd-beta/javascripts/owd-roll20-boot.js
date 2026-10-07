@@ -62,7 +62,8 @@
 
   // Page ouverte directement dans un onglet (hors Roll20) : rien à hydrater,
   // on oriente le visiteur au lieu d'attendre un pont qui ne répondra jamais.
-  window.__owdVueInventaire = /[#&]view=inventaire(?:&|$)/.test(location.hash || "");
+  window.__owdVueAttaques = /[#&]view=attaques(?:&|$)/.test(location.hash || "");
+  window.__owdVueInventaire = window.__owdVueAttaques || /[#&]view=inventaire(?:&|$)/.test(location.hash || "");
   var objetDrag = null, accesInventaire = true;
   var STANDALONE = (function () { try { return window.top === window; } catch (e) { return false; } })();
 
@@ -1494,7 +1495,7 @@
     else if (d.type === "inventory-drop-chat" && d.charId === CHAR_ID && objetDrag &&
         d.token === objetDrag.token && d.ref === objetDrag.ref && Date.now() - objetDrag.t < 30000) {
       objetDrag = null;
-      if (accesInventaire && window.Owd && window.Owd.__montreObjet) window.Owd.__montreObjet(d.ref);
+      if (accesInventaire && !gele && !inventoryLocked && window.Owd && window.Owd.__actionObjet) window.Owd.__actionObjet(d.ref, d.action || "montrer");
       appliqueDiffere();
     }
     else if (d.type === "take" && d.payload) window.__owdTake(d.payload);
@@ -1526,9 +1527,26 @@
   });
 
   function inventoryParent(msg) {msg.ns='owd';msg.charId=CHAR_ID;try{window.parent.postMessage(msg,'*');}catch(e){}}
-  var externalDrag=null;
+  var externalDrag=null, inventoryLocked=false;
+  var attackOwner = "a" + Date.now().toString(36) + Math.random().toString(36).slice(2), attackSequence = 0, attackPreview = null, attackHeartbeat = null;
+  function sendAttackPreview() {
+    if (!attackPreview || !window.__owdVueAttaques || !ready || gele || !accesInventaire || document.hidden) { window.__owdAttackPreview(null); return; }
+    post({type:"attack-preview",action:"show",owner:attackOwner,sequence:attackSequence,
+      preview:{mirror:attackPreview.mirror,orientation:attackPreview.orientation,path:attackPreview.path,owner:attackOwner,expiresAt:Date.now()+8000}});
+  }
+  window.__owdAttackPreview = function (preview) {
+    if (!window.__owdVueAttaques) return;
+    if (attackHeartbeat) clearInterval(attackHeartbeat); attackHeartbeat=null;
+    var was=attackPreview; attackPreview=preview; attackSequence++;
+    if (preview) { sendAttackPreview(); if(attackPreview) attackHeartbeat=setInterval(sendAttackPreview,1000); }
+    else if (was) post({type:"attack-preview",action:"stop",owner:attackOwner,sequence:attackSequence});
+  };
+  window.addEventListener("pagehide",function(){window.__owdAttackPreview(null);});
+  document.addEventListener("visibilitychange",function(){if(document.hidden)window.__owdAttackPreview(null);});
+
   window.addEventListener('message',function(ev){
     var d=ev.data;if(!window.__owdVueInventaire||!d||d.ns!=='owd'||ev.source!==window.parent)return;
+    if(d.type==='attack-preview-cancel'){window.__owdAttackPreview(null);return;}
     if(d.type==='inventory-external-drag'){externalDrag=d.drag||null;return;}
     if(d.type==='inventory-poll'){post({type:'load',resync:true});if(ready&&!gele)doSave();return;}
     if(d.type!=='inventory-command')return;
@@ -1547,7 +1565,7 @@
         else if(d.action==='commit')reply.value=window.Owd.__confirmeTransfert(d.job);
         else if(d.action==='remove')reply.value=window.Owd.__retireTransfert(d.job);
         else if(d.action==='cancel')reply.value=window.Owd.__annuleTransfert(d.job);
-        else if(d.action==='lock'){document.getElementById('perso-fiche').inert=!!d.lock||!accesInventaire;reply.value=true;}
+        else if(d.action==='lock'){inventoryLocked=!!d.lock;document.getElementById('perso-fiche').inert=!!d.lock||!accesInventaire;reply.value=true;}
         else throw new Error('Commande inconnue.');
         doSave();
       }
