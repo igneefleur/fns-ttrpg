@@ -74,18 +74,18 @@ extra_css:
   # par ces deux listes, Roll20 la charge par le manifeste ; deux clés de cache
   # qui divergent, et les deux mondes font tourner deux codes en croyant faire
   # tourner le même. Un fichier monté d'un seul côté ne se voit pas.
-  - stylesheets/owd-fiche.css?v=101
-  - stylesheets/owd-des3d.css?v=101  # les dés en volume, pris dans l'extension (hooks/des3d.py)
+  - stylesheets/owd-fiche.css?v=103
+  - stylesheets/owd-des3d.css?v=103  # les dés en volume, pris dans l'extension (hooks/des3d.py)
 extra_javascript:
   - javascripts/changelog.js
   - javascripts/continuous.js
   - javascripts/nav-drawer.js
   - javascripts/night.js
-  - javascripts/owd-migrations.js?v=101 # moteur de migration : AVANT le bundle, qui l'appelle
-  - javascripts/owd-mods.js?v=101       # moteur de mods : AVANT la fiche, qui l'interroge (et facultatif de naissance)
-  - javascripts/owd-des3d.js?v=101    # moteur des dés en volume : AVANT la fiche, qui s'en sert
-  - javascripts/owd-inventaire-data.js?v=101
-  - javascripts/owd-fiche.js?v=101
+  - javascripts/owd-migrations.js?v=103 # moteur de migration : AVANT le bundle, qui l'appelle
+  - javascripts/owd-mods.js?v=103       # moteur de mods : AVANT la fiche, qui l'interroge (et facultatif de naissance)
+  - javascripts/owd-des3d.js?v=103    # moteur des dés en volume : AVANT la fiche, qui s'en sert
+  - javascripts/owd-inventaire-data.js?v=103
+  - javascripts/owd-fiche.js?v=103
   - javascripts/copybtn.js
 hooks:
   - hooks/changelog.py

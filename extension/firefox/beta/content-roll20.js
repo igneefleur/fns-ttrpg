@@ -203,7 +203,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
     var s = document.createElement("script");
     s.id = "owd-page-bridge";
     s.src = browser.runtime.getURL("beta/roll20-page.js");     // propre à cette copie
-    s.onload = function () { this.remove(); };   // le listener reste actif, on retire la balise
+    s.onload = function () { this.remove(); var a=document.createElement("script");a.src=browser.runtime.getURL("beta/attack-map.js");a.onload=function(){this.remove();};(document.head||root).appendChild(a); };   // propre à cette copie
     (document.head || root).appendChild(s);
   }
 
@@ -1237,7 +1237,8 @@ if (typeof browser === "undefined") { var browser = chrome; }
   var outils = {}, barreObs = null, panelFront = 100020;
   var OUTILS = [
     {id:'monde',titre:'Monde',page:'roll20-camp.html',cle:'owdPanneau:roll20-camp.html',w:360,h:350,minW:280,minH:320},
-    {id:'inventaire',titre:'Inventaire',page:'roll20-inventaire.html',cle:'owdPanneau:roll20-inventaire.html',w:850,h:650,minW:340,minH:320}
+    {id:'inventaire',titre:'Inventaire',page:'roll20-inventaire.html',cle:'owdPanneau:roll20-inventaire.html',w:850,h:650,minW:340,minH:320},
+    {id:'attaques',titre:'Attaques',page:'roll20-attaques.html',cle:'owdPanneau:roll20-attaques.html',w:620,h:650,minW:340,minH:320}
   ];
   function barreZone(){return document.querySelector('#master-toolbar .upper-buttons')||document.querySelector('#vm-master-toolbar .upper-buttons');}
   function barreRect(){var n=document.getElementById('master-toolbar')||document.getElementById('vm-master-toolbar');return n?n.getBoundingClientRect():null;}
@@ -1256,7 +1257,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
     p.anchor.title=p.etat.ancre?'Détacher':'Ancrer';p.anchor.textContent=p.etat.ancre?'⇲':'⇱';paintButton(p);}
   function remplit(p){if(p.frame)return;p.frame=el('iframe','owd-panneau-frame');p.frame.title=p.def.titre;p.frame.setAttribute('allow','clipboard-write');
     p.frame.src=browser.runtime.getURL('panneau.html')+'#p='+p.def.page+'&n='+(nuitEffective()?'1':'0')+'&m='+MODE;p.body.appendChild(p.frame);}
-  function ouvre(p,on){if(on)p.box.style.zIndex=String(++panelFront);p.etat.ouvert=!!on;applique(p);if(on)remplit(p);range(p);}
+  function ouvre(p,on){if(!on&&p.def.id==='attaques'&&p.frame)p.frame.contentWindow.postMessage({ns:'owd',type:'attack-preview-cancel'},'*');if(on)p.box.style.zIndex=String(++panelFront);p.etat.ouvert=!!on;applique(p);if(on)remplit(p);range(p);}
   function geste(p,e,move){if(e.button!==0)return;e.preventDefault();e.stopPropagation();var target=e.currentTarget,g=geo(p),x=e.clientX,y=e.clientY;
     if(move){p.etat.ancre=false;p.etat.x=g.x;p.etat.y=g.y;}
     var start={x:p.etat.x,y:p.etat.y,w:p.etat.w,h:p.etat.h};p.box.classList.add('owd-panneau-geste');
@@ -1264,7 +1265,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
     function drag(ev){var dx=ev.clientX-x,dy=ev.clientY-y;if(move){p.etat.x=start.x+dx;p.etat.y=start.y+dy;}else{p.etat.w=start.w+dx;p.etat.h=start.h+dy;p.etat.tailleChoisie=true;}applique(p);}
     function end(){target.removeEventListener('pointermove',drag);target.removeEventListener('pointerup',end);target.removeEventListener('pointercancel',end);window.removeEventListener('blur',end);try{target.releasePointerCapture(e.pointerId);}catch(err){}p.box.classList.remove('owd-panneau-geste');range(p);}
     target.addEventListener('pointermove',drag);target.addEventListener('pointerup',end);target.addEventListener('pointercancel',end);window.addEventListener('blur',end);}
-  function monte(p){p.box=poseNuit(el('div','owd-panneau'));p.box.id=p.def.id==='monde'?'owd-panneau':'owd-panneau-inventaire';p.box.setAttribute('role','dialog');p.box.setAttribute('aria-label',p.def.titre);p.box.addEventListener('pointerdown',function(){p.box.style.zIndex=String(++panelFront);});
+  function monte(p){p.box=poseNuit(el('div','owd-panneau'));p.box.id=p.def.id==='monde'?'owd-panneau':'owd-panneau-'+p.def.id;p.box.setAttribute('role','dialog');p.box.setAttribute('aria-label',p.def.titre);p.box.addEventListener('pointerdown',function(){p.box.style.zIndex=String(++panelFront);});
     var head=el('div','owd-panneau-tete');head.appendChild(el('span','owd-panneau-titre',p.def.titre));
     p.anchor=el('button','owd-panneau-btn','⇲');p.anchor.type='button';p.anchor.setAttribute('aria-label','Ancrer ou détacher '+p.def.titre);
     p.anchor.addEventListener('pointerdown',function(e){e.stopPropagation();});p.anchor.addEventListener('click',function(){var g=geo(p);p.etat.x=g.x;p.etat.y=g.y;p.etat.ancre=!p.etat.ancre;applique(p);range(p);});head.appendChild(p.anchor);
@@ -1272,17 +1273,14 @@ if (typeof browser === "undefined") { var browser = chrome; }
     head.addEventListener('pointerdown',function(e){geste(p,e,true);});p.box.appendChild(head);p.body=el('div','owd-panneau-corps');p.box.appendChild(p.body);
     var grip=el('div','owd-panneau-grip');grip.title='Redimensionner '+p.def.titre;grip.setAttribute('role','separator');grip.setAttribute('aria-label',grip.title);grip.tabIndex=0;
     grip.addEventListener('pointerdown',function(e){geste(p,e,false);});grip.addEventListener('keydown',function(e){var d={ArrowRight:[20,0],ArrowLeft:[-20,0],ArrowDown:[0,20],ArrowUp:[0,-20]}[e.key];if(d){e.preventDefault();p.etat.w+=d[0];p.etat.h+=d[1];p.etat.tailleChoisie=true;applique(p);range(p);}});p.box.appendChild(grip);document.body.appendChild(p.box);applique(p);if(p.etat.ouvert)remplit(p);}
-  function icon(id){var ns='http://www.w3.org/2000/svg',s=document.createElementNS(ns,'svg');s.setAttribute('viewBox','0 0 24 24');s.setAttribute('width','18');s.setAttribute('height','18');s.setAttribute('fill','currentColor');s.setAttribute('aria-hidden','true');
-    function node(tag,attrs){var n=document.createElementNS(ns,tag);Object.keys(attrs).forEach(function(k){n.setAttribute(k,attrs[k]);});s.appendChild(n);}
-    if(id==='monde'){node('circle',{cx:12,cy:12,r:7});node('ellipse',{cx:12,cy:12,rx:12,ry:3.7,transform:'rotate(-27 12 12)',fill:'none',stroke:'currentColor','stroke-width':2});}
-    else{node('path',{'fill-rule':'evenodd',d:'M8 5V4a4 4 0 0 1 8 0v1a5 5 0 0 1 4 5v9a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3v-9a5 5 0 0 1 4-5Zm2 0h4V4a2 2 0 0 0-4 0v1Zm-2 9v5h8v-5H8Zm1.5 1.5h5v2h-5v-2Z'});}
-    return s;}
+  var OUTIL_ICONS={"monde": {"viewBox": "0.00099945068359375 0 511.9980163574219 512", "body": "<g>\n\t<g>\n\t\t<path d=\"M437.018,74.982C388.666,26.628,324.379,0,255.998,0S123.332,26.629,74.981,74.982    c-48.351,48.352-74.98,112.639-74.98,181.02s26.628,132.667,74.98,181.019C123.332,485.372,187.618,512,255.998,512    s132.667-26.628,181.02-74.98c48.353-48.351,74.981-112.638,74.981-181.019S485.371,123.334,437.018,74.982z M450.067,178.679    c-9.325,0.717-16.629-1.99-25.878-5.418c-6.35-2.353-13.548-5.021-21.987-6.698c-22.742-4.519-46.069,7.879-59.43,31.587    c-3.891,6.904-22.498,42.451-6.665,64.26c5.936,8.176,13.878,12.937,20.261,16.761c8.564,5.133,17.418,10.44,27.45,14.488    c2.136,0.862,4.251,1.643,6.295,2.397c6.084,2.246,12.376,4.569,14.626,7.65c1.261,1.726,2.577,5.614,1.68,14.325    c-0.601,5.827-2.933,12.186-5.402,18.918c-6.082,16.586-14.413,39.304,5.108,61.608c3.494,3.991,7.437,7.371,11.717,10.122    c-40.615,43.029-98.144,69.93-161.844,69.93c-122.746,0-222.606-99.862-222.606-222.607c0-23.651,3.721-46.447,10.585-67.848    c3.564,5.1,7.588,9.634,11.448,13.697c12.347,12.999,25.996,24.88,40.629,35.356c1.085,0.777,2.63,1.883,3.435,2.607    c0.55,2.459,0.329,6,0.08,10.033c-0.53,8.547-1.257,20.252,5.198,32.569c4.205,8.024,10.092,14.2,15.286,19.65    c5.058,5.307,9.426,9.889,10.647,14.334c0.87,3.168,0.5,7.829,0.107,12.765c-0.54,6.798-1.153,14.505,0.808,22.796    c2.636,11.143,8.927,19.4,14.477,26.685c3.499,4.592,6.804,8.931,8.238,12.903c1.105,3.065,1.552,7.197,2.023,11.571    c0.473,4.385,1.01,9.355,2.32,14.473c3.926,15.336,16.655,30.052,33.831,30.051c0.915,0,1.846-0.042,2.786-0.128    c17.786-1.625,29.999-17.517,31.871-41.477c0.303-3.878,1.101-14.101,3.079-16.356c0.612-0.244,2.103-0.609,3.209-0.879    c4.705-1.152,11.814-2.894,17.688-8.91c10.819-11.08,7.836-24.971,6.053-33.27c-0.536-2.499-1.145-5.333-1.11-6.81    c0.095-3.955,8.196-10.874,11.246-13.479l30.516-26.066c11.881-10.047,16.325-27.524,11.059-43.487    c-3.76-11.396-12.082-21.643-24.069-29.635c-14.789-9.857-30.778-12.384-43.861-6.933c-4.449,1.853-8.046,4.395-10.937,6.438    c-0.875,0.619-2.028,1.434-2.966,2.029c-0.431-0.48-0.928-1.144-1.389-1.99c-1.1-2.018-2.088-4.638-3.135-7.412    c-1.378-3.65-2.94-7.788-5.251-11.953c-12.367-22.285-32.569-24.757-47.319-26.561c-2.521-0.308-4.903-0.6-7.278-0.967    c-12.417-1.921-25.049-7.373-34.746-14.875c3.554-1.278,7.898-2.263,10.236-2.172c1.692,0.056,3.675,0.282,5.777,0.521    c6.023,0.687,13.516,1.54,21.592-0.724c8.153-2.285,14.164-6.98,18.993-10.752c1.378-1.076,2.679-2.093,3.879-2.935    c2.26-1.586,6.657-1.953,11.312-2.342c11.593-0.968,35.716-2.981,39.131-36.524c1.69-16.596-4.372-31.454-9.243-43.393    c-4.051-9.932-7.982-19.79-11.412-29.991c12.285-2.106,24.906-3.219,37.785-3.219c27.634,0,54.101,5.077,78.538,14.32    c-0.732,0.72-1.466,1.439-2.197,2.156c-7.421,7.278-15.095,14.805-20.376,21.642c-2.233,2.891-5.969,7.728-7.071,14.694    c-1.867,11.818,5.2,20.897,8.218,24.773c4.484,5.763,11.992,15.409,24.393,18.502c2.77,0.69,5.444,0.986,8.01,0.986    c9.344,0,17.292-3.913,23.454-6.948c3.548-1.747,7.217-3.554,9.41-3.73c2.088-0.171,5.774,1.044,9.345,2.214    c5.214,1.71,11.123,3.646,18.084,3.899c9.157,0.328,17.278-2.989,23.651-9.252c14.783,18.364,26.715,39.111,35.119,61.571    c-1.19,0.031-2.402,0.048-3.484,0.061C457.818,178.322,454.109,178.369,450.067,178.679z\" />\n\t</g>\n</g>\n"}, "inventaire": {"viewBox": "0 2.093998908996582 294 289.8110046386719", "body": "<g>\n\t<path d=\"M269.775,124.122c-8.732,15.873-25.202,26.783-44.563,26.783H218v11.531v17.793c0,5.566-4.936,10.08-10.502,10.08   c-5.566,0-10.498-4.514-10.498-10.08v-29.324H97v29.324c0,5.566-4.935,10.08-10.499,10.08c-5.566,0-10.501-4.514-10.501-10.08   v-17.793v-11.531h-6.526c-19.361,0-36.172-10.91-44.905-26.783C10.191,130.106,0,144.981,0,162.437v48.557   c0,22.674,17.165,40.912,38.326,40.912c0.001,0-0.326,0-0.326,0v-1.519v-18.481h218v18.481v1.519h0.358   c21.161,0,37.642-18.238,37.642-40.912v-48.557C294,144.982,284.152,130.108,269.775,124.122z\" />\n\t<path d=\"M79.554,291.905h135.578c22.06,0,40.21-18,41.178-40H38.376C39.344,273.905,57.494,291.905,79.554,291.905z\" />\n\t<path d=\"M113.445,35.905H69.474C52.299,35.905,38,49.992,38,67.167v32.184c0,17.175,14.299,31.555,31.474,31.555H76V91.901   c0-5.568,4.935-10.08,10.501-10.08c5.564,0,10.499,4.512,10.499,10.08v39.004h100V91.901c0-5.568,4.932-10.08,10.498-10.08   c5.566,0,10.502,4.512,10.502,10.08v39.004h7.212c17.175,0,30.788-14.38,30.788-31.555V67.167   c0-17.175-13.613-31.262-30.788-31.262H181.24c0-7-2.479-14.459-6.662-20.097c-6.182-8.331-16.089-13.714-27.237-13.714   c-11.147,0-21.053,5.369-27.234,13.699C115.924,21.433,113.445,28.905,113.445,35.905z M161.086,35.905H133.6   c0-7,6.164-13.741,13.741-13.741C154.92,22.164,161.086,28.905,161.086,35.905z\" />\n</g>\n"}, "attaques": {"viewBox": "0.01600027084350586 -0.00006283074617385864 290.19305419921875 290.2250671386719", "body": "<g>\n\t<path d=\"M63.951,243.575c-1.945-3.578-4.401-6.907-7.363-9.869c-3.106-3.102-6.626-5.633-10.4-7.63   c-4.51-2.387-0.945-7.5-0.945-7.5c4.616-7.023,8.825-14.079,12.305-20.226l-23.363-23.344H11.504c-4.362,0-7.898-3.539-7.898-7.902   c0-4.361,3.536-7.9,7.898-7.9h25.947c2.1,0,4.107,0.832,5.588,2.312l85.379,85.291c1.483,1.483,2.315,3.495,2.315,5.589v26.073   c0,4.365-3.537,7.897-7.9,7.897c-4.367,0-7.904-3.531-7.904-7.897v-22.798l-23.27-23.24c-6.281,3.707-13.582,8.252-20.816,13.25   C70.842,245.679,66.698,248.629,63.951,243.575z\" />\n\t<path d=\"M26.61,237.102c-7.106,0-13.784,2.764-18.812,7.784c-5.019,5.015-7.782,11.686-7.782,18.778   c0,7.097,2.764,13.762,7.782,18.776c5.027,5.016,11.706,7.783,18.812,7.785c7.102,0,13.781-2.77,18.804-7.785   c5.023-5.015,7.79-11.682,7.79-18.776c0-7.093-2.768-13.764-7.79-18.778C40.392,239.866,33.712,237.102,26.61,237.102z\" />\n\t<path d=\"M100.985,182.318c-3.502,3.499-9.232,3.499-12.734,0.001l-8.81-8.801c-3.502-3.498-3.502-9.223,0-12.721L229.832,10.564   c3.502-3.498,10.401-6.727,15.33-7.175l36.862-3.352c4.93-0.448,8.596,3.218,8.148,8.148l-3.346,36.791   c-0.448,4.93-3.68,11.825-7.182,15.324l-150.4,150.251c-3.502,3.498-9.232,3.498-12.734,0l-8.822-8.813   c-3.502-3.498-3.502-9.223,0-12.722L233.608,63.213c1.854-1.848,1.856-4.852,0.003-6.702c-1.848-1.853-4.853-1.853-6.709-0.002   L100.985,182.318z\" />\n</g>\n"}};
+  function icon(id){var d=OUTIL_ICONS[id],s=document.createElementNS('http://www.w3.org/2000/svg','svg');s.setAttribute('viewBox',d.viewBox);s.setAttribute('width','18');s.setAttribute('height','18');s.setAttribute('fill','currentColor');s.setAttribute('aria-hidden','true');s.innerHTML=d.body;return s;}
   function barreModele(z){var l=z.querySelectorAll('.toolbar-button-outer');for(var i=0;i<l.length;i++){var n=l[i];if(n.hasAttribute('data-owd-rang')||n.classList.contains('vttk-outil')||(!n.offsetWidth&&!n.offsetHeight))continue;if(n.querySelector('.icon-slot'))return n;}return null;}
   function insert(z,n,rank){n.setAttribute('data-owd-rang',rank);var ours=z.querySelectorAll('[data-owd-rang]'),before=null;
     for(var i=0;i<ours.length;i++)if(Number(ours[i].getAttribute('data-owd-rang'))>rank){before=ours[i];break;}
     if(!before)before=z.querySelector('#more-tools-button');if(before&&before.parentNode===z)z.insertBefore(n,before);else z.appendChild(n);}
   function barrePose(){var z=barreZone();if(!z)return false;var model=barreModele(z);if(!model)return false;
-    if(!document.getElementById('owd-outils-titre')){var sep=z.querySelector('.spacer-outer:has(.spacer-header)')||z.querySelector('.spacer-outer'),n=sep?sep.cloneNode(true):el('div','spacer-outer');n.id='owd-outils-titre';var mot=n.querySelector('.spacer-header');if(!mot){if(!n.firstChild)n.appendChild(el('div','spacer-inner'));mot=el('div','spacer-header');n.appendChild(mot);}mot.textContent='OUTWARD';insert(z,n,0);}
+    if(!document.getElementById('owd-outils-titre')){var sep=z.querySelector('.spacer-outer:has(.spacer-header)')||z.querySelector('.spacer-outer'),n=sep?sep.cloneNode(true):el('div','spacer-outer');n.id='owd-outils-titre';var mot=n.querySelector('.spacer-header');if(!mot){if(!n.firstChild)n.appendChild(el('div','spacer-inner'));mot=el('div','spacer-header');n.appendChild(mot);}mot.textContent='OWD';insert(z,n,0);}
     OUTILS.forEach(function(def,i){var p=outils[def.id];if(!p||document.getElementById('owd-outil-'+def.id))return;var n=model.cloneNode(true);n.id='owd-outil-'+def.id;
       Array.prototype.forEach.call(n.querySelectorAll('[id]'),function(c){c.removeAttribute('id');});var caret=n.querySelector('.submenu-caret');if(caret)caret.remove();var slot=n.querySelector('.icon-slot');slot.classList.remove('icon-selected');slot.style.removeProperty('background-color');
       var ico=n.querySelector('.grimoire__roll20-icon')||slot;ico.textContent='';ico.appendChild(icon(def.id));
@@ -1305,15 +1303,16 @@ if (typeof browser === "undefined") { var browser = chrome; }
   function hideDropHint(){if(dropHint)dropHint.hidden=true;if(dropHintTimer){clearTimeout(dropHintTimer);dropHintTimer=null;}}
   function showDropHint(){var sidebar=document.getElementById('rightsidebar')||document.getElementById('textchat');if(!sidebar)return;
     var r=sidebar.getBoundingClientRect();if(!r.width||!r.height)return;
-    if(!dropHint){dropHint=el('div','owd-chat-drop-hint');dropHint.setAttribute('role','status');dropHint.appendChild(el('span','owd-chat-drop-label','Déposer pour montrer l’objet dans le chat'));document.body.appendChild(dropHint);}
+    if(!dropHint){dropHint=el('div','owd-chat-drop-hint');dropHint.setAttribute('role','status');[['supprimer','Supprimer'],['donner','Donner'],['montrer','Montrer']].forEach(function(a){var zone=el('div','owd-chat-drop-zone');zone.dataset.action=a[0];zone.appendChild(el('span','owd-chat-drop-label',a[1]));dropHint.appendChild(zone);});document.body.appendChild(dropHint);}
     dropHint.hidden=false;dropHint.style.left=r.left+'px';dropHint.style.top=r.top+'px';dropHint.style.width=r.width+'px';dropHint.style.height=r.height+'px';
     if(dropHintTimer)clearTimeout(dropHintTimer);dropHintTimer=setTimeout(hideDropHint,30000);}
   function dragMessage(ev,d){if(d.type==='inventory-drag-start'&&d.token&&d.ref&&d.charId){objetDrag={source:ev.source,token:d.token,ref:d.ref,charId:d.charId,t:Date.now()};showDropHint();return true;}
     if(d.type==='inventory-drag-end'){hideDropHint();var token=d.token;setTimeout(function(){if(objetDrag&&objetDrag.token===token)objetDrag=null;},1500);return true;}return false;}
+  function dropAction(e){var r=dropHint&&dropHint.getBoundingClientRect();if(!r||!r.height)return 'montrer';return ['supprimer','donner','montrer'][Math.max(0,Math.min(2,Math.floor((e.clientY-r.top)*3/r.height)))];}
   function chatDropInit(){
-    function allow(e){if(!chatTarget(e.target)||!dragItem(e))return;e.preventDefault();e.stopImmediatePropagation();e.dataTransfer.dropEffect='copy';showDropHint();}
+    function allow(e){if(!chatTarget(e.target)||!dragItem(e))return;e.preventDefault();e.stopImmediatePropagation();showDropHint();if(!dropHint||dropHint.hidden)return;var action=dropAction(e);e.dataTransfer.dropEffect=action==='montrer'?'copy':'move';Array.prototype.forEach.call(dropHint.children,function(z){z.classList.toggle('over',z.dataset.action===action);});}
     document.addEventListener('dragenter',allow,true);document.addEventListener('dragover',allow,true);
-    document.addEventListener('drop',function(e){hideDropHint();if(!e.isTrusted||!chatTarget(e.target)||!dragItem(e))return;
+    document.addEventListener('drop',function(e){var action=dropAction(e);hideDropHint();if(!e.isTrusted||!chatTarget(e.target)||!dragItem(e))return;
       var raw='',data=null;try{raw=e.dataTransfer.getData(ITEM_MIME);}catch(err){}
       // Firefox expose le type entre origines, mais peut masquer le contenu.
       // L'identité déjà reçue de la fiche permet de confirmer CE drag natif.
@@ -1321,7 +1320,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
       else if(objetDrag&&Date.now()-objetDrag.t<30000)data={token:objetDrag.token,ref:objetDrag.ref,charId:objetDrag.charId};
       if(!data||typeof data.token!=='string'||typeof data.ref!=='string'||typeof data.charId!=='string')return;
       e.preventDefault();e.stopImmediatePropagation();
-      var msg={ns:'owd',type:'inventory-drop-chat',token:data.token,ref:data.ref,charId:data.charId};
+      var msg={ns:'owd',type:'inventory-drop-chat',action:action,token:data.token,ref:data.ref,charId:data.charId};
       if(objetDrag&&objetDrag.token===data.token&&Date.now()-objetDrag.t<30000){try{objetDrag.source.postMessage(msg,'*');}catch(err){}}
       else sheets.forEach(function(w){try{w.postMessage(msg,'*');}catch(err){}});
       // Chaque amorce vérifie le personnage et SON jeton de drag, et le
@@ -1382,10 +1381,10 @@ if (typeof browser === "undefined") { var browser = chrome; }
     // à laisser un intervalle tourner trente secondes pour rien.
     if (IS_EDITEUR) guetteDes();
     if (IS_TOP) {
-      // FRAME DU HAUT : on n'injecte RIEN au chargement (l'injection main-world gêne
-      // l'ouverture des fiches Roll20). On attend que l'utilisateur ouvre l'onglet
-      // Fiche Outward (depuis une fiche déjà ouverte) : il pose alors le pont via
-      // need-bridge. Reçoit aussi les JETS de la fiche -> tchat Roll20 (le tchat vit
+      // FRAME DU HAUT : le pont passif et le lecteur des attaques sont injectés
+      // dans l’éditeur, même sans fiche ouverte, pour recevoir les marqueurs.
+      // Ils n’émettent aucun message spontané ni écriture au démarrage.
+      // need-bridge reste le chemin d’installation des fenêtres de fiche. Reçoit aussi les JETS de la fiche -> tchat Roll20 (le tchat vit
       // dans cette frame, sauf popout : relais vers l'opener).
       window.addEventListener("message", function (ev) {
         try {
@@ -1436,7 +1435,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
       // popout : la barre d'onglets de la fiche vit dans CE document, on y pose l'onglet.
       if (IS_POPOUT) startScan();
       // la partie elle-même (et elle seule) reçoit le panneau et son bouton
-      if (IS_EDITEUR) { panDemarre(); chatDropInit(); }
+      if (IS_EDITEUR) { injectPageScript(); panDemarre(); chatDropInit(); }
     } else {
       startScan();
     }

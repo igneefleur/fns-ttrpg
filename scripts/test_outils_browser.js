@@ -53,7 +53,7 @@ const ia=inv(wa),ib=inv(wb);await ia.locator('[data-module="inv"]').waitFor();aw
  const resized=await a.locator('#owd-panneau-inventaire').boundingBox();assert.ok(resized.width>950);assert.ok(resized.height>700);
  const old=wf(a);await a.locator('#owd-outil-inventaire').click();await a.locator('#owd-outil-inventaire').click();assert.equal(wf(a),old);
  await a.evaluate(()=>{const z=document.querySelector('.upper-buttons');z.innerHTML='<div class="toolbar-button-outer"><button><span class="icon-slot">↗</span></button></div><div class="spacer-outer"></div><div id="more-tools-button">…</div>';});
- await a.locator('#owd-outil-inventaire button').waitFor();assert.equal(await a.locator('#owd-outils-titre').count(),1);assert.equal(await a.locator('[data-owd-rang]').count(),3);
+ await a.locator('#owd-outil-inventaire button').waitFor();assert.equal(await a.locator('#owd-outils-titre').count(),1);assert.equal(await a.locator('[data-owd-rang]').count(),4);
  await a.waitForTimeout(600);const saved=await a.evaluate(()=>JSON.parse(localStorage.getItem('extension-store'))['owdPanneau:roll20-inventaire.html']);assert.ok(saved.w>950&&saved.h>700&&saved.tailleChoisie);
  console.log('OK redimensionnement souris, géométrie conservée, réouverture sans perdre la fiche, remontage des deux barres natives');
  await ia.locator('.pc-obj-tile').filter({hasText:'Pain'}).first().click({position:{x:10,y:10}});await ib.locator('.pc-obj-tile').filter({hasText:'Dague'}).first().click();
@@ -156,6 +156,31 @@ const ia=inv(wa),ib=inv(wb);await ia.locator('[data-module="inv"]').waitFor();aw
  await wa.waitForFunction(()=>!localStorage.getItem('owd-inventaire-transfert:test'));
  console.log('OK destination refusée : source conservée ; reprise après fermeture, aucun doublon');
 
+ // Three native drop actions from detached inventory, and Attacks tabs.
+ assert.equal(await a.locator('#owd-outils-titre').textContent(),'OWD');
+ assert.equal(await a.locator('#owd-outil-attaques svg').count(),1);
+ await a.locator('#owd-outil-attaques').click();
+ let attacks;for(let i=0;i<100;i++){attacks=a.frames().find(f=>f.url().includes('/roll20-attaques.html'));if(attacks&&await attacks.locator('select option').count())break;await a.waitForTimeout(100);}
+ await choose(attacks,'shared');let attackSheet=inv(attacks);await attackSheet.locator('[data-module="attaque"]').waitFor();
+ assert.equal(await attackSheet.locator('[data-module]').count(),1);assert.equal(await attackSheet.locator('.pc-tab').count(),0);
+ await choose(attacks,'other');await inv(attacks).locator('[data-module="attaque"]').waitFor();
+ let changedAttack=C.copy(C.read(states.shared).state);changedAttack.inv.objets.find(o=>o.ref==='o1').arme={attaque:6,degats:16};changedAttack.attaques=[{id:'atk-test',arme:'o1'}];
+ let attackEdit=new C.Session(C.copy(states.shared),changedAttack);attackEdit.capture(changedAttack);Object.assign(states.shared,attackEdit.outgoing());
+ const hiddenAttack=attacks.frameLocator('iframe[data-character="shared"]');
+ await hiddenAttack.locator('.pc-attaque-card').waitFor();assert.ok((await hiddenAttack.locator('.pc-attaque-card').textContent()).includes('Lame'));
+ await choose(attacks,'shared');assert.equal(await attacks.locator('select option[value="shared"]').count(),0);
+ await hiddenAttack.locator('.pc-attaque-tete').click();await hiddenAttack.locator('.pc-attaque-simple').click();await a.waitForTimeout(500);assert.ok(chats[chats.length-1].includes('Lame'));
+ console.log('OK Attaques seul, onglets indépendants, onglet masqué synchronisé et attaque envoyée au chat');
+ await a.locator('#owd-outil-attaques').click();await choose(wa,'shared');
+ async function dropAction(page,sheet,label,index){let tile=sheet.locator('.pc-obj-tile').filter({hasText:label}).first();await tile.scrollIntoViewIfNeeded();let tr=await tile.locator(':scope > .pc-obj-ph').boundingBox(),cr=await page.locator('#rightsidebar').boundingBox();await page.mouse.move(tr.x+10,tr.y+10);await page.mouse.down();await page.mouse.move(tr.x+22,tr.y+10,{steps:5});await page.locator('.owd-chat-drop-hint').waitFor();let zones=await page.locator('.owd-chat-drop-zone').evaluateAll(ns=>ns.map(n=>({t:n.textContent,h:n.getBoundingClientRect().height})));assert.deepEqual(zones.map(z=>z.t),['Supprimer','Donner','Montrer']);assert.ok(zones.every(z=>Math.abs(z.h-cr.height/3)<3));await page.mouse.move(cr.x+80,cr.y+cr.height*(index+.5)/3,{steps:30});await page.mouse.up();await page.waitForTimeout(300);assert.equal(await page.locator('.owd-chat-drop-hint').isVisible(),false);}
+ const beforeActions=chats.length;
+ await dropAction(a,inv(wa),'Pain distant',1);await inv(wa).locator('.pc-modal-title').filter({hasText:'Donner'}).waitFor();
+ await inv(wa).locator('.pc-modal input').fill('1');await inv(wa).locator('.pc-modal-actions button').filter({hasText:'Donner'}).click();
+ await a.waitForTimeout(1000);assert.equal(chats.length,beforeActions+1);assert.ok(chats.at(-1).includes('/owd_take'));
+ for(let i=0;i<80&&C.read(states.shared).state.inv.objets.find(o=>o.nom==='Pain distant').qte!==4;i++)await a.waitForTimeout(100);assert.equal(C.read(states.shared).state.inv.objets.find(o=>o.nom==='Pain distant').qte,4);
+ await dropAction(a,inv(wa),'Pain distant',0);await inv(wa).locator('.pc-modal-title').filter({hasText:'Supprimer'}).waitFor();await inv(wa).locator('.pc-modal-actions button').filter({hasText:'Annuler'}).click();assert.ok(C.read(states.shared).state.inv.objets.some(o=>o.nom==='Pain distant'));
+ await dropAction(a,inv(wa),'Pain distant',0);await inv(wa).locator('.pc-modal-actions button').filter({hasText:'Supprimer'}).click();for(let i=0;i<80&&C.read(states.shared).state.inv.objets.some(o=>o.nom==='Pain distant');i++)await a.waitForTimeout(100);assert.ok(!C.read(states.shared).state.inv.objets.some(o=>o.nom==='Pain distant'));assert.equal(chats.length,beforeActions+1);
+ console.log('OK tiers égaux, Donner avec quantité, Supprimer annulé puis confirmé, aucune carte parasite');
  await a.evaluate(()=>controls.shared='p2');await a.waitForTimeout(3000);assert.equal(await wa.locator('option[value="shared"]').count(),0);
  console.log('OK changement de personnage, état isolé, accès retiré');
  // Empty inventory must never create a sheet through the detached view.

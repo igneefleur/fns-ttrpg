@@ -5,6 +5,64 @@ inventaire, panneau Monde et extension Roll20.
 
 Site bêta : https://igneefleur.github.io/fns-ttrpg/owd-beta/
 
+## Version 3.5.0b — aperçu partagé des attaques sur la carte
+
+Survolez un coup dans la fenêtre **Attaques**, avec **un token sélectionné**
+et contrôlé par vous, sur une grille hexagonale visible. Le trajet apparaît
+sur la carte de tous les clients ayant cette extension : cases touchées plus
+marquées, cases traversées plus transparentes. Le survol n’envoie aucun jet ni
+dégât et ne consomme aucune ressource ; le clic garde son action habituelle.
+
+Le marqueur invisible `owd-atk-v1-…` transporte le trajet normal, le miroir et
+l’orientation en Base64url. Les autres marqueurs sont conservés. Le retrait est
+ciblé sur l’aperçu créé par cette vue ; les événements anciens ne peuvent pas
+retirer un aperçu plus récent. Une présence renouvelée pendant le survol et une
+expiration de huit secondes bornent les aperçus orphelins. Le lecteur s’installe
+même si le client n’a ouvert aucune fiche ni aucun panneau.
+
+La géométrie est adaptée des fonctions de VTTinker de Théo Cavaillès. Jumpgate
+lit le maillage de grille et dessine des hexagones Babylon non sélectionnables
+à la profondeur de la grille. Le moteur historique utilise la géométrie tracée
+par Roll20 et un calque 2D non interactif. Zoom, décalage, déplacement et tailles
+de grille suivent le moteur actif. Les grilles carrées, isométriques, masquées
+ou absentes n’affichent aucun trajet. Sur les hexagones à sommet pointu,
+l’orientation 0 correspond au voisin supérieur gauche ; sur ceux à sommet plat,
+elle correspond au voisin au-dessus, comme les cartes de la fiche.
+
+La portée se déduit des coordonnées : pas de plafond à trois anneaux, et les
+cartes de la fiche s’adaptent également au trajet. Les limites techniques de
+validation (1 024 étapes, coordonnées entières jusqu’à un million, marqueur
+jusqu’à 20 000 caractères) bornent les données reçues, sans fixer une portée de
+jeu. La taille maximale acceptée par Roll20 reste à mesurer en partie réelle.
+
+**fns-owd-beta-3.5.0b.zip** devient la base des prochains patchs ; le ZIP du
+patch s’applique à **3.4.0b**. Le site ET le nouveau pont de l’extension sont
+nécessaires. Tester avec les paquets non signés de `essai/`, puis recharger la
+partie. Aucun fichier de notes de patch ajouté, aucune signature ni publication.
+
+Contrôles supplémentaires : `node scripts/test_attack_map.js`,
+`node scripts/test_attack_scene.js`, et `node scripts/test_attack_map_browser.js`
+avec Playwright et `CHROMIUM_EXECUTABLE` si nécessaire. Le dernier accepte
+`TEST_BROWSER=firefox`. Ces essais utilisent un serveur Roll20 simulé ; le test
+Jumpgate vérifie ses objets de scène simulés et ne remplace pas un essai dans
+une vraie partie Roll20.
+
+## Version 3.4.0b — Attaques et actions de dépôt
+
+La barre **OWD** contient Monde, Inventaire et Attaques, avec les silhouettes
+SVG fournies, recadrées et uniformisées. Attaques utilise le module Armes natif
+avec des onglets par personnage accessible, sans doublon, chargés et
+synchronisés même masqués. Ses onglets et sa fenêtre sont mémorisés séparément.
+
+Le dépôt sur la barre latérale présente trois tiers de hauteur : **Supprimer**,
+**Donner**, **Montrer**. Supprimer demande confirmation ; Donner ouvre le choix
+de quantité existant puis envoie la carte Prendre ; Montrer conserve l’objet.
+Les actions fonctionnent depuis la fiche et l’inventaire détaché.
+
+**fns-owd-beta-3.4.0b.zip** devient la base des prochains patchs. Le ZIP du
+patch s’applique à **3.3.0b**. Aucun fichier de notes ou manifeste de patch
+n’est ajouté. Aucun paquet signé ni publication.
+
 ## Version 3.3.0b — onglets d’inventaire et synchronisation
 
 L’Inventaire de la barre OUTWARD propose des onglets ajoutables et fermables,
@@ -19,7 +77,7 @@ Les transferts attendent les confirmations serveur et conservent un journal
 pour reprendre une opération interrompue. Le drag vers le chat reste actif
 depuis la fiche et la boîte à outils.
 
-Voir [PATCH-3.3.0b.md](PATCH-3.3.0b.md) pour les détails, limites et vérifications.
+
 **fns-owd-beta-3.3.0b.zip** devient la base du prochain patch ; ce patch
 s’applique au projet complet **3.2.1b**. Aucun paquet signé ni publication.
 Pour tester le nouveau pont, charger temporairement les paquets de `essai/`

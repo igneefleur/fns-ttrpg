@@ -1,0 +1,10 @@
+'use strict';
+const assert=require('node:assert/strict'),A=require('../extension/firefox/beta/attack-map.js');
+function lattice(flat,radius,origin){let g={flat,radius,origin},seg=[];for(let q=-8;q<=8;q++)for(let r=-8;r<=8;r++){let p=A.basis(g,q,r),ps=A.polygon({...g,radius:radius/.98},p[0]+origin[0],p[1]+origin[1]);for(let i=0;i<6;i++){let a=ps[i],b=ps[(i+1)%6];seg.push(a[0]<b[0]||a[0]===b[0]&&a[1]<b[1]?[...a,...b]:[...b,...a]);}}return {seg};}
+let d={mirror:false,orientation:0,path:[[0,-1,'pass'],[0,-6,'hit'],[0,-12,'hit']],owner:'owner-1',expiresAt:Date.now()+8000};
+let tag=A.encode(d);assert.ok(tag.startsWith('owd-atk-v1-'));assert.ok(!/[,@=]/.test(tag));assert.deepEqual(A.decode(tag),d);console.log('OK protocole autonome, champs anglais, Base64url sans séparateur Roll20');
+for(let flat of [true,false])for(let scale of [10,40,80]){let g=A.gridFromSegments(lattice(flat,scale,[11,22]));assert.ok(g);assert.equal(g.flat,flat);assert.ok(Math.abs(g.radius-scale)<.001);assert.ok(g.residual<.01);let p=A.anchor(g,11,22);assert.ok(Math.hypot(p[0]-11,p[1]-22)<.001);}console.log('OK géométrie VTTinker : deux types d’hexagones, tailles, phases et alignement');
+for(let m of [true,false])for(let o=0;o<6;o++){let c=A.transform(4,-7,o,m);assert.equal((Math.abs(c[0])+Math.abs(c[1])+Math.abs(c[0]+c[1]))/2,7);}assert.deepEqual(A.transform(2,-3,6,false),[2,-3]);assert.deepEqual(A.transform(2,-3,0,true),[-2,-1]);console.log('OK six rotations et miroir avant rotation, distance conservée');
+assert.deepEqual(A.cells({...d,path:[[0,-6,'pass'],[0,-6,'hit'],[2,-3,'hit']]}),[{q:0,r:-6,type:'hit'},{q:2,r:-3,type:'hit'}]);assert.equal(A.cells(d).at(-1).r,-12);console.log('OK portée 6 et 12, branches, cases répétées : touche prioritaire');
+for(let x of ['owd-atk-v2-AAAA','owd-atk-v1-@@@@','owd-atk-v1-'+Buffer.from('{"path":[]}').toString('base64url'),'red@2'])assert.equal(A.decode(x),null);for(let x of [{...d,orientation:6},{...d,mirror:1},{...d,path:[[NaN,0,'hit']]},{...d,path:[[0,0,'other']]},{...d,path:[[.5,0,'hit']]}])assert.equal(A.encode(x),null);console.log('OK données invalides et versions inconnues ignorées');
+module.exports={lattice};

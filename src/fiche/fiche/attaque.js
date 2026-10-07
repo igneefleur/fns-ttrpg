@@ -175,7 +175,7 @@
     // Même géométrie que hooks/armes.py : hexagones à sommet plat, le porteur
     // au centre regardant vers le haut, trois anneaux autour de lui.
     var HX_NS = "http://www.w3.org/2000/svg";
-    var HX_R = 10, HX_SQ3 = Math.sqrt(3), HX_PORTEE = 3;
+    var HX_R = 10, HX_SQ3 = Math.sqrt(3);
     var HX_ANNEAUX = {};
     function svgEl(tag, attrs, txt) {
       var n = document.createElementNS(HX_NS, tag);
@@ -253,15 +253,16 @@
     function carteHex(brut, ori, miroir) {
       var etapes = hxEtapes(brut, ori, miroir), parCase = {};
       etapes.forEach(function (e) { parCase[e.q + "," + e.r] = e; });
-      var largeur = HX_R * (1.5 * HX_PORTEE + 1);
-      var hauteur = HX_R * HX_SQ3 * (HX_PORTEE + 0.5);
+      var portee = Math.max(1, etapes.reduce(function (n, e) { return Math.max(n, hxDistance(e.q, e.r)); }, 1));
+      var largeur = HX_R * (1.5 * portee + 1);
+      var hauteur = HX_R * HX_SQ3 * (portee + 0.5);
       var svg = svgEl("svg", {
         "class": "pc-attaque-carte", role: "img",
         "aria-label": "Trajet du coup : " + (brut || ""),
         viewBox: (-largeur).toFixed(1) + " " + (-hauteur).toFixed(1) + " " + (2 * largeur).toFixed(1) + " " + (2 * hauteur).toFixed(1)
       });
-      for (var q = -HX_PORTEE; q <= HX_PORTEE; q++) for (var r = -HX_PORTEE; r <= HX_PORTEE; r++) {
-        if (hxDistance(q, r) > HX_PORTEE) continue;
+      for (var q = -portee; q <= portee; q++) for (var r = -portee; r <= portee; r++) {
+        if (hxDistance(q, r) > portee) continue;
         var centre = hxCentre(q, r), e = parCase[q + "," + r];
         svg.appendChild(svgEl("polygon", {
           "class": e ? (e.role === "frappe" ? "hx-frappe" : "hx-passe") : "hx-vide",
@@ -331,6 +332,13 @@
       btn.title = "Envoyer les dégâts dans le tchat";
       btn.addEventListener("click", function () { envoieCoup(entree, it, coup, def); });
       btn.appendChild(carteHex(coup.trajet, orientation, miroir));
+      if (window.__owdVueAttaques && window.__owdAttackPreview) {
+        btn.addEventListener("pointerenter", function () {
+          var path = hxEtapes(coup.trajet, 0, false).map(function (e) { return [e.q,e.r,e.role === "frappe" ? "hit" : "pass"]; });
+          if (path.length) window.__owdAttackPreview({mirror:miroir,orientation:orientation,path:path});
+        });
+        btn.addEventListener("pointerleave", function () { window.__owdAttackPreview(null); });
+      }
 
       var bas = el("div", "pc-attaque-coup-bas");
       var texte = el("div", "pc-attaque-coup-texte");
@@ -514,6 +522,7 @@
     }
 
     function rendre() {
+      if (window.__owdVueAttaques && window.__owdAttackPreview) window.__owdAttackPreview(null);
       box.innerHTML = "";
       if (!Array.isArray(state.attaques)) state.attaques = [];
       state.attaques.forEach(function (a) { box.appendChild(carte(a)); });
@@ -526,6 +535,7 @@
       }, "pc-edit-only pc-attaque-ajout"));
       applyEdit(b, "attaque");
     }
+    if (window.__owdVueAttaques && window.__owdAttackPreview) remontageNettoyage.push(function () { window.__owdAttackPreview(null); });
     rendre();
     hooks.push(rendre);   // une arme modifiée dans l'inventaire se reflète ici immédiatement
     return b;

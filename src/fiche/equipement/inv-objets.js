@@ -59,6 +59,21 @@
     var it = state && state.inv && state.inv.objets.filter(function (o) { return o.ref === ref; })[0];
     if (it) sayChat("Objet — " + (it.nom || "objet"), champsObjet(it, it.qte));
   }
+  function actionObjet(ref, action) {
+    function objet() { return state.inv.objets.filter(function (o) { return o.ref === ref; })[0]; }
+    var it = objet(); if (!it) return;
+    if (action === "montrer") { montreObjet(ref); return; }
+    if (action === "donner") { donnerDialogue(it, it.qte); return; }
+    if (action !== "supprimer") return;
+    confirmer("Supprimer un objet", "Supprimer « " + (it.nom || "cet objet") + " » de l'inventaire ?", "Supprimer", function () {
+      var actuel = objet(); if (!actuel) return;
+      if (actuel.contenant) state.inv.objets.forEach(function (o) {
+        if (String(o.dans || "") === String(ref)) { o.dans = ""; o.ou = "sac"; o.emp = -1; }
+      });
+      state.inv.objets.splice(state.inv.objets.indexOf(actuel), 1);
+      refresh(); if (invRender) invRender();
+    });
+  }
   var invSelectionLocale = "";
   function invObjets(container, renderRef) {
     var items = state.inv.objets;

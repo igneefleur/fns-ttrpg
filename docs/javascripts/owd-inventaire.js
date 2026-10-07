@@ -3,8 +3,9 @@
 (function () {
   'use strict';
   var root=document.getElementById('inventaire-panneau'),D=window.OwdInventoryData;
+  var attacks=root.dataset.view==='attaques',kind=attacks?'attaques':'inventaire',title=attacks?'Attaques':'Inventaire';
   var tabs=[],frames={},characters=[],active='',campaign='',ready=false,seq=0,rpcs={},drag=null,hover=null,job=null,running=false,retry=null;
-  var bar=document.createElement('div');bar.className='inventaire-onglets';bar.setAttribute('role','tablist');bar.setAttribute('aria-label','Inventaires ouverts');
+  var bar=document.createElement('div');bar.className='inventaire-onglets';bar.setAttribute('role','tablist');bar.setAttribute('aria-label',attacks?'Attaques ouvertes':'Inventaires ouverts');
   var plus=document.createElement('button');plus.type='button';plus.className='inventaire-ajouter';plus.textContent='+';plus.setAttribute('aria-label','Ajouter un onglet');
   var notice=document.createElement('p');notice.className='inventaire-notice';notice.setAttribute('role','status');
   var view=document.createElement('div');view.className='inventaire-vue';view.id='inventaire-contenu';
@@ -12,7 +13,7 @@
   var select=document.createElement('select');select.setAttribute('aria-label','Personnage du nouvel onglet');picker.appendChild(select);view.appendChild(picker);root.replaceChildren(bar,notice,view);
   function post(d){d.ns='owd';try{window.top.postMessage(d,'*');}catch(e){}}
   function send(f,d){d.ns='owd';try{f.node.contentWindow.postMessage(d,'*');}catch(e){}}
-  function key(s){return 'owd-inventaire-'+s+':'+campaign;}
+  function key(s){return 'owd-'+kind+'-'+s+':'+campaign;}
   function available(id){return characters.some(function(c){return c.id===id;});}
   function name(id){var c=characters.filter(function(c){return c.id===id;})[0];return c?c.name:'Personnage inaccessible';}
   function assigned(id){return tabs.some(function(t){return t.id===id;});}
@@ -21,7 +22,7 @@
   function persistJob(){localStorage.setItem(key('transfert'),JSON.stringify(job));if(localStorage.getItem(key('transfert'))!==JSON.stringify(job))throw Error('Impossible de conserver le transfert pour sa reprise.');}
   function newTab(id){var t={key:'tab-'+(++seq),id:id||''};tabs.push(t);if(id)ensure(id);return t;}
   function ensure(id){if(frames[id]){frames[id].closing=false;return frames[id];}
-    var n=document.createElement('iframe');n.title='Inventaire — '+name(id);n.dataset.character=id;n.className='inventaire-frame';n.src='roll20-fiche.html#c='+encodeURIComponent(id)+'&view=inventaire&n='+(document.documentElement.classList.contains('night')?'1':'0');
+    var n=document.createElement('iframe');n.title=title+' — '+name(id);n.dataset.character=id;n.className='inventaire-frame';n.src='roll20-fiche.html#c='+encodeURIComponent(id)+'&view='+kind+'&n='+(document.documentElement.classList.contains('night')?'1':'0');
     var f={node:n,id:id,closing:false,disposing:false};frames[id]=f;view.appendChild(n);n.addEventListener('load',function(){if(drag)send(f,{type:'inventory-external-drag',drag:drag});});return f;
   }
   function activate(t){if(!t)return;active=t.key;render();saveTabs();}
@@ -34,7 +35,7 @@
       box.addEventListener('dragenter',over);box.addEventListener('dragover',over);box.addEventListener('dragleave',function(e){if(!box.contains(e.relatedTarget))clearHover();});box.append(b,close);bar.appendChild(box);
     });
     var candidates=characters.filter(function(c){return !assigned(c.id);});plus.disabled=!candidates.length;bar.appendChild(plus);
-    var current=tab(active);Object.keys(frames).forEach(function(id){var f=frames[id],visible=current&&current.id===id&&available(id);f.node.classList.toggle('inventaire-active',!!visible);f.node.setAttribute('aria-hidden',String(!visible));f.node.inert=!visible;});
+    var current=tab(active);Object.keys(frames).forEach(function(id){var f=frames[id],visible=current&&current.id===id&&available(id);if(attacks&&!visible)send(f,{type:'attack-preview-cancel'});f.node.classList.toggle('inventaire-active',!!visible);f.node.setAttribute('aria-hidden',String(!visible));f.node.inert=!visible;});
     picker.hidden=!!(current&&current.id);select.replaceChildren();var o=document.createElement('option');o.value='';o.textContent=candidates.length?'Choisir un personnage…':'Tous les personnages accessibles ont déjà un onglet';select.appendChild(o);candidates.forEach(function(c){var o=document.createElement('option');o.value=c.id;o.textContent=c.name;select.appendChild(o);});select.disabled=!candidates.length;
     if(!job){notice.textContent=current&&current.id&&!available(current.id)?'Vous n’avez plus accès à ce personnage. Les écritures sont bloquées.':!characters.length?'Aucun personnage contrôlé. Le MJ peut vous donner accès à un personnage dans Roll20.':'';notice.hidden=!notice.textContent;}
   }
@@ -80,24 +81,25 @@
     if(f){
       if(d.charId!==f.id)return;
       if(d.type==='inventory-result'){var q=rpcs[d.request];if(q&&q.frame===f){clearTimeout(q.timer);delete rpcs[d.request];if(d.error)q.reject(Error(d.error));else q.resolve(d.value);}return;}
-      if(d.type==='inventory-drag-start'&&!job){clearTimeout(retry);endDrag();drag={charId:f.id,ref:d.ref,token:d.token};Object.keys(frames).forEach(function(id){send(frames[id],{type:'inventory-external-drag',drag:drag});});return;}
+      if(!attacks&&d.type==='inventory-drag-start'&&!job){clearTimeout(retry);endDrag();drag={charId:f.id,ref:d.ref,token:d.token};Object.keys(frames).forEach(function(id){send(frames[id],{type:'inventory-external-drag',drag:drag});});return;}
       if(d.type==='inventory-drag-end'){clearHover();var token=d.token;setTimeout(function(){if(drag&&(!token||token===drag.token))endDrag();},400);return;}
       if(d.type==='inventory-tab-drop'&&drag&&d.drag&&d.drag.token===drag.token&&d.drag.charId===drag.charId&&d.drag.ref===drag.ref){var source=drag.charId,ref=drag.ref;endDrag();transfer(source,f.id,ref);return;}
     }
+    if(d.type==='attack-preview-cancel'&&(ev.source===window.parent||ev.source===window.top)){Object.keys(frames).forEach(function(id){send(frames[id],d);});return;}
     if(d.type==='panel-theme'&&(ev.source===window.parent||ev.source===window.top)){document.documentElement.classList.toggle('night',!!d.nuit);Object.keys(frames).forEach(function(id){send(frames[id],d);});return;}
     if(d.type!=='inventory-characters-result'||ev.source!==window.top)return;
     if(!d.pret){if(!ready)status('Chargement des personnages…');return;}
     if(campaign&&campaign!==d.campaignId){location.reload();return;}
     var before=JSON.stringify(characters);campaign=d.campaignId;characters=(d.characters||[]).slice().sort(function(a,b){return a.name.localeCompare(b.name,'fr');});
     if(!ready){ready=true;var saved;try{saved=JSON.parse(localStorage.getItem(key('onglets'))||'null');job=JSON.parse(localStorage.getItem(key('transfert'))||'null');}catch(e){status('Préférences d’onglets illisibles.');}
-      var ids=saved&&saved.tabs||[];if(!ids.length){try{var old=localStorage.getItem('owd-inventaire-personnage:'+campaign);if(available(old))ids=[old];}catch(e){}}
+      var ids=saved&&saved.tabs||[];if(!ids.length){try{var old=attacks?null:localStorage.getItem('owd-inventaire-personnage:'+campaign);if(available(old))ids=[old];}catch(e){}}
       ids.forEach(function(id){if(available(id)&&!assigned(id))newTab(id);});
       if(job&&job.source&&job.target&&job.items&&job.dest){[job.source,job.target].forEach(function(id){if(!assigned(id))newTab(id);});}else job=null;
       if(!tabs.length)newTab();var last=tabs.filter(function(t){return saved&&t.id===saved.active;})[0];active=(last||tabs[0]).key;render();if(job)run();
     }else if(before!==JSON.stringify(characters))render();
   });
   notice.textContent='Chargement des personnages…';
-  post({type:'panneau',panel:'inventaire',titre:'Inventaire',nuit:document.documentElement.classList.contains('night'),w:850,h:650});
+  post({type:'panneau',panel:kind,titre:title,nuit:document.documentElement.classList.contains('night'),w:850,h:650});
   function discovery(){if(!ready)post({type:'need-bridge'});post({type:'inventory-characters'});}discovery();setInterval(discovery,2000);
   setInterval(function(){schedulePoll();Object.keys(frames).forEach(function(id){var f=frames[id];if(!f.closing||f.disposing)return;f.disposing=true;rpc(id,'status').then(function(s){if(f.closing&&fresh(s)&&s.pending===0){f.node.remove();delete frames[id];}}).catch(function(){}).finally(function(){f.disposing=false;});});},1200);
 })();

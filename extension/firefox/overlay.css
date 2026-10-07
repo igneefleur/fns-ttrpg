@@ -524,6 +524,11 @@
 
 /* Indication de dépôt sur TOUT #rightsidebar, cible de dépôt sans
    toucher au positionnement des panneaux natifs de Roll20. */
-.owd-chat-drop-hint{position:fixed;z-index:2147483646;pointer-events:auto;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:18px;border:3px dashed #ffd77f;border-radius:5px;background:rgba(18,16,12,.78);color:#ffd77f;text-align:center;font:700 15px/1.45 'Proxima Nova','Nunito Sans',sans-serif}
+.owd-chat-drop-hint{position:fixed;z-index:2147483646;pointer-events:auto;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:0;flex-direction:column;border:3px dashed #ffd77f;border-radius:5px;background:rgba(18,16,12,.78);color:#ffd77f;text-align:center;font:700 15px/1.45 'Proxima Nova','Nunito Sans',sans-serif}
 .owd-chat-drop-hint[hidden]{display:none!important}
 .owd-chat-drop-label{padding:14px 18px;background:#171510;border:1px solid #ffd77f;border-radius:5px;box-shadow:0 3px 16px #0006}
+
+.owd-chat-drop-zone{flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center;box-sizing:border-box;border-bottom:1px dashed #ffd77f}
+.owd-chat-drop-zone:last-child{border-bottom:0}
+.owd-chat-drop-zone.over{background:#ffd77f33}
+.owd-chat-drop-zone[data-action=supprimer].over{background:#b0402c66}

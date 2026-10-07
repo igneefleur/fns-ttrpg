@@ -94,7 +94,7 @@
 
     if (window.__owdVueInventaire) {
       app.classList.add("pc-inventaire-seul");
-      monteModules({inventoryRoot: sheet});
+      monteModules({inventoryRoot: sheet, onlyModule: window.__owdVueAttaques ? "attaque" : "inv"});
     } else {
       buildHead(sheet);
       monteModules(buildTabs(sheet));

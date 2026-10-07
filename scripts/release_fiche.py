@@ -423,6 +423,12 @@ def main():
     else:
         print("  numéro : %s -> %s (%s)" % (release, cible.texte(), cran or "imposé"))
 
+    # The map protocol and both hex-grid geometries must remain compatible.
+    if not lancer("aperçus d’attaque", ["node", "scripts/test_attack_map.js"], racine):
+        return 1
+    if not lancer("dessin et cycle de vie Jumpgate", ["node", "scripts/test_attack_scene.js"], racine):
+        return 1
+
     # 2. LE NUMÉRO S'ÉCRIT ICI. Il n'y a rien avant lui qui puisse encore
     # arrêter la publication : la seule épreuve qui devrait le précéder est
     # celle du moteur de migrations, et elle n'existera qu'avec le premier pas

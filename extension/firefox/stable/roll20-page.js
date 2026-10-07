@@ -974,6 +974,11 @@
         return;
       }
       if (!d.charId) return;
+      if (d.type === "attack-preview") {
+        if (!liee(ev.source,d.charId)||!inventoryFrames.has(ev.source)||!inventoryAccess(getChar(d.charId))) return;
+        if (window.OwdAttackMap) window.OwdAttackMap.preview(ev.source,d);
+        return;
+      }
       if (d.type === "has-sheet") {
         // perso injoignable (Campaign pas prêt, opener fermé...) : exists:null
         // (« Roll20 n'a pas répondu ») — surtout pas false, qui proposerait de

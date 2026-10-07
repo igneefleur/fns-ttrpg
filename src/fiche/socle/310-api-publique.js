@@ -56,6 +56,7 @@
   window.Owd = {
     __recoitEtat: recoitEtatCollaboratif,
     __montreObjet: montreObjet,
+    __actionObjet: actionObjet,
     __objetsTransfert: objetsTransfert,
     __prepareTransfert: prepareTransfert,
     __importeTransfert: importeTransfert,

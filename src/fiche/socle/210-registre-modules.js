@@ -163,7 +163,7 @@
       if (SQUELETTES[t.id] && panes[t.id]) colonnes[t.id] = SQUELETTES[t.id](panes[t.id]);
     });
     ordreModules().forEach(function (m) {
-      if (panes.inventoryRoot && m.id !== "inv") return;
+      if (panes.inventoryRoot && m.id !== (panes.onlyModule || "inv")) return;
       // Coupé : pas monté. Ce test passe AVANT celui de l'hôte — un module
       // coupé n'affiche rien parce que le joueur l'a voulu, il n'a pas à porter
       // la mention de ceux qui ne trouvent pas leur place.
