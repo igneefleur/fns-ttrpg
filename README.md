@@ -5,12 +5,12 @@ inventaire, panneau Monde et extension Roll20.
 
 Site bêta : https://igneefleur.github.io/fns-ttrpg/owd-beta/
 
-## Version 3.5.0b — aperçu partagé des attaques sur la carte
+## Version 3.5.1b — aperçu partagé des attaques sur la carte
 
 Survolez un coup dans la fenêtre **Attaques**, avec **un token sélectionné**
 et contrôlé par vous, sur une grille hexagonale visible. Le trajet apparaît
-sur la carte de tous les clients ayant cette extension : cases touchées plus
-marquées, cases traversées plus transparentes. Le survol n’envoie aucun jet ni
+sur la carte de tous les clients ayant cette extension : contours opaques dorés pour les touches et dorés atténués pour les passages,
+avec des intérieurs vides. Les teintes reprennent la légende nocturne de la fiche. Le survol n’envoie aucun jet ni
 dégât et ne consomme aucune ressource ; le clic garde son action habituelle.
 
 Le marqueur invisible `owd-atk-v1-…` transporte le trajet normal, le miroir et
@@ -21,7 +21,8 @@ expiration de huit secondes bornent les aperçus orphelins. Le lecteur s’insta
 même si le client n’a ouvert aucune fiche ni aucun panneau.
 
 La géométrie est adaptée des fonctions de VTTinker de Théo Cavaillès. Jumpgate
-lit le maillage de grille et dessine des hexagones Babylon non sélectionnables
+utilise le centre synchronisé du token (le groupe de marqueurs décalé sert
+uniquement à vérifier sa visibilité), lit le maillage de grille et dessine des hexagones Babylon non sélectionnables
 à la profondeur de la grille. Le moteur historique utilise la géométrie tracée
 par Roll20 et un calque 2D non interactif. Zoom, décalage, déplacement et tailles
 de grille suivent le moteur actif. Les grilles carrées, isométriques, masquées
@@ -35,8 +36,8 @@ validation (1 024 étapes, coordonnées entières jusqu’à un million, marqueu
 jusqu’à 20 000 caractères) bornent les données reçues, sans fixer une portée de
 jeu. La taille maximale acceptée par Roll20 reste à mesurer en partie réelle.
 
-**fns-owd-beta-3.5.0b.zip** devient la base des prochains patchs ; le ZIP du
-patch s’applique à **3.4.0b**. Le site ET le nouveau pont de l’extension sont
+**fns-owd-beta-3.5.1b.zip** devient la base des prochains patchs ; le ZIP du
+patch s’applique à **3.5.0b**. Le site ET le nouveau pont de l’extension sont
 nécessaires. Tester avec les paquets non signés de `essai/`, puis recharger la
 partie. Aucun fichier de notes de patch ajouté, aucune signature ni publication.
 
