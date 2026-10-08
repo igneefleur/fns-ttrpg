@@ -1,3 +1,14 @@
+## Version 3.8.2b — confirmation des sauvegardes
+
+L’avertissement de sauvegarde en attente disparaît automatiquement dès que tous
+les champs locaux sont confirmés par une relecture de Roll20. Une relecture qui
+ne confirme pas les champs le laisse affiché ; les renvois automatiques et les
+autres alertes sont conservés. Le texte décrit une attente après plusieurs
+tentatives sans affirmer que les données sont perdues.
+
+Le schéma reste 12. **fns-owd-beta-3.8.2b.zip** devient la nouvelle base ; le patch
+s’applique à **3.8.1b**. La correction est servie par le site.
+
 ## Version 3.8.1b — fenêtres Inventaire et Attaques
 
 Les vues de la barre d’outils remplissent la hauteur disponible sous les onglets

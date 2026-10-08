@@ -8,7 +8,7 @@ const {chromium}=require('playwright');
 const fs=require('node:fs'), path=require('node:path'), http=require('node:http'), assert=require('node:assert/strict');
 const M=require('../docs/javascripts/owd-attr-map.js'), C=require('../docs/javascripts/owd-sync.js');
 const root=path.resolve(__dirname,'..');
-let attrs, writes=[];
+let attrs, writes=[], blockWrites=false;
 const seed=M.blank();seed.v=M.SCHEMA;seed.rel=M.release();seed.name='Fiche partagée';
 seed.comps=[{id:'c1',nom:'Lutte',groupe:'Physique',rang:1},{id:'c2',nom:'Évasion',groupe:'Physique',rang:2}];
 seed.inv.objets=[{ref:'o1',id:'',nom:'Dague',qte:1,ou:'sac',arme:{attaque:'6',degats:'16',parade:'8',reduction:'6',modsDegats:['Dexterite','',''],modsParade:['','',''],type:'',comp:''}}, {ref:'o2',id:'',nom:'Pain',qte:5,ou:'sac'}];
@@ -33,7 +33,7 @@ const server=http.createServer((req,res)=> {
     const ctx=await browser.newContext({viewport:{width:1600,height:1100}});
     await ctx.exposeBinding('backend',async(_,m)=>{
       if(m.kind==='read'){await new Promise(r=>setTimeout(r,70));return C.copy(attrs);}
-      if(m.kind==='write'){await new Promise(r=>setTimeout(r,30));attrs[m.data.name]={current:String(m.data.current||''),max:String(m.data.max||'')};writes.push(m.data.name);}
+      if(m.kind==='write'){if(blockWrites && m.data.name.startsWith(C.PREFIX))return;await new Promise(r=>setTimeout(r,30));attrs[m.data.name]={current:String(m.data.current||''),max:String(m.data.max||'')};writes.push(m.data.name);}
     });
     const pages=await Promise.all([ctx.newPage(),ctx.newPage()]);pages.forEach(p=>p.on('pageerror',e=>errors.push(e.message)));
     await Promise.all(pages.map(p=>p.goto(url+'/harness')));
@@ -70,6 +70,28 @@ const server=http.createServer((req,res)=> {
     await pages[1].waitForFunction(()=>JSON.parse(document.querySelector('iframe').contentWindow.__owdLocalStorage.getItem('owd-perso')).notes==='Texte partagé');
     const reopened=await pages[1].evaluate(()=>JSON.parse(document.querySelector('iframe').contentWindow.__owdLocalStorage.getItem('owd-perso')));
     assert.equal(reopened.notes,'Texte partagé');assert.deepEqual(reopened.inv.objets.map(x=>x.nom),['Lame','Galette']);
+    // Deux tentatives perdues déclenchent l'alerte. Une relecture ancienne
+    // ne doit pas la fermer ; la confirmation ultérieure, oui, sans édition.
+    blockWrites=true;
+    await a.locator('.pc-tab').filter({hasText:'Bio'}).click();
+    await notes.fill('Modification à renvoyer');
+    const warning=a.locator('#owd-bandeau[data-owd-raison="sync-pending"]');
+    await warning.waitFor({timeout:30000});
+    await pages[0].waitForTimeout(2000);
+    assert.equal(await warning.count(),1);
+    assert.equal(await notes.inputValue(),'Modification à renvoyer');
+    assert.equal(C.read(attrs).state.notes,'Texte partagé');
+    blockWrites=false;
+    await warning.waitFor({state:'detached',timeout:20000});
+    assert.equal(C.read(attrs).state.notes,'Modification à renvoyer');
+    await pages[1].reload();await b.locator('.pc-sheet').waitFor();
+    await pages[1].waitForFunction(()=>JSON.parse(document.querySelector('iframe').contentWindow.__owdLocalStorage.getItem('owd-perso')).notes==='Modification à renvoyer');
+    // La réception suivante ne doit pas effacer un bandeau d'une autre cause.
+    await notes.evaluate(()=>{const n=document.createElement('div');n.id='owd-bandeau';n.dataset.owdRaison='autre';n.textContent='Autre alerte';document.body.prepend(n);});
+    await notes.fill('Dernière modification');
+    await pages[1].waitForFunction(()=>JSON.parse(document.querySelector('iframe').contentWindow.__owdLocalStorage.getItem('owd-perso')).notes==='Dernière modification');
+    assert.equal(await a.locator('#owd-bandeau[data-owd-raison="autre"]').count(),1);
+    console.log('OK échecs persistants, renvoi automatique, disparition après confirmation, réouverture et autres alertes conservées');
     assert.ok(!writes.includes('owd_state'),'aucune photographie complète réécrite');
     assert.deepEqual(errors,[]);
     console.log('OK réouverture, état fusionné, aucune écriture owd_state, aucune erreur navigateur');
