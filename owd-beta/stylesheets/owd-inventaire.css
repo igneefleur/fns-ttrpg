@@ -1,4 +1,4 @@
-html,body{height:100%;margin:0;padding:0;font:14px 'Nunito Sans',sans-serif;background:#e9e7e2;color:#242424}
+html,body{height:100%;overflow:hidden;margin:0;padding:0;font:14px 'Nunito Sans',sans-serif;background:#e9e7e2;color:#242424}
 html.night,html.night body{background:#000;color:#e6e0d4}
 #inventaire-panneau{height:100%;display:flex;flex-direction:column;min-width:0}
 .inventaire-onglets{display:flex;gap:5px;padding:8px;overflow-x:auto;border-bottom:1px solid #8c806744;flex:none;align-items:center}

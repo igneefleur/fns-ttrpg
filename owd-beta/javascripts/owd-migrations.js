@@ -1282,6 +1282,15 @@
     }
   });
 
+  OwdMigr.ajouter({schema:12,titre:"Sacs à dos et piles séparées",
+    notes:"Chaque sac conserve ses objets et les transmet avec lui. Les sacs ne s’empilent plus.",
+    monter:function(s,ctx){var links=ctx.reprendre("sacs-schema12"),items=s.inv&&s.inv.objets||[];
+      if(links)items.forEach(function(o){if(links[o.ref]){o.dans=links[o.ref].dans;o.ou=links[o.ref].ou;o.emp=links[o.ref].emp;}});return s;},
+    descendre:function(s,ctx){var items=s.inv&&s.inv.objets||[],bags={},links={};
+      items.forEach(function(o){if(o.sac)bags[o.ref]=true;});
+      items.forEach(function(o){if(bags[o.dans]){links[o.ref]={dans:o.dans,ou:o.ou,emp:o.emp};o.dans="";o.ou="sac";o.emp=-1;}});
+      if(Object.keys(links).length)ctx.grenier("sacs-schema12",links);return s;}
+  });
   global.OwdMigr = OwdMigr;
   if (typeof module === "object" && module && module.exports) module.exports = OwdMigr;
 })(typeof window !== "undefined" ? window : (typeof global !== "undefined" ? global : this));
