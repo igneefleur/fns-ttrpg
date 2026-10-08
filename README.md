@@ -1,3 +1,54 @@
+## Version 3.8.1b — fenêtres Inventaire et Attaques
+
+Les vues de la barre d’outils remplissent la hauteur disponible sous les onglets
+sans ajouter de défilement de page ou de module. L’inventaire conserve uniquement
+le défilement indépendant de ses deux colonnes, y compris dans une fenêtre basse
+ou étroite. Les attaques défilent dans une seule liste ; les cartes gardent leur
+hauteur et restent accessibles après redimensionnement. La fiche complète garde
+son calcul de hauteur et sa disposition habituels.
+
+Le schéma reste 12. **fns-owd-beta-3.8.1b.zip** devient la nouvelle base ; le patch
+s’applique à **3.8.0b**. La correction est servie par le site. Aucune signature ni
+publication.
+
+## Version 3.8.0b — menu de clic droit de l’inventaire
+
+Un clic droit sur un objet ouvre un menu dans la palette de la fiche, avec des
+séparateurs entre montrer, donner, séparer, détruire, contenu, déplacements et
+équipement. Les actions partielles demandent une quantité strictement inférieure
+à la pile ; elles sont masquées pour un objet seul ou un sac. Séparer reste masqué
+si le contenant a des objets imbriqués.
+
+Équiper prend un exemplaire, choisit le premier emplacement compatible libre,
+puis remplace le premier compatible à défaut. Les armes choisissent la main droite
+puis la gauche ; les vêtements à deux cases occupent les deux. L’objet remplacé
+rejoint le sac porté, ou les poches. Les accroches choisissent un emplacement libre
+avant le premier et respectent l’encombrement autorisé. Les destinations indisponibles
+ou déjà utilisées sont masquées. Le menu fonctionne aussi avec Maj+F10, les flèches
+et Échap, et se ferme au clic extérieur, au défilement ou à la sortie de la fenêtre.
+
+Le schéma reste 12. **fns-owd-beta-3.8.0b.zip** devient la nouvelle base ; le patch
+s’applique à **3.7.0b**. Cette modification est servie par le site et ne nécessite
+pas de nouveau pont d’extension. Aucune signature ni publication.
+
+## Version 3.7.0b — inventaire et sacs à dos
+
+Le dépôt dans le tchat propose trois zones distinctes : Détruire, Donner et Montrer.
+Séparer crée une seconde pile avec la quantité indiquée ; le catalogue reste identique,
+mais chaque pile possède sa propre référence. La réception d’un objet ordinaire rejoint
+la première pile de même identifiant.
+
+Le groupe Sac à dos apparaît uniquement lorsque le sac est porté sur le dos.
+Retirer le sac conserve ses contenus, accessibles dans son panneau ; son poids total
+comprend les objets imbriqués. Donner ou transférer le sac transmet tout son contenu.
+Les sacs ne s’empilent jamais. Détruire un sac détruit également ses contenus,
+après confirmation explicite. Les objets sans sac restent accessibles dans Hors sac.
+Le schéma 12 conserve les liens des sacs lors d’une descente puis remontée de version.
+
+**fns-owd-beta-3.7.0b.zip** devient la base ; le patch s’applique à **3.6.0b**.
+Le site et l’extension doivent être mis à jour pour les trois nouvelles zones de dépôt.
+Les builds de test non signés sont dans `essai/`. Aucune signature ni publication.
+
 # Outward Système JDR
 
 Jeu de rôle sur table dans l'univers d'Outward : règles, fiche de personnage,

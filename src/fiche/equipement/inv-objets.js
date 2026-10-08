@@ -45,6 +45,7 @@
     return casePermise(o, ou);
   }
   function champsObjet(it, q) {
+    var bagWeight = it.sac ? window.OwdInventoryData.weight(state.inv.objets,it) : null;
     var fields = [["Quantité", fmtP(q)], ["Poids", fmtP(it.poids || 0) + (q > 1 ? " (total " + fmtP(q * (it.poids || 0)) + ")" : "")],
       ["Encombrance", fmtP(it.encombre || 0) + " eb"],
       ["Achat", fmtP(it.achat || 0) + " " + monnaie(true)], ["Vente", fmtP(prixVente(it)) + " " + monnaie(true)]];
@@ -64,6 +65,7 @@
       var labels={eclair:"éclair",decomposition:"décomposition",ethere:"éthéré"},label=labels[t]||t;
       if(it["res_"+t])add("Résistance "+label,fmtP(it["res_"+t])+" %");if(it["prot_"+t])add("Protection "+label,fmtP(it["prot_"+t]));
     });
+    if(bagWeight!==null)add("Poids avec contenu",fmtP(bagWeight)+" kg");
     if(it.rapide)add("Accès rapide","Oui");add("",it.desc);return fields;
   }
   function montreObjet(ref, qte) {
@@ -78,8 +80,10 @@
     if (action === "montrer") { montreObjet(ref); return; }
     if (action === "donner") { donnerDialogue(it, it.qte); return; }
     if (action !== "supprimer") return;
-    confirmer("Supprimer un objet", "Supprimer « " + (it.nom || "cet objet") + " » de l'inventaire ?", "Supprimer", function () {
+    confirmer("Détruire un objet", "Détruire « " + (it.nom || "cet objet") + " » de l'inventaire" + (it.sac ? " avec tout son contenu" : "") + " ?", "Détruire", function () {
       var actuel = objet(); if (!actuel) return;
+      if(actuel.sac){var refs=window.OwdInventoryData.group(state.inv,actuel.ref).map(function(o){return o.ref;});
+        for(var z=state.inv.objets.length-1;z>=0;z--)if(state.inv.objets[z]!==actuel&&refs.indexOf(state.inv.objets[z].ref)>=0)state.inv.objets.splice(z,1);}
       if (actuel.contenant) state.inv.objets.forEach(function (o) {
         if (String(o.dans || "") === String(ref)) { o.dans = ""; o.ou = "sac"; o.emp = -1; }
       });
@@ -216,6 +220,7 @@
       if (!lieuPermis(o, ou)) { flash("« " + INV_NOMS[ou] + " » ne prend pas cet objet."); return false; }
       var dest = ancrage(o, ou), cases = casesDe(o, dest), vient = o.ou;
       // Tirer un Contenu hors de son petit slot le redevient un objet libre.
+      window.OwdInventoryData.bind(items);
       o.dans = "";
       var chasses = [];
       cases.forEach(function (c) {
@@ -236,6 +241,9 @@
         if (at < 0) items.push(o);
         else items.splice(at, 0, o);
       }
+      var bag = window.OwdInventoryData.backpack(items);
+      if(dest === "sac" && bag && bag!==o) o.dans=bag.ref;
+      window.OwdInventoryData.bind(items);
       rangeEmplacements(items);   // une ceinture ôtée rend ses emplacements
       return true;
     }
@@ -274,6 +282,7 @@
         else if (vient === "poches" || vient === "sac") { occ.ou = vient; occ.emp = -1; }
         else { occ.ou = "sac"; occ.emp = -1; }
       }
+      window.OwdInventoryData.bind(items);
       rangeEmplacements(items);
       return pose;
     }
@@ -322,8 +331,152 @@
       return s;
     }
 
+    // Menu local aux objets : mêmes opérations que le panneau et le drag.
+    var menuObjet = null, menuRef = "";
+    function fermeMenu(retour) {
+      var ref = menuRef;
+      if (menuObjet && menuObjet.parentNode) menuObjet.parentNode.removeChild(menuObjet);
+      menuObjet = null; menuRef = "";
+      if (retour) Array.prototype.some.call(container.querySelectorAll(".pc-obj-tile"), function (t) {
+        if (t.dataset.objectRef !== ref) return false;
+        t.focus(); return true;
+      });
+    }
+    function objetActuel(ref) {
+      return items.filter(function (o) { return o.ref === ref; })[0] || null;
+    }
+    function avecQuantite(ref, titre, action) {
+      var it = objetActuel(ref); if (!it) return;
+      var body = el("div", "pc-modal-body"), q = el("input", "n");
+      q.type = "number"; q.min = "0.01"; q.max = fmtP(it.qte); q.step = "any";
+      q.value = fmtP(Math.min(1, it.qte / 2));
+      body.appendChild(el("div", "pc-modal-note", "Indiquez une quantité inférieure à la pile (" + fmtP(it.qte) + ")."));
+      body.appendChild(fld("Quantité", q));
+      dialogue(titre + " — " + (it.nom || "objet"), body, function () {
+        var actuel = objetActuel(ref), n = Math.round(pnum(q.value) * 100) / 100;
+        if (!actuel) { flash("Cet objet n'est plus dans l'inventaire."); return; }
+        if (!(n > 0 && n < actuel.qte)) { flash("Indiquez une quantité supérieure à zéro et inférieure à la pile."); q.focus(); return false; }
+        try { action(actuel, n); } catch (e) { flash(e.message); return false; }
+      }, titre);
+    }
+    function emplacementsEquipement(it) {
+      if (it.arme) return ["mainD", "mainG"];
+      if (it.sac) return ["dos"];
+      if (it.ceint) return ["ceinture"];
+      if (it.vet) return [it.vet === "hautbas" ? "haut" : it.vet];
+      if (it.acc) return (INV_ACC_TYPES[it.acc] || []).slice();
+      return [];
+    }
+    function rangeRemplace(it) {
+      var bag = window.OwdInventoryData.backpack(items);
+      deplace(it, bag && bag !== it ? "sac" : "poches");
+    }
+    function equipeObjet(it) {
+      var lieux = emplacementsEquipement(it).filter(function (ou) { return casePermise(it, ou); });
+      if (!lieux.length) return;
+      var libre = lieux.filter(function (ou) { return casesDe(it, ou).every(function (c) { return !objetEn(c); }); });
+      var ou = libre[0] || lieux[0], remplaces = [];
+      casesDe(it, ou).forEach(function (c) { var o = objetEn(c); if (o && o !== it && remplaces.indexOf(o) < 0) remplaces.push(o); });
+      var pose = it;
+      if (pnum(it.qte) > 1) pose = window.OwdInventoryData.split(items, it, 1, uid("o"));
+      if (deplace(pose, ou)) { remplaces.forEach(rangeRemplace); sel = pose; render(); refresh(); }
+    }
+    function accrocheObjet(it, lieu) {
+      if (!nbEp(lieu) || !epPermis(it, lieu)) return;
+      var k = 0;
+      for (var i = 0; i < nbEp(lieu); i++) if (!objetEp(lieu, i)) { k = i; break; }
+      var occ = objetEp(lieu, k), pose = poseEp(it, lieu, k);
+      if (pose) { if (occ && occ !== pose) rangeRemplace(occ); sel = pose; render(); refresh(); }
+    }
+    function ouvreMenu(it, e) {
+      e.preventDefault(); e.stopPropagation(); fermeMenu();
+      if (!objetActuel(it.ref)) return;
+      var r = e.currentTarget.getBoundingClientRect();
+      menuRef = it.ref; menuObjet = el("div", "pc-inv-context");
+      menuObjet.setAttribute("role", "menu");
+      menuObjet.addEventListener("contextmenu", function (ev) { ev.preventDefault(); });
+      menuObjet.setAttribute("aria-label", "Actions — " + (it.nom || "objet"));
+      var groupes = [], part = !it.sac && pnum(it.qte) > 1;
+      function entree(label, fn, danger) { return { label: label, fn: fn, danger: danger }; }
+      groupes.push([entree("Montrer", function (o) { montreObjet(o.ref); })].concat(part ? [entree("Montrer une partie", function (o) {
+        avecQuantite(o.ref, "Montrer une partie", function (a, q) { montreObjet(a.ref, q); });
+      })] : []));
+      groupes.push([entree("Donner", function (o) { donnerDialogue(o, o.qte, "all"); })].concat(part ? [entree("Donner une partie", function (o) {
+        donnerDialogue(o, Math.min(1, o.qte / 2), "part");
+      })] : []));
+      if (part && !items.some(function (o) { return o.dans === it.ref; })) groupes.push([entree("Séparer une partie", function (o) {
+        avecQuantite(o.ref, "Séparer une partie", function (a, q) { window.OwdInventoryData.split(items, a, q, uid("o")); render(); refresh(); });
+      })]);
+      groupes.push([entree("Détruire", function (o) { actionObjet(o.ref, "supprimer"); }, true)].concat(part ? [entree("Détruire une partie", function (o) {
+        avecQuantite(o.ref, "Détruire une partie", function (a, q) { a.qte = Math.round((a.qte - q) * 100) / 100; render(); refresh(); });
+      }, true)] : []));
+      if (it.sac) groupes.push([entree("Voir son contenu", function (o) {
+        sel = o; render(); var contenu = panel.querySelector(".pc-obj-tiles");
+        if (contenu) contenu.scrollIntoView({ block: "nearest" });
+      })]);
+      var deplacements = [], bag = window.OwdInventoryData.backpack(items);
+      if (bag && bag !== it && !(it.ou === "sac" && it.dans === bag.ref)) deplacements.push(entree("Déplacer dans le sac à dos", function (o) {
+        if (deplace(o, "sac")) { sel = o; render(); refresh(); }
+      }));
+      if (it.ou !== "poches" || it.dans) deplacements.push(entree("Déplacer dans les poches", function (o) {
+        if (deplace(o, "poches")) { sel = o; render(); refresh(); }
+      }));
+      if (deplacements.length) groupes.push(deplacements);
+      var equipements = [], lieux = emplacementsEquipement(it);
+      if (lieux.length && (!casesDe(it).length || lieux.indexOf(it.ou) < 0)) equipements.push(entree("Équiper", equipeObjet));
+      [["ceint", "Accrocher à la ceinture"], ["sacep", "Accrocher au sac à dos"]].forEach(function (opt) {
+        if (nbEp(opt[0]) > 0 && epPermis(it, opt[0]) && it.ou !== opt[0]) equipements.push(entree(opt[1], function (o) { accrocheObjet(o, opt[0]); }));
+      });
+      if (equipements.length) groupes.push(equipements);
+      groupes.forEach(function (g, i) {
+        if (i) { var sep = el("div", "pc-inv-context-separator"); sep.setAttribute("role", "separator"); menuObjet.appendChild(sep); }
+        g.forEach(function (a) {
+          var b = el("button", a.danger ? "danger" : "", a.label); b.type = "button"; b.setAttribute("role", "menuitem");
+          b.addEventListener("click", function () {
+            var o = objetActuel(it.ref); fermeMenu(); if (!o) return;
+            try { a.fn(o); } catch (err) { flash(err.message); }
+          }); menuObjet.appendChild(b);
+        });
+      });
+      (appEl || rootEl || document.body).appendChild(menuObjet);
+      var x = e.clientX || r.left + 8, y = e.clientY || r.top + 8, box = menuObjet.getBoundingClientRect();
+      menuObjet.style.left = Math.max(8, Math.min(x, window.innerWidth - box.width - 8)) + "px";
+      menuObjet.style.top = Math.max(8, Math.min(y, window.innerHeight - box.height - 8)) + "px";
+      menuObjet.querySelector("button").focus();
+    }
+    function menuExterieur(e) { if (menuObjet && !menuObjet.contains(e.target)) fermeMenu(); }
+    function menuClavier(e) {
+      if (!menuObjet) return;
+      if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); fermeMenu(true); return; }
+      if (e.key === "Tab") { fermeMenu(); return; }
+      var bs = Array.prototype.slice.call(menuObjet.querySelectorAll("button")), at = bs.indexOf(document.activeElement), next;
+      if (e.key === "ArrowDown") next = (at + 1) % bs.length;
+      else if (e.key === "ArrowUp") next = (at + bs.length - 1) % bs.length;
+      else if (e.key === "Home") next = 0;
+      else if (e.key === "End") next = bs.length - 1;
+      if (next !== undefined) { e.preventDefault(); bs[next].focus(); }
+    }
+    function menuScroll(e) { if (!menuObjet || menuObjet.contains(e.target)) return; fermeMenu(); }
+    document.addEventListener("pointerdown", menuExterieur, true);
+    document.addEventListener("keydown", menuClavier, true);
+    document.addEventListener("scroll", menuScroll, true);
+    function menuRedimensionne() { fermeMenu(); }
+    window.addEventListener("resize", menuRedimensionne);
+    window.addEventListener("blur", menuRedimensionne);
+    remontageNettoyage.push(function () {
+      fermeMenu(); document.removeEventListener("pointerdown", menuExterieur, true);
+      document.removeEventListener("keydown", menuClavier, true); document.removeEventListener("scroll", menuScroll, true);
+      window.removeEventListener("resize", menuRedimensionne);
+      window.removeEventListener("blur", menuRedimensionne);
+    });
+
     function tile(it) {
       var t = el("div", "pc-obj-tile" + (sel === it ? " sel" : ""));
+      t.dataset.objectRef = assureRef(it); t.tabIndex = 0;
+      t.addEventListener("contextmenu", function (e) { ouvreMenu(it, e); });
+      t.addEventListener("keydown", function (e) {
+        if (e.key === "ContextMenu" || (e.key === "F10" && e.shiftKey)) ouvreMenu(it, e);
+      });
       if (it.img) {
         var im = el("img");
         im.alt = ""; im.draggable = false;
@@ -334,8 +487,9 @@
       var nom = el("span", "nm", it.nom || "Objet");
       if (!O.nom) nom.style.display = "none";
       foot.appendChild(nom);
-      var poids = el("span", "pds", it.poids ? fmtP(it.poids) : "");
-      poids.title = "Poids unitaire";
+      var poids = el("span", "pds", it.sac ? fmtP(window.OwdInventoryData.weight(items,it)) : it.poids ? fmtP(it.poids) : "");
+      poids.title = it.sac ? "Poids du sac et de son contenu" : "Poids unitaire";
+      if(it.sac) majGroupes.push(function(){poids.textContent=fmtP(window.OwdInventoryData.weight(items,it));});
       if (!O.poids) poids.style.display = "none";
       foot.appendChild(poids);
       var badge = el("span", "qte", "×" + fmtP(it.qte));
@@ -509,29 +663,32 @@
     // POCHES et SAC À DOS : des tuiles, et l'encombrance contre la capacité.
     // Le sac montre D'ABORD ses emplacements, sur leurs propres lignes.
     function groupeLibre(ou, titre, poids, cap) {
+      var bag=window.OwdInventoryData.backpack(items), loose=titre==="Hors sac";
+      function visible(it){return it.ou===ou && (loose ? !it.dans : ou==="sac" ? bag&&it.dans===bag.ref : !it.dans);}
       var g = el("div", "pc-obj-group");
       var pds = el("span", "pds");
       pds.title = "Encombrance contre capacité";
       function maj() {
         var p = poids(), c = cap();
-        pds.textContent = fmtP(p) + " / " + fmtP(c) + " eb";
-        pds.classList.toggle("over", p > c);
+        pds.textContent = loose ? fmtP(p) + " eb" : fmtP(p) + " / " + fmtP(c) + " eb";
+        pds.classList.toggle("over", !loose && p > c);
       }
       maj();
       majGroupes.push(maj);
       var head = bandeau(titre, pds);
-      if (ou === "sac" && nbEp("sacep")) head.insertBefore(compteEp("sacep"), pds);
+      if (ou === "sac" && !loose && nbEp("sacep")) head.insertBefore(compteEp("sacep"), pds);
       g.appendChild(head);
-      if (ou === "sac" && nbEp("sacep")) g.appendChild(lignesEp("sacep"));
+      if (ou === "sac" && !loose && nbEp("sacep")) g.appendChild(lignesEp("sacep"));
       var tiles = el("div", "pc-obj-tiles");
       tiles.style.setProperty("--obj-cols", 5);
-      items.forEach(function (it) { if (!it.dans && it.ou === ou) tiles.appendChild(tile(it)); });
+      items.forEach(function (it) { if (visible(it)) tiles.appendChild(tile(it)); });
       var add = el("div", "pc-obj-addtile pc-edit-only", "+");
       add.title = "Ajouter un objet dans « " + titre + " »";
       add.addEventListener("click", function () {
         var o = { id: "", ref: uid("o"), nom: "", img: "", qte: 1, poids: 0, encombre: 0, places: 0, nourri: false, achat: 0, vente: null,
                   desc: "", ou: ou, emp: -1, rapide: false, vet: "", acc: "", poches: 0, froid: 0, chaud: 0,
                   sac: false, cap: 0, ceint: false, ep: 0, ebMax: 0, contenant: "", contenu: "", dans: "", arme: null };
+        if(ou === "sac" && !loose && bag) o.dans=bag.ref;
         items.push(o);
         sel = o;
         render();
@@ -541,7 +698,7 @@
       // LA LIGNE SE COMPLÈTE de cases vides en pointillé, et un groupe vide en
       // garde une entière : on voit la place qui reste. La case « + » de
       // l'édition compte dans la ligne.
-      var n = items.filter(function (x) { return !x.dans && x.ou === ou; }).length + (isEdit("inv") ? 1 : 0);
+      var n = items.filter(function (x) { return visible(x); }).length + (isEdit("inv") ? 1 : 0);
       var trous = Math.max(5, Math.ceil(n / 5) * 5) - n;
       for (var k = 0; k < trous; k++) tiles.appendChild(el("div", "pc-obj-tile pc-inv-trou"));
       tiles.addEventListener("dragover", function (e) {
@@ -668,7 +825,7 @@
       //   ACHAT | VENTE
       //   IDENTIFIANT | IMAGE (URL)  (en édition seulement)
       //   DESCRIPTION
-      //   [quantité] [Montrer] [Donner] [Supprimer]
+      //   [quantité] [Montrer] [Donner] [Détruire]
       // L'emplacement ne s'y choisit pas : on range au glisser-déposer.
       var nm = el("input", "nm pc-edit-field");
       nm.type = "text"; nm.placeholder = fantome ? "Aucun objet" : "Nom de l'objet";
@@ -696,9 +853,11 @@
       nat.addEventListener("change", function () {
         var v = nat.value;
         if (it.contenant && v !== "contenant") libereContenu(it, true);
-        if (it.dans && v !== "contenu") { it.dans = ""; it.ou = "sac"; it.emp = -1; }
+        if (it.sac && v !== "sac") libereContenu(it, true);
+        if (it.dans && v !== "contenu" && !items.some(function(x){return x.ref===it.dans&&x.sac;})) { it.dans = ""; it.ou = "sac"; it.emp = -1; }
         it.nourri = v === "nourri";
         it.sac = v === "sac";
+        if(it.sac && it.qte>1){var n=Math.ceil(it.qte);it.qte=1;for(var k=1;k<n;k++){var rest=JSON.parse(JSON.stringify(it));rest.ref=uid("o");rest.ou="sac";rest.emp=-1;items.push(rest);}}
         it.ceint = v === "ceint";
         it.contenant = v === "contenant" ? (it.contenant || "liquide") : "";
         it.contenu = v === "contenu" ? (it.contenu || "liquide") : "";
@@ -900,6 +1059,7 @@
       }
       slider.addEventListener("input", function () { setQte(Math.round(parseFloat(slider.value))); });
       qIn.addEventListener("input", function () { setQte(parseFloat(qIn.value)); });
+      if(it.sac){slider.disabled=true;qIn.disabled=true;it.qte=1;}
       qRow.appendChild(slider);
       qRow.appendChild(qIn);
       body.appendChild(fld("Quantité", qRow));
@@ -1001,19 +1161,33 @@
       }));
       function retireQte(q, tout) {
         if (tout) {
+          if(it.sac){var refs=window.OwdInventoryData.group(state.inv,it.ref).map(function(o){return o.ref;});
+            for(var z=items.length-1;z>=0;z--)if(items[z]!==it&&refs.indexOf(items[z].ref)>=0)items.splice(z,1);}
           if (it.contenant) libereContenu(it, true);
           items.splice(items.indexOf(it), 1); sel = null;
         } else it.qte = Math.round((it.qte - q) * 100) / 100;
         render();
         refresh();
       }
-      actions.appendChild(miniBtn("Supprimer", "Supprimer cette quantité (tout : l'objet disparaît)", function () {
+      actions.appendChild(miniBtn("Séparer", "Créer une pile avec la quantité indiquée", function(){
+        try{window.OwdInventoryData.split(items,it,bornerAct(),uid("o"));render();refresh();}catch(e){flash(e.message);}
+      }));
+      if(it.sac){var contents=el("div","pc-obj-tiles");
+        var deposit=el("div","pc-obj-addtile","Ranger dans le sac");deposit.title="Déposer un objet dans ce sac, même retiré";contents.appendChild(deposit);
+        deposit.addEventListener("dragover",function(e){if(drag&&drag!==it){e.preventDefault();e.stopPropagation();}});
+        deposit.addEventListener("drop",function(e){if(!drag)return;e.preventDefault();e.stopPropagation();var d=drag;drag=null;
+          if(window.OwdInventoryData.group(state.inv,d.ref).some(function(o){return o.ref===it.ref;})){flash("Un sac ne peut pas contenir lui-même.");return;}
+          if(deplace(d,"sac")){d.dans=it.ref;d.emp=-1;render();refresh();}});
+        items.forEach(function(o){if(o.dans===it.ref)contents.appendChild(tile(o));});
+        body.appendChild(el("div","lbl","Contenu du sac"));body.appendChild(contents);
+        body.appendChild(el("div","pc-modal-note","Glissez un objet vers les poches ou une case pour le sortir du sac. Poids total : "+fmtP(window.OwdInventoryData.weight(items,it))+" kg"));}
+      actions.appendChild(miniBtn("Détruire", "Détruire cette quantité (tout : l'objet disparaît)", function () {
         var q = bornerAct();
         var tout = q >= it.qte;
         if (tout && (it.nom || it.desc)) {
-          confirmer("Supprimer un objet",
-                    "Supprimer « " + (it.nom || "cet objet") + " » de l'inventaire ?",
-                    "Supprimer", function () { retireQte(q, true); });
+          confirmer("Détruire un objet",
+                    "Détruire « " + (it.nom || "cet objet") + " » de l'inventaire" + (it.sac ? " avec tout son contenu" : "") + " ?",
+                    "Détruire", function () { retireQte(q, true); });
           return;
         }
         retireQte(q, tout);
@@ -1028,6 +1202,7 @@
     // hauteur. Une fenêtre trop basse garde un plancher ; le module invisible
     // (onglet fermé) ne se mesure pas.
     function ajusteHauteur() {
+      if (window.__owdVueInventaire) { wrap.style.removeProperty("--inv-h"); return; }
       if (!wrap.isConnected || !wrap.offsetParent) return;
       // l'en-tête FIXE du site (absent dans Roll20) couvre le haut de l'écran
       var fixe = document.querySelector(".md-header");
@@ -1044,13 +1219,17 @@
       remontageNettoyage.push(function () { observateurInventaire.disconnect(); });
     }
     function render() {
+      fermeMenu();
+      if(sel && items.indexOf(sel)<0) sel=null;
       majGroupes = [];
       panelHooks.length = 0;
       leftBox.innerHTML = "";
       leftBox.appendChild(groupeSurSoi());
       leftBox.appendChild(groupeCeinture());
       leftBox.appendChild(groupeLibre("poches", "Poches", ebPoches, capPoches));
-      leftBox.appendChild(groupeLibre("sac", "Sac à dos", ebSac, capSac));
+      if(window.OwdInventoryData.backpack(items)) leftBox.appendChild(groupeLibre("sac", "Sac à dos", ebSac, capSac));
+      if(!window.OwdInventoryData.backpack(items)||items.some(function(o){return o.ou==="sac"&&!o.dans;}))
+        leftBox.appendChild(groupeLibre("sac", "Hors sac", function(){return ebOu("sac");}, function(){return 0;}));
       renderPanel();
       updateTotal();
       applyEdit(container, "inv");

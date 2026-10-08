@@ -290,7 +290,8 @@
     return Math.round(t * 1000) / 1000;
   }
   function ebPoches() { return ebOu("poches"); }
-  function ebSac() { return ebOu("sac"); }
+  function ebSac() { var bag=window.OwdInventoryData.backpack(state.inv.objets), n=0;
+    state.inv.objets.forEach(function(o){if(bag&&o.dans===bag.ref&&o.ou==="sac")n+=pnum(o.qte)*pnum(o.encombre);});return n; }
   // LES CASES QU'OCCUPE UN OBJET. D'ordinaire une seule, celle de son
   // emplacement ; mais un vêtement « Haut + Bas » (une robe) tient le haut ET
   // le bas, et une arme à deux mains les deux mains. Son emplacement « ou »
@@ -319,7 +320,7 @@
   function porteurEp(lieu, objets) {
     var out = null, cas = lieu === "ceint" ? "ceinture" : "dos";
     (objets || state.inv.objets).forEach(function (o) {
-      if (!out && o.ou === cas && (lieu === "ceint" ? o.ceint : o.sac)) out = o;
+      if (!out && !o.dans && o.ou === cas && (lieu === "ceint" ? o.ceint : o.sac)) out = o;
     });
     return out;
   }
@@ -328,7 +329,7 @@
   function objetEp(lieu, k) {
     var out = null;
     state.inv.objets.forEach(function (o) {
-      if (!out && !o.dans && o.ou === lieu && o.emp === k) out = o;
+      if (!out && (!o.dans || (lieu === "sacep" && porteurEp(lieu) && o.dans === porteurEp(lieu).ref)) && o.ou === lieu && o.emp === k) out = o;
     });
     return out;
   }
@@ -341,7 +342,8 @@
   function rangeEmplacements(objets) {
     var pris = {}, rendus = [];
     objets.forEach(function (o) {
-      if (o.dans) { o.emp = -1; return; }
+      if (o.dans && o.ou !== "sacep") { o.emp = -1; return; }
+      if(o.dans && o.ou === "sacep" && (!porteurEp("sacep",objets)||porteurEp("sacep",objets).ref!==o.dans))return;
       if (INV_EP.indexOf(o.ou) < 0) { o.emp = -1; return; }
       var cle = o.ou + o.emp;
       if (o.emp < 0 || o.emp >= nbEp(o.ou, objets) || pris[cle] ||

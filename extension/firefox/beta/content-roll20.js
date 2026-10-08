@@ -1363,16 +1363,16 @@ if (typeof browser === "undefined") { var browser = chrome; }
   function hideDropHint(){if(dropHint)dropHint.hidden=true;if(dropHintTimer){clearTimeout(dropHintTimer);dropHintTimer=null;}}
   function showDropHint(){var sidebar=document.getElementById('rightsidebar')||document.getElementById('textchat');if(!sidebar)return;
     var r=sidebar.getBoundingClientRect();if(!r.width||!r.height)return;
-    if(!dropHint){dropHint=el('div','owd-chat-drop-hint');dropHint.setAttribute('role','status');[['supprimer','Supprimer'],['donner','Donner'],['montrer','Montrer']].forEach(function(a){var zone=el('div','owd-chat-drop-zone');zone.dataset.action=a[0];zone.appendChild(el('span','owd-chat-drop-label',a[1]));dropHint.appendChild(zone);});document.body.appendChild(dropHint);}
+    if(!dropHint){dropHint=el('div','owd-chat-drop-hint');dropHint.setAttribute('role','status');[['supprimer','Détruire'],['donner','Donner'],['montrer','Montrer']].forEach(function(a){var zone=el('div','owd-chat-drop-zone');zone.dataset.action=a[0];zone.appendChild(el('span','owd-chat-drop-label',a[1]));dropHint.appendChild(zone);});document.body.appendChild(dropHint);}
     dropHint.hidden=false;dropHint.style.left=r.left+'px';dropHint.style.top=r.top+'px';dropHint.style.width=r.width+'px';dropHint.style.height=r.height+'px';
     if(dropHintTimer)clearTimeout(dropHintTimer);dropHintTimer=setTimeout(hideDropHint,30000);}
   function dragMessage(ev,d){if(d.type==='inventory-drag-start'&&d.token&&d.ref&&d.charId){objetDrag={source:ev.source,token:d.token,ref:d.ref,charId:d.charId,t:Date.now()};showDropHint();return true;}
     if(d.type==='inventory-drag-end'){hideDropHint();var token=d.token;setTimeout(function(){if(objetDrag&&objetDrag.token===token)objetDrag=null;},1500);return true;}return false;}
-  function dropAction(e){var r=dropHint&&dropHint.getBoundingClientRect();if(!r||!r.height)return 'montrer';return ['supprimer','donner','montrer'][Math.max(0,Math.min(2,Math.floor((e.clientY-r.top)*3/r.height)))];}
+  function dropAction(e){if(!dropHint)return null;for(var i=0;i<dropHint.children.length;i++){var z=dropHint.children[i],r=z.getBoundingClientRect();if(e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom)return z.dataset.action;}return null;}
   function chatDropInit(){
-    function allow(e){if(!chatTarget(e.target)||!dragItem(e))return;e.preventDefault();e.stopImmediatePropagation();showDropHint();if(!dropHint||dropHint.hidden)return;var action=dropAction(e);e.dataTransfer.dropEffect=action==='montrer'?'copy':'move';Array.prototype.forEach.call(dropHint.children,function(z){z.classList.toggle('over',z.dataset.action===action);});}
+    function allow(e){if(!chatTarget(e.target)||!dragItem(e))return;e.preventDefault();e.stopImmediatePropagation();showDropHint();if(!dropHint||dropHint.hidden)return;var action=dropAction(e);e.dataTransfer.dropEffect=!action?'none':action==='montrer'?'copy':'move';Array.prototype.forEach.call(dropHint.children,function(z){z.classList.toggle('over',z.dataset.action===action);});}
     document.addEventListener('dragenter',allow,true);document.addEventListener('dragover',allow,true);
-    document.addEventListener('drop',function(e){var action=dropAction(e);hideDropHint();if(!e.isTrusted||!chatTarget(e.target)||!dragItem(e))return;
+    document.addEventListener('drop',function(e){var action=dropAction(e);hideDropHint();if(!e.isTrusted||!chatTarget(e.target)||!dragItem(e)||!action)return;
       var raw='',data=null;try{raw=e.dataTransfer.getData(ITEM_MIME);}catch(err){}
       // Firefox expose le type entre origines, mais peut masquer le contenu.
       // L'identité déjà reçue de la fiche permet de confirmer CE drag natif.

@@ -64,6 +64,7 @@
   // on oriente le visiteur au lieu d'attendre un pont qui ne répondra jamais.
   window.__owdVueAttaques = /[#&]view=attaques(?:&|$)/.test(location.hash || "");
   window.__owdVueInventaire = window.__owdVueAttaques || /[#&]view=inventaire(?:&|$)/.test(location.hash || "");
+  document.documentElement.classList.toggle("owd-vue-outil", window.__owdVueInventaire);
   var objetDrag = null, accesInventaire = true;
   var STANDALONE = (function () { try { return window.top === window; } catch (e) { return false; } })();
 

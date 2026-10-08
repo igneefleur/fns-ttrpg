@@ -109,4 +109,5 @@ test('migration 10 → 11 → 10 sans perte',()=> {
   const up=Migr.appliquer(s,10,11);assert.ok(up.ok);assert.equal(up.state.avantages[0].id,'av-legacy-0');
   const down=Migr.appliquer(up.state,11,10);assert.ok(down.ok);assert.deepEqual(down.state,s);
 });
+test('migration 12 → 11 → 12 conserve les liens et les emplacements des sacs',()=>{const s=seed();s.v=12;s.inv.objets=[{ref:'bag',sac:true,qte:1,ou:'dos'},{ref:'a',dans:'bag',ou:'sac',emp:-1},{ref:'b',dans:'bag',ou:'sacep',emp:2}];const down=Migr.appliquer(s,12,11);assert.ok(down.ok);assert.equal(down.state.inv.objets[1].dans,'');const up=Migr.appliquer(down.state,11,12);assert.ok(up.ok);assert.deepEqual(up.state,s);});
 console.log(checks+' scénarios de concurrence validés.');

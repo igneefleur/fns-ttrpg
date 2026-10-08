@@ -337,19 +337,25 @@
     // désigne le `ref` d'un Contenant de même catégorie. Une sauvegarde cassée,
     // un contenant supprimé ou deux contenus visant le même slot ne doivent pas
     // rendre l'objet invisible : le lien invalide est simplement libéré au sac.
+    var anciensSacs = s.inv.objets.slice();
+    anciensSacs.forEach(function(o){if(!o.sac)return;var n=Math.max(1,Math.ceil(pnum(o.qte)));o.qte=1;
+      for(var k=1;k<n;k++){var c=JSON.parse(JSON.stringify(o));c.ref=uid("o");c.ou="sac";c.dans="";c.emp=-1;s.inv.objets.push(c);}});
     var contenantsParRef = Object.create(null), slotsPris = Object.create(null);
     s.inv.objets.forEach(function (o) {
-      if (o && o.ref && o.contenant) contenantsParRef[o.ref] = o;
+      if (o && o.ref && (o.contenant || o.sac)) contenantsParRef[o.ref] = o;
     });
     s.inv.objets.forEach(function (o) {
       if (!o || !o.dans) return;
       var p = contenantsParRef[o.dans];
-      if (!o.contenu || !p || p === o || String(o.contenu) !== String(p.contenant) || slotsPris[o.dans]) {
+      var cycle = p === o, walk = p, seen = {};
+      while(walk && walk.dans && !cycle){if(seen[walk.ref]||walk.dans===o.ref){cycle=true;break;}seen[walk.ref]=true;walk=contenantsParRef[walk.dans];}
+      if (!p || cycle || (!p.sac && (!o.contenu || String(o.contenu) !== String(p.contenant) || slotsPris[o.dans]))) {
         o.dans = "";
         o.ou = "sac";
         o.emp = -1;
         return;
       }
+      if(p.sac) { if(o.ou!=="sacep") {o.ou="sac";o.emp=-1;} return; }
       slotsPris[o.dans] = 1;
       // `ou` reste un repli compatible avec les anciens schémas ; pendant que
       // `dans` est posé, l'interface et les calculs d'encombrement l'ignorent.
@@ -386,6 +392,7 @@
       cases.forEach(function (c) { prises[c] = 1; });
     });
     rangeEmplacements(s.inv.objets);
+    window.OwdInventoryData.bind(s.inv.objets);
 
     // Une attaque dont l'objet a disparu garde sa référence : en édition le
     // joueur peut lui choisir une nouvelle arme. On ne la supprime surtout pas
