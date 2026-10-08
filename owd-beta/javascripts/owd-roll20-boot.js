@@ -1594,10 +1594,15 @@
       var recu = collaboration.receive(attrs);
       lastAttrs = attrs;
       if (!recu) return;
-      if (recu.lost) bandeau("Roll20 n'a pas confirmé certaines modifications. Elles restent dans cette fenêtre et seront renvoyées ; exportez la fiche avant de fermer si le problème persiste.", [
+      var attente = Object.keys(collaboration.pending).length;
+      var avertissement = document.getElementById('owd-bandeau');
+      // Une confirmation tardive résout aussi l'avertissement. Ne fermer que
+      // ce bandeau : une migration ou une autre alerte reste pertinente.
+      if (!attente && avertissement && avertissement.dataset.owdRaison === 'sync-pending') fermerBandeau();
+      if (recu.lost && attente) bandeau("Sauvegarde en attente : Roll20 n'a pas encore confirmé certaines modifications après plusieurs tentatives. Elles restent dans cette fenêtre et sont renvoyées automatiquement. Ce message disparaîtra dès leur confirmation ; exportez la fiche avant de fermer si l'attente persiste.", [
         { texte: "Exporter (JSON)", acte: "export", action: exporter },
         { texte: "Masquer", acte: "masquer", action: fermerBandeau }
-      ]);
+      ]).dataset.owdRaison = 'sync-pending';
       synchronisationDifferée = recu.state;
       appliqueDiffere();
       scheduleSave();
