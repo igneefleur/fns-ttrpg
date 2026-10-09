@@ -525,5 +525,13 @@
       "attrmap": "fiche/v1.35.0/mia-attr-map.js",
       "data": "fiche/v1.35.0/mia-creation.json"
     }
+  },
+  "narration": {
+    "js": [
+      "javascripts/mia-narration.js?v=1"
+    ],
+    "css": [
+      "stylesheets/mia-narration.css?v=1"
+    ]
   }
 }

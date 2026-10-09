@@ -3,7 +3,7 @@
     "mia-roll20@igneefleur": {
       "updates": [
         {
-          "version": "1.0.0.2",
+          "version": "1.35.2",
           "update_link": "https://igneefleur.github.io/fns-ttrpg/mia/download/mia-roll20-firefox.xpi",
           "browser_specific_settings": {
             "gecko": {
