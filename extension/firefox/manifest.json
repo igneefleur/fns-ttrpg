@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
   "name": "Fiche MIA sur Roll20",
-  "version": "1.0.0.2",
-  "description": "Affiche vos fiches de personnage MIA (système JDR) à la place de la fiche Roll20, avec les jets envoyés dans le tchat.",
+  "version": "1.35.2",
+  "description": "Affiche vos fiches de personnage MIA (système JDR) à la place de la fiche Roll20, avec les jets envoyés dans le tchat. Plateau partagé de points de narration avec jetons Fate.",
   "homepage_url": "https://igneefleur.github.io/fns-ttrpg/mia/",
   "browser_specific_settings": {
     "gecko": {
@@ -21,7 +21,10 @@
     "stable/roll20-page.js",
     "stable/creator-shell.js",
     "beta/roll20-page.js",
-    "beta/creator-shell.js"
+    "beta/creator-shell.js",
+    "panneau.html",
+    "stable/panneau-shell.js",
+    "beta/panneau-shell.js"
   ],
   "icons": {
     "48": "icons/icon.svg",

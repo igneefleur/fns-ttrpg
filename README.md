@@ -54,3 +54,44 @@ mkdocs serve
 Chaque envoi sur `mia-beta` construit le site et le publie dans le dossier
 `mia-beta/` de la branche `gh-pages`. Le site des joueurs, lui, vient de la branche
 `mia` et se publie dans `mia/` ; la racine appartient à `main`, qui porte le hub.
+
+## Points de narration — extension 1.0.0.3
+
+L’extension intègre le plateau partagé de narration de JJK, avec les couleurs,
+les polices et les modes clair/sombre de la fiche MIA. Les jetons utilisent
+`docs/assets/images/fate_token.png`, l’image Fate fournie, sans recoloration.
+
+### Mise en place dans Roll20
+
+1. Le MJ crée un personnage nommé **Narration** dans le journal.
+2. Il le rend visible dans le journal et contrôlable par **tous les joueurs**.
+3. Après rechargement de la partie avec la nouvelle extension, ouvrez le
+   **Plateau de narration** depuis la barre d’outils Roll20.
+4. Dans **Réglages**, ajoutez les joueurs. La distribution initiale est de
+   **3 jetons par joueur et 5 pour le MJ**, modifiable dans les réglages.
+5. Cliquez sur **Distribuer**, puis confirmez. Déplacez ensuite les jetons
+   entre les places pour dépenser ou donner des points. Le plateau sauvegarde
+   et synchronise ses positions dans les attributs Roll20 `mia_narr_`.
+
+Le panneau peut être ancré ou détaché, déplacé et redimensionné. Le popup de
+l’extension permet d’activer ou de désactiver le plateau. Les personnages
+MIA conservent leur schéma et leurs attributs existants.
+
+### Paquets pour cette livraison
+
+`extension/build/` contient les paquets de développement Firefox et Chrome
+**1.0.0.3**. Le paquet Firefox est **non signé** : pour un essai temporaire,
+chargez son `manifest.json` via `about:debugging` après extraction. Pour Chrome,
+extrayez le ZIP et utilisez **Charger l’extension non empaquetée**.
+
+Le site MIA doit aussi recevoir les fichiers de ce projet : le contenu du
+plateau est servi par `roll20-narration.html`, comme la fiche existante.
+Les anciens paquets signés dans `docs/download/` restent conservés jusqu’à
+la prochaine signature Mozilla ; ils ne contiennent pas cette nouvelle fonction.
+
+Pour reconstruire les paquets de développement :
+
+```bash
+python scripts/assembler.py
+python scripts/build_extension.py --sortie extension/build
+```

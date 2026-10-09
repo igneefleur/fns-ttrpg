@@ -4,4 +4,5 @@
     if (txt != null) e.textContent = txt;
     return e;
   }
+  function norm(s) { return (s || "").replace(/ /g, " ").replace(/\s+/g, " ").trim().toLowerCase(); }
 
