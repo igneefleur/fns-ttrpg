@@ -72,6 +72,6 @@ assert.equal(api.jugeDroits({gm:false,moi:'alice',controlledby:'all'}),true);
 assert.equal(api.litPoint('invalid'),null);assert.equal(api.litPoint('1200,-9').x,1000);assert.equal(api.litPoint('1200,-9').y,0);
 const raw=fs.readFileSync(path.join(root,'docs/assets/images/fate_token.png'));assert.ok(raw.length>1000);
 assert.ok(read('docs/stylesheets/mia-narration.css').includes('../assets/images/fate_token.png'));
-assert.equal(JSON.parse(read('extension/firefox/manifest.json')).version,'1.0.0.3');
-assert.equal(JSON.parse(read('extension/chrome/manifest.json')).version,'1.0.0.3');
+assert.equal(JSON.parse(read('extension/firefox/manifest.json')).version,'1.0.0.4');
+assert.equal(JSON.parse(read('extension/chrome/manifest.json')).version,'1.0.0.4');
 console.log('Narration: PASS (session distribution, repeated distribution, collection, shared hydration, persistence, permissions, MIA attribute preservation, namespace isolation, browser versions and token asset).');
