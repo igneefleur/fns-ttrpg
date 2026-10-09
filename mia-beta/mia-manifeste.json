@@ -528,10 +528,10 @@
   },
   "narration": {
     "js": [
-      "javascripts/mia-narration.js?v=1"
+      "javascripts/mia-narration.js?v=2"
     ],
     "css": [
-      "stylesheets/mia-narration.css?v=1"
+      "stylesheets/mia-narration.css?v=2"
     ]
   }
 }

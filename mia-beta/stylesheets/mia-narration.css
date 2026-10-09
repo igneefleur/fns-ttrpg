@@ -61,7 +61,7 @@
 
   /* Diamètre du jeton, posé par le script d'après la largeur du plateau : les
      jetons grossissent avec le panneau, sinon ils se perdent quand on l'agrandit. */
-  --jeton: 22px;
+  --jeton: 33px;
 }
 
 /* La nuit est une CLASSE, jamais une media query seule : elle doit rester

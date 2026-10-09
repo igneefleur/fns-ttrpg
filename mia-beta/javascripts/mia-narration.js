@@ -948,14 +948,12 @@
     // Le diamètre des jetons suit la largeur du plateau : agrandir le panneau
     // doit agrandir la table, pas semer des confettis.
     //
-    // MONTÉ DE 5.5 À 6.8 POUR CENT depuis que le jeton porte une médaille
-    // frappée et non plus un disque peint. Un dégradé se lit à seize pixels ;
-    // une gravure, non : à l'ancienne taille le personnage devenait une tache
-    // dorée et l'image ne servait à rien. Le plancher passe de 16 à 20 px, le
-    // plafond de 30 à 38.
+    // Diamètre augmenté de 50 %, après arrondi et bornage :
+    // les tailles restent exactement 1,5 fois celles de la version précédente.
+    // Plancher 30 px, plafond 57 px.
     function jauge() {
       var w = plateau.clientWidth || 320;
-      plateau.style.setProperty("--jeton", clamp(Math.round(w * 0.068), 20, 38) + "px");
+      plateau.style.setProperty("--jeton", (clamp(Math.round(w * 0.068), 20, 38) * 1.5) + "px");
       // Le nombre de colonnes ne dépend QUE du nombre de joueurs, jamais de la
       // hauteur disponible. Quand il en dépendait, les places changeaient de
       // position d'un panneau à l'autre alors que les jetons, eux, sont en
