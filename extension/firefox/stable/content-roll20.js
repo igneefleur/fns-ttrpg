@@ -7,14 +7,10 @@
  * Deux rôles selon la frame (le script tourne all_frames) :
  *  - FRAME DU HAUT (app.roll20.net/editor) : injecte roll20-page.js dans le MONDE
  *    PRINCIPAL (là où vit window.d20 / window.Campaign, invisible du content-script) ;
- *    ce page-script lit/écrit les attributs à la demande. C'est aussi elle qui pose
- *    le BOUTON DU PLATEAU dans la barre d'outils de Roll20 et le cadre du plateau
- *    de Narration, ancré à cette barre ou détaché.
+ *    ce page-script lit/écrit les attributs à la demande.
  *  - FRAME DE LA FEUILLE (iframe du dialogue de perso) : pose l'onglet « Fiche MIA »
  *    entre « Feuille de personnage » et « Bio & Info ». Au clic : si le perso a déjà
  *    une fiche MIA -> monte l'iframe de la coquille ; sinon -> bouton « Créer fiche MIA ».
- *    SAUF sur le personnage « Narration », qui porte le plateau et pas un personnage :
- *    l'onglet ne s'y pose pas (voir estPlateau).
  *
  * Cas particulier : la fiche OUVERTE EN FENÊTRE SÉPARÉE (bouton popout ->
  * app.roll20.net/editor/character/<campagne>/<perso>/...). Roll20 y sert le MÊME
@@ -38,11 +34,10 @@
  * trois, pas une de plus : tout le reste doit rester rigoureusement identique
  * d'un côté et de l'autre.
  *
- * RÉGLAGES. Ce fichier ne fait que LIRE le stockage, jamais écrire ailleurs que
- * dans la géométrie du plateau ; le popup est le seul poste d'aiguillage.
- * Il lit miaOff (éteinte : rien ne se réveille), miaBeta (quelle moitié parle),
- * miaNuit (« auto » | « jour » | « nuit », qui décide du n=1/0 envoyé aux pages
- * du site et de la couleur du cadre flottant) et l'interrupteur du plateau.
+ * RÉGLAGES. Ce fichier ne fait que LIRE le stockage, jamais écrire : le popup
+ * est le seul poste d'aiguillage. Il lit miaOff (éteinte : rien ne se réveille),
+ * miaBeta (quelle moitié parle) et miaNuit (« auto » | « jour » | « nuit », qui
+ * décide du n=1/0 envoyé aux pages du site et de la couleur de nos boîtes).
  * Tout cela se lit à la garde, tout en bas, où l'inventaire est détaillé.
  *
  * TOUTE CORRECTION DE SÛRETÉ DOIT ÊTRE APPLIQUÉE AUX DEUX COPIES. La liste
@@ -264,13 +259,9 @@ if (typeof browser === "undefined") { var browser = chrome; }
   }
 
   // ---------- « Narration » porte un plateau, pas un personnage ----------
-  // Ce personnage-là existe pour ranger l'état du plateau dans ses Attributes,
-  // et pour rien d'autre : le MJ le rend contrôlable par tous, c'est le seul
-  // objet d'une campagne où chacun a lecture et écriture. Lui poser l'onglet
-  // « Fiche MIA », c'est inviter à créer une fiche de personnage dessus — et
-  // c'est déjà arrivé : la carte d'attributs d'une fiche en produit une
-  // soixantaine, mesurés à 82 attributs « mia_ » pour 18 attendus, que le pont
-  // doit maintenant retirer au démarrage. On coupe donc à la racine.
+  // Ce personnage partagé stocke les points de narration. L'exclusion de
+  // son onglet évite d'y créer une fiche par erreur. Aucun attribut existant
+  // n'est supprimé par l'extension.
   //
   // LE NOM EST CELUI QUE LE PONT CONNAÎT (roll20-page.js, NARR_NOM) : c'est la
   // même chaîne, comparée de la même façon, et les deux doivent bouger
@@ -360,15 +351,14 @@ if (typeof browser === "undefined") { var browser = chrome; }
   // quand il en a donné un, et le thème de Roll20 sinon. Le faire disparaître
   // en mode « auto », comme on l'a envisagé, aurait coûté la seule chose que
   // l'extension sait faire de mieux que le site : sans indice, l'« auto » de la
-  // fiche et la nuit du plateau retombent sur prefers-color-scheme, donc sur le
-  // thème du NAVIGATEUR, et une partie Roll20 en sombre s'ouvrirait en clair
-  // sur un navigateur en clair. Aucune page du site n'a besoin d'être touchée :
+  // fiche retombe sur prefers-color-scheme, donc sur le thème du NAVIGATEUR, et
+  // une partie Roll20 en sombre s'ouvrirait en clair sur un navigateur en clair.
+  // Aucune page du site n'a besoin d'être touchée :
   // elles lisent n comme avant.
   //
   // La fiche garde le dernier mot par sa propre préférence (onglet Options,
   // localStorage mia-r20-night) : un joueur qui a explicitement mis SA fiche en
-  // jour la garde en jour. C'est voulu, le réglage le plus précis gagne ; le
-  // plateau, lui, n'a pas de préférence à lui et suit le popup.
+  // jour la garde en jour. C'est voulu, le réglage le plus précis gagne.
   var NUIT_ORDRE = "auto";
   function normNuit(v) { return v === "jour" || v === "nuit" ? v : "auto"; }
   function nuitEffective() {
@@ -453,25 +443,67 @@ if (typeof browser === "undefined") { var browser = chrome; }
   }
 
   // ---------- pose de l'onglet dans la barre d'onglets du dialogue ----------
-  // labels : un libellé ou une liste — l'interface Roll20 est LOCALISÉE selon le
-  // compte (« Feuille de personnage » en français, « Character Sheet » en
-  // anglais…) : on accepte toutes les variantes connues, sinon l'onglet
-  // n'apparaît que pour les comptes en français.
-  function labelEls(labels) {
-    var wants = (Array.isArray(labels) ? labels : [labels]).map(norm);
-    var nodes = document.querySelectorAll("a, span, li");
-    var raw = [];
-    for (var i = 0; i < nodes.length; i++) if (wants.indexOf(norm(nodes[i].textContent)) >= 0) raw.push(nodes[i]);
-    return raw.filter(function (n) { return !raw.some(function (m) { return m !== n && n.contains(m); }); });
+  // LA BARRE SE RECONNAÎT À SES ONGLETS, JAMAIS À LEURS NOMS.
+  //
+  // L'onglet se posait entre « Feuille de personnage » et « Bio & Info »,
+  // trouvés par leur libellé. Trois défauts, et le troisième est le pire :
+  // l'interface de Roll20 est LOCALISÉE selon le compte, donc il fallait
+  // connaître d'avance la traduction de chaque langue ; les libellés changent
+  // au gré de Roll20 ; et surtout, une campagne SANS feuille de personnage n'a
+  // pas d'onglet « Feuille de personnage » du tout — l'onglet ne se posait
+  // alors jamais, sans le moindre message.
+  //
+  // On repère donc la barre par les liens « data-tab » que Roll20 y pose, quels
+  // qu'ils disent, et on prend la DEUXIÈME PLACE. Aucun libellé n'est lu, aucun
+  // onglet particulier n'a besoin d'exister.
+  function barresOnglets() {
+    var liens = document.querySelectorAll("a[data-tab]");
+    var barres = [];
+    for (var i = 0; i < liens.length; i++) {
+      var item = liens[i].parentNode;
+      var strip = item && item.parentNode;
+      if (!strip || strip === document.body || strip === document.documentElement) continue;
+      // une barre d'onglets est courte : au-delà, on est tombé sur un conteneur
+      // qui n'en est pas une, et notre onglet s'y perdrait
+      if (strip.children.length > 24) continue;
+      if (barres.indexOf(strip) < 0) barres.push(strip);
+    }
+    return barres;
   }
-  function siblingItems(a, b) {
-    for (var pa = a; pa; pa = pa.parentNode)
-      for (var pb = b; pb; pb = pb.parentNode)
-        if (pb.parentNode && pb.parentNode === pa.parentNode) return [pa, pb];
-    return null;
+  // Les ITEMS d'une barre, c'est-à-dire ceux qui portent vraiment un onglet :
+  // Roll20 glisse parfois autre chose entre eux, et compter les enfants nus
+  // poserait le nôtre au mauvais rang.
+  function itemsOnglets(strip) {
+    var out = [];
+    for (var i = 0; i < strip.children.length; i++) {
+      var c = strip.children[i];
+      if (c.querySelector && c.querySelector("a[data-tab]")) out.push(c);
+    }
+    return out;
   }
   function dialogOf(node) {
     return node.closest(".ui-dialog") || node.closest("[class*='dialog']") || node.offsetParent || node.parentElement;
+  }
+  // CE DIALOGUE EST-IL CELUI D'UN PERSONNAGE ? La question ne se posait pas tant
+  // qu'on cherchait l'onglet « Feuille de personnage » : le trouver répondait
+  // déjà oui. Maintenant qu'on ne lit plus aucun libellé, n'importe quelle barre
+  // d'onglets de Roll20 — celle des réglages, celle d'un mod — recevrait notre
+  // onglet, et il s'ouvrirait sur la fiche d'un personnage qui n'est pas là.
+  //
+  // On exige donc que le dialogue PORTE LUI-MÊME la marque, plutôt que de se
+  // contenter du charId : celui-ci se rabat en dernier recours sur le premier
+  // [data-characterid] du document, c'est-à-dire sur un AUTRE dialogue resté
+  // ouvert à côté.
+  function estDialoguePersonnage(dialog) {
+    try {
+      var fe = window.frameElement;
+      if (fe && fe.closest && fe.closest(".characterdialog")) return true;
+    } catch (e) {}
+    if (dialog && dialog.matches && dialog.matches(".characterdialog, [data-characterid]")) return true;
+    if (dialog && dialog.closest && dialog.closest(".characterdialog, [data-characterid]")) return true;
+    if (dialog && dialog.querySelector && dialog.querySelector("[data-characterid]")) return true;
+    // fenêtre popout : pas de dialogue autour, l'adresse fait foi
+    return /^\/editor\/character\//.test(location.pathname);
   }
   function contentBoxOf(dialog, strip) {
     return (dialog.querySelector && dialog.querySelector(".tab-content")) || strip.nextElementSibling;
@@ -479,28 +511,18 @@ if (typeof browser === "undefined") { var browser = chrome; }
 
   function placeTabs() {
     var placed = 0;
-    labelEls(["Feuille de personnage", "Character Sheet"]).forEach(function (feuille) {
-      var bios = labelEls(["Bio & Info", "Bio and Info"]);
-      var items = null;
-      for (var i = 0; i < bios.length && !items; i++) {
-        var it = siblingItems(feuille, bios[i]);
-        if (!it) continue;
-        var parent = it[0].parentNode;
-        if (parent === document.body || parent === document.documentElement) continue;
-        if (parent.children.length > 24) continue;
-        items = it;
-      }
-      if (!items) return;
-      var feuilleItem = items[0], bioItem = items[1], strip = bioItem.parentNode;
+    barresOnglets().forEach(function (strip) {
+      var items = itemsOnglets(strip);
+      // Le PREMIER onglet natif sert de patron : on lui emprunte sa balise et
+      // ses classes, pour que le nôtre ait exactement le même aspect et le même
+      // violet une fois actif. Sans lui, rien à cloner : on passe.
+      var modele = items[0];
+      if (!modele) return;
       var dialog = dialogOf(strip);
+      if (!estDialoguePersonnage(dialog)) return;
       var charId = charIdOfFrame(dialog);
-
-      // Le plateau n'a pas de fiche. Le contrôle est refait à CHAQUE passage, et
-      // pas seulement avant la pose : le journal peut n'avoir pas encore répondu
-      // au premier balayage, et l'onglet serait alors déjà là. On le retire
-      // alors — l'onglet SEUL. Le pane, lui, reste : le système d'onglets de
-      // Roll20 garde un renvoi vers lui, et le supprimer d'un dialogue déjà lié
-      // empêche la fiche du personnage de s'ouvrir, la nôtre comme les siennes.
+      // Le personnage partagé de narration n'est pas une fiche de joueur.
+      // Garder la détection structurelle MIA, sans exiger un onglet natif.
       if (estPlateau(charId)) {
         var vieux = strip.querySelector(".mia-tab");
         if (vieux && vieux.parentNode) vieux.parentNode.removeChild(vieux);
@@ -508,6 +530,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
         if (vieuxPane) { vieuxPane.style.display = "none"; vieuxPane.classList.remove("mia-on"); }
         return;
       }
+
       if (strip.querySelector(".mia-tab")) { placed++; return; }   // déjà là
 
       var contentBox = contentBoxOf(dialog, strip);
@@ -531,9 +554,9 @@ if (typeof browser === "undefined") { var browser = chrome; }
       }
 
       // vrai onglet, cloné des onglets natifs (styles Roll20 : look + actif violet)
-      var tab = document.createElement(feuilleItem.tagName || "li");
-      tab.className = ((feuilleItem.className || "").replace(/\b(active|ui-tabs-active|ui-state-active|chosen)\b/g, "").trim() + " mia-tab").trim();
-      var nativeA = feuilleItem.querySelector("a");
+      var tab = document.createElement(modele.tagName || "li");
+      tab.className = ((modele.className || "").replace(/\b(active|ui-tabs-active|ui-state-active|chosen)\b/g, "").trim() + " mia-tab").trim();
+      var nativeA = modele.querySelector("a");
       var a = document.createElement("a");
       if (nativeA && nativeA.className) a.className = nativeA.className;
       a.setAttribute("href", "javascript:void(0);");
@@ -565,7 +588,10 @@ if (typeof browser === "undefined") { var browser = chrome; }
         if (na && na.getAttribute("data-tab") !== "miafiche") hideOurPane();
       }, true);
 
-      strip.insertBefore(tab, bioItem);   // vrai onglet DANS la barre, entre Feuille et Bio
+      // DEUXIÈME PLACE : devant l'onglet qui occupe le rang 2. S'il n'y en a
+      // qu'un, insertBefore(tab, undefined) ajoute à la fin — et le deuxième
+      // rang, c'est justement la fin.
+      strip.insertBefore(tab, items[1] || null);
       placed++;
     });
     return placed;
@@ -1272,7 +1298,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
             if (d.payload) diffuseTake(d.payload);
             return;
           }
-          rememberSheet(ev.source);
+          if (d.plateau !== true && d.type !== "panneau" && d.type !== "pan-grand" && d.type !== "narration-char") rememberSheet(ev.source);
           // Le panneau règle sa propre taille : c'est LA page servie par le site
           // qui sait ce qu'elle a à montrer, et le châssis ne doit pas devenir la
           // pièce qu'il faut re-signer pour élargir un plateau. Les valeurs sont
@@ -1364,11 +1390,10 @@ if (typeof browser === "undefined") { var browser = chrome; }
   // CE QU'ÉTEINDRE FAIT, ET CE QU'IL NE PEUT PAS FAIRE. Le popup doit pouvoir
   // le dire au joueur sans mentir, alors voici l'inventaire exact.
   //   Sur les pages Roll20 OUVERTES ENSUITE, rien ne se réveille : pas d'onglet
-  //   « Fiche MIA », pas de pane, pas de plateau, pas de bouton dans la barre
-  //   d'outils, pas de pont d20 (il n'est injecté que sur need-bridge, qui ne
-  //   part plus), aucun écouteur de message, aucune interception du lien
-  //   « Prendre », aucune écriture dans le stockage. La frame reste exactement
-  //   telle que Roll20 l'a faite.
+  //   « Fiche MIA », pas de pane, pas de pont d20 (il n'est injecté que sur
+  //   need-bridge, qui ne part plus), aucun écouteur de message, aucune
+  //   interception du lien « Prendre », aucune écriture dans le stockage. La
+  //   frame reste exactement telle que Roll20 l'a faite.
   //   Sur une partie DÉJÀ OUVERTE, rien ne se démonte, et c'est délibéré :
   //     - le pont posé dans le monde principal ne peut pas être retiré. Aucun
   //       script de contenu n'atteint ce monde, sa balise <script> s'est retirée
@@ -1376,10 +1401,6 @@ if (typeof browser === "undefined") { var browser = chrome; }
   //     - les écouteurs déjà posés sont des fonctions anonymes (message de la
   //       frame du haut, clic de capture de « Prendre », resize, ResizeObserver) :
   //       removeEventListener n'a rien à leur passer ;
-  //     - le bouton déjà posé dans la barre d'outils reste, et le guet qui le
-  //       repose aussi. Le retirer serait faisable, mais ce serait un démontage
-  //       de plus dans une interface Vue qu'on ne contrôle pas, pour gagner une
-  //       demi-seconde sur un rechargement de partie ;
   //     - le pane .tab-pane.miafiche ne doit surtout pas être retiré. Le système
   //       d'onglets de Roll20 garde un renvoi vers lui ; le supprimer d'un
   //       dialogue déjà lié empêche la fiche du personnage de s'ouvrir, la
@@ -1415,8 +1436,8 @@ if (typeof browser === "undefined") { var browser = chrome; }
   //
   // Deuxième ligne de défense, gratuite et volontairement conservée : les
   // marqueurs de DOM portent les MÊMES noms dans les deux copies (classe
-  // .mia-tab, id #mia-panneau, attribut data-mia-bridge), si bien que placeTabs
-  // et panMonte abandonnent tout seuls devant le travail de l'autre copie.
+  // .mia-tab, attribut data-mia-bridge), si bien que placeTabs abandonne tout
+  // seul devant le travail de l'autre copie.
   function reclame() {
     try {
       if (window.__miaRoll20) return;   // une copie tient déjà cette frame

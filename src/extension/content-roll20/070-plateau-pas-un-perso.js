@@ -1,11 +1,7 @@
   // ---------- « Narration » porte un plateau, pas un personnage ----------
-  // Ce personnage-là existe pour ranger l'état du plateau dans ses Attributes,
-  // et pour rien d'autre : le MJ le rend contrôlable par tous, c'est le seul
-  // objet d'une campagne où chacun a lecture et écriture. Lui poser l'onglet
-  // « Fiche MIA », c'est inviter à créer une fiche de personnage dessus — et
-  // c'est déjà arrivé : la carte d'attributs d'une fiche en produit une
-  // soixantaine, mesurés à 82 attributs « mia_ » pour 18 attendus, que le pont
-  // doit maintenant retirer au démarrage. On coupe donc à la racine.
+  // Ce personnage partagé stocke les points de narration. L'exclusion de
+  // son onglet évite d'y créer une fiche par erreur. Aucun attribut existant
+  // n'est supprimé par l'extension.
   //
   // LE NOM EST CELUI QUE LE PONT CONNAÎT (roll20-page.js, NARR_NOM) : c'est la
   // même chaîne, comparée de la même façon, et les deux doivent bouger

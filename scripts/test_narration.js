@@ -13,7 +13,7 @@ const document = {querySelector: () => null, addEventListener: () => {}};
 const window = {document, is_gm: true, currentPlayer: {id:'gm'}, addEventListener: (n,f) => {listeners[n]=f;}, Campaign: {characters: {models:[], get: id => chars[id]}}};
 function character(id, name, attributes) {
   const c = {id, get: key => key==='name'?name:key==='controlledby'?'all':'', attribs: {models:[], fetch: () => {c.fetches=(c.fetches||0)+1;}}};
-  c.attribs.create = data => {const m = {attributes:{...data}, get:k=>m.attributes[k], set:d=>Object.assign(m.attributes,d), save: (d,o) => {m.saved=(m.saved||0)+1; if(o.success)o.success();}, destroy: o=>{c.attribs.models.splice(c.attribs.models.indexOf(m),1);if(o.success)o.success();}}; c.attribs.models.push(m); return m;};
+  c.attribs.create = data => {const m = {attributes:{...data}, get:k=>m.attributes[k], set:d=>Object.assign(m.attributes,d), save: (d,o) => {m.saved=(m.saved||0)+1; if(o && o.success)o.success();}, destroy: o=>{c.attribs.models.splice(c.attribs.models.indexOf(m),1);if(o && o.success)o.success();}}; c.attribs.models.push(m); return m;};
   attributes.forEach(a=>c.attribs.create(a)); chars[id]=c;window.Campaign.characters.models.push(c);return c;
 }
 const board = character('board','Narration',[
@@ -21,6 +21,9 @@ const board = character('board','Narration',[
  {name:'mia_narr_pt_p1',current:'100,100',max:''},
  {name:'mia_state',current:'existing MIA character',max:''},
  {name:'mia_state',current:'second existing value',max:''},
+ {name:'mia_narr_future',current:'preserve unknown narration data',max:''},
+ {name:'mia_narr_pt_duplicate',current:'1,2',max:''},
+ {name:'mia_narr_pt_duplicate',current:'3,4',max:''},
  {name:'hp',current:'44',max:'44'}]);
 const hero = character('hero','Riko',[{name:'mia_pv',current:'90',max:'100'}]);
 const bridge = vm.createContext({window, document, location:{pathname:'/editor'}, console, setTimeout:t.setTimeout, clearTimeout:t.clearTimeout});
@@ -32,6 +35,8 @@ send(a,{type:'narration-char'}); assert.equal(a.answers.at(-1).charId,'board');
 send(a,{type:'load',charId:'board',menageGarde:['mia_narr_conf','mia_narr_pt_','mia_narr_bg_'],resync:true});
 assert.equal(a.answers.at(-1).sur,true);
 assert.equal(board.attribs.models.filter(m=>m.get('name')==='mia_state').length,2,'existing character attributes must survive');
+assert.equal(board.attribs.models.filter(m=>m.get('name')==='mia_narr_pt_duplicate').length,2,'no automatic deletion of duplicate attributes');
+assert.equal(board.attribs.models.find(m=>m.get('name')==='mia_narr_future').get('current'),'preserve unknown narration data');
 send(a,{type:'save',charId:'board',attrs:{mia_narr_pt_p1:{current:'700,500'},hp:{current:'0'},jjk_narr_pt_p1:{current:'0,0'}}});
 assert.equal(board.attribs.models.find(m=>m.get('name')==='mia_narr_pt_p1').get('current'),'700,500');
 assert.equal(board.attribs.models.find(m=>m.get('name')==='hp').get('current'),'44');
@@ -61,7 +66,7 @@ vm.runInContext(code,bc);const api=bw.testBoard;
 let conf=api.confVide();assert.equal(conf.donne.mj,5);assert.equal(conf.donne.joueur,3);
 conf.joueurs=[{id:'j1',nom:'Riko',img:''},{id:'j2',nom:'Reg',img:''}];api.prepare(conf);api.distribute();
 assert.equal(Object.keys(api.state().points).length,11);
-const first=writes.at(-1);assert.equal(first.ns,'mia');assert.equal(first.type,'save');assert.equal(first.charId,'board');
+const first=writes.at(-1);assert.equal(first.ns,'mia');assert.equal(first.plateau,true,'board messages must be distinguishable from character messages');assert.equal(first.type,'save');assert.equal(first.charId,'board');
 assert.equal(Object.keys(first.attrs).filter(k=>k.startsWith('mia_narr_pt_')).length,11);
 assert.equal(Object.values(api.state().points).filter(p=>p.x===100).length,5);
 api.distribute();assert.equal(Object.keys(api.state().points).length,11,'redistribute without duplicating tokens');assert.equal(api.state().conf.seq,11);
@@ -72,6 +77,6 @@ assert.equal(api.jugeDroits({gm:false,moi:'alice',controlledby:'all'}),true);
 assert.equal(api.litPoint('invalid'),null);assert.equal(api.litPoint('1200,-9').x,1000);assert.equal(api.litPoint('1200,-9').y,0);
 const raw=fs.readFileSync(path.join(root,'docs/assets/images/fate_token.png'));assert.ok(raw.length>1000);
 assert.ok(read('docs/stylesheets/mia-narration.css').includes('../assets/images/fate_token.png'));
-assert.equal(JSON.parse(read('extension/firefox/manifest.json')).version,'1.0.0.4');
-assert.equal(JSON.parse(read('extension/chrome/manifest.json')).version,'1.0.0.4');
+assert.equal(JSON.parse(read('extension/firefox/manifest.json')).version,'1.0.0.6');
+assert.equal(JSON.parse(read('extension/chrome/manifest.json')).version,'1.0.0.6');
 console.log('Narration: PASS (session distribution, repeated distribution, collection, shared hydration, persistence, permissions, MIA attribute preservation, namespace isolation, browser versions and token asset).');

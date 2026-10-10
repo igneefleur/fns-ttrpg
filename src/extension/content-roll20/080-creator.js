@@ -40,15 +40,14 @@
   // quand il en a donné un, et le thème de Roll20 sinon. Le faire disparaître
   // en mode « auto », comme on l'a envisagé, aurait coûté la seule chose que
   // l'extension sait faire de mieux que le site : sans indice, l'« auto » de la
-  // fiche et la nuit du plateau retombent sur prefers-color-scheme, donc sur le
-  // thème du NAVIGATEUR, et une partie Roll20 en sombre s'ouvrirait en clair
-  // sur un navigateur en clair. Aucune page du site n'a besoin d'être touchée :
+  // fiche retombe sur prefers-color-scheme, donc sur le thème du NAVIGATEUR, et
+  // une partie Roll20 en sombre s'ouvrirait en clair sur un navigateur en clair.
+  // Aucune page du site n'a besoin d'être touchée :
   // elles lisent n comme avant.
   //
   // La fiche garde le dernier mot par sa propre préférence (onglet Options,
   // localStorage mia-r20-night) : un joueur qui a explicitement mis SA fiche en
-  // jour la garde en jour. C'est voulu, le réglage le plus précis gagne ; le
-  // plateau, lui, n'a pas de préférence à lui et suit le popup.
+  // jour la garde en jour. C'est voulu, le réglage le plus précis gagne.
   var NUIT_ORDRE = "auto";
   function normNuit(v) { return v === "jour" || v === "nuit" ? v : "auto"; }
   function nuitEffective() {

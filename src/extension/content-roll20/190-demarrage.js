@@ -22,7 +22,7 @@
             if (d.payload) diffuseTake(d.payload);
             return;
           }
-          rememberSheet(ev.source);
+          if (d.plateau !== true && d.type !== "panneau" && d.type !== "pan-grand" && d.type !== "narration-char") rememberSheet(ev.source);
           // Le panneau règle sa propre taille : c'est LA page servie par le site
           // qui sait ce qu'elle a à montrer, et le châssis ne doit pas devenir la
           // pièce qu'il faut re-signer pour élargir un plateau. Les valeurs sont

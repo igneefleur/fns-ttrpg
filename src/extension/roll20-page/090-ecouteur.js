@@ -53,19 +53,6 @@
         // première demande de cette frame : elle se lie à ce personnage ; une
         // demande ultérieure pour un autre personnage est refusée (verrou 2).
         if (!lier(ev.source, d.charId)) return;
-        // LA LISTE DES PRÉFIXES DU PLATEAU, envoyée par la page qui les écrit.
-        // C'est elle qui rend le ménage possible : sans elle, aMoi() garde tout
-        // et rien n'est jamais détruit. On ne retient que des chaînes commençant
-        // par le préfixe général, pour qu'une page malveillante ne puisse pas
-        // faire passer les attributs NATIFS de Roll20 pour les siens.
-        if (d.menageGarde && d.menageGarde.length) {
-          var g = [], gi;
-          for (gi = 0; gi < d.menageGarde.length; gi++) {
-            var gp = String(d.menageGarde[gi] || "");
-            if (gp.length > 4 && gp.indexOf(PREFIX) === 0) g.push(gp);
-          }
-          if (g.length) menageGarde = g;
-        }
         // perso injoignable : ne pas hydrater avec du vide (la fiche relance load
         // toutes les 500 ms, le Campaign peut arriver après nous)
         var chl = getChar(d.charId);

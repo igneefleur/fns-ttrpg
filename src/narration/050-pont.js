@@ -2,6 +2,7 @@
   // ---------- dialogue avec le pont ----------
   function post(msg) {
     msg.ns = NS;
+    msg.plateau = true;
     try { window.top.postMessage(msg, "*"); } catch (e) {}
   }
   // Le pont d20 n'est injecté par l'extension que sur demande, et rien ne dit
@@ -25,14 +26,6 @@
   // dit lesquels le pont a retenus, pour qu'on garde les nôtres au lieu de les
   // croire effacés.
   var fondsTenus = false;
-  // CE QUI APPARTIENT AU PLATEAU, dit par le plateau lui-même. Le pont range les
-  // attributs de « Narration » : il retire les restes d'une fiche de personnage
-  // ouverte un jour dessus, et dédoublonne les nôtres. Mais il ne peut pas
-  // DEVINER lesquels sont les nôtres — et un critère gravé dans un paquet signé
-  // condamnerait tout nom qu'on se mettrait à écrire plus tard, puisque cette
-  // page-ci change sans signature. On envoie donc la liste, et le pont ne
-  // détruit rien sans elle.
-  var MENAGE_GARDE = [A_CONF, A_PT, A_BG];
   // ON DEMANDE À VOIR LES AUTRES. « load » seul ne rend que ce que ce client-ci
   // tient déjà ; « resync » lui fait d'abord poser la question au serveur. Deux
   // choses distinctes, et c'est toute la réparation : sans la seconde, un
@@ -54,7 +47,7 @@
     var n = Date.now(), rs = false;
     if (n - resyncQuand >= RESYNC) { resyncQuand = n; rs = true; }
     post({ type: "load", charId: charId, allege: fondsTenus === true,
-           menageGarde: MENAGE_GARDE, resync: rs });
+           resync: rs });
   }
   // Une écriture = un lot d'attributs. On note ce qu'on vient d'écrire : l'écho
   // met un aller-retour à revenir, et sans cette note la relecture suivante

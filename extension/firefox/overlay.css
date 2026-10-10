@@ -1,47 +1,25 @@
 /* CSS EN LUMIÈRE (pages de Roll20). Tout ce que l'extension DESSINE elle-même
-   dans la partie tient ici : l'onglet « Fiche MIA », son pane, l'écran « pas
-   encore de fiche », et le cadre du plateau de Narration. Le reste (la fiche,
-   le plateau) vit dans des iframes servies par le site, dont le CSS est
-   totalement isolé de celui-ci.
+   dans la partie tient ici : l'onglet « Fiche MIA », son pane et l'écran « pas
+   encore de fiche ». Le reste — la fiche — vit dans une iframe servie par le
+   site, dont le CSS est totalement isolé de celui-ci.
 
    PALETTE DU LIVRE, jour et nuit, recopiée de docs/stylesheets/mia-fiche.css :
    ce fichier est signé, il ne peut rien charger du site, et il doit tenir seul.
    Les formes aussi viennent de la fiche : une carte, c'est un fond --card, un
    filet --line-2, huit pixels de rayon et une ombre à peine posée ; un titre de
-   section, c'est un petit trait rouge sous un texte espacé. Le cadre du plateau
-   avait la couleur mais pas la forme, il avait donc l'air d'un widget collé sur
-   Roll20 au lieu d'une page du livre.
+   section, c'est un petit trait rouge sous un texte espacé.
 
    LES POLICES DU LIVRE NE SONT PAS LÀ, et il faut le dire plutôt que de le
    laisser croire : Alegreya et Cinzel sont servies par le site, une feuille
    injectée dans Roll20 ne peut pas aller les chercher (la CSP de Roll20 refuse
    la police d'une autre origine), et le paquet ne les embarque pas. On les
    NOMME quand même, en tête de pile : le joueur qui les a installées les verra,
-   les autres auront la meilleure sérif de leur machine. Le contenu des iframes,
+   les autres auront la meilleure sérif de leur machine. Le contenu de l'iframe,
    lui, a bien les vraies polices, puisqu'il vient du site. */
 
 /* onglet « Fiche MIA » : un vrai <li><a> cloné des onglets natifs (il hérite donc du
    style de Roll20, onglet actif violet compris). On n'ajoute que le curseur. */
 .mia-tab, .mia-tab a { cursor: pointer; }
-
-/* ---- bouton du plateau dans la barre d'outils ----
-   Le bouton est un CLONE d'un bouton natif : il porte non seulement les mêmes
-   classes, mais les mêmes attributs data-v-… par lesquels le CSS « scopé » de
-   Vue s'applique. Il n'y a donc RIEN à peindre ici, et c'est voulu : toute
-   couleur écrite de ce côté-ci vieillirait mal, ce fichier étant figé par la
-   signature alors que Roll20 change de thème quand il veut.
-   Reste un seul garde-fou. L'icône est une LIGATURE de la police d'icônes de
-   Roll20 : si cette police venait à manquer, ou à renommer sa ligature, le span
-   afficherait le mot en toutes lettres et pousserait toute la barre. On le
-   borne à la largeur d'une icône, sans rien changer quand tout va bien.
-   La borne est en PIXELS et non en em : une icône manquante peut aussi être une
-   police à zéro, et une borne relative vaudrait alors zéro elle aussi. Les
-   icônes natives mesurent 1.3em, soit environ 21 px ; 26 px les laisse passer
-   toutes sans jamais laisser passer un mot. */
-#mia-barre-bouton .grimoire__roll20-icon {
-  display: inline-block; max-width: 26px; overflow: hidden;
-  white-space: nowrap; vertical-align: middle;
-}
 
 /* ---- palette, jour et nuit ----
    Les variables sont posées SUR NOS PROPRES BOÎTES, jamais sur :root. Cette
@@ -51,36 +29,36 @@
    La nuit vient de la classe .mia-nuit, posée par content-roll20.js d'après le
    réglage miaNuit du popup (« auto » suit Roll20), et JAMAIS d'une media query
    seule : une media query suit le navigateur, que l'utilisateur ne pourrait pas
-   contredire, et le cadre resterait clair pendant que le plateau servi par le
-   site, lui, serait sombre.
+   contredire, et le cadre resterait clair pendant que la fiche servie par le
+   site, elle, serait sombre.
    Seuls les tons dont cette feuille se sert sont déclarés, et non la palette
    entière du livre : une variable posée ici n'est lue que par cette feuille.
-   Elle ne traverse aucune iframe, donc ni la fiche ni le plateau, qui sont des
-   documents servis par le site et portent leur propre palette. */
-.mia-panneau, .mia-create, .mia-creator-frame { 
-  --paper: #ffffff;
-  --bg-side: #ededed;
-  --card: #ffffff;
-  --panel: #f5f5f5;
-  --line: rgba(41, 33, 46, .35);
-  --line-2: rgba(41, 33, 46, .16);
-  --ink: #29212e;
-  --ink-2: #625b65;
-  --red: #d72f2f;
-  --ombre: 0 6px 10px rgba(0, 0, 0, .14), 0 1px 18px rgba(0, 0, 0, .12);
+   Elle ne traverse aucune iframe, donc pas la fiche, qui est un document servi
+   par le site et porte sa propre palette. */
+.mia-create, .mia-creator-frame {
+  --paper:    #faf6eb;
+  --bg-side:  #e4ddcd;
+  --card:     #fffdf6;
+  --panel:    #f6efdd;
+  --line:     #c6bb9f;
+  --line-2:   #d6cbb1;
+  --ink:      #20180c;
+  --ink-2:    #453d2d;
+  --red:      #a5271c;
+  --ombre:    rgba(60, 48, 18, .10);
   --ombre-portee: rgba(0, 0, 0, .28);
 }
-.mia-panneau.mia-nuit, .mia-create.mia-nuit, .mia-creator-frame.mia-nuit { 
-  --paper: #171717;
-  --bg-side: #0e0e0e;
-  --card: #1f1f1f;
-  --panel: #252525;
-  --line: #5c5c5c;
-  --line-2: rgba(255, 255, 255, .15);
-  --ink: #e6e6e6;
-  --ink-2: #b3b3b3;
-  --red: #e16363;
-  --ombre: 0 6px 18px rgba(0, 0, 0, .45);
+.mia-create.mia-nuit, .mia-creator-frame.mia-nuit {
+  --paper:    #201c15;
+  --bg-side:  #14110c;
+  --card:     #262119;
+  --panel:    #2f2a20;
+  --line:     #4f4838;
+  --line-2:   #453e31;
+  --ink:      #eee4cf;
+  --ink-2:    #cbc2ac;
+  --red:      #c65540;
+  --ombre:    rgba(0, 0, 0, .35);
   --ombre-portee: rgba(0, 0, 0, .60);
 }
 
@@ -110,6 +88,74 @@
   display: block !important; width: 100% !important; min-height: 400px;
   border: 0 !important; margin: 0 !important; padding: 0 !important;
   background: var(--bg-side);
+}
+
+/* ---- écran « pas encore de fiche » + bouton de création ----
+   Une carte du livre, posée au milieu du pane : fond --card, filet --line-2,
+   titre en capitales espacées sous son trait rouge. Elle remplaçait un bloc de
+   texte gris clair sans fond, qui n'appartenait à rien. */
+.mia-create {
+  box-sizing: border-box; max-width: 26rem; margin: 22px auto; padding: 18px 22px 22px;
+  text-align: center;
+  background: var(--card); color: var(--ink);
+  border: 1px solid var(--line-2); border-radius: 8px;
+  box-shadow: 0 1px 3px var(--ombre);
+  font: 14px/1.5 'Alegreya', 'EB Garamond', Garamond, 'Times New Roman', serif;
+}
+.mia-create-title {
+  position: relative; display: inline-block; margin: 0 0 10px; padding-bottom: 7px;
+  font-family: 'Cinzel', 'Alegreya', Garamond, 'Times New Roman', serif;
+  font-weight: 700; font-size: 17px; letter-spacing: .05em; color: var(--ink-2);
+}
+.mia-create-title::after {
+  content: ""; position: absolute; left: 50%; bottom: 0; margin-left: -13px;
+  width: 26px; height: 1.5px; background: var(--red); border-radius: 2px;
+}
+.mia-create-msg { margin: 0; color: var(--ink-2); font-size: 13px; }
+/* Le rouge de ce bouton ne suit PAS la nuit, et c'est mesuré : le --red du
+   livre s'éclaircit la nuit parce qu'il y sert de couleur de TEXTE sur fond
+   sombre, et du blanc posé dessus tomberait à 4.4 pour 1, sous le seuil. Le
+   rouge profond du jour tient 7.2 pour 1 contre le blanc cassé, de jour comme
+   de nuit, et reste le rouge du livre. */
+.mia-create-btn {
+  margin-top: 14px; padding: 9px 20px 10px; cursor: pointer;
+  background: #a5271c; color: #fff8f0;
+  border: 1px solid #7c130c; border-radius: 7px;
+  font: 700 14px/1.2 'Alegreya', 'EB Garamond', Garamond, 'Times New Roman', serif;
+  letter-spacing: .02em;
+  box-shadow: 0 1px 3px var(--ombre);
+  transition: background .12s;
+}
+.mia-create-btn:hover { background: #7c130c; }
+.mia-create-btn:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+
+/* Ajouts limités au plateau de narration. */
+#mia-barre-bouton .grimoire__roll20-icon { display: inline-block; max-width: 26px; overflow: hidden; white-space: nowrap; vertical-align: middle; }
+.mia-panneau { 
+  --paper: #ffffff;
+  --bg-side: #ededed;
+  --card: #ffffff;
+  --panel: #f5f5f5;
+  --line: rgba(41, 33, 46, .35);
+  --line-2: rgba(41, 33, 46, .16);
+  --ink: #29212e;
+  --ink-2: #625b65;
+  --red: #d72f2f;
+  --ombre: 0 6px 10px rgba(0, 0, 0, .14), 0 1px 18px rgba(0, 0, 0, .12);
+  --ombre-portee: rgba(0, 0, 0, .28);
+}
+.mia-panneau.mia-nuit { 
+  --paper: #171717;
+  --bg-side: #0e0e0e;
+  --card: #1f1f1f;
+  --panel: #252525;
+  --line: #5c5c5c;
+  --line-2: rgba(255, 255, 255, .15);
+  --ink: #e6e6e6;
+  --ink-2: #b3b3b3;
+  --red: #e16363;
+  --ombre: 0 6px 18px rgba(0, 0, 0, .45);
+  --ombre-portee: rgba(0, 0, 0, .60);
 }
 
 /* ---- cadre du plateau de Narration (ancré à la barre, ou flottant) ----
@@ -223,41 +269,3 @@
 .mia-panneau-ancre .mia-panneau-tete { cursor: default; }
 .mia-panneau-ancre .mia-panneau-grip { cursor: ew-resize; }
 
-/* ---- écran « pas encore de fiche » + bouton de création ----
-   Une carte du livre, posée au milieu du pane : fond --card, filet --line-2,
-   titre en capitales espacées sous son trait rouge. Elle remplaçait un bloc de
-   texte gris clair sans fond, qui n'appartenait à rien. */
-.mia-create {
-  box-sizing: border-box; max-width: 26rem; margin: 22px auto; padding: 18px 22px 22px;
-  text-align: center;
-  background: var(--card); color: var(--ink);
-  border: 1px solid var(--line-2); border-radius: 8px;
-  box-shadow: 0 1px 3px var(--ombre);
-  font: 14px/1.5 "Proxima Nova", proxima-nova, "IBM Plex Sans", "Segoe UI", system-ui, "Helvetica Neue", Helvetica, Arial, sans-serif;
-}
-.mia-create-title {
-  position: relative; display: inline-block; margin: 0 0 10px; padding-bottom: 7px;
-  font-family: "Proxima Nova Condensed", "Proxima Nova", proxima-nova, "IBM Plex Sans", "Segoe UI", Helvetica, Arial, sans-serif;
-  font-weight: 700; font-size: 17px; letter-spacing: .05em; color: var(--ink-2);
-}
-.mia-create-title::after {
-  content: ""; position: absolute; left: 50%; bottom: 0; margin-left: -13px;
-  width: 26px; height: 1.5px; background: var(--red); border-radius: 2px;
-}
-.mia-create-msg { margin: 0; color: var(--ink-2); font-size: 13px; }
-/* Le rouge de ce bouton ne suit PAS la nuit, et c'est mesuré : le --red du
-   livre s'éclaircit la nuit parce qu'il y sert de couleur de TEXTE sur fond
-   sombre, et du blanc posé dessus tomberait à 4.4 pour 1, sous le seuil. Le
-   rouge profond du jour tient 7.2 pour 1 contre le blanc cassé, de jour comme
-   de nuit, et reste le rouge du livre. */
-.mia-create-btn {
-  margin-top: 14px; padding: 9px 20px 10px; cursor: pointer;
-  background: #a5271c; color: #fff8f0;
-  border: 1px solid #7c130c; border-radius: 7px;
-  font: 700 14px/1.2 "Proxima Nova", proxima-nova, "IBM Plex Sans", "Segoe UI", system-ui, "Helvetica Neue", Helvetica, Arial, sans-serif;
-  letter-spacing: .02em;
-  box-shadow: 0 1px 3px var(--ombre);
-  transition: background .12s;
-}
-.mia-create-btn:hover { background: #7c130c; }
-.mia-create-btn:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }

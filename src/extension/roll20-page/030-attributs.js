@@ -121,6 +121,8 @@
     setTimeout(function () { if (!fini) { fini = true; issue(name, "aucune reponse", null); } }, 2500);
   }
   function writeOne(ch, name, v) {
+    // Les écritures des personnages conservent exactement le chemin MIA original.
+    if (!ch || ch.id !== narrId || name.indexOf("mia_narr_") !== 0) return writeOneFiche(ch, name, v);
     if (!ecrivable(name)) return;   // double fond : writeOne reste sûr quel que soit l'appelant
     var data = { name: name, current: str(v && v.current), max: str(v && v.max) };
     // On écrit dans TOUS les homonymes : c'est le seul moyen que la relecture
@@ -184,5 +186,37 @@
       }
       dernieresEcritures[name] = e;
     } catch (err) {}
+  }
+
+
+  function sauveFiche(m) {
+    if (!m || !m.save) return;
+    // Le try/catch reste : un save qui lève ne doit pas arrêter la boucle qui
+    // écrit les autres homonymes.
+    try { m.save(null); } catch (e) {}
+  }
+  function writeOneFiche(ch, name, v) {
+    if (!ecrivable(name)) return;   // double fond : writeOne reste sûr quel que soit l'appelant
+    var data = { name: name, current: str(v && v.current), max: str(v && v.max) };
+    // On écrit dans TOUS les homonymes : c'est le seul moyen que la relecture
+    // rende ce qu'on vient d'écrire, quel que soit celui qu'elle retient. Le
+    // ménage, lui, ramène le compte à un — mais il ne s'exécute qu'une fois par
+    // chargement, et il peut échouer : cette boucle reste la seule garantie.
+    var tous = findAllAttrs(ch, name);
+    if (!tous.length) {
+      var neuf = ch.attribs.create(data, { silent: true });
+      sauveFiche(neuf);
+      return;
+    }
+    for (var k = 0; k < tous.length; k++) {
+      var mk = tous[k];
+      // On garde le set SILENCIEUX : c'est lui qui évite l'événement change, donc
+      // onAttribChange puis updateSheetValues, qui plante quand la fiche du
+      // personnage est ouverte à côté.
+      if (mk.set) mk.set(data, { silent: true });
+      else { mk.attributes = mk.attributes || {}; mk.attributes.name = data.name; mk.attributes.current = data.current; mk.attributes.max = data.max; }
+      sauveFiche(mk);
+    }
+    return;
   }
 

@@ -55,7 +55,7 @@ Chaque envoi sur `mia-beta` construit le site et le publie dans le dossier
 `mia-beta/` de la branche `gh-pages`. Le site des joueurs, lui, vient de la branche
 `mia` et se publie dans `mia/` ; la racine appartient à `main`, qui porte le hub.
 
-## Points de narration — extension 1.0.0.4
+## Points de narration — extension 1.0.0.6
 
 L’extension intègre le plateau partagé de narration de JJK, avec les couleurs,
 les polices et les modes clair/sombre de la fiche MIA. Les jetons utilisent
@@ -80,7 +80,7 @@ MIA conservent leur schéma et leurs attributs existants.
 ### Paquets pour cette livraison
 
 `extension/build/` contient les paquets de développement Firefox et Chrome
-**1.0.0.4**. Le paquet Firefox est **non signé** : pour un essai temporaire,
+**1.0.0.6**. Le paquet Firefox est **non signé** : pour un essai temporaire,
 chargez son `manifest.json` via `about:debugging` après extraction. Pour Chrome,
 extrayez le ZIP et utilisez **Charger l’extension non empaquetée**.
 
@@ -98,3 +98,14 @@ python scripts/build_extension.py --sortie extension/build
 
 La version 1.0.0.4 augmente le diamètre des jetons de narration de 50 %,
 à toutes les tailles de panneau (30 à 57 px), sans modifier leur image.
+
+La version 1.0.0.6 rétablit la détection structurelle des onglets MIA,
+y compris dans les campagnes sans feuille de personnage native et dans les
+interfaces localisées. Le diamètre des jetons reste augmenté de 50 %.
+
+La version 1.0.0.6 annule également les changements de style hors demande
+du popup et du créateur. Les écritures de personnage suivent le code MIA
+d'origine. Les messages du plateau ne deviennent plus des destinataires
+des échanges d'objets. Aucun nettoyage automatique ne supprime d'attribut.
+Les commandes d'affichage et de repositionnement du plateau indiquent
+qu'un rechargement de la partie est nécessaire. Voir AUDIT_1.0.0.6.md.

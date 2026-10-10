@@ -1,0 +1,13 @@
+'use strict';
+const fs=require('fs'),path=require('path'),vm=require('vm'),assert=require('assert');
+const remembered=[], takes=[], handlers={};
+const c={IS_TOP:true,IS_POPOUT:false,IS_EDITEUR:true,window:{addEventListener:(n,f)=>handlers[n]=f},ecouteNuit(){},posePriseTake(){},panDemarre(){},panGrand(){},injectPageScript(){},rememberSheet:s=>remembered.push(s),diffuseTake:p=>takes.push(p)};
+vm.createContext(c);vm.runInContext(fs.readFileSync(path.join(__dirname,'../src/extension/content-roll20/190-demarrage.js'),'utf8'),c);c.demarre();
+const board={},hero={};
+for(const type of ['need-bridge','load','save','players','narration-char']) handlers.message({source:board,data:{ns:'mia',plateau:true,type}});
+handlers.message({source:board,data:{ns:'mia',type:'pan-grand',grand:true}});
+assert.equal(remembered.length,0,'narration must not receive character item transfers');
+for(const type of ['need-bridge','load','save']) handlers.message({source:hero,data:{ns:'mia',type}});
+assert.equal(remembered.length,3);assert.ok(remembered.every(s=>s===hero));
+handlers.message({source:hero,data:{ns:'mia',type:'take',payload:{objet:'test'}}});assert.equal(takes.length,1);assert.equal(remembered.length,3);
+console.log('Messages: PASS (narration isolated, character recipients retained, item transfer unchanged).');

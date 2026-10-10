@@ -458,11 +458,20 @@ if (typeof browser === "undefined") { var browser = chrome; }
       o[CLE_PAN_BIS] = etat.panneau;
       pose(o);
       rendPieces();
+      proposeRechargement();
     });
 
     elPanReplacer.addEventListener("click", function () {
-      try { browser.storage.local.remove(CLE_PAN_GEO); } catch (e) { /* rien à replacer */ }
-      flash("Plateau replacé.");
+      function ok() {
+        flash("Position réinitialisée. Rechargez la partie.");
+        proposeRechargement();
+      }
+      function ko() { flash("Impossible de réinitialiser la position du plateau."); }
+      try {
+        var p = browser.storage.local.remove(CLE_PAN_GEO);
+        if (p && p.then) p.then(ok, ko);
+        else ok();
+      } catch (e) { ko(); }
     });
 
     elBeta.addEventListener("click", function () {
@@ -515,7 +524,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
       // avec MIA doit pouvoir se débarrasser du plateau sans désinstaller, mais
       // ne doit pas avoir à l'allumer pour l'avoir.
       if (!touche[CLE_PAN]) {
-        etat.panneau = !(r[CLE_PAN] === false || r[CLE_PAN_BIS] === false);
+        etat.panneau = (r[CLE_PAN_BIS] != null ? r[CLE_PAN_BIS] : r[CLE_PAN]) !== false;
       }
 
       var k;
