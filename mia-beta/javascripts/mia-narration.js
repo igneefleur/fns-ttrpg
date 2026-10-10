@@ -212,6 +212,7 @@
   // ---------- dialogue avec le pont ----------
   function post(msg) {
     msg.ns = NS;
+    msg.plateau = true;
     try { window.top.postMessage(msg, "*"); } catch (e) {}
   }
   // Le pont d20 n'est injecté par l'extension que sur demande, et rien ne dit
@@ -235,14 +236,6 @@
   // dit lesquels le pont a retenus, pour qu'on garde les nôtres au lieu de les
   // croire effacés.
   var fondsTenus = false;
-  // CE QUI APPARTIENT AU PLATEAU, dit par le plateau lui-même. Le pont range les
-  // attributs de « Narration » : il retire les restes d'une fiche de personnage
-  // ouverte un jour dessus, et dédoublonne les nôtres. Mais il ne peut pas
-  // DEVINER lesquels sont les nôtres — et un critère gravé dans un paquet signé
-  // condamnerait tout nom qu'on se mettrait à écrire plus tard, puisque cette
-  // page-ci change sans signature. On envoie donc la liste, et le pont ne
-  // détruit rien sans elle.
-  var MENAGE_GARDE = [A_CONF, A_PT, A_BG];
   // ON DEMANDE À VOIR LES AUTRES. « load » seul ne rend que ce que ce client-ci
   // tient déjà ; « resync » lui fait d'abord poser la question au serveur. Deux
   // choses distinctes, et c'est toute la réparation : sans la seconde, un
@@ -264,7 +257,7 @@
     var n = Date.now(), rs = false;
     if (n - resyncQuand >= RESYNC) { resyncQuand = n; rs = true; }
     post({ type: "load", charId: charId, allege: fondsTenus === true,
-           menageGarde: MENAGE_GARDE, resync: rs });
+           resync: rs });
   }
   // Une écriture = un lot d'attributs. On note ce qu'on vient d'écrire : l'écho
   // met un aller-retour à revenir, et sans cette note la relecture suivante
@@ -704,33 +697,10 @@
     lblMot.textContent = "";
     boiteMot.hidden = true;
   }
-
-  // CE QUE LE PONT A RETIRÉ DE « NARRATION ». Une fois par chargement, il en
-  // enlève tout attribut « mia_ » qui n'est pas « mia_narr_ » — la trace d'une
-  // fiche de personnage ouverte un jour sur ce personnage-là (mesuré chez
-  // l'auteur : 82 attributs pour 18 attendus) — et fusionne les homonymes. Il
-  // rapporte { trouves, etrangers, doublons, retires } avec la lecture suivante.
-  //
-  // Le plateau n'en montre QUE le compte de ce qui a disparu, et une seule fois :
-  // ce n'est pas une panne, c'est un ménage, et le reste du rapport (dont l'arrêt
-  // sur refus) part dans la trace de dépannage. Le mot ne dit pas « de fiche » :
-  // les homonymes fusionnés, eux, étaient bien du plateau.
-  //
-  // La lecture est tolérante à dessein. Le pont est signé et le plateau ne l'est
-  // pas : ils ne sont jamais déployés le même jour, et le nombre nu comme
-  // l'objet détaillé doivent tous deux se lire.
+  // Diagnostic uniquement : les doublons restent conservés et sont tous mis à jour.
   function ditMenage(d) {
-    if (!d || d.menage == null) return;
-    var m = d.menage, n = 0;
-    if (typeof m === "number") n = m;
-    else if (Object.prototype.toString.call(m) === "[object Array]") n = m.length;
-    else if (typeof m === "object") {
-      n = entier(m.retires != null ? m.retires : (m.n != null ? m.n : m.nb), 0);
-      trace("menage", { menage: m });
-    }
-    if (!(n > 0)) return;
-    mot(n > 1 ? ("Ménage : " + n + " attributs retirés du plateau.")
-              : "Ménage : 1 attribut retiré du plateau.", "menage");
+    if (!d || !d.menage || typeof d.menage !== "object") return;
+    trace("menage", { menage: d.menage });
   }
 
   // ---------- les fonds de zone ----------
