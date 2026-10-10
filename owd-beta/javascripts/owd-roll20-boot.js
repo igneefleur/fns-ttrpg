@@ -109,7 +109,22 @@
     get length() { return Object.keys(mem).length; }
   };
 
-  function post(msg) { msg.ns = "owd"; msg.charId = CHAR_ID; if (window.__owdVueInventaire) msg.inventory = true; try { window.top.postMessage(msg, "*"); } catch (e) {} }
+  var takeOpenedAt = Date.now(), takeEnabled = !window.__owdVueInventaire;
+  function post(msg) {
+    msg.ns = "owd"; msg.charId = CHAR_ID;
+    if (window.__owdVueInventaire) msg.inventory = true;
+    if (!window.__owdVueAttaques) { msg.takeOpenedAt = takeOpenedAt; msg.takeEnabled = takeEnabled; }
+    try { window.top.postMessage(msg, "*"); } catch (e) {}
+  }
+  window.addEventListener('pagehide', function () { takeEnabled = false; post({type:'take-target'}); });
+  window.addEventListener('message', function (ev) {
+    var d = ev.data;
+    if (!d || d.ns !== 'owd' || d.type !== 'take-active' || ev.source !== window.parent || window.__owdVueAttaques) return;
+    takeEnabled = !!d.active;
+    if (takeEnabled) takeOpenedAt = Date.now();
+    post({type:'take-target'});
+  });
+  if(!window.__owdVueAttaques)try{window.parent.postMessage({ns:'owd',type:'take-ready',charId:CHAR_ID},'*');}catch(e){}
 
   // ---------- mode jour / nuit ----------
   // Le CSS nuit existe déjà dans la feuille de la fiche (html.night …) ; ici on
@@ -1489,7 +1504,7 @@
         if (collaboration && d.fresh === true && !gele && !collaborationApplique) recoitCollaboration(d.attrs || {});
       } else if (!collaborationPont || d.fresh === true) hydrate(d.attrs);
     }
-    // objet pris au tchat : diffusé à TOUTES les fiches ouvertes (le lien
+    // objet pris au tchat : destiné à une seule fiche, choisie par l'extension (le lien
     // /owd_take est public, chaque client décide s'il le prend), d'où l'absence
     // de filtre sur charId ; c'est le dialogue de réception qui demande
     // confirmation.

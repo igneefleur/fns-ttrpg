@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "3.8.2b";
+  var RELEASE = "3.8.4b";
   var SCHEMA = 12;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -2489,6 +2489,7 @@
   // repasse pas, le bandeau reste.
   var elSavePanne = null;
   function save() {
+    window.OwdInventoryData.bind(state.inv.objets);
     // La mise en forme se fait HORS du try du stockage, et son échec se dit
     // autrement. Un mod qui range une donnée circulaire dans ctx.state fait
     // jeter stringify : setItem n'est alors jamais atteint, donc sous Roll20 le
@@ -6832,7 +6833,7 @@
     var gSel = null;
     if (!jumeau) {
       gSel = el("select");
-      [["sac", window.OwdInventoryData.backpack(items) ? "Sac à dos" : "Hors sac"], ["poches", "Poches"]].forEach(function (g) {
+      (window.OwdInventoryData.backpack(items) ? [["sac", "Sac à dos"], ["poches", "Poches"]] : [["poches", "Poches"]]).forEach(function (g) {
         var o = el("option", null, g[1]);
         o.value = g[0];
         gSel.appendChild(o);
@@ -7727,22 +7728,22 @@
     // POCHES et SAC À DOS : des tuiles, et l'encombrance contre la capacité.
     // Le sac montre D'ABORD ses emplacements, sur leurs propres lignes.
     function groupeLibre(ou, titre, poids, cap) {
-      var bag=window.OwdInventoryData.backpack(items), loose=titre==="Hors sac";
-      function visible(it){return it.ou===ou && (loose ? !it.dans : ou==="sac" ? bag&&it.dans===bag.ref : !it.dans);}
+      var bag=window.OwdInventoryData.backpack(items);
+      function visible(it){return it.ou===ou && (ou==="sac" ? bag&&it.dans===bag.ref : !it.dans);}
       var g = el("div", "pc-obj-group");
       var pds = el("span", "pds");
       pds.title = "Encombrance contre capacité";
       function maj() {
         var p = poids(), c = cap();
-        pds.textContent = loose ? fmtP(p) + " eb" : fmtP(p) + " / " + fmtP(c) + " eb";
-        pds.classList.toggle("over", !loose && p > c);
+        pds.textContent = fmtP(p) + " / " + fmtP(c) + " eb";
+        pds.classList.toggle("over", p > c);
       }
       maj();
       majGroupes.push(maj);
       var head = bandeau(titre, pds);
-      if (ou === "sac" && !loose && nbEp("sacep")) head.insertBefore(compteEp("sacep"), pds);
+      if (ou === "sac" && nbEp("sacep")) head.insertBefore(compteEp("sacep"), pds);
       g.appendChild(head);
-      if (ou === "sac" && !loose && nbEp("sacep")) g.appendChild(lignesEp("sacep"));
+      if (ou === "sac" && nbEp("sacep")) g.appendChild(lignesEp("sacep"));
       var tiles = el("div", "pc-obj-tiles");
       tiles.style.setProperty("--obj-cols", 5);
       items.forEach(function (it) { if (visible(it)) tiles.appendChild(tile(it)); });
@@ -7752,7 +7753,7 @@
         var o = { id: "", ref: uid("o"), nom: "", img: "", qte: 1, poids: 0, encombre: 0, places: 0, nourri: false, achat: 0, vente: null,
                   desc: "", ou: ou, emp: -1, rapide: false, vet: "", acc: "", poches: 0, froid: 0, chaud: 0,
                   sac: false, cap: 0, ceint: false, ep: 0, ebMax: 0, contenant: "", contenu: "", dans: "", arme: null };
-        if(ou === "sac" && !loose && bag) o.dans=bag.ref;
+        if(ou === "sac" && bag) o.dans=bag.ref;
         items.push(o);
         sel = o;
         render();
@@ -8284,6 +8285,7 @@
     }
     function render() {
       fermeMenu();
+      window.OwdInventoryData.bind(items);
       if(sel && items.indexOf(sel)<0) sel=null;
       majGroupes = [];
       panelHooks.length = 0;
@@ -8292,8 +8294,6 @@
       leftBox.appendChild(groupeCeinture());
       leftBox.appendChild(groupeLibre("poches", "Poches", ebPoches, capPoches));
       if(window.OwdInventoryData.backpack(items)) leftBox.appendChild(groupeLibre("sac", "Sac à dos", ebSac, capSac));
-      if(!window.OwdInventoryData.backpack(items)||items.some(function(o){return o.ou==="sac"&&!o.dans;}))
-        leftBox.appendChild(groupeLibre("sac", "Hors sac", function(){return ebOu("sac");}, function(){return 0;}));
       renderPanel();
       updateTotal();
       applyEdit(container, "inv");
