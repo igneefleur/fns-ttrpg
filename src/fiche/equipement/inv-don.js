@@ -143,7 +143,7 @@
     var gSel = null;
     if (!jumeau) {
       gSel = el("select");
-      [["sac", window.OwdInventoryData.backpack(items) ? "Sac à dos" : "Hors sac"], ["poches", "Poches"]].forEach(function (g) {
+      (window.OwdInventoryData.backpack(items) ? [["sac", "Sac à dos"], ["poches", "Poches"]] : [["poches", "Poches"]]).forEach(function (g) {
         var o = el("option", null, g[1]);
         o.value = g[0];
         gSel.appendChild(o);

@@ -28,8 +28,9 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
  const browser=await engine.launch({headless:true,...(engine===chromium?{executablePath:process.env.CHROMIUM_EXECUTABLE||chromium.executablePath(),args:['--no-sandbox']}:{} )});const errors=[];
  try{const ctx=await browser.newContext({viewport:{width:1600,height:1000}});
  await ctx.exposeBinding('backend',async(_,m)=>{if(m.kind==='read'){if(readFails.has(m.id))throw Error('Réseau coupé');await new Promise(r=>setTimeout(r,30));return C.copy(states[m.id]);}if(m.kind==='chat'){chats.push(m.text);return;}if(m.kind==='write'){if(writeFails.has(m.id))return;states[m.id][m.data.name]={current:String(m.data.current||''),max:String(m.data.max||'')};writes.push({id:m.id,name:m.data.name});}});
- await ctx.addInitScript(({url})=>{const store={owdBeta:true,owdNuit:'nuit',owd_site_url:url+'/'};window.dragTrace=[];for(const type of ['dragstart','dragenter','drop','dragend'])document.addEventListener(type,e=>dragTrace.push({type,trusted:e.isTrusted,target:e.target.id||e.target.className,types:e.dataTransfer&&Array.from(e.dataTransfer.types),data:type==='drop'&&e.dataTransfer?e.dataTransfer.getData('application/x-owd-item'):null}),true);window.addEventListener('message',e=>{if(e.data&&/inventory-(drag|drop)/.test(e.data.type))dragTrace.push(e.data)});window.browser={runtime:{getURL:p=>url+'/ext/'+p},storage:{local:{get:async()=>({...store,...JSON.parse(localStorage.getItem("extension-store")||"{}")}),set:async o=>localStorage.setItem("extension-store",JSON.stringify({...JSON.parse(localStorage.getItem("extension-store")||"{}"),...o}))},onChanged:{addListener(){}}}};},{url:process.env.CROSS_ORIGIN==='1'?url.replace('127.0.0.1','localhost'):url});
+ await ctx.addInitScript(({url})=>{const store={owdBeta:true,owdNuit:'nuit',owd_site_url:url+'/',owd_sheet_url:url+'/roll20-fiche.html'};window.dragTrace=[];for(const type of ['dragstart','dragenter','drop','dragend'])document.addEventListener(type,e=>dragTrace.push({type,trusted:e.isTrusted,target:e.target.id||e.target.className,types:e.dataTransfer&&Array.from(e.dataTransfer.types),data:type==='drop'&&e.dataTransfer?e.dataTransfer.getData('application/x-owd-item'):null}),true);window.addEventListener('message',e=>{if(e.data&&/inventory-(drag|drop)/.test(e.data.type))dragTrace.push(e.data)});window.browser={runtime:{getURL:p=>url+'/ext/'+p},storage:{local:{get:async()=>({...store,...JSON.parse(localStorage.getItem("extension-store")||"{}")}),set:async o=>localStorage.setItem("extension-store",JSON.stringify({...JSON.parse(localStorage.getItem("extension-store")||"{}"),...o}))},onChanged:{addListener(){}}}};},{url:process.env.CROSS_ORIGIN==='1'?url.replace('127.0.0.1','localhost'):url});
  
+ if(process.env.TEST_TAKE_ONLY==='1')await ctx.addInitScript(()=>{window.takeTrace=[];window.addEventListener('message',e=>{if(e.data&&e.data.ns==='owd'&&(e.data.takeOpenedAt||/^take/.test(e.data.type)))takeTrace.push({type:e.data.type,at:e.data.takeOpenedAt,enabled:e.data.takeEnabled,active:e.data.active});});});
  const pages=await Promise.all([ctx.newPage(),ctx.newPage()]);pages.forEach(p=>p.on('pageerror',e=>errors.push(e.message)));
  await Promise.all(pages.map(p=>p.goto(url+'/editor')));const [a,b]=pages;
  await a.locator('#owd-outil-inventaire').click();await b.locator('#owd-outil-inventaire').click();
@@ -43,6 +44,36 @@ const ia=inv(wa),ib=inv(wb);await ia.locator('[data-module="inv"]').waitFor();aw
  assert.deepEqual(await wa.locator('option').evaluateAll(os=>os.map(o=>o.value)),['','empty','other']);
  assert.equal(await ia.locator('[data-module]').count(),1);assert.equal(await ia.locator('.pc-tab').count(),0);
  console.log('OK personnages contrôlés, vue strictement Inventaire, même bundle natif');
+ if(process.env.TEST_TAKE_ONLY==='1'){
+   const payload=Buffer.from(JSON.stringify({n:'Jeton reçu',q:1,p:.1,k:'test-take',d:'Réception unique'})).toString('base64');
+   await a.evaluate(p=>{const n=document.createElement('a');n.id='take-test';n.href='/owd_take '+p;n.textContent='Prendre';document.querySelector('#textchat-log').appendChild(n);},payload);
+   const sheets=()=>a.frames().filter(f=>f.url().includes('/roll20-fiche.html'));
+   async function take(target){await a.locator('#take-test').click();try{await target.locator('.pc-modal-over').waitFor({timeout:10000});}catch(e){for(const f of a.frames())console.log(f.url(),await f.evaluate(()=>window.takeTrace||[]));throw e;}await a.waitForTimeout(1800);let total=0;for(const f of sheets())total+=await f.locator('.pc-modal-over').count();assert.equal(total,1,'un seul dialogue parmi toutes les fiches');}
+   async function cancel(target){await target.getByRole('button',{name:'Annuler',exact:true}).evaluate(n=>n.click());}
+   await choose(wa,'other');const other=wa.frameLocator('iframe[data-character="other"]');await other.locator('.pc-sheet').waitFor();
+   await take(other);assert.deepEqual(await other.locator('.pc-modal-over select option').evaluateAll(ns=>ns.map(n=>n.textContent)),['Poches']);await cancel(other);
+   for(const f of sheets()){assert.equal(await f.locator('.pc-obj-ghead').filter({hasText:'Hors sac'}).count(),0);assert.equal(await f.locator('.pc-obj-tile').filter({hasText:'Pain'}).count(),1);}
+   async function full(id,char){await a.evaluate(({id,char})=>{const n=document.createElement('iframe');n.id=id;n.style='position:fixed;left:300px;top:0;width:1000px;height:900px;z-index:200000';n.src='/ext/creator.html#c='+char+'&m=beta';document.body.appendChild(n);},{id,char});const f=a.frameLocator('#'+id).frameLocator('#owd-remote');await f.locator('.pc-sheet').waitFor();return f;}
+   const first=await full('take-first','shared');const last=await full('take-last','other');
+   // Le trafic des anciennes vues ne doit pas changer le destinataire.
+   await a.waitForTimeout(3500);await take(last);await cancel(last);
+   await a.locator('#take-last').evaluate(n=>n.remove());await a.waitForTimeout(150);await take(first);await cancel(first);
+   await a.locator('#take-first').evaluate(n=>n.style.display='none');await choose(wa,'shared');
+   await a.waitForTimeout(2500);await take(ia);
+   await ia.getByRole('button',{name:'Prendre',exact:true}).evaluate(n=>n.click());
+   for(let i=0;i<100&&!C.read(states.shared).state.inv.objets.some(o=>o.id==='test-take'&&o.qte===1&&o.ou==='poches');i++)await a.waitForTimeout(200);
+   const taken=C.read(states.shared).state.inv.objets.filter(o=>o.id==='test-take');assert.equal(taken.length,1);assert.equal(taken[0].qte,1);assert.equal(taken[0].ou,'poches');assert.equal(C.read(states.other).state.inv.objets.filter(o=>o.id==='test-take').length,0);
+   const reopened=await full('take-reopened','other');await take(reopened);await cancel(reopened);
+   await a.locator('#take-reopened').evaluate(n=>n.style.display='none');
+   await a.locator('#owd-outil-inventaire').click();await a.locator('#owd-outil-inventaire').click();await a.waitForTimeout(300);await take(ia);await cancel(ia);
+   await wa.locator('.inventaire-onglet[data-character="shared"] .inventaire-fermer').click();await other.locator('.pc-sheet').waitFor();await a.waitForTimeout(300);await take(other);await cancel(other);
+   await choose(wa,'shared');await ia.locator('.pc-sheet').waitFor();await a.waitForTimeout(300);
+   // Le panneau Attaques et Monde ne deviennent jamais destinataires.
+   await a.locator('#owd-outil-attaques').click();let attackPage;for(let i=0;i<80;i++){attackPage=a.frames().find(f=>f.url().includes('/roll20-attaques.html'));if(attackPage&&await attackPage.locator('select option').count())break;await a.waitForTimeout(100);}
+   await attackPage.locator('select').selectOption('other');await attackPage.frameLocator('iframe.inventaire-active').locator('.pc-sheet').waitFor();
+   await a.locator('#owd-outil-monde').click();await a.waitForTimeout(2500);await take(ia);await cancel(ia);
+   assert.deepEqual(errors,[]);console.log('OK Prendre unique : dernier onglet, dernière fiche, fermeture, changement d’onglet, réception dans les poches, Attaques/Monde exclus');return;
+ }
  await a.locator('#owd-outil-monde').click();await a.locator('.owd-panneau').filter({hasText:'Monde'}).waitFor();
  const sizes=await a.locator('.owd-panneau').evaluateAll(ns=>ns.map(n=>({t:n.textContent,w:n.offsetWidth,h:n.offsetHeight})));
  assert.ok(sizes.some(s=>s.t.includes('Monde')&&s.h<500));assert.ok(sizes.some(s=>s.t.includes('Inventaire')&&s.h<800));

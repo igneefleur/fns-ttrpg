@@ -6,6 +6,7 @@
   // repasse pas, le bandeau reste.
   var elSavePanne = null;
   function save() {
+    window.OwdInventoryData.bind(state.inv.objets);
     // La mise en forme se fait HORS du try du stockage, et son échec se dit
     // autrement. Un mod qui range une donnée circulaire dans ctx.state fait
     // jeter stringify : setItem n'est alors jamais atteint, donc sous Roll20 le

@@ -553,9 +553,10 @@ if (typeof browser === "undefined") { var browser = chrome; }
         pane.classList.add("owd-on");   // seule cette classe rend le pane visible (overlay.css)
         for (var k = 0; k < strip.children.length; k++) strip.children[k].classList.remove("active");
         tab.classList.add("active");
+        var frame=pane.querySelector('iframe');if(frame)frame.contentWindow.postMessage({ns:'owd',type:'take-active',active:true},'*');
         refitFrame();   // l'iframe redevient visible : réajuster sa hauteur au dialogue
       }
-      function hideOurPane() { pane.style.display = "none"; pane.classList.remove("owd-on"); tab.classList.remove("active"); }
+      function hideOurPane() { pane.style.display = "none"; pane.classList.remove("owd-on"); tab.classList.remove("active");var frame=pane.querySelector('iframe');if(frame)frame.contentWindow.postMessage({ns:'owd',type:'take-active',active:false},'*'); }
 
       // On gère nous-mêmes l'affichage (fiable quel que soit le moment où bindTabEvents
       // s'exécute) et on bloque le gestionnaire délégué de Roll20 pour NOTRE onglet.
@@ -610,20 +611,25 @@ if (typeof browser === "undefined") { var browser = chrome; }
   // La fiche vit dans une iframe : elle ne voit pas le tchat. C'est donc ICI
   // qu'on intercepte le clic sur le lien « [Prendre](/owd_take <payload>) »
   // composé par la fiche, pour renvoyer le payload — jamais interprété ici —
-  // aux fiches ouvertes, qui affichent leur dialogue de réception.
+  // à la dernière fiche ou au dernier onglet d'inventaire ouvert.
   var TAKE_RE = /^\/owd_take\s+([A-Za-z0-9+/=_-]+)$/;
-  var sheets = [];   // fenêtres de fiches (ou popouts) qui nous ont parlé
-  function rememberSheet(w) {
-    if (!w) return;
-    try { if (sheets.indexOf(w) < 0) sheets.push(w); } catch (e) {}
+  var sheets = [];   // seuls les destinataires explicitement déclarés par la fiche
+  function lastSheet() {
+    sheets = sheets.filter(function (s) { try { return s.w && !s.w.closed; } catch (e) { return false; } });
+    return sheets.filter(function(s){return s.enabled;}).sort(function(a,b){return b.at-a.at;})[0];
+  }
+  function rememberSheet(w, d) {
+    if (!w || !Number.isFinite(d.takeOpenedAt) || typeof d.takeEnabled !== 'boolean') return;
+    var s=sheets.filter(function(s){return s.w===w;})[0];
+    if(!s){s={w:w,at:0,enabled:false};sheets.push(s);}
+    if(d.takeProxy===true||d.takeOpenedAt>=s.at){s.at=d.takeOpenedAt;s.enabled=d.takeEnabled;}
+    // Un popout reste un relais unique dans l'éditeur. Ses lectures et ses
+    // sauvegardes périodiques ne changent jamais son ordre d'ouverture.
+    if(IS_POPOUT)try{var target=lastSheet(),o=window.opener;if(o&&!o.closed)o.postMessage({ns:'owd',type:'take-target',takeProxy:true,takeOpenedAt:target?target.at:d.takeOpenedAt,takeEnabled:!!target},'https://app.roll20.net');}catch(e){}
   }
   function diffuseTake(payload) {
-    sheets = sheets.filter(function (w) { try { return w && !w.closed; } catch (e) { return false; } });
-    var n = 0;
-    sheets.forEach(function (w) {
-      try { w.postMessage({ ns: "owd", type: "take", payload: payload }, "*"); n++; } catch (e) {}
-    });
-    return n;
+    var s=lastSheet();if(!s)return 0;
+    try{s.w.postMessage({ns:'owd',type:'take',payload:payload},'*');return 1;}catch(e){return 0;}
   }
   function toast(msg) {
     try {
@@ -680,14 +686,14 @@ if (typeof browser === "undefined") { var browser = chrome; }
     return box;
   }
   function itemBody(p){var body=el('div','owd-item-body'),hero=el('div','owd-item-hero');hero.appendChild(itemImage(p));
-    var heading=el('div','owd-item-heading');heading.appendChild(el('div','owd-item-name',p.n||'Objet'));
+    var heading=el('div','owd-item-heading');
     var type=p.s.filter(function(f){return f[0]==='Type'||f[0]==='Contenant'||f[0]==='Contenu';}).map(function(f){return f[1];});
     if(type.length)heading.appendChild(el('div','owd-item-kind',type.join(' · ')));hero.appendChild(heading);body.appendChild(hero);
     var facts=el('dl','owd-item-facts');p.s.forEach(function(f){if(!f[0]||f[0]==='Quantité'||f[0]==='Type')return;var row=el('div','owd-item-fact');row.appendChild(el('dt',null,f[0]));row.appendChild(el('dd',null,f[1]));facts.appendChild(row);});body.appendChild(facts);
     if(p.d)body.appendChild(el('div','owd-item-description',p.d));return body;
   }
   function itemView(p){var previous=document.activeElement,dialog=poseNuit(el('dialog','owd-des owd-item-dialog'));
-    var head=el('div','owd-des-tete');head.appendChild(el('span','owd-des-titre','Objet'));head.appendChild(el('span','owd-des-compte','× '+p.q));dialog.appendChild(head);dialog.appendChild(itemBody(p));
+    var head=el('div','owd-des-tete');head.appendChild(el('span','owd-des-titre',p.n||'Objet'));head.appendChild(el('span','owd-des-compte','× '+p.q));dialog.appendChild(head);dialog.appendChild(itemBody(p));
     var close=el('button','owd-des-rejouer','Fermer');close.type='button';close.addEventListener('click',function(){dialog.close();});dialog.appendChild(close);
     dialog.addEventListener('close',function(){dialog.remove();if(previous&&previous.isConnected)previous.focus();});document.body.appendChild(dialog);dialog.showModal();close.focus();
   }
@@ -700,13 +706,14 @@ if (typeof browser === "undefined") { var browser = chrome; }
     var data=itemData(payload);if(!data)return false;
     tpl.setAttribute(ITEM_MARK,'1');
     try{var host=el('div','owd-des-hote owd-item-host'),card=poseNuit(el('div','owd-des owd-item'));
-      card.dataset.mode=give?'give':'show';var head=el('div','owd-des-tete');head.appendChild(el('span','owd-des-titre',give?'Objet donné':'Objet montré'));head.appendChild(el('span','owd-des-compte','× '+data.q));card.appendChild(head);card.appendChild(itemBody(data));
-      var foot=el('div','owd-des-pied'),detail=el('button','owd-des-rejouer','Détails'),action=el('button','owd-des-rejouer owd-item-action',give?'Donner':'Montrer');detail.type=action.type='button';
+      card.dataset.mode=give?'give':'show';var head=el('div','owd-des-tete');head.appendChild(el('span','owd-des-titre',data.n||'Objet'));head.appendChild(el('span','owd-des-compte','× '+data.q));card.appendChild(head);card.appendChild(itemBody(data));
+      var foot=el('div','owd-des-pied'),detail=el('button','owd-des-rejouer','Détails');detail.type='button';
       var fold=el('div','owd-des-repli');fold.id='owd-item-details-'+(++itemCount);fold.hidden=true;detail.setAttribute('aria-controls',fold.id);detail.setAttribute('aria-expanded','false');
       detail.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();fold.hidden=!fold.hidden;detail.setAttribute('aria-expanded',String(!fold.hidden));});
-      action.title=give?'Ouvrir le don et choisir la quantité à recevoir':'Voir l’image et les informations de l’objet en grand';
-      action.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();if(give){if(!diffuseTake(payload))toast('Ouvre ta fiche Outward, puis reclique « Donner » pour recevoir cet objet.');}else itemView(data);});
-      foot.appendChild(detail);foot.appendChild(action);card.appendChild(foot);host.appendChild(card);host.appendChild(fold);tpl.parentNode.insertBefore(host,tpl);fold.appendChild(tpl);return true;
+      foot.appendChild(detail);
+      if(give){var action=el('button','owd-des-rejouer owd-item-action','Donner');action.type='button';action.title='Ouvrir le don et choisir la quantité à recevoir';
+        action.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();if(!diffuseTake(payload))toast('Ouvre ta fiche Outward, puis reclique « Donner » pour recevoir cet objet.');});foot.appendChild(action);}
+      card.appendChild(foot);host.appendChild(card);host.appendChild(fold);tpl.parentNode.insertBefore(host,tpl);fold.appendChild(tpl);return true;
     }catch(e){tpl.removeAttribute(ITEM_MARK);return false;}
   }
 
@@ -947,11 +954,9 @@ if (typeof browser === "undefined") { var browser = chrome; }
     // déjà servi et en déduit qu'un nouveau geste commence.
     var lot = (window.OwdDes3d && window.OwdDes3d.lot) ? window.OwdDes3d.lot() : null;
     var piste = el("div", "owd-des-piste");
-    var somme = 0, haut = 0, choisis = [], choix = [];
+    var choisis = [], choix = [];
     for (i = 0; i < liste.length; i++) {
       var de = desFace(liste[i], i, lot);
-      somme += liste[i].valeur;
-      if (liste[i].valeur > haut) haut = liste[i].valeur;
       choisis.push(false);
 
       // ON CHOISIT LES DÉS EN CLIQUANT DESSUS, et c'est la plus grande cible de
@@ -1039,23 +1044,8 @@ if (typeof browser === "undefined") { var browser = chrome; }
     }
     carte.appendChild(chiffres);
 
-    // Le pied dit la SOMME et le MEILLEUR, discrètement. Aucun des deux n'est le
-    // résultat du tour : les dés d'action s'engagent un à un, c'est le joueur qui
-    // choisit lesquels. Les mettre en gros ferait croire à un jet unique.
+    // Les commandes occupent les deux extrémités du pied, comme les cartes d'objet.
     var pied = el("div", "owd-des-pied");
-    pied.appendChild(el("span", "owd-des-info", "somme " + somme));
-    pied.appendChild(el("span", "owd-des-info", "meilleur " + haut));
-
-    // PLUS DE « RE-ANIMER » (retiré à la demande de l'auteur, 21/09/2026) : il
-    // ne servait à rien, et sa place revient aux deux commandes utiles, qui
-    // tiennent désormais sur une même ligne. Le pied a DEUX GROUPES qui ne se
-    // cassent pas : les résultats, puis les commandes ; s'il manque de place,
-    // c'est le groupe entier qui passe à la ligne, jamais un bouton seul.
-    var infos = el("span", "owd-des-groupe");
-    while (pied.firstChild) infos.appendChild(pied.firstChild);
-    pied.appendChild(infos);
-    var cmds = el("span", "owd-des-groupe");
-    pied.appendChild(cmds);
 
     // LE DÉTAIL DE ROLL20, PAR UN BOUTON DE LA CARTE. Le message d'origine était
     // replié dans un <details> posé SOUS la carte, avec son propre libellé : deux
@@ -1067,7 +1057,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
     det.type = "button";
     det.setAttribute("aria-expanded", "false");
     det.setAttribute("title", "Montre le message que Roll20 a réellement écrit.");
-    cmds.appendChild(det);
+    pied.appendChild(det);
 
     // RELANCER LES DÉS CHOISIS, ET EUX SEULS.
     //
@@ -1122,7 +1112,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
       }
       majRelance();
     });
-    cmds.appendChild(rel);
+    pied.appendChild(rel);
 
     function majRelance() {
       var k, n = 0;
@@ -1317,7 +1307,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
     p.anchor.title=p.etat.ancre?'Détacher':'Ancrer';p.anchor.textContent=p.etat.ancre?'⇲':'⇱';paintButton(p);}
   function remplit(p){if(p.frame)return;p.frame=el('iframe','owd-panneau-frame');p.frame.title=p.def.titre;p.frame.setAttribute('allow','clipboard-write');
     p.frame.src=browser.runtime.getURL('panneau.html')+'#p='+p.def.page+'&n='+(nuitEffective()?'1':'0')+'&m='+MODE;p.body.appendChild(p.frame);}
-  function ouvre(p,on){if(!on&&p.def.id==='attaques'&&p.frame)p.frame.contentWindow.postMessage({ns:'owd',type:'attack-preview-cancel'},'*');if(on)p.box.style.zIndex=String(++panelFront);p.etat.ouvert=!!on;applique(p);if(on)remplit(p);range(p);}
+  function ouvre(p,on){if(!on&&p.def.id==='attaques'&&p.frame)p.frame.contentWindow.postMessage({ns:'owd',type:'attack-preview-cancel'},'*');if(on)p.box.style.zIndex=String(++panelFront);p.etat.ouvert=!!on;applique(p);if(on)remplit(p);if(p.def.id==='inventaire'&&p.frame)p.frame.contentWindow.postMessage({ns:'owd',type:'take-active',active:!!on},'*');range(p);}
   function geste(p,e,move){if(e.button!==0)return;e.preventDefault();e.stopPropagation();var target=e.currentTarget,g=geo(p),x=e.clientX,y=e.clientY;
     if(move){p.etat.ancre=false;p.etat.x=g.x;p.etat.y=g.y;}
     var start={x:p.etat.x,y:p.etat.y,w:p.etat.w,h:p.etat.h};p.box.classList.add('owd-panneau-geste');
@@ -1456,7 +1446,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
             if (d.payload) diffuseTake(d.payload);
             return;
           }
-          rememberSheet(ev.source);
+          rememberSheet(ev.source, d);
           // LE CADRE S'AGRANDIT POUR LES RÉGLAGES. Le camp ne peut pas faire
           // sortir un dialogue de son iframe : serré dans une colonne ancrée à
           // la barre, il devient illisible. Il demande donc de la place, on la

@@ -4,7 +4,7 @@
   'use strict';
   var root=document.getElementById('inventaire-panneau'),D=window.OwdInventoryData;
   var attacks=root.dataset.view==='attaques',kind=attacks?'attaques':'inventaire',title=attacks?'Attaques':'Inventaire';
-  var tabs=[],frames={},characters=[],active='',campaign='',ready=false,seq=0,rpcs={},drag=null,hover=null,job=null,running=false,retry=null;
+  var tabs=[],frames={},characters=[],active='',campaign='',ready=false,seq=0,rpcs={},drag=null,hover=null,job=null,running=false,retry=null,panelActive=true;
   var bar=document.createElement('div');bar.className='inventaire-onglets';bar.setAttribute('role','tablist');bar.setAttribute('aria-label',attacks?'Attaques ouvertes':'Inventaires ouverts');
   var plus=document.createElement('button');plus.type='button';plus.className='inventaire-ajouter';plus.textContent='+';plus.setAttribute('aria-label','Ajouter un onglet');
   var notice=document.createElement('p');notice.className='inventaire-notice';notice.setAttribute('role','status');
@@ -23,7 +23,7 @@
   function newTab(id){var t={key:'tab-'+(++seq),id:id||''};tabs.push(t);if(id)ensure(id);return t;}
   function ensure(id){if(frames[id]){frames[id].closing=false;return frames[id];}
     var n=document.createElement('iframe');n.title=title+' — '+name(id);n.dataset.character=id;n.className='inventaire-frame';n.src='roll20-fiche.html#c='+encodeURIComponent(id)+'&view='+kind+'&n='+(document.documentElement.classList.contains('night')?'1':'0');
-    var f={node:n,id:id,closing:false,disposing:false};frames[id]=f;view.appendChild(n);n.addEventListener('load',function(){if(drag)send(f,{type:'inventory-external-drag',drag:drag});});return f;
+    var f={node:n,id:id,closing:false,disposing:false,takeActive:false};frames[id]=f;view.appendChild(n);n.addEventListener('load',function(){var t=tab(active);send(f,{type:'take-active',active:!!(panelActive&&t&&t.id===id&&!f.closing)});if(drag)send(f,{type:'inventory-external-drag',drag:drag});});return f;
   }
   function activate(t){if(!t)return;active=t.key;render();saveTabs();}
   function render(){
@@ -35,7 +35,7 @@
       box.addEventListener('dragenter',over);box.addEventListener('dragover',over);box.addEventListener('dragleave',function(e){if(!box.contains(e.relatedTarget))clearHover();});box.append(b,close);bar.appendChild(box);
     });
     var candidates=characters.filter(function(c){return !assigned(c.id);});plus.disabled=!candidates.length;bar.appendChild(plus);
-    var current=tab(active);Object.keys(frames).forEach(function(id){var f=frames[id],visible=current&&current.id===id&&available(id);if(attacks&&!visible)send(f,{type:'attack-preview-cancel'});f.node.classList.toggle('inventaire-active',!!visible);f.node.setAttribute('aria-hidden',String(!visible));f.node.inert=!visible;});
+    var current=tab(active);Object.keys(frames).forEach(function(id){var f=frames[id],visible=!!(current&&current.id===id&&available(id)&&!f.closing),eligible=visible&&panelActive;if(f.takeActive!==eligible){f.takeActive=eligible;send(f,{type:'take-active',active:eligible});}if(attacks&&!visible)send(f,{type:'attack-preview-cancel'});f.node.classList.toggle('inventaire-active',visible);f.node.setAttribute('aria-hidden',String(!visible));f.node.inert=!visible;});
     picker.hidden=!!(current&&current.id);select.replaceChildren();var o=document.createElement('option');o.value='';o.textContent=candidates.length?'Choisir un personnage…':'Tous les personnages accessibles ont déjà un onglet';select.appendChild(o);candidates.forEach(function(c){var o=document.createElement('option');o.value=c.id;o.textContent=c.name;select.appendChild(o);});select.disabled=!candidates.length;
     if(!job){notice.textContent=current&&current.id&&!available(current.id)?'Vous n’avez plus accès à ce personnage. Les écritures sont bloquées.':!characters.length?'Aucun personnage contrôlé. Le MJ peut vous donner accès à un personnage dans Roll20.':'';notice.hidden=!notice.textContent;}
   }
@@ -80,11 +80,13 @@
     var f=Object.keys(frames).map(function(id){return frames[id];}).filter(function(f){return ev.source===f.node.contentWindow;})[0];
     if(f){
       if(d.charId!==f.id)return;
+      if(d.type==='take-ready'){var current=tab(active);send(f,{type:'take-active',active:!!(panelActive&&current&&current.id===f.id&&!f.closing&&available(f.id))});return;}
       if(d.type==='inventory-result'){var q=rpcs[d.request];if(q&&q.frame===f){clearTimeout(q.timer);delete rpcs[d.request];if(d.error)q.reject(Error(d.error));else q.resolve(d.value);}return;}
       if(!attacks&&d.type==='inventory-drag-start'&&!job){clearTimeout(retry);endDrag();drag={charId:f.id,ref:d.ref,token:d.token};Object.keys(frames).forEach(function(id){send(frames[id],{type:'inventory-external-drag',drag:drag});});return;}
       if(d.type==='inventory-drag-end'){clearHover();var token=d.token;setTimeout(function(){if(drag&&(!token||token===drag.token))endDrag();},400);return;}
       if(d.type==='inventory-tab-drop'&&drag&&d.drag&&d.drag.token===drag.token&&d.drag.charId===drag.charId&&d.drag.ref===drag.ref){var source=drag.charId,ref=drag.ref;endDrag();transfer(source,f.id,ref);return;}
     }
+    if(d.type==='take-active'&&ev.source===window.parent){panelActive=!!d.active;render();return;}
     if(d.type==='attack-preview-cancel'&&(ev.source===window.parent||ev.source===window.top)){Object.keys(frames).forEach(function(id){send(frames[id],d);});return;}
     if(d.type==='panel-theme'&&(ev.source===window.parent||ev.source===window.top)){document.documentElement.classList.toggle('night',!!d.nuit);Object.keys(frames).forEach(function(id){send(frames[id],d);});return;}
     if(d.type!=='inventory-characters-result'||ev.source!==window.top)return;

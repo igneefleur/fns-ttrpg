@@ -15,7 +15,7 @@
   // Backpack links use the same stable refs as ordinary container contents.
   function backpack(items){return items.filter(function(o){return o.sac&&!o.dans&&o.ou==='dos';})[0]||null;}
   function weight(items,item){return group({objets:items},item.ref).reduce(function(n,o){return n+(Number(o.poids)||0)*(Number(o.qte)||0);},0);}
-  function bind(items){var bag=backpack(items);if(!bag)return;items.forEach(function(o){if(o!==bag&&!o.dans&&(o.ou==='sac'||o.ou==='sacep'))o.dans=bag.ref;});}
+  function bind(items){var bag=backpack(items);items.forEach(function(o){if(o!==bag&&!o.dans&&(o.ou==='sac'||o.ou==='sacep')){if(bag)o.dans=bag.ref;else{o.ou='poches';o.emp=-1;}}});}
   function split(items,item,q,ref){q=Number(q);if(item.sac||!(q>0&&q<Number(item.qte)))throw Error('Indiquez une quantité inférieure à la pile.');
     if(items.some(function(o){return o.dans===item.ref;}))throw Error('Videz ce contenant avant de séparer sa pile.');
     if(!ref||items.some(function(o){return o.ref===ref;}))throw Error("Référence de pile invalide.");

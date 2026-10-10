@@ -1,3 +1,35 @@
+## Version 3.8.4b — cartes du chat
+
+OWD Item Show affiche uniquement Détails ; les commandes Montrer de l’inventaire
+restent disponibles. OWD Item Show et OWD Item Give utilisent le nom de l’objet
+en titre, sans le répéter dans le corps. Leur image reprend le portrait 21:32 et
+le cadrage de l’inventaire. OWD Item Give conserve son bouton Donner.
+
+OWD Action Dice garde uniquement Détails à gauche et Relancer à droite : somme
+et meilleur sont retirés. La sélection, la relance des dés et l’accès au message
+Roll20 d’origine sont conservés.
+
+Le schéma reste 12. **fns-owd-beta-3.8.4b.zip** devient la nouvelle base ; le patch
+s’applique à **3.8.3b**. Mettre à jour le site et l’extension. Les paquets de test
+sont dans `essai/` ; les paquets signés de `docs/download/` sont conservés.
+
+## Version 3.8.3b — réception unique et rangement sans sac
+
+« Prendre » ouvre un seul dialogue, dans la dernière fiche ouverte ou le dernier
+onglet d’inventaire activé. Les lectures et sauvegardes des autres vues ne changent
+pas ce choix. Les onglets masqués ou fermés, Monde et Attaques ne sont pas des
+destinataires. Rouvrir la fenêtre Inventaire ou l’onglet Fiche Outward le remet
+en tête ; les popouts passent par un relais unique dans l’éditeur.
+
+La catégorie « Hors sac » est retirée. Sans sac porté, les anciens objets libres
+du sac et les nouveaux objets reçus vont dans les poches. Les objets déjà liés
+à un sac retiré restent à l’intérieur et sont accessibles par son contenu.
+
+Le schéma reste 12. **fns-owd-beta-3.8.3b.zip** devient la nouvelle base ; le patch
+s’applique à **3.8.2b**. Mettre à jour le site ET l’extension : les sources et les
+paquets de test dans `essai/` sont fournis. Les paquets signés de `docs/download/`
+sont conservés ; aucune signature ni publication n’a été lancée.
+
 ## Version 3.8.2b — confirmation des sauvegardes
 
 L’avertissement de sauvegarde en attente disparaît automatiquement dès que tous
