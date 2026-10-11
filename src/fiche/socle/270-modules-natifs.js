@@ -26,7 +26,8 @@
     { id: "pc",           titre: "PC",               onglet: "fiche", colonne: "milieu", build: buildPc },
     { id: "contenance",   titre: "CONTENANCE",       onglet: "fiche", colonne: "milieu", build: buildContenance },
     { id: "desaction",    titre: "ACTIONS",          onglet: "fiche", colonne: "droite", build: buildDesAction },
-    { id: "attaque",      titre: "ARMES",          onglet: "fiche", colonne: "droite", build: buildAttaque },
+    { id: "attaque",      titre: "ATTAQUES",          onglet: "fiche", colonne: "droite", build: buildAttaque },
+    { id: "defense",      titre: "DÉFENSES",         onglet: "fiche", colonne: "droite", build: buildDefense },
     { id: "comps",        titre: "COMPÉTENCES",      onglet: "fiche", colonne: "droite", build: buildComps },
     { id: "recuperation", titre: "RÉCUPÉRATION",     onglet: "fiche", colonne: "droite", build: buildRecuperation },
     // ---- onglet Art ----

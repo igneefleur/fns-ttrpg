@@ -1,14 +1,9 @@
-  // ---- Armes : raccourcis de combat, ressources et lecture des trajets ----
-  // Une entrée ne possède AUCUNE valeur de combat : elle pointe vers un objet
-  // d'arme de l'inventaire. Le TYPE de cette arme relie l'objet aux six coups
-  // du livre (DATA.armes[].attaques), dont le trajet et la garde sont dessinés
-  // ici. Le clic sur une carte de coup garde le geste du module précédent : il
-  // envoie les dégâts dans le tchat.
+  // ---- Attaques liées aux armes ou créées librement ----
   var attaqueVue = { ouverts: Object.create(null), orientation: 0, miroirs: Object.create(null) };
   function buildAttaque() {
     // L'id technique reste « attaque » pour préserver les dispositions déjà
-    // sauvegardées ; seul le titre visible du module devient « Armes ».
-    var b = block("Armes", null, "attaque", function () { rendre(); });
+    // sauvegardées ; le titre visible devient « Attaques ».
+    var b = block("Attaques", null, "attaque", function () { rendre(); });
     var box = el("div", "pc-attaques");
     b.appendChild(box);
     var ouverts = attaqueVue.ouverts;   // état d'interface seulement, jamais sauvegardé
@@ -359,7 +354,7 @@
 
     function carte(entree) {
       var card = el("div", "pc-attaque-card");
-      var it = objetArme(entree.arme);
+      var it = entree.personnalisee ? { nom: entree.nom || "Attaque personnalisée", arme: entree.personnalisee } : objetArme(entree.arme);
 
       // Le choix de l'arme n'existe qu'en édition. L'entrée garde une `ref`
       // interne : renommer l'objet dans l'inventaire ne casse pas le raccourci.
@@ -369,6 +364,7 @@
       var vide = el("option", null, "— Choisir une arme —");
       vide.value = "";
       sel.appendChild(vide);
+      var libre = el("option", null, "Attaque personnalisée"); libre.value = "custom"; libre.selected = !!entree.personnalisee; sel.appendChild(libre);
       armes.forEach(function (o, i) {
         var op = el("option", null, o.nom || ((o.arme && o.arme.type) ? "Arme — " + o.arme.type : "Arme sans nom"));
         op.value = String(i);
@@ -376,19 +372,36 @@
         sel.appendChild(op);
       });
       sel.addEventListener("change", function () {
-        if (sel.value === "") entree.arme = "";
+        if (sel.value === "custom") {
+          entree.arme = "";
+          entree.personnalisee = entree.personnalisee || { attaque: "8", degats: "0", modsDegats: ["", "", ""], modsParade: ["", "", ""], comp: "", type: "", mult: "1", trajet: "", garde: "", touche: "", passage: "" };
+          ouverts[entree.id] = true;
+        } else if (sel.value === "") { entree.arme = ""; entree.personnalisee = null; }
         else {
           var o = armes[parseInt(sel.value, 10)];
           entree.arme = assureRef(o);
+          entree.personnalisee = null;
           ouverts[entree.id] = true;
         }
         refresh();
       });
-      edit.appendChild(fld("Arme", sel));
-      edit.appendChild(miniBtn("✕", "Retirer cette arme", function () {
+      edit.appendChild(fld("Source", sel));
+      edit.appendChild(miniBtn("✕", "Retirer cette attaque", function () {
         state.attaques = state.attaques.filter(function (a) { return a.id !== entree.id; });
         refresh();
       }, "danger pc-attaque-retire"));
+      if (entree.personnalisee) {
+        edit.appendChild(combatTexte("Nom", entree, "nom"));
+        edit.appendChild(carteArme(it, true));
+        var libreChamps = el("div", "pc-arme-line pc-arme-2");
+        [ ["Multiplicateur", "mult"], ["Trajet", "trajet"], ["Garde", "garde"] ].forEach(function (f) {
+          libreChamps.appendChild(combatTexte(f[0], entree.personnalisee, f[1]));
+        });
+        libreChamps.appendChild(fld("Type de touche", combatType(entree.personnalisee, "touche")));
+        libreChamps.appendChild(fld("Type de passage", combatType(entree.personnalisee, "passage")));
+        edit.appendChild(libreChamps);
+        edit.appendChild(el("div", "pc-modal-note", "Trajet : 1:passe>2:frappe. Garde : 1>9. Sans trajet, l’attaque envoie simplement ses dégâts."));
+      }
       card.appendChild(edit);
 
       if (!it) {
@@ -399,6 +412,9 @@
 
       var def = typeArme(it.arme.type);
       var coups = def && Array.isArray(def.attaques) ? def.attaques : [];
+      if (entree.personnalisee && it.arme.trajet) coups = [{ nom: it.nom, mult: it.arme.mult,
+        trajet: it.arme.trajet, garde: it.arme.garde, types: [it.arme.touche, it.arme.passage || it.arme.touche] }];
+      if (entree.personnalisee && !it.arme.trajet && !it.arme.type) def = { types: [it.arme.touche] };
       var ouvert = !!ouverts[entree.id];
       var tete = el("button", "pc-attaque-tete");
       tete.type = "button";
@@ -463,7 +479,7 @@
       // Les armes de mêlée du livre ont six trajets. Les armes à distance,
       // boucliers et armes de jet sans trajet gardent néanmoins un vrai bouton
       // d'attaque : il envoie simplement leurs dégâts de base + MOD et leur type.
-      if (coups.length !== 6) {
+      if (!coups.length) {
         var simple = el("button", "pc-attaque-simple");
         simple.type = "button";
         var stypes = def && Array.isArray(def.types) ? def.types : [];
@@ -526,8 +542,8 @@
       box.innerHTML = "";
       if (!Array.isArray(state.attaques)) state.attaques = [];
       state.attaques.forEach(function (a) { box.appendChild(carte(a)); });
-      if (!state.attaques.length) box.appendChild(el("div", "pc-empty", "Aucune arme."));
-      box.appendChild(miniBtn("+ Ajouter une arme", null, function () {
+      if (!state.attaques.length) box.appendChild(el("div", "pc-empty", "Aucune attaque."));
+      box.appendChild(miniBtn("+ Ajouter une attaque", null, function () {
         var a = { id: uid("atk"), arme: "", utiliseEndurance: false, utiliseMunition: false, munition: "" };
         state.attaques.push(a);
         ouverts[a.id] = true;

@@ -19,7 +19,7 @@
     return fld(libelle, i);
   }
 
-  function carteArme(it) {
+  function carteArme(it, attaqueLibre) {
     var a = it.arme;
 
     function selComp() {
@@ -40,7 +40,7 @@
       remplir();
       s.title = "La compétence affiliée à cette arme.";
       s.addEventListener("change", function () { a.comp = s.value; save(); refresh(); });
-      hooks.push(function () { if (document.activeElement !== s) remplir(); });
+      if (!attaqueLibre) hooks.push(function () { if (document.activeElement !== s) remplir(); });
       return s;
     }
 
@@ -68,7 +68,7 @@
         a[table][rang] = s.value;
         save();
       });
-      hooks.push(function () { if (document.activeElement !== s) remplir(); });
+      if (!attaqueLibre) hooks.push(function () { if (document.activeElement !== s) remplir(); });
       return s;
     }
 
@@ -115,7 +115,7 @@
         save();
         refresh();
       });
-      hooks.push(function () { if (document.activeElement !== s) remplir(); });
+      if (!attaqueLibre) hooks.push(function () { if (document.activeElement !== s) remplir(); });
       return s;
     }
 
@@ -137,11 +137,11 @@
     var l3 = ligne("pc-arme-2");
     l3.appendChild(champArme("Parade", a, "parade", "Difficulté du jet de parade."));
     l3.appendChild(champArme("Réduction", a, "reduction", "Réduction de dégâts de base sur une parade réussie."));
-    card.appendChild(l3);
+    if (!attaqueLibre) card.appendChild(l3);
 
     var l4 = ligne("pc-arme-3");
     for (var j = 0; j < 3; j++) l4.appendChild(fld("MOD", selCarac("modsParade", j)));
-    card.appendChild(l4);
+    if (!attaqueLibre) card.appendChild(l4);
 
     var l5 = ligne("pc-arme-2");
     l5.appendChild(fld("Compétence", selComp()));

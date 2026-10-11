@@ -45,6 +45,17 @@
     for (var i = 0; i < 3; i++) out[i] = liste[i] == null ? "" : String(liste[i]);
     return out;
   }
+  function normCombatLibre(a, comps) {
+    if (!a || typeof a !== "object" || Array.isArray(a)) return null;
+    var out = {};
+    ["attaque", "degats", "parade", "reduction", "type", "mult", "trajet", "garde", "touche", "passage"].forEach(function (k) {
+      out[k] = String(a[k] == null ? "" : a[k]);
+    });
+    out.modsDegats = normModsArme(a.modsDegats); out.modsParade = normModsArme(a.modsParade);
+    out.comp = a.comp && comps[a.comp] ? String(a.comp) : "";
+    out.mains = 1;
+    return out;
+  }
   function normalize(s) {
     var b = blank();
     if (!s || typeof s !== "object") return b;
@@ -172,11 +183,21 @@
         return {
           id: String(a.id || "") || uid("atk"),
           arme: String(a.arme || ""),
+          nom: String(a.nom || ""),
+          personnalisee: normCombatLibre(a.personnalisee, vusComps),
           utiliseEndurance: !!a.utiliseEndurance,
           utiliseMunition: !!a.utiliseMunition,
           munition: String(a.munition || "")
         };
       });
+
+    if (!s.defenses || typeof s.defenses !== "object" || Array.isArray(s.defenses)) s.defenses = {};
+    var esquive = s.defenses.esquive || {};
+    s.defenses.esquive = { comp: vusComps[esquive.comp] ? String(esquive.comp) : "", utiliseEndurance: !!esquive.utiliseEndurance };
+    s.defenses.entrees = (Array.isArray(s.defenses.entrees) ? s.defenses.entrees : []).filter(function (a) { return a && typeof a === "object"; }).map(function (a) {
+      return { id: String(a.id || "") || uid("def"), nom: String(a.nom || ""), arme: String(a.arme || ""),
+        personnalisee: normCombatLibre(a.personnalisee, vusComps), utiliseEndurance: !!a.utiliseEndurance };
+    });
 
     // ---- avantages ----
     if (!Array.isArray(s.avantages)) s.avantages = [];

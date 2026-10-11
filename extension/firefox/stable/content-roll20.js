@@ -711,8 +711,8 @@ if (typeof browser === "undefined") { var browser = chrome; }
       var fold=el('div','owd-des-repli');fold.id='owd-item-details-'+(++itemCount);fold.hidden=true;detail.setAttribute('aria-controls',fold.id);detail.setAttribute('aria-expanded','false');
       detail.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();fold.hidden=!fold.hidden;detail.setAttribute('aria-expanded',String(!fold.hidden));});
       foot.appendChild(detail);
-      if(give){var action=el('button','owd-des-rejouer owd-item-action','Donner');action.type='button';action.title='Ouvrir le don et choisir la quantité à recevoir';
-        action.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();if(!diffuseTake(payload))toast('Ouvre ta fiche Outward, puis reclique « Donner » pour recevoir cet objet.');});foot.appendChild(action);}
+      if(give){var action=el('button','owd-des-rejouer owd-item-action','Prendre');action.type='button';action.title='Choisir la quantité à prendre dans votre inventaire';
+        action.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();if(!diffuseTake(payload))toast('Ouvre ta fiche Outward, puis reclique « Prendre » pour recevoir cet objet.');});foot.appendChild(action);}
       card.appendChild(foot);host.appendChild(card);host.appendChild(fold);tpl.parentNode.insertBefore(host,tpl);fold.appendChild(tpl);return true;
     }catch(e){tpl.removeAttribute(ITEM_MARK);return false;}
   }

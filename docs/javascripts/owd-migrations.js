@@ -1291,6 +1291,29 @@
       items.forEach(function(o){if(bags[o.dans]){links[o.ref]={dans:o.dans,ou:o.ou,emp:o.emp};o.dans="";o.ou="sac";o.emp=-1;}});
       if(Object.keys(links).length)ctx.grenier("sacs-schema12",links);return s;}
   });
+  OwdMigr.ajouter({ schema: 13, titre: "Attaques et défenses personnalisées",
+    notes: "Les attaques peuvent être créées sans arme ; les défenses calculent les dégâts subis.",
+    monter: function (s, ctx) {
+      var retour = ctx.reprendre("combat-schema13");
+      if (retour) {
+        s.defenses = retour.defenses;
+        s.attaques = s.attaques || [];
+        (retour.attaques || []).forEach(function (a) { s.attaques.splice(Math.min(a.index, s.attaques.length), 0, a.entree); });
+      }
+      if (s.modules && Array.isArray(s.modules.ordre) && s.modules.ordre.indexOf("defense") < 0) {
+        var at = s.modules.ordre.indexOf("attaque");
+        if (at >= 0) s.modules.ordre.splice(at + 1, 0, "defense");
+      }
+      return s;
+    },
+    descendre: function (s, ctx) {
+      var libres = []; (s.attaques || []).forEach(function (a, i) { if (a.personnalisee) libres.push({ index: i, entree: a }); });
+      ctx.grenier("combat-schema13", { defenses: s.defenses, attaques: libres });
+      s.attaques = (s.attaques || []).filter(function (a) { return !a.personnalisee; });
+      delete s.defenses;
+      return s;
+    }
+  });
   global.OwdMigr = OwdMigr;
   if (typeof module === "object" && module && module.exports) module.exports = OwdMigr;
 })(typeof window !== "undefined" ? window : (typeof global !== "undefined" ? global : this));

@@ -424,6 +424,8 @@ def main():
         print("  numéro : %s -> %s (%s)" % (release, cible.texte(), cran or "imposé"))
 
     # The map protocol and both hex-grid geometries must remain compatible.
+    if not lancer("calculs de défense et sauvegarde", ["node", "scripts/test_defenses.js"], racine):
+        return 1
     if not lancer("aperçus d’attaque", ["node", "scripts/test_attack_map.js"], racine):
         return 1
     if not lancer("dessin et cycle de vie Jumpgate", ["node", "scripts/test_attack_scene.js"], racine):

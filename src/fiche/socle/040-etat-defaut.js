@@ -151,6 +151,7 @@
       // Contenu sélectionné par sa ref interne.
       // Une entrée : { id, arme, utiliseEndurance, utiliseMunition, munition }.
       attaques: [],
+      defenses: { esquive: { comp: "", utiliseEndurance: false }, entrees: [] },
 
       // ---- avantages ----
       // Une entrée : { nom, cout, desc }. Le coût, en points d'avantage, se

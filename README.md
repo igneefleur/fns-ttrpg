@@ -1,3 +1,38 @@
+## Version 3.9.0b — Attaques et Défenses
+
+Le module Armes devient Attaques : les raccourcis d’inventaire sont conservés,
+et des attaques personnelles peuvent définir difficulté, dégâts, MOD, compétence,
+type, trajet, garde et multiplicateur. Les trajets personnels utilisent le même
+aperçu sur la carte et acceptent les portées longues.
+
+Défenses apparaît sous Attaques : Sans Défense et Esquive sont toujours présents.
+Les autres défenses utilisent une arme (boucliers compris) ou leurs propres valeurs.
+La protection d’une parade vaut la Réduction de l’arme + ses trois MOD, en plus
+des protections portées. Les protections/résistances du même objet ne sont jamais
+comptées deux fois. Une parade ratée utilise seulement les défenses du personnage ;
+une esquive réussie annule tous les dégâts.
+
+Le formulaire saisit les dégâts par type, montre le calcul puis applique les PV
+et envoie le détail au chat. Les composantes du même type sont regroupées : protection,
+pourcentage cumulé, arrondi final vers le bas, minimum zéro. Le jet utilise la
+compétence liée et les dés d’action existants ; la réussite se renseigne dans le
+formulaire. Utiliser Endurance est sauvegardé par entrée : esquive 8 PE, parade
+sa difficulté, dépensés une fois à la validation, même en cas d’échec.
+
+Schéma 13, migration réversible conservant les attaques libres et les défenses.
+Le patch s’applique à 3.8.5b ; 3.9.0b devient la nouvelle base. Mise à jour du site
+uniquement : aucune modification, signature ni publication de l’extension.
+
+## Version 3.8.5b — bouton Prendre du chat
+
+OWD Item Give affiche « Prendre » dans le chat, avec une infobulle et un message
+d’aide cohérents. « Donner » reste l’action de l’inventaire. La réception et le
+payload de l’objet sont conservés.
+
+Le schéma reste 12. **fns-owd-beta-3.8.5b.zip** devient la nouvelle base ; le patch
+s’applique à **3.8.4b**. Mettre à jour l’extension et le site ; les paquets de test
+sont dans `essai/`. Aucune signature ni publication n’a été lancée.
+
 ## Version 3.8.4b — cartes du chat
 
 OWD Item Show affiche uniquement Détails ; les commandes Montrer de l’inventaire
