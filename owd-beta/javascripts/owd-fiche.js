@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "3.13.2b";
+  var RELEASE = "3.13.3b";
   var SCHEMA = 16;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -5868,21 +5868,24 @@
       legende.appendChild(cles);
 
       var controles = el("div", "pc-attaque-controles");
-      var visee = el("label", "pc-attaque-visee");
+      var visee = el("div", "pc-attaque-visee");
       visee.appendChild(el("span", null, "Visée"));
-      var selOri = el("select", "pc-select pc-attaque-orientation");
+      var directions = el("div", "pc-tabs mini pc-attaque-orientations");
+      directions.setAttribute("role", "group");
+      directions.setAttribute("aria-label", "Orientation du personnage");
       ["↑", "↗", "↘", "↓", "↙", "↖"].forEach(function (sym, i) {
-        var op = el("option", null, sym); op.value = String(i);
-        if (i === orientation) op.selected = true;
-        selOri.appendChild(op);
+        var bouton = el("button", "pc-tab pc-attaque-orientation" + (i === orientation ? " on" : ""), sym);
+        bouton.type = "button";
+        bouton.setAttribute("aria-label", ["Haut", "Haut-droite", "Bas-droite", "Bas", "Bas-gauche", "Haut-gauche"][i]);
+        bouton.setAttribute("aria-pressed", String(i === orientation));
+        bouton.title = bouton.getAttribute("aria-label");
+        bouton.addEventListener("click", function () {
+          attaqueVue.orientation = orientation = i;
+          rendre();
+        });
+        directions.appendChild(bouton);
       });
-      selOri.setAttribute("aria-label", "Orientation du personnage");
-      selOri.addEventListener("change", function () {
-        orientation = Math.max(0, Math.min(5, parseInt(selOri.value, 10) || 0));
-        attaqueVue.orientation = orientation;
-        rendre();
-      });
-      visee.appendChild(selOri);
+      visee.appendChild(directions);
       controles.appendChild(visee);
 
       var mir = el("button", "pc-mini pc-attaque-miroir" + (miroirs[entree.id] ? " on" : ""), "⇋ Miroir");
