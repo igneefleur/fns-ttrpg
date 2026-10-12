@@ -42,7 +42,7 @@ jobs:
           python-version: '3.13'
 
       # Pas de WeasyPrint ici : le PDF est désactivé tant qu'il n'y a pas de livre
-      # (voir l'en-tête de mkdocs.ci.yml, qui dit quoi rétablir le jour venu).
+      # (voir l'en-tête de mkdocs.yml, qui dit quoi rétablir le jour venu).
       #
       # « requests » ne sert QU'À scripts/sign_extension.py ; tous les autres
       # scripts tiennent avec la bibliothèque standard, exprès. Il s'installe
@@ -80,7 +80,7 @@ jobs:
       - name: Build
         env:
           NO_MKDOCS_2_WARNING: "1"   # coupe l'encadré promo « MkDocs 2.0 » de Material dans les logs
-        run: mkdocs build --config-file mkdocs.ci.yml
+        run: mkdocs build --config-file mkdocs.yml
 
       # BRANCHE BETA : LA SIGNATURE MOZILLA NE PART JAMAIS TOUTE SEULE. Un push
       # ne fait que déployer le site beta ; l'extension ne se signe que sur
@@ -110,7 +110,7 @@ jobs:
         if: ${{ inputs.signer }}
         env:
           NO_MKDOCS_2_WARNING: "1"
-        run: mkdocs build --config-file mkdocs.ci.yml
+        run: mkdocs build --config-file mkdocs.yml
 
       # La re-signature modifie les deux manifests, parties.js, les paquets,
       # updates.json et l'empreinte : on les recommitte sur la branche, sans
