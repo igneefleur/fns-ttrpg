@@ -58,68 +58,32 @@
     return { protection: p, reduction: r };
   }
   function defensePrompt(nom, mode, entree) {
-    var v = defenseValeurs(entree), body = el("div", "pc-modal-body pc-defense-form"), lignes = [];
-    var reussite = el("input"); reussite.type = "checkbox"; reussite.checked = true;
-    var cout = mode === "esquive" ? 8 : mode === "sans" ? 0 : v.difficulte;
-    var comp = compDe(mode === "esquive" ? entree.comp : v.comp);
-    if (mode !== "sans") {
-      var choix = el("label", "pc-defense-reussite"); choix.appendChild(reussite); choix.appendChild(document.createTextNode("Défense réussie")); body.appendChild(choix);
-      var jet = miniBtn("Lancer le jet", null, function () {
-        // Les dés d'action Roll20 sont conservés, avec leurs relances. Le joueur
-        // indique ensuite le résultat : aucune somme locale concurrente.
-        if (!comp) { flash("Liez une compétence à cette défense en édition."); return; }
-        var n = compDes(comp);
-        doRoll(nom + " — " + (comp.nom || "Compétence") + " — Difficulté " + cout, compBonus(comp), deDe(n), true, n);
-      });
-      body.appendChild(jet);
-      body.appendChild(el("div", "pc-modal-note", "Indiquez la réussite après le jet. Coût de la tentative : " + (state.combatOptions.defenses.utiliseEndurance ? fmtP(cout) : "0") + " PE."));
-    }
-    var liste = el("div", "pc-defense-lignes"), calcul = el("div", "pc-defense-calcul"); body.appendChild(liste);
-    function values() {
-      // Même type = une composante de dégâts, pour appliquer sa protection une
-      // fois et ne pas gagner un arrondi supplémentaire en divisant la saisie.
-      var types = {};
-      lignes.forEach(function (l) { var n = Number(l.input.value.replace(",", ".")); types[l.type.value] = (types[l.type.value] || 0) + (isFinite(n) && n >= 0 ? n : 0); });
-      var out = [], total = 0;
-      Object.keys(types).forEach(function (t) {
-        var defenses = defenseTotaux(t, mode === "parade" ? v : null, reussite.checked);
-        var dg = mode === "esquive" && reussite.checked ? 0 : combatDegats(types[t], defenses.protection, defenses.reduction);
-        total += dg; out.push({ type: t, brut: types[t], p: defenses.protection, r: defenses.reduction, dg: dg });
-      });
-      return { total: total, lignes: out };
-    }
-    function affiche() {
-      var res = values(); calcul.innerHTML = "";
-      res.lignes.forEach(function (l) { calcul.appendChild(el("div", null, combatLibType(l.type) + " : " + fmtP(l.brut) + " − " + fmtP(l.p) + " protection, puis " + fmtP(l.r) + " % → " + fmtP(l.dg))); });
-      calcul.appendChild(el("strong", "pc-defense-total", "Dégâts subis : " + fmtP(res.total)));
-    }
-    function ajoute() {
-      var l = { type: combatType({ touche: "contondant" }, "touche"), input: el("input", "pc-edit-field") };
-      l.input.type = "text"; l.input.inputMode = "decimal"; l.input.value = "0"; l.input.setAttribute("aria-label", "Dégâts de l’attaque");
-      var row = el("div", "pc-defense-ligne"); row.appendChild(l.type); row.appendChild(l.input);
-      // Ce formulaire est temporaire : ne pas sauvegarder/remonter la fiche au
-      // changement de type (combatType possède normalement un listener métier).
-      var select = l.type.cloneNode(true); row.replaceChild(select, l.type); l.type = select;
-      row.appendChild(miniBtn("✕", "Retirer ce type de dégâts", function () { if (lignes.length < 2) return; lignes.splice(lignes.indexOf(l), 1); row.remove(); affiche(); }));
-      l.type.addEventListener("change", affiche); l.input.addEventListener("input", affiche); lignes.push(l); liste.appendChild(row); affiche();
-    }
-    body.appendChild(miniBtn("+ Ajouter un type de dégâts", null, ajoute)); body.appendChild(calcul);
-    reussite.addEventListener("change", affiche); ajoute();
-    dialogue(nom + " — Dégâts reçus", body, function () {
-      if (lignes.some(function (l) { var n = Number(l.input.value.replace(",", ".")); return !l.input.value.trim() || !isFinite(n) || n < 0; })) { flash("Saisissez des dégâts positifs ou nuls."); return false; }
-      // Résoudre avec les valeurs actuelles : une armure ou l'arme peut avoir
-      // été modifiée dans une autre fenêtre pendant que le formulaire était ouvert.
+    var body = el("div", "pc-modal-body pc-defense-form"), degats = el("input", "n"), type = el("select", "pc-select");
+    degats.type = "text"; degats.inputMode = "decimal"; degats.value = "0";
+    degats.setAttribute("aria-label", "Dégâts subis");
+    combatTypes().forEach(function (t) { var op = el("option", null, combatLibType(t)); op.value = t; type.appendChild(op); });
+    type.setAttribute("aria-label", "Type de dégâts");
+    body.appendChild(fld("Dégâts subis", degats)); body.appendChild(fld("Type de dégâts", type));
+    dialogue(nom, body, function () {
+      var brut = Number(degats.value.replace(",", "."));
+      if (!degats.value.trim() || !isFinite(brut) || brut < 0) { flash("Saisissez des dégâts positifs ou nuls."); degats.focus(); return false; }
       if (mode === "parade" && entree.arme && !defenseArme(entree.arme)) { flash("Cette arme n’est plus disponible."); return false; }
-      v = defenseValeurs(entree); if (mode === "parade") cout = v.difficulte;
-      var res = values();
-      state.etat.pv = Math.round((courant("pv") - res.total) * 100) / 100;
-      if (mode !== "sans" && state.combatOptions.defenses.utiliseEndurance) state.etat.pe = Math.round((courant("pe") - cout) * 100) / 100;
-      var champs = res.lignes.map(function (l) { return [combatLibType(l.type), fmtP(l.brut) + " reçus · Protection " + fmtP(l.p) + " · Réduction " + fmtP(l.r) + " % · " + fmtP(l.dg) + " subis"]; });
-      if (mode !== "sans") champs.push(["Résultat", reussite.checked ? "Réussite" : "Échec"]);
-      champs.push(["Dégâts subis", fmtP(res.total)]);
-      if (mode !== "sans" && state.combatOptions.defenses.utiliseEndurance) champs.push(["Endurance", "−" + fmtP(cout)]);
+      var v = defenseValeurs(entree), totaux = defenseTotaux(type.value, mode === "parade" ? v : null, true);
+      var subis = mode === "esquive" ? 0 : combatDegats(brut, totaux.protection, totaux.reduction);
+      var cout = mode === "esquive" ? 8 : mode === "sans" ? 0 : v.difficulte;
+      var comp = compDe(mode === "esquive" ? entree.comp : v.comp);
+      var champs = [["Dégâts reçus", fmtP(brut) + " " + combatLibType(type.value)],
+        ["Protection", fmtP(totaux.protection)], ["Réduction", fmtP(totaux.reduction) + " %"], ["Dégâts subis", fmtP(subis)]];
+      if (mode !== "sans") {
+        champs.push(["Difficulté", fmtP(cout)]);
+        if (comp) champs.push(["Compétence", comp.nom || "Compétence"]);
+        if (state.combatOptions.defenses.utiliseEndurance) {
+          state.etat.pe = Math.round((courant("pe") - cout) * 100) / 100;
+          champs.push(["Endurance", "−" + fmtP(cout)]);
+        }
+      }
       sayChat(nom, champs); refresh();
-    }, "Appliquer les dégâts");
+    }, "Valider");
   }
   function buildDefense() {
     var b = block("Défenses", null, "defense", rendre), box = el("div", "pc-attaques pc-defenses"); b.appendChild(box);

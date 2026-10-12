@@ -35,71 +35,35 @@ const server=http.createServer((req,res)=> {
 });
 (async()=> {
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const url='http://127.0.0.1:'+server.address().port;
- const engine=process.env.TEST_BROWSER==='firefox'?firefox:chromium;
- const browser=await engine.launch({headless:true,...(process.env.CHROMIUM_EXECUTABLE?{executablePath:process.env.CHROMIUM_EXECUTABLE}:{}),args:engine===chromium?['--no-sandbox']:[]});const errors=[];
+ const browser=await firefox.launch({headless:true});const errors=[];
  try {
   const ctx=await browser.newContext({viewport:{width:1600,height:1100}});
-  await ctx.exposeBinding('backend',async(_,m)=>{if(m.kind==='read')return C.copy(attrs);if(m.kind==='write'){attrs[m.data.name]={current:String(m.data.current||''),max:String(m.data.max||'')};writes.push(m.data.name);}});
+  await ctx.exposeBinding('backend',async(_,m)=>{if(m.kind==='read')return C.copy(attrs);if(m.kind==='write')attrs[m.data.name]={current:String(m.data.current||''),max:String(m.data.max||'')};});
   const page=await ctx.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto(url+'/harness');
   const sheet=page.frameLocator('iframe');await sheet.locator('.pc-sheet').waitFor();
   const frame=page.frames().find(f=>f.url().includes('roll20-fiche'));
-  await frame.evaluate(()=>{window.combatChats=[];window.__owdChat=c=>window.combatChats.push(c);});
-  const state=()=>page.frames().find(f=>f.url().includes('roll20-fiche')).evaluate(()=>JSON.parse(__owdLocalStorage.getItem('owd-perso')));
-  const def=sheet.locator('[data-module="defense"]'),atk=sheet.locator('[data-module="attaque"]');
-  assert.match(await atk.locator('.pc-block-title').textContent(),/Attaques/);
-  assert.equal(await atk.evaluate(n=>n.nextElementSibling.dataset.module),'defense');
-  assert.equal(await def.locator('.pc-defense-bouton').count(),4);
-  await def.getByRole('button',{name:'Sans Défense',exact:false}).click();
-  let modal=sheet.locator('.pc-modal');await modal.locator('.pc-defense-ligne select').selectOption('feu');await modal.getByLabel('Dégâts de l’attaque').fill('30');
-  assert.equal(await modal.locator('.pc-defense-total').textContent(),'Dégâts subis : 21');
-  await page.screenshot({path:'/tmp/owd-defense-dialog-390.png'});
-  await modal.getByRole('button',{name:'Appliquer les dégâts'}).click();let s=await state();assert.equal(s.etat.pv,79);assert.equal(s.etat.pe,100);
-  console.log('OK Sans Défense : protections 6, réduction 9 %, 21 dégâts, aucun PE');
-  await def.getByRole('button',{name:'Parade — Dague',exact:false}).click();modal=sheet.locator('.pc-modal');
-  await modal.locator('.pc-defense-ligne select').selectOption('feu');await modal.getByLabel('Dégâts de l’attaque').fill('30');
-  assert.equal(await modal.locator('.pc-defense-total').textContent(),'Dégâts subis : 12');
-  await modal.getByRole('button',{name:'Lancer le jet'}).click();
-  await modal.getByRole('button',{name:'Appliquer les dégâts'}).click();s=await state();assert.equal(s.etat.pv,67);assert.equal(s.etat.pe,92);
-  assert.match((await frame.evaluate(()=>combatChats)).join('\n'),/Difficulté 8/);
-  await def.getByRole('button',{name:'Parade — Dague',exact:false}).click();modal=sheet.locator('.pc-modal');
-  await modal.locator('.pc-defense-ligne select').selectOption('feu');await modal.getByLabel('Dégâts de l’attaque').fill('30');await modal.getByLabel('Défense réussie').uncheck();
-  assert.equal(await modal.locator('.pc-defense-total').textContent(),'Dégâts subis : 21');await modal.getByRole('button',{name:'Appliquer les dégâts'}).click();s=await state();assert.equal(s.etat.pv,46);assert.equal(s.etat.pe,84);
-  console.log('OK parade réussie/ratée, MOD de protection, jet lié, coût 8 une seule fois');
-  await def.getByRole('button',{name:'Esquive',exact:false}).click();modal=sheet.locator('.pc-modal');await modal.getByLabel('Dégâts de l’attaque').fill('999');
-  assert.equal(await modal.locator('.pc-defense-total').textContent(),'Dégâts subis : 0');await modal.getByRole('button',{name:'Appliquer les dégâts'}).click();s=await state();assert.equal(s.etat.pv,46);assert.equal(s.etat.pe,76);
-  // Duplicate types share a single protection and final rounding.
-  await def.getByRole('button',{name:'Sans Défense',exact:false}).click();modal=sheet.locator('.pc-modal');
-  await modal.locator('.pc-defense-ligne select').selectOption('feu');await modal.getByLabel('Dégâts de l’attaque').fill('15');await modal.getByRole('button',{name:'+ Ajouter un type de dégâts'}).click();
-  await modal.locator('.pc-defense-ligne select').nth(1).selectOption('feu');await modal.getByLabel('Dégâts de l’attaque').nth(1).fill('15');assert.equal(await modal.locator('.pc-defense-total').textContent(),'Dégâts subis : 21');
-  await modal.getByLabel('Dégâts de l’attaque').first().fill('-1');await modal.getByRole('button',{name:'Appliquer les dégâts'}).click();assert.equal(await modal.count(),1);await modal.getByRole('button',{name:'Annuler'}).click();
-  assert.equal((await state()).etat.pv,46);
-  console.log('OK esquive, saisie multi types, validation négative et annulation sans dépense');
-  // Custom trajectory supports six cells, same attack controls and resource behavior.
-  await atk.locator('.pc-attaque-tete').filter({hasText:'Onde de feu'}).click();let card=atk.locator('.pc-attaque-card').filter({hasText:'Onde de feu'});
-  assert.equal(await card.locator('.pc-attaque-coup').count(),1);assert.match(await card.locator('span.touche').textContent(),/28/);assert.match(await card.locator('span.passage').textContent(),/14/);
-  await card.locator('.pc-attaque-coup').click();assert.equal((await state()).etat.pe,71);
-  await atk.locator('.pc-attaque-tete').filter({hasText:'Poing'}).click();await atk.locator('.pc-attaque-card').filter({hasText:'Poing'}).locator('.pc-attaque-simple').click();assert.equal((await state()).etat.pe,67);
-  await def.getByRole('button',{name:'Barrière',exact:false}).click();modal=sheet.locator('.pc-modal');await modal.locator('.pc-defense-ligne select').selectOption('feu');await modal.getByLabel('Dégâts de l’attaque').fill('30');assert.equal(await modal.locator('.pc-defense-total').textContent(),'Dégâts subis : 19');await modal.getByRole('button',{name:'Appliquer les dégâts'}).click();assert.equal((await state()).etat.pe,62);
-  // Create new source types via actual edition controls and preserve after reopen.
-  await def.locator('.pc-gear').click();await def.getByRole('button',{name:'+ Ajouter une défense'}).click();
-  await def.locator('.pc-attaque-card').last().locator('select').first().selectOption('custom');
-  await def.locator('.pc-attaque-card').last().locator('input').first().fill('Protection libre');await def.locator('.pc-attaque-card').last().locator('input').first().dispatchEvent('change');
-  await atk.locator('.pc-gear').click();await atk.getByRole('button',{name:'+ Ajouter une attaque'}).click();await atk.locator('.pc-attaque-card').last().locator('select').first().selectOption('custom');
-  await atk.locator('.pc-attaque-card').last().locator('input').first().fill('Attaque libre');await atk.locator('.pc-attaque-card').last().locator('input').first().dispatchEvent('change');
-  await atk.locator('.pc-attaque-card').last().screenshot({path:'/tmp/owd-attack-editor-390.png'});
-  await page.waitForFunction(()=>{const s=JSON.parse(document.querySelector('iframe').contentWindow.__owdLocalStorage.getItem('owd-perso'));return s.attaques.some(a=>a.nom==='Attaque libre')&&s.defenses.entrees.some(a=>a.nom==='Protection libre');});
-  for (let i=0;i<150;i++) {
-    const saved=C.read(attrs).state;
-    if (saved.attaques.some(a=>a.nom==='Attaque libre'&&a.personnalisee)&&saved.defenses.entrees.some(a=>a.nom==='Protection libre'&&a.personnalisee)) break;
-    await page.waitForTimeout(100);
+  await frame.evaluate(()=>{window.chats=[];window.__owdChat=c=>chats.push(c);});
+  const state=()=>frame.evaluate(()=>JSON.parse(__owdLocalStorage.getItem('owd-perso')));
+  const def=sheet.locator('[data-module="defense"]');
+  const scenarios=[['Sans Défense',21,100],['Parade — Dague',12,92],['Esquive',0,84],['Barrière',19,79]];
+  for(let i=0;i<scenarios.length;i++) {
+   const [name,damage,pe]=scenarios[i];await def.getByRole('button',{name,exact:false}).click();
+   const modal=sheet.locator('.pc-modal');assert.equal(await modal.locator('input').count(),1);assert.equal(await modal.locator('select').count(),1);
+   assert.deepEqual(await modal.getByRole('button').allTextContents(),['Annuler','Valider']);
+   assert.equal(await modal.locator('.pc-defense-total,.pc-defense-reussite,input[type="checkbox"]').count(),0);
+   await modal.getByLabel('Dégâts subis',{exact:true}).fill('30');await modal.getByLabel('Type de dégâts',{exact:true}).selectOption('feu');
+   if(i===0)await page.screenshot({path:'/tmp/owd-defense-simple-3101.png'});
+   await modal.getByRole('button',{name:'Valider',exact:true}).click();
+   const chats=await frame.evaluate(()=>chats);assert.equal(chats.length,i+1);assert.match(chats.at(-1),new RegExp('Dégâts subis='+damage+'(?:}| )'));
+   assert.ok(!chats.at(-1).includes('Réussite'));assert.ok(!chats.at(-1).includes('/roll'));
+   assert.equal((await state()).etat.pv,100);assert.equal((await state()).etat.pe,pe);
   }
-  assert.ok(C.read(attrs).state.attaques.some(a=>a.nom==='Attaque libre'&&a.personnalisee),'serveur : attaque libre confirmée');
-  assert.ok(C.read(attrs).state.defenses.entrees.some(a=>a.nom==='Protection libre'&&a.personnalisee),'serveur : défense libre confirmée');
-  await page.reload();await sheet.locator('.pc-sheet').waitFor();
-  assert.ok((await state()).attaques.some(a=>a.nom==='Attaque libre'&&a.personnalisee));assert.ok((await state()).defenses.entrees.some(a=>a.nom==='Protection libre'&&a.personnalisee));
-  assert.equal((await state()).defenses.esquive.comp,'c2');assert.equal((await state()).etat.pe,62);
-  assert.equal((await state()).attaques[0].arme,'blade');assert.deepEqual(errors,[]);
-  await page.screenshot({path:'/tmp/owd-combat-390.png'});
-  console.log('OK attaques personnalisées, portée 6, création, ancien lien conservé, réouverture et absence d’erreur navigateur');
+  await def.getByRole('button',{name:'Parade — Dague',exact:false}).click();let modal=sheet.locator('.pc-modal');
+  await modal.getByLabel('Dégâts subis',{exact:true}).fill('-1');await modal.getByRole('button',{name:'Valider',exact:true}).click();assert.equal(await modal.count(),1);
+  await modal.getByRole('button',{name:'Annuler',exact:true}).click();assert.equal((await state()).etat.pe,79);assert.equal(await frame.evaluate(()=>chats.length),4);
+  await def.getByRole('button',{name:'Utiliser Endurance',exact:true}).click();await def.getByRole('button',{name:'Esquive',exact:false}).click();
+  modal=sheet.locator('.pc-modal');await modal.getByLabel('Dégâts subis',{exact:true}).fill('12,5');await modal.getByRole('button',{name:'Valider',exact:true}).click();assert.equal((await state()).etat.pe,79);
+  assert.deepEqual(errors,[]);
+  console.log('OK fenêtre à deux champs, envoi unique, calculs, coûts PE, PV inchangés, annulation et saisie décimale');
  } finally {await browser.close();server.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;server.close();});

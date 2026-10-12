@@ -146,9 +146,9 @@
     for (var j = 0; j < 3; j++) l4.appendChild(fld("MOD", selCarac("modsParade", j)));
     if (!attaqueLibre) card.appendChild(l4);
 
-    var l5 = ligne("pc-arme-2");
+    var l5 = ligne(attaqueLibre ? "pc-arme-1" : "pc-arme-2");
     l5.appendChild(fld("Compétence", selComp()));
-    l5.appendChild(fld("Type", selTypeArme()));
+    if (!attaqueLibre) l5.appendChild(fld("Type", selTypeArme()));
     card.appendChild(l5);
 
     return card;

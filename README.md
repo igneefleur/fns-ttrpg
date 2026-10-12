@@ -1,3 +1,28 @@
+## Version 3.10.2b — Édition des attaques
+
+Type se choisit séparément : Armes ou Attaque personnalisée. Armes propose
+la Source dans l’équipement ; Attaque personnalisée propose le Nom à sa place.
+Le dessin reste à gauche et tous les champs sont à droite : difficulté, dégâts,
+MOD, compétence, multiplicateur, garde et types de touche/passage. Le type d’arme
+n’apparaît plus dans les attaques personnalisées.
+
+Touche/Passage et Effacer/Tout Effacer occupent deux lignes de boutons à parts
+égales. La portée est centrée sous le dessin. Le texte d’aide a été retiré.
+
+Schéma 14 inchangé. Patch sur 3.10.1b ; projet complet 3.10.2b.
+Mise à jour du site uniquement. Aucune signature ni publication de l’extension.
+
+## Version 3.10.1b — Défense : saisie simple puis envoi au chat
+
+Le clic sur une défense ouvre uniquement Dégâts subis et Type de dégâts.
+Valider envoie une seule carte de défense avec ses valeurs et le calcul des
+protections/réductions. L’option Endurance du module conserve son coût prévu.
+Le formulaire ne contient plus de jet séparé, réussite/échec, aperçu de calcul
+ou ajout de types. La validation n’applique plus automatiquement les dégâts aux PV.
+
+Schéma 14 inchangé. Patch sur 3.10.0b ; projet complet 3.10.1b.
+Mise à jour du site uniquement. Aucune signature ni publication de l’extension.
+
 ## Version 3.10.0b — Trajets dessinés, options globales et taille
 
 Les armes normales affichent toujours au moins trois anneaux autour du centre.

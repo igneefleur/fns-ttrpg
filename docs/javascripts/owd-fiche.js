@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "3.10.0b";
+  var RELEASE = "3.10.2b";
   var SCHEMA = 14;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -5128,68 +5128,32 @@
     return { protection: p, reduction: r };
   }
   function defensePrompt(nom, mode, entree) {
-    var v = defenseValeurs(entree), body = el("div", "pc-modal-body pc-defense-form"), lignes = [];
-    var reussite = el("input"); reussite.type = "checkbox"; reussite.checked = true;
-    var cout = mode === "esquive" ? 8 : mode === "sans" ? 0 : v.difficulte;
-    var comp = compDe(mode === "esquive" ? entree.comp : v.comp);
-    if (mode !== "sans") {
-      var choix = el("label", "pc-defense-reussite"); choix.appendChild(reussite); choix.appendChild(document.createTextNode("Défense réussie")); body.appendChild(choix);
-      var jet = miniBtn("Lancer le jet", null, function () {
-        // Les dés d'action Roll20 sont conservés, avec leurs relances. Le joueur
-        // indique ensuite le résultat : aucune somme locale concurrente.
-        if (!comp) { flash("Liez une compétence à cette défense en édition."); return; }
-        var n = compDes(comp);
-        doRoll(nom + " — " + (comp.nom || "Compétence") + " — Difficulté " + cout, compBonus(comp), deDe(n), true, n);
-      });
-      body.appendChild(jet);
-      body.appendChild(el("div", "pc-modal-note", "Indiquez la réussite après le jet. Coût de la tentative : " + (state.combatOptions.defenses.utiliseEndurance ? fmtP(cout) : "0") + " PE."));
-    }
-    var liste = el("div", "pc-defense-lignes"), calcul = el("div", "pc-defense-calcul"); body.appendChild(liste);
-    function values() {
-      // Même type = une composante de dégâts, pour appliquer sa protection une
-      // fois et ne pas gagner un arrondi supplémentaire en divisant la saisie.
-      var types = {};
-      lignes.forEach(function (l) { var n = Number(l.input.value.replace(",", ".")); types[l.type.value] = (types[l.type.value] || 0) + (isFinite(n) && n >= 0 ? n : 0); });
-      var out = [], total = 0;
-      Object.keys(types).forEach(function (t) {
-        var defenses = defenseTotaux(t, mode === "parade" ? v : null, reussite.checked);
-        var dg = mode === "esquive" && reussite.checked ? 0 : combatDegats(types[t], defenses.protection, defenses.reduction);
-        total += dg; out.push({ type: t, brut: types[t], p: defenses.protection, r: defenses.reduction, dg: dg });
-      });
-      return { total: total, lignes: out };
-    }
-    function affiche() {
-      var res = values(); calcul.innerHTML = "";
-      res.lignes.forEach(function (l) { calcul.appendChild(el("div", null, combatLibType(l.type) + " : " + fmtP(l.brut) + " − " + fmtP(l.p) + " protection, puis " + fmtP(l.r) + " % → " + fmtP(l.dg))); });
-      calcul.appendChild(el("strong", "pc-defense-total", "Dégâts subis : " + fmtP(res.total)));
-    }
-    function ajoute() {
-      var l = { type: combatType({ touche: "contondant" }, "touche"), input: el("input", "pc-edit-field") };
-      l.input.type = "text"; l.input.inputMode = "decimal"; l.input.value = "0"; l.input.setAttribute("aria-label", "Dégâts de l’attaque");
-      var row = el("div", "pc-defense-ligne"); row.appendChild(l.type); row.appendChild(l.input);
-      // Ce formulaire est temporaire : ne pas sauvegarder/remonter la fiche au
-      // changement de type (combatType possède normalement un listener métier).
-      var select = l.type.cloneNode(true); row.replaceChild(select, l.type); l.type = select;
-      row.appendChild(miniBtn("✕", "Retirer ce type de dégâts", function () { if (lignes.length < 2) return; lignes.splice(lignes.indexOf(l), 1); row.remove(); affiche(); }));
-      l.type.addEventListener("change", affiche); l.input.addEventListener("input", affiche); lignes.push(l); liste.appendChild(row); affiche();
-    }
-    body.appendChild(miniBtn("+ Ajouter un type de dégâts", null, ajoute)); body.appendChild(calcul);
-    reussite.addEventListener("change", affiche); ajoute();
-    dialogue(nom + " — Dégâts reçus", body, function () {
-      if (lignes.some(function (l) { var n = Number(l.input.value.replace(",", ".")); return !l.input.value.trim() || !isFinite(n) || n < 0; })) { flash("Saisissez des dégâts positifs ou nuls."); return false; }
-      // Résoudre avec les valeurs actuelles : une armure ou l'arme peut avoir
-      // été modifiée dans une autre fenêtre pendant que le formulaire était ouvert.
+    var body = el("div", "pc-modal-body pc-defense-form"), degats = el("input", "n"), type = el("select", "pc-select");
+    degats.type = "text"; degats.inputMode = "decimal"; degats.value = "0";
+    degats.setAttribute("aria-label", "Dégâts subis");
+    combatTypes().forEach(function (t) { var op = el("option", null, combatLibType(t)); op.value = t; type.appendChild(op); });
+    type.setAttribute("aria-label", "Type de dégâts");
+    body.appendChild(fld("Dégâts subis", degats)); body.appendChild(fld("Type de dégâts", type));
+    dialogue(nom, body, function () {
+      var brut = Number(degats.value.replace(",", "."));
+      if (!degats.value.trim() || !isFinite(brut) || brut < 0) { flash("Saisissez des dégâts positifs ou nuls."); degats.focus(); return false; }
       if (mode === "parade" && entree.arme && !defenseArme(entree.arme)) { flash("Cette arme n’est plus disponible."); return false; }
-      v = defenseValeurs(entree); if (mode === "parade") cout = v.difficulte;
-      var res = values();
-      state.etat.pv = Math.round((courant("pv") - res.total) * 100) / 100;
-      if (mode !== "sans" && state.combatOptions.defenses.utiliseEndurance) state.etat.pe = Math.round((courant("pe") - cout) * 100) / 100;
-      var champs = res.lignes.map(function (l) { return [combatLibType(l.type), fmtP(l.brut) + " reçus · Protection " + fmtP(l.p) + " · Réduction " + fmtP(l.r) + " % · " + fmtP(l.dg) + " subis"]; });
-      if (mode !== "sans") champs.push(["Résultat", reussite.checked ? "Réussite" : "Échec"]);
-      champs.push(["Dégâts subis", fmtP(res.total)]);
-      if (mode !== "sans" && state.combatOptions.defenses.utiliseEndurance) champs.push(["Endurance", "−" + fmtP(cout)]);
+      var v = defenseValeurs(entree), totaux = defenseTotaux(type.value, mode === "parade" ? v : null, true);
+      var subis = mode === "esquive" ? 0 : combatDegats(brut, totaux.protection, totaux.reduction);
+      var cout = mode === "esquive" ? 8 : mode === "sans" ? 0 : v.difficulte;
+      var comp = compDe(mode === "esquive" ? entree.comp : v.comp);
+      var champs = [["Dégâts reçus", fmtP(brut) + " " + combatLibType(type.value)],
+        ["Protection", fmtP(totaux.protection)], ["Réduction", fmtP(totaux.reduction) + " %"], ["Dégâts subis", fmtP(subis)]];
+      if (mode !== "sans") {
+        champs.push(["Difficulté", fmtP(cout)]);
+        if (comp) champs.push(["Compétence", comp.nom || "Compétence"]);
+        if (state.combatOptions.defenses.utiliseEndurance) {
+          state.etat.pe = Math.round((courant("pe") - cout) * 100) / 100;
+          champs.push(["Endurance", "−" + fmtP(cout)]);
+        }
+      }
       sayChat(nom, champs); refresh();
-    }, "Appliquer les dégâts");
+    }, "Valider");
   }
   function buildDefense() {
     var b = block("Défenses", null, "defense", rendre), box = el("div", "pc-attaques pc-defenses"); b.appendChild(box);
@@ -5602,8 +5566,8 @@
       var box = el("div", "pc-attaque-editor"), path = hxEtapes(entree.personnalisee.trajet, 0, false);
       var rayon = Math.max(3, attaqueVue.portees[entree.id] || 3, path.reduce(function (n, e) { return Math.max(n, hxDistance(e.q, e.r)); }, 0));
       var brush = attaqueVue.pinceaux[entree.id] || "frappe";
-      var tools = el("div", "pc-attaque-editor-tools");
-      [["frappe", "Touche"], ["passe", "Passage"], ["efface", "Effacer"]].forEach(function (v) {
+      var tools = el("div", "pc-attaque-editor-tools pc-attaque-editor-paint");
+      [["frappe", "Touche"], ["passe", "Passage"]].forEach(function (v) {
         var bt = miniBtn(v[1], null, function () { attaqueVue.pinceaux[entree.id] = v[0]; rendre(); }, brush === v[0] ? "on" : "");
         bt.setAttribute("aria-pressed", String(brush === v[0])); tools.appendChild(bt);
       });
@@ -5634,67 +5598,59 @@
         cell.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); peint(); } });
       });
       box.appendChild(svg);
-      var pieds = el("div", "pc-attaque-editor-tools");
+      var efface = el("div", "pc-attaque-editor-tools pc-attaque-editor-erase");
+      var gomme = miniBtn("Effacer", null, function () { attaqueVue.pinceaux[entree.id] = "efface"; rendre(); }, brush === "efface" ? "on" : "");
+      gomme.setAttribute("aria-pressed", String(brush === "efface")); efface.appendChild(gomme);
+      efface.appendChild(miniBtn("Tout Effacer", null, function () { path = []; ecrit(); }));
+      box.insertBefore(efface, svg);
+      var pieds = el("div", "pc-attaque-editor-tools pc-attaque-editor-range");
       pieds.appendChild(miniBtn("−", "Réduire la grille", function () { attaqueVue.portees[entree.id] = Math.max(3, rayon - 1); rendre(); }));
       pieds.appendChild(el("span", null, "Portée " + rayon));
       pieds.appendChild(miniBtn("+", "Agrandir la grille", function () { attaqueVue.portees[entree.id] = rayon + 1; rendre(); }));
-      pieds.appendChild(miniBtn("Tout effacer", null, function () { path = []; ecrit(); }));
       box.appendChild(pieds);
-      box.appendChild(el("div", "pc-modal-note", "Cliquez les cases dans l’ordre du trajet. Le centre représente le personnage."));
       return box;
     }
 
     function carte(entree) {
-      var card = el("div", "pc-attaque-card");
+      var card = el("div", "pc-attaque-card"); card.dataset.attackId = entree.id;
       var it = entree.personnalisee ? { nom: entree.nom || "Attaque personnalisée", arme: entree.personnalisee } : objetArme(entree.arme);
 
       // Le choix de l'arme n'existe qu'en édition. L'entrée garde une `ref`
       // interne : renommer l'objet dans l'inventaire ne casse pas le raccourci.
       var edit = el("div", "pc-attaque-edit pc-edit-only");
-      var sel = el("select", "pc-select pc-edit-field");
-      var armes = armesInventaire();
-      var vide = el("option", null, "— Choisir une arme —");
-      vide.value = "";
-      sel.appendChild(vide);
-      var libre = el("option", null, "Attaque personnalisée"); libre.value = "custom"; libre.selected = !!entree.personnalisee; sel.appendChild(libre);
-      armes.forEach(function (o, i) {
-        var op = el("option", null, o.nom || ((o.arme && o.arme.type) ? "Arme — " + o.arme.type : "Arme sans nom"));
-        op.value = String(i);
-        if (it === o) op.selected = true;
-        sel.appendChild(op);
+      var choix = el("div", "pc-attaque-choix");
+      var type = el("select", "pc-select pc-edit-field pc-attaque-type");
+      [["arme", "Armes"], ["custom", "Attaque personnalisée"]].forEach(function (v) {
+        var op = el("option", null, v[1]); op.value = v[0]; op.selected = (entree.personnalisee ? "custom" : "arme") === v[0]; type.appendChild(op);
       });
-      sel.addEventListener("change", function () {
-        if (sel.value === "custom") {
+      type.addEventListener("change", function () {
+        if (type.value === "custom") {
           entree.arme = "";
           entree.personnalisee = entree.personnalisee || { attaque: "8", degats: "0", modsDegats: ["", "", ""], modsParade: ["", "", ""], comp: "", type: "", mult: "1", trajet: "", garde: "", touche: "", passage: "" };
-          ouverts[entree.id] = true;
-        } else if (sel.value === "") { entree.arme = ""; entree.personnalisee = null; }
-        else {
-          var o = armes[parseInt(sel.value, 10)];
-          entree.arme = assureRef(o);
-          entree.personnalisee = null;
-          ouverts[entree.id] = true;
-        }
-        refresh();
+        } else entree.personnalisee = null;
+        ouverts[entree.id] = true; refresh();
       });
-      edit.appendChild(fld("Source", sel));
-      edit.appendChild(miniBtn("✕", "Retirer cette attaque", function () {
-        state.attaques = state.attaques.filter(function (a) { return a.id !== entree.id; });
-        refresh();
+      choix.appendChild(fld("Type", type));
+      if (entree.personnalisee) choix.appendChild(combatTexte("Nom", entree, "nom"));
+      else {
+        var source = el("select", "pc-select pc-edit-field pc-attaque-source"), vide = el("option", null, "— Choisir une arme —"); vide.value = ""; source.appendChild(vide);
+        armesInventaire().forEach(function (o) { var op = el("option", null, o.nom || "Arme sans nom"); op.value = assureRef(o); op.selected = it === o; source.appendChild(op); });
+        if (entree.arme && !it) { var absent = el("option", null, "Arme introuvable"); absent.value = entree.arme; absent.selected = true; source.appendChild(absent); }
+        source.addEventListener("change", function () { entree.arme = source.value; ouverts[entree.id] = true; refresh(); });
+        choix.appendChild(fld("Source", source));
+      }
+      choix.appendChild(miniBtn("✕", "Retirer cette attaque", function () {
+        state.attaques = state.attaques.filter(function (a) { return a.id !== entree.id; }); refresh();
       }, "danger pc-attaque-retire"));
+      edit.appendChild(choix);
       if (entree.personnalisee) {
-        edit.appendChild(combatTexte("Nom", entree, "nom"));
-        var layout = el("div", "pc-attaque-custom-layout");
-        layout.appendChild(editeurTrajet(entree));
-        layout.appendChild(carteArme(it, true));
-        edit.appendChild(layout);
+        var layout = el("div", "pc-attaque-custom-layout"), infos = el("div", "pc-attaque-custom-info");
+        layout.appendChild(editeurTrajet(entree)); infos.appendChild(carteArme(it, true));
         var libreChamps = el("div", "pc-arme-line pc-arme-2");
-        [["Multiplicateur", "mult"], ["Garde", "garde"]].forEach(function (f) {
-          libreChamps.appendChild(combatTexte(f[0], entree.personnalisee, f[1]));
-        });
+        [["Multiplicateur", "mult"], ["Garde", "garde"]].forEach(function (f) { libreChamps.appendChild(combatTexte(f[0], entree.personnalisee, f[1])); });
         libreChamps.appendChild(fld("Type de touche", combatType(entree.personnalisee, "touche")));
         libreChamps.appendChild(fld("Type de passage", combatType(entree.personnalisee, "passage")));
-        edit.appendChild(libreChamps);
+        infos.appendChild(libreChamps); layout.appendChild(infos); edit.appendChild(layout);
       }
       card.appendChild(edit);
 
@@ -7315,9 +7271,9 @@
     for (var j = 0; j < 3; j++) l4.appendChild(fld("MOD", selCarac("modsParade", j)));
     if (!attaqueLibre) card.appendChild(l4);
 
-    var l5 = ligne("pc-arme-2");
+    var l5 = ligne(attaqueLibre ? "pc-arme-1" : "pc-arme-2");
     l5.appendChild(fld("Compétence", selComp()));
-    l5.appendChild(fld("Type", selTypeArme()));
+    if (!attaqueLibre) l5.appendChild(fld("Type", selTypeArme()));
     card.appendChild(l5);
 
     return card;

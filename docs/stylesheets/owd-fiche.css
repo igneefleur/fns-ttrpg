@@ -2020,10 +2020,6 @@ html.night .pc-attaque-carte .hx-vide { fill-opacity: .12; }
 .perso-fiche .pc-defense-bouton { width:100%; text-align:left; }
 .perso-fiche .pc-defense-edit { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; padding:8px; }
 .perso-fiche .pc-defense-edit .pc-arme-line { grid-column:1 / -1; }
-.perso-fiche .pc-defense-ligne { display:grid; grid-template-columns:minmax(0,1fr) minmax(70px,1fr) auto; gap:8px; margin-bottom:8px; }
-.perso-fiche .pc-defense-calcul { padding:12px 0; line-height:1.7; }
-.perso-fiche .pc-defense-total { display:block; font-size:1.15em; }
-.perso-fiche .pc-defense-reussite { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
 .perso-fiche .pc-attaque-edit .pc-arme { grid-column:1 / -1; width:100%; }
 /* Les champs personnels occupent toute la carte ; seule la croix de retrait
    reste dans la petite colonne du sélecteur de source. */
@@ -2040,3 +2036,13 @@ html.night .pc-attaque-carte .hx-vide { fill-opacity: .12; }
 .perso-fiche .pc-attaque-editor .hx-rang, .perso-fiche .pc-attaque-editor .hx-soi, .perso-fiche .pc-attaque-editor .hx-visee { pointer-events:none; }
 .perso-fiche .pc-combat-ressources { margin:0 0 8px; }
 @media (max-width:480px) { .perso-fiche .pc-attaque-custom-layout { grid-template-columns:minmax(0,1fr); } }
+
+/* Choix de l’attaque et outils du dessin. */
+.perso-fiche .pc-attaque-edit { grid-template-columns:minmax(0,1fr); }
+.perso-fiche .pc-attaque-choix { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto; gap:6px; align-items:end; min-width:0; }
+.perso-fiche .pc-attaque-choix select, .perso-fiche .pc-attaque-choix input { width:100%; min-width:0; box-sizing:border-box; }
+.perso-fiche .pc-attaque-editor-paint, .perso-fiche .pc-attaque-editor-erase { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:4px; }
+.perso-fiche .pc-attaque-editor-paint button, .perso-fiche .pc-attaque-editor-erase button { width:100%; min-width:0; }
+.perso-fiche .pc-attaque-editor-range { justify-content:center; }
+.perso-fiche .pc-attaque-custom-info { min-width:0; }
+.perso-fiche .pc-attaque-custom-info .pc-arme-1 { grid-template-columns:minmax(0,1fr); }

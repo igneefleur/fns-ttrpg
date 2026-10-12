@@ -58,8 +58,9 @@ const server=http.createServer((req,res)=> {
   await card.screenshot({path:'/tmp/owd-weapon-defense-391.png'});
   await sheet.locator('.pc-tab').filter({hasText:/^Fiche$/}).click();
   await sheet.locator('[data-module="defense"]').getByRole('button',{name:'Parade — Dague',exact:false}).click();
-  const modal=sheet.locator('.pc-modal');await modal.locator('.pc-defense-ligne select').selectOption('feu');await modal.getByLabel('Dégâts de l’attaque').fill('30');
-  assert.equal(await modal.locator('.pc-defense-total').textContent(),'Dégâts subis : 8');await modal.getByRole('button',{name:'Annuler'}).click();
+  await frame().evaluate(()=>{window.defenseChat='';window.__owdChat=c=>defenseChat=c;});
+  const modal=sheet.locator('.pc-modal');await modal.getByLabel('Type de dégâts', {exact:true}).selectOption('feu');await modal.getByLabel('Dégâts subis', {exact:true}).fill('30');
+  await modal.getByRole('button',{name:'Valider'}).click();assert.match(await frame().evaluate(()=>defenseChat),/Dégâts subis=8/);
   console.log('OK sous-champs Parade, Réduction et trois MOD visibles, modifiables, sauvegardés et utilisés par Défenses');
   await frame().evaluate(()=>{window.lastGive='';window.__owdChat=c=>lastGive=c;Owd.__actionObjet('top','donner');});
   await sheet.locator('.pc-modal').getByRole('button',{name:'Donner',exact:true}).click();
