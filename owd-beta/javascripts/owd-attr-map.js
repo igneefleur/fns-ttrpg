@@ -81,7 +81,7 @@
   // même version, la beta étant ce que le stable recevra à la fusion) : ce qui
   // compare des versions doit donc l'ôter avant de lire les nombres, et c'est
   // exactement ce que fait OwdMods.compareVersions.
-  var RELEASE_DEFAUT = "3.8.4b";
+  var RELEASE_DEFAUT = "3.9.0b";
   // Entier INDÉPENDANT de la release : il ne monte qu'au changement de forme de
   // l'état du personnage, jamais parce que le majeur a bougé. Ajouter une clé
   // racine avec un défaut n'en est PAS un : normalize() complète une clé
@@ -89,7 +89,7 @@
   // s'ouvre dans les deux sens sans migration. Le manifeste publie les deux
   // numéros séparément, et c'est ce repli-ci que l'amorce prend quand le
   // manifeste manque.
-  var SCHEMA_DEFAUT = 12;
+  var SCHEMA_DEFAUT = 13;
 
   // Release EFFECTIVE : celle du code qui TOURNE, pas celle que le site publie.
   //
@@ -184,6 +184,7 @@
     // interne d'un objet de l'inventaire. Le repli doit les faire voyager avec
     // l'inventaire, sinon une reconstruction depuis les attributs les perdrait.
     ["attaques", "attaques"],
+    ["defenses", "defenses"],
     ["avantages", "avantages"],
     ["armes", "armes"], ["vetements", "vetements"],
     ["inv", "inventaire"],
@@ -317,6 +318,7 @@
 
       // ---- attaques ----
       attaques: [],
+      defenses: { esquive: { comp: "", utiliseEndurance: false }, entrees: [] },
 
       // ---- avantages ----
       // Une entrée : { nom, cout, desc }. Le coût, en points d'avantage, se

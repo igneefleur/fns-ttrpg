@@ -2014,3 +2014,18 @@ html.night .pc-attaque-carte .hx-vide { fill-opacity: .12; }
 .perso-fiche .pc-inv-context button:hover,.perso-fiche .pc-inv-context button:focus-visible{background:var(--wash);outline:1px solid var(--accent);outline-offset:-1px}
 .perso-fiche .pc-inv-context button.danger{color:var(--danger)}
 .perso-fiche .pc-inv-context-separator{height:1px;background:var(--line-2);margin:5px 7px}
+
+/* Défenses : mêmes cartes et couleurs que les attaques. */
+.perso-fiche .pc-defenses { display:flex; flex-direction:column; gap:8px; }
+.perso-fiche .pc-defense-bouton { width:100%; text-align:left; }
+.perso-fiche .pc-defense-edit { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; padding:8px; }
+.perso-fiche .pc-defense-edit .pc-arme-line { grid-column:1 / -1; }
+.perso-fiche .pc-defense-ligne { display:grid; grid-template-columns:minmax(0,1fr) minmax(70px,1fr) auto; gap:8px; margin-bottom:8px; }
+.perso-fiche .pc-defense-calcul { padding:12px 0; line-height:1.7; }
+.perso-fiche .pc-defense-total { display:block; font-size:1.15em; }
+.perso-fiche .pc-defense-reussite { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+.perso-fiche .pc-attaque-edit .pc-arme { grid-column:1 / -1; width:100%; }
+/* Les champs personnels occupent toute la carte ; seule la croix de retrait
+   reste dans la petite colonne du sélecteur de source. */
+.perso-fiche .pc-attaque-edit > :nth-child(n+3) { grid-column:1 / -1; min-width:0; }
+.perso-fiche .pc-attaque-edit > .pc-modal-note { white-space:normal; }
