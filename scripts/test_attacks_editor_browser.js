@@ -83,7 +83,7 @@ const server=http.createServer((req,res)=> {
   await custom.screenshot({path:'/tmp/owd-attack-editor-3102.png'});
   // Cost for a custom attack is its difficulty; bow consumes the chosen pile only.
   await atk.getByRole('button',{name:'Consommer Endurance',exact:true}).click();await atk.getByRole('button',{name:'Consommer Munition',exact:true}).click();
-  await atk.locator('.pc-attaque-tete').filter({hasText:'Onde de feu'}).click();
+  await atk.locator('.pc-gear').click();await atk.locator('.pc-attaque-tete').filter({hasText:'Onde de feu'}).click();
   await atk.locator('.pc-attaque-card').filter({hasText:'Onde de feu'}).locator('.pc-attaque-coup').click();assert.equal((await state()).etat.pe,95);
   await atk.locator('.pc-attaque-tete').filter({hasText:'Arc'}).click();const bow=atk.locator('.pc-attaque-card[data-attack-id="bow"]');
   await bow.locator('.pc-attaque-simple').click();assert.equal((await state()).etat.pe,89);assert.equal((await state()).inv.objets.find(o=>o.ref==='arrows').qte,2);

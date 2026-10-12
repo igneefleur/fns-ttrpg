@@ -1,5 +1,5 @@
   // ---- Attaques liées aux armes ou créées librement ----
-  var attaqueVue = { ouverts: Object.create(null), orientation: 0, miroirs: Object.create(null), portees: Object.create(null), pinceaux: Object.create(null) };
+  var attaqueVue = { ouverts: Object.create(null), orientation: 0, miroirs: Object.create(null), portees: Object.create(null), gardes: Object.create(null), pinceaux: Object.create(null) };
   function buildAttaque() {
     // L'id technique reste « attaque » pour préserver les dispositions déjà
     // sauvegardées ; le titre visible devient « Attaques ».
@@ -403,9 +403,39 @@
       return box;
     }
 
+    function editeurGarde(entree) {
+      var box = el("div", "pc-garde-editor"); box.appendChild(el("div", "pc-attaque-section-titre", "Garde"));
+      var svg = gardeSvg(entree.personnalisee.garde || "5>5", false); svg.classList.add("pc-garde-dessin");
+      svg.setAttribute("aria-label", "Dessiner la garde"); svg.setAttribute("role", "group");
+      if (!entree.personnalisee.garde) Array.prototype.forEach.call(svg.querySelectorAll("circle,path"), function (n) { n.remove(); });
+      Array.prototype.forEach.call(svg.querySelectorAll("rect"), function (cell, i) {
+        var n = i + 1; cell.setAttribute("role", "button"); cell.setAttribute("tabindex", "0"); cell.setAttribute("aria-label", "Garde case " + n);
+        function dessine() {
+          var depart = attaqueVue.gardes[entree.id];
+          entree.personnalisee.garde = (depart || n) + ">" + n;
+          if (depart) delete attaqueVue.gardes[entree.id]; else attaqueVue.gardes[entree.id] = n;
+          refresh();
+        }
+        cell.addEventListener("click", dessine);
+        cell.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); dessine(); } });
+      });
+      box.appendChild(svg); box.appendChild(miniBtn("Effacer la garde", null, function () { entree.personnalisee.garde = ""; delete attaqueVue.gardes[entree.id]; refresh(); })); return box;
+    }
+
     function carte(entree) {
       var card = el("div", "pc-attaque-card"); card.dataset.attackId = entree.id;
       var it = entree.personnalisee ? { nom: entree.nom || "Attaque personnalisée", arme: entree.personnalisee } : objetArme(entree.arme);
+
+      var ouvert = !!ouverts[entree.id], def = it && typeArme(it.arme.type), meta = [];
+      if (it) {
+        if (it.arme.type) meta.push((def && def.nom) || it.arme.type);
+        if (String(it.arme.attaque || "").trim()) meta.push("Attaque " + it.arme.attaque);
+        meta.push("Dégâts " + fmtP(degatsArme(it)));
+      }
+      combatCarteTete(card, it ? it.nom || "Arme sans nom" : "Nouvelle attaque", meta.join(" · "), ouvert, "attaque", entree.id,
+        function () { ouverts[entree.id] = !ouverts[entree.id]; rendre(); }, function () { return state.attaques; });
+      if (!ouvert) return card;
+      function supprimer() { combatSupprimer(card, function () { state.attaques = state.attaques.filter(function (a) { return a.id !== entree.id; }); refresh(); }); }
 
       // Le choix de l'arme n'existe qu'en édition. L'entrée garde une `ref`
       // interne : renommer l'objet dans l'inventaire ne casse pas le raccourci.
@@ -431,51 +461,30 @@
         source.addEventListener("change", function () { entree.arme = source.value; ouverts[entree.id] = true; refresh(); });
         choix.appendChild(fld("Source", source));
       }
-      choix.appendChild(miniBtn("✕", "Retirer cette attaque", function () {
-        state.attaques = state.attaques.filter(function (a) { return a.id !== entree.id; }); refresh();
-      }, "danger pc-attaque-retire"));
       edit.appendChild(choix);
       if (entree.personnalisee) {
         var layout = el("div", "pc-attaque-custom-layout"), infos = el("div", "pc-attaque-custom-info");
-        layout.appendChild(editeurTrajet(entree)); infos.appendChild(carteArme(it, true));
+        var dessin = el("div", "pc-attaque-custom-dessin"); dessin.appendChild(editeurTrajet(entree)); dessin.appendChild(editeurGarde(entree)); layout.appendChild(dessin); infos.appendChild(carteArme(it, true));
         var libreChamps = el("div", "pc-arme-line pc-arme-2");
-        [["Multiplicateur", "mult"], ["Garde", "garde"]].forEach(function (f) { libreChamps.appendChild(combatTexte(f[0], entree.personnalisee, f[1])); });
+        [["Multiplicateur", "mult"]].forEach(function (f) { libreChamps.appendChild(combatTexte(f[0], entree.personnalisee, f[1])); });
         libreChamps.appendChild(fld("Type de touche", combatType(entree.personnalisee, "touche")));
         libreChamps.appendChild(fld("Type de passage", combatType(entree.personnalisee, "passage")));
         infos.appendChild(libreChamps); layout.appendChild(infos); edit.appendChild(layout);
       }
       card.appendChild(edit);
+      if (isEdit("attaque") && entree.personnalisee) { supprimer(); return card; }
 
       if (!it) {
         card.appendChild(el("div", "pc-empty pc-attaque-vide",
           entree.arme ? "Arme introuvable. Choisissez-en une autre en édition." : "Aucune arme choisie."));
-        return card;
+        supprimer(); return card;
       }
 
-      var def = typeArme(it.arme.type);
+      def = typeArme(it.arme.type);
       var coups = def && Array.isArray(def.attaques) ? def.attaques : [];
       if (entree.personnalisee && it.arme.trajet) coups = [{ nom: it.nom, mult: it.arme.mult,
         trajet: it.arme.trajet, garde: it.arme.garde, types: [it.arme.touche, it.arme.passage || it.arme.touche] }];
       if (entree.personnalisee && !it.arme.trajet && !it.arme.type) def = { types: [it.arme.touche] };
-      var ouvert = !!ouverts[entree.id];
-      var tete = el("button", "pc-attaque-tete");
-      tete.type = "button";
-      tete.setAttribute("aria-expanded", ouvert ? "true" : "false");
-      var nom = el("span", "pc-attaque-nom", it.nom || "Arme sans nom");
-      tete.appendChild(nom);
-      var meta = [];
-      if (it.arme.type) meta.push((def && def.nom) || it.arme.type);
-      if (String(it.arme.attaque || "").trim()) meta.push("Attaque " + it.arme.attaque);
-      meta.push("Dégâts " + fmtP(degatsArme(it)));
-      tete.appendChild(el("span", "pc-attaque-meta", meta.join(" · ")));
-      tete.appendChild(el("span", "pc-attaque-chevron", ouvert ? "▾" : "▸"));
-      tete.addEventListener("click", function () {
-        ouverts[entree.id] = !ouverts[entree.id];
-        rendre();
-      });
-      card.appendChild(tete);
-
-      if (!ouvert) return card;
       var detail = el("div", "pc-attaque-detail");
 
       if (categorieMunition(def)) {
@@ -510,7 +519,7 @@
         simple.addEventListener("click", function () { envoieAttaqueSimple(entree, it, def); });
         detail.appendChild(simple);
         card.appendChild(detail);
-        return card;
+        supprimer(); return card;
       }
 
       detail.appendChild(el("div", "pc-attaque-section-titre", "Trajets et Attaques"));
@@ -556,7 +565,7 @@
       coups.forEach(function (coup) { grille.appendChild(carteCoup(entree, it, coup, def)); });
       detail.appendChild(grille);
       card.appendChild(detail);
-      return card;
+      supprimer(); return card;
     }
 
     function rendre() {
