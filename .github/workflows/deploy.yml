@@ -170,6 +170,7 @@ jobs:
           target-folder: owd-beta
           clean: true
           force: false
+          attempt-limit: 10  # gh-pages partagé : davantage de rebases sans jamais force-pusher
 
       # L'EXTENSION EST UNIQUE : ELLE SE PUBLIE AUX DEUX ADRESSES. Le paquet
       # signé porte les DEUX moitiés, stable et beta, et c'est la case du popup
@@ -199,3 +200,4 @@ jobs:
           target-folder: owd/download
           clean: false
           force: false
+          attempt-limit: 10  # gh-pages partagé : davantage de rebases sans jamais force-pusher
