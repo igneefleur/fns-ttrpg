@@ -20,6 +20,9 @@
   }
 
   function carteArme(it, attaqueLibre) {
+    // L’inventaire passe historiquement un callback en second argument.
+    // Seul le booléen explicite des attaques libres masque la parade.
+    attaqueLibre = attaqueLibre === true;
     var a = it.arme;
 
     function selComp() {

@@ -1,3 +1,19 @@
+## Version 3.9.1b — Défenses d’armes dans l’inventaire et lien Prendre
+
+La carte d’arme de l’inventaire retrouve Parade, Réduction et ses trois MOD de
+parade. Le callback historique de l’inventaire n’est plus interprété comme le
+booléen qui masque ces champs dans les attaques personnalisées.
+
+Le lien natif des nouvelles macros OWD Item Give affiche Prendre, comme la carte
+habillée par l’extension. L’action Donner de l’inventaire conserve son libellé.
+Les anciens messages déjà envoyés ne sont pas réécrits. Le rendu spécial du chat
+nécessite l’extension récente : ses sources et les paquets de test la contiennent,
+mais le paquet signé précédent reste intact. Le workflow peut signer la version
+récente avec sa case dédiée. Le workflow corrigé utilise directement mkdocs.yml.
+
+Schéma 13 inchangé. Patch sur 3.9.0b, projet complet 3.9.1b. Site à mettre à jour ;
+aucune signature ou publication n’a été lancée.
+
 ## Version 3.9.0b — Attaques et Défenses
 
 Le module Armes devient Attaques : les raccourcis d’inventaire sont conservés,

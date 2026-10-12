@@ -85,7 +85,7 @@
       // d'un saut de ligne compose une commande que l'extension refuse — et
       // l'objet serait quand même retiré de l'inventaire, donc perdu.
       var cmd = cmdCarte("OWD Item Give", [["Objet", it.nom || "objet"]].concat(
-        champsObjet(it, q), [["Donner", "[Donner](" + TAKE_CMD + " " + packObjet(it, q) + ")"]]));
+        champsObjet(it, q), [["Prendre", "[Prendre](" + TAKE_CMD + " " + packObjet(it, q) + ")"]]));
       var enRoll20 = typeof window.__owdChat === "function";
       if (enRoll20) envoyer(cmd);
       else flash("Hors de Roll20 : rien n'est envoyé au tchat (l'objet reste dans l'inventaire).");
