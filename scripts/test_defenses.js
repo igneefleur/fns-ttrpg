@@ -21,3 +21,12 @@ const down=Migr.appliquer(s,13,12);assert.ok(down.ok);assert.equal(down.state.at
 const up=Migr.appliquer(down.state,12,13);assert.ok(up.ok);assert.deepEqual(up.state.defenses,s.defenses);
 assert.deepEqual(up.state.attaques,s.attaques);
 console.log('OK dégâts, bornes, protections portées, parade et MOD, échec, objet hybride, stockage et migrations');
+const legacy=M.blank();legacy.v=13;delete legacy.combatOptions;
+legacy.attaques=[{id:'legacy',arme:'shield',utiliseEndurance:true,utiliseMunition:true}];legacy.defenses.esquive.utiliseEndurance=true;
+const migrated=Migr.appliquer(legacy,13,14);assert.ok(migrated.ok);
+assert.deepEqual(migrated.state.combatOptions,{attaques:{utiliseEndurance:true,utiliseMunition:true},defenses:{utiliseEndurance:true}});
+const rollback=Migr.appliquer(migrated.state,14,13);assert.ok(rollback.ok);
+const again=Migr.appliquer(rollback.state,13,14);assert.ok(again.ok);assert.deepEqual(again.state.combatOptions,migrated.state.combatOptions);
+const identity=M.blank();identity.v=14;identity.taille='grande';identity.combatOptions.attaques.utiliseEndurance=true;
+const roundtrip=M.attrsToState(M.stateToAttrs(identity));assert.equal(roundtrip.taille,'grande');assert.deepEqual(roundtrip.combatOptions,identity.combatOptions);
+console.log('OK migration des anciennes options par entrée et conservation de la taille');

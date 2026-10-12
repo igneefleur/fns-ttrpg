@@ -68,7 +68,7 @@
     if (parseInt(s.v, 10) === SCHEMA) s.rel = RELEASE;
 
     // ---- identité et textes ----
-    ["name", "portrait", "espece", "age", "sexe", "genre", "background", "notes", "de"]
+    ["name", "portrait", "espece", "taille", "age", "sexe", "genre", "background", "notes", "de"]
       .forEach(function (k) { s[k] = s[k] == null ? "" : String(s[k]); });
     if (!s.de) s.de = DE_DEFAUT;
     s.xpTotal = Math.max(0, num(s.xpTotal, 0));
@@ -173,6 +173,10 @@
     // (compétence supprimée par une version qui l'ignorait) voyagerait pour rien.
     s.compsLeviers = tableLeviers(s.compsLeviers, COMP_LEVIERS, vusComps);
 
+    if (["minuscule", "petite", "moyenne", "grande", "enorme", "gigantesque"].indexOf(s.taille) < 0) s.taille = "moyenne";
+    var options = s.combatOptions || {}, attaqueOptions = options.attaques || {}, defenseOptions = options.defenses || {};
+    s.combatOptions = { attaques: { utiliseEndurance: !!attaqueOptions.utiliseEndurance, utiliseMunition: !!attaqueOptions.utiliseMunition },
+      defenses: { utiliseEndurance: !!defenseOptions.utiliseEndurance } };
     // ---- attaques ----
     // La référence d'arme est validée APRÈS l'inventaire, parce que les anciens
     // objets ne portent pas encore nécessairement leur `ref`. Ici on ne fait

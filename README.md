@@ -1,3 +1,25 @@
+## Version 3.10.0b — Trajets dessinés, options globales et taille
+
+Les armes normales affichent toujours au moins trois anneaux autour du centre.
+Les attaques personnelles ont un éditeur de trajet par clic : Touche, Passage,
+Effacer, ordre numéroté, grille agrandissable et effacement complet. Le dessin se
+fait à gauche en édition ; les données de l’attaque se saisissent à droite et
+en dessous. Les trajets existants et leurs aperçus sur la map sont conservés.
+
+Attaques possède deux options permanentes en haut : Utiliser Endurance et
+Utiliser Munition. Défenses possède seulement Utiliser Endurance. Ces options
+s’appliquent à toutes les entrées du module. La munition choisie reste propre à
+chaque attaque. Les anciennes options sont migrées : une option commune est
+activée si elle était active sur au moins une ancienne entrée. Les anciens
+réglages restent conservés pour le retour de version.
+
+Le sélecteur Taille se trouve entre Espèce et Âge : Minuscule, Petite, Moyenne,
+Grande, Énorme et Gigantesque. Il est sauvegardé avec le personnage ; la taille
+ne modifie pas automatiquement les règles de combat.
+
+Schéma 14, migration réversible. Patch sur 3.9.1b ; projet complet 3.10.0b.
+Mise à jour du site uniquement. Aucune signature ni publication de l’extension.
+
 ## Version 3.9.1b — Défenses d’armes dans l’inventaire et lien Prendre
 
 La carte d’arme de l’inventaire retrouve Parade, Réduction et ses trois MOD de

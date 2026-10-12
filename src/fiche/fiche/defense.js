@@ -24,11 +24,12 @@
     state.comps.forEach(function (c) { var o = el("option", null, c.nom || "Sans nom"); o.value = c.id; o.selected = c.id === data.comp; s.appendChild(o); });
     s.addEventListener("change", function () { data.comp = s.value; refresh(); }); return s;
   }
-  function combatEndurance(data) {
-    var on = !!data.utiliseEndurance, b = el("button", "pc-mini pc-attaque-toggle" + (on ? " on" : ""), "Utiliser Endurance");
+  function combatRessource(data, cle, texte) {
+    var on = !!data[cle], b = el("button", "pc-mini pc-attaque-toggle" + (on ? " on" : ""), texte);
     b.type = "button"; b.setAttribute("aria-pressed", String(on));
-    b.addEventListener("click", function () { data.utiliseEndurance = !data.utiliseEndurance; refresh(); }); return b;
+    b.addEventListener("click", function () { data[cle] = !data[cle]; refresh(); }); return b;
   }
+  function combatEndurance(data) { return combatRessource(data, "utiliseEndurance", "Utiliser Endurance"); }
   // Protection d'abord, pourcentage ensuite ; arrondi une seule fois, à la fin.
   // Borner chaque étape empêche deux valeurs négatives de produire des dégâts.
   function combatDegats(d, p, r) {
@@ -71,7 +72,7 @@
         doRoll(nom + " — " + (comp.nom || "Compétence") + " — Difficulté " + cout, compBonus(comp), deDe(n), true, n);
       });
       body.appendChild(jet);
-      body.appendChild(el("div", "pc-modal-note", "Indiquez la réussite après le jet. Coût de la tentative : " + (entree.utiliseEndurance ? fmtP(cout) : "0") + " PE."));
+      body.appendChild(el("div", "pc-modal-note", "Indiquez la réussite après le jet. Coût de la tentative : " + (state.combatOptions.defenses.utiliseEndurance ? fmtP(cout) : "0") + " PE."));
     }
     var liste = el("div", "pc-defense-lignes"), calcul = el("div", "pc-defense-calcul"); body.appendChild(liste);
     function values() {
@@ -112,11 +113,11 @@
       v = defenseValeurs(entree); if (mode === "parade") cout = v.difficulte;
       var res = values();
       state.etat.pv = Math.round((courant("pv") - res.total) * 100) / 100;
-      if (mode !== "sans" && entree.utiliseEndurance) state.etat.pe = Math.round((courant("pe") - cout) * 100) / 100;
+      if (mode !== "sans" && state.combatOptions.defenses.utiliseEndurance) state.etat.pe = Math.round((courant("pe") - cout) * 100) / 100;
       var champs = res.lignes.map(function (l) { return [combatLibType(l.type), fmtP(l.brut) + " reçus · Protection " + fmtP(l.p) + " · Réduction " + fmtP(l.r) + " % · " + fmtP(l.dg) + " subis"]; });
       if (mode !== "sans") champs.push(["Résultat", reussite.checked ? "Réussite" : "Échec"]);
       champs.push(["Dégâts subis", fmtP(res.total)]);
-      if (mode !== "sans" && entree.utiliseEndurance) champs.push(["Endurance", "−" + fmtP(cout)]);
+      if (mode !== "sans" && state.combatOptions.defenses.utiliseEndurance) champs.push(["Endurance", "−" + fmtP(cout)]);
       sayChat(nom, champs); refresh();
     }, "Appliquer les dégâts");
   }
@@ -131,10 +132,11 @@
     }
     function rendre() {
       box.innerHTML = "";
+      var ressources = el("div", "pc-attaque-ressources pc-combat-ressources"); ressources.appendChild(combatEndurance(state.combatOptions.defenses)); box.appendChild(ressources);
       box.appendChild(bouton("Sans Défense", "sans", null));
       var es = el("div", "pc-attaque-card"), esquive = state.defenses.esquive;
       var editEs = el("div", "pc-edit-only pc-defense-edit"); editEs.appendChild(fld("Compétence d’esquive", combatComp(esquive))); es.appendChild(editEs);
-      es.appendChild(bouton("Esquive", "esquive", esquive)); es.appendChild(combatEndurance(esquive)); box.appendChild(es);
+      es.appendChild(bouton("Esquive", "esquive", esquive)); box.appendChild(es);
       state.defenses.entrees.forEach(function (e) {
         var card = el("div", "pc-attaque-card"), edit = el("div", "pc-edit-only pc-defense-edit"), sel = el("select", "pc-select pc-edit-field");
         var opt = el("option", null, "— Choisir une arme —"); opt.value = ""; sel.appendChild(opt);
@@ -163,11 +165,11 @@
         }
         card.appendChild(edit);
         var item = defenseArme(e.arme), nom = e.nom || (item ? "Parade — " + (item.nom || "Arme") : "Défense personnalisée");
-        if (item || e.personnalisee) { card.appendChild(bouton(nom, "parade", e)); card.appendChild(combatEndurance(e)); }
+        if (item || e.personnalisee) { card.appendChild(bouton(nom, "parade", e)); }
         else card.appendChild(el("div", "pc-empty", e.arme ? "Arme introuvable. Choisissez une autre source." : "Choisissez une source en édition."));
         box.appendChild(card);
       });
-      box.appendChild(miniBtn("+ Ajouter une défense", null, function () { state.defenses.entrees.push({ id: uid("def"), nom: "", arme: "", personnalisee: null, utiliseEndurance: false }); refresh(); }, "pc-edit-only"));
+      box.appendChild(miniBtn("+ Ajouter une défense", null, function () { state.defenses.entrees.push({ id: uid("def"), nom: "", arme: "", personnalisee: null }); refresh(); }, "pc-edit-only"));
       applyEdit(b, "defense");
     }
     rendre(); hooks.push(rendre); return b;

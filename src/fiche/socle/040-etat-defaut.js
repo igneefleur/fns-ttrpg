@@ -18,7 +18,7 @@
       v: SCHEMA, rel: RELEASE,
 
       // ---- identité ----
-      name: "", portrait: "", espece: "", age: "", sexe: "", genre: "",
+      name: "", portrait: "", espece: "", taille: "moyenne", age: "", sexe: "", genre: "",
       background: "", notes: "",
 
       // ---- expérience ----
@@ -144,13 +144,12 @@
       //   rupture combien de points de rupture elle a demandés
       techniques: [],
 
-      // ---- armes de combat ----
-      // Les raccourcis du module Armes. Une entrée pointe vers l'objet d'arme
-      // de l'inventaire et ne duplique jamais ses valeurs. Elle mémorise aussi
-      // les deux consommations automatiques et, pour une arme à munitions, le
-      // Contenu sélectionné par sa ref interne.
-      // Une entrée : { id, arme, utiliseEndurance, utiliseMunition, munition }.
+      // ---- combat ----
+      // Les entrées référencent une arme ou conservent leurs propres valeurs.
+      // La munition choisie reste propre à chaque entrée ; les consommations
+      // se règlent une seule fois par module dans combatOptions.
       attaques: [],
+      combatOptions: { attaques: { utiliseEndurance: false, utiliseMunition: false }, defenses: { utiliseEndurance: false } },
       defenses: { esquive: { comp: "", utiliseEndurance: false }, entrees: [] },
 
       // ---- avantages ----

@@ -198,9 +198,16 @@
     } catch (e) {}
 
     idBox.appendChild(fld("Nom", textInput(function () { return state.name; },
-      function (v) { state.name = v; }, "Nom du personnage"), "c4"));
+      function (v) { state.name = v; }, "Nom du personnage"), "c2"));
     idBox.appendChild(fld("Espèce", textInput(function () { return state.espece; },
       function (v) { state.espece = v; }), "c2"));
+    var taille = el("select", "pc-select pc-taille"); taille.setAttribute("aria-label", "Taille du personnage");
+    [["minuscule", "Minuscule"], ["petite", "Petite"], ["moyenne", "Moyenne"], ["grande", "Grande"], ["enorme", "Énorme"], ["gigantesque", "Gigantesque"]].forEach(function (v) {
+      var op = el("option", null, v[1]); op.value = v[0]; op.selected = state.taille === v[0]; taille.appendChild(op);
+    });
+    taille.addEventListener("change", function () { state.taille = taille.value; refresh(); });
+    hooks.push(function () { if (document.activeElement !== taille) taille.value = state.taille; });
+    idBox.appendChild(fld("Taille", taille, "c2"));
     idBox.appendChild(fld("Âge", textInput(function () { return state.age; },
       function (v) { state.age = v; }), "c2"));
     idBox.appendChild(fld("Sexe", textInput(function () { return state.sexe; },

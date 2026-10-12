@@ -11,7 +11,7 @@ const root=path.resolve(__dirname,'..');
 let attrs, writes=[], blockWrites=false;
 const seed=M.blank();seed.v=M.SCHEMA;seed.rel=M.release();seed.name='Fiche partagée';
 seed.comps=[{id:'c1',nom:'Lutte',groupe:'Physique',rang:1},{id:'c2',nom:'Évasion',groupe:'Physique',rang:2}];
-seed.etat.pv=100;seed.etat.pe=100;
+seed.etat.pv=100;seed.etat.pe=100;seed.combatOptions={attaques:{utiliseEndurance:true,utiliseMunition:false},defenses:{utiliseEndurance:true}};
 seed.inv.objets=[{ref:'top',nom:'Tunique',qte:1,ou:'haut',vet:'haut',prot_feu:4,res_feu:5},
  {ref:'legs',nom:'Pantalon',qte:1,ou:'bas',vet:'bas',prot_feu:2,res_feu:4},
  {ref:'blade',nom:'Dague',qte:1,ou:'mainG',arme:{attaque:'6',degats:'16',parade:'8',reduction:'6',modsParade:['Force','',''],modsDegats:[],type:'dague',comp:'c1'}}];
@@ -78,8 +78,8 @@ const server=http.createServer((req,res)=> {
   await atk.locator('.pc-attaque-tete').filter({hasText:'Onde de feu'}).click();let card=atk.locator('.pc-attaque-card').filter({hasText:'Onde de feu'});
   assert.equal(await card.locator('.pc-attaque-coup').count(),1);assert.match(await card.locator('span.touche').textContent(),/28/);assert.match(await card.locator('span.passage').textContent(),/14/);
   await card.locator('.pc-attaque-coup').click();assert.equal((await state()).etat.pe,71);
-  await atk.locator('.pc-attaque-tete').filter({hasText:'Poing'}).click();await atk.locator('.pc-attaque-card').filter({hasText:'Poing'}).locator('.pc-attaque-simple').click();assert.equal((await state()).etat.pe,71);
-  await def.getByRole('button',{name:'Barrière',exact:false}).click();modal=sheet.locator('.pc-modal');await modal.locator('.pc-defense-ligne select').selectOption('feu');await modal.getByLabel('Dégâts de l’attaque').fill('30');assert.equal(await modal.locator('.pc-defense-total').textContent(),'Dégâts subis : 19');await modal.getByRole('button',{name:'Appliquer les dégâts'}).click();assert.equal((await state()).etat.pe,66);
+  await atk.locator('.pc-attaque-tete').filter({hasText:'Poing'}).click();await atk.locator('.pc-attaque-card').filter({hasText:'Poing'}).locator('.pc-attaque-simple').click();assert.equal((await state()).etat.pe,67);
+  await def.getByRole('button',{name:'Barrière',exact:false}).click();modal=sheet.locator('.pc-modal');await modal.locator('.pc-defense-ligne select').selectOption('feu');await modal.getByLabel('Dégâts de l’attaque').fill('30');assert.equal(await modal.locator('.pc-defense-total').textContent(),'Dégâts subis : 19');await modal.getByRole('button',{name:'Appliquer les dégâts'}).click();assert.equal((await state()).etat.pe,62);
   // Create new source types via actual edition controls and preserve after reopen.
   await def.locator('.pc-gear').click();await def.getByRole('button',{name:'+ Ajouter une défense'}).click();
   await def.locator('.pc-attaque-card').last().locator('select').first().selectOption('custom');
@@ -97,7 +97,7 @@ const server=http.createServer((req,res)=> {
   assert.ok(C.read(attrs).state.defenses.entrees.some(a=>a.nom==='Protection libre'&&a.personnalisee),'serveur : défense libre confirmée');
   await page.reload();await sheet.locator('.pc-sheet').waitFor();
   assert.ok((await state()).attaques.some(a=>a.nom==='Attaque libre'&&a.personnalisee));assert.ok((await state()).defenses.entrees.some(a=>a.nom==='Protection libre'&&a.personnalisee));
-  assert.equal((await state()).defenses.esquive.comp,'c2');assert.equal((await state()).etat.pe,66);
+  assert.equal((await state()).defenses.esquive.comp,'c2');assert.equal((await state()).etat.pe,62);
   assert.equal((await state()).attaques[0].arme,'blade');assert.deepEqual(errors,[]);
   await page.screenshot({path:'/tmp/owd-combat-390.png'});
   console.log('OK attaques personnalisées, portée 6, création, ancien lien conservé, réouverture et absence d’erreur navigateur');
