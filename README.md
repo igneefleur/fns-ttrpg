@@ -1,3 +1,23 @@
+## Version 3.11.0b — Défenses dépliables et modes lents
+
+Les défenses se déplient comme les attaques. Elles montrent les protections et
+résistances du personnage, complétées par la parade sélectionnée. Les valeurs
+positives et négatives sont visibles ; les valeurs nulles restent cachées,
+sauf avec Tout afficher. Le bouton Défendre conserve la saisie simple et
+l’envoi au chat.
+
+Les trois commandes de chaque module occupent un tiers de la ligne et utilisent
+le style Investies des compétences : Attaque Lente / Consommer Endurance /
+Consommer Munition ; Défense Lente / Consommer Endurance / Tout afficher.
+Une attaque lente ne dépense pas de PE et divise ses dégâts finaux par deux,
+arrondis au plancher. Une défense lente ne dépense pas de PE et divise la
+protection active de parade par deux, après cumul, arrondie au plancher.
+Les protections passives et résistances du personnage sont conservées.
+
+Schéma 15 avec migration réversible des nouveaux réglages. Patch sur 3.10.2b ;
+projet complet 3.11.0b. Site à mettre à jour uniquement. Aucune signature ou
+publication de l’extension n’a été lancée.
+
 ## Version 3.10.2b — Édition des attaques
 
 Type se choisit séparément : Armes ou Attaque personnalisée. Armes propose

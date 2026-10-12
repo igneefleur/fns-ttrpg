@@ -45,7 +45,8 @@
     }
     function degatsArme(it) {
       if (!it || !it.arme) return 0;
-      return Math.round((snum(it.arme.degats) + modsDegatsArme(it)) * 1000) / 1000;
+      var total = Math.round((snum(it.arme.degats) + modsDegatsArme(it)) * 1000) / 1000;
+      return state.combatOptions.attaques.lente ? Math.floor(total / 2) : total;
     }
     function typesCoup(coup, def) {
       var types = coup && Array.isArray(coup.types) ? coup.types :
@@ -65,6 +66,7 @@
       // floor(CARAC / 5). Le passage vaut la moitié du résultat final.
       // L'epsilon évite uniquement les imprécisions binaires de 0.8/1.2/1.4.
       var touche = Math.floor(base * mult + 1e-9) + mods;
+      if (state.combatOptions.attaques.lente) touche = Math.floor(touche / 2);
       return {
         mult: mult,
         touche: touche,
@@ -137,7 +139,7 @@
     function executeAttaque(entree, it, def, envoyer) {
       var r = prepareRessources(entree, it, def);
       if (!r) return;
-      if (state.combatOptions.attaques.utiliseEndurance && r.endurance > 0)
+      if (state.combatOptions.attaques.utiliseEndurance && !state.combatOptions.attaques.lente && r.endurance > 0)
         state.etat.pe = Math.round((courant("pe") - r.endurance) * 100) / 100;
       if (state.combatOptions.attaques.utiliseMunition && r.munition) {
         var ref = String(r.munition.ref || "");
@@ -562,8 +564,9 @@
       box.innerHTML = "";
       if (!Array.isArray(state.attaques)) state.attaques = [];
       var ressources = el("div", "pc-attaque-ressources pc-combat-ressources");
+      ressources.appendChild(combatRessource(state.combatOptions.attaques, "lente", "Attaque Lente"));
       ressources.appendChild(combatEndurance(state.combatOptions.attaques));
-      ressources.appendChild(combatRessource(state.combatOptions.attaques, "utiliseMunition", "Utiliser Munition"));
+      ressources.appendChild(combatRessource(state.combatOptions.attaques, "utiliseMunition", "Consommer Munition"));
       box.appendChild(ressources);
       state.attaques.forEach(function (a) { box.appendChild(carte(a)); });
       if (!state.attaques.length) box.appendChild(el("div", "pc-empty", "Aucune attaque."));

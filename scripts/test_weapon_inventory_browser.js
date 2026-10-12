@@ -57,7 +57,7 @@ const server=http.createServer((req,res)=> {
   assert.equal(await field('Parade').inputValue(),'9');assert.equal(await field('Réduction').inputValue(),'7');assert.equal(await card.locator('.pc-arme-line').nth(3).locator('select').nth(1).inputValue(),'Dexterite');
   await card.screenshot({path:'/tmp/owd-weapon-defense-391.png'});
   await sheet.locator('.pc-tab').filter({hasText:/^Fiche$/}).click();
-  await sheet.locator('[data-module="defense"]').getByRole('button',{name:'Parade — Dague',exact:false}).click();
+  await sheet.locator('[data-module="defense"]').getByRole('button',{name:'Parade — Dague',exact:false}).click();await sheet.locator('[data-defense-id="shield"] .pc-defense-bouton').click();
   await frame().evaluate(()=>{window.defenseChat='';window.__owdChat=c=>defenseChat=c;});
   const modal=sheet.locator('.pc-modal');await modal.getByLabel('Type de dégâts', {exact:true}).selectOption('feu');await modal.getByLabel('Dégâts subis', {exact:true}).fill('30');
   await modal.getByRole('button',{name:'Valider'}).click();assert.match(await frame().evaluate(()=>defenseChat),/Dégâts subis=8/);

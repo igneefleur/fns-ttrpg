@@ -16,3 +16,6 @@ scratchpad_*
 creation.debug.json
 forge.debug.json
 scripts/glossaire.json
+
+# Historique local des patchs
+/patches.md

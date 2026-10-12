@@ -47,10 +47,10 @@ const server=http.createServer((req,res)=> {
   const state=()=>frame().evaluate(()=>JSON.parse(__owdLocalStorage.getItem('owd-perso')));
   await frame().evaluate(()=>{window.chats=[];window.__owdChat=c=>chats.push(c);});
   const atk=sheet.locator('[data-module="attaque"]'),def=sheet.locator('[data-module="defense"]');
-  assert.equal(await atk.getByRole('button',{name:'Utiliser Endurance',exact:true}).count(),1);
-  assert.equal(await atk.getByRole('button',{name:'Utiliser Munition',exact:true}).count(),1);
-  assert.equal(await def.getByRole('button',{name:'Utiliser Endurance',exact:true}).count(),1);
-  assert.equal(await def.getByRole('button',{name:'Utiliser Munition',exact:true}).count(),0);
+  assert.equal(await atk.getByRole('button',{name:'Consommer Endurance',exact:true}).count(),1);
+  assert.equal(await atk.getByRole('button',{name:'Consommer Munition',exact:true}).count(),1);
+  assert.equal(await def.getByRole('button',{name:'Consommer Endurance',exact:true}).count(),1);
+  assert.equal(await def.getByRole('button',{name:'Consommer Munition',exact:true}).count(),0);
   await atk.locator('.pc-attaque-tete').filter({hasText:'Dague'}).click();const dague=atk.locator('.pc-attaque-card[data-attack-id="old"]');
   assert.equal(await dague.locator('.pc-attaque-coup').count(),6);
   for(let i=0;i<6;i++)assert.equal(await dague.locator('.pc-attaque-coup').nth(i).locator('polygon[data-q]').count(),37);
@@ -82,14 +82,14 @@ const server=http.createServer((req,res)=> {
   const info=custom.locator('.pc-attaque-custom-info');assert.equal(await info.getByText('Multiplicateur',{exact:true}).count(),1);assert.equal(await info.getByText('Type de touche',{exact:true}).count(),1);assert.equal(await info.getByText('Type de passage',{exact:true}).count(),1);
   await custom.screenshot({path:'/tmp/owd-attack-editor-3102.png'});
   // Cost for a custom attack is its difficulty; bow consumes the chosen pile only.
-  await atk.getByRole('button',{name:'Utiliser Endurance',exact:true}).click();await atk.getByRole('button',{name:'Utiliser Munition',exact:true}).click();
+  await atk.getByRole('button',{name:'Consommer Endurance',exact:true}).click();await atk.getByRole('button',{name:'Consommer Munition',exact:true}).click();
   await atk.locator('.pc-attaque-tete').filter({hasText:'Onde de feu'}).click();
   await atk.locator('.pc-attaque-card').filter({hasText:'Onde de feu'}).locator('.pc-attaque-coup').click();assert.equal((await state()).etat.pe,95);
   await atk.locator('.pc-attaque-tete').filter({hasText:'Arc'}).click();const bow=atk.locator('.pc-attaque-card[data-attack-id="bow"]');
   await bow.locator('.pc-attaque-simple').click();assert.equal((await state()).etat.pe,89);assert.equal((await state()).inv.objets.find(o=>o.ref==='arrows').qte,2);
-  await atk.getByRole('button',{name:'Utiliser Endurance',exact:true}).click();await bow.locator('.pc-attaque-simple').click();assert.equal((await state()).etat.pe,89);assert.equal((await state()).inv.objets.find(o=>o.ref==='arrows').qte,1);
-  await atk.getByRole('button',{name:'Utiliser Munition',exact:true}).click();await bow.locator('.pc-attaque-simple').click();assert.equal((await state()).inv.objets.find(o=>o.ref==='arrows').qte,1);
-  await def.getByRole('button',{name:'Utiliser Endurance',exact:true}).click();await def.getByRole('button',{name:'Esquive',exact:false}).click();
+  await atk.getByRole('button',{name:'Consommer Endurance',exact:true}).click();await bow.locator('.pc-attaque-simple').click();assert.equal((await state()).etat.pe,89);assert.equal((await state()).inv.objets.find(o=>o.ref==='arrows').qte,1);
+  await atk.getByRole('button',{name:'Consommer Munition',exact:true}).click();await bow.locator('.pc-attaque-simple').click();assert.equal((await state()).inv.objets.find(o=>o.ref==='arrows').qte,1);
+  await def.getByRole('button',{name:'Consommer Endurance',exact:true}).click();await def.getByRole('button',{name:'Esquive',exact:false}).click();await def.locator('[data-defense-id="esquive"] .pc-defense-bouton').click();
   await sheet.locator('.pc-modal').getByLabel('Dégâts subis', {exact:true}).fill('30');await sheet.locator('.pc-modal').getByRole('button',{name:'Valider'}).click();assert.equal((await state()).etat.pe,81);
   await sheet.getByLabel('Taille du personnage').selectOption('grande');
   for(let i=0;i<300;i++){const s=C.read(attrs).state;if(s.taille==='grande'&&s.attaques.at(-1).personnalisee?.trajet==='1:passe>6:frappe'&&s.combatOptions.defenses.utiliseEndurance&&s.etat.pe===81)break;await page.waitForTimeout(100);}

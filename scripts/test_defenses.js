@@ -30,3 +30,10 @@ const again=Migr.appliquer(rollback.state,13,14);assert.ok(again.ok);assert.deep
 const identity=M.blank();identity.v=14;identity.taille='grande';identity.combatOptions.attaques.utiliseEndurance=true;
 const roundtrip=M.attrsToState(M.stateToAttrs(identity));assert.equal(roundtrip.taille,'grande');assert.deepEqual(roundtrip.combatOptions,identity.combatOptions);
 console.log('OK migration des anciennes options par entrée et conservation de la taille');
+ctx.state.inv.objets[2].ou='mainG';ctx.state.combatOptions={defenses:{lente:true}};
+d=ctx.defenseValeurs({arme:'shield'});t=ctx.defenseTotaux('feu',d,true);assert.equal(t.protection,10);assert.equal(t.reduction,9);
+d.protection=5;t=ctx.defenseTotaux('feu',d,true);assert.equal(t.protection,7); // floor((5 + 2)/2) + 4
+const slow=M.blank();slow.v=15;slow.combatOptions.attaques.lente=true;slow.combatOptions.defenses.lente=true;slow.combatOptions.defenses.toutAfficher=true;
+const oldSlow=Migr.appliquer(slow,15,14);assert.ok(oldSlow.ok);assert.equal(oldSlow.state.combatOptions.attaques.lente,undefined);
+const newSlow=Migr.appliquer(oldSlow.state,14,15);assert.ok(newSlow.ok);assert.deepEqual(newSlow.state.combatOptions,slow.combatOptions);
+console.log('OK défense lente : cumul actif puis plancher, protections passives conservées, résistances intactes et migration réversible');

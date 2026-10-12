@@ -149,7 +149,7 @@
       // La munition choisie reste propre à chaque entrée ; les consommations
       // se règlent une seule fois par module dans combatOptions.
       attaques: [],
-      combatOptions: { attaques: { utiliseEndurance: false, utiliseMunition: false }, defenses: { utiliseEndurance: false } },
+      combatOptions: { attaques: { utiliseEndurance: false, utiliseMunition: false, lente: false }, defenses: { utiliseEndurance: false, lente: false, toutAfficher: false } },
       defenses: { esquive: { comp: "", utiliseEndurance: false }, entrees: [] },
 
       // ---- avantages ----

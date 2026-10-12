@@ -45,9 +45,10 @@ const server=http.createServer((req,res)=> {
   await frame.evaluate(()=>{window.chats=[];window.__owdChat=c=>chats.push(c);});
   const state=()=>frame.evaluate(()=>JSON.parse(__owdLocalStorage.getItem('owd-perso')));
   const def=sheet.locator('[data-module="defense"]');
+  async function openDef(name) { const head=def.locator('.pc-defense-tete').filter({hasText:name}); if(await head.getAttribute('aria-expanded')==='false')await head.click();await head.locator('..').locator('.pc-defense-bouton').click(); }
   const scenarios=[['Sans Défense',21,100],['Parade — Dague',12,92],['Esquive',0,84],['Barrière',19,79]];
   for(let i=0;i<scenarios.length;i++) {
-   const [name,damage,pe]=scenarios[i];await def.getByRole('button',{name,exact:false}).click();
+   const [name,damage,pe]=scenarios[i];await openDef(name);
    const modal=sheet.locator('.pc-modal');assert.equal(await modal.locator('input').count(),1);assert.equal(await modal.locator('select').count(),1);
    assert.deepEqual(await modal.getByRole('button').allTextContents(),['Annuler','Valider']);
    assert.equal(await modal.locator('.pc-defense-total,.pc-defense-reussite,input[type="checkbox"]').count(),0);
@@ -58,10 +59,10 @@ const server=http.createServer((req,res)=> {
    assert.ok(!chats.at(-1).includes('Réussite'));assert.ok(!chats.at(-1).includes('/roll'));
    assert.equal((await state()).etat.pv,100);assert.equal((await state()).etat.pe,pe);
   }
-  await def.getByRole('button',{name:'Parade — Dague',exact:false}).click();let modal=sheet.locator('.pc-modal');
+  await openDef('Parade — Dague');let modal=sheet.locator('.pc-modal');
   await modal.getByLabel('Dégâts subis',{exact:true}).fill('-1');await modal.getByRole('button',{name:'Valider',exact:true}).click();assert.equal(await modal.count(),1);
   await modal.getByRole('button',{name:'Annuler',exact:true}).click();assert.equal((await state()).etat.pe,79);assert.equal(await frame.evaluate(()=>chats.length),4);
-  await def.getByRole('button',{name:'Utiliser Endurance',exact:true}).click();await def.getByRole('button',{name:'Esquive',exact:false}).click();
+  await def.getByRole('button',{name:'Consommer Endurance',exact:true}).click();await openDef('Esquive');
   modal=sheet.locator('.pc-modal');await modal.getByLabel('Dégâts subis',{exact:true}).fill('12,5');await modal.getByRole('button',{name:'Valider',exact:true}).click();assert.equal((await state()).etat.pe,79);
   assert.deepEqual(errors,[]);
   console.log('OK fenêtre à deux champs, envoi unique, calculs, coûts PE, PV inchangés, annulation et saisie décimale');
