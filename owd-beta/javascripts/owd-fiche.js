@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "3.11.0b";
+  var RELEASE = "3.12.0b";
   var SCHEMA = 15;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -5156,6 +5156,43 @@
       sayChat(nom, champs); refresh();
     }, "Valider");
   }
+  var combatDrag = null;
+  function combatCarteTete(card, nom, resume, ouvert, module, id, toggle, liste) {
+    var ligne = el("div", "pc-combat-tete");
+    var tete = el("button", "pc-attaque-tete" + (module === "defense" ? " pc-defense-tete" : "")); tete.type = "button";
+    tete.setAttribute("aria-expanded", String(ouvert));
+    tete.appendChild(el("span", "pc-attaque-nom", nom)); tete.appendChild(el("span", "pc-attaque-meta", resume));
+    tete.addEventListener("click", toggle); ligne.appendChild(tete);
+    var outils = el("div", "pc-combat-outils");
+    if (liste) {
+      var drag = el("span", "pc-combat-drag pc-edit-only", "⠿"); drag.title = "Déplacer"; drag.setAttribute("aria-label", "Déplacer " + nom); drag.draggable = true;
+      drag.addEventListener("dragstart", function (ev) {
+        if (!isEdit(module)) { ev.preventDefault(); return; }
+        combatDrag = { module: module, id: id }; ev.dataTransfer.setData("text/plain", id); ev.dataTransfer.effectAllowed = "move"; card.classList.add("pc-combat-pris");
+      });
+      drag.addEventListener("dragend", function () { combatDrag = null; card.classList.remove("pc-combat-pris"); }); outils.appendChild(drag);
+      card.addEventListener("dragover", function (ev) {
+        if (!isEdit(module) || !combatDrag || combatDrag.module !== module || combatDrag.id === id) return;
+        ev.preventDefault(); ev.dataTransfer.dropEffect = "move";
+        card.classList.add("pc-combat-depot");
+      });
+      card.addEventListener("dragleave", function () { card.classList.remove("pc-combat-depot"); });
+      card.addEventListener("drop", function (ev) {
+        if (!isEdit(module) || !combatDrag || combatDrag.module !== module || combatDrag.id === id) return;
+        ev.preventDefault(); var items = liste(), from = items.findIndex(function (e) { return e.id === combatDrag.id; });
+        if (from < 0) return;
+        var avant = ev.clientY < card.getBoundingClientRect().top + card.getBoundingClientRect().height / 2;
+        var moved = items.splice(from, 1)[0], to = items.findIndex(function (e) { return e.id === id; });
+        items.splice(to + (avant ? 0 : 1), 0, moved); combatDrag = null; refresh();
+      });
+    }
+    var ouvrir = miniBtn(ouvert ? "▾" : "▸", ouvert ? "Réduire" : "Agrandir", toggle, "pc-combat-ouvrir");
+    ouvrir.setAttribute("aria-label", ouvert ? "Réduire" : "Agrandir"); ouvrir.setAttribute("aria-expanded", String(ouvert)); outils.appendChild(ouvrir);
+    ligne.appendChild(outils); card.appendChild(ligne);
+  }
+  function combatSupprimer(card, action) {
+    var pied = el("div", "pc-combat-pied pc-edit-only"); pied.appendChild(miniBtn("Supprimer", null, action, "danger")); card.appendChild(pied);
+  }
   var defenseVue = { ouverts: Object.create(null) };
   function buildDefense() {
     var b = block("Défenses", null, "defense", rendre), box = el("div", "pc-attaques pc-defenses"); b.appendChild(box);
@@ -5165,12 +5202,10 @@
       btn.addEventListener("click", function () { defensePrompt(nom, mode, entree); }); return btn;
     }
     function details(card, nom, mode, entree, id) {
-      var ouvert = !!defenseVue.ouverts[id], v = defenseValeurs(entree), tete = el("button", "pc-attaque-tete pc-defense-tete"); tete.type = "button";
-      tete.setAttribute("aria-expanded", String(ouvert)); tete.appendChild(el("span", "pc-attaque-nom", nom));
+      var ouvert = !!defenseVue.ouverts[id], v = defenseValeurs(entree);
       var valeur = state.combatOptions.defenses.lente ? Math.floor(v.protection / 2) : v.protection;
-      tete.appendChild(el("span", "pc-attaque-meta", mode === "sans" ? "" : mode === "esquive" ? "Difficulté 8" : "Difficulté " + fmtP(v.difficulte) + " · Protection " + sign(valeur)));
-      tete.appendChild(el("span", "pc-attaque-chevron", ouvert ? "▾" : "▸"));
-      tete.addEventListener("click", function () { defenseVue.ouverts[id] = !defenseVue.ouverts[id]; rendre(); }); card.appendChild(tete);
+      combatCarteTete(card, nom, mode === "sans" ? "" : mode === "esquive" ? "Difficulté 8" : "Difficulté " + fmtP(v.difficulte) + " · Protection " + sign(valeur), ouvert, "defense", id,
+        function () { defenseVue.ouverts[id] = !defenseVue.ouverts[id]; rendre(); }, mode === "parade" ? function () { return state.defenses.entrees; } : null);
       if (!ouvert) return;
       var detail = el("div", "pc-attaque-detail pc-defense-detail");
       var comp = compDe(mode === "esquive" ? entree.comp : v.comp);
@@ -5195,8 +5230,8 @@
       ressources.appendChild(combatRessource(state.combatOptions.defenses, "toutAfficher", "Tout afficher")); box.appendChild(ressources);
       var sans = el("div", "pc-attaque-card"); sans.dataset.defenseId = "sans"; details(sans, "Sans Défense", "sans", null, "sans"); box.appendChild(sans);
       var es = el("div", "pc-attaque-card"), esquive = state.defenses.esquive;
-      var editEs = el("div", "pc-edit-only pc-defense-edit"); editEs.appendChild(fld("Compétence d’esquive", combatComp(esquive))); es.appendChild(editEs);
-      es.dataset.defenseId = "esquive"; details(es, "Esquive", "esquive", esquive, "esquive"); box.appendChild(es);
+      var editEs = el("div", "pc-edit-only pc-defense-edit"); editEs.appendChild(fld("Compétence d’esquive", combatComp(esquive))); 
+      es.dataset.defenseId = "esquive"; details(es, "Esquive", "esquive", esquive, "esquive"); if (defenseVue.ouverts.esquive) es.insertBefore(editEs, es.querySelector(".pc-defense-detail")); box.appendChild(es);
       state.defenses.entrees.forEach(function (e) {
         var card = el("div", "pc-attaque-card"), edit = el("div", "pc-edit-only pc-defense-edit"), sel = el("select", "pc-select pc-edit-field");
         var opt = el("option", null, "— Choisir une arme —"); opt.value = ""; sel.appendChild(opt);
@@ -5210,7 +5245,6 @@
           else { e.personnalisee = null; e.arme = sel.value; } refresh();
         });
         edit.appendChild(fld("Source", sel)); edit.appendChild(combatTexte("Nom", e, "nom"));
-        edit.appendChild(miniBtn("✕", "Retirer cette défense", function () { state.defenses.entrees = state.defenses.entrees.filter(function (a) { return a.id !== e.id; }); refresh(); }, "danger"));
         if (e.personnalisee) {
           edit.appendChild(combatTexte("Difficulté", e.personnalisee, "parade"));
           edit.appendChild(combatTexte("Protection", e.personnalisee, "reduction"));
@@ -5223,20 +5257,22 @@
           })(i);
           edit.appendChild(mods);
         }
-        card.appendChild(edit);
         var item = defenseArme(e.arme), nom = e.nom || (item ? "Parade — " + (item.nom || "Arme") : "Défense personnalisée");
         card.dataset.defenseId = e.id;
-        if (item || e.personnalisee) { details(card, nom, "parade", e, e.id); }
-        else card.appendChild(el("div", "pc-empty", e.arme ? "Arme introuvable. Choisissez une autre source." : "Choisissez une source en édition."));
+        details(card, nom, "parade", e, e.id);
+        if (defenseVue.ouverts[e.id]) {
+          card.insertBefore(edit, card.querySelector(".pc-defense-detail"));
+          combatSupprimer(card, function () { state.defenses.entrees = state.defenses.entrees.filter(function (a) { return a.id !== e.id; }); refresh(); });
+        }
         box.appendChild(card);
       });
-      box.appendChild(miniBtn("+ Ajouter une défense", null, function () { state.defenses.entrees.push({ id: uid("def"), nom: "", arme: "", personnalisee: null }); refresh(); }, "pc-edit-only"));
+      box.appendChild(miniBtn("+ Ajouter une défense", null, function () { var e = { id: uid("def"), nom: "", arme: "", personnalisee: null }; state.defenses.entrees.push(e); defenseVue.ouverts[e.id] = true; refresh(); }, "pc-edit-only"));
       applyEdit(b, "defense");
     }
     rendre(); hooks.push(rendre); return b;
   }
   // ---- Attaques liées aux armes ou créées librement ----
-  var attaqueVue = { ouverts: Object.create(null), orientation: 0, miroirs: Object.create(null), portees: Object.create(null), pinceaux: Object.create(null) };
+  var attaqueVue = { ouverts: Object.create(null), orientation: 0, miroirs: Object.create(null), portees: Object.create(null), gardes: Object.create(null), pinceaux: Object.create(null) };
   function buildAttaque() {
     // L'id technique reste « attaque » pour préserver les dispositions déjà
     // sauvegardées ; le titre visible devient « Attaques ».
@@ -5640,9 +5676,39 @@
       return box;
     }
 
+    function editeurGarde(entree) {
+      var box = el("div", "pc-garde-editor"); box.appendChild(el("div", "pc-attaque-section-titre", "Garde"));
+      var svg = gardeSvg(entree.personnalisee.garde || "5>5", false); svg.classList.add("pc-garde-dessin");
+      svg.setAttribute("aria-label", "Dessiner la garde"); svg.setAttribute("role", "group");
+      if (!entree.personnalisee.garde) Array.prototype.forEach.call(svg.querySelectorAll("circle,path"), function (n) { n.remove(); });
+      Array.prototype.forEach.call(svg.querySelectorAll("rect"), function (cell, i) {
+        var n = i + 1; cell.setAttribute("role", "button"); cell.setAttribute("tabindex", "0"); cell.setAttribute("aria-label", "Garde case " + n);
+        function dessine() {
+          var depart = attaqueVue.gardes[entree.id];
+          entree.personnalisee.garde = (depart || n) + ">" + n;
+          if (depart) delete attaqueVue.gardes[entree.id]; else attaqueVue.gardes[entree.id] = n;
+          refresh();
+        }
+        cell.addEventListener("click", dessine);
+        cell.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); dessine(); } });
+      });
+      box.appendChild(svg); box.appendChild(miniBtn("Effacer la garde", null, function () { entree.personnalisee.garde = ""; delete attaqueVue.gardes[entree.id]; refresh(); })); return box;
+    }
+
     function carte(entree) {
       var card = el("div", "pc-attaque-card"); card.dataset.attackId = entree.id;
       var it = entree.personnalisee ? { nom: entree.nom || "Attaque personnalisée", arme: entree.personnalisee } : objetArme(entree.arme);
+
+      var ouvert = !!ouverts[entree.id], def = it && typeArme(it.arme.type), meta = [];
+      if (it) {
+        if (it.arme.type) meta.push((def && def.nom) || it.arme.type);
+        if (String(it.arme.attaque || "").trim()) meta.push("Attaque " + it.arme.attaque);
+        meta.push("Dégâts " + fmtP(degatsArme(it)));
+      }
+      combatCarteTete(card, it ? it.nom || "Arme sans nom" : "Nouvelle attaque", meta.join(" · "), ouvert, "attaque", entree.id,
+        function () { ouverts[entree.id] = !ouverts[entree.id]; rendre(); }, function () { return state.attaques; });
+      if (!ouvert) return card;
+      function supprimer() { combatSupprimer(card, function () { state.attaques = state.attaques.filter(function (a) { return a.id !== entree.id; }); refresh(); }); }
 
       // Le choix de l'arme n'existe qu'en édition. L'entrée garde une `ref`
       // interne : renommer l'objet dans l'inventaire ne casse pas le raccourci.
@@ -5668,51 +5734,30 @@
         source.addEventListener("change", function () { entree.arme = source.value; ouverts[entree.id] = true; refresh(); });
         choix.appendChild(fld("Source", source));
       }
-      choix.appendChild(miniBtn("✕", "Retirer cette attaque", function () {
-        state.attaques = state.attaques.filter(function (a) { return a.id !== entree.id; }); refresh();
-      }, "danger pc-attaque-retire"));
       edit.appendChild(choix);
       if (entree.personnalisee) {
         var layout = el("div", "pc-attaque-custom-layout"), infos = el("div", "pc-attaque-custom-info");
-        layout.appendChild(editeurTrajet(entree)); infos.appendChild(carteArme(it, true));
+        var dessin = el("div", "pc-attaque-custom-dessin"); dessin.appendChild(editeurTrajet(entree)); dessin.appendChild(editeurGarde(entree)); layout.appendChild(dessin); infos.appendChild(carteArme(it, true));
         var libreChamps = el("div", "pc-arme-line pc-arme-2");
-        [["Multiplicateur", "mult"], ["Garde", "garde"]].forEach(function (f) { libreChamps.appendChild(combatTexte(f[0], entree.personnalisee, f[1])); });
+        [["Multiplicateur", "mult"]].forEach(function (f) { libreChamps.appendChild(combatTexte(f[0], entree.personnalisee, f[1])); });
         libreChamps.appendChild(fld("Type de touche", combatType(entree.personnalisee, "touche")));
         libreChamps.appendChild(fld("Type de passage", combatType(entree.personnalisee, "passage")));
         infos.appendChild(libreChamps); layout.appendChild(infos); edit.appendChild(layout);
       }
       card.appendChild(edit);
+      if (isEdit("attaque") && entree.personnalisee) { supprimer(); return card; }
 
       if (!it) {
         card.appendChild(el("div", "pc-empty pc-attaque-vide",
           entree.arme ? "Arme introuvable. Choisissez-en une autre en édition." : "Aucune arme choisie."));
-        return card;
+        supprimer(); return card;
       }
 
-      var def = typeArme(it.arme.type);
+      def = typeArme(it.arme.type);
       var coups = def && Array.isArray(def.attaques) ? def.attaques : [];
       if (entree.personnalisee && it.arme.trajet) coups = [{ nom: it.nom, mult: it.arme.mult,
         trajet: it.arme.trajet, garde: it.arme.garde, types: [it.arme.touche, it.arme.passage || it.arme.touche] }];
       if (entree.personnalisee && !it.arme.trajet && !it.arme.type) def = { types: [it.arme.touche] };
-      var ouvert = !!ouverts[entree.id];
-      var tete = el("button", "pc-attaque-tete");
-      tete.type = "button";
-      tete.setAttribute("aria-expanded", ouvert ? "true" : "false");
-      var nom = el("span", "pc-attaque-nom", it.nom || "Arme sans nom");
-      tete.appendChild(nom);
-      var meta = [];
-      if (it.arme.type) meta.push((def && def.nom) || it.arme.type);
-      if (String(it.arme.attaque || "").trim()) meta.push("Attaque " + it.arme.attaque);
-      meta.push("Dégâts " + fmtP(degatsArme(it)));
-      tete.appendChild(el("span", "pc-attaque-meta", meta.join(" · ")));
-      tete.appendChild(el("span", "pc-attaque-chevron", ouvert ? "▾" : "▸"));
-      tete.addEventListener("click", function () {
-        ouverts[entree.id] = !ouverts[entree.id];
-        rendre();
-      });
-      card.appendChild(tete);
-
-      if (!ouvert) return card;
       var detail = el("div", "pc-attaque-detail");
 
       if (categorieMunition(def)) {
@@ -5747,7 +5792,7 @@
         simple.addEventListener("click", function () { envoieAttaqueSimple(entree, it, def); });
         detail.appendChild(simple);
         card.appendChild(detail);
-        return card;
+        supprimer(); return card;
       }
 
       detail.appendChild(el("div", "pc-attaque-section-titre", "Trajets et Attaques"));
@@ -5793,7 +5838,7 @@
       coups.forEach(function (coup) { grille.appendChild(carteCoup(entree, it, coup, def)); });
       detail.appendChild(grille);
       card.appendChild(detail);
-      return card;
+      supprimer(); return card;
     }
 
     function rendre() {
