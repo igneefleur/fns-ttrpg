@@ -51,6 +51,18 @@ const server=http.createServer((req,res)=> {
   const custom=atk.locator('[data-attack-id="custom"]'),sans=def.locator('[data-defense-id="sans"]');
   await sans.getByRole('button',{name:'Agrandir',exact:true}).click();assert.equal(await sans.locator('table').count(),0);
   assert.equal(await sans.getByRole('button',{name:'Se défendre',exact:true}).count(),1);
+  const modAtk=atk.locator('[data-combat-modifiers="attaque"]');
+  const modDef=def.locator('[data-combat-modifiers="defense"]');
+  assert.equal(await modAtk.count(),1);assert.equal(await modDef.count(),1);
+  assert.equal(await modAtk.locator('.pc-attaque-card').count(),0); // la carte est le conteneur, pas un bloc ajouté dedans
+  assert.equal(await modAtk.locator('.pc-defense-valeurs').count(),0);
+  await modAtk.getByRole('button',{name:'Agrandir',exact:true}).click();
+  await modDef.getByRole('button',{name:'Agrandir',exact:true}).click();
+  assert.equal(await modAtk.locator('.pc-defense-valeurs').count(),1);
+  assert.equal(await modDef.locator('.pc-defense-valeurs').count(),1);
+  assert.equal(await modAtk.locator('[data-damage-type]').count(),9);
+  assert.equal(await modDef.locator('[data-damage-type]').count(),9);
+  assert.equal(await modAtk.getByLabel('Dégâts Feu',{exact:true}).isDisabled(),false);
   async function fill(box,label,n){const i=box.getByLabel(label,{exact:true});assert.equal(await i.isDisabled(),false);await i.fill(String(n));await i.dispatchEvent('change');}
   await fill(atk,'Dégâts Feu',5);await fill(atk,'Dégâts Froid',3);
   await custom.getByRole('button',{name:'Agrandir',exact:true}).click();
@@ -68,7 +80,10 @@ const server=http.createServer((req,res)=> {
   assert.ok(Math.max(...sizes.bs)-Math.min(...sizes.bs)<1);assert.ok(sizes.mid<1);assert.ok(parseFloat(sizes.font)>=10);assert.equal(sizes.radius,'50%');
   await custom.screenshot({path:'/tmp/owd-combat-modifiers-313.png'});await shield.screenshot({path:'/tmp/owd-defense-modifiers-313.png'});
   for(let i=0;i<300;i++){const s=C.read(attrs).state;if(s.combatModifiers?.attaques?.feu===5&&s.combatModifiers?.protections?.froid===-2)break;await page.waitForTimeout(100);}
-  assert.equal(C.read(attrs).state.combatModifiers.attaques.feu,5);await page.reload();await sheet.locator('.pc-sheet').waitFor();assert.equal((await state()).combatModifiers.protections.froid,-2);
+  assert.equal(C.read(attrs).state.combatModifiers.attaques.feu,5);
+  await modAtk.getByRole('button',{name:'Réduire',exact:true}).click();
+  assert.equal(await atk.locator('[data-combat-modifiers="attaque"] .pc-defense-valeurs').count(),0);
+  await page.reload();await sheet.locator('.pc-sheet').waitFor();assert.equal((await state()).combatModifiers.protections.froid,-2);
   assert.deepEqual(errors,[]);console.log('OK disposition, hauteurs égales, portée identique température, défense vide sans tableau, modificateurs multisources, modes lents, chat et sauvegarde');
  } finally {await browser.close();server.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;server.close();});

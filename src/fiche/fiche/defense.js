@@ -30,20 +30,47 @@
     b.addEventListener("click", function () { data[cle] = !data[cle]; refresh(); }); return b;
   }
   function combatMod(k, t) { return snum(state.combatModifiers && state.combatModifiers[k] && state.combatModifiers[k][t]); }
-  function combatModificateurs(module) {
-    var attaque = module === "attaque", box = el("div", "pc-combat-modificateurs");
-    box.appendChild(el("div", "pc-combat-mod-title", attaque ? "Modificateurs d’Attaque" : "Modificateurs de Défense"));
-    var table = el("table", "pc-combat-mod-table"), head = el("tr");
-    (attaque ? ["Type", "Dégâts"] : ["Type", "Protection", "Résistance"]).forEach(function (s) { head.appendChild(el("th", null, s)); }); table.appendChild(head);
+  // État de dépliage purement visuel, comme les cartes d'attaque et de défense.
+  // Aucun nouvel attribut de personnage n'est nécessaire.
+  var combatModVue = { attaque: false, defense: false };
+  function combatModificateurs(module, redessiner) {
+    var attaque = module === "attaque", ouvert = !!combatModVue[module];
+    var titre = attaque ? "Modificateurs d’Attaque" : "Modificateurs de Défense";
+    // Même cadre, même en-tête et même chevron que toutes les cartes de combat.
+    var card = el("div", "pc-attaque-card pc-combat-modificateurs");
+    card.dataset.combatModifiers = module;
+    combatCarteTete(card, titre, "", ouvert, module, "modificateurs-" + module,
+      function () { combatModVue[module] = !combatModVue[module]; redessiner(); }, null);
+    if (!ouvert) return card;
+
+    // La présentation est celle des défenses pour LES DEUX modules, y compris
+    // les alignements, la typographie et l'espacement de leurs tableaux.
+    var detail = el("div", "pc-attaque-detail pc-defense-detail pc-combat-mod-detail");
+    var table = el("table", "pc-defense-valeurs pc-combat-mod-table"), head = el("tr");
+    (attaque ? ["Type", "Dégâts"] : ["Type", "Protection", "Résistance"]).forEach(function (s) {
+      head.appendChild(el("th", null, s));
+    });
+    table.appendChild(head);
     combatTypes().forEach(function (t) {
-      var row = el("tr"); row.appendChild(el("td", null, combatLibType(t)));
+      var row = el("tr"); row.dataset.damageType = t;
+      row.appendChild(el("td", null, combatLibType(t)));
       (attaque ? ["attaques"] : ["protections", "resistances"]).forEach(function (k) {
-        var td = el("td"), i = el("input", "pc-num"); i.type = "number"; i.step = "any"; i.value = combatMod(k, t);
+        var td = el("td"), valeur = el("span", "pc-combat-mod-cell");
+        var i = el("input", "pc-num");
+        i.type = "number"; i.step = "any"; i.value = combatMod(k, t);
         i.setAttribute("aria-label", (k === "attaques" ? "Dégâts" : k === "protections" ? "Protection" : "Résistance") + " " + combatLibType(t));
-        i.addEventListener("input", function () { var n = Number(i.value); if (isFinite(n)) { state.combatModifiers[k][t] = n; save(); } });
-        i.addEventListener("change", function () { refresh(); }); td.appendChild(i); if (k === "resistances") td.appendChild(el("span", null, " %")); row.appendChild(td);
-      }); table.appendChild(row);
-    }); box.appendChild(table); return box;
+        i.addEventListener("input", function () {
+          var n = Number(i.value);
+          if (isFinite(n)) { state.combatModifiers[k][t] = n; save(); }
+        });
+        i.addEventListener("change", function () { refresh(); });
+        valeur.appendChild(i);
+        if (k === "resistances") valeur.appendChild(el("span", "pc-combat-mod-pourcent", "%"));
+        td.appendChild(valeur); row.appendChild(td);
+      });
+      table.appendChild(row);
+    });
+    detail.appendChild(table); card.appendChild(detail); return card;
   }
   function combatEndurance(data) { return combatRessource(data, "utiliseEndurance", "Consommer Endurance"); }
   // Protection d'abord, pourcentage ensuite ; arrondi une seule fois, à la fin.
@@ -213,7 +240,7 @@
         box.appendChild(card);
       });
       box.appendChild(miniBtn("+ Ajouter une défense", null, function () { var e = { id: uid("def"), nom: "", arme: "", personnalisee: null }; state.defenses.entrees.push(e); defenseVue.ouverts[e.id] = true; refresh(); }, "pc-edit-only"));
-      box.appendChild(combatModificateurs("defense"));
+      box.appendChild(combatModificateurs("defense", rendre));
       applyEdit(b, "defense");
     }
     rendre(); hooks.push(rendre); return b;

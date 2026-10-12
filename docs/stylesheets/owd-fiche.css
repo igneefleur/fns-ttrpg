@@ -2091,12 +2091,12 @@ html.night .pc-attaque-carte .hx-vide { fill-opacity: .12; }
 .perso-fiche .pc-defense-valeurs th,.perso-fiche .pc-defense-valeurs td { text-align:center; vertical-align:middle; }
 .perso-fiche .pc-defense-valeurs td:not(:first-child) { text-align:center; }
 .perso-fiche .pc-defense-bouton { justify-content:center; text-align:center; font-size:var(--fs-body); }
-.perso-fiche .pc-combat-modificateurs { border-top:1px solid var(--hair); margin-top:8px; padding-top:8px; }
-.perso-fiche .pc-combat-mod-title { font-size:var(--fs-body); font-weight:700; text-align:center; margin-bottom:6px; }
-.perso-fiche .pc-combat-mod-table { width:100%; table-layout:fixed; border-collapse:collapse; font-size:var(--fs-body); }
-.perso-fiche .pc-combat-mod-table td,.perso-fiche .pc-combat-mod-table th { padding:3px; text-align:center; vertical-align:middle; }
-.perso-fiche .pc-combat-mod-table th { color:var(--ink-3); font-size:var(--fs-meta); }
-.perso-fiche .pc-combat-mod-table .pc-num { width:4ch; max-width:70%; }
+/* Modificateurs : de vraies cartes de combat repliables. Le tableau partage
+   strictement la mise en page des défenses, dans Attaques comme Défenses. */
+.perso-fiche .pc-combat-mod-detail .pc-combat-mod-table { width:100%; table-layout:fixed; margin-bottom:0; }
+.perso-fiche .pc-combat-mod-table .pc-combat-mod-cell { display:inline-flex; justify-content:center; align-items:center; gap:.12rem; min-width:0; width:100%; }
+.perso-fiche .pc-combat-mod-table .pc-num { width:100%; max-width:4.5rem; box-sizing:border-box; font-size:var(--fs-body); }
+.perso-fiche .pc-combat-mod-table .pc-combat-mod-pourcent { font-size:var(--fs-body); white-space:nowrap; }
 .perso-fiche .pc-combat-tete .pc-attaque-nom { font-size:.82rem; }
 .perso-fiche .pc-defense-detail > .pc-attaque-meta { text-align:center; font-size:var(--fs-body); margin-bottom:.4rem; }
 .perso-fiche .pc-defense-valeurs { font-size:var(--fs-body); }

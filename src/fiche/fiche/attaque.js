@@ -596,7 +596,7 @@
         ouverts[a.id] = true;
         refresh();
       }, "pc-edit-only pc-attaque-ajout"));
-      box.appendChild(combatModificateurs("attaque"));
+      box.appendChild(combatModificateurs("attaque", rendre));
       applyEdit(b, "attaque");
     }
     if (window.__owdVueAttaques && window.__owdAttackPreview) remontageNettoyage.push(function () { window.__owdAttackPreview(null); });
