@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "3.9.0b";
+  var RELEASE = "3.9.1b";
   var SCHEMA = 13;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -6987,7 +6987,7 @@
       // d'un saut de ligne compose une commande que l'extension refuse — et
       // l'objet serait quand même retiré de l'inventaire, donc perdu.
       var cmd = cmdCarte("OWD Item Give", [["Objet", it.nom || "objet"]].concat(
-        champsObjet(it, q), [["Donner", "[Donner](" + TAKE_CMD + " " + packObjet(it, q) + ")"]]));
+        champsObjet(it, q), [["Prendre", "[Prendre](" + TAKE_CMD + " " + packObjet(it, q) + ")"]]));
       var enRoll20 = typeof window.__owdChat === "function";
       if (enRoll20) envoyer(cmd);
       else flash("Hors de Roll20 : rien n'est envoyé au tchat (l'objet reste dans l'inventaire).");
@@ -7145,6 +7145,9 @@
   }
 
   function carteArme(it, attaqueLibre) {
+    // L’inventaire passe historiquement un callback en second argument.
+    // Seul le booléen explicite des attaques libres masque la parade.
+    attaqueLibre = attaqueLibre === true;
     var a = it.arme;
 
     function selComp() {
