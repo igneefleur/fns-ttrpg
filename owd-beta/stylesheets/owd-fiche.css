@@ -2029,3 +2029,14 @@ html.night .pc-attaque-carte .hx-vide { fill-opacity: .12; }
    reste dans la petite colonne du sélecteur de source. */
 .perso-fiche .pc-attaque-edit > :nth-child(n+3) { grid-column:1 / -1; min-width:0; }
 .perso-fiche .pc-attaque-edit > .pc-modal-note { white-space:normal; }
+
+/* Éditeur des attaques : tracé à gauche, données à droite, détails dessous. */
+.perso-fiche .pc-attaque-custom-layout { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; align-items:start; }
+.perso-fiche .pc-attaque-custom-layout .pc-arme { width:100%; box-sizing:border-box; grid-column:auto; }
+.perso-fiche .pc-attaque-editor-tools { display:flex; align-items:center; flex-wrap:wrap; gap:4px; margin-bottom:6px; }
+.perso-fiche .pc-attaque-editor-tools .on { background:var(--accent-deep); color:var(--paper); }
+.perso-fiche .pc-attaque-editor svg polygon[role="button"] { cursor:pointer; }
+.perso-fiche .pc-attaque-editor svg polygon[role="button"]:focus { outline:none; stroke:var(--accent); stroke-width:1.8px; }
+.perso-fiche .pc-attaque-editor .hx-rang, .perso-fiche .pc-attaque-editor .hx-soi, .perso-fiche .pc-attaque-editor .hx-visee { pointer-events:none; }
+.perso-fiche .pc-combat-ressources { margin:0 0 8px; }
+@media (max-width:480px) { .perso-fiche .pc-attaque-custom-layout { grid-template-columns:minmax(0,1fr); } }

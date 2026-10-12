@@ -1314,6 +1314,21 @@
       return s;
     }
   });
+  OwdMigr.ajouter({ schema: 14, titre: "Options de combat communes aux modules",
+    notes: "Endurance et munitions se choisissent une seule fois en haut de leur module.",
+    monter: function (s, ctx) {
+      var retour = ctx.reprendre("combat-options-schema14");
+      if (retour) s.combatOptions = retour;
+      else {
+        var attaques = s.attaques || [], defenses = s.defenses || {}, entrees = defenses.entrees || [];
+        s.combatOptions = { attaques: { utiliseEndurance: attaques.some(function (a) { return a.utiliseEndurance; }),
+          utiliseMunition: attaques.some(function (a) { return a.utiliseMunition; }) },
+          defenses: { utiliseEndurance: !!(defenses.esquive && defenses.esquive.utiliseEndurance) || entrees.some(function (e) { return e.utiliseEndurance; }) } };
+      }
+      return s;
+    },
+    descendre: function (s, ctx) { ctx.grenier("combat-options-schema14", s.combatOptions); delete s.combatOptions; return s; }
+  });
   global.OwdMigr = OwdMigr;
   if (typeof module === "object" && module && module.exports) module.exports = OwdMigr;
 })(typeof window !== "undefined" ? window : (typeof global !== "undefined" ? global : this));

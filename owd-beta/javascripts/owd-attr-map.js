@@ -81,7 +81,7 @@
   // même version, la beta étant ce que le stable recevra à la fusion) : ce qui
   // compare des versions doit donc l'ôter avant de lire les nombres, et c'est
   // exactement ce que fait OwdMods.compareVersions.
-  var RELEASE_DEFAUT = "3.9.1b";
+  var RELEASE_DEFAUT = "3.10.0b";
   // Entier INDÉPENDANT de la release : il ne monte qu'au changement de forme de
   // l'état du personnage, jamais parce que le majeur a bougé. Ajouter une clé
   // racine avec un défaut n'en est PAS un : normalize() complète une clé
@@ -89,7 +89,7 @@
   // s'ouvre dans les deux sens sans migration. Le manifeste publie les deux
   // numéros séparément, et c'est ce repli-ci que l'amorce prend quand le
   // manifeste manque.
-  var SCHEMA_DEFAUT = 13;
+  var SCHEMA_DEFAUT = 14;
 
   // Release EFFECTIVE : celle du code qui TOURNE, pas celle que le site publie.
   //
@@ -133,7 +133,7 @@
   // surtout, aucun d'eux ne vient disputer au MIROIR les suffixes que les
   // barres de jetons lisent.
   var SCALARS = [
-    ["name", "nom", "s"], ["espece", "espece", "s"], ["age", "age", "s"],
+    ["name", "nom", "s"], ["espece", "espece", "s"], ["taille", "taille", "s"], ["age", "age", "s"],
     ["sexe", "sexe", "s"], ["genre", "genre", "s"],
     ["portrait", "portrait", "s"],
     ["background", "background", "s"], ["notes", "notes", "s"],
@@ -185,6 +185,7 @@
     // l'inventaire, sinon une reconstruction depuis les attributs les perdrait.
     ["attaques", "attaques"],
     ["defenses", "defenses"],
+    ["combatOptions", "combat_options"],
     ["avantages", "avantages"],
     ["armes", "armes"], ["vetements", "vetements"],
     ["inv", "inventaire"],
@@ -243,7 +244,7 @@
       v: SCHEMA_DEFAUT, rel: RELEASE_DEFAUT,
 
       // ---- identité ----
-      name: "", portrait: "", espece: "", age: "", sexe: "", genre: "",
+      name: "", portrait: "", espece: "", taille: "moyenne", age: "", sexe: "", genre: "",
       background: "", notes: "",
 
       // ---- expérience ----
@@ -318,6 +319,7 @@
 
       // ---- attaques ----
       attaques: [],
+      combatOptions: { attaques: { utiliseEndurance: false, utiliseMunition: false }, defenses: { utiliseEndurance: false } },
       defenses: { esquive: { comp: "", utiliseEndurance: false }, entrees: [] },
 
       // ---- avantages ----
