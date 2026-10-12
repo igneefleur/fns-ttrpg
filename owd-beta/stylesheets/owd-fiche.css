@@ -2046,3 +2046,11 @@ html.night .pc-attaque-carte .hx-vide { fill-opacity: .12; }
 .perso-fiche .pc-attaque-editor-range { justify-content:center; }
 .perso-fiche .pc-attaque-custom-info { min-width:0; }
 .perso-fiche .pc-attaque-custom-info .pc-arme-1 { grid-template-columns:minmax(0,1fr); }
+
+/* Options de combat : même puce que le filtre Investies. */
+.perso-fiche .pc-combat-ressources { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.perso-fiche .pc-combat-toggle { width:100%; min-width:0; box-sizing:border-box; font-family:inherit; white-space:normal; }
+.perso-fiche .pc-defense-valeurs { width:100%; border-collapse:collapse; font-size:var(--fs-meta); margin-bottom:8px; }
+.perso-fiche .pc-defense-valeurs th { text-align:left; color:var(--ink-3); }
+.perso-fiche .pc-defense-valeurs td,.perso-fiche .pc-defense-valeurs th { padding:4px; border-bottom:1px solid var(--hair); }
+.perso-fiche .pc-defense-valeurs td:not(:first-child) { text-align:right; }

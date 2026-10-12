@@ -77,8 +77,8 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "3.10.2b";
-  var SCHEMA = 14;
+  var RELEASE = "3.11.0b";
+  var SCHEMA = 15;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
   // caractéristiques est ouverte mais serrée (20 est la moyenne humaine), un
@@ -458,7 +458,7 @@
       // La munition choisie reste propre à chaque entrée ; les consommations
       // se règlent une seule fois par module dans combatOptions.
       attaques: [],
-      combatOptions: { attaques: { utiliseEndurance: false, utiliseMunition: false }, defenses: { utiliseEndurance: false } },
+      combatOptions: { attaques: { utiliseEndurance: false, utiliseMunition: false, lente: false }, defenses: { utiliseEndurance: false, lente: false, toutAfficher: false } },
       defenses: { esquive: { comp: "", utiliseEndurance: false }, entrees: [] },
 
       // ---- avantages ----
@@ -730,8 +730,8 @@
 
     if (["minuscule", "petite", "moyenne", "grande", "enorme", "gigantesque"].indexOf(s.taille) < 0) s.taille = "moyenne";
     var options = s.combatOptions || {}, attaqueOptions = options.attaques || {}, defenseOptions = options.defenses || {};
-    s.combatOptions = { attaques: { utiliseEndurance: !!attaqueOptions.utiliseEndurance, utiliseMunition: !!attaqueOptions.utiliseMunition },
-      defenses: { utiliseEndurance: !!defenseOptions.utiliseEndurance } };
+    s.combatOptions = { attaques: { utiliseEndurance: !!attaqueOptions.utiliseEndurance, utiliseMunition: !!attaqueOptions.utiliseMunition, lente: !!attaqueOptions.lente },
+      defenses: { utiliseEndurance: !!defenseOptions.utiliseEndurance, lente: !!defenseOptions.lente, toutAfficher: !!defenseOptions.toutAfficher } };
     // ---- attaques ----
     // La référence d'arme est validée APRÈS l'inventaire, parce que les anciens
     // objets ne portent pas encore nécessairement leur `ref`. Ici on ne fait
@@ -5095,11 +5095,11 @@
     s.addEventListener("change", function () { data.comp = s.value; refresh(); }); return s;
   }
   function combatRessource(data, cle, texte) {
-    var on = !!data[cle], b = el("button", "pc-mini pc-attaque-toggle" + (on ? " on" : ""), texte);
+    var on = !!data[cle], b = el("button", "pc-chip pc-combat-toggle" + (on ? " on" : ""), texte);
     b.type = "button"; b.setAttribute("aria-pressed", String(on));
     b.addEventListener("click", function () { data[cle] = !data[cle]; refresh(); }); return b;
   }
-  function combatEndurance(data) { return combatRessource(data, "utiliseEndurance", "Utiliser Endurance"); }
+  function combatEndurance(data) { return combatRessource(data, "utiliseEndurance", "Consommer Endurance"); }
   // Protection d'abord, pourcentage ensuite ; arrondi une seule fois, à la fin.
   // Borner chaque étape empêche deux valeurs négatives de produire des dégâts.
   function combatDegats(d, p, r) {
@@ -5119,11 +5119,12 @@
     var p = 0, r = 0, portes = vetementsPortes().filter(function (o) { return pnum(o.qte) > 0; });
     portes.forEach(function (o) { p += snum(o["prot_" + type]); r += snum(o["res_" + type]); });
     if (defense && reussie) {
-      p += defense.protection;
+      var active = defense.protection;
       // Un objet hybride déjà porté n'est compté qu'une seule fois.
       if (defense.item && portes.indexOf(defense.item) < 0) {
-        p += snum(defense.item["prot_" + type]); r += snum(defense.item["res_" + type]);
+        active += snum(defense.item["prot_" + type]); r += snum(defense.item["res_" + type]);
       }
+      p += state.combatOptions && state.combatOptions.defenses.lente ? Math.floor(active / 2) : active;
     }
     return { protection: p, reduction: r };
   }
@@ -5147,7 +5148,7 @@
       if (mode !== "sans") {
         champs.push(["Difficulté", fmtP(cout)]);
         if (comp) champs.push(["Compétence", comp.nom || "Compétence"]);
-        if (state.combatOptions.defenses.utiliseEndurance) {
+        if (state.combatOptions.defenses.utiliseEndurance && !state.combatOptions.defenses.lente) {
           state.etat.pe = Math.round((courant("pe") - cout) * 100) / 100;
           champs.push(["Endurance", "−" + fmtP(cout)]);
         }
@@ -5155,22 +5156,47 @@
       sayChat(nom, champs); refresh();
     }, "Valider");
   }
+  var defenseVue = { ouverts: Object.create(null) };
   function buildDefense() {
     var b = block("Défenses", null, "defense", rendre), box = el("div", "pc-attaques pc-defenses"); b.appendChild(box);
     function bouton(nom, mode, entree) {
       var btn = el("button", "pc-attaque-simple pc-defense-bouton"); btn.type = "button";
       btn.appendChild(el("strong", null, nom));
-      var v = defenseValeurs(entree);
-      btn.appendChild(el("span", null, mode === "sans" ? "Protections et réductions du personnage" : mode === "esquive" ? "Difficulté 8 · Esquive réussie : aucun dégât" : "Difficulté " + fmtP(v.difficulte) + " · Protection +" + fmtP(v.protection)));
       btn.addEventListener("click", function () { defensePrompt(nom, mode, entree); }); return btn;
+    }
+    function details(card, nom, mode, entree, id) {
+      var ouvert = !!defenseVue.ouverts[id], v = defenseValeurs(entree), tete = el("button", "pc-attaque-tete pc-defense-tete"); tete.type = "button";
+      tete.setAttribute("aria-expanded", String(ouvert)); tete.appendChild(el("span", "pc-attaque-nom", nom));
+      var valeur = state.combatOptions.defenses.lente ? Math.floor(v.protection / 2) : v.protection;
+      tete.appendChild(el("span", "pc-attaque-meta", mode === "sans" ? "" : mode === "esquive" ? "Difficulté 8" : "Difficulté " + fmtP(v.difficulte) + " · Protection " + sign(valeur)));
+      tete.appendChild(el("span", "pc-attaque-chevron", ouvert ? "▾" : "▸"));
+      tete.addEventListener("click", function () { defenseVue.ouverts[id] = !defenseVue.ouverts[id]; rendre(); }); card.appendChild(tete);
+      if (!ouvert) return;
+      var detail = el("div", "pc-attaque-detail pc-defense-detail");
+      var comp = compDe(mode === "esquive" ? entree.comp : v.comp);
+      if (comp) detail.appendChild(el("div", "pc-attaque-meta", comp.nom || "Compétence"));
+      var table = el("table", "pc-defense-valeurs"), head = el("tr");
+      ["Type", "Protection", "Résistance"].forEach(function (s) { head.appendChild(el("th", null, s)); }); table.appendChild(head);
+      combatTypes().forEach(function (t) {
+        var totaux = defenseTotaux(t, mode === "parade" ? v : null, true);
+        if (!state.combatOptions.defenses.toutAfficher && totaux.protection === 0 && totaux.reduction === 0) return;
+        var row = el("tr"); row.dataset.damageType = t;
+        row.appendChild(el("td", null, combatLibType(t)));
+        row.appendChild(el("td", "pc-defense-protection", (state.combatOptions.defenses.toutAfficher || totaux.protection !== 0 ? fmtP(totaux.protection) : "")));
+        row.appendChild(el("td", "pc-defense-resistance", (state.combatOptions.defenses.toutAfficher || totaux.reduction !== 0 ? fmtP(totaux.reduction) + " %" : ""))); table.appendChild(row);
+      });
+      detail.appendChild(table); detail.appendChild(bouton("Défendre", mode, entree)); card.appendChild(detail);
     }
     function rendre() {
       box.innerHTML = "";
-      var ressources = el("div", "pc-attaque-ressources pc-combat-ressources"); ressources.appendChild(combatEndurance(state.combatOptions.defenses)); box.appendChild(ressources);
-      box.appendChild(bouton("Sans Défense", "sans", null));
+      var ressources = el("div", "pc-attaque-ressources pc-combat-ressources");
+      ressources.appendChild(combatRessource(state.combatOptions.defenses, "lente", "Défense Lente"));
+      ressources.appendChild(combatEndurance(state.combatOptions.defenses));
+      ressources.appendChild(combatRessource(state.combatOptions.defenses, "toutAfficher", "Tout afficher")); box.appendChild(ressources);
+      var sans = el("div", "pc-attaque-card"); sans.dataset.defenseId = "sans"; details(sans, "Sans Défense", "sans", null, "sans"); box.appendChild(sans);
       var es = el("div", "pc-attaque-card"), esquive = state.defenses.esquive;
       var editEs = el("div", "pc-edit-only pc-defense-edit"); editEs.appendChild(fld("Compétence d’esquive", combatComp(esquive))); es.appendChild(editEs);
-      es.appendChild(bouton("Esquive", "esquive", esquive)); box.appendChild(es);
+      es.dataset.defenseId = "esquive"; details(es, "Esquive", "esquive", esquive, "esquive"); box.appendChild(es);
       state.defenses.entrees.forEach(function (e) {
         var card = el("div", "pc-attaque-card"), edit = el("div", "pc-edit-only pc-defense-edit"), sel = el("select", "pc-select pc-edit-field");
         var opt = el("option", null, "— Choisir une arme —"); opt.value = ""; sel.appendChild(opt);
@@ -5199,7 +5225,8 @@
         }
         card.appendChild(edit);
         var item = defenseArme(e.arme), nom = e.nom || (item ? "Parade — " + (item.nom || "Arme") : "Défense personnalisée");
-        if (item || e.personnalisee) { card.appendChild(bouton(nom, "parade", e)); }
+        card.dataset.defenseId = e.id;
+        if (item || e.personnalisee) { details(card, nom, "parade", e, e.id); }
         else card.appendChild(el("div", "pc-empty", e.arme ? "Arme introuvable. Choisissez une autre source." : "Choisissez une source en édition."));
         box.appendChild(card);
       });
@@ -5255,7 +5282,8 @@
     }
     function degatsArme(it) {
       if (!it || !it.arme) return 0;
-      return Math.round((snum(it.arme.degats) + modsDegatsArme(it)) * 1000) / 1000;
+      var total = Math.round((snum(it.arme.degats) + modsDegatsArme(it)) * 1000) / 1000;
+      return state.combatOptions.attaques.lente ? Math.floor(total / 2) : total;
     }
     function typesCoup(coup, def) {
       var types = coup && Array.isArray(coup.types) ? coup.types :
@@ -5275,6 +5303,7 @@
       // floor(CARAC / 5). Le passage vaut la moitié du résultat final.
       // L'epsilon évite uniquement les imprécisions binaires de 0.8/1.2/1.4.
       var touche = Math.floor(base * mult + 1e-9) + mods;
+      if (state.combatOptions.attaques.lente) touche = Math.floor(touche / 2);
       return {
         mult: mult,
         touche: touche,
@@ -5347,7 +5376,7 @@
     function executeAttaque(entree, it, def, envoyer) {
       var r = prepareRessources(entree, it, def);
       if (!r) return;
-      if (state.combatOptions.attaques.utiliseEndurance && r.endurance > 0)
+      if (state.combatOptions.attaques.utiliseEndurance && !state.combatOptions.attaques.lente && r.endurance > 0)
         state.etat.pe = Math.round((courant("pe") - r.endurance) * 100) / 100;
       if (state.combatOptions.attaques.utiliseMunition && r.munition) {
         var ref = String(r.munition.ref || "");
@@ -5772,8 +5801,9 @@
       box.innerHTML = "";
       if (!Array.isArray(state.attaques)) state.attaques = [];
       var ressources = el("div", "pc-attaque-ressources pc-combat-ressources");
+      ressources.appendChild(combatRessource(state.combatOptions.attaques, "lente", "Attaque Lente"));
       ressources.appendChild(combatEndurance(state.combatOptions.attaques));
-      ressources.appendChild(combatRessource(state.combatOptions.attaques, "utiliseMunition", "Utiliser Munition"));
+      ressources.appendChild(combatRessource(state.combatOptions.attaques, "utiliseMunition", "Consommer Munition"));
       box.appendChild(ressources);
       state.attaques.forEach(function (a) { box.appendChild(carte(a)); });
       if (!state.attaques.length) box.appendChild(el("div", "pc-empty", "Aucune attaque."));

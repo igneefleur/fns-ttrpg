@@ -1329,6 +1329,23 @@
     },
     descendre: function (s, ctx) { ctx.grenier("combat-options-schema14", s.combatOptions); delete s.combatOptions; return s; }
   });
+  OwdMigr.ajouter({ schema: 15, titre: "Attaques et défenses lentes",
+    notes: "Les options de combat conservent les modes lents et l’affichage des valeurs nulles.",
+    monter: function (s, ctx) {
+      var retour = ctx.reprendre("combat-lent-schema15");
+      if (retour && s.combatOptions) {
+        s.combatOptions.attaques.lente = !!retour.attaque;
+        s.combatOptions.defenses.lente = !!retour.defense;
+        s.combatOptions.defenses.toutAfficher = !!retour.tout;
+      }
+      return s;
+    },
+    descendre: function (s, ctx) {
+      var options = s.combatOptions || {}, a = options.attaques || {}, d = options.defenses || {};
+      ctx.grenier("combat-lent-schema15", { attaque: !!a.lente, defense: !!d.lente, tout: !!d.toutAfficher });
+      delete a.lente; delete d.lente; delete d.toutAfficher; return s;
+    }
+  });
   global.OwdMigr = OwdMigr;
   if (typeof module === "object" && module && module.exports) module.exports = OwdMigr;
 })(typeof window !== "undefined" ? window : (typeof global !== "undefined" ? global : this));
