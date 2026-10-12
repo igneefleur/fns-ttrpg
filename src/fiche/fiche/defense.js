@@ -29,6 +29,22 @@
     b.type = "button"; b.setAttribute("aria-pressed", String(on));
     b.addEventListener("click", function () { data[cle] = !data[cle]; refresh(); }); return b;
   }
+  function combatMod(k, t) { return snum(state.combatModifiers && state.combatModifiers[k] && state.combatModifiers[k][t]); }
+  function combatModificateurs(module) {
+    var attaque = module === "attaque", box = el("div", "pc-combat-modificateurs");
+    box.appendChild(el("div", "pc-combat-mod-title", attaque ? "Modificateurs d’Attaque" : "Modificateurs de Défense"));
+    var table = el("table", "pc-combat-mod-table"), head = el("tr");
+    (attaque ? ["Type", "Dégâts"] : ["Type", "Protection", "Résistance"]).forEach(function (s) { head.appendChild(el("th", null, s)); }); table.appendChild(head);
+    combatTypes().forEach(function (t) {
+      var row = el("tr"); row.appendChild(el("td", null, combatLibType(t)));
+      (attaque ? ["attaques"] : ["protections", "resistances"]).forEach(function (k) {
+        var td = el("td"), i = el("input", "pc-num"); i.type = "number"; i.step = "any"; i.value = combatMod(k, t);
+        i.setAttribute("aria-label", (k === "attaques" ? "Dégâts" : k === "protections" ? "Protection" : "Résistance") + " " + combatLibType(t));
+        i.addEventListener("input", function () { var n = Number(i.value); if (isFinite(n)) { state.combatModifiers[k][t] = n; save(); } });
+        i.addEventListener("change", function () { refresh(); }); td.appendChild(i); if (k === "resistances") td.appendChild(el("span", null, " %")); row.appendChild(td);
+      }); table.appendChild(row);
+    }); box.appendChild(table); return box;
+  }
   function combatEndurance(data) { return combatRessource(data, "utiliseEndurance", "Consommer Endurance"); }
   // Protection d'abord, pourcentage ensuite ; arrondi une seule fois, à la fin.
   // Borner chaque étape empêche deux valeurs négatives de produire des dégâts.
@@ -56,7 +72,7 @@
       }
       p += state.combatOptions && state.combatOptions.defenses.lente ? Math.floor(active / 2) : active;
     }
-    return { protection: p, reduction: r };
+    return { protection: p + combatMod("protections", type), reduction: r + combatMod("resistances", type) };
   }
   function defensePrompt(nom, mode, entree) {
     var body = el("div", "pc-modal-body pc-defense-form"), degats = el("input", "n"), type = el("select", "pc-select");
@@ -128,7 +144,7 @@
     var b = block("Défenses", null, "defense", rendre), box = el("div", "pc-attaques pc-defenses"); b.appendChild(box);
     function bouton(nom, mode, entree) {
       var btn = el("button", "pc-attaque-simple pc-defense-bouton"); btn.type = "button";
-      btn.appendChild(el("strong", null, nom));
+      btn.appendChild(el("strong", null, "Se défendre"));
       btn.addEventListener("click", function () { defensePrompt(nom, mode, entree); }); return btn;
     }
     function details(card, nom, mode, entree, id) {
@@ -150,7 +166,7 @@
         row.appendChild(el("td", "pc-defense-protection", (state.combatOptions.defenses.toutAfficher || totaux.protection !== 0 ? fmtP(totaux.protection) : "")));
         row.appendChild(el("td", "pc-defense-resistance", (state.combatOptions.defenses.toutAfficher || totaux.reduction !== 0 ? fmtP(totaux.reduction) + " %" : ""))); table.appendChild(row);
       });
-      detail.appendChild(table); detail.appendChild(bouton("Défendre", mode, entree)); card.appendChild(detail);
+      if (table.querySelector("td")) detail.appendChild(table); detail.appendChild(bouton(nom, mode, entree)); card.appendChild(detail);
     }
     function rendre() {
       box.innerHTML = "";
@@ -197,6 +213,7 @@
         box.appendChild(card);
       });
       box.appendChild(miniBtn("+ Ajouter une défense", null, function () { var e = { id: uid("def"), nom: "", arme: "", personnalisee: null }; state.defenses.entrees.push(e); defenseVue.ouverts[e.id] = true; refresh(); }, "pc-edit-only"));
+      box.appendChild(combatModificateurs("defense"));
       applyEdit(b, "defense");
     }
     rendre(); hooks.push(rendre); return b;

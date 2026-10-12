@@ -37,3 +37,11 @@ const slow=M.blank();slow.v=15;slow.combatOptions.attaques.lente=true;slow.comba
 const oldSlow=Migr.appliquer(slow,15,14);assert.ok(oldSlow.ok);assert.equal(oldSlow.state.combatOptions.attaques.lente,undefined);
 const newSlow=Migr.appliquer(oldSlow.state,14,15);assert.ok(newSlow.ok);assert.deepEqual(newSlow.state.combatOptions,slow.combatOptions);
 console.log('OK défense lente : cumul actif puis plancher, protections passives conservées, résistances intactes et migration réversible');
+
+const s16=M.blank();s16.v=16;s16.combatModifiers={attaques:{feu:5},protections:{feu:4},resistances:{feu:10}};
+const dn16=Migr.appliquer(s16,16,15);assert.ok(dn16.ok);assert.equal(dn16.state.combatModifiers,undefined);
+const up16=Migr.appliquer(dn16.state,15,16);assert.ok(up16.ok);assert.deepEqual(up16.state.combatModifiers,s16.combatModifiers);
+assert.deepEqual(M.attrsToState(M.stateToAttrs(s16)).combatModifiers,s16.combatModifiers);
+ctx.state.combatModifiers={protections:{feu:4},resistances:{feu:10}};ctx.state.combatOptions={defenses:{lente:false}};
+t=ctx.defenseTotaux('feu',null,false);assert.equal(t.protection,8);assert.equal(t.reduction,15);
+console.log('OK modificateurs de défense, attributs et migration réversible 16');

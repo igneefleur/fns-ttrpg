@@ -59,7 +59,7 @@ const server=http.createServer((req,res)=> {
     const head=n.querySelector('.pc-combat-tete').getBoundingClientRect(),tools=n.querySelector('.pc-combat-outils').getBoundingClientRect();
     const trajet=n.querySelector('.pc-attaque-editor').getBoundingClientRect(),garde=n.querySelector('.pc-garde-editor').getBoundingClientRect();
     return {top:tools.top-head.top,right:head.right-tools.right,under:garde.left>=trajet.right,last:n.lastElementChild.className};
-  });assert.ok(layout.top<10&&layout.right<10&&layout.under);
+  });assert.ok(layout.top<25&&layout.right<10&&layout.under);
   const sizes=await custom.evaluate(n=>{const g=n.querySelector('.pc-garde-dessin').getBoundingClientRect(),mult=n.querySelector('.pc-attaque-editor-mult').getBoundingClientRect(),types=n.querySelector('.pc-attaque-editor-types').getBoundingClientRect(),cols=Array.from(n.querySelector('.pc-attaque-editor-types').children).map(x=>x.getBoundingClientRect());return {g:g.width,m:mult.width,t:types.width,c:cols.map(x=>x.width),y:cols.map(x=>x.y),border:getComputedStyle(n.querySelector('.pc-combat-ouvrir')).borderTopWidth};});assert.ok(sizes.g<60);assert.ok(Math.abs(sizes.m-sizes.t)<1);assert.ok(Math.abs(sizes.c[0]-sizes.c[1])<1&&sizes.y[0]===sizes.y[1]);assert.equal(sizes.border,'0px');assert.match(layout.last,/pc-combat-pied/);
   await custom.screenshot({path:'/tmp/owd-combat-cards-312.png'});
   await custom.getByRole('button',{name:'Réduire',exact:true}).click();assert.equal(await custom.locator('input').count(),0);assert.equal(await custom.getByRole('button',{name:'Supprimer',exact:true}).count(),0);

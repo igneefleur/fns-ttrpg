@@ -177,6 +177,13 @@
     var options = s.combatOptions || {}, attaqueOptions = options.attaques || {}, defenseOptions = options.defenses || {};
     s.combatOptions = { attaques: { utiliseEndurance: !!attaqueOptions.utiliseEndurance, utiliseMunition: !!attaqueOptions.utiliseMunition, lente: !!attaqueOptions.lente },
       defenses: { utiliseEndurance: !!defenseOptions.utiliseEndurance, lente: !!defenseOptions.lente, toutAfficher: !!defenseOptions.toutAfficher } };
+    var cm = s.combatModifiers || {};
+    s.combatModifiers = { attaques: {}, protections: {}, resistances: {} };
+    ["attaques", "protections", "resistances"].forEach(function (k) {
+      ["contondant", "perforant", "tranchant", "feu", "froid", "eclair", "decomposition", "ethere", "brut"].forEach(function (t) {
+        var n = Number(cm[k] && cm[k][t]); s.combatModifiers[k][t] = isFinite(n) ? n : 0;
+      });
+    });
     // ---- attaques ----
     // La référence d'arme est validée APRÈS l'inventaire, parce que les anciens
     // objets ne portent pas encore nécessairement leur `ref`. Ici on ne fait

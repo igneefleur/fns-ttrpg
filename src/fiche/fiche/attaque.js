@@ -73,6 +73,17 @@
         passage: Math.floor(touche / 2)
       };
     }
+    function degatsTypes(base, type, passage) {
+      var valeurs = {}, primary = combatTypes().indexOf(type) >= 0 ? type : type || "—";
+      valeurs[primary] = base;
+      combatTypes().forEach(function (t) { var n = combatMod("attaques", t); if (n) valeurs[t] = (valeurs[t] || 0) + n; });
+      return Object.keys(valeurs).map(function (t) {
+        var n = valeurs[t]; if (state.combatOptions.attaques.lente) n = Math.floor(n / 2); if (passage) n = Math.floor(n / 2);
+        return { type: t, valeur: Math.max(0, n) };
+      }).filter(function (x) { return x.valeur || x.type === primary; }).map(function (x) { return fmtP(x.valeur) + " " + x.type; }).join(" + ");
+    }
+    function brutArme(it) { return Math.round((snum(it.arme.degats) + modsDegatsArme(it)) * 1000) / 1000; }
+    function brutCoup(it, coup) { return Math.floor(snum(it.arme.degats) * multiplicateurCoup(coup) + 1e-9) + modsDegatsArme(it); }
     function fmtMult(n) {
       return "×" + Number(n || 1).toFixed(1);
     }
@@ -154,8 +165,8 @@
       executeAttaque(entree, it, def, function () {
         var types = typesCoup(coup, def), dg = degatsCoup(it, coup);
         sayChat((coup && coup.nom ? coup.nom : "Attaque") + " — " + (it.nom || (def && def.nom) || "Arme"), [
-          ["Case de touche", fmtP(dg.touche) + " " + types.touche],
-          ["Case de passage", fmtP(dg.passage) + " " + types.passage]
+          ["Case de touche", degatsTypes(brutCoup(it, coup), types.touche, false)],
+          ["Case de passage", degatsTypes(brutCoup(it, coup), types.passage, true)]
         ]);
       });
     }
@@ -163,7 +174,7 @@
       executeAttaque(entree, it, def, function () {
         var types = def && Array.isArray(def.types) ? def.types : [], type = types[0] || "—";
         sayChat("Attaque — " + (it.nom || (def && def.nom) || "Arme"), [
-          ["Dégâts", fmtP(degatsArme(it)) + " " + type]
+          ["Dégâts", degatsTypes(brutArme(it), type, false)]
         ]);
       });
     }
@@ -344,8 +355,8 @@
       nom.appendChild(el("span", "pc-attaque-mult", fmtMult(dg.mult)));
       texte.appendChild(nom);
       var chiffres = el("div", "pc-attaque-coup-degats");
-      chiffres.appendChild(el("span", "touche", "Touche " + fmtP(dg.touche) + " " + types.touche));
-      chiffres.appendChild(el("span", "passage", "Passage " + fmtP(dg.passage) + " " + types.passage));
+      chiffres.appendChild(el("span", "touche", "Touche " + degatsTypes(brutCoup(it, coup), types.touche, false)));
+      chiffres.appendChild(el("span", "passage", "Passage " + degatsTypes(brutCoup(it, coup), types.passage, true)));
       texte.appendChild(chiffres);
       bas.appendChild(texte);
       var garde = gardeSvg(coup.garde, miroir);
@@ -395,10 +406,10 @@
       gomme.setAttribute("aria-pressed", String(brush === "efface")); efface.appendChild(gomme);
       efface.appendChild(miniBtn("Tout Effacer", null, function () { path = []; ecrit(); }));
       box.insertBefore(efface, svg);
-      var pieds = el("div", "pc-attaque-editor-tools pc-attaque-editor-range");
-      pieds.appendChild(miniBtn("−", "Réduire la grille", function () { attaqueVue.portees[entree.id] = Math.max(3, rayon - 1); rendre(); }));
+      var pieds = el("div", "pc-attaque-editor-tools pc-attaque-editor-range pc-step");
+      pieds.appendChild(stepBtn("−", "Réduire la grille", function () { attaqueVue.portees[entree.id] = Math.max(3, rayon - 1); rendre(); }));
       pieds.appendChild(el("span", null, "Portée " + rayon));
-      pieds.appendChild(miniBtn("+", "Agrandir la grille", function () { attaqueVue.portees[entree.id] = rayon + 1; rendre(); }));
+      pieds.appendChild(stepBtn("+", "Agrandir la grille", function () { attaqueVue.portees[entree.id] = rayon + 1; rendre(); }));
       box.appendChild(pieds);
       return box;
     }
@@ -515,7 +526,7 @@
         simple.type = "button";
         var stypes = def && Array.isArray(def.types) ? def.types : [];
         simple.appendChild(el("strong", null, "Attaquer"));
-        simple.appendChild(el("span", null, fmtP(degatsArme(it)) + " " + (stypes[0] || "—")));
+        simple.appendChild(el("span", null, degatsTypes(brutArme(it), stypes[0] || "—", false)));
         simple.addEventListener("click", function () { envoieAttaqueSimple(entree, it, def); });
         detail.appendChild(simple);
         card.appendChild(detail);
@@ -585,6 +596,7 @@
         ouverts[a.id] = true;
         refresh();
       }, "pc-edit-only pc-attaque-ajout"));
+      box.appendChild(combatModificateurs("attaque"));
       applyEdit(b, "attaque");
     }
     if (window.__owdVueAttaques && window.__owdAttackPreview) remontageNettoyage.push(function () { window.__owdAttackPreview(null); });
