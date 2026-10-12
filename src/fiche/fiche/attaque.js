@@ -464,12 +464,12 @@
       edit.appendChild(choix);
       if (entree.personnalisee) {
         var layout = el("div", "pc-attaque-custom-layout"), infos = el("div", "pc-attaque-custom-info");
-        var dessin = el("div", "pc-attaque-custom-dessin"); dessin.appendChild(editeurTrajet(entree)); dessin.appendChild(editeurGarde(entree)); layout.appendChild(dessin); infos.appendChild(carteArme(it, true));
-        var libreChamps = el("div", "pc-arme-line pc-arme-2");
-        [["Multiplicateur", "mult"]].forEach(function (f) { libreChamps.appendChild(combatTexte(f[0], entree.personnalisee, f[1])); });
-        libreChamps.appendChild(fld("Type de touche", combatType(entree.personnalisee, "touche")));
-        libreChamps.appendChild(fld("Type de passage", combatType(entree.personnalisee, "passage")));
-        infos.appendChild(libreChamps); layout.appendChild(infos); edit.appendChild(layout);
+        var dessin = el("div", "pc-attaque-custom-dessin"); dessin.appendChild(editeurTrajet(entree));
+        var mult = el("div", "pc-attaque-editor-mult"); mult.appendChild(combatTexte("Multiplicateur", entree.personnalisee, "mult")); dessin.appendChild(mult);
+        var types = el("div", "pc-attaque-editor-types");
+        types.appendChild(fld("Type de touche", combatType(entree.personnalisee, "touche")));
+        types.appendChild(fld("Type de passage", combatType(entree.personnalisee, "passage"))); dessin.appendChild(types);
+        layout.appendChild(dessin); infos.appendChild(carteArme(it, true)); infos.appendChild(editeurGarde(entree)); layout.appendChild(infos); edit.appendChild(layout);
       }
       card.appendChild(edit);
       if (isEdit("attaque") && entree.personnalisee) { supprimer(); return card; }

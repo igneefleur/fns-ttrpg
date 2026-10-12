@@ -79,7 +79,7 @@ const server=http.createServer((req,res)=> {
   assert.equal(await custom.locator('.pc-attaque-source').count(),0);assert.equal(await custom.locator('.pc-arme label').filter({hasText:/^Type$/}).count(),0);
   assert.equal(await custom.locator('.pc-arme label').filter({hasText:/^Compétence$/}).count(),1);
   assert.equal(await custom.getByText('Cliquez les cases dans l’ordre du trajet. Le centre représente le personnage.',{exact:true}).count(),0);
-  const info=custom.locator('.pc-attaque-custom-info');assert.equal(await info.getByText('Multiplicateur',{exact:true}).count(),1);assert.equal(await info.getByText('Type de touche',{exact:true}).count(),1);assert.equal(await info.getByText('Type de passage',{exact:true}).count(),1);
+  const info=custom.locator('.pc-attaque-custom-dessin');assert.equal(await info.getByText('Multiplicateur',{exact:true}).count(),1);assert.equal(await info.getByText('Type de touche',{exact:true}).count(),1);assert.equal(await info.getByText('Type de passage',{exact:true}).count(),1);
   await custom.screenshot({path:'/tmp/owd-attack-editor-3102.png'});
   // Cost for a custom attack is its difficulty; bow consumes the chosen pile only.
   await atk.getByRole('button',{name:'Consommer Endurance',exact:true}).click();await atk.getByRole('button',{name:'Consommer Munition',exact:true}).click();

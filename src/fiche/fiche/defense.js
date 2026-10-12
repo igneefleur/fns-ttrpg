@@ -116,7 +116,7 @@
         items.splice(to + (avant ? 0 : 1), 0, moved); combatDrag = null; refresh();
       });
     }
-    var ouvrir = miniBtn(ouvert ? "▾" : "▸", ouvert ? "Réduire" : "Agrandir", toggle, "pc-combat-ouvrir");
+    var ouvrir = el("button", "pc-attaque-chevron pc-combat-ouvrir", ouvert ? "▾" : "▸"); ouvrir.type = "button"; ouvrir.title = ouvert ? "Réduire" : "Agrandir"; ouvrir.addEventListener("click", toggle);
     ouvrir.setAttribute("aria-label", ouvert ? "Réduire" : "Agrandir"); ouvrir.setAttribute("aria-expanded", String(ouvert)); outils.appendChild(ouvrir);
     ligne.appendChild(outils); card.appendChild(ligne);
   }

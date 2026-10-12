@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "3.12.0b";
+  var RELEASE = "3.12.1b";
   var SCHEMA = 15;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -5186,7 +5186,7 @@
         items.splice(to + (avant ? 0 : 1), 0, moved); combatDrag = null; refresh();
       });
     }
-    var ouvrir = miniBtn(ouvert ? "▾" : "▸", ouvert ? "Réduire" : "Agrandir", toggle, "pc-combat-ouvrir");
+    var ouvrir = el("button", "pc-attaque-chevron pc-combat-ouvrir", ouvert ? "▾" : "▸"); ouvrir.type = "button"; ouvrir.title = ouvert ? "Réduire" : "Agrandir"; ouvrir.addEventListener("click", toggle);
     ouvrir.setAttribute("aria-label", ouvert ? "Réduire" : "Agrandir"); ouvrir.setAttribute("aria-expanded", String(ouvert)); outils.appendChild(ouvrir);
     ligne.appendChild(outils); card.appendChild(ligne);
   }
@@ -5737,12 +5737,12 @@
       edit.appendChild(choix);
       if (entree.personnalisee) {
         var layout = el("div", "pc-attaque-custom-layout"), infos = el("div", "pc-attaque-custom-info");
-        var dessin = el("div", "pc-attaque-custom-dessin"); dessin.appendChild(editeurTrajet(entree)); dessin.appendChild(editeurGarde(entree)); layout.appendChild(dessin); infos.appendChild(carteArme(it, true));
-        var libreChamps = el("div", "pc-arme-line pc-arme-2");
-        [["Multiplicateur", "mult"]].forEach(function (f) { libreChamps.appendChild(combatTexte(f[0], entree.personnalisee, f[1])); });
-        libreChamps.appendChild(fld("Type de touche", combatType(entree.personnalisee, "touche")));
-        libreChamps.appendChild(fld("Type de passage", combatType(entree.personnalisee, "passage")));
-        infos.appendChild(libreChamps); layout.appendChild(infos); edit.appendChild(layout);
+        var dessin = el("div", "pc-attaque-custom-dessin"); dessin.appendChild(editeurTrajet(entree));
+        var mult = el("div", "pc-attaque-editor-mult"); mult.appendChild(combatTexte("Multiplicateur", entree.personnalisee, "mult")); dessin.appendChild(mult);
+        var types = el("div", "pc-attaque-editor-types");
+        types.appendChild(fld("Type de touche", combatType(entree.personnalisee, "touche")));
+        types.appendChild(fld("Type de passage", combatType(entree.personnalisee, "passage"))); dessin.appendChild(types);
+        layout.appendChild(dessin); infos.appendChild(carteArme(it, true)); infos.appendChild(editeurGarde(entree)); layout.appendChild(infos); edit.appendChild(layout);
       }
       card.appendChild(edit);
       if (isEdit("attaque") && entree.personnalisee) { supprimer(); return card; }

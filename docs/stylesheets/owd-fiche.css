@@ -2057,16 +2057,21 @@ html.night .pc-attaque-carte .hx-vide { fill-opacity: .12; }
 
 /* Cartes de combat : commandes fixes au-dessus du contenu dépliable. */
 .perso-fiche .pc-combat-tete { position:relative; min-height:2.2rem; }
-.perso-fiche .pc-combat-tete .pc-attaque-tete { padding-right:4.8rem; grid-template-columns:minmax(0,1fr); gap:.18rem; }
+.perso-fiche .pc-combat-tete .pc-attaque-tete { padding-right:3.7rem; grid-template-columns:minmax(0,1fr) auto; gap:.45rem; }
 .perso-fiche .pc-combat-outils { position:absolute; top:.3rem; right:.4rem; display:flex; align-items:center; gap:.3rem; }
 .perso-fiche .pc-combat-drag { cursor:grab; color:var(--ink-3); font-size:1.25rem; line-height:1; padding:.2rem; }
-.perso-fiche .pc-combat-ouvrir { width:1.8rem; height:1.8rem; padding:0; }
+.perso-fiche .pc-combat-ouvrir { width:1.2rem; height:1.4rem; padding:0; border:0; background:transparent; cursor:pointer; color:var(--accent-deep); font-size:.78rem; line-height:1; }
 .perso-fiche .pc-combat-pris { opacity:.5; }
 .perso-fiche .pc-combat-depot { outline:2px solid var(--accent); outline-offset:-2px; }
 .perso-fiche .pc-combat-pied { padding:.5rem; border-top:1px solid var(--hair); text-align:right; }
 .perso-fiche .pc-attaque-choix { grid-template-columns:repeat(2,minmax(0,1fr)); }
 .perso-fiche .pc-garde-editor { text-align:center; margin-top:.65rem; border-top:1px solid var(--hair); padding-top:.4rem; }
-.perso-fiche .pc-garde-dessin { width:7rem; height:7rem; margin:.4rem auto; }
+.perso-fiche .pc-garde-dessin { width:3rem; height:3rem; margin:.4rem auto; }
 .perso-fiche .pc-garde-dessin rect { cursor:pointer; }
 .perso-fiche .pc-garde-dessin rect:focus { outline:none; stroke:var(--accent); stroke-width:.5; }
 .perso-fiche .pc-garde-dessin path,.perso-fiche .pc-garde-dessin circle { pointer-events:none; }
+
+.perso-fiche .pc-attaque-editor-mult .pc-f { width:100%; }
+.perso-fiche .pc-attaque-editor-types { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; }
+.perso-fiche .pc-attaque-custom-dessin input,.perso-fiche .pc-attaque-custom-dessin select { width:100%; min-width:0; box-sizing:border-box; }
+.perso-fiche .pc-attaque-editor-types .pc-f { min-width:0; }
