@@ -77,8 +77,8 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "3.12.1b";
-  var SCHEMA = 15;
+  var RELEASE = "3.13.0b";
+  var SCHEMA = 16;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
   // caractéristiques est ouverte mais serrée (20 est la moyenne humaine), un
@@ -458,6 +458,7 @@
       // La munition choisie reste propre à chaque entrée ; les consommations
       // se règlent une seule fois par module dans combatOptions.
       attaques: [],
+      combatModifiers: { attaques: {}, protections: {}, resistances: {} },
       combatOptions: { attaques: { utiliseEndurance: false, utiliseMunition: false, lente: false }, defenses: { utiliseEndurance: false, lente: false, toutAfficher: false } },
       defenses: { esquive: { comp: "", utiliseEndurance: false }, entrees: [] },
 
@@ -732,6 +733,13 @@
     var options = s.combatOptions || {}, attaqueOptions = options.attaques || {}, defenseOptions = options.defenses || {};
     s.combatOptions = { attaques: { utiliseEndurance: !!attaqueOptions.utiliseEndurance, utiliseMunition: !!attaqueOptions.utiliseMunition, lente: !!attaqueOptions.lente },
       defenses: { utiliseEndurance: !!defenseOptions.utiliseEndurance, lente: !!defenseOptions.lente, toutAfficher: !!defenseOptions.toutAfficher } };
+    var cm = s.combatModifiers || {};
+    s.combatModifiers = { attaques: {}, protections: {}, resistances: {} };
+    ["attaques", "protections", "resistances"].forEach(function (k) {
+      ["contondant", "perforant", "tranchant", "feu", "froid", "eclair", "decomposition", "ethere", "brut"].forEach(function (t) {
+        var n = Number(cm[k] && cm[k][t]); s.combatModifiers[k][t] = isFinite(n) ? n : 0;
+      });
+    });
     // ---- attaques ----
     // La référence d'arme est validée APRÈS l'inventaire, parce que les anciens
     // objets ne portent pas encore nécessairement leur `ref`. Ici on ne fait
@@ -5099,6 +5107,22 @@
     b.type = "button"; b.setAttribute("aria-pressed", String(on));
     b.addEventListener("click", function () { data[cle] = !data[cle]; refresh(); }); return b;
   }
+  function combatMod(k, t) { return snum(state.combatModifiers && state.combatModifiers[k] && state.combatModifiers[k][t]); }
+  function combatModificateurs(module) {
+    var attaque = module === "attaque", box = el("div", "pc-combat-modificateurs");
+    box.appendChild(el("div", "pc-combat-mod-title", attaque ? "Modificateurs d’Attaque" : "Modificateurs de Défense"));
+    var table = el("table", "pc-combat-mod-table"), head = el("tr");
+    (attaque ? ["Type", "Dégâts"] : ["Type", "Protection", "Résistance"]).forEach(function (s) { head.appendChild(el("th", null, s)); }); table.appendChild(head);
+    combatTypes().forEach(function (t) {
+      var row = el("tr"); row.appendChild(el("td", null, combatLibType(t)));
+      (attaque ? ["attaques"] : ["protections", "resistances"]).forEach(function (k) {
+        var td = el("td"), i = el("input", "pc-num"); i.type = "number"; i.step = "any"; i.value = combatMod(k, t);
+        i.setAttribute("aria-label", (k === "attaques" ? "Dégâts" : k === "protections" ? "Protection" : "Résistance") + " " + combatLibType(t));
+        i.addEventListener("input", function () { var n = Number(i.value); if (isFinite(n)) { state.combatModifiers[k][t] = n; save(); } });
+        i.addEventListener("change", function () { refresh(); }); td.appendChild(i); if (k === "resistances") td.appendChild(el("span", null, " %")); row.appendChild(td);
+      }); table.appendChild(row);
+    }); box.appendChild(table); return box;
+  }
   function combatEndurance(data) { return combatRessource(data, "utiliseEndurance", "Consommer Endurance"); }
   // Protection d'abord, pourcentage ensuite ; arrondi une seule fois, à la fin.
   // Borner chaque étape empêche deux valeurs négatives de produire des dégâts.
@@ -5126,7 +5150,7 @@
       }
       p += state.combatOptions && state.combatOptions.defenses.lente ? Math.floor(active / 2) : active;
     }
-    return { protection: p, reduction: r };
+    return { protection: p + combatMod("protections", type), reduction: r + combatMod("resistances", type) };
   }
   function defensePrompt(nom, mode, entree) {
     var body = el("div", "pc-modal-body pc-defense-form"), degats = el("input", "n"), type = el("select", "pc-select");
@@ -5198,7 +5222,7 @@
     var b = block("Défenses", null, "defense", rendre), box = el("div", "pc-attaques pc-defenses"); b.appendChild(box);
     function bouton(nom, mode, entree) {
       var btn = el("button", "pc-attaque-simple pc-defense-bouton"); btn.type = "button";
-      btn.appendChild(el("strong", null, nom));
+      btn.appendChild(el("strong", null, "Se défendre"));
       btn.addEventListener("click", function () { defensePrompt(nom, mode, entree); }); return btn;
     }
     function details(card, nom, mode, entree, id) {
@@ -5220,7 +5244,7 @@
         row.appendChild(el("td", "pc-defense-protection", (state.combatOptions.defenses.toutAfficher || totaux.protection !== 0 ? fmtP(totaux.protection) : "")));
         row.appendChild(el("td", "pc-defense-resistance", (state.combatOptions.defenses.toutAfficher || totaux.reduction !== 0 ? fmtP(totaux.reduction) + " %" : ""))); table.appendChild(row);
       });
-      detail.appendChild(table); detail.appendChild(bouton("Défendre", mode, entree)); card.appendChild(detail);
+      if (table.querySelector("td")) detail.appendChild(table); detail.appendChild(bouton(nom, mode, entree)); card.appendChild(detail);
     }
     function rendre() {
       box.innerHTML = "";
@@ -5267,6 +5291,7 @@
         box.appendChild(card);
       });
       box.appendChild(miniBtn("+ Ajouter une défense", null, function () { var e = { id: uid("def"), nom: "", arme: "", personnalisee: null }; state.defenses.entrees.push(e); defenseVue.ouverts[e.id] = true; refresh(); }, "pc-edit-only"));
+      box.appendChild(combatModificateurs("defense"));
       applyEdit(b, "defense");
     }
     rendre(); hooks.push(rendre); return b;
@@ -5346,6 +5371,17 @@
         passage: Math.floor(touche / 2)
       };
     }
+    function degatsTypes(base, type, passage) {
+      var valeurs = {}, primary = combatTypes().indexOf(type) >= 0 ? type : type || "—";
+      valeurs[primary] = base;
+      combatTypes().forEach(function (t) { var n = combatMod("attaques", t); if (n) valeurs[t] = (valeurs[t] || 0) + n; });
+      return Object.keys(valeurs).map(function (t) {
+        var n = valeurs[t]; if (state.combatOptions.attaques.lente) n = Math.floor(n / 2); if (passage) n = Math.floor(n / 2);
+        return { type: t, valeur: Math.max(0, n) };
+      }).filter(function (x) { return x.valeur || x.type === primary; }).map(function (x) { return fmtP(x.valeur) + " " + x.type; }).join(" + ");
+    }
+    function brutArme(it) { return Math.round((snum(it.arme.degats) + modsDegatsArme(it)) * 1000) / 1000; }
+    function brutCoup(it, coup) { return Math.floor(snum(it.arme.degats) * multiplicateurCoup(coup) + 1e-9) + modsDegatsArme(it); }
     function fmtMult(n) {
       return "×" + Number(n || 1).toFixed(1);
     }
@@ -5427,8 +5463,8 @@
       executeAttaque(entree, it, def, function () {
         var types = typesCoup(coup, def), dg = degatsCoup(it, coup);
         sayChat((coup && coup.nom ? coup.nom : "Attaque") + " — " + (it.nom || (def && def.nom) || "Arme"), [
-          ["Case de touche", fmtP(dg.touche) + " " + types.touche],
-          ["Case de passage", fmtP(dg.passage) + " " + types.passage]
+          ["Case de touche", degatsTypes(brutCoup(it, coup), types.touche, false)],
+          ["Case de passage", degatsTypes(brutCoup(it, coup), types.passage, true)]
         ]);
       });
     }
@@ -5436,7 +5472,7 @@
       executeAttaque(entree, it, def, function () {
         var types = def && Array.isArray(def.types) ? def.types : [], type = types[0] || "—";
         sayChat("Attaque — " + (it.nom || (def && def.nom) || "Arme"), [
-          ["Dégâts", fmtP(degatsArme(it)) + " " + type]
+          ["Dégâts", degatsTypes(brutArme(it), type, false)]
         ]);
       });
     }
@@ -5617,8 +5653,8 @@
       nom.appendChild(el("span", "pc-attaque-mult", fmtMult(dg.mult)));
       texte.appendChild(nom);
       var chiffres = el("div", "pc-attaque-coup-degats");
-      chiffres.appendChild(el("span", "touche", "Touche " + fmtP(dg.touche) + " " + types.touche));
-      chiffres.appendChild(el("span", "passage", "Passage " + fmtP(dg.passage) + " " + types.passage));
+      chiffres.appendChild(el("span", "touche", "Touche " + degatsTypes(brutCoup(it, coup), types.touche, false)));
+      chiffres.appendChild(el("span", "passage", "Passage " + degatsTypes(brutCoup(it, coup), types.passage, true)));
       texte.appendChild(chiffres);
       bas.appendChild(texte);
       var garde = gardeSvg(coup.garde, miroir);
@@ -5668,10 +5704,10 @@
       gomme.setAttribute("aria-pressed", String(brush === "efface")); efface.appendChild(gomme);
       efface.appendChild(miniBtn("Tout Effacer", null, function () { path = []; ecrit(); }));
       box.insertBefore(efface, svg);
-      var pieds = el("div", "pc-attaque-editor-tools pc-attaque-editor-range");
-      pieds.appendChild(miniBtn("−", "Réduire la grille", function () { attaqueVue.portees[entree.id] = Math.max(3, rayon - 1); rendre(); }));
+      var pieds = el("div", "pc-attaque-editor-tools pc-attaque-editor-range pc-step");
+      pieds.appendChild(stepBtn("−", "Réduire la grille", function () { attaqueVue.portees[entree.id] = Math.max(3, rayon - 1); rendre(); }));
       pieds.appendChild(el("span", null, "Portée " + rayon));
-      pieds.appendChild(miniBtn("+", "Agrandir la grille", function () { attaqueVue.portees[entree.id] = rayon + 1; rendre(); }));
+      pieds.appendChild(stepBtn("+", "Agrandir la grille", function () { attaqueVue.portees[entree.id] = rayon + 1; rendre(); }));
       box.appendChild(pieds);
       return box;
     }
@@ -5788,7 +5824,7 @@
         simple.type = "button";
         var stypes = def && Array.isArray(def.types) ? def.types : [];
         simple.appendChild(el("strong", null, "Attaquer"));
-        simple.appendChild(el("span", null, fmtP(degatsArme(it)) + " " + (stypes[0] || "—")));
+        simple.appendChild(el("span", null, degatsTypes(brutArme(it), stypes[0] || "—", false)));
         simple.addEventListener("click", function () { envoieAttaqueSimple(entree, it, def); });
         detail.appendChild(simple);
         card.appendChild(detail);
@@ -5858,6 +5894,7 @@
         ouverts[a.id] = true;
         refresh();
       }, "pc-edit-only pc-attaque-ajout"));
+      box.appendChild(combatModificateurs("attaque"));
       applyEdit(b, "attaque");
     }
     if (window.__owdVueAttaques && window.__owdAttackPreview) remontageNettoyage.push(function () { window.__owdAttackPreview(null); });

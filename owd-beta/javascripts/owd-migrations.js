@@ -1346,6 +1346,11 @@
       delete a.lente; delete d.lente; delete d.toutAfficher; return s;
     }
   });
+  OwdMigr.ajouter({ schema: 16,
+    titre: "Modificateurs de combat", notes: "Dégâts, protections et résistances temporaires par type, communs à toutes les entrées.",
+    monter: function (s, ctx) { s.combatModifiers = ctx.reprendre("combat-modifiers-schema16") || s.combatModifiers || { attaques: {}, protections: {}, resistances: {} }; return s; },
+    descendre: function (s, ctx) { ctx.grenier("combat-modifiers-schema16", s.combatModifiers || {}); delete s.combatModifiers; return s; }
+  });
   global.OwdMigr = OwdMigr;
   if (typeof module === "object" && module && module.exports) module.exports = OwdMigr;
 })(typeof window !== "undefined" ? window : (typeof global !== "undefined" ? global : this));
