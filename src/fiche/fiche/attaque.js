@@ -545,11 +545,11 @@
       var controles = el("div", "pc-attaque-controles");
       var visee = el("div", "pc-attaque-visee");
       visee.appendChild(el("span", null, "Visée"));
-      var directions = el("div", "pc-tabs mini pc-attaque-orientations");
+      var directions = el("div", "pc-segs pc-attaque-orientations");
       directions.setAttribute("role", "group");
       directions.setAttribute("aria-label", "Orientation du personnage");
       ["↑", "↗", "↘", "↓", "↙", "↖"].forEach(function (sym, i) {
-        var bouton = el("button", "pc-tab pc-attaque-orientation" + (i === orientation ? " on" : ""), sym);
+        var bouton = el("button", "c pc-attaque-orientation" + (i === orientation ? " on" : ""), sym);
         bouton.type = "button";
         bouton.setAttribute("aria-label", ["Haut", "Haut-droite", "Bas-droite", "Bas", "Bas-gauche", "Haut-gauche"][i]);
         bouton.setAttribute("aria-pressed", String(i === orientation));
