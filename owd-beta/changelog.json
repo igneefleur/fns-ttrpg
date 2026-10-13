@@ -110,19 +110,5 @@
 "url": "content/regles/combat/armes/"
 }
 ]
-},
-{
-"short": "6f782c2",
-"author": "Théo Cavaillès",
-"date": "2026-09-22T19:10:33+02:00",
-"message": "Le gantelet se porte à une main, donc au singulier",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/6f782c2efc44a186a41e695ecf63a99ca594c496",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/combat/armes.md",
-"url": "content/regles/combat/armes/"
-}
-]
 }
 ]
