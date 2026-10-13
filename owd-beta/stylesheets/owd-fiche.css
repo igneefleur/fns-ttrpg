@@ -2068,7 +2068,12 @@ html.night .pc-attaque-carte .hx-vide { fill-opacity: .12; }
 .perso-fiche .pc-combat-tete { position:relative; min-height:2.2rem; }
 .perso-fiche .pc-combat-tete .pc-attaque-tete { padding-right:3.7rem; grid-template-columns:minmax(0,1fr) auto; gap:.45rem; }
 .perso-fiche .pc-combat-outils { position:absolute; top:.3rem; right:.4rem; display:flex; align-items:center; gap:.3rem; }
-.perso-fiche .pc-combat-drag { cursor:grab; color:var(--ink-3); font-size:1.25rem; line-height:1; padding:.2rem; }
+.perso-fiche .pc-combat-poignee { display:inline-flex; align-items:center; justify-content:center; box-sizing:border-box; width:1.7rem; height:1.7rem; flex:0 0 1.7rem; padding:0; }
+.perso-fiche .pc-combat-drag { cursor:grab; color:var(--ink-3); font-size:1.25rem; line-height:1; }
+.perso-fiche .pc-combat-oeil { border:0; background:transparent; color:var(--ink-3); cursor:pointer; }
+.perso-fiche .pc-combat-oeil:hover { color:var(--accent-deep); background:var(--stripe); }
+.perso-fiche .pc-combat-oeil:focus-visible { outline:2px solid var(--accent); outline-offset:1px; }
+.perso-fiche .pc-combat-oeil svg { display:block; width:1rem; height:1rem; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
 .perso-fiche .pc-combat-ouvrir { width:1.2rem; height:1.4rem; padding:0; border:0; background:transparent; cursor:pointer; color:var(--accent-deep); font-size:.78rem; line-height:1; }
 .perso-fiche .pc-combat-pris { opacity:.5; }
 .perso-fiche .pc-combat-depot { outline:2px solid var(--accent); outline-offset:-2px; }
