@@ -544,7 +544,6 @@
 
       var controles = el("div", "pc-attaque-controles");
       var visee = el("div", "pc-attaque-visee");
-      visee.appendChild(el("span", null, "Visée"));
       var directions = el("div", "pc-segs pc-attaque-orientations");
       directions.setAttribute("role", "group");
       directions.setAttribute("aria-label", "Orientation du personnage");
@@ -563,10 +562,11 @@
       visee.appendChild(directions);
       controles.appendChild(visee);
 
-      var mir = el("button", "pc-mini pc-attaque-miroir" + (miroirs[entree.id] ? " on" : ""), "⇋ Miroir");
+      var mir = el("button", "pc-mini pc-attaque-miroir" + (miroirs[entree.id] ? " on" : ""), "⇋");
       mir.type = "button";
       mir.setAttribute("aria-pressed", miroirs[entree.id] ? "true" : "false");
       mir.title = miroirs[entree.id] ? "Arme tenue en main gauche : revenir en main droite" : "Passer l'arme de la main droite à la main gauche";
+      mir.setAttribute("aria-label", mir.title);
       mir.addEventListener("click", function () {
         miroirs[entree.id] = !miroirs[entree.id];
         rendre();
@@ -599,7 +599,7 @@
         ouverts[a.id] = true;
         refresh();
       }, "pc-edit-only pc-attaque-ajout"));
-      box.appendChild(combatModificateurs("attaque", rendre));
+      var mods = combatModificateurs("attaque", rendre); if (mods) box.appendChild(mods);
       applyEdit(b, "attaque");
     }
     if (window.__owdVueAttaques && window.__owdAttackPreview) remontageNettoyage.push(function () { window.__owdAttackPreview(null); });

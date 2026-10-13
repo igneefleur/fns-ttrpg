@@ -177,6 +177,13 @@
     var options = s.combatOptions || {}, attaqueOptions = options.attaques || {}, defenseOptions = options.defenses || {};
     s.combatOptions = { attaques: { utiliseEndurance: !!attaqueOptions.utiliseEndurance, utiliseMunition: !!attaqueOptions.utiliseMunition, lente: !!attaqueOptions.lente },
       defenses: { utiliseEndurance: !!defenseOptions.utiliseEndurance, lente: !!defenseOptions.lente, toutAfficher: !!defenseOptions.toutAfficher } };
+    var combatAffichage = s.combatAffichage || {};
+    s.combatAffichage = {
+      modificateursAttaque: combatAffichage.modificateursAttaque !== false,
+      defenseSans: combatAffichage.defenseSans !== false,
+      defenseEsquive: combatAffichage.defenseEsquive !== false,
+      modificateursDefense: combatAffichage.modificateursDefense !== false
+    };
     var cm = s.combatModifiers || {};
     s.combatModifiers = { attaques: {}, protections: {}, resistances: {} };
     ["attaques", "protections", "resistances"].forEach(function (k) {

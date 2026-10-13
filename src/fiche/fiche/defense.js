@@ -35,12 +35,18 @@
   var combatModVue = { attaque: false, defense: false };
   function combatModificateurs(module, redessiner) {
     var attaque = module === "attaque", ouvert = !!combatModVue[module];
+    var cleVisibilite = attaque ? "modificateursAttaque" : "modificateursDefense";
+    var visible = state.combatAffichage[cleVisibilite] !== false;
+    if (!visible && !isEdit(module)) return null;
     var titre = attaque ? "Modificateurs d’Attaque" : "Modificateurs de Défense";
     // Même cadre, même en-tête et même chevron que toutes les cartes de combat.
     var card = el("div", "pc-attaque-card pc-combat-modificateurs");
     card.dataset.combatModifiers = module;
     combatCarteTete(card, titre, "", ouvert, module, "modificateurs-" + module,
-      function () { combatModVue[module] = !combatModVue[module]; redessiner(); }, null);
+      function () { combatModVue[module] = !combatModVue[module]; redessiner(); }, null, {
+        visible: visible,
+        basculer: function () { state.combatAffichage[cleVisibilite] = !visible; refresh(); }
+      });
     if (!ouvert) return card;
 
     // La présentation est celle des défenses pour LES DEUX modules, y compris
@@ -130,7 +136,21 @@
     }, "Valider");
   }
   var combatDrag = null;
-  function combatCarteTete(card, nom, resume, ouvert, module, id, toggle, liste) {
+  function combatOeil(visible) {
+    var ns = "http://www.w3.org/2000/svg", svg = document.createElementNS(ns, "svg");
+    svg.setAttribute("viewBox", "0 0 24 24"); svg.setAttribute("aria-hidden", "true");
+    var forme = document.createElementNS(ns, "path");
+    forme.setAttribute("d", "M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"); svg.appendChild(forme);
+    if (visible) {
+      var pupille = document.createElementNS(ns, "circle");
+      pupille.setAttribute("cx", "12"); pupille.setAttribute("cy", "12"); pupille.setAttribute("r", "3"); svg.appendChild(pupille);
+    } else {
+      var barre = document.createElementNS(ns, "path");
+      barre.setAttribute("d", "M3 3 21 21"); svg.appendChild(barre);
+    }
+    return svg;
+  }
+  function combatCarteTete(card, nom, resume, ouvert, module, id, toggle, liste, visibilite) {
     var ligne = el("div", "pc-combat-tete");
     var tete = el("button", "pc-attaque-tete" + (module === "defense" ? " pc-defense-tete" : "")); tete.type = "button";
     tete.setAttribute("aria-expanded", String(ouvert));
@@ -138,7 +158,7 @@
     tete.addEventListener("click", toggle); ligne.appendChild(tete);
     var outils = el("div", "pc-combat-outils");
     if (liste) {
-      var drag = el("span", "pc-combat-drag pc-edit-only", "⠿"); drag.title = "Déplacer"; drag.setAttribute("aria-label", "Déplacer " + nom); drag.draggable = true;
+      var drag = el("span", "pc-combat-poignee pc-combat-drag pc-edit-only", "⠿"); drag.title = "Déplacer"; drag.setAttribute("aria-label", "Déplacer " + nom); drag.draggable = true;
       drag.addEventListener("dragstart", function (ev) {
         if (!isEdit(module)) { ev.preventDefault(); return; }
         combatDrag = { module: module, id: id }; ev.dataTransfer.setData("text/plain", id); ev.dataTransfer.effectAllowed = "move"; card.classList.add("pc-combat-pris");
@@ -158,6 +178,13 @@
         var moved = items.splice(from, 1)[0], to = items.findIndex(function (e) { return e.id === id; });
         items.splice(to + (avant ? 0 : 1), 0, moved); combatDrag = null; refresh();
       });
+    } else if (visibilite) {
+      var oeil = el("button", "pc-combat-poignee pc-combat-oeil pc-edit-only"); oeil.type = "button";
+      oeil.title = visibilite.visible ? "Masquer hors du mode édition" : "Afficher hors du mode édition";
+      oeil.setAttribute("aria-label", oeil.title); oeil.setAttribute("aria-pressed", String(visibilite.visible));
+      oeil.appendChild(combatOeil(visibilite.visible));
+      oeil.addEventListener("click", function (ev) { ev.stopPropagation(); visibilite.basculer(); });
+      outils.appendChild(oeil);
     }
     var ouvrir = el("button", "pc-attaque-chevron pc-combat-ouvrir", ouvert ? "▾" : "▸"); ouvrir.type = "button"; ouvrir.title = ouvert ? "Réduire" : "Agrandir"; ouvrir.addEventListener("click", toggle);
     ouvrir.setAttribute("aria-label", ouvert ? "Réduire" : "Agrandir"); ouvrir.setAttribute("aria-expanded", String(ouvert)); outils.appendChild(ouvrir);
@@ -177,8 +204,11 @@
     function details(card, nom, mode, entree, id) {
       var ouvert = !!defenseVue.ouverts[id], v = defenseValeurs(entree);
       var valeur = state.combatOptions.defenses.lente ? Math.floor(v.protection / 2) : v.protection;
+      var cleVisibilite = mode === "sans" ? "defenseSans" : mode === "esquive" ? "defenseEsquive" : "";
+      var visible = !cleVisibilite || state.combatAffichage[cleVisibilite] !== false;
       combatCarteTete(card, nom, mode === "sans" ? "" : mode === "esquive" ? "Difficulté 8" : "Difficulté " + fmtP(v.difficulte) + " · Protection " + sign(valeur), ouvert, "defense", id,
-        function () { defenseVue.ouverts[id] = !defenseVue.ouverts[id]; rendre(); }, mode === "parade" ? function () { return state.defenses.entrees; } : null);
+        function () { defenseVue.ouverts[id] = !defenseVue.ouverts[id]; rendre(); }, mode === "parade" ? function () { return state.defenses.entrees; } : null,
+        cleVisibilite ? { visible: visible, basculer: function () { state.combatAffichage[cleVisibilite] = !visible; refresh(); } } : null);
       if (!ouvert) return;
       var detail = el("div", "pc-attaque-detail pc-defense-detail");
       var comp = compDe(mode === "esquive" ? entree.comp : v.comp);
@@ -201,10 +231,14 @@
       ressources.appendChild(combatRessource(state.combatOptions.defenses, "lente", "Défense Lente"));
       ressources.appendChild(combatEndurance(state.combatOptions.defenses));
       ressources.appendChild(combatRessource(state.combatOptions.defenses, "toutAfficher", "Tout afficher")); box.appendChild(ressources);
-      var sans = el("div", "pc-attaque-card"); sans.dataset.defenseId = "sans"; details(sans, "Sans Défense", "sans", null, "sans"); box.appendChild(sans);
+      var sans = el("div", "pc-attaque-card"); sans.dataset.defenseId = "sans";
+      if (isEdit("defense") || state.combatAffichage.defenseSans !== false) { details(sans, "Sans Défense", "sans", null, "sans"); box.appendChild(sans); }
       var es = el("div", "pc-attaque-card"), esquive = state.defenses.esquive;
       var editEs = el("div", "pc-edit-only pc-defense-edit"); editEs.appendChild(fld("Compétence d’esquive", combatComp(esquive))); 
-      es.dataset.defenseId = "esquive"; details(es, "Esquive", "esquive", esquive, "esquive"); if (defenseVue.ouverts.esquive) es.insertBefore(editEs, es.querySelector(".pc-defense-detail")); box.appendChild(es);
+      es.dataset.defenseId = "esquive";
+      if (isEdit("defense") || state.combatAffichage.defenseEsquive !== false) {
+        details(es, "Esquive", "esquive", esquive, "esquive"); if (defenseVue.ouverts.esquive) es.insertBefore(editEs, es.querySelector(".pc-defense-detail")); box.appendChild(es);
+      }
       state.defenses.entrees.forEach(function (e) {
         var card = el("div", "pc-attaque-card"), edit = el("div", "pc-edit-only pc-defense-edit"), sel = el("select", "pc-select pc-edit-field");
         var opt = el("option", null, "— Choisir une arme —"); opt.value = ""; sel.appendChild(opt);
@@ -240,7 +274,7 @@
         box.appendChild(card);
       });
       box.appendChild(miniBtn("+ Ajouter une défense", null, function () { var e = { id: uid("def"), nom: "", arme: "", personnalisee: null }; state.defenses.entrees.push(e); defenseVue.ouverts[e.id] = true; refresh(); }, "pc-edit-only"));
-      box.appendChild(combatModificateurs("defense", rendre));
+      var mods = combatModificateurs("defense", rendre); if (mods) box.appendChild(mods);
       applyEdit(b, "defense");
     }
     rendre(); hooks.push(rendre); return b;
