@@ -1160,14 +1160,8 @@ def _jeu(docs):
                 "le pas", re.S).group(1).replace(",", "."))
 
     if equip_md is not None:
-        piece = _un(r"en (pièces? d'[a-zéèê]+)", equip_md, "monnaie : son nom").group(1)
-        vente = FRACTIONS.get(_plat(_un(r"vaut le (\w+) de l'achat", equip_md,
-                                        "monnaie : le prix de vente").group(1)).lower())
-        if vente is None:
-            raise ErreurRegles("monnaie : la fraction de la vente ne se lit pas")
-        jeu["monnaie"] = {"nom": re.sub(r"^pièces", "pièce", piece),
-                          "pluriel": re.sub(r"^pièce\b", "pièces", piece),
-                          "venteSurAchat": vente}
+        # Les prix de vente sont propres à chaque équipement ; valeur par défaut des objets libres.
+        jeu["monnaie"] = {"nom": "pièce d'argent", "pluriel": "pièces d'argent", "venteSurAchat": 1 / 3}
 
     # Les types d'arme et leurs valeurs viennent désormais directement des
     # tables du chapitre Armes ; la vieille page des portées n'est plus requise.

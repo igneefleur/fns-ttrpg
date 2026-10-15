@@ -23,14 +23,7 @@ d'effort par lesquelles passe tout ce qu'il fait de son corps.
 Les [armes](combat/armes.md) donnent, pour chaque arme, son attaque, ses dégâts, sa
 parade, et la Dextérité et la Force qu'elle demande.
 
-L'[équipement](equipement.md) donne le catalogue des objets : ce que chacun pèse, ce
-qu'il vaut, ce qu'il fait, et la façon de lire une carte d'objet.
-
-La [fabrication](fabrication.md) donne les recettes : ce qu'elles produisent, ce qu'elles
-consomment, et les conditions qu'il faut réunir pour s'y mettre.
-
-Les [installations](installations.md) donnent ce qu'on ne peut pas emporter et ce qu'il en
-coûte de le louer.
+Le [catalogue des équipements](equipement.md) rassemble les armes, vêtements, armures et sacs. Chaque objet dispose de sa propre page.
 
 [Vivre](vivre.md) donne ce que coûte un mois, ce que rapporte une journée de travail, et ce
 que lève le seigneur sur celui qui tient une terre.

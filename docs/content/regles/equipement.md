@@ -1,805 +1,1329 @@
-# Équipement
-
-<div class="cols" markdown>
-
-<div class="keep" markdown>
-
-### Lire une carte d'objet
-
-<div class="defs" markdown>
-
-**La capacité :** le nombre de doses que l'objet peut contenir, ou de parts qu'on en tire quand c'est lui qu'on entame. Un objet qui sert une fois et disparaît n'en porte pas.
-
-**Le poids à vide :** ce que l'objet pèse en kilogrammes une fois vidé, à compter dans la [charge](base/capacites-physiques.md#la-charge) du personnage.
-
-**Le poids par dose :** ce que chaque dose ajoute à ce poids. Un objet plein pèse donc son poids à vide plus autant de fois ce nombre qu'il lui reste de doses.
-
-**Le poids :** ce que pèse en kilogrammes un objet qui ne se remplit pas. Il tient la place des deux lignes précédentes.
-
-**Le poids par part :** ce que pèse chaque part d'un objet qui s'entame sans être un contenant. Une miche entamée pèse ce qui lui reste.
-
-**La satiété** et **l'hydratation :** ce qu'une dose rend de faim et de soif, en points.
-
-**Le volume :** ce qu'une dose ou une part occupe de [contenance](base/capacites-physiques.md#la-contenance) une fois avalée.
-
-**L'achat :** ce qu'un marchand en demande, en pièces d'argent. Un prix suivi de *les dix* ou *les vingt* se paie au lot, et l'on n'en achète pas moins : une pincée de cendre ne se vend pas, un sac oui. Un tiret veut dire qu'aucun marchand n'en tient. La part de pain est l'étalon du livre, et une pièce d'argent en achète une.
-
-**La vente :** ce qu'un marchand en donne, en pièces d'argent. Elle vaut le tiers de l'achat, arrondi vers le bas, et se compte sur le lot entier : trois pains valent une pièce là où un seul n'en vaut aucune. Un tiret veut dire qu'un objet seul ne se revend pas.
-
-**Le type :** ce que l'objet est. Un objet n'en porte qu'un. Un **outil** ne se consomme pas et ne s'use pas : on l'a ou on ne l'a pas. Une **arme** ne porte ici que son poids et son prix, et les coups qu'elle donne se lisent au chapitre des [armes](combat/armes.md). Une **matière** ne s'emploie pas telle quelle : elle attend l'atelier.
-
-**La description :** ce à quoi l'objet ressemble et ce à quoi il sert. Elle ne porte aucune règle.
-
-**Les propriétés :** ce que l'objet fait de particulier. Chacune vient après la description, son nom en tête, suivi de ce qu'elle est puis de ce qu'elle change. Un objet ordinaire n'en porte aucune.
-
-</div>
-
-Deux effets qui portent le même nom ne se cumulent pas, à moins que leur règle ne le dise. Le second efface le premier et en relance la durée.
-
-</div>
-
-### Se servir d'un objet
-
-Boire ou manger coûte un [dé d'action](base/actions.md#les-des-daction). Prendre l'objet en main en coûte un second, à moins qu'il ne tienne dans un [accès rapide](base/capacites-physiques.md#les-acces-rapides), où il est déjà.
-
-Se servir d'un consommable tiré du sac revient donc à deux dés d'action, et à un seul quand il est sous la main.
-
-C'est la [contenance](base/capacites-physiques.md#la-contenance) qui borne ce qu'un personnage avale, dans un round comme dans une journée.
-
-Un contenant se remplit à une source et se vide par doses : ce qu'une dose verse est le volume du contenant divisé par son nombre de doses. Ce qui n'est pas liquide se compte autrement, une dose y valant une unité de ce qu'on y range et non une gorgée. Remplir un contenant à une source demande une minute d'[effort léger](base/capacites-physiques.md#leffort).
-
-**Un contenant ne prend que ce que son type nomme.** Les liquides vont à la gourde, à la bouteille et à la fiole ; les poudres à la poche ; ce qui poisse et ce qui graisse au pot, car ni le cuir ni le col étroit ne s'en relaveraient.
-
-Un litre d'eau bu rend 80 points d'[hydratation](base/capacites-physiques.md#la-satiete-et-lhydratation) et a un volume de 8 ; une dose en rend et en occupe sa part, soit 20 points et un volume de 2 pour un quart de litre. Une journée de marche coûte 135 points de [satiété](base/capacites-physiques.md#la-satiete-et-lhydratation), soit trois parts de pain.
-
-</div>
-
----
-
-<div class="cols" markdown>
-
-## Les contenants { .cat }
-
-<div class="mcard objet" markdown>
-**Gourde en cuir**
-
-<div class="objet-tete" markdown>
-![Gourde en cuir](../../assets/objets/edited/containers/gourde.png){ .objet-img }
-<div class="objet-stats">
-<div><span>Capacité</span><span>8</span></div>
-<div><span>Poids à vide</span><span>0.25 kg</span></div>
-<div><span>Poids par dose</span><span>0.25 kg</span></div>
-<div><span>Achat</span><span class="argent">6</span></div>
-<div><span>Vente</span><span class="argent">2</span></div>
-<div><span>Type</span><span>Contenant à liquide</span></div>
-</div>
-</div>
-
-Une outre de cuir cousu et poissé, fermée d'un bouchon de bois et portée en bandoulière, qui peut contenir jusqu'à deux litres. Elle est généralement utilisée par les voyageurs et les aventuriers pour emporter de l'eau.
-
-**Boire.** Un [dé d'action](base/actions.md#les-des-daction) permet soit de boire une dose, soit de la faire boire à quelqu'un qui y consent ou qui est hors d'état d'agir.
-
-</div>
-
-<div class="mcard objet" markdown>
-**Bouteille en verre**
-
-<div class="objet-tete" markdown>
-![Bouteille en verre](../../assets/objets/edited/containers/bouteille.png){ .objet-img }
-<div class="objet-stats">
-<div><span>Capacité</span><span>4</span></div>
-<div><span>Poids à vide</span><span>0.5 kg</span></div>
-<div><span>Poids par dose</span><span>0.25 kg</span></div>
-<div><span>Achat</span><span class="argent">18</span></div>
-<div><span>Vente</span><span class="argent">6</span></div>
-<div><span>Type</span><span>Contenant à liquide</span></div>
-</div>
-</div>
-
-Une bouteille de verre soufflé vert, au col étroit fermé d'un bouchon de liège et portant une étiquette de papier, qui peut contenir jusqu'à un litre. On la trouve souvent pleine d'un bon vin de gabaie.
-
-**Boire.** Un [dé d'action](base/actions.md#les-des-daction) permet soit de boire une dose, soit de la faire boire à quelqu'un qui y consent ou qui est hors d'état d'agir.
-
-</div>
-
-<div class="mcard objet" markdown>
-**Bouteille en verre bleuté**
-
-<div class="objet-tete" markdown>
-![Bouteille en verre bleuté](../../assets/objets/edited/containers/bouteille_bleutee.png){ .objet-img }
-<div class="objet-stats">
-<div><span>Capacité</span><span>4</span></div>
-<div><span>Poids à vide</span><span>0.5 kg</span></div>
-<div><span>Poids par dose</span><span>0.25 kg</span></div>
-<div><span>Achat</span><span class="argent">27</span></div>
-<div><span>Vente</span><span class="argent">9</span></div>
-<div><span>Type</span><span>Contenant à liquide</span></div>
-</div>
-</div>
-
-Une bouteille de verre bleuté, au col étroit fermé d'un bouchon de liège et portant une étiquette de papier, qui peut contenir jusqu'à un litre. On ne la voit guère ailleurs que sur les étagères d'un alchimiste.
-
-**Boire.** Un [dé d'action](base/actions.md#les-des-daction) permet soit de boire une dose, soit de la faire boire à quelqu'un qui y consent ou qui est hors d'état d'agir.
-
-**Conservation.** Cette bouteille garde intact ce qu'on lui confie. Un liquide magique n'y périme pas.
-
-</div>
-
-<div class="mcard objet" markdown>
-**Fiole en verre**
-
-<div class="objet-tete" markdown>
-![Fiole en verre](../../assets/objets/edited/containers/fiole.png){ .objet-img }
-<div class="objet-stats">
-<div><span>Capacité</span><span>1</span></div>
-<div><span>Poids à vide</span><span>0.25 kg</span></div>
-<div><span>Poids par dose</span><span>0.25 kg</span></div>
-<div><span>Achat</span><span class="argent">12</span></div>
-<div><span>Vente</span><span class="argent">4</span></div>
-<div><span>Type</span><span>Contenant à liquide</span></div>
-</div>
-</div>
-
-Une petite fiole de verre commun au col effilé, bouchée de liège et liée d'une ficelle portant une étiquette de papier vierge, qui peut contenir jusqu'à un quart de litre. On la trouve souvent pleine d'une huile ou d'un remède commun.
-
-**Boire.** Un [dé d'action](base/actions.md#les-des-daction) permet soit de boire une dose, soit de la faire boire à quelqu'un qui y consent ou qui est hors d'état d'agir.
-
-</div>
-
-<div class="mcard objet" markdown>
-**Fiole en verre bleuté**
-
-<div class="objet-tete" markdown>
-![Fiole en verre bleuté](../../assets/objets/edited/containers/fiole_bleutee.png){ .objet-img }
-<div class="objet-stats">
-<div><span>Capacité</span><span>1</span></div>
-<div><span>Poids à vide</span><span>0.25 kg</span></div>
-<div><span>Poids par dose</span><span>0.25 kg</span></div>
-<div><span>Achat</span><span class="argent">18</span></div>
-<div><span>Vente</span><span class="argent">6</span></div>
-<div><span>Type</span><span>Contenant à liquide</span></div>
-</div>
-</div>
-
-Une petite fiole de verre bleuté au col effilé, bouchée de liège et liée d'une ficelle portant une étiquette de papier vierge, qui peut contenir jusqu'à un quart de litre. C'est en elle que les alchimistes vendent leurs préparations.
-
-**Boire.** Un [dé d'action](base/actions.md#les-des-daction) permet soit de boire une dose, soit de la faire boire à quelqu'un qui y consent ou qui est hors d'état d'agir.
-
-**Conservation.** Cette fiole garde intact ce qu'on lui confie. Un liquide magique n'y périme pas.
-
-</div>
-
-<div class="mcard objet" markdown>
-**Poche**
-
-<div class="objet-tete" markdown>
-![Poche](../../assets/objets/edited/containers/poche.png){ .objet-img }
-<div class="objet-stats">
-<div><span>Capacité</span><span>10</span></div>
-<div><span>Poids à vide</span><span>0.1 kg</span></div>
-<div><span>Poids par dose</span><span>0.1 kg</span></div>
-<div><span>Achat</span><span class="argent">6</span></div>
-<div><span>Vente</span><span class="argent">2</span></div>
-<div><span>Type</span><span>Contenant à poudre</span></div>
-</div>
-</div>
-
-Une bourse de cuir souple fermée d'un cordon, qui tient dans la paume et se porte à la ceinture. Artisans et ramasseurs y mettent leurs poudres et tout ce qui file entre les doigts.
-
-</div>
-
-<div class="mcard objet" markdown>
-**Pot en verre**
-
-<div class="objet-tete" markdown>
-![Pot en verre](../../assets/objets/edited/containers/pot.png){ .objet-img }
-<div class="objet-stats">
-<div><span>Capacité</span><span>4</span></div>
-<div><span>Poids à vide</span><span>0.25 kg</span></div>
-<div><span>Poids par dose</span><span>0.1 kg</span></div>
-<div><span>Achat</span><span><span class="argent">12</span></span></div>
-<div><span>Vente</span><span><span class="argent">4</span></span></div>
-<div><span>Type</span><span>Contenant à pâte</span></div>
-</div>
-</div>
-
-Un pot de verre soufflé vert, trapu et à large gueule, fermé d'un disque de bois et d'un lien, qui peut contenir près d'un demi-litre. On y garde la poix, le suif et les confitures.
-
-</div>
-
-<div class="mcard objet" markdown>
-**Pot en verre bleuté**
-
-<div class="objet-tete" markdown>
-![Pot en verre bleuté](../../assets/objets/edited/containers/pot_bleute.png){ .objet-img }
-<div class="objet-stats">
-<div><span>Capacité</span><span>4</span></div>
-<div><span>Poids à vide</span><span>0.25 kg</span></div>
-<div><span>Poids par dose</span><span>0.1 kg</span></div>
-<div><span>Achat</span><span><span class="argent">18</span></span></div>
-<div><span>Vente</span><span><span class="argent">6</span></span></div>
-<div><span>Type</span><span>Contenant à pâte</span></div>
-</div>
-</div>
-
-Un pot de verre bleuté à large gueule, scellé d'un disque de bois et d'un lien de cire, qui peut contenir près d'un demi-litre. Les apothicaires y tiennent leurs onguents.
-
-**Conservation.** Ce pot garde intact ce qu'on lui confie. Un onguent magique n'y périme pas.
-
-</div>
-
-</div>
-
----
-
-<div class="cols" markdown>
-
-## Les liquides { .cat }
-
-<div class="mcard objet" markdown>
-**Eau potable**
-
-<div class="objet-tete" markdown>
-![Eau potable](../../assets/objets/edited/liquids/eau_potable.png){ .objet-img }
-<div class="objet-stats">
-<div><span>Hydratation</span><span>20</span></div>
-<div><span>Volume</span><span>2</span></div>
-<div><span>Achat</span><span>—</span></div>
-<div><span>Vente</span><span>—</span></div>
-<div><span>Type</span><span>Liquide</span></div>
-</div>
-</div>
-
-Une eau claire et sans odeur, tirée d'une source, d'une fontaine ou d'un puits. C'est celle dont on remplit les gourdes avant de prendre la route.
-
-**Souffle.** Chaque dose bue élève d'un niveau la [récupération naturelle](base/capacites-physiques.md#la-recuperation-naturelle) des points d'endurance pendant dix minutes.
-
-</div>
-
-<div class="mcard objet" markdown>
-**Eau de rivière**
-
-<div class="objet-tete" markdown>
-![Eau de rivière](../../assets/objets/edited/liquids/eau_riviere.png){ .objet-img }
-<div class="objet-stats">
-<div><span>Hydratation</span><span>20</span></div>
-<div><span>Volume</span><span>2</span></div>
-<div><span>Achat</span><span>—</span></div>
-<div><span>Vente</span><span>—</span></div>
-<div><span>Type</span><span>Liquide</span></div>
-</div>
-</div>
-
-L'eau trouble des cours d'eau et des mares, prise telle qu'elle vient. On la boit quand la gourde est vide et la source encore loin, et on la fait bouillir quand on en a le temps.
-
-**Souffle.** Chaque dose bue élève d'un niveau la [récupération naturelle](base/capacites-physiques.md#la-recuperation-naturelle) des points d'endurance pendant dix minutes.
-
-**Indigestion.** Cette eau n'est pas potable. Lorsqu'un personnage en boit une dose, le MJ doit lancer en secret 2d8. Si leur somme est inférieure ou égale à 4, le personnage attrape une indigestion.
-
-</div>
-
-<div class="mcard objet" markdown>
-**Eau salée**
-
-<div class="objet-tete" markdown>
-![Eau salée](../../assets/objets/edited/liquids/eau_salee.png){ .objet-img }
-<div class="objet-stats">
-<div><span>Hydratation</span><span>aucune</span></div>
-<div><span>Volume</span><span>2</span></div>
-<div><span>Achat</span><span>—</span></div>
-<div><span>Vente</span><span>—</span></div>
-<div><span>Type</span><span>Liquide</span></div>
-</div>
-</div>
-
-L'eau limpide et amère de la mer et des marais salants. Les cuisiniers la recueillent pour le sel qu'elle laisse en s'évaporant ; personne ne la boit.
-
-**Indigestion.** Cette eau n'est pas potable. Lorsqu'un personnage en boit une dose, le MJ doit lancer en secret 2d8. Si leur somme est inférieure ou égale à 9, le personnage attrape une indigestion.
-
-</div>
-
-<div class="mcard objet" markdown>
-**Eau rance**
-
-<div class="objet-tete" markdown>
-![Eau rance](../../assets/objets/edited/liquids/eau_rance.png){ .objet-img }
-<div class="objet-stats">
-<div><span>Hydratation</span><span>20</span></div>
-<div><span>Volume</span><span>2</span></div>
-<div><span>Achat</span><span>—</span></div>
-<div><span>Vente</span><span>—</span></div>
-<div><span>Type</span><span>Liquide</span></div>
-</div>
-</div>
-
-L'eau croupie des flaques, des citernes crevées et des fonds de cave, trouble et malodorante. Il faut être aux abois pour y tremper les lèvres, et un feu suffit à la racheter.
-
-**Souffle.** Chaque dose bue élève d'un niveau la [récupération naturelle](base/capacites-physiques.md#la-recuperation-naturelle) des points d'endurance pendant dix minutes.
-
-**Indigestion.** Cette eau n'est pas potable. Lorsqu'un personnage en boit une dose, le MJ doit lancer en secret 2d8. Si leur somme est inférieure ou égale à 11, le personnage attrape une indigestion.
-
-</div>
-
-</div>
-
----
-
-<div class="cols" markdown>
-
-## Les poudres { .cat }
-
-<div class="mcard objet" markdown>
-**Sable**
-
-<div class="objet-tete" markdown>
-![Sable](../../assets/objets/edited/powders/sable.png){ .objet-img }
-<div class="objet-stats">
-<div><span>Poids</span><span>0.1 kg</span></div>
-<div><span>Achat</span><span><span class="argent">1</span> les 10</span></div>
-<div><span>Vente</span><span>—</span></div>
-<div><span>Type</span><span>Poudre</span></div>
-</div>
-</div>
-
-Du sable pâle et fin, lavé et séché, pris au bord d'une rivière ou sur une plage. Les verriers s'en servent pour faire le verre.
-
-</div>
-
-<div class="mcard objet" markdown>
-**Sable bleu**
-
-<div class="objet-tete" markdown>
-![Sable bleu](../../assets/objets/edited/powders/sable_bleu.png){ .objet-img }
-<div class="objet-stats">
-<div><span>Poids</span><span>0.1 kg</span></div>
-<div><span>Achat</span><span><span class="argent">12</span></span></div>
-<div><span>Vente</span><span><span class="argent">4</span></span></div>
-<div><span>Type</span><span>Poudre</span></div>
-</div>
-</div>
-
-Une poudre bleue et scintillante qui affleure sur certaines plages. Les forgerons en tirent l'acier bleu, et les alchimistes la prisent fort.
-
-**Lueur.** Ce sable brille dans le noir comme de petites lucioles bleues. Un gisement se repère de loin la nuit.
-
-</div>
-
-<div class="mcard objet" markdown>
-**Cendre**
-
-<div class="objet-tete" markdown>
-![Cendre](../../assets/objets/edited/powders/cendre.png){ .objet-img }
-<div class="objet-stats">
-<div><span>Poids</span><span>0.1 kg</span></div>
-<div><span>Achat</span><span><span class="argent">1</span> les 20</span></div>
-<div><span>Vente</span><span>—</span></div>
-<div><span>Type</span><span>Poudre</span></div>
-</div>
-</div>
-
-La poudre grise qu'un feu de bois laisse derrière lui, tamisée de ses braises et de ses charbons. Les paysans en amendent leurs terres.
-
-</div>
-
-<div class="mcard objet" markdown>
-**Farine**
-
-<div class="objet-tete" markdown>
-![Farine](../../assets/objets/edited/powders/farine.png){ .objet-img }
-<div class="objet-stats">
-<div><span>Poids</span><span>0.1 kg</span></div>
-<div><span>Achat</span><span><span class="argent">2</span> les 10</span></div>
-<div><span>Vente</span><span>—</span></div>
-<div><span>Type</span><span>Poudre</span></div>
-</div>
-</div>
-
-Une farine blanche et fine, sortie du bluteau et encore tiède de la meule. Le meunier la vend au sac de dix, et il en faut six pour une miche.
-
-</div>
-
-</div>
-
----
-
-<div class="cols" markdown>
-
-## Les pâtes { .cat }
-
-<div class="mcard objet" markdown>
-**Poix**
-
-<div class="objet-tete" markdown>
-![Poix](../../assets/objets/edited/pastes/poix.png){ .objet-img }
-<div class="objet-stats">
-<div><span>Poids</span><span>0.1 kg</span></div>
-<div><span>Achat</span><span>—</span></div>
-<div><span>Vente</span><span>—</span></div>
-<div><span>Type</span><span>Pâte</span></div>
-</div>
-</div>
-
-Des écailles de résine de pin, ambrées et cassantes à froid, qui coulent dès qu'on les approche du feu. Les maroquiniers en tapissent l'intérieur des gourdes.
-
-</div>
-
-<div class="mcard objet" markdown>
-**Graisse**
-
-<div class="objet-tete" markdown>
-![Graisse](../../assets/objets/edited/pastes/graisse.png){ .objet-img }
-<div class="objet-stats">
-<div><span>Poids</span><span>0.1 kg</span></div>
-<div><span>Achat</span><span>—</span></div>
-<div><span>Vente</span><span>—</span></div>
-<div><span>Type</span><span>Pâte</span></div>
-</div>
-</div>
-
-Du suif fondu puis battu jusqu'à blanchir, ferme et gras sous le doigt. Les tanneurs en nourrissent le cuir au sortir de la fosse.
-
-</div>
-
-</div>
-
----
-
-<div class="cols" markdown>
-
-## Les vivres { .cat }
-
-<div class="mcard objet" markdown>
-**Pain**
-
-<div class="objet-tete" markdown>
-![Pain](../../assets/objets/edited/food/pain.png){ .objet-img }
-<div class="objet-stats">
-<div><span>Capacité</span><span>5</span></div>
-<div><span>Satiété</span><span>45</span></div>
-<div><span>Volume</span><span>8</span></div>
-<div><span>Poids par part</span><span>0.2 kg</span></div>
-<div><span>Achat</span><span><span class="argent">5</span></span></div>
-<div><span>Vente</span><span><span class="argent">1</span></span></div>
-<div><span>Type</span><span>Aliment</span></div>
-</div>
-</div>
-
-Une miche de pain bis à la croûte farinée, cuite le matin même, qu'on rompt en cinq parts. On en trouve sur toutes les tables et dans tous les sacs.
-
-</div>
-
-</div>
-
----
-
-<div class="cols" markdown>
-
-## Les outils { .cat }
-
-<div class="mcard objet" markdown>
-**Pelle**
-
-<div class="objet-tete" markdown>
-![Pelle](../../assets/objets/edited/tools/pelle.png){ .objet-img }
-<div class="objet-stats">
-<div><span>Poids</span><span>2 kg</span></div>
-<div><span>Achat</span><span class="argent">12</span></div>
-<div><span>Vente</span><span class="argent">4</span></div>
-<div><span>Type</span><span>Outil</span></div>
-</div>
-</div>
-
-Un fer de pelle emmanché sur un long manche de frêne, poli par les mains. Les charbonniers s'en servent pour couvrir leurs meules de terre.
-
-</div>
-
-</div>
-
----
-
-<div class="cols" markdown>
-
-## Les armes { .cat }
-
-<div class="mcard objet" markdown>
-**Épée en fer**
-
-<div class="objet-tete" markdown>
-![Épée en fer](../../assets/objets/edited/weapons/epee_fer.png){ .objet-img }
-<div class="objet-stats">
-<div><span>Poids</span><span>1.2 kg</span></div>
-<div><span>Achat</span><span><span class="argent">288</span></span></div>
-<div><span>Vente</span><span><span class="argent">96</span></span></div>
-<div><span>Type</span><span>Arme</span></div>
-</div>
-</div>
-
-Une lame droite de quatre-vingts centimètres, montée sur une croix de fer et une poignée de bois cerclée de cuir. Elle vaut le prix de huit charretées de charbon, et c'est du charbon qu'elle sort.
-
-</div>
-
-</div>
-
----
-
-<div class="cols" markdown>
-
-## Les matières { .cat }
-
-<div class="mcard objet" markdown>
-**Verre cassé**
-
-<div class="objet-tete" markdown>
-![Verre cassé](../../assets/objets/edited/materials/verre_casse.png){ .objet-img }
-<div class="objet-stats">
-<div><span>Poids</span><span>0.1 kg</span></div>
-<div><span>Achat</span><span>—</span></div>
-<div><span>Vente</span><span>—</span></div>
-<div><span>Type</span><span>Poudre</span></div>
-</div>
-</div>
-
-Des tessons de fioles et de bouteilles, ramassés au balai et concassés au pilon. Les verriers les refondent avec le sable.
-
-**Casse.** Une fiole brisée donne deux verres cassés, une bouteille quatre, un pot deux.
-
-</div>
-
-<div class="mcard objet" markdown>
-**Verre cassé bleuté**
-
-<div class="objet-tete" markdown>
-![Verre cassé bleuté](../../assets/objets/edited/materials/verre_casse_bleute.png){ .objet-img }
-<div class="objet-stats">
-<div><span>Poids</span><span>0.1 kg</span></div>
-<div><span>Achat</span><span>—</span></div>
-<div><span>Vente</span><span>—</span></div>
-<div><span>Type</span><span>Poudre</span></div>
-</div>
-</div>
-
-Des tessons de verre bleuté, mis de côté dans un seau à part. Un verrier ne les mêle jamais au calcin commun : le bleu s'y perdrait pour rien.
-
-**Casse.** Une fiole bleutée brisée donne deux verres cassés bleutés, une bouteille quatre, un pot deux.
-
-</div>
-
-<div class="mcard objet" markdown>
-**Petit bois**
-
-<div class="objet-tete" markdown>
-![Petit bois](../../assets/objets/edited/materials/bois.png){ .objet-img }
-<div class="objet-stats">
-<div><span>Poids</span><span>0.3 kg</span></div>
-<div><span>Achat</span><span>—</span></div>
-<div><span>Vente</span><span>—</span></div>
-<div><span>Type</span><span>Composant</span></div>
-</div>
-</div>
-
-Des branches mortes ramassées au sol et fendues à la main, sèches et prêtes à prendre. Il nourrit les feux de camp.
-
-</div>
-
-<div class="mcard objet" markdown>
-**Bûche**
-
-<div class="objet-tete" markdown>
-![Bûche](../../assets/objets/edited/materials/buche.png){ .objet-img }
-<div class="objet-stats">
-<div><span>Poids</span><span>3 kg</span></div>
-<div><span>Achat</span><span>—</span></div>
-<div><span>Vente</span><span>—</span></div>
-<div><span>Type</span><span>Composant</span></div>
-</div>
-</div>
-
-Une bûche de bois dur fendue en quartier, longue comme l'avant-bras. On l'ajoute au feu quand le petit bois a pris.
-
-</div>
-
-<div class="mcard objet" markdown>
-**Demi-stère de bois**
-
-<div class="objet-tete" markdown>
-![Demi-stère de bois](../../assets/objets/edited/materials/demi_stere.png){ .objet-img }
-<div class="objet-stats">
-<div><span>Poids</span><span>300 kg</span></div>
-<div><span>Achat</span><span class="argent">9</span></div>
-<div><span>Vente</span><span class="argent">3</span></div>
-<div><span>Type</span><span>Composant</span></div>
-</div>
-</div>
-
-Un demi-stère de bûches d'un mètre, fendues et empilées en tas carré, plus lourd qu'un homme n'en porte. C'est le bois des fours et des forges.
-
-</div>
-
-<div class="mcard objet" markdown>
-**Charbon de bois**
-
-<div class="objet-tete" markdown>
-![Charbon de bois](../../assets/objets/edited/materials/charbon.png){ .objet-img }
-<div class="objet-stats">
-<div><span>Poids</span><span>0.5 kg</span></div>
-<div><span>Achat</span><span><span class="argent">1</span></span></div>
-<div><span>Vente</span><span>—</span></div>
-<div><span>Type</span><span>Composant</span></div>
-</div>
-</div>
-
-Un charbon noir et léger, tiré d'une bûche cuite à l'étouffée. Il donne un feu vif et sans fumée, que les forgerons préfèrent au bois.
-
-</div>
-
-<div class="mcard objet" markdown>
-**Charretée de charbon**
-
-<div class="objet-tete" markdown>
-![Charretée de charbon](../../assets/objets/edited/materials/charretee_charbon.png){ .objet-img }
-<div class="objet-stats">
-<div><span>Poids</span><span>50 kg</span></div>
-<div><span>Achat</span><span><span class="argent">36</span></span></div>
-<div><span>Vente</span><span><span class="argent">12</span></span></div>
-<div><span>Type</span><span>Composant</span></div>
-</div>
-</div>
-
-Le charbon d'une meule entière, livré au tas. C'est ce que dévorent les bas fourneaux et les forges, qui n'en brûlent jamais moins.
-
-</div>
-
-<div class="mcard objet" markdown>
-**Minerai de fer**
-
-<div class="objet-tete" markdown>
-![Minerai de fer](../../assets/objets/edited/materials/minerai_fer.png){ .objet-img }
-<div class="objet-stats">
-<div><span>Poids</span><span>2 kg</span></div>
-<div><span>Achat</span><span>—</span></div>
-<div><span>Vente</span><span>—</span></div>
-<div><span>Type</span><span>Composant</span></div>
-</div>
-</div>
-
-Une roche grise et rouillée, piquée d'éclats métalliques, tirée du filon et cassée à la masse. Il en faut huit kilos pour deux kilos de fer, et le reste part en scorie.
-
-</div>
-
-<div class="mcard objet" markdown>
-**Lingot de fer**
-
-<div class="objet-tete" markdown>
-![Lingot de fer](../../assets/objets/edited/materials/lingot_fer.png){ .objet-img }
-<div class="objet-stats">
-<div><span>Poids</span><span>2 kg</span></div>
-<div><span>Achat</span><span><span class="argent">42</span></span></div>
-<div><span>Vente</span><span><span class="argent">14</span></span></div>
-<div><span>Type</span><span>Composant</span></div>
-</div>
-</div>
-
-Un lingot de fer cinglé, sombre et piqué de scories. C'est sous cette forme que le métal se vend, se transporte et se remet au feu.
-
-</div>
-
-<div class="mcard objet" markdown>
-**Gerbe de blé**
-
-<div class="objet-tete" markdown>
-![Gerbe de blé](../../assets/objets/edited/materials/gerbe_ble.png){ .objet-img }
-<div class="objet-stats">
-<div><span>Poids</span><span>12 kg</span></div>
-<div><span>Achat</span><span><span class="argent">1</span></span></div>
-<div><span>Vente</span><span>—</span></div>
-<div><span>Type</span><span>Composant</span></div>
-</div>
-</div>
-
-Une brassée d'épis coupés à la faucille et liés d'un lien de paille, dressée en tas au bord du champ. Le grain y tient encore à l'épi.
-
-</div>
-
-<div class="mcard objet" markdown>
-**Petite peau de bête**
-
-<div class="objet-tete" markdown>
-![Petite peau de bête](../../assets/objets/edited/materials/peau_petite.png){ .objet-img }
-<div class="objet-stats">
-<div><span>Poids</span><span>0.5 kg</span></div>
-<div><span>Achat</span><span class="argent">1</span></div>
-<div><span>Vente</span><span>—</span></div>
-<div><span>Type</span><span>Composant</span></div>
-</div>
-</div>
-
-Une peau de lièvre ou de renard, tendue sur son cadre et séchée le poil au-dehors. Sa fourrure borde les capuchons et les cols.
-
-</div>
-
-<div class="mcard objet" markdown>
-**Peau de bête**
-
-<div class="objet-tete" markdown>
-![Peau de bête](../../assets/objets/edited/materials/peau.png){ .objet-img }
-<div class="objet-stats">
-<div><span>Poids</span><span>2 kg</span></div>
-<div><span>Achat</span><span class="argent">3</span></div>
-<div><span>Vente</span><span class="argent">1</span></div>
-<div><span>Type</span><span>Composant</span></div>
-</div>
-</div>
-
-Une peau de loup ou de hyène, raclée de sa chair et roulée en ballot. Les tanneurs l'utilisent pour en faire du cuir.
-
-</div>
-
-<div class="mcard objet" markdown>
-**Grande peau de bête**
-
-<div class="objet-tete" markdown>
-![Grande peau de bête](../../assets/objets/edited/materials/peau_grande.png){ .objet-img }
-<div class="objet-stats">
-<div><span>Poids</span><span>8 kg</span></div>
-<div><span>Achat</span><span class="argent">6</span></div>
-<div><span>Vente</span><span class="argent">2</span></div>
-<div><span>Type</span><span>Composant</span></div>
-</div>
-</div>
-
-La peau d'un ours ou d'un bovin, épaisse au toucher et raide une fois sèche. Une seule suffit à couvrir un homme.
-
-</div>
-
-<div class="mcard objet" markdown>
-**Petit cuir**
-
-<div class="objet-tete" markdown>
-![Petit cuir](../../assets/objets/edited/materials/petit_cuir.png){ .objet-img }
-<div class="objet-stats">
-<div><span>Poids</span><span>0.15 kg</span></div>
-<div><span>Achat</span><span class="argent">6</span></div>
-<div><span>Vente</span><span class="argent">2</span></div>
-<div><span>Type</span><span>Composant</span></div>
-</div>
-</div>
-
-Un carré de cuir souple, large comme une main ouverte, roulé et lié d'une ficelle. Les maroquiniers s'en servent pour fabriquer des bourses et des gants.
-
-</div>
-
-<div class="mcard objet" markdown>
-**Cuir**
-
-<div class="objet-tete" markdown>
-![Cuir](../../assets/objets/edited/materials/cuir.png){ .objet-img }
-<div class="objet-stats">
-<div><span>Poids</span><span>0.6 kg</span></div>
-<div><span>Achat</span><span class="argent">12</span></div>
-<div><span>Vente</span><span class="argent">4</span></div>
-<div><span>Type</span><span>Composant</span></div>
-</div>
-</div>
-
-Une pièce de cuir tanné, souple et sombre, pliée en quatre. On y coupe deux gourdes, ou une paire de bottes.
-
-</div>
-
-<div class="mcard objet" markdown>
-**Grand cuir**
-
-<div class="objet-tete" markdown>
-![Grand cuir](../../assets/objets/edited/materials/grand_cuir.png){ .objet-img }
-<div class="objet-stats">
-<div><span>Poids</span><span>2.4 kg</span></div>
-<div><span>Achat</span><span class="argent">24</span></div>
-<div><span>Vente</span><span class="argent">8</span></div>
-<div><span>Type</span><span>Composant</span></div>
-</div>
-</div>
-
-Un pan de cuir d'un seul tenant, dont les bords pendent quand on le lève. Il faut cette taille pour un sac de voyage ou un plastron.
-
-</div>
-
-</div>
+# Équipements
+
+Les poids sont en kilogrammes, les volumes de rangement en litres et les prix en pièces d’argent. Chaque équipement possède sa propre fiche. Les catégories sont **souple**, **semi-rigide** (y compris les éléments articulés) et **rigide**.
+
+<!-- progress -->
+**Version en cours d’illustration : 48 / 598 créations illustrées.**
+<!-- /progress -->
+
+## Dagues
+
+- [Astral Dagger](equipements/dagues-astral-dagger.md)
+- [Broad Dagger](equipements/dagues-broad-dagger.md)
+- [Forged Glass Dagger](equipements/dagues-forged-glass-dagger.md)
+- [Galvanic Dagger](equipements/dagues-galvanic-dagger.md)
+- [Gilded Shiver of Tramontane](equipements/dagues-gilded-shiver-of-tramontane.md)
+- [Hailfrost Dagger](equipements/dagues-hailfrost-dagger.md)
+- [Manticore Dagger](equipements/dagues-manticore-dagger.md)
+- [Militia Dagger](equipements/dagues-militia-dagger.md)
+- [Red Lady's Dagger](equipements/dagues-red-lady-s-dagger.md)
+- [Rondel Dagger](equipements/dagues-rondel-dagger.md)
+- [Scarred Dagger](equipements/dagues-scarred-dagger.md)
+- [Shiv Dagger](equipements/dagues-shiv-dagger.md)
+- [Smoke Dagger](equipements/dagues-smoke-dagger.md)
+- [Vampiric Dagger](equipements/dagues-vampiric-dagger.md)
+- [Vigilante Dagger](equipements/dagues-vigilante-dagger.md)
+- [Wolf Dagger](equipements/dagues-wolf-dagger.md)
+- [Zhorn's Glowstone Dagger](equipements/dagues-zhorn-s-glowstone-dagger.md)
+- [Ancient Calygrey Dagger](equipements/dagues-ancient-calygrey-dagger.md)
+- [Assassin Dagger](equipements/dagues-assassin-dagger.md)
+- [Beast Golem Dagger](equipements/dagues-beast-golem-dagger.md)
+- [Brutal Dagger](equipements/dagues-brutal-dagger.md)
+- [Calygrey Dagger](equipements/dagues-calygrey-dagger.md)
+- [Chalcedony Dagger](equipements/dagues-chalcedony-dagger.md)
+- [Crescent Dagger](equipements/dagues-crescent-dagger.md)
+- [Damascene Dagger](equipements/dagues-damascene-dagger.md)
+- [Fang Dagger](equipements/dagues-fang-dagger.md)
+- [Ghost Dagger](equipements/dagues-ghost-dagger.md)
+- [Gold Dagger](equipements/dagues-gold-dagger.md)
+- [Gold-Lich Dagger](equipements/dagues-gold-lich-dagger.md)
+- [Golem Dagger](equipements/dagues-golem-dagger.md)
+- [Horror Dagger](equipements/dagues-horror-dagger.md)
+- [Iron Dagger](equipements/dagues-iron-dagger.md)
+- [Jade-Lich Dagger](equipements/dagues-jade-lich-dagger.md)
+- [Kazite Dagger](equipements/dagues-kazite-dagger.md)
+- [Marble Dagger](equipements/dagues-marble-dagger.md)
+- [Masterpiece Dagger](equipements/dagues-masterpiece-dagger.md)
+- [Meteoric Dagger](equipements/dagues-meteoric-dagger.md)
+- [Obsidian Dagger](equipements/dagues-obsidian-dagger.md)
+- [Old Legion Dagger](equipements/dagues-old-legion-dagger.md)
+- [Palladium Dagger](equipements/dagues-palladium-dagger.md)
+- [Runic Dagger](equipements/dagues-runic-dagger.md)
+- [Savage Dagger](equipements/dagues-savage-dagger.md)
+- [Thorny Dagger](equipements/dagues-thorny-dagger.md)
+- [Troglodyte Dagger](equipements/dagues-troglodyte-dagger.md)
+- [Tsar Dagger](equipements/dagues-tsar-dagger.md)
+- [Tuanosaur Dagger](equipements/dagues-tuanosaur-dagger.md)
+- [Virgin Dagger](equipements/dagues-virgin-dagger.md)
+- [Withering Dagger](equipements/dagues-withering-dagger.md)
+- [Giantkind Dagger](equipements/dagues-giantkind-dagger.md)
+- [Porcelain Dagger](equipements/dagues-porcelain-dagger.md)
+
+## Gantelets
+
+- [Astral Knuckles](equipements/gantelets-astral-knuckles.md)
+- [Brutal Knuckles](equipements/gantelets-brutal-knuckles.md)
+- [Chalcedony Knuckles](equipements/gantelets-chalcedony-knuckles.md)
+- [Cloth Knuckles](equipements/gantelets-cloth-knuckles.md)
+- [Damascene Knuckles](equipements/gantelets-damascene-knuckles.md)
+- [Fang Knuckles](equipements/gantelets-fang-knuckles.md)
+- [Forged Glass Knuckles](equipements/gantelets-forged-glass-knuckles.md)
+- [Galvanic Fists](equipements/gantelets-galvanic-fists.md)
+- [Gold-Lich Knuckles](equipements/gantelets-gold-lich-knuckles.md)
+- [Golden Iron Knuckles](equipements/gantelets-golden-iron-knuckles.md)
+- [Hailfrost Knuckles](equipements/gantelets-hailfrost-knuckles.md)
+- [Horror Fists](equipements/gantelets-horror-fists.md)
+- [Iron Knuckles](equipements/gantelets-iron-knuckles.md)
+- [Kazite Cestus](equipements/gantelets-kazite-cestus.md)
+- [Marble Fists](equipements/gantelets-marble-fists.md)
+- [Masterpiece Knuckles](equipements/gantelets-masterpiece-knuckles.md)
+- [Meteoric Knuckles](equipements/gantelets-meteoric-knuckles.md)
+- [Militia Knuckles](equipements/gantelets-militia-knuckles.md)
+- [Obsidian Knuckles](equipements/gantelets-obsidian-knuckles.md)
+- [Palladium Knuckles](equipements/gantelets-palladium-knuckles.md)
+- [Porcelain Fists](equipements/gantelets-porcelain-fists.md)
+- [Savage Fang Knuckles](equipements/gantelets-savage-fang-knuckles.md)
+- [Smoke Knuckles](equipements/gantelets-smoke-knuckles.md)
+- [Tokebakicit](equipements/gantelets-tokebakicit.md)
+- [Tsar Fists](equipements/gantelets-tsar-fists.md)
+- [Unusual Knuckles](equipements/gantelets-unusual-knuckles.md)
+- [Vampiric Knuckles](equipements/gantelets-vampiric-knuckles.md)
+- [Vigilante Knuckles](equipements/gantelets-vigilante-knuckles.md)
+- [Virgin Knuckles](equipements/gantelets-virgin-knuckles.md)
+- [Wolf Knuckles](equipements/gantelets-wolf-knuckles.md)
+- [Ancient Calygrey Knuckles](equipements/gantelets-ancient-calygrey-knuckles.md)
+- [Assassin Knuckles](equipements/gantelets-assassin-knuckles.md)
+- [Beast Golem Knuckles](equipements/gantelets-beast-golem-knuckles.md)
+- [Calygrey Knuckles](equipements/gantelets-calygrey-knuckles.md)
+- [Crescent Knuckles](equipements/gantelets-crescent-knuckles.md)
+- [Ghost Knuckles](equipements/gantelets-ghost-knuckles.md)
+- [Golem Knuckles](equipements/gantelets-golem-knuckles.md)
+- [Jade-Lich Knuckles](equipements/gantelets-jade-lich-knuckles.md)
+- [Manticore Knuckles](equipements/gantelets-manticore-knuckles.md)
+- [Old Legion Knuckles](equipements/gantelets-old-legion-knuckles.md)
+- [Runic Knuckles](equipements/gantelets-runic-knuckles.md)
+- [Thorny Knuckles](equipements/gantelets-thorny-knuckles.md)
+- [Troglodyte Knuckles](equipements/gantelets-troglodyte-knuckles.md)
+- [Tuanosaur Knuckles](equipements/gantelets-tuanosaur-knuckles.md)
+- [Withering Knuckles](equipements/gantelets-withering-knuckles.md)
+- [Giantkind Knuckles](equipements/gantelets-giantkind-knuckles.md)
+
+## Rapières
+
+- [Broken Golem Rapier](equipements/rapi-res-broken-golem-rapier.md)
+- [Radiant Wolf Rapier](equipements/rapi-res-radiant-wolf-rapier.md)
+- [Virgin Rapier](equipements/rapi-res-virgin-rapier.md)
+- [Wolf Rapier](equipements/rapi-res-wolf-rapier.md)
+- [Ancient Calygrey Rapier](equipements/rapi-res-ancient-calygrey-rapier.md)
+- [Assassin Rapier](equipements/rapi-res-assassin-rapier.md)
+- [Astral Rapier](equipements/rapi-res-astral-rapier.md)
+- [Beast Golem Rapier](equipements/rapi-res-beast-golem-rapier.md)
+- [Brutal Rapier](equipements/rapi-res-brutal-rapier.md)
+- [Calygrey Rapier](equipements/rapi-res-calygrey-rapier.md)
+- [Chalcedony Rapier](equipements/rapi-res-chalcedony-rapier.md)
+- [Crescent Rapier](equipements/rapi-res-crescent-rapier.md)
+- [Damascene Rapier](equipements/rapi-res-damascene-rapier.md)
+- [Fang Rapier](equipements/rapi-res-fang-rapier.md)
+- [Forged Glass Rapier](equipements/rapi-res-forged-glass-rapier.md)
+- [Galvanic Rapier](equipements/rapi-res-galvanic-rapier.md)
+- [Ghost Rapier](equipements/rapi-res-ghost-rapier.md)
+- [Gold Rapier](equipements/rapi-res-gold-rapier.md)
+- [Gold-Lich Rapier](equipements/rapi-res-gold-lich-rapier.md)
+- [Hailfrost Rapier](equipements/rapi-res-hailfrost-rapier.md)
+- [Horror Rapier](equipements/rapi-res-horror-rapier.md)
+- [Iron Rapier](equipements/rapi-res-iron-rapier.md)
+- [Jade-Lich Rapier](equipements/rapi-res-jade-lich-rapier.md)
+- [Kazite Rapier](equipements/rapi-res-kazite-rapier.md)
+- [Manticore Rapier](equipements/rapi-res-manticore-rapier.md)
+- [Marble Rapier](equipements/rapi-res-marble-rapier.md)
+- [Masterpiece Rapier](equipements/rapi-res-masterpiece-rapier.md)
+- [Meteoric Rapier](equipements/rapi-res-meteoric-rapier.md)
+- [Militia Rapier](equipements/rapi-res-militia-rapier.md)
+- [Obsidian Rapier](equipements/rapi-res-obsidian-rapier.md)
+- [Old Legion Rapier](equipements/rapi-res-old-legion-rapier.md)
+- [Palladium Rapier](equipements/rapi-res-palladium-rapier.md)
+- [Runic Rapier](equipements/rapi-res-runic-rapier.md)
+- [Savage Rapier](equipements/rapi-res-savage-rapier.md)
+- [Smoke Rapier](equipements/rapi-res-smoke-rapier.md)
+- [Thorny Rapier](equipements/rapi-res-thorny-rapier.md)
+- [Troglodyte Rapier](equipements/rapi-res-troglodyte-rapier.md)
+- [Tsar Rapier](equipements/rapi-res-tsar-rapier.md)
+- [Tuanosaur Rapier](equipements/rapi-res-tuanosaur-rapier.md)
+- [Vampiric Rapier](equipements/rapi-res-vampiric-rapier.md)
+- [Vigilante Rapier](equipements/rapi-res-vigilante-rapier.md)
+- [Withering Rapier](equipements/rapi-res-withering-rapier.md)
+- [Giantkind Rapier](equipements/rapi-res-giantkind-rapier.md)
+- [Porcelain Rapier](equipements/rapi-res-porcelain-rapier.md)
+
+## Sabres
+
+- [Cerulean Sabre](equipements/sabres-cerulean-sabre.md)
+- [Desert Khopesh](equipements/sabres-desert-khopesh.md)
+- [Gep's Blade](equipements/sabres-gep-s-blade.md)
+- [Gold Machete](equipements/sabres-gold-machete.md)
+- [Gold-Lich Sabre](equipements/sabres-gold-lich-sabre.md)
+- [Horror Sabre](equipements/sabres-horror-sabre.md)
+- [Jade Scimitar](equipements/sabres-jade-scimitar.md)
+- [Kazite Blade](equipements/sabres-kazite-blade.md)
+- [Machete](equipements/sabres-machete.md)
+- [Militia Sabre](equipements/sabres-militia-sabre.md)
+- [Mysterious Blade](equipements/sabres-mysterious-blade.md)
+- [Palladium Sabre](equipements/sabres-palladium-sabre.md)
+- [Smoke Sabre](equipements/sabres-smoke-sabre.md)
+- [Steel Sabre](equipements/sabres-steel-sabre.md)
+- [Vigilante Sabre](equipements/sabres-vigilante-sabre.md)
+- [Ancient Calygrey Sabre](equipements/sabres-ancient-calygrey-sabre.md)
+- [Assassin Sabre](equipements/sabres-assassin-sabre.md)
+- [Astral Sabre](equipements/sabres-astral-sabre.md)
+- [Beast Golem Sabre](equipements/sabres-beast-golem-sabre.md)
+- [Brutal Sabre](equipements/sabres-brutal-sabre.md)
+- [Calygrey Sabre](equipements/sabres-calygrey-sabre.md)
+- [Chalcedony Sabre](equipements/sabres-chalcedony-sabre.md)
+- [Crescent Sabre](equipements/sabres-crescent-sabre.md)
+- [Damascene Sabre](equipements/sabres-damascene-sabre.md)
+- [Fang Sabre](equipements/sabres-fang-sabre.md)
+- [Forged Glass Sabre](equipements/sabres-forged-glass-sabre.md)
+- [Galvanic Sabre](equipements/sabres-galvanic-sabre.md)
+- [Ghost Sabre](equipements/sabres-ghost-sabre.md)
+- [Golem Sabre](equipements/sabres-golem-sabre.md)
+- [Hailfrost Sabre](equipements/sabres-hailfrost-sabre.md)
+- [Iron Sabre](equipements/sabres-iron-sabre.md)
+- [Manticore Sabre](equipements/sabres-manticore-sabre.md)
+- [Marble Sabre](equipements/sabres-marble-sabre.md)
+- [Masterpiece Sabre](equipements/sabres-masterpiece-sabre.md)
+- [Meteoric Sabre](equipements/sabres-meteoric-sabre.md)
+- [Obsidian Sabre](equipements/sabres-obsidian-sabre.md)
+- [Old Legion Sabre](equipements/sabres-old-legion-sabre.md)
+- [Runic Sabre](equipements/sabres-runic-sabre.md)
+- [Savage Sabre](equipements/sabres-savage-sabre.md)
+- [Thorny Sabre](equipements/sabres-thorny-sabre.md)
+- [Troglodyte Sabre](equipements/sabres-troglodyte-sabre.md)
+- [Tsar Sabre](equipements/sabres-tsar-sabre.md)
+- [Tuanosaur Sabre](equipements/sabres-tuanosaur-sabre.md)
+- [Vampiric Sabre](equipements/sabres-vampiric-sabre.md)
+- [Virgin Sabre](equipements/sabres-virgin-sabre.md)
+- [Withering Sabre](equipements/sabres-withering-sabre.md)
+- [Wolf Sabre](equipements/sabres-wolf-sabre.md)
+- [Giantkind Sabre](equipements/sabres-giantkind-sabre.md)
+- [Porcelain Sabre](equipements/sabres-porcelain-sabre.md)
+
+## Épées 1 main
+
+- [Assassin Sword](equipements/p-es-1-main-assassin-sword.md)
+- [Astral Sword](equipements/p-es-1-main-astral-sword.md)
+- [Brand](equipements/p-es-1-main-brand.md)
+- [Chalcedony Sword](equipements/p-es-1-main-chalcedony-sword.md)
+- [Damascene Sword](equipements/p-es-1-main-damascene-sword.md)
+- [Fang Sword](equipements/p-es-1-main-fang-sword.md)
+- [Forged Glass Sword](equipements/p-es-1-main-forged-glass-sword.md)
+- [Hailfrost Sword](equipements/p-es-1-main-hailfrost-sword.md)
+- [Iron Sword](equipements/p-es-1-main-iron-sword.md)
+- [Maelstrom Blade](equipements/p-es-1-main-maelstrom-blade.md)
+- [Marble Sword](equipements/p-es-1-main-marble-sword.md)
+- [Masterpiece Sword](equipements/p-es-1-main-masterpiece-sword.md)
+- [Meteoric Sword](equipements/p-es-1-main-meteoric-sword.md)
+- [Obsidian Sword](equipements/p-es-1-main-obsidian-sword.md)
+- [Old Legion Gladius](equipements/p-es-1-main-old-legion-gladius.md)
+- [Runic Blade](equipements/p-es-1-main-runic-blade.md)
+- [Savage Sword](equipements/p-es-1-main-savage-sword.md)
+- [Strange Rusted Sword](equipements/p-es-1-main-strange-rusted-sword.md)
+- [Tsar Sword](equipements/p-es-1-main-tsar-sword.md)
+- [Vampiric Sword](equipements/p-es-1-main-vampiric-sword.md)
+- [Ancient Calygrey Sword](equipements/p-es-1-main-ancient-calygrey-sword.md)
+- [Beast Golem Sword](equipements/p-es-1-main-beast-golem-sword.md)
+- [Brutal Sword](equipements/p-es-1-main-brutal-sword.md)
+- [Calygrey Sword](equipements/p-es-1-main-calygrey-sword.md)
+- [Crescent Sword](equipements/p-es-1-main-crescent-sword.md)
+- [Galvanic Sword](equipements/p-es-1-main-galvanic-sword.md)
+- [Ghost Sword](equipements/p-es-1-main-ghost-sword.md)
+- [Gold Sword](equipements/p-es-1-main-gold-sword.md)
+- [Gold-Lich Sword](equipements/p-es-1-main-gold-lich-sword.md)
+- [Golem Sword](equipements/p-es-1-main-golem-sword.md)
+- [Horror Sword](equipements/p-es-1-main-horror-sword.md)
+- [Jade-Lich Sword](equipements/p-es-1-main-jade-lich-sword.md)
+- [Kazite Sword](equipements/p-es-1-main-kazite-sword.md)
+- [Manticore Sword](equipements/p-es-1-main-manticore-sword.md)
+- [Militia Sword](equipements/p-es-1-main-militia-sword.md)
+- [Palladium Sword](equipements/p-es-1-main-palladium-sword.md)
+- [Smoke Sword](equipements/p-es-1-main-smoke-sword.md)
+- [Thorny Sword](equipements/p-es-1-main-thorny-sword.md)
+- [Troglodyte Sword](equipements/p-es-1-main-troglodyte-sword.md)
+- [Tuanosaur Sword](equipements/p-es-1-main-tuanosaur-sword.md)
+- [Vigilante Sword](equipements/p-es-1-main-vigilante-sword.md)
+- [Virgin Sword](equipements/p-es-1-main-virgin-sword.md)
+- [Withering Sword](equipements/p-es-1-main-withering-sword.md)
+- [Wolf Sword](equipements/p-es-1-main-wolf-sword.md)
+- [Giantkind Sword](equipements/p-es-1-main-giantkind-sword.md)
+- [Porcelain Sword](equipements/p-es-1-main-porcelain-sword.md)
+
+## Haches 1 main
+
+- [Astral Axe](equipements/haches-1-main-astral-axe.md)
+- [Beast Golem Axe](equipements/haches-1-main-beast-golem-axe.md)
+- [Brutal Axe](equipements/haches-1-main-brutal-axe.md)
+- [Butcher Cleaver](equipements/haches-1-main-butcher-cleaver.md)
+- [Chalcedony Axe](equipements/haches-1-main-chalcedony-axe.md)
+- [Damascene Axe](equipements/haches-1-main-damascene-axe.md)
+- [Fang Axe](equipements/haches-1-main-fang-axe.md)
+- [Forged Glass Axe](equipements/haches-1-main-forged-glass-axe.md)
+- [Galvanic Axe](equipements/haches-1-main-galvanic-axe.md)
+- [Gold Hatchet](equipements/haches-1-main-gold-hatchet.md)
+- [Hailfrost Axe](equipements/haches-1-main-hailfrost-axe.md)
+- [Hatchet](equipements/haches-1-main-hatchet.md)
+- [Horror Axe](equipements/haches-1-main-horror-axe.md)
+- [Iron Axe](equipements/haches-1-main-iron-axe.md)
+- [Kazite Cleaver](equipements/haches-1-main-kazite-cleaver.md)
+- [Living Wood Axe](equipements/haches-1-main-living-wood-axe.md)
+- [Marble Axe](equipements/haches-1-main-marble-axe.md)
+- [Masterpiece Axe](equipements/haches-1-main-masterpiece-axe.md)
+- [Meteoric Axe](equipements/haches-1-main-meteoric-axe.md)
+- [Militia Axe](equipements/haches-1-main-militia-axe.md)
+- [Obsidian Axe](equipements/haches-1-main-obsidian-axe.md)
+- [Pain in the Axe](equipements/haches-1-main-pain-in-the-axe.md)
+- [Palladium Axe](equipements/haches-1-main-palladium-axe.md)
+- [Sandrose](equipements/haches-1-main-sandrose.md)
+- [Savage Axe](equipements/haches-1-main-savage-axe.md)
+- [Smoke Axe](equipements/haches-1-main-smoke-axe.md)
+- [Sunfall Axe](equipements/haches-1-main-sunfall-axe.md)
+- [Tsar Axe](equipements/haches-1-main-tsar-axe.md)
+- [Tuanosaur Axe](equipements/haches-1-main-tuanosaur-axe.md)
+- [Vampiric Axe](equipements/haches-1-main-vampiric-axe.md)
+- [Vigilante Axe](equipements/haches-1-main-vigilante-axe.md)
+- [Virgin Axe](equipements/haches-1-main-virgin-axe.md)
+- [Warm Axe](equipements/haches-1-main-warm-axe.md)
+- [Wolf Axe](equipements/haches-1-main-wolf-axe.md)
+- [Ancient Calygrey Axe](equipements/haches-1-main-ancient-calygrey-axe.md)
+- [Assassin Axe](equipements/haches-1-main-assassin-axe.md)
+- [Calygrey Axe](equipements/haches-1-main-calygrey-axe.md)
+- [Crescent Axe](equipements/haches-1-main-crescent-axe.md)
+- [Ghost Axe](equipements/haches-1-main-ghost-axe.md)
+- [Gold-Lich Axe](equipements/haches-1-main-gold-lich-axe.md)
+- [Golem Axe](equipements/haches-1-main-golem-axe.md)
+- [Jade-Lich Axe](equipements/haches-1-main-jade-lich-axe.md)
+- [Manticore Axe](equipements/haches-1-main-manticore-axe.md)
+- [Old Legion Axe](equipements/haches-1-main-old-legion-axe.md)
+- [Runic Axe](equipements/haches-1-main-runic-axe.md)
+- [Thorny Axe](equipements/haches-1-main-thorny-axe.md)
+- [Troglodyte Axe](equipements/haches-1-main-troglodyte-axe.md)
+- [Withering Axe](equipements/haches-1-main-withering-axe.md)
+- [Giantkind Axe](equipements/haches-1-main-giantkind-axe.md)
+
+## Masses 1 main
+
+- [Ancient Calygrey Mace](equipements/masses-1-main-ancient-calygrey-mace.md)
+- [Astral Mace](equipements/masses-1-main-astral-mace.md)
+- [Blacksmith's Vintage Hammer](equipements/masses-1-main-blacksmith-s-vintage-hammer.md)
+- [Brutal Club](equipements/masses-1-main-brutal-club.md)
+- [Calygrey Mace](equipements/masses-1-main-calygrey-mace.md)
+- [Chalcedony Mace](equipements/masses-1-main-chalcedony-mace.md)
+- [Damascene Mace](equipements/masses-1-main-damascene-mace.md)
+- [Fang Club](equipements/masses-1-main-fang-club.md)
+- [Forged Glass Mace](equipements/masses-1-main-forged-glass-mace.md)
+- [Galvanic Mace](equipements/masses-1-main-galvanic-mace.md)
+- [Giant Iron Key](equipements/masses-1-main-giant-iron-key.md)
+- [Gold Club](equipements/masses-1-main-gold-club.md)
+- [Gold-Lich Mace](equipements/masses-1-main-gold-lich-mace.md)
+- [Hailfrost Mace](equipements/masses-1-main-hailfrost-mace.md)
+- [Horror Mace](equipements/masses-1-main-horror-mace.md)
+- [Iron Mace](equipements/masses-1-main-iron-mace.md)
+- [Jade-Lich Mace](equipements/masses-1-main-jade-lich-mace.md)
+- [Kazite Hammer](equipements/masses-1-main-kazite-hammer.md)
+- [Mace of Seasons](equipements/masses-1-main-mace-of-seasons.md)
+- [Marble Morningstar](equipements/masses-1-main-marble-morningstar.md)
+- [Masterpiece Mace](equipements/masses-1-main-masterpiece-mace.md)
+- [Merton's Firepoker](equipements/masses-1-main-merton-s-firepoker.md)
+- [Meteoric Mace](equipements/masses-1-main-meteoric-mace.md)
+- [Militia Mace](equipements/masses-1-main-militia-mace.md)
+- [Obsidian Mace](equipements/masses-1-main-obsidian-mace.md)
+- [Palladium Mace](equipements/masses-1-main-palladium-mace.md)
+- [Primitive Club](equipements/masses-1-main-primitive-club.md)
+- [Savage Club](equipements/masses-1-main-savage-club.md)
+- [Scepter of the Cruel Priest](equipements/masses-1-main-scepter-of-the-cruel-priest.md)
+- [Sealed Mace](equipements/masses-1-main-sealed-mace.md)
+- [Skycrown Mace](equipements/masses-1-main-skycrown-mace.md)
+- [Smoke Mace](equipements/masses-1-main-smoke-mace.md)
+- [Tsar Mace](equipements/masses-1-main-tsar-mace.md)
+- [Vampiric Mace](equipements/masses-1-main-vampiric-mace.md)
+- [Vigilante Mace](equipements/masses-1-main-vigilante-mace.md)
+- [Virgin Mace](equipements/masses-1-main-virgin-mace.md)
+- [Wolf Mace](equipements/masses-1-main-wolf-mace.md)
+- [Assassin Mace](equipements/masses-1-main-assassin-mace.md)
+- [Beast Golem Mace](equipements/masses-1-main-beast-golem-mace.md)
+- [Crescent Mace](equipements/masses-1-main-crescent-mace.md)
+- [Ghost Mace](equipements/masses-1-main-ghost-mace.md)
+- [Golem Mace](equipements/masses-1-main-golem-mace.md)
+- [Manticore Mace](equipements/masses-1-main-manticore-mace.md)
+- [Old Legion Mace](equipements/masses-1-main-old-legion-mace.md)
+- [Runic Mace](equipements/masses-1-main-runic-mace.md)
+- [Thorny Mace](equipements/masses-1-main-thorny-mace.md)
+- [Troglodyte Mace](equipements/masses-1-main-troglodyte-mace.md)
+- [Tuanosaur Mace](equipements/masses-1-main-tuanosaur-mace.md)
+- [Withering Mace](equipements/masses-1-main-withering-mace.md)
+- [Giantkind Mace](equipements/masses-1-main-giantkind-mace.md)
+
+## Bâtons
+
+- [Ancient Calygrey Staff](equipements/b-tons-ancient-calygrey-staff.md)
+- [Astral Staff](equipements/b-tons-astral-staff.md)
+- [Calygrey Staff](equipements/b-tons-calygrey-staff.md)
+- [Compasswood Staff](equipements/b-tons-compasswood-staff.md)
+- [Cracked Red Moon](equipements/b-tons-cracked-red-moon.md)
+- [Crystal Staff](equipements/b-tons-crystal-staff.md)
+- [Frostburn Staff](equipements/b-tons-frostburn-staff.md)
+- [Gold Quarterstaff](equipements/b-tons-gold-quarterstaff.md)
+- [Ivory Master's Staff](equipements/b-tons-ivory-master-s-staff.md)
+- [Jade-Lich Staff](equipements/b-tons-jade-lich-staff.md)
+- [Mage's Poking Stick](equipements/b-tons-mage-s-poking-stick.md)
+- [Master's Staff](equipements/b-tons-master-s-staff.md)
+- [Quarterstaff](equipements/b-tons-quarterstaff.md)
+- [Revenant Moon](equipements/b-tons-revenant-moon.md)
+- [Rotwood Staff](equipements/b-tons-rotwood-staff.md)
+- [Scholar's Staff](equipements/b-tons-scholar-s-staff.md)
+- [Troglodyte Staff](equipements/b-tons-troglodyte-staff.md)
+- [Assassin Staff](equipements/b-tons-assassin-staff.md)
+- [Beast Golem Staff](equipements/b-tons-beast-golem-staff.md)
+- [Brutal Staff](equipements/b-tons-brutal-staff.md)
+- [Chalcedony Staff](equipements/b-tons-chalcedony-staff.md)
+- [Crescent Staff](equipements/b-tons-crescent-staff.md)
+- [Damascene Staff](equipements/b-tons-damascene-staff.md)
+- [Fang Staff](equipements/b-tons-fang-staff.md)
+- [Forged Glass Staff](equipements/b-tons-forged-glass-staff.md)
+- [Galvanic Staff](equipements/b-tons-galvanic-staff.md)
+- [Ghost Staff](equipements/b-tons-ghost-staff.md)
+- [Gold-Lich Staff](equipements/b-tons-gold-lich-staff.md)
+- [Golem Staff](equipements/b-tons-golem-staff.md)
+- [Hailfrost Staff](equipements/b-tons-hailfrost-staff.md)
+- [Horror Staff](equipements/b-tons-horror-staff.md)
+- [Iron Staff](equipements/b-tons-iron-staff.md)
+- [Kazite Staff](equipements/b-tons-kazite-staff.md)
+- [Manticore Staff](equipements/b-tons-manticore-staff.md)
+- [Marble Staff](equipements/b-tons-marble-staff.md)
+- [Masterpiece Staff](equipements/b-tons-masterpiece-staff.md)
+- [Meteoric Staff](equipements/b-tons-meteoric-staff.md)
+- [Militia Staff](equipements/b-tons-militia-staff.md)
+- [Obsidian Staff](equipements/b-tons-obsidian-staff.md)
+- [Old Legion Staff](equipements/b-tons-old-legion-staff.md)
+- [Palladium Staff](equipements/b-tons-palladium-staff.md)
+- [Runic Staff](equipements/b-tons-runic-staff.md)
+- [Savage Staff](equipements/b-tons-savage-staff.md)
+- [Smoke Staff](equipements/b-tons-smoke-staff.md)
+- [Thorny Staff](equipements/b-tons-thorny-staff.md)
+- [Tsar Staff](equipements/b-tons-tsar-staff.md)
+- [Tuanosaur Staff](equipements/b-tons-tuanosaur-staff.md)
+- [Vampiric Staff](equipements/b-tons-vampiric-staff.md)
+- [Vigilante Staff](equipements/b-tons-vigilante-staff.md)
+- [Virgin Staff](equipements/b-tons-virgin-staff.md)
+- [Withering Staff](equipements/b-tons-withering-staff.md)
+- [Wolf Staff](equipements/b-tons-wolf-staff.md)
+- [Giantkind Staff](equipements/b-tons-giantkind-staff.md)
+- [Porcelain Staff](equipements/b-tons-porcelain-staff.md)
+
+## Lances
+
+- [Astral Spear](equipements/lances-astral-spear.md)
+- [Brutal Spear](equipements/lances-brutal-spear.md)
+- [Chalcedony Spear](equipements/lances-chalcedony-spear.md)
+- [Damascene Spear](equipements/lances-damascene-spear.md)
+- [Fang Trident](equipements/lances-fang-trident.md)
+- [Fishing Harpoon](equipements/lances-fishing-harpoon.md)
+- [Forged Glass Spear](equipements/lances-forged-glass-spear.md)
+- [Galvanic Spear](equipements/lances-galvanic-spear.md)
+- [Gold Harpoon](equipements/lances-gold-harpoon.md)
+- [Gold Pitchfork](equipements/lances-gold-pitchfork.md)
+- [Gold-Lich Spear](equipements/lances-gold-lich-spear.md)
+- [Griigmerk kÄramerk](equipements/lances-griigmerk-k-ramerk.md)
+- [Hailfrost Spear](equipements/lances-hailfrost-spear.md)
+- [Horror Spear](equipements/lances-horror-spear.md)
+- [Iron Spear](equipements/lances-iron-spear.md)
+- [Kazite Lance](equipements/lances-kazite-lance.md)
+- [Marble Spear](equipements/lances-marble-spear.md)
+- [Masterpiece Spear](equipements/lances-masterpiece-spear.md)
+- [Meteoric Spear](equipements/lances-meteoric-spear.md)
+- [Militia Spear](equipements/lances-militia-spear.md)
+- [Obsidian Spear](equipements/lances-obsidian-spear.md)
+- [Old Legion Spear](equipements/lances-old-legion-spear.md)
+- [Palladium Spear](equipements/lances-palladium-spear.md)
+- [Phytosaur Spear](equipements/lances-phytosaur-spear.md)
+- [Pitchfork](equipements/lances-pitchfork.md)
+- [Rusted Spear](equipements/lances-rusted-spear.md)
+- [Savage Trident](equipements/lances-savage-trident.md)
+- [Shriek](equipements/lances-shriek.md)
+- [Smoke Spear](equipements/lances-smoke-spear.md)
+- [Thorny Spear](equipements/lances-thorny-spear.md)
+- [Troglodyte Spear](equipements/lances-troglodyte-spear.md)
+- [Troglodyte Trident](equipements/lances-troglodyte-trident.md)
+- [Tsar Spear](equipements/lances-tsar-spear.md)
+- [Vampiric Spear](equipements/lances-vampiric-spear.md)
+- [Vigilante Spear](equipements/lances-vigilante-spear.md)
+- [Virgin Spear](equipements/lances-virgin-spear.md)
+- [Werlig Spear](equipements/lances-werlig-spear.md)
+- [Withering Trident](equipements/lances-withering-trident.md)
+- [Wolf Spear](equipements/lances-wolf-spear.md)
+- [Ancient Calygrey Spear](equipements/lances-ancient-calygrey-spear.md)
+- [Assassin Spear](equipements/lances-assassin-spear.md)
+- [Beast Golem Spear](equipements/lances-beast-golem-spear.md)
+- [Calygrey Spear](equipements/lances-calygrey-spear.md)
+- [Crescent Spear](equipements/lances-crescent-spear.md)
+- [Ghost Spear](equipements/lances-ghost-spear.md)
+- [Golem Spear](equipements/lances-golem-spear.md)
+- [Jade-Lich Spear](equipements/lances-jade-lich-spear.md)
+- [Manticore Spear](equipements/lances-manticore-spear.md)
+- [Runic Spear](equipements/lances-runic-spear.md)
+- [Tuanosaur Spear](equipements/lances-tuanosaur-spear.md)
+- [Giantkind Spear](equipements/lances-giantkind-spear.md)
+- [Porcelain Spear](equipements/lances-porcelain-spear.md)
+
+## Hallebardes
+
+- [Astral Halberd](equipements/hallebardes-astral-halberd.md)
+- [Beast Golem Halberd](equipements/hallebardes-beast-golem-halberd.md)
+- [Chalcedony Halberd](equipements/hallebardes-chalcedony-halberd.md)
+- [Cleaver Halberd](equipements/hallebardes-cleaver-halberd.md)
+- [Damascene Halberd](equipements/hallebardes-damascene-halberd.md)
+- [Dreamer Halberd](equipements/hallebardes-dreamer-halberd.md)
+- [Duty](equipements/hallebardes-duty.md)
+- [Fang Halberd](equipements/hallebardes-fang-halberd.md)
+- [Forged Glass Halberd](equipements/hallebardes-forged-glass-halberd.md)
+- [Galvanic Halberd](equipements/hallebardes-galvanic-halberd.md)
+- [Giantkind Halberd](equipements/hallebardes-giantkind-halberd.md)
+- [Gold Guisarme](equipements/hallebardes-gold-guisarme.md)
+- [Hailfrost Halberd](equipements/hallebardes-hailfrost-halberd.md)
+- [Horror Halberd](equipements/hallebardes-horror-halberd.md)
+- [Iron Halberd](equipements/hallebardes-iron-halberd.md)
+- [Kazite Partizan](equipements/hallebardes-kazite-partizan.md)
+- [Marble Halberd](equipements/hallebardes-marble-halberd.md)
+- [Masterpiece Halberd](equipements/hallebardes-masterpiece-halberd.md)
+- [Meteoric Halberd](equipements/hallebardes-meteoric-halberd.md)
+- [Militia Halberd](equipements/hallebardes-militia-halberd.md)
+- [Mushroom Halberd](equipements/hallebardes-mushroom-halberd.md)
+- [Obsidian Halberd](equipements/hallebardes-obsidian-halberd.md)
+- [Palladium Halberd](equipements/hallebardes-palladium-halberd.md)
+- [Ruined Halberd](equipements/hallebardes-ruined-halberd.md)
+- [Sanguine Cleaver](equipements/hallebardes-sanguine-cleaver.md)
+- [Savage Halberd](equipements/hallebardes-savage-halberd.md)
+- [Smoke Halberd](equipements/hallebardes-smoke-halberd.md)
+- [Spore Halberd](equipements/hallebardes-spore-halberd.md)
+- [Thrice-Wrought Halberd](equipements/hallebardes-thrice-wrought-halberd.md)
+- [Tsar Halberd](equipements/hallebardes-tsar-halberd.md)
+- [Vampiric Halberd](equipements/hallebardes-vampiric-halberd.md)
+- [Vigilante Halberd](equipements/hallebardes-vigilante-halberd.md)
+- [Virgin Halberd](equipements/hallebardes-virgin-halberd.md)
+- [Wolf Halberd](equipements/hallebardes-wolf-halberd.md)
+- [Worn Guisarme](equipements/hallebardes-worn-guisarme.md)
+- [Ancient Calygrey Halberd](equipements/hallebardes-ancient-calygrey-halberd.md)
+- [Assassin Halberd](equipements/hallebardes-assassin-halberd.md)
+- [Calygrey Halberd](equipements/hallebardes-calygrey-halberd.md)
+- [Crescent Halberd](equipements/hallebardes-crescent-halberd.md)
+- [Ghost Halberd](equipements/hallebardes-ghost-halberd.md)
+- [Gold-Lich Halberd](equipements/hallebardes-gold-lich-halberd.md)
+- [Golem Halberd](equipements/hallebardes-golem-halberd.md)
+- [Jade-Lich Halberd](equipements/hallebardes-jade-lich-halberd.md)
+- [Manticore Halberd](equipements/hallebardes-manticore-halberd.md)
+- [Old Legion Halberd](equipements/hallebardes-old-legion-halberd.md)
+- [Runic Halberd](equipements/hallebardes-runic-halberd.md)
+- [Thorny Halberd](equipements/hallebardes-thorny-halberd.md)
+- [Troglodyte Halberd](equipements/hallebardes-troglodyte-halberd.md)
+- [Tuanosaur Halberd](equipements/hallebardes-tuanosaur-halberd.md)
+- [Withering Halberd](equipements/hallebardes-withering-halberd.md)
+
+## Grands sabres
+
+- [Royal Great-Khopesh](equipements/grands-sabres-royal-great-khopesh.md)
+- [Smoke Great Sabre](equipements/grands-sabres-smoke-great-sabre.md)
+- [Tsar Great Sabre](equipements/grands-sabres-tsar-great-sabre.md)
+- [Ancient Calygrey Great Sabre](equipements/grands-sabres-ancient-calygrey-great-sabre.md)
+- [Assassin Great Sabre](equipements/grands-sabres-assassin-great-sabre.md)
+- [Astral Great Sabre](equipements/grands-sabres-astral-great-sabre.md)
+- [Beast Golem Great Sabre](equipements/grands-sabres-beast-golem-great-sabre.md)
+- [Brutal Great Sabre](equipements/grands-sabres-brutal-great-sabre.md)
+- [Calygrey Great Sabre](equipements/grands-sabres-calygrey-great-sabre.md)
+- [Chalcedony Great Sabre](equipements/grands-sabres-chalcedony-great-sabre.md)
+- [Crescent Great Sabre](equipements/grands-sabres-crescent-great-sabre.md)
+- [Damascene Great Sabre](equipements/grands-sabres-damascene-great-sabre.md)
+- [Fang Great Sabre](equipements/grands-sabres-fang-great-sabre.md)
+- [Forged Glass Great Sabre](equipements/grands-sabres-forged-glass-great-sabre.md)
+- [Galvanic Great Sabre](equipements/grands-sabres-galvanic-great-sabre.md)
+- [Ghost Great Sabre](equipements/grands-sabres-ghost-great-sabre.md)
+- [Gold Great Sabre](equipements/grands-sabres-gold-great-sabre.md)
+- [Gold-Lich Great Sabre](equipements/grands-sabres-gold-lich-great-sabre.md)
+- [Golem Great Sabre](equipements/grands-sabres-golem-great-sabre.md)
+- [Hailfrost Great Sabre](equipements/grands-sabres-hailfrost-great-sabre.md)
+- [Horror Great Sabre](equipements/grands-sabres-horror-great-sabre.md)
+- [Iron Great Sabre](equipements/grands-sabres-iron-great-sabre.md)
+- [Jade-Lich Great Sabre](equipements/grands-sabres-jade-lich-great-sabre.md)
+- [Kazite Great Sabre](equipements/grands-sabres-kazite-great-sabre.md)
+- [Manticore Great Sabre](equipements/grands-sabres-manticore-great-sabre.md)
+- [Marble Great Sabre](equipements/grands-sabres-marble-great-sabre.md)
+- [Masterpiece Great Sabre](equipements/grands-sabres-masterpiece-great-sabre.md)
+- [Meteoric Great Sabre](equipements/grands-sabres-meteoric-great-sabre.md)
+- [Militia Great Sabre](equipements/grands-sabres-militia-great-sabre.md)
+- [Obsidian Great Sabre](equipements/grands-sabres-obsidian-great-sabre.md)
+- [Old Legion Great Sabre](equipements/grands-sabres-old-legion-great-sabre.md)
+- [Palladium Great Sabre](equipements/grands-sabres-palladium-great-sabre.md)
+- [Runic Great Sabre](equipements/grands-sabres-runic-great-sabre.md)
+- [Savage Great Sabre](equipements/grands-sabres-savage-great-sabre.md)
+- [Thorny Great Sabre](equipements/grands-sabres-thorny-great-sabre.md)
+- [Troglodyte Great Sabre](equipements/grands-sabres-troglodyte-great-sabre.md)
+- [Tuanosaur Great Sabre](equipements/grands-sabres-tuanosaur-great-sabre.md)
+- [Vampiric Great Sabre](equipements/grands-sabres-vampiric-great-sabre.md)
+- [Vigilante Great Sabre](equipements/grands-sabres-vigilante-great-sabre.md)
+- [Virgin Great Sabre](equipements/grands-sabres-virgin-great-sabre.md)
+- [Withering Great Sabre](equipements/grands-sabres-withering-great-sabre.md)
+- [Wolf Great Sabre](equipements/grands-sabres-wolf-great-sabre.md)
+- [Giantkind Great Sabre](equipements/grands-sabres-giantkind-great-sabre.md)
+- [Porcelain Great Sabre](equipements/grands-sabres-porcelain-great-sabre.md)
+
+## Grandes épées
+
+- [Assassin Claymore](equipements/grandes-p-es-assassin-claymore.md)
+- [Astral Claymore](equipements/grandes-p-es-astral-claymore.md)
+- [Chalcedony Claymore](equipements/grandes-p-es-chalcedony-claymore.md)
+- [Damascene Claymore](equipements/grandes-p-es-damascene-claymore.md)
+- [Fang Greatsword](equipements/grandes-p-es-fang-greatsword.md)
+- [Forged Glass Claymore](equipements/grandes-p-es-forged-glass-claymore.md)
+- [Gep's Longblade](equipements/grandes-p-es-gep-s-longblade.md)
+- [Gold-Lich Claymore](equipements/grandes-p-es-gold-lich-claymore.md)
+- [Golden Junk Claymore](equipements/grandes-p-es-golden-junk-claymore.md)
+- [Golem Greatsword](equipements/grandes-p-es-golem-greatsword.md)
+- [Great Runic Blade](equipements/grandes-p-es-great-runic-blade.md)
+- [Hailfrost Claymore](equipements/grandes-p-es-hailfrost-claymore.md)
+- [Horror Greatsword](equipements/grandes-p-es-horror-greatsword.md)
+- [Iron Claymore](equipements/grandes-p-es-iron-claymore.md)
+- [Junk Claymore](equipements/grandes-p-es-junk-claymore.md)
+- [Kazite Greatblade](equipements/grandes-p-es-kazite-greatblade.md)
+- [Marble Claymore](equipements/grandes-p-es-marble-claymore.md)
+- [Masterpiece Claymore](equipements/grandes-p-es-masterpiece-claymore.md)
+- [Meteoric Claymore](equipements/grandes-p-es-meteoric-claymore.md)
+- [Militia Claymore](equipements/grandes-p-es-militia-claymore.md)
+- [Mysterious Long Blade](equipements/grandes-p-es-mysterious-long-blade.md)
+- [Obsidian Claymore](equipements/grandes-p-es-obsidian-claymore.md)
+- [Palladium Claymore](equipements/grandes-p-es-palladium-claymore.md)
+- [Pathfinder Claymore](equipements/grandes-p-es-pathfinder-claymore.md)
+- [Prayer Claymore](equipements/grandes-p-es-prayer-claymore.md)
+- [Savage Greatsword](equipements/grandes-p-es-savage-greatsword.md)
+- [Sinner Claymore](equipements/grandes-p-es-sinner-claymore.md)
+- [Starchild Claymore](equipements/grandes-p-es-starchild-claymore.md)
+- [Thermal Claymore](equipements/grandes-p-es-thermal-claymore.md)
+- [Thorny Claymore](equipements/grandes-p-es-thorny-claymore.md)
+- [Vampiric Greatsword](equipements/grandes-p-es-vampiric-greatsword.md)
+- [Vigilante Claymore](equipements/grandes-p-es-vigilante-claymore.md)
+- [Virgin Greatsword](equipements/grandes-p-es-virgin-greatsword.md)
+- [Wolf Claymore](equipements/grandes-p-es-wolf-claymore.md)
+- [Zagis' Saw](equipements/grandes-p-es-zagis-saw.md)
+- [Ancient Calygrey Greatsword](equipements/grandes-p-es-ancient-calygrey-greatsword.md)
+- [Beast Golem Greatsword](equipements/grandes-p-es-beast-golem-greatsword.md)
+- [Brutal Greatsword](equipements/grandes-p-es-brutal-greatsword.md)
+- [Calygrey Greatsword](equipements/grandes-p-es-calygrey-greatsword.md)
+- [Crescent Greatsword](equipements/grandes-p-es-crescent-greatsword.md)
+- [Galvanic Greatsword](equipements/grandes-p-es-galvanic-greatsword.md)
+- [Ghost Greatsword](equipements/grandes-p-es-ghost-greatsword.md)
+- [Jade-Lich Greatsword](equipements/grandes-p-es-jade-lich-greatsword.md)
+- [Manticore Greatsword](equipements/grandes-p-es-manticore-greatsword.md)
+- [Old Legion Greatsword](equipements/grandes-p-es-old-legion-greatsword.md)
+- [Smoke Greatsword](equipements/grandes-p-es-smoke-greatsword.md)
+- [Troglodyte Greatsword](equipements/grandes-p-es-troglodyte-greatsword.md)
+- [Tsar Greatsword](equipements/grandes-p-es-tsar-greatsword.md)
+- [Tuanosaur Greatsword](equipements/grandes-p-es-tuanosaur-greatsword.md)
+- [Withering Greatsword](equipements/grandes-p-es-withering-greatsword.md)
+- [Giantkind Greatsword](equipements/grandes-p-es-giantkind-greatsword.md)
+
+## Grandes haches
+
+- [Astral Greataxe](equipements/grandes-haches-astral-greataxe.md)
+- [Brutal Greataxe](equipements/grandes-haches-brutal-greataxe.md)
+- [Chalcedony Greataxe](equipements/grandes-haches-chalcedony-greataxe.md)
+- [Crescent Greataxe](equipements/grandes-haches-crescent-greataxe.md)
+- [Damascene Greataxe](equipements/grandes-haches-damascene-greataxe.md)
+- [Fang Greataxe](equipements/grandes-haches-fang-greataxe.md)
+- [Felling Greataxe](equipements/grandes-haches-felling-greataxe.md)
+- [Forged Glass Greataxe](equipements/grandes-haches-forged-glass-greataxe.md)
+- [Fossilized Greataxe](equipements/grandes-haches-fossilized-greataxe.md)
+- [Galvanic Greataxe](equipements/grandes-haches-galvanic-greataxe.md)
+- [Giantkind Greataxe](equipements/grandes-haches-giantkind-greataxe.md)
+- [Gold Greataxe](equipements/grandes-haches-gold-greataxe.md)
+- [Grind](equipements/grandes-haches-grind.md)
+- [Hailfrost Greataxe](equipements/grandes-haches-hailfrost-greataxe.md)
+- [Horror Greataxe](equipements/grandes-haches-horror-greataxe.md)
+- [Iron Greataxe](equipements/grandes-haches-iron-greataxe.md)
+- [Kazite Greatcleaver](equipements/grandes-haches-kazite-greatcleaver.md)
+- [Kelvin's Greataxe](equipements/grandes-haches-kelvin-s-greataxe.md)
+- [Marble Greataxe](equipements/grandes-haches-marble-greataxe.md)
+- [Masterpiece Greataxe](equipements/grandes-haches-masterpiece-greataxe.md)
+- [Meteoric Greataxe](equipements/grandes-haches-meteoric-greataxe.md)
+- [Militia Greataxe](equipements/grandes-haches-militia-greataxe.md)
+- [Obsidian Greataxe](equipements/grandes-haches-obsidian-greataxe.md)
+- [Palladium Greataxe](equipements/grandes-haches-palladium-greataxe.md)
+- [Savage Greataxe](equipements/grandes-haches-savage-greataxe.md)
+- [Smoke Greataxe](equipements/grandes-haches-smoke-greataxe.md)
+- [Tsar Greataxe](equipements/grandes-haches-tsar-greataxe.md)
+- [Tuanosaur Greataxe](equipements/grandes-haches-tuanosaur-greataxe.md)
+- [Vampiric Greataxe](equipements/grandes-haches-vampiric-greataxe.md)
+- [Vigilante Greataxe](equipements/grandes-haches-vigilante-greataxe.md)
+- [Virgin Greataxe](equipements/grandes-haches-virgin-greataxe.md)
+- [Wolf Greataxe](equipements/grandes-haches-wolf-greataxe.md)
+- [Worldedge Greataxe](equipements/grandes-haches-worldedge-greataxe.md)
+- [Ancient Calygrey Greataxe](equipements/grandes-haches-ancient-calygrey-greataxe.md)
+- [Assassin Greataxe](equipements/grandes-haches-assassin-greataxe.md)
+- [Beast Golem Greataxe](equipements/grandes-haches-beast-golem-greataxe.md)
+- [Calygrey Greataxe](equipements/grandes-haches-calygrey-greataxe.md)
+- [Ghost Greataxe](equipements/grandes-haches-ghost-greataxe.md)
+- [Gold-Lich Greataxe](equipements/grandes-haches-gold-lich-greataxe.md)
+- [Golem Greataxe](equipements/grandes-haches-golem-greataxe.md)
+- [Jade-Lich Greataxe](equipements/grandes-haches-jade-lich-greataxe.md)
+- [Manticore Greataxe](equipements/grandes-haches-manticore-greataxe.md)
+- [Old Legion Greataxe](equipements/grandes-haches-old-legion-greataxe.md)
+- [Runic Greataxe](equipements/grandes-haches-runic-greataxe.md)
+- [Thorny Greataxe](equipements/grandes-haches-thorny-greataxe.md)
+- [Troglodyte Greataxe](equipements/grandes-haches-troglodyte-greataxe.md)
+- [Withering Greataxe](equipements/grandes-haches-withering-greataxe.md)
+
+## Faux de guerre
+
+- [Crescent Scythe](equipements/faux-de-guerre-crescent-scythe.md)
+- [Ghost Reaper](equipements/faux-de-guerre-ghost-reaper.md)
+- [Ancient Calygrey War Scythe](equipements/faux-de-guerre-ancient-calygrey-war-scythe.md)
+- [Assassin War Scythe](equipements/faux-de-guerre-assassin-war-scythe.md)
+- [Astral War Scythe](equipements/faux-de-guerre-astral-war-scythe.md)
+- [Beast Golem War Scythe](equipements/faux-de-guerre-beast-golem-war-scythe.md)
+- [Brutal War Scythe](equipements/faux-de-guerre-brutal-war-scythe.md)
+- [Calygrey War Scythe](equipements/faux-de-guerre-calygrey-war-scythe.md)
+- [Chalcedony War Scythe](equipements/faux-de-guerre-chalcedony-war-scythe.md)
+- [Damascene War Scythe](equipements/faux-de-guerre-damascene-war-scythe.md)
+- [Fang War Scythe](equipements/faux-de-guerre-fang-war-scythe.md)
+- [Forged Glass War Scythe](equipements/faux-de-guerre-forged-glass-war-scythe.md)
+- [Galvanic War Scythe](equipements/faux-de-guerre-galvanic-war-scythe.md)
+- [Gold War Scythe](equipements/faux-de-guerre-gold-war-scythe.md)
+- [Gold-Lich War Scythe](equipements/faux-de-guerre-gold-lich-war-scythe.md)
+- [Golem War Scythe](equipements/faux-de-guerre-golem-war-scythe.md)
+- [Hailfrost War Scythe](equipements/faux-de-guerre-hailfrost-war-scythe.md)
+- [Horror War Scythe](equipements/faux-de-guerre-horror-war-scythe.md)
+- [Iron War Scythe](equipements/faux-de-guerre-iron-war-scythe.md)
+- [Jade-Lich War Scythe](equipements/faux-de-guerre-jade-lich-war-scythe.md)
+- [Kazite War Scythe](equipements/faux-de-guerre-kazite-war-scythe.md)
+- [Manticore War Scythe](equipements/faux-de-guerre-manticore-war-scythe.md)
+- [Marble War Scythe](equipements/faux-de-guerre-marble-war-scythe.md)
+- [Masterpiece War Scythe](equipements/faux-de-guerre-masterpiece-war-scythe.md)
+- [Meteoric War Scythe](equipements/faux-de-guerre-meteoric-war-scythe.md)
+- [Militia War Scythe](equipements/faux-de-guerre-militia-war-scythe.md)
+- [Obsidian War Scythe](equipements/faux-de-guerre-obsidian-war-scythe.md)
+- [Old Legion War Scythe](equipements/faux-de-guerre-old-legion-war-scythe.md)
+- [Palladium War Scythe](equipements/faux-de-guerre-palladium-war-scythe.md)
+- [Runic War Scythe](equipements/faux-de-guerre-runic-war-scythe.md)
+- [Savage War Scythe](equipements/faux-de-guerre-savage-war-scythe.md)
+- [Smoke War Scythe](equipements/faux-de-guerre-smoke-war-scythe.md)
+- [Thorny War Scythe](equipements/faux-de-guerre-thorny-war-scythe.md)
+- [Troglodyte War Scythe](equipements/faux-de-guerre-troglodyte-war-scythe.md)
+- [Tsar War Scythe](equipements/faux-de-guerre-tsar-war-scythe.md)
+- [Tuanosaur War Scythe](equipements/faux-de-guerre-tuanosaur-war-scythe.md)
+- [Vampiric War Scythe](equipements/faux-de-guerre-vampiric-war-scythe.md)
+- [Vigilante War Scythe](equipements/faux-de-guerre-vigilante-war-scythe.md)
+- [Virgin War Scythe](equipements/faux-de-guerre-virgin-war-scythe.md)
+- [Withering War Scythe](equipements/faux-de-guerre-withering-war-scythe.md)
+- [Wolf War Scythe](equipements/faux-de-guerre-wolf-war-scythe.md)
+- [Giantkind War Scythe](equipements/faux-de-guerre-giantkind-war-scythe.md)
+- [Porcelain War Scythe](equipements/faux-de-guerre-porcelain-war-scythe.md)
+
+## Grands marteaux
+
+- [Astral Greatmace](equipements/grands-marteaux-astral-greatmace.md)
+- [Brutal Greatmace](equipements/grands-marteaux-brutal-greatmace.md)
+- [Chalcedony Hammer](equipements/grands-marteaux-chalcedony-hammer.md)
+- [Challenger Greathammer](equipements/grands-marteaux-challenger-greathammer.md)
+- [Damascene Hammer](equipements/grands-marteaux-damascene-hammer.md)
+- [De-powered Bludgeon](equipements/grands-marteaux-de-powered-bludgeon.md)
+- [Fang Greatclub](equipements/grands-marteaux-fang-greatclub.md)
+- [Forged Glass Greatmace](equipements/grands-marteaux-forged-glass-greatmace.md)
+- [Galvanic Greatmace](equipements/grands-marteaux-galvanic-greatmace.md)
+- [Ghost Parallel](equipements/grands-marteaux-ghost-parallel.md)
+- [Gold Mining Pick](equipements/grands-marteaux-gold-mining-pick.md)
+- [Hailfrost Hammer](equipements/grands-marteaux-hailfrost-hammer.md)
+- [Horror Greatmace](equipements/grands-marteaux-horror-greatmace.md)
+- [Iron Greathammer](equipements/grands-marteaux-iron-greathammer.md)
+- [Kazite Greathammer](equipements/grands-marteaux-kazite-greathammer.md)
+- [Manticore Greatmace](equipements/grands-marteaux-manticore-greatmace.md)
+- [Mantis Greatpick](equipements/grands-marteaux-mantis-greatpick.md)
+- [Marble Greathammer](equipements/grands-marteaux-marble-greathammer.md)
+- [Masterpiece Hammer](equipements/grands-marteaux-masterpiece-hammer.md)
+- [Meteoric Hammer](equipements/grands-marteaux-meteoric-hammer.md)
+- [Militia Hammer](equipements/grands-marteaux-militia-hammer.md)
+- [Mining Pick](equipements/grands-marteaux-mining-pick.md)
+- [Obsidian Greatmace](equipements/grands-marteaux-obsidian-greatmace.md)
+- [Palladium Greathammer](equipements/grands-marteaux-palladium-greathammer.md)
+- [Pillar Greathammer](equipements/grands-marteaux-pillar-greathammer.md)
+- [Pyrite Greathammer](equipements/grands-marteaux-pyrite-greathammer.md)
+- [Savage Greatclub](equipements/grands-marteaux-savage-greatclub.md)
+- [Smoke Hammer](equipements/grands-marteaux-smoke-hammer.md)
+- [Troglodyte Pole Mace](equipements/grands-marteaux-troglodyte-pole-mace.md)
+- [Tsar Greathammer](equipements/grands-marteaux-tsar-greathammer.md)
+- [Vampiric Greatmace](equipements/grands-marteaux-vampiric-greatmace.md)
+- [Vigilante Hammer](equipements/grands-marteaux-vigilante-hammer.md)
+- [Virgin Greatmace](equipements/grands-marteaux-virgin-greatmace.md)
+- [Withering Pole Mace](equipements/grands-marteaux-withering-pole-mace.md)
+- [Wolf Greathammer](equipements/grands-marteaux-wolf-greathammer.md)
+- [Ancient Calygrey Greathammer](equipements/grands-marteaux-ancient-calygrey-greathammer.md)
+- [Assassin Greathammer](equipements/grands-marteaux-assassin-greathammer.md)
+- [Beast Golem Greathammer](equipements/grands-marteaux-beast-golem-greathammer.md)
+- [Calygrey Greathammer](equipements/grands-marteaux-calygrey-greathammer.md)
+- [Crescent Greathammer](equipements/grands-marteaux-crescent-greathammer.md)
+- [Gold-Lich Greathammer](equipements/grands-marteaux-gold-lich-greathammer.md)
+- [Golem Greathammer](equipements/grands-marteaux-golem-greathammer.md)
+- [Jade-Lich Greathammer](equipements/grands-marteaux-jade-lich-greathammer.md)
+- [Old Legion Greathammer](equipements/grands-marteaux-old-legion-greathammer.md)
+- [Runic Greathammer](equipements/grands-marteaux-runic-greathammer.md)
+- [Thorny Greathammer](equipements/grands-marteaux-thorny-greathammer.md)
+- [Tuanosaur Greathammer](equipements/grands-marteaux-tuanosaur-greathammer.md)
+- [Giantkind Greathammer](equipements/grands-marteaux-giantkind-greathammer.md)
+- [Porcelain Greathammer](equipements/grands-marteaux-porcelain-greathammer.md)
+
+## Fléaux à deux mains
+
+- [Ancient Calygrey Two-Handed Flail](equipements/fl-aux-deux-mains-ancient-calygrey-two-handed-flail.md)
+- [Assassin Two-Handed Flail](equipements/fl-aux-deux-mains-assassin-two-handed-flail.md)
+- [Astral Two-Handed Flail](equipements/fl-aux-deux-mains-astral-two-handed-flail.md)
+- [Beast Golem Two-Handed Flail](equipements/fl-aux-deux-mains-beast-golem-two-handed-flail.md)
+- [Brutal Two-Handed Flail](equipements/fl-aux-deux-mains-brutal-two-handed-flail.md)
+- [Calygrey Two-Handed Flail](equipements/fl-aux-deux-mains-calygrey-two-handed-flail.md)
+- [Chalcedony Two-Handed Flail](equipements/fl-aux-deux-mains-chalcedony-two-handed-flail.md)
+- [Crescent Two-Handed Flail](equipements/fl-aux-deux-mains-crescent-two-handed-flail.md)
+- [Damascene Two-Handed Flail](equipements/fl-aux-deux-mains-damascene-two-handed-flail.md)
+- [Fang Two-Handed Flail](equipements/fl-aux-deux-mains-fang-two-handed-flail.md)
+- [Forged Glass Two-Handed Flail](equipements/fl-aux-deux-mains-forged-glass-two-handed-flail.md)
+- [Galvanic Two-Handed Flail](equipements/fl-aux-deux-mains-galvanic-two-handed-flail.md)
+- [Ghost Two-Handed Flail](equipements/fl-aux-deux-mains-ghost-two-handed-flail.md)
+- [Gold Two-Handed Flail](equipements/fl-aux-deux-mains-gold-two-handed-flail.md)
+- [Gold-Lich Two-Handed Flail](equipements/fl-aux-deux-mains-gold-lich-two-handed-flail.md)
+- [Golem Two-Handed Flail](equipements/fl-aux-deux-mains-golem-two-handed-flail.md)
+- [Hailfrost Two-Handed Flail](equipements/fl-aux-deux-mains-hailfrost-two-handed-flail.md)
+- [Horror Two-Handed Flail](equipements/fl-aux-deux-mains-horror-two-handed-flail.md)
+- [Iron Two-Handed Flail](equipements/fl-aux-deux-mains-iron-two-handed-flail.md)
+- [Jade-Lich Two-Handed Flail](equipements/fl-aux-deux-mains-jade-lich-two-handed-flail.md)
+- [Kazite Two-Handed Flail](equipements/fl-aux-deux-mains-kazite-two-handed-flail.md)
+- [Manticore Two-Handed Flail](equipements/fl-aux-deux-mains-manticore-two-handed-flail.md)
+- [Marble Two-Handed Flail](equipements/fl-aux-deux-mains-marble-two-handed-flail.md)
+- [Masterpiece Two-Handed Flail](equipements/fl-aux-deux-mains-masterpiece-two-handed-flail.md)
+- [Meteoric Two-Handed Flail](equipements/fl-aux-deux-mains-meteoric-two-handed-flail.md)
+- [Militia Two-Handed Flail](equipements/fl-aux-deux-mains-militia-two-handed-flail.md)
+- [Obsidian Two-Handed Flail](equipements/fl-aux-deux-mains-obsidian-two-handed-flail.md)
+- [Old Legion Two-Handed Flail](equipements/fl-aux-deux-mains-old-legion-two-handed-flail.md)
+- [Palladium Two-Handed Flail](equipements/fl-aux-deux-mains-palladium-two-handed-flail.md)
+- [Runic Two-Handed Flail](equipements/fl-aux-deux-mains-runic-two-handed-flail.md)
+- [Savage Two-Handed Flail](equipements/fl-aux-deux-mains-savage-two-handed-flail.md)
+- [Smoke Two-Handed Flail](equipements/fl-aux-deux-mains-smoke-two-handed-flail.md)
+- [Thorny Two-Handed Flail](equipements/fl-aux-deux-mains-thorny-two-handed-flail.md)
+- [Troglodyte Two-Handed Flail](equipements/fl-aux-deux-mains-troglodyte-two-handed-flail.md)
+- [Tsar Two-Handed Flail](equipements/fl-aux-deux-mains-tsar-two-handed-flail.md)
+- [Tuanosaur Two-Handed Flail](equipements/fl-aux-deux-mains-tuanosaur-two-handed-flail.md)
+- [Vampiric Two-Handed Flail](equipements/fl-aux-deux-mains-vampiric-two-handed-flail.md)
+- [Vigilante Two-Handed Flail](equipements/fl-aux-deux-mains-vigilante-two-handed-flail.md)
+- [Virgin Two-Handed Flail](equipements/fl-aux-deux-mains-virgin-two-handed-flail.md)
+- [Withering Two-Handed Flail](equipements/fl-aux-deux-mains-withering-two-handed-flail.md)
+- [Wolf Two-Handed Flail](equipements/fl-aux-deux-mains-wolf-two-handed-flail.md)
+- [Giantkind Two-Handed Flail](equipements/fl-aux-deux-mains-giantkind-two-handed-flail.md)
+- [Porcelain Two-Handed Flail](equipements/fl-aux-deux-mains-porcelain-two-handed-flail.md)
+
+## Tête
+
+- [Adventurer's Helm](equipements/t-te-adventurer-s-helm.md)
+- [Ammolite Helm](equipements/t-te-ammolite-helm.md)
+- [Antique Plate Sallet](equipements/t-te-antique-plate-sallet.md)
+- [Arcane Hood](equipements/t-te-arcane-hood.md)
+- [Ash-Filter Mask](equipements/t-te-ash-filter-mask.md)
+- [Barrier Helm](equipements/t-te-barrier-helm.md)
+- [Black Fur Helmet](equipements/t-te-black-fur-helmet.md)
+- [Black Plate Helm](equipements/t-te-black-plate-helm.md)
+- [Blue Sand Helm](equipements/t-te-blue-sand-helm.md)
+- [Brigand's Hat](equipements/t-te-brigand-s-hat.md)
+- [Caged Armor Helm](equipements/t-te-caged-armor-helm.md)
+- [Caldera Mail Helm](equipements/t-te-caldera-mail-helm.md)
+- [Candle Plate Helm](equipements/t-te-candle-plate-helm.md)
+- [Chalcedony Helmet](equipements/t-te-chalcedony-helmet.md)
+- [Copal Helm](equipements/t-te-copal-helm.md)
+- [Crimson Plate Mask](equipements/t-te-crimson-plate-mask.md)
+- [Dancer Mask](equipements/t-te-dancer-mask.md)
+- [Desert Veil](equipements/t-te-desert-veil.md)
+- [Elite Desert Veil](equipements/t-te-elite-desert-veil.md)
+- [Elite Hood](equipements/t-te-elite-hood.md)
+- [Elite Plate Helm](equipements/t-te-elite-plate-helm.md)
+- [Entomber Hat](equipements/t-te-entomber-hat.md)
+- [Purple Festive Hat](equipements/t-te-purple-festive-hat.md)
+- [Red Festive Hat](equipements/t-te-red-festive-hat.md)
+- [Fur Helm](equipements/t-te-fur-helm.md)
+- [Gold-Lich Mask](equipements/t-te-gold-lich-mask.md)
+- [Green Copal Helmet](equipements/t-te-green-copal-helmet.md)
+- [Halfplate Helm](equipements/t-te-halfplate-helm.md)
+- [Horror Helm](equipements/t-te-horror-helm.md)
+- [Jade Acolyte Cowl](equipements/t-te-jade-acolyte-cowl.md)
+- [Jade-Lich Mask](equipements/t-te-jade-lich-mask.md)
+- [Kazite Light Helmet](equipements/t-te-kazite-light-helmet.md)
+- [Kazite Cat Mask](equipements/t-te-kazite-cat-mask.md)
+- [Kazite Mask](equipements/t-te-kazite-mask.md)
+- [Kazite Oni Mask](equipements/t-te-kazite-oni-mask.md)
+- [Kintsugi Helm](equipements/t-te-kintsugi-helm.md)
+- [Krypteia Mask](equipements/t-te-krypteia-mask.md)
+- [Light Clothes Hood](equipements/t-te-light-clothes-hood.md)
+- [Looter Mask](equipements/t-te-looter-mask.md)
+- [Makeshift Leather Hat](equipements/t-te-makeshift-leather-hat.md)
+- [Manawall Helm](equipements/t-te-manawall-helm.md)
+- [Master Desert Veil](equipements/t-te-master-desert-veil.md)
+- [Master Kazite Cat Mask](equipements/t-te-master-kazite-cat-mask.md)
+- [Master Kazite Mask](equipements/t-te-master-kazite-mask.md)
+- [Master Kazite Oni Mask](equipements/t-te-master-kazite-oni-mask.md)
+- [Master Trader Hat](equipements/t-te-master-trader-hat.md)
+- [Merton's Skull](equipements/t-te-merton-s-skull.md)
+- [Militia Helm](equipements/t-te-militia-helm.md)
+- [Miner Helmet](equipements/t-te-miner-helmet.md)
+- [Noble Mask](equipements/t-te-noble-mask.md)
+- [Bright Nobleman Hat](equipements/t-te-bright-nobleman-hat.md)
+- [Dark Nobleman Hat](equipements/t-te-dark-nobleman-hat.md)
+- [Novice Hat](equipements/t-te-novice-hat.md)
+- [Orichalcum Helmet](equipements/t-te-orichalcum-helmet.md)
+- [Padded Helm](equipements/t-te-padded-helm.md)
+- [Palladium Helm](equipements/t-te-palladium-helm.md)
+- [Pathfinder Mask](equipements/t-te-pathfinder-mask.md)
+- [Petrified Wood Helm](equipements/t-te-petrified-wood-helm.md)
+- [Pilgrim Helmet](equipements/t-te-pilgrim-helmet.md)
+- [Plate Helm](equipements/t-te-plate-helm.md)
+- [Bright Rich Hat](equipements/t-te-bright-rich-hat.md)
+- [Dark Rich Hat](equipements/t-te-dark-rich-hat.md)
+- [Runic Helm](equipements/t-te-runic-helm.md)
+- [Rust Lich Helmet](equipements/t-te-rust-lich-helmet.md)
+- [Scaled Leather Hat](equipements/t-te-scaled-leather-hat.md)
+- [Scarlet Mask](equipements/t-te-scarlet-mask.md)
+- [Scavenger Hood](equipements/t-te-scavenger-hood.md)
+- [Scavenger Mask](equipements/t-te-scavenger-mask.md)
+- [Scavenger Scarf](equipements/t-te-scavenger-scarf.md)
+- [Scholar Circlet](equipements/t-te-scholar-circlet.md)
+- [Shadow Kazite Light Helmet](equipements/t-te-shadow-kazite-light-helmet.md)
+- [Shock Helmet](equipements/t-te-shock-helmet.md)
+- [Silver Helm](equipements/t-te-silver-helm.md)
+- [Slayer's Helmet](equipements/t-te-slayer-s-helmet.md)
+- [Squire Headband](equipements/t-te-squire-headband.md)
+- [Tattered Hood](equipements/t-te-tattered-hood.md)
+- [Tenebrous Helm](equipements/t-te-tenebrous-helm.md)
+- [Straw Hat](equipements/t-te-straw-hat.md)
+- [Tsar Helm](equipements/t-te-tsar-helm.md)
+- [Vigilante Helm](equipements/t-te-vigilante-helm.md)
+- [Virgin Helmet](equipements/t-te-virgin-helmet.md)
+- [White Arcane Hood](equipements/t-te-white-arcane-hood.md)
+- [White Kintsugi Helmet](equipements/t-te-white-kintsugi-helmet.md)
+- [White Priest Hood](equipements/t-te-white-priest-hood.md)
+- [White Priest Mitre](equipements/t-te-white-priest-mitre.md)
+- [Wolf Mage Helmet](equipements/t-te-wolf-mage-helmet.md)
+- [Wolf Medic Helmet](equipements/t-te-wolf-medic-helmet.md)
+- [Wolf Plate Full-Helm](equipements/t-te-wolf-plate-full-helm.md)
+- [Wolf Plate Helm](equipements/t-te-wolf-plate-helm.md)
+- [Dark Worker Hood](equipements/t-te-dark-worker-hood.md)
+- [Pale Worker's Hood](equipements/t-te-pale-worker-s-hood.md)
+- [Patterned Worker Hood](equipements/t-te-patterned-worker-hood.md)
+- [Zagis' Mask](equipements/t-te-zagis-mask.md)
+- [Black Pearlbird Mask](equipements/t-te-black-pearlbird-mask.md)
+- [Cauldron Helm](equipements/t-te-cauldron-helm.md)
+- [Coralhorn Mask](equipements/t-te-coralhorn-mask.md)
+- [Ergagr'Uk!](equipements/t-te-ergagr-uk.md)
+- [Gar'Ga'Nak](equipements/t-te-gar-ga-nak.md)
+- [Gargargar!](equipements/t-te-gargargar.md)
+- [Go'gO](equipements/t-te-go-go.md)
+- [GorkKrog!](equipements/t-te-gorkkrog.md)
+- [GoulgGalog!](equipements/t-te-goulggalog.md)
+- [Hound Mask](equipements/t-te-hound-mask.md)
+- [Jewel Bird Mask](equipements/t-te-jewel-bird-mask.md)
+- [Pearlbird Mask](equipements/t-te-pearlbird-mask.md)
+- [Red Wide Hat](equipements/t-te-red-wide-hat.md)
+- [Scarab Mask](equipements/t-te-scarab-mask.md)
+- [Tuanosaur Mask](equipements/t-te-tuanosaur-mask.md)
+- [White Wide Hat](equipements/t-te-white-wide-hat.md)
+- [Wide Black Hat](equipements/t-te-wide-black-hat.md)
+- [Wide Blue Hat](equipements/t-te-wide-blue-hat.md)
+
+## Haut
+
+- [Adventurer Armor](equipements/haut-adventurer-armor.md)
+- [Ammolite Armor](equipements/haut-ammolite-armor.md)
+- [Antique Plate Garb](equipements/haut-antique-plate-garb.md)
+- [Arcane Robe](equipements/haut-arcane-robe.md)
+- [Ash Armor](equipements/haut-ash-armor.md)
+- [Barrier Armor](equipements/haut-barrier-armor.md)
+- [Black Fur Armor](equipements/haut-black-fur-armor.md)
+- [Black Plate Armor](equipements/haut-black-plate-armor.md)
+- [Blue Sand Armor](equipements/haut-blue-sand-armor.md)
+- [Brigand Coat](equipements/haut-brigand-coat.md)
+- [Caged Armor Chestplate](equipements/haut-caged-armor-chestplate.md)
+- [Caldera Mail Armor](equipements/haut-caldera-mail-armor.md)
+- [Candle Plate Armor](equipements/haut-candle-plate-armor.md)
+- [Chalcedony Armor](equipements/haut-chalcedony-armor.md)
+- [Copal Armor](equipements/haut-copal-armor.md)
+- [Crimson Plate Armor](equipements/haut-crimson-plate-armor.md)
+- [Black Dancer Clothes](equipements/haut-black-dancer-clothes.md)
+- [Crimson Dancer Clothes](equipements/haut-crimson-dancer-clothes.md)
+- [Purple Dancer Clothes](equipements/haut-purple-dancer-clothes.md)
+- [Desert Tunic](equipements/haut-desert-tunic.md)
+- [Elite Desert Tunic](equipements/haut-elite-desert-tunic.md)
+- [Elite Plate Armor](equipements/haut-elite-plate-armor.md)
+- [Entomber Armor](equipements/haut-entomber-armor.md)
+- [Purple Festive Attire](equipements/haut-purple-festive-attire.md)
+- [Red Festive Attire](equipements/haut-red-festive-attire.md)
+- [Fur Armor](equipements/haut-fur-armor.md)
+- [Gold-Lich Armor](equipements/haut-gold-lich-armor.md)
+- [Green Copal Armor](equipements/haut-green-copal-armor.md)
+- [Halfplate Armor](equipements/haut-halfplate-armor.md)
+- [Horror Armor](equipements/haut-horror-armor.md)
+- [Jade Acolyte Robes](equipements/haut-jade-acolyte-robes.md)
+- [Jade-Lich Robes](equipements/haut-jade-lich-robes.md)
+- [Kazite Light Armor](equipements/haut-kazite-light-armor.md)
+- [Light Kazite Shirt](equipements/haut-light-kazite-shirt.md)
+- [Kazite Armor](equipements/haut-kazite-armor.md)
+- [Kintsugi Armor](equipements/haut-kintsugi-armor.md)
+- [Krypteia Armor](equipements/haut-krypteia-armor.md)
+- [Blue Light Clothes](equipements/haut-blue-light-clothes.md)
+- [Pale Light Clothes](equipements/haut-pale-light-clothes.md)
+- [Red Light Clothes](equipements/haut-red-light-clothes.md)
+- [Looter Armor](equipements/haut-looter-armor.md)
+- [Makeshift Leather Attire](equipements/haut-makeshift-leather-attire.md)
+- [Manawall Armor](equipements/haut-manawall-armor.md)
+- [Master Desert Tunic](equipements/haut-master-desert-tunic.md)
+- [Master Kazite Armor](equipements/haut-master-kazite-armor.md)
+- [Master Trader Garb](equipements/haut-master-trader-garb.md)
+- [Merton's Ribcage](equipements/haut-merton-s-ribcage.md)
+- [Militia Armor](equipements/haut-militia-armor.md)
+- [Miner Armor](equipements/haut-miner-armor.md)
+- [Noble Clothes](equipements/haut-noble-clothes.md)
+- [Bright Nobleman Attire](equipements/haut-bright-nobleman-attire.md)
+- [Dark Nobleman Attire](equipements/haut-dark-nobleman-attire.md)
+- [Novice Robe](equipements/haut-novice-robe.md)
+- [Orichalcum Armor](equipements/haut-orichalcum-armor.md)
+- [Padded Armor](equipements/haut-padded-armor.md)
+- [Palladium Armor](equipements/haut-palladium-armor.md)
+- [Pathfinder Armor](equipements/haut-pathfinder-armor.md)
+- [Petrified Wood Armor](equipements/haut-petrified-wood-armor.md)
+- [Pilgrim Armor](equipements/haut-pilgrim-armor.md)
+- [Plate Armor](equipements/haut-plate-armor.md)
+- [Bright Rich Attire](equipements/haut-bright-rich-attire.md)
+- [Dark Rich Attire](equipements/haut-dark-rich-attire.md)
+- [Runic Armor](equipements/haut-runic-armor.md)
+- [Rust Lich Armor](equipements/haut-rust-lich-armor.md)
+- [Scaled Leather Attire](equipements/haut-scaled-leather-attire.md)
+- [Scarlet Robes](equipements/haut-scarlet-robes.md)
+- [Scavenger Coat](equipements/haut-scavenger-coat.md)
+- [Scholar Attire](equipements/haut-scholar-attire.md)
+- [Shadow Kazite Light Armor](equipements/haut-shadow-kazite-light-armor.md)
+- [Shadow Light Kazite Shirt](equipements/haut-shadow-light-kazite-shirt.md)
+- [Shock Armor](equipements/haut-shock-armor.md)
+- [Silver Armor](equipements/haut-silver-armor.md)
+- [Slayer's Armor](equipements/haut-slayer-s-armor.md)
+- [Squire Attire](equipements/haut-squire-attire.md)
+- [Tattered Attire](equipements/haut-tattered-attire.md)
+- [Tenebrous Armor](equipements/haut-tenebrous-armor.md)
+- [Trader Garb](equipements/haut-trader-garb.md)
+- [Tsar Armor](equipements/haut-tsar-armor.md)
+- [Vigilante Armor](equipements/haut-vigilante-armor.md)
+- [Virgin Armor](equipements/haut-virgin-armor.md)
+- [White Arcane Robe](equipements/haut-white-arcane-robe.md)
+- [White Kintsugi Armor](equipements/haut-white-kintsugi-armor.md)
+- [White Priest Robes](equipements/haut-white-priest-robes.md)
+- [Wolf Mage Armor](equipements/haut-wolf-mage-armor.md)
+- [Wolf Medic Armor](equipements/haut-wolf-medic-armor.md)
+- [Wolf Plate Armor](equipements/haut-wolf-plate-armor.md)
+- [Dark Worker Attire](equipements/haut-dark-worker-attire.md)
+- [Green Worker Attire](equipements/haut-green-worker-attire.md)
+- [Patterned Worker Attire](equipements/haut-patterned-worker-attire.md)
+- [Zagis' Armor](equipements/haut-zagis-armor.md)
+- [Beige Garb](equipements/haut-beige-garb.md)
+- [Chitin Desert Tunic](equipements/haut-chitin-desert-tunic.md)
+- [Clansage Robe](equipements/haut-clansage-robe.md)
+- [Dark Green Garb](equipements/haut-dark-green-garb.md)
+- [Dark Red Garb](equipements/haut-dark-red-garb.md)
+- [Gray Garb](equipements/haut-gray-garb.md)
+- [Green Garb](equipements/haut-green-garb.md)
+- [Pearlescent Mail](equipements/haut-pearlescent-mail.md)
+- [Red Clansage Robe](equipements/haut-red-clansage-robe.md)
+- [Striped Garb](equipements/haut-striped-garb.md)
+
+## Mains
+
+- [Adventurer Gloves](equipements/mains-adventurer-gloves.md)
+- [Ammolite Gauntlets](equipements/mains-ammolite-gauntlets.md)
+- [Antique Plate Gauntlets](equipements/mains-antique-plate-gauntlets.md)
+- [Arcane Gloves](equipements/mains-arcane-gloves.md)
+- [Ash Gloves](equipements/mains-ash-gloves.md)
+- [Barrier Gauntlets](equipements/mains-barrier-gauntlets.md)
+- [Black Fur Gloves](equipements/mains-black-fur-gloves.md)
+- [Black Plate Gauntlets](equipements/mains-black-plate-gauntlets.md)
+- [Blue Sand Gauntlets](equipements/mains-blue-sand-gauntlets.md)
+- [Brigand Gloves](equipements/mains-brigand-gloves.md)
+- [Caged Gauntlets](equipements/mains-caged-gauntlets.md)
+- [Caldera Mail Gauntlets](equipements/mains-caldera-mail-gauntlets.md)
+- [Candle Plate Gauntlets](equipements/mains-candle-plate-gauntlets.md)
+- [Chalcedony Gauntlets](equipements/mains-chalcedony-gauntlets.md)
+- [Copal Gauntlets](equipements/mains-copal-gauntlets.md)
+- [Crimson Plate Gauntlets](equipements/mains-crimson-plate-gauntlets.md)
+- [Dancer Gloves](equipements/mains-dancer-gloves.md)
+- [Desert Gloves](equipements/mains-desert-gloves.md)
+- [Elite Desert Gloves](equipements/mains-elite-desert-gloves.md)
+- [Elite Gauntlets](equipements/mains-elite-gauntlets.md)
+- [Entomber Gloves](equipements/mains-entomber-gloves.md)
+- [Festive Gloves](equipements/mains-festive-gloves.md)
+- [Fur Gloves](equipements/mains-fur-gloves.md)
+- [Gold-Lich Gloves](equipements/mains-gold-lich-gloves.md)
+- [Green Copal Gauntlets](equipements/mains-green-copal-gauntlets.md)
+- [Halfplate Gloves](equipements/mains-halfplate-gloves.md)
+- [Horror Gauntlets](equipements/mains-horror-gauntlets.md)
+- [Jade Acolyte Gloves](equipements/mains-jade-acolyte-gloves.md)
+- [Jade-Lich Gloves](equipements/mains-jade-lich-gloves.md)
+- [Kazite Light Gloves](equipements/mains-kazite-light-gloves.md)
+- [Kazite Gauntlets](equipements/mains-kazite-gauntlets.md)
+- [Kintsugi Gauntlets](equipements/mains-kintsugi-gauntlets.md)
+- [Krypteia Gloves](equipements/mains-krypteia-gloves.md)
+- [Light Clothes Gloves](equipements/mains-light-clothes-gloves.md)
+- [Looter Gloves](equipements/mains-looter-gloves.md)
+- [Makeshift Leather Gloves](equipements/mains-makeshift-leather-gloves.md)
+- [Manawall Gauntlets](equipements/mains-manawall-gauntlets.md)
+- [Master Desert Gloves](equipements/mains-master-desert-gloves.md)
+- [Master Kazite Gauntlets](equipements/mains-master-kazite-gauntlets.md)
+- [Master Trader Gloves](equipements/mains-master-trader-gloves.md)
+- [Merton's Handbones](equipements/mains-merton-s-handbones.md)
+- [Militia Gloves](equipements/mains-militia-gloves.md)
+- [Miner Gloves](equipements/mains-miner-gloves.md)
+- [Noble Gloves](equipements/mains-noble-gloves.md)
+- [Nobleman Gloves](equipements/mains-nobleman-gloves.md)
+- [Novice Gloves](equipements/mains-novice-gloves.md)
+- [Orichalcum Gauntlets](equipements/mains-orichalcum-gauntlets.md)
+- [Padded Gloves](equipements/mains-padded-gloves.md)
+- [Palladium Gauntlets](equipements/mains-palladium-gauntlets.md)
+- [Pathfinder Gloves](equipements/mains-pathfinder-gloves.md)
+- [Petrified Wood Gauntlets](equipements/mains-petrified-wood-gauntlets.md)
+- [Pilgrim Gloves](equipements/mains-pilgrim-gloves.md)
+- [Plate Gauntlets](equipements/mains-plate-gauntlets.md)
+- [Rich Gloves](equipements/mains-rich-gloves.md)
+- [Runic Gauntlets](equipements/mains-runic-gauntlets.md)
+- [Rust Lich Gloves](equipements/mains-rust-lich-gloves.md)
+- [Scaled Leather Gloves](equipements/mains-scaled-leather-gloves.md)
+- [Scarlet Gloves](equipements/mains-scarlet-gloves.md)
+- [Scavenger Gloves](equipements/mains-scavenger-gloves.md)
+- [Scholar Gloves](equipements/mains-scholar-gloves.md)
+- [Shadow Kazite Gloves](equipements/mains-shadow-kazite-gloves.md)
+- [Shock Gauntlets](equipements/mains-shock-gauntlets.md)
+- [Silver Gauntlets](equipements/mains-silver-gauntlets.md)
+- [Slayer's Gauntlets](equipements/mains-slayer-s-gauntlets.md)
+- [Squire Gloves](equipements/mains-squire-gloves.md)
+- [Tattered Gloves](equipements/mains-tattered-gloves.md)
+- [Tenebrous Gloves](equipements/mains-tenebrous-gloves.md)
+- [Trader Gloves](equipements/mains-trader-gloves.md)
+- [Tsar Gauntlets](equipements/mains-tsar-gauntlets.md)
+- [Vigilante Gloves](equipements/mains-vigilante-gloves.md)
+- [Virgin Gauntlets](equipements/mains-virgin-gauntlets.md)
+- [White Arcane Gloves](equipements/mains-white-arcane-gloves.md)
+- [White Kintsugi Gauntlets](equipements/mains-white-kintsugi-gauntlets.md)
+- [White Priest Gloves](equipements/mains-white-priest-gloves.md)
+- [Wolf Mage Gauntlets](equipements/mains-wolf-mage-gauntlets.md)
+- [Wolf Medic Gauntlets](equipements/mains-wolf-medic-gauntlets.md)
+- [Wolf Plate Gauntlets](equipements/mains-wolf-plate-gauntlets.md)
+- [Worker Gloves](equipements/mains-worker-gloves.md)
+- [Zagis' Gloves](equipements/mains-zagis-gloves.md)
+- [Beige Gloves](equipements/mains-beige-gloves.md)
+- [Chitin Desert Gauntlets](equipements/mains-chitin-desert-gauntlets.md)
+- [Clansage Gloves](equipements/mains-clansage-gloves.md)
+- [Dark Green Gloves](equipements/mains-dark-green-gloves.md)
+- [Dark Red Gloves](equipements/mains-dark-red-gloves.md)
+- [Gray Gloves](equipements/mains-gray-gloves.md)
+- [Green Gloves](equipements/mains-green-gloves.md)
+- [Pearlescent Gauntlets](equipements/mains-pearlescent-gauntlets.md)
+- [Red Clansage Gloves](equipements/mains-red-clansage-gloves.md)
+- [Striped Gloves](equipements/mains-striped-gloves.md)
+
+## Bas
+
+- [Adventurer Trousers](equipements/bas-adventurer-trousers.md)
+- [Ammolite Leg Armor](equipements/bas-ammolite-leg-armor.md)
+- [Antique Plate Leg Armor](equipements/bas-antique-plate-leg-armor.md)
+- [Arcane Trousers](equipements/bas-arcane-trousers.md)
+- [Ash Trousers](equipements/bas-ash-trousers.md)
+- [Barrier Leg Armor](equipements/bas-barrier-leg-armor.md)
+- [Black Fur Trousers](equipements/bas-black-fur-trousers.md)
+- [Black Plate Leg Armor](equipements/bas-black-plate-leg-armor.md)
+- [Blue Sand Leg Armor](equipements/bas-blue-sand-leg-armor.md)
+- [Brigand Trousers](equipements/bas-brigand-trousers.md)
+- [Caged Leg Armor](equipements/bas-caged-leg-armor.md)
+- [Caldera Mail Leg Armor](equipements/bas-caldera-mail-leg-armor.md)
+- [Candle Plate Leg Armor](equipements/bas-candle-plate-leg-armor.md)
+- [Chalcedony Leg Armor](equipements/bas-chalcedony-leg-armor.md)
+- [Copal Leg Armor](equipements/bas-copal-leg-armor.md)
+- [Crimson Plate Leg Armor](equipements/bas-crimson-plate-leg-armor.md)
+- [Dancer Leggings](equipements/bas-dancer-leggings.md)
+- [Desert Trousers](equipements/bas-desert-trousers.md)
+- [Elite Desert Trousers](equipements/bas-elite-desert-trousers.md)
+- [Elite Leg Armor](equipements/bas-elite-leg-armor.md)
+- [Entomber Trousers](equipements/bas-entomber-trousers.md)
+- [Festive Trousers](equipements/bas-festive-trousers.md)
+- [Fur Trousers](equipements/bas-fur-trousers.md)
+- [Gold-Lich Trousers](equipements/bas-gold-lich-trousers.md)
+- [Green Copal Leg Armor](equipements/bas-green-copal-leg-armor.md)
+- [Halfplate Trousers](equipements/bas-halfplate-trousers.md)
+- [Horror Leg Armor](equipements/bas-horror-leg-armor.md)
+- [Jade Acolyte Trousers](equipements/bas-jade-acolyte-trousers.md)
+- [Jade-Lich Trousers](equipements/bas-jade-lich-trousers.md)
+- [Kazite Light Trousers](equipements/bas-kazite-light-trousers.md)
+- [Kazite Leg Armor](equipements/bas-kazite-leg-armor.md)
+- [Kintsugi Leg Armor](equipements/bas-kintsugi-leg-armor.md)
+- [Krypteia Trousers](equipements/bas-krypteia-trousers.md)
+- [Light Clothes Trousers](equipements/bas-light-clothes-trousers.md)
+- [Looter Trousers](equipements/bas-looter-trousers.md)
+- [Makeshift Leather Trousers](equipements/bas-makeshift-leather-trousers.md)
+- [Manawall Leg Armor](equipements/bas-manawall-leg-armor.md)
+- [Master Desert Trousers](equipements/bas-master-desert-trousers.md)
+- [Master Kazite Leg Armor](equipements/bas-master-kazite-leg-armor.md)
+- [Master Trader Trousers](equipements/bas-master-trader-trousers.md)
+- [Merton's Shinbones](equipements/bas-merton-s-shinbones.md)
+- [Militia Trousers](equipements/bas-militia-trousers.md)
+- [Miner Trousers](equipements/bas-miner-trousers.md)
+- [Noble Trousers](equipements/bas-noble-trousers.md)
+- [Nobleman Trousers](equipements/bas-nobleman-trousers.md)
+- [Novice Trousers](equipements/bas-novice-trousers.md)
+- [Orichalcum Leg Armor](equipements/bas-orichalcum-leg-armor.md)
+- [Padded Trousers](equipements/bas-padded-trousers.md)
+- [Palladium Leg Armor](equipements/bas-palladium-leg-armor.md)
+- [Pathfinder Trousers](equipements/bas-pathfinder-trousers.md)
+- [Petrified Wood Leg Armor](equipements/bas-petrified-wood-leg-armor.md)
+- [Pilgrim Trousers](equipements/bas-pilgrim-trousers.md)
+- [Plate Leg Armor](equipements/bas-plate-leg-armor.md)
+- [Rich Trousers](equipements/bas-rich-trousers.md)
+- [Runic Leg Armor](equipements/bas-runic-leg-armor.md)
+- [Rust Lich Trousers](equipements/bas-rust-lich-trousers.md)
+- [Scaled Leather Trousers](equipements/bas-scaled-leather-trousers.md)
+- [Scarlet Trousers](equipements/bas-scarlet-trousers.md)
+- [Scavenger Trousers](equipements/bas-scavenger-trousers.md)
+- [Scholar Trousers](equipements/bas-scholar-trousers.md)
+- [Shadow Kazite Trousers](equipements/bas-shadow-kazite-trousers.md)
+- [Shock Leg Armor](equipements/bas-shock-leg-armor.md)
+- [Silver Leg Armor](equipements/bas-silver-leg-armor.md)
+- [Slayer's Leg Armor](equipements/bas-slayer-s-leg-armor.md)
+- [Squire Trousers](equipements/bas-squire-trousers.md)
+- [Tattered Trousers](equipements/bas-tattered-trousers.md)
+- [Tenebrous Trousers](equipements/bas-tenebrous-trousers.md)
+- [Trader Trousers](equipements/bas-trader-trousers.md)
+- [Tsar Leg Armor](equipements/bas-tsar-leg-armor.md)
+- [Vigilante Trousers](equipements/bas-vigilante-trousers.md)
+- [Virgin Leg Armor](equipements/bas-virgin-leg-armor.md)
+- [White Arcane Trousers](equipements/bas-white-arcane-trousers.md)
+- [White Kintsugi Leg Armor](equipements/bas-white-kintsugi-leg-armor.md)
+- [White Priest Trousers](equipements/bas-white-priest-trousers.md)
+- [Wolf Mage Leg Armor](equipements/bas-wolf-mage-leg-armor.md)
+- [Wolf Medic Leg Armor](equipements/bas-wolf-medic-leg-armor.md)
+- [Wolf Plate Leg Armor](equipements/bas-wolf-plate-leg-armor.md)
+- [Worker Trousers](equipements/bas-worker-trousers.md)
+- [Zagis' Trousers](equipements/bas-zagis-trousers.md)
+- [Beige Trousers](equipements/bas-beige-trousers.md)
+- [Chitin Desert Trousers](equipements/bas-chitin-desert-trousers.md)
+- [Clansage Trousers](equipements/bas-clansage-trousers.md)
+- [Dark Green Trousers](equipements/bas-dark-green-trousers.md)
+- [Dark Red Trousers](equipements/bas-dark-red-trousers.md)
+- [Gray Trousers](equipements/bas-gray-trousers.md)
+- [Green Trousers](equipements/bas-green-trousers.md)
+- [Pearlescent Leg Armor](equipements/bas-pearlescent-leg-armor.md)
+- [Red Clansage Trousers](equipements/bas-red-clansage-trousers.md)
+- [Striped Trousers](equipements/bas-striped-trousers.md)
+
+## Pieds
+
+- [Adventurer Boots](equipements/pieds-adventurer-boots.md)
+- [Ammolite Boots](equipements/pieds-ammolite-boots.md)
+- [Antique Plate Boots](equipements/pieds-antique-plate-boots.md)
+- [Arcane Boots](equipements/pieds-arcane-boots.md)
+- [Ash Boots](equipements/pieds-ash-boots.md)
+- [Barrier Boots](equipements/pieds-barrier-boots.md)
+- [Black Fur Boots](equipements/pieds-black-fur-boots.md)
+- [Black Plate Boots](equipements/pieds-black-plate-boots.md)
+- [Blue Sand Boots](equipements/pieds-blue-sand-boots.md)
+- [Brigand Boots](equipements/pieds-brigand-boots.md)
+- [Caged Armor Boots](equipements/pieds-caged-armor-boots.md)
+- [Caldera Mail Boots](equipements/pieds-caldera-mail-boots.md)
+- [Candle Plate Boots](equipements/pieds-candle-plate-boots.md)
+- [Chalcedony Boots](equipements/pieds-chalcedony-boots.md)
+- [Copal Boots](equipements/pieds-copal-boots.md)
+- [Crimson Plate Boots](equipements/pieds-crimson-plate-boots.md)
+- [Dancer Shoes](equipements/pieds-dancer-shoes.md)
+- [Desert Boots](equipements/pieds-desert-boots.md)
+- [Elite Desert Boots](equipements/pieds-elite-desert-boots.md)
+- [Elite Plate Boots](equipements/pieds-elite-plate-boots.md)
+- [Entomber Boots](equipements/pieds-entomber-boots.md)
+- [Festive Boots](equipements/pieds-festive-boots.md)
+- [Fur Boots](equipements/pieds-fur-boots.md)
+- [Gold-Lich Boots](equipements/pieds-gold-lich-boots.md)
+- [Green Copal Boots](equipements/pieds-green-copal-boots.md)
+- [Halfplate Boots](equipements/pieds-halfplate-boots.md)
+- [Horror Greaves](equipements/pieds-horror-greaves.md)
+- [Jade Acolyte Boots](equipements/pieds-jade-acolyte-boots.md)
+- [Jade-Lich Boots](equipements/pieds-jade-lich-boots.md)
+- [Kazite Light Boots](equipements/pieds-kazite-light-boots.md)
+- [Kazite Boots](equipements/pieds-kazite-boots.md)
+- [Kintsugi Boots](equipements/pieds-kintsugi-boots.md)
+- [Krypteia Boots](equipements/pieds-krypteia-boots.md)
+- [Sandals](equipements/pieds-sandals.md)
+- [Looter Boots](equipements/pieds-looter-boots.md)
+- [Makeshift Leather Boots](equipements/pieds-makeshift-leather-boots.md)
+- [Manawall Boots](equipements/pieds-manawall-boots.md)
+- [Master Desert Boots](equipements/pieds-master-desert-boots.md)
+- [Master Kazite Boots](equipements/pieds-master-kazite-boots.md)
+- [Master Trader Boots](equipements/pieds-master-trader-boots.md)
+- [Merton's Footbones](equipements/pieds-merton-s-footbones.md)
+- [Militia Boots](equipements/pieds-militia-boots.md)
+- [Miner Boots](equipements/pieds-miner-boots.md)
+- [Noble Shoes](equipements/pieds-noble-shoes.md)
+- [Bright Nobleman Boots](equipements/pieds-bright-nobleman-boots.md)
+- [Dark Nobleman Boots](equipements/pieds-dark-nobleman-boots.md)
+- [Novice Boots](equipements/pieds-novice-boots.md)
+- [Orichalcum Boots](equipements/pieds-orichalcum-boots.md)
+- [Padded Boots](equipements/pieds-padded-boots.md)
+- [Palladium Boots](equipements/pieds-palladium-boots.md)
+- [Pathfinder Boots](equipements/pieds-pathfinder-boots.md)
+- [Petrified Wood Boots](equipements/pieds-petrified-wood-boots.md)
+- [Pilgrim Boots](equipements/pieds-pilgrim-boots.md)
+- [Plate Boots](equipements/pieds-plate-boots.md)
+- [Rich Boots](equipements/pieds-rich-boots.md)
+- [Runic Boots](equipements/pieds-runic-boots.md)
+- [Rust Lich Boots](equipements/pieds-rust-lich-boots.md)
+- [Scaled Leather Boots](equipements/pieds-scaled-leather-boots.md)
+- [Scarlet Boots](equipements/pieds-scarlet-boots.md)
+- [Scavenger Boots](equipements/pieds-scavenger-boots.md)
+- [Scholar Boots](equipements/pieds-scholar-boots.md)
+- [Shadow Kazite Light Boots](equipements/pieds-shadow-kazite-light-boots.md)
+- [Shock Boots](equipements/pieds-shock-boots.md)
+- [Silver Boots](equipements/pieds-silver-boots.md)
+- [Slayer's Boots](equipements/pieds-slayer-s-boots.md)
+- [Squire Boots](equipements/pieds-squire-boots.md)
+- [Tattered Boots](equipements/pieds-tattered-boots.md)
+- [Tenebrous Boots](equipements/pieds-tenebrous-boots.md)
+- [Trader Boots](equipements/pieds-trader-boots.md)
+- [Tsar Boots](equipements/pieds-tsar-boots.md)
+- [Vigilante Boots](equipements/pieds-vigilante-boots.md)
+- [Virgin Boots](equipements/pieds-virgin-boots.md)
+- [White Arcane Boots](equipements/pieds-white-arcane-boots.md)
+- [White Kintsugi Boots](equipements/pieds-white-kintsugi-boots.md)
+- [White Priest Boots](equipements/pieds-white-priest-boots.md)
+- [Wolf Mage Boots](equipements/pieds-wolf-mage-boots.md)
+- [Wolf Medic Boots](equipements/pieds-wolf-medic-boots.md)
+- [Wolf Plate Boots](equipements/pieds-wolf-plate-boots.md)
+- [Black Worker Boots](equipements/pieds-black-worker-boots.md)
+- [Worker Boots](equipements/pieds-worker-boots.md)
+- [Zagis' Boots](equipements/pieds-zagis-boots.md)
+- [Simple Shoes](equipements/pieds-simple-shoes.md)
+
+## Sacs à dos
+
+- [Primitive Satchel](equipements/backpacks-primitive-satchel.md)
+- [Adventurer Backpack](equipements/backpacks-adventurer-backpack.md)
+- [Nomad Backpack](equipements/backpacks-nomad-backpack.md)
+- [Alchemist Backpack](equipements/backpacks-alchemist-backpack.md)
+- [Scaled Satchel](equipements/backpacks-scaled-satchel.md)
+- [Strongbox Backpack](equipements/backpacks-strongbox-backpack.md)
+- [Brigand's Backpack](equipements/backpacks-brigand-s-backpack.md)
+- [Boozu Hide Backpack](equipements/backpacks-boozu-hide-backpack.md)
+- [Brass-Wolf Backpack](equipements/backpacks-brass-wolf-backpack.md)
+- [Glowstone Backpack](equipements/backpacks-glowstone-backpack.md)
+- [Light Mender's Backpack](equipements/backpacks-light-mender-s-backpack.md)
+- [Preservation Backpack](equipements/backpacks-preservation-backpack.md)
+- [Prospector Backpack](equipements/backpacks-prospector-backpack.md)
+- [Chalcedony Backpack](equipements/backpacks-chalcedony-backpack.md)
+- [Dusk Backpack](equipements/backpacks-dusk-backpack.md)
+- [Weaver's Backpack](equipements/backpacks-weaver-s-backpack.md)
+- [Zhorn's Hunting Backpack](equipements/backpacks-zhorn-s-hunting-backpack.md)
+- [Trader Backpack](equipements/backpacks-trader-backpack.md)

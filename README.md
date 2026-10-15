@@ -532,3 +532,12 @@ Le harnais accepte désormais `TEST_BROWSER=firefox` et `CROSS_ORIGIN=1` pour
 séparer Roll20 et les pages de fiche. Il vérifie la couche sur l'intégralité
 de `#rightsidebar`, les dépôts depuis les deux vues et la conservation des
 quantités. Installer le navigateur de test avec `playwright install firefox`.
+
+
+### Boutique Roll20 — 3.15.0b
+
+La barre d'outils OWD propose Boutique, avec catégories, recherche, pagination et détails des équipements. Les fiches `docs/content/regles/equipements/` constituent le catalogue : `hooks/boutique.py` produit `owd-boutique.json` pendant la construction.
+
+Cliquez sur un article pour consulter ses caractéristiques. Glissez-le dans le chat vers **Montrer** ou **Donner**, puis validez la quantité. **Donner** produit le bouton **Prendre** habituel ; les caractéristiques restent consultables dans la description de l'objet reçu. Aucun paiement automatique n'est effectué.
+
+Cette version change le site et le code de l'extension. Après avoir ajouté les fichiers à la branche bêta, ouvrez **Actions → website deployment → Run workflow**, sélectionnez **owd-beta**, cochez **Signer l'extension Outward chez Mozilla**, puis lancez le workflow. Les secrets Mozilla déjà utilisés par le projet sont nécessaires. Cette action publie les nouveaux téléchargements et permet la mise à jour Firefox. Le XPI signé inclus avant cette action correspond à l'ancienne extension.

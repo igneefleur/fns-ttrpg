@@ -70,7 +70,7 @@ La table ci-dessous donne ce que rapporte une journée de travail selon le rang 
 
 </div>
 
-Une journée de gages occupe le personnage du matin au soir et le laisse à l'[effort léger](base/capacites-physiques.md#leffort). Il ne peut pas la mener en même temps qu'une [fabrication](fabrication.md) qui réclame de l'effort, mais rien ne l'empêche de la mener pendant qu'une étape d'attente court.
+Une journée de gages occupe le personnage du matin au soir et le laisse à l'[effort léger](base/capacites-physiques.md#leffort). Il ne peut pas la mener en même temps qu'une fabrication qui réclame de l'effort, mais rien ne l'empêche de la mener pendant qu'une étape d'attente court.
 
 Le mois se compte sur vingt et un jours ouvrés. Un personnage qui travaille moins touche à proportion des jours qu'il donne.
 

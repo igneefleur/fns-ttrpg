@@ -32,9 +32,1286 @@ nav:
           - Moine: content/regles/techniques/moine.md
           - Barbare: content/regles/techniques/barbare.md
           - Speedster: content/regles/techniques/speedster.md
-      - Équipement: content/regles/equipement.md
-      - Fabrication: content/regles/fabrication.md
-      - Installations: content/regles/installations.md
+      - Équipements:
+          - Catalogue: content/regles/equipement.md
+          - Dagues:
+              - "Astral Dagger": content/regles/equipements/dagues-astral-dagger.md
+              - "Broad Dagger": content/regles/equipements/dagues-broad-dagger.md
+              - "Forged Glass Dagger": content/regles/equipements/dagues-forged-glass-dagger.md
+              - "Galvanic Dagger": content/regles/equipements/dagues-galvanic-dagger.md
+              - "Gilded Shiver of Tramontane": content/regles/equipements/dagues-gilded-shiver-of-tramontane.md
+              - "Hailfrost Dagger": content/regles/equipements/dagues-hailfrost-dagger.md
+              - "Manticore Dagger": content/regles/equipements/dagues-manticore-dagger.md
+              - "Militia Dagger": content/regles/equipements/dagues-militia-dagger.md
+              - "Red Lady's Dagger": content/regles/equipements/dagues-red-lady-s-dagger.md
+              - "Rondel Dagger": content/regles/equipements/dagues-rondel-dagger.md
+              - "Scarred Dagger": content/regles/equipements/dagues-scarred-dagger.md
+              - "Shiv Dagger": content/regles/equipements/dagues-shiv-dagger.md
+              - "Smoke Dagger": content/regles/equipements/dagues-smoke-dagger.md
+              - "Vampiric Dagger": content/regles/equipements/dagues-vampiric-dagger.md
+              - "Vigilante Dagger": content/regles/equipements/dagues-vigilante-dagger.md
+              - "Wolf Dagger": content/regles/equipements/dagues-wolf-dagger.md
+              - "Zhorn's Glowstone Dagger": content/regles/equipements/dagues-zhorn-s-glowstone-dagger.md
+              - "Ancient Calygrey Dagger": content/regles/equipements/dagues-ancient-calygrey-dagger.md
+              - "Assassin Dagger": content/regles/equipements/dagues-assassin-dagger.md
+              - "Beast Golem Dagger": content/regles/equipements/dagues-beast-golem-dagger.md
+              - "Brutal Dagger": content/regles/equipements/dagues-brutal-dagger.md
+              - "Calygrey Dagger": content/regles/equipements/dagues-calygrey-dagger.md
+              - "Chalcedony Dagger": content/regles/equipements/dagues-chalcedony-dagger.md
+              - "Crescent Dagger": content/regles/equipements/dagues-crescent-dagger.md
+              - "Damascene Dagger": content/regles/equipements/dagues-damascene-dagger.md
+              - "Fang Dagger": content/regles/equipements/dagues-fang-dagger.md
+              - "Ghost Dagger": content/regles/equipements/dagues-ghost-dagger.md
+              - "Gold Dagger": content/regles/equipements/dagues-gold-dagger.md
+              - "Gold-Lich Dagger": content/regles/equipements/dagues-gold-lich-dagger.md
+              - "Golem Dagger": content/regles/equipements/dagues-golem-dagger.md
+              - "Horror Dagger": content/regles/equipements/dagues-horror-dagger.md
+              - "Iron Dagger": content/regles/equipements/dagues-iron-dagger.md
+              - "Jade-Lich Dagger": content/regles/equipements/dagues-jade-lich-dagger.md
+              - "Kazite Dagger": content/regles/equipements/dagues-kazite-dagger.md
+              - "Marble Dagger": content/regles/equipements/dagues-marble-dagger.md
+              - "Masterpiece Dagger": content/regles/equipements/dagues-masterpiece-dagger.md
+              - "Meteoric Dagger": content/regles/equipements/dagues-meteoric-dagger.md
+              - "Obsidian Dagger": content/regles/equipements/dagues-obsidian-dagger.md
+              - "Old Legion Dagger": content/regles/equipements/dagues-old-legion-dagger.md
+              - "Palladium Dagger": content/regles/equipements/dagues-palladium-dagger.md
+              - "Runic Dagger": content/regles/equipements/dagues-runic-dagger.md
+              - "Savage Dagger": content/regles/equipements/dagues-savage-dagger.md
+              - "Thorny Dagger": content/regles/equipements/dagues-thorny-dagger.md
+              - "Troglodyte Dagger": content/regles/equipements/dagues-troglodyte-dagger.md
+              - "Tsar Dagger": content/regles/equipements/dagues-tsar-dagger.md
+              - "Tuanosaur Dagger": content/regles/equipements/dagues-tuanosaur-dagger.md
+              - "Virgin Dagger": content/regles/equipements/dagues-virgin-dagger.md
+              - "Withering Dagger": content/regles/equipements/dagues-withering-dagger.md
+              - "Giantkind Dagger": content/regles/equipements/dagues-giantkind-dagger.md
+              - "Porcelain Dagger": content/regles/equipements/dagues-porcelain-dagger.md
+          - Gantelets:
+              - "Astral Knuckles": content/regles/equipements/gantelets-astral-knuckles.md
+              - "Brutal Knuckles": content/regles/equipements/gantelets-brutal-knuckles.md
+              - "Chalcedony Knuckles": content/regles/equipements/gantelets-chalcedony-knuckles.md
+              - "Cloth Knuckles": content/regles/equipements/gantelets-cloth-knuckles.md
+              - "Damascene Knuckles": content/regles/equipements/gantelets-damascene-knuckles.md
+              - "Fang Knuckles": content/regles/equipements/gantelets-fang-knuckles.md
+              - "Forged Glass Knuckles": content/regles/equipements/gantelets-forged-glass-knuckles.md
+              - "Galvanic Fists": content/regles/equipements/gantelets-galvanic-fists.md
+              - "Gold-Lich Knuckles": content/regles/equipements/gantelets-gold-lich-knuckles.md
+              - "Golden Iron Knuckles": content/regles/equipements/gantelets-golden-iron-knuckles.md
+              - "Hailfrost Knuckles": content/regles/equipements/gantelets-hailfrost-knuckles.md
+              - "Horror Fists": content/regles/equipements/gantelets-horror-fists.md
+              - "Iron Knuckles": content/regles/equipements/gantelets-iron-knuckles.md
+              - "Kazite Cestus": content/regles/equipements/gantelets-kazite-cestus.md
+              - "Marble Fists": content/regles/equipements/gantelets-marble-fists.md
+              - "Masterpiece Knuckles": content/regles/equipements/gantelets-masterpiece-knuckles.md
+              - "Meteoric Knuckles": content/regles/equipements/gantelets-meteoric-knuckles.md
+              - "Militia Knuckles": content/regles/equipements/gantelets-militia-knuckles.md
+              - "Obsidian Knuckles": content/regles/equipements/gantelets-obsidian-knuckles.md
+              - "Palladium Knuckles": content/regles/equipements/gantelets-palladium-knuckles.md
+              - "Porcelain Fists": content/regles/equipements/gantelets-porcelain-fists.md
+              - "Savage Fang Knuckles": content/regles/equipements/gantelets-savage-fang-knuckles.md
+              - "Smoke Knuckles": content/regles/equipements/gantelets-smoke-knuckles.md
+              - "Tokebakicit": content/regles/equipements/gantelets-tokebakicit.md
+              - "Tsar Fists": content/regles/equipements/gantelets-tsar-fists.md
+              - "Unusual Knuckles": content/regles/equipements/gantelets-unusual-knuckles.md
+              - "Vampiric Knuckles": content/regles/equipements/gantelets-vampiric-knuckles.md
+              - "Vigilante Knuckles": content/regles/equipements/gantelets-vigilante-knuckles.md
+              - "Virgin Knuckles": content/regles/equipements/gantelets-virgin-knuckles.md
+              - "Wolf Knuckles": content/regles/equipements/gantelets-wolf-knuckles.md
+              - "Ancient Calygrey Knuckles": content/regles/equipements/gantelets-ancient-calygrey-knuckles.md
+              - "Assassin Knuckles": content/regles/equipements/gantelets-assassin-knuckles.md
+              - "Beast Golem Knuckles": content/regles/equipements/gantelets-beast-golem-knuckles.md
+              - "Calygrey Knuckles": content/regles/equipements/gantelets-calygrey-knuckles.md
+              - "Crescent Knuckles": content/regles/equipements/gantelets-crescent-knuckles.md
+              - "Ghost Knuckles": content/regles/equipements/gantelets-ghost-knuckles.md
+              - "Golem Knuckles": content/regles/equipements/gantelets-golem-knuckles.md
+              - "Jade-Lich Knuckles": content/regles/equipements/gantelets-jade-lich-knuckles.md
+              - "Manticore Knuckles": content/regles/equipements/gantelets-manticore-knuckles.md
+              - "Old Legion Knuckles": content/regles/equipements/gantelets-old-legion-knuckles.md
+              - "Runic Knuckles": content/regles/equipements/gantelets-runic-knuckles.md
+              - "Thorny Knuckles": content/regles/equipements/gantelets-thorny-knuckles.md
+              - "Troglodyte Knuckles": content/regles/equipements/gantelets-troglodyte-knuckles.md
+              - "Tuanosaur Knuckles": content/regles/equipements/gantelets-tuanosaur-knuckles.md
+              - "Withering Knuckles": content/regles/equipements/gantelets-withering-knuckles.md
+              - "Giantkind Knuckles": content/regles/equipements/gantelets-giantkind-knuckles.md
+          - Rapières:
+              - "Broken Golem Rapier": content/regles/equipements/rapi-res-broken-golem-rapier.md
+              - "Radiant Wolf Rapier": content/regles/equipements/rapi-res-radiant-wolf-rapier.md
+              - "Virgin Rapier": content/regles/equipements/rapi-res-virgin-rapier.md
+              - "Wolf Rapier": content/regles/equipements/rapi-res-wolf-rapier.md
+              - "Ancient Calygrey Rapier": content/regles/equipements/rapi-res-ancient-calygrey-rapier.md
+              - "Assassin Rapier": content/regles/equipements/rapi-res-assassin-rapier.md
+              - "Astral Rapier": content/regles/equipements/rapi-res-astral-rapier.md
+              - "Beast Golem Rapier": content/regles/equipements/rapi-res-beast-golem-rapier.md
+              - "Brutal Rapier": content/regles/equipements/rapi-res-brutal-rapier.md
+              - "Calygrey Rapier": content/regles/equipements/rapi-res-calygrey-rapier.md
+              - "Chalcedony Rapier": content/regles/equipements/rapi-res-chalcedony-rapier.md
+              - "Crescent Rapier": content/regles/equipements/rapi-res-crescent-rapier.md
+              - "Damascene Rapier": content/regles/equipements/rapi-res-damascene-rapier.md
+              - "Fang Rapier": content/regles/equipements/rapi-res-fang-rapier.md
+              - "Forged Glass Rapier": content/regles/equipements/rapi-res-forged-glass-rapier.md
+              - "Galvanic Rapier": content/regles/equipements/rapi-res-galvanic-rapier.md
+              - "Ghost Rapier": content/regles/equipements/rapi-res-ghost-rapier.md
+              - "Gold Rapier": content/regles/equipements/rapi-res-gold-rapier.md
+              - "Gold-Lich Rapier": content/regles/equipements/rapi-res-gold-lich-rapier.md
+              - "Hailfrost Rapier": content/regles/equipements/rapi-res-hailfrost-rapier.md
+              - "Horror Rapier": content/regles/equipements/rapi-res-horror-rapier.md
+              - "Iron Rapier": content/regles/equipements/rapi-res-iron-rapier.md
+              - "Jade-Lich Rapier": content/regles/equipements/rapi-res-jade-lich-rapier.md
+              - "Kazite Rapier": content/regles/equipements/rapi-res-kazite-rapier.md
+              - "Manticore Rapier": content/regles/equipements/rapi-res-manticore-rapier.md
+              - "Marble Rapier": content/regles/equipements/rapi-res-marble-rapier.md
+              - "Masterpiece Rapier": content/regles/equipements/rapi-res-masterpiece-rapier.md
+              - "Meteoric Rapier": content/regles/equipements/rapi-res-meteoric-rapier.md
+              - "Militia Rapier": content/regles/equipements/rapi-res-militia-rapier.md
+              - "Obsidian Rapier": content/regles/equipements/rapi-res-obsidian-rapier.md
+              - "Old Legion Rapier": content/regles/equipements/rapi-res-old-legion-rapier.md
+              - "Palladium Rapier": content/regles/equipements/rapi-res-palladium-rapier.md
+              - "Runic Rapier": content/regles/equipements/rapi-res-runic-rapier.md
+              - "Savage Rapier": content/regles/equipements/rapi-res-savage-rapier.md
+              - "Smoke Rapier": content/regles/equipements/rapi-res-smoke-rapier.md
+              - "Thorny Rapier": content/regles/equipements/rapi-res-thorny-rapier.md
+              - "Troglodyte Rapier": content/regles/equipements/rapi-res-troglodyte-rapier.md
+              - "Tsar Rapier": content/regles/equipements/rapi-res-tsar-rapier.md
+              - "Tuanosaur Rapier": content/regles/equipements/rapi-res-tuanosaur-rapier.md
+              - "Vampiric Rapier": content/regles/equipements/rapi-res-vampiric-rapier.md
+              - "Vigilante Rapier": content/regles/equipements/rapi-res-vigilante-rapier.md
+              - "Withering Rapier": content/regles/equipements/rapi-res-withering-rapier.md
+              - "Giantkind Rapier": content/regles/equipements/rapi-res-giantkind-rapier.md
+              - "Porcelain Rapier": content/regles/equipements/rapi-res-porcelain-rapier.md
+          - Sabres:
+              - "Cerulean Sabre": content/regles/equipements/sabres-cerulean-sabre.md
+              - "Desert Khopesh": content/regles/equipements/sabres-desert-khopesh.md
+              - "Gep's Blade": content/regles/equipements/sabres-gep-s-blade.md
+              - "Gold Machete": content/regles/equipements/sabres-gold-machete.md
+              - "Gold-Lich Sabre": content/regles/equipements/sabres-gold-lich-sabre.md
+              - "Horror Sabre": content/regles/equipements/sabres-horror-sabre.md
+              - "Jade Scimitar": content/regles/equipements/sabres-jade-scimitar.md
+              - "Kazite Blade": content/regles/equipements/sabres-kazite-blade.md
+              - "Machete": content/regles/equipements/sabres-machete.md
+              - "Militia Sabre": content/regles/equipements/sabres-militia-sabre.md
+              - "Mysterious Blade": content/regles/equipements/sabres-mysterious-blade.md
+              - "Palladium Sabre": content/regles/equipements/sabres-palladium-sabre.md
+              - "Smoke Sabre": content/regles/equipements/sabres-smoke-sabre.md
+              - "Steel Sabre": content/regles/equipements/sabres-steel-sabre.md
+              - "Vigilante Sabre": content/regles/equipements/sabres-vigilante-sabre.md
+              - "Ancient Calygrey Sabre": content/regles/equipements/sabres-ancient-calygrey-sabre.md
+              - "Assassin Sabre": content/regles/equipements/sabres-assassin-sabre.md
+              - "Astral Sabre": content/regles/equipements/sabres-astral-sabre.md
+              - "Beast Golem Sabre": content/regles/equipements/sabres-beast-golem-sabre.md
+              - "Brutal Sabre": content/regles/equipements/sabres-brutal-sabre.md
+              - "Calygrey Sabre": content/regles/equipements/sabres-calygrey-sabre.md
+              - "Chalcedony Sabre": content/regles/equipements/sabres-chalcedony-sabre.md
+              - "Crescent Sabre": content/regles/equipements/sabres-crescent-sabre.md
+              - "Damascene Sabre": content/regles/equipements/sabres-damascene-sabre.md
+              - "Fang Sabre": content/regles/equipements/sabres-fang-sabre.md
+              - "Forged Glass Sabre": content/regles/equipements/sabres-forged-glass-sabre.md
+              - "Galvanic Sabre": content/regles/equipements/sabres-galvanic-sabre.md
+              - "Ghost Sabre": content/regles/equipements/sabres-ghost-sabre.md
+              - "Golem Sabre": content/regles/equipements/sabres-golem-sabre.md
+              - "Hailfrost Sabre": content/regles/equipements/sabres-hailfrost-sabre.md
+              - "Iron Sabre": content/regles/equipements/sabres-iron-sabre.md
+              - "Manticore Sabre": content/regles/equipements/sabres-manticore-sabre.md
+              - "Marble Sabre": content/regles/equipements/sabres-marble-sabre.md
+              - "Masterpiece Sabre": content/regles/equipements/sabres-masterpiece-sabre.md
+              - "Meteoric Sabre": content/regles/equipements/sabres-meteoric-sabre.md
+              - "Obsidian Sabre": content/regles/equipements/sabres-obsidian-sabre.md
+              - "Old Legion Sabre": content/regles/equipements/sabres-old-legion-sabre.md
+              - "Runic Sabre": content/regles/equipements/sabres-runic-sabre.md
+              - "Savage Sabre": content/regles/equipements/sabres-savage-sabre.md
+              - "Thorny Sabre": content/regles/equipements/sabres-thorny-sabre.md
+              - "Troglodyte Sabre": content/regles/equipements/sabres-troglodyte-sabre.md
+              - "Tsar Sabre": content/regles/equipements/sabres-tsar-sabre.md
+              - "Tuanosaur Sabre": content/regles/equipements/sabres-tuanosaur-sabre.md
+              - "Vampiric Sabre": content/regles/equipements/sabres-vampiric-sabre.md
+              - "Virgin Sabre": content/regles/equipements/sabres-virgin-sabre.md
+              - "Withering Sabre": content/regles/equipements/sabres-withering-sabre.md
+              - "Wolf Sabre": content/regles/equipements/sabres-wolf-sabre.md
+              - "Giantkind Sabre": content/regles/equipements/sabres-giantkind-sabre.md
+              - "Porcelain Sabre": content/regles/equipements/sabres-porcelain-sabre.md
+          - Épées 1 main:
+              - "Assassin Sword": content/regles/equipements/p-es-1-main-assassin-sword.md
+              - "Astral Sword": content/regles/equipements/p-es-1-main-astral-sword.md
+              - "Brand": content/regles/equipements/p-es-1-main-brand.md
+              - "Chalcedony Sword": content/regles/equipements/p-es-1-main-chalcedony-sword.md
+              - "Damascene Sword": content/regles/equipements/p-es-1-main-damascene-sword.md
+              - "Fang Sword": content/regles/equipements/p-es-1-main-fang-sword.md
+              - "Forged Glass Sword": content/regles/equipements/p-es-1-main-forged-glass-sword.md
+              - "Hailfrost Sword": content/regles/equipements/p-es-1-main-hailfrost-sword.md
+              - "Iron Sword": content/regles/equipements/p-es-1-main-iron-sword.md
+              - "Maelstrom Blade": content/regles/equipements/p-es-1-main-maelstrom-blade.md
+              - "Marble Sword": content/regles/equipements/p-es-1-main-marble-sword.md
+              - "Masterpiece Sword": content/regles/equipements/p-es-1-main-masterpiece-sword.md
+              - "Meteoric Sword": content/regles/equipements/p-es-1-main-meteoric-sword.md
+              - "Obsidian Sword": content/regles/equipements/p-es-1-main-obsidian-sword.md
+              - "Old Legion Gladius": content/regles/equipements/p-es-1-main-old-legion-gladius.md
+              - "Runic Blade": content/regles/equipements/p-es-1-main-runic-blade.md
+              - "Savage Sword": content/regles/equipements/p-es-1-main-savage-sword.md
+              - "Strange Rusted Sword": content/regles/equipements/p-es-1-main-strange-rusted-sword.md
+              - "Tsar Sword": content/regles/equipements/p-es-1-main-tsar-sword.md
+              - "Vampiric Sword": content/regles/equipements/p-es-1-main-vampiric-sword.md
+              - "Ancient Calygrey Sword": content/regles/equipements/p-es-1-main-ancient-calygrey-sword.md
+              - "Beast Golem Sword": content/regles/equipements/p-es-1-main-beast-golem-sword.md
+              - "Brutal Sword": content/regles/equipements/p-es-1-main-brutal-sword.md
+              - "Calygrey Sword": content/regles/equipements/p-es-1-main-calygrey-sword.md
+              - "Crescent Sword": content/regles/equipements/p-es-1-main-crescent-sword.md
+              - "Galvanic Sword": content/regles/equipements/p-es-1-main-galvanic-sword.md
+              - "Ghost Sword": content/regles/equipements/p-es-1-main-ghost-sword.md
+              - "Gold Sword": content/regles/equipements/p-es-1-main-gold-sword.md
+              - "Gold-Lich Sword": content/regles/equipements/p-es-1-main-gold-lich-sword.md
+              - "Golem Sword": content/regles/equipements/p-es-1-main-golem-sword.md
+              - "Horror Sword": content/regles/equipements/p-es-1-main-horror-sword.md
+              - "Jade-Lich Sword": content/regles/equipements/p-es-1-main-jade-lich-sword.md
+              - "Kazite Sword": content/regles/equipements/p-es-1-main-kazite-sword.md
+              - "Manticore Sword": content/regles/equipements/p-es-1-main-manticore-sword.md
+              - "Militia Sword": content/regles/equipements/p-es-1-main-militia-sword.md
+              - "Palladium Sword": content/regles/equipements/p-es-1-main-palladium-sword.md
+              - "Smoke Sword": content/regles/equipements/p-es-1-main-smoke-sword.md
+              - "Thorny Sword": content/regles/equipements/p-es-1-main-thorny-sword.md
+              - "Troglodyte Sword": content/regles/equipements/p-es-1-main-troglodyte-sword.md
+              - "Tuanosaur Sword": content/regles/equipements/p-es-1-main-tuanosaur-sword.md
+              - "Vigilante Sword": content/regles/equipements/p-es-1-main-vigilante-sword.md
+              - "Virgin Sword": content/regles/equipements/p-es-1-main-virgin-sword.md
+              - "Withering Sword": content/regles/equipements/p-es-1-main-withering-sword.md
+              - "Wolf Sword": content/regles/equipements/p-es-1-main-wolf-sword.md
+              - "Giantkind Sword": content/regles/equipements/p-es-1-main-giantkind-sword.md
+              - "Porcelain Sword": content/regles/equipements/p-es-1-main-porcelain-sword.md
+          - Haches 1 main:
+              - "Astral Axe": content/regles/equipements/haches-1-main-astral-axe.md
+              - "Beast Golem Axe": content/regles/equipements/haches-1-main-beast-golem-axe.md
+              - "Brutal Axe": content/regles/equipements/haches-1-main-brutal-axe.md
+              - "Butcher Cleaver": content/regles/equipements/haches-1-main-butcher-cleaver.md
+              - "Chalcedony Axe": content/regles/equipements/haches-1-main-chalcedony-axe.md
+              - "Damascene Axe": content/regles/equipements/haches-1-main-damascene-axe.md
+              - "Fang Axe": content/regles/equipements/haches-1-main-fang-axe.md
+              - "Forged Glass Axe": content/regles/equipements/haches-1-main-forged-glass-axe.md
+              - "Galvanic Axe": content/regles/equipements/haches-1-main-galvanic-axe.md
+              - "Gold Hatchet": content/regles/equipements/haches-1-main-gold-hatchet.md
+              - "Hailfrost Axe": content/regles/equipements/haches-1-main-hailfrost-axe.md
+              - "Hatchet": content/regles/equipements/haches-1-main-hatchet.md
+              - "Horror Axe": content/regles/equipements/haches-1-main-horror-axe.md
+              - "Iron Axe": content/regles/equipements/haches-1-main-iron-axe.md
+              - "Kazite Cleaver": content/regles/equipements/haches-1-main-kazite-cleaver.md
+              - "Living Wood Axe": content/regles/equipements/haches-1-main-living-wood-axe.md
+              - "Marble Axe": content/regles/equipements/haches-1-main-marble-axe.md
+              - "Masterpiece Axe": content/regles/equipements/haches-1-main-masterpiece-axe.md
+              - "Meteoric Axe": content/regles/equipements/haches-1-main-meteoric-axe.md
+              - "Militia Axe": content/regles/equipements/haches-1-main-militia-axe.md
+              - "Obsidian Axe": content/regles/equipements/haches-1-main-obsidian-axe.md
+              - "Pain in the Axe": content/regles/equipements/haches-1-main-pain-in-the-axe.md
+              - "Palladium Axe": content/regles/equipements/haches-1-main-palladium-axe.md
+              - "Sandrose": content/regles/equipements/haches-1-main-sandrose.md
+              - "Savage Axe": content/regles/equipements/haches-1-main-savage-axe.md
+              - "Smoke Axe": content/regles/equipements/haches-1-main-smoke-axe.md
+              - "Sunfall Axe": content/regles/equipements/haches-1-main-sunfall-axe.md
+              - "Tsar Axe": content/regles/equipements/haches-1-main-tsar-axe.md
+              - "Tuanosaur Axe": content/regles/equipements/haches-1-main-tuanosaur-axe.md
+              - "Vampiric Axe": content/regles/equipements/haches-1-main-vampiric-axe.md
+              - "Vigilante Axe": content/regles/equipements/haches-1-main-vigilante-axe.md
+              - "Virgin Axe": content/regles/equipements/haches-1-main-virgin-axe.md
+              - "Warm Axe": content/regles/equipements/haches-1-main-warm-axe.md
+              - "Wolf Axe": content/regles/equipements/haches-1-main-wolf-axe.md
+              - "Ancient Calygrey Axe": content/regles/equipements/haches-1-main-ancient-calygrey-axe.md
+              - "Assassin Axe": content/regles/equipements/haches-1-main-assassin-axe.md
+              - "Calygrey Axe": content/regles/equipements/haches-1-main-calygrey-axe.md
+              - "Crescent Axe": content/regles/equipements/haches-1-main-crescent-axe.md
+              - "Ghost Axe": content/regles/equipements/haches-1-main-ghost-axe.md
+              - "Gold-Lich Axe": content/regles/equipements/haches-1-main-gold-lich-axe.md
+              - "Golem Axe": content/regles/equipements/haches-1-main-golem-axe.md
+              - "Jade-Lich Axe": content/regles/equipements/haches-1-main-jade-lich-axe.md
+              - "Manticore Axe": content/regles/equipements/haches-1-main-manticore-axe.md
+              - "Old Legion Axe": content/regles/equipements/haches-1-main-old-legion-axe.md
+              - "Runic Axe": content/regles/equipements/haches-1-main-runic-axe.md
+              - "Thorny Axe": content/regles/equipements/haches-1-main-thorny-axe.md
+              - "Troglodyte Axe": content/regles/equipements/haches-1-main-troglodyte-axe.md
+              - "Withering Axe": content/regles/equipements/haches-1-main-withering-axe.md
+              - "Giantkind Axe": content/regles/equipements/haches-1-main-giantkind-axe.md
+          - Masses 1 main:
+              - "Ancient Calygrey Mace": content/regles/equipements/masses-1-main-ancient-calygrey-mace.md
+              - "Astral Mace": content/regles/equipements/masses-1-main-astral-mace.md
+              - "Blacksmith's Vintage Hammer": content/regles/equipements/masses-1-main-blacksmith-s-vintage-hammer.md
+              - "Brutal Club": content/regles/equipements/masses-1-main-brutal-club.md
+              - "Calygrey Mace": content/regles/equipements/masses-1-main-calygrey-mace.md
+              - "Chalcedony Mace": content/regles/equipements/masses-1-main-chalcedony-mace.md
+              - "Damascene Mace": content/regles/equipements/masses-1-main-damascene-mace.md
+              - "Fang Club": content/regles/equipements/masses-1-main-fang-club.md
+              - "Forged Glass Mace": content/regles/equipements/masses-1-main-forged-glass-mace.md
+              - "Galvanic Mace": content/regles/equipements/masses-1-main-galvanic-mace.md
+              - "Giant Iron Key": content/regles/equipements/masses-1-main-giant-iron-key.md
+              - "Gold Club": content/regles/equipements/masses-1-main-gold-club.md
+              - "Gold-Lich Mace": content/regles/equipements/masses-1-main-gold-lich-mace.md
+              - "Hailfrost Mace": content/regles/equipements/masses-1-main-hailfrost-mace.md
+              - "Horror Mace": content/regles/equipements/masses-1-main-horror-mace.md
+              - "Iron Mace": content/regles/equipements/masses-1-main-iron-mace.md
+              - "Jade-Lich Mace": content/regles/equipements/masses-1-main-jade-lich-mace.md
+              - "Kazite Hammer": content/regles/equipements/masses-1-main-kazite-hammer.md
+              - "Mace of Seasons": content/regles/equipements/masses-1-main-mace-of-seasons.md
+              - "Marble Morningstar": content/regles/equipements/masses-1-main-marble-morningstar.md
+              - "Masterpiece Mace": content/regles/equipements/masses-1-main-masterpiece-mace.md
+              - "Merton's Firepoker": content/regles/equipements/masses-1-main-merton-s-firepoker.md
+              - "Meteoric Mace": content/regles/equipements/masses-1-main-meteoric-mace.md
+              - "Militia Mace": content/regles/equipements/masses-1-main-militia-mace.md
+              - "Obsidian Mace": content/regles/equipements/masses-1-main-obsidian-mace.md
+              - "Palladium Mace": content/regles/equipements/masses-1-main-palladium-mace.md
+              - "Primitive Club": content/regles/equipements/masses-1-main-primitive-club.md
+              - "Savage Club": content/regles/equipements/masses-1-main-savage-club.md
+              - "Scepter of the Cruel Priest": content/regles/equipements/masses-1-main-scepter-of-the-cruel-priest.md
+              - "Sealed Mace": content/regles/equipements/masses-1-main-sealed-mace.md
+              - "Skycrown Mace": content/regles/equipements/masses-1-main-skycrown-mace.md
+              - "Smoke Mace": content/regles/equipements/masses-1-main-smoke-mace.md
+              - "Tsar Mace": content/regles/equipements/masses-1-main-tsar-mace.md
+              - "Vampiric Mace": content/regles/equipements/masses-1-main-vampiric-mace.md
+              - "Vigilante Mace": content/regles/equipements/masses-1-main-vigilante-mace.md
+              - "Virgin Mace": content/regles/equipements/masses-1-main-virgin-mace.md
+              - "Wolf Mace": content/regles/equipements/masses-1-main-wolf-mace.md
+              - "Assassin Mace": content/regles/equipements/masses-1-main-assassin-mace.md
+              - "Beast Golem Mace": content/regles/equipements/masses-1-main-beast-golem-mace.md
+              - "Crescent Mace": content/regles/equipements/masses-1-main-crescent-mace.md
+              - "Ghost Mace": content/regles/equipements/masses-1-main-ghost-mace.md
+              - "Golem Mace": content/regles/equipements/masses-1-main-golem-mace.md
+              - "Manticore Mace": content/regles/equipements/masses-1-main-manticore-mace.md
+              - "Old Legion Mace": content/regles/equipements/masses-1-main-old-legion-mace.md
+              - "Runic Mace": content/regles/equipements/masses-1-main-runic-mace.md
+              - "Thorny Mace": content/regles/equipements/masses-1-main-thorny-mace.md
+              - "Troglodyte Mace": content/regles/equipements/masses-1-main-troglodyte-mace.md
+              - "Tuanosaur Mace": content/regles/equipements/masses-1-main-tuanosaur-mace.md
+              - "Withering Mace": content/regles/equipements/masses-1-main-withering-mace.md
+              - "Giantkind Mace": content/regles/equipements/masses-1-main-giantkind-mace.md
+          - Bâtons:
+              - "Ancient Calygrey Staff": content/regles/equipements/b-tons-ancient-calygrey-staff.md
+              - "Astral Staff": content/regles/equipements/b-tons-astral-staff.md
+              - "Calygrey Staff": content/regles/equipements/b-tons-calygrey-staff.md
+              - "Compasswood Staff": content/regles/equipements/b-tons-compasswood-staff.md
+              - "Cracked Red Moon": content/regles/equipements/b-tons-cracked-red-moon.md
+              - "Crystal Staff": content/regles/equipements/b-tons-crystal-staff.md
+              - "Frostburn Staff": content/regles/equipements/b-tons-frostburn-staff.md
+              - "Gold Quarterstaff": content/regles/equipements/b-tons-gold-quarterstaff.md
+              - "Ivory Master's Staff": content/regles/equipements/b-tons-ivory-master-s-staff.md
+              - "Jade-Lich Staff": content/regles/equipements/b-tons-jade-lich-staff.md
+              - "Mage's Poking Stick": content/regles/equipements/b-tons-mage-s-poking-stick.md
+              - "Master's Staff": content/regles/equipements/b-tons-master-s-staff.md
+              - "Quarterstaff": content/regles/equipements/b-tons-quarterstaff.md
+              - "Revenant Moon": content/regles/equipements/b-tons-revenant-moon.md
+              - "Rotwood Staff": content/regles/equipements/b-tons-rotwood-staff.md
+              - "Scholar's Staff": content/regles/equipements/b-tons-scholar-s-staff.md
+              - "Troglodyte Staff": content/regles/equipements/b-tons-troglodyte-staff.md
+              - "Assassin Staff": content/regles/equipements/b-tons-assassin-staff.md
+              - "Beast Golem Staff": content/regles/equipements/b-tons-beast-golem-staff.md
+              - "Brutal Staff": content/regles/equipements/b-tons-brutal-staff.md
+              - "Chalcedony Staff": content/regles/equipements/b-tons-chalcedony-staff.md
+              - "Crescent Staff": content/regles/equipements/b-tons-crescent-staff.md
+              - "Damascene Staff": content/regles/equipements/b-tons-damascene-staff.md
+              - "Fang Staff": content/regles/equipements/b-tons-fang-staff.md
+              - "Forged Glass Staff": content/regles/equipements/b-tons-forged-glass-staff.md
+              - "Galvanic Staff": content/regles/equipements/b-tons-galvanic-staff.md
+              - "Ghost Staff": content/regles/equipements/b-tons-ghost-staff.md
+              - "Gold-Lich Staff": content/regles/equipements/b-tons-gold-lich-staff.md
+              - "Golem Staff": content/regles/equipements/b-tons-golem-staff.md
+              - "Hailfrost Staff": content/regles/equipements/b-tons-hailfrost-staff.md
+              - "Horror Staff": content/regles/equipements/b-tons-horror-staff.md
+              - "Iron Staff": content/regles/equipements/b-tons-iron-staff.md
+              - "Kazite Staff": content/regles/equipements/b-tons-kazite-staff.md
+              - "Manticore Staff": content/regles/equipements/b-tons-manticore-staff.md
+              - "Marble Staff": content/regles/equipements/b-tons-marble-staff.md
+              - "Masterpiece Staff": content/regles/equipements/b-tons-masterpiece-staff.md
+              - "Meteoric Staff": content/regles/equipements/b-tons-meteoric-staff.md
+              - "Militia Staff": content/regles/equipements/b-tons-militia-staff.md
+              - "Obsidian Staff": content/regles/equipements/b-tons-obsidian-staff.md
+              - "Old Legion Staff": content/regles/equipements/b-tons-old-legion-staff.md
+              - "Palladium Staff": content/regles/equipements/b-tons-palladium-staff.md
+              - "Runic Staff": content/regles/equipements/b-tons-runic-staff.md
+              - "Savage Staff": content/regles/equipements/b-tons-savage-staff.md
+              - "Smoke Staff": content/regles/equipements/b-tons-smoke-staff.md
+              - "Thorny Staff": content/regles/equipements/b-tons-thorny-staff.md
+              - "Tsar Staff": content/regles/equipements/b-tons-tsar-staff.md
+              - "Tuanosaur Staff": content/regles/equipements/b-tons-tuanosaur-staff.md
+              - "Vampiric Staff": content/regles/equipements/b-tons-vampiric-staff.md
+              - "Vigilante Staff": content/regles/equipements/b-tons-vigilante-staff.md
+              - "Virgin Staff": content/regles/equipements/b-tons-virgin-staff.md
+              - "Withering Staff": content/regles/equipements/b-tons-withering-staff.md
+              - "Wolf Staff": content/regles/equipements/b-tons-wolf-staff.md
+              - "Giantkind Staff": content/regles/equipements/b-tons-giantkind-staff.md
+              - "Porcelain Staff": content/regles/equipements/b-tons-porcelain-staff.md
+          - Lances:
+              - "Astral Spear": content/regles/equipements/lances-astral-spear.md
+              - "Brutal Spear": content/regles/equipements/lances-brutal-spear.md
+              - "Chalcedony Spear": content/regles/equipements/lances-chalcedony-spear.md
+              - "Damascene Spear": content/regles/equipements/lances-damascene-spear.md
+              - "Fang Trident": content/regles/equipements/lances-fang-trident.md
+              - "Fishing Harpoon": content/regles/equipements/lances-fishing-harpoon.md
+              - "Forged Glass Spear": content/regles/equipements/lances-forged-glass-spear.md
+              - "Galvanic Spear": content/regles/equipements/lances-galvanic-spear.md
+              - "Gold Harpoon": content/regles/equipements/lances-gold-harpoon.md
+              - "Gold Pitchfork": content/regles/equipements/lances-gold-pitchfork.md
+              - "Gold-Lich Spear": content/regles/equipements/lances-gold-lich-spear.md
+              - "Griigmerk kÄramerk": content/regles/equipements/lances-griigmerk-k-ramerk.md
+              - "Hailfrost Spear": content/regles/equipements/lances-hailfrost-spear.md
+              - "Horror Spear": content/regles/equipements/lances-horror-spear.md
+              - "Iron Spear": content/regles/equipements/lances-iron-spear.md
+              - "Kazite Lance": content/regles/equipements/lances-kazite-lance.md
+              - "Marble Spear": content/regles/equipements/lances-marble-spear.md
+              - "Masterpiece Spear": content/regles/equipements/lances-masterpiece-spear.md
+              - "Meteoric Spear": content/regles/equipements/lances-meteoric-spear.md
+              - "Militia Spear": content/regles/equipements/lances-militia-spear.md
+              - "Obsidian Spear": content/regles/equipements/lances-obsidian-spear.md
+              - "Old Legion Spear": content/regles/equipements/lances-old-legion-spear.md
+              - "Palladium Spear": content/regles/equipements/lances-palladium-spear.md
+              - "Phytosaur Spear": content/regles/equipements/lances-phytosaur-spear.md
+              - "Pitchfork": content/regles/equipements/lances-pitchfork.md
+              - "Rusted Spear": content/regles/equipements/lances-rusted-spear.md
+              - "Savage Trident": content/regles/equipements/lances-savage-trident.md
+              - "Shriek": content/regles/equipements/lances-shriek.md
+              - "Smoke Spear": content/regles/equipements/lances-smoke-spear.md
+              - "Thorny Spear": content/regles/equipements/lances-thorny-spear.md
+              - "Troglodyte Spear": content/regles/equipements/lances-troglodyte-spear.md
+              - "Troglodyte Trident": content/regles/equipements/lances-troglodyte-trident.md
+              - "Tsar Spear": content/regles/equipements/lances-tsar-spear.md
+              - "Vampiric Spear": content/regles/equipements/lances-vampiric-spear.md
+              - "Vigilante Spear": content/regles/equipements/lances-vigilante-spear.md
+              - "Virgin Spear": content/regles/equipements/lances-virgin-spear.md
+              - "Werlig Spear": content/regles/equipements/lances-werlig-spear.md
+              - "Withering Trident": content/regles/equipements/lances-withering-trident.md
+              - "Wolf Spear": content/regles/equipements/lances-wolf-spear.md
+              - "Ancient Calygrey Spear": content/regles/equipements/lances-ancient-calygrey-spear.md
+              - "Assassin Spear": content/regles/equipements/lances-assassin-spear.md
+              - "Beast Golem Spear": content/regles/equipements/lances-beast-golem-spear.md
+              - "Calygrey Spear": content/regles/equipements/lances-calygrey-spear.md
+              - "Crescent Spear": content/regles/equipements/lances-crescent-spear.md
+              - "Ghost Spear": content/regles/equipements/lances-ghost-spear.md
+              - "Golem Spear": content/regles/equipements/lances-golem-spear.md
+              - "Jade-Lich Spear": content/regles/equipements/lances-jade-lich-spear.md
+              - "Manticore Spear": content/regles/equipements/lances-manticore-spear.md
+              - "Runic Spear": content/regles/equipements/lances-runic-spear.md
+              - "Tuanosaur Spear": content/regles/equipements/lances-tuanosaur-spear.md
+              - "Giantkind Spear": content/regles/equipements/lances-giantkind-spear.md
+              - "Porcelain Spear": content/regles/equipements/lances-porcelain-spear.md
+          - Hallebardes:
+              - "Astral Halberd": content/regles/equipements/hallebardes-astral-halberd.md
+              - "Beast Golem Halberd": content/regles/equipements/hallebardes-beast-golem-halberd.md
+              - "Chalcedony Halberd": content/regles/equipements/hallebardes-chalcedony-halberd.md
+              - "Cleaver Halberd": content/regles/equipements/hallebardes-cleaver-halberd.md
+              - "Damascene Halberd": content/regles/equipements/hallebardes-damascene-halberd.md
+              - "Dreamer Halberd": content/regles/equipements/hallebardes-dreamer-halberd.md
+              - "Duty": content/regles/equipements/hallebardes-duty.md
+              - "Fang Halberd": content/regles/equipements/hallebardes-fang-halberd.md
+              - "Forged Glass Halberd": content/regles/equipements/hallebardes-forged-glass-halberd.md
+              - "Galvanic Halberd": content/regles/equipements/hallebardes-galvanic-halberd.md
+              - "Giantkind Halberd": content/regles/equipements/hallebardes-giantkind-halberd.md
+              - "Gold Guisarme": content/regles/equipements/hallebardes-gold-guisarme.md
+              - "Hailfrost Halberd": content/regles/equipements/hallebardes-hailfrost-halberd.md
+              - "Horror Halberd": content/regles/equipements/hallebardes-horror-halberd.md
+              - "Iron Halberd": content/regles/equipements/hallebardes-iron-halberd.md
+              - "Kazite Partizan": content/regles/equipements/hallebardes-kazite-partizan.md
+              - "Marble Halberd": content/regles/equipements/hallebardes-marble-halberd.md
+              - "Masterpiece Halberd": content/regles/equipements/hallebardes-masterpiece-halberd.md
+              - "Meteoric Halberd": content/regles/equipements/hallebardes-meteoric-halberd.md
+              - "Militia Halberd": content/regles/equipements/hallebardes-militia-halberd.md
+              - "Mushroom Halberd": content/regles/equipements/hallebardes-mushroom-halberd.md
+              - "Obsidian Halberd": content/regles/equipements/hallebardes-obsidian-halberd.md
+              - "Palladium Halberd": content/regles/equipements/hallebardes-palladium-halberd.md
+              - "Ruined Halberd": content/regles/equipements/hallebardes-ruined-halberd.md
+              - "Sanguine Cleaver": content/regles/equipements/hallebardes-sanguine-cleaver.md
+              - "Savage Halberd": content/regles/equipements/hallebardes-savage-halberd.md
+              - "Smoke Halberd": content/regles/equipements/hallebardes-smoke-halberd.md
+              - "Spore Halberd": content/regles/equipements/hallebardes-spore-halberd.md
+              - "Thrice-Wrought Halberd": content/regles/equipements/hallebardes-thrice-wrought-halberd.md
+              - "Tsar Halberd": content/regles/equipements/hallebardes-tsar-halberd.md
+              - "Vampiric Halberd": content/regles/equipements/hallebardes-vampiric-halberd.md
+              - "Vigilante Halberd": content/regles/equipements/hallebardes-vigilante-halberd.md
+              - "Virgin Halberd": content/regles/equipements/hallebardes-virgin-halberd.md
+              - "Wolf Halberd": content/regles/equipements/hallebardes-wolf-halberd.md
+              - "Worn Guisarme": content/regles/equipements/hallebardes-worn-guisarme.md
+              - "Ancient Calygrey Halberd": content/regles/equipements/hallebardes-ancient-calygrey-halberd.md
+              - "Assassin Halberd": content/regles/equipements/hallebardes-assassin-halberd.md
+              - "Calygrey Halberd": content/regles/equipements/hallebardes-calygrey-halberd.md
+              - "Crescent Halberd": content/regles/equipements/hallebardes-crescent-halberd.md
+              - "Ghost Halberd": content/regles/equipements/hallebardes-ghost-halberd.md
+              - "Gold-Lich Halberd": content/regles/equipements/hallebardes-gold-lich-halberd.md
+              - "Golem Halberd": content/regles/equipements/hallebardes-golem-halberd.md
+              - "Jade-Lich Halberd": content/regles/equipements/hallebardes-jade-lich-halberd.md
+              - "Manticore Halberd": content/regles/equipements/hallebardes-manticore-halberd.md
+              - "Old Legion Halberd": content/regles/equipements/hallebardes-old-legion-halberd.md
+              - "Runic Halberd": content/regles/equipements/hallebardes-runic-halberd.md
+              - "Thorny Halberd": content/regles/equipements/hallebardes-thorny-halberd.md
+              - "Troglodyte Halberd": content/regles/equipements/hallebardes-troglodyte-halberd.md
+              - "Tuanosaur Halberd": content/regles/equipements/hallebardes-tuanosaur-halberd.md
+              - "Withering Halberd": content/regles/equipements/hallebardes-withering-halberd.md
+          - Grands sabres:
+              - "Royal Great-Khopesh": content/regles/equipements/grands-sabres-royal-great-khopesh.md
+              - "Smoke Great Sabre": content/regles/equipements/grands-sabres-smoke-great-sabre.md
+              - "Tsar Great Sabre": content/regles/equipements/grands-sabres-tsar-great-sabre.md
+              - "Ancient Calygrey Great Sabre": content/regles/equipements/grands-sabres-ancient-calygrey-great-sabre.md
+              - "Assassin Great Sabre": content/regles/equipements/grands-sabres-assassin-great-sabre.md
+              - "Astral Great Sabre": content/regles/equipements/grands-sabres-astral-great-sabre.md
+              - "Beast Golem Great Sabre": content/regles/equipements/grands-sabres-beast-golem-great-sabre.md
+              - "Brutal Great Sabre": content/regles/equipements/grands-sabres-brutal-great-sabre.md
+              - "Calygrey Great Sabre": content/regles/equipements/grands-sabres-calygrey-great-sabre.md
+              - "Chalcedony Great Sabre": content/regles/equipements/grands-sabres-chalcedony-great-sabre.md
+              - "Crescent Great Sabre": content/regles/equipements/grands-sabres-crescent-great-sabre.md
+              - "Damascene Great Sabre": content/regles/equipements/grands-sabres-damascene-great-sabre.md
+              - "Fang Great Sabre": content/regles/equipements/grands-sabres-fang-great-sabre.md
+              - "Forged Glass Great Sabre": content/regles/equipements/grands-sabres-forged-glass-great-sabre.md
+              - "Galvanic Great Sabre": content/regles/equipements/grands-sabres-galvanic-great-sabre.md
+              - "Ghost Great Sabre": content/regles/equipements/grands-sabres-ghost-great-sabre.md
+              - "Gold Great Sabre": content/regles/equipements/grands-sabres-gold-great-sabre.md
+              - "Gold-Lich Great Sabre": content/regles/equipements/grands-sabres-gold-lich-great-sabre.md
+              - "Golem Great Sabre": content/regles/equipements/grands-sabres-golem-great-sabre.md
+              - "Hailfrost Great Sabre": content/regles/equipements/grands-sabres-hailfrost-great-sabre.md
+              - "Horror Great Sabre": content/regles/equipements/grands-sabres-horror-great-sabre.md
+              - "Iron Great Sabre": content/regles/equipements/grands-sabres-iron-great-sabre.md
+              - "Jade-Lich Great Sabre": content/regles/equipements/grands-sabres-jade-lich-great-sabre.md
+              - "Kazite Great Sabre": content/regles/equipements/grands-sabres-kazite-great-sabre.md
+              - "Manticore Great Sabre": content/regles/equipements/grands-sabres-manticore-great-sabre.md
+              - "Marble Great Sabre": content/regles/equipements/grands-sabres-marble-great-sabre.md
+              - "Masterpiece Great Sabre": content/regles/equipements/grands-sabres-masterpiece-great-sabre.md
+              - "Meteoric Great Sabre": content/regles/equipements/grands-sabres-meteoric-great-sabre.md
+              - "Militia Great Sabre": content/regles/equipements/grands-sabres-militia-great-sabre.md
+              - "Obsidian Great Sabre": content/regles/equipements/grands-sabres-obsidian-great-sabre.md
+              - "Old Legion Great Sabre": content/regles/equipements/grands-sabres-old-legion-great-sabre.md
+              - "Palladium Great Sabre": content/regles/equipements/grands-sabres-palladium-great-sabre.md
+              - "Runic Great Sabre": content/regles/equipements/grands-sabres-runic-great-sabre.md
+              - "Savage Great Sabre": content/regles/equipements/grands-sabres-savage-great-sabre.md
+              - "Thorny Great Sabre": content/regles/equipements/grands-sabres-thorny-great-sabre.md
+              - "Troglodyte Great Sabre": content/regles/equipements/grands-sabres-troglodyte-great-sabre.md
+              - "Tuanosaur Great Sabre": content/regles/equipements/grands-sabres-tuanosaur-great-sabre.md
+              - "Vampiric Great Sabre": content/regles/equipements/grands-sabres-vampiric-great-sabre.md
+              - "Vigilante Great Sabre": content/regles/equipements/grands-sabres-vigilante-great-sabre.md
+              - "Virgin Great Sabre": content/regles/equipements/grands-sabres-virgin-great-sabre.md
+              - "Withering Great Sabre": content/regles/equipements/grands-sabres-withering-great-sabre.md
+              - "Wolf Great Sabre": content/regles/equipements/grands-sabres-wolf-great-sabre.md
+              - "Giantkind Great Sabre": content/regles/equipements/grands-sabres-giantkind-great-sabre.md
+              - "Porcelain Great Sabre": content/regles/equipements/grands-sabres-porcelain-great-sabre.md
+          - Grandes épées:
+              - "Assassin Claymore": content/regles/equipements/grandes-p-es-assassin-claymore.md
+              - "Astral Claymore": content/regles/equipements/grandes-p-es-astral-claymore.md
+              - "Chalcedony Claymore": content/regles/equipements/grandes-p-es-chalcedony-claymore.md
+              - "Damascene Claymore": content/regles/equipements/grandes-p-es-damascene-claymore.md
+              - "Fang Greatsword": content/regles/equipements/grandes-p-es-fang-greatsword.md
+              - "Forged Glass Claymore": content/regles/equipements/grandes-p-es-forged-glass-claymore.md
+              - "Gep's Longblade": content/regles/equipements/grandes-p-es-gep-s-longblade.md
+              - "Gold-Lich Claymore": content/regles/equipements/grandes-p-es-gold-lich-claymore.md
+              - "Golden Junk Claymore": content/regles/equipements/grandes-p-es-golden-junk-claymore.md
+              - "Golem Greatsword": content/regles/equipements/grandes-p-es-golem-greatsword.md
+              - "Great Runic Blade": content/regles/equipements/grandes-p-es-great-runic-blade.md
+              - "Hailfrost Claymore": content/regles/equipements/grandes-p-es-hailfrost-claymore.md
+              - "Horror Greatsword": content/regles/equipements/grandes-p-es-horror-greatsword.md
+              - "Iron Claymore": content/regles/equipements/grandes-p-es-iron-claymore.md
+              - "Junk Claymore": content/regles/equipements/grandes-p-es-junk-claymore.md
+              - "Kazite Greatblade": content/regles/equipements/grandes-p-es-kazite-greatblade.md
+              - "Marble Claymore": content/regles/equipements/grandes-p-es-marble-claymore.md
+              - "Masterpiece Claymore": content/regles/equipements/grandes-p-es-masterpiece-claymore.md
+              - "Meteoric Claymore": content/regles/equipements/grandes-p-es-meteoric-claymore.md
+              - "Militia Claymore": content/regles/equipements/grandes-p-es-militia-claymore.md
+              - "Mysterious Long Blade": content/regles/equipements/grandes-p-es-mysterious-long-blade.md
+              - "Obsidian Claymore": content/regles/equipements/grandes-p-es-obsidian-claymore.md
+              - "Palladium Claymore": content/regles/equipements/grandes-p-es-palladium-claymore.md
+              - "Pathfinder Claymore": content/regles/equipements/grandes-p-es-pathfinder-claymore.md
+              - "Prayer Claymore": content/regles/equipements/grandes-p-es-prayer-claymore.md
+              - "Savage Greatsword": content/regles/equipements/grandes-p-es-savage-greatsword.md
+              - "Sinner Claymore": content/regles/equipements/grandes-p-es-sinner-claymore.md
+              - "Starchild Claymore": content/regles/equipements/grandes-p-es-starchild-claymore.md
+              - "Thermal Claymore": content/regles/equipements/grandes-p-es-thermal-claymore.md
+              - "Thorny Claymore": content/regles/equipements/grandes-p-es-thorny-claymore.md
+              - "Vampiric Greatsword": content/regles/equipements/grandes-p-es-vampiric-greatsword.md
+              - "Vigilante Claymore": content/regles/equipements/grandes-p-es-vigilante-claymore.md
+              - "Virgin Greatsword": content/regles/equipements/grandes-p-es-virgin-greatsword.md
+              - "Wolf Claymore": content/regles/equipements/grandes-p-es-wolf-claymore.md
+              - "Zagis' Saw": content/regles/equipements/grandes-p-es-zagis-saw.md
+              - "Ancient Calygrey Greatsword": content/regles/equipements/grandes-p-es-ancient-calygrey-greatsword.md
+              - "Beast Golem Greatsword": content/regles/equipements/grandes-p-es-beast-golem-greatsword.md
+              - "Brutal Greatsword": content/regles/equipements/grandes-p-es-brutal-greatsword.md
+              - "Calygrey Greatsword": content/regles/equipements/grandes-p-es-calygrey-greatsword.md
+              - "Crescent Greatsword": content/regles/equipements/grandes-p-es-crescent-greatsword.md
+              - "Galvanic Greatsword": content/regles/equipements/grandes-p-es-galvanic-greatsword.md
+              - "Ghost Greatsword": content/regles/equipements/grandes-p-es-ghost-greatsword.md
+              - "Jade-Lich Greatsword": content/regles/equipements/grandes-p-es-jade-lich-greatsword.md
+              - "Manticore Greatsword": content/regles/equipements/grandes-p-es-manticore-greatsword.md
+              - "Old Legion Greatsword": content/regles/equipements/grandes-p-es-old-legion-greatsword.md
+              - "Smoke Greatsword": content/regles/equipements/grandes-p-es-smoke-greatsword.md
+              - "Troglodyte Greatsword": content/regles/equipements/grandes-p-es-troglodyte-greatsword.md
+              - "Tsar Greatsword": content/regles/equipements/grandes-p-es-tsar-greatsword.md
+              - "Tuanosaur Greatsword": content/regles/equipements/grandes-p-es-tuanosaur-greatsword.md
+              - "Withering Greatsword": content/regles/equipements/grandes-p-es-withering-greatsword.md
+              - "Giantkind Greatsword": content/regles/equipements/grandes-p-es-giantkind-greatsword.md
+          - Grandes haches:
+              - "Astral Greataxe": content/regles/equipements/grandes-haches-astral-greataxe.md
+              - "Brutal Greataxe": content/regles/equipements/grandes-haches-brutal-greataxe.md
+              - "Chalcedony Greataxe": content/regles/equipements/grandes-haches-chalcedony-greataxe.md
+              - "Crescent Greataxe": content/regles/equipements/grandes-haches-crescent-greataxe.md
+              - "Damascene Greataxe": content/regles/equipements/grandes-haches-damascene-greataxe.md
+              - "Fang Greataxe": content/regles/equipements/grandes-haches-fang-greataxe.md
+              - "Felling Greataxe": content/regles/equipements/grandes-haches-felling-greataxe.md
+              - "Forged Glass Greataxe": content/regles/equipements/grandes-haches-forged-glass-greataxe.md
+              - "Fossilized Greataxe": content/regles/equipements/grandes-haches-fossilized-greataxe.md
+              - "Galvanic Greataxe": content/regles/equipements/grandes-haches-galvanic-greataxe.md
+              - "Giantkind Greataxe": content/regles/equipements/grandes-haches-giantkind-greataxe.md
+              - "Gold Greataxe": content/regles/equipements/grandes-haches-gold-greataxe.md
+              - "Grind": content/regles/equipements/grandes-haches-grind.md
+              - "Hailfrost Greataxe": content/regles/equipements/grandes-haches-hailfrost-greataxe.md
+              - "Horror Greataxe": content/regles/equipements/grandes-haches-horror-greataxe.md
+              - "Iron Greataxe": content/regles/equipements/grandes-haches-iron-greataxe.md
+              - "Kazite Greatcleaver": content/regles/equipements/grandes-haches-kazite-greatcleaver.md
+              - "Kelvin's Greataxe": content/regles/equipements/grandes-haches-kelvin-s-greataxe.md
+              - "Marble Greataxe": content/regles/equipements/grandes-haches-marble-greataxe.md
+              - "Masterpiece Greataxe": content/regles/equipements/grandes-haches-masterpiece-greataxe.md
+              - "Meteoric Greataxe": content/regles/equipements/grandes-haches-meteoric-greataxe.md
+              - "Militia Greataxe": content/regles/equipements/grandes-haches-militia-greataxe.md
+              - "Obsidian Greataxe": content/regles/equipements/grandes-haches-obsidian-greataxe.md
+              - "Palladium Greataxe": content/regles/equipements/grandes-haches-palladium-greataxe.md
+              - "Savage Greataxe": content/regles/equipements/grandes-haches-savage-greataxe.md
+              - "Smoke Greataxe": content/regles/equipements/grandes-haches-smoke-greataxe.md
+              - "Tsar Greataxe": content/regles/equipements/grandes-haches-tsar-greataxe.md
+              - "Tuanosaur Greataxe": content/regles/equipements/grandes-haches-tuanosaur-greataxe.md
+              - "Vampiric Greataxe": content/regles/equipements/grandes-haches-vampiric-greataxe.md
+              - "Vigilante Greataxe": content/regles/equipements/grandes-haches-vigilante-greataxe.md
+              - "Virgin Greataxe": content/regles/equipements/grandes-haches-virgin-greataxe.md
+              - "Wolf Greataxe": content/regles/equipements/grandes-haches-wolf-greataxe.md
+              - "Worldedge Greataxe": content/regles/equipements/grandes-haches-worldedge-greataxe.md
+              - "Ancient Calygrey Greataxe": content/regles/equipements/grandes-haches-ancient-calygrey-greataxe.md
+              - "Assassin Greataxe": content/regles/equipements/grandes-haches-assassin-greataxe.md
+              - "Beast Golem Greataxe": content/regles/equipements/grandes-haches-beast-golem-greataxe.md
+              - "Calygrey Greataxe": content/regles/equipements/grandes-haches-calygrey-greataxe.md
+              - "Ghost Greataxe": content/regles/equipements/grandes-haches-ghost-greataxe.md
+              - "Gold-Lich Greataxe": content/regles/equipements/grandes-haches-gold-lich-greataxe.md
+              - "Golem Greataxe": content/regles/equipements/grandes-haches-golem-greataxe.md
+              - "Jade-Lich Greataxe": content/regles/equipements/grandes-haches-jade-lich-greataxe.md
+              - "Manticore Greataxe": content/regles/equipements/grandes-haches-manticore-greataxe.md
+              - "Old Legion Greataxe": content/regles/equipements/grandes-haches-old-legion-greataxe.md
+              - "Runic Greataxe": content/regles/equipements/grandes-haches-runic-greataxe.md
+              - "Thorny Greataxe": content/regles/equipements/grandes-haches-thorny-greataxe.md
+              - "Troglodyte Greataxe": content/regles/equipements/grandes-haches-troglodyte-greataxe.md
+              - "Withering Greataxe": content/regles/equipements/grandes-haches-withering-greataxe.md
+          - Faux de guerre:
+              - "Crescent Scythe": content/regles/equipements/faux-de-guerre-crescent-scythe.md
+              - "Ghost Reaper": content/regles/equipements/faux-de-guerre-ghost-reaper.md
+              - "Ancient Calygrey War Scythe": content/regles/equipements/faux-de-guerre-ancient-calygrey-war-scythe.md
+              - "Assassin War Scythe": content/regles/equipements/faux-de-guerre-assassin-war-scythe.md
+              - "Astral War Scythe": content/regles/equipements/faux-de-guerre-astral-war-scythe.md
+              - "Beast Golem War Scythe": content/regles/equipements/faux-de-guerre-beast-golem-war-scythe.md
+              - "Brutal War Scythe": content/regles/equipements/faux-de-guerre-brutal-war-scythe.md
+              - "Calygrey War Scythe": content/regles/equipements/faux-de-guerre-calygrey-war-scythe.md
+              - "Chalcedony War Scythe": content/regles/equipements/faux-de-guerre-chalcedony-war-scythe.md
+              - "Damascene War Scythe": content/regles/equipements/faux-de-guerre-damascene-war-scythe.md
+              - "Fang War Scythe": content/regles/equipements/faux-de-guerre-fang-war-scythe.md
+              - "Forged Glass War Scythe": content/regles/equipements/faux-de-guerre-forged-glass-war-scythe.md
+              - "Galvanic War Scythe": content/regles/equipements/faux-de-guerre-galvanic-war-scythe.md
+              - "Gold War Scythe": content/regles/equipements/faux-de-guerre-gold-war-scythe.md
+              - "Gold-Lich War Scythe": content/regles/equipements/faux-de-guerre-gold-lich-war-scythe.md
+              - "Golem War Scythe": content/regles/equipements/faux-de-guerre-golem-war-scythe.md
+              - "Hailfrost War Scythe": content/regles/equipements/faux-de-guerre-hailfrost-war-scythe.md
+              - "Horror War Scythe": content/regles/equipements/faux-de-guerre-horror-war-scythe.md
+              - "Iron War Scythe": content/regles/equipements/faux-de-guerre-iron-war-scythe.md
+              - "Jade-Lich War Scythe": content/regles/equipements/faux-de-guerre-jade-lich-war-scythe.md
+              - "Kazite War Scythe": content/regles/equipements/faux-de-guerre-kazite-war-scythe.md
+              - "Manticore War Scythe": content/regles/equipements/faux-de-guerre-manticore-war-scythe.md
+              - "Marble War Scythe": content/regles/equipements/faux-de-guerre-marble-war-scythe.md
+              - "Masterpiece War Scythe": content/regles/equipements/faux-de-guerre-masterpiece-war-scythe.md
+              - "Meteoric War Scythe": content/regles/equipements/faux-de-guerre-meteoric-war-scythe.md
+              - "Militia War Scythe": content/regles/equipements/faux-de-guerre-militia-war-scythe.md
+              - "Obsidian War Scythe": content/regles/equipements/faux-de-guerre-obsidian-war-scythe.md
+              - "Old Legion War Scythe": content/regles/equipements/faux-de-guerre-old-legion-war-scythe.md
+              - "Palladium War Scythe": content/regles/equipements/faux-de-guerre-palladium-war-scythe.md
+              - "Runic War Scythe": content/regles/equipements/faux-de-guerre-runic-war-scythe.md
+              - "Savage War Scythe": content/regles/equipements/faux-de-guerre-savage-war-scythe.md
+              - "Smoke War Scythe": content/regles/equipements/faux-de-guerre-smoke-war-scythe.md
+              - "Thorny War Scythe": content/regles/equipements/faux-de-guerre-thorny-war-scythe.md
+              - "Troglodyte War Scythe": content/regles/equipements/faux-de-guerre-troglodyte-war-scythe.md
+              - "Tsar War Scythe": content/regles/equipements/faux-de-guerre-tsar-war-scythe.md
+              - "Tuanosaur War Scythe": content/regles/equipements/faux-de-guerre-tuanosaur-war-scythe.md
+              - "Vampiric War Scythe": content/regles/equipements/faux-de-guerre-vampiric-war-scythe.md
+              - "Vigilante War Scythe": content/regles/equipements/faux-de-guerre-vigilante-war-scythe.md
+              - "Virgin War Scythe": content/regles/equipements/faux-de-guerre-virgin-war-scythe.md
+              - "Withering War Scythe": content/regles/equipements/faux-de-guerre-withering-war-scythe.md
+              - "Wolf War Scythe": content/regles/equipements/faux-de-guerre-wolf-war-scythe.md
+              - "Giantkind War Scythe": content/regles/equipements/faux-de-guerre-giantkind-war-scythe.md
+              - "Porcelain War Scythe": content/regles/equipements/faux-de-guerre-porcelain-war-scythe.md
+          - Grands marteaux:
+              - "Astral Greatmace": content/regles/equipements/grands-marteaux-astral-greatmace.md
+              - "Brutal Greatmace": content/regles/equipements/grands-marteaux-brutal-greatmace.md
+              - "Chalcedony Hammer": content/regles/equipements/grands-marteaux-chalcedony-hammer.md
+              - "Challenger Greathammer": content/regles/equipements/grands-marteaux-challenger-greathammer.md
+              - "Damascene Hammer": content/regles/equipements/grands-marteaux-damascene-hammer.md
+              - "De-powered Bludgeon": content/regles/equipements/grands-marteaux-de-powered-bludgeon.md
+              - "Fang Greatclub": content/regles/equipements/grands-marteaux-fang-greatclub.md
+              - "Forged Glass Greatmace": content/regles/equipements/grands-marteaux-forged-glass-greatmace.md
+              - "Galvanic Greatmace": content/regles/equipements/grands-marteaux-galvanic-greatmace.md
+              - "Ghost Parallel": content/regles/equipements/grands-marteaux-ghost-parallel.md
+              - "Gold Mining Pick": content/regles/equipements/grands-marteaux-gold-mining-pick.md
+              - "Hailfrost Hammer": content/regles/equipements/grands-marteaux-hailfrost-hammer.md
+              - "Horror Greatmace": content/regles/equipements/grands-marteaux-horror-greatmace.md
+              - "Iron Greathammer": content/regles/equipements/grands-marteaux-iron-greathammer.md
+              - "Kazite Greathammer": content/regles/equipements/grands-marteaux-kazite-greathammer.md
+              - "Manticore Greatmace": content/regles/equipements/grands-marteaux-manticore-greatmace.md
+              - "Mantis Greatpick": content/regles/equipements/grands-marteaux-mantis-greatpick.md
+              - "Marble Greathammer": content/regles/equipements/grands-marteaux-marble-greathammer.md
+              - "Masterpiece Hammer": content/regles/equipements/grands-marteaux-masterpiece-hammer.md
+              - "Meteoric Hammer": content/regles/equipements/grands-marteaux-meteoric-hammer.md
+              - "Militia Hammer": content/regles/equipements/grands-marteaux-militia-hammer.md
+              - "Mining Pick": content/regles/equipements/grands-marteaux-mining-pick.md
+              - "Obsidian Greatmace": content/regles/equipements/grands-marteaux-obsidian-greatmace.md
+              - "Palladium Greathammer": content/regles/equipements/grands-marteaux-palladium-greathammer.md
+              - "Pillar Greathammer": content/regles/equipements/grands-marteaux-pillar-greathammer.md
+              - "Pyrite Greathammer": content/regles/equipements/grands-marteaux-pyrite-greathammer.md
+              - "Savage Greatclub": content/regles/equipements/grands-marteaux-savage-greatclub.md
+              - "Smoke Hammer": content/regles/equipements/grands-marteaux-smoke-hammer.md
+              - "Troglodyte Pole Mace": content/regles/equipements/grands-marteaux-troglodyte-pole-mace.md
+              - "Tsar Greathammer": content/regles/equipements/grands-marteaux-tsar-greathammer.md
+              - "Vampiric Greatmace": content/regles/equipements/grands-marteaux-vampiric-greatmace.md
+              - "Vigilante Hammer": content/regles/equipements/grands-marteaux-vigilante-hammer.md
+              - "Virgin Greatmace": content/regles/equipements/grands-marteaux-virgin-greatmace.md
+              - "Withering Pole Mace": content/regles/equipements/grands-marteaux-withering-pole-mace.md
+              - "Wolf Greathammer": content/regles/equipements/grands-marteaux-wolf-greathammer.md
+              - "Ancient Calygrey Greathammer": content/regles/equipements/grands-marteaux-ancient-calygrey-greathammer.md
+              - "Assassin Greathammer": content/regles/equipements/grands-marteaux-assassin-greathammer.md
+              - "Beast Golem Greathammer": content/regles/equipements/grands-marteaux-beast-golem-greathammer.md
+              - "Calygrey Greathammer": content/regles/equipements/grands-marteaux-calygrey-greathammer.md
+              - "Crescent Greathammer": content/regles/equipements/grands-marteaux-crescent-greathammer.md
+              - "Gold-Lich Greathammer": content/regles/equipements/grands-marteaux-gold-lich-greathammer.md
+              - "Golem Greathammer": content/regles/equipements/grands-marteaux-golem-greathammer.md
+              - "Jade-Lich Greathammer": content/regles/equipements/grands-marteaux-jade-lich-greathammer.md
+              - "Old Legion Greathammer": content/regles/equipements/grands-marteaux-old-legion-greathammer.md
+              - "Runic Greathammer": content/regles/equipements/grands-marteaux-runic-greathammer.md
+              - "Thorny Greathammer": content/regles/equipements/grands-marteaux-thorny-greathammer.md
+              - "Tuanosaur Greathammer": content/regles/equipements/grands-marteaux-tuanosaur-greathammer.md
+              - "Giantkind Greathammer": content/regles/equipements/grands-marteaux-giantkind-greathammer.md
+              - "Porcelain Greathammer": content/regles/equipements/grands-marteaux-porcelain-greathammer.md
+          - Fléaux à deux mains:
+              - "Ancient Calygrey Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-ancient-calygrey-two-handed-flail.md
+              - "Assassin Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-assassin-two-handed-flail.md
+              - "Astral Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-astral-two-handed-flail.md
+              - "Beast Golem Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-beast-golem-two-handed-flail.md
+              - "Brutal Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-brutal-two-handed-flail.md
+              - "Calygrey Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-calygrey-two-handed-flail.md
+              - "Chalcedony Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-chalcedony-two-handed-flail.md
+              - "Crescent Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-crescent-two-handed-flail.md
+              - "Damascene Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-damascene-two-handed-flail.md
+              - "Fang Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-fang-two-handed-flail.md
+              - "Forged Glass Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-forged-glass-two-handed-flail.md
+              - "Galvanic Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-galvanic-two-handed-flail.md
+              - "Ghost Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-ghost-two-handed-flail.md
+              - "Gold Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-gold-two-handed-flail.md
+              - "Gold-Lich Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-gold-lich-two-handed-flail.md
+              - "Golem Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-golem-two-handed-flail.md
+              - "Hailfrost Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-hailfrost-two-handed-flail.md
+              - "Horror Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-horror-two-handed-flail.md
+              - "Iron Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-iron-two-handed-flail.md
+              - "Jade-Lich Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-jade-lich-two-handed-flail.md
+              - "Kazite Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-kazite-two-handed-flail.md
+              - "Manticore Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-manticore-two-handed-flail.md
+              - "Marble Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-marble-two-handed-flail.md
+              - "Masterpiece Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-masterpiece-two-handed-flail.md
+              - "Meteoric Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-meteoric-two-handed-flail.md
+              - "Militia Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-militia-two-handed-flail.md
+              - "Obsidian Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-obsidian-two-handed-flail.md
+              - "Old Legion Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-old-legion-two-handed-flail.md
+              - "Palladium Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-palladium-two-handed-flail.md
+              - "Runic Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-runic-two-handed-flail.md
+              - "Savage Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-savage-two-handed-flail.md
+              - "Smoke Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-smoke-two-handed-flail.md
+              - "Thorny Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-thorny-two-handed-flail.md
+              - "Troglodyte Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-troglodyte-two-handed-flail.md
+              - "Tsar Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-tsar-two-handed-flail.md
+              - "Tuanosaur Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-tuanosaur-two-handed-flail.md
+              - "Vampiric Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-vampiric-two-handed-flail.md
+              - "Vigilante Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-vigilante-two-handed-flail.md
+              - "Virgin Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-virgin-two-handed-flail.md
+              - "Withering Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-withering-two-handed-flail.md
+              - "Wolf Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-wolf-two-handed-flail.md
+              - "Giantkind Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-giantkind-two-handed-flail.md
+              - "Porcelain Two-Handed Flail": content/regles/equipements/fl-aux-deux-mains-porcelain-two-handed-flail.md
+          - Tête:
+              - "Adventurer's Helm": content/regles/equipements/t-te-adventurer-s-helm.md
+              - "Ammolite Helm": content/regles/equipements/t-te-ammolite-helm.md
+              - "Antique Plate Sallet": content/regles/equipements/t-te-antique-plate-sallet.md
+              - "Arcane Hood": content/regles/equipements/t-te-arcane-hood.md
+              - "Ash-Filter Mask": content/regles/equipements/t-te-ash-filter-mask.md
+              - "Barrier Helm": content/regles/equipements/t-te-barrier-helm.md
+              - "Black Fur Helmet": content/regles/equipements/t-te-black-fur-helmet.md
+              - "Black Plate Helm": content/regles/equipements/t-te-black-plate-helm.md
+              - "Blue Sand Helm": content/regles/equipements/t-te-blue-sand-helm.md
+              - "Brigand's Hat": content/regles/equipements/t-te-brigand-s-hat.md
+              - "Caged Armor Helm": content/regles/equipements/t-te-caged-armor-helm.md
+              - "Caldera Mail Helm": content/regles/equipements/t-te-caldera-mail-helm.md
+              - "Candle Plate Helm": content/regles/equipements/t-te-candle-plate-helm.md
+              - "Chalcedony Helmet": content/regles/equipements/t-te-chalcedony-helmet.md
+              - "Copal Helm": content/regles/equipements/t-te-copal-helm.md
+              - "Crimson Plate Mask": content/regles/equipements/t-te-crimson-plate-mask.md
+              - "Dancer Mask": content/regles/equipements/t-te-dancer-mask.md
+              - "Desert Veil": content/regles/equipements/t-te-desert-veil.md
+              - "Elite Desert Veil": content/regles/equipements/t-te-elite-desert-veil.md
+              - "Elite Hood": content/regles/equipements/t-te-elite-hood.md
+              - "Elite Plate Helm": content/regles/equipements/t-te-elite-plate-helm.md
+              - "Entomber Hat": content/regles/equipements/t-te-entomber-hat.md
+              - "Purple Festive Hat": content/regles/equipements/t-te-purple-festive-hat.md
+              - "Red Festive Hat": content/regles/equipements/t-te-red-festive-hat.md
+              - "Fur Helm": content/regles/equipements/t-te-fur-helm.md
+              - "Gold-Lich Mask": content/regles/equipements/t-te-gold-lich-mask.md
+              - "Green Copal Helmet": content/regles/equipements/t-te-green-copal-helmet.md
+              - "Halfplate Helm": content/regles/equipements/t-te-halfplate-helm.md
+              - "Horror Helm": content/regles/equipements/t-te-horror-helm.md
+              - "Jade Acolyte Cowl": content/regles/equipements/t-te-jade-acolyte-cowl.md
+              - "Jade-Lich Mask": content/regles/equipements/t-te-jade-lich-mask.md
+              - "Kazite Light Helmet": content/regles/equipements/t-te-kazite-light-helmet.md
+              - "Kazite Cat Mask": content/regles/equipements/t-te-kazite-cat-mask.md
+              - "Kazite Mask": content/regles/equipements/t-te-kazite-mask.md
+              - "Kazite Oni Mask": content/regles/equipements/t-te-kazite-oni-mask.md
+              - "Kintsugi Helm": content/regles/equipements/t-te-kintsugi-helm.md
+              - "Krypteia Mask": content/regles/equipements/t-te-krypteia-mask.md
+              - "Light Clothes Hood": content/regles/equipements/t-te-light-clothes-hood.md
+              - "Looter Mask": content/regles/equipements/t-te-looter-mask.md
+              - "Makeshift Leather Hat": content/regles/equipements/t-te-makeshift-leather-hat.md
+              - "Manawall Helm": content/regles/equipements/t-te-manawall-helm.md
+              - "Master Desert Veil": content/regles/equipements/t-te-master-desert-veil.md
+              - "Master Kazite Cat Mask": content/regles/equipements/t-te-master-kazite-cat-mask.md
+              - "Master Kazite Mask": content/regles/equipements/t-te-master-kazite-mask.md
+              - "Master Kazite Oni Mask": content/regles/equipements/t-te-master-kazite-oni-mask.md
+              - "Master Trader Hat": content/regles/equipements/t-te-master-trader-hat.md
+              - "Merton's Skull": content/regles/equipements/t-te-merton-s-skull.md
+              - "Militia Helm": content/regles/equipements/t-te-militia-helm.md
+              - "Miner Helmet": content/regles/equipements/t-te-miner-helmet.md
+              - "Noble Mask": content/regles/equipements/t-te-noble-mask.md
+              - "Bright Nobleman Hat": content/regles/equipements/t-te-bright-nobleman-hat.md
+              - "Dark Nobleman Hat": content/regles/equipements/t-te-dark-nobleman-hat.md
+              - "Novice Hat": content/regles/equipements/t-te-novice-hat.md
+              - "Orichalcum Helmet": content/regles/equipements/t-te-orichalcum-helmet.md
+              - "Padded Helm": content/regles/equipements/t-te-padded-helm.md
+              - "Palladium Helm": content/regles/equipements/t-te-palladium-helm.md
+              - "Pathfinder Mask": content/regles/equipements/t-te-pathfinder-mask.md
+              - "Petrified Wood Helm": content/regles/equipements/t-te-petrified-wood-helm.md
+              - "Pilgrim Helmet": content/regles/equipements/t-te-pilgrim-helmet.md
+              - "Plate Helm": content/regles/equipements/t-te-plate-helm.md
+              - "Bright Rich Hat": content/regles/equipements/t-te-bright-rich-hat.md
+              - "Dark Rich Hat": content/regles/equipements/t-te-dark-rich-hat.md
+              - "Runic Helm": content/regles/equipements/t-te-runic-helm.md
+              - "Rust Lich Helmet": content/regles/equipements/t-te-rust-lich-helmet.md
+              - "Scaled Leather Hat": content/regles/equipements/t-te-scaled-leather-hat.md
+              - "Scarlet Mask": content/regles/equipements/t-te-scarlet-mask.md
+              - "Scavenger Hood": content/regles/equipements/t-te-scavenger-hood.md
+              - "Scavenger Mask": content/regles/equipements/t-te-scavenger-mask.md
+              - "Scavenger Scarf": content/regles/equipements/t-te-scavenger-scarf.md
+              - "Scholar Circlet": content/regles/equipements/t-te-scholar-circlet.md
+              - "Shadow Kazite Light Helmet": content/regles/equipements/t-te-shadow-kazite-light-helmet.md
+              - "Shock Helmet": content/regles/equipements/t-te-shock-helmet.md
+              - "Silver Helm": content/regles/equipements/t-te-silver-helm.md
+              - "Slayer's Helmet": content/regles/equipements/t-te-slayer-s-helmet.md
+              - "Squire Headband": content/regles/equipements/t-te-squire-headband.md
+              - "Tattered Hood": content/regles/equipements/t-te-tattered-hood.md
+              - "Tenebrous Helm": content/regles/equipements/t-te-tenebrous-helm.md
+              - "Straw Hat": content/regles/equipements/t-te-straw-hat.md
+              - "Tsar Helm": content/regles/equipements/t-te-tsar-helm.md
+              - "Vigilante Helm": content/regles/equipements/t-te-vigilante-helm.md
+              - "Virgin Helmet": content/regles/equipements/t-te-virgin-helmet.md
+              - "White Arcane Hood": content/regles/equipements/t-te-white-arcane-hood.md
+              - "White Kintsugi Helmet": content/regles/equipements/t-te-white-kintsugi-helmet.md
+              - "White Priest Hood": content/regles/equipements/t-te-white-priest-hood.md
+              - "White Priest Mitre": content/regles/equipements/t-te-white-priest-mitre.md
+              - "Wolf Mage Helmet": content/regles/equipements/t-te-wolf-mage-helmet.md
+              - "Wolf Medic Helmet": content/regles/equipements/t-te-wolf-medic-helmet.md
+              - "Wolf Plate Full-Helm": content/regles/equipements/t-te-wolf-plate-full-helm.md
+              - "Wolf Plate Helm": content/regles/equipements/t-te-wolf-plate-helm.md
+              - "Dark Worker Hood": content/regles/equipements/t-te-dark-worker-hood.md
+              - "Pale Worker's Hood": content/regles/equipements/t-te-pale-worker-s-hood.md
+              - "Patterned Worker Hood": content/regles/equipements/t-te-patterned-worker-hood.md
+              - "Zagis' Mask": content/regles/equipements/t-te-zagis-mask.md
+              - "Black Pearlbird Mask": content/regles/equipements/t-te-black-pearlbird-mask.md
+              - "Cauldron Helm": content/regles/equipements/t-te-cauldron-helm.md
+              - "Coralhorn Mask": content/regles/equipements/t-te-coralhorn-mask.md
+              - "Ergagr'Uk!": content/regles/equipements/t-te-ergagr-uk.md
+              - "Gar'Ga'Nak": content/regles/equipements/t-te-gar-ga-nak.md
+              - "Gargargar!": content/regles/equipements/t-te-gargargar.md
+              - "Go'gO": content/regles/equipements/t-te-go-go.md
+              - "GorkKrog!": content/regles/equipements/t-te-gorkkrog.md
+              - "GoulgGalog!": content/regles/equipements/t-te-goulggalog.md
+              - "Hound Mask": content/regles/equipements/t-te-hound-mask.md
+              - "Jewel Bird Mask": content/regles/equipements/t-te-jewel-bird-mask.md
+              - "Pearlbird Mask": content/regles/equipements/t-te-pearlbird-mask.md
+              - "Red Wide Hat": content/regles/equipements/t-te-red-wide-hat.md
+              - "Scarab Mask": content/regles/equipements/t-te-scarab-mask.md
+              - "Tuanosaur Mask": content/regles/equipements/t-te-tuanosaur-mask.md
+              - "White Wide Hat": content/regles/equipements/t-te-white-wide-hat.md
+              - "Wide Black Hat": content/regles/equipements/t-te-wide-black-hat.md
+              - "Wide Blue Hat": content/regles/equipements/t-te-wide-blue-hat.md
+          - Haut:
+              - "Adventurer Armor": content/regles/equipements/haut-adventurer-armor.md
+              - "Ammolite Armor": content/regles/equipements/haut-ammolite-armor.md
+              - "Antique Plate Garb": content/regles/equipements/haut-antique-plate-garb.md
+              - "Arcane Robe": content/regles/equipements/haut-arcane-robe.md
+              - "Ash Armor": content/regles/equipements/haut-ash-armor.md
+              - "Barrier Armor": content/regles/equipements/haut-barrier-armor.md
+              - "Black Fur Armor": content/regles/equipements/haut-black-fur-armor.md
+              - "Black Plate Armor": content/regles/equipements/haut-black-plate-armor.md
+              - "Blue Sand Armor": content/regles/equipements/haut-blue-sand-armor.md
+              - "Brigand Coat": content/regles/equipements/haut-brigand-coat.md
+              - "Caged Armor Chestplate": content/regles/equipements/haut-caged-armor-chestplate.md
+              - "Caldera Mail Armor": content/regles/equipements/haut-caldera-mail-armor.md
+              - "Candle Plate Armor": content/regles/equipements/haut-candle-plate-armor.md
+              - "Chalcedony Armor": content/regles/equipements/haut-chalcedony-armor.md
+              - "Copal Armor": content/regles/equipements/haut-copal-armor.md
+              - "Crimson Plate Armor": content/regles/equipements/haut-crimson-plate-armor.md
+              - "Black Dancer Clothes": content/regles/equipements/haut-black-dancer-clothes.md
+              - "Crimson Dancer Clothes": content/regles/equipements/haut-crimson-dancer-clothes.md
+              - "Purple Dancer Clothes": content/regles/equipements/haut-purple-dancer-clothes.md
+              - "Desert Tunic": content/regles/equipements/haut-desert-tunic.md
+              - "Elite Desert Tunic": content/regles/equipements/haut-elite-desert-tunic.md
+              - "Elite Plate Armor": content/regles/equipements/haut-elite-plate-armor.md
+              - "Entomber Armor": content/regles/equipements/haut-entomber-armor.md
+              - "Purple Festive Attire": content/regles/equipements/haut-purple-festive-attire.md
+              - "Red Festive Attire": content/regles/equipements/haut-red-festive-attire.md
+              - "Fur Armor": content/regles/equipements/haut-fur-armor.md
+              - "Gold-Lich Armor": content/regles/equipements/haut-gold-lich-armor.md
+              - "Green Copal Armor": content/regles/equipements/haut-green-copal-armor.md
+              - "Halfplate Armor": content/regles/equipements/haut-halfplate-armor.md
+              - "Horror Armor": content/regles/equipements/haut-horror-armor.md
+              - "Jade Acolyte Robes": content/regles/equipements/haut-jade-acolyte-robes.md
+              - "Jade-Lich Robes": content/regles/equipements/haut-jade-lich-robes.md
+              - "Kazite Light Armor": content/regles/equipements/haut-kazite-light-armor.md
+              - "Light Kazite Shirt": content/regles/equipements/haut-light-kazite-shirt.md
+              - "Kazite Armor": content/regles/equipements/haut-kazite-armor.md
+              - "Kintsugi Armor": content/regles/equipements/haut-kintsugi-armor.md
+              - "Krypteia Armor": content/regles/equipements/haut-krypteia-armor.md
+              - "Blue Light Clothes": content/regles/equipements/haut-blue-light-clothes.md
+              - "Pale Light Clothes": content/regles/equipements/haut-pale-light-clothes.md
+              - "Red Light Clothes": content/regles/equipements/haut-red-light-clothes.md
+              - "Looter Armor": content/regles/equipements/haut-looter-armor.md
+              - "Makeshift Leather Attire": content/regles/equipements/haut-makeshift-leather-attire.md
+              - "Manawall Armor": content/regles/equipements/haut-manawall-armor.md
+              - "Master Desert Tunic": content/regles/equipements/haut-master-desert-tunic.md
+              - "Master Kazite Armor": content/regles/equipements/haut-master-kazite-armor.md
+              - "Master Trader Garb": content/regles/equipements/haut-master-trader-garb.md
+              - "Merton's Ribcage": content/regles/equipements/haut-merton-s-ribcage.md
+              - "Militia Armor": content/regles/equipements/haut-militia-armor.md
+              - "Miner Armor": content/regles/equipements/haut-miner-armor.md
+              - "Noble Clothes": content/regles/equipements/haut-noble-clothes.md
+              - "Bright Nobleman Attire": content/regles/equipements/haut-bright-nobleman-attire.md
+              - "Dark Nobleman Attire": content/regles/equipements/haut-dark-nobleman-attire.md
+              - "Novice Robe": content/regles/equipements/haut-novice-robe.md
+              - "Orichalcum Armor": content/regles/equipements/haut-orichalcum-armor.md
+              - "Padded Armor": content/regles/equipements/haut-padded-armor.md
+              - "Palladium Armor": content/regles/equipements/haut-palladium-armor.md
+              - "Pathfinder Armor": content/regles/equipements/haut-pathfinder-armor.md
+              - "Petrified Wood Armor": content/regles/equipements/haut-petrified-wood-armor.md
+              - "Pilgrim Armor": content/regles/equipements/haut-pilgrim-armor.md
+              - "Plate Armor": content/regles/equipements/haut-plate-armor.md
+              - "Bright Rich Attire": content/regles/equipements/haut-bright-rich-attire.md
+              - "Dark Rich Attire": content/regles/equipements/haut-dark-rich-attire.md
+              - "Runic Armor": content/regles/equipements/haut-runic-armor.md
+              - "Rust Lich Armor": content/regles/equipements/haut-rust-lich-armor.md
+              - "Scaled Leather Attire": content/regles/equipements/haut-scaled-leather-attire.md
+              - "Scarlet Robes": content/regles/equipements/haut-scarlet-robes.md
+              - "Scavenger Coat": content/regles/equipements/haut-scavenger-coat.md
+              - "Scholar Attire": content/regles/equipements/haut-scholar-attire.md
+              - "Shadow Kazite Light Armor": content/regles/equipements/haut-shadow-kazite-light-armor.md
+              - "Shadow Light Kazite Shirt": content/regles/equipements/haut-shadow-light-kazite-shirt.md
+              - "Shock Armor": content/regles/equipements/haut-shock-armor.md
+              - "Silver Armor": content/regles/equipements/haut-silver-armor.md
+              - "Slayer's Armor": content/regles/equipements/haut-slayer-s-armor.md
+              - "Squire Attire": content/regles/equipements/haut-squire-attire.md
+              - "Tattered Attire": content/regles/equipements/haut-tattered-attire.md
+              - "Tenebrous Armor": content/regles/equipements/haut-tenebrous-armor.md
+              - "Trader Garb": content/regles/equipements/haut-trader-garb.md
+              - "Tsar Armor": content/regles/equipements/haut-tsar-armor.md
+              - "Vigilante Armor": content/regles/equipements/haut-vigilante-armor.md
+              - "Virgin Armor": content/regles/equipements/haut-virgin-armor.md
+              - "White Arcane Robe": content/regles/equipements/haut-white-arcane-robe.md
+              - "White Kintsugi Armor": content/regles/equipements/haut-white-kintsugi-armor.md
+              - "White Priest Robes": content/regles/equipements/haut-white-priest-robes.md
+              - "Wolf Mage Armor": content/regles/equipements/haut-wolf-mage-armor.md
+              - "Wolf Medic Armor": content/regles/equipements/haut-wolf-medic-armor.md
+              - "Wolf Plate Armor": content/regles/equipements/haut-wolf-plate-armor.md
+              - "Dark Worker Attire": content/regles/equipements/haut-dark-worker-attire.md
+              - "Green Worker Attire": content/regles/equipements/haut-green-worker-attire.md
+              - "Patterned Worker Attire": content/regles/equipements/haut-patterned-worker-attire.md
+              - "Zagis' Armor": content/regles/equipements/haut-zagis-armor.md
+              - "Beige Garb": content/regles/equipements/haut-beige-garb.md
+              - "Chitin Desert Tunic": content/regles/equipements/haut-chitin-desert-tunic.md
+              - "Clansage Robe": content/regles/equipements/haut-clansage-robe.md
+              - "Dark Green Garb": content/regles/equipements/haut-dark-green-garb.md
+              - "Dark Red Garb": content/regles/equipements/haut-dark-red-garb.md
+              - "Gray Garb": content/regles/equipements/haut-gray-garb.md
+              - "Green Garb": content/regles/equipements/haut-green-garb.md
+              - "Pearlescent Mail": content/regles/equipements/haut-pearlescent-mail.md
+              - "Red Clansage Robe": content/regles/equipements/haut-red-clansage-robe.md
+              - "Striped Garb": content/regles/equipements/haut-striped-garb.md
+          - Mains:
+              - "Adventurer Gloves": content/regles/equipements/mains-adventurer-gloves.md
+              - "Ammolite Gauntlets": content/regles/equipements/mains-ammolite-gauntlets.md
+              - "Antique Plate Gauntlets": content/regles/equipements/mains-antique-plate-gauntlets.md
+              - "Arcane Gloves": content/regles/equipements/mains-arcane-gloves.md
+              - "Ash Gloves": content/regles/equipements/mains-ash-gloves.md
+              - "Barrier Gauntlets": content/regles/equipements/mains-barrier-gauntlets.md
+              - "Black Fur Gloves": content/regles/equipements/mains-black-fur-gloves.md
+              - "Black Plate Gauntlets": content/regles/equipements/mains-black-plate-gauntlets.md
+              - "Blue Sand Gauntlets": content/regles/equipements/mains-blue-sand-gauntlets.md
+              - "Brigand Gloves": content/regles/equipements/mains-brigand-gloves.md
+              - "Caged Gauntlets": content/regles/equipements/mains-caged-gauntlets.md
+              - "Caldera Mail Gauntlets": content/regles/equipements/mains-caldera-mail-gauntlets.md
+              - "Candle Plate Gauntlets": content/regles/equipements/mains-candle-plate-gauntlets.md
+              - "Chalcedony Gauntlets": content/regles/equipements/mains-chalcedony-gauntlets.md
+              - "Copal Gauntlets": content/regles/equipements/mains-copal-gauntlets.md
+              - "Crimson Plate Gauntlets": content/regles/equipements/mains-crimson-plate-gauntlets.md
+              - "Dancer Gloves": content/regles/equipements/mains-dancer-gloves.md
+              - "Desert Gloves": content/regles/equipements/mains-desert-gloves.md
+              - "Elite Desert Gloves": content/regles/equipements/mains-elite-desert-gloves.md
+              - "Elite Gauntlets": content/regles/equipements/mains-elite-gauntlets.md
+              - "Entomber Gloves": content/regles/equipements/mains-entomber-gloves.md
+              - "Festive Gloves": content/regles/equipements/mains-festive-gloves.md
+              - "Fur Gloves": content/regles/equipements/mains-fur-gloves.md
+              - "Gold-Lich Gloves": content/regles/equipements/mains-gold-lich-gloves.md
+              - "Green Copal Gauntlets": content/regles/equipements/mains-green-copal-gauntlets.md
+              - "Halfplate Gloves": content/regles/equipements/mains-halfplate-gloves.md
+              - "Horror Gauntlets": content/regles/equipements/mains-horror-gauntlets.md
+              - "Jade Acolyte Gloves": content/regles/equipements/mains-jade-acolyte-gloves.md
+              - "Jade-Lich Gloves": content/regles/equipements/mains-jade-lich-gloves.md
+              - "Kazite Light Gloves": content/regles/equipements/mains-kazite-light-gloves.md
+              - "Kazite Gauntlets": content/regles/equipements/mains-kazite-gauntlets.md
+              - "Kintsugi Gauntlets": content/regles/equipements/mains-kintsugi-gauntlets.md
+              - "Krypteia Gloves": content/regles/equipements/mains-krypteia-gloves.md
+              - "Light Clothes Gloves": content/regles/equipements/mains-light-clothes-gloves.md
+              - "Looter Gloves": content/regles/equipements/mains-looter-gloves.md
+              - "Makeshift Leather Gloves": content/regles/equipements/mains-makeshift-leather-gloves.md
+              - "Manawall Gauntlets": content/regles/equipements/mains-manawall-gauntlets.md
+              - "Master Desert Gloves": content/regles/equipements/mains-master-desert-gloves.md
+              - "Master Kazite Gauntlets": content/regles/equipements/mains-master-kazite-gauntlets.md
+              - "Master Trader Gloves": content/regles/equipements/mains-master-trader-gloves.md
+              - "Merton's Handbones": content/regles/equipements/mains-merton-s-handbones.md
+              - "Militia Gloves": content/regles/equipements/mains-militia-gloves.md
+              - "Miner Gloves": content/regles/equipements/mains-miner-gloves.md
+              - "Noble Gloves": content/regles/equipements/mains-noble-gloves.md
+              - "Nobleman Gloves": content/regles/equipements/mains-nobleman-gloves.md
+              - "Novice Gloves": content/regles/equipements/mains-novice-gloves.md
+              - "Orichalcum Gauntlets": content/regles/equipements/mains-orichalcum-gauntlets.md
+              - "Padded Gloves": content/regles/equipements/mains-padded-gloves.md
+              - "Palladium Gauntlets": content/regles/equipements/mains-palladium-gauntlets.md
+              - "Pathfinder Gloves": content/regles/equipements/mains-pathfinder-gloves.md
+              - "Petrified Wood Gauntlets": content/regles/equipements/mains-petrified-wood-gauntlets.md
+              - "Pilgrim Gloves": content/regles/equipements/mains-pilgrim-gloves.md
+              - "Plate Gauntlets": content/regles/equipements/mains-plate-gauntlets.md
+              - "Rich Gloves": content/regles/equipements/mains-rich-gloves.md
+              - "Runic Gauntlets": content/regles/equipements/mains-runic-gauntlets.md
+              - "Rust Lich Gloves": content/regles/equipements/mains-rust-lich-gloves.md
+              - "Scaled Leather Gloves": content/regles/equipements/mains-scaled-leather-gloves.md
+              - "Scarlet Gloves": content/regles/equipements/mains-scarlet-gloves.md
+              - "Scavenger Gloves": content/regles/equipements/mains-scavenger-gloves.md
+              - "Scholar Gloves": content/regles/equipements/mains-scholar-gloves.md
+              - "Shadow Kazite Gloves": content/regles/equipements/mains-shadow-kazite-gloves.md
+              - "Shock Gauntlets": content/regles/equipements/mains-shock-gauntlets.md
+              - "Silver Gauntlets": content/regles/equipements/mains-silver-gauntlets.md
+              - "Slayer's Gauntlets": content/regles/equipements/mains-slayer-s-gauntlets.md
+              - "Squire Gloves": content/regles/equipements/mains-squire-gloves.md
+              - "Tattered Gloves": content/regles/equipements/mains-tattered-gloves.md
+              - "Tenebrous Gloves": content/regles/equipements/mains-tenebrous-gloves.md
+              - "Trader Gloves": content/regles/equipements/mains-trader-gloves.md
+              - "Tsar Gauntlets": content/regles/equipements/mains-tsar-gauntlets.md
+              - "Vigilante Gloves": content/regles/equipements/mains-vigilante-gloves.md
+              - "Virgin Gauntlets": content/regles/equipements/mains-virgin-gauntlets.md
+              - "White Arcane Gloves": content/regles/equipements/mains-white-arcane-gloves.md
+              - "White Kintsugi Gauntlets": content/regles/equipements/mains-white-kintsugi-gauntlets.md
+              - "White Priest Gloves": content/regles/equipements/mains-white-priest-gloves.md
+              - "Wolf Mage Gauntlets": content/regles/equipements/mains-wolf-mage-gauntlets.md
+              - "Wolf Medic Gauntlets": content/regles/equipements/mains-wolf-medic-gauntlets.md
+              - "Wolf Plate Gauntlets": content/regles/equipements/mains-wolf-plate-gauntlets.md
+              - "Worker Gloves": content/regles/equipements/mains-worker-gloves.md
+              - "Zagis' Gloves": content/regles/equipements/mains-zagis-gloves.md
+              - "Beige Gloves": content/regles/equipements/mains-beige-gloves.md
+              - "Chitin Desert Gauntlets": content/regles/equipements/mains-chitin-desert-gauntlets.md
+              - "Clansage Gloves": content/regles/equipements/mains-clansage-gloves.md
+              - "Dark Green Gloves": content/regles/equipements/mains-dark-green-gloves.md
+              - "Dark Red Gloves": content/regles/equipements/mains-dark-red-gloves.md
+              - "Gray Gloves": content/regles/equipements/mains-gray-gloves.md
+              - "Green Gloves": content/regles/equipements/mains-green-gloves.md
+              - "Pearlescent Gauntlets": content/regles/equipements/mains-pearlescent-gauntlets.md
+              - "Red Clansage Gloves": content/regles/equipements/mains-red-clansage-gloves.md
+              - "Striped Gloves": content/regles/equipements/mains-striped-gloves.md
+          - Bas:
+              - "Adventurer Trousers": content/regles/equipements/bas-adventurer-trousers.md
+              - "Ammolite Leg Armor": content/regles/equipements/bas-ammolite-leg-armor.md
+              - "Antique Plate Leg Armor": content/regles/equipements/bas-antique-plate-leg-armor.md
+              - "Arcane Trousers": content/regles/equipements/bas-arcane-trousers.md
+              - "Ash Trousers": content/regles/equipements/bas-ash-trousers.md
+              - "Barrier Leg Armor": content/regles/equipements/bas-barrier-leg-armor.md
+              - "Black Fur Trousers": content/regles/equipements/bas-black-fur-trousers.md
+              - "Black Plate Leg Armor": content/regles/equipements/bas-black-plate-leg-armor.md
+              - "Blue Sand Leg Armor": content/regles/equipements/bas-blue-sand-leg-armor.md
+              - "Brigand Trousers": content/regles/equipements/bas-brigand-trousers.md
+              - "Caged Leg Armor": content/regles/equipements/bas-caged-leg-armor.md
+              - "Caldera Mail Leg Armor": content/regles/equipements/bas-caldera-mail-leg-armor.md
+              - "Candle Plate Leg Armor": content/regles/equipements/bas-candle-plate-leg-armor.md
+              - "Chalcedony Leg Armor": content/regles/equipements/bas-chalcedony-leg-armor.md
+              - "Copal Leg Armor": content/regles/equipements/bas-copal-leg-armor.md
+              - "Crimson Plate Leg Armor": content/regles/equipements/bas-crimson-plate-leg-armor.md
+              - "Dancer Leggings": content/regles/equipements/bas-dancer-leggings.md
+              - "Desert Trousers": content/regles/equipements/bas-desert-trousers.md
+              - "Elite Desert Trousers": content/regles/equipements/bas-elite-desert-trousers.md
+              - "Elite Leg Armor": content/regles/equipements/bas-elite-leg-armor.md
+              - "Entomber Trousers": content/regles/equipements/bas-entomber-trousers.md
+              - "Festive Trousers": content/regles/equipements/bas-festive-trousers.md
+              - "Fur Trousers": content/regles/equipements/bas-fur-trousers.md
+              - "Gold-Lich Trousers": content/regles/equipements/bas-gold-lich-trousers.md
+              - "Green Copal Leg Armor": content/regles/equipements/bas-green-copal-leg-armor.md
+              - "Halfplate Trousers": content/regles/equipements/bas-halfplate-trousers.md
+              - "Horror Leg Armor": content/regles/equipements/bas-horror-leg-armor.md
+              - "Jade Acolyte Trousers": content/regles/equipements/bas-jade-acolyte-trousers.md
+              - "Jade-Lich Trousers": content/regles/equipements/bas-jade-lich-trousers.md
+              - "Kazite Light Trousers": content/regles/equipements/bas-kazite-light-trousers.md
+              - "Kazite Leg Armor": content/regles/equipements/bas-kazite-leg-armor.md
+              - "Kintsugi Leg Armor": content/regles/equipements/bas-kintsugi-leg-armor.md
+              - "Krypteia Trousers": content/regles/equipements/bas-krypteia-trousers.md
+              - "Light Clothes Trousers": content/regles/equipements/bas-light-clothes-trousers.md
+              - "Looter Trousers": content/regles/equipements/bas-looter-trousers.md
+              - "Makeshift Leather Trousers": content/regles/equipements/bas-makeshift-leather-trousers.md
+              - "Manawall Leg Armor": content/regles/equipements/bas-manawall-leg-armor.md
+              - "Master Desert Trousers": content/regles/equipements/bas-master-desert-trousers.md
+              - "Master Kazite Leg Armor": content/regles/equipements/bas-master-kazite-leg-armor.md
+              - "Master Trader Trousers": content/regles/equipements/bas-master-trader-trousers.md
+              - "Merton's Shinbones": content/regles/equipements/bas-merton-s-shinbones.md
+              - "Militia Trousers": content/regles/equipements/bas-militia-trousers.md
+              - "Miner Trousers": content/regles/equipements/bas-miner-trousers.md
+              - "Noble Trousers": content/regles/equipements/bas-noble-trousers.md
+              - "Nobleman Trousers": content/regles/equipements/bas-nobleman-trousers.md
+              - "Novice Trousers": content/regles/equipements/bas-novice-trousers.md
+              - "Orichalcum Leg Armor": content/regles/equipements/bas-orichalcum-leg-armor.md
+              - "Padded Trousers": content/regles/equipements/bas-padded-trousers.md
+              - "Palladium Leg Armor": content/regles/equipements/bas-palladium-leg-armor.md
+              - "Pathfinder Trousers": content/regles/equipements/bas-pathfinder-trousers.md
+              - "Petrified Wood Leg Armor": content/regles/equipements/bas-petrified-wood-leg-armor.md
+              - "Pilgrim Trousers": content/regles/equipements/bas-pilgrim-trousers.md
+              - "Plate Leg Armor": content/regles/equipements/bas-plate-leg-armor.md
+              - "Rich Trousers": content/regles/equipements/bas-rich-trousers.md
+              - "Runic Leg Armor": content/regles/equipements/bas-runic-leg-armor.md
+              - "Rust Lich Trousers": content/regles/equipements/bas-rust-lich-trousers.md
+              - "Scaled Leather Trousers": content/regles/equipements/bas-scaled-leather-trousers.md
+              - "Scarlet Trousers": content/regles/equipements/bas-scarlet-trousers.md
+              - "Scavenger Trousers": content/regles/equipements/bas-scavenger-trousers.md
+              - "Scholar Trousers": content/regles/equipements/bas-scholar-trousers.md
+              - "Shadow Kazite Trousers": content/regles/equipements/bas-shadow-kazite-trousers.md
+              - "Shock Leg Armor": content/regles/equipements/bas-shock-leg-armor.md
+              - "Silver Leg Armor": content/regles/equipements/bas-silver-leg-armor.md
+              - "Slayer's Leg Armor": content/regles/equipements/bas-slayer-s-leg-armor.md
+              - "Squire Trousers": content/regles/equipements/bas-squire-trousers.md
+              - "Tattered Trousers": content/regles/equipements/bas-tattered-trousers.md
+              - "Tenebrous Trousers": content/regles/equipements/bas-tenebrous-trousers.md
+              - "Trader Trousers": content/regles/equipements/bas-trader-trousers.md
+              - "Tsar Leg Armor": content/regles/equipements/bas-tsar-leg-armor.md
+              - "Vigilante Trousers": content/regles/equipements/bas-vigilante-trousers.md
+              - "Virgin Leg Armor": content/regles/equipements/bas-virgin-leg-armor.md
+              - "White Arcane Trousers": content/regles/equipements/bas-white-arcane-trousers.md
+              - "White Kintsugi Leg Armor": content/regles/equipements/bas-white-kintsugi-leg-armor.md
+              - "White Priest Trousers": content/regles/equipements/bas-white-priest-trousers.md
+              - "Wolf Mage Leg Armor": content/regles/equipements/bas-wolf-mage-leg-armor.md
+              - "Wolf Medic Leg Armor": content/regles/equipements/bas-wolf-medic-leg-armor.md
+              - "Wolf Plate Leg Armor": content/regles/equipements/bas-wolf-plate-leg-armor.md
+              - "Worker Trousers": content/regles/equipements/bas-worker-trousers.md
+              - "Zagis' Trousers": content/regles/equipements/bas-zagis-trousers.md
+              - "Beige Trousers": content/regles/equipements/bas-beige-trousers.md
+              - "Chitin Desert Trousers": content/regles/equipements/bas-chitin-desert-trousers.md
+              - "Clansage Trousers": content/regles/equipements/bas-clansage-trousers.md
+              - "Dark Green Trousers": content/regles/equipements/bas-dark-green-trousers.md
+              - "Dark Red Trousers": content/regles/equipements/bas-dark-red-trousers.md
+              - "Gray Trousers": content/regles/equipements/bas-gray-trousers.md
+              - "Green Trousers": content/regles/equipements/bas-green-trousers.md
+              - "Pearlescent Leg Armor": content/regles/equipements/bas-pearlescent-leg-armor.md
+              - "Red Clansage Trousers": content/regles/equipements/bas-red-clansage-trousers.md
+              - "Striped Trousers": content/regles/equipements/bas-striped-trousers.md
+          - Pieds:
+              - "Adventurer Boots": content/regles/equipements/pieds-adventurer-boots.md
+              - "Ammolite Boots": content/regles/equipements/pieds-ammolite-boots.md
+              - "Antique Plate Boots": content/regles/equipements/pieds-antique-plate-boots.md
+              - "Arcane Boots": content/regles/equipements/pieds-arcane-boots.md
+              - "Ash Boots": content/regles/equipements/pieds-ash-boots.md
+              - "Barrier Boots": content/regles/equipements/pieds-barrier-boots.md
+              - "Black Fur Boots": content/regles/equipements/pieds-black-fur-boots.md
+              - "Black Plate Boots": content/regles/equipements/pieds-black-plate-boots.md
+              - "Blue Sand Boots": content/regles/equipements/pieds-blue-sand-boots.md
+              - "Brigand Boots": content/regles/equipements/pieds-brigand-boots.md
+              - "Caged Armor Boots": content/regles/equipements/pieds-caged-armor-boots.md
+              - "Caldera Mail Boots": content/regles/equipements/pieds-caldera-mail-boots.md
+              - "Candle Plate Boots": content/regles/equipements/pieds-candle-plate-boots.md
+              - "Chalcedony Boots": content/regles/equipements/pieds-chalcedony-boots.md
+              - "Copal Boots": content/regles/equipements/pieds-copal-boots.md
+              - "Crimson Plate Boots": content/regles/equipements/pieds-crimson-plate-boots.md
+              - "Dancer Shoes": content/regles/equipements/pieds-dancer-shoes.md
+              - "Desert Boots": content/regles/equipements/pieds-desert-boots.md
+              - "Elite Desert Boots": content/regles/equipements/pieds-elite-desert-boots.md
+              - "Elite Plate Boots": content/regles/equipements/pieds-elite-plate-boots.md
+              - "Entomber Boots": content/regles/equipements/pieds-entomber-boots.md
+              - "Festive Boots": content/regles/equipements/pieds-festive-boots.md
+              - "Fur Boots": content/regles/equipements/pieds-fur-boots.md
+              - "Gold-Lich Boots": content/regles/equipements/pieds-gold-lich-boots.md
+              - "Green Copal Boots": content/regles/equipements/pieds-green-copal-boots.md
+              - "Halfplate Boots": content/regles/equipements/pieds-halfplate-boots.md
+              - "Horror Greaves": content/regles/equipements/pieds-horror-greaves.md
+              - "Jade Acolyte Boots": content/regles/equipements/pieds-jade-acolyte-boots.md
+              - "Jade-Lich Boots": content/regles/equipements/pieds-jade-lich-boots.md
+              - "Kazite Light Boots": content/regles/equipements/pieds-kazite-light-boots.md
+              - "Kazite Boots": content/regles/equipements/pieds-kazite-boots.md
+              - "Kintsugi Boots": content/regles/equipements/pieds-kintsugi-boots.md
+              - "Krypteia Boots": content/regles/equipements/pieds-krypteia-boots.md
+              - "Sandals": content/regles/equipements/pieds-sandals.md
+              - "Looter Boots": content/regles/equipements/pieds-looter-boots.md
+              - "Makeshift Leather Boots": content/regles/equipements/pieds-makeshift-leather-boots.md
+              - "Manawall Boots": content/regles/equipements/pieds-manawall-boots.md
+              - "Master Desert Boots": content/regles/equipements/pieds-master-desert-boots.md
+              - "Master Kazite Boots": content/regles/equipements/pieds-master-kazite-boots.md
+              - "Master Trader Boots": content/regles/equipements/pieds-master-trader-boots.md
+              - "Merton's Footbones": content/regles/equipements/pieds-merton-s-footbones.md
+              - "Militia Boots": content/regles/equipements/pieds-militia-boots.md
+              - "Miner Boots": content/regles/equipements/pieds-miner-boots.md
+              - "Noble Shoes": content/regles/equipements/pieds-noble-shoes.md
+              - "Bright Nobleman Boots": content/regles/equipements/pieds-bright-nobleman-boots.md
+              - "Dark Nobleman Boots": content/regles/equipements/pieds-dark-nobleman-boots.md
+              - "Novice Boots": content/regles/equipements/pieds-novice-boots.md
+              - "Orichalcum Boots": content/regles/equipements/pieds-orichalcum-boots.md
+              - "Padded Boots": content/regles/equipements/pieds-padded-boots.md
+              - "Palladium Boots": content/regles/equipements/pieds-palladium-boots.md
+              - "Pathfinder Boots": content/regles/equipements/pieds-pathfinder-boots.md
+              - "Petrified Wood Boots": content/regles/equipements/pieds-petrified-wood-boots.md
+              - "Pilgrim Boots": content/regles/equipements/pieds-pilgrim-boots.md
+              - "Plate Boots": content/regles/equipements/pieds-plate-boots.md
+              - "Rich Boots": content/regles/equipements/pieds-rich-boots.md
+              - "Runic Boots": content/regles/equipements/pieds-runic-boots.md
+              - "Rust Lich Boots": content/regles/equipements/pieds-rust-lich-boots.md
+              - "Scaled Leather Boots": content/regles/equipements/pieds-scaled-leather-boots.md
+              - "Scarlet Boots": content/regles/equipements/pieds-scarlet-boots.md
+              - "Scavenger Boots": content/regles/equipements/pieds-scavenger-boots.md
+              - "Scholar Boots": content/regles/equipements/pieds-scholar-boots.md
+              - "Shadow Kazite Light Boots": content/regles/equipements/pieds-shadow-kazite-light-boots.md
+              - "Shock Boots": content/regles/equipements/pieds-shock-boots.md
+              - "Silver Boots": content/regles/equipements/pieds-silver-boots.md
+              - "Slayer's Boots": content/regles/equipements/pieds-slayer-s-boots.md
+              - "Squire Boots": content/regles/equipements/pieds-squire-boots.md
+              - "Tattered Boots": content/regles/equipements/pieds-tattered-boots.md
+              - "Tenebrous Boots": content/regles/equipements/pieds-tenebrous-boots.md
+              - "Trader Boots": content/regles/equipements/pieds-trader-boots.md
+              - "Tsar Boots": content/regles/equipements/pieds-tsar-boots.md
+              - "Vigilante Boots": content/regles/equipements/pieds-vigilante-boots.md
+              - "Virgin Boots": content/regles/equipements/pieds-virgin-boots.md
+              - "White Arcane Boots": content/regles/equipements/pieds-white-arcane-boots.md
+              - "White Kintsugi Boots": content/regles/equipements/pieds-white-kintsugi-boots.md
+              - "White Priest Boots": content/regles/equipements/pieds-white-priest-boots.md
+              - "Wolf Mage Boots": content/regles/equipements/pieds-wolf-mage-boots.md
+              - "Wolf Medic Boots": content/regles/equipements/pieds-wolf-medic-boots.md
+              - "Wolf Plate Boots": content/regles/equipements/pieds-wolf-plate-boots.md
+              - "Black Worker Boots": content/regles/equipements/pieds-black-worker-boots.md
+              - "Worker Boots": content/regles/equipements/pieds-worker-boots.md
+              - "Zagis' Boots": content/regles/equipements/pieds-zagis-boots.md
+              - "Simple Shoes": content/regles/equipements/pieds-simple-shoes.md
+          - Sacs à dos:
+              - "Primitive Satchel": content/regles/equipements/backpacks-primitive-satchel.md
+              - "Adventurer Backpack": content/regles/equipements/backpacks-adventurer-backpack.md
+              - "Nomad Backpack": content/regles/equipements/backpacks-nomad-backpack.md
+              - "Alchemist Backpack": content/regles/equipements/backpacks-alchemist-backpack.md
+              - "Scaled Satchel": content/regles/equipements/backpacks-scaled-satchel.md
+              - "Strongbox Backpack": content/regles/equipements/backpacks-strongbox-backpack.md
+              - "Brigand's Backpack": content/regles/equipements/backpacks-brigand-s-backpack.md
+              - "Boozu Hide Backpack": content/regles/equipements/backpacks-boozu-hide-backpack.md
+              - "Brass-Wolf Backpack": content/regles/equipements/backpacks-brass-wolf-backpack.md
+              - "Glowstone Backpack": content/regles/equipements/backpacks-glowstone-backpack.md
+              - "Light Mender's Backpack": content/regles/equipements/backpacks-light-mender-s-backpack.md
+              - "Preservation Backpack": content/regles/equipements/backpacks-preservation-backpack.md
+              - "Prospector Backpack": content/regles/equipements/backpacks-prospector-backpack.md
+              - "Chalcedony Backpack": content/regles/equipements/backpacks-chalcedony-backpack.md
+              - "Dusk Backpack": content/regles/equipements/backpacks-dusk-backpack.md
+              - "Weaver's Backpack": content/regles/equipements/backpacks-weaver-s-backpack.md
+              - "Zhorn's Hunting Backpack": content/regles/equipements/backpacks-zhorn-s-hunting-backpack.md
+              - "Trader Backpack": content/regles/equipements/backpacks-trader-backpack.md
       - Vivre: content/regles/vivre.md
   # La fiche de personnage, servie par le site et non par l'extension : la même
   # page monte la fiche ici, hors Roll20, et dans l'iframe de la coquille signée.
@@ -56,7 +1333,7 @@ theme:
     - navigation.instant  # navigation SPA : pas de rechargement complet (pas de flash)
     - navigation.tabs        # barre horizontale en haut
     - navigation.tabs.sticky # la barre reste collée (hauteur d'en-tête constante)
-    - navigation.expand      # arborescence dépliée par défaut
+    - navigation.prune       # catalogue : branches actives uniquement
     - navigation.indexes
     - navigation.footer      # liens page précédente / suivante (requis pour le défilement continu)
     - content.tooltips
@@ -74,18 +1351,18 @@ extra_css:
   # par ces deux listes, Roll20 la charge par le manifeste ; deux clés de cache
   # qui divergent, et les deux mondes font tourner deux codes en croyant faire
   # tourner le même. Un fichier monté d'un seul côté ne se voit pas.
-  - stylesheets/owd-fiche.css?v=135
-  - stylesheets/owd-des3d.css?v=135  # les dés en volume, pris dans l'extension (hooks/des3d.py)
+  - stylesheets/owd-fiche.css?v=136
+  - stylesheets/owd-des3d.css?v=136  # les dés en volume, pris dans l'extension (hooks/des3d.py)
 extra_javascript:
   - javascripts/changelog.js
   - javascripts/continuous.js
   - javascripts/nav-drawer.js
   - javascripts/night.js
-  - javascripts/owd-migrations.js?v=135 # moteur de migration : AVANT le bundle, qui l'appelle
-  - javascripts/owd-mods.js?v=135       # moteur de mods : AVANT la fiche, qui l'interroge (et facultatif de naissance)
-  - javascripts/owd-des3d.js?v=135    # moteur des dés en volume : AVANT la fiche, qui s'en sert
-  - javascripts/owd-inventaire-data.js?v=135
-  - javascripts/owd-fiche.js?v=135
+  - javascripts/owd-migrations.js?v=136 # moteur de migration : AVANT le bundle, qui l'appelle
+  - javascripts/owd-mods.js?v=136       # moteur de mods : AVANT la fiche, qui l'interroge (et facultatif de naissance)
+  - javascripts/owd-des3d.js?v=136    # moteur des dés en volume : AVANT la fiche, qui s'en sert
+  - javascripts/owd-inventaire-data.js?v=136
+  - javascripts/owd-fiche.js?v=136
   - javascripts/copybtn.js
 hooks:
   - hooks/changelog.py
@@ -95,6 +1372,7 @@ hooks:
   # Les données viennent des règles, jamais du code — et ce hook s'arrête plutôt
   # que de deviner ce qu'il n'a pas su lire.
   - hooks/owd_creation.py
+  - hooks/boutique.py
   # Sert au site le moteur des dés en volume de l'extension (des3d.js et .css),
   # lu à sa seule source : la fiche montre ses dés d'action avec.
   - hooks/des3d.py
