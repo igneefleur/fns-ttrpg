@@ -1,5 +1,2764 @@
 [
 {
+"short": "6ba6f7f",
+"author": "Théo Cavaillès",
+"date": "2026-10-15T15:18:22+02:00",
+"message": "Version 3.16.0b — Fenêtres repliables et nouveau module Défenses",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/6ba6f7fc57fef7ef211c028e0cad9af13763e6a1",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/equipements/b-tons-assassin-staff.md",
+"url": "content/regles/equipements/b-tons-assassin-staff/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/b-tons-beast-golem-staff.md",
+"url": "content/regles/equipements/b-tons-beast-golem-staff/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/b-tons-brutal-staff.md",
+"url": "content/regles/equipements/b-tons-brutal-staff/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/b-tons-chalcedony-staff.md",
+"url": "content/regles/equipements/b-tons-chalcedony-staff/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/b-tons-crescent-staff.md",
+"url": "content/regles/equipements/b-tons-crescent-staff/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/b-tons-damascene-staff.md",
+"url": "content/regles/equipements/b-tons-damascene-staff/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/b-tons-fang-staff.md",
+"url": "content/regles/equipements/b-tons-fang-staff/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/b-tons-forged-glass-staff.md",
+"url": "content/regles/equipements/b-tons-forged-glass-staff/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/b-tons-galvanic-staff.md",
+"url": "content/regles/equipements/b-tons-galvanic-staff/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/b-tons-ghost-staff.md",
+"url": "content/regles/equipements/b-tons-ghost-staff/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/b-tons-giantkind-staff.md",
+"url": "content/regles/equipements/b-tons-giantkind-staff/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/b-tons-gold-lich-staff.md",
+"url": "content/regles/equipements/b-tons-gold-lich-staff/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/b-tons-golem-staff.md",
+"url": "content/regles/equipements/b-tons-golem-staff/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/b-tons-hailfrost-staff.md",
+"url": "content/regles/equipements/b-tons-hailfrost-staff/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/b-tons-horror-staff.md",
+"url": "content/regles/equipements/b-tons-horror-staff/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/b-tons-iron-staff.md",
+"url": "content/regles/equipements/b-tons-iron-staff/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/b-tons-kazite-staff.md",
+"url": "content/regles/equipements/b-tons-kazite-staff/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/b-tons-manticore-staff.md",
+"url": "content/regles/equipements/b-tons-manticore-staff/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/b-tons-marble-staff.md",
+"url": "content/regles/equipements/b-tons-marble-staff/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/b-tons-masterpiece-staff.md",
+"url": "content/regles/equipements/b-tons-masterpiece-staff/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/b-tons-meteoric-staff.md",
+"url": "content/regles/equipements/b-tons-meteoric-staff/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/b-tons-militia-staff.md",
+"url": "content/regles/equipements/b-tons-militia-staff/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/b-tons-obsidian-staff.md",
+"url": "content/regles/equipements/b-tons-obsidian-staff/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/b-tons-old-legion-staff.md",
+"url": "content/regles/equipements/b-tons-old-legion-staff/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/b-tons-palladium-staff.md",
+"url": "content/regles/equipements/b-tons-palladium-staff/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/b-tons-porcelain-staff.md",
+"url": "content/regles/equipements/b-tons-porcelain-staff/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/b-tons-runic-staff.md",
+"url": "content/regles/equipements/b-tons-runic-staff/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/b-tons-savage-staff.md",
+"url": "content/regles/equipements/b-tons-savage-staff/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/b-tons-smoke-staff.md",
+"url": "content/regles/equipements/b-tons-smoke-staff/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/b-tons-thorny-staff.md",
+"url": "content/regles/equipements/b-tons-thorny-staff/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/b-tons-tsar-staff.md",
+"url": "content/regles/equipements/b-tons-tsar-staff/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/b-tons-tuanosaur-staff.md",
+"url": "content/regles/equipements/b-tons-tuanosaur-staff/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/b-tons-vampiric-staff.md",
+"url": "content/regles/equipements/b-tons-vampiric-staff/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/b-tons-vigilante-staff.md",
+"url": "content/regles/equipements/b-tons-vigilante-staff/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/b-tons-virgin-staff.md",
+"url": "content/regles/equipements/b-tons-virgin-staff/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/b-tons-withering-staff.md",
+"url": "content/regles/equipements/b-tons-withering-staff/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/b-tons-wolf-staff.md",
+"url": "content/regles/equipements/b-tons-wolf-staff/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-adventurer-trousers.md",
+"url": "content/regles/equipements/bas-adventurer-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-ammolite-leg-armor.md",
+"url": "content/regles/equipements/bas-ammolite-leg-armor/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-antique-plate-leg-armor.md",
+"url": "content/regles/equipements/bas-antique-plate-leg-armor/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-arcane-trousers.md",
+"url": "content/regles/equipements/bas-arcane-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-ash-trousers.md",
+"url": "content/regles/equipements/bas-ash-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-barrier-leg-armor.md",
+"url": "content/regles/equipements/bas-barrier-leg-armor/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-beige-trousers.md",
+"url": "content/regles/equipements/bas-beige-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-black-fur-trousers.md",
+"url": "content/regles/equipements/bas-black-fur-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-black-plate-leg-armor.md",
+"url": "content/regles/equipements/bas-black-plate-leg-armor/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-blue-sand-leg-armor.md",
+"url": "content/regles/equipements/bas-blue-sand-leg-armor/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-brigand-trousers.md",
+"url": "content/regles/equipements/bas-brigand-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-caged-leg-armor.md",
+"url": "content/regles/equipements/bas-caged-leg-armor/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-caldera-mail-leg-armor.md",
+"url": "content/regles/equipements/bas-caldera-mail-leg-armor/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-candle-plate-leg-armor.md",
+"url": "content/regles/equipements/bas-candle-plate-leg-armor/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-chalcedony-leg-armor.md",
+"url": "content/regles/equipements/bas-chalcedony-leg-armor/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-chitin-desert-trousers.md",
+"url": "content/regles/equipements/bas-chitin-desert-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-clansage-trousers.md",
+"url": "content/regles/equipements/bas-clansage-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-copal-leg-armor.md",
+"url": "content/regles/equipements/bas-copal-leg-armor/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-crimson-plate-leg-armor.md",
+"url": "content/regles/equipements/bas-crimson-plate-leg-armor/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-dark-green-trousers.md",
+"url": "content/regles/equipements/bas-dark-green-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-dark-red-trousers.md",
+"url": "content/regles/equipements/bas-dark-red-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-desert-trousers.md",
+"url": "content/regles/equipements/bas-desert-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-elite-desert-trousers.md",
+"url": "content/regles/equipements/bas-elite-desert-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-elite-leg-armor.md",
+"url": "content/regles/equipements/bas-elite-leg-armor/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-entomber-trousers.md",
+"url": "content/regles/equipements/bas-entomber-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-festive-trousers.md",
+"url": "content/regles/equipements/bas-festive-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-fur-trousers.md",
+"url": "content/regles/equipements/bas-fur-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-gold-lich-trousers.md",
+"url": "content/regles/equipements/bas-gold-lich-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-gray-trousers.md",
+"url": "content/regles/equipements/bas-gray-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-green-copal-leg-armor.md",
+"url": "content/regles/equipements/bas-green-copal-leg-armor/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-green-trousers.md",
+"url": "content/regles/equipements/bas-green-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-halfplate-trousers.md",
+"url": "content/regles/equipements/bas-halfplate-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-horror-leg-armor.md",
+"url": "content/regles/equipements/bas-horror-leg-armor/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-jade-acolyte-trousers.md",
+"url": "content/regles/equipements/bas-jade-acolyte-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-jade-lich-trousers.md",
+"url": "content/regles/equipements/bas-jade-lich-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-kazite-leg-armor.md",
+"url": "content/regles/equipements/bas-kazite-leg-armor/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-kazite-light-trousers.md",
+"url": "content/regles/equipements/bas-kazite-light-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-kintsugi-leg-armor.md",
+"url": "content/regles/equipements/bas-kintsugi-leg-armor/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-krypteia-trousers.md",
+"url": "content/regles/equipements/bas-krypteia-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-light-clothes-trousers.md",
+"url": "content/regles/equipements/bas-light-clothes-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-looter-trousers.md",
+"url": "content/regles/equipements/bas-looter-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-makeshift-leather-trousers.md",
+"url": "content/regles/equipements/bas-makeshift-leather-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-manawall-leg-armor.md",
+"url": "content/regles/equipements/bas-manawall-leg-armor/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-master-desert-trousers.md",
+"url": "content/regles/equipements/bas-master-desert-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-master-kazite-leg-armor.md",
+"url": "content/regles/equipements/bas-master-kazite-leg-armor/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-master-trader-trousers.md",
+"url": "content/regles/equipements/bas-master-trader-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-militia-trousers.md",
+"url": "content/regles/equipements/bas-militia-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-miner-trousers.md",
+"url": "content/regles/equipements/bas-miner-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-noble-trousers.md",
+"url": "content/regles/equipements/bas-noble-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-nobleman-trousers.md",
+"url": "content/regles/equipements/bas-nobleman-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-novice-trousers.md",
+"url": "content/regles/equipements/bas-novice-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-orichalcum-leg-armor.md",
+"url": "content/regles/equipements/bas-orichalcum-leg-armor/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-padded-trousers.md",
+"url": "content/regles/equipements/bas-padded-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-palladium-leg-armor.md",
+"url": "content/regles/equipements/bas-palladium-leg-armor/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-pathfinder-trousers.md",
+"url": "content/regles/equipements/bas-pathfinder-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-pearlescent-leg-armor.md",
+"url": "content/regles/equipements/bas-pearlescent-leg-armor/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-petrified-wood-leg-armor.md",
+"url": "content/regles/equipements/bas-petrified-wood-leg-armor/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-pilgrim-trousers.md",
+"url": "content/regles/equipements/bas-pilgrim-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-plate-leg-armor.md",
+"url": "content/regles/equipements/bas-plate-leg-armor/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-red-clansage-trousers.md",
+"url": "content/regles/equipements/bas-red-clansage-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-rich-trousers.md",
+"url": "content/regles/equipements/bas-rich-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-runic-leg-armor.md",
+"url": "content/regles/equipements/bas-runic-leg-armor/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-rust-lich-trousers.md",
+"url": "content/regles/equipements/bas-rust-lich-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-scaled-leather-trousers.md",
+"url": "content/regles/equipements/bas-scaled-leather-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-scarlet-trousers.md",
+"url": "content/regles/equipements/bas-scarlet-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-scavenger-trousers.md",
+"url": "content/regles/equipements/bas-scavenger-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-scholar-trousers.md",
+"url": "content/regles/equipements/bas-scholar-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-shadow-kazite-trousers.md",
+"url": "content/regles/equipements/bas-shadow-kazite-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-shock-leg-armor.md",
+"url": "content/regles/equipements/bas-shock-leg-armor/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-silver-leg-armor.md",
+"url": "content/regles/equipements/bas-silver-leg-armor/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-slayer-s-leg-armor.md",
+"url": "content/regles/equipements/bas-slayer-s-leg-armor/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-squire-trousers.md",
+"url": "content/regles/equipements/bas-squire-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-striped-trousers.md",
+"url": "content/regles/equipements/bas-striped-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-tattered-trousers.md",
+"url": "content/regles/equipements/bas-tattered-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-tenebrous-trousers.md",
+"url": "content/regles/equipements/bas-tenebrous-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-trader-trousers.md",
+"url": "content/regles/equipements/bas-trader-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-tsar-leg-armor.md",
+"url": "content/regles/equipements/bas-tsar-leg-armor/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-vigilante-trousers.md",
+"url": "content/regles/equipements/bas-vigilante-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-virgin-leg-armor.md",
+"url": "content/regles/equipements/bas-virgin-leg-armor/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-white-arcane-trousers.md",
+"url": "content/regles/equipements/bas-white-arcane-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-white-kintsugi-leg-armor.md",
+"url": "content/regles/equipements/bas-white-kintsugi-leg-armor/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-white-priest-trousers.md",
+"url": "content/regles/equipements/bas-white-priest-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-wolf-mage-leg-armor.md",
+"url": "content/regles/equipements/bas-wolf-mage-leg-armor/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-wolf-medic-leg-armor.md",
+"url": "content/regles/equipements/bas-wolf-medic-leg-armor/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-wolf-plate-leg-armor.md",
+"url": "content/regles/equipements/bas-wolf-plate-leg-armor/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-worker-trousers.md",
+"url": "content/regles/equipements/bas-worker-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/bas-zagis-trousers.md",
+"url": "content/regles/equipements/bas-zagis-trousers/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/faux-de-guerre-ancient-calygrey-war-scythe.md",
+"url": "content/regles/equipements/faux-de-guerre-ancient-calygrey-war-scythe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/faux-de-guerre-assassin-war-scythe.md",
+"url": "content/regles/equipements/faux-de-guerre-assassin-war-scythe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/faux-de-guerre-astral-war-scythe.md",
+"url": "content/regles/equipements/faux-de-guerre-astral-war-scythe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/faux-de-guerre-beast-golem-war-scythe.md",
+"url": "content/regles/equipements/faux-de-guerre-beast-golem-war-scythe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/faux-de-guerre-brutal-war-scythe.md",
+"url": "content/regles/equipements/faux-de-guerre-brutal-war-scythe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/faux-de-guerre-calygrey-war-scythe.md",
+"url": "content/regles/equipements/faux-de-guerre-calygrey-war-scythe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/faux-de-guerre-chalcedony-war-scythe.md",
+"url": "content/regles/equipements/faux-de-guerre-chalcedony-war-scythe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/faux-de-guerre-damascene-war-scythe.md",
+"url": "content/regles/equipements/faux-de-guerre-damascene-war-scythe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/faux-de-guerre-fang-war-scythe.md",
+"url": "content/regles/equipements/faux-de-guerre-fang-war-scythe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/faux-de-guerre-forged-glass-war-scythe.md",
+"url": "content/regles/equipements/faux-de-guerre-forged-glass-war-scythe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/faux-de-guerre-galvanic-war-scythe.md",
+"url": "content/regles/equipements/faux-de-guerre-galvanic-war-scythe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/faux-de-guerre-giantkind-war-scythe.md",
+"url": "content/regles/equipements/faux-de-guerre-giantkind-war-scythe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/faux-de-guerre-gold-lich-war-scythe.md",
+"url": "content/regles/equipements/faux-de-guerre-gold-lich-war-scythe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/faux-de-guerre-gold-war-scythe.md",
+"url": "content/regles/equipements/faux-de-guerre-gold-war-scythe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/faux-de-guerre-golem-war-scythe.md",
+"url": "content/regles/equipements/faux-de-guerre-golem-war-scythe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/faux-de-guerre-hailfrost-war-scythe.md",
+"url": "content/regles/equipements/faux-de-guerre-hailfrost-war-scythe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/faux-de-guerre-horror-war-scythe.md",
+"url": "content/regles/equipements/faux-de-guerre-horror-war-scythe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/faux-de-guerre-iron-war-scythe.md",
+"url": "content/regles/equipements/faux-de-guerre-iron-war-scythe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/faux-de-guerre-jade-lich-war-scythe.md",
+"url": "content/regles/equipements/faux-de-guerre-jade-lich-war-scythe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/faux-de-guerre-kazite-war-scythe.md",
+"url": "content/regles/equipements/faux-de-guerre-kazite-war-scythe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/faux-de-guerre-manticore-war-scythe.md",
+"url": "content/regles/equipements/faux-de-guerre-manticore-war-scythe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/faux-de-guerre-marble-war-scythe.md",
+"url": "content/regles/equipements/faux-de-guerre-marble-war-scythe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/faux-de-guerre-masterpiece-war-scythe.md",
+"url": "content/regles/equipements/faux-de-guerre-masterpiece-war-scythe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/faux-de-guerre-meteoric-war-scythe.md",
+"url": "content/regles/equipements/faux-de-guerre-meteoric-war-scythe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/faux-de-guerre-militia-war-scythe.md",
+"url": "content/regles/equipements/faux-de-guerre-militia-war-scythe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/faux-de-guerre-obsidian-war-scythe.md",
+"url": "content/regles/equipements/faux-de-guerre-obsidian-war-scythe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/faux-de-guerre-old-legion-war-scythe.md",
+"url": "content/regles/equipements/faux-de-guerre-old-legion-war-scythe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/faux-de-guerre-palladium-war-scythe.md",
+"url": "content/regles/equipements/faux-de-guerre-palladium-war-scythe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/faux-de-guerre-porcelain-war-scythe.md",
+"url": "content/regles/equipements/faux-de-guerre-porcelain-war-scythe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/faux-de-guerre-runic-war-scythe.md",
+"url": "content/regles/equipements/faux-de-guerre-runic-war-scythe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/faux-de-guerre-savage-war-scythe.md",
+"url": "content/regles/equipements/faux-de-guerre-savage-war-scythe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/faux-de-guerre-smoke-war-scythe.md",
+"url": "content/regles/equipements/faux-de-guerre-smoke-war-scythe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/faux-de-guerre-thorny-war-scythe.md",
+"url": "content/regles/equipements/faux-de-guerre-thorny-war-scythe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/faux-de-guerre-troglodyte-war-scythe.md",
+"url": "content/regles/equipements/faux-de-guerre-troglodyte-war-scythe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/faux-de-guerre-tsar-war-scythe.md",
+"url": "content/regles/equipements/faux-de-guerre-tsar-war-scythe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/faux-de-guerre-tuanosaur-war-scythe.md",
+"url": "content/regles/equipements/faux-de-guerre-tuanosaur-war-scythe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/faux-de-guerre-vampiric-war-scythe.md",
+"url": "content/regles/equipements/faux-de-guerre-vampiric-war-scythe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/faux-de-guerre-vigilante-war-scythe.md",
+"url": "content/regles/equipements/faux-de-guerre-vigilante-war-scythe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/faux-de-guerre-virgin-war-scythe.md",
+"url": "content/regles/equipements/faux-de-guerre-virgin-war-scythe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/faux-de-guerre-withering-war-scythe.md",
+"url": "content/regles/equipements/faux-de-guerre-withering-war-scythe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/faux-de-guerre-wolf-war-scythe.md",
+"url": "content/regles/equipements/faux-de-guerre-wolf-war-scythe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-ancient-calygrey-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-ancient-calygrey-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-assassin-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-assassin-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-astral-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-astral-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-beast-golem-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-beast-golem-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-brutal-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-brutal-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-calygrey-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-calygrey-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-chalcedony-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-chalcedony-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-crescent-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-crescent-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-damascene-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-damascene-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-fang-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-fang-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-forged-glass-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-forged-glass-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-galvanic-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-galvanic-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-ghost-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-ghost-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-giantkind-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-giantkind-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-gold-lich-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-gold-lich-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-gold-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-gold-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-golem-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-golem-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-hailfrost-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-hailfrost-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-horror-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-horror-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-iron-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-iron-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-jade-lich-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-jade-lich-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-kazite-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-kazite-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-manticore-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-manticore-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-marble-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-marble-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-masterpiece-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-masterpiece-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-meteoric-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-meteoric-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-militia-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-militia-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-obsidian-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-obsidian-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-old-legion-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-old-legion-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-palladium-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-palladium-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-porcelain-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-porcelain-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-runic-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-runic-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-savage-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-savage-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-smoke-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-smoke-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-thorny-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-thorny-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-troglodyte-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-troglodyte-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-tsar-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-tsar-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-tuanosaur-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-tuanosaur-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-vampiric-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-vampiric-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-vigilante-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-vigilante-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-virgin-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-virgin-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-withering-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-withering-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/fl-aux-deux-mains-wolf-two-handed-flail.md",
+"url": "content/regles/equipements/fl-aux-deux-mains-wolf-two-handed-flail/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/gantelets-giantkind-knuckles.md",
+"url": "content/regles/equipements/gantelets-giantkind-knuckles/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/gantelets-withering-knuckles.md",
+"url": "content/regles/equipements/gantelets-withering-knuckles/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grandes-haches-ancient-calygrey-greataxe.md",
+"url": "content/regles/equipements/grandes-haches-ancient-calygrey-greataxe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grandes-haches-assassin-greataxe.md",
+"url": "content/regles/equipements/grandes-haches-assassin-greataxe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grandes-haches-beast-golem-greataxe.md",
+"url": "content/regles/equipements/grandes-haches-beast-golem-greataxe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grandes-haches-calygrey-greataxe.md",
+"url": "content/regles/equipements/grandes-haches-calygrey-greataxe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grandes-haches-ghost-greataxe.md",
+"url": "content/regles/equipements/grandes-haches-ghost-greataxe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grandes-haches-gold-lich-greataxe.md",
+"url": "content/regles/equipements/grandes-haches-gold-lich-greataxe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grandes-haches-golem-greataxe.md",
+"url": "content/regles/equipements/grandes-haches-golem-greataxe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grandes-haches-jade-lich-greataxe.md",
+"url": "content/regles/equipements/grandes-haches-jade-lich-greataxe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grandes-haches-manticore-greataxe.md",
+"url": "content/regles/equipements/grandes-haches-manticore-greataxe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grandes-haches-old-legion-greataxe.md",
+"url": "content/regles/equipements/grandes-haches-old-legion-greataxe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grandes-haches-runic-greataxe.md",
+"url": "content/regles/equipements/grandes-haches-runic-greataxe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grandes-haches-thorny-greataxe.md",
+"url": "content/regles/equipements/grandes-haches-thorny-greataxe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grandes-haches-troglodyte-greataxe.md",
+"url": "content/regles/equipements/grandes-haches-troglodyte-greataxe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grandes-haches-withering-greataxe.md",
+"url": "content/regles/equipements/grandes-haches-withering-greataxe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grandes-p-es-ancient-calygrey-greatsword.md",
+"url": "content/regles/equipements/grandes-p-es-ancient-calygrey-greatsword/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grandes-p-es-beast-golem-greatsword.md",
+"url": "content/regles/equipements/grandes-p-es-beast-golem-greatsword/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grandes-p-es-brutal-greatsword.md",
+"url": "content/regles/equipements/grandes-p-es-brutal-greatsword/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grandes-p-es-calygrey-greatsword.md",
+"url": "content/regles/equipements/grandes-p-es-calygrey-greatsword/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grandes-p-es-crescent-greatsword.md",
+"url": "content/regles/equipements/grandes-p-es-crescent-greatsword/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grandes-p-es-galvanic-greatsword.md",
+"url": "content/regles/equipements/grandes-p-es-galvanic-greatsword/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grandes-p-es-ghost-greatsword.md",
+"url": "content/regles/equipements/grandes-p-es-ghost-greatsword/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grandes-p-es-giantkind-greatsword.md",
+"url": "content/regles/equipements/grandes-p-es-giantkind-greatsword/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grandes-p-es-jade-lich-greatsword.md",
+"url": "content/regles/equipements/grandes-p-es-jade-lich-greatsword/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grandes-p-es-manticore-greatsword.md",
+"url": "content/regles/equipements/grandes-p-es-manticore-greatsword/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grandes-p-es-old-legion-greatsword.md",
+"url": "content/regles/equipements/grandes-p-es-old-legion-greatsword/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grandes-p-es-smoke-greatsword.md",
+"url": "content/regles/equipements/grandes-p-es-smoke-greatsword/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grandes-p-es-troglodyte-greatsword.md",
+"url": "content/regles/equipements/grandes-p-es-troglodyte-greatsword/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grandes-p-es-tsar-greatsword.md",
+"url": "content/regles/equipements/grandes-p-es-tsar-greatsword/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grandes-p-es-tuanosaur-greatsword.md",
+"url": "content/regles/equipements/grandes-p-es-tuanosaur-greatsword/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grandes-p-es-withering-greatsword.md",
+"url": "content/regles/equipements/grandes-p-es-withering-greatsword/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-marteaux-ancient-calygrey-greathammer.md",
+"url": "content/regles/equipements/grands-marteaux-ancient-calygrey-greathammer/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-marteaux-assassin-greathammer.md",
+"url": "content/regles/equipements/grands-marteaux-assassin-greathammer/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-marteaux-beast-golem-greathammer.md",
+"url": "content/regles/equipements/grands-marteaux-beast-golem-greathammer/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-marteaux-calygrey-greathammer.md",
+"url": "content/regles/equipements/grands-marteaux-calygrey-greathammer/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-marteaux-crescent-greathammer.md",
+"url": "content/regles/equipements/grands-marteaux-crescent-greathammer/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-marteaux-giantkind-greathammer.md",
+"url": "content/regles/equipements/grands-marteaux-giantkind-greathammer/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-marteaux-gold-lich-greathammer.md",
+"url": "content/regles/equipements/grands-marteaux-gold-lich-greathammer/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-marteaux-golem-greathammer.md",
+"url": "content/regles/equipements/grands-marteaux-golem-greathammer/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-marteaux-jade-lich-greathammer.md",
+"url": "content/regles/equipements/grands-marteaux-jade-lich-greathammer/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-marteaux-old-legion-greathammer.md",
+"url": "content/regles/equipements/grands-marteaux-old-legion-greathammer/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-marteaux-porcelain-greathammer.md",
+"url": "content/regles/equipements/grands-marteaux-porcelain-greathammer/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-marteaux-runic-greathammer.md",
+"url": "content/regles/equipements/grands-marteaux-runic-greathammer/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-marteaux-thorny-greathammer.md",
+"url": "content/regles/equipements/grands-marteaux-thorny-greathammer/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-marteaux-tuanosaur-greathammer.md",
+"url": "content/regles/equipements/grands-marteaux-tuanosaur-greathammer/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-sabres-ancient-calygrey-great-sabre.md",
+"url": "content/regles/equipements/grands-sabres-ancient-calygrey-great-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-sabres-assassin-great-sabre.md",
+"url": "content/regles/equipements/grands-sabres-assassin-great-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-sabres-astral-great-sabre.md",
+"url": "content/regles/equipements/grands-sabres-astral-great-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-sabres-beast-golem-great-sabre.md",
+"url": "content/regles/equipements/grands-sabres-beast-golem-great-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-sabres-brutal-great-sabre.md",
+"url": "content/regles/equipements/grands-sabres-brutal-great-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-sabres-calygrey-great-sabre.md",
+"url": "content/regles/equipements/grands-sabres-calygrey-great-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-sabres-chalcedony-great-sabre.md",
+"url": "content/regles/equipements/grands-sabres-chalcedony-great-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-sabres-crescent-great-sabre.md",
+"url": "content/regles/equipements/grands-sabres-crescent-great-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-sabres-damascene-great-sabre.md",
+"url": "content/regles/equipements/grands-sabres-damascene-great-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-sabres-fang-great-sabre.md",
+"url": "content/regles/equipements/grands-sabres-fang-great-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-sabres-forged-glass-great-sabre.md",
+"url": "content/regles/equipements/grands-sabres-forged-glass-great-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-sabres-galvanic-great-sabre.md",
+"url": "content/regles/equipements/grands-sabres-galvanic-great-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-sabres-ghost-great-sabre.md",
+"url": "content/regles/equipements/grands-sabres-ghost-great-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-sabres-giantkind-great-sabre.md",
+"url": "content/regles/equipements/grands-sabres-giantkind-great-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-sabres-gold-great-sabre.md",
+"url": "content/regles/equipements/grands-sabres-gold-great-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-sabres-gold-lich-great-sabre.md",
+"url": "content/regles/equipements/grands-sabres-gold-lich-great-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-sabres-golem-great-sabre.md",
+"url": "content/regles/equipements/grands-sabres-golem-great-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-sabres-hailfrost-great-sabre.md",
+"url": "content/regles/equipements/grands-sabres-hailfrost-great-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-sabres-horror-great-sabre.md",
+"url": "content/regles/equipements/grands-sabres-horror-great-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-sabres-iron-great-sabre.md",
+"url": "content/regles/equipements/grands-sabres-iron-great-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-sabres-jade-lich-great-sabre.md",
+"url": "content/regles/equipements/grands-sabres-jade-lich-great-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-sabres-kazite-great-sabre.md",
+"url": "content/regles/equipements/grands-sabres-kazite-great-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-sabres-manticore-great-sabre.md",
+"url": "content/regles/equipements/grands-sabres-manticore-great-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-sabres-marble-great-sabre.md",
+"url": "content/regles/equipements/grands-sabres-marble-great-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-sabres-masterpiece-great-sabre.md",
+"url": "content/regles/equipements/grands-sabres-masterpiece-great-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-sabres-meteoric-great-sabre.md",
+"url": "content/regles/equipements/grands-sabres-meteoric-great-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-sabres-militia-great-sabre.md",
+"url": "content/regles/equipements/grands-sabres-militia-great-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-sabres-obsidian-great-sabre.md",
+"url": "content/regles/equipements/grands-sabres-obsidian-great-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-sabres-old-legion-great-sabre.md",
+"url": "content/regles/equipements/grands-sabres-old-legion-great-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-sabres-palladium-great-sabre.md",
+"url": "content/regles/equipements/grands-sabres-palladium-great-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-sabres-porcelain-great-sabre.md",
+"url": "content/regles/equipements/grands-sabres-porcelain-great-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-sabres-runic-great-sabre.md",
+"url": "content/regles/equipements/grands-sabres-runic-great-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-sabres-savage-great-sabre.md",
+"url": "content/regles/equipements/grands-sabres-savage-great-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-sabres-thorny-great-sabre.md",
+"url": "content/regles/equipements/grands-sabres-thorny-great-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-sabres-troglodyte-great-sabre.md",
+"url": "content/regles/equipements/grands-sabres-troglodyte-great-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-sabres-tuanosaur-great-sabre.md",
+"url": "content/regles/equipements/grands-sabres-tuanosaur-great-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-sabres-vampiric-great-sabre.md",
+"url": "content/regles/equipements/grands-sabres-vampiric-great-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-sabres-vigilante-great-sabre.md",
+"url": "content/regles/equipements/grands-sabres-vigilante-great-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-sabres-virgin-great-sabre.md",
+"url": "content/regles/equipements/grands-sabres-virgin-great-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-sabres-withering-great-sabre.md",
+"url": "content/regles/equipements/grands-sabres-withering-great-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/grands-sabres-wolf-great-sabre.md",
+"url": "content/regles/equipements/grands-sabres-wolf-great-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/haches-1-main-ancient-calygrey-axe.md",
+"url": "content/regles/equipements/haches-1-main-ancient-calygrey-axe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/haches-1-main-assassin-axe.md",
+"url": "content/regles/equipements/haches-1-main-assassin-axe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/haches-1-main-calygrey-axe.md",
+"url": "content/regles/equipements/haches-1-main-calygrey-axe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/haches-1-main-crescent-axe.md",
+"url": "content/regles/equipements/haches-1-main-crescent-axe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/haches-1-main-ghost-axe.md",
+"url": "content/regles/equipements/haches-1-main-ghost-axe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/haches-1-main-giantkind-axe.md",
+"url": "content/regles/equipements/haches-1-main-giantkind-axe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/haches-1-main-gold-lich-axe.md",
+"url": "content/regles/equipements/haches-1-main-gold-lich-axe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/haches-1-main-golem-axe.md",
+"url": "content/regles/equipements/haches-1-main-golem-axe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/haches-1-main-jade-lich-axe.md",
+"url": "content/regles/equipements/haches-1-main-jade-lich-axe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/haches-1-main-manticore-axe.md",
+"url": "content/regles/equipements/haches-1-main-manticore-axe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/haches-1-main-old-legion-axe.md",
+"url": "content/regles/equipements/haches-1-main-old-legion-axe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/haches-1-main-runic-axe.md",
+"url": "content/regles/equipements/haches-1-main-runic-axe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/haches-1-main-thorny-axe.md",
+"url": "content/regles/equipements/haches-1-main-thorny-axe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/haches-1-main-troglodyte-axe.md",
+"url": "content/regles/equipements/haches-1-main-troglodyte-axe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/haches-1-main-withering-axe.md",
+"url": "content/regles/equipements/haches-1-main-withering-axe/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/hallebardes-ancient-calygrey-halberd.md",
+"url": "content/regles/equipements/hallebardes-ancient-calygrey-halberd/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/hallebardes-assassin-halberd.md",
+"url": "content/regles/equipements/hallebardes-assassin-halberd/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/hallebardes-calygrey-halberd.md",
+"url": "content/regles/equipements/hallebardes-calygrey-halberd/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/hallebardes-crescent-halberd.md",
+"url": "content/regles/equipements/hallebardes-crescent-halberd/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/hallebardes-ghost-halberd.md",
+"url": "content/regles/equipements/hallebardes-ghost-halberd/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/hallebardes-gold-lich-halberd.md",
+"url": "content/regles/equipements/hallebardes-gold-lich-halberd/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/hallebardes-golem-halberd.md",
+"url": "content/regles/equipements/hallebardes-golem-halberd/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/hallebardes-jade-lich-halberd.md",
+"url": "content/regles/equipements/hallebardes-jade-lich-halberd/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/hallebardes-manticore-halberd.md",
+"url": "content/regles/equipements/hallebardes-manticore-halberd/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/hallebardes-old-legion-halberd.md",
+"url": "content/regles/equipements/hallebardes-old-legion-halberd/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/hallebardes-runic-halberd.md",
+"url": "content/regles/equipements/hallebardes-runic-halberd/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/hallebardes-thorny-halberd.md",
+"url": "content/regles/equipements/hallebardes-thorny-halberd/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/hallebardes-troglodyte-halberd.md",
+"url": "content/regles/equipements/hallebardes-troglodyte-halberd/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/hallebardes-tuanosaur-halberd.md",
+"url": "content/regles/equipements/hallebardes-tuanosaur-halberd/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/hallebardes-withering-halberd.md",
+"url": "content/regles/equipements/hallebardes-withering-halberd/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/lances-ancient-calygrey-spear.md",
+"url": "content/regles/equipements/lances-ancient-calygrey-spear/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/lances-assassin-spear.md",
+"url": "content/regles/equipements/lances-assassin-spear/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/lances-beast-golem-spear.md",
+"url": "content/regles/equipements/lances-beast-golem-spear/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/lances-calygrey-spear.md",
+"url": "content/regles/equipements/lances-calygrey-spear/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/lances-crescent-spear.md",
+"url": "content/regles/equipements/lances-crescent-spear/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/lances-ghost-spear.md",
+"url": "content/regles/equipements/lances-ghost-spear/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/lances-giantkind-spear.md",
+"url": "content/regles/equipements/lances-giantkind-spear/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/lances-golem-spear.md",
+"url": "content/regles/equipements/lances-golem-spear/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/lances-jade-lich-spear.md",
+"url": "content/regles/equipements/lances-jade-lich-spear/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/lances-manticore-spear.md",
+"url": "content/regles/equipements/lances-manticore-spear/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/lances-porcelain-spear.md",
+"url": "content/regles/equipements/lances-porcelain-spear/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/lances-runic-spear.md",
+"url": "content/regles/equipements/lances-runic-spear/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/lances-tuanosaur-spear.md",
+"url": "content/regles/equipements/lances-tuanosaur-spear/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-ammolite-gauntlets.md",
+"url": "content/regles/equipements/mains-ammolite-gauntlets/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-antique-plate-gauntlets.md",
+"url": "content/regles/equipements/mains-antique-plate-gauntlets/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-arcane-gloves.md",
+"url": "content/regles/equipements/mains-arcane-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-ash-gloves.md",
+"url": "content/regles/equipements/mains-ash-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-barrier-gauntlets.md",
+"url": "content/regles/equipements/mains-barrier-gauntlets/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-beige-gloves.md",
+"url": "content/regles/equipements/mains-beige-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-black-fur-gloves.md",
+"url": "content/regles/equipements/mains-black-fur-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-black-plate-gauntlets.md",
+"url": "content/regles/equipements/mains-black-plate-gauntlets/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-blue-sand-gauntlets.md",
+"url": "content/regles/equipements/mains-blue-sand-gauntlets/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-brigand-gloves.md",
+"url": "content/regles/equipements/mains-brigand-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-caged-gauntlets.md",
+"url": "content/regles/equipements/mains-caged-gauntlets/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-caldera-mail-gauntlets.md",
+"url": "content/regles/equipements/mains-caldera-mail-gauntlets/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-candle-plate-gauntlets.md",
+"url": "content/regles/equipements/mains-candle-plate-gauntlets/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-chalcedony-gauntlets.md",
+"url": "content/regles/equipements/mains-chalcedony-gauntlets/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-chitin-desert-gauntlets.md",
+"url": "content/regles/equipements/mains-chitin-desert-gauntlets/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-clansage-gloves.md",
+"url": "content/regles/equipements/mains-clansage-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-copal-gauntlets.md",
+"url": "content/regles/equipements/mains-copal-gauntlets/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-crimson-plate-gauntlets.md",
+"url": "content/regles/equipements/mains-crimson-plate-gauntlets/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-dancer-gloves.md",
+"url": "content/regles/equipements/mains-dancer-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-dark-green-gloves.md",
+"url": "content/regles/equipements/mains-dark-green-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-dark-red-gloves.md",
+"url": "content/regles/equipements/mains-dark-red-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-desert-gloves.md",
+"url": "content/regles/equipements/mains-desert-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-elite-desert-gloves.md",
+"url": "content/regles/equipements/mains-elite-desert-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-elite-gauntlets.md",
+"url": "content/regles/equipements/mains-elite-gauntlets/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-entomber-gloves.md",
+"url": "content/regles/equipements/mains-entomber-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-festive-gloves.md",
+"url": "content/regles/equipements/mains-festive-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-fur-gloves.md",
+"url": "content/regles/equipements/mains-fur-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-gold-lich-gloves.md",
+"url": "content/regles/equipements/mains-gold-lich-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-gray-gloves.md",
+"url": "content/regles/equipements/mains-gray-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-green-copal-gauntlets.md",
+"url": "content/regles/equipements/mains-green-copal-gauntlets/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-green-gloves.md",
+"url": "content/regles/equipements/mains-green-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-halfplate-gloves.md",
+"url": "content/regles/equipements/mains-halfplate-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-horror-gauntlets.md",
+"url": "content/regles/equipements/mains-horror-gauntlets/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-jade-acolyte-gloves.md",
+"url": "content/regles/equipements/mains-jade-acolyte-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-jade-lich-gloves.md",
+"url": "content/regles/equipements/mains-jade-lich-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-kazite-gauntlets.md",
+"url": "content/regles/equipements/mains-kazite-gauntlets/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-kazite-light-gloves.md",
+"url": "content/regles/equipements/mains-kazite-light-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-kintsugi-gauntlets.md",
+"url": "content/regles/equipements/mains-kintsugi-gauntlets/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-krypteia-gloves.md",
+"url": "content/regles/equipements/mains-krypteia-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-light-clothes-gloves.md",
+"url": "content/regles/equipements/mains-light-clothes-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-looter-gloves.md",
+"url": "content/regles/equipements/mains-looter-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-makeshift-leather-gloves.md",
+"url": "content/regles/equipements/mains-makeshift-leather-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-manawall-gauntlets.md",
+"url": "content/regles/equipements/mains-manawall-gauntlets/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-master-desert-gloves.md",
+"url": "content/regles/equipements/mains-master-desert-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-master-kazite-gauntlets.md",
+"url": "content/regles/equipements/mains-master-kazite-gauntlets/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-master-trader-gloves.md",
+"url": "content/regles/equipements/mains-master-trader-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-merton-s-handbones.md",
+"url": "content/regles/equipements/mains-merton-s-handbones/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-militia-gloves.md",
+"url": "content/regles/equipements/mains-militia-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-miner-gloves.md",
+"url": "content/regles/equipements/mains-miner-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-noble-gloves.md",
+"url": "content/regles/equipements/mains-noble-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-nobleman-gloves.md",
+"url": "content/regles/equipements/mains-nobleman-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-novice-gloves.md",
+"url": "content/regles/equipements/mains-novice-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-orichalcum-gauntlets.md",
+"url": "content/regles/equipements/mains-orichalcum-gauntlets/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-padded-gloves.md",
+"url": "content/regles/equipements/mains-padded-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-palladium-gauntlets.md",
+"url": "content/regles/equipements/mains-palladium-gauntlets/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-pathfinder-gloves.md",
+"url": "content/regles/equipements/mains-pathfinder-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-pearlescent-gauntlets.md",
+"url": "content/regles/equipements/mains-pearlescent-gauntlets/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-petrified-wood-gauntlets.md",
+"url": "content/regles/equipements/mains-petrified-wood-gauntlets/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-pilgrim-gloves.md",
+"url": "content/regles/equipements/mains-pilgrim-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-plate-gauntlets.md",
+"url": "content/regles/equipements/mains-plate-gauntlets/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-red-clansage-gloves.md",
+"url": "content/regles/equipements/mains-red-clansage-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-rich-gloves.md",
+"url": "content/regles/equipements/mains-rich-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-runic-gauntlets.md",
+"url": "content/regles/equipements/mains-runic-gauntlets/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-rust-lich-gloves.md",
+"url": "content/regles/equipements/mains-rust-lich-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-scaled-leather-gloves.md",
+"url": "content/regles/equipements/mains-scaled-leather-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-scarlet-gloves.md",
+"url": "content/regles/equipements/mains-scarlet-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-scavenger-gloves.md",
+"url": "content/regles/equipements/mains-scavenger-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-scholar-gloves.md",
+"url": "content/regles/equipements/mains-scholar-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-shadow-kazite-gloves.md",
+"url": "content/regles/equipements/mains-shadow-kazite-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-shock-gauntlets.md",
+"url": "content/regles/equipements/mains-shock-gauntlets/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-silver-gauntlets.md",
+"url": "content/regles/equipements/mains-silver-gauntlets/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-slayer-s-gauntlets.md",
+"url": "content/regles/equipements/mains-slayer-s-gauntlets/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-squire-gloves.md",
+"url": "content/regles/equipements/mains-squire-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-striped-gloves.md",
+"url": "content/regles/equipements/mains-striped-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-tattered-gloves.md",
+"url": "content/regles/equipements/mains-tattered-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-tenebrous-gloves.md",
+"url": "content/regles/equipements/mains-tenebrous-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-trader-gloves.md",
+"url": "content/regles/equipements/mains-trader-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-tsar-gauntlets.md",
+"url": "content/regles/equipements/mains-tsar-gauntlets/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-vigilante-gloves.md",
+"url": "content/regles/equipements/mains-vigilante-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-virgin-gauntlets.md",
+"url": "content/regles/equipements/mains-virgin-gauntlets/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-white-arcane-gloves.md",
+"url": "content/regles/equipements/mains-white-arcane-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-white-kintsugi-gauntlets.md",
+"url": "content/regles/equipements/mains-white-kintsugi-gauntlets/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-white-priest-gloves.md",
+"url": "content/regles/equipements/mains-white-priest-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-wolf-mage-gauntlets.md",
+"url": "content/regles/equipements/mains-wolf-mage-gauntlets/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-wolf-medic-gauntlets.md",
+"url": "content/regles/equipements/mains-wolf-medic-gauntlets/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-wolf-plate-gauntlets.md",
+"url": "content/regles/equipements/mains-wolf-plate-gauntlets/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-worker-gloves.md",
+"url": "content/regles/equipements/mains-worker-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/mains-zagis-gloves.md",
+"url": "content/regles/equipements/mains-zagis-gloves/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/masses-1-main-assassin-mace.md",
+"url": "content/regles/equipements/masses-1-main-assassin-mace/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/masses-1-main-beast-golem-mace.md",
+"url": "content/regles/equipements/masses-1-main-beast-golem-mace/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/masses-1-main-crescent-mace.md",
+"url": "content/regles/equipements/masses-1-main-crescent-mace/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/masses-1-main-ghost-mace.md",
+"url": "content/regles/equipements/masses-1-main-ghost-mace/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/masses-1-main-giantkind-mace.md",
+"url": "content/regles/equipements/masses-1-main-giantkind-mace/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/masses-1-main-golem-mace.md",
+"url": "content/regles/equipements/masses-1-main-golem-mace/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/masses-1-main-manticore-mace.md",
+"url": "content/regles/equipements/masses-1-main-manticore-mace/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/masses-1-main-old-legion-mace.md",
+"url": "content/regles/equipements/masses-1-main-old-legion-mace/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/masses-1-main-runic-mace.md",
+"url": "content/regles/equipements/masses-1-main-runic-mace/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/masses-1-main-thorny-mace.md",
+"url": "content/regles/equipements/masses-1-main-thorny-mace/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/masses-1-main-troglodyte-mace.md",
+"url": "content/regles/equipements/masses-1-main-troglodyte-mace/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/masses-1-main-tuanosaur-mace.md",
+"url": "content/regles/equipements/masses-1-main-tuanosaur-mace/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/masses-1-main-withering-mace.md",
+"url": "content/regles/equipements/masses-1-main-withering-mace/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/p-es-1-main-ancient-calygrey-sword.md",
+"url": "content/regles/equipements/p-es-1-main-ancient-calygrey-sword/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/p-es-1-main-beast-golem-sword.md",
+"url": "content/regles/equipements/p-es-1-main-beast-golem-sword/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/p-es-1-main-brutal-sword.md",
+"url": "content/regles/equipements/p-es-1-main-brutal-sword/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/p-es-1-main-calygrey-sword.md",
+"url": "content/regles/equipements/p-es-1-main-calygrey-sword/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/p-es-1-main-crescent-sword.md",
+"url": "content/regles/equipements/p-es-1-main-crescent-sword/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/p-es-1-main-galvanic-sword.md",
+"url": "content/regles/equipements/p-es-1-main-galvanic-sword/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/p-es-1-main-ghost-sword.md",
+"url": "content/regles/equipements/p-es-1-main-ghost-sword/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/p-es-1-main-giantkind-sword.md",
+"url": "content/regles/equipements/p-es-1-main-giantkind-sword/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/p-es-1-main-gold-lich-sword.md",
+"url": "content/regles/equipements/p-es-1-main-gold-lich-sword/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/p-es-1-main-gold-sword.md",
+"url": "content/regles/equipements/p-es-1-main-gold-sword/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/p-es-1-main-golem-sword.md",
+"url": "content/regles/equipements/p-es-1-main-golem-sword/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/p-es-1-main-horror-sword.md",
+"url": "content/regles/equipements/p-es-1-main-horror-sword/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/p-es-1-main-jade-lich-sword.md",
+"url": "content/regles/equipements/p-es-1-main-jade-lich-sword/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/p-es-1-main-kazite-sword.md",
+"url": "content/regles/equipements/p-es-1-main-kazite-sword/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/p-es-1-main-manticore-sword.md",
+"url": "content/regles/equipements/p-es-1-main-manticore-sword/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/p-es-1-main-militia-sword.md",
+"url": "content/regles/equipements/p-es-1-main-militia-sword/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/p-es-1-main-palladium-sword.md",
+"url": "content/regles/equipements/p-es-1-main-palladium-sword/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/p-es-1-main-porcelain-sword.md",
+"url": "content/regles/equipements/p-es-1-main-porcelain-sword/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/p-es-1-main-smoke-sword.md",
+"url": "content/regles/equipements/p-es-1-main-smoke-sword/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/p-es-1-main-thorny-sword.md",
+"url": "content/regles/equipements/p-es-1-main-thorny-sword/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/p-es-1-main-troglodyte-sword.md",
+"url": "content/regles/equipements/p-es-1-main-troglodyte-sword/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/p-es-1-main-tuanosaur-sword.md",
+"url": "content/regles/equipements/p-es-1-main-tuanosaur-sword/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/p-es-1-main-vigilante-sword.md",
+"url": "content/regles/equipements/p-es-1-main-vigilante-sword/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/p-es-1-main-virgin-sword.md",
+"url": "content/regles/equipements/p-es-1-main-virgin-sword/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/p-es-1-main-withering-sword.md",
+"url": "content/regles/equipements/p-es-1-main-withering-sword/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/p-es-1-main-wolf-sword.md",
+"url": "content/regles/equipements/p-es-1-main-wolf-sword/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/pieds-arcane-boots.md",
+"url": "content/regles/equipements/pieds-arcane-boots/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/pieds-brigand-boots.md",
+"url": "content/regles/equipements/pieds-brigand-boots/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/pieds-dancer-shoes.md",
+"url": "content/regles/equipements/pieds-dancer-shoes/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/pieds-elite-desert-boots.md",
+"url": "content/regles/equipements/pieds-elite-desert-boots/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/pieds-festive-boots.md",
+"url": "content/regles/equipements/pieds-festive-boots/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/pieds-looter-boots.md",
+"url": "content/regles/equipements/pieds-looter-boots/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/pieds-merton-s-footbones.md",
+"url": "content/regles/equipements/pieds-merton-s-footbones/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/pieds-novice-boots.md",
+"url": "content/regles/equipements/pieds-novice-boots/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/pieds-rich-boots.md",
+"url": "content/regles/equipements/pieds-rich-boots/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/pieds-white-arcane-boots.md",
+"url": "content/regles/equipements/pieds-white-arcane-boots/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/rapi-res-ancient-calygrey-rapier.md",
+"url": "content/regles/equipements/rapi-res-ancient-calygrey-rapier/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/rapi-res-assassin-rapier.md",
+"url": "content/regles/equipements/rapi-res-assassin-rapier/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/rapi-res-astral-rapier.md",
+"url": "content/regles/equipements/rapi-res-astral-rapier/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/rapi-res-beast-golem-rapier.md",
+"url": "content/regles/equipements/rapi-res-beast-golem-rapier/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/rapi-res-brutal-rapier.md",
+"url": "content/regles/equipements/rapi-res-brutal-rapier/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/rapi-res-calygrey-rapier.md",
+"url": "content/regles/equipements/rapi-res-calygrey-rapier/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/rapi-res-chalcedony-rapier.md",
+"url": "content/regles/equipements/rapi-res-chalcedony-rapier/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/rapi-res-crescent-rapier.md",
+"url": "content/regles/equipements/rapi-res-crescent-rapier/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/rapi-res-damascene-rapier.md",
+"url": "content/regles/equipements/rapi-res-damascene-rapier/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/rapi-res-fang-rapier.md",
+"url": "content/regles/equipements/rapi-res-fang-rapier/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/rapi-res-forged-glass-rapier.md",
+"url": "content/regles/equipements/rapi-res-forged-glass-rapier/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/rapi-res-galvanic-rapier.md",
+"url": "content/regles/equipements/rapi-res-galvanic-rapier/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/rapi-res-ghost-rapier.md",
+"url": "content/regles/equipements/rapi-res-ghost-rapier/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/rapi-res-giantkind-rapier.md",
+"url": "content/regles/equipements/rapi-res-giantkind-rapier/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/rapi-res-gold-lich-rapier.md",
+"url": "content/regles/equipements/rapi-res-gold-lich-rapier/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/rapi-res-gold-rapier.md",
+"url": "content/regles/equipements/rapi-res-gold-rapier/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/rapi-res-hailfrost-rapier.md",
+"url": "content/regles/equipements/rapi-res-hailfrost-rapier/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/rapi-res-horror-rapier.md",
+"url": "content/regles/equipements/rapi-res-horror-rapier/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/rapi-res-iron-rapier.md",
+"url": "content/regles/equipements/rapi-res-iron-rapier/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/rapi-res-jade-lich-rapier.md",
+"url": "content/regles/equipements/rapi-res-jade-lich-rapier/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/rapi-res-kazite-rapier.md",
+"url": "content/regles/equipements/rapi-res-kazite-rapier/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/rapi-res-manticore-rapier.md",
+"url": "content/regles/equipements/rapi-res-manticore-rapier/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/rapi-res-marble-rapier.md",
+"url": "content/regles/equipements/rapi-res-marble-rapier/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/rapi-res-masterpiece-rapier.md",
+"url": "content/regles/equipements/rapi-res-masterpiece-rapier/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/rapi-res-meteoric-rapier.md",
+"url": "content/regles/equipements/rapi-res-meteoric-rapier/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/rapi-res-militia-rapier.md",
+"url": "content/regles/equipements/rapi-res-militia-rapier/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/rapi-res-obsidian-rapier.md",
+"url": "content/regles/equipements/rapi-res-obsidian-rapier/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/rapi-res-old-legion-rapier.md",
+"url": "content/regles/equipements/rapi-res-old-legion-rapier/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/rapi-res-palladium-rapier.md",
+"url": "content/regles/equipements/rapi-res-palladium-rapier/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/rapi-res-porcelain-rapier.md",
+"url": "content/regles/equipements/rapi-res-porcelain-rapier/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/rapi-res-runic-rapier.md",
+"url": "content/regles/equipements/rapi-res-runic-rapier/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/rapi-res-savage-rapier.md",
+"url": "content/regles/equipements/rapi-res-savage-rapier/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/rapi-res-smoke-rapier.md",
+"url": "content/regles/equipements/rapi-res-smoke-rapier/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/rapi-res-thorny-rapier.md",
+"url": "content/regles/equipements/rapi-res-thorny-rapier/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/rapi-res-troglodyte-rapier.md",
+"url": "content/regles/equipements/rapi-res-troglodyte-rapier/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/rapi-res-tsar-rapier.md",
+"url": "content/regles/equipements/rapi-res-tsar-rapier/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/rapi-res-tuanosaur-rapier.md",
+"url": "content/regles/equipements/rapi-res-tuanosaur-rapier/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/rapi-res-vampiric-rapier.md",
+"url": "content/regles/equipements/rapi-res-vampiric-rapier/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/rapi-res-vigilante-rapier.md",
+"url": "content/regles/equipements/rapi-res-vigilante-rapier/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/rapi-res-withering-rapier.md",
+"url": "content/regles/equipements/rapi-res-withering-rapier/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/sabres-ancient-calygrey-sabre.md",
+"url": "content/regles/equipements/sabres-ancient-calygrey-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/sabres-assassin-sabre.md",
+"url": "content/regles/equipements/sabres-assassin-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/sabres-astral-sabre.md",
+"url": "content/regles/equipements/sabres-astral-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/sabres-beast-golem-sabre.md",
+"url": "content/regles/equipements/sabres-beast-golem-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/sabres-brutal-sabre.md",
+"url": "content/regles/equipements/sabres-brutal-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/sabres-calygrey-sabre.md",
+"url": "content/regles/equipements/sabres-calygrey-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/sabres-chalcedony-sabre.md",
+"url": "content/regles/equipements/sabres-chalcedony-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/sabres-crescent-sabre.md",
+"url": "content/regles/equipements/sabres-crescent-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/sabres-damascene-sabre.md",
+"url": "content/regles/equipements/sabres-damascene-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/sabres-fang-sabre.md",
+"url": "content/regles/equipements/sabres-fang-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/sabres-forged-glass-sabre.md",
+"url": "content/regles/equipements/sabres-forged-glass-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/sabres-galvanic-sabre.md",
+"url": "content/regles/equipements/sabres-galvanic-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/sabres-ghost-sabre.md",
+"url": "content/regles/equipements/sabres-ghost-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/sabres-giantkind-sabre.md",
+"url": "content/regles/equipements/sabres-giantkind-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/sabres-golem-sabre.md",
+"url": "content/regles/equipements/sabres-golem-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/sabres-hailfrost-sabre.md",
+"url": "content/regles/equipements/sabres-hailfrost-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/sabres-iron-sabre.md",
+"url": "content/regles/equipements/sabres-iron-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/sabres-manticore-sabre.md",
+"url": "content/regles/equipements/sabres-manticore-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/sabres-marble-sabre.md",
+"url": "content/regles/equipements/sabres-marble-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/sabres-masterpiece-sabre.md",
+"url": "content/regles/equipements/sabres-masterpiece-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/sabres-meteoric-sabre.md",
+"url": "content/regles/equipements/sabres-meteoric-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/sabres-obsidian-sabre.md",
+"url": "content/regles/equipements/sabres-obsidian-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/sabres-old-legion-sabre.md",
+"url": "content/regles/equipements/sabres-old-legion-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/sabres-porcelain-sabre.md",
+"url": "content/regles/equipements/sabres-porcelain-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/sabres-runic-sabre.md",
+"url": "content/regles/equipements/sabres-runic-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/sabres-savage-sabre.md",
+"url": "content/regles/equipements/sabres-savage-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/sabres-thorny-sabre.md",
+"url": "content/regles/equipements/sabres-thorny-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/sabres-troglodyte-sabre.md",
+"url": "content/regles/equipements/sabres-troglodyte-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/sabres-tsar-sabre.md",
+"url": "content/regles/equipements/sabres-tsar-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/sabres-tuanosaur-sabre.md",
+"url": "content/regles/equipements/sabres-tuanosaur-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/sabres-vampiric-sabre.md",
+"url": "content/regles/equipements/sabres-vampiric-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/sabres-virgin-sabre.md",
+"url": "content/regles/equipements/sabres-virgin-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/sabres-withering-sabre.md",
+"url": "content/regles/equipements/sabres-withering-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/sabres-wolf-sabre.md",
+"url": "content/regles/equipements/sabres-wolf-sabre/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/t-te-light-clothes-hood.md",
+"url": "content/regles/equipements/t-te-light-clothes-hood/"
+}
+]
+},
+{
 "short": "2386c73",
 "author": "Théo Cavaillès",
 "date": "2026-10-15T14:18:58+02:00",
@@ -6379,20 +9138,6 @@
 "date": "2026-09-22T19:41:10+02:00",
 "message": "La masse frappe en fin de rotation, comme le grand marteau",
 "url": "https://github.com/igneefleur/fns-ttrpg/commit/1575fd4dff8d0ac44bf745e581356cfcd83005b0",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/combat/armes.md",
-"url": "content/regles/combat/armes/"
-}
-]
-},
-{
-"short": "4a8600d",
-"author": "Théo Cavaillès",
-"date": "2026-09-22T19:17:03+02:00",
-"message": "Les revers de l'épée et du sabre passent par le talon avant d'atteindre 2d2",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/4a8600dc64cde8fccf11aeb701f14c575f3bc253",
 "files": [
 {
 "status": "modified",
