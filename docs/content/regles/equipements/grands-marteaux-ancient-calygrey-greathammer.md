@@ -1,7 +1,7 @@
 # Ancient Calygrey Greathammer
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Ancient Calygrey Greathammer](../../../assets/equipements/grands-marteaux-ancient-calygrey-greathammer.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands marteaux  

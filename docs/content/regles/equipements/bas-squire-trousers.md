@@ -1,7 +1,7 @@
 # Squire Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Squire Trousers](../../../assets/equipements/bas-squire-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

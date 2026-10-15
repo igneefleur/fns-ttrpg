@@ -1,7 +1,7 @@
 # Withering Great Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Withering Great Sabre](../../../assets/equipements/grands-sabres-withering-great-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands sabres  

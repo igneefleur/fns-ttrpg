@@ -1,7 +1,7 @@
 # Wolf Great Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Wolf Great Sabre](../../../assets/equipements/grands-sabres-wolf-great-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands sabres  

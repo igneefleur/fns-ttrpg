@@ -1,7 +1,7 @@
 # Giantkind Mace
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Giantkind Mace](../../../assets/equipements/masses-1-main-giantkind-mace.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Masses 1 main  

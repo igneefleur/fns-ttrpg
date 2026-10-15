@@ -1,7 +1,7 @@
 # Scavenger Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Scavenger Gloves](../../../assets/equipements/mains-scavenger-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

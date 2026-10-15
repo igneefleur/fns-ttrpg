@@ -1,7 +1,7 @@
 # Withering War Scythe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Withering War Scythe](../../../assets/equipements/faux-de-guerre-withering-war-scythe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Faux de guerre  

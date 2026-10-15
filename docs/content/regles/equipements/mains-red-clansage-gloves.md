@@ -1,7 +1,7 @@
 # Red Clansage Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Red Clansage Gloves](../../../assets/equipements/mains-red-clansage-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

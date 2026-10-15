@@ -1,7 +1,7 @@
 # Iron Two-Handed Flail
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Iron Two-Handed Flail](../../../assets/equipements/fl-aux-deux-mains-iron-two-handed-flail.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Fléaux à deux mains  

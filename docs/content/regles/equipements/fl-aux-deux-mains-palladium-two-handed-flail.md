@@ -1,7 +1,7 @@
 # Palladium Two-Handed Flail
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Palladium Two-Handed Flail](../../../assets/equipements/fl-aux-deux-mains-palladium-two-handed-flail.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Fléaux à deux mains  

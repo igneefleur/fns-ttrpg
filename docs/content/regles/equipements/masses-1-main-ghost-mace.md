@@ -1,7 +1,7 @@
 # Ghost Mace
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Ghost Mace](../../../assets/equipements/masses-1-main-ghost-mace.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Masses 1 main  

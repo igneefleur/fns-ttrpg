@@ -1,7 +1,7 @@
 # Crescent Spear
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Crescent Spear](../../../assets/equipements/lances-crescent-spear.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Lances  

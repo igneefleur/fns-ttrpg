@@ -1,7 +1,7 @@
 # Crescent Staff
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Crescent Staff](../../../assets/equipements/b-tons-crescent-staff.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bâtons  

@@ -1,7 +1,7 @@
 # Manticore Greatsword
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Manticore Greatsword](../../../assets/equipements/grandes-p-es-manticore-greatsword.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grandes épées  

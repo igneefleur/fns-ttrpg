@@ -1,7 +1,7 @@
 # Porcelain Staff
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Porcelain Staff](../../../assets/equipements/b-tons-porcelain-staff.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bâtons  

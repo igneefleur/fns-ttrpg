@@ -1,7 +1,7 @@
 # Horror Rapier
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Horror Rapier](../../../assets/equipements/rapi-res-horror-rapier.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Rapières  

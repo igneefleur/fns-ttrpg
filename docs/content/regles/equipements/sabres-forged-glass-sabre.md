@@ -1,7 +1,7 @@
 # Forged Glass Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Forged Glass Sabre](../../../assets/equipements/sabres-forged-glass-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Sabres  

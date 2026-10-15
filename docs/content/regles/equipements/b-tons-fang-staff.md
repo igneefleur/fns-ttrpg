@@ -1,7 +1,7 @@
 # Fang Staff
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Fang Staff](../../../assets/equipements/b-tons-fang-staff.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bâtons  

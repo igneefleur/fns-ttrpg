@@ -1,7 +1,7 @@
 # Troglodyte Greataxe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Troglodyte Greataxe](../../../assets/equipements/grandes-haches-troglodyte-greataxe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grandes haches  

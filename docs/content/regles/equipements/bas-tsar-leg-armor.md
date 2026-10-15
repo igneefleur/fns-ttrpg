@@ -1,7 +1,7 @@
 # Tsar Leg Armor
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Tsar Leg Armor](../../../assets/equipements/bas-tsar-leg-armor.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

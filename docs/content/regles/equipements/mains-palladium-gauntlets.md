@@ -1,7 +1,7 @@
 # Palladium Gauntlets
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Palladium Gauntlets](../../../assets/equipements/mains-palladium-gauntlets.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

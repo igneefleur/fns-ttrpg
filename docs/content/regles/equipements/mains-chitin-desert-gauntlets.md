@@ -1,7 +1,7 @@
 # Chitin Desert Gauntlets
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Chitin Desert Gauntlets](../../../assets/equipements/mains-chitin-desert-gauntlets.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

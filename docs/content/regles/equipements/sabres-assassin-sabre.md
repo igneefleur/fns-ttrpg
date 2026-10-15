@@ -1,7 +1,7 @@
 # Assassin Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Assassin Sabre](../../../assets/equipements/sabres-assassin-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Sabres  

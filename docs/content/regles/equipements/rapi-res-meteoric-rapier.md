@@ -1,7 +1,7 @@
 # Meteoric Rapier
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Meteoric Rapier](../../../assets/equipements/rapi-res-meteoric-rapier.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Rapières  

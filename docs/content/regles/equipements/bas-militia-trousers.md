@@ -1,7 +1,7 @@
 # Militia Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Militia Trousers](../../../assets/equipements/bas-militia-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

@@ -1,7 +1,7 @@
 # Ancient Calygrey Two-Handed Flail
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Ancient Calygrey Two-Handed Flail](../../../assets/equipements/fl-aux-deux-mains-ancient-calygrey-two-handed-flail.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Fléaux à deux mains  

@@ -1,7 +1,7 @@
 # Old Legion Mace
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Old Legion Mace](../../../assets/equipements/masses-1-main-old-legion-mace.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Masses 1 main  

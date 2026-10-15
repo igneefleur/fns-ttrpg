@@ -1,7 +1,7 @@
 # Novice Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Novice Trousers](../../../assets/equipements/bas-novice-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

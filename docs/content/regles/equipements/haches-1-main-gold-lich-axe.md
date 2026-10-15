@@ -1,7 +1,7 @@
 # Gold-Lich Axe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Gold-Lich Axe](../../../assets/equipements/haches-1-main-gold-lich-axe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Haches 1 main  

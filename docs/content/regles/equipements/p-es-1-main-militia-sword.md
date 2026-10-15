@@ -1,7 +1,7 @@
 # Militia Sword
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Militia Sword](../../../assets/equipements/p-es-1-main-militia-sword.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Épées 1 main  

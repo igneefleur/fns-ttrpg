@@ -1,7 +1,7 @@
 # Adventurer Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Adventurer Trousers](../../../assets/equipements/bas-adventurer-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

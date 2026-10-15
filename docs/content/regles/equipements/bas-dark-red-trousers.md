@@ -1,7 +1,7 @@
 # Dark Red Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Dark Red Trousers](../../../assets/equipements/bas-dark-red-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

@@ -1,7 +1,7 @@
 # Golem Sword
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Golem Sword](../../../assets/equipements/p-es-1-main-golem-sword.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Épées 1 main  

@@ -1,7 +1,7 @@
 # Giantkind Knuckles
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Giantkind Knuckles](../../../assets/equipements/gantelets-giantkind-knuckles.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Gantelets  

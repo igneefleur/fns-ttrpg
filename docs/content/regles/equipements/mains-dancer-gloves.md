@@ -1,7 +1,7 @@
 # Dancer Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Dancer Gloves](../../../assets/equipements/mains-dancer-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

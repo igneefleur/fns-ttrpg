@@ -1,7 +1,7 @@
 # Withering Greatsword
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Withering Greatsword](../../../assets/equipements/grandes-p-es-withering-greatsword.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grandes épées  

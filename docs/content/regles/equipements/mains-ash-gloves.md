@@ -1,7 +1,7 @@
 # Ash Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Ash Gloves](../../../assets/equipements/mains-ash-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

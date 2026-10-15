@@ -1,7 +1,7 @@
 # Gold Great Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Gold Great Sabre](../../../assets/equipements/grands-sabres-gold-great-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands sabres  

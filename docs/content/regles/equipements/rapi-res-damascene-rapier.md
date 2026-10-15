@@ -1,7 +1,7 @@
 # Damascene Rapier
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Damascene Rapier](../../../assets/equipements/rapi-res-damascene-rapier.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Rapières  

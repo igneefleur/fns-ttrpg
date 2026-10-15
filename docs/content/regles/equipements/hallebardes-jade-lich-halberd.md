@@ -1,7 +1,7 @@
 # Jade-Lich Halberd
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Jade-Lich Halberd](../../../assets/equipements/hallebardes-jade-lich-halberd.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Hallebardes  

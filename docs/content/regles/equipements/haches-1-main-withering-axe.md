@@ -1,7 +1,7 @@
 # Withering Axe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Withering Axe](../../../assets/equipements/haches-1-main-withering-axe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Haches 1 main  

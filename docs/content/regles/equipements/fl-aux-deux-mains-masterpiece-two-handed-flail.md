@@ -1,7 +1,7 @@
 # Masterpiece Two-Handed Flail
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Masterpiece Two-Handed Flail](../../../assets/equipements/fl-aux-deux-mains-masterpiece-two-handed-flail.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Fléaux à deux mains  

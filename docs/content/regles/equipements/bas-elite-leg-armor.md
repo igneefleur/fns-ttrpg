@@ -1,7 +1,7 @@
 # Elite Leg Armor
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Elite Leg Armor](../../../assets/equipements/bas-elite-leg-armor.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

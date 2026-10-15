@@ -1,7 +1,7 @@
 # Crescent Greathammer
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Crescent Greathammer](../../../assets/equipements/grands-marteaux-crescent-greathammer.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands marteaux  

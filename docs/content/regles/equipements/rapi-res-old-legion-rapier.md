@@ -1,7 +1,7 @@
 # Old Legion Rapier
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Old Legion Rapier](../../../assets/equipements/rapi-res-old-legion-rapier.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Rapières  

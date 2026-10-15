@@ -1,7 +1,7 @@
 # Galvanic Sword
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Galvanic Sword](../../../assets/equipements/p-es-1-main-galvanic-sword.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Épées 1 main  

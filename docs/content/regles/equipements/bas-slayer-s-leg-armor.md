@@ -1,7 +1,7 @@
 # Slayer's Leg Armor
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Slayer's Leg Armor](../../../assets/equipements/bas-slayer-s-leg-armor.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

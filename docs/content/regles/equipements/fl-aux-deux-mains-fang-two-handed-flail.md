@@ -1,7 +1,7 @@
 # Fang Two-Handed Flail
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Fang Two-Handed Flail](../../../assets/equipements/fl-aux-deux-mains-fang-two-handed-flail.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Fléaux à deux mains  

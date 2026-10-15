@@ -1,7 +1,7 @@
 # Wolf Medic Leg Armor
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Wolf Medic Leg Armor](../../../assets/equipements/bas-wolf-medic-leg-armor.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

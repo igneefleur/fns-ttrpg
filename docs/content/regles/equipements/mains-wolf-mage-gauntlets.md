@@ -1,7 +1,7 @@
 # Wolf Mage Gauntlets
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Wolf Mage Gauntlets](../../../assets/equipements/mains-wolf-mage-gauntlets.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

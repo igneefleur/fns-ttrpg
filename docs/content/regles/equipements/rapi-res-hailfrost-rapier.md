@@ -1,7 +1,7 @@
 # Hailfrost Rapier
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Hailfrost Rapier](../../../assets/equipements/rapi-res-hailfrost-rapier.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Rapières  

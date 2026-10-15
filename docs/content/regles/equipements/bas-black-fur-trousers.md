@@ -1,7 +1,7 @@
 # Black Fur Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Black Fur Trousers](../../../assets/equipements/bas-black-fur-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

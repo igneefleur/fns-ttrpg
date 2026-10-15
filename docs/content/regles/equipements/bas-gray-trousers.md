@@ -1,7 +1,7 @@
 # Gray Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Gray Trousers](../../../assets/equipements/bas-gray-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

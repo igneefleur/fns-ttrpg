@@ -1,7 +1,7 @@
 # Squire Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Squire Gloves](../../../assets/equipements/mains-squire-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

@@ -1,7 +1,7 @@
 # Gold-Lich Halberd
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Gold-Lich Halberd](../../../assets/equipements/hallebardes-gold-lich-halberd.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Hallebardes  

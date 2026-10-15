@@ -1,7 +1,7 @@
 # Jade-Lich Great Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Jade-Lich Great Sabre](../../../assets/equipements/grands-sabres-jade-lich-great-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands sabres  

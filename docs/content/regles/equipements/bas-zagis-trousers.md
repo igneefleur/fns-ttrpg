@@ -1,7 +1,7 @@
 # Zagis' Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Zagis' Trousers](../../../assets/equipements/bas-zagis-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

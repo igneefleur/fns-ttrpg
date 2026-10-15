@@ -1,7 +1,7 @@
 # Copal Leg Armor
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Copal Leg Armor](../../../assets/equipements/bas-copal-leg-armor.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

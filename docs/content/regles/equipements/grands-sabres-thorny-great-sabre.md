@@ -1,7 +1,7 @@
 # Thorny Great Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Thorny Great Sabre](../../../assets/equipements/grands-sabres-thorny-great-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands sabres  

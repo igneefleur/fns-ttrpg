@@ -1,7 +1,7 @@
 # Jade-Lich Greataxe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Jade-Lich Greataxe](../../../assets/equipements/grandes-haches-jade-lich-greataxe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grandes haches  

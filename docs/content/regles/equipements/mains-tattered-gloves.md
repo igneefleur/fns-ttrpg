@@ -1,7 +1,7 @@
 # Tattered Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Tattered Gloves](../../../assets/equipements/mains-tattered-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

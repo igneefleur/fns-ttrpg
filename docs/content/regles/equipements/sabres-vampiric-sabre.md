@@ -1,7 +1,7 @@
 # Vampiric Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Vampiric Sabre](../../../assets/equipements/sabres-vampiric-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Sabres  

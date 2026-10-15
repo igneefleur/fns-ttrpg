@@ -1,7 +1,7 @@
 # Astral War Scythe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Astral War Scythe](../../../assets/equipements/faux-de-guerre-astral-war-scythe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Faux de guerre  

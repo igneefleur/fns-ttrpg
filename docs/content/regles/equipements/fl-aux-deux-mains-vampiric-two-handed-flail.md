@@ -1,7 +1,7 @@
 # Vampiric Two-Handed Flail
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Vampiric Two-Handed Flail](../../../assets/equipements/fl-aux-deux-mains-vampiric-two-handed-flail.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Fléaux à deux mains  

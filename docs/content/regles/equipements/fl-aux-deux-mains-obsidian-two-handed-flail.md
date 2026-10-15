@@ -1,7 +1,7 @@
 # Obsidian Two-Handed Flail
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Obsidian Two-Handed Flail](../../../assets/equipements/fl-aux-deux-mains-obsidian-two-handed-flail.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Fléaux à deux mains  

@@ -1,7 +1,7 @@
 # Crescent Two-Handed Flail
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Crescent Two-Handed Flail](../../../assets/equipements/fl-aux-deux-mains-crescent-two-handed-flail.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Fléaux à deux mains  

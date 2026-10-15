@@ -1,7 +1,7 @@
 # Elite Desert Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Elite Desert Gloves](../../../assets/equipements/mains-elite-desert-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

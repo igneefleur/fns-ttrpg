@@ -1,7 +1,7 @@
 # Smoke Sword
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Smoke Sword](../../../assets/equipements/p-es-1-main-smoke-sword.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Épées 1 main  

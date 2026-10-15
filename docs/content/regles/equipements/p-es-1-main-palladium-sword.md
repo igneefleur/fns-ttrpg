@@ -1,7 +1,7 @@
 # Palladium Sword
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Palladium Sword](../../../assets/equipements/p-es-1-main-palladium-sword.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Épées 1 main  

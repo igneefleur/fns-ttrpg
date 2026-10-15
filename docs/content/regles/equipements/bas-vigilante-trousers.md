@@ -1,7 +1,7 @@
 # Vigilante Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Vigilante Trousers](../../../assets/equipements/bas-vigilante-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

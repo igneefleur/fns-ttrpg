@@ -1,7 +1,7 @@
 # Savage War Scythe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Savage War Scythe](../../../assets/equipements/faux-de-guerre-savage-war-scythe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Faux de guerre  

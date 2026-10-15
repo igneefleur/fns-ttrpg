@@ -1,7 +1,7 @@
 # Merton's Handbones
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Merton's Handbones](../../../assets/equipements/mains-merton-s-handbones.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

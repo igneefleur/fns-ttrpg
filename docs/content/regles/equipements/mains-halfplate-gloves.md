@@ -1,7 +1,7 @@
 # Halfplate Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Halfplate Gloves](../../../assets/equipements/mains-halfplate-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

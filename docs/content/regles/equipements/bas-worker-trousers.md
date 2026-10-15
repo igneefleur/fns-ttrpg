@@ -1,7 +1,7 @@
 # Worker Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Worker Trousers](../../../assets/equipements/bas-worker-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

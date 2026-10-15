@@ -1,7 +1,7 @@
 # Master Trader Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Master Trader Trousers](../../../assets/equipements/bas-master-trader-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

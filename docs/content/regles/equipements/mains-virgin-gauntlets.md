@@ -1,7 +1,7 @@
 # Virgin Gauntlets
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Virgin Gauntlets](../../../assets/equipements/mains-virgin-gauntlets.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

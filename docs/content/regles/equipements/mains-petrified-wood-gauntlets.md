@@ -1,7 +1,7 @@
 # Petrified Wood Gauntlets
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Petrified Wood Gauntlets](../../../assets/equipements/mains-petrified-wood-gauntlets.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

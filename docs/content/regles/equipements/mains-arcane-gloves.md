@@ -1,7 +1,7 @@
 # Arcane Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Arcane Gloves](../../../assets/equipements/mains-arcane-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

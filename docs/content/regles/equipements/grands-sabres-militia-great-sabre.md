@@ -1,7 +1,7 @@
 # Militia Great Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Militia Great Sabre](../../../assets/equipements/grands-sabres-militia-great-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands sabres  

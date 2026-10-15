@@ -1,7 +1,7 @@
 # Galvanic Rapier
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Galvanic Rapier](../../../assets/equipements/rapi-res-galvanic-rapier.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Rapières  

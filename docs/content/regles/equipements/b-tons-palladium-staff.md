@@ -1,7 +1,7 @@
 # Palladium Staff
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Palladium Staff](../../../assets/equipements/b-tons-palladium-staff.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bâtons  

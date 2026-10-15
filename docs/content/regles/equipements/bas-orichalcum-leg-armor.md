@@ -1,7 +1,7 @@
 # Orichalcum Leg Armor
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Orichalcum Leg Armor](../../../assets/equipements/bas-orichalcum-leg-armor.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

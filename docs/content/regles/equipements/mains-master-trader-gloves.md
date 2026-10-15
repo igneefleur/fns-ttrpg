@@ -1,7 +1,7 @@
 # Master Trader Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Master Trader Gloves](../../../assets/equipements/mains-master-trader-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

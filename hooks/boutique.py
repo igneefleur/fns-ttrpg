@@ -34,6 +34,8 @@ def catalogue(docs):
         description = re.sub(r'^## (.+)$', r'\1', description, flags=re.M)
         description = re.sub(r'\n{3,}', '\n\n', description).strip()
         img = ''
+        if not image:
+            raise ValueError(f'Illustration absente : {path.name}')
         if image:
             resolved = (path.parent / image[1]).resolve()
             img = resolved.relative_to(docs.resolve()).as_posix()

@@ -1,7 +1,7 @@
 # Smoke Rapier
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Smoke Rapier](../../../assets/equipements/rapi-res-smoke-rapier.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Rapières  

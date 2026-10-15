@@ -1,7 +1,7 @@
 # Master Desert Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Master Desert Trousers](../../../assets/equipements/bas-master-desert-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

@@ -1,7 +1,7 @@
 # Brutal Rapier
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Brutal Rapier](../../../assets/equipements/rapi-res-brutal-rapier.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Rapières  

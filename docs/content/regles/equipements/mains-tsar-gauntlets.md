@@ -1,7 +1,7 @@
 # Tsar Gauntlets
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Tsar Gauntlets](../../../assets/equipements/mains-tsar-gauntlets.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

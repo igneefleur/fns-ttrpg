@@ -1,7 +1,7 @@
 # Ash Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Ash Trousers](../../../assets/equipements/bas-ash-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

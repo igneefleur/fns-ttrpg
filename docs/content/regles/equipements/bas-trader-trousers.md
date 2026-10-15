@@ -1,7 +1,7 @@
 # Trader Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Trader Trousers](../../../assets/equipements/bas-trader-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

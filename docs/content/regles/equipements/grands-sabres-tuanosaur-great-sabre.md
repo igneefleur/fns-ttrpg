@@ -1,7 +1,7 @@
 # Tuanosaur Great Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Tuanosaur Great Sabre](../../../assets/equipements/grands-sabres-tuanosaur-great-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands sabres  

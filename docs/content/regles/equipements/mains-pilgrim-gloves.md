@@ -1,7 +1,7 @@
 # Pilgrim Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Pilgrim Gloves](../../../assets/equipements/mains-pilgrim-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

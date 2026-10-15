@@ -1,7 +1,7 @@
 # Kintsugi Gauntlets
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Kintsugi Gauntlets](../../../assets/equipements/mains-kintsugi-gauntlets.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

@@ -1,7 +1,7 @@
 # Shock Leg Armor
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Shock Leg Armor](../../../assets/equipements/bas-shock-leg-armor.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

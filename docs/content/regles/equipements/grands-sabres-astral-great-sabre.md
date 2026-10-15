@@ -1,7 +1,7 @@
 # Astral Great Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Astral Great Sabre](../../../assets/equipements/grands-sabres-astral-great-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands sabres  

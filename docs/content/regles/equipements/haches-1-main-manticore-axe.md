@@ -1,7 +1,7 @@
 # Manticore Axe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Manticore Axe](../../../assets/equipements/haches-1-main-manticore-axe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Haches 1 main  

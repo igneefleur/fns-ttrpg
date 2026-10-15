@@ -1,7 +1,7 @@
 # Marble Two-Handed Flail
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Marble Two-Handed Flail](../../../assets/equipements/fl-aux-deux-mains-marble-two-handed-flail.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Fléaux à deux mains  

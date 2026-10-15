@@ -1,7 +1,7 @@
 # Golem Spear
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Golem Spear](../../../assets/equipements/lances-golem-spear.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Lances  

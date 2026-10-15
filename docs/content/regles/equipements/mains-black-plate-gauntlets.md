@@ -1,7 +1,7 @@
 # Black Plate Gauntlets
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Black Plate Gauntlets](../../../assets/equipements/mains-black-plate-gauntlets.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

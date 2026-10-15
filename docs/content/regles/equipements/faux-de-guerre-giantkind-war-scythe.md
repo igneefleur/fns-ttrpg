@@ -1,7 +1,7 @@
 # Giantkind War Scythe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Giantkind War Scythe](../../../assets/equipements/faux-de-guerre-giantkind-war-scythe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Faux de guerre  

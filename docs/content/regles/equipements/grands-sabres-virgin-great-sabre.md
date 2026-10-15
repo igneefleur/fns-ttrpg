@@ -1,7 +1,7 @@
 # Virgin Great Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Virgin Great Sabre](../../../assets/equipements/grands-sabres-virgin-great-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands sabres  

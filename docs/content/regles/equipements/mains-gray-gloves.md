@@ -1,7 +1,7 @@
 # Gray Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Gray Gloves](../../../assets/equipements/mains-gray-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

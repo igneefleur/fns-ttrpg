@@ -1,7 +1,7 @@
 # Savage Great Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Savage Great Sabre](../../../assets/equipements/grands-sabres-savage-great-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands sabres  

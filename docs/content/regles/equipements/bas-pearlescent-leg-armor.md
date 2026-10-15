@@ -1,7 +1,7 @@
 # Pearlescent Leg Armor
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Pearlescent Leg Armor](../../../assets/equipements/bas-pearlescent-leg-armor.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

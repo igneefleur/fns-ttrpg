@@ -1,7 +1,7 @@
 # Obsidian Rapier
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Obsidian Rapier](../../../assets/equipements/rapi-res-obsidian-rapier.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Rapières  

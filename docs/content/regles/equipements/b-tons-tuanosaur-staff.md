@@ -1,7 +1,7 @@
 # Tuanosaur Staff
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Tuanosaur Staff](../../../assets/equipements/b-tons-tuanosaur-staff.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bâtons  

@@ -1,7 +1,7 @@
 # Calygrey Sword
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Calygrey Sword](../../../assets/equipements/p-es-1-main-calygrey-sword.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Épées 1 main  

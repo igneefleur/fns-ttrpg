@@ -1,7 +1,7 @@
 # Virgin War Scythe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Virgin War Scythe](../../../assets/equipements/faux-de-guerre-virgin-war-scythe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Faux de guerre  

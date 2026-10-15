@@ -1,7 +1,7 @@
 # Festive Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Festive Trousers](../../../assets/equipements/bas-festive-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

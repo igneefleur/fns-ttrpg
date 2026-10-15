@@ -1,7 +1,7 @@
 # Caldera Mail Gauntlets
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Caldera Mail Gauntlets](../../../assets/equipements/mains-caldera-mail-gauntlets.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

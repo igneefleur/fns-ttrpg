@@ -1,7 +1,7 @@
 # Candle Plate Gauntlets
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Candle Plate Gauntlets](../../../assets/equipements/mains-candle-plate-gauntlets.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

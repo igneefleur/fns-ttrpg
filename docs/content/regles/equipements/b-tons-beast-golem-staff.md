@@ -1,7 +1,7 @@
 # Beast Golem Staff
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Beast Golem Staff](../../../assets/equipements/b-tons-beast-golem-staff.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bâtons  

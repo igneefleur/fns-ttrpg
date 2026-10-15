@@ -1,7 +1,7 @@
 # Brutal Greatsword
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Brutal Greatsword](../../../assets/equipements/grandes-p-es-brutal-greatsword.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grandes épées  

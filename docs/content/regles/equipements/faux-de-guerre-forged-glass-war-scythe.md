@@ -1,7 +1,7 @@
 # Forged Glass War Scythe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Forged Glass War Scythe](../../../assets/equipements/faux-de-guerre-forged-glass-war-scythe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Faux de guerre  

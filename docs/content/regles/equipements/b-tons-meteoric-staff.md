@@ -1,7 +1,7 @@
 # Meteoric Staff
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Meteoric Staff](../../../assets/equipements/b-tons-meteoric-staff.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bâtons  

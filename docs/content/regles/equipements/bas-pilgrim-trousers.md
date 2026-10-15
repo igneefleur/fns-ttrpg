@@ -1,7 +1,7 @@
 # Pilgrim Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Pilgrim Trousers](../../../assets/equipements/bas-pilgrim-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

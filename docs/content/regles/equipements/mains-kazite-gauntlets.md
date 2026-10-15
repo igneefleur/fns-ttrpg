@@ -1,7 +1,7 @@
 # Kazite Gauntlets
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Kazite Gauntlets](../../../assets/equipements/mains-kazite-gauntlets.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

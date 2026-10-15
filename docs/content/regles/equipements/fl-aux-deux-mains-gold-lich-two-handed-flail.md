@@ -1,7 +1,7 @@
 # Gold-Lich Two-Handed Flail
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Gold-Lich Two-Handed Flail](../../../assets/equipements/fl-aux-deux-mains-gold-lich-two-handed-flail.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Fléaux à deux mains  

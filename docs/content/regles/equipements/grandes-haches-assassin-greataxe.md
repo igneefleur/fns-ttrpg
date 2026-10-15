@@ -1,7 +1,7 @@
 # Assassin Greataxe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Assassin Greataxe](../../../assets/equipements/grandes-haches-assassin-greataxe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grandes haches  

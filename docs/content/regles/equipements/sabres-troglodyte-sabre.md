@@ -1,7 +1,7 @@
 # Troglodyte Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Troglodyte Sabre](../../../assets/equipements/sabres-troglodyte-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Sabres  

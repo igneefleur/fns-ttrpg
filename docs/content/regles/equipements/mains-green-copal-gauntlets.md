@@ -1,7 +1,7 @@
 # Green Copal Gauntlets
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Green Copal Gauntlets](../../../assets/equipements/mains-green-copal-gauntlets.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

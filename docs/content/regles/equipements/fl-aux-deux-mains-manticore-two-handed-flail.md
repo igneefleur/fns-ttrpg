@@ -1,7 +1,7 @@
 # Manticore Two-Handed Flail
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Manticore Two-Handed Flail](../../../assets/equipements/fl-aux-deux-mains-manticore-two-handed-flail.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Fléaux à deux mains  

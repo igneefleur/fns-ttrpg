@@ -1,7 +1,7 @@
 # Silver Gauntlets
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Silver Gauntlets](../../../assets/equipements/mains-silver-gauntlets.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

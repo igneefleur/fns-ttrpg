@@ -1,7 +1,7 @@
 # Obsidian Staff
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Obsidian Staff](../../../assets/equipements/b-tons-obsidian-staff.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bâtons  

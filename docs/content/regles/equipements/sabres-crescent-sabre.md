@@ -1,7 +1,7 @@
 # Crescent Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Crescent Sabre](../../../assets/equipements/sabres-crescent-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Sabres  

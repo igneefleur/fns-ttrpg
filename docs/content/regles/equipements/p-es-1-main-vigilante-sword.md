@@ -1,7 +1,7 @@
 # Vigilante Sword
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Vigilante Sword](../../../assets/equipements/p-es-1-main-vigilante-sword.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Épées 1 main  

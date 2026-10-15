@@ -1,7 +1,7 @@
 # Runic Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Runic Sabre](../../../assets/equipements/sabres-runic-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Sabres  

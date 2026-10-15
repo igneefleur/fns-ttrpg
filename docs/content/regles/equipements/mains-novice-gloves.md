@@ -1,7 +1,7 @@
 # Novice Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Novice Gloves](../../../assets/equipements/mains-novice-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

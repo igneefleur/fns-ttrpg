@@ -1,7 +1,7 @@
 # Old Legion Axe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Old Legion Axe](../../../assets/equipements/haches-1-main-old-legion-axe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Haches 1 main  

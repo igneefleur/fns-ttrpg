@@ -1,7 +1,7 @@
 # Assassin Greathammer
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Assassin Greathammer](../../../assets/equipements/grands-marteaux-assassin-greathammer.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands marteaux  

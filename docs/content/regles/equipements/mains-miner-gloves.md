@@ -1,7 +1,7 @@
 # Miner Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Miner Gloves](../../../assets/equipements/mains-miner-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

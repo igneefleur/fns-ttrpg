@@ -1,7 +1,7 @@
 # Kazite Rapier
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Kazite Rapier](../../../assets/equipements/rapi-res-kazite-rapier.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Rapières  

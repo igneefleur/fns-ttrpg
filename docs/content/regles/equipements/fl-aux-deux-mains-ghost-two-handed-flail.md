@@ -1,7 +1,7 @@
 # Ghost Two-Handed Flail
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Ghost Two-Handed Flail](../../../assets/equipements/fl-aux-deux-mains-ghost-two-handed-flail.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Fléaux à deux mains  

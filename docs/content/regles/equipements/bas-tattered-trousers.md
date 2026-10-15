@@ -1,7 +1,7 @@
 # Tattered Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Tattered Trousers](../../../assets/equipements/bas-tattered-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

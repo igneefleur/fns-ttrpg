@@ -1,7 +1,7 @@
 # Giantkind Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Giantkind Sabre](../../../assets/equipements/sabres-giantkind-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Sabres  

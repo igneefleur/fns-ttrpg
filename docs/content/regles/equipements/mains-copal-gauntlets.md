@@ -1,7 +1,7 @@
 # Copal Gauntlets
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Copal Gauntlets](../../../assets/equipements/mains-copal-gauntlets.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

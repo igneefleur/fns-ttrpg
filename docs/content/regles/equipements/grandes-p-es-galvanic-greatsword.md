@@ -1,7 +1,7 @@
 # Galvanic Greatsword
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Galvanic Greatsword](../../../assets/equipements/grandes-p-es-galvanic-greatsword.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grandes épées  

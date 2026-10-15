@@ -1,7 +1,7 @@
 # Manticore Spear
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Manticore Spear](../../../assets/equipements/lances-manticore-spear.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Lances  

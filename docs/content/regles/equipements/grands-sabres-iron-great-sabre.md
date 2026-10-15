@@ -1,7 +1,7 @@
 # Iron Great Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Iron Great Sabre](../../../assets/equipements/grands-sabres-iron-great-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands sabres  

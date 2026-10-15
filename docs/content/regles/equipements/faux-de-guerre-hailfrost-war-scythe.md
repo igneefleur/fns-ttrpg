@@ -1,7 +1,7 @@
 # Hailfrost War Scythe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Hailfrost War Scythe](../../../assets/equipements/faux-de-guerre-hailfrost-war-scythe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Faux de guerre  

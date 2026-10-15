@@ -1,7 +1,7 @@
 # Rich Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Rich Gloves](../../../assets/equipements/mains-rich-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

@@ -1,7 +1,7 @@
 # Withering Staff
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Withering Staff](../../../assets/equipements/b-tons-withering-staff.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bâtons  

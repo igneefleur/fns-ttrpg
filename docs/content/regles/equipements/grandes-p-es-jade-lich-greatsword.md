@@ -1,7 +1,7 @@
 # Jade-Lich Greatsword
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Jade-Lich Greatsword](../../../assets/equipements/grandes-p-es-jade-lich-greatsword.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grandes épées  

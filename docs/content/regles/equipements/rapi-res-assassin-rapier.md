@@ -1,7 +1,7 @@
 # Assassin Rapier
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Assassin Rapier](../../../assets/equipements/rapi-res-assassin-rapier.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Rapières  

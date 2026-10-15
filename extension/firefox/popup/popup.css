@@ -487,3 +487,5 @@ body.p-off #p-pieces .p-titre { color: var(--ink-3); }
   font-size: var(--fs-meta); line-height: 1.25;
 }
 .p-flash[hidden] { display: none; }
+
+.p-separateur{border:0;border-top:1px solid var(--line);margin:8px 0}

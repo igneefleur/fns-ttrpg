@@ -1,7 +1,7 @@
 # Runic Great Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Runic Great Sabre](../../../assets/equipements/grands-sabres-runic-great-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands sabres  

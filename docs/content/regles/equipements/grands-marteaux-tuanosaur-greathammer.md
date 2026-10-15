@@ -1,7 +1,7 @@
 # Tuanosaur Greathammer
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Tuanosaur Greathammer](../../../assets/equipements/grands-marteaux-tuanosaur-greathammer.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands marteaux  

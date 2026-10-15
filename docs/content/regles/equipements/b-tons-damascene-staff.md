@@ -1,7 +1,7 @@
 # Damascene Staff
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Damascene Staff](../../../assets/equipements/b-tons-damascene-staff.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bâtons  

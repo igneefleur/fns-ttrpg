@@ -1,7 +1,7 @@
 # Obsidian Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Obsidian Sabre](../../../assets/equipements/sabres-obsidian-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Sabres  

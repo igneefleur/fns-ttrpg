@@ -1,7 +1,7 @@
 # Tuanosaur Halberd
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Tuanosaur Halberd](../../../assets/equipements/hallebardes-tuanosaur-halberd.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Hallebardes  

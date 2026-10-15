@@ -1,7 +1,7 @@
 # Red Clansage Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Red Clansage Trousers](../../../assets/equipements/bas-red-clansage-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

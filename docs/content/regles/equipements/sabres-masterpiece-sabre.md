@@ -1,7 +1,7 @@
 # Masterpiece Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Masterpiece Sabre](../../../assets/equipements/sabres-masterpiece-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Sabres  

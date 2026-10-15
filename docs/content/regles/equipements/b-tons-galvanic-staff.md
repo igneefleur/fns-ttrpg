@@ -1,7 +1,7 @@
 # Galvanic Staff
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Galvanic Staff](../../../assets/equipements/b-tons-galvanic-staff.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bâtons  

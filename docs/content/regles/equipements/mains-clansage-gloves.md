@@ -1,7 +1,7 @@
 # Clansage Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Clansage Gloves](../../../assets/equipements/mains-clansage-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

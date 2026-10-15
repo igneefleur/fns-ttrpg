@@ -1,7 +1,7 @@
 # Marble Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Marble Sabre](../../../assets/equipements/sabres-marble-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Sabres  

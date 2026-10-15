@@ -1,7 +1,7 @@
 # Chalcedony Gauntlets
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Chalcedony Gauntlets](../../../assets/equipements/mains-chalcedony-gauntlets.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

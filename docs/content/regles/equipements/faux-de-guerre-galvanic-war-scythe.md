@@ -1,7 +1,7 @@
 # Galvanic War Scythe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Galvanic War Scythe](../../../assets/equipements/faux-de-guerre-galvanic-war-scythe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Faux de guerre  

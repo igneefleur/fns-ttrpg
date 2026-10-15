@@ -1,7 +1,7 @@
 # Thorny Sword
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Thorny Sword](../../../assets/equipements/p-es-1-main-thorny-sword.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Épées 1 main  

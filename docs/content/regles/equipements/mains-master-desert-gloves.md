@@ -1,7 +1,7 @@
 # Master Desert Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Master Desert Gloves](../../../assets/equipements/mains-master-desert-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

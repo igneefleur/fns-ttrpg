@@ -1,7 +1,7 @@
 # Assassin Great Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Assassin Great Sabre](../../../assets/equipements/grands-sabres-assassin-great-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands sabres  

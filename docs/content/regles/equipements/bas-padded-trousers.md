@@ -1,7 +1,7 @@
 # Padded Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Padded Trousers](../../../assets/equipements/bas-padded-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

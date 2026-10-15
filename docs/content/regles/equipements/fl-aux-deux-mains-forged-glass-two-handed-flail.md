@@ -1,7 +1,7 @@
 # Forged Glass Two-Handed Flail
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Forged Glass Two-Handed Flail](../../../assets/equipements/fl-aux-deux-mains-forged-glass-two-handed-flail.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Fléaux à deux mains  

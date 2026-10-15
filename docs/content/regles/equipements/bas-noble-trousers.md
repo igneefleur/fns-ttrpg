@@ -1,7 +1,7 @@
 # Noble Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Noble Trousers](../../../assets/equipements/bas-noble-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

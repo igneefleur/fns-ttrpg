@@ -1,7 +1,7 @@
 # Troglodyte Sword
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Troglodyte Sword](../../../assets/equipements/p-es-1-main-troglodyte-sword.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Épées 1 main  

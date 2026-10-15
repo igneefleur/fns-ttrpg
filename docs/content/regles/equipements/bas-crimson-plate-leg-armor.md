@@ -1,7 +1,7 @@
 # Crimson Plate Leg Armor
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Crimson Plate Leg Armor](../../../assets/equipements/bas-crimson-plate-leg-armor.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

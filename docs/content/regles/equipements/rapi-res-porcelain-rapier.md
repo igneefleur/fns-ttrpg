@@ -1,7 +1,7 @@
 # Porcelain Rapier
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Porcelain Rapier](../../../assets/equipements/rapi-res-porcelain-rapier.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Rapières  

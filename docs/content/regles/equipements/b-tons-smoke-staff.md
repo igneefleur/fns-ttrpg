@@ -1,7 +1,7 @@
 # Smoke Staff
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Smoke Staff](../../../assets/equipements/b-tons-smoke-staff.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bâtons  

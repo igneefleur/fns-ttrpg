@@ -1,7 +1,7 @@
 # Horror Leg Armor
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Horror Leg Armor](../../../assets/equipements/bas-horror-leg-armor.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

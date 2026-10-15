@@ -1,7 +1,7 @@
 # Manticore Rapier
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Manticore Rapier](../../../assets/equipements/rapi-res-manticore-rapier.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Rapières  

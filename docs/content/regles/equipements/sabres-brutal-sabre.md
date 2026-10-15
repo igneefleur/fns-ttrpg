@@ -1,7 +1,7 @@
 # Brutal Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Brutal Sabre](../../../assets/equipements/sabres-brutal-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Sabres  

@@ -1,7 +1,7 @@
 # White Priest Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![White Priest Gloves](../../../assets/equipements/mains-white-priest-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

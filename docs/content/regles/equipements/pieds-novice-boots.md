@@ -1,7 +1,7 @@
 # Novice Boots
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Novice Boots](../../../assets/equipements/pieds-novice-boots.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Pieds  

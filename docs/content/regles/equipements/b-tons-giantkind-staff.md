@@ -1,7 +1,7 @@
 # Giantkind Staff
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Giantkind Staff](../../../assets/equipements/b-tons-giantkind-staff.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bâtons  

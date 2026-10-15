@@ -1,7 +1,7 @@
 # Tuanosaur Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Tuanosaur Sabre](../../../assets/equipements/sabres-tuanosaur-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Sabres  

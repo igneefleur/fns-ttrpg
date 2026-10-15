@@ -1,7 +1,7 @@
 # Desert Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Desert Trousers](../../../assets/equipements/bas-desert-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

@@ -1,7 +1,7 @@
 # Brutal Staff
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Brutal Staff](../../../assets/equipements/b-tons-brutal-staff.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bâtons  

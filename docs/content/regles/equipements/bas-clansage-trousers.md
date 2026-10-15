@@ -1,7 +1,7 @@
 # Clansage Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Clansage Trousers](../../../assets/equipements/bas-clansage-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

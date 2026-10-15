@@ -1,7 +1,7 @@
 # Jade-Lich Rapier
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Jade-Lich Rapier](../../../assets/equipements/rapi-res-jade-lich-rapier.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Rapières  

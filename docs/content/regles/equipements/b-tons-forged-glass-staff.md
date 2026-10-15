@@ -1,7 +1,7 @@
 # Forged Glass Staff
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Forged Glass Staff](../../../assets/equipements/b-tons-forged-glass-staff.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bâtons  

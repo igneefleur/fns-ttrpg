@@ -1,7 +1,7 @@
 # Assassin Mace
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Assassin Mace](../../../assets/equipements/masses-1-main-assassin-mace.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Masses 1 main  

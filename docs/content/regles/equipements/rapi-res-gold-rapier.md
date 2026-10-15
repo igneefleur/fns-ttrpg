@@ -1,7 +1,7 @@
 # Gold Rapier
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Gold Rapier](../../../assets/equipements/rapi-res-gold-rapier.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Rapières  

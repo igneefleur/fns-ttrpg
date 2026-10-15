@@ -1,7 +1,7 @@
 # Palladium Great Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Palladium Great Sabre](../../../assets/equipements/grands-sabres-palladium-great-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands sabres  

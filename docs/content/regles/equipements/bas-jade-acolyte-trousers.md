@@ -1,7 +1,7 @@
 # Jade Acolyte Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Jade Acolyte Trousers](../../../assets/equipements/bas-jade-acolyte-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

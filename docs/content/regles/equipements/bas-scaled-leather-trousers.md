@@ -1,7 +1,7 @@
 # Scaled Leather Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Scaled Leather Trousers](../../../assets/equipements/bas-scaled-leather-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

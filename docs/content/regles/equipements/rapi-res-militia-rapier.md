@@ -1,7 +1,7 @@
 # Militia Rapier
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Militia Rapier](../../../assets/equipements/rapi-res-militia-rapier.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Rapières  

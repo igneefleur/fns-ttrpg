@@ -1,7 +1,7 @@
 # Caldera Mail Leg Armor
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Caldera Mail Leg Armor](../../../assets/equipements/bas-caldera-mail-leg-armor.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

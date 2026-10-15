@@ -1,7 +1,7 @@
 # Masterpiece War Scythe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Masterpiece War Scythe](../../../assets/equipements/faux-de-guerre-masterpiece-war-scythe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Faux de guerre  

@@ -1,7 +1,7 @@
 # White Arcane Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![White Arcane Gloves](../../../assets/equipements/mains-white-arcane-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

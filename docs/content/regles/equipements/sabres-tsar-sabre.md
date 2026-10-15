@@ -1,7 +1,7 @@
 # Tsar Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Tsar Sabre](../../../assets/equipements/sabres-tsar-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Sabres  

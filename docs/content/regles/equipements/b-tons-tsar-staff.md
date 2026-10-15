@@ -1,7 +1,7 @@
 # Tsar Staff
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Tsar Staff](../../../assets/equipements/b-tons-tsar-staff.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bâtons  

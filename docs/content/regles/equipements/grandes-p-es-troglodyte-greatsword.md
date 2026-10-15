@@ -1,7 +1,7 @@
 # Troglodyte Greatsword
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Troglodyte Greatsword](../../../assets/equipements/grandes-p-es-troglodyte-greatsword.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grandes épées  

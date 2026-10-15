@@ -29,7 +29,7 @@ const tick=()=>new Promise(r=>setImmediate(r));
 (async()=>{
  const {doc,sent,top,message,form}=boot();await tick();const $=id=>doc.ids[id];
  assert.equal(catalogue.objets.length,1256);assert.equal(new Set(catalogue.objets.map(i=>i.id)).size,1256);
- catalogue.objets.forEach(it=>{if(it.img)assert.ok(fs.existsSync(path.join(root,'docs',it.img)));assert.ok(it.champs.length);});
+ catalogue.objets.forEach(it=>{assert.ok(it.img,it.id+' sans illustration');assert.ok(fs.existsSync(path.join(root,'docs',it.img)));assert.ok(it.champs.length);});
  assert.equal($('ob-items').children.length,24);assert.equal($('ob-categorie').children.length,23);assert.equal($('ob-page').textContent,'1 / 53');
  assert.equal($('ob-precedent').disabled,true);$('ob-suivant').onclick();assert.equal($('ob-page').textContent,'2 / 53');
  $('ob-categorie').value='Dagues';$('ob-categorie').onchange();assert.ok($('ob-items').children.length>0);assert.equal($('ob-page').textContent,'1 / 3');

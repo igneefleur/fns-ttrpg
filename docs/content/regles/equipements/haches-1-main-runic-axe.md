@@ -1,7 +1,7 @@
 # Runic Axe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Runic Axe](../../../assets/equipements/haches-1-main-runic-axe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Haches 1 main  

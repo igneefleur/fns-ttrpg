@@ -1,7 +1,7 @@
 # Astral Rapier
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Astral Rapier](../../../assets/equipements/rapi-res-astral-rapier.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Rapières  

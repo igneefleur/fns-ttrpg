@@ -1,7 +1,7 @@
 # Troglodyte Halberd
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Troglodyte Halberd](../../../assets/equipements/hallebardes-troglodyte-halberd.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Hallebardes  

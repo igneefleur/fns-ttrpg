@@ -1,7 +1,7 @@
 # Plate Leg Armor
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Plate Leg Armor](../../../assets/equipements/bas-plate-leg-armor.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

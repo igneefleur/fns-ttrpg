@@ -1,7 +1,7 @@
 # Damascene Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Damascene Sabre](../../../assets/equipements/sabres-damascene-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Sabres  

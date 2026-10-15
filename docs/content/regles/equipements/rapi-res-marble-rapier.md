@@ -1,7 +1,7 @@
 # Marble Rapier
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Marble Rapier](../../../assets/equipements/rapi-res-marble-rapier.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Rapières  

@@ -1,7 +1,7 @@
 # Porcelain Spear
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Porcelain Spear](../../../assets/equipements/lances-porcelain-spear.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Lances  

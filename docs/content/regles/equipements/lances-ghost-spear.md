@@ -1,7 +1,7 @@
 # Ghost Spear
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Ghost Spear](../../../assets/equipements/lances-ghost-spear.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Lances  

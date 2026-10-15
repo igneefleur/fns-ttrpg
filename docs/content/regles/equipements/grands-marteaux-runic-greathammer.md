@@ -1,7 +1,7 @@
 # Runic Greathammer
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Runic Greathammer](../../../assets/equipements/grands-marteaux-runic-greathammer.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands marteaux  

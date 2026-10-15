@@ -96,18 +96,14 @@
 
     <div class="p-ligne">
       <span class="p-lib" id="p-pan-lib">Monde</span>
-      <span class="p-actions">
-        <!-- « Replacer » répare le seul piège du panneau qui n'aurait aucune
-             sortie : traîné hors de l'écran ou replié dans un coin, il ne se
-             récupérerait par aucun chemin visible, alors que sa géométrie est
-             rangée sous une clé connue. -->
-        <button type="button" class="p-mini" id="p-pan-replacer"
-                title="Rend au panneau sa place, sa taille et son repli d'origine.">Replacer</button>
-        <button type="button" class="p-sw p-sw-btn" id="p-panneau" role="switch"
-                aria-checked="true" aria-labelledby="p-pan-lib"><i></i></button>
-      </span>
+      <button type="button" class="p-sw p-sw-btn" id="p-panneau" role="switch" aria-checked="true" aria-labelledby="p-pan-lib"><i></i></button>
     </div>
 
+    <div class="p-ligne"><span class="p-lib" id="p-boutique-lib">Boutique</span><button type="button" class="p-sw p-sw-btn" id="p-boutique" role="switch" aria-checked="true" aria-labelledby="p-boutique-lib"><i></i></button></div>
+    <div class="p-ligne"><span class="p-lib" id="p-inventaire-lib">Inventaire</span><button type="button" class="p-sw p-sw-btn" id="p-inventaire" role="switch" aria-checked="true" aria-labelledby="p-inventaire-lib"><i></i></button></div>
+    <div class="p-ligne"><span class="p-lib" id="p-attaques-lib">Attaques</span><button type="button" class="p-sw p-sw-btn" id="p-attaques" role="switch" aria-checked="true" aria-labelledby="p-attaques-lib"><i></i></button></div>
+    <div class="p-ligne"><span class="p-lib" id="p-defenses-lib">Défenses</span><button type="button" class="p-sw p-sw-btn" id="p-defenses" role="switch" aria-checked="true" aria-labelledby="p-defenses-lib"><i></i></button></div>
+    <hr class="p-separateur">
     <div class="p-ligne">
       <span class="p-lib" id="p-beta-lib">Beta</span>
       <button type="button" class="p-sw p-sw-btn" id="p-beta" role="switch"

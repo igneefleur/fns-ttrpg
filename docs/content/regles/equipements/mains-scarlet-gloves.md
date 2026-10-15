@@ -1,7 +1,7 @@
 # Scarlet Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Scarlet Gloves](../../../assets/equipements/mains-scarlet-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

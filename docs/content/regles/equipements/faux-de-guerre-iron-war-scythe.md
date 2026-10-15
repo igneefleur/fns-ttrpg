@@ -1,7 +1,7 @@
 # Iron War Scythe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Iron War Scythe](../../../assets/equipements/faux-de-guerre-iron-war-scythe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Faux de guerre  

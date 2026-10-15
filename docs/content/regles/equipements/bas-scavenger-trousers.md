@@ -1,7 +1,7 @@
 # Scavenger Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Scavenger Trousers](../../../assets/equipements/bas-scavenger-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

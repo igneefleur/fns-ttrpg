@@ -1,7 +1,7 @@
 # Old Legion Great Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Old Legion Great Sabre](../../../assets/equipements/grands-sabres-old-legion-great-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands sabres  

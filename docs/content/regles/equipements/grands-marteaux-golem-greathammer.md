@@ -1,7 +1,7 @@
 # Golem Greathammer
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Golem Greathammer](../../../assets/equipements/grands-marteaux-golem-greathammer.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands marteaux  

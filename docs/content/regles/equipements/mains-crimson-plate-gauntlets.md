@@ -1,7 +1,7 @@
 # Crimson Plate Gauntlets
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Crimson Plate Gauntlets](../../../assets/equipements/mains-crimson-plate-gauntlets.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

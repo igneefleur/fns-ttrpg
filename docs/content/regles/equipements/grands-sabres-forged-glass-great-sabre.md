@@ -1,7 +1,7 @@
 # Forged Glass Great Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Forged Glass Great Sabre](../../../assets/equipements/grands-sabres-forged-glass-great-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands sabres  

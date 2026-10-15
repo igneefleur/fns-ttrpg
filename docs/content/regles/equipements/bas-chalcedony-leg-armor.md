@@ -1,7 +1,7 @@
 # Chalcedony Leg Armor
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Chalcedony Leg Armor](../../../assets/equipements/bas-chalcedony-leg-armor.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

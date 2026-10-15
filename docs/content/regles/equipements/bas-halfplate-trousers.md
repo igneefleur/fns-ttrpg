@@ -1,7 +1,7 @@
 # Halfplate Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Halfplate Trousers](../../../assets/equipements/bas-halfplate-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

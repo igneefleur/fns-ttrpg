@@ -1,7 +1,7 @@
 # Pathfinder Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Pathfinder Gloves](../../../assets/equipements/mains-pathfinder-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

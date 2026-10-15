@@ -1,7 +1,7 @@
 # Tuanosaur Rapier
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Tuanosaur Rapier](../../../assets/equipements/rapi-res-tuanosaur-rapier.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Rapières  

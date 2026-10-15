@@ -1,7 +1,7 @@
 # Golem Great Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Golem Great Sabre](../../../assets/equipements/grands-sabres-golem-great-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands sabres  

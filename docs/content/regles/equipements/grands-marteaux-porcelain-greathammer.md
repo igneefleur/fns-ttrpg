@@ -1,7 +1,7 @@
 # Porcelain Greathammer
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Porcelain Greathammer](../../../assets/equipements/grands-marteaux-porcelain-greathammer.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands marteaux  

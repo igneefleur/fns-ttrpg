@@ -1,7 +1,7 @@
 # Light Clothes Hood
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Light Clothes Hood](../../../assets/equipements/t-te-light-clothes-hood.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Tête  

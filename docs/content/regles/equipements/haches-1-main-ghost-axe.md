@@ -1,7 +1,7 @@
 # Ghost Axe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Ghost Axe](../../../assets/equipements/haches-1-main-ghost-axe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Haches 1 main  

@@ -1,7 +1,7 @@
 # Fang War Scythe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Fang War Scythe](../../../assets/equipements/faux-de-guerre-fang-war-scythe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Faux de guerre  

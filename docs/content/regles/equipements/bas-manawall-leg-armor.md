@@ -1,7 +1,7 @@
 # Manawall Leg Armor
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Manawall Leg Armor](../../../assets/equipements/bas-manawall-leg-armor.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

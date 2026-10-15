@@ -1,7 +1,7 @@
 # Assassin Staff
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Assassin Staff](../../../assets/equipements/b-tons-assassin-staff.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bâtons  

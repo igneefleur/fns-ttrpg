@@ -1,7 +1,7 @@
 # Calygrey Halberd
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Calygrey Halberd](../../../assets/equipements/hallebardes-calygrey-halberd.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Hallebardes  

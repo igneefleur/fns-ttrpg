@@ -1,7 +1,7 @@
 # Runic Staff
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Runic Staff](../../../assets/equipements/b-tons-runic-staff.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bâtons  

@@ -1,7 +1,7 @@
 # Ghost Greataxe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Ghost Greataxe](../../../assets/equipements/grandes-haches-ghost-greataxe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grandes haches  

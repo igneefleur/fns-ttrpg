@@ -1,7 +1,7 @@
 # Old Legion Two-Handed Flail
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Old Legion Two-Handed Flail](../../../assets/equipements/fl-aux-deux-mains-old-legion-two-handed-flail.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Fléaux à deux mains  

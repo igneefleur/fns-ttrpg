@@ -1,7 +1,7 @@
 # Wolf Staff
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Wolf Staff](../../../assets/equipements/b-tons-wolf-staff.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bâtons  

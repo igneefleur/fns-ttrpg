@@ -1,7 +1,7 @@
 # Ancient Calygrey Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Ancient Calygrey Sabre](../../../assets/equipements/sabres-ancient-calygrey-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Sabres  

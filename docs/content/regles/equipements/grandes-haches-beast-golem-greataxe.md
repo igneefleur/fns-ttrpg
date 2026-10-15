@@ -1,7 +1,7 @@
 # Beast Golem Greataxe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Beast Golem Greataxe](../../../assets/equipements/grandes-haches-beast-golem-greataxe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grandes haches  

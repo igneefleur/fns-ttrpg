@@ -1,7 +1,7 @@
 # Looter Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Looter Gloves](../../../assets/equipements/mains-looter-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

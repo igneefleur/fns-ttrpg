@@ -1,7 +1,7 @@
 # Iron Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Iron Sabre](../../../assets/equipements/sabres-iron-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Sabres  

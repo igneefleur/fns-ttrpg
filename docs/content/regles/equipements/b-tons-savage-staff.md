@@ -1,7 +1,7 @@
 # Savage Staff
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Savage Staff](../../../assets/equipements/b-tons-savage-staff.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bâtons  

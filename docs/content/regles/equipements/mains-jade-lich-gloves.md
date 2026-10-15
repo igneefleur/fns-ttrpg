@@ -1,7 +1,7 @@
 # Jade-Lich Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Jade-Lich Gloves](../../../assets/equipements/mains-jade-lich-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

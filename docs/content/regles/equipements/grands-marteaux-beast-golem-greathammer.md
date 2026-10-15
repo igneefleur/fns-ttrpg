@@ -1,7 +1,7 @@
 # Beast Golem Greathammer
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Beast Golem Greathammer](../../../assets/equipements/grands-marteaux-beast-golem-greathammer.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands marteaux  

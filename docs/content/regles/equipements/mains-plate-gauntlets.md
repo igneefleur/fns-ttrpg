@@ -1,7 +1,7 @@
 # Plate Gauntlets
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Plate Gauntlets](../../../assets/equipements/mains-plate-gauntlets.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

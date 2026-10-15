@@ -1,7 +1,7 @@
 # Withering Mace
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Withering Mace](../../../assets/equipements/masses-1-main-withering-mace.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Masses 1 main  

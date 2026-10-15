@@ -1,7 +1,7 @@
 # Hailfrost Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Hailfrost Sabre](../../../assets/equipements/sabres-hailfrost-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Sabres  

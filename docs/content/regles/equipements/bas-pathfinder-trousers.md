@@ -1,7 +1,7 @@
 # Pathfinder Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Pathfinder Trousers](../../../assets/equipements/bas-pathfinder-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

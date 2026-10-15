@@ -1,7 +1,7 @@
 # Ancient Calygrey War Scythe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Ancient Calygrey War Scythe](../../../assets/equipements/faux-de-guerre-ancient-calygrey-war-scythe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Faux de guerre  

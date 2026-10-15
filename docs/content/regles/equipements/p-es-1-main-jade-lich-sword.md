@@ -1,7 +1,7 @@
 # Jade-Lich Sword
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Jade-Lich Sword](../../../assets/equipements/p-es-1-main-jade-lich-sword.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Épées 1 main  

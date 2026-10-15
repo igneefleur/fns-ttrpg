@@ -1,7 +1,7 @@
 # Thorny Greathammer
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Thorny Greathammer](../../../assets/equipements/grands-marteaux-thorny-greathammer.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands marteaux  

@@ -1,7 +1,7 @@
 # Jade-Lich Greathammer
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Jade-Lich Greathammer](../../../assets/equipements/grands-marteaux-jade-lich-greathammer.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands marteaux  

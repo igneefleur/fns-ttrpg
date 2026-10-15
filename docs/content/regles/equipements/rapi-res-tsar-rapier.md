@@ -1,7 +1,7 @@
 # Tsar Rapier
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Tsar Rapier](../../../assets/equipements/rapi-res-tsar-rapier.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Rapières  

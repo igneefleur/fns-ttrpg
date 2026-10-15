@@ -1,7 +1,7 @@
 # Troglodyte Axe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Troglodyte Axe](../../../assets/equipements/haches-1-main-troglodyte-axe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Haches 1 main  

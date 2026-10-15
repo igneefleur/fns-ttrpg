@@ -1,7 +1,7 @@
 # Horror Sword
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Horror Sword](../../../assets/equipements/p-es-1-main-horror-sword.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Épées 1 main  

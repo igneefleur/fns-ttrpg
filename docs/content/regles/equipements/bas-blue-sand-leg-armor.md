@@ -1,7 +1,7 @@
 # Blue Sand Leg Armor
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Blue Sand Leg Armor](../../../assets/equipements/bas-blue-sand-leg-armor.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

@@ -1,7 +1,7 @@
 # Shadow Kazite Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Shadow Kazite Gloves](../../../assets/equipements/mains-shadow-kazite-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

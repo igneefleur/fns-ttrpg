@@ -1,7 +1,7 @@
 # Gold-Lich Greataxe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Gold-Lich Greataxe](../../../assets/equipements/grandes-haches-gold-lich-greataxe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grandes haches  

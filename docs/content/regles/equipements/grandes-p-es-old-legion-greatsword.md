@@ -1,7 +1,7 @@
 # Old Legion Greatsword
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Old Legion Greatsword](../../../assets/equipements/grandes-p-es-old-legion-greatsword.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grandes épées  

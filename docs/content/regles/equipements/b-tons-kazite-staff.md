@@ -1,7 +1,7 @@
 # Kazite Staff
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Kazite Staff](../../../assets/equipements/b-tons-kazite-staff.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bâtons  

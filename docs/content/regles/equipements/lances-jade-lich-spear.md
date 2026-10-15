@@ -1,7 +1,7 @@
 # Jade-Lich Spear
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Jade-Lich Spear](../../../assets/equipements/lances-jade-lich-spear.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Lances  

@@ -1,7 +1,7 @@
 # Entomber Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Entomber Trousers](../../../assets/equipements/bas-entomber-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

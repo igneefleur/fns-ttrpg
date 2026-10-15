@@ -1,7 +1,7 @@
 # Fur Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Fur Trousers](../../../assets/equipements/bas-fur-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

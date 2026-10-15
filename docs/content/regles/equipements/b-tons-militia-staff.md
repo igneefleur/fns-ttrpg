@@ -1,7 +1,7 @@
 # Militia Staff
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Militia Staff](../../../assets/equipements/b-tons-militia-staff.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bâtons  

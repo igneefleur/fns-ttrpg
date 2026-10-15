@@ -1,7 +1,7 @@
 # Thorny Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Thorny Sabre](../../../assets/equipements/sabres-thorny-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Sabres  

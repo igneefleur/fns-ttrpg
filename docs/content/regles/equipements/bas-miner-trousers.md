@@ -1,7 +1,7 @@
 # Miner Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Miner Trousers](../../../assets/equipements/bas-miner-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

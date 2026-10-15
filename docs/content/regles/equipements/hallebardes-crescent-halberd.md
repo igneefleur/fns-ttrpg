@@ -1,7 +1,7 @@
 # Crescent Halberd
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Crescent Halberd](../../../assets/equipements/hallebardes-crescent-halberd.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Hallebardes  

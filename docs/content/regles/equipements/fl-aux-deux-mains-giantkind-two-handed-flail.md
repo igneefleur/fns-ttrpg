@@ -1,7 +1,7 @@
 # Giantkind Two-Handed Flail
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Giantkind Two-Handed Flail](../../../assets/equipements/fl-aux-deux-mains-giantkind-two-handed-flail.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Fléaux à deux mains  

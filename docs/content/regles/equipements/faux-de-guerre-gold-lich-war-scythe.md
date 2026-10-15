@@ -1,7 +1,7 @@
 # Gold-Lich War Scythe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Gold-Lich War Scythe](../../../assets/equipements/faux-de-guerre-gold-lich-war-scythe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Faux de guerre  

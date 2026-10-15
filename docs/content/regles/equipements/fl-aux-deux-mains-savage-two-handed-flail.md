@@ -1,7 +1,7 @@
 # Savage Two-Handed Flail
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Savage Two-Handed Flail](../../../assets/equipements/fl-aux-deux-mains-savage-two-handed-flail.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Fléaux à deux mains  

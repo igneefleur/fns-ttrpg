@@ -1,7 +1,7 @@
 # Green Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Green Gloves](../../../assets/equipements/mains-green-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

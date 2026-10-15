@@ -1,7 +1,7 @@
 # White Kintsugi Leg Armor
 
 <!-- illustration -->
-*Illustration en préparation.*
+![White Kintsugi Leg Armor](../../../assets/equipements/bas-white-kintsugi-leg-armor.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

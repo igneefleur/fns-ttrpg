@@ -1,7 +1,7 @@
 # Nobleman Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Nobleman Gloves](../../../assets/equipements/mains-nobleman-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

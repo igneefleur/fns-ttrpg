@@ -1,7 +1,7 @@
 # Barrier Gauntlets
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Barrier Gauntlets](../../../assets/equipements/mains-barrier-gauntlets.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

@@ -1,7 +1,7 @@
 # Tsar Two-Handed Flail
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Tsar Two-Handed Flail](../../../assets/equipements/fl-aux-deux-mains-tsar-two-handed-flail.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Fléaux à deux mains  

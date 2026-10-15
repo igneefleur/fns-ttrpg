@@ -1,7 +1,7 @@
 # Ancient Calygrey Spear
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Ancient Calygrey Spear](../../../assets/equipements/lances-ancient-calygrey-spear.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Lances  

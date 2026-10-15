@@ -1,7 +1,7 @@
 # Chalcedony Rapier
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Chalcedony Rapier](../../../assets/equipements/rapi-res-chalcedony-rapier.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Rapières  

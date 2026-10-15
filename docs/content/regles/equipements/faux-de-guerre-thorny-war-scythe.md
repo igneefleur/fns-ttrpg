@@ -1,7 +1,7 @@
 # Thorny War Scythe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Thorny War Scythe](../../../assets/equipements/faux-de-guerre-thorny-war-scythe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Faux de guerre  

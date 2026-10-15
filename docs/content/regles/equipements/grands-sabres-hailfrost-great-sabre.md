@@ -1,7 +1,7 @@
 # Hailfrost Great Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Hailfrost Great Sabre](../../../assets/equipements/grands-sabres-hailfrost-great-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands sabres  

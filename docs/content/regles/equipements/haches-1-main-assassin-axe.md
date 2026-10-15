@@ -1,7 +1,7 @@
 # Assassin Axe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Assassin Axe](../../../assets/equipements/haches-1-main-assassin-axe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Haches 1 main  

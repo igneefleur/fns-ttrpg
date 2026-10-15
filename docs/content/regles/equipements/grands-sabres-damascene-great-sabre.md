@@ -1,7 +1,7 @@
 # Damascene Great Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Damascene Great Sabre](../../../assets/equipements/grands-sabres-damascene-great-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands sabres  

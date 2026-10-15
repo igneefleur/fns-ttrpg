@@ -1,7 +1,7 @@
 # Runic Two-Handed Flail
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Runic Two-Handed Flail](../../../assets/equipements/fl-aux-deux-mains-runic-two-handed-flail.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Fléaux à deux mains  

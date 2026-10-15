@@ -1,7 +1,7 @@
 # Old Legion Greataxe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Old Legion Greataxe](../../../assets/equipements/grandes-haches-old-legion-greataxe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grandes haches  

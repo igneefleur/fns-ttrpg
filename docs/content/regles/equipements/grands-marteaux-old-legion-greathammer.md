@@ -1,7 +1,7 @@
 # Old Legion Greathammer
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Old Legion Greathammer](../../../assets/equipements/grands-marteaux-old-legion-greathammer.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands marteaux  

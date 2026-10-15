@@ -1,7 +1,7 @@
 # Old Legion Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Old Legion Sabre](../../../assets/equipements/sabres-old-legion-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Sabres  

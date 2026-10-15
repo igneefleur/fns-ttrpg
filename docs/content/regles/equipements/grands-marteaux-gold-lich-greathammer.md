@@ -1,7 +1,7 @@
 # Gold-Lich Greathammer
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Gold-Lich Greathammer](../../../assets/equipements/grands-marteaux-gold-lich-greathammer.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands marteaux  

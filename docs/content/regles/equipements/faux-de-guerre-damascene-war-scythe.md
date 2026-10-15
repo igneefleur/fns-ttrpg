@@ -1,7 +1,7 @@
 # Damascene War Scythe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Damascene War Scythe](../../../assets/equipements/faux-de-guerre-damascene-war-scythe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Faux de guerre  

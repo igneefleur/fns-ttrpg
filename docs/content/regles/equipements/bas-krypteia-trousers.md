@@ -1,7 +1,7 @@
 # Krypteia Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Krypteia Trousers](../../../assets/equipements/bas-krypteia-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

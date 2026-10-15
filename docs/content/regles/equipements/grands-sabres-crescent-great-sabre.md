@@ -1,7 +1,7 @@
 # Crescent Great Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Crescent Great Sabre](../../../assets/equipements/grands-sabres-crescent-great-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands sabres  

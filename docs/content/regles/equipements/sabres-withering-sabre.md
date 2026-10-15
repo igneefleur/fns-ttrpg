@@ -1,7 +1,7 @@
 # Withering Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Withering Sabre](../../../assets/equipements/sabres-withering-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Sabres  

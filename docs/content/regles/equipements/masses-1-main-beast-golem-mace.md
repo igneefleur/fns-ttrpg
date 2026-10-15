@@ -1,7 +1,7 @@
 # Beast Golem Mace
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Beast Golem Mace](../../../assets/equipements/masses-1-main-beast-golem-mace.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Masses 1 main  

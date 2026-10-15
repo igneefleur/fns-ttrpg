@@ -1,7 +1,7 @@
 # Giantkind Greathammer
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Giantkind Greathammer](../../../assets/equipements/grands-marteaux-giantkind-greathammer.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands marteaux  

@@ -1,7 +1,7 @@
 # Ancient Calygrey Sword
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Ancient Calygrey Sword](../../../assets/equipements/p-es-1-main-ancient-calygrey-sword.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Épées 1 main  

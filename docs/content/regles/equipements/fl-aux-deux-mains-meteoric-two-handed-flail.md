@@ -1,7 +1,7 @@
 # Meteoric Two-Handed Flail
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Meteoric Two-Handed Flail](../../../assets/equipements/fl-aux-deux-mains-meteoric-two-handed-flail.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Fléaux à deux mains  

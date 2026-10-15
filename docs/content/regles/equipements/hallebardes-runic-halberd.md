@@ -1,7 +1,7 @@
 # Runic Halberd
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Runic Halberd](../../../assets/equipements/hallebardes-runic-halberd.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Hallebardes  

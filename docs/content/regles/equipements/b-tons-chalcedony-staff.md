@@ -1,7 +1,7 @@
 # Chalcedony Staff
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Chalcedony Staff](../../../assets/equipements/b-tons-chalcedony-staff.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bâtons  

@@ -1,7 +1,7 @@
 # Elite Desert Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Elite Desert Trousers](../../../assets/equipements/bas-elite-desert-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

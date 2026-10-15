@@ -1,7 +1,7 @@
 # Master Kazite Leg Armor
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Master Kazite Leg Armor](../../../assets/equipements/bas-master-kazite-leg-armor.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

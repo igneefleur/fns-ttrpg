@@ -1,7 +1,7 @@
 # Fur Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Fur Gloves](../../../assets/equipements/mains-fur-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

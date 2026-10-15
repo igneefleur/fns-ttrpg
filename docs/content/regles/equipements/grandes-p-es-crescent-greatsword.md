@@ -1,7 +1,7 @@
 # Crescent Greatsword
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Crescent Greatsword](../../../assets/equipements/grandes-p-es-crescent-greatsword.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grandes épées  

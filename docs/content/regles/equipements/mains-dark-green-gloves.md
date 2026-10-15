@@ -1,7 +1,7 @@
 # Dark Green Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Dark Green Gloves](../../../assets/equipements/mains-dark-green-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

@@ -1,7 +1,7 @@
 # Giantkind Great Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Giantkind Great Sabre](../../../assets/equipements/grands-sabres-giantkind-great-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands sabres  

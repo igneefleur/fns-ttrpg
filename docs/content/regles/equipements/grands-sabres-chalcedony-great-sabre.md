@@ -1,7 +1,7 @@
 # Chalcedony Great Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Chalcedony Great Sabre](../../../assets/equipements/grands-sabres-chalcedony-great-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands sabres  

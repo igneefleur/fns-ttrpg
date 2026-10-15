@@ -1,7 +1,7 @@
 # Smoke War Scythe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Smoke War Scythe](../../../assets/equipements/faux-de-guerre-smoke-war-scythe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Faux de guerre  

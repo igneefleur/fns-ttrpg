@@ -1,7 +1,7 @@
 # Astral Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Astral Sabre](../../../assets/equipements/sabres-astral-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Sabres  

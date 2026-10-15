@@ -1,7 +1,7 @@
 # Vampiric Staff
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Vampiric Staff](../../../assets/equipements/b-tons-vampiric-staff.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bâtons  

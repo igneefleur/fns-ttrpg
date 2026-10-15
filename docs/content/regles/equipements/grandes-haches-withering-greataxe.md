@@ -1,7 +1,7 @@
 # Withering Greataxe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Withering Greataxe](../../../assets/equipements/grandes-haches-withering-greataxe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grandes haches  

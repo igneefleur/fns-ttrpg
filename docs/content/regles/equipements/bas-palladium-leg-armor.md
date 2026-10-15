@@ -1,7 +1,7 @@
 # Palladium Leg Armor
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Palladium Leg Armor](../../../assets/equipements/bas-palladium-leg-armor.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

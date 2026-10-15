@@ -1,7 +1,7 @@
 # Jade-Lich Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Jade-Lich Trousers](../../../assets/equipements/bas-jade-lich-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

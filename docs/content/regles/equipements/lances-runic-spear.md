@@ -1,7 +1,7 @@
 # Runic Spear
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Runic Spear](../../../assets/equipements/lances-runic-spear.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Lances  

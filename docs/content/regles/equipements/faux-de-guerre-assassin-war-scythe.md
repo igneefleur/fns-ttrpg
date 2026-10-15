@@ -1,7 +1,7 @@
 # Assassin War Scythe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Assassin War Scythe](../../../assets/equipements/faux-de-guerre-assassin-war-scythe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Faux de guerre  

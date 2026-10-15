@@ -1,7 +1,7 @@
 # Thorny Rapier
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Thorny Rapier](../../../assets/equipements/rapi-res-thorny-rapier.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Rapières  

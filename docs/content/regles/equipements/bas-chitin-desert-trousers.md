@@ -1,7 +1,7 @@
 # Chitin Desert Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Chitin Desert Trousers](../../../assets/equipements/bas-chitin-desert-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

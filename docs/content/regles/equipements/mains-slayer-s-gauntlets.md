@@ -1,7 +1,7 @@
 # Slayer's Gauntlets
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Slayer's Gauntlets](../../../assets/equipements/mains-slayer-s-gauntlets.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

@@ -1,7 +1,7 @@
 # Palladium Rapier
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Palladium Rapier](../../../assets/equipements/rapi-res-palladium-rapier.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Rapières  

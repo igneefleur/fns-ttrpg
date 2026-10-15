@@ -1,7 +1,7 @@
 # Looter Boots
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Looter Boots](../../../assets/equipements/pieds-looter-boots.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Pieds  

@@ -1,7 +1,7 @@
 # Scaled Leather Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Scaled Leather Gloves](../../../assets/equipements/mains-scaled-leather-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

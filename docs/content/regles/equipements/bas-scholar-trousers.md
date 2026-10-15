@@ -1,7 +1,7 @@
 # Scholar Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Scholar Trousers](../../../assets/equipements/bas-scholar-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

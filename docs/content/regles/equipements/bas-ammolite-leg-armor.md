@@ -1,7 +1,7 @@
 # Ammolite Leg Armor
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Ammolite Leg Armor](../../../assets/equipements/bas-ammolite-leg-armor.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

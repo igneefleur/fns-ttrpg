@@ -1,7 +1,7 @@
 # Gold Sword
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Gold Sword](../../../assets/equipements/p-es-1-main-gold-sword.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Épées 1 main  

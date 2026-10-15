@@ -1,7 +1,7 @@
 # Zagis' Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Zagis' Gloves](../../../assets/equipements/mains-zagis-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

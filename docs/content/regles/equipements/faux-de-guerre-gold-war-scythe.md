@@ -1,7 +1,7 @@
 # Gold War Scythe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Gold War Scythe](../../../assets/equipements/faux-de-guerre-gold-war-scythe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Faux de guerre  

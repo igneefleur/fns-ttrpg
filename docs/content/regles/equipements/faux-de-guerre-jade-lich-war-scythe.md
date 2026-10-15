@@ -1,7 +1,7 @@
 # Jade-Lich War Scythe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Jade-Lich War Scythe](../../../assets/equipements/faux-de-guerre-jade-lich-war-scythe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Faux de guerre  

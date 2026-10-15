@@ -1,7 +1,7 @@
 # Thorny Mace
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Thorny Mace](../../../assets/equipements/masses-1-main-thorny-mace.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Masses 1 main  

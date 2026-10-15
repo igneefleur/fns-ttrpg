@@ -1,7 +1,7 @@
 # Virgin Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Virgin Sabre](../../../assets/equipements/sabres-virgin-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Sabres  

@@ -1,7 +1,7 @@
 # Silver Leg Armor
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Silver Leg Armor](../../../assets/equipements/bas-silver-leg-armor.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

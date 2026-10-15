@@ -1,7 +1,7 @@
 # Vigilante Staff
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Vigilante Staff](../../../assets/equipements/b-tons-vigilante-staff.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bâtons  

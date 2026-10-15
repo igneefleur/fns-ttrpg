@@ -1,7 +1,7 @@
 # Brutal Two-Handed Flail
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Brutal Two-Handed Flail](../../../assets/equipements/fl-aux-deux-mains-brutal-two-handed-flail.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Fléaux à deux mains  

@@ -1,7 +1,7 @@
 # Vigilante Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Vigilante Gloves](../../../assets/equipements/mains-vigilante-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

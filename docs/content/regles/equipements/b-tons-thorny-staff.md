@@ -1,7 +1,7 @@
 # Thorny Staff
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Thorny Staff](../../../assets/equipements/b-tons-thorny-staff.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bâtons  

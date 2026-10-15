@@ -1,7 +1,7 @@
 # Wolf War Scythe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Wolf War Scythe](../../../assets/equipements/faux-de-guerre-wolf-war-scythe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Faux de guerre  

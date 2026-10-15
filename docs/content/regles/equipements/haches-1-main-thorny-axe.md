@@ -1,7 +1,7 @@
 # Thorny Axe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Thorny Axe](../../../assets/equipements/haches-1-main-thorny-axe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Haches 1 main  

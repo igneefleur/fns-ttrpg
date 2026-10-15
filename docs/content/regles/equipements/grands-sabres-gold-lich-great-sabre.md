@@ -1,7 +1,7 @@
 # Gold-Lich Great Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Gold-Lich Great Sabre](../../../assets/equipements/grands-sabres-gold-lich-great-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands sabres  

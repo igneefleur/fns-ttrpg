@@ -1,7 +1,7 @@
 # Beast Golem Rapier
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Beast Golem Rapier](../../../assets/equipements/rapi-res-beast-golem-rapier.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Rapières  

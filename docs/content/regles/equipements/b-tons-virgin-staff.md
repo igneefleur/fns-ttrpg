@@ -1,7 +1,7 @@
 # Virgin Staff
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Virgin Staff](../../../assets/equipements/b-tons-virgin-staff.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bâtons  

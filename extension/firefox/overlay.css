@@ -541,10 +541,6 @@
 
 /* Les articles du catalogue sont seulement montrés ou donnés. */
 .owd-chat-drop-hint.owd-shop-drag .owd-chat-drop-zone[data-action=supprimer]{display:none}
-/* Monde utilise la palette et les commandes de Roll20. */
-#owd-panneau{--paper:var(--vtt-dialog-background,#f5f5f5);--bg-side:#f5f5f5;--ink:#242424;--line:#d0d0d0;border-radius:5px}
-#owd-panneau.owd-nuit{--paper:#202124;--bg-side:#202124;--ink:#eee;--line:#48494e}
-#owd-panneau>.owd-panneau-tete{background:var(--paper);border-bottom:1px solid var(--line);padding:7px 8px 7px 12px}
-#owd-panneau .owd-panneau-titre{color:var(--ink);font-size:13px;letter-spacing:0}
-#owd-panneau .owd-panneau-btn{color:var(--ink);background:transparent;border-color:transparent}
-#owd-panneau .owd-panneau-btn:hover{background:var(--bg-side);border-color:var(--line)}
+/* Les cinq fenêtres reprennent le noir et l'or du cadre de l'extension. */
+.owd-panneau{--paper:#0d0d0d;--bg-side:#000;--ink:#e6e6e6;--line:#3a3a3a;--or:#ffd77f}
+.owd-panneau.owd-panneau-replie{min-height:0}

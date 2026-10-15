@@ -1,7 +1,7 @@
 # Crescent Axe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Crescent Axe](../../../assets/equipements/haches-1-main-crescent-axe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Haches 1 main  

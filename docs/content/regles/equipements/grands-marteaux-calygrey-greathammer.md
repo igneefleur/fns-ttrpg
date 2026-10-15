@@ -1,7 +1,7 @@
 # Calygrey Greathammer
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Calygrey Greathammer](../../../assets/equipements/grands-marteaux-calygrey-greathammer.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands marteaux  

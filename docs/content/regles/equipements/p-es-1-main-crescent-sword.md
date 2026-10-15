@@ -1,7 +1,7 @@
 # Crescent Sword
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Crescent Sword](../../../assets/equipements/p-es-1-main-crescent-sword.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Épées 1 main  

@@ -1,7 +1,7 @@
 # Tuanosaur Spear
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Tuanosaur Spear](../../../assets/equipements/lances-tuanosaur-spear.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Lances  

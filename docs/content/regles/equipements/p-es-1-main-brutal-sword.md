@@ -1,7 +1,7 @@
 # Brutal Sword
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Brutal Sword](../../../assets/equipements/p-es-1-main-brutal-sword.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Épées 1 main  

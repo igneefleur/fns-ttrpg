@@ -1,7 +1,7 @@
 # Iron Staff
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Iron Staff](../../../assets/equipements/b-tons-iron-staff.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bâtons  

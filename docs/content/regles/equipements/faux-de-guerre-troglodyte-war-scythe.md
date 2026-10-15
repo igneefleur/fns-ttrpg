@@ -1,7 +1,7 @@
 # Troglodyte War Scythe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Troglodyte War Scythe](../../../assets/equipements/faux-de-guerre-troglodyte-war-scythe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Faux de guerre  

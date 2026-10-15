@@ -1,7 +1,7 @@
 # Light Clothes Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Light Clothes Trousers](../../../assets/equipements/bas-light-clothes-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

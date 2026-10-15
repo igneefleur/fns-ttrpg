@@ -1,7 +1,7 @@
 # Withering Rapier
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Withering Rapier](../../../assets/equipements/rapi-res-withering-rapier.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Rapières  

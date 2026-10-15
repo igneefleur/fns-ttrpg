@@ -1,7 +1,7 @@
 # Horror Staff
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Horror Staff](../../../assets/equipements/b-tons-horror-staff.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bâtons  

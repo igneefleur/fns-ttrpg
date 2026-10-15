@@ -1,7 +1,7 @@
 # Tsar Greatsword
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Tsar Greatsword](../../../assets/equipements/grandes-p-es-tsar-greatsword.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grandes épées  

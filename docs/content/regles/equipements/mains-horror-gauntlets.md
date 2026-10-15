@@ -1,7 +1,7 @@
 # Horror Gauntlets
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Horror Gauntlets](../../../assets/equipements/mains-horror-gauntlets.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

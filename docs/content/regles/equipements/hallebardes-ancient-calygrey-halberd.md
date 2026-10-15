@@ -1,7 +1,7 @@
 # Ancient Calygrey Halberd
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Ancient Calygrey Halberd](../../../assets/equipements/hallebardes-ancient-calygrey-halberd.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Hallebardes  

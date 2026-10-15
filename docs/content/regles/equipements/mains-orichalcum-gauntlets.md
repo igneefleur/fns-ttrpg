@@ -1,7 +1,7 @@
 # Orichalcum Gauntlets
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Orichalcum Gauntlets](../../../assets/equipements/mains-orichalcum-gauntlets.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

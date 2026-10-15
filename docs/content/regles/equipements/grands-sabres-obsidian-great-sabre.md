@@ -1,7 +1,7 @@
 # Obsidian Great Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Obsidian Great Sabre](../../../assets/equipements/grands-sabres-obsidian-great-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands sabres  

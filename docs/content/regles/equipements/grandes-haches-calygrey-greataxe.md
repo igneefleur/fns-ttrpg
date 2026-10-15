@@ -1,7 +1,7 @@
 # Calygrey Greataxe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Calygrey Greataxe](../../../assets/equipements/grandes-haches-calygrey-greataxe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grandes haches  

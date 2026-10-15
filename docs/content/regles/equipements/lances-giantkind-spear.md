@@ -1,7 +1,7 @@
 # Giantkind Spear
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Giantkind Spear](../../../assets/equipements/lances-giantkind-spear.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Lances  

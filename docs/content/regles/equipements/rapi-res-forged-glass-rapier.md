@@ -1,7 +1,7 @@
 # Forged Glass Rapier
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Forged Glass Rapier](../../../assets/equipements/rapi-res-forged-glass-rapier.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Rapières  

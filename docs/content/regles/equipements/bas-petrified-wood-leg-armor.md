@@ -1,7 +1,7 @@
 # Petrified Wood Leg Armor
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Petrified Wood Leg Armor](../../../assets/equipements/bas-petrified-wood-leg-armor.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

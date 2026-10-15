@@ -1,7 +1,7 @@
 # Meteoric Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Meteoric Sabre](../../../assets/equipements/sabres-meteoric-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Sabres  

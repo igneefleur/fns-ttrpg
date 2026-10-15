@@ -1,7 +1,7 @@
 # Golem War Scythe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Golem War Scythe](../../../assets/equipements/faux-de-guerre-golem-war-scythe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Faux de guerre  

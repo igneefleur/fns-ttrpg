@@ -1,7 +1,7 @@
 # Caged Gauntlets
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Caged Gauntlets](../../../assets/equipements/mains-caged-gauntlets.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

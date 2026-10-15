@@ -1,7 +1,7 @@
 # Runic Rapier
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Runic Rapier](../../../assets/equipements/rapi-res-runic-rapier.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Rapières  

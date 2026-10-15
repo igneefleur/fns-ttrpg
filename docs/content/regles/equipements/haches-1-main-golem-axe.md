@@ -1,7 +1,7 @@
 # Golem Axe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Golem Axe](../../../assets/equipements/haches-1-main-golem-axe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Haches 1 main  

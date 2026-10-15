@@ -1,7 +1,7 @@
 # Ammolite Gauntlets
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Ammolite Gauntlets](../../../assets/equipements/mains-ammolite-gauntlets.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

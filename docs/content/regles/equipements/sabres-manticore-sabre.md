@@ -1,7 +1,7 @@
 # Manticore Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Manticore Sabre](../../../assets/equipements/sabres-manticore-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Sabres  

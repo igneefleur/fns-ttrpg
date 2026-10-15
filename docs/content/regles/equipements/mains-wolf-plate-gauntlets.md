@@ -1,7 +1,7 @@
 # Wolf Plate Gauntlets
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Wolf Plate Gauntlets](../../../assets/equipements/mains-wolf-plate-gauntlets.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

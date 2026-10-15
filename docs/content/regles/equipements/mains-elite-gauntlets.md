@@ -1,7 +1,7 @@
 # Elite Gauntlets
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Elite Gauntlets](../../../assets/equipements/mains-elite-gauntlets.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

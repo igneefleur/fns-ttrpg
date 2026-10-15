@@ -1,7 +1,7 @@
 # Assassin Halberd
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Assassin Halberd](../../../assets/equipements/hallebardes-assassin-halberd.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Hallebardes  

@@ -1,7 +1,7 @@
 # Withering Halberd
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Withering Halberd](../../../assets/equipements/hallebardes-withering-halberd.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Hallebardes  

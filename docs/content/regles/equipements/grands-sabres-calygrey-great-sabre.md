@@ -1,7 +1,7 @@
 # Calygrey Great Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Calygrey Great Sabre](../../../assets/equipements/grands-sabres-calygrey-great-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands sabres  

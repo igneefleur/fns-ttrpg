@@ -1,7 +1,7 @@
 # Vigilante Great Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Vigilante Great Sabre](../../../assets/equipements/grands-sabres-vigilante-great-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands sabres  

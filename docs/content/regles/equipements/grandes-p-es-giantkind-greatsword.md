@@ -1,7 +1,7 @@
 # Giantkind Greatsword
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Giantkind Greatsword](../../../assets/equipements/grandes-p-es-giantkind-greatsword.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grandes épées  

@@ -1,7 +1,7 @@
 # Arcane Boots
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Arcane Boots](../../../assets/equipements/pieds-arcane-boots.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Pieds  

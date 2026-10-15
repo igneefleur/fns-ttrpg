@@ -1,7 +1,7 @@
 # Kazite Light Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Kazite Light Trousers](../../../assets/equipements/bas-kazite-light-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

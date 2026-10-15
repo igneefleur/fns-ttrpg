@@ -1,7 +1,7 @@
 # Meteoric Great Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Meteoric Great Sabre](../../../assets/equipements/grands-sabres-meteoric-great-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands sabres  

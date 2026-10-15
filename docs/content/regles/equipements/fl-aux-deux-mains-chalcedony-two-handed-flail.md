@@ -1,7 +1,7 @@
 # Chalcedony Two-Handed Flail
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Chalcedony Two-Handed Flail](../../../assets/equipements/fl-aux-deux-mains-chalcedony-two-handed-flail.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Fléaux à deux mains  

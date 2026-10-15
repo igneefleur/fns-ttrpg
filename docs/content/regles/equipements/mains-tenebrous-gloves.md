@@ -1,7 +1,7 @@
 # Tenebrous Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Tenebrous Gloves](../../../assets/equipements/mains-tenebrous-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

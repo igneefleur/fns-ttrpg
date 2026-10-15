@@ -1,7 +1,7 @@
 # Obsidian War Scythe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Obsidian War Scythe](../../../assets/equipements/faux-de-guerre-obsidian-war-scythe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Faux de guerre  

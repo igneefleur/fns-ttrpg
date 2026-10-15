@@ -1,7 +1,7 @@
 # Wolf Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Wolf Sabre](../../../assets/equipements/sabres-wolf-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Sabres  

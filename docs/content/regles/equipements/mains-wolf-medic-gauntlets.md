@@ -1,7 +1,7 @@
 # Wolf Medic Gauntlets
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Wolf Medic Gauntlets](../../../assets/equipements/mains-wolf-medic-gauntlets.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

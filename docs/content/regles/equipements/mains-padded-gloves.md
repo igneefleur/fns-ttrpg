@@ -1,7 +1,7 @@
 # Padded Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Padded Gloves](../../../assets/equipements/mains-padded-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

@@ -541,3 +541,12 @@ La barre d'outils OWD propose Boutique, avec catégories, recherche, pagination 
 Cliquez sur un article pour consulter ses caractéristiques. Glissez-le dans le chat vers **Montrer** ou **Donner**, puis validez la quantité. **Donner** produit le bouton **Prendre** habituel ; les caractéristiques restent consultables dans la description de l'objet reçu. Aucun paiement automatique n'est effectué.
 
 Cette version change le site et le code de l'extension. Après avoir ajouté les fichiers à la branche bêta, ouvrez **Actions → website deployment → Run workflow**, sélectionnez **owd-beta**, cochez **Signer l'extension Outward chez Mozilla**, puis lancez le workflow. Les secrets Mozilla déjà utilisés par le projet sont nécessaires. Cette action publie les nouveaux téléchargements et permet la mise à jour Firefox. Le XPI signé inclus avant cette action correspond à l'ancienne extension.
+
+
+### 3.16.0b — images et fenêtres Roll20
+
+Les 1 256 équipements utilisent leurs illustrations terminées, récupérées dans `outward-equipements-images.zip`. Monde et Boutique reprennent le noir et le doré de l'extension. Les paramètres proposent cinq interrupteurs indépendants : Monde, Boutique, Inventaire, Attaques et Défenses, puis Beta après un séparateur.
+
+Défenses ouvre les onglets des personnages, comme Attaques, avec le même module et les mêmes calculs que la fiche. Double-cliquez sur le bandeau de chaque fenêtre pour la replier ou la réafficher. Le bouton Détacher et la commande Replacer ont été retirés.
+
+Le patch s'applique sur 3.15.0b. Après remplacement des fichiers sur GitHub, lancez **website deployment** avec **Signer l’extension Outward chez Mozilla** coché ; la seule mise à jour du site ne remplace pas le code signé de l'extension.

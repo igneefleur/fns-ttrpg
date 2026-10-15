@@ -1,7 +1,7 @@
 # Ghost Staff
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Ghost Staff](../../../assets/equipements/b-tons-ghost-staff.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bâtons  

@@ -1,7 +1,7 @@
 # Barrier Leg Armor
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Barrier Leg Armor](../../../assets/equipements/bas-barrier-leg-armor.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

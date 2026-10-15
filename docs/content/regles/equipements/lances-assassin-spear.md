@@ -1,7 +1,7 @@
 # Assassin Spear
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Assassin Spear](../../../assets/equipements/lances-assassin-spear.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Lances  

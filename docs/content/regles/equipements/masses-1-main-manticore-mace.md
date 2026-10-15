@@ -1,7 +1,7 @@
 # Manticore Mace
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Manticore Mace](../../../assets/equipements/masses-1-main-manticore-mace.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Masses 1 main  

@@ -1,7 +1,7 @@
 # Manticore Sword
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Manticore Sword](../../../assets/equipements/p-es-1-main-manticore-sword.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Épées 1 main  

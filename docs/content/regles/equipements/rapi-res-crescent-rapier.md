@@ -1,7 +1,7 @@
 # Crescent Rapier
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Crescent Rapier](../../../assets/equipements/rapi-res-crescent-rapier.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Rapières  

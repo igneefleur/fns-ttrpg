@@ -1,7 +1,7 @@
 # Antique Plate Gauntlets
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Antique Plate Gauntlets](../../../assets/equipements/mains-antique-plate-gauntlets.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

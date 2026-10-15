@@ -1,7 +1,7 @@
 # Iron Rapier
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Iron Rapier](../../../assets/equipements/rapi-res-iron-rapier.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Rapières  

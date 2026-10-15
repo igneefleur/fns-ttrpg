@@ -1,7 +1,7 @@
 # Green Copal Leg Armor
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Green Copal Leg Armor](../../../assets/equipements/bas-green-copal-leg-armor.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

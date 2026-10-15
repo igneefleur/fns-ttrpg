@@ -1,7 +1,7 @@
 # Calygrey Axe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Calygrey Axe](../../../assets/equipements/haches-1-main-calygrey-axe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Haches 1 main  

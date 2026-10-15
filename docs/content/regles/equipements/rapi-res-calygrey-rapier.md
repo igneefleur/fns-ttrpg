@@ -1,7 +1,7 @@
 # Calygrey Rapier
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Calygrey Rapier](../../../assets/equipements/rapi-res-calygrey-rapier.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Rapières  

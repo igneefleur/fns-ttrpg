@@ -1,7 +1,7 @@
 # Galvanic Two-Handed Flail
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Galvanic Two-Handed Flail](../../../assets/equipements/fl-aux-deux-mains-galvanic-two-handed-flail.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Fléaux à deux mains  

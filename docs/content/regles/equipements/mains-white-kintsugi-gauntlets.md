@@ -1,7 +1,7 @@
 # White Kintsugi Gauntlets
 
 <!-- illustration -->
-*Illustration en préparation.*
+![White Kintsugi Gauntlets](../../../assets/equipements/mains-white-kintsugi-gauntlets.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

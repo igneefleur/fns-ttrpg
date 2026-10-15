@@ -1,7 +1,7 @@
 # Masterpiece Great Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Masterpiece Great Sabre](../../../assets/equipements/grands-sabres-masterpiece-great-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands sabres  

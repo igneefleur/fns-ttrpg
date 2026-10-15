@@ -1,7 +1,7 @@
 # Merton's Footbones
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Merton's Footbones](../../../assets/equipements/pieds-merton-s-footbones.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Pieds  

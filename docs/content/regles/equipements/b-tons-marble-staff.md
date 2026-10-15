@@ -1,7 +1,7 @@
 # Marble Staff
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Marble Staff](../../../assets/equipements/b-tons-marble-staff.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bâtons  

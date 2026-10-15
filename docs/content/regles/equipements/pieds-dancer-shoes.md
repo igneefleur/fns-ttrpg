@@ -1,7 +1,7 @@
 # Dancer Shoes
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Dancer Shoes](../../../assets/equipements/pieds-dancer-shoes.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Pieds  

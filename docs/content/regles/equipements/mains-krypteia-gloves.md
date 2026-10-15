@@ -1,7 +1,7 @@
 # Krypteia Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Krypteia Gloves](../../../assets/equipements/mains-krypteia-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

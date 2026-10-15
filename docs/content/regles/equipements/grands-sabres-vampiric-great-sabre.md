@@ -1,7 +1,7 @@
 # Vampiric Great Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Vampiric Great Sabre](../../../assets/equipements/grands-sabres-vampiric-great-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands sabres  

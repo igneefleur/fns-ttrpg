@@ -1,7 +1,7 @@
 # Beige Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Beige Trousers](../../../assets/equipements/bas-beige-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

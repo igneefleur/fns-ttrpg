@@ -1,7 +1,7 @@
 # Fang Rapier
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Fang Rapier](../../../assets/equipements/rapi-res-fang-rapier.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Rapières  

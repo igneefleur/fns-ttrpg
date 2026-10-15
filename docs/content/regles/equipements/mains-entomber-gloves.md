@@ -1,7 +1,7 @@
 # Entomber Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Entomber Gloves](../../../assets/equipements/mains-entomber-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

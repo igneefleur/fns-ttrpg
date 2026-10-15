@@ -1,7 +1,7 @@
 # Hailfrost Two-Handed Flail
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Hailfrost Two-Handed Flail](../../../assets/equipements/fl-aux-deux-mains-hailfrost-two-handed-flail.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Fléaux à deux mains  

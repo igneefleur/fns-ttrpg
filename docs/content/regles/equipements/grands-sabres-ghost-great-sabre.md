@@ -1,7 +1,7 @@
 # Ghost Great Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Ghost Great Sabre](../../../assets/equipements/grands-sabres-ghost-great-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands sabres  

@@ -1,7 +1,7 @@
 # Masterpiece Rapier
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Masterpiece Rapier](../../../assets/equipements/rapi-res-masterpiece-rapier.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Rapières  

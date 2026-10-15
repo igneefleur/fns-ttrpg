@@ -1,7 +1,7 @@
 # Manticore Greataxe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Manticore Greataxe](../../../assets/equipements/grandes-haches-manticore-greataxe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grandes haches  

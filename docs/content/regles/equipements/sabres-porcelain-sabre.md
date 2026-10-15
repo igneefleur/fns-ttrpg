@@ -1,7 +1,7 @@
 # Porcelain Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Porcelain Sabre](../../../assets/equipements/sabres-porcelain-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Sabres  

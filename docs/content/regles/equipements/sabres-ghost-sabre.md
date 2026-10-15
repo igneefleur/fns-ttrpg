@@ -1,7 +1,7 @@
 # Ghost Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Ghost Sabre](../../../assets/equipements/sabres-ghost-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Sabres  

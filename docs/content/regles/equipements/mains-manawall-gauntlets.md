@@ -1,7 +1,7 @@
 # Manawall Gauntlets
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Manawall Gauntlets](../../../assets/equipements/mains-manawall-gauntlets.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

@@ -1,7 +1,7 @@
 # Masterpiece Staff
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Masterpiece Staff](../../../assets/equipements/b-tons-masterpiece-staff.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bâtons  

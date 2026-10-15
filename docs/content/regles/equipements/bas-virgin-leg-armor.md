@@ -1,7 +1,7 @@
 # Virgin Leg Armor
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Virgin Leg Armor](../../../assets/equipements/bas-virgin-leg-armor.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

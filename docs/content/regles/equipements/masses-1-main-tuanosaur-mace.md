@@ -1,7 +1,7 @@
 # Tuanosaur Mace
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Tuanosaur Mace](../../../assets/equipements/masses-1-main-tuanosaur-mace.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Masses 1 main  

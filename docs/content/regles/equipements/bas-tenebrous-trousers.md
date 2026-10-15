@@ -1,7 +1,7 @@
 # Tenebrous Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Tenebrous Trousers](../../../assets/equipements/bas-tenebrous-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

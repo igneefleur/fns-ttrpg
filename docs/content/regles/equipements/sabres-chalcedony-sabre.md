@@ -1,7 +1,7 @@
 # Chalcedony Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Chalcedony Sabre](../../../assets/equipements/sabres-chalcedony-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Sabres  

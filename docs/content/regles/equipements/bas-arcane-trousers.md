@@ -1,7 +1,7 @@
 # Arcane Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Arcane Trousers](../../../assets/equipements/bas-arcane-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

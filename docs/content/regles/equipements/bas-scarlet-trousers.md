@@ -1,7 +1,7 @@
 # Scarlet Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Scarlet Trousers](../../../assets/equipements/bas-scarlet-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

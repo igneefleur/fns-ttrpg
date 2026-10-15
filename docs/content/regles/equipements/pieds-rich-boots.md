@@ -1,7 +1,7 @@
 # Rich Boots
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Rich Boots](../../../assets/equipements/pieds-rich-boots.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Pieds  

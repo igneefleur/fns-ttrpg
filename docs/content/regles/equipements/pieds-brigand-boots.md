@@ -1,7 +1,7 @@
 # Brigand Boots
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Brigand Boots](../../../assets/equipements/pieds-brigand-boots.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Pieds  

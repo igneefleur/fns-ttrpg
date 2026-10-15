@@ -1,7 +1,7 @@
 # Makeshift Leather Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Makeshift Leather Trousers](../../../assets/equipements/bas-makeshift-leather-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

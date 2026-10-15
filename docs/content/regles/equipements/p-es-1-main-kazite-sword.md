@@ -1,7 +1,7 @@
 # Kazite Sword
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Kazite Sword](../../../assets/equipements/p-es-1-main-kazite-sword.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Épées 1 main  

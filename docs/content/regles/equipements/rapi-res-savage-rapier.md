@@ -1,7 +1,7 @@
 # Savage Rapier
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Savage Rapier](../../../assets/equipements/rapi-res-savage-rapier.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Rapières  

@@ -1,7 +1,7 @@
 # Withering Knuckles
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Withering Knuckles](../../../assets/equipements/gantelets-withering-knuckles.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Gantelets  

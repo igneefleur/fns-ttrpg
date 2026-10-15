@@ -1,7 +1,7 @@
 # Looter Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Looter Trousers](../../../assets/equipements/bas-looter-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

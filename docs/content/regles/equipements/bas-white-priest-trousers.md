@@ -1,7 +1,7 @@
 # White Priest Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![White Priest Trousers](../../../assets/equipements/bas-white-priest-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

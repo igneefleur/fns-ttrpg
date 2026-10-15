@@ -1,7 +1,7 @@
 # Brutal Great Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Brutal Great Sabre](../../../assets/equipements/grands-sabres-brutal-great-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands sabres  

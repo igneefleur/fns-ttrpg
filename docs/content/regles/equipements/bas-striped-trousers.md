@@ -1,7 +1,7 @@
 # Striped Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Striped Trousers](../../../assets/equipements/bas-striped-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

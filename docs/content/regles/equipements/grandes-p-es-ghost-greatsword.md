@@ -1,7 +1,7 @@
 # Ghost Greatsword
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Ghost Greatsword](../../../assets/equipements/grandes-p-es-ghost-greatsword.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grandes épées  

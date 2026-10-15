@@ -1,7 +1,7 @@
 # Fang Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Fang Sabre](../../../assets/equipements/sabres-fang-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Sabres  

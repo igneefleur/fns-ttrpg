@@ -1,7 +1,7 @@
 # Ancient Calygrey Axe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Ancient Calygrey Axe](../../../assets/equipements/haches-1-main-ancient-calygrey-axe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Haches 1 main  

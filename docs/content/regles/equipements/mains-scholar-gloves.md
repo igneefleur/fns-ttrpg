@@ -1,7 +1,7 @@
 # Scholar Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Scholar Gloves](../../../assets/equipements/mains-scholar-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

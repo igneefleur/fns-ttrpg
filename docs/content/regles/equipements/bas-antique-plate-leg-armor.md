@@ -1,7 +1,7 @@
 # Antique Plate Leg Armor
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Antique Plate Leg Armor](../../../assets/equipements/bas-antique-plate-leg-armor.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

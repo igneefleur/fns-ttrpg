@@ -1,7 +1,7 @@
 # Horror War Scythe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Horror War Scythe](../../../assets/equipements/faux-de-guerre-horror-war-scythe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Faux de guerre  

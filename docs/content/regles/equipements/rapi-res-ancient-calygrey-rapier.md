@@ -1,7 +1,7 @@
 # Ancient Calygrey Rapier
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Ancient Calygrey Rapier](../../../assets/equipements/rapi-res-ancient-calygrey-rapier.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Rapières  

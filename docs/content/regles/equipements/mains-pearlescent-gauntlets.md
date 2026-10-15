@@ -1,7 +1,7 @@
 # Pearlescent Gauntlets
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Pearlescent Gauntlets](../../../assets/equipements/mains-pearlescent-gauntlets.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

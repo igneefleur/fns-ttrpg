@@ -1,7 +1,7 @@
 # Rust Lich Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Rust Lich Trousers](../../../assets/equipements/bas-rust-lich-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

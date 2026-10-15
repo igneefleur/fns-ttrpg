@@ -1,7 +1,7 @@
 # Wolf Plate Leg Armor
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Wolf Plate Leg Armor](../../../assets/equipements/bas-wolf-plate-leg-armor.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

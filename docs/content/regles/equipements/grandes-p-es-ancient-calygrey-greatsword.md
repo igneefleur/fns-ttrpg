@@ -1,7 +1,7 @@
 # Ancient Calygrey Greatsword
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Ancient Calygrey Greatsword](../../../assets/equipements/grandes-p-es-ancient-calygrey-greatsword.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grandes épées  

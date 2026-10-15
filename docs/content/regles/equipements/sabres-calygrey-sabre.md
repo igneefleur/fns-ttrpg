@@ -1,7 +1,7 @@
 # Calygrey Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Calygrey Sabre](../../../assets/equipements/sabres-calygrey-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Sabres  

@@ -1,7 +1,7 @@
 # Vampiric Rapier
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Vampiric Rapier](../../../assets/equipements/rapi-res-vampiric-rapier.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Rapières  

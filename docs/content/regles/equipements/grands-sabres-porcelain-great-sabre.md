@@ -1,7 +1,7 @@
 # Porcelain Great Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Porcelain Great Sabre](../../../assets/equipements/grands-sabres-porcelain-great-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands sabres  

@@ -1,7 +1,7 @@
 # Manticore Great Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Manticore Great Sabre](../../../assets/equipements/grands-sabres-manticore-great-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands sabres  

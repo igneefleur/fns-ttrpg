@@ -1,7 +1,7 @@
 # Caged Leg Armor
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Caged Leg Armor](../../../assets/equipements/bas-caged-leg-armor.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

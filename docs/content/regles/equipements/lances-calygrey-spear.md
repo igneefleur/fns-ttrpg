@@ -1,7 +1,7 @@
 # Calygrey Spear
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Calygrey Spear](../../../assets/equipements/lances-calygrey-spear.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Lances  

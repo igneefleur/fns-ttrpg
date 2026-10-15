@@ -1,7 +1,7 @@
 # Galvanic Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Galvanic Sabre](../../../assets/equipements/sabres-galvanic-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Sabres  

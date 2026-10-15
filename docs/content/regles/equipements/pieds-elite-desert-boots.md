@@ -1,7 +1,7 @@
 # Elite Desert Boots
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Elite Desert Boots](../../../assets/equipements/pieds-elite-desert-boots.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Pieds  

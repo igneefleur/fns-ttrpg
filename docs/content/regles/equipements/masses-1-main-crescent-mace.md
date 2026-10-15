@@ -1,7 +1,7 @@
 # Crescent Mace
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Crescent Mace](../../../assets/equipements/masses-1-main-crescent-mace.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Masses 1 main  

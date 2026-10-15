@@ -1,7 +1,7 @@
 # Thorny Two-Handed Flail
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Thorny Two-Handed Flail](../../../assets/equipements/fl-aux-deux-mains-thorny-two-handed-flail.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Fléaux à deux mains  

@@ -1,7 +1,7 @@
 # Festive Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Festive Gloves](../../../assets/equipements/mains-festive-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

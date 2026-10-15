@@ -1,7 +1,7 @@
 # Jade-Lich Axe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Jade-Lich Axe](../../../assets/equipements/haches-1-main-jade-lich-axe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Haches 1 main  

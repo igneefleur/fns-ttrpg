@@ -1,7 +1,7 @@
 # Thorny Greataxe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Thorny Greataxe](../../../assets/equipements/grandes-haches-thorny-greataxe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grandes haches  

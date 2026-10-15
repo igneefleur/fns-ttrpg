@@ -1,7 +1,7 @@
 # Runic War Scythe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Runic War Scythe](../../../assets/equipements/faux-de-guerre-runic-war-scythe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Faux de guerre  

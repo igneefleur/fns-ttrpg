@@ -1,7 +1,7 @@
 # Smoke Greatsword
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Smoke Greatsword](../../../assets/equipements/grandes-p-es-smoke-greatsword.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grandes épées  

@@ -1,7 +1,7 @@
 # Manticore Halberd
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Manticore Halberd](../../../assets/equipements/hallebardes-manticore-halberd.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Hallebardes  

@@ -1,7 +1,7 @@
 # Beast Golem Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Beast Golem Sabre](../../../assets/equipements/sabres-beast-golem-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Sabres  

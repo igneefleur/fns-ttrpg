@@ -1,7 +1,7 @@
 # Brutal War Scythe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Brutal War Scythe](../../../assets/equipements/faux-de-guerre-brutal-war-scythe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Faux de guerre  

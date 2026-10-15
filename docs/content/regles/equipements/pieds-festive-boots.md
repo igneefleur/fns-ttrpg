@@ -1,7 +1,7 @@
 # Festive Boots
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Festive Boots](../../../assets/equipements/pieds-festive-boots.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Pieds  

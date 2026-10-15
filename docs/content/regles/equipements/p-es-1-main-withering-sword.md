@@ -1,7 +1,7 @@
 # Withering Sword
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Withering Sword](../../../assets/equipements/p-es-1-main-withering-sword.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Épées 1 main  

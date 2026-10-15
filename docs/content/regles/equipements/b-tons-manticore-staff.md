@@ -1,7 +1,7 @@
 # Manticore Staff
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Manticore Staff](../../../assets/equipements/b-tons-manticore-staff.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bâtons  

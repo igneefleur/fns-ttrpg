@@ -1,7 +1,7 @@
 # Golem Halberd
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Golem Halberd](../../../assets/equipements/hallebardes-golem-halberd.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Hallebardes  

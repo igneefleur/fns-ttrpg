@@ -1,7 +1,7 @@
 # Green Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Green Trousers](../../../assets/equipements/bas-green-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

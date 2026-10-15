@@ -1,7 +1,7 @@
 # Striped Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Striped Gloves](../../../assets/equipements/mains-striped-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

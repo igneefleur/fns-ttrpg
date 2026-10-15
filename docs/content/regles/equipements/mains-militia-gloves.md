@@ -1,7 +1,7 @@
 # Militia Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Militia Gloves](../../../assets/equipements/mains-militia-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

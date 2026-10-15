@@ -1,7 +1,7 @@
 # Beast Golem Greatsword
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Beast Golem Greatsword](../../../assets/equipements/grandes-p-es-beast-golem-greatsword.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grandes épées  

@@ -1,7 +1,7 @@
 # Ghost Halberd
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Ghost Halberd](../../../assets/equipements/hallebardes-ghost-halberd.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Hallebardes  

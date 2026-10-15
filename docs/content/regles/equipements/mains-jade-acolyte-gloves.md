@@ -1,7 +1,7 @@
 # Jade Acolyte Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Jade Acolyte Gloves](../../../assets/equipements/mains-jade-acolyte-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

@@ -1,7 +1,7 @@
 # Blue Sand Gauntlets
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Blue Sand Gauntlets](../../../assets/equipements/mains-blue-sand-gauntlets.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

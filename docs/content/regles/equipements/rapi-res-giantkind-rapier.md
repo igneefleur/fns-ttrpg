@@ -1,7 +1,7 @@
 # Giantkind Rapier
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Giantkind Rapier](../../../assets/equipements/rapi-res-giantkind-rapier.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Rapières  

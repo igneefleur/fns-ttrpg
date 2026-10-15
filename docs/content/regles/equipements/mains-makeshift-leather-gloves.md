@@ -1,7 +1,7 @@
 # Makeshift Leather Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Makeshift Leather Gloves](../../../assets/equipements/mains-makeshift-leather-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

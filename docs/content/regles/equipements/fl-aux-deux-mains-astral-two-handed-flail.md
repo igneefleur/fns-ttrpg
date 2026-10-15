@@ -1,7 +1,7 @@
 # Astral Two-Handed Flail
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Astral Two-Handed Flail](../../../assets/equipements/fl-aux-deux-mains-astral-two-handed-flail.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Fléaux à deux mains  

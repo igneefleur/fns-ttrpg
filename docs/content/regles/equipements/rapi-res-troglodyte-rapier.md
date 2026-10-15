@@ -1,7 +1,7 @@
 # Troglodyte Rapier
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Troglodyte Rapier](../../../assets/equipements/rapi-res-troglodyte-rapier.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Rapières  

@@ -1,7 +1,7 @@
 # Runic Mace
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Runic Mace](../../../assets/equipements/masses-1-main-runic-mace.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Masses 1 main  

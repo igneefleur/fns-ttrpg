@@ -48,9 +48,8 @@ if (typeof browser === "undefined") { var browser = chrome; }
   var CLE_NUIT = "owdNuit";
   var CLE_BETA = "owdBeta";
   var CLE_PAN = "owdPanneauActif";
-  // La géométrie du panneau : posée par content-roll20.js, jamais par le popup,
-  // qui ne fait que la SUPPRIMER quand on demande à replacer.
-  var CLE_PAN_GEO = "owdPanneau:roll20-camp.html";
+  var OUTILS = ["boutique", "inventaire", "attaques", "defenses"];
+  var outilsActifs = {};
 
   var CLE_DEP = ["owd_sheet_url", "owd_site_url"];
 
@@ -154,7 +153,6 @@ if (typeof browser === "undefined") { var browser = chrome; }
     var elRecharge = $("p-recharge");
     var elNuit = $("p-nuit");
     var elPan = $("p-panneau");
-    var elPanReplacer = $("p-pan-replacer");
     var elBeta = $("p-beta");
     var elFlash = $("p-flash");
     var elRegles = $("p-regles");
@@ -206,7 +204,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
       // tabulation ET les annonce désactivés aux lecteurs d'écran.
       elPan.disabled = etat.off;
       elBeta.disabled = etat.off;
-      elPanReplacer.disabled = etat.off;
+      OUTILS.forEach(function(id){marque($("p-"+id),outilsActifs[id]!==false);$("p-"+id).disabled=etat.off;});
       elRegles.href = etat.beta ? REGLES.beta : REGLES.stable;
       elMaj.href = etat.beta ? PAGE_EXT.beta : PAGE_EXT.stable;
     }
@@ -455,14 +453,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
       // rien.
     });
 
-    elPanReplacer.addEventListener("click", function () {
-      // Traîné hors de l'écran ou replié dans un coin, le panneau ne se
-      // récupérerait par aucun chemin visible : effacer sa géométrie lui rend sa
-      // place, sa taille et son repli d'origine, que content-roll20.js reposera
-      // au prochain montage.
-      try { browser.storage.local.remove(CLE_PAN_GEO); } catch (e) { /* rien à replacer */ }
-      flash("Panneau Monde replacé.");
-    });
+    OUTILS.forEach(function(id){$("p-"+id).addEventListener("click",function(){var cle="owdOutilActif:"+id;outilsActifs[id]=outilsActifs[id]===false;touche[cle]=true;var o={};o[cle]=outilsActifs[id];pose(o);rendPieces();});});
 
     elBeta.addEventListener("click", function () {
       etat.beta = !etat.beta;
@@ -486,7 +477,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
     // rien ne le dise ; ici l'échec passe par le même chemin que la réponse
     // vide, et le panneau s'affiche avec les valeurs par défaut, qui sont aussi
     // celles que les scripts de contenu prendront.
-    var voulues = [CLE_OFF, CLE_NUIT, CLE_BETA, CLE_PAN].concat(CLE_DEP);
+    var voulues = [CLE_OFF, CLE_NUIT, CLE_BETA, CLE_PAN].concat(CLE_DEP, OUTILS.map(function(id){return "owdOutilActif:"+id;}));
     try {
       browser.storage.local.get(voulues).then(recu, function () { recu(null); });
     } catch (e) {
@@ -517,6 +508,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
         etat.panneau = r[CLE_PAN] !== false;
       }
 
+      OUTILS.forEach(function(id){var cle="owdOutilActif:"+id;if(!touche[cle])outilsActifs[id]=r[cle]!==false;});
       var k;
       etat.depannage = [];
       for (k = 0; k < CLE_DEP.length; k++) {

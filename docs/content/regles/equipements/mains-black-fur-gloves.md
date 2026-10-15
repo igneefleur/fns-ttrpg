@@ -1,7 +1,7 @@
 # Black Fur Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Black Fur Gloves](../../../assets/equipements/mains-black-fur-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

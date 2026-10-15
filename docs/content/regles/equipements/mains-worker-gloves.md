@@ -1,7 +1,7 @@
 # Worker Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Worker Gloves](../../../assets/equipements/mains-worker-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

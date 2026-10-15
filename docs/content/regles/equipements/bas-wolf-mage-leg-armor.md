@@ -1,7 +1,7 @@
 # Wolf Mage Leg Armor
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Wolf Mage Leg Armor](../../../assets/equipements/bas-wolf-mage-leg-armor.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

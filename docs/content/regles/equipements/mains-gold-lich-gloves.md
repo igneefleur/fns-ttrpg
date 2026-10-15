@@ -1,7 +1,7 @@
 # Gold-Lich Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Gold-Lich Gloves](../../../assets/equipements/mains-gold-lich-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

@@ -1,7 +1,7 @@
 # Ancient Calygrey Great Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Ancient Calygrey Great Sabre](../../../assets/equipements/grands-sabres-ancient-calygrey-great-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands sabres  

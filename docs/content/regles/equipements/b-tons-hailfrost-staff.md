@@ -1,7 +1,7 @@
 # Hailfrost Staff
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Hailfrost Staff](../../../assets/equipements/b-tons-hailfrost-staff.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bâtons  

@@ -1,7 +1,7 @@
 # Shock Gauntlets
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Shock Gauntlets](../../../assets/equipements/mains-shock-gauntlets.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

@@ -1,7 +1,7 @@
 # Gold-Lich Rapier
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Gold-Lich Rapier](../../../assets/equipements/rapi-res-gold-lich-rapier.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Rapières  

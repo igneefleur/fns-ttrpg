@@ -1,7 +1,7 @@
 # Giantkind Sword
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Giantkind Sword](../../../assets/equipements/p-es-1-main-giantkind-sword.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Épées 1 main  

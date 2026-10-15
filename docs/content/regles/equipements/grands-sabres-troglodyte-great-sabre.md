@@ -1,7 +1,7 @@
 # Troglodyte Great Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Troglodyte Great Sabre](../../../assets/equipements/grands-sabres-troglodyte-great-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands sabres  

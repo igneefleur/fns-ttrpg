@@ -1,7 +1,7 @@
 # Runic Gauntlets
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Runic Gauntlets](../../../assets/equipements/mains-runic-gauntlets.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

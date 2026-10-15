@@ -1,7 +1,7 @@
 # Brigand Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Brigand Trousers](../../../assets/equipements/bas-brigand-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

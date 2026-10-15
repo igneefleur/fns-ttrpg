@@ -1,7 +1,7 @@
 # Desert Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Desert Gloves](../../../assets/equipements/mains-desert-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

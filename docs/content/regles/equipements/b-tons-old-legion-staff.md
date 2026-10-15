@@ -1,7 +1,7 @@
 # Old Legion Staff
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Old Legion Staff](../../../assets/equipements/b-tons-old-legion-staff.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bâtons  

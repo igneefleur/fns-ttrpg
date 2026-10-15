@@ -1,7 +1,7 @@
 # Kazite Light Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Kazite Light Gloves](../../../assets/equipements/mains-kazite-light-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

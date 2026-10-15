@@ -1,7 +1,7 @@
 # Tuanosaur Greatsword
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Tuanosaur Greatsword](../../../assets/equipements/grandes-p-es-tuanosaur-greatsword.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grandes épées  

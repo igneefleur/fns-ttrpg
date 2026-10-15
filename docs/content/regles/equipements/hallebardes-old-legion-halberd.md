@@ -1,7 +1,7 @@
 # Old Legion Halberd
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Old Legion Halberd](../../../assets/equipements/hallebardes-old-legion-halberd.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Hallebardes  

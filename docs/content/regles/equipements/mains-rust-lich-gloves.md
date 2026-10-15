@@ -1,7 +1,7 @@
 # Rust Lich Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Rust Lich Gloves](../../../assets/equipements/mains-rust-lich-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

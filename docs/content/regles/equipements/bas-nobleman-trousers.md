@@ -1,7 +1,7 @@
 # Nobleman Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Nobleman Trousers](../../../assets/equipements/bas-nobleman-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

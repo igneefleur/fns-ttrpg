@@ -1,7 +1,7 @@
 # Runic Greataxe
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Runic Greataxe](../../../assets/equipements/grandes-haches-runic-greataxe.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grandes haches  

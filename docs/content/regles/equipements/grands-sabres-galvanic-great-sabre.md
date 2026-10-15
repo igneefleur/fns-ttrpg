@@ -1,7 +1,7 @@
 # Galvanic Great Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Galvanic Great Sabre](../../../assets/equipements/grands-sabres-galvanic-great-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands sabres  

@@ -1,7 +1,7 @@
 # Gold-Lich Staff
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Gold-Lich Staff](../../../assets/equipements/b-tons-gold-lich-staff.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bâtons  

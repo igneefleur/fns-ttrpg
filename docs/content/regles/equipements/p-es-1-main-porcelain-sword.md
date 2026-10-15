@@ -1,7 +1,7 @@
 # Porcelain Sword
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Porcelain Sword](../../../assets/equipements/p-es-1-main-porcelain-sword.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Épées 1 main  

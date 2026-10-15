@@ -1,7 +1,7 @@
 # Vigilante Rapier
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Vigilante Rapier](../../../assets/equipements/rapi-res-vigilante-rapier.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Rapières  

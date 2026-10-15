@@ -1,7 +1,7 @@
 # Shadow Kazite Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Shadow Kazite Trousers](../../../assets/equipements/bas-shadow-kazite-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

@@ -1,7 +1,7 @@
 # Brigand Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Brigand Gloves](../../../assets/equipements/mains-brigand-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

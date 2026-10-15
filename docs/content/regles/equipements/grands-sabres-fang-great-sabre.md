@@ -1,7 +1,7 @@
 # Fang Great Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Fang Great Sabre](../../../assets/equipements/grands-sabres-fang-great-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands sabres  

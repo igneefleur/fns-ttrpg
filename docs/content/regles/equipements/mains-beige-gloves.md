@@ -1,7 +1,7 @@
 # Beige Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Beige Gloves](../../../assets/equipements/mains-beige-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

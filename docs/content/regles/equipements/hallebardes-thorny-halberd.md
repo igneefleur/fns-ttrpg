@@ -1,7 +1,7 @@
 # Thorny Halberd
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Thorny Halberd](../../../assets/equipements/hallebardes-thorny-halberd.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Hallebardes  

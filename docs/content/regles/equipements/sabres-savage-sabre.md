@@ -1,7 +1,7 @@
 # Savage Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Savage Sabre](../../../assets/equipements/sabres-savage-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Sabres  

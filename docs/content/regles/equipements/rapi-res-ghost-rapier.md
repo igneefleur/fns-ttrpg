@@ -1,7 +1,7 @@
 # Ghost Rapier
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Ghost Rapier](../../../assets/equipements/rapi-res-ghost-rapier.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Rapières  

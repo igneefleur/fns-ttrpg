@@ -1,7 +1,7 @@
 # Gold-Lich Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Gold-Lich Trousers](../../../assets/equipements/bas-gold-lich-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

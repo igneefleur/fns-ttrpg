@@ -1,7 +1,7 @@
 # Rich Trousers
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Rich Trousers](../../../assets/equipements/bas-rich-trousers.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Bas  

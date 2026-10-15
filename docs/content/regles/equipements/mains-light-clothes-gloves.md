@@ -1,7 +1,7 @@
 # Light Clothes Gloves
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Light Clothes Gloves](../../../assets/equipements/mains-light-clothes-gloves.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Mains  

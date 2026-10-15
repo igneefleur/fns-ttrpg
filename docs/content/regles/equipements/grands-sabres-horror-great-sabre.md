@@ -1,7 +1,7 @@
 # Horror Great Sabre
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Horror Great Sabre](../../../assets/equipements/grands-sabres-horror-great-sabre.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Grands sabres  

@@ -1,7 +1,7 @@
 # Ghost Sword
 
 <!-- illustration -->
-*Illustration en préparation.*
+![Ghost Sword](../../../assets/equipements/p-es-1-main-ghost-sword.png){ .equipment-portrait }
 <!-- /illustration -->
 
 **Catégorie :** Épées 1 main  
