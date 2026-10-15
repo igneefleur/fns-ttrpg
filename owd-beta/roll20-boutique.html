@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex">
+<title>Boutique Outward sur Roll20</title>
+<link rel="stylesheet" href="stylesheets/owd-boutique.css?v=1">
+<script defer src="javascripts/owd-boutique.js?v=1"></script>
+</head>
+<body>
+<main id="boutique">
+  <header class="ob-filtres"><input id="ob-recherche" type="search" placeholder="Rechercher un équipement…" aria-label="Rechercher un équipement"><select id="ob-categorie" aria-label="Catégorie"><option value="">Toutes les catégories</option></select></header>
+  <p id="ob-status" role="status">Chargement des équipements…</p>
+  <div class="ob-corps"><aside id="ob-details" aria-label="Équipement sélectionné"></aside><section class="ob-catalogue" aria-label="Catalogue"><div id="ob-items"></div><nav class="ob-pages" aria-label="Pages du catalogue"><button id="ob-precedent" type="button" aria-label="Page précédente">‹</button><span id="ob-page" aria-live="polite"></span><button id="ob-suivant" type="button" aria-label="Page suivante">›</button></nav></section></div>
+</main>
+<dialog id="ob-dialog"><form method="dialog"><h2 id="ob-dialog-title"></h2><label>Quantité<input id="ob-quantite-chat" type="number" min="1" step="1" required value="1"></label><div class="ob-dialog-actions"><button type="button" id="ob-annuler">Annuler</button><button type="submit">Envoyer dans le chat</button></div></form></dialog>
+</body>
+</html>

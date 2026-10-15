@@ -869,7 +869,7 @@
  "monnaie": {
   "nom": "pièce d'argent",
   "pluriel": "pièces d'argent",
-  "venteSurAchat": 3
+  "venteSurAchat": 0.3333333333333333
  },
  "armes": [
   {
