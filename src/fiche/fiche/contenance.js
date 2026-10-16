@@ -32,12 +32,12 @@
 
     var cmd = el("div", "pc-vital-cmd pc-temps");
     var delta = el("input", "pc-vital-delta");
-    delta.type = "number";
+    champNombreSigne(delta);
     delta.step = "1";
     delta.placeholder = "±";
     delta.setAttribute("aria-label", "Contenance à ajouter ou retirer");
     function applique() {
-      var d = parseFloat(delta.value);
+      var d = litNombreSigne(delta.value);
       if (!isFinite(d) || !d) return;
       state.etat.contenance = Math.max(0, Math.round((contenancePrise() + d) * 100) / 100);
       if (!(state.etat.contenance > 0)) reinitialiseHorlogeDigestion();

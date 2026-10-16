@@ -41,7 +41,7 @@
   [['Round',3],['Minute',60],['Heure',3600]].forEach(function(a){
     var cmd=el('div','om-command');
     cmd.appendChild(button('−','Reculer de 1 '+a[0].toLowerCase(),function(){edit(function(){state.horloge=D.advance(state.horloge,-a[1]);});}));
-    var amount=el('input','om-number');amount.type='number';amount.step='1';amount.placeholder='±';amount.setAttribute('aria-label',a[0]+'s à appliquer');controls.push(amount);cmd.appendChild(amount);cmd.appendChild(el('span','om-unit-name',a[0]));
+    var amount=el('input','om-number');amount.type='text';amount.inputMode='numeric';amount.step='1';amount.placeholder='±';amount.setAttribute('aria-label',a[0]+'s à appliquer');controls.push(amount);cmd.appendChild(amount);cmd.appendChild(el('span','om-unit-name',a[0]));
     function apply(){var n=Number(amount.value);if(!Number.isSafeInteger(n)||!n)return;edit(function(){state.horloge=D.advance(state.horloge,n*a[1]);});amount.value='';}
     amount.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();apply();}});
     cmd.appendChild(button('Appliquer','Appliquer les '+a[0].toLowerCase()+'s',apply));

@@ -81,12 +81,16 @@
       // Les niveaux d'effondrement que le JOUEUR ajoute à ceux des réserves
       // (ligne « Autre » du module) : ce que la fiche ne sait pas compter.
       effAutre: 0,
+      effAlcool: 0,
+      effAlcoolSecondes: 0,
+      effParties: {},
 
       // ---- les dés d'action ----
       // La taille de chaque dé d'action, dans l'ordre du module Actions : 4, 6,
       // 8, 10 ou 12. Vide au départ — un dé sans taille posée prend celle des
       // règles (le d8).
       desTailles: [],
+      desUtilises: {},
 
       // ---- ce que le personnage porte à l'instant ----
       // null = « au maximum » : la valeur SUIT le maximum quand il bouge, ce

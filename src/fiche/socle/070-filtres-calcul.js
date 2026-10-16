@@ -35,7 +35,7 @@
   var FILTRES_CONNUS = {
     caracTotal: 1, compBonus: 1, compDes: 1, compXp: 1,
     pvMax: 1, peMax: 1, pmMax: 1, piMax: 1, prMax: 1, psMax: 1, phMax: 1, pcMax: 1,
-    charge: 1, accesRapides: 1, contenance: 1, expoMax: 1, effondrement: 1,
+    charge: 1, accesRapides: 1, contenance: 1, expoMax: 1, effondrement: 1, effondrementPartie: 1,
     poidsPorte: 1, desAction: 1, ruptureMax: 1, xpDepense: 1
   };
   function ajouteFiltre(nom, fn, prop) {

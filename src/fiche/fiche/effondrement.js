@@ -1,82 +1,96 @@
-  // ---- 7. Effondrement ----
-  //     [      EFFONDREMENT      ]
-  //     [  MAX PV  ] [  MAX PE  ]
-  //     REPOS          [0]
-  //     SATIÉTÉ        [0]
-  //     HYDRATATION    [0]
-  //     EXPOSITION     [0]
-  //     AUTRE          [x]   ← saisi par le joueur
-  // Le niveau, puis ce qu'il laisse des deux maximums. La TABLE des dix lignes
-  // du livre n'apparaît nulle part : l'infobulle du niveau décompose ce que
-  // chaque réserve y apporte, et le DOM ne montre que l'état du personnage.
+  // ---- Effondrement : bases réelles, niveaux après effets, ajustements de jeu ----
   function buildEffondrement() {
-    // AUCUN ROUAGE : le module ne montre que l'état du personnage, et la ligne
-    // « Autre » se remplit en jouant. Forcer le niveau se fait dans les Options
-    // (Réglages des capacités, ligne Effondrement).
     var b = block("Effondrement");
-    var tN = bigTile("EFFONDREMENT", function () { return String(effondrement()); });
-    tN.classList.add("pc-eff-niveau");
-    b.appendChild(tN);
     function reste(champ) {
       return 100 - clamp(num(effDef()[champ], 0) * effondrement(), 0, 100);
     }
     var r = el("div", "pc-bigrow pc-bigrow-2");
     var tV = bigTile("MAX PV", function () { return reste("pvParNiveau") + " %"; });
     var tE = bigTile("MAX PE", function () { return reste("peParNiveau") + " %"; });
-    r.appendChild(tV);
-    r.appendChild(tE);
-    b.appendChild(r);
+    r.appendChild(tV); r.appendChild(tE); b.appendChild(r);
+    var tN = bigTile("EFFONDREMENT", function () { return String(effondrement()); });
+    tN.classList.add("pc-eff-niveau"); b.appendChild(tN);
 
-    // LES CAUSES, une ligne par réserve que les règles comptent, dans leur
-    // ordre, puis « Autre », que le joueur remplit. Les noms sont ceux des
-    // bandeaux de Survie.
-    var NOMS = { pr: "Repos", ps: "Satiété", ph: "Hydratation", expo: "Exposition" };
-    var causes = el("div", "pc-eff-causes");
-    var vals = {};
-    effReserves().forEach(function (cle) {
-      var ligne = el("div", "pc-eff-cause");
-      ligne.appendChild(el("span", "k", NOMS[cle] || libCap(cle, cle)));
-      var v = el("span", "v", "");
-      ligne.appendChild(v);
-      vals[cle] = v;
-      causes.appendChild(ligne);
+    var grille = el("div", "pc-eff-grille"), vues = [];
+    [["pr", "Repos"], ["expo", "Exposition"], ["ps", "Satiété"],
+     ["ph", "Hydratation"], ["alcool", "Alcool"], ["total", "Total"]].forEach(function (d) {
+      var cle = d[0], nom = d[1];
+      var carte = el("div", "pc-eff-partie"); carte.dataset.effPartie = cle;
+      var titre = el("div", "pc-eff-partie-titre");
+      titre.appendChild(el("span", null, nom));
+      var total = el("b", "pc-eff-partie-total"); titre.appendChild(total); carte.appendChild(titre);
+      var effets = el("div", "pc-eff-consequences"); carte.appendChild(effets);
+      var champs = el("div", "pc-eff-champs");
+      function champ(label, aide, lecture) {
+        var boite = el("label", "pc-eff-champ");
+        boite.appendChild(el("span", null, label));
+        var inp = champNombreSigne(el("input", "pc-eff-valeur"));
+        inp.setAttribute("aria-label", nom + " — " + (label === "Effets" ? "Après effets" : label)); inp.title = aide;
+        inp.readOnly = !!lecture; boite.appendChild(inp); champs.appendChild(boite); return inp;
+      }
+      var base = champ("Base", cle === "alcool" ? "Niveaux d’alcool réels. Un niveau disparaît toutes les 2 heures." : "Niveau réel avant effets et ajustements.", cle !== "alcool");
+      var apres = champ("Effets", "Niveau après effets. Modifier cette valeur règle l’écart à la base ; vider retire ce réglage.", false);
+      var mod = champ("±", "Ajustement manuel supplémentaire, positif ou négatif. Il ne change pas le niveau réel.", false);
+      mod.placeholder = "±";
+      function entree(inp, fn) {
+        inp.addEventListener("input", function () {
+          var vide = inp.value.trim() === "", n = litNombreSigne(inp.value);
+          if (!vide && (!isFinite(n) || !Number.isInteger(n))) return;
+          fn(vide ? null : clamp(n, -999, 999)); refresh();
+        });
+      }
+      if (cle === "alcool") entree(base, function (n) {
+        var ancien = num(state.effAlcool, 0);
+        state.effAlcool = Math.max(0, n || 0);
+        if (!ancien || !state.effAlcool) state.effAlcoolSecondes = 0;
+      });
+      function reglage() {
+        if (!state.effParties[cle]) state.effParties[cle] = { effet: 0, mod: 0 };
+        return state.effParties[cle];
+      }
+      entree(apres, function (n) {
+        // Un effet est un écart, pas un forçage : il continue de suivre sa réserve.
+        var courant = effApresEffets(cle), ancien = num(reglage().effet, 0);
+        reglage().effet = n === null ? 0 : clamp(ancien + Math.max(0, n) - courant, -999, 999);
+      });
+      entree(mod, function (n) {
+        if (cle === "total") state.effAutre = n || 0;
+        else reglage().mod = n || 0;
+      });
+      carte.appendChild(champs);
+      var horloge = el("div", "pc-eff-horloge");
+      if (cle === "alcool") carte.appendChild(horloge);
+      grille.appendChild(carte); vues.push({ cle: cle, base: base, apres: apres, mod: mod, total: total, effets: effets, horloge: horloge });
     });
-    var autre = el("div", "pc-eff-cause");
-    autre.appendChild(el("span", "k", "Autre"));
-    var inp = el("input", "v");
-    inp.type = "number"; inp.min = "0"; inp.step = "1";
-    inp.setAttribute("aria-label", "Autre effondrement");
-    inp.addEventListener("input", function () {
-      var n = parseInt(inp.value, 10);
-      state.effAutre = isFinite(n) ? clamp(n, 0, 99) : 0;
-      refresh();
-    });
-    autre.appendChild(inp);
-    causes.appendChild(autre);
-    b.appendChild(causes);
-
+    b.appendChild(grille);
     hooks.push(function () {
-      var parts = [], somme = 0;
-      effReserves().forEach(function (cle) {
-        var n = effNiveauDe(cle);
-        somme += n;
-        parts.push(libCap(cle, cle).toLowerCase() + " " + n);
-        if (vals[cle]) {
-          vals[cle].textContent = String(n);
-          vals[cle].classList.toggle("zero", !n);
+      vues.forEach(function (v) {
+        var cle = v.cle, brut = effBasePartie(cle), apres = effApresEffets(cle);
+        var niveau = cle === "total" ? effondrement() : effPartie(cle);
+        var mod = cle === "total" ? num(state.effAutre, 0) : num(effReglage(cle).mod, 0);
+        if (document.activeElement !== v.base) v.base.value = brut;
+        if (document.activeElement !== v.apres) v.apres.value = apres;
+        if (document.activeElement !== v.mod) v.mod.value = mod ? sign(mod).replace("−", "-") : "";
+        v.total.textContent = String(niveau);
+        if (cle === "alcool") {
+          v.effets.textContent = niveau ? "Ivresse : " + niveau + " niveau" + (niveau > 1 ? "x" : "") : "Aucune ivresse";
+          var restant = Math.max(0, 7200 - num(state.effAlcoolSecondes, 0));
+          var minutes = Math.ceil(restant / 60);
+          v.horloge.textContent = brut > 0 ? "−1 niveau dans " + Math.floor(minutes / 60) + " h " + (minutes % 60 ? (minutes % 60) + " min" : "") : "";
+        } else {
+          v.effets.textContent = "";
+          if (niveau) {
+            v.effets.appendChild(el("span", null, "PV max −" + clamp(niveau * num(effDef().pvParNiveau, 0), 0, 100) + " %"));
+            v.effets.appendChild(el("span", null, "PE max −" + clamp(niveau * num(effDef().peParNiveau, 0), 0, 100) + " %"));
+          } else v.effets.textContent = "Aucune réduction";
+          if (cle === "total" && peMax() <= 0) v.effets.appendChild(el("span", null, "Inconscient"));
         }
       });
-      var a = Math.max(0, num(state.effAutre, 0));
-      if (a) { somme += a; parts.push("autre " + a); }
-      if (document.activeElement !== inp) inp.value = a;
       var e = effondrement();
-      tN.classList.toggle("adj", e > 0);
-      tV.classList.toggle("adj", e > 0);
-      tE.classList.toggle("adj", e > 0);
+      [tN, tV, tE].forEach(function (t) { t.classList.toggle("adj", e > 0); });
       tN.title = capForce("effondrement")
         ? chaineTexteDe(lireCap("max", "effondrement"), "calculé", effondrementAuto())
-        : parts.join(" · ") + " = " + fmtP(somme) +
-          (somme > effPlafond() ? ", plafonné à " + effPlafond() : "");
+        : "Somme après effets et ajustements : " + effPartie("total") + " ; plafond " + effPlafond();
     });
     return b;
   }

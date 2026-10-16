@@ -63,7 +63,7 @@
       (attaque ? ["attaques"] : ["protections", "resistances"]).forEach(function (k) {
         var td = el("td"), valeur = el("span", "pc-combat-mod-cell");
         var i = el("input", "pc-num");
-        i.type = "number"; i.step = "any"; i.value = combatMod(k, t);
+        champNombreSigne(i); i.step = "any"; i.value = combatMod(k, t);
         i.setAttribute("aria-label", (k === "attaques" ? "Dégâts" : k === "protections" ? "Protection" : "Résistance") + " " + combatLibType(t));
         i.addEventListener("input", function () {
           var n = Number(i.value);

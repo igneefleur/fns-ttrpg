@@ -5,10 +5,10 @@
   // réglage.
   function champModVal(lire, ecrire, borne, titre, reg) {
     var inp = el("input", "pc-num modif");
-    inp.type = "number"; inp.step = String(MOD_PAS);
+    champNombreSigne(inp); inp.step = String(MOD_PAS);
     inp.title = titre;
     inp.addEventListener("input", function () {
-      var v = parseFloat(String(inp.value).replace(",", "."));
+      var v = litNombreSigne(inp.value);
       ecrire(isFinite(v) ? clamp(Math.round(v * 100) / 100, -borne, borne) : 0);
       refresh();
     });
@@ -25,10 +25,10 @@
   // Un champ de FORÇAGE : vide = valeur calculée (undefined, distinct de 0).
   function champForceVal(lire, ecrire, auto, titre, reg) {
     var inp = el("input", "force");
-    inp.type = "number"; inp.step = "any";
+    champNombreSigne(inp); inp.step = "any";
     inp.title = titre;
     inp.addEventListener("input", function () {
-      var v = parseFloat(String(inp.value).replace(",", "."));
+      var v = litNombreSigne(inp.value);
       ecrire(isFinite(v) ? clamp(Math.round(v * 100) / 100, -99999, 99999) : undefined);
       refresh();
     });
@@ -51,10 +51,10 @@
   // tranquille. Son pas est libre, des flèches de 1 en 1 sautant de ×1 à ×6.
   function champMultVal(lire, ecrire, titre, reg) {
     var inp = el("input", "pc-num modif mult");
-    inp.type = "number"; inp.step = "any";
+    champNombreSigne(inp); inp.step = "any";
     inp.title = titre;
     inp.addEventListener("input", function () {
-      var v = parseFloat(String(inp.value).replace(",", "."));
+      var v = litNombreSigne(inp.value);
       ecrire(isFinite(v) ? clamp(Math.round(v * 100) / 100, -MULT_BORNE, MULT_BORNE) : undefined);
       refresh();
     });

@@ -44,10 +44,9 @@
     var rangee = el("div", "pc-desaction");
     b.appendChild(rangee);
     var choisis = [];
-    // LES DÉS UTILISÉS : envoyés, ils restent inaccessibles jusqu'à ce qu'on
-    // les RÉCUPÈRE. Ce n'est pas le blocage du mouvement (« perdu ») : les deux
-    // se voient différemment.
-    var utilises = [];
+    // Les dés utilisés font partie de l’état sauvegardé, même après remontage ou synchronisation.
+    function utilise(i) { return (state.desUtilises || [])[i] === true; }
+    function poseUtilise(i, v) { if (v) state.desUtilises[i] = true; else delete state.desUtilises[i]; }
     var cases = [];
     var nuitVue = null;
 
@@ -99,18 +98,29 @@
       rangee.innerHTML = "";
       cases = [];
       choisis = choisis.slice(0, n);
-      utilises = utilises.slice(0, n);
+
       for (var i = 0; i < n; i++) (function (i) {
         var col = el("div", "pc-desaction-de");
         var pose = el("button", "pc-desaction-pose");
         pose.type = "button";
         pose.addEventListener("click", function () {
-          if (col.classList.contains("perdu") || utilises[i]) return;
+          if (utilise(i)) return;
           choisis[i] = !choisis[i];
           col.classList.toggle("on", !!choisis[i]);
           majBoutons();
         });
-        col.appendChild(pose);
+        var cadre = el("div", "pc-desaction-case");
+        cadre.appendChild(pose);
+        var bascule = el("button", "pc-desaction-bascule");
+        bascule.type = "button";
+        bascule.addEventListener("click", function (e) {
+          e.stopPropagation();
+          poseUtilise(i, !utilise(i));
+          choisis[i] = false;
+          refresh();
+        });
+        cadre.appendChild(bascule);
+        col.appendChild(cadre);
         var taille = el("div", "pc-desaction-taille");
         var moins = el("button", "pc-desaction-pas pc-edit-only", "−");
         moins.type = "button";
@@ -124,16 +134,17 @@
         taille.appendChild(plus);
         col.appendChild(taille);
         col.classList.toggle("on", !!choisis[i]);
-        col.classList.toggle("utilise", !!utilises[i]);
+        col.classList.toggle("utilise", utilise(i));
         rangee.appendChild(col);
-        cases.push({ col: col, pose: pose, nom: nom, moins: moins, plus: plus });
+        cases.push({ col: col, pose: pose, nom: nom, moins: moins, plus: plus, bascule: bascule });
         scene(i);
       })(i);
+      marqueUtilises();
     }
 
     var envoi = miniBtn("Envoyer", "Lancer les dés sélectionnés", function () {
       var tailles = [];
-      cases.forEach(function (c, i) { if (choisis[i]) tailles.push(desTaille(i)); });
+      cases.forEach(function (c, i) { if (choisis[i] && !utilise(i)) tailles.push(desTaille(i)); });
       if (!tailles.length) return;
       var cmd = "&{template:default}{{name=OWD Action Dice}}{{rolls=" +
                 tailles.map(function (t) { return "[[1d" + t + "]]"; }).join("") + "}}";
@@ -144,21 +155,20 @@
       }
       // ce qui vient d'être lancé est UTILISÉ jusqu'à « Récupérer »
       cases.forEach(function (c, i) {
-        if (choisis[i]) { utilises[i] = true; c.col.classList.add("utilise"); }
+        if (choisis[i]) poseUtilise(i, true);
         c.col.classList.remove("on");
       });
       choisis = [];
-      majBoutons();
+      refresh();
     }, "pc-desaction-envoi");
     var recup = miniBtn("Récupérer", "Rendre les dés utilisés", function () {
-      utilises = [];
-      cases.forEach(function (c) { c.col.classList.remove("utilise"); });
-      majBoutons();
+      state.desUtilises = {};
+      refresh();
     }, "pc-desaction-envoi");
     // ENVOYER ne part qu'avec un dé choisi, RÉCUPÉRER qu'avec un dé utilisé
     function majBoutons() {
-      envoi.disabled = !choisis.some(function (x, i) { return x && i < cases.length; });
-      recup.disabled = !utilises.some(function (x, i) { return x && i < cases.length; });
+      envoi.disabled = !choisis.some(function (x, i) { return x && i < cases.length && !utilise(i); });
+      recup.disabled = !cases.some(function (c, i) { return utilise(i); });
     }
     var gestes = el("div", "pc-desaction-gestes");
     gestes.appendChild(envoi);
@@ -179,17 +189,18 @@
       guet.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
       remontageNettoyage.push(function () { guet.disconnect(); });
     }
-    // LES DÉS PERDUS au mouvement (foncer coûte des dés d'action) : les
-    // derniers de la rangée, de droite à gauche, grisés et hachurés, et qu'on
-    // ne peut plus choisir. Un dé choisi qui se perd est désélectionné.
-    function marquePerdus() {
-      var perdus = Math.min(cases.length, desPerdusMouvement());
+    function marqueUtilises() {
       cases.forEach(function (c, i) {
-        var p = i >= cases.length - perdus;
-        c.col.classList.toggle("perdu", p);
-        c.pose.disabled = p;
-        c.pose.title = p ? "Dé d'action pris par le mouvement" : "";
-        if (p && choisis[i]) { choisis[i] = false; c.col.classList.remove("on"); }
+        var u = utilise(i);
+        if (u) choisis[i] = false;
+        c.col.classList.toggle("utilise", u);
+        c.col.classList.toggle("on", !u && !!choisis[i]);
+        c.pose.disabled = u;
+        c.pose.title = u ? "Dé consommé — récupérer avec le bouton dans la case" : "Sélectionner ce dé";
+        c.pose.setAttribute("aria-pressed", String(!u && !!choisis[i]));
+        c.bascule.textContent = u ? "↶" : "−";
+        c.bascule.title = u ? "Récupérer ce dé" : "Consommer temporairement ce dé";
+        c.bascule.setAttribute("aria-label", (u ? "Récupérer" : "Consommer") + " le dé " + (i + 1));
       });
       majBoutons();
     }
@@ -202,7 +213,7 @@
         nuitVue = nuit;
         bati();
       }
-      marquePerdus();
+      marqueUtilises();
     });
     return b;
   }

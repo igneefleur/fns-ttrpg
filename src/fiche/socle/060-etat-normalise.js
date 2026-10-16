@@ -79,7 +79,20 @@
       s.qualiteSommeil = b.qualiteSommeil;
     s.allure = String(s.allure == null ? "" : s.allure) || b.allure;
     s.allureCran = clamp(num(s.allureCran, 1), 1, 99);
-    s.effAutre = clamp(Math.round(num(s.effAutre, 0)), 0, 99);
+    s.effAutre = clamp(Math.round(num(s.effAutre, 0)), -999, 999);
+    s.effAlcool = clamp(Math.round(num(s.effAlcool, 0)), 0, 999);
+    s.effAlcoolSecondes = s.effAlcool > 0 ? clamp(num(s.effAlcoolSecondes, 0), 0, 7199) : 0;
+    if (!s.effParties || typeof s.effParties !== "object" || Array.isArray(s.effParties)) s.effParties = {};
+    ["pr", "expo", "ps", "ph", "alcool", "total"].forEach(function (k) {
+      var d = s.effParties[k];
+      if (!d || typeof d !== "object" || Array.isArray(d)) d = {};
+      s.effParties[k] = { effet: clamp(num(d.effet, 0), -999, 999), mod: clamp(num(d.mod, 0), -999, 999) };
+    });
+    var desUtilises = s.desUtilises;
+    s.desUtilises = {};
+    if (desUtilises && typeof desUtilises === "object") Object.keys(desUtilises).forEach(function (k) {
+      if (/^(?:0|[1-9]\d?)$/.test(k) && Number(k) < 99 && desUtilises[k] === true) s.desUtilises[k] = true;
+    });
     s.desTailles = Array.isArray(s.desTailles)
       ? s.desTailles.slice(0, 99).map(function (t) {
           t = num(t, 0);

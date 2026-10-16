@@ -489,6 +489,8 @@
       horloge: copieTemps(horlogeCourante()),
       horlogeDigestion: copieTemps(horlogeProcessus("horlogeDigestion")),
       horlogeExposition: copieTemps(horlogeProcessus("horlogeExposition", "")),
+      effAlcool: state.effAlcool,
+      effAlcoolSecondes: state.effAlcoolSecondes,
       recuperation: copieTemps(recupCoffre(false)) || {}
     };
     TEMPS_CLES.forEach(function (k) { o[k] = state.etat[k]; });
@@ -500,6 +502,8 @@
     state.horloge = copieTemps(o.horloge) || { jours: 0, heures: 0, minutes: 0, secondes: 0 };
     state.horlogeDigestion = copieTemps(o.horlogeDigestion) || { jours: 0, heures: 0, minutes: 0, secondes: 0 };
     state.horlogeExposition = copieTemps(o.horlogeExposition) || { jours: 0, heures: 0, minutes: 0, secondes: 0, regime: "" };
+    state.effAlcool = num(o.effAlcool, 0);
+    state.effAlcoolSecondes = num(o.effAlcoolSecondes, 0);
     if (!state.modData || typeof state.modData !== "object" || Array.isArray(state.modData)) state.modData = {};
     if (o.recuperation && Object.keys(o.recuperation).length) state.modData.recuperation = copieTemps(o.recuperation);
     else delete state.modData.recuperation;
@@ -513,6 +517,12 @@
   // cadences natives et toutes les durées proposées au module Récupération en
   // sont des multiples, ce qui rend le calcul exact sans fractions de temps.
   var PAS_TEMPS_SECONDES = 3;
+  function avanceAlcoolSecondes(secondes) {
+    if (!(state.effAlcool > 0)) { state.effAlcoolSecondes = 0; return; }
+    var t = num(state.effAlcoolSecondes, 0) + secondes;
+    state.effAlcool = Math.max(0, state.effAlcool - Math.floor(t / 7200));
+    state.effAlcoolSecondes = state.effAlcool > 0 ? t % 7200 : 0;
+  }
   function avancerSecondesCalcul(secondes) {
     var t = tempsDef(), e = effortDe(state.effort), restant, pas;
     if (!t || !e) return 0;
@@ -522,6 +532,7 @@
       pas = Math.min(PAS_TEMPS_SECONDES, restant);
       recupAppliquePas(pas, 1);
       appliqueClimatSecondes(pas, 1);
+      avanceAlcoolSecondes(pas);
       bougeHorloge(pas);
       restant -= pas;
     }

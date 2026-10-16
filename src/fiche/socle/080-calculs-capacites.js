@@ -178,11 +178,25 @@
     if (perte <= 0) return 0;
     return Math.floor(perte / effTranche());
   }
+  var EFF_PARTIES = ["pr", "expo", "ps", "ph", "alcool"];
+  function effReglage(cle) {
+    return (state.effParties || {})[cle] || { effet: 0, mod: 0 };
+  }
+  function effBasePartie(cle) {
+    if (cle === "alcool") return Math.max(0, num(state.effAlcool, 0));
+    if (cle === "total") return EFF_PARTIES.reduce(function (t, k) { return t + effBasePartie(k); }, 0);
+    return effReserves().indexOf(cle) >= 0 ? effNiveauDe(cle) : 0;
+  }
+  function effApresEffets(cle) {
+    var base = cle === "total" ? EFF_PARTIES.reduce(function (t, k) { return t + effPartie(k); }, 0) : effBasePartie(cle);
+    return Math.max(0, Math.floor(pub("effondrementPartie", base + num(effReglage(cle).effet, 0), { cle: cle, base: base })));
+  }
+  function effPartie(cle) {
+    var mod = cle === "total" ? num(state.effAutre, 0) : num(effReglage(cle).mod, 0);
+    return Math.max(0, effApresEffets(cle) + mod);
+  }
   function effondrementAuto() {
-    var t = 0;
-    effReserves().forEach(function (cle) { t += effNiveauDe(cle); });
-    t += Math.max(0, num(state.effAutre, 0));
-    return clamp(Math.floor(t), 0, effPlafond());
+    return clamp(effPartie("total"), 0, effPlafond());
   }
   // Le seul levier qui joue sur un NIVEAU et non sur des points : le MJ y pose
   // l'effondrement que les quatre réserves ne savent pas dire.

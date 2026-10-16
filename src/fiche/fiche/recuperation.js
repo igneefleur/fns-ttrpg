@@ -214,9 +214,9 @@
   // rangée, jamais de cadre segmenté sous le libellé.
   function recupChampNombreModule(lire, ecrire, aide) {
     var i = el("input", "pc-rec-field pc-rec-number");
-    i.type = "number"; i.step = "1"; i.title = aide || "";
+    champNombreSigne(i); i.step = "1"; i.title = aide || "";
     i.addEventListener("input", function () {
-      var v = parseFloat(String(i.value).replace(",", "."));
+      var v = litNombreSigne(i.value);
       if (isFinite(v)) { ecrire(v); refresh(); }
     });
     recupHooks.push(function () { if (document.activeElement !== i) i.value = lire(); });

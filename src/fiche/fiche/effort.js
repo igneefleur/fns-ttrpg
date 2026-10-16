@@ -64,11 +64,11 @@
     function geste(unite, secondesParUnite, etiquette) {
       var cmd = el("div", "pc-segs pc-temps-segs");
       var nb = el("input", "c pc-temps-val");
-      nb.type = "number"; nb.step = "1";
+      champNombreSigne(nb); nb.step = "1";
       nb.placeholder = "±";
       nb.setAttribute("aria-label", etiquette);
       function applique() {
-        var n = parseInt(nb.value, 10);
+        var n = Math.trunc(litNombreSigne(nb.value));
         if (!isFinite(n) || !n) return;
         var sec = avancerSecondes(n * secondesParUnite);
         nb.value = "";

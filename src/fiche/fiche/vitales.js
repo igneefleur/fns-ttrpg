@@ -46,11 +46,11 @@
     tete.appendChild(etat);
     var val = el("span", "pc-vital-val");
     var inp = el("input", "pc-vital-num");
-    inp.type = "number";
+    champNombreSigne(inp);
     inp.step = "1";
     inp.setAttribute("aria-label", libCap(cle, nom));
     inp.addEventListener("input", function () {
-      var v = parseFloat(inp.value);
+      var v = litNombreSigne(inp.value);
       state.etat[cle] = isFinite(v) ? Math.round(v * 100) / 100 : null;
       refresh();
     });
@@ -63,16 +63,22 @@
     var jauge = el("span", "pc-vital-jauge");
     var fill = el("i");
     jauge.appendChild(fill);
+    for (var palier = 1; palier < 10; palier++) {
+      var trait = el("span", "pc-vital-palier");
+      trait.style.left = (palier * 10) + "%";
+      trait.setAttribute("aria-hidden", "true");
+      jauge.appendChild(trait);
+    }
     box.appendChild(jauge);
 
     var cmd = el("div", "pc-vital-cmd");
     var delta = el("input", "pc-vital-delta");
-    delta.type = "number";
+    champNombreSigne(delta);
     delta.step = "1";
     delta.placeholder = "±";
     delta.setAttribute("aria-label", libCap(cle, nom) + " à ajouter ou retirer");
     function appliqueDelta() {
-      var d = parseFloat(delta.value);
+      var d = litNombreSigne(delta.value);
       if (!isFinite(d) || !d) return;
       state.etat[cle] = Math.round((courant(cle) + d) * 100) / 100;
       delta.value = "";

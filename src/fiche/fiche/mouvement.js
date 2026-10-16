@@ -16,7 +16,7 @@
     return out;
   }
   // Les DÉS D'ACTION que l'allure prend ce round (le coût du cran, à l'allure
-  // lourde) : le module Actions les bloque, de droite à gauche.
+  // lourde). Ce coût est informatif : le joueur gère ses dés dans Actions.
   function desPerdusMouvement() {
     var a = allureCourante();
     if (!a || a.crans.length < 2) return 0;

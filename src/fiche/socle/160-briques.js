@@ -41,11 +41,11 @@
     w.appendChild(stepBtn("−", title ? "− " + step + (title === true ? "" : " (" + title + ")") : null,
       function () { set(get() - step); refresh(); }));
     var i = el("input", "pc-num");
-    i.type = "number";
+    champNombreSigne(i);
     i.step = String(step);
     i.value = get();
     i.addEventListener("input", function () {
-      var v = parseFloat(String(i.value).replace(",", "."));
+      var v = litNombreSigne(i.value);
       if (isFinite(v)) { set(v); refresh(); }
     });
     (reg || hooks).push(function () { if (document.activeElement !== i) i.value = get(); });
@@ -91,10 +91,10 @@
     var c = caseVide(hote, "reglable");
     var t = el("span", "v pc-jeu-only", "");
     var i = el("input", "v pc-edit-only pc-case-champ pc-edit-field");
-    i.type = "number"; i.step = "1";
+    champNombreSigne(i); i.step = "1";
     i.title = aide;
     i.addEventListener("input", function () {
-      var v = parseInt(i.value, 10);
+      var v = Math.trunc(litNombreSigne(i.value));
       if (isFinite(v)) { ecrire(v); refresh(); }
     });
     (reg || hooks).push(function () {
@@ -130,10 +130,10 @@
   function champForceBoite(nomTable, levier, cle, auto, titre, reg) {
     var lire = lireTable(nomTable, levier, cle);
     var inp = el("input", "force");
-    inp.type = "number"; inp.step = "any";
+    champNombreSigne(inp); inp.step = "any";
     inp.title = titre || "Vide = valeur calculée ; une valeur la force.";
     inp.addEventListener("input", function () {
-      var v = parseFloat(String(inp.value).replace(",", "."));
+      var v = litNombreSigne(inp.value);
       ecrireBoite(nomTable, levier, "force", cle,
                   isFinite(v) ? clamp(Math.round(v * 100) / 100, -99999, 99999) : undefined);
       refresh();
@@ -156,11 +156,11 @@
       var boite = MMOD_BOITES[i];
       var lire = lireTable(nomTable, levier, cle);
       var inp = el("input", "pc-mmod");
-      inp.type = "number"; inp.step = "any"; inp.placeholder = "0";
+      champNombreSigne(inp); inp.step = "any"; inp.placeholder = "0";
       inp.title = "Bonus ou malus divers (" + MMOD_SLOTS[i] + ") — emplacement " +
                   (i + 1) + " sur " + MMOD_SLOTS.length + " ; les modificateurs s'additionnent.";
       inp.addEventListener("input", function () {
-        var n = parseFloat(String(inp.value).replace(",", "."));
+        var n = litNombreSigne(inp.value);
         ecrireBoite(nomTable, levier, boite, cle,
                     isFinite(n) && n !== 0 ? clamp(Math.round(n * 100) / 100, -9999, 9999) : undefined);
         inp.classList.toggle("neg", n < 0);
@@ -186,14 +186,14 @@
     }
     for (var i = 0; i < MMOD_SLOTS.length; i++) (function (i) {
       var inp = el("input", "pc-mmod");
-      inp.type = "number"; inp.step = "any"; inp.placeholder = "0";
+      champNombreSigne(inp); inp.step = "any"; inp.placeholder = "0";
       inp.title = "Bonus ou malus divers (" + MMOD_SLOTS[i] + ") — emplacement " +
                   (i + 1) + " sur " + MMOD_SLOTS.length + " ; les modificateurs s'additionnent.";
       var v0 = map[key] ? map[key][i] : 0;
       inp.value = v0 ? v0 : "";
       inp.classList.toggle("neg", v0 < 0);
       inp.addEventListener("input", function () {
-        var n = parseFloat(String(inp.value).replace(",", "."));
+        var n = litNombreSigne(inp.value);
         arr()[i] = isFinite(n) ? clamp(Math.round(n * 100) / 100, -9999, 9999) : 0;
         inp.classList.toggle("neg", arr()[i] < 0);
         refresh();

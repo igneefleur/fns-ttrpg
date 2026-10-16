@@ -5,6 +5,18 @@
     if (txt != null) e.textContent = txt;
     return e;
   }
+  // Les champs signés acceptent +20, 20, -20, la virgule et le moins typographique.
+  // Un input number efface +20 dans certains navigateurs avant l'événement input.
+  function champNombreSigne(i) {
+    i.type = "text";
+    i.inputMode = "decimal";
+    i.setAttribute("data-nombre-signe", "1");
+    return i;
+  }
+  function litNombreSigne(v) {
+    var s = String(v == null ? "" : v).trim().replace(/−/g, "-").replace(",", ".");
+    return /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(s) ? Number(s) : NaN;
+  }
   // URL du jeu de données. Une ARCHIVE de version embarque son propre
   // owd-creation.json, gelé à sa date : l'amorce le désigne par
   // window.__owdDataUrl avant d'injecter le bundle. Sans lui, un bundle

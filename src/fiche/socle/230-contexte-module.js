@@ -117,7 +117,7 @@
         pvMax: pvMax, peMax: peMax, pmMax: pmMax, piMax: piMax,
         prMax: prMax, psMax: psMax, phMax: phMax,
         charge: charge, accesRapides: accesRapides, contenance: contenance,
-        expoMax: expoMax, effondrement: effondrement,
+        expoMax: expoMax, effondrement: effondrement, effBasePartie: effBasePartie, effApresEffets: effApresEffets, effPartie: effPartie,
         poidsPorte: poidsPorte, desAction: desAction, ruptureMax: ruptureMax,
         xpDepense: xpDepense, courant: courant, maxDe: maxDe
       },

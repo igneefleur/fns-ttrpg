@@ -27,11 +27,11 @@
     tete.appendChild(nom);
     var val = el("span", "pc-vital-val");
     var inp = el("input", "pc-vital-num");
-    inp.type = "number";
+    champNombreSigne(inp);
     inp.step = "1";
     inp.setAttribute("aria-label", "Exposition");
     inp.addEventListener("input", function () {
-      var v = parseFloat(inp.value);
+      var v = litNombreSigne(inp.value);
       state.etat.expo = isFinite(v) ? Math.round(v * 100) / 100 : 0;
       refresh();
     });
@@ -46,6 +46,12 @@
     var fill = el("i");
     jauge.appendChild(fill);
     jauge.appendChild(el("b", "pc-expo-zero"));
+    for (var palier = 1; palier < 20; palier++) {
+      if (palier === 10) continue;
+      var trait = el("span", "pc-vital-palier");
+      trait.style.left = (palier * 5) + "%";
+      trait.setAttribute("aria-hidden", "true"); jauge.appendChild(trait);
+    }
     res.appendChild(jauge);
 
     // LA ZONE IDÉALE (en température de l'air, selon l'effort du module
@@ -62,12 +68,12 @@
 
     var cmd = el("div", "pc-vital-cmd");
     var delta = el("input", "pc-vital-delta");
-    delta.type = "number";
+    champNombreSigne(delta);
     delta.step = "1";
     delta.placeholder = "±";
     delta.setAttribute("aria-label", "Exposition à ajouter ou retirer");
     function applique() {
-      var d = parseFloat(delta.value);
+      var d = litNombreSigne(delta.value);
       if (!isFinite(d) || !d) return;
       var m = expoMax();
       state.etat.expo = Math.round(clamp(num(state.etat.expo, 0) + d, -m, m) * 100) / 100;

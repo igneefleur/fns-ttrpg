@@ -524,7 +524,7 @@ html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où 
 }
 .pc-vital-max.adj { color: var(--danger); }
 /* Une barre PLEINE : la version segmentée a été refusée sur la fiche MIA. */
-.pc-vital-jauge { display: flex; width: 100%; height: .5rem; background: var(--line-2); overflow: hidden; }
+.pc-vital-jauge { position: relative; display: flex; width: 100%; height: .5rem; background: var(--line-2); overflow: hidden; }
 .pc-vital-jauge > i { display: block; height: 100%; background: var(--teinte, var(--or)); transition: width .15s; }
 .pc-vital-jauge > i.over { background: var(--danger); }
 /* Un tiers pour le champ, deux tiers pour le bouton ; le bouton garde sa
@@ -2116,3 +2116,31 @@ html.night .pc-attaque-carte .hx-vide { fill-opacity: .12; }
 
 .perso-fiche .pc-defense-detail > .pc-attaque-meta { text-align:center; font-size:var(--fs-body); margin-bottom:.4rem; }
 .perso-fiche .pc-defense-valeurs { font-size:var(--fs-body); }
+
+/* Repères discrets aux paliers de 10 %, au-dessus du remplissage. */
+.pc-vital-palier { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--ink); opacity: .55; pointer-events: none; z-index: 1; }
+.pc-temps-segs > input.c { background: var(--card); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line-2); }
+.pc-temps-segs > input.c:focus { background: var(--card); box-shadow: inset 0 0 0 1px var(--or); }
+.pc-desaction-case { position: relative; width: 100%; }
+.pc-desaction-bascule { position: absolute; right: .16rem; top: .16rem; z-index: 2; display: grid; place-items: center; width: 1.05rem; height: 1.05rem; padding: 0; border: 1px solid var(--line-2); border-radius: 4px; background: var(--panel); color: var(--ink); font: inherit; font-size: .75rem; cursor: pointer; }
+.pc-desaction-bascule:hover, .pc-desaction-bascule:focus-visible { border-color: var(--or); color: var(--or); }
+.pc-desaction-de.utilise .pc-desaction-bascule { color: var(--or); }
+/* Effondrement : deux colonnes stables, trois rangées. */
+.pc-eff-grille { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); border: 1px solid var(--line-2); border-radius: 6px; overflow: hidden; margin-top: .45rem; }
+.pc-eff-partie { min-width: 0; padding: .45rem .35rem; border-bottom: 1px solid var(--line-2); }
+.pc-eff-partie:nth-child(odd) { border-right: 1px solid var(--line-2); }
+.pc-eff-partie:nth-last-child(-n+2) { border-bottom: 0; }
+.pc-eff-partie[data-eff-partie="total"] { background: var(--wash); }
+.pc-eff-partie-titre { display: flex; align-items: center; justify-content: space-between; gap: .2rem; font-size: var(--fs-label); font-weight: 800; text-transform: uppercase; letter-spacing: .025em; color: var(--ink-2); }
+.pc-eff-partie-total { font-size: 1rem; color: var(--ink); }
+.pc-eff-consequences { min-height: 2.4em; margin: .25rem 0 .35rem; color: var(--ink-3); font-size: .6rem; line-height: 1.25; }
+.pc-eff-champs { display: grid; grid-template-columns: .8fr 1fr .8fr; gap: .2rem; }
+.pc-eff-champ { min-width: 0; display: flex; flex-direction: column; gap: .15rem; text-align: center; }
+.pc-eff-champ > span { font-size: .53rem; color: var(--ink-3); white-space: nowrap; }
+.pc-eff-valeur { box-sizing: border-box; width: 100%; min-width: 0; height: 1.5rem; padding: .15rem; border: 1px solid var(--line-2); border-radius: 4px; background: var(--card); color: var(--ink); font: inherit; font-size: .7rem; font-weight: 700; text-align: center; }
+.pc-eff-valeur[readonly] { background: transparent; border-color: transparent; color: var(--ink-2); }
+.pc-eff-valeur:focus { outline: none; border-color: var(--or); }
+.pc-eff-horloge { font-size: .55rem; color: var(--ink-3); margin-top: .3rem; min-height: 1.25em; }
+.pc-eff-niveau { margin-top: .35rem; }
+
+.pc-eff-consequences > span { display: block; white-space: nowrap; }
