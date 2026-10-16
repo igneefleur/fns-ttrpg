@@ -113,17 +113,26 @@ const server=http.createServer((req,res)=> {
   const collapse=sheet.locator('[data-module="effondrement"]');
   assert.deepEqual(await collapse.locator('.pc-eff-partie').evaluateAll(ns=>ns.map(n=>n.dataset.effPartie)),['pr','pi','froid','chaud','ps','ph','alcool','autre']);
   for(const label of ['Repos','Innocence','Froid','Chaud','Satiété','Hydratation','Alcool','Autre']){
-    for(const field of ['Base','Effets']) assert.equal(await sheet.getByLabel(label+' — '+field,{exact:true}).getAttribute('readonly'),'');
+    for(const field of ['Base','Effet']) assert.equal(await sheet.getByLabel(label+' — '+field,{exact:true}).getAttribute('readonly'),'');
   }
   // Les effets sont alimentés par l’état/mods, jamais édités dans cette grille.
   await replace(s=>s.effParties.ph={effet:-1,mod:0});
   assert.equal(await frame.evaluate(()=>Owd.__calculs.effondrement()),3);
   const deltaRepos=sheet.getByLabel('Repos — ±',{exact:true});
-  await deltaRepos.fill('+2');await deltaRepos.press('Enter');
-  assert.equal(await deltaRepos.inputValue(),'');
+  await deltaRepos.fill('+2');
+  assert.equal((await state()).effParties.pr.mod,2);
+  await deltaRepos.press('Enter');
+  assert.equal((await state()).effParties.pr.mod,2);
+  assert.equal(await deltaRepos.inputValue(),'+2');
+  await deltaRepos.fill('+3');assert.equal((await state()).effParties.pr.mod,3);
+  await deltaRepos.fill('');assert.equal((await state()).effParties.pr.mod,0);
+  await deltaRepos.fill('-');assert.equal((await state()).effParties.pr.mod,0);
+  await deltaRepos.fill('+2');
   assert.equal(await frame.evaluate(()=>Owd.__calculs.effondrement()),5);
   const deltaAutre=sheet.getByLabel('Autre — ±',{exact:true});
-  await deltaAutre.fill('-1');await deltaAutre.press('Enter');
+  await deltaAutre.fill('-1');
+  assert.equal((await state()).effAutre,-1);
+  await deltaAutre.press('Enter');assert.equal((await state()).effAutre,-1);
   assert.equal(await frame.evaluate(()=>Owd.__calculs.effondrement()),4);
   await frame.evaluate(()=>Owd.remonte());
   assert.equal(await frame.evaluate(()=>Owd.__calculs.effondrement()),4);
@@ -172,9 +181,14 @@ const server=http.createServer((req,res)=> {
    const layout=await collapse.locator('.pc-eff-partie').evaluateAll(ns=>ns.map(n=>({key:n.dataset.effPartie,x:n.getBoundingClientRect().x,y:n.getBoundingClientRect().y,w:n.getBoundingClientRect().width,bg:getComputedStyle(n).backgroundColor})));
    for(let i=0;i<8;i+=2)assert.equal(layout[i].y,layout[i+1].y);
    for(let i=2;i<8;i+=2)assert.ok(layout[i].y>layout[i-2].y);
-   const fonts=await collapse.locator('.pc-big .k, .pc-eff-partie > .k').evaluateAll(ns=>ns.map(n=>{const s=getComputedStyle(n);return [s.fontSize,s.fontFamily,s.fontWeight,s.letterSpacing].join('|')}));
+   const fonts=await collapse.locator('.pc-big .k, .pc-eff-tete > .k').evaluateAll(ns=>ns.map(n=>{const s=getComputedStyle(n);return [s.fontSize,s.fontFamily,s.fontWeight,s.letterSpacing].join('|')}));
    assert.equal(new Set(fonts).size,1);
    assert.equal(await collapse.locator('.pc-eff-partie .pc-vital-jauge').count(),8);
+   assert.ok(await collapse.locator('.pc-eff-tete').evaluateAll(ns=>ns.every(n=>{const a=n.children[0].getBoundingClientRect(),b=n.children[1].getBoundingClientRect(),p=n.getBoundingClientRect();return a.right<=b.left&&b.right<=p.right+1&&Math.abs(a.y-b.y)<15;})));
+   for(const box of await collapse.locator('.pc-eff-champs').all()){
+     assert.deepEqual(await box.locator('.pc-eff-legende').allTextContents(),['Base','Effet','Autre']);
+     assert.ok(await box.evaluate(n=>{const a=n.children[0].getBoundingClientRect(),b=n.children[1].getBoundingClientRect(),c=n.children[2].getBoundingClientRect(),d=n.children[3].getBoundingClientRect(),e=n.children[4].getBoundingClientRect(),f=n.children[5].getBoundingClientRect();return a.y===b.y&&b.y===c.y&&d.y===e.y&&e.y===f.y&&d.y>a.y&&Math.abs(a.x-d.x)<1&&Math.abs(c.x-f.x)<1;}));
+   }
    assert.ok(await collapse.locator('.pc-eff-partie .pc-vital-max').evaluateAll(ns=>ns.every(n=>n.textContent==='/ 10')));
    assert.ok(await collapse.locator('.pc-eff-champs').evaluateAll(ns=>ns.every(n=>{const a=n.getBoundingClientRect(),b=n.parentElement.getBoundingClientRect();return Math.abs(a.left-b.left)<=1&&Math.abs(a.right-b.right)<=1;})));
    assert.ok(await sheet.locator('.pc-temps-val').evaluateAll(ns=>ns.every(n=>getComputedStyle(n).boxShadow==='none'&&getComputedStyle(n).borderTopWidth==='0px')));

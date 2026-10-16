@@ -808,7 +808,7 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
 .pc-eff-cause input.v::-webkit-inner-spin-button, .pc-eff-cause input.v::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 .pc-eff-cause input.v:focus { outline: none; border-color: var(--or); box-shadow: 0 0 0 2px var(--wash); }
 .pc-big { border: 1px solid var(--line-2); border-radius: 7px; background: var(--panel); text-align: center; padding: .28rem .2rem .32rem; transition: border-color .12s; }
-.pc-big .k, .pc-eff-partie > .k { display: block; font-size: .5rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); white-space: nowrap; }
+.pc-big .k, .pc-eff-tete > .k { display: block; font-size: .5rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); white-space: nowrap; }
 .pc-big .v { display: block; font-size: var(--fs-hero); font-weight: 700; line-height: 1.1; color: var(--ink); font-variant-numeric: tabular-nums; margin-top: .08rem; white-space: nowrap; }
 /* la seconde ligne d'une tuile : « 60 % » sous PE MAX, « / 10 » sous
    l'effondrement — ce qui qualifie le nombre sans l'encombrer */
@@ -2128,18 +2128,19 @@ html.night .t-pi { --palier-plein: #30343b; }
 .pc-desaction-de.utilise .pc-desaction-bascule { color: var(--or); }
 /* Effondrement : quatre paires, typographie partagée avec les grandes tuiles. */
 .pc-eff-grille { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); border: 1px solid var(--line-2); border-radius: 6px; overflow: hidden; margin-top: .45rem; }
-.pc-eff-partie { min-width: 0; padding: .35rem 0 0; border-bottom: 1px solid var(--line-2); text-align: center; }
+.pc-eff-partie { min-width: 0; padding: 0; border-bottom: 1px solid var(--line-2); text-align: center; }
 .pc-eff-partie:nth-child(odd) { border-right: 1px solid var(--line-2); }
 .pc-eff-partie:nth-last-child(-n+2) { border-bottom: 0; }
-.pc-eff-lecture { display: flex; align-items: baseline; justify-content: center; gap: .2rem; padding: .1rem .15rem .2rem; }
+.pc-eff-tete { display: flex; align-items: baseline; justify-content: space-between; gap: .15rem; padding: .3rem .2rem; }
+.pc-eff-lecture { display: flex; flex: 0 0 auto; align-items: baseline; gap: .12rem; }
 .pc-eff-partie-total { font-size: calc(var(--fs-value) * 1.85); font-weight: 800; line-height: 1; color: var(--ink); font-variant-numeric: tabular-nums; }
-.pc-eff-champs.pc-segs { margin: 0; border: 0; border-radius: 0; }
-.pc-eff-champs.pc-segs > .c { height: 1.9rem; padding: .15rem 0; }
-.pc-eff-champs.pc-segs > .pc-eff-champ { display: flex; flex-direction: column; gap: .12rem; cursor: default; }
-.pc-eff-champs > .pc-eff-champ:hover { background: transparent; color: var(--ink-3); }
-.pc-eff-legende { font-size: .4rem; font-weight: 700; letter-spacing: 0; }
-.pc-eff-valeur { box-sizing: border-box; width: 100%; min-width: 0; padding: 0; border: 0; outline: 0; border-radius: 0; background: transparent; color: var(--ink-2); font: inherit; font-size: .6rem; font-weight: 700; text-align: center; }
-.pc-eff-champs.pc-segs > input.pc-eff-delta { width: 0; border: 0; outline: 0; border-radius: 0; box-shadow: inset 1px 0 0 var(--line-2); background: var(--card); color: var(--ink); cursor: text; font-size: .7rem; }
+.pc-eff-champs.pc-segs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; border: 0; border-radius: 0; }
+.pc-eff-champs.pc-segs > .c { width: 100%; min-width: 0; height: 1.2rem; padding: 0; cursor: default; }
+.pc-eff-champs.pc-segs > .pc-eff-legende { height: .85rem; font-size: .4rem; font-weight: 700; letter-spacing: 0; }
+.pc-eff-champs.pc-segs > .c:nth-child(3n+1) { box-shadow: none; }
+.pc-eff-champs.pc-segs > input { display: block; box-sizing: border-box; border: 0; outline: 0; border-radius: 0; background: transparent; color: var(--ink-2); font: inherit; font-size: .6rem; font-weight: 700; text-align: center; }
+.pc-eff-champs.pc-segs > .c:hover { background: transparent; }
+.pc-eff-champs.pc-segs > input.pc-eff-delta { background: var(--card); color: var(--ink); cursor: text; font-size: .7rem; }
 .pc-eff-delta::placeholder { color: var(--ink-3); opacity: 1; }
 .pc-eff-champs.pc-segs > input.pc-eff-delta:focus { background: var(--card); }
 .pc-eff-partie.t-froid { --teinte: var(--froid); }

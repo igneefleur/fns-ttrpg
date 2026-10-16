@@ -1,4 +1,4 @@
-  // ---- Effondrement : huit causes, lecture seule et commande de variation ----
+  // ---- Effondrement : huit causes, lecture seule et modificateur direct ----
   function buildEffondrement() {
     var b = block("Effondrement");
     function reste(champ) { return 100 - clamp(num(effDef()[champ], 0) * effondrement(), 0, 100); }
@@ -12,37 +12,40 @@
     [["pr", "Repos"], ["pi", "Innocence"], ["froid", "Froid"], ["chaud", "Chaud"],
      ["ps", "Satiété"], ["ph", "Hydratation"], ["alcool", "Alcool"], ["autre", "Autre"]].forEach(function (d) {
       var cle = d[0], nom = d[1];
+      var abrege = { pi: "Innoc.", ph: "Hydrat." }[cle] || nom;
       var carte = el("div", "pc-eff-partie t-" + cle); carte.dataset.effPartie = cle;
-      carte.appendChild(el("span", "k", nom));
+      var tete = el("div", "pc-eff-tete");
+      var titre = el("span", "k", abrege); titre.title = nom; tete.appendChild(titre);
       var valeur = el("div", "pc-eff-lecture");
       var total = el("span", "pc-eff-partie-total"); valeur.appendChild(total);
-      valeur.appendChild(el("span", "pc-vital-max", "/ 10")); carte.appendChild(valeur);
+      valeur.appendChild(el("span", "pc-vital-max", "/ 10")); tete.appendChild(valeur); carte.appendChild(tete);
       var jauge = el("span", "pc-vital-jauge"), fill = el("i");
       jauge.appendChild(fill); carte.appendChild(jauge);
       var champs = el("div", "pc-segs pc-eff-champs");
+      ["Base", "Effet", "Autre"].forEach(function (label) { champs.appendChild(el("span", "c pc-eff-legende", label)); });
       function lecture(label) {
-        var cellule = el("label", "c pc-eff-champ"); cellule.appendChild(el("span", "pc-eff-legende", label));
-        var champ = champNombreSigne(el("input", "pc-eff-valeur"));
+        var champ = champNombreSigne(el("input", "c pc-eff-valeur"));
         champ.readOnly = true; champ.setAttribute("aria-label", nom + " — " + label);
-        cellule.appendChild(champ); champs.appendChild(cellule); return champ;
+        champs.appendChild(champ); return champ;
       }
-      var base = lecture("Base"), effets = lecture("Effets");
+      var base = lecture("Base"), effets = lecture("Effet");
       base.title = "Niveau calculé depuis la réserve ou l’état du personnage.";
       effets.title = "Bonus/malus des effets ; lecture seule.";
       var mod = champNombreSigne(el("input", "c pc-eff-delta"));
       mod.placeholder = "±"; mod.setAttribute("aria-label", nom + " — ±");
-      mod.addEventListener("keydown", function (e) {
-        if (e.key !== "Enter") return;
-        e.preventDefault();
-        var n = litNombreSigne(mod.value);
-        if (!isFinite(n) || !Number.isInteger(n) || !n) return;
-        if (cle === "autre") state.effAutre = clamp(num(state.effAutre, 0) + n, -999, 999);
+      mod.addEventListener("input", function () {
+        var vide = mod.value.trim() === "", n = vide ? 0 : litNombreSigne(mod.value);
+        if (!isFinite(n) || !Number.isInteger(n)) return;
+        n = clamp(n, -999, 999);
+        if (cle === "autre") state.effAutre = n;
         else {
           if (!state.effParties[cle]) state.effParties[cle] = { effet: 0, mod: 0 };
-          state.effParties[cle].mod = clamp(num(state.effParties[cle].mod, 0) + n, -999, 999);
+          state.effParties[cle].mod = n;
         }
-        mod.value = ""; refresh();
+        refresh();
       });
+      mod.addEventListener("keydown", function (e) { if (e.key === "Enter") e.preventDefault(); });
+      mod.addEventListener("blur", function () { refresh(); });
       champs.appendChild(mod); carte.appendChild(champs); grille.appendChild(carte);
       vues.push({cle: cle, carte: carte, total: total, base: base, effets: effets, mod: mod, fill: fill});
     });
@@ -57,7 +60,8 @@
         v.total.textContent = String(niveau);
         v.fill.style.width = clamp(niveau * 10, 0, 100) + "%";
         v.fill.style.marginLeft = v.cle === "froid" ? "auto" : "0";
-        v.mod.title = "Variation à appliquer avec Entrée. Ajustement actuel : " + sign(ajustement);
+        if (document.activeElement !== v.mod) v.mod.value = ajustement ? sign(ajustement).replace("−", "-") : "";
+        v.mod.title = "Modificateur direct, appliqué pendant la saisie. Vide = 0.";
         v.carte.title = "Base " + brut + " ; effets " + sign(ecart) + " ; ajustement " + sign(ajustement);
       });
       var e = effondrement();
