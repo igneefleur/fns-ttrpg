@@ -13,7 +13,7 @@
 
     var grille = el("div", "pc-eff-grille"), vues = [];
     [["pr", "Repos"], ["expo", "Exposition"], ["ps", "Satiété"],
-     ["ph", "Hydratation"], ["alcool", "Alcool"], ["total", "Total"]].forEach(function (d) {
+     ["ph", "Hydratation"], ["pi", "Innocence"], ["alcool", "Alcool"], ["total", "Total"]].forEach(function (d) {
       var cle = d[0], nom = d[1];
       var carte = el("div", "pc-eff-partie"); carte.dataset.effPartie = cle;
       var titre = el("div", "pc-eff-partie-titre");
@@ -25,11 +25,11 @@
         var boite = el("label", "pc-eff-champ");
         boite.appendChild(el("span", null, label));
         var inp = champNombreSigne(el("input", "pc-eff-valeur"));
-        inp.setAttribute("aria-label", nom + " — " + (label === "Effets" ? "Après effets" : label)); inp.title = aide;
+        inp.setAttribute("aria-label", nom + " — " + label); inp.title = aide;
         inp.readOnly = !!lecture; boite.appendChild(inp); champs.appendChild(boite); return inp;
       }
-      var base = champ("Base", cle === "alcool" ? "Niveaux d’alcool réels. Un niveau disparaît toutes les 2 heures." : "Niveau réel avant effets et ajustements.", cle !== "alcool");
-      var apres = champ("Effets", "Niveau après effets. Modifier cette valeur règle l’écart à la base ; vider retire ce réglage.", false);
+      var base = champ("Base", cle === "alcool" ? "Niveaux d’alcool réels. Un niveau disparaît toutes les 2 heures." : cle === "pi" ? "Niveau d’effondrement lié à l’innocence, réglé manuellement." : "Niveau réel avant effets et ajustements.", cle !== "alcool" && cle !== "pi");
+      var apres = champ("Effets", "Bonus ou malus d’effondrement dû aux effets. Vide = aucun ajustement manuel.", false);
       var mod = champ("±", "Ajustement manuel supplémentaire, positif ou négatif. Il ne change pas le niveau réel.", false);
       mod.placeholder = "±";
       function entree(inp, fn) {
@@ -48,10 +48,11 @@
         if (!state.effParties[cle]) state.effParties[cle] = { effet: 0, mod: 0 };
         return state.effParties[cle];
       }
+      if (cle === "pi") entree(base, function (n) { reglage().base = Math.max(0, n || 0); });
       entree(apres, function (n) {
-        // Un effet est un écart, pas un forçage : il continue de suivre sa réserve.
-        var courant = effApresEffets(cle), ancien = num(reglage().effet, 0);
-        reglage().effet = n === null ? 0 : clamp(ancien + Math.max(0, n) - courant, -999, 999);
+        var baseEffet = cle === "total" ? EFF_PARTIES.reduce(function (t, k) { return t + effPartie(k); }, 0) : effBasePartie(cle);
+        var effetExterne = pub("effondrementPartie", baseEffet + num(reglage().effet, 0), { cle: cle, base: baseEffet }) - baseEffet - num(reglage().effet, 0);
+        reglage().effet = n === null ? 0 : clamp(n - effetExterne, -999, 999);
       });
       entree(mod, function (n) {
         if (cle === "total") state.effAutre = n || 0;
@@ -69,20 +70,22 @@
         var niveau = cle === "total" ? effondrement() : effPartie(cle);
         var mod = cle === "total" ? num(state.effAutre, 0) : num(effReglage(cle).mod, 0);
         if (document.activeElement !== v.base) v.base.value = brut;
-        if (document.activeElement !== v.apres) v.apres.value = apres;
+        var baseEffet = cle === "total" ? EFF_PARTIES.reduce(function (t, k) { return t + effPartie(k); }, 0) : brut;
+        var ecartEffet = pub("effondrementPartie", baseEffet + num(effReglage(cle).effet, 0), { cle: cle, base: baseEffet }) - baseEffet;
+        if (document.activeElement !== v.apres) v.apres.value = ecartEffet ? sign(ecartEffet).replace("−", "-") : "0";
         if (document.activeElement !== v.mod) v.mod.value = mod ? sign(mod).replace("−", "-") : "";
         v.total.textContent = String(niveau);
         if (cle === "alcool") {
-          v.effets.textContent = niveau ? "Ivresse : " + niveau + " niveau" + (niveau > 1 ? "x" : "") : "Aucune ivresse";
+          v.effets.textContent = "";
           var restant = Math.max(0, 7200 - num(state.effAlcoolSecondes, 0));
           var minutes = Math.ceil(restant / 60);
-          v.horloge.textContent = brut > 0 ? "−1 niveau dans " + Math.floor(minutes / 60) + " h " + (minutes % 60 ? (minutes % 60) + " min" : "") : "";
+          v.horloge.textContent = brut > 0 ? "−1 · " + Math.floor(minutes / 60) + " h " + (minutes % 60 ? (minutes % 60) + " min" : "") : "";
         } else {
           v.effets.textContent = "";
           if (niveau) {
-            v.effets.appendChild(el("span", null, "PV max −" + clamp(niveau * num(effDef().pvParNiveau, 0), 0, 100) + " %"));
-            v.effets.appendChild(el("span", null, "PE max −" + clamp(niveau * num(effDef().peParNiveau, 0), 0, 100) + " %"));
-          } else v.effets.textContent = "Aucune réduction";
+            v.effets.appendChild(el("span", null, "PV −" + clamp(niveau * num(effDef().pvParNiveau, 0), 0, 100) + " %"));
+            v.effets.appendChild(el("span", null, "PE −" + clamp(niveau * num(effDef().peParNiveau, 0), 0, 100) + " %"));
+          }
           if (cle === "total" && peMax() <= 0) v.effets.appendChild(el("span", null, "Inconscient"));
         }
       });

@@ -47,8 +47,12 @@ const server=http.createServer((req,res)=> {
   const replace=async(fn)=>{let s=await state();fn(s);await frame.evaluate(s=>Owd.__recoitEtat(s),s);};
   await frame.evaluate(()=>{window.chats=[];window.__owdChat=c=>chats.push(c);});
   assert.equal(await sheet.locator('[data-module="survie"] button').filter({hasText:/chat/i}).count(),0);
-  for(const bar of await sheet.locator('.pc-vital-jauge:not(.pc-expo-jauge)').all())assert.equal(await bar.locator('.pc-vital-palier').count(),9);
-  assert.equal(await sheet.locator('.pc-expo-jauge .pc-vital-palier').count(),18);
+  assert.equal(await sheet.locator('[data-module="survie"] .pc-vital-palier').count(),27);
+  assert.equal(await sheet.locator('[data-module="pi"] .pc-vital-palier').count(),9);
+  assert.equal(await sheet.locator('.pc-expo-jauge .pc-vital-palier').count(),9);
+  for(const id of ['pv','pe','pm','pc','contenance']) assert.equal(await sheet.locator('[data-module="'+id+'"] .pc-vital-palier').count(),0);
+  assert.equal(await sheet.locator('[data-module="pi"] .pc-vital-nom').textContent(),'Innocence');
+  assert.equal(await sheet.locator('[data-module="pi"]').evaluate(n=>n.previousElementSibling.dataset.module),'exposition');
   const pv=sheet.locator('[data-module="pv"] .pc-vital-delta');
   for(const [text,expected] of [['+20',120],['-20',100],['20',120],['−20',100]]){
     await pv.fill(text);await pv.press('Enter');assert.equal((await state()).etat.pv,expected);
@@ -63,6 +67,16 @@ const server=http.createServer((req,res)=> {
   const before=(await state()).horloge.minutes;
   await minute.fill('+1');await minute.press('Enter');assert.equal((await state()).horloge.minutes,before+1);
   const colors=await frame.evaluate(()=>{const a=document.querySelector('.pc-temps-val'),b=document.querySelector('.pc-vital-delta');return [getComputedStyle(a).backgroundColor,getComputedStyle(b).backgroundColor];});assert.equal(colors[0],colors[1]);
+  // Exposition : chaque sens utilise la largeur entière et zéro est vide.
+  const exFill=sheet.locator('.pc-expo-jauge > i');
+  for(const [factor,left,width,filled] of [[.3,'0%','30%',3],[-.3,'70%','30%',3],[0,'0%','0%',0]]){
+    const m=await frame.evaluate(()=>Owd.__calculs.expoMax());
+    await replace(s=>s.etat.expo=m*factor);
+    assert.equal(await exFill.evaluate(n=>n.style.left),left);
+    assert.equal(await exFill.evaluate(n=>n.style.width),width);
+    assert.equal(await sheet.locator('.pc-expo-jauge .plein').count(),filled);
+  
+  }
   // Individual use and recovery, send, remount, theme and received state preserve use.
   const action=sheet.locator('[data-module="desaction"]');
   await action.getByRole('button',{name:'Consommer le dé 1',exact:true}).click();
@@ -97,8 +111,8 @@ const server=http.createServer((req,res)=> {
   assert.equal(await frame.evaluate(()=>Owd.__calculs.effPartie('ph')),2);
   assert.equal(await frame.evaluate(()=>Owd.__calculs.effondrement()),4);
   const collapse=sheet.locator('[data-module="effondrement"]');
-  assert.deepEqual(await collapse.locator('.pc-eff-partie').evaluateAll(ns=>ns.map(n=>n.dataset.effPartie)),['pr','expo','ps','ph','alcool','total']);
-  await sheet.getByLabel('Hydratation — Après effets',{exact:true}).fill('1');
+  assert.deepEqual(await collapse.locator('.pc-eff-partie').evaluateAll(ns=>ns.map(n=>n.dataset.effPartie)),['pr','expo','ps','ph','pi','alcool','total']);
+  await sheet.getByLabel('Hydratation — Effets',{exact:true}).fill('-1');
   assert.equal(await frame.evaluate(()=>Owd.__calculs.effondrement()),3);
   await sheet.getByLabel('Repos — ±',{exact:true}).fill('+2');
   assert.equal(await frame.evaluate(()=>Owd.__calculs.effondrement()),5);
@@ -108,6 +122,11 @@ const server=http.createServer((req,res)=> {
   assert.equal(await frame.evaluate(()=>Owd.__calculs.effondrement()),4);
   const baseBefore=await frame.evaluate(()=>Owd.__calculs.effNiveauDe('ps'));
   assert.equal(baseBefore,5);
+  await sheet.getByLabel('Innocence — Base',{exact:true}).fill('2');
+  assert.equal(await frame.evaluate(()=>Owd.__calculs.effPartie('pi')),2);
+  assert.equal(await frame.evaluate(()=>Owd.__calculs.effondrement()),6);
+  await frame.evaluate(()=>Owd.remonte());
+  assert.equal(await sheet.getByLabel('Innocence — Base',{exact:true}).inputValue(),'2');
   // Alcohol counts only occupied time and expires one level per two hours; exact undo.
   await replace(s=>{s.effParties={};s.effAutre=0;s.effAlcool=2;s.effAlcoolSecondes=0;s.effort='repos';});
   await hour.fill('+1');await hour.press('Enter'); assert.equal((await state()).effAlcool,2);assert.equal((await state()).effAlcoolSecondes,3600);
@@ -116,11 +135,12 @@ const server=http.createServer((req,res)=> {
   await hour.fill('+3');await hour.press('Enter'); assert.equal((await state()).effAlcool,0);assert.equal((await state()).effAlcoolSecondes,0);
   // Fallback attributes and sync preserve all added fields.
   const sample=await state();sample.desUtilises={0:true,2:true};sample.effParties.pr={effet:-3,mod:1};sample.effAlcool=1;sample.effAlcoolSecondes=99;
+  sample.effParties.pi={base:2,effet:-1,mod:1};
   const packed=M.stateToAttrs(sample,null);delete packed.owd_state;
   const back=M.attrsToState(packed);assert.deepEqual(back.desUtilises,sample.desUtilises);assert.deepEqual(back.effParties,sample.effParties);assert.equal(back.effAlcool,1);assert.equal(back.effAlcoolSecondes,99);
   assert.deepEqual(C.rebuild(C.flatten(sample)),sample);
   // Preview representative values, check bounds in both themes and compact width.
-  await replace(s=>{s.etat.pr=max.pr*.8;s.etat.ps=max.ps*.8;s.etat.ph=max.ph*.9;s.etat.expo=max.expo*.1;s.effAlcool=1;s.effAlcoolSecondes=0;s.effParties={pr:{effet:-1,mod:0},ps:{effet:-1,mod:0}};s.effAutre=0;s.desUtilises=[true,false,true];});
+  await replace(s=>{s.etat.pi=50;s.etat.pr=max.pr*.8;s.etat.ps=max.ps*.8;s.etat.ph=max.ph*.9;s.etat.expo=max.expo*.1;s.effAlcool=1;s.effAlcoolSecondes=0;s.effParties={pr:{effet:-1,mod:0},ps:{effet:-1,mod:0}};s.effAutre=0;s.desUtilises=[true,false,true];});
   async function capture(locator,file){
     for(let attempt=0;attempt<5;attempt++){
       try{await locator.screenshot({path:file});return;}
@@ -129,7 +149,18 @@ const server=http.createServer((req,res)=> {
   }
   for(const night of [true,false]){
    await frame.evaluate(n=>document.documentElement.classList.toggle('night',n),night);await page.waitForTimeout(50);
+   await page.mouse.move(0,0);
    await capture(collapse,'/tmp/owd-effondrement-'+(night?'night':'day')+'.png');
+   await capture(sheet.locator('[data-module="pi"]'),'/tmp/owd-innocence-'+(night?'night':'day')+'.png');
+   await capture(sheet.locator('[data-module="exposition"]'),'/tmp/owd-exposition-'+(night?'night':'day')+'.png');
+   const layout=await collapse.locator('.pc-eff-partie').evaluateAll(ns=>ns.map(n=>({key:n.dataset.effPartie,x:n.getBoundingClientRect().x,y:n.getBoundingClientRect().y,w:n.getBoundingClientRect().width,bg:getComputedStyle(n).backgroundColor})));
+   assert.equal(layout[4].y,layout[5].y);assert.ok(layout[6].y>layout[5].y);assert.ok(layout[6].w>layout[0].w*1.9);
+   assert.equal(layout[6].bg,layout[0].bg);
+   assert.ok(await collapse.locator('.pc-eff-partie-titre').evaluateAll(ns=>ns.every(n=>{const a=n.children[0].getBoundingClientRect(),v=n.children[1].getBoundingClientRect(),p=n.getBoundingClientRect();return (a.right<=v.left||v.top>=a.bottom)&&v.right<=p.right+1;})));
+   assert.ok(await collapse.locator('.pc-eff-champs').evaluateAll(ns=>ns.every(n=>getComputedStyle(n).flexDirection==='column')));
+   assert.ok(!(await collapse.textContent()).includes('Aucune'));
+   const ticks=await sheet.locator('[data-module="pi"] .pc-vital-palier').evaluateAll(ns=>ns.map(n=>({filled:n.classList.contains('plein'),color:getComputedStyle(n).backgroundColor})));
+   if(night)assert.ok(ticks.filter(t=>t.filled).every(t=>t.color==='rgb(48, 52, 59)'));
    await capture(action,'/tmp/owd-actions-'+(night?'night':'day')+'.png');
    assert.ok(await collapse.locator('.pc-eff-valeur').evaluateAll(ns=>ns.every(n=>{let r=n.getBoundingClientRect(),p=n.closest('.pc-eff-partie').getBoundingClientRect();return r.left>=p.left&&r.right<=p.right+1;})));
   }

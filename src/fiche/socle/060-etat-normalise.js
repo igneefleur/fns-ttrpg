@@ -83,10 +83,11 @@
     s.effAlcool = clamp(Math.round(num(s.effAlcool, 0)), 0, 999);
     s.effAlcoolSecondes = s.effAlcool > 0 ? clamp(num(s.effAlcoolSecondes, 0), 0, 7199) : 0;
     if (!s.effParties || typeof s.effParties !== "object" || Array.isArray(s.effParties)) s.effParties = {};
-    ["pr", "expo", "ps", "ph", "alcool", "total"].forEach(function (k) {
+    ["pr", "expo", "ps", "ph", "pi", "alcool", "total"].forEach(function (k) {
       var d = s.effParties[k];
       if (!d || typeof d !== "object" || Array.isArray(d)) d = {};
       s.effParties[k] = { effet: clamp(num(d.effet, 0), -999, 999), mod: clamp(num(d.mod, 0), -999, 999) };
+      if (k === "pi") s.effParties[k].base = clamp(Math.round(num(d.base, 0)), 0, 999);
     });
     var desUtilises = s.desUtilises;
     s.desUtilises = {};

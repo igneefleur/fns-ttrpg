@@ -63,7 +63,7 @@
     var jauge = el("span", "pc-vital-jauge");
     var fill = el("i");
     jauge.appendChild(fill);
-    for (var palier = 1; palier < 10; palier++) {
+    for (var palier = 1; ["pr", "ps", "ph", "pi"].indexOf(cle) >= 0 && palier < 10; palier++) {
       var trait = el("span", "pc-vital-palier");
       trait.style.left = (palier * 10) + "%";
       trait.setAttribute("aria-hidden", "true");
@@ -107,7 +107,11 @@
       box.classList.toggle("over", neg);
       fill.classList.toggle("over", neg);
       fill.style.marginLeft = neg ? "auto" : "0";
-      fill.style.width = clamp(neg ? 100 : (m > 0 ? v / m * 100 : 0), 0, 100) + "%";
+      var pourcent = clamp(neg ? 100 : (m > 0 ? v / m * 100 : 0), 0, 100);
+      fill.style.width = pourcent + "%";
+      jauge.querySelectorAll(".pc-vital-palier").forEach(function (trait) {
+        trait.classList.toggle("plein", parseFloat(trait.style.left) <= pourcent);
+      });
       jauge.title = nom + " " + reserveFmt(v) + " / " + fmtP(m);
     });
     return { el: box, etat: etat };
@@ -136,7 +140,7 @@
   // repos, mais cela ne change rien au geste : on y tape ce qui se perd ou se
   // regagne.
   function buildPi() {
-    return seule(reserveVitale("pi", provenanceCap("pi")));
+    return seule(reserveVitale("pi", provenanceCap("pi"), "Innocence"));
   }
   // LES POINTS DE CHANCE, même module que les PV : un compteur qui se dépense
   // et se regagne, et dont le maximum vient de la Chance comme les autres

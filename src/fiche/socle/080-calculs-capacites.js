@@ -178,12 +178,14 @@
     if (perte <= 0) return 0;
     return Math.floor(perte / effTranche());
   }
-  var EFF_PARTIES = ["pr", "expo", "ps", "ph", "alcool"];
+  var EFF_PARTIES = ["pr", "expo", "ps", "ph", "pi", "alcool"];
   function effReglage(cle) {
     return (state.effParties || {})[cle] || { effet: 0, mod: 0 };
   }
   function effBasePartie(cle) {
     if (cle === "alcool") return Math.max(0, num(state.effAlcool, 0));
+    // Aucune conversion automatique de l’innocence dans les règles actuelles.
+    if (cle === "pi") return Math.max(0, num(effReglage(cle).base, 0));
     if (cle === "total") return EFF_PARTIES.reduce(function (t, k) { return t + effBasePartie(k); }, 0);
     return effReserves().indexOf(cle) >= 0 ? effNiveauDe(cle) : 0;
   }

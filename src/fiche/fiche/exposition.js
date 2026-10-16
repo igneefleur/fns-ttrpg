@@ -1,23 +1,5 @@
   // ---- 6. Exposition ----
-  // LE GRÉEMENT DES RÉSERVES (vitales.js), mais SIGNÉ :
-  //
-  //     ┌───────────────────────────────┐
-  //     │ EXPOSITION          −30 / ±120 │  ← bandeau : l'identité et la valeur
-  //     ├───────────────────────────────┤
-  //     │ froid ██████|        chaud     │  ← la barre part du MILIEU
-  //     │  [   ±   ]      [Appliquer]    │  ← le geste du jeu
-  //     └───────────────────────────────┘
-  //
-  // Zéro est au centre et la barre y est vide : c'est l'état stable. Elle
-  // pousse vers la gauche quand le personnage a froid, vers la droite quand il
-  // a chaud, aux couleurs du froid et du chaud. Vider la valeur la remet à
-  // zéro. Aucun rouage : la borne se règle dans les Options (Réglages des
-  // capacités), et aucune table du froid ni du chaud n'est affichée.
-  //
-  // CE MODULE A ÉTÉ REFAIT parce que l'ancien lisait une variable qui n'existait
-  // pas dans son rafraîchissement : il levait à chaque passage, se faisait
-  // museler au cinquième (le filet rouge à sa gauche), et ses − et + semblaient
-  // morts puisque plus rien ne se redessinait.
+  // Zéro vide ; chaud depuis la gauche, froid depuis la droite, sur toute la largeur.
   function buildExposition() {
     var box = el("div", "pc-block pc-vital");
     var res = el("div", "pc-vital-res pc-expo-res");
@@ -41,15 +23,13 @@
     tete.appendChild(val);
     res.appendChild(tete);
 
-    // la barre : un remplissage qui part du milieu, et le trait du zéro
+    // Même échelle de 0 à 100 % pour chaque sens de remplissage.
     var jauge = el("span", "pc-vital-jauge pc-expo-jauge");
     var fill = el("i");
     jauge.appendChild(fill);
-    jauge.appendChild(el("b", "pc-expo-zero"));
-    for (var palier = 1; palier < 20; palier++) {
-      if (palier === 10) continue;
+    for (var palier = 1; palier < 10; palier++) {
       var trait = el("span", "pc-vital-palier");
-      trait.style.left = (palier * 5) + "%";
+      trait.style.left = (palier * 10) + "%";
       trait.setAttribute("aria-hidden", "true"); jauge.appendChild(trait);
     }
     res.appendChild(jauge);
@@ -99,10 +79,14 @@
       mx.title = capForce("expo")
         ? chaineTexteDe(lireCap("max", "expo"), "calculé", expoMaxAuto())
         : provenanceCap("expo")();
-      var part = m > 0 ? clamp(Math.abs(v) / m, 0, 1) * 50 : 0;
+      var part = m > 0 ? clamp(Math.abs(v) / m, 0, 1) * 100 : 0;
       fill.className = v < 0 ? "froid" : v > 0 ? "chaud" : "";
-      fill.style.left = (v < 0 ? 50 - part : 50) + "%";
+      fill.style.left = (v < 0 ? 100 - part : 0) + "%";
       fill.style.width = part + "%";
+      jauge.querySelectorAll(".pc-vital-palier").forEach(function (trait) {
+        var position = parseFloat(trait.style.left);
+        trait.classList.toggle("plein", part > 0 && (v < 0 ? position >= 100 - part : position <= part));
+      });
       var z = zoneIdeale();
       // le VRAI moins, comme au livre : « −5 à 7 »
       function deg(n) { return fmtP(n).replace("-", "−"); }
