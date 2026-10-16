@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "3.17.0b";
+  var RELEASE = "3.17.1b";
   var SCHEMA = 16;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -656,10 +656,11 @@
     s.effAlcool = clamp(Math.round(num(s.effAlcool, 0)), 0, 999);
     s.effAlcoolSecondes = s.effAlcool > 0 ? clamp(num(s.effAlcoolSecondes, 0), 0, 7199) : 0;
     if (!s.effParties || typeof s.effParties !== "object" || Array.isArray(s.effParties)) s.effParties = {};
-    ["pr", "expo", "ps", "ph", "alcool", "total"].forEach(function (k) {
+    ["pr", "expo", "ps", "ph", "pi", "alcool", "total"].forEach(function (k) {
       var d = s.effParties[k];
       if (!d || typeof d !== "object" || Array.isArray(d)) d = {};
       s.effParties[k] = { effet: clamp(num(d.effet, 0), -999, 999), mod: clamp(num(d.mod, 0), -999, 999) };
+      if (k === "pi") s.effParties[k].base = clamp(Math.round(num(d.base, 0)), 0, 999);
     });
     var desUtilises = s.desUtilises;
     s.desUtilises = {};
@@ -1564,12 +1565,14 @@
     if (perte <= 0) return 0;
     return Math.floor(perte / effTranche());
   }
-  var EFF_PARTIES = ["pr", "expo", "ps", "ph", "alcool"];
+  var EFF_PARTIES = ["pr", "expo", "ps", "ph", "pi", "alcool"];
   function effReglage(cle) {
     return (state.effParties || {})[cle] || { effet: 0, mod: 0 };
   }
   function effBasePartie(cle) {
     if (cle === "alcool") return Math.max(0, num(state.effAlcool, 0));
+    // Aucune conversion automatique de l’innocence dans les règles actuelles.
+    if (cle === "pi") return Math.max(0, num(effReglage(cle).base, 0));
     if (cle === "total") return EFF_PARTIES.reduce(function (t, k) { return t + effBasePartie(k); }, 0);
     return effReserves().indexOf(cle) >= 0 ? effNiveauDe(cle) : 0;
   }
@@ -4921,7 +4924,7 @@
     var jauge = el("span", "pc-vital-jauge");
     var fill = el("i");
     jauge.appendChild(fill);
-    for (var palier = 1; palier < 10; palier++) {
+    for (var palier = 1; ["pr", "ps", "ph", "pi"].indexOf(cle) >= 0 && palier < 10; palier++) {
       var trait = el("span", "pc-vital-palier");
       trait.style.left = (palier * 10) + "%";
       trait.setAttribute("aria-hidden", "true");
@@ -4965,7 +4968,11 @@
       box.classList.toggle("over", neg);
       fill.classList.toggle("over", neg);
       fill.style.marginLeft = neg ? "auto" : "0";
-      fill.style.width = clamp(neg ? 100 : (m > 0 ? v / m * 100 : 0), 0, 100) + "%";
+      var pourcent = clamp(neg ? 100 : (m > 0 ? v / m * 100 : 0), 0, 100);
+      fill.style.width = pourcent + "%";
+      jauge.querySelectorAll(".pc-vital-palier").forEach(function (trait) {
+        trait.classList.toggle("plein", parseFloat(trait.style.left) <= pourcent);
+      });
       jauge.title = nom + " " + reserveFmt(v) + " / " + fmtP(m);
     });
     return { el: box, etat: etat };
@@ -4994,7 +5001,7 @@
   // repos, mais cela ne change rien au geste : on y tape ce qui se perd ou se
   // regagne.
   function buildPi() {
-    return seule(reserveVitale("pi", provenanceCap("pi")));
+    return seule(reserveVitale("pi", provenanceCap("pi"), "Innocence"));
   }
   // LES POINTS DE CHANCE, même module que les PV : un compteur qui se dépense
   // et se regagne, et dont le maximum vient de la Chance comme les autres
@@ -5020,25 +5027,7 @@
     return b;
   }
   // ---- 6. Exposition ----
-  // LE GRÉEMENT DES RÉSERVES (vitales.js), mais SIGNÉ :
-  //
-  //     ┌───────────────────────────────┐
-  //     │ EXPOSITION          −30 / ±120 │  ← bandeau : l'identité et la valeur
-  //     ├───────────────────────────────┤
-  //     │ froid ██████|        chaud     │  ← la barre part du MILIEU
-  //     │  [   ±   ]      [Appliquer]    │  ← le geste du jeu
-  //     └───────────────────────────────┘
-  //
-  // Zéro est au centre et la barre y est vide : c'est l'état stable. Elle
-  // pousse vers la gauche quand le personnage a froid, vers la droite quand il
-  // a chaud, aux couleurs du froid et du chaud. Vider la valeur la remet à
-  // zéro. Aucun rouage : la borne se règle dans les Options (Réglages des
-  // capacités), et aucune table du froid ni du chaud n'est affichée.
-  //
-  // CE MODULE A ÉTÉ REFAIT parce que l'ancien lisait une variable qui n'existait
-  // pas dans son rafraîchissement : il levait à chaque passage, se faisait
-  // museler au cinquième (le filet rouge à sa gauche), et ses − et + semblaient
-  // morts puisque plus rien ne se redessinait.
+  // Zéro vide ; chaud depuis la gauche, froid depuis la droite, sur toute la largeur.
   function buildExposition() {
     var box = el("div", "pc-block pc-vital");
     var res = el("div", "pc-vital-res pc-expo-res");
@@ -5062,15 +5051,13 @@
     tete.appendChild(val);
     res.appendChild(tete);
 
-    // la barre : un remplissage qui part du milieu, et le trait du zéro
+    // Même échelle de 0 à 100 % pour chaque sens de remplissage.
     var jauge = el("span", "pc-vital-jauge pc-expo-jauge");
     var fill = el("i");
     jauge.appendChild(fill);
-    jauge.appendChild(el("b", "pc-expo-zero"));
-    for (var palier = 1; palier < 20; palier++) {
-      if (palier === 10) continue;
+    for (var palier = 1; palier < 10; palier++) {
       var trait = el("span", "pc-vital-palier");
-      trait.style.left = (palier * 5) + "%";
+      trait.style.left = (palier * 10) + "%";
       trait.setAttribute("aria-hidden", "true"); jauge.appendChild(trait);
     }
     res.appendChild(jauge);
@@ -5120,10 +5107,14 @@
       mx.title = capForce("expo")
         ? chaineTexteDe(lireCap("max", "expo"), "calculé", expoMaxAuto())
         : provenanceCap("expo")();
-      var part = m > 0 ? clamp(Math.abs(v) / m, 0, 1) * 50 : 0;
+      var part = m > 0 ? clamp(Math.abs(v) / m, 0, 1) * 100 : 0;
       fill.className = v < 0 ? "froid" : v > 0 ? "chaud" : "";
-      fill.style.left = (v < 0 ? 50 - part : 50) + "%";
+      fill.style.left = (v < 0 ? 100 - part : 0) + "%";
       fill.style.width = part + "%";
+      jauge.querySelectorAll(".pc-vital-palier").forEach(function (trait) {
+        var position = parseFloat(trait.style.left);
+        trait.classList.toggle("plein", part > 0 && (v < 0 ? position >= 100 - part : position <= part));
+      });
       var z = zoneIdeale();
       // le VRAI moins, comme au livre : « −5 à 7 »
       function deg(n) { return fmtP(n).replace("-", "−"); }
@@ -6145,7 +6136,7 @@
 
     var grille = el("div", "pc-eff-grille"), vues = [];
     [["pr", "Repos"], ["expo", "Exposition"], ["ps", "Satiété"],
-     ["ph", "Hydratation"], ["alcool", "Alcool"], ["total", "Total"]].forEach(function (d) {
+     ["ph", "Hydratation"], ["pi", "Innocence"], ["alcool", "Alcool"], ["total", "Total"]].forEach(function (d) {
       var cle = d[0], nom = d[1];
       var carte = el("div", "pc-eff-partie"); carte.dataset.effPartie = cle;
       var titre = el("div", "pc-eff-partie-titre");
@@ -6157,11 +6148,11 @@
         var boite = el("label", "pc-eff-champ");
         boite.appendChild(el("span", null, label));
         var inp = champNombreSigne(el("input", "pc-eff-valeur"));
-        inp.setAttribute("aria-label", nom + " — " + (label === "Effets" ? "Après effets" : label)); inp.title = aide;
+        inp.setAttribute("aria-label", nom + " — " + label); inp.title = aide;
         inp.readOnly = !!lecture; boite.appendChild(inp); champs.appendChild(boite); return inp;
       }
-      var base = champ("Base", cle === "alcool" ? "Niveaux d’alcool réels. Un niveau disparaît toutes les 2 heures." : "Niveau réel avant effets et ajustements.", cle !== "alcool");
-      var apres = champ("Effets", "Niveau après effets. Modifier cette valeur règle l’écart à la base ; vider retire ce réglage.", false);
+      var base = champ("Base", cle === "alcool" ? "Niveaux d’alcool réels. Un niveau disparaît toutes les 2 heures." : cle === "pi" ? "Niveau d’effondrement lié à l’innocence, réglé manuellement." : "Niveau réel avant effets et ajustements.", cle !== "alcool" && cle !== "pi");
+      var apres = champ("Effets", "Bonus ou malus d’effondrement dû aux effets. Vide = aucun ajustement manuel.", false);
       var mod = champ("±", "Ajustement manuel supplémentaire, positif ou négatif. Il ne change pas le niveau réel.", false);
       mod.placeholder = "±";
       function entree(inp, fn) {
@@ -6180,10 +6171,11 @@
         if (!state.effParties[cle]) state.effParties[cle] = { effet: 0, mod: 0 };
         return state.effParties[cle];
       }
+      if (cle === "pi") entree(base, function (n) { reglage().base = Math.max(0, n || 0); });
       entree(apres, function (n) {
-        // Un effet est un écart, pas un forçage : il continue de suivre sa réserve.
-        var courant = effApresEffets(cle), ancien = num(reglage().effet, 0);
-        reglage().effet = n === null ? 0 : clamp(ancien + Math.max(0, n) - courant, -999, 999);
+        var baseEffet = cle === "total" ? EFF_PARTIES.reduce(function (t, k) { return t + effPartie(k); }, 0) : effBasePartie(cle);
+        var effetExterne = pub("effondrementPartie", baseEffet + num(reglage().effet, 0), { cle: cle, base: baseEffet }) - baseEffet - num(reglage().effet, 0);
+        reglage().effet = n === null ? 0 : clamp(n - effetExterne, -999, 999);
       });
       entree(mod, function (n) {
         if (cle === "total") state.effAutre = n || 0;
@@ -6201,20 +6193,22 @@
         var niveau = cle === "total" ? effondrement() : effPartie(cle);
         var mod = cle === "total" ? num(state.effAutre, 0) : num(effReglage(cle).mod, 0);
         if (document.activeElement !== v.base) v.base.value = brut;
-        if (document.activeElement !== v.apres) v.apres.value = apres;
+        var baseEffet = cle === "total" ? EFF_PARTIES.reduce(function (t, k) { return t + effPartie(k); }, 0) : brut;
+        var ecartEffet = pub("effondrementPartie", baseEffet + num(effReglage(cle).effet, 0), { cle: cle, base: baseEffet }) - baseEffet;
+        if (document.activeElement !== v.apres) v.apres.value = ecartEffet ? sign(ecartEffet).replace("−", "-") : "0";
         if (document.activeElement !== v.mod) v.mod.value = mod ? sign(mod).replace("−", "-") : "";
         v.total.textContent = String(niveau);
         if (cle === "alcool") {
-          v.effets.textContent = niveau ? "Ivresse : " + niveau + " niveau" + (niveau > 1 ? "x" : "") : "Aucune ivresse";
+          v.effets.textContent = "";
           var restant = Math.max(0, 7200 - num(state.effAlcoolSecondes, 0));
           var minutes = Math.ceil(restant / 60);
-          v.horloge.textContent = brut > 0 ? "−1 niveau dans " + Math.floor(minutes / 60) + " h " + (minutes % 60 ? (minutes % 60) + " min" : "") : "";
+          v.horloge.textContent = brut > 0 ? "−1 · " + Math.floor(minutes / 60) + " h " + (minutes % 60 ? (minutes % 60) + " min" : "") : "";
         } else {
           v.effets.textContent = "";
           if (niveau) {
-            v.effets.appendChild(el("span", null, "PV max −" + clamp(niveau * num(effDef().pvParNiveau, 0), 0, 100) + " %"));
-            v.effets.appendChild(el("span", null, "PE max −" + clamp(niveau * num(effDef().peParNiveau, 0), 0, 100) + " %"));
-          } else v.effets.textContent = "Aucune réduction";
+            v.effets.appendChild(el("span", null, "PV −" + clamp(niveau * num(effDef().pvParNiveau, 0), 0, 100) + " %"));
+            v.effets.appendChild(el("span", null, "PE −" + clamp(niveau * num(effDef().peParNiveau, 0), 0, 100) + " %"));
+          }
           if (cle === "total" && peMax() <= 0) v.effets.appendChild(el("span", null, "Inconscient"));
         }
       });
@@ -10189,6 +10183,7 @@
     { id: "effort",       titre: "EFFORT ET TEMPS",  onglet: "fiche", colonne: "gauche", build: buildEffort },
     { id: "survie",       titre: "SURVIE",           onglet: "fiche", colonne: "gauche", build: buildSurvie },
     { id: "exposition",   titre: "EXPOSITION",       onglet: "fiche", colonne: "gauche", build: buildExposition },
+    { id: "pi",           titre: "INNOCENCE",        onglet: "fiche", colonne: "gauche", build: buildPi },
     // TROIS RÉSERVES, TROIS MODULES : même forme, mais on ne les lit pas au
     // même moment, et elles se déplacent — ou se coupent — l'une sans l'autre.
     { id: "pv",           titre: "PV",               onglet: "fiche", colonne: "milieu", build: buildPv },
@@ -10196,7 +10191,6 @@
     { id: "pm",           titre: "PM",               onglet: "fiche", colonne: "milieu", build: buildPm },
     { id: "mouvement",    titre: "MOUVEMENT",        onglet: "fiche", colonne: "milieu", build: buildMouvement },
     { id: "effondrement", titre: "EFFONDREMENT",     onglet: "fiche", colonne: "milieu", build: buildEffondrement },
-    { id: "pi",           titre: "PI",               onglet: "fiche", colonne: "milieu", build: buildPi },
     { id: "pc",           titre: "PC",               onglet: "fiche", colonne: "milieu", build: buildPc },
     { id: "contenance",   titre: "CONTENANCE",       onglet: "fiche", colonne: "milieu", build: buildContenance },
     { id: "desaction",    titre: "ACTIONS",          onglet: "fiche", colonne: "droite", build: buildDesAction },
