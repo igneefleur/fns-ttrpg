@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "3.16.0b";
+  var RELEASE = "3.17.0b";
   var SCHEMA = 16;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -135,6 +135,18 @@
     if (cls) e.className = cls;
     if (txt != null) e.textContent = txt;
     return e;
+  }
+  // Les champs signés acceptent +20, 20, -20, la virgule et le moins typographique.
+  // Un input number efface +20 dans certains navigateurs avant l'événement input.
+  function champNombreSigne(i) {
+    i.type = "text";
+    i.inputMode = "decimal";
+    i.setAttribute("data-nombre-signe", "1");
+    return i;
+  }
+  function litNombreSigne(v) {
+    var s = String(v == null ? "" : v).trim().replace(/−/g, "-").replace(",", ".");
+    return /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(s) ? Number(s) : NaN;
   }
   // URL du jeu de données. Une ARCHIVE de version embarque son propre
   // owd-creation.json, gelé à sa date : l'amorce le désigne par
@@ -390,12 +402,16 @@
       // Les niveaux d'effondrement que le JOUEUR ajoute à ceux des réserves
       // (ligne « Autre » du module) : ce que la fiche ne sait pas compter.
       effAutre: 0,
+      effAlcool: 0,
+      effAlcoolSecondes: 0,
+      effParties: {},
 
       // ---- les dés d'action ----
       // La taille de chaque dé d'action, dans l'ordre du module Actions : 4, 6,
       // 8, 10 ou 12. Vide au départ — un dé sans taille posée prend celle des
       // règles (le d8).
       desTailles: [],
+      desUtilises: {},
 
       // ---- ce que le personnage porte à l'instant ----
       // null = « au maximum » : la valeur SUIT le maximum quand il bouge, ce
@@ -636,7 +652,20 @@
       s.qualiteSommeil = b.qualiteSommeil;
     s.allure = String(s.allure == null ? "" : s.allure) || b.allure;
     s.allureCran = clamp(num(s.allureCran, 1), 1, 99);
-    s.effAutre = clamp(Math.round(num(s.effAutre, 0)), 0, 99);
+    s.effAutre = clamp(Math.round(num(s.effAutre, 0)), -999, 999);
+    s.effAlcool = clamp(Math.round(num(s.effAlcool, 0)), 0, 999);
+    s.effAlcoolSecondes = s.effAlcool > 0 ? clamp(num(s.effAlcoolSecondes, 0), 0, 7199) : 0;
+    if (!s.effParties || typeof s.effParties !== "object" || Array.isArray(s.effParties)) s.effParties = {};
+    ["pr", "expo", "ps", "ph", "alcool", "total"].forEach(function (k) {
+      var d = s.effParties[k];
+      if (!d || typeof d !== "object" || Array.isArray(d)) d = {};
+      s.effParties[k] = { effet: clamp(num(d.effet, 0), -999, 999), mod: clamp(num(d.mod, 0), -999, 999) };
+    });
+    var desUtilises = s.desUtilises;
+    s.desUtilises = {};
+    if (desUtilises && typeof desUtilises === "object") Object.keys(desUtilises).forEach(function (k) {
+      if (/^(?:0|[1-9]\d?)$/.test(k) && Number(k) < 99 && desUtilises[k] === true) s.desUtilises[k] = true;
+    });
     s.desTailles = Array.isArray(s.desTailles)
       ? s.desTailles.slice(0, 99).map(function (t) {
           t = num(t, 0);
@@ -1215,7 +1244,7 @@
   var FILTRES_CONNUS = {
     caracTotal: 1, compBonus: 1, compDes: 1, compXp: 1,
     pvMax: 1, peMax: 1, pmMax: 1, piMax: 1, prMax: 1, psMax: 1, phMax: 1, pcMax: 1,
-    charge: 1, accesRapides: 1, contenance: 1, expoMax: 1, effondrement: 1,
+    charge: 1, accesRapides: 1, contenance: 1, expoMax: 1, effondrement: 1, effondrementPartie: 1,
     poidsPorte: 1, desAction: 1, ruptureMax: 1, xpDepense: 1
   };
   function ajouteFiltre(nom, fn, prop) {
@@ -1535,11 +1564,25 @@
     if (perte <= 0) return 0;
     return Math.floor(perte / effTranche());
   }
+  var EFF_PARTIES = ["pr", "expo", "ps", "ph", "alcool"];
+  function effReglage(cle) {
+    return (state.effParties || {})[cle] || { effet: 0, mod: 0 };
+  }
+  function effBasePartie(cle) {
+    if (cle === "alcool") return Math.max(0, num(state.effAlcool, 0));
+    if (cle === "total") return EFF_PARTIES.reduce(function (t, k) { return t + effBasePartie(k); }, 0);
+    return effReserves().indexOf(cle) >= 0 ? effNiveauDe(cle) : 0;
+  }
+  function effApresEffets(cle) {
+    var base = cle === "total" ? EFF_PARTIES.reduce(function (t, k) { return t + effPartie(k); }, 0) : effBasePartie(cle);
+    return Math.max(0, Math.floor(pub("effondrementPartie", base + num(effReglage(cle).effet, 0), { cle: cle, base: base })));
+  }
+  function effPartie(cle) {
+    var mod = cle === "total" ? num(state.effAutre, 0) : num(effReglage(cle).mod, 0);
+    return Math.max(0, effApresEffets(cle) + mod);
+  }
   function effondrementAuto() {
-    var t = 0;
-    effReserves().forEach(function (cle) { t += effNiveauDe(cle); });
-    t += Math.max(0, num(state.effAutre, 0));
-    return clamp(Math.floor(t), 0, effPlafond());
+    return clamp(effPartie("total"), 0, effPlafond());
   }
   // Le seul levier qui joue sur un NIVEAU et non sur des points : le MJ y pose
   // l'effondrement que les quatre réserves ne savent pas dire.
@@ -2393,6 +2436,8 @@
       horloge: copieTemps(horlogeCourante()),
       horlogeDigestion: copieTemps(horlogeProcessus("horlogeDigestion")),
       horlogeExposition: copieTemps(horlogeProcessus("horlogeExposition", "")),
+      effAlcool: state.effAlcool,
+      effAlcoolSecondes: state.effAlcoolSecondes,
       recuperation: copieTemps(recupCoffre(false)) || {}
     };
     TEMPS_CLES.forEach(function (k) { o[k] = state.etat[k]; });
@@ -2404,6 +2449,8 @@
     state.horloge = copieTemps(o.horloge) || { jours: 0, heures: 0, minutes: 0, secondes: 0 };
     state.horlogeDigestion = copieTemps(o.horlogeDigestion) || { jours: 0, heures: 0, minutes: 0, secondes: 0 };
     state.horlogeExposition = copieTemps(o.horlogeExposition) || { jours: 0, heures: 0, minutes: 0, secondes: 0, regime: "" };
+    state.effAlcool = num(o.effAlcool, 0);
+    state.effAlcoolSecondes = num(o.effAlcoolSecondes, 0);
     if (!state.modData || typeof state.modData !== "object" || Array.isArray(state.modData)) state.modData = {};
     if (o.recuperation && Object.keys(o.recuperation).length) state.modData.recuperation = copieTemps(o.recuperation);
     else delete state.modData.recuperation;
@@ -2417,6 +2464,12 @@
   // cadences natives et toutes les durées proposées au module Récupération en
   // sont des multiples, ce qui rend le calcul exact sans fractions de temps.
   var PAS_TEMPS_SECONDES = 3;
+  function avanceAlcoolSecondes(secondes) {
+    if (!(state.effAlcool > 0)) { state.effAlcoolSecondes = 0; return; }
+    var t = num(state.effAlcoolSecondes, 0) + secondes;
+    state.effAlcool = Math.max(0, state.effAlcool - Math.floor(t / 7200));
+    state.effAlcoolSecondes = state.effAlcool > 0 ? t % 7200 : 0;
+  }
   function avancerSecondesCalcul(secondes) {
     var t = tempsDef(), e = effortDe(state.effort), restant, pas;
     if (!t || !e) return 0;
@@ -2426,6 +2479,7 @@
       pas = Math.min(PAS_TEMPS_SECONDES, restant);
       recupAppliquePas(pas, 1);
       appliqueClimatSecondes(pas, 1);
+      avanceAlcoolSecondes(pas);
       bougeHorloge(pas);
       restant -= pas;
     }
@@ -2932,11 +2986,11 @@
     w.appendChild(stepBtn("−", title ? "− " + step + (title === true ? "" : " (" + title + ")") : null,
       function () { set(get() - step); refresh(); }));
     var i = el("input", "pc-num");
-    i.type = "number";
+    champNombreSigne(i);
     i.step = String(step);
     i.value = get();
     i.addEventListener("input", function () {
-      var v = parseFloat(String(i.value).replace(",", "."));
+      var v = litNombreSigne(i.value);
       if (isFinite(v)) { set(v); refresh(); }
     });
     (reg || hooks).push(function () { if (document.activeElement !== i) i.value = get(); });
@@ -2982,10 +3036,10 @@
     var c = caseVide(hote, "reglable");
     var t = el("span", "v pc-jeu-only", "");
     var i = el("input", "v pc-edit-only pc-case-champ pc-edit-field");
-    i.type = "number"; i.step = "1";
+    champNombreSigne(i); i.step = "1";
     i.title = aide;
     i.addEventListener("input", function () {
-      var v = parseInt(i.value, 10);
+      var v = Math.trunc(litNombreSigne(i.value));
       if (isFinite(v)) { ecrire(v); refresh(); }
     });
     (reg || hooks).push(function () {
@@ -3021,10 +3075,10 @@
   function champForceBoite(nomTable, levier, cle, auto, titre, reg) {
     var lire = lireTable(nomTable, levier, cle);
     var inp = el("input", "force");
-    inp.type = "number"; inp.step = "any";
+    champNombreSigne(inp); inp.step = "any";
     inp.title = titre || "Vide = valeur calculée ; une valeur la force.";
     inp.addEventListener("input", function () {
-      var v = parseFloat(String(inp.value).replace(",", "."));
+      var v = litNombreSigne(inp.value);
       ecrireBoite(nomTable, levier, "force", cle,
                   isFinite(v) ? clamp(Math.round(v * 100) / 100, -99999, 99999) : undefined);
       refresh();
@@ -3047,11 +3101,11 @@
       var boite = MMOD_BOITES[i];
       var lire = lireTable(nomTable, levier, cle);
       var inp = el("input", "pc-mmod");
-      inp.type = "number"; inp.step = "any"; inp.placeholder = "0";
+      champNombreSigne(inp); inp.step = "any"; inp.placeholder = "0";
       inp.title = "Bonus ou malus divers (" + MMOD_SLOTS[i] + ") — emplacement " +
                   (i + 1) + " sur " + MMOD_SLOTS.length + " ; les modificateurs s'additionnent.";
       inp.addEventListener("input", function () {
-        var n = parseFloat(String(inp.value).replace(",", "."));
+        var n = litNombreSigne(inp.value);
         ecrireBoite(nomTable, levier, boite, cle,
                     isFinite(n) && n !== 0 ? clamp(Math.round(n * 100) / 100, -9999, 9999) : undefined);
         inp.classList.toggle("neg", n < 0);
@@ -3077,14 +3131,14 @@
     }
     for (var i = 0; i < MMOD_SLOTS.length; i++) (function (i) {
       var inp = el("input", "pc-mmod");
-      inp.type = "number"; inp.step = "any"; inp.placeholder = "0";
+      champNombreSigne(inp); inp.step = "any"; inp.placeholder = "0";
       inp.title = "Bonus ou malus divers (" + MMOD_SLOTS[i] + ") — emplacement " +
                   (i + 1) + " sur " + MMOD_SLOTS.length + " ; les modificateurs s'additionnent.";
       var v0 = map[key] ? map[key][i] : 0;
       inp.value = v0 ? v0 : "";
       inp.classList.toggle("neg", v0 < 0);
       inp.addEventListener("input", function () {
-        var n = parseFloat(String(inp.value).replace(",", "."));
+        var n = litNombreSigne(inp.value);
         arr()[i] = isFinite(n) ? clamp(Math.round(n * 100) / 100, -9999, 9999) : 0;
         inp.classList.toggle("neg", arr()[i] < 0);
         refresh();
@@ -4042,7 +4096,7 @@
         pvMax: pvMax, peMax: peMax, pmMax: pmMax, piMax: piMax,
         prMax: prMax, psMax: psMax, phMax: phMax,
         charge: charge, accesRapides: accesRapides, contenance: contenance,
-        expoMax: expoMax, effondrement: effondrement,
+        expoMax: expoMax, effondrement: effondrement, effBasePartie: effBasePartie, effApresEffets: effApresEffets, effPartie: effPartie,
         poidsPorte: poidsPorte, desAction: desAction, ruptureMax: ruptureMax,
         xpDepense: xpDepense, courant: courant, maxDe: maxDe
       },
@@ -4417,9 +4471,9 @@
   // rangée, jamais de cadre segmenté sous le libellé.
   function recupChampNombreModule(lire, ecrire, aide) {
     var i = el("input", "pc-rec-field pc-rec-number");
-    i.type = "number"; i.step = "1"; i.title = aide || "";
+    champNombreSigne(i); i.step = "1"; i.title = aide || "";
     i.addEventListener("input", function () {
-      var v = parseFloat(String(i.value).replace(",", "."));
+      var v = litNombreSigne(i.value);
       if (isFinite(v)) { ecrire(v); refresh(); }
     });
     recupHooks.push(function () { if (document.activeElement !== i) i.value = lire(); });
@@ -4762,11 +4816,11 @@
     function geste(unite, secondesParUnite, etiquette) {
       var cmd = el("div", "pc-segs pc-temps-segs");
       var nb = el("input", "c pc-temps-val");
-      nb.type = "number"; nb.step = "1";
+      champNombreSigne(nb); nb.step = "1";
       nb.placeholder = "±";
       nb.setAttribute("aria-label", etiquette);
       function applique() {
-        var n = parseInt(nb.value, 10);
+        var n = Math.trunc(litNombreSigne(nb.value));
         if (!isFinite(n) || !n) return;
         var sec = avancerSecondes(n * secondesParUnite);
         nb.value = "";
@@ -4850,11 +4904,11 @@
     tete.appendChild(etat);
     var val = el("span", "pc-vital-val");
     var inp = el("input", "pc-vital-num");
-    inp.type = "number";
+    champNombreSigne(inp);
     inp.step = "1";
     inp.setAttribute("aria-label", libCap(cle, nom));
     inp.addEventListener("input", function () {
-      var v = parseFloat(inp.value);
+      var v = litNombreSigne(inp.value);
       state.etat[cle] = isFinite(v) ? Math.round(v * 100) / 100 : null;
       refresh();
     });
@@ -4867,16 +4921,22 @@
     var jauge = el("span", "pc-vital-jauge");
     var fill = el("i");
     jauge.appendChild(fill);
+    for (var palier = 1; palier < 10; palier++) {
+      var trait = el("span", "pc-vital-palier");
+      trait.style.left = (palier * 10) + "%";
+      trait.setAttribute("aria-hidden", "true");
+      jauge.appendChild(trait);
+    }
     box.appendChild(jauge);
 
     var cmd = el("div", "pc-vital-cmd");
     var delta = el("input", "pc-vital-delta");
-    delta.type = "number";
+    champNombreSigne(delta);
     delta.step = "1";
     delta.placeholder = "±";
     delta.setAttribute("aria-label", libCap(cle, nom) + " à ajouter ou retirer");
     function appliqueDelta() {
-      var d = parseFloat(delta.value);
+      var d = litNombreSigne(delta.value);
       if (!isFinite(d) || !d) return;
       state.etat[cle] = Math.round((courant(cle) + d) * 100) / 100;
       delta.value = "";
@@ -4957,20 +5017,6 @@
     [["pr", "Repos"], ["ps", "Satiété"], ["ph", "Hydratation"]].forEach(function (x) {
       b.appendChild(reserveVitale(x[0], provenanceCap(x[0]), x[1]).el);
     });
-    var pied = el("div", "pc-comp-tools pc-vital-pied");
-    var ligne = el("div", "row");
-    ligne.appendChild(chatBtn(
-      function () { return "Survie — " + (state.name || "sans nom"); },
-      function () {
-        return [
-          [abbrCap("pr", "PR"), fmtP(courant("pr")) + " / " + fmtP(prMax())],
-          [abbrCap("ps", "PS"), fmtP(courant("ps")) + " / " + fmtP(psMax())],
-          [abbrCap("ph", "PH"), fmtP(courant("ph")) + " / " + fmtP(phMax())],
-          ["Effondrement", String(effondrement())]
-        ];
-      }));
-    pied.appendChild(ligne);
-    b.appendChild(pied);
     return b;
   }
   // ---- 6. Exposition ----
@@ -5002,11 +5048,11 @@
     tete.appendChild(nom);
     var val = el("span", "pc-vital-val");
     var inp = el("input", "pc-vital-num");
-    inp.type = "number";
+    champNombreSigne(inp);
     inp.step = "1";
     inp.setAttribute("aria-label", "Exposition");
     inp.addEventListener("input", function () {
-      var v = parseFloat(inp.value);
+      var v = litNombreSigne(inp.value);
       state.etat.expo = isFinite(v) ? Math.round(v * 100) / 100 : 0;
       refresh();
     });
@@ -5021,6 +5067,12 @@
     var fill = el("i");
     jauge.appendChild(fill);
     jauge.appendChild(el("b", "pc-expo-zero"));
+    for (var palier = 1; palier < 20; palier++) {
+      if (palier === 10) continue;
+      var trait = el("span", "pc-vital-palier");
+      trait.style.left = (palier * 5) + "%";
+      trait.setAttribute("aria-hidden", "true"); jauge.appendChild(trait);
+    }
     res.appendChild(jauge);
 
     // LA ZONE IDÉALE (en température de l'air, selon l'effort du module
@@ -5037,12 +5089,12 @@
 
     var cmd = el("div", "pc-vital-cmd");
     var delta = el("input", "pc-vital-delta");
-    delta.type = "number";
+    champNombreSigne(delta);
     delta.step = "1";
     delta.placeholder = "±";
     delta.setAttribute("aria-label", "Exposition à ajouter ou retirer");
     function applique() {
-      var d = parseFloat(delta.value);
+      var d = litNombreSigne(delta.value);
       if (!isFinite(d) || !d) return;
       var m = expoMax();
       state.etat.expo = Math.round(clamp(num(state.etat.expo, 0) + d, -m, m) * 100) / 100;
@@ -5149,7 +5201,7 @@
       (attaque ? ["attaques"] : ["protections", "resistances"]).forEach(function (k) {
         var td = el("td"), valeur = el("span", "pc-combat-mod-cell");
         var i = el("input", "pc-num");
-        i.type = "number"; i.step = "any"; i.value = combatMod(k, t);
+        champNombreSigne(i); i.step = "any"; i.value = combatMod(k, t);
         i.setAttribute("aria-label", (k === "attaques" ? "Dégâts" : k === "protections" ? "Protection" : "Résistance") + " " + combatLibType(t));
         i.addEventListener("input", function () {
           var n = Number(i.value);
@@ -5992,7 +6044,7 @@
     return out;
   }
   // Les DÉS D'ACTION que l'allure prend ce round (le coût du cran, à l'allure
-  // lourde) : le module Actions les bloque, de droite à gauche.
+  // lourde). Ce coût est informatif : le joueur gère ses dés dans Actions.
   function desPerdusMouvement() {
     var a = allureCourante();
     if (!a || a.crans.length < 2) return 0;
@@ -6078,85 +6130,99 @@
     });
     return b;
   }
-  // ---- 7. Effondrement ----
-  //     [      EFFONDREMENT      ]
-  //     [  MAX PV  ] [  MAX PE  ]
-  //     REPOS          [0]
-  //     SATIÉTÉ        [0]
-  //     HYDRATATION    [0]
-  //     EXPOSITION     [0]
-  //     AUTRE          [x]   ← saisi par le joueur
-  // Le niveau, puis ce qu'il laisse des deux maximums. La TABLE des dix lignes
-  // du livre n'apparaît nulle part : l'infobulle du niveau décompose ce que
-  // chaque réserve y apporte, et le DOM ne montre que l'état du personnage.
+  // ---- Effondrement : bases réelles, niveaux après effets, ajustements de jeu ----
   function buildEffondrement() {
-    // AUCUN ROUAGE : le module ne montre que l'état du personnage, et la ligne
-    // « Autre » se remplit en jouant. Forcer le niveau se fait dans les Options
-    // (Réglages des capacités, ligne Effondrement).
     var b = block("Effondrement");
-    var tN = bigTile("EFFONDREMENT", function () { return String(effondrement()); });
-    tN.classList.add("pc-eff-niveau");
-    b.appendChild(tN);
     function reste(champ) {
       return 100 - clamp(num(effDef()[champ], 0) * effondrement(), 0, 100);
     }
     var r = el("div", "pc-bigrow pc-bigrow-2");
     var tV = bigTile("MAX PV", function () { return reste("pvParNiveau") + " %"; });
     var tE = bigTile("MAX PE", function () { return reste("peParNiveau") + " %"; });
-    r.appendChild(tV);
-    r.appendChild(tE);
-    b.appendChild(r);
+    r.appendChild(tV); r.appendChild(tE); b.appendChild(r);
+    var tN = bigTile("EFFONDREMENT", function () { return String(effondrement()); });
+    tN.classList.add("pc-eff-niveau"); b.appendChild(tN);
 
-    // LES CAUSES, une ligne par réserve que les règles comptent, dans leur
-    // ordre, puis « Autre », que le joueur remplit. Les noms sont ceux des
-    // bandeaux de Survie.
-    var NOMS = { pr: "Repos", ps: "Satiété", ph: "Hydratation", expo: "Exposition" };
-    var causes = el("div", "pc-eff-causes");
-    var vals = {};
-    effReserves().forEach(function (cle) {
-      var ligne = el("div", "pc-eff-cause");
-      ligne.appendChild(el("span", "k", NOMS[cle] || libCap(cle, cle)));
-      var v = el("span", "v", "");
-      ligne.appendChild(v);
-      vals[cle] = v;
-      causes.appendChild(ligne);
+    var grille = el("div", "pc-eff-grille"), vues = [];
+    [["pr", "Repos"], ["expo", "Exposition"], ["ps", "Satiété"],
+     ["ph", "Hydratation"], ["alcool", "Alcool"], ["total", "Total"]].forEach(function (d) {
+      var cle = d[0], nom = d[1];
+      var carte = el("div", "pc-eff-partie"); carte.dataset.effPartie = cle;
+      var titre = el("div", "pc-eff-partie-titre");
+      titre.appendChild(el("span", null, nom));
+      var total = el("b", "pc-eff-partie-total"); titre.appendChild(total); carte.appendChild(titre);
+      var effets = el("div", "pc-eff-consequences"); carte.appendChild(effets);
+      var champs = el("div", "pc-eff-champs");
+      function champ(label, aide, lecture) {
+        var boite = el("label", "pc-eff-champ");
+        boite.appendChild(el("span", null, label));
+        var inp = champNombreSigne(el("input", "pc-eff-valeur"));
+        inp.setAttribute("aria-label", nom + " — " + (label === "Effets" ? "Après effets" : label)); inp.title = aide;
+        inp.readOnly = !!lecture; boite.appendChild(inp); champs.appendChild(boite); return inp;
+      }
+      var base = champ("Base", cle === "alcool" ? "Niveaux d’alcool réels. Un niveau disparaît toutes les 2 heures." : "Niveau réel avant effets et ajustements.", cle !== "alcool");
+      var apres = champ("Effets", "Niveau après effets. Modifier cette valeur règle l’écart à la base ; vider retire ce réglage.", false);
+      var mod = champ("±", "Ajustement manuel supplémentaire, positif ou négatif. Il ne change pas le niveau réel.", false);
+      mod.placeholder = "±";
+      function entree(inp, fn) {
+        inp.addEventListener("input", function () {
+          var vide = inp.value.trim() === "", n = litNombreSigne(inp.value);
+          if (!vide && (!isFinite(n) || !Number.isInteger(n))) return;
+          fn(vide ? null : clamp(n, -999, 999)); refresh();
+        });
+      }
+      if (cle === "alcool") entree(base, function (n) {
+        var ancien = num(state.effAlcool, 0);
+        state.effAlcool = Math.max(0, n || 0);
+        if (!ancien || !state.effAlcool) state.effAlcoolSecondes = 0;
+      });
+      function reglage() {
+        if (!state.effParties[cle]) state.effParties[cle] = { effet: 0, mod: 0 };
+        return state.effParties[cle];
+      }
+      entree(apres, function (n) {
+        // Un effet est un écart, pas un forçage : il continue de suivre sa réserve.
+        var courant = effApresEffets(cle), ancien = num(reglage().effet, 0);
+        reglage().effet = n === null ? 0 : clamp(ancien + Math.max(0, n) - courant, -999, 999);
+      });
+      entree(mod, function (n) {
+        if (cle === "total") state.effAutre = n || 0;
+        else reglage().mod = n || 0;
+      });
+      carte.appendChild(champs);
+      var horloge = el("div", "pc-eff-horloge");
+      if (cle === "alcool") carte.appendChild(horloge);
+      grille.appendChild(carte); vues.push({ cle: cle, base: base, apres: apres, mod: mod, total: total, effets: effets, horloge: horloge });
     });
-    var autre = el("div", "pc-eff-cause");
-    autre.appendChild(el("span", "k", "Autre"));
-    var inp = el("input", "v");
-    inp.type = "number"; inp.min = "0"; inp.step = "1";
-    inp.setAttribute("aria-label", "Autre effondrement");
-    inp.addEventListener("input", function () {
-      var n = parseInt(inp.value, 10);
-      state.effAutre = isFinite(n) ? clamp(n, 0, 99) : 0;
-      refresh();
-    });
-    autre.appendChild(inp);
-    causes.appendChild(autre);
-    b.appendChild(causes);
-
+    b.appendChild(grille);
     hooks.push(function () {
-      var parts = [], somme = 0;
-      effReserves().forEach(function (cle) {
-        var n = effNiveauDe(cle);
-        somme += n;
-        parts.push(libCap(cle, cle).toLowerCase() + " " + n);
-        if (vals[cle]) {
-          vals[cle].textContent = String(n);
-          vals[cle].classList.toggle("zero", !n);
+      vues.forEach(function (v) {
+        var cle = v.cle, brut = effBasePartie(cle), apres = effApresEffets(cle);
+        var niveau = cle === "total" ? effondrement() : effPartie(cle);
+        var mod = cle === "total" ? num(state.effAutre, 0) : num(effReglage(cle).mod, 0);
+        if (document.activeElement !== v.base) v.base.value = brut;
+        if (document.activeElement !== v.apres) v.apres.value = apres;
+        if (document.activeElement !== v.mod) v.mod.value = mod ? sign(mod).replace("−", "-") : "";
+        v.total.textContent = String(niveau);
+        if (cle === "alcool") {
+          v.effets.textContent = niveau ? "Ivresse : " + niveau + " niveau" + (niveau > 1 ? "x" : "") : "Aucune ivresse";
+          var restant = Math.max(0, 7200 - num(state.effAlcoolSecondes, 0));
+          var minutes = Math.ceil(restant / 60);
+          v.horloge.textContent = brut > 0 ? "−1 niveau dans " + Math.floor(minutes / 60) + " h " + (minutes % 60 ? (minutes % 60) + " min" : "") : "";
+        } else {
+          v.effets.textContent = "";
+          if (niveau) {
+            v.effets.appendChild(el("span", null, "PV max −" + clamp(niveau * num(effDef().pvParNiveau, 0), 0, 100) + " %"));
+            v.effets.appendChild(el("span", null, "PE max −" + clamp(niveau * num(effDef().peParNiveau, 0), 0, 100) + " %"));
+          } else v.effets.textContent = "Aucune réduction";
+          if (cle === "total" && peMax() <= 0) v.effets.appendChild(el("span", null, "Inconscient"));
         }
       });
-      var a = Math.max(0, num(state.effAutre, 0));
-      if (a) { somme += a; parts.push("autre " + a); }
-      if (document.activeElement !== inp) inp.value = a;
       var e = effondrement();
-      tN.classList.toggle("adj", e > 0);
-      tV.classList.toggle("adj", e > 0);
-      tE.classList.toggle("adj", e > 0);
+      [tN, tV, tE].forEach(function (t) { t.classList.toggle("adj", e > 0); });
       tN.title = capForce("effondrement")
         ? chaineTexteDe(lireCap("max", "effondrement"), "calculé", effondrementAuto())
-        : parts.join(" · ") + " = " + fmtP(somme) +
-          (somme > effPlafond() ? ", plafonné à " + effPlafond() : "");
+        : "Somme après effets et ajustements : " + effPartie("total") + " ; plafond " + effPlafond();
     });
     return b;
   }
@@ -6194,12 +6260,12 @@
 
     var cmd = el("div", "pc-vital-cmd pc-temps");
     var delta = el("input", "pc-vital-delta");
-    delta.type = "number";
+    champNombreSigne(delta);
     delta.step = "1";
     delta.placeholder = "±";
     delta.setAttribute("aria-label", "Contenance à ajouter ou retirer");
     function applique() {
-      var d = parseFloat(delta.value);
+      var d = litNombreSigne(delta.value);
       if (!isFinite(d) || !d) return;
       state.etat.contenance = Math.max(0, Math.round((contenancePrise() + d) * 100) / 100);
       if (!(state.etat.contenance > 0)) reinitialiseHorlogeDigestion();
@@ -6272,10 +6338,9 @@
     var rangee = el("div", "pc-desaction");
     b.appendChild(rangee);
     var choisis = [];
-    // LES DÉS UTILISÉS : envoyés, ils restent inaccessibles jusqu'à ce qu'on
-    // les RÉCUPÈRE. Ce n'est pas le blocage du mouvement (« perdu ») : les deux
-    // se voient différemment.
-    var utilises = [];
+    // Les dés utilisés font partie de l’état sauvegardé, même après remontage ou synchronisation.
+    function utilise(i) { return (state.desUtilises || [])[i] === true; }
+    function poseUtilise(i, v) { if (v) state.desUtilises[i] = true; else delete state.desUtilises[i]; }
     var cases = [];
     var nuitVue = null;
 
@@ -6327,18 +6392,29 @@
       rangee.innerHTML = "";
       cases = [];
       choisis = choisis.slice(0, n);
-      utilises = utilises.slice(0, n);
+
       for (var i = 0; i < n; i++) (function (i) {
         var col = el("div", "pc-desaction-de");
         var pose = el("button", "pc-desaction-pose");
         pose.type = "button";
         pose.addEventListener("click", function () {
-          if (col.classList.contains("perdu") || utilises[i]) return;
+          if (utilise(i)) return;
           choisis[i] = !choisis[i];
           col.classList.toggle("on", !!choisis[i]);
           majBoutons();
         });
-        col.appendChild(pose);
+        var cadre = el("div", "pc-desaction-case");
+        cadre.appendChild(pose);
+        var bascule = el("button", "pc-desaction-bascule");
+        bascule.type = "button";
+        bascule.addEventListener("click", function (e) {
+          e.stopPropagation();
+          poseUtilise(i, !utilise(i));
+          choisis[i] = false;
+          refresh();
+        });
+        cadre.appendChild(bascule);
+        col.appendChild(cadre);
         var taille = el("div", "pc-desaction-taille");
         var moins = el("button", "pc-desaction-pas pc-edit-only", "−");
         moins.type = "button";
@@ -6352,16 +6428,17 @@
         taille.appendChild(plus);
         col.appendChild(taille);
         col.classList.toggle("on", !!choisis[i]);
-        col.classList.toggle("utilise", !!utilises[i]);
+        col.classList.toggle("utilise", utilise(i));
         rangee.appendChild(col);
-        cases.push({ col: col, pose: pose, nom: nom, moins: moins, plus: plus });
+        cases.push({ col: col, pose: pose, nom: nom, moins: moins, plus: plus, bascule: bascule });
         scene(i);
       })(i);
+      marqueUtilises();
     }
 
     var envoi = miniBtn("Envoyer", "Lancer les dés sélectionnés", function () {
       var tailles = [];
-      cases.forEach(function (c, i) { if (choisis[i]) tailles.push(desTaille(i)); });
+      cases.forEach(function (c, i) { if (choisis[i] && !utilise(i)) tailles.push(desTaille(i)); });
       if (!tailles.length) return;
       var cmd = "&{template:default}{{name=OWD Action Dice}}{{rolls=" +
                 tailles.map(function (t) { return "[[1d" + t + "]]"; }).join("") + "}}";
@@ -6372,21 +6449,20 @@
       }
       // ce qui vient d'être lancé est UTILISÉ jusqu'à « Récupérer »
       cases.forEach(function (c, i) {
-        if (choisis[i]) { utilises[i] = true; c.col.classList.add("utilise"); }
+        if (choisis[i]) poseUtilise(i, true);
         c.col.classList.remove("on");
       });
       choisis = [];
-      majBoutons();
+      refresh();
     }, "pc-desaction-envoi");
     var recup = miniBtn("Récupérer", "Rendre les dés utilisés", function () {
-      utilises = [];
-      cases.forEach(function (c) { c.col.classList.remove("utilise"); });
-      majBoutons();
+      state.desUtilises = {};
+      refresh();
     }, "pc-desaction-envoi");
     // ENVOYER ne part qu'avec un dé choisi, RÉCUPÉRER qu'avec un dé utilisé
     function majBoutons() {
-      envoi.disabled = !choisis.some(function (x, i) { return x && i < cases.length; });
-      recup.disabled = !utilises.some(function (x, i) { return x && i < cases.length; });
+      envoi.disabled = !choisis.some(function (x, i) { return x && i < cases.length && !utilise(i); });
+      recup.disabled = !cases.some(function (c, i) { return utilise(i); });
     }
     var gestes = el("div", "pc-desaction-gestes");
     gestes.appendChild(envoi);
@@ -6407,17 +6483,18 @@
       guet.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
       remontageNettoyage.push(function () { guet.disconnect(); });
     }
-    // LES DÉS PERDUS au mouvement (foncer coûte des dés d'action) : les
-    // derniers de la rangée, de droite à gauche, grisés et hachurés, et qu'on
-    // ne peut plus choisir. Un dé choisi qui se perd est désélectionné.
-    function marquePerdus() {
-      var perdus = Math.min(cases.length, desPerdusMouvement());
+    function marqueUtilises() {
       cases.forEach(function (c, i) {
-        var p = i >= cases.length - perdus;
-        c.col.classList.toggle("perdu", p);
-        c.pose.disabled = p;
-        c.pose.title = p ? "Dé d'action pris par le mouvement" : "";
-        if (p && choisis[i]) { choisis[i] = false; c.col.classList.remove("on"); }
+        var u = utilise(i);
+        if (u) choisis[i] = false;
+        c.col.classList.toggle("utilise", u);
+        c.col.classList.toggle("on", !u && !!choisis[i]);
+        c.pose.disabled = u;
+        c.pose.title = u ? "Dé consommé — récupérer avec le bouton dans la case" : "Sélectionner ce dé";
+        c.pose.setAttribute("aria-pressed", String(!u && !!choisis[i]));
+        c.bascule.textContent = u ? "↶" : "−";
+        c.bascule.title = u ? "Récupérer ce dé" : "Consommer temporairement ce dé";
+        c.bascule.setAttribute("aria-label", (u ? "Récupérer" : "Consommer") + " le dé " + (i + 1));
       });
       majBoutons();
     }
@@ -6430,7 +6507,7 @@
         nuitVue = nuit;
         bati();
       }
-      marquePerdus();
+      marqueUtilises();
     });
     return b;
   }
@@ -8797,10 +8874,10 @@
   // réglage.
   function champModVal(lire, ecrire, borne, titre, reg) {
     var inp = el("input", "pc-num modif");
-    inp.type = "number"; inp.step = String(MOD_PAS);
+    champNombreSigne(inp); inp.step = String(MOD_PAS);
     inp.title = titre;
     inp.addEventListener("input", function () {
-      var v = parseFloat(String(inp.value).replace(",", "."));
+      var v = litNombreSigne(inp.value);
       ecrire(isFinite(v) ? clamp(Math.round(v * 100) / 100, -borne, borne) : 0);
       refresh();
     });
@@ -8817,10 +8894,10 @@
   // Un champ de FORÇAGE : vide = valeur calculée (undefined, distinct de 0).
   function champForceVal(lire, ecrire, auto, titre, reg) {
     var inp = el("input", "force");
-    inp.type = "number"; inp.step = "any";
+    champNombreSigne(inp); inp.step = "any";
     inp.title = titre;
     inp.addEventListener("input", function () {
-      var v = parseFloat(String(inp.value).replace(",", "."));
+      var v = litNombreSigne(inp.value);
       ecrire(isFinite(v) ? clamp(Math.round(v * 100) / 100, -99999, 99999) : undefined);
       refresh();
     });
@@ -8843,10 +8920,10 @@
   // tranquille. Son pas est libre, des flèches de 1 en 1 sautant de ×1 à ×6.
   function champMultVal(lire, ecrire, titre, reg) {
     var inp = el("input", "pc-num modif mult");
-    inp.type = "number"; inp.step = "any";
+    champNombreSigne(inp); inp.step = "any";
     inp.title = titre;
     inp.addEventListener("input", function () {
-      var v = parseFloat(String(inp.value).replace(",", "."));
+      var v = litNombreSigne(inp.value);
       ecrire(isFinite(v) ? clamp(Math.round(v * 100) / 100, -MULT_BORNE, MULT_BORNE) : undefined);
       refresh();
     });
@@ -10463,7 +10540,7 @@
       pvMax: pvMax, peMax: peMax, pmMax: pmMax, piMax: piMax,
       prMax: prMax, psMax: psMax, phMax: phMax,
       charge: charge, accesRapides: accesRapides, contenance: contenance,
-      expoMax: expoMax, effondrement: effondrement, effNiveauDe: effNiveauDe,
+      expoMax: expoMax, effondrement: effondrement, effBasePartie: effBasePartie, effApresEffets: effApresEffets, effPartie: effPartie, effNiveauDe: effNiveauDe,
       poidsPorte: poidsPorte, accesPris: accesPris, contenancePrise: contenancePrise,
       desAction: desAction, ruptureMax: ruptureMax, ruptureDepense: ruptureDepense,
       xpDepense: xpDepense, courant: courant, maxDe: maxDe, autoDe: autoDe,
