@@ -12,7 +12,7 @@
     [["pr", "Repos"], ["pi", "Innocence"], ["froid", "Froid"], ["chaud", "Chaud"],
      ["ps", "Satiété"], ["ph", "Hydratation"], ["alcool", "Alcool"], ["autre", "Autre"]].forEach(function (d) {
       var cle = d[0], nom = d[1];
-      var abrege = { pi: "Innoc.", ph: "Hydrat." }[cle] || nom;
+      var abrege = { pr: "PR", pi: "PI", ps: "PS", ph: "PH" }[cle] || nom;
       var carte = el("div", "pc-eff-partie t-" + cle); carte.dataset.effPartie = cle;
       var tete = el("div", "pc-eff-tete");
       var titre = el("span", "k", abrege); titre.title = nom; tete.appendChild(titre);
@@ -22,15 +22,14 @@
       var jauge = el("span", "pc-vital-jauge"), fill = el("i");
       jauge.appendChild(fill); carte.appendChild(jauge);
       var champs = el("div", "pc-segs pc-eff-champs");
-      ["Base", "Effet", "Autre"].forEach(function (label) { champs.appendChild(el("span", "c pc-eff-legende", label)); });
       function lecture(label) {
         var champ = champNombreSigne(el("input", "c pc-eff-valeur"));
         champ.readOnly = true; champ.setAttribute("aria-label", nom + " — " + label);
         champs.appendChild(champ); return champ;
       }
       var base = lecture("Base"), effets = lecture("Effet");
-      base.title = "Niveau calculé depuis la réserve ou l’état du personnage.";
-      effets.title = "Bonus/malus des effets ; lecture seule.";
+      base.title = "Base : niveau calculé depuis la réserve ou l’état du personnage.";
+      effets.title = "Effet : bonus/malus des effets ; lecture seule.";
       var mod = champNombreSigne(el("input", "c pc-eff-delta"));
       mod.placeholder = "±"; mod.setAttribute("aria-label", nom + " — ±");
       mod.addEventListener("input", function () {

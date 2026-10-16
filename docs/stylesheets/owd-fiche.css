@@ -2136,10 +2136,11 @@ html.night .t-pi { --palier-plein: #30343b; }
 .pc-eff-partie-total { font-size: calc(var(--fs-value) * 1.85); font-weight: 800; line-height: 1; color: var(--ink); font-variant-numeric: tabular-nums; }
 .pc-eff-champs.pc-segs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; border: 0; border-radius: 0; }
 .pc-eff-champs.pc-segs > .c { width: 100%; min-width: 0; height: 1.2rem; padding: 0; cursor: default; }
-.pc-eff-champs.pc-segs > .pc-eff-legende { height: .85rem; font-size: .4rem; font-weight: 700; letter-spacing: 0; }
 .pc-eff-champs.pc-segs > .c:nth-child(3n+1) { box-shadow: none; }
 .pc-eff-champs.pc-segs > input { display: block; box-sizing: border-box; border: 0; outline: 0; border-radius: 0; background: transparent; color: var(--ink-2); font: inherit; font-size: .6rem; font-weight: 700; text-align: center; }
-.pc-eff-champs.pc-segs > .c:hover { background: transparent; }
+.pc-eff-champs.pc-segs > input[readonly],
+.pc-eff-champs.pc-segs > input[readonly]:hover,
+.pc-eff-champs.pc-segs > input[readonly]:focus { background: transparent; color: var(--ink-2); cursor: default; transform: none; transition: none; }
 .pc-eff-champs.pc-segs > input.pc-eff-delta { background: var(--card); color: var(--ink); cursor: text; font-size: .7rem; }
 .pc-eff-delta::placeholder { color: var(--ink-3); opacity: 1; }
 .pc-eff-champs.pc-segs > input.pc-eff-delta:focus { background: var(--card); }

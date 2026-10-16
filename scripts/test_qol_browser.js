@@ -185,10 +185,16 @@ const server=http.createServer((req,res)=> {
    assert.equal(new Set(fonts).size,1);
    assert.equal(await collapse.locator('.pc-eff-partie .pc-vital-jauge').count(),8);
    assert.ok(await collapse.locator('.pc-eff-tete').evaluateAll(ns=>ns.every(n=>{const a=n.children[0].getBoundingClientRect(),b=n.children[1].getBoundingClientRect(),p=n.getBoundingClientRect();return a.right<=b.left&&b.right<=p.right+1&&Math.abs(a.y-b.y)<15;})));
+   assert.deepEqual(await collapse.locator('.pc-eff-tete > .k').allTextContents(),['PR','PI','Froid','Chaud','PS','PH','Alcool','Autre']);
+   assert.equal(await collapse.locator('.pc-eff-legende').count(),0);
    for(const box of await collapse.locator('.pc-eff-champs').all()){
-     assert.deepEqual(await box.locator('.pc-eff-legende').allTextContents(),['Base','Effet','Autre']);
-     assert.ok(await box.evaluate(n=>{const a=n.children[0].getBoundingClientRect(),b=n.children[1].getBoundingClientRect(),c=n.children[2].getBoundingClientRect(),d=n.children[3].getBoundingClientRect(),e=n.children[4].getBoundingClientRect(),f=n.children[5].getBoundingClientRect();return a.y===b.y&&b.y===c.y&&d.y===e.y&&e.y===f.y&&d.y>a.y&&Math.abs(a.x-d.x)<1&&Math.abs(c.x-f.x)<1;}));
+     assert.equal(await box.locator('input').count(),3);
+     assert.ok(await box.evaluate(n=>{const a=n.children[0].getBoundingClientRect(),b=n.children[1].getBoundingClientRect(),c=n.children[2].getBoundingClientRect();return a.y===b.y&&b.y===c.y;}));
    }
+   const readonly=collapse.getByLabel('Repos — Base',{exact:true});
+   const appearance=()=>readonly.evaluate(n=>{const s=getComputedStyle(n),r=n.getBoundingClientRect();return {color:s.color,background:s.backgroundColor,transform:s.transform,x:r.x,y:r.y,w:r.width,h:r.height}});
+   await page.mouse.move(0,0);await page.waitForTimeout(200);const normal=await appearance();
+   await readonly.hover();await page.waitForTimeout(200);assert.deepEqual(await appearance(),normal);
    assert.ok(await collapse.locator('.pc-eff-partie .pc-vital-max').evaluateAll(ns=>ns.every(n=>n.textContent==='/ 10')));
    assert.ok(await collapse.locator('.pc-eff-champs').evaluateAll(ns=>ns.every(n=>{const a=n.getBoundingClientRect(),b=n.parentElement.getBoundingClientRect();return Math.abs(a.left-b.left)<=1&&Math.abs(a.right-b.right)<=1;})));
    assert.ok(await sheet.locator('.pc-temps-val').evaluateAll(ns=>ns.every(n=>getComputedStyle(n).boxShadow==='none'&&getComputedStyle(n).borderTopWidth==='0px')));
