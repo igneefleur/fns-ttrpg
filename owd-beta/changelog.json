@@ -9103,19 +9103,5 @@
 "url": "content/regles/base/capacites-physiques/"
 }
 ]
-},
-{
-"short": "4d3c10d",
-"author": "Théo Cavaillès",
-"date": "2026-10-02T14:42:16+02:00",
-"message": "Update armes.md",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/4d3c10d96fdc96609cf29e81d289c6d79e768130",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/combat/armes.md",
-"url": "content/regles/combat/armes/"
-}
-]
 }
 ]
