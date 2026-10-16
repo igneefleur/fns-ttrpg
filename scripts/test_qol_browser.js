@@ -111,22 +111,38 @@ const server=http.createServer((req,res)=> {
   assert.equal(await frame.evaluate(()=>Owd.__calculs.effPartie('ph')),2);
   assert.equal(await frame.evaluate(()=>Owd.__calculs.effondrement()),4);
   const collapse=sheet.locator('[data-module="effondrement"]');
-  assert.deepEqual(await collapse.locator('.pc-eff-partie').evaluateAll(ns=>ns.map(n=>n.dataset.effPartie)),['pr','expo','ps','ph','pi','alcool','total']);
-  await sheet.getByLabel('Hydratation — Effets',{exact:true}).fill('-1');
+  assert.deepEqual(await collapse.locator('.pc-eff-partie').evaluateAll(ns=>ns.map(n=>n.dataset.effPartie)),['pr','pi','froid','chaud','ps','ph','alcool','autre']);
+  for(const label of ['Repos','Innocence','Froid','Chaud','Satiété','Hydratation','Alcool','Autre']){
+    for(const field of ['Base','Effets']) assert.equal(await sheet.getByLabel(label+' — '+field,{exact:true}).getAttribute('readonly'),'');
+  }
+  // Les effets sont alimentés par l’état/mods, jamais édités dans cette grille.
+  await replace(s=>s.effParties.ph={effet:-1,mod:0});
   assert.equal(await frame.evaluate(()=>Owd.__calculs.effondrement()),3);
-  await sheet.getByLabel('Repos — ±',{exact:true}).fill('+2');
+  const deltaRepos=sheet.getByLabel('Repos — ±',{exact:true});
+  await deltaRepos.fill('+2');await deltaRepos.press('Enter');
+  assert.equal(await deltaRepos.inputValue(),'');
   assert.equal(await frame.evaluate(()=>Owd.__calculs.effondrement()),5);
-  await sheet.getByLabel('Total — ±',{exact:true}).fill('-1');
+  const deltaAutre=sheet.getByLabel('Autre — ±',{exact:true});
+  await deltaAutre.fill('-1');await deltaAutre.press('Enter');
   assert.equal(await frame.evaluate(()=>Owd.__calculs.effondrement()),4);
   await frame.evaluate(()=>Owd.remonte());
   assert.equal(await frame.evaluate(()=>Owd.__calculs.effondrement()),4);
-  const baseBefore=await frame.evaluate(()=>Owd.__calculs.effNiveauDe('ps'));
-  assert.equal(baseBefore,5);
-  await sheet.getByLabel('Innocence — Base',{exact:true}).fill('2');
+  assert.equal(await frame.evaluate(()=>Owd.__calculs.effNiveauDe('ps')),5);
+  await replace(s=>{s.etat.pi=80;});
   assert.equal(await frame.evaluate(()=>Owd.__calculs.effPartie('pi')),2);
-  assert.equal(await frame.evaluate(()=>Owd.__calculs.effondrement()),6);
-  await frame.evaluate(()=>Owd.remonte());
   assert.equal(await sheet.getByLabel('Innocence — Base',{exact:true}).inputValue(),'2');
+  assert.equal(await frame.evaluate(()=>Owd.__calculs.effondrement()),6);
+  // Les deux signes de l’exposition restent exclusifs, les modificateurs sont indépendants.
+  await replace(s=>{s.etat.expo=-max.expo*.3;s.effParties.froid={effet:-1,mod:0};s.effParties.chaud={effet:0,mod:0};});
+  assert.equal(await sheet.getByLabel('Froid — Base',{exact:true}).inputValue(),'3');
+  assert.equal(await sheet.getByLabel('Chaud — Base',{exact:true}).inputValue(),'0');
+  await replace(s=>s.etat.expo=max.expo*.3);
+  assert.equal(await sheet.getByLabel('Froid — Base',{exact:true}).inputValue(),'0');
+  assert.equal(await sheet.getByLabel('Chaud — Base',{exact:true}).inputValue(),'3');
+  // Migration des réglages d’exposition de la version précédente.
+  await replace(s=>{s.etat.expo=-max.expo*.2;s.effParties={expo:{effet:-1,mod:1}};});
+  assert.equal((await state()).effParties.froid.effet,-1);
+  assert.equal((await state()).effParties.froid.mod,1);
   // Alcohol counts only occupied time and expires one level per two hours; exact undo.
   await replace(s=>{s.effParties={};s.effAutre=0;s.effAlcool=2;s.effAlcoolSecondes=0;s.effort='repos';});
   await hour.fill('+1');await hour.press('Enter'); assert.equal((await state()).effAlcool,2);assert.equal((await state()).effAlcoolSecondes,3600);
@@ -154,10 +170,15 @@ const server=http.createServer((req,res)=> {
    await capture(sheet.locator('[data-module="pi"]'),'/tmp/owd-innocence-'+(night?'night':'day')+'.png');
    await capture(sheet.locator('[data-module="exposition"]'),'/tmp/owd-exposition-'+(night?'night':'day')+'.png');
    const layout=await collapse.locator('.pc-eff-partie').evaluateAll(ns=>ns.map(n=>({key:n.dataset.effPartie,x:n.getBoundingClientRect().x,y:n.getBoundingClientRect().y,w:n.getBoundingClientRect().width,bg:getComputedStyle(n).backgroundColor})));
-   assert.equal(layout[4].y,layout[5].y);assert.ok(layout[6].y>layout[5].y);assert.ok(layout[6].w>layout[0].w*1.9);
-   assert.equal(layout[6].bg,layout[0].bg);
-   assert.ok(await collapse.locator('.pc-eff-partie-titre').evaluateAll(ns=>ns.every(n=>{const a=n.children[0].getBoundingClientRect(),v=n.children[1].getBoundingClientRect(),p=n.getBoundingClientRect();return (a.right<=v.left||v.top>=a.bottom)&&v.right<=p.right+1;})));
-   assert.ok(await collapse.locator('.pc-eff-champs').evaluateAll(ns=>ns.every(n=>getComputedStyle(n).flexDirection==='column')));
+   for(let i=0;i<8;i+=2)assert.equal(layout[i].y,layout[i+1].y);
+   for(let i=2;i<8;i+=2)assert.ok(layout[i].y>layout[i-2].y);
+   const fonts=await collapse.locator('.pc-big .k, .pc-eff-partie > .k').evaluateAll(ns=>ns.map(n=>{const s=getComputedStyle(n);return [s.fontSize,s.fontFamily,s.fontWeight,s.letterSpacing].join('|')}));
+   assert.equal(new Set(fonts).size,1);
+   assert.equal(await collapse.locator('.pc-eff-partie .pc-vital-jauge').count(),8);
+   assert.ok(await collapse.locator('.pc-eff-partie .pc-vital-max').evaluateAll(ns=>ns.every(n=>n.textContent==='/ 10')));
+   assert.ok(await collapse.locator('.pc-eff-champs').evaluateAll(ns=>ns.every(n=>{const a=n.getBoundingClientRect(),b=n.parentElement.getBoundingClientRect();return Math.abs(a.left-b.left)<=1&&Math.abs(a.right-b.right)<=1;})));
+   assert.ok(await sheet.locator('.pc-temps-val').evaluateAll(ns=>ns.every(n=>getComputedStyle(n).boxShadow==='none'&&getComputedStyle(n).borderTopWidth==='0px')));
+   assert.ok(await action.locator('.pc-desaction-bascule').evaluateAll(ns=>ns.every(n=>{const a=n.getBoundingClientRect(),b=n.parentElement.getBoundingClientRect();return Math.abs(a.top-b.top)<1&&Math.abs(a.right-b.right)<1&&a.width>20;})));
    assert.ok(!(await collapse.textContent()).includes('Aucune'));
    const ticks=await sheet.locator('[data-module="pi"] .pc-vital-palier').evaluateAll(ns=>ns.map(n=>({filled:n.classList.contains('plein'),color:getComputedStyle(n).backgroundColor})));
    if(night)assert.ok(ticks.filter(t=>t.filled).every(t=>t.color==='rgb(48, 52, 59)'));

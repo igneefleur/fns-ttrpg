@@ -502,11 +502,11 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
 .pc-vital-res.t-pv { --teinte: #881112; }
 .pc-vital-res.t-pe { --teinte: #AA872E; }
 .pc-vital-res.t-pm { --teinte: #286CA4; }
-.pc-vital-res.t-pi { --teinte: #C2185B; }   /* rose le jour… */
-html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où le blanc se voit */
-.pc-vital-res.t-pr { --teinte: #6A4C93; }
-.pc-vital-res.t-ps { --teinte: #B5652B; }
-.pc-vital-res.t-ph { --teinte: #2A9D8F; }
+.pc-vital-res.t-pi, .pc-eff-partie.t-pi { --teinte: #C2185B; }   /* rose le jour… */
+html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où le blanc se voit */
+.pc-vital-res.t-pr, .pc-eff-partie.t-pr { --teinte: #6A4C93; }
+.pc-vital-res.t-ps, .pc-eff-partie.t-ps { --teinte: #B5652B; }
+.pc-vital-res.t-ph, .pc-eff-partie.t-ph { --teinte: #2A9D8F; }
 .pc-vital-res.t-pc { --teinte: #5B8C2A; }
 .pc-vital-val { flex: 0 0 auto; margin-left: auto; display: inline-flex; align-items: baseline; gap: .2rem; }
 /* La largeur n'est qu'un plancher : reserveVitale() l'ajuste au nombre de signes. */
@@ -623,7 +623,7 @@ html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où 
 .pc-desaction-taille { display: flex; align-items: center; justify-content: center; gap: .15rem; }
 .pc-desaction-nom { min-width: 2.1em; text-align: center; font-size: .66rem; font-weight: 700; color: var(--ink-2); }
 .pc-desaction-pas {
-  width: 1.05rem; height: 1.05rem; padding: 0; border: 1px solid var(--line-2); border-radius: 50%;
+  width: 1.25rem; height: 1.25rem; padding: 0; border: 1px solid var(--line-2); border-radius: 50%;
   background: var(--panel); color: var(--ink-2); font: inherit; font-size: .62rem; line-height: 1; cursor: pointer;
 }
 .pc-desaction-pas:disabled { opacity: .35; cursor: default; }
@@ -766,7 +766,7 @@ html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où 
 /* ---- stepper −/valeur/+ ---- */
 .pc-step { display: inline-flex; align-items: center; gap: .25rem; }
 .pc-step button {
-  width: 1.05rem; height: 1.05rem; border-radius: 50%; padding: 0;
+  width: 1.25rem; height: 1.25rem; border-radius: 50%; padding: 0;
   border: 1px solid var(--line); background: var(--card); color: var(--ink-2);
   font-weight: 700; font-size: .74rem; line-height: 1; cursor: pointer;
   display: inline-grid; place-items: center; transition: background .12s, border-color .12s, color .12s;
@@ -808,7 +808,7 @@ html.night .pc-vital-res.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où 
 .pc-eff-cause input.v::-webkit-inner-spin-button, .pc-eff-cause input.v::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 .pc-eff-cause input.v:focus { outline: none; border-color: var(--or); box-shadow: 0 0 0 2px var(--wash); }
 .pc-big { border: 1px solid var(--line-2); border-radius: 7px; background: var(--panel); text-align: center; padding: .28rem .2rem .32rem; transition: border-color .12s; }
-.pc-big .k { display: block; font-size: .5rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); white-space: nowrap; }
+.pc-big .k, .pc-eff-partie > .k { display: block; font-size: .5rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); white-space: nowrap; }
 .pc-big .v { display: block; font-size: var(--fs-hero); font-weight: 700; line-height: 1.1; color: var(--ink); font-variant-numeric: tabular-nums; margin-top: .08rem; white-space: nowrap; }
 /* la seconde ligne d'une tuile : « 60 % » sous PE MAX, « / 10 » sous
    l'effondrement — ce qui qualifie le nombre sans l'encombrer */
@@ -2120,29 +2120,28 @@ html.night .pc-attaque-carte .hx-vide { fill-opacity: .12; }
 html.night .t-pi { --palier-plein: #30343b; }
 .perso-fiche .pc-vital-res.over { --palier-plein: #fff; }
 .pc-expo-jauge { --palier-plein: #fff; }
-.pc-temps-segs > input.c { background: var(--card); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line-2); }
-.pc-temps-segs > input.c:focus { background: var(--card); box-shadow: inset 0 0 0 1px var(--or); }
+.pc-temps-segs > input.c { background: var(--card); color: var(--ink); box-shadow: none; }
+.pc-temps-segs > input.c:focus { background: var(--card); box-shadow: none; }
 .pc-desaction-case { position: relative; width: 100%; }
-.pc-desaction-bascule { position: absolute; right: .16rem; top: .16rem; z-index: 2; display: grid; place-items: center; width: 1.05rem; height: 1.05rem; padding: 0; border: 1px solid var(--line-2); border-radius: 4px; background: var(--panel); color: var(--ink); font: inherit; font-size: .75rem; cursor: pointer; }
+.pc-desaction-bascule { position: absolute; right: 0; top: 0; z-index: 2; display: grid; place-items: center; width: 1.25rem; height: 1.25rem; padding: 0; border: 1px solid var(--line-2); border-radius: 0 7px 0 5px; background: var(--panel); color: var(--ink); font: inherit; font-size: .85rem; cursor: pointer; }
 .pc-desaction-bascule:hover, .pc-desaction-bascule:focus-visible { border-color: var(--or); color: var(--or); }
 .pc-desaction-de.utilise .pc-desaction-bascule { color: var(--or); }
-/* Effondrement : trois paires et le total sur toute la largeur. */
+/* Effondrement : quatre paires, typographie partagée avec les grandes tuiles. */
 .pc-eff-grille { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); border: 1px solid var(--line-2); border-radius: 6px; overflow: hidden; margin-top: .45rem; }
-.pc-eff-partie { min-width: 0; padding: .4rem .35rem; border-bottom: 1px solid var(--line-2); }
-.pc-eff-partie:nth-child(odd):not([data-eff-partie="total"]) { border-right: 1px solid var(--line-2); }
-.pc-eff-partie[data-eff-partie="total"] { grid-column: 1 / -1; border-bottom: 0; }
-.pc-eff-partie-titre { display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: .12rem; font-size: .58rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0; color: var(--ink-2); }
-.pc-eff-partie-total { flex-shrink: 0; font-size: 1rem; color: var(--ink); }
-.pc-eff-partie[data-eff-partie="total"] .pc-eff-partie-titre { flex-direction: row; }
-.pc-eff-consequences { display: flex; flex-wrap: wrap; gap: .15rem .4rem; margin: .15rem 0; color: var(--ink-2); font-size: .6rem; line-height: 1.25; }
-.pc-eff-consequences:empty { display: none; }
-.pc-eff-consequences > span { white-space: nowrap; }
-.pc-eff-champs { display: flex; flex-direction: column; gap: .1rem; margin-top: .2rem; }
-.pc-eff-champ { min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: .2rem; }
-.pc-eff-champ > span { font-size: var(--fs-label); color: var(--ink-3); white-space: nowrap; }
-.pc-eff-valeur { box-sizing: border-box; width: 3.6em; min-width: 0; height: 1.35rem; padding: .1rem .15rem; border: 1px solid var(--line-2); border-radius: 4px; background: var(--card); color: var(--ink); font: inherit; font-size: .7rem; font-weight: 700; text-align: center; }
-.pc-eff-valeur[readonly] { background: transparent; border-color: transparent; color: var(--ink-2); }
-.pc-eff-valeur:focus { outline: none; border-color: var(--or); }
-.pc-eff-horloge { font-size: .6rem; color: var(--ink-3); margin-top: .25rem; }
-.pc-eff-horloge:empty { display: none; }
+.pc-eff-partie { min-width: 0; padding: .35rem 0 0; border-bottom: 1px solid var(--line-2); text-align: center; }
+.pc-eff-partie:nth-child(odd) { border-right: 1px solid var(--line-2); }
+.pc-eff-partie:nth-last-child(-n+2) { border-bottom: 0; }
+.pc-eff-lecture { display: flex; align-items: baseline; justify-content: center; gap: .2rem; padding: .1rem .15rem .2rem; }
+.pc-eff-partie-total { font-size: calc(var(--fs-value) * 1.85); font-weight: 800; line-height: 1; color: var(--ink); font-variant-numeric: tabular-nums; }
+.pc-eff-champs.pc-segs { margin: 0; border: 0; border-radius: 0; }
+.pc-eff-champs.pc-segs > .c { height: 1.9rem; padding: .15rem 0; }
+.pc-eff-champs.pc-segs > .pc-eff-champ { display: flex; flex-direction: column; gap: .12rem; cursor: default; }
+.pc-eff-champs > .pc-eff-champ:hover { background: transparent; color: var(--ink-3); }
+.pc-eff-legende { font-size: .4rem; font-weight: 700; letter-spacing: 0; }
+.pc-eff-valeur { box-sizing: border-box; width: 100%; min-width: 0; padding: 0; border: 0; outline: 0; border-radius: 0; background: transparent; color: var(--ink-2); font: inherit; font-size: .6rem; font-weight: 700; text-align: center; }
+.pc-eff-champs.pc-segs > input.pc-eff-delta { width: 0; border: 0; outline: 0; border-radius: 0; box-shadow: inset 1px 0 0 var(--line-2); background: var(--card); color: var(--ink); cursor: text; font-size: .7rem; }
+.pc-eff-delta::placeholder { color: var(--ink-3); opacity: 1; }
+.pc-eff-champs.pc-segs > input.pc-eff-delta:focus { background: var(--card); }
+.pc-eff-partie.t-froid { --teinte: var(--froid); }
+.pc-eff-partie.t-chaud { --teinte: var(--chaud); }
 .pc-eff-niveau { margin-top: .35rem; }

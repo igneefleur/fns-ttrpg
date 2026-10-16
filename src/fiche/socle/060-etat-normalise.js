@@ -83,7 +83,12 @@
     s.effAlcool = clamp(Math.round(num(s.effAlcool, 0)), 0, 999);
     s.effAlcoolSecondes = s.effAlcool > 0 ? clamp(num(s.effAlcoolSecondes, 0), 0, 7199) : 0;
     if (!s.effParties || typeof s.effParties !== "object" || Array.isArray(s.effParties)) s.effParties = {};
-    ["pr", "expo", "ps", "ph", "pi", "alcool", "total"].forEach(function (k) {
+    // Les anciens ajustements d’exposition suivent le côté actuellement actif.
+    if (!s.effParties.froid && !s.effParties.chaud && s.effParties.expo) {
+      var coteExpo = num((s.etat || {}).expo, 0) < 0 ? "froid" : "chaud";
+      s.effParties[coteExpo] = { effet: num(s.effParties.expo.effet, 0), mod: num(s.effParties.expo.mod, 0) };
+    }
+    ["pr", "expo", "froid", "chaud", "ps", "ph", "pi", "alcool", "autre", "total"].forEach(function (k) {
       var d = s.effParties[k];
       if (!d || typeof d !== "object" || Array.isArray(d)) d = {};
       s.effParties[k] = { effet: clamp(num(d.effet, 0), -999, 999), mod: clamp(num(d.mod, 0), -999, 999) };
