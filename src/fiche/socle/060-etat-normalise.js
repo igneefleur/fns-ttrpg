@@ -412,6 +412,9 @@
           // clé stable d'un type d'arme lu dans armes.md ; une valeur inconnue
           // est conservée pour qu'une archive ou un mod ne perde rien.
           type: String(a.type == null ? "" : a.type),
+          // Prérequis : garder les huit entrées au round-trip et au transfert.
+          for: pnum(a.for), dex: pnum(a.dex), vig: pnum(a.vig), end: pnum(a.end),
+          res: pnum(a.res), fer: pnum(a.fer), int: pnum(a.int), cha: pnum(a.cha),
           // donnée technique de placement : la carte ne l'affiche plus.
           mains: num(a.mains, 1) === 2 ? 2 : 1
         } : null

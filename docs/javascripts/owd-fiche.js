@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "3.23.1b";
+  var RELEASE = "3.24.0b";
   var SCHEMA = 16;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -243,19 +243,16 @@
   // règle du livre.
   function D() { return DATA || {}; }
   function caracsData() { return Array.isArray(D().caracs) ? D().caracs : []; }
-  // L'ordre d'affichage des caractéristiques : celui des règles quand elles
-  // sont là (les quatre maîtrises, puis les quatre réserves), la liste socle
-  // sinon. Une caractéristique de l'état qui n'est plus dans les règles reste
-  // affichée en queue : on ne masque pas une donnée du personnage.
+  // Ordre demandé dans le module Caractéristiques et dans les prérequis.
+  // Les éventuelles caractéristiques supplémentaires des règles restent visibles.
   function caracsOrdre() {
     var out = [], vus = {};
-    caracsData().forEach(function (c) {
-      var k = c && c.cle;
-      if (k && !vus[k]) { vus[k] = 1; out.push(k); }
-    });
-    CARACS.concat(state ? Object.keys(state.caracs || {}) : []).forEach(function (k) {
-      if (!vus[k]) { vus[k] = 1; out.push(k); }
-    });
+    ["Force", "Dexterite", "Vigueur", "Endurance", "Resistance", "Ferveur", "Intelligence", "Chance"]
+      .concat(caracsData().map(function (c) { return c && c.cle; }))
+      .concat(CARACS, state ? Object.keys(state.caracs || {}) : [])
+      .forEach(function (k) {
+        if (k && !vus[k]) { vus[k] = 1; out.push(k); }
+      });
     return out;
   }
   function libCarac(c) {
@@ -995,6 +992,9 @@
           // clé stable d'un type d'arme lu dans armes.md ; une valeur inconnue
           // est conservée pour qu'une archive ou un mod ne perde rien.
           type: String(a.type == null ? "" : a.type),
+          // Prérequis : garder les huit entrées au round-trip et au transfert.
+          for: pnum(a.for), dex: pnum(a.dex), vig: pnum(a.vig), end: pnum(a.end),
+          res: pnum(a.res), fer: pnum(a.fer), int: pnum(a.int), cha: pnum(a.cha),
           // donnée technique de placement : la carte ne l'affiche plus.
           mains: num(a.mains, 1) === 2 ? 2 : 1
         } : null
@@ -7794,7 +7794,12 @@
       return el("div", "pc-arme-line " + classe);
     }
 
-    var card = el("div", "pc-arme");
+    var card = el("div", "pc-arme pc-obj-weapon-details");
+
+    // La compétence précède les valeurs d'attaque et de dégâts.
+    var l0 = ligne("pc-arme-1");
+    l0.appendChild(fld("Compétence", selComp()));
+    card.appendChild(l0);
 
     var l1 = ligne("pc-arme-2");
     l1.appendChild(champArme("Attaque", a, "attaque", "Difficulté du jet d'attaque."));
@@ -7814,23 +7819,50 @@
     for (var j = 0; j < 3; j++) l4.appendChild(fld("MOD", selCarac("modsParade", j)));
     if (!attaqueLibre) card.appendChild(l4);
 
-    var l5 = ligne(attaqueLibre || sousTypeHost ? "pc-arme-1" : "pc-arme-2");
-    l5.appendChild(fld("Compétence", selComp()));
     if (!attaqueLibre) {
       var typeField = fld(sousTypeHost ? "Sous-type" : "Type", selTypeArme());
       if (sousTypeHost) sousTypeHost.appendChild(typeField);
-      else l5.appendChild(typeField);
+      else { var lType = ligne("pc-arme-1"); lType.appendChild(typeField); card.appendChild(lType); }
     }
-    card.appendChild(l5);
 
-    if(!attaqueLibre){
-      if(!a.repartition)a.repartition={physique:100};
-      var rep=el("div","pc-arme-repartition"),sum=el("small","pc-arme-pourcent-total");
-      function total(){var n=0;combatTypes().forEach(function(k){n+=pnum(a.repartition[k]);});sum.textContent="Total : "+fmtP(n)+" %";sum.classList.toggle("pc-invalid",Math.abs(n-100)>0.001);}
-      combatTypes().forEach(function(k){var input=el("input","pc-edit-field");input.type="text";input.inputMode="decimal";input.value=pnum(a.repartition[k]);input.setAttribute("aria-label","Dégâts "+combatLibType(k)+" (%)");input.addEventListener("input",function(){var v=litNombreSigne(input.value);if(isFinite(v)&&v>=0){a.repartition[k]=v;save();total();}});input.addEventListener("change",refresh);rep.appendChild(fld(combatLibType(k)+" (%)",input));});
-      rep.appendChild(sum);total();card.appendChild(rep);
-      // hits reste dans les données pour les calculs ; ce n'est pas un champ d'édition.
-      var req=el("div","pc-arme-line pc-arme-2");req.appendChild(champArme("DEX requise",a,"dex"));req.appendChild(champArme("FOR requise",a,"for"));card.appendChild(req);
+    if (!attaqueLibre) {
+      if (!a.repartition) a.repartition = {physique:100};
+      var rep = el("div", "pc-arme-repartition");
+      var totalInput = el("input", "pc-edit-field pc-arme-total");
+      totalInput.type = "text";
+      totalInput.readOnly = true;
+      totalInput.setAttribute("aria-label", "Total des types de dégâts (%)");
+      totalInput.title = "Somme calculée automatiquement, non modifiable";
+      function total() {
+        var n = 0;
+        combatTypes().forEach(function (k) { n += pnum(a.repartition[k]); });
+        totalInput.value = fmtP(n) + " %";
+        totalInput.classList.toggle("pc-invalid", Math.abs(n-100) > 0.001);
+      }
+      // 4 rangées × 2, avec Brut / Total pour la dernière.
+      ["physique", "ethere", "feu", "froid", "eclair", "decomposition", "brut"].forEach(function (k) {
+        var input = el("input", "pc-edit-field");
+        input.type = "text";
+        input.inputMode = "decimal";
+        input.value = pnum(a.repartition[k]);
+        input.setAttribute("aria-label", "Dégâts " + combatLibType(k) + " (%)");
+        input.addEventListener("input", function () {
+          var v = litNombreSigne(input.value);
+          if (isFinite(v) && v >= 0) { a.repartition[k] = v; save(); total(); }
+        });
+        input.addEventListener("change", refresh);
+        rep.appendChild(fld(combatLibType(k) + " (%)", input));
+      });
+      rep.appendChild(fld("Total", totalInput));
+      total();
+      card.appendChild(rep);
+
+      // Les prérequis sont tous prévus, y compris ceux encore peu utilisés.
+      [["for", "FOR"], ["dex", "DEX"], ["vig", "VIG"], ["end", "END"],
+       ["res", "RES"], ["fer", "FER"], ["int", "INT"], ["cha", "CHA"]].forEach(function (x, i) {
+        if (i % 2 === 0) card.appendChild(ligne("pc-arme-2 pc-arme-requis"));
+        card.lastChild.appendChild(champArme(x[1], a, x[0], "Prérequis de " + x[1]));
+      });
     }
 
     return card;
@@ -7871,16 +7903,19 @@
     if(n.arme)n.arme.mains=n.mains;
     n.volume=pnum(o.volume===undefined?o.encombre:o.volume);n.encombre=n.volume;
     n.tailleInterieure=String(o.tailleInterieure||"");n.tailleAccroche=String(o.tailleAccroche || (n.sac?"Moyenne":""));
-    n.effets=(Array.isArray(o.effets)?o.effets:[]).slice(0,5).map(String);
+    n.effets=(Array.isArray(o.effets)?o.effets:[]).slice(0,8).map(String);
     n.restaurations={};n.unitesRestauration={};
     ["pv","pe","pm","pr","ps","ph","pi"].forEach(function(k){n.restaurations[k]=snum(o.restaurations&&o.restaurations[k]);n.unitesRestauration[k]=o.unitesRestauration&&o.unitesRestauration[k]==="% max"?"% max":"points";});
     n.ps=snum(o.ps);n.ph=snum(o.ph);n.tempsConsommation=pnum(o.tempsConsommation);
     n.conditionsEffets=o.conditionsEffets&&typeof o.conditionsEffets==="object"?JSON.parse(JSON.stringify(o.conditionsEffets)):{};
     n.stats=o.stats&&typeof o.stats==="object"?JSON.parse(JSON.stringify(o.stats)):{};
+    // Le choix des huit lignes est purement visuel ; les effets conservent
+    // leurs clés historiques, utilisées par les attaques et les défenses.
+    n.effetsEquipement=Array.isArray(o.effetsEquipement)?o.effetsEquipement.slice(0,8).map(String):null;
     n.proprietes=o.proprietes&&typeof o.proprietes==="object"?JSON.parse(JSON.stringify(o.proprietes)):{};
     n.munitionStats=o.munitionStats&&typeof o.munitionStats==="object"?JSON.parse(JSON.stringify(o.munitionStats)):{degats:0,repartition:{physique:100}};
     ["prot","res"].forEach(function(k){n[k+"_physique"]=o[k+"_physique"]===undefined?(modele&&modele[k+"_physique"]!==undefined?snum(modele[k+"_physique"]):Math.max(snum(o[k+"_contondant"]),snum(o[k+"_perforant"]),snum(o[k+"_tranchant"]))):snum(o[k+"_physique"]);});
-    if(n.arme){var rep=o.arme&&o.arme.repartition || modele&&modele.arme&&modele.arme.repartition || {physique:100};n.arme.repartition={};combatTypes().forEach(function(k){if(isFinite(Number(rep[k])))n.arme.repartition[k]=pnum(rep[k]);});if(!Object.keys(n.arme.repartition).length)n.arme.repartition={physique:100};n.arme.hits=Math.max(1,Math.floor(pnum(o.arme&&o.arme.hits)||1));n.arme.dex=pnum(o.arme&&o.arme.dex);n.arme.for=pnum(o.arme&&o.arme.for);}
+    if(n.arme){var rep=o.arme&&o.arme.repartition || modele&&modele.arme&&modele.arme.repartition || {physique:100};n.arme.repartition={};combatTypes().forEach(function(k){if(isFinite(Number(rep[k])))n.arme.repartition[k]=pnum(rep[k]);});if(!Object.keys(n.arme.repartition).length)n.arme.repartition={physique:100};n.arme.hits=Math.max(1,Math.floor(pnum(o.arme&&o.arme.hits)||1));["for","dex","vig","end","res","fer","int","cha"].forEach(function(k){n.arme[k]=pnum(o.arme&&o.arme[k]);});}
     if(n.typeObjet==="munition"){n.sousType={fleche:"fleches",carreau:"carreaux",balle:"balles",pierre:"pierres"}[n.sousType]||n.sousType;n.contenu=n.sousType;}
     return n;
   }
@@ -7888,18 +7923,96 @@
     var s=el("select","pc-select pc-edit-field");values.forEach(function(v){var k=Array.isArray(v)?v[0]:v,t=Array.isArray(v)?v[1]:v;var op=el("option",null,t);op.value=k;op.selected=k===current;s.appendChild(op);});
     s.addEventListener("change",function(){change(s.value);save();refresh();});return fld(label,s);
   }
+  // Toutes les propriétés chiffrées d'un vêtement passent par les mêmes
+  // accès que l'ancien formulaire, afin que les calculs continuent à fonctionner.
+  function invOptionsEquipement() {
+    var out = [];
+    combatTypes().forEach(function(k){out.push(["prot_"+k,"Protection "+combatLibType(k)+" (points)"]);});
+    combatTypes().forEach(function(k){out.push(["res_"+k,"Résistance "+combatLibType(k)+" (%)"]);});
+    out.push(["poches","Poches (L)"],["froid","Défense froid (°)"],["chaud","Défense chaud (°)"]);
+    combatTypes().forEach(function(k){out.push(["degats:"+k,"Dégâts "+combatLibType(k)+" (%)"]);});
+    out.push(["couts:pm","Coût PM (%)"],["couts:pe","Coût PE (%)"],
+      ["vitesse","Déplacement (%)"],["innocence","Résistance corruption (%)"],
+      ["alterations","Résistance altérations (%)"]);
+    return out;
+  }
+  function invValeurEquipement(it,cle) {
+    if (!cle) return 0;
+    if (cle.indexOf("degats:")===0) return snum(it.stats&&it.stats.degats&&it.stats.degats[cle.slice(7)]);
+    if (cle.indexOf("couts:")===0) return snum(it.stats&&it.stats.couts&&it.stats.couts[cle.slice(6)]);
+    if (["vitesse","innocence","alterations"].indexOf(cle)>=0) return snum(it.stats&&it.stats[cle]);
+    return snum(it[cle]);
+  }
+  function invPoseValeurEquipement(it,cle,val) {
+    if (!cle) return;
+    if (cle.indexOf("degats:")===0 || cle.indexOf("couts:")===0) {
+      if (!it.stats || typeof it.stats!=="object") it.stats={};
+      var nom=cle.split(":")[0], k=cle.split(":")[1];
+      if(!it.stats[nom] || typeof it.stats[nom]!=="object") it.stats[nom]={};
+      it.stats[nom][k]=val;
+    } else if (["vitesse","innocence","alterations"].indexOf(cle)>=0) {
+      if(!it.stats || typeof it.stats!=="object")it.stats={};
+      it.stats[cle]=val;
+    } else it[cle]=val;
+  }
+  function invLignesEquipement(it) {
+    var liste=invOptionsEquipement().map(function(x){return x[0];});
+    if(!Array.isArray(it.effetsEquipement))it.effetsEquipement=liste.filter(function(k){return invValeurEquipement(it,k)!==0;}).slice(0,8);
+    var present={};
+    it.effetsEquipement=Array.from({length:8},function(_,i){
+      var k=it.effetsEquipement[i]||"";
+      if(!k || liste.indexOf(k)<0 || present[k]) return "";
+      present[k]=true;return k;
+    });
+    return it.effetsEquipement;
+  }
+  function invChampsVetement(host,it) {
+    var choices=invOptionsEquipement(), lignes=invLignesEquipement(it);
+    var carte=el("div","pc-obj-effets-equipement");
+    for(var index=0;index<8;index++)(function(i){
+      var ligne=el("div","pc-obj-pair pc-obj-effet-ligne");
+      var montant=el("input","pc-edit-field");montant.type="text";montant.inputMode="decimal";
+      champNombreSigne(montant);
+      var select=el("select","pc-select pc-edit-field");
+      var vide=el("option",null,"Aucun effet");vide.value="";select.appendChild(vide);
+      choices.forEach(function(c){var opt=el("option",null,c[1]);opt.value=c[0];select.appendChild(opt);});
+      function afficher(){var cle=lignes[i]||"";select.value=cle;montant.value=cle?fmtP(invValeurEquipement(it,cle)):"";montant.disabled=!cle;}
+      select.addEventListener("change",function(){
+        var ancien=lignes[i]||"",nouveau=select.value;
+        if(nouveau && lignes.some(function(x,j){return j!==i&&x===nouveau;})){
+          select.value=ancien;flash("Cet effet est déjà utilisé dans une autre ligne.");return;
+        }
+        if(ancien!==nouveau){invPoseValeurEquipement(it,ancien,0);lignes[i]=nouveau;it.effetsEquipement=lignes;}
+        afficher();save();refresh();
+      });
+      montant.addEventListener("input",function(){
+        var v=litNombreSigne(montant.value);
+        if(isFinite(v) && lignes[i]){invPoseValeurEquipement(it,lignes[i],v);save();refresh();}
+      });
+      ligne.appendChild(fld("Valeur",montant));
+      ligne.appendChild(fld("Type d’effet",select));
+      carte.appendChild(ligne);
+      afficher();
+    })(index);
+    host.appendChild(carte);
+    // Les anciennes sauvegardes peuvent avoir davantage de huit valeurs.
+    // Ne jamais les supprimer silencieusement : elles restent actives.
+    var caches=choices.filter(function(c){return invValeurEquipement(it,c[0])!==0 && lignes.indexOf(c[0])<0;});
+    if(caches.length){var a=el("div","pc-obj-effets-anciens");a.appendChild(el("small",null,
+      caches.length+" effet(s) historique(s) hors des huit lignes, toujours actifs : "+caches.map(function(c){return c[1]+" "+fmtP(invValeurEquipement(it,c[0]));}).join(" ; ")));host.appendChild(a);}
+  }
   function invAvecEffets(it) {return ["solide","pate","liquide"].indexOf(invType(it))>=0 && ["ingerable","consommable"].indexOf(it.sousType)>=0;}
   function invChampsCommuns(body,it,render) {
     if(invAvecEffets(it)){
-      body.appendChild(el("div","lbl","Effets"));var card=el("div","pc-arme");
+      body.appendChild(el("div","lbl","Effets"));var card=el("div","pc-arme pc-obj-effets-grid");
       if(!Array.isArray(it.effets))it.effets=[];
-      for(var i=0;i<5;i++)(function(index){card.appendChild(fld("Effet "+(index+1),selectEffet(it.effets[index]||"",function(v){it.effets[index]=v;save();refresh();})));})(i);
+      for(var i=0;i<8;i++)(function(index){card.appendChild(fld("Effet "+(index+1),selectEffet(it.effets[index]||"",function(v){it.effets[index]=v;save();refresh();})));})(i);
       body.appendChild(card);
     }
     if(it.proprietes && Object.keys(it.proprietes).some(function(k){return it.proprietes[k]!=null;})){
       var props=el("div","pc-arme");Object.keys(it.proprietes).forEach(function(k){if(it.proprietes[k]==null)return;var i=el("input","pc-edit-field");i.type="text";i.value=it.proprietes[k];i.addEventListener("input",function(){it.proprietes[k]=i.value;save();});props.appendChild(fld({autonomie:"Autonomie",accrochable:"Accrochable",recharge:"Recharge"}[k]||k,i));});body.appendChild(props);
     }
-    if(it.vet || it.acc){
+    if(it.acc){
       if(!it.stats)it.stats={};var stats=el("div","pc-arme-repartition");
       function nombre(label,read,write){var n=el("input","pc-edit-field");champNombreSigne(n);n.value=read();n.addEventListener("input",function(){var v=litNombreSigne(n.value);if(isFinite(v)){write(v);save();}});n.addEventListener("change",refresh);return fld(label,n);}
       if(!it.stats.degats)it.stats.degats={};if(!it.stats.couts)it.stats.couts={};
@@ -8025,7 +8138,7 @@
     Object.keys(it.restaurations||{}).forEach(function(k){if(it.restaurations[k])add("Restauration "+k.toUpperCase(),fmtP(it.restaurations[k])+" "+(it.unitesRestauration[k]||"points"));});
     if(it.cap)add("Capacité",fmtP(it.cap)+" L");if(it.ep)add("Accroches",fmtP(it.ep)+" acc (max. "+(it.tailleAccroche || "non renseignée")+")");
     if(it.poches)add("Poches",fmtP(it.poches)+" L");if(it.froid)add("Protection froid",fmtP(it.froid));if(it.chaud)add("Protection chaleur",fmtP(it.chaud));
-    ["physique","feu","froid","eclair","decomposition","ethere","brut"].forEach(function(t){
+    ["physique","tranchant","contondant","perforant","feu","froid","eclair","decomposition","ethere","brut"].forEach(function(t){
       var labels={eclair:"éclair",decomposition:"décomposition",ethere:"éthéré"},label=labels[t]||t;
       if(it["res_"+t])add("Résistance "+label,fmtP(it["res_"+t])+" %");if(it["prot_"+t])add("Protection "+label,fmtP(it["prot_"+t]));
     });
@@ -8870,26 +8983,9 @@
           refresh();
         });
         sousLigne.appendChild(fld("Sous-type", typ));
-        pv.appendChild(champNombre("Poches", function () { return it.poches; },
-          function (v) { it.poches = pnum(v); }, "Ce que ce vêtement porté ajoute aux Poches, en L"));
-        cv.appendChild(pv);
-
-        var types = ["physique", "feu", "froid", "eclair", "decomposition", "ethere", "brut"];
-        types.forEach(function(t) {
-          var pr = el("div", "pc-obj-pair");
-          pr.appendChild(champNombre("Res " + t, function () { return it["res_" + t]; },
-            function (v) { it["res_" + t] = snum(v); }, "Resistance " + t + " (%)"));
-          pr.appendChild(champNombre("Prot " + t, function () { return it["prot_" + t]; },
-            function (v) { it["prot_" + t] = snum(v); }, "Protection " + t + " (flat)"));
-          cv.appendChild(pr);
-        });
-
-        var pp = el("div", "pc-obj-pair");
-        pp.appendChild(champNombre("Défense Froid", function () { return it.froid; },
-          function (v) { it.froid = snum(v); }, "Protection contre le froid, en degrés"));
-        pp.appendChild(champNombre("Défense Chaud", function () { return it.chaud; },
-          function (v) { it.chaud = snum(v); }, "Protection contre le chaud, en degrés"));
-        cv.appendChild(pp);
+        // Huit lignes uniques « Valeur | Type d'effet », données d'origine
+        // conservées pour les calculs de protection/résistance et les bonus.
+        invChampsVetement(cv,it);
         specifiquesSous.appendChild(cv);
       }
 
@@ -8943,15 +9039,18 @@
 
       // la nourriture porte son VOLUME : ce qu'une dose ou une part occupe de
       // contenance une fois avalée
-      if (it.nourri) {
+      if (invAvecEffets(it)) {
         var cn = carteNature();
         var pn = el("div", "pc-obj-pair");
         pn.appendChild(champNombre("Contenance", function () { return it.places; },
           function (v) { it.places = pnum(v); }, "Ce qu'une dose ou une part occupe de contenance"));
+        pn.appendChild(champNombre("Temps (DA)",function(){return num(it.tempsConsommation,0);},function(v){it.tempsConsommation=pnum(v);}));
         cn.appendChild(pn);
-        var nutrition=el("div","pc-obj-pair");["ps","ph"].forEach(function(k){nutrition.appendChild(champNombre(k.toUpperCase(),function(){return num(it[k],0);},function(v){it[k]=snum(v);}));});cn.appendChild(nutrition);
-        cn.appendChild(champNombre("Temps (DA)",function(){return num(it.tempsConsommation,0);},function(v){it.tempsConsommation=pnum(v);}));
-
+        if(it.nourri){
+          var nutrition=el("div","pc-obj-pair");
+          ["ps","ph"].forEach(function(k){nutrition.appendChild(champNombre(k.toUpperCase(),function(){return num(it[k],0);},function(v){it[k]=snum(v);}));});
+          cn.appendChild(nutrition);
+        }
         specifiquesSous.appendChild(cn);
       }
 

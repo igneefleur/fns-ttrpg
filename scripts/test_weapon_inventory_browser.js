@@ -47,14 +47,14 @@ const server=http.createServer((req,res)=> {
   const inv=sheet.locator('[data-module="inv"]');await inv.locator('.pc-obj-tile[data-object-ref="blade"]').click();
   const card=inv.locator('.pc-arme');const field=name=>card.locator('.pc-f').filter({hasText:new RegExp('^'+name+'$')}).locator('input');
   assert.equal(await field('Parade').inputValue(),'8');assert.equal(await field('Réduction').inputValue(),'6');
-  assert.equal(await card.locator('.pc-arme-line').nth(3).locator('select').count(),3);
+  assert.equal(await card.locator('.pc-arme-line').nth(4).locator('select').count(),3);
   assert.equal(await field('Parade').isDisabled(),true);
   await inv.locator('.pc-gear').click();await field('Parade').fill('9');await field('Réduction').fill('7');
-  await card.locator('.pc-arme-line').nth(3).locator('select').nth(1).selectOption('Dexterite');
+  await card.locator('.pc-arme-line').nth(4).locator('select').nth(1).selectOption('Dexterite');
   for(let i=0;i<200;i++){const a=C.read(attrs).state.inv.objets.find(o=>o.ref==='blade').arme;if(a.parade==='9'&&a.reduction==='7'&&a.modsParade[1]==='Dexterite')break;await page.waitForTimeout(100);}
   assert.equal(C.read(attrs).state.inv.objets.find(o=>o.ref==='blade').arme.modsParade[1],'Dexterite');
   await page.reload();await sheet.locator('.pc-sheet').waitFor();await sheet.locator('.pc-tab').filter({hasText:'Équipement'}).click();await inv.locator('.pc-obj-tile[data-object-ref="blade"]').click();
-  assert.equal(await field('Parade').inputValue(),'9');assert.equal(await field('Réduction').inputValue(),'7');assert.equal(await card.locator('.pc-arme-line').nth(3).locator('select').nth(1).inputValue(),'Dexterite');
+  assert.equal(await field('Parade').inputValue(),'9');assert.equal(await field('Réduction').inputValue(),'7');assert.equal(await card.locator('.pc-arme-line').nth(4).locator('select').nth(1).inputValue(),'Dexterite');
   await card.screenshot({path:'/tmp/owd-weapon-defense-391.png'});
   await sheet.locator('.pc-tab').filter({hasText:/^Fiche$/}).click();
   await sheet.locator('[data-module="defense"]').getByRole('button',{name:'Parade — Dague',exact:false}).click();await sheet.locator('[data-defense-id="shield"] .pc-defense-bouton').click();

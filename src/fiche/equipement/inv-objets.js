@@ -64,7 +64,7 @@
     Object.keys(it.restaurations||{}).forEach(function(k){if(it.restaurations[k])add("Restauration "+k.toUpperCase(),fmtP(it.restaurations[k])+" "+(it.unitesRestauration[k]||"points"));});
     if(it.cap)add("Capacité",fmtP(it.cap)+" L");if(it.ep)add("Accroches",fmtP(it.ep)+" acc (max. "+(it.tailleAccroche || "non renseignée")+")");
     if(it.poches)add("Poches",fmtP(it.poches)+" L");if(it.froid)add("Protection froid",fmtP(it.froid));if(it.chaud)add("Protection chaleur",fmtP(it.chaud));
-    ["physique","feu","froid","eclair","decomposition","ethere","brut"].forEach(function(t){
+    ["physique","tranchant","contondant","perforant","feu","froid","eclair","decomposition","ethere","brut"].forEach(function(t){
       var labels={eclair:"éclair",decomposition:"décomposition",ethere:"éthéré"},label=labels[t]||t;
       if(it["res_"+t])add("Résistance "+label,fmtP(it["res_"+t])+" %");if(it["prot_"+t])add("Protection "+label,fmtP(it["prot_"+t]));
     });
@@ -909,26 +909,9 @@
           refresh();
         });
         sousLigne.appendChild(fld("Sous-type", typ));
-        pv.appendChild(champNombre("Poches", function () { return it.poches; },
-          function (v) { it.poches = pnum(v); }, "Ce que ce vêtement porté ajoute aux Poches, en L"));
-        cv.appendChild(pv);
-
-        var types = ["physique", "feu", "froid", "eclair", "decomposition", "ethere", "brut"];
-        types.forEach(function(t) {
-          var pr = el("div", "pc-obj-pair");
-          pr.appendChild(champNombre("Res " + t, function () { return it["res_" + t]; },
-            function (v) { it["res_" + t] = snum(v); }, "Resistance " + t + " (%)"));
-          pr.appendChild(champNombre("Prot " + t, function () { return it["prot_" + t]; },
-            function (v) { it["prot_" + t] = snum(v); }, "Protection " + t + " (flat)"));
-          cv.appendChild(pr);
-        });
-
-        var pp = el("div", "pc-obj-pair");
-        pp.appendChild(champNombre("Défense Froid", function () { return it.froid; },
-          function (v) { it.froid = snum(v); }, "Protection contre le froid, en degrés"));
-        pp.appendChild(champNombre("Défense Chaud", function () { return it.chaud; },
-          function (v) { it.chaud = snum(v); }, "Protection contre le chaud, en degrés"));
-        cv.appendChild(pp);
+        // Huit lignes uniques « Valeur | Type d'effet », données d'origine
+        // conservées pour les calculs de protection/résistance et les bonus.
+        invChampsVetement(cv,it);
         specifiquesSous.appendChild(cv);
       }
 
@@ -982,15 +965,18 @@
 
       // la nourriture porte son VOLUME : ce qu'une dose ou une part occupe de
       // contenance une fois avalée
-      if (it.nourri) {
+      if (invAvecEffets(it)) {
         var cn = carteNature();
         var pn = el("div", "pc-obj-pair");
         pn.appendChild(champNombre("Contenance", function () { return it.places; },
           function (v) { it.places = pnum(v); }, "Ce qu'une dose ou une part occupe de contenance"));
+        pn.appendChild(champNombre("Temps (DA)",function(){return num(it.tempsConsommation,0);},function(v){it.tempsConsommation=pnum(v);}));
         cn.appendChild(pn);
-        var nutrition=el("div","pc-obj-pair");["ps","ph"].forEach(function(k){nutrition.appendChild(champNombre(k.toUpperCase(),function(){return num(it[k],0);},function(v){it[k]=snum(v);}));});cn.appendChild(nutrition);
-        cn.appendChild(champNombre("Temps (DA)",function(){return num(it.tempsConsommation,0);},function(v){it.tempsConsommation=pnum(v);}));
-
+        if(it.nourri){
+          var nutrition=el("div","pc-obj-pair");
+          ["ps","ph"].forEach(function(k){nutrition.appendChild(champNombre(k.toUpperCase(),function(){return num(it[k],0);},function(v){it[k]=snum(v);}));});
+          cn.appendChild(nutrition);
+        }
         specifiquesSous.appendChild(cn);
       }
 

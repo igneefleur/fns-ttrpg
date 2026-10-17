@@ -73,7 +73,10 @@ const server=http.createServer((req,res)=> {
   assert.equal(await sheet.locator('[data-ou="mainD"] [data-object-ref="sample"]').count(),1);
   for(const type of ['solide','pate','liquide']){
    await replace(s=>{const o=s.inv.objets[0];o.typeObjet=type;o.sousType='ingerable';o.nourri=true;o.ou='poches';});await choose();
-   assert.equal(await field('Effet 1').count(),1);assert.equal(await field('Effet 5').count(),1);
+   assert.equal(await field('Effet 1').count(),1);assert.equal(await field('Effet 8').count(),1);
+   assert.equal(await panel.locator('.pc-obj-effets-grid > .pc-f').count(),8);
+   assert.equal(await panel.locator('.pc-obj-effets-grid').evaluate(n=>getComputedStyle(n).gridTemplateColumns.split(' ').length),2);
+   assert.equal(await panel.locator('.pc-obj-subtype-card .pc-obj-pair').first().locator('.pc-f').count(),2);
    assert.equal(await panel.locator('.pc-obj-subtype-row > .pc-f').count(),1);
    assert.equal(await panel.locator('.pc-obj-subtype-card').count(),1);
    assert.ok(await panel.locator('.pc-obj-body').evaluate(n=>Array.from(n.children).findIndex(c=>c.classList.contains('pc-obj-subtype-row')) < Array.from(n.children).findIndex(c=>c.classList.contains('pc-obj-subtype-card'))));

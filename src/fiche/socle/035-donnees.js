@@ -5,19 +5,16 @@
   // règle du livre.
   function D() { return DATA || {}; }
   function caracsData() { return Array.isArray(D().caracs) ? D().caracs : []; }
-  // L'ordre d'affichage des caractéristiques : celui des règles quand elles
-  // sont là (les quatre maîtrises, puis les quatre réserves), la liste socle
-  // sinon. Une caractéristique de l'état qui n'est plus dans les règles reste
-  // affichée en queue : on ne masque pas une donnée du personnage.
+  // Ordre demandé dans le module Caractéristiques et dans les prérequis.
+  // Les éventuelles caractéristiques supplémentaires des règles restent visibles.
   function caracsOrdre() {
     var out = [], vus = {};
-    caracsData().forEach(function (c) {
-      var k = c && c.cle;
-      if (k && !vus[k]) { vus[k] = 1; out.push(k); }
-    });
-    CARACS.concat(state ? Object.keys(state.caracs || {}) : []).forEach(function (k) {
-      if (!vus[k]) { vus[k] = 1; out.push(k); }
-    });
+    ["Force", "Dexterite", "Vigueur", "Endurance", "Resistance", "Ferveur", "Intelligence", "Chance"]
+      .concat(caracsData().map(function (c) { return c && c.cle; }))
+      .concat(CARACS, state ? Object.keys(state.caracs || {}) : [])
+      .forEach(function (k) {
+        if (k && !vus[k]) { vus[k] = 1; out.push(k); }
+      });
     return out;
   }
   function libCarac(c) {

@@ -125,7 +125,12 @@
       return el("div", "pc-arme-line " + classe);
     }
 
-    var card = el("div", "pc-arme");
+    var card = el("div", "pc-arme pc-obj-weapon-details");
+
+    // La compétence précède les valeurs d'attaque et de dégâts.
+    var l0 = ligne("pc-arme-1");
+    l0.appendChild(fld("Compétence", selComp()));
+    card.appendChild(l0);
 
     var l1 = ligne("pc-arme-2");
     l1.appendChild(champArme("Attaque", a, "attaque", "Difficulté du jet d'attaque."));
@@ -145,23 +150,50 @@
     for (var j = 0; j < 3; j++) l4.appendChild(fld("MOD", selCarac("modsParade", j)));
     if (!attaqueLibre) card.appendChild(l4);
 
-    var l5 = ligne(attaqueLibre || sousTypeHost ? "pc-arme-1" : "pc-arme-2");
-    l5.appendChild(fld("Compétence", selComp()));
     if (!attaqueLibre) {
       var typeField = fld(sousTypeHost ? "Sous-type" : "Type", selTypeArme());
       if (sousTypeHost) sousTypeHost.appendChild(typeField);
-      else l5.appendChild(typeField);
+      else { var lType = ligne("pc-arme-1"); lType.appendChild(typeField); card.appendChild(lType); }
     }
-    card.appendChild(l5);
 
-    if(!attaqueLibre){
-      if(!a.repartition)a.repartition={physique:100};
-      var rep=el("div","pc-arme-repartition"),sum=el("small","pc-arme-pourcent-total");
-      function total(){var n=0;combatTypes().forEach(function(k){n+=pnum(a.repartition[k]);});sum.textContent="Total : "+fmtP(n)+" %";sum.classList.toggle("pc-invalid",Math.abs(n-100)>0.001);}
-      combatTypes().forEach(function(k){var input=el("input","pc-edit-field");input.type="text";input.inputMode="decimal";input.value=pnum(a.repartition[k]);input.setAttribute("aria-label","Dégâts "+combatLibType(k)+" (%)");input.addEventListener("input",function(){var v=litNombreSigne(input.value);if(isFinite(v)&&v>=0){a.repartition[k]=v;save();total();}});input.addEventListener("change",refresh);rep.appendChild(fld(combatLibType(k)+" (%)",input));});
-      rep.appendChild(sum);total();card.appendChild(rep);
-      // hits reste dans les données pour les calculs ; ce n'est pas un champ d'édition.
-      var req=el("div","pc-arme-line pc-arme-2");req.appendChild(champArme("DEX requise",a,"dex"));req.appendChild(champArme("FOR requise",a,"for"));card.appendChild(req);
+    if (!attaqueLibre) {
+      if (!a.repartition) a.repartition = {physique:100};
+      var rep = el("div", "pc-arme-repartition");
+      var totalInput = el("input", "pc-edit-field pc-arme-total");
+      totalInput.type = "text";
+      totalInput.readOnly = true;
+      totalInput.setAttribute("aria-label", "Total des types de dégâts (%)");
+      totalInput.title = "Somme calculée automatiquement, non modifiable";
+      function total() {
+        var n = 0;
+        combatTypes().forEach(function (k) { n += pnum(a.repartition[k]); });
+        totalInput.value = fmtP(n) + " %";
+        totalInput.classList.toggle("pc-invalid", Math.abs(n-100) > 0.001);
+      }
+      // 4 rangées × 2, avec Brut / Total pour la dernière.
+      ["physique", "ethere", "feu", "froid", "eclair", "decomposition", "brut"].forEach(function (k) {
+        var input = el("input", "pc-edit-field");
+        input.type = "text";
+        input.inputMode = "decimal";
+        input.value = pnum(a.repartition[k]);
+        input.setAttribute("aria-label", "Dégâts " + combatLibType(k) + " (%)");
+        input.addEventListener("input", function () {
+          var v = litNombreSigne(input.value);
+          if (isFinite(v) && v >= 0) { a.repartition[k] = v; save(); total(); }
+        });
+        input.addEventListener("change", refresh);
+        rep.appendChild(fld(combatLibType(k) + " (%)", input));
+      });
+      rep.appendChild(fld("Total", totalInput));
+      total();
+      card.appendChild(rep);
+
+      // Les prérequis sont tous prévus, y compris ceux encore peu utilisés.
+      [["for", "FOR"], ["dex", "DEX"], ["vig", "VIG"], ["end", "END"],
+       ["res", "RES"], ["fer", "FER"], ["int", "INT"], ["cha", "CHA"]].forEach(function (x, i) {
+        if (i % 2 === 0) card.appendChild(ligne("pc-arme-2 pc-arme-requis"));
+        card.lastChild.appendChild(champArme(x[1], a, x[0], "Prérequis de " + x[1]));
+      });
     }
 
     return card;
