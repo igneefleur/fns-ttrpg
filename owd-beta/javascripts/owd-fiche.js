@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "3.23.0b";
+  var RELEASE = "3.23.1b";
   var SCHEMA = 16;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -171,6 +171,25 @@
   function snum(v) {
     var n = parseFloat(String(v == null ? "" : v).replace(",", "."));
     return isFinite(n) ? Math.round(n * 100) / 100 : 0;
+  }
+  // Entrées signées : utilisées notamment par les restaurations et effets
+  // des Solides, Pâtes et Liquides. Les deux fonctions doivent appartenir au
+  // socle commun : un appel sans définition interrompait le rendu du panneau.
+  function champNombreSigne(input) {
+    input.type = "text";
+    input.inputMode = "decimal";
+    input.autocomplete = "off";
+    input.spellcheck = false;
+    return input;
+  }
+  function litNombreSigne(value) {
+    var texte = String(value == null ? "" : value).trim()
+      .replace(/[\u2212\u2013\u2014]/g, "-").replace(/\s+/g, "").replace(",", ".");
+    // Durant la saisie, un '-' ou '+' isolé ne doit pas écrire zéro dans
+    // l'état. L'utilisateur peut terminer son nombre avant la sauvegarde.
+    if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(texte)) return NaN;
+    var n = Number(texte);
+    return isFinite(n) ? n : NaN;
   }
   // affichage : point décimal, sans zéros de traîne (« 0.5 », « 3 »)
   function fmtP(n) { return String(Math.round(n * 1000) / 1000); }
@@ -7898,7 +7917,7 @@
       var rs=el("div","pc-arme");
       if(!it.restaurations)it.restaurations={};if(!it.unitesRestauration)it.unitesRestauration={};
       ["pv","pe","pm","pr","ps","ph","pi"].forEach(function(k){
-        var line=el("div","pc-obj-pair"),n=el("input","pc-edit-field");champNombreSigne(n);n.value=num(it.restaurations[k],0);n.setAttribute("aria-label","Restauration "+k.toUpperCase());
+        var line=el("div","pc-obj-pair"),n=el("input","pc-edit-field");champNombreSigne(n);n.value=snum(it.restaurations[k]);n.setAttribute("aria-label","Restauration "+k.toUpperCase());
         n.addEventListener("input",function(){var v=litNombreSigne(n.value);if(isFinite(v)){it.restaurations[k]=v;save();}});
         line.appendChild(fld("Restauration "+k.toUpperCase(),n));line.appendChild(invChoix("Unité",[["points","Points"],["% max","% du maximum"]],it.unitesRestauration[k]||"points",function(v){it.unitesRestauration[k]=v;}));rs.appendChild(line);
       });body.appendChild(rs);
@@ -7921,7 +7940,7 @@
       while(count-->0)appliqueEffet(d.id,it.nom,cible);
     });
     ["pv","pe","pm","pr","ps","ph","pi"].forEach(function(k){
-      var v=num(it.restaurations&&it.restaurations[k],0);
+      var v=snum(it.restaurations&&it.restaurations[k]);
       if(it.unitesRestauration&&it.unitesRestauration[k]==="% max")v=avant[k]*v/100;
       if(ingere && (k==="ps"||k==="ph"))v+=num(it[k],0);
       v*=q;if(k==="pi")v=effetPerteInnocence(v);
