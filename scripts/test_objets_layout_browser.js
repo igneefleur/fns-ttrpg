@@ -66,7 +66,7 @@ const server=http.createServer((req,res)=> {
   const mediaWidths=await panel.locator('.pc-obj-media').evaluate(n=>Array.from(n.children).map(c=>c.getBoundingClientRect().width));
   assert.ok(mediaWidths[0] >= mediaWidths[1]*2.8 && mediaWidths[0] <= mediaWidths[1]*3.2,'Image/Fichier environ 75/25');
   assert.equal(await field('Construction').count(),0);assert.equal(await field('Modèle de consommable').count(),0);assert.equal(await field('Effet 1').count(),0);
-  const types=await field('Type').locator('option').allTextContents();assert.ok(!types.includes('Éclairage')&&!types.includes('Couchage'));
+  const types=await field('Type').locator('option').allTextContents();assert.ok(!types.includes('Éclairage')&&!types.includes('Couchage'));assert.ok(types.includes('Consommable'));assert.ok(!types.includes('Solide')&&!types.includes('Pâte')&&!types.includes('Liquide'));
   await field('Mains').locator('select').selectOption('2');assert.equal((await state()).inv.objets[0].mains,2);
   await frame.evaluate(()=>Owd.remonte());await choose();assert.equal(await field('Mains').locator('select').inputValue(),'2');
   await replace(s=>{s.inv.objets[0].ou='mainG';});
@@ -76,7 +76,11 @@ const server=http.createServer((req,res)=> {
   // 2 autorise le port dans une main ; seul le dépôt sur 2 Mains occupe les deux.
   for(const type of ['solide','pate','liquide']){
    await replace(s=>{const o=s.inv.objets[0];o.typeObjet=type;o.sousType='ingerable';o.nourri=true;o.ou='poches';});await choose();
+   assert.equal(await field('Type').locator('select').inputValue(),'consommable');
+   assert.equal(await field('Sous-type').locator('select').inputValue(),type+'_ingerable');
+   assert.deepEqual(await field('Sous-type').locator('optgroup').evaluateAll(els=>els.map(e=>e.label)),['Solide','Pâte','Liquide']);
    assert.equal(await field('Effet 1').count(),1);assert.equal(await field('Effet 8').count(),1);
+   assert.equal(await panel.locator('.pc-obj-restauration').evaluate(n=>getComputedStyle(n).borderTopStyle),'none');
    assert.equal(await panel.locator('.pc-obj-effets-grid > .pc-f').count(),8);
    assert.equal(await panel.locator('.pc-obj-effets-grid').evaluate(n=>getComputedStyle(n).gridTemplateColumns.split(' ').length),2);
    assert.equal(await panel.locator('.pc-obj-subtype-card .pc-obj-pair').first().locator('.pc-f').count(),2);
@@ -85,8 +89,13 @@ const server=http.createServer((req,res)=> {
    assert.ok(await panel.locator('.pc-obj-body').evaluate(n=>Array.from(n.children).findIndex(c=>c.classList.contains('pc-obj-subtype-row')) < Array.from(n.children).findIndex(c=>c.classList.contains('pc-obj-subtype-card'))));
    assert.equal(await field('Effet 1').locator('option').first().textContent(),'Aucun');
    await replace(s=>{s.inv.objets[0].sousType='consommable';s.inv.objets[0].nourri=false;});await choose();assert.equal(await field('Effet 1').count(),1);
-   await replace(s=>{s.inv.objets[0].sousType='autre';});await choose();assert.equal(await field('Effet 1').count(),0);
+   assert.equal(await field('Sous-type').locator('select').inputValue(),type+'_autre');
+   await replace(s=>{s.inv.objets[0].sousType='autre';});await choose();assert.equal(await field('Effet 1').count(),1);
   }
+  // Sac : deux lignes compactes, 50/50, et labels lisibles sans débordement.
+  await replace(s=>{const o=s.inv.objets[0];o.typeObjet='rangement';o.sousType='sac';o.sac=true;o.ceint=false;o.cap=35;o.ep=4;o.tailleInterieure='Petite';o.tailleAccroche='Très petite';});await choose();
+  const sacLabels=await panel.locator('.pc-obj-subtype-card .pc-obj-subcard > .pc-obj-pair').evaluateAll(els=>els.map(n=>Array.from(n.querySelectorAll('label')).map(l=>l.textContent)));
+  assert.deepEqual(sacLabels,[['Capacité','Taille INT. max'],['Accroches','Taille ACC. max']]);
   // Migration d’anciens types et conservation des choix de mains des armes.
   await replace(s=>{s.inv.objets[0].typeObjet='eclairage';s.inv.objets[0].sousType='lanterne';s.inv.objets[0].construction='Rigide';});
   assert.equal((await state()).inv.objets[0].typeObjet,'autre');assert.equal((await state()).inv.objets[0].construction,undefined);

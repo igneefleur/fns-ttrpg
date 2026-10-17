@@ -77,8 +77,8 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "3.26.0b";
-  var SCHEMA = 16;
+  var RELEASE = "3.27.0b";
+  var SCHEMA = 17;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
   // caractéristiques est ouverte mais serrée (20 est la moyenne humaine), un
@@ -7894,11 +7894,47 @@
   }
   // Propriétés communes ajoutées sans réinterpréter les anciennes clés de stockage.
   var INV_TAILLES = ["Minuscule","Très petite","Petite","Moyenne","Grande","Très grande","Gigantesque"];
-  var INV_TYPES_OBJETS = {arme:"Arme",vetement:"Vêtement",accessoire:"Accessoire",rangement:"Rangement",contenant:"Contenant",solide:"Solide",pate:"Pâte",liquide:"Liquide",munition:"Munition",autre:"Objet divers"};
-  function invType(o) {return /^(eclairage|couchage)$/.test(o.typeObjet)?"autre":o.typeObjet || (o.arme?"arme":o.vet?"vetement":o.acc?"accessoire":o.sac||o.ceint?"rangement":o.contenant?"contenant":o.nourri?"solide":/^(fleche|carreau|balle|pierre)/.test(o.contenu||"")?"munition":o.contenu||"autre");}
+  var INV_TYPES_OBJETS = {arme:"Arme",vetement:"Vêtement",accessoire:"Accessoire",rangement:"Rangement",contenant:"Contenant",consommable:"Consommable",munition:"Munition",autre:"Objet divers"};
+  function invType(o) {
+    var ancien=String(o.typeObjet||"");
+    if(/^(eclairage|couchage)$/.test(ancien))return "autre";
+    // Les trois anciens types deviennent un même type de formulaire sans
+    // réécrire la catégorie physique `contenu` des objets déjà stockés.
+    if(["solide","pate","liquide"].indexOf(ancien)>=0)return "consommable";
+    if(ancien)return ancien;
+    if(o.arme)return "arme";
+    if(o.vet)return "vetement";
+    if(o.acc)return "accessoire";
+    if(o.sac||o.ceint)return "rangement";
+    if(o.contenant)return "contenant";
+    if(/^(fleche|carreau|balle|pierre)/.test(o.contenu||""))return "munition";
+    if(o.nourri||["solide","pate","liquide"].indexOf(o.contenu)>=0)return "consommable";
+    return "autre";
+  }
+  function invFormeConsommable(o) {
+    var raw=String(o.typeObjet||"");
+    if(["solide","pate","liquide"].indexOf(raw)>=0)return raw;
+    var sub=String(o.sousType||"");
+    if(/^(solide|pate|liquide)_(ingerable|autre)$/.test(sub))return sub.split("_")[0];
+    if(o.contenu==="liquide"||o.contenu==="pate")return o.contenu;
+    return "solide";
+  }
+  function invSousTypeConsommable(o) {
+    var sub=String(o.sousType||"");
+    if(/^(solide|pate|liquide)_(ingerable|autre)$/.test(sub))return sub;
+    // Avant la fusion, `consommable` désignait l'usage sans ingestion :
+    // il devient « autre », mais conserve ses effets et ses restaurations.
+    var use=(sub==="ingerable"||(!sub && o.nourri))?"ingerable":"autre";
+    return invFormeConsommable(o)+"_"+use;
+  }
+  function invEstIngerable(it){return /^(solide|pate|liquide)_ingerable$/.test(it.sousType||"");}
   function invSousTypes(type) {
     if(type==="rangement")return [["sac","Sac à dos"],["ceint","Ceinture"]];
-    if(["solide","pate","liquide"].indexOf(type)>=0)return [["ingerable","Ingérable"],["consommable","Consommable"],["autre","Autre"]];
+    if(type==="consommable")return [
+      ["solide_ingerable","Solide ingérable"],["solide_autre","Solide autre"],
+      ["pate_ingerable","Pâte ingérable"],["pate_autre","Pâte autre"],
+      ["liquide_ingerable","Liquide ingérable"],["liquide_autre","Liquide autre"]
+    ];
     if(type==="munition")return [["fleches","Flèche"],["carreaux","Carreau"],["balles","Balle"],["pierres","Pierre"]];
     return [];
   }
@@ -7918,11 +7954,12 @@
     }
     n.versionObjet=1;
     n.typeObjet=invType(o);if(!INV_TYPES_OBJETS[n.typeObjet])n.typeObjet="autre";
-    n.sousType=String(o.sousType || (o.sac?"sac":o.ceint?"ceint":o.vet?o.vet:o.acc?o.acc:o.arme?o.arme.type:o.nourri?"ingerable":n.typeObjet==="munition"?o.contenu:"autre"));
+    n.sousType=n.typeObjet==="consommable"?invSousTypeConsommable(o):
+      String(o.sousType || (o.sac?"sac":o.ceint?"ceint":o.vet?o.vet:o.acc?o.acc:o.arme?o.arme.type:n.typeObjet==="munition"?o.contenu:"autre"));
     if(/^(eclairage|couchage)$/.test(o.typeObjet))n.sousType="autre";
     // La catégorie technique du contenant EST son sous-type affiché.
     if(n.typeObjet==="contenant" && n.contenant)n.sousType=String(n.contenant);
-    n.nourri=n.sousType==="ingerable";n.places=pnum(o.places);
+    n.nourri=invEstIngerable(n);n.places=pnum(o.places);
     n.taille=INV_TAILLES.indexOf(o.taille)>=0?o.taille:modele&&modele.taille||"";
     var mainsBase=o.arme&&o.arme.mains;
     if(mainsBase==null && o.arme)armesData().forEach(function(d){if(d.cle===o.arme.type || !o.arme.type&&pli(d.nom)===pli(o.nom))mainsBase=d.mains;});
@@ -8048,7 +8085,7 @@
     });
     host.appendChild(grille);
   }
-  function invAvecEffets(it) {return ["solide","pate","liquide"].indexOf(invType(it))>=0 && ["ingerable","consommable"].indexOf(it.sousType)>=0;}
+  function invAvecEffets(it) {return invType(it)==="consommable" && /^(solide|pate|liquide)_(ingerable|autre)$/.test(it.sousType||"");}
   function invChampsCommuns(body,it,render) {
     if(invAvecEffets(it)){
       body.appendChild(el("div","lbl","Effets"));var card=el("div","pc-arme pc-obj-effets-grid");
@@ -8066,7 +8103,7 @@
       combatTypes().forEach(function(k){mun.appendChild(champArme(combatLibType(k)+" (%)",it.munitionStats.repartition,k));});body.appendChild(mun);
     }
     if(invAvecEffets(it)){
-      var rs=el("div","pc-arme");
+      var rs=el("div","pc-arme pc-obj-restauration");
       if(!it.restaurations)it.restaurations={};if(!it.unitesRestauration)it.unitesRestauration={};
       ["pv","pe","pm","pr","ps","ph","pi"].forEach(function(k){
         var line=el("div","pc-obj-pair"),n=el("input","pc-edit-field");champNombreSigne(n);n.value=snum(it.restaurations[k]);n.setAttribute("aria-label","Restauration "+k.toUpperCase());
@@ -8080,7 +8117,7 @@
     var effects=(it.effets||[]).map(effetDefinition).filter(Boolean);
     if(effects.length && Math.abs(q-Math.round(q))>1e-9){flash("Les effets sont définis par dose entière : choisissez une quantité entière.");return false;}
     if(effects.some(function(d){return d.ops.impregnation;})&&!defenseArme(cible)){flash("Choisissez l’arme à imprégner.");return false;}
-    var ingere=it.nourri || it.sousType==="ingerable",avant={};
+    var ingere=invEstIngerable(it),avant={};
     ["pv","pe","pm","pr","ps","ph","pi"].forEach(function(k){avant[k]=maxDe(k);});
     var results=[];
     // Les probabilités sont testées à la consommation, jamais au rafraîchissement.
@@ -8973,11 +9010,11 @@
         var sub=invSousTypes(type);it.typeObjet=type;it.sousType=sub.length?sub[0][0]:"";
         if(type==="rangement")v=it.sousType;
         if(it.contenant && v!=="contenant" || it.sac && v!=="sac")libereContenu(it,true);
-        it.nourri=it.sousType==="ingerable";it.sac=v==="sac";it.ceint=v==="ceint";
+        it.nourri=invEstIngerable(it);it.sac=v==="sac";it.ceint=v==="ceint";
         it.vet=v==="vet"?(it.vet||"haut"):"";it.acc=v==="acc"?(it.acc||"collier"):"";
         it.contenant=v==="contenant"?(it.contenant||"liquide"):"";
         if(type==="contenant")it.sousType=it.contenant;
-        it.contenu=type==="munition"?it.sousType:["liquide","pate"].indexOf(type)>=0?type:"";
+        it.contenu=type==="munition"?it.sousType:type==="consommable"?"":"";
         it.arme=v==="arme"?(it.arme||{attaque:"",degats:"",parade:"",reduction:"",modsDegats:[],modsParade:[],comp:"",type:"",mains:1,repartition:{physique:100}}):null;
         if (INV_EP.indexOf(it.ou) < 0 && !lieuPermis(it, it.ou)) it.ou = "sac";
         rangeEmplacements(items);
@@ -9003,9 +9040,33 @@
       var specifiquesSous = el("div", "pc-obj-specifics pc-obj-subtype-card");
       var sousLigne = el("div", "pc-obj-subtype-row");
       var sous = invSousTypes(invType(it));
-      if(sous.length) sousLigne.appendChild(invChoix("Sous-type", sous,
+      if(invType(it)==="consommable") {
+        // Les familles sont des en-têtes natifs en gras, non sélectionnables,
+        // comme dans la liste des types d'armes.
+        var choixConso=el("select","pc-select pc-edit-field");
+        [["Solide",sous.slice(0,2)],["Pâte",sous.slice(2,4)],["Liquide",sous.slice(4,6)]].forEach(function(gr){
+          var optgroup=document.createElement("optgroup");optgroup.label=gr[0];
+          gr[1].forEach(function(e){var opt=el("option",null,e[1]);opt.value=e[0];opt.selected=e[0]===it.sousType;optgroup.appendChild(opt);});
+          choixConso.appendChild(optgroup);
+        });
+        choixConso.addEventListener("change",function(){
+          it.sousType=choixConso.value;it.nourri=invEstIngerable(it);
+          var forme=invFormeConsommable(it);
+          // Conserver la compatibilité avec les Contenants : liquide/pâte
+          // restent des catégories de contenu indépendantes du sous-type.
+          if(["liquide","pate",""].indexOf(it.contenu||"")>=0)it.contenu=forme==="solide"?"":forme;
+          if(it.dans){var porteur=items.find(function(o){return o.ref===it.dans;});
+            if(porteur&&porteur.contenant&&it.contenu!==porteur.contenant){
+              it.dans="";it.ou=porteur.ou==="terre"?"terre":"sac";it.emp=-1;
+              flash("La matière ne correspond plus au contenant : l’objet en est sorti.");
+            }
+          }
+          save();render();refresh();
+        });
+        sousLigne.appendChild(fld("Sous-type",choixConso));
+      } else if(sous.length) sousLigne.appendChild(invChoix("Sous-type", sous,
         it.sousType || (it.ceint ? "ceint" : it.sac ? "sac" : "autre"), function (v) {
-          it.sousType=v;it.nourri=v==="ingerable";
+          it.sousType=v;it.nourri=invEstIngerable(it);
           if(invType(it)==="rangement"){
             if(it.sac&&v!=="sac")libereContenu(it,true);
             it.sac=v==="sac";it.ceint=v==="ceint";
@@ -9074,8 +9135,8 @@
       function champsEp() {
         var pe = el("div", "pc-obj-pair");
         pe.appendChild(champNombre("Accroches", function () { return it.ep; },
-          function (v) { it.ep = Math.floor(pnum(v)); rangeEmplacements(items); }, "Nombre d'emplacements, en acc"));
-        pe.appendChild(invChoix("Taille maximale",[["","Non renseignée"]].concat(INV_TAILLES.map(function(t){return [t,t];})),it.tailleAccroche || (it.sac?"Moyenne":""),function(v){it.tailleAccroche=v;rangeEmplacements(items);render();}));
+          function (v) { it.ep = Math.floor(pnum(v)); rangeEmplacements(items); }, "Nombre de points d'accroche"));
+        pe.appendChild(invChoix(it.sac?"Taille ACC. max":"Taille maximale",[["","Non renseignée"]].concat(INV_TAILLES.map(function(t){return [t,t];})),it.tailleAccroche || (it.sac?"Moyenne":""),function(v){it.tailleAccroche=v;rangeEmplacements(items);render();}));
         Array.prototype.forEach.call(pe.querySelectorAll("input"), function (i) {
           i.addEventListener("change", function () { render(); });
         });
@@ -9108,9 +9169,9 @@
         var cs = carteNature();
         var ps = el("div", "pc-obj-pair");
         ps.appendChild(champNombre("Capacité", function () { return it.cap; },
-          function (v) { it.cap = pnum(v); }, "Ce que ce sac contient, en L"));
+          function (v) { it.cap = pnum(v); }, "Capacité intérieure du sac, en L"));
+        ps.appendChild(invChoix("Taille INT. max",[["","Non renseignée"]].concat(INV_TAILLES.map(function(t){return [t,t];})),invTailleMaxSac(it),function(v){it.tailleInterieure=v;rangeEmplacements(items);render();}));
         cs.appendChild(ps);
-        cs.appendChild(invChoix("Taille intérieure maximale",INV_TAILLES,invTailleMaxSac(it),function(v){it.tailleInterieure=v;}));
         cs.appendChild(champsEp());
         specifiquesSous.appendChild(cs);
       }

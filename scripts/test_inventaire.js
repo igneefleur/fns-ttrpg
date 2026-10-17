@@ -50,4 +50,20 @@ test('Par terre et objets imbriqués persistent dans les attributs Roll20',()=>{
   assert.deepEqual(loaded.inv.objets,state.inv.objets);
   assert.deepEqual(loaded.inv.objets.map(x=>D.isCarried(loaded.inv.objets,x)),[false,false,false,true]);
 });
+test('fusion Consommable : neuf valeurs anciennes sans perte de données',()=>{
+  const sandbox={D:()=>({}),pnum:v=>Number(v)||0,snum:v=>Number(v)||0,
+    num:(v,d)=>Number(v)||d,combatTypes:()=>['physique','feu','froid','eclair','decomposition','ethere','brut']};
+  vm.createContext(sandbox);vm.runInContext(fs.readFileSync(require('node:path').join(__dirname,'../src/fiche/equipement/inv-nouveaux.js'),'utf8'),sandbox);
+  for(const t of ['solide','pate','liquide'])for(const sous of ['ingerable','consommable','autre']){
+    const objet={typeObjet:t,sousType:sous,nourri:sous==='ingerable',contenu:t==='solide'?'':t,restaurations:{pv:-12.5},effets:['exemple']};
+    const n=sandbox.enrichitObjet({contenu:objet.contenu},objet);
+    assert.equal(n.typeObjet,'consommable');assert.equal(n.sousType,t+'_'+(sous==='ingerable'?'ingerable':'autre'));
+    assert.equal(n.nourri,sous==='ingerable');assert.equal(n.restaurations.pv,-12.5);
+    assert.ok(sandbox.invAvecEffets(n));assert.equal(n.contenu,objet.contenu);
+  }
+  const cont=sandbox.enrichitObjet({contenant:'liquide'},{typeObjet:'contenant',contenant:'liquide'});
+  assert.equal(cont.typeObjet,'contenant');assert.equal(cont.sousType,'liquide');
+  assert.deepEqual(JSON.parse(JSON.stringify(sandbox.invSousTypes('consommable').map(e=>e[0]))),
+    ['solide_ingerable','solide_autre','pate_ingerable','pate_autre','liquide_ingerable','liquide_autre']);
+});
 console.log(count+' scénarios de transfert et de stockage validés.');

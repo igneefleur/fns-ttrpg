@@ -860,11 +860,11 @@
         var sub=invSousTypes(type);it.typeObjet=type;it.sousType=sub.length?sub[0][0]:"";
         if(type==="rangement")v=it.sousType;
         if(it.contenant && v!=="contenant" || it.sac && v!=="sac")libereContenu(it,true);
-        it.nourri=it.sousType==="ingerable";it.sac=v==="sac";it.ceint=v==="ceint";
+        it.nourri=invEstIngerable(it);it.sac=v==="sac";it.ceint=v==="ceint";
         it.vet=v==="vet"?(it.vet||"haut"):"";it.acc=v==="acc"?(it.acc||"collier"):"";
         it.contenant=v==="contenant"?(it.contenant||"liquide"):"";
         if(type==="contenant")it.sousType=it.contenant;
-        it.contenu=type==="munition"?it.sousType:["liquide","pate"].indexOf(type)>=0?type:"";
+        it.contenu=type==="munition"?it.sousType:type==="consommable"?"":"";
         it.arme=v==="arme"?(it.arme||{attaque:"",degats:"",parade:"",reduction:"",modsDegats:[],modsParade:[],comp:"",type:"",mains:1,repartition:{physique:100}}):null;
         if (INV_EP.indexOf(it.ou) < 0 && !lieuPermis(it, it.ou)) it.ou = "sac";
         rangeEmplacements(items);
@@ -890,9 +890,33 @@
       var specifiquesSous = el("div", "pc-obj-specifics pc-obj-subtype-card");
       var sousLigne = el("div", "pc-obj-subtype-row");
       var sous = invSousTypes(invType(it));
-      if(sous.length) sousLigne.appendChild(invChoix("Sous-type", sous,
+      if(invType(it)==="consommable") {
+        // Les familles sont des en-têtes natifs en gras, non sélectionnables,
+        // comme dans la liste des types d'armes.
+        var choixConso=el("select","pc-select pc-edit-field");
+        [["Solide",sous.slice(0,2)],["Pâte",sous.slice(2,4)],["Liquide",sous.slice(4,6)]].forEach(function(gr){
+          var optgroup=document.createElement("optgroup");optgroup.label=gr[0];
+          gr[1].forEach(function(e){var opt=el("option",null,e[1]);opt.value=e[0];opt.selected=e[0]===it.sousType;optgroup.appendChild(opt);});
+          choixConso.appendChild(optgroup);
+        });
+        choixConso.addEventListener("change",function(){
+          it.sousType=choixConso.value;it.nourri=invEstIngerable(it);
+          var forme=invFormeConsommable(it);
+          // Conserver la compatibilité avec les Contenants : liquide/pâte
+          // restent des catégories de contenu indépendantes du sous-type.
+          if(["liquide","pate",""].indexOf(it.contenu||"")>=0)it.contenu=forme==="solide"?"":forme;
+          if(it.dans){var porteur=items.find(function(o){return o.ref===it.dans;});
+            if(porteur&&porteur.contenant&&it.contenu!==porteur.contenant){
+              it.dans="";it.ou=porteur.ou==="terre"?"terre":"sac";it.emp=-1;
+              flash("La matière ne correspond plus au contenant : l’objet en est sorti.");
+            }
+          }
+          save();render();refresh();
+        });
+        sousLigne.appendChild(fld("Sous-type",choixConso));
+      } else if(sous.length) sousLigne.appendChild(invChoix("Sous-type", sous,
         it.sousType || (it.ceint ? "ceint" : it.sac ? "sac" : "autre"), function (v) {
-          it.sousType=v;it.nourri=v==="ingerable";
+          it.sousType=v;it.nourri=invEstIngerable(it);
           if(invType(it)==="rangement"){
             if(it.sac&&v!=="sac")libereContenu(it,true);
             it.sac=v==="sac";it.ceint=v==="ceint";
@@ -961,8 +985,8 @@
       function champsEp() {
         var pe = el("div", "pc-obj-pair");
         pe.appendChild(champNombre("Accroches", function () { return it.ep; },
-          function (v) { it.ep = Math.floor(pnum(v)); rangeEmplacements(items); }, "Nombre d'emplacements, en acc"));
-        pe.appendChild(invChoix("Taille maximale",[["","Non renseignée"]].concat(INV_TAILLES.map(function(t){return [t,t];})),it.tailleAccroche || (it.sac?"Moyenne":""),function(v){it.tailleAccroche=v;rangeEmplacements(items);render();}));
+          function (v) { it.ep = Math.floor(pnum(v)); rangeEmplacements(items); }, "Nombre de points d'accroche"));
+        pe.appendChild(invChoix(it.sac?"Taille ACC. max":"Taille maximale",[["","Non renseignée"]].concat(INV_TAILLES.map(function(t){return [t,t];})),it.tailleAccroche || (it.sac?"Moyenne":""),function(v){it.tailleAccroche=v;rangeEmplacements(items);render();}));
         Array.prototype.forEach.call(pe.querySelectorAll("input"), function (i) {
           i.addEventListener("change", function () { render(); });
         });
@@ -995,9 +1019,9 @@
         var cs = carteNature();
         var ps = el("div", "pc-obj-pair");
         ps.appendChild(champNombre("Capacité", function () { return it.cap; },
-          function (v) { it.cap = pnum(v); }, "Ce que ce sac contient, en L"));
+          function (v) { it.cap = pnum(v); }, "Capacité intérieure du sac, en L"));
+        ps.appendChild(invChoix("Taille INT. max",[["","Non renseignée"]].concat(INV_TAILLES.map(function(t){return [t,t];})),invTailleMaxSac(it),function(v){it.tailleInterieure=v;rangeEmplacements(items);render();}));
         cs.appendChild(ps);
-        cs.appendChild(invChoix("Taille intérieure maximale",INV_TAILLES,invTailleMaxSac(it),function(v){it.tailleInterieure=v;}));
         cs.appendChild(champsEp());
         specifiquesSous.appendChild(cs);
       }

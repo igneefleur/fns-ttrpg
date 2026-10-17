@@ -1,10 +1,46 @@
   // Propriétés communes ajoutées sans réinterpréter les anciennes clés de stockage.
   var INV_TAILLES = ["Minuscule","Très petite","Petite","Moyenne","Grande","Très grande","Gigantesque"];
-  var INV_TYPES_OBJETS = {arme:"Arme",vetement:"Vêtement",accessoire:"Accessoire",rangement:"Rangement",contenant:"Contenant",solide:"Solide",pate:"Pâte",liquide:"Liquide",munition:"Munition",autre:"Objet divers"};
-  function invType(o) {return /^(eclairage|couchage)$/.test(o.typeObjet)?"autre":o.typeObjet || (o.arme?"arme":o.vet?"vetement":o.acc?"accessoire":o.sac||o.ceint?"rangement":o.contenant?"contenant":o.nourri?"solide":/^(fleche|carreau|balle|pierre)/.test(o.contenu||"")?"munition":o.contenu||"autre");}
+  var INV_TYPES_OBJETS = {arme:"Arme",vetement:"Vêtement",accessoire:"Accessoire",rangement:"Rangement",contenant:"Contenant",consommable:"Consommable",munition:"Munition",autre:"Objet divers"};
+  function invType(o) {
+    var ancien=String(o.typeObjet||"");
+    if(/^(eclairage|couchage)$/.test(ancien))return "autre";
+    // Les trois anciens types deviennent un même type de formulaire sans
+    // réécrire la catégorie physique `contenu` des objets déjà stockés.
+    if(["solide","pate","liquide"].indexOf(ancien)>=0)return "consommable";
+    if(ancien)return ancien;
+    if(o.arme)return "arme";
+    if(o.vet)return "vetement";
+    if(o.acc)return "accessoire";
+    if(o.sac||o.ceint)return "rangement";
+    if(o.contenant)return "contenant";
+    if(/^(fleche|carreau|balle|pierre)/.test(o.contenu||""))return "munition";
+    if(o.nourri||["solide","pate","liquide"].indexOf(o.contenu)>=0)return "consommable";
+    return "autre";
+  }
+  function invFormeConsommable(o) {
+    var raw=String(o.typeObjet||"");
+    if(["solide","pate","liquide"].indexOf(raw)>=0)return raw;
+    var sub=String(o.sousType||"");
+    if(/^(solide|pate|liquide)_(ingerable|autre)$/.test(sub))return sub.split("_")[0];
+    if(o.contenu==="liquide"||o.contenu==="pate")return o.contenu;
+    return "solide";
+  }
+  function invSousTypeConsommable(o) {
+    var sub=String(o.sousType||"");
+    if(/^(solide|pate|liquide)_(ingerable|autre)$/.test(sub))return sub;
+    // Avant la fusion, `consommable` désignait l'usage sans ingestion :
+    // il devient « autre », mais conserve ses effets et ses restaurations.
+    var use=(sub==="ingerable"||(!sub && o.nourri))?"ingerable":"autre";
+    return invFormeConsommable(o)+"_"+use;
+  }
+  function invEstIngerable(it){return /^(solide|pate|liquide)_ingerable$/.test(it.sousType||"");}
   function invSousTypes(type) {
     if(type==="rangement")return [["sac","Sac à dos"],["ceint","Ceinture"]];
-    if(["solide","pate","liquide"].indexOf(type)>=0)return [["ingerable","Ingérable"],["consommable","Consommable"],["autre","Autre"]];
+    if(type==="consommable")return [
+      ["solide_ingerable","Solide ingérable"],["solide_autre","Solide autre"],
+      ["pate_ingerable","Pâte ingérable"],["pate_autre","Pâte autre"],
+      ["liquide_ingerable","Liquide ingérable"],["liquide_autre","Liquide autre"]
+    ];
     if(type==="munition")return [["fleches","Flèche"],["carreaux","Carreau"],["balles","Balle"],["pierres","Pierre"]];
     return [];
   }
@@ -24,11 +60,12 @@
     }
     n.versionObjet=1;
     n.typeObjet=invType(o);if(!INV_TYPES_OBJETS[n.typeObjet])n.typeObjet="autre";
-    n.sousType=String(o.sousType || (o.sac?"sac":o.ceint?"ceint":o.vet?o.vet:o.acc?o.acc:o.arme?o.arme.type:o.nourri?"ingerable":n.typeObjet==="munition"?o.contenu:"autre"));
+    n.sousType=n.typeObjet==="consommable"?invSousTypeConsommable(o):
+      String(o.sousType || (o.sac?"sac":o.ceint?"ceint":o.vet?o.vet:o.acc?o.acc:o.arme?o.arme.type:n.typeObjet==="munition"?o.contenu:"autre"));
     if(/^(eclairage|couchage)$/.test(o.typeObjet))n.sousType="autre";
     // La catégorie technique du contenant EST son sous-type affiché.
     if(n.typeObjet==="contenant" && n.contenant)n.sousType=String(n.contenant);
-    n.nourri=n.sousType==="ingerable";n.places=pnum(o.places);
+    n.nourri=invEstIngerable(n);n.places=pnum(o.places);
     n.taille=INV_TAILLES.indexOf(o.taille)>=0?o.taille:modele&&modele.taille||"";
     var mainsBase=o.arme&&o.arme.mains;
     if(mainsBase==null && o.arme)armesData().forEach(function(d){if(d.cle===o.arme.type || !o.arme.type&&pli(d.nom)===pli(o.nom))mainsBase=d.mains;});
@@ -154,7 +191,7 @@
     });
     host.appendChild(grille);
   }
-  function invAvecEffets(it) {return ["solide","pate","liquide"].indexOf(invType(it))>=0 && ["ingerable","consommable"].indexOf(it.sousType)>=0;}
+  function invAvecEffets(it) {return invType(it)==="consommable" && /^(solide|pate|liquide)_(ingerable|autre)$/.test(it.sousType||"");}
   function invChampsCommuns(body,it,render) {
     if(invAvecEffets(it)){
       body.appendChild(el("div","lbl","Effets"));var card=el("div","pc-arme pc-obj-effets-grid");
@@ -172,7 +209,7 @@
       combatTypes().forEach(function(k){mun.appendChild(champArme(combatLibType(k)+" (%)",it.munitionStats.repartition,k));});body.appendChild(mun);
     }
     if(invAvecEffets(it)){
-      var rs=el("div","pc-arme");
+      var rs=el("div","pc-arme pc-obj-restauration");
       if(!it.restaurations)it.restaurations={};if(!it.unitesRestauration)it.unitesRestauration={};
       ["pv","pe","pm","pr","ps","ph","pi"].forEach(function(k){
         var line=el("div","pc-obj-pair"),n=el("input","pc-edit-field");champNombreSigne(n);n.value=snum(it.restaurations[k]);n.setAttribute("aria-label","Restauration "+k.toUpperCase());
@@ -186,7 +223,7 @@
     var effects=(it.effets||[]).map(effetDefinition).filter(Boolean);
     if(effects.length && Math.abs(q-Math.round(q))>1e-9){flash("Les effets sont définis par dose entière : choisissez une quantité entière.");return false;}
     if(effects.some(function(d){return d.ops.impregnation;})&&!defenseArme(cible)){flash("Choisissez l’arme à imprégner.");return false;}
-    var ingere=it.nourri || it.sousType==="ingerable",avant={};
+    var ingere=invEstIngerable(it),avant={};
     ["pv","pe","pm","pr","ps","ph","pi"].forEach(function(k){avant[k]=maxDe(k);});
     var results=[];
     // Les probabilités sont testées à la consommation, jamais au rafraîchissement.
