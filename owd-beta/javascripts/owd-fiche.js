@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "3.24.0b";
+  var RELEASE = "3.25.0b";
   var SCHEMA = 16;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -944,6 +944,9 @@
         // « places » est le nom de CLÉ du volume d'un aliment : le livre dit
         // « volume », la clé garde son nom, qui voyage dans les Attributes
         places: pnum(o.places),
+        emplacements: Math.max(0,Math.floor(num(o.emplacements,1))),
+        tenueDeuxMains: o.tenueDeuxMains === true,
+        prerequis: o.prerequis && typeof o.prerequis === "object" ? o.prerequis : {},
         nourri: !!o.nourri,
         // Types « contenant » et « contenu » : la chaîne porte leur catégorie.
         // Une valeur inconnue est conservée plutôt qu'effacée : une archive ou
@@ -1007,7 +1010,7 @@
     var anciensSacs = s.inv.objets.slice();
     anciensSacs.forEach(function(o){if(!o.sac)return;var n=Math.max(1,Math.ceil(pnum(o.qte)));o.qte=1;
       for(var k=1;k<n;k++){var c=JSON.parse(JSON.stringify(o));c.ref=uid("o");c.ou="sac";c.dans="";c.emp=-1;s.inv.objets.push(c);}});
-    var contenantsParRef = Object.create(null), slotsPris = Object.create(null);
+    var contenantsParRef = Object.create(null);
     s.inv.objets.forEach(function (o) {
       if (o && o.ref && (o.contenant || o.sac)) contenantsParRef[o.ref] = o;
     });
@@ -1016,14 +1019,14 @@
       var p = contenantsParRef[o.dans];
       var cycle = p === o, walk = p, seen = {};
       while(walk && walk.dans && !cycle){if(seen[walk.ref]||walk.dans===o.ref){cycle=true;break;}seen[walk.ref]=true;walk=contenantsParRef[walk.dans];}
-      if (!p || cycle || (!p.sac && (!o.contenu || String(o.contenu) !== String(p.contenant) || slotsPris[o.dans]))) {
+      if (!p || cycle || (!p.sac && (!o.contenu || String(o.contenu) !== String(p.contenant)))) {
         o.dans = "";
         o.ou = "sac";
         o.emp = -1;
         return;
       }
       if(p.sac) { if(o.ou!=="sacep") {o.ou="sac";o.emp=-1;} return; }
-      slotsPris[o.dans] = 1;
+      // Plusieurs objets peuvent viser ce même contenant ; sa limite n'est qu'indicative.
       // `ou` reste un repli compatible avec les anciens schémas ; pendant que
       // `dans` est posé, l'interface et les calculs d'encombrement l'ignorent.
       o.ou = "sac";
@@ -1778,12 +1781,14 @@
   // emplacement ; mais un vêtement « Haut + Bas » (une robe) tient le haut ET
   // le bas, et une arme à deux mains les deux mains. Son emplacement « ou »
   // est alors la case d'ANCRAGE (haut, main droite), l'autre suit.
-  function casesDe(o, ou) {
+  function casesDe(o, ou, forceDeux) {
     var explicite = !!ou;
     ou = ou || o.ou;
     if (!explicite && o.dans) return [];
     if (o.vet === "hautbas" && (ou === "haut" || ou === "bas")) return ["haut", "bas"];
-    if ((o.mains === 2 || o.mains == null && o.arme && o.arme.mains === 2) && (ou === "mainG" || ou === "mainD")) return ["mainG", "mainD"];
+    if ((ou === "mainG" || ou === "mainD") &&
+        (o.mains === "2 obligatoires" || (forceDeux === undefined ? o.tenueDeuxMains === true : forceDeux === true)))
+      return ["mainG", "mainD"];
     return INV_CASES.indexOf(ou) >= 0 ? [ou] : [];
   }
   // Une CASE de Sur soi accepte-t-elle cet objet ? Les mains prennent tout ;
@@ -1857,8 +1862,8 @@
     return JSON.stringify(c);
   }
   // la case d'ancrage d'un objet posé en `ou`
-  function ancrage(o, ou) {
-    var c = casesDe(o, ou);
+  function ancrage(o, ou, forceDeux) {
+    var c = casesDe(o, ou, forceDeux);
     return c.length > 1 ? (o.vet === "hautbas" ? "haut" : "mainD") : ou;
   }
   function objetEn(cas) {
@@ -5822,6 +5827,13 @@
       return out;
     }
     function executeAttaque(entree, it, def, envoyer) {
+      // 2 : transportable dans une main, mais utilisable seulement à deux.
+      // Les 2 obligatoires occupent déjà les deux mains dès leur équipement.
+      if ((it.mains === 2 || it.mains === "2 obligatoires") &&
+          (it.ou === "mainG" || it.ou === "mainD") && !it.tenueDeuxMains) {
+        flash("Cette arme nécessite deux mains pour être utilisée. Déposez-la sur « 2 Mains ».");
+        return;
+      }
       var rep=it.arme&&it.arme.repartition,sum=0;
       if(rep){Object.keys(rep).forEach(function(k){sum+=pnum(rep[k]);});if(Math.abs(sum-100)>0.001){flash("La répartition des dégâts doit totaliser 100 %.");return;}}
       var r = prepareRessources(entree, it, def);
@@ -7828,15 +7840,15 @@
     if (!attaqueLibre) {
       if (!a.repartition) a.repartition = {physique:100};
       var rep = el("div", "pc-arme-repartition");
-      var totalInput = el("input", "pc-edit-field pc-arme-total");
-      totalInput.type = "text";
-      totalInput.readOnly = true;
+      // Une sortie calculée, ni champ éditable, ni texte sélectionnable.
+      var totalInput = el("div", "pc-edit-field pc-arme-total");
+      totalInput.setAttribute("role", "status");
       totalInput.setAttribute("aria-label", "Total des types de dégâts (%)");
       totalInput.title = "Somme calculée automatiquement, non modifiable";
       function total() {
         var n = 0;
         combatTypes().forEach(function (k) { n += pnum(a.repartition[k]); });
-        totalInput.value = fmtP(n) + " %";
+        totalInput.textContent = fmtP(n) + " %";
         totalInput.classList.toggle("pc-invalid", Math.abs(n-100) > 0.001);
       }
       // 4 rangées × 2, avec Brut / Total pour la dernière.
@@ -7861,7 +7873,7 @@
       [["for", "FOR"], ["dex", "DEX"], ["vig", "VIG"], ["end", "END"],
        ["res", "RES"], ["fer", "FER"], ["int", "INT"], ["cha", "CHA"]].forEach(function (x, i) {
         if (i % 2 === 0) card.appendChild(ligne("pc-arme-2 pc-arme-requis"));
-        card.lastChild.appendChild(champArme(x[1], a, x[0], "Prérequis de " + x[1]));
+        card.lastChild.appendChild(champArme("PRÉ. " + x[1], a, x[0], "Prérequis de " + x[1]));
       });
     }
 
@@ -7886,7 +7898,7 @@
     // Leurs quantités, prix, poids, image et description restent ceux du joueur.
     if(!o.versionObjet && /^boutique:/.test(o.id||"") && modele){
       o=Object.assign({},modele,o);
-      ["typeObjet","sousType","taille","tailleInterieure","tailleAccroche","effets","stats","restaurations","unitesRestauration","ps","ph","places","tempsConsommation","conditionsEffets","proprietes"].forEach(function(k){if(modele[k]!==undefined)o[k]=JSON.parse(JSON.stringify(modele[k]));});
+      ["typeObjet","sousType","taille","tailleInterieure","tailleAccroche","effets","stats","restaurations","unitesRestauration","ps","ph","places","emplacements","prerequis","tenueDeuxMains","tempsConsommation","conditionsEffets","proprietes"].forEach(function(k){if(modele[k]!==undefined)o[k]=JSON.parse(JSON.stringify(modele[k]));});
       ["arme","vet","sac","ceint","acc","contenant","contenu","cap","ep","froid","chaud","poches","prot_physique","res_physique"].forEach(function(k){if(modele[k]!==undefined)n[k]=JSON.parse(JSON.stringify(modele[k]));});
       combatTypes().forEach(function(t){["prot_","res_"].forEach(function(p){if(modele[p+t]!==undefined){n[p+t]=modele[p+t];o[p+t]=modele[p+t];}});});
       if(n.arme)o.arme=n.arme;
@@ -7895,12 +7907,19 @@
     n.typeObjet=invType(o);if(!INV_TYPES_OBJETS[n.typeObjet])n.typeObjet="autre";
     n.sousType=String(o.sousType || (o.sac?"sac":o.ceint?"ceint":o.vet?o.vet:o.acc?o.acc:o.arme?o.arme.type:o.nourri?"ingerable":n.typeObjet==="munition"?o.contenu:"autre"));
     if(/^(eclairage|couchage)$/.test(o.typeObjet))n.sousType="autre";
+    // La catégorie technique du contenant EST son sous-type affiché.
+    if(n.typeObjet==="contenant" && n.contenant)n.sousType=String(n.contenant);
     n.nourri=n.sousType==="ingerable";n.places=pnum(o.places);
     n.taille=INV_TAILLES.indexOf(o.taille)>=0?o.taille:modele&&modele.taille||"";
     var mainsBase=o.arme&&o.arme.mains;
     if(mainsBase==null && o.arme)armesData().forEach(function(d){if(d.cle===o.arme.type || !o.arme.type&&pli(d.nom)===pli(o.nom))mainsBase=d.mains;});
-    n.mains=num(o.mains,mainsBase===2?2:1)===2?2:1;
+    // 1 : une main suffit ; 2 : deux mains pour l'utilisation, une pour le port ;
+    // 2 obligatoires : occupation simultanée des deux mains.
+    n.mains=o.mains==="2 obligatoires"?"2 obligatoires":num(o.mains,mainsBase===2?2:1)===2?2:1;
+    n.tenueDeuxMains=(o.tenueDeuxMains===true || n.mains==="2 obligatoires") && (o.ou==="mainG" || o.ou==="mainD");
     if(n.arme)n.arme.mains=n.mains;
+    n.emplacements=Math.max(0,Math.floor(num(o.emplacements,1)));
+    n.prerequis={};["for","dex","vig","end","res","fer","int","cha"].forEach(function(k){n.prerequis[k]=pnum(o.prerequis&&o.prerequis[k]);});
     n.volume=pnum(o.volume===undefined?o.encombre:o.volume);n.encombre=n.volume;
     n.tailleInterieure=String(o.tailleInterieure||"");n.tailleAccroche=String(o.tailleAccroche || (n.sac?"Moyenne":""));
     n.effets=(Array.isArray(o.effets)?o.effets:[]).slice(0,8).map(String);
@@ -8001,6 +8020,21 @@
     if(caches.length){var a=el("div","pc-obj-effets-anciens");a.appendChild(el("small",null,
       caches.length+" effet(s) historique(s) hors des huit lignes, toujours actifs : "+caches.map(function(c){return c[1]+" "+fmtP(invValeurEquipement(it,c[0]));}).join(" ; ")));host.appendChild(a);}
   }
+  // Un seul tableau de prérequis pour les vêtements et les accessoires.
+  // Les valeurs restent en données, même si les règles d'équipement évoluent.
+  function invChampsPrerequis(host,it) {
+    if(!it.prerequis || typeof it.prerequis!=="object")it.prerequis={};
+    var grille=el("div","pc-obj-pre-requis");
+    [["for","FOR"],["dex","DEX"],["vig","VIG"],["end","END"],
+     ["res","RES"],["fer","FER"],["int","INT"],["cha","CHA"]].forEach(function(x){
+      var n=el("input","pc-edit-field");n.type="text";n.inputMode="numeric";
+      n.value=fmtP(pnum(it.prerequis[x[0]]));n.addEventListener("input",function(){
+        var v=litNombreSigne(n.value);if(isFinite(v) && v>=0){it.prerequis[x[0]]=v;save();}
+      });
+      grille.appendChild(fld("PRÉ. "+x[1],n));
+    });
+    host.appendChild(grille);
+  }
   function invAvecEffets(it) {return ["solide","pate","liquide"].indexOf(invType(it))>=0 && ["ingerable","consommable"].indexOf(it.sousType)>=0;}
   function invChampsCommuns(body,it,render) {
     if(invAvecEffets(it)){
@@ -8011,14 +8045,6 @@
     }
     if(it.proprietes && Object.keys(it.proprietes).some(function(k){return it.proprietes[k]!=null;})){
       var props=el("div","pc-arme");Object.keys(it.proprietes).forEach(function(k){if(it.proprietes[k]==null)return;var i=el("input","pc-edit-field");i.type="text";i.value=it.proprietes[k];i.addEventListener("input",function(){it.proprietes[k]=i.value;save();});props.appendChild(fld({autonomie:"Autonomie",accrochable:"Accrochable",recharge:"Recharge"}[k]||k,i));});body.appendChild(props);
-    }
-    if(it.acc){
-      if(!it.stats)it.stats={};var stats=el("div","pc-arme-repartition");
-      function nombre(label,read,write){var n=el("input","pc-edit-field");champNombreSigne(n);n.value=read();n.addEventListener("input",function(){var v=litNombreSigne(n.value);if(isFinite(v)){write(v);save();}});n.addEventListener("change",refresh);return fld(label,n);}
-      if(!it.stats.degats)it.stats.degats={};if(!it.stats.couts)it.stats.couts={};
-      combatTypes().forEach(function(k){stats.appendChild(nombre("Dégâts "+combatLibType(k)+" (%)",function(){return num(it.stats.degats[k],0);},function(v){it.stats.degats[k]=v;}));});
-      ["pm","pe"].forEach(function(k){stats.appendChild(nombre("Coût "+k.toUpperCase()+" (%)",function(){return num(it.stats.couts[k],0);},function(v){it.stats.couts[k]=v;}));});
-      [["vitesse","Déplacement (%)"],["innocence","Résistance corruption (%)"],["alterations","Résistance altérations (%)"]].forEach(function(x){stats.appendChild(nombre(x[1],function(){return num(it.stats[x[0]],0);},function(v){it.stats[x[0]]=v;}));});body.appendChild(stats);
     }
     if(invType(it)==="munition"){
       if(!it.munitionStats)it.munitionStats={degats:0,repartition:{physique:100}};
@@ -8096,7 +8122,7 @@
   // la fiche (et dans les Attributes Roll20) ; préférer une URL quand c'est
   // possible.
   var INV_NOMS = {
-    mainG: "Main gauche", mainD: "Main droite", ceinture: "Ceinture", dos: "Sac à dos",
+    mainG: "Main gauche", mainD: "Main droite", deuxMains: "2 Mains", ceinture: "Ceinture", dos: "Sac à dos",
     tete: "Tête", mains: "Mains", haut: "Haut", bas: "Bas", pieds: "Pieds",
     sousvet: "Sous-vêtement", hautbas: "Robe",
     oreilles: "Boucles d'oreilles", collier: "Collier",
@@ -8136,7 +8162,7 @@
     if(it.nourri){add("Contenance",fmtP(it.places || 0));add("PS",fmtP(it.ps||0));add("PH",fmtP(it.ph||0));}
     (it.effets||[]).filter(Boolean).forEach(function(id,i){add("Effet "+(i+1),id);});
     Object.keys(it.restaurations||{}).forEach(function(k){if(it.restaurations[k])add("Restauration "+k.toUpperCase(),fmtP(it.restaurations[k])+" "+(it.unitesRestauration[k]||"points"));});
-    if(it.cap)add("Capacité",fmtP(it.cap)+" L");if(it.ep)add("Accroches",fmtP(it.ep)+" acc (max. "+(it.tailleAccroche || "non renseignée")+")");
+    if(it.contenant)add("Emplacements",String(it.emplacements==null?1:it.emplacements));if(it.cap)add("Capacité",fmtP(it.cap)+" L");if(it.ep)add("Accroches",fmtP(it.ep)+" acc (max. "+(it.tailleAccroche || "non renseignée")+")");
     if(it.poches)add("Poches",fmtP(it.poches)+" L");if(it.froid)add("Protection froid",fmtP(it.froid));if(it.chaud)add("Protection chaleur",fmtP(it.chaud));
     ["physique","tranchant","contondant","perforant","feu","froid","eclair","decomposition","ethere","brut"].forEach(function(t){
       var labels={eclair:"éclair",decomposition:"décomposition",ethere:"éthéré"},label=labels[t]||t;
@@ -8218,12 +8244,12 @@
       if (o && !o.ref) o.ref = uid("o");
       return o && o.ref ? String(o.ref) : "";
     }
-    function contenuDans(porteur) {
-      var ref = assureRef(porteur), out = null;
-      if (!ref) return null;
-      items.forEach(function (o) { if (!out && o !== porteur && String(o.dans || "") === ref) out = o; });
-      return out;
+    function contenusDans(porteur) {
+      var ref=assureRef(porteur);
+      return ref?items.filter(function(o){return o!==porteur && String(o.dans||"")===ref;}):[];
     }
+    function contenuDans(porteur) {return contenusDans(porteur)[0] || null;}
+    function capaciteContenant(porteur) {return Math.max(0,Math.floor(num(porteur.emplacements,1)));}
     function nomCategorie(cle) {
       var noms = { liquide: "Liquide", poudre: "Poudre", pate: "Pâte" }, trouve = noms[cle] || "";
       if (trouve) return trouve;
@@ -8257,9 +8283,10 @@
               nomCategorie(o.contenu) + " ».");
         return false;
       }
-      var occ = contenuDans(porteur);
-      if (occ && occ !== o) { flash("Ce contenant possède déjà un contenu."); return false; }
+      var avant=contenusDans(porteur);
       assureRef(o); assureRef(porteur);
+      if(avant.indexOf(o)<0 && avant.length>=capaciteContenant(porteur))
+        flash("Attention : emplacements dépassés ("+(avant.length+1)+" / "+capaciteContenant(porteur)+"). Le contenu reste autorisé.");
       o.dans = porteur.ref;
       // `ou` reste un repli lisible par les anciens schémas. Tant que `dans`
       // est posé, le contenu n'apparaît pas dans le sac et n'en consomme pas
@@ -8294,10 +8321,12 @@
     // ou au sac s'il n'y a pas sa place. Un objet à deux cases (robe, arme à
     // deux mains) libère les DEUX, et ce qui les tenait part au sac.
     function deplace(o, ou, cible) {
+      var deuxMains=ou==="deuxMains" || o.mains==="2 obligatoires" && (ou==="mainG" || ou==="mainD");
+      if(ou==="deuxMains")ou="mainD";
       if (!lieuPermis(o, ou)) { flash("« " + INV_NOMS[ou] + " » ne prend pas cet objet."); return false; }
       var bagCible=window.OwdInventoryData.backpack(items);
       if(ou === "sac" && bagCible && o!==bagCible && !invTailleAccepte(o.taille,invTailleMaxSac(bagCible))){flash("Cet objet dépasse la taille intérieure maximale du sac.");return false;}
-      var dest = ancrage(o, ou), cases = casesDe(o, dest), vient = o.ou;
+      var dest = ancrage(o, ou, deuxMains), cases = casesDe(o, dest, deuxMains), vient = o.ou;
       // Tirer un Contenu hors de son petit slot le redevient un objet libre.
       window.OwdInventoryData.bind(items);
       o.dans = "";
@@ -8307,12 +8336,14 @@
         if (occ && occ !== o && chasses.indexOf(occ) < 0) chasses.push(occ);
       });
       o.ou = dest;
+      o.tenueDeuxMains = deuxMains;
       o.emp = -1;
       chasses.forEach(function (occ) {
         // l'échange simple : un seul occupant, qui tient là d'où l'objet vient
         var retour = chasses.length === 1 && lieuPermis(occ, vient) &&
                      casesDe(occ, vient).every(function (c) { return casesDe(o).indexOf(c) < 0; });
-        occ.ou = retour ? ancrage(occ, vient) : "sac";
+        occ.ou = retour ? ancrage(occ, vient, false) : "sac";
+        occ.tenueDeuxMains = occ.mains === "2 obligatoires" && (occ.ou === "mainD" || occ.ou === "mainG");
       });
       if (cible !== undefined) {
         items.splice(items.indexOf(o), 1);
@@ -8372,44 +8403,29 @@
     // draggable quand il est plein : on peut donc sortir son Contenu vers le
     // sac/les poches ou le déposer dans un autre Contenant compatible.
     function slotContenant(porteur) {
-      var occ = contenuDans(porteur);
-      var s = el("div", "pc-obj-content-slot" + (occ ? " plein" : " vide") + (sel === occ ? " sel" : ""));
-      s.title = occ ? ((occ.nom || "Contenu") + " — " + nomCategorie(occ.contenu))
-                    : ("Contenu : " + nomCategorie(porteur.contenant));
-      if (occ) {
-        if (occ.img) {
-          var im = el("img"); im.alt = ""; im.draggable = false; im.src = occ.img; s.appendChild(im);
-        } else {
-          var ph = el("span", "pc-obj-content-ph", (nomCategorie(occ.contenu) || "?").slice(0, 1).toUpperCase());
-          s.appendChild(ph);
-        }
-        if (pnum(occ.qte) !== 1) s.appendChild(el("span", "pc-obj-content-qte", "×" + fmtP(occ.qte)));
-        s.draggable = true;
-        s.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); sel = occ; render(); });
-        s.addEventListener("dragstart", function (e) {
-          e.stopPropagation(); drag = occ; s.classList.add("drag");
-          try { e.dataTransfer.setData("text/plain", ""); e.dataTransfer.effectAllowed = "move"; if (window.__owdObjetDrag) window.__owdObjetDrag(drag.ref, e.dataTransfer); } catch (err) {}
-        });
-        s.addEventListener("dragend", function (e) { e.stopPropagation(); drag = null; if (window.__owdObjetDragFin) window.__owdObjetDragFin(); render(); });
-      } else {
-        s.appendChild(el("span", "pc-obj-content-ph", "+"));
-      }
-      s.addEventListener("dragover", function (e) {
-        if (!drag || drag === porteur) return;
-        // Le slot intercepte le geste même s'il refuse l'objet : sans cela, le
-        // drop traverserait jusqu'à la grande tuile et réordonnerait le sac.
-        e.preventDefault(); e.stopPropagation();
-        s.classList.toggle("over", compatibleContenu(drag, porteur));
+      var contenus=contenusDans(porteur), limite=capaciteContenant(porteur);
+      var groupe=el("div","pc-obj-content-group"+(contenus.length>limite?" depasse":""));
+      groupe.title="Contenus : "+contenus.length+" / "+limite+" emplacements";
+      var visibles=contenus.slice(0,2);
+      visibles.push(null); // Dépôt toujours visible, même au-delà de la limite.
+      visibles.forEach(function(occ){
+        var s=el("div","pc-obj-content-slot"+(occ?" plein":" vide")+(sel===occ?" sel":""));
+        s.title=occ?(occ.nom||"Contenu"):"Déposer un contenu "+nomCategorie(porteur.contenant);
+        if(occ){
+          if(occ.img){var im=el("img");im.alt="";im.draggable=false;im.src=occ.img;s.appendChild(im);}
+          else s.appendChild(el("span","pc-obj-content-ph",(nomCategorie(occ.contenu)||"?").slice(0,1).toUpperCase()));
+          s.draggable=true;
+          s.addEventListener("click",function(e){e.stopPropagation();sel=occ;render();});
+          s.addEventListener("dragstart",function(e){e.stopPropagation();drag=occ;s.classList.add("drag");try{e.dataTransfer.setData("text/plain","");e.dataTransfer.effectAllowed="move";if(window.__owdObjetDrag)window.__owdObjetDrag(drag.ref,e.dataTransfer);}catch(err){}});
+          s.addEventListener("dragend",function(e){e.stopPropagation();drag=null;if(window.__owdObjetDragFin)window.__owdObjetDragFin();render();});
+        }else s.appendChild(el("span","pc-obj-content-ph","+"));
+        s.addEventListener("dragover",function(e){if(!drag||drag===porteur)return;e.preventDefault();e.stopPropagation();s.classList.toggle("over",compatibleContenu(drag,porteur));});
+        s.addEventListener("dragleave",function(e){e.stopPropagation();s.classList.remove("over");});
+        s.addEventListener("drop",function(e){if(!drag)return;e.preventDefault();e.stopPropagation();var d=drag;drag=null;if(poseContenu(d,porteur)){sel=d;save();refresh();}render();});
+        groupe.appendChild(s);
       });
-      s.addEventListener("dragleave", function (e) { e.stopPropagation(); s.classList.remove("over"); });
-      s.addEventListener("drop", function (e) {
-        if (!drag) return;
-        e.preventDefault(); e.stopPropagation();
-        var d = drag; drag = null;
-        if (poseContenu(d, porteur)) { sel = d; save(); refresh(); }
-        render();
-      });
-      return s;
+      if(contenus.length>2)groupe.appendChild(el("span","pc-obj-content-more","+"+(contenus.length-2)));
+      return groupe;
     }
 
     // Menu local aux objets : mêmes opérations que le panneau et le drag.
@@ -8698,6 +8714,18 @@
       return head;
     }
 
+    function caseDeuxMains() {
+      var c=el("div","pc-inv-case pc-inv-rien pc-inv-twohand-cell");
+      var zone=el("div","pc-obj-content-slot pc-inv-twohand-target","2 Mains");
+      zone.title="Tenir cet objet à deux mains : disponible même si une seule main suffit";
+      zone.setAttribute("role","group");zone.setAttribute("aria-label","Déposer pour tenir à deux mains");
+      var occ=objetEn("mainG"),autre=objetEn("mainD");
+      if(occ && occ===autre){zone.classList.add("plein");zone.title="Tenue à deux mains : "+(occ.nom||"Objet");}
+      zone.addEventListener("dragover",function(e){if(!drag)return;e.preventDefault();e.stopPropagation();zone.classList.add("over");});
+      zone.addEventListener("dragleave",function(e){e.stopPropagation();zone.classList.remove("over");});
+      zone.addEventListener("drop",function(e){if(!drag)return;e.preventDefault();e.stopPropagation();var d=drag;drag=null;if(deplace(d,"deuxMains")){sel=d;refresh();}render();});
+      c.appendChild(zone);return c;
+    }
     function groupeSurSoi() {
       var g = el("div", "pc-obj-group");
       g.appendChild(bandeau("Sur soi"));
@@ -8708,7 +8736,7 @@
        ["bagueG", "bagueD", "chevilleG", "chevilleD", "cape"]].forEach(function (ligne) {
         var l = el("div", "pc-inv-cases");
         ligne.forEach(function (ou) {
-          l.appendChild(ou ? caseSurSoi(ou) : el("div", "pc-inv-case pc-inv-rien"));
+          l.appendChild(ou ? caseSurSoi(ou) : caseDeuxMains());
         });
         g.appendChild(l);
       });
@@ -8858,6 +8886,7 @@
       s.addEventListener("change", function () {
         it[cle] = s.value;
         if (cle === "contenant") {
+          it.sousType=s.value;
           var occ = contenuDans(it);
           if (occ && !compatibleContenu(occ, it)) libereContenu(it);
         } else if (cle === "contenu" && it.dans) {
@@ -8921,6 +8950,7 @@
         it.nourri=it.sousType==="ingerable";it.sac=v==="sac";it.ceint=v==="ceint";
         it.vet=v==="vet"?(it.vet||"haut"):"";it.acc=v==="acc"?(it.acc||"collier"):"";
         it.contenant=v==="contenant"?(it.contenant||"liquide"):"";
+        if(type==="contenant")it.sousType=it.contenant;
         it.contenu=type==="munition"?it.sousType:["liquide","pate"].indexOf(type)>=0?type:"";
         it.arme=v==="arme"?(it.arme||{attaque:"",degats:"",parade:"",reduction:"",modsDegats:[],modsParade:[],comp:"",type:"",mains:1,repartition:{physique:100}}):null;
         if (INV_EP.indexOf(it.ou) < 0 && !lieuPermis(it, it.ou)) it.ou = "sac";
@@ -8986,6 +9016,7 @@
         // Huit lignes uniques « Valeur | Type d'effet », données d'origine
         // conservées pour les calculs de protection/résistance et les bonus.
         invChampsVetement(cv,it);
+        invChampsPrerequis(cv,it);
         specifiquesSous.appendChild(cv);
       }
 
@@ -9007,15 +9038,8 @@
           refresh();
         });
         sousLigne.appendChild(fld("Sous-type", tya));
-        pa.appendChild(champNombre("Poches", function () { return it.poches; },
-          function (v) { it.poches = pnum(v); }, "Ce que cet accessoire porté ajoute aux Poches, en L"));
-        ca.appendChild(pa);
-        var ppa = el("div", "pc-obj-pair");
-        ppa.appendChild(champNombre("Froid", function () { return it.froid; },
-          function (v) { it.froid = snum(v); }, "Protection contre le froid, en degrés"));
-        ppa.appendChild(champNombre("Chaud", function () { return it.chaud; },
-          function (v) { it.chaud = snum(v); }, "Protection contre le chaud, en degrés"));
-        ca.appendChild(ppa);
+        invChampsVetement(ca,it);
+        invChampsPrerequis(ca,it);
         specifiquesSous.appendChild(ca);
       }
 
@@ -9071,8 +9095,21 @@
       if (it.contenant) {
         var ct = carteNature();
         var pct = el("div", "pc-obj-pair");
-        pct.appendChild(fld("Catégorie", selCategorieStockage(it, "contenant")));
+        sousLigne.appendChild(fld("Sous-type",selCategorieStockage(it,"contenant")));
+        pct.appendChild(champNombre("Emplacements",function(){return capaciteContenant(it);},
+          function(v){it.emplacements=Math.max(0,Math.floor(pnum(v)));},
+          "Nombre de contenus conseillés : le dépassement affiche un avertissement, sans blocage"));
         ct.appendChild(pct);
+        var entreeCap=pct.querySelector("input");
+        if(entreeCap)entreeCap.addEventListener("change",function(){render();});
+        var dedans=contenusDans(it);
+        if(dedans.length){
+          var liste=el("div","pc-obj-container-contents");
+          liste.appendChild(el("small",dedans.length>capaciteContenant(it)?"pc-obj-overflow":"", 
+            "Contenus : "+dedans.length+" / "+capaciteContenant(it)+(dedans.length>capaciteContenant(it)?" — capacité dépassée":"")));
+          dedans.forEach(function(child){var b=miniBtn(child.nom||"Contenu","Sélectionner ce contenu",function(){sel=child;render();});liste.appendChild(b);});
+          ct.appendChild(liste);
+        }
         specifiquesType.appendChild(ct);
       }
       if (it.contenu && invType(it)==="autre") {
@@ -9102,7 +9139,13 @@
       body.appendChild(pair);
       var tailleMains=el("div","pc-obj-pair");
       tailleMains.appendChild(invChoix("Taille",[["","Non renseignée"]].concat(INV_TAILLES.map(function(t){return [t,t];})),it.taille||"",function(v){it.taille=v;rangeEmplacements(items);render();}));
-      tailleMains.appendChild(invChoix("Mains",[[1,"1"],[2,"2"]],it.mains||1,function(v){it.mains=Number(v);if(it.arme)it.arme.mains=it.mains;rangeEmplacements(items);render();}));
+      tailleMains.appendChild(invChoix("Mains",[[1,"1"],[2,"2"],["2 obligatoires","2 obligatoires"]],it.mains||1,function(v){
+        var nouvellesMains=v==="2 obligatoires"?v:Number(v);
+        // Occuper les deux mains AVANT de modifier le nombre requis : sinon
+        // l'objet masquerait l'occupant de l'autre main durant l'échange.
+        if(nouvellesMains==="2 obligatoires" && (it.ou==="mainG"||it.ou==="mainD"))deplace(it,"deuxMains");
+        it.mains=nouvellesMains;if(it.arme)it.arme.mains=it.mains;
+        rangeEmplacements(items);render();}));
       body.appendChild(tailleMains);
 
       // achat / vente, en pièces d'argent : la monnaie du livre est NOMMÉE

@@ -2212,3 +2212,33 @@ html.night .t-pi { --palier-plein: #30343b; }
 .pc-obj-body .pc-obj-effet-ligne select { width:100%; min-width:0; }
 .pc-obj-body .pc-obj-effets-equipement { display:flex; flex-direction:column; gap:.5rem; }
 .pc-obj-effets-anciens { color:var(--ink-3); font-size:var(--fs-meta); padding:.25rem 0; }
+
+/* 3.25.0b — Sortie non interactive et prises à deux mains. */
+.pc-obj-weapon-details .pc-arme-total {
+  display:flex;align-items:center;min-width:0;box-sizing:border-box;
+  border:none;border-bottom:1px solid var(--line);border-radius:0;
+  padding:.03rem .1rem .08rem;font:inherit;font-size:.74rem;font-weight:600;
+  user-select:none;-webkit-user-select:none;pointer-events:none;
+  cursor:default;background:transparent;opacity:1;
+}
+.pc-obj-weapon-details .pc-arme-total.pc-invalid { border-color:var(--danger); }
+.pc-obj-pre-requis {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.5rem .6rem;margin-top:.5rem;}
+.pc-obj-pre-requis > .pc-f {min-width:0;}
+.pc-inv-twohand-cell {position:relative;aspect-ratio:var(--obj-ratio);}
+.pc-inv-twohand-target {
+  left:.2rem;right:auto;bottom:.2rem;width:48%;font-size:.53rem;
+  cursor:default;text-align:center;padding:.05rem;
+}
+.pc-inv-twohand-target.plein {border-color:var(--accent);}
+.pc-obj-content-group {
+  position:absolute;bottom:1.25rem;right:.12rem;width:75%;z-index:3;
+  display:flex;gap:.1rem;align-items:flex-end;justify-content:flex-end;
+}
+.pc-obj-content-group .pc-obj-content-slot {
+  position:relative;right:auto;bottom:auto;flex:0 1 40%;width:40%;min-width:0;
+}
+.pc-obj-content-group.depasse .pc-obj-content-slot {border-color:var(--danger);}
+.pc-obj-content-more {font-size:.55rem;background:var(--card);border-radius:2px;padding:.08rem;white-space:nowrap;}
+.pc-obj-container-contents {display:flex;gap:.2rem;flex-wrap:wrap;align-items:center;}
+.pc-obj-container-contents > small {width:100%;color:var(--ink-3);}
+.pc-obj-container-contents > small.pc-obj-overflow {color:var(--danger);font-weight:700;}
