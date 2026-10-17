@@ -61,9 +61,29 @@
       mod.addEventListener("keydown", function (e) { if (e.key === "Enter") e.preventDefault(); });
       mod.addEventListener("blur", function () { refresh(); });
       champs.appendChild(mod); carte.appendChild(champs); grille.appendChild(carte);
-      vues.push({cle: cle, carte: carte, total: total, base: base, effets: effets, mod: mod, fill: fill});
+      vues.push({cle: cle, carte: carte, tete: tete, titre: titre, lecture: valeur, total: total, base: base, effets: effets, mod: mod, fill: fill});
     });
     b.appendChild(grille);
+    function ajusteLibelles() {
+      if (!b.isConnected) return;
+      vues.forEach(function (v) {
+        v.titre.classList.remove("compact");
+        var style = getComputedStyle(v.tete);
+        var requis = v.titre.getBoundingClientRect().width + v.lecture.getBoundingClientRect().width +
+          parseFloat(style.columnGap || 0) + parseFloat(style.paddingLeft || 0) + parseFloat(style.paddingRight || 0);
+        v.titre.classList.toggle("compact", requis > v.tete.clientWidth + 0.5);
+      });
+    }
+    if (typeof ResizeObserver === "function") {
+      var largeurObservee = -1;
+      var observation = new ResizeObserver(function () {
+        if (!b.isConnected) { observation.disconnect(); return; }
+        var largeur = grille.clientWidth;
+        if (largeur === largeurObservee) return;
+        largeurObservee = largeur; ajusteLibelles();
+      });
+      observation.observe(grille);
+    }
     hooks.push(function () {
       vues.forEach(function (v) {
         var brut = effBasePartie(v.cle), niveau = effPartie(v.cle);
@@ -82,6 +102,7 @@
       });
       desactive.classList.toggle("on", !!state.effDesactive); desactive.setAttribute("aria-pressed", String(!!state.effDesactive));
       pause.classList.toggle("on", !!state.effPause); pause.setAttribute("aria-pressed", String(!!state.effPause));
+      ajusteLibelles();
       var e = effondrement();
       [tN, tV, tE].forEach(function (t) { t.classList.toggle("adj", e > 0); });
       tN.title = capForce("effondrement")

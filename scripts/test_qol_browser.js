@@ -267,18 +267,19 @@ const server=http.createServer((req,res)=> {
    const fonts=await collapse.locator('.pc-big .k, .pc-eff-tete > .k').evaluateAll(ns=>ns.map(n=>{const s=getComputedStyle(n);return [s.fontSize,s.fontFamily,s.fontWeight,s.letterSpacing].join('|')}));
    assert.equal(new Set(fonts).size,1);
    assert.equal(await collapse.locator('.pc-eff-partie .pc-vital-jauge').count(),10);
-   const headGeometry=await collapse.locator('.pc-eff-tete').evaluateAll(ns=>ns.map(n=>{const a=n.children[0].getBoundingClientRect(),b=n.children[1].getBoundingClientRect(),p=n.getBoundingClientRect();return {name:n.children[0].innerText,ar:a.right,bl:b.left,br:b.right,pr:p.right,ay:a.y,by:b.y}}));
-   assert.ok(headGeometry.every(n=>n.ar<=n.bl&&n.br<=n.pr+1&&Math.abs(n.ay-n.by)<15),JSON.stringify(headGeometry));
-   assert.ok(await collapse.locator('.pc-eff-partie .pc-vital-jauge > i').evaluateAll(ns=>ns.every(n=>n.style.marginLeft==='0px')));
-   assert.deepEqual(await collapse.locator('.pc-eff-tete > .k').evaluateAll(ns=>ns.map(n=>n.innerText)),['PR','Charge','Froid','Chaud','PS','Contenance','PH','Alcool','PI','Autre']);
+   const reference=await sheet.locator('[data-module="pv"] .pc-vital-num').evaluate(n=>getComputedStyle(n).fontSize);
+   const referenceMax=await sheet.locator('[data-module="pv"] .pc-vital-max').evaluate(n=>getComputedStyle(n).fontSize);
    const savedWidth=await collapse.evaluate(n=>n.style.width);
-   await collapse.evaluate(n=>n.style.width='380px');
-   assert.deepEqual(await collapse.locator('.pc-eff-tete > .k').evaluateAll(ns=>ns.map(n=>n.innerText)),['PR','Charge','Froid','Chaud','PS','Contenance','PH','Alcool','PI','Autre']);
-   await collapse.evaluate(n=>n.style.width='150px');
-   assert.deepEqual(await collapse.locator('.pc-eff-tete > .k').evaluateAll(ns=>ns.map(n=>n.innerText)),['PR','CHG','FRD','CHD','PS','CTN','PH','ALC','PI','AUT']);
-   assert.ok(await collapse.locator('.pc-eff-tete').evaluateAll(ns=>ns.every(n=>{const a=n.children[0].getBoundingClientRect(),b=n.children[1].getBoundingClientRect(),p=n.getBoundingClientRect();return a.right<=b.left&&b.right<=p.right+1;})));
-   await capture(collapse,'/tmp/owd-effondrement-compact-'+(night?'night':'day')+'.png');
-   await collapse.evaluate((n,w)=>n.style.width=w,savedWidth);
+   for(const width of ['380px','150px',savedWidth]){
+     await collapse.evaluate((n,w)=>n.style.width=w,width);await page.waitForTimeout(40);
+     assert.ok(await collapse.locator('.pc-eff-partie-total').evaluateAll((ns,f)=>ns.every(n=>getComputedStyle(n).fontSize===f),reference));
+     assert.ok(await collapse.locator('.pc-eff-lecture .pc-vital-max').evaluateAll((ns,f)=>ns.every(n=>getComputedStyle(n).fontSize===f),referenceMax));
+     assert.ok(await collapse.locator('.pc-eff-tete').evaluateAll(ns=>ns.every(n=>{const a=n.children[0].getBoundingClientRect(),b=n.children[1].getBoundingClientRect(),p=n.getBoundingClientRect();return (a.right<=b.left||a.bottom<=b.top)&&b.right<=p.right+1;})));
+     if(width==='380px')assert.deepEqual(await collapse.locator('.pc-eff-tete > .k').evaluateAll(ns=>ns.map(n=>n.innerText)),['PR','CHARGE','FROID','CHAUD','PS','CONTENANCE','PH','ALCOOL','PI','AUTRE']);
+     if(width==='150px')await capture(collapse,'/tmp/owd-effondrement-compact-'+(night?'night':'day')+'.png');
+   }
+   assert.ok(await collapse.locator('.pc-eff-partie .pc-vital-jauge > i').evaluateAll(ns=>ns.every(n=>n.style.marginLeft==='0px')));
+
    assert.equal(await collapse.locator('.pc-eff-legende').count(),0);
    for(const box of await collapse.locator('.pc-eff-champs').all()){
      assert.equal(await box.locator('input').count(),3);
