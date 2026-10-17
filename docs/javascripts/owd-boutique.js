@@ -22,7 +22,26 @@
   function value(it, key) { var f = it.champs.find(function (c) { return c[0] === key; }); return f ? f[1] : ''; }
   function qvalid(v) { var n = Number(v); return Number.isSafeInteger(n) && n > 0 ? n : null; }
   function price(it) { var p = value(it, 'Achat (argent)'); return p ? p + ' argent' : '—'; }
-  function picture(it, cls) { var im = node('img', cls); im.src = it.img || ''; im.alt = ''; im.loading = 'lazy'; im.draggable = false; im.onerror = function () { im.hidden = true; }; return im; }
+  function imageCandidates(src) {
+    if (!src) return [];
+    // Une redirection wiki.gg peut refuser le hotlink. Fandom garde de nombreuses
+    // illustrations d'Outward : essayer les deux hôtes sans changer la fiche.
+    var list=[src], match=/^https:\/\/outward\.wiki\.gg\/wiki\/Special:Redirect\/file\/(.+)$/i.exec(src);
+    if(match){
+      var filename=match[1];
+      list.push('https://outward.fandom.com/wiki/Special:Redirect/file/'+filename);
+      list.push('https://outward.wiki.gg/wiki/Special:FilePath/'+filename);
+    }
+    return list;
+  }
+  function picture(it, cls) {
+    var im=node('img',cls),urls=imageCandidates(it.img),i=0;
+    im.alt=it.nom||'';im.loading='lazy';im.draggable=false;
+    im.onload=function(){if(urls.length && im.src){it.img=im.src;}};
+    im.onerror=function(){if(++i<urls.length){im.src=urls[i];return;}im.hidden=true;};
+    if(urls.length)im.src=urls[0];else im.hidden=true;
+    return im;
+  }
   function select(it) { selected = it; quantity = 1; renderDetails(); Array.from(list.children).forEach(function (n) { n.setAttribute('aria-pressed', String(n.dataset.id === it.id)); }); }
   function renderDetails() {
     details.replaceChildren();
