@@ -1,7 +1,7 @@
 'use strict';
 const assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs');
 const M=require('../docs/javascripts/owd-attr-map.js'),C=require('../docs/javascripts/owd-sync.js'),Migr=require('../docs/javascripts/owd-migrations.js');
-const ctx={snum:x=>Number(x)||0,pnum:x=>Math.max(0,Number(x)||0),caracTotal:()=>20,state:{inv:{objets:[]}},vetementsPortes:()=>ctx.state.inv.objets.filter(o=>o.ou==='haut')};
+const ctx={snum:x=>Number(x)||0,pnum:x=>Math.max(0,Number(x)||0),caracTotal:()=>20,effetBonus:()=>0,effetAlerte:()=>0,state:{inv:{objets:[]}},vetementsPortes:()=>ctx.state.inv.objets.filter(o=>o.ou==='haut')};
 vm.createContext(ctx);vm.runInContext(fs.readFileSync('src/fiche/fiche/defense.js','utf8'),ctx);
 assert.equal(ctx.combatDegats(30,6,9),21);
 assert.equal(ctx.combatDegats(5,10,0),0);
@@ -45,3 +45,14 @@ assert.deepEqual(M.attrsToState(M.stateToAttrs(s16)).combatModifiers,s16.combatM
 ctx.state.combatModifiers={protections:{feu:4},resistances:{feu:10}};ctx.state.combatOptions={defenses:{lente:false}};
 t=ctx.defenseTotaux('feu',null,false);assert.equal(t.protection,8);assert.equal(t.reduction,15);
 console.log('OK modificateurs de défense, attributs et migration réversible 16');
+
+// Le test isolé injecte les dépendances du moteur d’effets, puis vérifie
+// leur contribution sans modifier les protections de base du personnage.
+ctx.effetBonus=(cle,type)=>cle==='parade'?-2:cle==='protections'&&type==='feu'?10:cle==='resistances'&&type==='feu'?15:0;
+ctx.effetAlerte=()=>2;
+d=ctx.defenseValeurs({arme:'shield'});assert.equal(d.difficulte,6);
+t=ctx.defenseTotaux('feu',d,true);assert.equal(t.protection,30);assert.equal(t.reduction,24);
+ctx.effetBonus=(cle,type)=>cle==='immunites'&&type==='feu'?100:0;
+t=ctx.defenseTotaux('feu',null,false);assert.equal(t.reduction,100);
+ctx.effetBonus=()=>-100;assert.equal(ctx.defenseValeurs({arme:'shield'}).difficulte,1);
+console.log('OK effets de parade/protection/résistance, pénalité Alerte, immunité et difficulté minimale');

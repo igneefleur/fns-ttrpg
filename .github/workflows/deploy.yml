@@ -76,6 +76,7 @@ jobs:
           node scripts/test_monde.js
           node scripts/test_inventaire.js
           node scripts/test_defenses.js
+          node scripts/test_effets_data.js
 
       - name: Build
         env:
