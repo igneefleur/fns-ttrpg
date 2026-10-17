@@ -9103,19 +9103,5 @@
 "url": "content/regles/base/capacites-physiques/"
 }
 ]
-},
-{
-"short": "7180810",
-"author": "Théo Cavaillès",
-"date": "2026-10-05T12:52:46+02:00",
-"message": "Update fns-owd-beta files",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/7180810cea9f3b4ad715940e3668147bdf0b34da",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/base/capacites-physiques.md",
-"url": "content/regles/base/capacites-physiques/"
-}
-]
 }
 ]

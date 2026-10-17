@@ -64,8 +64,7 @@
   // on oriente le visiteur au lieu d'attendre un pont qui ne répondra jamais.
   window.__owdVueAttaques = /[#&]view=attaques(?:&|$)/.test(location.hash || "");
   window.__owdVueDefenses = /[#&]view=defenses(?:&|$)/.test(location.hash || "");
-  window.__owdVueCombat = window.__owdVueAttaques || window.__owdVueDefenses;
-  window.__owdVueInventaire = window.__owdVueCombat || /[#&]view=inventaire(?:&|$)/.test(location.hash || "");
+  window.__owdVueInventaire = window.__owdVueAttaques || window.__owdVueDefenses || /[#&]view=inventaire(?:&|$)/.test(location.hash || "");
   document.documentElement.classList.toggle("owd-vue-outil", window.__owdVueInventaire);
   var objetDrag = null, accesInventaire = true;
   var STANDALONE = (function () { try { return window.top === window; } catch (e) { return false; } })();
@@ -115,18 +114,18 @@
   function post(msg) {
     msg.ns = "owd"; msg.charId = CHAR_ID;
     if (window.__owdVueInventaire) msg.inventory = true;
-    if (!window.__owdVueCombat) { msg.takeOpenedAt = takeOpenedAt; msg.takeEnabled = takeEnabled; }
+    if (!window.__owdVueAttaques && !window.__owdVueDefenses) { msg.takeOpenedAt = takeOpenedAt; msg.takeEnabled = takeEnabled; }
     try { window.top.postMessage(msg, "*"); } catch (e) {}
   }
   window.addEventListener('pagehide', function () { takeEnabled = false; post({type:'take-target'}); });
   window.addEventListener('message', function (ev) {
     var d = ev.data;
-    if (!d || d.ns !== 'owd' || d.type !== 'take-active' || ev.source !== window.parent || window.__owdVueCombat) return;
+    if (!d || d.ns !== 'owd' || d.type !== 'take-active' || ev.source !== window.parent || window.__owdVueAttaques || window.__owdVueDefenses) return;
     takeEnabled = !!d.active;
     if (takeEnabled) takeOpenedAt = Date.now();
     post({type:'take-target'});
   });
-  if(!window.__owdVueCombat)try{window.parent.postMessage({ns:'owd',type:'take-ready',charId:CHAR_ID},'*');}catch(e){}
+  if(!window.__owdVueAttaques && !window.__owdVueDefenses)try{window.parent.postMessage({ns:'owd',type:'take-ready',charId:CHAR_ID},'*');}catch(e){}
 
   // ---------- mode jour / nuit ----------
   // Le CSS nuit existe déjà dans la feuille de la fiche (html.night …) ; ici on
