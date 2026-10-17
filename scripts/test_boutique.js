@@ -88,3 +88,25 @@ const tick=()=>new Promise(r=>setImmediate(r));
  assert.equal(parse(Buffer.from(JSON.stringify(legacy)).toString('base64url')).s[0][1],'2');
  console.log('OK Boutique : catalogue enrichi, catégories calculées, propriétés typées, images, recherche sans accents, pagination, sélection, quantités, annulation, jeton unique, don et présentation compatibles avec le chat, thèmes et erreur réseau.');
 })().catch(e=>{console.error(e);process.exitCode=1;});
+
+// Intégration : une boutique avec catalogue mais sans entrée Roll20 ni page
+// affichable reproduirait la régression signalée en 3.28.0b.
+(function verifieAccesBoutique() {
+ const html=fs.readFileSync(path.join(root,'docs/roll20-boutique.html'),'utf8');
+ for(const id of ['ob-recherche','ob-categorie','ob-items','ob-details','ob-status','ob-dialog','ob-quantite-chat','ob-dialog-title','ob-annuler','ob-page','ob-precedent','ob-suivant'])
+   assert.ok(html.includes('id="'+id+'"'), 'Interface Boutique : '+id+' absent');
+ assert.ok(html.includes('owd-manifeste.json')&&html.includes('man.boutique'),'La page Boutique ne charge pas son module depuis le manifeste');
+ const manifest=JSON.parse(fs.readFileSync(path.join(root,'docs/owd-manifeste.json'),'utf8'));
+ for(const type of ['js','css']) {
+   assert.ok(Array.isArray(manifest.boutique[type])&&manifest.boutique[type].length,'Bloc boutique.'+type+' manquant');
+   for(const u of manifest.boutique[type])assert.ok(fs.existsSync(path.join(root,'docs',u.split('?')[0])),'Ressource Boutique absente : '+u);
+ }
+ for(const mode of ['stable','beta']) {
+   const ext=fs.readFileSync(path.join(root,'extension/firefox',mode,'content-roll20.js'),'utf8');
+   assert.ok(/id:'boutique',titre:'Boutique',page:'roll20-boutique\.html'/.test(ext),'Outil Boutique non enregistré dans '+mode);
+   assert.ok(ext.indexOf("id:'boutique'")>ext.indexOf("id:'attaques'"),'Boutique doit suivre Attaques dans '+mode);
+   assert.ok(ext.includes('OUTIL_ICONS.boutique='),'Icône Boutique manquante dans '+mode);
+   assert.ok(ext.includes('icon(def.id)')&&ext.includes('OUTILS.forEach(function(def,i)'),'Bouton non raccordé au montage dans '+mode);
+ }
+ console.log('OK Accès Boutique : page, 12 éléments UI, styles, scripts, barre Roll20 stable/beta, ordre, icône et ouverture du panneau.');
+})();

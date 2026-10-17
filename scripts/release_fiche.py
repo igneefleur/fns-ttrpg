@@ -96,6 +96,8 @@ FICHIERS = [
     "javascripts/owd-inventaire-data.js",
     "javascripts/owd-inventaire.js",
     "stylesheets/owd-inventaire.css",
+    "javascripts/owd-boutique.js",
+    "stylesheets/owd-boutique.css",
     # ENGENDRÉ AU BUILD, et monté quand même. hooks/owd_creation.py le produit
     # depuis les règles : il n'est donc pas sur le disque, mais il EST servi par
     # le site et nommé au manifeste (bundle.data), et son contenu change dès
@@ -127,6 +129,8 @@ def blocs_a_serial(man):
         (man.get("monde") or {}).get("css"),
         (man.get("inventaire") or {}).get("js"),
         (man.get("inventaire") or {}).get("css"),
+        (man.get("boutique") or {}).get("js"),
+        (man.get("boutique") or {}).get("css"),
         (man.get("bundle") or {}).get("js"),
         (man.get("bundle") or {}).get("css"),
     ]

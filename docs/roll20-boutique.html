@@ -1,18 +1,67 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex">
-<title>Boutique Outward sur Roll20</title>
-<link rel="stylesheet" href="stylesheets/fonts.css">
-<link rel="stylesheet" href="stylesheets/owd-boutique.css?v=2">
-<script defer src="javascripts/owd-boutique.js?v=1"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Boutique Outward sur Roll20</title>
+  <link rel="stylesheet" href="stylesheets/fonts.css">
 </head>
 <body>
-<main id="boutique">
-  <header class="ob-filtres"><input id="ob-recherche" type="search" placeholder="Rechercher un équipement…" aria-label="Rechercher un équipement"><select id="ob-categorie" aria-label="Catégorie"><option value="">Toutes les catégories</option></select></header>
-  <p id="ob-status" role="status">Chargement des équipements…</p>
-  <div class="ob-corps"><aside id="ob-details" aria-label="Équipement sélectionné"></aside><section class="ob-catalogue" aria-label="Catalogue"><div id="ob-items"></div><nav class="ob-pages" aria-label="Pages du catalogue"><button id="ob-precedent" type="button" aria-label="Page précédente">‹</button><span id="ob-page" aria-live="polite"></span><button id="ob-suivant" type="button" aria-label="Page suivante">›</button></nav></section></div>
-</main>
-<dialog id="ob-dialog"><form method="dialog"><h2 id="ob-dialog-title"></h2><label>Quantité<input id="ob-quantite-chat" type="number" min="1" step="1" required value="1"></label><div class="ob-dialog-actions"><button type="button" id="ob-annuler">Annuler</button><button type="submit">Envoyer dans le chat</button></div></form></dialog>
+  <div id="ob-shell">
+    <header class="ob-entete">
+      <h1>Boutique</h1>
+      <div id="ob-status" role="status" aria-live="polite">Chargement des équipements…</div>
+    </header>
+    <div class="ob-main">
+      <aside class="ob-col-details" aria-label="Détails de l'équipement">
+        <div id="ob-details"></div>
+      </aside>
+      <section class="ob-col-catalogue" aria-label="Catalogue des équipements">
+        <div class="ob-filtres">
+          <label for="ob-recherche">Recherche
+            <input id="ob-recherche" type="search" placeholder="Nom de l'équipement" autocomplete="off" disabled>
+          </label>
+          <label for="ob-categorie">Catégorie
+            <select id="ob-categorie" disabled><option value="">Toutes les catégories</option></select>
+          </label>
+        </div>
+        <div id="ob-items" class="ob-items" aria-label="Équipements"></div>
+        <footer class="ob-pagination">
+          <button id="ob-precedent" type="button" disabled>Précédent</button>
+          <span id="ob-page" aria-live="polite">—</span>
+          <button id="ob-suivant" type="button" disabled>Suivant</button>
+        </footer>
+      </section>
+    </div>
+  </div>
+  <dialog id="ob-dialog" aria-labelledby="ob-dialog-title">
+    <form method="dialog">
+      <h2 id="ob-dialog-title">Quantité</h2>
+      <label for="ob-quantite-chat">Quantité à envoyer
+        <input id="ob-quantite-chat" type="number" min="1" step="1" value="1" required>
+      </label>
+      <div class="ob-dialog-actions">
+        <button id="ob-annuler" type="button">Annuler</button>
+        <button type="submit">Confirmer</button>
+      </div>
+    </form>
+  </dialog>
+  <script>
+    (function () {
+      'use strict';
+      var repli={js:['javascripts/owd-boutique.js'],css:['stylesheets/owd-boutique.css']};
+      var lance=false;
+      function sure(u){return typeof u==='string'&&!!u&&!/^[A-Za-z][A-Za-z0-9+.-]*:/.test(u)&&u.indexOf('//')!==0&&u.indexOf('..')<0;}
+      function valide(m){var c=m&&m.boutique;return c&&Array.isArray(c.js)&&c.js.length&&c.js.every(sure)&&Array.isArray(c.css)&&c.css.length&&c.css.every(sure);}
+      function demarre(man){if(lance)return;lance=true;var c=valide(man)?man.boutique:repli;
+        c.css.forEach(function(u){var link=document.createElement('link');link.rel='stylesheet';link.href=u;document.head.appendChild(link);});
+        (function suivants(i){if(i>=c.js.length)return;var script=document.createElement('script');script.src=c.js[i];script.onload=script.onerror=function(){suivants(i+1);};document.body.appendChild(script);})(0);
+      }
+      setTimeout(function(){demarre(null);},3000);
+      try{fetch('owd-manifeste.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.json():null;}).then(demarre,function(){demarre(null);});}catch(e){demarre(null);}
+    })();
+  </script>
+  <noscript>La boutique nécessite JavaScript.</noscript>
 </body>
 </html>
