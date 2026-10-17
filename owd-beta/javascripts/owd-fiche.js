@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "3.25.0b";
+  var RELEASE = "3.26.0b";
   var SCHEMA = 16;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -580,7 +580,7 @@
   // leurs données sans que la fiche les efface au passage.
   // LES LIEUX DE L'INVENTAIRE. Les dix-neuf cases de Sur soi (les mains, la
   // ceinture, le sac à dos, les vêtements, les accessoires), les emplacements
-  // (ep) de la ceinture et du sac à dos, puis les deux groupes libres.
+  // (ep) de la ceinture et du sac à dos, puis Poches, Sac et Par terre.
   // Le SOUS-VÊTEMENT est un ACCESSOIRE et non un vêtement : il ne fait pas
   // partie du set de cinq pièces (tête, haut, mains, bas, pieds) dont se
   // comptent la réduction et le tier, il se porte EN PLUS.
@@ -596,7 +596,7 @@
   };
   var INV_CASES = ["mainG", "mainD", "ceinture", "dos"].concat(INV_VETEMENTS, INV_ACCESSOIRES);
   var INV_EP = ["ceint", "sacep"];
-  var INV_LIEUX = INV_CASES.concat(INV_EP, ["poches", "sac"]);
+  var INV_LIEUX = INV_CASES.concat(INV_EP, ["poches", "sac", "terre"]);
   function accType(v) {
     if (aClef(INV_ACC_TYPES, v)) return v;
     var t = "";
@@ -958,7 +958,7 @@
         dans: o.dans == null ? "" : String(o.dans),
         achat: pnum(o.achat), vente: venteNum(o.vente),
         desc: o.desc == null ? "" : String(o.desc),
-        ou: INV_LIEUX.indexOf(o.ou) >= 0 ? o.ou : "sac",
+        ou: INV_LIEUX.indexOf(o.ou) >= 0 ? o.ou : "terre",
         // le rang de l'EMPLACEMENT qu'il tient, dans la ceinture ou sur le sac
         emp: Math.max(-1, Math.floor(num(o.emp, -1))),
         rapide: !!o.rapide,
@@ -1021,7 +1021,7 @@
       while(walk && walk.dans && !cycle){if(seen[walk.ref]||walk.dans===o.ref){cycle=true;break;}seen[walk.ref]=true;walk=contenantsParRef[walk.dans];}
       if (!p || cycle || (!p.sac && (!o.contenu || String(o.contenu) !== String(p.contenant)))) {
         o.dans = "";
-        o.ou = "sac";
+        o.ou = "terre";
         o.emp = -1;
         return;
       }
@@ -1063,6 +1063,8 @@
       cases.forEach(function (c) { prises[c] = 1; });
     });
     rangeEmplacements(s.inv.objets);
+    // Une ancienne poche contenant un objet trop grand est vidée sur le sol,
+    // sans supprimer l’objet ni lui faire consommer artificiellement la charge.
     window.OwdInventoryData.bind(s.inv.objets);
 
     // Une attaque dont l'objet a disparu garde sa référence : en édition le
@@ -1750,16 +1752,15 @@
   }
   function courant(cle) { return courantBrut(cle); }
 
-  // ---- charge, poches, sac, accès rapides ----
-  // L'inventaire a trois groupes fixes (Sur soi, Poches, Sac à dos) et TOUT ce
-  // qu'il porte pèse : la charge compare le poids total à ce que la Force
-  // porte. Les poches et le sac ont en plus chacun leur capacité, qui vient de
+  // ---- charge, poches, sac, par terre, accès rapides ----
+  // Seuls les objets effectivement portés contribuent à la charge.
+  // Les objets au sol, et tous les contenus de leurs contenants, sont exclus. Les poches et le sac ont en plus chacun leur capacité, qui vient de
   // ce que le personnage porte : les poches des vêtements dans leur case, et
   // le sac posé dans la case du sac à dos.
   function poidsDe(o) { return pnum(o.qte) * pnum(o.poids); }
   function poidsOu(test) {
     var t = 0;
-    state.inv.objets.forEach(function (o) { if (test(o.ou)) t += poidsDe(o); });
+    state.inv.objets.forEach(function (o) { if (test(o.ou, o)) t += poidsDe(o); });
     return Math.round(t * 1000) / 1000;
   }
   // Les poches et le sac ne se limitent pas en poids mais en ENCOMBRANCE
@@ -1890,14 +1891,14 @@
   }
   // Le poids porté se calcule ICI et nulle part ailleurs : le module
   // d'inventaire lit les mêmes fonctions.
-  function poidsPorteBrut() { return poidsOu(function () { return true; }); }
+  function poidsPorteBrut() { var porte = window.OwdInventoryData.carrier(state.inv.objets); return poidsOu(function (ou, o) { return porte(o); }); }
   function poidsPorte() { return pub("poidsPorte", poidsPorteBrut(), {}); }
   // Les objets marqués « prise rapide », comptés à l'unité et non à la
   // quantité : un carquois de vingt flèches occupe UN accès, pas vingt. Qu'ils
   // soient dans les poches ou dans le sac ne change rien.
   function accesPris() {
-    var n = 0;
-    state.inv.objets.forEach(function (o) { if (o.rapide && pnum(o.qte) > 0) n++; });
+    var n = 0, porte = window.OwdInventoryData.carrier(state.inv.objets);
+    state.inv.objets.forEach(function (o) { if (o.rapide && pnum(o.qte) > 0 && porte(o)) n++; });
     return n;
   }
   // La contenance OCCUPÉE se compte à la main (le pas du bloc Corps) : la fiche
@@ -5473,7 +5474,8 @@
     return Math.max(0, Math.floor(Math.max(0, d - p) * Math.max(0, 1 - r / 100) + 1e-9));
   }
   function defenseArme(ref) {
-    return state.inv.objets.filter(function (o) { return o.arme && String(o.ref) === String(ref); })[0] || null;
+    return state.inv.objets.filter(function (o) { return o.arme && String(o.ref) === String(ref) &&
+      window.OwdInventoryData.isCarried(state.inv.objets,o); })[0] || null;
   }
   function defenseValeurs(entree) {
     var item = entree && entree.arme ? defenseArme(entree.arme) : null;
@@ -5787,7 +5789,8 @@
       var cat = categorieMunition(def), objets = state.inv && Array.isArray(state.inv.objets) ? state.inv.objets : [];
       if (!cat) return [];
       return objets.filter(function (o) {
-        return o && String(o.typeObjet === "munition" ? o.sousType : o.contenu || "") === cat && pnum(o.qte) > 0;
+        return o && window.OwdInventoryData.isCarried(objets, o) &&
+          String(o.typeObjet === "munition" ? o.sousType : o.contenu || "") === cat && pnum(o.qte) > 0;
       });
     }
     function contenantDe(o) {
@@ -5803,7 +5806,8 @@
     }
     function munitionSelectionnee(entree, def) {
       var o = objetInventaire(entree && entree.munition);
-      return o && String(o.typeObjet === "munition" ? o.sousType : o.contenu || "") === categorieMunition(def) ? o : null;
+      return o && window.OwdInventoryData.isCarried(state.inv.objets,o) &&
+        String(o.typeObjet === "munition" ? o.sousType : o.contenu || "") === categorieMunition(def) ? o : null;
     }
     function retireUneMunition(o) {
       var objets = state.inv && Array.isArray(state.inv.objets) ? state.inv.objets : [];
@@ -5827,6 +5831,10 @@
       return out;
     }
     function executeAttaque(entree, it, def, envoyer) {
+      if (!window.OwdInventoryData.isCarried(state.inv.objets,it)) {
+        flash("Cette arme est par terre : ramassez-la avant d'attaquer.");
+        return;
+      }
       // 2 : transportable dans une main, mais utilisable seulement à deux.
       // Les 2 obligatoires occupent déjà les deux mains dès leur équipement.
       if ((it.mains === 2 || it.mains === "2 obligatoires") &&
@@ -7555,7 +7563,7 @@
         // protocole de don actuel n'embarque pas les sous-types d'équipement,
         // donc le contenu reste dans cette fiche et retourne au sac.
         if (it.contenant && it.ref) state.inv.objets.forEach(function (x) {
-          if (String(x.dans || "") === String(it.ref)) { x.dans = ""; x.ou = "sac"; x.emp = -1; }
+          if (String(x.dans || "") === String(it.ref)) { x.dans = ""; x.ou = it.ou === "terre" ? "terre" : "sac"; x.emp = -1; }
         });
         var i = state.inv.objets.indexOf(it);
         if (i >= 0) state.inv.objets.splice(i, 1);
@@ -7598,7 +7606,12 @@
     var gSel = null;
     if (!jumeau) {
       gSel = el("select");
-      (window.OwdInventoryData.backpack(items) ? [["sac", "Sac à dos"], ["poches", "Poches"]] : [["poches", "Poches"]]).forEach(function (g) {
+      // Un objet reçu arrive au sol par défaut ; le joueur choisit ensuite
+      // s'il le ramasse. Les poches ne sont proposées que si sa taille est connue.
+      var lieuxReception = [["terre", "Par terre"]];
+      if (window.OwdInventoryData.backpack(items)) lieuxReception.push(["sac", "Sac à dos"]);
+      if (recu.item && window.OwdInventoryData.pocketFits(recu.item)) lieuxReception.push(["poches", "Poches"]);
+      lieuxReception.forEach(function (g) {
         var o = el("option", null, g[1]);
         o.value = g[0];
         gSel.appendChild(o);
@@ -7652,10 +7665,10 @@
       if(recu.bundle){var refs={};recu.bundle.forEach(function(x){refs[x.ref]=uid("o");});
         var bag=window.OwdInventoryData.backpack(items);
         recu.bundle.forEach(function(x,i){var c=JSON.parse(JSON.stringify(x));c.ref=refs[x.ref];c.dans=refs[x.dans]||"";
-          if(i===0){c.qte=1;c.ou=gSel&&gSel.value==="poches"?"poches":"sac";c.emp=-1;if(c.ou==="sac"&&bag)c.dans=bag.ref;}
+          if(i===0){c.qte=1;c.ou=gSel?gSel.value:"terre";c.emp=-1;if(c.ou==="sac"&&bag)c.dans=bag.ref;}
           items.push(c);});
       } else if(recu.item){
-        var copie=JSON.parse(JSON.stringify(recu.item));copie.ref=uid("o");copie.qte=q;copie.ou=gSel&&gSel.value==="poches"?"poches":"sac";copie.dans="";copie.emp=-1;items.push(copie);
+        var copie=JSON.parse(JSON.stringify(recu.item));copie.ref=uid("o");copie.qte=q;copie.ou=gSel?gSel.value:"terre";copie.dans="";copie.emp=-1;items.push(copie);
       } else if (jumeau) {
         jumeau.qte = Math.round((jumeau.qte + q) * 100) / 100;
         ["nom", "img", "poids", "places", "desc", "achat", "vente"].forEach(function (k) {
@@ -7666,7 +7679,7 @@
         items.push({
           id: recu.id, ref: uid("o"), nom: recu.nom, img: recu.img, qte: q, poids: recu.poids,
           places: recu.places, achat: recu.achat, vente: recu.vente, desc: recu.desc,
-          ou: gSel && gSel.value === "poches" ? "poches" : "sac", emp: -1,
+          ou: gSel ? gSel.value : "terre", emp: -1,
           rapide: recu.rapide, vet: "", acc: "", poches: 0, froid: 0, chaud: 0,
           sac: false, cap: 0, ceint: false, ep: 0, ebMax: 0,
           contenant: "", contenu: "", dans: "", arme: null
@@ -8130,7 +8143,7 @@
     bagueG: "Bague gauche", bagueD: "Bague droite",
     chevilleG: "Cheville gauche", chevilleD: "Cheville droite", cape: "Cape",
     poignet: "Poignet", bague: "Bague", cheville: "Cheville",
-    ceint: "Ceinture", sacep: "Sac à dos", poches: "Poches", sac: "Sac à dos"
+    ceint: "Ceinture", sacep: "Sac à dos", poches: "Poches", sac: "Sac à dos", terre: "Par terre"
   };
   // le nom d'une case vide coupé à la main : les deux côtés d'une paire se
   // coupent au même endroit, jamais l'un seul parce que l'autre tient
@@ -8138,10 +8151,10 @@
     poignetG: "Poignet\ngauche", poignetD: "Poignet\ndroit",
     chevilleG: "Cheville\ngauche", chevilleD: "Cheville\ndroite"
   };
-  // Un objet peut-il aller là ? Les poches et le sac prennent tout ; une case
-  // de Sur soi, ce qui s'y porte. Les emplacements ont leur propre dépôt.
+  // Les poches n'acceptent que Minuscule / Très petite. Le sol n'a aucune limite.
   function lieuPermis(o, ou) {
-    if (ou === "poches" || ou === "sac") return true;
+    if (ou === "terre" || ou === "sac") return true;
+    if (ou === "poches") return window.OwdInventoryData.pocketFits(o);
     return casePermise(o, ou);
   }
   function champsObjet(it, q) {
@@ -8188,7 +8201,7 @@
       if(actuel.sac){var refs=window.OwdInventoryData.group(state.inv,actuel.ref).map(function(o){return o.ref;});
         for(var z=state.inv.objets.length-1;z>=0;z--)if(state.inv.objets[z]!==actuel&&refs.indexOf(state.inv.objets[z].ref)>=0)state.inv.objets.splice(z,1);}
       if (actuel.contenant) state.inv.objets.forEach(function (o) {
-        if (String(o.dans || "") === String(ref)) { o.dans = ""; o.ou = "sac"; o.emp = -1; }
+        if (String(o.dans || "") === String(ref)) { o.dans = ""; o.ou = actuel.ou === "terre" ? "terre" : "sac"; o.emp = -1; }
       });
       state.inv.objets.splice(state.inv.objets.indexOf(actuel), 1);
       refresh(); if (invRender) invRender();
@@ -8269,9 +8282,9 @@
       if (!ref) return 0;
       items.forEach(function (o) {
         if (String(o.dans || "") !== ref) return;
-        o.dans = ""; o.ou = "sac"; o.emp = -1; n++;
+        o.dans = ""; o.ou = porteur.ou === "terre" ? "terre" : "sac"; o.emp = -1; n++;
       });
-      if (n && !silencieux) flash("Le contenu a été replacé dans le sac à dos.");
+      if (n && !silencieux) flash("Le contenu a été sorti du contenant.");
       return n;
     }
     function poseContenu(o, porteur) {
@@ -8323,7 +8336,10 @@
     function deplace(o, ou, cible) {
       var deuxMains=ou==="deuxMains" || o.mains==="2 obligatoires" && (ou==="mainG" || ou==="mainD");
       if(ou==="deuxMains")ou="mainD";
-      if (!lieuPermis(o, ou)) { flash("« " + INV_NOMS[ou] + " » ne prend pas cet objet."); return false; }
+      if (!lieuPermis(o, ou)) {
+        flash(ou === "poches" ? "Les poches acceptent uniquement les objets de taille Très petite ou Minuscule (renseignez la taille de l'objet)." : "« " + INV_NOMS[ou] + " » ne prend pas cet objet.");
+        return false;
+      }
       var bagCible=window.OwdInventoryData.backpack(items);
       if(ou === "sac" && bagCible && o!==bagCible && !invTailleAccepte(o.taille,invTailleMaxSac(bagCible))){flash("Cet objet dépasse la taille intérieure maximale du sac.");return false;}
       var dest = ancrage(o, ou, deuxMains), cases = casesDe(o, dest, deuxMains), vient = o.ou;
@@ -8391,7 +8407,7 @@
       pose.emp = k;
       if (occ && occ !== pose) {
         if (vient && INV_EP.indexOf(vient) >= 0 && epPermis(occ, vient)) { occ.ou = vient; occ.emp = vientK; }
-        else if (vient === "poches" || vient === "sac") { occ.ou = vient; occ.emp = -1; }
+        else if (vient === "terre" || vient === "sac" || (vient === "poches" && lieuPermis(occ, "poches"))) { occ.ou = vient; occ.emp = -1; }
         else { occ.ou = "sac"; occ.emp = -1; }
       }
       window.OwdInventoryData.bind(items);
@@ -8466,7 +8482,7 @@
     }
     function rangeRemplace(it) {
       var bag = window.OwdInventoryData.backpack(items);
-      deplace(it, bag && bag !== it ? "sac" : "poches");
+      deplace(it, bag && bag !== it ? "sac" : "terre");
     }
     function equipeObjet(it) {
       var lieux = emplacementsEquipement(it).filter(function (ou) { return casePermise(it, ou); });
@@ -8515,8 +8531,11 @@
       if (bag && bag !== it && !(it.ou === "sac" && it.dans === bag.ref)) deplacements.push(entree("Déplacer dans le sac à dos", function (o) {
         if (deplace(o, "sac")) { sel = o; render(); refresh(); }
       }));
-      if (it.ou !== "poches" || it.dans) deplacements.push(entree("Déplacer dans les poches", function (o) {
+      if (lieuPermis(it, "poches") && (it.ou !== "poches" || it.dans)) deplacements.push(entree("Déplacer dans les poches", function (o) {
         if (deplace(o, "poches")) { sel = o; render(); refresh(); }
+      }));
+      if (it.ou !== "terre" || it.dans) deplacements.push(entree("Déplacer par terre", function (o) {
+        if (deplace(o, "terre")) { sel = o; render(); refresh(); }
       }));
       if (deplacements.length) groupes.push(deplacements);
       var equipements = [], lieux = emplacementsEquipement(it);
@@ -8611,7 +8630,7 @@
       t.addEventListener("dragend", function () { drag = null; if (window.__owdObjetDragFin) window.__owdObjetDragFin(); render(); });
       // dans les poches et le sac, déposer SUR une tuile range avant ou après
       // elle ; dans une case, c'est la case qui reçoit
-      if (it.ou === "poches" || it.ou === "sac") {
+      if (it.ou === "poches" || it.ou === "sac" || it.ou === "terre") {
         t.addEventListener("dragover", function (e) {
           if (!drag || drag === it) return;
           e.preventDefault();
@@ -8769,15 +8788,20 @@
       return g;
     }
 
-    // POCHES et SAC À DOS : des tuiles, et l'encombrance contre la capacité.
+    // POCHES et SAC À DOS : capacité affichée. PAR TERRE : illimité et hors charge.
     // Le sac montre D'ABORD ses emplacements, sur leurs propres lignes.
     function groupeLibre(ou, titre, poids, cap) {
       var bag=window.OwdInventoryData.backpack(items);
       function visible(it){return it.ou===ou && (ou==="sac" ? bag&&it.dans===bag.ref : !it.dans);}
       var g = el("div", "pc-obj-group");
       var pds = el("span", "pds");
-      pds.title = "Volume contre capacité";
+      pds.title = ou === "terre" ? "Sans limite : hors du poids porté" : "Volume contre capacité";
       function maj() {
+        if (ou === "terre") {
+          pds.textContent = items.filter(visible).length + " objets · illimité";
+          pds.classList.remove("over");
+          return;
+        }
         var p = poids(), c = cap();
         pds.textContent = fmtP(p) + " / " + fmtP(c) + " L";
         pds.classList.toggle("over", p > c);
@@ -8791,6 +8815,7 @@
       var tiles = el("div", "pc-obj-tiles");
       tiles.style.setProperty("--obj-cols", 5);
       items.forEach(function (it) { if (visible(it)) tiles.appendChild(tile(it)); });
+      if (ou === "terre") {
       var add = el("div", "pc-obj-addtile pc-edit-only", "+");
       add.title = "Ajouter un objet dans « " + titre + " »";
       add.addEventListener("click", function () {
@@ -8804,10 +8829,11 @@
         refresh();
       });
       tiles.appendChild(add);
+      }
       // LA LIGNE SE COMPLÈTE de cases vides en pointillé, et un groupe vide en
       // garde une entière : on voit la place qui reste. La case « + » de
       // l'édition compte dans la ligne.
-      var n = items.filter(function (x) { return visible(x); }).length + (isEdit("inv") ? 1 : 0);
+      var n = items.filter(function (x) { return visible(x); }).length + (ou === "terre" && isEdit("inv") ? 1 : 0);
       var trous = Math.max(5, Math.ceil(n / 5) * 5) - n;
       for (var k = 0; k < trous; k++) tiles.appendChild(el("div", "pc-obj-tile pc-inv-trou"));
       tiles.addEventListener("dragover", function (e) {
@@ -9338,6 +9364,7 @@
       leftBox.appendChild(groupeCeinture());
       leftBox.appendChild(groupeLibre("poches", "Poches", ebPoches, capPoches));
       if(window.OwdInventoryData.backpack(items)) leftBox.appendChild(groupeLibre("sac", "Sac à dos", ebSac, capSac));
+      leftBox.appendChild(groupeLibre("terre", "PAR TERRE"));
       renderPanel();
       updateTotal();
       applyEdit(container, "inv");
