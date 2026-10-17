@@ -1,7 +1,8 @@
 'use strict';
 const assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs');
 const M=require('../docs/javascripts/owd-attr-map.js'),C=require('../docs/javascripts/owd-sync.js'),Migr=require('../docs/javascripts/owd-migrations.js');
-const ctx={snum:x=>Number(x)||0,pnum:x=>Math.max(0,Number(x)||0),caracTotal:()=>20,effetBonus:()=>0,effetAlerte:()=>0,state:{inv:{objets:[]}},vetementsPortes:()=>ctx.state.inv.objets.filter(o=>o.ou==='haut')};
+const D=require('../docs/javascripts/owd-inventaire-data.js');
+const ctx={window:{OwdInventoryData:D},snum:x=>Number(x)||0,pnum:x=>Math.max(0,Number(x)||0),caracTotal:()=>20,effetBonus:()=>0,effetAlerte:()=>0,state:{inv:{objets:[]}},vetementsPortes:()=>ctx.state.inv.objets.filter(o=>o.ou==='haut')};
 vm.createContext(ctx);vm.runInContext(fs.readFileSync('src/fiche/fiche/defense.js','utf8'),ctx);
 assert.equal(ctx.combatDegats(30,6,9),21);
 assert.equal(ctx.combatDegats(5,10,0),0);
@@ -11,6 +12,8 @@ assert.equal(ctx.combatDegats(30,0,-50),45);
 ctx.state.inv.objets=[{ref:'top',qte:1,ou:'haut',prot_feu:4,res_feu:5},{ref:'ignored',qte:1,ou:'poches',prot_feu:999,res_feu:999},
  {ref:'shield',qte:1,ou:'mainG',prot_feu:2,res_feu:4,arme:{parade:8,reduction:6,modsParade:['Force','','']}}];
 let d=ctx.defenseValeurs({arme:'shield'});assert.equal(d.protection,10);assert.equal(d.difficulte,8);
+ctx.state.inv.objets[2].ou='terre';assert.equal(ctx.defenseValeurs({arme:'shield'}).item,null);
+ctx.state.inv.objets[2].ou='mainG';
 let t=ctx.defenseTotaux('feu',d,true);assert.equal(t.protection,16);assert.equal(t.reduction,9);
 t=ctx.defenseTotaux('feu',d,false);assert.equal(t.protection,4);assert.equal(t.reduction,5);
 ctx.state.inv.objets[2].ou='haut';t=ctx.defenseTotaux('feu',d,true);assert.equal(t.protection,16);assert.equal(t.reduction,9);

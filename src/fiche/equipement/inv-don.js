@@ -102,7 +102,7 @@
         // protocole de don actuel n'embarque pas les sous-types d'équipement,
         // donc le contenu reste dans cette fiche et retourne au sac.
         if (it.contenant && it.ref) state.inv.objets.forEach(function (x) {
-          if (String(x.dans || "") === String(it.ref)) { x.dans = ""; x.ou = "sac"; x.emp = -1; }
+          if (String(x.dans || "") === String(it.ref)) { x.dans = ""; x.ou = it.ou === "terre" ? "terre" : "sac"; x.emp = -1; }
         });
         var i = state.inv.objets.indexOf(it);
         if (i >= 0) state.inv.objets.splice(i, 1);
@@ -145,7 +145,12 @@
     var gSel = null;
     if (!jumeau) {
       gSel = el("select");
-      (window.OwdInventoryData.backpack(items) ? [["sac", "Sac à dos"], ["poches", "Poches"]] : [["poches", "Poches"]]).forEach(function (g) {
+      // Un objet reçu arrive au sol par défaut ; le joueur choisit ensuite
+      // s'il le ramasse. Les poches ne sont proposées que si sa taille est connue.
+      var lieuxReception = [["terre", "Par terre"]];
+      if (window.OwdInventoryData.backpack(items)) lieuxReception.push(["sac", "Sac à dos"]);
+      if (recu.item && window.OwdInventoryData.pocketFits(recu.item)) lieuxReception.push(["poches", "Poches"]);
+      lieuxReception.forEach(function (g) {
         var o = el("option", null, g[1]);
         o.value = g[0];
         gSel.appendChild(o);
@@ -199,10 +204,10 @@
       if(recu.bundle){var refs={};recu.bundle.forEach(function(x){refs[x.ref]=uid("o");});
         var bag=window.OwdInventoryData.backpack(items);
         recu.bundle.forEach(function(x,i){var c=JSON.parse(JSON.stringify(x));c.ref=refs[x.ref];c.dans=refs[x.dans]||"";
-          if(i===0){c.qte=1;c.ou=gSel&&gSel.value==="poches"?"poches":"sac";c.emp=-1;if(c.ou==="sac"&&bag)c.dans=bag.ref;}
+          if(i===0){c.qte=1;c.ou=gSel?gSel.value:"terre";c.emp=-1;if(c.ou==="sac"&&bag)c.dans=bag.ref;}
           items.push(c);});
       } else if(recu.item){
-        var copie=JSON.parse(JSON.stringify(recu.item));copie.ref=uid("o");copie.qte=q;copie.ou=gSel&&gSel.value==="poches"?"poches":"sac";copie.dans="";copie.emp=-1;items.push(copie);
+        var copie=JSON.parse(JSON.stringify(recu.item));copie.ref=uid("o");copie.qte=q;copie.ou=gSel?gSel.value:"terre";copie.dans="";copie.emp=-1;items.push(copie);
       } else if (jumeau) {
         jumeau.qte = Math.round((jumeau.qte + q) * 100) / 100;
         ["nom", "img", "poids", "places", "desc", "achat", "vente"].forEach(function (k) {
@@ -213,7 +218,7 @@
         items.push({
           id: recu.id, ref: uid("o"), nom: recu.nom, img: recu.img, qte: q, poids: recu.poids,
           places: recu.places, achat: recu.achat, vente: recu.vente, desc: recu.desc,
-          ou: gSel && gSel.value === "poches" ? "poches" : "sac", emp: -1,
+          ou: gSel ? gSel.value : "terre", emp: -1,
           rapide: recu.rapide, vet: "", acc: "", poches: 0, froid: 0, chaud: 0,
           sac: false, cap: 0, ceint: false, ep: 0, ebMax: 0,
           contenant: "", contenu: "", dans: "", arme: null

@@ -1,6 +1,6 @@
   // LES LIEUX DE L'INVENTAIRE. Les dix-neuf cases de Sur soi (les mains, la
   // ceinture, le sac à dos, les vêtements, les accessoires), les emplacements
-  // (ep) de la ceinture et du sac à dos, puis les deux groupes libres.
+  // (ep) de la ceinture et du sac à dos, puis Poches, Sac et Par terre.
   // Le SOUS-VÊTEMENT est un ACCESSOIRE et non un vêtement : il ne fait pas
   // partie du set de cinq pièces (tête, haut, mains, bas, pieds) dont se
   // comptent la réduction et le tier, il se porte EN PLUS.
@@ -16,7 +16,7 @@
   };
   var INV_CASES = ["mainG", "mainD", "ceinture", "dos"].concat(INV_VETEMENTS, INV_ACCESSOIRES);
   var INV_EP = ["ceint", "sacep"];
-  var INV_LIEUX = INV_CASES.concat(INV_EP, ["poches", "sac"]);
+  var INV_LIEUX = INV_CASES.concat(INV_EP, ["poches", "sac", "terre"]);
   function accType(v) {
     if (aClef(INV_ACC_TYPES, v)) return v;
     var t = "";
@@ -378,7 +378,7 @@
         dans: o.dans == null ? "" : String(o.dans),
         achat: pnum(o.achat), vente: venteNum(o.vente),
         desc: o.desc == null ? "" : String(o.desc),
-        ou: INV_LIEUX.indexOf(o.ou) >= 0 ? o.ou : "sac",
+        ou: INV_LIEUX.indexOf(o.ou) >= 0 ? o.ou : "terre",
         // le rang de l'EMPLACEMENT qu'il tient, dans la ceinture ou sur le sac
         emp: Math.max(-1, Math.floor(num(o.emp, -1))),
         rapide: !!o.rapide,
@@ -441,7 +441,7 @@
       while(walk && walk.dans && !cycle){if(seen[walk.ref]||walk.dans===o.ref){cycle=true;break;}seen[walk.ref]=true;walk=contenantsParRef[walk.dans];}
       if (!p || cycle || (!p.sac && (!o.contenu || String(o.contenu) !== String(p.contenant)))) {
         o.dans = "";
-        o.ou = "sac";
+        o.ou = "terre";
         o.emp = -1;
         return;
       }
@@ -483,6 +483,8 @@
       cases.forEach(function (c) { prises[c] = 1; });
     });
     rangeEmplacements(s.inv.objets);
+    // Une ancienne poche contenant un objet trop grand est vidée sur le sol,
+    // sans supprimer l’objet ni lui faire consommer artificiellement la charge.
     window.OwdInventoryData.bind(s.inv.objets);
 
     // Une attaque dont l'objet a disparu garde sa référence : en édition le

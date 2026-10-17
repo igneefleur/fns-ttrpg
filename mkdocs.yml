@@ -1361,8 +1361,8 @@ extra_javascript:
   - javascripts/owd-migrations.js?v=151 # moteur de migration : AVANT le bundle, qui l'appelle
   - javascripts/owd-mods.js?v=151       # moteur de mods : AVANT la fiche, qui l'interroge (et facultatif de naissance)
   - javascripts/owd-des3d.js?v=151    # moteur des dés en volume : AVANT la fiche, qui s'en sert
-  - javascripts/owd-inventaire-data.js?v=151
-  - javascripts/owd-fiche.js?v=151
+  - javascripts/owd-inventaire-data.js?v=152
+  - javascripts/owd-fiche.js?v=152
   - javascripts/copybtn.js
 hooks:
   - hooks/changelog.py

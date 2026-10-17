@@ -85,7 +85,8 @@
     return Math.max(0, Math.floor(Math.max(0, d - p) * Math.max(0, 1 - r / 100) + 1e-9));
   }
   function defenseArme(ref) {
-    return state.inv.objets.filter(function (o) { return o.arme && String(o.ref) === String(ref); })[0] || null;
+    return state.inv.objets.filter(function (o) { return o.arme && String(o.ref) === String(ref) &&
+      window.OwdInventoryData.isCarried(state.inv.objets,o); })[0] || null;
   }
   function defenseValeurs(entree) {
     var item = entree && entree.arme ? defenseArme(entree.arme) : null;

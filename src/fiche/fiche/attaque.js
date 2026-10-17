@@ -114,7 +114,8 @@
       var cat = categorieMunition(def), objets = state.inv && Array.isArray(state.inv.objets) ? state.inv.objets : [];
       if (!cat) return [];
       return objets.filter(function (o) {
-        return o && String(o.typeObjet === "munition" ? o.sousType : o.contenu || "") === cat && pnum(o.qte) > 0;
+        return o && window.OwdInventoryData.isCarried(objets, o) &&
+          String(o.typeObjet === "munition" ? o.sousType : o.contenu || "") === cat && pnum(o.qte) > 0;
       });
     }
     function contenantDe(o) {
@@ -130,7 +131,8 @@
     }
     function munitionSelectionnee(entree, def) {
       var o = objetInventaire(entree && entree.munition);
-      return o && String(o.typeObjet === "munition" ? o.sousType : o.contenu || "") === categorieMunition(def) ? o : null;
+      return o && window.OwdInventoryData.isCarried(state.inv.objets,o) &&
+        String(o.typeObjet === "munition" ? o.sousType : o.contenu || "") === categorieMunition(def) ? o : null;
     }
     function retireUneMunition(o) {
       var objets = state.inv && Array.isArray(state.inv.objets) ? state.inv.objets : [];
@@ -154,6 +156,10 @@
       return out;
     }
     function executeAttaque(entree, it, def, envoyer) {
+      if (!window.OwdInventoryData.isCarried(state.inv.objets,it)) {
+        flash("Cette arme est par terre : ramassez-la avant d'attaquer.");
+        return;
+      }
       // 2 : transportable dans une main, mais utilisable seulement à deux.
       // Les 2 obligatoires occupent déjà les deux mains dès leur équipement.
       if ((it.mains === 2 || it.mains === "2 obligatoires") &&

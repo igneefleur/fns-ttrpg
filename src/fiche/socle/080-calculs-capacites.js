@@ -314,16 +314,15 @@
   }
   function courant(cle) { return courantBrut(cle); }
 
-  // ---- charge, poches, sac, accès rapides ----
-  // L'inventaire a trois groupes fixes (Sur soi, Poches, Sac à dos) et TOUT ce
-  // qu'il porte pèse : la charge compare le poids total à ce que la Force
-  // porte. Les poches et le sac ont en plus chacun leur capacité, qui vient de
+  // ---- charge, poches, sac, par terre, accès rapides ----
+  // Seuls les objets effectivement portés contribuent à la charge.
+  // Les objets au sol, et tous les contenus de leurs contenants, sont exclus. Les poches et le sac ont en plus chacun leur capacité, qui vient de
   // ce que le personnage porte : les poches des vêtements dans leur case, et
   // le sac posé dans la case du sac à dos.
   function poidsDe(o) { return pnum(o.qte) * pnum(o.poids); }
   function poidsOu(test) {
     var t = 0;
-    state.inv.objets.forEach(function (o) { if (test(o.ou)) t += poidsDe(o); });
+    state.inv.objets.forEach(function (o) { if (test(o.ou, o)) t += poidsDe(o); });
     return Math.round(t * 1000) / 1000;
   }
   // Les poches et le sac ne se limitent pas en poids mais en ENCOMBRANCE
@@ -454,14 +453,14 @@
   }
   // Le poids porté se calcule ICI et nulle part ailleurs : le module
   // d'inventaire lit les mêmes fonctions.
-  function poidsPorteBrut() { return poidsOu(function () { return true; }); }
+  function poidsPorteBrut() { var porte = window.OwdInventoryData.carrier(state.inv.objets); return poidsOu(function (ou, o) { return porte(o); }); }
   function poidsPorte() { return pub("poidsPorte", poidsPorteBrut(), {}); }
   // Les objets marqués « prise rapide », comptés à l'unité et non à la
   // quantité : un carquois de vingt flèches occupe UN accès, pas vingt. Qu'ils
   // soient dans les poches ou dans le sac ne change rien.
   function accesPris() {
-    var n = 0;
-    state.inv.objets.forEach(function (o) { if (o.rapide && pnum(o.qte) > 0) n++; });
+    var n = 0, porte = window.OwdInventoryData.carrier(state.inv.objets);
+    state.inv.objets.forEach(function (o) { if (o.rapide && pnum(o.qte) > 0 && porte(o)) n++; });
     return n;
   }
   // La contenance OCCUPÉE se compte à la main (le pas du bloc Corps) : la fiche
