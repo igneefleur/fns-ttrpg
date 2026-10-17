@@ -475,7 +475,7 @@
       choix.appendChild(fld("Type", type));
       if (entree.personnalisee) choix.appendChild(combatTexte("Nom", entree, "nom"));
       else {
-        var source = el("select", "pc-select pc-edit-field pc-attaque-source"), vide = el("option", null, "— Choisir une arme —"); vide.value = ""; source.appendChild(vide);
+        var source = el("select", "pc-select pc-edit-field pc-attaque-source"), vide = el("option", null, "Choisir une arme"); vide.value = ""; source.appendChild(vide);
         armesInventaire().forEach(function (o) { var op = el("option", null, o.nom || "Arme sans nom"); op.value = assureRef(o); op.selected = it === o; source.appendChild(op); });
         if (entree.arme && !it) { var absent = el("option", null, "Arme introuvable"); absent.value = entree.arme; absent.selected = true; source.appendChild(absent); }
         source.addEventListener("change", function () { entree.arme = source.value; ouverts[entree.id] = true; refresh(); });
@@ -510,7 +510,7 @@
       if (categorieMunition(def)) {
         var munBox = el("div", "pc-attaque-munitions");
         var sm = el("select", "pc-select pc-attaque-munition");
-        var om0 = el("option", null, "— Choisir une munition —"); om0.value = ""; sm.appendChild(om0);
+        var om0 = el("option", null, "Choisir une munition"); om0.value = ""; sm.appendChild(om0);
         var compatibles = munitionsCompatibles(def), trouveMunition = false;
         compatibles.forEach(function (o) {
           var op = el("option", null, libelleMunition(o));

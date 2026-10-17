@@ -16,3 +16,11 @@ for(const o of data.equipements.filter(o=>o.arme))assert.ok(Math.abs(Object.valu
 const bag=data.equipements.find(o=>o.nom==='Nomad Backpack');assert.equal(bag.tailleInterieure,'Petite');assert.equal(bag.tailleAccroche,'Moyenne');assert.equal(bag.ep,5);
 assert.ok(defs.get('Poison').manuel);assert.ok(!defs.get('Poison').ops.regen);
 console.log('OK références, durées distinctes, pourcentages entiers des vêtements, ratios des armes, tailles des sacs et dégâts manuels.');
+
+const types=new Set(['arme','vetement','accessoire','rangement','contenant','solide','pate','liquide','munition','autre']);
+for(const o of data.equipements.concat(data.objets)){
+ assert.ok(types.has(o.typeObjet),o.nom+': type non demandé');
+ assert.equal(Object.hasOwn(o,'construction'),false,o.nom);
+ assert.ok(o.mains===1||o.mains===2,o.nom+': mains');
+}
+console.log('OK types autorisés, absence de Construction et nombre de mains pour chaque objet du catalogue');

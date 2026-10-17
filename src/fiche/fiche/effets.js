@@ -105,7 +105,7 @@
     return [j?j+" j":"",h?h+" h":"",m?m+" min":"",s?s+" s":""].filter(Boolean).join(" ") || "0 s";
   }
   function selectEffet(value, change) {
-    var s=el("select","pc-select pc-edit-field"),empty=el("option",null,"— Aucun —");empty.value="";s.appendChild(empty);
+    var s=el("select","pc-select pc-edit-field"),empty=el("option",null,"Aucun");empty.value="";s.appendChild(empty);
     effetsDefinitions().forEach(function(d){var o=el("option",null,d.nom);o.value=d.id;o.selected=d.id===value;s.appendChild(o);});
     if(value && !effetDefinition(value)){var o=el("option",null,value+" (inconnu)");o.value=value;o.selected=true;s.appendChild(o);}
     s.addEventListener("change",function(){change(s.value);});return s;
@@ -117,7 +117,7 @@
       temps.type="text";temps.inputMode="decimal";temps.placeholder="Durée du référentiel";
       var select=selectEffet("",function(v){id=v;var d=effetDefinition(id);temps.placeholder=d?d.dureeTexte:"Durée du référentiel";});
       body.appendChild(fld("Effet",select));body.appendChild(fld("Durée en minutes (facultatif)",temps));
-      var none=el("option",null,"— Personnage —");none.value="";armes.appendChild(none);
+      var none=el("option",null,"Personnage");none.value="";armes.appendChild(none);
       state.inv.objets.filter(function(o){return o.arme;}).forEach(function(o){var p=el("option",null,o.nom||"Arme");p.value=o.ref;armes.appendChild(p);});
       body.appendChild(fld("Cible",armes));
       dialogue("Ajouter un effet",body,function(){

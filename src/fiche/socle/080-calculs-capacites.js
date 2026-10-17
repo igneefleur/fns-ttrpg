@@ -350,7 +350,7 @@
     ou = ou || o.ou;
     if (!explicite && o.dans) return [];
     if (o.vet === "hautbas" && (ou === "haut" || ou === "bas")) return ["haut", "bas"];
-    if (o.arme && o.arme.mains === 2 && (ou === "mainG" || ou === "mainD")) return ["mainG", "mainD"];
+    if ((o.mains === 2 || o.mains == null && o.arme && o.arme.mains === 2) && (ou === "mainG" || ou === "mainD")) return ["mainG", "mainD"];
     return INV_CASES.indexOf(ou) >= 0 ? [ou] : [];
   }
   // Une CASE de Sur soi accepte-t-elle cet objet ? Les mains prennent tout ;

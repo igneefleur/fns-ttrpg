@@ -10,7 +10,7 @@
     function fillSel() {
       // refait après CHAQUE écriture de la bibliothèque, sinon le select ment
       sel.innerHTML = "";
-      var o0 = el("option", null, "— Bibliothèque —");
+      var o0 = el("option", null, "Bibliothèque");
       o0.value = "";
       sel.appendChild(o0);
       loadPersos().forEach(function (p) {

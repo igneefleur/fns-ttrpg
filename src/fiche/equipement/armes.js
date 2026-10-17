@@ -30,7 +30,7 @@
       function remplir() {
         var valeur = a.comp || "";
         s.innerHTML = "";
-        var o0 = el("option", null, "— Aucune —");
+        var o0 = el("option", null, "Aucune");
         o0.value = "";
         s.appendChild(o0);
         state.comps.forEach(function (c) {
@@ -52,7 +52,7 @@
       function remplir() {
         var valeur = Array.isArray(a[table]) ? String(a[table][rang] || "") : "";
         s.innerHTML = "";
-        var o0 = el("option", null, "—");
+        var o0 = el("option", null, "Aucun");
         o0.value = "";
         s.appendChild(o0);
         caracsOrdre().forEach(function (c) {
@@ -80,7 +80,7 @@
       function remplir() {
         var valeur = String(a.type || ""), trouve = false, groupes = {};
         s.innerHTML = "";
-        var o0 = el("option", null, "— Aucun —");
+        var o0 = el("option", null, "Aucun");
         o0.value = "";
         s.appendChild(o0);
         armesData().forEach(function (d) {
@@ -110,11 +110,9 @@
       s.addEventListener("change", function () {
         a.type = s.value;
         it.sousType=s.value;
-        // Le nombre de mains reste une donnée technique de l'inventaire. Quand
-        // le livre le connaît pour ce type, on l'aligne sans afficher un champ
-        // supplémentaire dans la carte de l'arme.
+        // La famille choisie initialise le champ Mains commun à tous les objets.
         armesData().forEach(function (d) {
-          if (d && d.cle === a.type && (d.mains === 1 || d.mains === 2)) a.mains = d.mains;
+          if (d && d.cle === a.type && (d.mains === 1 || d.mains === 2)) it.mains = a.mains = d.mains;
         });
         save();
         refresh();

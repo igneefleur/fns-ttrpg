@@ -58,7 +58,7 @@
     else if(it.acc)add("Type",INV_NOMS[it.acc] || it.acc);
     else if(it.sac)add("Type","Sac à dos");else if(it.ceint)add("Type","Ceinture");
     if(it.contenant)add("Contenant",it.contenant);if(it.contenu)add("Contenu",it.contenu);
-    add("Type",INV_TYPES_OBJETS[invType(it)]);add("Sous-type",it.sousType);add("Taille",it.taille);add("Construction",it.construction);
+    add("Type",INV_TYPES_OBJETS[invType(it)]);add("Sous-type",it.sousType);add("Taille",it.taille);add("Mains",it.mains || it.arme&&it.arme.mains || 1);
     if(it.nourri){add("Contenance",fmtP(it.places || 0));add("PS",fmtP(it.ps||0));add("PH",fmtP(it.ph||0));}
     (it.effets||[]).filter(Boolean).forEach(function(id,i){add("Effet "+(i+1),id);});
     Object.keys(it.restaurations||{}).forEach(function(k){if(it.restaurations[k])add("Restauration "+k.toUpperCase(),fmtP(it.restaurations[k])+" "+(it.unitesRestauration[k]||"points"));});
@@ -505,7 +505,7 @@
       if (!O.nom && !O.poids && !O.qte) foot.style.display = "none";
       t.appendChild(foot);
       if (it.contenant) t.appendChild(slotContenant(it));
-      t.title = (it.nom || "Objet") + (it.rapide ? " — prise rapide" : "");
+      t.title = (it.nom || "Objet") + (it.rapide ? " — accès rapide" : "");
       if (it.rapide) t.classList.add("rapide");
 
       t.addEventListener("click", function (e) { e.stopPropagation(); sel = it; render(); });
@@ -824,16 +824,7 @@
 
       var body = el("div", "pc-obj-body");
 
-      // L'ORDRE DU DÉTAIL, arrêté par l'auteur :
-      //   NOM
-      //   TYPE | prise rapide        (puis ce que le type demande)
-      //   QUANTITÉ
-      //   POIDS | ENCOMBRANCE
-      //   ACHAT | VENTE
-      //   IDENTIFIANT | IMAGE (URL)  (en édition seulement)
-      //   DESCRIPTION
-      //   [quantité] [Montrer] [Donner] [Détruire]
-      // L'emplacement ne s'y choisit pas : on range au glisser-déposer.
+      // Champs communs d’abord, puis propriétés propres au type et quantité.
       var nm = el("input", "nm pc-edit-field");
       nm.type = "text"; nm.placeholder = fantome ? "Aucun objet" : "Nom de l'objet";
       nm.value = it.nom;
@@ -865,23 +856,14 @@
         refresh();
       });
       ligneNat.appendChild(fld("Type", nat));
-      var kvR = el("div", "pc-kv");
-      var labR = el("label", null, "");
-      var cbR = el("input", "pc-edit-field");
-      cbR.type = "checkbox";
-      cbR.checked = !!it.rapide;
-      cbR.addEventListener("change", function () {
-        it.rapide = cbR.checked;
-        render();
-        refresh();
-      });
-      labR.appendChild(cbR);
-      labR.appendChild(el("span", null, " prise rapide"));
-      kvR.appendChild(labR);
-      ligneNat.appendChild(kvR);
+      var rapide = el("button", "pc-chip pc-combat-toggle" + (it.rapide ? " on" : ""), "Accès rapide");
+      rapide.type="button";rapide.setAttribute("aria-pressed",String(!!it.rapide));
+      rapide.addEventListener("click",function(){it.rapide=!it.rapide;render();refresh();});
+      ligneNat.appendChild(rapide);
       body.appendChild(ligneNat);
+      var specifiques=el("div","pc-obj-specifics");
       var sous=invSousTypes(invType(it));
-      if(sous.length)body.appendChild(invChoix("Sous-type",sous,it.sousType || (it.ceint?"ceint":it.sac?"sac":"autre"),function(v){
+      if(sous.length)specifiques.appendChild(invChoix("Sous-type",sous,it.sousType || (it.ceint?"ceint":it.sac?"sac":"autre"),function(v){
         it.sousType=v;it.nourri=v==="ingerable";
         if(invType(it)==="rangement"){if(it.sac&&v!=="sac")libereContenu(it,true);it.sac=v==="sac";it.ceint=v==="ceint";}
         if(invType(it)==="munition")it.contenu=v;
@@ -931,7 +913,7 @@
         pp.appendChild(champNombre("Défense Chaud", function () { return it.chaud; },
           function (v) { it.chaud = snum(v); }, "Protection contre le chaud, en degrés"));
         cv.appendChild(pp);
-        body.appendChild(cv);
+        specifiques.appendChild(cv);
       }
 
       // l'ACCESSOIRE : sa case, ses poches, sa protection
@@ -961,7 +943,7 @@
         ppa.appendChild(champNombre("Chaud", function () { return it.chaud; },
           function (v) { it.chaud = snum(v); }, "Protection contre le chaud, en degrés"));
         ca.appendChild(ppa);
-        body.appendChild(ca);
+        specifiques.appendChild(ca);
       }
 
       // les EMPLACEMENTS d'une ceinture ou d'un sac : leur nombre, et
@@ -970,7 +952,7 @@
         var pe = el("div", "pc-obj-pair");
         pe.appendChild(champNombre("Accroches", function () { return it.ep; },
           function (v) { it.ep = Math.floor(pnum(v)); rangeEmplacements(items); }, "Nombre d'emplacements, en acc"));
-        pe.appendChild(invChoix("Taille maximale",[["","— Non renseignée —"]].concat(INV_TAILLES.map(function(t){return [t,t];})),it.tailleAccroche || (it.sac?"Moyenne":""),function(v){it.tailleAccroche=v;rangeEmplacements(items);render();}));
+        pe.appendChild(invChoix("Taille maximale",[["","Non renseignée"]].concat(INV_TAILLES.map(function(t){return [t,t];})),it.tailleAccroche || (it.sac?"Moyenne":""),function(v){it.tailleAccroche=v;rangeEmplacements(items);render();}));
         Array.prototype.forEach.call(pe.querySelectorAll("input"), function (i) {
           i.addEventListener("change", function () { render(); });
         });
@@ -979,7 +961,7 @@
       if (it.ceint) {
         var cc = carteNature();
         cc.appendChild(champsEp());
-        body.appendChild(cc);
+        specifiques.appendChild(cc);
       }
 
       // la nourriture porte son VOLUME : ce qu'une dose ou une part occupe de
@@ -993,7 +975,7 @@
         var nutrition=el("div","pc-obj-pair");["ps","ph"].forEach(function(k){nutrition.appendChild(champNombre(k.toUpperCase(),function(){return num(it[k],0);},function(v){it[k]=snum(v);}));});cn.appendChild(nutrition);
         cn.appendChild(champNombre("Temps (DA)",function(){return num(it.tempsConsommation,0);},function(v){it.tempsConsommation=pnum(v);}));
 
-        body.appendChild(cn);
+        specifiques.appendChild(cn);
       }
 
       if (it.sac) {
@@ -1004,7 +986,7 @@
         cs.appendChild(ps);
         cs.appendChild(invChoix("Taille intérieure maximale",INV_TAILLES,invTailleMaxSac(it),function(v){it.tailleInterieure=v;}));
         cs.appendChild(champsEp());
-        body.appendChild(cs);
+        specifiques.appendChild(cs);
       }
 
       // CONTENANT et CONTENU partagent exactement les mêmes catégories. Le
@@ -1015,27 +997,93 @@
         var pct = el("div", "pc-obj-pair");
         pct.appendChild(fld("Catégorie", selCategorieStockage(it, "contenant")));
         ct.appendChild(pct);
-        body.appendChild(ct);
+        specifiques.appendChild(ct);
       }
       if (it.contenu && invType(it)==="autre") {
         var ctu = carteNature();
         var pctu = el("div", "pc-obj-pair");
         pctu.appendChild(fld("Catégorie", selCategorieStockage(it, "contenu")));
         ctu.appendChild(pctu);
-        body.appendChild(ctu);
+        specifiques.appendChild(ctu);
       }
 
       // L'ARME : cinq lignes de données, sans gestes ni boutons. Ses
       // rafraîchissements vont au registre du PANNEAU, vidé à chaque rendu :
       // sinon chaque clic sur une tuile laisserait des fonctions pointer sur un
-      // détail disparu. Le nombre de mains reste technique et vient du type.
+      // détail disparu.
       if (it.arme && !fantome) {
         var ancien = hooks;
         hooks = panelHooks;
-        try { body.appendChild(carteArme(it, function () { render(); })); }
+        try { specifiques.appendChild(carteArme(it, function () { render(); })); }
         finally { hooks = ancien; }
       }
 
+      var pair = el("div", "pc-obj-pair");
+      pair.appendChild(champNombre("Poids", function () { return it.poids; },
+        function (v) { it.poids = pnum(v); }));
+      pair.appendChild(champNombre("Volume", function () { return it.encombre; },
+        function (v) { it.volume = it.encombre = pnum(v); }, "En L"));
+      body.appendChild(pair);
+      var tailleMains=el("div","pc-obj-pair");
+      tailleMains.appendChild(invChoix("Taille",[["","Non renseignée"]].concat(INV_TAILLES.map(function(t){return [t,t];})),it.taille||"",function(v){it.taille=v;rangeEmplacements(items);render();}));
+      tailleMains.appendChild(invChoix("Mains",[[1,"1"],[2,"2"]],it.mains||1,function(v){it.mains=Number(v);if(it.arme)it.arme.mains=it.mains;rangeEmplacements(items);render();}));
+      body.appendChild(tailleMains);
+
+      // achat / vente, en pièces d'argent : la monnaie du livre est NOMMÉE
+      var prix = el("div", "pc-obj-pair");
+      prix.appendChild(champNombre("Prix d'achat", function () { return it.achat; },
+        function (v) { it.achat = pnum(v); majVente(); }, "Prix d'achat en " + monnaie(true)));
+      // le prix de vente laissé vide est AUTOMATIQUE ; un nombre saisi, 0
+      // compris, s'affiche tel quel
+      var vIn = el("input", "pc-edit-field");
+      vIn.type = "text"; vIn.inputMode = "decimal";
+      vIn.placeholder = "automatique";
+      function majVente() {
+        if (document.activeElement !== vIn) vIn.value = it.vente == null ? "" : fmtP(it.vente);
+        vIn.title = "Prix de vente en " + monnaie(true) + (it.vente == null ? " : " + fmtP(prixVente(it)) : "");
+      }
+      majVente();
+      vIn.addEventListener("input", function () { it.vente = venteNum(vIn.value); save(); refresh(); majVente(); });
+      vIn.addEventListener("blur", majVente);
+      prix.appendChild(fld("Prix de vente", vIn));
+      body.appendChild(prix);
+
+      // Identifiant visible ; image et fichier uniquement en édition.
+      // L'identifiant reconnaît le même objet d'une fiche à l'autre quand on
+      // le donne.
+      var pairE = el("div", "pc-obj-pair pc-edit-only");
+      var idIn = el("input", "pc-edit-field");
+      idIn.type = "text"; idIn.placeholder = "ex. iron_sword";
+      idIn.value = it.id || "";
+      idIn.addEventListener("input", function () { it.id = idIn.value; save(); });
+      body.appendChild(fld("Identifiant", idIn));
+      var url = el("input", "pc-edit-field");
+      url.type = "text"; url.placeholder = "https://…";
+      url.value = /^data:/.test(it.img) ? "" : it.img;
+      url.addEventListener("change", function () { it.img = url.value.trim(); render(); refresh(); });
+      var urlFld = fld("Image", url);
+      var file = el("input");
+      file.type = "file"; file.accept = "image/*"; file.style.display = "none";
+      file.addEventListener("change", function () {
+        var f = file.files && file.files[0];
+        file.value = "";
+        if (!f) return;
+        vignette(f, function (data) { it.img = data; render(); refresh(); });
+      });
+      urlFld.appendChild(file);
+      pairE.appendChild(fld("Fichier",miniBtn("Fichier…", "Importer une image (réduite en vignette 84 × 128)",
+        function () { file.click(); })));
+      pairE.insertBefore(urlFld,pairE.firstChild);
+      body.appendChild(pairE);
+
+      var desc = el("textarea", "pc-notes pc-edit-field");
+      desc.rows = 3;
+      desc.placeholder = "Description, effets, notes…";
+      desc.value = it.desc;
+      desc.addEventListener("input", function () { it.desc = desc.value; save(); });
+      body.appendChild(fld("Description", desc, "w"));
+      body.appendChild(specifiques);
+      invChampsCommuns(body,it,render);
       // quantité : curseur à l'unité + champ, décimal (une demi-ration)
       var qRow = el("div", "pc-obj-qrow");
       var slider = el("input");
@@ -1061,72 +1109,7 @@
       qRow.appendChild(slider);
       qRow.appendChild(qIn);
       body.appendChild(fld("Quantité", qRow));
-      if(!fantome){var modele=el("select","pc-edit-field"),vide=el("option",null,"— Choisir un modèle —");vide.value="";modele.appendChild(vide);
-        (D().consommables || []).forEach(function(m,index){var op=el("option",null,m.nom);op.value=String(index);modele.appendChild(op);});
-        modele.addEventListener("change",function(){if(modele.value==="")return;var m=D().consommables[Number(modele.value)],ref=it.ref,ou=it.ou,dans=it.dans;Object.keys(it).forEach(function(k){delete it[k];});Object.assign(it,JSON.parse(JSON.stringify(m)),{ref:ref,ou:ou,dans:dans});render();refresh();});body.appendChild(fld("Modèle de consommable",modele));}
 
-
-      var pair = el("div", "pc-obj-pair");
-      pair.appendChild(champNombre("Poids", function () { return it.poids; },
-        function (v) { it.poids = pnum(v); }));
-      pair.appendChild(champNombre("Volume", function () { return it.encombre; },
-        function (v) { it.volume = it.encombre = pnum(v); }, "En L"));
-      body.appendChild(pair);
-      invChampsCommuns(body,it,render);
-
-      // achat / vente, en pièces d'argent : la monnaie du livre est NOMMÉE
-      var prix = el("div", "pc-obj-pair");
-      prix.appendChild(champNombre("Prix d'achat", function () { return it.achat; },
-        function (v) { it.achat = pnum(v); majVente(); }, "Prix d'achat en " + monnaie(true)));
-      // le prix de vente laissé vide est AUTOMATIQUE ; un nombre saisi, 0
-      // compris, s'affiche tel quel
-      var vIn = el("input", "pc-edit-field");
-      vIn.type = "text"; vIn.inputMode = "decimal";
-      vIn.placeholder = "automatique";
-      function majVente() {
-        if (document.activeElement !== vIn) vIn.value = it.vente == null ? "" : fmtP(it.vente);
-        vIn.title = "Prix de vente en " + monnaie(true) + (it.vente == null ? " : " + fmtP(prixVente(it)) : "");
-      }
-      majVente();
-      vIn.addEventListener("input", function () { it.vente = venteNum(vIn.value); save(); refresh(); majVente(); });
-      vIn.addEventListener("blur", majVente);
-      prix.appendChild(fld("Prix de vente", vIn));
-      body.appendChild(prix);
-
-      // identifiant et image : de la construction, en édition seulement.
-      // L'identifiant reconnaît le même objet d'une fiche à l'autre quand on
-      // le donne.
-      var pairE = el("div", "pc-obj-pair pc-edit-only");
-      var idIn = el("input", "pc-edit-field");
-      idIn.type = "text"; idIn.placeholder = "ex. iron_sword";
-      idIn.value = it.id || "";
-      idIn.addEventListener("input", function () { it.id = idIn.value; save(); });
-      pairE.appendChild(fld("Identifiant", idIn));
-      var url = el("input", "pc-edit-field");
-      url.type = "text"; url.placeholder = "https://…";
-      url.value = /^data:/.test(it.img) ? "" : it.img;
-      url.addEventListener("change", function () { it.img = url.value.trim(); render(); refresh(); });
-      var urlFld = fld("Image (URL)", url);
-      var file = el("input");
-      file.type = "file"; file.accept = "image/*"; file.style.display = "none";
-      file.addEventListener("change", function () {
-        var f = file.files && file.files[0];
-        file.value = "";
-        if (!f) return;
-        vignette(f, function (data) { it.img = data; render(); refresh(); });
-      });
-      urlFld.appendChild(file);
-      urlFld.appendChild(miniBtn("Fichier…", "Importer une image (réduite en vignette 84 × 128)",
-        function () { file.click(); }));
-      pairE.appendChild(urlFld);
-      body.appendChild(pairE);
-
-      var desc = el("textarea", "pc-notes pc-edit-field");
-      desc.rows = 3;
-      desc.placeholder = "Description, effets, notes…";
-      desc.value = it.desc;
-      desc.addEventListener("input", function () { it.desc = desc.value; save(); });
-      body.appendChild(fld("Description", desc, "w"));
 
       if (fantome) {
         Array.prototype.forEach.call(body.querySelectorAll("input, select, textarea, button"),
@@ -1159,7 +1142,7 @@
         montreObjet(it.ref, bornerAct());
       });
       actions.appendChild(montrer);
-      if(it.nourri || ["consommable","ingerable"].indexOf(it.sousType)>=0)actions.appendChild(miniBtn("Consommer",null,function(){invConsommerDialogue(it,bornerAct());}));
+      if(invAvecEffets(it))actions.appendChild(miniBtn("Consommer",null,function(){invConsommerDialogue(it,bornerAct());}));
       actions.appendChild(miniBtn("Donner", "Donner cette quantité à un autre joueur", function () {
         donnerDialogue(it, bornerAct());
       }));

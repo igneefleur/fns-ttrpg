@@ -15,12 +15,12 @@
     var s = el("select", "pc-select pc-edit-field");
     combatTypes().forEach(function (t) { var o = el("option", null, combatLibType(t)); o.value = t;
       o.selected = t === data[key]; s.appendChild(o); });
-    if (!data[key]) { var empty = el("option", null, "— Choisir —"); empty.value = ""; empty.selected = true; s.insertBefore(empty, s.firstChild); }
+    if (!data[key]) { var empty = el("option", null, "Choisir"); empty.value = ""; empty.selected = true; s.insertBefore(empty, s.firstChild); }
     s.addEventListener("change", function () { data[key] = s.value; refresh(); });
     return s;
   }
   function combatComp(data) {
-    var s = el("select", "pc-select pc-edit-field"), vide = el("option", null, "— Choisir une compétence —"); vide.value = ""; s.appendChild(vide);
+    var s = el("select", "pc-select pc-edit-field"), vide = el("option", null, "Choisir une compétence"); vide.value = ""; s.appendChild(vide);
     state.comps.forEach(function (c) { var o = el("option", null, c.nom || "Sans nom"); o.value = c.id; o.selected = c.id === data.comp; s.appendChild(o); });
     s.addEventListener("change", function () { data.comp = s.value; refresh(); }); return s;
   }
@@ -245,7 +245,7 @@
       }
       state.defenses.entrees.forEach(function (e) {
         var card = el("div", "pc-attaque-card"), edit = el("div", "pc-edit-only pc-defense-edit"), sel = el("select", "pc-select pc-edit-field");
-        var opt = el("option", null, "— Choisir une arme —"); opt.value = ""; sel.appendChild(opt);
+        var opt = el("option", null, "Choisir une arme"); opt.value = ""; sel.appendChild(opt);
         opt = el("option", null, "Défense personnalisée"); opt.value = "custom"; opt.selected = !!e.personnalisee; sel.appendChild(opt);
         state.inv.objets.filter(function (o) { return o.arme; }).forEach(function (o) {
           if (!o.ref) o.ref = uid("o");
@@ -262,7 +262,7 @@
           edit.appendChild(fld("Compétence", combatComp(e.personnalisee)));
           var mods = el("div", "pc-arme-line pc-arme-3");
           for (var i = 0; i < 3; i++) (function (rang) {
-            var sm = el("select", "pc-select pc-edit-field"), empty = el("option", null, "—"); empty.value = ""; sm.appendChild(empty);
+            var sm = el("select", "pc-select pc-edit-field"), empty = el("option", null, "Aucun"); empty.value = ""; sm.appendChild(empty);
             caracsOrdre().forEach(function (c) { var op = el("option", null, abbrCarac(c)); op.value = c; op.selected = e.personnalisee.modsParade[rang] === c; sm.appendChild(op); });
             sm.addEventListener("change", function () { e.personnalisee.modsParade[rang] = sm.value; refresh(); }); mods.appendChild(fld("MOD", sm));
           })(i);

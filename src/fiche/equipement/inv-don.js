@@ -179,7 +179,7 @@
             var mi = el("img"); mi.alt = ""; mi.src = opt[2];
             bt.appendChild(mi);
           } else {
-            bt.appendChild(el("div", "val", opt[2] ? opt[2] : "— vide —"));
+            bt.appendChild(el("div", "val", opt[2] ? opt[2] : "vide"));
           }
           bt.addEventListener("click", function () {
             choix[c[0]] = opt[0];

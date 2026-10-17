@@ -459,7 +459,8 @@
       });
       if (!d) return;
       if (!o.arme.type) o.arme.type = String(d.cle);
-      if (d.mains === 1 || d.mains === 2) o.arme.mains = d.mains;
+      if (o.mains == null && (d.mains === 1 || d.mains === 2)) o.mains = d.mains;
+      o.arme.mains = o.mains;
     });
     // UNE CASE, UN OBJET, ET LE BON : une case de vêtement ne prend que son
     // type de vêtement, la case du sac à dos qu'un sac. Ce qui n'y a pas sa

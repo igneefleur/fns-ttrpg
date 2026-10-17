@@ -134,6 +134,11 @@ def build(path):
   s=w['Imprégnations'];row=[s.cell(r,c).value for c in range(1,19)]
   if not row[0]:continue
   liquid='Varnish' in row[0];templates.append({'id':'tableur:'+slug(row[0]),'nom':row[0],'qte':1,'typeObjet':'liquide' if liquid else 'solide','sousType':'consommable','nourri':False,'poids':row[2] or 0,'volume':row[12] or 0,'encombre':row[12] or 0,'taille':row[13] or '', 'effets':[row[3]] if row[3] else [],'tempsConsommation':row[9] or 1,'achat':row[14] or 0,'vente':row[15],'desc':row[16] or '', 'img':row[17] or '', 'ou':'poches','dans':'','emp':-1})
+ for item in gear+templates:
+  item.pop('construction',None)
+  if item.get('typeObjet') in ['eclairage','couchage']:
+   item['typeObjet']='autre';item['sousType']='autre'
+  item['mains']=item.get('arme',{}).get('mains',1)
  out={'version':1,'source':'ttrpg outward equipment','effets':effects,'objets':templates,'equipements':gear}
  dest=ROOT/'docs/data/owd-effets.json';dest.parent.mkdir(exist_ok=True);dest.write_text(json.dumps(out,ensure_ascii=False,indent=1)+'\n',encoding='utf8')
  print(len(effects),'effets,',len(templates),'modèles de consommables importés')

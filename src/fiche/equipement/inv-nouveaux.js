@@ -1,13 +1,11 @@
   // Propriétés communes ajoutées sans réinterpréter les anciennes clés de stockage.
   var INV_TAILLES = ["Minuscule","Très petite","Petite","Moyenne","Grande","Très grande","Gigantesque"];
-  var INV_TYPES_OBJETS = {arme:"Arme",vetement:"Vêtement",accessoire:"Accessoire",rangement:"Rangement",contenant:"Contenant",solide:"Solide",pate:"Pâte",liquide:"Liquide",munition:"Munition",eclairage:"Éclairage",couchage:"Couchage",autre:"Objet divers"};
-  function invType(o) {return o.typeObjet || (o.arme?"arme":o.vet?"vetement":o.acc?"accessoire":o.sac||o.ceint?"rangement":o.contenant?"contenant":o.nourri?"solide":/^(fleche|carreau|balle|pierre)/.test(o.contenu||"")?"munition":o.contenu||"autre");}
+  var INV_TYPES_OBJETS = {arme:"Arme",vetement:"Vêtement",accessoire:"Accessoire",rangement:"Rangement",contenant:"Contenant",solide:"Solide",pate:"Pâte",liquide:"Liquide",munition:"Munition",autre:"Objet divers"};
+  function invType(o) {return /^(eclairage|couchage)$/.test(o.typeObjet)?"autre":o.typeObjet || (o.arme?"arme":o.vet?"vetement":o.acc?"accessoire":o.sac||o.ceint?"rangement":o.contenant?"contenant":o.nourri?"solide":/^(fleche|carreau|balle|pierre)/.test(o.contenu||"")?"munition":o.contenu||"autre");}
   function invSousTypes(type) {
     if(type==="rangement")return [["sac","Sac à dos"],["ceint","Ceinture"]];
     if(["solide","pate","liquide"].indexOf(type)>=0)return [["ingerable","Ingérable"],["consommable","Consommable"],["autre","Autre"]];
     if(type==="munition")return [["fleches","Flèche"],["carreaux","Carreau"],["balles","Balle"],["pierres","Pierre"]];
-    if(type==="eclairage")return [["torche","Torche"],["lanterne","Lanterne"]];
-    if(type==="couchage")return [["couchage","Couchage"],["tente","Tente"]];
     return [];
   }
   function invTailleAccepte(taille, max) {return !taille || !max || INV_TAILLES.indexOf(taille)<=INV_TAILLES.indexOf(max);}
@@ -19,7 +17,7 @@
     // Leurs quantités, prix, poids, image et description restent ceux du joueur.
     if(!o.versionObjet && /^boutique:/.test(o.id||"") && modele){
       o=Object.assign({},modele,o);
-      ["typeObjet","sousType","taille","construction","tailleInterieure","tailleAccroche","effets","stats","restaurations","unitesRestauration","ps","ph","places","tempsConsommation","conditionsEffets","proprietes"].forEach(function(k){if(modele[k]!==undefined)o[k]=JSON.parse(JSON.stringify(modele[k]));});
+      ["typeObjet","sousType","taille","tailleInterieure","tailleAccroche","effets","stats","restaurations","unitesRestauration","ps","ph","places","tempsConsommation","conditionsEffets","proprietes"].forEach(function(k){if(modele[k]!==undefined)o[k]=JSON.parse(JSON.stringify(modele[k]));});
       ["arme","vet","sac","ceint","acc","contenant","contenu","cap","ep","froid","chaud","poches","prot_physique","res_physique"].forEach(function(k){if(modele[k]!==undefined)n[k]=JSON.parse(JSON.stringify(modele[k]));});
       combatTypes().forEach(function(t){["prot_","res_"].forEach(function(p){if(modele[p+t]!==undefined){n[p+t]=modele[p+t];o[p+t]=modele[p+t];}});});
       if(n.arme)o.arme=n.arme;
@@ -27,9 +25,13 @@
     n.versionObjet=1;
     n.typeObjet=invType(o);if(!INV_TYPES_OBJETS[n.typeObjet])n.typeObjet="autre";
     n.sousType=String(o.sousType || (o.sac?"sac":o.ceint?"ceint":o.vet?o.vet:o.acc?o.acc:o.arme?o.arme.type:o.nourri?"ingerable":n.typeObjet==="munition"?o.contenu:"autre"));
+    if(/^(eclairage|couchage)$/.test(o.typeObjet))n.sousType="autre";
     n.nourri=n.sousType==="ingerable";n.places=pnum(o.places);
     n.taille=INV_TAILLES.indexOf(o.taille)>=0?o.taille:modele&&modele.taille||"";
-    n.construction=["Souple","Semi-rigide","Rigide"].indexOf(o.construction)>=0?o.construction:modele&&modele.construction||"";
+    var mainsBase=o.arme&&o.arme.mains;
+    if(mainsBase==null && o.arme)armesData().forEach(function(d){if(d.cle===o.arme.type || !o.arme.type&&pli(d.nom)===pli(o.nom))mainsBase=d.mains;});
+    n.mains=num(o.mains,mainsBase===2?2:1)===2?2:1;
+    if(n.arme)n.arme.mains=n.mains;
     n.volume=pnum(o.volume===undefined?o.encombre:o.volume);n.encombre=n.volume;
     n.tailleInterieure=String(o.tailleInterieure||"");n.tailleAccroche=String(o.tailleAccroche || (n.sac?"Moyenne":""));
     n.effets=(Array.isArray(o.effets)?o.effets:[]).slice(0,5).map(String);
@@ -49,14 +51,14 @@
     var s=el("select","pc-select pc-edit-field");values.forEach(function(v){var k=Array.isArray(v)?v[0]:v,t=Array.isArray(v)?v[1]:v;var op=el("option",null,t);op.value=k;op.selected=k===current;s.appendChild(op);});
     s.addEventListener("change",function(){change(s.value);save();refresh();});return fld(label,s);
   }
+  function invAvecEffets(it) {return ["solide","pate","liquide"].indexOf(invType(it))>=0 && ["ingerable","consommable"].indexOf(it.sousType)>=0;}
   function invChampsCommuns(body,it,render) {
-    var row=el("div","pc-obj-pair");
-    row.appendChild(invChoix("Taille",[["","— Non renseignée —"]].concat(INV_TAILLES.map(function(t){return [t,t];})),it.taille||"",function(v){it.taille=v;rangeEmplacements(state.inv.objets);render();}));
-    row.appendChild(invChoix("Construction",[["","— Sans objet —"],["Souple","Souple"],["Semi-rigide","Semi-rigide"],["Rigide","Rigide"]],it.construction||"",function(v){it.construction=v;}));body.appendChild(row);
-    var title=el("div","lbl","Effets"),card=el("div","pc-arme");body.appendChild(title);
-    if(!Array.isArray(it.effets))it.effets=[];
-    for(var i=0;i<5;i++)(function(index){card.appendChild(fld("Effet "+(index+1),selectEffet(it.effets[index]||"",function(v){it.effets[index]=v;save();refresh();})));})(i);
-    body.appendChild(card);
+    if(invAvecEffets(it)){
+      body.appendChild(el("div","lbl","Effets"));var card=el("div","pc-arme");
+      if(!Array.isArray(it.effets))it.effets=[];
+      for(var i=0;i<5;i++)(function(index){card.appendChild(fld("Effet "+(index+1),selectEffet(it.effets[index]||"",function(v){it.effets[index]=v;save();refresh();})));})(i);
+      body.appendChild(card);
+    }
     if(it.proprietes && Object.keys(it.proprietes).some(function(k){return it.proprietes[k]!=null;})){
       var props=el("div","pc-arme");Object.keys(it.proprietes).forEach(function(k){if(it.proprietes[k]==null)return;var i=el("input","pc-edit-field");i.type="text";i.value=it.proprietes[k];i.addEventListener("input",function(){it.proprietes[k]=i.value;save();});props.appendChild(fld({autonomie:"Autonomie",accrochable:"Accrochable",recharge:"Recharge"}[k]||k,i));});body.appendChild(props);
     }
@@ -74,7 +76,7 @@
       if(!it.munitionStats.repartition)it.munitionStats.repartition={physique:100};
       combatTypes().forEach(function(k){mun.appendChild(champArme(combatLibType(k)+" (%)",it.munitionStats.repartition,k));});body.appendChild(mun);
     }
-    if(it.nourri || ["consommable","ingerable"].indexOf(it.sousType)>=0){
+    if(invAvecEffets(it)){
       var rs=el("div","pc-arme");
       if(!it.restaurations)it.restaurations={};if(!it.unitesRestauration)it.unitesRestauration={};
       ["pv","pe","pm","pr","ps","ph","pi"].forEach(function(k){

@@ -62,24 +62,24 @@ def catalogue(docs):
             if not obj.get('desc'):
                 obj['desc'] = it['desc']
             it['objet'] = obj
-            replacements = {'Type': obj.get('construction'), 'Taille': obj.get('taille'),
+            replacements = {'Taille': obj.get('taille'),
                             'Taille maximale acceptée': obj.get('tailleInterieure'),
                             'Attaches': obj.get('ep')}
             it['champs'] = [['Accroches' if k == 'Attaches' else k,
                              str(replacements[k]) if k in replacements and replacements[k] is not None else v]
-                            for k, v in it['champs']]
+                            for k, v in it['champs'] if k not in ['Construction','Type']]
             if obj.get('sac'):
                 it['categorie'] = 'Rangement'
                 it['famille'] = 'Sac à dos'
                 it['champs'].append(['Taille maximale aux accroches', 'Moyenne (2 acc par objet Moyen)'])
         existing = {it['nom'] for it in items}
-        categories = {'arme':'Arme','vetement':'Vêtement','rangement':'Rangement','eclairage':'Éclairage','couchage':'Couchage'}
+        categories = {'arme':'Arme','vetement':'Vêtement','rangement':'Rangement','autre':'Objet divers'}
         for o in data.get('equipements', []):
             if o['nom'] in existing:
                 continue
             existing.add(o['nom'])
             fields = [['Poids (kg)', str(o.get('poids',0))],['Volume (L)',str(o.get('volume',0))],
-                      ['Taille',o.get('taille','')],['Construction',o.get('construction','')],
+                      ['Taille',o.get('taille','')],['Mains',str(o.get('mains',1))],
                       ['Achat (argent)',str(o.get('achat',0))],['Vente (argent)',str(o.get('vente',0))]]
             fields += [['Effet '+str(i+1), name] for i,name in enumerate(o.get('effets',[]))]
             items.append({'id':o['id'],'nom':o['nom'],'categorie':categories[o['typeObjet']],
