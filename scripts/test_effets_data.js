@@ -17,7 +17,7 @@ const bag=data.equipements.find(o=>o.nom==='Nomad Backpack');assert.equal(bag.ta
 assert.ok(defs.get('Poison').manuel);assert.ok(!defs.get('Poison').ops.regen);
 console.log('OK références, durées distinctes, pourcentages entiers des vêtements, ratios des armes, tailles des sacs et dégâts manuels.');
 
-const types=new Set(['arme','vetement','accessoire','rangement','contenant','solide','pate','liquide','munition','autre']);
+const types=new Set(['arme','vetement','accessoire','rangement','contenant','consommable','munition','autre']);
 for(const o of data.equipements.concat(data.objets)){
  assert.ok(types.has(o.typeObjet),o.nom+': type non demandé');
  assert.equal(Object.hasOwn(o,'construction'),false,o.nom);

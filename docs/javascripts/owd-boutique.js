@@ -83,15 +83,23 @@
   function safe(s) { return String(s == null ? '' : s).replace(/[{}]/g, '').replace(/\s+/g, ' ').trim(); }
   function encode(o) { var bytes = new TextEncoder().encode(JSON.stringify(o)), s = ''; bytes.forEach(function (x) { s += String.fromCharCode(x); }); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
   function command(it, action, q) {
-    var fields = [['Quantité', q], ['Poids', value(it, 'Poids (kg)') + ' kg'], ['Volume', value(it, 'Volume (L)') + ' L'], ['Achat', price(it)], ['Vente', value(it, 'Vente (argent)') + ' argent'], ['Type', it.categorie]];
-    it.champs.forEach(function (f) { if (!/^(Poids|Volume|Achat|Vente)\b/.test(f[0])) fields.push(f); });
-    if (it.desc) fields.push(['Description', it.desc]);
-    var description = [it.desc, it.champs.map(function (f) { return f[0] + ' : ' + f[1]; }).join('\n')].filter(Boolean).join('\n\n');
+    // Carte compatible avec les anciennes versions de l'extension (version 1,
+    // toutes les valeurs de s sont des chaînes). La fiche complète circule
+    // séparément dans item, sans perdre les huit effets ou les prérequis.
+    var fields = [['Quantité', String(q)], ['Poids', value(it, 'Poids (kg)') + ' kg'],
+      ['Volume', value(it, 'Volume (L)') + ' L'], ['Achat', price(it)],
+      ['Vente', value(it, 'Vente (argent)') + ' argent'], ['Type', it.categorie]];
+    it.champs.forEach(function (f) { if (!/^(Poids|Volume|Achat|Vente)\b/.test(f[0])) fields.push([String(f[0]), String(f[1])]); });
     var objet = it.objet ? JSON.parse(JSON.stringify(it.objet)) : null;
     if(objet){objet.img=it.img ? new URL(it.img,location.href).href : '';objet.qte=q;}
-    var payload = encode({version: 2, item:objet, n: it.nom, q: q, k: 'boutique:' + it.id, p: num(value(it, 'Poids (kg)')), l: num(value(it, 'Volume (L)')), a: num(value(it, 'Achat (argent)')), v: num(value(it, 'Vente (argent)')), d: description, i: it.img ? new URL(it.img, location.href).href : '', s: fields});
+    var payload = encode({version: 1, item:objet, n: it.nom, q: q, k: 'boutique:' + it.id,
+      p: num(value(it, 'Poids (kg)')), l: num(value(it, 'Volume (L)')),
+      a: num(value(it, 'Achat (argent)')), v: num(value(it, 'Vente (argent)')),
+      d: it.desc || '', i: it.img ? new URL(it.img, location.href).href : '', s: fields});
     var raw = '&{template:default} {{name=OWD Item ' + (action === 'donner' ? 'Give' : 'Show') + '}} {{Objet=' + safe(it.nom) + '}}';
-    fields.forEach(function (f) { raw += ' {{' + safe(f[0]) + '=' + safe(f[1]) + '}}'; });
+    // Roll20 doit garder son lien Prendre intact, même avec 30 propriétés.
+    // Les détails restent accessibles dans la carte OWD et dans item.
+    fields.slice(0, 9).forEach(function (f) { raw += ' {{' + safe(f[0]) + '=' + safe(f[1]) + '}}'; });
     raw += action === 'donner' ? ' {{Prendre=[Prendre](/owd_take ' + payload + ')}}' : ' {{Montrer=[Montrer](/owd_item_show ' + payload + ')}}';
     return raw;
   }

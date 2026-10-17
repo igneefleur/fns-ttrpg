@@ -28,9 +28,9 @@ function boot(fetcher){
 const tick=()=>new Promise(r=>setImmediate(r));
 (async()=>{
  const {doc,sent,top,message,form}=boot();await tick();const $=id=>doc.ids[id];
- assert.ok(catalogue.objets.length>=1256);assert.equal(new Set(catalogue.objets.map(i=>i.id)).size,catalogue.objets.length);
+ assert.ok(catalogue.objets.length>=1648);assert.equal(new Set(catalogue.objets.map(i=>i.id)).size,catalogue.objets.length);
  const pages=Math.ceil(catalogue.objets.length/24),categories=new Set(catalogue.objets.map(i=>i.categorie)).size;
- catalogue.objets.forEach(it=>{assert.ok(it.img,it.id+' sans illustration');if(/^https:\/\//.test(it.img)){const image=new URL(it.img);assert.equal(image.protocol,'https:');assert.ok(['outward.wiki.gg','static.wikia.nocookie.net','outward.fandom.com'].includes(image.hostname),image.hostname);}else assert.ok(fs.existsSync(path.join(root,'docs',it.img)),it.img);assert.ok(it.champs.length);});
+ catalogue.objets.forEach(it=>{assert.ok(it.objet&&typeof it.objet==='object',it.id+' sans données d’inventaire');if(!it.img){assert.ok(it.objet.sourceOnglet,'image non résolue sur équipement déjà illustré');return;}if(/^https:\/\//.test(it.img)){const image=new URL(it.img);assert.equal(image.protocol,'https:');assert.ok(['outward.wiki.gg','static.wikia.nocookie.net','outward.fandom.com','igneefleur.github.io'].includes(image.hostname),image.hostname);}else assert.ok(fs.existsSync(path.join(root,'docs',it.img)),it.img);assert.ok(it.champs.length);});
  assert.equal($('ob-items').children.length,24);assert.equal($('ob-categorie').children.length,categories+1);assert.equal($('ob-page').textContent,'1 / '+pages);
  assert.equal($('ob-precedent').disabled,true);$('ob-suivant').onclick();assert.equal($('ob-page').textContent,'2 / '+pages);
  $('ob-categorie').value='Dagues';$('ob-categorie').onchange();assert.ok($('ob-items').children.length>0);assert.equal($('ob-page').textContent,'1 / 3');
@@ -47,18 +47,44 @@ const tick=()=>new Promise(r=>setImmediate(r));
  $('ob-quantite-chat').value='0';form.onsubmit({preventDefault(){}});assert.equal(sent.length,0);
  $('ob-quantite-chat').value='9';form.onsubmit({preventDefault(){}});assert.equal(sent.length,1);assert.equal(sent[0].type,'chat');assert.ok(sent[0].raw.includes('name=OWD Item Give'));assert.ok(sent[0].raw.includes('{{Quantité=9}}'));assert.ok(sent[0].raw.includes('[Prendre](/owd_take '));
  const encoded=/\/owd_take ([\w-]+)/.exec(sent[0].raw)[1],payload=JSON.parse(Buffer.from(encoded,'base64url').toString());
- assert.equal(payload.q,9);assert.equal(payload.n,'Astral Dagger');assert.equal(payload.a,2000);assert.equal(payload.v,600);assert.equal(payload.i,'https://example.test/owd-beta/assets/equipements/dagues-astral-dagger.png');assert.ok(payload.d.includes('Réduction de base : 10'));assert.ok(payload.s.some(f=>f[0]==='Parade'));
+ assert.equal(payload.q,9);assert.equal(payload.n,'Astral Dagger');assert.equal(payload.a,2000);assert.equal(payload.v,600);assert.equal(payload.i,'https://example.test/owd-beta/assets/equipements/dagues-astral-dagger.png');assert.equal(payload.version,1);assert.ok(payload.s.some(f=>f[0]==='Réduction de base'&&f[1]==='10'));assert.ok(payload.s.every(f=>typeof f[0]==='string'&&typeof f[1]==='string'));assert.ok(payload.s.some(f=>f[0]==='Parade'));
  assert.equal(payload.item.typeObjet,'arme');assert.equal(payload.item.arme.repartition.physique,80);assert.equal(payload.item.arme.repartition.eclair,20);
- assert.ok(catalogue.objets.some(i=>i.objet&&i.objet.typeObjet==='liquide'));
+ assert.ok(catalogue.objets.some(i=>i.objet&&i.objet.typeObjet==='consommable'&&i.objet.sousType==='liquide_ingerable'));
  assert.ok(catalogue.objets.some(i=>i.objet&&i.objet.typeObjet==='vetement'&&i.objet.sousType==='hautbas'));
  message({ns:'owd',type:'inventory-drop-chat',token:begin.token,ref:begin.ref,charId:'boutique',action:'donner'});assert.equal($('ob-dialog').open,false);assert.equal(sent.length,1);
  card.ondragstart(event);const second=sent.pop();message({ns:'owd',type:'inventory-drop-chat',token:second.token,ref:second.ref,charId:'boutique',action:'montrer'});$('ob-annuler').onclick();assert.equal($('ob-dialog').open,false);assert.equal(sent.length,1);
  card.ondragstart(event);const third=sent.pop();message({ns:'owd',type:'inventory-drop-chat',token:third.token,ref:third.ref,charId:'boutique',action:'montrer'});form.onsubmit({preventDefault(){}});assert.ok(sent[1].raw.includes('name=OWD Item Show'));assert.ok(sent[1].raw.includes('/owd_item_show'));assert.ok(!sent[1].raw.includes('/owd_take'));
  message({ns:'owd',type:'panel-theme',nuit:false});assert.equal(doc.documentElement.classList.contains('night'),false);message({ns:'owd',type:'panel-theme',nuit:true});assert.equal(doc.documentElement.classList.contains('night'),true);
  const failed=boot(async()=>{throw Error('network');});await tick();assert.ok(failed.doc.ids['ob-status'].textContent.includes('Réessayer'));assert.equal(failed.doc.ids['ob-suivant'].disabled,true);
+
+ // Vérifier les objets de chaque nouvelle famille dans la chaîne Boutique -> tchat -> Prendre.
+ for(const nom of ['Arcane Trousers','Waterskin','Great Life Potion','Ammolite','Gourde en cuir','Miche entière','Campfire Kit','Bandit Cage key']){
+   $('ob-categorie').value='';$('ob-recherche').value=nom;$('ob-recherche').oninput();
+   assert.ok($('ob-items').children.length>0,nom+' absent');
+   const item=catalogue.objets.find(x=>x.nom===nom);assert.ok(item,nom+' non catalogué');
+   const c=Array.from($('ob-items').children).find(x=>x.dataset.id===item.id);assert.ok(c,nom+' non visible');
+   const dt={setData(){},effectAllowed:''};c.ondragstart({dataTransfer:dt,preventDefault(){throw Error('drag invalide : '+nom);}});
+   const ref=sent.pop();message({ns:'owd',type:'inventory-drop-chat',token:ref.token,ref:ref.ref,charId:'boutique',action:'donner'});
+   assert.equal($('ob-dialog').open,true);$('ob-quantite-chat').value='3';form.onsubmit({preventDefault(){}});
+   const raw=sent.pop().raw, m=/\/owd_take ([\w-]+)/.exec(raw);assert.ok(m,nom+' : Prendre absent');
+   const p=JSON.parse(Buffer.from(m[1],'base64url').toString('utf8'));
+   assert.equal(p.item.nom,nom);assert.equal(p.item.qte,3);assert.equal(p.version,1);
+   assert.equal(p.item.typeObjet,item.objet.typeObjet);
+   assert.equal(p.item.sousType,item.objet.sousType);
+   assert.deepEqual(JSON.parse(JSON.stringify(p.item.effets||[])),JSON.parse(JSON.stringify(item.objet.effets||[])));
+   assert.ok(p.s.every(f=>f.every(v=>typeof v==='string')));
+ }
+
  // The native chat transport accepts the exact commands emitted by Boutique.
  const ext=fs.readFileSync(path.join(root,'extension/firefox/beta/content-roll20.js'),'utf8');
  const start=ext.indexOf('  function chatAutorise('),end=ext.indexOf('\n  }',start)+4;
  const check=vm.runInNewContext('var CHAT_CORPS=/^&\\{template:[A-Za-z0-9_-]+\\}/, CHAT_CHUCHOTE=/^\\/w\\s+(?:gm|"[^"]*")\\s+/; ('+ext.slice(start,end).trim()+')');assert.equal(check(sent[0].raw),true);assert.equal(check(sent[1].raw),true);
+ // Les anciennes cartes Boutique v2 et les nouvelles v1 s'affichent avec l'extension.
+ const itemStart=ext.indexOf('  function itemData('),itemEnd=ext.indexOf('  function itemImageURL(',itemStart);
+ const parse=vm.runInNewContext('('+ext.slice(itemStart,itemEnd).trim()+')',{atob,TextDecoder,Uint8Array});
+ const encodedV1=/\/owd_take ([\w-]+)/.exec(sent[0].raw)[1],decodedV1=parse(encodedV1);
+ assert.ok(decodedV1);assert.equal(decodedV1.n,'Astral Dagger');
+ const legacy={...decodedV1,version:2,s:[['Quantité',2],['Type','Consommable']]};
+ assert.equal(parse(Buffer.from(JSON.stringify(legacy)).toString('base64url')).s[0][1],'2');
  console.log('OK Boutique : catalogue enrichi, catégories calculées, propriétés typées, images, recherche sans accents, pagination, sélection, quantités, annulation, jeton unique, don et présentation compatibles avec le chat, thèmes et erreur réseau.');
 })().catch(e=>{console.error(e);process.exitCode=1;});

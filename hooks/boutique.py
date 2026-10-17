@@ -73,7 +73,7 @@ def catalogue(docs):
                 it['famille'] = 'Sac à dos'
                 it['champs'].append(['Taille maximale aux accroches', 'Moyenne (2 acc par objet Moyen)'])
         existing = {it['nom'] for it in items}
-        categories = {'arme':'Arme','vetement':'Vêtement','rangement':'Rangement','autre':'Objet divers'}
+        categories = {'arme':'Armes','vetement':'Vêtements','accessoire':'Accessoires','rangement':'Rangement','autre':'Objets divers','contenant':'Contenants','consommable':'Consommables','munition':'Munitions'}
         for o in data.get('equipements', []):
             if o['nom'] in existing:
                 continue
@@ -82,7 +82,7 @@ def catalogue(docs):
                       ['Taille',o.get('taille','')],['Mains',str(o.get('mains',1))],
                       ['Achat (argent)',str(o.get('achat',0))],['Vente (argent)',str(o.get('vente',0))]]
             fields += [['Effet '+str(i+1), name] for i,name in enumerate(o.get('effets',[]))]
-            items.append({'id':o['id'],'nom':o['nom'],'categorie':categories[o['typeObjet']],
+            items.append({'id':o['id'],'nom':o['nom'],'categorie':o.get('categorieBoutique') or ('Éclairage' if o['nom'] in ['Coil Lantern', "Djinn's Lamp", 'Explorer Lantern', 'Lantern of Souls', 'Old Lantern', 'Virgin Lantern', 'Ice-Flame Torch', 'Makeshift Torch'] else 'Tentes et couchages' if o['typeObjet']=='autre' and ('Tent' in o['nom'] or 'Bedroll' in o['nom'] or 'Lodge' in o['nom'] or 'Cocoon' in o['nom'] or 'Bone Cage' in o['nom']) else categories.get(o['typeObjet'],'Objets divers')),
                           'famille':o.get('sousType',''),'origine':'Outward','img':o.get('img',''),
                           'desc':o.get('desc',''),'champs':fields,'objet':o})
         for o in data.get('objets', []):
@@ -94,10 +94,17 @@ def catalogue(docs):
             fields += [['Effet '+str(i+1), name] for i, name in enumerate(o.get('effets', []))]
             fields += [['Restauration '+k.upper(), str(v)+' '+o.get('unitesRestauration', {}).get(k, 'points')]
                        for k, v in o.get('restaurations', {}).items() if v]
-            items.append({'id': o['id'], 'nom': o['nom'], 'categorie': {'solide':'Solide','pate':'Pâte','liquide':'Liquide'}[o['typeObjet']],
-                          'famille':'Ingérable' if o['sousType']=='ingerable' else 'Consommable', 'origine':'Outward', 'img':o.get('img',''), 'desc':o.get('desc',''),
+            items.append({'id': o['id'], 'nom': o['nom'], 'categorie': {'solide':'Consommables · Solide','pate':'Consommables · Pâte','liquide':'Consommables · Liquide'}.get(o.get('typeObjet'), 'Consommables · '+{'solide':'Solide','pate':'Pâte','liquide':'Liquide'}.get(o.get('sousType','').split('_')[0], 'Autre')),
+                          'famille':'Ingérable' if o.get('sousType','').endswith('_ingerable') or o.get('sousType')=='ingerable' else 'Autre', 'origine':'Outward', 'img':o.get('img',''), 'desc':o.get('desc',''),
                           'champs':fields, 'objet':o})
-    return {'version': 2, 'objets': items}
+    # Do not publish duplicate IDs: chat links use this key as the drag reference.
+    ids = [i['id'] for i in items]
+    if len(ids) != len(set(ids)):
+        raise ValueError('Identifiants Boutique dupliqués')
+    missing = [i['nom'] for i in items if not isinstance(i.get('objet'), dict)]
+    if missing:
+        raise ValueError('Fiches sans données techniques : '+', '.join(missing))
+    return {'version': 3, 'objets': items}
 
 
 def on_files(files, config):
