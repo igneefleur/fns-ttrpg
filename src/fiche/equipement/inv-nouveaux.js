@@ -45,7 +45,7 @@
     return [];
   }
   function invTailleAccepte(taille, max) {return !taille || !max || INV_TAILLES.indexOf(taille)<=INV_TAILLES.indexOf(max);}
-  function invCoutAcc(o,lieu) {return lieu==="sacep" && o.taille==="Moyenne" ? 2 : 1;}
+  function invCoutAcc(o,lieu) {return 1;} // Chaque objet accroché occupe un emplacement, taille contrôlée séparément.
   function invTailleMaxSac(o) {return o && (o.tailleInterieure || (o.cap>=100?"Moyenne":o.cap>=50?"Petite":"Très petite"));}
   function enrichitObjet(n,o) {
     var modele=(D().equipements||[]).concat(D().consommables||[]).filter(function(x){return x.nom===o.nom;})[0];

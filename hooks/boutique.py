@@ -71,7 +71,7 @@ def catalogue(docs):
             if obj.get('sac'):
                 it['categorie'] = 'Rangement'
                 it['famille'] = 'Sac à dos'
-                it['champs'].append(['Taille maximale aux accroches', 'Moyenne (2 acc par objet Moyen)'])
+                it['champs'].append(['Taille maximale aux accroches', str(obj.get('tailleAccroche') or 'Non renseignée')])
         existing = {it['nom'] for it in items}
         categories = {'arme':'Armes','vetement':'Vêtements','accessoire':'Accessoires','rangement':'Rangement','autre':'Objets divers','contenant':'Contenants','consommable':'Consommables','munition':'Munitions'}
         for o in data.get('equipements', []):

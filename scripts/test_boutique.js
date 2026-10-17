@@ -110,3 +110,30 @@ const tick=()=>new Promise(r=>setImmediate(r));
  }
  console.log('OK Accès Boutique : page, 12 éléments UI, styles, scripts, barre Roll20 stable/beta, ordre, icône et ouverture du panneau.');
 })();
+
+// Régression 3.28.4b : images du wiki disponibles comme secours, y compris
+// les liens static.wikia des potions. On vérifie les chemins, pas la réponse
+// HTTP du wiki, qui exige une connexion réseau et un navigateur réel.
+(function verifieSourcesWiki() {
+ const js=fs.readFileSync(path.join(root,'docs/javascripts/owd-boutique.js'),'utf8');
+ const start=js.indexOf('  function wikiFilename('),end=js.indexOf('  function select(it)',start);
+ assert.ok(start>=0&&end>start);
+ const methods=vm.runInNewContext(js.slice(start,end)+';({imageCandidates,wikiFilename})',{});
+ const potion=methods.imageCandidates({nom:'Great Life Potion',img:'https://static.wikia.nocookie.net/outward_gamepedia/images/a/bb/Great_Life_Potion.png/revision/latest'});
+ assert.ok(potion.some(u=>u.includes('wiki.gg/wiki/Special:FilePath/Great_Life_Potion.png')));
+ assert.ok(potion.some(u=>u.includes('outward.fandom.com/wiki/Special:Redirect/file/Great_Life_Potion.png')));
+ const ingredient=methods.imageCandidates({nom:'Iron Scrap',img:''});
+ assert.ok(ingredient.some(u=>u.endsWith('Special:FilePath/Iron_Scrap.png')));
+ assert.ok(ingredient.some(u=>u.endsWith('Special:Redirect/file/Iron_Scrap.png')));
+ const local=methods.imageCandidates({nom:'Iron Sword',img:'assets/equipements/armes-iron-sword.png'});
+ assert.deepEqual(Array.from(local),['assets/equipements/armes-iron-sword.png']);
+ const src=fs.readFileSync(path.join(root,'src/fiche/equipement/inv-nouveaux.js'),'utf8');
+ const match=/function invCoutAcc\(o,lieu\)\s*\{[^}]+\}/.exec(src);
+ assert.ok(match,'fonction d’accroche absente');
+ const slots=vm.runInNewContext('('+match[0]+')');
+ for(const taille of ['Minuscule','Très petite','Petite','Moyenne','Grande'])
+   for(const ou of ['sacep','ceint'])assert.equal(slots({taille},ou),1,'Accroche doublée: '+taille+'/'+ou);
+ const hook=fs.readFileSync(path.join(root,'hooks/boutique.py'),'utf8');
+ assert.ok(!hook.includes('2 acc par objet Moyen'));
+ console.log('OK illustrations Wiki : potions static.wikia et ingrédients, sans réécriture des illustrations IA ; chaque objet occupe une accroche.');
+})();

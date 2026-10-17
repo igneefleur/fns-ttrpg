@@ -121,15 +121,16 @@ const server=http.createServer((req,res)=> {
   await replace(s=>{s.effetsActifs=[];s.inv.objets=[{ref:'bow',nom:'Arc',qte:1,ou:'mainD',arme:{type:'arc-long',attaque:'7',degats:'20',repartition:{physique:100},mains:2}},{ref:'arrow',nom:'Flèche',qte:3,typeObjet:'munition',sousType:'fleche',ou:'poches'}];s.attaques=[{id:'bow-atk',arme:'bow'}];});
   assert.equal((await state()).inv.objets.find(o=>o.ref==='arrow').sousType,'fleches');
   await sheet.locator('[data-module="attaque"] .pc-attaque-tete').first().click();assert.equal(await sheet.locator('.pc-attaque-munition option[value="arrow"]').count(),1);
-  // Une arme moyenne occupe deux accroches ; taille maximale de l'accroche distincte de l'intérieur.
+  // Un objet de taille moyenne occupe UNE accroche ; la taille maximale reste contrôlée.
   await replace(s=>{s.effetsActifs=[];s.inv.objets=[{ref:'bag',nom:'Sac',sac:true,typeObjet:'rangement',sousType:'sac',qte:1,ou:'dos',cap:50,ep:3,tailleInterieure:'Petite',tailleAccroche:'Moyenne'},{ref:'medium',nom:'Arme moyenne',qte:1,taille:'Moyenne',ou:'sacep',dans:'bag',emp:0},{ref:'big',nom:'Grande',qte:1,taille:'Grande',ou:'poches'}];});
-  assert.equal(await frame.evaluate(()=>Owd.__calculs.objetEp('sacep',1).ref),'medium');
+  assert.equal(await frame.evaluate(()=>Owd.__calculs.objetEp('sacep',1)),null);
+  assert.equal(await frame.evaluate(()=>Owd.__calculs.objetEp('sacep',0).ref),'medium');
   assert.equal(await frame.evaluate(()=>Owd.__calculs.epPermis(JSON.parse(__owdLocalStorage.getItem('owd-perso')).inv.objets.find(o=>o.ref==='big'),'sacep')),false);
   await sheet.locator('.pc-tab').filter({hasText:/^Fiche$/}).click();
   await add('Récupération Nourriture PE III');await add('Discipline');await add('Protection augmentée II');await add('Alerte +2 niveaux');
   for(const night of [true,false]){await frame.evaluate(n=>document.documentElement.classList.toggle('night',n),night);for(let attempt=0;attempt<5;attempt++){try{await sheet.locator('[data-module="effets"]').screenshot({path:'/tmp/effets-'+(night?'night':'day')+'.png'});break;}catch(e){if(attempt===4)throw e;await page.waitForTimeout(150);}}}
   assert.equal(await sheet.locator('[data-module="effets"]').evaluate(n=>n.scrollWidth<=n.clientWidth+1),true);
   assert.deepEqual(errors,[]);
-  console.log('OK récupération discrète, deux sources, expiration/recul, Alerte partiellement automatisée, résistances/coûts, dissipation, poison manuel, permanent unique, consommation UI, sauvegarde/fallback/sync, deux accroches et rendu jour/nuit.');
+  console.log('OK récupération discrète, deux sources, expiration/recul, Alerte partiellement automatisée, résistances/coûts, dissipation, poison manuel, permanent unique, consommation UI, sauvegarde/fallback/sync, une accroche par objet et rendu jour/nuit.');
  } finally {await browser.close();server.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;server.close();});
