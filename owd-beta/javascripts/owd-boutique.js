@@ -22,24 +22,42 @@
   function value(it, key) { var f = it.champs.find(function (c) { return c[0] === key; }); return f ? f[1] : ''; }
   function qvalid(v) { var n = Number(v); return Number.isSafeInteger(n) && n > 0 ? n : null; }
   function price(it) { var p = value(it, 'Achat (argent)'); return p ? p + ' argent' : '—'; }
-  function imageCandidates(src) {
-    if (!src) return [];
-    // Une redirection wiki.gg peut refuser le hotlink. Fandom garde de nombreuses
-    // illustrations d'Outward : essayer les deux hôtes sans changer la fiche.
-    var list=[src], match=/^https:\/\/outward\.wiki\.gg\/wiki\/Special:Redirect\/file\/(.+)$/i.exec(src);
-    if(match){
-      var filename=match[1];
-      list.push('https://outward.fandom.com/wiki/Special:Redirect/file/'+filename);
-      list.push('https://outward.wiki.gg/wiki/Special:FilePath/'+filename);
+  function wikiFilename(it) {
+    // Le nom de l'objet sert de secours UNIQUEMENT si son image n'est pas
+    // déjà renseignée ou si toutes les URLs fournies échouent. Ne pas
+    // attribuer l'image d'un autre équipement par similarité de nom.
+    var original = String(it.nom || '').trim().replace(/\s+/g, '_');
+    return original ? original + '.png' : '';
+  }
+  function imageCandidates(it) {
+    var src=String(it.img || '').trim(), names=[], urls=[];
+    function add(u) { if (u && urls.indexOf(u) < 0) urls.push(u); }
+    function fileName(u) {
+      var m=/\/images\/[a-z0-9]\/[a-z0-9]{2}\/([^/?#]+)(?:\/|$)/i.exec(u) ||
+            /\/wiki\/Special:(?:Redirect\/file|FilePath)\/([^?#]+)/i.exec(u);
+      if(!m)return '';
+      try {return decodeURIComponent(m[1]);}catch(_){return m[1];}
     }
-    return list;
+    // On conserve en premier l'image existante (IA locale ou source d'Outward).
+    // Le secours externe couvre désormais les liens static.wikia.nocookie.net
+    // employés par la plupart des consommables, et pas seulement wiki.gg.
+    add(src);
+    var filename=fileName(src) || wikiFilename(it);
+    if(filename && !/^(?:assets\/|\.\/)/.test(src)){
+      var encoded=encodeURIComponent(filename).replace(/%2F/gi,'/');
+      add('https://outward.wiki.gg/wiki/Special:FilePath/'+encoded);
+      add('https://outward.wiki.gg/wiki/Special:Redirect/file/'+encoded);
+      add('https://outward.fandom.com/wiki/Special:Redirect/file/'+encoded);
+    }
+    return urls;
   }
   function picture(it, cls) {
-    var im=node('img',cls),urls=imageCandidates(it.img),i=0;
+    var im=node('img',cls),urls=imageCandidates(it),i=0;
     im.alt=it.nom||'';im.loading='lazy';im.draggable=false;
-    im.onload=function(){if(urls.length && im.src){it.img=im.src;}};
+    // Seule une image EFFECTIVEMENT CHARGÉE peut être envoyée au chat.
+    im.onload=function(){if(urls.length && im.src){it.imageResolved=im.src;im.hidden=false;}};
     im.onerror=function(){if(++i<urls.length){im.src=urls[i];return;}im.hidden=true;};
-    if(urls.length)im.src=urls[0];else im.hidden=true;
+    if(urls.length){im.hidden=false;im.src=urls[0];}else im.hidden=true;
     return im;
   }
   function select(it) { selected = it; quantity = 1; renderDetails(); Array.from(list.children).forEach(function (n) { n.setAttribute('aria-pressed', String(n.dataset.id === it.id)); }); }
@@ -47,7 +65,7 @@
     details.replaceChildren();
     if (!selected) { details.appendChild(node('p', '', 'Aucun équipement.')); return; }
     var it = selected;
-    if (it.img) details.appendChild(picture(it, 'ob-portrait'));
+    details.appendChild(picture(it, 'ob-portrait'));
     details.appendChild(node('h2', '', it.nom));
     details.appendChild(node('div', 'ob-categorie', it.categorie + (it.famille ? ' · ' + it.famille : '')));
     if (it.origine) details.appendChild(node('div', 'ob-origine', it.origine));
@@ -67,7 +85,7 @@
     list.replaceChildren();
     visible.forEach(function (it) {
       var b = node('button', 'ob-item'); b.type = 'button'; b.draggable = true; b.dataset.id = it.id; b.title = it.nom; b.setAttribute('aria-pressed', String(!!selected && selected.id === it.id));
-      if (it.img) b.appendChild(picture(it));
+      b.appendChild(picture(it));
       b.append(node('span', 'ob-item-name', it.nom), node('span', 'ob-item-price', price(it)));
       b.onclick = function () { select(it); };
       b.ondragstart = function (e) {
@@ -110,11 +128,12 @@
       ['Vente', value(it, 'Vente (argent)') + ' argent'], ['Type', it.categorie]];
     it.champs.forEach(function (f) { if (!/^(Poids|Volume|Achat|Vente)\b/.test(f[0])) fields.push([String(f[0]), String(f[1])]); });
     var objet = it.objet ? JSON.parse(JSON.stringify(it.objet)) : null;
-    if(objet){objet.img=it.img ? new URL(it.img,location.href).href : '';objet.qte=q;}
+    var imgChargee=it.imageResolved || (it.img && !/^https?:\/\//.test(it.img) ? new URL(it.img,location.href).href : '');
+    if(objet){objet.img=imgChargee;objet.qte=q;}
     var payload = encode({version: 1, item:objet, n: it.nom, q: q, k: 'boutique:' + it.id,
       p: num(value(it, 'Poids (kg)')), l: num(value(it, 'Volume (L)')),
       a: num(value(it, 'Achat (argent)')), v: num(value(it, 'Vente (argent)')),
-      d: it.desc || '', i: it.img ? new URL(it.img, location.href).href : '', s: fields});
+      d: it.desc || '', i: imgChargee, s: fields});
     var raw = '&{template:default} {{name=OWD Item ' + (action === 'donner' ? 'Give' : 'Show') + '}} {{Objet=' + safe(it.nom) + '}}';
     // Roll20 doit garder son lien Prendre intact, même avec 30 propriétés.
     // Les détails restent accessibles dans la carte OWD et dans item.
