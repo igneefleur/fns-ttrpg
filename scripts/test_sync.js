@@ -78,6 +78,13 @@ test('horloge : jours/heures/minutes/secondes forment un élément indivisible',
   const w=world();const s=cp(w.s);s.horloge={jours:3,heures:1,minutes:0,secondes:0};w.a.capture(s);
   const lot=w.a.outgoing();assert.equal(Object.keys(lot).length,1);
 });
+test('pause effondrement : niveau et détail voyagent dans un seul registre',()=> {
+  const w=world(),s=cp(w.s);
+  s.effPause={niveau:4,parties:{pr:{base:3,apres:2,niveau:4,effet:-1,mod:2},ph:{base:0,apres:0,niveau:0,effet:0,mod:0}}};
+  w.a.capture(s);const lot=w.a.outgoing();assert.equal(Object.keys(lot).length,1);
+  w.write(lot);assert.deepEqual(w.value().effPause,s.effPause);
+  const resumed=cp(s);resumed.effPause=null;w.a.capture(resumed);w.write(w.a.outgoing());assert.equal(w.value().effPause,null);
+});
 test('réseau/refus : une écriture non reçue reste en attente et repart',()=> {
   const w=world();const s=cp(w.s);s.notes='à conserver';w.a.capture(s);w.a.outgoing();w.tick(9000);
   assert.equal(w.a.receive(w.attrs).state.notes,'à conserver');assert.ok(Object.keys(w.a.outgoing()).length);

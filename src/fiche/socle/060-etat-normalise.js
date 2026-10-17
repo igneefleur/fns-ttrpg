@@ -94,6 +94,22 @@
       s.effParties[k] = { effet: clamp(num(d.effet, 0), -999, 999), mod: clamp(num(d.mod, 0), -999, 999) };
       if (k === "pi") s.effParties[k].base = clamp(Math.round(num(d.base, 0)), 0, 999);
     });
+    s.effDesactive = s.effDesactive === true;
+    var pause = s.effPause;
+    if (pause && typeof pause === "object" && !Array.isArray(pause) &&
+        isFinite(pause.niveau) && pause.parties && EFF_PARTIES.every(function (cle) {
+          var photo = pause.parties[cle];
+          return photo && ["base", "apres", "niveau", "effet", "mod"].every(function (champ) {
+            return typeof photo[champ] === "number" && isFinite(photo[champ]);
+          });
+        })) {
+      s.effPause = { niveau: clamp(num(pause.niveau, 0), 0, 999), parties: {} };
+      EFF_PARTIES.forEach(function (cle) {
+        var photo = pause.parties[cle], copie = {};
+        ["base", "apres", "niveau", "effet", "mod"].forEach(function (champ) { copie[champ] = clamp(photo[champ], -999, 999); });
+        s.effPause.parties[cle] = copie;
+      });
+    } else s.effPause = null;
     var desUtilises = s.desUtilises;
     s.desUtilises = {};
     if (desUtilises && typeof desUtilises === "object") Object.keys(desUtilises).forEach(function (k) {

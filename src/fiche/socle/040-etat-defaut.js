@@ -81,6 +81,8 @@
       // Les niveaux d'effondrement que le JOUEUR ajoute à ceux des réserves
       // (ligne « Autre » du module) : ce que la fiche ne sait pas compter.
       effAutre: 0,
+      effDesactive: false,
+      effPause: null,
       effAlcool: 0,
       effAlcoolSecondes: 0,
       effParties: {},

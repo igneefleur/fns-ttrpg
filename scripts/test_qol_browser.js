@@ -159,6 +159,64 @@ const server=http.createServer((req,res)=> {
   assert.equal(await frame.evaluate(()=>Owd.__calculs.effPartie('pi')),2);
   assert.equal(await sheet.getByLabel('Innocence — Base',{exact:true}).inputValue(),'2');
   assert.equal(await frame.evaluate(()=>Owd.__calculs.effondrement()),6);
+  // Désactiver retire les pénalités ; Pauser conserve les niveaux et leur détail.
+  const off=collapse.getByRole('button',{name:'Désactiver effondrement',exact:true});
+  const paused=collapse.getByRole('button',{name:'Pauser Effondrement',exact:true});
+  const basePE=await frame.evaluate(()=>Owd.__calculs.peMax());
+  await off.click();
+  assert.equal((await state()).effDesactive,true);
+  assert.equal(await frame.evaluate(()=>Owd.__calculs.effondrement()),0);
+  assert.ok(await frame.evaluate(()=>Owd.__calculs.peMax())>basePE);
+  await replace(s=>{s.etat.ph=max.ph*.6;});
+  assert.equal(await frame.evaluate(()=>Owd.__calculs.effondrement()),0);
+  assert.equal(await sheet.getByLabel('Hydratation — Base',{exact:true}).inputValue(),'4');
+  await off.click();
+  const current=await frame.evaluate(()=>Owd.__calculs.effondrement());
+  await paused.click();
+  const snap=(await state()).effPause;
+  assert.equal(snap.niveau,current);
+  assert.equal(await sheet.getByLabel('Repos — ±',{exact:true}).isDisabled(),true);
+  await replace(s=>{s.etat.pr=max.pr;s.etat.ph=max.ph;s.etat.ps=max.ps;s.etat.pi=100;s.etat.expo=0;});
+  assert.equal(await frame.evaluate(()=>Owd.__calculs.effondrement()),current);
+  assert.equal(await sheet.getByLabel('Hydratation — Base',{exact:true}).inputValue(),'4');
+  await frame.evaluate(()=>Owd.remonte());
+  assert.equal(await paused.getAttribute('aria-pressed'),'true');
+  assert.equal(await frame.evaluate(()=>Owd.__calculs.effondrement()),current);
+  const freezeAttrs=M.stateToAttrs(await state(),null);delete freezeAttrs.owd_state;
+  assert.deepEqual(M.attrsToState(freezeAttrs).effPause,snap);
+  await off.click();assert.equal(await frame.evaluate(()=>Owd.__calculs.effondrement()),0);
+  assert.deepEqual((await state()).effPause,snap);
+  const offAttrs=M.stateToAttrs(await state(),null);delete offAttrs.owd_state;
+  assert.equal(M.attrsToState(offAttrs).effDesactive,true);
+  for(let attempt=0;attempt<400;attempt++){
+    const saved=C.read(attrs).state;
+    if(saved.effDesactive){try{assert.deepEqual(saved.effPause,snap);break;}catch(_){}}
+    await page.waitForTimeout(100);
+  }
+  assert.equal(C.read(attrs).state.effDesactive,true);
+  assert.deepEqual(C.read(attrs).state.effPause,snap);
+  await page.reload();await sheet.locator('.pc-sheet').waitFor();
+  frame=page.frames().find(f=>f.url().includes('roll20-fiche'));
+  assert.equal(await off.getAttribute('aria-pressed'),'true');
+  assert.equal(await paused.getAttribute('aria-pressed'),'true');
+  assert.equal(await frame.evaluate(()=>Owd.__calculs.effondrement()),0);
+  assert.deepEqual((await state()).effPause,snap);
+
+  await off.click();assert.equal(await frame.evaluate(()=>Owd.__calculs.effondrement()),current);
+  await paused.click();assert.equal((await state()).effPause,null);
+  assert.equal(await sheet.getByLabel('Hydratation — Base',{exact:true}).inputValue(),'0');
+  assert.equal(await sheet.getByLabel('Repos — ±',{exact:true}).isDisabled(),false);
+  assert.equal(await frame.evaluate(()=>Owd.__calculs.effondrement()),1);
+  // Temps et digestion continuent pendant la pause, sans modifier ses niveaux.
+  await replace(s=>{s.etat.contenance=42;s.effAlcool=2;s.effAlcoolSecondes=0;});
+  await paused.click();const beforePausedTime=(await state()).effPause;
+  await minute.fill('+10');await minute.press('Enter');
+  assert.equal((await state()).etat.contenance,41);
+  assert.equal((await state()).effAlcoolSecondes,600);
+  assert.deepEqual((await state()).effPause,beforePausedTime);
+  assert.equal(await frame.evaluate(()=>Owd.__calculs.effBasePartie('contenance')),1);
+  await paused.click();assert.equal(await frame.evaluate(()=>Owd.__calculs.effBasePartie('contenance')),0);
+  await replace(s=>{s.etat.pr=max.pr*.7;s.etat.ps=max.ps*.5;s.etat.ph=max.ph*.8;s.etat.pi=80;s.etat.contenance=0;s.effAlcool=0;s.effParties={pr:{effet:-1,mod:2},ps:{effet:-20,mod:0},ph:{effet:-1,mod:0}};s.effAutre=-1;});
   // Les deux signes de l’exposition restent exclusifs, les modificateurs sont indépendants.
   await replace(s=>{s.etat.expo=-max.expo*.3;s.effParties.froid={effet:-1,mod:0};s.effParties.chaud={effet:0,mod:0};});
   assert.equal(await sheet.getByLabel('Froid — Base',{exact:true}).inputValue(),'3');
@@ -190,7 +248,7 @@ const server=http.createServer((req,res)=> {
   const back=M.attrsToState(packed);assert.deepEqual(back.desUtilises,sample.desUtilises);assert.deepEqual(back.effParties,sample.effParties);assert.equal(back.effAlcool,1);assert.equal(back.effAlcoolSecondes,99);
   assert.deepEqual(C.rebuild(C.flatten(sample)),sample);
   // Preview representative values, check bounds in both themes and compact width.
-  await replace(s=>{s.etat.pi=50;s.etat.pr=max.pr*.8;s.etat.ps=max.ps*.8;s.etat.ph=max.ph*.9;s.etat.expo=max.expo*.1;s.effAlcool=1;s.effAlcoolSecondes=0;s.effParties={pr:{effet:-1,mod:0},ps:{effet:-1,mod:0}};s.effAutre=0;s.desUtilises=[true,false,true];});
+  await replace(s=>{s.etat.contenance=60;s.etat.pi=50;s.etat.pr=max.pr*.8;s.etat.ps=max.ps*.8;s.etat.ph=max.ph*.9;s.etat.expo=max.expo*.1;s.effAlcool=1;s.effAlcoolSecondes=0;s.effParties={pr:{effet:-1,mod:0},ps:{effet:-1,mod:0}};s.effAutre=0;s.desUtilises=[true,false,true];});
   async function capture(locator,file){
     for(let attempt=0;attempt<5;attempt++){
       try{await locator.screenshot({path:file});return;}
@@ -209,13 +267,15 @@ const server=http.createServer((req,res)=> {
    const fonts=await collapse.locator('.pc-big .k, .pc-eff-tete > .k').evaluateAll(ns=>ns.map(n=>{const s=getComputedStyle(n);return [s.fontSize,s.fontFamily,s.fontWeight,s.letterSpacing].join('|')}));
    assert.equal(new Set(fonts).size,1);
    assert.equal(await collapse.locator('.pc-eff-partie .pc-vital-jauge').count(),10);
-   assert.ok(await collapse.locator('.pc-eff-tete').evaluateAll(ns=>ns.every(n=>{const a=n.children[0].getBoundingClientRect(),b=n.children[1].getBoundingClientRect(),p=n.getBoundingClientRect();return a.right<=b.left&&b.right<=p.right+1&&Math.abs(a.y-b.y)<15;})));
+   const headGeometry=await collapse.locator('.pc-eff-tete').evaluateAll(ns=>ns.map(n=>{const a=n.children[0].getBoundingClientRect(),b=n.children[1].getBoundingClientRect(),p=n.getBoundingClientRect();return {name:n.children[0].innerText,ar:a.right,bl:b.left,br:b.right,pr:p.right,ay:a.y,by:b.y}}));
+   assert.ok(headGeometry.every(n=>n.ar<=n.bl&&n.br<=n.pr+1&&Math.abs(n.ay-n.by)<15),JSON.stringify(headGeometry));
    assert.ok(await collapse.locator('.pc-eff-partie .pc-vital-jauge > i').evaluateAll(ns=>ns.every(n=>n.style.marginLeft==='0px')));
+   assert.deepEqual(await collapse.locator('.pc-eff-tete > .k').evaluateAll(ns=>ns.map(n=>n.innerText)),['PR','Charge','Froid','Chaud','PS','Contenance','PH','Alcool','PI','Autre']);
    const savedWidth=await collapse.evaluate(n=>n.style.width);
    await collapse.evaluate(n=>n.style.width='380px');
-   assert.deepEqual(await collapse.locator('.pc-eff-tete > .k').evaluateAll(ns=>ns.map(n=>n.innerText)),['PR','CHARGE','FROID','CHAUD','PS','CONTENANCE','PH','ALCOOL','PI','AUTRE']);
-   await collapse.evaluate(n=>n.style.width='200px');
-   assert.deepEqual(await collapse.locator('.pc-eff-tete > .k').evaluateAll(ns=>ns.map(n=>n.innerText)),['PR','CHG','FRD','CHD','PS','CTN','PH','ALCL','PI','AUT.']);
+   assert.deepEqual(await collapse.locator('.pc-eff-tete > .k').evaluateAll(ns=>ns.map(n=>n.innerText)),['PR','Charge','Froid','Chaud','PS','Contenance','PH','Alcool','PI','Autre']);
+   await collapse.evaluate(n=>n.style.width='150px');
+   assert.deepEqual(await collapse.locator('.pc-eff-tete > .k').evaluateAll(ns=>ns.map(n=>n.innerText)),['PR','CHG','FRD','CHD','PS','CTN','PH','ALC','PI','AUT']);
    assert.ok(await collapse.locator('.pc-eff-tete').evaluateAll(ns=>ns.every(n=>{const a=n.children[0].getBoundingClientRect(),b=n.children[1].getBoundingClientRect(),p=n.getBoundingClientRect();return a.right<=b.left&&b.right<=p.right+1;})));
    await capture(collapse,'/tmp/owd-effondrement-compact-'+(night?'night':'day')+'.png');
    await collapse.evaluate((n,w)=>n.style.width=w,savedWidth);

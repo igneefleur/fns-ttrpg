@@ -8,16 +8,26 @@
     r.appendChild(tV); r.appendChild(tE); b.appendChild(r);
     var tN = bigTile("EFFONDREMENT", function () { return String(effondrement()); });
     tN.classList.add("pc-eff-niveau"); b.appendChild(tN);
+    var commandes = el("div", "pc-eff-commandes");
+    var desactive = el("button", "pc-chip pc-combat-toggle", "Désactiver effondrement");
+    desactive.type = "button";
+    desactive.title = "Annule l’effondrement appliqué et ses pénalités ; les causes continuent de suivre le personnage.";
+    desactive.addEventListener("click", function () { state.effDesactive = !state.effDesactive; refresh(); });
+    var pause = el("button", "pc-chip pc-combat-toggle", "Pauser Effondrement");
+    pause.type = "button";
+    pause.title = "Fige les niveaux actuels. À la reprise, ils suivent de nouveau les réserves actuelles.";
+    pause.addEventListener("click", function () { state.effPause = state.effPause ? null : figeEffondrement(); refresh(); });
+    commandes.appendChild(desactive); commandes.appendChild(pause); b.appendChild(commandes);
     var grille = el("div", "pc-eff-grille"), vues = [];
     [["pr", "Repos"], ["charge", "Charge"], ["froid", "Froid"], ["chaud", "Chaud"],
      ["ps", "Satiété"], ["contenance", "Contenance"], ["ph", "Hydratation"], ["alcool", "Alcool"],
      ["pi", "Innocence"], ["autre", "Autre"]].forEach(function (d) {
       var cle = d[0], nom = d[1];
       var normal = { pr: "PR", pi: "PI", ps: "PS", ph: "PH" }[cle] || nom;
-      var compact = { charge: "CHG", contenance: "CTN", alcool: "ALCL", froid: "FRD", chaud: "CHD", autre: "AUT." }[cle] || normal;
+      var compact = { charge: "CHG", contenance: "CTN", alcool: "ALC", froid: "FRD", chaud: "CHD", autre: "AUT" }[cle] || normal;
       var carte = el("div", "pc-eff-partie t-" + cle); carte.dataset.effPartie = cle;
       var tete = el("div", "pc-eff-tete");
-      var titre = el("span", "k"); titre.title = nom; titre.setAttribute("aria-label", nom);
+      var titre = el("span", "k"); titre.dataset.effNom = cle; titre.title = nom; titre.setAttribute("aria-label", nom);
       titre.appendChild(el("span", "pc-eff-nom-normal", normal));
       titre.appendChild(el("span", "pc-eff-nom-compact", compact)); tete.appendChild(titre);
       var valeur = el("div", "pc-eff-lecture");
@@ -37,6 +47,7 @@
       var mod = champNombreSigne(el("input", "c pc-eff-delta"));
       mod.placeholder = "±"; mod.setAttribute("aria-label", nom + " — ±");
       mod.addEventListener("input", function () {
+        if (state.effPause) return;
         var vide = mod.value.trim() === "", n = vide ? 0 : litNombreSigne(mod.value);
         if (!isFinite(n) || !Number.isInteger(n)) return;
         n = clamp(n, -999, 999);
@@ -56,8 +67,10 @@
     hooks.push(function () {
       vues.forEach(function (v) {
         var brut = effBasePartie(v.cle), niveau = effPartie(v.cle);
-        var ecart = pub("effondrementPartie", brut + num(effReglage(v.cle).effet, 0), { cle: v.cle, base: brut }) - brut;
-        var ajustement = v.cle === "autre" ? num(state.effAutre, 0) : num(effReglage(v.cle).mod, 0);
+        var photo = effPhotoPartie(v.cle);
+        var ecart = photo ? photo.effet : pub("effondrementPartie", brut + num(effReglage(v.cle).effet, 0), { cle: v.cle, base: brut }) - brut;
+        var ajustement = photo ? photo.mod : v.cle === "autre" ? num(state.effAutre, 0) : num(effReglage(v.cle).mod, 0);
+        v.mod.disabled = !!state.effPause;
         v.base.value = brut;
         v.effets.value = ecart ? sign(ecart).replace("−", "-") : "0";
         v.total.textContent = String(niveau);
@@ -67,6 +80,8 @@
         v.mod.title = "Modificateur direct, appliqué pendant la saisie. Vide = 0.";
         v.carte.title = "Base " + brut + " ; effets " + sign(ecart) + " ; ajustement " + sign(ajustement);
       });
+      desactive.classList.toggle("on", !!state.effDesactive); desactive.setAttribute("aria-pressed", String(!!state.effDesactive));
+      pause.classList.toggle("on", !!state.effPause); pause.setAttribute("aria-pressed", String(!!state.effPause));
       var e = effondrement();
       [tN, tV, tE].forEach(function (t) { t.classList.toggle("adj", e > 0); });
       tN.title = capForce("effondrement")

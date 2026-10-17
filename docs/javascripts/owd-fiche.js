@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "3.19.0b";
+  var RELEASE = "3.20.0b";
   var SCHEMA = 16;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -402,6 +402,8 @@
       // Les niveaux d'effondrement que le JOUEUR ajoute à ceux des réserves
       // (ligne « Autre » du module) : ce que la fiche ne sait pas compter.
       effAutre: 0,
+      effDesactive: false,
+      effPause: null,
       effAlcool: 0,
       effAlcoolSecondes: 0,
       effParties: {},
@@ -667,6 +669,22 @@
       s.effParties[k] = { effet: clamp(num(d.effet, 0), -999, 999), mod: clamp(num(d.mod, 0), -999, 999) };
       if (k === "pi") s.effParties[k].base = clamp(Math.round(num(d.base, 0)), 0, 999);
     });
+    s.effDesactive = s.effDesactive === true;
+    var pause = s.effPause;
+    if (pause && typeof pause === "object" && !Array.isArray(pause) &&
+        isFinite(pause.niveau) && pause.parties && EFF_PARTIES.every(function (cle) {
+          var photo = pause.parties[cle];
+          return photo && ["base", "apres", "niveau", "effet", "mod"].every(function (champ) {
+            return typeof photo[champ] === "number" && isFinite(photo[champ]);
+          });
+        })) {
+      s.effPause = { niveau: clamp(num(pause.niveau, 0), 0, 999), parties: {} };
+      EFF_PARTIES.forEach(function (cle) {
+        var photo = pause.parties[cle], copie = {};
+        ["base", "apres", "niveau", "effet", "mod"].forEach(function (champ) { copie[champ] = clamp(photo[champ], -999, 999); });
+        s.effPause.parties[cle] = copie;
+      });
+    } else s.effPause = null;
     var desUtilises = s.desUtilises;
     s.desUtilises = {};
     if (desUtilises && typeof desUtilises === "object") Object.keys(desUtilises).forEach(function (k) {
@@ -1580,7 +1598,9 @@
     var tranche = Math.max(0.001, num(effDef().surchargeTranche, 5));
     return Math.max(0, Math.floor((pris - maximum) * 100 / maximum / tranche + 1e-9));
   }
+  function effPhotoPartie(cle) { return state.effPause && state.effPause.parties && state.effPause.parties[cle]; }
   function effBasePartie(cle) {
+    var photo = effPhotoPartie(cle); if (photo) return photo.base;
     if (cle === "charge") return effSurcharge(poidsPorte(), charge());
     if (cle === "contenance") return effSurcharge(contenancePrise(), contenance());
     if (cle === "alcool") return Math.max(0, num(state.effAlcool, 0));
@@ -1591,11 +1611,13 @@
     return effReserves().indexOf(cle) >= 0 ? effNiveauDe(cle) : 0;
   }
   function effApresEffets(cle) {
+    var photo = effPhotoPartie(cle); if (photo) return photo.apres;
     var base = cle === "total" ? EFF_PARTIES.reduce(function (t, k) { return t + effPartie(k); }, 0) : effBasePartie(cle);
     var valeur = Math.floor(pub("effondrementPartie", base + num(effReglage(cle).effet, 0), { cle: cle, base: base }));
     return cle === "autre" ? valeur : Math.max(0, valeur);
   }
   function effPartie(cle) {
+    var photo = effPhotoPartie(cle); if (photo) return photo.niveau;
     var mod = cle === "autre" ? num(state.effAutre, 0) : num(effReglage(cle).mod, 0);
     var valeur = effApresEffets(cle) + mod;
     return cle === "autre" ? valeur : Math.max(0, valeur);
@@ -1609,7 +1631,24 @@
     return clamp(Math.floor(chaine(lireCap("max", "effondrement"), effondrementAuto())),
                  0, effPlafond());
   }
-  function effondrement() { return pub("effondrement", effondrementBrut(), {}); }
+  function effondrementActif() { return pub("effondrement", effondrementBrut(), {}); }
+  function effondrement() {
+    if (state.effDesactive) return 0;
+    if (state.effPause) return state.effPause.niveau;
+    return effondrementActif();
+  }
+  function figeEffondrement() {
+    var photo = { niveau: effondrementActif(), parties: {} };
+    EFF_PARTIES.forEach(function (cle) {
+      var base = effBasePartie(cle);
+      photo.parties[cle] = {
+        base: base, apres: effApresEffets(cle), niveau: effPartie(cle),
+        effet: pub("effondrementPartie", base + num(effReglage(cle).effet, 0), { cle: cle, base: base }) - base,
+        mod: cle === "autre" ? num(state.effAutre, 0) : num(effReglage(cle).mod, 0)
+      };
+    });
+    return photo;
+  }
   // Ce que l'effondrement laisse d'un maximum, en pour cent. À appliquer sur le
   // maximum ENTIER (modificateurs compris) : l'effondrement diminue ce que le
   // corps peut porter, pas seulement ce que la caractéristique lui donnait.
@@ -6147,16 +6186,26 @@
     r.appendChild(tV); r.appendChild(tE); b.appendChild(r);
     var tN = bigTile("EFFONDREMENT", function () { return String(effondrement()); });
     tN.classList.add("pc-eff-niveau"); b.appendChild(tN);
+    var commandes = el("div", "pc-eff-commandes");
+    var desactive = el("button", "pc-chip pc-combat-toggle", "Désactiver effondrement");
+    desactive.type = "button";
+    desactive.title = "Annule l’effondrement appliqué et ses pénalités ; les causes continuent de suivre le personnage.";
+    desactive.addEventListener("click", function () { state.effDesactive = !state.effDesactive; refresh(); });
+    var pause = el("button", "pc-chip pc-combat-toggle", "Pauser Effondrement");
+    pause.type = "button";
+    pause.title = "Fige les niveaux actuels. À la reprise, ils suivent de nouveau les réserves actuelles.";
+    pause.addEventListener("click", function () { state.effPause = state.effPause ? null : figeEffondrement(); refresh(); });
+    commandes.appendChild(desactive); commandes.appendChild(pause); b.appendChild(commandes);
     var grille = el("div", "pc-eff-grille"), vues = [];
     [["pr", "Repos"], ["charge", "Charge"], ["froid", "Froid"], ["chaud", "Chaud"],
      ["ps", "Satiété"], ["contenance", "Contenance"], ["ph", "Hydratation"], ["alcool", "Alcool"],
      ["pi", "Innocence"], ["autre", "Autre"]].forEach(function (d) {
       var cle = d[0], nom = d[1];
       var normal = { pr: "PR", pi: "PI", ps: "PS", ph: "PH" }[cle] || nom;
-      var compact = { charge: "CHG", contenance: "CTN", alcool: "ALCL", froid: "FRD", chaud: "CHD", autre: "AUT." }[cle] || normal;
+      var compact = { charge: "CHG", contenance: "CTN", alcool: "ALC", froid: "FRD", chaud: "CHD", autre: "AUT" }[cle] || normal;
       var carte = el("div", "pc-eff-partie t-" + cle); carte.dataset.effPartie = cle;
       var tete = el("div", "pc-eff-tete");
-      var titre = el("span", "k"); titre.title = nom; titre.setAttribute("aria-label", nom);
+      var titre = el("span", "k"); titre.dataset.effNom = cle; titre.title = nom; titre.setAttribute("aria-label", nom);
       titre.appendChild(el("span", "pc-eff-nom-normal", normal));
       titre.appendChild(el("span", "pc-eff-nom-compact", compact)); tete.appendChild(titre);
       var valeur = el("div", "pc-eff-lecture");
@@ -6176,6 +6225,7 @@
       var mod = champNombreSigne(el("input", "c pc-eff-delta"));
       mod.placeholder = "±"; mod.setAttribute("aria-label", nom + " — ±");
       mod.addEventListener("input", function () {
+        if (state.effPause) return;
         var vide = mod.value.trim() === "", n = vide ? 0 : litNombreSigne(mod.value);
         if (!isFinite(n) || !Number.isInteger(n)) return;
         n = clamp(n, -999, 999);
@@ -6195,8 +6245,10 @@
     hooks.push(function () {
       vues.forEach(function (v) {
         var brut = effBasePartie(v.cle), niveau = effPartie(v.cle);
-        var ecart = pub("effondrementPartie", brut + num(effReglage(v.cle).effet, 0), { cle: v.cle, base: brut }) - brut;
-        var ajustement = v.cle === "autre" ? num(state.effAutre, 0) : num(effReglage(v.cle).mod, 0);
+        var photo = effPhotoPartie(v.cle);
+        var ecart = photo ? photo.effet : pub("effondrementPartie", brut + num(effReglage(v.cle).effet, 0), { cle: v.cle, base: brut }) - brut;
+        var ajustement = photo ? photo.mod : v.cle === "autre" ? num(state.effAutre, 0) : num(effReglage(v.cle).mod, 0);
+        v.mod.disabled = !!state.effPause;
         v.base.value = brut;
         v.effets.value = ecart ? sign(ecart).replace("−", "-") : "0";
         v.total.textContent = String(niveau);
@@ -6206,6 +6258,8 @@
         v.mod.title = "Modificateur direct, appliqué pendant la saisie. Vide = 0.";
         v.carte.title = "Base " + brut + " ; effets " + sign(ecart) + " ; ajustement " + sign(ajustement);
       });
+      desactive.classList.toggle("on", !!state.effDesactive); desactive.setAttribute("aria-pressed", String(!!state.effDesactive));
+      pause.classList.toggle("on", !!state.effPause); pause.setAttribute("aria-pressed", String(!!state.effPause));
       var e = effondrement();
       [tN, tV, tE].forEach(function (t) { t.classList.toggle("adj", e > 0); });
       tN.title = capForce("effondrement")

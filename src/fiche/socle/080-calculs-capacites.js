@@ -188,7 +188,9 @@
     var tranche = Math.max(0.001, num(effDef().surchargeTranche, 5));
     return Math.max(0, Math.floor((pris - maximum) * 100 / maximum / tranche + 1e-9));
   }
+  function effPhotoPartie(cle) { return state.effPause && state.effPause.parties && state.effPause.parties[cle]; }
   function effBasePartie(cle) {
+    var photo = effPhotoPartie(cle); if (photo) return photo.base;
     if (cle === "charge") return effSurcharge(poidsPorte(), charge());
     if (cle === "contenance") return effSurcharge(contenancePrise(), contenance());
     if (cle === "alcool") return Math.max(0, num(state.effAlcool, 0));
@@ -199,11 +201,13 @@
     return effReserves().indexOf(cle) >= 0 ? effNiveauDe(cle) : 0;
   }
   function effApresEffets(cle) {
+    var photo = effPhotoPartie(cle); if (photo) return photo.apres;
     var base = cle === "total" ? EFF_PARTIES.reduce(function (t, k) { return t + effPartie(k); }, 0) : effBasePartie(cle);
     var valeur = Math.floor(pub("effondrementPartie", base + num(effReglage(cle).effet, 0), { cle: cle, base: base }));
     return cle === "autre" ? valeur : Math.max(0, valeur);
   }
   function effPartie(cle) {
+    var photo = effPhotoPartie(cle); if (photo) return photo.niveau;
     var mod = cle === "autre" ? num(state.effAutre, 0) : num(effReglage(cle).mod, 0);
     var valeur = effApresEffets(cle) + mod;
     return cle === "autre" ? valeur : Math.max(0, valeur);
@@ -217,7 +221,24 @@
     return clamp(Math.floor(chaine(lireCap("max", "effondrement"), effondrementAuto())),
                  0, effPlafond());
   }
-  function effondrement() { return pub("effondrement", effondrementBrut(), {}); }
+  function effondrementActif() { return pub("effondrement", effondrementBrut(), {}); }
+  function effondrement() {
+    if (state.effDesactive) return 0;
+    if (state.effPause) return state.effPause.niveau;
+    return effondrementActif();
+  }
+  function figeEffondrement() {
+    var photo = { niveau: effondrementActif(), parties: {} };
+    EFF_PARTIES.forEach(function (cle) {
+      var base = effBasePartie(cle);
+      photo.parties[cle] = {
+        base: base, apres: effApresEffets(cle), niveau: effPartie(cle),
+        effet: pub("effondrementPartie", base + num(effReglage(cle).effet, 0), { cle: cle, base: base }) - base,
+        mod: cle === "autre" ? num(state.effAutre, 0) : num(effReglage(cle).mod, 0)
+      };
+    });
+    return photo;
+  }
   // Ce que l'effondrement laisse d'un maximum, en pour cent. À appliquer sur le
   // maximum ENTIER (modificateurs compris) : l'effondrement diminue ce que le
   // corps peut porter, pas seulement ce que la caractéristique lui donnait.
