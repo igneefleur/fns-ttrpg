@@ -56,13 +56,15 @@ const server=http.createServer((req,res)=> {
   const choose=async()=>{await sheet.locator('[data-object-ref="sample"]').first().click();};
   await choose();
   const common=await panel.locator('.pc-obj-body').evaluate(n=>Array.from(n.children).filter(c=>!c.matches('.pc-obj-specifics,.pc-obj-actions')).map(c=>c.matches('input.nm')?'NOM':Array.from(c.querySelectorAll(':scope > label,:scope > .pc-f > label')).map(l=>l.textContent).join('|')).filter(Boolean));
-  assert.deepEqual(common.slice(0,8),['NOM','Type','Poids|Volume','Taille|Mains',"Prix d'achat|Prix de vente",'Identifiant','Image|Fichier','Description']);
+  assert.deepEqual(common.slice(0,9),['NOM','Type|Accès rapide','Quantité','Poids|Volume','Taille|Mains',"Prix d'achat|Prix de vente",'Identifiant','Image|Fichier','Description']);
   assert.equal(await field('Image').isVisible(),false);assert.equal(await field('Identifiant').isVisible(),true);
-  assert.equal(await panel.getByRole('button',{name:'Accès rapide',exact:true}).getAttribute('aria-pressed'),'false');
-  await panel.getByRole('button',{name:'Accès rapide',exact:true}).click();assert.equal((await state()).inv.objets[0].rapide,true);
-  assert.equal(await panel.getByRole('button',{name:'Accès rapide',exact:true}).getAttribute('aria-pressed'),'true');
+  assert.equal(await panel.getByRole('button',{name:'Activer',exact:true}).getAttribute('aria-pressed'),'false');
+  await panel.getByRole('button',{name:'Activer',exact:true}).click();assert.equal((await state()).inv.objets[0].rapide,true);
+  assert.equal(await panel.getByRole('button',{name:'Activer',exact:true}).getAttribute('aria-pressed'),'true');
   await sheet.locator('[data-module="inv"] .pc-gear').click();
-  assert.equal(await field('Image').isVisible(),true);assert.equal(await field('Fichier').getByRole('button').isVisible(),true);
+  assert.equal(await field('Image').isVisible(),true);assert.equal(await field('Fichier').getByRole('button',{name:'Choisir'}).isVisible(),true);
+  const mediaWidths=await panel.locator('.pc-obj-media').evaluate(n=>Array.from(n.children).map(c=>c.getBoundingClientRect().width));
+  assert.ok(mediaWidths[0] >= mediaWidths[1]*2.8 && mediaWidths[0] <= mediaWidths[1]*3.2,'Image/Fichier environ 75/25');
   assert.equal(await field('Construction').count(),0);assert.equal(await field('Modèle de consommable').count(),0);assert.equal(await field('Effet 1').count(),0);
   const types=await field('Type').locator('option').allTextContents();assert.ok(!types.includes('Éclairage')&&!types.includes('Couchage'));
   await field('Mains').locator('select').selectOption('2');assert.equal((await state()).inv.objets[0].mains,2);
@@ -72,6 +74,9 @@ const server=http.createServer((req,res)=> {
   for(const type of ['solide','pate','liquide']){
    await replace(s=>{const o=s.inv.objets[0];o.typeObjet=type;o.sousType='ingerable';o.nourri=true;o.ou='poches';});await choose();
    assert.equal(await field('Effet 1').count(),1);assert.equal(await field('Effet 5').count(),1);
+   assert.equal(await panel.locator('.pc-obj-subtype-row > .pc-f').count(),1);
+   assert.equal(await panel.locator('.pc-obj-subtype-card').count(),1);
+   assert.ok(await panel.locator('.pc-obj-body').evaluate(n=>Array.from(n.children).findIndex(c=>c.classList.contains('pc-obj-subtype-row')) < Array.from(n.children).findIndex(c=>c.classList.contains('pc-obj-subtype-card'))));
    assert.equal(await field('Effet 1').locator('option').first().textContent(),'Aucun');
    await replace(s=>{s.inv.objets[0].sousType='consommable';s.inv.objets[0].nourri=false;});await choose();assert.equal(await field('Effet 1').count(),1);
    await replace(s=>{s.inv.objets[0].sousType='autre';});await choose();assert.equal(await field('Effet 1').count(),0);
@@ -81,6 +86,9 @@ const server=http.createServer((req,res)=> {
   assert.equal((await state()).inv.objets[0].typeObjet,'autre');assert.equal((await state()).inv.objets[0].construction,undefined);
   await replace(s=>{s.inv.objets[0].typeObjet='arme';s.inv.objets[0].arme={type:'dague',mains:2};s.inv.objets[0].mains=2;});await choose();
   assert.equal((await state()).inv.objets[0].arme.mains,2);
+  assert.equal(await field('Coups').count(),0);
+  assert.equal(await panel.locator('.pc-obj-type-properties .pc-arme').count(),1);
+  assert.equal(await panel.locator('.pc-obj-subtype-row .pc-f').count(),1);
   await replace(s=>{const o=s.inv.objets[0];o.typeObjet='liquide';o.arme=null;o.sousType='ingerable';o.nourri=true;});await choose();
   for(const night of [true,false])for(const width of [1500,850,600]){
    await frame.evaluate(({night,width})=>{document.documentElement.classList.toggle('night',night);frameElement.style.width=width+'px';},{night,width});

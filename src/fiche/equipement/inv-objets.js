@@ -856,20 +856,36 @@
         refresh();
       });
       ligneNat.appendChild(fld("Type", nat));
-      var rapide = el("button", "pc-chip pc-combat-toggle" + (it.rapide ? " on" : ""), "Accès rapide");
-      rapide.type="button";rapide.setAttribute("aria-pressed",String(!!it.rapide));
-      rapide.addEventListener("click",function(){it.rapide=!it.rapide;render();refresh();});
-      ligneNat.appendChild(rapide);
+      var rapideBoite = el("div", "pc-f pc-obj-quick");
+      rapideBoite.appendChild(el("label", null, "Accès rapide"));
+      var rapide = miniBtn("Activer", "Activer ou désactiver l'accès rapide", function () {
+        it.rapide = !it.rapide;
+        save(); render(); refresh();
+      }, "pc-obj-quick-toggle" + (it.rapide ? " on" : ""));
+      rapide.setAttribute("aria-pressed", String(!!it.rapide));
+      rapideBoite.appendChild(rapide);
+      ligneNat.appendChild(rapideBoite);
       body.appendChild(ligneNat);
-      var specifiques=el("div","pc-obj-specifics");
-      var sous=invSousTypes(invType(it));
-      if(sous.length)specifiques.appendChild(invChoix("Sous-type",sous,it.sousType || (it.ceint?"ceint":it.sac?"sac":"autre"),function(v){
-        it.sousType=v;it.nourri=v==="ingerable";
-        if(invType(it)==="rangement"){if(it.sac&&v!=="sac")libereContenu(it,true);it.sac=v==="sac";it.ceint=v==="ceint";}
-        if(invType(it)==="munition")it.contenu=v;
-        if(INV_EP.indexOf(it.ou)<0 && !lieuPermis(it,it.ou)){it.ou="poches";it.dans="";}
-        rangeEmplacements(items);render();
-      }));
+
+      // Le type possède son bloc, puis le sous-type sa ligne indépendante et
+      // son propre cadre. Les propriétés communes ne sont montrées qu'après.
+      var specifiquesType = el("div", "pc-obj-specifics pc-obj-type-properties");
+      var specifiquesSous = el("div", "pc-obj-specifics pc-obj-subtype-card");
+      var sousLigne = el("div", "pc-obj-subtype-row");
+      var sous = invSousTypes(invType(it));
+      if(sous.length) sousLigne.appendChild(invChoix("Sous-type", sous,
+        it.sousType || (it.ceint ? "ceint" : it.sac ? "sac" : "autre"), function (v) {
+          it.sousType=v;it.nourri=v==="ingerable";
+          if(invType(it)==="rangement"){
+            if(it.sac&&v!=="sac")libereContenu(it,true);
+            it.sac=v==="sac";it.ceint=v==="ceint";
+          }
+          if(invType(it)==="munition")it.contenu=v;
+          if(INV_EP.indexOf(it.ou)<0 && !lieuPermis(it,it.ou)){
+            it.ou="poches";it.dans="";
+          }
+          rangeEmplacements(items);render();
+        }));
 
 
       // ce que le type demande, juste sous lui. Tous les types utilisent le
@@ -892,7 +908,7 @@
           render();
           refresh();
         });
-        pv.appendChild(fld("Se porte", typ));
+        sousLigne.appendChild(fld("Sous-type", typ));
         pv.appendChild(champNombre("Poches", function () { return it.poches; },
           function (v) { it.poches = pnum(v); }, "Ce que ce vêtement porté ajoute aux Poches, en L"));
         cv.appendChild(pv);
@@ -913,7 +929,7 @@
         pp.appendChild(champNombre("Défense Chaud", function () { return it.chaud; },
           function (v) { it.chaud = snum(v); }, "Protection contre le chaud, en degrés"));
         cv.appendChild(pp);
-        specifiques.appendChild(cv);
+        specifiquesSous.appendChild(cv);
       }
 
       // l'ACCESSOIRE : sa case, ses poches, sa protection
@@ -933,7 +949,7 @@
           render();
           refresh();
         });
-        pa.appendChild(fld("Se porte", tya));
+        sousLigne.appendChild(fld("Sous-type", tya));
         pa.appendChild(champNombre("Poches", function () { return it.poches; },
           function (v) { it.poches = pnum(v); }, "Ce que cet accessoire porté ajoute aux Poches, en L"));
         ca.appendChild(pa);
@@ -943,7 +959,7 @@
         ppa.appendChild(champNombre("Chaud", function () { return it.chaud; },
           function (v) { it.chaud = snum(v); }, "Protection contre le chaud, en degrés"));
         ca.appendChild(ppa);
-        specifiques.appendChild(ca);
+        specifiquesSous.appendChild(ca);
       }
 
       // les EMPLACEMENTS d'une ceinture ou d'un sac : leur nombre, et
@@ -961,7 +977,7 @@
       if (it.ceint) {
         var cc = carteNature();
         cc.appendChild(champsEp());
-        specifiques.appendChild(cc);
+        specifiquesSous.appendChild(cc);
       }
 
       // la nourriture porte son VOLUME : ce qu'une dose ou une part occupe de
@@ -975,7 +991,7 @@
         var nutrition=el("div","pc-obj-pair");["ps","ph"].forEach(function(k){nutrition.appendChild(champNombre(k.toUpperCase(),function(){return num(it[k],0);},function(v){it[k]=snum(v);}));});cn.appendChild(nutrition);
         cn.appendChild(champNombre("Temps (DA)",function(){return num(it.tempsConsommation,0);},function(v){it.tempsConsommation=pnum(v);}));
 
-        specifiques.appendChild(cn);
+        specifiquesSous.appendChild(cn);
       }
 
       if (it.sac) {
@@ -986,7 +1002,7 @@
         cs.appendChild(ps);
         cs.appendChild(invChoix("Taille intérieure maximale",INV_TAILLES,invTailleMaxSac(it),function(v){it.tailleInterieure=v;}));
         cs.appendChild(champsEp());
-        specifiques.appendChild(cs);
+        specifiquesSous.appendChild(cs);
       }
 
       // CONTENANT et CONTENU partagent exactement les mêmes catégories. Le
@@ -997,14 +1013,14 @@
         var pct = el("div", "pc-obj-pair");
         pct.appendChild(fld("Catégorie", selCategorieStockage(it, "contenant")));
         ct.appendChild(pct);
-        specifiques.appendChild(ct);
+        specifiquesType.appendChild(ct);
       }
       if (it.contenu && invType(it)==="autre") {
         var ctu = carteNature();
         var pctu = el("div", "pc-obj-pair");
         pctu.appendChild(fld("Catégorie", selCategorieStockage(it, "contenu")));
         ctu.appendChild(pctu);
-        specifiques.appendChild(ctu);
+        specifiquesType.appendChild(ctu);
       }
 
       // L'ARME : cinq lignes de données, sans gestes ni boutons. Ses
@@ -1014,7 +1030,7 @@
       if (it.arme && !fantome) {
         var ancien = hooks;
         hooks = panelHooks;
-        try { specifiques.appendChild(carteArme(it, function () { render(); })); }
+        try { specifiquesType.appendChild(carteArme(it, false, sousLigne)); }
         finally { hooks = ancien; }
       }
 
@@ -1051,7 +1067,7 @@
       // Identifiant visible ; image et fichier uniquement en édition.
       // L'identifiant reconnaît le même objet d'une fiche à l'autre quand on
       // le donne.
-      var pairE = el("div", "pc-obj-pair pc-edit-only");
+      var pairE = el("div", "pc-obj-pair pc-obj-media pc-edit-only");
       var idIn = el("input", "pc-edit-field");
       idIn.type = "text"; idIn.placeholder = "ex. iron_sword";
       idIn.value = it.id || "";
@@ -1071,7 +1087,7 @@
         vignette(f, function (data) { it.img = data; render(); refresh(); });
       });
       urlFld.appendChild(file);
-      pairE.appendChild(fld("Fichier",miniBtn("Fichier…", "Importer une image (réduite en vignette 84 × 128)",
+      pairE.appendChild(fld("Fichier",miniBtn("Choisir", "Importer une image (réduite en vignette 84 × 128)",
         function () { file.click(); })));
       pairE.insertBefore(urlFld,pairE.firstChild);
       body.appendChild(pairE);
@@ -1082,8 +1098,10 @@
       desc.value = it.desc;
       desc.addEventListener("input", function () { it.desc = desc.value; save(); });
       body.appendChild(fld("Description", desc, "w"));
-      body.appendChild(specifiques);
-      invChampsCommuns(body,it,render);
+      invChampsCommuns(specifiquesSous,it,render);
+      if (specifiquesType.childNodes.length) body.insertBefore(specifiquesType, pair);
+      if (sousLigne.childNodes.length) body.insertBefore(sousLigne, pair);
+      if (specifiquesSous.childNodes.length) body.insertBefore(specifiquesSous, pair);
       // quantité : curseur à l'unité + champ, décimal (une demi-ration)
       var qRow = el("div", "pc-obj-qrow");
       var slider = el("input");
@@ -1108,7 +1126,7 @@
       if(it.sac){slider.disabled=true;qIn.disabled=true;it.qte=1;}
       qRow.appendChild(slider);
       qRow.appendChild(qIn);
-      body.appendChild(fld("Quantité", qRow));
+      body.insertBefore(fld("Quantité", qRow), ligneNat.nextSibling);
 
 
       if (fantome) {

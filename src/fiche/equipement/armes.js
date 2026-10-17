@@ -19,7 +19,7 @@
     return fld(libelle, i);
   }
 
-  function carteArme(it, attaqueLibre) {
+  function carteArme(it, attaqueLibre, sousTypeHost) {
     // L’inventaire passe historiquement un callback en second argument.
     // Seul le booléen explicite des attaques libres masque la parade.
     attaqueLibre = attaqueLibre === true;
@@ -145,9 +145,13 @@
     for (var j = 0; j < 3; j++) l4.appendChild(fld("MOD", selCarac("modsParade", j)));
     if (!attaqueLibre) card.appendChild(l4);
 
-    var l5 = ligne(attaqueLibre ? "pc-arme-1" : "pc-arme-2");
+    var l5 = ligne(attaqueLibre || sousTypeHost ? "pc-arme-1" : "pc-arme-2");
     l5.appendChild(fld("Compétence", selComp()));
-    if (!attaqueLibre) l5.appendChild(fld("Type", selTypeArme()));
+    if (!attaqueLibre) {
+      var typeField = fld(sousTypeHost ? "Sous-type" : "Type", selTypeArme());
+      if (sousTypeHost) sousTypeHost.appendChild(typeField);
+      else l5.appendChild(typeField);
+    }
     card.appendChild(l5);
 
     if(!attaqueLibre){
@@ -156,7 +160,8 @@
       function total(){var n=0;combatTypes().forEach(function(k){n+=pnum(a.repartition[k]);});sum.textContent="Total : "+fmtP(n)+" %";sum.classList.toggle("pc-invalid",Math.abs(n-100)>0.001);}
       combatTypes().forEach(function(k){var input=el("input","pc-edit-field");input.type="text";input.inputMode="decimal";input.value=pnum(a.repartition[k]);input.setAttribute("aria-label","Dégâts "+combatLibType(k)+" (%)");input.addEventListener("input",function(){var v=litNombreSigne(input.value);if(isFinite(v)&&v>=0){a.repartition[k]=v;save();total();}});input.addEventListener("change",refresh);rep.appendChild(fld(combatLibType(k)+" (%)",input));});
       rep.appendChild(sum);total();card.appendChild(rep);
-      var req=el("div","pc-arme-line pc-arme-3");req.appendChild(champArme("Coups",a,"hits"));req.appendChild(champArme("DEX requise",a,"dex"));req.appendChild(champArme("FOR requise",a,"for"));card.appendChild(req);
+      // hits reste dans les données pour les calculs ; ce n'est pas un champ d'édition.
+      var req=el("div","pc-arme-line pc-arme-2");req.appendChild(champArme("DEX requise",a,"dex"));req.appendChild(champArme("FOR requise",a,"for"));card.appendChild(req);
     }
 
     return card;

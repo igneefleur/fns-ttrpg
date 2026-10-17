@@ -2180,6 +2180,19 @@ html.night .t-pi { --palier-plein: #30343b; }
 /* Détail d’objet : même typographie, champs communs puis propriétés du type. */
 .pc-obj-specifics { display:flex; flex-direction:column; gap:.32rem; min-width:0; }
 .pc-obj-specifics:empty { display:none; }
-.pc-obj-body > .pc-obj-pair > .pc-combat-toggle { flex:1; align-self:stretch; min-width:0; }
+/* Sous-type isolé, puis ses seules propriétés dans un cadre commun. */
+.pc-obj-body .pc-obj-subtype-row > .pc-f { width:100%; min-width:0; }
+.pc-obj-body .pc-obj-subtype-card { border:1px solid var(--hair); border-radius:8px; background:var(--card); padding:.35rem .55rem .45rem; margin-bottom:.25rem; }
+.pc-obj-body .pc-obj-subtype-card > .pc-arme,
+.pc-obj-body .pc-obj-subtype-card > .pc-obj-subcard { border:0; border-radius:0; background:transparent; padding:0; margin:0; }
+.pc-obj-body .pc-obj-subtype-card > .pc-obj-subcard + .pc-arme,
+.pc-obj-body .pc-obj-subtype-card > .pc-arme + .pc-arme { border-top:1px solid var(--hair); padding-top:.3rem; }
+.pc-obj-body .pc-obj-quick { flex:1; min-width:0; }
+.pc-obj-body .pc-obj-quick .pc-mini { width:100%; margin:0; min-height:0; padding:.16rem .35rem; line-height:1.18; border-radius:3px; }
+.pc-obj-body .pc-obj-quick .pc-mini.on { background:var(--accent-deep); border-color:var(--accent-deep); color:var(--paper); }
+.pc-obj-body .pc-obj-media { display:grid; grid-template-columns:minmax(0,3fr) minmax(0,1fr); gap:.5rem; }
+.pc-obj-body .pc-obj-media .pc-f { min-width:0; }
+.pc-obj-body .pc-obj-media .pc-mini { align-self:stretch; width:100%; margin:0; border-radius:3px; }
+
 .pc-obj-body .pc-obj-pair > .pc-f { min-width:0; }
 .pc-obj-body .pc-obj-pair .pc-edit-field { max-width:100%; box-sizing:border-box; }
