@@ -2242,3 +2242,6 @@ html.night .t-pi { --palier-plein: #30343b; }
 .pc-obj-container-contents {display:flex;gap:.2rem;flex-wrap:wrap;align-items:center;}
 .pc-obj-container-contents > small {width:100%;color:var(--ink-3);}
 .pc-obj-container-contents > small.pc-obj-overflow {color:var(--danger);font-weight:700;}
+
+/* Les consommables n’ont pas de séparateur entre les effets (7–8 inclus) et la restauration PV. */
+.pc-obj-body .pc-obj-subtype-card > .pc-obj-effets-grid + .pc-obj-restauration { border-top:0; padding-top:0; }

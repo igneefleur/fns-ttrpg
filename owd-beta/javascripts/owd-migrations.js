@@ -1351,6 +1351,55 @@
     monter: function (s, ctx) { s.combatModifiers = ctx.reprendre("combat-modifiers-schema16") || s.combatModifiers || { attaques: {}, protections: {}, resistances: {} }; return s; },
     descendre: function (s, ctx) { ctx.grenier("combat-modifiers-schema16", s.combatModifiers || {}); delete s.combatModifiers; return s; }
   });
+  OwdMigr.ajouter({ schema: 17,
+    titre: "Consommables regroupés",
+    notes: "Solide, Pâte et Liquide partagent désormais un type Consommable, avec ingestion et autre usage distincts. Les anciens effets sont conservés.",
+    monter: function (s, ctx) {
+      var anciens = {}, retour=ctx.reprendre("consommables-nouveaux-schema17")||{},items=s.inv&&s.inv.objets||[];
+      items.forEach(function(o,i){
+        if(!o || typeof o!=="object")return;
+        var r=retour[String(o.ref||"#"+i)];
+        if(r){o.typeObjet=r.type;o.sousType=r.sous;o.nourri=r.nourri;return;}
+        var t=String(o.typeObjet||""), ancien=["solide","pate","liquide"].indexOf(t)>=0;
+        var estCons=t==="consommable", forme=ancien?t:
+          /^(solide|pate|liquide)_/.test(o.sousType||"")?o.sousType.split("_")[0]:
+          o.contenu==="pate"||o.contenu==="liquide"?o.contenu:"solide";
+        if(!ancien&&!estCons && !(o.nourri && !t))return;
+        if(estCons && /^(solide|pate|liquide)_(ingerable|autre)$/.test(o.sousType||""))return;
+        anciens[String(o.ref||"#"+i)]={
+          typePresent:Object.prototype.hasOwnProperty.call(o,"typeObjet"),type:o.typeObjet,
+          sousPresent:Object.prototype.hasOwnProperty.call(o,"sousType"),sous:o.sousType,
+          nourriPresent:Object.prototype.hasOwnProperty.call(o,"nourri"),nourri:o.nourri
+        };
+        var usage=o.sousType==="ingerable"||(!o.sousType&&o.nourri)?"ingerable":"autre";
+        o.typeObjet="consommable";o.sousType=forme+"_"+usage;o.nourri=usage==="ingerable";
+      });
+      // Préserver exactement les trois champs d'origine pour un retour 17 -> 16.
+      if(Object.keys(anciens).length)ctx.grenier("consommables-schema17",anciens);
+      return s;
+    },
+    descendre: function (s, ctx) {
+      var anciens=ctx.reprendre("consommables-schema17")||{},nouveaux={},items=s.inv&&s.inv.objets||[];
+      items.forEach(function(o,i){
+        if(!o || typeof o!=="object")return;
+        var cle=String(o.ref||"#"+i), a=anciens[cle];
+        if(a){
+          if(a.typePresent)o.typeObjet=a.type;else delete o.typeObjet;
+          if(a.sousPresent)o.sousType=a.sous;else delete o.sousType;
+          if(a.nourriPresent)o.nourri=a.nourri;else delete o.nourri;
+          return;
+        }
+        if(o.typeObjet!=="consommable")return;
+        var m=/^(solide|pate|liquide)_(ingerable|autre)$/.exec(o.sousType||"");
+        if(!m)return;
+        nouveaux[cle]={type:o.typeObjet,sous:o.sousType,nourri:o.nourri};
+        o.typeObjet=m[1];o.sousType=m[2]==="ingerable"?"ingerable":"consommable";
+        o.nourri=m[2]==="ingerable";
+      });
+      if(Object.keys(nouveaux).length)ctx.grenier("consommables-nouveaux-schema17",nouveaux);
+      return s;
+    }
+  });
   global.OwdMigr = OwdMigr;
   if (typeof module === "object" && module && module.exports) module.exports = OwdMigr;
 })(typeof window !== "undefined" ? window : (typeof global !== "undefined" ? global : this));
