@@ -2176,3 +2176,10 @@ html.night .t-pi { --palier-plein: #30343b; }
 [data-module="effets"] > .pc-obj-pair { margin-top:.35rem; }
 [data-module="effets"] > .pc-obj-pair > input { flex:1; width:0; }
 [data-module="effets"] .pc-obj-pair .pc-segs { flex:2; }
+
+/* Détail d’objet : même typographie, champs communs puis propriétés du type. */
+.pc-obj-specifics { display:flex; flex-direction:column; gap:.32rem; min-width:0; }
+.pc-obj-specifics:empty { display:none; }
+.pc-obj-body > .pc-obj-pair > .pc-combat-toggle { flex:1; align-self:stretch; min-width:0; }
+.pc-obj-body .pc-obj-pair > .pc-f { min-width:0; }
+.pc-obj-body .pc-obj-pair .pc-edit-field { max-width:100%; box-sizing:border-box; }
