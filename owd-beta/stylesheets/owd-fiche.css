@@ -2196,3 +2196,19 @@ html.night .t-pi { --palier-plein: #30343b; }
 
 .pc-obj-body .pc-obj-pair > .pc-f { min-width:0; }
 .pc-obj-body .pc-obj-pair .pc-edit-field { max-width:100%; box-sizing:border-box; }
+
+/* 3.24.0b — espacement régulier des données de l'arme, répartition 4×2,
+   lignes d'effets vêtements (8 × Valeur / Type) et consommables (4 × 2). */
+.pc-obj-weapon-details { display:flex; flex-direction:column; gap:.5rem; }
+.pc-obj-weapon-details > .pc-arme-line { margin-top:0; }
+.pc-obj-weapon-details > .pc-arme-repartition { gap:.5rem .6rem; }
+.pc-obj-weapon-details .pc-arme-total[readonly] { cursor:default; background:var(--panel); opacity:1; }
+.pc-obj-effets-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.5rem .6rem; }
+.pc-obj-effets-grid > .pc-f { min-width:0; }
+.pc-obj-effets-grid select { min-width:0; width:100%; }
+.pc-obj-body .pc-obj-effet-ligne { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.5rem .6rem; }
+.pc-obj-body .pc-obj-effet-ligne > .pc-f { min-width:0; }
+.pc-obj-body .pc-obj-effet-ligne input,
+.pc-obj-body .pc-obj-effet-ligne select { width:100%; min-width:0; }
+.pc-obj-body .pc-obj-effets-equipement { display:flex; flex-direction:column; gap:.5rem; }
+.pc-obj-effets-anciens { color:var(--ink-3); font-size:var(--fs-meta); padding:.25rem 0; }
