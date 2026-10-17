@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "3.22.0b";
+  var RELEASE = "3.23.0b";
   var SCHEMA = 16;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -135,18 +135,6 @@
     if (cls) e.className = cls;
     if (txt != null) e.textContent = txt;
     return e;
-  }
-  // Les champs signés acceptent +20, 20, -20, la virgule et le moins typographique.
-  // Un input number efface +20 dans certains navigateurs avant l'événement input.
-  function champNombreSigne(i) {
-    i.type = "text";
-    i.inputMode = "decimal";
-    i.setAttribute("data-nombre-signe", "1");
-    return i;
-  }
-  function litNombreSigne(v) {
-    var s = String(v == null ? "" : v).trim().replace(/−/g, "-").replace(",", ".");
-    return /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(s) ? Number(s) : NaN;
   }
   // URL du jeu de données. Une ARCHIVE de version embarque son propre
   // owd-creation.json, gelé à sa date : l'amorce le désigne par
@@ -1284,7 +1272,7 @@
   var FILTRES_CONNUS = {
     caracTotal: 1, compBonus: 1, compDes: 1, compXp: 1,
     pvMax: 1, peMax: 1, pmMax: 1, piMax: 1, prMax: 1, psMax: 1, phMax: 1, pcMax: 1,
-    charge: 1, accesRapides: 1, contenance: 1, expoMax: 1, effondrement: 1, effondrementPartie: 1,
+    charge: 1, accesRapides: 1, contenance: 1, expoMax: 1, effondrement: 1,
     poidsPorte: 1, desAction: 1, ruptureMax: 1, xpDepense: 1
   };
   function ajouteFiltre(nom, fn, prop) {
@@ -3067,11 +3055,11 @@
     w.appendChild(stepBtn("−", title ? "− " + step + (title === true ? "" : " (" + title + ")") : null,
       function () { set(get() - step); refresh(); }));
     var i = el("input", "pc-num");
-    champNombreSigne(i);
+    i.type = "number";
     i.step = String(step);
     i.value = get();
     i.addEventListener("input", function () {
-      var v = litNombreSigne(i.value);
+      var v = parseFloat(String(i.value).replace(",", "."));
       if (isFinite(v)) { set(v); refresh(); }
     });
     (reg || hooks).push(function () { if (document.activeElement !== i) i.value = get(); });
@@ -3117,10 +3105,10 @@
     var c = caseVide(hote, "reglable");
     var t = el("span", "v pc-jeu-only", "");
     var i = el("input", "v pc-edit-only pc-case-champ pc-edit-field");
-    champNombreSigne(i); i.step = "1";
+    i.type = "number"; i.step = "1";
     i.title = aide;
     i.addEventListener("input", function () {
-      var v = Math.trunc(litNombreSigne(i.value));
+      var v = parseInt(i.value, 10);
       if (isFinite(v)) { ecrire(v); refresh(); }
     });
     (reg || hooks).push(function () {
@@ -3156,10 +3144,10 @@
   function champForceBoite(nomTable, levier, cle, auto, titre, reg) {
     var lire = lireTable(nomTable, levier, cle);
     var inp = el("input", "force");
-    champNombreSigne(inp); inp.step = "any";
+    inp.type = "number"; inp.step = "any";
     inp.title = titre || "Vide = valeur calculée ; une valeur la force.";
     inp.addEventListener("input", function () {
-      var v = litNombreSigne(inp.value);
+      var v = parseFloat(String(inp.value).replace(",", "."));
       ecrireBoite(nomTable, levier, "force", cle,
                   isFinite(v) ? clamp(Math.round(v * 100) / 100, -99999, 99999) : undefined);
       refresh();
@@ -3182,11 +3170,11 @@
       var boite = MMOD_BOITES[i];
       var lire = lireTable(nomTable, levier, cle);
       var inp = el("input", "pc-mmod");
-      champNombreSigne(inp); inp.step = "any"; inp.placeholder = "0";
+      inp.type = "number"; inp.step = "any"; inp.placeholder = "0";
       inp.title = "Bonus ou malus divers (" + MMOD_SLOTS[i] + ") — emplacement " +
                   (i + 1) + " sur " + MMOD_SLOTS.length + " ; les modificateurs s'additionnent.";
       inp.addEventListener("input", function () {
-        var n = litNombreSigne(inp.value);
+        var n = parseFloat(String(inp.value).replace(",", "."));
         ecrireBoite(nomTable, levier, boite, cle,
                     isFinite(n) && n !== 0 ? clamp(Math.round(n * 100) / 100, -9999, 9999) : undefined);
         inp.classList.toggle("neg", n < 0);
@@ -3212,14 +3200,14 @@
     }
     for (var i = 0; i < MMOD_SLOTS.length; i++) (function (i) {
       var inp = el("input", "pc-mmod");
-      champNombreSigne(inp); inp.step = "any"; inp.placeholder = "0";
+      inp.type = "number"; inp.step = "any"; inp.placeholder = "0";
       inp.title = "Bonus ou malus divers (" + MMOD_SLOTS[i] + ") — emplacement " +
                   (i + 1) + " sur " + MMOD_SLOTS.length + " ; les modificateurs s'additionnent.";
       var v0 = map[key] ? map[key][i] : 0;
       inp.value = v0 ? v0 : "";
       inp.classList.toggle("neg", v0 < 0);
       inp.addEventListener("input", function () {
-        var n = litNombreSigne(inp.value);
+        var n = parseFloat(String(inp.value).replace(",", "."));
         arr()[i] = isFinite(n) ? clamp(Math.round(n * 100) / 100, -9999, 9999) : 0;
         inp.classList.toggle("neg", arr()[i] < 0);
         refresh();
@@ -4177,7 +4165,7 @@
         pvMax: pvMax, peMax: peMax, pmMax: pmMax, piMax: piMax,
         prMax: prMax, psMax: psMax, phMax: phMax,
         charge: charge, accesRapides: accesRapides, contenance: contenance,
-        expoMax: expoMax, effondrement: effondrement, effBasePartie: effBasePartie, effApresEffets: effApresEffets, effPartie: effPartie,
+        expoMax: expoMax, effondrement: effondrement,
         poidsPorte: poidsPorte, desAction: desAction, ruptureMax: ruptureMax,
         xpDepense: xpDepense, courant: courant, maxDe: maxDe
       },
@@ -5051,11 +5039,11 @@
     function geste(unite, secondesParUnite, etiquette) {
       var cmd = el("div", "pc-segs pc-temps-segs");
       var nb = el("input", "c pc-temps-val");
-      champNombreSigne(nb); nb.step = "1";
+      nb.type = "number"; nb.step = "1";
       nb.placeholder = "±";
       nb.setAttribute("aria-label", etiquette);
       function applique() {
-        var n = Math.trunc(litNombreSigne(nb.value));
+        var n = parseInt(nb.value, 10);
         if (!isFinite(n) || !n) return;
         var sec = avancerSecondes(n * secondesParUnite);
         nb.value = "";
@@ -5257,6 +5245,20 @@
     [["pr", "Repos"], ["ps", "Satiété"], ["ph", "Hydratation"]].forEach(function (x) {
       b.appendChild(reserveVitale(x[0], provenanceCap(x[0]), x[1]).el);
     });
+    var pied = el("div", "pc-comp-tools pc-vital-pied");
+    var ligne = el("div", "row");
+    ligne.appendChild(chatBtn(
+      function () { return "Survie — " + (state.name || "sans nom"); },
+      function () {
+        return [
+          [abbrCap("pr", "PR"), fmtP(courant("pr")) + " / " + fmtP(prMax())],
+          [abbrCap("ps", "PS"), fmtP(courant("ps")) + " / " + fmtP(psMax())],
+          [abbrCap("ph", "PH"), fmtP(courant("ph")) + " / " + fmtP(phMax())],
+          ["Effondrement", String(effondrement())]
+        ];
+      }));
+    pied.appendChild(ligne);
+    b.appendChild(pied);
     return b;
   }
   // ---- 6. Exposition ----
@@ -6515,12 +6517,12 @@
 
     var cmd = el("div", "pc-vital-cmd pc-temps");
     var delta = el("input", "pc-vital-delta");
-    champNombreSigne(delta);
+    delta.type = "number";
     delta.step = "1";
     delta.placeholder = "±";
     delta.setAttribute("aria-label", "Contenance à ajouter ou retirer");
     function applique() {
-      var d = litNombreSigne(delta.value);
+      var d = parseFloat(delta.value);
       if (!isFinite(d) || !d) return;
       state.etat.contenance = Math.max(0, Math.round((contenancePrise() + d) * 100) / 100);
       if (!(state.etat.contenance > 0)) reinitialiseHorlogeDigestion();
@@ -7667,7 +7669,7 @@
     return fld(libelle, i);
   }
 
-  function carteArme(it, attaqueLibre) {
+  function carteArme(it, attaqueLibre, sousTypeHost) {
     // L’inventaire passe historiquement un callback en second argument.
     // Seul le booléen explicite des attaques libres masque la parade.
     attaqueLibre = attaqueLibre === true;
@@ -7793,9 +7795,13 @@
     for (var j = 0; j < 3; j++) l4.appendChild(fld("MOD", selCarac("modsParade", j)));
     if (!attaqueLibre) card.appendChild(l4);
 
-    var l5 = ligne(attaqueLibre ? "pc-arme-1" : "pc-arme-2");
+    var l5 = ligne(attaqueLibre || sousTypeHost ? "pc-arme-1" : "pc-arme-2");
     l5.appendChild(fld("Compétence", selComp()));
-    if (!attaqueLibre) l5.appendChild(fld("Type", selTypeArme()));
+    if (!attaqueLibre) {
+      var typeField = fld(sousTypeHost ? "Sous-type" : "Type", selTypeArme());
+      if (sousTypeHost) sousTypeHost.appendChild(typeField);
+      else l5.appendChild(typeField);
+    }
     card.appendChild(l5);
 
     if(!attaqueLibre){
@@ -7804,7 +7810,8 @@
       function total(){var n=0;combatTypes().forEach(function(k){n+=pnum(a.repartition[k]);});sum.textContent="Total : "+fmtP(n)+" %";sum.classList.toggle("pc-invalid",Math.abs(n-100)>0.001);}
       combatTypes().forEach(function(k){var input=el("input","pc-edit-field");input.type="text";input.inputMode="decimal";input.value=pnum(a.repartition[k]);input.setAttribute("aria-label","Dégâts "+combatLibType(k)+" (%)");input.addEventListener("input",function(){var v=litNombreSigne(input.value);if(isFinite(v)&&v>=0){a.repartition[k]=v;save();total();}});input.addEventListener("change",refresh);rep.appendChild(fld(combatLibType(k)+" (%)",input));});
       rep.appendChild(sum);total();card.appendChild(rep);
-      var req=el("div","pc-arme-line pc-arme-3");req.appendChild(champArme("Coups",a,"hits"));req.appendChild(champArme("DEX requise",a,"dex"));req.appendChild(champArme("FOR requise",a,"for"));card.appendChild(req);
+      // hits reste dans les données pour les calculs ; ce n'est pas un champ d'édition.
+      var req=el("div","pc-arme-line pc-arme-2");req.appendChild(champArme("DEX requise",a,"dex"));req.appendChild(champArme("FOR requise",a,"for"));card.appendChild(req);
     }
 
     return card;
@@ -8791,20 +8798,36 @@
         refresh();
       });
       ligneNat.appendChild(fld("Type", nat));
-      var rapide = el("button", "pc-chip pc-combat-toggle" + (it.rapide ? " on" : ""), "Accès rapide");
-      rapide.type="button";rapide.setAttribute("aria-pressed",String(!!it.rapide));
-      rapide.addEventListener("click",function(){it.rapide=!it.rapide;render();refresh();});
-      ligneNat.appendChild(rapide);
+      var rapideBoite = el("div", "pc-f pc-obj-quick");
+      rapideBoite.appendChild(el("label", null, "Accès rapide"));
+      var rapide = miniBtn("Activer", "Activer ou désactiver l'accès rapide", function () {
+        it.rapide = !it.rapide;
+        save(); render(); refresh();
+      }, "pc-obj-quick-toggle" + (it.rapide ? " on" : ""));
+      rapide.setAttribute("aria-pressed", String(!!it.rapide));
+      rapideBoite.appendChild(rapide);
+      ligneNat.appendChild(rapideBoite);
       body.appendChild(ligneNat);
-      var specifiques=el("div","pc-obj-specifics");
-      var sous=invSousTypes(invType(it));
-      if(sous.length)specifiques.appendChild(invChoix("Sous-type",sous,it.sousType || (it.ceint?"ceint":it.sac?"sac":"autre"),function(v){
-        it.sousType=v;it.nourri=v==="ingerable";
-        if(invType(it)==="rangement"){if(it.sac&&v!=="sac")libereContenu(it,true);it.sac=v==="sac";it.ceint=v==="ceint";}
-        if(invType(it)==="munition")it.contenu=v;
-        if(INV_EP.indexOf(it.ou)<0 && !lieuPermis(it,it.ou)){it.ou="poches";it.dans="";}
-        rangeEmplacements(items);render();
-      }));
+
+      // Le type possède son bloc, puis le sous-type sa ligne indépendante et
+      // son propre cadre. Les propriétés communes ne sont montrées qu'après.
+      var specifiquesType = el("div", "pc-obj-specifics pc-obj-type-properties");
+      var specifiquesSous = el("div", "pc-obj-specifics pc-obj-subtype-card");
+      var sousLigne = el("div", "pc-obj-subtype-row");
+      var sous = invSousTypes(invType(it));
+      if(sous.length) sousLigne.appendChild(invChoix("Sous-type", sous,
+        it.sousType || (it.ceint ? "ceint" : it.sac ? "sac" : "autre"), function (v) {
+          it.sousType=v;it.nourri=v==="ingerable";
+          if(invType(it)==="rangement"){
+            if(it.sac&&v!=="sac")libereContenu(it,true);
+            it.sac=v==="sac";it.ceint=v==="ceint";
+          }
+          if(invType(it)==="munition")it.contenu=v;
+          if(INV_EP.indexOf(it.ou)<0 && !lieuPermis(it,it.ou)){
+            it.ou="poches";it.dans="";
+          }
+          rangeEmplacements(items);render();
+        }));
 
 
       // ce que le type demande, juste sous lui. Tous les types utilisent le
@@ -8827,7 +8850,7 @@
           render();
           refresh();
         });
-        pv.appendChild(fld("Se porte", typ));
+        sousLigne.appendChild(fld("Sous-type", typ));
         pv.appendChild(champNombre("Poches", function () { return it.poches; },
           function (v) { it.poches = pnum(v); }, "Ce que ce vêtement porté ajoute aux Poches, en L"));
         cv.appendChild(pv);
@@ -8848,7 +8871,7 @@
         pp.appendChild(champNombre("Défense Chaud", function () { return it.chaud; },
           function (v) { it.chaud = snum(v); }, "Protection contre le chaud, en degrés"));
         cv.appendChild(pp);
-        specifiques.appendChild(cv);
+        specifiquesSous.appendChild(cv);
       }
 
       // l'ACCESSOIRE : sa case, ses poches, sa protection
@@ -8868,7 +8891,7 @@
           render();
           refresh();
         });
-        pa.appendChild(fld("Se porte", tya));
+        sousLigne.appendChild(fld("Sous-type", tya));
         pa.appendChild(champNombre("Poches", function () { return it.poches; },
           function (v) { it.poches = pnum(v); }, "Ce que cet accessoire porté ajoute aux Poches, en L"));
         ca.appendChild(pa);
@@ -8878,7 +8901,7 @@
         ppa.appendChild(champNombre("Chaud", function () { return it.chaud; },
           function (v) { it.chaud = snum(v); }, "Protection contre le chaud, en degrés"));
         ca.appendChild(ppa);
-        specifiques.appendChild(ca);
+        specifiquesSous.appendChild(ca);
       }
 
       // les EMPLACEMENTS d'une ceinture ou d'un sac : leur nombre, et
@@ -8896,7 +8919,7 @@
       if (it.ceint) {
         var cc = carteNature();
         cc.appendChild(champsEp());
-        specifiques.appendChild(cc);
+        specifiquesSous.appendChild(cc);
       }
 
       // la nourriture porte son VOLUME : ce qu'une dose ou une part occupe de
@@ -8910,7 +8933,7 @@
         var nutrition=el("div","pc-obj-pair");["ps","ph"].forEach(function(k){nutrition.appendChild(champNombre(k.toUpperCase(),function(){return num(it[k],0);},function(v){it[k]=snum(v);}));});cn.appendChild(nutrition);
         cn.appendChild(champNombre("Temps (DA)",function(){return num(it.tempsConsommation,0);},function(v){it.tempsConsommation=pnum(v);}));
 
-        specifiques.appendChild(cn);
+        specifiquesSous.appendChild(cn);
       }
 
       if (it.sac) {
@@ -8921,7 +8944,7 @@
         cs.appendChild(ps);
         cs.appendChild(invChoix("Taille intérieure maximale",INV_TAILLES,invTailleMaxSac(it),function(v){it.tailleInterieure=v;}));
         cs.appendChild(champsEp());
-        specifiques.appendChild(cs);
+        specifiquesSous.appendChild(cs);
       }
 
       // CONTENANT et CONTENU partagent exactement les mêmes catégories. Le
@@ -8932,14 +8955,14 @@
         var pct = el("div", "pc-obj-pair");
         pct.appendChild(fld("Catégorie", selCategorieStockage(it, "contenant")));
         ct.appendChild(pct);
-        specifiques.appendChild(ct);
+        specifiquesType.appendChild(ct);
       }
       if (it.contenu && invType(it)==="autre") {
         var ctu = carteNature();
         var pctu = el("div", "pc-obj-pair");
         pctu.appendChild(fld("Catégorie", selCategorieStockage(it, "contenu")));
         ctu.appendChild(pctu);
-        specifiques.appendChild(ctu);
+        specifiquesType.appendChild(ctu);
       }
 
       // L'ARME : cinq lignes de données, sans gestes ni boutons. Ses
@@ -8949,7 +8972,7 @@
       if (it.arme && !fantome) {
         var ancien = hooks;
         hooks = panelHooks;
-        try { specifiques.appendChild(carteArme(it, function () { render(); })); }
+        try { specifiquesType.appendChild(carteArme(it, false, sousLigne)); }
         finally { hooks = ancien; }
       }
 
@@ -8986,7 +9009,7 @@
       // Identifiant visible ; image et fichier uniquement en édition.
       // L'identifiant reconnaît le même objet d'une fiche à l'autre quand on
       // le donne.
-      var pairE = el("div", "pc-obj-pair pc-edit-only");
+      var pairE = el("div", "pc-obj-pair pc-obj-media pc-edit-only");
       var idIn = el("input", "pc-edit-field");
       idIn.type = "text"; idIn.placeholder = "ex. iron_sword";
       idIn.value = it.id || "";
@@ -9006,7 +9029,7 @@
         vignette(f, function (data) { it.img = data; render(); refresh(); });
       });
       urlFld.appendChild(file);
-      pairE.appendChild(fld("Fichier",miniBtn("Fichier…", "Importer une image (réduite en vignette 84 × 128)",
+      pairE.appendChild(fld("Fichier",miniBtn("Choisir", "Importer une image (réduite en vignette 84 × 128)",
         function () { file.click(); })));
       pairE.insertBefore(urlFld,pairE.firstChild);
       body.appendChild(pairE);
@@ -9017,8 +9040,10 @@
       desc.value = it.desc;
       desc.addEventListener("input", function () { it.desc = desc.value; save(); });
       body.appendChild(fld("Description", desc, "w"));
-      body.appendChild(specifiques);
-      invChampsCommuns(body,it,render);
+      invChampsCommuns(specifiquesSous,it,render);
+      if (specifiquesType.childNodes.length) body.insertBefore(specifiquesType, pair);
+      if (sousLigne.childNodes.length) body.insertBefore(sousLigne, pair);
+      if (specifiquesSous.childNodes.length) body.insertBefore(specifiquesSous, pair);
       // quantité : curseur à l'unité + champ, décimal (une demi-ration)
       var qRow = el("div", "pc-obj-qrow");
       var slider = el("input");
@@ -9043,7 +9068,7 @@
       if(it.sac){slider.disabled=true;qIn.disabled=true;it.qte=1;}
       qRow.appendChild(slider);
       qRow.appendChild(qIn);
-      body.appendChild(fld("Quantité", qRow));
+      body.insertBefore(fld("Quantité", qRow), ligneNat.nextSibling);
 
 
       if (fantome) {
@@ -9256,10 +9281,10 @@
   // réglage.
   function champModVal(lire, ecrire, borne, titre, reg) {
     var inp = el("input", "pc-num modif");
-    champNombreSigne(inp); inp.step = String(MOD_PAS);
+    inp.type = "number"; inp.step = String(MOD_PAS);
     inp.title = titre;
     inp.addEventListener("input", function () {
-      var v = litNombreSigne(inp.value);
+      var v = parseFloat(String(inp.value).replace(",", "."));
       ecrire(isFinite(v) ? clamp(Math.round(v * 100) / 100, -borne, borne) : 0);
       refresh();
     });
@@ -9276,10 +9301,10 @@
   // Un champ de FORÇAGE : vide = valeur calculée (undefined, distinct de 0).
   function champForceVal(lire, ecrire, auto, titre, reg) {
     var inp = el("input", "force");
-    champNombreSigne(inp); inp.step = "any";
+    inp.type = "number"; inp.step = "any";
     inp.title = titre;
     inp.addEventListener("input", function () {
-      var v = litNombreSigne(inp.value);
+      var v = parseFloat(String(inp.value).replace(",", "."));
       ecrire(isFinite(v) ? clamp(Math.round(v * 100) / 100, -99999, 99999) : undefined);
       refresh();
     });
@@ -9302,10 +9327,10 @@
   // tranquille. Son pas est libre, des flèches de 1 en 1 sautant de ×1 à ×6.
   function champMultVal(lire, ecrire, titre, reg) {
     var inp = el("input", "pc-num modif mult");
-    champNombreSigne(inp); inp.step = "any";
+    inp.type = "number"; inp.step = "any";
     inp.title = titre;
     inp.addEventListener("input", function () {
-      var v = litNombreSigne(inp.value);
+      var v = parseFloat(String(inp.value).replace(",", "."));
       ecrire(isFinite(v) ? clamp(Math.round(v * 100) / 100, -MULT_BORNE, MULT_BORNE) : undefined);
       refresh();
     });
@@ -11053,7 +11078,7 @@
 
     if (window.__owdVueInventaire) {
       app.classList.add("pc-inventaire-seul");
-      monteModules({inventoryRoot: sheet, onlyModule: window.__owdVueAttaques ? "attaque" : window.__owdVueDefenses ? "defense" : "inv"});
+      monteModules({inventoryRoot: sheet, onlyModule: window.__owdVueAttaques ? "attaque" : "inv"});
     } else {
       buildHead(sheet);
       monteModules(buildTabs(sheet));
