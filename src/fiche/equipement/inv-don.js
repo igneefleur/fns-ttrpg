@@ -36,12 +36,14 @@
       l: pnum(it.places), d: String(it.desc || ""), k: String(it.id || ""),
       a: pnum(it.achat), version: 1, s: champsObjet(it, qte)
     };
+    if(!it.sac){p.item=JSON.parse(JSON.stringify(it));p.item.qte=p.q;p.item.dans="";}
     if(it.sac) p.bundle=window.OwdInventoryData.group(state.inv,it.ref);
     if (it.vente != null) p.v = pnum(it.vente);   // absent : automatique
     if (it.rapide) p.r = 1;
     var img = String(it.img || "");
     try { if(img && !/^data:/.test(img)) img = new URL(img, window.location.href).href; } catch(e) {}
     if (img && (img.length <= IMG_MAX || !/^data:/.test(img))) p.i = img;
+    if(p.item)p.item.img=p.i || "";
     return b64encode(JSON.stringify(p)).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/g,"");
   }
   function unpackObjet(b64) {
@@ -55,7 +57,7 @@
         if(bundle.length!==o.bundle.length||bundle.some(function(x){return !x.ref;}))return null;
       }catch(e){return null;}
     }
-    return {bundle:bundle,
+    return {bundle:bundle,item:o.item && typeof o.item==="object" ? o.item : null,
       nom: String(o.n || "Objet"), qte: Math.max(0, pnum(o.q)) || 1, poids: pnum(o.p),
       places: pnum(o.l), desc: String(o.d || ""), img: String(o.i || ""),
       id: String(o.k || ""), achat: pnum(o.a), vente: venteNum(o.v), rapide: !!o.r
@@ -120,8 +122,8 @@
     // Reconnaissance : d'abord l'IDENTIFIANT (deux homonymes distincts ne
     // fusionnent pas), à défaut le nom, insensible à la casse.
     var jumeau = null;
-    if (!recu.bundle && recu.id) items.forEach(function (x) { if (!jumeau && !x.sac && x.id && x.id === recu.id) jumeau = x; });
-    if (!jumeau && !recu.bundle) {
+    if (!recu.item && !recu.bundle && recu.id) items.forEach(function (x) { if (!jumeau && !x.sac && x.id && x.id === recu.id) jumeau = x; });
+    if (!recu.item && !jumeau && !recu.bundle) {
       items.forEach(function (x) {
         if (!jumeau && !x.sac && !x.id && !recu.id && pli(x.nom) === pli(recu.nom)) jumeau = x;
       });
@@ -191,6 +193,7 @@
       });
     }
 
+    if(recu.item)jumeau=null;
     dialogue("Prendre « " + recu.nom + " »", corps, function () {
       var q = Math.min(pnum(qIn.value) || recu.qte, recu.qte);
       if(recu.bundle){var refs={};recu.bundle.forEach(function(x){refs[x.ref]=uid("o");});
@@ -198,6 +201,8 @@
         recu.bundle.forEach(function(x,i){var c=JSON.parse(JSON.stringify(x));c.ref=refs[x.ref];c.dans=refs[x.dans]||"";
           if(i===0){c.qte=1;c.ou=gSel&&gSel.value==="poches"?"poches":"sac";c.emp=-1;if(c.ou==="sac"&&bag)c.dans=bag.ref;}
           items.push(c);});
+      } else if(recu.item){
+        var copie=JSON.parse(JSON.stringify(recu.item));copie.ref=uid("o");copie.qte=q;copie.ou=gSel&&gSel.value==="poches"?"poches":"sac";copie.dans="";copie.emp=-1;items.push(copie);
       } else if (jumeau) {
         jumeau.qte = Math.round((jumeau.qte + q) * 100) / 100;
         ["nom", "img", "poids", "places", "desc", "achat", "vente"].forEach(function (k) {

@@ -6,7 +6,7 @@
     return fld(label, i);
   }
   function combatTypes() {
-    return ["contondant", "perforant", "tranchant", "feu", "froid", "eclair", "decomposition", "ethere", "brut"];
+    return ["physique", "feu", "froid", "eclair", "decomposition", "ethere", "brut"];
   }
   function combatLibType(t) {
     return { eclair: "Éclair", decomposition: "Décomposition", ethere: "Éthéré" }[t] || capFirst(t);
@@ -92,7 +92,7 @@
     var a = entree && entree.personnalisee || item && item.arme;
     var flat = snum(a && a.reduction);
     (a && a.modsParade || []).slice(0, 3).forEach(function (c) { if (c) flat += Math.floor(caracTotal(c) / 5); });
-    return { item: item, protection: flat, difficulte: Math.max(0, snum(a && a.parade)), comp: a && a.comp || "" };
+    return { item: item, protection: flat, difficulte: Math.max(1, snum(a && a.parade) + effetBonus("parade")), comp: a && a.comp || "" };
   }
   function defenseTotaux(type, defense, reussie) {
     var p = 0, r = 0, portes = vetementsPortes().filter(function (o) { return pnum(o.qte) > 0; });
@@ -105,7 +105,10 @@
       }
       p += state.combatOptions && state.combatOptions.defenses.lente ? Math.floor(active / 2) : active;
     }
-    return { protection: p + combatMod("protections", type), reduction: r + combatMod("resistances", type) };
+    p += combatMod("protections",type) + effetBonus("protections",type);
+    r += combatMod("resistances",type) + effetBonus("resistances",type) - 5*effetAlerte();
+    if(effetBonus("immunites",type)>=100)r=Math.max(100,r);
+    return {protection:p,reduction:r};
   }
   function defensePrompt(nom, mode, entree) {
     var body = el("div", "pc-modal-body pc-defense-form"), degats = el("input", "n"), type = el("select", "pc-select");
@@ -121,15 +124,16 @@
       var v = defenseValeurs(entree), totaux = defenseTotaux(type.value, mode === "parade" ? v : null, true);
       var subis = mode === "esquive" ? 0 : combatDegats(brut, totaux.protection, totaux.reduction);
       var cout = mode === "esquive" ? 8 : mode === "sans" ? 0 : v.difficulte;
+      var difficulte = mode === "esquive" ? Math.max(1,8-effetAlerte()) : cout;
       var comp = compDe(mode === "esquive" ? entree.comp : v.comp);
       var champs = [["Dégâts reçus", fmtP(brut) + " " + combatLibType(type.value)],
         ["Protection", fmtP(totaux.protection)], ["Réduction", fmtP(totaux.reduction) + " %"], ["Dégâts subis", fmtP(subis)]];
       if (mode !== "sans") {
-        champs.push(["Difficulté", fmtP(cout)]);
+        champs.push(["Difficulté", fmtP(difficulte)]);
         if (comp) champs.push(["Compétence", comp.nom || "Compétence"]);
         if (state.combatOptions.defenses.utiliseEndurance && !state.combatOptions.defenses.lente) {
-          state.etat.pe = Math.round((courant("pe") - cout) * 100) / 100;
-          champs.push(["Endurance", "−" + fmtP(cout)]);
+          state.etat.pe = Math.round((courant("pe") - effetCout("pe",cout)) * 100) / 100;
+          champs.push(["Endurance", "−" + fmtP(effetCout("pe",cout))]);
         }
       }
       sayChat(nom, champs); refresh();
@@ -206,7 +210,7 @@
       var valeur = state.combatOptions.defenses.lente ? Math.floor(v.protection / 2) : v.protection;
       var cleVisibilite = mode === "sans" ? "defenseSans" : mode === "esquive" ? "defenseEsquive" : "";
       var visible = !cleVisibilite || state.combatAffichage[cleVisibilite] !== false;
-      combatCarteTete(card, nom, mode === "sans" ? "" : mode === "esquive" ? "Difficulté 8" : "Difficulté " + fmtP(v.difficulte) + " · Protection " + sign(valeur), ouvert, "defense", id,
+      combatCarteTete(card, nom, mode === "sans" ? "" : mode === "esquive" ? "Difficulté "+Math.max(1,8-effetAlerte()) : "Difficulté " + fmtP(v.difficulte) + " · Protection " + sign(valeur), ouvert, "defense", id,
         function () { defenseVue.ouverts[id] = !defenseVue.ouverts[id]; rendre(); }, mode === "parade" ? function () { return state.defenses.entrees; } : null,
         cleVisibilite ? { visible: visible, basculer: function () { state.combatAffichage[cleVisibilite] = !visible; refresh(); } } : null);
       if (!ouvert) return;

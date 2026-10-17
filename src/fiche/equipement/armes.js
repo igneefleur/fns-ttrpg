@@ -109,6 +109,7 @@
       s.title = "Type d'arme du livre ; il servira notamment à retrouver ses trajets.";
       s.addEventListener("change", function () {
         a.type = s.value;
+        it.sousType=s.value;
         // Le nombre de mains reste une donnée technique de l'inventaire. Quand
         // le livre le connaît pour ce type, on l'aligne sans afficher un champ
         // supplémentaire dans la carte de l'arme.
@@ -150,6 +151,15 @@
     l5.appendChild(fld("Compétence", selComp()));
     if (!attaqueLibre) l5.appendChild(fld("Type", selTypeArme()));
     card.appendChild(l5);
+
+    if(!attaqueLibre){
+      if(!a.repartition)a.repartition={physique:100};
+      var rep=el("div","pc-arme-repartition"),sum=el("small","pc-arme-pourcent-total");
+      function total(){var n=0;combatTypes().forEach(function(k){n+=pnum(a.repartition[k]);});sum.textContent="Total : "+fmtP(n)+" %";sum.classList.toggle("pc-invalid",Math.abs(n-100)>0.001);}
+      combatTypes().forEach(function(k){var input=el("input","pc-edit-field");input.type="text";input.inputMode="decimal";input.value=pnum(a.repartition[k]);input.setAttribute("aria-label","Dégâts "+combatLibType(k)+" (%)");input.addEventListener("input",function(){var v=litNombreSigne(input.value);if(isFinite(v)&&v>=0){a.repartition[k]=v;save();total();}});input.addEventListener("change",refresh);rep.appendChild(fld(combatLibType(k)+" (%)",input));});
+      rep.appendChild(sum);total();card.appendChild(rep);
+      var req=el("div","pc-arme-line pc-arme-3");req.appendChild(champArme("Coups",a,"hits"));req.appendChild(champArme("DEX requise",a,"dex"));req.appendChild(champArme("FOR requise",a,"for"));card.appendChild(req);
+    }
 
     return card;
   }

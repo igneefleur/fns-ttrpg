@@ -30,6 +30,7 @@
     { id: "defense",      titre: "DÉFENSES",         onglet: "fiche", colonne: "droite", build: buildDefense },
     { id: "comps",        titre: "COMPÉTENCES",      onglet: "fiche", colonne: "droite", build: buildComps },
     { id: "recuperation", titre: "RÉCUPÉRATION",     onglet: "fiche", colonne: "droite", build: buildRecuperation },
+    { id: "effets", titre: "EFFETS", onglet: "fiche", colonne: "droite", build: buildEffets },
     // ---- onglet Art ----
     // Pleine largeur, seul de son onglet : une technique est une CARTE, avec
     // ses rangs, son coût et son effet. Elle vivait sous les huit blocs de la

@@ -138,6 +138,7 @@
         }
       }
     }
+    Object.keys(state.effetsPermanents || {}).forEach(function(id){var e=effetDefinition(id);if(state.effetsPermanents[id] && e && e.ops.permanent)v+=num(e.ops.permanent[cle],0);});
     return v;
   }
   // Le maximum EFFECTIF d'une capacité : le forçage du MJ s'il existe, la
@@ -203,7 +204,7 @@
   function effApresEffets(cle) {
     var photo = effPhotoPartie(cle); if (photo) return photo.apres;
     var base = cle === "total" ? EFF_PARTIES.reduce(function (t, k) { return t + effPartie(k); }, 0) : effBasePartie(cle);
-    var valeur = Math.floor(pub("effondrementPartie", base + num(effReglage(cle).effet, 0), { cle: cle, base: base }));
+    var valeur = Math.floor(pub("effondrementPartie", base + num(effReglage(cle).effet, 0) + effetBonus("effondrement",cle) + (cle === "alcool" ? effetBonus("alcool") : 0), { cle: cle, base: base }));
     return cle === "autre" ? valeur : Math.max(0, valeur);
   }
   function effPartie(cle) {
@@ -233,7 +234,7 @@
       var base = effBasePartie(cle);
       photo.parties[cle] = {
         base: base, apres: effApresEffets(cle), niveau: effPartie(cle),
-        effet: pub("effondrementPartie", base + num(effReglage(cle).effet, 0), { cle: cle, base: base }) - base,
+        effet: pub("effondrementPartie", base + num(effReglage(cle).effet, 0) + effetBonus("effondrement",cle) + (cle === "alcool" ? effetBonus("alcool") : 0), { cle: cle, base: base }) - base,
         mod: cle === "autre" ? num(state.effAutre, 0) : num(effReglage(cle).mod, 0)
       };
     });
@@ -373,16 +374,17 @@
     return out;
   }
   function nbEp(lieu, objets) { var p = porteurEp(lieu, objets); return p ? p.ep : 0; }
-  function ebMaxEp(lieu, objets) { var p = porteurEp(lieu, objets); return p ? p.ebMax : 0; }
+  function ebMaxEp(lieu, objets) { var p = porteurEp(lieu, objets); return p ? (p.tailleAccroche || (p.sac ? "Moyenne" : "")) : ""; }
   function objetEp(lieu, k) {
     var out = null;
     state.inv.objets.forEach(function (o) {
-      if (!out && (!o.dans || (lieu === "sacep" && porteurEp(lieu) && o.dans === porteurEp(lieu).ref)) && o.ou === lieu && o.emp === k) out = o;
+      if (!out && (!o.dans || (lieu === "sacep" && porteurEp(lieu) && o.dans === porteurEp(lieu).ref)) && o.ou === lieu && o.emp <= k && k < o.emp + invCoutAcc(o,lieu)) out = o;
     });
     return out;
   }
   function epPermis(o, lieu, objets) {
-    return pnum(o.encombre) <= ebMaxEp(lieu, objets) && o !== porteurEp(lieu, objets);
+    if(o.proprietes && String(o.proprietes.accrochable).toLowerCase()==="non")return false;
+    return invTailleAccepte(o.taille,ebMaxEp(lieu,objets)) && o !== porteurEp(lieu,objets);
   }
   // Ce qui n'a plus d'emplacement valable (ceinture ôtée, rang au-delà du
   // nombre, trop encombrant, deux au même rang, une pile) retourne au sac.
@@ -394,13 +396,13 @@
       if(o.dans && o.ou === "sacep" && (!porteurEp("sacep",objets)||porteurEp("sacep",objets).ref!==o.dans))return;
       if (INV_EP.indexOf(o.ou) < 0) { o.emp = -1; return; }
       var cle = o.ou + o.emp;
-      if (o.emp < 0 || o.emp >= nbEp(o.ou, objets) || pris[cle] ||
+      if (o.emp < 0 || o.emp + invCoutAcc(o,o.ou) > nbEp(o.ou, objets) || pris[cle] || (invCoutAcc(o,o.ou)>1 && pris[o.ou+(o.emp+1)]) ||
           pnum(o.qte) > 1 || !epPermis(o, o.ou, objets)) {
         o.ou = "sac"; o.emp = -1;
         rendus.push(o);
         return;
       }
-      pris[cle] = 1;
+      for(var j=0;j<invCoutAcc(o,o.ou);j++)pris[o.ou+(o.emp+j)]=1;
     });
     rendus.forEach(function (o) {
       var sig = signatureObjet(o), pile = null;

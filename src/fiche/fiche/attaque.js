@@ -73,12 +73,18 @@
         passage: Math.floor(touche / 2)
       };
     }
-    function degatsTypes(base, type, passage) {
+    function degatsTypes(base, type, passage, it, entree) {
       var valeurs = {}, primary = combatTypes().indexOf(type) >= 0 ? type : type || "—";
-      valeurs[primary] = base;
+      primary = /^(tranchant|contondant|perforant)$/.test(primary) ? "physique" : primary;
+      var rep=it && it.arme && it.arme.repartition, somme=0;
+      if(rep)Object.keys(rep).forEach(function(k){somme+=pnum(rep[k]);});
+      if(somme>0)Object.keys(rep).forEach(function(k){if(rep[k]>0)valeurs[k]=base*rep[k]/somme;});else valeurs[primary] = base;
+      var ammo=entree&&munitionSelectionnee(entree,typeArme(it&&it.arme&&it.arme.type)),ms=ammo&&ammo.munitionStats;
+      if(ms&&ms.degats)combatTypes().forEach(function(k){var q=snum(ms.repartition&&ms.repartition[k]);if(q)valeurs[k]=(valeurs[k]||0)+snum(ms.degats)*q/100;});
+      effetsSources().forEach(function(x){var op=x.d.ops.impregnation;if(op && it && x.e.cible===it.ref && op.type)valeurs[op.type]=(valeurs[op.type]||0)+snum(it.arme.degats)*op.pct/100+op.flat;});
       combatTypes().forEach(function (t) { var n = combatMod("attaques", t); if (n) valeurs[t] = (valeurs[t] || 0) + n; });
       return Object.keys(valeurs).map(function (t) {
-        var n = valeurs[t]; if (state.combatOptions.attaques.lente) n = Math.floor(n / 2); if (passage) n = Math.floor(n / 2);
+        var n = Math.floor(valeurs[t]*(1+effetBonus("degats",t)/100)+1e-9); if (state.combatOptions.attaques.lente) n = Math.floor(n / 2); if (passage) n = Math.floor(n / 2);
         return { type: t, valeur: Math.max(0, n) };
       }).filter(function (x) { return x.valeur || x.type === primary; }).map(function (x) { return fmtP(x.valeur) + " " + x.type; }).join(" + ");
     }
@@ -108,7 +114,7 @@
       var cat = categorieMunition(def), objets = state.inv && Array.isArray(state.inv.objets) ? state.inv.objets : [];
       if (!cat) return [];
       return objets.filter(function (o) {
-        return o && String(o.contenu || "") === cat && pnum(o.qte) > 0;
+        return o && String(o.typeObjet === "munition" ? o.sousType : o.contenu || "") === cat && pnum(o.qte) > 0;
       });
     }
     function contenantDe(o) {
@@ -124,7 +130,7 @@
     }
     function munitionSelectionnee(entree, def) {
       var o = objetInventaire(entree && entree.munition);
-      return o && String(o.contenu || "") === categorieMunition(def) ? o : null;
+      return o && String(o.typeObjet === "munition" ? o.sousType : o.contenu || "") === categorieMunition(def) ? o : null;
     }
     function retireUneMunition(o) {
       var objets = state.inv && Array.isArray(state.inv.objets) ? state.inv.objets : [];
@@ -148,10 +154,12 @@
       return out;
     }
     function executeAttaque(entree, it, def, envoyer) {
+      var rep=it.arme&&it.arme.repartition,sum=0;
+      if(rep){Object.keys(rep).forEach(function(k){sum+=pnum(rep[k]);});if(Math.abs(sum-100)>0.001){flash("La répartition des dégâts doit totaliser 100 %.");return;}}
       var r = prepareRessources(entree, it, def);
       if (!r) return;
       if (state.combatOptions.attaques.utiliseEndurance && !state.combatOptions.attaques.lente && r.endurance > 0)
-        state.etat.pe = Math.round((courant("pe") - r.endurance) * 100) / 100;
+        state.etat.pe = Math.round((courant("pe") - effetCout("pe",r.endurance)) * 100) / 100;
       if (state.combatOptions.attaques.utiliseMunition && r.munition) {
         var ref = String(r.munition.ref || "");
         retireUneMunition(r.munition);
@@ -159,14 +167,15 @@
         if (!objetInventaire(ref)) entree.munition = "";
       }
       envoyer();
+      if(effetBonus("paradeAdverse"))sayChat("Effets de l’attaque",[["Parade adverse",sign(effetBonus("paradeAdverse"))],["Esquive adverse","Inchangée"]]);
       refresh();
     }
     function envoieCoup(entree, it, coup, def) {
       executeAttaque(entree, it, def, function () {
         var types = typesCoup(coup, def), dg = degatsCoup(it, coup);
         sayChat((coup && coup.nom ? coup.nom : "Attaque") + " — " + (it.nom || (def && def.nom) || "Arme"), [
-          ["Case de touche", degatsTypes(brutCoup(it, coup), types.touche, false)],
-          ["Case de passage", degatsTypes(brutCoup(it, coup), types.passage, true)]
+          ["Case de touche", degatsTypes(brutCoup(it, coup), types.touche, false, it, entree)],
+          ["Case de passage", degatsTypes(brutCoup(it, coup), types.passage, true, it, entree)]
         ]);
       });
     }
@@ -174,7 +183,7 @@
       executeAttaque(entree, it, def, function () {
         var types = def && Array.isArray(def.types) ? def.types : [], type = types[0] || "—";
         sayChat("Attaque — " + (it.nom || (def && def.nom) || "Arme"), [
-          ["Dégâts", degatsTypes(brutArme(it), type, false)]
+          ["Dégâts", degatsTypes(brutArme(it), type, false, it, entree)]
         ]);
       });
     }
@@ -355,8 +364,8 @@
       nom.appendChild(el("span", "pc-attaque-mult", fmtMult(dg.mult)));
       texte.appendChild(nom);
       var chiffres = el("div", "pc-attaque-coup-degats");
-      chiffres.appendChild(el("span", "touche", "Touche " + degatsTypes(brutCoup(it, coup), types.touche, false)));
-      chiffres.appendChild(el("span", "passage", "Passage " + degatsTypes(brutCoup(it, coup), types.passage, true)));
+      chiffres.appendChild(el("span", "touche", "Touche " + degatsTypes(brutCoup(it, coup), types.touche, false, it, entree)));
+      chiffres.appendChild(el("span", "passage", "Passage " + degatsTypes(brutCoup(it, coup), types.passage, true, it, entree)));
       texte.appendChild(chiffres);
       bas.appendChild(texte);
       var garde = gardeSvg(coup.garde, miroir);
@@ -440,7 +449,7 @@
       var ouvert = !!ouverts[entree.id], def = it && typeArme(it.arme.type), meta = [];
       if (it) {
         if (it.arme.type) meta.push((def && def.nom) || it.arme.type);
-        if (String(it.arme.attaque || "").trim()) meta.push("Attaque " + it.arme.attaque);
+        if (String(it.arme.attaque || "").trim()) meta.push("Attaque " + Math.max(0,snum(it.arme.attaque)+effetBonus("attaque")));
         meta.push("Dégâts " + fmtP(degatsArme(it)));
       }
       combatCarteTete(card, it ? it.nom || "Arme sans nom" : "Nouvelle attaque", meta.join(" · "), ouvert, "attaque", entree.id,
@@ -526,7 +535,7 @@
         simple.type = "button";
         var stypes = def && Array.isArray(def.types) ? def.types : [];
         simple.appendChild(el("strong", null, "Attaquer"));
-        simple.appendChild(el("span", null, degatsTypes(brutArme(it), stypes[0] || "—", false)));
+        simple.appendChild(el("span", null, degatsTypes(brutArme(it), stypes[0] || "—", false, it, entree)));
         simple.addEventListener("click", function () { envoieAttaqueSimple(entree, it, def); });
         detail.appendChild(simple);
         card.appendChild(detail);

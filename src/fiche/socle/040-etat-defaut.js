@@ -86,6 +86,7 @@
       effAlcool: 0,
       effAlcoolSecondes: 0,
       effParties: {},
+      effetsActifs: [], effetsPermanents: {},
 
       // ---- les dés d'action ----
       // La taille de chaque dé d'action, dans l'ordre du module Actions : 4, 6,

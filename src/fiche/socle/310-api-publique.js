@@ -70,6 +70,17 @@
     // numéro soi-même.
     version: RELEASE,
     schema: SCHEMA,
+    effets: {
+      liste: function(){return copieTemps(state.effetsActifs);},
+      definitions: function(){return copieTemps(effetsDefinitions());},
+      ajoute: function(id,source,cible,duree){var ok=appliqueEffet(id,source,cible,duree);refresh();return ok;},
+      retire: function(id){retireEffet(id);refresh();},
+      coupRecu: function(){effetCoupRecu();refresh();},
+      finTour: function(){effetFinTour();refresh();},
+      cout: effetCout,
+      accumulation: function(points){return Math.ceil(Math.max(0,num(points,0)) * Math.max(0,1-effetBonus("alterations")/100) - 1e-9);},
+      consomme: function(ref,q,cible){var it=state.inv.objets.filter(function(o){return o.ref===ref;})[0];return it?invConsommer(it,q,cible||""):false;}
+    },
     enregistre: enregistre,
     ordonne: ordonne,
     // une COPIE de la description : personne ne remanie la table de l'extérieur
@@ -120,7 +131,11 @@
       poidsPorte: poidsPorte, accesPris: accesPris, contenancePrise: contenancePrise,
       desAction: desAction, ruptureMax: ruptureMax, ruptureDepense: ruptureDepense,
       xpDepense: xpDepense, courant: courant, maxDe: maxDe, autoDe: autoDe,
-      confort: confort
+      confort: confort, defenseTotaux:defenseTotaux, defenseValeurs:defenseValeurs,
+      effetBonus:effetBonus, effetAlerte:effetAlerte,
+      avancerSecondes:function(n){var t=avancerSecondes(n);refresh();return t;},
+      reculerSecondes:function(n){var t=reculerSecondes(n);refresh();return t;},
+      epPermis:epPermis, nbEp:nbEp, objetEp:objetEp
     },
     // le registre des filtres, à plat et en copie : nom, propriétaire, fautes
     __filtres: function () {

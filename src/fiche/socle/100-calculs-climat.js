@@ -7,7 +7,7 @@
   function protection(champ) {
     var t = 0;
     vetementsPortes().forEach(function (o) { t += snum(o[champ]); });
-    return Math.round(t * 10) / 10;
+    return Math.round((t + effetBonus("climat",champ)) * 10) / 10;
   }
   // ---- le temps qui passe ----
   // Tout vient de owd-creation.json (clé « temps ») : les efforts et ce qu'ils
@@ -491,6 +491,7 @@
       horlogeExposition: copieTemps(horlogeProcessus("horlogeExposition", "")),
       effAlcool: state.effAlcool,
       effAlcoolSecondes: state.effAlcoolSecondes,
+      effetsActifs: copieTemps(state.effetsActifs || []),
       recuperation: copieTemps(recupCoffre(false)) || {}
     };
     TEMPS_CLES.forEach(function (k) { o[k] = state.etat[k]; });
@@ -502,6 +503,7 @@
     state.horloge = copieTemps(o.horloge) || { jours: 0, heures: 0, minutes: 0, secondes: 0 };
     state.horlogeDigestion = copieTemps(o.horlogeDigestion) || { jours: 0, heures: 0, minutes: 0, secondes: 0 };
     state.horlogeExposition = copieTemps(o.horlogeExposition) || { jours: 0, heures: 0, minutes: 0, secondes: 0, regime: "" };
+    state.effetsActifs = copieTemps(o.effetsActifs) || [];
     state.effAlcool = num(o.effAlcool, 0);
     state.effAlcoolSecondes = num(o.effAlcoolSecondes, 0);
     if (!state.modData || typeof state.modData !== "object" || Array.isArray(state.modData)) state.modData = {};
@@ -531,6 +533,8 @@
     while (restant > 0) {
       pas = Math.min(PAS_TEMPS_SECONDES, restant);
       recupAppliquePas(pas, 1);
+      effetsAvance(pas);
+      suitEffondrement();
       appliqueClimatSecondes(pas, 1);
       avanceAlcoolSecondes(pas);
       bougeHorloge(pas);

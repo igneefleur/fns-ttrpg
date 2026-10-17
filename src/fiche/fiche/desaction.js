@@ -174,6 +174,8 @@
     gestes.appendChild(envoi);
     gestes.appendChild(recup);
     b.appendChild(gestes);
+    var finTour=miniBtn("Fin de tour", "Appliquer Énergisé : récupérer un dé utilisé", function(){effetFinTour();refresh();});b.appendChild(finTour);
+    hooks.push(function(){finTour.style.display=effetBonus("finTour")>0?"":"none";});
 
     bati();
     majBoutons();

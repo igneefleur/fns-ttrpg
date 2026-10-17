@@ -57,6 +57,7 @@ fin = lf
   src/fiche/fiche/commun-jauges.js
   src/fiche/fiche/caracs.js
   src/fiche/fiche/recuperation.js
+  src/fiche/fiche/effets.js
   src/fiche/fiche/effort.js
   src/fiche/fiche/vitales.js
   src/fiche/fiche/survie.js
@@ -75,6 +76,7 @@ fin = lf
   src/fiche/socle/260-dialogue.js
   src/fiche/equipement/inv-don.js
   src/fiche/equipement/armes.js
+  src/fiche/equipement/inv-nouveaux.js
   src/fiche/equipement/inv-objets.js
   src/fiche/equipement/inv-transfert.js
   src/fiche/equipement/inv.js

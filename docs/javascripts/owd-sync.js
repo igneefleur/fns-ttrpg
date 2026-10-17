@@ -29,7 +29,9 @@
     function walk(v, p) {
       var k = key(p), ids = Object.create(null), keyed = Array.isArray(v);
       if (keyed) v.forEach(function (x) { var id = identity(x); if (!id || ids[id]) keyed = false; else ids[id] = true; });
-      if (p.length === 1 && (/^horloge(?:Digestion|Exposition)?$/.test(p[0][1]) || p[0][1] === "effPause")) {
+      if (p.length === 2 && p[0][1] === "effetsActifs" && p[1][0] === "e") {
+        out[k] = ["v", copy(v)];
+      } else if (p.length === 1 && (/^horloge(?:Digestion|Exposition)?$/.test(p[0][1]) || p[0][1] === "effPause")) {
         out[k] = ["v", copy(v)];
       } else if (Array.isArray(v) && keyed) {
         out[k] = ["l"];

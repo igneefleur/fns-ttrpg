@@ -49,7 +49,55 @@ def catalogue(docs):
                       'desc': plain(description), 'champs': fields})
     if not items:
         raise ValueError('Le catalogue des équipements est vide.')
-    return {'version': 1, 'objets': items}
+    # Les données JDR du tableur priment sur les anciennes fiches descriptives.
+    reference = docs / 'data/owd-effets.json'
+    if reference.exists():
+        data = json.loads(reference.read_text(encoding='utf8'))
+        by_name = {o['nom']: o for o in data.get('equipements', [])}
+        for it in items:
+            if it['nom'] not in by_name:
+                continue
+            obj = dict(by_name[it['nom']])
+            obj['img'] = it['img']
+            if not obj.get('desc'):
+                obj['desc'] = it['desc']
+            it['objet'] = obj
+            replacements = {'Type': obj.get('construction'), 'Taille': obj.get('taille'),
+                            'Taille maximale acceptée': obj.get('tailleInterieure'),
+                            'Attaches': obj.get('ep')}
+            it['champs'] = [['Accroches' if k == 'Attaches' else k,
+                             str(replacements[k]) if k in replacements and replacements[k] is not None else v]
+                            for k, v in it['champs']]
+            if obj.get('sac'):
+                it['categorie'] = 'Rangement'
+                it['famille'] = 'Sac à dos'
+                it['champs'].append(['Taille maximale aux accroches', 'Moyenne (2 acc par objet Moyen)'])
+        existing = {it['nom'] for it in items}
+        categories = {'arme':'Arme','vetement':'Vêtement','rangement':'Rangement','eclairage':'Éclairage','couchage':'Couchage'}
+        for o in data.get('equipements', []):
+            if o['nom'] in existing:
+                continue
+            existing.add(o['nom'])
+            fields = [['Poids (kg)', str(o.get('poids',0))],['Volume (L)',str(o.get('volume',0))],
+                      ['Taille',o.get('taille','')],['Construction',o.get('construction','')],
+                      ['Achat (argent)',str(o.get('achat',0))],['Vente (argent)',str(o.get('vente',0))]]
+            fields += [['Effet '+str(i+1), name] for i,name in enumerate(o.get('effets',[]))]
+            items.append({'id':o['id'],'nom':o['nom'],'categorie':categories[o['typeObjet']],
+                          'famille':o.get('sousType',''),'origine':'Outward','img':o.get('img',''),
+                          'desc':o.get('desc',''),'champs':fields,'objet':o})
+        for o in data.get('objets', []):
+            if o['nom'] in existing:
+                continue
+            fields = [['Poids (kg)', str(o.get('poids', 0))], ['Volume (L)', str(round(o.get('volume', 0), 3))],
+                      ['Contenance', str(o.get('places', 0))], ['Temps (DA)', str(o.get('tempsConsommation', 0))],
+                      ['PS', str(o.get('ps', 0))], ['PH', str(o.get('ph', 0))]]
+            fields += [['Effet '+str(i+1), name] for i, name in enumerate(o.get('effets', []))]
+            fields += [['Restauration '+k.upper(), str(v)+' '+o.get('unitesRestauration', {}).get(k, 'points')]
+                       for k, v in o.get('restaurations', {}).items() if v]
+            items.append({'id': o['id'], 'nom': o['nom'], 'categorie': {'solide':'Solide','pate':'Pâte','liquide':'Liquide'}[o['typeObjet']],
+                          'famille':'Ingérable' if o['sousType']=='ingerable' else 'Consommable', 'origine':'Outward', 'img':o.get('img',''), 'desc':o.get('desc',''),
+                          'champs':fields, 'objet':o})
+    return {'version': 2, 'objets': items}
 
 
 def on_files(files, config):

@@ -1172,12 +1172,25 @@ def _jeu(docs):
     if armes_md is not None:
         jeu["armes"] = _armes(armes_md, caracs, armes_css)
         jeu["typesDegats"] = _types_degats(armes_md)
+        physique = {"contondant", "tranchant", "perforant", "CON", "TRA", "PER"}
+        jeu["typesDegats"] = [{"cle":"physique", "libelle":"Physique", "dit":"inflige des dégâts physiques"}] + [t for t in jeu["typesDegats"] if t["cle"] not in physique]
+        for arme in jeu["armes"]:
+            arme["types"] = ["physique" if t in physique else t for t in arme.get("types", [])]
+            for attaque in arme.get("attaques", []):
+                if "types" in attaque:
+                    attaque["types"] = ["physique" if t in physique else t for t in attaque["types"]]
 
     return jeu
 
 
 def on_files(files, config, **kwargs):
     jeu = _jeu(config["docs_dir"])
+    referentiel = Path(config["docs_dir"]) / "data/owd-effets.json"
+    if referentiel.exists():
+        donnees = json.loads(referentiel.read_text(encoding="utf8"))
+        jeu["effets"] = donnees["effets"]
+        jeu["consommables"] = donnees["objets"]
+        jeu["equipements"] = donnees.get("equipements", [])
     absents = jeu.get("_absents")
     if absents:
         # AVERTISSEMENT, et surtout pas erreur : un chapitre pas encore écrit —

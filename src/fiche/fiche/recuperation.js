@@ -130,10 +130,11 @@
     };
   }
   function recupEtatVueModule(r) {
+    if(r && r.effetActif){var d=effetDefinition(r.effetActif.effet),re=d.ops.regen;return {niveau:re.niveau,cadence:recupCadence(re.niveau),actif:effetsSources().some(function(x){return x.e.id===r.effetActif.id;}),condition:true,bloque:false};}
     return r && r.perso ? recupCustomEtatModule(r) : recupEtat(r);
   }
   function recupListeModule() {
-    return recupsListe().concat(recupAjoutsNormalisesModule());
+    return recupsListe().concat(recupAjoutsNormalisesModule()).concat((state.effetsActifs||[]).filter(function(e){var d=effetDefinition(e.effet);return d&&d.ops.regen;}).map(function(e){var d=effetDefinition(e.effet);return {id:e.id,reserve:d.ops.regen.reserve,contexte:d.nom,effetActif:e};}));
   }
 
   // ---- branchement au moteur temporel discret ----
@@ -153,7 +154,7 @@
     recupExpireModule = {};
     recupNettoieCoffreModule();
   }
-  recupListeTemps = function () { return recupListeModule(); };
+  recupListeTemps = function () { return recupListeModule().filter(function(r){return !r.effetActif;}); };
   recupEtatTemps = function (r) { return recupEtatVueModule(r); };
   recupSecondesDisponiblesTemps = function (r, e, secondes, sens) {
     if (!e || !e.actif) return 0;
@@ -276,7 +277,7 @@
 
   function recupRangeeModule(r, odd) {
     var row = el("div", "pc-rec-row" + (odd ? " odd" : ""));
-    var edit = isEdit("recuperation");
+    var edit = isEdit("recuperation") && !r.effetActif;
     var e, cb = null, nivJeu = null, tempsJeu = null, typeJeu = null;
     row.appendChild(recupNomCelluleModule(r));
 
@@ -332,6 +333,8 @@
         typeJeu = recupValeurModule(recupDureeDef(r.type).court);
         temps.appendChild(tempsJeu); type.appendChild(typeJeu);
       }
+    } else if(r.effetActif) {
+      tempsJeu=recupValeurModule("");typeJeu=recupValeurModule("s");temps.appendChild(tempsJeu);type.appendChild(typeJeu);
     } else {
       temps.appendChild(recupValeurModule("∞", "infinity"));
       type.appendChild(recupValeurModule("—", "muted"));
@@ -345,8 +348,8 @@
         nivJeu.textContent = sign(e.niveau);
         nivJeu.classList.toggle("adj", !r.perso && recupBonusModule(r) !== 0);
       }
-      if (tempsJeu) tempsJeu.textContent = fmtP(recupTempsRestantModule(r));
-      if (typeJeu) typeJeu.textContent = recupDureeDef(r.type).court;
+      if (tempsJeu) tempsJeu.textContent = r.effetActif ? fmtP(r.effetActif.reste) : fmtP(recupTempsRestantModule(r));
+      if (typeJeu) typeJeu.textContent = r.effetActif ? "s" : recupDureeDef(r.type).court;
       row.classList.toggle("active", !!e.actif);
       row.classList.toggle("inactive", !e.actif);
       row.title = recupLibelle(r) + " · " + recupNom(r) + " · niveau " + sign(e.niveau) +
@@ -488,7 +491,7 @@
     b.appendChild(recupBox);
     hooks.push(function () {
       var sig = recupSignatureActivesModule();
-      if (recupOnly && sig !== recupVueSig) rebuildRecuperation();
+      if (sig !== recupVueSig) rebuildRecuperation();
     });
     rebuildRecuperation();
     return b;

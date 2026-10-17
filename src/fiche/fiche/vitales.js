@@ -80,6 +80,7 @@
     function appliqueDelta() {
       var d = litNombreSigne(delta.value);
       if (!isFinite(d) || !d) return;
+      if (cle === "pi") d = effetPerteInnocence(d);
       state.etat[cle] = Math.round((courant(cle) + d) * 100) / 100;
       delta.value = "";
       refresh();

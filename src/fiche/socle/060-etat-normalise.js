@@ -221,10 +221,19 @@
     };
     var cm = s.combatModifiers || {};
     s.combatModifiers = { attaques: {}, protections: {}, resistances: {} };
+    var legacyPhysique=cm.legacyPhysique && typeof cm.legacyPhysique==="object" ? JSON.parse(JSON.stringify(cm.legacyPhysique)) : {};
+    ["attaques","protections","resistances"].forEach(function(k){
+      if(cm[k] && ["contondant","perforant","tranchant"].some(function(t){return snum(cm[k][t])!==0;}))legacyPhysique[k]={contondant:snum(cm[k].contondant),perforant:snum(cm[k].perforant),tranchant:snum(cm[k].tranchant)};
+    });
+    if(Object.keys(legacyPhysique).length)s.combatModifiers.legacyPhysique=legacyPhysique;
     ["attaques", "protections", "resistances"].forEach(function (k) {
-      ["contondant", "perforant", "tranchant", "feu", "froid", "eclair", "decomposition", "ethere", "brut"].forEach(function (t) {
-        var n = Number(cm[k] && cm[k][t]); s.combatModifiers[k][t] = isFinite(n) ? n : 0;
+      ["physique", "feu", "froid", "eclair", "decomposition", "ethere", "brut"].forEach(function (t) {
+        var ancienne = cm[k] || {};
+        var n = Number(t === "physique" && ancienne.physique === undefined ? Math.max(snum(ancienne.contondant),snum(ancienne.perforant),snum(ancienne.tranchant)) : ancienne[t]); s.combatModifiers[k][t] = isFinite(n) ? n : 0;
       });
+      // Archives uniquement : conserver les anciennes clés sans les réutiliser
+      // dans les calculs Physique ni dans les champs visibles.
+      ["contondant","perforant","tranchant"].forEach(function(t){var v=cm[k]&&cm[k][t];if(v===undefined && legacyPhysique[k])v=legacyPhysique[k][t];if(v!==undefined && isFinite(Number(v)))s.combatModifiers[k][t]=Number(v);});
     });
     // ---- attaques ----
     // La référence d'arme est validée APRÈS l'inventaire, parce que les anciens
@@ -302,7 +311,7 @@
 
     // ---- vêtements ----
     if (!Array.isArray(s.vetements)) s.vetements = [];
-    var types = ["contondant", "perforant", "tranchant", "feu", "froid", "eclair", "decomposition", "ethere", "brut"];
+    var types = ["physique", "feu", "froid", "eclair", "decomposition", "ethere", "brut"];
     s.vetements = s.vetements.filter(function (v) { return v && typeof v === "object"; }).map(function (v) {
       var res = {
         id: String(v.id || "") || uid("v"),
@@ -339,9 +348,10 @@
       s.inv.objets.forEach(function (o) { if (o && typeof o === "object" && pnum(o.vente) === 0) o.vente = null; });
       s.inv.venteAuto = 1;
     }
+    effetsNormalise(s);
     s.inv.objets = s.inv.objets.filter(function (o) { return o && typeof o === "object"; }).map(function (o) {
       var a = o.arme && typeof o.arme === "object" && !Array.isArray(o.arme) ? o.arme : null;
-      return {
+      return enrichitObjet({
         id: String(o.id == null ? "" : o.id),   // LIBRE et facultatif : c'est le joueur qui le pose
         // ref ne se donne pas et ne s'affiche pas : il identifie CET objet dans
         // CETTE fiche pour qu'un module survive à un renommage.
@@ -405,7 +415,7 @@
           // donnée technique de placement : la carte ne l'affiche plus.
           mains: num(a.mains, 1) === 2 ? 2 : 1
         } : null
-      };
+      }, o);
     });
     // Un Contenu imbriqué n'occupe PAS une case normale : son lien `dans`
     // désigne le `ref` d'un Contenant de même catégorie. Une sauvegarde cassée,
@@ -510,6 +520,10 @@
         var iComps = s.modules.ordre.indexOf("comps");
         if (iComps >= 0) s.modules.ordre.splice(iComps + 1, 0, "recuperation");
       }
+    }
+    if (Array.isArray(s.modules.ordre) && !(s.modules.place && s.modules.place.effets)) {
+      s.modules.ordre = s.modules.ordre.filter(function(id){return id!=="effets";});
+      var ir=s.modules.ordre.indexOf("recuperation");if(ir>=0)s.modules.ordre.splice(ir+1,0,"effets");
     }
     if (s.modules.place !== undefined) {
       var src = s.modules.place, place = {};

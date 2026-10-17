@@ -6,8 +6,8 @@
   //               [boucles d'oreilles] [collier] [sous-vêtement] [poignet G] [poignet D]
   //               [bague G] [bague D] [cheville G] [cheville D] [cape]
   //   CEINTURE    les emplacements (ep) de la ceinture portée
-  //   POCHES      ce que les vêtements et accessoires portés laissent emporter (en eb)
-  //   SAC À DOS   les emplacements du sac porté, PUIS ce qu'il contient (en eb)
+  //   POCHES      ce que les vêtements et accessoires portés laissent emporter (en L)
+  //   SAC À DOS   les emplacements du sac porté, PUIS ce qu'il contient (en L)
   //
   // Les cases de Sur soi sont TOUJOURS là, vides ou pleines ; chacune ne prend
   // que ce qui s'y porte. Un EMPLACEMENT tient un seul exemplaire, jusqu'à
@@ -24,7 +24,7 @@
   var INV_NOMS = {
     mainG: "Main gauche", mainD: "Main droite", ceinture: "Ceinture", dos: "Sac à dos",
     tete: "Tête", mains: "Mains", haut: "Haut", bas: "Bas", pieds: "Pieds",
-    sousvet: "Sous-vêtement", hautbas: "Haut + Bas",
+    sousvet: "Sous-vêtement", hautbas: "Robe",
     oreilles: "Boucles d'oreilles", collier: "Collier",
     poignetG: "Poignet gauche", poignetD: "Poignet droit",
     bagueG: "Bague gauche", bagueD: "Bague droite",
@@ -47,7 +47,7 @@
   function champsObjet(it, q) {
     var bagWeight = it.sac ? window.OwdInventoryData.weight(state.inv.objets,it) : null;
     var fields = [["Quantité", fmtP(q)], ["Poids", fmtP(it.poids || 0) + (q > 1 ? " (total " + fmtP(q * (it.poids || 0)) + ")" : "")],
-      ["Encombrance", fmtP(it.encombre || 0) + " eb"],
+      ["Volume", fmtP(it.encombre || 0) + " L"],
       ["Achat", fmtP(it.achat || 0) + " " + monnaie(true)], ["Vente", fmtP(prixVente(it)) + " " + monnaie(true)]];
     function add(k,v){if(v!=null && String(v).trim()!=="")fields.push([k,String(v)]);}
     if(it.arme){var a=it.arme;add("Type",a.type || "Arme");add("Attaque",a.attaque);add("Dégâts",a.degats);
@@ -58,10 +58,13 @@
     else if(it.acc)add("Type",INV_NOMS[it.acc] || it.acc);
     else if(it.sac)add("Type","Sac à dos");else if(it.ceint)add("Type","Ceinture");
     if(it.contenant)add("Contenant",it.contenant);if(it.contenu)add("Contenu",it.contenu);
-    if(it.nourri){add("Type","Nourriture");add("Volume",fmtP(it.places || 0));}
-    if(it.cap)add("Capacité",fmtP(it.cap)+" eb");if(it.ep)add("Emplacements",fmtP(it.ep)+" (max. "+fmtP(it.ebMax || 0)+" eb)");
-    if(it.poches)add("Poches",fmtP(it.poches)+" eb");if(it.froid)add("Protection froid",fmtP(it.froid));if(it.chaud)add("Protection chaleur",fmtP(it.chaud));
-    ["contondant","perforant","tranchant","feu","froid","eclair","decomposition","ethere","brut"].forEach(function(t){
+    add("Type",INV_TYPES_OBJETS[invType(it)]);add("Sous-type",it.sousType);add("Taille",it.taille);add("Construction",it.construction);
+    if(it.nourri){add("Contenance",fmtP(it.places || 0));add("PS",fmtP(it.ps||0));add("PH",fmtP(it.ph||0));}
+    (it.effets||[]).filter(Boolean).forEach(function(id,i){add("Effet "+(i+1),id);});
+    Object.keys(it.restaurations||{}).forEach(function(k){if(it.restaurations[k])add("Restauration "+k.toUpperCase(),fmtP(it.restaurations[k])+" "+(it.unitesRestauration[k]||"points"));});
+    if(it.cap)add("Capacité",fmtP(it.cap)+" L");if(it.ep)add("Accroches",fmtP(it.ep)+" acc (max. "+(it.tailleAccroche || "non renseignée")+")");
+    if(it.poches)add("Poches",fmtP(it.poches)+" L");if(it.froid)add("Protection froid",fmtP(it.froid));if(it.chaud)add("Protection chaleur",fmtP(it.chaud));
+    ["physique","feu","froid","eclair","decomposition","ethere","brut"].forEach(function(t){
       var labels={eclair:"éclair",decomposition:"décomposition",ethere:"éthéré"},label=labels[t]||t;
       if(it["res_"+t])add("Résistance "+label,fmtP(it["res_"+t])+" %");if(it["prot_"+t])add("Protection "+label,fmtP(it["prot_"+t]));
     });
@@ -218,6 +221,8 @@
     // deux mains) libère les DEUX, et ce qui les tenait part au sac.
     function deplace(o, ou, cible) {
       if (!lieuPermis(o, ou)) { flash("« " + INV_NOMS[ou] + " » ne prend pas cet objet."); return false; }
+      var bagCible=window.OwdInventoryData.backpack(items);
+      if(ou === "sac" && bagCible && o!==bagCible && !invTailleAccepte(o.taille,invTailleMaxSac(bagCible))){flash("Cet objet dépasse la taille intérieure maximale du sac.");return false;}
       var dest = ancrage(o, ou), cases = casesDe(o, dest), vient = o.ou;
       // Tirer un Contenu hors de son petit slot le redevient un objet libre.
       window.OwdInventoryData.bind(items);
@@ -253,9 +258,10 @@
     // encombrant que l'emplacement ne l'accepte. Ce qui l'occupait retourne
     // d'où l'objet vient s'il y tient, au sac sinon.
     function poseEp(o, lieu, k) {
+      if(k+invCoutAcc(o,lieu)>nbEp(lieu)){flash("Pas assez d’accroches contiguës.");return null;}
       if (!epPermis(o, lieu)) {
         flash(o === porteurEp(lieu) ? "Un contenant ne s'accroche pas à lui-même."
-          : "Trop encombrant pour cet emplacement (" + fmtP(ebMaxEp(lieu)) + " eb au plus).");
+          : "Cet objet dépasse la taille maximale des accroches (" + ebMaxEp(lieu) + ").");
         return null;
       }
       var vient = o.ou, vientK = o.emp;
@@ -274,6 +280,7 @@
         vient = null;   // la pile reste où elle est : l'occupant va au sac
       }
       var occ = objetEp(lieu, k);
+      for(var slot=1;slot<invCoutAcc(pose,lieu);slot++){var autre=objetEp(lieu,k+slot);if(autre && autre!==pose && autre!==occ){autre.ou="sac";autre.emp=-1;autre.dans="";}}
       pose.dans = "";
       pose.ou = lieu;
       pose.emp = k;
@@ -577,8 +584,8 @@
       var c = el("div", "pc-inv-case pc-inv-ep");
       var o = objetEp(lieu, k);
       if (o) c.appendChild(tile(o));
-      else c.appendChild(el("div", "pc-inv-vide", "≤ " + fmtP(ebMaxEp(lieu)) + " eb"));
-      c.title = "Emplacement " + (k + 1) + " — " + fmtP(ebMaxEp(lieu)) + " eb au plus, un exemplaire";
+      else c.appendChild(el("div", "pc-inv-vide", "≤ " + (ebMaxEp(lieu) || "Taille libre")));
+      c.title = "Emplacement " + (k + 1) + " — " + (ebMaxEp(lieu) || "Taille libre") + " au plus, un exemplaire";
       c.addEventListener("dragover", function (e) {
         if (!drag || !epPermis(drag, lieu)) return;
         e.preventDefault();
@@ -639,8 +646,8 @@
       var pds = el("span", "pds");
       pds.title = "Emplacements tenus contre emplacements";
       function maj() {
-        var n = nbEp(lieu), pris = items.filter(function (o) { return o.ou === lieu; }).length;
-        pds.textContent = pris + " / " + n + " ep";
+        var n = nbEp(lieu), pris = items.filter(function (o) { return o.ou === lieu; }).reduce(function(t,o){return t+invCoutAcc(o,lieu);},0);
+        pds.textContent = pris + " / " + n + " acc";
       }
       maj();
       majGroupes.push(maj);
@@ -667,10 +674,10 @@
       function visible(it){return it.ou===ou && (ou==="sac" ? bag&&it.dans===bag.ref : !it.dans);}
       var g = el("div", "pc-obj-group");
       var pds = el("span", "pds");
-      pds.title = "Encombrance contre capacité";
+      pds.title = "Volume contre capacité";
       function maj() {
         var p = poids(), c = cap();
-        pds.textContent = fmtP(p) + " / " + fmtP(c) + " eb";
+        pds.textContent = fmtP(p) + " / " + fmtP(c) + " L";
         pds.classList.toggle("over", p > c);
       }
       maj();
@@ -803,7 +810,7 @@
       panel.dataset.syncEntity = invSelectionLocale;
       var fantome = !sel;
       panel.classList.toggle("fantome", fantome);
-      var types = ["contondant", "perforant", "tranchant", "feu", "froid", "eclair", "decomposition", "ethere", "brut"];
+      var types = ["physique", "feu", "froid", "eclair", "decomposition", "ethere", "brut"];
       var it = sel || { id: "", ref: "", nom: "", img: "", qte: 0, poids: 0, encombre: 0, places: 0, achat: 0, vente: null,
                         desc: "", ou: "sac", emp: -1, rapide: false, vet: "", acc: "", poches: 0, froid: 0, chaud: 0,
                         sac: false, cap: 0, ceint: false, ep: 0, ebMax: 0, contenant: "", contenu: "", dans: "", arme: null };
@@ -839,39 +846,18 @@
       // ne détruit jamais le contenu : un slot qui disparaît est vidé au sac.
       var ligneNat = el("div", "pc-obj-pair");
       var nat = el("select", "pc-edit-field");
-      var natureDe = it.arme ? "arme" : it.vet ? "vet" : it.acc ? "acc" : it.sac ? "sac" :
-                     it.ceint ? "ceint" : it.nourri ? "nourri" : it.contenu ? "contenu" :
-                     it.contenant ? "contenant" : "";
-      [["", "Objet"], ["nourri", "Nourriture"], ["vet", "Vêtement"], ["acc", "Accessoire"],
-       ["sac", "Sac à dos"], ["ceint", "Ceinture"], ["contenant", "Contenant"],
-       ["contenu", "Contenu"], ["arme", "Arme"]].forEach(function (n) {
-        var o = el("option", null, n[1]);
-        o.value = n[0];
-        if (n[0] === natureDe) o.selected = true;
-        nat.appendChild(o);
-      });
+      var natureDe = invType(it);
+      Object.keys(INV_TYPES_OBJETS).forEach(function(k){var o=el("option",null,INV_TYPES_OBJETS[k]);o.value=k;o.selected=k===natureDe;nat.appendChild(o);});
       nat.addEventListener("change", function () {
-        var v = nat.value;
-        if (it.contenant && v !== "contenant") libereContenu(it, true);
-        if (it.sac && v !== "sac") libereContenu(it, true);
-        if (it.dans && v !== "contenu" && !items.some(function(x){return x.ref===it.dans&&x.sac;})) { it.dans = ""; it.ou = "sac"; it.emp = -1; }
-        it.nourri = v === "nourri";
-        it.sac = v === "sac";
-        if(it.sac && it.qte>1){var n=Math.ceil(it.qte);it.qte=1;for(var k=1;k<n;k++){var rest=JSON.parse(JSON.stringify(it));rest.ref=uid("o");rest.ou="sac";rest.emp=-1;items.push(rest);}}
-        it.ceint = v === "ceint";
-        it.contenant = v === "contenant" ? (it.contenant || "liquide") : "";
-        it.contenu = v === "contenu" ? (it.contenu || "liquide") : "";
-        it.vet = v === "vet" ? (it.vet || "haut") : "";
-        it.acc = v === "acc" ? (it.acc || "collier") : "";
-        it.arme = v === "arme" ? (it.arme || { attaque: "", degats: "", modsDegats: ["", "", ""],
-          parade: "", reduction: "", modsParade: ["", "", ""], comp: "", type: "", mains: 1 }) : null;
-        if (v === "vet" || v === "acc") {
-          var types = ["contondant", "perforant", "tranchant", "feu", "froid", "eclair", "decomposition", "ethere", "brut"];
-          types.forEach(function(t) {
-            it["res_" + t] = it["res_" + t] || 0;
-            it["prot_" + t] = it["prot_" + t] || 0;
-          });
-        }
+        var type=nat.value, v={arme:"arme",vetement:"vet",accessoire:"acc",contenant:"contenant"}[type] || "";
+        var sub=invSousTypes(type);it.typeObjet=type;it.sousType=sub.length?sub[0][0]:"";
+        if(type==="rangement")v=it.sousType;
+        if(it.contenant && v!=="contenant" || it.sac && v!=="sac")libereContenu(it,true);
+        it.nourri=it.sousType==="ingerable";it.sac=v==="sac";it.ceint=v==="ceint";
+        it.vet=v==="vet"?(it.vet||"haut"):"";it.acc=v==="acc"?(it.acc||"collier"):"";
+        it.contenant=v==="contenant"?(it.contenant||"liquide"):"";
+        it.contenu=type==="munition"?it.sousType:["liquide","pate"].indexOf(type)>=0?type:"";
+        it.arme=v==="arme"?(it.arme||{attaque:"",degats:"",parade:"",reduction:"",modsDegats:[],modsParade:[],comp:"",type:"",mains:1,repartition:{physique:100}}):null;
         if (INV_EP.indexOf(it.ou) < 0 && !lieuPermis(it, it.ou)) it.ou = "sac";
         rangeEmplacements(items);
         save();
@@ -894,6 +880,15 @@
       kvR.appendChild(labR);
       ligneNat.appendChild(kvR);
       body.appendChild(ligneNat);
+      var sous=invSousTypes(invType(it));
+      if(sous.length)body.appendChild(invChoix("Sous-type",sous,it.sousType || (it.ceint?"ceint":it.sac?"sac":"autre"),function(v){
+        it.sousType=v;it.nourri=v==="ingerable";
+        if(invType(it)==="rangement"){if(it.sac&&v!=="sac")libereContenu(it,true);it.sac=v==="sac";it.ceint=v==="ceint";}
+        if(invType(it)==="munition")it.contenu=v;
+        if(INV_EP.indexOf(it.ou)<0 && !lieuPermis(it,it.ou)){it.ou="poches";it.dans="";}
+        rangeEmplacements(items);render();
+      }));
+
 
       // ce que le type demande, juste sous lui. Tous les types utilisent le
       // même cadre visuel que la carte d'arme : un seul bloc contient leurs
@@ -909,7 +904,7 @@
           typ.appendChild(o);
         });
         typ.addEventListener("change", function () {
-          it.vet = typ.value;
+          it.vet = typ.value;it.sousType=typ.value;
           if (!lieuPermis(it, it.ou)) it.ou = "sac";
           else if (INV_CASES.indexOf(it.ou) >= 0) deplace(it, it.ou);   // la robe prend aussi le bas
           render();
@@ -917,10 +912,10 @@
         });
         pv.appendChild(fld("Se porte", typ));
         pv.appendChild(champNombre("Poches", function () { return it.poches; },
-          function (v) { it.poches = pnum(v); }, "Ce que ce vêtement porté ajoute aux Poches, en eb"));
+          function (v) { it.poches = pnum(v); }, "Ce que ce vêtement porté ajoute aux Poches, en L"));
         cv.appendChild(pv);
 
-        var types = ["contondant", "perforant", "tranchant", "feu", "froid", "eclair", "decomposition", "ethere", "brut"];
+        var types = ["physique", "feu", "froid", "eclair", "decomposition", "ethere", "brut"];
         types.forEach(function(t) {
           var pr = el("div", "pc-obj-pair");
           pr.appendChild(champNombre("Res " + t, function () { return it["res_" + t]; },
@@ -951,14 +946,14 @@
           tya.appendChild(o);
         });
         tya.addEventListener("change", function () {
-          it.acc = tya.value;
+          it.acc = tya.value;it.sousType=tya.value;
           if (INV_EP.indexOf(it.ou) < 0 && !lieuPermis(it, it.ou)) it.ou = "sac";
           render();
           refresh();
         });
         pa.appendChild(fld("Se porte", tya));
         pa.appendChild(champNombre("Poches", function () { return it.poches; },
-          function (v) { it.poches = pnum(v); }, "Ce que cet accessoire porté ajoute aux Poches, en eb"));
+          function (v) { it.poches = pnum(v); }, "Ce que cet accessoire porté ajoute aux Poches, en L"));
         ca.appendChild(pa);
         var ppa = el("div", "pc-obj-pair");
         ppa.appendChild(champNombre("Froid", function () { return it.froid; },
@@ -973,10 +968,9 @@
       // l'encombrance au plus de chacun. Les changer redessine les groupes.
       function champsEp() {
         var pe = el("div", "pc-obj-pair");
-        pe.appendChild(champNombre("Emplacements", function () { return it.ep; },
-          function (v) { it.ep = Math.floor(pnum(v)); rangeEmplacements(items); }, "Nombre d'emplacements, en ep"));
-        pe.appendChild(champNombre("Eb max", function () { return it.ebMax; },
-          function (v) { it.ebMax = pnum(v); rangeEmplacements(items); }, "Encombrance au plus d'un emplacement, en eb"));
+        pe.appendChild(champNombre("Accroches", function () { return it.ep; },
+          function (v) { it.ep = Math.floor(pnum(v)); rangeEmplacements(items); }, "Nombre d'emplacements, en acc"));
+        pe.appendChild(invChoix("Taille maximale",[["","— Non renseignée —"]].concat(INV_TAILLES.map(function(t){return [t,t];})),it.tailleAccroche || (it.sac?"Moyenne":""),function(v){it.tailleAccroche=v;rangeEmplacements(items);render();}));
         Array.prototype.forEach.call(pe.querySelectorAll("input"), function (i) {
           i.addEventListener("change", function () { render(); });
         });
@@ -993,9 +987,12 @@
       if (it.nourri) {
         var cn = carteNature();
         var pn = el("div", "pc-obj-pair");
-        pn.appendChild(champNombre("Volume", function () { return it.places; },
+        pn.appendChild(champNombre("Contenance", function () { return it.places; },
           function (v) { it.places = pnum(v); }, "Ce qu'une dose ou une part occupe de contenance"));
         cn.appendChild(pn);
+        var nutrition=el("div","pc-obj-pair");["ps","ph"].forEach(function(k){nutrition.appendChild(champNombre(k.toUpperCase(),function(){return num(it[k],0);},function(v){it[k]=snum(v);}));});cn.appendChild(nutrition);
+        cn.appendChild(champNombre("Temps (DA)",function(){return num(it.tempsConsommation,0);},function(v){it.tempsConsommation=pnum(v);}));
+
         body.appendChild(cn);
       }
 
@@ -1003,8 +1000,9 @@
         var cs = carteNature();
         var ps = el("div", "pc-obj-pair");
         ps.appendChild(champNombre("Capacité", function () { return it.cap; },
-          function (v) { it.cap = pnum(v); }, "Ce que ce sac contient, en eb"));
+          function (v) { it.cap = pnum(v); }, "Ce que ce sac contient, en L"));
         cs.appendChild(ps);
+        cs.appendChild(invChoix("Taille intérieure maximale",INV_TAILLES,invTailleMaxSac(it),function(v){it.tailleInterieure=v;}));
         cs.appendChild(champsEp());
         body.appendChild(cs);
       }
@@ -1019,7 +1017,7 @@
         ct.appendChild(pct);
         body.appendChild(ct);
       }
-      if (it.contenu) {
+      if (it.contenu && invType(it)==="autre") {
         var ctu = carteNature();
         var pctu = el("div", "pc-obj-pair");
         pctu.appendChild(fld("Catégorie", selCategorieStockage(it, "contenu")));
@@ -1063,13 +1061,18 @@
       qRow.appendChild(slider);
       qRow.appendChild(qIn);
       body.appendChild(fld("Quantité", qRow));
+      if(!fantome){var modele=el("select","pc-edit-field"),vide=el("option",null,"— Choisir un modèle —");vide.value="";modele.appendChild(vide);
+        (D().consommables || []).forEach(function(m,index){var op=el("option",null,m.nom);op.value=String(index);modele.appendChild(op);});
+        modele.addEventListener("change",function(){if(modele.value==="")return;var m=D().consommables[Number(modele.value)],ref=it.ref,ou=it.ou,dans=it.dans;Object.keys(it).forEach(function(k){delete it[k];});Object.assign(it,JSON.parse(JSON.stringify(m)),{ref:ref,ou:ou,dans:dans});render();refresh();});body.appendChild(fld("Modèle de consommable",modele));}
+
 
       var pair = el("div", "pc-obj-pair");
       pair.appendChild(champNombre("Poids", function () { return it.poids; },
         function (v) { it.poids = pnum(v); }));
-      pair.appendChild(champNombre("Encombrance", function () { return it.encombre; },
-        function (v) { it.encombre = pnum(v); }, "En eb"));
+      pair.appendChild(champNombre("Volume", function () { return it.encombre; },
+        function (v) { it.volume = it.encombre = pnum(v); }, "En L"));
       body.appendChild(pair);
+      invChampsCommuns(body,it,render);
 
       // achat / vente, en pièces d'argent : la monnaie du livre est NOMMÉE
       var prix = el("div", "pc-obj-pair");
@@ -1156,6 +1159,7 @@
         montreObjet(it.ref, bornerAct());
       });
       actions.appendChild(montrer);
+      if(it.nourri || ["consommable","ingerable"].indexOf(it.sousType)>=0)actions.appendChild(miniBtn("Consommer",null,function(){invConsommerDialogue(it,bornerAct());}));
       actions.appendChild(miniBtn("Donner", "Donner cette quantité à un autre joueur", function () {
         donnerDialogue(it, bornerAct());
       }));
@@ -1177,6 +1181,7 @@
         deposit.addEventListener("dragover",function(e){if(drag&&drag!==it){e.preventDefault();e.stopPropagation();}});
         deposit.addEventListener("drop",function(e){if(!drag)return;e.preventDefault();e.stopPropagation();var d=drag;drag=null;
           if(window.OwdInventoryData.group(state.inv,d.ref).some(function(o){return o.ref===it.ref;})){flash("Un sac ne peut pas contenir lui-même.");return;}
+          if(!invTailleAccepte(d.taille,invTailleMaxSac(it))){flash("Cet objet dépasse la taille intérieure du sac.");return;}
           if(deplace(d,"sac")){d.dans=it.ref;d.emp=-1;render();refresh();}});
         items.forEach(function(o){if(o.dans===it.ref)contents.appendChild(tile(o));});
         body.appendChild(el("div","lbl","Contenu du sac"));body.appendChild(contents);

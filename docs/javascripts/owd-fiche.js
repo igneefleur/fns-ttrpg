@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "3.20.1b";
+  var RELEASE = "3.21.0b";
   var SCHEMA = 16;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -407,6 +407,7 @@
       effAlcool: 0,
       effAlcoolSecondes: 0,
       effParties: {},
+      effetsActifs: [], effetsPermanents: {},
 
       // ---- les dés d'action ----
       // La taille de chaque dé d'action, dans l'ordre du module Actions : 4, 6,
@@ -796,10 +797,19 @@
     };
     var cm = s.combatModifiers || {};
     s.combatModifiers = { attaques: {}, protections: {}, resistances: {} };
+    var legacyPhysique=cm.legacyPhysique && typeof cm.legacyPhysique==="object" ? JSON.parse(JSON.stringify(cm.legacyPhysique)) : {};
+    ["attaques","protections","resistances"].forEach(function(k){
+      if(cm[k] && ["contondant","perforant","tranchant"].some(function(t){return snum(cm[k][t])!==0;}))legacyPhysique[k]={contondant:snum(cm[k].contondant),perforant:snum(cm[k].perforant),tranchant:snum(cm[k].tranchant)};
+    });
+    if(Object.keys(legacyPhysique).length)s.combatModifiers.legacyPhysique=legacyPhysique;
     ["attaques", "protections", "resistances"].forEach(function (k) {
-      ["contondant", "perforant", "tranchant", "feu", "froid", "eclair", "decomposition", "ethere", "brut"].forEach(function (t) {
-        var n = Number(cm[k] && cm[k][t]); s.combatModifiers[k][t] = isFinite(n) ? n : 0;
+      ["physique", "feu", "froid", "eclair", "decomposition", "ethere", "brut"].forEach(function (t) {
+        var ancienne = cm[k] || {};
+        var n = Number(t === "physique" && ancienne.physique === undefined ? Math.max(snum(ancienne.contondant),snum(ancienne.perforant),snum(ancienne.tranchant)) : ancienne[t]); s.combatModifiers[k][t] = isFinite(n) ? n : 0;
       });
+      // Archives uniquement : conserver les anciennes clés sans les réutiliser
+      // dans les calculs Physique ni dans les champs visibles.
+      ["contondant","perforant","tranchant"].forEach(function(t){var v=cm[k]&&cm[k][t];if(v===undefined && legacyPhysique[k])v=legacyPhysique[k][t];if(v!==undefined && isFinite(Number(v)))s.combatModifiers[k][t]=Number(v);});
     });
     // ---- attaques ----
     // La référence d'arme est validée APRÈS l'inventaire, parce que les anciens
@@ -877,7 +887,7 @@
 
     // ---- vêtements ----
     if (!Array.isArray(s.vetements)) s.vetements = [];
-    var types = ["contondant", "perforant", "tranchant", "feu", "froid", "eclair", "decomposition", "ethere", "brut"];
+    var types = ["physique", "feu", "froid", "eclair", "decomposition", "ethere", "brut"];
     s.vetements = s.vetements.filter(function (v) { return v && typeof v === "object"; }).map(function (v) {
       var res = {
         id: String(v.id || "") || uid("v"),
@@ -914,9 +924,10 @@
       s.inv.objets.forEach(function (o) { if (o && typeof o === "object" && pnum(o.vente) === 0) o.vente = null; });
       s.inv.venteAuto = 1;
     }
+    effetsNormalise(s);
     s.inv.objets = s.inv.objets.filter(function (o) { return o && typeof o === "object"; }).map(function (o) {
       var a = o.arme && typeof o.arme === "object" && !Array.isArray(o.arme) ? o.arme : null;
-      return {
+      return enrichitObjet({
         id: String(o.id == null ? "" : o.id),   // LIBRE et facultatif : c'est le joueur qui le pose
         // ref ne se donne pas et ne s'affiche pas : il identifie CET objet dans
         // CETTE fiche pour qu'un module survive à un renommage.
@@ -980,7 +991,7 @@
           // donnée technique de placement : la carte ne l'affiche plus.
           mains: num(a.mains, 1) === 2 ? 2 : 1
         } : null
-      };
+      }, o);
     });
     // Un Contenu imbriqué n'occupe PAS une case normale : son lien `dans`
     // désigne le `ref` d'un Contenant de même catégorie. Une sauvegarde cassée,
@@ -1085,6 +1096,10 @@
         var iComps = s.modules.ordre.indexOf("comps");
         if (iComps >= 0) s.modules.ordre.splice(iComps + 1, 0, "recuperation");
       }
+    }
+    if (Array.isArray(s.modules.ordre) && !(s.modules.place && s.modules.place.effets)) {
+      s.modules.ordre = s.modules.ordre.filter(function(id){return id!=="effets";});
+      var ir=s.modules.ordre.indexOf("recuperation");if(ir>=0)s.modules.ordre.splice(ir+1,0,"effets");
     }
     if (s.modules.place !== undefined) {
       var src = s.modules.place, place = {};
@@ -1548,6 +1563,7 @@
         }
       }
     }
+    Object.keys(state.effetsPermanents || {}).forEach(function(id){var e=effetDefinition(id);if(state.effetsPermanents[id] && e && e.ops.permanent)v+=num(e.ops.permanent[cle],0);});
     return v;
   }
   // Le maximum EFFECTIF d'une capacité : le forçage du MJ s'il existe, la
@@ -1613,7 +1629,7 @@
   function effApresEffets(cle) {
     var photo = effPhotoPartie(cle); if (photo) return photo.apres;
     var base = cle === "total" ? EFF_PARTIES.reduce(function (t, k) { return t + effPartie(k); }, 0) : effBasePartie(cle);
-    var valeur = Math.floor(pub("effondrementPartie", base + num(effReglage(cle).effet, 0), { cle: cle, base: base }));
+    var valeur = Math.floor(pub("effondrementPartie", base + num(effReglage(cle).effet, 0) + effetBonus("effondrement",cle) + (cle === "alcool" ? effetBonus("alcool") : 0), { cle: cle, base: base }));
     return cle === "autre" ? valeur : Math.max(0, valeur);
   }
   function effPartie(cle) {
@@ -1643,7 +1659,7 @@
       var base = effBasePartie(cle);
       photo.parties[cle] = {
         base: base, apres: effApresEffets(cle), niveau: effPartie(cle),
-        effet: pub("effondrementPartie", base + num(effReglage(cle).effet, 0), { cle: cle, base: base }) - base,
+        effet: pub("effondrementPartie", base + num(effReglage(cle).effet, 0) + effetBonus("effondrement",cle) + (cle === "alcool" ? effetBonus("alcool") : 0), { cle: cle, base: base }) - base,
         mod: cle === "autre" ? num(state.effAutre, 0) : num(effReglage(cle).mod, 0)
       };
     });
@@ -1783,16 +1799,17 @@
     return out;
   }
   function nbEp(lieu, objets) { var p = porteurEp(lieu, objets); return p ? p.ep : 0; }
-  function ebMaxEp(lieu, objets) { var p = porteurEp(lieu, objets); return p ? p.ebMax : 0; }
+  function ebMaxEp(lieu, objets) { var p = porteurEp(lieu, objets); return p ? (p.tailleAccroche || (p.sac ? "Moyenne" : "")) : ""; }
   function objetEp(lieu, k) {
     var out = null;
     state.inv.objets.forEach(function (o) {
-      if (!out && (!o.dans || (lieu === "sacep" && porteurEp(lieu) && o.dans === porteurEp(lieu).ref)) && o.ou === lieu && o.emp === k) out = o;
+      if (!out && (!o.dans || (lieu === "sacep" && porteurEp(lieu) && o.dans === porteurEp(lieu).ref)) && o.ou === lieu && o.emp <= k && k < o.emp + invCoutAcc(o,lieu)) out = o;
     });
     return out;
   }
   function epPermis(o, lieu, objets) {
-    return pnum(o.encombre) <= ebMaxEp(lieu, objets) && o !== porteurEp(lieu, objets);
+    if(o.proprietes && String(o.proprietes.accrochable).toLowerCase()==="non")return false;
+    return invTailleAccepte(o.taille,ebMaxEp(lieu,objets)) && o !== porteurEp(lieu,objets);
   }
   // Ce qui n'a plus d'emplacement valable (ceinture ôtée, rang au-delà du
   // nombre, trop encombrant, deux au même rang, une pile) retourne au sac.
@@ -1804,13 +1821,13 @@
       if(o.dans && o.ou === "sacep" && (!porteurEp("sacep",objets)||porteurEp("sacep",objets).ref!==o.dans))return;
       if (INV_EP.indexOf(o.ou) < 0) { o.emp = -1; return; }
       var cle = o.ou + o.emp;
-      if (o.emp < 0 || o.emp >= nbEp(o.ou, objets) || pris[cle] ||
+      if (o.emp < 0 || o.emp + invCoutAcc(o,o.ou) > nbEp(o.ou, objets) || pris[cle] || (invCoutAcc(o,o.ou)>1 && pris[o.ou+(o.emp+1)]) ||
           pnum(o.qte) > 1 || !epPermis(o, o.ou, objets)) {
         o.ou = "sac"; o.emp = -1;
         rendus.push(o);
         return;
       }
-      pris[cle] = 1;
+      for(var j=0;j<invCoutAcc(o,o.ou);j++)pris[o.ou+(o.emp+j)]=1;
     });
     rendus.forEach(function (o) {
       var sig = signatureObjet(o), pile = null;
@@ -2012,7 +2029,7 @@
   function protection(champ) {
     var t = 0;
     vetementsPortes().forEach(function (o) { t += snum(o[champ]); });
-    return Math.round(t * 10) / 10;
+    return Math.round((t + effetBonus("climat",champ)) * 10) / 10;
   }
   // ---- le temps qui passe ----
   // Tout vient de owd-creation.json (clé « temps ») : les efforts et ce qu'ils
@@ -2496,6 +2513,7 @@
       horlogeExposition: copieTemps(horlogeProcessus("horlogeExposition", "")),
       effAlcool: state.effAlcool,
       effAlcoolSecondes: state.effAlcoolSecondes,
+      effetsActifs: copieTemps(state.effetsActifs || []),
       recuperation: copieTemps(recupCoffre(false)) || {}
     };
     TEMPS_CLES.forEach(function (k) { o[k] = state.etat[k]; });
@@ -2507,6 +2525,7 @@
     state.horloge = copieTemps(o.horloge) || { jours: 0, heures: 0, minutes: 0, secondes: 0 };
     state.horlogeDigestion = copieTemps(o.horlogeDigestion) || { jours: 0, heures: 0, minutes: 0, secondes: 0 };
     state.horlogeExposition = copieTemps(o.horlogeExposition) || { jours: 0, heures: 0, minutes: 0, secondes: 0, regime: "" };
+    state.effetsActifs = copieTemps(o.effetsActifs) || [];
     state.effAlcool = num(o.effAlcool, 0);
     state.effAlcoolSecondes = num(o.effAlcoolSecondes, 0);
     if (!state.modData || typeof state.modData !== "object" || Array.isArray(state.modData)) state.modData = {};
@@ -2536,6 +2555,8 @@
     while (restant > 0) {
       pas = Math.min(PAS_TEMPS_SECONDES, restant);
       recupAppliquePas(pas, 1);
+      effetsAvance(pas);
+      suitEffondrement();
       appliqueClimatSecondes(pas, 1);
       avanceAlcoolSecondes(pas);
       bougeHorloge(pas);
@@ -2832,6 +2853,7 @@
   // lancer — compétence, attaque, parade, technique. Aucun autre filtre à
   // écrire. Les DÉGÂTS n'en sont pas : ils ne se lancent pas du tout.
   function doRoll(label, value, die, isCheck, desMax, tracker) {
+    if(isCheck && effetBonus("sensAdverse") && pli(label).indexOf("discretion")>=0)sayChat("Discrétion",[["Jets de Sens adverses",sign(effetBonus("sensAdverse"))+" difficulté"]]);
     die = die || state.de || DE_DEFAUT;
     if (envoyer(cmdJet(label, value, die, isCheck && envInput(), desMax, tracker))) return;
     if (typeof window !== "undefined" && typeof window.__owdRoll === "function") {
@@ -4445,10 +4467,11 @@
     };
   }
   function recupEtatVueModule(r) {
+    if(r && r.effetActif){var d=effetDefinition(r.effetActif.effet),re=d.ops.regen;return {niveau:re.niveau,cadence:recupCadence(re.niveau),actif:effetsSources().some(function(x){return x.e.id===r.effetActif.id;}),condition:true,bloque:false};}
     return r && r.perso ? recupCustomEtatModule(r) : recupEtat(r);
   }
   function recupListeModule() {
-    return recupsListe().concat(recupAjoutsNormalisesModule());
+    return recupsListe().concat(recupAjoutsNormalisesModule()).concat((state.effetsActifs||[]).filter(function(e){var d=effetDefinition(e.effet);return d&&d.ops.regen;}).map(function(e){var d=effetDefinition(e.effet);return {id:e.id,reserve:d.ops.regen.reserve,contexte:d.nom,effetActif:e};}));
   }
 
   // ---- branchement au moteur temporel discret ----
@@ -4468,7 +4491,7 @@
     recupExpireModule = {};
     recupNettoieCoffreModule();
   }
-  recupListeTemps = function () { return recupListeModule(); };
+  recupListeTemps = function () { return recupListeModule().filter(function(r){return !r.effetActif;}); };
   recupEtatTemps = function (r) { return recupEtatVueModule(r); };
   recupSecondesDisponiblesTemps = function (r, e, secondes, sens) {
     if (!e || !e.actif) return 0;
@@ -4591,7 +4614,7 @@
 
   function recupRangeeModule(r, odd) {
     var row = el("div", "pc-rec-row" + (odd ? " odd" : ""));
-    var edit = isEdit("recuperation");
+    var edit = isEdit("recuperation") && !r.effetActif;
     var e, cb = null, nivJeu = null, tempsJeu = null, typeJeu = null;
     row.appendChild(recupNomCelluleModule(r));
 
@@ -4647,6 +4670,8 @@
         typeJeu = recupValeurModule(recupDureeDef(r.type).court);
         temps.appendChild(tempsJeu); type.appendChild(typeJeu);
       }
+    } else if(r.effetActif) {
+      tempsJeu=recupValeurModule("");typeJeu=recupValeurModule("s");temps.appendChild(tempsJeu);type.appendChild(typeJeu);
     } else {
       temps.appendChild(recupValeurModule("∞", "infinity"));
       type.appendChild(recupValeurModule("—", "muted"));
@@ -4660,8 +4685,8 @@
         nivJeu.textContent = sign(e.niveau);
         nivJeu.classList.toggle("adj", !r.perso && recupBonusModule(r) !== 0);
       }
-      if (tempsJeu) tempsJeu.textContent = fmtP(recupTempsRestantModule(r));
-      if (typeJeu) typeJeu.textContent = recupDureeDef(r.type).court;
+      if (tempsJeu) tempsJeu.textContent = r.effetActif ? fmtP(r.effetActif.reste) : fmtP(recupTempsRestantModule(r));
+      if (typeJeu) typeJeu.textContent = r.effetActif ? "s" : recupDureeDef(r.type).court;
       row.classList.toggle("active", !!e.actif);
       row.classList.toggle("inactive", !e.actif);
       row.title = recupLibelle(r) + " · " + recupNom(r) + " · niveau " + sign(e.niveau) +
@@ -4803,10 +4828,161 @@
     b.appendChild(recupBox);
     hooks.push(function () {
       var sig = recupSignatureActivesModule();
-      if (recupOnly && sig !== recupVueSig) rebuildRecuperation();
+      if (sig !== recupVueSig) rebuildRecuperation();
     });
     rebuildRecuperation();
     return b;
+  }
+  // Référentiel importé du tableur. Les règles non converties restent descriptives.
+  function effetsDefinitions() { return D().effets || []; }
+  var effetsCacheListe=null,effetsCache={};
+  function effetDefinition(id) { var liste=effetsDefinitions();if(liste!==effetsCacheListe){effetsCacheListe=liste;effetsCache=Object.create(null);liste.forEach(function(d){effetsCache[d.id]=d;});}return effetsCache[id] || null; }
+  function effetsNormalise(s) {
+    var ids = {};
+    s.effetsActifs = (Array.isArray(s.effetsActifs) ? s.effetsActifs : []).filter(function (e) { return e && typeof e === "object" && e.effet; }).map(function (e) {
+      var id = String(e.id || uid("eff")); if (ids[id]) id = uid("eff"); ids[id] = true;
+      return { id: id, effet: String(e.effet), source: String(e.source || ""), cible: String(e.cible || ""),
+        actif: e.actif !== false, reste: e.reste == null ? null : Math.max(0, num(e.reste, 0)),
+        duree: e.duree == null ? null : Math.max(0, num(e.duree, 0)), suivi: Math.max(0, num(e.suivi, 0)),
+        niveau: clamp(Math.floor(num(e.niveau, 1)), 1, 4) };
+    }).filter(function (e) { return e.reste === null || e.reste > 0; });
+    if (!s.effetsPermanents || typeof s.effetsPermanents !== "object" || Array.isArray(s.effetsPermanents)) s.effetsPermanents = {};
+  }
+  function effetsSources() {
+    var out = [];
+    (state.effetsActifs || []).forEach(function (e) {
+      var d = effetDefinition(e.effet);
+      if (d && e.actif && (e.reste === null || e.reste > 0)) out.push({ e: e, d: d });
+    });
+    // Les bonus d'équipement sont dérivés : aucune copie temporaire à sauvegarder.
+    (state.inv && state.inv.objets || []).forEach(function (o) {
+      if (o.dans || !(pnum(o.qte) > 0) || !(o.ou === "mainG" || o.ou === "mainD" || (o.vet || o.acc) && casesDe(o).length)) return;
+      (o.effets || []).forEach(function (id) { var d = effetDefinition(id); if (d && !(d.categorie==="Équipement porté en main" && o.ou!=="mainG")) out.push({e:{niveau:1,cible:o.arme ? o.ref : "",equipement:o.ref,source:o.nom}, d:d}); });
+    });
+    // Même famille portée plusieurs fois : le rang le plus élevé gagne.
+    var families = {};
+    return out.filter(function (x) {
+      if (x.d.ops.alerte || x.d.ops.alcool) return true;
+      var key = x.d.famille + "|" + (x.e.cible || "");
+      var best = out.filter(function (y) { return y.d.famille + "|" + (y.e.cible || "") === key; }).sort(function (a,b) { return num(b.d.rang,0)-num(a.d.rang,0); })[0];
+      if (families[key] || best !== x) return false; families[key] = true; return true;
+    });
+  }
+  function effetBonus(cle, type, cible) {
+    var n = 0;
+    vetementsPortes().forEach(function(o){var v=o.stats&&o.stats[cle];if(type!==undefined)v=v&&v[type];n+=num(v,0);});
+    effetsSources().forEach(function (x) {
+      if (x.e.cible && x.e.cible !== cible) return;
+      var v = x.d.ops[cle]; if (type !== undefined) v = v && v[type]; n += num(v,0);
+    });
+    return n;
+  }
+  function effetAlerte() {
+    return (state.effetsActifs || []).reduce(function (n,e) { var d=effetDefinition(e.effet); return d && d.ops.alerte && e.actif && (e.reste===null || e.reste>0) ? Math.max(n,e.niveau) : n; },0);
+  }
+  function effetCout(res, valeur) { return Math.max(0, Math.floor(Math.max(0,num(valeur,0)) * Math.max(0,1 + effetBonus("couts",res)/100) + 1e-9)); }
+  function effetPerteInnocence(delta) { return delta < 0 ? -Math.ceil(-delta * Math.max(0,1 - effetBonus("innocence")/100) - 1e-9) : delta; }
+  function retireEffet(id) { state.effetsActifs = state.effetsActifs.filter(function (e) { return e.id !== id; }); }
+  function effetCoupRecu() {
+    state.effetsActifs = state.effetsActifs.filter(function (e) {
+      var d=effetDefinition(e.effet); if (!d || !d.ops.alerte || !e.actif) return true;
+      e.niveau--; return e.niveau > 0;
+    });
+  }
+  function effetFinTour() {
+    if (!(effetBonus("finTour") > 0)) return;
+    for (var i=0;i<desAction();i++) if (state.desUtilises[i]) { delete state.desUtilises[i]; break; }
+  }
+  function appliqueEffet(id, source, cible, duree) {
+    var d=effetDefinition(id); if (!d) return false;
+    var op=d.ops || {}, actifs=state.effetsActifs;
+    if (op.permanent) {
+      if (!state.effetsPermanents[id]) {
+        Object.keys(op.permanent).forEach(function(k){ if(state.etat[k]==null)state.etat[k]=maxDe(k); });
+        state.effetsPermanents[id]=true;
+      }
+      return true;
+    }
+    if (op.supprime || op.panacee) {
+      state.effetsActifs = actifs.filter(function(e){
+        var def=effetDefinition(e.effet);
+        return !(def && (op.panacee ? def.negatif && def.dissipable : op.supprime.indexOf(def.famille)>=0 || op.supprime.indexOf(def.id)>=0));
+      }); return true;
+    }
+    if (op.impregnation && !(cible && defenseArme(cible))) return false;
+    var meme=actifs.filter(function(e){var def=effetDefinition(e.effet);return def && def.famille===d.famille && (e.cible||"")===(cible||"");})[0];
+    var seconds=duree === undefined ? d.duree : duree;
+    if (op.alerte) {
+      if (!meme) { meme={id:uid("eff"),effet:id,cible:"",niveau:0};actifs.push(meme); }
+      meme.niveau=clamp(num(meme.niveau,0)+op.alerte,1,4);seconds=60;
+    } else if (meme && !op.alcool) {
+      var previous=effetDefinition(meme.effet);if(previous && num(previous.rang,0)>num(d.rang,0))return true;
+    } else { meme={id:uid("eff"),niveau:1};actifs.push(meme); }
+    meme.effet=id;meme.source=String(source||"");meme.cible=String(cible||"");meme.actif=true;
+    meme.reste=seconds;meme.duree=seconds;meme.suivi=0;return true;
+  }
+  function effetsAvance(secondes) {
+    var efficaces=Object.create(null);effetsSources().forEach(function(x){if(x.e.id)efficaces[x.e.id]=true;});
+    (state.effetsActifs || []).forEach(function(e){
+      if(!e.actif)return;
+      var d=effetDefinition(e.effet),r=d && efficaces[e.id] && d.ops.regen,sec=e.reste===null?secondes:Math.min(secondes,e.reste);
+      if(r && sec>0) {
+        if(courant(r.reserve)>=maxDe(r.reserve))e.suivi=0;
+        else {e.suivi+=sec;var ticks=Math.floor((e.suivi+1e-9)/r.cadence);e.suivi-=ticks*r.cadence;if(ticks)bougeReserve(r.reserve,ticks*r.points);}
+      }
+      if(e.reste!==null)e.reste=Math.max(0,e.reste-secondes);
+    });
+    state.effetsActifs=state.effetsActifs.filter(function(e){return e.reste===null || e.reste>0;});
+  }
+  function effetTemps(secondes) {
+    if(secondes===null)return "—";
+    secondes=Math.max(0,Math.ceil(secondes));var j=Math.floor(secondes/86400),h=Math.floor(secondes%86400/3600),m=Math.floor(secondes%3600/60),s=secondes%60;
+    return [j?j+" j":"",h?h+" h":"",m?m+" min":"",s?s+" s":""].filter(Boolean).join(" ") || "0 s";
+  }
+  function selectEffet(value, change) {
+    var s=el("select","pc-select pc-edit-field"),empty=el("option",null,"— Aucun —");empty.value="";s.appendChild(empty);
+    effetsDefinitions().forEach(function(d){var o=el("option",null,d.nom);o.value=d.id;o.selected=d.id===value;s.appendChild(o);});
+    if(value && !effetDefinition(value)){var o=el("option",null,value+" (inconnu)");o.value=value;o.selected=true;s.appendChild(o);}
+    s.addEventListener("change",function(){change(s.value);});return s;
+  }
+  function buildEffets() {
+    var b=block("Effets",null,"effets"),box=el("div","pc-effets-liste");b.appendChild(box);
+    var add=miniBtn("+ Ajouter un effet",null,function(){
+      var body=el("div","pc-modal-body"),id="",temps=el("input","pc-edit-field"),armes=el("select","pc-select");
+      temps.type="text";temps.inputMode="decimal";temps.placeholder="Durée du référentiel";
+      var select=selectEffet("",function(v){id=v;var d=effetDefinition(id);temps.placeholder=d?d.dureeTexte:"Durée du référentiel";});
+      body.appendChild(fld("Effet",select));body.appendChild(fld("Durée en minutes (facultatif)",temps));
+      var none=el("option",null,"— Personnage —");none.value="";armes.appendChild(none);
+      state.inv.objets.filter(function(o){return o.arme;}).forEach(function(o){var p=el("option",null,o.nom||"Arme");p.value=o.ref;armes.appendChild(p);});
+      body.appendChild(fld("Cible",armes));
+      dialogue("Ajouter un effet",body,function(){
+        if(!id)return false;
+        var n=temps.value.trim()?litNombreSigne(temps.value):null;if(n!==null && (!isFinite(n)||n<=0))return false;
+        if(!appliqueEffet(id,"Manuel",armes.value,n===null?undefined:n*60)){flash("Choisissez l’arme à imprégner.");return false;}refresh();
+      },"Appliquer");
+    });b.appendChild(add);
+    var cost=el("div","pc-obj-pair"),n=el("input","pc-num");champNombreSigne(n);n.placeholder="Coût de base";n.setAttribute("aria-label","Coût en ressource avant effets");cost.appendChild(n);
+    var cs=el("div","pc-segs");["pm","pe"].forEach(function(k){cs.appendChild(miniBtn("Consommer "+k.toUpperCase(),null,function(){var v=litNombreSigne(n.value);if(!isFinite(v)||v<0)return;bougeReserve(k,-effetCout(k,v));n.value="";refresh();}));});cost.appendChild(cs);b.appendChild(cost);
+    var sig="";
+    hooks.push(function(){
+      var passifs=effetsSources().filter(function(x){return x.e.equipement;});
+      var now=JSON.stringify([state.effetsActifs,state.effetsPermanents,effetAlerte(),passifs]);if(now===sig)return;sig=now;box.innerHTML="";
+      (state.effetsActifs||[]).forEach(function(e){
+        var d=effetDefinition(e.effet),row=el("div","pc-effet-row");row.dataset.syncEntity=e.id;
+        var head=el("div","pc-effet-head"),name=el("span","pc-effet-nom",d&&d.ops.alerte?"Alerte — "+e.niveau:(d?d.nom:e.effet));head.appendChild(name);
+        head.appendChild(el("span","pc-effet-temps",effetTemps(e.reste)));row.appendChild(head);
+        var texte=d?d.description:"Effet inconnu : gestion manuelle.";
+        if(d&&d.ops.alerte)texte="−"+e.niveau+" difficulté d’Esquive ; −"+(5*e.niveau)+" % de résistance aux dégâts. Un coup reçu retire un niveau.";
+        var desc=el("div","pc-effet-desc",texte);row.appendChild(desc);
+        if(d&&d.manuel)row.appendChild(el("small","pc-effet-manuel","Conséquences manuelles"));
+        var actions=el("div","pc-segs");actions.appendChild(miniBtn(e.actif?"Pauser":"Reprendre",null,function(){e.actif=!e.actif;refresh();}));
+        if(d&&d.ops.alerte)actions.appendChild(miniBtn("Coup reçu", "Retirer un niveau d’Alerte",function(){effetCoupRecu();refresh();}));
+        actions.appendChild(miniBtn("Retirer",null,function(){retireEffet(e.id);refresh();}));row.appendChild(actions);box.appendChild(row);
+      });
+      passifs.forEach(function(x){var row=el("div","pc-effet-row"),head=el("div","pc-effet-head");head.appendChild(el("span","pc-effet-nom",x.d.nom));head.appendChild(el("span","pc-effet-temps","Équipé"));row.appendChild(head);row.appendChild(el("div","pc-effet-desc",x.d.description));row.title=x.e.source;box.appendChild(row);});
+      Object.keys(state.effetsPermanents||{}).forEach(function(id){if(state.effetsPermanents[id])box.appendChild(el("div","pc-effet-row",id+" — Permanent"));});
+      if(!box.childNodes.length)box.appendChild(el("div","pc-empty","Aucun effet actif."));
+    });return b;
   }
   // ---- Temps ----
   // L'effort que fournit le personnage et l'air qu'il respire, puis le geste
@@ -4996,6 +5172,7 @@
     function appliqueDelta() {
       var d = litNombreSigne(delta.value);
       if (!isFinite(d) || !d) return;
+      if (cle === "pi") d = effetPerteInnocence(d);
       state.etat[cle] = Math.round((courant(cle) + d) * 100) / 100;
       delta.value = "";
       refresh();
@@ -5190,7 +5367,7 @@
     return fld(label, i);
   }
   function combatTypes() {
-    return ["contondant", "perforant", "tranchant", "feu", "froid", "eclair", "decomposition", "ethere", "brut"];
+    return ["physique", "feu", "froid", "eclair", "decomposition", "ethere", "brut"];
   }
   function combatLibType(t) {
     return { eclair: "Éclair", decomposition: "Décomposition", ethere: "Éthéré" }[t] || capFirst(t);
@@ -5276,7 +5453,7 @@
     var a = entree && entree.personnalisee || item && item.arme;
     var flat = snum(a && a.reduction);
     (a && a.modsParade || []).slice(0, 3).forEach(function (c) { if (c) flat += Math.floor(caracTotal(c) / 5); });
-    return { item: item, protection: flat, difficulte: Math.max(0, snum(a && a.parade)), comp: a && a.comp || "" };
+    return { item: item, protection: flat, difficulte: Math.max(1, snum(a && a.parade) + effetBonus("parade")), comp: a && a.comp || "" };
   }
   function defenseTotaux(type, defense, reussie) {
     var p = 0, r = 0, portes = vetementsPortes().filter(function (o) { return pnum(o.qte) > 0; });
@@ -5289,7 +5466,10 @@
       }
       p += state.combatOptions && state.combatOptions.defenses.lente ? Math.floor(active / 2) : active;
     }
-    return { protection: p + combatMod("protections", type), reduction: r + combatMod("resistances", type) };
+    p += combatMod("protections",type) + effetBonus("protections",type);
+    r += combatMod("resistances",type) + effetBonus("resistances",type) - 5*effetAlerte();
+    if(effetBonus("immunites",type)>=100)r=Math.max(100,r);
+    return {protection:p,reduction:r};
   }
   function defensePrompt(nom, mode, entree) {
     var body = el("div", "pc-modal-body pc-defense-form"), degats = el("input", "n"), type = el("select", "pc-select");
@@ -5305,15 +5485,16 @@
       var v = defenseValeurs(entree), totaux = defenseTotaux(type.value, mode === "parade" ? v : null, true);
       var subis = mode === "esquive" ? 0 : combatDegats(brut, totaux.protection, totaux.reduction);
       var cout = mode === "esquive" ? 8 : mode === "sans" ? 0 : v.difficulte;
+      var difficulte = mode === "esquive" ? Math.max(1,8-effetAlerte()) : cout;
       var comp = compDe(mode === "esquive" ? entree.comp : v.comp);
       var champs = [["Dégâts reçus", fmtP(brut) + " " + combatLibType(type.value)],
         ["Protection", fmtP(totaux.protection)], ["Réduction", fmtP(totaux.reduction) + " %"], ["Dégâts subis", fmtP(subis)]];
       if (mode !== "sans") {
-        champs.push(["Difficulté", fmtP(cout)]);
+        champs.push(["Difficulté", fmtP(difficulte)]);
         if (comp) champs.push(["Compétence", comp.nom || "Compétence"]);
         if (state.combatOptions.defenses.utiliseEndurance && !state.combatOptions.defenses.lente) {
-          state.etat.pe = Math.round((courant("pe") - cout) * 100) / 100;
-          champs.push(["Endurance", "−" + fmtP(cout)]);
+          state.etat.pe = Math.round((courant("pe") - effetCout("pe",cout)) * 100) / 100;
+          champs.push(["Endurance", "−" + fmtP(effetCout("pe",cout))]);
         }
       }
       sayChat(nom, champs); refresh();
@@ -5390,7 +5571,7 @@
       var valeur = state.combatOptions.defenses.lente ? Math.floor(v.protection / 2) : v.protection;
       var cleVisibilite = mode === "sans" ? "defenseSans" : mode === "esquive" ? "defenseEsquive" : "";
       var visible = !cleVisibilite || state.combatAffichage[cleVisibilite] !== false;
-      combatCarteTete(card, nom, mode === "sans" ? "" : mode === "esquive" ? "Difficulté 8" : "Difficulté " + fmtP(v.difficulte) + " · Protection " + sign(valeur), ouvert, "defense", id,
+      combatCarteTete(card, nom, mode === "sans" ? "" : mode === "esquive" ? "Difficulté "+Math.max(1,8-effetAlerte()) : "Difficulté " + fmtP(v.difficulte) + " · Protection " + sign(valeur), ouvert, "defense", id,
         function () { defenseVue.ouverts[id] = !defenseVue.ouverts[id]; rendre(); }, mode === "parade" ? function () { return state.defenses.entrees; } : null,
         cleVisibilite ? { visible: visible, basculer: function () { state.combatAffichage[cleVisibilite] = !visible; refresh(); } } : null);
       if (!ouvert) return;
@@ -5538,12 +5719,18 @@
         passage: Math.floor(touche / 2)
       };
     }
-    function degatsTypes(base, type, passage) {
+    function degatsTypes(base, type, passage, it, entree) {
       var valeurs = {}, primary = combatTypes().indexOf(type) >= 0 ? type : type || "—";
-      valeurs[primary] = base;
+      primary = /^(tranchant|contondant|perforant)$/.test(primary) ? "physique" : primary;
+      var rep=it && it.arme && it.arme.repartition, somme=0;
+      if(rep)Object.keys(rep).forEach(function(k){somme+=pnum(rep[k]);});
+      if(somme>0)Object.keys(rep).forEach(function(k){if(rep[k]>0)valeurs[k]=base*rep[k]/somme;});else valeurs[primary] = base;
+      var ammo=entree&&munitionSelectionnee(entree,typeArme(it&&it.arme&&it.arme.type)),ms=ammo&&ammo.munitionStats;
+      if(ms&&ms.degats)combatTypes().forEach(function(k){var q=snum(ms.repartition&&ms.repartition[k]);if(q)valeurs[k]=(valeurs[k]||0)+snum(ms.degats)*q/100;});
+      effetsSources().forEach(function(x){var op=x.d.ops.impregnation;if(op && it && x.e.cible===it.ref && op.type)valeurs[op.type]=(valeurs[op.type]||0)+snum(it.arme.degats)*op.pct/100+op.flat;});
       combatTypes().forEach(function (t) { var n = combatMod("attaques", t); if (n) valeurs[t] = (valeurs[t] || 0) + n; });
       return Object.keys(valeurs).map(function (t) {
-        var n = valeurs[t]; if (state.combatOptions.attaques.lente) n = Math.floor(n / 2); if (passage) n = Math.floor(n / 2);
+        var n = Math.floor(valeurs[t]*(1+effetBonus("degats",t)/100)+1e-9); if (state.combatOptions.attaques.lente) n = Math.floor(n / 2); if (passage) n = Math.floor(n / 2);
         return { type: t, valeur: Math.max(0, n) };
       }).filter(function (x) { return x.valeur || x.type === primary; }).map(function (x) { return fmtP(x.valeur) + " " + x.type; }).join(" + ");
     }
@@ -5573,7 +5760,7 @@
       var cat = categorieMunition(def), objets = state.inv && Array.isArray(state.inv.objets) ? state.inv.objets : [];
       if (!cat) return [];
       return objets.filter(function (o) {
-        return o && String(o.contenu || "") === cat && pnum(o.qte) > 0;
+        return o && String(o.typeObjet === "munition" ? o.sousType : o.contenu || "") === cat && pnum(o.qte) > 0;
       });
     }
     function contenantDe(o) {
@@ -5589,7 +5776,7 @@
     }
     function munitionSelectionnee(entree, def) {
       var o = objetInventaire(entree && entree.munition);
-      return o && String(o.contenu || "") === categorieMunition(def) ? o : null;
+      return o && String(o.typeObjet === "munition" ? o.sousType : o.contenu || "") === categorieMunition(def) ? o : null;
     }
     function retireUneMunition(o) {
       var objets = state.inv && Array.isArray(state.inv.objets) ? state.inv.objets : [];
@@ -5613,10 +5800,12 @@
       return out;
     }
     function executeAttaque(entree, it, def, envoyer) {
+      var rep=it.arme&&it.arme.repartition,sum=0;
+      if(rep){Object.keys(rep).forEach(function(k){sum+=pnum(rep[k]);});if(Math.abs(sum-100)>0.001){flash("La répartition des dégâts doit totaliser 100 %.");return;}}
       var r = prepareRessources(entree, it, def);
       if (!r) return;
       if (state.combatOptions.attaques.utiliseEndurance && !state.combatOptions.attaques.lente && r.endurance > 0)
-        state.etat.pe = Math.round((courant("pe") - r.endurance) * 100) / 100;
+        state.etat.pe = Math.round((courant("pe") - effetCout("pe",r.endurance)) * 100) / 100;
       if (state.combatOptions.attaques.utiliseMunition && r.munition) {
         var ref = String(r.munition.ref || "");
         retireUneMunition(r.munition);
@@ -5624,14 +5813,15 @@
         if (!objetInventaire(ref)) entree.munition = "";
       }
       envoyer();
+      if(effetBonus("paradeAdverse"))sayChat("Effets de l’attaque",[["Parade adverse",sign(effetBonus("paradeAdverse"))],["Esquive adverse","Inchangée"]]);
       refresh();
     }
     function envoieCoup(entree, it, coup, def) {
       executeAttaque(entree, it, def, function () {
         var types = typesCoup(coup, def), dg = degatsCoup(it, coup);
         sayChat((coup && coup.nom ? coup.nom : "Attaque") + " — " + (it.nom || (def && def.nom) || "Arme"), [
-          ["Case de touche", degatsTypes(brutCoup(it, coup), types.touche, false)],
-          ["Case de passage", degatsTypes(brutCoup(it, coup), types.passage, true)]
+          ["Case de touche", degatsTypes(brutCoup(it, coup), types.touche, false, it, entree)],
+          ["Case de passage", degatsTypes(brutCoup(it, coup), types.passage, true, it, entree)]
         ]);
       });
     }
@@ -5639,7 +5829,7 @@
       executeAttaque(entree, it, def, function () {
         var types = def && Array.isArray(def.types) ? def.types : [], type = types[0] || "—";
         sayChat("Attaque — " + (it.nom || (def && def.nom) || "Arme"), [
-          ["Dégâts", degatsTypes(brutArme(it), type, false)]
+          ["Dégâts", degatsTypes(brutArme(it), type, false, it, entree)]
         ]);
       });
     }
@@ -5820,8 +6010,8 @@
       nom.appendChild(el("span", "pc-attaque-mult", fmtMult(dg.mult)));
       texte.appendChild(nom);
       var chiffres = el("div", "pc-attaque-coup-degats");
-      chiffres.appendChild(el("span", "touche", "Touche " + degatsTypes(brutCoup(it, coup), types.touche, false)));
-      chiffres.appendChild(el("span", "passage", "Passage " + degatsTypes(brutCoup(it, coup), types.passage, true)));
+      chiffres.appendChild(el("span", "touche", "Touche " + degatsTypes(brutCoup(it, coup), types.touche, false, it, entree)));
+      chiffres.appendChild(el("span", "passage", "Passage " + degatsTypes(brutCoup(it, coup), types.passage, true, it, entree)));
       texte.appendChild(chiffres);
       bas.appendChild(texte);
       var garde = gardeSvg(coup.garde, miroir);
@@ -5905,7 +6095,7 @@
       var ouvert = !!ouverts[entree.id], def = it && typeArme(it.arme.type), meta = [];
       if (it) {
         if (it.arme.type) meta.push((def && def.nom) || it.arme.type);
-        if (String(it.arme.attaque || "").trim()) meta.push("Attaque " + it.arme.attaque);
+        if (String(it.arme.attaque || "").trim()) meta.push("Attaque " + Math.max(0,snum(it.arme.attaque)+effetBonus("attaque")));
         meta.push("Dégâts " + fmtP(degatsArme(it)));
       }
       combatCarteTete(card, it ? it.nom || "Arme sans nom" : "Nouvelle attaque", meta.join(" · "), ouvert, "attaque", entree.id,
@@ -5991,7 +6181,7 @@
         simple.type = "button";
         var stypes = def && Array.isArray(def.types) ? def.types : [];
         simple.appendChild(el("strong", null, "Attaquer"));
-        simple.appendChild(el("span", null, degatsTypes(brutArme(it), stypes[0] || "—", false)));
+        simple.appendChild(el("span", null, degatsTypes(brutArme(it), stypes[0] || "—", false, it, entree)));
         simple.addEventListener("click", function () { envoieAttaqueSimple(entree, it, def); });
         detail.appendChild(simple);
         card.appendChild(detail);
@@ -6168,11 +6358,12 @@
           });
         }
       }
-      dist.v.pas.textContent = String(c.pas);
-      dist.v.min.textContent = fmtP(num0(c.minute));
-      dist.v.h.textContent = fmtP(num0(c.heure));
+      var bonusPas=effetBonus("pas"),facteur=1+effetBonus("vitesse")/100;
+      dist.v.pas.textContent = String(c.pas ? Math.floor((c.pas+bonusPas)*facteur) : 0);
+      dist.v.min.textContent = fmtP(c.pas ? num0(c.minute)*(c.pas+bonusPas)/c.pas*facteur : 0);
+      dist.v.h.textContent = fmtP(c.pas ? num0(c.heure)*(c.pas+bonusPas)/c.pas*facteur : 0);
       cout.v.da.textContent = String(c.des || 0);
-      cout.v.pe.textContent = String(c.pe || 0);
+      cout.v.pe.textContent = String(effetCout("pe",c.pe || 0));
     });
     return b;
   }
@@ -6531,6 +6722,8 @@
     gestes.appendChild(envoi);
     gestes.appendChild(recup);
     b.appendChild(gestes);
+    var finTour=miniBtn("Fin de tour", "Appliquer Énergisé : récupérer un dé utilisé", function(){effetFinTour();refresh();});b.appendChild(finTour);
+    hooks.push(function(){finTour.style.display=effetBonus("finTour")>0?"":"none";});
 
     bati();
     majBoutons();
@@ -7262,12 +7455,14 @@
       l: pnum(it.places), d: String(it.desc || ""), k: String(it.id || ""),
       a: pnum(it.achat), version: 1, s: champsObjet(it, qte)
     };
+    if(!it.sac){p.item=JSON.parse(JSON.stringify(it));p.item.qte=p.q;p.item.dans="";}
     if(it.sac) p.bundle=window.OwdInventoryData.group(state.inv,it.ref);
     if (it.vente != null) p.v = pnum(it.vente);   // absent : automatique
     if (it.rapide) p.r = 1;
     var img = String(it.img || "");
     try { if(img && !/^data:/.test(img)) img = new URL(img, window.location.href).href; } catch(e) {}
     if (img && (img.length <= IMG_MAX || !/^data:/.test(img))) p.i = img;
+    if(p.item)p.item.img=p.i || "";
     return b64encode(JSON.stringify(p)).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/g,"");
   }
   function unpackObjet(b64) {
@@ -7281,7 +7476,7 @@
         if(bundle.length!==o.bundle.length||bundle.some(function(x){return !x.ref;}))return null;
       }catch(e){return null;}
     }
-    return {bundle:bundle,
+    return {bundle:bundle,item:o.item && typeof o.item==="object" ? o.item : null,
       nom: String(o.n || "Objet"), qte: Math.max(0, pnum(o.q)) || 1, poids: pnum(o.p),
       places: pnum(o.l), desc: String(o.d || ""), img: String(o.i || ""),
       id: String(o.k || ""), achat: pnum(o.a), vente: venteNum(o.v), rapide: !!o.r
@@ -7346,8 +7541,8 @@
     // Reconnaissance : d'abord l'IDENTIFIANT (deux homonymes distincts ne
     // fusionnent pas), à défaut le nom, insensible à la casse.
     var jumeau = null;
-    if (!recu.bundle && recu.id) items.forEach(function (x) { if (!jumeau && !x.sac && x.id && x.id === recu.id) jumeau = x; });
-    if (!jumeau && !recu.bundle) {
+    if (!recu.item && !recu.bundle && recu.id) items.forEach(function (x) { if (!jumeau && !x.sac && x.id && x.id === recu.id) jumeau = x; });
+    if (!recu.item && !jumeau && !recu.bundle) {
       items.forEach(function (x) {
         if (!jumeau && !x.sac && !x.id && !recu.id && pli(x.nom) === pli(recu.nom)) jumeau = x;
       });
@@ -7417,6 +7612,7 @@
       });
     }
 
+    if(recu.item)jumeau=null;
     dialogue("Prendre « " + recu.nom + " »", corps, function () {
       var q = Math.min(pnum(qIn.value) || recu.qte, recu.qte);
       if(recu.bundle){var refs={};recu.bundle.forEach(function(x){refs[x.ref]=uid("o");});
@@ -7424,6 +7620,8 @@
         recu.bundle.forEach(function(x,i){var c=JSON.parse(JSON.stringify(x));c.ref=refs[x.ref];c.dans=refs[x.dans]||"";
           if(i===0){c.qte=1;c.ou=gSel&&gSel.value==="poches"?"poches":"sac";c.emp=-1;if(c.ou==="sac"&&bag)c.dans=bag.ref;}
           items.push(c);});
+      } else if(recu.item){
+        var copie=JSON.parse(JSON.stringify(recu.item));copie.ref=uid("o");copie.qte=q;copie.ou=gSel&&gSel.value==="poches"?"poches":"sac";copie.dans="";copie.emp=-1;items.push(copie);
       } else if (jumeau) {
         jumeau.qte = Math.round((jumeau.qte + q) * 100) / 100;
         ["nom", "img", "poids", "places", "desc", "achat", "vente"].forEach(function (k) {
@@ -7558,6 +7756,7 @@
       s.title = "Type d'arme du livre ; il servira notamment à retrouver ses trajets.";
       s.addEventListener("change", function () {
         a.type = s.value;
+        it.sousType=s.value;
         // Le nombre de mains reste une donnée technique de l'inventaire. Quand
         // le livre le connaît pour ce type, on l'aligne sans afficher un champ
         // supplémentaire dans la carte de l'arme.
@@ -7600,7 +7799,138 @@
     if (!attaqueLibre) l5.appendChild(fld("Type", selTypeArme()));
     card.appendChild(l5);
 
+    if(!attaqueLibre){
+      if(!a.repartition)a.repartition={physique:100};
+      var rep=el("div","pc-arme-repartition"),sum=el("small","pc-arme-pourcent-total");
+      function total(){var n=0;combatTypes().forEach(function(k){n+=pnum(a.repartition[k]);});sum.textContent="Total : "+fmtP(n)+" %";sum.classList.toggle("pc-invalid",Math.abs(n-100)>0.001);}
+      combatTypes().forEach(function(k){var input=el("input","pc-edit-field");input.type="text";input.inputMode="decimal";input.value=pnum(a.repartition[k]);input.setAttribute("aria-label","Dégâts "+combatLibType(k)+" (%)");input.addEventListener("input",function(){var v=litNombreSigne(input.value);if(isFinite(v)&&v>=0){a.repartition[k]=v;save();total();}});input.addEventListener("change",refresh);rep.appendChild(fld(combatLibType(k)+" (%)",input));});
+      rep.appendChild(sum);total();card.appendChild(rep);
+      var req=el("div","pc-arme-line pc-arme-3");req.appendChild(champArme("Coups",a,"hits"));req.appendChild(champArme("DEX requise",a,"dex"));req.appendChild(champArme("FOR requise",a,"for"));card.appendChild(req);
+    }
+
     return card;
+  }
+  // Propriétés communes ajoutées sans réinterpréter les anciennes clés de stockage.
+  var INV_TAILLES = ["Minuscule","Très petite","Petite","Moyenne","Grande","Très grande","Gigantesque"];
+  var INV_TYPES_OBJETS = {arme:"Arme",vetement:"Vêtement",accessoire:"Accessoire",rangement:"Rangement",contenant:"Contenant",solide:"Solide",pate:"Pâte",liquide:"Liquide",munition:"Munition",eclairage:"Éclairage",couchage:"Couchage",autre:"Objet divers"};
+  function invType(o) {return o.typeObjet || (o.arme?"arme":o.vet?"vetement":o.acc?"accessoire":o.sac||o.ceint?"rangement":o.contenant?"contenant":o.nourri?"solide":/^(fleche|carreau|balle|pierre)/.test(o.contenu||"")?"munition":o.contenu||"autre");}
+  function invSousTypes(type) {
+    if(type==="rangement")return [["sac","Sac à dos"],["ceint","Ceinture"]];
+    if(["solide","pate","liquide"].indexOf(type)>=0)return [["ingerable","Ingérable"],["consommable","Consommable"],["autre","Autre"]];
+    if(type==="munition")return [["fleches","Flèche"],["carreaux","Carreau"],["balles","Balle"],["pierres","Pierre"]];
+    if(type==="eclairage")return [["torche","Torche"],["lanterne","Lanterne"]];
+    if(type==="couchage")return [["couchage","Couchage"],["tente","Tente"]];
+    return [];
+  }
+  function invTailleAccepte(taille, max) {return !taille || !max || INV_TAILLES.indexOf(taille)<=INV_TAILLES.indexOf(max);}
+  function invCoutAcc(o,lieu) {return lieu==="sacep" && o.taille==="Moyenne" ? 2 : 1;}
+  function invTailleMaxSac(o) {return o && (o.tailleInterieure || (o.cap>=100?"Moyenne":o.cap>=50?"Petite":"Très petite"));}
+  function enrichitObjet(n,o) {
+    var modele=(D().equipements||[]).concat(D().consommables||[]).filter(function(x){return x.nom===o.nom;})[0];
+    // Les anciens achats de Boutique ne transportaient aucun champ technique.
+    // Leurs quantités, prix, poids, image et description restent ceux du joueur.
+    if(!o.versionObjet && /^boutique:/.test(o.id||"") && modele){
+      o=Object.assign({},modele,o);
+      ["typeObjet","sousType","taille","construction","tailleInterieure","tailleAccroche","effets","stats","restaurations","unitesRestauration","ps","ph","places","tempsConsommation","conditionsEffets","proprietes"].forEach(function(k){if(modele[k]!==undefined)o[k]=JSON.parse(JSON.stringify(modele[k]));});
+      ["arme","vet","sac","ceint","acc","contenant","contenu","cap","ep","froid","chaud","poches","prot_physique","res_physique"].forEach(function(k){if(modele[k]!==undefined)n[k]=JSON.parse(JSON.stringify(modele[k]));});
+      combatTypes().forEach(function(t){["prot_","res_"].forEach(function(p){if(modele[p+t]!==undefined){n[p+t]=modele[p+t];o[p+t]=modele[p+t];}});});
+      if(n.arme)o.arme=n.arme;
+    }
+    n.versionObjet=1;
+    n.typeObjet=invType(o);if(!INV_TYPES_OBJETS[n.typeObjet])n.typeObjet="autre";
+    n.sousType=String(o.sousType || (o.sac?"sac":o.ceint?"ceint":o.vet?o.vet:o.acc?o.acc:o.arme?o.arme.type:o.nourri?"ingerable":n.typeObjet==="munition"?o.contenu:"autre"));
+    n.nourri=n.sousType==="ingerable";n.places=pnum(o.places);
+    n.taille=INV_TAILLES.indexOf(o.taille)>=0?o.taille:modele&&modele.taille||"";
+    n.construction=["Souple","Semi-rigide","Rigide"].indexOf(o.construction)>=0?o.construction:modele&&modele.construction||"";
+    n.volume=pnum(o.volume===undefined?o.encombre:o.volume);n.encombre=n.volume;
+    n.tailleInterieure=String(o.tailleInterieure||"");n.tailleAccroche=String(o.tailleAccroche || (n.sac?"Moyenne":""));
+    n.effets=(Array.isArray(o.effets)?o.effets:[]).slice(0,5).map(String);
+    n.restaurations={};n.unitesRestauration={};
+    ["pv","pe","pm","pr","ps","ph","pi"].forEach(function(k){n.restaurations[k]=snum(o.restaurations&&o.restaurations[k]);n.unitesRestauration[k]=o.unitesRestauration&&o.unitesRestauration[k]==="% max"?"% max":"points";});
+    n.ps=snum(o.ps);n.ph=snum(o.ph);n.tempsConsommation=pnum(o.tempsConsommation);
+    n.conditionsEffets=o.conditionsEffets&&typeof o.conditionsEffets==="object"?JSON.parse(JSON.stringify(o.conditionsEffets)):{};
+    n.stats=o.stats&&typeof o.stats==="object"?JSON.parse(JSON.stringify(o.stats)):{};
+    n.proprietes=o.proprietes&&typeof o.proprietes==="object"?JSON.parse(JSON.stringify(o.proprietes)):{};
+    n.munitionStats=o.munitionStats&&typeof o.munitionStats==="object"?JSON.parse(JSON.stringify(o.munitionStats)):{degats:0,repartition:{physique:100}};
+    ["prot","res"].forEach(function(k){n[k+"_physique"]=o[k+"_physique"]===undefined?(modele&&modele[k+"_physique"]!==undefined?snum(modele[k+"_physique"]):Math.max(snum(o[k+"_contondant"]),snum(o[k+"_perforant"]),snum(o[k+"_tranchant"]))):snum(o[k+"_physique"]);});
+    if(n.arme){var rep=o.arme&&o.arme.repartition || modele&&modele.arme&&modele.arme.repartition || {physique:100};n.arme.repartition={};combatTypes().forEach(function(k){if(isFinite(Number(rep[k])))n.arme.repartition[k]=pnum(rep[k]);});if(!Object.keys(n.arme.repartition).length)n.arme.repartition={physique:100};n.arme.hits=Math.max(1,Math.floor(pnum(o.arme&&o.arme.hits)||1));n.arme.dex=pnum(o.arme&&o.arme.dex);n.arme.for=pnum(o.arme&&o.arme.for);}
+    if(n.typeObjet==="munition"){n.sousType={fleche:"fleches",carreau:"carreaux",balle:"balles",pierre:"pierres"}[n.sousType]||n.sousType;n.contenu=n.sousType;}
+    return n;
+  }
+  function invChoix(label,values,current,change) {
+    var s=el("select","pc-select pc-edit-field");values.forEach(function(v){var k=Array.isArray(v)?v[0]:v,t=Array.isArray(v)?v[1]:v;var op=el("option",null,t);op.value=k;op.selected=k===current;s.appendChild(op);});
+    s.addEventListener("change",function(){change(s.value);save();refresh();});return fld(label,s);
+  }
+  function invChampsCommuns(body,it,render) {
+    var row=el("div","pc-obj-pair");
+    row.appendChild(invChoix("Taille",[["","— Non renseignée —"]].concat(INV_TAILLES.map(function(t){return [t,t];})),it.taille||"",function(v){it.taille=v;rangeEmplacements(state.inv.objets);render();}));
+    row.appendChild(invChoix("Construction",[["","— Sans objet —"],["Souple","Souple"],["Semi-rigide","Semi-rigide"],["Rigide","Rigide"]],it.construction||"",function(v){it.construction=v;}));body.appendChild(row);
+    var title=el("div","lbl","Effets"),card=el("div","pc-arme");body.appendChild(title);
+    if(!Array.isArray(it.effets))it.effets=[];
+    for(var i=0;i<5;i++)(function(index){card.appendChild(fld("Effet "+(index+1),selectEffet(it.effets[index]||"",function(v){it.effets[index]=v;save();refresh();})));})(i);
+    body.appendChild(card);
+    if(it.proprietes && Object.keys(it.proprietes).some(function(k){return it.proprietes[k]!=null;})){
+      var props=el("div","pc-arme");Object.keys(it.proprietes).forEach(function(k){if(it.proprietes[k]==null)return;var i=el("input","pc-edit-field");i.type="text";i.value=it.proprietes[k];i.addEventListener("input",function(){it.proprietes[k]=i.value;save();});props.appendChild(fld({autonomie:"Autonomie",accrochable:"Accrochable",recharge:"Recharge"}[k]||k,i));});body.appendChild(props);
+    }
+    if(it.vet || it.acc){
+      if(!it.stats)it.stats={};var stats=el("div","pc-arme-repartition");
+      function nombre(label,read,write){var n=el("input","pc-edit-field");champNombreSigne(n);n.value=read();n.addEventListener("input",function(){var v=litNombreSigne(n.value);if(isFinite(v)){write(v);save();}});n.addEventListener("change",refresh);return fld(label,n);}
+      if(!it.stats.degats)it.stats.degats={};if(!it.stats.couts)it.stats.couts={};
+      combatTypes().forEach(function(k){stats.appendChild(nombre("Dégâts "+combatLibType(k)+" (%)",function(){return num(it.stats.degats[k],0);},function(v){it.stats.degats[k]=v;}));});
+      ["pm","pe"].forEach(function(k){stats.appendChild(nombre("Coût "+k.toUpperCase()+" (%)",function(){return num(it.stats.couts[k],0);},function(v){it.stats.couts[k]=v;}));});
+      [["vitesse","Déplacement (%)"],["innocence","Résistance corruption (%)"],["alterations","Résistance altérations (%)"]].forEach(function(x){stats.appendChild(nombre(x[1],function(){return num(it.stats[x[0]],0);},function(v){it.stats[x[0]]=v;}));});body.appendChild(stats);
+    }
+    if(invType(it)==="munition"){
+      if(!it.munitionStats)it.munitionStats={degats:0,repartition:{physique:100}};
+      var mun=el("div","pc-arme");mun.appendChild(champArme("Dégâts supplémentaires",it.munitionStats,"degats"));
+      if(!it.munitionStats.repartition)it.munitionStats.repartition={physique:100};
+      combatTypes().forEach(function(k){mun.appendChild(champArme(combatLibType(k)+" (%)",it.munitionStats.repartition,k));});body.appendChild(mun);
+    }
+    if(it.nourri || ["consommable","ingerable"].indexOf(it.sousType)>=0){
+      var rs=el("div","pc-arme");
+      if(!it.restaurations)it.restaurations={};if(!it.unitesRestauration)it.unitesRestauration={};
+      ["pv","pe","pm","pr","ps","ph","pi"].forEach(function(k){
+        var line=el("div","pc-obj-pair"),n=el("input","pc-edit-field");champNombreSigne(n);n.value=num(it.restaurations[k],0);n.setAttribute("aria-label","Restauration "+k.toUpperCase());
+        n.addEventListener("input",function(){var v=litNombreSigne(n.value);if(isFinite(v)){it.restaurations[k]=v;save();}});
+        line.appendChild(fld("Restauration "+k.toUpperCase(),n));line.appendChild(invChoix("Unité",[["points","Points"],["% max","% du maximum"]],it.unitesRestauration[k]||"points",function(v){it.unitesRestauration[k]=v;}));rs.appendChild(line);
+      });body.appendChild(rs);
+    }
+  }
+  function invConsommer(it,q,cible) {
+    q=Math.min(pnum(q),pnum(it.qte));if(!(q>0))return false;
+    var effects=(it.effets||[]).map(effetDefinition).filter(Boolean);
+    if(effects.length && Math.abs(q-Math.round(q))>1e-9){flash("Les effets sont définis par dose entière : choisissez une quantité entière.");return false;}
+    if(effects.some(function(d){return d.ops.impregnation;})&&!defenseArme(cible)){flash("Choisissez l’arme à imprégner.");return false;}
+    var ingere=it.nourri || it.sousType==="ingerable",avant={};
+    ["pv","pe","pm","pr","ps","ph","pi"].forEach(function(k){avant[k]=maxDe(k);});
+    var results=[];
+    // Les probabilités sont testées à la consommation, jamais au rafraîchissement.
+    effects.forEach(function(d){
+      if(d.categorie==="Maladie" || d.categorie==="Traitement"){results.push([d.nom,"À gérer avec les maladies"]);return;}
+      var seuil=Number(it.conditionsEffets&&it.conditionsEffets[d.id]);
+      if(seuil>0){var jet=1+Math.floor(Math.random()*8)+1+Math.floor(Math.random()*8);results.push([d.nom,"2d8 = "+jet+" ; seuil ≤ "+seuil]);if(jet>seuil)return;}
+      var count=d.ops.alcool?Math.floor(q):1;
+      while(count-->0)appliqueEffet(d.id,it.nom,cible);
+    });
+    ["pv","pe","pm","pr","ps","ph","pi"].forEach(function(k){
+      var v=num(it.restaurations&&it.restaurations[k],0);
+      if(it.unitesRestauration&&it.unitesRestauration[k]==="% max")v=avant[k]*v/100;
+      if(ingere && (k==="ps"||k==="ph"))v+=num(it[k],0);
+      v*=q;if(k==="pi")v=effetPerteInnocence(v);
+      if(v)bougeReserve(k,v);
+    });
+    if(ingere)state.etat.contenance=Math.round((contenancePrise()+q*pnum(it.places))*1000)/1000;
+    it.qte=Math.round((it.qte-q)*100)/100;
+    if(!it.qte)state.inv.objets.splice(state.inv.objets.indexOf(it),1);
+    results.unshift(["Quantité",fmtP(q)],["Temps",fmtP(q*pnum(it.tempsConsommation))+" DA"]);
+    sayChat("Consommer — "+it.nom,results);refresh();if(invRender)invRender();return true;
+  }
+  function invConsommerDialogue(it,q) {
+    var impr=(it.effets||[]).some(function(id){var d=effetDefinition(id);return d&&d.ops.impregnation;});
+    if(!impr){invConsommer(it,q,"");return;}
+    var body=el("div","pc-modal-body"),s=el("select","pc-select");
+    state.inv.objets.filter(function(o){return o.arme;}).forEach(function(o){var op=el("option",null,o.nom||"Arme");op.value=o.ref;s.appendChild(op);});body.appendChild(fld("Arme à imprégner",s));
+    dialogue("Appliquer — "+it.nom,body,function(){return invConsommer(it,q,s.value);},"Appliquer");
   }
   // ---- 14. Inventaire (pleine largeur) ----
   // QUATRE GROUPES FIXES, et rien d'autre dans l'onglet Équipement :
@@ -7610,8 +7940,8 @@
   //               [boucles d'oreilles] [collier] [sous-vêtement] [poignet G] [poignet D]
   //               [bague G] [bague D] [cheville G] [cheville D] [cape]
   //   CEINTURE    les emplacements (ep) de la ceinture portée
-  //   POCHES      ce que les vêtements et accessoires portés laissent emporter (en eb)
-  //   SAC À DOS   les emplacements du sac porté, PUIS ce qu'il contient (en eb)
+  //   POCHES      ce que les vêtements et accessoires portés laissent emporter (en L)
+  //   SAC À DOS   les emplacements du sac porté, PUIS ce qu'il contient (en L)
   //
   // Les cases de Sur soi sont TOUJOURS là, vides ou pleines ; chacune ne prend
   // que ce qui s'y porte. Un EMPLACEMENT tient un seul exemplaire, jusqu'à
@@ -7628,7 +7958,7 @@
   var INV_NOMS = {
     mainG: "Main gauche", mainD: "Main droite", ceinture: "Ceinture", dos: "Sac à dos",
     tete: "Tête", mains: "Mains", haut: "Haut", bas: "Bas", pieds: "Pieds",
-    sousvet: "Sous-vêtement", hautbas: "Haut + Bas",
+    sousvet: "Sous-vêtement", hautbas: "Robe",
     oreilles: "Boucles d'oreilles", collier: "Collier",
     poignetG: "Poignet gauche", poignetD: "Poignet droit",
     bagueG: "Bague gauche", bagueD: "Bague droite",
@@ -7651,7 +7981,7 @@
   function champsObjet(it, q) {
     var bagWeight = it.sac ? window.OwdInventoryData.weight(state.inv.objets,it) : null;
     var fields = [["Quantité", fmtP(q)], ["Poids", fmtP(it.poids || 0) + (q > 1 ? " (total " + fmtP(q * (it.poids || 0)) + ")" : "")],
-      ["Encombrance", fmtP(it.encombre || 0) + " eb"],
+      ["Volume", fmtP(it.encombre || 0) + " L"],
       ["Achat", fmtP(it.achat || 0) + " " + monnaie(true)], ["Vente", fmtP(prixVente(it)) + " " + monnaie(true)]];
     function add(k,v){if(v!=null && String(v).trim()!=="")fields.push([k,String(v)]);}
     if(it.arme){var a=it.arme;add("Type",a.type || "Arme");add("Attaque",a.attaque);add("Dégâts",a.degats);
@@ -7662,10 +7992,13 @@
     else if(it.acc)add("Type",INV_NOMS[it.acc] || it.acc);
     else if(it.sac)add("Type","Sac à dos");else if(it.ceint)add("Type","Ceinture");
     if(it.contenant)add("Contenant",it.contenant);if(it.contenu)add("Contenu",it.contenu);
-    if(it.nourri){add("Type","Nourriture");add("Volume",fmtP(it.places || 0));}
-    if(it.cap)add("Capacité",fmtP(it.cap)+" eb");if(it.ep)add("Emplacements",fmtP(it.ep)+" (max. "+fmtP(it.ebMax || 0)+" eb)");
-    if(it.poches)add("Poches",fmtP(it.poches)+" eb");if(it.froid)add("Protection froid",fmtP(it.froid));if(it.chaud)add("Protection chaleur",fmtP(it.chaud));
-    ["contondant","perforant","tranchant","feu","froid","eclair","decomposition","ethere","brut"].forEach(function(t){
+    add("Type",INV_TYPES_OBJETS[invType(it)]);add("Sous-type",it.sousType);add("Taille",it.taille);add("Construction",it.construction);
+    if(it.nourri){add("Contenance",fmtP(it.places || 0));add("PS",fmtP(it.ps||0));add("PH",fmtP(it.ph||0));}
+    (it.effets||[]).filter(Boolean).forEach(function(id,i){add("Effet "+(i+1),id);});
+    Object.keys(it.restaurations||{}).forEach(function(k){if(it.restaurations[k])add("Restauration "+k.toUpperCase(),fmtP(it.restaurations[k])+" "+(it.unitesRestauration[k]||"points"));});
+    if(it.cap)add("Capacité",fmtP(it.cap)+" L");if(it.ep)add("Accroches",fmtP(it.ep)+" acc (max. "+(it.tailleAccroche || "non renseignée")+")");
+    if(it.poches)add("Poches",fmtP(it.poches)+" L");if(it.froid)add("Protection froid",fmtP(it.froid));if(it.chaud)add("Protection chaleur",fmtP(it.chaud));
+    ["physique","feu","froid","eclair","decomposition","ethere","brut"].forEach(function(t){
       var labels={eclair:"éclair",decomposition:"décomposition",ethere:"éthéré"},label=labels[t]||t;
       if(it["res_"+t])add("Résistance "+label,fmtP(it["res_"+t])+" %");if(it["prot_"+t])add("Protection "+label,fmtP(it["prot_"+t]));
     });
@@ -7822,6 +8155,8 @@
     // deux mains) libère les DEUX, et ce qui les tenait part au sac.
     function deplace(o, ou, cible) {
       if (!lieuPermis(o, ou)) { flash("« " + INV_NOMS[ou] + " » ne prend pas cet objet."); return false; }
+      var bagCible=window.OwdInventoryData.backpack(items);
+      if(ou === "sac" && bagCible && o!==bagCible && !invTailleAccepte(o.taille,invTailleMaxSac(bagCible))){flash("Cet objet dépasse la taille intérieure maximale du sac.");return false;}
       var dest = ancrage(o, ou), cases = casesDe(o, dest), vient = o.ou;
       // Tirer un Contenu hors de son petit slot le redevient un objet libre.
       window.OwdInventoryData.bind(items);
@@ -7857,9 +8192,10 @@
     // encombrant que l'emplacement ne l'accepte. Ce qui l'occupait retourne
     // d'où l'objet vient s'il y tient, au sac sinon.
     function poseEp(o, lieu, k) {
+      if(k+invCoutAcc(o,lieu)>nbEp(lieu)){flash("Pas assez d’accroches contiguës.");return null;}
       if (!epPermis(o, lieu)) {
         flash(o === porteurEp(lieu) ? "Un contenant ne s'accroche pas à lui-même."
-          : "Trop encombrant pour cet emplacement (" + fmtP(ebMaxEp(lieu)) + " eb au plus).");
+          : "Cet objet dépasse la taille maximale des accroches (" + ebMaxEp(lieu) + ").");
         return null;
       }
       var vient = o.ou, vientK = o.emp;
@@ -7878,6 +8214,7 @@
         vient = null;   // la pile reste où elle est : l'occupant va au sac
       }
       var occ = objetEp(lieu, k);
+      for(var slot=1;slot<invCoutAcc(pose,lieu);slot++){var autre=objetEp(lieu,k+slot);if(autre && autre!==pose && autre!==occ){autre.ou="sac";autre.emp=-1;autre.dans="";}}
       pose.dans = "";
       pose.ou = lieu;
       pose.emp = k;
@@ -8181,8 +8518,8 @@
       var c = el("div", "pc-inv-case pc-inv-ep");
       var o = objetEp(lieu, k);
       if (o) c.appendChild(tile(o));
-      else c.appendChild(el("div", "pc-inv-vide", "≤ " + fmtP(ebMaxEp(lieu)) + " eb"));
-      c.title = "Emplacement " + (k + 1) + " — " + fmtP(ebMaxEp(lieu)) + " eb au plus, un exemplaire";
+      else c.appendChild(el("div", "pc-inv-vide", "≤ " + (ebMaxEp(lieu) || "Taille libre")));
+      c.title = "Emplacement " + (k + 1) + " — " + (ebMaxEp(lieu) || "Taille libre") + " au plus, un exemplaire";
       c.addEventListener("dragover", function (e) {
         if (!drag || !epPermis(drag, lieu)) return;
         e.preventDefault();
@@ -8243,8 +8580,8 @@
       var pds = el("span", "pds");
       pds.title = "Emplacements tenus contre emplacements";
       function maj() {
-        var n = nbEp(lieu), pris = items.filter(function (o) { return o.ou === lieu; }).length;
-        pds.textContent = pris + " / " + n + " ep";
+        var n = nbEp(lieu), pris = items.filter(function (o) { return o.ou === lieu; }).reduce(function(t,o){return t+invCoutAcc(o,lieu);},0);
+        pds.textContent = pris + " / " + n + " acc";
       }
       maj();
       majGroupes.push(maj);
@@ -8271,10 +8608,10 @@
       function visible(it){return it.ou===ou && (ou==="sac" ? bag&&it.dans===bag.ref : !it.dans);}
       var g = el("div", "pc-obj-group");
       var pds = el("span", "pds");
-      pds.title = "Encombrance contre capacité";
+      pds.title = "Volume contre capacité";
       function maj() {
         var p = poids(), c = cap();
-        pds.textContent = fmtP(p) + " / " + fmtP(c) + " eb";
+        pds.textContent = fmtP(p) + " / " + fmtP(c) + " L";
         pds.classList.toggle("over", p > c);
       }
       maj();
@@ -8407,7 +8744,7 @@
       panel.dataset.syncEntity = invSelectionLocale;
       var fantome = !sel;
       panel.classList.toggle("fantome", fantome);
-      var types = ["contondant", "perforant", "tranchant", "feu", "froid", "eclair", "decomposition", "ethere", "brut"];
+      var types = ["physique", "feu", "froid", "eclair", "decomposition", "ethere", "brut"];
       var it = sel || { id: "", ref: "", nom: "", img: "", qte: 0, poids: 0, encombre: 0, places: 0, achat: 0, vente: null,
                         desc: "", ou: "sac", emp: -1, rapide: false, vet: "", acc: "", poches: 0, froid: 0, chaud: 0,
                         sac: false, cap: 0, ceint: false, ep: 0, ebMax: 0, contenant: "", contenu: "", dans: "", arme: null };
@@ -8443,39 +8780,18 @@
       // ne détruit jamais le contenu : un slot qui disparaît est vidé au sac.
       var ligneNat = el("div", "pc-obj-pair");
       var nat = el("select", "pc-edit-field");
-      var natureDe = it.arme ? "arme" : it.vet ? "vet" : it.acc ? "acc" : it.sac ? "sac" :
-                     it.ceint ? "ceint" : it.nourri ? "nourri" : it.contenu ? "contenu" :
-                     it.contenant ? "contenant" : "";
-      [["", "Objet"], ["nourri", "Nourriture"], ["vet", "Vêtement"], ["acc", "Accessoire"],
-       ["sac", "Sac à dos"], ["ceint", "Ceinture"], ["contenant", "Contenant"],
-       ["contenu", "Contenu"], ["arme", "Arme"]].forEach(function (n) {
-        var o = el("option", null, n[1]);
-        o.value = n[0];
-        if (n[0] === natureDe) o.selected = true;
-        nat.appendChild(o);
-      });
+      var natureDe = invType(it);
+      Object.keys(INV_TYPES_OBJETS).forEach(function(k){var o=el("option",null,INV_TYPES_OBJETS[k]);o.value=k;o.selected=k===natureDe;nat.appendChild(o);});
       nat.addEventListener("change", function () {
-        var v = nat.value;
-        if (it.contenant && v !== "contenant") libereContenu(it, true);
-        if (it.sac && v !== "sac") libereContenu(it, true);
-        if (it.dans && v !== "contenu" && !items.some(function(x){return x.ref===it.dans&&x.sac;})) { it.dans = ""; it.ou = "sac"; it.emp = -1; }
-        it.nourri = v === "nourri";
-        it.sac = v === "sac";
-        if(it.sac && it.qte>1){var n=Math.ceil(it.qte);it.qte=1;for(var k=1;k<n;k++){var rest=JSON.parse(JSON.stringify(it));rest.ref=uid("o");rest.ou="sac";rest.emp=-1;items.push(rest);}}
-        it.ceint = v === "ceint";
-        it.contenant = v === "contenant" ? (it.contenant || "liquide") : "";
-        it.contenu = v === "contenu" ? (it.contenu || "liquide") : "";
-        it.vet = v === "vet" ? (it.vet || "haut") : "";
-        it.acc = v === "acc" ? (it.acc || "collier") : "";
-        it.arme = v === "arme" ? (it.arme || { attaque: "", degats: "", modsDegats: ["", "", ""],
-          parade: "", reduction: "", modsParade: ["", "", ""], comp: "", type: "", mains: 1 }) : null;
-        if (v === "vet" || v === "acc") {
-          var types = ["contondant", "perforant", "tranchant", "feu", "froid", "eclair", "decomposition", "ethere", "brut"];
-          types.forEach(function(t) {
-            it["res_" + t] = it["res_" + t] || 0;
-            it["prot_" + t] = it["prot_" + t] || 0;
-          });
-        }
+        var type=nat.value, v={arme:"arme",vetement:"vet",accessoire:"acc",contenant:"contenant"}[type] || "";
+        var sub=invSousTypes(type);it.typeObjet=type;it.sousType=sub.length?sub[0][0]:"";
+        if(type==="rangement")v=it.sousType;
+        if(it.contenant && v!=="contenant" || it.sac && v!=="sac")libereContenu(it,true);
+        it.nourri=it.sousType==="ingerable";it.sac=v==="sac";it.ceint=v==="ceint";
+        it.vet=v==="vet"?(it.vet||"haut"):"";it.acc=v==="acc"?(it.acc||"collier"):"";
+        it.contenant=v==="contenant"?(it.contenant||"liquide"):"";
+        it.contenu=type==="munition"?it.sousType:["liquide","pate"].indexOf(type)>=0?type:"";
+        it.arme=v==="arme"?(it.arme||{attaque:"",degats:"",parade:"",reduction:"",modsDegats:[],modsParade:[],comp:"",type:"",mains:1,repartition:{physique:100}}):null;
         if (INV_EP.indexOf(it.ou) < 0 && !lieuPermis(it, it.ou)) it.ou = "sac";
         rangeEmplacements(items);
         save();
@@ -8498,6 +8814,15 @@
       kvR.appendChild(labR);
       ligneNat.appendChild(kvR);
       body.appendChild(ligneNat);
+      var sous=invSousTypes(invType(it));
+      if(sous.length)body.appendChild(invChoix("Sous-type",sous,it.sousType || (it.ceint?"ceint":it.sac?"sac":"autre"),function(v){
+        it.sousType=v;it.nourri=v==="ingerable";
+        if(invType(it)==="rangement"){if(it.sac&&v!=="sac")libereContenu(it,true);it.sac=v==="sac";it.ceint=v==="ceint";}
+        if(invType(it)==="munition")it.contenu=v;
+        if(INV_EP.indexOf(it.ou)<0 && !lieuPermis(it,it.ou)){it.ou="poches";it.dans="";}
+        rangeEmplacements(items);render();
+      }));
+
 
       // ce que le type demande, juste sous lui. Tous les types utilisent le
       // même cadre visuel que la carte d'arme : un seul bloc contient leurs
@@ -8513,7 +8838,7 @@
           typ.appendChild(o);
         });
         typ.addEventListener("change", function () {
-          it.vet = typ.value;
+          it.vet = typ.value;it.sousType=typ.value;
           if (!lieuPermis(it, it.ou)) it.ou = "sac";
           else if (INV_CASES.indexOf(it.ou) >= 0) deplace(it, it.ou);   // la robe prend aussi le bas
           render();
@@ -8521,10 +8846,10 @@
         });
         pv.appendChild(fld("Se porte", typ));
         pv.appendChild(champNombre("Poches", function () { return it.poches; },
-          function (v) { it.poches = pnum(v); }, "Ce que ce vêtement porté ajoute aux Poches, en eb"));
+          function (v) { it.poches = pnum(v); }, "Ce que ce vêtement porté ajoute aux Poches, en L"));
         cv.appendChild(pv);
 
-        var types = ["contondant", "perforant", "tranchant", "feu", "froid", "eclair", "decomposition", "ethere", "brut"];
+        var types = ["physique", "feu", "froid", "eclair", "decomposition", "ethere", "brut"];
         types.forEach(function(t) {
           var pr = el("div", "pc-obj-pair");
           pr.appendChild(champNombre("Res " + t, function () { return it["res_" + t]; },
@@ -8555,14 +8880,14 @@
           tya.appendChild(o);
         });
         tya.addEventListener("change", function () {
-          it.acc = tya.value;
+          it.acc = tya.value;it.sousType=tya.value;
           if (INV_EP.indexOf(it.ou) < 0 && !lieuPermis(it, it.ou)) it.ou = "sac";
           render();
           refresh();
         });
         pa.appendChild(fld("Se porte", tya));
         pa.appendChild(champNombre("Poches", function () { return it.poches; },
-          function (v) { it.poches = pnum(v); }, "Ce que cet accessoire porté ajoute aux Poches, en eb"));
+          function (v) { it.poches = pnum(v); }, "Ce que cet accessoire porté ajoute aux Poches, en L"));
         ca.appendChild(pa);
         var ppa = el("div", "pc-obj-pair");
         ppa.appendChild(champNombre("Froid", function () { return it.froid; },
@@ -8577,10 +8902,9 @@
       // l'encombrance au plus de chacun. Les changer redessine les groupes.
       function champsEp() {
         var pe = el("div", "pc-obj-pair");
-        pe.appendChild(champNombre("Emplacements", function () { return it.ep; },
-          function (v) { it.ep = Math.floor(pnum(v)); rangeEmplacements(items); }, "Nombre d'emplacements, en ep"));
-        pe.appendChild(champNombre("Eb max", function () { return it.ebMax; },
-          function (v) { it.ebMax = pnum(v); rangeEmplacements(items); }, "Encombrance au plus d'un emplacement, en eb"));
+        pe.appendChild(champNombre("Accroches", function () { return it.ep; },
+          function (v) { it.ep = Math.floor(pnum(v)); rangeEmplacements(items); }, "Nombre d'emplacements, en acc"));
+        pe.appendChild(invChoix("Taille maximale",[["","— Non renseignée —"]].concat(INV_TAILLES.map(function(t){return [t,t];})),it.tailleAccroche || (it.sac?"Moyenne":""),function(v){it.tailleAccroche=v;rangeEmplacements(items);render();}));
         Array.prototype.forEach.call(pe.querySelectorAll("input"), function (i) {
           i.addEventListener("change", function () { render(); });
         });
@@ -8597,9 +8921,12 @@
       if (it.nourri) {
         var cn = carteNature();
         var pn = el("div", "pc-obj-pair");
-        pn.appendChild(champNombre("Volume", function () { return it.places; },
+        pn.appendChild(champNombre("Contenance", function () { return it.places; },
           function (v) { it.places = pnum(v); }, "Ce qu'une dose ou une part occupe de contenance"));
         cn.appendChild(pn);
+        var nutrition=el("div","pc-obj-pair");["ps","ph"].forEach(function(k){nutrition.appendChild(champNombre(k.toUpperCase(),function(){return num(it[k],0);},function(v){it[k]=snum(v);}));});cn.appendChild(nutrition);
+        cn.appendChild(champNombre("Temps (DA)",function(){return num(it.tempsConsommation,0);},function(v){it.tempsConsommation=pnum(v);}));
+
         body.appendChild(cn);
       }
 
@@ -8607,8 +8934,9 @@
         var cs = carteNature();
         var ps = el("div", "pc-obj-pair");
         ps.appendChild(champNombre("Capacité", function () { return it.cap; },
-          function (v) { it.cap = pnum(v); }, "Ce que ce sac contient, en eb"));
+          function (v) { it.cap = pnum(v); }, "Ce que ce sac contient, en L"));
         cs.appendChild(ps);
+        cs.appendChild(invChoix("Taille intérieure maximale",INV_TAILLES,invTailleMaxSac(it),function(v){it.tailleInterieure=v;}));
         cs.appendChild(champsEp());
         body.appendChild(cs);
       }
@@ -8623,7 +8951,7 @@
         ct.appendChild(pct);
         body.appendChild(ct);
       }
-      if (it.contenu) {
+      if (it.contenu && invType(it)==="autre") {
         var ctu = carteNature();
         var pctu = el("div", "pc-obj-pair");
         pctu.appendChild(fld("Catégorie", selCategorieStockage(it, "contenu")));
@@ -8667,13 +8995,18 @@
       qRow.appendChild(slider);
       qRow.appendChild(qIn);
       body.appendChild(fld("Quantité", qRow));
+      if(!fantome){var modele=el("select","pc-edit-field"),vide=el("option",null,"— Choisir un modèle —");vide.value="";modele.appendChild(vide);
+        (D().consommables || []).forEach(function(m,index){var op=el("option",null,m.nom);op.value=String(index);modele.appendChild(op);});
+        modele.addEventListener("change",function(){if(modele.value==="")return;var m=D().consommables[Number(modele.value)],ref=it.ref,ou=it.ou,dans=it.dans;Object.keys(it).forEach(function(k){delete it[k];});Object.assign(it,JSON.parse(JSON.stringify(m)),{ref:ref,ou:ou,dans:dans});render();refresh();});body.appendChild(fld("Modèle de consommable",modele));}
+
 
       var pair = el("div", "pc-obj-pair");
       pair.appendChild(champNombre("Poids", function () { return it.poids; },
         function (v) { it.poids = pnum(v); }));
-      pair.appendChild(champNombre("Encombrance", function () { return it.encombre; },
-        function (v) { it.encombre = pnum(v); }, "En eb"));
+      pair.appendChild(champNombre("Volume", function () { return it.encombre; },
+        function (v) { it.volume = it.encombre = pnum(v); }, "En L"));
       body.appendChild(pair);
+      invChampsCommuns(body,it,render);
 
       // achat / vente, en pièces d'argent : la monnaie du livre est NOMMÉE
       var prix = el("div", "pc-obj-pair");
@@ -8760,6 +9093,7 @@
         montreObjet(it.ref, bornerAct());
       });
       actions.appendChild(montrer);
+      if(it.nourri || ["consommable","ingerable"].indexOf(it.sousType)>=0)actions.appendChild(miniBtn("Consommer",null,function(){invConsommerDialogue(it,bornerAct());}));
       actions.appendChild(miniBtn("Donner", "Donner cette quantité à un autre joueur", function () {
         donnerDialogue(it, bornerAct());
       }));
@@ -8781,6 +9115,7 @@
         deposit.addEventListener("dragover",function(e){if(drag&&drag!==it){e.preventDefault();e.stopPropagation();}});
         deposit.addEventListener("drop",function(e){if(!drag)return;e.preventDefault();e.stopPropagation();var d=drag;drag=null;
           if(window.OwdInventoryData.group(state.inv,d.ref).some(function(o){return o.ref===it.ref;})){flash("Un sac ne peut pas contenir lui-même.");return;}
+          if(!invTailleAccepte(d.taille,invTailleMaxSac(it))){flash("Cet objet dépasse la taille intérieure du sac.");return;}
           if(deplace(d,"sac")){d.dans=it.ref;d.emp=-1;render();refresh();}});
         items.forEach(function(o){if(o.dans===it.ref)contents.appendChild(tile(o));});
         body.appendChild(el("div","lbl","Contenu du sac"));body.appendChild(contents);
@@ -10267,6 +10602,7 @@
     { id: "defense",      titre: "DÉFENSES",         onglet: "fiche", colonne: "droite", build: buildDefense },
     { id: "comps",        titre: "COMPÉTENCES",      onglet: "fiche", colonne: "droite", build: buildComps },
     { id: "recuperation", titre: "RÉCUPÉRATION",     onglet: "fiche", colonne: "droite", build: buildRecuperation },
+    { id: "effets", titre: "EFFETS", onglet: "fiche", colonne: "droite", build: buildEffets },
     // ---- onglet Art ----
     // Pleine largeur, seul de son onglet : une technique est une CARTE, avec
     // ses rangs, son coût et son effet. Elle vivait sous les huit blocs de la
@@ -10557,6 +10893,17 @@
     // numéro soi-même.
     version: RELEASE,
     schema: SCHEMA,
+    effets: {
+      liste: function(){return copieTemps(state.effetsActifs);},
+      definitions: function(){return copieTemps(effetsDefinitions());},
+      ajoute: function(id,source,cible,duree){var ok=appliqueEffet(id,source,cible,duree);refresh();return ok;},
+      retire: function(id){retireEffet(id);refresh();},
+      coupRecu: function(){effetCoupRecu();refresh();},
+      finTour: function(){effetFinTour();refresh();},
+      cout: effetCout,
+      accumulation: function(points){return Math.ceil(Math.max(0,num(points,0)) * Math.max(0,1-effetBonus("alterations")/100) - 1e-9);},
+      consomme: function(ref,q,cible){var it=state.inv.objets.filter(function(o){return o.ref===ref;})[0];return it?invConsommer(it,q,cible||""):false;}
+    },
     enregistre: enregistre,
     ordonne: ordonne,
     // une COPIE de la description : personne ne remanie la table de l'extérieur
@@ -10607,7 +10954,11 @@
       poidsPorte: poidsPorte, accesPris: accesPris, contenancePrise: contenancePrise,
       desAction: desAction, ruptureMax: ruptureMax, ruptureDepense: ruptureDepense,
       xpDepense: xpDepense, courant: courant, maxDe: maxDe, autoDe: autoDe,
-      confort: confort
+      confort: confort, defenseTotaux:defenseTotaux, defenseValeurs:defenseValeurs,
+      effetBonus:effetBonus, effetAlerte:effetAlerte,
+      avancerSecondes:function(n){var t=avancerSecondes(n);refresh();return t;},
+      reculerSecondes:function(n){var t=reculerSecondes(n);refresh();return t;},
+      epPermis:epPermis, nbEp:nbEp, objetEp:objetEp
     },
     // le registre des filtres, à plat et en copie : nom, propriétaire, fautes
     __filtres: function () {

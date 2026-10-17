@@ -11,6 +11,7 @@
   // lancer — compétence, attaque, parade, technique. Aucun autre filtre à
   // écrire. Les DÉGÂTS n'en sont pas : ils ne se lancent pas du tout.
   function doRoll(label, value, die, isCheck, desMax, tracker) {
+    if(isCheck && effetBonus("sensAdverse") && pli(label).indexOf("discretion")>=0)sayChat("Discrétion",[["Jets de Sens adverses",sign(effetBonus("sensAdverse"))+" difficulté"]]);
     die = die || state.de || DE_DEFAUT;
     if (envoyer(cmdJet(label, value, die, isCheck && envInput(), desMax, tracker))) return;
     if (typeof window !== "undefined" && typeof window.__owdRoll === "function") {
