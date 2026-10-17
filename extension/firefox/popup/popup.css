@@ -488,4 +488,5 @@ body.p-off #p-pieces .p-titre { color: var(--ink-3); }
 }
 .p-flash[hidden] { display: none; }
 
-.p-separateur{border:0;border-top:1px solid var(--line);margin:8px 0}
+/* Séparation des cinq outils et du mode Beta. */
+.p-separation { height: 1px; margin: 7px 0; background: var(--line, #777); opacity: .65; }

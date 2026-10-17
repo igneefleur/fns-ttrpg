@@ -167,27 +167,13 @@
   padding: 4px 5px 4px 10px; cursor: move; user-select: none;
   background: #262626; border-bottom: 1px solid #262626;
 }
-/* ANCRÉ, LE TITRE RECULE D'UNE TABULATION. Collé à la boîte à outils, il
-   commencerait juste contre elle et se ferait manger par son ombre : les
-   premières lettres ne seraient plus lisibles. Vingt-huit pixels suffisent à
-   l'en dégager, et seulement dans ce cas — flottant, le panneau n'a rien à sa
-   gauche et un décalage ne serait qu'un trou. */
-.owd-panneau.owd-panneau-ancre > .owd-panneau-tete { padding-left: 28px; }
 .owd-panneau-titre {
   flex: 1 1 auto; min-width: 0;
   font-family: inherit;
   font-weight: 700; font-size: 12px; letter-spacing: .06em; color: #ffd77f;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-/* les deux boutons de la barre de titre (détacher, fermer) ont la forme des
-   petits boutons de la fiche : fond --card, filet --line-2, cinq pixels de
-   rayon.
-   La pile de polices finit par « sans-serif » alors que tout le reste du cadre
-   est en sérif : les deux flèches d'ancrage (⇱ ⇲) n'existent dans aucune police
-   du livre, et c'est le repli glyphe par glyphe du navigateur qui les dessine.
-   Sans ce dernier recours nommé, un carré vide remplacerait le bouton. */
-/* Les deux boutons vivent DANS le bandeau : ils en prennent les couleurs,
-   sinon deux pastilles claires y feraient deux trous. */
+/* Le seul bouton du bandeau est Fermer ; l'en-tête se replie au double-clic. */
 .owd-panneau-btn {
   flex: 0 0 auto; width: 20px; height: 18px; padding: 0; cursor: pointer;
   background: rgba(255, 215, 127, .10); color: #ffd77f;
@@ -210,6 +196,7 @@
 .owd-panneau-replie .owd-panneau-grip { display: none; }
 .owd-panneau-replie .owd-panneau-tete { border-bottom: 0; }
 .owd-panneau-replie .owd-panneau-tete::after { display: none; }
+.owd-panneau-tete:focus-visible { outline: 2px solid var(--or); outline-offset: -2px; }
 .owd-panneau-grip {
   position: absolute; right: 0; bottom: 0; width: 14px; height: 14px;
   cursor: nwse-resize;
@@ -219,29 +206,6 @@
 /* pendant un geste, l'iframe ne capte plus la souris : sans cela le pointeur
    entre dedans et le déplacement s'arrête au bord du panneau */
 .owd-panneau-geste .owd-panneau-frame { pointer-events: none; }
-
-/* ---- ancré à la barre d'outils ----
-   Collé à la barre et sur toute la hauteur, comme les panneaux natifs de
-   Roll20. La géométrie est posée en ligne par content-roll20.js, qui MESURE la
-   barre au lieu de la deviner : rien de tout cela ne se règle ici, sans quoi il
-   faudrait re-signer l'extension le jour où Roll20 élargit sa barre.
-   Ce qui se règle ici, c'est ce qui SE VOIT : le coin gauche perd son arrondi
-   (une carte arrondie contre une barre droite laisse deux entailles de fond), la
-   barre de titre n'invite plus à saisir ce qui ne bouge plus, et la poignée ne
-   promet plus que la largeur. */
-/* LES COINS, ANCRÉ. Seul le côté qui TOUCHE la barre reste droit ; tout le reste
-   s'arrondit comme une carte du livre.
-     - en haut à gauche : toujours droit quand on est collé, c'est là que la
-       barre commence ;
-     - en bas à gauche : ARRONDI d'ordinaire — c'est le creux qu'il fallait
-       boucher — et droit seulement quand la barre descend jusqu'au bas de la
-       fenêtre, où le coin est de toute façon hors champ. Cette variante est
-       posée par content-roll20.js (classe .owd-panneau-bas-plein), qui mesure
-       la barre : le CSS ne peut pas savoir jusqu'où elle descend. */
-.owd-panneau-ancre { border-radius: 0 8px 8px 8px; }
-.owd-panneau-ancre.owd-panneau-bas-plein { border-radius: 0 8px 8px 0; }
-.owd-panneau-ancre .owd-panneau-tete { cursor: default; }
-.owd-panneau-ancre .owd-panneau-grip { cursor: ew-resize; }
 
 /* ---- écran « pas encore de fiche » + bouton de création ----
    Une carte du livre, posée au milieu du pane : fond --card, filet --line-2,
@@ -538,9 +502,3 @@
 .owd-item-dialog .owd-item-image{width:147px;flex-basis:147px}
 .owd-item-dialog .owd-item-description{max-height:none}.owd-item-dialog>button{margin-top:16px}
 @media(max-width:380px){.owd-item-dialog .owd-item-image{width:105px;flex-basis:105px}}
-
-/* Les articles du catalogue sont seulement montrés ou donnés. */
-.owd-chat-drop-hint.owd-shop-drag .owd-chat-drop-zone[data-action=supprimer]{display:none}
-/* Les cinq fenêtres reprennent le noir et l'or du cadre de l'extension. */
-.owd-panneau{--paper:#0d0d0d;--bg-side:#000;--ink:#e6e6e6;--line:#3a3a3a;--or:#ffd77f}
-.owd-panneau.owd-panneau-replie{min-height:0}

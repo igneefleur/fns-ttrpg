@@ -87,29 +87,24 @@
     </div>
   </section>
 
-  <!-- LES PIÈCES QU'ON ALLUME SÉPARÉMENT. Le camp d'abord, parce qu'il se
-       voit ; la beta en dernier, parce que c'est un réglage d'auteur. Le bloc
-       entier se grise quand l'extension est éteinte : rien ici n'a de sens tant
-       qu'elle l'est. -->
+  <!-- Chaque outil dispose de son interrupteur ; Beta est séparé des outils. -->
   <section class="p-bloc" id="p-pieces">
     <h2 class="p-titre">Affichage dans Roll20</h2>
-
-    <div class="p-ligne">
-      <span class="p-lib" id="p-pan-lib">Monde</span>
-      <button type="button" class="p-sw p-sw-btn" id="p-panneau" role="switch" aria-checked="true" aria-labelledby="p-pan-lib"><i></i></button>
-    </div>
-
-    <div class="p-ligne"><span class="p-lib" id="p-boutique-lib">Boutique</span><button type="button" class="p-sw p-sw-btn" id="p-boutique" role="switch" aria-checked="true" aria-labelledby="p-boutique-lib"><i></i></button></div>
-    <div class="p-ligne"><span class="p-lib" id="p-inventaire-lib">Inventaire</span><button type="button" class="p-sw p-sw-btn" id="p-inventaire" role="switch" aria-checked="true" aria-labelledby="p-inventaire-lib"><i></i></button></div>
-    <div class="p-ligne"><span class="p-lib" id="p-attaques-lib">Attaques</span><button type="button" class="p-sw p-sw-btn" id="p-attaques" role="switch" aria-checked="true" aria-labelledby="p-attaques-lib"><i></i></button></div>
-    <div class="p-ligne"><span class="p-lib" id="p-defenses-lib">Défenses</span><button type="button" class="p-sw p-sw-btn" id="p-defenses" role="switch" aria-checked="true" aria-labelledby="p-defenses-lib"><i></i></button></div>
-    <hr class="p-separateur">
-    <div class="p-ligne">
-      <span class="p-lib" id="p-beta-lib">Beta</span>
+    <div class="p-ligne"><span class="p-lib" id="p-pan-lib">Monde</span>
+      <button type="button" class="p-sw p-sw-btn" id="p-panneau" role="switch" aria-checked="true" aria-labelledby="p-pan-lib"><i></i></button></div>
+    <div class="p-ligne"><span class="p-lib" id="p-boutique-lib">Boutique</span>
+      <button type="button" class="p-sw p-sw-btn" id="p-boutique" role="switch" aria-checked="true" aria-labelledby="p-boutique-lib"><i></i></button></div>
+    <div class="p-ligne"><span class="p-lib" id="p-inventaire-lib">Inventaire</span>
+      <button type="button" class="p-sw p-sw-btn" id="p-inventaire" role="switch" aria-checked="true" aria-labelledby="p-inventaire-lib"><i></i></button></div>
+    <div class="p-ligne"><span class="p-lib" id="p-attaques-lib">Attaques</span>
+      <button type="button" class="p-sw p-sw-btn" id="p-attaques" role="switch" aria-checked="true" aria-labelledby="p-attaques-lib"><i></i></button></div>
+    <div class="p-ligne"><span class="p-lib" id="p-defenses-lib">Défenses</span>
+      <button type="button" class="p-sw p-sw-btn" id="p-defenses" role="switch" aria-checked="true" aria-labelledby="p-defenses-lib"><i></i></button></div>
+    <div class="p-separation" role="separator"></div>
+    <div class="p-ligne"><span class="p-lib" id="p-beta-lib">Beta</span>
       <button type="button" class="p-sw p-sw-btn" id="p-beta" role="switch"
               aria-checked="false" aria-labelledby="p-beta-lib"
-              title="Nouveautés en avance, casses possibles."><i></i></button>
-    </div>
+              title="Nouveautés en avance, casses possibles."><i></i></button></div>
   </section>
 
   <!-- HORS DES BLOCS, ET C'EST VOULU. Trois réglages exigent un rechargement

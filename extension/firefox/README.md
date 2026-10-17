@@ -123,7 +123,11 @@ les scripts d'amorce et de correspondance état ↔ Attributes.
 | `owdNuit` | absente = `"auto"` |
 | `owdBeta` | absente = partie stable |
 | `owdPanneauActif` | absente = panneau Monde allumé |
-| `owdPanneau:roll20-camp.html` | la géométrie du panneau, écrite par `content-roll20.js` ; le bouton « Replacer » du popup la SUPPRIME |
+| `owdOutilBoutiqueActif` | absente = Boutique allumée |
+| `owdOutilInventaireActif` | absente = Inventaire allumé |
+| `owdOutilAttaquesActif` | absente = Attaques allumé |
+| `owdOutilDefensesActif` | absente = Défenses allumées |
+| `owdPanneau:roll20-*.html` | position, taille, état réduit et visibilité de chaque fenêtre ; ne contient plus d'état d'ancrage |
 
 ## Dépannage
 
@@ -202,11 +206,13 @@ inclure les changements de fiche 3.0.0b et de Monde 3.1.0b en un seul paquet.
 
 ## Outils OUTWARD — version de site 3.2.0b
 
-`content-roll20.js` pose un séparateur natif OUTWARD et les outils Monde et
-Inventaire (planète et sac en SVG `currentColor`). Les barres à `div` et à
+`content-roll20.js` pose un séparateur natif OWD et les cinq outils Monde,
+Inventaire, Attaques, Défenses et Boutique (icônes SVG `currentColor`). Les barres à `div` et à
 `button` sont prises en charge, avec remise en place après un remontage.
-Les cadres indépendants conservent leur géométrie ; ils ne prennent pas la
-hauteur de la barre du MJ. Les iframes restent vivantes lors de la fermeture
+Les fenêtres sont toujours flottantes, déplaçables et redimensionnables ; elles
+se réduisent et se déplient au double-clic sur l'en-tête (Entrée/Espace aussi au
+clavier), sans commandes Ancrer, Détacher, Replacer ou Réduire distinctes. Elles
+conservent leur géométrie ; elles ne prennent pas la hauteur de la barre du MJ. Les iframes restent vivantes lors de la fermeture
 pour confirmer les envois en cours. Le thème est relayé sans rechargement.
 
 `owdPanneau:roll20-inventaire.html` mémorise la géométrie d'Inventaire, en plus

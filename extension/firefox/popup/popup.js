@@ -5,23 +5,9 @@
  * réglage, et le jour où les deux copies ne diraient pas la même chose, personne
  * ne saurait laquelle croire.
  *
- * CE QU'IL COMMANDE, dans l'ordre où on les rencontre :
- *   owdOff             l'interrupteur général      (absent = allumée)
- *   owdNuit            "auto" | "jour" | "nuit"    (absent = auto)
- *   owdPanneauActif    le panneau de Camp          (absent = allumé)
- *   owdBeta            la moitié beta              (absent = stable)
- *
- * UN SEUL NOM PAR RÉGLAGE, et c'est le luxe d'une extension neuve : rien n'est
- * encore posé chez un joueur, donc rien à ménager. Les deux copies de
- * content-roll20.js lisent exactement ces quatre clés-là, écrites exactement
- * comme ici. Le jour où une cinquième s'ajoutera, elle s'écrira des deux côtés
- * dans le même geste : un nom écrit d'un seul côté, c'est un interrupteur qui
- * ne fait plus rien, sans le moindre message, et personne ne s'en aperçoit
- * avant une vraie partie.
- *
- * Aucune collision avec la géométrie du panneau : celle-ci est rangée sous
- * « owdPanneau:roll20-camp.html », et storage.local.get("owdPanneauActif") ne
- * rend que la clé exacte, jamais ce qui commence pareil.
+ * LES REGLAGES D'OUTILS : cinq interrupteurs (Monde, Boutique, Inventaire,
+ * Attaques, Défenses), puis Beta. L'absence de clé signifie "activé".
+ * Les états géométriques des fenêtres sont indépendants des interrupteurs.
  *
  * LE MOT EST « BETA » DANS TOUT CE QU'UN JOUEUR LIT — le réglage, la pastille et
  * les lignes du pied. Il n'y en a pas de second, et il ne faut pas en inventer.
@@ -48,8 +34,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
   var CLE_NUIT = "owdNuit";
   var CLE_BETA = "owdBeta";
   var CLE_PAN = "owdPanneauActif";
-  var OUTILS = ["boutique", "inventaire", "attaques", "defenses"];
-  var outilsActifs = {};
+  var CLES_OUTILS={boutique:'owdOutilBoutiqueActif',inventaire:'owdOutilInventaireActif',attaques:'owdOutilAttaquesActif',defenses:'owdOutilDefensesActif'};
 
   var CLE_DEP = ["owd_sheet_url", "owd_site_url"];
 
@@ -100,6 +85,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
     nuit: "auto",
     beta: false,
     panneau: true,
+    outils: {boutique:true,inventaire:true,attaques:true,defenses:true},
     depannage: []      // les clés de dépannage trouvées posées
   };
   var su = false;        // le stockage a-t-il répondu
@@ -153,6 +139,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
     var elRecharge = $("p-recharge");
     var elNuit = $("p-nuit");
     var elPan = $("p-panneau");
+    var elsOutils={boutique:$("p-boutique"),inventaire:$("p-inventaire"),attaques:$("p-attaques"),defenses:$("p-defenses")};
     var elBeta = $("p-beta");
     var elFlash = $("p-flash");
     var elRegles = $("p-regles");
@@ -196,6 +183,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
 
     function rendPieces() {
       marque(elPan, etat.panneau);
+      Object.keys(CLES_OUTILS).forEach(function(id){marque(elsOutils[id],etat.outils[id]);});
       marque(elBeta, etat.beta);
       // GRISER NE SUFFIT PAS. L'opacité et pointer-events arrêtent la souris et
       // rien d'autre : au clavier, ces trois boutons resteraient dans l'ordre de
@@ -204,7 +192,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
       // tabulation ET les annonce désactivés aux lecteurs d'écran.
       elPan.disabled = etat.off;
       elBeta.disabled = etat.off;
-      OUTILS.forEach(function(id){marque($("p-"+id),outilsActifs[id]!==false);$("p-"+id).disabled=etat.off;});
+      Object.keys(CLES_OUTILS).forEach(function(id){elsOutils[id].disabled=etat.off;});
       elRegles.href = etat.beta ? REGLES.beta : REGLES.stable;
       elMaj.href = etat.beta ? PAGE_EXT.beta : PAGE_EXT.stable;
     }
@@ -447,13 +435,19 @@ if (typeof browser === "undefined") { var browser = chrome; }
       o[CLE_PAN] = etat.panneau;
       pose(o);
       rendPieces();
-      // Pas de proposition de rechargement ici : le panneau se monte et se
-      // démonte à l'ouverture d'une partie, et l'interrupteur ne vaut que pour
-      // la suivante. Un bouton qui sortirait pour tout ferait recharger pour
-      // rien.
+      // La barre est injectée au montage de Roll20 : un rechargement est
+      // nécessaire pour appliquer la nouvelle visibilité, comme les quatre
+      // autres outils.
+      proposeRechargement();
     });
 
-    OUTILS.forEach(function(id){$("p-"+id).addEventListener("click",function(){var cle="owdOutilActif:"+id;outilsActifs[id]=outilsActifs[id]===false;touche[cle]=true;var o={};o[cle]=outilsActifs[id];pose(o);rendPieces();});});
+    Object.keys(CLES_OUTILS).forEach(function(id){
+      elsOutils[id].addEventListener('click',function(){
+        etat.outils[id]=!etat.outils[id];touche[CLES_OUTILS[id]]=true;
+        var data={};data[CLES_OUTILS[id]]=etat.outils[id];pose(data);rendPieces();
+        proposeRechargement();
+      });
+    });
 
     elBeta.addEventListener("click", function () {
       etat.beta = !etat.beta;
@@ -477,7 +471,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
     // rien ne le dise ; ici l'échec passe par le même chemin que la réponse
     // vide, et le panneau s'affiche avec les valeurs par défaut, qui sont aussi
     // celles que les scripts de contenu prendront.
-    var voulues = [CLE_OFF, CLE_NUIT, CLE_BETA, CLE_PAN].concat(CLE_DEP, OUTILS.map(function(id){return "owdOutilActif:"+id;}));
+    var voulues = [CLE_OFF, CLE_NUIT, CLE_BETA, CLE_PAN].concat(Object.keys(CLES_OUTILS).map(function(id){return CLES_OUTILS[id];}),CLE_DEP);
     try {
       browser.storage.local.get(voulues).then(recu, function () { recu(null); });
     } catch (e) {
@@ -504,11 +498,11 @@ if (typeof browser === "undefined") { var browser = chrome; }
       // doit pouvoir se débarrasser du panneau sans désinstaller, mais ne doit
       // pas avoir à l'allumer pour l'avoir. Le test est donc STRICT sur false,
       // et non « r[CLE_PAN] !== undefined ».
-      if (!touche[CLE_PAN]) {
-        etat.panneau = r[CLE_PAN] !== false;
-      }
+      if (!touche[CLE_PAN]) {etat.panneau=r[CLE_PAN]!==false;}
+      Object.keys(CLES_OUTILS).forEach(function(id){
+        if(!touche[CLES_OUTILS[id]])etat.outils[id]=r[CLES_OUTILS[id]]!==false;
+      });
 
-      OUTILS.forEach(function(id){var cle="owdOutilActif:"+id;if(!touche[cle])outilsActifs[id]=r[cle]!==false;});
       var k;
       etat.depannage = [];
       for (k = 0; k < CLE_DEP.length; k++) {
