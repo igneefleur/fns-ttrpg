@@ -17,7 +17,7 @@
     // Leurs quantités, prix, poids, image et description restent ceux du joueur.
     if(!o.versionObjet && /^boutique:/.test(o.id||"") && modele){
       o=Object.assign({},modele,o);
-      ["typeObjet","sousType","taille","tailleInterieure","tailleAccroche","effets","stats","restaurations","unitesRestauration","ps","ph","places","tempsConsommation","conditionsEffets","proprietes"].forEach(function(k){if(modele[k]!==undefined)o[k]=JSON.parse(JSON.stringify(modele[k]));});
+      ["typeObjet","sousType","taille","tailleInterieure","tailleAccroche","effets","stats","restaurations","unitesRestauration","ps","ph","places","emplacements","prerequis","tenueDeuxMains","tempsConsommation","conditionsEffets","proprietes"].forEach(function(k){if(modele[k]!==undefined)o[k]=JSON.parse(JSON.stringify(modele[k]));});
       ["arme","vet","sac","ceint","acc","contenant","contenu","cap","ep","froid","chaud","poches","prot_physique","res_physique"].forEach(function(k){if(modele[k]!==undefined)n[k]=JSON.parse(JSON.stringify(modele[k]));});
       combatTypes().forEach(function(t){["prot_","res_"].forEach(function(p){if(modele[p+t]!==undefined){n[p+t]=modele[p+t];o[p+t]=modele[p+t];}});});
       if(n.arme)o.arme=n.arme;
@@ -26,12 +26,19 @@
     n.typeObjet=invType(o);if(!INV_TYPES_OBJETS[n.typeObjet])n.typeObjet="autre";
     n.sousType=String(o.sousType || (o.sac?"sac":o.ceint?"ceint":o.vet?o.vet:o.acc?o.acc:o.arme?o.arme.type:o.nourri?"ingerable":n.typeObjet==="munition"?o.contenu:"autre"));
     if(/^(eclairage|couchage)$/.test(o.typeObjet))n.sousType="autre";
+    // La catégorie technique du contenant EST son sous-type affiché.
+    if(n.typeObjet==="contenant" && n.contenant)n.sousType=String(n.contenant);
     n.nourri=n.sousType==="ingerable";n.places=pnum(o.places);
     n.taille=INV_TAILLES.indexOf(o.taille)>=0?o.taille:modele&&modele.taille||"";
     var mainsBase=o.arme&&o.arme.mains;
     if(mainsBase==null && o.arme)armesData().forEach(function(d){if(d.cle===o.arme.type || !o.arme.type&&pli(d.nom)===pli(o.nom))mainsBase=d.mains;});
-    n.mains=num(o.mains,mainsBase===2?2:1)===2?2:1;
+    // 1 : une main suffit ; 2 : deux mains pour l'utilisation, une pour le port ;
+    // 2 obligatoires : occupation simultanée des deux mains.
+    n.mains=o.mains==="2 obligatoires"?"2 obligatoires":num(o.mains,mainsBase===2?2:1)===2?2:1;
+    n.tenueDeuxMains=(o.tenueDeuxMains===true || n.mains==="2 obligatoires") && (o.ou==="mainG" || o.ou==="mainD");
     if(n.arme)n.arme.mains=n.mains;
+    n.emplacements=Math.max(0,Math.floor(num(o.emplacements,1)));
+    n.prerequis={};["for","dex","vig","end","res","fer","int","cha"].forEach(function(k){n.prerequis[k]=pnum(o.prerequis&&o.prerequis[k]);});
     n.volume=pnum(o.volume===undefined?o.encombre:o.volume);n.encombre=n.volume;
     n.tailleInterieure=String(o.tailleInterieure||"");n.tailleAccroche=String(o.tailleAccroche || (n.sac?"Moyenne":""));
     n.effets=(Array.isArray(o.effets)?o.effets:[]).slice(0,8).map(String);
@@ -132,6 +139,21 @@
     if(caches.length){var a=el("div","pc-obj-effets-anciens");a.appendChild(el("small",null,
       caches.length+" effet(s) historique(s) hors des huit lignes, toujours actifs : "+caches.map(function(c){return c[1]+" "+fmtP(invValeurEquipement(it,c[0]));}).join(" ; ")));host.appendChild(a);}
   }
+  // Un seul tableau de prérequis pour les vêtements et les accessoires.
+  // Les valeurs restent en données, même si les règles d'équipement évoluent.
+  function invChampsPrerequis(host,it) {
+    if(!it.prerequis || typeof it.prerequis!=="object")it.prerequis={};
+    var grille=el("div","pc-obj-pre-requis");
+    [["for","FOR"],["dex","DEX"],["vig","VIG"],["end","END"],
+     ["res","RES"],["fer","FER"],["int","INT"],["cha","CHA"]].forEach(function(x){
+      var n=el("input","pc-edit-field");n.type="text";n.inputMode="numeric";
+      n.value=fmtP(pnum(it.prerequis[x[0]]));n.addEventListener("input",function(){
+        var v=litNombreSigne(n.value);if(isFinite(v) && v>=0){it.prerequis[x[0]]=v;save();}
+      });
+      grille.appendChild(fld("PRÉ. "+x[1],n));
+    });
+    host.appendChild(grille);
+  }
   function invAvecEffets(it) {return ["solide","pate","liquide"].indexOf(invType(it))>=0 && ["ingerable","consommable"].indexOf(it.sousType)>=0;}
   function invChampsCommuns(body,it,render) {
     if(invAvecEffets(it)){
@@ -142,14 +164,6 @@
     }
     if(it.proprietes && Object.keys(it.proprietes).some(function(k){return it.proprietes[k]!=null;})){
       var props=el("div","pc-arme");Object.keys(it.proprietes).forEach(function(k){if(it.proprietes[k]==null)return;var i=el("input","pc-edit-field");i.type="text";i.value=it.proprietes[k];i.addEventListener("input",function(){it.proprietes[k]=i.value;save();});props.appendChild(fld({autonomie:"Autonomie",accrochable:"Accrochable",recharge:"Recharge"}[k]||k,i));});body.appendChild(props);
-    }
-    if(it.acc){
-      if(!it.stats)it.stats={};var stats=el("div","pc-arme-repartition");
-      function nombre(label,read,write){var n=el("input","pc-edit-field");champNombreSigne(n);n.value=read();n.addEventListener("input",function(){var v=litNombreSigne(n.value);if(isFinite(v)){write(v);save();}});n.addEventListener("change",refresh);return fld(label,n);}
-      if(!it.stats.degats)it.stats.degats={};if(!it.stats.couts)it.stats.couts={};
-      combatTypes().forEach(function(k){stats.appendChild(nombre("Dégâts "+combatLibType(k)+" (%)",function(){return num(it.stats.degats[k],0);},function(v){it.stats.degats[k]=v;}));});
-      ["pm","pe"].forEach(function(k){stats.appendChild(nombre("Coût "+k.toUpperCase()+" (%)",function(){return num(it.stats.couts[k],0);},function(v){it.stats.couts[k]=v;}));});
-      [["vitesse","Déplacement (%)"],["innocence","Résistance corruption (%)"],["alterations","Résistance altérations (%)"]].forEach(function(x){stats.appendChild(nombre(x[1],function(){return num(it.stats[x[0]],0);},function(v){it.stats[x[0]]=v;}));});body.appendChild(stats);
     }
     if(invType(it)==="munition"){
       if(!it.munitionStats)it.munitionStats={degats:0,repartition:{physique:100}};

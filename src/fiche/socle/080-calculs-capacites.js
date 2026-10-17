@@ -345,12 +345,14 @@
   // emplacement ; mais un vêtement « Haut + Bas » (une robe) tient le haut ET
   // le bas, et une arme à deux mains les deux mains. Son emplacement « ou »
   // est alors la case d'ANCRAGE (haut, main droite), l'autre suit.
-  function casesDe(o, ou) {
+  function casesDe(o, ou, forceDeux) {
     var explicite = !!ou;
     ou = ou || o.ou;
     if (!explicite && o.dans) return [];
     if (o.vet === "hautbas" && (ou === "haut" || ou === "bas")) return ["haut", "bas"];
-    if ((o.mains === 2 || o.mains == null && o.arme && o.arme.mains === 2) && (ou === "mainG" || ou === "mainD")) return ["mainG", "mainD"];
+    if ((ou === "mainG" || ou === "mainD") &&
+        (o.mains === "2 obligatoires" || (forceDeux === undefined ? o.tenueDeuxMains === true : forceDeux === true)))
+      return ["mainG", "mainD"];
     return INV_CASES.indexOf(ou) >= 0 ? [ou] : [];
   }
   // Une CASE de Sur soi accepte-t-elle cet objet ? Les mains prennent tout ;
@@ -424,8 +426,8 @@
     return JSON.stringify(c);
   }
   // la case d'ancrage d'un objet posé en `ou`
-  function ancrage(o, ou) {
-    var c = casesDe(o, ou);
+  function ancrage(o, ou, forceDeux) {
+    var c = casesDe(o, ou, forceDeux);
     return c.length > 1 ? (o.vet === "hautbas" ? "haut" : "mainD") : ou;
   }
   function objetEn(cas) {

@@ -154,6 +154,13 @@
       return out;
     }
     function executeAttaque(entree, it, def, envoyer) {
+      // 2 : transportable dans une main, mais utilisable seulement à deux.
+      // Les 2 obligatoires occupent déjà les deux mains dès leur équipement.
+      if ((it.mains === 2 || it.mains === "2 obligatoires") &&
+          (it.ou === "mainG" || it.ou === "mainD") && !it.tenueDeuxMains) {
+        flash("Cette arme nécessite deux mains pour être utilisée. Déposez-la sur « 2 Mains ».");
+        return;
+      }
       var rep=it.arme&&it.arme.repartition,sum=0;
       if(rep){Object.keys(rep).forEach(function(k){sum+=pnum(rep[k]);});if(Math.abs(sum-100)>0.001){flash("La répartition des dégâts doit totaliser 100 %.");return;}}
       var r = prepareRessources(entree, it, def);

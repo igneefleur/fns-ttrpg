@@ -159,15 +159,15 @@
     if (!attaqueLibre) {
       if (!a.repartition) a.repartition = {physique:100};
       var rep = el("div", "pc-arme-repartition");
-      var totalInput = el("input", "pc-edit-field pc-arme-total");
-      totalInput.type = "text";
-      totalInput.readOnly = true;
+      // Une sortie calculée, ni champ éditable, ni texte sélectionnable.
+      var totalInput = el("div", "pc-edit-field pc-arme-total");
+      totalInput.setAttribute("role", "status");
       totalInput.setAttribute("aria-label", "Total des types de dégâts (%)");
       totalInput.title = "Somme calculée automatiquement, non modifiable";
       function total() {
         var n = 0;
         combatTypes().forEach(function (k) { n += pnum(a.repartition[k]); });
-        totalInput.value = fmtP(n) + " %";
+        totalInput.textContent = fmtP(n) + " %";
         totalInput.classList.toggle("pc-invalid", Math.abs(n-100) > 0.001);
       }
       // 4 rangées × 2, avec Brut / Total pour la dernière.
@@ -192,7 +192,7 @@
       [["for", "FOR"], ["dex", "DEX"], ["vig", "VIG"], ["end", "END"],
        ["res", "RES"], ["fer", "FER"], ["int", "INT"], ["cha", "CHA"]].forEach(function (x, i) {
         if (i % 2 === 0) card.appendChild(ligne("pc-arme-2 pc-arme-requis"));
-        card.lastChild.appendChild(champArme(x[1], a, x[0], "Prérequis de " + x[1]));
+        card.lastChild.appendChild(champArme("PRÉ. " + x[1], a, x[0], "Prérequis de " + x[1]));
       });
     }
 

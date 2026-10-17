@@ -70,7 +70,10 @@ const server=http.createServer((req,res)=> {
   await field('Mains').locator('select').selectOption('2');assert.equal((await state()).inv.objets[0].mains,2);
   await frame.evaluate(()=>Owd.remonte());await choose();assert.equal(await field('Mains').locator('select').inputValue(),'2');
   await replace(s=>{s.inv.objets[0].ou='mainG';});
-  assert.equal(await sheet.locator('[data-ou="mainD"] [data-object-ref="sample"]').count(),1);
+  assert.equal(await sheet.locator('[data-ou="mainD"] [data-object-ref="sample"]').count(),0);
+  assert.equal(await sheet.locator('[data-ou="mainG"] [data-object-ref="sample"]').count(),1);
+  assert.equal(await sheet.locator('.pc-inv-twohand-target').count(),1);
+  // 2 autorise le port dans une main ; seul le dépôt sur 2 Mains occupe les deux.
   for(const type of ['solide','pate','liquide']){
    await replace(s=>{const o=s.inv.objets[0];o.typeObjet=type;o.sousType='ingerable';o.nourri=true;o.ou='poches';});await choose();
    assert.equal(await field('Effet 1').count(),1);assert.equal(await field('Effet 8').count(),1);

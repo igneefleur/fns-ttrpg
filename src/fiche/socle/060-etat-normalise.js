@@ -364,6 +364,9 @@
         // « places » est le nom de CLÉ du volume d'un aliment : le livre dit
         // « volume », la clé garde son nom, qui voyage dans les Attributes
         places: pnum(o.places),
+        emplacements: Math.max(0,Math.floor(num(o.emplacements,1))),
+        tenueDeuxMains: o.tenueDeuxMains === true,
+        prerequis: o.prerequis && typeof o.prerequis === "object" ? o.prerequis : {},
         nourri: !!o.nourri,
         // Types « contenant » et « contenu » : la chaîne porte leur catégorie.
         // Une valeur inconnue est conservée plutôt qu'effacée : une archive ou
@@ -427,7 +430,7 @@
     var anciensSacs = s.inv.objets.slice();
     anciensSacs.forEach(function(o){if(!o.sac)return;var n=Math.max(1,Math.ceil(pnum(o.qte)));o.qte=1;
       for(var k=1;k<n;k++){var c=JSON.parse(JSON.stringify(o));c.ref=uid("o");c.ou="sac";c.dans="";c.emp=-1;s.inv.objets.push(c);}});
-    var contenantsParRef = Object.create(null), slotsPris = Object.create(null);
+    var contenantsParRef = Object.create(null);
     s.inv.objets.forEach(function (o) {
       if (o && o.ref && (o.contenant || o.sac)) contenantsParRef[o.ref] = o;
     });
@@ -436,14 +439,14 @@
       var p = contenantsParRef[o.dans];
       var cycle = p === o, walk = p, seen = {};
       while(walk && walk.dans && !cycle){if(seen[walk.ref]||walk.dans===o.ref){cycle=true;break;}seen[walk.ref]=true;walk=contenantsParRef[walk.dans];}
-      if (!p || cycle || (!p.sac && (!o.contenu || String(o.contenu) !== String(p.contenant) || slotsPris[o.dans]))) {
+      if (!p || cycle || (!p.sac && (!o.contenu || String(o.contenu) !== String(p.contenant)))) {
         o.dans = "";
         o.ou = "sac";
         o.emp = -1;
         return;
       }
       if(p.sac) { if(o.ou!=="sacep") {o.ou="sac";o.emp=-1;} return; }
-      slotsPris[o.dans] = 1;
+      // Plusieurs objets peuvent viser ce même contenant ; sa limite n'est qu'indicative.
       // `ou` reste un repli compatible avec les anciens schémas ; pendant que
       // `dans` est posé, l'interface et les calculs d'encombrement l'ignorent.
       o.ou = "sac";
