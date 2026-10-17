@@ -87,7 +87,9 @@
     it.champs.forEach(function (f) { if (!/^(Poids|Volume|Achat|Vente)\b/.test(f[0])) fields.push(f); });
     if (it.desc) fields.push(['Description', it.desc]);
     var description = [it.desc, it.champs.map(function (f) { return f[0] + ' : ' + f[1]; }).join('\n')].filter(Boolean).join('\n\n');
-    var payload = encode({version: 1, n: it.nom, q: q, k: 'boutique:' + it.id, p: num(value(it, 'Poids (kg)')), l: num(value(it, 'Volume (L)')), a: num(value(it, 'Achat (argent)')), v: num(value(it, 'Vente (argent)')), d: description, i: it.img ? new URL(it.img, location.href).href : '', s: fields});
+    var objet = it.objet ? JSON.parse(JSON.stringify(it.objet)) : null;
+    if(objet){objet.img=it.img ? new URL(it.img,location.href).href : '';objet.qte=q;}
+    var payload = encode({version: 2, item:objet, n: it.nom, q: q, k: 'boutique:' + it.id, p: num(value(it, 'Poids (kg)')), l: num(value(it, 'Volume (L)')), a: num(value(it, 'Achat (argent)')), v: num(value(it, 'Vente (argent)')), d: description, i: it.img ? new URL(it.img, location.href).href : '', s: fields});
     var raw = '&{template:default} {{name=OWD Item ' + (action === 'donner' ? 'Give' : 'Show') + '}} {{Objet=' + safe(it.nom) + '}}';
     fields.forEach(function (f) { raw += ' {{' + safe(f[0]) + '=' + safe(f[1]) + '}}'; });
     raw += action === 'donner' ? ' {{Prendre=[Prendre](/owd_take ' + payload + ')}}' : ' {{Montrer=[Montrer](/owd_item_show ' + payload + ')}}';

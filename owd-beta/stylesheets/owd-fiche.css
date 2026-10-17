@@ -2160,3 +2160,19 @@ html.night .t-pi { --palier-plein: #30343b; }
 
 .pc-eff-tete { flex-wrap: wrap; }
 .pc-eff-lecture { margin-left: auto; }
+
+/* Effets : même typographie et mêmes commandes que les modules natifs. */
+.pc-effets-liste { min-width:0; }
+.pc-effet-row { border-bottom:1px solid var(--line); padding:.35rem 0; min-width:0; }
+.pc-effet-head { display:flex; gap:.35rem; justify-content:space-between; align-items:baseline; }
+.pc-effet-nom { font-size:var(--fs-label); color:var(--ink); overflow-wrap:anywhere; }
+.pc-effet-temps { flex:0 0 auto; font-size:var(--fs-meta); color:var(--ink-3); font-variant-numeric:tabular-nums; }
+.pc-effet-desc, .pc-effet-manuel { font-size:var(--fs-meta); color:var(--ink-3); overflow-wrap:anywhere; line-height:1.35; }
+.pc-effet-row .pc-segs { margin-top:.25rem; }
+.pc-arme-repartition { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.3rem; }
+.pc-arme-repartition .pc-f, .pc-arme-repartition input, [data-module="effets"] input { min-width:0; max-width:100%; }
+.pc-arme-pourcent-total { grid-column:1/-1; color:var(--ink-3); }
+.pc-invalid { color:var(--danger); }
+[data-module="effets"] > .pc-obj-pair { margin-top:.35rem; }
+[data-module="effets"] > .pc-obj-pair > input { flex:1; width:0; }
+[data-module="effets"] .pc-obj-pair .pc-segs { flex:2; }

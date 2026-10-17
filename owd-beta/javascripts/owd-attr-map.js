@@ -81,7 +81,7 @@
   // même version, la beta étant ce que le stable recevra à la fusion) : ce qui
   // compare des versions doit donc l'ôter avant de lire les nombres, et c'est
   // exactement ce que fait OwdMods.compareVersions.
-  var RELEASE_DEFAUT = "3.20.1b";
+  var RELEASE_DEFAUT = "3.21.0b";
   // Entier INDÉPENDANT de la release : il ne monte qu'au changement de forme de
   // l'état du personnage, jamais parce que le majeur a bougé. Ajouter une clé
   // racine avec un défaut n'en est PAS un : normalize() complète une clé
@@ -165,6 +165,7 @@
     ["desUtilises", "des_utilises"],
     ["effParties", "eff_parties"],
     ["effPause", "eff_pause"],
+    ["effetsActifs", "effets_actifs"], ["effetsPermanents", "effets_permanents"],
     // LA TABLE DE LEVIERS des caractéristiques : levier, boîte, caractéristique.
     // Tous les leviers des Options voyagent, y compris sur le chemin de repli :
     // en JJK, les seconds modificateurs et les forçages de caractéristiques ont
@@ -273,6 +274,7 @@
       effAutre: 0,
       effDesactive: false,
       effPause: null,
+      effetsActifs: [], effetsPermanents: {},
       effAlcool: 0,
       effAlcoolSecondes: 0,
       effParties: {},
