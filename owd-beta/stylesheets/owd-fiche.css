@@ -2148,21 +2148,15 @@ html.night .t-pi { --palier-plein: #30343b; }
 .pc-eff-partie.t-chaud { --teinte: var(--chaud); }
 .pc-eff-niveau { margin-top: .35rem; }
 
-/* La largeur de chaque case décide du libellé, même dans un panneau détaché. */
-.pc-eff-nom-normal { text-transform: none; letter-spacing: 0; }
+/* Seuls les libellés s’adaptent ; VALEUR / 10 garde les tailles des réserves. */
 .pc-eff-nom-compact { display: none; }
-@container (max-width: 85px) {
-  .pc-eff-nom-normal { display: none; }
-  .pc-eff-nom-compact { display: inline; }
-}
+.pc-eff-tete > .k.compact .pc-eff-nom-normal { display: none; }
+.pc-eff-tete > .k.compact .pc-eff-nom-compact { display: inline; }
 .pc-eff-partie.t-charge, .pc-eff-partie.t-contenance { --teinte: var(--or); }
 
 .pc-eff-commandes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .3rem; margin: .35rem 0; }
 .pc-eff-commandes > .pc-chip { padding: .25rem .15rem; line-height: 1.15; overflow-wrap: anywhere; }
 .pc-eff-champs.pc-segs > input.pc-eff-delta:disabled { cursor: default; opacity: .6; }
 
-/* Le nombre s’adapte aussi : les noms complets restent lisibles en taille normale. */
-.pc-eff-tete { gap: 0; padding-inline: 1px; }
-.pc-eff-lecture { gap: 0; }
-.pc-eff-partie-total { font-size: clamp(.6rem, 11cqi, calc(var(--fs-value) * 1.85)); }
-.pc-eff-lecture > .pc-vital-max { font-size: clamp(.35rem, 6cqi, var(--fs-label)); }
+.pc-eff-tete { flex-wrap: wrap; }
+.pc-eff-lecture { margin-left: auto; }
