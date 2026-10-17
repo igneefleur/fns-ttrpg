@@ -178,11 +178,19 @@
     if (perte <= 0) return 0;
     return Math.floor(perte / effTranche());
   }
-  var EFF_PARTIES = ["pr", "pi", "froid", "chaud", "ps", "ph", "alcool", "autre"];
+  var EFF_PARTIES = ["pr", "charge", "froid", "chaud", "ps", "contenance", "ph", "alcool", "pi", "autre"];
   function effReglage(cle) {
     return (state.effParties || {})[cle] || { effet: 0, mod: 0 };
   }
+  // Une tranche complète de 5 % au-delà du maximum ; tolérance aux seules erreurs flottantes.
+  function effSurcharge(pris, maximum) {
+    if (maximum <= 0) return pris > 0 ? effPlafond() : 0;
+    var tranche = Math.max(0.001, num(effDef().surchargeTranche, 5));
+    return Math.max(0, Math.floor((pris - maximum) * 100 / maximum / tranche + 1e-9));
+  }
   function effBasePartie(cle) {
+    if (cle === "charge") return effSurcharge(poidsPorte(), charge());
+    if (cle === "contenance") return effSurcharge(contenancePrise(), contenance());
     if (cle === "alcool") return Math.max(0, num(state.effAlcool, 0));
     if (cle === "pi") return effNiveauDe("pi");
     if (cle === "froid" || cle === "chaud") return (cle === "froid" ? num(state.etat.expo, 0) < 0 : num(state.etat.expo, 0) > 0) ? effNiveauDe("expo") : 0;

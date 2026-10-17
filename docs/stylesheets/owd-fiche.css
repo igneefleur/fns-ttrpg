@@ -2126,9 +2126,9 @@ html.night .t-pi { --palier-plein: #30343b; }
 .pc-desaction-bascule { position: absolute; right: 0; top: 0; z-index: 2; display: grid; place-items: center; width: 1.25rem; height: 1.25rem; padding: 0; border: 1px solid var(--line-2); border-radius: 0 7px 0 5px; background: var(--panel); color: var(--ink); font: inherit; font-size: .85rem; cursor: pointer; }
 .pc-desaction-bascule:hover, .pc-desaction-bascule:focus-visible { border-color: var(--or); color: var(--or); }
 .pc-desaction-de.utilise .pc-desaction-bascule { color: var(--or); }
-/* Effondrement : quatre paires, typographie partagée avec les grandes tuiles. */
+/* Effondrement : cinq paires, typographie partagée avec les grandes tuiles. */
 .pc-eff-grille { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); border: 1px solid var(--line-2); border-radius: 6px; overflow: hidden; margin-top: .45rem; }
-.pc-eff-partie { min-width: 0; padding: 0; border-bottom: 1px solid var(--line-2); text-align: center; }
+.pc-eff-partie { container-type: inline-size; min-width: 0; padding: 0; border-bottom: 1px solid var(--line-2); text-align: center; }
 .pc-eff-partie:nth-child(odd) { border-right: 1px solid var(--line-2); }
 .pc-eff-partie:nth-last-child(-n+2) { border-bottom: 0; }
 .pc-eff-tete { display: flex; align-items: baseline; justify-content: space-between; gap: .15rem; padding: .3rem .2rem; }
@@ -2147,3 +2147,11 @@ html.night .t-pi { --palier-plein: #30343b; }
 .pc-eff-partie.t-froid { --teinte: var(--froid); }
 .pc-eff-partie.t-chaud { --teinte: var(--chaud); }
 .pc-eff-niveau { margin-top: .35rem; }
+
+/* La largeur de chaque case décide du libellé, même dans un panneau détaché. */
+.pc-eff-nom-compact { display: none; }
+@container (max-width: 110px) {
+  .pc-eff-nom-normal { display: none; }
+  .pc-eff-nom-compact { display: inline; }
+}
+.pc-eff-partie.t-charge, .pc-eff-partie.t-contenance { --teinte: var(--or); }

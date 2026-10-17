@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "3.18.2b";
+  var RELEASE = "3.19.0b";
   var SCHEMA = 16;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -661,7 +661,7 @@
       var coteExpo = num((s.etat || {}).expo, 0) < 0 ? "froid" : "chaud";
       s.effParties[coteExpo] = { effet: num(s.effParties.expo.effet, 0), mod: num(s.effParties.expo.mod, 0) };
     }
-    ["pr", "expo", "froid", "chaud", "ps", "ph", "pi", "alcool", "autre", "total"].forEach(function (k) {
+    ["pr", "charge", "expo", "froid", "chaud", "ps", "contenance", "ph", "pi", "alcool", "autre", "total"].forEach(function (k) {
       var d = s.effParties[k];
       if (!d || typeof d !== "object" || Array.isArray(d)) d = {};
       s.effParties[k] = { effet: clamp(num(d.effet, 0), -999, 999), mod: clamp(num(d.mod, 0), -999, 999) };
@@ -1570,11 +1570,19 @@
     if (perte <= 0) return 0;
     return Math.floor(perte / effTranche());
   }
-  var EFF_PARTIES = ["pr", "pi", "froid", "chaud", "ps", "ph", "alcool", "autre"];
+  var EFF_PARTIES = ["pr", "charge", "froid", "chaud", "ps", "contenance", "ph", "alcool", "pi", "autre"];
   function effReglage(cle) {
     return (state.effParties || {})[cle] || { effet: 0, mod: 0 };
   }
+  // Une tranche complète de 5 % au-delà du maximum ; tolérance aux seules erreurs flottantes.
+  function effSurcharge(pris, maximum) {
+    if (maximum <= 0) return pris > 0 ? effPlafond() : 0;
+    var tranche = Math.max(0.001, num(effDef().surchargeTranche, 5));
+    return Math.max(0, Math.floor((pris - maximum) * 100 / maximum / tranche + 1e-9));
+  }
   function effBasePartie(cle) {
+    if (cle === "charge") return effSurcharge(poidsPorte(), charge());
+    if (cle === "contenance") return effSurcharge(contenancePrise(), contenance());
     if (cle === "alcool") return Math.max(0, num(state.effAlcool, 0));
     if (cle === "pi") return effNiveauDe("pi");
     if (cle === "froid" || cle === "chaud") return (cle === "froid" ? num(state.etat.expo, 0) < 0 : num(state.etat.expo, 0) > 0) ? effNiveauDe("expo") : 0;
@@ -6129,7 +6137,7 @@
     });
     return b;
   }
-  // ---- Effondrement : huit causes, lecture seule et modificateur direct ----
+  // ---- Effondrement : dix causes, lecture seule et modificateur direct ----
   function buildEffondrement() {
     var b = block("Effondrement");
     function reste(champ) { return 100 - clamp(num(effDef()[champ], 0) * effondrement(), 0, 100); }
@@ -6140,13 +6148,17 @@
     var tN = bigTile("EFFONDREMENT", function () { return String(effondrement()); });
     tN.classList.add("pc-eff-niveau"); b.appendChild(tN);
     var grille = el("div", "pc-eff-grille"), vues = [];
-    [["pr", "Repos"], ["pi", "Innocence"], ["froid", "Froid"], ["chaud", "Chaud"],
-     ["ps", "Satiété"], ["ph", "Hydratation"], ["alcool", "Alcool"], ["autre", "Autre"]].forEach(function (d) {
+    [["pr", "Repos"], ["charge", "Charge"], ["froid", "Froid"], ["chaud", "Chaud"],
+     ["ps", "Satiété"], ["contenance", "Contenance"], ["ph", "Hydratation"], ["alcool", "Alcool"],
+     ["pi", "Innocence"], ["autre", "Autre"]].forEach(function (d) {
       var cle = d[0], nom = d[1];
-      var abrege = { pr: "PR", pi: "PI", ps: "PS", ph: "PH" }[cle] || nom;
+      var normal = { pr: "PR", pi: "PI", ps: "PS", ph: "PH" }[cle] || nom;
+      var compact = { charge: "CHG", contenance: "CTN", alcool: "ALCL", froid: "FRD", chaud: "CHD", autre: "AUT." }[cle] || normal;
       var carte = el("div", "pc-eff-partie t-" + cle); carte.dataset.effPartie = cle;
       var tete = el("div", "pc-eff-tete");
-      var titre = el("span", "k", abrege); titre.title = nom; tete.appendChild(titre);
+      var titre = el("span", "k"); titre.title = nom; titre.setAttribute("aria-label", nom);
+      titre.appendChild(el("span", "pc-eff-nom-normal", normal));
+      titre.appendChild(el("span", "pc-eff-nom-compact", compact)); tete.appendChild(titre);
       var valeur = el("div", "pc-eff-lecture");
       var total = el("span", "pc-eff-partie-total"); valeur.appendChild(total);
       valeur.appendChild(el("span", "pc-vital-max", "/ 10")); tete.appendChild(valeur); carte.appendChild(tete);
@@ -6189,7 +6201,7 @@
         v.effets.value = ecart ? sign(ecart).replace("−", "-") : "0";
         v.total.textContent = String(niveau);
         v.fill.style.width = clamp(niveau * 10, 0, 100) + "%";
-        v.fill.style.marginLeft = v.cle === "froid" ? "auto" : "0";
+        v.fill.style.marginLeft = "0";
         if (document.activeElement !== v.mod) v.mod.value = ajustement ? sign(ajustement).replace("−", "-") : "";
         v.mod.title = "Modificateur direct, appliqué pendant la saisie. Vide = 0.";
         v.carte.title = "Base " + brut + " ; effets " + sign(ecart) + " ; ajustement " + sign(ajustement);
@@ -10163,8 +10175,8 @@
     // ---- onglet Fiche ----
     { id: "caracs",       titre: "CARACTÉRISTIQUES", onglet: "fiche", colonne: "gauche", build: buildCaracs },
     { id: "effort",       titre: "EFFORT ET TEMPS",  onglet: "fiche", colonne: "gauche", build: buildEffort },
-    { id: "survie",       titre: "SURVIE",           onglet: "fiche", colonne: "gauche", build: buildSurvie },
     { id: "exposition",   titre: "EXPOSITION",       onglet: "fiche", colonne: "gauche", build: buildExposition },
+    { id: "survie",       titre: "SURVIE",           onglet: "fiche", colonne: "gauche", build: buildSurvie },
     { id: "pi",           titre: "INNOCENCE",        onglet: "fiche", colonne: "gauche", build: buildPi },
     // TROIS RÉSERVES, TROIS MODULES : même forme, mais on ne les lit pas au
     // même moment, et elles se déplacent — ou se coupent — l'une sans l'autre.

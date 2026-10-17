@@ -1,4 +1,4 @@
-  // ---- Effondrement : huit causes, lecture seule et modificateur direct ----
+  // ---- Effondrement : dix causes, lecture seule et modificateur direct ----
   function buildEffondrement() {
     var b = block("Effondrement");
     function reste(champ) { return 100 - clamp(num(effDef()[champ], 0) * effondrement(), 0, 100); }
@@ -9,13 +9,17 @@
     var tN = bigTile("EFFONDREMENT", function () { return String(effondrement()); });
     tN.classList.add("pc-eff-niveau"); b.appendChild(tN);
     var grille = el("div", "pc-eff-grille"), vues = [];
-    [["pr", "Repos"], ["pi", "Innocence"], ["froid", "Froid"], ["chaud", "Chaud"],
-     ["ps", "Satiété"], ["ph", "Hydratation"], ["alcool", "Alcool"], ["autre", "Autre"]].forEach(function (d) {
+    [["pr", "Repos"], ["charge", "Charge"], ["froid", "Froid"], ["chaud", "Chaud"],
+     ["ps", "Satiété"], ["contenance", "Contenance"], ["ph", "Hydratation"], ["alcool", "Alcool"],
+     ["pi", "Innocence"], ["autre", "Autre"]].forEach(function (d) {
       var cle = d[0], nom = d[1];
-      var abrege = { pr: "PR", pi: "PI", ps: "PS", ph: "PH" }[cle] || nom;
+      var normal = { pr: "PR", pi: "PI", ps: "PS", ph: "PH" }[cle] || nom;
+      var compact = { charge: "CHG", contenance: "CTN", alcool: "ALCL", froid: "FRD", chaud: "CHD", autre: "AUT." }[cle] || normal;
       var carte = el("div", "pc-eff-partie t-" + cle); carte.dataset.effPartie = cle;
       var tete = el("div", "pc-eff-tete");
-      var titre = el("span", "k", abrege); titre.title = nom; tete.appendChild(titre);
+      var titre = el("span", "k"); titre.title = nom; titre.setAttribute("aria-label", nom);
+      titre.appendChild(el("span", "pc-eff-nom-normal", normal));
+      titre.appendChild(el("span", "pc-eff-nom-compact", compact)); tete.appendChild(titre);
       var valeur = el("div", "pc-eff-lecture");
       var total = el("span", "pc-eff-partie-total"); valeur.appendChild(total);
       valeur.appendChild(el("span", "pc-vital-max", "/ 10")); tete.appendChild(valeur); carte.appendChild(tete);
@@ -58,7 +62,7 @@
         v.effets.value = ecart ? sign(ecart).replace("−", "-") : "0";
         v.total.textContent = String(niveau);
         v.fill.style.width = clamp(niveau * 10, 0, 100) + "%";
-        v.fill.style.marginLeft = v.cle === "froid" ? "auto" : "0";
+        v.fill.style.marginLeft = "0";
         if (document.activeElement !== v.mod) v.mod.value = ajustement ? sign(ajustement).replace("−", "-") : "";
         v.mod.title = "Modificateur direct, appliqué pendant la saisie. Vide = 0.";
         v.carte.title = "Base " + brut + " ; effets " + sign(ecart) + " ; ajustement " + sign(ajustement);

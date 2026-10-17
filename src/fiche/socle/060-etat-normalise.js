@@ -88,7 +88,7 @@
       var coteExpo = num((s.etat || {}).expo, 0) < 0 ? "froid" : "chaud";
       s.effParties[coteExpo] = { effet: num(s.effParties.expo.effet, 0), mod: num(s.effParties.expo.mod, 0) };
     }
-    ["pr", "expo", "froid", "chaud", "ps", "ph", "pi", "alcool", "autre", "total"].forEach(function (k) {
+    ["pr", "charge", "expo", "froid", "chaud", "ps", "contenance", "ph", "pi", "alcool", "autre", "total"].forEach(function (k) {
       var d = s.effParties[k];
       if (!d || typeof d !== "object" || Array.isArray(d)) d = {};
       s.effParties[k] = { effet: clamp(num(d.effet, 0), -999, 999), mod: clamp(num(d.mod, 0), -999, 999) };

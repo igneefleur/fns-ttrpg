@@ -52,7 +52,8 @@ const server=http.createServer((req,res)=> {
   assert.equal(await sheet.locator('.pc-expo-jauge .pc-vital-palier').count(),9);
   for(const id of ['pv','pe','pm','pc','contenance']) assert.equal(await sheet.locator('[data-module="'+id+'"] .pc-vital-palier').count(),0);
   assert.equal(await sheet.locator('[data-module="pi"] .pc-vital-nom').textContent(),'Innocence');
-  assert.equal(await sheet.locator('[data-module="pi"]').evaluate(n=>n.previousElementSibling.dataset.module),'exposition');
+  assert.equal(await sheet.locator('[data-module="pi"]').evaluate(n=>n.previousElementSibling.dataset.module),'survie');
+  assert.equal(await sheet.locator('[data-module="exposition"]').evaluate(n=>n.previousElementSibling.dataset.module),'effort');
   const pv=sheet.locator('[data-module="pv"] .pc-vital-delta');
   for(const [text,expected] of [['+20',120],['-20',100],['20',120],['−20',100]]){
     await pv.fill(text);await pv.press('Enter');assert.equal((await state()).etat.pv,expected);
@@ -90,8 +91,9 @@ const server=http.createServer((req,res)=> {
   await replace(s=>s.notes='réception distante');
   assert.equal(await action.locator('.pc-desaction-pose').nth(0).isDisabled(),true);
   await action.getByRole('button',{name:'Récupérer le dé 1',exact:true}).click();
-  await action.locator('.pc-desaction-pose').nth(0).click();
-  await action.getByRole('button',{name:'Envoyer',exact:true}).click();
+  // Sélection + envoi dans le même tour : une réception distante entre les deux
+  // gestes peut légitimement reconstruire une sélection d’interface temporaire.
+  await action.evaluate(n=>{n.querySelector('.pc-desaction-pose').click();n.querySelector('.pc-desaction-envoi').click();});
   assert.equal((await state()).desUtilises[0],true);
   for(let attempt=0;attempt<400&&!C.read(attrs).state.desUtilises?.[0];attempt++)await page.waitForTimeout(100);
   assert.equal(C.read(attrs).state.desUtilises[0],true);
@@ -103,6 +105,22 @@ const server=http.createServer((req,res)=> {
   assert.equal(await action.locator('.pc-desaction-pose:not(:disabled)').count(),await action.locator('.pc-desaction-pose').count()-1);
   await action.getByRole('button',{name:'Récupérer',exact:true}).click();
   assert.equal(await action.locator('.pc-desaction-pose:disabled').count(),0);
+  // Dépassement : tranches COMPLÈTES de 5 %, et retour immédiat sous le seuil.
+  const initialInv=(await state()).inv.objets;
+  const capacity=await frame.evaluate(()=>({charge:Owd.__calculs.charge(),ctn:Owd.__calculs.contenance()}));
+  for(const [ratio,level] of [[.9,0],[1,0],[1.0499,0],[1.05,1],[1.10,2],[1.25,5],[1.50,10],[1,0]]){
+    await replace(s=>{s.inv.objets=[{ref:'ballast',nom:'Charge de test',qte:1,poids:capacity.charge*ratio,ou:'poches'}];s.etat.contenance=capacity.ctn*ratio;});
+    assert.equal(await frame.evaluate(()=>Owd.__calculs.effBasePartie('charge')),level);
+    assert.equal(await frame.evaluate(()=>Owd.__calculs.effBasePartie('contenance')),level);
+  }
+  await replace(s=>{s.etat.pr=null;s.etat.ps=null;s.etat.ph=null;s.etat.pi=null;s.etat.expo=0;s.effAlcool=0;s.effAutre=0;s.effParties={};s.inv.objets=[{ref:'ballast',nom:'Charge de test',qte:1,poids:capacity.charge*1.1,ou:'poches'}];s.etat.contenance=capacity.ctn*1.1;});
+  assert.equal(await frame.evaluate(()=>Owd.__calculs.effondrement()),4);
+  await replace(s=>{s.inv.objets=initialInv;s.etat.contenance=42;s.effort='repos';});
+  const tenMinutes=sheet.getByLabel('Minutes, en plus ou en moins');
+  await tenMinutes.fill('+10');await tenMinutes.press('Enter');
+  assert.equal((await state()).etat.contenance,41);
+  assert.equal(await frame.evaluate(()=>Owd.__calculs.effBasePartie('contenance')),0);
+  await replace(s=>{s.etat.contenance=0;});
   // Raw bases and effects do not cancel another category. Additional modifiers apply once.
   const max=await frame.evaluate(()=>{const c=Owd.__calculs;return {pr:c.prMax(),ps:c.psMax(),ph:c.phMax(),expo:c.expoMax()};});
   await replace(s=>{s.etat.pr=max.pr*.7;s.etat.ps=max.ps*.5;s.etat.ph=max.ph*.8;s.etat.expo=0;s.effAlcool=0;s.effAutre=0;s.effParties={pr:{effet:-1,mod:0},ps:{effet:-20,mod:0}};});
@@ -111,8 +129,8 @@ const server=http.createServer((req,res)=> {
   assert.equal(await frame.evaluate(()=>Owd.__calculs.effPartie('ph')),2);
   assert.equal(await frame.evaluate(()=>Owd.__calculs.effondrement()),4);
   const collapse=sheet.locator('[data-module="effondrement"]');
-  assert.deepEqual(await collapse.locator('.pc-eff-partie').evaluateAll(ns=>ns.map(n=>n.dataset.effPartie)),['pr','pi','froid','chaud','ps','ph','alcool','autre']);
-  for(const label of ['Repos','Innocence','Froid','Chaud','Satiété','Hydratation','Alcool','Autre']){
+  assert.deepEqual(await collapse.locator('.pc-eff-partie').evaluateAll(ns=>ns.map(n=>n.dataset.effPartie)),['pr','charge','froid','chaud','ps','contenance','ph','alcool','pi','autre']);
+  for(const label of ['Repos','Charge','Froid','Chaud','Satiété','Contenance','Hydratation','Alcool','Innocence','Autre']){
     for(const field of ['Base','Effet']) assert.equal(await sheet.getByLabel(label+' — '+field,{exact:true}).getAttribute('readonly'),'');
   }
   // Les effets sont alimentés par l’état/mods, jamais édités dans cette grille.
@@ -154,13 +172,20 @@ const server=http.createServer((req,res)=> {
   assert.equal((await state()).effParties.froid.mod,1);
   // Alcohol counts only occupied time and expires one level per two hours; exact undo.
   await replace(s=>{s.effParties={};s.effAutre=0;s.effAlcool=2;s.effAlcoolSecondes=0;s.effort='repos';});
-  await hour.fill('+1');await hour.press('Enter'); assert.equal((await state()).effAlcool,2);assert.equal((await state()).effAlcoolSecondes,3600);
-  await hour.fill('+1');await hour.press('Enter'); assert.equal((await state()).effAlcool,1);assert.equal((await state()).effAlcoolSecondes,0);
-  await hour.fill('-1');await hour.press('Enter'); assert.equal((await state()).effAlcool,2);assert.equal((await state()).effAlcoolSecondes,3600);
-  await hour.fill('+3');await hour.press('Enter'); assert.equal((await state()).effAlcool,0);assert.equal((await state()).effAlcoolSecondes,0);
+  // Le journal d’annulation est local : tester les gestes consécutifs dans le
+  // même tour évite qu’une réception serveur ne l’invalide entre deux commandes.
+  const alcoholSteps=await frame.evaluate(()=>{
+    const input=document.querySelector('[aria-label="Heures, en plus ou en moins"]');
+    return ['+1','+1','-1','+3'].map(value=>{
+      input.value=value;input.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true}));
+      const s=JSON.parse(__owdLocalStorage.getItem('owd-perso'));
+      return [s.effAlcool,s.effAlcoolSecondes];
+    });
+  });
+  assert.deepEqual(alcoholSteps,[[2,3600],[1,0],[2,3600],[0,0]]);
   // Fallback attributes and sync preserve all added fields.
   const sample=await state();sample.desUtilises={0:true,2:true};sample.effParties.pr={effet:-3,mod:1};sample.effAlcool=1;sample.effAlcoolSecondes=99;
-  sample.effParties.pi={base:2,effet:-1,mod:1};
+  sample.effParties.pi={base:2,effet:-1,mod:1};sample.effParties.charge={effet:-1,mod:2};sample.effParties.contenance={effet:-2,mod:1};
   const packed=M.stateToAttrs(sample,null);delete packed.owd_state;
   const back=M.attrsToState(packed);assert.deepEqual(back.desUtilises,sample.desUtilises);assert.deepEqual(back.effParties,sample.effParties);assert.equal(back.effAlcool,1);assert.equal(back.effAlcoolSecondes,99);
   assert.deepEqual(C.rebuild(C.flatten(sample)),sample);
@@ -179,13 +204,21 @@ const server=http.createServer((req,res)=> {
    await capture(sheet.locator('[data-module="pi"]'),'/tmp/owd-innocence-'+(night?'night':'day')+'.png');
    await capture(sheet.locator('[data-module="exposition"]'),'/tmp/owd-exposition-'+(night?'night':'day')+'.png');
    const layout=await collapse.locator('.pc-eff-partie').evaluateAll(ns=>ns.map(n=>({key:n.dataset.effPartie,x:n.getBoundingClientRect().x,y:n.getBoundingClientRect().y,w:n.getBoundingClientRect().width,bg:getComputedStyle(n).backgroundColor})));
-   for(let i=0;i<8;i+=2)assert.equal(layout[i].y,layout[i+1].y);
-   for(let i=2;i<8;i+=2)assert.ok(layout[i].y>layout[i-2].y);
+   for(let i=0;i<10;i+=2)assert.equal(layout[i].y,layout[i+1].y);
+   for(let i=2;i<10;i+=2)assert.ok(layout[i].y>layout[i-2].y);
    const fonts=await collapse.locator('.pc-big .k, .pc-eff-tete > .k').evaluateAll(ns=>ns.map(n=>{const s=getComputedStyle(n);return [s.fontSize,s.fontFamily,s.fontWeight,s.letterSpacing].join('|')}));
    assert.equal(new Set(fonts).size,1);
-   assert.equal(await collapse.locator('.pc-eff-partie .pc-vital-jauge').count(),8);
+   assert.equal(await collapse.locator('.pc-eff-partie .pc-vital-jauge').count(),10);
    assert.ok(await collapse.locator('.pc-eff-tete').evaluateAll(ns=>ns.every(n=>{const a=n.children[0].getBoundingClientRect(),b=n.children[1].getBoundingClientRect(),p=n.getBoundingClientRect();return a.right<=b.left&&b.right<=p.right+1&&Math.abs(a.y-b.y)<15;})));
-   assert.deepEqual(await collapse.locator('.pc-eff-tete > .k').allTextContents(),['PR','PI','Froid','Chaud','PS','PH','Alcool','Autre']);
+   assert.ok(await collapse.locator('.pc-eff-partie .pc-vital-jauge > i').evaluateAll(ns=>ns.every(n=>n.style.marginLeft==='0px')));
+   const savedWidth=await collapse.evaluate(n=>n.style.width);
+   await collapse.evaluate(n=>n.style.width='380px');
+   assert.deepEqual(await collapse.locator('.pc-eff-tete > .k').evaluateAll(ns=>ns.map(n=>n.innerText)),['PR','CHARGE','FROID','CHAUD','PS','CONTENANCE','PH','ALCOOL','PI','AUTRE']);
+   await collapse.evaluate(n=>n.style.width='200px');
+   assert.deepEqual(await collapse.locator('.pc-eff-tete > .k').evaluateAll(ns=>ns.map(n=>n.innerText)),['PR','CHG','FRD','CHD','PS','CTN','PH','ALCL','PI','AUT.']);
+   assert.ok(await collapse.locator('.pc-eff-tete').evaluateAll(ns=>ns.every(n=>{const a=n.children[0].getBoundingClientRect(),b=n.children[1].getBoundingClientRect(),p=n.getBoundingClientRect();return a.right<=b.left&&b.right<=p.right+1;})));
+   await capture(collapse,'/tmp/owd-effondrement-compact-'+(night?'night':'day')+'.png');
+   await collapse.evaluate((n,w)=>n.style.width=w,savedWidth);
    assert.equal(await collapse.locator('.pc-eff-legende').count(),0);
    for(const box of await collapse.locator('.pc-eff-champs').all()){
      assert.equal(await box.locator('input').count(),3);

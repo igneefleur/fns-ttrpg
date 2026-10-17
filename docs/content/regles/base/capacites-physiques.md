@@ -349,7 +349,7 @@ Exemple. Un personnage ordinaire, qui porte 20 en Chance, dispose de 4 points de
 
 ### La charge
 
-La charge est le poids que le personnage porte sans en être gêné. Elle découle de la Force. Au-delà, il ralentit.
+La charge est le poids que le personnage porte sans en être gêné. Elle découle de la Force. Il peut dépasser ce maximum : chaque tranche complète de 5 % de dépassement lui donne un niveau d’[effondrement](#leffondrement). Ces niveaux diminuent dès qu’il se décharge.
 
 <p class="formula">Charge = 30 + Force</p>
 
@@ -413,11 +413,11 @@ Elle s'occupe comme la [charge](#la-charge) se remplit : elle part de zéro, mon
 
 <p class="formula">Le ventre digère 1 de volume toutes les dix minutes</p>
 
-Un personnage ne peut rien avaler dont le volume dépasse ce qui lui reste de contenance. Un ventre plein ne se force pas : il faut attendre.
+Un personnage peut dépasser sa contenance maximale. Chaque tranche complète de 5 % de dépassement lui donne un niveau d’[effondrement](#leffondrement). Ces niveaux diminuent à mesure qu’il digère. Avec un maximum de 40, une contenance occupée de 42 donne un niveau, 44 en donne deux et 50 en donne cinq.
 
 <div class="memo" markdown>
 
-Exemple. Une chose d'un volume de 20 est digérée en trois heures vingt. Un personnage qui en avale deux d'affilée a rempli sa contenance, et il lui faut attendre dix minutes avant de pouvoir avaler quoi que ce soit.
+Exemple. Une chose d'un volume de 20 est digérée en trois heures vingt. Un personnage qui en avale deux d'affilée a rempli sa contenance. Il peut encore manger ou boire, mais chaque tranche complète de 2 points au-delà de son maximum de 40 lui donne un niveau d’effondrement.
 
 </div>
 
@@ -591,6 +591,8 @@ Exemple. Le désert bascule de 24 degrés entre le jour et la nuit. Un personnag
 Les manques des [points de repos](#les-points-de-repos), des [points de satiété et des points d'hydratation](#la-satiete-et-lhydratation) se comptent sur une seule échelle, l'effondrement. L'[exposition](#lexposition) au froid et au chaud s'y compte aussi.
 
 Chaque réserve donne un niveau d'effondrement par tranche de 10 % perdue, ce qui fait dix niveaux, le dernier lorsqu'elle est vide. Les niveaux de toutes les réserves s'additionnent, sans jamais dépasser dix.
+
+La surcharge et l’excès de contenance ajoutent chacun un niveau par tranche complète de 5 % au-dessus de leur maximum. Leurs contributions s’ajoutent aux autres causes, toujours dans la limite du plafond global de dix.
 
 Le niveau d'effondrement réduit le maximum de points d'endurance de 10 % par niveau, et le maximum de points de vie de 5 %.
 

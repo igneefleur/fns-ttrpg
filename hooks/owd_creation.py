@@ -519,7 +519,11 @@ def _effondrement(txt, capacites):
     reserves = [c for _, c in sorted(reserves)]
     if not reserves:
         raise ErreurRegles("effondrement : aucune réserve nommée dans l'ouverture")
-    return {"tranche": tranche, "plafond": plafond,
+    surcharge = int(_un(r"La surcharge et l’excès de contenance ajoutent chacun un niveau par tranche complète de (\d+) %", corps,
+                         "effondrement : la tranche de surcharge").group(1))
+    if surcharge <= 0:
+        raise ErreurRegles("effondrement : la tranche de surcharge doit être positive")
+    return {"surchargeTranche": surcharge, "tranche": tranche, "plafond": plafond,
             "peParNiveau": pe, "pvParNiveau": pv, "reserves": reserves}
 
 
