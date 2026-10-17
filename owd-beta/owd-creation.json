@@ -309,6 +309,7 @@
   }
  ],
  "effondrement": {
+  "surchargeTranche": 5,
   "tranche": 10,
   "plafond": 10,
   "peParNiveau": 10,

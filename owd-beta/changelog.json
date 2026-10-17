@@ -1,5 +1,19 @@
 [
 {
+"short": "101e3e4",
+"author": "Théo Cavaillès",
+"date": "2026-10-17T02:07:09+02:00",
+"message": "Version 3.19.0b — Réorganisation de l'effondrement et nouveaux seuils de charge",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/101e3e44d3f7d679f11faa4a98297eb1e58207d2",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/base/capacites-physiques.md",
+"url": "content/regles/base/capacites-physiques/"
+}
+]
+},
+{
 "short": "6ba6f7f",
 "author": "Théo Cavaillès",
 "date": "2026-10-15T15:18:22+02:00",
