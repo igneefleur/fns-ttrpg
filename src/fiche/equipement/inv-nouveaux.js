@@ -80,7 +80,7 @@
       var rs=el("div","pc-arme");
       if(!it.restaurations)it.restaurations={};if(!it.unitesRestauration)it.unitesRestauration={};
       ["pv","pe","pm","pr","ps","ph","pi"].forEach(function(k){
-        var line=el("div","pc-obj-pair"),n=el("input","pc-edit-field");champNombreSigne(n);n.value=num(it.restaurations[k],0);n.setAttribute("aria-label","Restauration "+k.toUpperCase());
+        var line=el("div","pc-obj-pair"),n=el("input","pc-edit-field");champNombreSigne(n);n.value=snum(it.restaurations[k]);n.setAttribute("aria-label","Restauration "+k.toUpperCase());
         n.addEventListener("input",function(){var v=litNombreSigne(n.value);if(isFinite(v)){it.restaurations[k]=v;save();}});
         line.appendChild(fld("Restauration "+k.toUpperCase(),n));line.appendChild(invChoix("Unité",[["points","Points"],["% max","% du maximum"]],it.unitesRestauration[k]||"points",function(v){it.unitesRestauration[k]=v;}));rs.appendChild(line);
       });body.appendChild(rs);
@@ -103,7 +103,7 @@
       while(count-->0)appliqueEffet(d.id,it.nom,cible);
     });
     ["pv","pe","pm","pr","ps","ph","pi"].forEach(function(k){
-      var v=num(it.restaurations&&it.restaurations[k],0);
+      var v=snum(it.restaurations&&it.restaurations[k]);
       if(it.unitesRestauration&&it.unitesRestauration[k]==="% max")v=avant[k]*v/100;
       if(ingere && (k==="ps"||k==="ph"))v+=num(it[k],0);
       v*=q;if(k==="pi")v=effetPerteInnocence(v);

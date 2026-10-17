@@ -5,18 +5,6 @@
     if (txt != null) e.textContent = txt;
     return e;
   }
-  // Les champs signés acceptent +20, 20, -20, la virgule et le moins typographique.
-  // Un input number efface +20 dans certains navigateurs avant l'événement input.
-  function champNombreSigne(i) {
-    i.type = "text";
-    i.inputMode = "decimal";
-    i.setAttribute("data-nombre-signe", "1");
-    return i;
-  }
-  function litNombreSigne(v) {
-    var s = String(v == null ? "" : v).trim().replace(/−/g, "-").replace(",", ".");
-    return /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(s) ? Number(s) : NaN;
-  }
   // URL du jeu de données. Une ARCHIVE de version embarque son propre
   // owd-creation.json, gelé à sa date : l'amorce le désigne par
   // window.__owdDataUrl avant d'injecter le bundle. Sans lui, un bundle
@@ -52,6 +40,25 @@
   function snum(v) {
     var n = parseFloat(String(v == null ? "" : v).replace(",", "."));
     return isFinite(n) ? Math.round(n * 100) / 100 : 0;
+  }
+  // Entrées signées : utilisées notamment par les restaurations et effets
+  // des Solides, Pâtes et Liquides. Les deux fonctions doivent appartenir au
+  // socle commun : un appel sans définition interrompait le rendu du panneau.
+  function champNombreSigne(input) {
+    input.type = "text";
+    input.inputMode = "decimal";
+    input.autocomplete = "off";
+    input.spellcheck = false;
+    return input;
+  }
+  function litNombreSigne(value) {
+    var texte = String(value == null ? "" : value).trim()
+      .replace(/[\u2212\u2013\u2014]/g, "-").replace(/\s+/g, "").replace(",", ".");
+    // Durant la saisie, un '-' ou '+' isolé ne doit pas écrire zéro dans
+    // l'état. L'utilisateur peut terminer son nombre avant la sauvegarde.
+    if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(texte)) return NaN;
+    var n = Number(texte);
+    return isFinite(n) ? n : NaN;
   }
   // affichage : point décimal, sans zéros de traîne (« 0.5 », « 3 »)
   function fmtP(n) { return String(Math.round(n * 1000) / 1000); }
