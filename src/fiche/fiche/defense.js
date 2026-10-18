@@ -96,7 +96,7 @@
     return { item: item, protection: flat, difficulte: Math.max(1, snum(a && a.parade) + effetBonus("parade")), comp: a && a.comp || "" };
   }
   function defenseTotaux(type, defense, reussie) {
-    var p = 0, r = 0, portes = vetementsPortes().filter(function (o) { return pnum(o.qte) > 0; });
+    var p = 0, r = 0, portes = equipementsPortes().filter(function (o) { return pnum(o.qte) > 0; });
     portes.forEach(function (o) { p += snum(o["prot_" + type]); r += snum(o["res_" + type]); });
     if (defense && reussie) {
       var active = defense.protection;

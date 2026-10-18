@@ -1,11 +1,11 @@
 # Butcher Cleaver
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Butcher Cleaver](../../../assets/equipements/haches-1-main-butcher-cleaver.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Haches 1 main  
-**Famille :** Hors set  
+**Famille :** Standalone  
 **Origine :** Outward
 
 Left alone over the ages, the Amethyst heart of the Butcher of Men has grown into a fearsome weapon, eager to slay again...
@@ -15,23 +15,24 @@ Left alone over the ages, the Amethyst heart of the Butcher of Men has grown int
 | Poids (kg) | 8 |
 | Volume (L) | 3 |
 | Taille | Petite |
+| Mains | 1 |
 | Achat (argent) | 2000 |
 | Vente (argent) | 600 |
 | Attaque | 11 |
 | Touches | 2 |
 | Dégâts de base | 105 |
-| Modificateur de dégâts 1 | FOR |
-| Modificateur de dégâts 2 | DEX |
 | Parade | 7 |
 | Réduction de base | 10 |
+| Modificateur de dégâts 1 | FOR |
+| Modificateur de dégâts 2 | DEX |
 | Modificateur de réduction 1 | FOR |
-| DEX requise | 10 |
+| Physique (%) | 40 |
+| Feu (%) | 0 |
+| Froid (%) | 0 |
+| Éclair (%) | 30 |
+| Décomposition (%) | 30 |
+| Éthéré (%) | 0 |
 | FOR requise | 10 |
-| Physique (%) | 40,0 |
-| Feu (%) | 0,0 |
-| Froid (%) | 0,0 |
-| Foudre (%) | 30,0 |
-| Décomposition (%) | 30,0 |
-| Éthéré (%) | 0,0 |
+| DEX requise | 10 |
 
 [Retour au catalogue](../equipement.md)

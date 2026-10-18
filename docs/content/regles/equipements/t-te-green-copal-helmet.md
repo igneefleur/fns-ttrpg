@@ -1,42 +1,30 @@
 # Green Copal Helmet
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Green Copal Helmet](../../../assets/equipements/t-te-green-copal-helmet.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Tête  
 **Famille :** Green Copal Set  
 **Origine :** Outward
 
+Protective headwear.
+
 | Caractéristique | Valeur |
 | --- | --- |
 | Poids (kg) | 3 |
 | Volume (L) | 9 |
-| Construction | Rigide |
+| Taille | Très petite |
+| Mains | 1 |
 | Achat (argent) | 164 |
 | Vente (argent) | 49 |
-| Protection | 1 |
-| Résistance physique (%) | 5 |
-| Résistance feu (%) | 0 |
-| Résistance froid (%) | 0 |
-| Résistance foudre (%) | 5 |
-| Résistance décomposition (%) | 0 |
-| Résistance éthéré (%) | 8 |
 | Protection contre le froid | 0 |
 | Protection contre la chaleur | 0 |
-| Bonus physique (%) | 0 |
-| Bonus feu (%) | 0 |
-| Bonus froid (%) | 0 |
-| Bonus foudre (%) | 0 |
-| Bonus décomposition (%) | 0 |
-| Bonus éthéré (%) | 0 |
-| Coût de mana (%) | 1 |
-| Coût d’endurance (%) | 0 |
-| Vitesse (%) | 0 |
-| Barrière | 0 |
-| Réduction des délais (%) | 0 |
-| Résistance à la corruption (%) | 0 |
-| Résistance aux statuts (%) | 0 |
-| Poches supplémentaires (kg) | 0 |
+| Poches (L) | 0 |
+| Protection Physique | 1 |
+| Résistance Physique (%) | 5 |
+| Résistance Éclair (%) | 5 |
+| Résistance Éthéré (%) | 8 |
+| Coût PM (%) | 1 |
 
 [Retour au catalogue](../equipement.md)

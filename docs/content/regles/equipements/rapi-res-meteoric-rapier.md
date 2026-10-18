@@ -1,39 +1,38 @@
 # Meteoric Rapier
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Meteoric Rapier](../../../assets/equipements/rapi-res-meteoric-rapier.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Rapières  
 **Famille :** Meteoric  
-**Origine :** Créé pour le JDR
+**Origine :** Homebrew
+
+A rapier crafted in the Meteoric style.
 
 | Caractéristique | Valeur |
 | --- | --- |
 | Poids (kg) | 1 |
 | Volume (L) | 1 |
 | Taille | Petite |
+| Mains | 1 |
 | Achat (argent) | 2000 |
 | Vente (argent) | 600 |
 | Attaque | 9 |
 | Touches | 1 |
 | Dégâts de base | 100 |
-| Modificateur de dégâts 1 | DEX |
-| Modificateur de dégâts 2 | DEX |
 | Parade | 8 |
 | Réduction de base | 15 |
+| Modificateur de dégâts 1 | DEX |
+| Modificateur de dégâts 2 | DEX |
 | Modificateur de réduction 1 | DEX |
+| Physique (%) | 50 |
+| Feu (%) | 50 |
+| Froid (%) | 0 |
+| Éclair (%) | 0 |
+| Décomposition (%) | 0 |
+| Éthéré (%) | 0 |
 | DEX requise | 20 |
-| FOR requise | 0 |
-| Physique (%) | 50,0 |
-| Feu (%) | 50,0 |
-| Froid (%) | 0,0 |
-| Foudre (%) | 0,0 |
-| Décomposition (%) | 0,0 |
-| Éthéré (%) | 0,0 |
-
-## Propriétés
-
-Holy Blaze / Accumulation 35%
+| Propriété — gestion manuelle | Holy Blaze / Buildup 35% |
 
 [Retour au catalogue](../equipement.md)

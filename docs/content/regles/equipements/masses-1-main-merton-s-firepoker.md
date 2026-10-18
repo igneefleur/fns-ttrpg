@@ -1,41 +1,38 @@
 # Merton's Firepoker
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Merton's Firepoker](../../../assets/equipements/masses-1-main-merton-s-firepoker.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Masses 1 main  
-**Famille :** Hors set  
+**Famille :** Standalone  
 **Origine :** Outward
 
 A flamin' weapon that don't go cold, perfect for a lad that can't die!"
 
 | Caractéristique | Valeur |
 | --- | --- |
-| Poids (kg) | 0,7 |
-| Volume (L) | 0,3 |
+| Poids (kg) | 0.7 |
+| Volume (L) | 0.3 |
 | Taille | Petite |
+| Mains | 1 |
 | Achat (argent) | 20 |
 | Vente (argent) | 6 |
 | Attaque | 9 |
 | Touches | 1 |
 | Dégâts de base | 50 |
-| Modificateur de dégâts 1 | FOR |
-| Modificateur de dégâts 2 | FOR |
 | Parade | 6 |
 | Réduction de base | 15 |
+| Modificateur de dégâts 1 | FOR |
+| Modificateur de dégâts 2 | FOR |
 | Modificateur de réduction 1 | FOR |
-| DEX requise | — |
+| Physique (%) | 50 |
+| Feu (%) | 50 |
+| Froid (%) | 0 |
+| Éclair (%) | 0 |
+| Décomposition (%) | 0 |
+| Éthéré (%) | 0 |
 | FOR requise | 20 |
-| Physique (%) | 50,0 |
-| Feu (%) | 50,0 |
-| Froid (%) | 0,0 |
-| Foudre (%) | 0,0 |
-| Décomposition (%) | 0,0 |
-| Éthéré (%) | 0,0 |
-
-## Propriétés
-
-Burning / Accumulation 40%
+| Propriété — gestion manuelle | Burning / Buildup 40% |
 
 [Retour au catalogue](../equipement.md)

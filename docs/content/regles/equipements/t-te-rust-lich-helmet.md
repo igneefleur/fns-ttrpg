@@ -1,42 +1,34 @@
 # Rust Lich Helmet
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Rust Lich Helmet](../../../assets/equipements/t-te-rust-lich-helmet.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Tête  
 **Famille :** Rust Lich Set  
 **Origine :** Outward
 
+Protective headwear.
+
 | Caractéristique | Valeur |
 | --- | --- |
 | Poids (kg) | 5 |
 | Volume (L) | 12 |
-| Construction | Rigide |
+| Taille | Très petite |
+| Mains | 1 |
 | Achat (argent) | 246 |
-| Vente (argent) | 73,9 |
-| Protection | 0 |
-| Résistance physique (%) | 7 |
-| Résistance feu (%) | 0 |
-| Résistance froid (%) | 0 |
-| Résistance foudre (%) | 0 |
-| Résistance décomposition (%) | 0 |
-| Résistance éthéré (%) | 0 |
+| Vente (argent) | 73.9 |
 | Protection contre le froid | 0 |
 | Protection contre la chaleur | 0 |
-| Bonus physique (%) | -12 |
-| Bonus feu (%) | 3 |
-| Bonus froid (%) | 3 |
-| Bonus foudre (%) | 3 |
-| Bonus décomposition (%) | 3 |
-| Bonus éthéré (%) | 0 |
-| Coût de mana (%) | -6 |
-| Coût d’endurance (%) | 1 |
-| Vitesse (%) | -1 |
-| Barrière | 0 |
-| Réduction des délais (%) | 0 |
-| Résistance à la corruption (%) | 0 |
-| Résistance aux statuts (%) | 0 |
-| Poches supplémentaires (kg) | 0 |
+| Poches (L) | 0 |
+| Résistance Physique (%) | 7 |
+| Bonus Physique (%) | -12 |
+| Bonus Feu (%) | 3 |
+| Bonus Froid (%) | 3 |
+| Bonus Éclair (%) | 3 |
+| Bonus Décomposition (%) | 3 |
+| Coût PM (%) | -6 |
+| Coût PE (%) | 1 |
+| Déplacement (%) | -1 |
 
 [Retour au catalogue](../equipement.md)

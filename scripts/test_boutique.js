@@ -57,8 +57,16 @@ const tick=()=>new Promise(r=>setImmediate(r));
  message({ns:'owd',type:'panel-theme',nuit:false});assert.equal(doc.documentElement.classList.contains('night'),false);message({ns:'owd',type:'panel-theme',nuit:true});assert.equal(doc.documentElement.classList.contains('night'),true);
  const failed=boot(async()=>{throw Error('network');});await tick();assert.ok(failed.doc.ids['ob-status'].textContent.includes('Réessayer'));assert.equal(failed.doc.ids['ob-suivant'].disabled,true);
 
+ $('ob-categorie').value='';$('ob-recherche').value='Antidote';$('ob-recherche').oninput();
+ assert.ok($('ob-items').textContent.includes('7 argent'));
+ assert.ok($('ob-details').textContent.includes('Achat : 7 argent · Vente : 2 argent'));
+ for(const nom of ['Clean Water','River Water','Rancid Water','Salt Water']){
+  $('ob-recherche').value=nom;$('ob-recherche').oninput();
+  assert.ok($('ob-items').textContent.includes('Prix non renseigné'),nom);
+  assert.ok($('ob-details').textContent.includes('Achat : Prix non renseigné · Vente : Prix non renseigné'),nom);
+ }
  // Vérifier les objets de chaque nouvelle famille dans la chaîne Boutique -> tchat -> Prendre.
- for(const nom of ['Arcane Trousers','Waterskin','Great Life Potion','Ammolite','Gourde en cuir','Miche entière','Campfire Kit','Bandit Cage key']){
+ for(const nom of ['Antidote','Clean Water','River Water','Rancid Water','Salt Water','Arcane Trousers','Waterskin','Great Life Potion','Ammolite','Whole Loaf','Trader Warbelt','Nomad Baldric','Arcane Robe','Thick Oil','Bolt Varnish','Campfire Kit','Bandit Cage key']){
    $('ob-categorie').value='';$('ob-recherche').value=nom;$('ob-recherche').oninput();
    assert.ok($('ob-items').children.length>0,nom+' absent');
    const item=catalogue.objets.find(x=>x.nom===nom);assert.ok(item,nom+' non catalogué');
@@ -71,6 +79,7 @@ const tick=()=>new Promise(r=>setImmediate(r));
    assert.equal(p.item.nom,nom);assert.equal(p.item.qte,3);assert.equal(p.version,1);
    assert.equal(p.item.typeObjet,item.objet.typeObjet);
    assert.equal(p.item.sousType,item.objet.sousType);
+   for(const [top,key] of [['a','achat'],['v','vente'],['p','poids'],['l','volume']])assert.equal(p[top],p.item[key],nom+' : carte et objet reçu diffèrent sur '+key);
    assert.deepEqual(JSON.parse(JSON.stringify(p.item.effets||[])),JSON.parse(JSON.stringify(item.objet.effets||[])));
    assert.ok(p.s.every(f=>f.every(v=>typeof v==='string')));
  }

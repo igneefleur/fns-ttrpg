@@ -1,6 +1,7 @@
 'use strict';
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict'),root=require('node:path').resolve(__dirname,'..');
 function packedFixtures(){let state={comps:[{id:'blade',nom:'Lames'}]},ctx={btoa,atob,TextEncoder,TextDecoder,Uint8Array,URL,window:{location:{href:'https://example.test/roll20-fiche.html'}},state,venteNum:v=>v==null?null:Number(v),INV_NOMS:{haut:'Haut'},pnum:x=>Math.max(0,parseFloat(x)||0),fmtP:x=>String(Number(x)||0),monnaie:()=>"pièces d’argent",prixVente:it=>it.vente==null?Math.floor((it.achat||0)/3):it.vente};vm.createContext(ctx);
+let tools=fs.readFileSync(root+'/src/fiche/socle/030-outils.js','utf8');vm.runInContext(tools.slice(tools.indexOf('  function venteNum('),tools.indexOf('  // nombre SIGNÉ')),ctx);
 let src=fs.readFileSync(root+'/src/fiche/equipement/inv-nouveaux.js','utf8');vm.runInContext(src,ctx);src=fs.readFileSync(root+'/src/fiche/equipement/inv-objets.js','utf8');vm.runInContext(src.slice(src.indexOf('  function champsObjet('),src.indexOf('  function actionObjet(')),ctx);src=fs.readFileSync(root+'/src/fiche/equipement/inv-don.js','utf8');vm.runInContext(src.slice(0,src.indexOf('  // Donner :')),ctx);
 let item={nom:'Épée en fer',id:'iron-sword',qte:3,poids:2.5,encombre:4,achat:90,vente:0,desc:'Forgée à Berg.\nUne lame ancienne & solide.',img:'/assets/sword.png',arme:{type:'épée',attaque:'8',degats:'24',parade:'9',reduction:'7',modsDegats:['force'],modsParade:['dexterite'],comp:'blade'}};
 let pack=ctx.packObjet(item,2),data=JSON.parse(ctx.b64decode(pack));assert.equal(data.version,1);assert.equal(data.n,item.nom);assert.equal(data.d,item.desc);assert.equal(data.i,'https://example.test/assets/sword.png');assert.equal(data.q,2);assert.ok(data.s.some(f=>f[0]==='Vente'&&f[1].startsWith('0 ')));assert.ok(data.s.some(f=>f[0]==='Compétence'&&f[1]==='Lames'));assert.ok(data.s.some(f=>f[0]==='Poids'&&f[1].includes('total 5')));assert.equal(ctx.unpackObjet(pack).nom,item.nom);assert.equal(ctx.unpackObjet(pack).vente,0);assert.ok(!/[+=/]/.test(pack));
@@ -9,5 +10,9 @@ ctx.state.inv.objets.push({ref:'flacon',nom:'Fiole',id:'glass',typeObjet:'conten
 const flaskPack=ctx.packObjet(ctx.state.inv.objets.find(x=>x.ref==='flacon'),1),flaskData=JSON.parse(ctx.b64decode(flaskPack));
 assert.equal(flaskData.bundle.length,2);assert.equal(flaskData.bundle[0].nom,'Fiole');assert.equal(flaskData.bundle[1].qte,2);
 assert.equal(flaskData.bundle[1].restaurations.pv,12.5);assert.equal(ctx.unpackObjet(flaskPack).bundle.length,2);
+const unknown={...item,achat:null,vente:null,arme:null};const unknownPack=ctx.packObjet(unknown,1);
+assert.equal(ctx.unpackObjet(unknownPack).achat,null);assert.equal(ctx.unpackObjet(unknownPack).vente,null);
+assert.equal(ctx.prixVente(unknown),null);assert.equal(ctx.prixObjetTexte(unknown,false),'Prix non renseigné');
+assert.equal(ctx.prixObjetTexte({...unknown,achat:0,vente:0},false),'0 pièces d’argent');
 console.log('OK payload : accents, quantité, prix nul explicite, statistiques d’arme/vêtement, image importée et compatibilité réception');return {pack,data,armorPack,armorData,ctx,item};}
 if(require.main===module)packedFixtures();module.exports={packedFixtures};

@@ -42,7 +42,7 @@
     var p = {
       n: String(it.nom || ""), q: groupe ? pnum(it.qte) : Math.max(0, pnum(qte)) || 1, p: pnum(it.poids),
       l: pnum(it.places), d: String(it.desc || ""), k: String(it.id || ""),
-      a: pnum(it.achat), version: 1, s: champsObjet(it, qte)
+      a: venteNum(it.achat), version: 1, s: champsObjet(it, qte)
     };
     if(!groupe){p.item=JSON.parse(JSON.stringify(it));p.item.qte=p.q;p.item.dans="";}
     else p.bundle=groupe;
@@ -68,7 +68,7 @@
     return {bundle:bundle,item:o.item && typeof o.item==="object" ? o.item : null,
       nom: String(o.n || "Objet"), qte: Math.max(0, pnum(o.q)) || 1, poids: pnum(o.p),
       places: pnum(o.l), desc: String(o.d || ""), img: String(o.i || ""),
-      id: String(o.k || ""), achat: pnum(o.a), vente: venteNum(o.v), rapide: !!o.r
+      id: String(o.k || ""), achat: venteNum(o.a), vente: venteNum(o.v), rapide: !!o.r
     };
   }
 
@@ -177,7 +177,8 @@
       [["nom", "Nom"], ["img", "Image"], ["poids", "Poids"], ["places", "Volume"],
        ["desc", "Description"], ["achat", "Achat"], ["vente", "Vente"]].forEach(function (c) {
         function dit(o) {
-          if (c[0] === "vente") return o.vente == null ? "automatique" : fmtP(o.vente);
+          if (c[0] === "vente") return prixObjetTexte(o,true);
+          if (c[0] === "achat") return prixObjetTexte(o,false);
           return String(o[c[0]] || "");
         }
         var mien = dit(jumeau), neuf = dit(recu);

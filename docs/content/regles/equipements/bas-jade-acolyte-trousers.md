@@ -1,42 +1,29 @@
 # Jade Acolyte Trousers
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Jade Acolyte Trousers](../../../assets/equipements/bas-jade-acolyte-trousers.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Bas  
 **Famille :** Jade Acolyte Set  
-**Origine :** Créé pour le JDR
+**Origine :** Homebrew
+
+A garment covering the lower body.
 
 | Caractéristique | Valeur |
 | --- | --- |
 | Poids (kg) | 1 |
-| Volume (L) | 2,5 |
-| Construction | Souple |
+| Volume (L) | 2.5 |
+| Taille | Très petite |
+| Mains | 1 |
 | Achat (argent) | 108 |
 | Vente (argent) | 35 |
-| Protection | 0 |
-| Résistance physique (%) | 7 |
-| Résistance feu (%) | 0 |
-| Résistance froid (%) | 0 |
-| Résistance foudre (%) | -12 |
-| Résistance décomposition (%) | 12 |
-| Résistance éthéré (%) | 0 |
 | Protection contre le froid | 0 |
 | Protection contre la chaleur | 0 |
-| Bonus physique (%) | 0 |
-| Bonus feu (%) | 0 |
-| Bonus froid (%) | 0 |
-| Bonus foudre (%) | 0 |
-| Bonus décomposition (%) | 0 |
-| Bonus éthéré (%) | 0 |
-| Coût de mana (%) | -9 |
-| Coût d’endurance (%) | 0 |
-| Vitesse (%) | 0 |
-| Barrière | 0 |
-| Réduction des délais (%) | 0 |
-| Résistance à la corruption (%) | 0 |
-| Résistance aux statuts (%) | 0 |
-| Poches supplémentaires (kg) | 0 |
+| Poches (L) | 0 |
+| Résistance Physique (%) | 7 |
+| Résistance Éclair (%) | -12 |
+| Résistance Décomposition (%) | 12 |
+| Coût PM (%) | -9 |
 
 [Retour au catalogue](../equipement.md)

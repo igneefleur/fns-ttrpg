@@ -1,41 +1,40 @@
 # Crescent Greathammer
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Crescent Greathammer](../../../assets/equipements/grands-marteaux-crescent-greathammer.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Grands marteaux  
 **Famille :** Crescent  
-**Origine :** Créé pour le JDR
+**Origine :** Homebrew
+
+A greathammer crafted in the Crescent style.
 
 | Caractéristique | Valeur |
 | --- | --- |
-| Poids (kg) | 2,5 |
+| Poids (kg) | 2.5 |
 | Volume (L) | 10 |
 | Taille | Moyenne |
+| Mains | 2 |
 | Achat (argent) | 375 |
 | Vente (argent) | 112 |
 | Attaque | 13 |
 | Touches | 1 |
 | Dégâts de base | 75 |
+| Parade | 9 |
+| Réduction de base | 25 |
 | Modificateur de dégâts 1 | FOR |
 | Modificateur de dégâts 2 | FOR |
 | Modificateur de dégâts 3 | FOR |
-| Parade | 9 |
-| Réduction de base | 25 |
 | Modificateur de réduction 1 | FOR |
 | Modificateur de réduction 2 | FOR |
-| DEX requise | 0 |
+| Physique (%) | 75 |
+| Feu (%) | 0 |
+| Froid (%) | 0 |
+| Éclair (%) | 0 |
+| Décomposition (%) | 0 |
+| Éthéré (%) | 25 |
 | FOR requise | 30 |
-| Physique (%) | 75,0 |
-| Feu (%) | 0,0 |
-| Froid (%) | 0,0 |
-| Foudre (%) | 0,0 |
-| Décomposition (%) | 0,0 |
-| Éthéré (%) | 25,0 |
-
-## Propriétés
-
-Elemental Vulnerability / Accumulation 45%
+| Propriété — gestion manuelle | Elemental Vulnerability / Buildup 45% |
 
 [Retour au catalogue](../equipement.md)

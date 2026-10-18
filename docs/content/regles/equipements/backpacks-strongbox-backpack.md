@@ -1,23 +1,27 @@
 # Strongbox Backpack
 
-<!-- illustration -->
-![Strongbox Backpack](../../../assets/equipements/backpacks-strongbox-backpack.png){ .equipment-portrait }
-<!-- /illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
 
-**Catégorie :** Sacs à dos  
+![Strongbox Backpack](../../../assets/equipements/backpacks-strongbox-backpack.png){ .equipment-portrait }
+
+**Catégorie :** Rangement  
+**Famille :** Backpacks  
 **Origine :** Outward
+
+Protection : +2.
 
 | Caractéristique | Valeur |
 | --- | --- |
-| Type | Coffre |
 | Poids (kg) | 4 |
 | Volume (L) | 65 |
 | Taille | Petite |
-| Capacité (L) | 60 |
-| Taille maximale acceptée | Petite |
-| Bonus | Protection : +2. |
-| Attaches | 4 |
+| Mains | 1 |
 | Achat (argent) | 100 |
 | Vente (argent) | 30 |
+| Capacité (L) | 60 |
+| Taille maximale acceptée | Petite |
+| Accroches | 4 |
+| Taille maximale aux accroches | Moyenne |
+| Protection Physique | 2 |
 
 [Retour au catalogue](../equipement.md)

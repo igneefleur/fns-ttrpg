@@ -1,35 +1,37 @@
 # Thorny Sabre
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Thorny Sabre](../../../assets/equipements/sabres-thorny-sabre.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Sabres  
 **Famille :** Thorny  
-**Origine :** Créé pour le JDR
+**Origine :** Homebrew
+
+A sabre crafted in the Thorny style.
 
 | Caractéristique | Valeur |
 | --- | --- |
-| Poids (kg) | 0,8 |
+| Poids (kg) | 0.8 |
 | Volume (L) | 2 |
 | Taille | Petite |
+| Mains | 1 |
 | Achat (argent) | 338 |
 | Vente (argent) | 101 |
 | Attaque | 8 |
 | Touches | 2 |
 | Dégâts de base | 35 |
-| Modificateur de dégâts 1 | DEX |
-| Modificateur de dégâts 2 | DEX |
 | Parade | 6 |
 | Réduction de base | 10 |
+| Modificateur de dégâts 1 | DEX |
+| Modificateur de dégâts 2 | DEX |
 | Modificateur de réduction 1 | DEX |
+| Physique (%) | 50 |
+| Feu (%) | 0 |
+| Froid (%) | 0 |
+| Éclair (%) | 0 |
+| Décomposition (%) | 0 |
+| Éthéré (%) | 50 |
 | DEX requise | 20 |
-| FOR requise | 0 |
-| Physique (%) | 50,0 |
-| Feu (%) | 0,0 |
-| Froid (%) | 0,0 |
-| Foudre (%) | 0,0 |
-| Décomposition (%) | 0,0 |
-| Éthéré (%) | 50,0 |
 
 [Retour au catalogue](../equipement.md)

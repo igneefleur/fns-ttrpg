@@ -1,39 +1,39 @@
 # Crescent Sword
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Crescent Sword](../../../assets/equipements/p-es-1-main-crescent-sword.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Épées 1 main  
 **Famille :** Crescent  
-**Origine :** Créé pour le JDR
+**Origine :** Homebrew
+
+A sword crafted in the Crescent style.
 
 | Caractéristique | Valeur |
 | --- | --- |
-| Poids (kg) | 0,9 |
-| Volume (L) | 2,5 |
+| Poids (kg) | 0.9 |
+| Volume (L) | 2.5 |
 | Taille | Petite |
+| Mains | 1 |
 | Achat (argent) | 375 |
 | Vente (argent) | 112 |
 | Attaque | 9 |
 | Touches | 3 |
 | Dégâts de base | 35 |
-| Modificateur de dégâts 1 | DEX |
-| Modificateur de dégâts 2 | FOR |
 | Parade | 5 |
 | Réduction de base | 5 |
+| Modificateur de dégâts 1 | DEX |
+| Modificateur de dégâts 2 | FOR |
 | Modificateur de réduction 1 | DEX |
-| DEX requise | 10 |
+| Physique (%) | 75 |
+| Feu (%) | 0 |
+| Froid (%) | 0 |
+| Éclair (%) | 0 |
+| Décomposition (%) | 0 |
+| Éthéré (%) | 25 |
 | FOR requise | 10 |
-| Physique (%) | 75,0 |
-| Feu (%) | 0,0 |
-| Froid (%) | 0,0 |
-| Foudre (%) | 0,0 |
-| Décomposition (%) | 0,0 |
-| Éthéré (%) | 25,0 |
-
-## Propriétés
-
-Elemental Vulnerability / Accumulation 45%
+| DEX requise | 10 |
+| Propriété — gestion manuelle | Elemental Vulnerability / Buildup 45% |
 
 [Retour au catalogue](../equipement.md)

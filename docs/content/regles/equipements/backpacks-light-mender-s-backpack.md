@@ -1,23 +1,29 @@
 # Light Mender's Backpack
 
-<!-- illustration -->
-![Light Mender's Backpack](../../../assets/equipements/backpacks-light-mender-s-backpack.png){ .equipment-portrait }
-<!-- /illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
 
-**Catégorie :** Sacs à dos  
+![Light Mender's Backpack](../../../assets/equipements/backpacks-light-mender-s-backpack.png){ .equipment-portrait }
+
+**Catégorie :** Rangement  
+**Famille :** Backpacks  
 **Origine :** Outward
+
+A backpack with internal storage and external attachment points.
 
 | Caractéristique | Valeur |
 | --- | --- |
-| Type | Cuir |
 | Poids (kg) | 2 |
 | Volume (L) | 4 |
 | Taille | Très petite |
-| Capacité (L) | 70 |
-| Taille maximale acceptée | Petite |
-| Bonus | Dégâts d’éclair : +10 %.<br>Périssement des aliments ralenti de 25 %.<br>Faible source de lumière. |
-| Attaches | 5 |
+| Mains | 1 |
 | Achat (argent) | 200 |
 | Vente (argent) | 60 |
+| Capacité (L) | 70 |
+| Taille maximale acceptée | Petite |
+| Accroches | 5 |
+| Taille maximale aux accroches | Moyenne |
+| Bonus Éclair (%) | 10 |
+| Périssement ralenti (%) | 25 |
+| Lumière | Faible |
 
 [Retour au catalogue](../equipement.md)

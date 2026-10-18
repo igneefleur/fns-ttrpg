@@ -6,7 +6,7 @@
   // la protection des VÊTEMENTS PORTÉS, dans la case de leur type
   function protection(champ) {
     var t = 0;
-    vetementsPortes().forEach(function (o) { t += snum(o[champ]); });
+    equipementsPortes().forEach(function (o) { t += snum(o[champ]); });
     return Math.round((t + effetBonus("climat",champ)) * 10) / 10;
   }
   // ---- le temps qui passe ----

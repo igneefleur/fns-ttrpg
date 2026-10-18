@@ -550,3 +550,8 @@ Les 1 256 équipements utilisent leurs illustrations terminées, récupérées d
 Défenses ouvre les onglets des personnages, comme Attaques, avec le même module et les mêmes calculs que la fiche. Double-cliquez sur le bandeau de chaque fenêtre pour la replier ou la réafficher. Le bouton Détacher et la commande Replacer ont été retirés.
 
 Le patch s'applique sur 3.15.0b. Après remplacement des fichiers sur GitHub, lancez **website deployment** avec **Signer l’extension Outward chez Mozilla** coché ; la seule mise à jour du site ne remplace pas le code signé de l'extension.
+
+
+### Équipements : source unique Boutique
+
+Les noms anglais, caractéristiques, effets et types d’arme sont définis dans `docs/data/owd-boutique.json`. La fiche, la Boutique et les fiches du livre consomment ces mêmes données. `python scripts/exporter_boutique.py` régénère les pages du livre ; le build les régénère également. L’ancien import de tableur est désactivé pour ne pas écraser les définitions.

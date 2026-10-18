@@ -1,42 +1,30 @@
 # Orichalcum Gauntlets
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Orichalcum Gauntlets](../../../assets/equipements/mains-orichalcum-gauntlets.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Mains  
 **Famille :** Orichalcum Set  
-**Origine :** Créé pour le JDR
+**Origine :** Homebrew
+
+Hand protection.
 
 | Caractéristique | Valeur |
 | --- | --- |
 | Poids (kg) | 2 |
-| Volume (L) | 2,5 |
-| Construction | Semi-rigide |
+| Volume (L) | 2.5 |
+| Taille | Minuscule |
+| Mains | 1 |
 | Achat (argent) | 200 |
 | Vente (argent) | 60 |
-| Protection | 1 |
-| Résistance physique (%) | 8 |
-| Résistance feu (%) | 0 |
-| Résistance froid (%) | 0 |
-| Résistance foudre (%) | 0 |
-| Résistance décomposition (%) | 0 |
-| Résistance éthéré (%) | 0 |
 | Protection contre le froid | 5 |
 | Protection contre la chaleur | -1 |
-| Bonus physique (%) | 0 |
-| Bonus feu (%) | 0 |
-| Bonus froid (%) | 0 |
-| Bonus foudre (%) | 0 |
-| Bonus décomposition (%) | 0 |
-| Bonus éthéré (%) | 0 |
-| Coût de mana (%) | 4 |
-| Coût d’endurance (%) | 1 |
-| Vitesse (%) | -2 |
-| Barrière | 0 |
-| Réduction des délais (%) | 0 |
-| Résistance à la corruption (%) | 0 |
-| Résistance aux statuts (%) | 0 |
-| Poches supplémentaires (kg) | 0 |
+| Poches (L) | 0 |
+| Protection Physique | 1 |
+| Résistance Physique (%) | 8 |
+| Coût PM (%) | 4 |
+| Coût PE (%) | 1 |
+| Déplacement (%) | -2 |
 
 [Retour au catalogue](../equipement.md)

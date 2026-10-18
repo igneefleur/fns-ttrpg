@@ -1,41 +1,41 @@
 # Ancient Calygrey Axe
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Ancient Calygrey Axe](../../../assets/equipements/haches-1-main-ancient-calygrey-axe.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Haches 1 main  
 **Famille :** Ancient Calygrey  
-**Origine :** Créé pour le JDR
+**Origine :** Homebrew
+
+An axe crafted in the Ancient Calygrey style.
 
 | Caractéristique | Valeur |
 | --- | --- |
 | Poids (kg) | 2 |
 | Volume (L) | 2 |
 | Taille | Petite |
+| Mains | 1 |
 | Achat (argent) | 2000 |
 | Vente (argent) | 600 |
 | Attaque | 11 |
 | Touches | 2 |
 | Dégâts de base | 105 |
-| Modificateur de dégâts 1 | FOR |
-| Modificateur de dégâts 2 | DEX |
 | Parade | 7 |
 | Réduction de base | 10 |
+| Modificateur de dégâts 1 | FOR |
+| Modificateur de dégâts 2 | DEX |
 | Modificateur de réduction 1 | FOR |
-| DEX requise | 10 |
+| Physique (%) | 90 |
+| Feu (%) | 0 |
+| Froid (%) | 0 |
+| Éclair (%) | 10 |
+| Décomposition (%) | 0 |
+| Éthéré (%) | 0 |
 | FOR requise | 10 |
-| Physique (%) | 90,0 |
-| Feu (%) | 0,0 |
-| Froid (%) | 0,0 |
-| Foudre (%) | 10,0 |
-| Décomposition (%) | 0,0 |
-| Éthéré (%) | 0,0 |
-
-## Propriétés
-
-Bonus de dégâts froid : +20 %
-Bonus de dégâts éclair : +20 %
-Coût de mana : -20 %
+| DEX requise | 10 |
+| Bonus Froid (%) | 20 |
+| Bonus Éclair (%) | 20 |
+| Coût PM (%) | -20 |
 
 [Retour au catalogue](../equipement.md)

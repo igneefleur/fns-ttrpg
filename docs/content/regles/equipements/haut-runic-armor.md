@@ -1,42 +1,37 @@
 # Runic Armor
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Runic Armor](../../../assets/equipements/haut-runic-armor.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Haut  
 **Famille :** Runic Set  
 **Origine :** Outward
 
+A garment covering the upper body.
+
 | Caractéristique | Valeur |
 | --- | --- |
 | Poids (kg) | 11 |
 | Volume (L) | 27 |
-| Construction | Rigide |
+| Taille | Petite |
+| Mains | 1 |
 | Achat (argent) | 400 |
 | Vente (argent) | 131 |
-| Protection | 2 |
-| Résistance physique (%) | 13 |
-| Résistance feu (%) | 0 |
-| Résistance froid (%) | 0 |
-| Résistance foudre (%) | 0 |
-| Résistance décomposition (%) | 0 |
-| Résistance éthéré (%) | 0 |
 | Protection contre le froid | 0 |
 | Protection contre la chaleur | -4 |
-| Bonus physique (%) | 0 |
-| Bonus feu (%) | 0 |
-| Bonus froid (%) | 0 |
-| Bonus foudre (%) | 4 |
-| Bonus décomposition (%) | 0 |
-| Bonus éthéré (%) | 4 |
-| Coût de mana (%) | -5 |
-| Coût d’endurance (%) | 9 |
-| Vitesse (%) | -4 |
-| Barrière | 2 |
-| Réduction des délais (%) | 0 |
-| Résistance à la corruption (%) | 0 |
-| Résistance aux statuts (%) | 0 |
-| Poches supplémentaires (kg) | 0 |
+| Poches (L) | 0 |
+| Protection Physique | 2 |
+| Résistance Physique (%) | 13 |
+| Protection Feu | 2 |
+| Protection Froid | 2 |
+| Protection Éclair | 2 |
+| Protection Décomposition | 2 |
+| Protection Éthéré | 2 |
+| Bonus Éclair (%) | 4 |
+| Bonus Éthéré (%) | 4 |
+| Coût PM (%) | -5 |
+| Coût PE (%) | 9 |
+| Déplacement (%) | -4 |
 
 [Retour au catalogue](../equipement.md)

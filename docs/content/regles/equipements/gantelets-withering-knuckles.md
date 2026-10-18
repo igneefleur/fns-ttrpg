@@ -1,39 +1,38 @@
 # Withering Knuckles
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Withering Knuckles](../../../assets/equipements/gantelets-withering-knuckles.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Gantelets  
 **Famille :** Withering  
-**Origine :** Créé pour le JDR
+**Origine :** Homebrew
+
+A pair of knuckles crafted in the Withering style.
 
 | Caractéristique | Valeur |
 | --- | --- |
-| Poids (kg) | 0,9 |
+| Poids (kg) | 0.9 |
 | Volume (L) | 2 |
-| Taille | Très petite |
+| Taille | Minuscule |
+| Mains | 1 |
 | Achat (argent) | 1000 |
 | Vente (argent) | 300 |
 | Attaque | 6 |
 | Touches | 1 |
 | Dégâts de base | 45 |
-| Modificateur de dégâts 1 | FOR |
-| Modificateur de dégâts 2 | FOR |
 | Parade | 5 |
 | Réduction de base | 5 |
+| Modificateur de dégâts 1 | FOR |
+| Modificateur de dégâts 2 | FOR |
 | Modificateur de réduction 1 | FOR |
-| DEX requise | 0 |
+| Physique (%) | 100 |
+| Feu (%) | 0 |
+| Froid (%) | 0 |
+| Éclair (%) | 0 |
+| Décomposition (%) | 0 |
+| Éthéré (%) | 0 |
 | FOR requise | 20 |
-| Physique (%) | 100,0 |
-| Feu (%) | 0,0 |
-| Froid (%) | 0,0 |
-| Foudre (%) | 0,0 |
-| Décomposition (%) | 0,0 |
-| Éthéré (%) | 0,0 |
-
-## Propriétés
-
-Confusion / Accumulation 45%
+| Propriété — gestion manuelle | Confusion / Buildup 45% |
 
 [Retour au catalogue](../equipement.md)

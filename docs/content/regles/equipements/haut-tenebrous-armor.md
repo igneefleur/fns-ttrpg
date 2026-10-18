@@ -1,42 +1,33 @@
 # Tenebrous Armor
 
-<!-- illustration -->
-![Tenebrous Armor](../../../assets/equipements/haut-tenebrous-armor.png){ .equipment-portrait }
-<!-- /illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
 
-**Catégorie :** Haut  
+![Tenebrous Armor](../../../assets/equipements/haut-tenebrous-armor.png){ .equipment-portrait }
+
+**Catégorie :** Robes  
 **Famille :** Tenebrous Set  
 **Origine :** Outward
 
+A full-length outfit covering both the upper and lower body.
+
 | Caractéristique | Valeur |
 | --- | --- |
-| Poids (kg) | 4 |
-| Volume (L) | 19 |
-| Construction | Rigide |
-| Achat (argent) | 273 |
-| Vente (argent) | 89 |
-| Protection | 0 |
-| Résistance physique (%) | 10 |
-| Résistance feu (%) | 9 |
-| Résistance froid (%) | 9 |
-| Résistance foudre (%) | 9 |
-| Résistance décomposition (%) | 0 |
-| Résistance éthéré (%) | 0 |
-| Protection contre le froid | 7 |
+| Poids (kg) | 6 |
+| Volume (L) | 26 |
+| Taille | Petite |
+| Mains | 1 |
+| Achat (argent) | 545 |
+| Vente (argent) | 178 |
+| Protection contre le froid | 14 |
 | Protection contre la chaleur | 0 |
-| Bonus physique (%) | 0 |
-| Bonus feu (%) | 0 |
-| Bonus froid (%) | 0 |
-| Bonus foudre (%) | 0 |
-| Bonus décomposition (%) | 8 |
-| Bonus éthéré (%) | 7 |
-| Coût de mana (%) | -9 |
-| Coût d’endurance (%) | 0 |
-| Vitesse (%) | 0 |
-| Barrière | 0 |
-| Réduction des délais (%) | 0 |
-| Résistance à la corruption (%) | 5 |
-| Résistance aux statuts (%) | 0 |
-| Poches supplémentaires (kg) | 0 |
+| Poches (L) | 0 |
+| Résistance Physique (%) | 20 |
+| Résistance Feu (%) | 17 |
+| Résistance Froid (%) | 17 |
+| Résistance Éclair (%) | 17 |
+| Bonus Décomposition (%) | 16 |
+| Bonus Éthéré (%) | 14 |
+| Coût PM (%) | -18 |
+| Résistance à la corruption (%) | 9 |
 
 [Retour au catalogue](../equipement.md)

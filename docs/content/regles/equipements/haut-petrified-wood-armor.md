@@ -1,42 +1,31 @@
 # Petrified Wood Armor
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Petrified Wood Armor](../../../assets/equipements/haut-petrified-wood-armor.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Haut  
 **Famille :** Petrified Wood Set  
 **Origine :** Outward
 
+A garment covering the upper body.
+
 | Caractéristique | Valeur |
 | --- | --- |
 | Poids (kg) | 6 |
 | Volume (L) | 30 |
-| Construction | Rigide |
+| Taille | Petite |
+| Mains | 1 |
 | Achat (argent) | 264 |
 | Vente (argent) | 86 |
-| Protection | 2 |
-| Résistance physique (%) | 12 |
-| Résistance feu (%) | 18 |
-| Résistance froid (%) | 0 |
-| Résistance foudre (%) | 0 |
-| Résistance décomposition (%) | 0 |
-| Résistance éthéré (%) | 0 |
 | Protection contre le froid | 0 |
 | Protection contre la chaleur | 7 |
-| Bonus physique (%) | 0 |
-| Bonus feu (%) | 0 |
-| Bonus froid (%) | 0 |
-| Bonus foudre (%) | 0 |
-| Bonus décomposition (%) | 0 |
-| Bonus éthéré (%) | 0 |
-| Coût de mana (%) | 4 |
-| Coût d’endurance (%) | 2 |
-| Vitesse (%) | -2 |
-| Barrière | 0 |
-| Réduction des délais (%) | 0 |
-| Résistance à la corruption (%) | 0 |
-| Résistance aux statuts (%) | 0 |
-| Poches supplémentaires (kg) | 0 |
+| Poches (L) | 0 |
+| Protection Physique | 2 |
+| Résistance Physique (%) | 12 |
+| Résistance Feu (%) | 18 |
+| Coût PM (%) | 4 |
+| Coût PE (%) | 2 |
+| Déplacement (%) | -2 |
 
 [Retour au catalogue](../equipement.md)

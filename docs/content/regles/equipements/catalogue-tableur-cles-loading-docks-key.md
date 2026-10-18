@@ -1,0 +1,22 @@
+# Loading Docks Key
+
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
+![Loading Docks Key](../../../assets/objets/wiki/bc5deb1ff406c8a0.png){ .equipment-portrait }
+
+**Catégorie :** Clés  
+**Famille :** Métal / clé  
+**Origine :** Outward
+
+A key that opens its matching lock.
+
+| Caractéristique | Valeur |
+| --- | --- |
+| Poids (kg) | 0.1 |
+| Volume (L) | 0.1 |
+| Taille | Minuscule |
+| Mains | 1 |
+| Achat (argent) | Non commercialisé |
+| Vente (argent) | Non commercialisé |
+
+[Retour au catalogue](../equipement.md)

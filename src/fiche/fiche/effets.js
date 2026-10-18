@@ -1,4 +1,4 @@
-  // Référentiel importé du tableur. Les règles non converties restent descriptives.
+  // Les définitions et les propriétés des objets sont celles de la Boutique.
   function effetsDefinitions() { return D().effets || []; }
   var effetsCacheListe=null,effetsCache={};
   function effetDefinition(id) { var liste=effetsDefinitions();if(liste!==effetsCacheListe){effetsCacheListe=liste;effetsCache=Object.create(null);liste.forEach(function(d){effetsCache[d.id]=d;});}return effetsCache[id] || null; }
@@ -21,8 +21,8 @@
     });
     // Les bonus d'équipement sont dérivés : aucune copie temporaire à sauvegarder.
     (state.inv && state.inv.objets || []).forEach(function (o) {
-      if (o.dans || !(pnum(o.qte) > 0) || !(o.ou === "mainG" || o.ou === "mainD" || (o.vet || o.acc) && casesDe(o).length)) return;
-      (o.effets || []).forEach(function (id) { var d = effetDefinition(id); if (d && !(d.categorie==="Équipement porté en main" && o.ou!=="mainG")) out.push({e:{niveau:1,cible:o.arme ? o.ref : "",equipement:o.ref,source:o.nom}, d:d}); });
+      if (o.dans || !(pnum(o.qte) > 0) || !(o.ou === "mainG" || o.ou === "mainD" || (o.vet || o.acc || o.sac || o.ceint) && casePermise(o,o.ou) && casesDe(o).length)) return;
+      (o.effets || []).forEach(function (id) { var d = effetDefinition(id); if (d) out.push({e:{niveau:1,cible:o.arme ? o.ref : "",equipement:o.ref,source:o.nom}, d:d}); });
     });
     // Même famille portée plusieurs fois : le rang le plus élevé gagne.
     var families = {};
@@ -35,7 +35,7 @@
   }
   function effetBonus(cle, type, cible) {
     var n = 0;
-    vetementsPortes().forEach(function(o){var v=o.stats&&o.stats[cle];if(type!==undefined)v=v&&v[type];n+=num(v,0);});
+    equipementsBonus().forEach(function(o){var v=o.stats&&o.stats[cle];if(type!==undefined)v=v&&v[type];n+=num(v,0);});
     effetsSources().forEach(function (x) {
       if (x.e.cible && x.e.cible !== cible) return;
       var v = x.d.ops[cle]; if (type !== undefined) v = v && v[type]; n += num(v,0);

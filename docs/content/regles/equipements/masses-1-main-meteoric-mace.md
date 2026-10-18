@@ -1,8 +1,8 @@
 # Meteoric Mace
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Meteoric Mace](../../../assets/equipements/masses-1-main-meteoric-mace.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Masses 1 main  
 **Famille :** Meteoric  
@@ -13,29 +13,26 @@ A glowing Obsidian Mace passed down by your ancestors. Inflicts Holy Blaze on bu
 | Caractéristique | Valeur |
 | --- | --- |
 | Poids (kg) | 2 |
-| Volume (L) | 2,5 |
+| Volume (L) | 2.5 |
 | Taille | Petite |
+| Mains | 1 |
 | Achat (argent) | 2000 |
 | Vente (argent) | 600 |
 | Attaque | 11 |
 | Touches | 1 |
 | Dégâts de base | 95 |
-| Modificateur de dégâts 1 | FOR |
-| Modificateur de dégâts 2 | FOR |
 | Parade | 8 |
 | Réduction de base | 15 |
+| Modificateur de dégâts 1 | FOR |
+| Modificateur de dégâts 2 | FOR |
 | Modificateur de réduction 1 | FOR |
-| DEX requise | — |
+| Physique (%) | 50 |
+| Feu (%) | 50 |
+| Froid (%) | 0 |
+| Éclair (%) | 0 |
+| Décomposition (%) | 0 |
+| Éthéré (%) | 0 |
 | FOR requise | 20 |
-| Physique (%) | 50,0 |
-| Feu (%) | 50,0 |
-| Froid (%) | 0,0 |
-| Foudre (%) | 0,0 |
-| Décomposition (%) | 0,0 |
-| Éthéré (%) | 0,0 |
-
-## Propriétés
-
-Holy Blaze / Accumulation 35%
+| Propriété — gestion manuelle | Holy Blaze / Buildup 35% |
 
 [Retour au catalogue](../equipement.md)

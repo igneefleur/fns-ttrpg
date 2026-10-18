@@ -1,42 +1,32 @@
 # Scarlet Trousers
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Scarlet Trousers](../../../assets/equipements/bas-scarlet-trousers.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Bas  
 **Famille :** Scarlet Set  
-**Origine :** Créé pour le JDR
+**Origine :** Homebrew
+
+A garment covering the lower body.
 
 | Caractéristique | Valeur |
 | --- | --- |
 | Poids (kg) | 1 |
-| Volume (L) | 2,5 |
-| Construction | Souple |
+| Volume (L) | 2.5 |
+| Taille | Très petite |
+| Mains | 1 |
 | Achat (argent) | 593 |
 | Vente (argent) | 179 |
-| Protection | 0 |
-| Résistance physique (%) | 6 |
-| Résistance feu (%) | 0 |
-| Résistance froid (%) | 0 |
-| Résistance foudre (%) | 0 |
-| Résistance décomposition (%) | 0 |
-| Résistance éthéré (%) | 0 |
 | Protection contre le froid | 0 |
 | Protection contre la chaleur | 0 |
-| Bonus physique (%) | 0 |
-| Bonus feu (%) | 13 |
-| Bonus froid (%) | 4 |
-| Bonus foudre (%) | 4 |
-| Bonus décomposition (%) | 4 |
-| Bonus éthéré (%) | 4 |
-| Coût de mana (%) | -7 |
-| Coût d’endurance (%) | 0 |
-| Vitesse (%) | 0 |
-| Barrière | 0 |
-| Réduction des délais (%) | 0 |
-| Résistance à la corruption (%) | 0 |
-| Résistance aux statuts (%) | -10 |
-| Poches supplémentaires (kg) | 0 |
+| Poches (L) | 0 |
+| Résistance Physique (%) | 6 |
+| Bonus Feu (%) | 13 |
+| Bonus Froid (%) | 4 |
+| Bonus Éclair (%) | 4 |
+| Bonus Décomposition (%) | 4 |
+| Bonus Éthéré (%) | 4 |
+| Coût PM (%) | -7 |
 
 [Retour au catalogue](../equipement.md)

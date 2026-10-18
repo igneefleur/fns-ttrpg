@@ -1,48 +1,31 @@
 # Caldera Mail Boots
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Caldera Mail Boots](../../../assets/equipements/pieds-caldera-mail-boots.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Pieds  
 **Famille :** Caldera Mail Set  
 **Origine :** Outward
 
-Provides 25% resistance to Pain and Confusion.
+Footwear for travel and combat.
 
 | Caractéristique | Valeur |
 | --- | --- |
 | Poids (kg) | 5 |
 | Volume (L) | 3 |
-| Construction | Semi-rigide |
+| Taille | Très petite |
+| Mains | 1 |
 | Achat (argent) | 157 |
 | Vente (argent) | 47 |
-| Protection | 1 |
-| Résistance physique (%) | 6 |
-| Résistance feu (%) | 0 |
-| Résistance froid (%) | 4 |
-| Résistance foudre (%) | 4 |
-| Résistance décomposition (%) | 0 |
-| Résistance éthéré (%) | 0 |
 | Protection contre le froid | 0 |
 | Protection contre la chaleur | 0 |
-| Bonus physique (%) | 0 |
-| Bonus feu (%) | 0 |
-| Bonus froid (%) | 0 |
-| Bonus foudre (%) | 0 |
-| Bonus décomposition (%) | 0 |
-| Bonus éthéré (%) | 0 |
-| Coût de mana (%) | 1 |
-| Coût d’endurance (%) | 0 |
-| Vitesse (%) | 0 |
-| Barrière | 0 |
-| Réduction des délais (%) | 0 |
-| Résistance à la corruption (%) | 0 |
-| Résistance aux statuts (%) | 0 |
-| Poches supplémentaires (kg) | 0 |
-
-## Propriétés
-
-Prevents Pain and Confusion by 25%
+| Poches (L) | 0 |
+| Protection Physique | 1 |
+| Résistance Physique (%) | 6 |
+| Résistance Froid (%) | 4 |
+| Résistance Éclair (%) | 4 |
+| Coût PM (%) | 1 |
+| Propriété — gestion manuelle | Prevents Pain and Confusion by 25% |
 
 [Retour au catalogue](../equipement.md)

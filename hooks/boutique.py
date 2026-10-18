@@ -1,122 +1,191 @@
-"""Catalogue de Boutique, reconstruit depuis les fiches d'équipement au build."""
+"""La Boutique définit les équipements. Le livre et la fiche sont des consommateurs."""
+import copy
 import json
-import re
+import math
 from pathlib import Path
 from mkdocs.structure.files import File
 
-
-def plain(text):
-    text = re.sub(r'<br\s*/?>', '\n', text, flags=re.I)
-    text = re.sub(r'\[([^]]+)\]\([^)]+\)', r'\1', text)
-    return text.replace('**', '').strip()
+TAILLES = ('Minuscule', 'Très petite', 'Petite', 'Moyenne', 'Grande', 'Très grande', 'Gigantesque')
+TYPES = ('arme', 'vetement', 'accessoire', 'rangement', 'contenant', 'consommable', 'munition', 'autre')
+DAMAGE = {'physique':'Physique', 'feu':'Feu', 'froid':'Froid', 'eclair':'Éclair', 'decomposition':'Décomposition', 'ethere':'Éthéré', 'brut':'Brut'}
 
 
-def catalogue(docs):
-    items = []
-    for path in sorted((docs / 'content/regles/equipements').glob('*.md')):
-        text = path.read_text(encoding='utf-8-sig')
-        title = re.search(r'^# (.+)$', text, re.M)
-        category = re.search(r'^\*\*Catégorie :\*\*\s*(.+)', text, re.M)
-        if not title or not category:
-            continue
-        image = re.search(r'!\[[^]]*\]\(([^)]+)\)', text)
-        fields = []
-        for line in text.splitlines():
-            if not line.startswith('| '):
-                continue
-            cells = [plain(c) for c in line.strip('| ').split('|')]
-            if len(cells) == 2 and cells[0] not in ('Caractéristique', '---') and not set(cells[0]) <= {'-', ' '}:
-                fields.append(cells)
-        description = re.sub(r'<!--.*?-->', '', text, flags=re.S)
-        description = re.sub(r'!\[[^]]*\]\([^)]*\)(?:\{[^}]*\})?', '', description)
-        description = '\n'.join(line for line in description.splitlines()
-                                if not line.startswith(('# ', '|', '**', '[Retour')))
-        description = re.sub(r'^## (.+)$', r'\1', description, flags=re.M)
-        description = re.sub(r'\n{3,}', '\n\n', description).strip()
-        img = ''
-        if not image:
-            raise ValueError(f'Illustration absente : {path.name}')
-        if image:
-            resolved = (path.parent / image[1]).resolve()
-            img = resolved.relative_to(docs.resolve()).as_posix()
-            if not resolved.is_file():
-                raise ValueError(f'Image absente : {path.name}: {img}')
-        family = re.search(r'^\*\*Famille :\*\*\s*(.+)', text, re.M)
-        origin = re.search(r'^\*\*Origine :\*\*\s*(.+)', text, re.M)
-        items.append({'id': path.stem, 'nom': title[1], 'categorie': category[1].strip(),
-                      'famille': family[1].strip() if family else '',
-                      'origine': origin[1].strip() if origin else '', 'img': img,
-                      'desc': plain(description), 'champs': fields})
+def reference(docs):
+    """Une seule définition éditable ; aucune lecture du livre ou d'un tableur."""
+    docs = Path(docs)
+    data = json.loads((docs / 'data/owd-boutique.json').read_text(encoding='utf8'))
+    items = data.get('equipements', [])
     if not items:
-        raise ValueError('Le catalogue des équipements est vide.')
-    # Les données JDR du tableur priment sur les anciennes fiches descriptives.
-    reference = docs / 'data/owd-effets.json'
-    if reference.exists():
-        data = json.loads(reference.read_text(encoding='utf8'))
-        by_name = {o['nom']: o for o in data.get('equipements', [])}
-        for it in items:
-            if it['nom'] not in by_name:
-                continue
-            obj = dict(by_name[it['nom']])
-            obj['img'] = it['img']
-            if not obj.get('desc'):
-                obj['desc'] = it['desc']
-            it['objet'] = obj
-            replacements = {'Taille': obj.get('taille'),
-                            'Taille maximale acceptée': obj.get('tailleInterieure'),
-                            'Attaches': obj.get('ep')}
-            it['champs'] = [['Accroches' if k == 'Attaches' else k,
-                             str(replacements[k]) if k in replacements and replacements[k] is not None else v]
-                            for k, v in it['champs'] if k not in ['Construction','Type']]
-            if obj.get('sac'):
-                it['categorie'] = 'Rangement'
-                it['famille'] = 'Sac à dos'
-                it['champs'].append(['Taille maximale aux accroches', str(obj.get('tailleAccroche') or 'Non renseignée')])
-        existing = {it['nom'] for it in items}
-        categories = {'arme':'Armes','vetement':'Vêtements','accessoire':'Accessoires','rangement':'Rangement','autre':'Objets divers','contenant':'Contenants','consommable':'Consommables','munition':'Munitions'}
-        for o in data.get('equipements', []):
-            if o['nom'] in existing:
-                continue
-            existing.add(o['nom'])
-            fields = [['Poids (kg)', str(o.get('poids',0))],['Volume (L)',str(o.get('volume',0))],
-                      ['Taille',o.get('taille','')],['Mains',str(o.get('mains',1))],
-                      ['Achat (argent)',str(o.get('achat',0))],['Vente (argent)',str(o.get('vente',0))]]
-            fields += [['Effet '+str(i+1), name] for i,name in enumerate(o.get('effets',[]))]
-            items.append({'id':o['id'],'nom':o['nom'],'categorie':o.get('categorieBoutique') or ('Éclairage' if o['nom'] in ['Coil Lantern', "Djinn's Lamp", 'Explorer Lantern', 'Lantern of Souls', 'Old Lantern', 'Virgin Lantern', 'Ice-Flame Torch', 'Makeshift Torch'] else 'Tentes et couchages' if o['typeObjet']=='autre' and ('Tent' in o['nom'] or 'Bedroll' in o['nom'] or 'Lodge' in o['nom'] or 'Cocoon' in o['nom'] or 'Bone Cage' in o['nom']) else categories.get(o['typeObjet'],'Objets divers')),
-                          'famille':o.get('sousType',''),'origine':'Outward','img':o.get('img',''),
-                          'desc':o.get('desc',''),'champs':fields,'objet':o})
-        for o in data.get('objets', []):
-            if o['nom'] in existing:
-                continue
-            fields = [['Poids (kg)', str(o.get('poids', 0))], ['Volume (L)', str(round(o.get('volume', 0), 3))],
-                      ['Contenance', str(o.get('places', 0))], ['Temps (DA)', str(o.get('tempsConsommation', 0))],
-                      ['PS', str(o.get('ps', 0))], ['PH', str(o.get('ph', 0))]]
-            fields += [['Effet '+str(i+1), name] for i, name in enumerate(o.get('effets', []))]
-            fields += [['Restauration '+k.upper(), str(v)+' '+o.get('unitesRestauration', {}).get(k, 'points')]
-                       for k, v in o.get('restaurations', {}).items() if v]
-            items.append({'id': o['id'], 'nom': o['nom'], 'categorie': {'solide':'Consommables · Solide','pate':'Consommables · Pâte','liquide':'Consommables · Liquide'}.get(o.get('typeObjet'), 'Consommables · '+{'solide':'Solide','pate':'Pâte','liquide':'Liquide'}.get(o.get('sousType','').split('_')[0], 'Autre')),
-                          'famille':'Ingérable' if o.get('sousType','').endswith('_ingerable') or o.get('sousType')=='ingerable' else 'Autre', 'origine':'Outward', 'img':o.get('img',''), 'desc':o.get('desc',''),
-                          'champs':fields, 'objet':o})
-    # Do not publish duplicate IDs: chat links use this key as the drag reference.
-    ids = [i['id'] for i in items]
-    if len(ids) != len(set(ids)):
-        raise ValueError('Identifiants Boutique dupliqués')
-    missing = [i['nom'] for i in items if not isinstance(i.get('objet'), dict)]
-    if missing:
-        raise ValueError('Fiches sans données techniques : '+', '.join(missing))
-    # Une image non renseignée est autorisée (créations JDR notamment), mais
-    # aucune illustration distante ou manquante ne doit être publiée.
-    for it in items:
-        img = it.get('img', '')
+        raise ValueError('Le catalogue Boutique est vide.')
+    ids, names = set(), set()
+    effects = {e['id'] for e in data.get('effets', [])}
+    if len(effects) != len(data.get('effets', [])):
+        raise ValueError('Identifiants d’effets dupliqués.')
+    for o in items:
+        name = o['nom']
+        if o['id'] in ids or name in names:
+            raise ValueError(f'Équipement dupliqué : {name}')
+        ids.add(o['id']); names.add(name)
+        if o.get('typeObjet') not in TYPES or o.get('taille') not in TAILLES:
+            raise ValueError(f'Type/taille invalide : {name}')
+        if o.get('mains') not in (1, 2, '2 obligatoires'):
+            raise ValueError(f'Nombre de mains invalide : {name}')
+        for key in ('poids', 'volume', 'achat', 'vente'):
+            val = o.get(key)
+            if key in ('achat', 'vente') and val is None: continue
+            if not isinstance(val, (float, int)) or not math.isfinite(val) or val < 0:
+                raise ValueError(f'{key} invalide ou absent : {name}')
+        if o.get('encombre') != o['volume']:
+            raise ValueError(f'Volume/encombrement différents : {name}')
+        if not o.get('desc'):
+            raise ValueError(f'Description absente : {name}')
+        img = o.get('img', '')
         if img:
             resolved = (docs / img).resolve()
             if not img.startswith('assets/') or not resolved.is_relative_to(docs.resolve()) or not resolved.is_file():
-                raise ValueError(f"Illustration non embarquée : {it['nom']}: {img}")
-    return {'version': 3, 'objets': items}
+                raise ValueError(f'Illustration non embarquée : {name}: {img}')
+        if o.get('tailleAccroche') and o['tailleAccroche'] not in TAILLES:
+            raise ValueError(f'Taille d’accroche invalide : {name}')
+        for eid in o.get('effets', []):
+            if eid not in effects:
+                raise ValueError(f'Effet inconnu : {name}: {eid}')
+        if o.get('arme'):
+            rep = o['arme'].get('repartition', {})
+            if abs(sum(rep.values()) - 100) > 1e-6:
+                raise ValueError(f'Répartition des dégâts invalide : {name}')
+    return data
+
+
+def number(v):
+    try:
+        n = float(v)
+        if math.isfinite(n): return str(int(n)) if int(n) == n else str(n)
+    except (ValueError, TypeError): pass
+    return str(v)
+
+
+def champs(o, effects):
+    """Projection d'affichage, sans modifier ou réinterpréter les valeurs."""
+    f = [['Poids (kg)', number(o['poids'])], ['Volume (L)', number(o['volume'])],
+         ['Taille', o['taille']], ['Mains', str(o['mains'])],
+         ['Achat (argent)', 'Non commercialisé' if o.get('commerce') == 'non-commercialise' else ('Non renseigné' if o.get('achat') is None else number(o['achat']))],
+         ['Vente (argent)', 'Non commercialisé' if o.get('commerce') == 'non-commercialise' else ('Non renseigné' if o.get('vente') is None else number(o['vente']))]]
+    def add(label, value, always=False):
+        if always or value not in (None, '', 0, False):
+            f.append([label, number(value)])
+    a = o.get('arme')
+    if a:
+        for label, key in [('Attaque','attaque'), ('Touches','hits'), ('Dégâts de base','degats'), ('Parade','parade'), ('Réduction de base','reduction')]:
+            add(label, a.get(key, 0), True)
+        abbr = {'Force':'FOR','Dexterite':'DEX','Vigueur':'VIG','Endurance':'END','Resistance':'RES','Ferveur':'FER','Intelligence':'INT','Chance':'CHA'}
+        for label, key in [('Modificateur de dégâts','modsDegats'), ('Modificateur de réduction','modsParade')]:
+            for i, val in enumerate(a.get(key, [])):
+                if val: add(f'{label} {i+1}', abbr.get(val, val))
+        for key, val in a.get('repartition', {}).items():
+            add(DAMAGE.get(key, key) + ' (%)', val, True)
+    for k, val in o.get('prerequis', {}).items():
+        add(k.upper() + ' requise', val)
+    if o.get('sac') or o['typeObjet'] == 'contenant':
+        add('Capacité (L)', o.get('cap', 0), True)
+        add('Taille maximale acceptée', o.get('tailleInterieure'))
+    if o.get('sac') or o.get('ceint'):
+        add('Accroches', o.get('ep', 0), True)
+        add('Taille maximale aux accroches', o.get('tailleAccroche'))
+    if o['typeObjet'] == 'contenant':
+        add('Contenu accepté', {'liquide':'Liquide','pate':'Pâte','poudre':'Poudre','solide':'Solide'}.get(o.get('contenant'), o.get('contenant', '')))
+        add('Piles de contenu', o.get('emplacements', 0), True)
+        add('Capacité (doses de 0,25 L)', o.get('doses'))
+    for key, label in [('froid','Protection contre le froid'), ('chaud','Protection contre la chaleur'), ('poches','Poches (L)')]:
+        add(label, o.get(key, 0), o['typeObjet'] == 'vetement')
+    for typ, label in DAMAGE.items():
+        add('Protection ' + label, o.get('prot_' + typ))
+        add('Résistance ' + label + ' (%)', o.get('res_' + typ))
+    stats = o.get('stats', {})
+    for typ, val in stats.get('degats', {}).items(): add('Bonus ' + DAMAGE.get(typ, typ) + ' (%)', val)
+    for typ, val in stats.get('protections', {}).items(): add('Protection passive ' + DAMAGE.get(typ, typ), val)
+    for typ, val in stats.get('resistances', {}).items(): add('Résistance passive ' + DAMAGE.get(typ, typ) + ' (%)', val)
+    for res, val in stats.get('couts', {}).items(): add('Coût ' + res.upper() + ' (%)', val)
+    for key, label in [('vitesse','Déplacement (%)'), ('innocence','Résistance à la corruption (%)'), ('alterations','Résistance aux altérations (%)')]: add(label, stats.get(key))
+    if o['typeObjet'] == 'consommable':
+        if o.get('nourri'):
+            for k, label in [('places','Contenance'), ('ps','PS'), ('ph','PH')]: add(label, o.get(k, 0), True)
+        add('Temps (DA)', o.get('tempsConsommation', 0), True)
+        for k, val in o.get('restaurations', {}).items():
+            if val: add('Restauration ' + k.upper(), number(val) + ' ' + o.get('unitesRestauration', {}).get(k, 'points'))
+        for eid, threshold in o.get('conditionsEffets', {}).items():
+            add('Condition : ' + effects.get(eid, {}).get('nom', eid), f'PS ≤ {threshold} %')
+    props = o.get('proprietes', {})
+    labels = {'autonomie':'Autonomie', 'accrochable':'Accrochable', 'recharge':'Recharge', 'esquiveLibre':'Ne gêne pas l’esquive', 'conservationAliments':'Périssement ralenti (%)', 'lumiere':'Lumière'}
+    for k, v in props.items():
+        if v is not None and v is not False:
+            add(labels.get(k, k), 'Oui' if v is True else {'faint':'Faible','bright':'Vive'}.get(str(v), v), True)
+    for rule in o.get('reglesManuelles', []): add('Propriété — gestion manuelle', rule)
+    for i, eid in enumerate(o.get('effets', [])):
+        d = effects[eid]
+        value = d['nom']
+        if d.get('description'): value += ' — ' + d['description']
+        if d.get('dureeTexte'): value += ' (' + d['dureeTexte'] + ')'
+        if d.get('manuel'): value += ' — gestion manuelle'
+        add(f'Effet {i+1}', value)
+    return f
+
+
+def catalogue(docs):
+    data = reference(docs)
+    effects = {e['id']: e for e in data['effets']}
+    items = []
+    for o in data['equipements']:
+        items.append({'id':o['id'], 'nom':o['nom'], 'categorie':o['categorieBoutique'],
+                      'famille':o.get('famille',''), 'origine':o.get('origine',''),
+                      'img':o.get('img',''), 'desc':o['desc'], 'champs':champs(o, effects),
+                      'objet':copy.deepcopy(o)})
+    return {'version':data['version'], 'source':'OWD Boutique', 'effets':data['effets'], 'typesArmes':data['typesArmes'], 'typesDegats':data['typesDegats'], 'monnaie':data['monnaie'], 'objets':items}
+
+
+def document(it):
+    def escape(v): return str(v).replace('|', '&#124;').replace('\n', '<br>')
+    text = f"# {it['nom']}\n\n<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->\n\n"
+    if it['img']: text += f"![{it['nom']}](../../../{it['img']}){{ .equipment-portrait }}\n\n"
+    text += f"**Catégorie :** {it['categorie']}  \n**Famille :** {it['famille']}  \n**Origine :** {it['origine']}\n\n{it['desc']}\n\n| Caractéristique | Valeur |\n| --- | --- |\n"
+    text += '\n'.join('| ' + escape(k) + ' | ' + escape(v) + ' |' for k, v in it['champs'])
+    return text + '\n\n[Retour au catalogue](../equipement.md)\n'
+
+
+def index_document(data):
+    lines = ['# Équipements', '', '<!-- Généré depuis la Boutique. -->', '', 'Les équipements, leurs valeurs et leurs effets sont définis par la Boutique.', '']
+    for category in sorted({x['categorie'] for x in data['objets']}):
+        lines += ['## ' + category, '']
+        lines += [f"- [{x['nom']}](equipements/{Path(x['objet']['page']).name})" for x in data['objets'] if x['categorie'] == category]
+        lines.append('')
+    return '\n'.join(lines)
+
+
+def on_config(config):
+    # Navigation dérivée du même catalogue, y compris les robes et nouveaux objets.
+    data = reference(Path(config['docs_dir']))
+    groups = {}
+    for item in sorted(data['equipements'], key=lambda o:o['nom'].casefold()):
+        groups.setdefault(item['categorieBoutique'], []).append({item['nom']: item['page']})
+    equipment_nav = [{'Catalogue':'content/regles/equipement.md'}] + [{k:groups[k]} for k in sorted(groups)]
+    def walk(nodes):
+        for node in nodes or []:
+            if not isinstance(node, dict): continue
+            for key, value in list(node.items()):
+                if key == 'Équipements': node[key] = equipment_nav
+                elif isinstance(value, list): walk(value)
+    walk(config.get('nav'))
+    return config
 
 
 def on_files(files, config):
-    docs = Path(config['docs_dir'])
-    data = json.dumps(catalogue(docs), ensure_ascii=False, separators=(',', ':'))
-    files.append(File.generated(config, 'owd-boutique.json', content=data))
+    data = catalogue(Path(config['docs_dir']))
+    def replace(path, content):
+        old = files.get_file_from_path(path)
+        if old is not None: files.remove(old)
+        files.append(File.generated(config, path, content=content))
+    old = files.get_file_from_path('owd-boutique.json')
+    if old is not None: files.remove(old)
+    files.append(File.generated(config, 'owd-boutique.json', content=json.dumps(data, ensure_ascii=False, separators=(',', ':'))))
+    for item in data['objets']: replace(item['objet']['page'], document(item))
+    replace('content/regles/equipement.md', index_document(data))
     return files

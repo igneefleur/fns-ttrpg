@@ -1,23 +1,27 @@
 # Brass-Wolf Backpack
 
-<!-- illustration -->
-![Brass-Wolf Backpack](../../../assets/equipements/backpacks-brass-wolf-backpack.png){ .equipment-portrait }
-<!-- /illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
 
-**Catégorie :** Sacs à dos  
+![Brass-Wolf Backpack](../../../assets/equipements/backpacks-brass-wolf-backpack.png){ .equipment-portrait }
+
+**Catégorie :** Rangement  
+**Famille :** Backpacks  
 **Origine :** Outward
+
+Protection : +2.
 
 | Caractéristique | Valeur |
 | --- | --- |
-| Type | Coffre |
 | Poids (kg) | 4 |
 | Volume (L) | 75 |
 | Taille | Petite |
-| Capacité (L) | 70 |
-| Taille maximale acceptée | Petite |
-| Bonus | Protection : +2. |
-| Attaches | 5 |
+| Mains | 1 |
 | Achat (argent) | 200 |
 | Vente (argent) | 60 |
+| Capacité (L) | 70 |
+| Taille maximale acceptée | Petite |
+| Accroches | 5 |
+| Taille maximale aux accroches | Moyenne |
+| Protection Physique | 2 |
 
 [Retour au catalogue](../equipement.md)

@@ -104,7 +104,7 @@ const server=http.createServer((req,res)=> {
   await replace(s=>{s.inv.objets=[{ref:'legacy',id:'boutique:robes-arcane-robe',nom:'Arcane Robe',qte:2,poids:2.5,ou:'poches'}];});
   assert.equal((await state()).inv.objets[0].vet,'hautbas');assert.equal((await state()).inv.objets[0].stats.couts.pm,-16);assert.equal((await state()).inv.objets[0].qte,2);
   // Répartition 80/20, multiplicateur du coup, MOD puis bonus élémentaire.
-  const astral=JSON.parse(fs.readFileSync(path.join(root,'docs/data/owd-effets.json'))).equipements.find(o=>o.nom==='Astral Dagger');
+  const astral=JSON.parse(fs.readFileSync(path.join(root,'docs/data/owd-boutique.json'))).equipements.find(o=>o.nom==='Astral Dagger');
   await replace(s=>{s.effetsActifs=[];s.effetsPermanents={};s.inv.objets=[{...astral,ref:'dagger',qte:1,ou:'mainG',img:''}];s.attaques=[{id:'astral',arme:'dagger'}];});
   await sheet.locator('.pc-tab').filter({hasText:/^Fiche$/}).click();await add('Bénédiction');
   const attack=sheet.locator('[data-module="attaque"] .pc-attaque-card').first();await attack.locator('.pc-attaque-tete').click();

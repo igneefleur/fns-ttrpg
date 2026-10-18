@@ -1,42 +1,30 @@
 # Master Desert Tunic
 
-<!-- illustration -->
-![Master Desert Tunic](../../../assets/equipements/haut-master-desert-tunic.png){ .equipment-portrait }
-<!-- /illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
 
-**Catégorie :** Haut  
+![Master Desert Tunic](../../../assets/equipements/haut-master-desert-tunic.png){ .equipment-portrait }
+
+**Catégorie :** Robes  
 **Famille :** Master Desert Set  
 **Origine :** Outward
 
+A full-length outfit covering both the upper and lower body.
+
 | Caractéristique | Valeur |
 | --- | --- |
-| Poids (kg) | 5 |
-| Volume (L) | 4 |
-| Construction | Souple |
-| Achat (argent) | 329 |
-| Vente (argent) | 99 |
-| Protection | 2 |
-| Résistance physique (%) | 15 |
-| Résistance feu (%) | 0 |
-| Résistance froid (%) | 0 |
-| Résistance foudre (%) | 0 |
-| Résistance décomposition (%) | 0 |
-| Résistance éthéré (%) | 0 |
+| Poids (kg) | 7.5 |
+| Volume (L) | 7 |
+| Taille | Très petite |
+| Mains | 1 |
+| Achat (argent) | 658 |
+| Vente (argent) | 198 |
 | Protection contre le froid | 0 |
-| Protection contre la chaleur | 11 |
-| Bonus physique (%) | 0 |
-| Bonus feu (%) | 0 |
-| Bonus froid (%) | 0 |
-| Bonus foudre (%) | 0 |
-| Bonus décomposition (%) | 0 |
-| Bonus éthéré (%) | 0 |
-| Coût de mana (%) | -5 |
-| Coût d’endurance (%) | -5 |
-| Vitesse (%) | 5 |
-| Barrière | 0 |
-| Réduction des délais (%) | 0 |
-| Résistance à la corruption (%) | 0 |
-| Résistance aux statuts (%) | 0 |
-| Poches supplémentaires (kg) | 0 |
+| Protection contre la chaleur | 21 |
+| Poches (L) | 0 |
+| Protection Physique | 4 |
+| Résistance Physique (%) | 29 |
+| Coût PM (%) | -9 |
+| Coût PE (%) | -10 |
+| Déplacement (%) | 9 |
 
 [Retour au catalogue](../equipement.md)

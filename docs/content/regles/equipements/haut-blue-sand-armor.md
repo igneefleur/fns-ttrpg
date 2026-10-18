@@ -1,8 +1,8 @@
 # Blue Sand Armor
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Blue Sand Armor](../../../assets/equipements/haut-blue-sand-armor.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Haut  
 **Famille :** Blue Sand Set  
@@ -14,31 +14,22 @@ Blue Sand Armor is a chest piece made from Blue Sand. It boasts exceptional defe
 | --- | --- |
 | Poids (kg) | 9 |
 | Volume (L) | 27 |
-| Construction | Rigide |
+| Taille | Petite |
+| Mains | 1 |
 | Achat (argent) | 320 |
 | Vente (argent) | 105 |
-| Protection | 2 |
-| Résistance physique (%) | 15 |
-| Résistance feu (%) | 7 |
-| Résistance froid (%) | 7 |
-| Résistance foudre (%) | 7 |
-| Résistance décomposition (%) | 7 |
-| Résistance éthéré (%) | 7 |
 | Protection contre le froid | 0 |
 | Protection contre la chaleur | -3 |
-| Bonus physique (%) | 0 |
-| Bonus feu (%) | 0 |
-| Bonus froid (%) | 0 |
-| Bonus foudre (%) | 0 |
-| Bonus décomposition (%) | 0 |
-| Bonus éthéré (%) | 0 |
-| Coût de mana (%) | 4 |
-| Coût d’endurance (%) | 4 |
-| Vitesse (%) | -4 |
-| Barrière | 0 |
-| Réduction des délais (%) | 0 |
-| Résistance à la corruption (%) | 0 |
-| Résistance aux statuts (%) | 0 |
-| Poches supplémentaires (kg) | 0 |
+| Poches (L) | 0 |
+| Protection Physique | 2 |
+| Résistance Physique (%) | 15 |
+| Résistance Feu (%) | 7 |
+| Résistance Froid (%) | 7 |
+| Résistance Éclair (%) | 7 |
+| Résistance Décomposition (%) | 7 |
+| Résistance Éthéré (%) | 7 |
+| Coût PM (%) | 4 |
+| Coût PE (%) | 4 |
+| Déplacement (%) | -4 |
 
 [Retour au catalogue](../equipement.md)

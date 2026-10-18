@@ -1,39 +1,38 @@
 # Savage Dagger
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Savage Dagger](../../../assets/equipements/dagues-savage-dagger.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Dagues  
 **Famille :** Savage  
-**Origine :** Créé pour le JDR
+**Origine :** Homebrew
+
+A dagger crafted in the Savage style.
 
 | Caractéristique | Valeur |
 | --- | --- |
-| Poids (kg) | 0,3 |
-| Volume (L) | 0,4 |
-| Taille | Très petite |
+| Poids (kg) | 0.3 |
+| Volume (L) | 0.3 |
+| Taille | Minuscule |
+| Mains | 1 |
 | Achat (argent) | 300 |
 | Vente (argent) | 90 |
 | Attaque | 7 |
 | Touches | 1 |
 | Dégâts de base | 45 |
-| Modificateur de dégâts 1 | DEX |
-| Modificateur de dégâts 2 | DEX |
 | Parade | 6 |
 | Réduction de base | 10 |
+| Modificateur de dégâts 1 | DEX |
+| Modificateur de dégâts 2 | DEX |
 | Modificateur de réduction 1 | DEX |
+| Physique (%) | 100 |
+| Feu (%) | 0 |
+| Froid (%) | 0 |
+| Éclair (%) | 0 |
+| Décomposition (%) | 0 |
+| Éthéré (%) | 0 |
 | DEX requise | 20 |
-| FOR requise | 0 |
-| Physique (%) | 100,0 |
-| Feu (%) | 0,0 |
-| Froid (%) | 0,0 |
-| Foudre (%) | 0,0 |
-| Décomposition (%) | 0,0 |
-| Éthéré (%) | 0,0 |
-
-## Propriétés
-
-Bleeding / Accumulation 45%
+| Propriété — gestion manuelle | Bleeding / Buildup 45% |
 
 [Retour au catalogue](../equipement.md)

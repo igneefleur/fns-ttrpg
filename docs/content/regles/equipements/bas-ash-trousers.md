@@ -1,42 +1,27 @@
 # Ash Trousers
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Ash Trousers](../../../assets/equipements/bas-ash-trousers.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Bas  
 **Famille :** Ash Set  
-**Origine :** Créé pour le JDR
+**Origine :** Homebrew
+
+A garment covering the lower body.
 
 | Caractéristique | Valeur |
 | --- | --- |
-| Poids (kg) | 2,5 |
+| Poids (kg) | 2.5 |
 | Volume (L) | 3 |
-| Construction | Souple |
+| Taille | Très petite |
+| Mains | 1 |
 | Achat (argent) | 122 |
 | Vente (argent) | 40 |
-| Protection | 0 |
-| Résistance physique (%) | 9 |
-| Résistance feu (%) | 0 |
-| Résistance froid (%) | 0 |
-| Résistance foudre (%) | 0 |
-| Résistance décomposition (%) | 20 |
-| Résistance éthéré (%) | 0 |
 | Protection contre le froid | 9 |
 | Protection contre la chaleur | 11 |
-| Bonus physique (%) | 0 |
-| Bonus feu (%) | 0 |
-| Bonus froid (%) | 0 |
-| Bonus foudre (%) | 0 |
-| Bonus décomposition (%) | 0 |
-| Bonus éthéré (%) | 0 |
-| Coût de mana (%) | 0 |
-| Coût d’endurance (%) | 0 |
-| Vitesse (%) | 0 |
-| Barrière | 0 |
-| Réduction des délais (%) | 0 |
-| Résistance à la corruption (%) | 0 |
-| Résistance aux statuts (%) | 0 |
-| Poches supplémentaires (kg) | 0 |
+| Poches (L) | 0 |
+| Résistance Physique (%) | 9 |
+| Résistance Décomposition (%) | 20 |
 
 [Retour au catalogue](../equipement.md)

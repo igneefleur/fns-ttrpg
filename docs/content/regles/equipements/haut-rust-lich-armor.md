@@ -1,42 +1,35 @@
 # Rust Lich Armor
 
-<!-- illustration -->
-![Rust Lich Armor](../../../assets/equipements/haut-rust-lich-armor.png){ .equipment-portrait }
-<!-- /illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
 
-**Catégorie :** Haut  
+![Rust Lich Armor](../../../assets/equipements/haut-rust-lich-armor.png){ .equipment-portrait }
+
+**Catégorie :** Robes  
 **Famille :** Rust Lich Set  
 **Origine :** Outward
 
+A full-length outfit covering both the upper and lower body.
+
 | Caractéristique | Valeur |
 | --- | --- |
-| Poids (kg) | 7 |
-| Volume (L) | 5 |
-| Construction | Souple |
-| Achat (argent) | 494 |
-| Vente (argent) | 147,9 |
-| Protection | 2 |
-| Résistance physique (%) | 15 |
-| Résistance feu (%) | 0 |
-| Résistance froid (%) | 0 |
-| Résistance foudre (%) | 0 |
-| Résistance décomposition (%) | 0 |
-| Résistance éthéré (%) | 0 |
+| Poids (kg) | 11 |
+| Volume (L) | 7.5 |
+| Taille | Très petite |
+| Mains | 1 |
+| Achat (argent) | 987 |
+| Vente (argent) | 295.8 |
 | Protection contre le froid | 0 |
 | Protection contre la chaleur | 0 |
-| Bonus physique (%) | -27 |
-| Bonus feu (%) | 8 |
-| Bonus froid (%) | 8 |
-| Bonus foudre (%) | 8 |
-| Bonus décomposition (%) | 8 |
-| Bonus éthéré (%) | 0 |
-| Coût de mana (%) | -14 |
-| Coût d’endurance (%) | 2 |
-| Vitesse (%) | -2 |
-| Barrière | 0 |
-| Réduction des délais (%) | 0 |
-| Résistance à la corruption (%) | 0 |
-| Résistance aux statuts (%) | 0 |
-| Poches supplémentaires (kg) | 0 |
+| Poches (L) | 0 |
+| Protection Physique | 4 |
+| Résistance Physique (%) | 29 |
+| Bonus Physique (%) | -54 |
+| Bonus Feu (%) | 16 |
+| Bonus Froid (%) | 16 |
+| Bonus Éclair (%) | 16 |
+| Bonus Décomposition (%) | 16 |
+| Coût PM (%) | -27 |
+| Coût PE (%) | 4 |
+| Déplacement (%) | -4 |
 
 [Retour au catalogue](../equipement.md)

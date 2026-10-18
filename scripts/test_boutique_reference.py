@@ -1,0 +1,69 @@
+"""Régressions de la source unique, indépendantes du livre et du tableur."""
+from pathlib import Path
+import copy
+import json
+import shutil
+import subprocess
+import sys
+import tempfile
+import unittest
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from hooks.boutique import reference, catalogue
+ROOT = Path(__file__).resolve().parents[1]
+
+class BoutiqueReference(unittest.TestCase):
+    def test_complete_source(self):
+        raw = reference(ROOT / 'docs')
+        catalog = catalogue(ROOT / 'docs')
+        self.assertGreaterEqual(len(raw['equipements']), 1660)
+        self.assertEqual(len(catalog['objets']), len(raw['equipements']))
+        byname = {o['nom']:o for o in raw['equipements']}
+        types={t['cle'] for t in raw['typesArmes']}
+        for o in raw['equipements']:
+            if o.get('arme'): self.assertIn(o['arme']['type'],types)
+        for it in catalog['objets']:
+            self.assertEqual(it['objet'], byname[it['nom']])
+            o = it['objet']; fields = dict(it['champs'])
+            for field,key in [('Poids (kg)','poids'),('Volume (L)','volume')]:self.assertEqual(float(fields[field]),o[key],o['nom'])
+            for key in ['taille','mains','achat','vente']:self.assertIn(key,o)
+            self.assertEqual(fields['Taille'],o['taille'])
+            self.assertEqual(fields['Mains'],str(o['mains']))
+            if o['commerce']=='vendu':
+                self.assertEqual(fields['Achat (argent)'],'Non renseigné' if o['achat'] is None else str(o['achat']).removesuffix('.0'))
+                self.assertEqual(fields['Vente (argent)'],'Non renseigné' if o['vente'] is None else str(o['vente']).removesuffix('.0'))
+            self.assertTrue(o['img'].startswith('assets/'))
+        self.assertEqual(byname['Thick Oil']['taille'],'Minuscule')
+        self.assertNotEqual(byname['Thick Oil']['desc'],'6600070')
+        self.assertEqual(byname['Arcane Robe']['froid'],6)
+        self.assertEqual(byname['Whole Loaf']['achat'],1)
+        self.assertEqual(byname['Bread Slice']['achat'],.2)
+        self.assertEqual(byname['Trader Warbelt']['ep'],20)
+        self.assertEqual(byname['Nomad Baldric']['ep'],4)
+        self.assertEqual(byname['Primitive Belt']['ep'],2)
+        belts=[o for o in byname.values() if o.get('ceint')]
+        self.assertGreaterEqual(len(belts),14)
+        for o in belts:
+            self.assertFalse(o['effets']);self.assertFalse(o['stats']);self.assertEqual(o['taille'],'Minuscule')
+        self.assertNotIn('Gourde en cuir',byname)
+        self.assertEqual(sum(o['nom']=="Gep's Drink" for o in byname.values()),1)
+
+    def test_no_book_or_sheet_dependency(self):
+        expected=catalogue(ROOT/'docs')
+        with tempfile.TemporaryDirectory() as temp:
+            docs=Path(temp);(docs/'data').mkdir()
+            shutil.copy(ROOT/'docs/data/owd-boutique.json',docs/'data/owd-boutique.json')
+            for it in expected['objets']:
+                dest=docs/it['img'];dest.parent.mkdir(parents=True,exist_ok=True)
+                if not dest.exists():shutil.copy(ROOT/'docs'/it['img'],dest)
+            # Aucun Markdown ni ancien référentiel, uniquement la Boutique et ses images.
+            self.assertEqual(catalogue(docs),expected)
+            p=docs/'data/owd-boutique.json';data=json.loads(p.read_text())
+            data['equipements'][0]['taille']='829';p.write_text(json.dumps(data))
+            with self.assertRaisesRegex(ValueError,'taille invalide'):reference(docs)
+
+    def test_import_cannot_erase_catalogue(self):
+        p=ROOT/'docs/data/owd-boutique.json';before=p.read_bytes()
+        result=subprocess.run([sys.executable,str(ROOT/'scripts/importer_effets.py'),'fake.xlsx'],capture_output=True)
+        self.assertEqual(result.returncode,2);self.assertEqual(p.read_bytes(),before)
+
+if __name__=='__main__':unittest.main()

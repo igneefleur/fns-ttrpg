@@ -1,8 +1,8 @@
 # Ancient Calygrey Mace
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Ancient Calygrey Mace](../../../assets/equipements/masses-1-main-ancient-calygrey-mace.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Masses 1 main  
 **Famille :** Ancient Calygrey  
@@ -15,23 +15,23 @@ The mace of an ancient Calygrey passed down by their ancestors.
 | Poids (kg) | 4 |
 | Volume (L) | 3 |
 | Taille | Petite |
+| Mains | 1 |
 | Achat (argent) | 2000 |
 | Vente (argent) | 600 |
 | Attaque | 12 |
 | Touches | 1 |
 | Dégâts de base | 155 |
-| Modificateur de dégâts 1 | FOR |
-| Modificateur de dégâts 2 | FOR |
 | Parade | 9 |
 | Réduction de base | 15 |
+| Modificateur de dégâts 1 | FOR |
+| Modificateur de dégâts 2 | FOR |
 | Modificateur de réduction 1 | FOR |
-| DEX requise | — |
+| Physique (%) | 60 |
+| Feu (%) | 0 |
+| Froid (%) | 0 |
+| Éclair (%) | 40 |
+| Décomposition (%) | 0 |
+| Éthéré (%) | 0 |
 | FOR requise | 20 |
-| Physique (%) | 60,0 |
-| Feu (%) | 0,0 |
-| Froid (%) | 0,0 |
-| Foudre (%) | 40,0 |
-| Décomposition (%) | 0,0 |
-| Éthéré (%) | 0,0 |
 
 [Retour au catalogue](../equipement.md)

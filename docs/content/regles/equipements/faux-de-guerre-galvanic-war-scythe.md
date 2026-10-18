@@ -1,41 +1,41 @@
 # Galvanic War Scythe
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Galvanic War Scythe](../../../assets/equipements/faux-de-guerre-galvanic-war-scythe.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Faux de guerre  
 **Famille :** Galvanic  
-**Origine :** Créé pour le JDR
+**Origine :** Homebrew
+
+A war scythe crafted in the Galvanic style.
 
 | Caractéristique | Valeur |
 | --- | --- |
 | Poids (kg) | 4 |
 | Volume (L) | 4 |
 | Taille | Moyenne |
+| Mains | 2 |
 | Achat (argent) | 1125 |
 | Vente (argent) | 338 |
 | Attaque | 15 |
 | Touches | 2 |
 | Dégâts de base | 110 |
+| Parade | 10 |
+| Réduction de base | 20 |
 | Modificateur de dégâts 1 | FOR |
 | Modificateur de dégâts 2 | FOR |
 | Modificateur de dégâts 3 | DEX |
-| Parade | 10 |
-| Réduction de base | 20 |
 | Modificateur de réduction 1 | FOR |
 | Modificateur de réduction 2 | FOR |
-| DEX requise | 10 |
+| Physique (%) | 100 |
+| Feu (%) | 0 |
+| Froid (%) | 0 |
+| Éclair (%) | 0 |
+| Décomposition (%) | 0 |
+| Éthéré (%) | 0 |
 | FOR requise | 20 |
-| Physique (%) | 100,0 |
-| Feu (%) | 0,0 |
-| Froid (%) | 0,0 |
-| Foudre (%) | 0,0 |
-| Décomposition (%) | 0,0 |
-| Éthéré (%) | 0,0 |
-
-## Propriétés
-
-Pain / Accumulation 60%
+| DEX requise | 10 |
+| Propriété — gestion manuelle | Pain / Buildup 60% |
 
 [Retour au catalogue](../equipement.md)

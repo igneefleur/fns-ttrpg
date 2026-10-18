@@ -1,40 +1,39 @@
 # Ghost Knuckles
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Ghost Knuckles](../../../assets/equipements/gantelets-ghost-knuckles.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Gantelets  
 **Famille :** Ghost  
-**Origine :** Créé pour le JDR
+**Origine :** Homebrew
+
+A pair of knuckles crafted in the Ghost style.
 
 | Caractéristique | Valeur |
 | --- | --- |
 | Poids (kg) | 1 |
-| Volume (L) | 2,5 |
-| Taille | Très petite |
+| Volume (L) | 2.5 |
+| Taille | Minuscule |
+| Mains | 1 |
 | Achat (argent) | 2500 |
 | Vente (argent) | 750 |
 | Attaque | 4 |
 | Touches | 1 |
 | Dégâts de base | 65 |
-| Modificateur de dégâts 1 | FOR |
-| Modificateur de dégâts 2 | FOR |
 | Parade | 3 |
 | Réduction de base | 5 |
+| Modificateur de dégâts 1 | FOR |
+| Modificateur de dégâts 2 | FOR |
 | Modificateur de réduction 1 | FOR |
-| DEX requise | 0 |
+| Physique (%) | 50 |
+| Feu (%) | 0 |
+| Froid (%) | 0 |
+| Éclair (%) | 0 |
+| Décomposition (%) | 0 |
+| Éthéré (%) | 50 |
 | FOR requise | 20 |
-| Physique (%) | 50,0 |
-| Feu (%) | 0,0 |
-| Froid (%) | 0,0 |
-| Foudre (%) | 0,0 |
-| Décomposition (%) | 0,0 |
-| Éthéré (%) | 50,0 |
-
-## Propriétés
-
-Aetherbomb / Accumulation 40%
--15% Physical resistance
+| Résistance passive Physique (%) | -15 |
+| Propriété — gestion manuelle | Aetherbomb / Buildup 40% |
 
 [Retour au catalogue](../equipement.md)

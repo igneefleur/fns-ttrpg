@@ -1,42 +1,42 @@
 # Calygrey Staff
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Calygrey Staff](../../../assets/equipements/b-tons-calygrey-staff.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Bâtons  
 **Famille :** Calygrey  
 **Origine :** Outward
+
+A staff crafted in the Calygrey style.
 
 | Caractéristique | Valeur |
 | --- | --- |
 | Poids (kg) | 2 |
 | Volume (L) | 2 |
 | Taille | Moyenne |
+| Mains | 2 |
 | Achat (argent) | 250 |
 | Vente (argent) | 75 |
 | Attaque | 11 |
 | Touches | 2 |
 | Dégâts de base | 65 |
+| Parade | 9 |
+| Réduction de base | 30 |
 | Modificateur de dégâts 1 | FOR |
 | Modificateur de dégâts 2 | DEX |
 | Modificateur de dégâts 3 | DEX |
-| Parade | 9 |
-| Réduction de base | 30 |
 | Modificateur de réduction 1 | DEX |
 | Modificateur de réduction 2 | DEX |
-| DEX requise | 20 |
+| Physique (%) | 90 |
+| Feu (%) | 0 |
+| Froid (%) | 0 |
+| Éclair (%) | 10 |
+| Décomposition (%) | 0 |
+| Éthéré (%) | 0 |
 | FOR requise | 10 |
-| Physique (%) | 90,0 |
-| Feu (%) | 0,0 |
-| Froid (%) | 0,0 |
-| Foudre (%) | 10,0 |
-| Décomposition (%) | 0,0 |
-| Éthéré (%) | 0,0 |
-
-## Propriétés
-
-Bonus de dégâts éclair : +20 %
-Coût de mana : -15 %
+| DEX requise | 20 |
+| Bonus Éclair (%) | 20 |
+| Coût PM (%) | -15 |
 
 [Retour au catalogue](../equipement.md)

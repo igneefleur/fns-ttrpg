@@ -1,8 +1,8 @@
 # Astral Knuckles
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Astral Knuckles](../../../assets/equipements/gantelets-astral-knuckles.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Gantelets  
 **Famille :** Astral  
@@ -12,33 +12,30 @@ Inflicts Scorched and Haunted.
 
 | Caractéristique | Valeur |
 | --- | --- |
-| Poids (kg) | 0,5 |
+| Poids (kg) | 0.5 |
 | Volume (L) | 1 |
-| Taille | Très petite |
+| Taille | Minuscule |
+| Mains | 1 |
 | Achat (argent) | 2000 |
 | Vente (argent) | 600 |
 | Attaque | 6 |
 | Touches | 1 |
 | Dégâts de base | 55 |
-| Modificateur de dégâts 1 | FOR |
-| Modificateur de dégâts 2 | FOR |
 | Parade | 5 |
 | Réduction de base | 5 |
+| Modificateur de dégâts 1 | FOR |
+| Modificateur de dégâts 2 | FOR |
 | Modificateur de réduction 1 | FOR |
-| DEX requise | — |
+| Physique (%) | 80 |
+| Feu (%) | 0 |
+| Froid (%) | 0 |
+| Éclair (%) | 0 |
+| Décomposition (%) | 20 |
+| Éthéré (%) | 0 |
 | FOR requise | 20 |
-| Physique (%) | 80,0 |
-| Feu (%) | 0,0 |
-| Froid (%) | 0,0 |
-| Foudre (%) | 0,0 |
-| Décomposition (%) | 20,0 |
-| Éthéré (%) | 0,0 |
-
-## Propriétés
-
-Scorched / Accumulation 33%
-Haunted / Accumulation 33%
-Bonus de dégâts froid : +7 %
-Bonus de dégâts éclair : +7 %
+| Bonus Froid (%) | 7 |
+| Bonus Éclair (%) | 7 |
+| Propriété — gestion manuelle | Scorched / Buildup 33% |
+| Propriété — gestion manuelle | Haunted / Buildup 33% |
 
 [Retour au catalogue](../equipement.md)

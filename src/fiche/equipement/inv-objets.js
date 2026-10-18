@@ -48,7 +48,7 @@
     var bagWeight = it.sac ? window.OwdInventoryData.weight(state.inv.objets,it) : null;
     var fields = [["Quantité", fmtP(q)], ["Poids", fmtP(it.poids || 0) + (q > 1 ? " (total " + fmtP(q * (it.poids || 0)) + ")" : "")],
       ["Volume", fmtP(it.encombre || 0) + " L"],
-      ["Achat", fmtP(it.achat || 0) + " " + monnaie(true)], ["Vente", fmtP(prixVente(it)) + " " + monnaie(true)]];
+      ["Achat", prixObjetTexte(it,false)], ["Vente", prixObjetTexte(it,true)]];
     function add(k,v){if(v!=null && String(v).trim()!=="")fields.push([k,String(v)]);}
     if(it.arme){var a=it.arme;add("Type",a.type || "Arme");add("Attaque",a.attaque);add("Dégâts",a.degats);
       add("Mods dégâts",(a.modsDegats||[]).filter(Boolean).join(" · "));add("Parade",a.parade);add("Réduction",a.reduction);
@@ -68,6 +68,13 @@
       var labels={eclair:"éclair",decomposition:"décomposition",ethere:"éthéré"},label=labels[t]||t;
       if(it["res_"+t])add("Résistance "+label,fmtP(it["res_"+t])+" %");if(it["prot_"+t])add("Protection "+label,fmtP(it["prot_"+t]));
     });
+    var stats=it.stats||{};
+    ["degats","protections","resistances"].forEach(function(k){Object.keys(stats[k]||{}).forEach(function(t){if(stats[k][t])add(({degats:"Bonus dégâts ",protections:"Protection passive ",resistances:"Résistance passive "})[k]+combatLibType(t),fmtP(stats[k][t])+(k==="protections"?"":" %"));});});
+    Object.keys(stats.couts||{}).forEach(function(k){if(stats.couts[k])add("Coût "+k.toUpperCase(),fmtP(stats.couts[k])+" %");});
+    [["vitesse","Déplacement"],["innocence","Résistance corruption"],["alterations","Résistance altérations"]].forEach(function(x){if(stats[x[0]])add(x[1],fmtP(stats[x[0]])+" %");});
+    if(it.sac||it.ceint){add("Accroches",it.ep);add("Taille maximale aux accroches",it.tailleAccroche);}
+    if(it.sac||it.contenant)add("Capacité (L)",it.cap);
+    (it.reglesManuelles||[]).forEach(function(rule){add("Propriété — gestion manuelle",rule);});
     if(bagWeight!==null)add("Poids avec contenu",fmtP(bagWeight)+" kg");
     if(it.rapide)add("Accès rapide","Oui");add("",it.desc);return fields;
   }
@@ -745,7 +752,7 @@
       var i = el("input", "pc-edit-field");
       i.type = "text"; i.inputMode = "decimal";
       i.value = lire() ? fmtP(lire()) : "";
-      i.placeholder = "0";
+      i.placeholder = libelle==="Prix d'achat" ? "Non renseigné" : "0";
       if (titre) i.title = titre;
       i.addEventListener("input", function () { ecrire(i.value); save(); updateTotal(); refresh(); });
       i.addEventListener("blur", function () { i.value = lire() ? fmtP(lire()) : ""; });
@@ -1088,15 +1095,15 @@
       // achat / vente, en pièces d'argent : la monnaie du livre est NOMMÉE
       var prix = el("div", "pc-obj-pair");
       prix.appendChild(champNombre("Prix d'achat", function () { return it.achat; },
-        function (v) { it.achat = pnum(v); majVente(); }, "Prix d'achat en " + monnaie(true)));
+        function (v) { it.achat = venteNum(v); majVente(); }, "Prix d'achat en " + monnaie(true)));
       // le prix de vente laissé vide est AUTOMATIQUE ; un nombre saisi, 0
       // compris, s'affiche tel quel
       var vIn = el("input", "pc-edit-field");
       vIn.type = "text"; vIn.inputMode = "decimal";
-      vIn.placeholder = "automatique";
+      vIn.placeholder = it.achat==null ? "Non renseigné" : "automatique";
       function majVente() {
         if (document.activeElement !== vIn) vIn.value = it.vente == null ? "" : fmtP(it.vente);
-        vIn.title = "Prix de vente en " + monnaie(true) + (it.vente == null ? " : " + fmtP(prixVente(it)) : "");
+        vIn.title = "Prix de vente en " + monnaie(true) + (it.vente == null ? " : " + prixObjetTexte(it,true) : "");
       }
       majVente();
       vIn.addEventListener("input", function () { it.vente = venteNum(vIn.value); save(); refresh(); majVente(); });
@@ -1138,6 +1145,11 @@
       desc.value = it.desc;
       desc.addEventListener("input", function () { it.desc = desc.value; save(); });
       body.appendChild(fld("Description", desc, "w"));
+      if(it.reglesManuelles && it.reglesManuelles.length){
+        var rules=el("div","pc-obj-regles");rules.appendChild(el("div","lbl","Propriétés — gestion manuelle"));
+        it.reglesManuelles.forEach(function(rule){rules.appendChild(el("div","pc-notes",rule));});body.appendChild(rules);
+      }
+
       invChampsCommuns(specifiquesSous,it,render);
       if (specifiquesType.childNodes.length) body.insertBefore(specifiquesType, pair);
       if (sousLigne.childNodes.length) body.insertBefore(sousLigne, pair);

@@ -1,42 +1,31 @@
 # Tsar Leg Armor
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Tsar Leg Armor](../../../assets/equipements/bas-tsar-leg-armor.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Bas  
 **Famille :** Tsar Set  
-**Origine :** Créé pour le JDR
+**Origine :** Homebrew
+
+A garment covering the lower body.
 
 | Caractéristique | Valeur |
 | --- | --- |
 | Poids (kg) | 7 |
 | Volume (L) | 10 |
-| Construction | Semi-rigide |
+| Taille | Très petite |
+| Mains | 1 |
 | Achat (argent) | 600 |
 | Vente (argent) | 195 |
-| Protection | 4 |
-| Résistance physique (%) | 20 |
-| Résistance feu (%) | 23 |
-| Résistance froid (%) | 0 |
-| Résistance foudre (%) | 0 |
-| Résistance décomposition (%) | 0 |
-| Résistance éthéré (%) | 0 |
 | Protection contre le froid | 0 |
 | Protection contre la chaleur | 7 |
-| Bonus physique (%) | 0 |
-| Bonus feu (%) | 0 |
-| Bonus froid (%) | 0 |
-| Bonus foudre (%) | 0 |
-| Bonus décomposition (%) | 0 |
-| Bonus éthéré (%) | 0 |
-| Coût de mana (%) | 4 |
-| Coût d’endurance (%) | 4 |
-| Vitesse (%) | -8 |
-| Barrière | 0 |
-| Réduction des délais (%) | 0 |
-| Résistance à la corruption (%) | 0 |
-| Résistance aux statuts (%) | 0 |
-| Poches supplémentaires (kg) | 0 |
+| Poches (L) | 0 |
+| Protection Physique | 4 |
+| Résistance Physique (%) | 20 |
+| Résistance Feu (%) | 23 |
+| Coût PM (%) | 4 |
+| Coût PE (%) | 4 |
+| Déplacement (%) | -8 |
 
 [Retour au catalogue](../equipement.md)

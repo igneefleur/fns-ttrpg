@@ -1,8 +1,8 @@
 # Astral Halberd
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Astral Halberd](../../../assets/equipements/hallebardes-astral-halberd.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Hallebardes  
 **Famille :** Astral  
@@ -15,32 +15,30 @@ Inflicts Curse and Haunted.
 | Poids (kg) | 2 |
 | Volume (L) | 4 |
 | Taille | Moyenne |
+| Mains | 2 |
 | Achat (argent) | 2500 |
 | Vente (argent) | 750 |
 | Attaque | 13 |
 | Touches | 2 |
 | Dégâts de base | 120 |
+| Parade | 10 |
+| Réduction de base | 20 |
 | Modificateur de dégâts 1 | DEX |
 | Modificateur de dégâts 2 | DEX |
 | Modificateur de dégâts 3 | FOR |
-| Parade | 10 |
-| Réduction de base | 20 |
 | Modificateur de réduction 1 | DEX |
 | Modificateur de réduction 2 | DEX |
-| DEX requise | 20 |
+| Physique (%) | 80 |
+| Feu (%) | 0 |
+| Froid (%) | 20 |
+| Éclair (%) | 0 |
+| Décomposition (%) | 0 |
+| Éthéré (%) | 0 |
 | FOR requise | 10 |
-| Physique (%) | 80,0 |
-| Feu (%) | 0,0 |
-| Froid (%) | 20,0 |
-| Foudre (%) | 0,0 |
-| Décomposition (%) | 0,0 |
-| Éthéré (%) | 0,0 |
-
-## Propriétés
-
-Curse / Accumulation 33%
-Haunted / Accumulation 33%
-Bonus de dégâts feu : +7 %
-Bonus de dégâts éclair : +7 %
+| DEX requise | 20 |
+| Bonus Feu (%) | 7 |
+| Bonus Éclair (%) | 7 |
+| Propriété — gestion manuelle | Curse / Buildup 33% |
+| Propriété — gestion manuelle | Haunted / Buildup 33% |
 
 [Retour au catalogue](../equipement.md)

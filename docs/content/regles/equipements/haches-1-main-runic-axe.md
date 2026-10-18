@@ -1,35 +1,38 @@
 # Runic Axe
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Runic Axe](../../../assets/equipements/haches-1-main-runic-axe.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Haches 1 main  
 **Famille :** Runic  
-**Origine :** Créé pour le JDR
+**Origine :** Homebrew
+
+An axe crafted in the Runic style.
 
 | Caractéristique | Valeur |
 | --- | --- |
 | Poids (kg) | 0 |
-| Volume (L) | 1,5 |
+| Volume (L) | 1.5 |
 | Taille | Petite |
-| Achat (argent) | 0 |
-| Vente (argent) | 0 |
+| Mains | 1 |
+| Achat (argent) | Non commercialisé |
+| Vente (argent) | Non commercialisé |
 | Attaque | 9 |
 | Touches | 2 |
 | Dégâts de base | 65 |
-| Modificateur de dégâts 1 | FOR |
-| Modificateur de dégâts 2 | DEX |
 | Parade | 5 |
 | Réduction de base | 10 |
+| Modificateur de dégâts 1 | FOR |
+| Modificateur de dégâts 2 | DEX |
 | Modificateur de réduction 1 | FOR |
-| DEX requise | 10 |
+| Physique (%) | 0 |
+| Feu (%) | 0 |
+| Froid (%) | 0 |
+| Éclair (%) | 0 |
+| Décomposition (%) | 0 |
+| Éthéré (%) | 100 |
 | FOR requise | 10 |
-| Physique (%) | 0,0 |
-| Feu (%) | 0,0 |
-| Froid (%) | 0,0 |
-| Foudre (%) | 0,0 |
-| Décomposition (%) | 0,0 |
-| Éthéré (%) | 100,0 |
+| DEX requise | 10 |
 
 [Retour au catalogue](../equipement.md)

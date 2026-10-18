@@ -1,42 +1,26 @@
 # Bright Rich Hat
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Bright Rich Hat](../../../assets/equipements/t-te-bright-rich-hat.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Tête  
 **Famille :** Rich Set  
 **Origine :** Outward
 
+Protective headwear.
+
 | Caractéristique | Valeur |
 | --- | --- |
 | Poids (kg) | 1 |
-| Volume (L) | 2,5 |
-| Construction | Semi-rigide |
+| Volume (L) | 2.5 |
+| Taille | Très petite |
+| Mains | 1 |
 | Achat (argent) | 19 |
 | Vente (argent) | 6 |
-| Protection | 0 |
-| Résistance physique (%) | 0 |
-| Résistance feu (%) | 0 |
-| Résistance froid (%) | 0 |
-| Résistance foudre (%) | 0 |
-| Résistance décomposition (%) | 0 |
-| Résistance éthéré (%) | 0 |
 | Protection contre le froid | 0 |
 | Protection contre la chaleur | 6 |
-| Bonus physique (%) | 0 |
-| Bonus feu (%) | 0 |
-| Bonus froid (%) | 0 |
-| Bonus foudre (%) | 0 |
-| Bonus décomposition (%) | 0 |
-| Bonus éthéré (%) | 0 |
-| Coût de mana (%) | 0 |
-| Coût d’endurance (%) | -2 |
-| Vitesse (%) | 0 |
-| Barrière | 0 |
-| Réduction des délais (%) | 0 |
-| Résistance à la corruption (%) | 0 |
-| Résistance aux statuts (%) | 0 |
-| Poches supplémentaires (kg) | 0 |
+| Poches (L) | 0 |
+| Coût PE (%) | -2 |
 
 [Retour au catalogue](../equipement.md)

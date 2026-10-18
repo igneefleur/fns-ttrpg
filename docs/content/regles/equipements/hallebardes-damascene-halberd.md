@@ -1,8 +1,8 @@
 # Damascene Halberd
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Damascene Halberd](../../../assets/equipements/hallebardes-damascene-halberd.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Hallebardes  
 **Famille :** Damascene  
@@ -15,29 +15,27 @@ Increases the power of Weapon Skills.
 | Poids (kg) | 3 |
 | Volume (L) | 4 |
 | Taille | Moyenne |
+| Mains | 2 |
 | Achat (argent) | 1125 |
-| Vente (argent) | 337,5 |
+| Vente (argent) | 337.5 |
 | Attaque | 12 |
 | Touches | 2 |
 | Dégâts de base | 115 |
+| Parade | 9 |
+| Réduction de base | 20 |
 | Modificateur de dégâts 1 | DEX |
 | Modificateur de dégâts 2 | DEX |
 | Modificateur de dégâts 3 | FOR |
-| Parade | 9 |
-| Réduction de base | 20 |
 | Modificateur de réduction 1 | DEX |
 | Modificateur de réduction 2 | DEX |
-| DEX requise | 20 |
+| Physique (%) | 100 |
+| Feu (%) | 0 |
+| Froid (%) | 0 |
+| Éclair (%) | 0 |
+| Décomposition (%) | 0 |
+| Éthéré (%) | 0 |
 | FOR requise | 10 |
-| Physique (%) | 100,0 |
-| Feu (%) | 0,0 |
-| Froid (%) | 0,0 |
-| Foudre (%) | 0,0 |
-| Décomposition (%) | 0,0 |
-| Éthéré (%) | 0,0 |
-
-## Propriétés
-
-Compétences d’arme : +25 % à tous les types de dégâts (y compris compétences d’arc et de dague).
+| DEX requise | 20 |
+| Propriété — gestion manuelle | Weapon skills deal +25% damage of all types, including bow and dagger skills. |
 
 [Retour au catalogue](../equipement.md)

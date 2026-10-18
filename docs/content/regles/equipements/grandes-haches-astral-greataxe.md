@@ -1,8 +1,8 @@
 # Astral Greataxe
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Astral Greataxe](../../../assets/equipements/grandes-haches-astral-greataxe.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Grandes haches  
 **Famille :** Astral  
@@ -15,32 +15,30 @@ Inflicts Chill and Scorched.
 | Poids (kg) | 3 |
 | Volume (L) | 4 |
 | Taille | Moyenne |
+| Mains | 2 |
 | Achat (argent) | 2500 |
 | Vente (argent) | 750 |
 | Attaque | 15 |
 | Touches | 3 |
 | Dégâts de base | 120 |
+| Parade | 9 |
+| Réduction de base | 15 |
 | Modificateur de dégâts 1 | FOR |
 | Modificateur de dégâts 2 | DEX |
 | Modificateur de dégâts 3 | FOR |
-| Parade | 9 |
-| Réduction de base | 15 |
 | Modificateur de réduction 1 | FOR |
 | Modificateur de réduction 2 | DEX |
-| DEX requise | 10 |
+| Physique (%) | 80 |
+| Feu (%) | 0 |
+| Froid (%) | 0 |
+| Éclair (%) | 20 |
+| Décomposition (%) | 0 |
+| Éthéré (%) | 0 |
 | FOR requise | 20 |
-| Physique (%) | 80,0 |
-| Feu (%) | 0,0 |
-| Froid (%) | 0,0 |
-| Foudre (%) | 20,0 |
-| Décomposition (%) | 0,0 |
-| Éthéré (%) | 0,0 |
-
-## Propriétés
-
-Chill / Accumulation 33%
-Scorched / Accumulation 33%
-Bonus de dégâts décomposition : +7 %
-Bonus de dégâts éthéré : +7 %
+| DEX requise | 10 |
+| Bonus Décomposition (%) | 7 |
+| Bonus Éthéré (%) | 7 |
+| Propriété — gestion manuelle | Chill / Buildup 33% |
+| Propriété — gestion manuelle | Scorched / Buildup 33% |
 
 [Retour au catalogue](../equipement.md)

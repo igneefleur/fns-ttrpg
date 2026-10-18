@@ -376,7 +376,7 @@
         contenant: o.contenant == null ? "" : String(o.contenant),
         contenu: o.contenu == null ? "" : String(o.contenu),
         dans: o.dans == null ? "" : String(o.dans),
-        achat: pnum(o.achat), vente: venteNum(o.vente),
+        achat: venteNum(o.achat), vente: venteNum(o.vente),
         desc: o.desc == null ? "" : String(o.desc),
         ou: INV_LIEUX.indexOf(o.ou) >= 0 ? o.ou : "terre",
         // le rang de l'EMPLACEMENT qu'il tient, dans la ceinture ou sur le sac

@@ -1,5 +1,6 @@
 'use strict';
-const assert=require('node:assert/strict'),data=require('../docs/data/owd-effets.json');
+const assert=require('node:assert/strict'),registry=require('../docs/data/owd-boutique.json');
+const data={...registry,objets:registry.equipements.filter(o=>o.typeObjet==='consommable')};
 const defs=new Map(data.effets.map(e=>[e.id,e]));
 assert.equal(defs.size,data.effets.length);
 for(const o of data.objets){assert.ok(o.effets.length<=5,o.nom);for(const id of o.effets)assert.ok(defs.has(id),o.nom+': '+id);}

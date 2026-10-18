@@ -1,35 +1,38 @@
 # Virgin Sword
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Virgin Sword](../../../assets/equipements/p-es-1-main-virgin-sword.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Épées 1 main  
 **Famille :** Virgin  
-**Origine :** Créé pour le JDR
+**Origine :** Homebrew
+
+A sword crafted in the Virgin style.
 
 | Caractéristique | Valeur |
 | --- | --- |
 | Poids (kg) | 1 |
 | Volume (L) | 2 |
 | Taille | Petite |
+| Mains | 1 |
 | Achat (argent) | 800 |
 | Vente (argent) | 240 |
 | Attaque | 9 |
 | Touches | 3 |
 | Dégâts de base | 50 |
-| Modificateur de dégâts 1 | DEX |
-| Modificateur de dégâts 2 | FOR |
 | Parade | 5 |
 | Réduction de base | 5 |
+| Modificateur de dégâts 1 | DEX |
+| Modificateur de dégâts 2 | FOR |
 | Modificateur de réduction 1 | DEX |
-| DEX requise | 10 |
+| Physique (%) | 100 |
+| Feu (%) | 0 |
+| Froid (%) | 0 |
+| Éclair (%) | 0 |
+| Décomposition (%) | 0 |
+| Éthéré (%) | 0 |
 | FOR requise | 10 |
-| Physique (%) | 100,0 |
-| Feu (%) | 0,0 |
-| Froid (%) | 0,0 |
-| Foudre (%) | 0,0 |
-| Décomposition (%) | 0,0 |
-| Éthéré (%) | 0,0 |
+| DEX requise | 10 |
 
 [Retour au catalogue](../equipement.md)

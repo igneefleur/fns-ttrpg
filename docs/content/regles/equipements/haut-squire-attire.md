@@ -1,42 +1,33 @@
 # Squire Attire
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Squire Attire](../../../assets/equipements/haut-squire-attire.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Haut  
 **Famille :** Squire Set  
 **Origine :** Outward
 
+A garment covering the upper body.
+
 | Caractéristique | Valeur |
 | --- | --- |
 | Poids (kg) | 5 |
 | Volume (L) | 3 |
-| Construction | Souple |
+| Taille | Très petite |
+| Mains | 1 |
 | Achat (argent) | 408 |
 | Vente (argent) | 123 |
-| Protection | 0 |
-| Résistance physique (%) | 13 |
-| Résistance feu (%) | 5 |
-| Résistance froid (%) | 5 |
-| Résistance foudre (%) | 5 |
-| Résistance décomposition (%) | 5 |
-| Résistance éthéré (%) | 5 |
 | Protection contre le froid | 3 |
 | Protection contre la chaleur | 3 |
-| Bonus physique (%) | 0 |
-| Bonus feu (%) | 0 |
-| Bonus froid (%) | 0 |
-| Bonus foudre (%) | 0 |
-| Bonus décomposition (%) | 0 |
-| Bonus éthéré (%) | 0 |
-| Coût de mana (%) | 0 |
-| Coût d’endurance (%) | -14 |
-| Vitesse (%) | 5 |
-| Barrière | 0 |
-| Réduction des délais (%) | 0 |
-| Résistance à la corruption (%) | 0 |
-| Résistance aux statuts (%) | 0 |
-| Poches supplémentaires (kg) | 0 |
+| Poches (L) | 0 |
+| Résistance Physique (%) | 13 |
+| Résistance Feu (%) | 5 |
+| Résistance Froid (%) | 5 |
+| Résistance Éclair (%) | 5 |
+| Résistance Décomposition (%) | 5 |
+| Résistance Éthéré (%) | 5 |
+| Coût PE (%) | -14 |
+| Déplacement (%) | 5 |
 
 [Retour au catalogue](../equipement.md)

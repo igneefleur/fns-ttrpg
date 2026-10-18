@@ -1,8 +1,8 @@
 # Ghost Parallel
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Ghost Parallel](../../../assets/equipements/grands-marteaux-ghost-parallel.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Grands marteaux  
 **Famille :** Ghost  
@@ -15,30 +15,27 @@ A strange foreign device, tuned to an ethereal frequency... Inflicts Aetherbomb 
 | Poids (kg) | 4 |
 | Volume (L) | 14 |
 | Taille | Moyenne |
+| Mains | 2 |
 | Achat (argent) | 2500 |
 | Vente (argent) | 750 |
 | Attaque | 15 |
 | Touches | 1 |
 | Dégâts de base | 175 |
+| Parade | 11 |
+| Réduction de base | 25 |
 | Modificateur de dégâts 1 | FOR |
 | Modificateur de dégâts 2 | FOR |
 | Modificateur de dégâts 3 | FOR |
-| Parade | 11 |
-| Réduction de base | 25 |
 | Modificateur de réduction 1 | FOR |
 | Modificateur de réduction 2 | FOR |
-| DEX requise | — |
+| Physique (%) | 50 |
+| Feu (%) | 0 |
+| Froid (%) | 0 |
+| Éclair (%) | 0 |
+| Décomposition (%) | 0 |
+| Éthéré (%) | 50 |
 | FOR requise | 30 |
-| Physique (%) | 50,0 |
-| Feu (%) | 0,0 |
-| Froid (%) | 0,0 |
-| Foudre (%) | 0,0 |
-| Décomposition (%) | 0,0 |
-| Éthéré (%) | 50,0 |
-
-## Propriétés
-
-Aetherbomb / Accumulation 40%
--15% Physical resistance
+| Résistance passive Physique (%) | -15 |
+| Propriété — gestion manuelle | Aetherbomb / Buildup 40% |
 
 [Retour au catalogue](../equipement.md)

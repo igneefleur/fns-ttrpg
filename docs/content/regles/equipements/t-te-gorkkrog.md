@@ -1,10 +1,11 @@
 # GorkKrog!
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![GorkKrog!](../../../assets/equipements/t-te-gorkkrog.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Tête  
+**Famille :**   
 **Origine :** Outward
 
 GorkKrog! is a type of Equipment in Outward, which can only be used by Troglodyte players.
@@ -13,35 +14,16 @@ GorkKrog! is a type of Equipment in Outward, which can only be used by Troglodyt
 | --- | --- |
 | Poids (kg) | 1 |
 | Volume (L) | 4 |
-| Construction | Rigide |
+| Taille | Très petite |
+| Mains | 1 |
 | Achat (argent) | 20 |
 | Vente (argent) | 6 |
-| Protection | 10 |
-| Résistance physique (%) | 50 |
-| Résistance feu (%) | 0 |
-| Résistance froid (%) | 0 |
-| Résistance foudre (%) | 0 |
-| Résistance décomposition (%) | 0 |
-| Résistance éthéré (%) | 0 |
 | Protection contre le froid | 0 |
 | Protection contre la chaleur | 0 |
-| Bonus physique (%) | 25 |
-| Bonus feu (%) | 0 |
-| Bonus froid (%) | 0 |
-| Bonus foudre (%) | 0 |
-| Bonus décomposition (%) | 0 |
-| Bonus éthéré (%) | 0 |
-| Coût de mana (%) | 0 |
-| Coût d’endurance (%) | 0 |
-| Vitesse (%) | 0 |
-| Barrière | 0 |
-| Réduction des délais (%) | 0 |
-| Résistance à la corruption (%) | 0 |
-| Résistance aux statuts (%) | 0 |
-| Poches supplémentaires (kg) | 0 |
-
-## Propriétés
-
-Utilisable uniquement par un Troglodyte. Change l’apparence du personnage en Troglodyte cuirassé.
+| Poches (L) | 0 |
+| Protection Physique | 10 |
+| Résistance Physique (%) | 50 |
+| Bonus Physique (%) | 25 |
+| Propriété — gestion manuelle | Only usable by a Troglodyte. Changes the wearer into an armored Troglodyte. |
 
 [Retour au catalogue](../equipement.md)

@@ -1,42 +1,34 @@
 # Rust Lich Trousers
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Rust Lich Trousers](../../../assets/equipements/bas-rust-lich-trousers.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Bas  
 **Famille :** Rust Lich Set  
-**Origine :** Créé pour le JDR
+**Origine :** Homebrew
+
+A garment covering the lower body.
 
 | Caractéristique | Valeur |
 | --- | --- |
 | Poids (kg) | 4 |
-| Volume (L) | 2,5 |
-| Construction | Souple |
+| Volume (L) | 2.5 |
+| Taille | Très petite |
+| Mains | 1 |
 | Achat (argent) | 493 |
-| Vente (argent) | 147,9 |
-| Protection | 2 |
-| Résistance physique (%) | 14 |
-| Résistance feu (%) | 0 |
-| Résistance froid (%) | 0 |
-| Résistance foudre (%) | 0 |
-| Résistance décomposition (%) | 0 |
-| Résistance éthéré (%) | 0 |
+| Vente (argent) | 147.9 |
 | Protection contre le froid | 0 |
 | Protection contre la chaleur | 0 |
-| Bonus physique (%) | -27 |
-| Bonus feu (%) | 8 |
-| Bonus froid (%) | 8 |
-| Bonus foudre (%) | 8 |
-| Bonus décomposition (%) | 8 |
-| Bonus éthéré (%) | 0 |
-| Coût de mana (%) | -13 |
-| Coût d’endurance (%) | 2 |
-| Vitesse (%) | -2 |
-| Barrière | 0 |
-| Réduction des délais (%) | 0 |
-| Résistance à la corruption (%) | 0 |
-| Résistance aux statuts (%) | 0 |
-| Poches supplémentaires (kg) | 0 |
+| Poches (L) | 0 |
+| Protection Physique | 2 |
+| Résistance Physique (%) | 14 |
+| Bonus Feu (%) | 8 |
+| Bonus Froid (%) | 8 |
+| Bonus Éclair (%) | 8 |
+| Bonus Décomposition (%) | 8 |
+| Coût PM (%) | -13 |
+| Coût PE (%) | 2 |
+| Déplacement (%) | -2 |
 
 [Retour au catalogue](../equipement.md)

@@ -442,6 +442,20 @@
              (o.acc && INV_ACCESSOIRES.indexOf(o.ou) >= 0 && casePermise(o, o.ou));
     });
   }
+  // Objets dont les propriétés passives s'appliquent lorsqu'ils sont portés.
+  function equipementsPortes() {
+    var clothes=vetementsPortes();
+    return (state.inv.objets || []).filter(function(o) {
+      return !o.dans && pnum(o.qte)>0 && ((o.sac && o.ou==="dos") || (o.ceint && o.ou==="ceinture") || clothes.indexOf(o)>=0);
+    });
+  }
+  function equipementsBonus() {
+    var out=equipementsPortes();
+    (state.inv.objets||[]).forEach(function(o){
+      if(!o.dans && pnum(o.qte)>0 && (o.ou==="mainG" || o.ou==="mainD") && out.indexOf(o)<0)out.push(o);
+    });
+    return out;
+  }
   function capPoches() {
     var t = 0;
     vetementsPortes().forEach(function (o) { t += pnum(o.poches); });

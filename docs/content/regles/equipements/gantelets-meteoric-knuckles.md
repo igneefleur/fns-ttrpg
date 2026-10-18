@@ -1,8 +1,8 @@
 # Meteoric Knuckles
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Meteoric Knuckles](../../../assets/equipements/gantelets-meteoric-knuckles.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Gantelets  
 **Famille :** Meteoric  
@@ -12,30 +12,27 @@ A glowing Obsidian Gauntlet passed down by your ancestors. Inflicts Holy Blaze o
 
 | Caractéristique | Valeur |
 | --- | --- |
-| Poids (kg) | 0,8 |
-| Volume (L) | 1,5 |
-| Taille | Très petite |
+| Poids (kg) | 0.8 |
+| Volume (L) | 1.5 |
+| Taille | Minuscule |
+| Mains | 1 |
 | Achat (argent) | 2000 |
 | Vente (argent) | 600 |
 | Attaque | 6 |
 | Touches | 1 |
 | Dégâts de base | 70 |
-| Modificateur de dégâts 1 | FOR |
-| Modificateur de dégâts 2 | FOR |
 | Parade | 5 |
 | Réduction de base | 5 |
+| Modificateur de dégâts 1 | FOR |
+| Modificateur de dégâts 2 | FOR |
 | Modificateur de réduction 1 | FOR |
-| DEX requise | — |
+| Physique (%) | 50 |
+| Feu (%) | 50 |
+| Froid (%) | 0 |
+| Éclair (%) | 0 |
+| Décomposition (%) | 0 |
+| Éthéré (%) | 0 |
 | FOR requise | 20 |
-| Physique (%) | 50,0 |
-| Feu (%) | 50,0 |
-| Froid (%) | 0,0 |
-| Foudre (%) | 0,0 |
-| Décomposition (%) | 0,0 |
-| Éthéré (%) | 0,0 |
-
-## Propriétés
-
-Holy Blaze / Accumulation 17.5%
+| Propriété — gestion manuelle | Holy Blaze / Buildup 17.5% |
 
 [Retour au catalogue](../equipement.md)

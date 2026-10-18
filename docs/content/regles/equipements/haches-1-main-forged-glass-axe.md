@@ -1,39 +1,43 @@
 # Forged Glass Axe
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Forged Glass Axe](../../../assets/equipements/haches-1-main-forged-glass-axe.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Haches 1 main  
 **Famille :** Forged Glass  
 **Origine :** Outward
 
+An axe crafted in the Forged Glass style.
+
 | Caractéristique | Valeur |
 | --- | --- |
-| Poids (kg) | 1,5 |
+| Poids (kg) | 1.5 |
 | Volume (L) | 2 |
 | Taille | Petite |
+| Mains | 1 |
 | Achat (argent) | 2000 |
 | Vente (argent) | 600 |
 | Attaque | 11 |
 | Touches | 2 |
 | Dégâts de base | 110 |
-| Modificateur de dégâts 1 | FOR |
-| Modificateur de dégâts 2 | DEX |
 | Parade | 7 |
 | Réduction de base | 10 |
+| Modificateur de dégâts 1 | FOR |
+| Modificateur de dégâts 2 | DEX |
 | Modificateur de réduction 1 | FOR |
-| DEX requise | 10 |
+| Physique (%) | 100 |
+| Feu (%) | 0 |
+| Froid (%) | 0 |
+| Éclair (%) | 0 |
+| Décomposition (%) | 0 |
+| Éthéré (%) | 0 |
 | FOR requise | 10 |
-| Physique (%) | 100,0 |
-| Feu (%) | 0,0 |
-| Froid (%) | 0,0 |
-| Foudre (%) | 0,0 |
-| Décomposition (%) | 0,0 |
-| Éthéré (%) | 0,0 |
-
-## Propriétés
-
-barrier: 1
+| DEX requise | 10 |
+| Protection passive Feu | 1 |
+| Protection passive Froid | 1 |
+| Protection passive Éclair | 1 |
+| Protection passive Décomposition | 1 |
+| Protection passive Éthéré | 1 |
 
 [Retour au catalogue](../equipement.md)

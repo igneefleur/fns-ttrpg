@@ -1,42 +1,30 @@
 # Ammolite Boots
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Ammolite Boots](../../../assets/equipements/pieds-ammolite-boots.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Pieds  
 **Famille :** Ammolite Set  
 **Origine :** Outward
 
+Footwear for travel and combat.
+
 | Caractéristique | Valeur |
 | --- | --- |
 | Poids (kg) | 6 |
 | Volume (L) | 3 |
-| Construction | Semi-rigide |
+| Taille | Très petite |
+| Mains | 1 |
 | Achat (argent) | 65 |
 | Vente (argent) | 21 |
-| Protection | 0 |
-| Résistance physique (%) | 4 |
-| Résistance feu (%) | 0 |
-| Résistance froid (%) | 8 |
-| Résistance foudre (%) | 0 |
-| Résistance décomposition (%) | 0 |
-| Résistance éthéré (%) | 0 |
 | Protection contre le froid | 3 |
 | Protection contre la chaleur | 0 |
-| Bonus physique (%) | 2 |
-| Bonus feu (%) | 0 |
-| Bonus froid (%) | 0 |
-| Bonus foudre (%) | 0 |
-| Bonus décomposition (%) | 0 |
-| Bonus éthéré (%) | 0 |
-| Coût de mana (%) | 2 |
-| Coût d’endurance (%) | 1 |
-| Vitesse (%) | 0 |
-| Barrière | 0 |
-| Réduction des délais (%) | 0 |
-| Résistance à la corruption (%) | 0 |
-| Résistance aux statuts (%) | 0 |
-| Poches supplémentaires (kg) | 0 |
+| Poches (L) | 0 |
+| Résistance Physique (%) | 4 |
+| Résistance Froid (%) | 8 |
+| Bonus Physique (%) | 2 |
+| Coût PM (%) | 2 |
+| Coût PE (%) | 1 |
 
 [Retour au catalogue](../equipement.md)

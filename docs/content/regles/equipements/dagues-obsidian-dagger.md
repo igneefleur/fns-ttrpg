@@ -1,39 +1,38 @@
 # Obsidian Dagger
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Obsidian Dagger](../../../assets/equipements/dagues-obsidian-dagger.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Dagues  
 **Famille :** Obsidian  
-**Origine :** Créé pour le JDR
+**Origine :** Homebrew
+
+A dagger crafted in the Obsidian style.
 
 | Caractéristique | Valeur |
 | --- | --- |
-| Poids (kg) | 0,4 |
-| Volume (L) | 0,3 |
-| Taille | Très petite |
+| Poids (kg) | 0.4 |
+| Volume (L) | 0.2 |
+| Taille | Minuscule |
+| Mains | 1 |
 | Achat (argent) | 300 |
 | Vente (argent) | 90 |
 | Attaque | 7 |
 | Touches | 1 |
 | Dégâts de base | 45 |
-| Modificateur de dégâts 1 | DEX |
-| Modificateur de dégâts 2 | DEX |
 | Parade | 6 |
 | Réduction de base | 10 |
+| Modificateur de dégâts 1 | DEX |
+| Modificateur de dégâts 2 | DEX |
 | Modificateur de réduction 1 | DEX |
+| Physique (%) | 50 |
+| Feu (%) | 50 |
+| Froid (%) | 0 |
+| Éclair (%) | 0 |
+| Décomposition (%) | 0 |
+| Éthéré (%) | 0 |
 | DEX requise | 20 |
-| FOR requise | 0 |
-| Physique (%) | 50,0 |
-| Feu (%) | 50,0 |
-| Froid (%) | 0,0 |
-| Foudre (%) | 0,0 |
-| Décomposition (%) | 0,0 |
-| Éthéré (%) | 0,0 |
-
-## Propriétés
-
-Burning / Accumulation 33%
+| Propriété — gestion manuelle | Burning / Buildup 33% |
 
 [Retour au catalogue](../equipement.md)

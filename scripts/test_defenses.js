@@ -3,6 +3,7 @@ const assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('nod
 const M=require('../docs/javascripts/owd-attr-map.js'),C=require('../docs/javascripts/owd-sync.js'),Migr=require('../docs/javascripts/owd-migrations.js');
 const D=require('../docs/javascripts/owd-inventaire-data.js');
 const ctx={window:{OwdInventoryData:D},snum:x=>Number(x)||0,pnum:x=>Math.max(0,Number(x)||0),caracTotal:()=>20,effetBonus:()=>0,effetAlerte:()=>0,state:{inv:{objets:[]}},vetementsPortes:()=>ctx.state.inv.objets.filter(o=>o.ou==='haut')};
+ctx.equipementsPortes=ctx.vetementsPortes;
 vm.createContext(ctx);vm.runInContext(fs.readFileSync('src/fiche/fiche/defense.js','utf8'),ctx);
 assert.equal(ctx.combatDegats(30,6,9),21);
 assert.equal(ctx.combatDegats(5,10,0),0);

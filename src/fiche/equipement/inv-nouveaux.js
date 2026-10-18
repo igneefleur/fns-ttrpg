@@ -44,11 +44,11 @@
     if(type==="munition")return [["fleches","Flèche"],["carreaux","Carreau"],["balles","Balle"],["pierres","Pierre"]];
     return [];
   }
-  function invTailleAccepte(taille, max) {return !taille || !max || INV_TAILLES.indexOf(taille)<=INV_TAILLES.indexOf(max);}
+  function invTailleAccepte(taille, max) {return (!taille || INV_TAILLES.indexOf(taille)>=0) && (!max || INV_TAILLES.indexOf(max)>=0) && (!taille || !max || INV_TAILLES.indexOf(taille)<=INV_TAILLES.indexOf(max));}
   function invCoutAcc(o,lieu) {return 1;} // Chaque objet accroché occupe un emplacement, taille contrôlée séparément.
   function invTailleMaxSac(o) {return o && (o.tailleInterieure || (o.cap>=100?"Moyenne":o.cap>=50?"Petite":"Très petite"));}
   function enrichitObjet(n,o) {
-    var modele=(D().equipements||[]).concat(D().consommables||[]).filter(function(x){return x.nom===o.nom;})[0];
+    var modele=(D().equipements||[]).concat(D().consommables||[]).filter(function(x){return x.id===(o.catalogueId||o.id) || (x.aliasIds||[]).indexOf(o.catalogueId||o.id)>=0 || x.nom===o.nom || (x.aliases||[]).indexOf(o.nom)>=0;})[0];
     // Les anciens achats de Boutique ne transportaient aucun champ technique.
     // Leurs quantités, prix, poids, image et description restent ceux du joueur.
     if(!o.versionObjet && /^boutique:/.test(o.id||"") && modele){
@@ -58,6 +58,15 @@
       combatTypes().forEach(function(t){["prot_","res_"].forEach(function(p){if(modele[p+t]!==undefined){n[p+t]=modele[p+t];o[p+t]=modele[p+t];}});});
       if(n.arme)o.arme=n.arme;
     }
+    n.catalogueId=modele ? modele.id : o.catalogueId || "";
+    n.catalogueVersion=o.catalogueVersion || (modele ? D().catalogueVersion : null);
+    n.commerce=o.commerce || (modele && modele.commerce) || "vendu";
+    n.typeRangement=o.typeRangement || (modele && modele.typeRangement) || "";
+    if(modele && (modele.aliases||[]).indexOf(o.nom)>=0)n.nom=modele.nom;
+    n.reglesManuelles=(Array.isArray(o.reglesManuelles)?o.reglesManuelles:modele&&modele.reglesManuelles||[]).map(String);
+    n.doses=pnum(o.doses===undefined?modele&&modele.doses:o.doses);
+    n.prixStatut=o.prixStatut || (modele && modele.prixStatut) || "";
+    if(modele && modele.prixStatut==="non-renseigne")n.achat=n.vente=null;
     n.versionObjet=1;
     n.typeObjet=invType(o);if(!INV_TYPES_OBJETS[n.typeObjet])n.typeObjet="autre";
     n.sousType=n.typeObjet==="consommable"?invSousTypeConsommable(o):
@@ -75,7 +84,7 @@
     n.tenueDeuxMains=(o.tenueDeuxMains===true || n.mains==="2 obligatoires") && (o.ou==="mainG" || o.ou==="mainD");
     if(n.arme)n.arme.mains=n.mains;
     n.emplacements=Math.max(0,Math.floor(num(o.emplacements,1)));
-    n.prerequis={};["for","dex","vig","end","res","fer","int","cha"].forEach(function(k){n.prerequis[k]=pnum(o.prerequis&&o.prerequis[k]);});
+    n.prerequis={};["for","dex","vig","end","res","fer","int","cha"].forEach(function(k){n.prerequis[k]=pnum(o.prerequis&&o.prerequis[k]!==undefined ? o.prerequis[k] : o.arme&&o.arme[k]);});
     n.volume=pnum(o.volume===undefined?o.encombre:o.volume);n.encombre=n.volume;
     n.tailleInterieure=String(o.tailleInterieure||"");n.tailleAccroche=String(o.tailleAccroche || (n.sac?"Moyenne":""));
     n.effets=(Array.isArray(o.effets)?o.effets:[]).slice(0,8).map(String);

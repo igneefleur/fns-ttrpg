@@ -1,23 +1,27 @@
 # Chalcedony Backpack
 
-<!-- illustration -->
-![Chalcedony Backpack](../../../assets/equipements/backpacks-chalcedony-backpack.png){ .equipment-portrait }
-<!-- /illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
 
-**Catégorie :** Sacs à dos  
+![Chalcedony Backpack](../../../assets/equipements/backpacks-chalcedony-backpack.png){ .equipment-portrait }
+
+**Catégorie :** Rangement  
+**Famille :** Backpacks  
 **Origine :** Outward
+
+A backpack with internal storage and external attachment points.
 
 | Caractéristique | Valeur |
 | --- | --- |
-| Type | Coffre |
 | Poids (kg) | 3 |
 | Volume (L) | 85 |
 | Taille | Petite |
-| Capacité (L) | 80 |
-| Taille maximale acceptée | Petite |
-| Bonus | Protection contre la chaleur : +15. |
-| Attaches | 6 |
+| Mains | 1 |
 | Achat (argent) | 350 |
 | Vente (argent) | 105 |
+| Capacité (L) | 80 |
+| Taille maximale acceptée | Petite |
+| Accroches | 6 |
+| Taille maximale aux accroches | Moyenne |
+| Protection contre la chaleur | 15 |
 
 [Retour au catalogue](../equipement.md)

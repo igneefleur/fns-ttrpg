@@ -1,42 +1,29 @@
 # Elite Leg Armor
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Elite Leg Armor](../../../assets/equipements/bas-elite-leg-armor.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Bas  
 **Famille :** Elite Set  
-**Origine :** Créé pour le JDR
+**Origine :** Homebrew
+
+A garment covering the lower body.
 
 | Caractéristique | Valeur |
 | --- | --- |
 | Poids (kg) | 6 |
 | Volume (L) | 8 |
-| Construction | Semi-rigide |
+| Taille | Très petite |
+| Mains | 1 |
 | Achat (argent) | 387 |
 | Vente (argent) | 128 |
-| Protection | 3 |
-| Résistance physique (%) | 16 |
-| Résistance feu (%) | 0 |
-| Résistance froid (%) | 0 |
-| Résistance foudre (%) | 0 |
-| Résistance décomposition (%) | 0 |
-| Résistance éthéré (%) | 0 |
 | Protection contre le froid | 0 |
 | Protection contre la chaleur | -3 |
-| Bonus physique (%) | 0 |
-| Bonus feu (%) | 0 |
-| Bonus froid (%) | 0 |
-| Bonus foudre (%) | 0 |
-| Bonus décomposition (%) | 0 |
-| Bonus éthéré (%) | 0 |
-| Coût de mana (%) | 0 |
-| Coût d’endurance (%) | 4 |
-| Vitesse (%) | -3 |
-| Barrière | 0 |
-| Réduction des délais (%) | 0 |
-| Résistance à la corruption (%) | 0 |
-| Résistance aux statuts (%) | 0 |
-| Poches supplémentaires (kg) | 0 |
+| Poches (L) | 0 |
+| Protection Physique | 3 |
+| Résistance Physique (%) | 16 |
+| Coût PE (%) | 4 |
+| Déplacement (%) | -3 |
 
 [Retour au catalogue](../equipement.md)

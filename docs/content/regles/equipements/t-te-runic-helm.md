@@ -1,42 +1,37 @@
 # Runic Helm
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Runic Helm](../../../assets/equipements/t-te-runic-helm.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Tête  
 **Famille :** Runic Set  
 **Origine :** Outward
 
+Protective headwear.
+
 | Caractéristique | Valeur |
 | --- | --- |
 | Poids (kg) | 8 |
-| Volume (L) | 2,5 |
-| Construction | Rigide |
+| Volume (L) | 2.5 |
+| Taille | Très petite |
+| Mains | 1 |
 | Achat (argent) | 200 |
 | Vente (argent) | 64 |
-| Protection | 1 |
-| Résistance physique (%) | 6 |
-| Résistance feu (%) | 0 |
-| Résistance froid (%) | 0 |
-| Résistance foudre (%) | 0 |
-| Résistance décomposition (%) | 0 |
-| Résistance éthéré (%) | 0 |
 | Protection contre le froid | 0 |
 | Protection contre la chaleur | -1 |
-| Bonus physique (%) | 0 |
-| Bonus feu (%) | 0 |
-| Bonus froid (%) | 0 |
-| Bonus foudre (%) | 1 |
-| Bonus décomposition (%) | 0 |
-| Bonus éthéré (%) | 1 |
-| Coût de mana (%) | -2 |
-| Coût d’endurance (%) | 4 |
-| Vitesse (%) | -2 |
-| Barrière | 1 |
-| Réduction des délais (%) | 0 |
-| Résistance à la corruption (%) | 0 |
-| Résistance aux statuts (%) | 0 |
-| Poches supplémentaires (kg) | 0 |
+| Poches (L) | 0 |
+| Protection Physique | 1 |
+| Résistance Physique (%) | 6 |
+| Protection Feu | 1 |
+| Protection Froid | 1 |
+| Protection Éclair | 1 |
+| Protection Décomposition | 1 |
+| Protection Éthéré | 1 |
+| Bonus Éclair (%) | 1 |
+| Bonus Éthéré (%) | 1 |
+| Coût PM (%) | -2 |
+| Coût PE (%) | 4 |
+| Déplacement (%) | -2 |
 
 [Retour au catalogue](../equipement.md)

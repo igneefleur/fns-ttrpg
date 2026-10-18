@@ -10,5 +10,19 @@
     [["pr", "Repos"], ["ps", "Satiété"], ["ph", "Hydratation"]].forEach(function (x) {
       b.appendChild(reserveVitale(x[0], provenanceCap(x[0]), x[1]).el);
     });
+    var pied = el("div", "pc-comp-tools pc-vital-pied");
+    var ligne = el("div", "row");
+    ligne.appendChild(chatBtn(
+      function () { return "Survie — " + (state.name || "sans nom"); },
+      function () {
+        return [
+          [abbrCap("pr", "PR"), fmtP(courant("pr")) + " / " + fmtP(prMax())],
+          [abbrCap("ps", "PS"), fmtP(courant("ps")) + " / " + fmtP(psMax())],
+          [abbrCap("ph", "PH"), fmtP(courant("ph")) + " / " + fmtP(phMax())],
+          ["Effondrement", String(effondrement())]
+        ];
+      }));
+    pied.appendChild(ligne);
+    b.appendChild(pied);
     return b;
   }

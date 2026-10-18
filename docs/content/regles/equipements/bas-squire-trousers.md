@@ -1,42 +1,33 @@
 # Squire Trousers
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Squire Trousers](../../../assets/equipements/bas-squire-trousers.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Bas  
 **Famille :** Squire Set  
-**Origine :** Créé pour le JDR
+**Origine :** Homebrew
+
+A garment covering the lower body.
 
 | Caractéristique | Valeur |
 | --- | --- |
-| Poids (kg) | 2,5 |
-| Volume (L) | 2,5 |
-| Construction | Souple |
+| Poids (kg) | 2.5 |
+| Volume (L) | 2.5 |
+| Taille | Très petite |
+| Mains | 1 |
 | Achat (argent) | 408 |
 | Vente (argent) | 123 |
-| Protection | 0 |
-| Résistance physique (%) | 12 |
-| Résistance feu (%) | 4 |
-| Résistance froid (%) | 4 |
-| Résistance foudre (%) | 4 |
-| Résistance décomposition (%) | 4 |
-| Résistance éthéré (%) | 4 |
 | Protection contre le froid | 2 |
 | Protection contre la chaleur | 2 |
-| Bonus physique (%) | 0 |
-| Bonus feu (%) | 0 |
-| Bonus froid (%) | 0 |
-| Bonus foudre (%) | 0 |
-| Bonus décomposition (%) | 0 |
-| Bonus éthéré (%) | 0 |
-| Coût de mana (%) | 0 |
-| Coût d’endurance (%) | -13 |
-| Vitesse (%) | 4 |
-| Barrière | 0 |
-| Réduction des délais (%) | 0 |
-| Résistance à la corruption (%) | 0 |
-| Résistance aux statuts (%) | 0 |
-| Poches supplémentaires (kg) | 0 |
+| Poches (L) | 0 |
+| Résistance Physique (%) | 12 |
+| Résistance Feu (%) | 4 |
+| Résistance Froid (%) | 4 |
+| Résistance Éclair (%) | 4 |
+| Résistance Décomposition (%) | 4 |
+| Résistance Éthéré (%) | 4 |
+| Coût PE (%) | -13 |
+| Déplacement (%) | 4 |
 
 [Retour au catalogue](../equipement.md)

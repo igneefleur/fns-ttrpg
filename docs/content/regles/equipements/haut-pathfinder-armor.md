@@ -1,42 +1,31 @@
 # Pathfinder Armor
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Pathfinder Armor](../../../assets/equipements/haut-pathfinder-armor.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Haut  
 **Famille :** Pathfinder Set  
 **Origine :** Outward
 
+A garment covering the upper body.
+
 | Caractéristique | Valeur |
 | --- | --- |
 | Poids (kg) | 7 |
 | Volume (L) | 5 |
-| Construction | Souple |
+| Taille | Très petite |
+| Mains | 1 |
 | Achat (argent) | 300 |
 | Vente (argent) | 93 |
-| Protection | 2 |
-| Résistance physique (%) | 14 |
-| Résistance feu (%) | 0 |
-| Résistance froid (%) | 0 |
-| Résistance foudre (%) | 0 |
-| Résistance décomposition (%) | 14 |
-| Résistance éthéré (%) | 0 |
 | Protection contre le froid | 8 |
 | Protection contre la chaleur | 8 |
-| Bonus physique (%) | 0 |
-| Bonus feu (%) | 0 |
-| Bonus froid (%) | 0 |
-| Bonus foudre (%) | 0 |
-| Bonus décomposition (%) | 0 |
-| Bonus éthéré (%) | 0 |
-| Coût de mana (%) | 5 |
-| Coût d’endurance (%) | 2 |
-| Vitesse (%) | -2 |
-| Barrière | 0 |
-| Réduction des délais (%) | 0 |
-| Résistance à la corruption (%) | 0 |
-| Résistance aux statuts (%) | 0 |
-| Poches supplémentaires (kg) | 0 |
+| Poches (L) | 0 |
+| Protection Physique | 2 |
+| Résistance Physique (%) | 14 |
+| Résistance Décomposition (%) | 14 |
+| Coût PM (%) | 5 |
+| Coût PE (%) | 2 |
+| Déplacement (%) | -2 |
 
 [Retour au catalogue](../equipement.md)

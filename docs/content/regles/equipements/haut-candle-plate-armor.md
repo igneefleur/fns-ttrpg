@@ -1,42 +1,33 @@
 # Candle Plate Armor
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Candle Plate Armor](../../../assets/equipements/haut-candle-plate-armor.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Haut  
 **Famille :** Candle Plate Set  
 **Origine :** Outward
 
+A garment covering the upper body.
+
 | Caractéristique | Valeur |
 | --- | --- |
 | Poids (kg) | 11 |
 | Volume (L) | 32 |
-| Construction | Rigide |
+| Taille | Petite |
+| Mains | 1 |
 | Achat (argent) | 600 |
 | Vente (argent) | 195 |
-| Protection | 2 |
-| Résistance physique (%) | 21 |
-| Résistance feu (%) | 18 |
-| Résistance froid (%) | 0 |
-| Résistance foudre (%) | 18 |
-| Résistance décomposition (%) | 0 |
-| Résistance éthéré (%) | 0 |
 | Protection contre le froid | 5 |
 | Protection contre la chaleur | -5 |
-| Bonus physique (%) | 0 |
-| Bonus feu (%) | 0 |
-| Bonus froid (%) | 0 |
-| Bonus foudre (%) | 0 |
-| Bonus décomposition (%) | 0 |
-| Bonus éthéré (%) | 0 |
-| Coût de mana (%) | 5 |
-| Coût d’endurance (%) | 4 |
-| Vitesse (%) | -4 |
-| Barrière | 0 |
-| Réduction des délais (%) | 0 |
+| Poches (L) | 0 |
+| Protection Physique | 2 |
+| Résistance Physique (%) | 21 |
+| Résistance Feu (%) | 18 |
+| Résistance Éclair (%) | 18 |
+| Coût PM (%) | 5 |
+| Coût PE (%) | 4 |
+| Déplacement (%) | -4 |
 | Résistance à la corruption (%) | 7 |
-| Résistance aux statuts (%) | 0 |
-| Poches supplémentaires (kg) | 0 |
 
 [Retour au catalogue](../equipement.md)

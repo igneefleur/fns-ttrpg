@@ -1,42 +1,30 @@
 # White Priest Gloves
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![White Priest Gloves](../../../assets/equipements/mains-white-priest-gloves.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Mains  
 **Famille :** White Priest Set  
-**Origine :** Créé pour le JDR
+**Origine :** Homebrew
+
+Hand protection.
 
 | Caractéristique | Valeur |
 | --- | --- |
-| Poids (kg) | 0,4 |
-| Volume (L) | 0,5 |
-| Construction | Souple |
+| Poids (kg) | 0.4 |
+| Volume (L) | 0.5 |
+| Taille | Minuscule |
+| Mains | 1 |
 | Achat (argent) | 125 |
 | Vente (argent) | 37 |
-| Protection | 0 |
-| Résistance physique (%) | 3 |
-| Résistance feu (%) | 8 |
-| Résistance froid (%) | 8 |
-| Résistance foudre (%) | 0 |
-| Résistance décomposition (%) | 8 |
-| Résistance éthéré (%) | 0 |
 | Protection contre le froid | 0 |
 | Protection contre la chaleur | 0 |
-| Bonus physique (%) | 0 |
-| Bonus feu (%) | 0 |
-| Bonus froid (%) | 0 |
-| Bonus foudre (%) | 0 |
-| Bonus décomposition (%) | 0 |
-| Bonus éthéré (%) | 0 |
-| Coût de mana (%) | -2 |
-| Coût d’endurance (%) | 0 |
-| Vitesse (%) | 0 |
-| Barrière | 0 |
-| Réduction des délais (%) | 0 |
-| Résistance à la corruption (%) | 0 |
-| Résistance aux statuts (%) | 0 |
-| Poches supplémentaires (kg) | 0 |
+| Poches (L) | 0 |
+| Résistance Physique (%) | 3 |
+| Résistance Feu (%) | 8 |
+| Résistance Froid (%) | 8 |
+| Résistance Décomposition (%) | 8 |
+| Coût PM (%) | -2 |
 
 [Retour au catalogue](../equipement.md)

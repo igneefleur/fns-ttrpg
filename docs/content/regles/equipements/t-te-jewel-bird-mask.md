@@ -1,10 +1,11 @@
 # Jewel Bird Mask
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Jewel Bird Mask](../../../assets/equipements/t-te-jewel-bird-mask.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Tête  
+**Famille :**   
 **Origine :** Outward
 
 Jewel Bird Mask is a type of Armor in Outward.
@@ -13,31 +14,14 @@ Jewel Bird Mask is a type of Armor in Outward.
 | --- | --- |
 | Poids (kg) | 3 |
 | Volume (L) | 7 |
-| Construction | Semi-rigide |
+| Taille | Très petite |
+| Mains | 1 |
 | Achat (argent) | 100 |
 | Vente (argent) | 30 |
-| Protection | 0 |
-| Résistance physique (%) | 10 |
-| Résistance feu (%) | 0 |
-| Résistance froid (%) | 0 |
-| Résistance foudre (%) | 0 |
-| Résistance décomposition (%) | 0 |
-| Résistance éthéré (%) | 0 |
 | Protection contre le froid | 0 |
 | Protection contre la chaleur | 0 |
-| Bonus physique (%) | 0 |
-| Bonus feu (%) | 0 |
-| Bonus froid (%) | 0 |
-| Bonus foudre (%) | 0 |
-| Bonus décomposition (%) | 0 |
-| Bonus éthéré (%) | 0 |
-| Coût de mana (%) | 0 |
-| Coût d’endurance (%) | 0 |
-| Vitesse (%) | 19 |
-| Barrière | 0 |
-| Réduction des délais (%) | 0 |
-| Résistance à la corruption (%) | 0 |
-| Résistance aux statuts (%) | 0 |
-| Poches supplémentaires (kg) | 0 |
+| Poches (L) | 0 |
+| Résistance Physique (%) | 10 |
+| Déplacement (%) | 19 |
 
 [Retour au catalogue](../equipement.md)

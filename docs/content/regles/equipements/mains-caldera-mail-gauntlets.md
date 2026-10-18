@@ -1,42 +1,30 @@
 # Caldera Mail Gauntlets
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Caldera Mail Gauntlets](../../../assets/equipements/mains-caldera-mail-gauntlets.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Mains  
 **Famille :** Caldera Mail Set  
-**Origine :** Créé pour le JDR
+**Origine :** Homebrew
+
+Hand protection.
 
 | Caractéristique | Valeur |
 | --- | --- |
-| Poids (kg) | 0,8 |
-| Volume (L) | 1,5 |
-| Construction | Semi-rigide |
+| Poids (kg) | 0.8 |
+| Volume (L) | 1.5 |
+| Taille | Minuscule |
+| Mains | 1 |
 | Achat (argent) | 157 |
 | Vente (argent) | 47 |
-| Protection | 1 |
-| Résistance physique (%) | 6 |
-| Résistance feu (%) | 0 |
-| Résistance froid (%) | 4 |
-| Résistance foudre (%) | 4 |
-| Résistance décomposition (%) | 0 |
-| Résistance éthéré (%) | 0 |
 | Protection contre le froid | 0 |
 | Protection contre la chaleur | 0 |
-| Bonus physique (%) | 0 |
-| Bonus feu (%) | 0 |
-| Bonus froid (%) | 0 |
-| Bonus foudre (%) | 0 |
-| Bonus décomposition (%) | 0 |
-| Bonus éthéré (%) | 0 |
-| Coût de mana (%) | 1 |
-| Coût d’endurance (%) | 0 |
-| Vitesse (%) | 0 |
-| Barrière | 0 |
-| Réduction des délais (%) | 0 |
-| Résistance à la corruption (%) | 0 |
-| Résistance aux statuts (%) | 0 |
-| Poches supplémentaires (kg) | 0 |
+| Poches (L) | 0 |
+| Protection Physique | 1 |
+| Résistance Physique (%) | 6 |
+| Résistance Froid (%) | 4 |
+| Résistance Éclair (%) | 4 |
+| Coût PM (%) | 1 |
 
 [Retour au catalogue](../equipement.md)

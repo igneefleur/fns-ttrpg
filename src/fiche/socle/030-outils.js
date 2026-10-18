@@ -34,7 +34,12 @@
     return v == null || String(v).trim() === "" ? null : pnum(v);
   }
   function prixVente(it) {
-    return it.vente == null ? Math.max(0, Math.floor(pnum(it.achat) / 3)) : pnum(it.vente);
+    return it.vente == null ? (it.achat == null ? null : Math.max(0, Math.floor(pnum(it.achat) / 3))) : pnum(it.vente);
+  }
+  function prixObjetTexte(it, vente) {
+    if(it.commerce==="non-commercialise")return "Non commercialisé";
+    var v=vente?prixVente(it):it.achat;
+    return v==null?"Prix non renseigné":fmtP(v)+" "+monnaie(true);
   }
   // nombre SIGNÉ (l'exposition va de −120 à +120) : même tolérance, sans plancher
   function snum(v) {

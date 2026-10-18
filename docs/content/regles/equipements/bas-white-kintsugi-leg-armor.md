@@ -1,42 +1,31 @@
 # White Kintsugi Leg Armor
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![White Kintsugi Leg Armor](../../../assets/equipements/bas-white-kintsugi-leg-armor.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Bas  
 **Famille :** White Kintsugi Set  
-**Origine :** Créé pour le JDR
+**Origine :** Homebrew
+
+A garment covering the lower body.
 
 | Caractéristique | Valeur |
 | --- | --- |
 | Poids (kg) | 6 |
 | Volume (L) | 10 |
-| Construction | Semi-rigide |
+| Taille | Très petite |
+| Mains | 1 |
 | Achat (argent) | 400 |
 | Vente (argent) | 120 |
-| Protection | 2 |
-| Résistance physique (%) | 20 |
-| Résistance feu (%) | 0 |
-| Résistance froid (%) | 0 |
-| Résistance foudre (%) | 0 |
-| Résistance décomposition (%) | 0 |
-| Résistance éthéré (%) | 0 |
 | Protection contre le froid | 0 |
 | Protection contre la chaleur | -3 |
-| Bonus physique (%) | 0 |
-| Bonus feu (%) | 7 |
-| Bonus froid (%) | 0 |
-| Bonus foudre (%) | 0 |
-| Bonus décomposition (%) | 0 |
-| Bonus éthéré (%) | 0 |
-| Coût de mana (%) | 14 |
-| Coût d’endurance (%) | 2 |
-| Vitesse (%) | -6 |
-| Barrière | 0 |
-| Réduction des délais (%) | 0 |
-| Résistance à la corruption (%) | 0 |
-| Résistance aux statuts (%) | 0 |
-| Poches supplémentaires (kg) | 0 |
+| Poches (L) | 0 |
+| Protection Physique | 2 |
+| Résistance Physique (%) | 20 |
+| Bonus Feu (%) | 7 |
+| Coût PM (%) | 14 |
+| Coût PE (%) | 2 |
+| Déplacement (%) | -6 |
 
 [Retour au catalogue](../equipement.md)

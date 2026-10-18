@@ -1,23 +1,26 @@
 # Primitive Satchel
 
-<!-- illustration -->
-![Primitive Satchel](../../../assets/equipements/backpacks-primitive-satchel.png){ .equipment-portrait }
-<!-- /illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
 
-**Catégorie :** Sacs à dos  
+![Primitive Satchel](../../../assets/equipements/backpacks-primitive-satchel.png){ .equipment-portrait }
+
+**Catégorie :** Rangement  
+**Famille :** Backpacks  
 **Origine :** Outward
+
+A backpack with internal storage and external attachment points.
 
 | Caractéristique | Valeur |
 | --- | --- |
-| Type | Cuir |
 | Poids (kg) | 1 |
 | Volume (L) | 2 |
 | Taille | Très petite |
-| Capacité (L) | 20 |
-| Taille maximale acceptée | Très petite |
-| Bonus | — |
-| Attaches | 0 |
+| Mains | 1 |
 | Achat (argent) | 30 |
 | Vente (argent) | 9 |
+| Capacité (L) | 20 |
+| Taille maximale acceptée | Très petite |
+| Accroches | 0 |
+| Taille maximale aux accroches | Moyenne |
 
 [Retour au catalogue](../equipement.md)

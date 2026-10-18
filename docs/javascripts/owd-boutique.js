@@ -21,7 +21,7 @@
   function num(s) { return Number(String(s || '').replace(',', '.').replace(/\s/g, '')) || 0; }
   function value(it, key) { var f = it.champs.find(function (c) { return c[0] === key; }); return f ? f[1] : ''; }
   function qvalid(v) { var n = Number(v); return Number.isSafeInteger(n) && n > 0 ? n : null; }
-  function price(it) { var p = value(it, 'Achat (argent)'); return p ? p + ' argent' : '—'; }
+  function price(it) { var o=it.objet; return o.commerce==='non-commercialise' ? 'Non commercialisé' : o.achat==null ? 'Prix non renseigné' : String(o.achat) + ' argent'; }
   function imageCandidates(it) {
     // Illustrations embarquées uniquement ; les créations sans image restent vides.
     var local = String(it.img || '').trim();
@@ -43,6 +43,7 @@
     var it = selected;
     details.appendChild(picture(it, 'ob-portrait'));
     details.appendChild(node('h2', '', it.nom));
+    details.appendChild(node('div', 'ob-prix-detail', 'Achat : '+price(it)+' · Vente : '+(it.objet.commerce==='non-commercialise'?'Non commercialisé':it.objet.vente==null?'Prix non renseigné':String(it.objet.vente)+' argent')));
     details.appendChild(node('div', 'ob-categorie', it.categorie + (it.famille ? ' · ' + it.famille : '')));
     if (it.origine) details.appendChild(node('div', 'ob-origine', it.origine));
     var buy = node('div', 'ob-achat'), label = node('label', '', 'Quantité'), input = node('input');
@@ -99,16 +100,16 @@
     // Carte compatible avec les anciennes versions de l'extension (version 1,
     // toutes les valeurs de s sont des chaînes). La fiche complète circule
     // séparément dans item, sans perdre les huit effets ou les prérequis.
-    var fields = [['Quantité', String(q)], ['Poids', value(it, 'Poids (kg)') + ' kg'],
-      ['Volume', value(it, 'Volume (L)') + ' L'], ['Achat', price(it)],
-      ['Vente', value(it, 'Vente (argent)') + ' argent'], ['Type', it.categorie]];
+    var fields = [['Quantité', String(q)], ['Poids', String(it.objet.poids) + ' kg'],
+      ['Volume', String(it.objet.volume) + ' L'], ['Achat', price(it)],
+      ['Vente', it.objet.commerce==='non-commercialise' ? 'Non commercialisé' : it.objet.vente==null ? 'Prix non renseigné' : String(it.objet.vente) + ' argent'], ['Type', it.categorie]];
     it.champs.forEach(function (f) { if (!/^(Poids|Volume|Achat|Vente)\b/.test(f[0])) fields.push([String(f[0]), String(f[1])]); });
     var objet = it.objet ? JSON.parse(JSON.stringify(it.objet)) : null;
     var imgChargee=it.imageResolved || (it.img && !/^https?:\/\//.test(it.img) ? new URL(it.img,location.href).href : '');
     if(objet){objet.img=imgChargee;objet.qte=q;}
     var payload = encode({version: 1, item:objet, n: it.nom, q: q, k: 'boutique:' + it.id,
-      p: num(value(it, 'Poids (kg)')), l: num(value(it, 'Volume (L)')),
-      a: num(value(it, 'Achat (argent)')), v: num(value(it, 'Vente (argent)')),
+      p: objet.poids, l: objet.volume,
+      a: objet.achat, v: objet.vente,
       d: it.desc || '', i: imgChargee, s: fields});
     var raw = '&{template:default} {{name=OWD Item ' + (action === 'donner' ? 'Give' : 'Show') + '}} {{Objet=' + safe(it.nom) + '}}';
     // Roll20 doit garder son lien Prendre intact, même avec 30 propriétés.
@@ -137,10 +138,10 @@
       var response = await fetch('owd-boutique.json', {cache: 'no-store'});
       if (!response.ok) throw Error('HTTP ' + response.status);
       var data = await response.json();
-      if (!data || !Array.isArray(data.objets) || !data.objets.length) throw Error('Catalogue vide');
+      if (!data || !Array.isArray(data.objets) || !data.objets.length || data.objets.some(function(it){return !it.objet || !Array.isArray(it.champs);})) throw Error('Catalogue vide');
       items = data.objets.sort(function (a, b) { return a.categorie.localeCompare(b.categorie, 'fr') || a.nom.localeCompare(b.nom, 'fr'); });
       var counts = Object.create(null);
-      items.forEach(function (it) { it.search = fold([it.nom, it.categorie, it.famille, it.origine].join(' ')); counts[it.categorie] = (counts[it.categorie] || 0) + 1; });
+      items.forEach(function (it) { it.search = fold([it.nom, it.categorie, it.famille, it.origine, (it.objet.aliases||[]).join(' '), it.desc].join(' ')); counts[it.categorie] = (counts[it.categorie] || 0) + 1; });
       categories.replaceChildren(new Option('Toutes les catégories', ''));
       Object.keys(counts).sort(function (a, b) { return a.localeCompare(b, 'fr'); }).forEach(function (c) { categories.add(new Option(c + ' (' + counts[c] + ')', c)); });
       search.disabled = categories.disabled = false; filter();

@@ -77,6 +77,8 @@ jobs:
           node scripts/test_inventaire.js
           node scripts/test_defenses.js
           node scripts/test_effets_data.js
+          node scripts/test_boutique_passifs.js
+          python scripts/test_boutique_reference.py
 
       - name: Build
         env:
@@ -84,7 +86,9 @@ jobs:
         run: mkdocs build --config-file mkdocs.yml
 
       - name: Boutique — catalogue et chat
-        run: node scripts/test_boutique.js
+        run: |
+          node scripts/test_boutique.js
+          node scripts/test_boutique_reference.js
 
       # BRANCHE BETA : LA SIGNATURE MOZILLA NE PART JAMAIS TOUTE SEULE. Un push
       # ne fait que déployer le site beta ; l'extension ne se signe que sur

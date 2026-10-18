@@ -1,42 +1,35 @@
 # Chalcedony Leg Armor
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Chalcedony Leg Armor](../../../assets/equipements/bas-chalcedony-leg-armor.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Bas  
 **Famille :** Chalcedony Set  
-**Origine :** Créé pour le JDR
+**Origine :** Homebrew
+
+A garment covering the lower body.
 
 | Caractéristique | Valeur |
 | --- | --- |
 | Poids (kg) | 6 |
 | Volume (L) | 11 |
-| Construction | Semi-rigide |
+| Taille | Très petite |
+| Mains | 1 |
 | Achat (argent) | 400 |
 | Vente (argent) | 120 |
-| Protection | 4 |
-| Résistance physique (%) | 15 |
-| Résistance feu (%) | 0 |
-| Résistance froid (%) | 0 |
-| Résistance foudre (%) | 0 |
-| Résistance décomposition (%) | 0 |
-| Résistance éthéré (%) | 0 |
 | Protection contre le froid | 0 |
 | Protection contre la chaleur | 3 |
-| Bonus physique (%) | 0 |
-| Bonus feu (%) | 0 |
-| Bonus froid (%) | 0 |
-| Bonus foudre (%) | 0 |
-| Bonus décomposition (%) | 0 |
-| Bonus éthéré (%) | 0 |
-| Coût de mana (%) | 4 |
-| Coût d’endurance (%) | 4 |
-| Vitesse (%) | -3 |
-| Barrière | 2 |
-| Réduction des délais (%) | 0 |
-| Résistance à la corruption (%) | 0 |
-| Résistance aux statuts (%) | 0 |
-| Poches supplémentaires (kg) | 0 |
+| Poches (L) | 0 |
+| Protection Physique | 4 |
+| Résistance Physique (%) | 15 |
+| Protection Feu | 2 |
+| Protection Froid | 2 |
+| Protection Éclair | 2 |
+| Protection Décomposition | 2 |
+| Protection Éthéré | 2 |
+| Coût PM (%) | 4 |
+| Coût PE (%) | 4 |
+| Déplacement (%) | -3 |
 
 [Retour au catalogue](../equipement.md)

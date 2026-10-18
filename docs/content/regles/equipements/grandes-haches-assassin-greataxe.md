@@ -1,42 +1,42 @@
 # Assassin Greataxe
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Assassin Greataxe](../../../assets/equipements/grandes-haches-assassin-greataxe.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Grandes haches  
 **Famille :** Assassin  
-**Origine :** Créé pour le JDR
+**Origine :** Homebrew
+
+A greataxe crafted in the Assassin style.
 
 | Caractéristique | Valeur |
 | --- | --- |
 | Poids (kg) | 2 |
 | Volume (L) | 6 |
 | Taille | Moyenne |
+| Mains | 2 |
 | Achat (argent) | 250 |
 | Vente (argent) | 75 |
 | Attaque | 13 |
 | Touches | 3 |
 | Dégâts de base | 60 |
+| Parade | 7 |
+| Réduction de base | 15 |
 | Modificateur de dégâts 1 | FOR |
 | Modificateur de dégâts 2 | DEX |
 | Modificateur de dégâts 3 | FOR |
-| Parade | 7 |
-| Réduction de base | 15 |
 | Modificateur de réduction 1 | FOR |
 | Modificateur de réduction 2 | DEX |
-| DEX requise | 10 |
+| Physique (%) | 75 |
+| Feu (%) | 0 |
+| Froid (%) | 0 |
+| Éclair (%) | 0 |
+| Décomposition (%) | 25 |
+| Éthéré (%) | 0 |
 | FOR requise | 20 |
-| Physique (%) | 75,0 |
-| Feu (%) | 0,0 |
-| Froid (%) | 0,0 |
-| Foudre (%) | 0,0 |
-| Décomposition (%) | 25,0 |
-| Éthéré (%) | 0,0 |
-
-## Propriétés
-
-Slow Down / Accumulation 45%
-Bleeding / Accumulation 33%
+| DEX requise | 10 |
+| Propriété — gestion manuelle | Slow Down / Buildup 45% |
+| Propriété — gestion manuelle | Bleeding / Buildup 33% |
 
 [Retour au catalogue](../equipement.md)

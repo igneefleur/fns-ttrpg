@@ -1,42 +1,33 @@
 # Scarlet Robes
 
-<!-- illustration -->
-![Scarlet Robes](../../../assets/equipements/haut-scarlet-robes.png){ .equipment-portrait }
-<!-- /illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
 
-**Catégorie :** Haut  
+![Scarlet Robes](../../../assets/equipements/haut-scarlet-robes.png){ .equipment-portrait }
+
+**Catégorie :** Robes  
 **Famille :** Scarlet Set  
 **Origine :** Outward
 
+A full-length outfit covering both the upper and lower body.
+
 | Caractéristique | Valeur |
 | --- | --- |
-| Poids (kg) | 2,5 |
-| Volume (L) | 3 |
-| Construction | Souple |
-| Achat (argent) | 594 |
-| Vente (argent) | 179 |
-| Protection | 0 |
-| Résistance physique (%) | 6 |
-| Résistance feu (%) | 0 |
-| Résistance froid (%) | 0 |
-| Résistance foudre (%) | 0 |
-| Résistance décomposition (%) | 0 |
-| Résistance éthéré (%) | 0 |
+| Poids (kg) | 3.5 |
+| Volume (L) | 5.5 |
+| Taille | Très petite |
+| Mains | 1 |
+| Achat (argent) | 1187 |
+| Vente (argent) | 358 |
 | Protection contre le froid | 0 |
 | Protection contre la chaleur | 0 |
-| Bonus physique (%) | 0 |
-| Bonus feu (%) | 14 |
-| Bonus froid (%) | 5 |
-| Bonus foudre (%) | 5 |
-| Bonus décomposition (%) | 5 |
-| Bonus éthéré (%) | 5 |
-| Coût de mana (%) | -7 |
-| Coût d’endurance (%) | 0 |
-| Vitesse (%) | 0 |
-| Barrière | 0 |
-| Réduction des délais (%) | 0 |
-| Résistance à la corruption (%) | 0 |
-| Résistance aux statuts (%) | -10 |
-| Poches supplémentaires (kg) | 0 |
+| Poches (L) | 0 |
+| Résistance Physique (%) | 12 |
+| Bonus Feu (%) | 27 |
+| Bonus Froid (%) | 9 |
+| Bonus Éclair (%) | 9 |
+| Bonus Décomposition (%) | 9 |
+| Bonus Éthéré (%) | 9 |
+| Coût PM (%) | -14 |
+| Résistance aux altérations (%) | -20 |
 
 [Retour au catalogue](../equipement.md)

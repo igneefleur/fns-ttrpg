@@ -1,42 +1,37 @@
 # White Arcane Trousers
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![White Arcane Trousers](../../../assets/equipements/bas-white-arcane-trousers.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Bas  
 **Famille :** White Arcane Set  
-**Origine :** Créé pour le JDR
+**Origine :** Homebrew
+
+A garment covering the lower body.
 
 | Caractéristique | Valeur |
 | --- | --- |
 | Poids (kg) | 1 |
-| Volume (L) | 2,5 |
-| Construction | Souple |
+| Volume (L) | 2.5 |
+| Taille | Très petite |
+| Mains | 1 |
 | Achat (argent) | 158 |
 | Vente (argent) | 48 |
-| Protection | 0 |
-| Résistance physique (%) | 7 |
-| Résistance feu (%) | 7 |
-| Résistance froid (%) | 7 |
-| Résistance foudre (%) | 7 |
-| Résistance décomposition (%) | 7 |
-| Résistance éthéré (%) | 7 |
 | Protection contre le froid | 3 |
 | Protection contre la chaleur | 0 |
-| Bonus physique (%) | 0 |
-| Bonus feu (%) | 2 |
-| Bonus froid (%) | 2 |
-| Bonus foudre (%) | 2 |
-| Bonus décomposition (%) | 2 |
-| Bonus éthéré (%) | 2 |
-| Coût de mana (%) | -8 |
-| Coût d’endurance (%) | 0 |
-| Vitesse (%) | 0 |
-| Barrière | 0 |
-| Réduction des délais (%) | 7 |
-| Résistance à la corruption (%) | 0 |
-| Résistance aux statuts (%) | 0 |
-| Poches supplémentaires (kg) | 0 |
+| Poches (L) | 0 |
+| Résistance Physique (%) | 7 |
+| Résistance Feu (%) | 7 |
+| Résistance Froid (%) | 7 |
+| Résistance Éclair (%) | 7 |
+| Résistance Décomposition (%) | 7 |
+| Résistance Éthéré (%) | 7 |
+| Bonus Feu (%) | 2 |
+| Bonus Froid (%) | 2 |
+| Bonus Éclair (%) | 2 |
+| Bonus Décomposition (%) | 2 |
+| Bonus Éthéré (%) | 2 |
+| Coût PM (%) | -8 |
 
 [Retour au catalogue](../equipement.md)

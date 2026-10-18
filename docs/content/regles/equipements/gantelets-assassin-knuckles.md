@@ -1,40 +1,39 @@
 # Assassin Knuckles
 
-<!-- illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
+
 ![Assassin Knuckles](../../../assets/equipements/gantelets-assassin-knuckles.png){ .equipment-portrait }
-<!-- /illustration -->
 
 **Catégorie :** Gantelets  
 **Famille :** Assassin  
-**Origine :** Créé pour le JDR
+**Origine :** Homebrew
+
+A pair of knuckles crafted in the Assassin style.
 
 | Caractéristique | Valeur |
 | --- | --- |
-| Poids (kg) | 0,5 |
-| Volume (L) | 1,5 |
-| Taille | Très petite |
+| Poids (kg) | 0.5 |
+| Volume (L) | 1.5 |
+| Taille | Minuscule |
+| Mains | 1 |
 | Achat (argent) | 225 |
 | Vente (argent) | 68 |
 | Attaque | 5 |
 | Touches | 1 |
 | Dégâts de base | 25 |
-| Modificateur de dégâts 1 | FOR |
-| Modificateur de dégâts 2 | FOR |
 | Parade | 4 |
 | Réduction de base | 5 |
+| Modificateur de dégâts 1 | FOR |
+| Modificateur de dégâts 2 | FOR |
 | Modificateur de réduction 1 | FOR |
-| DEX requise | 0 |
+| Physique (%) | 75 |
+| Feu (%) | 0 |
+| Froid (%) | 0 |
+| Éclair (%) | 0 |
+| Décomposition (%) | 25 |
+| Éthéré (%) | 0 |
 | FOR requise | 20 |
-| Physique (%) | 75,0 |
-| Feu (%) | 0,0 |
-| Froid (%) | 0,0 |
-| Foudre (%) | 0,0 |
-| Décomposition (%) | 25,0 |
-| Éthéré (%) | 0,0 |
-
-## Propriétés
-
-Slow Down / Accumulation 45%
-Bleeding / Accumulation 33%
+| Propriété — gestion manuelle | Slow Down / Buildup 45% |
+| Propriété — gestion manuelle | Bleeding / Buildup 33% |
 
 [Retour au catalogue](../equipement.md)

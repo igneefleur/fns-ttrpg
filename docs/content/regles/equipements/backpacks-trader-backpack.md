@@ -1,23 +1,26 @@
 # Trader Backpack
 
-<!-- illustration -->
-![Trader Backpack](../../../assets/equipements/backpacks-trader-backpack.png){ .equipment-portrait }
-<!-- /illustration -->
+<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
 
-**Catégorie :** Sacs à dos  
+![Trader Backpack](../../../assets/equipements/backpacks-trader-backpack.png){ .equipment-portrait }
+
+**Catégorie :** Rangement  
+**Famille :** Backpacks  
 **Origine :** Outward
+
+A backpack with internal storage and external attachment points.
 
 | Caractéristique | Valeur |
 | --- | --- |
-| Type | Cuir avec Armature |
 | Poids (kg) | 8 |
 | Volume (L) | 36 |
 | Taille | Petite |
-| Capacité (L) | 100 |
-| Taille maximale acceptée | Moyenne |
-| Bonus | — |
-| Attaches | 10 |
+| Mains | 1 |
 | Achat (argent) | 250 |
 | Vente (argent) | 75 |
+| Capacité (L) | 100 |
+| Taille maximale acceptée | Moyenne |
+| Accroches | 10 |
+| Taille maximale aux accroches | Moyenne |
 
 [Retour au catalogue](../equipement.md)
