@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "3.28.6b";
+  var RELEASE = "3.29.1b";
   var SCHEMA = 17;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -165,7 +165,12 @@
     return v == null || String(v).trim() === "" ? null : pnum(v);
   }
   function prixVente(it) {
-    return it.vente == null ? Math.max(0, Math.floor(pnum(it.achat) / 3)) : pnum(it.vente);
+    return it.vente == null ? (it.achat == null ? null : Math.max(0, Math.floor(pnum(it.achat) / 3))) : pnum(it.vente);
+  }
+  function prixObjetTexte(it, vente) {
+    if(it.commerce==="non-commercialise")return "Non commercialisé";
+    var v=vente?prixVente(it):it.achat;
+    return v==null?"Prix non renseigné":fmtP(v)+" "+monnaie(true);
   }
   // nombre SIGNÉ (l'exposition va de −120 à +120) : même tolérance, sans plancher
   function snum(v) {
@@ -956,7 +961,7 @@
         contenant: o.contenant == null ? "" : String(o.contenant),
         contenu: o.contenu == null ? "" : String(o.contenu),
         dans: o.dans == null ? "" : String(o.dans),
-        achat: pnum(o.achat), vente: venteNum(o.vente),
+        achat: venteNum(o.achat), vente: venteNum(o.vente),
         desc: o.desc == null ? "" : String(o.desc),
         ou: INV_LIEUX.indexOf(o.ou) >= 0 ? o.ou : "terre",
         // le rang de l'EMPLACEMENT qu'il tient, dans la ceinture ou sur le sac
@@ -1296,7 +1301,7 @@
   var FILTRES_CONNUS = {
     caracTotal: 1, compBonus: 1, compDes: 1, compXp: 1,
     pvMax: 1, peMax: 1, pmMax: 1, piMax: 1, prMax: 1, psMax: 1, phMax: 1, pcMax: 1,
-    charge: 1, accesRapides: 1, contenance: 1, expoMax: 1, effondrement: 1,
+    charge: 1, accesRapides: 1, contenance: 1, expoMax: 1, effondrement: 1, effondrementPartie: 1,
     poidsPorte: 1, desAction: 1, ruptureMax: 1, xpDepense: 1
   };
   function ajouteFiltre(nom, fn, prop) {
@@ -1880,6 +1885,20 @@
              (o.acc && INV_ACCESSOIRES.indexOf(o.ou) >= 0 && casePermise(o, o.ou));
     });
   }
+  // Objets dont les propriétés passives s'appliquent lorsqu'ils sont portés.
+  function equipementsPortes() {
+    var clothes=vetementsPortes();
+    return (state.inv.objets || []).filter(function(o) {
+      return !o.dans && pnum(o.qte)>0 && ((o.sac && o.ou==="dos") || (o.ceint && o.ou==="ceinture") || clothes.indexOf(o)>=0);
+    });
+  }
+  function equipementsBonus() {
+    var out=equipementsPortes();
+    (state.inv.objets||[]).forEach(function(o){
+      if(!o.dans && pnum(o.qte)>0 && (o.ou==="mainG" || o.ou==="mainD") && out.indexOf(o)<0)out.push(o);
+    });
+    return out;
+  }
   function capPoches() {
     var t = 0;
     vetementsPortes().forEach(function (o) { t += pnum(o.poches); });
@@ -2042,7 +2061,7 @@
   // la protection des VÊTEMENTS PORTÉS, dans la case de leur type
   function protection(champ) {
     var t = 0;
-    vetementsPortes().forEach(function (o) { t += snum(o[champ]); });
+    equipementsPortes().forEach(function (o) { t += snum(o[champ]); });
     return Math.round((t + effetBonus("climat",champ)) * 10) / 10;
   }
   // ---- le temps qui passe ----
@@ -3080,11 +3099,11 @@
     w.appendChild(stepBtn("−", title ? "− " + step + (title === true ? "" : " (" + title + ")") : null,
       function () { set(get() - step); refresh(); }));
     var i = el("input", "pc-num");
-    i.type = "number";
+    champNombreSigne(i);
     i.step = String(step);
     i.value = get();
     i.addEventListener("input", function () {
-      var v = parseFloat(String(i.value).replace(",", "."));
+      var v = litNombreSigne(i.value);
       if (isFinite(v)) { set(v); refresh(); }
     });
     (reg || hooks).push(function () { if (document.activeElement !== i) i.value = get(); });
@@ -3130,10 +3149,10 @@
     var c = caseVide(hote, "reglable");
     var t = el("span", "v pc-jeu-only", "");
     var i = el("input", "v pc-edit-only pc-case-champ pc-edit-field");
-    i.type = "number"; i.step = "1";
+    champNombreSigne(i); i.step = "1";
     i.title = aide;
     i.addEventListener("input", function () {
-      var v = parseInt(i.value, 10);
+      var v = Math.trunc(litNombreSigne(i.value));
       if (isFinite(v)) { ecrire(v); refresh(); }
     });
     (reg || hooks).push(function () {
@@ -3169,10 +3188,10 @@
   function champForceBoite(nomTable, levier, cle, auto, titre, reg) {
     var lire = lireTable(nomTable, levier, cle);
     var inp = el("input", "force");
-    inp.type = "number"; inp.step = "any";
+    champNombreSigne(inp); inp.step = "any";
     inp.title = titre || "Vide = valeur calculée ; une valeur la force.";
     inp.addEventListener("input", function () {
-      var v = parseFloat(String(inp.value).replace(",", "."));
+      var v = litNombreSigne(inp.value);
       ecrireBoite(nomTable, levier, "force", cle,
                   isFinite(v) ? clamp(Math.round(v * 100) / 100, -99999, 99999) : undefined);
       refresh();
@@ -3195,11 +3214,11 @@
       var boite = MMOD_BOITES[i];
       var lire = lireTable(nomTable, levier, cle);
       var inp = el("input", "pc-mmod");
-      inp.type = "number"; inp.step = "any"; inp.placeholder = "0";
+      champNombreSigne(inp); inp.step = "any"; inp.placeholder = "0";
       inp.title = "Bonus ou malus divers (" + MMOD_SLOTS[i] + ") — emplacement " +
                   (i + 1) + " sur " + MMOD_SLOTS.length + " ; les modificateurs s'additionnent.";
       inp.addEventListener("input", function () {
-        var n = parseFloat(String(inp.value).replace(",", "."));
+        var n = litNombreSigne(inp.value);
         ecrireBoite(nomTable, levier, boite, cle,
                     isFinite(n) && n !== 0 ? clamp(Math.round(n * 100) / 100, -9999, 9999) : undefined);
         inp.classList.toggle("neg", n < 0);
@@ -3225,14 +3244,14 @@
     }
     for (var i = 0; i < MMOD_SLOTS.length; i++) (function (i) {
       var inp = el("input", "pc-mmod");
-      inp.type = "number"; inp.step = "any"; inp.placeholder = "0";
+      champNombreSigne(inp); inp.step = "any"; inp.placeholder = "0";
       inp.title = "Bonus ou malus divers (" + MMOD_SLOTS[i] + ") — emplacement " +
                   (i + 1) + " sur " + MMOD_SLOTS.length + " ; les modificateurs s'additionnent.";
       var v0 = map[key] ? map[key][i] : 0;
       inp.value = v0 ? v0 : "";
       inp.classList.toggle("neg", v0 < 0);
       inp.addEventListener("input", function () {
-        var n = parseFloat(String(inp.value).replace(",", "."));
+        var n = litNombreSigne(inp.value);
         arr()[i] = isFinite(n) ? clamp(Math.round(n * 100) / 100, -9999, 9999) : 0;
         inp.classList.toggle("neg", arr()[i] < 0);
         refresh();
@@ -4190,7 +4209,7 @@
         pvMax: pvMax, peMax: peMax, pmMax: pmMax, piMax: piMax,
         prMax: prMax, psMax: psMax, phMax: phMax,
         charge: charge, accesRapides: accesRapides, contenance: contenance,
-        expoMax: expoMax, effondrement: effondrement,
+        expoMax: expoMax, effondrement: effondrement, effBasePartie: effBasePartie, effApresEffets: effApresEffets, effPartie: effPartie,
         poidsPorte: poidsPorte, desAction: desAction, ruptureMax: ruptureMax,
         xpDepense: xpDepense, courant: courant, maxDe: maxDe
       },
@@ -4847,7 +4866,7 @@
     rebuildRecuperation();
     return b;
   }
-  // Référentiel importé du tableur. Les règles non converties restent descriptives.
+  // Les définitions et les propriétés des objets sont celles de la Boutique.
   function effetsDefinitions() { return D().effets || []; }
   var effetsCacheListe=null,effetsCache={};
   function effetDefinition(id) { var liste=effetsDefinitions();if(liste!==effetsCacheListe){effetsCacheListe=liste;effetsCache=Object.create(null);liste.forEach(function(d){effetsCache[d.id]=d;});}return effetsCache[id] || null; }
@@ -4870,8 +4889,8 @@
     });
     // Les bonus d'équipement sont dérivés : aucune copie temporaire à sauvegarder.
     (state.inv && state.inv.objets || []).forEach(function (o) {
-      if (o.dans || !(pnum(o.qte) > 0) || !(o.ou === "mainG" || o.ou === "mainD" || (o.vet || o.acc) && casesDe(o).length)) return;
-      (o.effets || []).forEach(function (id) { var d = effetDefinition(id); if (d && !(d.categorie==="Équipement porté en main" && o.ou!=="mainG")) out.push({e:{niveau:1,cible:o.arme ? o.ref : "",equipement:o.ref,source:o.nom}, d:d}); });
+      if (o.dans || !(pnum(o.qte) > 0) || !(o.ou === "mainG" || o.ou === "mainD" || (o.vet || o.acc || o.sac || o.ceint) && casePermise(o,o.ou) && casesDe(o).length)) return;
+      (o.effets || []).forEach(function (id) { var d = effetDefinition(id); if (d) out.push({e:{niveau:1,cible:o.arme ? o.ref : "",equipement:o.ref,source:o.nom}, d:d}); });
     });
     // Même famille portée plusieurs fois : le rang le plus élevé gagne.
     var families = {};
@@ -4884,7 +4903,7 @@
   }
   function effetBonus(cle, type, cible) {
     var n = 0;
-    vetementsPortes().forEach(function(o){var v=o.stats&&o.stats[cle];if(type!==undefined)v=v&&v[type];n+=num(v,0);});
+    equipementsBonus().forEach(function(o){var v=o.stats&&o.stats[cle];if(type!==undefined)v=v&&v[type];n+=num(v,0);});
     effetsSources().forEach(function (x) {
       if (x.e.cible && x.e.cible !== cible) return;
       var v = x.d.ops[cle]; if (type !== undefined) v = v && v[type]; n += num(v,0);
@@ -5064,11 +5083,11 @@
     function geste(unite, secondesParUnite, etiquette) {
       var cmd = el("div", "pc-segs pc-temps-segs");
       var nb = el("input", "c pc-temps-val");
-      nb.type = "number"; nb.step = "1";
+      champNombreSigne(nb); nb.step = "1";
       nb.placeholder = "±";
       nb.setAttribute("aria-label", etiquette);
       function applique() {
-        var n = parseInt(nb.value, 10);
+        var n = Math.trunc(litNombreSigne(nb.value));
         if (!isFinite(n) || !n) return;
         var sec = avancerSecondes(n * secondesParUnite);
         nb.value = "";
@@ -5485,7 +5504,7 @@
     return { item: item, protection: flat, difficulte: Math.max(1, snum(a && a.parade) + effetBonus("parade")), comp: a && a.comp || "" };
   }
   function defenseTotaux(type, defense, reussie) {
-    var p = 0, r = 0, portes = vetementsPortes().filter(function (o) { return pnum(o.qte) > 0; });
+    var p = 0, r = 0, portes = equipementsPortes().filter(function (o) { return pnum(o.qte) > 0; });
     portes.forEach(function (o) { p += snum(o["prot_" + type]); r += snum(o["res_" + type]); });
     if (defense && reussie) {
       var active = defense.protection;
@@ -6556,12 +6575,12 @@
 
     var cmd = el("div", "pc-vital-cmd pc-temps");
     var delta = el("input", "pc-vital-delta");
-    delta.type = "number";
+    champNombreSigne(delta);
     delta.step = "1";
     delta.placeholder = "±";
     delta.setAttribute("aria-label", "Contenance à ajouter ou retirer");
     function applique() {
-      var d = parseFloat(delta.value);
+      var d = litNombreSigne(delta.value);
       if (!isFinite(d) || !d) return;
       state.etat.contenance = Math.max(0, Math.round((contenancePrise() + d) * 100) / 100);
       if (!(state.etat.contenance > 0)) reinitialiseHorlogeDigestion();
@@ -7503,7 +7522,7 @@
     var p = {
       n: String(it.nom || ""), q: groupe ? pnum(it.qte) : Math.max(0, pnum(qte)) || 1, p: pnum(it.poids),
       l: pnum(it.places), d: String(it.desc || ""), k: String(it.id || ""),
-      a: pnum(it.achat), version: 1, s: champsObjet(it, qte)
+      a: venteNum(it.achat), version: 1, s: champsObjet(it, qte)
     };
     if(!groupe){p.item=JSON.parse(JSON.stringify(it));p.item.qte=p.q;p.item.dans="";}
     else p.bundle=groupe;
@@ -7529,7 +7548,7 @@
     return {bundle:bundle,item:o.item && typeof o.item==="object" ? o.item : null,
       nom: String(o.n || "Objet"), qte: Math.max(0, pnum(o.q)) || 1, poids: pnum(o.p),
       places: pnum(o.l), desc: String(o.d || ""), img: String(o.i || ""),
-      id: String(o.k || ""), achat: pnum(o.a), vente: venteNum(o.v), rapide: !!o.r
+      id: String(o.k || ""), achat: venteNum(o.a), vente: venteNum(o.v), rapide: !!o.r
     };
   }
 
@@ -7638,7 +7657,8 @@
       [["nom", "Nom"], ["img", "Image"], ["poids", "Poids"], ["places", "Volume"],
        ["desc", "Description"], ["achat", "Achat"], ["vente", "Vente"]].forEach(function (c) {
         function dit(o) {
-          if (c[0] === "vente") return o.vente == null ? "automatique" : fmtP(o.vente);
+          if (c[0] === "vente") return prixObjetTexte(o,true);
+          if (c[0] === "achat") return prixObjetTexte(o,false);
           return String(o[c[0]] || "");
         }
         var mien = dit(jumeau), neuf = dit(recu);
@@ -7948,11 +7968,11 @@
     if(type==="munition")return [["fleches","Flèche"],["carreaux","Carreau"],["balles","Balle"],["pierres","Pierre"]];
     return [];
   }
-  function invTailleAccepte(taille, max) {return !taille || !max || INV_TAILLES.indexOf(taille)<=INV_TAILLES.indexOf(max);}
+  function invTailleAccepte(taille, max) {return (!taille || INV_TAILLES.indexOf(taille)>=0) && (!max || INV_TAILLES.indexOf(max)>=0) && (!taille || !max || INV_TAILLES.indexOf(taille)<=INV_TAILLES.indexOf(max));}
   function invCoutAcc(o,lieu) {return 1;} // Chaque objet accroché occupe un emplacement, taille contrôlée séparément.
   function invTailleMaxSac(o) {return o && (o.tailleInterieure || (o.cap>=100?"Moyenne":o.cap>=50?"Petite":"Très petite"));}
   function enrichitObjet(n,o) {
-    var modele=(D().equipements||[]).concat(D().consommables||[]).filter(function(x){return x.nom===o.nom;})[0];
+    var modele=(D().equipements||[]).concat(D().consommables||[]).filter(function(x){return x.id===(o.catalogueId||o.id) || (x.aliasIds||[]).indexOf(o.catalogueId||o.id)>=0 || x.nom===o.nom || (x.aliases||[]).indexOf(o.nom)>=0;})[0];
     // Les anciens achats de Boutique ne transportaient aucun champ technique.
     // Leurs quantités, prix, poids, image et description restent ceux du joueur.
     if(!o.versionObjet && /^boutique:/.test(o.id||"") && modele){
@@ -7962,6 +7982,15 @@
       combatTypes().forEach(function(t){["prot_","res_"].forEach(function(p){if(modele[p+t]!==undefined){n[p+t]=modele[p+t];o[p+t]=modele[p+t];}});});
       if(n.arme)o.arme=n.arme;
     }
+    n.catalogueId=modele ? modele.id : o.catalogueId || "";
+    n.catalogueVersion=o.catalogueVersion || (modele ? D().catalogueVersion : null);
+    n.commerce=o.commerce || (modele && modele.commerce) || "vendu";
+    n.typeRangement=o.typeRangement || (modele && modele.typeRangement) || "";
+    if(modele && (modele.aliases||[]).indexOf(o.nom)>=0)n.nom=modele.nom;
+    n.reglesManuelles=(Array.isArray(o.reglesManuelles)?o.reglesManuelles:modele&&modele.reglesManuelles||[]).map(String);
+    n.doses=pnum(o.doses===undefined?modele&&modele.doses:o.doses);
+    n.prixStatut=o.prixStatut || (modele && modele.prixStatut) || "";
+    if(modele && modele.prixStatut==="non-renseigne")n.achat=n.vente=null;
     n.versionObjet=1;
     n.typeObjet=invType(o);if(!INV_TYPES_OBJETS[n.typeObjet])n.typeObjet="autre";
     n.sousType=n.typeObjet==="consommable"?invSousTypeConsommable(o):
@@ -7979,7 +8008,7 @@
     n.tenueDeuxMains=(o.tenueDeuxMains===true || n.mains==="2 obligatoires") && (o.ou==="mainG" || o.ou==="mainD");
     if(n.arme)n.arme.mains=n.mains;
     n.emplacements=Math.max(0,Math.floor(num(o.emplacements,1)));
-    n.prerequis={};["for","dex","vig","end","res","fer","int","cha"].forEach(function(k){n.prerequis[k]=pnum(o.prerequis&&o.prerequis[k]);});
+    n.prerequis={};["for","dex","vig","end","res","fer","int","cha"].forEach(function(k){n.prerequis[k]=pnum(o.prerequis&&o.prerequis[k]!==undefined ? o.prerequis[k] : o.arme&&o.arme[k]);});
     n.volume=pnum(o.volume===undefined?o.encombre:o.volume);n.encombre=n.volume;
     n.tailleInterieure=String(o.tailleInterieure||"");n.tailleAccroche=String(o.tailleAccroche || (n.sac?"Moyenne":""));
     n.effets=(Array.isArray(o.effets)?o.effets:[]).slice(0,8).map(String);
@@ -8208,7 +8237,7 @@
     var bagWeight = it.sac ? window.OwdInventoryData.weight(state.inv.objets,it) : null;
     var fields = [["Quantité", fmtP(q)], ["Poids", fmtP(it.poids || 0) + (q > 1 ? " (total " + fmtP(q * (it.poids || 0)) + ")" : "")],
       ["Volume", fmtP(it.encombre || 0) + " L"],
-      ["Achat", fmtP(it.achat || 0) + " " + monnaie(true)], ["Vente", fmtP(prixVente(it)) + " " + monnaie(true)]];
+      ["Achat", prixObjetTexte(it,false)], ["Vente", prixObjetTexte(it,true)]];
     function add(k,v){if(v!=null && String(v).trim()!=="")fields.push([k,String(v)]);}
     if(it.arme){var a=it.arme;add("Type",a.type || "Arme");add("Attaque",a.attaque);add("Dégâts",a.degats);
       add("Mods dégâts",(a.modsDegats||[]).filter(Boolean).join(" · "));add("Parade",a.parade);add("Réduction",a.reduction);
@@ -8228,6 +8257,13 @@
       var labels={eclair:"éclair",decomposition:"décomposition",ethere:"éthéré"},label=labels[t]||t;
       if(it["res_"+t])add("Résistance "+label,fmtP(it["res_"+t])+" %");if(it["prot_"+t])add("Protection "+label,fmtP(it["prot_"+t]));
     });
+    var stats=it.stats||{};
+    ["degats","protections","resistances"].forEach(function(k){Object.keys(stats[k]||{}).forEach(function(t){if(stats[k][t])add(({degats:"Bonus dégâts ",protections:"Protection passive ",resistances:"Résistance passive "})[k]+combatLibType(t),fmtP(stats[k][t])+(k==="protections"?"":" %"));});});
+    Object.keys(stats.couts||{}).forEach(function(k){if(stats.couts[k])add("Coût "+k.toUpperCase(),fmtP(stats.couts[k])+" %");});
+    [["vitesse","Déplacement"],["innocence","Résistance corruption"],["alterations","Résistance altérations"]].forEach(function(x){if(stats[x[0]])add(x[1],fmtP(stats[x[0]])+" %");});
+    if(it.sac||it.ceint){add("Accroches",it.ep);add("Taille maximale aux accroches",it.tailleAccroche);}
+    if(it.sac||it.contenant)add("Capacité (L)",it.cap);
+    (it.reglesManuelles||[]).forEach(function(rule){add("Propriété — gestion manuelle",rule);});
     if(bagWeight!==null)add("Poids avec contenu",fmtP(bagWeight)+" kg");
     if(it.rapide)add("Accès rapide","Oui");add("",it.desc);return fields;
   }
@@ -8905,7 +8941,7 @@
       var i = el("input", "pc-edit-field");
       i.type = "text"; i.inputMode = "decimal";
       i.value = lire() ? fmtP(lire()) : "";
-      i.placeholder = "0";
+      i.placeholder = libelle==="Prix d'achat" ? "Non renseigné" : "0";
       if (titre) i.title = titre;
       i.addEventListener("input", function () { ecrire(i.value); save(); updateTotal(); refresh(); });
       i.addEventListener("blur", function () { i.value = lire() ? fmtP(lire()) : ""; });
@@ -9248,15 +9284,15 @@
       // achat / vente, en pièces d'argent : la monnaie du livre est NOMMÉE
       var prix = el("div", "pc-obj-pair");
       prix.appendChild(champNombre("Prix d'achat", function () { return it.achat; },
-        function (v) { it.achat = pnum(v); majVente(); }, "Prix d'achat en " + monnaie(true)));
+        function (v) { it.achat = venteNum(v); majVente(); }, "Prix d'achat en " + monnaie(true)));
       // le prix de vente laissé vide est AUTOMATIQUE ; un nombre saisi, 0
       // compris, s'affiche tel quel
       var vIn = el("input", "pc-edit-field");
       vIn.type = "text"; vIn.inputMode = "decimal";
-      vIn.placeholder = "automatique";
+      vIn.placeholder = it.achat==null ? "Non renseigné" : "automatique";
       function majVente() {
         if (document.activeElement !== vIn) vIn.value = it.vente == null ? "" : fmtP(it.vente);
-        vIn.title = "Prix de vente en " + monnaie(true) + (it.vente == null ? " : " + fmtP(prixVente(it)) : "");
+        vIn.title = "Prix de vente en " + monnaie(true) + (it.vente == null ? " : " + prixObjetTexte(it,true) : "");
       }
       majVente();
       vIn.addEventListener("input", function () { it.vente = venteNum(vIn.value); save(); refresh(); majVente(); });
@@ -9298,6 +9334,11 @@
       desc.value = it.desc;
       desc.addEventListener("input", function () { it.desc = desc.value; save(); });
       body.appendChild(fld("Description", desc, "w"));
+      if(it.reglesManuelles && it.reglesManuelles.length){
+        var rules=el("div","pc-obj-regles");rules.appendChild(el("div","lbl","Propriétés — gestion manuelle"));
+        it.reglesManuelles.forEach(function(rule){rules.appendChild(el("div","pc-notes",rule));});body.appendChild(rules);
+      }
+
       invChampsCommuns(specifiquesSous,it,render);
       if (specifiquesType.childNodes.length) body.insertBefore(specifiquesType, pair);
       if (sousLigne.childNodes.length) body.insertBefore(sousLigne, pair);
@@ -9540,10 +9581,10 @@
   // réglage.
   function champModVal(lire, ecrire, borne, titre, reg) {
     var inp = el("input", "pc-num modif");
-    inp.type = "number"; inp.step = String(MOD_PAS);
+    champNombreSigne(inp); inp.step = String(MOD_PAS);
     inp.title = titre;
     inp.addEventListener("input", function () {
-      var v = parseFloat(String(inp.value).replace(",", "."));
+      var v = litNombreSigne(inp.value);
       ecrire(isFinite(v) ? clamp(Math.round(v * 100) / 100, -borne, borne) : 0);
       refresh();
     });
@@ -9560,10 +9601,10 @@
   // Un champ de FORÇAGE : vide = valeur calculée (undefined, distinct de 0).
   function champForceVal(lire, ecrire, auto, titre, reg) {
     var inp = el("input", "force");
-    inp.type = "number"; inp.step = "any";
+    champNombreSigne(inp); inp.step = "any";
     inp.title = titre;
     inp.addEventListener("input", function () {
-      var v = parseFloat(String(inp.value).replace(",", "."));
+      var v = litNombreSigne(inp.value);
       ecrire(isFinite(v) ? clamp(Math.round(v * 100) / 100, -99999, 99999) : undefined);
       refresh();
     });
@@ -9586,10 +9627,10 @@
   // tranquille. Son pas est libre, des flèches de 1 en 1 sautant de ×1 à ×6.
   function champMultVal(lire, ecrire, titre, reg) {
     var inp = el("input", "pc-num modif mult");
-    inp.type = "number"; inp.step = "any";
+    champNombreSigne(inp); inp.step = "any";
     inp.title = titre;
     inp.addEventListener("input", function () {
-      var v = parseFloat(String(inp.value).replace(",", "."));
+      var v = litNombreSigne(inp.value);
       ecrire(isFinite(v) ? clamp(Math.round(v * 100) / 100, -MULT_BORNE, MULT_BORNE) : undefined);
       refresh();
     });
