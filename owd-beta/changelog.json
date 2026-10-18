@@ -24476,19 +24476,5 @@
 "url": "content/regles/base/capacites-physiques/"
 }
 ]
-},
-{
-"short": "6ae8602",
-"author": "Théo Cavaillès",
-"date": "2026-10-06T17:34:06+02:00",
-"message": "Update fns-owd-beta files",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/6ae8602216e9490a64cf3ed06047bd18ee6c9a19",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/base/capacites-physiques.md",
-"url": "content/regles/base/capacites-physiques/"
-}
-]
 }
 ]
