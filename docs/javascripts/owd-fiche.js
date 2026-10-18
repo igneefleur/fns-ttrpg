@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "3.31.0b";
+  var RELEASE = "3.31.1b";
   var SCHEMA = 17;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -488,7 +488,7 @@
       attaques: [],
       combatAffichage: { modificateursAttaque: true, defenseSans: true, defenseEsquive: true, modificateursDefense: true },
       combatModifiers: { attaques: {}, protections: {}, resistances: {} },
-      combatOptions: { attaques: { utiliseEndurance: false, utiliseMunition: false, lente: false }, defenses: { utiliseEndurance: false, lente: false, toutAfficher: false } },
+      combatOptions: { attaques: { utiliseEndurance: false, utiliseMunition: false, lente: false }, defenses: { utiliseEndurance: false, lente: false, degatsAuto: false } },
       defenses: { esquive: { comp: "", utiliseEndurance: false }, entrees: [] },
 
       // ---- avantages ----
@@ -796,7 +796,7 @@
     if (["minuscule", "petite", "moyenne", "grande", "enorme", "gigantesque"].indexOf(s.taille) < 0) s.taille = "moyenne";
     var options = s.combatOptions || {}, attaqueOptions = options.attaques || {}, defenseOptions = options.defenses || {};
     s.combatOptions = { attaques: { utiliseEndurance: !!attaqueOptions.utiliseEndurance, utiliseMunition: !!attaqueOptions.utiliseMunition, lente: !!attaqueOptions.lente },
-      defenses: { utiliseEndurance: !!defenseOptions.utiliseEndurance, lente: !!defenseOptions.lente, toutAfficher: !!defenseOptions.toutAfficher } };
+      defenses: { utiliseEndurance: !!defenseOptions.utiliseEndurance, lente: !!defenseOptions.lente, degatsAuto: !!defenseOptions.degatsAuto } };
     var combatAffichage = s.combatAffichage || {};
     s.combatAffichage = {
       modificateursAttaque: combatAffichage.modificateursAttaque !== false,
@@ -5532,7 +5532,10 @@
           champs.push(["Endurance", "−" + fmtP(effetCout("pe",cout))]);
         }
       }
-      sayChat(nom, champs); refresh();
+      if (state.combatOptions.defenses.degatsAuto && subis > 0) {
+        state.etat.pv = Math.round((courant("pv") - subis) * 100) / 100;
+      }
+      refresh(); sayChat(nom, champs);
     }, "Valider");
   }
   var combatDrag = null;
@@ -5617,11 +5620,11 @@
       ["Type", "Protection", "Résistance"].forEach(function (s) { head.appendChild(el("th", null, s)); }); table.appendChild(head);
       combatTypes().forEach(function (t) {
         var totaux = defenseTotaux(t, mode === "parade" ? v : null, true);
-        if (!state.combatOptions.defenses.toutAfficher && totaux.protection === 0 && totaux.reduction === 0) return;
+        if (totaux.protection === 0 && totaux.reduction === 0) return;
         var row = el("tr"); row.dataset.damageType = t;
         row.appendChild(el("td", null, combatLibType(t)));
-        row.appendChild(el("td", "pc-defense-protection", (state.combatOptions.defenses.toutAfficher || totaux.protection !== 0 ? fmtP(totaux.protection) : "")));
-        row.appendChild(el("td", "pc-defense-resistance", (state.combatOptions.defenses.toutAfficher || totaux.reduction !== 0 ? fmtP(totaux.reduction) + " %" : ""))); table.appendChild(row);
+        row.appendChild(el("td", "pc-defense-protection", (totaux.protection !== 0 ? fmtP(totaux.protection) : "")));
+        row.appendChild(el("td", "pc-defense-resistance", (totaux.reduction !== 0 ? fmtP(totaux.reduction) + " %" : ""))); table.appendChild(row);
       });
       if (table.querySelector("td")) detail.appendChild(table); detail.appendChild(bouton(nom, mode, entree)); card.appendChild(detail);
     }
@@ -5630,7 +5633,9 @@
       var ressources = el("div", "pc-attaque-ressources pc-combat-ressources");
       ressources.appendChild(combatRessource(state.combatOptions.defenses, "lente", "Défense Lente"));
       ressources.appendChild(combatEndurance(state.combatOptions.defenses));
-      ressources.appendChild(combatRessource(state.combatOptions.defenses, "toutAfficher", "Tout afficher")); box.appendChild(ressources);
+      var degatsAuto = combatRessource(state.combatOptions.defenses, "degatsAuto", "Dégâts Automatique");
+      degatsAuto.title = "Déduire automatiquement les dégâts finaux des PV après validation d’une défense";
+      ressources.appendChild(degatsAuto); box.appendChild(ressources);
       var sans = el("div", "pc-attaque-card"); sans.dataset.defenseId = "sans";
       if (isEdit("defense") || state.combatAffichage.defenseSans !== false) { details(sans, "Sans Défense", "sans", null, "sans"); box.appendChild(sans); }
       var es = el("div", "pc-attaque-card"), esquive = state.defenses.esquive;
@@ -6426,7 +6431,7 @@
     var tN = bigTile("EFFONDREMENT", function () { return String(effondrement()); });
     tN.classList.add("pc-eff-niveau"); b.appendChild(tN);
     var commandes = el("div", "pc-eff-commandes");
-    var desactive = el("button", "pc-chip pc-combat-toggle", "Désactiver effondrement");
+    var desactive = el("button", "pc-chip pc-combat-toggle", "Désactiver Effondrement");
     desactive.type = "button";
     desactive.title = "Annule l’effondrement appliqué et ses pénalités ; les causes continuent de suivre le personnage.";
     desactive.addEventListener("click", function () { state.effDesactive = !state.effDesactive; refresh(); });

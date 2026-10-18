@@ -137,7 +137,10 @@
           champs.push(["Endurance", "−" + fmtP(effetCout("pe",cout))]);
         }
       }
-      sayChat(nom, champs); refresh();
+      if (state.combatOptions.defenses.degatsAuto && subis > 0) {
+        state.etat.pv = Math.round((courant("pv") - subis) * 100) / 100;
+      }
+      refresh(); sayChat(nom, champs);
     }, "Valider");
   }
   var combatDrag = null;
@@ -222,11 +225,11 @@
       ["Type", "Protection", "Résistance"].forEach(function (s) { head.appendChild(el("th", null, s)); }); table.appendChild(head);
       combatTypes().forEach(function (t) {
         var totaux = defenseTotaux(t, mode === "parade" ? v : null, true);
-        if (!state.combatOptions.defenses.toutAfficher && totaux.protection === 0 && totaux.reduction === 0) return;
+        if (totaux.protection === 0 && totaux.reduction === 0) return;
         var row = el("tr"); row.dataset.damageType = t;
         row.appendChild(el("td", null, combatLibType(t)));
-        row.appendChild(el("td", "pc-defense-protection", (state.combatOptions.defenses.toutAfficher || totaux.protection !== 0 ? fmtP(totaux.protection) : "")));
-        row.appendChild(el("td", "pc-defense-resistance", (state.combatOptions.defenses.toutAfficher || totaux.reduction !== 0 ? fmtP(totaux.reduction) + " %" : ""))); table.appendChild(row);
+        row.appendChild(el("td", "pc-defense-protection", (totaux.protection !== 0 ? fmtP(totaux.protection) : "")));
+        row.appendChild(el("td", "pc-defense-resistance", (totaux.reduction !== 0 ? fmtP(totaux.reduction) + " %" : ""))); table.appendChild(row);
       });
       if (table.querySelector("td")) detail.appendChild(table); detail.appendChild(bouton(nom, mode, entree)); card.appendChild(detail);
     }
@@ -235,7 +238,9 @@
       var ressources = el("div", "pc-attaque-ressources pc-combat-ressources");
       ressources.appendChild(combatRessource(state.combatOptions.defenses, "lente", "Défense Lente"));
       ressources.appendChild(combatEndurance(state.combatOptions.defenses));
-      ressources.appendChild(combatRessource(state.combatOptions.defenses, "toutAfficher", "Tout afficher")); box.appendChild(ressources);
+      var degatsAuto = combatRessource(state.combatOptions.defenses, "degatsAuto", "Dégâts Automatique");
+      degatsAuto.title = "Déduire automatiquement les dégâts finaux des PV après validation d’une défense";
+      ressources.appendChild(degatsAuto); box.appendChild(ressources);
       var sans = el("div", "pc-attaque-card"); sans.dataset.defenseId = "sans";
       if (isEdit("defense") || state.combatAffichage.defenseSans !== false) { details(sans, "Sans Défense", "sans", null, "sans"); box.appendChild(sans); }
       var es = el("div", "pc-attaque-card"), esquive = state.defenses.esquive;

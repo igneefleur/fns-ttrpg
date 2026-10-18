@@ -60,3 +60,31 @@ ctx.effetBonus=(cle,type)=>cle==='immunites'&&type==='feu'?100:0;
 t=ctx.defenseTotaux('feu',null,false);assert.equal(t.reduction,100);
 ctx.effetBonus=()=>-100;assert.equal(ctx.defenseValeurs({arme:'shield'}).difficulte,1);
 console.log('OK effets de parade/protection/résistance, pénalité Alerte, immunité et difficulté minimale');
+
+// Exécuter le vrai formulaire et sa validation avec un DOM minimal.
+ctx.el=(tag,cls,text)=>({tag,value:tag==='select'?'physique':'',textContent:text,children:[],appendChild(n){this.children.push(n);return n;},setAttribute(){},focus(){this.focused=true;}});
+ctx.fld=(label,input)=>({label,input});ctx.fmtP=String;ctx.capFirst=s=>s;ctx.compDe=()=>null;ctx.flash=message=>{ctx.error=message;};ctx.effetCout=(k,v)=>v;
+ctx.dialogue=(title,body,validate)=>{ctx.form=body;ctx.validate=validate;};ctx.sayChat=(title,fields)=>{ctx.chat=fields;};ctx.refresh=()=>{ctx.persisted=JSON.parse(JSON.stringify(ctx.state));};
+ctx.courant=k=>ctx.state.etat[k]==null?100:ctx.state.etat[k];ctx.effetBonus=()=>0;ctx.effetAlerte=()=>0;
+function prompt({auto=true,pv=100,damage='30',mode='sans',slow=false,protection=6,resistance=9,endurance=false}={}){
+ ctx.state={inv:{objets:[{ref:'armor',qte:1,ou:'haut',prot_physique:protection,res_physique:resistance}]},etat:{pv,pe:100},combatOptions:{defenses:{degatsAuto:auto,lente:slow,utiliseEndurance:endurance}}};ctx.error='';ctx.chat=null;ctx.persisted=null;
+ ctx.defensePrompt('Défense',mode,{personnalisee:{parade:8,reduction:10,modsParade:[]}});ctx.form.children[0].input.value=damage;return ctx.validate();
+}
+prompt();assert.equal(ctx.state.etat.pv,79);assert.equal(ctx.persisted.etat.pv,79);assert.equal(ctx.chat.find(x=>x[0]==='Dégâts subis')[1],'21');
+prompt({auto:false});assert.equal(ctx.state.etat.pv,100);assert.equal(ctx.chat.find(x=>x[0]==='Dégâts subis')[1],'21');
+prompt({pv:null});assert.equal(ctx.state.etat.pv,79);
+prompt({pv:10});assert.equal(ctx.state.etat.pv,-11);
+prompt({pv:10.25});assert.equal(ctx.state.etat.pv,-10.75);
+prompt({damage:'0',pv:null});assert.equal(ctx.state.etat.pv,null);
+prompt({damage:'5',pv:null});assert.equal(ctx.state.etat.pv,null);
+prompt({mode:'esquive',endurance:true});assert.equal(ctx.state.etat.pv,100);assert.equal(ctx.state.etat.pe,92);
+prompt({mode:'parade',slow:true,endurance:true});assert.equal(ctx.state.etat.pv,83);assert.equal(ctx.state.etat.pe,100); // floor((30-6-5)*.91)=17
+prompt({mode:'parade',endurance:true});assert.equal(ctx.state.etat.pv,88);assert.equal(ctx.state.etat.pe,92); // floor((30-6-10)*.91)=12
+for(const damage of ['','-1','abc','Infinity']){assert.equal(prompt({damage}),false);assert.equal(ctx.state.etat.pv,100);assert.equal(ctx.chat,null);assert.equal(ctx.persisted,null);}
+ctx.state.combatOptions.defenses.degatsAuto=true;const synced=M.attrsToState(M.stateToAttrs({...M.blank(),...ctx.state}));assert.equal(synced.combatOptions.defenses.degatsAuto,true);
+const defaults=M.blank();assert.equal(defaults.combatOptions.defenses.degatsAuto,false);assert.equal(defaults.combatOptions.defenses.toutAfficher,undefined);
+const normalizer=fs.readFileSync('src/fiche/socle/060-etat-normalise.js','utf8'),start=normalizer.indexOf('    var options = s.combatOptions'),end=normalizer.indexOf('    var combatAffichage',start);
+const normalizeOptions=s=>vm.runInNewContext(normalizer.slice(start,end)+';s.combatOptions',{s});
+assert.equal(normalizeOptions({combatOptions:{defenses:{toutAfficher:true}}}).defenses.degatsAuto,false);
+assert.equal(normalizeOptions({combatOptions:{defenses:{degatsAuto:true}}}).defenses.degatsAuto,true);
+console.log('OK Dégâts Automatique : formulaire réel, dégâts finaux, option désactivée, PV maximum/négatifs/décimaux, absorption, esquive, parade lente, endurance, validation et persistance.');

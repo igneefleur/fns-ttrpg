@@ -9,7 +9,7 @@
     var tN = bigTile("EFFONDREMENT", function () { return String(effondrement()); });
     tN.classList.add("pc-eff-niveau"); b.appendChild(tN);
     var commandes = el("div", "pc-eff-commandes");
-    var desactive = el("button", "pc-chip pc-combat-toggle", "Désactiver effondrement");
+    var desactive = el("button", "pc-chip pc-combat-toggle", "Désactiver Effondrement");
     desactive.type = "button";
     desactive.title = "Annule l’effondrement appliqué et ses pénalités ; les causes continuent de suivre le personnage.";
     desactive.addEventListener("click", function () { state.effDesactive = !state.effDesactive; refresh(); });

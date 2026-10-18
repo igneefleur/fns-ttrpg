@@ -46,25 +46,26 @@ const server=http.createServer((req,res)=> {
   const state=()=>frame.evaluate(()=>JSON.parse(__owdLocalStorage.getItem('owd-perso')));
   const def=sheet.locator('[data-module="defense"]'),atk=sheet.locator('[data-module="attaque"]');
   assert.deepEqual(await atk.locator('.pc-combat-ressources button').allTextContents(),['Attaque Lente','Consommer Endurance','Consommer Munition']);
-  assert.deepEqual(await def.locator('.pc-combat-ressources button').allTextContents(),['Défense Lente','Consommer Endurance','Tout afficher']);
+  assert.deepEqual(await def.locator('.pc-combat-ressources button').allTextContents(),['Défense Lente','Consommer Endurance','Dégâts Automatique']);
   for(const mod of [atk,def]) {const widths=await mod.locator('.pc-combat-ressources button').evaluateAll(ns=>ns.map(n=>n.getBoundingClientRect().width));assert.ok(Math.max(...widths)-Math.min(...widths)<1);assert.equal(await mod.locator('.pc-combat-ressources .pc-chip').count(),3);}
   const sans=def.locator('[data-defense-id="sans"]');await sans.locator('.pc-defense-tete').click();
   assert.equal(await sans.locator('tr[data-damage-type]').count(),3);
   assert.equal(await sans.locator('[data-damage-type="froid"] .pc-defense-resistance').textContent(),'-5 %');
   assert.equal(await sans.locator('[data-damage-type="ethere"] .pc-defense-protection').textContent(),'-3');
   assert.equal(await sans.locator('[data-damage-type="ethere"] .pc-defense-resistance').textContent(),'');
-  await def.getByRole('button',{name:'Tout afficher',exact:true}).click();assert.equal(await sans.locator('tr[data-damage-type]').count(),9);
-  await def.getByRole('button',{name:'Tout afficher',exact:true}).click();await sans.locator('.pc-defense-tete').click();assert.equal(await sans.locator('.pc-defense-detail').count(),0);
+  await def.getByRole('button',{name:'Dégâts Automatique',exact:true}).click();assert.equal(await sans.locator('tr[data-damage-type]').count(),3);assert.equal((await state()).combatOptions.defenses.degatsAuto,true);
+  await def.getByRole('button',{name:'Dégâts Automatique',exact:true}).click();await sans.locator('.pc-defense-tete').click();assert.equal(await sans.locator('.pc-defense-detail').count(),0);
   await atk.getByRole('button',{name:'Attaque Lente',exact:true}).click();await atk.locator('.pc-attaque-tete').filter({hasText:'Onde de feu'}).click();
   const custom=atk.locator('[data-attack-id="custom"]');assert.match(await custom.locator('span.touche').textContent(),/14/);assert.match(await custom.locator('span.passage').textContent(),/7/);
   await custom.locator('.pc-attaque-coup').click();assert.equal((await state()).etat.pe,100);
   await def.getByRole('button',{name:'Défense Lente',exact:true}).click();const shield=def.locator('[data-defense-id="shield"]');await shield.locator('.pc-defense-tete').click();
   assert.equal(await shield.locator('[data-damage-type="feu"] .pc-defense-protection').textContent(),'11');
+  await def.getByRole('button',{name:'Dégâts Automatique',exact:true}).click();
   await shield.locator('.pc-defense-bouton').click();const modal=sheet.locator('.pc-modal');assert.equal(await modal.locator('input').count(),1);assert.equal(await modal.locator('select').count(),1);
   await modal.getByLabel('Dégâts subis',{exact:true}).fill('30');await modal.getByLabel('Type de dégâts',{exact:true}).selectOption('feu');await modal.getByRole('button',{name:'Valider',exact:true}).click();
-  assert.equal((await state()).etat.pe,100);assert.match(await frame.evaluate(()=>chats.at(-1)),/Protection=11/);assert.match(await frame.evaluate(()=>chats.at(-1)),/Dégâts subis=17/);
+  assert.equal((await state()).etat.pe,100);assert.equal((await state()).etat.pv,83);assert.match(await frame.evaluate(()=>chats.at(-1)),/Protection=11/);assert.match(await frame.evaluate(()=>chats.at(-1)),/Dégâts subis=17/);
   await def.getByRole('button',{name:'Défense Lente',exact:true}).click();assert.equal(await shield.locator('[data-damage-type="feu"] .pc-defense-protection').textContent(),'16');
   await page.screenshot({path:'/tmp/owd-slow-defenses-311.png'});assert.deepEqual(errors,[]);
-  console.log('OK cartes dépliables, valeurs négatives/positives, zéros masqués, Tout afficher, tiers égaux, style Investies, attaque/parade lente, arrondis et PE');
+  console.log('OK cartes dépliables, valeurs négatives/positives, zéros masqués, Dégâts Automatique, tiers égaux, style Investies, attaque/parade lente, arrondis et PE');
  }finally{await browser.close();server.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;server.close();});

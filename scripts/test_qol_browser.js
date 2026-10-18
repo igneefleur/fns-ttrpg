@@ -160,7 +160,7 @@ const server=http.createServer((req,res)=> {
   assert.equal(await sheet.getByLabel('Innocence — Base',{exact:true}).inputValue(),'2');
   assert.equal(await frame.evaluate(()=>Owd.__calculs.effondrement()),6);
   // Désactiver retire les pénalités ; Pauser conserve les niveaux et leur détail.
-  const off=collapse.getByRole('button',{name:'Désactiver effondrement',exact:true});
+  const off=collapse.getByRole('button',{name:'Désactiver Effondrement',exact:true});
   const paused=collapse.getByRole('button',{name:'Pauser Effondrement',exact:true});
   const basePE=await frame.evaluate(()=>Owd.__calculs.peMax());
   await off.click();
