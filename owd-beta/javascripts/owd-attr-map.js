@@ -11,7 +11,8 @@
  *   - setRelease(r)             : dit quelle release TOURNE (voir release()).
  *
  * TOUS les attributs produits commencent par « owd_ ». Trois familles :
- *   - COLLABORATION (schéma 11) : OwdSync reconstruit `owd_sync_base` et
+ *   - STOCKAGE REGROUPÉ : owd_storage et OwdSync.Compact priment désormais.
+ *   - COLLABORATION HISTORIQUE (schéma 11) : OwdSync reconstruit `owd_sync_base` et
  *     les registres de champ `owd_sync_p_*`. Ce format PRIME s'il est présent.
  *     Une corruption gèle les écritures, jamais de repli silencieux.
  *   - SOURCE HISTORIQUE : `owd_state` porte l'état ENTIER en JSON. C'est lui
@@ -81,7 +82,7 @@
   // même version, la beta étant ce que le stable recevra à la fusion) : ce qui
   // compare des versions doit donc l'ôter avant de lire les nombres, et c'est
   // exactement ce que fait OwdMods.compareVersions.
-  var RELEASE_DEFAUT = "3.31.1b";
+  var RELEASE_DEFAUT = "4.0.0b";
   // Entier INDÉPENDANT de la release : il ne monte qu'au changement de forme de
   // l'état du personnage, jamais parce que le majeur a bougé. Ajouter une clé
   // racine avec un défaut n'en est PAS un : normalize() complète une clé
@@ -638,6 +639,12 @@
   function attrsToState(attrs) {
     attrs = attrs || {};
     var cur = lecteur(attrs);
+    if(SYNC&&SYNC.Compact&&attrs[SYNC.Compact.BASE]){
+      try{return attacher(SYNC.Compact.read(attrs).state,null,null);}catch(e){
+        var preparing=false;try{preparing=JSON.parse(attrs[SYNC.Compact.BASE].current).phase==='staging';}catch(ignored){}
+        if(!preparing||!attrs.owd_sync_base&&!attrs.owd_state)return attacher(reconstruire(cur),"illisible","Stockage par blocs illisible : "+e.message);
+      }
+    }
     if (SYNC && attrs[SYNC.BASE] && String(attrs[SYNC.BASE].current || "")) {
       try { return attacher(SYNC.read(attrs).state, null, null); }
       catch (e) { return attacher(reconstruire(cur), "illisible", "État collaboratif illisible : " + e.message); }
@@ -683,6 +690,7 @@
   function ficheDe(attrs) {
     attrs = attrs || {};
     var cur = lecteur(attrs);
+    if(SYNC&&SYNC.Compact&&attrs[SYNC.Compact.BASE]){try{var compact=SYNC.Compact.read(attrs).state;return {schema:Number(compact.v),release:compact.rel||null};}catch(e){}}
     var schema = null, rel = null;
     if (SYNC && attrs[SYNC.BASE] && String(attrs[SYNC.BASE].current || "")) {
       try { var cs = SYNC.read(attrs).state; return { schema: Number(cs.v), release: cs.rel || null }; }
