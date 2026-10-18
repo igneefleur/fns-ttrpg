@@ -104,6 +104,14 @@ def catalogue(docs):
     missing = [i['nom'] for i in items if not isinstance(i.get('objet'), dict)]
     if missing:
         raise ValueError('Fiches sans données techniques : '+', '.join(missing))
+    # Une image non renseignée est autorisée (créations JDR notamment), mais
+    # aucune illustration distante ou manquante ne doit être publiée.
+    for it in items:
+        img = it.get('img', '')
+        if img:
+            resolved = (docs / img).resolve()
+            if not img.startswith('assets/') or not resolved.is_relative_to(docs.resolve()) or not resolved.is_file():
+                raise ValueError(f"Illustration non embarquée : {it['nom']}: {img}")
     return {'version': 3, 'objets': items}
 
 

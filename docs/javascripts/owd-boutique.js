@@ -22,34 +22,10 @@
   function value(it, key) { var f = it.champs.find(function (c) { return c[0] === key; }); return f ? f[1] : ''; }
   function qvalid(v) { var n = Number(v); return Number.isSafeInteger(n) && n > 0 ? n : null; }
   function price(it) { var p = value(it, 'Achat (argent)'); return p ? p + ' argent' : '—'; }
-  function wikiFilename(it) {
-    // Le nom de l'objet sert de secours UNIQUEMENT si son image n'est pas
-    // déjà renseignée ou si toutes les URLs fournies échouent. Ne pas
-    // attribuer l'image d'un autre équipement par similarité de nom.
-    var original = String(it.nom || '').trim().replace(/\s+/g, '_');
-    return original ? original + '.png' : '';
-  }
   function imageCandidates(it) {
-    var src=String(it.img || '').trim(), names=[], urls=[];
-    function add(u) { if (u && urls.indexOf(u) < 0) urls.push(u); }
-    function fileName(u) {
-      var m=/\/images\/[a-z0-9]\/[a-z0-9]{2}\/([^/?#]+)(?:\/|$)/i.exec(u) ||
-            /\/wiki\/Special:(?:Redirect\/file|FilePath)\/([^?#]+)/i.exec(u);
-      if(!m)return '';
-      try {return decodeURIComponent(m[1]);}catch(_){return m[1];}
-    }
-    // On conserve en premier l'image existante (IA locale ou source d'Outward).
-    // Le secours externe couvre désormais les liens static.wikia.nocookie.net
-    // employés par la plupart des consommables, et pas seulement wiki.gg.
-    add(src);
-    var filename=fileName(src) || wikiFilename(it);
-    if(filename && !/^(?:assets\/|\.\/)/.test(src)){
-      var encoded=encodeURIComponent(filename).replace(/%2F/gi,'/');
-      add('https://outward.wiki.gg/wiki/Special:FilePath/'+encoded);
-      add('https://outward.wiki.gg/wiki/Special:Redirect/file/'+encoded);
-      add('https://outward.fandom.com/wiki/Special:Redirect/file/'+encoded);
-    }
-    return urls;
+    // Illustrations embarquées uniquement ; les créations sans image restent vides.
+    var local = String(it.img || '').trim();
+    return /^assets\//.test(local) && !local.includes('..') ? [local] : [];
   }
   function picture(it, cls) {
     var im=node('img',cls),urls=imageCandidates(it),i=0;

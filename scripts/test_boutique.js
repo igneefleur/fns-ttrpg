@@ -30,7 +30,7 @@ const tick=()=>new Promise(r=>setImmediate(r));
  const {doc,sent,top,message,form}=boot();await tick();const $=id=>doc.ids[id];
  assert.ok(catalogue.objets.length>=1648);assert.equal(new Set(catalogue.objets.map(i=>i.id)).size,catalogue.objets.length);
  const pages=Math.ceil(catalogue.objets.length/24),categories=new Set(catalogue.objets.map(i=>i.categorie)).size;
- catalogue.objets.forEach(it=>{assert.ok(it.objet&&typeof it.objet==='object',it.id+' sans données d’inventaire');if(!it.img){assert.ok(it.objet.sourceOnglet,'image non résolue sur équipement déjà illustré');return;}if(/^https:\/\//.test(it.img)){const image=new URL(it.img);assert.equal(image.protocol,'https:');assert.ok(['outward.wiki.gg','static.wikia.nocookie.net','outward.fandom.com','igneefleur.github.io'].includes(image.hostname),image.hostname);}else assert.ok(fs.existsSync(path.join(root,'docs',it.img)),it.img);assert.ok(it.champs.length);});
+ catalogue.objets.forEach(it=>{assert.ok(it.objet&&typeof it.objet==='object',it.id+' sans données d’inventaire');if(!it.img)return;if(/^https:\/\//.test(it.img)){const image=new URL(it.img);assert.equal(image.protocol,'https:');assert.ok(['outward.wiki.gg','static.wikia.nocookie.net','outward.fandom.com','igneefleur.github.io'].includes(image.hostname),image.hostname);}else assert.ok(fs.existsSync(path.join(root,'docs',it.img)),it.img);assert.ok(it.champs.length);});
  assert.equal($('ob-items').children.length,24);assert.equal($('ob-categorie').children.length,categories+1);assert.equal($('ob-page').textContent,'1 / '+pages);
  assert.equal($('ob-precedent').disabled,true);$('ob-suivant').onclick();assert.equal($('ob-page').textContent,'2 / '+pages);
  $('ob-categorie').value='Dagues';$('ob-categorie').onchange();assert.ok($('ob-items').children.length>0);assert.equal($('ob-page').textContent,'1 / 3');
@@ -111,29 +111,18 @@ const tick=()=>new Promise(r=>setImmediate(r));
  console.log('OK Accès Boutique : page, 12 éléments UI, styles, scripts, barre Roll20 stable/beta, ordre, icône et ouverture du panneau.');
 })();
 
-// Régression 3.28.4b : images du wiki disponibles comme secours, y compris
-// les liens static.wikia des potions. On vérifie les chemins, pas la réponse
-// HTTP du wiki, qui exige une connexion réseau et un navigateur réel.
-(function verifieSourcesWiki() {
+// Illustrations embarquées : aucun secours distant, y compris pour le homebrew.
+(function verifieImagesLocales() {
  const js=fs.readFileSync(path.join(root,'docs/javascripts/owd-boutique.js'),'utf8');
- const start=js.indexOf('  function wikiFilename('),end=js.indexOf('  function select(it)',start);
- assert.ok(start>=0&&end>start);
- const methods=vm.runInNewContext(js.slice(start,end)+';({imageCandidates,wikiFilename})',{});
- const potion=methods.imageCandidates({nom:'Great Life Potion',img:'https://static.wikia.nocookie.net/outward_gamepedia/images/a/bb/Great_Life_Potion.png/revision/latest'});
- assert.ok(potion.some(u=>u.includes('wiki.gg/wiki/Special:FilePath/Great_Life_Potion.png')));
- assert.ok(potion.some(u=>u.includes('outward.fandom.com/wiki/Special:Redirect/file/Great_Life_Potion.png')));
- const ingredient=methods.imageCandidates({nom:'Iron Scrap',img:''});
- assert.ok(ingredient.some(u=>u.endsWith('Special:FilePath/Iron_Scrap.png')));
- assert.ok(ingredient.some(u=>u.endsWith('Special:Redirect/file/Iron_Scrap.png')));
- const local=methods.imageCandidates({nom:'Iron Sword',img:'assets/equipements/armes-iron-sword.png'});
- assert.deepEqual(Array.from(local),['assets/equipements/armes-iron-sword.png']);
- const src=fs.readFileSync(path.join(root,'src/fiche/equipement/inv-nouveaux.js'),'utf8');
- const match=/function invCoutAcc\(o,lieu\)\s*\{[^}]+\}/.exec(src);
- assert.ok(match,'fonction d’accroche absente');
- const slots=vm.runInNewContext('('+match[0]+')');
- for(const taille of ['Minuscule','Très petite','Petite','Moyenne','Grande'])
-   for(const ou of ['sacep','ceint'])assert.equal(slots({taille},ou),1,'Accroche doublée: '+taille+'/'+ou);
- const hook=fs.readFileSync(path.join(root,'hooks/boutique.py'),'utf8');
- assert.ok(!hook.includes('2 acc par objet Moyen'));
- console.log('OK illustrations Wiki : potions static.wikia et ingrédients, sans réécriture des illustrations IA ; chaque objet occupe une accroche.');
+ const start=js.indexOf('  function imageCandidates('),end=js.indexOf('  function picture(',start);
+ const imageCandidates=vm.runInNewContext(js.slice(start,end)+';imageCandidates',{});
+ assert.deepEqual(Array.from(imageCandidates({img:'assets/objets/wiki/test.png'})),['assets/objets/wiki/test.png']);
+ for(const img of ['', 'https://outward.wiki.gg/wiki/Special:FilePath/Key.png', '//other.test/a.png', 'assets/../x.png'])
+   assert.equal(imageCandidates({img,nom:'Objet inventé'}).length,0);
+ for(const it of catalogue.objets){
+   assert.ok(!/^https?:/.test(it.img),it.nom+' : illustration distante');
+   assert.equal(it.objet.img||'',it.img||'',it.nom+' : image inventaire différente');
+   if(it.img)assert.ok(fs.existsSync(path.join(root,'docs',it.img)),it.nom+' : image absente');
+ }
+ console.log('OK illustrations locales : catalogue, inventaire et absence de secours externe.');
 })();

@@ -140,6 +140,18 @@ def build(path):
    item['typeObjet']='autre';item['sousType']='autre'
   item['mains']=item.get('arme',{}).get('mains',1)
  out={'version':1,'source':'ttrpg outward equipment','effets':effects,'objets':templates,'equipements':gear}
- dest=ROOT/'docs/data/owd-effets.json';dest.parent.mkdir(exist_ok=True);dest.write_text(json.dumps(out,ensure_ascii=False,indent=1)+'\n',encoding='utf8')
+ dest=ROOT/'docs/data/owd-effets.json'
+ # Les illustrations téléchargées appartiennent au projet, pas au tableur.
+ # Un nouvel import ne doit ni les écraser, ni réintroduire des URL distantes.
+ precedent=json.loads(dest.read_text(encoding='utf8')) if dest.exists() else {}
+ images={o['nom']:o for k in ['equipements','objets'] for o in precedent.get(k,[]) if 'imageStatut' in o or str(o.get('img','')).startswith('assets/')}
+ for o in gear+templates:
+  ancien=images.get(o['nom'])
+  if ancien is not None:
+   for k in ['img','imageStatut','imageSource','imageReference']:
+    if k in ancien:o[k]=ancien[k]
+  elif str(o.get('img','')).startswith(('http:','https:')):
+   o['imageSource']=o['img'];o['img']='';o['imageStatut']='a-telecharger'
+ dest.parent.mkdir(exist_ok=True);dest.write_text(json.dumps(out,ensure_ascii=False,indent=1)+'\n',encoding='utf8')
  print(len(effects),'effets,',len(templates),'modèles de consommables importés')
 if __name__=='__main__':build(sys.argv[1])
