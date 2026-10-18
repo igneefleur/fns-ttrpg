@@ -430,15 +430,37 @@
     try{var saved=JSON.parse(localStorage.getItem(key)||'null');if(!saved)return;saved.ops=saved.ops.filter(function(op){return !seen[op.id];});Object.keys(saved.payloads||{}).forEach(function(k){if(attrs[k]&&attrs[k].current===saved.payloads[k].current){delete saved.payloads[k];if(storagePayloads[ch.id])delete storagePayloads[ch.id][k];}});if(saved.ops.length||Object.keys(saved.payloads||{}).length)localStorage.setItem(key,JSON.stringify(saved));else localStorage.removeItem(key);}catch(e){}
   }
   function storageCleanup(ch){var attrs=readAll(ch.id),meta;try{meta=storageManifest(attrs);}catch(e){return;}if(!meta||meta.phase!=='ready')return;var known=["owd_state", "owd_nom", "owd_espece", "owd_taille", "owd_age", "owd_sexe", "owd_genre", "owd_portrait", "owd_background", "owd_notes", "owd_de", "owd_xp_total", "owd_eff_autre", "owd_eff_desactive", "owd_eff_alcool", "owd_eff_alcool_secondes", "owd_effort", "owd_temperature", "owd_qualite_sommeil", "owd_allure", "owd_allure_cran", "owd_argent", "owd_version", "owd_release", "owd_caracs", "owd_horloge", "owd_horloge_digestion", "owd_horloge_exposition", "owd_caracs_xp", "owd_des_tailles", "owd_des_utilises", "owd_eff_parties", "owd_eff_pause", "owd_effets_actifs", "owd_effets_permanents", "owd_caracs_leviers", "owd_etat_courant", "owd_caps_leviers", "owd_competences", "owd_comps_leviers", "owd_techniques", "owd_attaques", "owd_defenses", "owd_combat_options", "owd_combat_modifiers", "owd_avantages", "owd_armes", "owd_vetements", "owd_inventaire", "owd_modules", "owd_mod_donnees", "owd_mod_actifs", "owd_mods", "owd_force", "owd_dexterite", "owd_intelligence", "owd_ferveur", "owd_vigueur", "owd_endurance", "owd_resistance", "owd_chance", "owd_pv", "owd_pe", "owd_pm", "owd_pi", "owd_pr", "owd_ps", "owd_ph", "owd_expo", "owd_charge", "owd_acces", "owd_contenance", "owd_rupture", "owd_effondrement", "owd_des_action", "owd_xp_depense"];
-    var old={};Object.keys(attrs).forEach(function(k){if(k==='owd_state'||k==='owd_sync_base'||k.indexOf('owd_sync_p_')===0)old[k]=String(attrs[k].current||'');});
-    var fingerprint=storageHash(storageStable(old)),check=storageCleanupChecks[ch.id];
-    if(!check){storageCleanupChecks[ch.id]={since:Date.now(),fingerprint:fingerprint};return;}
-    if(meta.legacyFingerprint&&Object.keys(old).length&&meta.legacyFingerprint!==fingerprint){return {error:'Les anciennes données ont changé pendant la migration. Leur suppression est suspendue ; conservez et exportez les anciennes fiches ouvertes.'};}
-    if(Date.now()-check.since<6000)return;
+    function legacyValues(current){var out={};Object.keys(current).forEach(function(k){if(k==='owd_state'||k==='owd_sync_base'||k.indexOf('owd_sync_p_')===0)out[k]=String(current[k].current==null?'':current[k].current);});return out;}
+    var old=legacyValues(attrs),fingerprint=storageHash(storageStable(old)),check=storageCleanupChecks[ch.id];
+    var changed='Les anciennes données ont réellement changé ou leur reliquat ne peut pas être vérifié. Le nettoyage est suspendu ; la nouvelle fiche reste utilisable. Exportez les anciennes versions ouvertes avant de les fermer.';
+    if(!check||check.epoch!==meta.epoch){check=storageCleanupChecks[ch.id]={since:Date.now(),epoch:meta.epoch};}
+    if(meta.cleanupComplete){return Object.keys(old).length?{error:changed}:{status:'done'};}
+    // La preuve est enregistrée dans le manifeste EXISTANT, puis relue avant
+    // toute suppression. Les suppressions ne modifient plus cette référence.
+    if(!meta.legacyHashes){
+      var proof=arguments[1],hashes={};Object.keys(old).forEach(function(k){hashes[k]=storageHash(old[k]);});
+      if(Object.keys(old).length&&meta.legacyFingerprint!==fingerprint&&!(proof&&proof.epoch===meta.epoch&&proof.fingerprint===fingerprint&&storageStable(proof.hashes)===storageStable(hashes)))return {error:changed};
+      meta.legacyHashes=hashes;enqueue(ch.id,{owd_storage:{current:JSON.stringify(meta),max:''}},true);return {status:'pending'};
+    }
+    function unchanged(current){var values=legacyValues(current);return Object.keys(values).every(function(k){return Object.prototype.hasOwnProperty.call(meta.legacyHashes,k)&&meta.legacyHashes[k]===storageHash(values[k]);});}
+    if(!unchanged(attrs))return {error:changed};
+    if(Date.now()-check.since<6000)return {status:'pending'};
     var obsolete=Object.keys(attrs).filter(function(k){return k!=='owd_version'&&k!=='owd_backup'&&['owd_pv','owd_pe','owd_pm'].indexOf(k)<0&&(known.indexOf(k)>=0||k==='owd_sync_base'||k.indexOf('owd_sync_p_')===0);});
-    if(storageTimers[ch.id])return;var work=[];obsolete.forEach(function(k){findAllAttrs(ch,k).forEach(function(m){work.push(m);});});if(!work.length)return;storageTimers[ch.id]=true;
-    function next(){var m=work.shift();if(!m){delete storageTimers[ch.id];return;}detruit(m,function(){setTimeout(next,WRITE_DELAY);},function(){delete storageTimers[ch.id];});}next();
+    if(storageTimers[ch.id])return {status:'pending'};
+    var work=[];obsolete.forEach(function(k){findAllAttrs(ch,k).forEach(function(m){work.push({name:k,model:m,value:String(attrs[k].current==null?'':attrs[k].current)});});});
+    if(!work.length){delete meta.legacyHashes;meta.cleanupComplete=true;enqueue(ch.id,{owd_storage:{current:JSON.stringify(meta),max:''}},true);return {status:'done'};}storageTimers[ch.id]=true;
+    function next(){
+      var current=readAll(ch.id),fresh;try{fresh=storageManifest(current);}catch(e){delete storageTimers[ch.id];return;}
+      if(!fresh||fresh.phase!=='ready'||fresh.epoch!==meta.epoch||!unchanged(current)){delete storageTimers[ch.id];return;}
+      var entry=work.shift();if(!entry){delete storageTimers[ch.id];return;}
+      // Relire également les copies numériques : une ancienne extension qui
+      // les réécrit en cours de nettoyage ne doit pas être effacée aveuglément.
+      if(!current[entry.name]){setTimeout(next,WRITE_DELAY);return;}
+      if(String(current[entry.name].current==null?'':current[entry.name].current)!==entry.value){delete storageTimers[ch.id];return;}
+      detruit(entry.model,function(){setTimeout(next,WRITE_DELAY);},function(){delete storageTimers[ch.id];});
+    }next();return {status:'pending'};
   }
+
   window.__owdStorageBridge={session:storageSession,ops:function(id,data){var ch=getChar(id);if(ch&&inventoryAccess(ch))storageOps(ch,data);}};
 
   function reply(ev, msg) { msg.ns = "owd"; try { ev.source.postMessage(msg, "*"); } catch (e) {} }
@@ -1086,7 +1108,7 @@
         if(!liee(ev.source,d.charId)||!inventoryAccess(getChar(d.charId)))return;
         try{var manifest=storageManifest(readAll(d.charId));if(manifest&&manifest.phase==='staging'){manifest.phase='ready';enqueue(d.charId,{owd_storage:{current:JSON.stringify(manifest),max:''}},true);}}catch(error){reply(ev,{type:'storage-error',charId:d.charId,error:String(error.message||error)});}
       } else if (d.type === "storage-cleanup") {
-        if(liee(ev.source,d.charId)&&inventoryAccess(getChar(d.charId))){var report=storageCleanup(getChar(d.charId));if(report&&report.error)reply(ev,{type:'storage-error',charId:d.charId,error:report.error});}
+        if(liee(ev.source,d.charId)&&inventoryAccess(getChar(d.charId))){var report=storageCleanup(getChar(d.charId),d.proof);if(report)reply(ev,{type:'storage-cleanup-status',charId:d.charId,status:report.status,error:report.error});}
       } else if (d.type === "save") {
         if (!liee(ev.source, d.charId)) return;
         var inv = inventoryFrames.has(ev.source);

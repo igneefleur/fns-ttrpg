@@ -56,6 +56,7 @@
   var M = window.OwdAttrMap;
   var C = window.OwdSync && window.OwdSync.Compact;
   var storageCapable=false, storageSession="";
+  var storageCleanupNotice=null;
   var tokenObserved={},tokenMaxObserved={},storageConflictSeen={},storageIntent={absolute:{}};
   window.__owdReserveSet=function(k){storageIntent.absolute[JSON.stringify([['k','etat'],['k',k]])]=true;};
   window.__owdInventorySet=function(ref){storageIntent.absolute[JSON.stringify([['k','inv'],['k','objets'],['e',ref],['k','qte']])]=true;};
@@ -1489,6 +1490,14 @@
   window.addEventListener("message", function (ev) {
     var d = ev.data;
     if (!d || d.ns !== "owd" || ev.source !== window.top) return;
+    if(d.type==='storage-cleanup-status'&&(!d.charId||d.charId===CHAR_ID)){
+      var cleanupBanner=document.getElementById('owd-bandeau');
+      if(d.error&&storageCleanupNotice===d.error)return;
+      storageCleanupNotice=d.error||null;
+      if(d.error){bandeau('Nettoyage des anciens attributs en attente : '+d.error,[{texte:'Exporter (JSON)',acte:'export',action:exporter},{texte:'Masquer',acte:'masquer',action:fermerBandeau}]).dataset.owdRaison='storage-cleanup';}
+      else if(cleanupBanner&&cleanupBanner.dataset.owdRaison==='storage-cleanup')fermerBandeau();
+      return;
+    }
     if(d.type==='storage-error'&&(!d.charId||d.charId===CHAR_ID)){bandeau("Sauvegarde en attente : "+d.error,[{texte:"Exporter (JSON)",acte:"export",action:exporter}]);return;}
     // on n'accepte que l'hydratation de NOTRE personnage (plusieurs fiches peuvent être ouvertes)
     if (d.type === "hydrate" && (!d.charId || d.charId === CHAR_ID)) {
@@ -1638,7 +1647,7 @@
       confirmStoragePending(server);persistStoragePending();
       lastAttrs = attrs;
       if (!recu) return;
-      if(collaboration.hasBase&&!recu.incomplete){if(server.meta.phase!=='ready')post({type:'storage-activate'});else post({type:'storage-cleanup'});}
+      if(collaboration.hasBase&&!recu.incomplete){if(server.meta.phase!=='ready')post({type:'storage-activate'});else post({type:'storage-cleanup',proof:server.meta.legacyHashes||server.meta.cleanupComplete?null:C.cleanupProof(attrs)});}
       if(recu.conflict && recu.conflicts && recu.conflicts.some(function(c){var k=c.id+':'+(c.path||c.reason);if(storageConflictSeen[k])return false;storageConflictSeen[k]=true;return true;})){bandeau("Des modifications simultanées ont été détectées. Vérifiez les valeurs concernées ; les opérations restent conservées dans les journaux.",[{texte:"Exporter (JSON)",acte:"export",action:exporter}]);}
 
       var attente = Object.keys(collaboration.pending).length;
