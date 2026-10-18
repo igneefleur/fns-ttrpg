@@ -51,6 +51,7 @@
     inp.setAttribute("aria-label", libCap(cle, nom));
     inp.addEventListener("input", function () {
       var v = litNombreSigne(inp.value);
+      if(window.__owdReserveSet)window.__owdReserveSet(cle);
       state.etat[cle] = isFinite(v) ? Math.round(v * 100) / 100 : null;
       refresh();
     });

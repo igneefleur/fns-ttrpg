@@ -562,3 +562,15 @@ Les noms anglais, caractéristiques, effets et types d’arme sont définis dans
 Une description est le texte exact de la section Description de la fiche wiki correspondante, ou une chaîne vide. Aucun texte générique ni description déduite du set ne doit la remplacer. `descriptionSource` conserve la page wiki et `descriptionEmpreinte` l’empreinte du texte vérifié. Les descriptions des objets déjà reçus sont actualisées depuis cette définition.
 
 Les fournitures dont l’adaptation JDR n’est pas encore définie portent `definitionStatut: a-completer` et nomment les valeurs manquantes dans `donneesACompleter`. Un volume inconnu reste `null`, une taille inconnue reste vide : ces absences ne signifient pas zéro. Leurs images, poids et prix proviennent du wiki ; aucun effet JDR n’est déduit de leur description.
+
+### Stockage Roll20 depuis la 4.0.0b
+
+Les attributs `owd_block_*` et `owd_stack_*` portent les données initiales vérifiées. `owd_storage` décrit le format et les blocs ; `owd_ops_*` porte les opérations persistantes propres à une session de partie. La fiche et les outils reconstruisent ensemble l’état courant. Les journaux se segmentent lorsqu’ils grossissent ; ils ne sont ni tronqués ni supprimés automatiquement. Une suppression manuelle peut donc perdre des modifications récentes.
+
+La migration est automatique avec le nouveau pont. Les anciens attributs sont conservés jusqu’à confirmation du nouveau stockage. En cas de changement d’une ancienne fiche pendant la migration, le nettoyage se suspend et un message demande de conserver ses données. Les attributs étrangers et les sauvegardes existantes ne sont pas supprimés.
+
+Une modification des PV, PE ou PM courants dans un attribut lié au token remonte dans la fiche à la prochaine lecture fraîche. Une modification de maximum pendant le suivi devient un forçage du maximum correspondant dans les Options. Les modifications de fiche actualisent les trois miroirs. Les macros qui lisaient les autres anciens attributs calculés doivent passer par les outils de la fiche.
+
+Cette version change le code de l’extension. Pour Firefox, lancer le workflow de la branche avec l’option de signature activée, puis installer la version signée et recharger la partie. Les clés AMO sont nécessaires à la signature. Le paquet Firefox de `essai/` est non signé et réservé au chargement temporaire de développement ; il ne remplace pas le dernier paquet signé de `docs/download/`. Le paquet Chrome de `essai/` peut être décompressé et chargé en mode développeur.
+
+La synchronisation dépend toujours des attributs et des confirmations Roll20. Les opérations non confirmées restent conservées localement ; les conflits sont signalés. Aucun protocole ne rend atomiques les modifications natives de Roll20 : vérifier les avertissements, et conserver un export avant une migration de campagne.

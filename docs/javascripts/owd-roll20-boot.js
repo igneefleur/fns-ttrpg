@@ -1,4 +1,6 @@
-/* Amorce Roll20 de la fiche Outward — chargée UNIQUEMENT par
+/* Format 2 : blocs et opérations via le pont storageBlocks=2. Les chemins
+ * historiques sont conservés pour la lecture et les reprises de migration.
+ * Amorce Roll20 de la fiche Outward — chargée UNIQUEMENT par
  * roll20-fiche.html, la page que l'extension Roll20 affiche dans son iframe.
  *
  * Architecture « coquille » : l'extension signée ne contient pas la fiche.
@@ -52,7 +54,11 @@
 (function () {
   "use strict";
   var M = window.OwdAttrMap;
-  var C = window.OwdSync;
+  var C = window.OwdSync && window.OwdSync.Compact;
+  var storageCapable=false, storageSession="";
+  var tokenObserved={},tokenMaxObserved={},storageConflictSeen={},storageIntent={absolute:{}};
+  window.__owdReserveSet=function(k){storageIntent.absolute[JSON.stringify([['k','etat'],['k',k]])]=true;};
+  window.__owdInventorySet=function(ref){storageIntent.absolute[JSON.stringify([['k','inv'],['k','objets'],['e',ref],['k','qte']])]=true;};
 
   // id du personnage Roll20, passé de creator.html au hash de cette page (#c=<id>).
   var CHAR_ID = (function () {
@@ -100,7 +106,7 @@
     setItem: function (k, v) {
       mem[k] = String(v);
       if (collaboration && !collaborationApplique && k === "owd-perso") {
-        collaboration.capture(JSON.parse(mem[k])); modificationLocale = Date.now();
+        updateStorageMaxima();collaboration.capture(JSON.parse(mem[k]),storageIntent);storageIntent={absolute:{}};persistStoragePending(); modificationLocale = Date.now();
       }
       if (ready && !collaborationApplique && SAVE_KEYS[k]) scheduleSave();
     },
@@ -231,6 +237,10 @@
     q.forEach(function (p) { window.__owdOnTake(p); });
   }, 400);
 
+  function updateStorageMaxima(){if(!collaboration)return;try{var cards=JSON.parse(mem['owd-cards']||'{}'),caps=cards._current&&cards._current.capacites||{};Object.keys(caps).forEach(function(k){if(/Max$/.test(k)&&typeof caps[k]==='number')collaboration.maxima[k.slice(0,-3)]=caps[k];});}catch(e){}}
+  function persistStoragePending(){if(!collaboration)return;var key='owd-pending-v2:'+CHAR_ID+':'+collaboration.id;try{var ops=Object.keys(collaboration.pending).map(function(k){return collaboration.pending[k];});if(ops.length)localStorage.setItem(key,JSON.stringify({epoch:collaboration.epoch,ops:ops,payloads:collaboration.payloads}));else localStorage.removeItem(key);}catch(e){bandeauPerte();}}
+  function restoreStoragePending(){if(!collaboration)return;var prefix='owd-pending-v2:'+CHAR_ID+':';try{for(var i=0;i<localStorage.length;i++){var key=localStorage.key(i);if(!key||key.indexOf(prefix)!==0)continue;var r=JSON.parse(localStorage.getItem(key));if(r.epoch!==collaboration.epoch){bandeau('Une sauvegarde locale appartient à un autre format de fiche. Exportez les données avant de la remplacer.',[{texte:'Exporter (JSON)',acte:'export',action:exporter}]);continue;}Object.assign(collaboration.payloads,r.payloads||{});(r.ops||[]).forEach(function(op){collaboration.pending[op.id]=op;collaboration.clock=Math.max(collaboration.clock,op.clock);});}}catch(e){gele=true;bandeauGelIllisible('Journal local de modifications illisible.');}}
+  function confirmStoragePending(server){if(!server)return;var prefix='owd-pending-v2:'+CHAR_ID+':';try{var keys=[];for(var i=0;i<localStorage.length;i++){var key=localStorage.key(i);if(key&&key.indexOf(prefix)===0)keys.push(key);}keys.forEach(function(key){var r=JSON.parse(localStorage.getItem(key));if(r.epoch!==server.meta.epoch)return;r.ops=r.ops.filter(function(op){return !server.ids[op.id];});if(r.ops.length)localStorage.setItem(key,JSON.stringify(r));else localStorage.removeItem(key);});}catch(e){bandeauPerte();}}
   function scheduleSave() {
     if (gele) return;           // rien ne sort d'une fiche qu'on n'a pas su lire en entier
     if (saveTimer) clearTimeout(saveTimer);
@@ -246,14 +256,15 @@
     try { var cards = JSON.parse(mem["owd-cards"] || "{}"); card = cards && cards._current; } catch (e) {}
     if (collaboration) {
       collaboration.capture(state);
+      var cardCaps=card&&card.capacites||{};
+      ['pv','pe','pm','pr','ps','ph','pi','pc','contenance','expo','rupture'].forEach(function(k){var m=cardCaps[k+'Max'];if(typeof m==='number')collaboration.maxima[k]=m;});
       var lot = collaboration.outgoing();
-      // Macros et barres de jetons restent un MIROIR calculé. Aucune collection
-      // ni photographie complète n'est réécrite par une sauvegarde courante.
-      var tous = M.stateToAttrs(state, card), natifs = M.stateToAttrs(state, null), miroirs = {};
-      Object.keys(tous).forEach(function (n) { if (!Object.prototype.hasOwnProperty.call(natifs, n)) miroirs[n] = tous[n]; });
-      var delta = diff(lastAttrs, miroirs);
-      Object.keys(delta).forEach(function (n) { lot[n] = delta[n]; });
-      if (Object.keys(lot).length) post({ type: "save", attrs: lot });
+      if(!collaboration.hasBase){if(Object.keys(lot).length)post({type:'save',attrs:lot});return;}
+      if(Object.keys(lot).length)post({type:'storage-ops',epoch:collaboration.epoch,ops:Object.keys(lot).map(function(k){return lot[k];}),payloads:collaboration.payloads});
+      // Trois miroirs seulement ; les blocs restent la source de vérité.
+      var mirrors={};if(card)['pv','pe','pm'].forEach(function(k){var current=cardCaps[k]==null?cardCaps[k+'Max']:cardCaps[k],max=cardCaps[k+'Max'];if(current!==undefined&&max!==undefined)mirrors['owd_'+k]={current:String(current),max:String(max)};});
+      var delta=diff(lastAttrs,mirrors);if(Object.keys(delta).length&&!Object.keys(collaboration.pending).length)post({type:'save',attrs:delta});
+
       return;
     }
     var attrs = M.stateToAttrs(state, card);
@@ -957,7 +968,7 @@
     // Un double clic sur « mettre à niveau » lancerait deux protocoles, donc
     // deux injections : la fiche se monterait deux fois dans la même page.
     if (bundleCharge || !spec) return;
-    if (C && !collaborationPont) {
+    if (C && (!collaborationPont || !storageCapable)) {
       var b = ecran("Extension Outward à mettre à jour", false);
       b.appendChild(noeud("p", null, "Cette fiche utilise l'édition simultanée. Installez la nouvelle extension Outward puis rechargez la partie Roll20. Aucune modification n'est envoyée avec l'ancien pont."));
       boutonExport(zoneActions(b));
@@ -996,12 +1007,14 @@
     function serie() {
       if (i >= urls.length) {
         if (C && collaborationPont && !gele) {
-          collaboration = new C.Session(lastAttrs, JSON.parse(mem["owd-perso"]));
+          collaboration = new C.Session(lastAttrs, JSON.parse(mem["owd-perso"]), null, {id:"v"+Date.now().toString(36)+Math.random().toString(36).slice(2)});
+          updateStorageMaxima();restoreStoragePending();
+          if(collaboration.hasBase&&Object.keys(collaboration.pending).length){var restored=collaboration.receive(lastAttrs);if(restored){synchronisationDifferée=restored.state;appliqueDiffere();}}
           // La photographie n'est écrite qu'une fois. Elle est aussi annoncée
           // au vieux code par owd_state/schema 11, pour empêcher ses écritures.
           if (!collaboration.hasBase) {
             var initial = collaboration.outgoing();
-            initial[M.PREFIX + "state"] = { current: JSON.stringify(collaboration.seed), max: "" };
+
             initial[M.PREFIX + "version"] = { current: String(collaboration.seed.v), max: M.release() };
             post({ type: "save", attrs: initial });
           }
@@ -1476,6 +1489,7 @@
   window.addEventListener("message", function (ev) {
     var d = ev.data;
     if (!d || d.ns !== "owd" || ev.source !== window.top) return;
+    if(d.type==='storage-error'&&(!d.charId||d.charId===CHAR_ID)){bandeau("Sauvegarde en attente : "+d.error,[{texte:"Exporter (JSON)",acte:"export",action:exporter}]);return;}
     // on n'accepte que l'hydratation de NOTRE personnage (plusieurs fiches peuvent être ouvertes)
     if (d.type === "hydrate" && (!d.charId || d.charId === CHAR_ID)) {
       // ROUTAGE CRITIQUE. Une fois la fiche hydratée, un « hydrate » n'hydrate
@@ -1494,6 +1508,7 @@
       if (window.__owdVueInventaire && d.inventoryAccess === true && !accesInventaire) {
         accesInventaire = true; document.getElementById("perso-fiche").inert = false; note(null);
       }
+      storageCapable=d.storageBlocks===2;storageSession=d.storageSession||"";
       collaborationPont = d.collaboration === 1 && d.resync === true;
       if (d.fresh === true || !collaborationPont) {
         derniereLecture = Date.now();
@@ -1607,9 +1622,25 @@
     try {
       // capture() a déjà reçu chaque frappe dans le shim SYNCHRONE, avant le
       // debounce de sauvegarde : même une réponse arrivée à cet instant la garde.
+      var server=C.read(attrs),previous=null;try{previous=C.read(collaboration.attrs);}catch(e){}
+      if(server&&collaboration.hasBase){['pv','pe','pm'].forEach(function(k){var a=attrs['owd_'+k],raw=a&&String(a.current),n=Number(raw),actual=server.state.etat[k];
+        if(actual==null)actual=collaboration.maxima[k];
+        var old=previous&&previous.state.etat[k];if(old==null)old=collaboration.maxima[k];
+        // Une projection retardée de l'ancienne réserve n'est pas une saisie.
+        // Les barres sont des valeurs absolues ; les dépenses de fiche restent des deltas.
+        if(raw!==undefined&&raw.trim()!==''&&isFinite(n)&&typeof actual==='number'&&n!==actual&&n!==old&&!(server.state.etat[k]==null&&n===Number(a.max)&&tokenObserved[k]===undefined)&&tokenObserved[k]!==raw){collaboration.token(k,n,server);}
+        var maximum=a&&String(a.max),maxValue=Number(maximum),computed=collaboration.maxima[k];
+        if(maximum!==undefined&&maximum.trim()!==''&&isFinite(maxValue)&&maxValue>=0&&typeof computed==='number'&&maxValue!==computed&&tokenMaxObserved[k]!==undefined&&maximum!==tokenMaxObserved[k]){if(server.state.etat[k]==null&&isFinite(n))collaboration.token(k,n,server);collaboration.tokenMax(k,maxValue,server);}
+        tokenMaxObserved[k]=maximum;
+        tokenObserved[k]=raw;
+      });}
       var recu = collaboration.receive(attrs);
+      confirmStoragePending(server);persistStoragePending();
       lastAttrs = attrs;
       if (!recu) return;
+      if(collaboration.hasBase&&!recu.incomplete){if(server.meta.phase!=='ready')post({type:'storage-activate'});else post({type:'storage-cleanup'});}
+      if(recu.conflict && recu.conflicts && recu.conflicts.some(function(c){var k=c.id+':'+(c.path||c.reason);if(storageConflictSeen[k])return false;storageConflictSeen[k]=true;return true;})){bandeau("Des modifications simultanées ont été détectées. Vérifiez les valeurs concernées ; les opérations restent conservées dans les journaux.",[{texte:"Exporter (JSON)",acte:"export",action:exporter}]);}
+
       var attente = Object.keys(collaboration.pending).length;
       var avertissement = document.getElementById('owd-bandeau');
       // Une confirmation tardive résout aussi l'avertissement. Ne fermer que

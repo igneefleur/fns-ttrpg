@@ -373,7 +373,7 @@
     if (busy) return;
     // Une écriture à la fois, avec priorité à la base puis aux registres.
     // Les miroirs de macros ne bloquent jamais une fiche qui continue à saisir.
-    function priorite(n) { return (n === "owd_sync_base" || n === "owd_monde_base") ? 0 : (n.indexOf("owd_sync_p_") === 0 || n.indexOf("owd_monde_p_") === 0) ? 1 : 2; }
+    function priorite(n) { if(n.indexOf('owd_block_')===0||n.indexOf('owd_stack_')===0)return 0;if(n.indexOf('owd_ops_')===0)return 1;if(n==='owd_storage')return 2;return (n === "owd_sync_base" || n === "owd_monde_base") ? 0 : (n.indexOf("owd_sync_p_") === 0 || n.indexOf("owd_monde_p_") === 0) ? 1 : 2; }
     var choisi = 0;
     for (var j = 0; j < queue.length; j++) {
       if (Object.keys(queue[j].attrs).some(function (n) { return priorite(n) < 2; })) { choisi = j; break; }
@@ -406,6 +406,40 @@
     // reste AVANT l'attente permet à enqueue() de remplacer les valeurs périmées.
     setTimeout(function () { busy = false; pump(); }, WRITE_DELAY);
   }
+
+  // Journaux de session : une seule file par fenêtre de partie et personnage.
+  // Les popouts délèguent à la partie d'origine ; chaque journal n'a qu'un auteur.
+  function storageHash(s){s=String(s);var h=2166136261;for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0).toString(16);}
+  function storageStable(v){if(Array.isArray(v))return '['+v.map(storageStable).join(',')+']';if(v&&typeof v==='object')return '{'+Object.keys(v).sort().map(function(k){return JSON.stringify(k)+':'+storageStable(v[k]);}).join(',')+'}';return JSON.stringify(v);}
+  var storageSession='s'+Date.now().toString(36)+Math.random().toString(36).slice(2),storagePending={},storageConfirmed={},storagePayloads={},storageTimers={},storageCleanupChecks={};
+  try{var sk='owd-session-v2';storageSession=sessionStorage.getItem(sk)||storageSession;sessionStorage.setItem(sk,storageSession);}catch(e){}
+  function storageOwner(){campaign();try{if(winCampagne&&winCampagne!==window&&winCampagne.__owdStorageBridge)return winCampagne.__owdStorageBridge;}catch(e){}return null;}
+  function storageManifest(attrs){var raw=attrs.owd_storage&&attrs.owd_storage.current;if(!raw)return null;var m=JSON.parse(raw);if(m.format!==2)throw Error('Version de stockage inconnue.');Object.keys(m.blocks).forEach(function(k){if(!attrs[k]||storageHash(attrs[k].current)!==m.blocks[k])throw Error('Migration incomplète.');});return m;}
+  function storageSessionName(){var owner=storageOwner();return owner?owner.session:storageSession;}
+  function storageOps(ch,data){var owner=storageOwner();if(owner){owner.ops(ch.id,data);return;}var attrs=readAll(ch.id),meta=storageManifest(attrs);if(!meta||meta.epoch!==data.epoch)throw Error('Format de fiche modifié : rechargez avant de renvoyer les opérations.');
+    var key='owd-operations-v2:'+String((campaign()||{}).id||'partie')+':'+ch.id+':'+storageSession;
+    var payloads=storagePayloads[ch.id]||(storagePayloads[ch.id]={});Object.assign(payloads,data.payloads||{});
+    var map=storagePending[ch.id];if(!map){map={};Object.keys(attrs).filter(function(k){return k.indexOf('owd_ops_'+storageSession+'_')===0;}).sort().forEach(function(k){var b=JSON.parse(attrs[k].current);if(b.epoch===meta.epoch)b.ops.forEach(function(o){map[o.id]=o;});});try{var saved=JSON.parse(localStorage.getItem(key)||'null');if(saved&&saved.epoch===meta.epoch){saved.ops.forEach(function(o){map[o.id]=o;});Object.assign(payloads,saved.payloads||{});}}catch(e){throw Error('Journal local illisible ; exportez la fiche avant de continuer.');}storagePending[ch.id]=map;}
+    (data.ops||[]).forEach(function(op){if(!op.id||!Array.isArray(op.changes)||!Number.isSafeInteger(op.clock))throw Error('Opération invalide.');if(map[op.id]&&storageStable(map[op.id])!==storageStable(op))throw Error('Identifiant d’opération réutilisé.');map[op.id]=op;});
+    var ordered=Object.keys(map).map(function(k){return map[k];});var confirmed=storageConfirmed[ch.id]||{},waiting=ordered.filter(function(op){return !confirmed[op.id];});localStorage.setItem(key,JSON.stringify({epoch:meta.epoch,ops:waiting,payloads:payloads}));
+    // Un journal trop gros est segmenté ; jamais tronqué, jamais plafonné.
+    var chunks=[],part=[];ordered.forEach(function(o){var trial=part.concat([o]);if(part.length&&JSON.stringify(trial).length>24000){chunks.push(part);part=[o];}else part=trial;});if(part.length)chunks.push(part);var out={};Object.keys(payloads).forEach(function(k){if(k.indexOf('owd_stack_')!==0&&k.indexOf('owd_block_module_')!==0)throw Error('Bloc de données invalide.');if(attrs[k]&&attrs[k].current!==payloads[k].current)throw Error('Identifiant de pile déjà utilisé.');if(!attrs[k])out[k]=payloads[k];});chunks.forEach(function(ops,i){out['owd_ops_'+storageSession+'_'+String(i).padStart(5,'0')]={current:JSON.stringify({format:2,epoch:meta.epoch,session:storageSession,ops:ops}),max:''};});Object.keys(out).forEach(function(k){if(attrs[k]&&attrs[k].current===out[k].current)delete out[k];});enqueue(ch.id,out,true);
+  }
+  function storageConfirmLocal(ch,attrs){var seen={};Object.keys(attrs).filter(function(k){return k.indexOf('owd_ops_'+storageSession+'_')===0;}).forEach(function(k){try{JSON.parse(attrs[k].current).ops.forEach(function(op){seen[op.id]=true;});}catch(e){}});storageConfirmed[ch.id]=seen;
+    var key='owd-operations-v2:'+String((campaign()||{}).id||'partie')+':'+ch.id+':'+storageSession;
+    try{var saved=JSON.parse(localStorage.getItem(key)||'null');if(!saved)return;saved.ops=saved.ops.filter(function(op){return !seen[op.id];});Object.keys(saved.payloads||{}).forEach(function(k){if(attrs[k]&&attrs[k].current===saved.payloads[k].current){delete saved.payloads[k];if(storagePayloads[ch.id])delete storagePayloads[ch.id][k];}});if(saved.ops.length||Object.keys(saved.payloads||{}).length)localStorage.setItem(key,JSON.stringify(saved));else localStorage.removeItem(key);}catch(e){}
+  }
+  function storageCleanup(ch){var attrs=readAll(ch.id),meta;try{meta=storageManifest(attrs);}catch(e){return;}if(!meta||meta.phase!=='ready')return;var known=["owd_state", "owd_nom", "owd_espece", "owd_taille", "owd_age", "owd_sexe", "owd_genre", "owd_portrait", "owd_background", "owd_notes", "owd_de", "owd_xp_total", "owd_eff_autre", "owd_eff_desactive", "owd_eff_alcool", "owd_eff_alcool_secondes", "owd_effort", "owd_temperature", "owd_qualite_sommeil", "owd_allure", "owd_allure_cran", "owd_argent", "owd_version", "owd_release", "owd_caracs", "owd_horloge", "owd_horloge_digestion", "owd_horloge_exposition", "owd_caracs_xp", "owd_des_tailles", "owd_des_utilises", "owd_eff_parties", "owd_eff_pause", "owd_effets_actifs", "owd_effets_permanents", "owd_caracs_leviers", "owd_etat_courant", "owd_caps_leviers", "owd_competences", "owd_comps_leviers", "owd_techniques", "owd_attaques", "owd_defenses", "owd_combat_options", "owd_combat_modifiers", "owd_avantages", "owd_armes", "owd_vetements", "owd_inventaire", "owd_modules", "owd_mod_donnees", "owd_mod_actifs", "owd_mods", "owd_force", "owd_dexterite", "owd_intelligence", "owd_ferveur", "owd_vigueur", "owd_endurance", "owd_resistance", "owd_chance", "owd_pv", "owd_pe", "owd_pm", "owd_pi", "owd_pr", "owd_ps", "owd_ph", "owd_expo", "owd_charge", "owd_acces", "owd_contenance", "owd_rupture", "owd_effondrement", "owd_des_action", "owd_xp_depense"];
+    var old={};Object.keys(attrs).forEach(function(k){if(k==='owd_state'||k==='owd_sync_base'||k.indexOf('owd_sync_p_')===0)old[k]=String(attrs[k].current||'');});
+    var fingerprint=storageHash(storageStable(old)),check=storageCleanupChecks[ch.id];
+    if(!check){storageCleanupChecks[ch.id]={since:Date.now(),fingerprint:fingerprint};return;}
+    if(meta.legacyFingerprint&&Object.keys(old).length&&meta.legacyFingerprint!==fingerprint){return {error:'Les anciennes données ont changé pendant la migration. Leur suppression est suspendue ; conservez et exportez les anciennes fiches ouvertes.'};}
+    if(Date.now()-check.since<6000)return;
+    var obsolete=Object.keys(attrs).filter(function(k){return k!=='owd_version'&&k!=='owd_backup'&&['owd_pv','owd_pe','owd_pm'].indexOf(k)<0&&(known.indexOf(k)>=0||k==='owd_sync_base'||k.indexOf('owd_sync_p_')===0);});
+    if(storageTimers[ch.id])return;var work=[];obsolete.forEach(function(k){findAllAttrs(ch,k).forEach(function(m){work.push(m);});});if(!work.length)return;storageTimers[ch.id]=true;
+    function next(){var m=work.shift();if(!m){delete storageTimers[ch.id];return;}detruit(m,function(){setTimeout(next,WRITE_DELAY);},function(){delete storageTimers[ch.id];});}next();
+  }
+  window.__owdStorageBridge={session:storageSession,ops:function(id,data){var ch=getChar(id);if(ch&&inventoryAccess(ch))storageOps(ch,data);}};
 
   function reply(ev, msg) { msg.ns = "owd"; try { ev.source.postMessage(msg, "*"); } catch (e) {} }
 
@@ -697,6 +731,7 @@
   var RESYNC_MIN = 1500, resyncJobs = {}, readSubscriptions = new WeakMap();
   function publieLecture(ch, ok) {
     menage(); var attrs = readAll(ch.id), at = Date.now();
+    if(ok&&attrs.owd_storage)storageConfirmLocal(ch,attrs);
     srcFrames.forEach(function (w, i) {
       if (srcIds[i] !== ch.id) return;
       var base = readSubscriptions.get(w); if (!base) return;
@@ -1014,7 +1049,7 @@
         // toutes les 500 ms, le Campaign peut arriver après nous)
         var chl = getChar(d.charId);
         if (!chl) return;
-        var rl = { type: "hydrate", charId: d.charId, attrs: readAll(d.charId), resync: true, collaboration: 1 };
+        var rl = { type: "hydrate", charId: d.charId, attrs: readAll(d.charId), resync: true, collaboration: 1, storageBlocks: 2, storageSession: storageSessionName() };
         if (inventoryFrames.has(ev.source)) {
           rl.inventoryAccess = true;
           if (etatAttributs(chl) !== "sur") return;
@@ -1044,10 +1079,25 @@
         readSubscriptions.set(ev.source, rl);
         if (d.resync === true) {resynchronise(chl);return;}
         rl.fresh = false;reply(ev,rl);
+      } else if (d.type === "storage-ops") {
+        if(!liee(ev.source,d.charId)||!inventoryAccess(getChar(d.charId)))return;
+        try{storageOps(getChar(d.charId),d);}catch(error){reply(ev,{type:'storage-error',charId:d.charId,error:String(error.message||error)});}
+      } else if (d.type === "storage-activate") {
+        if(!liee(ev.source,d.charId)||!inventoryAccess(getChar(d.charId)))return;
+        try{var manifest=storageManifest(readAll(d.charId));if(manifest&&manifest.phase==='staging'){manifest.phase='ready';enqueue(d.charId,{owd_storage:{current:JSON.stringify(manifest),max:''}},true);}}catch(error){reply(ev,{type:'storage-error',charId:d.charId,error:String(error.message||error)});}
+      } else if (d.type === "storage-cleanup") {
+        if(liee(ev.source,d.charId)&&inventoryAccess(getChar(d.charId))){var report=storageCleanup(getChar(d.charId));if(report&&report.error)reply(ev,{type:'storage-error',charId:d.charId,error:report.error});}
       } else if (d.type === "save") {
         if (!liee(ev.source, d.charId)) return;
         var inv = inventoryFrames.has(ev.source);
         if (inv && !inventoryAccess(getChar(d.charId))) return;
+        var current=readAll(d.charId);
+        if(current.owd_storage){
+          var allowed={};Object.keys(d.attrs||{}).forEach(function(k){if(k==='owd_pv'||k==='owd_pe'||k==='owd_pm')allowed[k]=d.attrs[k];});
+          // Blocs initiaux immuables : seuls les morceaux manquants peuvent être repris.
+          try{var header=JSON.parse(current.owd_storage.current);Object.keys(header.blocks||{}).forEach(function(k){if((!current[k]||storageHash(current[k].current)!==header.blocks[k])&&d.attrs&&d.attrs[k]&&storageHash(d.attrs[k].current)===header.blocks[k])allowed[k]=d.attrs[k];});}catch(e){}
+          enqueue(d.charId,allowed,inv);return;
+        }
         enqueue(d.charId, d.attrs, inv);
       }
     } catch (e) {}

@@ -1164,6 +1164,7 @@
       qIn.type = "number"; qIn.min = "0"; qIn.step = "any";
       qIn.value = it.qte;
       function setQte(v) {
+        if(window.__owdInventorySet)window.__owdInventorySet(it.ref);
         window.OwdInventoryData.isolateAncestors(items,it);
         it.qte = isFinite(v) && v >= 0 ? Math.round(v * 100) / 100 : 0;
         if (+slider.max < it.qte) slider.max = String(it.qte);

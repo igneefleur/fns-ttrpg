@@ -73,6 +73,8 @@ jobs:
       - name: Édition collaborative et migrations
         run: |
           node scripts/test_sync.js
+          node scripts/test_sync_blocks.js
+          node scripts/test_sync_blocks_bridge.js
           node scripts/test_monde.js
           node scripts/test_inventory_stacks.js
           node scripts/test_inventaire.js

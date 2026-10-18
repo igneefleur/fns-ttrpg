@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "3.31.1b";
+  var RELEASE = "4.0.0b";
   var SCHEMA = 17;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -5163,6 +5163,7 @@
     inp.setAttribute("aria-label", libCap(cle, nom));
     inp.addEventListener("input", function () {
       var v = litNombreSigne(inp.value);
+      if(window.__owdReserveSet)window.__owdReserveSet(cle);
       state.etat[cle] = isFinite(v) ? Math.round(v * 100) / 100 : null;
       refresh();
     });
@@ -9299,6 +9300,7 @@
       qIn.type = "number"; qIn.min = "0"; qIn.step = "any";
       qIn.value = it.qte;
       function setQte(v) {
+        if(window.__owdInventorySet)window.__owdInventorySet(it.ref);
         window.OwdInventoryData.isolateAncestors(items,it);
         it.qte = isFinite(v) && v >= 0 ? Math.round(v * 100) / 100 : 0;
         if (+slider.max < it.qte) slider.max = String(it.qte);
