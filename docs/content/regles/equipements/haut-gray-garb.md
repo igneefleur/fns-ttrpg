@@ -8,7 +8,7 @@
 **Famille :**   
 **Origine :** Outward
 
-Gray Garb is a type of Armor in Outward.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

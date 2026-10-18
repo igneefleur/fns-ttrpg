@@ -8,7 +8,7 @@
 **Famille :** Kintsugi Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

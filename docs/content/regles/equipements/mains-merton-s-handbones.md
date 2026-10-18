@@ -8,7 +8,7 @@
 **Famille :** Merton's Bones  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

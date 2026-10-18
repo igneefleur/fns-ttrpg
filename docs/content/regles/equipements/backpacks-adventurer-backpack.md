@@ -8,7 +8,7 @@
 **Famille :** Backpacks  
 **Origine :** Outward
 
-A backpack with internal storage and external attachment points.
+Bag with small carrying capacity, specially made to not interfere with the dodge
 
 | Caractéristique | Valeur |
 | --- | --- |

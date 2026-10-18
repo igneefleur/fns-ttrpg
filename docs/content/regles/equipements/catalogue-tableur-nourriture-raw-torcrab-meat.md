@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Raw torcrab flesh with a naturally spicy taste.
+A spicy hunk of Torcrab Meat.
 
 | Caractéristique | Valeur |
 | --- | --- |

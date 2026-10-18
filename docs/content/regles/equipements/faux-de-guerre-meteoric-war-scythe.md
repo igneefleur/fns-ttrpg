@@ -8,7 +8,7 @@
 **Famille :** Meteoric  
 **Origine :** Homebrew
 
-A war scythe crafted in the Meteoric style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

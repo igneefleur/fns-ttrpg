@@ -8,7 +8,7 @@
 **Famille :**   
 **Origine :** Outward
 
-Chitin Desert Tunic is a craftable type of Body Armor in Outward.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

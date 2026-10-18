@@ -8,7 +8,7 @@
 **Famille :** Wolf Medic Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

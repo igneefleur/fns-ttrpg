@@ -8,7 +8,7 @@
 **Famille :** Thorny  
 **Origine :** Homebrew
 
-An axe crafted in the Thorny style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

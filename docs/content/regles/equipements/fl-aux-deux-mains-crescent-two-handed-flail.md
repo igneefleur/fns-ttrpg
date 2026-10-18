@@ -8,7 +8,7 @@
 **Famille :** Crescent  
 **Origine :** Homebrew
 
-A two-handed flail crafted in the Crescent style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Wolf Plate Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

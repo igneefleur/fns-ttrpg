@@ -8,7 +8,7 @@
 **Famille :** Jade-Lich  
 **Origine :** Homebrew
 
-A greatsword crafted in the Jade-Lich style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

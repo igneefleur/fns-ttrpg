@@ -8,7 +8,8 @@
 **Famille :** Backpacks  
 **Origine :** Outward
 
-A backpack with internal storage and external attachment points.
+Basic craftable bag used to store items, though it lacks a spot to hang a lantern from.
+Equipping this backpack slows your dodge.
 
 | Caractéristique | Valeur |
 | --- | --- |

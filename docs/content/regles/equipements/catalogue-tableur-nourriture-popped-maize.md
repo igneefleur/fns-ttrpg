@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-A snack of salted popped maize.
+A delightful salty snack, good for filling an empty stomach.
 
 | Caractéristique | Valeur |
 | --- | --- |

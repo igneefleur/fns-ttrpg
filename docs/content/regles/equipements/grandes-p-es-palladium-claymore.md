@@ -8,7 +8,7 @@
 **Famille :** Palladium  
 **Origine :** Outward
 
-A greatsword crafted in the Palladium style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

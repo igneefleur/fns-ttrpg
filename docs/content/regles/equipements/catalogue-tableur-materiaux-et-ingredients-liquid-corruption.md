@@ -8,7 +8,7 @@
 **Famille :** Liquide / pâte  
 **Origine :** Outward
 
-A material used in crafting.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Masterpiece  
 **Origine :** Homebrew
 
-A dagger crafted in the Masterpiece style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

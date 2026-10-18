@@ -8,7 +8,7 @@
 **Famille :** Runic  
 **Origine :** Homebrew
 
-A two-handed flail crafted in the Runic style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

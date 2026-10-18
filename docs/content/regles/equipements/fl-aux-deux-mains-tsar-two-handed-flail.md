@@ -8,7 +8,7 @@
 **Famille :** Tsar  
 **Origine :** Homebrew
 
-A two-handed flail crafted in the Tsar style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

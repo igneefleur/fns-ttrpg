@@ -8,7 +8,7 @@
 **Famille :** Autre / magique  
 **Origine :** Outward
 
-An adventuring or quest item.
+Written proof of the debt the Blue Chamber owes you.
 
 | Caractéristique | Valeur |
 | --- | --- |

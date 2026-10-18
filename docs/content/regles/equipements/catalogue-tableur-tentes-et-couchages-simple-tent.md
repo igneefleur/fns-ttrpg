@@ -8,7 +8,8 @@
 **Famille :** Adventuring gear  
 **Origine :** Outward
 
-Well-made tent that helps protect against the weather, compared to a bedroll. Sleeping in this tent gives a small bonus to stamina use.
+Well-made tent that helps protect against the weather, compared to a bedroll.
+Sleeping in this tent gives a small bonus to stamina use.
 
 | Caractéristique | Valeur |
 | --- | --- |

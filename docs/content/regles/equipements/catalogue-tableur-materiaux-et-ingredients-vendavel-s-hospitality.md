@@ -8,7 +8,7 @@
 **Famille :** Autre / magique  
 **Origine :** Outward
 
-A material used in crafting.
+The torn flag of a notorious rebel, proof justice was served. It can be used to craft new unique equipment.
 
 | Caractéristique | Valeur |
 | --- | --- |

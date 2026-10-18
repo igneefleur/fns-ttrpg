@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-A light, stringy mushroom that muffles footsteps when eaten.
+Airy mushroom strands that, when eaten, muffle the sound of one's footsteps.
 
 | Caractéristique | Valeur |
 | --- | --- |

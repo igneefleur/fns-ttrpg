@@ -8,7 +8,7 @@
 **Famille :** Giantkind  
 **Origine :** Homebrew
 
-An axe crafted in the Giantkind style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

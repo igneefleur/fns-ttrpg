@@ -8,7 +8,7 @@
 **Famille :** Minéral / poudre  
 **Origine :** Outward
 
-A material used in crafting.
+A magical gemstone meant to place atop a staff.
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Standalone  
 **Origine :** Outward
 
-The lance of a hero, whose mortality was proved in the Caldera. Inflicts both Burning and Holy Blaze, but reduces your Stamina Recovery.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

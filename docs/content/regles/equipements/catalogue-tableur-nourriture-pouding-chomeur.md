@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-A traditional dessert with warming properties.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

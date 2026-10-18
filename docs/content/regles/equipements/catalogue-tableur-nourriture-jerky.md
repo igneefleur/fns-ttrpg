@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+Salted meat that rots very slowly.
 
 | Caractéristique | Valeur |
 | --- | --- |

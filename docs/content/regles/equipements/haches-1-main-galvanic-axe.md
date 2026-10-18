@@ -8,7 +8,7 @@
 **Famille :** Galvanic  
 **Origine :** Outward
 
-An axe crafted in the Galvanic style.
+Inflicts Pain
 
 | Caractéristique | Valeur |
 | --- | --- |

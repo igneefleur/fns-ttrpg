@@ -8,7 +8,7 @@
 **Famille :** Chalcedony Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

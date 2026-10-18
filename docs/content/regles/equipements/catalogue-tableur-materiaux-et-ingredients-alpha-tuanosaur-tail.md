@@ -8,7 +8,7 @@
 **Famille :** Organique rigide  
 **Origine :** Outward
 
-A material used in crafting.
+Circular tail bone of an apex predator, used to craft powerful axes.
 
 | Caractéristique | Valeur |
 | --- | --- |

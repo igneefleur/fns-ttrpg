@@ -8,7 +8,7 @@
 **Famille :** Palladium  
 **Origine :** Homebrew
 
-A sword crafted in the Palladium style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

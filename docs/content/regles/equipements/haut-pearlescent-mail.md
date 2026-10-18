@@ -8,7 +8,7 @@
 **Famille :**   
 **Origine :** Outward
 
-Pearlescent Mail is a type of Armor in Outward.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

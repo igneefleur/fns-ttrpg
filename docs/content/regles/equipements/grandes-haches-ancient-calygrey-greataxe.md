@@ -8,7 +8,7 @@
 **Famille :** Ancient Calygrey  
 **Origine :** Homebrew
 
-A greataxe crafted in the Ancient Calygrey style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

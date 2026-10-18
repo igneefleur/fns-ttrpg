@@ -8,7 +8,7 @@
 **Famille :** Crescent  
 **Origine :** Homebrew
 
-A sword crafted in the Crescent style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

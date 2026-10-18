@@ -8,7 +8,7 @@
 **Famille :** Palladium  
 **Origine :** Outward
 
-An axe crafted in the Palladium style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Hailfrost  
 **Origine :** Homebrew
 
-A war scythe crafted in the Hailfrost style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

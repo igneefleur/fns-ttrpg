@@ -8,7 +8,7 @@
 **Famille :** Organique rigide  
 **Origine :** Outward
 
-A material used in crafting.
+Antler of Coralhorn male, used to craft strong bows.
 
 | Caractéristique | Valeur |
 | --- | --- |

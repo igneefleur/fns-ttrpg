@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+Cooked crustacean coveted for its mana-restoring qualities.
 
 | Caractéristique | Valeur |
 | --- | --- |

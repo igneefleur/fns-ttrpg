@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+A Golden Crescent, rolled in Frosted Powder. Protects against the heat.
 
 | Caractéristique | Valeur |
 | --- | --- |

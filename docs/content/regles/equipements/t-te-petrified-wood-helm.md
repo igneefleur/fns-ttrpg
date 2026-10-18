@@ -8,7 +8,7 @@
 **Famille :** Petrified Wood Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

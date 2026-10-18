@@ -8,7 +8,7 @@
 **Famille :** Zagis' Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

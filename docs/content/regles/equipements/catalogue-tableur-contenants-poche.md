@@ -1,14 +1,14 @@
-# Poche
+# Pouch
 
 <!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->
 
-![Poche](../../../assets/objets/edited/containers/poche.png){ .equipment-portrait }
+![Pouch](../../../assets/objets/edited/containers/poche.png){ .equipment-portrait }
 
 **Catégorie :** Contenants  
 **Famille :** Containers  
 **Origine :** Outward
 
-An empty container for solid contents.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Autre / magique  
 **Origine :** Outward
 
-A material used in crafting.
+Gemstone encrusted chains, used for a Noble's prisoners. It can be used to craft new unique equipment.
 
 | Caractéristique | Valeur |
 | --- | --- |

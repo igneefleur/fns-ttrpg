@@ -8,7 +8,7 @@
 **Famille :** Obsidian  
 **Origine :** Homebrew
 
-A two-handed flail crafted in the Obsidian style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

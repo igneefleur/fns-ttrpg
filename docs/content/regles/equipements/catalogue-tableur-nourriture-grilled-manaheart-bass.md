@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+A grilled Mana-filled fish fillet. Cures Sapped.
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-A roasted nut with invigorating properties.
+Roasted nut that increases the metabolism.
 
 | Caractéristique | Valeur |
 | --- | --- |

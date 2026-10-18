@@ -8,7 +8,7 @@
 **Famille :**   
 **Origine :** Outward
 
-Red Clansage Robe is a type of Armor in Outward.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

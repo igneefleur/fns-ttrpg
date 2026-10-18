@@ -8,7 +8,7 @@
 **Famille :** Antique Plate Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

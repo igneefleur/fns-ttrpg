@@ -8,7 +8,7 @@
 **Famille :** Backpacks  
 **Origine :** Outward
 
-A backpack with an elemental protective barrier.
+Provides 5 Barrier.
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Chalcedony  
 **Origine :** Homebrew
 
-A dagger crafted in the Chalcedony style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Kazite  
 **Origine :** Homebrew
 
-A war scythe crafted in the Kazite style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

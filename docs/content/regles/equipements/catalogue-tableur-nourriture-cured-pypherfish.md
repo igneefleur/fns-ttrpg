@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+The toxins have been cleansed out of the meat, leaving behind protective qualities.
 
 | Caractéristique | Valeur |
 | --- | --- |

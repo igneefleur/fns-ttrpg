@@ -8,7 +8,7 @@
 **Famille :** Ammolite Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

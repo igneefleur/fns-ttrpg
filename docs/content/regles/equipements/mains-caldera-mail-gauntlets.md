@@ -8,7 +8,7 @@
 **Famille :** Caldera Mail Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Elite Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

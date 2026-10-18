@@ -8,7 +8,7 @@
 **Famille :** Chalcedony  
 **Origine :** Outward
 
-Inflicts Slow Down.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

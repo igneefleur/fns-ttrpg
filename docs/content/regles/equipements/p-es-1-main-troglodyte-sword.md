@@ -8,7 +8,7 @@
 **Famille :** Troglodyte  
 **Origine :** Homebrew
 
-A sword crafted in the Troglodyte style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

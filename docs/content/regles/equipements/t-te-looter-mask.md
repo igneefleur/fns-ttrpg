@@ -8,7 +8,7 @@
 **Famille :** Looter Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

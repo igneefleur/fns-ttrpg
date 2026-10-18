@@ -8,7 +8,7 @@
 **Famille :** Manticore  
 **Origine :** Homebrew
 
-A pair of knuckles crafted in the Manticore style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

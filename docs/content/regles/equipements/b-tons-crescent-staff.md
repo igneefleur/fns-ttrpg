@@ -8,7 +8,7 @@
 **Famille :** Crescent  
 **Origine :** Homebrew
 
-A staff crafted in the Crescent style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

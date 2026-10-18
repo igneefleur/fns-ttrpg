@@ -8,7 +8,7 @@
 **Famille :** Organique souple / végétal  
 **Origine :** Outward
 
-A material used in crafting.
+A thorny, blood drinking root once treasured by an ancient “cult of paper”.
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Hailfrost  
 **Origine :** Outward
 
-Not enchantable and loses Durability over time. Can be repaired by crafting it with a Cold Stone.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

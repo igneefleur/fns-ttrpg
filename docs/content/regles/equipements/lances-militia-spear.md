@@ -8,7 +8,7 @@
 **Famille :** Militia  
 **Origine :** Outward
 
-A spear crafted in the Militia style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

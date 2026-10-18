@@ -8,7 +8,7 @@
 **Famille :** Crescent  
 **Origine :** Homebrew
 
-An axe crafted in the Crescent style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

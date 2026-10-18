@@ -8,7 +8,7 @@
 **Famille :** Fang  
 **Origine :** Homebrew
 
-A two-handed flail crafted in the Fang style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

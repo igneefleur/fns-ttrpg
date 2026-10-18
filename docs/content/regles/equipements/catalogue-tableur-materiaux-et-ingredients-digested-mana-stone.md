@@ -8,7 +8,7 @@
 **Famille :** Minéral / poudre  
 **Origine :** Outward
 
-A material used in crafting.
+Mana Stone, melted down into a thick, Mana-rich oil by a Molepig's stomach.
 
 | Caractéristique | Valeur |
 | --- | --- |

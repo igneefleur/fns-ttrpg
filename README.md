@@ -555,3 +555,10 @@ Le patch s'applique sur 3.15.0b. Après remplacement des fichiers sur GitHub, la
 ### Équipements : source unique Boutique
 
 Les noms anglais, caractéristiques, effets et types d’arme sont définis dans `docs/data/owd-boutique.json`. La fiche, la Boutique et les fiches du livre consomment ces mêmes données. `python scripts/exporter_boutique.py` régénère les pages du livre ; le build les régénère également. L’ancien import de tableur est désactivé pour ne pas écraser les définitions.
+
+
+### Descriptions de Boutique
+
+Une description est le texte exact de la section Description de la fiche wiki correspondante, ou une chaîne vide. Aucun texte générique ni description déduite du set ne doit la remplacer. `descriptionSource` conserve la page wiki et `descriptionEmpreinte` l’empreinte du texte vérifié. Les descriptions des objets déjà reçus sont actualisées depuis cette définition.
+
+Les fournitures dont l’adaptation JDR n’est pas encore définie portent `definitionStatut: a-completer` et nomment les valeurs manquantes dans `donneesACompleter`. Un volume inconnu reste `null`, une taille inconnue reste vide : ces absences ne signifient pas zéro. Leurs images, poids et prix proviennent du wiki ; aucun effet JDR n’est déduit de leur description.

@@ -8,7 +8,7 @@
 **Famille :** Giantkind  
 **Origine :** Homebrew
 
-A staff crafted in the Giantkind style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

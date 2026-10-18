@@ -8,7 +8,7 @@
 **Famille :** Manticore  
 **Origine :** Homebrew
 
-A sword crafted in the Manticore style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

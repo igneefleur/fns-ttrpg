@@ -8,7 +8,7 @@
 **Famille :** Marble  
 **Origine :** Homebrew
 
-A rapier crafted in the Marble style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

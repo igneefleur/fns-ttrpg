@@ -8,7 +8,7 @@
 **Famille :** Runic  
 **Origine :** Homebrew
 
-A war scythe crafted in the Runic style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

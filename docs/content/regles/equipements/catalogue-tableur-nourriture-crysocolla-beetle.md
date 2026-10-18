@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-A volcanic beetle that lives in fats and oils.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

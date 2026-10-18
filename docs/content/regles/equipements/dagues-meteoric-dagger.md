@@ -8,7 +8,7 @@
 **Famille :** Meteoric  
 **Origine :** Homebrew
 
-A dagger crafted in the Meteoric style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

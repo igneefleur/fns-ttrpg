@@ -8,7 +8,7 @@
 **Famille :** Iron  
 **Origine :** Outward
 
-A greatsword crafted in the Iron style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

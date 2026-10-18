@@ -8,7 +8,7 @@
 **Famille :** Crescent  
 **Origine :** Outward
 
-Inflicts Vulnerability to all non-physical elements on enemies.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

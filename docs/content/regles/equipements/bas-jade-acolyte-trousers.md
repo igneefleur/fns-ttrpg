@@ -8,7 +8,7 @@
 **Famille :** Jade Acolyte Set  
 **Origine :** Homebrew
 
-A garment covering the lower body.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Autre / magique  
 **Origine :** Outward
 
-An adventuring or quest item.
+Effigy of a ancient undead mage. The statue's underside has grooves that might fit on some device.
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Heals the Sapped and Weaken Debuffs.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

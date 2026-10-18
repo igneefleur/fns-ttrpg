@@ -8,7 +8,7 @@
 **Famille :** Chalcedony  
 **Origine :** Homebrew
 
-A sabre crafted in the Chalcedony style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

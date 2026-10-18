@@ -8,7 +8,7 @@
 **Famille :** Hailfrost  
 **Origine :** Homebrew
 
-A rapier crafted in the Hailfrost style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Master Desert Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Ancient Calygrey  
 **Origine :** Homebrew
 
-A spear crafted in the Ancient Calygrey style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

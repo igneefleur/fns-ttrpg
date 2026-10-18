@@ -8,7 +8,7 @@
 **Famille :** Jade Acolyte Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Masterpiece  
 **Origine :** Homebrew
 
-A sabre crafted in the Masterpiece style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

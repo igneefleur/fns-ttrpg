@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+Thick, delicious cream used in cooking. Provides Corruption resistance.
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Wolf  
 **Origine :** Homebrew
 
-A great sabre crafted in the Wolf style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

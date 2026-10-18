@@ -8,7 +8,7 @@
 **Famille :** Militia  
 **Origine :** Homebrew
 
-A great sabre crafted in the Militia style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

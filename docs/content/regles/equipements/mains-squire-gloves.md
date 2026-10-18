@@ -8,7 +8,7 @@
 **Famille :** Squire Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

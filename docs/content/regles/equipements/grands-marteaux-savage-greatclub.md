@@ -8,7 +8,7 @@
 **Famille :** Savage  
 **Origine :** Outward
 
-A Fang Greatclub made from the bones of ancient beasts, passed down by your ancestors. Inflicts Bleeding.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

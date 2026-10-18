@@ -8,7 +8,7 @@
 **Famille :** Vigilante  
 **Origine :** Homebrew
 
-A two-handed flail crafted in the Vigilante style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

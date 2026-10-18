@@ -8,7 +8,7 @@
 **Famille :** Caldera Mail Set  
 **Origine :** Outward
 
-A garment covering the upper body.
+Provides 50% resistance to Pain and Confusion.
 
 | Caractéristique | Valeur |
 | --- | --- |

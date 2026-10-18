@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Cooked meat from a rare iridescent bird, retaining its invigorating properties.
+Iridescent steak of a rare bird that increases one's movement speed.
 
 | Caractéristique | Valeur |
 | --- | --- |

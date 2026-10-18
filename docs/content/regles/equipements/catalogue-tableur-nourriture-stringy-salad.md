@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-A nourishing mix of vegetables and mushrooms with mild healing properties.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

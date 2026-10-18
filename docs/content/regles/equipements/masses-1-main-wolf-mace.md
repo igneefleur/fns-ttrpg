@@ -8,7 +8,7 @@
 **Famille :** Wolf  
 **Origine :** Outward
 
-A mace crafted in the Wolf style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

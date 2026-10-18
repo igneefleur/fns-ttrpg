@@ -8,7 +8,7 @@
 **Famille :** Tsar  
 **Origine :** Homebrew
 
-A sabre crafted in the Tsar style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

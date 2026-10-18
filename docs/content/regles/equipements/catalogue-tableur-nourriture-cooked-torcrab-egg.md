@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+A Cooked Torcrab Egg, free of diseases.
 
 | Caractéristique | Valeur |
 | --- | --- |

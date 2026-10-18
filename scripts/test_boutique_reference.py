@@ -24,9 +24,10 @@ class BoutiqueReference(unittest.TestCase):
         for it in catalog['objets']:
             self.assertEqual(it['objet'], byname[it['nom']])
             o = it['objet']; fields = dict(it['champs'])
-            for field,key in [('Poids (kg)','poids'),('Volume (L)','volume')]:self.assertEqual(float(fields[field]),o[key],o['nom'])
+            for field,key in [('Poids (kg)','poids'),('Volume (L)','volume')]:
+                self.assertEqual(fields[field],'Non renseigné') if o[key] is None else self.assertEqual(float(fields[field]),o[key],o['nom'])
             for key in ['taille','mains','achat','vente']:self.assertIn(key,o)
-            self.assertEqual(fields['Taille'],o['taille'])
+            self.assertEqual(fields['Taille'],o['taille'] or 'Non renseignée')
             self.assertEqual(fields['Mains'],str(o['mains']))
             if o['commerce']=='vendu':
                 self.assertEqual(fields['Achat (argent)'],'Non renseigné' if o['achat'] is None else str(o['achat']).removesuffix('.0'))
@@ -60,6 +61,29 @@ class BoutiqueReference(unittest.TestCase):
             p=docs/'data/owd-boutique.json';data=json.loads(p.read_text())
             data['equipements'][0]['taille']='829';p.write_text(json.dumps(data))
             with self.assertRaisesRegex(ValueError,'taille invalide'):reference(docs)
+
+    def test_wiki_descriptions_only(self):
+        raw = reference(ROOT/'docs')
+        self.assertTrue(any(not o['desc'] for o in raw['equipements']))
+        self.assertTrue(any(o['desc'] for o in raw['equipements']))
+        for o in raw['equipements']:
+            if o['desc']:
+                self.assertEqual(o['descriptionStatut'], 'wiki')
+                self.assertIn('/wiki/', o['descriptionSource'])
+        # Une ancienne phrase générique ne peut pas réapparaître sans vérification.
+        with tempfile.TemporaryDirectory() as temp:
+            docs=Path(temp);(docs/'data').mkdir()
+            for o in raw['equipements']:
+                target=docs/o['img'];target.parent.mkdir(parents=True,exist_ok=True)
+                if not target.exists():shutil.copy(ROOT/'docs'/o['img'],target)
+            invalid=copy.deepcopy(raw)
+            obj=next(o for o in invalid['equipements'] if not o['desc'])
+            obj['desc']='A generic invented description.'
+            p=docs/'data/owd-boutique.json';p.write_text(json.dumps(invalid))
+            with self.assertRaisesRegex(ValueError,'sans source wiki'):reference(docs)
+            obj['descriptionSource']='https://outward.wiki.gg/wiki/Example';obj['descriptionStatut']='wiki';obj['descriptionEmpreinte']='old'
+            p.write_text(json.dumps(invalid))
+            with self.assertRaisesRegex(ValueError,'sans vérification'):reference(docs)
 
     def test_import_cannot_erase_catalogue(self):
         p=ROOT/'docs/data/owd-boutique.json';before=p.read_bytes()

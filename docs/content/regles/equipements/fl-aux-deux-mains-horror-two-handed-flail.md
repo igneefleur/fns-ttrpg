@@ -8,7 +8,7 @@
 **Famille :** Horror  
 **Origine :** Homebrew
 
-A two-handed flail crafted in the Horror style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

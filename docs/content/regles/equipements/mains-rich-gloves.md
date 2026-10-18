@@ -8,7 +8,7 @@
 **Famille :** Rich Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

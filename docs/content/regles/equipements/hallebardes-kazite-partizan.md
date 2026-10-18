@@ -8,7 +8,7 @@
 **Famille :** Kazite  
 **Origine :** Outward
 
-Inflicts Weaken
+
 
 | Caractéristique | Valeur |
 | --- | --- |

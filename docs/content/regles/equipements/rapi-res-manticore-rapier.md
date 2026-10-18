@@ -8,7 +8,7 @@
 **Famille :** Manticore  
 **Origine :** Homebrew
 
-A rapier crafted in the Manticore style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

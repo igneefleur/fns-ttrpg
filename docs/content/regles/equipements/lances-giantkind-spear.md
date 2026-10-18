@@ -8,7 +8,7 @@
 **Famille :** Giantkind  
 **Origine :** Homebrew
 
-A spear crafted in the Giantkind style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

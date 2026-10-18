@@ -8,7 +8,7 @@
 **Famille :** Backpacks  
 **Origine :** Outward
 
-A backpack with internal storage and external attachment points.
+Does not interfere with the user's roll. Protects against Corruption.
 
 | Caractéristique | Valeur |
 | --- | --- |

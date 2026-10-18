@@ -8,7 +8,7 @@
 **Famille :** Black Plate Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

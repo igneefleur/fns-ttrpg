@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-A medicinal mushroom preparation that removes poisons and diseases.
+Medicinal mushroom dish that removes poison and diseases.
 
 | Caractéristique | Valeur |
 | --- | --- |

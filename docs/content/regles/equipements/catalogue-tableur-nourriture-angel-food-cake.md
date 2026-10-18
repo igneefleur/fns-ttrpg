@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Dessert savoureux favorisant le bienfait Discipline.
+A delicious dessert that helps your Discipline.
 
 | Caractéristique | Valeur |
 | --- | --- |

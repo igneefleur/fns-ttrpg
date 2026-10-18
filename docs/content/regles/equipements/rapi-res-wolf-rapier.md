@@ -8,7 +8,7 @@
 **Famille :** Wolf  
 **Origine :** Outward
 
-A rapier crafted in the Wolf style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

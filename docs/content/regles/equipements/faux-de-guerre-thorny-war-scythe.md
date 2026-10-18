@@ -8,7 +8,7 @@
 **Famille :** Thorny  
 **Origine :** Homebrew
 
-A war scythe crafted in the Thorny style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

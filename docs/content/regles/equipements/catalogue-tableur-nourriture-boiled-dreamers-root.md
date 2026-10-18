@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+Increases resistance to cold weather and cures the common cold.
 
 | Caractéristique | Valeur |
 | --- | --- |

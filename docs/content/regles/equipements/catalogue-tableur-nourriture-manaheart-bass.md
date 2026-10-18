@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-A fish adapted to environments rich in mana.
+A fish that has evolved to thrive in a Mana-Rich environment.
 
 | Caractéristique | Valeur |
 | --- | --- |

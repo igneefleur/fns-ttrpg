@@ -8,7 +8,8 @@
 **Famille :** Adventuring gear  
 **Origine :** Outward
 
-Layered tent of thick furs that grant high resistance to cold weather. Sleeping in this tent gives a large bonus to stamina use.
+Layered tent of thick furs that grant high resistance to cold weather.
+Sleeping in this tent gives a large bonus to stamina use.
 
 | Caractéristique | Valeur |
 | --- | --- |

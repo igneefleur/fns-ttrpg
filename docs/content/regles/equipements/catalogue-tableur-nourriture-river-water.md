@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Water collected from Aurai's rivers and lakes, with a risk of disease.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

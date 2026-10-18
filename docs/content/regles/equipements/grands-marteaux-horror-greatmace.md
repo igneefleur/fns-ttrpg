@@ -8,7 +8,7 @@
 **Famille :** Horror  
 **Origine :** Outward
 
-Inflicts Extreme Poison
+
 
 | Caractéristique | Valeur |
 | --- | --- |

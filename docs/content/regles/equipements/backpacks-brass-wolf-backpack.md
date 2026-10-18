@@ -8,7 +8,8 @@
 **Famille :** Backpacks  
 **Origine :** Outward
 
-Protection : +2.
+Exquisite bag, used by northern Wolf-Knights. It protects the items it carries and its wearer.
+Equipping this backpack slows your dodge.
 
 | Caractéristique | Valeur |
 | --- | --- |

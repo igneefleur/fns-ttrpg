@@ -8,7 +8,7 @@
 **Famille :** Runic  
 **Origine :** Homebrew
 
-A greataxe crafted in the Runic style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

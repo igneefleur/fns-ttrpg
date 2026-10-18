@@ -8,7 +8,7 @@
 **Famille :** Virgin  
 **Origine :** Homebrew
 
-A two-handed flail crafted in the Virgin style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

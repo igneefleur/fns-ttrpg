@@ -8,7 +8,7 @@
 **Famille :** Giantkind  
 **Origine :** Homebrew
 
-A war scythe crafted in the Giantkind style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

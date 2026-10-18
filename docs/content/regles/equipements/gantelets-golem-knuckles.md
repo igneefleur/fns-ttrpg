@@ -8,7 +8,7 @@
 **Famille :** Golem  
 **Origine :** Homebrew
 
-A pair of knuckles crafted in the Golem style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

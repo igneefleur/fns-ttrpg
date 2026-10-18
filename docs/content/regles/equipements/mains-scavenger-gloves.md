@@ -8,7 +8,7 @@
 **Famille :** Scavenger Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

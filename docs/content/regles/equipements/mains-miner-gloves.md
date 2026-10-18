@@ -8,7 +8,7 @@
 **Famille :** Miner Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

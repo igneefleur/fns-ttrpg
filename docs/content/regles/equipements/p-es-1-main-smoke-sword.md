@@ -8,7 +8,7 @@
 **Famille :** Smoke  
 **Origine :** Homebrew
 
-A sword crafted in the Smoke style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

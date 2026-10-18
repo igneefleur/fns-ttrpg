@@ -8,7 +8,7 @@
 **Famille :** Crimson Plate Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

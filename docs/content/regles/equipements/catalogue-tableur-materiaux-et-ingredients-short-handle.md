@@ -8,7 +8,7 @@
 **Famille :** Bois / pièce allongée  
 **Origine :** Outward
 
-A material used in crafting.
+A glimmering handle. Combined with something else, this would fit a one-handed weapon.
 
 | Caractéristique | Valeur |
 | --- | --- |

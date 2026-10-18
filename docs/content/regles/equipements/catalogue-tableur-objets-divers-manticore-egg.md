@@ -8,7 +8,7 @@
 **Famille :** Organique rigide  
 **Origine :** Outward
 
-An adventuring or quest item.
+Use this to hatch yourself a new friend!
 
 | Caractéristique | Valeur |
 | --- | --- |

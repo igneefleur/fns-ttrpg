@@ -8,7 +8,7 @@
 **Famille :** Vampiric  
 **Origine :** Homebrew
 
-A sabre crafted in the Vampiric style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

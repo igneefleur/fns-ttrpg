@@ -8,7 +8,7 @@
 **Famille :**   
 **Origine :** Outward
 
-Beige Garb is a type of Armor in Outward.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

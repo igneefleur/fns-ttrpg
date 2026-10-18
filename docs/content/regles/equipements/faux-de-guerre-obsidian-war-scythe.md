@@ -8,7 +8,7 @@
 **Famille :** Obsidian  
 **Origine :** Homebrew
 
-A war scythe crafted in the Obsidian style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

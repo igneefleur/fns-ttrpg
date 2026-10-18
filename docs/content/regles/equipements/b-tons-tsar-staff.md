@@ -8,7 +8,7 @@
 **Famille :** Tsar  
 **Origine :** Homebrew
 
-A staff crafted in the Tsar style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

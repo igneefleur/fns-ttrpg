@@ -8,7 +8,7 @@
 **Famille :** Standalone  
 **Origine :** Outward
 
-An axe.
+Every blow from this powerful one-handed axe will draw a scream from the victim. It inflicts pain.
 
 | Caractéristique | Valeur |
 | --- | --- |

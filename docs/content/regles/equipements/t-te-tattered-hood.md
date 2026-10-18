@@ -8,7 +8,7 @@
 **Famille :** Tattered Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

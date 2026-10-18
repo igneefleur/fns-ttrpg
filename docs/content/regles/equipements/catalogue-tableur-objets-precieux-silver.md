@@ -8,7 +8,8 @@
 **Famille :** Monnaie  
 **Origine :** Outward
 
-A valuable trade good.
+Universal currency of the land.
+Note that 100 coins have a combined weight of 1.
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Concoction which instantly restores a massive amount of stamina and max stamina. It also grants Stamina Regeneration.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

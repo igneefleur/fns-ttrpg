@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+Boiled Crawlberries that rot slower than usual.
 
 | Caractéristique | Valeur |
 | --- | --- |

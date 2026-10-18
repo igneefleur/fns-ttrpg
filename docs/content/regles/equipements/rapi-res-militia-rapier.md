@@ -8,7 +8,7 @@
 **Famille :** Militia  
 **Origine :** Homebrew
 
-A rapier crafted in the Militia style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

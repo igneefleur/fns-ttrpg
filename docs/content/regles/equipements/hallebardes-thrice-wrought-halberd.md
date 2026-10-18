@@ -8,7 +8,7 @@
 **Famille :** Standalone  
 **Origine :** Outward
 
-Artifact forged Long ago by a female blacksmith for a Gold Lich she loved
+
 
 | Caractéristique | Valeur |
 | --- | --- |

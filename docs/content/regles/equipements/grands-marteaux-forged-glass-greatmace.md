@@ -8,7 +8,7 @@
 **Famille :** Forged Glass  
 **Origine :** Outward
 
-A greathammer crafted in the Forged Glass style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

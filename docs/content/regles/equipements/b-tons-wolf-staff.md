@@ -8,7 +8,7 @@
 **Famille :** Wolf  
 **Origine :** Homebrew
 
-A staff crafted in the Wolf style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

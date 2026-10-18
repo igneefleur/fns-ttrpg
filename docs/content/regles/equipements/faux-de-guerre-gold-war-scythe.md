@@ -8,7 +8,7 @@
 **Famille :** Gold  
 **Origine :** Homebrew
 
-A war scythe crafted in the Gold style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

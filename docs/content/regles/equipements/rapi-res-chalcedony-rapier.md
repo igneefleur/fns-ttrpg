@@ -8,7 +8,7 @@
 **Famille :** Chalcedony  
 **Origine :** Homebrew
 
-A rapier crafted in the Chalcedony style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Militia  
 **Origine :** Homebrew
 
-A war scythe crafted in the Militia style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

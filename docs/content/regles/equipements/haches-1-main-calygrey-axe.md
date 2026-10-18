@@ -8,7 +8,7 @@
 **Famille :** Calygrey  
 **Origine :** Homebrew
 
-An axe crafted in the Calygrey style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

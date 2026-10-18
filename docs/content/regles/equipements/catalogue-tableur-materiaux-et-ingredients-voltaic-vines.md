@@ -8,7 +8,7 @@
 **Famille :** Organique souple / végétal  
 **Origine :** Outward
 
-A material used in crafting.
+A root that crackles with tame lightning when flexed.
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Halfplate Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

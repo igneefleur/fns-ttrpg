@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+Long-lasting gooey gelatin, good for stamina, but full of Corruption.
 
 | Caractéristique | Valeur |
 | --- | --- |

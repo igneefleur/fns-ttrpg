@@ -8,7 +8,7 @@
 **Famille :** Brutal  
 **Origine :** Homebrew
 
-A two-handed flail crafted in the Brutal style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

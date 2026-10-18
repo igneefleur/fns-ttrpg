@@ -8,7 +8,7 @@
 **Famille :** Wolf  
 **Origine :** Homebrew
 
-A two-handed flail crafted in the Wolf style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

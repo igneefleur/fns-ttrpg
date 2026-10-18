@@ -8,7 +8,7 @@
 **Famille :** Standalone  
 **Origine :** Outward
 
-The smith wanted to refine, strength and sharpen all weapons in the armory.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

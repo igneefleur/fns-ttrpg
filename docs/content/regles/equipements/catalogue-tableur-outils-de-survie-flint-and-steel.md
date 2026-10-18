@@ -8,7 +8,7 @@
 **Famille :** allumage  
 **Origine :** Outward
 
-Basic fire-starting kit using a piece of flint and steel.
+Basic survival tool used to light campfires. It might have other uses, however.
 
 | Caractéristique | Valeur |
 | --- | --- |

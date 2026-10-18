@@ -8,7 +8,7 @@
 **Famille :** Nobleman Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

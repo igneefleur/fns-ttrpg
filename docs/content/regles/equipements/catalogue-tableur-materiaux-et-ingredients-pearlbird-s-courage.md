@@ -8,7 +8,7 @@
 **Famille :** Autre / magique  
 **Origine :** Outward
 
-A material used in crafting.
+The skull of a monstrous prehistoric Pearlbird. It can be used to craft new unique equipment.
 
 | Caractéristique | Valeur |
 | --- | --- |

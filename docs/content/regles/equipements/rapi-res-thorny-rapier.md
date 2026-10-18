@@ -8,7 +8,7 @@
 **Famille :** Thorny  
 **Origine :** Homebrew
 
-A rapier crafted in the Thorny style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

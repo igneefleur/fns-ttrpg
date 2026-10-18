@@ -8,7 +8,7 @@
 **Famille :** Savage  
 **Origine :** Homebrew
 
-A great sabre crafted in the Savage style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Rust Lich Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

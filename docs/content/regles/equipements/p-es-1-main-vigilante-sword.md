@@ -8,7 +8,7 @@
 **Famille :** Vigilante  
 **Origine :** Homebrew
 
-A sword crafted in the Vigilante style.
+A bloody Militia Sword passed down by your ancestors.
 
 | Caractéristique | Valeur |
 | --- | --- |

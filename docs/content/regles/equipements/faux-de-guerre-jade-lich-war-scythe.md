@@ -8,7 +8,7 @@
 **Famille :** Jade-Lich  
 **Origine :** Homebrew
 
-A war scythe crafted in the Jade-Lich style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Marble  
 **Origine :** Outward
 
-A greathammer crafted in the Marble style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

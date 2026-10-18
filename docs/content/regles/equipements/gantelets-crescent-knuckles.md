@@ -8,7 +8,7 @@
 **Famille :** Crescent  
 **Origine :** Homebrew
 
-A pair of knuckles crafted in the Crescent style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

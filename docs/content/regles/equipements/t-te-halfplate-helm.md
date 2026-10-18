@@ -8,7 +8,7 @@
 **Famille :** Halfplate Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

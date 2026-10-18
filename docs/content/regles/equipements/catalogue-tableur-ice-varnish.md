@@ -8,7 +8,7 @@
 **Famille :** Supplies  
 **Origine :** Outward
 
-Thick fluid that confers the Frost element when applied to a melee weapon..
+
 
 | Caractéristique | Valeur |
 | --- | --- |

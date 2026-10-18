@@ -8,7 +8,7 @@
 **Famille :** Beast Golem  
 **Origine :** Homebrew
 
-A sabre crafted in the Beast Golem style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

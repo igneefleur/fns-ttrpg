@@ -8,7 +8,7 @@
 **Famille :** Porcelain  
 **Origine :** Homebrew
 
-A dagger crafted in the Porcelain style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

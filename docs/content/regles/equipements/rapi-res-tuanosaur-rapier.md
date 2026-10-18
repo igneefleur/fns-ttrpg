@@ -8,7 +8,7 @@
 **Famille :** Tuanosaur  
 **Origine :** Homebrew
 
-A rapier crafted in the Tuanosaur style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

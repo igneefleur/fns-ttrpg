@@ -8,7 +8,7 @@
 **Famille :** Scavenger Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

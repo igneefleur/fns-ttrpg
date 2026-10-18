@@ -8,7 +8,7 @@
 **Famille :** Gold-Lich  
 **Origine :** Homebrew
 
-A great sabre crafted in the Gold-Lich style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

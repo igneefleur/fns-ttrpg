@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+A toxic fish. Requires some work to make safely edible.
 
 | Caractéristique | Valeur |
 | --- | --- |

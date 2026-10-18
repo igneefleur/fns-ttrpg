@@ -8,7 +8,7 @@
 **Famille :** Pathfinder Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

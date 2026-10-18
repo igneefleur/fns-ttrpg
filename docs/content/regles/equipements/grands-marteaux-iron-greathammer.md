@@ -8,7 +8,7 @@
 **Famille :** Iron  
 **Origine :** Outward
 
-A greathammer crafted in the Iron style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

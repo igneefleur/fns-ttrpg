@@ -8,7 +8,7 @@
 **Famille :** Light Clothes Set  
 **Origine :** Homebrew
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

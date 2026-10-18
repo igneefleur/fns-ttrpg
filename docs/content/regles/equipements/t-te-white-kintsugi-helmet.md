@@ -8,7 +8,7 @@
 **Famille :** White Kintsugi Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

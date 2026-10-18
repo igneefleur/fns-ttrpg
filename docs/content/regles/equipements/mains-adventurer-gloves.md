@@ -8,7 +8,7 @@
 **Famille :** Adventurer Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,8 @@
 **Famille :** Minéral / poudre  
 **Origine :** Outward
 
-A material used in crafting.
+Handful of salt, obtained by mining rock or boiling sea water over a campfire.
+It is essential in cooking and in alchemy.
 
 | Caractéristique | Valeur |
 | --- | --- |

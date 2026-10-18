@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-A river eel sometimes found in mountainous regions.
+A River Eel, sometimes found in mountainous regions.
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Iron  
 **Origine :** Outward
 
-An axe crafted in the Iron style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

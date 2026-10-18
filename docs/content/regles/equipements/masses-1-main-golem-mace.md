@@ -8,7 +8,7 @@
 **Famille :** Golem  
 **Origine :** Homebrew
 
-A mace crafted in the Golem style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

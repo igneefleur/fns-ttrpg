@@ -8,7 +8,7 @@
 **Famille :** Old Legion  
 **Origine :** Homebrew
 
-A halberd crafted in the Old Legion style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

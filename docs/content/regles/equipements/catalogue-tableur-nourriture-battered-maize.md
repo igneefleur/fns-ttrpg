@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+Maize coated with delicious salty Torcrab Egg Yolk.
 
 | Caractéristique | Valeur |
 | --- | --- |

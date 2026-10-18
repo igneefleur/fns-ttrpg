@@ -8,7 +8,7 @@
 **Famille :** Autre / magique  
 **Origine :** Outward
 
-A material used in crafting.
+Hollow Arrowheads, required to craft special arrows.
 
 | Caractéristique | Valeur |
 | --- | --- |

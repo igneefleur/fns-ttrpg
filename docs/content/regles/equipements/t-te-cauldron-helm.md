@@ -8,7 +8,7 @@
 **Famille :**   
 **Origine :** Outward
 
-When calling the kettle black just wasn't enough.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

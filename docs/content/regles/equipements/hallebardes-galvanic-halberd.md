@@ -8,7 +8,7 @@
 **Famille :** Galvanic  
 **Origine :** Outward
 
-A halberd crafted in the Galvanic style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

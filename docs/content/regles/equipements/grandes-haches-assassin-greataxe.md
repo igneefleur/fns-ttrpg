@@ -8,7 +8,7 @@
 **Famille :** Assassin  
 **Origine :** Homebrew
 
-A greataxe crafted in the Assassin style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

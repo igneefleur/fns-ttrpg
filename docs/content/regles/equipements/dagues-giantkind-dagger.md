@@ -8,7 +8,7 @@
 **Famille :** Giantkind  
 **Origine :** Homebrew
 
-A dagger crafted in the Giantkind style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :**   
 **Origine :** Outward
 
-Clansage Robe is a type of Armor in Outward.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

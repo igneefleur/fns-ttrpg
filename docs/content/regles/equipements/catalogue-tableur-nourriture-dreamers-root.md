@@ -8,7 +8,8 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+A root full of safely edible Mana, with latent medicinal potential.
+Instantly cures Leywilt.
 
 | Caractéristique | Valeur |
 | --- | --- |

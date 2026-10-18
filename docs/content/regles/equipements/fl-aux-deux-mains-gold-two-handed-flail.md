@@ -8,7 +8,7 @@
 **Famille :** Gold  
 **Origine :** Homebrew
 
-A two-handed flail crafted in the Gold style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

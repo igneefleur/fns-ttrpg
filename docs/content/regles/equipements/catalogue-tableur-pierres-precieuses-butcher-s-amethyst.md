@@ -8,7 +8,8 @@
 **Famille :** Gemme  
 **Origine :** Outward
 
-Gemme compacte ; Tsar Stone non commercialisable
+Beautiful one-of-a-kind gem formed in the heart of a unique horror.
+It is a memento from a hard-fought battle to save the city of Monsoon.
 
 | Caractéristique | Valeur |
 | --- | --- |

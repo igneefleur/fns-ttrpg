@@ -8,7 +8,7 @@
 **Famille :** Standalone  
 **Origine :** Outward
 
-Sword that emits a blade of energy, which is both indestructible and luminous.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

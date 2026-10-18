@@ -8,7 +8,7 @@
 **Famille :** Meteoric  
 **Origine :** Homebrew
 
-A two-handed flail crafted in the Meteoric style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

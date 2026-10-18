@@ -8,7 +8,7 @@
 **Famille :** Caged Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+Raw meat that resists corruption. May make you sick if eaten raw.
 
 | Caractéristique | Valeur |
 | --- | --- |

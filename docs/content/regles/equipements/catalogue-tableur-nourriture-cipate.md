@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+A crustless meat pie with layers upon layers of meat. Provides excellent healing over time.
 
 | Caractéristique | Valeur |
 | --- | --- |

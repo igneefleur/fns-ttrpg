@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-An infusion that treats the common cold and restores burnt mana.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

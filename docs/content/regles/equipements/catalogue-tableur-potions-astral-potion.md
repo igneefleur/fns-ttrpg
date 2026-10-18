@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Potion which instantly restores some mana.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

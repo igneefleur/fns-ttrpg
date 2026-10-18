@@ -8,7 +8,7 @@
 **Famille :** Palladium  
 **Origine :** Outward
 
-A mace crafted in the Palladium style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

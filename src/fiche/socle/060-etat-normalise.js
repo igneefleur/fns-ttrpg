@@ -360,10 +360,10 @@
         img: o.img == null ? "" : String(o.img),
         qte: pnum(o.qte === undefined ? 1 : o.qte),
         poids: pnum(o.poids),
-        encombre: pnum(o.encombre),
+        encombre: o.encombre===null?null:pnum(o.encombre),
         // « places » est le nom de CLÉ du volume d'un aliment : le livre dit
         // « volume », la clé garde son nom, qui voyage dans les Attributes
-        places: pnum(o.places),
+        places: o.places===null?null:pnum(o.places),
         emplacements: Math.max(0,Math.floor(num(o.emplacements,1))),
         tenueDeuxMains: o.tenueDeuxMains === true,
         prerequis: o.prerequis && typeof o.prerequis === "object" ? o.prerequis : {},

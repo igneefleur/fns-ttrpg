@@ -8,7 +8,7 @@
 **Famille :** Wolf Plate Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

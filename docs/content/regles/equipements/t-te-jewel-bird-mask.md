@@ -8,7 +8,7 @@
 **Famille :**   
 **Origine :** Outward
 
-Jewel Bird Mask is a type of Armor in Outward.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

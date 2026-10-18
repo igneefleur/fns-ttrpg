@@ -8,7 +8,7 @@
 **Famille :** Vigilante  
 **Origine :** Homebrew
 
-A staff crafted in the Vigilante style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

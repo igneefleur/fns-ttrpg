@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Seawater collected from the shore. It does not replace safe drinking water.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

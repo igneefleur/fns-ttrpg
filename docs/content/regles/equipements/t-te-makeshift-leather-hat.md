@@ -8,7 +8,7 @@
 **Famille :** Makeshift Leather Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

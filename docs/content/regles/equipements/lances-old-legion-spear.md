@@ -8,7 +8,7 @@
 **Famille :** Old Legion  
 **Origine :** Outward
 
-A spear crafted in the Old Legion style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

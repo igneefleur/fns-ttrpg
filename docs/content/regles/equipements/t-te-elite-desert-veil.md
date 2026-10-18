@@ -8,7 +8,7 @@
 **Famille :** Elite Desert Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

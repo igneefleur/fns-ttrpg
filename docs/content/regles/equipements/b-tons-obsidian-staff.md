@@ -8,7 +8,7 @@
 **Famille :** Obsidian  
 **Origine :** Homebrew
 
-A staff crafted in the Obsidian style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

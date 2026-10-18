@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+Iridescent flesh of a rare bird which increases one's movement speed.
 
 | Caractéristique | Valeur |
 | --- | --- |

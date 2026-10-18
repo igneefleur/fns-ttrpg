@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Thick boreo fat that strengthens and restores the body, with a risk of indigestion.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

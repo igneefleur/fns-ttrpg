@@ -8,7 +8,7 @@
 **Famille :** Adventuring gear  
 **Origine :** Outward
 
-Improves your Fire power, and weakens your Ice resistance.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

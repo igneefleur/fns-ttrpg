@@ -8,7 +8,7 @@
 **Famille :** Horror  
 **Origine :** Homebrew
 
-A sword crafted in the Horror style.
+Inflicts Extreme Poison
 
 | Caractéristique | Valeur |
 | --- | --- |

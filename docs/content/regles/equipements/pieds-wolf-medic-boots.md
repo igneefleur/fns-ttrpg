@@ -8,7 +8,7 @@
 **Famille :** Wolf Medic Set  
 **Origine :** Outward
 
-Footwear for travel and combat.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

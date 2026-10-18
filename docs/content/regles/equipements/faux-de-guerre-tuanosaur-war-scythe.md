@@ -8,7 +8,7 @@
 **Famille :** Tuanosaur  
 **Origine :** Homebrew
 
-A war scythe crafted in the Tuanosaur style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

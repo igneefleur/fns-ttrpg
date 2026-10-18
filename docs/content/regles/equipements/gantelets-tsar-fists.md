@@ -8,7 +8,7 @@
 **Famille :** Tsar  
 **Origine :** Outward
 
-A pair of knuckles crafted in the Tsar style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

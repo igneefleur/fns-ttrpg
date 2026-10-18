@@ -8,7 +8,7 @@
 **Famille :** Vigilante  
 **Origine :** Outward
 
-A bloody Militia Dagger passed down by your ancestors. This off-hand weapon requires Dagger Skills to be used.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

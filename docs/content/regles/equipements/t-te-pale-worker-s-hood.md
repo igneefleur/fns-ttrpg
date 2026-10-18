@@ -8,7 +8,7 @@
 **Famille :** Worker Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

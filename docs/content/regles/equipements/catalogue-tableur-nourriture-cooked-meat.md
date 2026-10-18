@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+Slab of meat grilled over a campfire, removing any risk of disease.
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Organique souple / végétal  
 **Origine :** Outward
 
-A material used in crafting.
+A fluffy powder used in many baked foods.
 
 | Caractéristique | Valeur |
 | --- | --- |

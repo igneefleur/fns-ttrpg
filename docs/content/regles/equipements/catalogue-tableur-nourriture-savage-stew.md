@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+Elaborate stew using alpha meat and a gravel beetle, which gives impact resistance as well as adding impact to one's attacks with the rage status
 
 | Caractéristique | Valeur |
 | --- | --- |

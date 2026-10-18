@@ -8,7 +8,7 @@
 **Famille :** Forged Glass  
 **Origine :** Homebrew
 
-A two-handed flail crafted in the Forged Glass style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

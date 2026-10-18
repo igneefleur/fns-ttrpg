@@ -8,7 +8,7 @@
 **Famille :** Forged Glass  
 **Origine :** Outward
 
-An axe crafted in the Forged Glass style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

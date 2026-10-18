@@ -8,7 +8,8 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+Boiled root that increased its mana-restoring properties.
+It is no longer reinvigorating, however.
 
 | Caractéristique | Valeur |
 | --- | --- |

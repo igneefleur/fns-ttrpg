@@ -8,7 +8,7 @@
 **Famille :** Hailfrost  
 **Origine :** Homebrew
 
-A two-handed flail crafted in the Hailfrost style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

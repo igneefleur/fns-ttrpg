@@ -8,7 +8,7 @@
 **Famille :** Trader Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

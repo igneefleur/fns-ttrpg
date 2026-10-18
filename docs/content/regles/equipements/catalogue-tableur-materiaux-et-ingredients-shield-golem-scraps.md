@@ -8,7 +8,7 @@
 **Famille :** Métal  
 **Origine :** Outward
 
-A material used in crafting.
+Still conducts electricity... Can be used to craft weapons.
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Ghost  
 **Origine :** Homebrew
 
-A two-handed flail crafted in the Ghost style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

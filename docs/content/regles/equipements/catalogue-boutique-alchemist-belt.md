@@ -8,7 +8,7 @@
 **Famille :** Alchemist  
 **Origine :** Homebrew
 
-A waist belt with loops for small tools and supplies.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

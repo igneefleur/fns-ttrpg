@@ -8,7 +8,7 @@
 **Famille :** Porcelain  
 **Origine :** Outward
 
-"The Dawn Weaver's knowledge remade us; we grafted porcelain to our flesh"
+
 
 | Caractéristique | Valeur |
 | --- | --- |

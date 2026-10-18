@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-An iced infusion that restores burnt mana and helps treat indigestion and Meeka fever.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

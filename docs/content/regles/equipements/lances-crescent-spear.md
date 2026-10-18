@@ -8,7 +8,7 @@
 **Famille :** Crescent  
 **Origine :** Homebrew
 
-A spear crafted in the Crescent style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

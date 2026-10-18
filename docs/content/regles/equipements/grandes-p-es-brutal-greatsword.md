@@ -8,7 +8,7 @@
 **Famille :** Brutal  
 **Origine :** Homebrew
 
-A greatsword crafted in the Brutal style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

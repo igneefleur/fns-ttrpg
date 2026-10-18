@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Powerful concoction that temporarily increases your movement speed, stealth and coats your equipped melee weapon with poison.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

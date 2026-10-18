@@ -8,7 +8,8 @@
 **Famille :** Backpacks  
 **Origine :** Outward
 
-A backpack with internal storage and external attachment points.
+Bag with a ring of bright glowstone, which negates the need for a lantern.
+Equipping this backpack slows your dodge.
 
 | Caractéristique | Valeur |
 | --- | --- |

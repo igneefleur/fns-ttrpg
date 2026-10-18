@@ -8,7 +8,7 @@
 **Famille :** Hailfrost  
 **Origine :** Homebrew
 
-A staff crafted in the Hailfrost style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

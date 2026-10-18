@@ -8,7 +8,7 @@
 **Famille :** Entomber Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

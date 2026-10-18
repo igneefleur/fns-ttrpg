@@ -8,7 +8,7 @@
 **Famille :** Gold-Lich Set  
 **Origine :** Outward
 
-Footwear for travel and combat.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

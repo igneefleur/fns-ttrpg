@@ -8,7 +8,7 @@
 **Famille :** Organique rigide  
 **Origine :** Outward
 
-A material used in crafting.
+Assortment of fangs, used to craft equipment by binding them to iron weapons.
 
 | Caractéristique | Valeur |
 | --- | --- |

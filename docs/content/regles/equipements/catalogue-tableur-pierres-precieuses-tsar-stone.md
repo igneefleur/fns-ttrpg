@@ -8,7 +8,7 @@
 **Famille :** Gemme  
 **Origine :** Outward
 
-A valuable gemstone.
+Shimmering gem that glimmers with shining power
 
 | Caractéristique | Valeur |
 | --- | --- |

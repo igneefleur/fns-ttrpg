@@ -8,7 +8,7 @@
 **Famille :** Golem  
 **Origine :** Homebrew
 
-A spear crafted in the Golem style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

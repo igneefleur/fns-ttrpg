@@ -8,7 +8,8 @@
 **Famille :** Backpacks  
 **Origine :** Outward
 
-A backpack with internal storage and external attachment points.
+Balanced backpack commonly used by travelers.
+Equipping this backpack slows your dodge.
 
 | Caractéristique | Valeur |
 | --- | --- |

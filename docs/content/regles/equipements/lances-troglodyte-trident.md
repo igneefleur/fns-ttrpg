@@ -8,7 +8,7 @@
 **Famille :** Troglodyte  
 **Origine :** Outward
 
-A spear crafted in the Troglodyte style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

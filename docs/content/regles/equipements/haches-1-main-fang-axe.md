@@ -8,7 +8,7 @@
 **Famille :** Fang  
 **Origine :** Outward
 
-Inflicts Bleeding on enemies.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

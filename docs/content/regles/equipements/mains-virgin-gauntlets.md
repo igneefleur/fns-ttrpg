@@ -8,7 +8,7 @@
 **Famille :** Virgin Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

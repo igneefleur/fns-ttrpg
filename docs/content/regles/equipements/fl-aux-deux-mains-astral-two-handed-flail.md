@@ -8,7 +8,7 @@
 **Famille :** Astral  
 **Origine :** Homebrew
 
-A two-handed flail crafted in the Astral style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

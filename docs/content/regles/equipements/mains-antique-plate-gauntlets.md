@@ -8,7 +8,7 @@
 **Famille :** Antique Plate Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

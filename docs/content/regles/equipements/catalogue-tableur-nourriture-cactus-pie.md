@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+Dish of invigorating cactus fruit and bread that helps against the heat when eaten.
 
 | Caractéristique | Valeur |
 | --- | --- |

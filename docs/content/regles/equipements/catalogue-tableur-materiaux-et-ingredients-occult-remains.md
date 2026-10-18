@@ -8,7 +8,7 @@
 **Famille :** Organique rigide  
 **Origine :** Outward
 
-A material used in crafting.
+Dry Remnants of necrotic beings, used in alchemy and to craft weapons.
 
 | Caractéristique | Valeur |
 | --- | --- |

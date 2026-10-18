@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-A fatty infusion that restores burnt health and helps treat ambraine withdrawal.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

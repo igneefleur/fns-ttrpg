@@ -8,7 +8,7 @@
 **Famille :** Giantkind  
 **Origine :** Homebrew
 
-A pair of knuckles crafted in the Giantkind style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Tuanosaur  
 **Origine :** Homebrew
 
-A mace crafted in the Tuanosaur style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

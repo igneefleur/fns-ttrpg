@@ -8,7 +8,7 @@
 **Famille :** Standalone  
 **Origine :** Outward
 
-A greathammer.
+Inflicts Pain on enemies.
 
 | Caractéristique | Valeur |
 | --- | --- |

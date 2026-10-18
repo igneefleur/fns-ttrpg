@@ -8,7 +8,7 @@
 **Famille :** Pilgrim Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

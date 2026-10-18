@@ -8,7 +8,7 @@
 **Famille :** Organique rigide  
 **Origine :** Outward
 
-A material used in crafting.
+Venomous tongue of a giant insect, used to craft swords.
 
 | Caractéristique | Valeur |
 | --- | --- |

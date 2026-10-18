@@ -8,7 +8,7 @@
 **Famille :** Virgin  
 **Origine :** Homebrew
 
-A war scythe crafted in the Virgin style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

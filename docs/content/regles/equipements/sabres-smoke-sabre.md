@@ -8,7 +8,7 @@
 **Famille :** Smoke  
 **Origine :** Outward
 
-Inflicts Blaze on Burning foes.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

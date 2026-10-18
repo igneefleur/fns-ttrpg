@@ -8,7 +8,7 @@
 **Famille :** Marble  
 **Origine :** Outward
 
-A spear crafted in the Marble style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

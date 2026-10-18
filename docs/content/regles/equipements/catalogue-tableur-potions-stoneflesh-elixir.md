@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Powerful concoction that temporarily increases your Impact Resistance and the Physical Damage your attacks deal and grants the Rage Bonus.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

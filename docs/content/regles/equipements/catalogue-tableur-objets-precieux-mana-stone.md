@@ -8,7 +8,7 @@
 **Famille :** Minéral / poudre  
 **Origine :** Outward
 
-A valuable trade good.
+Unrefined mineral that radiates raw magic, used in many alchemical recipes.
 
 | Caractéristique | Valeur |
 | --- | --- |

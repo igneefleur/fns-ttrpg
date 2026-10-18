@@ -8,7 +8,7 @@
 **Famille :** Métal / clé  
 **Origine :** Outward
 
-A key that opens its matching lock.
+Unlocks the Golem Warehouse from the Downtown Ruins in Antique Plateau.
 
 | Caractéristique | Valeur |
 | --- | --- |

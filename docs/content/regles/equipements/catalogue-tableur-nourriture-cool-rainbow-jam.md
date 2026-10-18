@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+A chilly jam that provides some Barrier, Mana regeneration, and Heat Resist.
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Blue Sand Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

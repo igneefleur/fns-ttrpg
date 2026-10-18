@@ -8,7 +8,7 @@
 **Famille :** Militia Set  
 **Origine :** Outward
 
-Worker's clothes, reinforced for battle. Completely resists Hamper.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

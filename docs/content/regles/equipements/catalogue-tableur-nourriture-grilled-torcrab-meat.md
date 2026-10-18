@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Cooked torcrab meat, still spicy but safer to eat.
+Spicy, but safe Torcrab Meat.
 
 | Caractéristique | Valeur |
 | --- | --- |

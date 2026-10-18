@@ -8,7 +8,7 @@
 **Famille :** Ghost  
 **Origine :** Homebrew
 
-An axe crafted in the Ghost style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Ghost  
 **Origine :** Homebrew
 
-A rapier crafted in the Ghost style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

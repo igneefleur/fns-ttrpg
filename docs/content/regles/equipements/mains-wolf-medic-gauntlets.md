@@ -8,7 +8,7 @@
 **Famille :** Wolf Medic Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

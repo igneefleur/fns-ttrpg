@@ -8,7 +8,7 @@
 **Famille :** Gold-Lich  
 **Origine :** Outward
 
-A mace crafted in the Gold-Lich style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

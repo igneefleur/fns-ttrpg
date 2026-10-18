@@ -8,7 +8,7 @@
 **Famille :**   
 **Origine :** Outward
 
-Red Wide Hat is a type of Armor in Outward.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

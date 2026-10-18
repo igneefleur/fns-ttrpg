@@ -8,7 +8,7 @@
 **Famille :** Troglodyte  
 **Origine :** Homebrew
 
-A war scythe crafted in the Troglodyte style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Krypteia Set  
 **Origine :** Outward
 
-Noise-silencing boots worn by a secret order of scholars turned assassins. Fully prevents Blaze.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

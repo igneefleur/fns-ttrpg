@@ -8,7 +8,7 @@
 **Famille :** Palladium  
 **Origine :** Outward
 
-A pair of knuckles crafted in the Palladium style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

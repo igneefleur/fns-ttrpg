@@ -8,7 +8,7 @@
 **Famille :** Gemme  
 **Origine :** Outward
 
-Gemme compacte ; Tsar Stone non commercialisable
+Dark gem with intricate magical properties. Craftsmen in Levant can create wizardly robes from this material.
 
 | Caractéristique | Valeur |
 | --- | --- |

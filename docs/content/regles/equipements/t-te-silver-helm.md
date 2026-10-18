@@ -8,7 +8,7 @@
 **Famille :** Silver Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

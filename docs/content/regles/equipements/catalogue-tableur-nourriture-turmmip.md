@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+Bulbous root vegetable with mana-restoring properties.
 
 | Caractéristique | Valeur |
 | --- | --- |

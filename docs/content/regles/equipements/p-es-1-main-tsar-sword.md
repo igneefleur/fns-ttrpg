@@ -8,7 +8,7 @@
 **Famille :** Tsar  
 **Origine :** Outward
 
-A sword crafted in the Tsar style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

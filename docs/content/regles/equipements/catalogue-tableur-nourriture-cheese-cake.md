@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+This healthy dessert also boosts Corruption resistance
 
 | Caractéristique | Valeur |
 | --- | --- |

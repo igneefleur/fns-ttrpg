@@ -8,7 +8,7 @@
 **Famille :** Bois / pièce allongée  
 **Origine :** Outward
 
-A material used in crafting.
+Mineral Component used by the blacksmiths of Berg to craft an unusual set of armor.
 
 | Caractéristique | Valeur |
 | --- | --- |

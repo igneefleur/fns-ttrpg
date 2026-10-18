@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+Salted alpha meat that rots very slowly, while retaining the special meat's qualities.
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** alchimie  
 **Origine :** Outward
 
-A portable apparatus for making potions and alchemical mixtures over a fire.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

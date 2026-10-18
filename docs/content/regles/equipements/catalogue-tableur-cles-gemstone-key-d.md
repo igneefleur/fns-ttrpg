@@ -8,7 +8,7 @@
 **Famille :** Métal / clé  
 **Origine :** Outward
 
-A key that opens its matching lock.
+Part of a set of 4. Activates the Main Console in the Forgotten Research Laboratory.
 
 | Caractéristique | Valeur |
 | --- | --- |

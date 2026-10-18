@@ -8,7 +8,7 @@
 **Famille :** Organique souple / végétal  
 **Origine :** Outward
 
-A material used in crafting.
+Dense seeds useful as an alchemical reagent.
 
 | Caractéristique | Valeur |
 | --- | --- |

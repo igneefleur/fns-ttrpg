@@ -1,7 +1,9 @@
 """La Boutique définit les équipements. Le livre et la fiche sont des consommateurs."""
 import copy
+import hashlib
 import json
 import math
+from urllib.parse import urlparse
 from pathlib import Path
 from mkdocs.structure.files import File
 
@@ -26,19 +28,26 @@ def reference(docs):
         if o['id'] in ids or name in names:
             raise ValueError(f'Équipement dupliqué : {name}')
         ids.add(o['id']); names.add(name)
-        if o.get('typeObjet') not in TYPES or o.get('taille') not in TAILLES:
+        missing = set(o.get('donneesACompleter', [])) if o.get('definitionStatut') == 'a-completer' else set()
+        if o.get('typeObjet') not in TYPES or (o.get('taille') not in TAILLES and not (o.get('taille') == '' and 'taille' in missing)):
             raise ValueError(f'Type/taille invalide : {name}')
         if o.get('mains') not in (1, 2, '2 obligatoires'):
             raise ValueError(f'Nombre de mains invalide : {name}')
         for key in ('poids', 'volume', 'achat', 'vente'):
             val = o.get(key)
-            if key in ('achat', 'vente') and val is None: continue
+            if val is None and (key in ('achat', 'vente') or key in missing): continue
             if not isinstance(val, (float, int)) or not math.isfinite(val) or val < 0:
                 raise ValueError(f'{key} invalide ou absent : {name}')
         if o.get('encombre') != o['volume']:
             raise ValueError(f'Volume/encombrement différents : {name}')
-        if not o.get('desc'):
-            raise ValueError(f'Description absente : {name}')
+        if not isinstance(o.get('desc'), str):
+            raise ValueError(f'Description invalide : {name}')
+        if o['desc']:
+            src = urlparse(o.get('descriptionSource', ''))
+            if src.scheme != 'https' or src.netloc not in ('outward.wiki.gg', 'outward.fandom.com') or not src.path.startswith('/wiki/') or o.get('descriptionStatut') != 'wiki':
+                raise ValueError(f'Description sans source wiki : {name}')
+            if hashlib.sha256(o['desc'].encode()).hexdigest() != o.get('descriptionEmpreinte'):
+                raise ValueError(f'Description modifiée sans vérification : {name}')
         img = o.get('img', '')
         if img:
             resolved = (docs / img).resolve()
@@ -57,6 +66,7 @@ def reference(docs):
 
 
 def number(v):
+    if v is None: return 'Non renseigné'
     try:
         n = float(v)
         if math.isfinite(n): return str(int(n)) if int(n) == n else str(n)
@@ -67,12 +77,13 @@ def number(v):
 def champs(o, effects):
     """Projection d'affichage, sans modifier ou réinterpréter les valeurs."""
     f = [['Poids (kg)', number(o['poids'])], ['Volume (L)', number(o['volume'])],
-         ['Taille', o['taille']], ['Mains', str(o['mains'])],
+         ['Taille', o['taille'] or 'Non renseignée'], ['Mains', str(o['mains'])],
          ['Achat (argent)', 'Non commercialisé' if o.get('commerce') == 'non-commercialise' else ('Non renseigné' if o.get('achat') is None else number(o['achat']))],
          ['Vente (argent)', 'Non commercialisé' if o.get('commerce') == 'non-commercialise' else ('Non renseigné' if o.get('vente') is None else number(o['vente']))]]
     def add(label, value, always=False):
         if always or value not in (None, '', 0, False):
             f.append([label, number(value)])
+    if o.get('effetsStatut') == 'non-definis': f.append(['Effets JDR', 'Non définis'])
     a = o.get('arme')
     if a:
         for label, key in [('Attaque','attaque'), ('Touches','hits'), ('Dégâts de base','degats'), ('Parade','parade'), ('Réduction de base','reduction')]:

@@ -8,7 +8,7 @@
 **Famille :** Wolf  
 **Origine :** Homebrew
 
-A war scythe crafted in the Wolf style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

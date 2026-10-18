@@ -8,7 +8,7 @@
 **Famille :** Marble  
 **Origine :** Homebrew
 
-A dagger crafted in the Marble style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

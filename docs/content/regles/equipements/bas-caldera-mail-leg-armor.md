@@ -8,7 +8,7 @@
 **Famille :** Caldera Mail Set  
 **Origine :** Homebrew
 
-A garment covering the lower body.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

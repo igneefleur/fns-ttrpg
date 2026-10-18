@@ -8,7 +8,7 @@
 **Famille :** Black Plate Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

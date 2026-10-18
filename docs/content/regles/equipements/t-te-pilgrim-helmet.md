@@ -8,7 +8,7 @@
 **Famille :** Pilgrim Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

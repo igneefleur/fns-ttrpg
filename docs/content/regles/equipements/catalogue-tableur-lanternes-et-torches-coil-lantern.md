@@ -8,7 +8,7 @@
 **Famille :** Adventuring gear  
 **Origine :** Outward
 
-Fueled by an advanced Power Coil, this Lantern provides light for an extremely long time. The coil can be swapped for a new one when the light does run out.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

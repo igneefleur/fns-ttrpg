@@ -8,7 +8,7 @@
 **Famille :** Autre / magique  
 **Origine :** Outward
 
-A material used in crafting.
+Severed threads of the Scarlet Lady's influence...It can be used to craft new unique equipment.
 
 | Caractéristique | Valeur |
 | --- | --- |

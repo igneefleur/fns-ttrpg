@@ -8,7 +8,7 @@
 **Famille :** Ghost  
 **Origine :** Homebrew
 
-A pair of knuckles crafted in the Ghost style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

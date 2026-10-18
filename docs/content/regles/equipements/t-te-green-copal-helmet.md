@@ -8,7 +8,7 @@
 **Famille :** Green Copal Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :**   
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

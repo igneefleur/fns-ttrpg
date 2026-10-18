@@ -8,7 +8,7 @@
 **Famille :** Festive Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

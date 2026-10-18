@@ -8,7 +8,7 @@
 **Famille :** Brigand Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

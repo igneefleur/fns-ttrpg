@@ -8,7 +8,7 @@
 **Famille :** Brutal  
 **Origine :** Outward
 
-An axe crafted in the Brutal style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

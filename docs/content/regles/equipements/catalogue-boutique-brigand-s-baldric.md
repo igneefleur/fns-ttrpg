@@ -8,7 +8,7 @@
 **Famille :** Brigand's  
 **Origine :** Homebrew
 
-A shoulder strap with attachment loops for weapons and equipment.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

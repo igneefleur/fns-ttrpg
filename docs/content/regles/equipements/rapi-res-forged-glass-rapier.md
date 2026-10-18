@@ -8,7 +8,7 @@
 **Famille :** Forged Glass  
 **Origine :** Homebrew
 
-A rapier crafted in the Forged Glass style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

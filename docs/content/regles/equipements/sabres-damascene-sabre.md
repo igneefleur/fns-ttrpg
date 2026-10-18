@@ -8,7 +8,7 @@
 **Famille :** Damascene  
 **Origine :** Homebrew
 
-A sabre crafted in the Damascene style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

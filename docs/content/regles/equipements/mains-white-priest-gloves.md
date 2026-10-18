@@ -8,7 +8,7 @@
 **Famille :** White Priest Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

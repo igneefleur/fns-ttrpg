@@ -8,7 +8,7 @@
 **Famille :** Tsar Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

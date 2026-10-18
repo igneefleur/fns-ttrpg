@@ -8,7 +8,7 @@
 **Famille :** Galvanic  
 **Origine :** Outward
 
-A dagger crafted in the Galvanic style.
+Inflicts Pain. This off-hand weapon requires Dagger Skills to be used.
 
 | Caractéristique | Valeur |
 | --- | --- |

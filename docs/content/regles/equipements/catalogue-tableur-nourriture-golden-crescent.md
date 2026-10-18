@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+A delicious fruit enjoyed by Sirrocan nobility.
 
 | Caractéristique | Valeur |
 | --- | --- |

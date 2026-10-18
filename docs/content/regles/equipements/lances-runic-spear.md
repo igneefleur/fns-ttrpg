@@ -8,7 +8,7 @@
 **Famille :** Runic  
 **Origine :** Homebrew
 
-A spear crafted in the Runic style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

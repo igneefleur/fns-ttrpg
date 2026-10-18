@@ -8,7 +8,7 @@
 **Famille :** Supplies  
 **Origine :** Outward
 
-Thick fluid that envenoms a weapon when applied to it.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

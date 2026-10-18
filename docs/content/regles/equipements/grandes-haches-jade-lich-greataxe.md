@@ -8,7 +8,7 @@
 **Famille :** Jade-Lich  
 **Origine :** Homebrew
 
-A greataxe crafted in the Jade-Lich style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+A large sweet vegetable that grows in ground filled with dormant Corruption.
 
 | Caractéristique | Valeur |
 | --- | --- |

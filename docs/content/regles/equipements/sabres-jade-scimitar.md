@@ -8,7 +8,7 @@
 **Famille :** Jade-Lich  
 **Origine :** Outward
 
-A sabre crafted in the Jade-Lich style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

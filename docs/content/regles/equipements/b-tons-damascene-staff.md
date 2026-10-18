@@ -8,7 +8,7 @@
 **Famille :** Damascene  
 **Origine :** Homebrew
 
-A staff crafted in the Damascene style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

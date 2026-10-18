@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Concoction that temporarily increases your Lightning Damage and Resistances.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

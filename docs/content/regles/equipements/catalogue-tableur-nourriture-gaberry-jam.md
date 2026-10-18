@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+Crushed berries boiled into nutritious syrup, with warming properties.
 
 | Caractéristique | Valeur |
 | --- | --- |

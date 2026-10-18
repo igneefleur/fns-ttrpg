@@ -8,7 +8,7 @@
 **Famille :** Manticore  
 **Origine :** Homebrew
 
-An axe crafted in the Manticore style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

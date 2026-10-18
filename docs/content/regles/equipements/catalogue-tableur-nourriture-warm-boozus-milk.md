@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-A drink.
+Wholesome Boozu milk that is safe to drink, and warms the drinker.
 
 | Caractéristique | Valeur |
 | --- | --- |

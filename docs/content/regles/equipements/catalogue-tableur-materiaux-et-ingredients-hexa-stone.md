@@ -8,7 +8,7 @@
 **Famille :** Minéral / poudre  
 **Origine :** Outward
 
-A material used in crafting.
+A glowing blue stone in the shape of a flawless hexagon.
 
 | Caractéristique | Valeur |
 | --- | --- |

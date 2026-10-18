@@ -8,7 +8,7 @@
 **Famille :** Tsar Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

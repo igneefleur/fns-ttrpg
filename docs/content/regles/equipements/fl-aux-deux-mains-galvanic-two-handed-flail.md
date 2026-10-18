@@ -8,7 +8,7 @@
 **Famille :** Galvanic  
 **Origine :** Homebrew
 
-A two-handed flail crafted in the Galvanic style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Brutal  
 **Origine :** Outward
 
-Inflicts Confusion
+
 
 | Caractéristique | Valeur |
 | --- | --- |

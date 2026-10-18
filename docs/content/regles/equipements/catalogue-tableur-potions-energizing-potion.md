@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Temporarily reduces skill cooldowns.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

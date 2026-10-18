@@ -8,7 +8,7 @@
 **Famille :** Merton's Bones  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

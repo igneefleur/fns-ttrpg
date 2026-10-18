@@ -66,7 +66,7 @@ const tick=()=>new Promise(r=>setImmediate(r));
   assert.ok($('ob-details').textContent.includes('Achat : Prix non renseigné · Vente : Prix non renseigné'),nom);
  }
  // Vérifier les objets de chaque nouvelle famille dans la chaîne Boutique -> tchat -> Prendre.
- for(const nom of ['Antidote','Clean Water','River Water','Rancid Water','Salt Water','Arcane Trousers','Waterskin','Great Life Potion','Ammolite','Whole Loaf','Trader Warbelt','Nomad Baldric','Arcane Robe','Thick Oil','Bolt Varnish','Campfire Kit','Bandit Cage key']){
+ for(const nom of ['Bandages','Crystal Powder','Tripwire Trap','Pressure Plate Trap','Frost Bomb','Spikes – Wood','Spikes – Iron','Spikes – Palladium','Charge – Incendiary','Charge – Toxic','Charge – Nerve Gas','Arcane Dampener','Antidote','Clean Water','River Water','Rancid Water','Salt Water','Arcane Trousers','Waterskin','Great Life Potion','Ammolite','Whole Loaf','Trader Warbelt','Nomad Baldric','Arcane Robe','Thick Oil','Bolt Varnish','Campfire Kit','Bandit Cage key']){
    $('ob-categorie').value='';$('ob-recherche').value=nom;$('ob-recherche').oninput();
    assert.ok($('ob-items').children.length>0,nom+' absent');
    const item=catalogue.objets.find(x=>x.nom===nom);assert.ok(item,nom+' non catalogué');

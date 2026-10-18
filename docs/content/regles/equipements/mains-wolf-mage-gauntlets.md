@@ -8,7 +8,7 @@
 **Famille :** Wolf Mage Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

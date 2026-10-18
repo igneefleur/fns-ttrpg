@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Powerful concoction that temporarily increases your weapon's Impact and gives you the Possessed and the Discipline boons.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Raises your Alertness Level by 1.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

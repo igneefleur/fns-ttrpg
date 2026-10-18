@@ -8,7 +8,7 @@
 **Famille :** Marble  
 **Origine :** Homebrew
 
-A two-handed flail crafted in the Marble style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

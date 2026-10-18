@@ -8,7 +8,7 @@
 **Famille :** Iron  
 **Origine :** Outward
 
-A halberd crafted in the Iron style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

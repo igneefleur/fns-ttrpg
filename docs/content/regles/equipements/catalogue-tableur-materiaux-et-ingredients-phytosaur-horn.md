@@ -8,7 +8,7 @@
 **Famille :** Organique rigide  
 **Origine :** Outward
 
-A material used in crafting.
+Poisonous bones of large herbivores, used to craft spears.
 
 | Caractéristique | Valeur |
 | --- | --- |

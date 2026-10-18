@@ -8,7 +8,7 @@
 **Famille :** Thorny  
 **Origine :** Outward
 
-A greatsword crafted in the Thorny style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

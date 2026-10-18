@@ -8,7 +8,7 @@
 **Famille :** Tsar  
 **Origine :** Outward
 
-A spear crafted in the Tsar style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

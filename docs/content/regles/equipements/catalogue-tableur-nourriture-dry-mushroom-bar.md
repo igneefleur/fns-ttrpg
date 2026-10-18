@@ -8,7 +8,8 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+Mushrooms pounded into a bar shape.
+It restores a bit of maximum health.
 
 | Caractéristique | Valeur |
 | --- | --- |

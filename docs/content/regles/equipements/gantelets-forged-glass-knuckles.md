@@ -8,7 +8,7 @@
 **Famille :** Forged Glass  
 **Origine :** Outward
 
-A pair of knuckles crafted in the Forged Glass style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Brutal  
 **Origine :** Outward
 
-A halberd crafted in the Brutal style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

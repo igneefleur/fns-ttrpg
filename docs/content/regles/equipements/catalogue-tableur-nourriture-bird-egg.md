@@ -8,7 +8,8 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+Large Pearlbird egg that carries a chance of disease when eaten raw.
+Eggs provide both health and stamina recovery over time.
 
 | Caractéristique | Valeur |
 | --- | --- |

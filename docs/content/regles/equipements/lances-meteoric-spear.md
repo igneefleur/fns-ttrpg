@@ -8,7 +8,7 @@
 **Famille :** Meteoric  
 **Origine :** Outward
 
-A glowing Obsidian Spear passed down by your ancestors. Inflicts Holy Blaze on burning foes.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

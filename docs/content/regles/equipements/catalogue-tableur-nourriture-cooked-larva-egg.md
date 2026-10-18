@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+Hardened exotic egg that rots more slowly than its raw counterpart.
 
 | Caractéristique | Valeur |
 | --- | --- |

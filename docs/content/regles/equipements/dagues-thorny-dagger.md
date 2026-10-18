@@ -8,7 +8,7 @@
 **Famille :** Thorny  
 **Origine :** Homebrew
 
-A dagger crafted in the Thorny style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Wolf  
 **Origine :** Outward
 
-An axe crafted in the Wolf style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Palladium  
 **Origine :** Homebrew
 
-A war scythe crafted in the Palladium style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

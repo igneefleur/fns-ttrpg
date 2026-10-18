@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+A poisonous mushroom that can stimulate the mind, when carefully cooked.
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Organique souple / végétal  
 **Origine :** Outward
 
-A material used in crafting.
+Easily gathers static electricity...
 
 | Caractéristique | Valeur |
 | --- | --- |

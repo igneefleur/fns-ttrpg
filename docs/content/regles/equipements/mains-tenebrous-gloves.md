@@ -8,7 +8,7 @@
 **Famille :** Tenebrous Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Crimson Plate Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

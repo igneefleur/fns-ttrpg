@@ -8,7 +8,7 @@
 **Famille :** Supplies  
 **Origine :** Outward
 
-Soiled Cloth that confers the Lightning element when rubbed on a melee weapon.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

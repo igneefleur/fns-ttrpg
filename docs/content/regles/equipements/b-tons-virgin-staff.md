@@ -8,7 +8,7 @@
 **Famille :** Virgin  
 **Origine :** Homebrew
 
-A staff crafted in the Virgin style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

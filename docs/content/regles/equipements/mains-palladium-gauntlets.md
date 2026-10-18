@@ -8,7 +8,7 @@
 **Famille :** Palladium Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

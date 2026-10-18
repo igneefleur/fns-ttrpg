@@ -8,7 +8,7 @@
 **Famille :** Organique rigide  
 **Origine :** Outward
 
-An adventuring or quest item.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

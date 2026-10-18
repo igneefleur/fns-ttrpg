@@ -8,7 +8,8 @@
 **Famille :** Gemme  
 **Origine :** Outward
 
-Gemme compacte ; Tsar Stone non commercialisable
+Semiprecious stone found near water, unlike other gems.
+It can fetch a good price.
 
 | Caractéristique | Valeur |
 | --- | --- |

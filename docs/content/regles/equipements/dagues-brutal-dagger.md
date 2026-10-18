@@ -8,7 +8,7 @@
 **Famille :** Brutal  
 **Origine :** Homebrew
 
-A dagger crafted in the Brutal style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

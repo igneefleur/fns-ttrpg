@@ -8,7 +8,8 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Safe drinking water that aids stamina recovery.
+Drinking water restores stamina over time and removes the Burning status.
+It can be filled at fountains or in natural bodies of water.
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Horror  
 **Origine :** Homebrew
 
-A war scythe crafted in the Horror style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

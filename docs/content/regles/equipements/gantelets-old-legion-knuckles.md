@@ -8,7 +8,7 @@
 **Famille :** Old Legion  
 **Origine :** Homebrew
 
-A pair of knuckles crafted in the Old Legion style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

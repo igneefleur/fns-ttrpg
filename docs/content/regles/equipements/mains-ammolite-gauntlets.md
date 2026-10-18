@@ -8,7 +8,7 @@
 **Famille :** Ammolite Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Vampiric  
 **Origine :** Outward
 
-Inflicts Blood Leech. This off-hand weapon requires Dagger Skills to be used.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

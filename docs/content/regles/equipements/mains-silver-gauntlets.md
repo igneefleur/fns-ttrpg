@@ -8,7 +8,7 @@
 **Famille :** Silver Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

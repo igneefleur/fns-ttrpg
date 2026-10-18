@@ -8,7 +8,7 @@
 **Famille :** Minéral / poudre  
 **Origine :** Outward
 
-A material used in crafting.
+Ore altered by insect nectar, needed to make Chalcedony weapons.
 
 | Caractéristique | Valeur |
 | --- | --- |

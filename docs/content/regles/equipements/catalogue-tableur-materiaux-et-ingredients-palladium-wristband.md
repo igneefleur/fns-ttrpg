@@ -8,7 +8,7 @@
 **Famille :** Métal  
 **Origine :** Outward
 
-A material used in crafting.
+Used for crafting fist-based weapons.
 
 | Caractéristique | Valeur |
 | --- | --- |

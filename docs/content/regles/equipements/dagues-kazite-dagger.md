@@ -8,7 +8,7 @@
 **Famille :** Kazite  
 **Origine :** Homebrew
 
-A dagger crafted in the Kazite style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

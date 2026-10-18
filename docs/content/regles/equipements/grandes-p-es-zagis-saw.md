@@ -8,7 +8,8 @@
 **Famille :** Standalone  
 **Origine :** Outward
 
-A greatsword.
+Immense man-cutting saw of the bandit lord Zagis.
+Inflicts Pain on enemies.
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Calygrey  
 **Origine :** Homebrew
 
-A halberd crafted in the Calygrey style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -21,6 +21,8 @@
     });
     // Les bonus d'équipement sont dérivés : aucune copie temporaire à sauvegarder.
     (state.inv && state.inv.objets || []).forEach(function (o) {
+      // Les effets des consommables sont activés par leur consommation, jamais par leur port.
+      if (invType(o) === "consommable") return;
       if (o.dans || !(pnum(o.qte) > 0) || !(o.ou === "mainG" || o.ou === "mainD" || (o.vet || o.acc || o.sac || o.ceint) && casePermise(o,o.ou) && casesDe(o).length)) return;
       (o.effets || []).forEach(function (id) { var d = effetDefinition(id); if (d) out.push({e:{niveau:1,cible:o.arme ? o.ref : "",equipement:o.ref,source:o.nom}, d:d}); });
     });

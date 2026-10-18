@@ -8,7 +8,7 @@
 **Famille :** Manticore  
 **Origine :** Homebrew
 
-A mace crafted in the Manticore style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

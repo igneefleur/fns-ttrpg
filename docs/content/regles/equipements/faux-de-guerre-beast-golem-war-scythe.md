@@ -8,7 +8,7 @@
 **Famille :** Beast Golem  
 **Origine :** Homebrew
 
-A war scythe crafted in the Beast Golem style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

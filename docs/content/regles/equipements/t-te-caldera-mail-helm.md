@@ -8,7 +8,7 @@
 **Famille :** Caldera Mail Set  
 **Origine :** Outward
 
-Protective headwear.
+Provides 25% resistance to Pain and Confusion.
 
 | Caractéristique | Valeur |
 | --- | --- |

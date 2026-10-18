@@ -8,7 +8,7 @@
 **Famille :** Golem  
 **Origine :** Homebrew
 
-A war scythe crafted in the Golem style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

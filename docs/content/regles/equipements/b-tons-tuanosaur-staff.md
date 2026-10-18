@@ -8,7 +8,7 @@
 **Famille :** Tuanosaur  
 **Origine :** Homebrew
 
-A staff crafted in the Tuanosaur style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

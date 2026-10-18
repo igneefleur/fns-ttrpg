@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+A crunchy fillet of cooked Eel. Cures Weaken.
 
 | Caractéristique | Valeur |
 | --- | --- |

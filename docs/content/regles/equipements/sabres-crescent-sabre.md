@@ -8,7 +8,7 @@
 **Famille :** Crescent  
 **Origine :** Homebrew
 
-A sabre crafted in the Crescent style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

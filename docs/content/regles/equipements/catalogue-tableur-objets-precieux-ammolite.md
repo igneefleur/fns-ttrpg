@@ -8,7 +8,8 @@
 **Famille :** Minéral / poudre  
 **Origine :** Outward
 
-A valuable trade good.
+Fossilized shells of ancient sea creatures.
+These iridescent stones are used to craft Ammolite Armor
 
 | Caractéristique | Valeur |
 | --- | --- |

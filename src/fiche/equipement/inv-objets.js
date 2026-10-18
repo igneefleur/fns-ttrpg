@@ -47,7 +47,7 @@
   function champsObjet(it, q) {
     var bagWeight = it.sac ? window.OwdInventoryData.weight(state.inv.objets,it) : null;
     var fields = [["Quantité", fmtP(q)], ["Poids", fmtP(it.poids || 0) + (q > 1 ? " (total " + fmtP(q * (it.poids || 0)) + ")" : "")],
-      ["Volume", fmtP(it.encombre || 0) + " L"],
+      ["Volume", it.encombre===null?"Non renseigné":fmtP(it.encombre || 0) + " L"],
       ["Achat", prixObjetTexte(it,false)], ["Vente", prixObjetTexte(it,true)]];
     function add(k,v){if(v!=null && String(v).trim()!=="")fields.push([k,String(v)]);}
     if(it.arme){var a=it.arme;add("Type",a.type || "Arme");add("Attaque",a.attaque);add("Dégâts",a.degats);
@@ -59,7 +59,7 @@
     else if(it.sac)add("Type","Sac à dos");else if(it.ceint)add("Type","Ceinture");
     if(it.contenant)add("Contenant",it.contenant);if(it.contenu)add("Contenu",it.contenu);
     add("Type",INV_TYPES_OBJETS[invType(it)]);add("Sous-type",it.sousType);add("Taille",it.taille);add("Mains",it.mains || it.arme&&it.arme.mains || 1);
-    if(it.nourri){add("Contenance",fmtP(it.places || 0));add("PS",fmtP(it.ps||0));add("PH",fmtP(it.ph||0));}
+    if(it.nourri){add("Contenance",it.places===null?"Non renseignée":fmtP(it.places || 0));add("PS",it.ps===null?"Non renseigné":fmtP(it.ps||0));add("PH",it.ph===null?"Non renseigné":fmtP(it.ph||0));}
     (it.effets||[]).filter(Boolean).forEach(function(id,i){add("Effet "+(i+1),id);});
     Object.keys(it.restaurations||{}).forEach(function(k){if(it.restaurations[k])add("Restauration "+k.toUpperCase(),fmtP(it.restaurations[k])+" "+(it.unitesRestauration[k]||"points"));});
     if(it.contenant)add("Emplacements",String(it.emplacements==null?1:it.emplacements));if(it.cap)add("Capacité",fmtP(it.cap)+" L");if(it.ep)add("Accroches",fmtP(it.ep)+" acc (max. "+(it.tailleAccroche || "non renseignée")+")");

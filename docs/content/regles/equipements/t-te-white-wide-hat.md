@@ -8,7 +8,7 @@
 **Famille :**   
 **Origine :** Outward
 
-White Wide Hat is a type of Armor in Outward.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Crimson Plate Set  
 **Origine :** Outward
 
-A garment covering the upper body.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

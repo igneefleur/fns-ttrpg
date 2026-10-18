@@ -8,7 +8,7 @@
 **Famille :** Palladium  
 **Origine :** Homebrew
 
-A two-handed flail crafted in the Palladium style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

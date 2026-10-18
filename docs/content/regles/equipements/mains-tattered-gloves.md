@@ -8,7 +8,7 @@
 **Famille :** Tattered Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

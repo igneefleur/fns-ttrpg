@@ -8,7 +8,7 @@
 **Famille :** Rust Lich Set  
 **Origine :** Homebrew
 
-A garment covering the lower body.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

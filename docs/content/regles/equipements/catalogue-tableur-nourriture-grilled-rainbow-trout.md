@@ -8,7 +8,8 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+Highly prized fish filet that shimmers brightly.
+It restores mana and increases your resistance against elemental damage.
 
 | Caractéristique | Valeur |
 | --- | --- |

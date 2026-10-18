@@ -8,7 +8,7 @@
 **Famille :** Thorny  
 **Origine :** Homebrew
 
-A two-handed flail crafted in the Thorny style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

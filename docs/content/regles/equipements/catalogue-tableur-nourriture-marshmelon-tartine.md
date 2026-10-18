@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+Melon jelly thinly spread on bread, making several rations, each full with stamina-restoring properties of a jar of marshmelon jam.
 
 | Caractéristique | Valeur |
 | --- | --- |

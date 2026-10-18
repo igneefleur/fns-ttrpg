@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Luminous water infused with magical energy.
+Water that glows with magical energy.
 
 | Caractéristique | Valeur |
 | --- | --- |

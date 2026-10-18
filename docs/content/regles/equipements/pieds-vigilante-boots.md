@@ -8,7 +8,7 @@
 **Famille :** Vigilante Set  
 **Origine :** Outward
 
-Bloody Militia Boots passed down by your ancestors.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

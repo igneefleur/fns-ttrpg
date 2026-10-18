@@ -8,7 +8,7 @@
 **Famille :** Troglodyte  
 **Origine :** Homebrew
 
-An axe crafted in the Troglodyte style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

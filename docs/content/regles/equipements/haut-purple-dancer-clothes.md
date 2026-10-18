@@ -8,7 +8,7 @@
 **Famille :** Dancer Set  
 **Origine :** Outward
 
-Sensual clothes that enables one to dance, or fight, without end.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

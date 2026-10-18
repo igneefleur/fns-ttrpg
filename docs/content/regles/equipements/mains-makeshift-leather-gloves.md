@@ -8,7 +8,7 @@
 **Famille :** Makeshift Leather Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

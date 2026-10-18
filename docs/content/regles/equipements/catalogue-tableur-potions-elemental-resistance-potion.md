@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Powerful concoction that temporarily grants moderate resistance against Fire, Frost, Lightning, Decay and Ethereal damage.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

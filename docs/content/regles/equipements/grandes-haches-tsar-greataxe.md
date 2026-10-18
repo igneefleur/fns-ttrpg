@@ -8,7 +8,7 @@
 **Famille :** Tsar  
 **Origine :** Outward
 
-A greataxe crafted in the Tsar style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

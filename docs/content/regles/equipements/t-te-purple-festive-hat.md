@@ -8,7 +8,7 @@
 **Famille :** Festive Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

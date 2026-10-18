@@ -8,7 +8,7 @@
 **Famille :** Black Fur Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

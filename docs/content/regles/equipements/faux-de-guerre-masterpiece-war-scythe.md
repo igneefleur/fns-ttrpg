@@ -8,7 +8,7 @@
 **Famille :** Masterpiece  
 **Origine :** Homebrew
 
-A war scythe crafted in the Masterpiece style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

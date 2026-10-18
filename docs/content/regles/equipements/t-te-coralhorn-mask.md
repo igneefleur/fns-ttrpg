@@ -8,7 +8,7 @@
 **Famille :**   
 **Origine :** Outward
 
-On the festival's first day, we celebrate the spirit of honor.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

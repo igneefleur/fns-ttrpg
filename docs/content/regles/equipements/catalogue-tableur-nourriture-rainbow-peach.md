@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+A rare volcanic fruit. Has properties that resist elements.
 
 | Caractéristique | Valeur |
 | --- | --- |

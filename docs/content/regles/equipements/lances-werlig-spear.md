@@ -8,7 +8,8 @@
 **Famille :** Standalone  
 **Origine :** Outward
 
-Artifact spear of the Cabal of Winds.; ; It was forged to slay horrors, who are weak to lightning.
+Artifact spear of the Cabal of Winds.
+It was forged to slay horrors, who are weak to lightning.
 
 | Caractéristique | Valeur |
 | --- | --- |

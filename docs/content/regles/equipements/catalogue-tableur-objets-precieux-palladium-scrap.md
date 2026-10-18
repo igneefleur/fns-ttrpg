@@ -8,7 +8,8 @@
 **Famille :** Métal  
 **Origine :** Outward
 
-A valuable trade good.
+Irregular lump of high quality metal, used to craft exotic arms and armors.
+Crafting monster weapons often requires this material, as iron is often insufficient.
 
 | Caractéristique | Valeur |
 | --- | --- |

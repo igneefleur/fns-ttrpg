@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+Spicy, long-lasting, strengthening Jerky.
 
 | Caractéristique | Valeur |
 | --- | --- |

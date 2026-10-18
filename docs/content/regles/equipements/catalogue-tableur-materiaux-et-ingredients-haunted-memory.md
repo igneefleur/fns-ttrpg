@@ -8,7 +8,7 @@
 **Famille :** Autre / magique  
 **Origine :** Outward
 
-A material used in crafting.
+The memory of a Ghost's deepest regret, exorcised by forbidden magic. It can be used to craft new unique equipment.
 
 | Caractéristique | Valeur |
 | --- | --- |

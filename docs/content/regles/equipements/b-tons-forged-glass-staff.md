@@ -8,7 +8,7 @@
 **Famille :** Forged Glass  
 **Origine :** Homebrew
 
-A staff crafted in the Forged Glass style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

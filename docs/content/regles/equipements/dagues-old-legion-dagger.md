@@ -8,7 +8,7 @@
 **Famille :** Old Legion  
 **Origine :** Homebrew
 
-A dagger crafted in the Old Legion style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

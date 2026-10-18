@@ -8,7 +8,7 @@
 **Famille :** Runic Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

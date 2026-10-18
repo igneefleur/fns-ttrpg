@@ -8,7 +8,7 @@
 **Famille :** Troglodyte  
 **Origine :** Homebrew
 
-A pair of knuckles crafted in the Troglodyte style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

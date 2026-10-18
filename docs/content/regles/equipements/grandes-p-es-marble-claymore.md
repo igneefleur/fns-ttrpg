@@ -8,7 +8,7 @@
 **Famille :** Marble  
 **Origine :** Outward
 
-A greatsword crafted in the Marble style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

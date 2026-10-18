@@ -8,7 +8,7 @@
 **Famille :** Blue Sand Set  
 **Origine :** Outward
 
-Blue Sand Armor is a chest piece made from Blue Sand. It boasts exceptional defenses, outclassing even the Half-plate armor early game, though it is quite heavy and inhibits movement as well as stamina regeneration in exchange for its defensive capabilities.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

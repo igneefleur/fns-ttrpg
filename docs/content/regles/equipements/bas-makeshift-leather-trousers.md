@@ -8,7 +8,7 @@
 **Famille :** Makeshift Leather Set  
 **Origine :** Homebrew
 
-A garment covering the lower body.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

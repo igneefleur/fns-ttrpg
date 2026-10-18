@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-A celestial mushroom used in mana recovery elixirs.
+Celestial toadstool which restores mana and is an ingredient in magic-restoring elixirs.
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Horror Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

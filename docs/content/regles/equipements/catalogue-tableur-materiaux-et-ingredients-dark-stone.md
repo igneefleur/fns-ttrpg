@@ -8,7 +8,7 @@
 **Famille :** Minéral / poudre  
 **Origine :** Outward
 
-A material used in crafting.
+A Mana Stone lightly tainted by Corruption.
 
 | Caractéristique | Valeur |
 | --- | --- |

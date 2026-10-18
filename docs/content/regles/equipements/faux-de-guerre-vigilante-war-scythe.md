@@ -8,7 +8,7 @@
 **Famille :** Vigilante  
 **Origine :** Homebrew
 
-A war scythe crafted in the Vigilante style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

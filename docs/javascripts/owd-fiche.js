@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "3.29.1b";
+  var RELEASE = "3.30.0b";
   var SCHEMA = 17;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -945,10 +945,10 @@
         img: o.img == null ? "" : String(o.img),
         qte: pnum(o.qte === undefined ? 1 : o.qte),
         poids: pnum(o.poids),
-        encombre: pnum(o.encombre),
+        encombre: o.encombre===null?null:pnum(o.encombre),
         // « places » est le nom de CLÉ du volume d'un aliment : le livre dit
         // « volume », la clé garde son nom, qui voyage dans les Attributes
-        places: pnum(o.places),
+        places: o.places===null?null:pnum(o.places),
         emplacements: Math.max(0,Math.floor(num(o.emplacements,1))),
         tenueDeuxMains: o.tenueDeuxMains === true,
         prerequis: o.prerequis && typeof o.prerequis === "object" ? o.prerequis : {},
@@ -1897,7 +1897,7 @@
     (state.inv.objets||[]).forEach(function(o){
       if(!o.dans && pnum(o.qte)>0 && (o.ou==="mainG" || o.ou==="mainD") && out.indexOf(o)<0)out.push(o);
     });
-    return out;
+    return out.filter(function(o){return invType(o)!=="consommable";});
   }
   function capPoches() {
     var t = 0;
@@ -4889,6 +4889,8 @@
     });
     // Les bonus d'équipement sont dérivés : aucune copie temporaire à sauvegarder.
     (state.inv && state.inv.objets || []).forEach(function (o) {
+      // Les effets des consommables sont activés par leur consommation, jamais par leur port.
+      if (invType(o) === "consommable") return;
       if (o.dans || !(pnum(o.qte) > 0) || !(o.ou === "mainG" || o.ou === "mainD" || (o.vet || o.acc || o.sac || o.ceint) && casePermise(o,o.ou) && casesDe(o).length)) return;
       (o.effets || []).forEach(function (id) { var d = effetDefinition(id); if (d) out.push({e:{niveau:1,cible:o.arme ? o.ref : "",equipement:o.ref,source:o.nom}, d:d}); });
     });
@@ -7985,6 +7987,10 @@
     n.catalogueId=modele ? modele.id : o.catalogueId || "";
     n.catalogueVersion=o.catalogueVersion || (modele ? D().catalogueVersion : null);
     n.commerce=o.commerce || (modele && modele.commerce) || "vendu";
+    if(modele){n.desc=modele.desc;n.descriptionSource=modele.descriptionSource || "";n.descriptionStatut=modele.descriptionStatut;n.descriptionEmpreinte=modele.descriptionEmpreinte || "";}
+    n.donneesACompleter=modele ? (modele.donneesACompleter||[]).slice() : (o.donneesACompleter||[]).slice();
+    n.definitionStatut=modele ? (modele.definitionStatut||"") : (o.definitionStatut||"");
+    n.effetsStatut=modele ? (modele.effetsStatut||"") : (o.effetsStatut||"");
     n.typeRangement=o.typeRangement || (modele && modele.typeRangement) || "";
     if(modele && (modele.aliases||[]).indexOf(o.nom)>=0)n.nom=modele.nom;
     n.reglesManuelles=(Array.isArray(o.reglesManuelles)?o.reglesManuelles:modele&&modele.reglesManuelles||[]).map(String);
@@ -7998,7 +8004,7 @@
     if(/^(eclairage|couchage)$/.test(o.typeObjet))n.sousType="autre";
     // La catégorie technique du contenant EST son sous-type affiché.
     if(n.typeObjet==="contenant" && n.contenant)n.sousType=String(n.contenant);
-    n.nourri=invEstIngerable(n);n.places=pnum(o.places);
+    n.nourri=invEstIngerable(n);n.places=o.places===null?null:pnum(o.places);
     n.taille=INV_TAILLES.indexOf(o.taille)>=0?o.taille:modele&&modele.taille||"";
     var mainsBase=o.arme&&o.arme.mains;
     if(mainsBase==null && o.arme)armesData().forEach(function(d){if(d.cle===o.arme.type || !o.arme.type&&pli(d.nom)===pli(o.nom))mainsBase=d.mains;});
@@ -8009,12 +8015,12 @@
     if(n.arme)n.arme.mains=n.mains;
     n.emplacements=Math.max(0,Math.floor(num(o.emplacements,1)));
     n.prerequis={};["for","dex","vig","end","res","fer","int","cha"].forEach(function(k){n.prerequis[k]=pnum(o.prerequis&&o.prerequis[k]!==undefined ? o.prerequis[k] : o.arme&&o.arme[k]);});
-    n.volume=pnum(o.volume===undefined?o.encombre:o.volume);n.encombre=n.volume;
+    var rawVolume=o.volume===undefined?o.encombre:o.volume;n.volume=rawVolume===null?null:pnum(rawVolume);n.encombre=n.volume;
     n.tailleInterieure=String(o.tailleInterieure||"");n.tailleAccroche=String(o.tailleAccroche || (n.sac?"Moyenne":""));
     n.effets=(Array.isArray(o.effets)?o.effets:[]).slice(0,8).map(String);
     n.restaurations={};n.unitesRestauration={};
     ["pv","pe","pm","pr","ps","ph","pi"].forEach(function(k){n.restaurations[k]=snum(o.restaurations&&o.restaurations[k]);n.unitesRestauration[k]=o.unitesRestauration&&o.unitesRestauration[k]==="% max"?"% max":"points";});
-    n.ps=snum(o.ps);n.ph=snum(o.ph);n.tempsConsommation=pnum(o.tempsConsommation);
+    n.ps=o.ps===null?null:snum(o.ps);n.ph=o.ph===null?null:snum(o.ph);n.tempsConsommation=o.tempsConsommation===null?null:pnum(o.tempsConsommation);
     n.conditionsEffets=o.conditionsEffets&&typeof o.conditionsEffets==="object"?JSON.parse(JSON.stringify(o.conditionsEffets)):{};
     n.stats=o.stats&&typeof o.stats==="object"?JSON.parse(JSON.stringify(o.stats)):{};
     // Le choix des huit lignes est purement visuel ; les effets conservent
@@ -8236,7 +8242,7 @@
   function champsObjet(it, q) {
     var bagWeight = it.sac ? window.OwdInventoryData.weight(state.inv.objets,it) : null;
     var fields = [["Quantité", fmtP(q)], ["Poids", fmtP(it.poids || 0) + (q > 1 ? " (total " + fmtP(q * (it.poids || 0)) + ")" : "")],
-      ["Volume", fmtP(it.encombre || 0) + " L"],
+      ["Volume", it.encombre===null?"Non renseigné":fmtP(it.encombre || 0) + " L"],
       ["Achat", prixObjetTexte(it,false)], ["Vente", prixObjetTexte(it,true)]];
     function add(k,v){if(v!=null && String(v).trim()!=="")fields.push([k,String(v)]);}
     if(it.arme){var a=it.arme;add("Type",a.type || "Arme");add("Attaque",a.attaque);add("Dégâts",a.degats);
@@ -8248,7 +8254,7 @@
     else if(it.sac)add("Type","Sac à dos");else if(it.ceint)add("Type","Ceinture");
     if(it.contenant)add("Contenant",it.contenant);if(it.contenu)add("Contenu",it.contenu);
     add("Type",INV_TYPES_OBJETS[invType(it)]);add("Sous-type",it.sousType);add("Taille",it.taille);add("Mains",it.mains || it.arme&&it.arme.mains || 1);
-    if(it.nourri){add("Contenance",fmtP(it.places || 0));add("PS",fmtP(it.ps||0));add("PH",fmtP(it.ph||0));}
+    if(it.nourri){add("Contenance",it.places===null?"Non renseignée":fmtP(it.places || 0));add("PS",it.ps===null?"Non renseigné":fmtP(it.ps||0));add("PH",it.ph===null?"Non renseigné":fmtP(it.ph||0));}
     (it.effets||[]).filter(Boolean).forEach(function(id,i){add("Effet "+(i+1),id);});
     Object.keys(it.restaurations||{}).forEach(function(k){if(it.restaurations[k])add("Restauration "+k.toUpperCase(),fmtP(it.restaurations[k])+" "+(it.unitesRestauration[k]||"points"));});
     if(it.contenant)add("Emplacements",String(it.emplacements==null?1:it.emplacements));if(it.cap)add("Capacité",fmtP(it.cap)+" L");if(it.ep)add("Accroches",fmtP(it.ep)+" acc (max. "+(it.tailleAccroche || "non renseignée")+")");

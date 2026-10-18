@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-A traditional meal for workers, supporting vital recovery and the Discipline boon.
+Typical Worker's food. Provides health regeneration and Discipline.
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Scarlet Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

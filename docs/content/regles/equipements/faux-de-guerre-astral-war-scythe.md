@@ -8,7 +8,7 @@
 **Famille :** Astral  
 **Origine :** Homebrew
 
-A war scythe crafted in the Astral style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

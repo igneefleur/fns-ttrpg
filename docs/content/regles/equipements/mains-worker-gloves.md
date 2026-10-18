@@ -8,7 +8,7 @@
 **Famille :** Worker Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Jade Acolyte Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

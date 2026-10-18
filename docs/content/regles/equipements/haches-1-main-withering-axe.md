@@ -8,7 +8,7 @@
 **Famille :** Withering  
 **Origine :** Homebrew
 
-An axe crafted in the Withering style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+A rare chilly delectable treat. Provides heat resistance, Barrier, and high Stamina regeneration.
 
 | Caractéristique | Valeur |
 | --- | --- |

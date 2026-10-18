@@ -8,7 +8,7 @@
 **Famille :** Savage  
 **Origine :** Homebrew
 
-A war scythe crafted in the Savage style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

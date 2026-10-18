@@ -8,7 +8,7 @@
 **Famille :** Calygrey  
 **Origine :** Outward
 
-A mace crafted in the Calygrey style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

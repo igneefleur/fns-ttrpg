@@ -8,7 +8,7 @@
 **Famille :** Organique souple / végétal  
 **Origine :** Outward
 
-A material used in crafting.
+Rare plants that grow on mountains and used in alchemy.
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** cuisine  
 **Origine :** Outward
 
-A lightweight portable cooking pot for meals prepared over a campfire.
+Lightweight pot that enables the preparation of recipes with more than one ingredient, to be used on a lit campfire.
 
 | Caractéristique | Valeur |
 | --- | --- |

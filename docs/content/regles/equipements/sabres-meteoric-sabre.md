@@ -8,7 +8,7 @@
 **Famille :** Meteoric  
 **Origine :** Homebrew
 
-A sabre crafted in the Meteoric style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

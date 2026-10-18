@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+Translucent spread of delicious fruit jam. The concentrated melon confers an immense stamina recovery.
 
 | Caractéristique | Valeur |
 | --- | --- |

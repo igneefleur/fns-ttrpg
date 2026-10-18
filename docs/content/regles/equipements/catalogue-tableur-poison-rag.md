@@ -8,7 +8,7 @@
 **Famille :** Supplies  
 **Origine :** Outward
 
-Soiled cloth that envenoms a weapon when rubbed on it.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

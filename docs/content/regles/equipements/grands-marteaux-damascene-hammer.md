@@ -8,7 +8,7 @@
 **Famille :** Damascene  
 **Origine :** Outward
 
-Increases the power of Weapon Skills.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Homebrew
 
-Food.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

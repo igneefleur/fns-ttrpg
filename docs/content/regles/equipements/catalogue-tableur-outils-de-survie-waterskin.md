@@ -8,7 +8,8 @@
 **Famille :** Containers  
 **Origine :** Homebrew
 
-An empty leather waterskin with a capacity of eight quarter-liter doses.
+Drinking water restores stamina over time and removes the Burning status.
+It can be filled at fountains or in natural bodies of water.
 
 | Caractéristique | Valeur |
 | --- | --- |

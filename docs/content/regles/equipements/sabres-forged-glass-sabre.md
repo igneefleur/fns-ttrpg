@@ -8,7 +8,7 @@
 **Famille :** Forged Glass  
 **Origine :** Homebrew
 
-A sabre crafted in the Forged Glass style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

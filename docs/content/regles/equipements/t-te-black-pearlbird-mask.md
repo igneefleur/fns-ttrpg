@@ -8,7 +8,7 @@
 **Famille :**   
 **Origine :** Outward
 
-Black Pearlbird Mask is a type of Armor in Outward.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

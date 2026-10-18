@@ -8,7 +8,8 @@
 **Famille :** Autre / magique  
 **Origine :** Outward
 
-An adventuring or quest item.
+Ominous effigy of an undead ruler.
+Used as an offering, this could garner the favor of an ancient power, and with it, unique rewards.
 
 | Caractéristique | Valeur |
 | --- | --- |

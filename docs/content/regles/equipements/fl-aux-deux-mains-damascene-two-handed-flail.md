@@ -8,7 +8,7 @@
 **Famille :** Damascene  
 **Origine :** Homebrew
 
-A two-handed flail crafted in the Damascene style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

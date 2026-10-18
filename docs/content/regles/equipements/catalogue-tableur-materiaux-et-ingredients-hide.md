@@ -8,7 +8,7 @@
 **Famille :** Organique souple / végétal  
 **Origine :** Outward
 
-A material used in crafting.
+Tanned animal skin, used in many basic crafting recipes.
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Arcane Set  
 **Origine :** Homebrew
 
-Footwear for travel and combat.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

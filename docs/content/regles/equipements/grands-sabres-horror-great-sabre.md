@@ -8,7 +8,7 @@
 **Famille :** Horror  
 **Origine :** Homebrew
 
-A great sabre crafted in the Horror style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

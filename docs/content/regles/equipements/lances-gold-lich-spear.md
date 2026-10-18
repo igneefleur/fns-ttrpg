@@ -8,7 +8,7 @@
 **Famille :** Gold-Lich  
 **Origine :** Outward
 
-A spear crafted in the Gold-Lich style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

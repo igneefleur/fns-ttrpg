@@ -8,7 +8,7 @@
 **Famille :** White Priest Set  
 **Origine :** Outward
 
-Footwear for travel and combat.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

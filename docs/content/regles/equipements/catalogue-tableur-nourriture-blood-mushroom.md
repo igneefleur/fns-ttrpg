@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-An unusual mushroom that causes headaches when eaten raw, but is useful in healing elixirs.
+Peculiar toadstool that gives headaches when eaten raw, but is an ingredient in health-restoring elixirs.
 
 | Caractéristique | Valeur |
 | --- | --- |

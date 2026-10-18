@@ -8,7 +8,7 @@
 **Famille :** Brigand Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

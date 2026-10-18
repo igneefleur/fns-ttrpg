@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-An edible nut used in stamina recovery elixirs.
+Edible nut that is a main ingredient in stamina-restoring elixirs.
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Dancer Set  
 **Origine :** Outward
 
-Sensual mask that enables one to dance, or fight, without end.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

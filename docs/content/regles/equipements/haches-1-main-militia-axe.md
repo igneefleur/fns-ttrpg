@@ -8,7 +8,7 @@
 **Famille :** Militia  
 **Origine :** Outward
 
-An axe crafted in the Militia style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

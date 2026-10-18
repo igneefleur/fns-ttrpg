@@ -8,7 +8,7 @@
 **Famille :** Krypteia Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

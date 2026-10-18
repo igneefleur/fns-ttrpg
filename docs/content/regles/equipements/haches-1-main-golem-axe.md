@@ -8,7 +8,7 @@
 **Famille :** Golem  
 **Origine :** Homebrew
 
-An axe crafted in the Golem style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

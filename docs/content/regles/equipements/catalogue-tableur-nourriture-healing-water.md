@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-A drink.
+Water that has been fortified with healing roots. Recovers HP over time instead of Stamina.
 
 | Caractéristique | Valeur |
 | --- | --- |

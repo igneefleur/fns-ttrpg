@@ -8,7 +8,8 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+Pearlbird egg boiled over a campfire, removing the risk of disease.
+Eggs provide both health and stamina recovery over time.
 
 | Caractéristique | Valeur |
 | --- | --- |

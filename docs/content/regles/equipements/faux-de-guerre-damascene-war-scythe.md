@@ -8,7 +8,7 @@
 **Famille :** Damascene  
 **Origine :** Homebrew
 
-A war scythe crafted in the Damascene style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

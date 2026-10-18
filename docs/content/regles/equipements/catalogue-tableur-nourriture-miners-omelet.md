@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+Filling omelet that is a good way to use Common Mushrooms to cook into a decent dish.
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Chalcedony  
 **Origine :** Homebrew
 
-A war scythe crafted in the Chalcedony style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

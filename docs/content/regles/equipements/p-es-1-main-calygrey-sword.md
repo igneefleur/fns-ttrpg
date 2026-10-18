@@ -8,7 +8,7 @@
 **Famille :** Calygrey  
 **Origine :** Homebrew
 
-A sword crafted in the Calygrey style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

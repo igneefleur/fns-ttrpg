@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-A drink.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Marble  
 **Origine :** Outward
 
-A greataxe crafted in the Marble style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

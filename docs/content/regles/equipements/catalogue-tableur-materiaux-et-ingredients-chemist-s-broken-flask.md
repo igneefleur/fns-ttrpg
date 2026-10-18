@@ -8,7 +8,7 @@
 **Famille :** Autre / magique  
 **Origine :** Outward
 
-A material used in crafting.
+Only the Chemist knew how to mix poison, sun dust and demon blood.
 
 | Caractéristique | Valeur |
 | --- | --- |

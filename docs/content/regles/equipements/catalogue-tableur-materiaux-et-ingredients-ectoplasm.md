@@ -8,7 +8,7 @@
 **Famille :** Liquide / pâte  
 **Origine :** Outward
 
-A material used in crafting.
+The ghostly remains of a deathly sick Molepig runt...
 
 | Caractéristique | Valeur |
 | --- | --- |

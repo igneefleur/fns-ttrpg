@@ -8,7 +8,7 @@
 **Famille :** Elite Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

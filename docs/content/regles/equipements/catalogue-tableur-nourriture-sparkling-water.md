@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Sparkling water with enhanced stamina recovery properties.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

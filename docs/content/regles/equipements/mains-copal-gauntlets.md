@@ -8,7 +8,7 @@
 **Famille :** Copal Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

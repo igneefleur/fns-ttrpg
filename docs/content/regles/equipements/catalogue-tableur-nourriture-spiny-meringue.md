@@ -8,7 +8,8 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-A spiny dessert with strong health and stamina recovery properties.
+Thorny dessert with high health and stamina restorative properties.
+It also helps against the sun when eaten.
 
 | Caractéristique | Valeur |
 | --- | --- |

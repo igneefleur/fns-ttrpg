@@ -8,7 +8,7 @@
 **Famille :** Troglodyte  
 **Origine :** Homebrew
 
-A mace crafted in the Troglodyte style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

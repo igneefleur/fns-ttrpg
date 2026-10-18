@@ -8,7 +8,7 @@
 **Famille :** Organique souple / végétal  
 **Origine :** Outward
 
-A material used in crafting.
+Naturally resistant to Corruption. Used in Crafting.
 
 | Caractéristique | Valeur |
 | --- | --- |

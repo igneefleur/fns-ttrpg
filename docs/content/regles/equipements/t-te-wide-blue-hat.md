@@ -8,7 +8,7 @@
 **Famille :**   
 **Origine :** Outward
 
-Wide Blue Hat is a type of Armor in Outward.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

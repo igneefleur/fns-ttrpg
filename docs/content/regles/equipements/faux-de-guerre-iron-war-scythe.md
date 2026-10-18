@@ -8,7 +8,7 @@
 **Famille :** Iron  
 **Origine :** Homebrew
 
-A war scythe crafted in the Iron style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

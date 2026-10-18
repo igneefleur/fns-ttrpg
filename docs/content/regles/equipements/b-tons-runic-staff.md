@@ -8,7 +8,7 @@
 **Famille :** Runic  
 **Origine :** Homebrew
 
-A staff crafted in the Runic style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

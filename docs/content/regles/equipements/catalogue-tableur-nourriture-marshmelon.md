@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+Heavy marsh fruit that restore far more stamina than Gaberries. These raw melons gain anti-poison properties when boiled.
 
 | Caractéristique | Valeur |
 | --- | --- |

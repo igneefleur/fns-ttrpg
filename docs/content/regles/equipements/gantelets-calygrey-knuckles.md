@@ -8,7 +8,7 @@
 **Famille :** Calygrey  
 **Origine :** Homebrew
 
-A pair of knuckles crafted in the Calygrey style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

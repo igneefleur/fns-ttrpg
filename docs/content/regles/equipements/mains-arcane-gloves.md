@@ -8,7 +8,7 @@
 **Famille :** Arcane Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

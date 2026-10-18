@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Cooked berries that provide a little nourishment and keep better.
+Boiled fruit that provides a bit of nutrition and rots more slowly.
 
 | Caractéristique | Valeur |
 | --- | --- |

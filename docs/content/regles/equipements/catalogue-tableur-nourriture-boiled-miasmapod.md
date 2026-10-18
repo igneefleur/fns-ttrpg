@@ -8,7 +8,8 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Cooked marsh cephalopod, less toxic than its raw form but still dangerous.
+Boiled octopus that is less toxic but with lower restorative qualities.
+It also instantly cures infections.
 
 | Caractéristique | Valeur |
 | --- | --- |

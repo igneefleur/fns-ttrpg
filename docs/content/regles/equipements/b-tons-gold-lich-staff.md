@@ -8,7 +8,7 @@
 **Famille :** Gold-Lich  
 **Origine :** Homebrew
 
-A staff crafted in the Gold-Lich style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

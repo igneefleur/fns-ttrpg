@@ -8,7 +8,7 @@
 **Famille :** Porcelain  
 **Origine :** Homebrew
 
-A war scythe crafted in the Porcelain style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

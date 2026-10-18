@@ -8,7 +8,7 @@
 **Famille :** alchimie  
 **Origine :** Outward
 
-A lightweight alchemical apparatus for brewing potions over a fire.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

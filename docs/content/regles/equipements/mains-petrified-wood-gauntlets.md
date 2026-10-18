@@ -8,7 +8,7 @@
 **Famille :** Petrified Wood Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

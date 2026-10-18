@@ -8,7 +8,7 @@
 **Famille :** Smoke  
 **Origine :** Homebrew
 
-A rapier crafted in the Smoke style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

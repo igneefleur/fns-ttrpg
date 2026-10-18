@@ -8,7 +8,7 @@
 **Famille :** Shadow Kazite Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Minéral / poudre  
 **Origine :** Outward
 
-A valuable trade good.
+Ancient resin that can be shaped into armors. Only the smiths of Berg possess such techniques, though.
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Gemme  
 **Origine :** Outward
 
-Gemme compacte ; Tsar Stone non commercialisable
+Hefty precious stone with a lush green color. It can fetch an enormous price.
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+Rainbow Jam, spread across bread, to make more food portions out of it.
 
 | Caractéristique | Valeur |
 | --- | --- |

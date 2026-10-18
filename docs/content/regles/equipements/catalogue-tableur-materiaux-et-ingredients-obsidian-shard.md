@@ -8,7 +8,7 @@
 **Famille :** Minéral / poudre  
 **Origine :** Outward
 
-A material used in crafting.
+Chunk of fire-infused glass, used to craft bludgeoning weapons.
 
 | Caractéristique | Valeur |
 | --- | --- |

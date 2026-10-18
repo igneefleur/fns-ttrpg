@@ -8,7 +8,7 @@
 **Famille :** Kazite Set  
 **Origine :** Homebrew
 
-A garment covering the lower body.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

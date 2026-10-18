@@ -8,7 +8,7 @@
 **Famille :** Black Fur Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

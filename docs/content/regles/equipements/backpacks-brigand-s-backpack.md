@@ -8,7 +8,7 @@
 **Famille :** Backpacks  
 **Origine :** Outward
 
-A backpack with internal storage and external attachment points.
+Increases your Physical Damage by 15%. Does not impede rolling.
 
 | Caractéristique | Valeur |
 | --- | --- |

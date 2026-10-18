@@ -8,7 +8,7 @@
 **Famille :** Scaled Leather Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

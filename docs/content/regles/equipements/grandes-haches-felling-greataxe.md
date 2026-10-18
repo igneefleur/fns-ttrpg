@@ -8,7 +8,7 @@
 **Famille :** Standalone  
 **Origine :** Outward
 
-A greataxe.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

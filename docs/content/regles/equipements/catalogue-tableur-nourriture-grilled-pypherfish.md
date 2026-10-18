@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Cooked fish rich in mana. Ordinary cooking does not eliminate its toxins.
+A mana-heavy cooked fish. The toxins have been cooked into the meat...
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Savage  
 **Origine :** Homebrew
 
-A two-handed flail crafted in the Savage style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

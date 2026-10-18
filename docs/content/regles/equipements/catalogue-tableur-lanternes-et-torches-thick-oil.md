@@ -8,7 +8,7 @@
 **Famille :** Food and supplies  
 **Origine :** Outward
 
-Thick combustible oil used to refuel compatible lanterns.
+Flammable fluid used to refuel lanterns and to make incendiary weapons.
 
 | Caractéristique | Valeur |
 | --- | --- |

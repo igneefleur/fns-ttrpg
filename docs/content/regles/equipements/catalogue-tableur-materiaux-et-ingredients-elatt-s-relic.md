@@ -8,7 +8,7 @@
 **Famille :** Autre / magique  
 **Origine :** Outward
 
-A material used in crafting.
+A candle effigy imbued with Elatt's protective spells. It can be used to craft new unique equipment.
 
 | Caractéristique | Valeur |
 | --- | --- |

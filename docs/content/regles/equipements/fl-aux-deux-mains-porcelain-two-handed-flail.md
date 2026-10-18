@@ -8,7 +8,7 @@
 **Famille :** Porcelain  
 **Origine :** Homebrew
 
-A two-handed flail crafted in the Porcelain style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

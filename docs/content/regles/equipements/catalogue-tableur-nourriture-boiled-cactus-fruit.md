@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+Mushy fruit that, after being boiled, offers an immediate jolt of stamina.
 
 | Caractéristique | Valeur |
 | --- | --- |

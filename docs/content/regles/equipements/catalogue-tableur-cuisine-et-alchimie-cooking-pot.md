@@ -8,7 +8,7 @@
 **Famille :** cuisine  
 **Origine :** Outward
 
-A heavy metal pot used to prepare cooked meals over a campfire.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

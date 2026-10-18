@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-A combustible mushroom used in many alchemical preparations.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

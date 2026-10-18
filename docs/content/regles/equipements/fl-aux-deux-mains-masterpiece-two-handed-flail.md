@@ -8,7 +8,7 @@
 **Famille :** Masterpiece  
 **Origine :** Homebrew
 
-A two-handed flail crafted in the Masterpiece style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

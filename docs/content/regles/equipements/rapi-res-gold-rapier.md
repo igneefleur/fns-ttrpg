@@ -8,7 +8,7 @@
 **Famille :** Gold  
 **Origine :** Homebrew
 
-A rapier crafted in the Gold style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

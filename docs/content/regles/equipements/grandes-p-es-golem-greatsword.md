@@ -8,7 +8,7 @@
 **Famille :** Golem  
 **Origine :** Outward
 
-A greatsword crafted in the Golem style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

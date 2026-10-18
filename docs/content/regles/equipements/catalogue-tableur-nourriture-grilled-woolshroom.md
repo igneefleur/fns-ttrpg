@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-A lightly cooked mushroom that retains its stealth-enhancing properties.
+Crudely cooked mushroom that, when eaten, muffles the sound of one's footsteps.
 
 | Caractéristique | Valeur |
 | --- | --- |

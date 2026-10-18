@@ -8,7 +8,7 @@
 **Famille :** Giantkind  
 **Origine :** Outward
 
-A greataxe crafted in the Giantkind style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

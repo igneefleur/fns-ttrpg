@@ -8,7 +8,7 @@
 **Famille :** Marble  
 **Origine :** Homebrew
 
-A war scythe crafted in the Marble style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

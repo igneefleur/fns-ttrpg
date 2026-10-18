@@ -8,7 +8,7 @@
 **Famille :** Withering  
 **Origine :** Homebrew
 
-A pair of knuckles crafted in the Withering style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -396,6 +396,7 @@ Les équipements, leurs valeurs et leurs effets sont définis par la Boutique.
 - [Fire Rag](equipements/catalogue-tableur-fire-rag.md)
 - [Ice Rag](equipements/catalogue-tableur-ice-rag.md)
 - [Poison Rag](equipements/catalogue-tableur-poison-rag.md)
+- [Bandages](equipements/catalogue-wiki-bandages.md)
 
 ## Contenants
 
@@ -403,7 +404,7 @@ Les équipements, leurs valeurs et leurs effets sont définis par la Boutique.
 - [Glass Bottle](equipements/catalogue-tableur-contenants-bouteille-en-verre.md)
 - [Glass Vial](equipements/catalogue-tableur-contenants-fiole-en-verre.md)
 - [Glass Jar](equipements/catalogue-tableur-contenants-pot-en-verre.md)
-- [Poche](equipements/catalogue-tableur-contenants-poche.md)
+- [Pouch](equipements/catalogue-tableur-contenants-poche.md)
 
 ## Cuisine et alchimie
 
@@ -1293,6 +1294,7 @@ Les équipements, leurs valeurs et leurs effets sont définis par la Boutique.
 - [Waning Tentacle](equipements/catalogue-tableur-materiaux-et-ingredients-waning-tentacle.md)
 - [Wheat](equipements/catalogue-tableur-materiaux-et-ingredients-wheat.md)
 - [Wood](equipements/catalogue-tableur-materiaux-et-ingredients-wood.md)
+- [Crystal Powder](equipements/catalogue-wiki-crystal-powder.md)
 
 ## Objets divers
 
@@ -1418,6 +1420,19 @@ Les équipements, leurs valeurs et leurs effets sont définis par la Boutique.
 - [Small Sapphire](equipements/catalogue-tableur-pierres-precieuses-small-sapphire.md)
 - [Tiny Aquamarine](equipements/catalogue-tableur-pierres-precieuses-tiny-aquamarine.md)
 - [Tsar Stone](equipements/catalogue-tableur-pierres-precieuses-tsar-stone.md)
+
+## Pièges et composants
+
+- [Tripwire Trap](equipements/catalogue-wiki-tripwire-trap.md)
+- [Pressure Plate Trap](equipements/catalogue-wiki-pressure-plate-trap.md)
+- [Frost Bomb](equipements/catalogue-wiki-frost-bomb.md)
+- [Spikes – Wood](equipements/catalogue-wiki-spikes-wood.md)
+- [Spikes – Iron](equipements/catalogue-wiki-spikes-iron.md)
+- [Spikes – Palladium](equipements/catalogue-wiki-spikes-palladium.md)
+- [Charge – Incendiary](equipements/catalogue-wiki-charge-incendiary.md)
+- [Charge – Toxic](equipements/catalogue-wiki-charge-toxic.md)
+- [Charge – Nerve Gas](equipements/catalogue-wiki-charge-nerve-gas.md)
+- [Arcane Dampener](equipements/catalogue-wiki-arcane-dampener.md)
 
 ## Rangement
 

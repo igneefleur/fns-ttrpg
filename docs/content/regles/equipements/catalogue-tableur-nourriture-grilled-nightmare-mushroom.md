@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-A cooked mushroom whose toxic substances become an alertness stimulant.
+Grilling this mushroom has converted the poison into a substance that increases awareness.
 
 | Caractéristique | Valeur |
 | --- | --- |

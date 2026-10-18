@@ -8,7 +8,7 @@
 **Famille :** Vigilante Set  
 **Origine :** Outward
 
-A bloody Militia Helm passed down by your ancestors.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

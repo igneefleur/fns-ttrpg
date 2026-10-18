@@ -8,7 +8,7 @@
 **Famille :** Withering  
 **Origine :** Homebrew
 
-A mace crafted in the Withering style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

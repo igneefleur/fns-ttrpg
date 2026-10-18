@@ -8,7 +8,7 @@
 **Famille :** Astral  
 **Origine :** Homebrew
 
-A rapier crafted in the Astral style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

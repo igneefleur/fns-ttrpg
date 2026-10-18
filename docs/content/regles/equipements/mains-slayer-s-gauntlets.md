@@ -8,7 +8,7 @@
 **Famille :** Slayer's Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

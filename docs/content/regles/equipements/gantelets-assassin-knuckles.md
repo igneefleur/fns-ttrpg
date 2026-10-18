@@ -8,7 +8,7 @@
 **Famille :** Assassin  
 **Origine :** Homebrew
 
-A pair of knuckles crafted in the Assassin style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

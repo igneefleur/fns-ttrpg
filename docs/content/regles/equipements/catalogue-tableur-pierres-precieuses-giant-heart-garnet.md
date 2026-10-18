@@ -8,7 +8,7 @@
 **Famille :** Gemme  
 **Origine :** Outward
 
-A garnet prized as a precious trade stone.
+Large mineralized heart of an Ash Giant.
 
 | Caractéristique | Valeur |
 | --- | --- |

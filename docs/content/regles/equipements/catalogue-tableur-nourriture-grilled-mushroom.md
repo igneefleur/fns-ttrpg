@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-A cooked, crumbly mushroom that provides little nourishment.
+Crumbling fungus that barely provides nutrients.
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Master Kazite Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

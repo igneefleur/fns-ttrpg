@@ -8,7 +8,7 @@
 **Famille :**   
 **Origine :** Outward
 
-Simple Shoes is a type of Boot in Outward.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -39,3 +39,19 @@ for(const nom of ['Clean Water','River Water','Rancid Water','Salt Water']){
  assert.ok(p.s.some(f=>f[0]==='Achat'&&f[1]==='Prix non renseigné'));
 }
 console.log('OK prix absents conservés, anciens tarifs inventés retirés à la normalisation.');
+// Les descriptions d’instance issues d’anciens catalogues suivent la source Boutique.
+const oldDescription=registry.equipements.find(o=>o.nom==='Primitive Belt');
+const refreshed=ctx.normalize({nom:oldDescription.nom,desc:'Invented description'}, {...oldDescription,desc:'Invented description'});
+assert.equal(refreshed.desc,'');
+for(const nom of ['Bandages','Crystal Powder','Tripwire Trap','Pressure Plate Trap','Frost Bomb','Spikes – Wood','Spikes – Iron','Spikes – Palladium','Charge – Incendiary','Charge – Toxic','Charge – Nerve Gas','Arcane Dampener']){
+ const o=registry.equipements.find(o=>o.nom===nom);assert.ok(o,nom);assert.equal(o.volume,null);assert.equal(o.taille,'');
+ assert.deepEqual(o.effets,[]);assert.deepEqual(o.stats,{});assert.equal(o.effetsStatut,'non-definis');
+ const n=ctx.normalize({nom:o.nom},{...o});assert.equal(n.volume,null);assert.equal(n.encombre,null);assert.equal(n.desc,o.desc);
+ const p=payload(list.find(it=>it.nom===nom));assert.equal(p.l,null);assert.equal(p.item.volume,null);assert.equal(p.d,o.desc);
+ assert.ok(p.s.some(f=>f[0]==='Volume'&&f[1]==='Non renseigné'));
+}
+console.log('OK nouvelles fournitures sans effets, données inconnues explicites, descriptions vides conservées au transfert.');
+
+const powder=registry.equipements.find(o=>o.nom==='Crystal Powder');
+const normalizedPowder=ctx.normalize({nom:powder.nom},{...powder});
+for(const k of ['volume','encombre','places','ps','ph','tempsConsommation'])assert.equal(normalizedPowder[k],null,k);

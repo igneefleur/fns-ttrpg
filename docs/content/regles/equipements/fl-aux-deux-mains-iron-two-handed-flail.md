@@ -8,7 +8,7 @@
 **Famille :** Iron  
 **Origine :** Homebrew
 
-A two-handed flail crafted in the Iron style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

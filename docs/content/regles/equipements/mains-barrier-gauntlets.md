@@ -8,7 +8,7 @@
 **Famille :** Barrier Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Entomber Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

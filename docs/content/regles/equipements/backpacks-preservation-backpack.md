@@ -8,7 +8,8 @@
 **Famille :** Backpacks  
 **Origine :** Outward
 
-A backpack with internal storage and external attachment points.
+Elite bag that strongly slows down the decay of the food it contains.
+Equipping this backpack slows your dodge and removes your dodge invincibility
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+Rare crustacean coveted by fisherman for its mana-restoring properties but that can make one ill when eaten raw.
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Brew that neutralizes most poisons.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

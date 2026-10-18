@@ -8,7 +8,7 @@
 **Famille :** Assassin  
 **Origine :** Homebrew
 
-A staff crafted in the Assassin style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Iron  
 **Origine :** Outward
 
-A mace crafted in the Iron style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** feu-de-camp  
 **Origine :** Outward
 
-A kit used to set up a fire for cooking, boiling water and keeping warm.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,8 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Potion which instantly reinvigorates a tired body.
-It restores a bit of max stamina.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Autre / magique  
 **Origine :** Outward
 
-A material used in crafting.
+A fragment of Calixa's original shield, shattered in battle against the Devourer. It can be used to craft new unique equipment.
 
 | Caractéristique | Valeur |
 | --- | --- |

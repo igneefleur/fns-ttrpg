@@ -8,7 +8,7 @@
 **Famille :** Marble  
 **Origine :** Homebrew
 
-A sabre crafted in the Marble style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

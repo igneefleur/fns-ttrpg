@@ -8,7 +8,7 @@
 **Famille :** Adventurer Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

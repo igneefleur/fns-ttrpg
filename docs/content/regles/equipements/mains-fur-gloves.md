@@ -8,7 +8,7 @@
 **Famille :** Fur Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

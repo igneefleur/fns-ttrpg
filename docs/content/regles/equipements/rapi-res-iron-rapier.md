@@ -8,7 +8,7 @@
 **Famille :** Iron  
 **Origine :** Homebrew
 
-A rapier crafted in the Iron style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

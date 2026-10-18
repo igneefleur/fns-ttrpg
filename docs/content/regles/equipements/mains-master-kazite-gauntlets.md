@@ -8,7 +8,7 @@
 **Famille :** Master Kazite Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

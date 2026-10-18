@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+Heavy desert fruit that re-invigorates and protects against the sun.
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Orichalcum Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

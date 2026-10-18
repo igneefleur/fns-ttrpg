@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Foul water found in places such as the Hallowed Marsh, liable to cause illness.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

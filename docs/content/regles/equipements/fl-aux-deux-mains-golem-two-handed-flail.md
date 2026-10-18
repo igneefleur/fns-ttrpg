@@ -8,7 +8,7 @@
 **Famille :** Golem  
 **Origine :** Homebrew
 
-A two-handed flail crafted in the Golem style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

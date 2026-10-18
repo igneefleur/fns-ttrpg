@@ -8,7 +8,7 @@
 **Famille :** Gold-Lich  
 **Origine :** Outward
 
-A pair of knuckles crafted in the Gold-Lich style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

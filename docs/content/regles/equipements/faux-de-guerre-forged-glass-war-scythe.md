@@ -8,7 +8,7 @@
 **Famille :** Forged Glass  
 **Origine :** Homebrew
 
-A war scythe crafted in the Forged Glass style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

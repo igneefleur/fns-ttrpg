@@ -8,7 +8,7 @@
 **Famille :** Merton's Bones  
 **Origine :** Homebrew
 
-Footwear for travel and combat.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

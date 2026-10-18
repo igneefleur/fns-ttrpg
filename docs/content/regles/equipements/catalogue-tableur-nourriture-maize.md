@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-A nourishing staple favored by workers and travelers.
+A staple food for laborers and travellers alike. Quite filling.
 
 | Caractéristique | Valeur |
 | --- | --- |

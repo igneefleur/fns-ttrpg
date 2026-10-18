@@ -8,7 +8,7 @@
 **Famille :**   
 **Origine :** Outward
 
-Dark Green Garb is a type of Armor in Outward.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

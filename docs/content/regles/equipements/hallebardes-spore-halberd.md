@@ -8,7 +8,7 @@
 **Famille :** Troglodyte  
 **Origine :** Outward
 
-A Troglodyte Halberd, passed down by your ancestors. The ages have made the fungus all the more virulent... Inflicts Poison.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

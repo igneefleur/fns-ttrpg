@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+Mashed and preserved Golden Crescent.
 
 | Caractéristique | Valeur |
 | --- | --- |

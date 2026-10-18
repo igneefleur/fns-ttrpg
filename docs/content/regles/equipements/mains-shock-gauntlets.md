@@ -8,7 +8,7 @@
 **Famille :** Shock Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+A Torcrab's Egg. Cook before eating.
 
 | Caractéristique | Valeur |
 | --- | --- |

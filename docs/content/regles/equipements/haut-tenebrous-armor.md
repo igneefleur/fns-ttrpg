@@ -8,7 +8,7 @@
 **Famille :** Tenebrous Set  
 **Origine :** Outward
 
-A full-length outfit covering both the upper and lower body.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

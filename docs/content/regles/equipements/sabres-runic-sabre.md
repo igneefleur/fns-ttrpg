@@ -8,7 +8,7 @@
 **Famille :** Runic  
 **Origine :** Homebrew
 
-A sabre crafted in the Runic style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** White Arcane Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

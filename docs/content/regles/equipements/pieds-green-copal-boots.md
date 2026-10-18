@@ -8,7 +8,7 @@
 **Famille :** Green Copal Set  
 **Origine :** Outward
 
-Footwear for travel and combat.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Minéral / poudre  
 **Origine :** Outward
 
-A material used in crafting.
+A fine, shimmering dust of diamond specs.
 
 | Caractéristique | Valeur |
 | --- | --- |

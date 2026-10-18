@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-A pungent paste that restores burnt vital reserves and treats infections.
+Odorous paste which restores your maximum health and stamina, allowing you to continue adventuring without sleep. It also instantly cures infections.
 
 | Caractéristique | Valeur |
 | --- | --- |

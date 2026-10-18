@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+Boiled Purpkins that rot slower than usual.
 
 | Caractéristique | Valeur |
 | --- | --- |

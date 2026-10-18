@@ -8,7 +8,7 @@
 **Famille :** Tuanosaur  
 **Origine :** Outward
 
-Inflicts Extreme Bleeding effect on enemies.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

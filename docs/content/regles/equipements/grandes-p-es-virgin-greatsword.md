@@ -8,7 +8,7 @@
 **Famille :** Virgin  
 **Origine :** Outward
 
-A pure piece of gear, designed to receive enchantments.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

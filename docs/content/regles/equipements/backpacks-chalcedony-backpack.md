@@ -8,7 +8,7 @@
 **Famille :** Backpacks  
 **Origine :** Outward
 
-A backpack with internal storage and external attachment points.
+Provides 15 resistance to heat when worn.
 
 | Caractéristique | Valeur |
 | --- | --- |

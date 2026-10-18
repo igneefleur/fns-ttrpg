@@ -8,7 +8,7 @@
 **Famille :** Jade-Lich  
 **Origine :** Homebrew
 
-A rapier crafted in the Jade-Lich style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

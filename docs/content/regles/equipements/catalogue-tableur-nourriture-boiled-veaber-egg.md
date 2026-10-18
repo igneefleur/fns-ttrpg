@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+A Veaber Egg, cooked on a campfire, ridding it of disease. A staple food for Harmattan's mages.
 
 | Caractéristique | Valeur |
 | --- | --- |

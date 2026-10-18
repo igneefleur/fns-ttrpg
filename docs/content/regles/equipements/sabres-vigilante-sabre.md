@@ -8,7 +8,7 @@
 **Famille :** Vigilante  
 **Origine :** Outward
 
-A bloody Militia Sword passed down by your ancestors.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

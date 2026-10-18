@@ -8,7 +8,7 @@
 **Famille :** Galvanic  
 **Origine :** Homebrew
 
-A war scythe crafted in the Galvanic style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

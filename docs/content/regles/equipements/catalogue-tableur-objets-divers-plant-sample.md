@@ -8,7 +8,7 @@
 **Famille :** Spécimen  
 **Origine :** Outward
 
-An adventuring or quest item.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

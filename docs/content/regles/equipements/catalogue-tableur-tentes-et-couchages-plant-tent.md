@@ -8,7 +8,8 @@
 **Famille :** Adventuring gear  
 **Origine :** Outward
 
-Wondrous shelter born of a seed, which protects against the heat and refills one's Thirst and hunger. This tent cannot be picked back up.
+Wondrous shelter born of a seed, which protects against the heat and refills one's Thirst and hunger.
+This tent cannot be picked back up.
 
 | Caractéristique | Valeur |
 | --- | --- |

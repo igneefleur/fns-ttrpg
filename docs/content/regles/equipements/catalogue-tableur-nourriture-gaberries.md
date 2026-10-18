@@ -8,7 +8,8 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+Common berry that only offers a small amount of nutrition and will quickly rot unless cooked.
+As a fruit, these berries restore stamina over time.
 
 | Caractéristique | Valeur |
 | --- | --- |

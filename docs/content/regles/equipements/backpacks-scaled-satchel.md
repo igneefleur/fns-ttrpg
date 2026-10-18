@@ -8,7 +8,7 @@
 **Famille :** Backpacks  
 **Origine :** Outward
 
-A backpack with internal storage and external attachment points.
+Craftable bag with improved carrying capacity, a lantern slot and which does not restrict your dodge.
 
 | Caractéristique | Valeur |
 | --- | --- |

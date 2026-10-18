@@ -8,7 +8,7 @@
 **Famille :** Runic  
 **Origine :** Homebrew
 
-A halberd crafted in the Runic style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

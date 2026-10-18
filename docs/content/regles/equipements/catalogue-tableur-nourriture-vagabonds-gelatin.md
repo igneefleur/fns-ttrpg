@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+A jam containing the properties of several regional jams. Provides unparalleled benefits.
 
 | Caractéristique | Valeur |
 | --- | --- |

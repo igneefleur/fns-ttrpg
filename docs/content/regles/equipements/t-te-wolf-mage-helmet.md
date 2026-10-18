@@ -8,7 +8,7 @@
 **Famille :** Wolf Mage Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

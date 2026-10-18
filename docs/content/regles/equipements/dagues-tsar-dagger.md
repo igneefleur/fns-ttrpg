@@ -8,7 +8,7 @@
 **Famille :** Tsar  
 **Origine :** Homebrew
 
-A dagger crafted in the Tsar style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

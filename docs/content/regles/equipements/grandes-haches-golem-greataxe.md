@@ -8,7 +8,7 @@
 **Famille :** Golem  
 **Origine :** Homebrew
 
-A greataxe crafted in the Golem style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Gold-Lich Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

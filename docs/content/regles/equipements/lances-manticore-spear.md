@@ -8,7 +8,7 @@
 **Famille :** Manticore  
 **Origine :** Homebrew
 
-A spear crafted in the Manticore style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

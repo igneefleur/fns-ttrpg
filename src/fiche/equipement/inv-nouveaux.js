@@ -61,6 +61,10 @@
     n.catalogueId=modele ? modele.id : o.catalogueId || "";
     n.catalogueVersion=o.catalogueVersion || (modele ? D().catalogueVersion : null);
     n.commerce=o.commerce || (modele && modele.commerce) || "vendu";
+    if(modele){n.desc=modele.desc;n.descriptionSource=modele.descriptionSource || "";n.descriptionStatut=modele.descriptionStatut;n.descriptionEmpreinte=modele.descriptionEmpreinte || "";}
+    n.donneesACompleter=modele ? (modele.donneesACompleter||[]).slice() : (o.donneesACompleter||[]).slice();
+    n.definitionStatut=modele ? (modele.definitionStatut||"") : (o.definitionStatut||"");
+    n.effetsStatut=modele ? (modele.effetsStatut||"") : (o.effetsStatut||"");
     n.typeRangement=o.typeRangement || (modele && modele.typeRangement) || "";
     if(modele && (modele.aliases||[]).indexOf(o.nom)>=0)n.nom=modele.nom;
     n.reglesManuelles=(Array.isArray(o.reglesManuelles)?o.reglesManuelles:modele&&modele.reglesManuelles||[]).map(String);
@@ -74,7 +78,7 @@
     if(/^(eclairage|couchage)$/.test(o.typeObjet))n.sousType="autre";
     // La catégorie technique du contenant EST son sous-type affiché.
     if(n.typeObjet==="contenant" && n.contenant)n.sousType=String(n.contenant);
-    n.nourri=invEstIngerable(n);n.places=pnum(o.places);
+    n.nourri=invEstIngerable(n);n.places=o.places===null?null:pnum(o.places);
     n.taille=INV_TAILLES.indexOf(o.taille)>=0?o.taille:modele&&modele.taille||"";
     var mainsBase=o.arme&&o.arme.mains;
     if(mainsBase==null && o.arme)armesData().forEach(function(d){if(d.cle===o.arme.type || !o.arme.type&&pli(d.nom)===pli(o.nom))mainsBase=d.mains;});
@@ -85,12 +89,12 @@
     if(n.arme)n.arme.mains=n.mains;
     n.emplacements=Math.max(0,Math.floor(num(o.emplacements,1)));
     n.prerequis={};["for","dex","vig","end","res","fer","int","cha"].forEach(function(k){n.prerequis[k]=pnum(o.prerequis&&o.prerequis[k]!==undefined ? o.prerequis[k] : o.arme&&o.arme[k]);});
-    n.volume=pnum(o.volume===undefined?o.encombre:o.volume);n.encombre=n.volume;
+    var rawVolume=o.volume===undefined?o.encombre:o.volume;n.volume=rawVolume===null?null:pnum(rawVolume);n.encombre=n.volume;
     n.tailleInterieure=String(o.tailleInterieure||"");n.tailleAccroche=String(o.tailleAccroche || (n.sac?"Moyenne":""));
     n.effets=(Array.isArray(o.effets)?o.effets:[]).slice(0,8).map(String);
     n.restaurations={};n.unitesRestauration={};
     ["pv","pe","pm","pr","ps","ph","pi"].forEach(function(k){n.restaurations[k]=snum(o.restaurations&&o.restaurations[k]);n.unitesRestauration[k]=o.unitesRestauration&&o.unitesRestauration[k]==="% max"?"% max":"points";});
-    n.ps=snum(o.ps);n.ph=snum(o.ph);n.tempsConsommation=pnum(o.tempsConsommation);
+    n.ps=o.ps===null?null:snum(o.ps);n.ph=o.ph===null?null:snum(o.ph);n.tempsConsommation=o.tempsConsommation===null?null:pnum(o.tempsConsommation);
     n.conditionsEffets=o.conditionsEffets&&typeof o.conditionsEffets==="object"?JSON.parse(JSON.stringify(o.conditionsEffets)):{};
     n.stats=o.stats&&typeof o.stats==="object"?JSON.parse(JSON.stringify(o.stats)):{};
     // Le choix des huit lignes est purement visuel ; les effets conservent

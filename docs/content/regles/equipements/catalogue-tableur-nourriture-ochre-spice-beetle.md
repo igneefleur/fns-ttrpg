@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-An uncommon invigorating plant-dwelling insect used in elaborate recipes.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

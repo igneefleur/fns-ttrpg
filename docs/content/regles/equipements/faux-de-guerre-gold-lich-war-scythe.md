@@ -8,7 +8,7 @@
 **Famille :** Gold-Lich  
 **Origine :** Homebrew
 
-A war scythe crafted in the Gold-Lich style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

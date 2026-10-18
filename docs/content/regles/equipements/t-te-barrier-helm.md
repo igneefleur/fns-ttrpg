@@ -8,7 +8,7 @@
 **Famille :** Barrier Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

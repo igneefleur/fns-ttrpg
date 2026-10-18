@@ -8,7 +8,7 @@
 **Famille :** Assassin  
 **Origine :** Homebrew
 
-An axe crafted in the Assassin style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

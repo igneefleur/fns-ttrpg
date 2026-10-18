@@ -8,7 +8,7 @@
 **Famille :** Tsar  
 **Origine :** Homebrew
 
-A war scythe crafted in the Tsar style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

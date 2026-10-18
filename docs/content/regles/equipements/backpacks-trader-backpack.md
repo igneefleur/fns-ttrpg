@@ -8,7 +8,7 @@
 **Famille :** Backpacks  
 **Origine :** Outward
 
-A backpack with internal storage and external attachment points.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

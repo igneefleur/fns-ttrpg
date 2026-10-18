@@ -8,7 +8,7 @@
 **Famille :** Tuanosaur  
 **Origine :** Homebrew
 
-A two-handed flail crafted in the Tuanosaur style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

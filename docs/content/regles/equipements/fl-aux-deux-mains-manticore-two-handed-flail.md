@@ -8,7 +8,7 @@
 **Famille :** Manticore  
 **Origine :** Homebrew
 
-A two-handed flail crafted in the Manticore style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Smoke  
 **Origine :** Homebrew
 
-A two-handed flail crafted in the Smoke style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,8 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-A drink.
+Strange brew that removes Hexes, Pain, Confusion, and starts the process of curing The Hunch disease.
+Also increases the drinker’s protection against negative Status Effects.
 
 | Caractéristique | Valeur |
 | --- | --- |

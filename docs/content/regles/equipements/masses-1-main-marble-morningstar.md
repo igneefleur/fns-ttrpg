@@ -8,7 +8,7 @@
 **Famille :** Marble  
 **Origine :** Outward
 
-Inflicts Confusion on enemies.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Assassin  
 **Origine :** Homebrew
 
-A two-handed flail crafted in the Assassin style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

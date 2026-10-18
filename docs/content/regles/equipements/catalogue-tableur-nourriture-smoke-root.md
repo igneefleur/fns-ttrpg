@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-A fire-infused plant that grows on scorched land.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

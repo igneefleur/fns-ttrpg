@@ -8,7 +8,7 @@
 **Famille :** Caldera Mail Set  
 **Origine :** Outward
 
-Footwear for travel and combat.
+Provides 25% resistance to Pain and Confusion.
 
 | Caractéristique | Valeur |
 | --- | --- |

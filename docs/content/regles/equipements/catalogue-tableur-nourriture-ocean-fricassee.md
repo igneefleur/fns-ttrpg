@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+Superior egg and fish dish with healing properties which restore health, stamina, and mana.
 
 | Caractéristique | Valeur |
 | --- | --- |

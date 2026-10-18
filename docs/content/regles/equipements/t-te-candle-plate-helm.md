@@ -8,7 +8,7 @@
 **Famille :** Candle Plate Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Scaled Leather Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

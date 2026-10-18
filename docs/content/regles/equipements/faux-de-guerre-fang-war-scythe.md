@@ -8,7 +8,7 @@
 **Famille :** Fang  
 **Origine :** Homebrew
 
-A war scythe crafted in the Fang style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

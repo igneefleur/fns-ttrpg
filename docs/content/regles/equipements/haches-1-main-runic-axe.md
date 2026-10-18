@@ -8,7 +8,7 @@
 **Famille :** Runic  
 **Origine :** Homebrew
 
-An axe crafted in the Runic style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

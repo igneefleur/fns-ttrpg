@@ -8,7 +8,7 @@
 **Famille :** Smoke  
 **Origine :** Homebrew
 
-A staff crafted in the Smoke style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

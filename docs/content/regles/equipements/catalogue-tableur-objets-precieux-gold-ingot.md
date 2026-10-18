@@ -8,7 +8,7 @@
 **Famille :** Monnaie  
 **Origine :** Outward
 
-A gold bar used as a high-value trade currency.
+Valuable metal ingot used to easily transport wealth. It has no practical use but every merchant will buy such ingots for the same fixed price.
 
 | Caractéristique | Valeur |
 | --- | --- |

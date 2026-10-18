@@ -8,7 +8,7 @@
 **Famille :** Métal  
 **Origine :** Outward
 
-A valuable trade good.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

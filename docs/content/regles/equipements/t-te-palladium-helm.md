@@ -8,7 +8,7 @@
 **Famille :** Palladium Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Brew that restores a moderate amount of health, stamina and mana
+
 
 | Caractéristique | Valeur |
 | --- | --- |

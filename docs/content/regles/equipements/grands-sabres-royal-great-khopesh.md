@@ -8,7 +8,7 @@
 **Famille :** Standalone  
 **Origine :** Outward
 
-A great sabre.
+Inflicts Pain on enemies.
 
 | Caractéristique | Valeur |
 | --- | --- |

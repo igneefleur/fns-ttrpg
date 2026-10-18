@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-An infusion that treats infections and restores burnt health and stamina.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Vampiric  
 **Origine :** Homebrew
 
-A staff crafted in the Vampiric style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Vampiric  
 **Origine :** Outward
 
-Inflicts Blood Leech
+
 
 | Caractéristique | Valeur |
 | --- | --- |

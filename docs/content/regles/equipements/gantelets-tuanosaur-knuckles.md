@@ -8,7 +8,7 @@
 **Famille :** Tuanosaur  
 **Origine :** Homebrew
 
-A pair of knuckles crafted in the Tuanosaur style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

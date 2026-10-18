@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-An energy-rich pie that also carries corruption.
+Bursting with energy, but full of Corruption.
 
 | Caractéristique | Valeur |
 | --- | --- |

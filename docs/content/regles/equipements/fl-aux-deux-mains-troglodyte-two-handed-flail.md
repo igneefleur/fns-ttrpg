@@ -8,7 +8,7 @@
 **Famille :** Troglodyte  
 **Origine :** Homebrew
 
-A two-handed flail crafted in the Troglodyte style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-A lightly grilled torcrab sandwich popular with warriors.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

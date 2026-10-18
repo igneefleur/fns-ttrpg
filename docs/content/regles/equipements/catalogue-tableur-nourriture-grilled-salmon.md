@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+Fish cooked over a campfire, removing any risk of disease.
 
 | Caractéristique | Valeur |
 | --- | --- |

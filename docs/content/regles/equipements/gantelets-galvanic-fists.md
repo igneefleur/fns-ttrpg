@@ -8,7 +8,7 @@
 **Famille :** Galvanic  
 **Origine :** Outward
 
-A pair of knuckles crafted in the Galvanic style.
+Inflicts Pain
 
 | Caractéristique | Valeur |
 | --- | --- |

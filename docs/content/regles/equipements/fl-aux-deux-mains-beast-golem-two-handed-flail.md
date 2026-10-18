@@ -8,7 +8,7 @@
 **Famille :** Beast Golem  
 **Origine :** Homebrew
 
-A two-handed flail crafted in the Beast Golem style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

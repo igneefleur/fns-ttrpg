@@ -8,7 +8,7 @@
 **Famille :** Assassin  
 **Origine :** Homebrew
 
-A war scythe crafted in the Assassin style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

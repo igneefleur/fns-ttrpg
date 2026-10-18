@@ -8,7 +8,7 @@
 **Famille :** Supplies  
 **Origine :** Outward
 
-Soiled Cloth that confers the Frost element when rubbed on a melee weapon.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Brutal  
 **Origine :** Homebrew
 
-A great sabre crafted in the Brutal style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

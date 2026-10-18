@@ -8,7 +8,7 @@
 **Famille :** Assassin  
 **Origine :** Homebrew
 
-A halberd crafted in the Assassin style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

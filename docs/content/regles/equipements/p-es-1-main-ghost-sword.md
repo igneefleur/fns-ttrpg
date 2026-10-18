@@ -8,7 +8,7 @@
 **Famille :** Ghost  
 **Origine :** Homebrew
 
-A sword crafted in the Ghost style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Arcane Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

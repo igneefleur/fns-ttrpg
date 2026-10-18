@@ -8,7 +8,7 @@
 **Famille :** Runic  
 **Origine :** Homebrew
 
-A pair of knuckles crafted in the Runic style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

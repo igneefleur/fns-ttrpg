@@ -8,7 +8,7 @@
 **Famille :** Astral  
 **Origine :** Homebrew
 
-A sabre crafted in the Astral style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

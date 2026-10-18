@@ -8,7 +8,7 @@
 **Famille :** Organique souple / végétal  
 **Origine :** Outward
 
-A material used in crafting.
+Sturdy hide obtained by skinning scaled beasts, used in advanced crafting recipes.
 
 | Caractéristique | Valeur |
 | --- | --- |

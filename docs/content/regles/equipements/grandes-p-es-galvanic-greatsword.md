@@ -8,7 +8,7 @@
 **Famille :** Galvanic  
 **Origine :** Homebrew
 
-A greatsword crafted in the Galvanic style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Militia  
 **Origine :** Homebrew
 
-A sword crafted in the Militia style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

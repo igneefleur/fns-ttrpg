@@ -8,7 +8,7 @@
 **Famille :** Standalone  
 **Origine :** Outward
 
-An axe.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

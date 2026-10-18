@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Concoction which instantly restores mana and max mana.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

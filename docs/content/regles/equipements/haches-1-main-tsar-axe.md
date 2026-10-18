@@ -8,7 +8,7 @@
 **Famille :** Tsar  
 **Origine :** Outward
 
-An axe crafted in the Tsar style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

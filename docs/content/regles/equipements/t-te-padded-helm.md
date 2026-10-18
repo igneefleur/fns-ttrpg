@@ -8,7 +8,7 @@
 **Famille :** Padded Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

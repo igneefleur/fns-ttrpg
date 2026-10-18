@@ -8,7 +8,8 @@
 **Famille :** Autre / magique  
 **Origine :** Outward
 
-A valuable trade good.
+Carved idol, infused with Blue Sand.
+The venerable ancestors would be satisfied with this opulent gift.
 
 | Caractéristique | Valeur |
 | --- | --- |

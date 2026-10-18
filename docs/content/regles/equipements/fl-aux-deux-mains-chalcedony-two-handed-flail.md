@@ -8,7 +8,7 @@
 **Famille :** Chalcedony  
 **Origine :** Homebrew
 
-A two-handed flail crafted in the Chalcedony style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

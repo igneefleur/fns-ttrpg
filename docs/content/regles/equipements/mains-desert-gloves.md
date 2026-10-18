@@ -8,7 +8,7 @@
 **Famille :** Desert Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

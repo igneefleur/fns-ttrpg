@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-A thick soup that aids mana recovery and treats the common cold.
+Chunky soup that has mana-restoring properties, and will slowly heal the common cold.
 
 | Caractéristique | Valeur |
 | --- | --- |

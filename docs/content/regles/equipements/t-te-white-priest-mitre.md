@@ -8,7 +8,7 @@
 **Famille :** White Priest Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

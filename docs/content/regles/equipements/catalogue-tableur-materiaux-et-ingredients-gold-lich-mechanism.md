@@ -8,7 +8,7 @@
 **Famille :** Métal  
 **Origine :** Outward
 
-A material used in crafting.
+Box of golden gears, used to craft a wide variety of weapons.
 
 | Caractéristique | Valeur |
 | --- | --- |

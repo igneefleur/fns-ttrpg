@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+A cooked Golden Crescent. Rots more slowly.
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Runic  
 **Origine :** Homebrew
 
-A greathammer crafted in the Runic style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

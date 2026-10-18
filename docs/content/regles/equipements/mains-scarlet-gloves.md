@@ -8,7 +8,7 @@
 **Famille :** Scarlet Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

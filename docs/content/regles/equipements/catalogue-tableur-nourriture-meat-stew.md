@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+Filling but ordinary dish made with whatever meat and plants are at hand, with a pinch of salt.
 
 | Caractéristique | Valeur |
 | --- | --- |

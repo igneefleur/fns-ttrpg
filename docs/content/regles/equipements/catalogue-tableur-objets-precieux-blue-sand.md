@@ -8,7 +8,8 @@
 **Famille :** Minéral / poudre  
 **Origine :** Outward
 
-A valuable trade good.
+Glimmering powder used by blacksmiths to craft armors made of blue steel alloy.
+It is also highly prized as an alchemical ingredient.
 
 | Caractéristique | Valeur |
 | --- | --- |

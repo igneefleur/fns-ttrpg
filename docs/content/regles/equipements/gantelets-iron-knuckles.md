@@ -8,7 +8,7 @@
 **Famille :** Iron  
 **Origine :** Outward
 
-A pair of knuckles crafted in the Iron style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

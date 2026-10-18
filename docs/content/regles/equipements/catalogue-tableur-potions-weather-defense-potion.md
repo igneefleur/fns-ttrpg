@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Concoction that provides relief from warm and cold temperatures. Note that it has no effect on Fire and Frost damage.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

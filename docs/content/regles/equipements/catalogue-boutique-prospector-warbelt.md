@@ -8,7 +8,7 @@
 **Famille :** Prospector  
 **Origine :** Homebrew
 
-A reinforced utility belt with equipment attachment loops.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

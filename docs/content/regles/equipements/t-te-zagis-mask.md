@@ -8,7 +8,7 @@
 **Famille :** Zagis' Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

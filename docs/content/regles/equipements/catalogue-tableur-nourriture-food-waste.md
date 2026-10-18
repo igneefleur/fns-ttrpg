@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+Diseased mush that is what remains when a cooking recipe fails.
 
 | Caractéristique | Valeur |
 | --- | --- |

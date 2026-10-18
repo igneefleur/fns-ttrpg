@@ -8,7 +8,7 @@
 **Famille :** Vampiric  
 **Origine :** Homebrew
 
-A two-handed flail crafted in the Vampiric style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

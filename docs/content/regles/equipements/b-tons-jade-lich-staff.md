@@ -8,7 +8,7 @@
 **Famille :** Jade-Lich  
 **Origine :** Outward
 
-A staff crafted in the Jade-Lich style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

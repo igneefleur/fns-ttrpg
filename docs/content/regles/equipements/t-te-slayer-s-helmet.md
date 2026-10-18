@@ -8,7 +8,7 @@
 **Famille :** Slayer's Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

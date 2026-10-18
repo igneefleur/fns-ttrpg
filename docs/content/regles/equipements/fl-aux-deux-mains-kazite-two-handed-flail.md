@@ -8,7 +8,7 @@
 **Famille :** Kazite  
 **Origine :** Homebrew
 
-A two-handed flail crafted in the Kazite style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

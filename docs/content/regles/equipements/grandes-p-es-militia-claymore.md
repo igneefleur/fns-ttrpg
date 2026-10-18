@@ -8,7 +8,7 @@
 **Famille :** Militia  
 **Origine :** Outward
 
-A greatsword crafted in the Militia style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

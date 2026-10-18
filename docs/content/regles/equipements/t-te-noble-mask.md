@@ -8,7 +8,7 @@
 **Famille :** Noble Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

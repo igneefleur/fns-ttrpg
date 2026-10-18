@@ -8,7 +8,8 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+Eggs of exotic insects, with diverse restorative capacities.
+Eating it raw carries a chance of disease.
 
 | Caractéristique | Valeur |
 | --- | --- |

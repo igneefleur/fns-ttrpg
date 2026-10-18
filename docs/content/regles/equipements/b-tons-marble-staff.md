@@ -8,7 +8,7 @@
 **Famille :** Marble  
 **Origine :** Homebrew
 
-A staff crafted in the Marble style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Calygrey  
 **Origine :** Outward
 
-A staff crafted in the Calygrey style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

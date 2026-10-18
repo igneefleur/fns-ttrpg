@@ -8,7 +8,7 @@
 **Famille :** Novice Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

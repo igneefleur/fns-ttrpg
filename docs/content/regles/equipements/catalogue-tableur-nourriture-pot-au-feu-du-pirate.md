@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-A salty fish soup with nourishing and restorative properties.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Adventuring gear  
 **Origine :** Outward
 
-Unique lantern with a purple glow, endless light, and resistances when held in the off hand.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Provides resistance to status effects for 60 seconds.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

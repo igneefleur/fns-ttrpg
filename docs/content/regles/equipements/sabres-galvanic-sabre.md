@@ -8,7 +8,7 @@
 **Famille :** Galvanic  
 **Origine :** Homebrew
 
-A sabre crafted in the Galvanic style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

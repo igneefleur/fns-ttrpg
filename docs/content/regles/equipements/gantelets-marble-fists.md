@@ -8,7 +8,7 @@
 **Famille :** Marble  
 **Origine :** Outward
 
-A pair of knuckles crafted in the Marble style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

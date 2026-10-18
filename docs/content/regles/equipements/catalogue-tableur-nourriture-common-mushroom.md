@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-A bland mushroom often found in damp caves.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

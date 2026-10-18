@@ -8,7 +8,7 @@
 **Famille :** Giantkind  
 **Origine :** Homebrew
 
-A two-handed flail crafted in the Giantkind style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

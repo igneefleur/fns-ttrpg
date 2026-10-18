@@ -8,7 +8,7 @@
 **Famille :** Manawall Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

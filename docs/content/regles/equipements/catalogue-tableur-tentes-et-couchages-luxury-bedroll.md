@@ -8,7 +8,7 @@
 **Famille :** couchage  
 **Origine :** Outward
 
-A portable shelter or bedroll.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

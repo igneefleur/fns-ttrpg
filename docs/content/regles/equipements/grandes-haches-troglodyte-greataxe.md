@@ -8,7 +8,7 @@
 **Famille :** Troglodyte  
 **Origine :** Homebrew
 
-A greataxe crafted in the Troglodyte style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

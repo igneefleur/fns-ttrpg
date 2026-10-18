@@ -8,7 +8,7 @@
 **Famille :** Fang  
 **Origine :** Homebrew
 
-A dagger crafted in the Fang style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

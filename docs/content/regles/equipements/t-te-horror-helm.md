@@ -8,7 +8,7 @@
 **Famille :** Horror Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

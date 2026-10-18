@@ -8,7 +8,7 @@
 **Famille :** Runic  
 **Origine :** Homebrew
 
-A dagger crafted in the Runic style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

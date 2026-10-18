@@ -8,7 +8,7 @@
 **Famille :** Golem  
 **Origine :** Homebrew
 
-A sabre crafted in the Golem style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

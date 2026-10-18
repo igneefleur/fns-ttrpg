@@ -8,7 +8,7 @@
 **Famille :** Obsidian  
 **Origine :** Homebrew
 
-A rapier crafted in the Obsidian style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

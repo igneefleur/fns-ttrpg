@@ -8,7 +8,8 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-A shimmering fish that aids mana recovery, but may cause illness when eaten raw.
+Shimmering fish that restores mana but can make one ill when eaten raw.
+It also increases your resistance to all elemental damage.
 
 | Caractéristique | Valeur |
 | --- | --- |

@@ -8,7 +8,7 @@
 **Famille :** Golem  
 **Origine :** Homebrew
 
-A halberd crafted in the Golem style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

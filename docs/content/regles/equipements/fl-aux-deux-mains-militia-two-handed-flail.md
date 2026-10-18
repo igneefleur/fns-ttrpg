@@ -8,7 +8,7 @@
 **Famille :** Militia  
 **Origine :** Homebrew
 
-A two-handed flail crafted in the Militia style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

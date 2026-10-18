@@ -8,7 +8,7 @@
 **Famille :** Containers  
 **Origine :** Homebrew
 
-An empty container for solid contents.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

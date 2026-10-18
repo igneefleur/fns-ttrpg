@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-Food.
+Tender fruit, boiled to reveal its anti-poison properties.
 
 | Caractéristique | Valeur |
 | --- | --- |

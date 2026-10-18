@@ -8,7 +8,7 @@
 **Famille :** Adventuring gear  
 **Origine :** Outward
 
-Minimalist tent that conceals the user, reducing the chances of being ambushed. Sleeping in this tent gives a medium bonus to stamina use.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

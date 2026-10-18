@@ -8,7 +8,7 @@
 **Famille :** Marble  
 **Origine :** Outward
 
-A halberd crafted in the Marble style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

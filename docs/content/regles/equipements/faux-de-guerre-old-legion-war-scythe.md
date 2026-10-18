@@ -8,7 +8,7 @@
 **Famille :** Old Legion  
 **Origine :** Homebrew
 
-A war scythe crafted in the Old Legion style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

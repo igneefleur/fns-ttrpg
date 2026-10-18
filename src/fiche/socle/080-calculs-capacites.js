@@ -454,7 +454,7 @@
     (state.inv.objets||[]).forEach(function(o){
       if(!o.dans && pnum(o.qte)>0 && (o.ou==="mainG" || o.ou==="mainD") && out.indexOf(o)<0)out.push(o);
     });
-    return out;
+    return out.filter(function(o){return invType(o)!=="consommable";});
   }
   function capPoches() {
     var t = 0;

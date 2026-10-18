@@ -8,7 +8,7 @@
 **Famille :** Tsar  
 **Origine :** Outward
 
-A mace crafted in the Tsar style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

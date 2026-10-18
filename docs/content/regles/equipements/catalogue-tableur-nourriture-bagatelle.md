@@ -8,7 +8,7 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-A delicious dessert associated with corruption.
+A corrupting, but delicious dessert
 
 | Caractéristique | Valeur |
 | --- | --- |

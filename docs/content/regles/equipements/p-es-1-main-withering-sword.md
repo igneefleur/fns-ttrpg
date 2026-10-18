@@ -8,7 +8,7 @@
 **Famille :** Withering  
 **Origine :** Homebrew
 
-A sword crafted in the Withering style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

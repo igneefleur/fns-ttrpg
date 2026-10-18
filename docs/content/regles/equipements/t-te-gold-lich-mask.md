@@ -8,7 +8,7 @@
 **Famille :** Gold-Lich Set  
 **Origine :** Outward
 
-Protective headwear.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

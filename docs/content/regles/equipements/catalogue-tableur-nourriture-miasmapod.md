@@ -8,7 +8,8 @@
 **Famille :** Food and drink  
 **Origine :** Outward
 
-A rare marsh cephalopod that closes wounds but poisons whoever eats it.
+Rare marsh octopus, which closes wounds but poisons the eater.
+It also instantly cures infections.
 
 | Caractéristique | Valeur |
 | --- | --- |

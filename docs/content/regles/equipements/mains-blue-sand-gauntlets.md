@@ -8,7 +8,7 @@
 **Famille :** Blue Sand Set  
 **Origine :** Homebrew
 
-Hand protection.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

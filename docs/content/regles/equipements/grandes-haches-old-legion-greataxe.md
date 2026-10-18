@@ -8,7 +8,7 @@
 **Famille :** Old Legion  
 **Origine :** Homebrew
 
-A greataxe crafted in the Old Legion style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

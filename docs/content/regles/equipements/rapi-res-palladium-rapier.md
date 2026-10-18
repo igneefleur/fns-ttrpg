@@ -8,7 +8,7 @@
 **Famille :** Palladium  
 **Origine :** Homebrew
 
-A rapier crafted in the Palladium style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |

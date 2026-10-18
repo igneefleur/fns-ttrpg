@@ -8,7 +8,7 @@
 **Famille :** Giantkind  
 **Origine :** Homebrew
 
-A sword crafted in the Giantkind style.
+
 
 | Caractéristique | Valeur |
 | --- | --- |
