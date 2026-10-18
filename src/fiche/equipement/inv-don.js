@@ -35,17 +35,17 @@
     // descendants. Ce n'est pas une particularité réservée aux sacs à dos.
     if(!it || !it.ref || !window.OwdInventoryData) return null;
     var groupe=window.OwdInventoryData.group(state.inv,it.ref);
-    return it.sac || groupe.length>1 ? groupe : null;
+    return groupe.length>1 ? groupe : null;
   }
   function packObjet(it, qte) {
     var groupe=contenuGroupe(it);
     var p = {
-      n: String(it.nom || ""), q: groupe ? pnum(it.qte) : Math.max(0, pnum(qte)) || 1, p: pnum(it.poids),
+      n: String(it.nom || ""), q: Math.min(pnum(it.qte), Math.max(0, pnum(qte))), p: pnum(it.poids),
       l: pnum(it.places), d: String(it.desc || ""), k: String(it.id || ""),
       a: venteNum(it.achat), version: 1, s: champsObjet(it, qte)
     };
     if(!groupe){p.item=JSON.parse(JSON.stringify(it));p.item.qte=p.q;p.item.dans="";}
-    else p.bundle=groupe;
+    else {groupe[0].qte=p.q;p.bundle=groupe;}
     if (it.vente != null) p.v = pnum(it.vente);   // absent : automatique
     if (it.rapide) p.r = 1;
     var img = String(it.img || "");
@@ -57,7 +57,7 @@
   function unpackObjet(b64) {
     var o;
     try { o = JSON.parse(b64decode(b64)); } catch (e) { return null; }
-    if (!o || typeof o !== "object") return null;
+    if (!o || typeof o !== "object" || !(pnum(o.q)>0)) return null;
     var bundle=null;
     if(o.bundle!==undefined){
       if(!Array.isArray(o.bundle)||!o.bundle.length||!o.bundle[0]||!o.bundle[0].ref)return null;
@@ -78,21 +78,23 @@
     corps.appendChild(el("div", "pc-modal-note",
       "L'objet quitte l'inventaire et part dans le tchat : le premier joueur qui clique « Prendre » le reçoit."));
     var groupe=contenuGroupe(it);
-    if(groupe)corps.appendChild(el("div","pc-modal-note","Le contenant et tout son contenu sont envoyés ensemble, sans séparer la pile."));
+    if(groupe)corps.appendChild(el("div","pc-modal-note","Chaque exemplaire donné emporte son contenu."));
     var qIn = el("input", "n");
     qIn.type = "number"; qIn.min = "0"; qIn.max = String(it.qte); qIn.step = "any";
-    qIn.value = fmtP(groupe ? it.qte : Math.min(pnum(qteDefaut) || it.qte, it.qte));
-    if(groupe)qIn.disabled=true;
-    if(mode !== "all" && !groupe) corps.appendChild(fld("Quantité à donner (sur " + fmtP(it.qte) + ")", qIn));
+    qIn.value = fmtP(Math.min(pnum(qteDefaut) || it.qte, it.qte));
+
+    if(mode !== "all") corps.appendChild(fld("Quantité à donner (sur " + fmtP(it.qte) + ")", qIn));
     else corps.appendChild(el("div", "pc-modal-note", "Quantité : " + fmtP(it.qte)));
     dialogue("Donner « " + (it.nom || "objet") + " »", corps, function () {
       if(state.inv.objets.indexOf(it)<0) {flash("Cet objet n'est plus dans l'inventaire.");return;}
-      var q = groupe || mode === "all" ? it.qte : Math.min(pnum(qIn.value) || it.qte, it.qte);
-      if(mode === "part" && !groupe) q=Math.round(pnum(qIn.value)*100)/100;
+      var q = mode === "all" ? it.qte : Math.min(pnum(qIn.value) || it.qte, it.qte);
+      if(mode === "part") q=Math.round(pnum(qIn.value)*100)/100;
       if(mode === "part" && !(q>0 && q<it.qte)) {
         flash("Indiquez une quantité supérieure à zéro et inférieure à la pile.");qIn.focus();return false;
       }
       if (!it.qte || !q) { flash("Cet objet n'est plus en stock."); return; }
+      window.OwdInventoryData.isolateAncestors(state.inv.objets,it);
+      groupe=contenuGroupe(it);
       // LE NOM PASSE PAR envSan : sans lui, un nom porteur d'une accolade ou
       // d'un saut de ligne compose une commande que l'extension refuse — et
       // l'objet serait quand même retiré de l'inventaire, donc perdu.
@@ -104,7 +106,7 @@
       // LA PILE NE DIMINUE QUE SI LE CANAL EXISTE : sinon l'objet partirait
       // sans que personne ne puisse le prendre.
       if (!enRoll20) return;
-      if(groupe){var refs=groupe.map(function(x){return x.ref;});
+      if(groupe && q>=it.qte){var refs=groupe.map(function(x){return x.ref;});
         for(var z=state.inv.objets.length-1;z>=0;z--)if(refs.indexOf(state.inv.objets[z].ref)>=0)state.inv.objets.splice(z,1);refresh();if(invRender)invRender();return;}
       it.qte = Math.max(0, Math.round((it.qte - q) * 100) / 100);
       if (!it.qte) {
@@ -129,16 +131,7 @@
     var recu = unpackObjet(payload);
     if (!recu) { flash("Objet illisible (message abîmé)."); return; }
     var items = state.inv.objets;
-    // Reconnaissance : d'abord l'IDENTIFIANT (deux homonymes distincts ne
-    // fusionnent pas), à défaut le nom, insensible à la casse.
-    var jumeau = null;
-    if (!recu.item && !recu.bundle && recu.id) items.forEach(function (x) { if (!jumeau && !x.sac && x.id && x.id === recu.id) jumeau = x; });
-    if (!recu.item && !jumeau && !recu.bundle) {
-      items.forEach(function (x) {
-        if (!jumeau && !x.sac && !x.id && !recu.id && pli(x.nom) === pli(recu.nom)) jumeau = x;
-      });
-    }
-
+    var jumeau=null;
     var corps = el("div", "pc-modal-body");
     if (recu.img) {
       var imb = el("div", "pc-modal-img");
@@ -149,7 +142,7 @@
     var qIn = el("input", "n");
     qIn.type = "number"; qIn.min = "0"; qIn.max = String(recu.qte); qIn.step = "any";
     qIn.value = fmtP(recu.qte);
-    if(recu.bundle){recu.qte=pnum(recu.bundle[0].qte)||1;qIn.value=fmtP(recu.qte);qIn.disabled=true;}
+
     corps.appendChild(fld("Quantité à prendre (sur " + fmtP(recu.qte) + ")", qIn));
 
     var gSel = null;
@@ -168,63 +161,17 @@
       corps.appendChild(fld("Ranger dans", gSel));
     }
 
-    // conflits : pour chaque champ qui diffère, garder le sien ou prendre le neuf
-    var choix = {};
-    if (jumeau) {
-      corps.appendChild(el("div", "pc-modal-note",
-        "« " + jumeau.nom + " » est déjà dans l'inventaire (" + fmtP(jumeau.qte) + ")" +
-        (recu.id ? " — même identifiant" : "") + " : les quantités s'additionnent."));
-      [["nom", "Nom"], ["img", "Image"], ["poids", "Poids"], ["places", "Volume"],
-       ["desc", "Description"], ["achat", "Achat"], ["vente", "Vente"]].forEach(function (c) {
-        function dit(o) {
-          if (c[0] === "vente") return prixObjetTexte(o,true);
-          if (c[0] === "achat") return prixObjetTexte(o,false);
-          return String(o[c[0]] || "");
-        }
-        var mien = dit(jumeau), neuf = dit(recu);
-        if (mien === neuf || (!mien && !neuf)) return;
-        choix[c[0]] = "mien";
-        var bloc = el("div", "pc-modal-conflit");
-        bloc.appendChild(el("div", "lbl", c[1] + " : deux versions"));
-        var row = el("div", "row");
-        [["mien", "Garder le mien", mien], ["neuf", "Prendre le nouveau", neuf]].forEach(function (opt) {
-          var bt = el("button", "pc-modal-choix" + (opt[0] === "mien" ? " on" : ""));
-          bt.type = "button";
-          bt.appendChild(el("div", "tag", opt[1]));
-          if (c[0] === "img" && opt[2]) {
-            var mi = el("img"); mi.alt = ""; mi.src = opt[2];
-            bt.appendChild(mi);
-          } else {
-            bt.appendChild(el("div", "val", opt[2] ? opt[2] : "vide"));
-          }
-          bt.addEventListener("click", function () {
-            choix[c[0]] = opt[0];
-            Array.prototype.forEach.call(row.children, function (x) { x.classList.remove("on"); });
-            bt.classList.add("on");
-          });
-          row.appendChild(bt);
-        });
-        bloc.appendChild(row);
-        corps.appendChild(bloc);
-      });
-    }
-
-    if(recu.item)jumeau=null;
     dialogue("Prendre « " + recu.nom + " »", corps, function () {
-      var q = Math.min(pnum(qIn.value) || recu.qte, recu.qte);
+      var q = Math.min(pnum(qIn.value), recu.qte);
+      if(!(q>0)){flash("Indiquez une quantité positive.");return false;}
+      var incoming=null;
       if(recu.bundle){var refs={};recu.bundle.forEach(function(x){refs[x.ref]=uid("o");});
         var bag=window.OwdInventoryData.backpack(items);
         recu.bundle.forEach(function(x,i){var c=JSON.parse(JSON.stringify(x));c.ref=refs[x.ref];c.dans=refs[x.dans]||"";
-          if(i===0){c.ou=gSel?gSel.value:"terre";c.emp=-1;if(c.ou==="sac"&&bag)c.dans=bag.ref;}
+          if(i===0){incoming=c;c.qte=q;c.ou=gSel?gSel.value:"terre";c.emp=-1;if(c.ou==="sac"&&bag)c.dans=bag.ref;}
           items.push(c);});
       } else if(recu.item){
-        var copie=JSON.parse(JSON.stringify(recu.item));copie.ref=uid("o");copie.qte=q;copie.ou=gSel?gSel.value:"terre";copie.dans="";copie.emp=-1;items.push(copie);
-      } else if (jumeau) {
-        jumeau.qte = Math.round((jumeau.qte + q) * 100) / 100;
-        ["nom", "img", "poids", "places", "desc", "achat", "vente"].forEach(function (k) {
-          if (choix[k] === "neuf") jumeau[k] = recu[k];
-        });
-        if (!jumeau.id && recu.id) jumeau.id = recu.id;
+        var copie=JSON.parse(JSON.stringify(recu.item));copie.ref=uid("o");copie.qte=q;copie.ou=gSel?gSel.value:"terre";copie.dans="";copie.emp=-1;items.push(copie);incoming=copie;
       } else {
         items.push({
           id: recu.id, ref: uid("o"), nom: recu.nom, img: recu.img, qte: q, poids: recu.poids,
@@ -236,6 +183,7 @@
         });
       }
       window.OwdInventoryData.bind(items);
+      if(incoming){var twin=items.filter(function(o){return window.OwdInventoryData.canMerge(items,o,incoming);})[0];if(twin)window.OwdInventoryData.merge(items,twin,incoming);}
       refresh();
       if (invRender) invRender();
       flash(fmtP(q) + " × « " + recu.nom + " » ajouté à l'inventaire.");

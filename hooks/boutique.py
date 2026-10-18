@@ -126,7 +126,7 @@ def champs(o, effects):
         for eid, threshold in o.get('conditionsEffets', {}).items():
             add('Condition : ' + effects.get(eid, {}).get('nom', eid), f'PS ≤ {threshold} %')
     props = o.get('proprietes', {})
-    labels = {'autonomie':'Autonomie', 'accrochable':'Accrochable', 'recharge':'Recharge', 'esquiveLibre':'Ne gêne pas l’esquive', 'conservationAliments':'Périssement ralenti (%)', 'lumiere':'Lumière'}
+    labels = {'autonomie':'Autonomie', 'recharge':'Recharge', 'esquiveLibre':'Ne gêne pas l’esquive', 'conservationAliments':'Périssement ralenti (%)', 'lumiere':'Lumière'}
     for k, v in props.items():
         if v is not None and v is not False:
             add(labels.get(k, k), 'Oui' if v is True else {'faint':'Faible','bright':'Vive'}.get(str(v), v), True)

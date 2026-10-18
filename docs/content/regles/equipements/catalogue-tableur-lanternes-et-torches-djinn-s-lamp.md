@@ -19,7 +19,6 @@ When held in hand, helps protect the wielder from Status Ailments. Can be refill
 | Achat (argent) | 25 |
 | Vente (argent) | 8 |
 | Autonomie | 8 hours |
-| Accrochable | Oui |
 | Recharge | Thick Oil |
 | Effet 1 | Résistance de la lampe du Djinn — +15 % de résistance à l'accumulation des altérations. (Tant que tenue en main secondaire) |
 

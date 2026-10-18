@@ -45,7 +45,7 @@
     return casePermise(o, ou);
   }
   function champsObjet(it, q) {
-    var bagWeight = it.sac ? window.OwdInventoryData.weight(state.inv.objets,it) : null;
+    var bagWeight = it.sac ? window.OwdInventoryData.weight(state.inv.objets,it) * (pnum(it.qte)>0 ? pnum(q)/pnum(it.qte) : 0) : null;
     var fields = [["Quantité", fmtP(q)], ["Poids", fmtP(it.poids || 0) + (q > 1 ? " (total " + fmtP(q * (it.poids || 0)) + ")" : "")],
       ["Volume", it.encombre===null?"Non renseigné":fmtP(it.encombre || 0) + " L"],
       ["Achat", prixObjetTexte(it,false)], ["Vente", prixObjetTexte(it,true)]];
@@ -92,10 +92,11 @@
     if (action !== "supprimer") return;
     confirmer("Détruire un objet", "Détruire « " + (it.nom || "cet objet") + " » de l'inventaire" + (it.sac ? " avec tout son contenu" : "") + " ?", "Détruire", function () {
       var actuel = objet(); if (!actuel) return;
+      window.OwdInventoryData.isolateAncestors(state.inv.objets,actuel);
       if(actuel.sac){var refs=window.OwdInventoryData.group(state.inv,actuel.ref).map(function(o){return o.ref;});
         for(var z=state.inv.objets.length-1;z>=0;z--)if(state.inv.objets[z]!==actuel&&refs.indexOf(state.inv.objets[z].ref)>=0)state.inv.objets.splice(z,1);}
       if (actuel.contenant) state.inv.objets.forEach(function (o) {
-        if (String(o.dans || "") === String(ref)) { o.dans = ""; o.ou = actuel.ou === "terre" ? "terre" : "sac"; o.emp = -1; }
+        if (String(o.dans || "") === String(ref)) { o.qte=Math.round(pnum(o.qte)*pnum(actuel.qte)*100)/100; o.dans = ""; o.ou = actuel.ou === "terre" ? "terre" : "sac"; o.emp = -1; }
       });
       state.inv.objets.splice(state.inv.objets.indexOf(actuel), 1);
       refresh(); if (invRender) invRender();
@@ -172,10 +173,12 @@
                 String(o.contenu) === String(porteur.contenant));
     }
     function libereContenu(porteur, silencieux) {
+      if(!silencieux)window.OwdInventoryData.isolate(items,porteur);
       var ref = porteur && porteur.ref ? String(porteur.ref) : "", n = 0;
       if (!ref) return 0;
       items.forEach(function (o) {
         if (String(o.dans || "") !== ref) return;
+        if(silencieux)o.qte=Math.round(pnum(o.qte)*pnum(porteur.qte)*100)/100;
         o.dans = ""; o.ou = porteur.ou === "terre" ? "terre" : "sac"; o.emp = -1; n++;
       });
       if (n && !silencieux) flash("Le contenu a été sorti du contenant.");
@@ -190,6 +193,9 @@
               nomCategorie(o.contenu) + " ».");
         return false;
       }
+      if(window.OwdInventoryData.group({objets:items},o.ref).some(function(x){return x.ref===porteur.ref;}))return false;
+      window.OwdInventoryData.isolate(items,porteur);
+      window.OwdInventoryData.isolateAncestors(items,o);
       var avant=contenusDans(porteur);
       assureRef(o); assureRef(porteur);
       if(avant.indexOf(o)<0 && avant.length>=capaciteContenant(porteur))
@@ -228,6 +234,7 @@
     // ou au sac s'il n'y a pas sa place. Un objet à deux cases (robe, arme à
     // deux mains) libère les DEUX, et ce qui les tenait part au sac.
     function deplace(o, ou, cible) {
+      if((INV_CASES.indexOf(ou)>=0 || ou==="deuxMains") && pnum(o.qte)<1){flash("Un emplacement exige un exemplaire entier.");return false;}
       var deuxMains=ou==="deuxMains" || o.mains==="2 obligatoires" && (ou==="mainG" || ou==="mainD");
       if(ou==="deuxMains")ou="mainD";
       if (!lieuPermis(o, ou)) {
@@ -236,6 +243,8 @@
       }
       var bagCible=window.OwdInventoryData.backpack(items);
       if(ou === "sac" && bagCible && o!==bagCible && !invTailleAccepte(o.taille,invTailleMaxSac(bagCible))){flash("Cet objet dépasse la taille intérieure maximale du sac.");return false;}
+      window.OwdInventoryData.isolateAncestors(items,o);
+      if(INV_CASES.indexOf(ou)>=0)window.OwdInventoryData.isolate(items,o);
       var dest = ancrage(o, ou, deuxMains), cases = casesDe(o, dest, deuxMains), vient = o.ou;
       // Tirer un Contenu hors de son petit slot le redevient un objet libre.
       window.OwdInventoryData.bind(items);
@@ -273,7 +282,7 @@
     // encombrant que l'emplacement ne l'accepte. Ce qui l'occupait retourne
     // d'où l'objet vient s'il y tient, au sac sinon.
     function poseEp(o, lieu, k) {
-      if(k+invCoutAcc(o,lieu)>nbEp(lieu)){flash("Pas assez d’accroches contiguës.");return null;}
+      if(k<0 || k+invCoutAcc(o,lieu)>nbEp(lieu)){flash("Pas assez d’accroches contiguës.");return null;}
       if (!epPermis(o, lieu)) {
         flash(o === porteurEp(lieu) ? "Un contenant ne s'accroche pas à lui-même."
           : "Cet objet dépasse la taille maximale des accroches (" + ebMaxEp(lieu) + ").");
@@ -281,19 +290,8 @@
       }
       var vient = o.ou, vientK = o.emp;
       var pose = o;
-      if (pnum(o.qte) > 1) {
-        var refAvant = assureRef(o);
-        pose = JSON.parse(JSON.stringify(o));
-        pose.ref = uid("o");
-        pose.qte = 1;
-        o.qte = Math.round((o.qte - 1) * 100) / 100;
-        items.splice(items.indexOf(o) + 1, 0, pose);
-        // Si la pile de contenants portait un contenu, c'est l'exemplaire
-        // effectivement déplacé qui l'emporte ; les deux objets ne partagent
-        // jamais le même ref interne.
-        items.forEach(function (x) { if (String(x.dans || "") === refAvant) x.dans = pose.ref; });
-        vient = null;   // la pile reste où elle est : l'occupant va au sac
-      }
+      window.OwdInventoryData.isolateAncestors(items,o);
+      if (pnum(o.qte)>1) { pose=window.OwdInventoryData.split(items,o,1,uid("o")); vient=null; }
       var occ = objetEp(lieu, k);
       for(var slot=1;slot<invCoutAcc(pose,lieu);slot++){var autre=objetEp(lieu,k+slot);if(autre && autre!==pose && autre!==occ){autre.ou="sac";autre.emp=-1;autre.dans="";}}
       pose.dans = "";
@@ -385,7 +383,7 @@
       var ou = libre[0] || lieux[0], remplaces = [];
       casesDe(it, ou).forEach(function (c) { var o = objetEn(c); if (o && o !== it && remplaces.indexOf(o) < 0) remplaces.push(o); });
       var pose = it;
-      if (pnum(it.qte) > 1) pose = window.OwdInventoryData.split(items, it, 1, uid("o"));
+      if(pnum(it.qte)>1)pose=window.OwdInventoryData.split(items,it,1,uid("o"));
       if (deplace(pose, ou)) { remplaces.forEach(rangeRemplace); sel = pose; render(); refresh(); }
     }
     function accrocheObjet(it, lieu) {
@@ -403,7 +401,7 @@
       menuObjet.setAttribute("role", "menu");
       menuObjet.addEventListener("contextmenu", function (ev) { ev.preventDefault(); });
       menuObjet.setAttribute("aria-label", "Actions — " + (it.nom || "objet"));
-      var groupes = [], part = !it.sac && pnum(it.qte) > 1;
+      var groupes = [], part = pnum(it.qte) > 1;
       function entree(label, fn, danger) { return { label: label, fn: fn, danger: danger }; }
       groupes.push([entree("Montrer", function (o) { montreObjet(o.ref); })].concat(part ? [entree("Montrer une partie", function (o) {
         avecQuantite(o.ref, "Montrer une partie", function (a, q) { montreObjet(a.ref, q); });
@@ -411,11 +409,11 @@
       groupes.push([entree("Donner", function (o) { donnerDialogue(o, o.qte, "all"); })].concat(part ? [entree("Donner une partie", function (o) {
         donnerDialogue(o, Math.min(1, o.qte / 2), "part");
       })] : []));
-      if (part && !items.some(function (o) { return o.dans === it.ref; })) groupes.push([entree("Séparer une partie", function (o) {
+      if (part) groupes.push([entree("Séparer une partie", function (o) {
         avecQuantite(o.ref, "Séparer une partie", function (a, q) { window.OwdInventoryData.split(items, a, q, uid("o")); render(); refresh(); });
       })]);
       groupes.push([entree("Détruire", function (o) { actionObjet(o.ref, "supprimer"); }, true)].concat(part ? [entree("Détruire une partie", function (o) {
-        avecQuantite(o.ref, "Détruire une partie", function (a, q) { a.qte = Math.round((a.qte - q) * 100) / 100; render(); refresh(); });
+        avecQuantite(o.ref, "Détruire une partie", function (a, q) { window.OwdInventoryData.isolateAncestors(items,a); a.qte = Math.round((a.qte - q) * 100) / 100; render(); refresh(); });
       }, true)] : []));
       if (it.sac) groupes.push([entree("Voir son contenu", function (o) {
         sel = o; render(); var contenu = panel.querySelector(".pc-obj-tiles");
@@ -883,6 +881,7 @@
       var rapideBoite = el("div", "pc-f pc-obj-quick");
       rapideBoite.appendChild(el("label", null, "Accès rapide"));
       var rapide = miniBtn("Activer", "Activer ou désactiver l'accès rapide", function () {
+        window.OwdInventoryData.isolate(items,it);
         it.rapide = !it.rapide;
         save(); render(); refresh();
       }, "pc-obj-quick-toggle" + (it.rapide ? " on" : ""));
@@ -1131,7 +1130,7 @@
         var f = file.files && file.files[0];
         file.value = "";
         if (!f) return;
-        vignette(f, function (data) { it.img = data; render(); refresh(); });
+        vignette(f, function (data) { window.OwdInventoryData.isolate(items,it); it.img = data; render(); refresh(); });
       });
       urlFld.appendChild(file);
       pairE.appendChild(fld("Fichier",miniBtn("Choisir", "Importer une image (réduite en vignette 84 × 128)",
@@ -1165,17 +1164,20 @@
       qIn.type = "number"; qIn.min = "0"; qIn.step = "any";
       qIn.value = it.qte;
       function setQte(v) {
+        window.OwdInventoryData.isolateAncestors(items,it);
         it.qte = isFinite(v) && v >= 0 ? Math.round(v * 100) / 100 : 0;
         if (+slider.max < it.qte) slider.max = String(it.qte);
         if (document.activeElement !== slider) slider.value = it.qte;
         if (document.activeElement !== qIn) qIn.value = it.qte;
         majAct();
+        var etaitEquipe=window.OwdInventoryData.equipped(it);
         save(); updateTotal();
+        if(etaitEquipe)render();
         refresh();   // le poids porté vient de bouger : la charge suit
       }
       slider.addEventListener("input", function () { setQte(Math.round(parseFloat(slider.value))); });
       qIn.addEventListener("input", function () { setQte(parseFloat(qIn.value)); });
-      if(it.sac){slider.disabled=true;qIn.disabled=true;it.qte=1;}
+
       qRow.appendChild(slider);
       qRow.appendChild(qIn);
       body.insertBefore(fld("Quantité", qRow), ligneNat.nextSibling);
@@ -1217,6 +1219,7 @@
         donnerDialogue(it, bornerAct());
       }));
       function retireQte(q, tout) {
+        window.OwdInventoryData.isolateAncestors(items,it);
         if (tout) {
           if(it.sac){var refs=window.OwdInventoryData.group(state.inv,it.ref).map(function(o){return o.ref;});
             for(var z=items.length-1;z>=0;z--)if(items[z]!==it&&refs.indexOf(items[z].ref)>=0)items.splice(z,1);}
@@ -1235,6 +1238,7 @@
         deposit.addEventListener("drop",function(e){if(!drag)return;e.preventDefault();e.stopPropagation();var d=drag;drag=null;
           if(window.OwdInventoryData.group(state.inv,d.ref).some(function(o){return o.ref===it.ref;})){flash("Un sac ne peut pas contenir lui-même.");return;}
           if(!invTailleAccepte(d.taille,invTailleMaxSac(it))){flash("Cet objet dépasse la taille intérieure du sac.");return;}
+          window.OwdInventoryData.isolate(items,it);
           if(deplace(d,"sac")){d.dans=it.ref;d.emp=-1;render();refresh();}});
         items.forEach(function(o){if(o.dans===it.ref)contents.appendChild(tile(o));});
         body.appendChild(el("div","lbl","Contenu du sac"));body.appendChild(contents);
@@ -1250,6 +1254,15 @@
         }
         retireQte(q, tout);
       }, "danger"));
+      actions.appendChild(miniBtn("Empiler", "Réunir les objets et contenus strictement identiques au même endroit", function(){
+        var target=items.filter(function(o){return window.OwdInventoryData.canMerge(items,o,it);})[0];
+        if(!target){flash("Aucune pile strictement identique à cet emplacement.");return;}
+        sel=window.OwdInventoryData.merge(items,target,it);render();refresh();
+      }));
+      function avantEdition(e){if(qRow.contains(e.target)||actions.contains(e.target))return;
+        if(e.target.matches && e.target.matches('input,select,textarea'))window.OwdInventoryData.isolate(items,it);}
+      body.addEventListener("input",avantEdition,true);body.addEventListener("change",avantEdition,true);
+      body.addEventListener("change",function(e){if(!actions.contains(e.target)){render();refresh();}});
       body.appendChild(actions);
       panel.appendChild(body);
     }

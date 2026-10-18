@@ -1,6 +1,8 @@
   // Transfert entre les inventaires contrôlés : le destinataire est confirmé
   // avant le retrait source. Les refs déterministes rendent la reprise idempotente.
   function objetsTransfert(ref) {
+    var item=state.inv.objets.filter(function(o){return o.ref===ref;})[0];
+    if(item){window.OwdInventoryData.isolateAncestors(state.inv.objets,item);save();}
     return {items:window.OwdInventoryData.group(state.inv, ref),competences:window.OwdInventoryData.copy(state.comps)};
   }
   function importeTransfert(job) {

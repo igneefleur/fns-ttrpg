@@ -14,5 +14,8 @@ const unknown={...item,achat:null,vente:null,arme:null};const unknownPack=ctx.pa
 assert.equal(ctx.unpackObjet(unknownPack).achat,null);assert.equal(ctx.unpackObjet(unknownPack).vente,null);
 assert.equal(ctx.prixVente(unknown),null);assert.equal(ctx.prixObjetTexte(unknown,false),'Prix non renseigné');
 assert.equal(ctx.prixObjetTexte({...unknown,achat:0,vente:0},false),'0 pièces d’argent');
+const filled=ctx.state.inv.objets.find(x=>x.ref==='flacon');filled.qte=5;
+const partial=JSON.parse(ctx.b64decode(ctx.packObjet(filled,2)));assert.equal(partial.q,2);assert.equal(partial.bundle[0].qte,2);assert.equal(partial.bundle[1].qte,2);assert.equal(filled.qte,5);
+assert.equal(ctx.unpackObjet(ctx.b64encode(JSON.stringify({...partial,q:0}))),null);
 console.log('OK payload : accents, quantité, prix nul explicite, statistiques d’arme/vêtement, image importée et compatibilité réception');return {pack,data,armorPack,armorData,ctx,item};}
 if(require.main===module)packedFixtures();module.exports={packedFixtures};

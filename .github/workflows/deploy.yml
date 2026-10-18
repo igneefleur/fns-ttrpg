@@ -74,6 +74,7 @@ jobs:
         run: |
           node scripts/test_sync.js
           node scripts/test_monde.js
+          node scripts/test_inventory_stacks.js
           node scripts/test_inventaire.js
           node scripts/test_defenses.js
           node scripts/test_effets_data.js

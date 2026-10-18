@@ -19,7 +19,6 @@
 | Achat (argent) | 300 |
 | Vente (argent) | 90 |
 | Autonomie | 720 hours (30 days) |
-| Accrochable | Oui |
 | Recharge | Power Coil |
 
 [Retour au catalogue](../equipement.md)

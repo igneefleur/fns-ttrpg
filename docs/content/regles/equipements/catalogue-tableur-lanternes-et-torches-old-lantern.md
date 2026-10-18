@@ -19,7 +19,6 @@ Rusty oil lantern with a weak flame.
 | Achat (argent) | 15 |
 | Vente (argent) | 4 |
 | Autonomie | 4 hours |
-| Accrochable | Oui |
 | Recharge | Thick Oil |
 
 [Retour au catalogue](../equipement.md)

@@ -427,9 +427,6 @@
     // désigne le `ref` d'un Contenant de même catégorie. Une sauvegarde cassée,
     // un contenant supprimé ou deux contenus visant le même slot ne doivent pas
     // rendre l'objet invisible : le lien invalide est simplement libéré au sac.
-    var anciensSacs = s.inv.objets.slice();
-    anciensSacs.forEach(function(o){if(!o.sac)return;var n=Math.max(1,Math.ceil(pnum(o.qte)));o.qte=1;
-      for(var k=1;k<n;k++){var c=JSON.parse(JSON.stringify(o));c.ref=uid("o");c.ou="sac";c.dans="";c.emp=-1;s.inv.objets.push(c);}});
     var contenantsParRef = Object.create(null);
     s.inv.objets.forEach(function (o) {
       if (o && o.ref && (o.contenant || o.sac)) contenantsParRef[o.ref] = o;
@@ -473,6 +470,7 @@
     // place, ou arrive second, retourne au sac plutôt que de disparaître.
     // Un objet à DEUX cases (robe, arme à deux mains) les prend toutes deux,
     // ancré sur la sienne ; qu'une seule soit déjà prise, et il retourne au sac.
+    window.OwdInventoryData.normalizeSlots(s.inv.objets);
     var prises = {};
     s.inv.objets.forEach(function (o) {
       if (INV_CASES.indexOf(o.ou) < 0) return;

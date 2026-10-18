@@ -19,7 +19,6 @@ Oil Lantern that shines brightly.
 | Achat (argent) | 25 |
 | Vente (argent) | 8 |
 | Autonomie | 8 hours |
-| Accrochable | Oui |
 | Recharge | Thick Oil |
 
 [Retour au catalogue](../equipement.md)

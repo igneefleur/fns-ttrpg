@@ -19,7 +19,6 @@ A mage's enchantable lantern.
 | Achat (argent) | 25 |
 | Vente (argent) | 8 |
 | Autonomie | 8 hours |
-| Accrochable | Oui |
 | Recharge | Thick Oil (sans enchantement) |
 
 [Retour au catalogue](../equipement.md)

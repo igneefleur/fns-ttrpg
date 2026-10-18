@@ -19,7 +19,6 @@
 | Achat (argent) | Non commercialisé |
 | Vente (argent) | Non commercialisé |
 | Autonomie | Infinie |
-| Accrochable | Oui |
 | Recharge | None |
 | Effet 1 | Protection de la lanterne des âmes — +20 % de résistance éthérée ; +10 % de résistance au feu, à la glace, à la foudre et à la décomposition. (Tant que tenue en main secondaire) |
 

@@ -319,7 +319,7 @@
   // Les objets au sol, et tous les contenus de leurs contenants, sont exclus. Les poches et le sac ont en plus chacun leur capacité, qui vient de
   // ce que le personnage porte : les poches des vêtements dans leur case, et
   // le sac posé dans la case du sac à dos.
-  function poidsDe(o) { return pnum(o.qte) * pnum(o.poids); }
+  function poidsDe(o) { return window.OwdInventoryData.totalQuantity(state.inv.objets,o) * pnum(o.poids); }
   function poidsOu(test) {
     var t = 0;
     state.inv.objets.forEach(function (o) { if (test(o.ou, o)) t += poidsDe(o); });
@@ -347,7 +347,7 @@
   function casesDe(o, ou, forceDeux) {
     var explicite = !!ou;
     ou = ou || o.ou;
-    if (!explicite && o.dans) return [];
+    if (!explicite && (o.dans || pnum(o.qte)!==1)) return [];
     if (o.vet === "hautbas" && (ou === "haut" || ou === "bas")) return ["haut", "bas"];
     if ((ou === "mainG" || ou === "mainD") &&
         (o.mains === "2 obligatoires" || (forceDeux === undefined ? o.tenueDeuxMains === true : forceDeux === true)))
@@ -358,6 +358,7 @@
   // la ceinture, une ceinture ; le dos, un sac ; une case de vêtement ou
   // d'accessoire, ce qui s'y porte.
   function casePermise(o, ou) {
+    if(pnum(o.qte)<1)return false;
     if (ou === "mainG" || ou === "mainD") return true;
     if (ou === "ceinture") return !!o.ceint;
     if (ou === "dos") return !!o.sac;
@@ -370,7 +371,7 @@
   function porteurEp(lieu, objets) {
     var out = null, cas = lieu === "ceint" ? "ceinture" : "dos";
     (objets || state.inv.objets).forEach(function (o) {
-      if (!out && !o.dans && o.ou === cas && (lieu === "ceint" ? o.ceint : o.sac)) out = o;
+      if (!out && !o.dans && pnum(o.qte)===1 && o.ou === cas && (lieu === "ceint" ? o.ceint : o.sac)) out = o;
     });
     return out;
   }
@@ -384,13 +385,14 @@
     return out;
   }
   function epPermis(o, lieu, objets) {
-    if(o.proprietes && String(o.proprietes.accrochable).toLowerCase()==="non")return false;
+    if(pnum(o.qte)<1 || !porteurEp(lieu,objets))return false;
     return invTailleAccepte(o.taille,ebMaxEp(lieu,objets)) && o !== porteurEp(lieu,objets);
   }
   // Ce qui n'a plus d'emplacement valable (ceinture ôtée, rang au-delà du
   // nombre, trop encombrant, deux au même rang, une pile) retourne au sac.
   // Un exemplaire qui retourne au sac y REJOINT sa pile, s'il en a une.
   function rangeEmplacements(objets) {
+    window.OwdInventoryData.normalizeSlots(objets);
     var pris = {}, rendus = [];
     objets.forEach(function (o) {
       if (o.dans && o.ou !== "sacep") { o.emp = -1; return; }
@@ -405,24 +407,7 @@
       }
       for(var j=0;j<invCoutAcc(o,o.ou);j++)pris[o.ou+(o.emp+j)]=1;
     });
-    rendus.forEach(function (o) {
-      var sig = signatureObjet(o), pile = null;
-      objets.forEach(function (x) {
-        if (!pile && x !== o && x.ou === "sac" && signatureObjet(x) === sig) pile = x;
-      });
-      if (!pile) return;
-      pile.qte = Math.round((pnum(pile.qte) + pnum(o.qte)) * 100) / 100;
-      objets.splice(objets.indexOf(o), 1);
-    });
-  }
-  // ce qu'est un objet, sans sa quantité ni sa place : deux piles de même
-  // signature sont le même objet
-  function signatureObjet(o) {
-    var c = {};
-    Object.keys(o).sort().forEach(function (k) {
-      if (k !== "qte" && k !== "ou" && k !== "emp") c[k] = o[k];
-    });
-    return JSON.stringify(c);
+
   }
   // la case d'ancrage d'un objet posé en `ou`
   function ancrage(o, ou, forceDeux) {
@@ -438,21 +423,21 @@
   // en haut). Poches et protection viennent des deux.
   function vetementsPortes() {
     return state.inv.objets.filter(function (o) {
-      return (o.vet && (o.ou === o.vet || (o.vet === "hautbas" && o.ou === "haut"))) ||
-             (o.acc && INV_ACCESSOIRES.indexOf(o.ou) >= 0 && casePermise(o, o.ou));
+      return !o.dans && pnum(o.qte)===1 && ((o.vet && (o.ou === o.vet || (o.vet === "hautbas" && o.ou === "haut"))) ||
+             (o.acc && INV_ACCESSOIRES.indexOf(o.ou) >= 0 && casePermise(o, o.ou)));
     });
   }
   // Objets dont les propriétés passives s'appliquent lorsqu'ils sont portés.
   function equipementsPortes() {
     var clothes=vetementsPortes();
     return (state.inv.objets || []).filter(function(o) {
-      return !o.dans && pnum(o.qte)>0 && ((o.sac && o.ou==="dos") || (o.ceint && o.ou==="ceinture") || clothes.indexOf(o)>=0);
+      return !o.dans && pnum(o.qte)===1 && ((o.sac && o.ou==="dos") || (o.ceint && o.ou==="ceinture") || clothes.indexOf(o)>=0);
     });
   }
   function equipementsBonus() {
     var out=equipementsPortes();
     (state.inv.objets||[]).forEach(function(o){
-      if(!o.dans && pnum(o.qte)>0 && (o.ou==="mainG" || o.ou==="mainD") && out.indexOf(o)<0)out.push(o);
+      if(!o.dans && pnum(o.qte)===1 && (o.ou==="mainG" || o.ou==="mainD") && out.indexOf(o)<0)out.push(o);
     });
     return out.filter(function(o){return invType(o)!=="consommable";});
   }
