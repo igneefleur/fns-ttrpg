@@ -34,8 +34,8 @@
     };
   }
   function isCarried(items,item){return carrier(items)(item);}
-  function backpack(items){return items.filter(function(o){return o.sac&&!o.dans&&o.ou==='dos';})[0]||null;}
-  function weight(items,item){return group({objets:items},item.ref).reduce(function(n,o){return n+(Number(o.poids)||0)*(Number(o.qte)||0);},0);}
+  function backpack(items){return items.filter(function(o){return o.sac&&!o.dans&&Number(o.qte)===1&&o.ou==='dos';})[0]||null;}
+  function weight(items,item){var tree=group({objets:items},item.ref);tree[0].dans='';return tree.reduce(function(n,o){return n+(Number(o.poids)||0)*totalQuantity(tree,o);},0);}
   function bind(items){var bag=backpack(items);items.forEach(function(o){
     if(o.ou==='poches'&&!o.dans&&!pocketFits(o)){o.ou='terre';o.emp=-1;}
     if(o!==bag&&!o.dans&&(o.ou==='sac'||o.ou==='sacep')){
@@ -45,12 +45,37 @@
       }else{o.ou='terre';o.emp=-1;}
     }
   });} 
-  function split(items,item,q,ref){q=Number(q);if(item.sac||!(q>0&&q<Number(item.qte)))throw Error('Indiquez une quantité inférieure à la pile.');
-    if(items.some(function(o){return o.dans===item.ref;}))throw Error('Videz ce contenant avant de séparer sa pile.');
-    if(!ref||items.some(function(o){return o.ref===ref;}))throw Error("Référence de pile invalide.");
-    var other=copy(item);other.ref=ref;other.qte=q;item.qte=Math.round((item.qte-q)*100)/100;
-    if(other.ou!=='sac'&&other.ou!=='poches'&&other.ou!=='terre'){other.ou='sac';other.emp=-1;other.dans='';}
-    items.splice(items.indexOf(item)+1,0,other);bind(items);return other;}
-  var api={backpack:backpack,pocketFits:pocketFits,carrier:carrier,isCarried:isCarried,weight:weight,bind:bind,split:split,copy:copy,stable:stable,group:group,prepare:prepare,received:received,committed:committed,removed:removed,cancelled:function(state,job){return removed(state,{items:job.dest});}};
+  // Les descendants décrivent le contenu d'UN exemplaire de la pile.
+  var slots=['mainG','mainD','ceinture','dos','tete','haut','mains','bas','pieds','oreilles','collier','sousvet','poignetG','poignetD','bagueG','bagueD','chevilleG','chevilleD','cape','ceint','sacep'];
+  function equipped(o){return slots.indexOf(o.ou)>=0&&(!o.dans||o.ou==='sacep');}
+  function fresh(items,base){var ref=base,i=0;while(items.some(function(o){return o.ref===ref;}))ref=base+'_'+(++i);return ref;}
+  function split(items,item,q,ref){q=Number(q);if(!(q>0&&q<Number(item.qte)))throw Error('Indiquez une quantité inférieure à la pile.');
+    if(!ref||items.some(function(o){return o.ref===ref;}))throw Error('Référence de pile invalide.');
+    isolateAncestors(items,item);
+    var tree=group({objets:items},item.ref),refs={};refs[item.ref]=ref;
+    tree.slice(1).forEach(function(o,i){refs[o.ref]=fresh(items,ref+'c'+i);});
+    tree.forEach(function(o,i){o.ref=refs[o.ref];o.dans=refs[o.dans]||o.dans;if(i===0){o.qte=q;if(equipped(o)){o.ou='terre';o.emp=-1;o.dans='';}}});
+    item.qte=Math.round((Number(item.qte)-q)*100)/100;Array.prototype.push.apply(items,tree);return tree[0];}
+  function isolateAncestors(items,item,seen){seen=seen||{};if(!item.dans||seen[item.ref])return;seen[item.ref]=true;
+    var p=items.filter(function(o){return o.ref===item.dans;})[0];if(p){isolateAncestors(items,p,seen);isolateSelf(items,p);}}
+  function isolateSelf(items,item){if(Number(item.qte)>1)split(items,item,Math.round((Number(item.qte)-1)*100)/100,fresh(items,item.ref+'pile'));return item;}
+  function isolate(items,item){isolateAncestors(items,item);return isolateSelf(items,item);}
+  function normalizeSlots(items){items.slice().forEach(function(o){if(!equipped(o))return;
+    if(Number(o.qte)<1||!isFinite(Number(o.qte))){o.ou='terre';o.dans='';o.emp=-1;}
+    else if(Number(o.qte)>1)isolate(items,o);
+  });}
+  function signature(items,item,seen,child){seen=seen||{};if(seen[item.ref])throw Error('Contenu cyclique.');var next=Object.assign({},seen);next[item.ref]=true;var value={};
+    Object.keys(item).forEach(function(k){if(['ref','dans','ou','emp','qte'].indexOf(k)<0)value[k]=item[k];});
+    if(child&&item.ou==='sacep'){value.ou='sacep';value.emp=item.emp;}
+    var contents=Object.create(null);items.filter(function(o){return o.dans===item.ref;}).forEach(function(o){var key=signature(items,o,next,true);contents[key]=Math.round(((contents[key]||0)+Number(o.qte))*100)/100;});
+    return stable({objet:value,contenu:contents});}
+  function canMerge(items,a,b){if(!a||!b||a===b||equipped(a)||equipped(b)||a.ou!==b.ou||(a.dans||'')!==(b.dans||'')||!(Number(a.qte)>0&&Number(b.qte)>0))return false;
+    try{return signature(items,a)===signature(items,b);}catch(e){return false;}}
+  function merge(items,target,source){if(!canMerge(items,target,source))throw Error('Ces objets ne sont pas identiques.');
+    isolateAncestors(items,target);isolateAncestors(items,source);
+    var refs=group({objets:items},source.ref).map(function(o){return o.ref;});target.qte=Math.round((Number(target.qte)+Number(source.qte))*100)/100;
+    for(var i=items.length-1;i>=0;i--)if(refs.indexOf(items[i].ref)>=0)items.splice(i,1);return target;}
+  function totalQuantity(items,item){var q=Number(item.qte)||0,seen={},p=item;while(p&&p.dans){if(seen[p.ref])return 0;seen[p.ref]=true;p=items.filter(function(o){return o.ref===p.dans;})[0];if(p)q*=Number(p.qte)||0;}return q;}
+  var api={equipped:equipped,isolate:isolate,isolateAncestors:isolateAncestors,normalizeSlots:normalizeSlots,signature:signature,canMerge:canMerge,merge:merge,totalQuantity:totalQuantity,backpack:backpack,pocketFits:pocketFits,carrier:carrier,isCarried:isCarried,weight:weight,bind:bind,split:split,copy:copy,stable:stable,group:group,prepare:prepare,received:received,committed:committed,removed:removed,cancelled:function(state,job){return removed(state,{items:job.dest});}};
   root.OwdInventoryData=api;if(typeof module==='object'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

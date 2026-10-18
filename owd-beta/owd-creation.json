@@ -102044,7 +102044,6 @@
    "emp": -1,
    "proprietes": {
     "autonomie": "720 hours (30 days)",
-    "accrochable": true,
     "recharge": "Power Coil"
    },
    "mains": 1,
@@ -102083,7 +102082,6 @@
    "emp": -1,
    "proprietes": {
     "autonomie": "8 hours",
-    "accrochable": true,
     "recharge": "Thick Oil"
    },
    "mains": 1,
@@ -102122,7 +102120,6 @@
    "emp": -1,
    "proprietes": {
     "autonomie": "8 hours",
-    "accrochable": true,
     "recharge": "Thick Oil"
    },
    "mains": 1,
@@ -102163,7 +102160,6 @@
    "emp": -1,
    "proprietes": {
     "autonomie": "Infinie",
-    "accrochable": true,
     "recharge": "None"
    },
    "mains": 1,
@@ -102200,7 +102196,6 @@
    "emp": -1,
    "proprietes": {
     "autonomie": "4 hours",
-    "accrochable": true,
     "recharge": "Thick Oil"
    },
    "mains": 1,
@@ -102239,7 +102234,6 @@
    "emp": -1,
    "proprietes": {
     "autonomie": "8 hours",
-    "accrochable": true,
     "recharge": "Thick Oil (sans enchantement)"
    },
    "mains": 1,
@@ -102280,7 +102274,6 @@
    "emp": -1,
    "proprietes": {
     "autonomie": "2 hours",
-    "accrochable": false,
     "recharge": "None"
    },
    "mains": 1,
@@ -102321,7 +102314,6 @@
    "emp": -1,
    "proprietes": {
     "autonomie": "30 minutes",
-    "accrochable": false,
     "recharge": "None"
    },
    "mains": 1,
@@ -102362,7 +102354,6 @@
    "emp": -1,
    "proprietes": {
     "autonomie": null,
-    "accrochable": null,
     "recharge": null
    },
    "mains": 1,
@@ -102403,7 +102394,6 @@
    "emp": -1,
    "proprietes": {
     "autonomie": null,
-    "accrochable": null,
     "recharge": null
    },
    "mains": 1,
@@ -102442,7 +102432,6 @@
    "emp": -1,
    "proprietes": {
     "autonomie": null,
-    "accrochable": null,
     "recharge": null
    },
    "mains": 1,
@@ -102483,7 +102472,6 @@
    "emp": -1,
    "proprietes": {
     "autonomie": null,
-    "accrochable": null,
     "recharge": null
    },
    "mains": 1,
@@ -102524,7 +102512,6 @@
    "emp": -1,
    "proprietes": {
     "autonomie": null,
-    "accrochable": null,
     "recharge": null
    },
    "mains": 1,
@@ -102563,7 +102550,6 @@
    "emp": -1,
    "proprietes": {
     "autonomie": null,
-    "accrochable": null,
     "recharge": null
    },
    "mains": 1,
@@ -102604,7 +102590,6 @@
    "emp": -1,
    "proprietes": {
     "autonomie": null,
-    "accrochable": null,
     "recharge": null
    },
    "mains": 1,
@@ -102643,7 +102628,6 @@
    "emp": -1,
    "proprietes": {
     "autonomie": null,
-    "accrochable": null,
     "recharge": null
    },
    "mains": 1,
@@ -102684,7 +102668,6 @@
    "emp": -1,
    "proprietes": {
     "autonomie": null,
-    "accrochable": null,
     "recharge": null
    },
    "mains": 1,
@@ -102725,7 +102708,6 @@
    "emp": -1,
    "proprietes": {
     "autonomie": null,
-    "accrochable": null,
     "recharge": null
    },
    "mains": 1,
@@ -102766,7 +102748,6 @@
    "emp": -1,
    "proprietes": {
     "autonomie": null,
-    "accrochable": null,
     "recharge": null
    },
    "mains": 1,
@@ -102807,7 +102788,6 @@
    "emp": -1,
    "proprietes": {
     "autonomie": null,
-    "accrochable": null,
     "recharge": null
    },
    "mains": 1,
@@ -102848,7 +102828,6 @@
    "emp": -1,
    "proprietes": {
     "autonomie": null,
-    "accrochable": null,
     "recharge": null
    },
    "mains": 1,
@@ -102889,7 +102868,6 @@
    "emp": -1,
    "proprietes": {
     "autonomie": null,
-    "accrochable": null,
     "recharge": null
    },
    "mains": 1,

@@ -1,5 +1,44 @@
 [
 {
+"short": "13ec007",
+"author": "Théo Cavaillès",
+"date": "2026-10-18T21:35:24+02:00",
+"message": "patch 3.31.0b",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/13ec0075f2bc6c815f4e46f65ffab109f31e0c76",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/equipements/catalogue-tableur-lanternes-et-torches-coil-lantern.md",
+"url": "content/regles/equipements/catalogue-tableur-lanternes-et-torches-coil-lantern/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/catalogue-tableur-lanternes-et-torches-djinn-s-lamp.md",
+"url": "content/regles/equipements/catalogue-tableur-lanternes-et-torches-djinn-s-lamp/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/catalogue-tableur-lanternes-et-torches-explorer-lantern.md",
+"url": "content/regles/equipements/catalogue-tableur-lanternes-et-torches-explorer-lantern/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/catalogue-tableur-lanternes-et-torches-lantern-of-souls.md",
+"url": "content/regles/equipements/catalogue-tableur-lanternes-et-torches-lantern-of-souls/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/catalogue-tableur-lanternes-et-torches-old-lantern.md",
+"url": "content/regles/equipements/catalogue-tableur-lanternes-et-torches-old-lantern/"
+},
+{
+"status": "modified",
+"filename": "content/regles/equipements/catalogue-tableur-lanternes-et-torches-virgin-lantern.md",
+"url": "content/regles/equipements/catalogue-tableur-lanternes-et-torches-virgin-lantern/"
+}
+]
+},
+{
 "short": "13f521b",
 "author": "Théo Cavaillès",
 "date": "2026-10-18T18:58:12+02:00",
