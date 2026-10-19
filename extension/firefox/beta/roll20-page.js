@@ -421,7 +421,7 @@
     var payloads=storagePayloads[ch.id]||(storagePayloads[ch.id]={});Object.assign(payloads,data.payloads||{});
     var map=storagePending[ch.id];if(!map){map={};Object.keys(attrs).filter(function(k){return k.indexOf('owd_ops_'+storageSession+'_')===0;}).sort().forEach(function(k){var b=JSON.parse(attrs[k].current);if(b.epoch===meta.epoch)b.ops.forEach(function(o){map[o.id]=o;});});try{var saved=JSON.parse(localStorage.getItem(key)||'null');if(saved&&saved.epoch===meta.epoch){saved.ops.forEach(function(o){map[o.id]=o;});Object.assign(payloads,saved.payloads||{});}}catch(e){throw Error('Journal local illisible ; exportez la fiche avant de continuer.');}storagePending[ch.id]=map;}
     (data.ops||[]).forEach(function(op){if(!op.id||!Array.isArray(op.changes)||!Number.isSafeInteger(op.clock))throw Error('Opération invalide.');if(map[op.id]&&storageStable(map[op.id])!==storageStable(op))throw Error('Identifiant d’opération réutilisé.');map[op.id]=op;});
-    var ordered=Object.keys(map).map(function(k){return map[k];});var confirmed=storageConfirmed[ch.id]||{},waiting=ordered.filter(function(op){return !confirmed[op.id];});localStorage.setItem(key,JSON.stringify({epoch:meta.epoch,ops:waiting,payloads:payloads}));
+    var ordered=Object.keys(map).map(function(k){return map[k];});var confirmed=storageConfirmed[ch.id]||{},waiting=ordered.filter(function(op){return !confirmed[op.id]&&!op.legacyBackup;});if(waiting.length||Object.keys(payloads).length)localStorage.setItem(key,JSON.stringify({epoch:meta.epoch,ops:waiting,payloads:payloads}));else localStorage.removeItem(key);
     // Un journal trop gros est segmenté ; jamais tronqué, jamais plafonné.
     var chunks=[],part=[];ordered.forEach(function(o){var trial=part.concat([o]);if(part.length&&JSON.stringify(trial).length>24000){chunks.push(part);part=[o];}else part=trial;});if(part.length)chunks.push(part);var out={};Object.keys(payloads).forEach(function(k){if(k.indexOf('owd_stack_')!==0&&k.indexOf('owd_block_module_')!==0)throw Error('Bloc de données invalide.');if(attrs[k]&&attrs[k].current!==payloads[k].current)throw Error('Identifiant de pile déjà utilisé.');if(!attrs[k])out[k]=payloads[k];});chunks.forEach(function(ops,i){out['owd_ops_'+storageSession+'_'+String(i).padStart(5,'0')]={current:JSON.stringify({format:2,epoch:meta.epoch,session:storageSession,ops:ops}),max:''};});Object.keys(out).forEach(function(k){if(attrs[k]&&attrs[k].current===out[k].current)delete out[k];});enqueue(ch.id,out,true);
   }
@@ -429,36 +429,80 @@
     var key='owd-operations-v2:'+String((campaign()||{}).id||'partie')+':'+ch.id+':'+storageSession;
     try{var saved=JSON.parse(localStorage.getItem(key)||'null');if(!saved)return;saved.ops=saved.ops.filter(function(op){return !seen[op.id];});Object.keys(saved.payloads||{}).forEach(function(k){if(attrs[k]&&attrs[k].current===saved.payloads[k].current){delete saved.payloads[k];if(storagePayloads[ch.id])delete storagePayloads[ch.id][k];}});if(saved.ops.length||Object.keys(saved.payloads||{}).length)localStorage.setItem(key,JSON.stringify(saved));else localStorage.removeItem(key);}catch(e){}
   }
-  function storageCleanup(ch){var attrs=readAll(ch.id),meta;try{meta=storageManifest(attrs);}catch(e){return;}if(!meta||meta.phase!=='ready')return;var known=["owd_state", "owd_nom", "owd_espece", "owd_taille", "owd_age", "owd_sexe", "owd_genre", "owd_portrait", "owd_background", "owd_notes", "owd_de", "owd_xp_total", "owd_eff_autre", "owd_eff_desactive", "owd_eff_alcool", "owd_eff_alcool_secondes", "owd_effort", "owd_temperature", "owd_qualite_sommeil", "owd_allure", "owd_allure_cran", "owd_argent", "owd_version", "owd_release", "owd_caracs", "owd_horloge", "owd_horloge_digestion", "owd_horloge_exposition", "owd_caracs_xp", "owd_des_tailles", "owd_des_utilises", "owd_eff_parties", "owd_eff_pause", "owd_effets_actifs", "owd_effets_permanents", "owd_caracs_leviers", "owd_etat_courant", "owd_caps_leviers", "owd_competences", "owd_comps_leviers", "owd_techniques", "owd_attaques", "owd_defenses", "owd_combat_options", "owd_combat_modifiers", "owd_avantages", "owd_armes", "owd_vetements", "owd_inventaire", "owd_modules", "owd_mod_donnees", "owd_mod_actifs", "owd_mods", "owd_force", "owd_dexterite", "owd_intelligence", "owd_ferveur", "owd_vigueur", "owd_endurance", "owd_resistance", "owd_chance", "owd_pv", "owd_pe", "owd_pm", "owd_pi", "owd_pr", "owd_ps", "owd_ph", "owd_expo", "owd_charge", "owd_acces", "owd_contenance", "owd_rupture", "owd_effondrement", "owd_des_action", "owd_xp_depense"];
-    function legacyValues(current){var out={};Object.keys(current).forEach(function(k){if(k==='owd_state'||k==='owd_sync_base'||k.indexOf('owd_sync_p_')===0)out[k]=String(current[k].current==null?'':current[k].current);});return out;}
-    var old=legacyValues(attrs),fingerprint=storageHash(storageStable(old)),check=storageCleanupChecks[ch.id];
-    var changed='Les anciennes données ont réellement changé ou leur reliquat ne peut pas être vérifié. Le nettoyage est suspendu ; la nouvelle fiche reste utilisable. Exportez les anciennes versions ouvertes avant de les fermer.';
-    if(!check||check.epoch!==meta.epoch){check=storageCleanupChecks[ch.id]={since:Date.now(),epoch:meta.epoch};}
-    if(meta.cleanupComplete){return Object.keys(old).length?{error:changed}:{status:'done'};}
-    // La preuve est enregistrée dans le manifeste EXISTANT, puis relue avant
-    // toute suppression. Les suppressions ne modifient plus cette référence.
-    if(!meta.legacyHashes){
-      var proof=arguments[1],hashes={};Object.keys(old).forEach(function(k){hashes[k]=storageHash(old[k]);});
-      if(Object.keys(old).length&&meta.legacyFingerprint!==fingerprint&&!(proof&&proof.epoch===meta.epoch&&proof.fingerprint===fingerprint&&storageStable(proof.hashes)===storageStable(hashes)))return {error:changed};
-      meta.legacyHashes=hashes;enqueue(ch.id,{owd_storage:{current:JSON.stringify(meta),max:''}},true);return {status:'pending'};
+  var storageFresh={},storageCleanupReports={};
+  function storageObsolete(k){return typeof k==='string'&&k!=='owd_version'&&k!=='owd_backup'&&['owd_pv','owd_pe','owd_pm'].indexOf(k)<0&&(k==='owd_state'||k.indexOf('owd_sync_')===0||STORAGE_LEGACY.indexOf(k)>=0);}
+  var STORAGE_LEGACY=["owd_state", "owd_nom", "owd_espece", "owd_taille", "owd_age", "owd_sexe", "owd_genre", "owd_portrait", "owd_background", "owd_notes", "owd_de", "owd_xp_total", "owd_eff_autre", "owd_eff_desactive", "owd_eff_alcool", "owd_eff_alcool_secondes", "owd_effort", "owd_temperature", "owd_qualite_sommeil", "owd_allure", "owd_allure_cran", "owd_argent", "owd_version", "owd_release", "owd_caracs", "owd_horloge", "owd_horloge_digestion", "owd_horloge_exposition", "owd_caracs_xp", "owd_des_tailles", "owd_des_utilises", "owd_eff_parties", "owd_eff_pause", "owd_effets_actifs", "owd_effets_permanents", "owd_caracs_leviers", "owd_etat_courant", "owd_caps_leviers", "owd_competences", "owd_comps_leviers", "owd_techniques", "owd_attaques", "owd_defenses", "owd_combat_options", "owd_combat_modifiers", "owd_avantages", "owd_armes", "owd_vetements", "owd_inventaire", "owd_modules", "owd_mod_donnees", "owd_mod_actifs", "owd_mods", "owd_force", "owd_dexterite", "owd_intelligence", "owd_ferveur", "owd_vigueur", "owd_endurance", "owd_resistance", "owd_chance", "owd_pv", "owd_pe", "owd_pm", "owd_pi", "owd_pr", "owd_ps", "owd_ph", "owd_expo", "owd_charge", "owd_acces", "owd_contenance", "owd_rupture", "owd_effondrement", "owd_des_action", "owd_xp_depense"];
+  function storageLegacyRecords(ch){
+    var out={};models(ch).forEach(function(m){var k=attrVal(m,'name');if(typeof k!=='string'||!storageObsolete(k))return;
+      var v={current:String(attrVal(m,'current')==null?'':attrVal(m,'current')),max:String(attrVal(m,'max')==null?'':attrVal(m,'max'))};
+      var rows=out[k]||(out[k]=[]);if(!rows.some(function(x){return storageStable(x)===storageStable(v);}))rows.push(v);
+    });Object.keys(out).forEach(function(k){out[k].sort(function(a,b){return storageStable(a).localeCompare(storageStable(b));});});return out;
+  }
+  function storageArchiveOps(epoch,records){
+    var fragments=[];Object.keys(records).sort().forEach(function(name){records[name].forEach(function(value){var raw=storageStable(value),hash=storageHash(raw),total=Math.max(1,Math.ceil(raw.length/6000));for(var i=0;i<total;i++)fragments.push({name:name,hash:hash,part:i,total:total,data:raw.slice(i*6000,(i+1)*6000)});});});
+    var groups=[],group=[];fragments.forEach(function(fragment){var next=group.concat([fragment]);if(group.length&&JSON.stringify(next).length>18000){groups.push(group);group=[fragment];}else group=next;});if(group.length)groups.push(group);
+    return groups.map(function(parts){var backup={format:2,epoch:epoch,fragments:parts};return {id:'migration-backup:'+epoch+':'+storageHash(storageStable(backup)),clock:0,at:0,changes:[],legacyBackup:backup};});
+  }
+  function storageLegacySaved(attrs,epoch){
+    var out={},pieces={};function add(name,v){var rows=out[name]||(out[name]=[]);if(!rows.some(function(x){return storageStable(x)===storageStable(v);}))rows.push(v);}
+    Object.keys(attrs).filter(function(k){return k.indexOf('owd_ops_')===0;}).forEach(function(k){
+      var box=JSON.parse(attrs[k].current);if(box.epoch!==epoch)return;
+      (box.ops||[]).forEach(function(op){var backup=op.legacyBackup;if(!backup||backup.epoch!==epoch)return;
+        var identity=backup.format===1?backup.attributes:backup;
+        if(op.id!=='migration-backup:'+epoch+':'+storageHash(storageStable(identity)))throw Error('Sauvegarde de migration illisible.');
+        if(backup.format===1){Object.keys(backup.attributes).forEach(function(name){backup.attributes[name].forEach(function(v){add(name,v);});});return;}
+        if(backup.format!==2||!Array.isArray(backup.fragments))throw Error('Format de sauvegarde de migration inconnu.');
+        backup.fragments.forEach(function(f){if(!Number.isSafeInteger(f.total)||!Number.isSafeInteger(f.part)||f.total<1||f.part<0||f.part>=f.total||typeof f.data!=='string')throw Error('Fragment de sauvegarde invalide.');
+          var key=storageStable([f.name,f.hash,f.total]),entry=pieces[key]||(pieces[key]={name:f.name,hash:f.hash,total:f.total,parts:{}});
+          if(Object.prototype.hasOwnProperty.call(entry.parts,f.part)&&entry.parts[f.part]!==f.data)throw Error('Fragments de sauvegarde incompatibles.');entry.parts[f.part]=f.data;
+        });
+      });
+    });Object.keys(pieces).forEach(function(k){var entry=pieces[k];if(Object.keys(entry.parts).length!==entry.total)return;var raw='';for(var i=0;i<entry.total;i++)raw+=entry.parts[i];if(storageHash(raw)!==entry.hash)throw Error('Sauvegarde de migration altérée.');var value=JSON.parse(raw);if(typeof value.current!=='string'||typeof value.max!=='string')throw Error('Valeur de sauvegarde invalide.');add(entry.name,value);});return out;
+  }
+  function storageCleanup(ch){
+    function report(r){storageCleanupReports[ch.id]=r;return r;}
+    var attrs=readAll(ch.id),meta;try{meta=storageManifest(attrs);}catch(e){return report({status:'error',error:String(e.message||e)});}
+    if(!meta||meta.phase!=='ready')return report({status:'pending',stage:'migration'});
+    var fresh=storageFresh[ch.id];if(!fresh||Date.now()-fresh.at>15000)return report({status:'pending',stage:'confirmation'});
+    var check=storageCleanupChecks[ch.id];if(!check||check.epoch!==meta.epoch){check=storageCleanupChecks[ch.id]={since:Date.now(),epoch:meta.epoch};}
+    var records=storageLegacyRecords(ch),names=Object.keys(records),count=models(ch).filter(function(m){return storageObsolete(attrVal(m,'name')||'');}).length;
+    var saved;try{var confirmed=storageManifest(fresh.attrs);if(!confirmed||confirmed.epoch!==meta.epoch||confirmed.phase!=='ready')return report({status:'pending',stage:'confirmation'});saved=storageLegacySaved(fresh.attrs,meta.epoch);}catch(e){return report({status:'error',error:String(e.message||e)});}
+    var missing={};names.forEach(function(k){records[k].forEach(function(v){if(!(saved[k]||[]).some(function(x){return storageStable(x)===storageStable(v);})){(missing[k]||(missing[k]=[])).push(v);}});});
+    if(Object.keys(missing).length){
+      // Une opération sans changement de fiche garde les anciennes valeurs.
+      // Son identité déterministe permet plusieurs MJ/vues sans écrasement.
+      // Elle doit être RELUE DU SERVEUR avant la moindre suppression.
+      try{storageOps(ch,{epoch:meta.epoch,ops:storageArchiveOps(meta.epoch,missing),payloads:{}});}catch(e){return report({status:'error',error:'Sauvegarde avant nettoyage : '+String(e.message||e)});}
+      if(check.backupSince===undefined)check.backupSince=Date.now();
+      if(Date.now()-check.backupSince>15000)return report({status:'error',stage:'backup',remaining:count,error:'Roll20 ne confirme pas encore la sauvegarde de sécurité. Les anciennes données sont conservées ; nouvelle tentative automatique.'});
+      return report({status:'pending',stage:'backup',remaining:count});
     }
-    function unchanged(current){var values=legacyValues(current);return Object.keys(values).every(function(k){return Object.prototype.hasOwnProperty.call(meta.legacyHashes,k)&&meta.legacyHashes[k]===storageHash(values[k]);});}
-    if(!unchanged(attrs))return {error:changed};
-    if(Date.now()-check.since<6000)return {status:'pending'};
-    var obsolete=Object.keys(attrs).filter(function(k){return k!=='owd_version'&&k!=='owd_backup'&&['owd_pv','owd_pe','owd_pm'].indexOf(k)<0&&(known.indexOf(k)>=0||k==='owd_sync_base'||k.indexOf('owd_sync_p_')===0);});
-    if(storageTimers[ch.id])return {status:'pending'};
-    var work=[];obsolete.forEach(function(k){findAllAttrs(ch,k).forEach(function(m){work.push({name:k,model:m,value:String(attrs[k].current==null?'':attrs[k].current)});});});
-    if(!work.length){delete meta.legacyHashes;meta.cleanupComplete=true;enqueue(ch.id,{owd_storage:{current:JSON.stringify(meta),max:''}},true);return {status:'done'};}storageTimers[ch.id]=true;
+    delete check.backupSince;
+    if(!count){
+      // Le résultat est annoncé uniquement après une lecture serveur sans
+      // anciens attributs, jamais sur une suppression locale optimiste.
+      if(Object.keys(fresh.attrs).some(storageObsolete))return report({status:'pending',stage:'confirmation',remaining:0});
+      if(!meta.cleanupComplete||meta.legacyHashes){delete meta.legacyHashes;meta.cleanupComplete=true;enqueue(ch.id,{owd_storage:{current:JSON.stringify(meta),max:''}},true);}
+      return report({status:'done',remaining:0});
+    }
+    if(Date.now()-check.since<6000)return report({status:'pending',stage:'ready',remaining:count});
+    if(storageTimers[ch.id]){var last=storageCleanupReports[ch.id];return last&&last.status==='error'?last:report({status:'pending',stage:'deleting',remaining:count});}
+    var work=models(ch).filter(function(m){return storageObsolete(attrVal(m,'name')||'');}).sort(function(a,b){return Number(String(attrVal(b,'name')).indexOf('owd_sync_')===0)-Number(String(attrVal(a,'name')).indexOf('owd_sync_')===0);}),failed=false;
+    storageTimers[ch.id]=true;report({status:'pending',stage:'deleting',remaining:count});
     function next(){
-      var current=readAll(ch.id),fresh;try{fresh=storageManifest(current);}catch(e){delete storageTimers[ch.id];return;}
-      if(!fresh||fresh.phase!=='ready'||fresh.epoch!==meta.epoch||!unchanged(current)){delete storageTimers[ch.id];return;}
+      if(failed){delete storageTimers[ch.id];return;}
+      var current=readAll(ch.id),m;try{m=storageManifest(current);}catch(e){delete storageTimers[ch.id];report({status:'error',error:String(e.message||e)});return;}
+      if(!m||m.epoch!==meta.epoch||m.phase!=='ready'){delete storageTimers[ch.id];return;}
       var entry=work.shift();if(!entry){delete storageTimers[ch.id];return;}
-      // Relire également les copies numériques : une ancienne extension qui
-      // les réécrit en cours de nettoyage ne doit pas être effacée aveuglément.
-      if(!current[entry.name]){setTimeout(next,WRITE_DELAY);return;}
-      if(String(current[entry.name].current==null?'':current[entry.name].current)!==entry.value){delete storageTimers[ch.id];return;}
-      detruit(entry.model,function(){setTimeout(next,WRITE_DELAY);},function(){delete storageTimers[ch.id];});
-    }next();return {status:'pending'};
+      var name=attrVal(entry,'name'),v={current:String(attrVal(entry,'current')==null?'':attrVal(entry,'current')),max:String(attrVal(entry,'max')==null?'':attrVal(entry,'max'))};
+      if(models(ch).indexOf(entry)<0){setTimeout(next,WRITE_DELAY);return;}
+      // Toute réécriture tardive est archivée au passage suivant avant reprise.
+      if(!(saved[name]||[]).some(function(x){return storageStable(x)===storageStable(v);})){delete storageTimers[ch.id];report({status:'pending',stage:'backup',remaining:work.length+1});return;}
+      var attemptedAt=Date.now();
+      detruit(entry,function(){},function(reason){var latest=storageFresh[ch.id];if(latest&&latest.at>=attemptedAt&&!latest.attrs[name])return;failed=true;report({status:'error',error:'Suppression de '+name+' : '+String(reason||'refus du serveur')+'. Nouvelle tentative automatique.'});});
+      // Même cadence que les écritures ; la fin attend la relecture serveur.
+      setTimeout(next,WRITE_DELAY);
+    }next();return storageCleanupReports[ch.id];
   }
 
   window.__owdStorageBridge={session:storageSession,ops:function(id,data){var ch=getChar(id);if(ch&&inventoryAccess(ch))storageOps(ch,data);}};
@@ -753,7 +797,8 @@
   var RESYNC_MIN = 1500, resyncJobs = {}, readSubscriptions = new WeakMap();
   function publieLecture(ch, ok) {
     menage(); var attrs = readAll(ch.id), at = Date.now();
-    if(ok&&attrs.owd_storage)storageConfirmLocal(ch,attrs);
+    var cleanup=null;
+    if(ok&&attrs.owd_storage&&inventoryAccess(ch)){storageConfirmLocal(ch,attrs);storageFresh[ch.id]={at:at,attrs:attrs};try{cleanup=storageCleanup(ch);}catch(e){cleanup={status:'error',error:String(e.message||e)};}}
     srcFrames.forEach(function (w, i) {
       if (srcIds[i] !== ch.id) return;
       var base = readSubscriptions.get(w); if (!base) return;
@@ -764,6 +809,7 @@
       msg.attrs = attrs; msg.fresh = !!ok; msg.readAt = ok ? at : 0;
       if (inventoryFrames.has(w)) msg.inventoryAccess = true;
       reply({source:w}, msg);
+      if(cleanup)reply({source:w},Object.assign({type:'storage-cleanup-status',charId:ch.id},cleanup));
     });
   }
   function resynchronise(ch) {
@@ -1071,7 +1117,7 @@
         // toutes les 500 ms, le Campaign peut arriver après nous)
         var chl = getChar(d.charId);
         if (!chl) return;
-        var rl = { type: "hydrate", charId: d.charId, attrs: readAll(d.charId), resync: true, collaboration: 1, storageBlocks: 2, storageSession: storageSessionName() };
+        var rl = { type: "hydrate", charId: d.charId, attrs: readAll(d.charId), resync: true, collaboration: 1, storageBlocks: 2, storageCleanup:3, storageSession: storageSessionName() };
         if (inventoryFrames.has(ev.source)) {
           rl.inventoryAccess = true;
           if (etatAttributs(chl) !== "sur") return;
@@ -1108,7 +1154,9 @@
         if(!liee(ev.source,d.charId)||!inventoryAccess(getChar(d.charId)))return;
         try{var manifest=storageManifest(readAll(d.charId));if(manifest&&manifest.phase==='staging'){manifest.phase='ready';enqueue(d.charId,{owd_storage:{current:JSON.stringify(manifest),max:''}},true);}}catch(error){reply(ev,{type:'storage-error',charId:d.charId,error:String(error.message||error)});}
       } else if (d.type === "storage-cleanup") {
-        if(liee(ev.source,d.charId)&&inventoryAccess(getChar(d.charId))){var report=storageCleanup(getChar(d.charId),d.proof);if(report)reply(ev,{type:'storage-cleanup-status',charId:d.charId,status:report.status,error:report.error});}
+        if(!liee(ev.source,d.charId))return;
+        if(!inventoryAccess(getChar(d.charId))){reply(ev,{type:'storage-cleanup-status',charId:d.charId,status:'error',error:'Roll20 refuse le nettoyage : accès en écriture au personnage requis.'});return;}
+        try{var report=storageCleanup(getChar(d.charId));reply(ev,Object.assign({type:'storage-cleanup-status',charId:d.charId},report));}catch(error){reply(ev,{type:'storage-cleanup-status',charId:d.charId,status:'error',error:String(error.message||error)});}
       } else if (d.type === "save") {
         if (!liee(ev.source, d.charId)) return;
         var inv = inventoryFrames.has(ev.source);
