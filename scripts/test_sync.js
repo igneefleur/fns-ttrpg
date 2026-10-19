@@ -8,7 +8,7 @@ let checks = 0;
 function test(name, fn) { fn(); checks++; console.log('OK', name); }
 const cp = C.copy;
 function seed() {
-  const s=M.blank(); s.v=11; s.rel='3.0.0b';
+  const s=M.blank(); s.v=11; s.rel='3.0.0b'; s.notes='';
   s.comps=[{id:'c1',nom:'Lutte',rang:1},{id:'c2',nom:'Évasion',rang:2}];
   s.inv.objets=[{ref:'o1',id:'libre',nom:'Dague',qte:1,arme:{degats:'16',modsDegats:['Force','','']}}, {ref:'o2',id:'libre',nom:'Pain',qte:5}];
   s.avantages=[{id:'av1',nom:'A',desc:'texte',cout:1}];

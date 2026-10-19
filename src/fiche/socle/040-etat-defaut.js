@@ -19,7 +19,7 @@
 
       // ---- identité ----
       name: "", portrait: "", espece: "", taille: "moyenne", age: "", sexe: "", genre: "",
-      background: "", notes: "",
+      background: "", notes: { format: 1, messages: [] },
 
       // ---- expérience ----
       // Les règles ne donnent AUCUNE dotation de départ : le total part à zéro

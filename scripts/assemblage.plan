@@ -30,6 +30,8 @@
 [docs/javascripts/owd-fiche.js]
 bom = non
 fin = lf
+  src/fiche/vendor/markdown-it.min.js
+  src/fiche/vendor/purify.min.js
   src/fiche/socle/010-ouverture.js
   src/fiche/socle/020-version.js
   src/fiche/socle/030-outils.js

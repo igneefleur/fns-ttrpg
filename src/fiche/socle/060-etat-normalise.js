@@ -68,8 +68,9 @@
     if (parseInt(s.v, 10) === SCHEMA) s.rel = RELEASE;
 
     // ---- identité et textes ----
-    ["name", "portrait", "espece", "taille", "age", "sexe", "genre", "background", "notes", "de"]
+    ["name", "portrait", "espece", "taille", "age", "sexe", "genre", "background", "de"]
       .forEach(function (k) { s[k] = s[k] == null ? "" : String(s[k]); });
+    s.notes = normaliseNotes(s.notes);
     if (!s.de) s.de = DE_DEFAUT;
     s.xpTotal = Math.max(0, num(s.xpTotal, 0));
     s.effort = String(s.effort == null ? "" : s.effort) || b.effort;

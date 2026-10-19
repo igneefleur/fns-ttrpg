@@ -59,4 +59,45 @@ test('panneau Notes : superposition indépendante de la hauteur du chat',()=>{
  for(const mode of ['stable','beta'])assert.ok(read('extension/firefox/'+mode+'/content-roll20.js').includes('document.body.appendChild(p.panel)'));
 });
 
+
+const C=require('../docs/javascripts/owd-sync.js'),M=require('../docs/javascripts/owd-attr-map.js'),Migr=require('../docs/javascripts/owd-migrations.js');
+const notesContext=vm.createContext({window:{markdownit:require('../src/fiche/vendor/markdown-it.min.js')}});
+vm.runInContext(read('src/fiche/bio/notes.js'),notesContext);
+function message(id,text='Texte',mode='plain'){return {id,at:1700000000000,text,mode};}
+test('migration : ancien texte intégral en Brut, identifiant stable et aucune date inventée',()=>{
+ const s=M.blank();s.v=17;s.notes='**ancien**\n\n<img src="x">\n  fin  ';
+ const r=Migr.appliquer(s,17,18);assert.equal(r.ok,true);assert.deepEqual(r.state.notes,{format:1,messages:[{id:'legacy',at:0,text:s.notes,mode:'plain'}]});
+ assert.deepEqual(Migr.appliquer(r.state,18,18).state.notes,r.state.notes);
+ s.notes='';assert.deepEqual(Migr.appliquer(s,17,18).state.notes.messages,[]);
+});
+test('descente puis remontée : messages, identifiants et formats récupérés sans perte',()=>{
+ const s=M.blank();s.notes.messages=[message('a','**texte**','markdown'),message('b','<br>','plain')];
+ const down=Migr.appliquer(s,18,17);assert.equal(down.ok,true);assert.equal(down.state.notes,'**texte**\n\n<br>');
+ assert.deepEqual(Migr.appliquer(down.state,17,18).state.notes,s.notes);
+});
+test('un seul attribut Notes, même avec 2000 messages ; export et repli préservés',()=>{
+ const s=M.blank();s.notes.messages=Array.from({length:2000},(_,i)=>message('n'+i,'note '+i));
+ const attrs=C.Compact.encode(s);assert.deepEqual(Object.keys(attrs).filter(k=>/notes/.test(k)),['owd_block_notes']);assert.deepEqual(C.Compact.read(attrs).state.notes,s.notes);
+ const legacy=M.stateToAttrs(s);delete legacy.owd_state;assert.deepEqual(M.attrsToState(legacy).state.notes,s.notes);
+ legacy.owd_notes={current:'{"texte":"ancien JSON littéral"}'};assert.equal(M.attrsToState(legacy).state.notes,legacy.owd_notes.current);
+ legacy.owd_version.current='17';legacy.owd_notes.current='{"format":1,"messages":[]}';assert.equal(M.attrsToState(legacy).state.notes,legacy.owd_notes.current);
+});
+function notesWorld(initial){const s=M.blank();s.notes.messages=initial||[];const attrs=C.Compact.encode(s),a=new C.Compact.Session(attrs,s,()=>1,{id:'a'}),b=new C.Compact.Session(attrs,s,()=>1,{id:'b'});return {attrs,a,b,write(client,fn){const local=C.rebuild(client.local);fn(local.notes.messages);client.capture(local);attrs['owd_ops_'+client.id]={current:JSON.stringify({epoch:client.epoch,ops:Object.values(client.pending)})};},read(){return C.Compact.read(attrs);}};}
+test('deux ajouts simultanés dans le même bloc : aucun écrasement',()=>{
+ const w=notesWorld();w.write(w.a,m=>m.push(message('a')));w.write(w.b,m=>m.push(message('b')));assert.deepEqual(w.read().state.notes.messages.map(m=>m.id),['a','b']);assert.equal(w.read().conflicts.length,0);
+});
+test('modifier des messages distincts, supprimer pendant une édition et détecter un conflit',()=>{
+ const w=notesWorld([message('a'),message('b')]);w.write(w.a,m=>m[0].text='A');w.write(w.b,m=>m[1].text='B');assert.deepEqual(w.read().state.notes.messages.map(m=>m.text),['A','B']);assert.equal(w.read().conflicts.length,0);
+ const d=notesWorld([message('a')]);d.write(d.a,m=>m.splice(0,1));d.write(d.b,m=>m[0].text='Edition');assert.deepEqual(d.read().state.notes.messages,[]);
+ const clash=notesWorld([message('a')]);clash.write(clash.a,m=>m[0].text='A');clash.write(clash.b,m=>m[0].text='B');assert.ok(clash.read().conflicts.length);
+});
+test('recherche Markdown : contenu textuel sans casse, accents ni syntaxe',()=>{
+ const plain=notesContext.notesPlie(notesContext.notesTexteRecherche(message('a','Une **grande** porte à **Bérg**. ![Carte secrète](https://example.org/carte.png)','markdown')));
+ assert.ok(plain.includes('une grande porte a berg'));assert.ok(plain.includes('carte secrete'));
+ assert.equal(notesContext.notesTexteRecherche(message('b','**brut**')),'**brut**');
+});
+test('notes inconnues conservées pour export ; refus explicite dans le module',()=>{
+ const unknown={format:2,future:'texte'};assert.equal(notesContext.normaliseNotes(unknown),unknown);assert.throws(()=>notesContext.normaliseNotes(unknown,true),/illisible/);
+ const bad={format:1,messages:[{id:'a',text:'A'},{id:'a',text:'B'}]};assert.equal(notesContext.normaliseNotes(bad),bad);assert.throws(()=>notesContext.normaliseNotes(bad,true),/illisible/);
+});
 console.log(count+' scénarios Notes et icônes validés.');

@@ -82,7 +82,7 @@
   // même version, la beta étant ce que le stable recevra à la fusion) : ce qui
   // compare des versions doit donc l'ôter avant de lire les nombres, et c'est
   // exactement ce que fait OwdMods.compareVersions.
-  var RELEASE_DEFAUT = "4.5.2b";
+  var RELEASE_DEFAUT = "4.6.0b";
   // Entier INDÉPENDANT de la release : il ne monte qu'au changement de forme de
   // l'état du personnage, jamais parce que le majeur a bougé. Ajouter une clé
   // racine avec un défaut n'en est PAS un : normalize() complète une clé
@@ -90,7 +90,7 @@
   // s'ouvre dans les deux sens sans migration. Le manifeste publie les deux
   // numéros séparément, et c'est ce repli-ci que l'amorce prend quand le
   // manifeste manque.
-  var SCHEMA_DEFAUT = 17;
+  var SCHEMA_DEFAUT = 18;
 
   // Release EFFECTIVE : celle du code qui TOURNE, pas celle que le site publie.
   //
@@ -123,7 +123,7 @@
   }
 
   // champ d'état scalaire -> [clé d'état, suffixe, type]
-  //   n = nombre, s = chaîne libre, b = booléen,
+  //   n = nombre, s = chaîne libre, b = booléen, j = Notes JSON ou ancien texte,
   //   N = nombre NULLABLE : "" vaut null et non 0 (les « forcé » du MJ, où vide
   //       veut dire « valeur calculée » — les confondre avec 0 clouerait une
   //       capacité à zéro sur le chemin de repli).
@@ -137,7 +137,7 @@
     ["name", "nom", "s"], ["espece", "espece", "s"], ["taille", "taille", "s"], ["age", "age", "s"],
     ["sexe", "sexe", "s"], ["genre", "genre", "s"],
     ["portrait", "portrait", "s"],
-    ["background", "background", "s"], ["notes", "notes", "s"],
+    ["background", "background", "s"], ["notes", "notes", "j"],
     ["de", "de", "s"],
     ["xpTotal", "xp_total", "n"],
     ["effAutre", "eff_autre", "n"],
@@ -253,7 +253,7 @@
 
       // ---- identité ----
       name: "", portrait: "", espece: "", taille: "moyenne", age: "", sexe: "", genre: "",
-      background: "", notes: "",
+      background: "", notes: { format: 1, messages: [] },
 
       // ---- expérience ----
       // Les règles ne donnent AUCUNE dotation de départ : le total part à zéro
@@ -450,7 +450,7 @@
 
     SCALARS.forEach(function (d) {
       var v = state[d[0]];
-      put(d[1], d[2] === "b" ? (v ? 1 : 0) : v);
+      put(d[1], d[2] === "j" && v && typeof v === "object" ? JSON.stringify(v) : d[2] === "b" ? (v ? 1 : 0) : v);
     });
     // owd_version, réécrit APRÈS la boucle : son `current` reste le SCHÉMA (un
     // entier, pour que hasSheet et les macros gardent un nombre), son `max`
@@ -552,7 +552,10 @@
       if (d[2] === "n") { if (v !== "" && isFinite(parseFloat(v))) s[d[0]] = num(v); }
       else if (d[2] === "N") s[d[0]] = (v === "" || v == null || !isFinite(parseFloat(v))) ? null : num(v);
       else if (d[2] === "b") s[d[0]] = String(v) === "1" || String(v) === "true";
-      else s[d[0]] = str(v);
+      else if(d[2] === "j") {
+        s[d[0]] = str(v);
+        try { var notes = JSON.parse(v); if(Number(cur("version")) >= 18 && notes && notes.format === 1 && Array.isArray(notes.messages)) s[d[0]] = notes; } catch(e) {}
+      } else s[d[0]] = str(v);
     });
     COLLECTIONS.forEach(function (d) {
       var v = cur(d[1]);

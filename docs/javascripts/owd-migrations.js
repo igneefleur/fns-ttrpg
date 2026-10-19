@@ -1400,6 +1400,23 @@
       return s;
     }
   });
+  OwdMigr.ajouter({ schema: 18,
+    titre: "Notes en messages",
+    notes: "Historique personnel en texte brut ou Markdown, dans le seul bloc Notes.",
+    monter: function(s,ctx){
+      var retour=ctx.reprendre("notes-messages-schema18");
+      if(retour){s.notes=retour;return s;}
+      if(s.notes&&s.notes.format===1&&Array.isArray(s.notes.messages))return s;
+      var texte=s.notes==null?"":String(s.notes);
+      s.notes={format:1,messages:texte.length?[{id:"legacy",at:0,text:texte,mode:"plain"}]:[]};return s;
+    },
+    descendre: function(s,ctx){
+      if(s.notes&&s.notes.format===1&&Array.isArray(s.notes.messages)){
+        ctx.grenier("notes-messages-schema18",s.notes);
+        s.notes=s.notes.messages.map(function(m){return m.text;}).join("\n\n");
+      }return s;
+    }
+  });
   global.OwdMigr = OwdMigr;
   if (typeof module === "object" && module && module.exports) module.exports = OwdMigr;
 })(typeof window !== "undefined" ? window : (typeof global !== "undefined" ? global : this));
