@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.6.1b";
+  var RELEASE = "4.6.2b";
   var SCHEMA = 18;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -11368,6 +11368,7 @@
   }
 
   window.Owd = {
+    __pret: false,
     __recoitEtat: recoitEtatCollaboratif,
     __montreObjet: montreObjet,
     __actionObjet: actionObjet,
@@ -11578,7 +11579,7 @@
   // fiche restait close sur un message faux. Chacun son filet.
   function demarre(root) {
     state = load() || blank();
-    try { mount(root); }
+    try { mount(root); window.Owd.__pret = true; }
     catch (e) {
       if (window.console && window.console.error) window.console.error("[fiche] montage", e);
       root.innerHTML = '<p style="padding:2rem;color:#b0402c">La fiche n\'a pas pu se monter (' +

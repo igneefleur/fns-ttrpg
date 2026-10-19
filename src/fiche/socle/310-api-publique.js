@@ -54,6 +54,7 @@
   }
 
   window.Owd = {
+    __pret: false,
     __recoitEtat: recoitEtatCollaboratif,
     __montreObjet: montreObjet,
     __actionObjet: actionObjet,

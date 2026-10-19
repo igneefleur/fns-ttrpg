@@ -388,6 +388,9 @@ def main():
     if not lancer("sauvegarde avant mise à niveau", ["node", "scripts/test_upgrade_backup.js"], racine):
         return 1
 
+    if not lancer("reprise des journaux locaux", ["node", "scripts/test_local_recovery.js"], racine):
+        return 1
+
     if not lancer("Notes et icônes de l’extension", ["node", "scripts/test_notes.js"], racine):
         return 1
 

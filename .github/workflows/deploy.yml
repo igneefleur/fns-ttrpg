@@ -83,6 +83,7 @@ jobs:
           node scripts/test_fiche_actions.js
           node scripts/test_notes.js
           node scripts/test_upgrade_backup.js
+          node scripts/test_local_recovery.js
           node scripts/test_defenses.js
           node scripts/test_effets_data.js
           node scripts/test_boutique_passifs.js

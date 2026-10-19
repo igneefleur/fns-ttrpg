@@ -239,9 +239,108 @@
   }, 400);
 
   function updateStorageMaxima(){if(!collaboration)return;try{var cards=JSON.parse(mem['owd-cards']||'{}'),caps=cards._current&&cards._current.capacites||{};Object.keys(caps).forEach(function(k){if(/Max$/.test(k)&&typeof caps[k]==='number')collaboration.maxima[k.slice(0,-3)]=caps[k];});}catch(e){}}
-  function persistStoragePending(){if(!collaboration)return;var key='owd-pending-v2:'+CHAR_ID+':'+collaboration.id;try{var ops=Object.keys(collaboration.pending).map(function(k){return collaboration.pending[k];});if(ops.length)localStorage.setItem(key,JSON.stringify({epoch:collaboration.epoch,ops:ops,payloads:collaboration.payloads}));else localStorage.removeItem(key);}catch(e){bandeauPerte();}}
-  function restoreStoragePending(){if(!collaboration)return;var prefix='owd-pending-v2:'+CHAR_ID+':';try{for(var i=0;i<localStorage.length;i++){var key=localStorage.key(i);if(!key||key.indexOf(prefix)!==0)continue;var r=JSON.parse(localStorage.getItem(key));if(r.epoch!==collaboration.epoch){bandeau('Une sauvegarde locale appartient à un autre format de fiche. Exportez les données avant de la remplacer.',[{texte:'Exporter (JSON)',acte:'export',action:exporter}]);continue;}Object.assign(collaboration.payloads,r.payloads||{});(r.ops||[]).forEach(function(op){collaboration.pending[op.id]=op;collaboration.clock=Math.max(collaboration.clock,op.clock);});}}catch(e){gele=true;bandeauGelIllisible('Journal local de modifications illisible.');}}
-  function confirmStoragePending(server){if(!server)return;var prefix='owd-pending-v2:'+CHAR_ID+':';try{var keys=[];for(var i=0;i<localStorage.length;i++){var key=localStorage.key(i);if(key&&key.indexOf(prefix)===0)keys.push(key);}keys.forEach(function(key){var r=JSON.parse(localStorage.getItem(key));if(r.epoch!==server.meta.epoch)return;r.ops=r.ops.filter(function(op){return !server.ids[op.id];});if(r.ops.length)localStorage.setItem(key,JSON.stringify(r));else localStorage.removeItem(key);});}catch(e){bandeauPerte();}}
+  function persistStoragePending(){
+    if(!collaboration)return false;
+    var key='owd-pending-v2:'+CHAR_ID+':'+collaboration.id;
+    try{var ops=Object.keys(collaboration.pending).map(function(id){return collaboration.pending[id];});
+      if(ops.length)localStorage.setItem(key,JSON.stringify({epoch:collaboration.epoch,ops:ops,payloads:collaboration.payloads}));else localStorage.removeItem(key);
+      return true;
+    }catch(e){bandeauPerte();return false;}
+  }
+  function storageLocalKeys(prefix){var keys=[];for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.indexOf(prefix)===0)keys.push(k);}return keys;}
+  function archiveStoragePending(key,raw,reason){
+    try{localStorage.setItem('owd-recovery-v2:'+CHAR_ID+':'+C.hash(key)+':'+C.hash(raw),JSON.stringify({source:key,raw:raw,reason:reason,at:Date.now()}));return true;}catch(e){return false;}
+  }
+  function afficheRecuperationsLocales(){
+    try{if(!storageLocalKeys('owd-recovery-v2:'+CHAR_ID+':').length||document.getElementById('owd-local-recovery'))return;
+      var button=document.createElement('button');button.id='owd-local-recovery';button.type='button';button.textContent='Données locales conservées';
+      button.title='Consulter les anciennes modifications mises à l’abri';button.style.cssText='flex:none;align-self:flex-start;margin:4px 8px;font:inherit;font-size:12px';
+      button.onclick=function(){var records=storageLocalKeys('owd-recovery-v2:'+CHAR_ID+':').map(function(k){return JSON.parse(localStorage.getItem(k));});
+        var box=ecran('Anciennes modifications locales',false);box.appendChild(noeud('p',null,'Ces données ont été conservées séparément. La fiche actuelle reste utilisable.'));
+        montrerJson(JSON.stringify(records,null,2),'Copies locales conservées, sans modification de leur contenu.');bouton(zoneActions(box),'Fermer','fermer',fermerEcran);
+      };document.body.insertBefore(button,document.getElementById('perso-fiche'));
+    }catch(e){}
+  }
+  function validStorageOp(op){
+    if(!op||typeof op.id!=='string'||!op.id||!Number.isSafeInteger(op.clock)||!Array.isArray(op.changes))return false;
+    return op.changes.every(function(c){try{var p=JSON.parse(c.k);return Array.isArray(p)&&p.length>0&&p.every(function(x){return Array.isArray(x)&&['k','e','order','index'].indexOf(x[0])>=0&&['__proto__','prototype','constructor'].indexOf(x[1])<0;})&&Array.isArray(c.n)&&['v','o','l','i','d'].indexOf(c.n[0])>=0;}catch(e){return false;}});
+  }
+  function validRecoveryState(state,target){
+    try{
+      if(!state||state.v!==target.v)return false;
+      if(!Object.keys(target).every(function(k){var a=target[k],b=state[k];return Array.isArray(a)?Array.isArray(b):a&&typeof a==='object'?b&&typeof b==='object'&&!Array.isArray(b):true;}))return false;
+      if(target.notes&&target.notes.format===1&&(!state.notes||state.notes.format!==1||!Array.isArray(state.notes.messages)))return false;
+      return C.stable(C.read(C.encode(state)).state)===C.stable(state);
+    }catch(e){return false;}
+  }
+  // Changement de base : seules les valeurs dont l'ancien état correspond
+  // encore sont reprises. Une ancienne note libre devient un message, jamais
+  // le remplacement de tout l'historique. Le reste demeure dans sa copie locale.
+  function rebaseStorageOp(state,op){
+    if(!validStorageOp(op)||op.creates||op.modules)return null;
+    var next=C.copy(state),flat=C.flatten(next),notes=[];
+    for(var i=0;i<op.changes.length;i++){
+      var c=op.changes[i],p=JSON.parse(c.k),root=p[0][1];
+      if(p.length===1&&(root==='v'||root==='rel'))continue;
+      if(p.length===1&&root==='notes'&&c.n[0]==='v'&&typeof c.n[1]==='string'&&next.notes&&next.notes.format===1){notes.push(c.n[1]);continue;}
+      var current=flat[c.k];if(C.stable(current)===C.stable(c.n))continue;
+      if(c.n[0]!=='v'||!current||current[0]!=='v'||c.before===undefined||C.stable(current)!==C.stable(c.before))return null;
+      for(var j=1;j<p.length;j++){var parent=flat[JSON.stringify(p.slice(0,j))];if(!parent||parent[0]==='d'||parent[0]==='v')return null;}
+      flat[c.k]=C.copy(c.n);
+    }
+    next=C.rebuild(flat);notes.forEach(function(text){if(!text.trim()||next.notes.messages.some(function(m){return m.text===text;}))return;
+      next.notes.messages.push({id:'recovered-'+C.hash(op.id)+':'+C.hash(text),at:Date.now(),text:text,mode:'plain'});
+    });return next;
+  }
+  function restoreStoragePending(){
+    if(!collaboration)return;
+    var prefix='owd-pending-v2:'+CHAR_ID+':',keys;
+    try{keys=storageLocalKeys(prefix);}catch(e){return;}
+    var server=C.read(lastAttrs),remove=[];
+    keys.forEach(function(key){
+      if(key===prefix+collaboration.id)return;
+      var raw=null,r,archived=false;
+      try{
+        raw=localStorage.getItem(key);r=JSON.parse(raw);
+        if(!r||!Array.isArray(r.ops)||!r.ops.every(validStorageOp)||r.payloads&&typeof r.payloads!=='object')throw Error('Journal local illisible');
+        var pending=r.ops.filter(function(op){return !server.ids[op.id];});
+        if(!pending.length){remove.push(key);return;}
+        // Vérifier les opérations isolément dans le lecteur, avant de les
+        // mélanger à une session saine. Un seul vieux journal ne la gèle plus.
+        var trial=Object.assign({},lastAttrs),candidate=null;
+        trial[C.PREFIX+'local-recovery']={current:JSON.stringify({epoch:collaboration.epoch,ops:Object.keys(collaboration.pending).map(function(id){return collaboration.pending[id];}).concat(pending)})};
+        Object.keys(collaboration.payloads).forEach(function(k){if(!trial[k])trial[k]=collaboration.payloads[k];});
+        Object.keys(r.payloads||{}).forEach(function(k){if(!trial[k])trial[k]=r.payloads[k];});
+        if(r.epoch===collaboration.epoch)try{candidate=C.read(trial);}catch(e){}
+        var target=JSON.parse(mem['owd-perso']);
+        if(candidate&&!candidate.incomplete&&validRecoveryState(candidate.state,target)){
+          Object.assign(collaboration.payloads,r.payloads||{});pending.forEach(function(op){collaboration.pending[op.id]=op;collaboration.pendingAt[op.id]=Date.now();collaboration.clock=Math.max(collaboration.clock,op.clock);});
+        }else{
+          archived=archiveStoragePending(key,raw,'Ancienne base de synchronisation ou structure modifiée');
+          // Si l'archive locale est impossible (quota), conserver l'original.
+          if(!archived)return;
+          var recovered=C.rebuild(collaboration.local);
+          pending.slice().sort(function(a,b){return a.clock-b.clock||(a.id<b.id?-1:1);}).forEach(function(op){var next=rebaseStorageOp(recovered,op);if(next)recovered=next;});
+          collaboration.capture(recovered);
+        }
+        remove.push(key);
+      }catch(e){if(raw!==null&&archiveStoragePending(key,raw,String(e.message||e)))remove.push(key);}
+    });
+    // Transfert local atomique : ne retirer l'ancienne boîte qu'après écriture
+    // réussie de la nouvelle, qui contient toutes les opérations reprises.
+    if(persistStoragePending())remove.forEach(function(key){try{localStorage.removeItem(key);}catch(e){}});
+    afficheRecuperationsLocales();
+  }
+  function confirmStoragePending(server){
+    if(!server)return;var prefix='owd-pending-v2:'+CHAR_ID+':';
+    try{storageLocalKeys(prefix).forEach(function(key){try{var r=JSON.parse(localStorage.getItem(key));if(!r||r.epoch!==server.meta.epoch||!Array.isArray(r.ops))return;
+      r.ops=r.ops.filter(function(op){return !server.ids[op.id];});if(r.ops.length)localStorage.setItem(key,JSON.stringify(r));else localStorage.removeItem(key);
+    }catch(e){}});}catch(e){}
+  }
+  function nouveauxConflits(remote){
+    var fresh=false;(remote&&remote.conflicts||[]).forEach(function(c){var k=c.id+':'+(c.path||c.reason);if(!storageConflictSeen[k])fresh=true;storageConflictSeen[k]=true;});return fresh;
+  }
+  function marqueConflitsAnciens(remote){nouveauxConflits(remote);}
   function scheduleSave() {
     if (gele) return;           // rien ne sort d'une fiche qu'on n'a pas su lire en entier
     if (saveTimer) clearTimeout(saveTimer);
@@ -1007,9 +1106,17 @@
     var i = 0;
     function serie() {
       if (i >= urls.length) {
+        // Le script peut avoir fini avant son fetch de règles et son montage.
+        // Ne pas initialiser une session sur la mémoire encore au vieux schéma.
+        if (window.Owd && window.Owd.__pret === false) { setTimeout(serie, 25); return; }
         if (C && collaborationPont && !gele) {
           collaboration = new C.Session(lastAttrs, JSON.parse(mem["owd-perso"]), null, {id:"v"+Date.now().toString(36)+Math.random().toString(36).slice(2)});
-          updateStorageMaxima();restoreStoragePending();
+          updateStorageMaxima();
+          // Le bundle vient de migrer en mémoire. Capturer cette montée AVANT
+          // une réponse distante encore à l'ancien schéma, même si le réseau
+          // retarde sa confirmation de plusieurs secondes.
+          collaboration.capture(JSON.parse(mem["owd-perso"]));
+          marqueConflitsAnciens(C.read(lastAttrs));restoreStoragePending();persistStoragePending();
           if(collaboration.hasBase&&Object.keys(collaboration.pending).length){var restored=collaboration.receive(lastAttrs);if(restored){synchronisationDifferée=restored.state;appliqueDiffere();}}
           // La photographie n'est écrite qu'une fois. Elle est aussi annoncée
           // au vieux code par owd_state/schema 11, pour empêcher ses écritures.
@@ -1711,7 +1818,7 @@
       lastAttrs = attrs;
       if (!recu) return;
       if(collaboration.hasBase&&!recu.incomplete){if(server.meta.phase!=='ready')post({type:'storage-activate'});else post({type:'storage-cleanup'});}
-      if(recu.conflict && recu.conflicts && recu.conflicts.some(function(c){var k=c.id+':'+(c.path||c.reason);if(storageConflictSeen[k])return false;storageConflictSeen[k]=true;return true;})){bandeau("Des modifications simultanées ont été détectées. Vérifiez les valeurs concernées ; les opérations restent conservées dans les journaux.",[{texte:"Exporter (JSON)",acte:"export",action:exporter}]);}
+      if(recu.conflict && nouveauxConflits(recu)){bandeau("Des modifications simultanées viennent d’être reçues. Les valeurs affichées suivent l’ordre de synchronisation ; les opérations restent conservées.",[{texte:"Fermer",acte:"masquer",action:fermerBandeau},{texte:"Exporter (JSON)",acte:"export",action:exporter}]).dataset.owdRaison='sync-conflict';}
 
       var attente = Object.keys(collaboration.pending).length;
       var avertissement = document.getElementById('owd-bandeau');
