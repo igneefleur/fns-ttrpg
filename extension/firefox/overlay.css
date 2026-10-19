@@ -506,10 +506,10 @@
 /* Pictogrammes d’origine, recolorés par le thème natif de Roll20. */
 .owd-tool-icon { display:inline-block; width:18px; height:18px; vertical-align:middle; background-color:currentColor;
   -webkit-mask:var(--owd-icon) center / contain no-repeat; mask:var(--owd-icon) center / contain no-repeat; }
-#owd-sidebar-notes-tab { cursor:pointer; }
-#owd-sidebar-notes-button { display:flex; align-items:center; justify-content:center; }
+#owd-sidebar-notes-tab { cursor:pointer; box-sizing:border-box; flex-shrink:0; }
+#owd-sidebar-notes-button, a#owd-sidebar-notes-tab, button#owd-sidebar-notes-tab { display:flex; box-sizing:border-box; padding:0; align-items:center; justify-content:center; }
 #owd-sidebar-notes-button:focus-visible { outline:2px solid currentColor; outline-offset:-2px; }
-#rightsidebar > .owd-sidebar-notes { position:absolute; left:0; right:0; bottom:0; z-index:5; display:flex; min-height:0; overflow:hidden; background:#f5f5f5; }
-#rightsidebar > .owd-sidebar-notes.owd-nuit { background:#000; }
-#rightsidebar > .owd-sidebar-notes[hidden] { display:none!important; }
+.owd-sidebar-notes { position:fixed; bottom:0; z-index:10500; display:flex; min-height:0; overflow:hidden; background:#f5f5f5; }
+.owd-sidebar-notes.owd-nuit { background:#000; }
+.owd-sidebar-notes[hidden] { display:none!important; }
 .owd-sidebar-notes-frame { display:block; border:0; width:100%; height:100%; min-width:0; min-height:0; flex:1; }

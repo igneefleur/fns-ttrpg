@@ -14,12 +14,17 @@ for(const mode of ['stable','beta'])test('barre Notes '+mode+' : masquage, retou
  const src=read('extension/firefox/'+mode+'/content-roll20.js'),start=src.indexOf('  var notesSidebar ='),end=src.indexOf('  // La barre latérale ENTIÈRE',start);
  const chat=node('div'),settings=node('div'),tab=node('li'),link=node('a'),chatTab=node('li'),chatLink=node('a',{href:'#textchat','aria-selected':'true'}),settingsTab=node('li'),settingsLink=node('a',{href:'#mysettings','aria-selected':'false'});
  tab.appendChild(link);chatTab.appendChild(chatLink);settingsTab.appendChild(settingsLink);chatTab.classList.add('active');chat.style.setProperty('display','block');settings.style.setProperty('display','none');
- const sidebar=node('div'),nav=node('ul'),panel=node('div');sidebar.appendChild(chat);sidebar.appendChild(settings);sidebar.appendChild(panel);nav.appendChild(chatTab);nav.appendChild(tab);nav.appendChild(settingsTab);sidebar.appendChild(nav);
+ const input=node('div'),sidebar=node('div'),nav=node('ul'),panel=node('div');
+ sidebar.getBoundingClientRect=()=>({left:780,top:10,width:420,bottom:750});nav.getBoundingClientRect=()=>({bottom:45});
+ settingsTab.getBoundingClientRect=()=>({width:36,height:35});settingsLink.getBoundingClientRect=()=>({width:34,height:35});sidebar.appendChild(chat);sidebar.appendChild(settings);sidebar.appendChild(panel);nav.appendChild(chatTab);nav.appendChild(tab);nav.appendChild(settingsTab);sidebar.appendChild(nav);
  sidebar.querySelector=()=>null;nav.querySelectorAll=s=>s.startsWith('a[')?[chatLink,link,settingsLink]:[chatTab,chatLink,tab,link,settingsTab,settingsLink];
- const ctx={document:{getElementById:id=>({textchat:chat,mysettings:settings}[id])},window:{},MODE:mode,browser:{runtime:{getURL:p=>'extension://'+p}},nuitEffective:()=>false,el:(t,c)=>Object.assign(node(t),{className:c})};vm.createContext(ctx);vm.runInContext(src.slice(start,end),ctx);
- ctx.notesSidebar={sidebar,nav,tab,link,panel,active:false,frame:null,saved:[],selection:[]};ctx.notesOuvre();
+ const ctx={document:{getElementById:id=>({textchat:chat,mysettings:settings,'textchat-input':input}[id])},window:{},MODE:mode,browser:{runtime:{getURL:p=>'extension://'+p}},nuitEffective:()=>false,el:(t,c)=>Object.assign(node(t),{className:c})};vm.createContext(ctx);vm.runInContext(src.slice(start,end),ctx);
+ ctx.notesSidebar={sidebar,nav,tab,link,panel,model:settingsTab,modelLink:settingsLink,active:false,frame:null,saved:[],selection:[]};ctx.notesOuvre();
+ assert.equal(tab.style.width,'36px');assert.equal(tab.style.height,'35px');assert.equal(link.style.height,'35px');
+ assert.equal(panel.style.top,'45px');assert.equal(panel.style.left,'780px');assert.equal(panel.style.width,'420px');
+ assert.equal(input.style.getPropertyValue('display'),'none','saisie hors de la barre masquée');
  const frame=ctx.notesSidebar.frame;assert.ok(frame.src.includes('p=roll20-notes.html'));assert.ok(frame.src.endsWith('&m='+mode));assert.equal(panel.hidden,false);assert.equal(panel.style.display,'flex');assert.equal(chat.style.getPropertyValue('display'),'none');assert.equal(link.getAttribute('aria-selected'),'true');
- ctx.notesFerme();assert.equal(chat.style.getPropertyValue('display'),'block');assert.equal(settings.style.getPropertyValue('display'),'none');assert.equal(chatLink.getAttribute('aria-selected'),'true');assert.equal(panel.hidden,true);
+ ctx.notesFerme();assert.equal(input.style.getPropertyValue('display'),'');assert.equal(chat.style.getPropertyValue('display'),'block');assert.equal(settings.style.getPropertyValue('display'),'none');assert.equal(chatLink.getAttribute('aria-selected'),'true');assert.equal(panel.hidden,true);
  // Roll20 peut avoir masqué aussi le panneau ajouté : l'ouverture le réaffiche.
  panel.style.display='none';ctx.notesOuvre();assert.equal(panel.style.display,'flex');assert.equal(ctx.notesSidebar.frame,frame);ctx.notesFerme();assert.equal(ctx.notesSidebar.frame,frame);
 });
@@ -48,4 +53,10 @@ const hashes={
 for(const [id,expected] of Object.entries(hashes))test('icône '+id+' : source fournie conservée à l’octet près',()=>{
  const svg=read('extension/firefox/icons/owd-'+id+'.svg'),source=Buffer.from(/base64,([^\"]+)/.exec(svg)[1],'base64');assert.equal(crypto.createHash('sha256').update(source).digest('hex'),expected);assert.ok(svg.includes('feColorMatrix'));assert.ok(!svg.includes('<path'));
 });
+
+test('panneau Notes : superposition indépendante de la hauteur du chat',()=>{
+ const css=read('extension/firefox/overlay.css');assert.match(css,/\.owd-sidebar-notes \{ position:fixed; bottom:0; z-index:10500;/);
+ for(const mode of ['stable','beta'])assert.ok(read('extension/firefox/'+mode+'/content-roll20.js').includes('document.body.appendChild(p.panel)'));
+});
+
 console.log(count+' scénarios Notes et icônes validés.');
