@@ -70,7 +70,8 @@
   // on oriente le visiteur au lieu d'attendre un pont qui ne répondra jamais.
   window.__owdVueAttaques = /[#&]view=attaques(?:&|$)/.test(location.hash || "");
   window.__owdVueDefenses = /[#&]view=defenses(?:&|$)/.test(location.hash || "");
-  window.__owdVueInventaire = window.__owdVueAttaques || window.__owdVueDefenses || /[#&]view=inventaire(?:&|$)/.test(location.hash || "");
+  window.__owdVueNotes = /[#&]view=notes(?:&|$)/.test(location.hash || "");
+  window.__owdVueInventaire = window.__owdVueNotes || window.__owdVueAttaques || window.__owdVueDefenses || /[#&]view=inventaire(?:&|$)/.test(location.hash || "");
   document.documentElement.classList.toggle("owd-vue-outil", window.__owdVueInventaire);
   var objetDrag = null, accesInventaire = true;
   var STANDALONE = (function () { try { return window.top === window; } catch (e) { return false; } })();
@@ -120,18 +121,18 @@
   function post(msg) {
     msg.ns = "owd"; msg.charId = CHAR_ID;
     if (window.__owdVueInventaire) msg.inventory = true;
-    if (!window.__owdVueAttaques && !window.__owdVueDefenses) { msg.takeOpenedAt = takeOpenedAt; msg.takeEnabled = takeEnabled; }
+    if (!window.__owdVueAttaques && !window.__owdVueDefenses && !window.__owdVueNotes) { msg.takeOpenedAt = takeOpenedAt; msg.takeEnabled = takeEnabled; }
     try { window.top.postMessage(msg, "*"); } catch (e) {}
   }
   window.addEventListener('pagehide', function () { takeEnabled = false; post({type:'take-target'}); });
   window.addEventListener('message', function (ev) {
     var d = ev.data;
-    if (!d || d.ns !== 'owd' || d.type !== 'take-active' || ev.source !== window.parent || window.__owdVueAttaques || window.__owdVueDefenses) return;
+    if (!d || d.ns !== 'owd' || d.type !== 'take-active' || ev.source !== window.parent || window.__owdVueAttaques || window.__owdVueDefenses || window.__owdVueNotes) return;
     takeEnabled = !!d.active;
     if (takeEnabled) takeOpenedAt = Date.now();
     post({type:'take-target'});
   });
-  if(!window.__owdVueAttaques && !window.__owdVueDefenses)try{window.parent.postMessage({ns:'owd',type:'take-ready',charId:CHAR_ID},'*');}catch(e){}
+  if(!window.__owdVueAttaques && !window.__owdVueDefenses && !window.__owdVueNotes)try{window.parent.postMessage({ns:'owd',type:'take-ready',charId:CHAR_ID},'*');}catch(e){}
 
   // ---------- mode jour / nuit ----------
   // Le CSS nuit existe déjà dans la feuille de la fiche (html.night …) ; ici on
@@ -1515,7 +1516,7 @@
       if (window.__owdVueInventaire && d.inventoryAccess === false) {
         accesInventaire = false;
         document.getElementById("perso-fiche").inert = true;
-        note("Vous n’avez plus accès à l’inventaire de ce personnage.");
+        note(window.__owdVueNotes ? "Vous n’avez plus accès aux notes de ce personnage." : "Vous n’avez plus accès à l’inventaire de ce personnage.");
         return;
       }
       if (window.__owdVueInventaire && d.inventoryAccess === true && !accesInventaire) {
@@ -1593,7 +1594,7 @@
   window.addEventListener('message',function(ev){
     var d=ev.data;if(!window.__owdVueInventaire||!d||d.ns!=='owd'||ev.source!==window.parent)return;
     if(d.type==='attack-preview-cancel'){window.__owdAttackPreview(null);return;}
-    if(d.type==='inventory-external-drag'){externalDrag=d.drag||null;return;}
+    if(!window.__owdVueNotes && d.type==='inventory-external-drag'){externalDrag=d.drag||null;return;}
     if(d.type==='inventory-poll'){post({type:'load',resync:true});if(ready&&!gele)doSave();return;}
     if(d.type!=='inventory-command')return;
     var reply={type:'inventory-result',request:d.request};
@@ -1605,6 +1606,7 @@
         if(d.job&&server&&window.OwdInventoryData){reply.value.received=OwdInventoryData.received(server,d.job);reply.value.committed=OwdInventoryData.committed(server,d.job);reply.value.removed=OwdInventoryData.removed(server,d.job);reply.value.cancelled=OwdInventoryData.cancelled(server,d.job);}
       } else {
         if(!active)throw new Error('Inventaire indisponible ou accès retiré.');
+        if(window.__owdVueNotes)throw new Error('La vue Notes ne déplace pas les objets.');
         if(d.action==='describe')reply.value=window.Owd.__objetsTransfert(d.ref);
         else if(d.action==='prepare')reply.value=window.Owd.__prepareTransfert(d.job);
         else if(d.action==='import')reply.value=window.Owd.__importeTransfert(d.job);

@@ -95,3 +95,7 @@ html.owd-vue-outil #owd-roll20-note{flex:none;margin:.5rem auto}
 .pc-inventaire-seul .pc-attaques{flex:1;min-height:0;overflow-y:auto;scrollbar-gutter:stable}
 
 .pc-inventaire-seul .pc-attaques > *{flex:none}
+
+/* Notes seules dans la barre latérale : lecture intégrale dans le panneau. */
+.pc-notes-seul .pc-sheet > .pc-block { overflow-y:auto; }
+.pc-notes-seul .pc-prose-read, .pc-notes-seul textarea.pc-notes { flex:none; }
