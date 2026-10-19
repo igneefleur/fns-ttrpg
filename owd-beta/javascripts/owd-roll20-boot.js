@@ -307,19 +307,19 @@
   // rien, il vient ici (voir le routage de l'écouteur). Une absence de réponse
   // rend la main avec null : c'est déjà un verdict (personnage injoignable).
   var sondes = [];
-  function sonde(cb) {
-    var s = { cb: cb, t: null };
+  function sonde(cb, frais) {
+    var s = { cb: cb, t: null, frais: !!frais };
     s.t = setTimeout(function () {
       var i = sondes.indexOf(s);
       if (i >= 0) sondes.splice(i, 1);
       cb(null);
-    }, 1500);
+    }, frais ? 6000 : 1500);
     sondes.push(s);
     post({ type: "load", resync: true });
   }
-  function sondeReponse(attrs) {
-    var q = sondes.slice();
-    sondes.length = 0;
+  function sondeReponse(attrs, frais) {
+    var q = sondes.filter(function(s){return !s.frais || frais === true;});
+    sondes = sondes.filter(function(s){return q.indexOf(s)<0;});
     q.forEach(function (s) { clearTimeout(s.t); s.cb(attrs || {}); });
   }
 
@@ -1084,7 +1084,7 @@
     var brut = val((attrsVus || {})[M.PREFIX + "state"], "current");
     // Sans owd_state lisible, on met à l'abri la reconstruction champ par
     // champ : c'est exactement ce que la migration s'apprête à remplacer.
-    var contenu = brut ? String(brut) : (mem["owd-perso"] || "");
+    var contenu = attrsVus && C && attrsVus[C.BASE] ? (mem["owd-perso"] || "") : brut ? String(brut) : (mem["owd-perso"] || "");
     var lot = {};
     lot[M.PREFIX + BACKUP] = {
       current: contenu,
@@ -1094,6 +1094,50 @@
     };
     return lot;
   }
+  // Le pont au format 2 refuse les anciens « save » hors miroirs de tokens.
+  // Les sauvegardes passent donc par ses journaux, comme les archives de
+  // nettoyage : opérations sans changements, fragmentées, conservées sur Roll20.
+  function lotBackupBlocs(lot,attrs) {
+    var remote=C.read(attrs),raw=C.stable(lot[M.PREFIX+BACKUP]),hash=C.hash(raw),ops=[],total=Math.max(1,Math.ceil(raw.length/3000));
+    for(var i=0;i<total;i++){
+      var backup={format:2,epoch:remote.meta.epoch,fragments:[{name:M.PREFIX+BACKUP,hash:hash,part:i,total:total,data:raw.slice(i*3000,(i+1)*3000)}]};
+      ops.push({id:"migration-backup:"+remote.meta.epoch+":"+C.hash(C.stable(backup)),clock:0,at:0,changes:[],legacyBackup:backup});
+    }return {epoch:remote.meta.epoch,ops:ops};
+  }
+  function backupBlocs(attrs) {
+    var remote=C.read(attrs),groups=Object.create(null),found=null;
+    remote.ops.forEach(function(op){var b=op.legacyBackup;if(!b||b.format!==2||b.epoch!==remote.meta.epoch||!Array.isArray(b.fragments)||op.id!=="migration-backup:"+b.epoch+":"+C.hash(C.stable(b)))return;
+      b.fragments.forEach(function(f){if(f.name!==M.PREFIX+BACKUP||!Number.isSafeInteger(f.part)||!Number.isSafeInteger(f.total)||f.part<0||f.part>=f.total||typeof f.data!=="string")return;
+        var key=f.hash+":"+f.total,g=groups[key]||(groups[key]={hash:f.hash,total:f.total,parts:Object.create(null)});
+        if(g.parts[f.part]!==undefined&&g.parts[f.part]!==f.data)g.invalid=true;g.parts[f.part]=f.data;
+      });
+    });
+    Object.keys(groups).forEach(function(key){var g=groups[key];if(g.invalid||Object.keys(g.parts).length!==g.total)return;var raw="";for(var i=0;i<g.total;i++)raw+=g.parts[i];if(C.hash(raw)!==g.hash)return;
+      var a;try{a=JSON.parse(raw);if(typeof a.current!=="string"||typeof a.max!=="string")return;JSON.parse(a.current);}catch(e){return;}
+      if(!found||a.max.split("|")[1]>found.max.split("|")[1])found=a;
+    });return found;
+  }
+  function confirmeOperations(packet, cb) {
+    var end=Date.now()+Math.max(20000,packet.ops.length*200+10000);
+    (function poll(){sonde(function(attrs){var remote=null;try{remote=attrs&&C.read(attrs);}catch(e){}
+      if(remote&&remote.meta.epoch===packet.epoch&&packet.ops.every(function(op){return remote.ids[op.id]&&C.stable(remote.ids[op.id])===C.stable(op);})){cb(true,attrs,remote);return;}
+      if(Date.now()>=end){cb(false,attrs);return;}setTimeout(poll,700);
+    },true);})();
+  }
+  function tenterBackupBlocs(lot,silencieux) {
+    var packet;try{packet=lotBackupBlocs(lot,attrsVus);}catch(e){ecranRouge(lot,silencieux);return;}
+    post({type:"storage-ops",epoch:packet.epoch,ops:packet.ops});
+    confirmeOperations(packet,function(ok,attrs,remote){
+      if(!ok){ecranRouge(lot,silencieux);return;}
+      // Une autre fenêtre peut avoir joué pendant la copie. Repartir de sa
+      // version confirmée, jamais migrer une photographie devenue périmée.
+      var expected=JSON.parse(lot[M.PREFIX+BACKUP].current);
+      attrsVus=attrs;lastAttrs=attrs;
+      mem["owd-perso"]=JSON.stringify(remote.state);
+      if(C.stable(expected)!==C.stable(remote.state)){monter(silencieux,{schema:remote.state.v});return;}
+      fermerEcran();bandeauMisAJour();chargerBundle(specCourant());
+    });
+  }
   function monter(silencieux, f) {
     var lot = lotBackup(f);
     tenterBackup(lot, silencieux);
@@ -1102,6 +1146,7 @@
     ecranAttente("Mise à niveau de la fiche",
       "Sauvegarde de secours de l'état d'origine dans le personnage Roll20, puis relecture pour vérifier " +
       "qu'elle est bien arrivée. Ne pas fermer cet onglet.");
+    if(C && attrsVus && attrsVus[C.BASE]){tenterBackupBlocs(lot,silencieux);return;}
     post({ type: "save", attrs: lot });
     confirme(lot, function (ok) {
       if (!ok) { ecranRouge(lot, silencieux); return; }
@@ -1132,12 +1177,24 @@
   // confirmation. La fiche affichée, elle, reste la version migrée : elle
   // réécrirait l'état restauré à la première frappe. D'où le gel, et la
   // consigne de fermer l'onglet.
+  function restaurerBlocs(attrs) {
+    var original;try{original=backupBlocs(attrs)||attrs[M.PREFIX+BACKUP];if(!original)throw Error("Sauvegarde absente.");
+      var before=JSON.parse(val(original,"current")),remote=C.read(attrs),session=new C.Session(attrs,remote.state);
+      session.capture(before);var packet={epoch:session.epoch,ops:Object.keys(session.pending).map(function(id){return session.pending[id];})};
+      if(packet.ops.length)post({type:"storage-ops",epoch:packet.epoch,ops:packet.ops,payloads:session.payloads});
+      confirmeOperations(packet,function(ok,recu,r){
+        if(!ok||C.stable(r.state)!==C.stable(before)){var b=ecran("Restauration non confirmée",true);b.appendChild(noeud("p",null,"La sauvegarde d’origine reste conservée. Aucune écriture ne part plus de cette fenêtre."));boutonExport(zoneActions(b));montrerJson(original.current,"État d’origine sauvegardé.");return;}
+        lastAttrs=recu;mem["owd-perso"]=JSON.stringify(before);fermerEcran();bandeau("État d’origine restauré. Fermez cette fiche puis rouvrez-la ; cette fenêtre reste gelée.",[{texte:"Exporter (JSON)",acte:"export",action:exporter}]);
+      });
+    }catch(e){var b=ecran("Sauvegarde de secours illisible",true);b.appendChild(noeud("p",null,String(e.message||e)));boutonExport(zoneActions(b));}
+  }
   function restaurer() {
     gele = true;
     fermerBandeau();
     ecranAttente("Restauration de l'état d'origine",
       "Relecture de la sauvegarde de secours dans le personnage Roll20.");
     sonde(function (recu) {
+      if(C && recu && recu[C.BASE]){restaurerBlocs(recu);return;}
       var a = recu ? recu[M.PREFIX + BACKUP] : null;
       var brut = a ? String(val(a, "current") || "") : "";
       if (!brut) {
@@ -1188,8 +1245,7 @@
   }
 
   function bandeauMisAJour() {
-    bandeau("Fiche mise à niveau en " + releaseSite() + ". L'état d'origine est gardé dans l'attribut " +
-            "owd_backup du personnage.", [
+    bandeau("Fiche mise à niveau en " + releaseSite() + ". Une sauvegarde vérifiée de l’état d’origine est conservée dans le personnage.", [
       { texte: "Restaurer l'état d'origine", acte: "restaurer", action: restaurer },
       { texte: "Exporter (JSON)", acte: "export", action: exporter },
       { texte: "Masquer", acte: "masquer", action: fermerBandeau }
@@ -1531,7 +1587,7 @@
         if (avertissement && avertissement.dataset.owdRaison === 'sync-timeout') fermerBandeau();
       }
       if (hydrated) {
-        sondeReponse(d.attrs);
+        sondeReponse(d.attrs, d.fresh);
         if (collaboration && d.fresh === true && !gele && !collaborationApplique) recoitCollaboration(d.attrs || {});
       } else if (!collaborationPont || d.fresh === true) hydrate(d.attrs);
     }
