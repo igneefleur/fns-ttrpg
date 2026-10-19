@@ -385,6 +385,9 @@ def main():
     if not lancer("édition collaborative et migrations", ["node", "scripts/test_sync.js"], racine):
         return 1
 
+    if not lancer("sauvegarde avant mise à niveau", ["node", "scripts/test_upgrade_backup.js"], racine):
+        return 1
+
     if not lancer("Notes et icônes de l’extension", ["node", "scripts/test_notes.js"], racine):
         return 1
 
