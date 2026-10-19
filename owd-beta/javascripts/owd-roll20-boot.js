@@ -82,6 +82,7 @@
   var enVol = null;             // lot posté, pas encore relu : ni oublié, ni tenu pour acquis
   var enVolTimer = null;
   var echecs = 0;               // confirmations manquées d'affilée
+  var miseANiveauDemandee = false, miseANiveauOps = [], miseANiveauReprise = null;
   var ready = false;            // les sauvegardes ne partent qu'après hydratation + montage
   var saveTimer = null;
   var askTimer = null;          // relance de la demande d'hydratation
@@ -252,7 +253,7 @@
     try{localStorage.setItem('owd-recovery-v2:'+CHAR_ID+':'+C.hash(key)+':'+C.hash(raw),JSON.stringify({source:key,raw:raw,reason:reason,at:Date.now()}));return true;}catch(e){return false;}
   }
   function afficheRecuperationsLocales(){
-    try{if(!storageLocalKeys('owd-recovery-v2:'+CHAR_ID+':').length||document.getElementById('owd-local-recovery'))return;
+    try{if(window.__owdVueInventaire)return;if(!storageLocalKeys('owd-recovery-v2:'+CHAR_ID+':').length||document.getElementById('owd-local-recovery'))return;
       var button=document.createElement('button');button.id='owd-local-recovery';button.type='button';button.textContent='Données locales conservées';
       button.title='Consulter les anciennes modifications mises à l’abri';button.style.cssText='flex:none;align-self:flex-start;margin:4px 8px;font:inherit;font-size:12px';
       button.onclick=function(){var records=storageLocalKeys('owd-recovery-v2:'+CHAR_ID+':').map(function(k){return JSON.parse(localStorage.getItem(k));});
@@ -1111,11 +1112,12 @@
         if (window.Owd && window.Owd.__pret === false) { setTimeout(serie, 25); return; }
         if (C && collaborationPont && !gele) {
           collaboration = new C.Session(lastAttrs, JSON.parse(mem["owd-perso"]), null, {id:"v"+Date.now().toString(36)+Math.random().toString(36).slice(2)});
-          updateStorageMaxima();
+          chargeRepriseMiseANiveau();updateStorageMaxima();
           // Le bundle vient de migrer en mémoire. Capturer cette montée AVANT
           // une réponse distante encore à l'ancien schéma, même si le réseau
           // retarde sa confirmation de plusieurs secondes.
           collaboration.capture(JSON.parse(mem["owd-perso"]));
+          if(miseANiveauDemandee)miseANiveauOps=Object.keys(collaboration.pending);
           marqueConflitsAnciens(C.read(lastAttrs));restoreStoragePending();persistStoragePending();
           if(collaboration.hasBase&&Object.keys(collaboration.pending).length){var restored=collaboration.receive(lastAttrs);if(restored){synchronisationDifferée=restored.state;appliqueDiffere();}}
           // La photographie n'est écrite qu'une fois. Elle est aussi annoncée
@@ -1235,17 +1237,19 @@
     var packet;try{packet=lotBackupBlocs(lot,attrsVus);}catch(e){ecranRouge(lot,silencieux);return;}
     post({type:"storage-ops",epoch:packet.epoch,ops:packet.ops});
     confirmeOperations(packet,function(ok,attrs,remote){
+      if(bundleCharge)return;
       if(!ok){ecranRouge(lot,silencieux);return;}
-      // Une autre fenêtre peut avoir joué pendant la copie. Repartir de sa
-      // version confirmée, jamais migrer une photographie devenue périmée.
-      var expected=JSON.parse(lot[M.PREFIX+BACKUP].current);
+      // La copie d'origine est vérifiée et les écritures concurrentes sont
+      // conservées dans les journaux. Migrer le dernier état relu : recommencer
+      // la sauvegarde à chaque mouvement d'horloge pouvait boucler sans fin.
       attrsVus=attrs;lastAttrs=attrs;
       mem["owd-perso"]=JSON.stringify(remote.state);
-      if(C.stable(expected)!==C.stable(remote.state)){monter(silencieux,{schema:remote.state.v});return;}
-      fermerEcran();bandeauMisAJour();chargerBundle(specCourant());
+      if(Number(remote.state.v)>schemaSite()){fermerEcran();decide=false;decider();return;}
+      fermerEcran();chargerBundle(specCourant());
     });
   }
   function monter(silencieux, f) {
+    miseANiveauDemandee=true;
     var lot = lotBackup(f);
     tenterBackup(lot, silencieux);
   }
@@ -1256,11 +1260,11 @@
     if(C && attrsVus && attrsVus[C.BASE]){tenterBackupBlocs(lot,silencieux);return;}
     post({ type: "save", attrs: lot });
     confirme(lot, function (ok) {
+      if(bundleCharge)return;
       if (!ok) { ecranRouge(lot, silencieux); return; }
       // Confirmé : le lot entre dans la base du diff, il est en base.
       lastAttrs = fusion(lastAttrs, lot);
       fermerEcran();
-      if (silencieux) bandeauMisAJour();
       chargerBundle(specCourant());
     }, 8000);
   }
@@ -1478,6 +1482,39 @@
       "niveau, elle, se redemande toujours."));
   }
 
+  // Une montée déjà autorisée peut être encore dans un journal local si
+  // l'onglet a été rechargé avant son accusé serveur. Elle se reprend sans
+  // demander une nouvelle autorisation ; la copie de secours doit être relue.
+  function repriseMiseANiveau(attrs,cible){
+    if(!C||!attrs[C.BASE])return false;
+    try{
+      var remote=C.read(attrs),backup=backupBlocs(attrs);
+      if(!backup||Number(JSON.parse(backup.current).v)>=cible)return false;
+      return storageLocalKeys('owd-pending-v2:'+CHAR_ID+':').some(function(key){try{
+        var r=JSON.parse(localStorage.getItem(key));
+        if(!r||r.epoch!==remote.meta.epoch||!Array.isArray(r.ops)||!r.ops.every(validStorageOp)||!r.ops.some(function(op){return op.changes.some(function(c){return c.k==='[["k","v"]]'&&c.n[0]==='v'&&c.n[1]===cible;});}))return false;
+        var trial=Object.assign({},attrs);trial[C.PREFIX+'resume-upgrade']={current:JSON.stringify({epoch:r.epoch,ops:r.ops})};
+        Object.keys(r.payloads||{}).forEach(function(k){if(!trial[k])trial[k]=r.payloads[k];});var candidate=C.read(trial);
+        if(candidate.incomplete||!validRecoveryState(candidate.state,{v:cible,notes:{format:1,messages:[]}}))return false;
+        miseANiveauReprise={epoch:r.epoch,ops:r.ops,payloads:r.payloads||{}};mem['owd-perso']=JSON.stringify(candidate.state);return true;
+      }catch(e){return false;}});
+    }catch(e){return false;}
+  }
+  function chargeRepriseMiseANiveau(){
+    var r=miseANiveauReprise;if(!r||!collaboration||r.epoch!==collaboration.epoch)return;
+    Object.assign(collaboration.payloads,r.payloads);r.ops.forEach(function(op){collaboration.pending[op.id]=op;collaboration.pendingAt[op.id]=Date.now();collaboration.clock=Math.max(collaboration.clock,op.clock);});
+    // Reconstituer la base locale AVANT la capture du bundle : sinon les
+    // dépenses en attente seraient capturées une seconde fois, et la migration
+    // fraîche pourrait remplacer une note modifiée hors ligne par son ancien texte.
+    collaboration.receive(lastAttrs);miseANiveauReprise=null;
+  }
+  function actualiseAvantMontage(attrs){
+    if(bundleCharge||gele||!attrsPrets)return;
+    var f=versionFiche(attrs);if(!f||f.schema!==schemaSite())return;
+    var state=M.attrsToState(attrs);if(!state||state.degrade)return;
+    attrsVus=lastAttrs=attrs;mem['owd-perso']=JSON.stringify(state);decide=false;decider();
+  }
+
   // ---------- la décision ----------
   function decider() {
     if (decide || !attrsPrets || !manifPret) return;
@@ -1564,6 +1601,8 @@
     // schSite > 1 est faux : le laisser en place tel quel, il coûte une ligne
     // et il servira au premier changement de forme de l'état.
     if (f.schema === 1 && schSite > 1) { monter(true, f); return; }
+
+    if(f.schema<schSite&&repriseMiseANiveau(attrs,schSite)){miseANiveauDemandee=true;chargerBundle(courant);return;}
 
     // 5. l'écran.
     avecMigrations(function () { ecranVersion(f, relSite, schSite); });
@@ -1696,6 +1735,7 @@
       if (hydrated) {
         sondeReponse(d.attrs, d.fresh);
         if (collaboration && d.fresh === true && !gele && !collaborationApplique) recoitCollaboration(d.attrs || {});
+        else if(d.fresh===true)actualiseAvantMontage(d.attrs||{});
       } else if (!collaborationPont || d.fresh === true) hydrate(d.attrs);
     }
     // objet pris au tchat : destiné à une seule fiche, choisie par l'extension (le lien
@@ -1817,6 +1857,7 @@
       confirmStoragePending(server);persistStoragePending();
       lastAttrs = attrs;
       if (!recu) return;
+      if(miseANiveauDemandee&&server&&!server.incomplete&&Number(server.state.v)===schemaSite()&&miseANiveauOps.every(function(id){return !!server.ids[id];})){miseANiveauDemandee=false;bandeauMisAJour();}
       if(collaboration.hasBase&&!recu.incomplete){if(server.meta.phase!=='ready')post({type:'storage-activate'});else post({type:'storage-cleanup'});}
       if(recu.conflict && nouveauxConflits(recu)){bandeau("Des modifications simultanées viennent d’être reçues. Les valeurs affichées suivent l’ordre de synchronisation ; les opérations restent conservées.",[{texte:"Fermer",acte:"masquer",action:fermerBandeau},{texte:"Exporter (JSON)",acte:"export",action:exporter}]).dataset.owdRaison='sync-conflict';}
 
