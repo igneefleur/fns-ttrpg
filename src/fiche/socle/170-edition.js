@@ -7,11 +7,32 @@
   // persisté — chaque chargement repart verrouillé.
   var editMods = {};
   function isEdit(id) { return !!editMods[id]; }
+  // Lecture en texte normal : hauteur naturelle, même dans un onglet masqué
+  // ou après un changement de largeur. Le textarea garde sa taille d'édition
+  // et son redimensionnement manuel ; on ne mesure ni ne réécrit sa hauteur.
+  function majTextesLecture(scope) {
+    if (!scope) return;
+    Array.prototype.forEach.call(scope.querySelectorAll("textarea.pc-notes.pc-edit-field"), function (f) {
+      if (!f.parentNode) return;
+      var lecture = f._owdLecture;
+      if (!lecture || lecture.parentNode !== f.parentNode) {
+        lecture = el("div", "pc-prose-read");
+        f.parentNode.insertBefore(lecture, f);
+        f._owdLecture = lecture;
+      }
+      // Ne pas remplacer le texte inchangé : cela casserait sa sélection
+      // à chaque rafraîchissement de l'horloge ou des réserves.
+      if (lecture.textContent !== f.value) lecture.textContent = f.value;
+      lecture.hidden = !f.disabled;
+      f.classList.toggle("pc-prose-editor-lecture", f.disabled);
+    });
+  }
   function applyEdit(scope, id) {
     scope.classList.toggle("editing", isEdit(id));
     Array.prototype.forEach.call(scope.querySelectorAll(".pc-edit-field"), function (f) {
       f.disabled = !isEdit(id);
     });
+    majTextesLecture(scope);
   }
   function gearBtn(scope, id, onToggle) {
     var g = el("button", "pc-gear", "⚙");

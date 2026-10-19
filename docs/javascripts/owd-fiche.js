@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.4.0b";
+  var RELEASE = "4.4.1b";
   var SCHEMA = 17;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -3022,6 +3022,9 @@
         museleAffiche(id, e);
       }
     });
+    // Après les hooks : Bio et Notes viennent notamment de recevoir leur
+    // valeur distante. La lecture doit montrer cette même valeur dès la passe.
+    majTextesLecture(rootEl);
   }
   var remontageNettoyage = [];
   var rootEl = null;
@@ -3262,11 +3265,32 @@
   // persisté — chaque chargement repart verrouillé.
   var editMods = {};
   function isEdit(id) { return !!editMods[id]; }
+  // Lecture en texte normal : hauteur naturelle, même dans un onglet masqué
+  // ou après un changement de largeur. Le textarea garde sa taille d'édition
+  // et son redimensionnement manuel ; on ne mesure ni ne réécrit sa hauteur.
+  function majTextesLecture(scope) {
+    if (!scope) return;
+    Array.prototype.forEach.call(scope.querySelectorAll("textarea.pc-notes.pc-edit-field"), function (f) {
+      if (!f.parentNode) return;
+      var lecture = f._owdLecture;
+      if (!lecture || lecture.parentNode !== f.parentNode) {
+        lecture = el("div", "pc-prose-read");
+        f.parentNode.insertBefore(lecture, f);
+        f._owdLecture = lecture;
+      }
+      // Ne pas remplacer le texte inchangé : cela casserait sa sélection
+      // à chaque rafraîchissement de l'horloge ou des réserves.
+      if (lecture.textContent !== f.value) lecture.textContent = f.value;
+      lecture.hidden = !f.disabled;
+      f.classList.toggle("pc-prose-editor-lecture", f.disabled);
+    });
+  }
   function applyEdit(scope, id) {
     scope.classList.toggle("editing", isEdit(id));
     Array.prototype.forEach.call(scope.querySelectorAll(".pc-edit-field"), function (f) {
       f.disabled = !isEdit(id);
     });
+    majTextesLecture(scope);
   }
   function gearBtn(scope, id, onToggle) {
     var g = el("button", "pc-gear", "⚙");
@@ -7511,18 +7535,16 @@
     return b;
   }
   function buildNotes() {
-    // Les notes restent LIBRES, sans rouage : c'est le carnet de la session, il
-    // s'écrit en jeu, la main sur le clavier. Un verrou à ouvrir avant chaque
-    // ligne le rendrait inutilisable — et rien ici ne se calcule, donc rien ne
-    // se casse à l'écrire de travers.
-    var b = block("Notes");
-    var nt = el("textarea", "pc-notes");
+    // Comme la Bio : lecture intégrale ou édition dans une zone redimensionnable.
+    var b = block("Notes", null, "notes");
+    var nt = el("textarea", "pc-notes pc-edit-field");
     nt.rows = 6;
     nt.placeholder = "Ce que la table a dit, ce qu'il reste à faire.";
     nt.value = state.notes || "";
     nt.addEventListener("input", function () { state.notes = nt.value; save(); });
     hooks.push(function () { if (document.activeElement !== nt) nt.value = state.notes || ""; });
     b.appendChild(nt);
+    applyEdit(b, "notes");
     return b;
   }
   // ---------- boîte de dialogue ----------
