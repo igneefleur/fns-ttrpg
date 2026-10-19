@@ -2245,3 +2245,34 @@ html.night .t-pi { --palier-plein: #30343b; }
 
 /* Les consommables n’ont pas de séparateur entre les effets (7–8 inclus) et la restauration PV. */
 .pc-obj-body .pc-obj-subtype-card > .pc-obj-effets-grid + .pc-obj-restauration { border-top:0; padding-top:0; }
+
+/* Compétences : commandes et rangs partagent une même case. */
+.pc-comp-row { --comp-case: calc(6.2rem / 6); --comp-hauteur: .98rem; }
+.pc-comp-name { align-items: center; }
+.pc-comp-rangs { display: flex; align-items: center; gap: .2rem; min-width: 0; }
+.pc-comp-rangs .pc-stadebar { flex: 1; }
+.pc-comp-rangs .seg { box-sizing: border-box; height: var(--comp-hauteur); padding: 0; }
+.pc-comp-row .pc-comp-del, .pc-comp-drag {
+  box-sizing: border-box; flex: 0 0 calc(6.2rem / 6); width: calc(6.2rem / 6); height: .98rem;
+  display: inline-flex; align-items: center; justify-content: center; padding: 0;
+  border: 1px solid var(--line-2); border-radius: 3px; background: var(--panel);
+  color: var(--ink-3); font: inherit; font-size: .62rem; line-height: 1;
+}
+.pc-comp-drag { cursor: grab; }
+.pc-comp-drag:active { cursor: grabbing; }
+.pc-comp-row .pc-comp-del:hover { color: var(--danger); border-color: var(--danger); }
+.pc-editable.editing .pc-comp-row { grid-template-columns: minmax(0, 1fr) calc(6.2rem + 6.2rem / 6 + .2rem) 2.4rem; }
+.pc-editable.editing .pc-comp-rang-head { padding-left: calc(6.2rem / 6 + .2rem); }
+.pc-comp-champ::after { content: none; }
+.pc-comp-groupe-nom { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; padding: .15rem 0; }
+.pc-comp-repli { border: 0; background: transparent; color: var(--ink-2); cursor: pointer; padding: 0 .3rem; font-size: .85rem; }
+.pc-comp-champ { user-select: none; }
+.pc-comp-add { flex-wrap: wrap; }
+.pc-comp-add .pc-select { flex: 1 1 8rem; width: auto; }
+.pc-comp-add input { flex: 1 1 8rem; }
+.pc-comp-add [hidden] { display: none; }
+.pc-comp-sans-groupe { margin: .3rem; padding: .3rem; border: 1px dashed var(--line-2); color: var(--ink-3); font-size: .62rem; text-align: center; }
+.pc-comp-row.avant, .pc-comp-champ.avant, .pc-comp-groupe.avant { box-shadow: 0 -2px var(--accent); }
+.pc-comp-row.apres, .pc-comp-champ.apres, .pc-comp-groupe.apres { box-shadow: 0 2px var(--accent); }
+.pc-comp-champ.depot, .pc-comp-sans-groupe.depot { background: var(--wash); outline: 1px solid var(--accent); }
+.pc-comp-row.pris, .pc-comp-groupe.pris { opacity: .45; }

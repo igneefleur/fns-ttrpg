@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.3.0b";
+  var RELEASE = "4.4.0b";
   var SCHEMA = 17;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -6823,7 +6823,7 @@
   // siennes, et la fiche n'en propose pas — une liste d'exemples passerait pour
   // une règle du livre alors qu'elle n'y est pas. D'où un tableau d'entrées à
   // id stable, un champ « groupe » libre pour que chacun range comme il veut,
-  // et un bloc qui montre TOUT d'un coup, sans repli ni troncature.
+  // et des groupes repliables dont l’ordre vient de ce même tableau.
   function xpJusque(r) {
     var t = 0, tab = rangs(), i;
     for (i = 1; i <= r && i < tab.length; i++) t += num(tab[i].xp, 0);
@@ -6847,6 +6847,9 @@
 
     var nameBox = el("span", "pc-comp-name");
     var label = el("span", "pc-comp-label", item.nom || "Sans nom");
+    if (mod === "comps") nameBox.appendChild(poigneeComp("Déplacer la compétence", function () {
+      return { type: "comp", id: item.id };
+    }, row));
     nameBox.appendChild(label);
     // RENOMMAGE EN PLACE, au double-clic, en édition seulement. Jamais
     // prompt() : muet dans l'iframe Roll20 sous Chrome. Le renommage ne touche
@@ -6912,8 +6915,9 @@
                 "Supprimer « " + (item.nom || "sans nom") + " » effacera aussi " + perdu.join(", ") + ".",
                 "Supprimer", retire);
     });
-    nameBox.appendChild(del);
     row.appendChild(nameBox);
+    var rangBox = el("span", "pc-comp-rangs");
+    rangBox.appendChild(del);
 
     // LA BARRE DE RANGS : un cran par rang, du non-initié au Rang Max. Le
     // dégradé monte avec le rang ; l'infobulle porte le rang COMPLET (dés,
@@ -6951,7 +6955,8 @@
       bar.appendChild(sg);
       segs.push(sg);
     });
-    row.appendChild(bar);
+    rangBox.appendChild(bar);
+    row.appendChild(rangBox);
 
     // Le total est un BOUTON de jet : c'est le bonus de rang plus les
     // modificateurs, et le clic lance les dés d'action que le rang autorise.
@@ -6964,40 +6969,11 @@
     });
     row.appendChild(total);
 
-    // RÉORDONNANCEMENT par glisser-déposer natif : l'ordre du tableau EST
-    // l'ordre d'affichage dans son groupe.
-    row.draggable = true;
-    row.addEventListener("dragstart", function (e) {
-      if (!isEdit(mod)) { e.preventDefault(); return; }
-      dragComp = item.id;
-      row.classList.add("pris");
-      // Firefox refuse de commencer un glissement sans donnée posée
-      try { e.dataTransfer.setData("text/plain", item.id); e.dataTransfer.effectAllowed = "move"; }
-      catch (err) {}
-    });
-    row.addEventListener("dragend", function () {
-      dragComp = null;
-      row.classList.remove("pris");
-      row.classList.remove("avant");
-    });
-    row.addEventListener("dragover", function (e) {
-      if (!dragComp || dragComp === item.id) return;
-      e.preventDefault();          // sans lui, le navigateur refuse le dépôt
-      var r = row.getBoundingClientRect();
-      row.classList.toggle("avant", e.clientY < r.top + r.height / 2);
-    });
-    row.addEventListener("dragleave", function () { row.classList.remove("avant"); });
-    row.addEventListener("drop", function (e) {
-      if (!dragComp || dragComp === item.id) return;
-      e.preventDefault();
-      var r = row.getBoundingClientRect();
-      var avant = e.clientY < r.top + r.height / 2;   // moitié haute = « avant elle »
-      deplaceComp(dragComp, item.id, avant);
-      dragComp = null;
-      row.classList.remove("avant");
-      if (opts.onDrop) opts.onDrop();
-      else rebuildComps();
-      if (optCompsRebuild) optCompsRebuild();
+    if (mod === "comps") cibleComp(row, function (e) {
+      if (dragComp.type !== "comp" || dragComp.id === item.id) return false;
+      return e.clientY < row.getBoundingClientRect().top + row.getBoundingClientRect().height / 2 ? "avant" : "apres";
+    }, function (e, position) {
+      deplaceComp(dragComp.id, item.id, position === "avant");
     });
 
     reg.push(function () {
@@ -7030,23 +7006,79 @@
     });
     return row;
   }
-  var dragComp = null;   // l'id de la compétence qu'on tient
-  // Déplacer une compétence devant (ou derrière) une autre. L'ordre du tableau
-  // EST l'ordre d'affichage : il n'y a rien d'autre à écrire.
+  // Le repli est local à cette fiche ouverte ; aucun attribut de personnage.
+  var compReplies = Object.create(null);
+  var dragComp = null;
+  function finDragComp() {
+    dragComp = null;
+    if (!compBox) return;
+    Array.prototype.forEach.call(compBox.querySelectorAll(".pris, .avant, .apres, .depot"), function (n) {
+      ["pris", "avant", "apres", "depot"].forEach(function (c) { n.classList.remove(c); });
+    });
+  }
+  function poigneeComp(titre, lire, source) {
+    var h = el("button", "pc-comp-drag pc-edit-only", "⠿");
+    h.type = "button"; h.title = titre; h.setAttribute("aria-label", titre);
+    h.draggable = true;
+    h.addEventListener("dragstart", function (e) {
+      e.stopPropagation();
+      if (!isEdit("comps")) { e.preventDefault(); return; }
+      dragComp = lire(); source.classList.add("pris");
+      e.dataTransfer.setData("text/plain", "owd-competences");
+      e.dataTransfer.effectAllowed = "move";
+    });
+    h.addEventListener("dragend", function (e) { e.stopPropagation(); finDragComp(); });
+    return h;
+  }
+  function cibleComp(n, position, action) {
+    n.addEventListener("dragover", function (e) {
+      if (!isEdit("comps") || !dragComp) return;
+      var p = position(e); if (!p) return;
+      e.preventDefault(); e.stopPropagation();
+      ["avant", "apres", "depot"].forEach(function (c) { n.classList.toggle(c, c === p); });
+      e.dataTransfer.dropEffect = "move";
+    });
+    n.addEventListener("dragleave", function (e) {
+      if (e.relatedTarget && n.contains(e.relatedTarget)) return;
+      ["avant", "apres", "depot"].forEach(function (c) { n.classList.remove(c); });
+    });
+    n.addEventListener("drop", function (e) {
+      if (!isEdit("comps") || !dragComp) return;
+      var p = position(e); if (!p) return;
+      e.preventDefault(); e.stopPropagation();
+      action(e, p); finDragComp(); rebuildComps();
+      if (optCompsRebuild) optCompsRebuild();
+    });
+  }
+  function groupesComps() {
+    var ordre = [];
+    state.comps.forEach(function (c) { var g = compGroupe(c); if (ordre.indexOf(g) < 0) ordre.push(g); });
+    return ordre;
+  }
   function deplaceComp(id, cibleId, avant) {
-    var from = -1, to = -1, i;
-    for (i = 0; i < state.comps.length; i++) {
-      if (state.comps[i].id === id) from = i;
-      if (state.comps[i].id === cibleId) to = i;
-    }
-    if (from < 0 || to < 0) return;
-    var m = state.comps.splice(from, 1)[0];
-    // la cible se recalcule APRÈS le retrait : retirer l'entrée déplacée décale
-    // tout ce qui la suivait
-    var k = state.comps.indexOf(compDeDans(state.comps, cibleId));
-    if (k < 0) state.comps.push(m);
-    else state.comps.splice(avant ? k : k + 1, 0, m);
+    var m = compDeDans(state.comps, id), cible = compDeDans(state.comps, cibleId);
+    if (!m || !cible || m === cible) return;
+    m.groupe = compGroupe(cible);
+    state.comps.splice(state.comps.indexOf(m), 1);
+    var k = state.comps.indexOf(cible);
+    state.comps.splice(avant ? k : k + 1, 0, m);
     save();
+  }
+  function compVersGroupe(id, groupe) {
+    var m = compDeDans(state.comps, id); if (!m || compGroupe(m) === groupe) return;
+    state.comps.splice(state.comps.indexOf(m), 1);
+    m.groupe = groupe;
+    var k = state.comps.length;
+    state.comps.forEach(function (c, i) { if (compGroupe(c) === groupe) k = i + 1; });
+    state.comps.splice(k, 0, m); save();
+  }
+  function deplaceGroupe(groupe, cible, avant) {
+    var ordre = groupesComps(), from = ordre.indexOf(groupe);
+    if (groupe === cible || from < 0 || ordre.indexOf(cible) < 0) return;
+    ordre.splice(from, 1); ordre.splice(ordre.indexOf(cible) + (avant ? 0 : 1), 0, groupe);
+    var resultat = [];
+    ordre.forEach(function (g) { state.comps.forEach(function (c) { if (compGroupe(c) === g) resultat.push(c); }); });
+    state.comps = resultat; save();
   }
   function compDeDans(liste, id) {
     var out = null;
@@ -7055,6 +7087,7 @@
   }
 
   var compBox = null;
+  var compSearch = null, compInvestiesChip = null;
   var compFilter = "";
   var compOnly = false;      // « Investies » : éteinte par défaut — l'auteur veut TOUT voir
   // L'outil de recherche se coupe depuis l'onglet Options. Coupé, il DISPARAÎT
@@ -7076,8 +7109,15 @@
 
   function rebuildComps() {
     if (!compBox) return;
+    if (compSearch) compSearch.value = compFilter;
+    if (compInvestiesChip) compInvestiesChip.classList.toggle("on", compOnly);
     compHooks = [];   // les lignes vont être détruites : leurs hooks avec
     compBox.innerHTML = "";
+    var head = el("div", "pc-comp-row head");
+    head.appendChild(el("span", null, "Compétence"));
+    head.appendChild(el("span", "pc-comp-rang-head", "Rang"));
+    head.appendChild(el("span", null, "Total"));
+    compBox.appendChild(head);
     var flt = filtreDe(compFilter);
     var liste = state.comps.filter(function (c) {
       if (compOnly && !compInvestie(c)) return false;
@@ -7096,35 +7136,66 @@
     } else {
       // Par GROUPE, dans l'ordre où les groupes apparaissent : c'est le
       // rangement du joueur, la fiche n'en impose aucun et n'en trie aucun.
-      var ordre = [], vus = {};
-      liste.forEach(function (c) {
-        var g = compGroupe(c);
-        if (!vus[g]) { vus[g] = 1; ordre.push(g); }
-      });
-      ordre.forEach(function (g) {
-        compBox.appendChild(el("div", "pc-comp-champ", g || "Sans groupe"));
-        var head = el("div", "pc-comp-row head");
-        head.appendChild(el("span", null, "Compétence"));
-        head.appendChild(el("span", null, "Rang"));
-        head.appendChild(el("span", null, "Total"));
-        compBox.appendChild(head);
-        var i = 0;
-        liste.forEach(function (c) {
-          if (compGroupe(c) !== g) return;
-          compBox.appendChild(compRow(c, i % 2 === 1, { module: "comps", reg: compHooks }));
-          i++;
+      groupesComps().forEach(function (g) {
+        var visibles = liste.filter(function (c) { return compGroupe(c) === g; });
+        if (!visibles.length) return;
+        var groupe = el("section", "pc-comp-groupe"); groupe.dataset.groupe = g;
+        var titre = el("div", "pc-comp-champ");
+        titre.appendChild(poigneeComp("Déplacer le groupe", function () { return { type: "groupe", groupe: g }; }, groupe));
+        titre.appendChild(el("span", "pc-comp-groupe-nom", g || "Sans groupe"));
+        var bouton = el("button", "pc-comp-repli", compReplies[g] ? "▸" : "▾");
+        bouton.type = "button";
+        bouton.setAttribute("aria-expanded", String(!compReplies[g]));
+        bouton.setAttribute("aria-label", (compReplies[g] ? "Déplier " : "Replier ") + (g || "Sans groupe"));
+        var toggle = function () { compReplies[g] = !compReplies[g]; rebuildComps(); };
+        bouton.addEventListener("click", function (e) { e.stopPropagation(); toggle(); });
+        titre.addEventListener("dblclick", function (e) {
+          if (e.target.closest("button")) return;
+          e.preventDefault(); toggle();
         });
+        titre.appendChild(bouton); groupe.appendChild(titre);
+        cibleComp(titre, function (e) {
+          if (dragComp.type === "comp") return "depot";
+          if (dragComp.groupe === g) return false;
+          var r = titre.getBoundingClientRect(); return e.clientY < r.top + r.height / 2 ? "avant" : "apres";
+        }, function (e, p) {
+          if (dragComp.type === "comp") compVersGroupe(dragComp.id, g);
+          else deplaceGroupe(dragComp.groupe, g, p === "avant");
+        });
+        // Toute la surface du groupe reçoit un groupe déplacé, y compris replié.
+        cibleComp(groupe, function (e) {
+          if (dragComp.type !== "groupe" || dragComp.groupe === g) return false;
+          var r = groupe.getBoundingClientRect(); return e.clientY < r.top + r.height / 2 ? "avant" : "apres";
+        }, function (e, p) { deplaceGroupe(dragComp.groupe, g, p === "avant"); });
+        if (!compReplies[g]) visibles.forEach(function (c, i) {
+          groupe.appendChild(compRow(c, i % 2 === 1, { module: "comps", reg: compHooks }));
+        });
+        compBox.appendChild(groupe);
       });
+    }
+    if (isEdit("comps") && groupesComps().indexOf("") < 0 && state.comps.length) {
+      var libre = el("div", "pc-comp-sans-groupe", "Déposer ici pour retirer le groupe");
+      cibleComp(libre, function () { return dragComp.type === "comp" ? "depot" : false; },
+        function () { compVersGroupe(dragComp.id, ""); });
+      compBox.appendChild(libre);
     }
     // AJOUT, en édition seulement : un nom, un groupe, et c'est tout.
     if (isEdit("comps")) {
       var add = el("div", "pc-comp-add");
       var nom = el("input");
       nom.type = "text"; nom.placeholder = "Nouvelle compétence…";
-      var grp = el("input");
-      grp.type = "text"; grp.placeholder = "Groupe (facultatif)";
+      var grp = el("select", "pc-select"); grp.setAttribute("aria-label", "Groupe de la nouvelle compétence");
+      var choix = el("option", null, "Sans groupe"); choix.value = "sans"; grp.appendChild(choix);
+      var existants = groupesComps().filter(function (g) { return g !== ""; });
+      existants.forEach(function (g, i) { var o = el("option", null, g); o.value = "g" + i; grp.appendChild(o); });
+      var nouveau = el("option", null, "Nouveau groupe…"); nouveau.value = "nouveau"; grp.appendChild(nouveau);
+      var nouveauNom = el("input"); nouveauNom.type = "text";
+      nouveauNom.placeholder = "Nom du nouveau groupe"; nouveauNom.setAttribute("aria-label", "Nom du nouveau groupe");
+      nouveauNom.hidden = true;
+      grp.addEventListener("change", function () { nouveauNom.hidden = grp.value !== "nouveau"; if (!nouveauNom.hidden) nouveauNom.focus(); });
       add.appendChild(nom);
       add.appendChild(grp);
+      add.appendChild(nouveauNom);
       // Une EXPRESSION de fonction, pas une déclaration : une déclaration dans
       // un bloc est refusée par le mode strict d'ES5, que le vieux moteur d'une
       // iframe Roll20 peut encore appliquer à la lettre.
@@ -7135,7 +7206,10 @@
         var doublon = false;
         state.comps.forEach(function (c) { if (pli(c.nom) === pli(n)) doublon = true; });
         if (doublon) { flash("« " + n + " » existe déjà."); return; }
-        state.comps.push({ id: uid("c"), nom: n, groupe: grp.value.trim(), rang: 0 });
+        var g = grp.value === "nouveau" ? nouveauNom.value.trim() : grp.value === "sans" ? "" : existants[Number(grp.value.slice(1))];
+        if (grp.value === "nouveau" && !g) { nouveauNom.focus(); return; }
+        state.comps.push({ id: uid("c"), nom: n, groupe: g, rang: 0 });
+        compReplies[g] = false;
         nom.value = "";
         // ne jamais ajouter une compétence qui resterait invisible
         if (compOnly) compOnly = false;
@@ -7145,6 +7219,7 @@
         if (optCompsRebuild) optCompsRebuild();
       };
       nom.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); ajoute(); } });
+      nouveauNom.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); ajoute(); } });
       add.appendChild(miniBtn("+", "Ajouter cette compétence", ajoute));
       compBox.appendChild(add);
     }
@@ -7156,10 +7231,12 @@
     var l1 = el("div", "row");
     var search = champFiltre(function () { return compFilter; },
                              function (v) { compFilter = v; }, "Filtrer les compétences…", rebuildComps);
+    compSearch = search;
     if (search) l1.appendChild(search);
     // LE FILTRE ET LA PUCE SUR UNE MÊME LIGNE, à parts égales : la rangée est
     // une grille à colonnes 1fr, chacun y prend sa moitié
     var puce = el("span", "pc-chip", "Investies");
+    compInvestiesChip = puce;
     puce.title = "N'afficher que les compétences où un rang, un modificateur ou un forçage est posé.";
     puce.classList.toggle("on", compOnly);
     puce.addEventListener("click", function () {
