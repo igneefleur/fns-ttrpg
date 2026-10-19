@@ -374,6 +374,8 @@ def main():
         return 1
     if not lancer("suppression des compétences", ["node", "scripts/test_competence_delete.js"], racine):
         return 1
+    if not lancer("groupes de compétences", ["node", "scripts/test_competence_groups.js"], racine):
+        return 1
     if not lancer("Techniques, consommation et munitions", ["node", "scripts/test_fiche_actions.js"], racine):
         return 1
     if not lancer("piles et emplacements d’équipement", ["node", "scripts/test_inventory_stacks.js"], racine):
