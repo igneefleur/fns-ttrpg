@@ -24462,19 +24462,5 @@
 "url": "content/regles/vivre/"
 }
 ]
-},
-{
-"short": "2168e69",
-"author": "Théo Cavaillès",
-"date": "2026-10-07T01:09:31+02:00",
-"message": "Update fns-owd-beta files",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/2168e69f38216c18b1e9acb2e214230598bfa400",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/base/capacites-physiques.md",
-"url": "content/regles/base/capacites-physiques/"
-}
-]
 }
 ]
