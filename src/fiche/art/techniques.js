@@ -7,6 +7,10 @@
     var b = block("Techniques", null, "techniques", function () { rendre(); });
     var box = el("div");
     b.appendChild(box);
+    // Un seul rappel appartient au module. Les lignes rebâties remplacent
+    // leurs rappels au lieu d’en laisser sur les anciennes cartes.
+    var techHooks = [];
+    hooks.push(function () { techHooks.forEach(function (fn) { fn(); }); });
 
     function carte(t) {
       var card = el("div", "pc-av");
@@ -87,7 +91,7 @@
           ecrire(isFinite(v) ? clamp(v, min, max) : min);
           refresh();
         });
-        hooks.push(function () { if (document.activeElement !== inp) inp.value = lire(); });
+        techHooks.push(function () { if (document.activeElement !== inp) inp.value = lire(); });
         return fld(libelle, inp, large ? "w" : null);
       }
       ligne.appendChild(nombre("Rangs", function () { return t.rangs; },
@@ -103,7 +107,7 @@
         "Combien de points de rupture cette technique a demandés."));
       card.appendChild(ligne);
 
-      hooks.push(function () {
+      techHooks.push(function () {
         segs.forEach(function (sg, i) {
           sg.classList.toggle("on", i <= t.rang);
           sg.classList.toggle("cur", i === t.rang);
@@ -113,6 +117,7 @@
     }
 
     function rendre() {
+      techHooks = [];
       box.innerHTML = "";
       state.techniques.forEach(function (t) { box.appendChild(carte(t)); });
       if (!state.techniques.length) box.appendChild(el("div", "pc-empty", "Aucune technique."));
@@ -122,6 +127,7 @@
         rendre();
       }, "pc-edit-only"));
       applyEdit(b, "techniques");
+      techHooks.forEach(function (fn) { fn(); });
     }
     rendre();
     return b;

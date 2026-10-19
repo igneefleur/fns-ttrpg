@@ -233,11 +233,12 @@
     }
   }
   function invConsommer(it,q,cible) {
-    window.OwdInventoryData.isolateAncestors(state.inv.objets,it);
     q=Math.min(pnum(q),pnum(it.qte));if(!(q>0))return false;
     var effects=(it.effets||[]).map(effetDefinition).filter(Boolean);
     if(effects.length && Math.abs(q-Math.round(q))>1e-9){flash("Les effets sont définis par dose entière : choisissez une quantité entière.");return false;}
     if(effects.some(function(d){return d.ops.impregnation;})&&!defenseArme(cible)){flash("Choisissez l’arme à imprégner.");return false;}
+    // Un refus ne doit pas séparer les contenants ni modifier leurs contenus.
+    window.OwdInventoryData.isolateAncestors(state.inv.objets,it);
     var ingere=invEstIngerable(it),avant={};
     ["pv","pe","pm","pr","ps","ph","pi"].forEach(function(k){avant[k]=maxDe(k);});
     var results=[];

@@ -79,6 +79,7 @@ jobs:
           node scripts/test_inventory_stacks.js
           node scripts/test_inventaire.js
           node scripts/test_competence_delete.js
+          node scripts/test_fiche_actions.js
           node scripts/test_defenses.js
           node scripts/test_effets_data.js
           node scripts/test_boutique_passifs.js

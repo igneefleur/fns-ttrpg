@@ -137,12 +137,9 @@
     function retireUneMunition(o) {
       var objets = state.inv && Array.isArray(state.inv.objets) ? state.inv.objets : [];
       if (!o) return;
-      if (pnum(o.qte) <= 1) {
-        var i = objets.indexOf(o);
-        if (i >= 0) objets.splice(i, 1);
-        return;
-      }
-      o.qte = Math.round((pnum(o.qte) - 1) * 100) / 100;
+      window.OwdInventoryData.isolateAncestors(objets, o);
+      // Conserver le modèle, ses propriétés et sa référence pour le réassort.
+      o.qte = Math.max(0, Math.round((pnum(o.qte) - 1) * 100) / 100);
     }
     function prepareRessources(entree, it, def) {
       var out = { endurance: coutEndurance(it), munition: null };
@@ -155,7 +152,7 @@
       }
       return out;
     }
-    function executeAttaque(entree, it, def, envoyer) {
+    function executeAttaque(entree, it, def, preparerMessage) {
       if (!window.OwdInventoryData.isCarried(state.inv.objets,it)) {
         flash("Cette arme est par terre : ramassez-la avant d'attaquer.");
         return;
@@ -171,33 +168,32 @@
       if(rep){Object.keys(rep).forEach(function(k){sum+=pnum(rep[k]);});if(Math.abs(sum-100)>0.001){flash("La répartition des dégâts doit totaliser 100 %.");return;}}
       var r = prepareRessources(entree, it, def);
       if (!r) return;
+      // Les dégâts utilisent encore toutes les propriétés du projectile tiré.
+      var message = preparerMessage();
       if (state.combatOptions.attaques.utiliseEndurance && !state.combatOptions.attaques.lente && r.endurance > 0)
         state.etat.pe = Math.round((courant("pe") - effetCout("pe",r.endurance)) * 100) / 100;
       if (state.combatOptions.attaques.utiliseMunition && r.munition) {
-        var ref = String(r.munition.ref || "");
         retireUneMunition(r.munition);
-        // Si la pile entière vient de disparaître, le sélecteur redevient vide.
-        if (!objetInventaire(ref)) entree.munition = "";
       }
-      envoyer();
+      sayChat(message.titre, message.champs);
       if(effetBonus("paradeAdverse"))sayChat("Effets de l’attaque",[["Parade adverse",sign(effetBonus("paradeAdverse"))],["Esquive adverse","Inchangée"]]);
       refresh();
     }
     function envoieCoup(entree, it, coup, def) {
       executeAttaque(entree, it, def, function () {
-        var types = typesCoup(coup, def), dg = degatsCoup(it, coup);
-        sayChat((coup && coup.nom ? coup.nom : "Attaque") + " — " + (it.nom || (def && def.nom) || "Arme"), [
+        var types = typesCoup(coup, def);
+        return { titre: (coup && coup.nom ? coup.nom : "Attaque") + " — " + (it.nom || (def && def.nom) || "Arme"), champs: [
           ["Case de touche", degatsTypes(brutCoup(it, coup), types.touche, false, it, entree)],
           ["Case de passage", degatsTypes(brutCoup(it, coup), types.passage, true, it, entree)]
-        ]);
+        ] };
       });
     }
     function envoieAttaqueSimple(entree, it, def) {
       executeAttaque(entree, it, def, function () {
         var types = def && Array.isArray(def.types) ? def.types : [], type = types[0] || "—";
-        sayChat("Attaque — " + (it.nom || (def && def.nom) || "Arme"), [
+        return { titre: "Attaque — " + (it.nom || (def && def.nom) || "Arme"), champs: [
           ["Dégâts", degatsTypes(brutArme(it), type, false, it, entree)]
-        ]);
+        ] };
       });
     }
 
@@ -532,7 +528,8 @@
           sm.appendChild(op);
         });
         if (entree.munition && !trouveMunition) {
-          var ancienne = el("option", null, "Munition indisponible");
+          var precedente = objetInventaire(entree.munition);
+          var ancienne = el("option", null, precedente && pnum(precedente.qte) === 0 ? libelleMunition(precedente) + " (épuisée)" : "Munition indisponible");
           ancienne.value = String(entree.munition); ancienne.selected = true; sm.appendChild(ancienne);
         }
         sm.addEventListener("change", function () { entree.munition = sm.value; refresh(); });

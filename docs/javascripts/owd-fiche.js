@@ -77,7 +77,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.2.1b";
+  var RELEASE = "4.3.0b";
   var SCHEMA = 17;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -5824,12 +5824,9 @@
     function retireUneMunition(o) {
       var objets = state.inv && Array.isArray(state.inv.objets) ? state.inv.objets : [];
       if (!o) return;
-      if (pnum(o.qte) <= 1) {
-        var i = objets.indexOf(o);
-        if (i >= 0) objets.splice(i, 1);
-        return;
-      }
-      o.qte = Math.round((pnum(o.qte) - 1) * 100) / 100;
+      window.OwdInventoryData.isolateAncestors(objets, o);
+      // Conserver le modèle, ses propriétés et sa référence pour le réassort.
+      o.qte = Math.max(0, Math.round((pnum(o.qte) - 1) * 100) / 100);
     }
     function prepareRessources(entree, it, def) {
       var out = { endurance: coutEndurance(it), munition: null };
@@ -5842,7 +5839,7 @@
       }
       return out;
     }
-    function executeAttaque(entree, it, def, envoyer) {
+    function executeAttaque(entree, it, def, preparerMessage) {
       if (!window.OwdInventoryData.isCarried(state.inv.objets,it)) {
         flash("Cette arme est par terre : ramassez-la avant d'attaquer.");
         return;
@@ -5858,33 +5855,32 @@
       if(rep){Object.keys(rep).forEach(function(k){sum+=pnum(rep[k]);});if(Math.abs(sum-100)>0.001){flash("La répartition des dégâts doit totaliser 100 %.");return;}}
       var r = prepareRessources(entree, it, def);
       if (!r) return;
+      // Les dégâts utilisent encore toutes les propriétés du projectile tiré.
+      var message = preparerMessage();
       if (state.combatOptions.attaques.utiliseEndurance && !state.combatOptions.attaques.lente && r.endurance > 0)
         state.etat.pe = Math.round((courant("pe") - effetCout("pe",r.endurance)) * 100) / 100;
       if (state.combatOptions.attaques.utiliseMunition && r.munition) {
-        var ref = String(r.munition.ref || "");
         retireUneMunition(r.munition);
-        // Si la pile entière vient de disparaître, le sélecteur redevient vide.
-        if (!objetInventaire(ref)) entree.munition = "";
       }
-      envoyer();
+      sayChat(message.titre, message.champs);
       if(effetBonus("paradeAdverse"))sayChat("Effets de l’attaque",[["Parade adverse",sign(effetBonus("paradeAdverse"))],["Esquive adverse","Inchangée"]]);
       refresh();
     }
     function envoieCoup(entree, it, coup, def) {
       executeAttaque(entree, it, def, function () {
-        var types = typesCoup(coup, def), dg = degatsCoup(it, coup);
-        sayChat((coup && coup.nom ? coup.nom : "Attaque") + " — " + (it.nom || (def && def.nom) || "Arme"), [
+        var types = typesCoup(coup, def);
+        return { titre: (coup && coup.nom ? coup.nom : "Attaque") + " — " + (it.nom || (def && def.nom) || "Arme"), champs: [
           ["Case de touche", degatsTypes(brutCoup(it, coup), types.touche, false, it, entree)],
           ["Case de passage", degatsTypes(brutCoup(it, coup), types.passage, true, it, entree)]
-        ]);
+        ] };
       });
     }
     function envoieAttaqueSimple(entree, it, def) {
       executeAttaque(entree, it, def, function () {
         var types = def && Array.isArray(def.types) ? def.types : [], type = types[0] || "—";
-        sayChat("Attaque — " + (it.nom || (def && def.nom) || "Arme"), [
+        return { titre: "Attaque — " + (it.nom || (def && def.nom) || "Arme"), champs: [
           ["Dégâts", degatsTypes(brutArme(it), type, false, it, entree)]
-        ]);
+        ] };
       });
     }
 
@@ -6219,7 +6215,8 @@
           sm.appendChild(op);
         });
         if (entree.munition && !trouveMunition) {
-          var ancienne = el("option", null, "Munition indisponible");
+          var precedente = objetInventaire(entree.munition);
+          var ancienne = el("option", null, precedente && pnum(precedente.qte) === 0 ? libelleMunition(precedente) + " (épuisée)" : "Munition indisponible");
           ancienne.value = String(entree.munition); ancienne.selected = true; sm.appendChild(ancienne);
         }
         sm.addEventListener("change", function () { entree.munition = sm.value; refresh(); });
@@ -7203,6 +7200,10 @@
     var b = block("Techniques", null, "techniques", function () { rendre(); });
     var box = el("div");
     b.appendChild(box);
+    // Un seul rappel appartient au module. Les lignes rebâties remplacent
+    // leurs rappels au lieu d’en laisser sur les anciennes cartes.
+    var techHooks = [];
+    hooks.push(function () { techHooks.forEach(function (fn) { fn(); }); });
 
     function carte(t) {
       var card = el("div", "pc-av");
@@ -7283,7 +7284,7 @@
           ecrire(isFinite(v) ? clamp(v, min, max) : min);
           refresh();
         });
-        hooks.push(function () { if (document.activeElement !== inp) inp.value = lire(); });
+        techHooks.push(function () { if (document.activeElement !== inp) inp.value = lire(); });
         return fld(libelle, inp, large ? "w" : null);
       }
       ligne.appendChild(nombre("Rangs", function () { return t.rangs; },
@@ -7299,7 +7300,7 @@
         "Combien de points de rupture cette technique a demandés."));
       card.appendChild(ligne);
 
-      hooks.push(function () {
+      techHooks.push(function () {
         segs.forEach(function (sg, i) {
           sg.classList.toggle("on", i <= t.rang);
           sg.classList.toggle("cur", i === t.rang);
@@ -7309,6 +7310,7 @@
     }
 
     function rendre() {
+      techHooks = [];
       box.innerHTML = "";
       state.techniques.forEach(function (t) { box.appendChild(carte(t)); });
       if (!state.techniques.length) box.appendChild(el("div", "pc-empty", "Aucune technique."));
@@ -7318,6 +7320,7 @@
         rendre();
       }, "pc-edit-only"));
       applyEdit(b, "techniques");
+      techHooks.forEach(function (fn) { fn(); });
     }
     rendre();
     return b;
@@ -8109,11 +8112,12 @@
     }
   }
   function invConsommer(it,q,cible) {
-    window.OwdInventoryData.isolateAncestors(state.inv.objets,it);
     q=Math.min(pnum(q),pnum(it.qte));if(!(q>0))return false;
     var effects=(it.effets||[]).map(effetDefinition).filter(Boolean);
     if(effects.length && Math.abs(q-Math.round(q))>1e-9){flash("Les effets sont définis par dose entière : choisissez une quantité entière.");return false;}
     if(effects.some(function(d){return d.ops.impregnation;})&&!defenseArme(cible)){flash("Choisissez l’arme à imprégner.");return false;}
+    // Un refus ne doit pas séparer les contenants ni modifier leurs contenus.
+    window.OwdInventoryData.isolateAncestors(state.inv.objets,it);
     var ingere=invEstIngerable(it),avant={};
     ["pv","pe","pm","pr","ps","ph","pi"].forEach(function(k){avant[k]=maxDe(k);});
     var results=[];
