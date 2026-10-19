@@ -114,7 +114,22 @@ const tick=()=>new Promise(r=>setImmediate(r));
    const ext=fs.readFileSync(path.join(root,'extension/firefox',mode,'content-roll20.js'),'utf8');
    assert.ok(/id:'boutique',titre:'Boutique',page:'roll20-boutique\.html'/.test(ext),'Outil Boutique non enregistré dans '+mode);
    assert.ok(ext.indexOf("id:'boutique'")>ext.indexOf("id:'attaques'"),'Boutique doit suivre Attaques dans '+mode);
-   assert.ok(ext.includes('OUTIL_ICONS.boutique='),'Icône Boutique manquante dans '+mode);
+   // Depuis 4.5.0b, cette icône provient de l’image fournie, via iconeImage().
+   // Exercer le chemin réellement utilisé, plutôt qu’exiger l’ancien SVG inline.
+   const startIcon=ext.indexOf('  function iconeImage('),endIcon=ext.indexOf('  function barreModele(',startIcon);
+   assert.ok(startIcon>=0&&endIcon>startIcon,'Fabrique des icônes absente dans '+mode);
+   const context={browser:{runtime:{getURL:p=>'moz-extension://test/'+p}},el:(tag,cls)=>({tag,cls,attrs:{},style:{values:{},setProperty(k,v){this.values[k]=v;}},setAttribute(k,v){this.attrs[k]=v;}})};
+   const icon=vm.runInNewContext(ext.slice(startIcon,endIcon)+';icon("boutique")',context);
+   assert.equal(icon.tag,'span');assert.equal(icon.cls,'owd-tool-icon');
+   assert.equal(icon.style.values['--owd-icon'],'url("moz-extension://test/icons/owd-boutique.svg")','Image Boutique non raccordée dans '+mode);
+   assert.equal(icon.attrs['aria-hidden'],'true');
+   const asset='icons/owd-boutique.svg';
+   assert.ok(fs.existsSync(path.join(root,'extension/firefox',asset)),'Image Boutique absente');
+   for(const browser of ['firefox','chrome']){
+     const m=JSON.parse(fs.readFileSync(path.join(root,'extension',browser,'manifest.json'),'utf8'));
+     const resources=m.web_accessible_resources.flatMap(r=>typeof r==='string'?[r]:r.resources);
+     assert.ok(resources.includes(asset),'Image Boutique non exposée par '+browser);
+   }
    assert.ok(ext.includes('icon(def.id)')&&ext.includes('OUTILS.forEach(function(def,i)'),'Bouton non raccordé au montage dans '+mode);
  }
  console.log('OK Accès Boutique : page, 12 éléments UI, styles, scripts, barre Roll20 stable/beta, ordre, icône et ouverture du panneau.');
