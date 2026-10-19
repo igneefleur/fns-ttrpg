@@ -574,3 +574,16 @@ Une modification des PV, PE ou PM courants dans un attribut lié au token remont
 Cette version change le code de l’extension. Pour Firefox, lancer le workflow de la branche avec l’option de signature activée, puis installer la version signée et recharger la partie. Les clés AMO sont nécessaires à la signature. Le paquet Firefox de `essai/` est non signé et réservé au chargement temporaire de développement ; il ne remplace pas le dernier paquet signé de `docs/download/`. Le paquet Chrome de `essai/` peut être décompressé et chargé en mode développeur.
 
 La synchronisation dépend toujours des attributs et des confirmations Roll20. Les opérations non confirmées restent conservées localement ; les conflits sont signalés. Aucun protocole ne rend atomiques les modifications natives de Roll20 : vérifier les avertissements, et conserver un export avant une migration de campagne.
+
+
+## 4.5.0b — Notes dans la barre latérale Roll20
+
+Le livre apparaît avant le rouage de la barre droite. Ses onglets permettent d’ouvrir les Notes de plusieurs personnages contrôlés, comme les outils Inventaire, Attaques et Défenses. Les Notes utilisent les données de la fiche et restent synchronisées lorsque le panneau est masqué. Les nouvelles icônes de Défenses et Boutique incorporent les images fournies sans redessiner leurs détails.
+
+Cette mise à jour modifie l’extension :
+
+1. Appliquer le patch sur 4.4.1b (ou utiliser le projet complet), puis ajouter les fichiers à la branche bêta.
+2. Dans **Actions → website deployment → Run workflow**, choisir **owd-beta**, cocher **Signer l’extension Outward chez Mozilla**, puis lancer le workflow. Les secrets AMO déjà utilisés par le projet sont nécessaires.
+3. Installer la nouvelle version signée proposée par Firefox, puis recharger la page entière de la partie Roll20. Sous Chrome, utiliser le nouveau paquet produit par le workflow.
+
+Les fichiers de `essai/` sont des paquets de développement non signés ; ils ne remplacent pas le XPI signé distribué dans `docs/download/`.

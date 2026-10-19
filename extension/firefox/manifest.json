@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Fiche Outward sur Roll20",
-  "version": "4.2.0.1",
+  "version": "4.5.0",
   "description": "Affiche vos fiches de personnage Outward (système JDR) à la place de la fiche Roll20, avec les jets envoyés dans le tchat.",
   "homepage_url": "https://igneefleur.github.io/fns-ttrpg/owd/",
   "browser_specific_settings": {
@@ -26,7 +26,10 @@
     "beta/creator-shell.js",
     "beta/panneau-shell.js",
     "stable/attack-map.js",
-    "beta/attack-map.js"
+    "beta/attack-map.js",
+    "icons/owd-notes.svg",
+    "icons/owd-defenses.svg",
+    "icons/owd-boutique.svg"
   ],
   "icons": {
     "48": "icons/icon.svg",

@@ -385,6 +385,9 @@ def main():
     if not lancer("édition collaborative et migrations", ["node", "scripts/test_sync.js"], racine):
         return 1
 
+    if not lancer("Notes et icônes de l’extension", ["node", "scripts/test_notes.js"], racine):
+        return 1
+
     # 0. L'ASSEMBLAGE, AVANT MÊME DE LIRE LE NUMÉRO.
     #
     # RELEASE et SCHEMA se lisent dans le fichier SERVI, qui est désormais un

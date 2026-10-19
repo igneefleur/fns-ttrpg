@@ -1353,16 +1353,15 @@ if (typeof browser === "undefined") { var browser = chrome; }
     var grip=el('div','owd-panneau-grip');grip.title='Redimensionner '+p.def.titre;grip.setAttribute('role','separator');grip.setAttribute('aria-label',grip.title);grip.tabIndex=0;
     grip.addEventListener('pointerdown',function(e){geste(p,e,false);});grip.addEventListener('keydown',function(e){var d={ArrowRight:[20,0],ArrowLeft:[-20,0],ArrowDown:[0,20],ArrowUp:[0,-20]}[e.key];if(d){e.preventDefault();p.etat.w+=d[0];p.etat.h+=d[1];p.etat.tailleChoisie=true;applique(p);range(p);}});p.box.appendChild(grip);document.body.appendChild(p.box);applique(p);if(p.etat.ouvert)remplit(p);}
   var OUTIL_ICONS={"monde": {"viewBox": "0.00099945068359375 0 511.9980163574219 512", "body": "<g>\n\t<g>\n\t\t<path d=\"M437.018,74.982C388.666,26.628,324.379,0,255.998,0S123.332,26.629,74.981,74.982    c-48.351,48.352-74.98,112.639-74.98,181.02s26.628,132.667,74.98,181.019C123.332,485.372,187.618,512,255.998,512    s132.667-26.628,181.02-74.98c48.353-48.351,74.981-112.638,74.981-181.019S485.371,123.334,437.018,74.982z M450.067,178.679    c-9.325,0.717-16.629-1.99-25.878-5.418c-6.35-2.353-13.548-5.021-21.987-6.698c-22.742-4.519-46.069,7.879-59.43,31.587    c-3.891,6.904-22.498,42.451-6.665,64.26c5.936,8.176,13.878,12.937,20.261,16.761c8.564,5.133,17.418,10.44,27.45,14.488    c2.136,0.862,4.251,1.643,6.295,2.397c6.084,2.246,12.376,4.569,14.626,7.65c1.261,1.726,2.577,5.614,1.68,14.325    c-0.601,5.827-2.933,12.186-5.402,18.918c-6.082,16.586-14.413,39.304,5.108,61.608c3.494,3.991,7.437,7.371,11.717,10.122    c-40.615,43.029-98.144,69.93-161.844,69.93c-122.746,0-222.606-99.862-222.606-222.607c0-23.651,3.721-46.447,10.585-67.848    c3.564,5.1,7.588,9.634,11.448,13.697c12.347,12.999,25.996,24.88,40.629,35.356c1.085,0.777,2.63,1.883,3.435,2.607    c0.55,2.459,0.329,6,0.08,10.033c-0.53,8.547-1.257,20.252,5.198,32.569c4.205,8.024,10.092,14.2,15.286,19.65    c5.058,5.307,9.426,9.889,10.647,14.334c0.87,3.168,0.5,7.829,0.107,12.765c-0.54,6.798-1.153,14.505,0.808,22.796    c2.636,11.143,8.927,19.4,14.477,26.685c3.499,4.592,6.804,8.931,8.238,12.903c1.105,3.065,1.552,7.197,2.023,11.571    c0.473,4.385,1.01,9.355,2.32,14.473c3.926,15.336,16.655,30.052,33.831,30.051c0.915,0,1.846-0.042,2.786-0.128    c17.786-1.625,29.999-17.517,31.871-41.477c0.303-3.878,1.101-14.101,3.079-16.356c0.612-0.244,2.103-0.609,3.209-0.879    c4.705-1.152,11.814-2.894,17.688-8.91c10.819-11.08,7.836-24.971,6.053-33.27c-0.536-2.499-1.145-5.333-1.11-6.81    c0.095-3.955,8.196-10.874,11.246-13.479l30.516-26.066c11.881-10.047,16.325-27.524,11.059-43.487    c-3.76-11.396-12.082-21.643-24.069-29.635c-14.789-9.857-30.778-12.384-43.861-6.933c-4.449,1.853-8.046,4.395-10.937,6.438    c-0.875,0.619-2.028,1.434-2.966,2.029c-0.431-0.48-0.928-1.144-1.389-1.99c-1.1-2.018-2.088-4.638-3.135-7.412    c-1.378-3.65-2.94-7.788-5.251-11.953c-12.367-22.285-32.569-24.757-47.319-26.561c-2.521-0.308-4.903-0.6-7.278-0.967    c-12.417-1.921-25.049-7.373-34.746-14.875c3.554-1.278,7.898-2.263,10.236-2.172c1.692,0.056,3.675,0.282,5.777,0.521    c6.023,0.687,13.516,1.54,21.592-0.724c8.153-2.285,14.164-6.98,18.993-10.752c1.378-1.076,2.679-2.093,3.879-2.935    c2.26-1.586,6.657-1.953,11.312-2.342c11.593-0.968,35.716-2.981,39.131-36.524c1.69-16.596-4.372-31.454-9.243-43.393    c-4.051-9.932-7.982-19.79-11.412-29.991c12.285-2.106,24.906-3.219,37.785-3.219c27.634,0,54.101,5.077,78.538,14.32    c-0.732,0.72-1.466,1.439-2.197,2.156c-7.421,7.278-15.095,14.805-20.376,21.642c-2.233,2.891-5.969,7.728-7.071,14.694    c-1.867,11.818,5.2,20.897,8.218,24.773c4.484,5.763,11.992,15.409,24.393,18.502c2.77,0.69,5.444,0.986,8.01,0.986    c9.344,0,17.292-3.913,23.454-6.948c3.548-1.747,7.217-3.554,9.41-3.73c2.088-0.171,5.774,1.044,9.345,2.214    c5.214,1.71,11.123,3.646,18.084,3.899c9.157,0.328,17.278-2.989,23.651-9.252c14.783,18.364,26.715,39.111,35.119,61.571    c-1.19,0.031-2.402,0.048-3.484,0.061C457.818,178.322,454.109,178.369,450.067,178.679z\" />\n\t</g>\n</g>\n"}, "inventaire": {"viewBox": "0 2.093998908996582 294 289.8110046386719", "body": "<g>\n\t<path d=\"M269.775,124.122c-8.732,15.873-25.202,26.783-44.563,26.783H218v11.531v17.793c0,5.566-4.936,10.08-10.502,10.08   c-5.566,0-10.498-4.514-10.498-10.08v-29.324H97v29.324c0,5.566-4.935,10.08-10.499,10.08c-5.566,0-10.501-4.514-10.501-10.08   v-17.793v-11.531h-6.526c-19.361,0-36.172-10.91-44.905-26.783C10.191,130.106,0,144.981,0,162.437v48.557   c0,22.674,17.165,40.912,38.326,40.912c0.001,0-0.326,0-0.326,0v-1.519v-18.481h218v18.481v1.519h0.358   c21.161,0,37.642-18.238,37.642-40.912v-48.557C294,144.982,284.152,130.108,269.775,124.122z\" />\n\t<path d=\"M79.554,291.905h135.578c22.06,0,40.21-18,41.178-40H38.376C39.344,273.905,57.494,291.905,79.554,291.905z\" />\n\t<path d=\"M113.445,35.905H69.474C52.299,35.905,38,49.992,38,67.167v32.184c0,17.175,14.299,31.555,31.474,31.555H76V91.901   c0-5.568,4.935-10.08,10.501-10.08c5.564,0,10.499,4.512,10.499,10.08v39.004h100V91.901c0-5.568,4.932-10.08,10.498-10.08   c5.566,0,10.502,4.512,10.502,10.08v39.004h7.212c17.175,0,30.788-14.38,30.788-31.555V67.167   c0-17.175-13.613-31.262-30.788-31.262H181.24c0-7-2.479-14.459-6.662-20.097c-6.182-8.331-16.089-13.714-27.237-13.714   c-11.147,0-21.053,5.369-27.234,13.699C115.924,21.433,113.445,28.905,113.445,35.905z M161.086,35.905H133.6   c0-7,6.164-13.741,13.741-13.741C154.92,22.164,161.086,28.905,161.086,35.905z\" />\n</g>\n"}, "attaques": {"viewBox": "0.01600027084350586 -0.00006283074617385864 290.19305419921875 290.2250671386719", "body": "<g>\n\t<path d=\"M63.951,243.575c-1.945-3.578-4.401-6.907-7.363-9.869c-3.106-3.102-6.626-5.633-10.4-7.63   c-4.51-2.387-0.945-7.5-0.945-7.5c4.616-7.023,8.825-14.079,12.305-20.226l-23.363-23.344H11.504c-4.362,0-7.898-3.539-7.898-7.902   c0-4.361,3.536-7.9,7.898-7.9h25.947c2.1,0,4.107,0.832,5.588,2.312l85.379,85.291c1.483,1.483,2.315,3.495,2.315,5.589v26.073   c0,4.365-3.537,7.897-7.9,7.897c-4.367,0-7.904-3.531-7.904-7.897v-22.798l-23.27-23.24c-6.281,3.707-13.582,8.252-20.816,13.25   C70.842,245.679,66.698,248.629,63.951,243.575z\" />\n\t<path d=\"M26.61,237.102c-7.106,0-13.784,2.764-18.812,7.784c-5.019,5.015-7.782,11.686-7.782,18.778   c0,7.097,2.764,13.762,7.782,18.776c5.027,5.016,11.706,7.783,18.812,7.785c7.102,0,13.781-2.77,18.804-7.785   c5.023-5.015,7.79-11.682,7.79-18.776c0-7.093-2.768-13.764-7.79-18.778C40.392,239.866,33.712,237.102,26.61,237.102z\" />\n\t<path d=\"M100.985,182.318c-3.502,3.499-9.232,3.499-12.734,0.001l-8.81-8.801c-3.502-3.498-3.502-9.223,0-12.721L229.832,10.564   c3.502-3.498,10.401-6.727,15.33-7.175l36.862-3.352c4.93-0.448,8.596,3.218,8.148,8.148l-3.346,36.791   c-0.448,4.93-3.68,11.825-7.182,15.324l-150.4,150.251c-3.502,3.498-9.232,3.498-12.734,0l-8.822-8.813   c-3.502-3.498-3.502-9.223,0-12.722L233.608,63.213c1.854-1.848,1.856-4.852,0.003-6.702c-1.848-1.853-4.853-1.853-6.709-0.002   L100.985,182.318z\" />\n</g>\n"}};
-  // Boutique : icône de magasin, dessinée comme les trois outils OWD.
-  OUTIL_ICONS.boutique={viewBox:'0 0 24 24',body:'<path d="M3 9l2-5h14l2 5v2a3 3 0 0 1-5 2 3 3 0 0 1-5 0 3 3 0 0 1-5 0 3 3 0 0 1-3-2V9Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 14v7h14v-7M9 21v-5h6v5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>'};
-  // Bouclier : ajout distinct du croisement des deux armes.
-  OUTIL_ICONS.defenses={viewBox:'0 0 24 24',body:'<path d="M12 2l8 3v6c0 5.4-3.2 9.3-8 11-4.8-1.7-8-5.6-8-11V5l8-3z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><path d="M12 5.5v13" stroke="currentColor" stroke-width="1.6"/>'};
-  function icon(id){var d=OUTIL_ICONS[id],s=document.createElementNS('http://www.w3.org/2000/svg','svg');s.setAttribute('viewBox',d.viewBox);s.setAttribute('width','18');s.setAttribute('height','18');s.setAttribute('fill','currentColor');s.setAttribute('aria-hidden','true');s.innerHTML=d.body;return s;}
+  // Les pictogrammes incorporent les images d’origine sans retoucher leur dessin.
+  function iconeImage(id){var n=el('span','owd-tool-icon');n.setAttribute('aria-hidden','true');
+    var urls={notes:browser.runtime.getURL('icons/owd-notes.svg'),defenses:browser.runtime.getURL('icons/owd-defenses.svg'),boutique:browser.runtime.getURL('icons/owd-boutique.svg')};var url=urls[id];n.style.setProperty('--owd-icon','url("'+url+'")');return n;}
+  function icon(id){if(id==='defenses'||id==='boutique')return iconeImage(id);var d=OUTIL_ICONS[id],s=document.createElementNS('http://www.w3.org/2000/svg','svg');s.setAttribute('viewBox',d.viewBox);s.setAttribute('width','18');s.setAttribute('height','18');s.setAttribute('fill','currentColor');s.setAttribute('aria-hidden','true');s.innerHTML=d.body;return s;}
   function barreModele(z){var l=z.querySelectorAll('.toolbar-button-outer');for(var i=0;i<l.length;i++){var n=l[i];if(n.hasAttribute('data-owd-rang')||n.classList.contains('vttk-outil')||(!n.offsetWidth&&!n.offsetHeight))continue;if(n.querySelector('.icon-slot'))return n;}return null;}
   function insert(z,n,rank){n.setAttribute('data-owd-rang',rank);var ours=z.querySelectorAll('[data-owd-rang]'),before=null;
     for(var i=0;i<ours.length;i++)if(Number(ours[i].getAttribute('data-owd-rang'))>rank){before=ours[i];break;}
     if(!before)before=z.querySelector('#more-tools-button');if(before&&before.parentNode===z)z.insertBefore(n,before);else z.appendChild(n);}
-  function barrePose(){var z=barreZone();if(!z)return false;var model=barreModele(z);if(!model)return false;
+  function barrePose(){notesPose();var z=barreZone();if(!z)return false;var model=barreModele(z);if(!model)return false;
     if(!document.getElementById('owd-outils-titre')){var sep=z.querySelector('.spacer-outer:has(.spacer-header)')||z.querySelector('.spacer-outer'),n=sep?sep.cloneNode(true):el('div','spacer-outer');n.id='owd-outils-titre';var mot=n.querySelector('.spacer-header');if(!mot){if(!n.firstChild)n.appendChild(el('div','spacer-inner'));mot=el('div','spacer-header');n.appendChild(mot);}mot.textContent='OWD';insert(z,n,0);}
     OUTILS.forEach(function(def,i){var p=outils[def.id];if(!p||document.getElementById('owd-outil-'+def.id))return;var n=model.cloneNode(true);n.id='owd-outil-'+def.id;
       Array.prototype.forEach.call(n.querySelectorAll('[id]'),function(c){c.removeAttribute('id');});var caret=n.querySelector('.submenu-caret');if(caret)caret.remove();var slot=n.querySelector('.icon-slot');slot.classList.remove('icon-selected');slot.style.removeProperty('background-color');
@@ -1378,9 +1377,138 @@ if (typeof browser === "undefined") { var browser = chrome; }
       barrePose();var queued=false;barreObs=new MutationObserver(function(){if(queued)return;queued=true;setTimeout(function(){queued=false;barrePose();Object.keys(outils).forEach(function(k){applique(outils[k]);});},150);});barreObs.observe(document.body,{childList:true,subtree:true});
       window.addEventListener('resize',function(){Object.keys(outils).forEach(function(k){applique(outils[k]);});});}
     try{browser.storage.local.get(keys).then(start,function(){start({});});}catch(e){start({});}}
-  function panRepeint(){Object.keys(outils).forEach(function(k){var p=outils[k];poseNuit(p.box);if(p.frame)p.frame.contentWindow.postMessage({ns:'owd',type:'panel-theme',nuit:nuitEffective()},'*');});}
+  function panRepeint(){if(notesSidebar){poseNuit(notesSidebar.panel);if(notesSidebar.frame)notesSidebar.frame.contentWindow.postMessage({ns:'owd',type:'panel-theme',nuit:nuitEffective()},'*');}Object.keys(outils).forEach(function(k){var p=outils[k];poseNuit(p.box);if(p.frame)p.frame.contentWindow.postMessage({ns:'owd',type:'panel-theme',nuit:nuitEffective()},'*');});}
   function panelMessage(d){var p=outils[d.panel||'monde'];if(!p)return;if(d.nuit!=null)p.box.classList.toggle('owd-nuit',!!d.nuit);
     if(!p.etat.tailleChoisie){if(d.w!=null)p.etat.w=Number(d.w)||p.def.w;if(d.h!=null)p.etat.h=Number(d.h)||p.def.h;}if(d.replie!=null)p.etat.replie=!!d.replie;applique(p);range(p);}
+  // Notes : un onglet natif à droite, jamais un panneau de la barre d'outils.
+  // Le cadre est conservé lors des changements d'onglet : ses fiches continuent
+  // de confirmer leurs sauvegardes, comme les autres outils multi-personnages.
+  var notesSidebar = null;
+  var NOTES_ACTIVE = ['active','ui-tabs-active','ui-state-active','chosen','selected'];
+  function notesNavigation(sidebar) {
+    var settings = sidebar.querySelector('a[href="#mysettings"],a[href="#settings"],[aria-controls="mysettings"],[aria-controls="settings"]');
+    var nav = settings && settings.closest('ul,[role="tablist"],.tabmenu');
+    if (!nav) nav = sidebar.querySelector('#sidebar-tabs,.ui-tabs-nav,.tabmenu,[role="tablist"]');
+    if (!nav) return null;
+    var links = nav.querySelectorAll('a[href^="#"],[role="tab"]');
+    if (!settings) settings = links[links.length - 1];
+    if (!settings || settings.closest('#owd-sidebar-notes-tab')) return null;
+    var item = settings;
+    while (item.parentNode && item.parentNode !== nav) item = item.parentNode;
+    return item.parentNode === nav ? {nav:nav,settings:item,link:settings} : null;
+  }
+  function notesCadre() {
+    var p = notesSidebar;
+    if (p.frame) return;
+    p.frame = el('iframe','owd-sidebar-notes-frame');
+    p.frame.title = 'Notes des personnages'; p.frame.setAttribute('allow','clipboard-write');
+    p.frame.src = browser.runtime.getURL('panneau.html')+'#p=roll20-notes.html&n='+(nuitEffective()?'1':'0')+'&m='+MODE;
+    p.panel.appendChild(p.frame);
+  }
+  function notesHauteur() {
+    var p = notesSidebar;
+    if (!p || !p.active) return;
+    var nav = p.nav.getBoundingClientRect(), side = p.sidebar.getBoundingClientRect();
+    p.panel.style.top = Math.max(0,nav.bottom-side.top)+'px';
+  }
+  function notesFerme() {
+    var p = notesSidebar; if (!p || !p.active) return;
+    p.active = false; p.panel.hidden = true;p.panel.style.display='none';p.panel.setAttribute('aria-hidden','true');
+    p.tab.classList.remove('owd-notes-selected');
+    NOTES_ACTIVE.forEach(function(c){p.tab.classList.remove(c);});
+    p.link.setAttribute('aria-selected','false');
+    p.saved.forEach(function(s){
+      if (s.display === '') s.node.style.removeProperty('display');
+      else s.node.style.setProperty('display',s.display,s.priority);
+    });
+    p.selection.forEach(function(s){
+      NOTES_ACTIVE.forEach(function(c){if(s.classes.indexOf(c)>=0)s.node.classList.add(c);});
+      if(s.aria===null)s.node.removeAttribute('aria-selected');else s.node.setAttribute('aria-selected',s.aria);
+    });
+    p.saved=[];p.selection=[];
+  }
+  function notesOuvre() {
+    var p = notesSidebar; if (!p) return;
+    if (!p.active) {
+      p.saved=[];p.selection=[];
+      // Seuls les panneaux nommés par les onglets Roll20 sont masqués ; ni la
+      // navigation ni les autres enfants de la barre latérale ne sont détruits.
+      var panels=[];
+      Array.prototype.forEach.call(p.nav.querySelectorAll('a[href^="#"],[aria-controls]'),function(a){
+        if (p.tab.contains(a)) return;
+        var id=a.getAttribute('aria-controls')||(a.getAttribute('href')||'').slice(1);
+        var pane=id&&document.getElementById(id);
+        if(pane&&pane!==p.sidebar&&p.sidebar.contains(pane)&&!pane.contains(p.nav)&&panels.indexOf(pane)<0)panels.push(pane);
+      });
+      var input=p.sidebar.querySelector('#textchat-input');
+      if(input&&!panels.some(function(n){return n.contains(input);}))panels.push(input);
+      panels.forEach(function(n){p.saved.push({node:n,display:n.style.getPropertyValue('display'),priority:n.style.getPropertyPriority('display')});n.style.setProperty('display','none','important');});
+      Array.prototype.forEach.call(p.nav.querySelectorAll('li,a,[role="tab"]'),function(n){
+        if(p.tab===n||p.tab.contains(n))return;
+        var classes=NOTES_ACTIVE.filter(function(c){return n.classList.contains(c);});
+        var aria=n.getAttribute('aria-selected');
+        if(classes.length||aria==='true'){
+          p.selection.push({node:n,classes:classes,aria:aria});
+          classes.forEach(function(c){n.classList.remove(c);p.tab.classList.add(c);});
+          if(aria!==null)n.setAttribute('aria-selected','false');
+        }
+      });
+      p.active=true;
+    }
+    p.tab.classList.add('owd-notes-selected');p.link.setAttribute('aria-selected','true');
+    p.panel.hidden=false;p.panel.style.display='flex';p.panel.setAttribute('aria-hidden','false');notesCadre();notesHauteur();
+  }
+  function notesPose() {
+    var sidebar=document.getElementById('rightsidebar');if(!sidebar)return;
+    var found=notesNavigation(sidebar);if(!found)return;
+    var p=notesSidebar;
+    if(!p){
+      p=notesSidebar={sidebar:sidebar,nav:found.nav,tab:null,link:null,panel:poseNuit(el('div','owd-sidebar-notes')),frame:null,active:false,saved:[],selection:[]};
+      p.panel.id='owd-sidebar-notes';p.panel.hidden=true;p.panel.setAttribute('role','tabpanel');p.panel.setAttribute('aria-labelledby','owd-sidebar-notes-button');
+      window.addEventListener('resize',notesHauteur);
+      if(typeof ResizeObserver==='function'){p.observer=new ResizeObserver(notesHauteur);p.observer.observe(sidebar);}
+    }
+    if(p.sidebar!==sidebar||p.nav!==found.nav){
+      var was=p.active;notesFerme();p.sidebar=sidebar;p.nav=found.nav;p.reopen=was;
+      if(p.observer){p.observer.disconnect();p.observer.observe(sidebar);}
+    }
+    if(!p.tab||p.tab.parentNode!==found.nav){
+      if(p.active){notesFerme();p.reopen=true;}
+      if(p.tab)p.tab.remove();
+      var tab=found.settings.cloneNode(false),simple=/^(A|BUTTON)$/.test(tab.tagName),link=simple?tab:el('a');
+      // Le conteneur reprend les classes de ses voisins, sans leurs actions.
+      NOTES_ACTIVE.forEach(function(c){tab.classList.remove(c);});
+      Array.prototype.slice.call(tab.attributes).forEach(function(a){if(a.name!=='class')tab.removeAttribute(a.name);});
+      tab.id='owd-sidebar-notes-tab';
+      link.id=simple?'owd-sidebar-notes-tab':'owd-sidebar-notes-button';link.href='#owd-sidebar-notes';link.title='Notes';
+      link.className=found.link.className||'';NOTES_ACTIVE.forEach(function(c){link.classList.remove(c);});
+      link.setAttribute('role','tab');link.setAttribute('aria-label','Notes');link.setAttribute('aria-controls','owd-sidebar-notes');link.setAttribute('aria-selected','false');
+      link.appendChild(iconeImage('notes'));if(!simple)tab.appendChild(link);p.tab=tab;p.link=link;p.panel.setAttribute('aria-labelledby',link.id);
+      tab.addEventListener('click',function(e){e.preventDefault();e.stopImmediatePropagation();notesOuvre();},true);
+      link.addEventListener('keydown',function(e){
+        if(e.key==='Enter'||e.key===' '){e.preventDefault();e.stopImmediatePropagation();notesOuvre();}
+        else if(e.key==='Escape'){e.preventDefault();notesFerme();if(found.link.focus)found.link.focus();}
+        else if(e.key==='ArrowLeft'||e.key==='ArrowRight'){
+          var links=Array.prototype.filter.call(p.nav.querySelectorAll('a[href^="#"],[role="tab"]'),function(n){return n===p.link||!p.tab.contains(n);});
+          var i=links.indexOf(p.link),next=links[(i+(e.key==='ArrowLeft'?-1:1)+links.length)%links.length];
+          if(next){e.preventDefault();e.stopImmediatePropagation();notesFerme();next.focus();next.click();}
+        }
+      });
+    }
+    if(p.tab.nextSibling!==found.settings)found.nav.insertBefore(p.tab,found.settings);
+    if(p.panel.parentNode!==sidebar)sidebar.appendChild(p.panel);
+    if(!sidebar._owdNotesEcoute){
+      sidebar._owdNotesEcoute=true;
+      sidebar.addEventListener('click',function(e){
+        var n=notesSidebar;if(n&&n.active&&n.nav.contains(e.target)&&!n.tab.contains(e.target))notesFerme();
+      },true);
+      sidebar.addEventListener('keydown',function(e){
+        var n=notesSidebar;if(n&&n.active&&n.nav.contains(e.target)&&!n.tab.contains(e.target)&&['ArrowLeft','ArrowRight','Home','End','Enter',' '].indexOf(e.key)>=0)notesFerme();
+      },true);
+    }
+    if(p.reopen){p.reopen=false;notesOuvre();}else notesHauteur();
+  }
+
   // La barre latérale ENTIÈRE est la cible. Le MIME natif permet d'accepter
   // dragenter/dragover même si le message de démarrage arrive en retard.
   var objetDrag=null, dropHint=null, dropHintTimer=null;
