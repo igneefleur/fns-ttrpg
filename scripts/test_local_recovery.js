@@ -7,7 +7,7 @@ function setup(version=18){
  const state=M.blank();state.v=version;state.notes=version===18?{format:1,messages:[]}:'Ancienne note';
  const attrs=C.encode(state),local=new Map(),target=C.copy(state);target.v=18;if(version<18)target.notes={format:1,messages:[{id:'legacy',at:0,text:state.notes,mode:'plain'}]};
  const session=new C.Session(attrs,target,null,{id:'current'});session.capture(target);
- const ctx={C,JSON,Object,Array,Date,Number,Math,String,Error,CHAR_ID:'test',mem:{'owd-perso':JSON.stringify(target)},lastAttrs:attrs,collaboration:session,storageConflictSeen:{},bandeauPerte(){},localStorage:{get length(){return local.size;},key(i){return [...local.keys()][i];},getItem(k){return local.get(k)||null;},setItem(k,v){local.set(k,v);},removeItem(k){local.delete(k);}}};
+ const ctx={window:{},C,JSON,Object,Array,Date,Number,Math,String,Error,CHAR_ID:'test',mem:{'owd-perso':JSON.stringify(target)},lastAttrs:attrs,collaboration:session,storageConflictSeen:{},bandeauPerte(){},localStorage:{get length(){return local.size;},key(i){return [...local.keys()][i];},getItem(k){return local.get(k)||null;},setItem(k,v){local.set(k,v);},removeItem(k){local.delete(k);}}};
  vm.createContext(ctx);vm.runInContext(boot.slice(boot.indexOf('  function persistStoragePending('),boot.indexOf('  function scheduleSave(')),ctx);
  return {ctx,local,session,attrs,state,target,put(ops,epoch=session.epoch,payloads={}){const key='owd-pending-v2:test:old';local.set(key,JSON.stringify({epoch,ops,payloads}));return key;},receive(){return session.receive(attrs).state;}};
 }
