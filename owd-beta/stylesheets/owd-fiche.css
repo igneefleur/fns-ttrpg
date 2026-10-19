@@ -1555,6 +1555,16 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
 .pc-f > .pc-mini { align-self: flex-end; margin-top: .18rem; }
 .pc-notes { width: 100%; min-height: 4.5rem; border: 1px solid var(--line-2); border-radius: 7px; background: var(--card); color: var(--ink); font: inherit; font-size: .72rem; padding: .5rem .6rem; resize: vertical; box-sizing: border-box; }
 .pc-notes:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--wash); }
+/* Lecture intégrale, sans défilement interne ni hauteur imposée. */
+.pc-prose-read {
+  box-sizing: border-box; width: 100%; min-width: 0;
+  padding: .5rem .6rem; color: var(--ink); font: inherit; font-size: .72rem;
+  white-space: pre-wrap; overflow-wrap: anywhere;
+}
+.pc-f > .pc-prose-read { font-size: .7rem; }
+.pc-prose-read[hidden], textarea.pc-prose-editor-lecture { display: none; }
+/* La hauteur native (rows) reste raisonnable ; la poignée peut l'agrandir. */
+textarea.pc-notes { overflow-y: auto; }
 /* « rien ici » — jamais un message d'erreur. Une liste de compétences vide ne
    manque de rien : le joueur n'a simplement pas encore nommé les siennes. */
 .pc-empty { font-size: .72rem; color: var(--ink-3); font-style: italic; padding: .3rem .3rem; text-align: center; }
