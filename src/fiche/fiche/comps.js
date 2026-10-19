@@ -67,8 +67,19 @@
       if (armes.length) perdu.push("le lien de " + armes.length + (armes.length > 1 ? " armes" : " arme"));
       function retire() {
         state.comps = state.comps.filter(function (c) { return c.id !== item.id; });
+        // Les réglages actuels sont rangés par levier, boîte puis compétence.
+        // Ne pas toucher aux réglages des autres compétences.
+        Object.keys(state.compsLeviers || {}).forEach(function (nom) {
+          var boites = state.compsLeviers[nom];
+          Object.keys(boites).forEach(function (boite) {
+            delete boites[boite][item.id];
+            if (!Object.keys(boites[boite]).length) delete boites[boite];
+          });
+          if (!Object.keys(boites).length) delete state.compsLeviers[nom];
+        });
+        // Compatibilité avec un ancien import, sans exiger ces tables disparues.
         ["compsMod", "compsMod2", "compsForce", "compsDesForce"].forEach(function (k) {
-          delete state[k][item.id];
+          if (state[k]) delete state[k][item.id];
         });
         state.inv.objets.forEach(function (o) { if (o.arme && o.arme.comp === item.id) o.arme.comp = ""; });
         refresh();

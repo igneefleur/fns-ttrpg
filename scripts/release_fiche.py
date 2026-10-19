@@ -372,6 +372,8 @@ def main():
         return 1
     if not lancer("pont et tokens", ["node", "scripts/test_sync_blocks_bridge.js"], racine):
         return 1
+    if not lancer("suppression des compétences", ["node", "scripts/test_competence_delete.js"], racine):
+        return 1
     if not lancer("piles et emplacements d’équipement", ["node", "scripts/test_inventory_stacks.js"], racine):
         return 1
     if not lancer("transferts d’inventaire", ["node", "scripts/test_inventaire.js"], racine):
