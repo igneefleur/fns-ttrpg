@@ -84,11 +84,12 @@
   var echecs = 0;               // confirmations manquées d'affilée
   var miseANiveauDemandee = false, miseANiveauOps = [], miseANiveauReprise = null;
   var ready = false;            // les sauvegardes ne partent qu'après hydratation + montage
+  var storageInitialSentAt = 0;
   var saveTimer = null;
   var askTimer = null;          // relance de la demande d'hydratation
   var gardeArmee = false;       // le chien de garde ne se lance qu'une fois par session
   var taillesPostees = [];      // tailles récentes de owd_state posté (repère du chien de garde)
-  var collaboration = null, collaborationPont = false, collaborationApplique = false;
+  var collaboration = null, collaborationPont = false, collaborationApplique = false, storagePendingDeferred = false;
   var derniereLecture = 0, modificationLocale = 0;
   var synchronisationDifferée = null;
   // Les formulaires composant du texte (IME) et les modales gardent leur DOM.
@@ -96,6 +97,7 @@
   var composition = false;
   document.addEventListener("compositionstart", function () { composition = true; });
   document.addEventListener("compositionend", function () { composition = false; appliqueDiffere(); });
+  var lectureVerifiee=null, baseVerifiee=null, empreinteBaseVerifiee="", gelVolontaire=false, attrsEnErreur=null;
   var gele = false;             // fiche lue à moitié : on n'écrit plus rien (voir hydrate)
 
   // Le shim que le bundle prend en priorité (var STORE = window.__owdLocalStorage
@@ -106,7 +108,8 @@
   window.__owdLocalStorage = {
     getItem: function (k) { return Object.prototype.hasOwnProperty.call(mem, k) ? mem[k] : null; },
     setItem: function (k, v) {
-      mem[k] = String(v);
+      var previousValue=mem[k];mem[k] = String(v);
+      if(ready&&gele&&!gelVolontaire&&!collaboration&&!collaborationApplique&&k==='owd-perso'&&previousValue!==mem[k]){try{localStorage.setItem('owd-recovery-v2:'+CHAR_ID+':draft',JSON.stringify({source:'saisie-pendant-recuperation',raw:mem[k],reason:'Modifications saisies pendant une lecture indisponible',at:Date.now()}));}catch(e){}}
       if (collaboration && !collaborationApplique && k === "owd-perso") {
         updateStorageMaxima();collaboration.capture(JSON.parse(mem[k]),storageIntent);storageIntent={absolute:{}};persistStoragePending(); modificationLocale = Date.now();
       }
@@ -239,6 +242,36 @@
     q.forEach(function (p) { window.__owdOnTake(p); });
   }, 400);
 
+  function memoriseLectureVerifiee(attrs,remote){
+    try{remote=remote||C.read(attrs);if(!remote||remote.incomplete)return;lectureVerifiee=attrs;
+      var stamp=remote.meta.epoch+':'+C.hash(C.stable(remote.meta.blocks));if(stamp===empreinteBaseVerifiee)return;
+      var base={};base[C.BASE]=attrs[C.BASE];Object.keys(remote.meta.blocks).forEach(function(k){base[k]=attrs[k];});baseVerifiee=base;empreinteBaseVerifiee=stamp;
+      try{localStorage.setItem('owd-verified-base-v2:'+CHAR_ID,JSON.stringify(base));}catch(e){}
+    }catch(e){}
+  }
+  function repareBlocsVerifies(attrs){
+    try{var cached=baseVerifiee;if(!cached)cached=JSON.parse(localStorage.getItem('owd-verified-base-v2:'+CHAR_ID)||'null');if(!cached)return false;
+      var source=C.snapshot(cached);if(!source)return false;var meta=attrs[C.BASE]?JSON.parse(attrs[C.BASE].current):null,fix={};
+      if(!meta){if(!attrs[C.BLOCK+'fiche']||!attrs[C.BLOCK+'inventaire'])return false;var trial=Object.assign({},attrs);trial[C.BASE]=cached[C.BASE];C.read(trial);fix[C.BASE]=cached[C.BASE];}
+      else{if(meta.epoch!==source.meta.epoch)return false;Object.keys(meta.blocks||{}).forEach(function(k){if((!attrs[k]||C.hash(attrs[k].current)!==meta.blocks[k])&&cached[k]&&C.hash(cached[k].current)===meta.blocks[k])fix[k]=cached[k];});}
+      if(!Object.keys(fix).length)return false;post({type:'save',attrs:fix});return true;
+    }catch(e){return false;}
+  }
+  function exporterRecuperation(){
+    var raw=JSON.stringify({format:'outward-recovery',character:CHAR_ID,at:Date.now(),attrs:attrsEnErreur||attrsVus||lastAttrs,verified:lectureVerifiee||baseVerifiee,displayed:mem['owd-perso']||null},null,2);
+    var url=URL.createObjectURL(new Blob([raw],{type:'application/json'})),link=document.createElement('a');link.href=url;link.download='outward-recuperation.json';link.click();setTimeout(function(){URL.revokeObjectURL(url);},1000);
+  }
+  function reprendLectureValide(attrs){
+    if(!gele||gelVolontaire||collaboration||!bundleCharge||!ready||!window.Owd)return;
+    try{var remote=C.read(attrs);if(!remote||remote.incomplete)return;
+      if(Number(remote.state.v)!==window.Owd.schema){bandeau('Lecture rétablie. Rouvrez la fiche pour charger sa version.',[{texte:'Recharger la fiche',acte:'recharger',action:function(){location.reload();}},{texte:'Exporter les données de secours',acte:'export-recuperation',action:exporterRecuperation}]);return;}
+      collaborationApplique=true;try{window.Owd.__recoitEtat(remote.state);}finally{collaborationApplique=false;}
+      attrsVus=lastAttrs=attrs;collaboration=new C.Session(attrs,JSON.parse(mem['owd-perso']));updateStorageMaxima();collaboration.capture(JSON.parse(mem['owd-perso']));
+      marqueConflitsAnciens(remote);restoreStoragePending();var resumed=collaboration.receive(attrs);synchronisationDifferée=resumed.state;appliqueDiffere();
+      gele=false;attrsEnErreur=null;memoriseLectureVerifiee(attrs,remote);fermerBandeau();afficheRecuperationsLocales();scheduleSave();
+    }catch(e){attrsEnErreur=attrs;}
+  }
+
   function updateStorageMaxima(){if(!collaboration)return;try{var cards=JSON.parse(mem['owd-cards']||'{}'),caps=cards._current&&cards._current.capacites||{};Object.keys(caps).forEach(function(k){if(/Max$/.test(k)&&typeof caps[k]==='number')collaboration.maxima[k.slice(0,-3)]=caps[k];});}catch(e){}}
   function persistStoragePending(){
     if(!collaboration)return false;
@@ -252,11 +285,32 @@
   function archiveStoragePending(key,raw,reason){
     try{localStorage.setItem('owd-recovery-v2:'+CHAR_ID+':'+C.hash(key)+':'+C.hash(raw),JSON.stringify({source:key,raw:raw,reason:reason,at:Date.now()}));return true;}catch(e){return false;}
   }
+  var storageRecoveryChecks=[];
+  function copiesLocalesDisponibles(){return storageLocalKeys('owd-recovery-v2:'+CHAR_ID+':').filter(function(k){try{return JSON.parse(localStorage.getItem(k)).resolved!==true;}catch(e){return true;}});}
+  function reprendCopiesCreation(server){
+    storageRecoveryChecks=[];
+    storageLocalKeys('owd-recovery-v2:'+CHAR_ID+':').forEach(function(key){try{
+      var record=JSON.parse(localStorage.getItem(key));if(record.resolved)return;
+      var journal=JSON.parse(record.raw);if(!journal||journal.epoch!==server.meta.epoch||!Array.isArray(journal.ops)||!journal.ops.every(validStorageOp))return;
+      storageRecoveryChecks.push({key:key,record:record,journal:journal});
+      // Erreur de lecture « server.ids » avant l'existence de la base. Ces
+      // copies contiennent un journal valide, qui doit retrouver le circuit normal.
+      if(/ids/.test(record.reason||'')&&/null/.test(record.reason||'')&&typeof record.source==='string'&&record.source.indexOf('owd-pending-v2:'+CHAR_ID+':')===0&&!localStorage.getItem(record.source))localStorage.setItem(record.source,record.raw);
+    }catch(e){}});
+    confirmeCopiesLocales(server);
+  }
+  function confirmeCopiesLocales(server){
+    if(!server)return;var changed=false;
+    storageRecoveryChecks=storageRecoveryChecks.filter(function(check){
+      if(!check.journal.ops.every(function(op){return server.ids[op.id]&&C.stable(server.ids[op.id])===C.stable(op)&&!server.conflicts.some(function(c){return c.id===op.id;});}))return true;
+      try{check.record.resolved=true;localStorage.setItem(check.key,JSON.stringify(check.record));changed=true;return false;}catch(e){return true;}
+    });if(changed)afficheRecuperationsLocales();
+  }
   function afficheRecuperationsLocales(){
-    try{if(window.__owdVueInventaire)return;if(!storageLocalKeys('owd-recovery-v2:'+CHAR_ID+':').length||document.getElementById('owd-local-recovery'))return;
+    try{if(window.__owdVueInventaire)return;var existing=document.getElementById('owd-local-recovery');if(!copiesLocalesDisponibles().length){if(existing)existing.remove();return;}if(existing)return;
       var button=document.createElement('button');button.id='owd-local-recovery';button.type='button';button.textContent='Données locales conservées';
       button.title='Consulter les anciennes modifications mises à l’abri';button.style.cssText='flex:none;align-self:flex-start;margin:4px 8px;font:inherit;font-size:12px';
-      button.onclick=function(){var records=storageLocalKeys('owd-recovery-v2:'+CHAR_ID+':').map(function(k){return JSON.parse(localStorage.getItem(k));});
+      button.onclick=function(){var records=copiesLocalesDisponibles().map(function(k){return JSON.parse(localStorage.getItem(k));});
         var box=ecran('Anciennes modifications locales',false);box.appendChild(noeud('p',null,'Ces données ont été conservées séparément. La fiche actuelle reste utilisable.'));
         montrerJson(JSON.stringify(records,null,2),'Copies locales conservées, sans modification de leur contenu.');bouton(zoneActions(box),'Fermer','fermer',fermerEcran);
       };document.body.insertBefore(button,document.getElementById('perso-fiche'));
@@ -293,11 +347,31 @@
       next.notes.messages.push({id:'recovered-'+C.hash(op.id)+':'+C.hash(text),at:Date.now(),text:text,mode:'plain'});
     });return next;
   }
+  function reconstitueCreation(attrs){
+    if(!C||attrs[C.BASE]||attrs.owd_version||attrs.owd_state||attrs.owd_sync_base||!attrs[C.BLOCK+'fiche']||!attrs[C.BLOCK+'inventaire'])return null;
+    try{
+      var meta=JSON.parse(C.encode(M.blank())[C.BASE].current);meta.blocks={};meta.reserves={};meta.moduleData={};
+      Object.keys(attrs).forEach(function(k){if(k.indexOf(C.BLOCK)!==0&&k.indexOf(C.STACK)!==0)return;meta.blocks[k]=C.hash(attrs[k].current);
+        if(k.indexOf(C.BLOCK+'reserve_')===0)meta.reserves[k.slice((C.BLOCK+'reserve_').length)]=k;
+        if(k.indexOf(C.BLOCK+'module_')===0)meta.moduleData[decodeURIComponent(k.slice((C.BLOCK+'module_').length))]=k;
+      });
+      var trial=Object.assign({},attrs);trial[C.BASE]={current:JSON.stringify(meta),max:''};var state=C.read(trial).state,epoch='e'+C.hash(C.stable(state));
+      // Le nom de base enregistré dans le journal doit correspondre à l'état
+      // complet reconstitué. Un bloc manquant ou changé interdit cette reprise.
+      var keys=storageLocalKeys('owd-pending-v2:'+CHAR_ID+':').concat(storageLocalKeys('owd-recovery-v2:'+CHAR_ID+':'));
+      var proved=keys.some(function(k){try{var r=JSON.parse(localStorage.getItem(k));if(r.raw)r=JSON.parse(r.raw);return r.epoch===epoch&&Array.isArray(r.ops)&&r.ops.every(validStorageOp);}catch(e){return false;}});
+      if(!proved)return null;meta.epoch=epoch;trial[C.BASE].current=JSON.stringify(meta);trial.owd_version={current:String(state.v),max:state.rel||''};return trial;
+    }catch(e){return null;}
+  }
   function restoreStoragePending(){
     if(!collaboration)return;
     var prefix='owd-pending-v2:'+CHAR_ID+':',keys;
-    try{keys=storageLocalKeys(prefix);}catch(e){return;}
     var server=C.read(lastAttrs),remove=[];
+    // Une nouvelle fiche n'a pas encore de base confirmée. L'absence de base
+    // ne rend pas ses journaux illisibles : les garder jusqu'à sa réception.
+    if(!server){storagePendingDeferred=true;return;}
+    storagePendingDeferred=false;
+    try{reprendCopiesCreation(server);keys=storageLocalKeys(prefix);}catch(e){return;}
     keys.forEach(function(key){
       if(key===prefix+collaboration.id)return;
       var raw=null,r,archived=false;
@@ -333,7 +407,7 @@
     afficheRecuperationsLocales();
   }
   function confirmStoragePending(server){
-    if(!server)return;var prefix='owd-pending-v2:'+CHAR_ID+':';
+    if(!server)return;confirmeCopiesLocales(server);var prefix='owd-pending-v2:'+CHAR_ID+':';
     try{storageLocalKeys(prefix).forEach(function(key){try{var r=JSON.parse(localStorage.getItem(key));if(!r||r.epoch!==server.meta.epoch||!Array.isArray(r.ops))return;
       r.ops=r.ops.filter(function(op){return !server.ids[op.id];});if(r.ops.length)localStorage.setItem(key,JSON.stringify(r));else localStorage.removeItem(key);
     }catch(e){}});}catch(e){}
@@ -348,7 +422,7 @@
     saveTimer = setTimeout(doSave, 400);
   }
   function doSave() {
-    if (!accesInventaire) return;
+    if (gele || !accesInventaire) return;
     saveTimer = null;
     var state;
     try { state = JSON.parse(mem["owd-perso"] || "null"); } catch (e) { return; }
@@ -360,7 +434,11 @@
       var cardCaps=card&&card.capacites||{};
       ['pv','pe','pm','pr','ps','ph','pi','pc','contenance','expo','rupture'].forEach(function(k){var m=cardCaps[k+'Max'];if(typeof m==='number')collaboration.maxima[k]=m;});
       var lot = collaboration.outgoing();
-      if(!collaboration.hasBase){if(Object.keys(lot).length)post({type:'save',attrs:lot});return;}
+      if(!collaboration.hasBase){
+        // Le pont écrit les blocs un à un. Renvoyer toute la base chaque seconde
+        // réinsérait les premiers blocs devant le manifeste, qui n'arrivait jamais.
+        if(Date.now()-storageInitialSentAt>=10000){var missing=diff(lastAttrs,lot);if(Object.keys(missing).length){post({type:'save',attrs:missing});storageInitialSentAt=Date.now();}}return;
+      }
       if(Object.keys(lot).length)post({type:'storage-ops',epoch:collaboration.epoch,ops:Object.keys(lot).map(function(k){return lot[k];}),payloads:collaboration.payloads});
       // Trois miroirs seulement ; les blocs restent la source de vérité.
       var mirrors={};if(card)['pv','pe','pm'].forEach(function(k){var current=cardCaps[k]==null?cardCaps[k+'Max']:cardCaps[k],max=cardCaps[k+'Max'];if(current!==undefined&&max!==undefined)mirrors['owd_'+k]={current:String(current),max:String(max)};});
@@ -666,49 +744,18 @@
     ]);
   }
 
-  // Fiche à moitié lue, dans les deux cas où cela arrive (voir hydrate).
-  // attrsToState a rendu la meilleure reconstruction possible, qui a le droit
-  // de s'AFFICHER mais jamais de se réécrire : elle ne porte pas ce que le
-  // repli ne sait pas porter, et la première sauvegarde remplacerait la fiche
-  // du personnage par cette version amputée. D'où le gel. PAS DE BOUTON
-  // « MASQUER » ici : un bandeau caché laisserait croire que la fiche
-  // s'enregistre. C'est l'exception — le bandeau de perte et celui de « fiche
-  // plus récente » se masquent, eux, parce que dans ces cas la fiche
-  // s'enregistre vraiment. Le seul geste offert est explicite et dit ce qu'il
-  // coûte, et c'est le même quelle que soit la façon dont la lecture a échoué.
+  // Une lecture incomplète suspend les écritures, jamais les tentatives de
+  // récupération. Ne pas remplacer la source par une reconstruction amputée.
   function bandeauGel(txt) {
-    bandeau(txt, [
-      { texte: "Écraser avec ce qui a pu être lu", acte: "ecraser", action: function () {
-          fermerBandeau();
-          gele = false;
-          lastAttrs = {};      // la base du diff ne vaut plus rien : tout réémettre
-          enVol = null;
-          scheduleSave();
-        } }
-    ]);
+    var current=document.getElementById('owd-bandeau');if(current&&current.dataset.owdRaison==='sync-unreadable'&&current.querySelector('.owd-bandeau-txt').textContent===txt)return;
+    bandeau(txt,[{texte:'Réessayer la lecture',acte:'reessayer-lecture',action:function(){post({type:'load',resync:true});}},
+      {texte:'Exporter les données de secours',acte:'export-recuperation',action:exporterRecuperation}]).dataset.owdRaison='sync-unreadable';
   }
-  // owd_state est là mais ne se lit pas : un caractère tapé dans l'onglet
-  // Attributes de Roll20 suffit. L'original cassé est encore dans le
-  // personnage, et c'est lui qu'il faut récupérer.
   function bandeauGelIllisible(raison) {
-    bandeauGel("Cette fiche n'a pas pu être lue en entier (" + (raison || "état illisible") + "). " +
-               "Ce qui s'affiche est une reconstruction incomplète : rien n'est enregistré, pour ne " +
-               "pas écraser ce que Roll20 contient encore. Récupérer l'attribut owd_state du " +
-               "personnage avant toute chose ; il porte la fiche entière.");
+    bandeauGel('Lecture indisponible : '+(raison||'données illisibles')+'. Les écritures vers Roll20 sont suspendues. La lecture est réessayée automatiquement ; les blocs récupérables sont réparés uniquement depuis une copie vérifiée.');
   }
-  // owd_state a disparu alors que le reste de la fiche est là. Rien n'est
-  // « cassé » à l'écran : la fiche s'affiche, presque complète, ce qui rend ce
-  // cas plus traître que le précédent. Le bandeau doit donc NOMMER ce qui
-  // manque, sinon le joueur croit à un simple oubli et se remet à taper.
   function bandeauGelDisparu() {
-    bandeauGel("La fiche entière de ce personnage est introuvable : l'attribut owd_state, qui la " +
-               "porte en un seul morceau, est vide, alors que les autres attributs owd_ sont " +
-               "toujours là. Ce qui s'affiche a été reconstruit à partir d'eux, et il y manque des " +
-               "choses : les images des objets de l'équipement, et tout ce qui n'a pas d'attribut " +
-               "à lui. Rien n'est enregistré, pour ne pas remplacer la fiche par cette " +
-               "reconstruction. Si owd_state a été vidé par erreur, y remettre son contenu puis " +
-               "rouvrir cet onglet ; sinon, le bouton ci-dessous repart de ce qui a pu être lu, en " +
-               "acceptant ces pertes.");
+    bandeauGel('Les données complètes de cette fiche sont absentes de la lecture Roll20. La récupération reste active ; aucune reconstruction incomplète ne remplace les données du personnage.');
   }
 
   // ================= écran de version =================
@@ -1126,7 +1173,7 @@
             var initial = collaboration.outgoing();
 
             initial[M.PREFIX + "version"] = { current: String(collaboration.seed.v), max: M.release() };
-            post({ type: "save", attrs: initial });
+            post({ type: "save", attrs: initial });storageInitialSentAt=Date.now();
           }
         }
         ready = true; post({ type: "mounted" }); scheduleSave(); return;
@@ -1300,7 +1347,7 @@
     }catch(e){var b=ecran("Sauvegarde de secours illisible",true);b.appendChild(noeud("p",null,String(e.message||e)));boutonExport(zoneActions(b));}
   }
   function restaurer() {
-    gele = true;
+    gelVolontaire=true;gele = true;
     fermerBandeau();
     ecranAttente("Restauration de l'état d'origine",
       "Relecture de la sauvegarde de secours dans le personnage Roll20.");
@@ -1634,7 +1681,9 @@
     if (askTimer) { clearTimeout(askTimer); askTimer = null; }   // plus rien à réclamer
     note(null);
     attrs = attrs || {};
-    if (window.__owdVueInventaire && !attrs.owd_version && !attrs.owd_state && !attrs.owd_sync_base) {
+    var resumed=reconstitueCreation(attrs);
+    if(resumed){attrs=resumed;post({type:'save',attrs:{owd_storage:attrs.owd_storage,owd_version:attrs.owd_version}});}
+    if (window.__owdVueInventaire && !attrs.owd_version && !attrs.owd_state && !attrs.owd_sync_base && !(C&&attrs[C.BASE])) {
       hydrated = false; note("Ce personnage n’a pas encore de fiche Outward. Ouvrez sa fiche pour la créer.");
       askTimer = setTimeout(function () { post({type: "load", resync: true}); }, 2000); return;
     }
@@ -1669,7 +1718,7 @@
     var neuf = !M.RAISON_SANS_FICHE || !!(state && state.raison === M.RAISON_SANS_FICHE);
     var illisible = degrade === "illisible";
     var disparu = degrade === "partiel" && !neuf;
-    if (illisible || disparu) gele = true;
+    if (illisible || disparu){gele = true;attrsEnErreur=attrs;repareBlocsVerifies(attrs);}else if(C&&attrs[C.BASE])memoriseLectureVerifiee(attrs);
     mem["owd-perso"] = JSON.stringify(state);
     mem["owd-cards"] = "{}";
     mem["owd-persos"] = "[]";     // pas de bibliothèque multi-perso dans Roll20
@@ -1734,8 +1783,8 @@
       }
       if (hydrated) {
         sondeReponse(d.attrs, d.fresh);
-        if (collaboration && d.fresh === true && !gele && !collaborationApplique) recoitCollaboration(d.attrs || {});
-        else if(d.fresh===true)actualiseAvantMontage(d.attrs||{});
+        if (collaboration && d.fresh === true && !gelVolontaire && !collaborationApplique) recoitCollaboration(d.attrs || {});
+        else if(d.fresh===true){if(gele&&!gelVolontaire){repareBlocsVerifies(d.attrs||{});reprendLectureValide(d.attrs||{});}else actualiseAvantMontage(d.attrs||{});}
       } else if (!collaborationPont || d.fresh === true) hydrate(d.attrs);
     }
     // objet pris au tchat : destiné à une seule fiche, choisie par l'extension (le lien
@@ -1841,7 +1890,7 @@
     try {
       // capture() a déjà reçu chaque frappe dans le shim SYNCHRONE, avant le
       // debounce de sauvegarde : même une réponse arrivée à cet instant la garde.
-      var server=C.read(attrs),previous=null;try{previous=C.read(collaboration.attrs);}catch(e){}
+      var server=C.read(attrs),previous=null;if(!server&&collaboration.hasBase)throw Error('Manifeste de stockage absent de la lecture Roll20.');try{previous=C.read(collaboration.attrs);}catch(e){}
       if(server&&collaboration.hasBase){['pv','pe','pm'].forEach(function(k){var a=attrs['owd_'+k],raw=a&&String(a.current),n=Number(raw),actual=server.state.etat[k];
         if(actual==null)actual=collaboration.maxima[k];
         var old=previous&&previous.state.etat[k];if(old==null)old=collaboration.maxima[k];
@@ -1854,9 +1903,11 @@
         tokenObserved[k]=raw;
       });}
       var recu = collaboration.receive(attrs);
-      confirmStoragePending(server);persistStoragePending();
       lastAttrs = attrs;
+      if(storagePendingDeferred&&server){restoreStoragePending();recu=collaboration.receive(attrs);}
+      confirmStoragePending(server);persistStoragePending();
       if (!recu) return;
+      if(server&&!server.incomplete)memoriseLectureVerifiee(attrs,server);
       if(miseANiveauDemandee&&server&&!server.incomplete&&Number(server.state.v)===schemaSite()&&miseANiveauOps.every(function(id){return !!server.ids[id];})){miseANiveauDemandee=false;bandeauMisAJour();}
       if(collaboration.hasBase&&!recu.incomplete){if(server.meta.phase!=='ready')post({type:'storage-activate'});else post({type:'storage-cleanup'});}
       if(recu.conflict && nouveauxConflits(recu)){bandeau("Des modifications simultanées viennent d’être reçues. Les valeurs affichées suivent l’ordre de synchronisation ; les opérations restent conservées.",[{texte:"Fermer",acte:"masquer",action:fermerBandeau},{texte:"Exporter (JSON)",acte:"export",action:exporter}]).dataset.owdRaison='sync-conflict';}
@@ -1872,10 +1923,11 @@
       ]).dataset.owdRaison = 'sync-pending';
       synchronisationDifferée = recu.state;
       appliqueDiffere();
+      if(!recu.incomplete){gele=false;attrsEnErreur=null;var resumedBanner=document.getElementById('owd-bandeau');if(resumedBanner&&resumedBanner.dataset.owdRaison==='sync-unreadable')fermerBandeau();}
       scheduleSave();
     } catch (err) {
       gele = true;
-      bandeauGelIllisible("Synchronisation interrompue : " + err.message);
+      attrsEnErreur=attrs;repareBlocsVerifies(attrs);bandeauGelIllisible("Synchronisation interrompue : " + err.message);
     }
   }
   function appliqueDiffere() {
@@ -1894,12 +1946,12 @@
     } finally { collaborationApplique = false; }
   }
   setInterval(function () {
-    appliqueDiffere();
-    if (!STANDALONE && hydrated && ready && !gele && collaborationPont) {
+    try{appliqueDiffere();}catch(e){gele=true;bandeauGelIllisible(e.message);}
+    if (!STANDALONE && hydrated && ready && !gelVolontaire && collaborationPont) {
       post({ type: "load", resync: true });
       // Le début d'activation et les lots en attente sont aussi repris après
       // une coupure de réseau, sans dépendre d'une frappe supplémentaire.
-      if (collaboration) doSave();
+      if (collaboration && !gele) doSave();
       if (accesInventaire && derniereLecture && Date.now() - derniereLecture > 12000 &&
           !(document.getElementById('owd-bandeau') && document.getElementById('owd-bandeau').dataset.owdRaison === 'sync-timeout'))
         bandeau("La synchronisation avec Roll20 ne répond plus. Les modifications locales restent en attente ; vous pouvez exporter la fiche.", [

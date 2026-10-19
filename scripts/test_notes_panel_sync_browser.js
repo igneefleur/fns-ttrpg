@@ -1,6 +1,6 @@
 /* Harnais navigateur : fiche complète et panneau Notes réellement imbriqué,
  * vrai bundle et vrai pont, une collection Backbone et un serveur simulé.
- * node scripts/test_notes_panel_sync_browser.js [--migration]
+ * node scripts/test_notes_panel_sync_browser.js [--migration | --fresh | --partial | --damage | --no-version]
  * Dépendance de vérification : playwright + Chromium.
  */
 'use strict';
@@ -8,7 +8,7 @@ const {chromium}=require('playwright');
 const fs=require('node:fs'), path=require('node:path'), http=require('node:http'), assert=require('node:assert/strict');
 const M=require('../docs/javascripts/owd-attr-map.js'), C=require('../docs/javascripts/owd-sync.js');
 const root=path.resolve(__dirname,'..');
-let attrs, writes=[], blockWrites=false,holdMigration=process.argv.includes('--migration'),worldStep=0,worldOps=[];const migration=holdMigration;
+let attrs, writes=[], blockWrites=false,holdMigration=process.argv.includes('--migration'),worldStep=0,worldOps=[];const migration=holdMigration,damage=process.argv.includes('--damage'),partial=process.argv.includes('--partial'),fresh=process.argv.includes('--fresh')||partial;
 const seed=M.blank();seed.v=M.SCHEMA;seed.rel=M.release();seed.name='Fiche partagée';
 seed.comps=[{id:'c1',nom:'Lutte',groupe:'Physique',rang:1},{id:'c2',nom:'Évasion',groupe:'Physique',rang:2}];
 seed.inv.objets=[{ref:'o1',id:'',nom:'Dague',qte:1,ou:'sac',arme:{attaque:'6',degats:'16',parade:'8',reduction:'6',modsDegats:['Dexterite','',''],modsParade:['','',''],type:'',comp:''}}, {ref:'o2',id:'',nom:'Pain',qte:5,ou:'sac'}];
@@ -16,6 +16,8 @@ if(migration){seed.v=17;seed.rel='4.5.2b';seed.notes='Notes avant migration';}
 attrs=C.Compact.encode(seed);
 const meta=JSON.parse(attrs[C.Compact.BASE].current);meta.phase='ready';attrs[C.Compact.BASE].current=JSON.stringify(meta);
 attrs.owd_version={current:String(seed.v),max:seed.rel};
+if(process.argv.includes('--no-version'))delete attrs.owd_version;
+if(fresh){if(partial){delete attrs.owd_storage;delete attrs.owd_version;}else attrs={};}
 function harness() { return `<!doctype html><meta charset="utf-8"><style>iframe{width:1500px;height:1000px}</style><script>
 function model(data) {return {attributes:{...data},get(k){return this.attributes[k]},set(d){Object.assign(this.attributes,d)},save(data,opts){Object.assign(this.attributes,data||{});window.backend({kind:'write',data:this.attributes}).then(()=>opts&&opts.success&&opts.success())}}}
 const collection={models:[],create(data){const m=model(data);this.models.push(m);return m},fetch(opts){window.backend({kind:'read'}).then(attrs=>{this.models=Object.keys(attrs).map(name=>model({name,...attrs[name]}));opts&&opts.success&&opts.success()})}};
@@ -34,7 +36,8 @@ const server=http.createServer((req,res)=> {
   const browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_EXECUTABLE || chromium.executablePath(),args:['--no-sandbox']});const errors=[];
   try {
     const ctx=await browser.newContext({viewport:{width:1600,height:1100}});
-    await ctx.addInitScript(()=>localStorage.setItem('owd-recovery-v2:shared:fixture',JSON.stringify({source:'ancien-journal',raw:'copie conservée',reason:'fixture',at:1})));
+    if(partial)await ctx.addInitScript(({epoch})=>localStorage.setItem('owd-recovery-v2:shared:false-copy',JSON.stringify({source:'owd-pending-v2:shared:old',raw:JSON.stringify({epoch,ops:[{id:'old:1',clock:1,changes:[{k:'[["k","name"]]',before:['v','Fiche partagée'],n:['v','Fiche reprise']}]}],payloads:{}}),reason:"Cannot read properties of null (reading 'ids')"})),{epoch:meta.epoch});
+    if(!fresh)await ctx.addInitScript(()=>localStorage.setItem('owd-recovery-v2:shared:fixture',JSON.stringify({source:'ancien-journal',raw:'copie conservée',reason:'fixture',at:1})));
     await ctx.exposeBinding('backend',async(_,m)=>{
       if(m.kind==='read'){await new Promise(r=>setTimeout(r,70));if(migration&&C.Compact.read(attrs).state.v===17){const state=C.Compact.read(attrs).state,peer=new C.Compact.Session(attrs,state,null,{id:'world'+(++worldStep)}),next=C.copy(state);next.horloge.secondes++;peer.capture(next);worldOps.push(...Object.values(peer.pending));attrs.owd_ops_world={current:JSON.stringify({epoch:peer.epoch,ops:worldOps})};}return C.copy(attrs);}
       if(m.kind==='write'){if(holdMigration&&m.data.name.startsWith(C.Compact.PREFIX)&&JSON.parse(m.data.current).ops.some(o=>o.changes.some(c=>c.k==='[["k","v"]]'&&c.n[1]===18)))return;if(blockWrites && (m.data.name.startsWith(C.PREFIX)||m.data.name.startsWith(C.Compact.PREFIX)))return;await new Promise(r=>setTimeout(r,30));attrs[m.data.name]={current:String(m.data.current||''),max:String(m.data.max||'')};writes.push(m.data.name);}
@@ -66,7 +69,8 @@ const server=http.createServer((req,res)=> {
       assert.equal(C.Compact.read(attrs).state.etat.pe,77,'dépense reprise une seule fois');
       console.log('OK migration avec horloge active, rechargement avant confirmation, reprise sans nouvelle demande et panneau ouvert automatiquement.');
     }else await notesView.locator('.pc-sheet').waitFor();
-    assert.equal(await notesView.locator('#owd-local-recovery').count(),0);assert.equal(await sheet.locator('#owd-local-recovery').count(),1);
+    if(partial)await sheet.locator('#owd-local-recovery').waitFor({state:'detached',timeout:15000});
+    assert.equal(await notesView.locator('#owd-local-recovery').count(),0);assert.equal(await sheet.locator('#owd-local-recovery').count(),fresh?0:1);
     await sheet.locator('.pc-tab').filter({hasText:'Bio'}).click();
     async function send(f,text){await f.locator('.pc-notes-input').fill(text);await f.locator('.pc-notes-compose').getByRole('button',{name:'Envoyer',exact:true}).click();}
     await send(notesView,'Du panneau vers la fiche');
@@ -97,6 +101,25 @@ const server=http.createServer((req,res)=> {
     await notesView.locator('.pc-notes-body').filter({hasText:'Modifié dans la fiche'}).waitFor({timeout:15000});
     await send(notesView,'Après rechargement');await sheet.locator('.pc-notes-body').filter({hasText:'Après rechargement'}).waitFor({timeout:15000});
     console.log('OK panneau masqué, réouverture et persistance');
+    if(damage){
+      const recoveryKeys=await page.evaluate(()=>Object.keys(localStorage).filter(k=>k.startsWith('owd-recovery-v2:shared:')).sort());
+      const good=attrs.owd_block_notes.current;attrs.owd_block_notes.current='{broken';
+      await sheet.locator('[data-owd-act="reessayer-lecture"]').waitFor({timeout:12000});
+      assert.equal(await sheet.locator('[data-owd-act="ecraser"]').count(),0);
+      const downloaded=page.waitForEvent('download');await sheet.locator('[data-owd-act="export-recuperation"]').click();const file=await downloaded;const report=JSON.parse(fs.readFileSync(await file.path(),'utf8'));assert.equal(report.character,'shared');assert.equal(report.attrs.owd_block_notes.current,'{broken');
+      for(let i=0;i<150&&attrs.owd_block_notes.current!==good;i++)await page.waitForTimeout(100);assert.equal(attrs.owd_block_notes.current,good);
+      await sheet.locator('[data-owd-act="reessayer-lecture"]').waitFor({state:'detached',timeout:15000});
+      await send(notesView,'Après réparation');await sheet.locator('.pc-notes-body').filter({hasText:'Après réparation'}).waitFor({timeout:15000});
+      attrs.owd_block_notes.current='{broken';await page.reload();
+      await sheet.locator('.pc-sheet').waitFor();await notesView.locator('.pc-sheet').waitFor();
+      await sheet.locator('.pc-tab').filter({hasText:'Bio'}).click();
+      await sheet.locator('.pc-notes-body').filter({hasText:'Après réparation'}).waitFor({timeout:20000});
+      await sheet.locator('[data-owd-act="reessayer-lecture"]').waitFor({state:'detached',timeout:15000});
+      await send(sheet,'Après récupération au démarrage');await notesView.locator('.pc-notes-body').filter({hasText:'Après récupération au démarrage'}).waitFor({timeout:15000});
+      assert.deepEqual(await page.evaluate(()=>Object.keys(localStorage).filter(k=>k.startsWith('owd-recovery-v2:shared:')).sort()),recoveryKeys);
+      console.log('OK bloc corrompu en session et au démarrage : copie vérifiée, reprise des écritures sans perte des notes.');
+    }
+    if(fresh){assert.equal(await sheet.locator('#owd-local-recovery').count(),0);if(partial){assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('owd-recovery-v2:shared:false-copy')).resolved),true);assert.equal(C.Compact.read(attrs).state.name,'Fiche reprise');}else assert.equal((await page.evaluate(()=>Object.keys(localStorage).filter(k=>k.startsWith('owd-recovery-v2:shared:')))).length,0);console.log('OK création depuis zéro : aucun faux journal de secours ni bouton après rechargement.');}
     await ctx.close();
     assert.ok(!writes.includes('owd_state'),'aucune photographie complète réécrite');
     assert.deepEqual(errors,[]);
