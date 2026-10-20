@@ -925,11 +925,13 @@ def _temps(txt):
     expo = _section(txt, "L'exposition", "exposition")
     bouge = _ecrit(_un(r"Toutes les (\w+) minutes, elle bouge d'autant de points que l'\[?intensité",
                        expo, "exposition : sa cadence").group(1), "exposition : sa cadence")
-    ret = _un(r"revient vers zéro de (\d+) % toutes les (\w+) minutes", expo, "exposition : son retour")
-    if bouge != tranche or _ecrit(ret.group(2), "exposition : son retour") != tranche:
+    if bouge != tranche:
         raise ErreurRegles("exposition : sa cadence n'est pas la tranche de l'effort")
+    depart = int(_un(r"La première tranche résorbe (\d+) point", expo, "résorption : départ").group(1))
+    increment = int(_un(r"Chaque tranche favorable suivante ajoute (\d+) point", expo, "résorption : progression").group(1))
+    res_max = int(_un(r"maximum de (\d+) points par tranche", expo, "résorption : maximum").group(1))
     # LE PLAFOND de chaque intensité (« | 3 | 30 % | »), lu dans la table qui
-    # suit sa phrase d'annonce, et le retour d'une exposition qui le dépasse
+    # suit sa phrase d'annonce ; les paramètres de résorption sont lus séparément
     tab = expo[_un(r"donne le plafond de l'exposition selon l'intensité", expo,
                    "exposition : la table des plafonds").end():]
     plafonds = {}
@@ -937,60 +939,39 @@ def _temps(txt):
         plafonds[str(int(k))] = int(pct)
     if sorted(int(k) for k in plafonds) != list(range(1, int_max + 1)):
         raise ErreurRegles(f"exposition : la table des plafonds ne va pas de 1 à {int_max}")
-    ret_pl = _un(r"revient vers lui de (\d+) % toutes les (\w+) minutes", expo,
-                 "exposition : le retour au plafond")
-    if _ecrit(ret_pl.group(2), "exposition : le retour au plafond") != tranche:
-        raise ErreurRegles("exposition : le retour au plafond n'est pas la tranche de l'effort")
-
     # « Le ventre digère 1 de volume toutes les dix minutes » : la digestion.
     dig = _un(r"digère (\d+) de volume toutes les (\w+) minutes", _section(txt, "La contenance", "contenance"),
               "contenance : la digestion")
     digestion = {"volume": int(dig.group(1)),
                  "minutes": _ecrit(dig.group(2), "contenance : la cadence")}
 
-    # RÉCUPÉRATIONS NATURELLES. Les quatre réserves ordinaires donnent leurs
-    # deux niveaux (éveillé / endormi) dans leur section. PR, PS et PH font
-    # exception et suivent directement l'effort : on déroule donc les tables
-    # déjà lues plus haut en entrées du même format. Le module de la fiche peut
-    # alors TOUT afficher et régler sans connaître une seule valeur du livre.
+    # Une table de règles : sept récupérations permanentes et 35 d'activité.
     recups = []
-    for cle, titre in (("pv", "Les points de vie"),
-                       ("pe", "Les points d'endurance"),
-                       ("pm", "Les points de mana"),
-                       ("pi", "Les points d'innocence")):
-        corps = _section(txt, titre, f"récupération : {titre}")
-        ev = _niveau(_un(r"Récupération naturelle éveillé = ([+−-]?\d+)", corps,
-                         f"récupération : {cle} éveillé").group(1))
-        sl = _niveau(_un(r"Récupération naturelle endormi = ([+−-]?\d+)", corps,
-                         f"récupération : {cle} endormi").group(1))
-        recups.append({"id": f"{cle}:eveille", "reserve": cle, "contexte": "Éveillé",
-                       "condition": "sommeil", "valeur": False, "niveau": ev})
-        recups.append({"id": f"{cle}:endormi", "reserve": cle, "contexte": "Endormi",
-                       "condition": "sommeil", "valeur": True, "niveau": sl})
-
-    for c, n in zip(cles, noms):
-        recups.append({"id": f"pr:{c}", "reserve": "pr", "contexte": n,
-                       "condition": "effort", "valeur": c, "niveau": repos[c]})
-        for r in ("ps", "ph"):
-            recups.append({"id": f"{r}:{c}", "reserve": r, "contexte": n,
-                           "condition": "effort", "valeur": c, "niveau": survie[c]})
-
-    # L'endurance ne récupère pas pendant une tranche d'effort lourd. Cette
-    # exception est une CONDITION d'activité, pas une troisième valeur de PE.
-    pe_sec = _section(txt, "Les points d'endurance", "récupération : endurance")
-    pe_bloque = _un(r"Les (\w+) minutes d'effort ([^ ]+) font seules exception et n'en rendent aucun",
-                    pe_sec, "récupération : exception de l'endurance")
-    if _ecrit(pe_bloque.group(1), "récupération : durée de l'exception PE") != tranche:
-        raise ErreurRegles("récupération : l'exception PE ne dure pas une tranche d'effort")
-    effort_bloque = _cle(pe_bloque.group(2))
-    if effort_bloque not in cles:
-        raise ErreurRegles(f"récupération : effort PE inconnu « {pe_bloque.group(2)} »")
-
-    # Le manque de sommeil modifie UNIQUEMENT la récupération éveillée de mana.
-    # La récupération endormi reste à -5, quel que soit le manque de repos.
-    # On extrait la tranche et le bonus au lieu de figer +2 / 10 % dans le moteur.
+    reserves = ["pv", "pe", "pm", "pr", "ps", "ph", "pi"]
+    recsec = _section(txt, "La récupération naturelle", "récupération")
+    niveaux = {}
+    for row in re.findall(r"^\|([^\n]+)\|\s*$", recsec, re.M):
+        cells = [c.strip() for c in row.split("|")]
+        if len(cells) == 8 and _cle(cells[0]) in ["naturelle"] + cles:
+            niveaux[_cle(cells[0])] = [_niveau(v) for v in cells[1:]]
+    if set(niveaux) != set(["naturelle"] + cles):
+        raise ErreurRegles("récupération : table Naturelle et cinq activités incomplète")
+    for i, reserve in enumerate(reserves):
+        recups.append({"id": f"{reserve}:naturelle", "reserve": reserve, "contexte": "Naturelle",
+                       "condition": "toujours", "niveau": niveaux["naturelle"][i]})
+        for c, n in zip(cles, noms):
+            r = {"id": f"{reserve}:{c}", "reserve": reserve, "contexte": n,
+                 "condition": "effort", "valeur": c, "niveau": niveaux[c][i]}
+            # Garder les bonus des anciennes fiches sans réintroduire leurs anciennes bases.
+            if reserve in ("pv", "pe", "pm", "pi"):
+                r["ancienId"] = f"{reserve}:" + ("endormi" if c == "sommeil" else "eveille")
+                r["ancienNiveau"] = {"pv": 5 if c == "sommeil" else 0, "pe": 10,
+                                     "pm": -5 if c == "sommeil" else 0, "pi": 0}[reserve]
+            recups.append(r)
+    if any(niveaux[c][3] != repos[c] or niveaux[c][4] != survie[c] or niveaux[c][5] != survie[c] for c in cles):
+        raise ErreurRegles("récupération : tables d'activité PR/PS/PH contradictoires")
     pm_sec = _section(txt, "Les points de mana", "récupération : mana")
-    mm = _un(r"Chaque tranche de (\d+) % de .*? perdue ajoute (\d+) à la récupération naturelle éveillé du personnage",
+    mm = _un(r"Chaque tranche de (\d+) % de .*? perdue ajoute (\d+) à leur niveau de récupération de mana",
              pm_sec, "récupération : manque de sommeil", re.S)
 
     return {
@@ -1001,16 +982,16 @@ def _temps(txt):
         "regen": regen,
         "qualitesSommeil": qualites_sommeil,
         "recuperations": recups,
-        "recupBloques": [{"reserve": "pe", "effort": effort_bloque}],
-        "recupManqueSommeil": {"id": "pm:eveille", "reserve": "pm", "source": "pr",
+        "recupBloques": [],
+        "recupManqueSommeil": {"reserve": "pm", "source": "pr",
                                 "tranche": int(mm.group(1)), "bonus": int(mm.group(2))},
         "recupExposition": {"froid": _effets_recup_expo(txt, "Le froid"),
                             "chaud": _effets_recup_expo(txt, "Le chaud")},
         "paliers": {"diviseur": int(pal.group(1)), "arrondi": _ARRONDI[pal.group(2)]},
-        "expoRetour": int(ret.group(1)),
+        "resorption": {"depart": depart, "increment": increment, "max": res_max},
         # l'intensité maximale, le plafond d'exposition de chaque intensité
         # (en %), et le retour d'une exposition qui dépasse son plafond
-        "intensite": {"max": int_max, "plafonds": plafonds, "retour": int(ret_pl.group(1))},
+        "intensite": {"max": int_max, "plafonds": plafonds},
         "accelere": {"froid": _effets_expo(txt, "Le froid"), "chaud": _effets_expo(txt, "Le chaud")},
     }
 

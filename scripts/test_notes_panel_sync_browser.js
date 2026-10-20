@@ -9,7 +9,7 @@ const fs=require('node:fs'), path=require('node:path'), http=require('node:http'
 const M=require('../docs/javascripts/owd-attr-map.js'), C=require('../docs/javascripts/owd-sync.js');
 const root=path.resolve(__dirname,'..');
 let attrs, writes=[], blockWrites=false,holdMigration=process.argv.includes('--migration'),worldStep=0,worldOps=[];const migration=holdMigration,damage=process.argv.includes('--damage'),partial=process.argv.includes('--partial'),fresh=process.argv.includes('--fresh')||partial;
-const journal=process.argv.includes('--journal');
+const journal=process.argv.includes('--journal'),exposition=process.argv.includes('--exposition');
 const seed=M.blank();seed.v=M.SCHEMA;seed.rel=M.release();seed.name='Fiche partagée';
 seed.comps=[{id:'c1',nom:'Lutte',groupe:'Physique',rang:1},{id:'c2',nom:'Évasion',groupe:'Physique',rang:2}];
 seed.inv.objets=[{ref:'o1',id:'',nom:'Dague',qte:1,ou:'sac',arme:{attaque:'6',degats:'16',parade:'8',reduction:'6',modsDegats:['Dexterite','',''],modsParade:['','',''],type:'',comp:''}}, {ref:'o2',id:'',nom:'Pain',qte:5,ou:'sac'}];
@@ -74,6 +74,32 @@ const server=http.createServer((req,res)=> {
     }else await notesView.locator('.pc-sheet').waitFor();
     if(partial)await sheet.locator('#owd-local-recovery').waitFor({state:'detached',timeout:15000});
     assert.equal(await notesView.locator('#owd-local-recovery').count(),0);assert.equal(await sheet.locator('#owd-local-recovery').count(),fresh?0:1);
+    if(exposition){
+      const frame=page.frames().find(f=>f.url().includes('/roll20-fiche.html#c=shared'));
+      await frame.waitForFunction(()=>window.Owd&&Owd.__pret);
+      assert.equal(await sheet.locator('[data-module="recuperation"] .pc-rec-group').count(),7);
+      assert.equal(await sheet.locator('[data-module="recuperation"] .pc-rec-label').filter({hasText:/^Naturelle$/}).count(),7);
+      assert.equal(await sheet.locator('[data-module="recuperation"] .pc-rec-row:not(.head)').count(),42);
+      await frame.evaluate(()=>{const s=JSON.parse(__owdLocalStorage.getItem('owd-perso'));s.etat.expo=80;s.temperature=48;s.effort='repos';s.capsLeviers.max=s.capsLeviers.max||{};s.capsLeviers.max.force=s.capsLeviers.max.force||{};s.capsLeviers.max.force.expo=100;s.horlogeExposition={jours:0,heures:0,minutes:0,secondes:0,regime:''};Owd.__recoitEtat(s);Owd.__calculs.avancerSecondes(2100);});
+      assert.equal(await sheet.getByLabel('Exposition',{exact:true}).inputValue(),'80');
+      assert.equal(await sheet.getByLabel('Prochaine résorption naturelle',{exact:true}).innerText(),'4');
+      for(let i=0;i<150&&C.Compact.read(attrs).state.horlogeExposition.minutes!==35;i++)await page.waitForTimeout(100);
+      assert.equal(C.Compact.read(attrs).state.horlogeExposition.minutes,35);
+      await page.reload();await sheet.locator('.pc-sheet').waitFor();
+      const reloaded=page.frames().find(f=>f.url().includes('/roll20-fiche.html#c=shared'));
+      await reloaded.waitForFunction(()=>window.Owd&&Owd.__pret);
+      assert.equal(await sheet.getByLabel('Prochaine résorption naturelle',{exact:true}).innerText(),'4');
+      const result=await reloaded.evaluate(()=>{
+        function climate(t,seconds){const s=JSON.parse(__owdLocalStorage.getItem('owd-perso'));s.temperature=t;Owd.__recoitEtat(s);Owd.__calculs.avancerSecondes(seconds);}
+        climate(20,100);climate(30,100);climate(44,100);
+        return JSON.parse(__owdLocalStorage.getItem('owd-perso'));
+      });
+      assert.equal(result.etat.expo,79);assert.equal(result.horlogeExposition.minutes,40);assert.equal(result.horlogeExposition.regime,'resorption:chaud');
+      assert.equal(await sheet.getByLabel('Prochaine résorption naturelle',{exact:true}).innerText(),'5');
+      for(let i=0;i<150&&C.Compact.read(attrs).state.etat.expo!==79;i++)await page.waitForTimeout(100);
+      assert.equal(C.Compact.read(attrs).state.etat.expo,79);
+      assert.deepEqual(errors,[]);console.log('OK navigateur : 42 lignes dont sept Naturelle à zéro, vraie résorption affichée, 35 minutes conservées après synchronisation et rechargement, trois changements de climat favorables, tranche à 4 puis prochaine à 5, aucun nouvel attribut.');return;
+    }
     if(journal){
       await sheet.locator('.pc-tab').filter({hasText:'Options'}).click();
       const jm=sheet.locator('[data-module="journal"]');await jm.waitFor();

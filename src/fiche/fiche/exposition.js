@@ -44,7 +44,9 @@
       stat.appendChild(c);
       return v;
     }
-    var vZone = caseStat("idéal °C"), vInt = caseStat("intensité");
+    var vZone = caseStat("idéal °C"), vInt = caseStat("intensité"), vRes = caseStat("résorption");
+    vRes.setAttribute("aria-label", "Prochaine résorption naturelle");
+    vRes.title = "Points de résorption naturelle à la prochaine tranche favorable complète";
 
     var cmd = el("div", "pc-vital-cmd");
     var delta = el("input", "pc-vital-delta");
@@ -94,6 +96,8 @@
       var p = paliersClimat();
       vInt.textContent = p < 0 ? "Froid " + (-p) : p > 0 ? "Chaud " + p : "Aucune";
       vInt.className = "v" + (p < 0 ? " froid" : p > 0 ? " chaud" : "");
+      var t=tempsDef(), r=t&&t.resorption, active=r&&resorptionApplicable(v,p);
+      vRes.textContent=active ? fmtP(Math.min(r.max,r.depart+Math.floor(secondesHorlogeProcessus("horlogeExposition")/(t.tranche*60))*r.increment)) : "—";
       jauge.title = "Exposition " + (v < 0 ? "−" + fmtP(-v) : fmtP(v)) + " sur ±" + fmtP(m) +
                     " · niveau d'effondrement " + effNiveauDe("expo");
     });

@@ -391,6 +391,9 @@ def main():
     if not lancer("reprise des journaux locaux", ["node", "scripts/test_local_recovery.js"], racine):
         return 1
 
+    if not lancer("Exposition et récupérations", ["node", "scripts/test_exposition_recuperations.js"], racine):
+        return 1
+
     if not lancer("Journal des changements", ["node", "scripts/test_journal.js"], racine):
         return 1
 

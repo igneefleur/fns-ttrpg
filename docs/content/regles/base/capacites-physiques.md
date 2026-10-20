@@ -101,13 +101,13 @@ La table ci-dessous donne le niveau de récupération des points de repos selon 
 | Repos | −4 |
 | Léger | −5 |
 | Intermédiaire | −6 |
-| Lourd | −8 |
+| Lourd | −7 |
 
 </div>
 
 <div class="memo" markdown>
 
-Exemple. Un personnage ordinaire, qui porte 20 en Vigueur, dispose de 800 points de repos. Si dans une journée il effectue huit heures d'effort intermédiaire avec huit d'effort léger, il devra dormir huit heures pour récupérer les points perdus. Aussi, il lui faut avoir dépensé au moins 80 points avant de trouver le sommeil : seize heures d'effort léger, huit d'effort intermédiaire, ou quatre heures d'effort lourd.
+Exemple. Un personnage ordinaire, qui porte 20 en Vigueur, dispose de 800 points de repos. Si dans une journée il effectue huit heures d'effort intermédiaire avec huit d'effort léger, il devra dormir huit heures pour récupérer les points perdus. Aussi, il lui faut avoir dépensé au moins 80 points avant de trouver le sommeil : seize heures d'effort léger, huit d'effort intermédiaire, ou six heures d'effort lourd (90 points perdus, contre 75 après cinq heures).
 
 </div>
 
@@ -151,13 +151,22 @@ Ce qu'une réserve rend d'elle-même tient dans un seul nombre, son niveau de r�
 
 Un niveau négatif se lit dans la même table, mais la réserve se vide au lieu de se remplir.
 
-Chaque réserve porte deux récupérations naturelles, l'une pour le personnage éveillé et l'autre pour le personnage endormi. Chacune est un niveau, qui se lit dans la table ci-dessus.
+Chaque réserve possède une récupération **Naturelle**, de niveau 0 par défaut, et cinq récupérations d'activité. La récupération Naturelle est permanente et s'ajoute à celle de l'activité en cours ; les autres activités sont inactives. Un niveau nul reste présent et peut être modifié sur la fiche. Les niveaux sont indépendants : chacun applique sa propre cadence de la table ci-dessus.
 
-Les points de repos, les points de satiété et les points d'hydratation font exception : leur niveau ne tient pas au sommeil mais à l'[effort](#leffort) du personnage, et chacune de ces réserves donne le sien.
+La table suivante donne les niveaux de base des sept réserves. La qualité du sommeil et les autres modificateurs s'appliquent ensuite.
+
+| Activité | PV | PE | PM | PR | PS | PH | PI |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Naturelle | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| Sommeil | +5 | +11 | −5 | +7 | −3 | −3 | 0 |
+| Repos | 0 | +10 | 0 | −4 | −4 | −4 | 0 |
+| Léger | 0 | +9 | 0 | −5 | −5 | −5 | 0 |
+| Intermédiaire | 0 | +8 | 0 | −6 | −6 | −6 | 0 |
+| Lourd | 0 | +7 | 0 | −7 | −7 | −7 | 0 |
 
 <div class="memo" markdown>
 
-Exemple. La récupération naturelle endormi des points de mana est de −5, soit 5 points perdus par heure. Une nuit de huit heures en coûte donc 40.
+Exemple. La récupération des points de mana pendant le sommeil est au niveau −5, soit 5 points perdus par heure. Une nuit de huit heures en coûte donc 40.
 
 </div>
 
@@ -173,11 +182,7 @@ Les points de vie mesurent ce que le corps encaisse avant de tomber. Ils découl
 
 <p class="formula">Points de vie = 80 + Vigueur</p>
 
-Les points de vie ne reviennent qu'au sommeil. Un personnage éveillé n'en regagne aucun, quelle que soit la durée de sa halte. Endormi, chaque heure de sommeil lui rend ce que sa [récupération naturelle](#la-recuperation-naturelle) endormi donne dans la table, et un sommeil écourté ne rend que les heures dormies.
-
-<p class="formula">Récupération naturelle éveillé = 0</p>
-
-<p class="formula">Récupération naturelle endormi = 5</p>
+La récupération de base des points de vie est au niveau +5 pendant le sommeil, soit 5 points par heure complète. Les quatre activités éveillées sont au niveau 0. Une récupération Naturelle de niveau 0 est également présente, comme pour toutes les réserves.
 
 <div class="memo" markdown>
 
@@ -191,27 +196,19 @@ Les points d'endurance mesurent le souffle dont un personnage dispose pour l'eff
 
 <p class="formula">Points d'endurance = 80 + Endurance</p>
 
-Les points d'endurance reviennent en tout temps, et les deux [récupérations naturelles](#la-recuperation-naturelle) du personnage valent autant l'une que l'autre : il se refait le souffle en dormant comme en veillant. Les dix minutes d'effort lourd font seules exception et n'en rendent aucun ; le compte reprend à la tranche suivante.
-
-<p class="formula">Récupération naturelle éveillé = 10</p>
-
-<p class="formula">Récupération naturelle endormi = 10</p>
+Les points d'endurance reviennent selon l'activité : niveau +11 pendant le sommeil, +10 au repos, +9 en effort léger, +8 en effort intermédiaire et +7 en effort lourd. L'effort lourd ne bloque plus cette récupération.
 
 <div class="memo" markdown>
 
-Exemple. Un personnage fonce le temps d'un seul round, puis marche le reste des dix minutes. Il dépense les 5 points d'endurance de sa course, et ces dix minutes ne lui en rendent aucun, puisqu'elles comptent tout entières comme de l'effort lourd. Sa course lui aura donc coûté 15 points.
+Exemple. En effort léger, le niveau +9 rend 5 points toutes les dix minutes complètes. En effort lourd, le niveau +7 rend 15 points par heure complète. Le sommeil, au niveau +11, rend 15 points toutes les dix minutes complètes.
 
 </div>
 
 ### Les points de mana
 
-Un personnage reposé ne regagne aucun point de mana, et son sommeil lui en coûte : sa [récupération naturelle](#la-recuperation-naturelle) endormi est négative, et chaque heure dormie vide la réserve d'autant.
+Pour un personnage reposé, les quatre activités éveillées ont une récupération de mana de niveau 0. Le sommeil est au niveau −5 et coûte 5 points de mana par heure complète.
 
-<p class="formula">Récupération naturelle éveillé = 0</p>
-
-<p class="formula">Récupération naturelle endormi = −5</p>
-
-Le manque de sommeil augmente seulement la récupération éveillée. Chaque tranche de 10 % de [points de repos](#les-points-de-repos) perdue ajoute 2 à la récupération naturelle éveillé du personnage. La récupération naturelle endormi reste toujours à −5.
+Le manque de sommeil augmente seulement les récupérations des activités éveillées. Chaque tranche de 10 % de [points de repos](#les-points-de-repos) perdue ajoute 2 à leur niveau de récupération de mana. Ce bonus ne s'applique ni au sommeil ni à la ligne Naturelle.
 
 <div class="memo" markdown>
 
@@ -225,11 +222,7 @@ Les points d'innocence mesurent ce que l'âme supporte avant que la souillure ne
 
 <p class="formula">Points d'innocence = 80 + Ferveur</p>
 
-Les deux [récupérations naturelles](#la-recuperation-naturelle) des points d'innocence valent zéro : le temps seul n'en rend aucun, ni la veille ni le sommeil. Un personnage ne les regagne qu'en les payant.
-
-<p class="formula">Récupération naturelle éveillé = 0</p>
-
-<p class="formula">Récupération naturelle endormi = 0</p>
+Les cinq récupérations d'activité et la récupération Naturelle des points d'innocence sont au niveau 0 : le temps seul n'en rend aucun. Un personnage ne les regagne qu'en les payant.
 
 </div>
 
@@ -465,9 +458,17 @@ L'exposition mesure ce que le froid ou le chaud a déjà fait au corps. Elle par
 
 <p class="formula">Exposition = de −(100 + Résistance) à +(100 + Résistance)</p>
 
-Toutes les dix minutes, elle bouge d'autant de points que l'[intensité](#le-climat) de froid ou de chaleur du personnage, sans dépasser le plafond de cette intensité. Chaque tranche de 10 % franchie lui donne un niveau d'[effondrement](#leffondrement). Tant qu'il se tient dans sa zone, elle revient vers zéro de 10 % toutes les dix minutes.
+Toutes les dix minutes, elle bouge d'autant de points que l'[intensité](#le-climat) de froid ou de chaleur du personnage, sans dépasser le plafond de cette intensité. Chaque tranche complète de 10 % de son maximum atteinte lui donne un niveau d'[effondrement](#leffondrement).
 
-Le plafond se compte du côté de l'intensité subie : sous zéro pour le froid, au-dessus pour le chaud. Une exposition déjà au-delà du plafond revient vers lui de 10 % toutes les dix minutes.
+Le plafond se compte du côté de l'intensité subie : sous zéro pour le froid, au-dessus pour le chaud. Changer de température ne ramène jamais instantanément une exposition au nouveau plafond.
+
+**Résorption naturelle.** Elle s'active en zone confortable, quand l'environnement est opposé à l'exposition accumulée, ou lorsque l'exposition dépasse le plafond actuel du même côté. La première tranche résorbe 1 point. Chaque tranche favorable suivante ajoute 1 point à cette résorption, avec un maximum de 10 points par tranche. Elle ne dépend pas du maximum d'exposition. En zone confortable, elle résorbe donc 1 point après dix minutes, 3 après vingt minutes et 6 après trente minutes.
+
+En zone confortable ou dans un environnement opposé, on applique d'abord la résorption vers zéro, sans lui faire franchir zéro, puis l'intensité environnementale. L'intensité s'applique même si la résorption vient d'atteindre zéro : elle peut donc commencer une exposition du signe opposé. La résorption cesse lorsque l'exposition n'en remplit plus les conditions ; en zone confortable elle s'arrête à zéro.
+
+**Dépassement du plafond du même côté.** On calcule d'abord l'intensité moins la résorption naturelle. Un bilan positif ou nul ne change pas l'exposition. Un bilan négatif la réduit vers le plafond, sans aller en dessous de ce plafond. La résorption continue de progresser même pendant les tranches sans diminution, puis cesse une fois le plafond atteint. Le fonctionnement est symétrique pour le froid.
+
+**Continuité et compteur.** L'exposition a son propre compteur en jours, heures, minutes et secondes, indépendant des réserves et de la digestion. Tant que la résorption reste applicable au même côté d'exposition, ses tranches accomplies et sa tranche en cours sont conservées, y compris lors d'un changement d'intensité ou d'un passage entre dépassement de plafond, zone confortable et température opposée. Après trente-cinq minutes favorables, la prochaine résorption vaut ainsi 4 points et arrive cinq minutes plus tard. Le compteur repart lorsque cette phase s'achève ; hors résorption, un changement d'intensité recommence la tranche. À exposition nulle et en zone confortable, aucun compteur ne tourne.
 
 La table ci-dessous donne le plafond de l'exposition selon l'intensité.
 

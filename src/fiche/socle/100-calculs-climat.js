@@ -45,6 +45,8 @@
   function recupNiveauRegle(r) { return Math.round(num(r && r.niveau, 0)); }
   function recupNiveauBase(r) {
     var d = recupCoffre(false), n = d.niveaux && d.niveaux[r.id];
+    if (n === undefined && r.ancienId && d.niveaux && d.niveaux[r.ancienId] !== undefined)
+      n = recupNiveauRegle(r) + Number(d.niveaux[r.ancienId]) - num(r.ancienNiveau, 0);
     return isFinite(Number(n)) ? Math.round(Number(n)) : recupNiveauRegle(r);
   }
   function ecritRecupNiveau(r, v) {
@@ -56,7 +58,7 @@
     v = clamp(Math.round(num(v, recupNiveauRegle(r))), -max, max);
     var d = recupCoffre(true);
     if (!d.niveaux || typeof d.niveaux !== "object" || Array.isArray(d.niveaux)) d.niveaux = {};
-    if (v === recupNiveauRegle(r)) delete d.niveaux[r.id];
+    if (v === recupNiveauRegle(r) && !(r.ancienId && d.niveaux[r.ancienId] !== undefined)) delete d.niveaux[r.id];
     else d.niveaux[r.id] = v;
     if (!Object.keys(d.niveaux).length) delete d.niveaux;
     recupOublieSuivi(r.id);
@@ -69,13 +71,15 @@
   }
   function recupCondition(r) {
     if (!r) return false;
+    if (r.condition === "toujours") return true;
     if (r.condition === "effort") return state.effort === r.valeur;
     if (r.condition === "sommeil") return (state.effort === "sommeil") === !!r.valeur;
     return false;
   }
   function recupManqueSommeil(niveau, r) {
     var t = tempsDef(), m = t && t.recupManqueSommeil;
-    if (!m || r.reserve !== m.reserve || (m.id && r.id !== m.id)) return niveau;
+    if (!m || r.reserve !== m.reserve || (m.id && r.id !== m.id) ||
+        (!m.id && (r.condition !== "effort" || r.valeur === "sommeil"))) return niveau;
     var max = maxDe(m.source), cur = courant(m.source);
     if (!(max > 0)) return niveau;
     var perdu = Math.max(0, (max - cur) * 100 / max);
@@ -85,7 +89,8 @@
   function recupQualiteSommeil(niveau, r) {
     if (!(niveau > 0) || !r) return niveau;
     var liee = (r.condition === "sommeil" && !!r.valeur) ||
-               (r.condition === "effort" && r.valeur === "sommeil");
+               (r.condition === "effort" && r.valeur === "sommeil") ||
+               (r.condition === "toujours" && state.effort === "sommeil");
     if (!liee) return niveau;
     var t = tempsDef(), qs = t && Array.isArray(t.qualitesSommeil) ? t.qualitesSommeil : [];
     var cle = String(state.qualiteSommeil || "confortable"), mod = 0;
@@ -418,57 +423,61 @@
       state.etat.contenance = Math.min(contenance(), Math.round((snum(state.etat.contenance) + rticks * Math.max(0, num(dg.volume, 0))) * 1000) / 1000);
   }
 
+  // Le régime porte la continuité du PROCESSUS de résorption, indépendamment
+  // de l'intensité : changer de climat favorable ne perd aucune seconde.
+  function resorptionApplicable(x, p) {
+    return !!x && (!p || x * p < 0 || Math.abs(x) > plafondExpo(p));
+  }
   function regimeExposition() {
     var p = paliersClimat(), x = snum(state.etat.expo);
-    if (p) return "intensite:" + p;
-    if (x < 0) return "retour:froid";
-    if (x > 0) return "retour:chaud";
-    return "";
+    if (resorptionApplicable(x,p)) return x > 0 ? "resorption:chaud" : "resorption:froid";
+    return p ? "intensite:" + p : "";
+  }
+  function actualiseRegimeExposition() {
+    var regime=regimeExposition(),h=horlogeProcessus("horlogeExposition","");
+    if(h.regime!==regime || !regime)resetHorlogeProcessus("horlogeExposition",regime);
+    return regime;
+  }
+  function niveauResorptionExposition() {
+    var t=tempsDef(), r=t&&t.resorption;
+    if(!r)return 0;
+    var cadence=Math.max(1,num(t.tranche,10)*60), tranches=Math.max(1,Math.floor(secondesHorlogeProcessus("horlogeExposition")/cadence));
+    return Math.min(num(r.max,0),num(r.depart,0)+(tranches-1)*num(r.increment,0));
   }
   function appliqueTickExposition() {
-    var t = tempsDef(), p = paliersClimat(), m = expoMax(), x = snum(state.etat.expo);
-    if (!t || !(m > 0)) return;
-    var retourPct = num(t.intensite ? t.intensite.retour : t.expoRetour, 0);
-    var retour = m * retourPct / 100;
-    if (p) {
-      var cap = plafondExpo(p) * (p < 0 ? -1 : 1);
-      if (p < 0) x = x < cap ? Math.min(cap, x + retour) : Math.max(cap, x + p);
-      else x = x > cap ? Math.max(cap, x - retour) : Math.min(cap, x + p);
-      x = clamp(x, -m, m);
-    } else if (x) {
-      var calme = m * num(t.expoRetour, 0) / 100;
-      x = x > 0 ? Math.max(0, x - calme) : Math.min(0, x + calme);
+    var t=tempsDef(),p=paliersClimat(),m=expoMax(),x=snum(state.etat.expo);
+    if(!t||!(m>0))return;
+    var resorption=resorptionApplicable(x,p)?niveauResorptionExposition():0;
+    if(p && x*p>0 && Math.abs(x)>plafondExpo(p)) {
+      // Le bilan ne peut ni aggraver le dépassement ni traverser son plafond.
+      var baisse=Math.max(0,resorption-Math.abs(p));
+      x=(x<0?-1:1)*Math.max(plafondExpo(p),Math.abs(x)-baisse);
+    } else {
+      if(resorption)x=(x<0?-1:1)*Math.max(0,Math.abs(x)-resorption);
+      if(p){var cap=plafondExpo(p);x=p>0?Math.min(cap,x+p):Math.max(-cap,x+p);}
     }
-    state.etat.expo = Math.round(x * 1000000) / 1000000;
+    state.etat.expo=Math.round(clamp(x,-m,m)*1000000)/1000000;
   }
   function appliqueExpositionSecondes(secondes, sens) {
-    var t = tempsDef();
-    if (!t || !(secondes > 0)) return;
-    var cadence = Math.max(1, Math.round(Math.max(1, num(t.tranche, 10)) * 60));
-    sens = sens < 0 ? -1 : 1;
-
-    if (sens > 0) {
-      var regime = regimeExposition();
-      if (!regime) { resetHorlogeProcessus("horlogeExposition", ""); return; }
-      var h = horlogeProcessus("horlogeExposition", "");
-      if (String(h.regime || "") !== regime) resetHorlogeProcessus("horlogeExposition", regime);
-      var a = avanceHorlogeProcessus("horlogeExposition", secondes, regime);
-      var ticks = Math.floor(a.apres / cadence) - Math.floor(a.avant / cadence);
-      while (ticks-- > 0) appliqueTickExposition();
-      // Un retour qui atteint zéro termine le processus immédiatement. Un
-      // changement d'intensité, lui, ne sera constaté qu'au prochain passage
-      // du temps et repartira alors de zéro.
-      var apresRegime = regimeExposition();
-      if (!apresRegime) resetHorlogeProcessus("horlogeExposition", "");
-      else if (apresRegime !== regime) resetHorlogeProcessus("horlogeExposition", apresRegime);
-      return;
+    var t=tempsDef();if(!t||!(secondes>0))return;
+    var cadence=Math.max(1,Math.round(Math.max(1,num(t.tranche,10))*60));
+    if(sens<0){
+      // Le journal temporel restaure exactement les retours usuels. Hors journal,
+      // seul le temps connu peut être reculé, pas la météo passée.
+      poseHorlogeProcessus("horlogeExposition",Math.max(0,secondesHorlogeProcessus("horlogeExposition")-secondes),String(horlogeProcessus("horlogeExposition","").regime||""));return;
     }
-
-    // Repli approximatif hors journal : on ne peut pas reconstruire la météo
-    // passée. On recule seulement l'horloge du régime encore connu.
-    var avant = secondesHorlogeProcessus("horlogeExposition");
-    poseHorlogeProcessus("horlogeExposition", Math.max(0, avant - secondes),
-      String(horlogeProcessus("horlogeExposition", "").regime || ""));
+    var reste=Math.floor(secondes);
+    while(reste>0){
+      var regime=regimeExposition(),h=horlogeProcessus("horlogeExposition","");
+      if(!regime){resetHorlogeProcessus("horlogeExposition","");return;}
+      if(h.regime!==regime)resetHorlogeProcessus("horlogeExposition",regime);
+      var avant=secondesHorlogeProcessus("horlogeExposition"),pas=Math.min(reste,cadence-avant%cadence);
+      avanceHorlogeProcessus("horlogeExposition",pas,regime);reste-=pas;
+      if((avant+pas)%cadence===0){
+        appliqueTickExposition();
+        var apres=regimeExposition();if(apres!==regime)resetHorlogeProcessus("horlogeExposition",apres);
+      }
+    }
   }
 
   function appliqueClimatSecondes(secondes, sens) {

@@ -77,6 +77,7 @@
     effVu = e;
   }
   function refresh() {
+    actualiseRegimeExposition();
     suitEffondrement();
     save();
     var bilan = {};
