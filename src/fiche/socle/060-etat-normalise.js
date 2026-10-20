@@ -82,7 +82,10 @@
     s.allureCran = clamp(num(s.allureCran, 1), 1, 99);
     s.effAutre = clamp(Math.round(num(s.effAutre, 0)), -999, 999);
     s.effAlcool = clamp(Math.round(num(s.effAlcool, 0)), 0, 999);
-    s.effAlcoolSecondes = s.effAlcool > 0 ? clamp(num(s.effAlcoolSecondes, 0), 0, 7199) : 0;
+    // Ancien compteur conservé à la lecture seulement, sans écran de migration.
+    if (!s.horlogeAlcool || (num(s.effAlcoolSecondes, 0) > 0 && !Object.values(s.horlogeAlcool).some(Number)))
+      s.horlogeAlcool = {secondes: num(s.effAlcoolSecondes, 0)};
+    delete s.effAlcoolSecondes;
     if (!s.effParties || typeof s.effParties !== "object" || Array.isArray(s.effParties)) s.effParties = {};
     // Les anciens ajustements d’exposition suivent le côté actuellement actif.
     if (!s.effParties.froid && !s.effParties.chaud && s.effParties.expo) {
@@ -139,6 +142,7 @@
     s.horloge = normaliseHorloge(s.horloge, false);
     s.horlogeDigestion = normaliseHorloge(s.horlogeDigestion, false);
     s.horlogeExposition = normaliseHorloge(s.horlogeExposition, true);
+    s.horlogeAlcool = normaliseHorloge(s.effAlcool > 0 ? s.horlogeAlcool : null, false);
     s.argent = pnum(s.argent);
 
     // ---- caractéristiques ----

@@ -32,7 +32,8 @@
   }
   function recupNom(r) {
     if (r && r.perso) return String(r.nom || "Récupération");
-    return String(r && r.contexte || "Sans contexte");
+    if (r && r.effetActif) return (r.effetActif.categorie === "digestive" ? "Digestive" : "Spéciale") + " · " + r.contexte;
+    return (r && r.categorie === "naturelle" ? "Naturelle · " : "") + String(r && r.contexte || "Sans contexte");
   }
   function recupDureeDef(cle) {
     var out = RECUP_DUREES[2], i;
@@ -85,7 +86,7 @@
     var max = recupNiveauMaxModule(), d;
     if (!r || typeof r !== "object") return null;
     if (!r.id) r.id = uid("r");
-    r.perso = true;
+    r.perso = true; r.categorie = r.categorie === "digestive" ? "digestive" : "speciale";
     r.nom = capFirst(String(r.nom || "Récupération").trim()) || "Récupération";
     r.reserve = String(r.reserve || "pv");
     r.niveau = clamp(Math.round(num(r.niveau, 0)), -max, max);
@@ -268,6 +269,14 @@
     } else {
       w.appendChild(el("span", "pc-rec-label", recupNom(r)));
     }
+    if (r.perso) {
+      if (isEdit("recuperation")) {
+        var categorie = el("select", "pc-rec-categorie"); categorie.setAttribute("aria-label", "Catégorie de récupération");
+        [["speciale", "Spéciale"], ["digestive", "Digestive"]].forEach(function (x) { var o = el("option", null, x[1]); o.value = x[0]; categorie.appendChild(o); });
+        categorie.value = r.categorie;
+        categorie.addEventListener("change", function () { r.categorie = categorie.value; refresh(); }); w.appendChild(categorie);
+      } else w.appendChild(el("small", "pc-rec-categorie", r.categorie === "digestive" ? "Digestive" : "Spéciale"));
+    }
     return w;
   }
 
@@ -421,7 +430,7 @@
     var toute = recupListeModule();
     var liste = toute.filter(function (r) {
       var e = recupEtatVueModule(r);
-      if (!recupNatives && !r.perso) return false;
+      if (!recupNatives && r.categorie === "naturelle") return false;
       if (recupOnly && !e.actif) return false;
       return true;
     });
@@ -475,8 +484,8 @@
       rebuildRecuperation();
     });
     ligne.appendChild(actives);
-    var natives = el("span", "pc-chip", "Natives");
-    natives.title = "Afficher ou masquer les récupérations natives de la fiche.";
+    var natives = el("span", "pc-chip", "Naturelles");
+    natives.title = "Afficher ou masquer les récupérations naturelles de la fiche.";
     natives.classList.toggle("on", recupNatives);
     natives.addEventListener("click", function () {
       recupNatives = !recupNatives;

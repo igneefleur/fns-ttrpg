@@ -77,6 +77,7 @@
     effVu = e;
   }
   function refresh() {
+    actualiseHorlogeAlcool();
     actualiseRegimeExposition();
     suitEffondrement();
     save();

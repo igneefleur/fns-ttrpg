@@ -84,7 +84,7 @@
       effDesactive: false,
       effPause: null,
       effAlcool: 0,
-      effAlcoolSecondes: 0,
+      horlogeAlcool: { jours: 0, heures: 0, minutes: 0, secondes: 0 },
       effParties: {},
       effetsActifs: [], effetsPermanents: {},
 

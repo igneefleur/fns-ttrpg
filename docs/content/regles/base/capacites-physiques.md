@@ -151,13 +151,13 @@ Ce qu'une réserve rend d'elle-même tient dans un seul nombre, son niveau de r�
 
 Un niveau négatif se lit dans la même table, mais la réserve se vide au lieu de se remplir.
 
-Chaque réserve possède une récupération **Naturelle**, de niveau 0 par défaut, et cinq récupérations d'activité. La récupération Naturelle est permanente et s'ajoute à celle de l'activité en cours ; les autres activités sont inactives. Un niveau nul reste présent et peut être modifié sur la fiche. Les niveaux sont indépendants : chacun applique sa propre cadence de la table ci-dessus.
+Les récupérations se répartissent en trois catégories : **Naturelle** (récupération passive commune, selon l'activité), **Digestive** (tout ce qui est mangé ou bu, y compris potions et plats magiques) et **Spéciale** (autres sources : sorts, équipement et effets externes). Les cinq activités sont les conditions de la récupération naturelle : seule l'activité actuelle s'applique, sans récupération permanente supplémentaire.
 
+L'effondrement ne modifie que les récupérations naturelles indiquées dans sa table. Les récupérations digestives et spéciales restent indépendantes. Vomir le contenu ingéré interrompt les effets digestifs encore en cours ; les points déjà récupérés restent acquis. Les effets instantanés déjà résolus ne sont pas annulés.
 La table suivante donne les niveaux de base des sept réserves. La qualité du sommeil et les autres modificateurs s'appliquent ensuite.
 
 | Activité | PV | PE | PM | PR | PS | PH | PI |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| Naturelle | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 | Sommeil | +5 | +11 | −5 | +7 | −3 | −3 | 0 |
 | Repos | 0 | +10 | 0 | −4 | −4 | −4 | 0 |
 | Léger | 0 | +9 | 0 | −5 | −5 | −5 | 0 |
@@ -182,7 +182,7 @@ Les points de vie mesurent ce que le corps encaisse avant de tomber. Ils découl
 
 <p class="formula">Points de vie = 80 + Vigueur</p>
 
-La récupération de base des points de vie est au niveau +5 pendant le sommeil, soit 5 points par heure complète. Les quatre activités éveillées sont au niveau 0. Une récupération Naturelle de niveau 0 est également présente, comme pour toutes les réserves.
+La récupération de base des points de vie est au niveau +5 pendant le sommeil, soit 5 points par heure complète. Les quatre activités éveillées sont au niveau 0.
 
 <div class="memo" markdown>
 
@@ -208,11 +208,11 @@ Exemple. En effort léger, le niveau +9 rend 5 points toutes les dix minutes com
 
 Pour un personnage reposé, les quatre activités éveillées ont une récupération de mana de niveau 0. Le sommeil est au niveau −5 et coûte 5 points de mana par heure complète.
 
-Le manque de sommeil augmente seulement les récupérations des activités éveillées. Chaque tranche de 10 % de [points de repos](#les-points-de-repos) perdue ajoute 2 à leur niveau de récupération de mana. Ce bonus ne s'applique ni au sommeil ni à la ligne Naturelle.
+L'effondrement de Repos ajoute 1 niveau de récupération naturelle des PM par point, uniquement éveillé (Repos, Léger, Intermédiaire et Lourd). Aucun bonus ne s'applique pendant le sommeil. Cette règle remplace le bonus de 2 niveaux par tranche de 10 % de PR manquants.
 
 <div class="memo" markdown>
 
-Exemple. Un personnage qui a dormi son content ne récupère aucun mana. Descendu à la moitié de ses points de repos, il a perdu cinq tranches de 10 % et récupère donc au niveau 10, soit 10 points toutes les dix minutes.
+Exemple. Avec cinq points d'effondrement de Repos, le personnage récupère naturellement son mana au niveau +5 éveillé, soit 5 points par heure complète. Pendant le sommeil, le niveau reste −5.
 
 </div>
 
@@ -222,7 +222,7 @@ Les points d'innocence mesurent ce que l'âme supporte avant que la souillure ne
 
 <p class="formula">Points d'innocence = 80 + Ferveur</p>
 
-Les cinq récupérations d'activité et la récupération Naturelle des points d'innocence sont au niveau 0 : le temps seul n'en rend aucun. Un personnage ne les regagne qu'en les payant.
+Les cinq conditions d'activité de la récupération naturelle des points d'innocence sont au niveau 0 : le temps seul n'en rend aucun. Un personnage ne les regagne qu'en les payant.
 
 </div>
 
@@ -507,51 +507,7 @@ Exemple. Le même personnage, nu, à 15 °C : à l'arrêt il subit une intensit�
 
 </div>
 
-Chaque niveau porte un effet, qui dure tant que l'exposition s'y tient et s'ajoute à ceux des niveaux déjà franchis.
-
-Quand l'exposition revient à zéro, et chaque fois que le personnage dort, il lance 2d8 : un jet égal ou inférieur au numéro du niveau le plus profond qu'il a atteint lui vaut la maladie que ce niveau indique.
-
-#### Le froid
-
-La table ci-dessous donne l'exposition, la maladie et l'effet selon le niveau de froid.
-
-<div class="sepia-table expo-table" markdown>
-
-| Niveau | Exposition | Maladie | Effet |
-|:---:|:---:|:---:|---|
-| 1 | −10 % | | |
-| 2 | −20 % | rhume | la satiété se dépense deux fois plus vite |
-| 3 | −30 % | rhume | les PV ne reviennent plus que toutes les 2 heures de sommeil |
-| 4 | −40 % | rhume | la satiété se dépense quatre fois plus vite |
-| 5 | −50 % | fièvre | |
-| 6 | −60 % | fièvre | les PV ne reviennent plus que toutes les 4 heures de sommeil |
-| 7 | −70 % | fièvre | le personnage ne peut pas dormir |
-| 8 | −80 % | gelures | |
-| 9 | −90 % | gelures | les PV ne reviennent plus |
-| 10 | −100 % | gelures | inconscient |
-
-</div>
-
-#### Le chaud
-
-La table ci-dessous donne l'exposition, la maladie et l'effet selon le niveau de chaud.
-
-<div class="sepia-table expo-table" markdown>
-
-| Niveau | Exposition | Maladie | Effet |
-|:---:|:---:|:---:|---|
-| 1 | +10 % | | |
-| 2 | +20 % | insolation | l'hydratation se dépense deux fois plus vite |
-| 3 | +30 % | insolation | les PE ne reviennent plus que toutes les heures |
-| 4 | +40 % | insolation | l'hydratation se dépense quatre fois plus vite |
-| 5 | +50 % | fièvre | |
-| 6 | +60 % | fièvre | les PE ne reviennent plus que toutes les 8 heures |
-| 7 | +70 % | fièvre | le personnage ne peut pas dormir |
-| 8 | +80 % | brûlures | |
-| 9 | +90 % | brûlures | les PE ne reviennent plus |
-| 10 | +100 % | brûlures | inconscient |
-
-</div>
+Les niveaux de froid et de chaud contribuent à l'effondrement et appliquent les effets spécifiques décrits ci-dessous. Les anciennes accélérations de consommation, restrictions de récupération, interdictions de sommeil et maladies liées aux paliers d'exposition ne s'appliquent plus.
 
 ### Le climat des milieux
 
@@ -620,11 +576,30 @@ La table ci-dessous donne ce qui reste du maximum de points d'endurance et du ma
 
 Un personnage dont le maximum de points d'endurance atteint zéro tombe inconscient.
 
+Les effets spécifiques s'ajoutent aux pertes communes, selon le niveau effectif de chaque cause (effets et ajustements compris). Le plafond global de dix s'applique aux pénalités communes ; les causes gardent leurs propres niveaux. Désactiver l'effondrement annule aussi ces effets spécifiques. Une pause conserve les niveaux figés.
+
+| Type | Effet spécifique |
+|---|---|
+| Repos | −1 niveau de récupération naturelle des PE et +1 niveau de récupération naturelle des PM par point, uniquement éveillé. |
+| Faim — Satiété | −2 de protection contre le froid par point. |
+| Soif — Hydratation | −2 de protection contre la chaleur par point. |
+| Chaud | −1 niveau de récupération naturelle des PH tous les 2 points. |
+| Froid | −1 niveau de récupération naturelle des PS tous les 2 points. |
+| Charge | −1 pas au mouvement total par point, après calcul de l'allure. |
+| Contenance | −1 pas au mouvement total par point, après calcul de l'allure. |
+| Alcool | −5 % au coût en mana et +1 à la difficulté de tous les jets par point. |
+| Innocence | Effet spécifique encore à définir. |
+| Autre | Aucun effet spécifique. |
+
+Repos s'applique pendant Repos, Léger, Intermédiaire et Lourd, jamais pendant le sommeil. La récupération naturelle des PE peut devenir négative et retirer passivement des PE. Chaud et Froid s'appliquent également pendant le sommeil : leur malus vaut −floor(niveau / 2), soit −1 à 2–3 points, −2 à 4–5 points, jusqu'à −5 à 10 points.
+
+Charge et Contenance se cumulent ; le mouvement reste au minimum à zéro et ses distances suivent les pas effectifs. Aucun surcoût direct en PE ne s'ajoute. Pour l'alcool, la fiche applique la réduction du coût en mana et affiche le malus de difficulté, sans modifier automatiquement les jets.
+
+L'alcool possède une horloge dédiée en jours, heures, minutes et secondes, indépendante de l'exposition et de la digestion. Elle avance seulement tant que des points d'alcool sont présents. Chaque tranche complète de 2 heures retire 1 point ; boire de nouveau ne remet pas la progression à zéro. La progression partielle est sauvegardée. À zéro alcool, l'horloge s'arrête et revient à zéro, sans crédit pour une consommation future.
+
 <div class="memo" markdown>
 
-Exemple. Un personnage ordinaire qui dort et mange, mais ne boit plus, gagne un niveau d'effondrement toutes les sept heures. Au bout d'un peu moins de trois jours il atteint le dixième niveau et s'effondre.
-
-Le même, s'il ne mange pas non plus, gagne en plus un niveau par jour : il s'effondre alors au bout d'un peu plus de deux jours.
+Exemple. À trois points d'alcool et après une heure trente, une nouvelle consommation ajoute un point sans toucher à l'horloge. Trente minutes plus tard, un point est résorbé : il reste trois points. Les pénalités communes, la réduction du coût en mana et le malus affiché suivent les niveaux actuels.
 
 </div>
 

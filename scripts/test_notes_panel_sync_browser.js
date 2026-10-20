@@ -78,8 +78,8 @@ const server=http.createServer((req,res)=> {
       const frame=page.frames().find(f=>f.url().includes('/roll20-fiche.html#c=shared'));
       await frame.waitForFunction(()=>window.Owd&&Owd.__pret);
       assert.equal(await sheet.locator('[data-module="recuperation"] .pc-rec-group').count(),7);
-      assert.equal(await sheet.locator('[data-module="recuperation"] .pc-rec-label').filter({hasText:/^Naturelle$/}).count(),7);
-      assert.equal(await sheet.locator('[data-module="recuperation"] .pc-rec-row:not(.head)').count(),42);
+      assert.equal(await sheet.locator('[data-module="recuperation"] .pc-rec-label').filter({hasText:/^Naturelle · /}).count(),35);
+      assert.equal(await sheet.locator('[data-module="recuperation"] .pc-rec-row:not(.head)').count(),35);
       await frame.evaluate(()=>{const s=JSON.parse(__owdLocalStorage.getItem('owd-perso'));s.etat.expo=80;s.temperature=48;s.effort='repos';s.capsLeviers.max=s.capsLeviers.max||{};s.capsLeviers.max.force=s.capsLeviers.max.force||{};s.capsLeviers.max.force.expo=100;s.horlogeExposition={jours:0,heures:0,minutes:0,secondes:0,regime:''};Owd.__recoitEtat(s);Owd.__calculs.avancerSecondes(2100);});
       assert.equal(await sheet.getByLabel('Exposition',{exact:true}).inputValue(),'80');
       assert.equal(await sheet.getByLabel('Prochaine résorption naturelle',{exact:true}).innerText(),'4');
@@ -98,7 +98,7 @@ const server=http.createServer((req,res)=> {
       assert.equal(await sheet.getByLabel('Prochaine résorption naturelle',{exact:true}).innerText(),'5');
       for(let i=0;i<150&&C.Compact.read(attrs).state.etat.expo!==79;i++)await page.waitForTimeout(100);
       assert.equal(C.Compact.read(attrs).state.etat.expo,79);
-      assert.deepEqual(errors,[]);console.log('OK navigateur : 42 lignes dont sept Naturelle à zéro, vraie résorption affichée, 35 minutes conservées après synchronisation et rechargement, trois changements de climat favorables, tranche à 4 puis prochaine à 5, aucun nouvel attribut.');return;
+      assert.deepEqual(errors,[]);console.log('OK navigateur : 35 conditions naturelles sans ligne permanente supplémentaire, vraie résorption affichée, 35 minutes conservées après synchronisation et rechargement, trois changements de climat favorables, tranche à 4 puis prochaine à 5, aucun nouvel attribut.');return;
     }
     if(journal){
       await sheet.locator('.pc-tab').filter({hasText:'Options'}).click();

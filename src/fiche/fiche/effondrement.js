@@ -8,6 +8,10 @@
     r.appendChild(tV); r.appendChild(tE); b.appendChild(r);
     var tN = bigTile("EFFONDREMENT", function () { return String(effondrement()); });
     tN.classList.add("pc-eff-niveau"); b.appendChild(tN);
+    var effetsActifs = el("div", "pc-eff-actifs");
+    effetsActifs.setAttribute("aria-label", "Effets d’effondrement appliqués"); b.appendChild(effetsActifs);
+    var horloge = el("div", "pc-eff-horloge");
+    horloge.setAttribute("aria-label", "Horloge d’alcool"); b.appendChild(horloge);
     var commandes = el("div", "pc-eff-commandes");
     var desactive = el("button", "pc-chip pc-combat-toggle", "Désactiver Effondrement");
     desactive.type = "button";
@@ -42,7 +46,14 @@
         champs.appendChild(champ); return champ;
       }
       var base = lecture("Base"), effets = lecture("Effet");
-      base.title = "Base : niveau calculé depuis la réserve ou l’état du personnage.";
+      if (cle === "alcool") {
+        base.readOnly = false; base.title = "Points d'alcool présents, résorbés par l'horloge dédiée.";
+        base.addEventListener("input", function () {
+          var n = litNombreSigne(base.value); if (!isFinite(n)) return;
+          state.effAlcool = clamp(Math.round(n), 0, 999); refresh();
+        });
+      }
+      base.title = cle === "alcool" ? base.title : "Base : niveau calculé depuis la réserve ou l’état du personnage.";
       effets.title = "Effet : bonus/malus des effets ; lecture seule.";
       var mod = champNombreSigne(el("input", "c pc-eff-delta"));
       mod.placeholder = "±"; mod.setAttribute("aria-label", nom + " — ±");
@@ -85,13 +96,30 @@
       observation.observe(grille);
     }
     hooks.push(function () {
+      var sp = effSpecifiques(), lignes = [], total = effondrement();
+      function ajoute(v, label, unite) { if (v) lignes.push(sign(v) + (unite || "") + " " + label); }
+      ajoute(-Math.min(100, total * num(effDef().pvParNiveau, 0)), "PV maximums", " %");
+      ajoute(-Math.min(100, total * num(effDef().peParNiveau, 0)), "PE maximums", " %");
+      ajoute(sp.pe, "niveau(x) de récupération naturelle des PE");
+      ajoute(sp.pm, "niveau(x) de récupération naturelle des PM");
+      ajoute(sp.ps, "niveau(x) de récupération naturelle des PS");
+      ajoute(sp.ph, "niveau(x) de récupération naturelle des PH");
+      ajoute(sp.froid, "de protection contre le froid"); ajoute(sp.chaud, "de protection contre la chaleur");
+      ajoute(sp.pas, "pas au mouvement total"); ajoute(sp.mana, "au coût en mana", " %");
+      ajoute(sp.difficulte, "à la difficulté de tous les jets (à appliquer manuellement)");
+      effetsActifs.replaceChildren(); lignes.forEach(function (texte) { effetsActifs.appendChild(el("div", "pc-eff-actif", texte)); });
+      effetsActifs.hidden = !lignes.length;
+      var h = horlogeProcessus("horlogeAlcool"), active = state.effAlcool > 0;
+      horloge.textContent = "Alcool · " + h.jours + " j · " + h.heures + " h · " + h.minutes + " min · " + h.secondes + " s" +
+        (active ? " — prochain −1 dans " + effetTemps(alcoolCadenceSecondes() - secondesHorlogeProcessus("horlogeAlcool") % alcoolCadenceSecondes()) : " — arrêtée");
       vues.forEach(function (v) {
         var brut = effBasePartie(v.cle), niveau = effPartie(v.cle);
         var photo = effPhotoPartie(v.cle);
         var ecart = photo ? photo.effet : pub("effondrementPartie", brut + num(effReglage(v.cle).effet, 0), { cle: v.cle, base: brut }) - brut;
         var ajustement = photo ? photo.mod : v.cle === "autre" ? num(state.effAutre, 0) : num(effReglage(v.cle).mod, 0);
         v.mod.disabled = !!state.effPause;
-        v.base.value = brut;
+        if (v.cle === "alcool") v.base.disabled = !!state.effPause;
+        if (document.activeElement !== v.base) v.base.value = brut;
         v.effets.value = ecart ? sign(ecart).replace("−", "-") : "0";
         v.total.textContent = String(niveau);
         v.fill.style.width = clamp(niveau * 10, 0, 100) + "%";

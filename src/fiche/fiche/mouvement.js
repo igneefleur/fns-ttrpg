@@ -95,9 +95,10 @@
         }
       }
       var bonusPas=effetBonus("pas"),facteur=1+effetBonus("vitesse")/100;
-      dist.v.pas.textContent = String(c.pas ? Math.floor((c.pas+bonusPas)*facteur) : 0);
-      dist.v.min.textContent = fmtP(c.pas ? num0(c.minute)*(c.pas+bonusPas)/c.pas*facteur : 0);
-      dist.v.h.textContent = fmtP(c.pas ? num0(c.heure)*(c.pas+bonusPas)/c.pas*facteur : 0);
+      var pas = c.pas ? Math.max(0, Math.floor((c.pas + bonusPas) * facteur) + effSpecifiques().pas) : 0;
+      dist.v.pas.textContent = String(pas);
+      dist.v.min.textContent = fmtP(c.pas ? num0(c.minute) * pas / c.pas : 0);
+      dist.v.h.textContent = fmtP(c.pas ? num0(c.heure) * pas / c.pas : 0);
       cout.v.da.textContent = String(c.des || 0);
       cout.v.pe.textContent = String(effetCout("pe",c.pe || 0));
     });

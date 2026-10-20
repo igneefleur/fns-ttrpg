@@ -7,7 +7,7 @@
   function protection(champ) {
     var t = 0;
     equipementsPortes().forEach(function (o) { t += snum(o[champ]); });
-    return Math.round((t + effetBonus("climat",champ)) * 10) / 10;
+    return Math.round((t + effetBonus("climat",champ) + num(effSpecifiques()[champ], 0)) * 10) / 10;
   }
   // ---- le temps qui passe ----
   // Tout vient de owd-creation.json (clé « temps ») : les efforts et ce qu'ils
@@ -28,7 +28,14 @@
   // complète (round, minute, 10 m, heure, 8 h...).
   function recupsListe() {
     var t = tempsDef();
-    return t && Array.isArray(t.recuperations) ? t.recuperations : [];
+    var liste = t && Array.isArray(t.recuperations) ? t.recuperations.slice() : [];
+    // Conserver les anciennes lignes permanentes uniquement si elles ont été réglées.
+    var niveaux = recupCoffre(false).niveaux || {};
+    Object.keys(niveaux).forEach(function (id) {
+      if (/^(pv|pe|pm|pr|ps|ph|pi):naturelle$/.test(id) && num(niveaux[id], 0))
+        liste.push({id:id, reserve:id.split(":")[0], contexte:"Spéciale — ancien bonus", categorie:"speciale", condition:"toujours", niveau:0});
+    });
+    return liste;
   }
   function recupCoffre(cree) {
     if (!state.modData || typeof state.modData !== "object") {
@@ -76,18 +83,8 @@
     if (r.condition === "sommeil") return (state.effort === "sommeil") === !!r.valeur;
     return false;
   }
-  function recupManqueSommeil(niveau, r) {
-    var t = tempsDef(), m = t && t.recupManqueSommeil;
-    if (!m || r.reserve !== m.reserve || (m.id && r.id !== m.id) ||
-        (!m.id && (r.condition !== "effort" || r.valeur === "sommeil"))) return niveau;
-    var max = maxDe(m.source), cur = courant(m.source);
-    if (!(max > 0)) return niveau;
-    var perdu = Math.max(0, (max - cur) * 100 / max);
-    var tranches = Math.floor((perdu + 1e-9) / Math.max(1, num(m.tranche, 10)));
-    return niveau + tranches * num(m.bonus, 0);
-  }
   function recupQualiteSommeil(niveau, r) {
-    if (!(niveau > 0) || !r) return niveau;
+    if (!(niveau > 0) || !r || r.categorie === "speciale") return niveau;
     var liee = (r.condition === "sommeil" && !!r.valeur) ||
                (r.condition === "effort" && r.valeur === "sommeil") ||
                (r.condition === "toujours" && state.effort === "sommeil");
@@ -111,14 +108,6 @@
     if (cote === "chaud" && x <= 0) return 0;
     return Math.floor((Math.abs(x) / m) * 100 / effTranche());
   }
-  function recupEffetExpo(reserve) {
-    var t = tempsDef(), cote = num(state.etat.expo, 0) < 0 ? "froid" : "chaud";
-    var niv = niveauExpoActuel(cote), out = null;
-    (((t && t.recupExposition) || {})[cote] || []).forEach(function (x) {
-      if (x.reserve === reserve && num(x.niveau, 0) <= niv && (!out || num(x.niveau, 0) > num(out.niveau, 0))) out = x;
-    });
-    return out;
-  }
   function recupCadence(niveau) {
     var t = tempsDef(), n = Math.abs(Math.round(num(niveau, 0))), out = null;
     ((t && t.regen) || []).forEach(function (r) {
@@ -136,9 +125,9 @@
   // personnage et cadence réellement applicable à cet instant.
   function recupEtat(r) {
     var base = recupNiveauBase(r);
-    var niveau = recupQualiteSommeil(recupManqueSommeil(base, r), r);
+    var niveau = recupQualiteSommeil(base, r) + (r.categorie === "naturelle" ? num(effSpecifiques()[r.reserve], 0) : 0);
     var condition = recupCondition(r), bloque = condition && recupBloquee(r);
-    var c = recupCadence(niveau), exp = condition ? recupEffetExpo(r.reserve) : null;
+    var c = recupCadence(clamp(niveau, -20, 20)), exp = null;
     var raison = "";
     if (bloque) raison = "bloquée par l'effort actuel";
     if (exp && exp.aucune) { bloque = true; raison = "bloquée par l'exposition"; }
@@ -249,16 +238,7 @@
   }
   // Le facteur de dépense d'une réserve, selon le niveau de froid ou de chaud
   // que l'exposition a atteint.
-  function facteurDepense(cle) {
-    var t = tempsDef(), m = expoMax(), f = 1;
-    if (!t || m <= 0 || !state.etat.expo) return 1;
-    var cote = state.etat.expo < 0 ? "froid" : "chaud";
-    var niv = Math.floor((Math.abs(state.etat.expo) / m) * 100 / effTranche());
-    ((t.accelere || {})[cote] || []).forEach(function (a) {
-      if (a.reserve === cle && a.niveau <= niv) f = Math.max(f, num(a.facteur, 1));
-    });
-    return f;
-  }
+  function facteurDepense() { return 1; }
   // Une réserve qui bouge d'un nombre ENTIER de points. Les récupérations
   // arrivent désormais ici seulement lorsqu'une cadence complète est atteinte.
   function bougeReserve(cle, delta) {
@@ -499,7 +479,7 @@
       horlogeDigestion: copieTemps(horlogeProcessus("horlogeDigestion")),
       horlogeExposition: copieTemps(horlogeProcessus("horlogeExposition", "")),
       effAlcool: state.effAlcool,
-      effAlcoolSecondes: state.effAlcoolSecondes,
+      horlogeAlcool: copieTemps(horlogeProcessus("horlogeAlcool")),
       effetsActifs: copieTemps(state.effetsActifs || []),
       recuperation: copieTemps(recupCoffre(false)) || {}
     };
@@ -514,7 +494,7 @@
     state.horlogeExposition = copieTemps(o.horlogeExposition) || { jours: 0, heures: 0, minutes: 0, secondes: 0, regime: "" };
     state.effetsActifs = copieTemps(o.effetsActifs) || [];
     state.effAlcool = num(o.effAlcool, 0);
-    state.effAlcoolSecondes = num(o.effAlcoolSecondes, 0);
+    state.horlogeAlcool = copieTemps(o.horlogeAlcool) || {jours:0, heures:0, minutes:0, secondes:0};
     if (!state.modData || typeof state.modData !== "object" || Array.isArray(state.modData)) state.modData = {};
     if (o.recuperation && Object.keys(o.recuperation).length) state.modData.recuperation = copieTemps(o.recuperation);
     else delete state.modData.recuperation;
@@ -528,11 +508,17 @@
   // cadences natives et toutes les durées proposées au module Récupération en
   // sont des multiples, ce qui rend le calcul exact sans fractions de temps.
   var PAS_TEMPS_SECONDES = 3;
+  function alcoolCadenceSecondes() { return Math.max(1, num((effDef().specifiques || {}).alcoolSecondes, 7200)); }
+  function actualiseHorlogeAlcool() {
+    if (!(state.effAlcool > 0)) resetHorlogeProcessus("horlogeAlcool");
+  }
   function avanceAlcoolSecondes(secondes) {
-    if (!(state.effAlcool > 0)) { state.effAlcoolSecondes = 0; return; }
-    var t = num(state.effAlcoolSecondes, 0) + secondes;
-    state.effAlcool = Math.max(0, state.effAlcool - Math.floor(t / 7200));
-    state.effAlcoolSecondes = state.effAlcool > 0 ? t % 7200 : 0;
+    actualiseHorlogeAlcool();
+    if (!(state.effAlcool > 0) || !(secondes > 0)) return;
+    var cadence = alcoolCadenceSecondes(), a = avanceHorlogeProcessus("horlogeAlcool", secondes);
+    var ticks = Math.floor(a.apres / cadence) - Math.floor(a.avant / cadence);
+    state.effAlcool = Math.max(0, state.effAlcool - ticks);
+    actualiseHorlogeAlcool();
   }
   function avancerSecondesCalcul(secondes) {
     var t = tempsDef(), e = effortDe(state.effort), restant, pas;

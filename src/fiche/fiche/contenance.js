@@ -13,6 +13,15 @@
   //
   // Aucun rouage : le maximum se règle dans les Options (Réglages des
   // capacités, ligne Contenance).
+  function vomirContenu() {
+    state.etat.contenance = 0; reinitialiseHorlogeDigestion();
+    state.effetsActifs = (state.effetsActifs || []).filter(function (e) { return e.categorie !== "digestive"; });
+    var d = recupCoffre(false);
+    if (Array.isArray(d.ajouts)) d.ajouts = d.ajouts.filter(function (r) {
+      if (r.categorie !== "digestive") return true; recupOublieSuivi(r.id); return false;
+    });
+    nettoieRecupCoffre(); refresh(); rebuildRecuperation();
+  }
   function buildContenance() {
     var b = block("Contenance");
     var fig = el("div", "pc-estomac");
@@ -50,6 +59,7 @@
     cmd.appendChild(delta);
     cmd.appendChild(miniBtn("Appliquer", "Ajouter cette variation", applique));
     b.appendChild(cmd);
+    b.appendChild(miniBtn("Vomir", "Vider la contenance et interrompre les effets digestifs en cours", vomirContenu));
 
     hooks.push(function () {
       var pris = contenancePrise(), m = contenance();

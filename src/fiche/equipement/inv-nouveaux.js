@@ -248,7 +248,7 @@
       var seuil=Number(it.conditionsEffets&&it.conditionsEffets[d.id]);
       if(seuil>0){var jet=1+Math.floor(Math.random()*8)+1+Math.floor(Math.random()*8);results.push([d.nom,"2d8 = "+jet+" ; seuil ≤ "+seuil]);if(jet>seuil)return;}
       var count=d.ops.alcool?Math.floor(q):1;
-      while(count-->0)appliqueEffet(d.id,it.nom,cible);
+      while(count-->0)appliqueEffet(d.id,it.nom,cible,undefined,ingere ? "digestive" : "speciale");
     });
     ["pv","pe","pm","pr","ps","ph","pi"].forEach(function(k){
       var v=snum(it.restaurations&&it.restaurations[k]);

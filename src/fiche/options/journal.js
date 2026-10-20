@@ -7,7 +7,7 @@
     comps:"Compétences", techniques:"Techniques", notes:"Notes", messages:"Messages", text:"Texte", mode:"Format", at:"Date", format:"Format",
     inv:"Inventaire", objets:"Objets", nom:"Nom", qte:"Quantité", ou:"Emplacement", dans:"Contenant", emp:"Accroche", rang:"Rang", groupe:"Groupe", ordre:"Ordre", order:"Ordre",
     attaques:"Attaques", defenses:"Défenses", avantages:"Avantages", modules:"Disposition des modules", modActifs:"Modules actifs", mods:"Mods", modData:"Données des modules",
-    effort:"Effort", horloge:"Horloge", horlogeDigestion:"Digestion", horlogeExposition:"Exposition", temperature:"Température", qualiteSommeil:"Qualité du sommeil",
+    effort:"Effort", horloge:"Horloge", horlogeDigestion:"Digestion", horlogeExposition:"Exposition", horlogeAlcool:"Alcool", temperature:"Température", qualiteSommeil:"Qualité du sommeil",
     effetsActifs:"Effets actifs", effetsPermanents:"Effets permanents", effParties:"Effondrement", effDesactive:"Désactiver Effondrement", allure:"Allure", allureCran:"Vitesse",
     capsLeviers:"Réglages des capacités", caracsLeviers:"Réglages des caractéristiques", compsLeviers:"Réglages des compétences", combatOptions:"Options de combat", combatModifiers:"Modificateurs de combat", combatAffichage:"Affichage de combat",
     desTailles:"Dés d’action", desUtilises:"Dés utilisés", v:"Format de fiche", rel:"Version", de:"Jets"

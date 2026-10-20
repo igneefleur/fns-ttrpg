@@ -208,11 +208,11 @@ const server=http.createServer((req,res)=> {
   assert.equal(await sheet.getByLabel('Repos — ±',{exact:true}).isDisabled(),false);
   assert.equal(await frame.evaluate(()=>Owd.__calculs.effondrement()),1);
   // Temps et digestion continuent pendant la pause, sans modifier ses niveaux.
-  await replace(s=>{s.etat.contenance=42;s.effAlcool=2;s.effAlcoolSecondes=0;});
+  await replace(s=>{s.etat.contenance=42;s.effAlcool=2;s.horlogeAlcool={jours:0,heures:0,minutes:0,secondes:0};});
   await paused.click();const beforePausedTime=(await state()).effPause;
   await minute.fill('+10');await minute.press('Enter');
   assert.equal((await state()).etat.contenance,41);
-  assert.equal((await state()).effAlcoolSecondes,600);
+  assert.equal((await state()).horlogeAlcool.minutes,10);
   assert.deepEqual((await state()).effPause,beforePausedTime);
   assert.equal(await frame.evaluate(()=>Owd.__calculs.effBasePartie('contenance')),1);
   await paused.click();assert.equal(await frame.evaluate(()=>Owd.__calculs.effBasePartie('contenance')),0);
@@ -229,7 +229,7 @@ const server=http.createServer((req,res)=> {
   assert.equal((await state()).effParties.froid.effet,-1);
   assert.equal((await state()).effParties.froid.mod,1);
   // Alcohol counts only occupied time and expires one level per two hours; exact undo.
-  await replace(s=>{s.effParties={};s.effAutre=0;s.effAlcool=2;s.effAlcoolSecondes=0;s.effort='repos';});
+  await replace(s=>{s.effParties={};s.effAutre=0;s.effAlcool=2;s.horlogeAlcool={jours:0,heures:0,minutes:0,secondes:0};s.effort='repos';});
   // Le journal d’annulation est local : tester les gestes consécutifs dans le
   // même tour évite qu’une réception serveur ne l’invalide entre deux commandes.
   const alcoholSteps=await frame.evaluate(()=>{
@@ -237,18 +237,18 @@ const server=http.createServer((req,res)=> {
     return ['+1','+1','-1','+3'].map(value=>{
       input.value=value;input.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true}));
       const s=JSON.parse(__owdLocalStorage.getItem('owd-perso'));
-      return [s.effAlcool,s.effAlcoolSecondes];
+      return [s.effAlcool,s.horlogeAlcool.heures*3600+s.horlogeAlcool.minutes*60+s.horlogeAlcool.secondes];
     });
   });
-  assert.deepEqual(alcoholSteps,[[2,3600],[1,0],[2,3600],[0,0]]);
+  assert.deepEqual(alcoholSteps,[[2,3600],[1,7200],[2,3600],[0,0]]);
   // Fallback attributes and sync preserve all added fields.
-  const sample=await state();sample.desUtilises={0:true,2:true};sample.effParties.pr={effet:-3,mod:1};sample.effAlcool=1;sample.effAlcoolSecondes=99;
+  const sample=await state();sample.desUtilises={0:true,2:true};sample.effParties.pr={effet:-3,mod:1};sample.effAlcool=1;sample.horlogeAlcool={jours:0,heures:0,minutes:1,secondes:39};
   sample.effParties.pi={base:2,effet:-1,mod:1};sample.effParties.charge={effet:-1,mod:2};sample.effParties.contenance={effet:-2,mod:1};
   const packed=M.stateToAttrs(sample,null);delete packed.owd_state;
-  const back=M.attrsToState(packed);assert.deepEqual(back.desUtilises,sample.desUtilises);assert.deepEqual(back.effParties,sample.effParties);assert.equal(back.effAlcool,1);assert.equal(back.effAlcoolSecondes,99);
+  const back=M.attrsToState(packed);assert.deepEqual(back.desUtilises,sample.desUtilises);assert.deepEqual(back.effParties,sample.effParties);assert.equal(back.effAlcool,1);assert.deepEqual(back.horlogeAlcool,sample.horlogeAlcool);
   assert.deepEqual(C.rebuild(C.flatten(sample)),sample);
   // Preview representative values, check bounds in both themes and compact width.
-  await replace(s=>{s.etat.contenance=60;s.etat.pi=50;s.etat.pr=max.pr*.8;s.etat.ps=max.ps*.8;s.etat.ph=max.ph*.9;s.etat.expo=max.expo*.1;s.effAlcool=1;s.effAlcoolSecondes=0;s.effParties={pr:{effet:-1,mod:0},ps:{effet:-1,mod:0}};s.effAutre=0;s.desUtilises=[true,false,true];});
+  await replace(s=>{s.etat.contenance=60;s.etat.pi=50;s.etat.pr=max.pr*.8;s.etat.ps=max.ps*.8;s.etat.ph=max.ph*.9;s.etat.expo=max.expo*.1;s.effAlcool=1;s.horlogeAlcool={jours:0,heures:0,minutes:0,secondes:0};s.effParties={pr:{effet:-1,mod:0},ps:{effet:-1,mod:0}};s.effAutre=0;s.desUtilises=[true,false,true];});
   async function capture(locator,file){
     for(let attempt=0;attempt<5;attempt++){
       try{await locator.screenshot({path:file});return;}

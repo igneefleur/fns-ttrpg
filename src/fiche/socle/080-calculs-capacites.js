@@ -228,6 +228,17 @@
     if (state.effPause) return state.effPause.niveau;
     return effondrementActif();
   }
+  function effSpecifiques() {
+    var d = effDef().specifiques || {}, actif = !state.effDesactive;
+    function n(cle) { return actif ? Math.max(0, effPartie(cle)) : 0; }
+    var eveille = state.effort !== "sommeil", repos = eveille ? n("pr") : 0;
+    return { pe: repos * num(d.reposPE, 0), pm: repos * num(d.reposPM, 0),
+      ps: Math.floor(n("froid") / Math.max(1, num(d.froidTranche, 2))) * num(d.froidPS, 0),
+      ph: Math.floor(n("chaud") / Math.max(1, num(d.chaudTranche, 2))) * num(d.chaudPH, 0),
+      froid: n("ps") * num(d.faimFroid, 0), chaud: n("ph") * num(d.soifChaud, 0),
+      pas: n("charge") * num(d.chargePas, 0) + n("contenance") * num(d.contenancePas, 0),
+      mana: n("alcool") * num(d.alcoolMana, 0), difficulte: n("alcool") * num(d.alcoolDifficulte, 0) };
+  }
   function figeEffondrement() {
     var photo = { niveau: effondrementActif(), parties: {} };
     EFF_PARTIES.forEach(function (cle) {

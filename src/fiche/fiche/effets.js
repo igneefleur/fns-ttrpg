@@ -6,11 +6,29 @@
     var ids = {};
     s.effetsActifs = (Array.isArray(s.effetsActifs) ? s.effetsActifs : []).filter(function (e) { return e && typeof e === "object" && e.effet; }).map(function (e) {
       var id = String(e.id || uid("eff")); if (ids[id]) id = uid("eff"); ids[id] = true;
-      return { id: id, effet: String(e.effet), source: String(e.source || ""), cible: String(e.cible || ""),
+      return { categorie: e.categorie === "digestive" ? "digestive" : "speciale", id: id, effet: String(e.effet), source: String(e.source || ""), cible: String(e.cible || ""),
         actif: e.actif !== false, reste: e.reste == null ? null : Math.max(0, num(e.reste, 0)),
         duree: e.duree == null ? null : Math.max(0, num(e.duree, 0)), suivi: Math.max(0, num(e.suivi, 0)),
         niveau: clamp(Math.floor(num(e.niveau, 1)), 1, 4) };
     }).filter(function (e) { return e.reste === null || e.reste > 0; });
+    var alcool = 0, progression = 0;
+    s.effetsActifs = s.effetsActifs.filter(function (e) {
+      var d = effetDefinition(e.effet); if (!d || !d.ops.alcool || !e.actif) return true;
+      alcool += Math.max(0, num(d.ops.alcool, 0));
+      progression = Math.max(progression, Math.max(0, num(e.duree, 7200) - num(e.reste, 7200)));
+      return false;
+    });
+    if (alcool) {
+      s.effAlcool = num(s.effAlcool, 0) + alcool;
+      if (!horlogeVersSecondes(s.horlogeAlcool)) {
+        progression %= alcoolCadenceSecondes();
+        s.horlogeAlcool = {jours:0, heures:Math.floor(progression / 3600), minutes:Math.floor(progression % 3600 / 60), secondes:progression % 60};
+      }
+    }
+    // Les anciennes récupérations alimentaires et de potion viennent du catalogue.
+    s.effetsActifs.forEach(function (e) {
+      if ((D().equipements || []).concat(D().consommables || []).some(function (o) { return o.nom === e.source && (o.effets || []).indexOf(e.effet) >= 0 && invEstIngerable(o); })) e.categorie = "digestive";
+    });
     if (!s.effetsPermanents || typeof s.effetsPermanents !== "object" || Array.isArray(s.effetsPermanents)) s.effetsPermanents = {};
   }
   function effetsSources() {
@@ -47,7 +65,7 @@
   function effetAlerte() {
     return (state.effetsActifs || []).reduce(function (n,e) { var d=effetDefinition(e.effet); return d && d.ops.alerte && e.actif && (e.reste===null || e.reste>0) ? Math.max(n,e.niveau) : n; },0);
   }
-  function effetCout(res, valeur) { return Math.max(0, Math.floor(Math.max(0,num(valeur,0)) * Math.max(0,1 + effetBonus("couts",res)/100) + 1e-9)); }
+  function effetCout(res, valeur) { return Math.max(0, Math.floor(Math.max(0,num(valeur,0)) * Math.max(0,1 + (effetBonus("couts",res) + (res === "pm" ? effSpecifiques().mana : 0))/100) + 1e-9)); }
   function effetPerteInnocence(delta) { return delta < 0 ? -Math.ceil(-delta * Math.max(0,1 - effetBonus("innocence")/100) - 1e-9) : delta; }
   function retireEffet(id) { state.effetsActifs = state.effetsActifs.filter(function (e) { return e.id !== id; }); }
   function effetCoupRecu() {
@@ -60,9 +78,10 @@
     if (!(effetBonus("finTour") > 0)) return;
     for (var i=0;i<desAction();i++) if (state.desUtilises[i]) { delete state.desUtilises[i]; break; }
   }
-  function appliqueEffet(id, source, cible, duree) {
+  function appliqueEffet(id, source, cible, duree, categorie) {
     var d=effetDefinition(id); if (!d) return false;
     var op=d.ops || {}, actifs=state.effetsActifs;
+    if (op.alcool) { state.effAlcool = Math.max(0, num(state.effAlcool, 0)) + Math.max(0, num(op.alcool, 0)); return true; }
     if (op.permanent) {
       if (!state.effetsPermanents[id]) {
         Object.keys(op.permanent).forEach(function(k){ if(state.etat[k]==null)state.etat[k]=maxDe(k); });
@@ -85,7 +104,7 @@
     } else if (meme && !op.alcool) {
       var previous=effetDefinition(meme.effet);if(previous && num(previous.rang,0)>num(d.rang,0))return true;
     } else { meme={id:uid("eff"),niveau:1};actifs.push(meme); }
-    meme.effet=id;meme.source=String(source||"");meme.cible=String(cible||"");meme.actif=true;
+    meme.categorie=categorie === "digestive" ? "digestive" : "speciale";meme.effet=id;meme.source=String(source||"");meme.cible=String(cible||"");meme.actif=true;
     meme.reste=seconds;meme.duree=seconds;meme.suivi=0;return true;
   }
   function effetsAvance(secondes) {
@@ -142,7 +161,7 @@
         if(d&&d.ops.alerte)texte="−"+e.niveau+" difficulté d’Esquive ; −"+(5*e.niveau)+" % de résistance aux dégâts. Un coup reçu retire un niveau.";
         var desc=el("div","pc-effet-desc",texte);row.appendChild(desc);
         if(d&&d.manuel)row.appendChild(el("small","pc-effet-manuel","Conséquences manuelles"));
-        var actions=el("div","pc-segs");actions.appendChild(miniBtn(e.actif?"Pauser":"Reprendre",null,function(){e.actif=!e.actif;refresh();}));
+        var actions=el("div","pc-segs");actions.appendChild(miniBtn(e.actif?"Pauser":"Reprendre",null,function(){e.actif=!e.actif;if(d && d.ops.alcool && e.actif)effetsNormalise(state);refresh();}));
         if(d&&d.ops.alerte)actions.appendChild(miniBtn("Coup reçu", "Retirer un niveau d’Alerte",function(){effetCoupRecu();refresh();}));
         actions.appendChild(miniBtn("Retirer",null,function(){retireEffet(e.id);refresh();}));row.appendChild(actions);box.appendChild(row);
       });
