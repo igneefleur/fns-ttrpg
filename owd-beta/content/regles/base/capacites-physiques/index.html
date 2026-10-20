@@ -55,9 +55,9 @@
     
       <link rel="stylesheet" href="../../../../stylesheets/cartes.css?v=24">
     
-      <link rel="stylesheet" href="../../../../stylesheets/owd-fiche.css?v=204">
+      <link rel="stylesheet" href="../../../../stylesheets/owd-fiche.css?v=206">
     
-      <link rel="stylesheet" href="../../../../stylesheets/owd-des3d.css?v=204">
+      <link rel="stylesheet" href="../../../../stylesheets/owd-des3d.css?v=206">
     
     <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -896,34 +896,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="L&#39;exposition">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#le-froid" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Le froid
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#le-chaud" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Le chaud
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -1531,34 +1503,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="L&#39;exposition">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#le-froid" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Le froid
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#le-chaud" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Le chaud
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -1813,8 +1757,9 @@
 </table>
 </div>
 <p>Un niveau négatif se lit dans la même table, mais la réserve se vide au lieu de se remplir.</p>
-<p>Chaque réserve possède une récupération <strong>Naturelle</strong>, de niveau 0 par défaut, et cinq récupérations d'activité. La récupération Naturelle est permanente et s'ajoute à celle de l'activité en cours ; les autres activités sont inactives. Un niveau nul reste présent et peut être modifié sur la fiche. Les niveaux sont indépendants : chacun applique sa propre cadence de la table ci-dessus.</p>
-<p>La table suivante donne les niveaux de base des sept réserves. La qualité du sommeil et les autres modificateurs s'appliquent ensuite.</p>
+<p>Les récupérations se répartissent en trois catégories : <strong>Naturelle</strong> (récupération passive commune, selon l'activité), <strong>Digestive</strong> (tout ce qui est mangé ou bu, y compris potions et plats magiques) et <strong>Spéciale</strong> (autres sources : sorts, équipement et effets externes). Les cinq activités sont les conditions de la récupération naturelle : seule l'activité actuelle s'applique, sans récupération permanente supplémentaire.</p>
+<p>L'effondrement ne modifie que les récupérations naturelles indiquées dans sa table. Les récupérations digestives et spéciales restent indépendantes. Vomir le contenu ingéré interrompt les effets digestifs encore en cours ; les points déjà récupérés restent acquis. Les effets instantanés déjà résolus ne sont pas annulés.
+La table suivante donne les niveaux de base des sept réserves. La qualité du sommeil et les autres modificateurs s'appliquent ensuite.</p>
 <table>
 <thead>
 <tr>
@@ -1829,16 +1774,6 @@
 </tr>
 </thead>
 <tbody>
-<tr>
-<td>Naturelle</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0</td>
-</tr>
 <tr>
 <td>Sommeil</td>
 <td style="text-align: right;">+5</td>
@@ -1900,7 +1835,7 @@
 <h3 id="les-points-de-vie">Les points de vie</h3>
 <p>Les points de vie mesurent ce que le corps encaisse avant de tomber. Ils découlent de la Vigueur.</p>
 <p class="formula">Points de vie = 80 + Vigueur</p>
-<p>La récupération de base des points de vie est au niveau +5 pendant le sommeil, soit 5 points par heure complète. Les quatre activités éveillées sont au niveau 0. Une récupération Naturelle de niveau 0 est également présente, comme pour toutes les réserves.</p>
+<p>La récupération de base des points de vie est au niveau +5 pendant le sommeil, soit 5 points par heure complète. Les quatre activités éveillées sont au niveau 0.</p>
 <div class="memo">
 <p>Exemple. Un personnage ordinaire, qui porte 20 en Vigueur, dispose de 100 points de vie. Une nuit de huit heures lui en rend 40 ; blessé à mort, il lui faut deux nuits et demie pour se refaire.</p>
 </div>
@@ -1913,14 +1848,14 @@
 </div>
 <h3 id="les-points-de-mana">Les points de mana</h3>
 <p>Pour un personnage reposé, les quatre activités éveillées ont une récupération de mana de niveau 0. Le sommeil est au niveau −5 et coûte 5 points de mana par heure complète.</p>
-<p>Le manque de sommeil augmente seulement les récupérations des activités éveillées. Chaque tranche de 10 % de <a href="#les-points-de-repos">points de repos</a> perdue ajoute 2 à leur niveau de récupération de mana. Ce bonus ne s'applique ni au sommeil ni à la ligne Naturelle.</p>
+<p>L'effondrement de Repos ajoute 1 niveau de récupération naturelle des PM par point, uniquement éveillé (Repos, Léger, Intermédiaire et Lourd). Aucun bonus ne s'applique pendant le sommeil. Cette règle remplace le bonus de 2 niveaux par tranche de 10 % de PR manquants.</p>
 <div class="memo">
-<p>Exemple. Un personnage qui a dormi son content ne récupère aucun mana. Descendu à la moitié de ses points de repos, il a perdu cinq tranches de 10 % et récupère donc au niveau 10, soit 10 points toutes les dix minutes.</p>
+<p>Exemple. Avec cinq points d'effondrement de Repos, le personnage récupère naturellement son mana au niveau +5 éveillé, soit 5 points par heure complète. Pendant le sommeil, le niveau reste −5.</p>
 </div>
 <h3 id="les-points-dinnocence">Les points d'innocence</h3>
 <p>Les points d'innocence mesurent ce que l'âme supporte avant que la souillure ne la gagne. Ils découlent de la Ferveur.</p>
 <p class="formula">Points d'innocence = 80 + Ferveur</p>
-<p>Les cinq récupérations d'activité et la récupération Naturelle des points d'innocence sont au niveau 0 : le temps seul n'en rend aucun. Un personnage ne les regagne qu'en les payant.</p>
+<p>Les cinq conditions d'activité de la récupération naturelle des points d'innocence sont au niveau 0 : le temps seul n'en rend aucun. Un personnage ne les regagne qu'en les payant.</p>
 </div>
 <hr />
 <div class="cols">
@@ -2260,160 +2195,7 @@
 <p>Exemple. Le même personnage, nu, à 15 °C : à l'arrêt il subit une intensité de 4, mais en effort intermédiaire il ressent 30 °C et n'en subit aucune.</p>
 <p>À l'inverse, à 40 °C, il subit une intensité de 2 immobile et de 6 en effort intermédiaire.</p>
 </div>
-<p>Chaque niveau porte un effet, qui dure tant que l'exposition s'y tient et s'ajoute à ceux des niveaux déjà franchis.</p>
-<p>Quand l'exposition revient à zéro, et chaque fois que le personnage dort, il lance 2d8 : un jet égal ou inférieur au numéro du niveau le plus profond qu'il a atteint lui vaut la maladie que ce niveau indique.</p>
-<h4 id="le-froid">Le froid</h4>
-<p>La table ci-dessous donne l'exposition, la maladie et l'effet selon le niveau de froid.</p>
-<div class="sepia-table expo-table">
-<table>
-<thead>
-<tr>
-<th style="text-align: center;">Niveau</th>
-<th style="text-align: center;">Exposition</th>
-<th style="text-align: center;">Maladie</th>
-<th>Effet</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: center;">1</td>
-<td style="text-align: center;">−10 %</td>
-<td style="text-align: center;"></td>
-<td></td>
-</tr>
-<tr>
-<td style="text-align: center;">2</td>
-<td style="text-align: center;">−20 %</td>
-<td style="text-align: center;">rhume</td>
-<td>la satiété se dépense deux fois plus vite</td>
-</tr>
-<tr>
-<td style="text-align: center;">3</td>
-<td style="text-align: center;">−30 %</td>
-<td style="text-align: center;">rhume</td>
-<td>les PV ne reviennent plus que toutes les 2 heures de sommeil</td>
-</tr>
-<tr>
-<td style="text-align: center;">4</td>
-<td style="text-align: center;">−40 %</td>
-<td style="text-align: center;">rhume</td>
-<td>la satiété se dépense quatre fois plus vite</td>
-</tr>
-<tr>
-<td style="text-align: center;">5</td>
-<td style="text-align: center;">−50 %</td>
-<td style="text-align: center;">fièvre</td>
-<td></td>
-</tr>
-<tr>
-<td style="text-align: center;">6</td>
-<td style="text-align: center;">−60 %</td>
-<td style="text-align: center;">fièvre</td>
-<td>les PV ne reviennent plus que toutes les 4 heures de sommeil</td>
-</tr>
-<tr>
-<td style="text-align: center;">7</td>
-<td style="text-align: center;">−70 %</td>
-<td style="text-align: center;">fièvre</td>
-<td>le personnage ne peut pas dormir</td>
-</tr>
-<tr>
-<td style="text-align: center;">8</td>
-<td style="text-align: center;">−80 %</td>
-<td style="text-align: center;">gelures</td>
-<td></td>
-</tr>
-<tr>
-<td style="text-align: center;">9</td>
-<td style="text-align: center;">−90 %</td>
-<td style="text-align: center;">gelures</td>
-<td>les PV ne reviennent plus</td>
-</tr>
-<tr>
-<td style="text-align: center;">10</td>
-<td style="text-align: center;">−100 %</td>
-<td style="text-align: center;">gelures</td>
-<td>inconscient</td>
-</tr>
-</tbody>
-</table>
-</div>
-<h4 id="le-chaud">Le chaud</h4>
-<p>La table ci-dessous donne l'exposition, la maladie et l'effet selon le niveau de chaud.</p>
-<div class="sepia-table expo-table">
-<table>
-<thead>
-<tr>
-<th style="text-align: center;">Niveau</th>
-<th style="text-align: center;">Exposition</th>
-<th style="text-align: center;">Maladie</th>
-<th>Effet</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: center;">1</td>
-<td style="text-align: center;">+10 %</td>
-<td style="text-align: center;"></td>
-<td></td>
-</tr>
-<tr>
-<td style="text-align: center;">2</td>
-<td style="text-align: center;">+20 %</td>
-<td style="text-align: center;">insolation</td>
-<td>l'hydratation se dépense deux fois plus vite</td>
-</tr>
-<tr>
-<td style="text-align: center;">3</td>
-<td style="text-align: center;">+30 %</td>
-<td style="text-align: center;">insolation</td>
-<td>les PE ne reviennent plus que toutes les heures</td>
-</tr>
-<tr>
-<td style="text-align: center;">4</td>
-<td style="text-align: center;">+40 %</td>
-<td style="text-align: center;">insolation</td>
-<td>l'hydratation se dépense quatre fois plus vite</td>
-</tr>
-<tr>
-<td style="text-align: center;">5</td>
-<td style="text-align: center;">+50 %</td>
-<td style="text-align: center;">fièvre</td>
-<td></td>
-</tr>
-<tr>
-<td style="text-align: center;">6</td>
-<td style="text-align: center;">+60 %</td>
-<td style="text-align: center;">fièvre</td>
-<td>les PE ne reviennent plus que toutes les 8 heures</td>
-</tr>
-<tr>
-<td style="text-align: center;">7</td>
-<td style="text-align: center;">+70 %</td>
-<td style="text-align: center;">fièvre</td>
-<td>le personnage ne peut pas dormir</td>
-</tr>
-<tr>
-<td style="text-align: center;">8</td>
-<td style="text-align: center;">+80 %</td>
-<td style="text-align: center;">brûlures</td>
-<td></td>
-</tr>
-<tr>
-<td style="text-align: center;">9</td>
-<td style="text-align: center;">+90 %</td>
-<td style="text-align: center;">brûlures</td>
-<td>les PE ne reviennent plus</td>
-</tr>
-<tr>
-<td style="text-align: center;">10</td>
-<td style="text-align: center;">+100 %</td>
-<td style="text-align: center;">brûlures</td>
-<td>inconscient</td>
-</tr>
-</tbody>
-</table>
-</div>
+<p>Les niveaux de froid et de chaud contribuent à l'effondrement et appliquent les effets spécifiques décrits ci-dessous. Les anciennes accélérations de consommation, restrictions de récupération, interdictions de sommeil et maladies liées aux paliers d'exposition ne s'appliquent plus.</p>
 <h3 id="le-climat-des-milieux">Le climat des milieux</h3>
 <p>La table ci-dessous donne la température de l'air selon le milieu, le jour et la nuit. Le jour court de cinq heures du matin à dix heures du soir ; le reste est la nuit.</p>
 <div class="sepia-table">
@@ -2561,9 +2343,62 @@
 </table>
 </div>
 <p>Un personnage dont le maximum de points d'endurance atteint zéro tombe inconscient.</p>
+<p>Les effets spécifiques s'ajoutent aux pertes communes, selon le niveau effectif de chaque cause (effets et ajustements compris). Le plafond global de dix s'applique aux pénalités communes ; les causes gardent leurs propres niveaux. Désactiver l'effondrement annule aussi ces effets spécifiques. Une pause conserve les niveaux figés.</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Effet spécifique</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Repos</td>
+<td>−1 niveau de récupération naturelle des PE et +1 niveau de récupération naturelle des PM par point, uniquement éveillé.</td>
+</tr>
+<tr>
+<td>Faim — Satiété</td>
+<td>−2 de protection contre le froid par point.</td>
+</tr>
+<tr>
+<td>Soif — Hydratation</td>
+<td>−2 de protection contre la chaleur par point.</td>
+</tr>
+<tr>
+<td>Chaud</td>
+<td>−1 niveau de récupération naturelle des PH tous les 2 points.</td>
+</tr>
+<tr>
+<td>Froid</td>
+<td>−1 niveau de récupération naturelle des PS tous les 2 points.</td>
+</tr>
+<tr>
+<td>Charge</td>
+<td>−1 pas au mouvement total par point, après calcul de l'allure.</td>
+</tr>
+<tr>
+<td>Contenance</td>
+<td>−1 pas au mouvement total par point, après calcul de l'allure.</td>
+</tr>
+<tr>
+<td>Alcool</td>
+<td>−5 % au coût en mana et +1 à la difficulté de tous les jets par point.</td>
+</tr>
+<tr>
+<td>Innocence</td>
+<td>Effet spécifique encore à définir.</td>
+</tr>
+<tr>
+<td>Autre</td>
+<td>Aucun effet spécifique.</td>
+</tr>
+</tbody>
+</table>
+<p>Repos s'applique pendant Repos, Léger, Intermédiaire et Lourd, jamais pendant le sommeil. La récupération naturelle des PE peut devenir négative et retirer passivement des PE. Chaud et Froid s'appliquent également pendant le sommeil : leur malus vaut −floor(niveau / 2), soit −1 à 2–3 points, −2 à 4–5 points, jusqu'à −5 à 10 points.</p>
+<p>Charge et Contenance se cumulent ; le mouvement reste au minimum à zéro et ses distances suivent les pas effectifs. Aucun surcoût direct en PE ne s'ajoute. Pour l'alcool, la fiche applique la réduction du coût en mana et affiche le malus de difficulté, sans modifier automatiquement les jets.</p>
+<p>L'alcool possède une horloge dédiée en jours, heures, minutes et secondes, indépendante de l'exposition et de la digestion. Elle avance seulement tant que des points d'alcool sont présents. Chaque tranche complète de 2 heures retire 1 point ; boire de nouveau ne remet pas la progression à zéro. La progression partielle est sauvegardée. À zéro alcool, l'horloge s'arrête et revient à zéro, sans crédit pour une consommation future.</p>
 <div class="memo">
-<p>Exemple. Un personnage ordinaire qui dort et mange, mais ne boit plus, gagne un niveau d'effondrement toutes les sept heures. Au bout d'un peu moins de trois jours il atteint le dixième niveau et s'effondre.</p>
-<p>Le même, s'il ne mange pas non plus, gagne en plus un niveau par jour : il s'effondre alors au bout d'un peu plus de deux jours.</p>
+<p>Exemple. À trois points d'alcool et après une heure trente, une nouvelle consommation ajoute un point sans toucher à l'horloge. Trente minutes plus tard, un point est résorbé : il reste trois points. Les pénalités communes, la réduction du coût en mana et le malus affiché suivent les niveaux actuels.</p>
 </div>
 <div class="memo">
 <p>Exemple. Au niveau 10, ce personnage n'a plus que 50 points de vie sur les 100 qu'il portait. Une grande hache, qui inflige 32 dégâts de taille, le tue en deux coups au lieu de quatre.</p>
@@ -2670,15 +2505,15 @@
       
         <script src="../../../../javascripts/night.js"></script>
       
-        <script src="../../../../javascripts/owd-migrations.js?v=204"></script>
+        <script src="../../../../javascripts/owd-migrations.js?v=206"></script>
       
-        <script src="../../../../javascripts/owd-mods.js?v=204"></script>
+        <script src="../../../../javascripts/owd-mods.js?v=206"></script>
       
-        <script src="../../../../javascripts/owd-des3d.js?v=204"></script>
+        <script src="../../../../javascripts/owd-des3d.js?v=206"></script>
       
-        <script src="../../../../javascripts/owd-inventaire-data.js?v=204"></script>
+        <script src="../../../../javascripts/owd-inventaire-data.js?v=206"></script>
       
-        <script src="../../../../javascripts/owd-fiche.js?v=204"></script>
+        <script src="../../../../javascripts/owd-fiche.js?v=206"></script>
       
         <script src="../../../../javascripts/copybtn.js"></script>
       

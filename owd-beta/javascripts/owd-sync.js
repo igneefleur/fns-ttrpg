@@ -33,7 +33,7 @@
       if (keyed) v.forEach(function (x) { var id = identity(x); if (!id || ids[id]) keyed = false; else ids[id] = true; });
       if (p.length === 2 && p[0][1] === "effetsActifs" && p[1][0] === "e") {
         out[k] = ["v", copy(v)];
-      } else if (p.length === 1 && (/^horloge(?:Digestion|Exposition)?$/.test(p[0][1]) || p[0][1] === "effPause")) {
+      } else if (p.length === 1 && (/^horloge(?:Digestion|Exposition|Alcool)?$/.test(p[0][1]) || p[0][1] === "effPause")) {
         out[k] = ["v", copy(v)];
       } else if (Array.isArray(v) && keyed) {
         out[k] = ["l"];
@@ -210,7 +210,7 @@
     function val(a){return a&&typeof a==='object'?String(a.current==null?'':a.current):String(a==null?'':a);}
     function attr(v){return {current:JSON.stringify(v),max:''};}
     function parse(a){return JSON.parse(val(a));}
-    var owners={bio:['name','age','espece','genre','sexe','taille','portrait','background'],caracs:['caracs','caracsXp','xpTotal'],effort:['effort','qualiteSommeil','horloge'],exposition:['temperature','horlogeExposition'],mouvement:['allure','allureCran'],effondrement:['effParties','effAutre','effAlcool','effAlcoolSecondes','effDesactive','effPause'],actions:['desTailles','desUtilises'],attaques:['attaques'],defenses:['defenses'],competences:['comps'],recuperation:[],effets:['effetsActifs','effetsPermanents'],techniques:['techniques'],avantages:['avantages'],notes:['notes'],jets:['de'],reglages_caracs:['caracsLeviers'],reglages_capacites:['capsLeviers'],reglages_competences:['compsLeviers'],modules:['modules','modActifs'],mods:['mods']};
+    var owners={bio:['name','age','espece','genre','sexe','taille','portrait','background'],caracs:['caracs','caracsXp','xpTotal'],effort:['effort','qualiteSommeil','horloge'],exposition:['temperature','horlogeExposition'],mouvement:['allure','allureCran'],effondrement:['effParties','effAutre','effAlcool','effAlcoolSecondes','horlogeAlcool','effDesactive','effPause'],actions:['desTailles','desUtilises'],attaques:['attaques'],defenses:['defenses'],competences:['comps'],recuperation:[],effets:['effetsActifs','effetsPermanents'],techniques:['techniques'],avantages:['avantages'],notes:['notes'],jets:['de'],reglages_caracs:['caracsLeviers'],reglages_capacites:['capsLeviers'],reglages_competences:['compsLeviers'],modules:['modules','modActifs'],mods:['mods']};
     function encode(state,epoch){
       var s=legacy.copy(state),blocks={},known={},schema={};
       function put(name,v){blocks[name]=attr(v);schema[name]=hash(blocks[name].current);}
@@ -246,11 +246,11 @@
       });
       return {state:legacy.rebuild(f),flat:f,meta:base.meta,ops:ops,ids:ids,conflicts:conflicts,incomplete:incomplete,clock:ops.reduce(function(n,o){return Math.max(n,o.clock);},0)};
     }
-    function numeric(p){return p.length===2&&p[0][1]==='etat' || invPath(p)&&p[p.length-1][1]==='qte';}
+    function numeric(p){return p.length===1&&p[0][1]==='effAlcool' || p.length===2&&p[0][1]==='etat' || invPath(p)&&p[p.length-1][1]==='qte';}
     function Session(attrs,state,now,settings){settings=settings||{};this.actor=settings.actor||null;this.now=now||Date.now;this.attrs=attrs||{};this.id=settings.id||('s'+Math.random().toString(36).slice(2)+Date.now().toString(36));this.counter=0;this.clock=0;this.payloads={};this.pending={};this.pendingAt={};this.published={};this.maxima={};this.local=legacy.flatten(state);this.seed=legacy.copy(state);this.migration=encode(state);if(stable(snapshot(this.migration).state)!==stable(state))throw Error('Le nouveau stockage ne restitue pas la fiche complète.');var source=null;try{var old=legacy.read(attrs);source=old?old.state:attrs&&attrs.owd_state?parse(attrs.owd_state):null;}catch(e){}var header=parse(this.migration[META]);header.source=source?hash(stable(source)):null;var legacyValues={};Object.keys(attrs||{}).forEach(function(k){if(k==='owd_state'||k==='owd_sync_base'||k.indexOf('owd_sync_p_')===0)legacyValues[k]=val(attrs[k]);});header.legacyFingerprint=hash(stable(legacyValues));this.migration[META]=attr(header);this.hasBase=false;try{var r=read(attrs);if(r){this.hasBase=true;this.clock=r.clock;this.epoch=r.meta.epoch;this.local=r.flat;}}catch(e){if(!attrs.owd_sync_base&&!attrs.owd_state)throw e;}this.epoch=this.epoch||parse(this.migration[META]).epoch;}
     Session.prototype.capture=function(state,intent){var next=legacy.flatten(state),diff=legacy.difference(this.local,next),changes=[],self=this;Object.keys(diff).forEach(function(k){var p=JSON.parse(k),n=diff[k],b=self.local[k],c={k:k,n:n};if(b!==undefined)c.before=b;
         if(numeric(p)&&!(intent&&intent.absolute&&intent.absolute[k])&&n[0]==='v'&&typeof n[1]==='number'&&b&&b[0]==='v') {var old=b[1];if(old==null&&p[0][1]==='etat')old=self.maxima[p[1][1]];if(typeof old==='number'&&Number.isFinite(old)){c.delta=Math.round((n[1]-old)*1000000)/1000000;c.anchor=old;}}
-        if(p.length===1&&/^horloge(?:Digestion|Exposition)?$/.test(p[0][1])&&b&&b[0]==='v'&&n[0]==='v'&&b[1]&&n[1]&&b[1].regime===n[1].regime){var seconds=function(h){return Number(h.jours)*86400+Number(h.heures)*3600+Number(h.minutes)*60+Number(h.secondes);};var d=seconds(n[1])-seconds(b[1]);if(Number.isSafeInteger(d))c.clockDelta=d;}
+        if(p.length===1&&/^horloge(?:Digestion|Exposition|Alcool)?$/.test(p[0][1])&&b&&b[0]==='v'&&n[0]==='v'&&b[1]&&n[1]&&b[1].regime===n[1].regime){var seconds=function(h){return Number(h.jours)*86400+Number(h.heures)*3600+Number(h.minutes)*60+Number(h.secondes);};var d=seconds(n[1])-seconds(b[1]);if(Number.isSafeInteger(d))c.clockDelta=d;}
         changes.push(c);});if(changes.length){var creates={},refs={};changes.forEach(function(c){var p=JSON.parse(c.k);if(invPath(p)&&p.length===3&&c.n[0]==='o'&&!self.local[c.k])refs[p[2][1]]=true;});
         Object.keys(refs).forEach(function(ref){var record=(state.inv.objets||[]).filter(function(o){return o.ref===ref;})[0];if(!record)return;record=legacy.copy(record);['ou','dans','emp'].forEach(function(k){delete record[k];});var name=STACK+encodeURIComponent(ref),raw=attr(record);self.payloads[name]=raw;creates[ref]={attribute:name,hash:hash(raw.current)};});
         changes=changes.filter(function(c){var p=JSON.parse(c.k);return !(invPath(p)&&p.length>3&&refs[p[2][1]]&&['ou','dans','emp','order'].indexOf(p[3][1]||p[3][0])<0);});

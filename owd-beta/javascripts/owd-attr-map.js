@@ -82,7 +82,7 @@
   // même version, la beta étant ce que le stable recevra à la fusion) : ce qui
   // compare des versions doit donc l'ôter avant de lire les nombres, et c'est
   // exactement ce que fait OwdMods.compareVersions.
-  var RELEASE_DEFAUT = "4.8.0b";
+  var RELEASE_DEFAUT = "4.9.0b";
   // Entier INDÉPENDANT de la release : il ne monte qu'au changement de forme de
   // l'état du personnage, jamais parce que le majeur a bougé. Ajouter une clé
   // racine avec un défaut n'en est PAS un : normalize() complète une clé
@@ -156,6 +156,7 @@
     // Horloge interne invisible : J/H/M/S normalisés. Elle a son attribut de
     // repli propre pour ne pas disparaître si owd_state doit être reconstruit.
     ["horloge", "horloge"],
+    ["horlogeAlcool", "horloge_alcool"],
     ["horlogeDigestion", "horloge_digestion"],
     ["horlogeExposition", "horloge_exposition"],
     // Les points de caractéristique achetés à l'expérience, à part de la
@@ -277,7 +278,7 @@
       effPause: null,
       effetsActifs: [], effetsPermanents: {},
       effAlcool: 0,
-      effAlcoolSecondes: 0,
+      horlogeAlcool: { jours: 0, heures: 0, minutes: 0, secondes: 0 },
       effParties: {},
 
       // ---- les dés d'action ----

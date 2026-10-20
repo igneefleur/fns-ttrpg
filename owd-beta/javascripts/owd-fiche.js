@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.8.0b";
+  var RELEASE = "4.9.0b";
   var SCHEMA = 18;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -419,7 +419,7 @@
       effDesactive: false,
       effPause: null,
       effAlcool: 0,
-      effAlcoolSecondes: 0,
+      horlogeAlcool: { jours: 0, heures: 0, minutes: 0, secondes: 0 },
       effParties: {},
       effetsActifs: [], effetsPermanents: {},
 
@@ -672,7 +672,10 @@
     s.allureCran = clamp(num(s.allureCran, 1), 1, 99);
     s.effAutre = clamp(Math.round(num(s.effAutre, 0)), -999, 999);
     s.effAlcool = clamp(Math.round(num(s.effAlcool, 0)), 0, 999);
-    s.effAlcoolSecondes = s.effAlcool > 0 ? clamp(num(s.effAlcoolSecondes, 0), 0, 7199) : 0;
+    // Ancien compteur conservé à la lecture seulement, sans écran de migration.
+    if (!s.horlogeAlcool || (num(s.effAlcoolSecondes, 0) > 0 && !Object.values(s.horlogeAlcool).some(Number)))
+      s.horlogeAlcool = {secondes: num(s.effAlcoolSecondes, 0)};
+    delete s.effAlcoolSecondes;
     if (!s.effParties || typeof s.effParties !== "object" || Array.isArray(s.effParties)) s.effParties = {};
     // Les anciens ajustements d’exposition suivent le côté actuellement actif.
     if (!s.effParties.froid && !s.effParties.chaud && s.effParties.expo) {
@@ -729,6 +732,7 @@
     s.horloge = normaliseHorloge(s.horloge, false);
     s.horlogeDigestion = normaliseHorloge(s.horlogeDigestion, false);
     s.horlogeExposition = normaliseHorloge(s.horlogeExposition, true);
+    s.horlogeAlcool = normaliseHorloge(s.effAlcool > 0 ? s.horlogeAlcool : null, false);
     s.argent = pnum(s.argent);
 
     // ---- caractéristiques ----
@@ -1675,6 +1679,17 @@
     if (state.effPause) return state.effPause.niveau;
     return effondrementActif();
   }
+  function effSpecifiques() {
+    var d = effDef().specifiques || {}, actif = !state.effDesactive;
+    function n(cle) { return actif ? Math.max(0, effPartie(cle)) : 0; }
+    var eveille = state.effort !== "sommeil", repos = eveille ? n("pr") : 0;
+    return { pe: repos * num(d.reposPE, 0), pm: repos * num(d.reposPM, 0),
+      ps: Math.floor(n("froid") / Math.max(1, num(d.froidTranche, 2))) * num(d.froidPS, 0),
+      ph: Math.floor(n("chaud") / Math.max(1, num(d.chaudTranche, 2))) * num(d.chaudPH, 0),
+      froid: n("ps") * num(d.faimFroid, 0), chaud: n("ph") * num(d.soifChaud, 0),
+      pas: n("charge") * num(d.chargePas, 0) + n("contenance") * num(d.contenancePas, 0),
+      mana: n("alcool") * num(d.alcoolMana, 0), difficulte: n("alcool") * num(d.alcoolDifficulte, 0) };
+  }
   function figeEffondrement() {
     var photo = { niveau: effondrementActif(), parties: {} };
     EFF_PARTIES.forEach(function (cle) {
@@ -2051,7 +2066,7 @@
   function protection(champ) {
     var t = 0;
     equipementsPortes().forEach(function (o) { t += snum(o[champ]); });
-    return Math.round((t + effetBonus("climat",champ)) * 10) / 10;
+    return Math.round((t + effetBonus("climat",champ) + num(effSpecifiques()[champ], 0)) * 10) / 10;
   }
   // ---- le temps qui passe ----
   // Tout vient de owd-creation.json (clé « temps ») : les efforts et ce qu'ils
@@ -2072,7 +2087,14 @@
   // complète (round, minute, 10 m, heure, 8 h...).
   function recupsListe() {
     var t = tempsDef();
-    return t && Array.isArray(t.recuperations) ? t.recuperations : [];
+    var liste = t && Array.isArray(t.recuperations) ? t.recuperations.slice() : [];
+    // Conserver les anciennes lignes permanentes uniquement si elles ont été réglées.
+    var niveaux = recupCoffre(false).niveaux || {};
+    Object.keys(niveaux).forEach(function (id) {
+      if (/^(pv|pe|pm|pr|ps|ph|pi):naturelle$/.test(id) && num(niveaux[id], 0))
+        liste.push({id:id, reserve:id.split(":")[0], contexte:"Spéciale — ancien bonus", categorie:"speciale", condition:"toujours", niveau:0});
+    });
+    return liste;
   }
   function recupCoffre(cree) {
     if (!state.modData || typeof state.modData !== "object") {
@@ -2120,18 +2142,8 @@
     if (r.condition === "sommeil") return (state.effort === "sommeil") === !!r.valeur;
     return false;
   }
-  function recupManqueSommeil(niveau, r) {
-    var t = tempsDef(), m = t && t.recupManqueSommeil;
-    if (!m || r.reserve !== m.reserve || (m.id && r.id !== m.id) ||
-        (!m.id && (r.condition !== "effort" || r.valeur === "sommeil"))) return niveau;
-    var max = maxDe(m.source), cur = courant(m.source);
-    if (!(max > 0)) return niveau;
-    var perdu = Math.max(0, (max - cur) * 100 / max);
-    var tranches = Math.floor((perdu + 1e-9) / Math.max(1, num(m.tranche, 10)));
-    return niveau + tranches * num(m.bonus, 0);
-  }
   function recupQualiteSommeil(niveau, r) {
-    if (!(niveau > 0) || !r) return niveau;
+    if (!(niveau > 0) || !r || r.categorie === "speciale") return niveau;
     var liee = (r.condition === "sommeil" && !!r.valeur) ||
                (r.condition === "effort" && r.valeur === "sommeil") ||
                (r.condition === "toujours" && state.effort === "sommeil");
@@ -2155,14 +2167,6 @@
     if (cote === "chaud" && x <= 0) return 0;
     return Math.floor((Math.abs(x) / m) * 100 / effTranche());
   }
-  function recupEffetExpo(reserve) {
-    var t = tempsDef(), cote = num(state.etat.expo, 0) < 0 ? "froid" : "chaud";
-    var niv = niveauExpoActuel(cote), out = null;
-    (((t && t.recupExposition) || {})[cote] || []).forEach(function (x) {
-      if (x.reserve === reserve && num(x.niveau, 0) <= niv && (!out || num(x.niveau, 0) > num(out.niveau, 0))) out = x;
-    });
-    return out;
-  }
   function recupCadence(niveau) {
     var t = tempsDef(), n = Math.abs(Math.round(num(niveau, 0))), out = null;
     ((t && t.regen) || []).forEach(function (r) {
@@ -2180,9 +2184,9 @@
   // personnage et cadence réellement applicable à cet instant.
   function recupEtat(r) {
     var base = recupNiveauBase(r);
-    var niveau = recupQualiteSommeil(recupManqueSommeil(base, r), r);
+    var niveau = recupQualiteSommeil(base, r) + (r.categorie === "naturelle" ? num(effSpecifiques()[r.reserve], 0) : 0);
     var condition = recupCondition(r), bloque = condition && recupBloquee(r);
-    var c = recupCadence(niveau), exp = condition ? recupEffetExpo(r.reserve) : null;
+    var c = recupCadence(clamp(niveau, -20, 20)), exp = null;
     var raison = "";
     if (bloque) raison = "bloquée par l'effort actuel";
     if (exp && exp.aucune) { bloque = true; raison = "bloquée par l'exposition"; }
@@ -2293,16 +2297,7 @@
   }
   // Le facteur de dépense d'une réserve, selon le niveau de froid ou de chaud
   // que l'exposition a atteint.
-  function facteurDepense(cle) {
-    var t = tempsDef(), m = expoMax(), f = 1;
-    if (!t || m <= 0 || !state.etat.expo) return 1;
-    var cote = state.etat.expo < 0 ? "froid" : "chaud";
-    var niv = Math.floor((Math.abs(state.etat.expo) / m) * 100 / effTranche());
-    ((t.accelere || {})[cote] || []).forEach(function (a) {
-      if (a.reserve === cle && a.niveau <= niv) f = Math.max(f, num(a.facteur, 1));
-    });
-    return f;
-  }
+  function facteurDepense() { return 1; }
   // Une réserve qui bouge d'un nombre ENTIER de points. Les récupérations
   // arrivent désormais ici seulement lorsqu'une cadence complète est atteinte.
   function bougeReserve(cle, delta) {
@@ -2543,7 +2538,7 @@
       horlogeDigestion: copieTemps(horlogeProcessus("horlogeDigestion")),
       horlogeExposition: copieTemps(horlogeProcessus("horlogeExposition", "")),
       effAlcool: state.effAlcool,
-      effAlcoolSecondes: state.effAlcoolSecondes,
+      horlogeAlcool: copieTemps(horlogeProcessus("horlogeAlcool")),
       effetsActifs: copieTemps(state.effetsActifs || []),
       recuperation: copieTemps(recupCoffre(false)) || {}
     };
@@ -2558,7 +2553,7 @@
     state.horlogeExposition = copieTemps(o.horlogeExposition) || { jours: 0, heures: 0, minutes: 0, secondes: 0, regime: "" };
     state.effetsActifs = copieTemps(o.effetsActifs) || [];
     state.effAlcool = num(o.effAlcool, 0);
-    state.effAlcoolSecondes = num(o.effAlcoolSecondes, 0);
+    state.horlogeAlcool = copieTemps(o.horlogeAlcool) || {jours:0, heures:0, minutes:0, secondes:0};
     if (!state.modData || typeof state.modData !== "object" || Array.isArray(state.modData)) state.modData = {};
     if (o.recuperation && Object.keys(o.recuperation).length) state.modData.recuperation = copieTemps(o.recuperation);
     else delete state.modData.recuperation;
@@ -2572,11 +2567,17 @@
   // cadences natives et toutes les durées proposées au module Récupération en
   // sont des multiples, ce qui rend le calcul exact sans fractions de temps.
   var PAS_TEMPS_SECONDES = 3;
+  function alcoolCadenceSecondes() { return Math.max(1, num((effDef().specifiques || {}).alcoolSecondes, 7200)); }
+  function actualiseHorlogeAlcool() {
+    if (!(state.effAlcool > 0)) resetHorlogeProcessus("horlogeAlcool");
+  }
   function avanceAlcoolSecondes(secondes) {
-    if (!(state.effAlcool > 0)) { state.effAlcoolSecondes = 0; return; }
-    var t = num(state.effAlcoolSecondes, 0) + secondes;
-    state.effAlcool = Math.max(0, state.effAlcool - Math.floor(t / 7200));
-    state.effAlcoolSecondes = state.effAlcool > 0 ? t % 7200 : 0;
+    actualiseHorlogeAlcool();
+    if (!(state.effAlcool > 0) || !(secondes > 0)) return;
+    var cadence = alcoolCadenceSecondes(), a = avanceHorlogeProcessus("horlogeAlcool", secondes);
+    var ticks = Math.floor(a.apres / cadence) - Math.floor(a.avant / cadence);
+    state.effAlcool = Math.max(0, state.effAlcool - ticks);
+    actualiseHorlogeAlcool();
   }
   function avancerSecondesCalcul(secondes) {
     var t = tempsDef(), e = effortDe(state.effort), restant, pas;
@@ -3012,6 +3013,7 @@
     effVu = e;
   }
   function refresh() {
+    actualiseHorlogeAlcool();
     actualiseRegimeExposition();
     suitEffondrement();
     save();
@@ -4421,7 +4423,8 @@
   }
   function recupNom(r) {
     if (r && r.perso) return String(r.nom || "Récupération");
-    return String(r && r.contexte || "Sans contexte");
+    if (r && r.effetActif) return (r.effetActif.categorie === "digestive" ? "Digestive" : "Spéciale") + " · " + r.contexte;
+    return (r && r.categorie === "naturelle" ? "Naturelle · " : "") + String(r && r.contexte || "Sans contexte");
   }
   function recupDureeDef(cle) {
     var out = RECUP_DUREES[2], i;
@@ -4474,7 +4477,7 @@
     var max = recupNiveauMaxModule(), d;
     if (!r || typeof r !== "object") return null;
     if (!r.id) r.id = uid("r");
-    r.perso = true;
+    r.perso = true; r.categorie = r.categorie === "digestive" ? "digestive" : "speciale";
     r.nom = capFirst(String(r.nom || "Récupération").trim()) || "Récupération";
     r.reserve = String(r.reserve || "pv");
     r.niveau = clamp(Math.round(num(r.niveau, 0)), -max, max);
@@ -4657,6 +4660,14 @@
     } else {
       w.appendChild(el("span", "pc-rec-label", recupNom(r)));
     }
+    if (r.perso) {
+      if (isEdit("recuperation")) {
+        var categorie = el("select", "pc-rec-categorie"); categorie.setAttribute("aria-label", "Catégorie de récupération");
+        [["speciale", "Spéciale"], ["digestive", "Digestive"]].forEach(function (x) { var o = el("option", null, x[1]); o.value = x[0]; categorie.appendChild(o); });
+        categorie.value = r.categorie;
+        categorie.addEventListener("change", function () { r.categorie = categorie.value; refresh(); }); w.appendChild(categorie);
+      } else w.appendChild(el("small", "pc-rec-categorie", r.categorie === "digestive" ? "Digestive" : "Spéciale"));
+    }
     return w;
   }
 
@@ -4810,7 +4821,7 @@
     var toute = recupListeModule();
     var liste = toute.filter(function (r) {
       var e = recupEtatVueModule(r);
-      if (!recupNatives && !r.perso) return false;
+      if (!recupNatives && r.categorie === "naturelle") return false;
       if (recupOnly && !e.actif) return false;
       return true;
     });
@@ -4864,8 +4875,8 @@
       rebuildRecuperation();
     });
     ligne.appendChild(actives);
-    var natives = el("span", "pc-chip", "Natives");
-    natives.title = "Afficher ou masquer les récupérations natives de la fiche.";
+    var natives = el("span", "pc-chip", "Naturelles");
+    natives.title = "Afficher ou masquer les récupérations naturelles de la fiche.";
     natives.classList.toggle("on", recupNatives);
     natives.addEventListener("click", function () {
       recupNatives = !recupNatives;
@@ -4893,11 +4904,29 @@
     var ids = {};
     s.effetsActifs = (Array.isArray(s.effetsActifs) ? s.effetsActifs : []).filter(function (e) { return e && typeof e === "object" && e.effet; }).map(function (e) {
       var id = String(e.id || uid("eff")); if (ids[id]) id = uid("eff"); ids[id] = true;
-      return { id: id, effet: String(e.effet), source: String(e.source || ""), cible: String(e.cible || ""),
+      return { categorie: e.categorie === "digestive" ? "digestive" : "speciale", id: id, effet: String(e.effet), source: String(e.source || ""), cible: String(e.cible || ""),
         actif: e.actif !== false, reste: e.reste == null ? null : Math.max(0, num(e.reste, 0)),
         duree: e.duree == null ? null : Math.max(0, num(e.duree, 0)), suivi: Math.max(0, num(e.suivi, 0)),
         niveau: clamp(Math.floor(num(e.niveau, 1)), 1, 4) };
     }).filter(function (e) { return e.reste === null || e.reste > 0; });
+    var alcool = 0, progression = 0;
+    s.effetsActifs = s.effetsActifs.filter(function (e) {
+      var d = effetDefinition(e.effet); if (!d || !d.ops.alcool || !e.actif) return true;
+      alcool += Math.max(0, num(d.ops.alcool, 0));
+      progression = Math.max(progression, Math.max(0, num(e.duree, 7200) - num(e.reste, 7200)));
+      return false;
+    });
+    if (alcool) {
+      s.effAlcool = num(s.effAlcool, 0) + alcool;
+      if (!horlogeVersSecondes(s.horlogeAlcool)) {
+        progression %= alcoolCadenceSecondes();
+        s.horlogeAlcool = {jours:0, heures:Math.floor(progression / 3600), minutes:Math.floor(progression % 3600 / 60), secondes:progression % 60};
+      }
+    }
+    // Les anciennes récupérations alimentaires et de potion viennent du catalogue.
+    s.effetsActifs.forEach(function (e) {
+      if ((D().equipements || []).concat(D().consommables || []).some(function (o) { return o.nom === e.source && (o.effets || []).indexOf(e.effet) >= 0 && invEstIngerable(o); })) e.categorie = "digestive";
+    });
     if (!s.effetsPermanents || typeof s.effetsPermanents !== "object" || Array.isArray(s.effetsPermanents)) s.effetsPermanents = {};
   }
   function effetsSources() {
@@ -4934,7 +4963,7 @@
   function effetAlerte() {
     return (state.effetsActifs || []).reduce(function (n,e) { var d=effetDefinition(e.effet); return d && d.ops.alerte && e.actif && (e.reste===null || e.reste>0) ? Math.max(n,e.niveau) : n; },0);
   }
-  function effetCout(res, valeur) { return Math.max(0, Math.floor(Math.max(0,num(valeur,0)) * Math.max(0,1 + effetBonus("couts",res)/100) + 1e-9)); }
+  function effetCout(res, valeur) { return Math.max(0, Math.floor(Math.max(0,num(valeur,0)) * Math.max(0,1 + (effetBonus("couts",res) + (res === "pm" ? effSpecifiques().mana : 0))/100) + 1e-9)); }
   function effetPerteInnocence(delta) { return delta < 0 ? -Math.ceil(-delta * Math.max(0,1 - effetBonus("innocence")/100) - 1e-9) : delta; }
   function retireEffet(id) { state.effetsActifs = state.effetsActifs.filter(function (e) { return e.id !== id; }); }
   function effetCoupRecu() {
@@ -4947,9 +4976,10 @@
     if (!(effetBonus("finTour") > 0)) return;
     for (var i=0;i<desAction();i++) if (state.desUtilises[i]) { delete state.desUtilises[i]; break; }
   }
-  function appliqueEffet(id, source, cible, duree) {
+  function appliqueEffet(id, source, cible, duree, categorie) {
     var d=effetDefinition(id); if (!d) return false;
     var op=d.ops || {}, actifs=state.effetsActifs;
+    if (op.alcool) { state.effAlcool = Math.max(0, num(state.effAlcool, 0)) + Math.max(0, num(op.alcool, 0)); return true; }
     if (op.permanent) {
       if (!state.effetsPermanents[id]) {
         Object.keys(op.permanent).forEach(function(k){ if(state.etat[k]==null)state.etat[k]=maxDe(k); });
@@ -4972,7 +5002,7 @@
     } else if (meme && !op.alcool) {
       var previous=effetDefinition(meme.effet);if(previous && num(previous.rang,0)>num(d.rang,0))return true;
     } else { meme={id:uid("eff"),niveau:1};actifs.push(meme); }
-    meme.effet=id;meme.source=String(source||"");meme.cible=String(cible||"");meme.actif=true;
+    meme.categorie=categorie === "digestive" ? "digestive" : "speciale";meme.effet=id;meme.source=String(source||"");meme.cible=String(cible||"");meme.actif=true;
     meme.reste=seconds;meme.duree=seconds;meme.suivi=0;return true;
   }
   function effetsAvance(secondes) {
@@ -5029,7 +5059,7 @@
         if(d&&d.ops.alerte)texte="−"+e.niveau+" difficulté d’Esquive ; −"+(5*e.niveau)+" % de résistance aux dégâts. Un coup reçu retire un niveau.";
         var desc=el("div","pc-effet-desc",texte);row.appendChild(desc);
         if(d&&d.manuel)row.appendChild(el("small","pc-effet-manuel","Conséquences manuelles"));
-        var actions=el("div","pc-segs");actions.appendChild(miniBtn(e.actif?"Pauser":"Reprendre",null,function(){e.actif=!e.actif;refresh();}));
+        var actions=el("div","pc-segs");actions.appendChild(miniBtn(e.actif?"Pauser":"Reprendre",null,function(){e.actif=!e.actif;if(d && d.ops.alcool && e.actif)effetsNormalise(state);refresh();}));
         if(d&&d.ops.alerte)actions.appendChild(miniBtn("Coup reçu", "Retirer un niveau d’Alerte",function(){effetCoupRecu();refresh();}));
         actions.appendChild(miniBtn("Retirer",null,function(){retireEffet(e.id);refresh();}));row.appendChild(actions);box.appendChild(row);
       });
@@ -6448,9 +6478,10 @@
         }
       }
       var bonusPas=effetBonus("pas"),facteur=1+effetBonus("vitesse")/100;
-      dist.v.pas.textContent = String(c.pas ? Math.floor((c.pas+bonusPas)*facteur) : 0);
-      dist.v.min.textContent = fmtP(c.pas ? num0(c.minute)*(c.pas+bonusPas)/c.pas*facteur : 0);
-      dist.v.h.textContent = fmtP(c.pas ? num0(c.heure)*(c.pas+bonusPas)/c.pas*facteur : 0);
+      var pas = c.pas ? Math.max(0, Math.floor((c.pas + bonusPas) * facteur) + effSpecifiques().pas) : 0;
+      dist.v.pas.textContent = String(pas);
+      dist.v.min.textContent = fmtP(c.pas ? num0(c.minute) * pas / c.pas : 0);
+      dist.v.h.textContent = fmtP(c.pas ? num0(c.heure) * pas / c.pas : 0);
       cout.v.da.textContent = String(c.des || 0);
       cout.v.pe.textContent = String(effetCout("pe",c.pe || 0));
     });
@@ -6466,6 +6497,10 @@
     r.appendChild(tV); r.appendChild(tE); b.appendChild(r);
     var tN = bigTile("EFFONDREMENT", function () { return String(effondrement()); });
     tN.classList.add("pc-eff-niveau"); b.appendChild(tN);
+    var effetsActifs = el("div", "pc-eff-actifs");
+    effetsActifs.setAttribute("aria-label", "Effets d’effondrement appliqués"); b.appendChild(effetsActifs);
+    var horloge = el("div", "pc-eff-horloge");
+    horloge.setAttribute("aria-label", "Horloge d’alcool"); b.appendChild(horloge);
     var commandes = el("div", "pc-eff-commandes");
     var desactive = el("button", "pc-chip pc-combat-toggle", "Désactiver Effondrement");
     desactive.type = "button";
@@ -6500,7 +6535,14 @@
         champs.appendChild(champ); return champ;
       }
       var base = lecture("Base"), effets = lecture("Effet");
-      base.title = "Base : niveau calculé depuis la réserve ou l’état du personnage.";
+      if (cle === "alcool") {
+        base.readOnly = false; base.title = "Points d'alcool présents, résorbés par l'horloge dédiée.";
+        base.addEventListener("input", function () {
+          var n = litNombreSigne(base.value); if (!isFinite(n)) return;
+          state.effAlcool = clamp(Math.round(n), 0, 999); refresh();
+        });
+      }
+      base.title = cle === "alcool" ? base.title : "Base : niveau calculé depuis la réserve ou l’état du personnage.";
       effets.title = "Effet : bonus/malus des effets ; lecture seule.";
       var mod = champNombreSigne(el("input", "c pc-eff-delta"));
       mod.placeholder = "±"; mod.setAttribute("aria-label", nom + " — ±");
@@ -6543,13 +6585,30 @@
       observation.observe(grille);
     }
     hooks.push(function () {
+      var sp = effSpecifiques(), lignes = [], total = effondrement();
+      function ajoute(v, label, unite) { if (v) lignes.push(sign(v) + (unite || "") + " " + label); }
+      ajoute(-Math.min(100, total * num(effDef().pvParNiveau, 0)), "PV maximums", " %");
+      ajoute(-Math.min(100, total * num(effDef().peParNiveau, 0)), "PE maximums", " %");
+      ajoute(sp.pe, "niveau(x) de récupération naturelle des PE");
+      ajoute(sp.pm, "niveau(x) de récupération naturelle des PM");
+      ajoute(sp.ps, "niveau(x) de récupération naturelle des PS");
+      ajoute(sp.ph, "niveau(x) de récupération naturelle des PH");
+      ajoute(sp.froid, "de protection contre le froid"); ajoute(sp.chaud, "de protection contre la chaleur");
+      ajoute(sp.pas, "pas au mouvement total"); ajoute(sp.mana, "au coût en mana", " %");
+      ajoute(sp.difficulte, "à la difficulté de tous les jets (à appliquer manuellement)");
+      effetsActifs.replaceChildren(); lignes.forEach(function (texte) { effetsActifs.appendChild(el("div", "pc-eff-actif", texte)); });
+      effetsActifs.hidden = !lignes.length;
+      var h = horlogeProcessus("horlogeAlcool"), active = state.effAlcool > 0;
+      horloge.textContent = "Alcool · " + h.jours + " j · " + h.heures + " h · " + h.minutes + " min · " + h.secondes + " s" +
+        (active ? " — prochain −1 dans " + effetTemps(alcoolCadenceSecondes() - secondesHorlogeProcessus("horlogeAlcool") % alcoolCadenceSecondes()) : " — arrêtée");
       vues.forEach(function (v) {
         var brut = effBasePartie(v.cle), niveau = effPartie(v.cle);
         var photo = effPhotoPartie(v.cle);
         var ecart = photo ? photo.effet : pub("effondrementPartie", brut + num(effReglage(v.cle).effet, 0), { cle: v.cle, base: brut }) - brut;
         var ajustement = photo ? photo.mod : v.cle === "autre" ? num(state.effAutre, 0) : num(effReglage(v.cle).mod, 0);
         v.mod.disabled = !!state.effPause;
-        v.base.value = brut;
+        if (v.cle === "alcool") v.base.disabled = !!state.effPause;
+        if (document.activeElement !== v.base) v.base.value = brut;
         v.effets.value = ecart ? sign(ecart).replace("−", "-") : "0";
         v.total.textContent = String(niveau);
         v.fill.style.width = clamp(niveau * 10, 0, 100) + "%";
@@ -6584,6 +6643,15 @@
   //
   // Aucun rouage : le maximum se règle dans les Options (Réglages des
   // capacités, ligne Contenance).
+  function vomirContenu() {
+    state.etat.contenance = 0; reinitialiseHorlogeDigestion();
+    state.effetsActifs = (state.effetsActifs || []).filter(function (e) { return e.categorie !== "digestive"; });
+    var d = recupCoffre(false);
+    if (Array.isArray(d.ajouts)) d.ajouts = d.ajouts.filter(function (r) {
+      if (r.categorie !== "digestive") return true; recupOublieSuivi(r.id); return false;
+    });
+    nettoieRecupCoffre(); refresh(); rebuildRecuperation();
+  }
   function buildContenance() {
     var b = block("Contenance");
     var fig = el("div", "pc-estomac");
@@ -6621,6 +6689,7 @@
     cmd.appendChild(delta);
     cmd.appendChild(miniBtn("Appliquer", "Ajouter cette variation", applique));
     b.appendChild(cmd);
+    b.appendChild(miniBtn("Vomir", "Vider la contenance et interrompre les effets digestifs en cours", vomirContenu));
 
     hooks.push(function () {
       var pris = contenancePrise(), m = contenance();
@@ -8339,7 +8408,7 @@
       var seuil=Number(it.conditionsEffets&&it.conditionsEffets[d.id]);
       if(seuil>0){var jet=1+Math.floor(Math.random()*8)+1+Math.floor(Math.random()*8);results.push([d.nom,"2d8 = "+jet+" ; seuil ≤ "+seuil]);if(jet>seuil)return;}
       var count=d.ops.alcool?Math.floor(q):1;
-      while(count-->0)appliqueEffet(d.id,it.nom,cible);
+      while(count-->0)appliqueEffet(d.id,it.nom,cible,undefined,ingere ? "digestive" : "speciale");
     });
     ["pv","pe","pm","pr","ps","ph","pi"].forEach(function(k){
       var v=snum(it.restaurations&&it.restaurations[k]);
@@ -10826,7 +10895,7 @@
     comps:"Compétences", techniques:"Techniques", notes:"Notes", messages:"Messages", text:"Texte", mode:"Format", at:"Date", format:"Format",
     inv:"Inventaire", objets:"Objets", nom:"Nom", qte:"Quantité", ou:"Emplacement", dans:"Contenant", emp:"Accroche", rang:"Rang", groupe:"Groupe", ordre:"Ordre", order:"Ordre",
     attaques:"Attaques", defenses:"Défenses", avantages:"Avantages", modules:"Disposition des modules", modActifs:"Modules actifs", mods:"Mods", modData:"Données des modules",
-    effort:"Effort", horloge:"Horloge", horlogeDigestion:"Digestion", horlogeExposition:"Exposition", temperature:"Température", qualiteSommeil:"Qualité du sommeil",
+    effort:"Effort", horloge:"Horloge", horlogeDigestion:"Digestion", horlogeExposition:"Exposition", horlogeAlcool:"Alcool", temperature:"Température", qualiteSommeil:"Qualité du sommeil",
     effetsActifs:"Effets actifs", effetsPermanents:"Effets permanents", effParties:"Effondrement", effDesactive:"Désactiver Effondrement", allure:"Allure", allureCran:"Vitesse",
     capsLeviers:"Réglages des capacités", caracsLeviers:"Réglages des caractéristiques", compsLeviers:"Réglages des compétences", combatOptions:"Options de combat", combatModifiers:"Modificateurs de combat", combatAffichage:"Affichage de combat",
     desTailles:"Dés d’action", desUtilises:"Dés utilisés", v:"Format de fiche", rel:"Version", de:"Jets"

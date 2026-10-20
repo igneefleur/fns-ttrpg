@@ -2337,3 +2337,9 @@ html.night .t-pi { --palier-plein: #30343b; }
 .pc-journal-change { margin: .5rem 0; }
 .pc-journal-change pre { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 16rem; overflow: auto; margin: .2rem 0; font: inherit; }
 .pc-journal-pages { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-top: .5rem; }
+
+/* Effets réellement appliqués et horloge d'alcool. */
+.pc-eff-actifs, .pc-eff-horloge { margin:.35rem 0; font-size:var(--fs-meta); line-height:1.4; overflow-wrap:anywhere; }
+.pc-eff-actif { padding:.08rem 0; }
+.pc-eff-horloge { color:var(--ink-3); font-variant-numeric:tabular-nums; }
+.pc-rec-categorie { font-size:var(--fs-meta); color:var(--ink-3); max-width:100%; }
