@@ -363,7 +363,7 @@
    {
     "cle": "lourd",
     "nom": "Lourd",
-    "repos": -8,
+    "repos": -7,
     "survie": -7,
     "degres": 25
    }
@@ -504,67 +504,181 @@
   ],
   "recuperations": [
    {
-    "id": "pv:eveille",
+    "id": "pv:naturelle",
     "reserve": "pv",
-    "contexte": "Éveillé",
-    "condition": "sommeil",
-    "valeur": false,
+    "contexte": "Naturelle",
+    "condition": "toujours",
     "niveau": 0
    },
    {
-    "id": "pv:endormi",
+    "id": "pv:sommeil",
     "reserve": "pv",
-    "contexte": "Endormi",
-    "condition": "sommeil",
-    "valeur": true,
-    "niveau": 5
+    "contexte": "Sommeil",
+    "condition": "effort",
+    "valeur": "sommeil",
+    "niveau": 5,
+    "ancienId": "pv:endormi",
+    "ancienNiveau": 5
    },
    {
-    "id": "pe:eveille",
+    "id": "pv:repos",
+    "reserve": "pv",
+    "contexte": "Repos",
+    "condition": "effort",
+    "valeur": "repos",
+    "niveau": 0,
+    "ancienId": "pv:eveille",
+    "ancienNiveau": 0
+   },
+   {
+    "id": "pv:leger",
+    "reserve": "pv",
+    "contexte": "Léger",
+    "condition": "effort",
+    "valeur": "leger",
+    "niveau": 0,
+    "ancienId": "pv:eveille",
+    "ancienNiveau": 0
+   },
+   {
+    "id": "pv:intermediaire",
+    "reserve": "pv",
+    "contexte": "Intermédiaire",
+    "condition": "effort",
+    "valeur": "intermediaire",
+    "niveau": 0,
+    "ancienId": "pv:eveille",
+    "ancienNiveau": 0
+   },
+   {
+    "id": "pv:lourd",
+    "reserve": "pv",
+    "contexte": "Lourd",
+    "condition": "effort",
+    "valeur": "lourd",
+    "niveau": 0,
+    "ancienId": "pv:eveille",
+    "ancienNiveau": 0
+   },
+   {
+    "id": "pe:naturelle",
     "reserve": "pe",
-    "contexte": "Éveillé",
-    "condition": "sommeil",
-    "valeur": false,
-    "niveau": 10
-   },
-   {
-    "id": "pe:endormi",
-    "reserve": "pe",
-    "contexte": "Endormi",
-    "condition": "sommeil",
-    "valeur": true,
-    "niveau": 10
-   },
-   {
-    "id": "pm:eveille",
-    "reserve": "pm",
-    "contexte": "Éveillé",
-    "condition": "sommeil",
-    "valeur": false,
+    "contexte": "Naturelle",
+    "condition": "toujours",
     "niveau": 0
    },
    {
-    "id": "pm:endormi",
-    "reserve": "pm",
-    "contexte": "Endormi",
-    "condition": "sommeil",
-    "valeur": true,
-    "niveau": -5
+    "id": "pe:sommeil",
+    "reserve": "pe",
+    "contexte": "Sommeil",
+    "condition": "effort",
+    "valeur": "sommeil",
+    "niveau": 11,
+    "ancienId": "pe:endormi",
+    "ancienNiveau": 10
    },
    {
-    "id": "pi:eveille",
-    "reserve": "pi",
-    "contexte": "Éveillé",
-    "condition": "sommeil",
-    "valeur": false,
+    "id": "pe:repos",
+    "reserve": "pe",
+    "contexte": "Repos",
+    "condition": "effort",
+    "valeur": "repos",
+    "niveau": 10,
+    "ancienId": "pe:eveille",
+    "ancienNiveau": 10
+   },
+   {
+    "id": "pe:leger",
+    "reserve": "pe",
+    "contexte": "Léger",
+    "condition": "effort",
+    "valeur": "leger",
+    "niveau": 9,
+    "ancienId": "pe:eveille",
+    "ancienNiveau": 10
+   },
+   {
+    "id": "pe:intermediaire",
+    "reserve": "pe",
+    "contexte": "Intermédiaire",
+    "condition": "effort",
+    "valeur": "intermediaire",
+    "niveau": 8,
+    "ancienId": "pe:eveille",
+    "ancienNiveau": 10
+   },
+   {
+    "id": "pe:lourd",
+    "reserve": "pe",
+    "contexte": "Lourd",
+    "condition": "effort",
+    "valeur": "lourd",
+    "niveau": 7,
+    "ancienId": "pe:eveille",
+    "ancienNiveau": 10
+   },
+   {
+    "id": "pm:naturelle",
+    "reserve": "pm",
+    "contexte": "Naturelle",
+    "condition": "toujours",
     "niveau": 0
    },
    {
-    "id": "pi:endormi",
-    "reserve": "pi",
-    "contexte": "Endormi",
-    "condition": "sommeil",
-    "valeur": true,
+    "id": "pm:sommeil",
+    "reserve": "pm",
+    "contexte": "Sommeil",
+    "condition": "effort",
+    "valeur": "sommeil",
+    "niveau": -5,
+    "ancienId": "pm:endormi",
+    "ancienNiveau": -5
+   },
+   {
+    "id": "pm:repos",
+    "reserve": "pm",
+    "contexte": "Repos",
+    "condition": "effort",
+    "valeur": "repos",
+    "niveau": 0,
+    "ancienId": "pm:eveille",
+    "ancienNiveau": 0
+   },
+   {
+    "id": "pm:leger",
+    "reserve": "pm",
+    "contexte": "Léger",
+    "condition": "effort",
+    "valeur": "leger",
+    "niveau": 0,
+    "ancienId": "pm:eveille",
+    "ancienNiveau": 0
+   },
+   {
+    "id": "pm:intermediaire",
+    "reserve": "pm",
+    "contexte": "Intermédiaire",
+    "condition": "effort",
+    "valeur": "intermediaire",
+    "niveau": 0,
+    "ancienId": "pm:eveille",
+    "ancienNiveau": 0
+   },
+   {
+    "id": "pm:lourd",
+    "reserve": "pm",
+    "contexte": "Lourd",
+    "condition": "effort",
+    "valeur": "lourd",
+    "niveau": 0,
+    "ancienId": "pm:eveille",
+    "ancienNiveau": 0
+   },
+   {
+    "id": "pr:naturelle",
+    "reserve": "pr",
+    "contexte": "Naturelle",
+    "condition": "toujours",
     "niveau": 0
    },
    {
@@ -576,40 +690,8 @@
     "niveau": 7
    },
    {
-    "id": "ps:sommeil",
-    "reserve": "ps",
-    "contexte": "Sommeil",
-    "condition": "effort",
-    "valeur": "sommeil",
-    "niveau": -3
-   },
-   {
-    "id": "ph:sommeil",
-    "reserve": "ph",
-    "contexte": "Sommeil",
-    "condition": "effort",
-    "valeur": "sommeil",
-    "niveau": -3
-   },
-   {
     "id": "pr:repos",
     "reserve": "pr",
-    "contexte": "Repos",
-    "condition": "effort",
-    "valeur": "repos",
-    "niveau": -4
-   },
-   {
-    "id": "ps:repos",
-    "reserve": "ps",
-    "contexte": "Repos",
-    "condition": "effort",
-    "valeur": "repos",
-    "niveau": -4
-   },
-   {
-    "id": "ph:repos",
-    "reserve": "ph",
     "contexte": "Repos",
     "condition": "effort",
     "valeur": "repos",
@@ -624,40 +706,8 @@
     "niveau": -5
    },
    {
-    "id": "ps:leger",
-    "reserve": "ps",
-    "contexte": "Léger",
-    "condition": "effort",
-    "valeur": "leger",
-    "niveau": -5
-   },
-   {
-    "id": "ph:leger",
-    "reserve": "ph",
-    "contexte": "Léger",
-    "condition": "effort",
-    "valeur": "leger",
-    "niveau": -5
-   },
-   {
     "id": "pr:intermediaire",
     "reserve": "pr",
-    "contexte": "Intermédiaire",
-    "condition": "effort",
-    "valeur": "intermediaire",
-    "niveau": -6
-   },
-   {
-    "id": "ps:intermediaire",
-    "reserve": "ps",
-    "contexte": "Intermédiaire",
-    "condition": "effort",
-    "valeur": "intermediaire",
-    "niveau": -6
-   },
-   {
-    "id": "ph:intermediaire",
-    "reserve": "ph",
     "contexte": "Intermédiaire",
     "condition": "effort",
     "valeur": "intermediaire",
@@ -669,7 +719,46 @@
     "contexte": "Lourd",
     "condition": "effort",
     "valeur": "lourd",
-    "niveau": -8
+    "niveau": -7
+   },
+   {
+    "id": "ps:naturelle",
+    "reserve": "ps",
+    "contexte": "Naturelle",
+    "condition": "toujours",
+    "niveau": 0
+   },
+   {
+    "id": "ps:sommeil",
+    "reserve": "ps",
+    "contexte": "Sommeil",
+    "condition": "effort",
+    "valeur": "sommeil",
+    "niveau": -3
+   },
+   {
+    "id": "ps:repos",
+    "reserve": "ps",
+    "contexte": "Repos",
+    "condition": "effort",
+    "valeur": "repos",
+    "niveau": -4
+   },
+   {
+    "id": "ps:leger",
+    "reserve": "ps",
+    "contexte": "Léger",
+    "condition": "effort",
+    "valeur": "leger",
+    "niveau": -5
+   },
+   {
+    "id": "ps:intermediaire",
+    "reserve": "ps",
+    "contexte": "Intermédiaire",
+    "condition": "effort",
+    "valeur": "intermediaire",
+    "niveau": -6
    },
    {
     "id": "ps:lourd",
@@ -680,22 +769,112 @@
     "niveau": -7
    },
    {
+    "id": "ph:naturelle",
+    "reserve": "ph",
+    "contexte": "Naturelle",
+    "condition": "toujours",
+    "niveau": 0
+   },
+   {
+    "id": "ph:sommeil",
+    "reserve": "ph",
+    "contexte": "Sommeil",
+    "condition": "effort",
+    "valeur": "sommeil",
+    "niveau": -3
+   },
+   {
+    "id": "ph:repos",
+    "reserve": "ph",
+    "contexte": "Repos",
+    "condition": "effort",
+    "valeur": "repos",
+    "niveau": -4
+   },
+   {
+    "id": "ph:leger",
+    "reserve": "ph",
+    "contexte": "Léger",
+    "condition": "effort",
+    "valeur": "leger",
+    "niveau": -5
+   },
+   {
+    "id": "ph:intermediaire",
+    "reserve": "ph",
+    "contexte": "Intermédiaire",
+    "condition": "effort",
+    "valeur": "intermediaire",
+    "niveau": -6
+   },
+   {
     "id": "ph:lourd",
     "reserve": "ph",
     "contexte": "Lourd",
     "condition": "effort",
     "valeur": "lourd",
     "niveau": -7
-   }
-  ],
-  "recupBloques": [
+   },
    {
-    "reserve": "pe",
-    "effort": "lourd"
+    "id": "pi:naturelle",
+    "reserve": "pi",
+    "contexte": "Naturelle",
+    "condition": "toujours",
+    "niveau": 0
+   },
+   {
+    "id": "pi:sommeil",
+    "reserve": "pi",
+    "contexte": "Sommeil",
+    "condition": "effort",
+    "valeur": "sommeil",
+    "niveau": 0,
+    "ancienId": "pi:endormi",
+    "ancienNiveau": 0
+   },
+   {
+    "id": "pi:repos",
+    "reserve": "pi",
+    "contexte": "Repos",
+    "condition": "effort",
+    "valeur": "repos",
+    "niveau": 0,
+    "ancienId": "pi:eveille",
+    "ancienNiveau": 0
+   },
+   {
+    "id": "pi:leger",
+    "reserve": "pi",
+    "contexte": "Léger",
+    "condition": "effort",
+    "valeur": "leger",
+    "niveau": 0,
+    "ancienId": "pi:eveille",
+    "ancienNiveau": 0
+   },
+   {
+    "id": "pi:intermediaire",
+    "reserve": "pi",
+    "contexte": "Intermédiaire",
+    "condition": "effort",
+    "valeur": "intermediaire",
+    "niveau": 0,
+    "ancienId": "pi:eveille",
+    "ancienNiveau": 0
+   },
+   {
+    "id": "pi:lourd",
+    "reserve": "pi",
+    "contexte": "Lourd",
+    "condition": "effort",
+    "valeur": "lourd",
+    "niveau": 0,
+    "ancienId": "pi:eveille",
+    "ancienNiveau": 0
    }
   ],
+  "recupBloques": [],
   "recupManqueSommeil": {
-   "id": "pm:eveille",
    "reserve": "pm",
    "source": "pr",
    "tranche": 10,
@@ -741,7 +920,11 @@
    "diviseur": 4,
    "arrondi": "haut"
   },
-  "expoRetour": 10,
+  "resorption": {
+   "depart": 1,
+   "increment": 1,
+   "max": 10
+  },
   "intensite": {
    "max": 10,
    "plafonds": {
@@ -755,8 +938,7 @@
     "8": 80,
     "9": 90,
     "10": 100
-   },
-   "retour": 10
+   }
   },
   "accelere": {
    "froid": [

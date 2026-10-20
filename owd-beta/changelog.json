@@ -1,5 +1,19 @@
 [
 {
+"short": "d75338a",
+"author": "Théo Cavaillès",
+"date": "2026-10-20T14:00:14+02:00",
+"message": "4.8.0b",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/d75338a6efe600ac4c1ce6cde415046f354d8109",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/base/capacites-physiques.md",
+"url": "content/regles/base/capacites-physiques/"
+}
+]
+},
+{
 "short": "13ec007",
 "author": "Théo Cavaillès",
 "date": "2026-10-18T21:35:24+02:00",
