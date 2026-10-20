@@ -91,13 +91,7 @@
       return { seule: pane };
     },
     equipement: function (pane) {
-      var cols = el("div", "pc-cols2");
-      var c1 = el("div", "pc-col");
-      var c2 = el("div", "pc-col");
-      cols.appendChild(c1);
-      cols.appendChild(c2);
-      pane.appendChild(cols);
-      return { gauche: c1, droite: c2, bas: pane };
+      return { milieu: pane };
     },
     bio: function (pane) {
       var cols = el("div", "pc-cols2");

@@ -507,7 +507,18 @@
 
   window.__owdStorageBridge={session:storageSession,ops:function(id,data){var ch=getChar(id);if(ch&&inventoryAccess(ch))storageOps(ch,data);}};
 
-  function reply(ev, msg) { msg.ns = "owd"; try { ev.source.postMessage(msg, "*"); } catch (e) {} }
+  function journalPlayer() {
+    try {
+      campaign();
+      var w = winCampagne || window, p = w.currentPlayer || window.currentPlayer;
+      var id = p && (p.id || (p.get && p.get("id"))) || w.currentPlayerId || window.currentPlayerId;
+      var c = w.Campaign || (w.d20 && w.d20.Campaign);
+      if (id && c && c.players && c.players.get) p = c.players.get(id) || p;
+      var name = p && ((p.get && p.get("displayname")) || (p.attributes && p.attributes.displayname) || p.displayname);
+      return id && name ? {id:String(id), name:String(name)} : null;
+    } catch (e) { return null; }
+  }
+  function reply(ev, msg) { if(msg.type === "hydrate") msg.player = journalPlayer(); msg.ns = "owd"; try { ev.source.postMessage(msg, "*"); } catch (e) {} }
 
   // Joueurs de la partie, pour le sélecteur « À un joueur » de la barre d'envoi
   // de la fiche (qui est une iframe d'une autre origine et ne peut pas les lire

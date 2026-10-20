@@ -2324,3 +2324,16 @@ html.night .t-pi { --palier-plein: #30343b; }
 .pc-notes-chat [hidden] { display:none!important; }
 .pc-notes-latest { align-self:center; margin:.3rem 0; }
 .pc-notes-seul .pc-notes-chat { min-height:0; max-height:none; }
+
+/* Journal : cinquante événements par page, détails chargés à l'ouverture. */
+.pc-journal-info { margin: .5rem 0; font-size: .8em; opacity: .8; }
+.pc-journal-list { max-height: 38rem; overflow-y: auto; overflow-wrap: anywhere; }
+.pc-journal-entry { border-bottom: 1px solid currentColor; padding: .65rem 0; }
+.pc-journal-entry > summary { cursor: pointer; }
+.pc-journal-head { display: flex; flex-wrap: wrap; gap: .35rem .7rem; font-size: .85em; }
+.pc-journal-summary { margin-top: .25rem; }
+.pc-journal-status { font-style: italic; }
+.pc-journal-details { padding: .5rem; }
+.pc-journal-change { margin: .5rem 0; }
+.pc-journal-change pre { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 16rem; overflow: auto; margin: .2rem 0; font: inherit; }
+.pc-journal-pages { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-top: .5rem; }

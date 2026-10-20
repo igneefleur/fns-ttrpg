@@ -9,10 +9,12 @@ const fs=require('node:fs'), path=require('node:path'), http=require('node:http'
 const M=require('../docs/javascripts/owd-attr-map.js'), C=require('../docs/javascripts/owd-sync.js');
 const root=path.resolve(__dirname,'..');
 let attrs, writes=[], blockWrites=false,holdMigration=process.argv.includes('--migration'),worldStep=0,worldOps=[];const migration=holdMigration,damage=process.argv.includes('--damage'),partial=process.argv.includes('--partial'),fresh=process.argv.includes('--fresh')||partial;
+const journal=process.argv.includes('--journal');
 const seed=M.blank();seed.v=M.SCHEMA;seed.rel=M.release();seed.name='Fiche partagée';
 seed.comps=[{id:'c1',nom:'Lutte',groupe:'Physique',rang:1},{id:'c2',nom:'Évasion',groupe:'Physique',rang:2}];
 seed.inv.objets=[{ref:'o1',id:'',nom:'Dague',qte:1,ou:'sac',arme:{attaque:'6',degats:'16',parade:'8',reduction:'6',modsDegats:['Dexterite','',''],modsParade:['','',''],type:'',comp:''}}, {ref:'o2',id:'',nom:'Pain',qte:5,ou:'sac'}];
 if(migration){seed.v=17;seed.rel='4.5.2b';seed.notes='Notes avant migration';}
+if(journal)seed.modules={place:{inv:{onglet:'equipement',colonne:'bas'},defense:{onglet:'equipement',colonne:'gauche'}}};
 attrs=C.Compact.encode(seed);
 const meta=JSON.parse(attrs[C.Compact.BASE].current);meta.phase='ready';attrs[C.Compact.BASE].current=JSON.stringify(meta);
 attrs.owd_version={current:String(seed.v),max:seed.rel};
@@ -22,6 +24,7 @@ function harness() { return `<!doctype html><meta charset="utf-8"><style>iframe{
 function model(data) {return {attributes:{...data},get(k){return this.attributes[k]},set(d){Object.assign(this.attributes,d)},save(data,opts){Object.assign(this.attributes,data||{});window.backend({kind:'write',data:this.attributes}).then(()=>opts&&opts.success&&opts.success())}}}
 const collection={models:[],create(data){const m=model(data);this.models.push(m);return m},fetch(opts){window.backend({kind:'read'}).then(attrs=>{this.models=Object.keys(attrs).map(name=>model({name,...attrs[name]}));opts&&opts.success&&opts.success()})}};
 const ch={id:'shared',attribs:collection,get(k){return k==='name'?'Fiche partagée':k==='controlledby'?'all':''}};
+window.currentPlayer={id:'p1',get(k){return k==='displayname'?'Alice':null}};
 window.Campaign={characters:{get(id){return id==='shared'?ch:null},models:[ch]},players:{models:[]}};
 </script><script src="/bridge.js"></script><iframe id="sheet" src="/roll20-fiche.html#c=shared"></iframe><iframe id="panel" src="/roll20-notes.html"></iframe>`; }
 const server=http.createServer((req,res)=> {
@@ -71,6 +74,30 @@ const server=http.createServer((req,res)=> {
     }else await notesView.locator('.pc-sheet').waitFor();
     if(partial)await sheet.locator('#owd-local-recovery').waitFor({state:'detached',timeout:15000});
     assert.equal(await notesView.locator('#owd-local-recovery').count(),0);assert.equal(await sheet.locator('#owd-local-recovery').count(),fresh?0:1);
+    if(journal){
+      await sheet.locator('.pc-tab').filter({hasText:'Options'}).click();
+      const jm=sheet.locator('[data-module="journal"]');await jm.waitFor();
+      assert.equal(await jm.evaluate(n=>n.previousElementSibling.dataset.module),'modules');
+      const layout=await sheet.locator('[data-module="modules"]').evaluate(n=>{const h=Array.from(n.querySelectorAll('.pc-modgroupe')).find(x=>x.textContent==='Équipement');return Array.from(h.nextElementSibling.querySelectorAll('.pc-modplan-col-nom')).map(x=>x.textContent);});assert.deepEqual(layout,['Milieu']);
+      assert.equal(await sheet.locator('[data-module="modules"] .pc-modplan-carte[data-etat="perdu"]').count(),0);
+      await sheet.locator('.pc-tab').filter({hasText:'Fiche',exact:true}).click();
+      await sheet.locator('[data-module="pe"] .pc-vital-num').fill('77');
+      await notesView.locator('.pc-notes-input').fill('Message traçable');await notesView.locator('.pc-notes-compose').getByRole('button',{name:'Envoyer',exact:true}).click();
+      await sheet.locator('.pc-tab').filter({hasText:'Options'}).click();
+      await jm.locator('.pc-journal-entry').filter({hasText:'Alice'}).first().waitFor({timeout:15000});
+      await jm.getByRole('searchbox').fill('Message traçable');await page.waitForTimeout(1600);assert.equal(await jm.locator('.pc-journal-entry').count(),1);
+      await jm.locator('summary').click();await jm.locator('.pc-journal-details').getByText(/Message traçable/).waitFor();assert.equal(await jm.locator('time[datetime]').count(),1);
+      await page.waitForTimeout(2500);assert.equal(await jm.locator('.pc-journal-entry').count(),1);
+      const state=C.Compact.read(attrs).state,peer=new C.Compact.Session(attrs,state,()=>1700000000000,{id:'peer-journal',actor:{id:'p2',name:'Bob'}});const next=C.copy(state);
+      for(let i=1;i<=123;i++){next.age=i;peer.capture(next);peer.outgoing();}
+      attrs.owd_ops_peer_journal={current:JSON.stringify({epoch:peer.epoch,ops:Object.values(peer.pending)})};
+      await jm.getByRole('searchbox').fill('Bob');await page.waitForTimeout(2200);assert.equal(await jm.locator('.pc-journal-entry').count(),50);
+      await jm.getByRole('button',{name:'Plus anciens',exact:true}).click();assert.equal(await jm.locator('.pc-journal-entry').count(),50);
+      await jm.getByRole('button',{name:'Plus anciens',exact:true}).click();assert.equal(await jm.locator('.pc-journal-entry').count(),23);
+      await jm.getByRole('button',{name:'Plus récents',exact:true}).click();assert.equal(await jm.locator('.pc-journal-entry').count(),50);
+      await page.reload();await sheet.locator('.pc-sheet').waitFor();await sheet.locator('.pc-tab').filter({hasText:'Options'}).click();await jm.getByRole('searchbox').fill('Message traçable');await page.waitForTimeout(1700);assert.equal(await jm.locator('.pc-journal-entry').count(),1);assert.match(await jm.locator('.pc-journal-entry').innerText(),/Alice/);
+      assert.deepEqual(errors,[]);console.log('OK Journal navigateur : Equipement normalisé avec anciennes dispositions, module sous Modules, identité depuis le vrai pont, changements fiche/panneau, détail daté, aucune duplication, joueur distant, pagination de 123 événements et persistance après rechargement.');return;
+    }
     await sheet.locator('.pc-tab').filter({hasText:'Bio'}).click();
     async function send(f,text){await f.locator('.pc-notes-input').fill(text);await f.locator('.pc-notes-compose').getByRole('button',{name:'Envoyer',exact:true}).click();}
     await send(notesView,'Du panneau vers la fiche');

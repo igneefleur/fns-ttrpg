@@ -93,6 +93,7 @@ fin = lf
   src/fiche/options/optcomps.js
   src/fiche/options/filtres.js
   src/fiche/options/modules.js
+  src/fiche/options/journal.js
   src/fiche/options/mods.js
   src/fiche/socle/270-modules-natifs.js
   src/fiche/socle/280-moteur-mods.js

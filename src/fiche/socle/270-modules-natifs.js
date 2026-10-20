@@ -37,7 +37,7 @@
     // Fiche, c'est-à-dire là où personne n'allait la chercher.
     { id: "techniques",   titre: "TECHNIQUES",       onglet: "art", colonne: "seule",  build: buildTechniques },
     // ---- onglet Équipement ----
-    { id: "inv",          titre: "INVENTAIRE",       onglet: "equipement", colonne: "bas",    build: buildInv },
+    { id: "inv",          titre: "INVENTAIRE",       onglet: "equipement", colonne: "milieu",    build: buildInv },
     // ---- onglet Bio ----
     // La prose, dans son propre onglet : ce qui se lit ne se met pas devant ce
     // qui se joue, et ces deux zones sont les seules de la fiche qu'on ne
@@ -60,6 +60,7 @@
     { id: "filtres",      titre: "OUTILS DE FILTRE", onglet: "options", colonne: "droite", build: buildFiltres },
     { id: "mods",         titre: "MODS",             onglet: "options", colonne: "gauche", build: buildMods },
     { id: "modules",      titre: "MODULES",          onglet: "options", colonne: "gauche", build: buildModules },
+    { id: "journal",      titre: "JOURNAL",          onglet: "options", colonne: "gauche", build: buildJournal },
     // le titre dit ce que le bloc AFFICHE : « Compétences » le confondrait avec
     // celui de l'onglet Fiche, dans le plan comme partout où les modules se
     // nomment

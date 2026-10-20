@@ -17,9 +17,9 @@
   function placeDemandee(m) {
     var p = (disposition().place || {})[m.id];
     if (p && typeof p === "object" && typeof p.onglet === "string" && typeof p.colonne === "string")
-      return { onglet: p.onglet, colonne: p.colonne };
+      return { onglet: p.onglet, colonne: colonneNormalisee(p.onglet, p.colonne) };
     var o = placeOrigine[m.id];
-    if (o) return { onglet: o.onglet, colonne: o.colonne };
+    if (o) return { onglet: o.onglet, colonne: colonneNormalisee(o.onglet, o.colonne) };
     return { onglet: m.onglet, colonne: m.colonne };
   }
   function idsConnus() { return ordreModules().map(function (m) { return m.id; }); }

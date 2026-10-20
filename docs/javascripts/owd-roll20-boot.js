@@ -85,6 +85,15 @@
   var miseANiveauDemandee = false, miseANiveauOps = [], miseANiveauReprise = null;
   var ready = false;            // les sauvegardes ne partent qu'après hydratation + montage
   var storageInitialSentAt = 0;
+  var journalPlayer = null, journalRemote = null;
+  window.__owdJournal = function () {
+    var remote=journalRemote, ops=remote ? remote.ops.slice() : [], ids={};
+    ops.forEach(function(op){ids[op.id]=true;});
+    var pending={};
+    if(collaboration)Object.keys(collaboration.pending).forEach(function(id){if(!ids[id]){ops.push(collaboration.pending[id]);pending[id]=true;}});
+    return {ops:ops, pending:pending, conflicts:remote ? remote.conflicts : [], identity:!!journalPlayer,
+      payload:function(name){var a=collaboration&&collaboration.payloads[name]||lastAttrs[name];try{return a?JSON.parse(a.current):null;}catch(e){return null;}}};
+  };
   var saveTimer = null;
   var askTimer = null;          // relance de la demande d'hydratation
   var gardeArmee = false;       // le chien de garde ne se lance qu'une fois par session
@@ -111,7 +120,7 @@
       var previousValue=mem[k];mem[k] = String(v);
       if(ready&&gele&&!gelVolontaire&&!collaboration&&!collaborationApplique&&k==='owd-perso'&&previousValue!==mem[k]){try{localStorage.setItem('owd-recovery-v2:'+CHAR_ID+':draft',JSON.stringify({source:'saisie-pendant-recuperation',raw:mem[k],reason:'Modifications saisies pendant une lecture indisponible',at:Date.now()}));}catch(e){}}
       if (collaboration && !collaborationApplique && k === "owd-perso") {
-        updateStorageMaxima();collaboration.capture(JSON.parse(mem[k]),storageIntent);storageIntent={absolute:{}};persistStoragePending(); modificationLocale = Date.now();
+        updateStorageMaxima();collaboration.actor=journalPlayer;collaboration.capture(JSON.parse(mem[k]),storageIntent);storageIntent={absolute:{}};persistStoragePending(); modificationLocale = Date.now();
       }
       if (ready && !collaborationApplique && SAVE_KEYS[k]) scheduleSave();
     },
@@ -243,7 +252,7 @@
   }, 400);
 
   function memoriseLectureVerifiee(attrs,remote){
-    try{remote=remote||C.read(attrs);if(!remote||remote.incomplete)return;lectureVerifiee=attrs;
+    try{remote=remote||C.read(attrs);if(!remote||remote.incomplete)return;journalRemote=remote;lectureVerifiee=attrs;
       var stamp=remote.meta.epoch+':'+C.hash(C.stable(remote.meta.blocks));if(stamp===empreinteBaseVerifiee)return;
       var base={};base[C.BASE]=attrs[C.BASE];Object.keys(remote.meta.blocks).forEach(function(k){base[k]=attrs[k];});baseVerifiee=base;empreinteBaseVerifiee=stamp;
       try{localStorage.setItem('owd-verified-base-v2:'+CHAR_ID,JSON.stringify(base));}catch(e){}
@@ -430,7 +439,7 @@
     var card = null;
     try { var cards = JSON.parse(mem["owd-cards"] || "{}"); card = cards && cards._current; } catch (e) {}
     if (collaboration) {
-      collaboration.capture(state);
+      collaboration.actor=journalPlayer;collaboration.capture(state);
       var cardCaps=card&&card.capacites||{};
       ['pv','pe','pm','pr','ps','ph','pi','pc','contenance','expo','rupture'].forEach(function(k){var m=cardCaps[k+'Max'];if(typeof m==='number')collaboration.maxima[k]=m;});
       var lot = collaboration.outgoing();
@@ -1757,6 +1766,8 @@
     if(d.type==='storage-error'&&(!d.charId||d.charId===CHAR_ID)){bandeau("Sauvegarde en attente : "+d.error,[{texte:"Exporter (JSON)",acte:"export",action:exporter}]);return;}
     // on n'accepte que l'hydratation de NOTRE personnage (plusieurs fiches peuvent être ouvertes)
     if (d.type === "hydrate" && (!d.charId || d.charId === CHAR_ID)) {
+      if(d.player && typeof d.player.id === "string" && typeof d.player.name === "string") journalPlayer={id:d.player.id,name:d.player.name};
+      if(collaboration)collaboration.actor=journalPlayer;
       // ROUTAGE CRITIQUE. Une fois la fiche hydratée, un « hydrate » n'hydrate
       // plus rien : c'est la réponse à une sonde de confirmation, qui n'a le
       // droit que de LIRE. Le passer à hydrate() — ou même le laisser tomber
@@ -1890,7 +1901,7 @@
     try {
       // capture() a déjà reçu chaque frappe dans le shim SYNCHRONE, avant le
       // debounce de sauvegarde : même une réponse arrivée à cet instant la garde.
-      var server=C.read(attrs),previous=null;if(!server&&collaboration.hasBase)throw Error('Manifeste de stockage absent de la lecture Roll20.');try{previous=C.read(collaboration.attrs);}catch(e){}
+      var server=C.read(attrs),previous=null;if(server)journalRemote=server;if(!server&&collaboration.hasBase)throw Error('Manifeste de stockage absent de la lecture Roll20.');try{previous=C.read(collaboration.attrs);}catch(e){}
       if(server&&collaboration.hasBase){['pv','pe','pm'].forEach(function(k){var a=attrs['owd_'+k],raw=a&&String(a.current),n=Number(raw),actual=server.state.etat[k];
         if(actual==null)actual=collaboration.maxima[k];
         var old=previous&&previous.state.etat[k];if(old==null)old=collaboration.maxima[k];

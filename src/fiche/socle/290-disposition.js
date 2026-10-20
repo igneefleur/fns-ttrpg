@@ -3,6 +3,9 @@
   // on le bâtit UNE FOIS À VIDE, dans un élément détaché, plutôt que de
   // recopier ici une liste de colonnes qui dériverait au premier onglet
   // remanié.
+  function colonneNormalisee(onglet, colonne) {
+    return onglet === "equipement" && ["gauche", "droite", "bas", "seule"].indexOf(colonne) >= 0 ? "milieu" : colonne;
+  }
   function colonnesDe(onglet) {
     if (!aClef(SQUELETTES, onglet)) return null;
     var noms = {};
@@ -28,6 +31,12 @@
   // colonne qui n'existe plus dans ce squelette) est simplement IGNORÉE : elle
   // laisserait sinon le module hors de la fiche, sans rien pour l'y ramener.
   function appliqueDisposition() {
+    modules = modules.map(function (m) {
+      var colonne = colonneNormalisee(m.onglet, m.colonne);
+      if (colonne === m.colonne) return m;
+      var copie = {}; Object.keys(m).forEach(function(k){copie[k]=m[k];});
+      copie.colonne = colonne; return copie;
+    });
     var d = state && state.modules;
     if (!d || typeof d !== "object") return;
     if (Array.isArray(d.ordre)) ordonne(d.ordre);
@@ -41,7 +50,8 @@
       var m = modules[i];
       var onglet = (typeof p.onglet === "string" && aClef(SQUELETTES, p.onglet)) ? p.onglet : m.onglet;
       var cols = colonnesDe(onglet) || {};
-      var colonne = (typeof p.colonne === "string" && aClef(cols, p.colonne)) ? p.colonne : null;
+      var demandee = colonneNormalisee(onglet, p.colonne);
+      var colonne = (typeof demandee === "string" && aClef(cols, demandee)) ? demandee : null;
       // l'onglet change sans que la colonne suive : celle du module n'existe
       // peut-être pas là-bas, on prend alors la première du squelette
       if (!colonne) colonne = aClef(cols, m.colonne) ? m.colonne : Object.keys(cols)[0];
