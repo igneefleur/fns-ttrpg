@@ -2339,9 +2339,10 @@ html.night .t-pi { --palier-plein: #30343b; }
 .pc-journal-pages { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-top: .5rem; }
 
 /* Effets réellement appliqués et horloge d'alcool. */
-.pc-eff-actifs, .pc-eff-horloge { margin:.35rem 0; font-size:var(--fs-meta); line-height:1.4; overflow-wrap:anywhere; }
-.pc-eff-actif { padding:.08rem 0; }
-.pc-eff-horloge { color:var(--ink-3); font-variant-numeric:tabular-nums; }
+.pc-eff-actifs { display:grid; gap:.35rem; margin:.5rem 0; font-size:var(--fs-meta); line-height:1.4; overflow-wrap:anywhere; }
+.pc-eff-actifs[hidden] { display:none; }
+.pc-eff-actif { padding:.45rem .6rem; border:1px solid #000; border-radius:4px; background:#171717; color:#f2f2f2; }
+.pc-vital-consommation { margin-top:.4rem; font-size:var(--fs-meta); color:var(--ink-2); text-align:center; }
 .pc-rec-categorie { font-size:var(--fs-meta); color:var(--ink-3); max-width:100%; }
 
 /* Choix commun d'imprégnation du module Attaques. */

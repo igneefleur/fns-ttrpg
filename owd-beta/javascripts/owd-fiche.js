@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.11.0b";
+  var RELEASE = "4.12.0b";
   var SCHEMA = 18;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -4970,7 +4970,8 @@
   function effetAlerte() {
     return (state.effetsActifs || []).reduce(function (n,e) { var d=effetDefinition(e.effet); return d && d.ops.alerte && e.actif && (e.reste===null || e.reste>0) ? Math.max(n,e.niveau) : n; },0);
   }
-  function effetCout(res, valeur) { return Math.max(0, Math.floor(Math.max(0,num(valeur,0)) * Math.max(0,1 + (effetBonus("couts",res) + (res === "pm" ? effSpecifiques().mana : 0))/100) + 1e-9)); }
+  function effetConsommation(res) { return Math.max(0, 100 + effetBonus("couts",res) + (res === "pm" ? effSpecifiques().mana : 0)); }
+  function effetCout(res, valeur) { return Math.max(0, Math.floor(Math.max(0, Number(valeur) || 0) * effetConsommation(res) / 100 + 1e-9)); }
   function effetPerteInnocence(delta) { return delta < 0 ? -Math.ceil(-delta * Math.max(0,1 - effetBonus("innocence")/100) - 1e-9) : delta; }
   function retireEffet(id) { state.effetsActifs = state.effetsActifs.filter(function (e) { return e.id !== id; }); }
   function effetCoupRecu() {
@@ -5265,6 +5266,7 @@
       var d = litNombreSigne(delta.value);
       if (!isFinite(d) || !d) return;
       if (cle === "pi") d = effetPerteInnocence(d);
+      if (d < 0 && /^(pv|pe|pm)$/.test(cle)) d = -effetCout(cle, -d);
       state.etat[cle] = Math.round((courant(cle) + d) * 100) / 100;
       delta.value = "";
       refresh();
@@ -5275,8 +5277,11 @@
     cmd.appendChild(delta);
     cmd.appendChild(miniBtn("Appliquer", "Ajouter cette variation", appliqueDelta));
     box.appendChild(cmd);
+    var consommation = /^(pv|pe|pm)$/.test(cle) ? el("div", "pc-vital-consommation") : null;
+    if (consommation) box.appendChild(consommation);
 
     hooks.push(function () {
+      if (consommation) consommation.textContent = "Consommation " + cle.toUpperCase() + " : " + fmtP(effetConsommation(cle)) + " %";
       var v = courant(cle), m = maxDe(cle);
       if (document.activeElement !== inp) inp.value = v;
       // un <input> ROGNE au lieu de déborder : sa largeur suit le nombre de
@@ -6514,6 +6519,9 @@
     return Math.max(0, Math.floor(num0(c.des)));
   }
   function num0(v) { var n = parseFloat(v); return isFinite(n) ? n : 0; }
+  function mouvementPas(base, bonus, vitesse, effondrement) {
+    return base ? Math.max(0, Math.floor(base + bonus) + Math.trunc(vitesse / 10) + effondrement) : 0;
+  }
   function buildMouvement() {
     var b = block("Mouvement");
 
@@ -6584,11 +6592,10 @@
           });
         }
       }
-      var bonusPas=effetBonus("pas"),facteur=1+effetBonus("vitesse")/100;
-      var pas = c.pas ? Math.max(0, Math.floor((c.pas + bonusPas) * facteur) + effSpecifiques().pas) : 0;
+      var pas = mouvementPas(c.pas, effetBonus("pas"), effetBonus("vitesse"), effSpecifiques().pas);
       dist.v.pas.textContent = String(pas);
-      dist.v.min.textContent = fmtP(c.pas ? num0(c.minute) * pas / c.pas : 0);
-      dist.v.h.textContent = fmtP(c.pas ? num0(c.heure) * pas / c.pas : 0);
+      dist.v.min.textContent = fmtP(Math.round(c.pas ? num0(c.minute) * pas / c.pas : 0));
+      dist.v.h.textContent = fmtP(Math.round((c.pas ? num0(c.heure) * pas / c.pas : 0) * 10) / 10);
       cout.v.da.textContent = String(c.des || 0);
       cout.v.pe.textContent = String(effetCout("pe",c.pe || 0));
     });
@@ -6606,8 +6613,6 @@
     tN.classList.add("pc-eff-niveau"); b.appendChild(tN);
     var effetsActifs = el("div", "pc-eff-actifs");
     effetsActifs.setAttribute("aria-label", "Effets d’effondrement appliqués"); b.appendChild(effetsActifs);
-    var horloge = el("div", "pc-eff-horloge");
-    horloge.setAttribute("aria-label", "Horloge d’alcool"); b.appendChild(horloge);
     var commandes = el("div", "pc-eff-commandes");
     var desactive = el("button", "pc-chip pc-combat-toggle", "Désactiver Effondrement");
     desactive.type = "button";
@@ -6705,9 +6710,7 @@
       ajoute(sp.difficulte, "à la difficulté de tous les jets (à appliquer manuellement)");
       effetsActifs.replaceChildren(); lignes.forEach(function (texte) { effetsActifs.appendChild(el("div", "pc-eff-actif", texte)); });
       effetsActifs.hidden = !lignes.length;
-      var h = horlogeProcessus("horlogeAlcool"), active = state.effAlcool > 0;
-      horloge.textContent = "Alcool · " + h.jours + " j · " + h.heures + " h · " + h.minutes + " min · " + h.secondes + " s" +
-        (active ? " — prochain −1 dans " + effetTemps(alcoolCadenceSecondes() - secondesHorlogeProcessus("horlogeAlcool") % alcoolCadenceSecondes()) : " — arrêtée");
+
       vues.forEach(function (v) {
         var brut = effBasePartie(v.cle), niveau = effPartie(v.cle);
         var photo = effPhotoPartie(v.cle);
@@ -8372,8 +8375,8 @@
     combatTypes().forEach(function(k){out.push(["res_"+k,"Résistance "+combatLibType(k)+" (%)"]);});
     out.push(["poches","Poches (L)"],["froid","Défense froid (°)"],["chaud","Défense chaud (°)"]);
     combatTypes().forEach(function(k){out.push(["degats:"+k,"Dégâts "+combatLibType(k)+" (%)"]);});
-    out.push(["couts:pm","Coût PM (%)"],["couts:pe","Coût PE (%)"],
-      ["vitesse","Déplacement (%)"],["innocence","Résistance corruption (%)"],
+    out.push(["couts:pv","Coût PV (%)"],["couts:pm","Coût PM (%)"],["couts:pe","Coût PE (%)"],
+      ["vitesse","Vitesse"],["innocence","Résistance corruption (%)"],
       ["alterations","Résistance altérations (%)"]);
     return out;
   }
@@ -8595,7 +8598,7 @@
     var stats=it.stats||{};
     ["degats","protections","resistances"].forEach(function(k){Object.keys(stats[k]||{}).forEach(function(t){if(stats[k][t])add(({degats:"Bonus dégâts ",protections:"Protection passive ",resistances:"Résistance passive "})[k]+combatLibType(t),fmtP(stats[k][t])+(k==="protections"?"":" %"));});});
     Object.keys(stats.couts||{}).forEach(function(k){if(stats.couts[k])add("Coût "+k.toUpperCase(),fmtP(stats.couts[k])+" %");});
-    [["vitesse","Déplacement"],["innocence","Résistance corruption"],["alterations","Résistance altérations"]].forEach(function(x){if(stats[x[0]])add(x[1],fmtP(stats[x[0]])+" %");});
+    [["vitesse","Vitesse"],["innocence","Résistance corruption"],["alterations","Résistance altérations"]].forEach(function(x){if(stats[x[0]])add(x[1],fmtP(stats[x[0]])+(x[0]==="vitesse"?"":" %"));});
     if(it.sac||it.ceint){add("Accroches",it.ep);add("Taille maximale aux accroches",it.tailleAccroche);}
     if(it.sac||it.contenant)add("Capacité (L)",it.cap);
     (it.reglesManuelles||[]).forEach(function(rule){add("Propriété — gestion manuelle",rule);});

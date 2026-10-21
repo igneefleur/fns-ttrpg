@@ -55,3 +55,5 @@ html:not(.night) .ob-item img,html:not(.night) .ob-portrait{background:#e5e0d6}
 html:not(.night) .ob-pagination button,html:not(.night) #ob-details button,html:not(.night) .ob-dialog-actions button{background:#f7f5ef;color:#242424}
 html:not(.night) #ob-dialog{background:#f7f5ef;color:#242424}
 @media(max-width:620px){html:not(.night) .ob-col-details{border-bottom-color:#8c806766}}
+
+@media(max-width:620px){.ob-filtres{flex-wrap:wrap}.ob-filtres label:first-child{flex-basis:100%}}
