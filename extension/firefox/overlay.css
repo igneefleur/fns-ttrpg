@@ -540,5 +540,5 @@
 .owd-combat-damage { display: inline-flex; align-items: center; gap: 3px; font-variant-numeric: tabular-nums; }
 .owd-combat-damage img { width: 18px; height: 18px; object-fit: contain; }
 .owd-combat-total { margin-top: 7px; font-size: 12px; font-weight: bold; }
-.owd-combat-footer { justify-content: flex-end; gap: 7px; }
+.owd-combat-footer { justify-content: space-between; gap: 7px; }
 .owd-combat .owd-des-titre { overflow-wrap: anywhere; white-space: normal; }

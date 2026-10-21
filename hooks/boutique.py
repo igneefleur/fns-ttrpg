@@ -19,6 +19,7 @@ def reference(docs):
     items = data.get('equipements', [])
     if not items:
         raise ValueError('Le catalogue Boutique est vide.')
+    categories = {c['nom']: c['sousCategories'] for c in data['categoriesBoutique']}
     ids, names = set(), set()
     effects = {e['id'] for e in data.get('effets', [])}
     if len(effects) != len(data.get('effets', [])):
@@ -40,6 +41,8 @@ def reference(docs):
             raise ValueError(f'Icône d’imprégnation non embarquée : {d["id"]}')
     for o in items:
         name = o['nom']
+        if o.get('sousCategorieBoutique') not in categories.get(o.get('categorieBoutique'), []):
+            raise ValueError(f'Catégorie Boutique invalide : {name}')
         if o['id'] in ids or name in names:
             raise ValueError(f'Équipement dupliqué : {name}')
         ids.add(o['id']); names.add(name)
@@ -131,7 +134,7 @@ def champs(o, effects):
     for typ, val in stats.get('protections', {}).items(): add('Protection passive ' + DAMAGE.get(typ, typ), val)
     for typ, val in stats.get('resistances', {}).items(): add('Résistance passive ' + DAMAGE.get(typ, typ) + ' (%)', val)
     for res, val in stats.get('couts', {}).items(): add('Coût ' + res.upper() + ' (%)', val)
-    for key, label in [('vitesse','Déplacement (%)'), ('innocence','Résistance à la corruption (%)'), ('alterations','Résistance aux altérations (%)')]: add(label, stats.get(key))
+    for key, label in [('vitesse','Vitesse'), ('innocence','Résistance à la corruption (%)'), ('alterations','Résistance aux altérations (%)')]: add(label, stats.get(key))
     if o['typeObjet'] == 'consommable':
         if o.get('nourri'):
             for k, label in [('places','Contenance'), ('ps','PS'), ('ph','PH')]: add(label, o.get(k, 0), True)
@@ -161,11 +164,11 @@ def catalogue(docs):
     effects = {e['id']: e for e in data['effets']}
     items = []
     for o in data['equipements']:
-        items.append({'id':o['id'], 'nom':o['nom'], 'categorie':o['categorieBoutique'],
+        items.append({'id':o['id'], 'nom':o['nom'], 'categorie':o['categorieBoutique'], 'sousCategorie':o['sousCategorieBoutique'],
                       'famille':o.get('famille',''), 'origine':o.get('origine',''),
                       'img':o.get('img',''), 'desc':o['desc'], 'champs':champs(o, effects),
                       'objet':copy.deepcopy(o)})
-    return {'version':data['version'], 'source':'OWD Boutique', 'effets':data['effets'], 'typesArmes':data['typesArmes'], 'typesDegats':data['typesDegats'], 'monnaie':data['monnaie'], 'objets':items}
+    return {'version':data['version'], 'categories':data['categoriesBoutique'], 'source':'OWD Boutique', 'effets':data['effets'], 'typesArmes':data['typesArmes'], 'typesDegats':data['typesDegats'], 'monnaie':data['monnaie'], 'objets':items}
 
 
 def document(it):

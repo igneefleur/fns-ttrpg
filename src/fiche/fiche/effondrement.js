@@ -10,8 +10,6 @@
     tN.classList.add("pc-eff-niveau"); b.appendChild(tN);
     var effetsActifs = el("div", "pc-eff-actifs");
     effetsActifs.setAttribute("aria-label", "Effets d’effondrement appliqués"); b.appendChild(effetsActifs);
-    var horloge = el("div", "pc-eff-horloge");
-    horloge.setAttribute("aria-label", "Horloge d’alcool"); b.appendChild(horloge);
     var commandes = el("div", "pc-eff-commandes");
     var desactive = el("button", "pc-chip pc-combat-toggle", "Désactiver Effondrement");
     desactive.type = "button";
@@ -109,9 +107,7 @@
       ajoute(sp.difficulte, "à la difficulté de tous les jets (à appliquer manuellement)");
       effetsActifs.replaceChildren(); lignes.forEach(function (texte) { effetsActifs.appendChild(el("div", "pc-eff-actif", texte)); });
       effetsActifs.hidden = !lignes.length;
-      var h = horlogeProcessus("horlogeAlcool"), active = state.effAlcool > 0;
-      horloge.textContent = "Alcool · " + h.jours + " j · " + h.heures + " h · " + h.minutes + " min · " + h.secondes + " s" +
-        (active ? " — prochain −1 dans " + effetTemps(alcoolCadenceSecondes() - secondesHorlogeProcessus("horlogeAlcool") % alcoolCadenceSecondes()) : " — arrêtée");
+
       vues.forEach(function (v) {
         var brut = effBasePartie(v.cle), niveau = effPartie(v.cle);
         var photo = effPhotoPartie(v.cle);

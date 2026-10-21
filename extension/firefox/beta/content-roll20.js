@@ -783,7 +783,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
     var foot=el('div','owd-des-pied owd-combat-footer');
     if(kind==='attack'){var defend=el('button','owd-des-rejouer owd-combat-defend','Se défendre');defend.type='button';defend.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();if(!diffuseDefense(payload))toast('Ouvre ta fiche Outward, puis reclique « Se défendre ».');});foot.appendChild(defend);}
     var details=el('button','owd-des-rejouer owd-combat-details','Détails'),fold=el('div','owd-des-repli');details.type='button';fold.hidden=true;fold.id='owd-combat-details-'+(++combatCount);details.setAttribute('aria-controls',fold.id);details.setAttribute('aria-expanded','false');
-    details.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();fold.hidden=!fold.hidden;details.setAttribute('aria-expanded',String(!fold.hidden));});foot.appendChild(details);card.appendChild(foot);host.appendChild(card);host.appendChild(fold);
+    details.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();fold.hidden=!fold.hidden;details.setAttribute('aria-expanded',String(!fold.hidden));});foot.insertBefore(details,foot.firstChild);card.appendChild(foot);host.appendChild(card);host.appendChild(fold);
     tpl.setAttribute('data-owd-combat','1');tpl.parentNode.insertBefore(host,tpl);fold.appendChild(tpl);return true;
   }
 

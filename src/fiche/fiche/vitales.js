@@ -82,6 +82,7 @@
       var d = litNombreSigne(delta.value);
       if (!isFinite(d) || !d) return;
       if (cle === "pi") d = effetPerteInnocence(d);
+      if (d < 0 && /^(pv|pe|pm)$/.test(cle)) d = -effetCout(cle, -d);
       state.etat[cle] = Math.round((courant(cle) + d) * 100) / 100;
       delta.value = "";
       refresh();
@@ -92,8 +93,11 @@
     cmd.appendChild(delta);
     cmd.appendChild(miniBtn("Appliquer", "Ajouter cette variation", appliqueDelta));
     box.appendChild(cmd);
+    var consommation = /^(pv|pe|pm)$/.test(cle) ? el("div", "pc-vital-consommation") : null;
+    if (consommation) box.appendChild(consommation);
 
     hooks.push(function () {
+      if (consommation) consommation.textContent = "Consommation " + cle.toUpperCase() + " : " + fmtP(effetConsommation(cle)) + " %";
       var v = courant(cle), m = maxDe(cle);
       if (document.activeElement !== inp) inp.value = v;
       // un <input> ROGNE au lieu de déborder : sa largeur suit le nombre de

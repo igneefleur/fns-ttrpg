@@ -397,6 +397,8 @@ def main():
 
     if not lancer("Effondrement et horloge d’alcool", ["node", "scripts/test_effondrement.js"], racine):
         return 1
+    if not lancer("Vitesse et consommation des réserves", ["node", "scripts/test_vitesse_consommation.js"], racine):
+        return 1
     if not lancer("Exposition et récupérations", ["node", "scripts/test_exposition_recuperations.js"], racine):
         return 1
 

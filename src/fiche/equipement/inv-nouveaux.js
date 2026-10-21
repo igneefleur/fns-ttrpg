@@ -120,8 +120,8 @@
     combatTypes().forEach(function(k){out.push(["res_"+k,"Résistance "+combatLibType(k)+" (%)"]);});
     out.push(["poches","Poches (L)"],["froid","Défense froid (°)"],["chaud","Défense chaud (°)"]);
     combatTypes().forEach(function(k){out.push(["degats:"+k,"Dégâts "+combatLibType(k)+" (%)"]);});
-    out.push(["couts:pm","Coût PM (%)"],["couts:pe","Coût PE (%)"],
-      ["vitesse","Déplacement (%)"],["innocence","Résistance corruption (%)"],
+    out.push(["couts:pv","Coût PV (%)"],["couts:pm","Coût PM (%)"],["couts:pe","Coût PE (%)"],
+      ["vitesse","Vitesse"],["innocence","Résistance corruption (%)"],
       ["alterations","Résistance altérations (%)"]);
     return out;
   }

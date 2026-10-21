@@ -3,7 +3,7 @@
   'use strict';
   var $ = function (id) { return document.getElementById(id); };
   var items = [], filtered = [], selected = null, page = 0, size = 24, quantity = 1, drag = null, pending = null;
-  var search = $('ob-recherche'), categories = $('ob-categorie'), list = $('ob-items'), details = $('ob-details'), status = $('ob-status');
+  var search = $('ob-recherche'), categories = $('ob-categorie'), subcategories = $('ob-sous-categorie'), list = $('ob-items'), details = $('ob-details'), status = $('ob-status');
   var dialog = $('ob-dialog'), chatQuantity = $('ob-quantite-chat');
   function post(d) { d.ns = 'owd'; window.top.postMessage(d, '*'); }
   function theme(on) { document.documentElement.classList.toggle('night', on); }
@@ -44,7 +44,7 @@
     details.appendChild(picture(it, 'ob-portrait'));
     details.appendChild(node('h2', '', it.nom));
     details.appendChild(node('div', 'ob-prix-detail', 'Achat : '+price(it)+' · Vente : '+(it.objet.commerce==='non-commercialise'?'Non commercialisé':it.objet.vente==null?'Prix non renseigné':String(it.objet.vente)+' argent')));
-    details.appendChild(node('div', 'ob-categorie', it.categorie + (it.famille ? ' · ' + it.famille : '')));
+    details.appendChild(node('div', 'ob-categorie', it.categorie + (it.sousCategorie ? ' · ' + it.sousCategorie : '') + (it.famille ? ' · ' + it.famille : '')));
     if (it.origine) details.appendChild(node('div', 'ob-origine', it.origine));
     var buy = node('div', 'ob-achat'), label = node('label', '', 'Quantité'), input = node('input');
     input.id = 'ob-quantite'; input.type = 'number'; input.min = '1'; input.step = '1'; input.value = String(quantity); input.required = true;
@@ -88,10 +88,18 @@
   }
   function filter() {
     var words = fold(search.value).trim().split(/\s+/).filter(Boolean);
-    filtered = items.filter(function (it) { return (!categories.value || it.categorie === categories.value) && words.every(function (w) { return it.search.indexOf(w) >= 0; }); });
+    filtered = items.filter(function (it) { return (!categories.value || it.categorie === categories.value) && (!subcategories.value || it.sousCategorie === subcategories.value) && words.every(function (w) { return it.search.indexOf(w) >= 0; }); });
     page = 0; render();
   }
-  search.oninput = filter; categories.onchange = filter;
+  function updateSubcategories() {
+    var counts = {};
+    items.forEach(function(it) { if (it.categorie === categories.value && it.sousCategorie) counts[it.sousCategorie] = (counts[it.sousCategorie] || 0) + 1; });
+    subcategories.replaceChildren(new Option('Toutes les sous-catégories', ''));
+    Object.keys(counts).sort(function(a,b){return a.localeCompare(b,'fr');}).forEach(function(c){subcategories.add(new Option(c+' ('+counts[c]+')',c));});
+    subcategories.value = ''; subcategories.disabled = !categories.value;
+  }
+  search.oninput = filter; subcategories.onchange = filter;
+  categories.onchange = function() { updateSubcategories(); filter(); };
   $('ob-precedent').onclick = function () { page--; render(); list.scrollTop = 0; };
   $('ob-suivant').onclick = function () { page++; render(); list.scrollTop = 0; };
   function safe(s) { return String(s == null ? '' : s).replace(/[{}]/g, '').replace(/\s+/g, ' ').trim(); }
@@ -133,7 +141,7 @@
     var job = pending; pending = null; dialog.close(); post({type: 'chat', raw: command(job.item, job.action, q)});
   };
   async function load() {
-    search.disabled = categories.disabled = true;
+    search.disabled = categories.disabled = subcategories.disabled = true;
     try {
       var response = await fetch('owd-boutique.json', {cache: 'no-store'});
       if (!response.ok) throw Error('HTTP ' + response.status);
@@ -141,9 +149,10 @@
       if (!data || !Array.isArray(data.objets) || !data.objets.length || data.objets.some(function(it){return !it.objet || !Array.isArray(it.champs);})) throw Error('Catalogue vide');
       items = data.objets.sort(function (a, b) { return a.categorie.localeCompare(b.categorie, 'fr') || a.nom.localeCompare(b.nom, 'fr'); });
       var counts = Object.create(null);
-      items.forEach(function (it) { it.search = fold([it.nom, it.categorie, it.famille, it.origine, (it.objet.aliases||[]).join(' '), it.desc].join(' ')); counts[it.categorie] = (counts[it.categorie] || 0) + 1; });
+      items.forEach(function (it) { it.search = fold([it.nom, it.categorie, it.sousCategorie, it.famille, it.origine, (it.objet.aliases||[]).join(' '), it.desc].join(' ')); counts[it.categorie] = (counts[it.categorie] || 0) + 1; });
       categories.replaceChildren(new Option('Toutes les catégories', ''));
-      Object.keys(counts).sort(function (a, b) { return a.localeCompare(b, 'fr'); }).forEach(function (c) { categories.add(new Option(c + ' (' + counts[c] + ')', c)); });
+      (data.categories || Object.keys(counts).map(function(c){return {nom:c};})).forEach(function(c){categories.add(new Option(c.nom+' ('+(counts[c.nom] || 0)+')',c.nom));});
+      updateSubcategories();
       search.disabled = categories.disabled = false; filter();
     } catch (e) {
       status.textContent = 'Impossible de charger les équipements. ';

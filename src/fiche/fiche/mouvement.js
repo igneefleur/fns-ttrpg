@@ -24,6 +24,9 @@
     return Math.max(0, Math.floor(num0(c.des)));
   }
   function num0(v) { var n = parseFloat(v); return isFinite(n) ? n : 0; }
+  function mouvementPas(base, bonus, vitesse, effondrement) {
+    return base ? Math.max(0, Math.floor(base + bonus) + Math.trunc(vitesse / 10) + effondrement) : 0;
+  }
   function buildMouvement() {
     var b = block("Mouvement");
 
@@ -94,11 +97,10 @@
           });
         }
       }
-      var bonusPas=effetBonus("pas"),facteur=1+effetBonus("vitesse")/100;
-      var pas = c.pas ? Math.max(0, Math.floor((c.pas + bonusPas) * facteur) + effSpecifiques().pas) : 0;
+      var pas = mouvementPas(c.pas, effetBonus("pas"), effetBonus("vitesse"), effSpecifiques().pas);
       dist.v.pas.textContent = String(pas);
-      dist.v.min.textContent = fmtP(c.pas ? num0(c.minute) * pas / c.pas : 0);
-      dist.v.h.textContent = fmtP(c.pas ? num0(c.heure) * pas / c.pas : 0);
+      dist.v.min.textContent = fmtP(Math.round(c.pas ? num0(c.minute) * pas / c.pas : 0));
+      dist.v.h.textContent = fmtP(Math.round((c.pas ? num0(c.heure) * pas / c.pas : 0) * 10) / 10);
       cout.v.da.textContent = String(c.des || 0);
       cout.v.pe.textContent = String(effetCout("pe",c.pe || 0));
     });

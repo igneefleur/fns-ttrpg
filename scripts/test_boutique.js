@@ -17,7 +17,7 @@ class Node {
 function boot(fetcher){
  const doc={ids:{},createElement(tag){return new Node(tag,this);},getElementById(id){return this.ids[id];},documentElement:null};
  doc.documentElement=doc.createElement('html');
- for(const id of ['ob-recherche','ob-categorie','ob-items','ob-details','ob-status','ob-dialog','ob-quantite-chat','ob-dialog-title','ob-annuler','ob-page','ob-precedent','ob-suivant']){const n=doc.createElement(id==='ob-categorie'?'select':id==='ob-quantite-chat'?'input':'div');n.id=id;}
+ for(const id of ['ob-recherche','ob-sous-categorie','ob-categorie','ob-items','ob-details','ob-status','ob-dialog','ob-quantite-chat','ob-dialog-title','ob-annuler','ob-page','ob-precedent','ob-suivant']){const n=doc.createElement(id==='ob-categorie'?'select':id==='ob-quantite-chat'?'input':'div');n.id=id;}
  const form=doc.createElement('form');doc.ids['ob-dialog'].append(form);doc.ids['ob-quantite-chat'].type='number';doc.ids['ob-quantite-chat'].min='1';
  const sent=[],listeners={},top={postMessage:d=>sent.push(d)},parent={};
  const window={top,parent,addEventListener:(t,f)=>{listeners[t]=f;}};
@@ -29,13 +29,15 @@ const tick=()=>new Promise(r=>setImmediate(r));
 (async()=>{
  const {doc,sent,top,message,form}=boot();await tick();const $=id=>doc.ids[id];
  assert.ok(catalogue.objets.length>=1648);assert.equal(new Set(catalogue.objets.map(i=>i.id)).size,catalogue.objets.length);
- const pages=Math.ceil(catalogue.objets.length/24),categories=new Set(catalogue.objets.map(i=>i.categorie)).size;
+ assert.equal(catalogue.categories.length,12);
+ for(const it of catalogue.objets){assert.ok(catalogue.categories.some(c=>c.nom===it.categorie&&c.sousCategories.includes(it.sousCategorie)),it.nom);assert.equal(it.objet.sousCategorieBoutique,it.sousCategorie);}
+ const pages=Math.ceil(catalogue.objets.length/24),categories=catalogue.categories.length;
  catalogue.objets.forEach(it=>{assert.ok(it.objet&&typeof it.objet==='object',it.id+' sans données d’inventaire');if(!it.img)return;if(/^https:\/\//.test(it.img)){const image=new URL(it.img);assert.equal(image.protocol,'https:');assert.ok(['outward.wiki.gg','static.wikia.nocookie.net','outward.fandom.com','igneefleur.github.io'].includes(image.hostname),image.hostname);}else assert.ok(fs.existsSync(path.join(root,'docs',it.img)),it.img);assert.ok(it.champs.length);});
  assert.equal($('ob-items').children.length,24);assert.equal($('ob-categorie').children.length,categories+1);assert.equal($('ob-page').textContent,'1 / '+pages);
  assert.equal($('ob-precedent').disabled,true);$('ob-suivant').onclick();assert.equal($('ob-page').textContent,'2 / '+pages);
- $('ob-categorie').value='Dagues';$('ob-categorie').onchange();assert.ok($('ob-items').children.length>0);assert.equal($('ob-page').textContent,'1 / 3');
+ $('ob-categorie').value='Armes';$('ob-categorie').onchange();$('ob-sous-categorie').value='Dagues';$('ob-sous-categorie').onchange();assert.ok($('ob-items').children.length>0);assert.equal($('ob-page').textContent,'1 / 3');
  $('ob-recherche').value='Astral';$('ob-recherche').oninput();assert.equal($('ob-items').children.length,1);assert.ok($('ob-details').textContent.includes('Astral Dagger'));
- $('ob-categorie').value='';$('ob-recherche').value='epees';$('ob-recherche').oninput();assert.ok($('ob-items').children.length>1);assert.ok($('ob-details').textContent.includes('Épées'));
+ $('ob-categorie').value='';$('ob-categorie').onchange();$('ob-recherche').value='epees';$('ob-recherche').oninput();assert.ok($('ob-items').children.length>1);assert.match($('ob-details').textContent,/épées/i);
  $('ob-recherche').value='NO_SUCH_EQUIPMENT_111';$('ob-recherche').oninput();assert.equal($('ob-items').children[0].textContent,'Aucun résultat.');assert.equal($('ob-suivant').disabled,true);assert.equal($('ob-details').textContent,'Aucun équipement.');
  $('ob-recherche').value='Astral Dagger';$('ob-recherche').oninput();
  const card=$('ob-items').children[0],transfer={values:{},setData(k,v){this.values[k]=v;}},event={dataTransfer:transfer,preventDefault(){this.cancelled=true;}};
@@ -57,17 +59,18 @@ const tick=()=>new Promise(r=>setImmediate(r));
  message({ns:'owd',type:'panel-theme',nuit:false});assert.equal(doc.documentElement.classList.contains('night'),false);message({ns:'owd',type:'panel-theme',nuit:true});assert.equal(doc.documentElement.classList.contains('night'),true);
  const failed=boot(async()=>{throw Error('network');});await tick();assert.ok(failed.doc.ids['ob-status'].textContent.includes('Réessayer'));assert.equal(failed.doc.ids['ob-suivant'].disabled,true);
 
- $('ob-categorie').value='';$('ob-recherche').value='Antidote';$('ob-recherche').oninput();
+ $('ob-categorie').value='';$('ob-categorie').onchange();$('ob-recherche').value='Antidote';$('ob-recherche').oninput();
  assert.ok($('ob-items').textContent.includes('7 argent'));
  assert.ok($('ob-details').textContent.includes('Achat : 7 argent · Vente : 2 argent'));
  for(const nom of ['Clean Water','River Water','Rancid Water','Salt Water']){
   $('ob-recherche').value=nom;$('ob-recherche').oninput();
   assert.ok($('ob-items').textContent.includes('Prix non renseigné'),nom);
+  $('ob-items').children.find(n=>n.dataset.id===catalogue.objets.find(i=>i.nom===nom).id).onclick();
   assert.ok($('ob-details').textContent.includes('Achat : Prix non renseigné · Vente : Prix non renseigné'),nom);
  }
  // Vérifier les objets de chaque nouvelle famille dans la chaîne Boutique -> tchat -> Prendre.
  for(const nom of ['Bandages','Crystal Powder','Tripwire Trap','Pressure Plate Trap','Frost Bomb','Spikes – Wood','Spikes – Iron','Spikes – Palladium','Charge – Incendiary','Charge – Toxic','Charge – Nerve Gas','Arcane Dampener','Antidote','Clean Water','River Water','Rancid Water','Salt Water','Arcane Trousers','Waterskin','Great Life Potion','Ammolite','Whole Loaf','Trader Warbelt','Nomad Baldric','Arcane Robe','Thick Oil','Bolt Varnish','Campfire Kit','Bandit Cage key']){
-   $('ob-categorie').value='';$('ob-recherche').value=nom;$('ob-recherche').oninput();
+   $('ob-categorie').value='';$('ob-categorie').onchange();$('ob-recherche').value=nom;$('ob-recherche').oninput();
    assert.ok($('ob-items').children.length>0,nom+' absent');
    const item=catalogue.objets.find(x=>x.nom===nom);assert.ok(item,nom+' non catalogué');
    const c=Array.from($('ob-items').children).find(x=>x.dataset.id===item.id);assert.ok(c,nom+' non visible');
@@ -102,7 +105,7 @@ const tick=()=>new Promise(r=>setImmediate(r));
 // affichable reproduirait la régression signalée en 3.28.0b.
 (function verifieAccesBoutique() {
  const html=fs.readFileSync(path.join(root,'docs/roll20-boutique.html'),'utf8');
- for(const id of ['ob-recherche','ob-categorie','ob-items','ob-details','ob-status','ob-dialog','ob-quantite-chat','ob-dialog-title','ob-annuler','ob-page','ob-precedent','ob-suivant'])
+ for(const id of ['ob-recherche','ob-sous-categorie','ob-categorie','ob-items','ob-details','ob-status','ob-dialog','ob-quantite-chat','ob-dialog-title','ob-annuler','ob-page','ob-precedent','ob-suivant'])
    assert.ok(html.includes('id="'+id+'"'), 'Interface Boutique : '+id+' absent');
  assert.ok(html.includes('owd-manifeste.json')&&html.includes('man.boutique'),'La page Boutique ne charge pas son module depuis le manifeste');
  const manifest=JSON.parse(fs.readFileSync(path.join(root,'docs/owd-manifeste.json'),'utf8'));

@@ -1,0 +1,15 @@
+/* Filtres de la vraie Boutique, sur le catalogue construit. */
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict'),{chromium}=require('playwright');
+const root=path.resolve(__dirname,'..');
+const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local');let f=path.join(root,'docs',u.pathname);if(!fs.existsSync(f))f=path.join(root,'site',u.pathname);if(!fs.existsSync(f)||fs.statSync(f).isDirectory()){res.statusCode=404;return res.end();}res.setHeader('Content-Type',({'.html':'text/html','.js':'application/javascript','.json':'application/json','.css':'text/css','.png':'image/png'})[path.extname(f)]||'application/octet-stream');res.end(fs.readFileSync(f));});
+(async()=>{await new Promise(r=>server.listen(0,'127.0.0.1',r));const browser=await chromium.launch({executablePath:process.env.CHROMIUM_EXECUTABLE,args:['--no-sandbox','--disable-dev-shm-usage']});try{
+ const page=await browser.newPage({viewport:{width:1100,height:850}}),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('http://127.0.0.1:'+server.address().port+'/roll20-boutique.html');await page.waitForFunction(()=>!document.getElementById('ob-categorie').disabled);
+ const main=page.locator('#ob-categorie'),sub=page.locator('#ob-sous-categorie');assert.equal(await main.locator('option').count(),13);assert.equal(await sub.isDisabled(),true);
+ await main.selectOption('Rangements');assert.equal(await page.locator('#ob-status').innerText(),'32 équipements');assert.deepEqual(await sub.locator('option').evaluateAll(ns=>ns.slice(1).map(n=>n.value)),['Baudriers','Ceintures','Ceinturons','Sacs à dos']);
+ for(const [name,count] of [['Baudriers',4],['Ceintures',3],['Ceinturons',7],['Sacs à dos',18]]){await sub.selectOption(name);assert.equal(await page.locator('#ob-items .ob-item').count(),count);}
+ await sub.selectOption('Baudriers');await page.locator('#ob-recherche').fill('nomad');assert.equal(await page.locator('#ob-items .ob-item').count(),1);assert.match(await page.locator('#ob-details h2').innerText(),/Nomad Baldric/);
+ await page.locator('#ob-recherche').fill('');await main.selectOption('Armes');assert.equal(await sub.inputValue(),'');await sub.selectOption('Dagues');assert.equal(await page.locator('#ob-status').innerText(),'50 équipements');
+ await main.selectOption('Rangements');await sub.selectOption('Baudriers');await page.screenshot({path:'/tmp/owd-boutique-categories-4.12.png'});await page.setViewportSize({width:390,height:850});assert.equal(await page.locator('body').evaluate(n=>n.scrollWidth>n.clientWidth+1),false);await page.screenshot({path:'/tmp/owd-boutique-mobile-4.12.png'});assert.deepEqual(errors,[]);
+ console.log('OK Boutique navigateur : 12 catégories, quatre rangements, comptages, recherche combinée, remise à zéro de sous-catégorie et écran mobile.');
+}finally{await browser.close();server.close();}})().catch(e=>{console.error(e);process.exitCode=1;server.close();});

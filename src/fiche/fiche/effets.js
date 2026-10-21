@@ -65,7 +65,8 @@
   function effetAlerte() {
     return (state.effetsActifs || []).reduce(function (n,e) { var d=effetDefinition(e.effet); return d && d.ops.alerte && e.actif && (e.reste===null || e.reste>0) ? Math.max(n,e.niveau) : n; },0);
   }
-  function effetCout(res, valeur) { return Math.max(0, Math.floor(Math.max(0,num(valeur,0)) * Math.max(0,1 + (effetBonus("couts",res) + (res === "pm" ? effSpecifiques().mana : 0))/100) + 1e-9)); }
+  function effetConsommation(res) { return Math.max(0, 100 + effetBonus("couts",res) + (res === "pm" ? effSpecifiques().mana : 0)); }
+  function effetCout(res, valeur) { return Math.max(0, Math.floor(Math.max(0, Number(valeur) || 0) * effetConsommation(res) / 100 + 1e-9)); }
   function effetPerteInnocence(delta) { return delta < 0 ? -Math.ceil(-delta * Math.max(0,1 - effetBonus("innocence")/100) - 1e-9) : delta; }
   function retireEffet(id) { state.effetsActifs = state.effetsActifs.filter(function (e) { return e.id !== id; }); }
   function effetCoupRecu() {

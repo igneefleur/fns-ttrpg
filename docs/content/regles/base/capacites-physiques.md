@@ -236,6 +236,10 @@ Un personnage se déplace à l'allure qu'il veut. Cette allure définit le nombr
 
 Lorsqu'un personnage dort, il n'a pas d'allure. Il n'a donc aucun mouvement.
 
+La Vitesse des équipements portés s'additionne en points. Chaque tranche complète de +10 ajoute 1 pas au mouvement final ; chaque tranche complète de −10 retire 1 pas. Entre −9 et +9, aucun pas ne change. Ce bonus ou malus s'applique après l'allure, avant les malus d'effondrement de Charge et de Contenance. Le mouvement final ne peut pas être négatif.
+
+Les modules PV, PE et PM indiquent leur pourcentage de consommation : 100 % correspond au coût normal. Les modificateurs de coût se cumulent, y compris celui de l'alcool pour les PM, avec un minimum de 0 %. La perte est arrondie à l'inférieur après application du pourcentage. Le bouton Appliquer reçoit la dépense avant réduction ; les dégâts subis ne sont pas une dépense de réserve.
+
 <div class="mcard" markdown>
 **Allure de repos**
 

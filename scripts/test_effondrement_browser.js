@@ -11,14 +11,29 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
  const eff=p.locator('[data-module="effondrement"]'),active=eff.getByLabel('Effets d’effondrement appliqués');
  assert.equal(await p.locator('[data-module="recuperation"] .pc-rec-row:not(.head)').count(),35);assert.equal(await active.isVisible(),false);
  await change("s.effParties={pr:{mod:3},ps:{mod:2},ph:{mod:1},charge:{mod:2},contenance:{mod:1},froid:{mod:4},chaud:{mod:5}};s.effAlcool=2");
+ await eff.screenshot({path:'/tmp/owd-effondrement-4.12.png'});
  let text=await active.innerText();assert.match(text,/−3 niveau\(x\).*PE/);assert.match(text,/\+3 niveau\(x\).*PM/);assert.match(text,/−4 de protection contre le froid/);assert.match(text,/−3 pas/);assert.match(text,/−10 % au coût en mana/);assert.match(text,/\+2 à la difficulté/);
  await change("s.effort='sommeil'");text=await active.innerText();assert.doesNotMatch(text,/niveau\(x\).*P[EM]/);assert.match(text,/−2 niveau\(x\).*PH/);
  await eff.getByRole('button',{name:'Désactiver Effondrement',exact:true}).click();assert.equal(await active.isVisible(),false);await eff.getByRole('button',{name:'Désactiver Effondrement',exact:true}).click();
  await change("s.effParties={};s.effAlcool=3;s.horlogeAlcool={jours:0,heures:1,minutes:30,secondes:0};s.effort='repos'");
- await p.evaluate(()=>{Owd.effets.ajoute('Effondrement d’alcool +1','Bière','');Owd.__calculs.avancerSecondes(1800);});assert.equal((await read()).effAlcool,3);assert.equal((await read()).horlogeAlcool.heures,2);assert.match(await eff.getByLabel('Horloge d’alcool').innerText(),/2 h/);
+ await p.evaluate(()=>{Owd.effets.ajoute('Effondrement d’alcool +1','Bière','');Owd.__calculs.avancerSecondes(1800);});assert.equal((await read()).effAlcool,3);assert.equal((await read()).horlogeAlcool.heures,2);assert.equal(await eff.getByLabel('Horloge d’alcool').count(),0);
  // La réception d'un état sauvegardé ne répète pas l'avance et conserve la phase.
  await change('');assert.equal((await read()).horlogeAlcool.heures,2);
  await p.evaluate(()=>Owd.__calculs.avancerSecondes(21600));assert.equal((await read()).effAlcool,0);assert.deepEqual((await read()).horlogeAlcool,{jours:0,heures:0,minutes:0,secondes:0});
+ // Coûts visibles et Appliquer : l’entrée est le coût avant réduction.
+ await change("s.effParties={};s.effAlcool=2;s.inv.objets=[{ref:'speedblade',nom:'Test',typeObjet:'arme',qte:1,ou:'mainD',stats:{vitesse:12,couts:{pv:-20,pe:25,pm:-20}}}];s.etat.pv=100;s.etat.pe=100;s.etat.pm=100;s.allure='leger'");
+ for (const [k,pct,cost] of [['pv',80,10],['pe',125,16],['pm',70,9]]) {
+  const mod=p.locator('[data-module="'+k+'"]');
+  assert.match(await mod.locator('.pc-vital-consommation').innerText(),new RegExp('Consommation '+k.toUpperCase()+' : '+pct+' %'));
+  await mod.locator('.pc-vital-delta').fill('-13.4');await mod.getByRole('button',{name:'Appliquer',exact:true}).click();
+  assert.equal((await read()).etat[k],100-cost);
+ }
+ assert.equal(await p.locator('.pc-vital-consommation').count(),3);
+ await p.locator('[data-module="pm"]').screenshot({path:'/tmp/owd-consommation-4.12.png'});
+ const movement=p.locator('[data-module="mouvement"]');const speedSteps=Number(await movement.locator('.pc-mouv-dist .c').first().locator('.v').innerText());
+ await change("s.inv.objets[0].stats.vitesse=9");assert.equal(Number(await movement.locator('.pc-mouv-dist .c').first().locator('.v').innerText()),speedSteps-1);
+ const distances=await movement.locator('.pc-mouv-dist .v').allTextContents();assert.match(distances[1],/^\d+$/);assert.match(distances[2],/^\d+(?:[.,]\d)?$/);
+ await change("s.inv.objets=[];s.effAlcool=0");
  // Consommation réelle : nourriture puis potion, catégories persistantes.
  const catalogue=JSON.parse(fs.readFileSync('site/owd-creation.json')).consommables;
  const samples=[catalogue.find(o=>o.effets.some(id=>id.startsWith('Récupération Nourriture'))),catalogue.find(o=>o.effets.some(id=>id.startsWith('Récupération Potion')))];
