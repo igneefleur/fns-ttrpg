@@ -60,6 +60,7 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
   const shop=page.frames().find(f=>f.url().includes('/roll20-boutique.html'));await shop.locator('.ob-item').first().waitFor();
   await shop.waitForFunction(()=>Array.from(document.querySelectorAll('.ob-item img')).every(i=>i.complete&&i.naturalWidth>0));
   assert.equal(await shop.locator('.ob-item img').count(),24);assert.ok(await shop.locator('.ob-item').evaluateAll(ns=>ns.every(n=>n.querySelector('.ob-item-price').getBoundingClientRect().bottom<=n.getBoundingClientRect().bottom)), 'Prix contenus dans les cartes');
+  if(process.env.TOOLBAR_ONLY==='1'){assert.deepEqual(errors,[]);console.log('OK barre : cinq panneaux réels, repli, dimensions, Défenses et Boutique avec images ; aucune erreur JavaScript.');return;}
   const palette=await shop.locator('body').evaluate(n=>({bg:getComputedStyle(n).backgroundColor,gold:getComputedStyle(n).getPropertyValue('--ob-accent').trim()}));assert.equal(palette.bg,'rgb(0, 0, 0)');assert.equal(palette.gold,'#ffd77f');
   await shop.locator('#ob-recherche').fill('Palladium Sword');await shop.locator('.ob-item').first().waitFor();
   await shop.waitForFunction(()=>{const i=document.querySelector('.ob-portrait');return i&&i.complete&&i.naturalWidth>0;});

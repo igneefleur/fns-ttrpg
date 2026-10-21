@@ -1297,7 +1297,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
     {id:'defenses',titre:'Défenses',page:'roll20-defenses.html',cle:'owdPanneau:roll20-defenses.html',w:620,h:650,minW:340,minH:320},
     {id:'boutique',titre:'Boutique',page:'roll20-boutique.html',cle:'owdPanneau:roll20-boutique.html',w:940,h:690,minW:380,minH:330}
   ];
-  function barreZone(){return document.querySelector('#master-toolbar .upper-buttons')||document.querySelector('#vm-master-toolbar .upper-buttons');}
+  function barreZone(){var root=document.getElementById('master-toolbar')||document.getElementById('vm-master-toolbar');return root&&(root.querySelector('.upper-buttons')||root.querySelector('[role="toolbar"]')||root);}
   function barreRect(){var n=document.getElementById('master-toolbar')||document.getElementById('vm-master-toolbar');return n?n.getBoundingClientRect():null;}
   function borne(p){var e=p.etat,vw=window.innerWidth||1200,vh=window.innerHeight||800;
     e.w=Math.max(Math.min(p.def.minW,vw),Math.min(e.w,vw-16));e.h=Math.max(Math.min(p.def.minH,vh),Math.min(e.h,vh-16));
@@ -1306,7 +1306,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
   function range(p){if(p.timer)clearTimeout(p.timer);p.timer=setTimeout(function(){var o={};o[p.def.cle]=p.etat;try{browser.storage.local.set(o);}catch(e){}},400);}
   function paintButton(p){var n=document.getElementById('owd-outil-'+p.def.id),slot=n&&n.querySelector('.icon-slot');if(!n)return;
     var b=n.querySelector('button')||n;b.setAttribute('aria-expanded',p.etat.ouvert?'true':'false');
-    if(slot){slot.classList.toggle('icon-selected',p.etat.ouvert);if(p.etat.ouvert)slot.style.setProperty('background-color','var(--vtt-toolbar-active-selection-bg)');else slot.style.removeProperty('background-color');}}
+    if(slot){slot.classList.toggle('icon-selected',p.etat.ouvert);if(p.etat.ouvert)slot.style.setProperty('background-color','var(--vtt-toolbar-active-selection-bg,rgba(127,127,127,.32))');else slot.style.removeProperty('background-color');}}
   function applique(p){if(!p.box)return;var g=geo(p),replie=!!p.etat.replie;
     p.box.hidden=!p.etat.ouvert;p.box.style.display=p.etat.ouvert?'flex':'none';
     p.box.classList.toggle('owd-panneau-replie',replie);
@@ -1361,13 +1361,33 @@ if (typeof browser === "undefined") { var browser = chrome; }
   function insert(z,n,rank){n.setAttribute('data-owd-rang',rank);var ours=z.querySelectorAll('[data-owd-rang]'),before=null;
     for(var i=0;i<ours.length;i++)if(Number(ours[i].getAttribute('data-owd-rang'))>rank){before=ours[i];break;}
     if(!before)before=z.querySelector('#more-tools-button');if(before&&before.parentNode===z)z.insertBefore(n,before);else z.appendChild(n);}
-  function barrePose(){notesPose();var z=barreZone();if(!z)return false;var model=barreModele(z);if(!model)return false;
-    if(!document.getElementById('owd-outils-titre')){var sep=z.querySelector('.spacer-outer:has(.spacer-header)')||z.querySelector('.spacer-outer'),n=sep?sep.cloneNode(true):el('div','spacer-outer');n.id='owd-outils-titre';var mot=n.querySelector('.spacer-header');if(!mot){if(!n.firstChild)n.appendChild(el('div','spacer-inner'));mot=el('div','spacer-header');n.appendChild(mot);}mot.textContent='OWD';insert(z,n,0);}
-    OUTILS.forEach(function(def,i){var p=outils[def.id];if(!p||document.getElementById('owd-outil-'+def.id))return;var n=model.cloneNode(true);n.id='owd-outil-'+def.id;
-      Array.prototype.forEach.call(n.querySelectorAll('[id]'),function(c){c.removeAttribute('id');});var caret=n.querySelector('.submenu-caret');if(caret)caret.remove();var slot=n.querySelector('.icon-slot');slot.classList.remove('icon-selected');slot.style.removeProperty('background-color');
-      var ico=n.querySelector('.grimoire__roll20-icon')||slot;ico.textContent='';ico.appendChild(icon(def.id));
-      var b=n.querySelector('button')||n;b.title=def.titre;b.setAttribute('aria-label',def.titre);if(b===n){b.setAttribute('role','button');b.tabIndex=0;b.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();ouvre(p,!p.etat.ouvert);}});}
-      b.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();ouvre(p,!p.etat.ouvert);});insert(z,n,i+1);paintButton(p);});return true;}
+  // Les boutons natifs ne servent que de référence de taille et de couleur.
+  // Ne jamais cloner leurs enfants : les menus de Roll20 peuvent évoluer.
+  function barreAdapte(z,model){
+    var slot=model&&model.querySelector('.icon-slot'),main=slot&&(slot.closest('button')||slot);
+    var r=main&&main.getBoundingClientRect(),outer=model&&model.getBoundingClientRect();
+    var w=outer&&outer.width||32,h=r&&r.height||32;
+    w=Math.max(24,Math.min(64,w));h=Math.max(24,Math.min(64,h));
+    var cible=slot&&(slot.querySelector('.grimoire__roll20-icon')||slot),couleur=cible&&getComputedStyle(cible).color;
+    Array.prototype.forEach.call(z.querySelectorAll('.owd-toolbar-button'),function(n){
+      n.style.setProperty('--owd-toolbar-width',w+'px');n.style.setProperty('--owd-toolbar-height',h+'px');
+      if(couleur)n.style.color=couleur;
+    });
+  }
+  function barrePose(){notesPose();var z=barreZone();if(!z)return false;var model=barreModele(z);
+    if(!document.getElementById('owd-outils-titre')){
+      var titre=el('div','spacer-outer owd-toolbar-title');titre.id='owd-outils-titre';
+      var inner=el('div','spacer-inner'),mot=el('div','spacer-header');mot.textContent='OWD';
+      inner.appendChild(mot);titre.appendChild(inner);insert(z,titre,0);
+    }
+    OUTILS.forEach(function(def,i){
+      var p=outils[def.id];if(!p||document.getElementById('owd-outil-'+def.id))return;
+      var n=el('div','toolbar-button-outer owd-toolbar-button');n.id='owd-outil-'+def.id;
+      var b=el('button','owd-toolbar-control');b.type='button';b.title=def.titre;b.setAttribute('aria-label',def.titre);
+      var slot=el('span','icon-slot');slot.appendChild(icon(def.id));b.appendChild(slot);n.appendChild(b);
+      n.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();ouvre(p,!p.etat.ouvert);});
+      insert(z,n,i+1);paintButton(p);
+    });barreAdapte(z,model);return true;}
   var CLES_OUTILS={monde:'owdPanneauActif',boutique:'owdOutilBoutiqueActif',inventaire:'owdOutilInventaireActif',attaques:'owdOutilAttaquesActif',defenses:'owdOutilDefensesActif'};
   function panDemarre(){var keys=OUTILS.map(function(d){return d.cle;}).concat(Object.keys(CLES_OUTILS).map(function(id){return CLES_OUTILS[id];}));
     function start(r){r=r||{};OUTILS.forEach(function(d){if(r[CLES_OUTILS[d.id]]===false)return;
@@ -1375,7 +1395,10 @@ if (typeof browser === "undefined") { var browser = chrome; }
         h:Number(e.h)||d.h,tailleChoisie:!!e.tailleChoisie,replie:!!e.replie}};
       outils[d.id]=p;monte(p);});
       barrePose();var queued=false;barreObs=new MutationObserver(function(){if(queued)return;queued=true;setTimeout(function(){queued=false;barrePose();Object.keys(outils).forEach(function(k){applique(outils[k]);});},150);});barreObs.observe(document.body,{childList:true,subtree:true});
-      window.addEventListener('resize',function(){Object.keys(outils).forEach(function(k){applique(outils[k]);});});}
+      var themeObs=new MutationObserver(function(){barrePose();});
+      themeObs.observe(document.documentElement,{attributes:true,attributeFilter:['class','data-theme']});
+      themeObs.observe(document.body,{attributes:true,attributeFilter:['class','data-theme']});
+      window.addEventListener('resize',function(){barrePose();Object.keys(outils).forEach(function(k){applique(outils[k]);});});}
     try{browser.storage.local.get(keys).then(start,function(){start({});});}catch(e){start({});}}
   function panRepeint(){if(notesSidebar){poseNuit(notesSidebar.panel);if(notesSidebar.frame)notesSidebar.frame.contentWindow.postMessage({ns:'owd',type:'panel-theme',nuit:nuitEffective()},'*');}Object.keys(outils).forEach(function(k){var p=outils[k];poseNuit(p.box);if(p.frame)p.frame.contentWindow.postMessage({ns:'owd',type:'panel-theme',nuit:nuitEffective()},'*');});}
   function panelMessage(d){var p=outils[d.panel||'monde'];if(!p)return;if(d.nuit!=null)p.box.classList.toggle('owd-nuit',!!d.nuit);

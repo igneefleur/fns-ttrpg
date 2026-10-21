@@ -1,14 +1,14 @@
 {
-  "version": "4.7.0",
-  "hash": "7ab93231192286e8cb0c9b75d1491bd931ab0b61bf06ddc514cffa2c8629aeec",
+  "version": "4.9.2",
+  "hash": "34809248432f5652551307b00db3abe27b542b49a1518c0f01c78984e5ffd788",
   "parties": {
     "stable": {
-      "version": "4.7.0",
-      "hash": "d51957f4019a67b33c912f993fabd33e74d3b3c5889ea823bdf84bd88cec4462"
+      "version": "4.9.2",
+      "hash": "222f9ac25a9350599914e0f9cfe115780de542509517cd915304a69227ad65ed"
     },
     "beta": {
-      "version": "4.7.0b",
-      "hash": "13a1ba9b576c6f82b2b80486d3bc5c9ec67065e052c0d642db78e763a18018eb"
+      "version": "4.9.2b",
+      "hash": "ca9808744146c53628a6c6cb5aeb9b2f22c6b9410c1f032a2c0d2bb0d036d54e"
     }
   }
 }
