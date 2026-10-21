@@ -55,7 +55,7 @@
     function degatsArme(it) {
       if (!it || !it.arme) return 0;
       var total = brutArme(it);
-      return state.combatOptions.attaques.lente ? Math.floor(total / 2) : total;
+      return Math.floor(total / (state.combatOptions.attaques.lente ? 2 : 1) + 1e-9);
     }
     function typesCoup(coup, def) {
       var types = coup && Array.isArray(coup.types) ? coup.types :
@@ -82,8 +82,12 @@
       };
     }
     function degatsTypes(base, type, passage, it, entree) {
+      return chiffresDegats(base, type, passage, it, entree).map(function (x) { return fmtP(x.valeur) + " " + x.type; }).join(" + ");
+    }
+    function chiffresDegats(base, type, passage, it, entree) {
       var valeurs = {}, primary = combatTypes().indexOf(type) >= 0 ? type : type || "—";
       primary = /^(tranchant|contondant|perforant)$/.test(primary) ? "physique" : primary;
+      if (combatTypes().indexOf(primary) < 0) primary = "physique";
       var rep=it && it.arme && it.arme.repartition, somme=0;
       if(rep)Object.keys(rep).forEach(function(k){somme+=pnum(rep[k]);});
       if(somme>0)Object.keys(rep).forEach(function(k){if(rep[k]>0)valeurs[k]=base*rep[k]/somme;});else valeurs[primary] = base;
@@ -99,7 +103,7 @@
         var fixe = impregnation && impregnation.type === t ? snum(impregnation.flat) : 0;
         var n = Math.floor(valeurs[t]*(1+effetBonus("degats",t)/100)+fixe+1e-9); if (state.combatOptions.attaques.lente) n = Math.floor(n / 2); if (passage) n = Math.floor(n / 2);
         return { type: t, valeur: Math.max(0, n) };
-      }).filter(function (x) { return x.valeur || x.type === primary; }).map(function (x) { return fmtP(x.valeur) + " " + x.type; }).join(" + ");
+      }).filter(function (x) { return x.valeur || x.type === primary; });
     }
     function brutArme(it) { return Math.round((snum(it.arme.degats) * (1 + bonusImpregnation()) + modsDegatsArme(it)) * 1000) / 1000; }
     function brutCoup(it, coup) {
@@ -193,14 +197,14 @@
       if (state.combatOptions.attaques.utiliseMunition && r.munition) {
         retireUneMunition(r.munition);
       }
-      sayChat(message.titre, message.champs);
+      sayChat(message.titre, message.champs, message.combat);
       if(effetBonus("paradeAdverse"))sayChat("Effets de l’attaque",[["Parade adverse",sign(effetBonus("paradeAdverse"))],["Esquive adverse","Inchangée"]]);
       refresh();
     }
     function envoieCoup(entree, it, coup, def) {
       executeAttaque(entree, it, def, function () {
         var types = typesCoup(coup, def);
-        return { titre: (coup && coup.nom ? coup.nom : "Attaque") + " — " + (it.nom || (def && def.nom) || "Arme"), champs: [
+        return { combat: { kind: "attack", hit: chiffresDegats(brutCoup(it, coup), types.touche, false, it, entree), pass: chiffresDegats(brutCoup(it, coup), types.passage, true, it, entree) }, titre: (coup && coup.nom ? coup.nom : "Attaque") + " — " + (it.nom || (def && def.nom) || "Arme"), champs: [
           ["Case de touche", degatsTypes(brutCoup(it, coup), types.touche, false, it, entree)],
           ["Case de passage", degatsTypes(brutCoup(it, coup), types.passage, true, it, entree)]
         ] };
@@ -209,8 +213,8 @@
     function envoieAttaqueSimple(entree, it, def) {
       executeAttaque(entree, it, def, function () {
         var types = def && Array.isArray(def.types) ? def.types : [], type = types[0] || "—";
-        return { titre: "Attaque — " + (it.nom || (def && def.nom) || "Arme"), champs: [
-          ["Dégâts", degatsTypes(brutArme(it), type, false, it, entree)]
+        return { combat: { kind: "attack", hit: chiffresDegats(brutArme(it), type, false, it, entree), pass: chiffresDegats(brutArme(it), type, true, it, entree) }, titre: "Attaque — " + (it.nom || (def && def.nom) || "Arme"), champs: [
+          ["Case de touche", degatsTypes(brutArme(it), type, false, it, entree)], ["Case de passage", degatsTypes(brutArme(it), type, true, it, entree)]
         ] };
       });
     }
@@ -649,7 +653,6 @@
       bouton(null); (D().impregnations || []).forEach(bouton);
       detail.appendChild(choix);
       if (actif && actif.effetsManuels) detail.appendChild(el("p", "pc-impregnation-effets", actif.effetsManuels + " — gestion manuelle."));
-      detail.appendChild(el("p", "pc-impregnation-aide", "Un seul choix commun à toutes les attaques. Recliquez pour le retirer. Ce choix ne consomme aucun objet et reste actif jusqu’à son retrait."));
       card.appendChild(detail); return card;
     }
 

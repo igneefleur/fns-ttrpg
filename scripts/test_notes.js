@@ -35,8 +35,8 @@ test('amorce : Notes isolées et jamais destinataires des objets Prendre',()=>{
   const ctx={window:w,document:{documentElement:{classList:{toggle(){}}}},location:{hash:'#c=a&view='+view},CHAR_ID:'a',Date};vm.createContext(ctx);
   vm.runInContext(s.slice(s.indexOf('  window.__owdVueAttaques ='),s.indexOf('  var objetDrag =')),ctx);
   vm.runInContext(s.slice(s.indexOf('  var takeOpenedAt ='),s.indexOf('  // ---------- mode jour / nuit')),ctx);
-  ctx.post({type:'load'});assert.equal(w.__owdVueNotes,view==='notes');assert.equal(sent[0].inventory,!!view||undefined);
-  if(view==='notes'||view==='attaques'||view==='defenses'){assert.equal('takeEnabled' in sent[0],false);assert.equal(parentSent.length,0);events.message({source:w.parent,data:{ns:'owd',type:'take-active',active:true}});assert.equal(sent.length,1);}
+  ctx.post({type:'load'});assert.equal('defendEnabled' in sent[0],view!=='notes'&&view!=='attaques');assert.equal(w.__owdVueNotes,view==='notes');assert.equal(sent[0].inventory,!!view||undefined);
+  if(view==='notes'||view==='attaques'||view==='defenses'){assert.equal('takeEnabled' in sent[0],false);assert.equal(parentSent.length,view==='defenses'?1:0);events.message({source:w.parent,data:{ns:'owd',type:'take-active',active:true}});assert.equal(sent.length,1);}
   else {assert.equal(parentSent[0].type,'take-ready');}
  }
 });

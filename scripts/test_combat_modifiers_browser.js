@@ -72,7 +72,7 @@ const server=http.createServer((req,res)=> {
   await atk.getByRole('button',{name:'Attaque Lente',exact:true}).click();assert.match(await custom.locator('span.touche').textContent(),/16 feu.*1 froid/);
   await fill(def,'Protection Feu',4);await fill(def,'Résistance Feu',10);
   assert.equal(await sans.locator('[data-damage-type="feu"] .pc-defense-protection').textContent(),'4');
-  await sans.getByRole('button',{name:'Se défendre',exact:true}).click();const modal=sheet.locator('.pc-modal');await modal.getByLabel('Dégâts subis',{exact:true}).fill('30');await modal.getByLabel('Type de dégâts').selectOption('feu');await modal.getByRole('button',{name:'Valider'}).click();
+  await sans.getByRole('button',{name:'Se défendre',exact:true}).click();const modal=sheet.locator('.pc-modal');await modal.getByLabel('Dégâts Feu',{exact:true}).fill('30');await modal.getByRole('button',{name:'Valider'}).click();
   assert.match(await frame().evaluate(()=>chats.at(-1)),/Dégâts subis.*23/);
   const shield=def.locator('[data-defense-id="shield"]');await shield.getByRole('button',{name:'Agrandir',exact:true}).click();assert.equal(await shield.locator('[data-damage-type="feu"] .pc-defense-protection').textContent(),'14');
   await atk.locator('.pc-gear').click();await def.locator('.pc-gear').click();await fill(def,'Protection Froid',-2);

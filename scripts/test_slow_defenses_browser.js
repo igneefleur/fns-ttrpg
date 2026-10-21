@@ -61,9 +61,9 @@ const server=http.createServer((req,res)=> {
   await def.getByRole('button',{name:'Défense Lente',exact:true}).click();const shield=def.locator('[data-defense-id="shield"]');await shield.locator('.pc-defense-tete').click();
   assert.equal(await shield.locator('[data-damage-type="feu"] .pc-defense-protection').textContent(),'11');
   await def.getByRole('button',{name:'Dégâts Automatique',exact:true}).click();
-  await shield.locator('.pc-defense-bouton').click();const modal=sheet.locator('.pc-modal');assert.equal(await modal.locator('input').count(),1);assert.equal(await modal.locator('select').count(),1);
-  await modal.getByLabel('Dégâts subis',{exact:true}).fill('30');await modal.getByLabel('Type de dégâts',{exact:true}).selectOption('feu');await modal.getByRole('button',{name:'Valider',exact:true}).click();
-  assert.equal((await state()).etat.pe,100);assert.equal((await state()).etat.pv,83);assert.match(await frame.evaluate(()=>chats.at(-1)),/Protection=11/);assert.match(await frame.evaluate(()=>chats.at(-1)),/Dégâts subis=17/);
+  await shield.locator('.pc-defense-bouton').click();const modal=sheet.locator('.pc-modal');assert.equal(await modal.locator('input').count(),7);assert.equal(await modal.locator('select').count(),0);
+  await modal.getByLabel('Dégâts Feu',{exact:true}).fill('30');await modal.getByRole('button',{name:'Valider',exact:true}).click();
+  assert.equal((await state()).etat.pe,100);assert.equal((await state()).etat.pv,83);assert.match(await frame.evaluate(()=>chats.at(-1)),/Protection · Feu=11/);assert.match(await frame.evaluate(()=>chats.at(-1)),/Dégâts subis=17/);
   await def.getByRole('button',{name:'Défense Lente',exact:true}).click();assert.equal(await shield.locator('[data-damage-type="feu"] .pc-defense-protection').textContent(),'16');
   await page.screenshot({path:'/tmp/owd-slow-defenses-311.png'});assert.deepEqual(errors,[]);
   console.log('OK cartes dépliables, valeurs négatives/positives, zéros masqués, Dégâts Automatique, tiers égaux, style Investies, attaque/parade lente, arrondis et PE');

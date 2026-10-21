@@ -59,7 +59,7 @@ const server=http.createServer((req,res)=> {
   await sheet.locator('.pc-tab').filter({hasText:/^Fiche$/}).click();
   await sheet.locator('[data-module="defense"]').getByRole('button',{name:'Parade — Dague',exact:false}).click();await sheet.locator('[data-defense-id="shield"] .pc-defense-bouton').click();
   await frame().evaluate(()=>{window.defenseChat='';window.__owdChat=c=>defenseChat=c;});
-  const modal=sheet.locator('.pc-modal');await modal.getByLabel('Type de dégâts', {exact:true}).selectOption('feu');await modal.getByLabel('Dégâts subis', {exact:true}).fill('30');
+  const modal=sheet.locator('.pc-modal');await modal.getByLabel('Dégâts Feu', {exact:true}).fill('30');
   await modal.getByRole('button',{name:'Valider'}).click();assert.match(await frame().evaluate(()=>defenseChat),/Dégâts subis=8/);
   console.log('OK sous-champs Parade, Réduction et trois MOD visibles, modifiables, sauvegardés et utilisés par Défenses');
   await frame().evaluate(()=>{window.lastGive='';window.__owdChat=c=>lastGive=c;Owd.__actionObjet('top','donner');});

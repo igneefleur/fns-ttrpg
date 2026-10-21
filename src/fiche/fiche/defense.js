@@ -111,24 +111,38 @@
     if(effetBonus("immunites",type)>=100)r=Math.max(100,r);
     return {protection:p,reduction:r};
   }
-  function defensePrompt(nom, mode, entree) {
-    var body = el("div", "pc-modal-body pc-defense-form"), degats = el("input", "n"), type = el("select", "pc-select");
-    degats.type = "text"; degats.inputMode = "decimal"; degats.value = "0";
-    degats.setAttribute("aria-label", "Dégâts subis");
-    combatTypes().forEach(function (t) { var op = el("option", null, combatLibType(t)); op.value = t; type.appendChild(op); });
-    type.setAttribute("aria-label", "Type de dégâts");
-    body.appendChild(fld("Dégâts subis", degats)); body.appendChild(fld("Type de dégâts", type));
+  function defensePrompt(nom, mode, entree, recus) {
+    var body = el("div", "pc-modal-body pc-defense-form"), inputs = {};
+    combatTypes().forEach(function (t) {
+      var input = el("input", "n"); input.type = "text"; input.inputMode = "decimal";
+      input.value = String(recus && recus[t] || 0); input.setAttribute("aria-label", "Dégâts " + combatLibType(t));
+      inputs[t] = input; body.appendChild(fld(combatLibType(t), input));
+    });
     dialogue(nom, body, function () {
-      var brut = Number(degats.value.replace(",", "."));
-      if (!degats.value.trim() || !isFinite(brut) || brut < 0) { flash("Saisissez des dégâts positifs ou nuls."); degats.focus(); return false; }
+      var valeurs = {}, invalide = null;
+      combatTypes().forEach(function (t) {
+        var raw = inputs[t].value.trim(), n = Number(raw.replace(",", "."));
+        if (raw && (!isFinite(n) || n < 0)) invalide = inputs[t];
+        valeurs[t] = raw ? n : 0;
+      });
+      if (invalide) { flash("Saisissez des dégâts positifs ou nuls."); invalide.focus(); return false; }
       if (mode === "parade" && entree.arme && !defenseArme(entree.arme)) { flash("Cette arme n’est plus disponible."); return false; }
-      var v = defenseValeurs(entree), totaux = defenseTotaux(type.value, mode === "parade" ? v : null, true);
-      var subis = mode === "esquive" ? 0 : combatDegats(brut, totaux.protection, totaux.reduction);
+      var v = defenseValeurs(entree), subis = 0, champs = [], finaux = [];
+      combatTypes().forEach(function (t) {
+        var brut = valeurs[t];
+        if (!brut) return;
+        var totaux = defenseTotaux(t, mode === "parade" ? v : null, true);
+        var n = mode === "esquive" ? 0 : combatDegats(brut, totaux.protection, totaux.reduction);
+        subis += n; finaux.push({type:t, valeur:n});
+        champs.push(["Reçus · " + combatLibType(t), fmtP(brut)]);
+        champs.push(["Protection · " + combatLibType(t), fmtP(totaux.protection)]);
+        champs.push(["Résistance · " + combatLibType(t), fmtP(totaux.reduction) + " %"]);
+        champs.push(["Subis · " + combatLibType(t), fmtP(n)]);
+      });
+      champs.push(["Dégâts subis", fmtP(subis)]);
       var cout = mode === "esquive" ? 8 : mode === "sans" ? 0 : v.difficulte;
       var difficulte = mode === "esquive" ? Math.max(1,8-effetAlerte()) : cout;
       var comp = compDe(mode === "esquive" ? entree.comp : v.comp);
-      var champs = [["Dégâts reçus", fmtP(brut) + " " + combatLibType(type.value)],
-        ["Protection", fmtP(totaux.protection)], ["Réduction", fmtP(totaux.reduction) + " %"], ["Dégâts subis", fmtP(subis)]];
       if (mode !== "sans") {
         champs.push(["Difficulté", fmtP(difficulte)]);
         if (comp) champs.push(["Compétence", comp.nom || "Compétence"]);
@@ -137,11 +151,41 @@
           champs.push(["Endurance", "−" + fmtP(effetCout("pe",cout))]);
         }
       }
-      if (state.combatOptions.defenses.degatsAuto && subis > 0) {
-        state.etat.pv = Math.round((courant("pv") - subis) * 100) / 100;
-      }
-      refresh(); sayChat(nom, champs);
+      if (state.combatOptions.defenses.degatsAuto && subis > 0) state.etat.pv = Math.round((courant("pv") - subis) * 100) / 100;
+      refresh(); sayChat(nom, champs, {kind:"defense", final:finaux, total:subis});
     }, "Valider");
+  }
+  function defenseDepuisChat(payload) {
+    var data;
+    try { if (typeof payload !== "string" || payload.length > 16000) return; data = JSON.parse(b64decode(payload)); } catch (e) { return; }
+    if (!data || data.v !== 1 || data.kind !== "attack") return;
+    function valide(liste) {
+      var vus = {};
+      return Array.isArray(liste) && liste.length <= 7 && liste.every(function (d) {
+        if (!d || combatTypes().indexOf(d.type) < 0 || vus[d.type] || typeof d.valeur !== "number" || !isFinite(d.valeur) || d.valeur < 0) return false;
+        vus[d.type] = true; return true;
+      });
+    }
+    if (!valide(data.hit) || !valide(data.pass)) return;
+    var body = el("div", "pc-modal-body"), zone = el("select", "pc-select"), choix = el("select", "pc-select");
+    [["hit", "Touche"], ["pass", "Passe"]].forEach(function (a) { var op = el("option", null, a[1]); op.value = a[0]; zone.appendChild(op); });
+    zone.setAttribute("aria-label", "Dégâts à défendre");
+    var defenses = [{nom:"Sans Défense", mode:"sans", entree:null}, {nom:"Esquive", mode:"esquive", entree:state.defenses.esquive}];
+    state.defenses.entrees.forEach(function (e) {
+      var item = defenseArme(e.arme);
+      if (!e.personnalisee && !item) return;
+      defenses.push({nom:e.nom || (item ? "Parade — " + item.nom : "Défense personnalisée"), mode:"parade", entree:e});
+    });
+    defenses.forEach(function (d, i) { var op = el("option", null, d.nom); op.value = String(i); choix.appendChild(op); });
+    choix.setAttribute("aria-label", "Défense");
+    body.appendChild(fld("Dégâts à défendre", zone)); body.appendChild(fld("Défense", choix));
+    dialogue("Se défendre — " + (state.name || "Sans nom"), body, function () {
+      var d = defenses[Number(choix.value)], recus = {};
+      if (!d) return false;
+      data[zone.value === "pass" ? "pass" : "hit"].forEach(function (x) { recus[x.type] = x.valeur; });
+      // Le premier dialogue doit être fermé avant de monter le formulaire.
+      setTimeout(function () { defensePrompt(d.nom, d.mode, d.entree, recus); }, 0);
+    }, "Continuer");
   }
   var combatDrag = null;
   function combatOeil(visible) {

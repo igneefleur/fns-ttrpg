@@ -90,7 +90,7 @@ const server=http.createServer((req,res)=> {
   await atk.getByRole('button',{name:'Consommer Endurance',exact:true}).click();await bow.locator('.pc-attaque-simple').click();assert.equal((await state()).etat.pe,89);assert.equal((await state()).inv.objets.find(o=>o.ref==='arrows').qte,1);
   await atk.getByRole('button',{name:'Consommer Munition',exact:true}).click();await bow.locator('.pc-attaque-simple').click();assert.equal((await state()).inv.objets.find(o=>o.ref==='arrows').qte,1);
   await def.getByRole('button',{name:'Consommer Endurance',exact:true}).click();await def.getByRole('button',{name:'Esquive',exact:false}).click();await def.locator('[data-defense-id="esquive"] .pc-defense-bouton').click();
-  await sheet.locator('.pc-modal').getByLabel('Dégâts subis', {exact:true}).fill('30');await sheet.locator('.pc-modal').getByRole('button',{name:'Valider'}).click();assert.equal((await state()).etat.pe,81);
+  await sheet.locator('.pc-modal').getByLabel('Dégâts Physique', {exact:true}).fill('30');await sheet.locator('.pc-modal').getByRole('button',{name:'Valider'}).click();assert.equal((await state()).etat.pe,81);
   await sheet.getByLabel('Taille du personnage').selectOption('grande');
   for(let i=0;i<300;i++){const s=C.read(attrs).state;if(s.taille==='grande'&&s.attaques.at(-1).personnalisee?.trajet==='1:passe>6:frappe'&&s.combatOptions.defenses.utiliseEndurance&&s.etat.pe===81)break;await page.waitForTimeout(100);}
   assert.equal(C.read(attrs).state.taille,'grande');await page.reload();await sheet.locator('.pc-sheet').waitFor();

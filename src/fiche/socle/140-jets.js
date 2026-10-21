@@ -41,9 +41,16 @@
   // « {{=texte}} », une ligne pleine largeur sans colonne de libellé, réservée
   // aux TEXTES LONGS (description d'une technique, d'un objet). UNE SEULE par
   // carte : le gabarit les indexe par clé.
-  function sayChat(title, fields) {
+  function sayChat(title, fields, combat) {
     var clean = (fields || []).filter(function (f) { return f && String(f[1] == null ? "" : f[1]).trim(); });
-    if (envoyer(cmdCarte(title, clean))) return;
+    if (combat) {
+      combat.v = 1; combat.title = String(title); combat.character = String(state.name || "");
+      var payload = b64encode(JSON.stringify(combat)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+      var action = combat.kind === "attack" ? "owd_defend" : "owd_defense";
+      var carte = [[combat.kind === "attack" ? "Attaque" : "Défense", title], ["Personnage", state.name || "Sans nom"]].concat(clean);
+      carte.push(["OWD", "[" + (combat.kind === "attack" ? "Se défendre" : "Carte") + "](/" + action + " " + payload + ")"]);
+      if (envoyer(cmdCarte(combat.kind === "attack" ? "OWD Attack" : "OWD Defense", carte))) return;
+    } else if (envoyer(cmdCarte(title, clean))) return;
     if (typeof window !== "undefined" && typeof window.__owdSay === "function") {
       window.__owdSay(title, clean);
       return;

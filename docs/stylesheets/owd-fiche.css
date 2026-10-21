@@ -2346,7 +2346,7 @@ html.night .t-pi { --palier-plein: #30343b; }
 
 /* Choix commun d'imprégnation du module Attaques. */
 .pc-impregnation-detail { padding: .5rem; }
-.pc-impregnation-choix { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); gap: .35rem; }
+.pc-impregnation-choix { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); gap: .35rem; grid-auto-rows: 1fr; }
 .pc-impregnation-option { display: flex; align-items: center; gap: .45rem; min-width: 0; padding: .4rem; border: 1px solid var(--hair); border-radius: 4px; background: var(--card); color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
 .pc-impregnation-option:hover { background: var(--stripe); }
 .pc-impregnation-option.on { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
@@ -2357,3 +2357,6 @@ html.night .t-pi { --palier-plein: #30343b; }
 .pc-impregnation-effets, .pc-impregnation-aide { margin: .5rem 0 0; }
 .pc-impregnation .pc-attaque-tete { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; }
 .pc-impregnation .pc-attaque-meta { overflow: hidden; text-overflow: ellipsis; }
+
+.pc-impregnation-option { min-height: calc(40px + .8rem + 2px); }
+.pc-defense-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: .45rem; }

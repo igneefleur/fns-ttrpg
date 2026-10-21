@@ -70,7 +70,7 @@ const server=http.createServer((req,res)=> {
   // La difficulté d'esquive baisse, son coût de base reste 8 PE.
   await replace(s=>{s.etat.pe=100;s.combatOptions.defenses.utiliseEndurance=true;s.combatOptions.defenses.lente=false;});
   const esquive=sheet.locator('[data-defense-id="esquive"]');await esquive.locator('.pc-attaque-tete').click();await esquive.getByRole('button',{name:'Se défendre',exact:true}).click();
-  await sheet.locator('.pc-modal').getByLabel('Dégâts subis',{exact:true}).fill('1');await sheet.locator('.pc-modal').getByRole('button',{name:'Valider',exact:true}).click();assert.equal((await state()).etat.pe,92);
+  await sheet.locator('.pc-modal').getByLabel('Dégâts Physique',{exact:true}).fill('1');await sheet.locator('.pc-modal').getByRole('button',{name:'Valider',exact:true}).click();assert.equal((await state()).etat.pe,92);
   await frame.evaluate(()=>Owd.effets.coupRecu());assert.equal(await frame.evaluate(()=>Owd.__calculs.effetAlerte()),3);
   await advance(60);assert.equal(await frame.evaluate(()=>Owd.__calculs.effetAlerte()),0);
   assert.equal(await frame.evaluate(()=>Owd.__calculs.defenseTotaux('eclair',null,true).reduction),20);

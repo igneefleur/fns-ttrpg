@@ -530,3 +530,15 @@
 .owd-toolbar-control:hover > .icon-slot { background:var(--vtt-toolbar-hover-bg,rgba(127,127,127,.18)); }
 .owd-toolbar-control:focus-visible { outline:2px solid currentColor; outline-offset:-2px; }
 .owd-toolbar-control .owd-tool-icon { flex:0 0 18px; }
+
+/* Cartes OWD Attack et OWD Defense. */
+.owd-combat-columns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+.owd-combat-column { min-width: 0; }
+.owd-combat-character { color: var(--ink-2); font-size: 11px; margin: 3px 0 7px; overflow-wrap: anywhere; }
+.owd-combat-label { color: var(--ink-2); font-size: 11px; margin-bottom: 5px; }
+.owd-combat-values { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.owd-combat-damage { display: inline-flex; align-items: center; gap: 3px; font-variant-numeric: tabular-nums; }
+.owd-combat-damage img { width: 18px; height: 18px; object-fit: contain; }
+.owd-combat-total { margin-top: 7px; font-size: 12px; font-weight: bold; }
+.owd-combat-footer { justify-content: flex-end; gap: 7px; }
+.owd-combat .owd-des-titre { overflow-wrap: anywhere; white-space: normal; }

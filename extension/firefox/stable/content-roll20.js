@@ -650,6 +650,8 @@ if (typeof browser === "undefined") { var browser = chrome; }
       var a = e.target && (e.target.tagName === "A" ? e.target
               : (e.target.closest ? e.target.closest("a") : null));
       if (!a) return;
+      var defenseLink = /^\/owd_defend\s+([A-Za-z0-9+/=_-]+)$/.exec((a.getAttribute("href") || "").trim());
+      if(defenseLink){e.preventDefault();e.stopPropagation();if(!diffuseDefense(defenseLink[1]))toast('Ouvre ta fiche Outward, puis reclique « Se défendre ».');return;}
       var show = /^\/owd_item_show\s+([A-Za-z0-9+/=_-]+)$/.exec((a.getAttribute("href") || "").trim());
       if(show){e.preventDefault();e.stopPropagation();var item=itemData(show[1]);if(item)itemView(item);return;}
       var m = TAKE_RE.exec((a.getAttribute("href") || "").trim());
@@ -720,6 +722,69 @@ if (typeof browser === "undefined") { var browser = chrome; }
         action.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();if(!diffuseTake(payload))toast('Ouvre ta fiche Outward, puis reclique « Prendre » pour recevoir cet objet.');});foot.appendChild(action);}
       card.appendChild(foot);host.appendChild(card);host.appendChild(fold);tpl.parentNode.insertBefore(host,tpl);fold.appendChild(tpl);return true;
     }catch(e){tpl.removeAttribute(ITEM_MARK);return false;}
+  }
+
+  // Cartes de combat : les valeurs sont calculées par la fiche, jamais par le chat.
+  var COMBAT_TYPES=['physique','feu','froid','eclair','decomposition','ethere','brut'];
+  var COMBAT_LABELS={physique:'Physique',feu:'Feu',froid:'Froid',eclair:'Éclair',decomposition:'Décomposition',ethere:'Éthéré',brut:'Brut'};
+  var COMBAT_IMAGES={physique:browser.runtime.getURL('icons/damage-physique.png'),feu:browser.runtime.getURL('icons/damage-feu.png'),froid:browser.runtime.getURL('icons/damage-froid.png'),eclair:browser.runtime.getURL('icons/damage-eclair.png'),decomposition:browser.runtime.getURL('icons/damage-decomposition.png'),ethere:browser.runtime.getURL('icons/damage-ethere.png'),brut:browser.runtime.getURL('icons/damage-brut.png')};
+  var combatCount=0,defenseSheets=[];
+  function combatData(payload){
+    if(typeof payload!=='string'||payload.length>16000||!/^[A-Za-z0-9+/_=-]+$/.test(payload))return null;
+    try{
+      var bin=atob(payload.replace(/-/g,'+').replace(/_/g,'/')),bytes=new Uint8Array(bin.length);
+      for(var i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+      var d=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
+      if(!d||d.v!==1||!['attack','defense'].includes(d.kind)||typeof d.title!=='string'||d.title.length>1000||typeof d.character!=='string'||d.character.length>1000)return null;
+      function values(a){var seen={};return Array.isArray(a)&&a.length<=7&&a.every(function(x){if(!x||!COMBAT_TYPES.includes(x.type)||seen[x.type]||typeof x.valeur!=='number'||!Number.isFinite(x.valeur)||x.valeur<0)return false;seen[x.type]=true;return true;});}
+      if(d.kind==='attack')return values(d.hit)&&values(d.pass)?d:null;
+      return values(d.final)&&Number.isFinite(d.total)&&d.total>=0&&d.total===d.final.reduce(function(n,x){return n+x.valeur;},0)?d:null;
+    }catch(e){return null;}
+  }
+  function rememberDefense(w,d){
+    if(!w||!Number.isFinite(d.defendOpenedAt)||typeof d.defendEnabled!=='boolean')return;
+    var s=defenseSheets.find(function(x){return x.w===w;});if(!s){s={w:w,at:0,enabled:false};defenseSheets.push(s);}
+    if(d.defendProxy===true||d.defendOpenedAt>=s.at){s.at=d.defendOpenedAt;s.enabled=d.defendEnabled;}
+    if(IS_POPOUT)try{var target=lastDefense(),o=window.opener;if(o&&!o.closed)o.postMessage({ns:'owd',type:'defend-target',defendProxy:true,defendOpenedAt:target?target.at:d.defendOpenedAt,defendEnabled:!!target},'https://app.roll20.net');}catch(e){}
+  }
+  function lastDefense(){
+    defenseSheets=defenseSheets.filter(function(s){try{return s.w&&!s.w.closed;}catch(e){return false;}});
+    return defenseSheets.filter(function(s){return s.enabled;}).sort(function(a,b){return b.at-a.at;})[0]||lastSheet();
+  }
+  function diffuseDefense(payload){
+    var d=combatData(payload);if(!d||d.kind!=='attack')return false;
+    var s=lastDefense();if(!s)return false;
+    try{s.w.postMessage({ns:'owd',type:'defend',payload:payload},'*');return true;}catch(e){return false;}
+  }
+  function combatValues(values){
+    var list=el('div','owd-combat-values');
+    COMBAT_TYPES.forEach(function(t){var x=values.find(function(v){return v.type===t;});if(!x||!x.valeur)return;
+      var row=el('span','owd-combat-damage');row.dataset.damageType=t;row.title=COMBAT_LABELS[t];
+      var image=el('img');image.src=COMBAT_IMAGES[t];image.alt=COMBAT_LABELS[t];image.width=18;image.height=18;
+      row.appendChild(image);row.appendChild(el('strong',null,String(x.valeur)));list.appendChild(row);
+    });
+    if(!list.childNodes.length)list.appendChild(el('strong',null,'0'));return list;
+  }
+  function combatRhabille(tpl){
+    if(!tpl||tpl.hasAttribute('data-owd-combat'))return !!(tpl&&tpl.hasAttribute('data-owd-combat'));
+    var caption=tpl.querySelector('caption, .sheet-template-name');if(!caption)return false;
+    var name=norm(caption.textContent),kind=name==='owd attack'?'attack':name==='owd defense'?'defense':'';if(!kind)return false;
+    var payload='',links=tpl.querySelectorAll('a[href]'),re=kind==='attack'?/^\/owd_defend\s+([A-Za-z0-9+/_=-]+)$/:/^\/owd_defense\s+([A-Za-z0-9+/_=-]+)$/;
+    for(var i=0;i<links.length;i++){var m=re.exec((links[i].getAttribute('href')||'').trim());if(m){payload=m[1];break;}}
+    var d=combatData(payload);if(!d||d.kind!==kind)return false;
+    var host=el('div','owd-des-hote owd-combat-host'),card=poseNuit(el('div','owd-des owd-combat'));card.dataset.kind=kind;
+    var head=el('div','owd-des-tete');head.appendChild(el('span','owd-des-titre',d.title));card.appendChild(head);
+    if(d.character)card.appendChild(el('div','owd-combat-character',d.character));
+    if(kind==='attack'){
+      var cols=el('div','owd-combat-columns');[['Touche',d.hit],['Passe',d.pass]].forEach(function(a){var col=el('div','owd-combat-column');col.appendChild(el('div','owd-combat-label',a[0]));col.appendChild(combatValues(a[1]));cols.appendChild(col);});card.appendChild(cols);
+    }else{
+      card.appendChild(el('div','owd-combat-label','Dégâts finaux subis'));card.appendChild(combatValues(d.final));card.appendChild(el('div','owd-combat-total','Total : '+d.total));
+    }
+    var foot=el('div','owd-des-pied owd-combat-footer');
+    if(kind==='attack'){var defend=el('button','owd-des-rejouer owd-combat-defend','Se défendre');defend.type='button';defend.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();if(!diffuseDefense(payload))toast('Ouvre ta fiche Outward, puis reclique « Se défendre ».');});foot.appendChild(defend);}
+    var details=el('button','owd-des-rejouer owd-combat-details','Détails'),fold=el('div','owd-des-repli');details.type='button';fold.hidden=true;fold.id='owd-combat-details-'+(++combatCount);details.setAttribute('aria-controls',fold.id);details.setAttribute('aria-expanded','false');
+    details.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();fold.hidden=!fold.hidden;details.setAttribute('aria-expanded',String(!fold.hidden));});foot.appendChild(details);card.appendChild(foot);host.appendChild(card);host.appendChild(fold);
+    tpl.setAttribute('data-owd-combat','1');tpl.parentNode.insertBefore(host,tpl);fold.appendChild(tpl);return true;
   }
 
   // ---------- les dés d'action : rhabiller le message du tchat ----------
@@ -1190,10 +1255,10 @@ if (typeof browser === "undefined") { var browser = chrome; }
   function desBalaye(racine) {
     if (!racine || !racine.querySelectorAll) return;
     var l = racine.querySelectorAll(".sheet-rolltemplate-default:not([" + DES_MARQUE + "])");
-    for (var i = 0; i < l.length; i++) { if(!itemRhabille(l[i])){desSignaleGabarit(l[i]); desRhabille(l[i]);} }
+    for (var i = 0; i < l.length; i++) { if(!combatRhabille(l[i])&&!itemRhabille(l[i])){desSignaleGabarit(l[i]); desRhabille(l[i]);} }
     // le noeud ajouté PEUT être le gabarit lui-même, pas seulement son parent
     if (racine.classList && racine.classList.contains("sheet-rolltemplate-default")) {
-      if(!itemRhabille(racine)){desSignaleGabarit(racine); desRhabille(racine);}
+      if(!combatRhabille(racine)&&!itemRhabille(racine)){desSignaleGabarit(racine); desRhabille(racine);}
     }
   }
 
@@ -1316,7 +1381,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
     paintButton(p);}
   function remplit(p){if(p.frame)return;p.frame=el('iframe','owd-panneau-frame');p.frame.title=p.def.titre;p.frame.setAttribute('allow','clipboard-write');
     p.frame.src=browser.runtime.getURL('panneau.html')+'#p='+p.def.page+'&n='+(nuitEffective()?'1':'0')+'&m='+MODE;p.body.appendChild(p.frame);}
-  function ouvre(p,on){if(!on&&p.def.id==='attaques'&&p.frame)p.frame.contentWindow.postMessage({ns:'owd',type:'attack-preview-cancel'},'*');if(on)p.box.style.zIndex=String(++panelFront);p.etat.ouvert=!!on;applique(p);if(on)remplit(p);if(p.def.id==='inventaire'&&p.frame)p.frame.contentWindow.postMessage({ns:'owd',type:'take-active',active:!!on},'*');range(p);}
+  function ouvre(p,on){if(!on&&p.def.id==='attaques'&&p.frame)p.frame.contentWindow.postMessage({ns:'owd',type:'attack-preview-cancel'},'*');if(on)p.box.style.zIndex=String(++panelFront);p.etat.ouvert=!!on;applique(p);if(on)remplit(p);if(p.def.id==='inventaire'&&p.frame)p.frame.contentWindow.postMessage({ns:'owd',type:'take-active',active:!!on},'*');if(p.def.id==='defenses'&&p.frame)p.frame.contentWindow.postMessage({ns:'owd',type:'defend-active',active:!!on},'*');range(p);}
   function geste(p,e,move){
     if(e.button!==0||e.target.closest('button'))return;
     if(!move)e.preventDefault();
@@ -1652,7 +1717,9 @@ if (typeof browser === "undefined") { var browser = chrome; }
             if (d.payload) diffuseTake(d.payload);
             return;
           }
+          if (d.type === "defend") { if(d.payload)diffuseDefense(d.payload); return; }
           rememberSheet(ev.source, d);
+          rememberDefense(ev.source, d);
           // LE CADRE S'AGRANDIT POUR LES RÉGLAGES. Le camp ne peut pas faire
           // sortir un dialogue de son iframe : serré dans une colonne ancrée à
           // la barre, il devient illisible. Il demande donc de la place, on la

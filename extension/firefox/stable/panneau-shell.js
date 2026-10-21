@@ -48,7 +48,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
 
   window.addEventListener("message", function (ev) {
     var d = ev.data;
-    if (!d || d.ns !== "owd" || (d.type !== "panel-theme" && d.type !== "attack-preview-cancel" && d.type !== "take-active") || ev.source !== window.parent) return;
+    if (!d || d.ns !== "owd" || (d.type !== "panel-theme" && d.type !== "attack-preview-cancel" && d.type !== "take-active" && d.type !== "defend-active") || ev.source !== window.parent) return;
     if(d.type==='panel-theme')document.documentElement.classList.toggle("night", !!d.nuit);
     document.getElementById("owd-remote").contentWindow.postMessage(d, "*");
   });

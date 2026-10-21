@@ -80,11 +80,18 @@ prompt({damage:'5',pv:null});assert.equal(ctx.state.etat.pv,null);
 prompt({mode:'esquive',endurance:true});assert.equal(ctx.state.etat.pv,100);assert.equal(ctx.state.etat.pe,92);
 prompt({mode:'parade',slow:true,endurance:true});assert.equal(ctx.state.etat.pv,83);assert.equal(ctx.state.etat.pe,100); // floor((30-6-5)*.91)=17
 prompt({mode:'parade',endurance:true});assert.equal(ctx.state.etat.pv,88);assert.equal(ctx.state.etat.pe,92); // floor((30-6-10)*.91)=12
-for(const damage of ['','-1','abc','Infinity']){assert.equal(prompt({damage}),false);assert.equal(ctx.state.etat.pv,100);assert.equal(ctx.chat,null);assert.equal(ctx.persisted,null);}
+for(const damage of ['-1','abc','Infinity']){assert.equal(prompt({damage}),false);assert.equal(ctx.state.etat.pv,100);assert.equal(ctx.chat,null);assert.equal(ctx.persisted,null);}
 ctx.state.combatOptions.defenses.degatsAuto=true;const synced=M.attrsToState(M.stateToAttrs({...M.blank(),...ctx.state}));assert.equal(synced.combatOptions.defenses.degatsAuto,true);
 const defaults=M.blank();assert.equal(defaults.combatOptions.defenses.degatsAuto,false);assert.equal(defaults.combatOptions.defenses.toutAfficher,undefined);
 const normalizer=fs.readFileSync('src/fiche/socle/060-etat-normalise.js','utf8'),start=normalizer.indexOf('    var options = s.combatOptions'),end=normalizer.indexOf('    var combatAffichage',start);
 const normalizeOptions=s=>vm.runInNewContext(normalizer.slice(start,end)+';s.combatOptions',{s});
 assert.equal(normalizeOptions({combatOptions:{defenses:{toutAfficher:true}}}).defenses.degatsAuto,false);
 assert.equal(normalizeOptions({combatOptions:{defenses:{degatsAuto:true}}}).defenses.degatsAuto,true);
+prompt({damage:''});assert.equal(ctx.state.etat.pv,100);
+// Plusieurs types sont résolus indépendamment, avec un seul coût de défense.
+prompt({auto:true,endurance:true,mode:'parade',damage:'0'});
+ctx.form.children[0].input.value='30';ctx.form.children[1].input.value='20';
+const beforePe=ctx.state.etat.pe;ctx.validate();assert.equal(ctx.state.etat.pv,78);assert.equal(ctx.state.etat.pe,beforePe-8);
+assert.deepEqual(Array.from(ctx.form.children,x=>x.label),['physique','feu','froid','Éclair','Décomposition','Éthéré','brut']);
+prompt({auto:true,endurance:true,mode:'parade',damage:'0'});ctx.form.children[1].input.value='-2';const snapshot=JSON.stringify(ctx.state);assert.equal(ctx.validate(),false);assert.equal(JSON.stringify(ctx.state),snapshot);
 console.log('OK Dégâts Automatique : formulaire réel, dégâts finaux, option désactivée, PV maximum/négatifs/décimaux, absorption, esquive, parade lente, endurance, validation et persistance.');
