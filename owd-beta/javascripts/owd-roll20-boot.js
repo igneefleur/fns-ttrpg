@@ -131,22 +131,35 @@
   };
 
   var takeOpenedAt = Date.now(), takeEnabled = !window.__owdVueInventaire;
+  var defendOpenedAt = Date.now(), defendEnabled = !window.__owdVueInventaire;
+  var defendEligible = !window.__owdVueAttaques && !window.__owdVueNotes;
   function post(msg) {
     msg.ns = "owd"; msg.charId = CHAR_ID;
     if (window.__owdVueInventaire) msg.inventory = true;
     if (!window.__owdVueAttaques && !window.__owdVueDefenses && !window.__owdVueNotes) { msg.takeOpenedAt = takeOpenedAt; msg.takeEnabled = takeEnabled; }
+    if (defendEligible) { msg.defendOpenedAt = defendOpenedAt; msg.defendEnabled = defendEnabled; }
     try { window.top.postMessage(msg, "*"); } catch (e) {}
   }
-  window.addEventListener('pagehide', function () { takeEnabled = false; post({type:'take-target'}); });
+  window.addEventListener('pagehide', function () { takeEnabled = false; defendEnabled = false; post({type:'take-target'}); });
   window.addEventListener('message', function (ev) {
-    var d = ev.data;
-    if (!d || d.ns !== 'owd' || d.type !== 'take-active' || ev.source !== window.parent || window.__owdVueAttaques || window.__owdVueDefenses || window.__owdVueNotes) return;
-    takeEnabled = !!d.active;
-    if (takeEnabled) takeOpenedAt = Date.now();
-    post({type:'take-target'});
+    var d=ev.data;
+    if(!d||d.ns!=='owd'||ev.source!==window.parent)return;
+    if(d.type==='take-active'&&!window.__owdVueAttaques&&!window.__owdVueDefenses&&!window.__owdVueNotes){
+      takeEnabled=!!d.active;if(takeEnabled)takeOpenedAt=Date.now();
+      defendEnabled=takeEnabled;if(defendEnabled)defendOpenedAt=Date.now();post({type:'take-target'});
+    }else if(d.type==='defend-active'&&defendEligible){
+      defendEnabled=!!d.active;if(defendEnabled)defendOpenedAt=Date.now();post({type:'defend-target'});
+    }
   });
-  if(!window.__owdVueAttaques && !window.__owdVueDefenses && !window.__owdVueNotes)try{window.parent.postMessage({ns:'owd',type:'take-ready',charId:CHAR_ID},'*');}catch(e){}
-
+  if(!window.__owdVueAttaques&&!window.__owdVueDefenses&&!window.__owdVueNotes)try{window.parent.postMessage({ns:'owd',type:'take-ready',charId:CHAR_ID},'*');}catch(e){}
+  if(defendEligible)try{window.parent.postMessage({ns:'owd',type:'defend-ready',charId:CHAR_ID},'*');}catch(e){}
+  window.addEventListener('focus',function(){if(defendEligible&&defendEnabled){defendOpenedAt=Date.now();post({type:'defend-target'});}});
+  var defendQueue = [];
+  function defendFromChat(payload) {
+    if(typeof payload!=='string'||payload.length>16000||!defendEligible)return;
+    if(!ready){defendQueue.push(payload);if(defendQueue.length>8)defendQueue.shift();return;}
+    if(!gele&&window.Owd&&window.Owd.__defendreDepuisChat)window.Owd.__defendreDepuisChat(payload);
+  }
   // ---------- mode jour / nuit ----------
   // Le CSS nuit existe déjà dans la feuille de la fiche (html.night …) ; ici on
   // ne fait que poser la classe. Préférence locale à CE navigateur (vrai
@@ -245,6 +258,9 @@
     q.forEach(function (cb) { cb(noms); });
   }
   setInterval(function () {
+    if(ready&&!gele&&window.Owd&&window.Owd.__defendreDepuisChat&&defendQueue.length) {
+      var pending=defendQueue.shift(); window.Owd.__defendreDepuisChat(pending);
+    }
     if (!takeQueue.length || typeof window.__owdOnTake !== "function") return;
     var q = takeQueue.slice();
     takeQueue.length = 0;
@@ -1809,6 +1825,9 @@
       appliqueDiffere();
     }
     else if (d.type === "take" && d.payload) window.__owdTake(d.payload);
+    else if (d.type === "defend" && typeof d.payload === "string" && d.payload.length <= 16000) {
+      defendFromChat(d.payload);
+    }
     // liste des joueurs connectés, en réponse à __owdPlayers
     else if (d.type === "players-result") playersReply(d.players || []);
   });

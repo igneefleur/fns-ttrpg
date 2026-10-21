@@ -35,7 +35,7 @@
       box.addEventListener('dragenter',over);box.addEventListener('dragover',over);box.addEventListener('dragleave',function(e){if(!box.contains(e.relatedTarget))clearHover();});box.append(b,close);bar.appendChild(box);
     });
     var candidates=characters.filter(function(c){return !assigned(c.id);});plus.disabled=!candidates.length;bar.appendChild(plus);
-    var current=tab(active);Object.keys(frames).forEach(function(id){var f=frames[id],visible=!!(current&&current.id===id&&available(id)&&!f.closing),eligible=visible&&panelActive&&inventory;if(f.takeActive!==eligible){f.takeActive=eligible;send(f,{type:'take-active',active:eligible});}if(attacks&&!visible)send(f,{type:'attack-preview-cancel'});f.node.classList.toggle('inventaire-active',visible);f.node.setAttribute('aria-hidden',String(!visible));f.node.inert=!visible;});
+    var current=tab(active);Object.keys(frames).forEach(function(id){var f=frames[id],visible=!!(current&&current.id===id&&available(id)&&!f.closing),eligible=visible&&panelActive&&inventory;if(f.takeActive!==eligible){f.takeActive=eligible;send(f,{type:'take-active',active:eligible});}var canDefend=visible&&panelActive&&(inventory||defenses);if(f.defendActive!==canDefend){f.defendActive=canDefend;send(f,{type:'defend-active',active:canDefend});}if(attacks&&!visible)send(f,{type:'attack-preview-cancel'});f.node.classList.toggle('inventaire-active',visible);f.node.setAttribute('aria-hidden',String(!visible));f.node.inert=!visible;});
     picker.hidden=!!(current&&current.id);select.replaceChildren();var o=document.createElement('option');o.value='';o.textContent=candidates.length?'Choisir un personnage…':'Tous les personnages accessibles ont déjà un onglet';select.appendChild(o);candidates.forEach(function(c){var o=document.createElement('option');o.value=c.id;o.textContent=c.name;select.appendChild(o);});select.disabled=!candidates.length;
     if(!job){notice.textContent=current&&current.id&&!available(current.id)?'Vous n’avez plus accès à ce personnage. Les écritures sont bloquées.':!characters.length?'Aucun personnage contrôlé. Le MJ peut vous donner accès à un personnage dans Roll20.':'';notice.hidden=!notice.textContent;}
   }
@@ -80,13 +80,14 @@
     var f=Object.keys(frames).map(function(id){return frames[id];}).filter(function(f){return ev.source===f.node.contentWindow;})[0];
     if(f){
       if(d.charId!==f.id)return;
+      if((inventory||defenses)&&d.type==='defend-ready'){var currentDefense=tab(active);send(f,{type:'defend-active',active:!!(panelActive&&currentDefense&&currentDefense.id===f.id&&!f.closing&&available(f.id))});return;}
       if(inventory&&d.type==='take-ready'){var current=tab(active);send(f,{type:'take-active',active:!!(panelActive&&current&&current.id===f.id&&!f.closing&&available(f.id))});return;}
       if(d.type==='inventory-result'){var q=rpcs[d.request];if(q&&q.frame===f){clearTimeout(q.timer);delete rpcs[d.request];if(d.error)q.reject(Error(d.error));else q.resolve(d.value);}return;}
       if(inventory&&d.type==='inventory-drag-start'&&!job){clearTimeout(retry);endDrag();drag={charId:f.id,ref:d.ref,token:d.token};Object.keys(frames).forEach(function(id){send(frames[id],{type:'inventory-external-drag',drag:drag});});return;}
       if(d.type==='inventory-drag-end'){clearHover();var token=d.token;setTimeout(function(){if(drag&&(!token||token===drag.token))endDrag();},400);return;}
       if(inventory&&d.type==='inventory-tab-drop'&&drag&&d.drag&&d.drag.token===drag.token&&d.drag.charId===drag.charId&&d.drag.ref===drag.ref){var source=drag.charId,ref=drag.ref;endDrag();transfer(source,f.id,ref);return;}
     }
-    if(d.type==='take-active'&&ev.source===window.parent){panelActive=!!d.active;render();return;}
+    if((d.type==='take-active'||d.type==='defend-active')&&ev.source===window.parent){panelActive=!!d.active;render();return;}
     if(d.type==='attack-preview-cancel'&&(ev.source===window.parent||ev.source===window.top)){Object.keys(frames).forEach(function(id){send(frames[id],d);});return;}
     if(d.type==='panel-theme'&&(ev.source===window.parent||ev.source===window.top)){document.documentElement.classList.toggle('night',!!d.nuit);Object.keys(frames).forEach(function(id){send(frames[id],d);});return;}
     if(d.type!=='inventory-characters-result'||ev.source!==window.top)return;
