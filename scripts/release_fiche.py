@@ -365,6 +365,10 @@ def main():
 
     print("PUBLICATION DE LA FICHE" + (" (essai)" if a.essai else ""))
 
+    # Même contrôle du référentiel et des images que le workflow de déploiement.
+    if not lancer("référentiel Boutique et images locales", [sys.executable, "scripts/test_boutique_reference.py"], racine):
+        return 1
+
     # Concurrence et migration : arrêt avant toute écriture de version.
     if not lancer("Monde collaboratif", ["node", "scripts/test_monde.js"], racine):
         return 1

@@ -12,6 +12,17 @@ from hooks.boutique import reference, catalogue
 ROOT = Path(__file__).resolve().parents[1]
 
 class BoutiqueReference(unittest.TestCase):
+    def copy_source(self, docs, raw):
+        """Copier uniquement le référentiel Boutique et toutes ses illustrations."""
+        (docs/'data').mkdir()
+        (docs/'data/owd-boutique.json').write_text(json.dumps(raw), encoding='utf8')
+        images = {item['img'] for group in ('equipements', 'impregnations')
+                  for item in raw.get(group, []) if item.get('img')}
+        for image in images:
+            target = docs/image
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy(ROOT/'docs'/image, target)
+
     def test_complete_source(self):
         raw = reference(ROOT / 'docs')
         catalog = catalogue(ROOT / 'docs')
@@ -51,12 +62,11 @@ class BoutiqueReference(unittest.TestCase):
     def test_no_book_or_sheet_dependency(self):
         expected=catalogue(ROOT/'docs')
         with tempfile.TemporaryDirectory() as temp:
-            docs=Path(temp);(docs/'data').mkdir()
-            shutil.copy(ROOT/'docs/data/owd-boutique.json',docs/'data/owd-boutique.json')
-            for it in expected['objets']:
-                dest=docs/it['img'];dest.parent.mkdir(parents=True,exist_ok=True)
-                if not dest.exists():shutil.copy(ROOT/'docs'/it['img'],dest)
+            docs=Path(temp)
+            raw=reference(ROOT/'docs')
+            self.copy_source(docs, raw)
             # Aucun Markdown ni ancien référentiel, uniquement la Boutique et ses images.
+            self.assertEqual(reference(docs)['impregnations'], raw['impregnations'])
             self.assertEqual(catalogue(docs),expected)
             p=docs/'data/owd-boutique.json';data=json.loads(p.read_text())
             data['equipements'][0]['taille']='829';p.write_text(json.dumps(data))
@@ -72,10 +82,8 @@ class BoutiqueReference(unittest.TestCase):
                 self.assertIn('/wiki/', o['descriptionSource'])
         # Une ancienne phrase générique ne peut pas réapparaître sans vérification.
         with tempfile.TemporaryDirectory() as temp:
-            docs=Path(temp);(docs/'data').mkdir()
-            for o in raw['equipements']:
-                target=docs/o['img'];target.parent.mkdir(parents=True,exist_ok=True)
-                if not target.exists():shutil.copy(ROOT/'docs'/o['img'],target)
+            docs=Path(temp)
+            self.copy_source(docs, raw)
             invalid=copy.deepcopy(raw)
             obj=next(o for o in invalid['equipements'] if not o['desc'])
             obj['desc']='A generic invented description.'
@@ -84,6 +92,16 @@ class BoutiqueReference(unittest.TestCase):
             obj['descriptionSource']='https://outward.wiki.gg/wiki/Example';obj['descriptionStatut']='wiki';obj['descriptionEmpreinte']='old'
             p.write_text(json.dumps(invalid))
             with self.assertRaisesRegex(ValueError,'sans vérification'):reference(docs)
+
+    def test_missing_imbue_image_is_rejected(self):
+        raw=reference(ROOT/'docs')
+        with tempfile.TemporaryDirectory() as temp:
+            docs=Path(temp)
+            self.copy_source(docs, raw)
+            # Une vraie image absente doit toujours bloquer le déploiement.
+            (docs/raw['impregnations'][0]['img']).unlink()
+            with self.assertRaisesRegex(ValueError, 'Icône d’imprégnation non embarquée'):
+                reference(docs)
 
     def test_import_cannot_erase_catalogue(self):
         p=ROOT/'docs/data/owd-boutique.json';before=p.read_bytes()
