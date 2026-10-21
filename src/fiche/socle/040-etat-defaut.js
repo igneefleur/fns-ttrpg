@@ -158,7 +158,7 @@
       attaques: [],
       combatAffichage: { modificateursAttaque: true, defenseSans: true, defenseEsquive: true, modificateursDefense: true },
       combatModifiers: { attaques: {}, protections: {}, resistances: {} },
-      combatOptions: { attaques: { utiliseEndurance: false, utiliseMunition: false, lente: false }, defenses: { utiliseEndurance: false, lente: false, degatsAuto: false } },
+      combatOptions: { attaques: { utiliseEndurance: false, utiliseMunition: false, lente: false, impregnation: "" }, defenses: { utiliseEndurance: false, lente: false, degatsAuto: false } },
       defenses: { esquive: { comp: "", utiliseEndurance: false }, entrees: [] },
 
       // ---- avantages ----

@@ -23,6 +23,21 @@ def reference(docs):
     effects = {e['id'] for e in data.get('effets', [])}
     if len(effects) != len(data.get('effets', [])):
         raise ValueError('Identifiants d’effets dupliqués.')
+    imbues = set()
+    for d in data.get('impregnations', []):
+        if not d.get('id') or d['id'] in imbues:
+            raise ValueError('Identifiant d’imprégnation absent ou dupliqué.')
+        imbues.add(d['id'])
+        for key in ('pct', 'flat'):
+            value = d.get(key)
+            if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value < 0:
+                raise ValueError(f'Imprégnation : {key} invalide : {d["id"]}')
+        if d.get('type') not in ('', *DAMAGE) or (d['flat'] and not d.get('type')):
+            raise ValueError(f'Type d’imprégnation invalide : {d["id"]}')
+        img = d.get('img', '')
+        resolved = (docs / img).resolve()
+        if not img.startswith('assets/impregnations/') or not resolved.is_relative_to(docs.resolve()) or not resolved.is_file():
+            raise ValueError(f'Icône d’imprégnation non embarquée : {d["id"]}')
     for o in items:
         name = o['nom']
         if o['id'] in ids or name in names:

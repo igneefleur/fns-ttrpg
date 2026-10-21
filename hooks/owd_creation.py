@@ -1165,6 +1165,7 @@ def on_files(files, config, **kwargs):
     spec.loader.exec_module(boutique)
     donnees = boutique.reference(Path(config["docs_dir"]))
     jeu["effets"] = donnees["effets"]
+    jeu["impregnations"] = donnees.get("impregnations", [])
     jeu["consommables"] = [o for o in donnees["equipements"] if o["typeObjet"] == "consommable"]
     jeu["equipements"] = [o for o in donnees["equipements"] if o["typeObjet"] != "consommable"]
     jeu["catalogueVersion"] = donnees["version"]

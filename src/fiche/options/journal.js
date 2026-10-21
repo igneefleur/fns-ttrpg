@@ -9,7 +9,7 @@
     attaques:"Attaques", defenses:"Défenses", avantages:"Avantages", modules:"Disposition des modules", modActifs:"Modules actifs", mods:"Mods", modData:"Données des modules",
     effort:"Effort", horloge:"Horloge", horlogeDigestion:"Digestion", horlogeExposition:"Exposition", horlogeAlcool:"Alcool", temperature:"Température", qualiteSommeil:"Qualité du sommeil",
     effetsActifs:"Effets actifs", effetsPermanents:"Effets permanents", effParties:"Effondrement", effDesactive:"Désactiver Effondrement", allure:"Allure", allureCran:"Vitesse",
-    capsLeviers:"Réglages des capacités", caracsLeviers:"Réglages des caractéristiques", compsLeviers:"Réglages des compétences", combatOptions:"Options de combat", combatModifiers:"Modificateurs de combat", combatAffichage:"Affichage de combat",
+    capsLeviers:"Réglages des capacités", caracsLeviers:"Réglages des caractéristiques", compsLeviers:"Réglages des compétences", combatOptions:"Options de combat", impregnation:"Imprégnation", combatModifiers:"Modificateurs de combat", combatAffichage:"Affichage de combat",
     desTailles:"Dés d’action", desUtilises:"Dés utilisés", v:"Format de fiche", rel:"Version", de:"Jets"
   };
   function journalLib(k) { return JOURNAL_LIBELLES[k] || String(k).replace(/([a-z])([A-Z])/g,"$1 $2").replace(/_/g," "); }

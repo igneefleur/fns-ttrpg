@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.9.2b";
+  var RELEASE = "4.10.0b";
   var SCHEMA = 18;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -493,7 +493,7 @@
       attaques: [],
       combatAffichage: { modificateursAttaque: true, defenseSans: true, defenseEsquive: true, modificateursDefense: true },
       combatModifiers: { attaques: {}, protections: {}, resistances: {} },
-      combatOptions: { attaques: { utiliseEndurance: false, utiliseMunition: false, lente: false }, defenses: { utiliseEndurance: false, lente: false, degatsAuto: false } },
+      combatOptions: { attaques: { utiliseEndurance: false, utiliseMunition: false, lente: false, impregnation: "" }, defenses: { utiliseEndurance: false, lente: false, degatsAuto: false } },
       defenses: { esquive: { comp: "", utiliseEndurance: false }, entrees: [] },
 
       // ---- avantages ----
@@ -805,7 +805,7 @@
 
     if (["minuscule", "petite", "moyenne", "grande", "enorme", "gigantesque"].indexOf(s.taille) < 0) s.taille = "moyenne";
     var options = s.combatOptions || {}, attaqueOptions = options.attaques || {}, defenseOptions = options.defenses || {};
-    s.combatOptions = { attaques: { utiliseEndurance: !!attaqueOptions.utiliseEndurance, utiliseMunition: !!attaqueOptions.utiliseMunition, lente: !!attaqueOptions.lente },
+    s.combatOptions = { attaques: { utiliseEndurance: !!attaqueOptions.utiliseEndurance, utiliseMunition: !!attaqueOptions.utiliseMunition, lente: !!attaqueOptions.lente, impregnation: typeof attaqueOptions.impregnation === "string" ? attaqueOptions.impregnation : "" },
       defenses: { utiliseEndurance: !!defenseOptions.utiliseEndurance, lente: !!defenseOptions.lente, degatsAuto: !!defenseOptions.degatsAuto } };
     var combatAffichage = s.combatAffichage || {};
     s.combatAffichage = {
@@ -5765,6 +5765,15 @@
     var orientation = attaqueVue.orientation;                 // 0 = haut, puis six directions dans le sens horaire
     var miroirs = attaqueVue.miroirs;   // par raccourci d'arme : main droite par défaut, gauche en miroir
 
+    function impregnationSelectionnee() {
+      var id = state.combatOptions.attaques.impregnation;
+      return (D().impregnations || []).find(function (d) { return d.id === id; }) || null;
+    }
+    function bonusImpregnation() {
+      var d = impregnationSelectionnee();
+      return d ? snum(d.pct) / 100 : 0;
+    }
+
     function armesInventaire() {
       var objets = state.inv && Array.isArray(state.inv.objets) ? state.inv.objets : [];
       return objets.filter(function (o) { return o && o.arme; });
@@ -5800,7 +5809,7 @@
     }
     function degatsArme(it) {
       if (!it || !it.arme) return 0;
-      var total = Math.round((snum(it.arme.degats) + modsDegatsArme(it)) * 1000) / 1000;
+      var total = brutArme(it);
       return state.combatOptions.attaques.lente ? Math.floor(total / 2) : total;
     }
     function typesCoup(coup, def) {
@@ -5814,13 +5823,12 @@
       return isFinite(n) && n > 0 ? n : 1;
     }
     function degatsCoup(it, coup) {
-      var base = snum(it && it.arme ? it.arme.degats : 0);
-      var mods = modsDegatsArme(it), mult = multiplicateurCoup(coup);
+      var mult = multiplicateurCoup(coup);
       // Équilibrage : le multiplicateur du coup ne porte QUE sur les dégâts
       // de base de l'arme. Les MOD sont ajoutés ensuite, chacun valant
       // floor(CARAC / 5). Le passage vaut la moitié du résultat final.
       // L'epsilon évite uniquement les imprécisions binaires de 0.8/1.2/1.4.
-      var touche = Math.floor(base * mult + 1e-9) + mods;
+      var touche = brutCoup(it, coup);
       if (state.combatOptions.attaques.lente) touche = Math.floor(touche / 2);
       return {
         mult: mult,
@@ -5836,15 +5844,25 @@
       if(somme>0)Object.keys(rep).forEach(function(k){if(rep[k]>0)valeurs[k]=base*rep[k]/somme;});else valeurs[primary] = base;
       var ammo=entree&&munitionSelectionnee(entree,typeArme(it&&it.arme&&it.arme.type)),ms=ammo&&ammo.munitionStats;
       if(ms&&ms.degats)combatTypes().forEach(function(k){var q=snum(ms.repartition&&ms.repartition[k]);if(q)valeurs[k]=(valeurs[k]||0)+snum(ms.degats)*q/100;});
-      effetsSources().forEach(function(x){var op=x.d.ops.impregnation;if(op && it && x.e.cible===it.ref && op.type)valeurs[op.type]=(valeurs[op.type]||0)+snum(it.arme.degats)*op.pct/100+op.flat;});
+      // Une seule imprégnation : le choix commun remplace, dans ce module,
+      // l'imprégnation ciblée de l'arme. Sans choix, l'effet ciblé reste actif.
+      var impregnation = impregnationSelectionnee();
+      if (!impregnation) effetsSources().forEach(function(x){var op=x.d.ops.impregnation;if(op && it && x.e.cible===it.ref && op.type)valeurs[op.type]=(valeurs[op.type]||0)+snum(it.arme.degats)*op.pct/100+op.flat;});
+      if (impregnation && impregnation.flat && impregnation.type && !Object.prototype.hasOwnProperty.call(valeurs, impregnation.type)) valeurs[impregnation.type] = 0;
       combatTypes().forEach(function (t) { var n = combatMod("attaques", t); if (n) valeurs[t] = (valeurs[t] || 0) + n; });
       return Object.keys(valeurs).map(function (t) {
-        var n = Math.floor(valeurs[t]*(1+effetBonus("degats",t)/100)+1e-9); if (state.combatOptions.attaques.lente) n = Math.floor(n / 2); if (passage) n = Math.floor(n / 2);
+        var fixe = impregnation && impregnation.type === t ? snum(impregnation.flat) : 0;
+        var n = Math.floor(valeurs[t]*(1+effetBonus("degats",t)/100)+fixe+1e-9); if (state.combatOptions.attaques.lente) n = Math.floor(n / 2); if (passage) n = Math.floor(n / 2);
         return { type: t, valeur: Math.max(0, n) };
       }).filter(function (x) { return x.valeur || x.type === primary; }).map(function (x) { return fmtP(x.valeur) + " " + x.type; }).join(" + ");
     }
-    function brutArme(it) { return Math.round((snum(it.arme.degats) + modsDegatsArme(it)) * 1000) / 1000; }
-    function brutCoup(it, coup) { return Math.floor(snum(it.arme.degats) * multiplicateurCoup(coup) + 1e-9) + modsDegatsArme(it); }
+    function brutArme(it) { return Math.round((snum(it.arme.degats) * (1 + bonusImpregnation()) + modsDegatsArme(it)) * 1000) / 1000; }
+    function brutCoup(it, coup) {
+      var base = snum(it.arme.degats) * (multiplicateurCoup(coup) + bonusImpregnation());
+      // Avec un bonus de coefficient, répartir avant l'arrondi final par type. Sans bonus,
+      // préserver l'arrondi des attaques existantes.
+      return (bonusImpregnation() ? base : Math.floor(base + 1e-9)) + modsDegatsArme(it);
+    }
     function fmtMult(n) {
       return "×" + Number(n || 1).toFixed(1);
     }
@@ -6356,6 +6374,40 @@
       supprimer(); return card;
     }
 
+    function carteImpregnation() {
+      var actif = impregnationSelectionnee(), ouvert = !!attaqueVue.impregnation;
+      var card = el("div", "pc-attaque-card pc-impregnation");
+      combatCarteTete(card, "Imprégnation", actif ? actif.nom : "Aucune", ouvert, "attaque", "impregnation", function () {
+        attaqueVue.impregnation = !ouvert; rendre();
+      });
+      if (!ouvert) return card;
+      var detail = el("div", "pc-attaque-detail pc-impregnation-detail");
+      var choix = el("div", "pc-impregnation-choix");
+      function bouton(d) {
+        var choisi = d ? !!actif && actif.id === d.id : !actif;
+        var btn = el("button", "pc-impregnation-option" + (choisi ? " on" : ""));
+        btn.type = "button"; btn.setAttribute("aria-pressed", String(choisi));
+        if (d) {
+          var image = el("img"); image.src = new URL(d.img, new URL(dataUrl(), location.href)).href;
+          image.alt = ""; image.width = 40; image.height = 40; image.loading = "lazy"; btn.appendChild(image);
+        }
+        var texte = el("span", "pc-impregnation-libelle");
+        texte.appendChild(el("span", "", d ? d.nom : "Aucune"));
+        if (d) texte.appendChild(el("small", "", d.resume));
+        btn.appendChild(texte); btn.title = d ? d.nomAnglais + (d.effetsManuels ? " — " + d.effetsManuels : "") : "Retirer l’imprégnation commune";
+        btn.addEventListener("click", function () {
+          state.combatOptions.attaques.impregnation = d && !choisi ? d.id : "";
+          refresh();
+        });
+        choix.appendChild(btn);
+      }
+      bouton(null); (D().impregnations || []).forEach(bouton);
+      detail.appendChild(choix);
+      if (actif && actif.effetsManuels) detail.appendChild(el("p", "pc-impregnation-effets", actif.effetsManuels + " — gestion manuelle."));
+      detail.appendChild(el("p", "pc-impregnation-aide", "Un seul choix commun à toutes les attaques. Recliquez pour le retirer. Ce choix ne consomme aucun objet et reste actif jusqu’à son retrait."));
+      card.appendChild(detail); return card;
+    }
+
     function rendre() {
       if (window.__owdVueAttaques && window.__owdAttackPreview) window.__owdAttackPreview(null);
       box.innerHTML = "";
@@ -6374,6 +6426,7 @@
         refresh();
       }, "pc-edit-only pc-attaque-ajout"));
       var mods = combatModificateurs("attaque", rendre); if (mods) box.appendChild(mods);
+      box.appendChild(carteImpregnation());
       applyEdit(b, "attaque");
     }
     if (window.__owdVueAttaques && window.__owdAttackPreview) remontageNettoyage.push(function () { window.__owdAttackPreview(null); });
@@ -7356,21 +7409,6 @@
     b.appendChild(tools);
     compBox = el("div");
     b.appendChild(compBox);
-    // La carte des compétences investies : une ligne par compétence, avec son
-    // rang, ses dés et son bonus.
-    var pied = el("div", "pc-comp-tools");
-    var lg = el("div", "row");
-    lg.appendChild(chatBtn(
-      function () { return "Compétences — " + (state.name || "sans nom"); },
-      function () {
-        return state.comps.filter(compInvestie).map(function (c) {
-          var i = rangInfo(compRang(c));
-          return [c.nom || "Sans nom",
-                  (i.nom || ("rang " + compRang(c))) + " · " + deDe(compDes(c)) + " " + sign(compBonus(c))];
-        });
-      }));
-    pied.appendChild(lg);
-    b.appendChild(pied);
     rebuildComps();
     return b;
   }
@@ -10897,7 +10935,7 @@
     attaques:"Attaques", defenses:"Défenses", avantages:"Avantages", modules:"Disposition des modules", modActifs:"Modules actifs", mods:"Mods", modData:"Données des modules",
     effort:"Effort", horloge:"Horloge", horlogeDigestion:"Digestion", horlogeExposition:"Exposition", horlogeAlcool:"Alcool", temperature:"Température", qualiteSommeil:"Qualité du sommeil",
     effetsActifs:"Effets actifs", effetsPermanents:"Effets permanents", effParties:"Effondrement", effDesactive:"Désactiver Effondrement", allure:"Allure", allureCran:"Vitesse",
-    capsLeviers:"Réglages des capacités", caracsLeviers:"Réglages des caractéristiques", compsLeviers:"Réglages des compétences", combatOptions:"Options de combat", combatModifiers:"Modificateurs de combat", combatAffichage:"Affichage de combat",
+    capsLeviers:"Réglages des capacités", caracsLeviers:"Réglages des caractéristiques", compsLeviers:"Réglages des compétences", combatOptions:"Options de combat", impregnation:"Imprégnation", combatModifiers:"Modificateurs de combat", combatAffichage:"Affichage de combat",
     desTailles:"Dés d’action", desUtilises:"Dés utilisés", v:"Format de fiche", rel:"Version", de:"Jets"
   };
   function journalLib(k) { return JOURNAL_LIBELLES[k] || String(k).replace(/([a-z])([A-Z])/g,"$1 $2").replace(/_/g," "); }

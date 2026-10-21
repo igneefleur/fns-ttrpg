@@ -74,7 +74,7 @@ const server=http.createServer((req,res)=> {
   assert.equal((await state()).defenses.entrees[0].id,'customDef');
   await barriere.getByRole('button',{name:'Agrandir',exact:true}).click();await barriere.getByRole('button',{name:'Supprimer',exact:true}).click();
   assert.equal((await state()).defenses.entrees.some(x=>x.id==='customDef'),false);
-  await atk.getByRole('button',{name:'+ Ajouter une attaque',exact:true}).click();const added=atk.locator('.pc-attaque-card').last();
+  await atk.getByRole('button',{name:'+ Ajouter une attaque',exact:true}).click();const added=atk.locator('.pc-attaque-card[data-attack-id]').last();
   assert.equal(await added.getByRole('button',{name:'Réduire',exact:true}).count(),1);await added.getByRole('button',{name:'Supprimer',exact:true}).click();
   for(let i=0;i<300;i++){const s=C.read(attrs).state;if(s.attaques[0].id==='custom'&&s.attaques[0].personnalisee.garde==='2>7'&&s.defenses.entrees.length===1)break;await page.waitForTimeout(100);}
   assert.equal(C.read(attrs).state.attaques[0].id,'custom');assert.equal(C.read(attrs).state.attaques[0].personnalisee.garde,'2>7');

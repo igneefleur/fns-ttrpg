@@ -429,21 +429,6 @@
     b.appendChild(tools);
     compBox = el("div");
     b.appendChild(compBox);
-    // La carte des compétences investies : une ligne par compétence, avec son
-    // rang, ses dés et son bonus.
-    var pied = el("div", "pc-comp-tools");
-    var lg = el("div", "row");
-    lg.appendChild(chatBtn(
-      function () { return "Compétences — " + (state.name || "sans nom"); },
-      function () {
-        return state.comps.filter(compInvestie).map(function (c) {
-          var i = rangInfo(compRang(c));
-          return [c.nom || "Sans nom",
-                  (i.nom || ("rang " + compRang(c))) + " · " + deDe(compDes(c)) + " " + sign(compBonus(c))];
-        });
-      }));
-    pied.appendChild(lg);
-    b.appendChild(pied);
     rebuildComps();
     return b;
   }

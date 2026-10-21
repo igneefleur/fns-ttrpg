@@ -12,10 +12,10 @@ let attrs, writes=[], blockWrites=false;
 const seed=M.blank();seed.v=M.SCHEMA;seed.rel=M.release();seed.name='Fiche partagée';
 seed.comps=[{id:'c1',nom:'Lutte',groupe:'Physique',rang:1},{id:'c2',nom:'Évasion',groupe:'Physique',rang:2}];
 seed.etat.pv=100;seed.etat.pe=100;
-seed.inv.objets=[{ref:'top',nom:'Tunique',qte:1,ou:'haut',vet:'haut',prot_feu:4,res_feu:5},
+seed.inv.objets=[{ref:'top',nom:'Tunique',qte:1,ou:'haut',vet:'haut',poches:10,prot_feu:4,res_feu:5},
  {ref:'legs',nom:'Pantalon',qte:1,ou:'bas',vet:'bas',prot_feu:2,res_feu:4},
- {ref:'arrows',nom:'Flèches',qte:3,ou:'poches',contenu:'fleches'},
- {ref:'bow',nom:'Arc',qte:1,ou:'poches',arme:{attaque:'6',degats:'16',type:'arc-court'}},
+ {ref:'arrows',nom:'Flèches',qte:3,ou:'poches',taille:'Minuscule',contenu:'fleches'},
+ {ref:'bow',nom:'Arc',qte:1,ou:'poches',taille:'Très petite',arme:{attaque:'6',degats:'16',type:'arc-court'}},
  {ref:'blade',nom:'Dague',qte:1,ou:'mainG',arme:{attaque:'6',degats:'16',parade:'8',reduction:'6',modsParade:['Force','',''],modsDegats:[],type:'dague',comp:'c1'}}];
 seed.attaques=[{id:'bow',arme:'bow',munition:'arrows'},{id:'old',arme:'blade'}, {id:'custom',nom:'Onde de feu',utiliseEndurance:true,personnalisee:{attaque:'5',degats:'20',modsDegats:['Force','',''],type:'',comp:'c1',mult:'1.2',trajet:'1:passe>6:frappe',garde:'1>9',touche:'feu',passage:'feu'}},
  {id:'simple',nom:'Poing',personnalisee:{attaque:'4',degats:'10',modsDegats:[],type:'',touche:'contondant'}}];
@@ -57,7 +57,7 @@ const server=http.createServer((req,res)=> {
   assert.equal(await atk.locator('.pc-attaque-card .pc-attaque-toggle').count(),0);
   console.log('OK six coups normaux : trois anneaux complets et centre, options uniques en haut de chaque module');
   await atk.locator('.pc-gear').click();assert.equal(await dague.locator('.pc-attaque-type').inputValue(),'arme');assert.equal(await dague.locator('.pc-attaque-source').inputValue(),'blade');await atk.getByRole('button',{name:'+ Ajouter une attaque'}).click();
-  const custom=atk.locator('.pc-attaque-card').last();await custom.locator('select').first().selectOption('custom');
+  const custom=atk.locator('.pc-attaque-card[data-attack-id]').last();await custom.locator('select').first().selectOption('custom');
   await custom.locator('input').first().fill('Trajet dessiné');await custom.locator('input').first().dispatchEvent('change');
   const editor=custom.locator('.pc-attaque-editor');await editor.getByRole('button',{name:'Passage',exact:true}).click();
   await editor.locator('polygon[data-q="0"][data-r="-1"]').click();

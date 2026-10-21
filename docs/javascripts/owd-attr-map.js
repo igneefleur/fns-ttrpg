@@ -82,7 +82,7 @@
   // même version, la beta étant ce que le stable recevra à la fusion) : ce qui
   // compare des versions doit donc l'ôter avant de lire les nombres, et c'est
   // exactement ce que fait OwdMods.compareVersions.
-  var RELEASE_DEFAUT = "4.9.2b";
+  var RELEASE_DEFAUT = "4.10.0b";
   // Entier INDÉPENDANT de la release : il ne monte qu'au changement de forme de
   // l'état du personnage, jamais parce que le majeur a bougé. Ajouter une clé
   // racine avec un défaut n'en est PAS un : normalize() complète une clé
@@ -336,7 +336,7 @@
       // ---- attaques ----
       attaques: [],
       combatModifiers: { attaques: {}, protections: {}, resistances: {} },
-      combatOptions: { attaques: { utiliseEndurance: false, utiliseMunition: false, lente: false }, defenses: { utiliseEndurance: false, lente: false, degatsAuto: false } },
+      combatOptions: { attaques: { utiliseEndurance: false, utiliseMunition: false, lente: false, impregnation: "" }, defenses: { utiliseEndurance: false, lente: false, degatsAuto: false } },
       defenses: { esquive: { comp: "", utiliseEndurance: false }, entrees: [] },
 
       // ---- avantages ----
