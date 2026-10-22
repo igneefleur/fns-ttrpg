@@ -56,7 +56,7 @@
   var M = window.OwdAttrMap;
   var C = window.OwdSync && window.OwdSync.Compact;
   var storageCapable=false, storageSession="";
-  var tokenObserved={},tokenMaxObserved={},storageConflictSeen={},storageIntent={absolute:{}};
+  var tokenObserved={},tokenMaxObserved={},storageIntent={absolute:{}};
   window.__owdReserveSet=function(k){storageIntent.absolute[JSON.stringify([['k','etat'],['k',k]])]=true;};
   window.__owdInventorySet=function(ref){storageIntent.absolute[JSON.stringify([['k','inv'],['k','objets'],['e',ref],['k','qte']])]=true;};
 
@@ -76,13 +76,14 @@
   var objetDrag = null, accesInventaire = true;
   var STANDALONE = (function () { try { return window.top === window; } catch (e) { return false; } })();
 
+  var VIEW_ID = "v" + Date.now().toString(36) + Math.random().toString(36).slice(2);
   var mem = {};                 // cache localStorage
   var SAVE_KEYS = { "owd-perso": 1, "owd-cards": 1 };
   var lastAttrs = {};           // ce que Roll20 a été VU contenir (base du diff)
   var enVol = null;             // lot posté, pas encore relu : ni oublié, ni tenu pour acquis
   var enVolTimer = null;
   var echecs = 0;               // confirmations manquées d'affilée
-  var miseANiveauDemandee = false, miseANiveauOps = [], miseANiveauReprise = null;
+  var miseANiveauDemandee = false, miseANiveauOps = [];
   var ready = false;            // les sauvegardes ne partent qu'après hydratation + montage
   var storageInitialSentAt = 0;
   var journalPlayer = null, journalRemote = null;
@@ -98,7 +99,7 @@
   var askTimer = null;          // relance de la demande d'hydratation
   var gardeArmee = false;       // le chien de garde ne se lance qu'une fois par session
   var taillesPostees = [];      // tailles récentes de owd_state posté (repère du chien de garde)
-  var collaboration = null, collaborationPont = false, collaborationApplique = false, storagePendingDeferred = false;
+  var collaboration = null, collaborationPont = false, collaborationApplique = false;
   var derniereLecture = 0, modificationLocale = 0;
   var synchronisationDifferée = null;
   // Les formulaires composant du texte (IME) et les modales gardent leur DOM.
@@ -117,10 +118,9 @@
   window.__owdLocalStorage = {
     getItem: function (k) { return Object.prototype.hasOwnProperty.call(mem, k) ? mem[k] : null; },
     setItem: function (k, v) {
-      var previousValue=mem[k];mem[k] = String(v);
-      if(ready&&gele&&!gelVolontaire&&!collaboration&&!collaborationApplique&&k==='owd-perso'&&previousValue!==mem[k]){try{localStorage.setItem('owd-recovery-v2:'+CHAR_ID+':draft',JSON.stringify({source:'saisie-pendant-recuperation',raw:mem[k],reason:'Modifications saisies pendant une lecture indisponible',at:Date.now()}));}catch(e){}}
+      mem[k] = String(v);
       if (collaboration && !collaborationApplique && k === "owd-perso") {
-        updateStorageMaxima();collaboration.actor=journalPlayer;collaboration.capture(JSON.parse(mem[k]),storageIntent);storageIntent={absolute:{}};persistStoragePending(); modificationLocale = Date.now();
+        updateStorageMaxima();collaboration.actor=journalPlayer;collaboration.capture(JSON.parse(mem[k]),storageIntent);storageIntent={absolute:{}};actualiseStatutEnregistrement(); modificationLocale = Date.now();
       }
       if (ready && !collaborationApplique && SAVE_KEYS[k]) scheduleSave();
     },
@@ -134,13 +134,13 @@
   var defendOpenedAt = Date.now(), defendEnabled = !window.__owdVueInventaire;
   var defendEligible = !window.__owdVueAttaques && !window.__owdVueNotes;
   function post(msg) {
-    msg.ns = "owd"; msg.charId = CHAR_ID;
+    msg.ns = "owd"; msg.charId = CHAR_ID; msg.viewId = VIEW_ID;
     if (window.__owdVueInventaire) msg.inventory = true;
     if (!window.__owdVueAttaques && !window.__owdVueDefenses && !window.__owdVueNotes) { msg.takeOpenedAt = takeOpenedAt; msg.takeEnabled = takeEnabled; }
     if (defendEligible) { msg.defendOpenedAt = defendOpenedAt; msg.defendEnabled = defendEnabled; }
     try { window.top.postMessage(msg, "*"); } catch (e) {}
   }
-  window.addEventListener('pagehide', function () { takeEnabled = false; defendEnabled = false; post({type:'take-target'}); });
+  window.addEventListener('pagehide', function () { takeEnabled = false; defendEnabled = false; post({type:'storage-release'}); post({type:'take-target'}); });
   window.addEventListener('message', function (ev) {
     var d=ev.data;
     if(!d||d.ns!=='owd'||ev.source!==window.parent)return;
@@ -271,11 +271,10 @@
     try{remote=remote||C.read(attrs);if(!remote||remote.incomplete)return;journalRemote=remote;lectureVerifiee=attrs;
       var stamp=remote.meta.epoch+':'+C.hash(C.stable(remote.meta.blocks));if(stamp===empreinteBaseVerifiee)return;
       var base={};base[C.BASE]=attrs[C.BASE];Object.keys(remote.meta.blocks).forEach(function(k){base[k]=attrs[k];});baseVerifiee=base;empreinteBaseVerifiee=stamp;
-      try{localStorage.setItem('owd-verified-base-v2:'+CHAR_ID,JSON.stringify(base));}catch(e){}
     }catch(e){}
   }
   function repareBlocsVerifies(attrs){
-    try{var cached=baseVerifiee;if(!cached)cached=JSON.parse(localStorage.getItem('owd-verified-base-v2:'+CHAR_ID)||'null');if(!cached)return false;
+    try{var cached=baseVerifiee;if(!cached)return false;
       var source=C.snapshot(cached);if(!source)return false;var meta=attrs[C.BASE]?JSON.parse(attrs[C.BASE].current):null,fix={};
       if(!meta){if(!attrs[C.BLOCK+'fiche']||!attrs[C.BLOCK+'inventaire'])return false;var trial=Object.assign({},attrs);trial[C.BASE]=cached[C.BASE];C.read(trial);fix[C.BASE]=cached[C.BASE];}
       else{if(meta.epoch!==source.meta.epoch)return false;Object.keys(meta.blocks||{}).forEach(function(k){if((!attrs[k]||C.hash(attrs[k].current)!==meta.blocks[k])&&cached[k]&&C.hash(cached[k].current)===meta.blocks[k])fix[k]=cached[k];});}
@@ -292,155 +291,42 @@
       if(Number(remote.state.v)!==window.Owd.schema){bandeau('Lecture rétablie. Rouvrez la fiche pour charger sa version.',[{texte:'Recharger la fiche',acte:'recharger',action:function(){location.reload();}},{texte:'Exporter les données de secours',acte:'export-recuperation',action:exporterRecuperation}]);return;}
       collaborationApplique=true;try{window.Owd.__recoitEtat(remote.state);}finally{collaborationApplique=false;}
       attrsVus=lastAttrs=attrs;collaboration=new C.Session(attrs,JSON.parse(mem['owd-perso']));updateStorageMaxima();collaboration.capture(JSON.parse(mem['owd-perso']));
-      marqueConflitsAnciens(remote);restoreStoragePending();var resumed=collaboration.receive(attrs);synchronisationDifferée=resumed.state;appliqueDiffere();
-      gele=false;attrsEnErreur=null;memoriseLectureVerifiee(attrs,remote);fermerBandeau();afficheRecuperationsLocales();scheduleSave();
+      var resumed=collaboration.receive(attrs);synchronisationDifferée=resumed.state;appliqueDiffere();
+      gele=false;attrsEnErreur=null;memoriseLectureVerifiee(attrs,remote);fermerBandeau();scheduleSave();
     }catch(e){attrsEnErreur=attrs;}
   }
 
   function updateStorageMaxima(){if(!collaboration)return;try{var cards=JSON.parse(mem['owd-cards']||'{}'),caps=cards._current&&cards._current.capacites||{};Object.keys(caps).forEach(function(k){if(/Max$/.test(k)&&typeof caps[k]==='number')collaboration.maxima[k.slice(0,-3)]=caps[k];});}catch(e){}}
-  function persistStoragePending(){
-    if(!collaboration)return false;
-    var key='owd-pending-v2:'+CHAR_ID+':'+collaboration.id;
-    try{var ops=Object.keys(collaboration.pending).map(function(id){return collaboration.pending[id];});
-      if(ops.length)localStorage.setItem(key,JSON.stringify({epoch:collaboration.epoch,ops:ops,payloads:collaboration.payloads}));else localStorage.removeItem(key);
-      return true;
-    }catch(e){bandeauPerte();return false;}
+  // Les saisies en attente vivent seulement dans la session ouverte.
+  // Ne jamais lire ni rejouer les anciens journaux persistants du navigateur.
+  function purgeAnciennesModificationsLocales() {
+    try {
+      var prefixes = ['owd-pending-v2:' + CHAR_ID + ':', 'owd-recovery-v2:' + CHAR_ID + ':'];
+      var keys = [];
+      for (var i = 0; i < localStorage.length; i++) {
+        var key = localStorage.key(i);
+        if (key === 'owd-verified-base-v2:' + CHAR_ID || prefixes.some(function(p){return key && key.indexOf(p) === 0;})) keys.push(key);
+      }
+      keys.forEach(function(key){try{localStorage.removeItem(key);}catch(e){}});
+    } catch (e) {}
   }
-  function storageLocalKeys(prefix){var keys=[];for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.indexOf(prefix)===0)keys.push(k);}return keys;}
-  function archiveStoragePending(key,raw,reason){
-    try{localStorage.setItem('owd-recovery-v2:'+CHAR_ID+':'+C.hash(key)+':'+C.hash(raw),JSON.stringify({source:key,raw:raw,reason:reason,at:Date.now()}));return true;}catch(e){return false;}
+  purgeAnciennesModificationsLocales();
+  var saveStatus = '', saveStatusTimer = null;
+  function statutEnregistrement(text, failed) {
+    if (saveStatus === text) return;
+    saveStatus = text;
+    if (saveStatusTimer) clearTimeout(saveStatusTimer);
+    var n = document.getElementById('owd-save-status');
+    if (!n) { n = document.createElement('div'); n.id = 'owd-save-status'; n.setAttribute('role','status'); n.style.cssText='padding:3px 8px;font:inherit;font-size:12px'; document.body.insertBefore(n,document.getElementById('perso-fiche')); }
+    n.textContent = text; n.hidden = !text; n.dataset.failed = String(!!failed);
+    if (text === 'Enregistré') saveStatusTimer = setTimeout(function(){statutEnregistrement('');},2500);
   }
-  var storageRecoveryChecks=[];
-  function copiesLocalesDisponibles(){return storageLocalKeys('owd-recovery-v2:'+CHAR_ID+':').filter(function(k){try{return JSON.parse(localStorage.getItem(k)).resolved!==true;}catch(e){return true;}});}
-  function reprendCopiesCreation(server){
-    storageRecoveryChecks=[];
-    storageLocalKeys('owd-recovery-v2:'+CHAR_ID+':').forEach(function(key){try{
-      var record=JSON.parse(localStorage.getItem(key));if(record.resolved)return;
-      var journal=JSON.parse(record.raw);if(!journal||journal.epoch!==server.meta.epoch||!Array.isArray(journal.ops)||!journal.ops.every(validStorageOp))return;
-      storageRecoveryChecks.push({key:key,record:record,journal:journal});
-      // Erreur de lecture « server.ids » avant l'existence de la base. Ces
-      // copies contiennent un journal valide, qui doit retrouver le circuit normal.
-      if(/ids/.test(record.reason||'')&&/null/.test(record.reason||'')&&typeof record.source==='string'&&record.source.indexOf('owd-pending-v2:'+CHAR_ID+':')===0&&!localStorage.getItem(record.source))localStorage.setItem(record.source,record.raw);
-    }catch(e){}});
-    confirmeCopiesLocales(server);
+  function actualiseStatutEnregistrement(failed) {
+    var waiting = collaboration && Object.keys(collaboration.pending).length;
+    if (failed && waiting) statutEnregistrement('Échec de l’enregistrement. Les modifications restent en attente dans cette fenêtre.',true);
+    else if (waiting) statutEnregistrement('Enregistrement en cours…');
+    else if (saveStatus) statutEnregistrement('Enregistré');
   }
-  function confirmeCopiesLocales(server){
-    if(!server)return;var changed=false;
-    storageRecoveryChecks=storageRecoveryChecks.filter(function(check){
-      if(!check.journal.ops.every(function(op){return server.ids[op.id]&&C.stable(server.ids[op.id])===C.stable(op)&&!server.conflicts.some(function(c){return c.id===op.id;});}))return true;
-      try{check.record.resolved=true;localStorage.setItem(check.key,JSON.stringify(check.record));changed=true;return false;}catch(e){return true;}
-    });if(changed)afficheRecuperationsLocales();
-  }
-  function afficheRecuperationsLocales(){
-    try{if(window.__owdVueInventaire)return;var existing=document.getElementById('owd-local-recovery');if(!copiesLocalesDisponibles().length){if(existing)existing.remove();return;}if(existing)return;
-      var button=document.createElement('button');button.id='owd-local-recovery';button.type='button';button.textContent='Données locales conservées';
-      button.title='Consulter les anciennes modifications mises à l’abri';button.style.cssText='flex:none;align-self:flex-start;margin:4px 8px;font:inherit;font-size:12px';
-      button.onclick=function(){var records=copiesLocalesDisponibles().map(function(k){return JSON.parse(localStorage.getItem(k));});
-        var box=ecran('Anciennes modifications locales',false);box.appendChild(noeud('p',null,'Ces données ont été conservées séparément. La fiche actuelle reste utilisable.'));
-        montrerJson(JSON.stringify(records,null,2),'Copies locales conservées, sans modification de leur contenu.');bouton(zoneActions(box),'Fermer','fermer',fermerEcran);
-      };document.body.insertBefore(button,document.getElementById('perso-fiche'));
-    }catch(e){}
-  }
-  function validStorageOp(op){
-    if(!op||typeof op.id!=='string'||!op.id||!Number.isSafeInteger(op.clock)||!Array.isArray(op.changes))return false;
-    return op.changes.every(function(c){try{var p=JSON.parse(c.k);return Array.isArray(p)&&p.length>0&&p.every(function(x){return Array.isArray(x)&&['k','e','order','index'].indexOf(x[0])>=0&&['__proto__','prototype','constructor'].indexOf(x[1])<0;})&&Array.isArray(c.n)&&['v','o','l','i','d'].indexOf(c.n[0])>=0;}catch(e){return false;}});
-  }
-  function validRecoveryState(state,target){
-    try{
-      if(!state||state.v!==target.v)return false;
-      if(!Object.keys(target).every(function(k){var a=target[k],b=state[k];return Array.isArray(a)?Array.isArray(b):a&&typeof a==='object'?b&&typeof b==='object'&&!Array.isArray(b):true;}))return false;
-      if(target.notes&&target.notes.format===1&&(!state.notes||state.notes.format!==1||!Array.isArray(state.notes.messages)))return false;
-      return C.stable(C.read(C.encode(state)).state)===C.stable(state);
-    }catch(e){return false;}
-  }
-  // Changement de base : seules les valeurs dont l'ancien état correspond
-  // encore sont reprises. Une ancienne note libre devient un message, jamais
-  // le remplacement de tout l'historique. Le reste demeure dans sa copie locale.
-  function rebaseStorageOp(state,op){
-    if(!validStorageOp(op)||op.creates||op.modules)return null;
-    var next=C.copy(state),flat=C.flatten(next),notes=[];
-    for(var i=0;i<op.changes.length;i++){
-      var c=op.changes[i],p=JSON.parse(c.k),root=p[0][1];
-      if(p.length===1&&(root==='v'||root==='rel'))continue;
-      if(p.length===1&&root==='notes'&&c.n[0]==='v'&&typeof c.n[1]==='string'&&next.notes&&next.notes.format===1){notes.push(c.n[1]);continue;}
-      var current=flat[c.k];if(C.stable(current)===C.stable(c.n))continue;
-      if(c.n[0]!=='v'||!current||current[0]!=='v'||c.before===undefined||C.stable(current)!==C.stable(c.before))return null;
-      for(var j=1;j<p.length;j++){var parent=flat[JSON.stringify(p.slice(0,j))];if(!parent||parent[0]==='d'||parent[0]==='v')return null;}
-      flat[c.k]=C.copy(c.n);
-    }
-    next=C.rebuild(flat);notes.forEach(function(text){if(!text.trim()||next.notes.messages.some(function(m){return m.text===text;}))return;
-      next.notes.messages.push({id:'recovered-'+C.hash(op.id)+':'+C.hash(text),at:Date.now(),text:text,mode:'plain'});
-    });return next;
-  }
-  function reconstitueCreation(attrs){
-    if(!C||attrs[C.BASE]||attrs.owd_version||attrs.owd_state||attrs.owd_sync_base||!attrs[C.BLOCK+'fiche']||!attrs[C.BLOCK+'inventaire'])return null;
-    try{
-      var meta=JSON.parse(C.encode(M.blank())[C.BASE].current);meta.blocks={};meta.reserves={};meta.moduleData={};
-      Object.keys(attrs).forEach(function(k){if(k.indexOf(C.BLOCK)!==0&&k.indexOf(C.STACK)!==0)return;meta.blocks[k]=C.hash(attrs[k].current);
-        if(k.indexOf(C.BLOCK+'reserve_')===0)meta.reserves[k.slice((C.BLOCK+'reserve_').length)]=k;
-        if(k.indexOf(C.BLOCK+'module_')===0)meta.moduleData[decodeURIComponent(k.slice((C.BLOCK+'module_').length))]=k;
-      });
-      var trial=Object.assign({},attrs);trial[C.BASE]={current:JSON.stringify(meta),max:''};var state=C.read(trial).state,epoch='e'+C.hash(C.stable(state));
-      // Le nom de base enregistré dans le journal doit correspondre à l'état
-      // complet reconstitué. Un bloc manquant ou changé interdit cette reprise.
-      var keys=storageLocalKeys('owd-pending-v2:'+CHAR_ID+':').concat(storageLocalKeys('owd-recovery-v2:'+CHAR_ID+':'));
-      var proved=keys.some(function(k){try{var r=JSON.parse(localStorage.getItem(k));if(r.raw)r=JSON.parse(r.raw);return r.epoch===epoch&&Array.isArray(r.ops)&&r.ops.every(validStorageOp);}catch(e){return false;}});
-      if(!proved)return null;meta.epoch=epoch;trial[C.BASE].current=JSON.stringify(meta);trial.owd_version={current:String(state.v),max:state.rel||''};return trial;
-    }catch(e){return null;}
-  }
-  function restoreStoragePending(){
-    if(!collaboration)return;
-    var prefix='owd-pending-v2:'+CHAR_ID+':',keys;
-    var server=C.read(lastAttrs),remove=[];
-    // Une nouvelle fiche n'a pas encore de base confirmée. L'absence de base
-    // ne rend pas ses journaux illisibles : les garder jusqu'à sa réception.
-    if(!server){storagePendingDeferred=true;return;}
-    storagePendingDeferred=false;
-    try{reprendCopiesCreation(server);keys=storageLocalKeys(prefix);}catch(e){return;}
-    keys.forEach(function(key){
-      if(key===prefix+collaboration.id)return;
-      var raw=null,r,archived=false;
-      try{
-        raw=localStorage.getItem(key);r=JSON.parse(raw);
-        if(!r||!Array.isArray(r.ops)||!r.ops.every(validStorageOp)||r.payloads&&typeof r.payloads!=='object')throw Error('Journal local illisible');
-        var pending=r.ops.filter(function(op){return !server.ids[op.id];});
-        if(!pending.length){remove.push(key);return;}
-        // Vérifier les opérations isolément dans le lecteur, avant de les
-        // mélanger à une session saine. Un seul vieux journal ne la gèle plus.
-        var trial=Object.assign({},lastAttrs),candidate=null;
-        trial[C.PREFIX+'local-recovery']={current:JSON.stringify({epoch:collaboration.epoch,ops:Object.keys(collaboration.pending).map(function(id){return collaboration.pending[id];}).concat(pending)})};
-        Object.keys(collaboration.payloads).forEach(function(k){if(!trial[k])trial[k]=collaboration.payloads[k];});
-        Object.keys(r.payloads||{}).forEach(function(k){if(!trial[k])trial[k]=r.payloads[k];});
-        if(r.epoch===collaboration.epoch)try{candidate=C.read(trial);}catch(e){}
-        var target=JSON.parse(mem['owd-perso']);
-        if(candidate&&!candidate.incomplete&&validRecoveryState(candidate.state,target)){
-          Object.assign(collaboration.payloads,r.payloads||{});pending.forEach(function(op){collaboration.pending[op.id]=op;collaboration.pendingAt[op.id]=Date.now();collaboration.clock=Math.max(collaboration.clock,op.clock);});
-        }else{
-          archived=archiveStoragePending(key,raw,'Ancienne base de synchronisation ou structure modifiée');
-          // Si l'archive locale est impossible (quota), conserver l'original.
-          if(!archived)return;
-          var recovered=C.rebuild(collaboration.local);
-          pending.slice().sort(function(a,b){return a.clock-b.clock||(a.id<b.id?-1:1);}).forEach(function(op){var next=rebaseStorageOp(recovered,op);if(next)recovered=next;});
-          collaboration.capture(recovered);
-        }
-        remove.push(key);
-      }catch(e){if(raw!==null&&archiveStoragePending(key,raw,String(e.message||e)))remove.push(key);}
-    });
-    // Transfert local atomique : ne retirer l'ancienne boîte qu'après écriture
-    // réussie de la nouvelle, qui contient toutes les opérations reprises.
-    if(persistStoragePending())remove.forEach(function(key){try{localStorage.removeItem(key);}catch(e){}});
-    afficheRecuperationsLocales();
-  }
-  function confirmStoragePending(server){
-    if(!server)return;confirmeCopiesLocales(server);var prefix='owd-pending-v2:'+CHAR_ID+':';
-    try{storageLocalKeys(prefix).forEach(function(key){try{var r=JSON.parse(localStorage.getItem(key));if(!r||r.epoch!==server.meta.epoch||!Array.isArray(r.ops))return;
-      r.ops=r.ops.filter(function(op){return !server.ids[op.id];});if(r.ops.length)localStorage.setItem(key,JSON.stringify(r));else localStorage.removeItem(key);
-    }catch(e){}});}catch(e){}
-  }
-  function nouveauxConflits(remote){
-    var fresh=false;(remote&&remote.conflicts||[]).forEach(function(c){var k=c.id+':'+(c.path||c.reason);if(!storageConflictSeen[k])fresh=true;storageConflictSeen[k]=true;});return fresh;
-  }
-  function marqueConflitsAnciens(remote){nouveauxConflits(remote);}
   function scheduleSave() {
     if (gele) return;           // rien ne sort d'une fiche qu'on n'a pas su lire en entier
     if (saveTimer) clearTimeout(saveTimer);
@@ -1183,14 +1069,14 @@
         // Ne pas initialiser une session sur la mémoire encore au vieux schéma.
         if (window.Owd && window.Owd.__pret === false) { setTimeout(serie, 25); return; }
         if (C && collaborationPont && !gele) {
-          collaboration = new C.Session(lastAttrs, JSON.parse(mem["owd-perso"]), null, {id:"v"+Date.now().toString(36)+Math.random().toString(36).slice(2)});
-          chargeRepriseMiseANiveau();updateStorageMaxima();
+          collaboration = new C.Session(lastAttrs, JSON.parse(mem["owd-perso"]), null, {id:VIEW_ID});
+          updateStorageMaxima();
           // Le bundle vient de migrer en mémoire. Capturer cette montée AVANT
           // une réponse distante encore à l'ancien schéma, même si le réseau
           // retarde sa confirmation de plusieurs secondes.
           collaboration.capture(JSON.parse(mem["owd-perso"]));
           if(miseANiveauDemandee)miseANiveauOps=Object.keys(collaboration.pending);
-          marqueConflitsAnciens(C.read(lastAttrs));restoreStoragePending();persistStoragePending();
+          actualiseStatutEnregistrement();
           if(collaboration.hasBase&&Object.keys(collaboration.pending).length){var restored=collaboration.receive(lastAttrs);if(restored){synchronisationDifferée=restored.state;appliqueDiffere();}}
           // La photographie n'est écrite qu'une fois. Elle est aussi annoncée
           // au vieux code par owd_state/schema 11, pour empêcher ses écritures.
@@ -1554,32 +1440,6 @@
       "niveau, elle, se redemande toujours."));
   }
 
-  // Une montée déjà autorisée peut être encore dans un journal local si
-  // l'onglet a été rechargé avant son accusé serveur. Elle se reprend sans
-  // demander une nouvelle autorisation ; la copie de secours doit être relue.
-  function repriseMiseANiveau(attrs,cible){
-    if(!C||!attrs[C.BASE])return false;
-    try{
-      var remote=C.read(attrs),backup=backupBlocs(attrs);
-      if(!backup||Number(JSON.parse(backup.current).v)>=cible)return false;
-      return storageLocalKeys('owd-pending-v2:'+CHAR_ID+':').some(function(key){try{
-        var r=JSON.parse(localStorage.getItem(key));
-        if(!r||r.epoch!==remote.meta.epoch||!Array.isArray(r.ops)||!r.ops.every(validStorageOp)||!r.ops.some(function(op){return op.changes.some(function(c){return c.k==='[["k","v"]]'&&c.n[0]==='v'&&c.n[1]===cible;});}))return false;
-        var trial=Object.assign({},attrs);trial[C.PREFIX+'resume-upgrade']={current:JSON.stringify({epoch:r.epoch,ops:r.ops})};
-        Object.keys(r.payloads||{}).forEach(function(k){if(!trial[k])trial[k]=r.payloads[k];});var candidate=C.read(trial);
-        if(candidate.incomplete||!validRecoveryState(candidate.state,{v:cible,notes:{format:1,messages:[]}}))return false;
-        miseANiveauReprise={epoch:r.epoch,ops:r.ops,payloads:r.payloads||{}};mem['owd-perso']=JSON.stringify(candidate.state);return true;
-      }catch(e){return false;}});
-    }catch(e){return false;}
-  }
-  function chargeRepriseMiseANiveau(){
-    var r=miseANiveauReprise;if(!r||!collaboration||r.epoch!==collaboration.epoch)return;
-    Object.assign(collaboration.payloads,r.payloads);r.ops.forEach(function(op){collaboration.pending[op.id]=op;collaboration.pendingAt[op.id]=Date.now();collaboration.clock=Math.max(collaboration.clock,op.clock);});
-    // Reconstituer la base locale AVANT la capture du bundle : sinon les
-    // dépenses en attente seraient capturées une seconde fois, et la migration
-    // fraîche pourrait remplacer une note modifiée hors ligne par son ancien texte.
-    collaboration.receive(lastAttrs);miseANiveauReprise=null;
-  }
   function actualiseAvantMontage(attrs){
     if(bundleCharge||gele||!attrsPrets)return;
     var f=versionFiche(attrs);if(!f||f.schema!==schemaSite())return;
@@ -1674,7 +1534,6 @@
     // et il servira au premier changement de forme de l'état.
     if (f.schema === 1 && schSite > 1) { monter(true, f); return; }
 
-    if(f.schema<schSite&&repriseMiseANiveau(attrs,schSite)){miseANiveauDemandee=true;chargerBundle(courant);return;}
 
     // 5. l'écran.
     avecMigrations(function () { ecranVersion(f, relSite, schSite); });
@@ -1699,6 +1558,23 @@
     if (n) { if (html == null) n.remove(); else n.innerHTML = html; }
   }
 
+  // Création interrompue : reconstruire le manifeste uniquement si tous les
+  // blocs canoniques sont déjà présents sur Roll20, sans consulter le navigateur.
+  function reconstitueCreation(attrs) {
+    if(!C||attrs[C.BASE]||attrs.owd_version||attrs.owd_state||attrs.owd_sync_base||!attrs[C.BLOCK+'fiche']||!attrs[C.BLOCK+'inventaire'])return null;
+    try {
+      var required=C.encode(M.blank());if(Object.keys(required).some(function(k){return k.indexOf(C.BLOCK)===0&&!attrs[k];}))return null;
+      var meta=JSON.parse(required[C.BASE].current);meta.blocks={};meta.reserves={};meta.moduleData={};
+      Object.keys(attrs).forEach(function(k){if(k.indexOf(C.BLOCK)!==0&&k.indexOf(C.STACK)!==0)return;meta.blocks[k]=C.hash(attrs[k].current);
+        if(k.indexOf(C.BLOCK+'reserve_')===0)meta.reserves[k.slice((C.BLOCK+'reserve_').length)]=k;
+        if(k.indexOf(C.BLOCK+'module_')===0)meta.moduleData[decodeURIComponent(k.slice((C.BLOCK+'module_').length))]=k;
+      });
+      var trial=Object.assign({},attrs);trial[C.BASE]={current:JSON.stringify(meta),max:''};var state=C.read(trial).state,canonical=C.encode(state);
+      if(!Object.keys(canonical).filter(function(k){return k.indexOf(C.BLOCK)===0||k.indexOf(C.STACK)===0;}).every(function(k){return attrs[k]&&C.stable(JSON.parse(attrs[k].current))===C.stable(JSON.parse(canonical[k].current));}))return null;
+      meta.epoch=JSON.parse(canonical[C.BASE].current).epoch;trial[C.BASE].current=JSON.stringify(meta);trial.owd_version={current:String(state.v),max:state.rel||''};return trial;
+    }catch(e){return null;}
+  }
+
   var hydrated = false;
   function hydrate(attrs) {
     if (hydrated) return;         // une seule hydratation par vie de page
@@ -1706,8 +1582,7 @@
     if (askTimer) { clearTimeout(askTimer); askTimer = null; }   // plus rien à réclamer
     note(null);
     attrs = attrs || {};
-    var resumed=reconstitueCreation(attrs);
-    if(resumed){attrs=resumed;post({type:'save',attrs:{owd_storage:attrs.owd_storage,owd_version:attrs.owd_version}});}
+    var restored=reconstitueCreation(attrs);if(restored){attrs=restored;post({type:'save',attrs:{owd_storage:attrs.owd_storage,owd_version:attrs.owd_version}});}
     if (window.__owdVueInventaire && !attrs.owd_version && !attrs.owd_state && !attrs.owd_sync_base && !(C&&attrs[C.BASE])) {
       hydrated = false; note("Ce personnage n’a pas encore de fiche Outward. Ouvrez sa fiche pour la créer.");
       askTimer = setTimeout(function () { post({type: "load", resync: true}); }, 2000); return;
@@ -1779,7 +1654,7 @@
     if(d.type==='storage-cleanup-status'&&(!d.charId||d.charId===CHAR_ID)){
       afficheNettoyage(d);return;
     }
-    if(d.type==='storage-error'&&(!d.charId||d.charId===CHAR_ID)){bandeau("Sauvegarde en attente : "+d.error,[{texte:"Exporter (JSON)",acte:"export",action:exporter}]);return;}
+    if(d.type==='storage-error'&&(!d.charId||d.charId===CHAR_ID)){statutEnregistrement('Échec de l’enregistrement : '+d.error,true);return;}
     // on n'accepte que l'hydratation de NOTRE personnage (plusieurs fiches peuvent être ouvertes)
     if (d.type === "hydrate" && (!d.charId || d.charId === CHAR_ID)) {
       if(d.player && typeof d.player.id === "string" && typeof d.player.name === "string") journalPlayer={id:d.player.id,name:d.player.name};
@@ -1801,7 +1676,7 @@
         accesInventaire = true; document.getElementById("perso-fiche").inert = false; note(null);
       }
       if(d.storageBlocks===2&&d.storageCleanup!==3)afficheNettoyage({status:'error',error:'Le pont de cette partie utilise encore un ancien nettoyage. Après installation de l’extension 4.2.0, rechargez la page entière de la partie Roll20.'});
-      storageCapable=d.storageBlocks===2;storageSession=d.storageSession||"";
+      storageCapable=d.storageBlocks===2&&d.storageVolatile===1;storageSession=d.storageSession||"";
       collaborationPont = d.collaboration === 1 && d.resync === true;
       if (d.fresh === true || !collaborationPont) {
         derniereLecture = Date.now();
@@ -1934,23 +1809,12 @@
       });}
       var recu = collaboration.receive(attrs);
       lastAttrs = attrs;
-      if(storagePendingDeferred&&server){restoreStoragePending();recu=collaboration.receive(attrs);}
-      confirmStoragePending(server);persistStoragePending();
       if (!recu) return;
       if(server&&!server.incomplete)memoriseLectureVerifiee(attrs,server);
       if(miseANiveauDemandee&&server&&!server.incomplete&&Number(server.state.v)===schemaSite()&&miseANiveauOps.every(function(id){return !!server.ids[id];})){miseANiveauDemandee=false;bandeauMisAJour();}
       if(collaboration.hasBase&&!recu.incomplete){if(server.meta.phase!=='ready')post({type:'storage-activate'});else post({type:'storage-cleanup'});}
-      if(recu.conflict && nouveauxConflits(recu)){bandeau("Des modifications simultanées viennent d’être reçues. Les valeurs affichées suivent l’ordre de synchronisation ; les opérations restent conservées.",[{texte:"Fermer",acte:"masquer",action:fermerBandeau},{texte:"Exporter (JSON)",acte:"export",action:exporter}]).dataset.owdRaison='sync-conflict';}
 
-      var attente = Object.keys(collaboration.pending).length;
-      var avertissement = document.getElementById('owd-bandeau');
-      // Une confirmation tardive résout aussi l'avertissement. Ne fermer que
-      // ce bandeau : une migration ou une autre alerte reste pertinente.
-      if (!attente && avertissement && avertissement.dataset.owdRaison === 'sync-pending') fermerBandeau();
-      if (recu.lost && attente) bandeau("Sauvegarde en attente : Roll20 n'a pas encore confirmé certaines modifications après plusieurs tentatives. Elles restent dans cette fenêtre et sont renvoyées automatiquement. Ce message disparaîtra dès leur confirmation ; exportez la fiche avant de fermer si l'attente persiste.", [
-        { texte: "Exporter (JSON)", acte: "export", action: exporter },
-        { texte: "Masquer", acte: "masquer", action: fermerBandeau }
-      ]).dataset.owdRaison = 'sync-pending';
+      actualiseStatutEnregistrement(recu.lost);
       synchronisationDifferée = recu.state;
       appliqueDiffere();
       if(!recu.incomplete){gele=false;attrsEnErreur=null;var resumedBanner=document.getElementById('owd-bandeau');if(resumedBanner&&resumedBanner.dataset.owdRaison==='sync-unreadable')fermerBandeau();}
