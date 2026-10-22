@@ -25,7 +25,7 @@ function model(data) {return {attributes:{...data},get(k){return this.attributes
 const collection={models:[],create(data){const m=model(data);this.models.push(m);return m},fetch(opts){window.backend({kind:'read'}).then(attrs=>{this.models=Object.keys(attrs).map(name=>model({name,...attrs[name]}));opts&&opts.success&&opts.success()})}};
 const ch={id:'shared',attribs:collection,get(k){return k==='name'?'Fiche partagée':k==='controlledby'?'all':''}};
 window.Campaign={characters:{get(id){return id==='shared'?ch:null},models:[ch]},players:{models:[]}};
-</script><script src="/bridge.js"></script><iframe src="/roll20-fiche.html#c=shared"></iframe>`; }
+</script><script data-owd-version="4.2.0" data-owd-mode="beta" data-owd-browser="firefox" src="/bridge.js"></script><iframe src="/roll20-fiche.html#c=shared"></iframe>`; }
 const server=http.createServer((req,res)=> {
   const url=new URL(req.url,'http://localhost');let body,mime;
   if(url.pathname==='/harness'){body=harness();mime='text/html';}
@@ -40,7 +40,7 @@ const server=http.createServer((req,res)=> {
   const ctx=await browser.newContext({viewport:{width:1600,height:1100}});
   await ctx.exposeBinding('backend',async(_,m)=>{if(m.kind==='read')return C.copy(attrs);if(m.kind==='write')attrs[m.data.name]={current:String(m.data.current||''),max:String(m.data.max||'')};});
   const page=await ctx.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto(url+'/harness');
-  const sheet=page.frameLocator('iframe');await sheet.locator('.pc-sheet').waitFor();
+  const sheet=page.frameLocator('iframe');await sheet.locator('.pc-sheet').waitFor();await sheet.locator('#owd-mode-bar').waitFor();if(await sheet.locator('#owd-mode-switch').textContent()==='Passer en Mode Edition')await sheet.locator('#owd-mode-switch').click();
   const frame=page.frames().find(f=>f.url().includes('roll20-fiche'));
   await frame.evaluate(()=>{window.chats=[];window.__owdChat=c=>chats.push(c);});
   const state=()=>frame.evaluate(()=>JSON.parse(__owdLocalStorage.getItem('owd-perso')));

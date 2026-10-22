@@ -27,7 +27,7 @@ function model(data) {return {attributes:{...data},get(k){return this.attributes
 const collection={models:[],create(data){const m=model(data);this.models.push(m);return m},fetch(opts){window.backend({kind:'read'}).then(attrs=>{this.models=Object.keys(attrs).map(name=>model({name,...attrs[name]}));opts&&opts.success&&opts.success()})}};
 const ch={id:'shared',attribs:collection,get(k){return k==='name'?'Fiche partagée':k==='controlledby'?'all':''}};
 window.Campaign={characters:{get(id){return id==='shared'?ch:null},models:[ch]},players:{models:[]}};
-</script><script src="/bridge.js"></script><iframe src="/roll20-fiche.html#c=shared"></iframe>`; }
+</script><script data-owd-version="4.2.0" data-owd-mode="beta" data-owd-browser="firefox" src="/bridge.js"></script><iframe src="/roll20-fiche.html#c=shared"></iframe>`; }
 const server=http.createServer((req,res)=> {
   const url=new URL(req.url,'http://localhost');let body,mime;
   if(url.pathname==='/harness'){body=harness();mime='text/html';}
@@ -42,7 +42,7 @@ const server=http.createServer((req,res)=> {
   const ctx=await browser.newContext({viewport:{width:1600,height:1100}});
   await ctx.exposeBinding('backend',async(_,m)=>{if(m.kind==='read')return C.copy(attrs);if(m.kind==='write')attrs[m.data.name]={current:String(m.data.current||''),max:String(m.data.max||'')};});
   const page=await ctx.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto(url+'/harness');
-  const sheet=page.frameLocator('iframe');await sheet.locator('.pc-sheet').waitFor();
+  const sheet=page.frameLocator('iframe');await sheet.locator('.pc-sheet').waitFor();await sheet.locator('#owd-mode-bar').waitFor();if(await sheet.locator('#owd-mode-switch').textContent()==='Passer en Mode Edition')await sheet.locator('#owd-mode-switch').click();
   const frame=()=>page.frames().find(f=>f.url().includes('roll20-fiche'));
   const state=()=>frame().evaluate(()=>JSON.parse(__owdLocalStorage.getItem('owd-perso')));
   await frame().evaluate(()=>{window.chats=[];window.__owdChat=c=>chats.push(c);});
@@ -93,7 +93,7 @@ const server=http.createServer((req,res)=> {
   await sheet.locator('.pc-modal').getByLabel('Dégâts Physique', {exact:true}).fill('30');await sheet.locator('.pc-modal').getByRole('button',{name:'Valider'}).click();assert.equal((await state()).etat.pe,81);
   await sheet.getByLabel('Taille du personnage').selectOption('grande');
   for(let i=0;i<300;i++){const s=C.read(attrs).state;if(s.taille==='grande'&&s.attaques.at(-1).personnalisee?.trajet==='1:passe>6:frappe'&&s.combatOptions.defenses.utiliseEndurance&&s.etat.pe===81)break;await page.waitForTimeout(100);}
-  assert.equal(C.read(attrs).state.taille,'grande');await page.reload();await sheet.locator('.pc-sheet').waitFor();
+  assert.equal(C.read(attrs).state.taille,'grande');await page.reload();await sheet.locator('.pc-sheet').waitFor();await sheet.locator('#owd-mode-bar').waitFor();if(await sheet.locator('#owd-mode-switch').textContent()==='Passer en Mode Edition')await sheet.locator('#owd-mode-switch').click();
   assert.equal(await sheet.getByLabel('Taille du personnage').inputValue(),'grande');assert.equal((await state()).attaques.at(-1).personnalisee.trajet,'1:passe>6:frappe');
   assert.equal((await state()).combatOptions.attaques.utiliseEndurance,false);assert.equal((await state()).combatOptions.attaques.utiliseMunition,false);assert.equal((await state()).combatOptions.defenses.utiliseEndurance,true);
   assert.deepEqual(errors,[]);

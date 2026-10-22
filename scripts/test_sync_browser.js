@@ -18,7 +18,7 @@ function model(data) {return {attributes:{...data},get(k){return this.attributes
 const collection={models:[],create(data){const m=model(data);this.models.push(m);return m},fetch(opts){window.backend({kind:'read'}).then(attrs=>{this.models=Object.keys(attrs).map(name=>model({name,...attrs[name]}));opts&&opts.success&&opts.success()})}};
 const ch={id:'shared',attribs:collection,get(k){return k==='name'?'Fiche partagée':k==='controlledby'?'all':''}};
 window.Campaign={characters:{get(id){return id==='shared'?ch:null},models:[ch]},players:{models:[]}};
-</script><script src="/bridge.js"></script><iframe src="/roll20-fiche.html#c=shared"></iframe>`; }
+</script><script data-owd-version="4.2.0" data-owd-mode="beta" data-owd-browser="firefox" src="/bridge.js"></script><iframe src="/roll20-fiche.html#c=shared"></iframe>`; }
 const server=http.createServer((req,res)=> {
   const url=new URL(req.url,'http://localhost');let body,mime;
   if(url.pathname==='/harness'){body=harness();mime='text/html';}
@@ -38,7 +38,7 @@ const server=http.createServer((req,res)=> {
     const pages=await Promise.all([ctx.newPage(),ctx.newPage()]);pages.forEach(p=>p.on('pageerror',e=>errors.push(e.message)));
     await Promise.all(pages.map(p=>p.goto(url+'/harness')));
     const frames=pages.map(p=>p.frameLocator('iframe'));
-    await Promise.all(frames.map(f=>f.locator('.pc-sheet').waitFor()));
+    await Promise.all(frames.map(async f=>{await f.locator('#owd-mode-bar').waitFor();await f.locator('#owd-mode-switch').click();}));
     const [a,b]=frames;
     // Live notes and a simultaneous PE change, using real input handlers.
     await a.locator('.pc-tab').filter({hasText:'Bio'}).click();
@@ -66,7 +66,7 @@ const server=http.createServer((req,res)=> {
     assert.deepEqual(C.read(attrs).state.inv.objets.map(x=>x.nom),['Lame','Galette']);
     console.log('OK inventaire simultané et sélection locale conservée');
     // A fresh opener receives the authoritative merged state.
-    await pages[1].reload();await b.locator('.pc-sheet').waitFor();
+    await pages[1].reload();await b.locator('.pc-sheet').waitFor();await b.locator('#owd-mode-bar').waitFor();if(await b.locator('#owd-mode-switch').textContent()==='Passer en Mode Edition')await b.locator('#owd-mode-switch').click();
     await pages[1].waitForFunction(()=>JSON.parse(document.querySelector('iframe').contentWindow.__owdLocalStorage.getItem('owd-perso')).notes==='Texte partagé');
     const reopened=await pages[1].evaluate(()=>JSON.parse(document.querySelector('iframe').contentWindow.__owdLocalStorage.getItem('owd-perso')));
     assert.equal(reopened.notes,'Texte partagé');assert.deepEqual(reopened.inv.objets.map(x=>x.nom),['Lame','Galette']);
@@ -84,7 +84,7 @@ const server=http.createServer((req,res)=> {
     blockWrites=false;
     await warning.waitFor({state:'detached',timeout:20000});
     assert.equal(C.read(attrs).state.notes,'Modification à renvoyer');
-    await pages[1].reload();await b.locator('.pc-sheet').waitFor();
+    await pages[1].reload();await b.locator('.pc-sheet').waitFor();await b.locator('#owd-mode-bar').waitFor();if(await b.locator('#owd-mode-switch').textContent()==='Passer en Mode Edition')await b.locator('#owd-mode-switch').click();
     await pages[1].waitForFunction(()=>JSON.parse(document.querySelector('iframe').contentWindow.__owdLocalStorage.getItem('owd-perso')).notes==='Modification à renvoyer');
     // La réception suivante ne doit pas effacer un bandeau d'une autre cause.
     await notes.evaluate(()=>{const n=document.createElement('div');n.id='owd-bandeau';n.dataset.owdRaison='autre';n.textContent='Autre alerte';document.body.prepend(n);});

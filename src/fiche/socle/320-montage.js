@@ -115,6 +115,7 @@
     try { mount(root); window.Owd.__pret = true; }
     catch (e) {
       if (window.console && window.console.error) window.console.error("[fiche] montage", e);
+      if(window.__owdOpenFailure){window.__owdOpenFailure('program');return;}
       root.innerHTML = '<p style="padding:2rem;color:#b0402c">La fiche n\'a pas pu se monter (' +
         messageErreur(e) + "). Les données, elles, sont chargées : la cause est dans la fiche ou dans un mod.</p>";
     }
@@ -138,6 +139,7 @@
       // c'est bien du fichier qu'il faudrait alors se plaindre
       .then(function (d) { if (!d) throw new Error("données vides"); DATA = d; })
       .catch(function (e) {
+        if(window.__owdOpenFailure){window.__owdOpenFailure('files');return;}
         root.innerHTML = '<p style="padding:2rem;color:#b0402c">La fiche n\'a pas pu charger ses données (' +
           e.message + ").</p>";
       })

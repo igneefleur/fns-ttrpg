@@ -587,3 +587,10 @@ Cette mise à jour modifie l’extension :
 3. Installer la nouvelle version signée proposée par Firefox, puis recharger la page entière de la partie Roll20. Sous Chrome, utiliser le nouveau paquet produit par le workflow.
 
 Les fichiers de `essai/` sont des paquets de développement non signés ; ils ne remplacent pas le XPI signé distribué dans `docs/download/`.
+
+
+## Ouverture et édition — 4.14.0b
+
+Chaque vue Roll20 s’ouvre en Mode Consultation. Le bouton Passer en Mode Edition autorise ses modifications ; plusieurs joueurs peuvent éditer simultanément. Le bandeau distingue les joueurs en édition et en consultation. L’attribut séparé `owd_presence` contient leurs présences par vue, renouvelées toutes les dix secondes et expirées après trente secondes, sans alimenter le Journal du personnage.
+
+Le chargement vérifie l’extension puis la version du personnage, avec un délai de dix secondes. Toute mise à jour du personnage demande une confirmation ; sa sauvegarde de secours est vérifiée sur Roll20 avant migration. Une version archivée absente ne peut pas être ouverte. Les trois bandeaux concernent uniquement l’enregistrement en attente, l’échec d’enregistrement et l’autorisation des mods. Les opérations non confirmées restent en mémoire pendant la session et ne sont pas rejouées après rechargement.

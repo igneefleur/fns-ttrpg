@@ -42,6 +42,8 @@
   "use strict";
   if (window.__owdBridge) return;   // jamais deux ponts (écouteurs en double)
   window.__owdBridge = true;
+  var bridgeTag=typeof document!=='undefined'?document.currentScript:null;
+  var installedExtension={version:bridgeTag&&bridgeTag.getAttribute('data-owd-version'),mode:bridgeTag&&bridgeTag.getAttribute('data-owd-mode'),browser:bridgeTag&&bridgeTag.getAttribute('data-owd-browser'),sessionUi:1};
   var PREFIX = "owd_";
   var WRITE_DELAY = 60;   // ms entre deux écritures d'attribut
 
@@ -455,6 +457,17 @@
   function storageConfirmLocal(ch,attrs){var seen={};Object.keys(attrs).filter(function(k){return k.indexOf('owd_ops_'+storageSession+'_')===0;}).forEach(function(k){try{JSON.parse(attrs[k].current).ops.forEach(function(op){seen[op.id]=true;});}catch(e){}});storageConfirmed[ch.id]=seen;
     Object.keys(storagePayloads[ch.id]||{}).forEach(function(k){if(attrs[k]&&attrs[k].current===storagePayloads[ch.id][k].current)delete storagePayloads[ch.id][k];});
   }
+  var presenceLocal={},presenceKnown={};
+  function mergePresence(a,b,now){var out={};[a,b].forEach(function(map){Object.keys(map||{}).forEach(function(k){var r=map[k];if(['__proto__','prototype','constructor'].indexOf(k)>=0||!r||typeof r.player!=='string'||!Number.isSafeInteger(r.seq)||!Number.isFinite(r.at)||now-r.at>=60000||r.at-now>60000)return;var old=out[k];if(!old||r.seq>old.seq||r.seq===old.seq&&r.at>old.at)out[k]=r;});});return out;}
+  function presenceData(attrs){try{var p=JSON.parse(attrs.owd_presence.current);return p.format===1&&p.views&&typeof p.views==='object'?p.views:{};}catch(e){return {};}}
+  function presenceRead(ch,attrs){var now=Date.now();var known=mergePresence(presenceKnown[ch.id],presenceData(attrs),now);known=mergePresence(known,presenceLocal[ch.id],now);presenceKnown[ch.id]=known;return Object.keys(known).map(function(k){return known[k];}).filter(function(r){return !r.left&&now-r.at<30000;});}
+  function publishPresence(ch){var attrs=readAll(ch.id);presenceRead(ch,attrs);var current={format:1,views:presenceKnown[ch.id]||{}},json=storageStable(current);if(!attrs.owd_presence||attrs.owd_presence.current!==json)enqueue(ch.id,{owd_presence:{current:json,max:''}},true);}
+  function updatePresence(ch,data){
+    var owner=storageOwner();if(owner&&owner.presence){owner.presence(ch.id,data);return;}
+    var player=journalPlayer();if(!player||!data.viewId||typeof data.viewId!=='string')return;
+    var map=presenceLocal[ch.id]||(presenceLocal[ch.id]={}),prev=map[data.viewId];
+    map[data.viewId]={player:player.id,name:player.name,view:data.viewId,mode:data.mode==='edition'?'edition':'consultation',at:Date.now(),seq:(prev?prev.seq:0)+1,left:data.action==='leave'};publishPresence(ch);
+  }
   var storageFresh={},storageCleanupReports={};
   function storageObsolete(k){return typeof k==='string'&&k!=='owd_version'&&k!=='owd_backup'&&['owd_pv','owd_pe','owd_pm'].indexOf(k)<0&&(k==='owd_state'||k.indexOf('owd_sync_')===0||STORAGE_LEGACY.indexOf(k)>=0);}
   var STORAGE_LEGACY=["owd_state", "owd_nom", "owd_espece", "owd_taille", "owd_age", "owd_sexe", "owd_genre", "owd_portrait", "owd_background", "owd_notes", "owd_de", "owd_xp_total", "owd_eff_autre", "owd_eff_desactive", "owd_eff_alcool", "owd_eff_alcool_secondes", "owd_effort", "owd_temperature", "owd_qualite_sommeil", "owd_allure", "owd_allure_cran", "owd_argent", "owd_version", "owd_release", "owd_caracs", "owd_horloge", "owd_horloge_digestion", "owd_horloge_exposition", "owd_caracs_xp", "owd_des_tailles", "owd_des_utilises", "owd_eff_parties", "owd_eff_pause", "owd_effets_actifs", "owd_effets_permanents", "owd_caracs_leviers", "owd_etat_courant", "owd_caps_leviers", "owd_competences", "owd_comps_leviers", "owd_techniques", "owd_attaques", "owd_defenses", "owd_combat_options", "owd_combat_modifiers", "owd_avantages", "owd_armes", "owd_vetements", "owd_inventaire", "owd_modules", "owd_mod_donnees", "owd_mod_actifs", "owd_mods", "owd_force", "owd_dexterite", "owd_intelligence", "owd_ferveur", "owd_vigueur", "owd_endurance", "owd_resistance", "owd_chance", "owd_pv", "owd_pe", "owd_pm", "owd_pi", "owd_pr", "owd_ps", "owd_ph", "owd_expo", "owd_charge", "owd_acces", "owd_contenance", "owd_rupture", "owd_effondrement", "owd_des_action", "owd_xp_depense"];
@@ -531,7 +544,7 @@
     }next();return storageCleanupReports[ch.id];
   }
 
-  window.__owdStorageBridge={session:storageSession,release:function(id,viewId){var ch=getChar(id);if(ch&&inventoryAccess(ch))storageRelease(ch,viewId);},ops:function(id,data){var ch=getChar(id);if(ch&&inventoryAccess(ch))storageOps(ch,data);}};
+  window.__owdStorageBridge={session:storageSession,presence:function(id,data){var ch=getChar(id);if(ch&&inventoryAccess(ch))updatePresence(ch,data);},release:function(id,viewId){var ch=getChar(id);if(ch&&inventoryAccess(ch))storageRelease(ch,viewId);},ops:function(id,data){var ch=getChar(id);if(ch&&inventoryAccess(ch))storageOps(ch,data);}};
 
   function journalPlayer() {
     try {
@@ -544,7 +557,7 @@
       return id && name ? {id:String(id), name:String(name)} : null;
     } catch (e) { return null; }
   }
-  function reply(ev, msg) { if(msg.type === "hydrate") msg.player = journalPlayer(); msg.ns = "owd"; try { ev.source.postMessage(msg, "*"); } catch (e) {} }
+  function reply(ev, msg) { if(msg.type === "hydrate") {msg.player = journalPlayer();msg.extension=installedExtension;} msg.ns = "owd"; try { ev.source.postMessage(msg, "*"); } catch (e) {} }
 
   // Joueurs de la partie, pour le sélecteur « À un joueur » de la barre d'envoi
   // de la fiche (qui est une iframe d'une autre origine et ne peut pas les lire
@@ -834,6 +847,7 @@
   var RESYNC_MIN = 1500, resyncJobs = {}, readSubscriptions = new WeakMap();
   function publieLecture(ch, ok) {
     menage(); var attrs = readAll(ch.id), at = Date.now();
+    if(ok){presenceRead(ch,attrs);if(Object.keys(presenceLocal[ch.id]||{}).length)publishPresence(ch);}
     var cleanup=null;
     if(ok&&attrs.owd_storage&&inventoryAccess(ch)){storageConfirmLocal(ch,attrs);storageFresh[ch.id]={at:at,attrs:attrs};try{cleanup=storageCleanup(ch);}catch(e){cleanup={status:'error',error:String(e.message||e)};}}
     srcFrames.forEach(function (w, i) {
@@ -843,7 +857,7 @@
         reply({source:w}, {type:'hydrate',charId:ch.id,inventoryAccess:false}); return;
       }
       var msg = {}; Object.keys(base).forEach(function(k){msg[k]=base[k];});
-      msg.attrs = attrs; msg.fresh = !!ok; msg.readAt = ok ? at : 0;
+      msg.attrs = attrs; msg.presence=presenceRead(ch,attrs); msg.fresh = !!ok; msg.readAt = ok ? at : 0;
       if (inventoryFrames.has(w)) msg.inventoryAccess = true;
       reply({source:w}, msg);
       if(cleanup)reply({source:w},Object.assign({type:'storage-cleanup-status',charId:ch.id},cleanup));
@@ -1185,6 +1199,9 @@
         readSubscriptions.set(ev.source, rl);
         if (d.resync === true) {resynchronise(chl);return;}
         rl.fresh = false;reply(ev,rl);
+      } else if (d.type === "presence") {
+        if(!liee(ev.source,d.charId)||!inventoryAccess(getChar(d.charId)))return;
+        updatePresence(getChar(d.charId),d);
       } else if (d.type === "storage-release") {
         if(!liee(ev.source,d.charId)||!inventoryAccess(getChar(d.charId)))return;
         try{storageRelease(getChar(d.charId),d.viewId);}catch(error){}

@@ -202,6 +202,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
     root.setAttribute("data-owd-bridge", "1");
     var s = document.createElement("script");
     s.id = "owd-page-bridge";
+    try{s.setAttribute('data-owd-version',browser.runtime.getManifest().version);s.setAttribute('data-owd-mode',MODE);s.setAttribute('data-owd-browser',browser.runtime.getManifest().manifest_version===3?'chrome':'firefox');}catch(e){}
     s.src = browser.runtime.getURL("beta/roll20-page.js");     // propre à cette copie
     s.onload = function () { this.remove(); var a=document.createElement("script");a.src=browser.runtime.getURL("beta/attack-map.js");a.onload=function(){this.remove();};(document.head||root).appendChild(a); };   // propre à cette copie
     (document.head || root).appendChild(s);

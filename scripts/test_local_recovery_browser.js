@@ -21,7 +21,7 @@ function model(data) {return {attributes:{...data},get(k){return this.attributes
 const collection={models:[],create(data){const m=model(data);this.models.push(m);return m},fetch(opts){window.backend({kind:'read'}).then(attrs=>{this.models=Object.keys(attrs).map(name=>model({name,...attrs[name]}));opts&&opts.success&&opts.success()})}};
 const ch={id:'shared',attribs:collection,get(k){return k==='name'?'Fiche partagée':k==='controlledby'?'all':''}};
 window.Campaign={characters:{get(id){return id==='shared'?ch:null},models:[ch]},players:{models:[]}};
-</script><script src="/bridge.js"></script><iframe src="/roll20-fiche.html#c=shared"></iframe>`; }
+</script><script data-owd-version="4.2.0" data-owd-mode="beta" data-owd-browser="firefox" src="/bridge.js"></script><iframe src="/roll20-fiche.html#c=shared"></iframe>`; }
 const server=http.createServer((req,res)=> {
   const url=new URL(req.url,'http://localhost');let body,mime;
   if(url.pathname==='/harness'){body=harness();mime='text/html';}
@@ -48,7 +48,7 @@ const server=http.createServer((req,res)=> {
     await Promise.all(pages.map(p=>p.goto(url+'/harness')));
     const frames=pages.map(p=>p.frameLocator('iframe'));
     const a=frames[0];
-    await a.locator('.pc-sheet').waitFor({timeout:30000});
+    await a.locator('.pc-sheet').waitFor({timeout:30000});await a.locator('#owd-mode-switch').click();
     assert.equal(C.Compact.read(attrs).state.notes.messages.length,1);
     assert.equal(await a.locator('#owd-local-recovery').count(),0);
     const storageKeys=await pages[0].evaluate(()=>Object.keys(localStorage));assert.ok(!storageKeys.some(k=>/^owd-(pending|recovery|operations|verified-base)-v2:/.test(k)));
@@ -66,7 +66,7 @@ const server=http.createServer((req,res)=> {
     await pages[0].waitForTimeout(1800);assert.equal(C.Compact.read(attrs).state.etat.pe,91);
     const sheetFrame=pages[0].frames().find(f=>f.url().includes('roll20-fiche.html'));const reopenedUrl=new URL(sheetFrame.url());reopenedUrl.searchParams.set('reload','1');await sheetFrame.goto(reopenedUrl.href);await a.locator('.pc-sheet').waitFor();
     assert.equal(await a.locator('[data-module="pe"] .pc-vital-num').inputValue(),'91');
-    blockWrites=false;await a.locator('[data-module="pe"] .pc-vital-num').fill('83');
+    blockWrites=false;await a.locator('#owd-mode-switch').click();await a.locator('[data-module="pe"] .pc-vital-num').fill('83');
     for(let i=0;i<120&&C.Compact.read(attrs).state.etat.pe!==83;i++)await pages[0].waitForTimeout(100);assert.equal(C.Compact.read(attrs).state.etat.pe,83,'aucun rejeu de la dépense abandonnée');
     // Même comportement après rechargement de toute la partie.
     blockWrites=true;await a.locator('[data-module="pe"] .pc-vital-num').fill('65');await pages[0].waitForTimeout(1800);await pages[0].reload();await a.locator('.pc-sheet').waitFor();assert.equal(await a.locator('[data-module="pe"] .pc-vital-num').inputValue(),'83');blockWrites=false;

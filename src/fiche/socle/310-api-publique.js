@@ -152,3 +152,9 @@
   };
   window.__owdModules = window.Owd;
 
+
+  // Les commandes externes ne doivent pas contourner le mode Consultation.
+  function gardeCommandeEdition(obj,key){var fn=obj[key];obj[key]=function(){if(window.__owdCanEdit&&!window.__owdCanEdit())return false;return fn.apply(this,arguments);};}
+  ['__defendreDepuisChat','__prepareTransfert','__importeTransfert','__confirmeTransfert','__retireTransfert','__annuleTransfert'].forEach(function(k){gardeCommandeEdition(window.Owd,k);});
+  ['ajoute','retire','coupRecu','finTour','consomme'].forEach(function(k){gardeCommandeEdition(window.Owd.effets,k);});
+  ['avancerSecondes','reculerSecondes'].forEach(function(k){gardeCommandeEdition(window.Owd.__calculs,k);});

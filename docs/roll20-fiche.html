@@ -36,9 +36,16 @@
   <link rel="stylesheet" href="stylesheets/fonts.css">
 </head>
 <body>
-  <div id="owd-roll20-note">Connexion à Roll20…</div>
+  <div id="owd-roll20-note" role="status"><h1>Chargement du personnage</h1><p>Vérification de l’extension…</p></div>
   <div id="perso-fiche"><noscript>La fiche a besoin de JavaScript.</noscript></div>
   <script>
+  window.__owdOpeningAt=Date.now();
+  setTimeout(function(){
+    if(window.__owdOpenFailure)return;
+    var note=document.getElementById('owd-roll20-note');if(!note)return;
+    note.innerHTML='<h1>Impossible d’ouvrir le personnage</h1><p>Les fichiers nécessaires au fonctionnement de la fiche n’ont pas pu être chargés. Réessayez dans quelques instants.</p><button type="button" id="owd-early-retry">Réessayer</button> <button type="button" disabled>Exporter les données disponibles</button><p>Aucune donnée du personnage disponible à exporter.</p>';
+    document.getElementById('owd-early-retry').onclick=function(){location.reload();};
+  },10000);
   // JOUR / NUIT, tout de suite. Cette poignée de lignes doit rester ICI, dans
   // l'amorceur : elle s'exécute AVANT le premier rendu. Passée à l'amorce, qui
   // n'arrive qu'après la lecture du manifeste, elle ferait clignoter la fiche

@@ -20,7 +20,7 @@ function model(data) {return {attributes:{...data},get(k){return this.attributes
 const collection={models:[],create(data){const m=model(data);this.models.push(m);return m},fetch(opts){window.backend({kind:'read'}).then(attrs=>{this.models=Object.keys(attrs).map(name=>model({name,...attrs[name]}));opts&&opts.success&&opts.success()})}};
 const ch={id:'shared',attribs:collection,get(k){return k==='name'?'Fiche partagée':k==='controlledby'?'all':''}};
 window.Campaign={characters:{get(id){return id==='shared'?ch:null},models:[ch]},players:{models:[]}};
-</script><script src="/bridge.js"></script><iframe src="/roll20-fiche.html#c=shared"></iframe>`; }
+</script><script data-owd-version="4.2.0" data-owd-mode="beta" data-owd-browser="firefox" src="/bridge.js"></script><iframe src="/roll20-fiche.html#c=shared"></iframe>`; }
 const server=http.createServer((req,res)=> {
   const url=new URL(req.url,'http://localhost');let body,mime;
   if(url.pathname==='/harness'){body=harness();mime='text/html';}
@@ -40,7 +40,7 @@ const server=http.createServer((req,res)=> {
     const pages=await Promise.all([ctx.newPage(),ctx.newPage()]);pages.forEach(p=>p.on('pageerror',e=>errors.push(e.message)));
     await Promise.all(pages.map(p=>p.goto(url+'/harness')));
     const frames=pages.map(p=>p.frameLocator('iframe'));
-    await Promise.all(frames.map(f=>f.locator('.pc-sheet').waitFor()));
+    await Promise.all(frames.map(async f=>{await f.locator('#owd-mode-bar').waitFor();await f.locator('#owd-mode-switch').click();}));
     const [a,b]=frames;
     // Live notes and a simultaneous PE change, using real input handlers.
     await a.locator('.pc-tab').filter({hasText:'Bio'}).click();
@@ -61,7 +61,7 @@ const server=http.createServer((req,res)=> {
     await pages[1].waitForFunction(()=>{const s=JSON.parse(document.querySelector('iframe').contentWindow.__owdLocalStorage.getItem('owd-perso'));return s.notes.messages.some(m=>m.text==='Message du client A');});
     const current=C.read(attrs).state;assert.equal(current.notes.messages.length,3);assert.equal(new Set(current.notes.messages.map(m=>m.id)).size,3);assert.equal(current.etat.pe,77);
     assert.deepEqual(Object.keys(attrs).filter(n=>/^owd_block_notes$/.test(n)),['owd_block_notes']);
-    await pages[1].reload();await b.locator('.pc-sheet').waitFor();await pages[1].waitForFunction(()=>JSON.parse(document.querySelector('iframe').contentWindow.__owdLocalStorage.getItem('owd-perso')).notes.messages.length===3);
+    await pages[1].reload();await b.locator('.pc-sheet').waitFor();await b.locator('#owd-mode-bar').waitFor();if(await b.locator('#owd-mode-switch').textContent()==='Passer en Mode Edition')await b.locator('#owd-mode-switch').click();await pages[1].waitForFunction(()=>JSON.parse(document.querySelector('iframe').contentWindow.__owdLocalStorage.getItem('owd-perso')).notes.messages.length===3);
     console.log('OK Notes : envois simultanés, aucun doublon ni écrasement, un seul bloc Notes, réouverture depuis Roll20 simulé.');
     assert.ok(!writes.includes('owd_state'),'aucune photographie complète réécrite');
     assert.deepEqual(errors,[]);

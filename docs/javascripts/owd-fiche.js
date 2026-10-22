@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.13.0b";
+  var RELEASE = "4.14.0b";
   var SCHEMA = 18;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -2726,6 +2726,7 @@
     }
   }
   function montrePanneSave(msg) {
+    if(window.__owdSaveFailure){window.__owdSaveFailure(msg);return;}
     if (!msg) {
       if (elSavePanne && elSavePanne.parentNode) elSavePanne.parentNode.removeChild(elSavePanne);
       return;
@@ -3050,6 +3051,7 @@
     // Après les hooks : Bio et Notes viennent notamment de recevoir leur
     // valeur distante. La lecture doit montrer cette même valeur dès la passe.
     majTextesLecture(rootEl);
+    if(window.__owdApplyMode)window.__owdApplyMode();
   }
   var remontageNettoyage = [];
   var rootEl = null;
@@ -11532,7 +11534,7 @@
     } catch (e) { return []; }
   }
   function examinerMods(attente) {
-    var corps = el("div", "pc-modal-body");
+    var corps = el("div", "pc-modal-body");corps.setAttribute("data-consultation", "1");
     corps.appendChild(el("div", "pc-modal-note",
       "Un mod autorisé tourne dans la page de la fiche, avec les mêmes droits qu'elle : " +
       "il fait ce qu'il veut de ce qui s'y affiche et de ce qui s'y enregistre. " +
@@ -11561,13 +11563,11 @@
     var n = attente.length;
     // .pc-avis-mods : le bandeau de CONSENTEMENT, distinct de celui de perte
     // d'enregistrement, qui partage la même mise en forme.
-    var av = el("div", "pc-avis pc-avis-mods");
-    av.appendChild(el("div", "pc-avis-txt",
-      "Ce personnage porte " + n + " mod" + (n > 1 ? "s" : "") + " qui n'" +
-      (n > 1 ? "ont" : "a") + " pas été autorisé" + (n > 1 ? "s" : "") +
-      " sur ce navigateur. " + (n > 1 ? "Ils ne tournent" : "Il ne tourne") + " pas."));
+    var av = el("div", "pc-avis pc-avis-mods");av.setAttribute("data-consultation", "1");
+    av.appendChild(el("strong", null, "Mods en attente d’autorisation"));
+    av.appendChild(el("div", "pc-avis-txt", "Ce personnage contient des mods qui n’ont pas été autorisés sur ce navigateur. Ils restent désactivés."));
     var row = el("div", "row");
-    row.appendChild(miniBtn("Examiner", "Lire le code de chaque mod avant de décider",
+    row.appendChild(miniBtn("Examiner les mods", "Lire le code de chaque mod avant de décider",
       function () { examinerMods(attente); }));
     row.appendChild(miniBtn("Tout refuser", "Aucun de ces mods ne tournera sur ce navigateur", function () {
       attente.forEach(function (m) { decideMod(m.empreinte, "non"); });
@@ -11731,6 +11731,12 @@
   };
   window.__owdModules = window.Owd;
 
+
+  // Les commandes externes ne doivent pas contourner le mode Consultation.
+  function gardeCommandeEdition(obj,key){var fn=obj[key];obj[key]=function(){if(window.__owdCanEdit&&!window.__owdCanEdit())return false;return fn.apply(this,arguments);};}
+  ['__defendreDepuisChat','__prepareTransfert','__importeTransfert','__confirmeTransfert','__retireTransfert','__annuleTransfert'].forEach(function(k){gardeCommandeEdition(window.Owd,k);});
+  ['ajoute','retire','coupRecu','finTour','consomme'].forEach(function(k){gardeCommandeEdition(window.Owd.effets,k);});
+  ['avancerSecondes','reculerSecondes'].forEach(function(k){gardeCommandeEdition(window.Owd.__calculs,k);});
   // ---------- montage ----------
   // UN MONTAGE NE SE RELANCE JAMAIS DEPUIS LUI-MÊME. Un mod qui finit par
   // Owd.remonte() (geste naturel, et la documentation le donne sans réserve) ou
@@ -11848,6 +11854,7 @@
     try { mount(root); window.Owd.__pret = true; }
     catch (e) {
       if (window.console && window.console.error) window.console.error("[fiche] montage", e);
+      if(window.__owdOpenFailure){window.__owdOpenFailure('program');return;}
       root.innerHTML = '<p style="padding:2rem;color:#b0402c">La fiche n\'a pas pu se monter (' +
         messageErreur(e) + "). Les données, elles, sont chargées : la cause est dans la fiche ou dans un mod.</p>";
     }
@@ -11871,6 +11878,7 @@
       // c'est bien du fichier qu'il faudrait alors se plaindre
       .then(function (d) { if (!d) throw new Error("données vides"); DATA = d; })
       .catch(function (e) {
+        if(window.__owdOpenFailure){window.__owdOpenFailure('files');return;}
         root.innerHTML = '<p style="padding:2rem;color:#b0402c">La fiche n\'a pas pu charger ses données (' +
           e.message + ").</p>";
       })

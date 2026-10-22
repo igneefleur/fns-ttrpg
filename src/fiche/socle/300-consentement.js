@@ -20,7 +20,7 @@
     } catch (e) { return []; }
   }
   function examinerMods(attente) {
-    var corps = el("div", "pc-modal-body");
+    var corps = el("div", "pc-modal-body");corps.setAttribute("data-consultation", "1");
     corps.appendChild(el("div", "pc-modal-note",
       "Un mod autorisé tourne dans la page de la fiche, avec les mêmes droits qu'elle : " +
       "il fait ce qu'il veut de ce qui s'y affiche et de ce qui s'y enregistre. " +
@@ -49,13 +49,11 @@
     var n = attente.length;
     // .pc-avis-mods : le bandeau de CONSENTEMENT, distinct de celui de perte
     // d'enregistrement, qui partage la même mise en forme.
-    var av = el("div", "pc-avis pc-avis-mods");
-    av.appendChild(el("div", "pc-avis-txt",
-      "Ce personnage porte " + n + " mod" + (n > 1 ? "s" : "") + " qui n'" +
-      (n > 1 ? "ont" : "a") + " pas été autorisé" + (n > 1 ? "s" : "") +
-      " sur ce navigateur. " + (n > 1 ? "Ils ne tournent" : "Il ne tourne") + " pas."));
+    var av = el("div", "pc-avis pc-avis-mods");av.setAttribute("data-consultation", "1");
+    av.appendChild(el("strong", null, "Mods en attente d’autorisation"));
+    av.appendChild(el("div", "pc-avis-txt", "Ce personnage contient des mods qui n’ont pas été autorisés sur ce navigateur. Ils restent désactivés."));
     var row = el("div", "row");
-    row.appendChild(miniBtn("Examiner", "Lire le code de chaque mod avant de décider",
+    row.appendChild(miniBtn("Examiner les mods", "Lire le code de chaque mod avant de décider",
       function () { examinerMods(attente); }));
     row.appendChild(miniBtn("Tout refuser", "Aucun de ces mods ne tournera sur ce navigateur", function () {
       attente.forEach(function (m) { decideMod(m.empreinte, "non"); });

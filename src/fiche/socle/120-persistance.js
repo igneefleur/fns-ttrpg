@@ -37,6 +37,7 @@
     }
   }
   function montrePanneSave(msg) {
+    if(window.__owdSaveFailure){window.__owdSaveFailure(msg);return;}
     if (!msg) {
       if (elSavePanne && elSavePanne.parentNode) elSavePanne.parentNode.removeChild(elSavePanne);
       return;

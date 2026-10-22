@@ -26,7 +26,7 @@ const collection={models:[],create(data){const m=model(data);this.models.push(m)
 const ch={id:'shared',attribs:collection,get(k){return k==='name'?'Fiche partagée':k==='controlledby'?'all':''}};
 window.currentPlayer={id:'p1',get(k){return k==='displayname'?'Alice':null}};
 window.Campaign={characters:{get(id){return id==='shared'?ch:null},models:[ch]},players:{models:[]}};
-</script><script src="/bridge.js"></script><iframe id="sheet" src="/roll20-fiche.html#c=shared"></iframe><iframe id="panel" src="/roll20-notes.html"></iframe>`; }
+</script><script data-owd-version="4.2.0" data-owd-mode="beta" data-owd-browser="firefox" src="/bridge.js"></script><iframe id="sheet" src="/roll20-fiche.html#c=shared"></iframe><iframe id="panel" src="/roll20-notes.html"></iframe>`; }
 const server=http.createServer((req,res)=> {
   const url=new URL(req.url,'http://localhost');let body,mime;
   if(url.pathname==='/harness'){body=harness();mime='text/html';}
@@ -48,7 +48,7 @@ const server=http.createServer((req,res)=> {
     const page=await ctx.newPage();page.on('pageerror',e=>errors.push(e.message));
     await page.goto(url+'/harness');
     const sheet=page.frameLocator('#sheet'),panel=page.frameLocator('#panel');
-    if(!migration)await sheet.locator('.pc-sheet').waitFor();
+    if(!migration){await sheet.locator('#owd-mode-bar').waitFor();await sheet.locator('#owd-mode-switch').click();}
     await panel.getByLabel('Personnage du nouvel onglet').selectOption('shared');
     const notesView=panel.frameLocator('.inventaire-frame');
     if(migration){
@@ -71,7 +71,8 @@ const server=http.createServer((req,res)=> {
       await notesView.locator('.pc-notes-body').filter({hasText:'Notes avant migration'}).waitFor({timeout:15000});
       assert.equal(C.Compact.read(attrs).state.etat.pe,confirmedPe,'réserve relue depuis Roll20');
       console.log('OK migration avec horloge active, rechargement avant confirmation, nouvelle confirmation sans reprise locale et panneau ouvert automatiquement.');
-    }else await notesView.locator('.pc-sheet').waitFor();
+    }else await notesView.locator('#owd-mode-bar').waitFor();
+    if(await notesView.locator('#owd-mode-switch').textContent()==='Passer en Mode Edition')await notesView.locator('#owd-mode-switch').click();
     if(partial)await sheet.locator('#owd-local-recovery').waitFor({state:'detached',timeout:15000});
     assert.equal(await notesView.locator('#owd-local-recovery').count(),0);assert.equal(await sheet.locator('#owd-local-recovery').count(),0);
     if(exposition){
@@ -85,7 +86,7 @@ const server=http.createServer((req,res)=> {
       assert.equal(await sheet.getByLabel('Prochaine résorption naturelle',{exact:true}).innerText(),'4');
       for(let i=0;i<150&&C.Compact.read(attrs).state.horlogeExposition.minutes!==35;i++)await page.waitForTimeout(100);
       assert.equal(C.Compact.read(attrs).state.horlogeExposition.minutes,35);
-      await page.reload();await sheet.locator('.pc-sheet').waitFor();
+      await page.reload();await sheet.locator('#owd-mode-bar').waitFor();await sheet.locator('#owd-mode-switch').click();await notesView.locator('#owd-mode-bar').waitFor();await notesView.locator('#owd-mode-switch').click();
       const reloaded=page.frames().find(f=>f.url().includes('/roll20-fiche.html#c=shared'));
       await reloaded.waitForFunction(()=>window.Owd&&Owd.__pret);
       assert.equal(await sheet.getByLabel('Prochaine résorption naturelle',{exact:true}).innerText(),'4');
@@ -121,7 +122,7 @@ const server=http.createServer((req,res)=> {
       await jm.getByRole('button',{name:'Plus anciens',exact:true}).click();assert.equal(await jm.locator('.pc-journal-entry').count(),50);
       await jm.getByRole('button',{name:'Plus anciens',exact:true}).click();assert.equal(await jm.locator('.pc-journal-entry').count(),23);
       await jm.getByRole('button',{name:'Plus récents',exact:true}).click();assert.equal(await jm.locator('.pc-journal-entry').count(),50);
-      await page.reload();await sheet.locator('.pc-sheet').waitFor();await sheet.locator('.pc-tab').filter({hasText:'Options'}).click();await jm.getByRole('searchbox').fill('Message traçable');await page.waitForTimeout(1700);assert.equal(await jm.locator('.pc-journal-entry').count(),1);assert.match(await jm.locator('.pc-journal-entry').innerText(),/Alice/);
+      await page.reload();await sheet.locator('#owd-mode-bar').waitFor();await sheet.locator('#owd-mode-switch').click();await notesView.locator('#owd-mode-bar').waitFor();await notesView.locator('#owd-mode-switch').click();await sheet.locator('.pc-tab').filter({hasText:'Options'}).click();await jm.getByRole('searchbox').fill('Message traçable');await page.waitForTimeout(1700);assert.equal(await jm.locator('.pc-journal-entry').count(),1);assert.match(await jm.locator('.pc-journal-entry').innerText(),/Alice/);
       assert.deepEqual(errors,[]);console.log('OK Journal navigateur : Equipement normalisé avec anciennes dispositions, module sous Modules, identité depuis le vrai pont, changements fiche/panneau, détail daté, aucune duplication, joueur distant, pagination de 123 événements et persistance après rechargement.');return;
     }
     await sheet.locator('.pc-tab').filter({hasText:'Bio'}).click();
@@ -148,7 +149,7 @@ const server=http.createServer((req,res)=> {
     await send(sheet,'Panneau masqué');
     await page.waitForTimeout(3500);await page.locator('#panel').evaluate(n=>n.style.display='');
     await notesView.locator('.pc-notes-body').filter({hasText:'Panneau masqué'}).waitFor({timeout:15000});
-    await page.reload();await sheet.locator('.pc-sheet').waitFor();await notesView.locator('.pc-sheet').waitFor();
+    await page.reload();await sheet.locator('#owd-mode-bar').waitFor();await sheet.locator('#owd-mode-switch').click();await notesView.locator('#owd-mode-bar').waitFor();await notesView.locator('#owd-mode-switch').click();await notesView.locator('.pc-sheet').waitFor();
     await sheet.locator('.pc-tab').filter({hasText:'Bio'}).click();
     await sheet.locator('.pc-notes-body').filter({hasText:'Modifié dans la fiche'}).waitFor({timeout:15000});
     await notesView.locator('.pc-notes-body').filter({hasText:'Modifié dans la fiche'}).waitFor({timeout:15000});

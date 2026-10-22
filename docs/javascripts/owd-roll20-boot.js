@@ -56,6 +56,12 @@
   var M = window.OwdAttrMap;
   var C = window.OwdSync && window.OwdSync.Compact;
   var storageCapable=false, storageSession="";
+  var edition=false, extensionReady=false, extensionChecking=false, extensionInfo=null, lastHydration=null;
+  var operationTimer=null, operationSerial=0, operationBusy=false, failureKind='', loadingKind='opening';
+  var preparationFailed=false;
+  var firstPendingAt=0, saveFailure='', openingDone=false, presenceRows=[];
+  var openingStartedAt=window.__owdOpeningAt||Date.now();
+  window.__owdCanEdit=function(){return edition&&!gele&&accesInventaire&&ready&&!document.getElementById('owd-ecran');};
   var tokenObserved={},tokenMaxObserved={},storageIntent={absolute:{}};
   window.__owdReserveSet=function(k){storageIntent.absolute[JSON.stringify([['k','etat'],['k',k]])]=true;};
   window.__owdInventorySet=function(ref){storageIntent.absolute[JSON.stringify([['k','inv'],['k','objets'],['e',ref],['k','qte']])]=true;};
@@ -118,8 +124,9 @@
   window.__owdLocalStorage = {
     getItem: function (k) { return Object.prototype.hasOwnProperty.call(mem, k) ? mem[k] : null; },
     setItem: function (k, v) {
+      if(ready&&!collaborationApplique&&!edition&&!miseANiveauDemandee&&SAVE_KEYS[k])return;
       mem[k] = String(v);
-      if (collaboration && !collaborationApplique && k === "owd-perso") {
+      if (collaboration && !collaborationApplique && (edition||miseANiveauDemandee) && k === "owd-perso") {
         updateStorageMaxima();collaboration.actor=journalPlayer;collaboration.capture(JSON.parse(mem[k]),storageIntent);storageIntent={absolute:{}};actualiseStatutEnregistrement(); modificationLocale = Date.now();
       }
       if (ready && !collaborationApplique && SAVE_KEYS[k]) scheduleSave();
@@ -136,11 +143,11 @@
   function post(msg) {
     msg.ns = "owd"; msg.charId = CHAR_ID; msg.viewId = VIEW_ID;
     if (window.__owdVueInventaire) msg.inventory = true;
-    if (!window.__owdVueAttaques && !window.__owdVueDefenses && !window.__owdVueNotes) { msg.takeOpenedAt = takeOpenedAt; msg.takeEnabled = takeEnabled; }
-    if (defendEligible) { msg.defendOpenedAt = defendOpenedAt; msg.defendEnabled = defendEnabled; }
+    if (!window.__owdVueAttaques && !window.__owdVueDefenses && !window.__owdVueNotes) { msg.takeOpenedAt = takeOpenedAt; msg.takeEnabled = takeEnabled&&edition; }
+    if (defendEligible) { msg.defendOpenedAt = defendOpenedAt; msg.defendEnabled = defendEnabled&&edition; }
     try { window.top.postMessage(msg, "*"); } catch (e) {}
   }
-  window.addEventListener('pagehide', function () { takeEnabled = false; defendEnabled = false; post({type:'storage-release'}); post({type:'take-target'}); });
+  window.addEventListener('pagehide', function () { takeEnabled = false; defendEnabled = false; post({type:'presence',action:'leave'}); post({type:'storage-release'}); post({type:'take-target'}); });
   window.addEventListener('message', function (ev) {
     var d=ev.data;
     if(!d||d.ns!=='owd'||ev.source!==window.parent)return;
@@ -158,7 +165,7 @@
   function defendFromChat(payload) {
     if(typeof payload!=='string'||payload.length>16000||!defendEligible)return;
     if(!ready){defendQueue.push(payload);if(defendQueue.length>8)defendQueue.shift();return;}
-    if(!gele&&window.Owd&&window.Owd.__defendreDepuisChat)window.Owd.__defendreDepuisChat(payload);
+    if(window.__owdCanEdit()&&window.Owd&&window.Owd.__defendreDepuisChat)window.Owd.__defendreDepuisChat(payload);
   }
   // ---------- mode jour / nuit ----------
   // Le CSS nuit existe déjà dans la feuille de la fiche (html.night …) ; ici on
@@ -233,7 +240,9 @@
   // on le met alors en attente et on le rejoue dès que la fiche répond.
   var takeQueue = [];
   window.__owdTake = function (payload) {
+    if(ready&&!window.__owdCanEdit())return;
     if (typeof window.__owdOnTake === "function") { window.__owdOnTake(payload); return; }
+    if(ready&&!window.__owdCanEdit())return;
     takeQueue.push(payload);
   };
   // Joueurs connectés, pour le sélecteur « À un joueur » de la barre d'envoi.
@@ -258,10 +267,10 @@
     q.forEach(function (cb) { cb(noms); });
   }
   setInterval(function () {
-    if(ready&&!gele&&window.Owd&&window.Owd.__defendreDepuisChat&&defendQueue.length) {
+    if(window.__owdCanEdit()&&window.Owd&&window.Owd.__defendreDepuisChat&&defendQueue.length) {
       var pending=defendQueue.shift(); window.Owd.__defendreDepuisChat(pending);
     }
-    if (!takeQueue.length || typeof window.__owdOnTake !== "function") return;
+    if (!window.__owdCanEdit() || !takeQueue.length || typeof window.__owdOnTake !== "function") return;
     var q = takeQueue.slice();
     takeQueue.length = 0;
     q.forEach(function (p) { window.__owdOnTake(p); });
@@ -288,7 +297,7 @@
   function reprendLectureValide(attrs){
     if(!gele||gelVolontaire||collaboration||!bundleCharge||!ready||!window.Owd)return;
     try{var remote=C.read(attrs);if(!remote||remote.incomplete)return;
-      if(Number(remote.state.v)!==window.Owd.schema){bandeau('Lecture rétablie. Rouvrez la fiche pour charger sa version.',[{texte:'Recharger la fiche',acte:'recharger',action:function(){location.reload();}},{texte:'Exporter les données de secours',acte:'export-recuperation',action:exporterRecuperation}]);return;}
+      if(Number(remote.state.v)!==window.Owd.schema){location.reload();return;}
       collaborationApplique=true;try{window.Owd.__recoitEtat(remote.state);}finally{collaborationApplique=false;}
       attrsVus=lastAttrs=attrs;collaboration=new C.Session(attrs,JSON.parse(mem['owd-perso']));updateStorageMaxima();collaboration.capture(JSON.parse(mem['owd-perso']));
       var resumed=collaboration.receive(attrs);synchronisationDifferée=resumed.state;appliqueDiffere();
@@ -312,20 +321,25 @@
   }
   purgeAnciennesModificationsLocales();
   var saveStatus = '', saveStatusTimer = null;
-  function statutEnregistrement(text, failed) {
-    if (saveStatus === text) return;
-    saveStatus = text;
-    if (saveStatusTimer) clearTimeout(saveStatusTimer);
-    var n = document.getElementById('owd-save-status');
-    if (!n) { n = document.createElement('div'); n.id = 'owd-save-status'; n.setAttribute('role','status'); n.style.cssText='padding:3px 8px;font:inherit;font-size:12px'; document.body.insertBefore(n,document.getElementById('perso-fiche')); }
-    n.textContent = text; n.hidden = !text; n.dataset.failed = String(!!failed);
-    if (text === 'Enregistré') saveStatusTimer = setTimeout(function(){statutEnregistrement('');},2500);
+  function statutEnregistrement(text,failed) {
+    if(failed){saveFailure=text||'error';afficheErreurEnregistrement(true);return;}
+    var n=document.getElementById('owd-save-status');
+    if(!n){n=document.createElement('div');n.id='owd-save-status';n.setAttribute('role','status');document.body.insertBefore(n,document.getElementById('perso-fiche'));}
+    n.textContent=text;n.hidden=!text;saveStatus=text;
+    if(saveStatusTimer)clearTimeout(saveStatusTimer);
+    if(text==='Enregistré')saveStatusTimer=setTimeout(function(){n.hidden=true;saveStatus='';},2500);
   }
-  function actualiseStatutEnregistrement(failed) {
-    var waiting = collaboration && Object.keys(collaboration.pending).length;
-    if (failed && waiting) statutEnregistrement('Échec de l’enregistrement. Les modifications restent en attente dans cette fenêtre.',true);
-    else if (waiting) statutEnregistrement('Enregistrement en cours…');
-    else if (saveStatus) statutEnregistrement('Enregistré');
+  function afficheErreurEnregistrement(failed){
+    if(!ready)return;
+    var title=failed?'Impossible d’enregistrer le personnage':'Enregistrement en attente';
+    var text=failed?'Une erreur empêche l’enregistrement des dernières modifications. Réessayez dans quelques instants.':'Roll20 n’a pas confirmé les dernières modifications. Elles restent dans cette fenêtre et seront perdues si vous la fermez ou la rechargez. Réessayez dans quelques instants.';
+    var n=bandeau(title+' — '+text,[{texte:'Réessayer',acte:'reessayer-enregistrement',action:function(){saveFailure='';firstPendingAt=Date.now();scheduleSave();post({type:'load',resync:true});}},{texte:'Exporter le personnage (JSON)',acte:'export',action:exporter}]);n.dataset.owdRaison='recording';
+  }
+  window.__owdSaveFailure=function(message){preparationFailed=!!message;if(message){saveFailure=message;afficheErreurEnregistrement(true);}else actualiseStatutEnregistrement(false);};
+  function actualiseStatutEnregistrement(failed){
+    var count=collaboration?Object.keys(collaboration.pending).length:0;
+    if(count){if(!firstPendingAt)firstPendingAt=Date.now();statutEnregistrement('Enregistrement en cours…');if(saveFailure)afficheErreurEnregistrement(true);else if(failed||Date.now()-firstPendingAt>=10000)afficheErreurEnregistrement(false);}
+    else if(!preparationFailed&&(firstPendingAt||saveFailure)){firstPendingAt=0;saveFailure='';var n=document.getElementById('owd-bandeau');if(n&&n.dataset.owdRaison==='recording')fermerBandeau();statutEnregistrement('Enregistré');}
   }
   function scheduleSave() {
     if (gele) return;           // rien ne sort d'une fiche qu'on n'a pas su lire en entier
@@ -341,7 +355,7 @@
     var card = null;
     try { var cards = JSON.parse(mem["owd-cards"] || "{}"); card = cards && cards._current; } catch (e) {}
     if (collaboration) {
-      collaboration.actor=journalPlayer;collaboration.capture(state);
+      collaboration.actor=journalPlayer;if(edition||miseANiveauDemandee)collaboration.capture(state);
       var cardCaps=card&&card.capacites||{};
       ['pv','pe','pm','pr','ps','ph','pi','pc','contenance','expo','rupture'].forEach(function(k){var m=cardCaps[k+'Max'];if(typeof m==='number')collaboration.maxima[k]=m;});
       var lot = collaboration.outgoing();
@@ -472,7 +486,7 @@
         // on cesse de relancer tout seul — le lot part quand même à la
         // prochaine modification, le diff ne l'a pas oublié.
         bandeauPerte();
-      }, 8000);
+      }, 10000);
     }, 400);
   }
 
@@ -602,7 +616,7 @@
     if (document.getElementById("owd-bandeau-css")) return;
     var s = document.createElement("style");
     s.id = "owd-bandeau-css";
-    s.textContent = CSS_BANDEAU;
+    s.textContent = CSS_BANDEAU + "#owd-mode-bar{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem .8rem;padding:.6rem;border-bottom:1px solid #6b5a2e;font:inherit;font-size:13px;background:#f5f2ea;color:#1a1a1a}html.night #owd-mode-bar{background:#0d0d0d;color:#e6e6e6}#owd-mode-bar button{font:inherit;padding:.3rem .6rem;border:1px solid #6b5a2e;border-radius:4px;cursor:pointer}#owd-mode-bar .owd-presence-edition,#owd-mode-bar .owd-presence-consultation{flex-basis:100%;font-size:12px}#owd-save-status{padding:.2rem .6rem;font-size:12px}.owd-consultation #perso-fiche input:not([type=search]),.owd-consultation #perso-fiche textarea,.owd-consultation #perso-fiche select{cursor:default}.owd-ecran-telecharger{display:inline-block;padding:.35rem .7rem;border:1px solid #6b5a2e;border-radius:.2rem;color:inherit;text-decoration:none}";
     document.head.appendChild(s);
   }
   // txt : texte brut (jamais de HTML, il peut venir d'un message d'erreur).
@@ -638,37 +652,9 @@
     var b = document.getElementById("owd-bandeau");
     if (b && b.parentNode) b.parentNode.removeChild(b);
   }
-  function bandeauPerte() {
-    bandeau("Roll20 n'enregistre pas cette fiche. Les modifications restent dans cette fenêtre " +
-            "et seront perdues en la fermant. Si la fiche est ouverte dans une fenêtre séparée, " +
-            "garder la fenêtre principale de la partie ouverte ; sinon, vérifier que le " +
-            "personnage n'est pas en lecture seule.", [
-      { texte: "Réessayer", acte: "reessayer", action: function () {
-          fermerBandeau();
-          echecs = 0;
-          enVol = null;
-          lastAttrs = {};        // on ne sait plus ce que Roll20 tient : tout réémettre
-          gardeArmee = false;    // et refaire surveiller la première écriture qui suit
-          scheduleSave();
-        } },
-      { texte: "Masquer", acte: "masquer", action: fermerBandeau }
-    ]);
-  }
-
-  // Une lecture incomplète suspend les écritures, jamais les tentatives de
-  // récupération. Ne pas remplacer la source par une reconstruction amputée.
-  function bandeauGel(txt) {
-    var current=document.getElementById('owd-bandeau');if(current&&current.dataset.owdRaison==='sync-unreadable'&&current.querySelector('.owd-bandeau-txt').textContent===txt)return;
-    bandeau(txt,[{texte:'Réessayer la lecture',acte:'reessayer-lecture',action:function(){post({type:'load',resync:true});}},
-      {texte:'Exporter les données de secours',acte:'export-recuperation',action:exporterRecuperation}]).dataset.owdRaison='sync-unreadable';
-  }
-  function bandeauGelIllisible(raison) {
-    bandeauGel('Lecture indisponible : '+(raison||'données illisibles')+'. Les écritures vers Roll20 sont suspendues. La lecture est réessayée automatiquement ; les blocs récupérables sont réparés uniquement depuis une copie vérifiée.');
-  }
-  function bandeauGelDisparu() {
-    bandeauGel('Les données complètes de cette fiche sont absentes de la lecture Roll20. La récupération reste active ; aucune reconstruction incomplète ne remplace les données du personnage.');
-  }
-
+  function bandeauPerte(){afficheErreurEnregistrement(false);}
+  function bandeauGelIllisible(raison){erreurOuverture(/absent|incomplet/i.test(raison||'')?'incomplete':'unreadable');}
+  function bandeauGelDisparu(){erreurOuverture('incomplete');}
   // ================= écran de version =================
   /* La fiche vit dans le personnage Roll20, le code vit sur le site, et les
    * deux ne bougent pas ensemble : une table peut ne pas rouvrir une fiche
@@ -719,16 +705,7 @@
     var s = M && M.SCHEMA;
     return (typeof s === "number" && isFinite(s)) ? s : 1;
   }
-  // Décision produit : l'écran ne paraît qu'au désaccord de SCHÉMA. Le défaut
-  // vaut aussi quand le manifeste manque ou tarde, car c'est là que l'écran est
-  // le moins utile : bloquer sur le NUMÉRO le sortirait chez un joueur dont le
-  // réseau a hoqueté, à chaque ouverture, alors qu'aucune donnée n'a changé de
-  // forme. Le manifeste peut redemander l'ancien réglage, personne d'autre.
-  function blocage() {
-    var m = manifeste();
-    return (m && m.blocage === "release") ? "release" : "schema";
-  }
-
+  // Toute différence de release ou de schéma demande un accord explicite.
   // LA lecture d'un numéro, seule de tout le fichier, et celle du contrat :
   // « v » facultatif, un à trois nombres (les manquants valent 0), « b » de
   // la beta COLLÉ au dernier, suffixe de fabrication [-+…] toléré. Rend
@@ -845,34 +822,6 @@
     return spec;
   }
 
-  function epinglageLu() {
-    try {
-      var v = localStorage.getItem(PIN_PREFIX + CHAR_ID);
-      if (!v) return null;
-      var o = JSON.parse(v);
-      return (o && typeof o === "object" && typeof o.release === "string") ? o : null;
-    } catch (e) { return null; }
-  }
-  // On range la release EXACTE, jamais sa ligne : la clé et la forme rangées
-  // doivent rester lisibles pour les épinglages déjà posés chez les joueurs.
-  // C'est la comparaison, elle, qui se fait ligne à ligne (voir decider()).
-  function epinglagePoser(rel) {
-    try {
-      localStorage.setItem(PIN_PREFIX + CHAR_ID,
-        JSON.stringify({ release: String(rel), quand: new Date().toISOString() }));
-    } catch (e) {}
-  }
-
-  // Version de la fiche trouvée dans le personnage, { schema, release } ou null.
-  //
-  // C'est owd_state qui fait foi : lui seul est réécrit par la version qui a
-  // réellement enregistré la fiche. Le max de owd_version, lui, porte la
-  // release que l'amorce croyait servir au moment de l'écriture, et une archive
-  // qui tourne sous le manifeste du jour y inscrit la version DU SITE : s'y
-  // fier ferait passer une fiche d'archive pour une fiche à jour, et « ouvrir
-  // avec sa version » n'aurait plus d'objet. ficheDe() applique cette priorité
-  // (état d'abord, owd_version en repli quand l'état ne se lit plus) sans
-  // reconstruire l'état, ce qui reste bon marché sur un owd_state énorme.
   function versionFiche(attrs) {
     var f = null;
     try { f = M.ficheDe(attrs); } catch (e) { f = null; }
@@ -936,6 +885,91 @@
     b.appendChild(noeud("p", null, txt));
     return b;
   }
+
+  function startLoading(kind,step){
+    if(kind==='opening'&&!operationBusy&&operationSerial)openingStartedAt=Date.now();
+    loadingKind=kind||'opening';failureKind='';operationBusy=true;var serial=++operationSerial;
+    if(operationTimer)clearTimeout(operationTimer);
+    ecranAttente('Chargement du personnage',step||'Vérification de l’extension…');
+    operationTimer=setTimeout(function(){if(serial!==operationSerial)return;operationBusy=false;if(loadingKind==='backup')erreurSauvegarde();else if(loadingKind==='upgrade')erreurMiseAJour();else erreurOuverture(extensionReady?'timeout':'extension');},kind==='opening'?Math.max(0,10000-(Date.now()-openingStartedAt)):10000);
+    return serial;
+  }
+  function stopLoading(){operationBusy=false;++operationSerial;if(operationTimer)clearTimeout(operationTimer);operationTimer=null;}
+  function updateLoading(step){var e=document.querySelector('#owd-ecran .owd-ecran-boite p');if(e&&operationBusy)e.textContent=step;}
+  function exportPossible(){return !!(mem['owd-perso']&&mem['owd-perso']!=='null'&&mem['owd-perso']!=='{}');}
+  function exportButton(z,available){var b=bouton(z,'Exporter les données disponibles','export',exporter);if(!available)griser(b,'Aucune donnée du personnage disponible à exporter.',z.parentNode);return b;}
+  function erreurOuverture(kind){
+    stopLoading();failureKind=kind;
+    var messages={timeout:'Roll20 n’a pas répondu à la demande de chargement du personnage.',extension:'Les informations nécessaires pour vérifier la version de l’extension n’ont pas pu être récupérées.',incomplete:'Roll20 n’a pas transmis toutes les données nécessaires pour ouvrir ce personnage.',unreadable:'Les données reçues de Roll20 ne peuvent pas être lues. Le personnage n’a pas pu être ouvert.',files:'Les fichiers nécessaires au fonctionnement de la fiche n’ont pas pu être chargés.',program:'Une erreur empêche l’affichage de la fiche.'};
+    var b=ecran('Impossible d’ouvrir le personnage',true);b.appendChild(noeud('p',null,(messages[kind]||messages.program)+' Réessayez dans quelques instants.'));
+    var z=zoneActions(b);bouton(z,'Réessayer','reessayer-ouverture',function(){if(!extensionReady){extensionChecking=false;verifyExtension(lastHydration);return;}if(bundleCharge&&kind==='files'||bundleCharge&&kind==='program'){location.reload();return;}hydrated=false;decide=false;attrsPrets=false;gele=false;startLoading('opening','Chargement des données du personnage depuis Roll20…');post({type:'load',resync:true});});exportButton(z,exportPossible());
+  }
+  function erreurSauvegarde(){stopLoading();failureKind='backup';var b=ecran('Impossible de sauvegarder le personnage',true);b.appendChild(noeud('p',null,'Roll20 n’a pas confirmé la sauvegarde de secours du personnage. La mise à jour n’a pas été lancée. Réessayez dans quelques instants.'));var z=zoneActions(b);bouton(z,'Réessayer','reessayer-backup',function(){monter(false,versionFiche(attrsVus));});bouton(z,'Retour','retour',function(){miseANiveauDemandee=false;decide=false;decider();});boutonExport(z);}
+  function erreurMiseAJour(){stopLoading();failureKind='upgrade';var b=ecran('Impossible de mettre à jour le personnage',true);b.appendChild(noeud('p',null,'La mise à jour du personnage n’a pas pu être terminée. Une sauvegarde de secours de son état précédent est conservée sur Roll20. Réessayez dans quelques instants.'));var z=zoneActions(b);bouton(z,'Réessayer','reessayer-upgrade',function(){location.reload();});boutonExport(z);}
+  function extensionUpdate(installed,latest){stopLoading();var b=ecran('Extension Outward à mettre à jour',false);b.appendChild(noeud('p',null,'Votre extension Outward n’est pas à jour. Installez la dernière version, puis rechargez la page Roll20 pour ouvrir ce personnage.'));var v=noeud('div','owd-ecran-vers');v.appendChild(noeud('span',null,'Votre version de l’extension : '+installed));v.appendChild(noeud('span',null,'Dernière version de l’extension : '+latest));b.appendChild(v);var z=zoneActions(b);boutonExport(z);var a=noeud('a','owd-ecran-telecharger','Télécharger la mise à jour');a.href=new URL('download/owd-roll20-'+(extensionInfo&&extensionInfo.browser==='chrome'?'chrome.zip':'firefox.xpi'),location.href).href;a.target='_blank';a.rel='noopener';z.appendChild(a);}
+  function compareExtension(a,b){
+    function parts(v){return /^\d+\.\d+\.\d+(?:\.\d+)?$/.test(String(v))?String(v).split('.').map(Number):null;}
+    var x=parts(a),y=parts(b);if(!x||!y)return null;
+    for(var i=0;i<4;i++){var n=(x[i]||0)-(y[i]||0);if(n)return n<0?-1:1;}return 0;
+  }
+  function verifyExtension(d){
+    if(extensionReady||extensionChecking)return;
+    extensionChecking=true;extensionInfo=d&&d.extension||null;
+    startLoading('opening','Vérification de l’extension…');
+    var serial=operationSerial;
+    fetch('download/ext-signed.json?t='+Date.now(),{cache:'no-store'}).then(function(r){if(!r.ok)throw Error('extension');return r.json();}).then(function(meta){
+      if(serial!==operationSerial)return;
+      var mode=/b$/.test(releaseSite())?'beta':'stable',installed=extensionInfo&&extensionInfo.version,latest=meta&&meta.version;
+      var comparison=compareExtension(installed,latest);
+      if(comparison===null){erreurOuverture('extension');return;}
+      if(comparison<0||!storageCapable||!collaborationPont||!extensionInfo.sessionUi){extensionUpdate(installed,latest);return;}
+      extensionReady=true;extensionChecking=false;updateLoading('Chargement des données du personnage depuis Roll20…');
+      if(lastHydration&&lastHydration.fresh===true)hydrate(lastHydration.attrs);else post({type:'load',resync:true});
+    }).catch(function(){if(serial===operationSerial)erreurOuverture('extension');});
+  }
+  window.__owdOpenFailure=function(kind){if(miseANiveauDemandee)erreurMiseAJour();else erreurOuverture(kind||'program');};
+
+  function canUseControl(target){
+    if(!target||!target.closest)return false;
+    return target.matches('.pc-obj-tile,.pc-inv-objet') || !!target.closest('.pc-tab,.pc-attaque-tete,.pc-comp-groupe-nom,.pc-comp-repli,.pc-comp-roll,.pc-notes-latest,.pc-journal-pages,.pc-note-toggle,.pc-journal-toggle,[data-consultation],.pc-notes-search,.pc-journal-search')||target.type==='search';
+  }
+  function installModeBar(){
+    var bar=document.getElementById('owd-mode-bar');if(bar){renderPresence();return;}
+    bar=noeud('div','owd-mode-bar');bar.id='owd-mode-bar';
+    var label=noeud('strong','owd-mode-label','Mode Consultation'),button=noeud('button',null,'Passer en Mode Edition');button.type='button';button.id='owd-mode-switch';
+    button.onclick=function(){
+      if(gele||!accesInventaire||document.getElementById('owd-ecran'))return;
+      // Repartir de la dernière représentation partagée avant toute édition.
+      if(!edition&&window.Owd&&window.Owd.__recoitEtat){collaborationApplique=true;try{window.Owd.__recoitEtat(JSON.parse(mem['owd-perso']));}finally{collaborationApplique=false;}}
+      edition=!edition;label.textContent=edition?'Mode Edition':'Mode Consultation';button.textContent=edition?'Passer en Mode Consultation':'Passer en Mode Edition';
+      document.documentElement.classList.toggle('owd-consultation',!edition);if(window.Owd&&window.Owd.remonte)window.Owd.remonte();sendPresence();post({type:'take-target'});post({type:'defend-target'});renderPresence();applyModeControls();
+    };
+    bar.appendChild(label);bar.appendChild(button);bar.appendChild(noeud('div','owd-presence-edition'));bar.appendChild(noeud('div','owd-presence-consultation'));
+    document.body.insertBefore(bar,document.getElementById('perso-fiche'));document.documentElement.classList.add('owd-consultation');sendPresence();renderPresence();applyModeControls();
+  }
+  function applyModeControls(){
+    if(!ready)return;document.querySelectorAll('#perso-fiche input,#perso-fiche textarea,#perso-fiche select,#perso-fiche button,#perso-fiche [draggable="true"]').forEach(function(n){
+      if(!edition&&!canUseControl(n)){n.setAttribute('data-owd-readonly','1');if(n.tagName==='INPUT'||n.tagName==='TEXTAREA')n.readOnly=true;else n.disabled=true;if(n.draggable)n.draggable=false;}
+    });
+  }
+  window.__owdApplyMode=applyModeControls;
+  function sendPresence(){if(ready&&openingDone&&journalPlayer){presenceRows=(presenceRows||[]).filter(function(r){return r.view!==VIEW_ID;});presenceRows.push({player:journalPlayer.id,name:journalPlayer.name,view:VIEW_ID,mode:edition?'edition':'consultation',at:Date.now()});post({type:'presence',mode:edition?'edition':'consultation'});}}
+  function renderPresence(){
+    var bar=document.getElementById('owd-mode-bar');if(!bar)return;
+    var byPlayer={};(presenceRows||[]).forEach(function(r){if(r.left||Date.now()-r.at>=30000)return;var id=r.player,name=r.name||id;if(!byPlayer[id])byPlayer[id]={name:name,edition:false};if(r.mode==='edition')byPlayer[id].edition=true;});
+    if(journalPlayer){var me=byPlayer[journalPlayer.id]||(byPlayer[journalPlayer.id]={name:journalPlayer.name,edition:false});if(edition)me.edition=true;}
+    var edit=[],read=[];Object.keys(byPlayer).sort().forEach(function(id){(byPlayer[id].edition?edit:read).push(byPlayer[id].name);});
+    bar.querySelector('.owd-presence-edition').textContent='En édition : '+(edit.join(', ')||'—');bar.querySelector('.owd-presence-consultation').textContent='En consultation : '+(read.join(', ')||'—');
+  }
+  setInterval(sendPresence,10000);
+  function guardConsultation(ev){
+    if(edition||!ready||!ev.target||!ev.target.closest||!ev.target.closest('#perso-fiche'))return;
+    var target=ev.target.closest('button,input,textarea,select,[contenteditable="true"],[draggable="true"]');
+    if(!target||canUseControl(target))return;
+    ev.preventDefault();ev.stopImmediatePropagation();
+  }
+  ['click','dblclick','beforeinput','input','change','keydown','dragstart','drop'].forEach(function(type){document.addEventListener(type,guardConsultation,true);});
+  document.addEventListener('focusin',function(ev){if(!edition&&ready&&ev.target&&ev.target.matches&&ev.target.matches('#perso-fiche input,#perso-fiche textarea,#perso-fiche select')&&!canUseControl(ev.target)){ev.target.blur();}},true);
 
   // ---------- export ----------
   // Le JSON du personnage TEL QU'IL A ÉTÉ LU, avant toute migration : c'est
@@ -1016,7 +1050,7 @@
     }, 1200);
   }
   function boutonExport(zone) {
-    return bouton(zone, "Exporter le personnage (JSON)", "export", exporter);
+    var button=bouton(zone, 'Exporter le personnage (JSON)', 'export', exporter);if(!exportPossible()){button.disabled=true;button.title='Aucune donnée du personnage disponible à exporter.';}return button;
   }
 
   // ---------- chargement du bundle ----------
@@ -1027,14 +1061,9 @@
     // Un double clic sur « mettre à niveau » lancerait deux protocoles, donc
     // deux injections : la fiche se monterait deux fois dans la même page.
     if (bundleCharge || !spec) return;
-    if (C && (!collaborationPont || !storageCapable)) {
-      var b = ecran("Extension Outward à mettre à jour", false);
-      b.appendChild(noeud("p", null, "Cette fiche utilise l'édition simultanée. Installez la nouvelle extension Outward puis rechargez la partie Roll20. Aucune modification n'est envoyée avec l'ancien pont."));
-      boutonExport(zoneActions(b));
-      return;
-    }
+    if(!extensionReady)return;
     bundleCharge = true;
-    fermerEcran();
+    updateLoading('Préparation de la fiche…');
     // data : le owd-creation.json à lire. Une archive embarque le sien, gelé à
     // sa date ; sans lui un ancien bundle lirait les règles d'aujourd'hui.
     window.__owdDataUrl = spec.data || null;
@@ -1064,6 +1093,7 @@
     var urls = spec.js || [];
     var i = 0;
     function serie() {
+      if(failureKind)return;
       if (i >= urls.length) {
         // Le script peut avoir fini avant son fetch de règles et son montage.
         // Ne pas initialiser une session sur la mémoire encore au vieux schéma.
@@ -1074,7 +1104,7 @@
           // Le bundle vient de migrer en mémoire. Capturer cette montée AVANT
           // une réponse distante encore à l'ancien schéma, même si le réseau
           // retarde sa confirmation de plusieurs secondes.
-          collaboration.capture(JSON.parse(mem["owd-perso"]));
+          if(miseANiveauDemandee||!collaboration.hasBase)collaboration.capture(JSON.parse(mem["owd-perso"]));
           if(miseANiveauDemandee)miseANiveauOps=Object.keys(collaboration.pending);
           actualiseStatutEnregistrement();
           if(collaboration.hasBase&&Object.keys(collaboration.pending).length){var restored=collaboration.receive(lastAttrs);if(restored){synchronisationDifferée=restored.state;appliqueDiffere();}}
@@ -1087,13 +1117,16 @@
             post({ type: "save", attrs: initial });storageInitialSentAt=Date.now();
           }
         }
-        ready = true; post({ type: "mounted" }); scheduleSave(); return;
+        ready = true; post({ type: "mounted" });
+        if(miseANiveauDemandee){loadingKind='upgrade';scheduleSave();}
+        else {stopLoading();fermerEcran();openingDone=true;installModeBar();}
+        return;
       }
       var s = document.createElement("script");
       var u = urls[i++];
       s.src = u;
       s.onload = serie;
-      s.onerror = function () { post({ type: "error", error: u }); serie(); };
+      s.onerror = function () { post({ type: 'error', error: u }); window.__owdOpenFailure('files'); };
       document.body.appendChild(s);
     }
     // Une archive peut apporter SA correspondance état <-> Attributes. Elle
@@ -1147,7 +1180,12 @@
   // owd_backup, on la RELIT dans le personnage, et seulement alors on injecte
   // le bundle qui migrera. Un backup qu'on n'a pas relu ne vaut rien : le pont
   // avale l'échec d'une écriture sans le dire (voir 5. en tête de fichier).
+  var backupAttempt=null;
   function lotBackup(f) {
+    var target=typeof releaseSite==='function'?releaseSite():'';
+    if(backupAttempt&&backupAttempt.target===target&&backupAttempt.from===(f&&f.release))return backupAttempt.lot;
+    try{var existing=C&&attrsVus&&attrsVus[C.BASE]&&backupBlocs(attrsVus);if(existing&&existing.max.split('|')[2]===target){var source=JSON.parse(existing.current);if(source.rel===(f&&f.release)){var saved={};saved[M.PREFIX+BACKUP]=existing;return saved;}}}catch(e){}
+
     var brut = val((attrsVus || {})[M.PREFIX + "state"], "current");
     // Sans owd_state lisible, on met à l'abri la reconstruction champ par
     // champ : c'est exactement ce que la migration s'apprête à remplacer.
@@ -1157,8 +1195,9 @@
       current: contenu,
       // max : d'où vient cette sauvegarde. « schéma|date », lisible à l'oeil nu
       // dans l'onglet Attributes de Roll20, et relu par la restauration.
-      max: String(f && f.schema != null ? f.schema : "") + "|" + new Date().toISOString()
+      max: String(f && f.schema != null ? f.schema : "") + "|" + new Date().toISOString()+'|'+target
     };
+    backupAttempt={target:target,from:f&&f.release,lot:lot};
     return lot;
   }
   // Le pont au format 2 refuse les anciens « save » hors miroirs de tokens.
@@ -1185,7 +1224,7 @@
     });return found;
   }
   function confirmeOperations(packet, cb) {
-    var end=Date.now()+Math.max(20000,packet.ops.length*200+10000);
+    var end=Date.now()+10000;
     (function poll(){sonde(function(attrs){var remote=null;try{remote=attrs&&C.read(attrs);}catch(e){}
       if(remote&&remote.meta.epoch===packet.epoch&&packet.ops.every(function(op){return remote.ids[op.id]&&C.stable(remote.ids[op.id])===C.stable(op);})){cb(true,attrs,remote);return;}
       if(Date.now()>=end){cb(false,attrs);return;}setTimeout(poll,700);
@@ -1194,8 +1233,10 @@
   function tenterBackupBlocs(lot,silencieux) {
     var packet;try{packet=lotBackupBlocs(lot,attrsVus);}catch(e){ecranRouge(lot,silencieux);return;}
     post({type:"storage-ops",epoch:packet.epoch,ops:packet.ops});
+    updateLoading('Vérification de la sauvegarde…');
+    var serial=operationSerial;
     confirmeOperations(packet,function(ok,attrs,remote){
-      if(bundleCharge)return;
+      if(serial!==operationSerial||bundleCharge)return;
       if(!ok){ecranRouge(lot,silencieux);return;}
       // La copie d'origine est vérifiée et les écritures concurrentes sont
       // conservées dans les journaux. Migrer le dernier état relu : recommencer
@@ -1203,142 +1244,29 @@
       attrsVus=attrs;lastAttrs=attrs;
       mem["owd-perso"]=JSON.stringify(remote.state);
       if(Number(remote.state.v)>schemaSite()){fermerEcran();decide=false;decider();return;}
-      fermerEcran();chargerBundle(specCourant());
+      startLoading('upgrade','Préparation de la fiche…');chargerBundle(specCourant());
     });
   }
   function monter(silencieux, f) {
+    if(operationBusy)return;
     miseANiveauDemandee=true;
     var lot = lotBackup(f);
     tenterBackup(lot, silencieux);
   }
   function tenterBackup(lot, silencieux) {
-    ecranAttente("Mise à niveau de la fiche",
-      "Sauvegarde de secours de l'état d'origine dans le personnage Roll20, puis relecture pour vérifier " +
-      "qu'elle est bien arrivée. Ne pas fermer cet onglet.");
+    var serial=startLoading('backup','Sauvegarde du personnage avant la mise à jour…');
     if(C && attrsVus && attrsVus[C.BASE]){tenterBackupBlocs(lot,silencieux);return;}
     post({ type: "save", attrs: lot });
     confirme(lot, function (ok) {
-      if(bundleCharge)return;
+      if(serial!==operationSerial||bundleCharge)return;
       if (!ok) { ecranRouge(lot, silencieux); return; }
       // Confirmé : le lot entre dans la base du diff, il est en base.
       lastAttrs = fusion(lastAttrs, lot);
-      fermerEcran();
+      startLoading('upgrade','Préparation de la fiche…');
       chargerBundle(specCourant());
-    }, 8000);
+    }, 10000);
   }
-  function ecranRouge(lot, silencieux) {
-    var b = ecran("Roll20 n'a pas confirmé la sauvegarde de secours", true);
-    b.appendChild(noeud("p", null,
-      "L'état d'origine de la fiche a été envoyé au personnage, mais il n'a pas été relu à l'identique. " +
-      "La mise à niveau n'a donc PAS eu lieu : rien n'a été modifié. Copier le personnage ci-dessous avant " +
-      "de réessayer ; si la fiche est ouverte dans une fenêtre séparée, garder la fenêtre principale de la " +
-      "partie ouverte, et vérifier que le personnage n'est pas en lecture seule."));
-    var z = zoneActions(b);
-    bouton(z, "Réessayer", "reessayer", function () { tenterBackup(lot, silencieux); }, true);
-    bouton(z, "Copier le JSON", "copier-json", function () {
-      montrerJson(jsonPerso(), "Le personnage tel qu'il a été lu, avant toute migration.");
-    });
-    boutonExport(z);
-  }
-
-  // « Restaurer l'état d'origine » : relit owd_backup DANS LE PERSONNAGE (pas
-  // en mémoire : c'est Roll20 qui fait foi) et le réécrit dans owd_state, avec
-  // confirmation. La fiche affichée, elle, reste la version migrée : elle
-  // réécrirait l'état restauré à la première frappe. D'où le gel, et la
-  // consigne de fermer l'onglet.
-  function restaurerBlocs(attrs) {
-    var original;try{original=backupBlocs(attrs)||attrs[M.PREFIX+BACKUP];if(!original)throw Error("Sauvegarde absente.");
-      var before=JSON.parse(val(original,"current")),remote=C.read(attrs),session=new C.Session(attrs,remote.state);
-      session.capture(before);var packet={epoch:session.epoch,ops:Object.keys(session.pending).map(function(id){return session.pending[id];})};
-      if(packet.ops.length)post({type:"storage-ops",epoch:packet.epoch,ops:packet.ops,payloads:session.payloads});
-      confirmeOperations(packet,function(ok,recu,r){
-        if(!ok||C.stable(r.state)!==C.stable(before)){var b=ecran("Restauration non confirmée",true);b.appendChild(noeud("p",null,"La sauvegarde d’origine reste conservée. Aucune écriture ne part plus de cette fenêtre."));boutonExport(zoneActions(b));montrerJson(original.current,"État d’origine sauvegardé.");return;}
-        lastAttrs=recu;mem["owd-perso"]=JSON.stringify(before);fermerEcran();bandeau("État d’origine restauré. Fermez cette fiche puis rouvrez-la ; cette fenêtre reste gelée.",[{texte:"Exporter (JSON)",acte:"export",action:exporter}]);
-      });
-    }catch(e){var b=ecran("Sauvegarde de secours illisible",true);b.appendChild(noeud("p",null,String(e.message||e)));boutonExport(zoneActions(b));}
-  }
-  function restaurer() {
-    gelVolontaire=true;gele = true;
-    fermerBandeau();
-    ecranAttente("Restauration de l'état d'origine",
-      "Relecture de la sauvegarde de secours dans le personnage Roll20.");
-    sonde(function (recu) {
-      if(C && recu && recu[C.BASE]){restaurerBlocs(recu);return;}
-      var a = recu ? recu[M.PREFIX + BACKUP] : null;
-      var brut = a ? String(val(a, "current") || "") : "";
-      if (!brut) {
-        var b0 = ecran("Aucune sauvegarde de secours à restaurer", true);
-        b0.appendChild(noeud("p", null,
-          "L'attribut owd_backup du personnage est vide ou illisible. Rien n'a été touché ; la fiche reste " +
-          "gelée dans cette fenêtre (aucune écriture) tant qu'elle n'est pas rechargée."));
-        var z0 = zoneActions(b0);
-        bouton(z0, "Réessayer", "reessayer", restaurer, true);
-        boutonExport(z0);
-        return;
-      }
-      var meta = String(val(a, "max") || "");
-      var sch = parseInt(meta, 10);
-      var lot = {};
-      lot[M.PREFIX + "state"] = { current: brut, max: "" };
-      // owd_version repart au schéma d'origine, sinon la fiche restaurée serait
-      // relue comme une fiche du jour au prochain chargement.
-      if (isFinite(sch)) lot[M.PREFIX + "version"] = { current: String(sch), max: "" };
-      if (C && recu && recu[C.BASE]) {
-        lot[C.BASE] = { current: "", max: "" };
-        Object.keys(recu).forEach(function (n) {
-          if (n.indexOf(C.PREFIX) === 0) lot[n] = { current: "", max: "" };
-        });
-      }
-      post({ type: "save", attrs: lot });
-      confirme(lot, function (ok) {
-        if (!ok) {
-          var b1 = ecran("Roll20 n'a pas confirmé la restauration", true);
-          b1.appendChild(noeud("p", null,
-            "L'état d'origine a été renvoyé au personnage mais n'a pas été relu à l'identique. Le voici en " +
-            "clair : le copier avant toute chose. Aucune écriture ne part plus de cette fenêtre."));
-          var z1 = zoneActions(b1);
-          bouton(z1, "Réessayer", "reessayer", restaurer, true);
-          boutonExport(z1);
-          montrerJson(brut, "L'état d'origine, tel qu'il était gardé dans owd_backup.");
-          return;
-        }
-        lastAttrs = fusion(lastAttrs, lot);
-        fermerEcran();
-        bandeau("État d'origine restauré dans le personnage. La fiche affichée ici est encore la version " +
-                "migrée : fermer cet onglet sans y toucher, puis le rouvrir. Aucune écriture ne part plus " +
-                "de cette fenêtre.", [
-          { texte: "Exporter (JSON)", acte: "export", action: exporter }
-        ]);
-      }, 8000);
-    });
-  }
-
-  function bandeauMisAJour() {
-    bandeau("Fiche mise à niveau en " + releaseSite() + ". Une sauvegarde vérifiée de l’état d’origine est conservée dans le personnage.", [
-      { texte: "Restaurer l'état d'origine", acte: "restaurer", action: restaurer },
-      { texte: "Exporter (JSON)", acte: "export", action: exporter },
-      { texte: "Masquer", acte: "masquer", action: fermerBandeau }
-    ]);
-  }
-
-  // Fiche écrite par une release PLUS RÉCENTE que le site, alors que le schéma
-  // concorde. Le contrat ne bloque pas sur le numéro, et il a raison : la forme
-  // des données est celle que ce code sait lire, un écran serait de trop. Reste
-  // ce qu'une release plus jeune a pu ajouter SANS toucher au schéma : un champ
-  // que ce code ne connaît pas et que la première sauvegarde laisserait tomber.
-  // Trop peu pour barrer le passage, trop pour ouvrir sans un mot : un bandeau,
-  // qui n'empêche rien mais met l'export à portée avant la première frappe. Il
-  // se masque, contrairement à ceux du gel : ici la fiche s'enregistre vraiment,
-  // le cacher ne fait donc croire à rien de faux.
-  function bandeauPlusRecente(relFiche, relSite) {
-    bandeau("Cette fiche a été enregistrée en " + relFiche + ", plus récent que la version servie ici (" +
-            relSite + "). Elle s'ouvre quand même : ses données ont la forme que cette version sait lire. " +
-            "Ce que " + relFiche + " a pu ajouter depuis, en revanche, cette version ne le connaît pas et " +
-            "ne le réécrira pas. Exporter avant de modifier.", [
-      { texte: "Exporter (JSON)", acte: "export", action: exporter },
-      { texte: "Masquer", acte: "masquer", action: fermerBandeau }
-    ]);
-  }
+  function ecranRouge(){erreurSauvegarde();}
 
   // ---------- l'écran lui-même ----------
   //
@@ -1350,193 +1278,37 @@
   // rapport. Les identifiants, eux, gardent « site » (relSite, releaseSite) :
   // ils nomment l'endroit d'où la version est lue, personne ne les lit en jeu,
   // et les renommer ne changerait rien pour un joueur.
-  function ecranVersion(f, relSite, schSite) {
-    var relFiche = f.release || null;
-    var duFutur = (f.schema != null && f.schema > schSite);
-    var b = ecran(duFutur ? "Cette fiche vient d'une version plus récente que celle servie ici"
-                          : "Cette fiche n'a pas la version servie ici", false);
-    var v = noeud("div", "owd-ecran-vers");
-    v.appendChild(noeud("span", null, "Fiche du personnage : " + texteVersion(relFiche, f.schema)));
-    v.appendChild(noeud("span", null, "Fiche servie ici : " + texteVersion(relSite, schSite)));
-    b.appendChild(v);
-    b.appendChild(noeud("p", null,
-      "Rien n'a été lu de travers et rien n'a été enregistré : aucune écriture ne partira tant qu'un " +
-      "choix n'aura pas été fait."));
-
-    b.appendChild(noeud("h2", null, "Ce que la mise à niveau change"));
-    var pas = null;
-    try {
-      if (window.OwdMigr && window.OwdMigr.resume) pas = window.OwdMigr.resume(f.schema, schSite);
-    } catch (e) { pas = null; }
-    if (duFutur) {
-      b.appendChild(noeud("p", null,
-        "La fiche a été écrite par une version plus récente que celle servie ici. La version servie ne " +
-        "sait pas la redescendre, et l'ouvrir avec le code d'aujourd'hui lui ferait perdre ce qu'il ne " +
-        "connaît pas."));
-    } else if (!pas) {
-      b.appendChild(noeud("p", null,
-        "Cette version ne sait pas dire ce qui sépare le schéma " + f.schema + " du schéma " + schSite +
-        " : le chemin de migration lui manque. Exporter le personnage avant de choisir."));
-    } else if (!pas.length) {
-      b.appendChild(noeud("p", null,
-        "Rien dans la structure de la fiche : seul le numéro de version change."));
-    } else {
-      var ul = noeud("ul");
-      pas.forEach(function (e) {
-        var li = noeud("li");
-        li.appendChild(noeud("span", "owd-ecran-pas", e.titre + " : "));
-        li.appendChild(document.createTextNode(e.notes));
-        ul.appendChild(li);
-      });
-      b.appendChild(ul);
-    }
-
-    // L'épinglage ne vaut QUE pour « ouvrir avec sa version » : la case est
-    // construite avant les boutons (leur gestionnaire la lit) mais posée après
-    // eux. Elle n'est jamais honorée par la montée, qui est destructive et ne
-    // se rejoue pas de mémoire.
-    var lab = noeud("label", "owd-ecran-epingle");
-    var caseEp = document.createElement("input");
-    caseEp.type = "checkbox";
-    caseEp.id = "owd-ecran-epingle";
-    lab.appendChild(caseEp);
-    lab.appendChild(document.createTextNode(" Ne plus me demander pour ce personnage"));
-
-    var z = zoneActions(b);
-    var bMonter = bouton(z, "Mettre la fiche à niveau (" + relSite + ")", "monter", function () {
-      monter(false, f);
-    }, !duFutur);
-    var arch = archiveDe(relFiche);
-    // Le libellé dit ce qui va OUVRIR, pas ce que le joueur espère : une ligne
-    // ne gèle qu'une archive, donc un personnage écrit en 1.2.4 s'ouvrira avec
-    // 1.2.0. Promettre « sa version » mentirait sur le code qui va tourner.
-    // Comparaison de RANG et non de texte : la clé « 1.2.0 » est bien la version
-    // d'une fiche écrite en « 1.2.0b », et annoncer une archive « la plus proche
-    // de sa version » pour un simple suffixe inquiéterait pour rien.
-    var bArch = bouton(z, (arch && !memeRang(arch.release, relFiche))
-      ? ("Ouvrir avec l'archive " + arch.release + " (la plus proche de sa version)")
-      : ("Ouvrir avec sa version (" + (relFiche || "inconnue") + ")"), "archive", function () {
-      if (!arch) return;   // bouton grisé : ceinture, au cas où un clic passe quand même
-      if (caseEp.checked && relFiche) epinglagePoser(relFiche);
-      chargerBundle(arch, true);
-    }, duFutur);
+  function ecranVersion(f,relSite,schSite){
+    stopLoading();var newer=f.schema>schSite||compare(f.release,relSite)>0;
+    var b=ecran(newer?'Version du personnage incompatible':'Personnage à mettre à jour',false);
+    b.appendChild(noeud('p',null,newer?'Ce personnage a été enregistré avec une version plus récente de la fiche Outward. La version actuellement disponible ne peut pas l’ouvrir.':'Ce personnage a été enregistré avec une ancienne version de la fiche Outward. Mettez-le à jour pour l’ouvrir avec la version actuelle.'));
+    var v=noeud('div','owd-ecran-vers');v.appendChild(noeud('span',null,'Version du personnage : '+(f.release||'Inconnue')));v.appendChild(noeud('span',null,'Version actuelle de la fiche : '+relSite));b.appendChild(v);
+    var z=zoneActions(b),arch=archiveDe(f.release);
+    if(arch&&!memeRang(arch.release,f.release))arch=null;
+    if(!newer)bouton(z,'Mettre à jour le personnage','monter',function(){if(!operationBusy)monter(false,f);},true);
+    var open=bouton(z,newer?'Ouvrir avec la version du personnage':'Ouvrir avec l’ancienne version','archive',function(){if(arch&&!operationBusy){miseANiveauDemandee=false;startLoading('opening','Préparation de la fiche…');chargerBundle(arch,true);}});
+    if(newer)bouton(z,'Réessayer','reessayer-version',function(){location.reload();});
     boutonExport(z);
-
-    if (duFutur) {
-      griser(bMonter, "La mise à niveau est indisponible : la fiche est plus récente que la version " +
-                      "servie ici, la rétrograder lui ferait perdre ce qui n'existe pas encore de ce " +
-                      "côté.", b);
-    }
-    if (!arch) {
-      griser(bArch, relFiche
-        ? "« Ouvrir avec sa version » est indisponible : aucune archive publiée pour la ligne de " +
-          relFiche + "."
-        : "« Ouvrir avec sa version » est indisponible : la fiche ne dit pas quelle version l'a écrite.", b);
-    }
-
-    b.appendChild(lab);
-    b.appendChild(noeud("p", "owd-ecran-note",
-      "La case ne vaut que pour « ouvrir avec sa version », et seulement dans ce navigateur. La mise à " +
-      "niveau, elle, se redemande toujours."));
+    if(!arch)griser(open,f.release?'Cette version de la fiche n’est plus disponible. Le personnage ne peut pas être ouvert avec cette version.':'La version utilisée pour enregistrer ce personnage est inconnue. Le personnage ne peut pas être ouvert avec son ancienne version.',b);
   }
 
   function actualiseAvantMontage(attrs){
-    if(bundleCharge||gele||!attrsPrets)return;
-    var f=versionFiche(attrs);if(!f||f.schema!==schemaSite())return;
+    if(bundleCharge||gele||!attrsPrets||operationBusy)return;
+    var f=versionFiche(attrs);if(!f||f.schema!==schemaSite()||!memeRang(f.release,releaseSite()))return;
     var state=M.attrsToState(attrs);if(!state||state.degrade)return;
     attrsVus=lastAttrs=attrs;mem['owd-perso']=JSON.stringify(state);decide=false;decider();
   }
 
   // ---------- la décision ----------
-  function decider() {
-    if (decide || !attrsPrets || !manifPret) return;
-    decide = true;
-    var attrs = attrsVus || {};
-    var courant = specCourant();
-
-    // 0. Fiche à moitié lue : le gel a déjà tranché et son bandeau dit tout.
-    // Proposer de migrer un état qu'on n'a pas su lire serait exactement le
-    // geste que le gel existe pour empêcher. Comme le gel couvre aussi le
-    // owd_state disparu, c'est ici que s'arrête le personnage qui n'a plus que
-    // ses attributs de repli : la montée silencieuse du cas 4 écrirait, elle
-    // aussi, et écrirait cette reconstruction amputée.
-    if (gele) { chargerBundle(courant); return; }
-
-    var f = versionFiche(attrs);
-    // 1. personnage sans fiche Outward : rien à dire, la fiche du jour se monte.
-    if (!f || f.schema === null) { chargerBundle(courant); return; }
-
-    var relSite = releaseSite(), schSite = schemaSite();
-
-    // ACCORD : ce que ce site aurait fait sans le moindre épinglage, c'est-à-dire
-    // aucun écran et le bundle du jour.
-    //
-    // UN SEUL JUGE À LA FOIS, ET C'EST CELUI QUE LE MANIFESTE DÉSIGNE. Sous
-    // « blocage: schema », le schéma décide seul : le rang de release ne doit
-    // PAS pouvoir accorder par-dessus un désaccord de schéma. Une disjonction
-    // laisserait passer le cas {v: 1, rel: "1.2.0b"} sur un site 1.2.0b en
-    // schéma 2 — même rang, donc accord — et la fiche du jour réécrirait en
-    // silence un état d'un autre schéma, sans écran et sans sauvegarde de
-    // secours. Le numéro de release d'un personnage n'est qu'une étiquette ;
-    // seul le schéma dit ce que ses données valent. Ce n'est donc PAS une
-    // disjonction, et ça a déjà été payé une fois.
-    //
-    // Le suffixe de la beta ne compte pas dans le rang : « 1.0.0b » et
-    // « 1.0.0 » sont la même version, et une fiche écrite sur la beta ne doit
-    // pas paraître venue d'ailleurs une fois rouverte sur le site stable du
-    // même numéro.
-    var accord = blocage() === "schema"
-      ? f.schema === schSite
-      : !!(f.release && memeRang(f.release, relSite));
-
-    // 2. Choix déjà fait pour ce personnage, dans ce navigateur : on ne
-    // redemande pas. Comparé LIGNE à ligne des deux côtés, parce que le bundle
-    // d'archive réécrit state.rel avec SA constante dès la première
-    // sauvegarde : sur une égalité stricte, l'épinglage ne tiendrait qu'une
-    // session. L'épinglage ne vaut que si l'archive est toujours publiée ;
-    // sinon la question se repose.
-    //
-    // L'ACCORD LE SAUTE. /owd/ et /owd-beta/ sont servis par la même origine,
-    // donc partagent ce localStorage : le joueur qui coche « ne plus me
-    // demander » sur la beta, dont le schéma a pris un cran d'avance, poserait
-    // aussi son épinglage pour le site stable, où sa fiche s'accorde et où RIEN
-    // ne lui aurait été demandé. Il y rouvrirait alors une archive de la ligne
-    // précédente, sans écran pour le lui dire, et rejouerait une vieille fiche
-    // sans le savoir. Partout ailleurs l'épinglage garde la tête, et doit la
-    // garder : là, l'écran reparaîtrait à chaque ouverture, et le test 3 est
-    // précisément celui qui, sur le schéma, rouvrirait la fiche avec le bundle
-    // du jour en silence, contre un choix explicite.
-    var pin = accord ? null : epinglageLu();
-    if (pin && f.release && memeRang(pin.release, f.release, true)) {
-      var arch = archiveDe(f.release);
-      if (arch) { chargerBundle(arch, true); return; }
-    }
-
-    // 3. Accord avec le site : la fiche s'ouvre sans rien demander.
-    if (accord) {
-      // Sauf qu'elle peut venir d'une release plus JEUNE que celle servie ici
-      // (fiche revenue de la beta, ou site en retard d'un déploiement). Le
-      // contrat ne bloque pas sur le numéro, donc on ouvre ; mais ouvrir plus
-      // vieux que le personnage se dit, sinon personne ne saurait qu'un champ
-      // récent risque de tomber à la première sauvegarde.
-      if (compare(f.release, relSite) === 1) bandeauPlusRecente(f.release, relSite);
-      chargerBundle(courant);
-      return;
-    }
-
-    // 4. Parc historique : tout ce qui aurait été écrit avant le versionnage
-    // porterait le schéma 1. Personne n'a CHOISI d'être en v1, donc pas
-    // d'écran : montée silencieuse (le moteur la fait dans normalize) et un
-    // bandeau qui le dit, avec de quoi revenir en arrière.
-    //
-    // Ce cas ne se déclenchera jamais tant que le schéma servi vaut 1, puisque
-    // schSite > 1 est faux : le laisser en place tel quel, il coûte une ligne
-    // et il servira au premier changement de forme de l'état.
-    if (f.schema === 1 && schSite > 1) { monter(true, f); return; }
-
-
-    // 5. l'écran.
-    avecMigrations(function () { ecranVersion(f, relSite, schSite); });
+  function decider(){
+    if(decide||!attrsPrets||!manifPret||!extensionReady)return;
+    decide=true;updateLoading('Vérification de la version du personnage…');
+    if(gele){erreurOuverture('unreadable');return;}
+    var f=versionFiche(attrsVus||{}),rel=releaseSite(),schema=schemaSite();
+    if(!f||f.schema===null){chargerBundle(specCourant());return;}
+    var sameRelease=f.release&&memeRang(f.release,rel);
+    if(f.schema===schema&&sameRelease){chargerBundle(specCourant());return;}
+    avecMigrations(function(){ecranVersion(f,rel,schema);});
   }
 
   // Le manifeste est posé par l'amorceur AVANT l'amorce ; mais l'amorce peut
@@ -1626,8 +1398,8 @@
     enVol = null;
     // le bandeau vient APRÈS le cache : son bouton « écraser » déclenche une
     // sauvegarde, qui lit mem["owd-perso"]
-    if (illisible) bandeauGelIllisible(state.raison);
-    else if (disparu) bandeauGelDisparu();
+    if (illisible) {bandeauGelIllisible(state.raison);return;}
+    else if (disparu) {bandeauGelDisparu();return;}
     // POINT D'INSERTION DE L'ÉCRAN DE VERSION. Les attributs sont là, le bundle
     // n'est pas encore chargé, `ready` vaut false : c'est le seul instant où
     // l'on connaît la fiche sans pouvoir l'écrire. decider() choisit quoi
@@ -1638,15 +1410,7 @@
     decider();
   }
 
-  function afficheNettoyage(d){
-    var status=document.getElementById('owd-cleanup-status');
-    if(!status){status=document.createElement('div');status.id='owd-cleanup-status';status.setAttribute('role','status');status.style.cssText='padding:6px 12px;font:inherit;font-size:12px;border-bottom:1px solid currentColor;opacity:.85';document.body.insertBefore(status,document.body.firstChild);}
-    var text=d.error?'Nettoyage en attente : '+d.error:d.status==='done'?'Nettoyage terminé : anciens attributs owd_sync supprimés.':d.stage==='backup'?'Nettoyage des anciens attributs : sauvegarde de sécurité en cours…':d.stage==='deleting'?'Nettoyage des anciens attributs : '+d.remaining+' restant(s).':'Nettoyage des anciens attributs : confirmation en cours…';
-    if(status.textContent!==text)status.textContent=text;
-    status.dataset.owdStatus=d.status||'pending';
-    // Retirer seulement l’ancienne alerte désormais remplacée par ce suivi.
-    var banner=document.getElementById('owd-bandeau');if(banner&&banner.dataset.owdRaison==='storage-cleanup')fermerBandeau();
-  }
+  function afficheNettoyage(){}
 
   window.addEventListener("message", function (ev) {
     var d = ev.data;
@@ -1654,7 +1418,7 @@
     if(d.type==='storage-cleanup-status'&&(!d.charId||d.charId===CHAR_ID)){
       afficheNettoyage(d);return;
     }
-    if(d.type==='storage-error'&&(!d.charId||d.charId===CHAR_ID)){statutEnregistrement('Échec de l’enregistrement : '+d.error,true);return;}
+    if(d.type==='storage-error'&&(!d.charId||d.charId===CHAR_ID)){if(loadingKind==='backup'&&operationBusy)erreurSauvegarde();else if(miseANiveauDemandee)erreurMiseAJour();else statutEnregistrement(d.error,true);return;}
     // on n'accepte que l'hydratation de NOTRE personnage (plusieurs fiches peuvent être ouvertes)
     if (d.type === "hydrate" && (!d.charId || d.charId === CHAR_ID)) {
       if(d.player && typeof d.player.id === "string" && typeof d.player.name === "string") journalPlayer={id:d.player.id,name:d.player.name};
@@ -1683,6 +1447,11 @@
         var avertissement = document.getElementById('owd-bandeau');
         if (avertissement && avertissement.dataset.owdRaison === 'sync-timeout') fermerBandeau();
       }
+      lastHydration=d;
+      if(!hydrated&&d.attrs){attrsVus=lastAttrs=d.attrs;try{var initial=M.attrsToState(d.attrs);if(initial&&!initial.degrade)mem['owd-perso']=JSON.stringify(initial);}catch(e){}}
+      if(d.presence){presenceRows=d.presence;renderPresence();}
+      if(!extensionReady){verifyExtension(d);return;}
+      if(!openingDone)updateLoading('Chargement des données du personnage depuis Roll20…');
       if (hydrated) {
         sondeReponse(d.attrs, d.fresh);
         if (collaboration && d.fresh === true && !gelVolontaire && !collaborationApplique) recoitCollaboration(d.attrs || {});
@@ -1696,7 +1465,7 @@
     else if (d.type === "inventory-drop-chat" && d.charId === CHAR_ID && objetDrag &&
         d.token === objetDrag.token && d.ref === objetDrag.ref && Date.now() - objetDrag.t < 30000) {
       objetDrag = null;
-      if (accesInventaire && !gele && !inventoryLocked && window.Owd && window.Owd.__actionObjet) window.Owd.__actionObjet(d.ref, d.action || "montrer");
+      if (window.__owdCanEdit() && !inventoryLocked && window.Owd && window.Owd.__actionObjet) window.Owd.__actionObjet(d.ref, d.action || "montrer");
       appliqueDiffere();
     }
     else if (d.type === "take" && d.payload) window.__owdTake(d.payload);
@@ -1754,6 +1523,7 @@
     if(!window.__owdVueNotes && d.type==='inventory-external-drag'){externalDrag=d.drag||null;return;}
     if(d.type==='inventory-poll'){post({type:'load',resync:true});if(ready&&!gele)doSave();return;}
     if(d.type!=='inventory-command')return;
+    if(!window.__owdCanEdit()&&['status','check','describe'].indexOf(d.action)<0){inventoryParent({type:'inventory-result',request:d.request,error:'Mode Consultation'});return;}
     var reply={type:'inventory-result',request:d.request};
     try {
       var active=ready&&!gele&&accesInventaire&&!!collaboration&&!!window.Owd;
@@ -1778,7 +1548,7 @@
     inventoryParent(reply);
   });
   function externalDrop(e){
-    if(!externalDrag||externalDrag.charId===CHAR_ID||!e.dataTransfer||
+    if(!window.__owdCanEdit()||!externalDrag||externalDrag.charId===CHAR_ID||!e.dataTransfer||
         Array.prototype.indexOf.call(e.dataTransfer.types,'application/x-owd-item')<0)return;
     if(!e.target.closest||!e.target.closest('[data-module="inv"]'))return;
     e.preventDefault();e.stopImmediatePropagation();e.dataTransfer.dropEffect='move';
@@ -1811,13 +1581,13 @@
       lastAttrs = attrs;
       if (!recu) return;
       if(server&&!server.incomplete)memoriseLectureVerifiee(attrs,server);
-      if(miseANiveauDemandee&&server&&!server.incomplete&&Number(server.state.v)===schemaSite()&&miseANiveauOps.every(function(id){return !!server.ids[id];})){miseANiveauDemandee=false;bandeauMisAJour();}
+      if(miseANiveauDemandee&&server&&!server.incomplete&&Number(server.state.v)===schemaSite()&&miseANiveauOps.every(function(id){return !!server.ids[id];})){miseANiveauDemandee=false;stopLoading();fermerEcran();openingDone=true;installModeBar();}
       if(collaboration.hasBase&&!recu.incomplete){if(server.meta.phase!=='ready')post({type:'storage-activate'});else post({type:'storage-cleanup'});}
 
       actualiseStatutEnregistrement(recu.lost);
       synchronisationDifferée = recu.state;
       appliqueDiffere();
-      if(!recu.incomplete){gele=false;attrsEnErreur=null;var resumedBanner=document.getElementById('owd-bandeau');if(resumedBanner&&resumedBanner.dataset.owdRaison==='sync-unreadable')fermerBandeau();}
+      if(!recu.incomplete){gele=false;attrsEnErreur=null;if(failureKind==='unreadable'||failureKind==='incomplete'){stopLoading();failureKind='';fermerEcran();}var resumedBanner=document.getElementById('owd-bandeau');if(resumedBanner&&resumedBanner.dataset.owdRaison==='sync-unreadable')fermerBandeau();}
       scheduleSave();
     } catch (err) {
       gele = true;
@@ -1846,11 +1616,8 @@
       // Le début d'activation et les lots en attente sont aussi repris après
       // une coupure de réseau, sans dépendre d'une frappe supplémentaire.
       if (collaboration && !gele) doSave();
-      if (accesInventaire && derniereLecture && Date.now() - derniereLecture > 12000 &&
-          !(document.getElementById('owd-bandeau') && document.getElementById('owd-bandeau').dataset.owdRaison === 'sync-timeout'))
-        bandeau("La synchronisation avec Roll20 ne répond plus. Les modifications locales restent en attente ; vous pouvez exporter la fiche.", [
-          { texte: "Exporter (JSON)", acte: "export", action: exporter }
-        ]).dataset.owdRaison = "sync-timeout";
+      actualiseStatutEnregistrement(false);
+      renderPresence();
     }
   }, 1200);
 
@@ -1881,18 +1648,13 @@
   // La relance s'arrête à la PREMIÈRE hydratation : au-delà, un « load » de
   // plus produirait un « hydrate » de plus, et donc une réponse tardive qui
   // n'aurait plus rien à hydrater.
+  startLoading('opening','Vérification de l’extension…');
   var tries = 0;
   (function ask() {
     askTimer = null;
     if (hydrated) return;
     tries++;
-    if (tries > 40) {             // ~20 s sans réponse : le pont n'est pas là
-      note("Roll20 n'a pas répondu. Fermer et rouvrir l'onglet « Fiche Outward » ; " +
-           "si rien ne change, recharger la page Roll20 (F5). Si la fiche est " +
-           "dans une fenêtre séparée (popout), garder la fenêtre principale de " +
-           "la partie ouverte, ou rouvrir la fiche depuis celle-ci.");
-      return;
-    }
+    if(failureKind)return;
     post({ type: "load", resync: true });
     askTimer = setTimeout(ask, 500);
   })();

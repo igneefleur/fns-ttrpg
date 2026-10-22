@@ -107,6 +107,7 @@
     // Après les hooks : Bio et Notes viennent notamment de recevoir leur
     // valeur distante. La lecture doit montrer cette même valeur dès la passe.
     majTextesLecture(rootEl);
+    if(window.__owdApplyMode)window.__owdApplyMode();
   }
   var remontageNettoyage = [];
   var rootEl = null;

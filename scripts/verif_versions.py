@@ -480,24 +480,14 @@ def main():
             fautes.append("manifeste : owd-migrations.js existe mais n'est nommé nulle part ; "
                           "dans Roll20 le moteur de migration ne serait jamais chargé")
 
-    # 3. LE MODE DE BLOCAGE. C'est ce réglage, et non le suffixe, qui décide
-    # quand l'écran de version paraît. « release » n'est pas une faute : le
-    # contrat ne l'a jamais banni et l'amorceur le sert pour de bon (voir
-    # blocage() dans owd-roll20-boot.js). En faire un refus donnerait un outil
-    # qu'il faudrait contourner pour publier un réglage licite, et un outil
-    # qu'on contourne ne garde plus rien du tout. On le dit, on ne bloque pas.
+    # Chaque changement de version du personnage demande un accord explicite.
     blocage = man.get("blocage")
-    if blocage == "schema":
-        notes.append("manifeste : blocage « schema »")
-    elif blocage == "release":
-        notes.append("manifeste : blocage « release », alors que « schema » est le "
-                     "réglage attendu ; ainsi réglé, un simple correctif de CSS sort "
-                     "l'écran de version chez tous les joueurs, à toutes les tables, "
-                     "pour un code qui lit et écrit exactement les mêmes données")
+    if blocage == "release":
+        notes.append("manifeste : blocage « release »")
+    elif blocage == "schema":
+        notes.append("manifeste : ancien réglage « schema » ; la fiche vérifie aussi la release")
     else:
-        fautes.append("manifeste : blocage = %r, inconnu de l'amorceur, qui retombera "
-                      "sur « schema » sans le dire ; les deux seuls réglages servis "
-                      "sont « schema » (attendu) et « release »" % blocage)
+        fautes.append("manifeste : blocage = %r, valeur inconnue" % blocage)
 
     # LES ARCHIVES sont VIDES et doivent le rester tant que rien n'est gelé. Une
     # clé posée à la main y nommerait des fichiers que personne n'a figés, et
