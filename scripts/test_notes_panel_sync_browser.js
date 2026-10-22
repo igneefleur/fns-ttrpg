@@ -55,25 +55,25 @@ const server=http.createServer((req,res)=> {
       await notesView.locator('[data-owd-act="monter"]').waitFor();
       await sheet.locator('[data-owd-act="monter"]').click();
       await sheet.locator('.pc-sheet').waitFor({timeout:30000});
-      await sheet.locator('#owd-local-recovery').waitFor();
-      await sheet.locator('[data-module="pe"] .pc-vital-num').fill('77');
+      assert.equal(await sheet.locator('#owd-local-recovery').count(),0);
+      blockWrites=true;await sheet.locator('[data-module="pe"] .pc-vital-num').fill('77');
       await sheet.locator('.pc-tab').filter({hasText:'Bio'}).click();
       await sheet.locator('.pc-note-message').getByRole('button',{name:'Modifier',exact:true}).click();
       await sheet.locator('.pc-notes-editor textarea').fill('Note éditée avant confirmation');
       await sheet.locator('.pc-notes-editor').getByRole('button',{name:'Enregistrer',exact:true}).click();
       assert.equal(C.Compact.read(attrs).state.v,17,'confirmation volontairement retardée');
-      await page.reload();await sheet.locator('.pc-sheet').waitFor({timeout:15000});
-      assert.equal(await sheet.locator('[data-owd-act="monter"]').count(),0);
-      holdMigration=false;
+      const confirmedPe=attrs.owd_pe ? Number(attrs.owd_pe.current) : C.Compact.read(attrs).state.etat.pe;
+      await page.reload();await sheet.locator('[data-owd-act="monter"]').waitFor({timeout:15000});
+      holdMigration=false;blockWrites=false;await sheet.locator('[data-owd-act="monter"]').click();await sheet.locator('.pc-sheet').waitFor();
       await notesView.locator('.pc-sheet').waitFor({timeout:20000});
       for(let i=0;i<100&&C.Compact.read(attrs).state.v!==18;i++)await page.waitForTimeout(100);
       assert.equal(C.Compact.read(attrs).state.v,18);assert.ok(worldStep>1);
-      await notesView.locator('.pc-notes-body').filter({hasText:'Note éditée avant confirmation'}).waitFor({timeout:15000});
-      assert.equal(C.Compact.read(attrs).state.etat.pe,77,'dépense reprise une seule fois');
-      console.log('OK migration avec horloge active, rechargement avant confirmation, reprise sans nouvelle demande et panneau ouvert automatiquement.');
+      await notesView.locator('.pc-notes-body').filter({hasText:'Notes avant migration'}).waitFor({timeout:15000});
+      assert.equal(C.Compact.read(attrs).state.etat.pe,confirmedPe,'réserve relue depuis Roll20');
+      console.log('OK migration avec horloge active, rechargement avant confirmation, nouvelle confirmation sans reprise locale et panneau ouvert automatiquement.');
     }else await notesView.locator('.pc-sheet').waitFor();
     if(partial)await sheet.locator('#owd-local-recovery').waitFor({state:'detached',timeout:15000});
-    assert.equal(await notesView.locator('#owd-local-recovery').count(),0);assert.equal(await sheet.locator('#owd-local-recovery').count(),fresh?0:1);
+    assert.equal(await notesView.locator('#owd-local-recovery').count(),0);assert.equal(await sheet.locator('#owd-local-recovery').count(),0);
     if(exposition){
       const frame=page.frames().find(f=>f.url().includes('/roll20-fiche.html#c=shared'));
       await frame.waitForFunction(()=>window.Owd&&Owd.__pret);
@@ -107,7 +107,7 @@ const server=http.createServer((req,res)=> {
       const layout=await sheet.locator('[data-module="modules"]').evaluate(n=>{const h=Array.from(n.querySelectorAll('.pc-modgroupe')).find(x=>x.textContent==='Équipement');return Array.from(h.nextElementSibling.querySelectorAll('.pc-modplan-col-nom')).map(x=>x.textContent);});assert.deepEqual(layout,['Milieu']);
       assert.equal(await sheet.locator('[data-module="modules"] .pc-modplan-carte[data-etat="perdu"]').count(),0);
       await sheet.locator('.pc-tab').filter({hasText:'Fiche',exact:true}).click();
-      await sheet.locator('[data-module="pe"] .pc-vital-num').fill('77');
+      blockWrites=true;await sheet.locator('[data-module="pe"] .pc-vital-num').fill('77');
       await notesView.locator('.pc-notes-input').fill('Message traçable');await notesView.locator('.pc-notes-compose').getByRole('button',{name:'Envoyer',exact:true}).click();
       await sheet.locator('.pc-tab').filter({hasText:'Options'}).click();
       await jm.locator('.pc-journal-entry').filter({hasText:'Alice'}).first().waitFor({timeout:15000});
@@ -164,15 +164,16 @@ const server=http.createServer((req,res)=> {
       await sheet.locator('[data-owd-act="reessayer-lecture"]').waitFor({state:'detached',timeout:15000});
       await send(notesView,'Après réparation');await sheet.locator('.pc-notes-body').filter({hasText:'Après réparation'}).waitFor({timeout:15000});
       attrs.owd_block_notes.current='{broken';await page.reload();
+      await sheet.locator('[data-owd-act="reessayer-lecture"]').waitFor();attrs.owd_block_notes.current=good;await sheet.locator('[data-owd-act="reessayer-lecture"]').click();
       await sheet.locator('.pc-sheet').waitFor();await notesView.locator('.pc-sheet').waitFor();
       await sheet.locator('.pc-tab').filter({hasText:'Bio'}).click();
       await sheet.locator('.pc-notes-body').filter({hasText:'Après réparation'}).waitFor({timeout:20000});
       await sheet.locator('[data-owd-act="reessayer-lecture"]').waitFor({state:'detached',timeout:15000});
       await send(sheet,'Après récupération au démarrage');await notesView.locator('.pc-notes-body').filter({hasText:'Après récupération au démarrage'}).waitFor({timeout:15000});
       assert.deepEqual(await page.evaluate(()=>Object.keys(localStorage).filter(k=>k.startsWith('owd-recovery-v2:shared:')).sort()),recoveryKeys);
-      console.log('OK bloc corrompu en session et au démarrage : copie vérifiée, reprise des écritures sans perte des notes.');
+      console.log('OK bloc corrompu : réparation depuis la lecture en mémoire pendant la session ; après rechargement, attente du retour de données Roll20 valides.');
     }
-    if(fresh){assert.equal(await sheet.locator('#owd-local-recovery').count(),0);if(partial){assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('owd-recovery-v2:shared:false-copy')).resolved),true);assert.equal(C.Compact.read(attrs).state.name,'Fiche reprise');}else assert.equal((await page.evaluate(()=>Object.keys(localStorage).filter(k=>k.startsWith('owd-recovery-v2:shared:')))).length,0);console.log('OK création depuis zéro : aucun faux journal de secours ni bouton après rechargement.');}
+    if(fresh){assert.equal(await sheet.locator('#owd-local-recovery').count(),0);if(partial){assert.equal(await page.evaluate(()=>localStorage.getItem('owd-recovery-v2:shared:false-copy')),null);assert.equal(C.Compact.read(attrs).state.name,'Fiche partagée');}else assert.equal((await page.evaluate(()=>Object.keys(localStorage).filter(k=>k.startsWith('owd-recovery-v2:shared:')))).length,0);console.log('OK création depuis zéro : aucun faux journal de secours ni bouton après rechargement.');}
     await ctx.close();
     assert.ok(!writes.includes('owd_state'),'aucune photographie complète réécrite');
     assert.deepEqual(errors,[]);

@@ -392,7 +392,7 @@ def main():
     if not lancer("sauvegarde avant mise à niveau", ["node", "scripts/test_upgrade_backup.js"], racine):
         return 1
 
-    if not lancer("reprise des journaux locaux", ["node", "scripts/test_local_recovery.js"], racine):
+    if not lancer("sessions sans reprise locale", ["node", "scripts/test_local_recovery.js"], racine):
         return 1
 
     if not lancer("Effondrement et horloge d’alcool", ["node", "scripts/test_effondrement.js"], racine):

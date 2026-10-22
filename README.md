@@ -573,7 +573,7 @@ Une modification des PV, PE ou PM courants dans un attribut lié au token remont
 
 Cette version change le code de l’extension. Pour Firefox, lancer le workflow de la branche avec l’option de signature activée, puis installer la version signée et recharger la partie. Les clés AMO sont nécessaires à la signature. Le paquet Firefox de `essai/` est non signé et réservé au chargement temporaire de développement ; il ne remplace pas le dernier paquet signé de `docs/download/`. Le paquet Chrome de `essai/` peut être décompressé et chargé en mode développeur.
 
-La synchronisation dépend toujours des attributs et des confirmations Roll20. Les opérations non confirmées restent conservées localement ; les conflits sont signalés. Aucun protocole ne rend atomiques les modifications natives de Roll20 : vérifier les avertissements, et conserver un export avant une migration de campagne.
+La synchronisation dépend toujours des attributs et des confirmations Roll20. Les opérations non confirmées restent uniquement en mémoire tant que la fiche est ouverte. À sa réouverture, seules les données enregistrées sur Roll20 sont chargées. Le statut indique l’enregistrement en cours ou son échec ; aucun avertissement générique d’édition simultanée n’est affiché. Aucun protocole ne rend atomiques les modifications natives de Roll20 : vérifier les avertissements, et conserver un export avant une migration de campagne.
 
 
 ## 4.5.0b — Notes dans la barre latérale Roll20

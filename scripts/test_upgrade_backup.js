@@ -15,25 +15,9 @@ test('modification concurrente pendant la sauvegarde : migrer le dernier état s
  w.ctx.tenterBackupBlocs(lot,false);assert.equal(restarted,0,'la copie vérifiée doit rester valable si l’horloge avance');assert.equal(opened,1);assert.equal(JSON.parse(w.ctx.mem['owd-perso']).horloge.secondes,3);
  assert.equal(w.ctx.backupBlocs(changed).current,lot.owd_backup.current);
 });
-test('rechargement avant confirmation : reprendre une migration déjà sauvegardée et autorisée',()=>{
- const w=setup(),packet=w.ctx.lotBackupBlocs(w.ctx.lotBackup({schema:17}),w.attrs),attrs=recorded(w,packet),state=C.copy(w.state);state.v=18;state.notes={format:1,messages:[{id:'legacy',text:w.state.notes,mode:'plain',at:0}]};const session=new C.Session(attrs,state,null,{id:'reload'});session.capture(state);
- const key='owd-pending-v2:test:reload',raw=JSON.stringify({epoch:session.epoch,ops:Object.values(session.pending),payloads:session.payloads});
- Object.assign(w.ctx,{CHAR_ID:'test',storageLocalKeys:()=>[key],localStorage:{getItem:()=>raw}});
- vm.runInContext(boot.slice(boot.indexOf('  function validStorageOp('),boot.indexOf('  // Changement de base :')),w.ctx);
- vm.runInContext(boot.slice(boot.indexOf('  function repriseMiseANiveau('),boot.indexOf('  // ---------- la décision ----------')),w.ctx);
- assert.equal(w.ctx.repriseMiseANiveau(attrs,18),true);assert.equal(w.ctx.repriseMiseANiveau(w.attrs,18),false,'pas de montée automatique sans sauvegarde confirmée');
-});
-test('reprise avec un serveur plus avancé : garder les notes éditées et ne pas doubler les dépenses',()=>{
- const w=setup();w.state.etat.pe=100;w.attrs=C.encode(w.state);w.ctx.attrsVus=w.attrs;w.ctx.mem['owd-perso']=JSON.stringify(w.state);const packet=w.ctx.lotBackupBlocs(w.ctx.lotBackup({schema:17}),w.attrs),attrs=recorded(w,packet),state=C.copy(w.state);state.v=18;state.notes={format:1,messages:[{id:'legacy',text:'Avant édition',mode:'plain',at:0}]};const session=new C.Session(attrs,state,null,{id:'reload'});session.capture(state);state.notes.messages[0].text='Édition non confirmée';state.etat.pe=95;session.capture(state);
- attrs.owd_ops_world={current:JSON.stringify({epoch:session.epoch,ops:[{id:'world:100',clock:100,changes:[{k:'[["k","horloge"]]',n:['v',{jours:0,heures:0,minutes:0,secondes:7}]}]}]})};
- const raw=JSON.stringify({epoch:session.epoch,ops:Object.values(session.pending),payloads:session.payloads});Object.assign(w.ctx,{CHAR_ID:'test',storageLocalKeys:()=>['old'],localStorage:{getItem:()=>raw},lastAttrs:attrs,miseANiveauReprise:null});
- vm.runInContext(boot.slice(boot.indexOf('  function validStorageOp('),boot.indexOf('  // Changement de base :')),w.ctx);vm.runInContext(boot.slice(boot.indexOf('  function repriseMiseANiveau('),boot.indexOf('  // ---------- la décision ----------')),w.ctx);
- assert.equal(w.ctx.repriseMiseANiveau(attrs,18),true);const seed=JSON.parse(w.ctx.mem['owd-perso']);w.ctx.collaboration=new C.Session(attrs,seed,null,{id:'reopened'});w.ctx.chargeRepriseMiseANiveau();w.ctx.collaboration.capture(seed);const actual=w.ctx.collaboration.receive(attrs).state;
- assert.equal(actual.etat.pe,95);assert.equal(actual.notes.messages[0].text,'Édition non confirmée');assert.equal(actual.horloge.secondes,7);
-});
 test('panneau en attente : prendre la migration confirmée dans une autre fiche sans redemander',()=>{
  const w=setup(),state=C.copy(w.state);state.v=18;state.notes={format:1,messages:[]};const attrs=C.encode(state);let opens=0;Object.assign(w.ctx,{bundleCharge:false,gele:false,attrsPrets:true,schemaSite:()=>18,versionFiche:M.ficheDe,decider:()=>opens++});
- vm.runInContext(boot.slice(boot.indexOf('  function repriseMiseANiveau('),boot.indexOf('  // ---------- la décision ----------')),w.ctx);
+ vm.runInContext(boot.slice(boot.indexOf('  function actualiseAvantMontage('),boot.indexOf('  // ---------- la décision ----------')),w.ctx);
  w.ctx.actualiseAvantMontage(w.attrs);assert.equal(opens,0);w.ctx.actualiseAvantMontage(attrs);assert.equal(opens,1);assert.equal(JSON.parse(w.ctx.mem['owd-perso']).v,18);
  w.ctx.bundleCharge=true;w.ctx.actualiseAvantMontage(attrs);assert.equal(opens,1,'ne jamais remplacer la mémoire d’une fiche déjà montée');
 });

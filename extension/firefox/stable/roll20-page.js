@@ -411,23 +411,49 @@
   // Les popouts délèguent à la partie d'origine ; chaque journal n'a qu'un auteur.
   function storageHash(s){s=String(s);var h=2166136261;for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0).toString(16);}
   function storageStable(v){if(Array.isArray(v))return '['+v.map(storageStable).join(',')+']';if(v&&typeof v==='object')return '{'+Object.keys(v).sort().map(function(k){return JSON.stringify(k)+':'+storageStable(v[k]);}).join(',')+'}';return JSON.stringify(v);}
-  var storageSession='s'+Date.now().toString(36)+Math.random().toString(36).slice(2),storagePending={},storageConfirmed={},storagePayloads={},storageTimers={},storageCleanupChecks={};
-  try{var sk='owd-session-v2';storageSession=sessionStorage.getItem(sk)||storageSession;sessionStorage.setItem(sk,storageSession);}catch(e){}
+  var storageSession='s'+Date.now().toString(36)+Math.random().toString(36).slice(2),storagePending={},storageConfirmed={},storagePayloads={},storageTimers={},storageCleanupChecks={},storageViewOps={},storageViewSources=new WeakMap();
+  try {
+    var obsolete=[];
+    for(var i=0;i<localStorage.length;i++){var key=localStorage.key(i);if(key&&key.indexOf('owd-operations-v2:')===0)obsolete.push(key);}
+    obsolete.forEach(function(key){try{localStorage.removeItem(key);}catch(e){}});
+    sessionStorage.removeItem('owd-session-v2');
+  } catch(e) {}
   function storageOwner(){campaign();try{if(winCampagne&&winCampagne!==window&&winCampagne.__owdStorageBridge)return winCampagne.__owdStorageBridge;}catch(e){}return null;}
   function storageManifest(attrs){var raw=attrs.owd_storage&&attrs.owd_storage.current;if(!raw)return null;var m=JSON.parse(raw);if(m.format!==2)throw Error('Version de stockage inconnue.');Object.keys(m.blocks).forEach(function(k){if(!attrs[k]||storageHash(attrs[k].current)!==m.blocks[k])throw Error('Migration incomplète.');});return m;}
   function storageSessionName(){var owner=storageOwner();return owner?owner.session:storageSession;}
-  function storageOps(ch,data){var owner=storageOwner();if(owner){owner.ops(ch.id,data);return;}var attrs=readAll(ch.id),meta=storageManifest(attrs);if(!meta||meta.epoch!==data.epoch)throw Error('Format de fiche modifié : rechargez avant de renvoyer les opérations.');
-    var key='owd-operations-v2:'+String((campaign()||{}).id||'partie')+':'+ch.id+':'+storageSession;
-    var payloads=storagePayloads[ch.id]||(storagePayloads[ch.id]={});Object.assign(payloads,data.payloads||{});
-    var map=storagePending[ch.id];if(!map){map={};Object.keys(attrs).filter(function(k){return k.indexOf('owd_ops_'+storageSession+'_')===0;}).sort().forEach(function(k){var b=JSON.parse(attrs[k].current);if(b.epoch===meta.epoch)b.ops.forEach(function(o){map[o.id]=o;});});try{var saved=JSON.parse(localStorage.getItem(key)||'null');if(saved&&saved.epoch===meta.epoch){saved.ops.forEach(function(o){map[o.id]=o;});Object.assign(payloads,saved.payloads||{});}}catch(e){throw Error('Journal local illisible ; exportez la fiche avant de continuer.');}storagePending[ch.id]=map;}
-    (data.ops||[]).forEach(function(op){if(!op.id||!Array.isArray(op.changes)||!Number.isSafeInteger(op.clock))throw Error('Opération invalide.');if(map[op.id]&&storageStable(map[op.id])!==storageStable(op))throw Error('Identifiant d’opération réutilisé.');map[op.id]=op;});
-    var ordered=Object.keys(map).map(function(k){return map[k];});var confirmed=storageConfirmed[ch.id]||{},waiting=ordered.filter(function(op){return !confirmed[op.id]&&!op.legacyBackup;});if(waiting.length||Object.keys(payloads).length)localStorage.setItem(key,JSON.stringify({epoch:meta.epoch,ops:waiting,payloads:payloads}));else localStorage.removeItem(key);
+  function storageOps(ch,data,confirmedAttrs){var owner=storageOwner();if(owner){owner.ops(ch.id,data);return;}var attrs=confirmedAttrs||readAll(ch.id),meta=storageManifest(attrs);if(!meta||meta.epoch!==data.epoch)throw Error('Format de fiche modifié : rechargez avant de renvoyer les opérations.');
+    var payloads=Object.assign({},storagePayloads[ch.id]||{},data.payloads||{});
+    var map=Object.assign({},storagePending[ch.id]||{});{Object.keys(attrs).filter(function(k){return k.indexOf('owd_ops_'+storageSession+'_')===0;}).sort().forEach(function(k){var b=JSON.parse(attrs[k].current);if(b.epoch===meta.epoch)b.ops.forEach(function(o){map[o.id]=o;});});}
+    var recorded={};Object.keys(attrs).filter(function(k){return k.indexOf('owd_ops_')===0;}).forEach(function(k){try{var b=JSON.parse(attrs[k].current);if(b.epoch===meta.epoch)b.ops.forEach(function(op){recorded[op.id]=op;});}catch(e){}});
+    (data.ops||[]).forEach(function(op){if(recorded[op.id]){if(storageStable(recorded[op.id])!==storageStable(op))throw Error('Identifiant d’opération réutilisé.');return;}if(!op.id||!Array.isArray(op.changes)||!Number.isSafeInteger(op.clock))throw Error('Opération invalide.');if(map[op.id]&&storageStable(map[op.id])!==storageStable(op))throw Error('Identifiant d’opération réutilisé.');map[op.id]=op;});
+    var ordered=Object.keys(map).map(function(k){return map[k];});
     // Un journal trop gros est segmenté ; jamais tronqué, jamais plafonné.
-    var chunks=[],part=[];ordered.forEach(function(o){var trial=part.concat([o]);if(part.length&&JSON.stringify(trial).length>24000){chunks.push(part);part=[o];}else part=trial;});if(part.length)chunks.push(part);var out={};Object.keys(payloads).forEach(function(k){if(k.indexOf('owd_stack_')!==0&&k.indexOf('owd_block_module_')!==0)throw Error('Bloc de données invalide.');if(attrs[k]&&attrs[k].current!==payloads[k].current)throw Error('Identifiant de pile déjà utilisé.');if(!attrs[k])out[k]=payloads[k];});chunks.forEach(function(ops,i){out['owd_ops_'+storageSession+'_'+String(i).padStart(5,'0')]={current:JSON.stringify({format:2,epoch:meta.epoch,session:storageSession,ops:ops}),max:''};});Object.keys(out).forEach(function(k){if(attrs[k]&&attrs[k].current===out[k].current)delete out[k];});enqueue(ch.id,out,true);
+    var chunks=[],part=[];ordered.forEach(function(o){var trial=part.concat([o]);if(part.length&&JSON.stringify(trial).length>24000){chunks.push(part);part=[o];}else part=trial;});if(part.length)chunks.push(part);var out={};Object.keys(payloads).forEach(function(k){if(k.indexOf('owd_stack_')!==0&&k.indexOf('owd_block_module_')!==0)throw Error('Bloc de données invalide.');if(attrs[k]&&attrs[k].current!==payloads[k].current)throw Error('Identifiant de pile déjà utilisé.');if(!attrs[k])out[k]=payloads[k];});chunks.forEach(function(ops,i){out['owd_ops_'+storageSession+'_'+String(i).padStart(5,'0')]={current:JSON.stringify({format:2,epoch:meta.epoch,session:storageSession,ops:ops}),max:''};});Object.keys(out).forEach(function(k){if(attrs[k]&&attrs[k].current===out[k].current)delete out[k];});
+    // Valider tout le lot avant de modifier la file en mémoire.
+    storagePending[ch.id]=map;storagePayloads[ch.id]=payloads;
+    if(data.viewId){var views=storageViewOps[ch.id]||(storageViewOps[ch.id]={}),view=views[data.viewId]||(views[data.viewId]={ops:{},payloads:{}});(data.ops||[]).forEach(function(op){view.ops[op.id]=true;});Object.keys(data.payloads||{}).forEach(function(k){view.payloads[k]=true;});}
+    enqueue(ch.id,out,true);
+  }
+  function storageRelease(ch,viewId){
+    var owner=storageOwner();if(owner){if(owner.release)owner.release(ch.id,viewId);return;}
+    var views=storageViewOps[ch.id]||{},view=views[viewId];if(!view)return;delete views[viewId];
+    var attrs=storageFresh[ch.id] ? storageFresh[ch.id].attrs : readAll(ch.id),retainedOps={},retainedPayloads={},recorded={};
+    Object.keys(views).forEach(function(k){Object.assign(retainedOps,views[k].ops);Object.assign(retainedPayloads,views[k].payloads);});
+    Object.keys(attrs).filter(function(k){return k.indexOf('owd_ops_')===0;}).forEach(function(k){try{JSON.parse(attrs[k].current).ops.forEach(function(op){recorded[op.id]=true;});}catch(e){}});
+    Object.keys(view.ops).forEach(function(id){if(!retainedOps[id]&&!recorded[id]&&storagePending[ch.id])delete storagePending[ch.id][id];});
+    Object.keys(view.payloads).forEach(function(k){if(!retainedPayloads[k]&&storagePayloads[ch.id])delete storagePayloads[ch.id][k];});
+    // Retirer les écritures pas encore commencées, puis recomposer avec les
+    // opérations confirmées et celles des autres vues toujours ouvertes.
+    if(typeof queue!=='undefined')queue.forEach(function(job){if(job.id!==ch.id)return;Object.keys(job.attrs).forEach(function(k){if(k.indexOf('owd_ops_'+storageSession+'_')===0||view.payloads[k]&&!retainedPayloads[k]&&!attrs[k])delete job.attrs[k];});});
+    var meta=storageManifest(attrs);if(meta)storageOps(ch,{epoch:meta.epoch,ops:[]},attrs);
+  }
+  function storageRegisterView(source,ch,viewId){
+    if(!viewId)return;var old=storageViewSources.get(source);
+    if(old&&old.id===ch.id&&old.viewId!==viewId)storageRelease(ch,old.viewId);
+    storageViewSources.set(source,{id:ch.id,viewId:viewId});
   }
   function storageConfirmLocal(ch,attrs){var seen={};Object.keys(attrs).filter(function(k){return k.indexOf('owd_ops_'+storageSession+'_')===0;}).forEach(function(k){try{JSON.parse(attrs[k].current).ops.forEach(function(op){seen[op.id]=true;});}catch(e){}});storageConfirmed[ch.id]=seen;
-    var key='owd-operations-v2:'+String((campaign()||{}).id||'partie')+':'+ch.id+':'+storageSession;
-    try{var saved=JSON.parse(localStorage.getItem(key)||'null');if(!saved)return;saved.ops=saved.ops.filter(function(op){return !seen[op.id];});Object.keys(saved.payloads||{}).forEach(function(k){if(attrs[k]&&attrs[k].current===saved.payloads[k].current){delete saved.payloads[k];if(storagePayloads[ch.id])delete storagePayloads[ch.id][k];}});if(saved.ops.length||Object.keys(saved.payloads||{}).length)localStorage.setItem(key,JSON.stringify(saved));else localStorage.removeItem(key);}catch(e){}
+    Object.keys(storagePayloads[ch.id]||{}).forEach(function(k){if(attrs[k]&&attrs[k].current===storagePayloads[ch.id][k].current)delete storagePayloads[ch.id][k];});
   }
   var storageFresh={},storageCleanupReports={};
   function storageObsolete(k){return typeof k==='string'&&k!=='owd_version'&&k!=='owd_backup'&&['owd_pv','owd_pe','owd_pm'].indexOf(k)<0&&(k==='owd_state'||k.indexOf('owd_sync_')===0||STORAGE_LEGACY.indexOf(k)>=0);}
@@ -505,7 +531,7 @@
     }next();return storageCleanupReports[ch.id];
   }
 
-  window.__owdStorageBridge={session:storageSession,ops:function(id,data){var ch=getChar(id);if(ch&&inventoryAccess(ch))storageOps(ch,data);}};
+  window.__owdStorageBridge={session:storageSession,release:function(id,viewId){var ch=getChar(id);if(ch&&inventoryAccess(ch))storageRelease(ch,viewId);},ops:function(id,data){var ch=getChar(id);if(ch&&inventoryAccess(ch))storageOps(ch,data);}};
 
   function journalPlayer() {
     try {
@@ -1128,7 +1154,8 @@
         // toutes les 500 ms, le Campaign peut arriver après nous)
         var chl = getChar(d.charId);
         if (!chl) return;
-        var rl = { type: "hydrate", charId: d.charId, attrs: readAll(d.charId), resync: true, collaboration: 1, storageBlocks: 2, storageCleanup:3, storageSession: storageSessionName() };
+        storageRegisterView(ev.source,chl,d.viewId);
+        var rl = { type: "hydrate", charId: d.charId, attrs: readAll(d.charId), resync: true, collaboration: 1, storageBlocks: 2, storageVolatile: 1, storageCleanup:3, storageSession: storageSessionName() };
         if (inventoryFrames.has(ev.source)) {
           rl.inventoryAccess = true;
           if (etatAttributs(chl) !== "sur") return;
@@ -1158,6 +1185,9 @@
         readSubscriptions.set(ev.source, rl);
         if (d.resync === true) {resynchronise(chl);return;}
         rl.fresh = false;reply(ev,rl);
+      } else if (d.type === "storage-release") {
+        if(!liee(ev.source,d.charId)||!inventoryAccess(getChar(d.charId)))return;
+        try{storageRelease(getChar(d.charId),d.viewId);}catch(error){}
       } else if (d.type === "storage-ops") {
         if(!liee(ev.source,d.charId)||!inventoryAccess(getChar(d.charId)))return;
         try{storageOps(getChar(d.charId),d);}catch(error){reply(ev,{type:'storage-error',charId:d.charId,error:String(error.message||error)});}

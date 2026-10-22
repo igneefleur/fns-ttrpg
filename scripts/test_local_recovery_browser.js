@@ -9,12 +9,12 @@ const fs=require('node:fs'), path=require('node:path'), http=require('node:http'
 const M=require('../docs/javascripts/owd-attr-map.js'), C=require('../docs/javascripts/owd-sync.js');
 const root=path.resolve(__dirname,'..');
 let attrs, writes=[], blockWrites=false;
-const seed=M.blank();seed.v=17;seed.rel='4.5.2b';seed.notes='Note d’origine à préserver';seed.name='Fiche partagée';
+const seed=M.blank();seed.v=M.SCHEMA;seed.rel=M.release();seed.etat.pe=100;seed.notes={format:1,messages:[{id:'original',text:'Note d’origine à préserver',mode:'plain',at:0}]};seed.name='Fiche partagée';
 seed.comps=[{id:'c1',nom:'Lutte',groupe:'Physique',rang:1},{id:'c2',nom:'Évasion',groupe:'Physique',rang:2}];
 seed.inv.objets=[{ref:'o1',id:'',nom:'Dague',qte:1,ou:'sac',arme:{attaque:'6',degats:'16',parade:'8',reduction:'6',modsDegats:['Dexterite','',''],modsParade:['','',''],type:'',comp:''}}, {ref:'o2',id:'',nom:'Pain',qte:5,ou:'sac'}];
 attrs=C.Compact.encode(seed);
 const meta=JSON.parse(attrs[C.Compact.BASE].current);meta.phase='ready';attrs[C.Compact.BASE].current=JSON.stringify(meta);
-attrs.owd_version={current:'17',max:'4.5.2b'};
+attrs.owd_version={current:String(seed.v),max:seed.rel};
 attrs.owd_ops_historic={current:JSON.stringify({epoch:meta.epoch,ops:[{id:'pastA:1',clock:1,changes:[{k:'[[\"k\",\"name\"]]',before:['v',seed.name],n:['v','Nom A']}]},{id:'pastB:1',clock:2,changes:[{k:'[[\"k\",\"name\"]]',before:['v',seed.name],n:['v','Nom B']}]}]})};
 function harness() { return `<!doctype html><meta charset="utf-8"><style>iframe{width:1500px;height:1000px}</style><script>
 function model(data) {return {attributes:{...data},get(k){return this.attributes[k]},set(d){Object.assign(this.attributes,d)},save(data,opts){Object.assign(this.attributes,data||{});window.backend({kind:'write',data:this.attributes}).then(()=>opts&&opts.success&&opts.success())}}}
@@ -26,7 +26,7 @@ const server=http.createServer((req,res)=> {
   const url=new URL(req.url,'http://localhost');let body,mime;
   if(url.pathname==='/harness'){body=harness();mime='text/html';}
   else if(url.pathname==='/bridge.js'){body=fs.readFileSync(path.join(root,'extension/firefox/beta/roll20-page.js'));mime='text/javascript';}
-  else {const file=path.join(root,'site',decodeURIComponent(url.pathname));if(!file.startsWith(path.join(root,'site'))||!fs.existsSync(file)||fs.statSync(file).isDirectory()){res.writeHead(404);res.end();return;}body=fs.readFileSync(file);mime=file.endsWith('.js')?'text/javascript':file.endsWith('.json')?'application/json':file.endsWith('.css')?'text/css':file.endsWith('.html')?'text/html':'application/octet-stream';}
+  else {let file=path.join(root,'docs',decodeURIComponent(url.pathname));if(!fs.existsSync(file))file=path.join(root,'site',decodeURIComponent(url.pathname));if(!file.startsWith(root)||!fs.existsSync(file)||fs.statSync(file).isDirectory()){res.writeHead(404);res.end();return;}body=fs.readFileSync(file);mime=file.endsWith('.js')?'text/javascript':file.endsWith('.json')?'application/json':file.endsWith('.css')?'text/css':file.endsWith('.html')?'text/html':'application/octet-stream';}
   const send=()=>{res.writeHead(200,{'content-type':mime});res.end(body);};
   if(url.pathname.endsWith('/owd-creation.json'))setTimeout(send,800);else send();
 });
@@ -35,38 +35,43 @@ const server=http.createServer((req,res)=> {
   const browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_EXECUTABLE || chromium.executablePath(),args:['--no-sandbox']});const errors=[];
   try {
     const ctx=await browser.newContext({viewport:{width:1600,height:1100}});
-    await ctx.addInitScript(()=>{if(location.pathname!=='/roll20-fiche.html'||localStorage.getItem('recovery-fixture'))return;
-      localStorage.setItem('recovery-fixture','1');
+    await ctx.addInitScript(()=>{if(localStorage.getItem('recovery-fixture'))return;
+      localStorage.setItem('recovery-fixture','1');localStorage.setItem('owd-operations-v2:partie:shared:old','{invalid');sessionStorage.setItem('owd-session-v2','old');
       localStorage.setItem('owd-pending-v2:shared:corrupt','{invalid');
       localStorage.setItem('owd-pending-v2:shared:old',JSON.stringify({epoch:'previous-format',payloads:{},ops:[{id:'offline:1',clock:1,changes:[{k:'[["k","notes"]]',before:['v','Note d’origine à préserver'],n:['v','Note locale hors ligne']}]}]}));
     });
     await ctx.exposeBinding('backend',async(_,m)=>{
       if(m.kind==='read'){await new Promise(r=>setTimeout(r,70));return C.copy(attrs);}
-      if(m.kind==='write'){if(blockWrites && (m.data.name.startsWith(C.PREFIX)||m.data.name.startsWith(C.Compact.PREFIX)))return;await new Promise(r=>setTimeout(r,900));attrs[m.data.name]={current:String(m.data.current||''),max:String(m.data.max||'')};writes.push(m.data.name);}
+      if(m.kind==='write'){if(blockWrites && (m.data.name.startsWith(C.PREFIX)||m.data.name.startsWith(C.Compact.PREFIX)))return;await new Promise(r=>setTimeout(r,30));attrs[m.data.name]={current:String(m.data.current||''),max:String(m.data.max||'')};writes.push(m.data.name);}
     });
     const pages=[await ctx.newPage()];pages.forEach(p=>p.on('pageerror',e=>errors.push(e.message)));
     await Promise.all(pages.map(p=>p.goto(url+'/harness')));
     const frames=pages.map(p=>p.frameLocator('iframe'));
     const a=frames[0];
-    await a.locator('[data-owd-act="monter"]').click();
     await a.locator('.pc-sheet').waitFor({timeout:30000});
-    await pages[0].waitForFunction(()=>JSON.parse(document.querySelector('iframe').contentWindow.__owdLocalStorage.getItem('owd-perso')).v===18);
-    for(let i=0;i<150&&C.Compact.read(attrs).state.v!==18;i++)await pages[0].waitForTimeout(100);
-    for(let i=0;i<150&&C.Compact.read(attrs).state.notes.messages.length!==2;i++)await pages[0].waitForTimeout(100);
-    const now=C.Compact.read(attrs);assert.equal(now.state.v,18);assert.equal(now.state.notes.messages[0].text,'Note d’origine à préserver');assert.ok(now.ops.some(o=>o.legacyBackup&&o.legacyBackup.fragments.some(f=>f.name==='owd_backup')));assert.equal(writes.includes('owd_backup'),false);
-    assert.equal(now.state.notes.messages.length,2);assert.ok(now.state.notes.messages.some(m=>m.text==='Note locale hors ligne'));
-    assert.equal(await a.locator('body').innerText().then(t=>t.includes('Une sauvegarde locale appartient')||t.includes('Des modifications simultanées')),false);
-    assert.equal(await a.locator('#owd-local-recovery').count(),1);
-    console.log('OK journaux locaux incompatibles et illisibles récupérés sans bloquer, conflits historiques silencieux.');
-    await a.locator('.pc-tab').filter({hasText:'Bio'}).click();await a.locator('.pc-notes-input').fill('Après mise à niveau');await a.locator('.pc-notes-compose').getByRole('button',{name:'Envoyer',exact:true}).click();
-    await pages[0].waitForFunction(()=>JSON.parse(document.querySelector('iframe').contentWindow.__owdLocalStorage.getItem('owd-perso')).notes.messages.length===3);
-    for(let i=0;i<150&&C.Compact.read(attrs).state.notes.messages.length!==3;i++)await pages[0].waitForTimeout(100);assert.equal(C.Compact.read(attrs).state.notes.messages.length,3);
-    await pages[0].reload();await a.locator('.pc-sheet').waitFor();await pages[0].waitForFunction(()=>JSON.parse(document.querySelector('iframe').contentWindow.__owdLocalStorage.getItem('owd-perso')).notes.messages.length===3);
-    assert.equal(await a.locator('body').innerText().then(t=>t.includes('Une sauvegarde locale appartient')||t.includes('Des modifications simultanées')||t.includes('Synchronisation interrompue')),false);
-    assert.ok(C.Compact.read(attrs).ops.some(o=>o.legacyBackup&&o.legacyBackup.fragments.some(f=>f.name==='owd_backup')));
-    console.log('OK serveur ralenti : migration, reprise locale, édition et sauvegarde après rechargement.');
-    assert.ok(!writes.includes('owd_state'),'aucune photographie complète réécrite');
-    assert.deepEqual(errors,[]);
-    console.log('OK réouverture, état fusionné, aucune écriture owd_state, aucune erreur navigateur');
+    assert.equal(C.Compact.read(attrs).state.notes.messages.length,1);
+    assert.equal(await a.locator('#owd-local-recovery').count(),0);
+    const storageKeys=await pages[0].evaluate(()=>Object.keys(localStorage));assert.ok(!storageKeys.some(k=>/^owd-(pending|recovery|operations|verified-base)-v2:/.test(k)));
+    // Un nouveau conflit réel sur le même champ n’affiche aucun bandeau.
+    attrs.owd_ops_new_conflict={current:JSON.stringify({epoch:meta.epoch,ops:[{id:'peerA:1',clock:40,changes:[{k:'[["k","name"]]',before:['v','Nom B'],n:['v','Premier nom']}]},{id:'peerB:1',clock:41,changes:[{k:'[["k","name"]]',before:['v','Nom B'],n:['v','Dernier nom']}]}]})};
+    await pages[0].waitForFunction(()=>JSON.parse(document.querySelector('iframe').contentWindow.__owdLocalStorage.getItem('owd-perso')).name==='Dernier nom');
+    assert.ok(C.Compact.read(attrs).conflicts.length);assert.equal(await a.locator('body').innerText().then(t=>t.includes('Des modifications simultanées')),false);
+    // Une sauvegarde normale persiste ; le statut suit sa confirmation.
+    await a.locator('[data-module="pe"] .pc-vital-num').fill('91');
+    for(let i=0;i<120&&C.Compact.read(attrs).state.etat.pe!==91;i++)await pages[0].waitForTimeout(100);assert.equal(C.Compact.read(attrs).state.etat.pe,91);
+    await a.locator('#owd-save-status').filter({hasText:'Enregistré'}).waitFor();
+    // Roll20 refuse les écritures : la saisie demeure dans cette page seulement.
+    blockWrites=true;await a.locator('[data-module="pe"] .pc-vital-num').fill('77');
+    await a.locator('#owd-save-status').filter({hasText:'Enregistrement en cours'}).waitFor();
+    await pages[0].waitForTimeout(1800);assert.equal(C.Compact.read(attrs).state.etat.pe,91);
+    const sheetFrame=pages[0].frames().find(f=>f.url().includes('roll20-fiche.html'));const reopenedUrl=new URL(sheetFrame.url());reopenedUrl.searchParams.set('reload','1');await sheetFrame.goto(reopenedUrl.href);await a.locator('.pc-sheet').waitFor();
+    assert.equal(await a.locator('[data-module="pe"] .pc-vital-num').inputValue(),'91');
+    blockWrites=false;await a.locator('[data-module="pe"] .pc-vital-num').fill('83');
+    for(let i=0;i<120&&C.Compact.read(attrs).state.etat.pe!==83;i++)await pages[0].waitForTimeout(100);assert.equal(C.Compact.read(attrs).state.etat.pe,83,'aucun rejeu de la dépense abandonnée');
+    // Même comportement après rechargement de toute la partie.
+    blockWrites=true;await a.locator('[data-module="pe"] .pc-vital-num').fill('65');await pages[0].waitForTimeout(1800);await pages[0].reload();await a.locator('.pc-sheet').waitFor();assert.equal(await a.locator('[data-module="pe"] .pc-vital-num').inputValue(),'83');blockWrites=false;
+    assert.equal(await a.locator('#owd-local-recovery').count(),0);assert.equal(await a.locator('body').innerText().then(t=>t.includes('Des modifications simultanées')),false);
+    const after=await pages[0].evaluate(()=>Object.keys(localStorage));assert.ok(!after.some(k=>/^owd-(pending|recovery|operations|verified-base)-v2:/.test(k)));
+    assert.deepEqual(errors,[]);console.log('OK navigateur : anciens caches ignorés et retirés, conflit silencieux, confirmation visible, écritures refusées, rechargement de fiche puis de partie sans reprise, nouvelle saisie sauvegardée.');
   } finally {await browser.close();server.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;server.close();});
