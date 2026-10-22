@@ -6,6 +6,14 @@
     if (!s || parseInt(s.v, 10) !== SCHEMA) throw new Error("Schéma distant incompatible : recharger la fiche.");
     s = normalize(s);
     if (JSON.stringify(s) === JSON.stringify(state)) return;
+    var changes=Object.keys(state).concat(Object.keys(s).filter(function(k){return !Object.prototype.hasOwnProperty.call(state,k);})).filter(function(k){return JSON.stringify(s[k])!==JSON.stringify(state[k]);});
+    if(!changes.length)return;
+    var structural={notes:[],background:['bg'],avantages:['avantages'],comps:['comps','optcomps','attaque','defense'],techniques:['techniques'],inv:['inv','attaque','defense','effets'],attaques:['attaque'],defenses:['defense'],combatOptions:['attaque','defense'],combatModifiers:['attaque','defense'],combatAffichage:['attaque','defense'],effetsActifs:['effets','recuperation'],effetsPermanents:['effets','recuperation'],caracs:['caracs'],caracsXp:['caracs'],caracsLeviers:['modcaracs'],capsLeviers:['optcaps'],compsLeviers:['optcomps','comps']};
+    var scalar=['name','portrait','age','sexe','genre','espece','taille','xpTotal','etat','effort','temperature','qualiteSommeil','horloge','horlogeDigestion','horlogeExposition','horlogeAlcool','effAlcool','effAlcoolSecondes','effParties','effAutre','effDesactive','effPause','allure','allureCran','desTailles','desUtilises'];
+    var oldData=state.modData||{},newData=s.modData||{};
+    if(Object.keys(oldData).concat(Object.keys(newData)).every(function(k){return k==='recuperation'||JSON.stringify(oldData[k])===JSON.stringify(newData[k]);}))structural.modData=['recuperation'];
+    var targets=[],partial=!modulesPersoActifs()&&changes.every(function(k){return structural[k]||scalar.indexOf(k)>=0;});
+    if(partial)changes.forEach(function(k){(structural[k]||[]).forEach(function(id){if(targets.indexOf(id)<0)targets.push(id);});});
     var actif = document.activeElement, focus = null, positions = [];
     function signature(c) { return [c.tagName, c.type || "", c.className, c.getAttribute("placeholder") || "", c.getAttribute("aria-label") || ""].join("|"); }
     function ancre(c) {
@@ -22,13 +30,16 @@
     }
     var sx = window.scrollX, sy = window.scrollY;
     Array.prototype.forEach.call(rootEl.querySelectorAll("[data-module]"), function (m) {
+      if(partial&&targets.indexOf(m.dataset.module)<0)return;
       Array.prototype.forEach.call(m.querySelectorAll("*"), function (n, i) {
         if (n.scrollTop || n.scrollLeft) positions.push({ module: m.dataset.module, index: i, top: n.scrollTop, left: n.scrollLeft });
       });
     });
-    journalTemps = []; effVu = null; effMaxVu = {};
-    state = normalize(s);
-    remount();
+    journalTemps=[];
+    if(partial){
+      changes.forEach(function(k){if(s[k]===undefined)delete state[k];else if(k==='etat'){Object.keys(state.etat).forEach(function(r){if(!(r in s.etat))delete state.etat[r];});Object.assign(state.etat,s.etat);}else state[k]=s[k];});
+      reconstruitModules(targets);refresh();
+    }else{effVu=null;effMaxVu={};state=s;remount();}
     positions.forEach(function (p) {
       var m = Array.prototype.find.call(rootEl.querySelectorAll("[data-module]"), function (n) { return n.dataset.module === p.module; });
       var n = m && m.querySelectorAll("*")[p.index]; if (n) { n.scrollTop = p.top; n.scrollLeft = p.left; }
@@ -55,6 +66,7 @@
 
   window.Owd = {
     __pret: false,
+    __afficheVue:function(){monteOnglet(window.__owdVueInventaire?null:curTab());refresh(true);},
     __recoitEtat: recoitEtatCollaboratif,
     __defendreDepuisChat: defenseDepuisChat,
     __montreObjet: montreObjet,

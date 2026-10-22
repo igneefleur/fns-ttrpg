@@ -421,7 +421,14 @@
     sessionStorage.removeItem('owd-session-v2');
   } catch(e) {}
   function storageOwner(){campaign();try{if(winCampagne&&winCampagne!==window&&winCampagne.__owdStorageBridge)return winCampagne.__owdStorageBridge;}catch(e){}return null;}
-  function storageManifest(attrs){var raw=attrs.owd_storage&&attrs.owd_storage.current;if(!raw)return null;var m=JSON.parse(raw);if(m.format!==2)throw Error('Version de stockage inconnue.');Object.keys(m.blocks).forEach(function(k){if(!attrs[k]||storageHash(attrs[k].current)!==m.blocks[k])throw Error('Migration incomplète.');});return m;}
+  var manifestChecks=[];
+  function storageManifest(attrs){var raw=attrs.owd_storage&&attrs.owd_storage.current;if(!raw)return null;
+    var cached=manifestChecks.filter(function(c){return c.raw===raw&&c.blocks.every(function(x){return attrs[x[0]]&&attrs[x[0]].current===x[1];});})[0];
+    if(cached)return JSON.parse(raw);
+    var m=JSON.parse(raw);if(m.format!==2)throw Error('Version de stockage inconnue.');var blocks=[];
+    Object.keys(m.blocks).forEach(function(k){if(!attrs[k]||storageHash(attrs[k].current)!==m.blocks[k])throw Error('Migration incomplète.');blocks.push([k,attrs[k].current]);});
+    manifestChecks.push({raw:raw,blocks:blocks});if(manifestChecks.length>8)manifestChecks.shift();return m;
+  }
   function storageSessionName(){var owner=storageOwner();return owner?owner.session:storageSession;}
   function storageOps(ch,data,confirmedAttrs){var owner=storageOwner();if(owner){owner.ops(ch.id,data);return;}var attrs=confirmedAttrs||readAll(ch.id),meta=storageManifest(attrs);if(!meta||meta.epoch!==data.epoch)throw Error('Format de fiche modifié : rechargez avant de renvoyer les opérations.');
     var payloads=Object.assign({},storagePayloads[ch.id]||{},data.payloads||{});
@@ -505,6 +512,12 @@
     var fresh=storageFresh[ch.id];if(!fresh||Date.now()-fresh.at>15000)return report({status:'pending',stage:'confirmation'});
     var check=storageCleanupChecks[ch.id];if(!check||check.epoch!==meta.epoch){check=storageCleanupChecks[ch.id]={since:Date.now(),epoch:meta.epoch};}
     var records=storageLegacyRecords(ch),names=Object.keys(records),count=models(ch).filter(function(m){return storageObsolete(attrVal(m,'name')||'');}).length;
+    if(!names.length&&!count){
+      delete check.backupSince;
+      var clean=storageManifest(fresh.attrs);if(!clean||clean.epoch!==meta.epoch||clean.phase!=='ready'||Object.keys(fresh.attrs).some(storageObsolete))return report({status:'pending',stage:'confirmation',remaining:0});
+      if(!meta.cleanupComplete||meta.legacyHashes){delete meta.legacyHashes;meta.cleanupComplete=true;enqueue(ch.id,{owd_storage:{current:JSON.stringify(meta),max:''}},true);}
+      return report({status:'done',remaining:0});
+    }
     var saved;try{var confirmed=storageManifest(fresh.attrs);if(!confirmed||confirmed.epoch!==meta.epoch||confirmed.phase!=='ready')return report({status:'pending',stage:'confirmation'});saved=storageLegacySaved(fresh.attrs,meta.epoch);}catch(e){return report({status:'error',error:String(e.message||e)});}
     var missing={};names.forEach(function(k){records[k].forEach(function(v){if(!(saved[k]||[]).some(function(x){return storageStable(x)===storageStable(v);})){(missing[k]||(missing[k]=[])).push(v);}});});
     if(Object.keys(missing).length){
@@ -845,9 +858,17 @@
   // Les collections locales ne sont pas un abonnement aux autres joueurs.
   // Le site demande la cadence ; le pont borne les requêtes par personnage.
   var RESYNC_MIN = 1500, resyncJobs = {}, readSubscriptions = new WeakMap();
+  var readRevisions={},readRevisionCounter=0,readRevisionSession=Math.random().toString(36).slice(2);
+  function revisionLecture(id,attrs){
+    var old=readRevisions[id],keys=Object.keys(attrs).filter(function(k){return k!=='owd_presence';});
+    var same=old&&keys.length===old.keys.length&&keys.every(function(k){return old.attrs[k]&&attrs[k].current===old.attrs[k].current&&attrs[k].max===old.attrs[k].max;});
+    if(!same)readRevisions[id]={attrs:attrs,keys:keys,revision:readRevisionSession+':'+(++readRevisionCounter)};
+    return readRevisions[id].revision;
+  }
   function publieLecture(ch, ok) {
     menage(); var attrs = readAll(ch.id), at = Date.now();
     if(ok){presenceRead(ch,attrs);if(Object.keys(presenceLocal[ch.id]||{}).length)publishPresence(ch);}
+    var revision=ok?revisionLecture(ch.id,attrs):null;
     var cleanup=null;
     if(ok&&attrs.owd_storage&&inventoryAccess(ch)){storageConfirmLocal(ch,attrs);storageFresh[ch.id]={at:at,attrs:attrs};try{cleanup=storageCleanup(ch);}catch(e){cleanup={status:'error',error:String(e.message||e)};}}
     srcFrames.forEach(function (w, i) {
@@ -857,7 +878,10 @@
         reply({source:w}, {type:'hydrate',charId:ch.id,inventoryAccess:false}); return;
       }
       var msg = {}; Object.keys(base).forEach(function(k){msg[k]=base[k];});
-      msg.attrs = attrs; msg.presence=presenceRead(ch,attrs); msg.fresh = !!ok; msg.readAt = ok ? at : 0;
+      delete msg.lightRead;delete msg.readRevision;
+      if(ok&&base.lightRead===1&&base.readRevision===revision){delete msg.attrs;msg.unchanged=true;}else msg.attrs=attrs;
+      if(ok)msg.revision=revision;
+      msg.presence=presenceRead(ch,attrs); msg.fresh = !!ok; msg.readAt = ok ? at : 0;
       if (inventoryFrames.has(w)) msg.inventoryAccess = true;
       reply({source:w}, msg);
       if(cleanup)reply({source:w},Object.assign({type:'storage-cleanup-status',charId:ch.id},cleanup));
@@ -1196,6 +1220,7 @@
           var _n; for (_n in dernieresEcritures) { if (dernieresEcritures.hasOwnProperty(_n)) { rl.ecrits = dernieresEcritures; break; } }
           dernieresEcritures = {};
         }
+        if(d.lightRead===1){rl.lightRead=1;rl.readRevision=typeof d.readRevision==='string'?d.readRevision:null;}
         readSubscriptions.set(ev.source, rl);
         if (d.resync === true) {resynchronise(chl);return;}
         rl.fresh = false;reply(ev,rl);

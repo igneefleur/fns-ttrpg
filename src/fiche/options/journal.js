@@ -39,7 +39,7 @@
     b.appendChild(search);b.appendChild(info);b.appendChild(list);b.appendChild(pages);
     var previous="",dead=false,timer=null;
     function render(force) {
-      if(dead || (!force && !b.getClientRects().length))return;
+      if(dead || (!force && (window.__owdViewVisible===false||!b.getClientRects().length)))return;
       if(typeof window.__owdJournal!=="function") {info.textContent="Le journal des changements est disponible dans Roll20.";return;}
       var data=window.__owdJournal(), rows=data.ops.filter(function(op){return op.changes&&op.changes.length;});
       var signature=rows.map(function(op){return op.id;}).join("|")+"/"+Object.keys(data.pending).join("|")+"/"+data.conflicts.length+"/"+data.identity;

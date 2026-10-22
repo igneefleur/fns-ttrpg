@@ -554,10 +554,10 @@ if (typeof browser === "undefined") { var browser = chrome; }
         pane.classList.add("owd-on");   // seule cette classe rend le pane visible (overlay.css)
         for (var k = 0; k < strip.children.length; k++) strip.children[k].classList.remove("active");
         tab.classList.add("active");
-        var frame=pane.querySelector('iframe');if(frame)frame.contentWindow.postMessage({ns:'owd',type:'take-active',active:true},'*');
+        var frame=pane.querySelector('iframe');if(frame)frame.contentWindow.postMessage({ns:'owd',type:'view-visible',active:true},'*');if(frame)frame.contentWindow.postMessage({ns:'owd',type:'take-active',active:true},'*');
         refitFrame();   // l'iframe redevient visible : réajuster sa hauteur au dialogue
       }
-      function hideOurPane() { pane.style.display = "none"; pane.classList.remove("owd-on"); tab.classList.remove("active");var frame=pane.querySelector('iframe');if(frame)frame.contentWindow.postMessage({ns:'owd',type:'take-active',active:false},'*'); }
+      function hideOurPane() { pane.style.display = "none"; pane.classList.remove("owd-on"); tab.classList.remove("active");var frame=pane.querySelector('iframe');if(frame)frame.contentWindow.postMessage({ns:'owd',type:'view-visible',active:false},'*');if(frame)frame.contentWindow.postMessage({ns:'owd',type:'take-active',active:false},'*'); }
 
       // On gère nous-mêmes l'affichage (fiable quel que soit le moment où bindTabEvents
       // s'exécute) et on bloque le gestionnaire délégué de Roll20 pour NOTRE onglet.
@@ -580,11 +580,22 @@ if (typeof browser === "undefined") { var browser = chrome; }
 
   // ---------- boucle ----------
   function scan() { placeTabs(); }
+  function mutationDansZoneJeu(m){
+    var t=m.target&&m.target.nodeType===1?m.target:m.target&&m.target.parentElement;
+    return !!(t&&t.closest&&t.closest('#textchat,[id*="textchat"],.chat-messages,.chatmessages,.canvas-container,#owd-sidebar-notes,.owd-panneau'));
+  }
+  function mutationBarre(m){
+    if(mutationDansZoneJeu(m))return false;
+    var t=m.target&&m.target.nodeType===1?m.target:m.target&&m.target.parentElement;
+    if(t&&t.closest&&t.closest('#master-toolbar,#vm-master-toolbar,#rightsidebar'))return true;
+    return Array.prototype.some.call(m.addedNodes,function(n){return n.nodeType===1&&(n.matches('#master-toolbar,#vm-master-toolbar,#rightsidebar')||n.querySelector('#master-toolbar,#vm-master-toolbar,#rightsidebar'));})||
+      Array.prototype.some.call(m.removedNodes,function(n){return n.nodeType===1&&(n.matches('#master-toolbar,#vm-master-toolbar,#rightsidebar')||n.querySelector('#master-toolbar,#vm-master-toolbar,#rightsidebar'));});
+  }
   function startScan() {
     scan();
     var pending = false;
-    var obs = new MutationObserver(function () {
-      if (pending) return;
+    var obs = new MutationObserver(function (muts) {
+      if (pending || !muts.some(function(m){return !mutationDansZoneJeu(m);})) return;
       pending = true;
       setTimeout(function () { pending = false; scan(); }, 300);
     });
@@ -1382,7 +1393,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
     paintButton(p);}
   function remplit(p){if(p.frame)return;p.frame=el('iframe','owd-panneau-frame');p.frame.title=p.def.titre;p.frame.setAttribute('allow','clipboard-write');
     p.frame.src=browser.runtime.getURL('panneau.html')+'#p='+p.def.page+'&n='+(nuitEffective()?'1':'0')+'&m='+MODE;p.body.appendChild(p.frame);}
-  function ouvre(p,on){if(!on&&p.def.id==='attaques'&&p.frame)p.frame.contentWindow.postMessage({ns:'owd',type:'attack-preview-cancel'},'*');if(on)p.box.style.zIndex=String(++panelFront);p.etat.ouvert=!!on;applique(p);if(on)remplit(p);if(p.def.id==='inventaire'&&p.frame)p.frame.contentWindow.postMessage({ns:'owd',type:'take-active',active:!!on},'*');if(p.def.id==='defenses'&&p.frame)p.frame.contentWindow.postMessage({ns:'owd',type:'defend-active',active:!!on},'*');range(p);}
+  function ouvre(p,on){if(!on&&p.def.id==='attaques'&&p.frame)p.frame.contentWindow.postMessage({ns:'owd',type:'attack-preview-cancel'},'*');if(on)p.box.style.zIndex=String(++panelFront);p.etat.ouvert=!!on;applique(p);if(on)remplit(p);if(p.frame)p.frame.contentWindow.postMessage({ns:'owd',type:'view-visible',active:!!on},'*');if(p.def.id==='inventaire'&&p.frame)p.frame.contentWindow.postMessage({ns:'owd',type:'take-active',active:!!on},'*');if(p.def.id==='defenses'&&p.frame)p.frame.contentWindow.postMessage({ns:'owd',type:'defend-active',active:!!on},'*');range(p);}
   function geste(p,e,move){
     if(e.button!==0||e.target.closest('button'))return;
     if(!move)e.preventDefault();
@@ -1460,7 +1471,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
       var e=r[d.cle]||{};var p={def:d,etat:{ouvert:!!e.ouvert,x:Number(e.x)||80,y:Number(e.y)||60,w:Number(e.w)||d.w,
         h:Number(e.h)||d.h,tailleChoisie:!!e.tailleChoisie,replie:!!e.replie}};
       outils[d.id]=p;monte(p);});
-      barrePose();var queued=false;barreObs=new MutationObserver(function(){if(queued)return;queued=true;setTimeout(function(){queued=false;barrePose();Object.keys(outils).forEach(function(k){applique(outils[k]);});},150);});barreObs.observe(document.body,{childList:true,subtree:true});
+      barrePose();var queued=false;barreObs=new MutationObserver(function(muts){if(queued||!muts.some(mutationBarre))return;queued=true;setTimeout(function(){queued=false;barrePose();},150);});barreObs.observe(document.body,{childList:true,subtree:true});
       var themeObs=new MutationObserver(function(){barrePose();});
       themeObs.observe(document.documentElement,{attributes:true,attributeFilter:['class','data-theme']});
       themeObs.observe(document.body,{attributes:true,attributeFilter:['class','data-theme']});

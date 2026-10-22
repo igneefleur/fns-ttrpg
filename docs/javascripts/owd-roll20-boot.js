@@ -125,9 +125,10 @@
     getItem: function (k) { return Object.prototype.hasOwnProperty.call(mem, k) ? mem[k] : null; },
     setItem: function (k, v) {
       if(ready&&!collaborationApplique&&!edition&&!miseANiveauDemandee&&SAVE_KEYS[k])return;
+      if(SAVE_KEYS[k]&&mem[k]===String(v)){if(k==='owd-perso')storageIntent={absolute:{}};return;}
       mem[k] = String(v);
       if (collaboration && !collaborationApplique && (edition||miseANiveauDemandee) && k === "owd-perso") {
-        updateStorageMaxima();collaboration.actor=journalPlayer;collaboration.capture(JSON.parse(mem[k]),storageIntent);storageIntent={absolute:{}};actualiseStatutEnregistrement(); modificationLocale = Date.now();
+        updateStorageMaxima();collaboration.actor=journalPlayer;collaboration.capture(JSON.parse(mem[k]),storageIntent);lastCapturedPerson=mem[k];storageIntent={absolute:{}};actualiseStatutEnregistrement(); modificationLocale = Date.now();
       }
       if (ready && !collaborationApplique && SAVE_KEYS[k]) scheduleSave();
     },
@@ -140,7 +141,9 @@
   var takeOpenedAt = Date.now(), takeEnabled = !window.__owdVueInventaire;
   var defendOpenedAt = Date.now(), defendEnabled = !window.__owdVueInventaire;
   var defendEligible = !window.__owdVueAttaques && !window.__owdVueNotes;
+  var wireRevision=null,wireAttrs=null;
   function post(msg) {
+    if(msg.type==='load'){msg.lightRead=1;msg.readRevision=(!gele&&wireAttrs)?wireRevision:null;}
     msg.ns = "owd"; msg.charId = CHAR_ID; msg.viewId = VIEW_ID;
     if (window.__owdVueInventaire) msg.inventory = true;
     if (!window.__owdVueAttaques && !window.__owdVueDefenses && !window.__owdVueNotes) { msg.takeOpenedAt = takeOpenedAt; msg.takeEnabled = takeEnabled&&edition; }
@@ -325,7 +328,7 @@
     if(failed){saveFailure=text||'error';afficheErreurEnregistrement(true);return;}
     var n=document.getElementById('owd-save-status');
     if(!n){n=document.createElement('div');n.id='owd-save-status';n.setAttribute('role','status');document.body.insertBefore(n,document.getElementById('perso-fiche'));}
-    n.textContent=text;n.hidden=!text;saveStatus=text;
+    if(n.textContent!==text)n.textContent=text;n.hidden=!text;saveStatus=text;
     if(saveStatusTimer)clearTimeout(saveStatusTimer);
     if(text==='Enregistré')saveStatusTimer=setTimeout(function(){n.hidden=true;saveStatus='';},2500);
   }
@@ -346,16 +349,20 @@
     if (saveTimer) clearTimeout(saveTimer);
     saveTimer = setTimeout(doSave, 400);
   }
+  var lastSavePerson=null,lastSaveCards=null,lastSaveAttrs=null,lastCapturedPerson=null,miroirsEnAttente=false;
   function doSave() {
     if (gele || !accesInventaire) return;
     saveTimer = null;
+    // Les sondes continuent ; une fiche inchangée n'a rien à re-sérialiser.
+    if(collaboration&&collaboration.hasBase&&!miseANiveauDemandee&&!miroirsEnAttente&&!Object.keys(collaboration.pending).length&&lastSavePerson===mem['owd-perso']&&lastSaveCards===mem['owd-cards']&&lastSaveAttrs===lastAttrs)return;
+    lastSavePerson=mem['owd-perso'];lastSaveCards=mem['owd-cards'];lastSaveAttrs=lastAttrs;
     var state;
     try { state = JSON.parse(mem["owd-perso"] || "null"); } catch (e) { return; }
     if (!state) return;
     var card = null;
     try { var cards = JSON.parse(mem["owd-cards"] || "{}"); card = cards && cards._current; } catch (e) {}
     if (collaboration) {
-      collaboration.actor=journalPlayer;if(edition||miseANiveauDemandee)collaboration.capture(state);
+      collaboration.actor=journalPlayer;if((edition||miseANiveauDemandee)&&lastCapturedPerson!==mem['owd-perso']){collaboration.capture(state);lastCapturedPerson=mem['owd-perso'];}
       var cardCaps=card&&card.capacites||{};
       ['pv','pe','pm','pr','ps','ph','pi','pc','contenance','expo','rupture'].forEach(function(k){var m=cardCaps[k+'Max'];if(typeof m==='number')collaboration.maxima[k]=m;});
       var lot = collaboration.outgoing();
@@ -367,7 +374,7 @@
       if(Object.keys(lot).length)post({type:'storage-ops',epoch:collaboration.epoch,ops:Object.keys(lot).map(function(k){return lot[k];}),payloads:collaboration.payloads});
       // Trois miroirs seulement ; les blocs restent la source de vérité.
       var mirrors={};if(card)['pv','pe','pm'].forEach(function(k){var current=cardCaps[k]==null?cardCaps[k+'Max']:cardCaps[k],max=cardCaps[k+'Max'];if(current!==undefined&&max!==undefined)mirrors['owd_'+k]={current:String(current),max:String(max)};});
-      var delta=diff(lastAttrs,mirrors);if(Object.keys(delta).length&&!Object.keys(collaboration.pending).length)post({type:'save',attrs:delta});
+      var delta=diff(lastAttrs,mirrors);if(!Object.keys(collaboration.pending).length){miroirsEnAttente=Object.keys(delta).length>0;if(miroirsEnAttente)post({type:'save',attrs:delta});}
 
       return;
     }
@@ -959,7 +966,7 @@
     var byPlayer={};(presenceRows||[]).forEach(function(r){if(r.left||Date.now()-r.at>=30000)return;var id=r.player,name=r.name||id;if(!byPlayer[id])byPlayer[id]={name:name,edition:false};if(r.mode==='edition')byPlayer[id].edition=true;});
     if(journalPlayer){var me=byPlayer[journalPlayer.id]||(byPlayer[journalPlayer.id]={name:journalPlayer.name,edition:false});if(edition)me.edition=true;}
     var edit=[],read=[];Object.keys(byPlayer).sort().forEach(function(id){(byPlayer[id].edition?edit:read).push(byPlayer[id].name);});
-    bar.querySelector('.owd-presence-edition').textContent='En édition : '+(edit.join(', ')||'—');bar.querySelector('.owd-presence-consultation').textContent='En consultation : '+(read.join(', ')||'—');
+    var e=bar.querySelector('.owd-presence-edition'),c=bar.querySelector('.owd-presence-consultation'),et='En édition : '+(edit.join(', ')||'—'),ct='En consultation : '+(read.join(', ')||'—');if(e.textContent!==et)e.textContent=et;if(c.textContent!==ct)c.textContent=ct;
   }
   setInterval(sendPresence,10000);
   function guardConsultation(ev){
@@ -1421,6 +1428,9 @@
     if(d.type==='storage-error'&&(!d.charId||d.charId===CHAR_ID)){if(loadingKind==='backup'&&operationBusy)erreurSauvegarde();else if(miseANiveauDemandee)erreurMiseAJour();else statutEnregistrement(d.error,true);return;}
     // on n'accepte que l'hydratation de NOTRE personnage (plusieurs fiches peuvent être ouvertes)
     if (d.type === "hydrate" && (!d.charId || d.charId === CHAR_ID)) {
+      if(d.unchanged){if(!wireAttrs||d.revision!==wireRevision){wireRevision=null;post({type:'load',resync:true});return;}d.attrs=wireAttrs;}
+      else if(d.attrs&&d.fresh===true&&typeof d.revision==='string'){wireAttrs=d.attrs;wireRevision=d.revision;}
+
       if(d.player && typeof d.player.id === "string" && typeof d.player.name === "string") journalPlayer={id:d.player.id,name:d.player.name};
       if(collaboration)collaboration.actor=journalPlayer;
       // ROUTAGE CRITIQUE. Une fois la fiche hydratée, un « hydrate » n'hydrate
@@ -1518,7 +1528,9 @@
   document.addEventListener("visibilitychange",function(){if(document.hidden)window.__owdAttackPreview(null);});
 
   window.addEventListener('message',function(ev){
-    var d=ev.data;if(!window.__owdVueInventaire||!d||d.ns!=='owd'||ev.source!==window.parent)return;
+    var d=ev.data;if(!d||d.ns!=='owd'||ev.source!==window.parent)return;
+    if(d.type==='view-visible'){window.__owdViewVisible=!!d.active;if(d.active&&ready&&window.Owd&&Owd.__afficheVue)Owd.__afficheVue();return;}
+    if(!window.__owdVueInventaire)return;
     if(d.type==='attack-preview-cancel'){window.__owdAttackPreview(null);return;}
     if(!window.__owdVueNotes && d.type==='inventory-external-drag'){externalDrag=d.drag||null;return;}
     if(d.type==='inventory-poll'){post({type:'load',resync:true});if(ready&&!gele)doSave();return;}
@@ -1561,11 +1573,19 @@
   document.addEventListener('drop',externalDrop,true);
 
   // ---------- édition collaborative ----------
+  var lastCollaborationAttrs=null;
+  function memeLecturePersonnage(a,b){
+    if(!a||!b)return false;
+    var keys=Object.keys(a).filter(function(k){return k!=='owd_presence';});
+    if(keys.length!==Object.keys(b).filter(function(k){return k!=='owd_presence';}).length)return false;
+    return keys.every(function(k){return b[k]&&String(a[k].current)===String(b[k].current)&&String(a[k].max)===String(b[k].max);});
+  }
   function recoitCollaboration(attrs) {
     try {
+      if(!gele&&!miseANiveauDemandee&&memeLecturePersonnage(attrs,lastCollaborationAttrs)){actualiseStatutEnregistrement(false);return;}
       // capture() a déjà reçu chaque frappe dans le shim SYNCHRONE, avant le
       // debounce de sauvegarde : même une réponse arrivée à cet instant la garde.
-      var server=C.read(attrs),previous=null;if(server)journalRemote=server;if(!server&&collaboration.hasBase)throw Error('Manifeste de stockage absent de la lecture Roll20.');try{previous=C.read(collaboration.attrs);}catch(e){}
+      var previous=journalRemote,server=(collaboration.reader?collaboration.reader.read(attrs):C.read(attrs));if(server)journalRemote=server;if(!server&&collaboration.hasBase)throw Error('Manifeste de stockage absent de la lecture Roll20.');if(!previous)try{previous=C.read(collaboration.attrs);}catch(e){}
       if(server&&collaboration.hasBase){['pv','pe','pm'].forEach(function(k){var a=attrs['owd_'+k],raw=a&&String(a.current),n=Number(raw),actual=server.state.etat[k];
         if(actual==null)actual=collaboration.maxima[k];
         var old=previous&&previous.state.etat[k];if(old==null)old=collaboration.maxima[k];
@@ -1577,9 +1597,10 @@
         tokenMaxObserved[k]=maximum;
         tokenObserved[k]=raw;
       });}
-      var recu = collaboration.receive(attrs);
+      var recu = collaboration.receive(attrs,server);
       lastAttrs = attrs;
       if (!recu) return;
+      if(!recu.incomplete)lastCollaborationAttrs=attrs;
       if(server&&!server.incomplete)memoriseLectureVerifiee(attrs,server);
       if(miseANiveauDemandee&&server&&!server.incomplete&&Number(server.state.v)===schemaSite()&&miseANiveauOps.every(function(id){return !!server.ids[id];})){miseANiveauDemandee=false;stopLoading();fermerEcran();openingDone=true;installModeBar();}
       if(collaboration.hasBase&&!recu.incomplete){if(server.meta.phase!=='ready')post({type:'storage-activate'});else post({type:'storage-cleanup'});}

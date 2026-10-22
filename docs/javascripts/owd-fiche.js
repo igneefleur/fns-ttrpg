@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.14.0b";
+  var RELEASE = "4.16.0b";
   var SCHEMA = 18;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -148,7 +148,7 @@
   // trahir la version qu'on croit rejouer.
   function dataUrl() {
     var u = typeof window !== "undefined" ? window.__owdDataUrl : null;
-    return u || (siteBase() + "owd-creation.json");
+    return u || (siteBase() + "owd-creation-runtime.json");
   }
   function siteBase() {
     var l = document.querySelector('link[href*="assets/"], script[src*="assets/"]');
@@ -333,6 +333,14 @@
   function typesDegats() { return Array.isArray(D().typesDegats) ? D().typesDegats : []; }
   function armesData() { return Array.isArray(D().armes) ? D().armes : []; }
 
+
+  function decodeRuntimeData(d){
+    if(!d||d.format!=='owd-runtime-1')return d;
+    if(!d.data||!d.catalogue)throw Error('Données communes incomplètes.');
+    var out=Object.assign({},d.data);
+    ['equipements','consommables'].forEach(function(k){var t=d.catalogue[k];if(!t||!Array.isArray(t.lignes)||!t.defauts)throw Error('Catalogue incomplet.');out[k]=t.lignes.map(function(row){return Object.assign({},t.defauts,row);});});
+    return out;
+  }
   // ---------- état ----------
   // L'état VIERGE, et la SEULE table qui fasse autorité sur les clés racine.
   // Trois règles tiennent ce bloc, et chacune a déjà coûté quelque chose :
@@ -3020,19 +3028,39 @@
     });
     effVu = e;
   }
-  function refresh() {
+  var refreshEmpreintes=null;
+  var VUE_DEPENDANCES={notes:['notes'],bg:['background'],avantages:['avantages'],techniques:['techniques'],journal:[],modules:['modules','modActifs'],mods:['mods']};
+  function refresh(force) {
     actualiseHorlogeAlcool();
     actualiseRegimeExposition();
     suitEffondrement();
     save();
+    var stamps={},changes=[],invalidStamp=false;
+    try{
+    Object.keys(state).forEach(function(k){if(k==='etat'){Object.keys(state.etat).forEach(function(r){stamps['etat.'+r]=JSON.stringify(state.etat[r]);});}else stamps[k]=JSON.stringify(state[k]);});
+    }catch(e){invalidStamp=true;}
+    Object.keys(stamps).forEach(function(k){if(!refreshEmpreintes||stamps[k]!==refreshEmpreintes[k])changes.push(k);});
+    var all=invalidStamp||force===true||!refreshEmpreintes||!changes.length||modulesPersoActifs();refreshEmpreintes=invalidStamp?null:stamps;
+    function doit(id){
+      // Le panneau Notes peut être masqué par le conteneur Roll20 sans signal.
+      // Sa fenêtre limitée de messages reste cohérente sans reconstruire le module.
+      if(id==='notes'&&changes.indexOf('notes')>=0)return true;
+      if(window.__owdViewVisible===false&&!modulesPersoActifs())return false;
+      var node=elModules[id];if(node&&!node.getClientRects().length&&!modulesPersoActifs())return false;
+      if(all)return true;
+      if(changes.every(function(k){return /^etat\.(pv|pe|pm)$/.test(k);}))return changes.some(function(k){return k==='etat.'+id;})||id==='optcaps';
+      if(VUE_DEPENDANCES[id])return changes.some(function(k){return VUE_DEPENDANCES[id].indexOf(k)>=0;});
+      if(changes.every(function(k){return ['notes','background','portrait','name','age','sexe','genre'].indexOf(k)>=0;}))return false;
+      return true;
+    }
     var bilan = {};
     joue("", regHors, bilan);
     // les clés d'un objet se parcourent dans leur ordre de création : c'est
     // l'ordre de montage des modules, donc l'affichage ne bouge pas
-    Object.keys(regsModules).forEach(function (id) { joue(id, regsModules[id], bilan); });
-    joue("comps", compHooks, bilan);
-    joue("recuperation", recupHooks, bilan);
-    joue("optcomps", optHooks, bilan);
+    Object.keys(regsModules).forEach(function (id) {if(doit(id))joue(id,regsModules[id],bilan);});
+    if(doit("comps"))joue("comps",compHooks,bilan);
+    if(doit("recuperation"))joue("recuperation",recupHooks,bilan);
+    if(doit("optcomps"))joue("optcomps",optHooks,bilan);
     Object.keys(bilan).forEach(function (id) {
       var e = etatModule(id);
       if (e.musele) return;
@@ -3844,7 +3872,9 @@
         btns[t.id].classList.toggle("on", t.id === id);
         panes[t.id].classList.toggle("on", t.id === id);
       });
-      setTab(id);   // l'onglet ouvert survit au remontage
+      setTab(id);
+      if(!enMontage){monteOnglet(id);refresh(true);}
+      //    // l'onglet ouvert survit au remontage
     }
     sheet.appendChild(bar);
     TABS.forEach(function (t) { sheet.appendChild(panes[t.id]); });
@@ -4004,73 +4034,67 @@
     try { return !!m.pour(); } catch (e) { return false; }
   }
 
-  function monteModules(panes) {
-    var colonnes = {};
-    elModules = {};
-    TABS.forEach(function (t) {
-      if (SQUELETTES[t.id] && panes[t.id]) colonnes[t.id] = SQUELETTES[t.id](panes[t.id]);
+  var modulesDifferes=[],moduleObserver=null;
+  function observeModuleDiffere(slot){if(moduleObserver)moduleObserver.observe(slot);}
+  function observeVisibiliteModules(){
+    if(typeof IntersectionObserver!=='function')return;
+    var seen=false,wasVisible=true;
+    var observer=new IntersectionObserver(function(entries){
+      var restore=false;entries.forEach(function(e){if(e.target===rootEl){if(seen&&!wasVisible&&e.isIntersecting)restore=true;seen=true;wasVisible=e.isIntersecting;}});
+      if(window.__owdViewVisible===false)return;
+      var ready=modulesDifferes.filter(function(x){return entries.some(function(e){return e.target===x.slot&&e.isIntersecting;})&&x.slot.getClientRects().length;});
+      modulesDifferes=modulesDifferes.filter(function(x){return ready.indexOf(x)<0;});
+      ready.forEach(function(x){observer.unobserve(x.slot);construitModule(x.m,x.hote,x.slot);});
+      if(ready.length||restore)refresh(true);
     });
-    ordreModules().forEach(function (m) {
-      if (panes.inventoryRoot && m.id !== (panes.onlyModule || "inv")) return;
-      // Coupé : pas monté. Ce test passe AVANT celui de l'hôte — un module
-      // coupé n'affiche rien parce que le joueur l'a voulu, il n'a pas à porter
-      // la mention de ceux qui ne trouvent pas leur place.
-      if (!panes.inventoryRoot && m.id !== MODULE_REGLAGES && !actif(m.id)) return;
-      if (!moduleAffichable(m)) return;
-      // Onglet ou colonne inconnus : le module est laissé de côté (un mod mal
-      // réglé ne doit pas emporter la fiche), mais il est MARQUÉ — sans ce
-      // « vide », il ne s'affiche nulle part ET ne se plaint nulle part.
-      // aClef, et pas une simple lecture : une colonne nommée « constructor »
-      // rendrait une méthode d'Object en guise d'hôte, et le montage tomberait
-      // sur le premier appendChild.
-      var cols = colonnes[m.onglet];
-      var hote = panes.inventoryRoot || ((cols && aClef(cols, m.colonne)) ? cols[m.colonne] : null);
-      if (!hote) { etatModule(m.id).vide = true; return; }
-      var reg = regModule(m.id);
-      var precedent = hooks;
-      var propPrecedent = proprietaireCourant;
-      var e;
-      hooks = reg;
-      // le MOD qui a posé ce module, s'il vient d'un mod : c'est lui l'ayant
-      // droit de ce que le build enregistre, pas l'id du bloc
-      proprietaireCourant = m.__mod || m.id;
-      try {
-        e = m.build(contexte(m, reg));
-        // build qui rend autre chose qu'un ÉLÉMENT : rien à monter, et rien qui
-        // porte un dataset. Le traiter comme muet coûte un bloc ; le poser dans
-        // la page coûtait la fiche entière.
-        if (e && e.nodeType !== 1) e = null;
-        if (e && !e.dataset.module) e.dataset.module = m.id;
-        etatModule(m.id).panne = "";
-      } catch (err) {
-        // build a pu pousser des fonctions avant de tomber : elles pointent sur
-        // un bloc à moitié bâti et jetteraient à chaque rafraîchissement
-        reg.length = 0;
-        e = blocEnPanne(m, err);
-      }
-      hooks = precedent;
-      proprietaireCourant = propPrecedent;
-      // un build qui ne rend rien n'est PAS une erreur (un module a le droit de
-      // s'effacer), mais la liste doit pouvoir le signaler
-      etatModule(m.id).vide = !e;
-      if (!e) return;
-      // L'INSERTION AUSSI PEUT JETER, et c'était la dernière porte par laquelle
-      // un mod fermait la fiche : un build qui rend document.body fait lever
-      // appendChild, l'exception sortait de mount(), et comme le mod voyage
-      // avec le personnage cela recommençait à CHAQUE ouverture, sans une ligne
-      // d'interface pour couper le fautif.
-      try {
-        hote.appendChild(e);
-        elModules[m.id] = e;
-      } catch (err2) {
-        reg.length = 0;
-        var carte = blocEnPanne(m, err2);
-        elModules[m.id] = carte;
-        hote.appendChild(carte);   // la carte de panne, elle, s'insère forcément
-      }
+    moduleObserver=observer;observer.observe(rootEl);remontageNettoyage.push(function(){observer.disconnect();});
+  }
+  function moduleNatif(m){return MODULES_NATIFS.some(function(n){return n.id===m.id&&n.build===m.build;});}
+  function modulesPersoActifs(){return (typeof filtres!=='undefined'&&Object.keys(filtres).some(function(k){return filtres[k].length>0;}))||(Array.isArray(modules)&&modules.some(function(m){return !moduleNatif(m);}))||(state.mods||[]).some(function(m){return m.actif!==false&&modAutorise(m.id);});}
+  function construitModule(m,hote,slot){
+    var reg=regModule(m.id),precedent=hooks,propPrecedent=proprietaireCourant,e;
+    hooks=reg;proprietaireCourant=m.__mod||m.id;
+    var cleanStart=remontageNettoyage.length;
+    try{e=m.build(contexte(m,reg));if(e&&e.nodeType!==1)e=null;if(e&&!e.dataset.module)e.dataset.module=m.id;etatModule(m.id).panne='';}
+    catch(err){reg.length=0;e=blocEnPanne(m,err);}
+    finally{hooks=precedent;proprietaireCourant=propPrecedent;}
+    remontageNettoyage.slice(cleanStart).forEach(function(fn){fn._owdModule=m.id;});
+    etatModule(m.id).vide=!e;
+    if(!e){if(slot)slot.remove();delete elModules[m.id];return;}
+    try{if(slot&&slot.parentNode)slot.parentNode.replaceChild(e,slot);else hote.appendChild(e);elModules[m.id]=e;}
+    catch(err2){reg.length=0;var carte=blocEnPanne(m,err2);if(slot&&slot.parentNode)slot.parentNode.replaceChild(carte,slot);else hote.appendChild(carte);elModules[m.id]=carte;}
+  }
+  function monteOnglet(id){
+    var todo=modulesDifferes.filter(function(x){return id==null||x.m.onglet===id;});
+    modulesDifferes=modulesDifferes.filter(function(x){return id!=null&&x.m.onglet!==id;});
+    todo.forEach(function(x){if(moduleObserver)moduleObserver.unobserve(x.slot);construitModule(x.m,x.hote,x.slot);});
+  }
+  function reconstruitModules(ids){
+    ids.forEach(function(id){
+      var old=elModules[id],m=modules.filter(function(x){return x.id===id;})[0];
+      if(!old||!old.parentNode||!m||old.classList.contains('pc-module-differe'))return;
+      var retained=[];remontageNettoyage.forEach(function(fn){if(fn._owdModule===id){try{fn();}catch(e){}}else retained.push(fn);});remontageNettoyage=retained;
+      regsModules[id]=[];if(id==='comps')compHooks=[];if(id==='recuperation')recupHooks=[];if(id==='optcomps')optHooks=[];
+      etatsModules[id]={echecs:0,musele:false,erreur:'',panne:'',vide:false};
+      if((window.__owdViewVisible===false||!old.getClientRects().length)&&!m.__mod&&!modulesPersoActifs()){
+        var parent=old.parentNode,slot=el('div','pc-module-differe');slot.dataset.module=id;slot.style.minHeight='1px';parent.replaceChild(slot,old);elModules[id]=slot;modulesDifferes.push({m:m,hote:parent,slot:slot});observeModuleDiffere(slot);
+      }else construitModule(m,old.parentNode,old);
     });
   }
-
+  function monteModules(panes){
+    var colonnes={};elModules={};modulesDifferes=[];observeVisibiliteModules();
+    TABS.forEach(function(t){if(SQUELETTES[t.id]&&panes[t.id])colonnes[t.id]=SQUELETTES[t.id](panes[t.id]);});
+    ordreModules().forEach(function(m){
+      if(panes.inventoryRoot&&m.id!==(panes.onlyModule||'inv'))return;
+      if(!panes.inventoryRoot&&m.id!==MODULE_REGLAGES&&!actif(m.id))return;
+      if(!moduleAffichable(m))return;
+      var cols=colonnes[m.onglet],hote=panes.inventoryRoot||((cols&&aClef(cols,m.colonne))?cols[m.colonne]:null);
+      if(!hote){etatModule(m.id).vide=true;return;}
+      if(((panes.inventoryRoot&&window.__owdViewVisible===false)||(!panes.inventoryRoot&&m.onglet!==curTab()))&&!m.__mod&&!modulesPersoActifs()){
+        var slot=el('div','pc-module-differe');slot.dataset.module=m.id;slot.style.minHeight='1px';hote.appendChild(slot);elModules[m.id]=slot;modulesDifferes.push({m:m,hote:hote,slot:slot});observeModuleDiffere(slot);
+      }else construitModule(m,hote,null);
+    });
+  }
   // ---------- isolation des pannes ----------
   function blocEnPanne(m, err) {
     var msg = messageErreur(err);
@@ -8304,8 +8328,21 @@
   function invTailleAccepte(taille, max) {return (!taille || INV_TAILLES.indexOf(taille)>=0) && (!max || INV_TAILLES.indexOf(max)>=0) && (!taille || !max || INV_TAILLES.indexOf(taille)<=INV_TAILLES.indexOf(max));}
   function invCoutAcc(o,lieu) {return 1;} // Chaque objet accroché occupe un emplacement, taille contrôlée séparément.
   function invTailleMaxSac(o) {return o && (o.tailleInterieure || (o.cap>=100?"Moyenne":o.cap>=50?"Petite":"Très petite"));}
+  var catalogueIndex=null;
+  function modeleCatalogue(o){
+    var d=D(),items=d.equipements||[],foods=d.consommables||[];
+    if(typeof state!=='undefined'&&state&&typeof modulesPersoActifs==='function'&&modulesPersoActifs())return items.concat(foods).filter(function(x){return x.id===(o.catalogueId||o.id)||(x.aliasIds||[]).indexOf(o.catalogueId||o.id)>=0||x.nom===o.nom||(x.aliases||[]).indexOf(o.nom)>=0;})[0];
+    if(!catalogueIndex||catalogueIndex.items!==items||catalogueIndex.foods!==foods||catalogueIndex.count!==items.length+foods.length){
+      var all=items.concat(foods),byId=Object.create(null),byName=Object.create(null);
+      function add(map,key,i){if(typeof key==='string'&&key&&!Object.prototype.hasOwnProperty.call(map,key))map[key]=i;}
+      all.forEach(function(x,i){add(byId,x.id,i);(x.aliasIds||[]).forEach(function(k){add(byId,k,i);});add(byName,x.nom,i);(x.aliases||[]).forEach(function(k){add(byName,k,i);});});
+      catalogueIndex={items:items,foods:foods,count:all.length,all:all,ids:byId,names:byName};
+    }
+    var id=catalogueIndex.ids[o.catalogueId||o.id],name=catalogueIndex.names[o.nom],i=id===undefined?name:name===undefined?id:Math.min(id,name);
+    return i===undefined?undefined:catalogueIndex.all[i];
+  }
   function enrichitObjet(n,o) {
-    var modele=(D().equipements||[]).concat(D().consommables||[]).filter(function(x){return x.id===(o.catalogueId||o.id) || (x.aliasIds||[]).indexOf(o.catalogueId||o.id)>=0 || x.nom===o.nom || (x.aliases||[]).indexOf(o.nom)>=0;})[0];
+    var modele=modeleCatalogue(o);
     // Les anciens achats de Boutique ne transportaient aucun champ technique.
     // Leurs quantités, prix, poids, image et description restent ceux du joueur.
     if(!o.versionObjet && /^boutique:/.test(o.id||"") && modele){
@@ -11024,7 +11061,7 @@
     b.appendChild(search);b.appendChild(info);b.appendChild(list);b.appendChild(pages);
     var previous="",dead=false,timer=null;
     function render(force) {
-      if(dead || (!force && !b.getClientRects().length))return;
+      if(dead || (!force && (window.__owdViewVisible===false||!b.getClientRects().length)))return;
       if(typeof window.__owdJournal!=="function") {info.textContent="Le journal des changements est disponible dans Roll20.";return;}
       var data=window.__owdJournal(), rows=data.ops.filter(function(op){return op.changes&&op.changes.length;});
       var signature=rows.map(function(op){return op.id;}).join("|")+"/"+Object.keys(data.pending).join("|")+"/"+data.conflicts.length+"/"+data.identity;
@@ -11585,6 +11622,14 @@
     if (!s || parseInt(s.v, 10) !== SCHEMA) throw new Error("Schéma distant incompatible : recharger la fiche.");
     s = normalize(s);
     if (JSON.stringify(s) === JSON.stringify(state)) return;
+    var changes=Object.keys(state).concat(Object.keys(s).filter(function(k){return !Object.prototype.hasOwnProperty.call(state,k);})).filter(function(k){return JSON.stringify(s[k])!==JSON.stringify(state[k]);});
+    if(!changes.length)return;
+    var structural={notes:[],background:['bg'],avantages:['avantages'],comps:['comps','optcomps','attaque','defense'],techniques:['techniques'],inv:['inv','attaque','defense','effets'],attaques:['attaque'],defenses:['defense'],combatOptions:['attaque','defense'],combatModifiers:['attaque','defense'],combatAffichage:['attaque','defense'],effetsActifs:['effets','recuperation'],effetsPermanents:['effets','recuperation'],caracs:['caracs'],caracsXp:['caracs'],caracsLeviers:['modcaracs'],capsLeviers:['optcaps'],compsLeviers:['optcomps','comps']};
+    var scalar=['name','portrait','age','sexe','genre','espece','taille','xpTotal','etat','effort','temperature','qualiteSommeil','horloge','horlogeDigestion','horlogeExposition','horlogeAlcool','effAlcool','effAlcoolSecondes','effParties','effAutre','effDesactive','effPause','allure','allureCran','desTailles','desUtilises'];
+    var oldData=state.modData||{},newData=s.modData||{};
+    if(Object.keys(oldData).concat(Object.keys(newData)).every(function(k){return k==='recuperation'||JSON.stringify(oldData[k])===JSON.stringify(newData[k]);}))structural.modData=['recuperation'];
+    var targets=[],partial=!modulesPersoActifs()&&changes.every(function(k){return structural[k]||scalar.indexOf(k)>=0;});
+    if(partial)changes.forEach(function(k){(structural[k]||[]).forEach(function(id){if(targets.indexOf(id)<0)targets.push(id);});});
     var actif = document.activeElement, focus = null, positions = [];
     function signature(c) { return [c.tagName, c.type || "", c.className, c.getAttribute("placeholder") || "", c.getAttribute("aria-label") || ""].join("|"); }
     function ancre(c) {
@@ -11601,13 +11646,16 @@
     }
     var sx = window.scrollX, sy = window.scrollY;
     Array.prototype.forEach.call(rootEl.querySelectorAll("[data-module]"), function (m) {
+      if(partial&&targets.indexOf(m.dataset.module)<0)return;
       Array.prototype.forEach.call(m.querySelectorAll("*"), function (n, i) {
         if (n.scrollTop || n.scrollLeft) positions.push({ module: m.dataset.module, index: i, top: n.scrollTop, left: n.scrollLeft });
       });
     });
-    journalTemps = []; effVu = null; effMaxVu = {};
-    state = normalize(s);
-    remount();
+    journalTemps=[];
+    if(partial){
+      changes.forEach(function(k){if(s[k]===undefined)delete state[k];else if(k==='etat'){Object.keys(state.etat).forEach(function(r){if(!(r in s.etat))delete state.etat[r];});Object.assign(state.etat,s.etat);}else state[k]=s[k];});
+      reconstruitModules(targets);refresh();
+    }else{effVu=null;effMaxVu={};state=s;remount();}
     positions.forEach(function (p) {
       var m = Array.prototype.find.call(rootEl.querySelectorAll("[data-module]"), function (n) { return n.dataset.module === p.module; });
       var n = m && m.querySelectorAll("*")[p.index]; if (n) { n.scrollTop = p.top; n.scrollLeft = p.left; }
@@ -11634,6 +11682,7 @@
 
   window.Owd = {
     __pret: false,
+    __afficheVue:function(){monteOnglet(window.__owdVueInventaire?null:curTab());refresh(true);},
     __recoitEtat: recoitEtatCollaboratif,
     __defendreDepuisChat: defenseDepuisChat,
     __montreObjet: montreObjet,
@@ -11781,6 +11830,7 @@
   }
   function montage(root) {
     remontageNettoyage.splice(0).forEach(function (f) { try { f(); } catch (e) {} });
+    modulesDifferes=[];refreshEmpreintes=null;
     rootEl = root;
     enMontage = true;
     // Tous les registres repartent à vide : les anciens pointent sur un DOM qui
@@ -11876,7 +11926,7 @@
       .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
       // DATA vide vaut échec : sans lui le montage partirait sans données, et
       // c'est bien du fichier qu'il faudrait alors se plaindre
-      .then(function (d) { if (!d) throw new Error("données vides"); DATA = d; })
+      .then(function (d) { if (!d) throw new Error("données vides"); DATA = decodeRuntimeData(d); })
       .catch(function (e) {
         if(window.__owdOpenFailure){window.__owdOpenFailure('files');return;}
         root.innerHTML = '<p style="padding:2rem;color:#b0402c">La fiche n\'a pas pu charger ses données (' +

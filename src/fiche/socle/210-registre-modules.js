@@ -150,70 +150,64 @@
     try { return !!m.pour(); } catch (e) { return false; }
   }
 
-  function monteModules(panes) {
-    var colonnes = {};
-    elModules = {};
-    TABS.forEach(function (t) {
-      if (SQUELETTES[t.id] && panes[t.id]) colonnes[t.id] = SQUELETTES[t.id](panes[t.id]);
+  var modulesDifferes=[],moduleObserver=null;
+  function observeModuleDiffere(slot){if(moduleObserver)moduleObserver.observe(slot);}
+  function observeVisibiliteModules(){
+    if(typeof IntersectionObserver!=='function')return;
+    var seen=false,wasVisible=true;
+    var observer=new IntersectionObserver(function(entries){
+      var restore=false;entries.forEach(function(e){if(e.target===rootEl){if(seen&&!wasVisible&&e.isIntersecting)restore=true;seen=true;wasVisible=e.isIntersecting;}});
+      if(window.__owdViewVisible===false)return;
+      var ready=modulesDifferes.filter(function(x){return entries.some(function(e){return e.target===x.slot&&e.isIntersecting;})&&x.slot.getClientRects().length;});
+      modulesDifferes=modulesDifferes.filter(function(x){return ready.indexOf(x)<0;});
+      ready.forEach(function(x){observer.unobserve(x.slot);construitModule(x.m,x.hote,x.slot);});
+      if(ready.length||restore)refresh(true);
     });
-    ordreModules().forEach(function (m) {
-      if (panes.inventoryRoot && m.id !== (panes.onlyModule || "inv")) return;
-      // Coupé : pas monté. Ce test passe AVANT celui de l'hôte — un module
-      // coupé n'affiche rien parce que le joueur l'a voulu, il n'a pas à porter
-      // la mention de ceux qui ne trouvent pas leur place.
-      if (!panes.inventoryRoot && m.id !== MODULE_REGLAGES && !actif(m.id)) return;
-      if (!moduleAffichable(m)) return;
-      // Onglet ou colonne inconnus : le module est laissé de côté (un mod mal
-      // réglé ne doit pas emporter la fiche), mais il est MARQUÉ — sans ce
-      // « vide », il ne s'affiche nulle part ET ne se plaint nulle part.
-      // aClef, et pas une simple lecture : une colonne nommée « constructor »
-      // rendrait une méthode d'Object en guise d'hôte, et le montage tomberait
-      // sur le premier appendChild.
-      var cols = colonnes[m.onglet];
-      var hote = panes.inventoryRoot || ((cols && aClef(cols, m.colonne)) ? cols[m.colonne] : null);
-      if (!hote) { etatModule(m.id).vide = true; return; }
-      var reg = regModule(m.id);
-      var precedent = hooks;
-      var propPrecedent = proprietaireCourant;
-      var e;
-      hooks = reg;
-      // le MOD qui a posé ce module, s'il vient d'un mod : c'est lui l'ayant
-      // droit de ce que le build enregistre, pas l'id du bloc
-      proprietaireCourant = m.__mod || m.id;
-      try {
-        e = m.build(contexte(m, reg));
-        // build qui rend autre chose qu'un ÉLÉMENT : rien à monter, et rien qui
-        // porte un dataset. Le traiter comme muet coûte un bloc ; le poser dans
-        // la page coûtait la fiche entière.
-        if (e && e.nodeType !== 1) e = null;
-        if (e && !e.dataset.module) e.dataset.module = m.id;
-        etatModule(m.id).panne = "";
-      } catch (err) {
-        // build a pu pousser des fonctions avant de tomber : elles pointent sur
-        // un bloc à moitié bâti et jetteraient à chaque rafraîchissement
-        reg.length = 0;
-        e = blocEnPanne(m, err);
-      }
-      hooks = precedent;
-      proprietaireCourant = propPrecedent;
-      // un build qui ne rend rien n'est PAS une erreur (un module a le droit de
-      // s'effacer), mais la liste doit pouvoir le signaler
-      etatModule(m.id).vide = !e;
-      if (!e) return;
-      // L'INSERTION AUSSI PEUT JETER, et c'était la dernière porte par laquelle
-      // un mod fermait la fiche : un build qui rend document.body fait lever
-      // appendChild, l'exception sortait de mount(), et comme le mod voyage
-      // avec le personnage cela recommençait à CHAQUE ouverture, sans une ligne
-      // d'interface pour couper le fautif.
-      try {
-        hote.appendChild(e);
-        elModules[m.id] = e;
-      } catch (err2) {
-        reg.length = 0;
-        var carte = blocEnPanne(m, err2);
-        elModules[m.id] = carte;
-        hote.appendChild(carte);   // la carte de panne, elle, s'insère forcément
-      }
+    moduleObserver=observer;observer.observe(rootEl);remontageNettoyage.push(function(){observer.disconnect();});
+  }
+  function moduleNatif(m){return MODULES_NATIFS.some(function(n){return n.id===m.id&&n.build===m.build;});}
+  function modulesPersoActifs(){return (typeof filtres!=='undefined'&&Object.keys(filtres).some(function(k){return filtres[k].length>0;}))||(Array.isArray(modules)&&modules.some(function(m){return !moduleNatif(m);}))||(state.mods||[]).some(function(m){return m.actif!==false&&modAutorise(m.id);});}
+  function construitModule(m,hote,slot){
+    var reg=regModule(m.id),precedent=hooks,propPrecedent=proprietaireCourant,e;
+    hooks=reg;proprietaireCourant=m.__mod||m.id;
+    var cleanStart=remontageNettoyage.length;
+    try{e=m.build(contexte(m,reg));if(e&&e.nodeType!==1)e=null;if(e&&!e.dataset.module)e.dataset.module=m.id;etatModule(m.id).panne='';}
+    catch(err){reg.length=0;e=blocEnPanne(m,err);}
+    finally{hooks=precedent;proprietaireCourant=propPrecedent;}
+    remontageNettoyage.slice(cleanStart).forEach(function(fn){fn._owdModule=m.id;});
+    etatModule(m.id).vide=!e;
+    if(!e){if(slot)slot.remove();delete elModules[m.id];return;}
+    try{if(slot&&slot.parentNode)slot.parentNode.replaceChild(e,slot);else hote.appendChild(e);elModules[m.id]=e;}
+    catch(err2){reg.length=0;var carte=blocEnPanne(m,err2);if(slot&&slot.parentNode)slot.parentNode.replaceChild(carte,slot);else hote.appendChild(carte);elModules[m.id]=carte;}
+  }
+  function monteOnglet(id){
+    var todo=modulesDifferes.filter(function(x){return id==null||x.m.onglet===id;});
+    modulesDifferes=modulesDifferes.filter(function(x){return id!=null&&x.m.onglet!==id;});
+    todo.forEach(function(x){if(moduleObserver)moduleObserver.unobserve(x.slot);construitModule(x.m,x.hote,x.slot);});
+  }
+  function reconstruitModules(ids){
+    ids.forEach(function(id){
+      var old=elModules[id],m=modules.filter(function(x){return x.id===id;})[0];
+      if(!old||!old.parentNode||!m||old.classList.contains('pc-module-differe'))return;
+      var retained=[];remontageNettoyage.forEach(function(fn){if(fn._owdModule===id){try{fn();}catch(e){}}else retained.push(fn);});remontageNettoyage=retained;
+      regsModules[id]=[];if(id==='comps')compHooks=[];if(id==='recuperation')recupHooks=[];if(id==='optcomps')optHooks=[];
+      etatsModules[id]={echecs:0,musele:false,erreur:'',panne:'',vide:false};
+      if((window.__owdViewVisible===false||!old.getClientRects().length)&&!m.__mod&&!modulesPersoActifs()){
+        var parent=old.parentNode,slot=el('div','pc-module-differe');slot.dataset.module=id;slot.style.minHeight='1px';parent.replaceChild(slot,old);elModules[id]=slot;modulesDifferes.push({m:m,hote:parent,slot:slot});observeModuleDiffere(slot);
+      }else construitModule(m,old.parentNode,old);
     });
   }
-
+  function monteModules(panes){
+    var colonnes={};elModules={};modulesDifferes=[];observeVisibiliteModules();
+    TABS.forEach(function(t){if(SQUELETTES[t.id]&&panes[t.id])colonnes[t.id]=SQUELETTES[t.id](panes[t.id]);});
+    ordreModules().forEach(function(m){
+      if(panes.inventoryRoot&&m.id!==(panes.onlyModule||'inv'))return;
+      if(!panes.inventoryRoot&&m.id!==MODULE_REGLAGES&&!actif(m.id))return;
+      if(!moduleAffichable(m))return;
+      var cols=colonnes[m.onglet],hote=panes.inventoryRoot||((cols&&aClef(cols,m.colonne))?cols[m.colonne]:null);
+      if(!hote){etatModule(m.id).vide=true;return;}
+      if(((panes.inventoryRoot&&window.__owdViewVisible===false)||(!panes.inventoryRoot&&m.onglet!==curTab()))&&!m.__mod&&!modulesPersoActifs()){
+        var slot=el('div','pc-module-differe');slot.dataset.module=m.id;slot.style.minHeight='1px';hote.appendChild(slot);elModules[m.id]=slot;modulesDifferes.push({m:m,hote:hote,slot:slot});observeModuleDiffere(slot);
+      }else construitModule(m,hote,null);
+    });
+  }

@@ -75,6 +75,8 @@ jobs:
           node scripts/test_sync.js
           node scripts/test_sync_blocks.js
           node scripts/test_sync_blocks_bridge.js
+          node scripts/test_session_ui.js
+          node scripts/test_performance_sync.js
           node scripts/test_monde.js
           node scripts/test_inventory_stacks.js
           node scripts/test_inventaire.js

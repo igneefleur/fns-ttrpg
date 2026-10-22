@@ -85,3 +85,11 @@
   function typesDegats() { return Array.isArray(D().typesDegats) ? D().typesDegats : []; }
   function armesData() { return Array.isArray(D().armes) ? D().armes : []; }
 
+
+  function decodeRuntimeData(d){
+    if(!d||d.format!=='owd-runtime-1')return d;
+    if(!d.data||!d.catalogue)throw Error('Données communes incomplètes.');
+    var out=Object.assign({},d.data);
+    ['equipements','consommables'].forEach(function(k){var t=d.catalogue[k];if(!t||!Array.isArray(t.lignes)||!t.defauts)throw Error('Catalogue incomplet.');out[k]=t.lignes.map(function(row){return Object.assign({},t.defauts,row);});});
+    return out;
+  }

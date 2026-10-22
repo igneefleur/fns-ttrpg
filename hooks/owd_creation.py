@@ -1155,6 +1155,34 @@ def _jeu(docs):
     return jeu
 
 
+def _runtime_catalogue(rows):
+    # Seulement des valeurs primitives présentes sur TOUS les objets :
+    # aucune confusion entre champ absent, null, faux et zéro.
+    if not rows:
+        return {"defauts": {}, "lignes": []}
+    from collections import Counter
+    common = set(rows[0]).intersection(*(set(row) for row in rows[1:]))
+    defaults = {}
+    for key in sorted(common):
+        values = [row[key] for row in rows]
+        if not all(value is None or isinstance(value, (str, int, float, bool)) for value in values):
+            continue
+        counts = Counter(json.dumps(value, ensure_ascii=False) for value in values)
+        raw, count = counts.most_common(1)[0]
+        if count > 1 and count >= len(rows) * .6:
+            defaults[key] = json.loads(raw)
+    lines = [{key: value for key, value in row.items()
+              if key not in defaults or json.dumps(value, ensure_ascii=False) != json.dumps(defaults[key], ensure_ascii=False)}
+             for row in rows]
+    return {"defauts": defaults, "lignes": lines}
+
+
+def runtime_data(jeu):
+    return {"format": "owd-runtime-1",
+            "data": {key: value for key, value in jeu.items() if key not in ("equipements", "consommables")},
+            "catalogue": {key: _runtime_catalogue(jeu.get(key, [])) for key in ("equipements", "consommables")}}
+
+
 def on_files(files, config, **kwargs):
     jeu = _jeu(config["docs_dir"])
     # La Boutique définit tous les objets et effets ; le livre ne les redéfinit pas.
@@ -1185,4 +1213,6 @@ def on_files(files, config, **kwargs):
             CIBLE, len(absents), ", ".join(absents))
     contenu = json.dumps(jeu, ensure_ascii=False, indent=1)
     files.append(File.generated(config, CIBLE, content=contenu))
+    compact = json.dumps(runtime_data(jeu), ensure_ascii=False, separators=(",", ":"))
+    files.append(File.generated(config, "owd-creation-runtime.json", content=compact))
     return files

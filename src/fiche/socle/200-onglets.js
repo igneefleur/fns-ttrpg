@@ -40,7 +40,9 @@
         btns[t.id].classList.toggle("on", t.id === id);
         panes[t.id].classList.toggle("on", t.id === id);
       });
-      setTab(id);   // l'onglet ouvert survit au remontage
+      setTab(id);
+      if(!enMontage){monteOnglet(id);refresh(true);}
+      //    // l'onglet ouvert survit au remontage
     }
     sheet.appendChild(bar);
     TABS.forEach(function (t) { sheet.appendChild(panes[t.id]); });

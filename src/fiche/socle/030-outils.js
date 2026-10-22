@@ -12,7 +12,7 @@
   // trahir la version qu'on croit rejouer.
   function dataUrl() {
     var u = typeof window !== "undefined" ? window.__owdDataUrl : null;
-    return u || (siteBase() + "owd-creation.json");
+    return u || (siteBase() + "owd-creation-runtime.json");
   }
   function siteBase() {
     var l = document.querySelector('link[href*="assets/"], script[src*="assets/"]');

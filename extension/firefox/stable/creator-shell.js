@@ -30,9 +30,11 @@ if (typeof browser === "undefined") { var browser = chrome; }
   "use strict";
   var SITE_URL = "https://igneefleur.github.io/fns-ttrpg/owd/roll20-fiche.html";   // propre à cette copie
 
-  var takeActive=true;
+  var takeActive=true,viewVisible=true;
+  document.getElementById('owd-remote').addEventListener('load',function(){this.contentWindow.postMessage({ns:'owd',type:'view-visible',active:viewVisible},'*');});
   window.addEventListener('message',function(ev){var d=ev.data,remote=document.getElementById('owd-remote');if(!d||d.ns!=='owd')return;
-    if(d.type==='take-active'&&ev.source===window.parent){takeActive=!!d.active;remote.contentWindow.postMessage(d,'*');}
+    if(d.type==='view-visible'&&ev.source===window.parent){viewVisible=!!d.active;remote.contentWindow.postMessage(d,'*');}
+    else if(d.type==='take-active'&&ev.source===window.parent){takeActive=!!d.active;remote.contentWindow.postMessage(d,'*');}
     else if(d.type==='take-ready'&&ev.source===remote.contentWindow)remote.contentWindow.postMessage({ns:'owd',type:'take-active',active:takeActive},'*');
   });
   function mount(url) {

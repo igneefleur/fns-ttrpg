@@ -76,19 +76,39 @@
     });
     effVu = e;
   }
-  function refresh() {
+  var refreshEmpreintes=null;
+  var VUE_DEPENDANCES={notes:['notes'],bg:['background'],avantages:['avantages'],techniques:['techniques'],journal:[],modules:['modules','modActifs'],mods:['mods']};
+  function refresh(force) {
     actualiseHorlogeAlcool();
     actualiseRegimeExposition();
     suitEffondrement();
     save();
+    var stamps={},changes=[],invalidStamp=false;
+    try{
+    Object.keys(state).forEach(function(k){if(k==='etat'){Object.keys(state.etat).forEach(function(r){stamps['etat.'+r]=JSON.stringify(state.etat[r]);});}else stamps[k]=JSON.stringify(state[k]);});
+    }catch(e){invalidStamp=true;}
+    Object.keys(stamps).forEach(function(k){if(!refreshEmpreintes||stamps[k]!==refreshEmpreintes[k])changes.push(k);});
+    var all=invalidStamp||force===true||!refreshEmpreintes||!changes.length||modulesPersoActifs();refreshEmpreintes=invalidStamp?null:stamps;
+    function doit(id){
+      // Le panneau Notes peut être masqué par le conteneur Roll20 sans signal.
+      // Sa fenêtre limitée de messages reste cohérente sans reconstruire le module.
+      if(id==='notes'&&changes.indexOf('notes')>=0)return true;
+      if(window.__owdViewVisible===false&&!modulesPersoActifs())return false;
+      var node=elModules[id];if(node&&!node.getClientRects().length&&!modulesPersoActifs())return false;
+      if(all)return true;
+      if(changes.every(function(k){return /^etat\.(pv|pe|pm)$/.test(k);}))return changes.some(function(k){return k==='etat.'+id;})||id==='optcaps';
+      if(VUE_DEPENDANCES[id])return changes.some(function(k){return VUE_DEPENDANCES[id].indexOf(k)>=0;});
+      if(changes.every(function(k){return ['notes','background','portrait','name','age','sexe','genre'].indexOf(k)>=0;}))return false;
+      return true;
+    }
     var bilan = {};
     joue("", regHors, bilan);
     // les clés d'un objet se parcourent dans leur ordre de création : c'est
     // l'ordre de montage des modules, donc l'affichage ne bouge pas
-    Object.keys(regsModules).forEach(function (id) { joue(id, regsModules[id], bilan); });
-    joue("comps", compHooks, bilan);
-    joue("recuperation", recupHooks, bilan);
-    joue("optcomps", optHooks, bilan);
+    Object.keys(regsModules).forEach(function (id) {if(doit(id))joue(id,regsModules[id],bilan);});
+    if(doit("comps"))joue("comps",compHooks,bilan);
+    if(doit("recuperation"))joue("recuperation",recupHooks,bilan);
+    if(doit("optcomps"))joue("optcomps",optHooks,bilan);
     Object.keys(bilan).forEach(function (id) {
       var e = etatModule(id);
       if (e.musele) return;

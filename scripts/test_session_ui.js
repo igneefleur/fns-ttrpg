@@ -17,3 +17,11 @@ assert.equal(save.compareExtension('4.2.0.1','4.2.0.2'),-1);assert.equal(save.co
 save.window.__owdSaveFailure('invalid');save.actualiseStatutEnregistrement(false);assert.match(banners.at(-1),/^Impossible/);save.window.__owdSaveFailure('');assert.equal(save.saveFailure,'');
 assert.doesNotMatch(boot,/Ne plus me demander|function epinglage|Afficher les détails techniques/);
 console.log('OK présence : fusion, paquets retardés, départ, expiration ; enregistrement : premier délai conservé, deux erreurs exclusives, confirmation.');
+
+// Les mises à jour natives ciblent leurs modules ; une clé inconnue garde le chemin complet.
+const source=fs.readFileSync('src/fiche/socle/310-api-publique.js','utf8'),begin=source.indexOf('  function recoitEtatCollaboratif('),end=source.indexOf('  window.Owd =',begin);
+const live={SCHEMA:18,JSON,Object,Array,Error,state:{v:18,name:'Alice',etat:{pv:100,pe:80,pm:20,ps:12},notes:{format:1,messages:[]}},normalize:s=>s,modulesPersoActifs:()=>false,rootEl:{querySelectorAll:()=>[]},document:{activeElement:null},window:{scrollX:0,scrollY:0,scrollTo(){}},journalTemps:[],effVu:null,effMaxVu:{},calls:0,mounts:0,rebuilt:[]};live.refresh=()=>live.calls++;live.remount=()=>live.mounts++;live.reconstruitModules=ids=>live.rebuilt.push(...ids);vm.createContext(live);vm.runInContext(source.slice(begin,end),live);
+let next=JSON.parse(JSON.stringify(live.state));next.etat.pe=63;live.recoitEtatCollaboratif(next);assert.equal(live.state.etat.pe,63);assert.equal(live.mounts,0);assert.equal(live.calls,1);
+next=JSON.parse(JSON.stringify(live.state));next.notes.messages.push({id:'n',text:'Note reçue'});live.recoitEtatCollaboratif(next);assert.deepEqual(live.rebuilt,[]);assert.equal(live.mounts,0);
+next=JSON.parse(JSON.stringify(live.state));next.future={x:1};live.recoitEtatCollaboratif(next);assert.equal(live.mounts,1);assert.equal(live.state.future.x,1);
+console.log('OK réceptions ciblées : réserves et Notes sans remontage ; clé inconnue avec reconstruction complète.');

@@ -372,6 +372,8 @@ def main():
     # Concurrence et migration : arrêt avant toute écriture de version.
     if not lancer("Monde collaboratif", ["node", "scripts/test_monde.js"], racine):
         return 1
+    if not lancer("caches et transport", ["node", "scripts/test_performance_sync.js"], racine):
+        return 1
     if not lancer("stockage regroupé", ["node", "scripts/test_sync_blocks.js"], racine):
         return 1
     if not lancer("pont et tokens", ["node", "scripts/test_sync_blocks_bridge.js"], racine):

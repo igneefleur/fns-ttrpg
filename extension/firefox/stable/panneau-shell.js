@@ -46,9 +46,12 @@ if (typeof browser === "undefined") { var browser = chrome; }
   try { page = m ? decodeURIComponent(m[1]) : ""; } catch (e) { page = ""; }
   if (!sure(page)) page = DEFAUT;
 
+  var viewVisible=true;
+  document.getElementById('owd-remote').addEventListener('load',function(){this.contentWindow.postMessage({ns:'owd',type:'view-visible',active:viewVisible},'*');});
   window.addEventListener("message", function (ev) {
     var d = ev.data;
-    if (!d || d.ns !== "owd" || (d.type !== "panel-theme" && d.type !== "attack-preview-cancel" && d.type !== "take-active" && d.type !== "defend-active") || ev.source !== window.parent) return;
+    if (!d || d.ns !== "owd" || (d.type !== "view-visible" && d.type !== "panel-theme" && d.type !== "attack-preview-cancel" && d.type !== "take-active" && d.type !== "defend-active") || ev.source !== window.parent) return;
+    if(d.type==='view-visible'||d.type==='take-active'||d.type==='defend-active')viewVisible=!!d.active;
     if(d.type==='panel-theme')document.documentElement.classList.toggle("night", !!d.nuit);
     document.getElementById("owd-remote").contentWindow.postMessage(d, "*");
   });

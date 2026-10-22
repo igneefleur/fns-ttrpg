@@ -32,7 +32,7 @@ test('amorce : Notes isolées et jamais destinataires des objets Prendre',()=>{
  const s=read('docs/javascripts/owd-roll20-boot.js');
  for(const view of ['notes','attaques','defenses','inventaire','']){
   const sent=[],parentSent=[],events={};const w={top:{postMessage:d=>sent.push(d)},parent:{postMessage:d=>parentSent.push(d)},addEventListener:(k,fn)=>events[k]=fn};
-  const ctx={edition:true,window:w,document:{documentElement:{classList:{toggle(){}}}},location:{hash:'#c=a&view='+view},VIEW_ID:'test-view',CHAR_ID:'a',Date};vm.createContext(ctx);
+  const ctx={gele:false,wireRevision:null,wireAttrs:null,edition:true,window:w,document:{documentElement:{classList:{toggle(){}}}},location:{hash:'#c=a&view='+view},VIEW_ID:'test-view',CHAR_ID:'a',Date};vm.createContext(ctx);
   vm.runInContext(s.slice(s.indexOf('  window.__owdVueAttaques ='),s.indexOf('  var objetDrag =')),ctx);
   vm.runInContext(s.slice(s.indexOf('  var takeOpenedAt ='),s.indexOf('  // ---------- mode jour / nuit')),ctx);
   ctx.post({type:'load'});assert.equal('defendEnabled' in sent[0],view!=='notes'&&view!=='attaques');assert.equal(w.__owdVueNotes,view==='notes');assert.equal(sent[0].inventory,!!view||undefined);

@@ -33,7 +33,7 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
    const base={owdBeta:true,owdNuit:'nuit',owd_site_url:url+'/',owd_sheet_url:url+'/roll20-fiche.html'},listeners=[];
    function emit(ch){listeners.forEach(f=>f(ch,'local'));}
    window.addEventListener('storage',e=>{if(e.key==='extension-store'){const before=JSON.parse(e.oldValue||'{}'),after=JSON.parse(e.newValue||'{}'),ch={};for(const k of new Set([...Object.keys(before),...Object.keys(after)]))if(JSON.stringify(before[k])!==JSON.stringify(after[k]))ch[k]={oldValue:before[k],newValue:after[k]};emit(ch);}});
-   window.browser={runtime:{getManifest:()=>({version:'4.2.0',manifest_version:2}),getURL:p=>url+'/ext/'+p,getManifest:()=>({version:'1.12.0'})},storage:{local:{get:async()=>({...base,...JSON.parse(localStorage.getItem('extension-store')||'{}')}),set:async o=>{const before=JSON.parse(localStorage.getItem('extension-store')||'{}'),ch={};Object.keys(o).forEach(k=>ch[k]={oldValue:before[k],newValue:o[k]});localStorage.setItem('extension-store',JSON.stringify({...before,...o}));emit(ch);}},onChanged:{addListener:f=>listeners.push(f)}},tabs:{query:async()=>[],reload:async()=>{}}};
+   window.browser={runtime:{getManifest:()=>({version:'4.2.0',manifest_version:2}),getURL:p=>url+'/ext/'+p,getManifest:()=>({version:'4.2.0',manifest_version:2})},storage:{local:{get:async()=>({...base,...JSON.parse(localStorage.getItem('extension-store')||'{}')}),set:async o=>{const before=JSON.parse(localStorage.getItem('extension-store')||'{}'),ch={};Object.keys(o).forEach(k=>ch[k]={oldValue:before[k],newValue:o[k]});localStorage.setItem('extension-store',JSON.stringify({...before,...o}));emit(ch);}},onChanged:{addListener:f=>listeners.push(f)}},tabs:{query:async()=>[],reload:async()=>{}}};
   },{url});
   const page=await ctx.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto(url+'/editor');
   for(const id of ['monde','boutique','inventaire','attaques','defenses'])await page.locator('#owd-outil-'+id).waitFor();
@@ -52,15 +52,17 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
   const def=page.frames().find(f=>f.url().includes('/roll20-defenses.html'));assert.ok(def);
   await def.locator('select option[value="shared"]').waitFor({state:'attached'});await def.locator('select').selectOption('shared');
   const sheet=def.frameLocator('iframe.inventaire-active');await sheet.locator('.pc-defenses').waitFor({timeout:12000}).catch(async e=>{console.log(await sheet.locator('body').innerText());console.log(await def.locator('iframe').getAttribute('src'));throw e;});assert.equal(await sheet.locator('.pc-attaques:not(.pc-defenses)').count(),0);
+  await sheet.locator('#owd-mode-bar').waitFor();await sheet.locator('#owd-mode-switch').click();
   await sheet.locator('.pc-attaque-tete').first().click();await sheet.getByRole('button',{name:'Se défendre',exact:true}).first().click();await sheet.locator('.pc-modal-body').waitFor();
-  assert.equal(await sheet.locator('.pc-modal-body select').count(),1);assert.equal(await sheet.locator('.pc-modal-body input').count(),1);
+  assert.equal(await sheet.locator('.pc-modal-body select').count(),0);assert.equal(await sheet.locator('.pc-modal-body input').count(),7);
   await page.locator('#owd-outil-defenses').click();
   console.log('OK Défenses : onglets personnage, module isolé et fenêtre dégâts/type');
   await page.locator('#owd-outil-boutique').click();
   const shop=page.frames().find(f=>f.url().includes('/roll20-boutique.html'));await shop.locator('.ob-item').first().waitFor();
   await shop.waitForFunction(()=>Array.from(document.querySelectorAll('.ob-item img')).every(i=>i.complete&&i.naturalWidth>0));
-  assert.equal(await shop.locator('.ob-item img').count(),24);assert.ok(await shop.locator('.ob-item').evaluateAll(ns=>ns.every(n=>n.querySelector('.ob-item-price').getBoundingClientRect().bottom<=n.getBoundingClientRect().bottom)), 'Prix contenus dans les cartes');
+  assert.equal(await shop.locator('.ob-item img').count(),24);
   if(process.env.TOOLBAR_ONLY==='1'){assert.deepEqual(errors,[]);console.log('OK barre : cinq panneaux réels, repli, dimensions, Défenses et Boutique avec images ; aucune erreur JavaScript.');return;}
+  assert.ok(await shop.locator('.ob-item').evaluateAll(ns=>ns.every(n=>n.querySelector('.ob-item-price').getBoundingClientRect().bottom<=n.getBoundingClientRect().bottom)), 'Prix contenus dans les cartes');
   const palette=await shop.locator('body').evaluate(n=>({bg:getComputedStyle(n).backgroundColor,gold:getComputedStyle(n).getPropertyValue('--ob-accent').trim()}));assert.equal(palette.bg,'rgb(0, 0, 0)');assert.equal(palette.gold,'#ffd77f');
   await shop.locator('#ob-recherche').fill('Palladium Sword');await shop.locator('.ob-item').first().waitFor();
   await shop.waitForFunction(()=>{const i=document.querySelector('.ob-portrait');return i&&i.complete&&i.naturalWidth>0;});

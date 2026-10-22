@@ -42,6 +42,7 @@
   }
   function montage(root) {
     remontageNettoyage.splice(0).forEach(function (f) { try { f(); } catch (e) {} });
+    modulesDifferes=[];refreshEmpreintes=null;
     rootEl = root;
     enMontage = true;
     // Tous les registres repartent à vide : les anciens pointent sur un DOM qui
@@ -137,7 +138,7 @@
       .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
       // DATA vide vaut échec : sans lui le montage partirait sans données, et
       // c'est bien du fichier qu'il faudrait alors se plaindre
-      .then(function (d) { if (!d) throw new Error("données vides"); DATA = d; })
+      .then(function (d) { if (!d) throw new Error("données vides"); DATA = decodeRuntimeData(d); })
       .catch(function (e) {
         if(window.__owdOpenFailure){window.__owdOpenFailure('files');return;}
         root.innerHTML = '<p style="padding:2rem;color:#b0402c">La fiche n\'a pas pu charger ses données (' +

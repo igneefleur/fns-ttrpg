@@ -47,8 +47,21 @@
   function invTailleAccepte(taille, max) {return (!taille || INV_TAILLES.indexOf(taille)>=0) && (!max || INV_TAILLES.indexOf(max)>=0) && (!taille || !max || INV_TAILLES.indexOf(taille)<=INV_TAILLES.indexOf(max));}
   function invCoutAcc(o,lieu) {return 1;} // Chaque objet accroché occupe un emplacement, taille contrôlée séparément.
   function invTailleMaxSac(o) {return o && (o.tailleInterieure || (o.cap>=100?"Moyenne":o.cap>=50?"Petite":"Très petite"));}
+  var catalogueIndex=null;
+  function modeleCatalogue(o){
+    var d=D(),items=d.equipements||[],foods=d.consommables||[];
+    if(typeof state!=='undefined'&&state&&typeof modulesPersoActifs==='function'&&modulesPersoActifs())return items.concat(foods).filter(function(x){return x.id===(o.catalogueId||o.id)||(x.aliasIds||[]).indexOf(o.catalogueId||o.id)>=0||x.nom===o.nom||(x.aliases||[]).indexOf(o.nom)>=0;})[0];
+    if(!catalogueIndex||catalogueIndex.items!==items||catalogueIndex.foods!==foods||catalogueIndex.count!==items.length+foods.length){
+      var all=items.concat(foods),byId=Object.create(null),byName=Object.create(null);
+      function add(map,key,i){if(typeof key==='string'&&key&&!Object.prototype.hasOwnProperty.call(map,key))map[key]=i;}
+      all.forEach(function(x,i){add(byId,x.id,i);(x.aliasIds||[]).forEach(function(k){add(byId,k,i);});add(byName,x.nom,i);(x.aliases||[]).forEach(function(k){add(byName,k,i);});});
+      catalogueIndex={items:items,foods:foods,count:all.length,all:all,ids:byId,names:byName};
+    }
+    var id=catalogueIndex.ids[o.catalogueId||o.id],name=catalogueIndex.names[o.nom],i=id===undefined?name:name===undefined?id:Math.min(id,name);
+    return i===undefined?undefined:catalogueIndex.all[i];
+  }
   function enrichitObjet(n,o) {
-    var modele=(D().equipements||[]).concat(D().consommables||[]).filter(function(x){return x.id===(o.catalogueId||o.id) || (x.aliasIds||[]).indexOf(o.catalogueId||o.id)>=0 || x.nom===o.nom || (x.aliases||[]).indexOf(o.nom)>=0;})[0];
+    var modele=modeleCatalogue(o);
     // Les anciens achats de Boutique ne transportaient aucun champ technique.
     // Leurs quantités, prix, poids, image et description restent ceux du joueur.
     if(!o.versionObjet && /^boutique:/.test(o.id||"") && modele){

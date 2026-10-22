@@ -594,3 +594,18 @@ Les fichiers de `essai/` sont des paquets de développement non signés ; ils ne
 Chaque vue Roll20 s’ouvre en Mode Consultation. Le bouton Passer en Mode Edition autorise ses modifications ; plusieurs joueurs peuvent éditer simultanément. Le bandeau distingue les joueurs en édition et en consultation. L’attribut séparé `owd_presence` contient leurs présences par vue, renouvelées toutes les dix secondes et expirées après trente secondes, sans alimenter le Journal du personnage.
 
 Le chargement vérifie l’extension puis la version du personnage, avec un délai de dix secondes. Toute mise à jour du personnage demande une confirmation ; sa sauvegarde de secours est vérifiée sur Roll20 avant migration. Une version archivée absente ne peut pas être ouverte. Les trois bandeaux concernent uniquement l’enregistrement en attente, l’échec d’enregistrement et l’autorisation des mods. Les opérations non confirmées restent en mémoire pendant la session et ne sont pas rejouées après rechargement.
+
+
+## Mesures de performances — 4.15.0b
+
+Les tests `scripts/test_performance_browser.js` et `scripts/test_extension_performance_browser.js` utilisent Playwright/Chromium et un serveur Roll20 simulé. Le premier ouvre deux vues contenant chacune 150 objets, 150 compétences et 600 notes, mesure dix secondes au repos puis vérifie qu’une dépense se synchronise. Le second ajoute des messages à un historique de 6 000 entrées et vérifie que le chat ne recalcule pas la barre d’outils. Les résultats sont écrits dans `/tmp/owd-performance.json` et `/tmp/owd-extension-performance.json`, ou dans le chemin `OWD_PERF_OUTPUT`. `CHROMIUM_EXECUTABLE` permet de choisir le navigateur installé. `OWD_PERF_BASELINE=1` désactive seulement le seuil du premier test pour mesurer une version antérieure avec le même scénario ; `OWD_PERF_EXTENSION` sélectionne une copie antérieure du content script dans le second.
+
+Ces mesures servent à comparer les traitements et repérer les régressions. Leurs durées instrumentées ne prédisent pas les performances d’une partie Roll20 réelle. La fréquence de lecture de Roll20 et les reprises des écritures non confirmées restent inchangées.
+
+### Complément — 4.16.0b
+
+`node scripts/test_performance_sync.js` vérifie les caches causaux, leurs replis, les captures partielles, le transport des confirmations et le catalogue compacté. Ce contrôle ne nécessite pas de navigateur. Après construction du site, `scripts/test_performance_render_browser.js` vérifie les onglets différés, les calculs sans module monté, la conservation des brouillons et la réception dans une vue masquée. Le test du panneau Notes utilise aussi le vrai panneau imbriqué, un pont simulé et deux vues synchronisées.
+
+Le catalogue de démarrage utilise `owd-creation-runtime.json` : ses propriétés communes sont restaurées au chargement. Le JSON complet et son format restent disponibles. Les caches de synchronisation sont propres à chaque session et ne réintroduisent aucune reprise locale après rechargement. Aucun historique ni attribut de personnage n’est supprimé pour accélérer l’affichage.
+
+Sur le scénario instrumenté de 150 objets, 150 compétences et 600 notes, le DOM initial passe de 15 844 à 3 554 éléments entre 4.15.0b et 4.16.0b. La réception synthétique d’une note passe d’environ 278 ms avec remplacement des champs à 11 ms sans remplacement. Le catalogue brut passe d’environ 2,6 à 1,7 Mo ; ce ne sont pas des tailles de transfert compressé. Les saisies PE restent variables : aucun gain stable n’est revendiqué sur ce geste. Ces chiffres proviennent du harnais Chromium local, sans serveur Roll20 réel.
