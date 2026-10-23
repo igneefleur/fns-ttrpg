@@ -341,6 +341,9 @@
     ["nom", "qte", "poids", "total", "vign"].forEach(function (k) {
       s.inv.opts[k] = s.inv.opts[k] === undefined ? b.inv.opts[k] : !!s.inv.opts[k];
     });
+    var coinsDefaut=b.inv.opts.coins;
+    if(!s.inv.opts.coins||typeof s.inv.opts.coins!=="object"||Array.isArray(s.inv.opts.coins))s.inv.opts.coins={};
+    Object.keys(coinsDefaut).forEach(function(k){if(["aucun","nom","qte","poids","poidsTotal","volume","volumeTotal","da"].indexOf(s.inv.opts.coins[k])<0)s.inv.opts.coins[k]=coinsDefaut[k];});
     // Les anciens groupes libres ne survivent pas : le schéma 3 les a remis au
     // grenier, et l'emplacement « ou » les remplace.
     delete s.inv.groupes;

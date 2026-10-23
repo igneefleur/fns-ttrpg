@@ -102,7 +102,7 @@
       refresh(); if (invRender) invRender();
     });
   }
-  var invSelectionLocale = "";
+  var invSelectionLocale = "", invEditionObjetLocale = "";
   function invObjets(container, renderRef) {
     var items = state.inv.objets;
     var O = state.inv.opts;
@@ -110,23 +110,17 @@
     var drag = null;         // l'objet qu'on glisse
     var panelHooks = [];     // ce que le panneau rafraîchit, vidé à chaque rendu
 
-    // réglages d'affichage du module, en mode édition seulement
-    // CINQ PAR LIGNE, fixe : les tuiles des poches et du sac ont la taille des
-    // cases de Sur soi, qui sont cinq sur leur ligne de vêtements.
+    // Le rouage du module ne règle que l’affichage commun aux tuiles.
     var optRow = el("div", "pc-obj-opts pc-edit-only");
-    [["nom", "Nom"], ["qte", "Quantité"], ["poids", "Poids"], ["total", "Total"]].forEach(function (o) {
-      var chip = el("span", "pc-chip");
-      chip.textContent = o[1];
-      chip.title = "Afficher « " + o[1] + " » sur les tuiles" + (o[0] === "total" ? " (total en bas du module)" : "");
-      chip.classList.toggle("on", !!O[o[0]]);
-      chip.addEventListener("click", function () {
-        O[o[0]] = !O[o[0]];
-        chip.classList.toggle("on", !!O[o[0]]);
-        render();
-        refresh();
-      });
-      optRow.appendChild(chip);
+    var choixCoins=[["aucun","Aucun"],["nom","Nom"],["qte","Quantité"],["poids","Poids unitaire"],["poidsTotal","Poids total"],["volume","Volume unitaire"],["volumeTotal","Volume total"],["da","Prise en main (DA)"]];
+    [["hautGauche","En haut à gauche"],["hautDroite","En haut à droite"],["basGauche","En bas à gauche"],["basDroite","En bas à droite"]].forEach(function(c){
+      var select=el("select","pc-select pc-edit-field");select.setAttribute("aria-label",c[1]);select.dataset.invCorner=c[0];
+      choixCoins.forEach(function(v){var option=el("option",null,v[1]);option.value=v[0];option.selected=O.coins[c[0]]===v[0];select.appendChild(option);});
+      select.addEventListener("change",function(){O.coins[c[0]]=select.value;render();refresh();});
+      optRow.appendChild(fld(c[1],select));
     });
+    var totalToggle=el("button","pc-chip"+(O.total?" on":""),"Total porté");totalToggle.type="button";totalToggle.setAttribute("aria-pressed",String(!!O.total));
+    totalToggle.addEventListener("click",function(){O.total=!O.total;totalToggle.classList.toggle("on",O.total);totalToggle.setAttribute("aria-pressed",String(O.total));refresh();});optRow.appendChild(totalToggle);
     container.appendChild(optRow);
 
     var wrap = el("div", "pc-obj-wrap");
@@ -135,9 +129,12 @@
     wrap.appendChild(leftBox);
     wrap.appendChild(panel);
     var tot = el("div", "pc-inv-total");
+    var objetsAvecContenu=Object.create(null);
+    function indexContenus(){objetsAvecContenu=Object.create(null);items.forEach(function(o){if(o.dans)objetsAvecContenu[o.dans]=true;});}
     var majGroupes = [];     // les poids des bandeaux, rafraîchis sans re-rendu
 
     function updateTotal() {
+      indexContenus();
       tot.style.display = O.total ? "" : "none";
       majGroupes.forEach(function (f) { f(); });
       tot.textContent = "Poids porté : " + fmtP(poidsPorte()) + " / " + fmtP(charge()) + " kg";
@@ -491,22 +488,24 @@
         im.src = it.img;
         t.appendChild(im);
       } else t.appendChild(el("div", "pc-obj-ph", "?"));
-      var foot = el("div", "pc-obj-foot");
-      var nom = el("span", "nm", it.nom || "Objet");
-      if (!O.nom) nom.style.display = "none";
-      foot.appendChild(nom);
-      var poids = el("span", "pds", it.sac ? fmtP(window.OwdInventoryData.weight(items,it)) : it.poids ? fmtP(it.poids) : "");
-      poids.title = it.sac ? "Poids du sac et de son contenu" : "Poids unitaire";
-      if(it.sac) majGroupes.push(function(){poids.textContent=fmtP(window.OwdInventoryData.weight(items,it));});
-      if (!O.poids) poids.style.display = "none";
-      foot.appendChild(poids);
-      var badge = el("span", "qte", "×" + fmtP(it.qte));
-      if (!O.qte) badge.style.display = "none";
-      foot.appendChild(badge);
-      if (!O.nom && !O.poids && !O.qte) foot.style.display = "none";
-      t.appendChild(foot);
+      ["hautGauche","hautDroite","basGauche","basDroite"].forEach(function(position){
+        var key=O.coins[position];if(key==="aucun")return;
+        var badge=el("span","pc-obj-corner "+position);badge.dataset.corner=position;badge.dataset.value=key;t.appendChild(badge);
+        function update(){
+          var q=pnum(it.qte),value="",label="";
+          if(key==="nom"){value=it.nom||"Objet";label="Nom";}
+          if(key==="qte"){value="x "+fmtP(q);label="Quantité";}
+          if(key==="da"){value=window.OwdInventoryData.takeCost(it)+" DA";label="Prise en main";}
+          if(key==="poids"||key==="poidsTotal"){value=it.poids==null?"—":fmtP(key==="poidsTotal"?(objetsAvecContenu[it.ref]?window.OwdInventoryData.weight(items,it):pnum(it.poids)*q):pnum(it.poids))+" kg";label=key==="poidsTotal"?"Poids total, contenu inclus":"Poids unitaire";}
+          if(key==="volume"||key==="volumeTotal"){value=it.encombre==null?"—":fmtP(pnum(it.encombre)*(key==="volumeTotal"?q:1))+" L";label=key==="volumeTotal"?"Volume total":"Volume unitaire";}
+          if(badge.textContent!==value)badge.textContent=value;
+          badge.title=label+" : "+value;
+        }
+        majGroupes.push(update);update();
+      });
       if (it.contenant) t.appendChild(slotContenant(it));
       t.title = (it.nom || "Objet") + (it.rapide ? " — accès rapide" : "");
+      majGroupes.push(function(){var titre=(it.nom||"Objet")+(it.rapide?" — accès rapide":"");if(t.title!==titre)t.title=titre;});
       if (it.rapide) t.classList.add("rapide");
 
       t.addEventListener("click", function (e) { e.stopPropagation(); sel = it; render(); });
@@ -708,14 +707,16 @@
       tiles.style.setProperty("--obj-cols", 5);
       items.forEach(function (it) { if (visible(it)) tiles.appendChild(tile(it)); });
       if (ou === "terre") {
-      var add = el("div", "pc-obj-addtile pc-edit-only", "+");
+      var add = el("button", "pc-obj-addtile", "+");add.type="button";add.setAttribute("aria-label","Ajouter un objet");
       add.title = "Ajouter un objet dans « " + titre + " »";
       add.addEventListener("click", function () {
+        if(window.__owdCanEdit&&!window.__owdCanEdit())return;
         var o = { id: "", ref: uid("o"), nom: "", img: "", qte: 1, poids: 0, encombre: 0, places: 0, nourri: false, achat: 0, vente: null,
                   desc: "", ou: ou, emp: -1, rapide: false, vet: "", acc: "", poches: 0, froid: 0, chaud: 0,
                   sac: false, cap: 0, ceint: false, ep: 0, ebMax: 0, contenant: "", contenu: "", dans: "", arme: null };
         if(ou === "sac" && bag) o.dans=bag.ref;
         items.push(o);
+        invEditionObjetLocale=o.ref;
         sel = o;
         render();
         refresh();
@@ -725,7 +726,7 @@
       // LA LIGNE SE COMPLÈTE de cases vides en pointillé, et un groupe vide en
       // garde une entière : on voit la place qui reste. La case « + » de
       // l'édition compte dans la ligne.
-      var n = items.filter(function (x) { return visible(x); }).length + (ou === "terre" && isEdit("inv") ? 1 : 0);
+      var n = items.filter(function (x) { return visible(x); }).length + (ou === "terre" ? 1 : 0);
       var trous = Math.max(5, Math.ceil(n / 5) * 5) - n;
       for (var k = 0; k < trous; k++) tiles.appendChild(el("div", "pc-obj-tile pc-inv-trou"));
       tiles.addEventListener("dragover", function (e) {
@@ -828,6 +829,7 @@
       // voit d'avance ce qu'un objet porte.
       if (sel && items.indexOf(sel) < 0) sel = null;
       invSelectionLocale = sel ? sel.ref : "";
+      if(invEditionObjetLocale!==invSelectionLocale)invEditionObjetLocale="";
       panel.dataset.syncEntity = invSelectionLocale;
       var fantome = !sel;
       panel.classList.toggle("fantome", fantome);
@@ -850,8 +852,12 @@
       nm.type = "text"; nm.placeholder = fantome ? "Aucun objet" : "Nom de l'objet";
       nm.value = it.nom;
       nm.addEventListener("input", function () { it.nom = nm.value; save(); });
-      nm.addEventListener("change", function () { render(); });
-      body.appendChild(nm);
+      nm.addEventListener("change", function () { updateTotal();refresh(); });
+      var nameRow=el("div","pc-obj-name-row"),itemGear=el("button","pc-item-gear","⚙");itemGear.type="button";
+      itemGear.addEventListener("click",function(){
+        if(!sel||window.__owdCanEdit&&!window.__owdCanEdit())return;
+        invEditionObjetLocale=invEditionObjetLocale===sel.ref?"":sel.ref;applyItemEdit();
+      });nameRow.appendChild(nm);nameRow.appendChild(itemGear);body.appendChild(nameRow);
 
       // TYPE : une seule nature fonctionnelle à la fois. « Contenant » offre
       // un slot interne ; « Contenu » est ce qui peut y entrer. Changer de type
@@ -1188,6 +1194,7 @@
         Array.prototype.forEach.call(body.querySelectorAll("input, select, textarea, button"),
           function (x) { x.disabled = true; });
         panel.appendChild(body);
+        prepareItemFields();applyItemEdit();
         return;
       }
 
@@ -1263,9 +1270,24 @@
       function avantEdition(e){if(qRow.contains(e.target)||actions.contains(e.target))return;
         if(e.target.matches && e.target.matches('input,select,textarea'))window.OwdInventoryData.isolate(items,it);}
       body.addEventListener("input",avantEdition,true);body.addEventListener("change",avantEdition,true);
-      body.addEventListener("change",function(e){if(!actions.contains(e.target)){render();refresh();}});
+      body.addEventListener("change",function(e){if(!actions.contains(e.target)&&body.isConnected){if(e.target.tagName==="SELECT")render();refresh();}});
       body.appendChild(actions);
       panel.appendChild(body);
+      prepareItemFields();applyItemEdit();
+    }
+
+    function prepareItemFields(){
+      panel.querySelectorAll(".pc-edit-field").forEach(function(n){n.classList.replace("pc-edit-field","pc-item-edit-field");});
+      panel.querySelectorAll(".pc-edit-only").forEach(function(n){n.classList.replace("pc-edit-only","pc-item-edit-only");});
+    }
+    function applyItemEdit(){
+      var allowed=!window.__owdCanEdit||window.__owdCanEdit();
+      if(!allowed||!sel||items.indexOf(sel)<0)invEditionObjetLocale="";
+      var editing=!!sel&&allowed&&invEditionObjetLocale===sel.ref;
+      panel.classList.toggle("pc-item-editing",editing);
+      panel.querySelectorAll(".pc-item-edit-field").forEach(function(n){n.disabled=!editing;});
+      var button=panel.querySelector(".pc-item-gear");if(button){button.disabled=!sel||!allowed;button.title=editing?"Terminer les modifications de cet objet":"Modifier cet objet";button.setAttribute("aria-label",button.title);button.setAttribute("aria-pressed",String(editing));}
+      majTextesLecture(panel);
     }
 
     // TOUTE LA HAUTEUR DE LA FENÊTRE (la page du site, ou l'iframe de Roll20),
@@ -1295,6 +1317,7 @@
       window.OwdInventoryData.bind(items);
       if(sel && items.indexOf(sel)<0) sel=null;
       majGroupes = [];
+      indexContenus();
       panelHooks.length = 0;
       leftBox.innerHTML = "";
       leftBox.appendChild(groupeSurSoi());
@@ -1311,6 +1334,7 @@
       ajusteHauteur();
       updateTotal();
       panelHooks.forEach(function (f) { try { f(); } catch (e) {} });
+      applyItemEdit();
     });
     if (renderRef) renderRef.fn = render;
     invRender = render;   // un objet reçu du tchat redessine l'inventaire

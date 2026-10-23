@@ -82,7 +82,7 @@
   // même version, la beta étant ce que le stable recevra à la fusion) : ce qui
   // compare des versions doit donc l'ôter avant de lire les nombres, et c'est
   // exactement ce que fait OwdMods.compareVersions.
-  var RELEASE_DEFAUT = "4.20.0b";
+  var RELEASE_DEFAUT = "4.21.0b";
   // Entier INDÉPENDANT de la release : il ne monte qu'au changement de forme de
   // l'état du personnage, jamais parce que le majeur a bougé. Ajouter une clé
   // racine avec un défaut n'en est PAS un : normalize() complète une clé
@@ -360,7 +360,7 @@
       // absente de ce miroir serait une perte sèche au repli.
       inv: {
         objets: [],
-        opts: { cols: 5, nom: true, qte: true, poids: false, total: true, vign: true }
+        opts: { cols: 5, nom: true, qte: true, poids: false, total: true, vign: true, coins: { hautGauche: "volumeTotal", hautDroite: "poidsTotal", basGauche: "da", basDroite: "qte" } }
       },
 
       // ---- le dé des jets ----

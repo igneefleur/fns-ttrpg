@@ -53,10 +53,10 @@ const server=http.createServer((req,res)=> {
     // Same entity, different fields: modify quantities vs name.
     await a.locator('.pc-tab').filter({hasText:'Équipement'}).click();
     await b.locator('.pc-tab').filter({hasText:'Équipement'}).click();
-    await a.locator('.pc-obj-tile').filter({hasText:'Pain'}).first().click();
-    await b.locator('.pc-obj-tile').filter({hasText:'Dague'}).first().click();
-    await a.locator('[data-module="inv"] .pc-gear').click();
-    await b.locator('[data-module="inv"] .pc-gear').click();
+    await a.locator('.pc-obj-tile[data-object-ref="o2"]').first().click();
+    await b.locator('.pc-obj-tile[data-object-ref="o1"]').first().click();
+    await a.locator('[data-module="inv"] .pc-item-gear').click();
+    await b.locator('[data-module="inv"] .pc-item-gear').click();
     await a.locator('input[placeholder="Nom de l\'objet"]').fill('Galette');
     await b.locator('input[placeholder="Nom de l\'objet"]').fill('Lame');
     await pages[0].waitForFunction(()=>JSON.parse(document.querySelector('iframe').contentWindow.__owdLocalStorage.getItem('owd-perso')).inv.objets.every(x=>['Lame','Galette'].includes(x.nom)));

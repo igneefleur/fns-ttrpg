@@ -205,7 +205,7 @@
       //           modules qui doivent pointer vers cet objet sans dépendre du nom
       inv: {
         objets: [],
-        opts: { cols: 5, nom: true, qte: true, poids: false, total: true, vign: true }
+        opts: { cols: 5, nom: true, qte: true, poids: false, total: true, vign: true, coins: { hautGauche: "volumeTotal", hautDroite: "poidsTotal", basGauche: "da", basDroite: "qte" } }
       },
 
       // ---- le dé des jets ----

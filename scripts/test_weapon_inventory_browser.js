@@ -24,6 +24,7 @@ function harness() { return `<!doctype html><meta charset="utf-8"><style>iframe{
 function model(data) {return {attributes:{...data},get(k){return this.attributes[k]},set(d){Object.assign(this.attributes,d)},save(_,opts){window.backend({kind:'write',data:this.attributes}).then(()=>opts&&opts.success&&opts.success())}}}
 const collection={models:[],create(data){const m=model(data);this.models.push(m);return m},fetch(opts){window.backend({kind:'read'}).then(attrs=>{this.models=Object.keys(attrs).map(name=>model({name,...attrs[name]}));opts&&opts.success&&opts.success()})}};
 const ch={id:'shared',attribs:collection,get(k){return k==='name'?'Fiche partagée':k==='controlledby'?'all':''}};
+window.currentPlayer={id:'p1',get:k=>k==='displayname'?'Testeur':null};
 window.Campaign={characters:{get(id){return id==='shared'?ch:null},models:[ch]},players:{models:[]}};
 </script><script data-owd-version="4.2.0" data-owd-mode="beta" data-owd-browser="firefox" src="/bridge.js"></script><iframe src="/roll20-fiche.html#c=shared"></iframe>`; }
 const server=http.createServer((req,res)=> {
@@ -36,7 +37,7 @@ const server=http.createServer((req,res)=> {
 (async()=> {
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const url='http://127.0.0.1:'+server.address().port;
  const engine=process.env.TEST_BROWSER==='firefox'?firefox:chromium;
- const browser=await engine.launch({headless:true,args:engine===chromium?['--no-sandbox']:[]});const errors=[];
+ const browser=await engine.launch({headless:true,executablePath:process.env.CHROMIUM_EXECUTABLE,args:engine===chromium?['--no-sandbox']:[]});const errors=[];
  try {
   const ctx=await browser.newContext({viewport:{width:1600,height:1100}});
   await ctx.exposeBinding('backend',async(_,m)=>{if(m.kind==='read')return C.copy(attrs);if(m.kind==='write')attrs[m.data.name]={current:String(m.data.current||''),max:String(m.data.max||'')};});
@@ -49,7 +50,7 @@ const server=http.createServer((req,res)=> {
   assert.equal(await field('Parade').inputValue(),'8');assert.equal(await field('Réduction').inputValue(),'6');
   assert.equal(await card.locator('.pc-arme-line').nth(4).locator('select').count(),3);
   assert.equal(await field('Parade').isDisabled(),true);
-  await inv.locator('.pc-gear').click();await field('Parade').fill('9');await field('Réduction').fill('7');
+  await inv.locator('.pc-item-gear').click();await field('Parade').fill('9');await field('Réduction').fill('7');
   await card.locator('.pc-arme-line').nth(4).locator('select').nth(1).selectOption('Dexterite');
   for(let i=0;i<200;i++){const a=C.read(attrs).state.inv.objets.find(o=>o.ref==='blade').arme;if(a.parade==='9'&&a.reduction==='7'&&a.modsParade[1]==='Dexterite')break;await page.waitForTimeout(100);}
   assert.equal(C.read(attrs).state.inv.objets.find(o=>o.ref==='blade').arme.modsParade[1],'Dexterite');

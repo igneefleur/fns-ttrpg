@@ -12,7 +12,7 @@
   // et son redimensionnement manuel ; on ne mesure ni ne réécrit sa hauteur.
   function majTextesLecture(scope) {
     if (!scope) return;
-    Array.prototype.forEach.call(scope.querySelectorAll("textarea.pc-notes.pc-edit-field"), function (f) {
+    Array.prototype.forEach.call(scope.querySelectorAll("textarea.pc-notes.pc-edit-field,textarea.pc-notes.pc-item-edit-field"), function (f) {
       if (!f.parentNode) return;
       var lecture = f._owdLecture;
       if (!lecture || lecture.parentNode !== f.parentNode) {
