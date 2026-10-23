@@ -108,6 +108,8 @@
     Object.keys(before).forEach(function (k) {
       if (own(after, k)) return;
       var p = JSON.parse(k), n = before[k];
+      // Un marqueur déjà supprimé n'est pas une nouvelle suppression.
+      if (n[0] === "d") return;
       // Une table éparse devenue vide ne supprime pas ses parents : un autre
       // joueur peut avoir ajouté une AUTRE clé sous le même parent.
       if (n[0] === "o" && (!p.length || p[p.length - 1][0] !== "e")) return;
@@ -275,11 +277,19 @@
       dirty.forEach(function(root){(cache.groups[root]||[]).forEach(function(k){before[k]=session.local[k];delete next[k];});var one={};if(Object.prototype.hasOwnProperty.call(state,root))one[root]=state[root];var flat=legacy.flatten(one);delete flat['[]'];Object.assign(next,flat);Object.assign(after,flat);cache.groups[root]=Object.keys(flat);if(Object.prototype.hasOwnProperty.call(state,root))cache.signs[root]=JSON.stringify(state[root]);else delete cache.signs[root];});
       cache.flat=next;session.captureCache=cache;return {next:next,diff:legacy.difference(before,after)};
     }
+    // Un payload publié reste immuable, même si sa référence logique a été réutilisée
+    // par une ancienne vue après une photographie. Le Journal garde son ancien bloc.
+    function stackPayloadName(session,ref,raw){
+      var base=STACK+encodeURIComponent(ref),name=base,serial=0;
+      function collision(k){return session.attrs[k]&&val(session.attrs[k])!==raw.current||session.payloads[k]&&val(session.payloads[k])!==raw.current;}
+      while(collision(name))name=base+'__create_'+encodeURIComponent(session.id)+'_'+(session.counter+1)+'_'+(++serial);
+      return name;
+    }
     Session.prototype.capture=function(state,intent){var parts=captureParts(this,state),next=parts.next,diff=parts.diff,changes=[],self=this;Object.keys(diff).forEach(function(k){var p=JSON.parse(k),n=diff[k],b=self.local[k],c={k:k,n:n};if(b!==undefined)c.before=b;
         if(numeric(p)&&!(intent&&intent.absolute&&intent.absolute[k])&&n[0]==='v'&&typeof n[1]==='number'&&b&&b[0]==='v') {var old=b[1];if(old==null&&p[0][1]==='etat')old=self.maxima[p[1][1]];if(typeof old==='number'&&Number.isFinite(old)){c.delta=Math.round((n[1]-old)*1000000)/1000000;c.anchor=old;}}
         if(p.length===1&&/^horloge(?:Digestion|Exposition|Alcool)?$/.test(p[0][1])&&b&&b[0]==='v'&&n[0]==='v'&&b[1]&&n[1]&&b[1].regime===n[1].regime){var seconds=function(h){return Number(h.jours)*86400+Number(h.heures)*3600+Number(h.minutes)*60+Number(h.secondes);};var d=seconds(n[1])-seconds(b[1]);if(Number.isSafeInteger(d))c.clockDelta=d;}
         changes.push(c);});if(changes.length){var creates={},refs={};changes.forEach(function(c){var p=JSON.parse(c.k);if(invPath(p)&&p.length===3&&c.n[0]==='o'&&!self.local[c.k])refs[p[2][1]]=true;});
-        Object.keys(refs).forEach(function(ref){var record=(state.inv.objets||[]).filter(function(o){return o.ref===ref;})[0];if(!record)return;record=legacy.copy(record);['ou','dans','emp'].forEach(function(k){delete record[k];});var name=STACK+encodeURIComponent(ref),raw=attr(record);self.payloads[name]=raw;creates[ref]={attribute:name,hash:hash(raw.current)};});
+        Object.keys(refs).forEach(function(ref){var record=(state.inv.objets||[]).filter(function(o){return o.ref===ref;})[0];if(!record)return;record=legacy.copy(record);['ou','dans','emp'].forEach(function(k){delete record[k];});var raw=attr(record),name=stackPayloadName(self,ref,raw);self.payloads[name]=raw;creates[ref]={attribute:name,hash:hash(raw.current)};});
         changes=changes.filter(function(c){var p=JSON.parse(c.k);return !(invPath(p)&&p.length>3&&refs[p[2][1]]&&['ou','dans','emp','order'].indexOf(p[3][1]||p[3][0])<0);});
         var modules={};changes.forEach(function(c){var p=JSON.parse(c.k);if(p.length===2&&p[0][1]==='modData'&&c.n[0]==='o'&&!self.local[c.k]){var id=p[1][1],name=BLOCK+'module_'+encodeURIComponent(id);if(!self.attrs[name]){var raw=attr(state.modData[id]);self.payloads[name]=raw;modules[id]={attribute:name,hash:hash(raw.current)};}}});
         changes=changes.filter(function(c){var p=JSON.parse(c.k);return !(p.length>2&&p[0][1]==='modData'&&modules[p[1][1]]);});

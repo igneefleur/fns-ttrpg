@@ -1438,7 +1438,7 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
 .pc-obj-content-qte {
   position: absolute; right: 1px; bottom: 1px; z-index: 2; padding: 0 .12rem;
   border-radius: 3px; background: color-mix(in srgb, var(--card) 88%, transparent);
-  color: var(--ink-2); font-size: .54rem; font-weight: 800; font-variant-numeric: tabular-nums;
+  color: var(--ink); font-size: .54rem; font-weight: 800; font-variant-numeric: tabular-nums;
 }
 /* réglages du module, en mode édition (par ligne 1..8, et les puces
    Nom / Quantité / Poids / Total) */
