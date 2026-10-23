@@ -19,6 +19,22 @@ test('glisser une pile vers chaque case équipe un seul exemplaire',()=>{for(con
 test('accrocher une pile remplie sépare le contenu et conserve le reliquat',()=>{const a=fixture(),before=mass(a),c=placement(a);const pose=c.poseEp(a[0],'ceint',0);assert.equal(pose.qte,1);assert.equal(pose.ou,'ceint');assert.equal(a[0].qte,2);assert.equal(mass(a),before);});
 test('placement direct de quantité zéro refusé sans créer un exemplaire',()=>{const a=fixture();a[0].qte=0;const c=placement(a);assert.equal(c.deplace(a[0],'dos'),false);assert.equal(c.poseEp(a[0],'ceint',0),null);assert.equal(a.length,3);assert.equal(a[0].qte,0);});
 test('la disposition des piles de contenu et leur lieu technique ne changent pas leur identité',()=>{const a=fixture(),b=D.split(a,a[0],1,'other'),v=a.find(o=>o.dans===b.ref),w=a.find(o=>o.dans===v.ref);w.qte=1;w.ou='terre';a.push({...w,ref:'extra-water',qte:3,ou:'sac'});assert.ok(D.canMerge(a,a[0],b));});
+function contents(items){const c={items,window:{OwdInventoryData:D},pnum:x=>Number(x)||0,armesData:()=>[],uid:()=>"content-ref",flash(){}};vm.createContext(c);vm.runInContext(source.slice(source.indexOf('    function assureRef('),source.indexOf('    function vignette(')),c);return c;}
+test('un contenant refuse un contenu différent sans modifier les piles ni les liens',()=>{
+ const a=fixture(),water=a[2],salt={...water,ref:'salt',nom:'Salt Water',qte:2,dans:'',ou:'terre'};a.push(salt);const c=contents(a),before=JSON.stringify(a);
+ assert.equal(D.canContain(a,salt,a[1]),false);assert.equal(c.poseContenu(salt,a[1]),false);assert.equal(JSON.stringify(a),before);
+ salt.nom=water.nom;salt.effets=['autre'];assert.equal(D.canContain(a,salt,a[1]),false);
+ delete salt.effets;salt.contenu='poudre';assert.equal(D.canContain(a,salt,a[1]),false);
+});
+test('ajouter le même contenu fusionne sa quantité et conserve toutes les piles remplies',()=>{
+ const a=fixture(),copy={...a[2],ref:'extra',qte:2,dans:'',ou:'terre'};a.push(copy);const before=mass(a),c=contents(a);
+ assert.equal(D.canContain(a,copy,a[1]),true);const target=c.poseContenu(copy,a[1]);assert.equal(target.ref,'water');assert.equal(target.qte,6);assert.equal(a.filter(o=>o.dans==='vial').length,1);assert.equal(a.some(o=>o.ref==='extra'),false);assert.equal(mass(a),before);
+ assert.equal(a[0].qte,1);assert.equal(a[1].qte,1);assert.ok(a.some(o=>o.nom==='Bag'&&o.qte===2));assert.ok(a.some(o=>o.nom==='Vial'&&o.qte===1));
+});
+test('un contenant vide reçoit le contenu dans sa case ; ses anciens contenus différents restent récupérables',()=>{
+ const a=fixture();a[0].qte=1;a[1].qte=1;a[2].dans='';a[2].ou='terre';const c=contents(a);assert.equal(c.poseContenu(a[2],a[1]),a[2]);assert.equal(a[2].dans,'vial');
+ const legacy={...a[2],ref:'legacy',nom:'Antidote'};a.push(legacy);const before=JSON.stringify(a),other={...a[2],ref:'more',dans:'',ou:'terre'};a.push(other);assert.equal(c.poseContenu(other,a[1]),false);assert.equal(JSON.stringify(a.slice(0,-1)),before);
+});
 const caps=fs.readFileSync('src/fiche/socle/080-calculs-capacites.js','utf8'),types=fs.readFileSync('src/fiche/equipement/inv-nouveaux.js','utf8');
 test('accroches : taille inconnue acceptée, taille excessive et quantité nulle refusées, ancien non accrochable ignoré',()=>{const c={state:{inv:{objets:[{ref:'belt',ou:'ceinture',ceint:true,qte:1,ep:2,tailleAccroche:'Très petite'}]}},INV_TAILLES:['Minuscule','Très petite','Petite','Moyenne'],pnum:x=>Number(x)||0};vm.createContext(c);vm.runInContext(types.slice(types.indexOf('  function invTailleAccepte'),types.indexOf('  function invCoutAcc')),c);vm.runInContext(caps.slice(caps.indexOf('  function porteurEp'),caps.indexOf('  function rangeEmplacements')),c);assert.ok(c.epPermis({qte:1,taille:'',proprietes:{accrochable:'non'}},'ceint'));assert.ok(c.epPermis({qte:1,taille:'Très petite'},'ceint'));assert.ok(!c.epPermis({qte:1,taille:'Petite'},'ceint'));assert.ok(!c.epPermis({qte:0,taille:''},'ceint'));c.state.inv.objets[0].qte=0;assert.equal(c.nbEp('ceint'),0);});
 console.log(n+' scénarios de piles et équipement validés.');
