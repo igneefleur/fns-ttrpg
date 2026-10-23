@@ -680,13 +680,13 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
    édition, seuls les gestes de JEU restent actifs (jets, tchat, points de vie,
    contenance, bourse, quantités). Les .pc-edit-only n'existent qu'en édition ;
    les champs .pc-edit-field verrouillés prennent l'air d'un simple texte. */
-.pc-gear {
+.pc-gear, .pc-item-gear {
   margin-left: auto; flex: 0 0 auto; border: none; background: transparent;
   color: var(--ink-3); font: inherit; font-size: .84rem; line-height: 1;
   cursor: pointer; padding: 0 .02rem; transition: color .12s, transform .15s;
 }
 .pc-block-title small ~ .pc-gear { margin-left: .4rem; }
-.pc-gear:hover { color: var(--ink); }
+.pc-gear:hover, .pc-item-gear:hover { color: var(--ink); }
 .pc-editable.editing .pc-gear { color: var(--accent); transform: rotate(90deg); }
 .pc-editable.editing { border-color: var(--accent); }
 .pc-editable:not(.editing) .pc-edit-only { display: none !important; }
@@ -1458,12 +1458,12 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
 .pc-obj-imgbox { background: var(--panel); }
 .pc-obj-imgbox img { width: 100%; aspect-ratio: 1 / 1; object-fit: contain; display: block; }
 .pc-obj-body { padding: .4rem .5rem .5rem; display: flex; flex-direction: column; gap: .32rem; }
-.pc-obj-body > input.nm {
+.pc-obj-body > input.nm, .pc-obj-name-row > input.nm {
   border: none; border-bottom: 1px solid var(--line); background: transparent;
   color: var(--ink); font: inherit; font-size: .76rem; font-weight: 700; padding: .02rem .1rem .06rem;
   min-width: 0; width: 100%; border-radius: 0;
 }
-.pc-obj-body > input.nm:focus { outline: none; border-bottom: 2px solid var(--accent); }
+.pc-obj-body > input.nm:focus, .pc-obj-name-row > input.nm:focus { outline: none; border-bottom: 2px solid var(--accent); }
 .pc-obj-qrow { display: flex; gap: .35rem; align-items: center; }
 .pc-obj-qrow input[type="range"] { flex: 1; min-width: 0; accent-color: var(--accent); }
 .pc-obj-qrow input.n {
@@ -2363,3 +2363,23 @@ html.night .t-pi { --palier-plein: #30343b; }
 
 .pc-impregnation-option { min-height: calc(40px + .8rem + 2px); }
 .pc-defense-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: .45rem; }
+
+/* Inventaire : quatre emplacements sur l’image, et édition propre à l’objet. */
+.pc-obj-opts .pc-f{flex:1 1 7rem;min-width:0}
+.pc-obj-opts select{width:100%;max-width:100%}
+.pc-obj-corner{position:absolute;z-index:4;max-width:48%;box-sizing:border-box;padding:.08rem .16rem;border-radius:3px;background:color-mix(in srgb,var(--card) 88%,transparent);color:var(--ink);font-size:.5rem;font-weight:700;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;font-variant-numeric:tabular-nums}
+.pc-obj-corner.hautGauche{top:.12rem;left:.12rem}
+.pc-obj-corner.hautDroite{top:.12rem;right:.12rem}
+.pc-obj-corner.basGauche{bottom:.12rem;left:.12rem}
+.pc-obj-corner.basDroite{bottom:.12rem;right:.12rem}
+.pc-obj-name-row{display:flex;align-items:center;gap:.3rem;min-width:0}
+.pc-obj-name-row>.nm{flex:1;min-width:0;width:0}
+.pc-item-gear{flex:none;margin-left:auto}
+.pc-item-gear[aria-pressed="true"]{color:var(--accent);transform:rotate(90deg)}
+.pc-obj-panel:not(.pc-item-editing) .pc-item-edit-only{display:none!important}
+.pc-obj-panel:not(.pc-item-editing) .pc-item-edit-field{pointer-events:none;border-color:transparent!important;background:transparent!important;box-shadow:none!important;resize:none;color:var(--ink);opacity:1}
+.pc-obj-panel:not(.pc-item-editing) select.pc-item-edit-field{appearance:none;padding-left:0}
+.pc-obj-panel:not(.pc-item-editing) .pc-item-edit-field::placeholder{color:transparent}
+
+button.pc-obj-addtile{background:transparent;font-family:inherit}
+button.pc-obj-addtile:disabled{cursor:default;opacity:.45}
