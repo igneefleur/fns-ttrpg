@@ -1170,6 +1170,7 @@
       qIn.type = "number"; qIn.min = "0"; qIn.step = "any";
       qIn.value = it.qte;
       function setQte(v) {
+        if(window.OwdInventoryData.equipped(it))return;
         if(window.__owdInventorySet)window.__owdInventorySet(it.ref);
         window.OwdInventoryData.isolateAncestors(items,it);
         it.qte = isFinite(v) && v >= 0 ? Math.round(v * 100) / 100 : 0;
@@ -1187,7 +1188,7 @@
 
       qRow.appendChild(slider);
       qRow.appendChild(qIn);
-      body.insertBefore(fld("Quantité", qRow), ligneNat.nextSibling);
+      if(!window.OwdInventoryData.equipped(it))body.insertBefore(fld("Quantité", qRow), ligneNat.nextSibling);
 
 
       if (fantome) {
@@ -1217,7 +1218,7 @@
       actQte.addEventListener("blur", function () { actQte.value = fmtP(bornerAct()); });
 
       var actions = el("div", "pc-obj-actions");
-      actions.appendChild(fld("Quantité", actQte, "qact"));
+      if(!window.OwdInventoryData.equipped(it))actions.appendChild(fld("Quantité", actQte, "qact"));
       var montrer = miniBtn("Montrer", "Montrer cet objet dans le tchat", function () {
         montreObjet(it.ref, bornerAct());
       });

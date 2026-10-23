@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.21.0b";
+  var RELEASE = "4.21.1b";
   var SCHEMA = 18;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -9774,6 +9774,7 @@
       qIn.type = "number"; qIn.min = "0"; qIn.step = "any";
       qIn.value = it.qte;
       function setQte(v) {
+        if(window.OwdInventoryData.equipped(it))return;
         if(window.__owdInventorySet)window.__owdInventorySet(it.ref);
         window.OwdInventoryData.isolateAncestors(items,it);
         it.qte = isFinite(v) && v >= 0 ? Math.round(v * 100) / 100 : 0;
@@ -9791,7 +9792,7 @@
 
       qRow.appendChild(slider);
       qRow.appendChild(qIn);
-      body.insertBefore(fld("Quantité", qRow), ligneNat.nextSibling);
+      if(!window.OwdInventoryData.equipped(it))body.insertBefore(fld("Quantité", qRow), ligneNat.nextSibling);
 
 
       if (fantome) {
@@ -9821,7 +9822,7 @@
       actQte.addEventListener("blur", function () { actQte.value = fmtP(bornerAct()); });
 
       var actions = el("div", "pc-obj-actions");
-      actions.appendChild(fld("Quantité", actQte, "qact"));
+      if(!window.OwdInventoryData.equipped(it))actions.appendChild(fld("Quantité", actQte, "qact"));
       var montrer = miniBtn("Montrer", "Montrer cet objet dans le tchat", function () {
         montreObjet(it.ref, bornerAct());
       });
