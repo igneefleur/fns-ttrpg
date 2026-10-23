@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.21.1b";
+  var RELEASE = "4.21.2b";
   var SCHEMA = 18;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -8666,7 +8666,7 @@
     if(it.nourri){add("Contenance",it.places===null?"Non renseignée":fmtP(it.places || 0));add("PS",it.ps===null?"Non renseigné":fmtP(it.ps||0));add("PH",it.ph===null?"Non renseigné":fmtP(it.ph||0));}
     (it.effets||[]).filter(Boolean).forEach(function(id,i){add("Effet "+(i+1),id);});
     Object.keys(it.restaurations||{}).forEach(function(k){if(it.restaurations[k])add("Restauration "+k.toUpperCase(),fmtP(it.restaurations[k])+" "+(it.unitesRestauration[k]||"points"));});
-    if(it.contenant)add("Emplacements",String(it.emplacements==null?1:it.emplacements));if(it.cap)add("Capacité",fmtP(it.cap)+" L");if(it.ep)add("Accroches",fmtP(it.ep)+" acc (max. "+(it.tailleAccroche || "non renseignée")+")");
+    if(it.cap)add("Capacité",fmtP(it.cap)+" L");if(it.ep)add("Accroches",fmtP(it.ep)+" acc (max. "+(it.tailleAccroche || "non renseignée")+")");
     if(it.poches)add("Poches",fmtP(it.poches)+" L");if(it.froid)add("Protection froid",fmtP(it.froid));if(it.chaud)add("Protection chaleur",fmtP(it.chaud));
     ["physique","tranchant","contondant","perforant","feu","froid","eclair","decomposition","ethere","brut"].forEach(function(t){
       var labels={eclair:"éclair",decomposition:"décomposition",ethere:"éthéré"},label=labels[t]||t;
@@ -8745,7 +8745,7 @@
     }
 
     // ---- Contenants / Contenus -------------------------------------------------
-    // Un Contenant offre UN slot interne. Un Contenu est un objet complet dont
+    // Un Contenant offre une case pour un contenu identique. Un Contenu est un objet complet dont
     // la catégorie doit être exactement celle du Contenant qui le reçoit. Le
     // lien voyage par `ref`, jamais par le nom affiché : renommer une gourde ne
     // fait donc pas tomber son eau.
@@ -8758,7 +8758,6 @@
       return ref?items.filter(function(o){return o!==porteur && String(o.dans||"")===ref;}):[];
     }
     function contenuDans(porteur) {return contenusDans(porteur)[0] || null;}
-    function capaciteContenant(porteur) {return Math.max(0,Math.floor(num(porteur.emplacements,1)));}
     function nomCategorie(cle) {
       var noms = { liquide: "Liquide", poudre: "Poudre", pate: "Pâte" }, trouve = noms[cle] || "";
       if (trouve) return trouve;
@@ -8795,18 +8794,23 @@
         return false;
       }
       if(window.OwdInventoryData.group({objets:items},o.ref).some(function(x){return x.ref===porteur.ref;}))return false;
+      if(!window.OwdInventoryData.canContain(items,o,porteur)){
+        flash("Ce contenant contient déjà un contenu différent.");return false;
+      }
       window.OwdInventoryData.isolate(items,porteur);
       window.OwdInventoryData.isolateAncestors(items,o);
       var avant=contenusDans(porteur);
       assureRef(o); assureRef(porteur);
-      if(avant.indexOf(o)<0 && avant.length>=capaciteContenant(porteur))
-        flash("Attention : emplacements dépassés ("+(avant.length+1)+" / "+capaciteContenant(porteur)+"). Le contenu reste autorisé.");
       o.dans = porteur.ref;
       // `ou` reste un repli lisible par les anciens schémas. Tant que `dans`
       // est posé, le contenu n'apparaît pas dans le sac et n'en consomme pas
       // l'encombrement une seconde fois.
       o.ou = "sac"; o.emp = -1;
-      return true;
+      var cible=avant.filter(function(child){return child!==o;})[0]||o;
+      avant.concat([o]).forEach(function(child){
+        if(child!==cible&&items.indexOf(child)>=0&&window.OwdInventoryData.canMerge(items,cible,child))window.OwdInventoryData.merge(items,cible,child);
+      });
+      return cible;
     }
 
     function vignette(file, cb) {
@@ -8912,28 +8916,28 @@
     // draggable quand il est plein : on peut donc sortir son Contenu vers le
     // sac/les poches ou le déposer dans un autre Contenant compatible.
     function slotContenant(porteur) {
-      var contenus=contenusDans(porteur), limite=capaciteContenant(porteur);
-      var groupe=el("div","pc-obj-content-group"+(contenus.length>limite?" depasse":""));
-      groupe.title="Contenus : "+contenus.length+" / "+limite+" emplacements";
-      var visibles=contenus.slice(0,2);
-      visibles.push(null); // Dépôt toujours visible, même au-delà de la limite.
+      var contenus=contenusDans(porteur);
+      var groupe=el("div","pc-obj-content-group");
+      groupe.title="Contenu";
+      // Les anciens contenus restent accessibles, sans créer une case vide à côté.
+      var visibles=contenus.length?contenus:[null];
       visibles.forEach(function(occ){
         var s=el("div","pc-obj-content-slot"+(occ?" plein":" vide")+(sel===occ?" sel":""));
         s.title=occ?(occ.nom||"Contenu"):"Déposer un contenu "+nomCategorie(porteur.contenant);
         if(occ){
           if(occ.img){var im=el("img");im.alt="";im.draggable=false;im.src=occ.img;s.appendChild(im);}
           else s.appendChild(el("span","pc-obj-content-ph",(nomCategorie(occ.contenu)||"?").slice(0,1).toUpperCase()));
+          s.appendChild(el("span","pc-obj-content-qte","x "+fmtP(pnum(occ.qte))));
           s.draggable=true;
           s.addEventListener("click",function(e){e.stopPropagation();sel=occ;render();});
           s.addEventListener("dragstart",function(e){e.stopPropagation();drag=occ;s.classList.add("drag");try{e.dataTransfer.setData("text/plain","");e.dataTransfer.effectAllowed="move";if(window.__owdObjetDrag)window.__owdObjetDrag(drag.ref,e.dataTransfer);}catch(err){}});
           s.addEventListener("dragend",function(e){e.stopPropagation();drag=null;if(window.__owdObjetDragFin)window.__owdObjetDragFin();render();});
         }else s.appendChild(el("span","pc-obj-content-ph","+"));
-        s.addEventListener("dragover",function(e){if(!drag||drag===porteur)return;e.preventDefault();e.stopPropagation();s.classList.toggle("over",compatibleContenu(drag,porteur));});
+        s.addEventListener("dragover",function(e){if(!drag||drag===porteur)return;e.preventDefault();e.stopPropagation();s.classList.toggle("over",window.OwdInventoryData.canContain(items,drag,porteur));});
         s.addEventListener("dragleave",function(e){e.stopPropagation();s.classList.remove("over");});
-        s.addEventListener("drop",function(e){if(!drag)return;e.preventDefault();e.stopPropagation();var d=drag;drag=null;if(poseContenu(d,porteur)){sel=d;save();refresh();}render();});
+        s.addEventListener("drop",function(e){if(!drag)return;e.preventDefault();e.stopPropagation();var d=drag;drag=null;var contenu=poseContenu(d,porteur);if(contenu){sel=contenu;save();refresh();}render();});
         groupe.appendChild(s);
       });
-      if(contenus.length>2)groupe.appendChild(el("span","pc-obj-content-more","+"+(contenus.length-2)));
       return groupe;
     }
 
@@ -9643,27 +9647,19 @@
       }
 
       // CONTENANT et CONTENU partagent exactement les mêmes catégories. Le
-      // premier expose un slot sur sa tuile ; le second peut y entrer si et
-      // seulement si les deux chaînes sont identiques.
+      // premier expose une case sur sa tuile ; le second doit correspondre à
+      // sa catégorie et au contenu déjà présent.
       if (it.contenant) {
         var ct = carteNature();
-        var pct = el("div", "pc-obj-pair");
         sousLigne.appendChild(fld("Sous-type",selCategorieStockage(it,"contenant")));
-        pct.appendChild(champNombre("Emplacements",function(){return capaciteContenant(it);},
-          function(v){it.emplacements=Math.max(0,Math.floor(pnum(v)));},
-          "Nombre de contenus conseillés : le dépassement affiche un avertissement, sans blocage"));
-        ct.appendChild(pct);
-        var entreeCap=pct.querySelector("input");
-        if(entreeCap)entreeCap.addEventListener("change",function(){render();});
         var dedans=contenusDans(it);
         if(dedans.length){
           var liste=el("div","pc-obj-container-contents");
-          liste.appendChild(el("small",dedans.length>capaciteContenant(it)?"pc-obj-overflow":"", 
-            "Contenus : "+dedans.length+" / "+capaciteContenant(it)+(dedans.length>capaciteContenant(it)?" — capacité dépassée":"")));
+          liste.appendChild(el("small","","Contenu"));
           dedans.forEach(function(child){var b=miniBtn(child.nom||"Contenu","Sélectionner ce contenu",function(){sel=child;render();});liste.appendChild(b);});
           ct.appendChild(liste);
+          specifiquesType.appendChild(ct);
         }
-        specifiquesType.appendChild(ct);
       }
       if (it.contenu && invType(it)==="autre") {
         var ctu = carteNature();

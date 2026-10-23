@@ -69,6 +69,15 @@
     if(child&&item.ou==='sacep'){value.ou='sacep';value.emp=item.emp;}
     var contents=Object.create(null);items.filter(function(o){return o.dans===item.ref;}).forEach(function(o){var key=signature(items,o,next,true);contents[key]=Math.round(((contents[key]||0)+Number(o.qte))*100)/100;});
     return stable({objet:value,contenu:contents});}
+  // Un contenant conserve une seule identité de contenu ; la quantité peut varier.
+  function canContain(items,item,container){
+    if(!item||!container||item===container||!item.contenu||!container.contenant||String(item.contenu)!==String(container.contenant))return false;
+    try{
+      if(group({objets:items},item.ref).some(function(o){return o.ref===container.ref;}))return false;
+      var key=signature(items,item);
+      return items.filter(function(o){return o!==item&&o.dans===container.ref;}).every(function(o){return signature(items,o)===key;});
+    }catch(e){return false;}
+  }
   function canMerge(items,a,b){if(!a||!b||a===b||equipped(a)||equipped(b)||a.ou!==b.ou||(a.dans||'')!==(b.dans||'')||!(Number(a.qte)>0&&Number(b.qte)>0))return false;
     try{return signature(items,a)===signature(items,b);}catch(e){return false;}}
   function merge(items,target,source){if(!canMerge(items,target,source))throw Error('Ces objets ne sont pas identiques.');
@@ -77,6 +86,6 @@
     for(var i=items.length-1;i>=0;i--)if(refs.indexOf(items[i].ref)>=0)items.splice(i,1);return target;}
   function totalQuantity(items,item){var q=Number(item.qte)||0,seen={},p=item;while(p&&p.dans){if(seen[p.ref])return 0;seen[p.ref]=true;p=items.filter(function(o){return o.ref===p.dans;})[0];if(p)q*=Number(p.qte)||0;}return q;}
   function takeCost(item){var hands=item&&item.mains;if(hands==null&&item&&item.arme)hands=item.arme.mains;return Math.max(0,(hands==='2 obligatoires'?3:Number(hands)===2?2:1)-(item&&item.rapide?1:0));}
-  var api={takeCost:takeCost,equipped:equipped,isolate:isolate,isolateAncestors:isolateAncestors,normalizeSlots:normalizeSlots,signature:signature,canMerge:canMerge,merge:merge,totalQuantity:totalQuantity,backpack:backpack,pocketFits:pocketFits,carrier:carrier,isCarried:isCarried,weight:weight,bind:bind,split:split,copy:copy,stable:stable,group:group,prepare:prepare,received:received,committed:committed,removed:removed,cancelled:function(state,job){return removed(state,{items:job.dest});}};
+  var api={canContain:canContain,takeCost:takeCost,equipped:equipped,isolate:isolate,isolateAncestors:isolateAncestors,normalizeSlots:normalizeSlots,signature:signature,canMerge:canMerge,merge:merge,totalQuantity:totalQuantity,backpack:backpack,pocketFits:pocketFits,carrier:carrier,isCarried:isCarried,weight:weight,bind:bind,split:split,copy:copy,stable:stable,group:group,prepare:prepare,received:received,committed:committed,removed:removed,cancelled:function(state,job){return removed(state,{items:job.dest});}};
   root.OwdInventoryData=api;if(typeof module==='object'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);
