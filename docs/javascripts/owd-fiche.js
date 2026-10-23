@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.22.1b";
+  var RELEASE = "4.23.0b";
   var SCHEMA = 18;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -227,11 +227,9 @@
   // Identifiant STABLE d'une entrée (compétence, technique, arme, geste,
   // vêtement, objet). Il naît une fois et ne se réécrit jamais : c'est lui qui
   // relie une arme à sa compétence et un objet donné à son jumeau chez l'autre
-  // joueur. Le compteur écarte les collisions du même millième de seconde.
-  var idSeq = 0;
+  // joueur. Le générateur partagé distingue aussi les vues ouvertes simultanément.
   function uid(prefixe) {
-    idSeq++;
-    return (prefixe || "x") + Date.now().toString(36) + idSeq.toString(36);
+    return window.OwdInventoryData.newRef(null,prefixe||"x");
   }
   // Comparaison de noms insensible à la casse ET aux accents : « Épée » et
   // « epee » sont le même nom pour un refus de doublon.

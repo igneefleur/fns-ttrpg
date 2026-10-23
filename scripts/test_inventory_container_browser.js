@@ -32,7 +32,7 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
  await tile('water').dragTo(slot());await wait(()=>items().some(o=>o.ref==='water'&&o.dans==='vial'));
  assert.equal(await slot().count(),1);assert.equal(await slot().getAttribute('class').then(s=>s.includes('plein')),true);assert.equal(await slot().locator('img').count(),1);assert.equal(await slot().locator('.pc-obj-content-qte').innerText(),'x 2');assert.equal(await tile('vial').locator('.pc-obj-content-slot.vide').count(),0);
  await tile('antidote').dragTo(slot());await inv.locator('.pc-obj-panel').waitFor();assert.equal(items().find(o=>o.ref==='antidote').dans||'','');assert.equal(await slot().locator('.pc-obj-content-qte').innerText(),'x 2');
- await tile('extra').dragTo(slot());await wait(()=>items().find(o=>o.ref==='water').qte===5);assert.equal(items().some(o=>o.ref==='extra'),false);assert.equal(await slot().count(),1);assert.equal(await slot().locator('.pc-obj-content-qte').innerText(),'x 5');
+ await tile('extra').dragTo(slot());await wait(()=>items().find(o=>o.ref==='water').qte===5);assert.equal(items().some(o=>o.ref==='extra'),false);assert.equal(await slot().count(),1);assert.equal(await slot().locator('.pc-obj-content-qte').innerText(),'x 5');assert.equal(await slot().locator('.pc-obj-content-qte').evaluate(n=>getComputedStyle(n).color),await tile('vial').locator('.pc-obj-corner.basDroite').evaluate(n=>getComputedStyle(n).color),'couleur normale de quantité');
  await tile('powder').dragTo(slot());assert.equal(items().find(o=>o.ref==='powder').dans||'','');assert.equal(items().filter(o=>o.dans==='vial').length,1);
  // Le contenu reste sélectionnable et ne déplace pas la case.
  await slot().click();

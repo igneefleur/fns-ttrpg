@@ -54,4 +54,23 @@ test('nettoyage : pas de suppression sans relecture complète',()=>{const {attrs
 test('nettoyage sans sauvegarde Roll20 : anciennes valeurs supprimées, état et tokens conservés',()=>{const {state,attrs}=readyMigration();Object.assign(attrs,{owd_backup:{current:'ancienne sauvegarde'},owd_pv:{current:'100',max:'100'},native:{current:'natif'},owd_custom:{current:'extension tierce'}});const w=setup(attrs);finishCleanup(w);assert.ok(!Object.keys(attrs).some(k=>k.startsWith('owd_sync_')||k==='owd_state'||k==='owd_backup'));assert.ok(attrs.native&&attrs.owd_custom&&attrs.owd_pv);assert.deepEqual(B.read(attrs).state,state);assert.ok(!Object.keys(attrs).some(k=>k.startsWith('owd_ops_')));});
 test('nettoyage partiel : reprise sans archive ni journal supplémentaire',()=>{const {attrs}=readyMigration(),w=setup(attrs);w.confirm();w.ctx.storageCleanup(w.ch);const next=setup(attrs);finishCleanup(next);assert.ok(!attrs.owd_state&&!attrs.owd_sync_base);assert.ok(!Object.keys(attrs).some(k=>k.startsWith('owd_ops_')));});
 test('photographies : anciens blocs retirés après confirmation, blocs actifs et payloads du Journal préservés',()=>{const state=fixture(),attrs=B.encode(state),meta=JSON.parse(attrs.owd_storage.current);meta.phase='ready';meta.retired=['owd_block_cp_obsolete','owd_stack_journal','owd_block_bio'];attrs.owd_storage.current=JSON.stringify(meta);attrs.owd_block_cp_obsolete={current:'{}',max:''};attrs.owd_stack_journal={current:'{}',max:''};attrs.owd_ops_history={current:JSON.stringify({epoch:meta.epoch,ops:[{id:'history:1',clock:1,changes:[],creates:{journal:{attribute:'owd_stack_journal',hash:B.hash('{}')}}}]})};const w=setup(attrs);finishCleanup(w);assert.ok(!attrs.owd_block_cp_obsolete);assert.ok(attrs.owd_block_bio&&attrs.owd_stack_journal);});
+
+// Une photographie absorbe les opérations mais conserve leurs anciens payloads pour le Journal.
+function photograph(w,state){
+ const before=B.read(w.attrs),encoded=B.encode(state,before.meta.epoch),meta=JSON.parse(encoded[B.BASE].current),staged={},names={},blocks={};
+ meta.absorbed=Object.assign({},before.meta.absorbed||{});before.ops.forEach(op=>{meta.absorbed[op.id]=true;});meta.clock=before.clock;meta.phase='ready';
+ for(const [i,key] of Object.keys(meta.blocks).entries()){const physical='owd_block_cp_test_'+meta.clock+'_'+i;staged[physical]=encoded[key];names[key]=physical;blocks[physical]=meta.blocks[key];}
+ meta.names=names;meta.blocks=blocks;staged[B.BASE]={current:JSON.stringify(meta),max:''};Object.assign(w.attrs,staged);assert.deepEqual(B.read(w.attrs).state,state);
+}
+test('contenants remplis : séparer, fusionner, photographier et rouvrir ne bloque plus la séparation',()=>{
+ const D=require('../docs/javascripts/owd-inventaire-data.js'),state=fixture();state.inv.objets=[{ref:'vial',nom:'Vial',qte:3,contenant:'liquide',poids:.1,ou:'terre',dans:'',emp:-1},{ref:'water',nom:'Water',qte:3,contenu:'liquide',poids:1,ou:'sac',dans:'vial',emp:-1}];
+ const attrs=B.encode(state),w=setup(attrs);let a=new B.Session(attrs,state,null,{id:'a'}),draft=C.copy(state);
+ function publish(){a.capture(draft);w.send(a);w.flush();a.receive(attrs);draft=C.rebuild(a.local);assert.deepEqual(draft,B.read(attrs).state);}
+ D.isolate(draft.inv.objets,draft.inv.objets[0]);const other=draft.inv.objets.find(o=>o.contenant&&o.ref!=='vial').ref;publish();const oldPayload=C.copy(attrs['owd_stack_'+encodeURIComponent(other)]);
+ D.merge(draft.inv.objets,draft.inv.objets[0],draft.inv.objets.find(o=>o.ref===other));publish();draft.inv.objets[0].qte=2;publish();assert.equal(draft.inv.objets[0].qte,2,'édition possible après la fusion');photograph(w,draft);a=new B.Session(attrs,draft,null,{id:'reopened'});
+ // Compatibilité avec une ancienne vue : même référence, nouvelle quantité de pile.
+ D.split(draft.inv.objets,draft.inv.objets[0],1,other);assert.doesNotThrow(publish);assert.deepEqual(attrs['owd_stack_'+encodeURIComponent(other)],oldPayload,'historique immuable');
+ assert.equal(draft.inv.objets.filter(o=>o.contenant).reduce((s,o)=>s+o.qte,0),2);assert.equal(draft.inv.objets.filter(o=>o.contenu).reduce((s,o)=>s+D.totalQuantity(draft.inv.objets,o),0),6);
+ draft.name='Toujours éditable';publish();assert.equal(B.read(attrs).state.name,'Toujours éditable');assert.equal(Object.keys(a.pending).length,0);
+});
 console.log(n+' scénarios du pont et des tokens validés.');

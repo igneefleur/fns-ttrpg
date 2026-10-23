@@ -21,4 +21,17 @@ test('saisies absolues de réserves : pas d’addition involontaire, conflit sig
 test('temps avancé simultanément : horloge et réserves suivent les deux opérations',()=>{const w=world();w.change(w.a,s=>{s.horloge.minutes=10;s.etat.pe-=5;});w.change(w.b,s=>{s.horloge.minutes=15;s.etat.pe-=7;});assert.equal(w.read().state.horloge.minutes,25);assert.equal(w.read().state.etat.pe,88);});
 test('maximum du token : forçage de capacité dans la fiche, sans toucher aux autres leviers',()=>{const w=world();w.a.tokenMax('pv',150,w.read());w.attrs.owd_ops_a={current:JSON.stringify({epoch:w.a.epoch,ops:Object.values(w.a.pending)})};assert.equal(w.read().state.capsLeviers.max.force.pv,150);});
 test('format actif corrompu : ne jamais revenir silencieusement à l’ancienne fiche',()=>{const s=fixture(),attrs=B.encode(s),m=JSON.parse(attrs[B.BASE].current);m.phase='ready';attrs[B.BASE].current=JSON.stringify(m);attrs.owd_state={current:JSON.stringify(s)};delete attrs[Object.keys(m.blocks)[0]];assert.equal(M.attrsToState(attrs).degrade,'illisible');});
+
+test('supprimer une pile puis modifier le reste de l’inventaire conserve les modifications',()=>{
+ const w=world(),history={};
+ function edit(fn){w.change(w.a,fn);Object.assign(history,w.a.pending);w.attrs[B.PREFIX+w.a.id]={current:JSON.stringify({epoch:w.a.epoch,ops:Object.values(history)}),max:''};w.a.receive(w.attrs);}
+ edit(s=>{s.inv.objets=[];});assert.equal(w.read().state.inv.objets.length,0);
+ edit(s=>{s.inv.objets.push({ref:'new',nom:'Fiole',qte:2,ou:'terre'});});
+ edit(s=>{s.inv.objets[0].nom='Fiole modifiée';s.inv.objets[0].qte=1;});const actual=w.read();
+ assert.equal(actual.state.inv.objets[0].nom,'Fiole modifiée');assert.equal(actual.state.inv.objets[0].qte,1);assert.equal(actual.conflicts.length,0);
+});
+test('supprimer deux fois une même pile depuis deux joueurs reste un conflit, sans appliquer les autres changements du second',()=>{
+ const w=world();w.change(w.a,s=>{s.inv.objets=[];});w.change(w.b,s=>{s.inv.objets=[];s.name='Ne doit pas remplacer';});const actual=w.read();
+ assert.equal(actual.state.inv.objets.length,0);assert.notEqual(actual.state.name,'Ne doit pas remplacer');assert.ok(actual.conflicts.length>0);
+});
 console.log(count+' scénarios de stockage regroupé validés.');
