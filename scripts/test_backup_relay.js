@@ -13,7 +13,7 @@ ctx.backupVerifiedRead(ch,{});await settle();assert.equal(sent.length,1);now+=36
 ctx.backupSnapshot(ch,state,'migration');await settle();assert.equal(sent[2].reason,'migration');
 ctx.backupSnapshot(ch,state,'opening');await settle();assert.equal(sent[3].reason,'opening','une réouverture produit bien une demande');
 now+=3600001;accept=false;ctx.backupVerifiedRead(ch,{});await settle();assert.equal(sent.length,5);assert.ok(errors.length);assert.notEqual(ctx.backupRequests['c:automatic'],now);ctx.backupVerifiedRead(ch,{});await settle();assert.equal(sent.length,5);now+=30001;accept=true;ctx.backupVerifiedRead(ch,{});await settle();assert.equal(sent.length,6);
-ctx.campaign=()=>({});win.campaignid='global-game';assert.equal(ctx.backupCampaignId(),'global-game');delete win.campaignid;win.location={pathname:'/editor/character/popout-game/c/'};assert.equal(ctx.backupCampaignId(),'popout-game');
+ctx.campaign=()=>({});win.campaign_id='global-game';assert.equal(ctx.backupCampaignId(),'global-game');delete win.campaign_id;win.location={pathname:'/editor/character/popout-game/c/'};assert.equal(ctx.backupCampaignId(),'popout-game');
 let restored;document.addEventListener('owd-backup-restore',ev=>{const d=JSON.parse(ev.detail);document.dispatchEvent(new CustomEvent('owd-backup-restore-result',{detail:JSON.stringify({token:d.token,ok:true})}));});listeners[0]({ns:'owd-backups',action:'restore',snapshot:{state}},null,r=>restored=r);assert.equal(restored.ok,true);
 console.log('OK trajet page → relais de contenu → stockage → accusé : identité Backbone sans .id, ouverture, migration, heure simulée, échec non confirmé puis reprise, restauration JSON et fenêtre séparée.');
 })().catch(e=>{console.error(e);process.exitCode=1});

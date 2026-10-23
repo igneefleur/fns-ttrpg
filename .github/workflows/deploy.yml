@@ -88,6 +88,7 @@ jobs:
           node scripts/test_upgrade_backup.js
           node scripts/test_checkpoint_import.js
           node scripts/test_backup_relay.js
+          node scripts/test_shared_mode.js
           node scripts/test_local_recovery.js
           node scripts/test_combat_chat.js
           node scripts/test_defenses.js

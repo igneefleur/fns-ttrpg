@@ -375,6 +375,9 @@ def main():
     if not lancer("relais des sauvegardes locales", ["node", "scripts/test_backup_relay.js"], racine):
         return 1
 
+    if not lancer("modes partagés des vues", ["node", "scripts/test_shared_mode.js"], racine):
+        return 1
+
     # Concurrence et migration : arrêt avant toute écriture de version.
     if not lancer("Monde collaboratif", ["node", "scripts/test_monde.js"], racine):
         return 1

@@ -467,13 +467,39 @@
   var presenceLocal={},presenceKnown={};
   function mergePresence(a,b,now){var out={};[a,b].forEach(function(map){Object.keys(map||{}).forEach(function(k){var r=map[k];if(['__proto__','prototype','constructor'].indexOf(k)>=0||!r||typeof r.player!=='string'||!Number.isSafeInteger(r.seq)||!Number.isFinite(r.at)||now-r.at>=60000||r.at-now>60000)return;var old=out[k];if(!old||r.seq>old.seq||r.seq===old.seq&&r.at>old.at)out[k]=r;});});return out;}
   function presenceData(attrs){try{var p=JSON.parse(attrs.owd_presence.current);return p.format===1&&p.views&&typeof p.views==='object'?p.views:{};}catch(e){return {};}}
-  function presenceRead(ch,attrs){var now=Date.now();var known=mergePresence(presenceKnown[ch.id],presenceData(attrs),now);known=mergePresence(known,presenceLocal[ch.id],now);presenceKnown[ch.id]=known;return Object.keys(known).map(function(k){return known[k];}).filter(function(r){return !r.left&&now-r.at<30000;});}
+  var presenceWatchers=[],presenceOwnerObserved=null,presenceOwnerStop=null;
+  function presenceChoice(rows,player){
+    var best=null;rows.forEach(function(r){if(r.player!==player||r.left)return;
+      var candidate={mode:r.mode==='edition'?'edition':'consultation',modeAt:Number(r.modeAt)||0,modeBy:String(r.modeBy||'')};
+      if(!best||candidate.modeAt>best.modeAt||candidate.modeAt===best.modeAt&&candidate.modeBy>best.modeBy)best=candidate;
+    });return best;
+  }
+  function observePresenceOwner(owner){
+    if(owner===presenceOwnerObserved)return;
+    if(presenceOwnerStop)presenceOwnerStop();presenceOwnerObserved=owner;presenceOwnerStop=null;
+    if(owner&&owner.watchPresence)presenceOwnerStop=owner.watchPresence(function(id){var ch=getChar(id);if(ch)notifyPresence(ch);});
+  }
+  function presenceRead(ch,attrs){
+    var owner=storageOwner();observePresenceOwner(owner);
+    if(owner&&owner.rows)return owner.rows(ch.id);
+    var now=Date.now(),known=mergePresence(presenceKnown[ch.id],presenceData(attrs),now);known=mergePresence(known,presenceLocal[ch.id],now);presenceKnown[ch.id]=known;
+    var rows=Object.keys(known).map(function(k){return known[k];}).filter(function(r){return !r.left&&now-r.at<30000;});
+    return rows.map(function(r){return Object.assign({},r,presenceChoice(rows,r.player));});
+  }
+  function notifyPresence(ch,attrs){
+    var rows=presenceRead(ch,attrs||readAll(ch.id)),player=journalPlayer(),mode=player&&presenceChoice(rows,player.id);
+    srcFrames.forEach(function(w,i){if(srcIds[i]===ch.id)reply({source:w},{type:'presence-state',charId:ch.id,presence:rows,modeState:mode});});
+    presenceWatchers.slice().forEach(function(fn){try{fn(ch.id);}catch(e){}});
+  }
   function publishPresence(ch){var attrs=readAll(ch.id);presenceRead(ch,attrs);var current={format:1,views:presenceKnown[ch.id]||{}},json=storageStable(current);if(!attrs.owd_presence||attrs.owd_presence.current!==json)enqueue(ch.id,{owd_presence:{current:json,max:''}},true);}
   function updatePresence(ch,data){
-    var owner=storageOwner();if(owner&&owner.presence){owner.presence(ch.id,data);return;}
+    var owner=storageOwner();observePresenceOwner(owner);if(owner&&owner.presence){owner.presence(ch.id,data);return;}
     var player=journalPlayer();if(!player||!data.viewId||typeof data.viewId!=='string')return;
-    var map=presenceLocal[ch.id]||(presenceLocal[ch.id]={}),prev=map[data.viewId];
-    map[data.viewId]={player:player.id,name:player.name,view:data.viewId,mode:data.mode==='edition'?'edition':'consultation',at:Date.now(),seq:(prev?prev.seq:0)+1,left:data.action==='leave'};publishPresence(ch);
+    var rows=presenceRead(ch,readAll(ch.id)),choice=presenceChoice(rows,player.id);
+    var map=presenceLocal[ch.id]||(presenceLocal[ch.id]={}),prev=map[data.viewId]||(presenceKnown[ch.id]||{})[data.viewId],seq=(prev?prev.seq:0)+1;
+    if(data.action==='mode'||!choice)choice={mode:data.action==='mode'&&data.mode==='edition'?'edition':'consultation',modeAt:Math.max(Date.now(),choice?choice.modeAt+1:0),modeBy:data.viewId+':'+seq};
+    map[data.viewId]=Object.assign({player:player.id,name:player.name,view:data.viewId,at:Date.now(),seq:seq,left:data.action==='leave'},choice);
+    publishPresence(ch);notifyPresence(ch);
   }
   var storageFresh={},storageCleanupReports={};
   function storageObsolete(k){return typeof k==='string'&&k!=='owd_version'&&['owd_pv','owd_pe','owd_pm'].indexOf(k)<0&&(k==='owd_backup'||k==='owd_state'||k.indexOf('owd_sync_')===0||STORAGE_LEGACY.indexOf(k)>=0);}
@@ -523,7 +549,7 @@
   function backupCampaignId(){
     var c=campaign(),w=winCampagne||window,id;
     try{id=c&&(c.id||(c.get&&(c.get('id')||c.get('_id')))||c.campaignid);}catch(e){}
-    id=id||w.campaignid||w.CAMPAIGN_ID;
+    id=id||w.campaign_id||w.campaignid||w.CAMPAIGN_ID;
     if(!id){var match=String(w.location&&w.location.pathname||'').match(/^\/editor\/character\/([^/]+)\//);if(match)id=match[1];}
     return id==null?'':String(id);
   }
@@ -605,7 +631,9 @@
     fetchFresh(function(attrs){if(storageBasis(attrs)!==storageBasis(expected)){fail('Le personnage a changé pendant la préparation. Réessayez la mise à jour.');return;}stage();});
   }
 
-  window.__owdStorageBridge={session:storageSession,presence:function(id,data){var ch=getChar(id);if(ch&&inventoryAccess(ch))updatePresence(ch,data);},release:function(id,viewId){var ch=getChar(id);if(ch&&inventoryAccess(ch))storageRelease(ch,viewId);},ops:function(id,data){var ch=getChar(id);if(ch&&inventoryAccess(ch))storageOps(ch,data);}};
+  window.__owdStorageBridge={session:storageSession,watchPresence:function(fn){presenceWatchers.push(fn);return function(){var i=presenceWatchers.indexOf(fn);if(i>=0)presenceWatchers.splice(i,1);};},rows:function(id){var ch=getChar(id);return ch?presenceRead(ch,readAll(id)):[];},presence:function(id,data){var ch=getChar(id);if(ch&&inventoryAccess(ch))updatePresence(ch,data);},release:function(id,viewId){var ch=getChar(id);if(ch&&inventoryAccess(ch))storageRelease(ch,viewId);},ops:function(id,data){var ch=getChar(id);if(ch&&inventoryAccess(ch))storageOps(ch,data);}};
+
+  if(typeof window.addEventListener==='function')window.addEventListener('pagehide',function(){if(presenceOwnerStop)presenceOwnerStop();presenceOwnerStop=null;});
 
   function journalPlayer() {
     try {
@@ -916,7 +944,7 @@
   function publieLecture(ch, ok) {
     menage(); var attrs = readAll(ch.id), at = Date.now();
     if(ok&&typeof backupVerifiedRead==='function')backupVerifiedRead(ch,attrs);
-    if(ok){presenceRead(ch,attrs);if(Object.keys(presenceLocal[ch.id]||{}).length)publishPresence(ch);}
+    if(ok){presenceRead(ch,attrs);if(Object.keys(presenceLocal[ch.id]||{}).length)publishPresence(ch);if(typeof notifyPresence==='function')notifyPresence(ch,attrs);}
     var revision=ok?revisionLecture(ch.id,attrs):null;
     var cleanup=null;
     if(ok&&attrs.owd_storage&&inventoryAccess(ch)){storageConfirmLocal(ch,attrs);storageFresh[ch.id]={at:at,attrs:attrs};try{cleanup=storageCleanup(ch);}catch(e){cleanup={status:'error',error:String(e.message||e)};}}
@@ -1258,7 +1286,7 @@
         var chl = getChar(d.charId);
         if (!chl) return;
         storageRegisterView(ev.source,chl,d.viewId);
-        var rl = { type: "hydrate", charId: d.charId, attrs: readAll(d.charId), resync: true, collaboration: 1, storageBlocks: 2, storageVolatile: 1, storageVersion:1, storageImport:1, localBackups:1, localBackupRelay:1, storageCleanup:3, storageSession: storageSessionName() };
+        var rl = { type: "hydrate", charId: d.charId, attrs: readAll(d.charId), resync: true, collaboration: 1, storageBlocks: 2, storageVolatile: 1, storageVersion:1, storageImport:1, localBackups:1, localBackupRelay:1, sharedMode:1, storageCleanup:3, storageSession: storageSessionName() };
         if (inventoryFrames.has(ev.source)) {
           rl.inventoryAccess = true;
           if (etatAttributs(chl) !== "sur") return;
