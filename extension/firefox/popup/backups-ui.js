@@ -20,6 +20,7 @@
       });
     }).catch(function(e){message(e.message);});}
     document.querySelectorAll('[data-popup-tab]').forEach(function(b){b.onclick=function(){var id=b.dataset.popupTab;document.querySelectorAll('[data-popup-panel]').forEach(function(p){p.hidden=p.dataset.popupPanel!==id;});document.querySelectorAll('[data-popup-tab]').forEach(function(t){t.setAttribute('aria-selected',String(t===b));});if(id==='backups')load();};});
+    api.runtime.onMessage.addListener(function(d){if(d&&d.ns==='owd-backups'&&d.action==='changed'&&!document.querySelector('[data-popup-panel="backups"]').hidden)load();});
     load();
   });
 })();

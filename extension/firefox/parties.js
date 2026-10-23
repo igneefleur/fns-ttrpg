@@ -20,6 +20,6 @@
  * du cas où le fichier n'a pas été chargé (typeof).
  */
 var PARTIES = {
-  "stable": "4.19.0",
-  "beta": "4.19.0b"
+  "stable": "4.19.1",
+  "beta": "4.19.1b"
 };

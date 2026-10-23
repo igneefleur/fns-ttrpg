@@ -1707,18 +1707,6 @@ if (typeof browser === "undefined") { var browser = chrome; }
   // condition pour que la copie qui n'est pas du mode, ou l'extension éteinte,
   // ne laisse aucune trace.
   function demarre() {
-    if(IS_TOP){
-      window.addEventListener('message',function(ev){var d=ev.data;if(ev.source!==window||ev.origin!==location.origin||!d||d.ns!=='owd-local-backup'||d.type!=='save')return;
-        browser.runtime.sendMessage(Object.assign({},d,{ns:'owd-backups',action:'save'})).catch(function(){});
-      });
-      browser.runtime.onMessage.addListener(function(d,sender,respond){
-        if(!d||d.ns!=='owd-backups'||d.action!=='restore')return;
-        var token='restore-'+Date.now()+'-'+Math.random(),timer;
-        function done(e){var r=e.data;if(e.source!==window||!r||r.ns!=='owd-backup-restore-result'||r.token!==token)return;clearTimeout(timer);window.removeEventListener('message',done);respond(r);}
-        window.addEventListener('message',done);timer=setTimeout(function(){window.removeEventListener('message',done);respond({ok:false,error:'Roll20 ne répond pas. Réessayez dans quelques instants.'});},36000);
-        window.postMessage({ns:'owd-backup-restore',token:token,snapshot:d.snapshot},location.origin);return true;
-      });
-    }
     ecouteNuit();
     posePriseTake();
     // Le tchat vit dans la frame de l'ÉDITEUR : ni la fenêtre popout d'une

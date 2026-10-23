@@ -520,13 +520,34 @@
     });
     return storageStable(out);
   }
-  function backupSnapshot(ch,state,reason){
-    if(!state||typeof state!=='object'||Array.isArray(state)||!Number.isSafeInteger(state.v))return;
-    
-    var c=campaign();if(!c||!c.id)return;
-    window.postMessage({ns:'owd-local-backup',type:'save',campaignId:String(c.id),charId:String(ch.id),name:String(ch.get('name')||state.name||'Sans nom'),reason:reason,state:state},location.origin);
+  function backupCampaignId(){
+    var c=campaign(),w=winCampagne||window,id;
+    try{id=c&&(c.id||(c.get&&(c.get('id')||c.get('_id')))||c.campaignid);}catch(e){}
+    id=id||w.campaignid||w.CAMPAIGN_ID;
+    if(!id){var match=String(w.location&&w.location.pathname||'').match(/^\/editor\/character\/([^/]+)\//);if(match)id=match[1];}
+    return id==null?'':String(id);
   }
-  function backupVerifiedRead(ch,attrs){if(!storageImports[ch.id]&&window.OwdSync&&readSubscriptions){try{var verified=window.OwdSync.Compact.read(attrs);if(verified&&!verified.incomplete){var previous=backupRequests[ch.id+':automatic'];if(!previous||Date.now()-previous>=3600000){backupSnapshot(ch,verified.state,previous?'hourly':'opening');backupRequests[ch.id+':automatic']=Date.now();}}}catch(e){}}}
+  var backupInFlight={},backupRetryAt={};
+  function backupSnapshot(ch,state,reason){
+    if(!state||typeof state!=='object'||Array.isArray(state)||!Number.isSafeInteger(state.v))return false;
+    var campaignId=backupCampaignId();if(!campaignId)return false;
+    var request='backup-'+Date.now()+'-'+Math.random().toString(36).slice(2);
+    backupInFlight[request]={charId:ch.id,at:Date.now()};
+    document.dispatchEvent(new CustomEvent('owd-backup-save',{detail:JSON.stringify({request:request,campaignId:campaignId,charId:String(ch.id),name:String(ch.get('name')||state.name||'Sans nom'),reason:reason,state:state})}));
+    return true;
+  }
+  if(typeof document!=='undefined')document.addEventListener('owd-backup-saved',function(ev){
+    try{var d=JSON.parse(ev.detail),pending=backupInFlight[d.request];if(!pending)return;delete backupInFlight[d.request];
+      if(d.ok){backupRequests[pending.charId+':automatic']=Date.now();delete backupRetryAt[pending.charId];}
+      else backupRetryAt[pending.charId]=Date.now()+30000;
+    }catch(e){}
+  });
+  function backupVerifiedRead(ch,attrs){if(!storageImports[ch.id]&&window.OwdSync&&readSubscriptions){try{
+    var now=Date.now(),previous=backupRequests[ch.id+':automatic'];
+    Object.keys(backupInFlight).forEach(function(k){if(now-backupInFlight[k].at>30000)delete backupInFlight[k];});
+    if(previous&&now-previous<3600000||backupRetryAt[ch.id]>now||Object.keys(backupInFlight).some(function(k){return backupInFlight[k].charId===ch.id;}))return;
+    var verified=window.OwdSync.Compact.read(attrs);if(verified&&!verified.incomplete)backupSnapshot(ch,verified.state,previous?'hourly':'opening');
+  }catch(e){}}}
   function storageImport(ch,data,ev){
     if(storageImports[ch.id])throw Error('Une importation est déjà en cours.');
     var expected=data.expected,encoded=data.blocks,meta=storageManifest(encoded),state=data.state;
@@ -1132,12 +1153,12 @@
     pas();
   }
 
-  window.addEventListener('message',function(ev){
-    var d=ev.data;if(ev.source!==window||ev.origin!==location.origin||!d||d.ns!=='owd-backup-restore')return;
-    function result(ok,error){window.postMessage({ns:'owd-backup-restore-result',token:d.token,ok:ok,error:error},location.origin);}
+  document.addEventListener('owd-backup-restore',function(ev){
+    var d;try{d=JSON.parse(ev.detail);}catch(e){return;}
+    function result(ok,error){document.dispatchEvent(new CustomEvent('owd-backup-restore-result',{detail:JSON.stringify({token:d.token,ok:ok,error:error})}));}
     try{
       var saved=d.snapshot,c=campaign(),ch=saved&&getChar(saved.charId);
-      if(!saved||!c||String(c.id)!==saved.campaignId||!ch||!inventoryAccess(ch))throw Error('Ouvrez la partie de ce personnage avec un accès en écriture.');
+      if(!saved||!c||backupCampaignId()!==saved.campaignId||!ch||!inventoryAccess(ch))throw Error('Ouvrez la partie de ce personnage avec un accès en écriture.');
       if(!window.OwdSync)throw Error('Rechargez la partie Roll20.');
       ch.attribs.fetch({success:function(){try{
         var attrs=readAll(ch.id),old=null;try{old=window.OwdSync.Compact.read(attrs);}catch(e){}
@@ -1237,7 +1258,7 @@
         var chl = getChar(d.charId);
         if (!chl) return;
         storageRegisterView(ev.source,chl,d.viewId);
-        var rl = { type: "hydrate", charId: d.charId, attrs: readAll(d.charId), resync: true, collaboration: 1, storageBlocks: 2, storageVolatile: 1, storageVersion:1, storageImport:1, localBackups:1, storageCleanup:3, storageSession: storageSessionName() };
+        var rl = { type: "hydrate", charId: d.charId, attrs: readAll(d.charId), resync: true, collaboration: 1, storageBlocks: 2, storageVolatile: 1, storageVersion:1, storageImport:1, localBackups:1, localBackupRelay:1, storageCleanup:3, storageSession: storageSessionName() };
         if (inventoryFrames.has(ev.source)) {
           rl.inventoryAccess = true;
           if (etatAttributs(chl) !== "sur") return;

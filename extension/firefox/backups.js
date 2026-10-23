@@ -20,7 +20,7 @@
   api.runtime.onMessage.addListener(function(d,sender,respond){
     if(!d||d.ns!=='owd-backups')return;
     var task;
-    if(d.action==='save'&&sender.tab&&/^https:\/\/app\.roll20\.net\//.test(sender.url||''))task=save(d).then(function(r){api.storage.local.remove('owdBackupFailure').catch(function(){});return r;},function(e){api.storage.local.set({owdBackupFailure:String(e.message||e)}).catch(function(){});throw e;});
+    if(d.action==='save'&&sender.tab&&/^https:\/\/app\.roll20\.net\//.test(sender.url||''))task=save(d).then(function(r){return api.storage.local.remove('owdBackupFailure').catch(function(){}).then(function(){try{api.runtime.sendMessage({ns:'owd-backups',action:'changed'}).catch(function(){});}catch(e){}return r;});},function(e){api.storage.local.set({owdBackupFailure:String(e.message||e)}).catch(function(){});throw e;});
     else if(extensionPage(sender)&&d.action==='list')task=store('readonly',function(s,done){var q=s.getAll();q.onsuccess=function(){done(q.result.sort(function(a,b){return b.at-a.at;}).map(metadata));};});
     else if(extensionPage(sender)&&d.action==='get')task=store('readonly',function(s,done){var q=s.get(d.id);q.onsuccess=function(){done(q.result?Object.assign(metadata(q.result),{state:JSON.parse(q.result.raw)}):null);};});
     else if(extensionPage(sender)&&d.action==='delete')task=store('readwrite',function(s,done){s.delete(d.id);done({ok:true});});

@@ -1414,7 +1414,7 @@
         accesInventaire = true; document.getElementById("perso-fiche").inert = false; note(null);
       }
       if(d.storageBlocks===2&&d.storageCleanup!==3)afficheNettoyage({status:'error',error:'Le pont de cette partie utilise encore un ancien nettoyage. Après installation de l’extension 4.2.0, rechargez la page entière de la partie Roll20.'});
-      storageCapable=d.storageBlocks===2&&d.storageVolatile===1&&d.storageVersion===1&&d.storageImport===1&&d.localBackups===1;storageSession=d.storageSession||"";
+      storageCapable=d.storageBlocks===2&&d.storageVolatile===1&&d.storageVersion===1&&d.storageImport===1&&d.localBackups===1&&d.localBackupRelay===1;storageSession=d.storageSession||"";
       collaborationPont = d.collaboration === 1 && d.resync === true;
       if (d.fresh === true || !collaborationPont) {
         derniereLecture = Date.now();

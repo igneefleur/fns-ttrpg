@@ -372,6 +372,9 @@ def main():
     if not lancer("importation par photographie", ["node", "scripts/test_checkpoint_import.js"], racine):
         return 1
 
+    if not lancer("relais des sauvegardes locales", ["node", "scripts/test_backup_relay.js"], racine):
+        return 1
+
     # Concurrence et migration : arrêt avant toute écriture de version.
     if not lancer("Monde collaboratif", ["node", "scripts/test_monde.js"], racine):
         return 1
