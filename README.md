@@ -613,3 +613,7 @@ Sur le scénario instrumenté de 150 objets, 150 compétences et 600 notes, le D
 ### Régressions des versions et réserves — 4.17.0b
 
 Après construction du site, `CHROMIUM_EXECUTABLE=/chemin/vers/chromium node scripts/test_versions_reserves_browser.js` vérifie la confirmation de la version, la fermeture puis réouverture, un ancien bundle, les vues restées ouvertes avec un ancien code et la réception d’une réserve pendant que son champ a le focus. Le serveur Roll20 est simulé. `scripts/test_session_ui_browser.js` vérifie également la réouverture après mise à jour. Cette livraison nécessite les nouvelles sources de l’extension : le marqueur existant `owd_version` est maintenant accepté dans ses écritures de métadonnées, sans toucher à l’immutabilité des blocs initiaux.
+
+### Confirmation et délais — 4.18.0b
+
+`node scripts/test_upgrade_waits.js` vérifie la publication de la version confirmée indépendamment des autres opérations en attente, l’absence de publication anticipée, les délais de 36 secondes, les erreurs de sauvegarde tardives et les liens vers les pages Extension beta/stable. Ce test fait partie des contrôles de publication et de CI. Le bandeau d’enregistrement apparaît après 12 secondes ; les erreurs connues restent immédiates. Le test `scripts/test_versions_reserves_browser.js` vérifie aussi une mise à jour dont le catalogue arrive après onze secondes. Les tests navigateur utilisent un serveur Roll20 simulé.

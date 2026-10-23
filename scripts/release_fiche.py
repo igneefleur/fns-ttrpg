@@ -394,6 +394,8 @@ def main():
     if not lancer("sauvegarde avant mise à niveau", ["node", "scripts/test_upgrade_backup.js"], racine):
         return 1
 
+    if not lancer("confirmation de mise à jour et erreurs tardives", ["node", "scripts/test_upgrade_waits.js"], racine):
+        return 1
     if not lancer("écrans, délais et présence", ["node", "scripts/test_session_ui.js"], racine):
         return 1
     if not lancer("sessions sans reprise locale", ["node", "scripts/test_local_recovery.js"], racine):

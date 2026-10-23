@@ -897,7 +897,7 @@
     if (delay > 0) {job.timer=setTimeout(function(){job.timer=null;resynchronise(ch);},delay);return true;}
     job.last=Date.now();job.running=true;var serial=++job.serial, timeout;
     function done(ok){if(serial!==job.serial||!job.running)return;clearTimeout(timeout);job.running=false;publieLecture(ch,ok);}
-    timeout=setTimeout(function(){done(false);},10000);
+    timeout=setTimeout(function(){done(false);},36000);
     try {ch.attribs.fetch({success:function(){done(true);},error:function(){done(false);}});}
     catch(e){done(false);}
     return true;
