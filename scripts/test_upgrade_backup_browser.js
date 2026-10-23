@@ -1,65 +1,27 @@
-/* Harnais navigateur : vrai bundle et vrai pont, deux collections Backbone
- * indépendantes, serveur simulé partagé. Aucun compte Roll20 nécessaire.
- * NODE_PATH=/chemin/node_modules node scripts/test_notes_sync_browser.js
- * Dépendance de vérification : playwright + Chromium.
- */
+/* Régressions : versions confirmées, anciennes vues, réserves focalisées. */
+/* Vrai pont Roll20 et vraie fiche : ouverture, consultation, présence et erreurs. */
 'use strict';
-const {chromium}=require('playwright');
-const fs=require('node:fs'), path=require('node:path'), http=require('node:http'), assert=require('node:assert/strict');
-const M=require('../docs/javascripts/owd-attr-map.js'), C=require('../docs/javascripts/owd-sync.js');
-const root=path.resolve(__dirname,'..');
-let attrs, writes=[], blockWrites=false;
-const seed=M.blank();seed.v=17;seed.rel='4.5.2b';seed.notes='Note d’origine à préserver';seed.name='Fiche partagée';
-seed.comps=[{id:'c1',nom:'Lutte',groupe:'Physique',rang:1},{id:'c2',nom:'Évasion',groupe:'Physique',rang:2}];
-seed.inv.objets=[{ref:'o1',id:'',nom:'Dague',qte:1,ou:'sac',arme:{attaque:'6',degats:'16',parade:'8',reduction:'6',modsDegats:['Dexterite','',''],modsParade:['','',''],type:'',comp:''}}, {ref:'o2',id:'',nom:'Pain',qte:5,ou:'sac'}];
-attrs=C.Compact.encode(seed);
-const meta=JSON.parse(attrs[C.Compact.BASE].current);meta.phase='ready';attrs[C.Compact.BASE].current=JSON.stringify(meta);
-attrs.owd_version={current:'17',max:'4.5.2b'};
-function harness() { return `<!doctype html><meta charset="utf-8"><style>iframe{width:1500px;height:1000px}</style><script>
-function model(data) {return {attributes:{...data},get(k){return this.attributes[k]},set(d){Object.assign(this.attributes,d)},save(data,opts){Object.assign(this.attributes,data||{});window.backend({kind:'write',data:this.attributes}).then(()=>opts&&opts.success&&opts.success())}}}
-const collection={models:[],create(data){const m=model(data);this.models.push(m);return m},fetch(opts){window.backend({kind:'read'}).then(attrs=>{this.models=Object.keys(attrs).map(name=>model({name,...attrs[name]}));opts&&opts.success&&opts.success()})}};
-const ch={id:'shared',attribs:collection,get(k){return k==='name'?'Fiche partagée':k==='controlledby'?'all':''}};
-window.Campaign={characters:{get(id){return id==='shared'?ch:null},models:[ch]},players:{models:[]}};
-</script><script data-owd-version="4.2.0" data-owd-mode="beta" data-owd-browser="firefox" src="/bridge.js"></script><iframe src="/roll20-fiche.html#c=shared"></iframe>`; }
-const server=http.createServer((req,res)=> {
-  const url=new URL(req.url,'http://localhost');let body,mime;
-  if(url.pathname==='/harness'){body=harness();mime='text/html';}
-  else if(url.pathname==='/bridge.js'){body=fs.readFileSync(path.join(root,'extension/firefox/beta/roll20-page.js'));mime='text/javascript';}
-  else {const file=path.join(root,'site',decodeURIComponent(url.pathname));if(!file.startsWith(path.join(root,'site'))||!fs.existsSync(file)||fs.statSync(file).isDirectory()){res.writeHead(404);res.end();return;}body=fs.readFileSync(file);mime=file.endsWith('.js')?'text/javascript':file.endsWith('.json')?'application/json':file.endsWith('.css')?'text/css':file.endsWith('.html')?'text/html':'application/octet-stream';}
-  res.writeHead(200,{'content-type':mime});res.end(body);
-});
-(async()=> {
-  await new Promise(r=>server.listen(0,'127.0.0.1',r));const url='http://127.0.0.1:'+server.address().port;
-  const browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_EXECUTABLE || chromium.executablePath(),args:['--no-sandbox']});const errors=[];
-  try {
-    const ctx=await browser.newContext({viewport:{width:1600,height:1100}});
-    await ctx.exposeBinding('backend',async(_,m)=>{
-      if(m.kind==='read'){await new Promise(r=>setTimeout(r,70));return C.copy(attrs);}
-      if(m.kind==='write'){if(blockWrites && (m.data.name.startsWith(C.PREFIX)||m.data.name.startsWith(C.Compact.PREFIX)))return;await new Promise(r=>setTimeout(r,30));attrs[m.data.name]={current:String(m.data.current||''),max:String(m.data.max||'')};writes.push(m.data.name);}
-    });
-    const pages=[await ctx.newPage()];pages.forEach(p=>p.on('pageerror',e=>errors.push(e.message)));
-    await Promise.all(pages.map(p=>p.goto(url+'/harness')));
-    const frames=pages.map(p=>p.frameLocator('iframe'));
-    const a=frames[0];
-    await a.locator('[data-owd-act="monter"]').click();
-    await a.locator('.pc-sheet').waitFor({timeout:30000});
-    await pages[0].waitForFunction(()=>JSON.parse(document.querySelector('iframe').contentWindow.__owdLocalStorage.getItem('owd-perso')).v===18);
-    for(let i=0;i<150&&C.Compact.read(attrs).state.v!==18;i++)await pages[0].waitForTimeout(100);
-    const now=C.Compact.read(attrs);assert.equal(now.state.v,18);assert.equal(now.state.notes.messages[0].text,'Note d’origine à préserver');assert.ok(now.ops.some(o=>o.legacyBackup&&o.legacyBackup.fragments.some(f=>f.name==='owd_backup')));assert.equal(writes.includes('owd_backup'),false);
-    await a.locator('[data-owd-act="restaurer"]').click();
-    for(let i=0;i<150&&C.Compact.read(attrs).state.v!==17;i++)await pages[0].waitForTimeout(100);
-    assert.equal(C.Compact.read(attrs).state.v,17);assert.equal(C.Compact.read(attrs).state.notes,'Note d’origine à préserver');
-    await pages[0].reload();await a.locator('[data-owd-act="monter"]').click();await a.locator('.pc-sheet').waitFor();
-    for(let i=0;i<150&&C.Compact.read(attrs).state.v!==18;i++)await pages[0].waitForTimeout(100);assert.equal(C.Compact.read(attrs).state.v,18);
-    console.log('OK restauration vérifiée puis nouvelle mise à niveau.');
-    await a.locator('.pc-tab').filter({hasText:'Bio'}).click();await a.locator('.pc-notes-input').fill('Après mise à niveau');await a.locator('.pc-notes-compose').getByRole('button',{name:'Envoyer',exact:true}).click();
-    await pages[0].waitForFunction(()=>JSON.parse(document.querySelector('iframe').contentWindow.__owdLocalStorage.getItem('owd-perso')).notes.messages.length===2);
-    for(let i=0;i<150&&C.Compact.read(attrs).state.notes.messages.length!==2;i++)await pages[0].waitForTimeout(100);assert.equal(C.Compact.read(attrs).state.notes.messages.length,2);
-    await pages[0].reload();await a.locator('.pc-sheet').waitFor();await pages[0].waitForFunction(()=>JSON.parse(document.querySelector('iframe').contentWindow.__owdLocalStorage.getItem('owd-perso')).notes.messages.length===2);
-    assert.ok(C.Compact.read(attrs).ops.some(o=>o.legacyBackup&&o.legacyBackup.fragments.some(f=>f.name==='owd_backup')));
-    console.log('OK mise à niveau réelle 17 → 18 : ancien pont inchangé, sauvegarde relue, notes conservées et nouvelles notes persistées après rechargement.');
-    assert.ok(!writes.includes('owd_state'),'aucune photographie complète réécrite');
-    assert.deepEqual(errors,[]);
-    console.log('OK réouverture, état fusionné, aucune écriture owd_state, aucune erreur navigateur');
-  } finally {await browser.close();server.close();}
-})().catch(e=>{console.error(e);process.exitCode=1;server.close();});
+const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict'),{chromium}=require('playwright');
+const M=require('../docs/javascripts/owd-attr-map.js'),C=require('../docs/javascripts/owd-sync.js').Compact;
+const root=path.resolve(__dirname,'..');let attrs,block=false,latest='4.2.0',metadataFailure=false,filesFailure=false,serveMode='normal',blockVersion=false;
+function reset(release){const s=M.blank();s.name='Personnage test';s.etat.pe=100;s.etat.pv=100;s.rel=release||M.release();s.comps=[{id:'c1',nom:'Lutte',rang:1,groupe:'Physique'}];attrs=C.encode(s);const meta=JSON.parse(attrs.owd_storage.current);meta.phase='ready';attrs.owd_storage.current=JSON.stringify(meta);attrs.owd_version={current:String(s.v),max:s.rel};block=false;latest='4.2.0';metadataFailure=false;filesFailure=false;}
+function harness(player){return `<!doctype html><meta charset="utf-8"><style>iframe{width:1100px;height:850px}</style><script>
+function model(data){return {attributes:{...data},get(k){return this.attributes[k]},set(d){Object.assign(this.attributes,d)},save(d,o){Object.assign(this.attributes,d||{});backend({kind:'write',data:this.attributes}).then(()=>o&&o.success&&o.success())}}}
+const col={models:[],create(d){const m=model(d);this.models.push(m);return m},fetch(o){backend({kind:'read'}).then(a=>{this.models=Object.keys(a).map(name=>model({name,...a[name]}));o&&o.success&&o.success()})}};
+const ch={id:'test',attribs:col,get:k=>k==='controlledby'?'all':k==='name'?'Personnage test':''};window.Campaign={id:'game',characters:{get:id=>id==='test'?ch:null,models:[ch]},players:{models:[]}};
+window.currentPlayer={id:${JSON.stringify(player)},get:k=>k==='displayname'?${JSON.stringify(player)}:null};</script><script src="/javascripts/owd-sync.js"></script><script data-owd-version="4.2.0" data-owd-mode="beta" data-owd-browser="firefox" src="/bridge.js"></script><iframe id="sheet" src="/roll20-fiche.html#c=test"></iframe>`;}
+const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local');if(u.pathname==='/harness'){res.setHeader('Content-Type','text/html');return res.end(harness(u.searchParams.get('player')||'Alice'));}if(u.pathname==='/download/ext-signed.json'){res.setHeader('Content-Type','application/json');res.statusCode=metadataFailure?503:200;return res.end(JSON.stringify({version:latest}));}if(filesFailure&&(u.pathname==='/owd-creation.json'||u.pathname==='/owd-creation-runtime.json')){res.statusCode=503;return res.end();}let file=u.pathname==='/bridge.js'?path.join(root,'extension/firefox/beta/roll20-page.js'):path.join(root,'docs',u.pathname);if(!fs.existsSync(file))file=path.join(root,'site',u.pathname);if(!fs.existsSync(file)||fs.statSync(file).isDirectory()){res.statusCode=404;return res.end();}res.setHeader('Content-Type',({'.js':'application/javascript','.json':'application/json','.css':'text/css','.html':'text/html','.png':'image/png','.svg':'image/svg+xml'})[path.extname(file)]||'application/octet-stream');let bytes=fs.readFileSync(file);if(file.endsWith('/roll20-page.js')&&serveMode==='oldBridge')bytes=Buffer.from(bytes.toString().replace('storageVersion:1,',''));if(file.endsWith('/owd-fiche.js')&&(serveMode==='old'||serveMode==='stale'))bytes=Buffer.from(bytes.toString().replace('var RELEASE = "'+M.release()+'";', 'var RELEASE = "4.15.0b";'));if(file.endsWith('/owd-manifeste.json')&&serveMode==='old')bytes=Buffer.from(bytes.toString().replace('"release": "'+M.release()+'"','"release": "4.15.0b"'));if(serveMode==='slow'&&file.endsWith('/owd-creation-runtime.json'))return setTimeout(()=>res.end(bytes),11000);res.end(bytes);});
+(async()=>{await new Promise(r=>server.listen(0,'127.0.0.1',r));const browser=await chromium.launch({executablePath:process.env.CHROMIUM_EXECUTABLE,args:['--no-sandbox']});try{
+ const context=await browser.newContext({viewport:{width:1250,height:1000}}),errors=[],writes=[],snapshots=[];
+ await context.exposeBinding('backend',async(_,m)=>{if(m.kind==='read')return C.copy(attrs);if(m.kind==='write'){attrs[m.data.name]={current:String(m.data.current||''),max:String(m.data.max||'')};writes.push(m.data.name);}});
+ const open=async()=>{var p=await context.newPage();p.on('pageerror',e=>errors.push(e.message));await p.addInitScript(()=>{window.backupEvents=[];window.addEventListener('message',e=>{if(e.data?.ns==='owd-local-backup')backupEvents.push(e.data);});});await p.goto('http://127.0.0.1:'+server.address().port+'/harness');return p;};
+ reset('4.16.0b');const original=C.read(attrs).state;original.inv.objets=Array.from({length:1000},(_,i)=>({ref:'large'+i,id:'',nom:'Objet '+i,qte:1,ou:'sac'}));attrs=C.encode(original);attrs.owd_version={current:String(original.v),max:original.rel};
+ let p=await open(),sheet=p.frameLocator('#sheet');await sheet.locator('[data-owd-act="monter"]').click();await sheet.locator('#owd-mode-bar').waitFor({timeout:180000});
+ assert.equal(C.read(attrs).state.inv.objets.length,1000);assert.equal(C.read(attrs).state.rel,M.release());assert.equal(attrs.owd_version.max,M.release());assert.ok(!writes.some(k=>k.startsWith('owd_ops_')||k==='owd_backup'));assert.ok((await p.evaluate(()=>backupEvents)).some(e=>e.reason==='migration'&&e.state.rel==='4.16.0b'));
+ await p.close();p=await open();sheet=p.frameLocator('#sheet');await sheet.locator('#owd-mode-bar').waitFor({timeout:35000});assert.equal(await sheet.locator('[data-owd-act="monter"]').count(),0);console.log('OK vraie fiche + vrai pont : migration et réouverture de 1 000 équipements, sans journal ni backup Roll20.');await p.close();
+ // Restaurer depuis l'extension reste possible sur un personnage illisible.
+ reset();const saved=C.read(attrs).state;saved.name='Copie restaurée';attrs.owd_storage.current='{illisible';p=await open();
+ const restored=await p.evaluate(async state=>{var token='test-restore';return new Promise(resolve=>{window.addEventListener('message',function done(e){if(e.data?.ns==='owd-backup-restore-result'&&e.data.token===token){window.removeEventListener('message',done);resolve(e.data);}});window.postMessage({ns:'owd-backup-restore',token,snapshot:{campaignId:'game',charId:'test',state}},location.origin);});},saved);
+ assert.equal(restored.ok,true,restored.error);assert.equal(C.read(attrs).state.name,'Copie restaurée');console.log('OK restauration depuis l’extension sur un personnage au manifeste illisible.');await p.close();
+ assert.deepEqual(errors,[]);await context.close();
+}finally{await browser.close();server.close();}})().catch(e=>{console.error(e);process.exitCode=1;server.close();});

@@ -91,6 +91,7 @@
   var enVolTimer = null;
   var echecs = 0;               // confirmations manquées d'affilée
   var miseANiveauDemandee = false, miseANiveauOps = [], versionBloquee = false;
+  var migrationSource=null,migrationEnvoyee=false;
   var ready = false;            // les sauvegardes ne partent qu'après hydratation + montage
   var storageInitialSentAt = 0;
   var journalPlayer = null, journalRemote = null;
@@ -281,8 +282,12 @@
     q.forEach(function (p) { window.__owdOnTake(p); });
   }, 400);
 
+  var derniereSauvegarde=0;
   function memoriseLectureVerifiee(attrs,remote){
     try{remote=remote||C.read(attrs);if(!remote||remote.incomplete)return;journalRemote=remote;lectureVerifiee=attrs;
+      if(!derniereSauvegarde||Date.now()-derniereSauvegarde>=3600000){
+        post({type:'backup-snapshot',state:remote.state,reason:derniereSauvegarde?'hourly':'opening'});derniereSauvegarde=Date.now();
+      }
       var stamp=remote.meta.epoch+':'+C.hash(C.stable(remote.meta.blocks));if(stamp===empreinteBaseVerifiee)return;
       var base={};base[C.BASE]=attrs[C.BASE];Object.keys(remote.meta.blocks).forEach(function(k){base[k]=attrs[k];});baseVerifiee=base;empreinteBaseVerifiee=stamp;
     }catch(e){}
@@ -353,7 +358,7 @@
   }
   var lastSavePerson=null,lastSaveCards=null,lastSaveAttrs=null,lastCapturedPerson=null,miroirsEnAttente=false;
   function doSave() {
-    if (gele || versionBloquee || !accesInventaire) return;
+    if (gele || versionBloquee || !accesInventaire || (miseANiveauDemandee&&migrationEnvoyee)) return;
     saveTimer = null;
     // Les sondes continuent ; une fiche inchangée n'a rien à re-sérialiser.
     if(collaboration&&collaboration.hasBase&&!miseANiveauDemandee&&!miroirsEnAttente&&!Object.keys(collaboration.pending).length&&lastSavePerson===mem['owd-perso']&&lastSaveCards===mem['owd-cards']&&lastSaveAttrs===lastAttrs)return;
@@ -695,7 +700,6 @@
   // d'ouvrir une vieille fiche avec son ancien code ne s'impose pas à la table.
   var PIN_PREFIX = "owd-r20-version:";
   // Ce que la montée met à l'abri, dans le personnage lui-même.
-  var BACKUP = "backup";
 
   var attrsVus = null;          // les attributs reçus, gardés pour la décision
   var attrsPrets = false;
@@ -907,7 +911,7 @@
     loadingKind=kind||'opening';failureKind='';operationBusy=true;var serial=++operationSerial;
     if(operationTimer)clearTimeout(operationTimer);
     ecranAttente('Chargement du personnage',step||'Vérification de l’extension…');
-    operationTimer=setTimeout(function(){if(serial!==operationSerial)return;operationBusy=false;if(loadingKind==='backup')erreurSauvegarde();else if(loadingKind==='upgrade')erreurMiseAJour();else erreurOuverture(extensionReady?'timeout':'extension');},kind==='opening'?Math.max(0,OPERATION_TIMEOUT-(Date.now()-openingStartedAt)):OPERATION_TIMEOUT);
+    operationTimer=setTimeout(function(){if(serial!==operationSerial)return;operationBusy=false;if(loadingKind==='upgrade')erreurMiseAJour();else erreurOuverture(extensionReady?'timeout':'extension');},kind==='opening'?Math.max(0,OPERATION_TIMEOUT-(Date.now()-openingStartedAt)):OPERATION_TIMEOUT);
     return serial;
   }
   function stopLoading(){operationBusy=false;++operationSerial;if(operationTimer)clearTimeout(operationTimer);operationTimer=null;}
@@ -920,8 +924,7 @@
     var b=ecran('Impossible d’ouvrir le personnage',true);b.appendChild(noeud('p',null,(messages[kind]||messages.program)+' Réessayez dans quelques instants.'));
     var z=zoneActions(b);bouton(z,'Réessayer','reessayer-ouverture',function(){if(!extensionReady){extensionChecking=false;verifyExtension(lastHydration);return;}if(bundleCharge&&kind==='files'||bundleCharge&&kind==='program'){location.reload();return;}hydrated=false;decide=false;attrsPrets=false;gele=false;startLoading('opening','Chargement des données du personnage depuis Roll20…');post({type:'load',resync:true});});exportButton(z,exportPossible());
   }
-  function erreurSauvegarde(){stopLoading();failureKind='backup';var b=ecran('Impossible de sauvegarder le personnage',true);b.appendChild(noeud('p',null,'Roll20 n’a pas confirmé la sauvegarde de secours du personnage. La mise à jour n’a pas été lancée. Réessayez dans quelques instants.'));var z=zoneActions(b);bouton(z,'Réessayer','reessayer-backup',function(){monter(false,versionFiche(attrsVus));});bouton(z,'Retour','retour',function(){miseANiveauDemandee=false;decide=false;decider();});boutonExport(z);}
-  function erreurMiseAJour(){stopLoading();failureKind='upgrade';var b=ecran('Impossible de mettre à jour le personnage',true);b.appendChild(noeud('p',null,'La mise à jour du personnage n’a pas pu être terminée. Une sauvegarde de secours de son état précédent est conservée sur Roll20. Réessayez dans quelques instants.'));var z=zoneActions(b);bouton(z,'Réessayer','reessayer-upgrade',function(){location.reload();});boutonExport(z);}
+  function erreurMiseAJour(){stopLoading();failureKind='upgrade';var b=ecran('Impossible de mettre à jour le personnage',true);b.appendChild(noeud('p',null,'La mise à jour du personnage n’a pas pu être terminée. Réessayez dans quelques instants.'));var z=zoneActions(b);bouton(z,'Réessayer','reessayer-upgrade',function(){location.reload();});boutonExport(z);}
   function extensionUpdate(installed,latest){stopLoading();var b=ecran('Extension Outward à mettre à jour',false);b.appendChild(noeud('p',null,'Votre extension Outward n’est pas à jour. Installez la dernière version, puis rechargez la page Roll20 pour ouvrir ce personnage.'));var v=noeud('div','owd-ecran-vers');v.appendChild(noeud('span',null,'Votre version de l’extension : '+installed));v.appendChild(noeud('span',null,'Dernière version de l’extension : '+latest));b.appendChild(v);var z=zoneActions(b);boutonExport(z);var a=noeud('a','owd-ecran-telecharger','Télécharger la mise à jour');a.href=new URL('extension/',location.href).href;a.target='_blank';a.rel='noopener';z.appendChild(a);}
   function compareExtension(a,b){
     function parts(v){return /^\d+\.\d+\.\d+(?:\.\d+)?$/.test(String(v))?String(v).split('.').map(Number):null;}
@@ -1119,6 +1122,11 @@
         if(!window.Owd||Number(window.Owd.schema)!==schemaAttendu||!memeRang(window.Owd.version,spec.release||releaseSite())){
           if(miseANiveauDemandee)erreurMiseAJour();else erreurOuverture('files');return;
         }
+        if(miseANiveauDemandee){
+          ready=true;loadingKind='upgrade';migrationEnvoyee=true;
+          post({type:'storage-import',state:JSON.parse(mem['owd-perso']),blocks:C.encode(JSON.parse(mem['owd-perso'])),expected:migrationSource});
+          return;
+        }
         if (C && collaborationPont && !gele) {
           collaboration = new C.Session(lastAttrs, JSON.parse(mem["owd-perso"]), null, {id:VIEW_ID});
           updateStorageMaxima();
@@ -1196,98 +1204,23 @@
     setTimeout(une, 3000);
   }
 
-  // ---------- protocole de mise à niveau ----------
-  // Rien de destructif sans accusé de réception : la fiche d'origine part dans
-  // owd_backup, on la RELIT dans le personnage, et seulement alors on injecte
-  // le bundle qui migrera. Un backup qu'on n'a pas relu ne vaut rien : le pont
-  // avale l'échec d'une écriture sans le dire (voir 5. en tête de fichier).
-  var backupAttempt=null;
-  function lotBackup(f) {
-    var target=typeof releaseSite==='function'?releaseSite():'';
-    if(backupAttempt&&backupAttempt.target===target&&backupAttempt.from===(f&&f.release))return backupAttempt.lot;
-    try{var existing=C&&attrsVus&&attrsVus[C.BASE]&&backupBlocs(attrsVus);if(existing&&existing.max.split('|')[2]===target){var source=JSON.parse(existing.current);if(source.rel===(f&&f.release)){var saved={};saved[M.PREFIX+BACKUP]=existing;return saved;}}}catch(e){}
-
-    var brut = val((attrsVus || {})[M.PREFIX + "state"], "current");
-    // Sans owd_state lisible, on met à l'abri la reconstruction champ par
-    // champ : c'est exactement ce que la migration s'apprête à remplacer.
-    var contenu = attrsVus && C && attrsVus[C.BASE] ? (mem["owd-perso"] || "") : brut ? String(brut) : (mem["owd-perso"] || "");
-    var lot = {};
-    lot[M.PREFIX + BACKUP] = {
-      current: contenu,
-      // max : d'où vient cette sauvegarde. « schéma|date », lisible à l'oeil nu
-      // dans l'onglet Attributes de Roll20, et relu par la restauration.
-      max: String(f && f.schema != null ? f.schema : "") + "|" + new Date().toISOString()+'|'+target
-    };
-    backupAttempt={target:target,from:f&&f.release,lot:lot};
-    return lot;
-  }
-  // Le pont au format 2 refuse les anciens « save » hors miroirs de tokens.
-  // Les sauvegardes passent donc par ses journaux, comme les archives de
-  // nettoyage : opérations sans changements, fragmentées, conservées sur Roll20.
-  function lotBackupBlocs(lot,attrs) {
-    var remote=C.read(attrs),raw=C.stable(lot[M.PREFIX+BACKUP]),hash=C.hash(raw),ops=[],total=Math.max(1,Math.ceil(raw.length/3000));
-    for(var i=0;i<total;i++){
-      var backup={format:2,epoch:remote.meta.epoch,fragments:[{name:M.PREFIX+BACKUP,hash:hash,part:i,total:total,data:raw.slice(i*3000,(i+1)*3000)}]};
-      ops.push({id:"migration-backup:"+remote.meta.epoch+":"+C.hash(C.stable(backup)),clock:0,at:0,changes:[],legacyBackup:backup});
-    }return {epoch:remote.meta.epoch,ops:ops};
-  }
-  function backupBlocs(attrs) {
-    var remote=C.read(attrs),groups=Object.create(null),found=null;
-    remote.ops.forEach(function(op){var b=op.legacyBackup;if(!b||b.format!==2||b.epoch!==remote.meta.epoch||!Array.isArray(b.fragments)||op.id!=="migration-backup:"+b.epoch+":"+C.hash(C.stable(b)))return;
-      b.fragments.forEach(function(f){if(f.name!==M.PREFIX+BACKUP||!Number.isSafeInteger(f.part)||!Number.isSafeInteger(f.total)||f.part<0||f.part>=f.total||typeof f.data!=="string")return;
-        var key=f.hash+":"+f.total,g=groups[key]||(groups[key]={hash:f.hash,total:f.total,parts:Object.create(null)});
-        if(g.parts[f.part]!==undefined&&g.parts[f.part]!==f.data)g.invalid=true;g.parts[f.part]=f.data;
-      });
-    });
-    Object.keys(groups).forEach(function(key){var g=groups[key];if(g.invalid||Object.keys(g.parts).length!==g.total)return;var raw="";for(var i=0;i<g.total;i++)raw+=g.parts[i];if(C.hash(raw)!==g.hash)return;
-      var a;try{a=JSON.parse(raw);if(typeof a.current!=="string"||typeof a.max!=="string")return;JSON.parse(a.current);}catch(e){return;}
-      if(!found||a.max.split("|")[1]>found.max.split("|")[1])found=a;
-    });return found;
-  }
-  function confirmeOperations(packet, cb) {
-    var end=Date.now()+OPERATION_TIMEOUT;
-    (function poll(){sonde(function(attrs){var remote=null;try{remote=attrs&&C.read(attrs);}catch(e){}
-      if(remote&&remote.meta.epoch===packet.epoch&&packet.ops.every(function(op){return remote.ids[op.id]&&C.stable(remote.ids[op.id])===C.stable(op);})){cb(true,attrs,remote);return;}
-      if(Date.now()>=end){cb(false,attrs);return;}setTimeout(poll,700);
-    },true);})();
-  }
-  function tenterBackupBlocs(lot,silencieux) {
-    var packet;try{packet=lotBackupBlocs(lot,attrsVus);}catch(e){ecranRouge(lot,silencieux);return;}
-    post({type:"storage-ops",epoch:packet.epoch,ops:packet.ops});
-    updateLoading('Vérification de la sauvegarde…');
-    var serial=operationSerial;
-    confirmeOperations(packet,function(ok,attrs,remote){
-      if(serial!==operationSerial||bundleCharge)return;
-      if(!ok){ecranRouge(lot,silencieux);return;}
-      // La copie d'origine est vérifiée et les écritures concurrentes sont
-      // conservées dans les journaux. Migrer le dernier état relu : recommencer
-      // la sauvegarde à chaque mouvement d'horloge pouvait boucler sans fin.
-      attrsVus=attrs;lastAttrs=attrs;
-      mem["owd-perso"]=JSON.stringify(remote.state);
-      if(Number(remote.state.v)>schemaSite()){fermerEcran();decide=false;decider();return;}
-      startLoading('upgrade','Préparation de la fiche…');chargerBundle(specCourant());
-    });
-  }
+  // La migration se prépare en mémoire ; le pont publie une photographie
+  // vérifiée, puis le manifeste. Aucun journal de normalisation n'est créé.
   function monter(silencieux, f) {
     if(operationBusy)return;
     miseANiveauDemandee=true;
-    var lot = lotBackup(f);
-    tenterBackup(lot, silencieux);
-  }
-  function tenterBackup(lot, silencieux) {
-    var serial=startLoading('backup','Sauvegarde du personnage avant la mise à jour…');
-    if(C && attrsVus && attrsVus[C.BASE]){tenterBackupBlocs(lot,silencieux);return;}
-    post({ type: "save", attrs: lot });
-    confirme(lot, function (ok) {
+    var serial=startLoading('upgrade','Préparation de la fiche…');
+    sonde(function(attrs){
       if(serial!==operationSerial||bundleCharge)return;
-      if (!ok) { ecranRouge(lot, silencieux); return; }
-      // Confirmé : le lot entre dans la base du diff, il est en base.
-      lastAttrs = fusion(lastAttrs, lot);
-      startLoading('upgrade','Préparation de la fiche…');
-      chargerBundle(specCourant());
-    }, OPERATION_TIMEOUT);
+      try{
+        var state=M.attrsToState(attrs);
+        if(!state||state.degrade==='illisible'||state.degrade==='partiel')throw Error('Personnage incomplet.');
+        migrationSource=attrs;attrsVus=lastAttrs=attrs;mem['owd-perso']=JSON.stringify(state);
+        post({type:'backup-snapshot',state:state,reason:'migration'});
+        chargerBundle(specCourant());
+      }catch(e){erreurMiseAJour();}
+    },true);
   }
-  function ecranRouge(){erreurSauvegarde();}
 
   // ---------- l'écran lui-même ----------
   //
@@ -1436,12 +1369,29 @@
   window.addEventListener("message", function (ev) {
     var d = ev.data;
     if (!d || d.ns !== "owd" || ev.source !== window.top) return;
+    if(d.type==='backup-restored'&&d.charId===CHAR_ID){gele=true;versionBloquee=true;edition=false;post({type:'storage-release'});location.reload();return;}
+    if(d.type==='storage-import-progress'&&d.charId===CHAR_ID&&miseANiveauDemandee){startLoading('upgrade','Enregistrement du personnage…');return;}
+    if(d.type==='storage-import-result'&&d.charId===CHAR_ID){
+      if(!miseANiveauDemandee)return;
+      if(!d.ok){erreurMiseAJour();return;}
+      try{
+        var verified=C.read(d.attrs);
+        if(!verified||verified.incomplete||Number(verified.state.v)!==schemaSite()||!memeRang(verified.state.rel,releaseSite()))throw Error('Version non confirmée.');
+        lastAttrs=attrsVus=d.attrs;journalRemote=verified;
+        collaboration=new C.Session(d.attrs,verified.state,null,{id:VIEW_ID});updateStorageMaxima();
+        collaborationApplique=true;try{window.Owd.__recoitEtat(verified.state);}finally{collaborationApplique=false;}
+        miseANiveauDemandee=false;migrationEnvoyee=false;stopLoading();failureKind='';fermerEcran();openingDone=true;
+        memoriseLectureVerifiee(d.attrs,verified);installModeBar();post({type:'mounted'});scheduleSave();
+      }catch(e){erreurMiseAJour();}
+      return;
+    }
     if(d.type==='storage-cleanup-status'&&(!d.charId||d.charId===CHAR_ID)){
       afficheNettoyage(d);return;
     }
-    if(d.type==='storage-error'&&(!d.charId||d.charId===CHAR_ID)){if(loadingKind==='backup'&&miseANiveauDemandee)erreurSauvegarde();else if(miseANiveauDemandee)erreurMiseAJour();else statutEnregistrement(d.error,true);return;}
+    if(d.type==='storage-error'&&(!d.charId||d.charId===CHAR_ID)){if(miseANiveauDemandee)erreurMiseAJour();else statutEnregistrement(d.error,true);return;}
     // on n'accepte que l'hydratation de NOTRE personnage (plusieurs fiches peuvent être ouvertes)
     if (d.type === "hydrate" && (!d.charId || d.charId === CHAR_ID)) {
+      if(miseANiveauDemandee&&migrationEnvoyee)return;
       if(d.unchanged){if(!wireAttrs||d.revision!==wireRevision){wireRevision=null;post({type:'load',resync:true});return;}d.attrs=wireAttrs;}
       else if(d.attrs&&d.fresh===true&&typeof d.revision==='string'){wireAttrs=d.attrs;wireRevision=d.revision;}
 
@@ -1464,7 +1414,7 @@
         accesInventaire = true; document.getElementById("perso-fiche").inert = false; note(null);
       }
       if(d.storageBlocks===2&&d.storageCleanup!==3)afficheNettoyage({status:'error',error:'Le pont de cette partie utilise encore un ancien nettoyage. Après installation de l’extension 4.2.0, rechargez la page entière de la partie Roll20.'});
-      storageCapable=d.storageBlocks===2&&d.storageVolatile===1&&d.storageVersion===1;storageSession=d.storageSession||"";
+      storageCapable=d.storageBlocks===2&&d.storageVolatile===1&&d.storageVersion===1&&d.storageImport===1&&d.localBackups===1;storageSession=d.storageSession||"";
       collaborationPont = d.collaboration === 1 && d.resync === true;
       if (d.fresh === true || !collaborationPont) {
         derniereLecture = Date.now();

@@ -26,6 +26,7 @@
        une extension cassée, ce qu'elle ne serait pas. -->
   <script src="../parties.js"></script>
   <script src="popup.js"></script>
+  <script src="backups-ui.js"></script>
 </head>
 <body>
 
@@ -51,6 +52,9 @@
   <span class="p-tag" id="p-beta-tag" hidden>beta</span>
 </header>
 
+<nav class="popup-tabs" role="tablist" aria-label="Extension"><button type="button" role="tab" aria-selected="true" data-popup-tab="backups">Sauvegardes</button><button type="button" role="tab" aria-selected="false" data-popup-tab="options">Options</button></nav>
+<section class="p-corps" data-popup-panel="backups"><p>20 sauvegardes maximum par personnage, conservées dans ce navigateur.</p><p id="backup-status" role="status"></p><div id="backup-list"></div></section>
+<div data-popup-panel="options" hidden>
 <main class="p-corps">
 
   <!-- L'INTERRUPTEUR GÉNÉRAL, la plus grosse chose de la fenêtre.
@@ -175,5 +179,6 @@
   <p class="p-alerte" id="p-depannage" hidden></p>
 </footer>
 
+</div>
 </body>
 </html>

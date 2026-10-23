@@ -9,7 +9,7 @@ function client(remoteRel,localRel){
   const session=new B.Session(attrs,state,Date.now,{id:'wait-test'}),local=B.copy(state);
   local.rel=localRel;local.name='Opération indépendante';session.capture(local);
   const sent=[],ctx={OPERATION_TIMEOUT:operationTimeout,gele:false,versionBloquee:false,accesInventaire:true,saveTimer:null,
-    collaboration:session,miseANiveauDemandee:true,miroirsEnAttente:false,lastSavePerson:null,lastSaveCards:null,lastSaveAttrs:null,
+    collaboration:session,miseANiveauDemandee:true,migrationEnvoyee:false,miroirsEnAttente:false,lastSavePerson:null,lastSaveCards:null,lastSaveAttrs:null,
     lastCapturedPerson:JSON.stringify(local),mem:{'owd-perso':JSON.stringify(local)},edition:false,journalPlayer:null,
     journalRemote:B.read(attrs),lastAttrs:attrs,post:m=>sent.push(m),JSON,Object,String,Date};
   vm.createContext(ctx);vm.runInContext(boot.slice(boot.indexOf('  function doSave()'),boot.indexOf('  // ---------- accusé de réception')),ctx);
@@ -29,14 +29,14 @@ const timer={OPERATION_TIMEOUT:operationTimeout,Date:{now:()=>now},Math,operatio
   setTimeout(fn,ms){callback=fn;delay=ms;return 1;},clearTimeout(){},
   erreurSauvegarde(){shown='backup';},erreurMiseAJour(){shown='upgrade';},erreurOuverture(){shown='opening';}};
 vm.createContext(timer);vm.runInContext(boot.slice(boot.indexOf('  function startLoading('),boot.indexOf('  function updateLoading(')),timer);
-for(const kind of ['opening','backup','upgrade']){
+for(const kind of ['opening','upgrade']){
   shown='';now=0;timer.startLoading(kind);assert.equal(delay,36000);now=36000;callback();assert.equal(shown,kind);
 }
 now=12000;timer.operationBusy=true;timer.openingStartedAt=0;timer.startLoading('opening');assert.equal(delay,24000,'le délai de chargement ne repart pas à chaque étape');
 const errorLine=boot.split('\n').find(s=>s.trim().startsWith("if(d.type==='storage-error'"));
-Object.assign(timer,{CHAR_ID:'c',miseANiveauDemandee:true,statutEnregistrement(){shown='recording';}});
+Object.assign(timer,{CHAR_ID:'c',miseANiveauDemandee:true,migrationEnvoyee:false,statutEnregistrement(){shown='recording';}});
 vm.runInContext('function storageError(d){'+errorLine+'}',timer);
-timer.loadingKind='backup';timer.operationBusy=false;timer.storageError({type:'storage-error',charId:'c'});assert.equal(shown,'backup');
+timer.operationBusy=false;
 timer.loadingKind='upgrade';timer.storageError({type:'storage-error',charId:'c'});assert.equal(shown,'upgrade');
 console.log('OK délais : 36 secondes, budget de chargement conservé et erreur tardive de sauvegarde jamais présentée comme échec de mise à jour.');
 

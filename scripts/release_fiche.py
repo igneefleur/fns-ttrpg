@@ -369,6 +369,9 @@ def main():
     if not lancer("référentiel Boutique et images locales", [sys.executable, "scripts/test_boutique_reference.py"], racine):
         return 1
 
+    if not lancer("importation par photographie", ["node", "scripts/test_checkpoint_import.js"], racine):
+        return 1
+
     # Concurrence et migration : arrêt avant toute écriture de version.
     if not lancer("Monde collaboratif", ["node", "scripts/test_monde.js"], racine):
         return 1
