@@ -89,7 +89,7 @@
   var enVol = null;             // lot posté, pas encore relu : ni oublié, ni tenu pour acquis
   var enVolTimer = null;
   var echecs = 0;               // confirmations manquées d'affilée
-  var miseANiveauDemandee = false, miseANiveauOps = [];
+  var miseANiveauDemandee = false, miseANiveauOps = [], versionBloquee = false;
   var ready = false;            // les sauvegardes ne partent qu'après hydratation + montage
   var storageInitialSentAt = 0;
   var journalPlayer = null, journalRemote = null;
@@ -124,6 +124,7 @@
   window.__owdLocalStorage = {
     getItem: function (k) { return Object.prototype.hasOwnProperty.call(mem, k) ? mem[k] : null; },
     setItem: function (k, v) {
+      if(versionBloquee&&SAVE_KEYS[k])return;
       if(ready&&!collaborationApplique&&!edition&&!miseANiveauDemandee&&SAVE_KEYS[k])return;
       if(SAVE_KEYS[k]&&mem[k]===String(v)){if(k==='owd-perso')storageIntent={absolute:{}};return;}
       mem[k] = String(v);
@@ -351,7 +352,7 @@
   }
   var lastSavePerson=null,lastSaveCards=null,lastSaveAttrs=null,lastCapturedPerson=null,miroirsEnAttente=false;
   function doSave() {
-    if (gele || !accesInventaire) return;
+    if (gele || versionBloquee || !accesInventaire) return;
     saveTimer = null;
     // Les sondes continuent ; une fiche inchangée n'a rien à re-sérialiser.
     if(collaboration&&collaboration.hasBase&&!miseANiveauDemandee&&!miroirsEnAttente&&!Object.keys(collaboration.pending).length&&lastSavePerson===mem['owd-perso']&&lastSaveCards===mem['owd-cards']&&lastSaveAttrs===lastAttrs)return;
@@ -372,8 +373,8 @@
         if(Date.now()-storageInitialSentAt>=10000){var missing=diff(lastAttrs,lot);if(Object.keys(missing).length){post({type:'save',attrs:missing});storageInitialSentAt=Date.now();}}return;
       }
       if(Object.keys(lot).length)post({type:'storage-ops',epoch:collaboration.epoch,ops:Object.keys(lot).map(function(k){return lot[k];}),payloads:collaboration.payloads});
-      // Trois miroirs seulement ; les blocs restent la source de vérité.
-      var mirrors={};if(card)['pv','pe','pm'].forEach(function(k){var current=cardCaps[k]==null?cardCaps[k+'Max']:cardCaps[k],max=cardCaps[k+'Max'];if(current!==undefined&&max!==undefined)mirrors['owd_'+k]={current:String(current),max:String(max)};});
+      // Réserves dérivées et version lisible ; les blocs restent la source de vérité.
+      var mirrors={owd_version:{current:String(state.v),max:String(state.rel||'')}};if(card)['pv','pe','pm'].forEach(function(k){var current=cardCaps[k]==null?cardCaps[k+'Max']:cardCaps[k],max=cardCaps[k+'Max'];if(current!==undefined&&max!==undefined)mirrors['owd_'+k]={current:String(current),max:String(max)};});
       var delta=diff(lastAttrs,mirrors);if(!Object.keys(collaboration.pending).length){miroirsEnAttente=Object.keys(delta).length>0;if(miroirsEnAttente)post({type:'save',attrs:delta});}
 
       return;
@@ -1105,6 +1106,11 @@
         // Le script peut avoir fini avant son fetch de règles et son montage.
         // Ne pas initialiser une session sur la mémoire encore au vieux schéma.
         if (window.Owd && window.Owd.__pret === false) { setTimeout(serie, 25); return; }
+        var schemaAttendu=spec.release?versionFiche(attrsVus):null;
+        schemaAttendu=schemaAttendu?schemaAttendu.schema:schemaSite();
+        if(!window.Owd||Number(window.Owd.schema)!==schemaAttendu||!memeRang(window.Owd.version,spec.release||releaseSite())){
+          if(miseANiveauDemandee)erreurMiseAJour();else erreurOuverture('files');return;
+        }
         if (C && collaborationPont && !gele) {
           collaboration = new C.Session(lastAttrs, JSON.parse(mem["owd-perso"]), null, {id:VIEW_ID});
           updateStorageMaxima();
@@ -1450,7 +1456,7 @@
         accesInventaire = true; document.getElementById("perso-fiche").inert = false; note(null);
       }
       if(d.storageBlocks===2&&d.storageCleanup!==3)afficheNettoyage({status:'error',error:'Le pont de cette partie utilise encore un ancien nettoyage. Après installation de l’extension 4.2.0, rechargez la page entière de la partie Roll20.'});
-      storageCapable=d.storageBlocks===2&&d.storageVolatile===1;storageSession=d.storageSession||"";
+      storageCapable=d.storageBlocks===2&&d.storageVolatile===1&&d.storageVersion===1;storageSession=d.storageSession||"";
       collaborationPont = d.collaboration === 1 && d.resync === true;
       if (d.fresh === true || !collaborationPont) {
         derniereLecture = Date.now();
@@ -1582,10 +1588,18 @@
   }
   function recoitCollaboration(attrs) {
     try {
+      if(versionBloquee)return;
       if(!gele&&!miseANiveauDemandee&&memeLecturePersonnage(attrs,lastCollaborationAttrs)){actualiseStatutEnregistrement(false);return;}
       // capture() a déjà reçu chaque frappe dans le shim SYNCHRONE, avant le
       // debounce de sauvegarde : même une réponse arrivée à cet instant la garde.
       var previous=journalRemote,server=(collaboration.reader?collaboration.reader.read(attrs):C.read(attrs));if(server)journalRemote=server;if(!server&&collaboration.hasBase)throw Error('Manifeste de stockage absent de la lecture Roll20.');if(!previous)try{previous=C.read(collaboration.attrs);}catch(e){}
+      if(server&&window.Owd&&typeof window.Owd.version==='string'&&(Number(server.state.v)>Number(window.Owd.schema)||compare(server.state.rel,window.Owd.version)>0)){
+        versionBloquee=true;gele=true;edition=false;synchronisationDifferée=null;
+        if(saveTimer){clearTimeout(saveTimer);saveTimer=null;}
+        post({type:'storage-release'});post({type:'take-target'});post({type:'defend-target'});sendPresence();
+        document.getElementById('perso-fiche').inert=true;
+        ecranVersion({schema:Number(server.state.v),release:server.state.rel},window.Owd.version,Number(window.Owd.schema));return;
+      }
       if(server&&collaboration.hasBase){['pv','pe','pm'].forEach(function(k){var a=attrs['owd_'+k],raw=a&&String(a.current),n=Number(raw),actual=server.state.etat[k];
         if(actual==null)actual=collaboration.maxima[k];
         var old=previous&&previous.state.etat[k];if(old==null)old=collaboration.maxima[k];
@@ -1602,7 +1616,7 @@
       if (!recu) return;
       if(!recu.incomplete)lastCollaborationAttrs=attrs;
       if(server&&!server.incomplete)memoriseLectureVerifiee(attrs,server);
-      if(miseANiveauDemandee&&server&&!server.incomplete&&Number(server.state.v)===schemaSite()&&miseANiveauOps.every(function(id){return !!server.ids[id];})){miseANiveauDemandee=false;stopLoading();fermerEcran();openingDone=true;installModeBar();}
+      if(miseANiveauDemandee&&server&&!server.incomplete&&Number(server.state.v)===schemaSite()&&memeRang(server.state.rel,releaseSite())&&attrs.owd_version&&Number(attrs.owd_version.current)===schemaSite()&&memeRang(attrs.owd_version.max,releaseSite())&&miseANiveauOps.every(function(id){return !!server.ids[id];})){miseANiveauDemandee=false;stopLoading();fermerEcran();openingDone=true;installModeBar();}
       if(collaboration.hasBase&&!recu.incomplete){if(server.meta.phase!=='ready')post({type:'storage-activate'});else post({type:'storage-cleanup'});}
 
       actualiseStatutEnregistrement(recu.lost);
