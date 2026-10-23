@@ -952,19 +952,31 @@
     if(!target||!target.closest)return false;
     return target.matches('.pc-obj-tile,.pc-inv-objet') || !!target.closest('.pc-tab,.pc-attaque-tete,.pc-comp-groupe-nom,.pc-comp-repli,.pc-comp-roll,.pc-notes-latest,.pc-journal-pages,.pc-note-toggle,.pc-journal-toggle,[data-consultation],.pc-notes-search,.pc-journal-search')||target.type==='search';
   }
+  var sharedModeState=null;
+  function applySharedMode(mode){
+    if(!mode)return;
+    var at=Number(mode.modeAt)||0,by=String(mode.modeBy||'');
+    if(sharedModeState&&(at<sharedModeState.modeAt||at===sharedModeState.modeAt&&by<sharedModeState.modeBy))return;
+    sharedModeState={mode:mode.mode==='edition'?'edition':'consultation',modeAt:at,modeBy:by};
+    if(!ready||!openingDone||!document.getElementById('owd-mode-bar'))return;
+    var next=sharedModeState.mode==='edition',changed=edition!==next;edition=next;
+    var bar=document.getElementById('owd-mode-bar');bar.querySelector('.owd-mode-label').textContent=edition?'Mode Edition':'Mode Consultation';
+    bar.querySelector('#owd-mode-switch').textContent=edition?'Passer en Mode Consultation':'Passer en Mode Edition';
+    document.documentElement.classList.toggle('owd-consultation',!edition);
+    if(changed&&window.Owd&&window.Owd.remonte)window.Owd.remonte();
+    if(changed){post({type:'take-target'});post({type:'defend-target'});}
+    renderPresence();applyModeControls();
+  }
   function installModeBar(){
-    var bar=document.getElementById('owd-mode-bar');if(bar){renderPresence();return;}
+    var bar=document.getElementById('owd-mode-bar');if(bar){applySharedMode(sharedModeState);renderPresence();return;}
     bar=noeud('div','owd-mode-bar');bar.id='owd-mode-bar';
     var label=noeud('strong','owd-mode-label','Mode Consultation'),button=noeud('button',null,'Passer en Mode Edition');button.type='button';button.id='owd-mode-switch';
     button.onclick=function(){
       if(gele||!accesInventaire||document.getElementById('owd-ecran'))return;
-      // Repartir de la dernière représentation partagée avant toute édition.
-      if(!edition&&window.Owd&&window.Owd.__recoitEtat){collaborationApplique=true;try{window.Owd.__recoitEtat(JSON.parse(mem['owd-perso']));}finally{collaborationApplique=false;}}
-      edition=!edition;label.textContent=edition?'Mode Edition':'Mode Consultation';button.textContent=edition?'Passer en Mode Consultation':'Passer en Mode Edition';
-      document.documentElement.classList.toggle('owd-consultation',!edition);if(window.Owd&&window.Owd.remonte)window.Owd.remonte();sendPresence();post({type:'take-target'});post({type:'defend-target'});renderPresence();applyModeControls();
+      post({type:'presence',action:'mode',mode:edition?'consultation':'edition'});
     };
     bar.appendChild(label);bar.appendChild(button);bar.appendChild(noeud('div','owd-presence-edition'));bar.appendChild(noeud('div','owd-presence-consultation'));
-    document.body.insertBefore(bar,document.getElementById('perso-fiche'));document.documentElement.classList.add('owd-consultation');sendPresence();renderPresence();applyModeControls();
+    document.body.insertBefore(bar,document.getElementById('perso-fiche'));document.documentElement.classList.add('owd-consultation');applySharedMode(sharedModeState);sendPresence('join');renderPresence();applyModeControls();
   }
   function applyModeControls(){
     if(!ready)return;document.querySelectorAll('#perso-fiche input,#perso-fiche textarea,#perso-fiche select,#perso-fiche button,#perso-fiche [draggable="true"]').forEach(function(n){
@@ -972,7 +984,7 @@
     });
   }
   window.__owdApplyMode=applyModeControls;
-  function sendPresence(){if(ready&&openingDone&&journalPlayer){presenceRows=(presenceRows||[]).filter(function(r){return r.view!==VIEW_ID;});presenceRows.push({player:journalPlayer.id,name:journalPlayer.name,view:VIEW_ID,mode:edition?'edition':'consultation',at:Date.now()});post({type:'presence',mode:edition?'edition':'consultation'});}}
+  function sendPresence(action){if(ready&&openingDone&&journalPlayer)post({type:'presence',action:action||'heartbeat',mode:edition?'edition':'consultation'});}
   function renderPresence(){
     var bar=document.getElementById('owd-mode-bar');if(!bar)return;
     var byPlayer={};(presenceRows||[]).forEach(function(r){if(r.left||Date.now()-r.at>=30000)return;var id=r.player,name=r.name||id;if(!byPlayer[id])byPlayer[id]={name:name,edition:false};if(r.mode==='edition')byPlayer[id].edition=true;});
@@ -1369,6 +1381,7 @@
   window.addEventListener("message", function (ev) {
     var d = ev.data;
     if (!d || d.ns !== "owd" || ev.source !== window.top) return;
+    if(d.type==='presence-state'&&d.charId===CHAR_ID){presenceRows=d.presence||[];applySharedMode(d.modeState);renderPresence();return;}
     if(d.type==='backup-restored'&&d.charId===CHAR_ID){gele=true;versionBloquee=true;edition=false;post({type:'storage-release'});location.reload();return;}
     if(d.type==='storage-import-progress'&&d.charId===CHAR_ID&&miseANiveauDemandee){startLoading('upgrade','Enregistrement du personnage…');return;}
     if(d.type==='storage-import-result'&&d.charId===CHAR_ID){
@@ -1414,7 +1427,7 @@
         accesInventaire = true; document.getElementById("perso-fiche").inert = false; note(null);
       }
       if(d.storageBlocks===2&&d.storageCleanup!==3)afficheNettoyage({status:'error',error:'Le pont de cette partie utilise encore un ancien nettoyage. Après installation de l’extension 4.2.0, rechargez la page entière de la partie Roll20.'});
-      storageCapable=d.storageBlocks===2&&d.storageVolatile===1&&d.storageVersion===1&&d.storageImport===1&&d.localBackups===1&&d.localBackupRelay===1;storageSession=d.storageSession||"";
+      storageCapable=d.storageBlocks===2&&d.storageVolatile===1&&d.storageVersion===1&&d.storageImport===1&&d.localBackups===1&&d.localBackupRelay===1&&d.sharedMode===1;storageSession=d.storageSession||"";
       collaborationPont = d.collaboration === 1 && d.resync === true;
       if (d.fresh === true || !collaborationPont) {
         derniereLecture = Date.now();
