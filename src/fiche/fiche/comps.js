@@ -416,6 +416,7 @@
     // LE FILTRE ET LA PUCE SUR UNE MÊME LIGNE, à parts égales : la rangée est
     // une grille à colonnes 1fr, chacun y prend sa moitié
     var puce = el("span", "pc-chip", "Investies");
+    puce.setAttribute("data-consultation","1");
     compInvestiesChip = puce;
     puce.title = "N'afficher que les compétences où un rang, un modificateur ou un forçage est posé.";
     puce.classList.toggle("on", compOnly);

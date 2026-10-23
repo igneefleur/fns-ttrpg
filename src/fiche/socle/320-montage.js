@@ -130,6 +130,7 @@
     // point d'entrée des objets donnés au tchat : l'amorce Roll20 appelle ceci
     // quand le joueur clique « Prendre » (et rejoue ce qui attendait le montage)
     window.__owdOnTake = function (payload) {
+      if(!ficheModifiable())return false;
       if (!state) { flash("La fiche n'est pas encore prête : recliquer « Prendre »."); return; }
       recevoirObjet(payload);
     };

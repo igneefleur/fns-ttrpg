@@ -5,16 +5,19 @@
   // confirmation passe donc par cette couche, posée dans le document de la
   // fiche. Il n'y a pas une seule exception dans ce fichier.
   function dialogue(titre, corps, valider, libelleValider) {
+    var lecture=!!corps.closest('[data-consultation]');
     var over = el("div", "pc-modal-over");
+    if(lecture)over.setAttribute('data-consultation','1');
     var box = el("div", "pc-modal");
     box.appendChild(el("div", "pc-modal-title", titre));
     box.appendChild(corps);
     var pied = el("div", "pc-modal-actions");
     function fermer() { if (over.parentNode) over.parentNode.removeChild(over); }
-    pied.appendChild(miniBtn("Annuler", null, fermer));
+    var annuler=miniBtn("Annuler", null, fermer);annuler.setAttribute('data-consultation','1');pied.appendChild(annuler);
     // valider() qui rend explicitement false LAISSE le dialogue ouvert ; toute
     // autre valeur ferme.
     pied.appendChild(miniBtn(libelleValider || "Valider", null, function () {
+      if(!over.isConnected||!lecture&&!ficheModifiable()){fermer();return;}
       if (valider() !== false) fermer();
     }, "primary"));
     box.appendChild(pied);

@@ -181,6 +181,7 @@
       return n;
     }
     function poseContenu(o, porteur) {
+      if(window.__owdCanEdit&&!window.__owdCanEdit())return false;
       if (!o || !porteur || o === porteur) return false;
       if (!o.contenu) { flash("Seul un objet de type Contenu peut être placé ici."); return false; }
       if (!porteur.contenant) { flash("Cet objet n'est pas un contenant."); return false; }
@@ -235,6 +236,7 @@
     // ou au sac s'il n'y a pas sa place. Un objet à deux cases (robe, arme à
     // deux mains) libère les DEUX, et ce qui les tenait part au sac.
     function deplace(o, ou, cible) {
+      if(window.__owdCanEdit&&!window.__owdCanEdit())return false;
       if((INV_CASES.indexOf(ou)>=0 || ou==="deuxMains") && pnum(o.qte)<1){flash("Un emplacement exige un exemplaire entier.");return false;}
       var deuxMains=ou==="deuxMains" || o.mains==="2 obligatoires" && (ou==="mainG" || ou==="mainD");
       if(ou==="deuxMains")ou="mainD";
@@ -283,6 +285,7 @@
     // encombrant que l'emplacement ne l'accepte. Ce qui l'occupait retourne
     // d'où l'objet vient s'il y tient, au sac sinon.
     function poseEp(o, lieu, k) {
+      if(window.__owdCanEdit&&!window.__owdCanEdit())return null;
       if(k<0 || k+invCoutAcc(o,lieu)>nbEp(lieu)){flash("Pas assez d’accroches contiguës.");return null;}
       if (!epPermis(o, lieu)) {
         flash(o === porteurEp(lieu) ? "Un contenant ne s'accroche pas à lui-même."
@@ -324,7 +327,7 @@
           if(occ.img){var im=el("img");im.alt="";im.draggable=false;im.src=occ.img;s.appendChild(im);}
           else s.appendChild(el("span","pc-obj-content-ph",(nomCategorie(occ.contenu)||"?").slice(0,1).toUpperCase()));
           s.appendChild(el("span","pc-obj-content-qte","x "+fmtP(pnum(occ.qte))));
-          s.draggable=true;
+          s.draggable=ficheModifiable();
           s.addEventListener("click",function(e){e.stopPropagation();sel=occ;render();});
           s.addEventListener("dragstart",function(e){e.stopPropagation();drag=occ;s.classList.add("drag");try{e.dataTransfer.setData("text/plain","");e.dataTransfer.effectAllowed="move";if(window.__owdObjetDrag)window.__owdObjetDrag(drag.ref,e.dataTransfer);}catch(err){}});
           s.addEventListener("dragend",function(e){e.stopPropagation();drag=null;if(window.__owdObjetDragFin)window.__owdObjetDragFin();render();});
@@ -395,6 +398,7 @@
       if (pose) { if (occ && occ !== pose) rangeRemplace(occ); sel = pose; render(); refresh(); }
     }
     function ouvreMenu(it, e) {
+      if(!ficheModifiable()){e.preventDefault();return;}
       e.preventDefault(); e.stopPropagation(); fermeMenu();
       if (!objetActuel(it.ref)) return;
       var r = e.currentTarget.getBoundingClientRect();
@@ -513,7 +517,7 @@
       if (it.rapide) t.classList.add("rapide");
 
       t.addEventListener("click", function (e) { e.stopPropagation(); sel = it; render(); });
-      t.draggable = true;
+      t.draggable = ficheModifiable();
       // RANGER SE JOUE : on passe l'épée d'une main à l'autre, on range une
       // fiole dans les poches en pleine partie. Le glisser-déposer marche donc
       // hors du mode édition comme dedans.
@@ -1132,7 +1136,7 @@
         var f = file.files && file.files[0];
         file.value = "";
         if (!f) return;
-        vignette(f, function (data) { window.OwdInventoryData.isolate(items,it); it.img = data; render(); refresh(); });
+        vignette(f, function (data) { if(!ficheModifiable()||!file.isConnected)return; window.OwdInventoryData.isolate(items,it); it.img = data; render(); refresh(); });
       });
       urlFld.appendChild(file);
       pairE.appendChild(fld("Fichier",miniBtn("Choisir", "Importer une image (réduite en vignette 84 × 128)",

@@ -6,7 +6,8 @@
   // d'objets. Réglage d'interface PUR : ni dans l'état du personnage, ni
   // persisté — chaque chargement repart verrouillé.
   var editMods = {};
-  function isEdit(id) { return !!editMods[id]; }
+  function ficheModifiable() { return !window.__owdCanEdit || window.__owdCanEdit(); }
+  function isEdit(id) { return ficheModifiable() && !!editMods[id]; }
   // Lecture en texte normal : hauteur naturelle, même dans un onglet masqué
   // ou après un changement de largeur. Le textarea garde sa taille d'édition
   // et son redimensionnement manuel ; on ne mesure ni ne réécrit sa hauteur.
@@ -33,12 +34,14 @@
       f.disabled = !isEdit(id);
     });
     majTextesLecture(scope);
+    if(window.__owdApplyMode)window.__owdApplyMode(scope);
   }
   function gearBtn(scope, id, onToggle) {
     var g = el("button", "pc-gear", "⚙");
     g.type = "button";
     g.title = "Modifier ce module";
     g.addEventListener("click", function () {
+      if(!ficheModifiable())return;
       editMods[id] = !editMods[id];
       g.title = isEdit(id) ? "Terminer les modifications" : "Modifier ce module";
       applyEdit(scope, id);

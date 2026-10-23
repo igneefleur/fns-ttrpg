@@ -75,10 +75,12 @@
     a.click();
   }
   function importerJson(file) {
+    if(!ficheModifiable())return;
     var f = file.files && file.files[0];
     if (!f) return;
     var r = new FileReader();
     r.onload = function () {
+      if(!ficheModifiable()||!file.isConnected)return;
       try {
         state = normalize(JSON.parse(r.result));
         remount();

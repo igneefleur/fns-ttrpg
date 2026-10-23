@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.21.2b";
+  var RELEASE = "4.22.0b";
   var SCHEMA = 18;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -3356,7 +3356,8 @@
   // d'objets. Réglage d'interface PUR : ni dans l'état du personnage, ni
   // persisté — chaque chargement repart verrouillé.
   var editMods = {};
-  function isEdit(id) { return !!editMods[id]; }
+  function ficheModifiable() { return !window.__owdCanEdit || window.__owdCanEdit(); }
+  function isEdit(id) { return ficheModifiable() && !!editMods[id]; }
   // Lecture en texte normal : hauteur naturelle, même dans un onglet masqué
   // ou après un changement de largeur. Le textarea garde sa taille d'édition
   // et son redimensionnement manuel ; on ne mesure ni ne réécrit sa hauteur.
@@ -3383,12 +3384,14 @@
       f.disabled = !isEdit(id);
     });
     majTextesLecture(scope);
+    if(window.__owdApplyMode)window.__owdApplyMode(scope);
   }
   function gearBtn(scope, id, onToggle) {
     var g = el("button", "pc-gear", "⚙");
     g.type = "button";
     g.title = "Modifier ce module";
     g.addEventListener("click", function () {
+      if(!ficheModifiable())return;
       editMods[id] = !editMods[id];
       g.title = isEdit(id) ? "Terminer les modifications" : "Modifier ce module";
       applyEdit(scope, id);
@@ -3501,10 +3504,12 @@
     a.click();
   }
   function importerJson(file) {
+    if(!ficheModifiable())return;
     var f = file.files && file.files[0];
     if (!f) return;
     var r = new FileReader();
     r.onload = function () {
+      if(!ficheModifiable()||!file.isConnected)return;
       try {
         state = normalize(JSON.parse(r.result));
         remount();
@@ -7517,6 +7522,7 @@
     // LE FILTRE ET LA PUCE SUR UNE MÊME LIGNE, à parts égales : la rangée est
     // une grille à colonnes 1fr, chacun y prend sa moitié
     var puce = el("span", "pc-chip", "Investies");
+    puce.setAttribute("data-consultation","1");
     compInvestiesChip = puce;
     puce.title = "N'afficher que les compétences où un rang, un modificateur ou un forçage est posé.";
     puce.classList.toggle("on", compOnly);
@@ -7817,6 +7823,7 @@
     input.value=remembered?remembered.text:'';search.value=remembered?remembered.search:'';
     var mode=remembered?remembered.mode:'plain',previewing=false,rows=[],results=[],from=0,to=0,lastValue=null,lastKey=null,query=notesPlie(search.value),editing=remembered?remembered.editing:null,following=true,dead=false,timer=null,scrollFrame=null;
     var searchCache=remembered?remembered.searchCache:Object.create(null),drafts=remembered?remembered.drafts:Object.create(null),BATCH=50,MAX=100;
+    if(!ficheModifiable()&&editing){drafts[editing.id]=editing;editing=null;}
     function modes(parent,get,set){
       var group=el('div','pc-notes-modes'),buttons=[];group.setAttribute('role','group');group.setAttribute('aria-label','Format du message');
       [['plain','Brut'],['markdown','Markdown']].forEach(function(pair){var button=miniBtn(pair[1],null,function(){set(pair[0]);sync();});buttons.push([button,pair[0]]);group.appendChild(button);});
@@ -7825,7 +7832,7 @@
     modes(controls,function(){return mode;},function(v){mode=v;updatePreview();});
     var previewButton=miniBtn('Aperçu',null,function(){previewing=!previewing;updatePreview();});controls.appendChild(previewButton);
     var send=miniBtn('Envoyer',null,envoie,'primary');controls.appendChild(send);
-    function updatePreview(){previewButton.hidden=mode!=='markdown';preview.hidden=!previewing||mode!=='markdown';input.hidden=!preview.hidden;previewButton.setAttribute('aria-pressed',String(!preview.hidden));previewButton.textContent=preview.hidden?'Aperçu':'Écrire';if(!preview.hidden)notesRendu(preview,input.value,mode);send.disabled=!input.value.trim();}
+    function updatePreview(){previewButton.hidden=mode!=='markdown';preview.hidden=!previewing||mode!=='markdown';input.hidden=!preview.hidden;previewButton.setAttribute('aria-pressed',String(!preview.hidden));previewButton.textContent=preview.hidden?'Aperçu':'Écrire';if(!preview.hidden)notesRendu(preview,input.value,mode);send.disabled=!ficheModifiable()||!input.value.trim();}
     function data(){return normaliseNotes(state.notes,true);}
     function resetWindow(){to=results.length;from=Math.max(0,to-BATCH);following=true;}
     function filter(){results=query?rows.filter(function(m){var c=searchCache[m.id];if(!c||c.text!==m.text||c.mode!==m.mode)c=searchCache[m.id]={text:m.text,mode:m.mode,plain:notesPlie(notesTexteRecherche(m))};return c.plain.indexOf(query)>=0;}):rows;}
@@ -7843,17 +7850,17 @@
     }
     function commit(){state.notes=data();save();lastValue=null;redrawData(false);}
     function ajoute(text,format){clearTimeout(timer);search.value='';query='';var d=data();d.messages.push({id:'n-'+uid()+'-'+Math.random().toString(36).slice(2),at:Date.now(),text:text,mode:format});state.notes=d;save();lastValue=null;redrawData(true);}
-    function envoie(){if(!input.value.trim())return;ajoute(input.value,mode);input.value='';previewing=false;updatePreview();input.focus();}
+    function envoie(){if(!ficheModifiable()||!input.value.trim())return;ajoute(input.value,mode);input.value='';previewing=false;updatePreview();input.focus();}
     input.addEventListener('input',updatePreview);
     input.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();envoie();}});
     function record(id){return data().messages.find(function(m){return m.id===id;});}
     function version(m){return m?JSON.stringify([m.text,m.mode]):null;}
-    function commence(m){if(editing&&editing.id!==m.id)drafts[editing.id]=editing;editing=drafts[m.id]||{id:m.id,text:m.text,mode:m.mode,base:version(m)};render(false);var area=messages.querySelector('.pc-notes-editor textarea');if(area)area.focus();}
+    function commence(m){if(!ficheModifiable())return;if(editing&&editing.id!==m.id)drafts[editing.id]=editing;editing=drafts[m.id]||{id:m.id,text:m.text,mode:m.mode,base:version(m)};render(false);var area=messages.querySelector('.pc-notes-editor textarea');if(area)area.focus();}
     function edition(box,m){
       var draft=editing,editor=el('div','pc-notes-editor'),area=el('textarea','pc-notes'),actions=el('div','pc-notes-controls');area.rows=4;area.value=draft.text;area.setAttribute('aria-label','Modifier la note');editor.appendChild(area);editor.appendChild(actions);box.appendChild(editor);
       area.addEventListener('input',function(){draft.text=area.value;});modes(actions,function(){return draft.mode;},function(v){draft.mode=v;});
       actions.appendChild(miniBtn('Annuler',null,function(){delete drafts[m.id];editing=null;render(false);}));
-      function saveEdit(){var current=record(m.id);if(version(current)!==draft.base){flash('Cette note a changé ailleurs ou a été supprimée. Votre brouillon est conservé.');warning.hidden=false;return;}if(!draft.text.trim()){flash('Une note vide ne peut pas être enregistrée.');return;}current.text=draft.text;current.mode=draft.mode;delete drafts[m.id];editing=null;commit();}
+      function saveEdit(){if(!ficheModifiable())return;var current=record(m.id);if(version(current)!==draft.base){flash('Cette note a changé ailleurs ou a été supprimée. Votre brouillon est conservé.');warning.hidden=false;return;}if(!draft.text.trim()){flash('Une note vide ne peut pas être enregistrée.');return;}current.text=draft.text;current.mode=draft.mode;delete drafts[m.id];editing=null;commit();}
       actions.appendChild(miniBtn('Enregistrer',null,saveEdit,'primary'));
       area.addEventListener('keydown',function(e){if(e.key==='Escape'){e.preventDefault();delete drafts[m.id];editing=null;render(false);}else if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)&&!e.isComposing){e.preventDefault();saveEdit();}});
       var warning=el('div','pc-notes-conflict');warning.hidden=version(record(m.id))===draft.base;warning.appendChild(el('p',null,'Cette note a changé ailleurs. Vous pouvez conserver votre texte dans une nouvelle note.'));
@@ -7880,6 +7887,7 @@
       count.textContent=query?results.length+' résultat'+(results.length===1?'':'s')+' · '+rows.length+' notes':rows.length+' note'+(rows.length===1?'':'s');clear.disabled=!search.value;latest.hidden=to===results.length;following=!!bottom;
       if(bottom)history.scrollTop=history.scrollHeight;else{var found=Array.prototype.find.call(messages.querySelectorAll('.pc-note-message'),function(n){return n.dataset.id===anchor;});history.scrollTop=found?scroll+found.getBoundingClientRect().top-offset:scroll;}
       if(caret){var area=messages.querySelector('.pc-notes-editor textarea');if(area){area.focus({preventScroll:true});area.setSelectionRange(caret.start,caret.end);}}
+      if(window.__owdApplyMode)window.__owdApplyMode(b);
     }
     history.addEventListener('scroll',function(){following=to===results.length&&history.scrollHeight-history.clientHeight-history.scrollTop<45;if(scrollFrame!==null)return;scrollFrame=requestAnimationFrame(function(){scrollFrame=null;if(dead||!history.clientHeight)return;if(history.scrollTop<35&&from>0)page(-1);else if(history.scrollHeight-history.clientHeight-history.scrollTop<35&&to<results.length)page(1);});},{passive:true});
     var observer=typeof ResizeObserver==='function'?new ResizeObserver(function(){if(following)history.scrollTop=history.scrollHeight;}):null;if(observer)observer.observe(messages);
@@ -7895,16 +7903,19 @@
   // confirmation passe donc par cette couche, posée dans le document de la
   // fiche. Il n'y a pas une seule exception dans ce fichier.
   function dialogue(titre, corps, valider, libelleValider) {
+    var lecture=!!corps.closest('[data-consultation]');
     var over = el("div", "pc-modal-over");
+    if(lecture)over.setAttribute('data-consultation','1');
     var box = el("div", "pc-modal");
     box.appendChild(el("div", "pc-modal-title", titre));
     box.appendChild(corps);
     var pied = el("div", "pc-modal-actions");
     function fermer() { if (over.parentNode) over.parentNode.removeChild(over); }
-    pied.appendChild(miniBtn("Annuler", null, fermer));
+    var annuler=miniBtn("Annuler", null, fermer);annuler.setAttribute('data-consultation','1');pied.appendChild(annuler);
     // valider() qui rend explicitement false LAISSE le dialogue ouvert ; toute
     // autre valeur ferme.
     pied.appendChild(miniBtn(libelleValider || "Valider", null, function () {
+      if(!over.isConnected||!lecture&&!ficheModifiable()){fermer();return;}
       if (valider() !== false) fermer();
     }, "primary"));
     box.appendChild(pied);
@@ -8785,6 +8796,7 @@
       return n;
     }
     function poseContenu(o, porteur) {
+      if(window.__owdCanEdit&&!window.__owdCanEdit())return false;
       if (!o || !porteur || o === porteur) return false;
       if (!o.contenu) { flash("Seul un objet de type Contenu peut être placé ici."); return false; }
       if (!porteur.contenant) { flash("Cet objet n'est pas un contenant."); return false; }
@@ -8839,6 +8851,7 @@
     // ou au sac s'il n'y a pas sa place. Un objet à deux cases (robe, arme à
     // deux mains) libère les DEUX, et ce qui les tenait part au sac.
     function deplace(o, ou, cible) {
+      if(window.__owdCanEdit&&!window.__owdCanEdit())return false;
       if((INV_CASES.indexOf(ou)>=0 || ou==="deuxMains") && pnum(o.qte)<1){flash("Un emplacement exige un exemplaire entier.");return false;}
       var deuxMains=ou==="deuxMains" || o.mains==="2 obligatoires" && (ou==="mainG" || ou==="mainD");
       if(ou==="deuxMains")ou="mainD";
@@ -8887,6 +8900,7 @@
     // encombrant que l'emplacement ne l'accepte. Ce qui l'occupait retourne
     // d'où l'objet vient s'il y tient, au sac sinon.
     function poseEp(o, lieu, k) {
+      if(window.__owdCanEdit&&!window.__owdCanEdit())return null;
       if(k<0 || k+invCoutAcc(o,lieu)>nbEp(lieu)){flash("Pas assez d’accroches contiguës.");return null;}
       if (!epPermis(o, lieu)) {
         flash(o === porteurEp(lieu) ? "Un contenant ne s'accroche pas à lui-même."
@@ -8928,7 +8942,7 @@
           if(occ.img){var im=el("img");im.alt="";im.draggable=false;im.src=occ.img;s.appendChild(im);}
           else s.appendChild(el("span","pc-obj-content-ph",(nomCategorie(occ.contenu)||"?").slice(0,1).toUpperCase()));
           s.appendChild(el("span","pc-obj-content-qte","x "+fmtP(pnum(occ.qte))));
-          s.draggable=true;
+          s.draggable=ficheModifiable();
           s.addEventListener("click",function(e){e.stopPropagation();sel=occ;render();});
           s.addEventListener("dragstart",function(e){e.stopPropagation();drag=occ;s.classList.add("drag");try{e.dataTransfer.setData("text/plain","");e.dataTransfer.effectAllowed="move";if(window.__owdObjetDrag)window.__owdObjetDrag(drag.ref,e.dataTransfer);}catch(err){}});
           s.addEventListener("dragend",function(e){e.stopPropagation();drag=null;if(window.__owdObjetDragFin)window.__owdObjetDragFin();render();});
@@ -8999,6 +9013,7 @@
       if (pose) { if (occ && occ !== pose) rangeRemplace(occ); sel = pose; render(); refresh(); }
     }
     function ouvreMenu(it, e) {
+      if(!ficheModifiable()){e.preventDefault();return;}
       e.preventDefault(); e.stopPropagation(); fermeMenu();
       if (!objetActuel(it.ref)) return;
       var r = e.currentTarget.getBoundingClientRect();
@@ -9117,7 +9132,7 @@
       if (it.rapide) t.classList.add("rapide");
 
       t.addEventListener("click", function (e) { e.stopPropagation(); sel = it; render(); });
-      t.draggable = true;
+      t.draggable = ficheModifiable();
       // RANGER SE JOUE : on passe l'épée d'une main à l'autre, on range une
       // fiole dans les poches en pleine partie. Le glisser-déposer marche donc
       // hors du mode édition comme dedans.
@@ -9736,7 +9751,7 @@
         var f = file.files && file.files[0];
         file.value = "";
         if (!f) return;
-        vignette(f, function (data) { window.OwdInventoryData.isolate(items,it); it.img = data; render(); refresh(); });
+        vignette(f, function (data) { if(!ficheModifiable()||!file.isConnected)return; window.OwdInventoryData.isolate(items,it); it.img = data; render(); refresh(); });
       });
       urlFld.appendChild(file);
       pairE.appendChild(fld("Fichier",miniBtn("Choisir", "Importer une image (réduite en vignette 84 × 128)",
@@ -10467,7 +10482,7 @@
       x.addEventListener("click", fn);
       return x;
     }
-    act.appendChild(btn("Exporter (JSON)", null, exporterJson));
+    var exportBtn=btn("Exporter (JSON)", null, exporterJson);exportBtn.setAttribute("data-consultation","1");act.appendChild(exportBtn);
     var file = el("input");
     file.type = "file"; file.accept = "application/json"; file.style.display = "none";
     file.addEventListener("change", function () { importerJson(file); });
@@ -11842,7 +11857,7 @@
 
   // Les commandes externes ne doivent pas contourner le mode Consultation.
   function gardeCommandeEdition(obj,key){var fn=obj[key];obj[key]=function(){if(window.__owdCanEdit&&!window.__owdCanEdit())return false;return fn.apply(this,arguments);};}
-  ['__defendreDepuisChat','__prepareTransfert','__importeTransfert','__confirmeTransfert','__retireTransfert','__annuleTransfert'].forEach(function(k){gardeCommandeEdition(window.Owd,k);});
+  ['__actionObjet','active','ordonne','__defendreDepuisChat','__prepareTransfert','__importeTransfert','__confirmeTransfert','__retireTransfert','__annuleTransfert'].forEach(function(k){gardeCommandeEdition(window.Owd,k);});
   ['ajoute','retire','coupRecu','finTour','consomme'].forEach(function(k){gardeCommandeEdition(window.Owd.effets,k);});
   ['avancerSecondes','reculerSecondes'].forEach(function(k){gardeCommandeEdition(window.Owd.__calculs,k);});
   // ---------- montage ----------
@@ -11977,6 +11992,7 @@
     // point d'entrée des objets donnés au tchat : l'amorce Roll20 appelle ceci
     // quand le joueur clique « Prendre » (et rejoue ce qui attendait le montage)
     window.__owdOnTake = function (payload) {
+      if(!ficheModifiable())return false;
       if (!state) { flash("La fiche n'est pas encore prête : recliquer « Prendre »."); return; }
       recevoirObjet(payload);
     };

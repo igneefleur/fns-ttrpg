@@ -25,3 +25,20 @@ let next=JSON.parse(JSON.stringify(live.state));next.etat.pe=63;live.recoitEtatC
 next=JSON.parse(JSON.stringify(live.state));next.notes.messages.push({id:'n',text:'Note reçue'});live.recoitEtatCollaboratif(next);assert.deepEqual(live.rebuilt,[]);assert.equal(live.mounts,0);
 next=JSON.parse(JSON.stringify(live.state));next.future={x:1};live.recoitEtatCollaboratif(next);assert.equal(live.mounts,1);assert.equal(live.state.future.x,1);
 console.log('OK réceptions ciblées : réserves et Notes sans remontage ; clé inconnue avec reconstruction complète.');
+
+// Le droit de sélectionner une tuile ne donne jamais le droit de la déplacer.
+let editable=false;const readControl={},root={};
+const guards={ready:true,window:{__owdCanEdit:()=>editable},canUseControl:n=>n===readControl};vm.createContext(guards);
+vm.runInContext(boot.slice(boot.indexOf('  function guardConsultation('),boot.indexOf("  ['click','dblclick','beforeinput'")),guards);
+function event(type,control=readControl,extra={}){return Object.assign({type,key:'',target:{closest:s=>s==='#perso-fiche'?root:control},preventDefault(){this.prevented=true;},stopImmediatePropagation(){this.stopped=true;}},extra);}
+for(const type of ['dragstart','dragenter','dragover','drop','contextmenu','submit'])for(const target of [readControl,null]){const e=event(type,target);guards.guardConsultation(e);assert.ok(e.prevented&&e.stopped,type+' bloqué, même sur une surface de lecture ou sans contrôle');}
+for(const key of ['ContextMenu','F10']){const e=event('keydown',readControl,{key,shiftKey:true});guards.guardConsultation(e);assert.ok(e.prevented,'menu clavier bloqué');}
+for(const type of ['click','input','change']){const read=event(type);guards.guardConsultation(read);assert.ok(!read.prevented);const edit=event(type,null);guards.guardConsultation(edit);assert.ok(edit.prevented);}
+editable=true;const allowed=event('drop',null);guards.guardConsultation(allowed);assert.ok(!allowed.prevented,'édition intacte');
+console.log('OK Consultation : sélection distincte des déplacements, dépôts sans contrôle et menus clavier bloqués, lecture et édition conservées.');
+
+// Une lecture de fichier commencée avant le changement de mode ne remplace pas le personnage.
+const imports=fs.readFileSync('src/fiche/socle/180-barre-outils.js','utf8');let modifiable=true,reader;
+const importing={state:{name:'Original'},FileReader:class{constructor(){reader=this;}readAsText(){}},ficheModifiable:()=>modifiable,normalize:s=>s,remount(){throw Error('import interdit');},flash(){}};vm.createContext(importing);vm.runInContext(imports.slice(imports.indexOf('  function importerJson(')),importing);
+const file={files:[{}],isConnected:true};importing.importerJson(file);reader.result='{"name":"Autre personnage"}';modifiable=false;reader.onload();assert.equal(importing.state.name,'Original');modifiable=true;file.isConnected=false;reader.onload();assert.equal(importing.state.name,'Original');
+console.log('OK import différé : annulé en Consultation et après remplacement du formulaire.');

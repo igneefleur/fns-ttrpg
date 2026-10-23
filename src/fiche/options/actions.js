@@ -10,7 +10,7 @@
       x.addEventListener("click", fn);
       return x;
     }
-    act.appendChild(btn("Exporter (JSON)", null, exporterJson));
+    var exportBtn=btn("Exporter (JSON)", null, exporterJson);exportBtn.setAttribute("data-consultation","1");act.appendChild(exportBtn);
     var file = el("input");
     file.type = "file"; file.accept = "application/json"; file.style.display = "none";
     file.addEventListener("change", function () { importerJson(file); });

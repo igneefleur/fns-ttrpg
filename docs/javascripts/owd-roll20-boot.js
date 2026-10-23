@@ -971,7 +971,7 @@
 
   function canUseControl(target){
     if(!target||!target.closest)return false;
-    return target.matches('.pc-obj-tile,.pc-inv-objet') || !!target.closest('.pc-tab,.pc-attaque-tete,.pc-comp-groupe-nom,.pc-comp-repli,.pc-comp-roll,.pc-notes-latest,.pc-journal-pages,.pc-note-toggle,.pc-journal-toggle,[data-consultation],.pc-notes-search,.pc-journal-search')||target.type==='search';
+    return target.matches('.pc-obj-tile,.pc-inv-objet,.pc-obj-content-slot.plein,.pc-tab,.pc-attaque-tete,.pc-combat-ouvrir,.pc-comp-groupe-nom,.pc-comp-repli,.pc-comp-roll,.pc-notes-latest,.pc-notes-older,.pc-notes-newer,.pc-note-toggle,.pc-journal-toggle,summary,a[href]') || !!target.closest('[data-consultation],.pc-notes-search,.pc-journal-pages') || target.type==='search';
   }
   var sharedModeState=null;
   function applySharedMode(mode){
@@ -1000,10 +1000,15 @@
     controls.appendChild(label);controls.appendChild(button);presence.appendChild(noeud('div','owd-presence-edition'));presence.appendChild(noeud('div','owd-presence-consultation'));bar.appendChild(controls);bar.appendChild(presence);var status=document.getElementById('owd-save-status');if(status)controls.appendChild(status);
     document.body.insertBefore(bar,document.getElementById('perso-fiche'));document.documentElement.classList.add('owd-consultation');applySharedMode(sharedModeState);sendPresence('join');renderPresence();applyModeControls();
   }
-  function applyModeControls(){
+  function applyModeControls(scope){
     if(!ready)return;
-    if(savePainter)savePainter.sync();document.querySelectorAll('#perso-fiche input,#perso-fiche textarea,#perso-fiche select,#perso-fiche button,#perso-fiche [draggable="true"]').forEach(function(n){
-      if(!edition&&!canUseControl(n)){n.setAttribute('data-owd-readonly','1');if(n.tagName==='INPUT'||n.tagName==='TEXTAREA')n.readOnly=true;else n.disabled=true;if(n.draggable)n.draggable=false;}
+    var surface=scope&&scope.querySelectorAll?scope:document;
+    if(surface===document&&savePainter)savePainter.sync();surface.querySelectorAll(surface===document?'#perso-fiche input,#perso-fiche textarea,#perso-fiche select,#perso-fiche button,#perso-fiche [draggable="true"]':'input,textarea,select,button,[draggable="true"]').forEach(function(n){
+      if(!window.__owdCanEdit()){
+        // Une tuile reste sélectionnable, mais ne devient jamais une source de déplacement.
+        if(n.draggable)n.draggable=false;
+        if(!canUseControl(n)){n.setAttribute('data-owd-readonly','1');if(n.tagName==='TEXTAREA'||n.tagName==='INPUT'&&!/^(checkbox|radio|range|file|button|submit)$/.test(n.type))n.readOnly=true;else n.disabled=true;}
+      }
     });
   }
   window.__owdApplyMode=applyModeControls;
@@ -1017,13 +1022,17 @@
   }
   setInterval(sendPresence,10000);
   function guardConsultation(ev){
-    if(edition||!ready||!ev.target||!ev.target.closest||!ev.target.closest('#perso-fiche'))return;
-    var target=ev.target.closest('button,input,textarea,select,[contenteditable="true"],[draggable="true"]');
-    if(!target||canUseControl(target))return;
+    if(!ready||window.__owdCanEdit()||!ev.target||!ev.target.closest||!ev.target.closest('#perso-fiche'))return;
+    // Les permissions de lecture concernent le clic, jamais le déplacement ni le dépôt.
+    var interaction=/^(dragstart|dragenter|dragover|drop|contextmenu|submit)$/.test(ev.type)||ev.type==='keydown'&&(ev.key==='ContextMenu'||ev.key==='F10'&&ev.shiftKey);
+    var target=ev.target.closest('button,input,textarea,select,a,summary,[contenteditable="true"],.pc-obj-content-slot,.pc-obj-tile,.pc-inv-objet,.pc-comp-groupe-nom,.pc-tab,.pc-comp-roll,.pc-note-toggle,.pc-journal-toggle,[data-consultation]');
+    if(!interaction&&canUseControl(target))return;
+    // Conserver la sélection et la copie de texte, le défilement et la navigation au clavier.
+    if(ev.type==='keydown'&&((ev.ctrlKey||ev.metaKey)&&/^[ac]$/i.test(ev.key)||/^(Tab|Escape|ArrowUp|ArrowDown|ArrowLeft|ArrowRight|PageUp|PageDown|Home|End)$/.test(ev.key)))return;
     ev.preventDefault();ev.stopImmediatePropagation();
   }
-  ['click','dblclick','beforeinput','input','change','keydown','dragstart','drop'].forEach(function(type){document.addEventListener(type,guardConsultation,true);});
-  document.addEventListener('focusin',function(ev){if(!edition&&ready&&ev.target&&ev.target.matches&&ev.target.matches('#perso-fiche input,#perso-fiche textarea,#perso-fiche select')&&!canUseControl(ev.target)){ev.target.blur();}},true);
+  ['click','dblclick','beforeinput','input','change','keydown','paste','cut','submit','contextmenu','dragstart','dragenter','dragover','drop'].forEach(function(type){document.addEventListener(type,guardConsultation,true);});
+  document.addEventListener('focusin',function(ev){if(!window.__owdCanEdit()&&ready&&ev.target&&ev.target.matches&&ev.target.matches('#perso-fiche input,#perso-fiche textarea,#perso-fiche select')&&!canUseControl(ev.target)){ev.target.blur();}},true);
 
   // ---------- export ----------
   // Le JSON du personnage TEL QU'IL A ÉTÉ LU, avant toute migration : c'est
@@ -1487,6 +1496,7 @@
   });
 
   window.__owdObjetDrag = function (ref, dt) {
+    if(!window.__owdCanEdit())return false;
     var token = window.crypto && crypto.randomUUID ? crypto.randomUUID() : Date.now() + "-" + Math.random();
     objetDrag = {ref: ref, token: token, t: Date.now(), active: true};
     dt.setData("application/x-owd-item", JSON.stringify({ref: ref, token: token, charId: CHAR_ID}));
