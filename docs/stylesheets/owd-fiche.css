@@ -1404,7 +1404,7 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
    que soit le nom. L'image occupe la case ENTIÈRE, et le pied passe PAR-DESSUS
    son bas, sur un bandeau voilé qui le garde lisible ; il tient sur une seule
    ligne (le nom s'abrège, il se lit en entier au survol). */
-.pc-obj-wrap { --obj-ratio: 21 / 32; }
+.pc-obj-wrap { --obj-ratio: 21 / 32; --inv-case-interne: .48; }
 .pc-obj-tile { aspect-ratio: var(--obj-ratio); }
 .pc-obj-tile > img, .pc-obj-tile > .pc-obj-ph {
   position: absolute; inset: 0; width: 100%; height: 100%; aspect-ratio: auto; object-fit: cover;
@@ -2238,12 +2238,13 @@ html.night .t-pi { --palier-plein: #30343b; }
 .pc-obj-pre-requis > .pc-f {min-width:0;}
 .pc-inv-twohand-cell {position:relative;aspect-ratio:var(--obj-ratio);}
 .pc-inv-twohand-target {
-  left:.2rem;right:auto;bottom:.2rem;width:48%;font-size:.53rem;
+  left:.2rem;right:auto;bottom:.2rem;width:calc(100% * var(--inv-case-interne));font-size:.53rem;
   cursor:default;text-align:center;padding:.05rem;
 }
 .pc-inv-twohand-target.plein {border-color:var(--accent);}
+/* Les 2 px compensent les bordures de la tuile pour égaler la case « 2 Mains ». */
 .pc-obj-content-group {
-  position:absolute;bottom:1.25rem;right:.18rem;width:36%;z-index:3;
+  position:absolute;bottom:.2rem;right:.2rem;width:calc((100% + 2px) * var(--inv-case-interne));z-index:3;
   display:flex;flex-direction:column;gap:.1rem;align-items:stretch;
 }
 .pc-obj-content-group .pc-obj-content-slot {
@@ -2372,6 +2373,8 @@ html.night .t-pi { --palier-plein: #30343b; }
 .pc-obj-corner.hautDroite{top:.12rem;right:.12rem}
 .pc-obj-corner.basGauche{bottom:.12rem;left:.12rem}
 .pc-obj-corner.basDroite{bottom:.12rem;right:.12rem}
+/* Le badge du contenant reste au-dessus de sa case ; celui du contenu reste dedans. */
+.pc-obj-contenant > .pc-obj-corner.basDroite{bottom:calc((100% + 2px) * var(--inv-case-interne) + .3rem);right:.2rem}
 .pc-obj-name-row{display:flex;align-items:center;gap:.3rem;min-width:0}
 .pc-obj-name-row>.nm{flex:1;min-width:0;width:0}
 .pc-item-gear{flex:none;margin-left:auto}

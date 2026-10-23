@@ -20,7 +20,15 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
  const tile=ref=>inv.locator('.pc-obj-tile[data-object-ref="'+ref+'"]').first(),slot=()=>tile('vial').locator('.pc-obj-content-slot'),items=()=>C.read(attrs).state.inv.objets;
  const wait=async fn=>{for(let i=0;i<150&&!(await fn());i++)await new Promise(r=>setTimeout(r,100));assert.ok(await fn());};
  assert.equal(await slot().count(),1);assert.equal(await slot().innerText(),'+');
- const box=await slot().boundingBox(),parent=await tile('vial').boundingBox();assert.ok(box.width>parent.width*.35&&box.width<parent.width*.4);
+ async function checkLayout(){
+  const box=await slot().boundingBox(),parent=await tile('vial').boundingBox(),hands=await inv.locator('.pc-inv-twohand-target').boundingBox();
+  assert.ok(Math.abs(box.width-hands.width)<1.1,'même largeur que 2 Mains');assert.ok(Math.abs(box.height-hands.height)<1.1,'même hauteur que 2 Mains '+JSON.stringify({box,hands,parent}));
+  assert.ok(parent.x+parent.width-box.x-box.width<5&&parent.y+parent.height-box.y-box.height<5,'case en bas à droite');
+  const badge=await tile('vial').locator('.pc-obj-corner.basDroite').boundingBox();assert.ok(badge.y+badge.height<=box.y,'badge du contenant au-dessus');
+  const ordinary=await tile('antidote').boundingBox(),ordinaryBadge=await tile('antidote').locator('.pc-obj-corner.basDroite').boundingBox();assert.ok(ordinary.y+ordinary.height-ordinaryBadge.y-ordinaryBadge.height<5,'autres objets inchangés');
+  return box;
+ }
+ const box=await checkLayout();
  await tile('water').dragTo(slot());await wait(()=>items().some(o=>o.ref==='water'&&o.dans==='vial'));
  assert.equal(await slot().count(),1);assert.equal(await slot().getAttribute('class').then(s=>s.includes('plein')),true);assert.equal(await slot().locator('img').count(),1);assert.equal(await slot().locator('.pc-obj-content-qte').innerText(),'x 2');assert.equal(await tile('vial').locator('.pc-obj-content-slot.vide').count(),0);
  await tile('antidote').dragTo(slot());await inv.locator('.pc-obj-panel').waitFor();assert.equal(items().find(o=>o.ref==='antidote').dans||'','');assert.equal(await slot().locator('.pc-obj-content-qte').innerText(),'x 2');
@@ -29,6 +37,9 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
  // Le contenu reste sélectionnable et ne déplace pas la case.
  await slot().click();
  const panel=inv.locator('.pc-obj-panel');assert.equal(await panel.locator('.nm').inputValue(),'Clean Water');
- const after=await slot().boundingBox();assert.ok(Math.abs(after.width-box.width)<1);
+ const after=await checkLayout();assert.ok(Math.abs(after.width-box.width)<1);
+ const quantity=await slot().locator('.pc-obj-content-qte').boundingBox();assert.ok(after.x+after.width-quantity.x-quantity.width<3&&after.y+after.height-quantity.y-quantity.height<3,'quantité du contenu dans son coin');
+ await p.screenshot({path:'/tmp/4221-container-wide.png'});
+ await p.locator('#sheet').evaluate(n=>n.style.width='580px');await p.waitForTimeout(150);await checkLayout();await p.screenshot({path:'/tmp/4221-container-narrow.png'});
  assert.deepEqual(errors,[]);console.log('OK contenants : une case agrandie, contenu dedans, quantité fusionnée, mélange et mauvaise catégorie refusés, contenu sélectionnable.');await context.close();
  }finally{await browser.close();server.close();}})().catch(e=>{console.error(e);process.exitCode=1;server.close();});

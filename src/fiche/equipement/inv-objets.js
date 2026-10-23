@@ -484,7 +484,7 @@
     });
 
     function tile(it) {
-      var t = el("div", "pc-obj-tile" + (sel === it ? " sel" : ""));
+      var t = el("div", "pc-obj-tile" + (it.contenant ? " pc-obj-contenant" : "") + (sel === it ? " sel" : ""));
       t.dataset.objectRef = assureRef(it); t.tabIndex = 0;
       t.addEventListener("contextmenu", function (e) { ouvreMenu(it, e); });
       t.addEventListener("keydown", function (e) {
