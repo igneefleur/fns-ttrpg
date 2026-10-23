@@ -76,7 +76,7 @@
     var refs=group({objets:items},source.ref).map(function(o){return o.ref;});target.qte=Math.round((Number(target.qte)+Number(source.qte))*100)/100;
     for(var i=items.length-1;i>=0;i--)if(refs.indexOf(items[i].ref)>=0)items.splice(i,1);return target;}
   function totalQuantity(items,item){var q=Number(item.qte)||0,seen={},p=item;while(p&&p.dans){if(seen[p.ref])return 0;seen[p.ref]=true;p=items.filter(function(o){return o.ref===p.dans;})[0];if(p)q*=Number(p.qte)||0;}return q;}
-  function takeCost(item){var hands=item&&item.mains;if(hands==null&&item&&item.arme)hands=item.arme.mains;return Math.max(0,(hands==='2 obligatoires'?2:1)-(item&&item.rapide?1:0));}
+  function takeCost(item){var hands=item&&item.mains;if(hands==null&&item&&item.arme)hands=item.arme.mains;return Math.max(0,(hands==='2 obligatoires'?3:Number(hands)===2?2:1)-(item&&item.rapide?1:0));}
   var api={takeCost:takeCost,equipped:equipped,isolate:isolate,isolateAncestors:isolateAncestors,normalizeSlots:normalizeSlots,signature:signature,canMerge:canMerge,merge:merge,totalQuantity:totalQuantity,backpack:backpack,pocketFits:pocketFits,carrier:carrier,isCarried:isCarried,weight:weight,bind:bind,split:split,copy:copy,stable:stable,group:group,prepare:prepare,received:received,committed:committed,removed:removed,cancelled:function(state,job){return removed(state,{items:job.dest});}};
   root.OwdInventoryData=api;if(typeof module==='object'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);
