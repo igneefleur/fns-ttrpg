@@ -334,7 +334,7 @@
   function statutEnregistrement(text,failed) {
     if(failed){saveFailure=text||'error';afficheErreurEnregistrement(true);return;}
     var n=document.getElementById('owd-save-status');
-    if(!n){n=document.createElement('div');n.id='owd-save-status';n.setAttribute('role','status');document.body.insertBefore(n,document.getElementById('perso-fiche'));}
+    if(!n){n=document.createElement('div');n.id='owd-save-status';n.setAttribute('role','status');var controls=document.querySelector('#owd-mode-bar .owd-mode-controls');if(controls)controls.appendChild(n);else document.body.insertBefore(n,document.getElementById('perso-fiche'));}
     if(n.textContent!==text)n.textContent=text;n.hidden=!text;saveStatus=text;
     if(saveStatusTimer)clearTimeout(saveStatusTimer);
     if(text==='Enregistré')saveStatusTimer=setTimeout(function(){n.hidden=true;saveStatus='';},2500);
@@ -347,7 +347,9 @@
   }
   window.__owdSaveFailure=function(message){preparationFailed=!!message;if(message){saveFailure=message;afficheErreurEnregistrement(true);}else actualiseStatutEnregistrement(false);};
   function actualiseStatutEnregistrement(failed){
+    if(typeof updateSaveContours==='function')updateSaveContours();
     var count=collaboration?Object.keys(collaboration.pending).length:0;
+    if(!count&&typeof saveContours!=='undefined'&&saveContours)count=Object.keys(saveContours.records).filter(function(id){return saveContours.records[id].phase==='pending';}).length;
     if(count){if(!firstPendingAt)firstPendingAt=Date.now();statutEnregistrement('Enregistrement en cours…');if(saveFailure)afficheErreurEnregistrement(true);else if(Date.now()-firstPendingAt>=12000)afficheErreurEnregistrement(false);}
     else if(!preparationFailed&&(firstPendingAt||saveFailure)){firstPendingAt=0;saveFailure='';var n=document.getElementById('owd-bandeau');if(n&&n.dataset.owdRaison==='recording')fermerBandeau();statutEnregistrement('Enregistré');}
   }
@@ -357,6 +359,25 @@
     saveTimer = setTimeout(doSave, 400);
   }
   var lastSavePerson=null,lastSaveCards=null,lastSaveAttrs=null,lastCapturedPerson=null,miroirsEnAttente=false;
+  var saveContours=window.OwdSaveProgress?new window.OwdSaveProgress.Tracker():null;
+  var savePainter=saveContours?new window.OwdSaveProgress.Painter(saveContours,document):null;
+  window.__owdSavingModules=function(values){
+    if(!saveContours)return;
+    saveContours.capture(values,collaboration?collaboration.pending:{},ready&&openingDone&&!miseANiveauDemandee&&!collaborationApplique&&!gele);
+    updateSaveContours();
+  };
+  function updateSaveContours(){
+    if(!saveContours)return;
+    saveContours.confirm(journalRemote,function(id){
+      if(['pv','pe','pm'].indexOf(id)<0)return true;
+      try{var c=JSON.parse(mem['owd-cards']||'{}')._current,caps=c&&c.capacites,a=lastAttrs['owd_'+id];
+        return !!(caps&&a&&String(a.current)===String(caps[id]==null?caps[id+'Max']:caps[id])&&String(a.max)===String(caps[id+'Max']));
+      }catch(e){return false;}
+    });
+    savePainter.sync();
+  }
+  window.addEventListener('pagehide',function(){if(savePainter)savePainter.destroy();});
+
   function doSave() {
     if (gele || versionBloquee || !accesInventaire || (miseANiveauDemandee&&migrationEnvoyee)) return;
     saveTimer = null;
@@ -637,7 +658,7 @@
     if (document.getElementById("owd-bandeau-css")) return;
     var s = document.createElement("style");
     s.id = "owd-bandeau-css";
-    s.textContent = CSS_BANDEAU + "#owd-mode-bar{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem .8rem;padding:.6rem;border-bottom:1px solid #6b5a2e;font:inherit;font-size:13px;background:#f5f2ea;color:#1a1a1a}html.night #owd-mode-bar{background:#0d0d0d;color:#e6e6e6}#owd-mode-bar button{font:inherit;padding:.3rem .6rem;border:1px solid #6b5a2e;border-radius:4px;cursor:pointer}#owd-mode-bar .owd-presence-edition,#owd-mode-bar .owd-presence-consultation{flex-basis:100%;font-size:12px}#owd-save-status{padding:.2rem .6rem;font-size:12px}.owd-consultation #perso-fiche input:not([type=search]),.owd-consultation #perso-fiche textarea,.owd-consultation #perso-fiche select{cursor:default}.owd-ecran-telecharger{display:inline-block;padding:.35rem .7rem;border:1px solid #6b5a2e;border-radius:.2rem;color:inherit;text-decoration:none}";
+    s.textContent = CSS_BANDEAU + "#owd-save-status{padding:.2rem .6rem;font-size:12px}.owd-consultation #perso-fiche input:not([type=search]),.owd-consultation #perso-fiche textarea,.owd-consultation #perso-fiche select{cursor:default}.owd-ecran-telecharger{display:inline-block;padding:.35rem .7rem;border:1px solid #6b5a2e;border-radius:.2rem;color:inherit;text-decoration:none}";
     document.head.appendChild(s);
   }
   // txt : texte brut (jamais de HTML, il peut venir d'un message d'erreur).
@@ -970,16 +991,18 @@
   function installModeBar(){
     var bar=document.getElementById('owd-mode-bar');if(bar){applySharedMode(sharedModeState);renderPresence();return;}
     bar=noeud('div','owd-mode-bar');bar.id='owd-mode-bar';
-    var label=noeud('strong','owd-mode-label','Mode Consultation'),button=noeud('button',null,'Passer en Mode Edition');button.type='button';button.id='owd-mode-switch';
+    var label=noeud('strong','owd-mode-label','Mode Consultation'),button=noeud('button','pc-btn','Passer en Mode Edition');button.type='button';button.id='owd-mode-switch';
     button.onclick=function(){
       if(gele||!accesInventaire||document.getElementById('owd-ecran'))return;
       post({type:'presence',action:'mode',mode:edition?'consultation':'edition'});
     };
-    bar.appendChild(label);bar.appendChild(button);bar.appendChild(noeud('div','owd-presence-edition'));bar.appendChild(noeud('div','owd-presence-consultation'));
+    var controls=noeud('div','owd-mode-controls'),presence=noeud('div','owd-mode-presence');
+    controls.appendChild(label);controls.appendChild(button);presence.appendChild(noeud('div','owd-presence-edition'));presence.appendChild(noeud('div','owd-presence-consultation'));bar.appendChild(controls);bar.appendChild(presence);var status=document.getElementById('owd-save-status');if(status)controls.appendChild(status);
     document.body.insertBefore(bar,document.getElementById('perso-fiche'));document.documentElement.classList.add('owd-consultation');applySharedMode(sharedModeState);sendPresence('join');renderPresence();applyModeControls();
   }
   function applyModeControls(){
-    if(!ready)return;document.querySelectorAll('#perso-fiche input,#perso-fiche textarea,#perso-fiche select,#perso-fiche button,#perso-fiche [draggable="true"]').forEach(function(n){
+    if(!ready)return;
+    if(savePainter)savePainter.sync();document.querySelectorAll('#perso-fiche input,#perso-fiche textarea,#perso-fiche select,#perso-fiche button,#perso-fiche [draggable="true"]').forEach(function(n){
       if(!edition&&!canUseControl(n)){n.setAttribute('data-owd-readonly','1');if(n.tagName==='INPUT'||n.tagName==='TEXTAREA')n.readOnly=true;else n.disabled=true;if(n.draggable)n.draggable=false;}
     });
   }

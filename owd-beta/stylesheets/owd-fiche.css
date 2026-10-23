@@ -64,7 +64,7 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
    L'échelle typographique, elle, est reprise TELLE QUELLE de JJK. Ces huit
    nombres font la densité de la fiche ; les changer, c'est refaire l'erreur.
    ============================================================ */
-.perso-fiche {
+.perso-fiche, #owd-mode-bar {
   --paper:   #ffffff;   /* la feuille (site : héritée d'extra.css ; iframe : ce repli) */
   --bg-side: #e9e7e2;   /* le plan de travail, gris clair autour de la feuille */
   --card:    #ffffff;   /* cartes de section : blanches comme la feuille, tenues par leur filet */
@@ -137,6 +137,8 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
   --gut: .7rem;
   --pc-sheet-w: 50rem;
 
+}
+.perso-fiche {
   color: var(--ink);
   background: var(--bg-side);
   min-height: 74vh;
@@ -1736,7 +1738,7 @@ textarea.pc-notes { overflow-y: auto; }
    une couleur qui rate la nuit.
    ============================================================ */
 html.night .perso-fiche { color-scheme: dark; }
-html.night .perso-fiche {
+html.night .perso-fiche, html.night #owd-mode-bar {
   /* mêmes papiers nuit que le livre (night.css) et que le camp (owd-camp.css) :
      le --paper local, qui n'est qu'un repli de l'iframe, masquerait sinon la
      feuille sombre du site */

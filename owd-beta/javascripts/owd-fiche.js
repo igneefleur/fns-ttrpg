@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.19.2b";
+  var RELEASE = "4.20.0b";
   var SCHEMA = 18;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -2731,8 +2731,42 @@
       card.id = "_current";
       cards._current = card;
       try { STORE.setItem("owd-cards", JSON.stringify(cards)); } catch (e5) {}
+      enregistrementModules(card,json);
     }
   }
+
+  var enregistrementEtat=null;
+  function enregistrementModules(card,json) {
+    if(!window.__owdSavingModules||json===null||enregistrementEtat===json)return;
+    enregistrementEtat=json;
+    var out={},caps=card.capacites,caracs=card.caracs;
+    function set(id,parts){out[id]=JSON.stringify(parts);}
+    var own={caracs:['caracs','caracsXp','xpTotal'],effort:['effort','qualiteSommeil','horloge'],exposition:['temperature','horlogeExposition'],mouvement:['allure','allureCran'],effondrement:['effParties','effAutre','effAlcool','effAlcoolSecondes','horlogeAlcool','effDesactive','effPause'],desaction:['desTailles','desUtilises'],attaque:['attaques'],defense:['defenses'],comps:['comps','compsGroupes'],effets:['effetsActifs','effetsPermanents'],techniques:['techniques'],avantages:['avantages'],notes:['notes'],jets:['de'],modcaracs:['caracsLeviers'],optcaps:['capsLeviers'],optcomps:['compsLeviers'],modules:['modules','modActifs'],mods:['mods'],bg:['background'],inv:['inv']};
+    Object.keys(own).forEach(function(id){set(id,own[id].map(function(k){return state[k];}));});
+    Object.keys(state.modData||{}).forEach(function(id){set(id,[out[id],state.modData[id]]);});
+    function add(id,value){set(id,[out[id],value]);}
+    add('caracs',[caracs,caps.xpDepense]);
+    ['pv','pe','pm','pi','pc','contenance','rupture'].forEach(function(k){add(k,[caps[k],caps[k+'Max'],['pv','pe','pm'].indexOf(k)>=0?effetConsommation(k):null]);});
+    add('survie',['pr','ps','ph'].map(function(k){return [caps[k],caps[k+'Max']];}));
+    add('exposition',[caps.expo,caps.expoMax,confort()]);
+    add('pc',[caps.charge,caps.chargePorte,caps.acces,caps.accesPris]);
+    add('contenance',caps.contenancePrise);
+    var causes=['pr','ps','ph','pi','charge','contenance','chaud','froid','alcool','autre'].map(function(k){return [k,effPartie(k)];});
+    add('effondrement',[caps.effondrement,causes,effSpecifiques()]);
+    add('mouvement',[effetBonus('pas'),effetBonus('vitesse'),effSpecifiques().pas]);
+    add('recuperation',recupListeModule().map(function(x){return [x,recupEtatVueModule(x)];}));
+    add('desaction',caps.desAction);
+    add('comps',(state.comps||[]).map(function(c){return [compBonus(c),compDes(c),compXp(c)];}));
+    var weapons=(state.inv.objets||[]).filter(function(o){return o.arme;}),combat=[state.combatOptions,state.combatModifiers,state.combatAffichage];
+    add('attaque',[weapons,combat,caracs,(state.inv.objets||[]).filter(function(o){return o.munition;}),combatTypes().map(function(t){return effetBonus('degats',t);}),effetBonus('attaque'),effetBonus('paradeAdverse'),effetsSources().filter(function(x){return !!x.d.ops.impregnation;})]);
+    add('defense',[weapons,combat,effetBonus('parade'),weapons.map(function(o){return (o.arme.modsParade||[]).map(function(k){return caracs[k];});}),combatTypes().map(function(t){return defenseTotaux(t,null,false);})]);
+    add('effets',effetsSources());
+    if(window.__owdJournal)add('journal',window.__owdJournal().ops.map(function(o){return o.id;}));
+    // A mod may declare the exact values its own module calculates.
+    modules.forEach(function(m){if(typeof m.enregistrement==='function'){try{add(m.id,m.enregistrement());}catch(e){}}});
+    window.__owdSavingModules(out);
+  }
+
   function montrePanneSave(msg) {
     if(window.__owdSaveFailure){window.__owdSaveFailure(msg);return;}
     if (!msg) {
