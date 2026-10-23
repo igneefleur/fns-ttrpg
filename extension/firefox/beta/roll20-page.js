@@ -1193,7 +1193,7 @@
         var chl = getChar(d.charId);
         if (!chl) return;
         storageRegisterView(ev.source,chl,d.viewId);
-        var rl = { type: "hydrate", charId: d.charId, attrs: readAll(d.charId), resync: true, collaboration: 1, storageBlocks: 2, storageVolatile: 1, storageCleanup:3, storageSession: storageSessionName() };
+        var rl = { type: "hydrate", charId: d.charId, attrs: readAll(d.charId), resync: true, collaboration: 1, storageBlocks: 2, storageVolatile: 1, storageVersion:1, storageCleanup:3, storageSession: storageSessionName() };
         if (inventoryFrames.has(ev.source)) {
           rl.inventoryAccess = true;
           if (etatAttributs(chl) !== "sur") return;
@@ -1246,7 +1246,7 @@
         if (inv && !inventoryAccess(getChar(d.charId))) return;
         var current=readAll(d.charId);
         if(current.owd_storage){
-          var allowed={};Object.keys(d.attrs||{}).forEach(function(k){if(k==='owd_pv'||k==='owd_pe'||k==='owd_pm')allowed[k]=d.attrs[k];});
+          var allowed={};Object.keys(d.attrs||{}).forEach(function(k){if(k==='owd_pv'||k==='owd_pe'||k==='owd_pm'||k==='owd_version')allowed[k]=d.attrs[k];});
           // Blocs initiaux immuables : seuls les morceaux manquants peuvent être repris.
           try{var header=JSON.parse(current.owd_storage.current);Object.keys(header.blocks||{}).forEach(function(k){if((!current[k]||storageHash(current[k].current)!==header.blocks[k])&&d.attrs&&d.attrs[k]&&storageHash(d.attrs[k].current)===header.blocks[k])allowed[k]=d.attrs[k];});}catch(e){}
           enqueue(d.charId,allowed,inv);return;

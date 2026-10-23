@@ -26,7 +26,7 @@
       var a = ancre(actif), sig = signature(actif);
       var semblables = Array.prototype.filter.call(a.el.querySelectorAll("input,textarea,select"), function (c) { return signature(c) === sig; });
       focus = { module: a.module, entity: a.entity, signature: sig, index: semblables.indexOf(actif),
-        value: actif.value, start: actif.selectionStart, end: actif.selectionEnd, direction: actif.selectionDirection, scroll: actif.scrollTop };
+        reserve: actif.dataset.syncReserve || null, value: actif.value, start: actif.selectionStart, end: actif.selectionEnd, direction: actif.selectionDirection, scroll: actif.scrollTop };
     }
     var sx = window.scrollX, sy = window.scrollY;
     Array.prototype.forEach.call(rootEl.querySelectorAll("[data-module]"), function (m) {
@@ -55,7 +55,7 @@
           c.focus({ preventScroll: true });
           // Les commandes ± ne sont pas encore dans l'état. Une saisie locale
           // reste aussi sous les doigts pendant la réception d'autres champs.
-          c.value = focus.value;
+          c.value = focus.reserve ? courant(focus.reserve) : focus.value;
           try { if (focus.start !== null) c.setSelectionRange(focus.start, focus.end, focus.direction); } catch (e) {}
           c.scrollTop = focus.scroll;
         }

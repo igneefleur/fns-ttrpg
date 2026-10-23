@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.16.0b";
+  var RELEASE = "4.17.0b";
   var SCHEMA = 18;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -5256,6 +5256,7 @@
     tete.appendChild(etat);
     var val = el("span", "pc-vital-val");
     var inp = el("input", "pc-vital-num");
+    inp.dataset.syncReserve=cle;
     champNombreSigne(inp);
     inp.step = "1";
     inp.setAttribute("aria-label", libCap(cle, nom));
@@ -11642,7 +11643,7 @@
       var a = ancre(actif), sig = signature(actif);
       var semblables = Array.prototype.filter.call(a.el.querySelectorAll("input,textarea,select"), function (c) { return signature(c) === sig; });
       focus = { module: a.module, entity: a.entity, signature: sig, index: semblables.indexOf(actif),
-        value: actif.value, start: actif.selectionStart, end: actif.selectionEnd, direction: actif.selectionDirection, scroll: actif.scrollTop };
+        reserve: actif.dataset.syncReserve || null, value: actif.value, start: actif.selectionStart, end: actif.selectionEnd, direction: actif.selectionDirection, scroll: actif.scrollTop };
     }
     var sx = window.scrollX, sy = window.scrollY;
     Array.prototype.forEach.call(rootEl.querySelectorAll("[data-module]"), function (m) {
@@ -11671,7 +11672,7 @@
           c.focus({ preventScroll: true });
           // Les commandes ± ne sont pas encore dans l'état. Une saisie locale
           // reste aussi sous les doigts pendant la réception d'autres champs.
-          c.value = focus.value;
+          c.value = focus.reserve ? courant(focus.reserve) : focus.value;
           try { if (focus.start !== null) c.setSelectionRange(focus.start, focus.end, focus.direction); } catch (e) {}
           c.scrollTop = focus.scroll;
         }

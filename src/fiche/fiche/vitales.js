@@ -46,6 +46,7 @@
     tete.appendChild(etat);
     var val = el("span", "pc-vital-val");
     var inp = el("input", "pc-vital-num");
+    inp.dataset.syncReserve=cle;
     champNombreSigne(inp);
     inp.step = "1";
     inp.setAttribute("aria-label", libCap(cle, nom));
