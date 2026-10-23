@@ -63,7 +63,7 @@
   var firstPendingAt=0, saveFailure='', openingDone=false, presenceRows=[];
   var openingStartedAt=window.__owdOpeningAt||Date.now();
   window.__owdCanEdit=function(){return edition&&!gele&&accesInventaire&&ready&&!document.getElementById('owd-ecran');};
-  var tokenObserved={},tokenMaxObserved={},storageIntent={absolute:{}};
+  var storageIntent={absolute:{}};
   window.__owdReserveSet=function(k){storageIntent.absolute[JSON.stringify([['k','etat'],['k',k]])]=true;};
   window.__owdInventorySet=function(ref){storageIntent.absolute[JSON.stringify([['k','inv'],['k','objets'],['e',ref],['k','qte']])]=true;};
 
@@ -1459,7 +1459,7 @@
         accesInventaire = true; document.getElementById("perso-fiche").inert = false; note(null);
       }
       if(d.storageBlocks===2&&d.storageCleanup!==3)afficheNettoyage({status:'error',error:'Le pont de cette partie utilise encore un ancien nettoyage. Après installation de l’extension 4.2.0, rechargez la page entière de la partie Roll20.'});
-      storageCapable=d.storageBlocks===2&&d.storageVolatile===1&&d.storageVersion===1&&d.storageImport===1&&d.localBackups===1&&d.localBackupRelay===1&&d.sharedMode===1;storageSession=d.storageSession||"";
+      storageCapable=d.storageBlocks===2&&d.storageVolatile===1&&d.storageVersion===1&&d.storageImport===1&&d.localBackups===1&&d.localBackupRelay===1&&d.sharedMode===1&&d.tokenEdits===1;storageSession=d.storageSession||"";
       collaborationPont = d.collaboration === 1 && d.resync === true;
       if (d.fresh === true || !collaborationPont) {
         derniereLecture = Date.now();
@@ -1604,17 +1604,9 @@
         document.getElementById('perso-fiche').inert=true;
         ecranVersion({schema:Number(server.state.v),release:server.state.rel},window.Owd.version,Number(window.Owd.schema));return;
       }
-      if(server&&collaboration.hasBase){['pv','pe','pm'].forEach(function(k){var a=attrs['owd_'+k],raw=a&&String(a.current),n=Number(raw),actual=server.state.etat[k];
-        if(actual==null)actual=collaboration.maxima[k];
-        var old=previous&&previous.state.etat[k];if(old==null)old=collaboration.maxima[k];
-        // Une projection retardée de l'ancienne réserve n'est pas une saisie.
-        // Les barres sont des valeurs absolues ; les dépenses de fiche restent des deltas.
-        if(raw!==undefined&&raw.trim()!==''&&isFinite(n)&&typeof actual==='number'&&n!==actual&&n!==old&&!(server.state.etat[k]==null&&n===Number(a.max)&&tokenObserved[k]===undefined)&&tokenObserved[k]!==raw){collaboration.token(k,n,server);}
-        var maximum=a&&String(a.max),maxValue=Number(maximum),computed=collaboration.maxima[k];
-        if(maximum!==undefined&&maximum.trim()!==''&&isFinite(maxValue)&&maxValue>=0&&typeof computed==='number'&&maxValue!==computed&&tokenMaxObserved[k]!==undefined&&maximum!==tokenMaxObserved[k]){if(server.state.etat[k]==null&&isFinite(n))collaboration.token(k,n,server);collaboration.tokenMax(k,maxValue,server);}
-        tokenMaxObserved[k]=maximum;
-        tokenObserved[k]=raw;
-      });}
+      // Les attributs de barre sont des projections, jamais des commandes.
+      // Le pont traduit les sauvegardes natives explicites en opérations ; une
+      // relecture retardée ne doit modifier ni les réserves ni leurs leviers.
       var recu = collaboration.receive(attrs,server);
       lastAttrs = attrs;
       if (!recu) return;

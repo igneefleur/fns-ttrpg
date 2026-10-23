@@ -159,12 +159,40 @@
   function readAll(id) {
     var ch = getChar(id), out = {};
     models(ch).forEach(function (m) {
+      observeTokenAttribute(ch,m);
       var n = attrVal(m, "name");
       if (typeof n === "string" && n.indexOf(PREFIX) === 0) {
         out[n] = { current: str(attrVal(m, "current")), max: str(attrVal(m, "max")) };
       }
     });
     return out;
+  }
+
+  // Une lecture, un fetch et l'écho Firebase ne constituent pas une saisie.
+  // Seul save() d'un attribut natif produit une commande. Nos projections
+  // passent par sauve(), avec un garde réentrant, et ne produisent aucune commande.
+
+  function observeTokenAttribute(ch,m){
+    if(!m||typeof m.save!=='function'||!/^owd_(pv|pe|pm)$/.test(attrVal(m,'name')))return;
+    var hook=m.save.__owdTokenHook;
+    if(hook){hook.baseline={current:str(attrVal(m,'current')),max:str(attrVal(m,'max'))};return;}
+    hook={mirrorDepth:0,baseline:{current:str(attrVal(m,'current')),max:str(attrVal(m,'max'))}};
+    var original=m.save;
+    m.save=function(values,options){
+      var edit={},before=hook.baseline;
+      ['current','max'].forEach(function(field){
+        var keyed=typeof values==='string',explicit=keyed?values===field:values&&Object.prototype.hasOwnProperty.call(values,field),value=explicit?(keyed?options:values[field]):attrVal(m,field);
+        if(str(value)!==before[field])edit[field]=str(value);
+      });
+      var own=hook.mirrorDepth>0,result=original.apply(this,arguments);
+      hook.baseline={current:str(attrVal(m,'current')),max:str(attrVal(m,'max'))};
+      if(!own&&result!==false&&Object.keys(edit).length){
+        try{storageTokenEdit(ch,attrVal(m,'name').slice(4),edit,before);}
+        catch(error){srcFrames.forEach(function(w,i){if(srcIds[i]===ch.id)reply({source:w},{type:'storage-error',charId:ch.id,error:String(error.message||error)});});}
+      }
+      return result;
+    };
+    Object.defineProperty(m.save,'__owdTokenHook',{value:hook});
   }
 
   // ---------- les gros attributs ne repartent qu'AU CHANGEMENT ----------
@@ -278,10 +306,11 @@
     if (!m || !m.save) return;
     var fini = false;
     try {
-      m.save(null, {
+      var tokenHook=m.save.__owdTokenHook;if(tokenHook)tokenHook.mirrorDepth++;
+      try { m.save(null, {
         success: function () { if (!fini) { fini = true; issue(name, "accepte", null); } },
         error: function (mm, rep) { if (!fini) { fini = true; issue(name, "refuse", texteReponse(rep)); } }
-      });
+      }); } finally { if(tokenHook)tokenHook.mirrorDepth--; }
     } catch (e) {
       fini = true;
       issue(name, "exception", String((e && e.message) || e).slice(0, 120));
@@ -300,11 +329,13 @@
     if (tous.length > 1) doublons(name, tous.length);
     if (!tous.length) {
       var neuf = ch.attribs.create(data, { silent: true });
+      observeTokenAttribute(ch,neuf);
       sauve(neuf, name);
       return relu(neuf, name, data);
     }
     for (var k = 0; k < tous.length; k++) {
       var mk = tous[k];
+      observeTokenAttribute(ch,mk);
       // On garde le set SILENCIEUX : c'est lui qui évite l'événement change, donc
       // onAttribChange puis updateSheetValues, qui plante quand la fiche est
       // ouverte — et le pont ouvre justement celle de « Camp ».
@@ -442,6 +473,27 @@
     storagePending[ch.id]=map;storagePayloads[ch.id]=payloads;
     if(data.viewId){var views=storageViewOps[ch.id]||(storageViewOps[ch.id]={}),view=views[data.viewId]||(views[data.viewId]={ops:{},payloads:{}});(data.ops||[]).forEach(function(op){view.ops[op.id]=true;});Object.keys(data.payloads||{}).forEach(function(k){view.payloads[k]=true;});}
     enqueue(ch.id,out,true);
+  }
+  function storageTokenEdit(ch,k,edit,before){
+    var owner=storageOwner();if(owner){if(owner.tokenEdit)owner.tokenEdit(ch.id,k,edit,before);return;}
+    if(!/^(pv|pe|pm)$/.test(k)||!inventoryAccess(ch)||!window.OwdSync)return;
+    var C=window.OwdSync.Compact,attrs=readAll(ch.id),meta=storageManifest(attrs);if(!meta)return;
+    // Les saisies successives doivent voir aussi les opérations encore en file,
+    // sans attendre le fetch suivant, ni réordonner les valeurs absolues.
+    var pending=Object.keys(storagePending[ch.id]||{}).map(function(id){return storagePending[ch.id][id];});
+    var projected=Object.assign({},attrs,storagePayloads[ch.id]||{});
+    projected.owd_ops_native_pending={current:JSON.stringify({epoch:meta.epoch,ops:pending}),max:''};
+    var remote=C.read(projected);if(!remote||remote.incomplete)throw Error('Données du personnage incomplètes. Réessayez dans quelques instants.');
+    var session=new C.Session(projected,remote.state,null,{id:'native-'+storageSession});
+    function number(field){var raw=edit[field];return raw!==undefined&&String(raw).trim()!==''&&isFinite(Number(raw))?Number(raw):null;}
+    var current=number('current'),maximum=number('max');
+    if(current!==null)session.token(k,current,remote);
+    if(maximum!==null&&maximum>=0){
+      if(current===null&&remote.state.etat[k]==null&&before&&String(before.current).trim()!==''&&isFinite(Number(before.current)))session.token(k,Number(before.current),remote);
+      session.tokenMax(k,maximum,remote);
+    }
+    var ops=Object.keys(session.pending).map(function(id){var op=session.pending[id];op.at=Date.now();var actor=journalPlayer();if(actor)op.actor=actor;return op;});
+    if(ops.length)storageOps(ch,{epoch:meta.epoch,ops:ops,payloads:session.payloads},attrs);
   }
   function storageRelease(ch,viewId){
     var owner=storageOwner();if(owner){if(owner.release)owner.release(ch.id,viewId);return;}
@@ -631,7 +683,7 @@
     fetchFresh(function(attrs){if(storageBasis(attrs)!==storageBasis(expected)){fail('Le personnage a changé pendant la préparation. Réessayez la mise à jour.');return;}stage();});
   }
 
-  window.__owdStorageBridge={session:storageSession,watchPresence:function(fn){presenceWatchers.push(fn);return function(){var i=presenceWatchers.indexOf(fn);if(i>=0)presenceWatchers.splice(i,1);};},rows:function(id){var ch=getChar(id);return ch?presenceRead(ch,readAll(id)):[];},presence:function(id,data){var ch=getChar(id);if(ch&&inventoryAccess(ch))updatePresence(ch,data);},release:function(id,viewId){var ch=getChar(id);if(ch&&inventoryAccess(ch))storageRelease(ch,viewId);},ops:function(id,data){var ch=getChar(id);if(ch&&inventoryAccess(ch))storageOps(ch,data);}};
+  window.__owdStorageBridge={session:storageSession,tokenEdit:function(id,k,edit,before){var ch=getChar(id);if(ch)storageTokenEdit(ch,k,edit,before);},watchPresence:function(fn){presenceWatchers.push(fn);return function(){var i=presenceWatchers.indexOf(fn);if(i>=0)presenceWatchers.splice(i,1);};},rows:function(id){var ch=getChar(id);return ch?presenceRead(ch,readAll(id)):[];},presence:function(id,data){var ch=getChar(id);if(ch&&inventoryAccess(ch))updatePresence(ch,data);},release:function(id,viewId){var ch=getChar(id);if(ch&&inventoryAccess(ch))storageRelease(ch,viewId);},ops:function(id,data){var ch=getChar(id);if(ch&&inventoryAccess(ch))storageOps(ch,data);}};
 
   if(typeof window.addEventListener==='function')window.addEventListener('pagehide',function(){if(presenceOwnerStop)presenceOwnerStop();presenceOwnerStop=null;});
 
@@ -1114,10 +1166,11 @@
     function sauveConfirme(m, nom) {
       try {
         if (!m || !m.save) return;
-        m.save(null, {
+        var tokenHook=m.save.__owdTokenHook;if(tokenHook)tokenHook.mirrorDepth++;
+        try { m.save(null, {
           success: function () { confirme[nom] = true; },
           error: function () { confirme[nom] = false; }
-        });
+        }); } finally { if(tokenHook)tokenHook.mirrorDepth--; }
       } catch (e) { confirme[nom] = false; }
     }
     var etape = 0;
@@ -1286,7 +1339,7 @@
         var chl = getChar(d.charId);
         if (!chl) return;
         storageRegisterView(ev.source,chl,d.viewId);
-        var rl = { type: "hydrate", charId: d.charId, attrs: readAll(d.charId), resync: true, collaboration: 1, storageBlocks: 2, storageVolatile: 1, storageVersion:1, storageImport:1, localBackups:1, localBackupRelay:1, sharedMode:1, storageCleanup:3, storageSession: storageSessionName() };
+        var rl = { type: "hydrate", charId: d.charId, attrs: readAll(d.charId), resync: true, collaboration: 1, storageBlocks: 2, storageVolatile: 1, storageVersion:1, storageImport:1, localBackups:1, localBackupRelay:1, sharedMode:1, tokenEdits:1, storageCleanup:3, storageSession: storageSessionName() };
         if (inventoryFrames.has(ev.source)) {
           rl.inventoryAccess = true;
           if (etatAttributs(chl) !== "sur") return;
