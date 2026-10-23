@@ -57,6 +57,7 @@
   var C = window.OwdSync && window.OwdSync.Compact;
   var storageCapable=false, storageSession="";
   var edition=false, extensionReady=false, extensionChecking=false, extensionInfo=null, lastHydration=null;
+  var OPERATION_TIMEOUT=36000;
   var operationTimer=null, operationSerial=0, operationBusy=false, failureKind='', loadingKind='opening';
   var preparationFailed=false;
   var firstPendingAt=0, saveFailure='', openingDone=false, presenceRows=[];
@@ -342,7 +343,7 @@
   window.__owdSaveFailure=function(message){preparationFailed=!!message;if(message){saveFailure=message;afficheErreurEnregistrement(true);}else actualiseStatutEnregistrement(false);};
   function actualiseStatutEnregistrement(failed){
     var count=collaboration?Object.keys(collaboration.pending).length:0;
-    if(count){if(!firstPendingAt)firstPendingAt=Date.now();statutEnregistrement('Enregistrement en cours…');if(saveFailure)afficheErreurEnregistrement(true);else if(failed||Date.now()-firstPendingAt>=10000)afficheErreurEnregistrement(false);}
+    if(count){if(!firstPendingAt)firstPendingAt=Date.now();statutEnregistrement('Enregistrement en cours…');if(saveFailure)afficheErreurEnregistrement(true);else if(Date.now()-firstPendingAt>=12000)afficheErreurEnregistrement(false);}
     else if(!preparationFailed&&(firstPendingAt||saveFailure)){firstPendingAt=0;saveFailure='';var n=document.getElementById('owd-bandeau');if(n&&n.dataset.owdRaison==='recording')fermerBandeau();statutEnregistrement('Enregistré');}
   }
   function scheduleSave() {
@@ -374,8 +375,15 @@
       }
       if(Object.keys(lot).length)post({type:'storage-ops',epoch:collaboration.epoch,ops:Object.keys(lot).map(function(k){return lot[k];}),payloads:collaboration.payloads});
       // Réserves dérivées et version lisible ; les blocs restent la source de vérité.
-      var mirrors={owd_version:{current:String(state.v),max:String(state.rel||'')}};if(card)['pv','pe','pm'].forEach(function(k){var current=cardCaps[k]==null?cardCaps[k+'Max']:cardCaps[k],max=cardCaps[k+'Max'];if(current!==undefined&&max!==undefined)mirrors['owd_'+k]={current:String(current),max:String(max)};});
-      var delta=diff(lastAttrs,mirrors);if(!Object.keys(collaboration.pending).length){miroirsEnAttente=Object.keys(delta).length>0;if(miroirsEnAttente)post({type:'save',attrs:delta});}
+      var mirrors={};
+      // Le marqueur reflète uniquement une lecture Roll20 vérifiée, jamais une saisie en vol.
+      if(journalRemote&&!journalRemote.incomplete&&journalRemote.meta.epoch===collaboration.epoch)mirrors.owd_version={current:String(journalRemote.state.v),max:String(journalRemote.state.rel||'')};
+      if(card)['pv','pe','pm'].forEach(function(k){var current=cardCaps[k]==null?cardCaps[k+'Max']:cardCaps[k],max=cardCaps[k+'Max'];if(current!==undefined&&max!==undefined)mirrors['owd_'+k]={current:String(current),max:String(max)};});
+      var delta=diff(lastAttrs,mirrors);
+      if(Object.keys(collaboration.pending).length){
+        // Une opération indépendante ne doit pas empêcher de confirmer la version déjà enregistrée.
+        miroirsEnAttente=!!delta.owd_version;if(delta.owd_version)post({type:'save',attrs:{owd_version:delta.owd_version}});
+      }else{miroirsEnAttente=Object.keys(delta).length>0;if(miroirsEnAttente)post({type:'save',attrs:delta});}
 
       return;
     }
@@ -494,7 +502,7 @@
         // on cesse de relancer tout seul — le lot part quand même à la
         // prochaine modification, le diff ne l'a pas oublié.
         bandeauPerte();
-      }, 10000);
+      }, OPERATION_TIMEOUT);
     }, 400);
   }
 
@@ -899,7 +907,7 @@
     loadingKind=kind||'opening';failureKind='';operationBusy=true;var serial=++operationSerial;
     if(operationTimer)clearTimeout(operationTimer);
     ecranAttente('Chargement du personnage',step||'Vérification de l’extension…');
-    operationTimer=setTimeout(function(){if(serial!==operationSerial)return;operationBusy=false;if(loadingKind==='backup')erreurSauvegarde();else if(loadingKind==='upgrade')erreurMiseAJour();else erreurOuverture(extensionReady?'timeout':'extension');},kind==='opening'?Math.max(0,10000-(Date.now()-openingStartedAt)):10000);
+    operationTimer=setTimeout(function(){if(serial!==operationSerial)return;operationBusy=false;if(loadingKind==='backup')erreurSauvegarde();else if(loadingKind==='upgrade')erreurMiseAJour();else erreurOuverture(extensionReady?'timeout':'extension');},kind==='opening'?Math.max(0,OPERATION_TIMEOUT-(Date.now()-openingStartedAt)):OPERATION_TIMEOUT);
     return serial;
   }
   function stopLoading(){operationBusy=false;++operationSerial;if(operationTimer)clearTimeout(operationTimer);operationTimer=null;}
@@ -914,7 +922,7 @@
   }
   function erreurSauvegarde(){stopLoading();failureKind='backup';var b=ecran('Impossible de sauvegarder le personnage',true);b.appendChild(noeud('p',null,'Roll20 n’a pas confirmé la sauvegarde de secours du personnage. La mise à jour n’a pas été lancée. Réessayez dans quelques instants.'));var z=zoneActions(b);bouton(z,'Réessayer','reessayer-backup',function(){monter(false,versionFiche(attrsVus));});bouton(z,'Retour','retour',function(){miseANiveauDemandee=false;decide=false;decider();});boutonExport(z);}
   function erreurMiseAJour(){stopLoading();failureKind='upgrade';var b=ecran('Impossible de mettre à jour le personnage',true);b.appendChild(noeud('p',null,'La mise à jour du personnage n’a pas pu être terminée. Une sauvegarde de secours de son état précédent est conservée sur Roll20. Réessayez dans quelques instants.'));var z=zoneActions(b);bouton(z,'Réessayer','reessayer-upgrade',function(){location.reload();});boutonExport(z);}
-  function extensionUpdate(installed,latest){stopLoading();var b=ecran('Extension Outward à mettre à jour',false);b.appendChild(noeud('p',null,'Votre extension Outward n’est pas à jour. Installez la dernière version, puis rechargez la page Roll20 pour ouvrir ce personnage.'));var v=noeud('div','owd-ecran-vers');v.appendChild(noeud('span',null,'Votre version de l’extension : '+installed));v.appendChild(noeud('span',null,'Dernière version de l’extension : '+latest));b.appendChild(v);var z=zoneActions(b);boutonExport(z);var a=noeud('a','owd-ecran-telecharger','Télécharger la mise à jour');a.href=new URL('download/owd-roll20-'+(extensionInfo&&extensionInfo.browser==='chrome'?'chrome.zip':'firefox.xpi'),location.href).href;a.target='_blank';a.rel='noopener';z.appendChild(a);}
+  function extensionUpdate(installed,latest){stopLoading();var b=ecran('Extension Outward à mettre à jour',false);b.appendChild(noeud('p',null,'Votre extension Outward n’est pas à jour. Installez la dernière version, puis rechargez la page Roll20 pour ouvrir ce personnage.'));var v=noeud('div','owd-ecran-vers');v.appendChild(noeud('span',null,'Votre version de l’extension : '+installed));v.appendChild(noeud('span',null,'Dernière version de l’extension : '+latest));b.appendChild(v);var z=zoneActions(b);boutonExport(z);var a=noeud('a','owd-ecran-telecharger','Télécharger la mise à jour');a.href=new URL('extension/',location.href).href;a.target='_blank';a.rel='noopener';z.appendChild(a);}
   function compareExtension(a,b){
     function parts(v){return /^\d+\.\d+\.\d+(?:\.\d+)?$/.test(String(v))?String(v).split('.').map(Number):null;}
     var x=parts(a),y=parts(b);if(!x||!y)return null;
@@ -1237,7 +1245,7 @@
     });return found;
   }
   function confirmeOperations(packet, cb) {
-    var end=Date.now()+10000;
+    var end=Date.now()+OPERATION_TIMEOUT;
     (function poll(){sonde(function(attrs){var remote=null;try{remote=attrs&&C.read(attrs);}catch(e){}
       if(remote&&remote.meta.epoch===packet.epoch&&packet.ops.every(function(op){return remote.ids[op.id]&&C.stable(remote.ids[op.id])===C.stable(op);})){cb(true,attrs,remote);return;}
       if(Date.now()>=end){cb(false,attrs);return;}setTimeout(poll,700);
@@ -1277,7 +1285,7 @@
       lastAttrs = fusion(lastAttrs, lot);
       startLoading('upgrade','Préparation de la fiche…');
       chargerBundle(specCourant());
-    }, 10000);
+    }, OPERATION_TIMEOUT);
   }
   function ecranRouge(){erreurSauvegarde();}
 
@@ -1431,7 +1439,7 @@
     if(d.type==='storage-cleanup-status'&&(!d.charId||d.charId===CHAR_ID)){
       afficheNettoyage(d);return;
     }
-    if(d.type==='storage-error'&&(!d.charId||d.charId===CHAR_ID)){if(loadingKind==='backup'&&operationBusy)erreurSauvegarde();else if(miseANiveauDemandee)erreurMiseAJour();else statutEnregistrement(d.error,true);return;}
+    if(d.type==='storage-error'&&(!d.charId||d.charId===CHAR_ID)){if(loadingKind==='backup'&&miseANiveauDemandee)erreurSauvegarde();else if(miseANiveauDemandee)erreurMiseAJour();else statutEnregistrement(d.error,true);return;}
     // on n'accepte que l'hydratation de NOTRE personnage (plusieurs fiches peuvent être ouvertes)
     if (d.type === "hydrate" && (!d.charId || d.charId === CHAR_ID)) {
       if(d.unchanged){if(!wireAttrs||d.revision!==wireRevision){wireRevision=null;post({type:'load',resync:true});return;}d.attrs=wireAttrs;}
