@@ -99,3 +99,20 @@ html.owd-vue-outil #owd-roll20-note{flex:none;margin:.5rem auto}
 /* Notes seules dans la barre latérale : lecture intégrale dans le panneau. */
 .pc-notes-seul .pc-sheet > .pc-block { overflow:hidden; }
 .pc-notes-seul .pc-notes-chat { height:auto; max-height:none; }
+
+
+/* Mode et présences : même largeur, palette et bouton que la fiche. */
+#owd-mode-bar{box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:.3rem .8rem;flex-wrap:wrap;flex:none;width:50rem;max-width:100%;margin:0 auto;padding:.3rem .7rem;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-top:0;border-radius:0 0 5px 5px;font:inherit;font-size:.65rem;line-height:1.25}
+#owd-mode-bar .owd-mode-controls{display:flex;align-items:center;gap:.55rem;flex-wrap:wrap;min-width:0}
+#owd-mode-bar .owd-mode-label{font-family:'Proxima Nova Condensed','Nunito Sans',sans-serif;font-size:.7rem;font-weight:800;color:var(--ink);white-space:nowrap}
+#owd-mode-switch.pc-btn{padding:.18rem .45rem;font-size:.65rem;line-height:1.25}
+#owd-mode-bar .owd-mode-presence{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:.15rem .7rem;margin-left:auto;min-width:0;font-size:.58rem;color:var(--ink-2);overflow-wrap:anywhere}
+#owd-mode-bar .owd-presence-edition{color:var(--accent)}
+html.owd-vue-outil #owd-mode-bar{width:100%}
+/* Le contour reste dans le bloc : aucun décalage, aucun clic intercepté. */
+.owd-module-saving{position:relative}
+.owd-save-outline{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3;overflow:visible}
+.owd-save-outline path{stroke:var(--accent);stroke-width:2;stroke-linecap:round;vector-effect:non-scaling-stroke}
+@media(prefers-reduced-motion:reduce){.owd-save-outline{opacity:.7}}
+
+#owd-mode-bar #owd-save-status{padding:0;font-size:.58rem;color:var(--ink-2)}

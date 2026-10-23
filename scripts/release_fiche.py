@@ -73,6 +73,7 @@ FICHIERS = [
     "javascripts/owd-sync.js",
     "javascripts/owd-attr-map.js",
     "javascripts/owd-roll20-boot.js",
+    "javascripts/owd-save-progress.js",
     "javascripts/owd-migrations.js",
     # le moteur de mods : chargé AVANT la fiche, qui l'interroge. Il a été
     # oublié de cette liste à sa création, alors qu'il était bien nommé au
@@ -375,6 +376,7 @@ def main():
     if not lancer("relais des sauvegardes locales", ["node", "scripts/test_backup_relay.js"], racine):
         return 1
 
+    if not lancer("contours d’enregistrement", ["node", "scripts/test_save_progress.js"], racine): return 1
     if not lancer("modes partagés des vues", ["node", "scripts/test_shared_mode.js"], racine):
         return 1
 
