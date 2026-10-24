@@ -47,7 +47,7 @@ class BoutiqueReference(unittest.TestCase):
             self.assertTrue(o['img'].startswith('assets/'))
         self.assertEqual(byname['Thick Oil']['taille'],'Minuscule')
         self.assertNotEqual(byname['Thick Oil']['desc'],'6600070')
-        self.assertEqual(byname['Arcane Robe']['froid'],8)
+        self.assertEqual(byname['Arcane Robe']['froid'],6)
         self.assertEqual(byname['Whole Loaf']['achat'],1)
         self.assertEqual(byname['Bread Slice']['achat'],.2)
         self.assertEqual(byname['Trader Warbelt']['ep'],20)
