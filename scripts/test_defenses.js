@@ -13,7 +13,17 @@ assert.equal(ctx.combatDegats(30,0,-50),45);
 ctx.state.inv.objets=[{ref:'top',qte:1,ou:'haut',prot_feu:4,res_feu:5},{ref:'ignored',qte:1,ou:'poches',prot_feu:999,res_feu:999},
  {ref:'shield',qte:1,ou:'mainG',prot_feu:2,res_feu:4,arme:{parade:8,reduction:6,modsParade:['Force','','']}}];
 let d=ctx.defenseValeurs({arme:'shield'});assert.equal(d.protection,10);assert.equal(d.difficulte,8);
-ctx.state.inv.objets[2].ou='terre';assert.equal(ctx.defenseValeurs({arme:'shield'}).item,null);
+// La défense et l’attaque acceptent une arme depuis tout l’inventaire.
+for (const emplacement of ['terre', 'sac', 'poches', 'mainD', 'mainG']) {
+ ctx.state.inv.objets[2].ou=emplacement;
+ const valeur=ctx.defenseValeurs({arme:'shield'});
+ assert.equal(valeur.item,ctx.state.inv.objets[2],emplacement);
+ assert.equal(valeur.protection,10,emplacement);
+ assert.equal(valeur.difficulte,8,emplacement);
+}
+const epeeHorsInventaire=ctx.state.inv.objets.pop();
+assert.equal(ctx.defenseValeurs({arme:'shield'}).item,null);
+ctx.state.inv.objets.push(epeeHorsInventaire);
 ctx.state.inv.objets[2].ou='mainG';
 let t=ctx.defenseTotaux('feu',d,true);assert.equal(t.protection,16);assert.equal(t.reduction,9);
 t=ctx.defenseTotaux('feu',d,false);assert.equal(t.protection,4);assert.equal(t.reduction,5);

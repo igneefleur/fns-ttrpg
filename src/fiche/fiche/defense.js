@@ -85,8 +85,12 @@
     return Math.max(0, Math.floor(Math.max(0, d - p) * Math.max(0, 1 - r / 100) + 1e-9));
   }
   function defenseArme(ref) {
-    return state.inv.objets.filter(function (o) { return o.arme && String(o.ref) === String(ref) &&
-      window.OwdInventoryData.isCarried(state.inv.objets,o); })[0] || null;
+    // Comme les attaques : une arme reste utilisable tant qu’elle se trouve
+    // dans l’inventaire, y compris à terre ou dans un contenant.
+    var objets = state.inv && Array.isArray(state.inv.objets) ? state.inv.objets : [];
+    return objets.filter(function (o) {
+      return o && o.arme && String(o.ref) === String(ref);
+    })[0] || null;
   }
   function defenseValeurs(entree) {
     var item = entree && entree.arme ? defenseArme(entree.arme) : null;
