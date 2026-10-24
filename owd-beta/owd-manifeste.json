@@ -1,38 +1,38 @@
 {
   "_lisezmoi": "Manifeste de la fiche Outward. C'est LUI qui dit quoi charger. roll20-fiche.html est un amorceur gelé, servi sans ?v= par la coquille signée et gardé dix minutes par GitHub Pages : il ne peut donc pas nommer les fichiers lui-même sans risquer de les figer. Ce manifeste, lui, se relit sans cache à chaque ouverture (fetch no-store, plus un ?t= qui change la clé de cache du CDN). Toutes les URL sont RELATIVES à la racine du site ; une URL absolue, une URL commençant par // ou une URL contenant .. fait refuser le manifeste ENTIER, et l'amorceur retombe sur son repli gelé — panne muette, la fiche a l'air de marcher mais sans ?v= et sans manifeste. Les ?v= sont des clés de cache, jamais des numéros de version : ils s'incrémentent ensemble, et le site qui charge le même bundle par mkdocs doit porter le même numéro, sinon les deux mondes ne font pas tourner le même code.",
   "_versions": "release et schema sont deux numéros indépendants. release est le numéro publié X.Y.Z ; le suffixe beta b ne change pas son rang. schema est un entier qui ne monte que lorsque la forme des données change. Toute différence de release ou de schéma demande un accord explicite avant mise à jour du personnage. Le réglage blocage est release. Une ancienne version ne peut être ouverte que si son archive exacte est disponible. Les numéros du manifeste, du bundle et de la table des attributs doivent rester alignés, ainsi que la chaîne des migrations.",
-  "release": "4.25.2b",
+  "release": "4.25.3b",
   "schema": 18,
   "blocage": "release",
   "amorce": [
-    "javascripts/owd-sync.js?v=253",
-    "javascripts/owd-attr-map.js?v=253",
-    "javascripts/owd-save-progress.js?v=253",
-    "javascripts/owd-roll20-boot.js?v=253"
+    "javascripts/owd-sync.js?v=254",
+    "javascripts/owd-attr-map.js?v=254",
+    "javascripts/owd-save-progress.js?v=254",
+    "javascripts/owd-roll20-boot.js?v=254"
   ],
   "camp": {
     "js": [
-      "javascripts/owd-sync.js?v=253",
-      "javascripts/owd-monde-data.js?v=253",
-      "javascripts/owd-monde.js?v=253"
+      "javascripts/owd-sync.js?v=254",
+      "javascripts/owd-monde-data.js?v=254",
+      "javascripts/owd-monde.js?v=254"
     ],
     "css": [
-      "stylesheets/owd-monde.css?v=253"
+      "stylesheets/owd-monde.css?v=254"
     ]
   },
   "_donnees": "bundle.data nomme le jeu de données que la fiche consomme : owd-creation.json, produit AU BUILD par hooks/owd_creation.py depuis docs/content/regles/. Il porte le barème des rangs, les formules des capacités, les huit caractéristiques, les armes et leurs paliers — rien de tout cela n'est écrit dans owd-fiche.js, et une règle qui change au livre change la fiche à la construction suivante. Il est nommé ICI, avec son ?v=, et non deviné par le code : une ARCHIVE de version chargée par l'amorce doit lire les règles de SON jour, sinon un rang renommé suffit à trahir la version qu'on croit rejouer. La fiche retombe sur le répertoire du site quand ce champ manque, mais c'est un repli, pas le chemin normal.",
   "bundle": {
     "js": [
-      "javascripts/owd-migrations.js?v=253",
-      "javascripts/owd-mods.js?v=253",
-      "javascripts/owd-des3d.js?v=253",
-      "javascripts/owd-inventaire-data.js?v=253",
-      "javascripts/owd-fiche.js?v=253"
+      "javascripts/owd-migrations.js?v=254",
+      "javascripts/owd-mods.js?v=254",
+      "javascripts/owd-des3d.js?v=254",
+      "javascripts/owd-inventaire-data.js?v=254",
+      "javascripts/owd-fiche.js?v=254"
     ],
     "css": [
-      "stylesheets/owd-fiche.css?v=253",
-      "stylesheets/owd-des3d.css?v=253",
-      "stylesheets/owd-roll20.css?v=253"
+      "stylesheets/owd-fiche.css?v=254",
+      "stylesheets/owd-des3d.css?v=254",
+      "stylesheets/owd-roll20.css?v=254"
     ],
     "data": "owd-creation-runtime.json?v=218"
   },
@@ -40,29 +40,29 @@
   "archives": {},
   "monde": {
     "js": [
-      "javascripts/owd-sync.js?v=253",
-      "javascripts/owd-monde-data.js?v=253",
-      "javascripts/owd-monde.js?v=253"
+      "javascripts/owd-sync.js?v=254",
+      "javascripts/owd-monde-data.js?v=254",
+      "javascripts/owd-monde.js?v=254"
     ],
     "css": [
-      "stylesheets/owd-monde.css?v=253"
+      "stylesheets/owd-monde.css?v=254"
     ]
   },
   "inventaire": {
     "js": [
-      "javascripts/owd-inventaire-data.js?v=253",
-      "javascripts/owd-inventaire.js?v=253"
+      "javascripts/owd-inventaire-data.js?v=254",
+      "javascripts/owd-inventaire.js?v=254"
     ],
     "css": [
-      "stylesheets/owd-inventaire.css?v=253"
+      "stylesheets/owd-inventaire.css?v=254"
     ]
   },
   "boutique": {
     "js": [
-      "javascripts/owd-boutique.js?v=253"
+      "javascripts/owd-boutique.js?v=254"
     ],
     "css": [
-      "stylesheets/owd-boutique.css?v=253"
+      "stylesheets/owd-boutique.css?v=254"
     ]
   }
 }
