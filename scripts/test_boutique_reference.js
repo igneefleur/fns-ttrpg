@@ -15,7 +15,7 @@ for(const it of list){
 }
 const poisoned=structuredClone(list.find(x=>x.nom==='Arcane Robe'));
 for(const f of poisoned.champs)if(['Achat (argent)','Vente (argent)','Poids (kg)','Volume (L)'].includes(f[0]))f[1]='999999';
-const p=payload(poisoned);assert.equal(p.a,174);assert.equal(p.p,2.5);assert.equal(p.l,7.5);
+const p=payload(poisoned);assert.equal(p.a,250);assert.equal(p.p,2.5);assert.equal(p.l,7.5);
 console.log('OK '+list.length+' objets : données, cartes et réception concordent ; champs d’affichage sans autorité mécanique.');
 // Les propriétés doivent survivre à la normalisation et à une sauvegarde, pas seulement au lien Prendre.
 const registry=require('../docs/data/owd-boutique.json');

@@ -417,6 +417,8 @@ def main():
         return 1
     if not lancer("Vitesse et consommation des réserves", ["node", "scripts/test_vitesse_consommation.js"], racine):
         return 1
+    if not lancer("Vêtements, récupérations et images", ["node", "scripts/test_vetements.js"], racine):
+        return 1
     if not lancer("Exposition et récupérations", ["node", "scripts/test_exposition_recuperations.js"], racine):
         return 1
 

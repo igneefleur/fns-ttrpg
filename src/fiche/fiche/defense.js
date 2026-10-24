@@ -107,6 +107,7 @@
       p += state.combatOptions && state.combatOptions.defenses.lente ? Math.floor(active / 2) : active;
     }
     p += combatMod("protections",type) + effetBonus("protections",type);
+    if (["feu","froid","eclair","decomposition","ethere"].indexOf(type)>=0) p += effetBonus("barriere");
     r += combatMod("resistances",type) + effetBonus("resistances",type) - 5*effetAlerte();
     if(effetBonus("immunites",type)>=100)r=Math.max(100,r);
     return {protection:p,reduction:r};

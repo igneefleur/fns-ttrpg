@@ -35,6 +35,8 @@
       if (/^(pv|pe|pm|pr|ps|ph|pi):naturelle$/.test(id) && num(niveaux[id], 0))
         liste.push({id:id, reserve:id.split(":")[0], contexte:"Spéciale — ancien bonus", categorie:"speciale", condition:"toujours", niveau:0});
     });
+    var wolf = Math.max(0, Math.round(effetBonus("wolfMedic")));
+    if (wolf) liste.push({id:"pv:wolf-medic", reserve:"pv", contexte:"Wolf Medic Regeneration", categorie:"speciale", condition:"toujours", niveau:wolf, equipement:true});
     return liste;
   }
   function recupCoffre(cree) {
@@ -51,13 +53,14 @@
   }
   function recupNiveauRegle(r) { return Math.round(num(r && r.niveau, 0)); }
   function recupNiveauBase(r) {
+    if (r.equipement) return recupNiveauRegle(r);
     var d = recupCoffre(false), n = d.niveaux && d.niveaux[r.id];
     if (n === undefined && r.ancienId && d.niveaux && d.niveaux[r.ancienId] !== undefined)
       n = recupNiveauRegle(r) + Number(d.niveaux[r.ancienId]) - num(r.ancienNiveau, 0);
     return isFinite(Number(n)) ? Math.round(Number(n)) : recupNiveauRegle(r);
   }
   function ecritRecupNiveau(r, v) {
-    if (!r || !r.id) return;
+    if (!r || !r.id || r.equipement) return;
     var t = tempsDef(), max = 20;
     if (t && Array.isArray(t.regen) && t.regen.length) {
       max = 0; t.regen.forEach(function (x) { max = Math.max(max, num(x.niveau, 0)); });

@@ -1,0 +1,45 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const data=require('../docs/data/owd-boutique.json');
+const clothes=data.equipements.filter(o=>o.typeObjet==='vetement');
+const get=n=>clothes.find(o=>o.nom===n);
+assert.equal(clothes.length,430);
+assert.equal(new Set(clothes.map(o=>o.id)).size,430);
+assert.ok(clothes.every(o=>fs.existsSync('docs/'+o.img)));
+assert.ok(clothes.every(o=>!/^Zagis'|Troglodyte|Merton/.test(o.nom)));
+assert.equal(get('Pearlbird Mask').stats.vitesse,8);
+assert.equal(get('Chitin Desert Tunic').vet,'hautbas');
+assert.equal(get('Chitin Desert Tunic').poches,5);
+assert.equal(get('Desert Tunic').res_physique,15);
+assert.equal(get('Desert Tunic').chaud,25);
+assert.equal(get('Desert Tunic').poches,5);
+assert.equal(clothes.filter(o=>o.famille==='Master Trader Set').reduce((s,o)=>s+o.stats.vitesse,0),25);
+assert.equal(clothes.filter(o=>o.famille==='Wolf Medic Set').reduce((s,o)=>s+o.stats.wolfMedic,0),7);
+assert.equal(clothes.filter(o=>o.famille==='Shock Set').reduce((s,o)=>s+o.stats.impact,0),30);
+assert.equal(get('Scholar Circlet').stats.recuperationAction,10);
+for(const o of clothes){
+ for(const key of ['barriere','recuperationAction','wolfMedic'])assert.ok(Number.isInteger(o.stats[key]),o.nom+' '+key);
+ assert.ok(!o.reglesManuelles?.some(x=>/^Recover /.test(x)),o.nom+' ancienne récupération');
+}
+const fx=fs.readFileSync('src/fiche/fiche/effets.js','utf8');
+let recovery=0,energized=0;
+const c={state:{desUtilises:{}},desAction:()=>4,effetBonus:k=>k==='recuperationAction'?recovery:k==='finTour'?energized:0};vm.createContext(c);
+vm.runInContext(fx.slice(fx.indexOf('  function recuperationActionFinTour('),fx.indexOf('  function appliqueEffet(')),c);
+for(const [points,expected] of [[9,0],[10,1],[19,1],[20,2],[-9,0],[-10,-1],[-19,-1],[-20,-2]]){recovery=points;assert.equal(c.recuperationActionFinTour(),expected);}
+recovery=20;c.state.desUtilises={0:true,2:true,3:true};c.effetFinTour();assert.deepEqual(c.state.desUtilises,{3:true});
+recovery=-20;c.state.desUtilises={0:true,1:true,2:true};c.effetFinTour();assert.equal(Object.keys(c.state.desUtilises).length,4);
+c.effetFinTour();assert.equal(Object.keys(c.state.desUtilises).length,4,'aucun dé disponible : aucune dette');
+recovery=9;energized=1;c.effetFinTour();assert.equal(Object.keys(c.state.desUtilises).length,3,'Énergisé reste cumulable');
+const temps=JSON.parse(require('node:child_process').execFileSync('python3',['-c',"import json;from pathlib import Path;from hooks.owd_creation import _temps;print(json.dumps(_temps(Path('docs/content/regles/base/capacites-physiques.md').read_text())))"]));
+let wolf=7;
+const w={state:{modData:{},effort:'sommeil'},D:()=>({temps}),effetBonus:k=>k==='wolfMedic'?wolf:0,num:(n,d=0)=>n==null?d:Number(n),clamp:(n,a,b)=>Math.max(a,Math.min(b,n)),effSpecifiques:()=>({pv:-10})};vm.createContext(w);
+vm.runInContext(fs.readFileSync('src/fiche/socle/100-calculs-climat.js','utf8'),w);
+let r=w.recupsListe().find(r=>r.id==='pv:wolf-medic');assert.equal(r.categorie,'speciale');assert.equal(w.recupEtat(r).niveau,7);
+w.ecritRecupNiveau(r,20);assert.equal(w.recupEtat(r).niveau,7,'niveau dérivé du port');
+assert.ok(w.recupEtat(r).actif,'actif aussi pendant le sommeil');
+wolf=0;assert.ok(!w.recupsListe().some(r=>r.id==='pv:wolf-medic'));
+const d={state:{inv:{objets:[]}},snum:n=>Number(n)||0,equipementsPortes:()=>[],effetBonus:k=>k==='barriere'?3:0,effetAlerte:()=>0};vm.createContext(d);
+vm.runInContext(fs.readFileSync('src/fiche/fiche/defense.js','utf8'),d);
+for(const type of ['feu','froid','eclair','decomposition','ethere'])assert.equal(d.defenseTotaux(type,null,false).protection,3);
+for(const type of ['physique','brut'])assert.equal(d.defenseTotaux(type,null,false).protection,0);
+console.log('OK 430 vêtements et images, robes, objets uniques, effets, seuils DA, bornes, Wolf Medic spécial et Barrière.');

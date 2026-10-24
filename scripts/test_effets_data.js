@@ -10,7 +10,7 @@ assert.equal(defs.get('Récupération Potion PV V').duree,60);
 assert.equal(defs.get('Récupération Potion PV V').ops.regen.cadence,3);
 assert.equal(defs.get('Récupération Eau ordinaire PE').duree,600);
 const robe=data.equipements.find(o=>o.nom==='Arcane Robe');
-assert.equal(robe.res_physique,10);assert.equal(robe.stats.couts.pm,-16);assert.equal(robe.stats.degats.froid,7);
+assert.equal(robe.res_physique,13);assert.equal(robe.stats.couts.pm,-21);assert.equal(robe.stats.degats.froid,11);
 const dagger=data.equipements.find(o=>o.nom==='Astral Dagger');
 assert.equal(dagger.arme.repartition.physique,80);assert.equal(dagger.arme.repartition.eclair,20);
 for(const o of data.equipements.filter(o=>o.arme))assert.ok(Math.abs(Object.values(o.arme.repartition).reduce((a,b)=>a+b,0)-100)<1e-8,o.nom);

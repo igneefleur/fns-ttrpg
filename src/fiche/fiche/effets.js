@@ -75,9 +75,15 @@
       e.niveau--; return e.niveau > 0;
     });
   }
+  function recuperationActionFinTour() {
+    return Math.trunc(effetBonus("recuperationAction") / 10) + (effetBonus("finTour") > 0 ? 1 : 0);
+  }
   function effetFinTour() {
-    if (!(effetBonus("finTour") > 0)) return;
-    for (var i=0;i<desAction();i++) if (state.desUtilises[i]) { delete state.desUtilises[i]; break; }
+    var n = recuperationActionFinTour();
+    for (var i=0;i<desAction() && n;i++) {
+      if (n > 0 && state.desUtilises[i]) { delete state.desUtilises[i]; n--; }
+      else if (n < 0 && !state.desUtilises[i]) { state.desUtilises[i] = true; n++; }
+    }
   }
   function appliqueEffet(id, source, cible, duree, categorie) {
     var d=effetDefinition(id); if (!d) return false;

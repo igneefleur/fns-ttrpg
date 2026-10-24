@@ -286,7 +286,7 @@
 
   function recupRangeeModule(r, odd) {
     var row = el("div", "pc-rec-row" + (odd ? " odd" : ""));
-    var edit = isEdit("recuperation") && !r.effetActif;
+    var edit = isEdit("recuperation") && !r.effetActif && !r.equipement;
     var e, cb = null, nivJeu = null, tempsJeu = null, typeJeu = null;
     row.appendChild(recupNomCelluleModule(r));
 

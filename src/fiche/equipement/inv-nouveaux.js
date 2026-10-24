@@ -135,14 +135,15 @@
     combatTypes().forEach(function(k){out.push(["degats:"+k,"Dégâts "+combatLibType(k)+" (%)"]);});
     out.push(["couts:pv","Coût PV (%)"],["couts:pm","Coût PM (%)"],["couts:pe","Coût PE (%)"],
       ["vitesse","Vitesse"],["innocence","Résistance corruption (%)"],
-      ["alterations","Résistance altérations (%)"]);
+      ["alterations","Résistance altérations (%)"],["barriere","Barrière"],
+      ["recuperationAction","Récupération d’Action"],["wolfMedic","Wolf Medic Regeneration (niveau)"],["impact","Bonus d’impact (%)"]);
     return out;
   }
   function invValeurEquipement(it,cle) {
     if (!cle) return 0;
     if (cle.indexOf("degats:")===0) return snum(it.stats&&it.stats.degats&&it.stats.degats[cle.slice(7)]);
     if (cle.indexOf("couts:")===0) return snum(it.stats&&it.stats.couts&&it.stats.couts[cle.slice(6)]);
-    if (["vitesse","innocence","alterations"].indexOf(cle)>=0) return snum(it.stats&&it.stats[cle]);
+    if (["vitesse","innocence","alterations","barriere","recuperationAction","wolfMedic","impact"].indexOf(cle)>=0) return snum(it.stats&&it.stats[cle]);
     return snum(it[cle]);
   }
   function invPoseValeurEquipement(it,cle,val) {
@@ -152,7 +153,7 @@
       var nom=cle.split(":")[0], k=cle.split(":")[1];
       if(!it.stats[nom] || typeof it.stats[nom]!=="object") it.stats[nom]={};
       it.stats[nom][k]=val;
-    } else if (["vitesse","innocence","alterations"].indexOf(cle)>=0) {
+    } else if (["vitesse","innocence","alterations","barriere","recuperationAction","wolfMedic","impact"].indexOf(cle)>=0) {
       if(!it.stats || typeof it.stats!=="object")it.stats={};
       it.stats[cle]=val;
     } else it[cle]=val;

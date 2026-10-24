@@ -96,6 +96,7 @@ jobs:
           node scripts/test_defenses.js
           node scripts/test_effets_data.js
           node scripts/test_boutique_passifs.js
+          node scripts/test_vetements.js
           python scripts/test_boutique_reference.py
 
       - name: Build

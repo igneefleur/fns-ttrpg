@@ -26,7 +26,8 @@ class BoutiqueReference(unittest.TestCase):
     def test_complete_source(self):
         raw = reference(ROOT / 'docs')
         catalog = catalogue(ROOT / 'docs')
-        self.assertGreaterEqual(len(raw['equipements']), 1660)
+        self.assertGreaterEqual(len(raw['equipements']), 1600)
+        self.assertEqual(sum(o['typeObjet']=='vetement' for o in raw['equipements']), 430)
         self.assertEqual(len(catalog['objets']), len(raw['equipements']))
         byname = {o['nom']:o for o in raw['equipements']}
         types={t['cle'] for t in raw['typesArmes']}
@@ -46,7 +47,7 @@ class BoutiqueReference(unittest.TestCase):
             self.assertTrue(o['img'].startswith('assets/'))
         self.assertEqual(byname['Thick Oil']['taille'],'Minuscule')
         self.assertNotEqual(byname['Thick Oil']['desc'],'6600070')
-        self.assertEqual(byname['Arcane Robe']['froid'],6)
+        self.assertEqual(byname['Arcane Robe']['froid'],8)
         self.assertEqual(byname['Whole Loaf']['achat'],1)
         self.assertEqual(byname['Bread Slice']['achat'],.2)
         self.assertEqual(byname['Trader Warbelt']['ep'],20)

@@ -72,6 +72,7 @@
     ["degats","protections","resistances"].forEach(function(k){Object.keys(stats[k]||{}).forEach(function(t){if(stats[k][t])add(({degats:"Bonus dégâts ",protections:"Protection passive ",resistances:"Résistance passive "})[k]+combatLibType(t),fmtP(stats[k][t])+(k==="protections"?"":" %"));});});
     Object.keys(stats.couts||{}).forEach(function(k){if(stats.couts[k])add("Coût "+k.toUpperCase(),fmtP(stats.couts[k])+" %");});
     [["vitesse","Vitesse"],["innocence","Résistance corruption"],["alterations","Résistance altérations"]].forEach(function(x){if(stats[x[0]])add(x[1],fmtP(stats[x[0]])+(x[0]==="vitesse"?"":" %"));});
+    [["barriere","Barrière"],["recuperationAction","Récupération d’Action"],["wolfMedic","Wolf Medic Regeneration (niveau)"],["impact","Bonus d’impact (%)"]].forEach(function(x){if(stats[x[0]])add(x[1],fmtP(stats[x[0]]));});
     if(it.sac||it.ceint){add("Accroches",it.ep);add("Taille maximale aux accroches",it.tailleAccroche);}
     if(it.sac||it.contenant)add("Capacité (L)",it.cap);
     (it.reglesManuelles||[]).forEach(function(rule){add("Propriété — gestion manuelle",rule);});

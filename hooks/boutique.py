@@ -134,7 +134,7 @@ def champs(o, effects):
     for typ, val in stats.get('protections', {}).items(): add('Protection passive ' + DAMAGE.get(typ, typ), val)
     for typ, val in stats.get('resistances', {}).items(): add('Résistance passive ' + DAMAGE.get(typ, typ) + ' (%)', val)
     for res, val in stats.get('couts', {}).items(): add('Coût ' + res.upper() + ' (%)', val)
-    for key, label in [('vitesse','Vitesse'), ('innocence','Résistance à la corruption (%)'), ('alterations','Résistance aux altérations (%)')]: add(label, stats.get(key))
+    for key, label in [('vitesse','Vitesse'), ('innocence','Résistance à la corruption (%)'), ('alterations','Résistance aux altérations (%)'), ('barriere','Barrière'), ('recuperationAction','Récupération d’Action'), ('wolfMedic','Wolf Medic Regeneration (niveau)'), ('impact','Bonus d’impact (%)')]: add(label, stats.get(key))
     if o['typeObjet'] == 'consommable':
         if o.get('nourri'):
             for k, label in [('places','Contenance'), ('ps','PS'), ('ph','PH')]: add(label, o.get(k, 0), True)
@@ -208,6 +208,14 @@ def on_config(config):
 
 def on_files(files, config):
     data = catalogue(Path(config['docs_dir']))
+    # Un article retiré ne doit plus être publié ni indexé par la recherche.
+    # Ses illustrations restent disponibles pour les objets déjà possédés.
+    active = {item['objet']['page'] for item in data['objets']}
+    for file in list(files):
+        if file.src_uri.startswith('content/regles/equipements/') and file.src_uri.endswith('.md') and file.src_uri not in active:
+            text = Path(file.abs_src_path).read_text(encoding='utf8') if file.abs_src_path else ''
+            if '<!-- Généré depuis docs/data/owd-boutique.json ; modifier la Boutique. -->' in text:
+                files.remove(file)
     def replace(path, content):
         old = files.get_file_from_path(path)
         if old is not None: files.remove(old)

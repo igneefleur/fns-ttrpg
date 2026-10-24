@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.24.0b";
+  var RELEASE = "4.25.0b";
   var SCHEMA = 18;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -2103,6 +2103,8 @@
       if (/^(pv|pe|pm|pr|ps|ph|pi):naturelle$/.test(id) && num(niveaux[id], 0))
         liste.push({id:id, reserve:id.split(":")[0], contexte:"Spéciale — ancien bonus", categorie:"speciale", condition:"toujours", niveau:0});
     });
+    var wolf = Math.max(0, Math.round(effetBonus("wolfMedic")));
+    if (wolf) liste.push({id:"pv:wolf-medic", reserve:"pv", contexte:"Wolf Medic Regeneration", categorie:"speciale", condition:"toujours", niveau:wolf, equipement:true});
     return liste;
   }
   function recupCoffre(cree) {
@@ -2119,13 +2121,14 @@
   }
   function recupNiveauRegle(r) { return Math.round(num(r && r.niveau, 0)); }
   function recupNiveauBase(r) {
+    if (r.equipement) return recupNiveauRegle(r);
     var d = recupCoffre(false), n = d.niveaux && d.niveaux[r.id];
     if (n === undefined && r.ancienId && d.niveaux && d.niveaux[r.ancienId] !== undefined)
       n = recupNiveauRegle(r) + Number(d.niveaux[r.ancienId]) - num(r.ancienNiveau, 0);
     return isFinite(Number(n)) ? Math.round(Number(n)) : recupNiveauRegle(r);
   }
   function ecritRecupNiveau(r, v) {
-    if (!r || !r.id) return;
+    if (!r || !r.id || r.equipement) return;
     var t = tempsDef(), max = 20;
     if (t && Array.isArray(t.regen) && t.regen.length) {
       max = 0; t.regen.forEach(function (x) { max = Math.max(max, num(x.niveau, 0)); });
@@ -4750,7 +4753,7 @@
 
   function recupRangeeModule(r, odd) {
     var row = el("div", "pc-rec-row" + (odd ? " odd" : ""));
-    var edit = isEdit("recuperation") && !r.effetActif;
+    var edit = isEdit("recuperation") && !r.effetActif && !r.equipement;
     var e, cb = null, nivJeu = null, tempsJeu = null, typeJeu = null;
     row.appendChild(recupNomCelluleModule(r));
 
@@ -5046,9 +5049,15 @@
       e.niveau--; return e.niveau > 0;
     });
   }
+  function recuperationActionFinTour() {
+    return Math.trunc(effetBonus("recuperationAction") / 10) + (effetBonus("finTour") > 0 ? 1 : 0);
+  }
   function effetFinTour() {
-    if (!(effetBonus("finTour") > 0)) return;
-    for (var i=0;i<desAction();i++) if (state.desUtilises[i]) { delete state.desUtilises[i]; break; }
+    var n = recuperationActionFinTour();
+    for (var i=0;i<desAction() && n;i++) {
+      if (n > 0 && state.desUtilises[i]) { delete state.desUtilises[i]; n--; }
+      else if (n < 0 && !state.desUtilises[i]) { state.desUtilises[i] = true; n++; }
+    }
   }
   function appliqueEffet(id, source, cible, duree, categorie) {
     var d=effetDefinition(id); if (!d) return false;
@@ -5650,6 +5659,7 @@
       p += state.combatOptions && state.combatOptions.defenses.lente ? Math.floor(active / 2) : active;
     }
     p += combatMod("protections",type) + effetBonus("protections",type);
+    if (["feu","froid","eclair","decomposition","ethere"].indexOf(type)>=0) p += effetBonus("barriere");
     r += combatMod("resistances",type) + effetBonus("resistances",type) - 5*effetAlerte();
     if(effetBonus("immunites",type)>=100)r=Math.max(100,r);
     return {protection:p,reduction:r};
@@ -7057,8 +7067,8 @@
     gestes.appendChild(envoi);
     gestes.appendChild(recup);
     b.appendChild(gestes);
-    var finTour=miniBtn("Fin de tour", "Appliquer Énergisé : récupérer un dé utilisé", function(){effetFinTour();refresh();});b.appendChild(finTour);
-    hooks.push(function(){finTour.style.display=effetBonus("finTour")>0?"":"none";});
+    var finTour=miniBtn("Fin de tour", "Appliquer la récupération d’action", function(){effetFinTour();refresh();});b.appendChild(finTour);
+    hooks.push(function(){finTour.style.display=recuperationActionFinTour()!==0?"":"none";});
 
     bati();
     majBoutons();
@@ -8463,14 +8473,15 @@
     combatTypes().forEach(function(k){out.push(["degats:"+k,"Dégâts "+combatLibType(k)+" (%)"]);});
     out.push(["couts:pv","Coût PV (%)"],["couts:pm","Coût PM (%)"],["couts:pe","Coût PE (%)"],
       ["vitesse","Vitesse"],["innocence","Résistance corruption (%)"],
-      ["alterations","Résistance altérations (%)"]);
+      ["alterations","Résistance altérations (%)"],["barriere","Barrière"],
+      ["recuperationAction","Récupération d’Action"],["wolfMedic","Wolf Medic Regeneration (niveau)"],["impact","Bonus d’impact (%)"]);
     return out;
   }
   function invValeurEquipement(it,cle) {
     if (!cle) return 0;
     if (cle.indexOf("degats:")===0) return snum(it.stats&&it.stats.degats&&it.stats.degats[cle.slice(7)]);
     if (cle.indexOf("couts:")===0) return snum(it.stats&&it.stats.couts&&it.stats.couts[cle.slice(6)]);
-    if (["vitesse","innocence","alterations"].indexOf(cle)>=0) return snum(it.stats&&it.stats[cle]);
+    if (["vitesse","innocence","alterations","barriere","recuperationAction","wolfMedic","impact"].indexOf(cle)>=0) return snum(it.stats&&it.stats[cle]);
     return snum(it[cle]);
   }
   function invPoseValeurEquipement(it,cle,val) {
@@ -8480,7 +8491,7 @@
       var nom=cle.split(":")[0], k=cle.split(":")[1];
       if(!it.stats[nom] || typeof it.stats[nom]!=="object") it.stats[nom]={};
       it.stats[nom][k]=val;
-    } else if (["vitesse","innocence","alterations"].indexOf(cle)>=0) {
+    } else if (["vitesse","innocence","alterations","barriere","recuperationAction","wolfMedic","impact"].indexOf(cle)>=0) {
       if(!it.stats || typeof it.stats!=="object")it.stats={};
       it.stats[cle]=val;
     } else it[cle]=val;
@@ -8685,6 +8696,7 @@
     ["degats","protections","resistances"].forEach(function(k){Object.keys(stats[k]||{}).forEach(function(t){if(stats[k][t])add(({degats:"Bonus dégâts ",protections:"Protection passive ",resistances:"Résistance passive "})[k]+combatLibType(t),fmtP(stats[k][t])+(k==="protections"?"":" %"));});});
     Object.keys(stats.couts||{}).forEach(function(k){if(stats.couts[k])add("Coût "+k.toUpperCase(),fmtP(stats.couts[k])+" %");});
     [["vitesse","Vitesse"],["innocence","Résistance corruption"],["alterations","Résistance altérations"]].forEach(function(x){if(stats[x[0]])add(x[1],fmtP(stats[x[0]])+(x[0]==="vitesse"?"":" %"));});
+    [["barriere","Barrière"],["recuperationAction","Récupération d’Action"],["wolfMedic","Wolf Medic Regeneration (niveau)"],["impact","Bonus d’impact (%)"]].forEach(function(x){if(stats[x[0]])add(x[1],fmtP(stats[x[0]]));});
     if(it.sac||it.ceint){add("Accroches",it.ep);add("Taille maximale aux accroches",it.tailleAccroche);}
     if(it.sac||it.contenant)add("Capacité (L)",it.cap);
     (it.reglesManuelles||[]).forEach(function(rule){add("Propriété — gestion manuelle",rule);});
