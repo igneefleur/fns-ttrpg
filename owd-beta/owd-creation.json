@@ -74071,8 +74071,8 @@
    "vente": 22,
    "desc": "",
    "prot_physique": 0,
-   "froid": 1,
-   "chaud": 2,
+   "froid": 3,
+   "chaud": 5,
    "stats": {
     "degats": {
      "physique": 0,
@@ -74116,7 +74116,7 @@
    "catalogueId": "tableur:tete-adventurer-s-helm",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -74138,7 +74138,7 @@
    "vente": 18,
    "desc": "",
    "prot_physique": 0,
-   "froid": 2,
+   "froid": 5,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -74183,7 +74183,7 @@
    "catalogueId": "tableur:tete-ammolite-helm",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -74205,7 +74205,7 @@
    "vente": 30,
    "desc": "",
    "prot_physique": 1,
-   "froid": 5,
+   "froid": 10,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -74250,7 +74250,7 @@
    "catalogueId": "tableur:tete-antique-plate-sallet",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -74272,7 +74272,7 @@
    "vente": 15,
    "desc": "",
    "prot_physique": 0,
-   "froid": 1,
+   "froid": 3,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -74317,7 +74317,7 @@
    "catalogueId": "tableur:tete-arcane-hood",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -74339,8 +74339,8 @@
    "vente": 15,
    "desc": "",
    "prot_physique": 0,
-   "froid": 3,
-   "chaud": 3,
+   "froid": 7,
+   "chaud": 7,
    "stats": {
     "degats": {
      "physique": 0,
@@ -74384,7 +74384,7 @@
    "catalogueId": "tableur:tete-ash-filter-mask",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -74407,7 +74407,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 2,
+   "chaud": 4,
    "stats": {
     "degats": {
      "physique": 0,
@@ -74451,7 +74451,7 @@
    "catalogueId": "tableur:tete-barrier-helm",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -74473,7 +74473,7 @@
    "vente": 37,
    "desc": "",
    "prot_physique": 0,
-   "froid": 6,
+   "froid": 12,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -74518,7 +74518,7 @@
    "catalogueId": "tableur:tete-black-fur-helmet",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -74540,7 +74540,7 @@
    "vente": 42,
    "desc": "",
    "prot_physique": 1,
-   "froid": 2,
+   "froid": 5,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -74585,7 +74585,7 @@
    "catalogueId": "tableur:tete-black-plate-helm",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -74652,7 +74652,7 @@
    "catalogueId": "tableur:tete-blue-sand-helm",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -74674,7 +74674,7 @@
    "vente": 9,
    "desc": "",
    "prot_physique": 0,
-   "froid": 1,
+   "froid": 3,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -74719,7 +74719,7 @@
    "catalogueId": "tableur:tete-brigand-s-hat",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -74786,7 +74786,7 @@
    "catalogueId": "tableur:tete-caged-armor-helm",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionSource": "https://outward.fandom.com/wiki/Caged_Armor_Helm",
    "descriptionStatut": "wiki",
    "descriptionEmpreinte": "8ac8c56c838633d997bbb7a1c93608f56faac7146ae8682025a6a4381c6cef38",
@@ -74855,7 +74855,7 @@
    "catalogueId": "tableur:tete-caldera-mail-helm",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionSource": "https://outward.fandom.com/wiki/Caldera_Mail_Helm",
    "descriptionStatut": "wiki",
    "descriptionEmpreinte": "778e27bb53d6c7c1bf508c9085faeb970738b4c9f1a64e04e96de730bb355640",
@@ -74882,7 +74882,7 @@
    "vente": 79,
    "desc": "",
    "prot_physique": 1,
-   "froid": 1,
+   "froid": 3,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -74927,7 +74927,7 @@
    "catalogueId": "tableur:tete-candle-plate-helm",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -74994,7 +74994,7 @@
    "catalogueId": "tableur:tete-chalcedony-helmet",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -75061,7 +75061,7 @@
    "catalogueId": "tableur:tete-copal-helm",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -75083,7 +75083,7 @@
    "vente": 79,
    "desc": "",
    "prot_physique": 1,
-   "froid": 3,
+   "froid": 7,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -75128,7 +75128,7 @@
    "catalogueId": "tableur:tete-crimson-plate-mask",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -75151,7 +75151,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 3,
+   "chaud": 6,
    "stats": {
     "degats": {
      "physique": 0,
@@ -75195,7 +75195,7 @@
    "catalogueId": "tableur:tete-dancer-mask",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -75218,7 +75218,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 5,
+   "chaud": 10,
    "stats": {
     "degats": {
      "physique": 0,
@@ -75262,7 +75262,7 @@
    "catalogueId": "tableur:tete-desert-veil",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -75285,7 +75285,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 4,
+   "chaud": 8,
    "stats": {
     "degats": {
      "physique": 0,
@@ -75329,7 +75329,7 @@
    "catalogueId": "tableur:tete-elite-desert-veil",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -75352,7 +75352,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 4,
+   "chaud": 8,
    "stats": {
     "degats": {
      "physique": 0,
@@ -75396,7 +75396,7 @@
    "catalogueId": "tableur:tete-elite-hood",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -75463,7 +75463,7 @@
    "catalogueId": "tableur:tete-elite-plate-helm",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -75486,7 +75486,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 3,
+   "chaud": 7,
    "stats": {
     "degats": {
      "physique": 0,
@@ -75530,7 +75530,7 @@
    "catalogueId": "tableur:tete-entomber-hat",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -75553,7 +75553,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 3,
+   "chaud": 6,
    "stats": {
     "degats": {
      "physique": 0,
@@ -75597,7 +75597,7 @@
    "catalogueId": "tableur:tete-purple-festive-hat",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -75620,7 +75620,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 3,
+   "chaud": 6,
    "stats": {
     "degats": {
      "physique": 0,
@@ -75664,7 +75664,7 @@
    "catalogueId": "tableur:tete-red-festive-hat",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -75686,7 +75686,7 @@
    "vente": 15,
    "desc": "",
    "prot_physique": 0,
-   "froid": 5,
+   "froid": 10,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -75731,7 +75731,7 @@
    "catalogueId": "tableur:tete-fur-helm",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -75798,7 +75798,7 @@
    "catalogueId": "tableur:tete-gold-lich-mask",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -75865,7 +75865,7 @@
    "catalogueId": "tableur:tete-green-copal-helmet",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -75932,7 +75932,7 @@
    "catalogueId": "tableur:tete-halfplate-helm",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -75999,7 +75999,7 @@
    "catalogueId": "tableur:tete-horror-helm",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -76066,7 +76066,7 @@
    "catalogueId": "tableur:tete-jade-acolyte-cowl",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -76133,7 +76133,7 @@
    "catalogueId": "tableur:tete-jade-lich-mask",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -76155,7 +76155,7 @@
    "vente": 22,
    "desc": "",
    "prot_physique": 0,
-   "froid": 1,
+   "froid": 3,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -76200,7 +76200,7 @@
    "catalogueId": "tableur:tete-kazite-light-helmet",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -76267,7 +76267,7 @@
    "catalogueId": "tableur:tete-kazite-cat-mask",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -76334,7 +76334,7 @@
    "catalogueId": "tableur:tete-kazite-mask",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -76401,7 +76401,7 @@
    "catalogueId": "tableur:tete-kazite-oni-mask",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -76468,7 +76468,7 @@
    "catalogueId": "tableur:tete-kintsugi-helm",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -76535,7 +76535,7 @@
    "catalogueId": "tableur:tete-krypteia-mask",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionSource": "https://outward.fandom.com/wiki/Krypteia_Mask",
    "descriptionStatut": "wiki",
    "descriptionEmpreinte": "94a2e23b012af2d4e3c0ff9059fb6fec4feaeeaf79d049950cd6c0bfc51fe637",
@@ -76563,7 +76563,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 2,
+   "chaud": 4,
    "stats": {
     "degats": {
      "physique": 0,
@@ -76607,7 +76607,7 @@
    "catalogueId": "tableur:tete-light-clothes-hood",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -76629,7 +76629,7 @@
    "vente": 1,
    "desc": "",
    "prot_physique": 0,
-   "froid": 2,
+   "froid": 5,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -76674,7 +76674,7 @@
    "catalogueId": "tableur:tete-looter-mask",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -76696,7 +76696,7 @@
    "vente": 1,
    "desc": "",
    "prot_physique": 0,
-   "froid": 2,
+   "froid": 5,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -76741,7 +76741,7 @@
    "catalogueId": "tableur:tete-makeshift-leather-hat",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -76764,7 +76764,7 @@
    "desc": "An ethereal Barrier Helm passed down by your ancestors.",
    "prot_physique": 1,
    "froid": 0,
-   "chaud": 2,
+   "chaud": 4,
    "stats": {
     "degats": {
      "physique": 0,
@@ -76808,7 +76808,7 @@
    "catalogueId": "tableur:tete-manawall-helm",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionSource": "https://outward.fandom.com/wiki/Manawall_Helm",
    "descriptionStatut": "wiki",
    "descriptionEmpreinte": "9f11191d88c04f03f0cd884da083a547b63aa60f6217f3aff05e36e091087d91",
@@ -76833,7 +76833,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 4,
+   "chaud": 8,
    "stats": {
     "degats": {
      "physique": 0,
@@ -76877,7 +76877,7 @@
    "catalogueId": "tableur:tete-master-desert-veil",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -76944,7 +76944,7 @@
    "catalogueId": "tableur:tete-master-kazite-cat-mask",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -77011,7 +77011,7 @@
    "catalogueId": "tableur:tete-master-kazite-mask",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -77078,7 +77078,7 @@
    "catalogueId": "tableur:tete-master-kazite-oni-mask",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -77100,8 +77100,8 @@
    "vente": 36,
    "desc": "",
    "prot_physique": 0,
-   "froid": 2,
-   "chaud": 2,
+   "froid": 5,
+   "chaud": 5,
    "stats": {
     "degats": {
      "physique": 0,
@@ -77145,7 +77145,7 @@
    "catalogueId": "tableur:tete-master-trader-hat",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -77168,7 +77168,7 @@
    "desc": "Worker's clothes, reinforced for battle. Completely resists Confusion.",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 2,
+   "chaud": 5,
    "stats": {
     "degats": {
      "physique": 0,
@@ -77212,7 +77212,7 @@
    "catalogueId": "tableur:tete-militia-helm",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionSource": "https://outward.fandom.com/wiki/Militia_Helm",
    "descriptionStatut": "wiki",
    "descriptionEmpreinte": "28131f20d874ec5fedb6b58ced238ff7814b4274779158dff00f376acb272ebf",
@@ -77240,7 +77240,7 @@
    "desc": "Fully Prevents Confusion.",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 2,
+   "chaud": 5,
    "stats": {
     "degats": {
      "physique": 0,
@@ -77284,7 +77284,7 @@
    "catalogueId": "tableur:tete-miner-helmet",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionSource": "https://outward.fandom.com/wiki/Miner_Helmet",
    "descriptionStatut": "wiki",
    "descriptionEmpreinte": "ca6efed754bd4a39fb47a96ee244d644f7e25c380017c38ddb4e84015b6c1662",
@@ -77312,7 +77312,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 2,
+   "chaud": 4,
    "stats": {
     "degats": {
      "physique": 0,
@@ -77356,7 +77356,7 @@
    "catalogueId": "tableur:tete-noble-mask",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -77379,7 +77379,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 3,
+   "chaud": 7,
    "stats": {
     "degats": {
      "physique": 0,
@@ -77423,7 +77423,7 @@
    "catalogueId": "tableur:tete-bright-nobleman-hat",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -77446,7 +77446,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 3,
+   "chaud": 7,
    "stats": {
     "degats": {
      "physique": 0,
@@ -77490,7 +77490,7 @@
    "catalogueId": "tableur:tete-dark-nobleman-hat",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -77557,7 +77557,7 @@
    "catalogueId": "tableur:tete-novice-hat",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -77579,7 +77579,7 @@
    "vente": 52,
    "desc": "",
    "prot_physique": 1,
-   "froid": 5,
+   "froid": 10,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -77624,7 +77624,7 @@
    "catalogueId": "tableur:tete-orichalcum-helmet",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -77646,7 +77646,7 @@
    "vente": 4,
    "desc": "",
    "prot_physique": 0,
-   "froid": 2,
+   "froid": 5,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -77691,7 +77691,7 @@
    "catalogueId": "tableur:tete-padded-helm",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -77758,7 +77758,7 @@
    "catalogueId": "tableur:tete-palladium-helm",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -77780,8 +77780,8 @@
    "vente": 37,
    "desc": "",
    "prot_physique": 0,
-   "froid": 3,
-   "chaud": 3,
+   "froid": 6,
+   "chaud": 6,
    "stats": {
     "degats": {
      "physique": 0,
@@ -77825,7 +77825,7 @@
    "catalogueId": "tableur:tete-pathfinder-mask",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -77848,7 +77848,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 2,
+   "chaud": 5,
    "stats": {
     "degats": {
      "physique": 0,
@@ -77892,7 +77892,7 @@
    "catalogueId": "tableur:tete-petrified-wood-helm",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -77914,8 +77914,8 @@
    "vente": 78,
    "desc": "",
    "prot_physique": 1,
-   "froid": 4,
-   "chaud": 4,
+   "froid": 8,
+   "chaud": 8,
    "stats": {
     "degats": {
      "physique": 0,
@@ -77959,7 +77959,7 @@
    "catalogueId": "tableur:tete-pilgrim-helmet",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -78026,7 +78026,7 @@
    "catalogueId": "tableur:tete-plate-helm",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -78049,7 +78049,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 3,
+   "chaud": 7,
    "stats": {
     "degats": {
      "physique": 0,
@@ -78093,7 +78093,7 @@
    "catalogueId": "tableur:tete-bright-rich-hat",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -78116,7 +78116,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 3,
+   "chaud": 7,
    "stats": {
     "degats": {
      "physique": 0,
@@ -78160,7 +78160,7 @@
    "catalogueId": "tableur:tete-dark-rich-hat",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -78227,7 +78227,7 @@
    "catalogueId": "tableur:tete-runic-helm",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -78294,7 +78294,7 @@
    "catalogueId": "tableur:tete-rust-lich-helmet",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -78361,7 +78361,7 @@
    "catalogueId": "tableur:tete-scaled-leather-hat",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -78428,7 +78428,7 @@
    "catalogueId": "tableur:tete-scarlet-mask",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -78450,7 +78450,7 @@
    "vente": 4,
    "desc": "",
    "prot_physique": 0,
-   "froid": 1,
+   "froid": 3,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -78495,7 +78495,7 @@
    "catalogueId": "tableur:tete-scavenger-hood",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -78517,7 +78517,7 @@
    "vente": 4,
    "desc": "",
    "prot_physique": 0,
-   "froid": 1,
+   "froid": 3,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -78562,7 +78562,7 @@
    "catalogueId": "tableur:tete-scavenger-mask",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -78584,7 +78584,7 @@
    "vente": 10,
    "desc": "",
    "prot_physique": 0,
-   "froid": 1,
+   "froid": 3,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -78629,7 +78629,7 @@
    "catalogueId": "tableur:tete-scavenger-scarf",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -78652,7 +78652,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 1,
+   "chaud": 3,
    "stats": {
     "degats": {
      "physique": 0,
@@ -78696,7 +78696,7 @@
    "catalogueId": "tableur:tete-scholar-circlet",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -78763,7 +78763,7 @@
    "catalogueId": "tableur:tete-shadow-kazite-light-helmet",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionSource": "https://outward.fandom.com/wiki/Shadow_Kazite_Light_Helmet",
    "descriptionStatut": "wiki",
    "descriptionEmpreinte": "114807fbbcae6f094bbc71e512dcd39f584226fec944cd81252b17768faa1c4a",
@@ -78833,7 +78833,7 @@
    "catalogueId": "tableur:tete-shock-helmet",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -78900,7 +78900,7 @@
    "catalogueId": "tableur:tete-silver-helm",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -78922,8 +78922,8 @@
    "vente": 37,
    "desc": "",
    "prot_physique": 0,
-   "froid": 2,
-   "chaud": 2,
+   "froid": 4,
+   "chaud": 4,
    "stats": {
     "degats": {
      "physique": 3,
@@ -78967,7 +78967,7 @@
    "catalogueId": "tableur:tete-slayer-s-helmet",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -79034,7 +79034,7 @@
    "catalogueId": "tableur:tete-squire-headband",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -79056,8 +79056,8 @@
    "vente": 1,
    "desc": "",
    "prot_physique": 0,
-   "froid": 0,
-   "chaud": 0,
+   "froid": 1,
+   "chaud": 1,
    "stats": {
     "degats": {
      "physique": 0,
@@ -79101,7 +79101,7 @@
    "catalogueId": "tableur:tete-tattered-hood",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -79123,7 +79123,7 @@
    "vente": 37,
    "desc": "",
    "prot_physique": 0,
-   "froid": 2,
+   "froid": 5,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -79168,7 +79168,7 @@
    "catalogueId": "tableur:tete-tenebrous-helm",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -79191,7 +79191,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 2,
+   "chaud": 5,
    "stats": {
     "degats": {
      "physique": 0,
@@ -79235,7 +79235,7 @@
    "catalogueId": "tableur:tete-straw-hat",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -79258,7 +79258,7 @@
    "desc": "",
    "prot_physique": 2,
    "froid": 0,
-   "chaud": 2,
+   "chaud": 5,
    "stats": {
     "degats": {
      "physique": 0,
@@ -79302,7 +79302,7 @@
    "catalogueId": "tableur:tete-tsar-helm",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -79325,7 +79325,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 2,
+   "chaud": 5,
    "stats": {
     "degats": {
      "physique": 0,
@@ -79369,7 +79369,7 @@
    "catalogueId": "tableur:tete-vigilante-helm",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête",
    "reglesManuelles": [
@@ -79439,7 +79439,7 @@
    "catalogueId": "tableur:tete-virgin-helmet",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -79461,7 +79461,7 @@
    "vente": 30,
    "desc": "",
    "prot_physique": 0,
-   "froid": 1,
+   "froid": 3,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -79506,7 +79506,7 @@
    "catalogueId": "tableur:tete-white-arcane-hood",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -79573,7 +79573,7 @@
    "catalogueId": "tableur:tete-white-kintsugi-helmet",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -79640,7 +79640,7 @@
    "catalogueId": "tableur:tete-white-priest-hood",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -79707,7 +79707,7 @@
    "catalogueId": "tableur:tete-white-priest-mitre",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -79774,7 +79774,7 @@
    "catalogueId": "tableur:tete-wolf-mage-helmet",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -79796,7 +79796,7 @@
    "vente": 45,
    "desc": "",
    "prot_physique": 0,
-   "froid": 2,
+   "froid": 5,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -79841,7 +79841,7 @@
    "catalogueId": "tableur:tete-wolf-medic-helmet",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -79908,7 +79908,7 @@
    "catalogueId": "tableur:tete-wolf-plate-full-helm",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -79930,7 +79930,7 @@
    "vente": 58,
    "desc": "",
    "prot_physique": 1,
-   "froid": 1,
+   "froid": 3,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -79975,7 +79975,7 @@
    "catalogueId": "tableur:tete-wolf-plate-helm",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -79997,8 +79997,8 @@
    "vente": 1,
    "desc": "",
    "prot_physique": 0,
-   "froid": 1,
-   "chaud": 0,
+   "froid": 3,
+   "chaud": 1,
    "stats": {
     "degats": {
      "physique": 0,
@@ -80042,7 +80042,7 @@
    "catalogueId": "tableur:tete-dark-worker-hood",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -80064,8 +80064,8 @@
    "vente": 1,
    "desc": "",
    "prot_physique": 0,
-   "froid": 1,
-   "chaud": 0,
+   "froid": 3,
+   "chaud": 1,
    "stats": {
     "degats": {
      "physique": 0,
@@ -80109,7 +80109,7 @@
    "catalogueId": "tableur:tete-pale-worker-s-hood",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -80131,8 +80131,8 @@
    "vente": 1,
    "desc": "",
    "prot_physique": 0,
-   "froid": 1,
-   "chaud": 0,
+   "froid": 3,
+   "chaud": 1,
    "stats": {
     "degats": {
      "physique": 0,
@@ -80176,7 +80176,7 @@
    "catalogueId": "tableur:tete-patterned-worker-hood",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -80243,7 +80243,7 @@
    "catalogueId": "tableur:tete-black-pearlbird-mask",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -80310,7 +80310,7 @@
    "catalogueId": "tableur:tete-cauldron-helm",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -80377,7 +80377,7 @@
    "catalogueId": "tableur:tete-coralhorn-mask",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -80444,7 +80444,7 @@
    "catalogueId": "tableur:tete-hound-mask",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionSource": "https://outward.fandom.com/wiki/Hound_Mask",
    "descriptionStatut": "wiki",
    "descriptionEmpreinte": "a2c2dc024ce3a0f1941dccc27176f56d90a5bd6ef11bc11e3477fb02604d124d",
@@ -80513,7 +80513,7 @@
    "catalogueId": "tableur:tete-jewel-bird-mask",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -80580,7 +80580,7 @@
    "catalogueId": "tableur:tete-pearlbird-mask",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionSource": "https://outward.fandom.com/wiki/Pearlbird_Mask",
    "descriptionStatut": "wiki",
    "descriptionEmpreinte": "bacbfc3ea31608e7140110cb70e3f3c2d78fbe0cc2dd00c4d9559f5a906ef818",
@@ -80605,7 +80605,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 6,
+   "chaud": 10,
    "stats": {
     "degats": {
      "physique": 0,
@@ -80649,7 +80649,7 @@
    "catalogueId": "tableur:tete-red-wide-hat",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -80716,7 +80716,7 @@
    "catalogueId": "tableur:tete-scarab-mask",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionSource": "https://outward.fandom.com/wiki/Scarab_Mask",
    "descriptionStatut": "wiki",
    "descriptionEmpreinte": "66a5f400f6fed9cd8d997b711dc3459f68079be47ab14c91b71626054ed072f5",
@@ -80785,7 +80785,7 @@
    "catalogueId": "tableur:tete-tuanosaur-mask",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionSource": "https://outward.fandom.com/wiki/Tuanosaur_Mask",
    "descriptionStatut": "wiki",
    "descriptionEmpreinte": "72c715e96f91c038af4a42171ef0a0969d936bb6c524948cb2d5291e6b60d48f",
@@ -80810,7 +80810,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 6,
+   "chaud": 10,
    "stats": {
     "degats": {
      "physique": 0,
@@ -80854,7 +80854,7 @@
    "catalogueId": "tableur:tete-white-wide-hat",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -80877,7 +80877,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 6,
+   "chaud": 10,
    "stats": {
     "degats": {
      "physique": 0,
@@ -80921,7 +80921,7 @@
    "catalogueId": "tableur:tete-wide-black-hat",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -80944,7 +80944,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 6,
+   "chaud": 10,
    "stats": {
     "degats": {
      "physique": 0,
@@ -80988,7 +80988,7 @@
    "catalogueId": "tableur:tete-wide-blue-hat",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Tête"
   },
@@ -81010,8 +81010,8 @@
    "vente": 57,
    "desc": "",
    "prot_physique": 1,
-   "froid": 4,
-   "chaud": 7,
+   "froid": 3,
+   "chaud": 5,
    "stats": {
     "degats": {
      "physique": 0,
@@ -81055,7 +81055,7 @@
    "catalogueId": "tableur:haut-adventurer-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -81077,7 +81077,7 @@
    "vente": 46,
    "desc": "",
    "prot_physique": 1,
-   "froid": 7,
+   "froid": 5,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -81122,7 +81122,7 @@
    "catalogueId": "tableur:haut-ammolite-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -81144,7 +81144,7 @@
    "vente": 69,
    "desc": "",
    "prot_physique": 3,
-   "froid": 11,
+   "froid": 8,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -81189,7 +81189,7 @@
    "catalogueId": "tableur:haut-antique-plate-garb",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -81211,8 +81211,8 @@
    "vente": 45,
    "desc": "",
    "prot_physique": 0,
-   "froid": 9,
-   "chaud": 9,
+   "froid": 7,
+   "chaud": 7,
    "stats": {
     "degats": {
      "physique": 0,
@@ -81256,7 +81256,7 @@
    "catalogueId": "tableur:haut-ash-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -81279,7 +81279,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 4,
+   "chaud": 3,
    "stats": {
     "degats": {
      "physique": 0,
@@ -81323,7 +81323,7 @@
    "catalogueId": "tableur:haut-barrier-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -81345,7 +81345,7 @@
    "vente": 87,
    "desc": "",
    "prot_physique": 0,
-   "froid": 15,
+   "froid": 12,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -81390,7 +81390,7 @@
    "catalogueId": "tableur:haut-black-fur-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -81412,7 +81412,7 @@
    "vente": 115,
    "desc": "",
    "prot_physique": 2,
-   "froid": 7,
+   "froid": 5,
    "chaud": -8,
    "stats": {
     "degats": {
@@ -81457,7 +81457,7 @@
    "catalogueId": "tableur:haut-black-plate-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -81524,7 +81524,7 @@
    "catalogueId": "tableur:haut-blue-sand-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -81546,7 +81546,7 @@
    "vente": 24,
    "desc": "",
    "prot_physique": 0,
-   "froid": 4,
+   "froid": 3,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -81591,7 +81591,7 @@
    "catalogueId": "tableur:haut-brigand-coat",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -81658,7 +81658,7 @@
    "catalogueId": "tableur:haut-caged-armor-chestplate",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionSource": "https://outward.fandom.com/wiki/Caged_Armor_Chestplate",
    "descriptionStatut": "wiki",
    "descriptionEmpreinte": "8ac8c56c838633d997bbb7a1c93608f56faac7146ae8682025a6a4381c6cef38",
@@ -81727,7 +81727,7 @@
    "catalogueId": "tableur:haut-caldera-mail-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionSource": "https://outward.wiki.gg/wiki/Caldera_Mail_Armor",
    "descriptionStatut": "wiki",
    "descriptionEmpreinte": "58f39ba1cb3b3dda6dcbafb85fd3289c34060bef561a3231f5b9088e084c757c",
@@ -81754,7 +81754,7 @@
    "vente": 214,
    "desc": "",
    "prot_physique": 2,
-   "froid": 4,
+   "froid": 3,
    "chaud": -6,
    "stats": {
     "degats": {
@@ -81799,7 +81799,7 @@
    "catalogueId": "tableur:haut-candle-plate-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -81866,7 +81866,7 @@
    "catalogueId": "tableur:haut-chalcedony-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -81933,7 +81933,7 @@
    "catalogueId": "tableur:haut-copal-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -81955,7 +81955,7 @@
    "vente": 214,
    "desc": "",
    "prot_physique": 2,
-   "froid": 9,
+   "froid": 7,
    "chaud": -8,
    "stats": {
     "degats": {
@@ -82000,7 +82000,7 @@
    "catalogueId": "tableur:haut-crimson-plate-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -82023,7 +82023,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 9,
+   "chaud": 7,
    "stats": {
     "degats": {
      "physique": 0,
@@ -82067,7 +82067,7 @@
    "catalogueId": "tableur:haut-black-dancer-clothes",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -82090,7 +82090,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 9,
+   "chaud": 7,
    "stats": {
     "degats": {
      "physique": 0,
@@ -82134,7 +82134,7 @@
    "catalogueId": "tableur:haut-crimson-dancer-clothes",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -82157,7 +82157,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 9,
+   "chaud": 7,
    "stats": {
     "degats": {
      "physique": 0,
@@ -82201,7 +82201,7 @@
    "catalogueId": "tableur:haut-purple-dancer-clothes",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -82224,7 +82224,7 @@
    "desc": "",
    "prot_physique": 2,
    "froid": 0,
-   "chaud": -3,
+   "chaud": -5,
    "stats": {
     "degats": {
      "physique": 0,
@@ -82268,7 +82268,7 @@
    "catalogueId": "tableur:haut-elite-plate-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -82291,7 +82291,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 10,
+   "chaud": 8,
    "stats": {
     "degats": {
      "physique": 0,
@@ -82335,7 +82335,7 @@
    "catalogueId": "tableur:haut-entomber-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -82358,7 +82358,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 7,
+   "chaud": 5,
    "stats": {
     "degats": {
      "physique": 0,
@@ -82402,7 +82402,7 @@
    "catalogueId": "tableur:haut-purple-festive-attire",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -82425,7 +82425,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 7,
+   "chaud": 5,
    "stats": {
     "degats": {
      "physique": 0,
@@ -82469,7 +82469,7 @@
    "catalogueId": "tableur:haut-red-festive-attire",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -82491,7 +82491,7 @@
    "vente": 45,
    "desc": "",
    "prot_physique": 0,
-   "froid": 13,
+   "froid": 10,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -82536,7 +82536,7 @@
    "catalogueId": "tableur:haut-fur-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -82603,7 +82603,7 @@
    "catalogueId": "tableur:haut-gold-lich-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -82670,7 +82670,7 @@
    "catalogueId": "tableur:haut-green-copal-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -82737,7 +82737,7 @@
    "catalogueId": "tableur:haut-halfplate-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -82804,7 +82804,7 @@
    "catalogueId": "tableur:haut-horror-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -82826,7 +82826,7 @@
    "vente": 53,
    "desc": "",
    "prot_physique": 0,
-   "froid": 6,
+   "froid": 5,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -82871,7 +82871,7 @@
    "catalogueId": "tableur:haut-kazite-light-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -82893,7 +82893,7 @@
    "vente": 53,
    "desc": "",
    "prot_physique": 0,
-   "froid": 1,
+   "froid": 0,
    "chaud": 5,
    "stats": {
     "degats": {
@@ -82938,7 +82938,7 @@
    "catalogueId": "tableur:haut-light-kazite-shirt",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -83005,7 +83005,7 @@
    "catalogueId": "tableur:haut-kazite-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -83072,7 +83072,7 @@
    "catalogueId": "tableur:haut-kintsugi-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -83139,7 +83139,7 @@
    "catalogueId": "tableur:haut-krypteia-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionSource": "https://outward.fandom.com/wiki/Krypteia_Armor",
    "descriptionStatut": "wiki",
    "descriptionEmpreinte": "e9baa8e9377a07c6e66b578002e72abd9ee01ef42f656c438bcd0eb5f5b38d4c",
@@ -83167,7 +83167,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 9,
+   "chaud": 8,
    "stats": {
     "degats": {
      "physique": 0,
@@ -83211,7 +83211,7 @@
    "catalogueId": "tableur:haut-blue-light-clothes",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -83234,7 +83234,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 9,
+   "chaud": 8,
    "stats": {
     "degats": {
      "physique": 0,
@@ -83278,7 +83278,7 @@
    "catalogueId": "tableur:haut-pale-light-clothes",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -83301,7 +83301,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 9,
+   "chaud": 8,
    "stats": {
     "degats": {
      "physique": 0,
@@ -83345,7 +83345,7 @@
    "catalogueId": "tableur:haut-red-light-clothes",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -83367,7 +83367,7 @@
    "vente": 4,
    "desc": "",
    "prot_physique": 0,
-   "froid": 7,
+   "froid": 5,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -83412,7 +83412,7 @@
    "catalogueId": "tableur:haut-looter-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -83434,7 +83434,7 @@
    "vente": 5,
    "desc": "Like other survival attires, this improvised coat has additional pockets.",
    "prot_physique": 0,
-   "froid": 7,
+   "froid": 5,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -83479,7 +83479,7 @@
    "catalogueId": "tableur:haut-makeshift-leather-attire",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionSource": "https://outward.fandom.com/wiki/Makeshift_Leather_Attire",
    "descriptionStatut": "wiki",
    "descriptionEmpreinte": "922803bafabef391bbf1e8ddb08f555c8ba921219522630a06088ef5f79d5661",
@@ -83504,7 +83504,7 @@
    "desc": "Ethereal Barrier Armor passed down by your ancestors.",
    "prot_physique": 3,
    "froid": 0,
-   "chaud": 4,
+   "chaud": 3,
    "stats": {
     "degats": {
      "physique": 0,
@@ -83548,7 +83548,7 @@
    "catalogueId": "tableur:haut-manawall-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionSource": "https://outward.fandom.com/wiki/Manawall_Armor",
    "descriptionStatut": "wiki",
    "descriptionEmpreinte": "5e9d4e256a8e7c49cf02e4ceb82c90eeabd07a26e547b9f7bf47c9fa8ea0772b",
@@ -83617,7 +83617,7 @@
    "catalogueId": "tableur:haut-master-kazite-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -83639,8 +83639,8 @@
    "vente": 88,
    "desc": "",
    "prot_physique": 0,
-   "froid": 7,
-   "chaud": 7,
+   "froid": 5,
+   "chaud": 5,
    "stats": {
     "degats": {
      "physique": 0,
@@ -83684,7 +83684,7 @@
    "catalogueId": "tableur:haut-master-trader-garb",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -83707,7 +83707,7 @@
    "desc": "Worker's clothes, reinforced for battle. Completely resists Burning.",
    "prot_physique": 2,
    "froid": 0,
-   "chaud": 7,
+   "chaud": 5,
    "stats": {
     "degats": {
      "physique": 0,
@@ -83751,7 +83751,7 @@
    "catalogueId": "tableur:haut-militia-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionSource": "https://outward.wiki.gg/wiki/Militia_Armor",
    "descriptionStatut": "wiki",
    "descriptionEmpreinte": "1311445381ff4da67e60d2345323d891165635540fe2066ce4c6a350a5daab3a",
@@ -83779,7 +83779,7 @@
    "desc": "Fully Prevents Burning.",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 7,
+   "chaud": 5,
    "stats": {
     "degats": {
      "physique": 0,
@@ -83823,7 +83823,7 @@
    "catalogueId": "tableur:haut-miner-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionSource": "https://outward.fandom.com/wiki/Miner_Armor",
    "descriptionStatut": "wiki",
    "descriptionEmpreinte": "eae1c20e08d762c5684400d281b63718d345745fdc20003683a3f5e44c70ee79",
@@ -83851,7 +83851,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 5,
+   "chaud": 4,
    "stats": {
     "degats": {
      "physique": 0,
@@ -83895,7 +83895,7 @@
    "catalogueId": "tableur:haut-noble-clothes",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -83918,7 +83918,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 9,
+   "chaud": 7,
    "stats": {
     "degats": {
      "physique": 0,
@@ -83962,7 +83962,7 @@
    "catalogueId": "tableur:haut-bright-nobleman-attire",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -83985,7 +83985,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 9,
+   "chaud": 7,
    "stats": {
     "degats": {
      "physique": 0,
@@ -84029,7 +84029,7 @@
    "catalogueId": "tableur:haut-dark-nobleman-attire",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -84051,7 +84051,7 @@
    "vente": 132,
    "desc": "",
    "prot_physique": 2,
-   "froid": 10,
+   "froid": 8,
    "chaud": -8,
    "stats": {
     "degats": {
@@ -84096,7 +84096,7 @@
    "catalogueId": "tableur:haut-orichalcum-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -84118,7 +84118,7 @@
    "vente": 9,
    "desc": "",
    "prot_physique": 0,
-   "froid": 7,
+   "froid": 5,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -84163,7 +84163,7 @@
    "catalogueId": "tableur:haut-padded-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -84230,7 +84230,7 @@
    "catalogueId": "tableur:haut-palladium-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -84252,8 +84252,8 @@
    "vente": 102,
    "desc": "",
    "prot_physique": 2,
-   "froid": 8,
-   "chaud": 8,
+   "froid": 6,
+   "chaud": 6,
    "stats": {
     "degats": {
      "physique": 0,
@@ -84297,7 +84297,7 @@
    "catalogueId": "tableur:haut-pathfinder-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -84320,7 +84320,7 @@
    "desc": "",
    "prot_physique": 2,
    "froid": 0,
-   "chaud": 7,
+   "chaud": 5,
    "stats": {
     "degats": {
      "physique": 0,
@@ -84364,7 +84364,7 @@
    "catalogueId": "tableur:haut-petrified-wood-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -84386,8 +84386,8 @@
    "vente": 197,
    "desc": "",
    "prot_physique": 2,
-   "froid": 7,
-   "chaud": 7,
+   "froid": 5,
+   "chaud": 5,
    "stats": {
     "degats": {
      "physique": 0,
@@ -84431,7 +84431,7 @@
    "catalogueId": "tableur:haut-pilgrim-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -84498,7 +84498,7 @@
    "catalogueId": "tableur:haut-plate-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -84521,7 +84521,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 9,
+   "chaud": 7,
    "stats": {
     "degats": {
      "physique": 0,
@@ -84565,7 +84565,7 @@
    "catalogueId": "tableur:haut-bright-rich-attire",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -84588,7 +84588,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 9,
+   "chaud": 7,
    "stats": {
     "degats": {
      "physique": 0,
@@ -84632,7 +84632,7 @@
    "catalogueId": "tableur:haut-dark-rich-attire",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -84699,7 +84699,7 @@
    "catalogueId": "tableur:haut-runic-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -84766,7 +84766,7 @@
    "catalogueId": "tableur:haut-scaled-leather-attire",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -84788,7 +84788,7 @@
    "vente": 9,
    "desc": "",
    "prot_physique": 0,
-   "froid": 4,
+   "froid": 3,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -84833,7 +84833,7 @@
    "catalogueId": "tableur:haut-scavenger-coat",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -84855,8 +84855,8 @@
    "vente": 18,
    "desc": "",
    "prot_physique": 0,
-   "froid": 4,
-   "chaud": 4,
+   "froid": 3,
+   "chaud": 3,
    "stats": {
     "degats": {
      "physique": 0,
@@ -84900,7 +84900,7 @@
    "catalogueId": "tableur:haut-scholar-attire",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -84967,7 +84967,7 @@
    "catalogueId": "tableur:haut-shadow-kazite-light-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionSource": "https://outward.fandom.com/wiki/Shadow_Kazite_Light_Armor",
    "descriptionStatut": "wiki",
    "descriptionEmpreinte": "4dd757461b5f248e156235da898c38c994d411858aec406a7d0afd192e356ce0",
@@ -85036,7 +85036,7 @@
    "catalogueId": "tableur:haut-shadow-light-kazite-shirt",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionSource": "https://outward.fandom.com/wiki/Shadow_Light_Kazite_Shirt",
    "descriptionStatut": "wiki",
    "descriptionEmpreinte": "8b9a2596ff30818c45f13616517c76487c07fba851bbff82fe3f1551f45075df",
@@ -85106,7 +85106,7 @@
    "catalogueId": "tableur:haut-shock-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -85173,7 +85173,7 @@
    "catalogueId": "tableur:haut-silver-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -85195,8 +85195,8 @@
    "vente": 87,
    "desc": "",
    "prot_physique": 0,
-   "froid": 5,
-   "chaud": 5,
+   "froid": 4,
+   "chaud": 4,
    "stats": {
     "degats": {
      "physique": 8,
@@ -85240,7 +85240,7 @@
    "catalogueId": "tableur:haut-slayer-s-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -85262,8 +85262,8 @@
    "vente": 129,
    "desc": "",
    "prot_physique": 0,
-   "froid": 1,
-   "chaud": 1,
+   "froid": 0,
+   "chaud": 0,
    "stats": {
     "degats": {
      "physique": 0,
@@ -85307,7 +85307,7 @@
    "catalogueId": "tableur:haut-squire-attire",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -85329,8 +85329,8 @@
    "vente": 2,
    "desc": "",
    "prot_physique": 0,
-   "froid": 2,
-   "chaud": 2,
+   "froid": 1,
+   "chaud": 1,
    "stats": {
     "degats": {
      "physique": 0,
@@ -85374,7 +85374,7 @@
    "catalogueId": "tableur:haut-tattered-attire",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -85396,8 +85396,8 @@
    "vente": 7,
    "desc": "",
    "prot_physique": 0,
-   "froid": 4,
-   "chaud": 2,
+   "froid": 3,
+   "chaud": 0,
    "stats": {
     "degats": {
      "physique": 0,
@@ -85441,7 +85441,7 @@
    "catalogueId": "tableur:haut-trader-garb",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -85464,7 +85464,7 @@
    "desc": "",
    "prot_physique": 4,
    "froid": 0,
-   "chaud": 7,
+   "chaud": 5,
    "stats": {
     "degats": {
      "physique": 0,
@@ -85508,7 +85508,7 @@
    "catalogueId": "tableur:haut-tsar-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -85531,7 +85531,7 @@
    "desc": "Bloody Militia Armor passed down by your ancestors.",
    "prot_physique": 2,
    "froid": 0,
-   "chaud": 7,
+   "chaud": 5,
    "stats": {
     "degats": {
      "physique": 0,
@@ -85575,7 +85575,7 @@
    "catalogueId": "tableur:haut-vigilante-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionSource": "https://outward.fandom.com/wiki/Vigilante_Armor",
    "descriptionStatut": "wiki",
    "descriptionEmpreinte": "3f7d3e229359e20fe5aee8997a309838fdec66fa3c0a39777de9bbbdef718718",
@@ -85647,7 +85647,7 @@
    "catalogueId": "tableur:haut-virgin-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionSource": "https://outward.fandom.com/wiki/Virgin_Armor",
    "descriptionStatut": "wiki",
    "descriptionEmpreinte": "bba17c93e97a62fda8a39f9a3a6ee3262ac189d329efcece947c27530c36465f",
@@ -85716,7 +85716,7 @@
    "catalogueId": "tableur:haut-white-kintsugi-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -85738,7 +85738,7 @@
    "vente": 68,
    "desc": "",
    "prot_physique": 1,
-   "froid": 6,
+   "froid": 5,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -85783,7 +85783,7 @@
    "catalogueId": "tableur:haut-wolf-mage-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -85805,7 +85805,7 @@
    "vente": 105,
    "desc": "",
    "prot_physique": 2,
-   "froid": 7,
+   "froid": 5,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -85850,7 +85850,7 @@
    "catalogueId": "tableur:haut-wolf-medic-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -85872,7 +85872,7 @@
    "vente": 146,
    "desc": "",
    "prot_physique": 2,
-   "froid": 4,
+   "froid": 3,
    "chaud": -6,
    "stats": {
     "degats": {
@@ -85917,7 +85917,7 @@
    "catalogueId": "tableur:haut-wolf-plate-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -85939,8 +85939,8 @@
    "vente": 2,
    "desc": "",
    "prot_physique": 0,
-   "froid": 4,
-   "chaud": 1,
+   "froid": 3,
+   "chaud": 0,
    "stats": {
     "degats": {
      "physique": 0,
@@ -85984,7 +85984,7 @@
    "catalogueId": "tableur:haut-dark-worker-attire",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -86006,8 +86006,8 @@
    "vente": 2,
    "desc": "",
    "prot_physique": 0,
-   "froid": 4,
-   "chaud": 1,
+   "froid": 3,
+   "chaud": 0,
    "stats": {
     "degats": {
      "physique": 0,
@@ -86051,7 +86051,7 @@
    "catalogueId": "tableur:haut-green-worker-attire",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -86073,8 +86073,8 @@
    "vente": 2,
    "desc": "",
    "prot_physique": 0,
-   "froid": 4,
-   "chaud": 1,
+   "froid": 3,
+   "chaud": 0,
    "stats": {
     "degats": {
      "physique": 0,
@@ -86118,7 +86118,7 @@
    "catalogueId": "tableur:haut-patterned-worker-attire",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -86185,7 +86185,7 @@
    "catalogueId": "tableur:haut-beige-garb",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -86252,7 +86252,7 @@
    "catalogueId": "tableur:haut-dark-green-garb",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -86319,7 +86319,7 @@
    "catalogueId": "tableur:haut-dark-red-garb",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -86386,7 +86386,7 @@
    "catalogueId": "tableur:haut-gray-garb",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -86453,7 +86453,7 @@
    "catalogueId": "tableur:haut-green-garb",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -86520,7 +86520,7 @@
    "catalogueId": "tableur:haut-pearlescent-mail",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -86587,7 +86587,7 @@
    "catalogueId": "tableur:haut-striped-garb",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Torse"
   },
@@ -86610,7 +86610,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 2,
-   "chaud": 2,
+   "chaud": 3,
    "stats": {
     "degats": {
      "physique": 0,
@@ -86654,7 +86654,7 @@
    "catalogueId": "tableur:mains-adventurer-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -86676,7 +86676,7 @@
    "vente": 19,
    "desc": "",
    "prot_physique": 1,
-   "froid": 2,
+   "froid": 3,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -86721,7 +86721,7 @@
    "catalogueId": "tableur:mains-ammolite-gauntlets",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -86743,7 +86743,7 @@
    "vente": 30,
    "desc": "",
    "prot_physique": 1,
-   "froid": 2,
+   "froid": 3,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -86788,7 +86788,7 @@
    "catalogueId": "tableur:mains-antique-plate-gauntlets",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -86855,7 +86855,7 @@
    "catalogueId": "tableur:mains-arcane-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -86922,7 +86922,7 @@
    "catalogueId": "tableur:mains-ash-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -86989,7 +86989,7 @@
    "catalogueId": "tableur:mains-barrier-gauntlets",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -87056,7 +87056,7 @@
    "catalogueId": "tableur:mains-black-fur-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -87078,7 +87078,7 @@
    "vente": 46,
    "desc": "",
    "prot_physique": 1,
-   "froid": 2,
+   "froid": 3,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -87123,7 +87123,7 @@
    "catalogueId": "tableur:mains-black-plate-gauntlets",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -87190,7 +87190,7 @@
    "catalogueId": "tableur:mains-blue-sand-gauntlets",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -87257,7 +87257,7 @@
    "catalogueId": "tableur:mains-brigand-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -87324,7 +87324,7 @@
    "catalogueId": "tableur:mains-caged-gauntlets",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -87391,7 +87391,7 @@
    "catalogueId": "tableur:mains-caldera-mail-gauntlets",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains",
    "reglesManuelles": [
@@ -87461,7 +87461,7 @@
    "catalogueId": "tableur:mains-candle-plate-gauntlets",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -87528,7 +87528,7 @@
    "catalogueId": "tableur:mains-chalcedony-gauntlets",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -87595,7 +87595,7 @@
    "catalogueId": "tableur:mains-copal-gauntlets",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -87662,7 +87662,7 @@
    "catalogueId": "tableur:mains-crimson-plate-gauntlets",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -87729,7 +87729,7 @@
    "catalogueId": "tableur:mains-dancer-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -87796,7 +87796,7 @@
    "catalogueId": "tableur:mains-desert-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -87819,7 +87819,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 0,
+   "chaud": 1,
    "stats": {
     "degats": {
      "physique": 0,
@@ -87863,7 +87863,7 @@
    "catalogueId": "tableur:mains-elite-desert-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -87930,7 +87930,7 @@
    "catalogueId": "tableur:mains-elite-gauntlets",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -87997,7 +87997,7 @@
    "catalogueId": "tableur:mains-entomber-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -88064,7 +88064,7 @@
    "catalogueId": "tableur:mains-festive-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -88131,7 +88131,7 @@
    "catalogueId": "tableur:mains-fur-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -88198,7 +88198,7 @@
    "catalogueId": "tableur:mains-gold-lich-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -88265,7 +88265,7 @@
    "catalogueId": "tableur:mains-green-copal-gauntlets",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -88332,7 +88332,7 @@
    "catalogueId": "tableur:mains-halfplate-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -88399,7 +88399,7 @@
    "catalogueId": "tableur:mains-horror-gauntlets",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -88466,7 +88466,7 @@
    "catalogueId": "tableur:mains-jade-acolyte-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -88533,7 +88533,7 @@
    "catalogueId": "tableur:mains-jade-lich-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -88600,7 +88600,7 @@
    "catalogueId": "tableur:mains-kazite-light-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -88667,7 +88667,7 @@
    "catalogueId": "tableur:mains-kazite-gauntlets",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -88734,7 +88734,7 @@
    "catalogueId": "tableur:mains-kintsugi-gauntlets",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -88801,7 +88801,7 @@
    "catalogueId": "tableur:mains-krypteia-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains",
    "reglesManuelles": [
@@ -88871,7 +88871,7 @@
    "catalogueId": "tableur:mains-light-clothes-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -88938,7 +88938,7 @@
    "catalogueId": "tableur:mains-looter-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -88960,7 +88960,7 @@
    "vente": 1,
    "desc": "",
    "prot_physique": 0,
-   "froid": 2,
+   "froid": 3,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -89005,7 +89005,7 @@
    "catalogueId": "tableur:mains-makeshift-leather-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -89072,7 +89072,7 @@
    "catalogueId": "tableur:mains-manawall-gauntlets",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -89139,7 +89139,7 @@
    "catalogueId": "tableur:mains-master-desert-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -89206,7 +89206,7 @@
    "catalogueId": "tableur:mains-master-kazite-gauntlets",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -89228,8 +89228,8 @@
    "vente": 39,
    "desc": "",
    "prot_physique": 0,
-   "froid": 2,
-   "chaud": 2,
+   "froid": 3,
+   "chaud": 3,
    "stats": {
     "degats": {
      "physique": 0,
@@ -89273,7 +89273,7 @@
    "catalogueId": "tableur:mains-master-trader-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -89296,7 +89296,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 2,
+   "chaud": 3,
    "stats": {
     "degats": {
      "physique": 0,
@@ -89340,7 +89340,7 @@
    "catalogueId": "tableur:mains-militia-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -89363,7 +89363,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 2,
+   "chaud": 3,
    "stats": {
     "degats": {
      "physique": 0,
@@ -89407,7 +89407,7 @@
    "catalogueId": "tableur:mains-miner-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -89474,7 +89474,7 @@
    "catalogueId": "tableur:mains-noble-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -89541,7 +89541,7 @@
    "catalogueId": "tableur:mains-nobleman-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -89608,7 +89608,7 @@
    "catalogueId": "tableur:mains-novice-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -89675,7 +89675,7 @@
    "catalogueId": "tableur:mains-orichalcum-gauntlets",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -89697,7 +89697,7 @@
    "vente": 4,
    "desc": "",
    "prot_physique": 0,
-   "froid": 2,
+   "froid": 3,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -89742,7 +89742,7 @@
    "catalogueId": "tableur:mains-padded-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -89809,7 +89809,7 @@
    "catalogueId": "tableur:mains-palladium-gauntlets",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -89876,7 +89876,7 @@
    "catalogueId": "tableur:mains-pathfinder-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -89899,7 +89899,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 2,
+   "chaud": 3,
    "stats": {
     "degats": {
      "physique": 0,
@@ -89943,7 +89943,7 @@
    "catalogueId": "tableur:mains-petrified-wood-gauntlets",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -90010,7 +90010,7 @@
    "catalogueId": "tableur:mains-pilgrim-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -90077,7 +90077,7 @@
    "catalogueId": "tableur:mains-plate-gauntlets",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -90144,7 +90144,7 @@
    "catalogueId": "tableur:mains-rich-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -90211,7 +90211,7 @@
    "catalogueId": "tableur:mains-runic-gauntlets",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -90278,7 +90278,7 @@
    "catalogueId": "tableur:mains-rust-lich-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -90345,7 +90345,7 @@
    "catalogueId": "tableur:mains-scaled-leather-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -90412,7 +90412,7 @@
    "catalogueId": "tableur:mains-scarlet-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -90479,7 +90479,7 @@
    "catalogueId": "tableur:mains-scavenger-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -90501,7 +90501,7 @@
    "vente": 8,
    "desc": "",
    "prot_physique": 0,
-   "froid": 1,
+   "froid": 2,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -90546,7 +90546,7 @@
    "catalogueId": "tableur:mains-scholar-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -90613,7 +90613,7 @@
    "catalogueId": "tableur:mains-shadow-kazite-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -90681,7 +90681,7 @@
    "catalogueId": "tableur:mains-shock-gauntlets",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -90748,7 +90748,7 @@
    "catalogueId": "tableur:mains-silver-gauntlets",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -90815,7 +90815,7 @@
    "catalogueId": "tableur:mains-slayer-s-gauntlets",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -90837,8 +90837,8 @@
    "vente": 56,
    "desc": "",
    "prot_physique": 0,
-   "froid": 2,
-   "chaud": 2,
+   "froid": 3,
+   "chaud": 3,
    "stats": {
     "degats": {
      "physique": 0,
@@ -90882,7 +90882,7 @@
    "catalogueId": "tableur:mains-squire-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -90904,8 +90904,8 @@
    "vente": 1,
    "desc": "",
    "prot_physique": 0,
-   "froid": 0,
-   "chaud": 0,
+   "froid": 1,
+   "chaud": 1,
    "stats": {
     "degats": {
      "physique": 0,
@@ -90949,7 +90949,7 @@
    "catalogueId": "tableur:mains-tattered-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -90971,7 +90971,7 @@
    "vente": 41,
    "desc": "",
    "prot_physique": 0,
-   "froid": 2,
+   "froid": 3,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -91016,7 +91016,7 @@
    "catalogueId": "tableur:mains-tenebrous-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -91038,7 +91038,7 @@
    "vente": 3,
    "desc": "",
    "prot_physique": 0,
-   "froid": 1,
+   "froid": 2,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -91083,7 +91083,7 @@
    "catalogueId": "tableur:mains-trader-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -91106,7 +91106,7 @@
    "desc": "",
    "prot_physique": 2,
    "froid": 0,
-   "chaud": 2,
+   "chaud": 3,
    "stats": {
     "degats": {
      "physique": 0,
@@ -91150,7 +91150,7 @@
    "catalogueId": "tableur:mains-tsar-gauntlets",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -91173,7 +91173,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 2,
+   "chaud": 3,
    "stats": {
     "degats": {
      "physique": 0,
@@ -91217,7 +91217,7 @@
    "catalogueId": "tableur:mains-vigilante-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -91284,7 +91284,7 @@
    "catalogueId": "tableur:mains-virgin-gauntlets",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -91351,7 +91351,7 @@
    "catalogueId": "tableur:mains-white-arcane-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -91418,7 +91418,7 @@
    "catalogueId": "tableur:mains-white-kintsugi-gauntlets",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -91485,7 +91485,7 @@
    "catalogueId": "tableur:mains-white-priest-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -91507,7 +91507,7 @@
    "vente": 30,
    "desc": "",
    "prot_physique": 1,
-   "froid": 2,
+   "froid": 3,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -91552,7 +91552,7 @@
    "catalogueId": "tableur:mains-wolf-mage-gauntlets",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -91574,7 +91574,7 @@
    "vente": 45,
    "desc": "",
    "prot_physique": 0,
-   "froid": 2,
+   "froid": 3,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -91619,7 +91619,7 @@
    "catalogueId": "tableur:mains-wolf-medic-gauntlets",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -91686,7 +91686,7 @@
    "catalogueId": "tableur:mains-wolf-plate-gauntlets",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -91753,7 +91753,7 @@
    "catalogueId": "tableur:mains-worker-gloves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Mains"
   },
@@ -91775,8 +91775,8 @@
    "vente": 57,
    "desc": "",
    "prot_physique": 1,
-   "froid": 4,
-   "chaud": 7,
+   "froid": 3,
+   "chaud": 5,
    "stats": {
     "degats": {
      "physique": 0,
@@ -91820,7 +91820,7 @@
    "catalogueId": "tableur:bas-adventurer-trousers",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -91842,7 +91842,7 @@
    "vente": 46,
    "desc": "",
    "prot_physique": 1,
-   "froid": 7,
+   "froid": 5,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -91887,7 +91887,7 @@
    "catalogueId": "tableur:bas-ammolite-leg-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -91909,7 +91909,7 @@
    "vente": 69,
    "desc": "",
    "prot_physique": 3,
-   "froid": 10,
+   "froid": 7,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -91954,7 +91954,7 @@
    "catalogueId": "tableur:bas-antique-plate-leg-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -91976,8 +91976,8 @@
    "vente": 45,
    "desc": "",
    "prot_physique": 0,
-   "froid": 9,
-   "chaud": 9,
+   "froid": 7,
+   "chaud": 7,
    "stats": {
     "degats": {
      "physique": 0,
@@ -92021,7 +92021,7 @@
    "catalogueId": "tableur:bas-ash-trousers",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -92044,7 +92044,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 4,
+   "chaud": 3,
    "stats": {
     "degats": {
      "physique": 0,
@@ -92088,7 +92088,7 @@
    "catalogueId": "tableur:bas-barrier-leg-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -92110,7 +92110,7 @@
    "vente": 87,
    "desc": "",
    "prot_physique": 0,
-   "froid": 15,
+   "froid": 12,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -92155,7 +92155,7 @@
    "catalogueId": "tableur:bas-black-fur-trousers",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -92177,7 +92177,7 @@
    "vente": 114,
    "desc": "",
    "prot_physique": 2,
-   "froid": 7,
+   "froid": 5,
    "chaud": -7,
    "stats": {
     "degats": {
@@ -92222,7 +92222,7 @@
    "catalogueId": "tableur:bas-black-plate-leg-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -92289,7 +92289,7 @@
    "catalogueId": "tableur:bas-blue-sand-leg-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -92311,7 +92311,7 @@
    "vente": 23,
    "desc": "",
    "prot_physique": 0,
-   "froid": 4,
+   "froid": 3,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -92356,7 +92356,7 @@
    "catalogueId": "tableur:bas-brigand-trousers",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -92423,7 +92423,7 @@
    "catalogueId": "tableur:bas-caged-leg-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -92490,7 +92490,7 @@
    "catalogueId": "tableur:bas-caldera-mail-leg-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes",
    "reglesManuelles": [
@@ -92515,7 +92515,7 @@
    "vente": 214,
    "desc": "",
    "prot_physique": 2,
-   "froid": 4,
+   "froid": 3,
    "chaud": -6,
    "stats": {
     "degats": {
@@ -92560,7 +92560,7 @@
    "catalogueId": "tableur:bas-candle-plate-leg-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -92627,7 +92627,7 @@
    "catalogueId": "tableur:bas-chalcedony-leg-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -92694,7 +92694,7 @@
    "catalogueId": "tableur:bas-copal-leg-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -92716,7 +92716,7 @@
    "vente": 214,
    "desc": "",
    "prot_physique": 2,
-   "froid": 9,
+   "froid": 7,
    "chaud": -7,
    "stats": {
     "degats": {
@@ -92761,7 +92761,7 @@
    "catalogueId": "tableur:bas-crimson-plate-leg-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -92784,7 +92784,7 @@
    "desc": "Sensual leggings that enable one to dance, or fight, without end.",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 8,
+   "chaud": 7,
    "stats": {
     "degats": {
      "physique": 0,
@@ -92828,7 +92828,7 @@
    "catalogueId": "tableur:bas-dancer-leggings",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionSource": "https://outward.fandom.com/wiki/Dancer_Leggings",
    "descriptionStatut": "wiki",
    "descriptionEmpreinte": "875cb9576d0da885e21311e536885e847aaa6895dccb17da711846e4469d0c5b",
@@ -92853,7 +92853,7 @@
    "desc": "",
    "prot_physique": 2,
    "froid": 0,
-   "chaud": -3,
+   "chaud": -5,
    "stats": {
     "degats": {
      "physique": 0,
@@ -92897,7 +92897,7 @@
    "catalogueId": "tableur:bas-elite-leg-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -92920,7 +92920,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 10,
+   "chaud": 8,
    "stats": {
     "degats": {
      "physique": 0,
@@ -92964,7 +92964,7 @@
    "catalogueId": "tableur:bas-entomber-trousers",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -92987,7 +92987,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 6,
+   "chaud": 5,
    "stats": {
     "degats": {
      "physique": 0,
@@ -93031,7 +93031,7 @@
    "catalogueId": "tableur:bas-festive-trousers",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -93053,7 +93053,7 @@
    "vente": 45,
    "desc": "",
    "prot_physique": 0,
-   "froid": 12,
+   "froid": 10,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -93098,7 +93098,7 @@
    "catalogueId": "tableur:bas-fur-trousers",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -93165,7 +93165,7 @@
    "catalogueId": "tableur:bas-gold-lich-trousers",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -93232,7 +93232,7 @@
    "catalogueId": "tableur:bas-green-copal-leg-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -93299,7 +93299,7 @@
    "catalogueId": "tableur:bas-halfplate-trousers",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -93366,7 +93366,7 @@
    "catalogueId": "tableur:bas-horror-leg-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -93388,7 +93388,7 @@
    "vente": 53,
    "desc": "",
    "prot_physique": 0,
-   "froid": 6,
+   "froid": 5,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -93433,7 +93433,7 @@
    "catalogueId": "tableur:bas-kazite-light-trousers",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -93500,7 +93500,7 @@
    "catalogueId": "tableur:bas-kazite-leg-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -93567,7 +93567,7 @@
    "catalogueId": "tableur:bas-kintsugi-leg-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -93634,7 +93634,7 @@
    "catalogueId": "tableur:bas-krypteia-trousers",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes",
    "reglesManuelles": [
@@ -93660,7 +93660,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 8,
+   "chaud": 7,
    "stats": {
     "degats": {
      "physique": 0,
@@ -93704,7 +93704,7 @@
    "catalogueId": "tableur:bas-light-clothes-trousers",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -93726,7 +93726,7 @@
    "vente": 4,
    "desc": "",
    "prot_physique": 0,
-   "froid": 6,
+   "froid": 5,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -93771,7 +93771,7 @@
    "catalogueId": "tableur:bas-looter-trousers",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -93793,7 +93793,7 @@
    "vente": 5,
    "desc": "",
    "prot_physique": 0,
-   "froid": 7,
+   "froid": 5,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -93838,7 +93838,7 @@
    "catalogueId": "tableur:bas-makeshift-leather-trousers",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -93861,7 +93861,7 @@
    "desc": "",
    "prot_physique": 3,
    "froid": 0,
-   "chaud": 4,
+   "chaud": 3,
    "stats": {
     "degats": {
      "physique": 0,
@@ -93905,7 +93905,7 @@
    "catalogueId": "tableur:bas-manawall-leg-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -93972,7 +93972,7 @@
    "catalogueId": "tableur:bas-master-kazite-leg-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -93994,8 +93994,8 @@
    "vente": 88,
    "desc": "",
    "prot_physique": 0,
-   "froid": 7,
-   "chaud": 7,
+   "froid": 5,
+   "chaud": 5,
    "stats": {
     "degats": {
      "physique": 0,
@@ -94039,7 +94039,7 @@
    "catalogueId": "tableur:bas-master-trader-trousers",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -94062,7 +94062,7 @@
    "desc": "",
    "prot_physique": 2,
    "froid": 0,
-   "chaud": 7,
+   "chaud": 5,
    "stats": {
     "degats": {
      "physique": 0,
@@ -94106,7 +94106,7 @@
    "catalogueId": "tableur:bas-militia-trousers",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes",
    "reglesManuelles": [
@@ -94132,7 +94132,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 7,
+   "chaud": 5,
    "stats": {
     "degats": {
      "physique": 0,
@@ -94176,7 +94176,7 @@
    "catalogueId": "tableur:bas-miner-trousers",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes",
    "reglesManuelles": [
@@ -94202,7 +94202,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 4,
+   "chaud": 3,
    "stats": {
     "degats": {
      "physique": 0,
@@ -94246,7 +94246,7 @@
    "catalogueId": "tableur:bas-noble-trousers",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -94269,7 +94269,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 9,
+   "chaud": 7,
    "stats": {
     "degats": {
      "physique": 0,
@@ -94313,7 +94313,7 @@
    "catalogueId": "tableur:bas-nobleman-trousers",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -94335,7 +94335,7 @@
    "vente": 132,
    "desc": "",
    "prot_physique": 2,
-   "froid": 10,
+   "froid": 7,
    "chaud": -7,
    "stats": {
     "degats": {
@@ -94380,7 +94380,7 @@
    "catalogueId": "tableur:bas-orichalcum-leg-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -94402,7 +94402,7 @@
    "vente": 9,
    "desc": "",
    "prot_physique": 0,
-   "froid": 7,
+   "froid": 5,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -94447,7 +94447,7 @@
    "catalogueId": "tableur:bas-padded-trousers",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -94514,7 +94514,7 @@
    "catalogueId": "tableur:bas-palladium-leg-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -94536,8 +94536,8 @@
    "vente": 102,
    "desc": "",
    "prot_physique": 2,
-   "froid": 7,
-   "chaud": 7,
+   "froid": 6,
+   "chaud": 6,
    "stats": {
     "degats": {
      "physique": 0,
@@ -94581,7 +94581,7 @@
    "catalogueId": "tableur:bas-pathfinder-trousers",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -94604,7 +94604,7 @@
    "desc": "",
    "prot_physique": 2,
    "froid": 0,
-   "chaud": 7,
+   "chaud": 5,
    "stats": {
     "degats": {
      "physique": 0,
@@ -94648,7 +94648,7 @@
    "catalogueId": "tableur:bas-petrified-wood-leg-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -94670,8 +94670,8 @@
    "vente": 197,
    "desc": "",
    "prot_physique": 2,
-   "froid": 7,
-   "chaud": 7,
+   "froid": 5,
+   "chaud": 5,
    "stats": {
     "degats": {
      "physique": 0,
@@ -94715,7 +94715,7 @@
    "catalogueId": "tableur:bas-pilgrim-trousers",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -94782,7 +94782,7 @@
    "catalogueId": "tableur:bas-plate-leg-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -94805,7 +94805,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 9,
+   "chaud": 7,
    "stats": {
     "degats": {
      "physique": 0,
@@ -94849,7 +94849,7 @@
    "catalogueId": "tableur:bas-rich-trousers",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -94916,7 +94916,7 @@
    "catalogueId": "tableur:bas-runic-leg-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -94983,7 +94983,7 @@
    "catalogueId": "tableur:bas-scaled-leather-trousers",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -95005,7 +95005,7 @@
    "vente": 9,
    "desc": "",
    "prot_physique": 0,
-   "froid": 4,
+   "froid": 3,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -95050,7 +95050,7 @@
    "catalogueId": "tableur:bas-scavenger-trousers",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -95073,7 +95073,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 3,
-   "chaud": 4,
+   "chaud": 3,
    "stats": {
     "degats": {
      "physique": 0,
@@ -95117,7 +95117,7 @@
    "catalogueId": "tableur:bas-scholar-trousers",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -95184,7 +95184,7 @@
    "catalogueId": "tableur:bas-shadow-kazite-trousers",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -95252,7 +95252,7 @@
    "catalogueId": "tableur:bas-shock-leg-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -95319,7 +95319,7 @@
    "catalogueId": "tableur:bas-silver-leg-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -95341,8 +95341,8 @@
    "vente": 87,
    "desc": "",
    "prot_physique": 0,
-   "froid": 5,
-   "chaud": 5,
+   "froid": 4,
+   "chaud": 4,
    "stats": {
     "degats": {
      "physique": 8,
@@ -95386,7 +95386,7 @@
    "catalogueId": "tableur:bas-slayer-s-leg-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -95453,7 +95453,7 @@
    "catalogueId": "tableur:bas-squire-trousers",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -95475,8 +95475,8 @@
    "vente": 2,
    "desc": "",
    "prot_physique": 0,
-   "froid": 2,
-   "chaud": 2,
+   "froid": 1,
+   "chaud": 1,
    "stats": {
     "degats": {
      "physique": 0,
@@ -95520,7 +95520,7 @@
    "catalogueId": "tableur:bas-tattered-trousers",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -95543,7 +95543,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 3,
-   "chaud": 1,
+   "chaud": 0,
    "stats": {
     "degats": {
      "physique": 0,
@@ -95587,7 +95587,7 @@
    "catalogueId": "tableur:bas-trader-trousers",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -95610,7 +95610,7 @@
    "desc": "",
    "prot_physique": 4,
    "froid": 0,
-   "chaud": 7,
+   "chaud": 5,
    "stats": {
     "degats": {
      "physique": 0,
@@ -95654,7 +95654,7 @@
    "catalogueId": "tableur:bas-tsar-leg-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -95677,7 +95677,7 @@
    "desc": "",
    "prot_physique": 2,
    "froid": 0,
-   "chaud": 7,
+   "chaud": 5,
    "stats": {
     "degats": {
      "physique": 0,
@@ -95721,7 +95721,7 @@
    "catalogueId": "tableur:bas-vigilante-trousers",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes",
    "reglesManuelles": [
@@ -95791,7 +95791,7 @@
    "catalogueId": "tableur:bas-virgin-leg-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -95858,7 +95858,7 @@
    "catalogueId": "tableur:bas-white-kintsugi-leg-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -95925,7 +95925,7 @@
    "catalogueId": "tableur:bas-wolf-mage-leg-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -95947,7 +95947,7 @@
    "vente": 105,
    "desc": "",
    "prot_physique": 2,
-   "froid": 7,
+   "froid": 5,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -95992,7 +95992,7 @@
    "catalogueId": "tableur:bas-wolf-medic-leg-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -96014,7 +96014,7 @@
    "vente": 145,
    "desc": "",
    "prot_physique": 2,
-   "froid": 4,
+   "froid": 3,
    "chaud": -6,
    "stats": {
     "degats": {
@@ -96059,7 +96059,7 @@
    "catalogueId": "tableur:bas-wolf-plate-leg-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -96081,7 +96081,7 @@
    "vente": 2,
    "desc": "",
    "prot_physique": 0,
-   "froid": 4,
+   "froid": 3,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -96126,7 +96126,7 @@
    "catalogueId": "tableur:bas-worker-trousers",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Jambes"
   },
@@ -96193,7 +96193,7 @@
    "catalogueId": "tableur:pieds-adventurer-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -96260,7 +96260,7 @@
    "catalogueId": "tableur:pieds-ammolite-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -96327,7 +96327,7 @@
    "catalogueId": "tableur:pieds-antique-plate-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -96394,7 +96394,7 @@
    "catalogueId": "tableur:pieds-arcane-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -96461,7 +96461,7 @@
    "catalogueId": "tableur:pieds-ash-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -96528,7 +96528,7 @@
    "catalogueId": "tableur:pieds-barrier-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -96595,7 +96595,7 @@
    "catalogueId": "tableur:pieds-black-fur-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -96662,7 +96662,7 @@
    "catalogueId": "tableur:pieds-black-plate-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -96729,7 +96729,7 @@
    "catalogueId": "tableur:pieds-blue-sand-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -96796,7 +96796,7 @@
    "catalogueId": "tableur:pieds-brigand-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -96863,7 +96863,7 @@
    "catalogueId": "tableur:pieds-caged-armor-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionSource": "https://outward.fandom.com/wiki/Caged_Armor_Boots",
    "descriptionStatut": "wiki",
    "descriptionEmpreinte": "8ac8c56c838633d997bbb7a1c93608f56faac7146ae8682025a6a4381c6cef38",
@@ -96932,7 +96932,7 @@
    "catalogueId": "tableur:pieds-caldera-mail-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionSource": "https://outward.fandom.com/wiki/Caldera_Mail_Boots",
    "descriptionStatut": "wiki",
    "descriptionEmpreinte": "778e27bb53d6c7c1bf508c9085faeb970738b4c9f1a64e04e96de730bb355640",
@@ -97004,7 +97004,7 @@
    "catalogueId": "tableur:pieds-candle-plate-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -97071,7 +97071,7 @@
    "catalogueId": "tableur:pieds-chalcedony-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -97138,7 +97138,7 @@
    "catalogueId": "tableur:pieds-copal-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -97205,7 +97205,7 @@
    "catalogueId": "tableur:pieds-crimson-plate-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -97272,7 +97272,7 @@
    "catalogueId": "tableur:pieds-dancer-shoes",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -97339,7 +97339,7 @@
    "catalogueId": "tableur:pieds-desert-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -97406,7 +97406,7 @@
    "catalogueId": "tableur:pieds-elite-desert-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -97473,7 +97473,7 @@
    "catalogueId": "tableur:pieds-elite-plate-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -97540,7 +97540,7 @@
    "catalogueId": "tableur:pieds-entomber-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -97607,7 +97607,7 @@
    "catalogueId": "tableur:pieds-festive-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -97674,7 +97674,7 @@
    "catalogueId": "tableur:pieds-fur-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -97741,7 +97741,7 @@
    "catalogueId": "tableur:pieds-gold-lich-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -97808,7 +97808,7 @@
    "catalogueId": "tableur:pieds-green-copal-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -97875,7 +97875,7 @@
    "catalogueId": "tableur:pieds-halfplate-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -97942,7 +97942,7 @@
    "catalogueId": "tableur:pieds-horror-greaves",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -98009,7 +98009,7 @@
    "catalogueId": "tableur:pieds-jade-acolyte-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -98076,7 +98076,7 @@
    "catalogueId": "tableur:pieds-jade-lich-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -98143,7 +98143,7 @@
    "catalogueId": "tableur:pieds-kazite-light-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -98210,7 +98210,7 @@
    "catalogueId": "tableur:pieds-kazite-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -98277,7 +98277,7 @@
    "catalogueId": "tableur:pieds-kintsugi-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -98344,7 +98344,7 @@
    "catalogueId": "tableur:pieds-krypteia-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds",
    "reglesManuelles": [
@@ -98414,7 +98414,7 @@
    "catalogueId": "tableur:pieds-sandals",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -98481,7 +98481,7 @@
    "catalogueId": "tableur:pieds-looter-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -98548,7 +98548,7 @@
    "catalogueId": "tableur:pieds-makeshift-leather-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -98615,7 +98615,7 @@
    "catalogueId": "tableur:pieds-manawall-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionSource": "https://outward.fandom.com/wiki/Manawall_Boots",
    "descriptionStatut": "wiki",
    "descriptionEmpreinte": "fbf060910610c40943558a61e6e8fd1583b141a4ec4d63034fafdcc73aa281d8",
@@ -98684,7 +98684,7 @@
    "catalogueId": "tableur:pieds-master-desert-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -98751,7 +98751,7 @@
    "catalogueId": "tableur:pieds-master-kazite-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -98818,7 +98818,7 @@
    "catalogueId": "tableur:pieds-master-trader-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -98885,7 +98885,7 @@
    "catalogueId": "tableur:pieds-militia-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds",
    "reglesManuelles": [
@@ -98955,7 +98955,7 @@
    "catalogueId": "tableur:pieds-miner-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionSource": "https://outward.fandom.com/wiki/Miner_Boots",
    "descriptionStatut": "wiki",
    "descriptionEmpreinte": "709be7bbda8e30fcb7300c6e09a6d4f7fcd092ef2feed67d730be157e20dce14",
@@ -99027,7 +99027,7 @@
    "catalogueId": "tableur:pieds-noble-shoes",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -99094,7 +99094,7 @@
    "catalogueId": "tableur:pieds-bright-nobleman-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -99161,7 +99161,7 @@
    "catalogueId": "tableur:pieds-dark-nobleman-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -99228,7 +99228,7 @@
    "catalogueId": "tableur:pieds-novice-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -99295,7 +99295,7 @@
    "catalogueId": "tableur:pieds-orichalcum-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -99362,7 +99362,7 @@
    "catalogueId": "tableur:pieds-padded-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -99429,7 +99429,7 @@
    "catalogueId": "tableur:pieds-palladium-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -99496,7 +99496,7 @@
    "catalogueId": "tableur:pieds-pathfinder-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -99563,7 +99563,7 @@
    "catalogueId": "tableur:pieds-petrified-wood-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -99630,7 +99630,7 @@
    "catalogueId": "tableur:pieds-pilgrim-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -99697,7 +99697,7 @@
    "catalogueId": "tableur:pieds-plate-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -99764,7 +99764,7 @@
    "catalogueId": "tableur:pieds-rich-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -99831,7 +99831,7 @@
    "catalogueId": "tableur:pieds-runic-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -99898,7 +99898,7 @@
    "catalogueId": "tableur:pieds-rust-lich-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -99965,7 +99965,7 @@
    "catalogueId": "tableur:pieds-scaled-leather-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -100032,7 +100032,7 @@
    "catalogueId": "tableur:pieds-scarlet-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -100099,7 +100099,7 @@
    "catalogueId": "tableur:pieds-scavenger-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -100166,7 +100166,7 @@
    "catalogueId": "tableur:pieds-scholar-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -100233,7 +100233,7 @@
    "catalogueId": "tableur:pieds-shadow-kazite-light-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionSource": "https://outward.fandom.com/wiki/Shadow_Kazite_Light_Boots",
    "descriptionStatut": "wiki",
    "descriptionEmpreinte": "94d4b8394f1add14d6bcd9f9470243f4a7a85a148046f13a8f7953d26e755781",
@@ -100303,7 +100303,7 @@
    "catalogueId": "tableur:pieds-shock-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -100370,7 +100370,7 @@
    "catalogueId": "tableur:pieds-silver-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -100437,7 +100437,7 @@
    "catalogueId": "tableur:pieds-slayer-s-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -100504,7 +100504,7 @@
    "catalogueId": "tableur:pieds-squire-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -100571,7 +100571,7 @@
    "catalogueId": "tableur:pieds-tattered-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -100638,7 +100638,7 @@
    "catalogueId": "tableur:pieds-tenebrous-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -100705,7 +100705,7 @@
    "catalogueId": "tableur:pieds-trader-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -100772,7 +100772,7 @@
    "catalogueId": "tableur:pieds-tsar-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -100839,7 +100839,7 @@
    "catalogueId": "tableur:pieds-vigilante-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds",
    "reglesManuelles": [
@@ -100909,7 +100909,7 @@
    "catalogueId": "tableur:pieds-virgin-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionSource": "https://outward.fandom.com/wiki/Virgin_Boots",
    "descriptionStatut": "wiki",
    "descriptionEmpreinte": "bba17c93e97a62fda8a39f9a3a6ee3262ac189d329efcece947c27530c36465f",
@@ -100978,7 +100978,7 @@
    "catalogueId": "tableur:pieds-white-arcane-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -101045,7 +101045,7 @@
    "catalogueId": "tableur:pieds-white-kintsugi-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -101112,7 +101112,7 @@
    "catalogueId": "tableur:pieds-white-priest-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -101179,7 +101179,7 @@
    "catalogueId": "tableur:pieds-wolf-mage-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -101246,7 +101246,7 @@
    "catalogueId": "tableur:pieds-wolf-medic-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -101313,7 +101313,7 @@
    "catalogueId": "tableur:pieds-wolf-plate-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -101380,7 +101380,7 @@
    "catalogueId": "tableur:pieds-black-worker-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -101447,7 +101447,7 @@
    "catalogueId": "tableur:pieds-worker-boots",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -101514,7 +101514,7 @@
    "catalogueId": "tableur:pieds-simple-shoes",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Pieds"
   },
@@ -101536,7 +101536,7 @@
    "vente": 75,
    "desc": "",
    "prot_physique": 1,
-   "froid": 8,
+   "froid": 6,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -101581,7 +101581,7 @@
    "catalogueId": "tableur:robes-arcane-robe",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Robes et tenues complètes"
   },
@@ -101648,7 +101648,7 @@
    "catalogueId": "tableur:robes-jade-acolyte-robes",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Robes et tenues complètes"
   },
@@ -101715,7 +101715,7 @@
    "catalogueId": "tableur:robes-jade-lich-robes",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Robes et tenues complètes"
   },
@@ -101782,7 +101782,7 @@
    "catalogueId": "tableur:robes-novice-robe",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Robes et tenues complètes"
   },
@@ -101849,7 +101849,7 @@
    "catalogueId": "tableur:robes-scarlet-robes",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Robes et tenues complètes"
   },
@@ -101871,7 +101871,7 @@
    "vente": 136,
    "desc": "",
    "prot_physique": 1,
-   "froid": 8,
+   "froid": 6,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -101916,7 +101916,7 @@
    "catalogueId": "tableur:robes-white-arcane-robe",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Robes et tenues complètes"
   },
@@ -101983,7 +101983,7 @@
    "catalogueId": "tableur:robes-white-priest-robes",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Robes et tenues complètes"
   },
@@ -102050,7 +102050,7 @@
    "catalogueId": "tableur:robes-clansage-robe",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Robes et tenues complètes"
   },
@@ -102117,7 +102117,7 @@
    "catalogueId": "tableur:robes-red-clansage-robe",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Robes et tenues complètes"
   },
@@ -102140,7 +102140,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 25,
+   "chaud": 20,
    "stats": {
     "degats": {
      "physique": 0,
@@ -102184,7 +102184,7 @@
    "catalogueId": "tableur:robes-desert-tunic",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Robes et tenues complètes"
   },
@@ -102207,7 +102207,7 @@
    "desc": "",
    "prot_physique": 3,
    "froid": 0,
-   "chaud": 21,
+   "chaud": 16,
    "stats": {
     "degats": {
      "physique": 0,
@@ -102251,7 +102251,7 @@
    "catalogueId": "tableur:robes-elite-desert-tunic",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Robes et tenues complètes"
   },
@@ -102274,7 +102274,7 @@
    "desc": "",
    "prot_physique": 4,
    "froid": 0,
-   "chaud": 20,
+   "chaud": 16,
    "stats": {
     "degats": {
      "physique": 0,
@@ -102318,7 +102318,7 @@
    "catalogueId": "tableur:robes-master-desert-tunic",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Robes et tenues complètes"
   },
@@ -102385,7 +102385,7 @@
    "catalogueId": "tableur:robes-chitin-desert-tunic",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Robes et tenues complètes"
   },
@@ -102452,7 +102452,7 @@
    "catalogueId": "tableur:robes-rust-lich-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Robes et tenues complètes"
   },
@@ -102474,7 +102474,7 @@
    "vente": 188,
    "desc": "",
    "prot_physique": 0,
-   "froid": 14,
+   "froid": 10,
    "chaud": 0,
    "stats": {
     "degats": {
@@ -102519,7 +102519,7 @@
    "catalogueId": "tableur:robes-tenebrous-armor",
    "versionObjet": 1,
    "commerce": "vendu",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Robes et tenues complètes"
   },
@@ -102541,8 +102541,8 @@
    "vente": 36,
    "desc": "",
    "prot_physique": 0,
-   "froid": 7,
-   "chaud": 8,
+   "froid": 6,
+   "chaud": 6,
    "stats": {
     "degats": {
      "physique": 0,
@@ -102587,7 +102587,7 @@
    "versionObjet": 1,
    "commerce": "vendu",
    "page": "content/regles/equipements/catalogue-tableur-robes-scholar-robe.md",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Robes et tenues complètes"
   },
@@ -102610,7 +102610,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 18,
+   "chaud": 14,
    "stats": {
     "degats": {
      "physique": 0,
@@ -102655,7 +102655,7 @@
    "versionObjet": 1,
    "commerce": "vendu",
    "page": "content/regles/equipements/catalogue-tableur-robes-bright-nobleman-robe.md",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Robes et tenues complètes"
   },
@@ -102678,7 +102678,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 18,
+   "chaud": 14,
    "stats": {
     "degats": {
      "physique": 0,
@@ -102723,7 +102723,7 @@
    "versionObjet": 1,
    "commerce": "vendu",
    "page": "content/regles/equipements/catalogue-tableur-robes-dark-nobleman-robe.md",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Robes et tenues complètes"
   },
@@ -102746,7 +102746,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 18,
+   "chaud": 14,
    "stats": {
     "degats": {
      "physique": 0,
@@ -102791,7 +102791,7 @@
    "versionObjet": 1,
    "commerce": "vendu",
    "page": "content/regles/equipements/catalogue-tableur-robes-bright-rich-robe.md",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Robes et tenues complètes"
   },
@@ -102814,7 +102814,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 18,
+   "chaud": 14,
    "stats": {
     "degats": {
      "physique": 0,
@@ -102859,7 +102859,7 @@
    "versionObjet": 1,
    "commerce": "vendu",
    "page": "content/regles/equipements/catalogue-tableur-robes-dark-rich-robe.md",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Robes et tenues complètes"
   },
@@ -102882,7 +102882,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 13,
+   "chaud": 10,
    "stats": {
     "degats": {
      "physique": 0,
@@ -102927,7 +102927,7 @@
    "versionObjet": 1,
    "commerce": "vendu",
    "page": "content/regles/equipements/catalogue-tableur-robes-purple-festive-robe.md",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Robes et tenues complètes"
   },
@@ -102950,7 +102950,7 @@
    "desc": "",
    "prot_physique": 0,
    "froid": 0,
-   "chaud": 13,
+   "chaud": 10,
    "stats": {
     "degats": {
      "physique": 0,
@@ -102995,7 +102995,7 @@
    "versionObjet": 1,
    "commerce": "vendu",
    "page": "content/regles/equipements/catalogue-tableur-robes-red-festive-robe.md",
-   "catalogueVersion": 7,
+   "catalogueVersion": 8,
    "descriptionStatut": "absente",
    "sousCategorieBoutique": "Robes et tenues complètes"
   },
@@ -110311,7 +110311,7 @@
    "sousCategorieBoutique": "Pointes et charges"
   }
  ],
- "catalogueVersion": 7,
+ "catalogueVersion": 8,
  "armes": [
   {
    "cle": "dague",
