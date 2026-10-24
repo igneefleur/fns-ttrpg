@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.25.1b";
+  var RELEASE = "4.25.2b";
   var SCHEMA = 18;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -5985,7 +5985,16 @@
       // l'imprégnation ciblée de l'arme. Sans choix, l'effet ciblé reste actif.
       var impregnation = impregnationSelectionnee();
       if (!impregnation) effetsSources().forEach(function(x){var op=x.d.ops.impregnation;if(op && it && x.e.cible===it.ref && op.type)valeurs[op.type]=(valeurs[op.type]||0)+snum(it.arme.degats)*op.pct/100+op.flat;});
-      if (impregnation && impregnation.flat && impregnation.type && !Object.prototype.hasOwnProperty.call(valeurs, impregnation.type)) valeurs[impregnation.type] = 0;
+      // L'imprégnation commune crée des dégâts de son propre élément : son
+      // pourcentage porte uniquement sur la base de l'arme, jamais sur le
+      // multiplicateur du coup ni sur les MOD, et ne change pas la répartition.
+      // Ce supplément précède les bonus de dégâts par type. Le fixe, lui,
+      // conserve sa place après ces bonus (voir le calcul final ci-dessous).
+      if (impregnation && impregnation.type) {
+        var elementaire = snum(it && it.arme && it.arme.degats) * bonusImpregnation();
+        if (elementaire || snum(impregnation.flat))
+          valeurs[impregnation.type] = (valeurs[impregnation.type] || 0) + elementaire;
+      }
       combatTypes().forEach(function (t) { var n = combatMod("attaques", t); if (n) valeurs[t] = (valeurs[t] || 0) + n; });
       return Object.keys(valeurs).map(function (t) {
         var fixe = impregnation && impregnation.type === t ? snum(impregnation.flat) : 0;
@@ -5993,12 +6002,12 @@
         return { type: t, valeur: Math.max(0, n) };
       }).filter(function (x) { return x.valeur || x.type === primary; });
     }
-    function brutArme(it) { return Math.round((snum(it.arme.degats) * (1 + bonusImpregnation()) + modsDegatsArme(it)) * 1000) / 1000; }
+    function brutArme(it) { return Math.round((snum(it.arme.degats) + modsDegatsArme(it)) * 1000) / 1000; }
     function brutCoup(it, coup) {
-      var base = snum(it.arme.degats) * (multiplicateurCoup(coup) + bonusImpregnation());
-      // Avec un bonus de coefficient, répartir avant l'arrondi final par type. Sans bonus,
-      // préserver l'arrondi des attaques existantes.
-      return (bonusImpregnation() ? base : Math.floor(base + 1e-9)) + modsDegatsArme(it);
+      // Le multiplicateur du coup s'applique aux seuls dégâts de base de
+      // l'arme ; chaque MOD s'ajoute ensuite. L'imprégnation est calculée
+      // séparément, par élément, dans chiffresDegats().
+      return Math.floor(snum(it.arme.degats) * multiplicateurCoup(coup) + 1e-9) + modsDegatsArme(it);
     }
     function fmtMult(n) {
       return "×" + Number(n || 1).toFixed(1);
