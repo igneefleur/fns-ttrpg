@@ -108,7 +108,7 @@
     // Carte compatible avec les anciennes versions de l'extension (version 1,
     // toutes les valeurs de s sont des chaînes). La fiche complète circule
     // séparément dans item, sans perdre les huit effets ou les prérequis.
-    var fields = [['Quantité', String(q)], ['Poids', String(it.objet.poids) + ' kg'],
+    var fields = [['Quantité', String(q)], ['Poids', it.objet.poids==null?'Non renseigné':String(it.objet.poids) + ' kg'],
       ['Volume', it.objet.volume==null?'Non renseigné':String(it.objet.volume) + ' L'], ['Achat', price(it)],
       ['Vente', it.objet.commerce==='non-commercialise' ? 'Non commercialisé' : it.objet.vente==null ? 'Prix non renseigné' : String(it.objet.vente) + ' argent'], ['Type', it.categorie]];
     it.champs.forEach(function (f) { if (!/^(Poids|Volume|Achat|Vente)\b/.test(f[0])) fields.push([String(f[0]), String(f[1])]); });
