@@ -62,8 +62,8 @@
     list.replaceChildren();
     visible.forEach(function (it) {
       var b = node('button', 'ob-item'); b.type = 'button'; b.draggable = true; b.dataset.id = it.id; b.title = it.nom; b.setAttribute('aria-pressed', String(!!selected && selected.id === it.id));
-      b.appendChild(picture(it));
-      b.append(node('span', 'ob-item-name', it.nom), node('span', 'ob-item-price', price(it)));
+      var tile = node('span', 'ob-item-tile'); tile.appendChild(picture(it)); b.appendChild(tile);
+      var info = node('span', 'ob-item-info'); info.append(node('span', 'ob-item-name', it.nom), node('span', 'ob-item-meta', it.sousCategorie || it.categorie), node('span', 'ob-item-price', price(it))); b.appendChild(info);
       b.onclick = function () { select(it); };
       b.ondragstart = function (e) {
         if (!selected || selected.id !== it.id) select(it);
@@ -88,8 +88,27 @@
   }
   function filter() {
     var words = fold(search.value).trim().split(/\s+/).filter(Boolean);
-    filtered = items.filter(function (it) { return (!categories.value || it.categorie === categories.value) && (!subcategories.value || it.sousCategorie === subcategories.value) && words.every(function (w) { return it.search.indexOf(w) >= 0; }); });
+    var min = numberInput('ob-prix-min'), max = numberInput('ob-prix-max'), pmax = numberInput('ob-poids-max'), vmax = numberInput('ob-volume-max');
+    var effect = fold($('ob-effet').value).trim(), stat = $('ob-caracteristique').value, threshold = numberInput('ob-carac-min');
+    filtered = items.filter(function (it) {
+      var o=it.objet, prix=o.commerce==='non-commercialise'?null:finite(o.achat), poids=finite(o.poids), volume=finite(o.volume);
+      if ((categories.value && it.categorie!==categories.value) || (subcategories.value && it.sousCategorie!==subcategories.value) || !words.every(function(w){return it.search.indexOf(w)>=0;})) return false;
+      if ((min!==null||max!==null) && (prix===null ? !$('ob-prix-inconnu').checked : (min!==null&&prix<min)||(max!==null&&prix>max))) return false;
+      if ((pmax!==null&&(poids===null||poids>pmax)) || (vmax!==null&&(volume===null||volume>vmax))) return false;
+      if ($('ob-taille').value && o.taille!==$('ob-taille').value) return false;
+      if (effect && fold((o.effets||[]).map(function(e){return typeof e==='string'?e:(e.nom||e.id||'');}).join(' ')).indexOf(effect)<0) return false;
+      if (stat) { var v=statValue(o,stat); if(v===null || v < (threshold===null?1:threshold)) return false; }
+      return true;
+    });
+    var sort=$('ob-tri').value||'nom', inverse=$('ob-inverse').checked?-1:1;
+    filtered.sort(function(a,b){ if(sort==='nom')return inverse*a.nom.localeCompare(b.nom,'fr'); var av=finite(a.objet[sort]),bv=finite(b.objet[sort]); if(sort==='achat'){if(a.objet.commerce==='non-commercialise')av=null;if(b.objet.commerce==='non-commercialise')bv=null;} if(av===null||bv===null)return av===bv?a.nom.localeCompare(b.nom,'fr'):av===null?1:-1;return inverse*(av-bv)||a.nom.localeCompare(b.nom,'fr'); });
     page = 0; render();
+  }
+  function finite(x) { return x===null||x===undefined||x===''||!Number.isFinite(Number(x))?null:Number(x); }
+  function numberInput(id) { var x=$(id).value; return x===''?null:finite(String(x).replace(',','.')); }
+  function statValue(o,key) { var stats=o.stats||{}, v;
+    if(key==='pm'||key==='pe') { v=finite((stats.couts||{})[key]); return v===null?null:-v; }
+    v=finite(Object.prototype.hasOwnProperty.call(o,key)?o[key]:stats[key]); return v;
   }
   function updateSubcategories() {
     var counts = {};
@@ -100,6 +119,9 @@
   }
   search.oninput = filter; subcategories.onchange = filter;
   categories.onchange = function() { updateSubcategories(); filter(); };
+  ['ob-prix-min','ob-prix-max','ob-effet','ob-carac-min','ob-poids-max','ob-volume-max'].forEach(function(id){$(id).oninput=filter;});
+  ['ob-prix-inconnu','ob-caracteristique','ob-taille','ob-tri','ob-inverse'].forEach(function(id){$(id).onchange=filter;});
+  $('ob-reset').onclick=function(){search.value='';categories.value='';updateSubcategories();['ob-prix-min','ob-prix-max','ob-effet','ob-caracteristique','ob-poids-max','ob-volume-max','ob-taille'].forEach(function(id){$(id).value='';});$('ob-carac-min').value='1';$('ob-tri').value='nom';$('ob-prix-inconnu').checked=$('ob-inverse').checked=false;filter();};
   $('ob-precedent').onclick = function () { page--; render(); list.scrollTop = 0; };
   $('ob-suivant').onclick = function () { page++; render(); list.scrollTop = 0; };
   function safe(s) { return String(s == null ? '' : s).replace(/[{}]/g, '').replace(/\s+/g, ' ').trim(); }
