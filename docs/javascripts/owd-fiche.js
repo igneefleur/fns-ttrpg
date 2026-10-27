@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.25.3b";
+  var RELEASE = "4.26.1b";
   var SCHEMA = 18;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -963,7 +963,7 @@
         nom: o.nom == null ? "" : String(o.nom),
         img: o.img == null ? "" : String(o.img),
         qte: pnum(o.qte === undefined ? 1 : o.qte),
-        poids: pnum(o.poids),
+        poids: o.poids === null ? null : pnum(o.poids),
         encombre: o.encombre===null?null:pnum(o.encombre),
         // « places » est le nom de CLÉ du volume d'un aliment : le livre dit
         // « volume », la clé garde son nom, qui voyage dans les Attributes
@@ -7999,7 +7999,7 @@
   function packObjet(it, qte) {
     var groupe=contenuGroupe(it);
     var p = {
-      n: String(it.nom || ""), q: Math.min(pnum(it.qte), Math.max(0, pnum(qte))), p: pnum(it.poids),
+      n: String(it.nom || ""), q: Math.min(pnum(it.qte), Math.max(0, pnum(qte))), p: it.poids === null ? null : pnum(it.poids),
       l: pnum(it.places), d: String(it.desc || ""), k: String(it.id || ""),
       a: venteNum(it.achat), version: 1, s: champsObjet(it, qte)
     };
@@ -8025,7 +8025,7 @@
       }catch(e){return null;}
     }
     return {bundle:bundle,item:o.item && typeof o.item==="object" ? o.item : null,
-      nom: String(o.n || "Objet"), qte: Math.max(0, pnum(o.q)) || 1, poids: pnum(o.p),
+      nom: String(o.n || "Objet"), qte: Math.max(0, pnum(o.q)) || 1, poids: o.p === null ? null : pnum(o.p),
       places: pnum(o.l), desc: String(o.d || ""), img: String(o.i || ""),
       id: String(o.k || ""), achat: venteNum(o.a), vente: venteNum(o.v), rapide: !!o.r
     };
@@ -8683,7 +8683,7 @@
   }
   function champsObjet(it, q) {
     var bagWeight = it.sac ? window.OwdInventoryData.weight(state.inv.objets,it) * (pnum(it.qte)>0 ? pnum(q)/pnum(it.qte) : 0) : null;
-    var fields = [["Quantité", fmtP(q)], ["Poids", fmtP(it.poids || 0) + (q > 1 ? " (total " + fmtP(q * (it.poids || 0)) + ")" : "")],
+    var fields = [["Quantité", fmtP(q)], ["Poids", it.poids===null ? "Non renseigné" : fmtP(it.poids || 0) + (q > 1 ? " (total " + fmtP(q * (it.poids || 0)) + ")" : "")],
       ["Volume", it.encombre===null?"Non renseigné":fmtP(it.encombre || 0) + " L"],
       ["Achat", prixObjetTexte(it,false)], ["Vente", prixObjetTexte(it,true)]];
     function add(k,v){if(v!=null && String(v).trim()!=="")fields.push([k,String(v)]);}
@@ -9397,7 +9397,7 @@
       var i = el("input", "pc-edit-field");
       i.type = "text"; i.inputMode = "decimal";
       i.value = lire() ? fmtP(lire()) : "";
-      i.placeholder = libelle==="Prix d'achat" ? "Non renseigné" : "0";
+      i.placeholder = libelle==="Prix d'achat" || (libelle==="Poids" && lire()===null) ? "Non renseigné" : "0";
       if (titre) i.title = titre;
       i.addEventListener("input", function () { ecrire(i.value); save(); updateTotal(); refresh(); });
       i.addEventListener("blur", function () { i.value = lire() ? fmtP(lire()) : ""; });
@@ -9720,7 +9720,7 @@
 
       var pair = el("div", "pc-obj-pair");
       pair.appendChild(champNombre("Poids", function () { return it.poids; },
-        function (v) { it.poids = pnum(v); }));
+        function (v) { it.poids = !String(v).trim() && (it.donneesACompleter||[]).indexOf("poids")>=0 ? null : pnum(v); }));
       pair.appendChild(champNombre("Volume", function () { return it.encombre; },
         function (v) { it.volume = it.encombre = pnum(v); }, "En L"));
       body.appendChild(pair);

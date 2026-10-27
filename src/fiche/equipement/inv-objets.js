@@ -46,7 +46,7 @@
   }
   function champsObjet(it, q) {
     var bagWeight = it.sac ? window.OwdInventoryData.weight(state.inv.objets,it) * (pnum(it.qte)>0 ? pnum(q)/pnum(it.qte) : 0) : null;
-    var fields = [["Quantité", fmtP(q)], ["Poids", fmtP(it.poids || 0) + (q > 1 ? " (total " + fmtP(q * (it.poids || 0)) + ")" : "")],
+    var fields = [["Quantité", fmtP(q)], ["Poids", it.poids===null ? "Non renseigné" : fmtP(it.poids || 0) + (q > 1 ? " (total " + fmtP(q * (it.poids || 0)) + ")" : "")],
       ["Volume", it.encombre===null?"Non renseigné":fmtP(it.encombre || 0) + " L"],
       ["Achat", prixObjetTexte(it,false)], ["Vente", prixObjetTexte(it,true)]];
     function add(k,v){if(v!=null && String(v).trim()!=="")fields.push([k,String(v)]);}
@@ -760,7 +760,7 @@
       var i = el("input", "pc-edit-field");
       i.type = "text"; i.inputMode = "decimal";
       i.value = lire() ? fmtP(lire()) : "";
-      i.placeholder = libelle==="Prix d'achat" ? "Non renseigné" : "0";
+      i.placeholder = libelle==="Prix d'achat" || (libelle==="Poids" && lire()===null) ? "Non renseigné" : "0";
       if (titre) i.title = titre;
       i.addEventListener("input", function () { ecrire(i.value); save(); updateTotal(); refresh(); });
       i.addEventListener("blur", function () { i.value = lire() ? fmtP(lire()) : ""; });
@@ -1083,7 +1083,7 @@
 
       var pair = el("div", "pc-obj-pair");
       pair.appendChild(champNombre("Poids", function () { return it.poids; },
-        function (v) { it.poids = pnum(v); }));
+        function (v) { it.poids = !String(v).trim() && (it.donneesACompleter||[]).indexOf("poids")>=0 ? null : pnum(v); }));
       pair.appendChild(champNombre("Volume", function () { return it.encombre; },
         function (v) { it.volume = it.encombre = pnum(v); }, "En L"));
       body.appendChild(pair);

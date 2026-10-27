@@ -12,6 +12,9 @@ assert.equal(flaskData.bundle.length,2);assert.equal(flaskData.bundle[0].nom,'Fi
 assert.equal(flaskData.bundle[1].restaurations.pv,12.5);assert.equal(ctx.unpackObjet(flaskPack).bundle.length,2);
 const unknown={...item,achat:null,vente:null,arme:null};const unknownPack=ctx.packObjet(unknown,1);
 assert.equal(ctx.unpackObjet(unknownPack).achat,null);assert.equal(ctx.unpackObjet(unknownPack).vente,null);
+const noWeight={...unknown,poids:null};const noWeightPack=ctx.packObjet(noWeight,1),noWeightData=JSON.parse(ctx.b64decode(noWeightPack));
+assert.equal(noWeightData.p,null);assert.equal(noWeightData.item.poids,null);assert.equal(ctx.unpackObjet(noWeightPack).poids,null);
+assert.ok(noWeightData.s.some(f=>f[0]==='Poids'&&f[1]==='Non renseigné'));
 assert.equal(ctx.prixVente(unknown),null);assert.equal(ctx.prixObjetTexte(unknown,false),'Prix non renseigné');
 assert.equal(ctx.prixObjetTexte({...unknown,achat:0,vente:0},false),'0 pièces d’argent');
 const filled=ctx.state.inv.objets.find(x=>x.ref==='flacon');filled.qte=5;

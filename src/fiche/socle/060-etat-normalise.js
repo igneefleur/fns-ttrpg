@@ -367,7 +367,7 @@
         nom: o.nom == null ? "" : String(o.nom),
         img: o.img == null ? "" : String(o.img),
         qte: pnum(o.qte === undefined ? 1 : o.qte),
-        poids: pnum(o.poids),
+        poids: o.poids === null ? null : pnum(o.poids),
         encombre: o.encombre===null?null:pnum(o.encombre),
         // « places » est le nom de CLÉ du volume d'un aliment : le livre dit
         // « volume », la clé garde son nom, qui voyage dans les Attributes

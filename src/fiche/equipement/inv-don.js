@@ -40,7 +40,7 @@
   function packObjet(it, qte) {
     var groupe=contenuGroupe(it);
     var p = {
-      n: String(it.nom || ""), q: Math.min(pnum(it.qte), Math.max(0, pnum(qte))), p: pnum(it.poids),
+      n: String(it.nom || ""), q: Math.min(pnum(it.qte), Math.max(0, pnum(qte))), p: it.poids === null ? null : pnum(it.poids),
       l: pnum(it.places), d: String(it.desc || ""), k: String(it.id || ""),
       a: venteNum(it.achat), version: 1, s: champsObjet(it, qte)
     };
@@ -66,7 +66,7 @@
       }catch(e){return null;}
     }
     return {bundle:bundle,item:o.item && typeof o.item==="object" ? o.item : null,
-      nom: String(o.n || "Objet"), qte: Math.max(0, pnum(o.q)) || 1, poids: pnum(o.p),
+      nom: String(o.n || "Objet"), qte: Math.max(0, pnum(o.q)) || 1, poids: o.p === null ? null : pnum(o.p),
       places: pnum(o.l), desc: String(o.d || ""), img: String(o.i || ""),
       id: String(o.k || ""), achat: venteNum(o.a), vente: venteNum(o.v), rapide: !!o.r
     };

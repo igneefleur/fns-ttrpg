@@ -16,12 +16,17 @@ for(const it of list){
 const poisoned=structuredClone(list.find(x=>x.nom==='Arcane Robe'));
 for(const f of poisoned.champs)if(['Achat (argent)','Vente (argent)','Poids (kg)','Volume (L)'].includes(f[0]))f[1]='999999';
 const p=payload(poisoned);assert.equal(p.a,250);assert.equal(p.p,2.5);assert.equal(p.l,7.5);
+const underwear=payload(list.find(x=>x.nom==='Adventurer Underwear'));
+assert.equal(underwear.p,0.5);assert.equal(underwear.l,1);assert.equal(underwear.a,75);assert.equal(underwear.item.acc,'sousvet');
 console.log('OK '+list.length+' objets : données, cartes et réception concordent ; champs d’affichage sans autorité mécanique.');
 // Les propriétés doivent survivre à la normalisation et à une sauvegarde, pas seulement au lien Prendre.
 const registry=require('../docs/data/owd-boutique.json');
 const inv=fs.readFileSync(path.join(root,'src/fiche/equipement/inv-nouveaux.js'),'utf8');
 const ctx={D:()=>({equipements:registry.equipements.filter(o=>o.typeObjet!=='consommable'),consommables:registry.equipements.filter(o=>o.typeObjet==='consommable'),catalogueVersion:registry.version}),pnum:v=>Math.max(0,Number(v)||0),snum:v=>Number(v)||0,num:(v,d=0)=>v==null?d:Number(v),combatTypes:()=>['physique','feu','froid','eclair','decomposition','ethere','brut'],armesData:()=>registry.typesArmes,pli:s=>String(s).toLowerCase()};
 vm.createContext(ctx);vm.runInContext(inv.slice(0,inv.indexOf('  function invChoix('))+';this.normalize=enrichitObjet;',ctx);
+const authored=registry.equipements.find(o=>o.nom==='Adventurer Underwear');
+const priced=ctx.normalize({...authored,achat:12,vente:4},{...authored,achat:12,vente:4});
+assert.equal(priced.achat,12);assert.equal(priced.vente,4,'Un prix saisi n’est pas effacé par la normalisation');
 for(const o of registry.equipements){
  const base={nom:o.nom,id:o.id,arme:o.arme?structuredClone(o.arme):null,sac:o.sac||false,ceint:o.ceint||false,vet:o.vet||''};
  const n=JSON.parse(JSON.stringify(ctx.normalize(base,o)));
