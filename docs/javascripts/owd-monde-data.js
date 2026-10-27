@@ -11,9 +11,21 @@
     if(!Number.isSafeInteger(j)||j>999999999)throw new Error('Horloge hors limites');
     return {jours:j,heures:he%24,minutes:m%60,secondes:s%60};
   }
+  var DEPART={annee:412,mois:2,jour:3};
+  function dateDepart(d){
+    if(d===undefined)return {annee:DEPART.annee,mois:DEPART.mois,jour:DEPART.jour};
+    if(!d||typeof d!=='object'||Array.isArray(d)||!Number.isSafeInteger(d.annee)||d.annee<1||d.annee>1000000000||!Number.isInteger(d.mois)||d.mois<1||d.mois>12||!Number.isInteger(d.jour)||d.jour<1||d.jour>28)throw new Error('Date de départ invalide');
+    return {annee:d.annee,mois:d.mois,jour:d.jour};
+  }
+  function dateMonde(h,depart){
+    h=clock(h);depart=dateDepart(depart);
+    var jours=(depart.annee-1)*336+(depart.mois-1)*28+depart.jour-1+h.jours-1;
+    var annee=Math.floor(jours/336)+1,reste=jours-(annee-1)*336,mois=Math.floor(reste/28)+1,jour=reste%28+1;
+    return {annee:annee,mois:mois,jour:jour,saison:['Printemps','Été','Automne','Hiver'][Math.floor((mois-1)/3)]};
+  }
   function validate(s){
     if(!s||s.v!==1)throw new Error('Version de Monde incompatible');
-    var h=clock(s.horloge),t=s.temperature;
+    var h=clock(s.horloge),t=s.temperature;dateDepart(s.dateDepart);
     if(t!==null&&(typeof t!=='number'||!Number.isFinite(t)||Math.abs(t)>999))throw new Error('Température invalide');
     // Une base mal formée n'est jamais réécrite après une lecture partielle.
     if(Object.keys(h).some(function(k){return h[k]!==s.horloge[k];}))throw new Error('Horloge distante non normalisée');
@@ -43,6 +55,6 @@
     return {v:1,horloge:h,temperature:t};
   }
   function read(attrs){var r=sync.read(attrs);return r?validate(r.state):fromLegacy(attrs||{});}
-  var api={sync:sync,clock:clock,advance:advance,validate:validate,read:read,fromLegacy:fromLegacy};
+  var api={sync:sync,clock:clock,advance:advance,dateDepart:dateDepart,dateMonde:dateMonde,validate:validate,read:read,fromLegacy:fromLegacy};
   root.OwdMondeData=api;if(typeof module==='object'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);
