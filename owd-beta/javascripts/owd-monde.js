@@ -7,7 +7,7 @@
   var charId=null,session=null,state=null,rights=false,capable=false,frozen=false,lastRead=0,timer=null,composing=false,tick=0;
   function post(m){m.ns='owd';if(charId)m.charId=charId;window.top.postMessage(m,'*');}
   function el(tag,cls,text){var n=document.createElement(tag);if(cls)n.className=cls;if(text!=null)n.textContent=text;return n;}
-  var notice=el('p','om-notice'),clockFields={},controls=[];
+  var notice=el('p','om-notice'),clockFields={},dateFields={},controls=[],worldDate;
   notice.setAttribute('role','status');root.appendChild(notice);
   function message(t){notice.textContent=t||'';notice.hidden=!t;}
   function enabled(){return !!session&&rights&&capable&&!frozen;}
@@ -15,6 +15,9 @@
     controls.forEach(function(n){n.disabled=!enabled();});
     if(!state)return;
     Object.keys(clockFields).forEach(function(k){var n=clockFields[k];if(force||document.activeElement!==n)n.value=state.horloge[k];});
+    var depart=D.dateDepart(state.dateDepart),date=D.dateMonde(state.horloge,depart);
+    Object.keys(dateFields).forEach(function(k){var n=dateFields[k];if(force||document.activeElement!==n)n.value=depart[k];});
+    worldDate.textContent='Jour '+date.jour+' · Mois '+date.mois+' · Année '+date.annee+' · '+date.saison;
     if(force||document.activeElement!==temperature)temperature.value=state.temperature==null?'':state.temperature;
   }
   function stop(err){frozen=true;message(err.message||String(err));rendu();}
@@ -28,9 +31,18 @@
     catch(e){stop(e);}
   }
   function button(label,aria,fn){var b=el('button','om-button',label);b.type='button';b.setAttribute('aria-label',aria);b.addEventListener('click',fn);controls.push(b);return b;}
+  var dateBox=el('section','om-date');dateBox.appendChild(el('h2','','Date du monde'));
+  worldDate=el('div','om-date-actuelle');worldDate.setAttribute('aria-live','polite');dateBox.appendChild(worldDate);
+  var start=el('details','om-date-depart'),summary=el('summary','','Début de la campagne'),startRow=el('div','om-start-fields');start.appendChild(summary);
+  [['jour','Jour',28],['mois','Mois',12],['annee','Année',1000000000]].forEach(function(a){
+    var label=el('label','om-unit'),input=el('input','om-number');input.type='number';input.min='1';input.max=String(a[2]);input.step='1';input.setAttribute('aria-label',a[1]+' de début de campagne');
+    input.addEventListener('change',function(){var v=Number(input.value);if(!Number.isSafeInteger(v)||v<1||v>a[2]){rendu(true);return;}
+      edit(function(){var depart=D.dateDepart(state.dateDepart);depart[a[0]]=v;state.dateDepart=depart;});});
+    label.appendChild(input);label.appendChild(el('span','',a[1]));startRow.appendChild(label);dateFields[a[0]]=input;controls.push(input);
+  });start.appendChild(startRow);dateBox.appendChild(start);root.appendChild(dateBox);
   var clockBox=el('section','om-clock');clockBox.appendChild(el('h2','','Horloge'));
   var row=el('div','om-clock-fields');
-  [['jours','Jours'],['heures','Heures'],['minutes','Minutes'],['secondes','Secondes']].forEach(function(a){
+  [['jours','Jour de campagne'],['heures','Heures'],['minutes','Minutes'],['secondes','Secondes']].forEach(function(a){
     var label=el('label','om-unit'),input=el('input','om-number');input.type='number';input.min='0';input.step='1';input.setAttribute('aria-label',a[1]);
     var baseSaisie=null;input.addEventListener('focus',function(){baseSaisie=state?C.copy(state.horloge):null;});
     input.addEventListener('input',function(){var v=Number(input.value);if(input.value===''||!Number.isFinite(v)||v<0)return;
