@@ -19,7 +19,7 @@ assert.equal(hashes.size,69,'Chaque sous-vêtement a sa propre illustration');
 const pockets={'Adventurer Underwear':2,'Brigand Underwear':1,'Elite Underwear':2,'Makeshift Leather Underwear':2,'Master Trader Underwear':4,'Pilgrim Underwear':5,'Scaled Leather Underwear':2,'Scavenger Underwear':2,'Trader Underwear':4};
 for(const o of items)assert.equal(o.poches,pockets[o.nom]||0,o.nom+' poches');
 const get=n=>structuredClone(items.find(o=>o.nom===n));
-for(const [name,cold,hot,fire,frost] of [['Tattered Underwear',1,0,0,0],['Trader Underwear',1,0,0,0],['Adventurer Underwear',1,2,1,0],['Ammolite Underwear',2,0,0,1],['Desert Underwear',1,4,0,0]]){
+for(const [name,cold,hot,fire,frost] of [['Tattered Underwear',1,0,0,0],['Trader Underwear',2,0,0,0],['Adventurer Underwear',2,2,1,0],['Ammolite Underwear',3,0,0,1],['Desert Underwear',1,4,0,0],['Fur Underwear',5,0,0,1]]){
  const o=get(name);assert.deepEqual([o.froid,o.chaud,o.res_feu,o.res_froid],[cold,hot,fire,frost],name);
 }
 const p=get('Adventurer Underwear');p.ref='underwear-test';p.ou='sousvet';
@@ -31,7 +31,7 @@ const worn=cap.slice(cap.indexOf('  function vetementsPortes()'),cap.indexOf('  
 const climate=fs.readFileSync('src/fiche/socle/100-calculs-climat.js','utf8');
 const cold=climate.slice(climate.indexOf('  function protection('),climate.indexOf('  // ---- le temps qui passe'));
 vm.createContext(ctx);vm.runInContext(caseCode+worn+cold+fs.readFileSync('src/fiche/fiche/defense.js','utf8'),ctx);
-assert.equal(ctx.casePermise(p,'sousvet'),true);assert.equal(ctx.protection('froid'),1);assert.equal(ctx.protection('chaud'),2);assert.equal(ctx.defenseTotaux('feu',null,false).reduction,1);
+assert.equal(ctx.casePermise(p,'sousvet'),true);assert.equal(ctx.protection('froid'),2);assert.equal(ctx.protection('chaud'),2);assert.equal(ctx.defenseTotaux('feu',null,false).reduction,1);
 p.ou='poches';assert.equal(ctx.protection('chaud'),0);assert.equal(ctx.defenseTotaux('feu',null,false).reduction,0);
 p.ou='sousvet';p.qte=2;assert.equal(ctx.protection('chaud'),0,'Une pile ne donne aucun bonus porté');p.qte=1;
 const M=require('../docs/javascripts/owd-attr-map.js'),s=M.blank();s.inv.objets=[p];const decoded=M.attrsToState(M.stateToAttrs(s)).inv.objets[0];
