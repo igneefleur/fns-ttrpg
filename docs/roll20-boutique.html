@@ -14,11 +14,7 @@
       <div id="ob-status" role="status" aria-live="polite">Chargement des équipements…</div>
     </header>
     <div class="ob-main">
-      <aside class="ob-col-details" aria-label="Détails de l'équipement">
-        <div id="ob-details"></div>
-      </aside>
-      <section class="ob-col-catalogue" aria-label="Catalogue des équipements">
-        <div class="ob-filtres">
+      <aside class="ob-filtres" aria-label="Recherche et filtres">
           <label for="ob-recherche">Recherche
             <input id="ob-recherche" type="search" placeholder="Nom de l'équipement" autocomplete="off" disabled>
           </label>
@@ -28,7 +24,17 @@
           <label for="ob-sous-categorie">Sous-catégorie
             <select id="ob-sous-categorie" disabled><option value="">Toutes les sous-catégories</option></select>
           </label>
-        </div>
+          <fieldset><legend>Prix d’achat (argent)</legend><div class="ob-plage"><label>Minimum<input id="ob-prix-min" type="number" min="0" step="any"></label><label>Maximum<input id="ob-prix-max" type="number" min="0" step="any"></label></div><label class="ob-check"><input id="ob-prix-inconnu" type="checkbox"> Inclure les prix non renseignés</label></fieldset>
+          <label>Effet <input id="ob-effet" type="search" placeholder="Nom de l’effet"></label>
+          <label>Caractéristique <select id="ob-caracteristique"><option value="">Toutes</option><option value="froid">Protection contre le froid</option><option value="chaud">Protection contre la chaleur</option><option value="prot_physique">Protection physique</option><option value="res_physique">Résistance physique</option><option value="res_feu">Résistance au feu</option><option value="res_froid">Résistance au froid</option><option value="res_eclair">Résistance à l’éclair</option><option value="res_decomposition">Résistance à la décomposition</option><option value="res_ethere">Résistance à l’éthéré</option><option value="vitesse">Vitesse</option><option value="barriere">Barrière</option><option value="recuperationAction">Récupération d’action</option><option value="pm">Réduction du coût en PM</option><option value="pe">Réduction du coût en PE</option><option value="poches">Poches</option></select></label>
+          <label>Valeur minimale <input id="ob-carac-min" type="number" step="any" value="1"></label>
+          <div class="ob-plage"><label>Poids max. (kg)<input id="ob-poids-max" type="number" min="0" step="any"></label><label>Volume max. (L)<input id="ob-volume-max" type="number" min="0" step="any"></label></div>
+          <label>Taille <select id="ob-taille"><option value="">Toutes</option><option>Microscopique</option><option>Infime</option><option>Minuscule</option><option>Très petite</option><option>Petite</option><option>Moyenne</option><option>Grande</option><option>Très grande</option><option>Gigantesque</option><option>Colossale</option></select></label>
+          <label>Trier par <select id="ob-tri"><option value="nom">Nom</option><option value="achat">Prix</option><option value="poids">Poids</option><option value="volume">Volume</option></select></label>
+          <label class="ob-check"><input id="ob-inverse" type="checkbox"> Ordre décroissant</label>
+          <button id="ob-reset" type="button">Effacer les filtres</button>
+      </aside>
+      <section class="ob-col-catalogue" aria-label="Catalogue des équipements">
         <div id="ob-items" class="ob-items" aria-label="Équipements"></div>
         <footer class="ob-pagination">
           <button id="ob-precedent" type="button" disabled>Précédent</button>
@@ -36,6 +42,7 @@
           <button id="ob-suivant" type="button" disabled>Suivant</button>
         </footer>
       </section>
+      <aside class="ob-col-details" aria-label="Détails de l'équipement"><div id="ob-details"></div></aside>
     </div>
   </div>
   <dialog id="ob-dialog" aria-labelledby="ob-dialog-title">

@@ -17,7 +17,7 @@ class Node {
 function boot(fetcher){
  const doc={ids:{},createElement(tag){return new Node(tag,this);},getElementById(id){return this.ids[id];},documentElement:null};
  doc.documentElement=doc.createElement('html');
- for(const id of ['ob-recherche','ob-sous-categorie','ob-categorie','ob-items','ob-details','ob-status','ob-dialog','ob-quantite-chat','ob-dialog-title','ob-annuler','ob-page','ob-precedent','ob-suivant']){const n=doc.createElement(id==='ob-categorie'?'select':id==='ob-quantite-chat'?'input':'div');n.id=id;}
+ for(const id of ['ob-recherche','ob-sous-categorie','ob-categorie','ob-items','ob-details','ob-status','ob-dialog','ob-quantite-chat','ob-dialog-title','ob-annuler','ob-page','ob-precedent','ob-suivant','ob-prix-min','ob-prix-max','ob-prix-inconnu','ob-effet','ob-caracteristique','ob-carac-min','ob-poids-max','ob-volume-max','ob-taille','ob-tri','ob-inverse','ob-reset']){const n=doc.createElement(id==='ob-categorie'?'select':id==='ob-quantite-chat'?'input':'div');n.id=id;}
  const form=doc.createElement('form');doc.ids['ob-dialog'].append(form);doc.ids['ob-quantite-chat'].type='number';doc.ids['ob-quantite-chat'].min='1';
  const sent=[],listeners={},top={postMessage:d=>sent.push(d)},parent={};
  const window={top,parent,addEventListener:(t,f)=>{listeners[t]=f;}};
@@ -34,6 +34,9 @@ const tick=()=>new Promise(r=>setImmediate(r));
  const pages=Math.ceil(catalogue.objets.length/24),categories=catalogue.categories.length;
  catalogue.objets.forEach(it=>{assert.ok(it.objet&&typeof it.objet==='object',it.id+' sans données d’inventaire');if(!it.img)return;if(/^https:\/\//.test(it.img)){const image=new URL(it.img);assert.equal(image.protocol,'https:');assert.ok(['outward.wiki.gg','static.wikia.nocookie.net','outward.fandom.com','igneefleur.github.io'].includes(image.hostname),image.hostname);}else assert.ok(fs.existsSync(path.join(root,'docs',it.img)),it.img);assert.ok(it.champs.length);});
  assert.equal($('ob-items').children.length,24);assert.equal($('ob-categorie').children.length,categories+1);assert.equal($('ob-page').textContent,'1 / '+pages);
+ $('ob-recherche').value='Clean Water';$('ob-recherche').oninput();$('ob-prix-max').value='10';$('ob-prix-max').oninput();assert.equal($('ob-items').children[0].textContent,'Aucun résultat.');$('ob-prix-inconnu').checked=true;$('ob-prix-inconnu').onchange();assert.ok($('ob-items').textContent.includes('Clean Water'));
+ $('ob-reset').onclick();$('ob-recherche').value='Adventurer Armor';$('ob-recherche').oninput();$('ob-caracteristique').value='res_feu';$('ob-caracteristique').onchange();$('ob-carac-min').value='17';$('ob-carac-min').oninput();assert.ok($('ob-items').textContent.includes('Adventurer Armor'));$('ob-carac-min').value='18';$('ob-carac-min').oninput();assert.equal($('ob-items').children[0].textContent,'Aucun résultat.');$('ob-reset').onclick();
+ $('ob-recherche').value='Great Life Potion';$('ob-recherche').oninput();$('ob-effet').value='saignement';$('ob-effet').oninput();assert.ok($('ob-items').textContent.includes('Great Life Potion'));$('ob-poids-max').value='0.2';$('ob-poids-max').oninput();assert.equal($('ob-items').children[0].textContent,'Aucun résultat.');$('ob-reset').onclick();
  assert.equal($('ob-precedent').disabled,true);$('ob-suivant').onclick();assert.equal($('ob-page').textContent,'2 / '+pages);
  $('ob-categorie').value='Armes';$('ob-categorie').onchange();$('ob-sous-categorie').value='Dagues';$('ob-sous-categorie').onchange();assert.ok($('ob-items').children.length>0);assert.equal($('ob-page').textContent,'1 / 3');
  $('ob-recherche').value='Astral';$('ob-recherche').oninput();assert.equal($('ob-items').children.length,1);assert.ok($('ob-details').textContent.includes('Astral Dagger'));
