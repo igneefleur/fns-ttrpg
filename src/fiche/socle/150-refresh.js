@@ -79,6 +79,7 @@
   var refreshEmpreintes=null;
   var VUE_DEPENDANCES={notes:['notes'],bg:['background'],avantages:['avantages'],techniques:['techniques'],journal:[],modules:['modules','modActifs'],mods:['mods']};
   function refresh(force) {
+    recupSynchroniseSuivi();
     actualiseHorlogeAlcool();
     actualiseRegimeExposition();
     suitEffondrement();

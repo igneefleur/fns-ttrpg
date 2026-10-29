@@ -2,20 +2,21 @@
   // popup de l'extension et les attributs miroir Roll20 (barres de jetons,
   // macros). Elle ne se relit jamais : elle se recalcule.
   function computeCard() {
+    function visible(k){return state.etat[k]==null?null:Math.floor(state.etat[k]);}
     var caracs = {};
     caracsOrdre().forEach(function (c) { caracs[c] = caracTotal(c); });
     return {
       name: state.name || "Sans nom",
       caracs: caracs,
       capacites: {
-        pv: state.etat.pv, pvMax: pvMax(),
-        pe: state.etat.pe, peMax: peMax(),
-        pm: state.etat.pm, pmMax: pmMax(),
-        pi: state.etat.pi, piMax: piMax(),
-        pr: state.etat.pr, prMax: prMax(),
-        ps: state.etat.ps, psMax: psMax(),
-        ph: state.etat.ph, phMax: phMax(),
-        pc: state.etat.pc, pcMax: pcMax(),
+        pv: visible("pv"), pvMax: pvMax(),
+        pe: visible("pe"), peMax: peMax(),
+        pm: visible("pm"), pmMax: pmMax(),
+        pi: visible("pi"), piMax: piMax(),
+        pr: visible("pr"), prMax: prMax(),
+        ps: visible("ps"), psMax: psMax(),
+        ph: visible("ph"), phMax: phMax(),
+        pc: visible("pc"), pcMax: pcMax(),
         expo: state.etat.expo, expoMax: expoMax(),
         charge: charge(), chargePorte: poidsPorte(),
         acces: accesRapides(), accesPris: accesPris(),

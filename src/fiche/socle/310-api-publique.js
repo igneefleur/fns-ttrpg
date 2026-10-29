@@ -55,7 +55,7 @@
           c.focus({ preventScroll: true });
           // Les commandes ± ne sont pas encore dans l'état. Une saisie locale
           // reste aussi sous les doigts pendant la réception d'autres champs.
-          c.value = focus.reserve ? courant(focus.reserve) : focus.value;
+          c.value = focus.reserve ? Math.floor(courant(focus.reserve)) : focus.value;
           try { if (focus.start !== null) c.setSelectionRange(focus.start, focus.end, focus.direction); } catch (e) {}
           c.scrollTop = focus.scroll;
         }

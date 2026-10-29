@@ -127,18 +127,17 @@
     meme.categorie=categorie === "digestive" ? "digestive" : "speciale";meme.effet=id;meme.source=String(source||"");meme.cible=String(cible||"");meme.actif=true;
     meme.reste=seconds;meme.duree=seconds;meme.suivi=0;if(d.nutrition)meme.facteur=Math.max(0,num(facteur,1));return true;
   }
-  function effetsAvance(secondes) {
-    var efficaces=Object.create(null);effetsSources().forEach(function(x){if(x.e.id)efficaces[x.e.id]=true;});
+  function effetsAvance(secondes, debitsDejaAppliques) {
+    var efficaces=Object.create(null),deltas={};effetsSources().forEach(function(x){if(x.e.id)efficaces[x.e.id]=true;});
     (state.effetsActifs || []).forEach(function(e){
       if(!e.actif)return;
       var d=effetDefinition(e.effet),r=d && efficaces[e.id] && d.ops.regen,sec=e.reste===null?secondes:Math.min(secondes,e.reste);
-      if(r && sec>0) {
-        if((r.points>0 && courant(r.reserve)>=maxDe(r.reserve)) || (r.points<0 && courant(r.reserve)<=0))e.suivi=0;
-        else {e.suivi+=sec;var ticks=Math.floor((e.suivi+1e-9)/r.cadence);e.suivi-=ticks*r.cadence;if(ticks)bougeReserve(r.reserve,ticks*r.points*num(e.facteur,1));}
-      }
+      if(r && sec>0 && !debitsDejaAppliques)deltas[r.reserve]=num(deltas[r.reserve],0)+sec/r.cadence*r.points*num(e.facteur,1);
+      e.suivi=0;
       if(e.reste!==null)e.reste=Math.max(0,e.reste-secondes);
     });
-    state.effetsActifs=state.effetsActifs.filter(function(e){return e.reste===null || e.reste>0;});
+    Object.keys(deltas).forEach(function(k){bougeReserve(k,deltas[k]);});
+    state.effetsActifs=state.effetsActifs.filter(function(e){return e.reste===null || e.reste>1e-8;});
   }
   function effetTemps(secondes) {
     if(secondes===null)return "—";

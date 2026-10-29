@@ -6,6 +6,7 @@
   // repasse pas, le bandeau reste.
   var elSavePanne = null;
   function save() {
+    arronditReservesTemps();
     window.OwdInventoryData.normalizeSlots(state.inv.objets);
     rangeEmplacements(state.inv.objets);
     window.OwdInventoryData.bind(state.inv.objets);

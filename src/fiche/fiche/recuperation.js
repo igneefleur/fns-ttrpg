@@ -96,7 +96,7 @@
     r.type = d.cle;
     r.temps = Math.max(0, Number(r.temps) || 0);
     if (!isFinite(Number(r.resteSecondes))) r.resteSecondes = r.temps * d.secondes;
-    r.resteSecondes = Math.max(0, Math.floor(Number(r.resteSecondes) || 0));
+    r.resteSecondes = Math.max(0, (Number(r.resteSecondes) || 0));
     return r;
   }
   function recupAjoutsNormalisesModule() {
@@ -139,8 +139,8 @@
     return recupsListe().concat(recupAjoutsNormalisesModule()).concat((state.effetsActifs||[]).filter(function(e){var d=effetDefinition(e.effet);return d&&d.ops.regen;}).map(function(e){var d=effetDefinition(e.effet);return {id:e.id,reserve:d.ops.regen.reserve,contexte:d.nom,effetActif:e};}));
   }
 
-  // ---- branchement au moteur temporel discret ----
-  // Le socle gère les ticks des récupérations natives. Le module lui fournit
+  // ---- branchement au moteur temporel progressif ----
+  // Le socle gère les débits des récupérations natives. Le module lui fournit
   // simplement ses ajouts et leur durée en secondes.
   var recupExpireModule = {};
   function recupPurgeExpiresModule() {
@@ -161,15 +161,15 @@
   recupSecondesDisponiblesTemps = function (r, e, secondes, sens) {
     if (!e || !e.actif) return 0;
     if (!r.perso || sens < 0) return secondes;
-    return Math.min(secondes, Math.max(0, Math.floor(Number(r.resteSecondes) || 0)));
+    return Math.min(secondes, Math.max(0, (Number(r.resteSecondes) || 0)));
   };
   recupApresPasTemps = function (r, e, secondes, sens) {
     if (!r || !r.perso || !e || !e.actif || !(secondes > 0)) return;
     if (sens > 0) {
-      r.resteSecondes = Math.max(0, Math.floor(Number(r.resteSecondes) || 0) - secondes);
-      if (!r.resteSecondes) recupExpireModule[r.id] = true;
+      r.resteSecondes = Math.max(0, (Number(r.resteSecondes) || 0) - secondes);
+      if (r.resteSecondes<1e-8) {r.resteSecondes=0;recupExpireModule[r.id] = true;}
     } else {
-      r.resteSecondes = Math.max(0, Math.floor(Number(r.resteSecondes) || 0) + secondes);
+      r.resteSecondes = Math.max(0, (Number(r.resteSecondes) || 0) + secondes);
     }
   };
   recupFinTemps = function (sens) { if (sens > 0) recupPurgeExpiresModule(); };

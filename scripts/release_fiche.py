@@ -419,6 +419,8 @@ def main():
         return 1
     if not lancer("Vêtements, récupérations et images", ["node", "scripts/test_vetements.js"], racine):
         return 1
+    if not lancer("Récupération progressive et événements", ["node", "scripts/test_recuperation_progressive.js"], racine):
+        return 1
     if not lancer("Nutrition, effets et cumul", ["node", "scripts/test_nutrition.js"], racine):
         return 1
     if not lancer("Sous-vêtements et port", ["node", "scripts/test_sous_vetements.js"], racine):

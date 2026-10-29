@@ -152,11 +152,11 @@
         champs.push(["Difficulté", fmtP(difficulte)]);
         if (comp) champs.push(["Compétence", comp.nom || "Compétence"]);
         if (state.combatOptions.defenses.utiliseEndurance && !state.combatOptions.defenses.lente) {
-          state.etat.pe = Math.round((courant("pe") - effetCout("pe",cout)) * 100) / 100;
+          state.etat.pe = (courant("pe") - effetCout("pe",cout));
           champs.push(["Endurance", "−" + fmtP(effetCout("pe",cout))]);
         }
       }
-      if (state.combatOptions.defenses.degatsAuto && subis > 0) state.etat.pv = Math.round((courant("pv") - subis) * 100) / 100;
+      if (state.combatOptions.defenses.degatsAuto && subis > 0) state.etat.pv = (courant("pv") - subis);
       refresh(); sayChat(nom, champs, {kind:"defense", final:finaux, total:subis});
     }, "Valider");
   }

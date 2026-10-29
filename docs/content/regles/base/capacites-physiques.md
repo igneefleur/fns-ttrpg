@@ -107,7 +107,7 @@ La table ci-dessous donne le niveau de récupération des points de repos selon 
 
 <div class="memo" markdown>
 
-Exemple. Un personnage ordinaire, qui porte 20 en Vigueur, dispose de 800 points de repos. Si dans une journée il effectue huit heures d'effort intermédiaire avec huit d'effort léger, il devra dormir huit heures pour récupérer les points perdus. Aussi, il lui faut avoir dépensé au moins 80 points avant de trouver le sommeil : seize heures d'effort léger, huit d'effort intermédiaire, ou six heures d'effort lourd (90 points perdus, contre 75 après cinq heures).
+Exemple. Un personnage ordinaire, qui porte 20 en Vigueur, dispose de 800 points de repos. Si dans une journée il effectue huit heures d'effort intermédiaire avec huit d'effort léger, il devra dormir huit heures pour récupérer les points perdus. Aussi, il lui faut avoir dépensé au moins 80 points avant de trouver le sommeil : seize heures d'effort léger, huit d'effort intermédiaire, ou cinq heures vingt d'effort lourd (80 points perdus, contre 75 après cinq heures).
 
 </div>
 
@@ -151,6 +151,10 @@ Ce qu'une réserve rend d'elle-même tient dans un seul nombre, son niveau de r�
 
 Un niveau négatif se lit dans la même table, mais la réserve se vide au lieu de se remplir.
 
+Les gains et pertes sont progressifs : 5 points toutes les 8 heures donnent 0,625 point après une heure. Les fractions sont conservées, avec six décimales à l’enregistrement ; seule la partie entière est affichée. Les sources actives s’additionnent avant application. Aucun gain ne s’accumule au-delà du maximum, ni aucune perte sous zéro.
+
+Le temps est calculé en secondes, par segments. Une expiration, un changement de récupération, un seuil d’effondrement ou une borne de réserve termine le segment ; les conséquences s’appliquent avant de calculer la suite. Les événements au même instant sont traités ensemble. Les horloges de digestion, d’exposition et d’alcool conservent leurs échéances propres.
+
 Les récupérations se répartissent en trois catégories : **Naturelle** (récupération passive commune, selon l'activité), **Digestive** (tout ce qui est mangé ou bu, y compris potions et plats magiques) et **Spéciale** (autres sources : sorts, équipement et effets externes). Les cinq activités sont les conditions de la récupération naturelle : seule l'activité actuelle s'applique, sans récupération permanente supplémentaire.
 
 L'effondrement ne modifie que les récupérations naturelles indiquées dans sa table. Les récupérations digestives et spéciales restent indépendantes. Vomir le contenu ingéré interrompt les effets digestifs encore en cours ; les points déjà récupérés restent acquis. Les effets instantanés déjà résolus ne sont pas annulés.
@@ -183,7 +187,7 @@ Manger ou boire ne restaure plus immédiatement les PS et PH. Les aliments et le
 
 Chaque portion a sa propre progression. Les récupérations et déperditions digestives de PS et PH sont **cumulables**, y compris entre plusieurs portions du même objet. Le temps déjà accumulé par une portion n'est pas remis à zéro lorsqu'une autre est consommée. Une déperdition utilise les mêmes cadences qu'une récupération, en retirant les points. Vomir interrompt aussi les déperditions digestives restantes.
 
-Les effets **Récupération (Nourriture) PS/PH I à X** et **Déperdition (Nourriture) PS/PH I à X** correspondent aux niveaux de récupération 4 à 13. Les effets **Récupération (Eau)** et **Déperdition (Eau)** ont cinq rangs, correspondant aux niveaux 10 à 14. Ces rangs existent même si aucun objet ne les utilise encore. Les points sont appliqués à chaque échéance complète de leur cadence, y compris à l'instant où l'effet expire.
+Les effets **Récupération (Nourriture) PS/PH I à X** et **Déperdition (Nourriture) PS/PH I à X** correspondent aux niveaux de récupération 4 à 13. Les effets **Récupération (Eau)** et **Déperdition (Eau)** ont cinq rangs, correspondant aux niveaux 10 à 14. Ces rangs existent même si aucun objet ne les utilise encore. Les points sont appliqués progressivement jusqu’à l’expiration de l’effet. Le niveau 4 reste à 20 points toutes les 8 heures : un effet actif deux heures apporte donc 5 points.
 
 Les autres familles de récupération et d'amélioration ne cumulent pas plusieurs rangs d'une même famille : seul le plus élevé s'applique. Les récupérations alimentaires, de potion et d'eau restent des familles distinctes. La récupération PI des potions comporte cinq rangs, correspondant aux niveaux 6 à 10, pendant 2 heures.
 
@@ -199,7 +203,7 @@ Les points de vie mesurent ce que le corps encaisse avant de tomber. Ils découl
 
 <p class="formula">Points de vie = 80 + Vigueur</p>
 
-La récupération de base des points de vie est au niveau +5 pendant le sommeil, soit 5 points par heure complète. Les quatre activités éveillées sont au niveau 0.
+La récupération de base des points de vie est au niveau +5 pendant le sommeil, soit 5 points par heure. Les quatre activités éveillées sont au niveau 0.
 
 <div class="memo" markdown>
 
@@ -217,19 +221,19 @@ Les points d'endurance reviennent selon l'activité : niveau +11 pendant le somm
 
 <div class="memo" markdown>
 
-Exemple. En effort léger, le niveau +9 rend 5 points toutes les dix minutes complètes. En effort lourd, le niveau +7 rend 15 points par heure complète. Le sommeil, au niveau +11, rend 15 points toutes les dix minutes complètes.
+Exemple. En effort léger, le niveau +9 rend 5 points toutes les dix minutes. En effort lourd, le niveau +7 rend 15 points par heure. Le sommeil, au niveau +11, rend 15 points toutes les dix minutes.
 
 </div>
 
 ### Les points de mana
 
-Pour un personnage reposé, les quatre activités éveillées ont une récupération de mana de niveau 0. Le sommeil est au niveau −5 et coûte 5 points de mana par heure complète.
+Pour un personnage reposé, les quatre activités éveillées ont une récupération de mana de niveau 0. Le sommeil est au niveau −5 et coûte 5 points de mana par heure.
 
 L'effondrement de Repos ajoute 1 niveau de récupération naturelle des PM par point, uniquement éveillé (Repos, Léger, Intermédiaire et Lourd). Aucun bonus ne s'applique pendant le sommeil. Cette règle remplace le bonus de 2 niveaux par tranche de 10 % de PR manquants.
 
 <div class="memo" markdown>
 
-Exemple. Avec cinq points d'effondrement de Repos, le personnage récupère naturellement son mana au niveau +5 éveillé, soit 5 points par heure complète. Pendant le sommeil, le niveau reste −5.
+Exemple. Avec cinq points d'effondrement de Repos, le personnage récupère naturellement son mana au niveau +5 éveillé, soit 5 points par heure. Pendant le sommeil, le niveau reste −5.
 
 </div>
 

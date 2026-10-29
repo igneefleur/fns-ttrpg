@@ -202,7 +202,7 @@
       // Les dégâts utilisent encore toutes les propriétés du projectile tiré.
       var message = preparerMessage();
       if (state.combatOptions.attaques.utiliseEndurance && !state.combatOptions.attaques.lente && r.endurance > 0)
-        state.etat.pe = Math.round((courant("pe") - effetCout("pe",r.endurance)) * 100) / 100;
+        state.etat.pe = (courant("pe") - effetCout("pe",r.endurance));
       if (state.combatOptions.attaques.utiliseMunition && r.munition) {
         retireUneMunition(r.munition);
       }

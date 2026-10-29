@@ -16,9 +16,9 @@
       function () { return "Survie — " + (state.name || "sans nom"); },
       function () {
         return [
-          [abbrCap("pr", "PR"), fmtP(courant("pr")) + " / " + fmtP(prMax())],
-          [abbrCap("ps", "PS"), fmtP(courant("ps")) + " / " + fmtP(psMax())],
-          [abbrCap("ph", "PH"), fmtP(courant("ph")) + " / " + fmtP(phMax())],
+          [abbrCap("pr", "PR"), fmtP(Math.floor(courant("pr"))) + " / " + fmtP(prMax())],
+          [abbrCap("ps", "PS"), fmtP(Math.floor(courant("ps"))) + " / " + fmtP(psMax())],
+          [abbrCap("ph", "PH"), fmtP(Math.floor(courant("ph"))) + " / " + fmtP(phMax())],
           ["Effondrement", String(effondrement())]
         ];
       }));

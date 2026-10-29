@@ -177,7 +177,9 @@
     if (m <= 0) return 0;
     var perte = (m - courantBrut(cle)) / m * 100;
     if (perte <= 0) return 0;
-    return Math.floor(perte / effTranche());
+    var q=perte/effTranche();
+    if(typeof recupSensTemps!=="undefined" && recupSensTemps && recupSensTemps[cle]>0 && Math.abs(q-Math.round(q))<1e-9)q-=1e-9;
+    return Math.max(0,Math.floor(q+1e-10));
   }
   var EFF_PARTIES = ["pr", "charge", "froid", "chaud", "ps", "contenance", "ph", "alcool", "pi", "autre"];
   function effReglage(cle) {

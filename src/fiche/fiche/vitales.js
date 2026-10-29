@@ -24,7 +24,7 @@
 
   // Le signe moins TYPOGRAPHIQUE, comme dans sign() : à cette taille le trait
   // d'union du clavier passe pour une césure.
-  function reserveFmt(n) { return n < 0 ? "−" + fmtP(-n) : fmtP(n); }
+  function reserveFmt(n) { n=Math.floor(n); return n < 0 ? "−" + fmtP(-n) : fmtP(n); }
 
   // Rend { el, etat } : UNE réserve (bandeau, barre, geste), et la pastille
   // d'état que l'appelant remplit lui-même. La CARTE qui la porte est à part
@@ -84,7 +84,7 @@
       if (!isFinite(d) || !d) return;
       if (cle === "pi") d = effetPerteInnocence(d);
       if (d < 0 && /^(pv|pe|pm)$/.test(cle)) d = -effetCout(cle, -d);
-      state.etat[cle] = Math.round((courant(cle) + d) * 100) / 100;
+      state.etat[cle] = (courant(cle) + d);
       delta.value = "";
       refresh();
     }
@@ -100,7 +100,7 @@
     hooks.push(function () {
       if (consommation) consommation.textContent = "Consommation " + cle.toUpperCase() + " : " + fmtP(effetConsommation(cle)) + " %";
       var v = courant(cle), m = maxDe(cle);
-      if (document.activeElement !== inp) inp.value = v;
+      if (document.activeElement !== inp) inp.value = Math.floor(v);
       // un <input> ROGNE au lieu de déborder : sa largeur suit le nombre de
       // signes (les chiffres sont à chasse fixe)
       inp.style.width = Math.max(3.4, String(inp.value).length + 0.3) + "ch";
