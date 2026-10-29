@@ -70,8 +70,8 @@ html:not(.night) #ob-dialog{background:#f7f5ef;color:#242424}
 .ob-filtres button{background:#343027;border:1px solid #837154;border-radius:3px;color:inherit;padding:7px;cursor:pointer}
 .ob-col-details{flex:0 0 33%;border-right:0;border-left:1px solid #81715566}
 .ob-items{display:flex;flex-direction:column;gap:5px}
-.ob-item{min-height:0;display:flex;flex-direction:row;align-items:center;padding:4px;gap:9px}
-.ob-item-tile{width:44px;aspect-ratio:21 / 32;flex:none;overflow:hidden;border:1px solid #6e634f;border-radius:7px;background:#16130f}
+.ob-item{flex:0 0 auto;min-height:80px;display:flex;flex-direction:row;align-items:center;padding:5px;gap:9px;line-height:1.4}
+.ob-item-tile{width:44px;height:67px;aspect-ratio:21 / 32;flex:none;overflow:hidden;border:1px solid #6e634f;border-radius:7px;background:#16130f}
 .ob-item .ob-item-tile img{display:block;height:100%;width:100%;object-fit:cover}
 .ob-item-info{display:flex;min-width:0;flex:1;flex-direction:column;gap:3px}
 .ob-item-meta{font-size:11px;color:#b3a385}
