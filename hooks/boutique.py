@@ -138,6 +138,12 @@ def champs(o, effects):
     if o['typeObjet'] == 'consommable':
         if o.get('nourri'):
             for k, label in [('places','Contenance'), ('ps','PS'), ('ph','PH')]: add(label, o.get(k, 0), True)
+            source = 'Eau' if o.get('sousType', '').startswith('liquide') else 'Nourriture'
+            for res in ('ps', 'ph'):
+                total = o.get(res, 0)
+                if not total: continue
+                definition = next((e for e in effects.values() if e.get('nutrition') == {'source':source, 'reserve':res, 'apport':total}), None)
+                if definition: add('Assimilation '+res.upper(), definition['nom']+' — '+definition['description'])
         add('Temps (DA)', o.get('tempsConsommation', 0), True)
         for k, val in o.get('restaurations', {}).items():
             if val: add('Restauration ' + k.upper(), number(val) + ' ' + o.get('unitesRestauration', {}).get(k, 'points'))
@@ -153,8 +159,7 @@ def champs(o, effects):
         d = effects[eid]
         value = d['nom']
         if d.get('description'): value += ' — ' + d['description']
-        if d.get('dureeTexte'): value += ' (' + d['dureeTexte'] + ')'
-        if d.get('manuel'): value += ' — gestion manuelle'
+        if d.get('dureeTexte') and d['dureeTexte'].lower() not in d.get('description', '').lower(): value += ' (' + d['dureeTexte'] + ')'
         add(f'Effet {i+1}', value)
     return f
 

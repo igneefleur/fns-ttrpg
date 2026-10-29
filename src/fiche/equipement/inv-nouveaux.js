@@ -269,7 +269,10 @@
       if(it.unitesRestauration&&it.unitesRestauration[k]==="% max")v=avant[k]*v/100;
       if(ingere && (k==="ps"||k==="ph"))v+=num(it[k],0);
       v*=q;if(k==="pi")v=effetPerteInnocence(v);
-      if(v)bougeReserve(k,v);
+      if(ingere && (k==='ps'||k==='ph') && v){
+        var digestion=effetNutrition(it,k,v/q);
+        if(digestion)appliqueEffet(digestion.id,it.nom,'',undefined,'digestive',q);
+      }else if(v)bougeReserve(k,v);
     });
     if(ingere)state.etat.contenance=Math.round((contenancePrise()+q*pnum(it.places))*1000)/1000;
     it.qte=Math.round((it.qte-q)*100)/100;

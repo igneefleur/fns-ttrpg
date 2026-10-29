@@ -60,7 +60,8 @@
     if(it.contenant)add("Contenant",it.contenant);if(it.contenu)add("Contenu",it.contenu);
     add("Type",INV_TYPES_OBJETS[invType(it)]);add("Sous-type",it.sousType);add("Taille",it.taille);add("Mains",it.mains || it.arme&&it.arme.mains || 1);
     if(it.nourri){add("Contenance",it.places===null?"Non renseignée":fmtP(it.places || 0));add("PS",it.ps===null?"Non renseigné":fmtP(it.ps||0));add("PH",it.ph===null?"Non renseigné":fmtP(it.ph||0));}
-    (it.effets||[]).filter(Boolean).forEach(function(id,i){add("Effet "+(i+1),id);});
+    (it.effets||[]).filter(Boolean).forEach(function(id,i){var d=typeof effetDefinition==='function'?effetDefinition(id):null;add("Effet "+(i+1),d?d.nom+' — '+d.description:id);});
+    if(it.nourri && typeof effetNutrition==='function')['ps','ph'].forEach(function(k){var d=effetNutrition(it,k,num(it[k],0));if(d)add('Assimilation '+k.toUpperCase(),d.nom+' — '+d.description);});
     Object.keys(it.restaurations||{}).forEach(function(k){if(it.restaurations[k])add("Restauration "+k.toUpperCase(),fmtP(it.restaurations[k])+" "+(it.unitesRestauration[k]||"points"));});
     if(it.cap)add("Capacité",fmtP(it.cap)+" L");if(it.ep)add("Accroches",fmtP(it.ep)+" acc (max. "+(it.tailleAccroche || "non renseignée")+")");
     if(it.poches)add("Poches",fmtP(it.poches)+" L");if(it.froid)add("Protection froid",fmtP(it.froid));if(it.chaud)add("Protection chaleur",fmtP(it.chaud));

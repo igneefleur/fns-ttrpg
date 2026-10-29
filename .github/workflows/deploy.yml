@@ -98,6 +98,7 @@ jobs:
           node scripts/test_boutique_passifs.js
           node scripts/test_vetements.js
           node scripts/test_sous_vetements.js
+          node scripts/test_nutrition.js
           python scripts/test_boutique_reference.py
 
       - name: Build

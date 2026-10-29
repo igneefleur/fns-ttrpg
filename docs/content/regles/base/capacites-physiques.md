@@ -154,6 +154,7 @@ Un niveau négatif se lit dans la même table, mais la réserve se vide au lieu 
 Les récupérations se répartissent en trois catégories : **Naturelle** (récupération passive commune, selon l'activité), **Digestive** (tout ce qui est mangé ou bu, y compris potions et plats magiques) et **Spéciale** (autres sources : sorts, équipement et effets externes). Les cinq activités sont les conditions de la récupération naturelle : seule l'activité actuelle s'applique, sans récupération permanente supplémentaire.
 
 L'effondrement ne modifie que les récupérations naturelles indiquées dans sa table. Les récupérations digestives et spéciales restent indépendantes. Vomir le contenu ingéré interrompt les effets digestifs encore en cours ; les points déjà récupérés restent acquis. Les effets instantanés déjà résolus ne sont pas annulés.
+
 La table suivante donne les niveaux de base des sept réserves. La qualité du sommeil et les autres modificateurs s'appliquent ensuite.
 
 | Activité | PV | PE | PM | PR | PS | PH | PI |
@@ -175,6 +176,22 @@ Exemple. La récupération des points de mana pendant le sommeil est au niveau �
 ---
 
 <div class="cols" markdown>
+
+### L'assimilation des aliments et des boissons
+
+Manger ou boire ne restaure plus immédiatement les PS et PH. Les aliments et les soupes donnent des récupérations digestives pendant **2 heures**. Les eaux, thés, laits, vins et potions donnent leurs apports PS et PH pendant **10 minutes**. Leurs autres effets gardent leur durée propre.
+
+Chaque portion a sa propre progression. Les récupérations et déperditions digestives de PS et PH sont **cumulables**, y compris entre plusieurs portions du même objet. Le temps déjà accumulé par une portion n'est pas remis à zéro lorsqu'une autre est consommée. Une déperdition utilise les mêmes cadences qu'une récupération, en retirant les points. Vomir interrompt aussi les déperditions digestives restantes.
+
+Les effets **Récupération (Nourriture) PS/PH I à X** et **Déperdition (Nourriture) PS/PH I à X** correspondent aux niveaux de récupération 4 à 13. Les effets **Récupération (Eau)** et **Déperdition (Eau)** ont cinq rangs, correspondant aux niveaux 10 à 14. Ces rangs existent même si aucun objet ne les utilise encore. Les points sont appliqués à chaque échéance complète de leur cadence, y compris à l'instant où l'effet expire.
+
+Les autres familles de récupération et d'amélioration ne cumulent pas plusieurs rangs d'une même famille : seul le plus élevé s'applique. Les récupérations alimentaires, de potion et d'eau restent des familles distinctes. La récupération PI des potions comporte cinq rangs, correspondant aux niveaux 6 à 10, pendant 2 heures.
+
+### Le soulagement de l'effondrement
+
+**Soulagement (Satiété), (Hydratation) et (Repos)** ont dix rangs : chaque rang neutralise les pénalités d'un point d'effondrement du type concerné pendant 2 heures. **Soulagement Total** neutralise les pénalités de 10 points de chaque type d'effondrement pendant 2 heures. Pour un même type, seul le soulagement le plus élevé s'applique.
+
+**Résistance à la corruption I à X** réduit les pertes d'Innocence de 10 % par rang pendant 2 heures. **Dégâts Physiques Augmentés (Nourriture/Potion) I à V** donne 10 % de dégâts physiques par rang ; la durée est de 10 minutes pour la nourriture et de 1 minute pour les potions. Les deux sources de ce bonus de dégâts restent non cumulables entre elles.
 
 ### Les points de vie
 

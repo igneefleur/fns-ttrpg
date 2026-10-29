@@ -20,6 +20,7 @@
     { cle: "minute", nom: "Minute", court: "m", secondes: 60 },
     { cle: "10m", nom: "10 minutes", court: "10 m", secondes: 600 },
     { cle: "1h", nom: "1 heure", court: "1 h", secondes: 3600 },
+    { cle: "2h", nom: "2 heures", court: "2 h", secondes: 7200 },
     { cle: "8h", nom: "8 heures", court: "8 h", secondes: 28800 }
   ];
 
@@ -32,7 +33,7 @@
   }
   function recupNom(r) {
     if (r && r.perso) return String(r.nom || "Récupération");
-    if (r && r.effetActif) return (r.effetActif.categorie === "digestive" ? "Digestive" : "Spéciale") + " · " + r.contexte;
+    if (r && r.effetActif) return r.contexte + (num(r.effetActif.facteur,1)!==1?' × '+fmtP(r.effetActif.facteur):'');
     return (r && r.categorie === "naturelle" ? "Naturelle · " : "") + String(r && r.contexte || "Sans contexte");
   }
   function recupDureeDef(cle) {
@@ -131,7 +132,7 @@
     };
   }
   function recupEtatVueModule(r) {
-    if(r && r.effetActif){var d=effetDefinition(r.effetActif.effet),re=d.ops.regen;return {niveau:re.niveau,cadence:recupCadence(re.niveau),actif:effetsSources().some(function(x){return x.e.id===r.effetActif.id;}),condition:true,bloque:false};}
+    if(r && r.effetActif){var d=effetDefinition(r.effetActif.effet),re=d.ops.regen,c=recupCadence(re.niveau);if(c)c.points*=num(r.effetActif.facteur,1);return {niveau:re.niveau,cadence:c,actif:effetsSources().some(function(x){return x.e.id===r.effetActif.id;}),condition:true,bloque:false};}
     return r && r.perso ? recupCustomEtatModule(r) : recupEtat(r);
   }
   function recupListeModule() {
@@ -315,7 +316,7 @@
       } else {
         niv.appendChild(recupChampNombreModule(function () { return recupBonusModule(r); }, function (v) {
           ecritRecupBonusModule(r, v);
-        }, "Bonus au niveau de récupération (la règle de base n'est pas modifiée)"));
+        }, "Bonus au niveau de récupération"));
       }
     } else {
       nivJeu = recupValeurModule(""); niv.appendChild(nivJeu);
@@ -363,6 +364,7 @@
       row.classList.toggle("inactive", !e.actif);
       row.title = recupLibelle(r) + " · " + recupNom(r) + " · niveau " + sign(e.niveau) +
         (e.cadence ? " · " + recupCadenceCourt(e.cadence) : "");
+      if(r.effetActif){var definition=effetDefinition(r.effetActif.effet);if(definition)row.title=definition.description;}
     });
     return row;
   }

@@ -211,6 +211,7 @@
     var photo = effPhotoPartie(cle); if (photo) return photo.niveau;
     var mod = cle === "autre" ? num(state.effAutre, 0) : num(effReglage(cle).mod, 0);
     var valeur = effApresEffets(cle) + mod;
+    if(cle === 'autre')return valeur-Math.min(Math.max(0,valeur),Math.max(0,effetBonus('soulagementTotal')));
     return cle === "autre" ? valeur : Math.max(0, valeur);
   }
   function effondrementAuto() {

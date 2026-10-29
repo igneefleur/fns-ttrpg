@@ -58,7 +58,7 @@ const server=http.createServer((req,res)=> {
   await add('Récupération Nourriture PV I');assert.equal((await state()).effetsActifs[0].effet,'Récupération Nourriture PV V');
   await add('Récupération Potion PV V');assert.equal((await state()).effetsActifs.length,2);
   await advance(60);assert.equal((await state()).effetsActifs.length,1);
-  assert.ok((await sheet.locator('[data-module="recuperation"]').textContent()).includes('Récupération Nourriture PV V'));
+  assert.ok((await sheet.locator('[data-module="recuperation"]').textContent()).includes('Récupération (Nourriture) PV V'));
   // Deux ajouts concurrents de même famille ne doublent pas la récupération.
   await replace(s=>{s.etat.pv=0;const e=s.effetsActifs[0];s.effetsActifs=[{...e,reste:7200,suivi:0},{...e,id:'concurrent-copy',reste:7200,suivi:0}];});
   await advance(600);assert.equal((await state()).etat.pv,10);
@@ -89,7 +89,7 @@ const server=http.createServer((req,res)=> {
   // Consommation réelle : propriétés numériques, dose, contenance, effets, préservation des métadonnées.
   await reset();await replace(s=>{s.etat.ps=100;s.etat.ph=100;s.inv.objets=[{ref:'food',nom:'Dose',qte:2,poids:.2,volume:.4,typeObjet:'solide',sousType:'ingerable',nourri:true,places:3,ps:5,ph:8,tempsConsommation:1,effets:['Alerte +1 niveau'],restaurations:{pv:10},unitesRestauration:{pv:'points'},ou:'poches'}];});
   const before=await state();assert.equal(await frame.evaluate(()=>Owd.effets.consomme('food',1)),true);
-  let s=await state();assert.equal(s.inv.objets[0].qte,1);assert.equal(s.etat.pv,before.etat.pv+10);assert.equal(s.etat.ps,105);assert.equal(s.etat.ph,108);assert.equal(s.etat.contenance,3);assert.equal(s.inv.objets[0].volume,.4);
+  let s=await state();assert.equal(s.inv.objets[0].qte,1);assert.equal(s.etat.pv,before.etat.pv+10);assert.equal(s.etat.ps,100);assert.equal(s.etat.ph,100);assert.ok(s.effetsActifs.some(e=>e.effet==='recup-nourriture-ps-1'));assert.ok(s.effetsActifs.some(e=>e.effet==='recup-nourriture-ph-2'));assert.equal(s.etat.contenance,3);assert.equal(s.inv.objets[0].volume,.4);
   assert.equal(await frame.evaluate(()=>Owd.__calculs.effetAlerte()),1);
   const packed=M.stateToAttrs(s,null);delete packed.owd_state;assert.deepEqual(M.attrsToState(packed).effetsActifs,s.effetsActifs);assert.deepEqual(C.rebuild(C.flatten(s)),s);
   await frame.evaluate(()=>Owd.remonte());assert.equal((await state()).effetsActifs[0].reste,60);
