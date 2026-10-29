@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.29.0b";
+  var RELEASE = "4.30.0b";
   var SCHEMA = 18;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -1637,7 +1637,9 @@
     if (m <= 0) return 0;
     var perte = (m - courantBrut(cle)) / m * 100;
     if (perte <= 0) return 0;
-    return Math.floor(perte / effTranche());
+    var q=perte/effTranche();
+    if(typeof recupSensTemps!=="undefined" && recupSensTemps && recupSensTemps[cle]>0 && Math.abs(q-Math.round(q))<1e-9)q-=1e-9;
+    return Math.max(0,Math.floor(q+1e-10));
   }
   var EFF_PARTIES = ["pr", "charge", "froid", "chaud", "ps", "contenance", "ph", "alcool", "pi", "autre"];
   function effReglage(cle) {
@@ -2091,10 +2093,7 @@
     return out;
   }
   // ---- récupérations naturelles ----
-  // Les niveaux viennent des règles. Le temps ne les traite plus comme un
-  // débit continu : chaque récupération possède un compteur de secondes
-  // consécutives actives et ne produit son effet qu'à la fin d'une cadence
-  // complète (round, minute, 10 m, heure, 8 h...).
+  // Les niveaux viennent des règles ; les cadences définissent des débits continus.
   function recupsListe() {
     var t = tempsDef();
     var liste = t && Array.isArray(t.recuperations) ? t.recuperations.slice() : [];
@@ -2212,8 +2211,7 @@
   }
 
   // Suivi persistant de la tranche en cours : { id: { secondes, signature } }.
-  // Il ne stocke jamais des fractions de point. Une interruption efface le
-  // compteur de la récupération concernée ; le prochain cycle repart de zéro.
+  // Ancien format conservé pour convertir les sauvegardes précédentes.
   function recupSuivi(cree) {
     var d = recupCoffre(cree);
     if (!d.suivi || typeof d.suivi !== "object" || Array.isArray(d.suivi)) {
@@ -2266,14 +2264,21 @@
     if (d < 0 && cur <= 0) return false;
     return !!d;
   }
+  // Conversion unique des reliquats de l'ancien moteur en fractions acquises.
   function recupSynchroniseSuivi() {
-    var suivi = recupSuivi(false), liste = recupListeTemps(), parId = {};
-    liste.forEach(function (r) { if (r && r.id) parId[r.id] = r; });
-    Object.keys(suivi).forEach(function (id) {
-      var r = parId[id], e = r ? recupEtatTemps(r) : null;
-      if (!r || !e || !e.actif || !recupPeutCumulerTemps(r, e) ||
-          suivi[id].signature !== recupSignatureTemps(r, e)) delete suivi[id];
+    var suivi = recupSuivi(false), deltas = {}, liste = recupListeTemps();
+    liste.forEach(function(r) {
+      var u=suivi[r.id], e=recupEtatTemps(r), cadence=e && recupCadenceSecondes(e.cadence);
+      if(u && e.actif && cadence && u.signature===recupSignatureTemps(r,e))
+        deltas[r.reserve]=num(deltas[r.reserve],0)+recupDeltaTickTemps(r,e)*Math.max(0,num(u.secondes,0))/cadence;
     });
+    delete recupCoffre(false).suivi;
+    if(typeof effetsSources==='function') effetsSources().forEach(function(x) {
+      var r=x.d.ops.regen, e=x.e;
+      if(r && e.suivi>0) deltas[r.reserve]=num(deltas[r.reserve],0)+r.points*num(e.facteur,1)*e.suivi/r.cadence;
+    });
+    (state.effetsActifs||[]).forEach(function(e){e.suivi=0;});
+    Object.keys(deltas).forEach(function(k){bougeReserve(k,deltas[k]);});
     nettoieRecupCoffre();
   }
   // LA ZONE IDÉALE, en température de l'AIR : sa zone de confort (le corps nu
@@ -2311,15 +2316,18 @@
   // Le facteur de dépense d'une réserve, selon le niveau de froid ou de chaud
   // que l'exposition a atteint.
   function facteurDepense() { return 1; }
-  // Une réserve qui bouge d'un nombre ENTIER de points. Les récupérations
-  // arrivent désormais ici seulement lorsqu'une cadence complète est atteinte.
-  function bougeReserve(cle, delta) {
+  // Les fractions restent dans la réserve, sans reliquat ni attribut séparé.
+  function bougeReserve(cle, delta, maximum) {
     if (!delta) return;
-    var cur = courant(cle), m = maxDe(cle);
-    var v = Math.floor(cur + delta);
-    if (delta > 0) v = Math.max(cur, Math.min(v, m));
-    else v = Math.min(cur, Math.max(v, 0));
-    state.etat[cle] = v >= m && cur <= m ? null : v;
+    var cur=courant(cle), m=maximum===undefined?maxDe(cle):maximum, v=cur+delta;
+    if(delta>0)v=Math.max(cur,Math.min(v,m));
+    else v=Math.min(cur,Math.max(v,0));
+    state.etat[cle]=v>=m && cur<=m?null:v;
+  }
+  function arronditReservesTemps() {
+    ['pv','pe','pm','pi','pr','ps','ph','pc'].forEach(function(k){
+      if(typeof state.etat[k]==='number')state.etat[k]=Math.round(state.etat[k]*1e6)/1e6;
+    });
   }
 
   // ---- horloge interne ----
@@ -2335,10 +2343,11 @@
     return ((((Math.max(0, Math.floor(Number(h.jours) || 0)) * 24) +
               Math.max(0, Math.floor(Number(h.heures) || 0))) * 60 +
               Math.max(0, Math.floor(Number(h.minutes) || 0))) * 60 +
-              Math.max(0, Math.floor(Number(h.secondes) || 0)));
+              Math.max(0, Number(h.secondes) || 0));
   }
   function poseHorlogeDepuisSecondes(total) {
-    total = Math.max(0, Math.floor(Number(total) || 0));
+    total = Math.max(0, Number(total) || 0);
+    if(Math.abs(total-Math.round(total))<1e-8)total=Math.round(total);
     var h = horlogeCourante();
     h.jours = Math.floor(total / 86400); total %= 86400;
     h.heures = Math.floor(total / 3600); total %= 3600;
@@ -2346,7 +2355,7 @@
     h.secondes = total % 60;
   }
   function bougeHorloge(secondes) {
-    var avant = horlogeVersSecondes(), apres = Math.max(0, avant + Math.trunc(Number(secondes) || 0));
+    var avant = horlogeVersSecondes(), apres = Math.max(0, avant + (Number(secondes) || 0));
     poseHorlogeDepuisSecondes(apres);
     return apres - avant;
   }
@@ -2369,10 +2378,11 @@
     return ((((Math.max(0, Math.floor(Number(h.jours) || 0)) * 24) +
               Math.max(0, Math.floor(Number(h.heures) || 0))) * 60 +
               Math.max(0, Math.floor(Number(h.minutes) || 0))) * 60 +
-              Math.max(0, Math.floor(Number(h.secondes) || 0)));
+              Math.max(0, Number(h.secondes) || 0));
   }
   function poseHorlogeProcessus(cle, total, regime) {
-    total = Math.max(0, Math.floor(Number(total) || 0));
+    total = Math.max(0, Number(total) || 0);
+    if(Math.abs(total-Math.round(total))<1e-8)total=Math.round(total);
     var h = horlogeProcessus(cle, regime);
     h.jours = Math.floor(total / 86400); total %= 86400;
     h.heures = Math.floor(total / 3600); total %= 3600;
@@ -2386,58 +2396,74 @@
   }
   function avanceHorlogeProcessus(cle, secondes, regime) {
     var avant = secondesHorlogeProcessus(cle);
-    var apres = Math.max(0, avant + Math.trunc(Number(secondes) || 0));
+    var apres = Math.max(0, avant + (Number(secondes) || 0));
     poseHorlogeProcessus(cle, apres, regime);
     return { avant: avant, apres: apres };
   }
   function reinitialiseHorlogeDigestion() { resetHorlogeProcessus("horlogeDigestion"); }
 
-  // ---- moteur discret de récupération ----
+  // ---- débits simultanés et échéances ----
+  var recupSensTemps = null;
+  function recupDebitsTemps() {
+    var debits={};
+    recupListeTemps().forEach(function(r){
+      var e=recupEtatTemps(r), c=e && recupCadenceSecondes(e.cadence);
+      if(e && e.actif && c)debits[r.reserve]=num(debits[r.reserve],0)+recupDeltaTickTemps(r,e)/c;
+    });
+    if(typeof effetsSources==='function')effetsSources().forEach(function(x){
+      var r=x.d.ops.regen;
+      if(r && r.cadence>0)debits[r.reserve]=num(debits[r.reserve],0)+r.points*num(x.e.facteur,1)/r.cadence;
+    });
+    return debits;
+  }
+  function recupAppliqueDebitsTemps(debits, secondes) {
+    // Tous les débits et plafonds sont lus avant de déplacer la première réserve.
+    var max={}, valeurs={};
+    Object.keys(debits).forEach(function(k){max[k]=maxDe(k);valeurs[k]=courant(k);});
+    Object.keys(debits).forEach(function(k){
+      var delta=debits[k]*secondes,cur=valeurs[k],m=max[k],v=cur+delta;
+      v=delta>0?Math.max(cur,Math.min(v,m)):Math.min(cur,Math.max(v,0));
+      state.etat[k]=v>=m && cur<=m?null:v;
+    });
+  }
+  function recupDureesPasTemps(secondes,sens) {
+    recupListeTemps().forEach(function(r){var e=recupEtatTemps(r),a=recupSecondesDisponiblesTemps(r,e,secondes,sens);if(a>0)recupApresPasTemps(r,e,a,sens);});
+  }
   function recupAppliquePas(secondes, sens) {
-    var liste = recupListeTemps(), suivi = recupSuivi(true), deltas = {};
-    var i, r, e, actif, cadence, sig, u, total, ticks, delta;
-    sens = sens < 0 ? -1 : 1;
-    for (i = 0; i < liste.length; i++) {
-      r = liste[i];
-      if (!r || !r.id || !r.reserve) continue;
-      e = recupEtatTemps(r);
-      actif = recupSecondesDisponiblesTemps(r, e, secondes, sens);
-      if (!(actif > 0) || !e || !e.actif || !e.cadence) { delete suivi[r.id]; continue; }
-
-      // La durée d'un effet temporaire s'écoule tant qu'il est actif, même si
-      // la réserve est déjà pleine/vide. En revanche une réserve à sa borne ne
-      // banque jamais une récupération future : son compteur repart de zéro.
-      recupApresPasTemps(r, e, actif, sens);
-      cadence = recupCadenceSecondes(e.cadence);
-      if (!cadence) { delete suivi[r.id]; continue; }
-      sig = recupSignatureTemps(r, e);
-      u = suivi[r.id];
-      if (!u || typeof u !== "object" || u.signature !== sig) u = { secondes: 0, signature: sig };
-
-      if (sens > 0 && !recupPeutCumulerTemps(r, e)) { delete suivi[r.id]; continue; }
-      total = Math.max(0, num(u.secondes, 0));
-      ticks = 0;
-      if (sens > 0) {
-        total += actif;
-        ticks = Math.floor(total / cadence);
-        total -= ticks * cadence;
-      } else {
-        total -= actif;
-        while (total < 0) { total += cadence; ticks++; }
+    var debits={};
+    recupListeTemps().forEach(function(r){
+      var e=recupEtatTemps(r),c=e && recupCadenceSecondes(e.cadence),a=recupSecondesDisponiblesTemps(r,e,secondes,sens);
+      if(e && e.actif && c && a>0)debits[r.reserve]=num(debits[r.reserve],0)+recupDeltaTickTemps(r,e)*a/c*(sens<0?-1:1);
+    });
+    recupDureesPasTemps(secondes,sens);recupAppliqueDebitsTemps(debits,1);
+  }
+  function prochainStopTemps(reste,debits) {
+    var pas=reste;
+    function stop(n){if(n>1e-8 && n<pas)pas=n;}
+    // Expirations : même un effet sans récupération peut modifier les plafonds.
+    (state.effetsActifs||[]).forEach(function(e){if(e.actif && e.reste!==null)stop(e.reste);});
+    recupListeTemps().forEach(function(r){var e=recupEtatTemps(r);if(r.perso && e.actif)stop(r.resteSecondes);});
+    Object.keys(debits).forEach(function(k){
+      var d=debits[k],v=courant(k),m=maxDe(k);
+      if(!d)return;
+      stop(((d>0?m:0)-v)/d);
+      // Chaque frontière d'effondrement doit être traitée avant de poursuivre.
+      if(['pr','ps','ph','pi'].indexOf(k)>=0 && m>0){
+        var unite=m*effTranche()/100,q=v/unite;
+        var cible=(d>0?Math.floor(q+1e-9)+1:Math.ceil(q-1e-9)-1)*unite;
+        if(cible>=0 && cible<=m)stop((cible-v)/d);
       }
-      u.secondes = total; u.signature = sig; suivi[r.id] = u;
-      if (ticks) {
-        delta = recupDeltaTickTemps(r, e) * ticks * sens;
-        deltas[r.reserve] = num(deltas[r.reserve], 0) + delta;
-      }
-    }
-    Object.keys(deltas).forEach(function (cle) { bougeReserve(cle, deltas[cle]); });
-    nettoieRecupCoffre();
+    });
+    var t=tempsDef(),cadence=Math.max(1,num(t.tranche,10)*60);
+    if(actualiseRegimeExposition())stop(cadence-secondesHorlogeProcessus('horlogeExposition')%cadence);
+    cadence=digestionCadenceSecondes();
+    if(cadence && snum(state.etat.contenance)>0)stop(cadence-secondesHorlogeProcessus('horlogeDigestion')%cadence);
+    if(state.effAlcool>0){cadence=alcoolCadenceSecondes();stop(cadence-secondesHorlogeProcessus('horlogeAlcool')%cadence);}
+    return pas;
   }
 
   // ---- exposition et digestion, par tranches complètes ----
-  // Elles suivent la même philosophie que les récupérations : une cadence ne
-  // produit RIEN avant d'être entièrement écoulée. Chacune possède cependant
+  // Une cadence produit son effet seulement à son échéance. Chacune possède
   // une vraie horloge J/H/M/S cumulative, indépendante de l'horloge du monde.
 
   function digestionCadenceSecondes() {
@@ -2455,7 +2481,7 @@
       // pourrait offrir un tick immédiat au prochain aliment avalé.
       if (!(snum(state.etat.contenance) > 0)) { reinitialiseHorlogeDigestion(); return; }
       var a = avanceHorlogeProcessus("horlogeDigestion", secondes);
-      var ticks = Math.floor(a.apres / cadence) - Math.floor(a.avant / cadence);
+      var ticks = Math.floor((a.apres+1e-8) / cadence) - Math.floor((a.avant+1e-8) / cadence);
       if (ticks > 0) {
         var retire = ticks * Math.max(0, num(dg.volume, 0));
         state.etat.contenance = Math.max(0, Math.round((snum(state.etat.contenance) - retire) * 1000) / 1000);
@@ -2480,8 +2506,8 @@
   function resorptionApplicable(x, p) {
     return !!x && (!p || x * p < 0 || Math.abs(x) > plafondExpo(p));
   }
-  function regimeExposition() {
-    var p = paliersClimat(), x = snum(state.etat.expo);
+  function regimeExposition(intensite) {
+    var p = intensite===undefined?paliersClimat():intensite, x = snum(state.etat.expo);
     if (resorptionApplicable(x,p)) return x > 0 ? "resorption:chaud" : "resorption:froid";
     return p ? "intensite:" + p : "";
   }
@@ -2496,8 +2522,8 @@
     var cadence=Math.max(1,num(t.tranche,10)*60), tranches=Math.max(1,Math.floor(secondesHorlogeProcessus("horlogeExposition")/cadence));
     return Math.min(num(r.max,0),num(r.depart,0)+(tranches-1)*num(r.increment,0));
   }
-  function appliqueTickExposition() {
-    var t=tempsDef(),p=paliersClimat(),m=expoMax(),x=snum(state.etat.expo);
+  function appliqueTickExposition(intensite) {
+    var t=tempsDef(),p=intensite===undefined?paliersClimat():intensite,m=expoMax(),x=snum(state.etat.expo);
     if(!t||!(m>0))return;
     var resorption=resorptionApplicable(x,p)?niveauResorptionExposition():0;
     if(p && x*p>0 && Math.abs(x)>plafondExpo(p)) {
@@ -2510,7 +2536,7 @@
     }
     state.etat.expo=Math.round(clamp(x,-m,m)*1000000)/1000000;
   }
-  function appliqueExpositionSecondes(secondes, sens) {
+  function appliqueExpositionSecondes(secondes, sens, intensite) {
     var t=tempsDef();if(!t||!(secondes>0))return;
     var cadence=Math.max(1,Math.round(Math.max(1,num(t.tranche,10))*60));
     if(sens<0){
@@ -2518,22 +2544,22 @@
       // seul le temps connu peut être reculé, pas la météo passée.
       poseHorlogeProcessus("horlogeExposition",Math.max(0,secondesHorlogeProcessus("horlogeExposition")-secondes),String(horlogeProcessus("horlogeExposition","").regime||""));return;
     }
-    var reste=Math.floor(secondes);
-    while(reste>0){
-      var regime=regimeExposition(),h=horlogeProcessus("horlogeExposition","");
+    var reste=secondes;
+    while(reste>1e-8){
+      var regime=regimeExposition(intensite),h=horlogeProcessus("horlogeExposition","");
       if(!regime){resetHorlogeProcessus("horlogeExposition","");return;}
       if(h.regime!==regime)resetHorlogeProcessus("horlogeExposition",regime);
       var avant=secondesHorlogeProcessus("horlogeExposition"),pas=Math.min(reste,cadence-avant%cadence);
       avanceHorlogeProcessus("horlogeExposition",pas,regime);reste-=pas;
-      if((avant+pas)%cadence===0){
-        appliqueTickExposition();
-        var apres=regimeExposition();if(apres!==regime)resetHorlogeProcessus("horlogeExposition",apres);
+      if(Math.abs((avant+pas)/cadence-Math.round((avant+pas)/cadence))<1e-9){
+        appliqueTickExposition(intensite);
+        var apres=regimeExposition(intensite);if(apres!==regime)resetHorlogeProcessus("horlogeExposition",apres);
       }
     }
   }
 
-  function appliqueClimatSecondes(secondes, sens) {
-    appliqueExpositionSecondes(secondes, sens);
+  function appliqueClimatSecondes(secondes, sens, intensite) {
+    appliqueExpositionSecondes(secondes, sens, intensite);
     appliqueDigestionSecondes(secondes, sens);
   }
 
@@ -2576,9 +2602,7 @@
     try { return JSON.stringify(a) === JSON.stringify(b); } catch (e) { return false; }
   }
 
-  // La plus petite unité du monde est le round : 3 secondes. Toutes les
-  // cadences natives et toutes les durées proposées au module Récupération en
-  // sont des multiples, ce qui rend le calcul exact sans fractions de temps.
+  // Pas du repli de recul hors journal ; l’avance utilise les événements.
   var PAS_TEMPS_SECONDES = 3;
   function alcoolCadenceSecondes() { return Math.max(1, num((effDef().specifiques || {}).alcoolSecondes, 7200)); }
   function actualiseHorlogeAlcool() {
@@ -2588,26 +2612,31 @@
     actualiseHorlogeAlcool();
     if (!(state.effAlcool > 0) || !(secondes > 0)) return;
     var cadence = alcoolCadenceSecondes(), a = avanceHorlogeProcessus("horlogeAlcool", secondes);
-    var ticks = Math.floor(a.apres / cadence) - Math.floor(a.avant / cadence);
+    var ticks = Math.floor((a.apres+1e-8) / cadence) - Math.floor((a.avant+1e-8) / cadence);
     state.effAlcool = Math.max(0, state.effAlcool - ticks);
     actualiseHorlogeAlcool();
   }
   function avancerSecondesCalcul(secondes) {
-    var t = tempsDef(), e = effortDe(state.effort), restant, pas;
-    if (!t || !e) return 0;
-    secondes = Math.max(0, Math.floor(Number(secondes) || 0));
-    restant = secondes;
-    while (restant > 0) {
-      pas = Math.min(PAS_TEMPS_SECONDES, restant);
-      recupAppliquePas(pas, 1);
-      effetsAvance(pas);
-      suitEffondrement();
-      appliqueClimatSecondes(pas, 1);
-      avanceAlcoolSecondes(pas);
-      bougeHorloge(pas);
-      restant -= pas;
-    }
-    recupFinTemps(1);
+    var t=tempsDef(),e=effortDe(state.effort),restant,pas,debits,intensite;
+    if(!t || !e)return 0;
+    secondes=Math.max(0,Math.floor(Number(secondes)||0));restant=secondes;
+    recupSynchroniseSuivi();suitEffondrement();
+    try {
+      while(restant>1e-8){
+        debits=recupDebitsTemps();recupSensTemps=debits;
+        // À une frontière exacte, les débits suivants utilisent le côté vers lequel on évolue.
+        suitEffondrement();debits=recupDebitsTemps();recupSensTemps=debits;
+        pas=prochainStopTemps(restant,debits);intensite=paliersClimat();
+        recupDureesPasTemps(pas,1);
+        recupAppliqueDebitsTemps(debits,pas);
+        effetsAvance(pas,true);
+        appliqueClimatSecondes(pas,1,intensite);avanceAlcoolSecondes(pas);bougeHorloge(pas);
+        recupFinTemps(1);suitEffondrement();
+        restant=Math.max(0,restant-pas);
+      }
+    } finally {recupSensTemps=null;}
+    suitEffondrement();
+    arronditReservesTemps();
     return secondes;
   }
   function reculerSecondesCalcul(secondes) {
@@ -2626,7 +2655,7 @@
     return -fait;
   }
   function avancerSecondes(secondes) {
-    secondes = Math.trunc(Number(secondes) || 0);
+    secondes = (Number(secondes) || 0);
     if (secondes < 0) return reculerSecondes(-secondes);
     if (!secondes) return 0;
     var avant = photoTemps(), fait = avancerSecondesCalcul(secondes);
@@ -2673,20 +2702,21 @@
   // popup de l'extension et les attributs miroir Roll20 (barres de jetons,
   // macros). Elle ne se relit jamais : elle se recalcule.
   function computeCard() {
+    function visible(k){return state.etat[k]==null?null:Math.floor(state.etat[k]);}
     var caracs = {};
     caracsOrdre().forEach(function (c) { caracs[c] = caracTotal(c); });
     return {
       name: state.name || "Sans nom",
       caracs: caracs,
       capacites: {
-        pv: state.etat.pv, pvMax: pvMax(),
-        pe: state.etat.pe, peMax: peMax(),
-        pm: state.etat.pm, pmMax: pmMax(),
-        pi: state.etat.pi, piMax: piMax(),
-        pr: state.etat.pr, prMax: prMax(),
-        ps: state.etat.ps, psMax: psMax(),
-        ph: state.etat.ph, phMax: phMax(),
-        pc: state.etat.pc, pcMax: pcMax(),
+        pv: visible("pv"), pvMax: pvMax(),
+        pe: visible("pe"), peMax: peMax(),
+        pm: visible("pm"), pmMax: pmMax(),
+        pi: visible("pi"), piMax: piMax(),
+        pr: visible("pr"), prMax: prMax(),
+        ps: visible("ps"), psMax: psMax(),
+        ph: visible("ph"), phMax: phMax(),
+        pc: visible("pc"), pcMax: pcMax(),
         expo: state.etat.expo, expoMax: expoMax(),
         charge: charge(), chargePorte: poidsPorte(),
         acces: accesRapides(), accesPris: accesPris(),
@@ -2708,6 +2738,7 @@
   // repasse pas, le bandeau reste.
   var elSavePanne = null;
   function save() {
+    arronditReservesTemps();
     window.OwdInventoryData.normalizeSlots(state.inv.objets);
     rangeEmplacements(state.inv.objets);
     window.OwdInventoryData.bind(state.inv.objets);
@@ -3070,6 +3101,7 @@
   var refreshEmpreintes=null;
   var VUE_DEPENDANCES={notes:['notes'],bg:['background'],avantages:['avantages'],techniques:['techniques'],journal:[],modules:['modules','modActifs'],mods:['mods']};
   function refresh(force) {
+    recupSynchroniseSuivi();
     actualiseHorlogeAlcool();
     actualiseRegimeExposition();
     suitEffondrement();
@@ -4564,7 +4596,7 @@
     r.type = d.cle;
     r.temps = Math.max(0, Number(r.temps) || 0);
     if (!isFinite(Number(r.resteSecondes))) r.resteSecondes = r.temps * d.secondes;
-    r.resteSecondes = Math.max(0, Math.floor(Number(r.resteSecondes) || 0));
+    r.resteSecondes = Math.max(0, (Number(r.resteSecondes) || 0));
     return r;
   }
   function recupAjoutsNormalisesModule() {
@@ -4607,8 +4639,8 @@
     return recupsListe().concat(recupAjoutsNormalisesModule()).concat((state.effetsActifs||[]).filter(function(e){var d=effetDefinition(e.effet);return d&&d.ops.regen;}).map(function(e){var d=effetDefinition(e.effet);return {id:e.id,reserve:d.ops.regen.reserve,contexte:d.nom,effetActif:e};}));
   }
 
-  // ---- branchement au moteur temporel discret ----
-  // Le socle gère les ticks des récupérations natives. Le module lui fournit
+  // ---- branchement au moteur temporel progressif ----
+  // Le socle gère les débits des récupérations natives. Le module lui fournit
   // simplement ses ajouts et leur durée en secondes.
   var recupExpireModule = {};
   function recupPurgeExpiresModule() {
@@ -4629,15 +4661,15 @@
   recupSecondesDisponiblesTemps = function (r, e, secondes, sens) {
     if (!e || !e.actif) return 0;
     if (!r.perso || sens < 0) return secondes;
-    return Math.min(secondes, Math.max(0, Math.floor(Number(r.resteSecondes) || 0)));
+    return Math.min(secondes, Math.max(0, (Number(r.resteSecondes) || 0)));
   };
   recupApresPasTemps = function (r, e, secondes, sens) {
     if (!r || !r.perso || !e || !e.actif || !(secondes > 0)) return;
     if (sens > 0) {
-      r.resteSecondes = Math.max(0, Math.floor(Number(r.resteSecondes) || 0) - secondes);
-      if (!r.resteSecondes) recupExpireModule[r.id] = true;
+      r.resteSecondes = Math.max(0, (Number(r.resteSecondes) || 0) - secondes);
+      if (r.resteSecondes<1e-8) {r.resteSecondes=0;recupExpireModule[r.id] = true;}
     } else {
-      r.resteSecondes = Math.max(0, Math.floor(Number(r.resteSecondes) || 0) + secondes);
+      r.resteSecondes = Math.max(0, (Number(r.resteSecondes) || 0) + secondes);
     }
   };
   recupFinTemps = function (sens) { if (sens > 0) recupPurgeExpiresModule(); };
@@ -5104,18 +5136,17 @@
     meme.categorie=categorie === "digestive" ? "digestive" : "speciale";meme.effet=id;meme.source=String(source||"");meme.cible=String(cible||"");meme.actif=true;
     meme.reste=seconds;meme.duree=seconds;meme.suivi=0;if(d.nutrition)meme.facteur=Math.max(0,num(facteur,1));return true;
   }
-  function effetsAvance(secondes) {
-    var efficaces=Object.create(null);effetsSources().forEach(function(x){if(x.e.id)efficaces[x.e.id]=true;});
+  function effetsAvance(secondes, debitsDejaAppliques) {
+    var efficaces=Object.create(null),deltas={};effetsSources().forEach(function(x){if(x.e.id)efficaces[x.e.id]=true;});
     (state.effetsActifs || []).forEach(function(e){
       if(!e.actif)return;
       var d=effetDefinition(e.effet),r=d && efficaces[e.id] && d.ops.regen,sec=e.reste===null?secondes:Math.min(secondes,e.reste);
-      if(r && sec>0) {
-        if((r.points>0 && courant(r.reserve)>=maxDe(r.reserve)) || (r.points<0 && courant(r.reserve)<=0))e.suivi=0;
-        else {e.suivi+=sec;var ticks=Math.floor((e.suivi+1e-9)/r.cadence);e.suivi-=ticks*r.cadence;if(ticks)bougeReserve(r.reserve,ticks*r.points*num(e.facteur,1));}
-      }
+      if(r && sec>0 && !debitsDejaAppliques)deltas[r.reserve]=num(deltas[r.reserve],0)+sec/r.cadence*r.points*num(e.facteur,1);
+      e.suivi=0;
       if(e.reste!==null)e.reste=Math.max(0,e.reste-secondes);
     });
-    state.effetsActifs=state.effetsActifs.filter(function(e){return e.reste===null || e.reste>0;});
+    Object.keys(deltas).forEach(function(k){bougeReserve(k,deltas[k]);});
+    state.effetsActifs=state.effetsActifs.filter(function(e){return e.reste===null || e.reste>1e-8;});
   }
   function effetTemps(secondes) {
     if(secondes===null)return "—";
@@ -5300,7 +5331,7 @@
 
   // Le signe moins TYPOGRAPHIQUE, comme dans sign() : à cette taille le trait
   // d'union du clavier passe pour une césure.
-  function reserveFmt(n) { return n < 0 ? "−" + fmtP(-n) : fmtP(n); }
+  function reserveFmt(n) { n=Math.floor(n); return n < 0 ? "−" + fmtP(-n) : fmtP(n); }
 
   // Rend { el, etat } : UNE réserve (bandeau, barre, geste), et la pastille
   // d'état que l'appelant remplit lui-même. La CARTE qui la porte est à part
@@ -5360,7 +5391,7 @@
       if (!isFinite(d) || !d) return;
       if (cle === "pi") d = effetPerteInnocence(d);
       if (d < 0 && /^(pv|pe|pm)$/.test(cle)) d = -effetCout(cle, -d);
-      state.etat[cle] = Math.round((courant(cle) + d) * 100) / 100;
+      state.etat[cle] = (courant(cle) + d);
       delta.value = "";
       refresh();
     }
@@ -5376,7 +5407,7 @@
     hooks.push(function () {
       if (consommation) consommation.textContent = "Consommation " + cle.toUpperCase() + " : " + fmtP(effetConsommation(cle)) + " %";
       var v = courant(cle), m = maxDe(cle);
-      if (document.activeElement !== inp) inp.value = v;
+      if (document.activeElement !== inp) inp.value = Math.floor(v);
       // un <input> ROGNE au lieu de déborder : sa largeur suit le nombre de
       // signes (les chiffres sont à chasse fixe)
       inp.style.width = Math.max(3.4, String(inp.value).length + 0.3) + "ch";
@@ -5452,9 +5483,9 @@
       function () { return "Survie — " + (state.name || "sans nom"); },
       function () {
         return [
-          [abbrCap("pr", "PR"), fmtP(courant("pr")) + " / " + fmtP(prMax())],
-          [abbrCap("ps", "PS"), fmtP(courant("ps")) + " / " + fmtP(psMax())],
-          [abbrCap("ph", "PH"), fmtP(courant("ph")) + " / " + fmtP(phMax())],
+          [abbrCap("pr", "PR"), fmtP(Math.floor(courant("pr"))) + " / " + fmtP(prMax())],
+          [abbrCap("ps", "PS"), fmtP(Math.floor(courant("ps"))) + " / " + fmtP(psMax())],
+          [abbrCap("ph", "PH"), fmtP(Math.floor(courant("ph"))) + " / " + fmtP(phMax())],
           ["Effondrement", String(effondrement())]
         ];
       }));
@@ -5721,11 +5752,11 @@
         champs.push(["Difficulté", fmtP(difficulte)]);
         if (comp) champs.push(["Compétence", comp.nom || "Compétence"]);
         if (state.combatOptions.defenses.utiliseEndurance && !state.combatOptions.defenses.lente) {
-          state.etat.pe = Math.round((courant("pe") - effetCout("pe",cout)) * 100) / 100;
+          state.etat.pe = (courant("pe") - effetCout("pe",cout));
           champs.push(["Endurance", "−" + fmtP(effetCout("pe",cout))]);
         }
       }
-      if (state.combatOptions.defenses.degatsAuto && subis > 0) state.etat.pv = Math.round((courant("pv") - subis) * 100) / 100;
+      if (state.combatOptions.defenses.degatsAuto && subis > 0) state.etat.pv = (courant("pv") - subis);
       refresh(); sayChat(nom, champs, {kind:"defense", final:finaux, total:subis});
     }, "Valider");
   }
@@ -6111,7 +6142,7 @@
       // Les dégâts utilisent encore toutes les propriétés du projectile tiré.
       var message = preparerMessage();
       if (state.combatOptions.attaques.utiliseEndurance && !state.combatOptions.attaques.lente && r.endurance > 0)
-        state.etat.pe = Math.round((courant("pe") - effetCout("pe",r.endurance)) * 100) / 100;
+        state.etat.pe = (courant("pe") - effetCout("pe",r.endurance));
       if (state.combatOptions.attaques.utiliseMunition && r.munition) {
         retireUneMunition(r.munition);
       }
@@ -11789,7 +11820,7 @@
           c.focus({ preventScroll: true });
           // Les commandes ± ne sont pas encore dans l'état. Une saisie locale
           // reste aussi sous les doigts pendant la réception d'autres champs.
-          c.value = focus.reserve ? courant(focus.reserve) : focus.value;
+          c.value = focus.reserve ? Math.floor(courant(focus.reserve)) : focus.value;
           try { if (focus.start !== null) c.setSelectionRange(focus.start, focus.end, focus.direction); } catch (e) {}
           c.scrollTop = focus.scroll;
         }

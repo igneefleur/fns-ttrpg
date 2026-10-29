@@ -55,9 +55,9 @@
     
       <link rel="stylesheet" href="../../../../stylesheets/cartes.css?v=24">
     
-      <link rel="stylesheet" href="../../../../stylesheets/owd-fiche.css?v=264">
+      <link rel="stylesheet" href="../../../../stylesheets/owd-fiche.css?v=266">
     
-      <link rel="stylesheet" href="../../../../stylesheets/owd-des3d.css?v=264">
+      <link rel="stylesheet" href="../../../../stylesheets/owd-des3d.css?v=266">
     
     <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -1641,7 +1641,7 @@
 </table>
 </div>
 <div class="memo">
-<p>Exemple. Un personnage ordinaire, qui porte 20 en Vigueur, dispose de 800 points de repos. Si dans une journée il effectue huit heures d'effort intermédiaire avec huit d'effort léger, il devra dormir huit heures pour récupérer les points perdus. Aussi, il lui faut avoir dépensé au moins 80 points avant de trouver le sommeil : seize heures d'effort léger, huit d'effort intermédiaire, ou six heures d'effort lourd (90 points perdus, contre 75 après cinq heures).</p>
+<p>Exemple. Un personnage ordinaire, qui porte 20 en Vigueur, dispose de 800 points de repos. Si dans une journée il effectue huit heures d'effort intermédiaire avec huit d'effort léger, il devra dormir huit heures pour récupérer les points perdus. Aussi, il lui faut avoir dépensé au moins 80 points avant de trouver le sommeil : seize heures d'effort léger, huit d'effort intermédiaire, ou cinq heures vingt d'effort lourd (80 points perdus, contre 75 après cinq heures).</p>
 </div>
 </div>
 <hr />
@@ -1745,6 +1745,8 @@
 </table>
 </div>
 <p>Un niveau négatif se lit dans la même table, mais la réserve se vide au lieu de se remplir.</p>
+<p>Les gains et pertes sont progressifs : 5 points toutes les 8 heures donnent 0,625 point après une heure. Les fractions sont conservées, avec six décimales à l’enregistrement ; seule la partie entière est affichée. Les sources actives s’additionnent avant application. Aucun gain ne s’accumule au-delà du maximum, ni aucune perte sous zéro.</p>
+<p>Le temps est calculé en secondes, par segments. Une expiration, un changement de récupération, un seuil d’effondrement ou une borne de réserve termine le segment ; les conséquences s’appliquent avant de calculer la suite. Les événements au même instant sont traités ensemble. Les horloges de digestion, d’exposition et d’alcool conservent leurs échéances propres.</p>
 <p>Les récupérations se répartissent en trois catégories : <strong>Naturelle</strong> (récupération passive commune, selon l'activité), <strong>Digestive</strong> (tout ce qui est mangé ou bu, y compris potions et plats magiques) et <strong>Spéciale</strong> (autres sources : sorts, équipement et effets externes). Les cinq activités sont les conditions de la récupération naturelle : seule l'activité actuelle s'applique, sans récupération permanente supplémentaire.</p>
 <p>L'effondrement ne modifie que les récupérations naturelles indiquées dans sa table. Les récupérations digestives et spéciales restent indépendantes. Vomir le contenu ingéré interrompt les effets digestifs encore en cours ; les points déjà récupérés restent acquis. Les effets instantanés déjà résolus ne sont pas annulés.</p>
 <p>La table suivante donne les niveaux de base des sept réserves. La qualité du sommeil et les autres modificateurs s'appliquent ensuite.</p>
@@ -1823,7 +1825,7 @@
 <h3 id="lassimilation-des-aliments-et-des-boissons">L'assimilation des aliments et des boissons</h3>
 <p>Manger ou boire ne restaure plus immédiatement les PS et PH. Les aliments et les soupes donnent des récupérations digestives pendant <strong>2 heures</strong>. Les eaux, thés, laits, vins et potions donnent leurs apports PS et PH pendant <strong>10 minutes</strong>. Leurs autres effets gardent leur durée propre.</p>
 <p>Chaque portion a sa propre progression. Les récupérations et déperditions digestives de PS et PH sont <strong>cumulables</strong>, y compris entre plusieurs portions du même objet. Le temps déjà accumulé par une portion n'est pas remis à zéro lorsqu'une autre est consommée. Une déperdition utilise les mêmes cadences qu'une récupération, en retirant les points. Vomir interrompt aussi les déperditions digestives restantes.</p>
-<p>Les effets <strong>Récupération (Nourriture) PS/PH I à X</strong> et <strong>Déperdition (Nourriture) PS/PH I à X</strong> correspondent aux niveaux de récupération 4 à 13. Les effets <strong>Récupération (Eau)</strong> et <strong>Déperdition (Eau)</strong> ont cinq rangs, correspondant aux niveaux 10 à 14. Ces rangs existent même si aucun objet ne les utilise encore. Les points sont appliqués à chaque échéance complète de leur cadence, y compris à l'instant où l'effet expire.</p>
+<p>Les effets <strong>Récupération (Nourriture) PS/PH I à X</strong> et <strong>Déperdition (Nourriture) PS/PH I à X</strong> correspondent aux niveaux de récupération 4 à 13. Les effets <strong>Récupération (Eau)</strong> et <strong>Déperdition (Eau)</strong> ont cinq rangs, correspondant aux niveaux 10 à 14. Ces rangs existent même si aucun objet ne les utilise encore. Les points sont appliqués progressivement jusqu’à l’expiration de l’effet. Le niveau 4 reste à 20 points toutes les 8 heures : un effet actif deux heures apporte donc 5 points.</p>
 <p>Les autres familles de récupération et d'amélioration ne cumulent pas plusieurs rangs d'une même famille : seul le plus élevé s'applique. Les récupérations alimentaires, de potion et d'eau restent des familles distinctes. La récupération PI des potions comporte cinq rangs, correspondant aux niveaux 6 à 10, pendant 2 heures.</p>
 <h3 id="le-soulagement-de-leffondrement">Le soulagement de l'effondrement</h3>
 <p><strong>Soulagement (Satiété), (Hydratation) et (Repos)</strong> ont dix rangs : chaque rang neutralise les pénalités d'un point d'effondrement du type concerné pendant 2 heures. <strong>Soulagement Total</strong> neutralise les pénalités de 10 points de chaque type d'effondrement pendant 2 heures. Pour un même type, seul le soulagement le plus élevé s'applique.</p>
@@ -1831,7 +1833,7 @@
 <h3 id="les-points-de-vie">Les points de vie</h3>
 <p>Les points de vie mesurent ce que le corps encaisse avant de tomber. Ils découlent de la Vigueur.</p>
 <p class="formula">Points de vie = 80 + Vigueur</p>
-<p>La récupération de base des points de vie est au niveau +5 pendant le sommeil, soit 5 points par heure complète. Les quatre activités éveillées sont au niveau 0.</p>
+<p>La récupération de base des points de vie est au niveau +5 pendant le sommeil, soit 5 points par heure. Les quatre activités éveillées sont au niveau 0.</p>
 <div class="memo">
 <p>Exemple. Un personnage ordinaire, qui porte 20 en Vigueur, dispose de 100 points de vie. Une nuit de huit heures lui en rend 40 ; blessé à mort, il lui faut deux nuits et demie pour se refaire.</p>
 </div>
@@ -1840,13 +1842,13 @@
 <p class="formula">Points d'endurance = 80 + Endurance</p>
 <p>Les points d'endurance reviennent selon l'activité : niveau +11 pendant le sommeil, +10 au repos, +9 en effort léger, +8 en effort intermédiaire et +7 en effort lourd. L'effort lourd ne bloque plus cette récupération.</p>
 <div class="memo">
-<p>Exemple. En effort léger, le niveau +9 rend 5 points toutes les dix minutes complètes. En effort lourd, le niveau +7 rend 15 points par heure complète. Le sommeil, au niveau +11, rend 15 points toutes les dix minutes complètes.</p>
+<p>Exemple. En effort léger, le niveau +9 rend 5 points toutes les dix minutes. En effort lourd, le niveau +7 rend 15 points par heure. Le sommeil, au niveau +11, rend 15 points toutes les dix minutes.</p>
 </div>
 <h3 id="les-points-de-mana">Les points de mana</h3>
-<p>Pour un personnage reposé, les quatre activités éveillées ont une récupération de mana de niveau 0. Le sommeil est au niveau −5 et coûte 5 points de mana par heure complète.</p>
+<p>Pour un personnage reposé, les quatre activités éveillées ont une récupération de mana de niveau 0. Le sommeil est au niveau −5 et coûte 5 points de mana par heure.</p>
 <p>L'effondrement de Repos ajoute 1 niveau de récupération naturelle des PM par point, uniquement éveillé (Repos, Léger, Intermédiaire et Lourd). Aucun bonus ne s'applique pendant le sommeil. Cette règle remplace le bonus de 2 niveaux par tranche de 10 % de PR manquants.</p>
 <div class="memo">
-<p>Exemple. Avec cinq points d'effondrement de Repos, le personnage récupère naturellement son mana au niveau +5 éveillé, soit 5 points par heure complète. Pendant le sommeil, le niveau reste −5.</p>
+<p>Exemple. Avec cinq points d'effondrement de Repos, le personnage récupère naturellement son mana au niveau +5 éveillé, soit 5 points par heure. Pendant le sommeil, le niveau reste −5.</p>
 </div>
 <h3 id="les-points-dinnocence">Les points d'innocence</h3>
 <p>Les points d'innocence mesurent ce que l'âme supporte avant que la souillure ne la gagne. Ils découlent de la Ferveur.</p>
@@ -2503,15 +2505,15 @@
       
         <script src="../../../../javascripts/night.js"></script>
       
-        <script src="../../../../javascripts/owd-migrations.js?v=264"></script>
+        <script src="../../../../javascripts/owd-migrations.js?v=266"></script>
       
-        <script src="../../../../javascripts/owd-mods.js?v=264"></script>
+        <script src="../../../../javascripts/owd-mods.js?v=266"></script>
       
-        <script src="../../../../javascripts/owd-des3d.js?v=264"></script>
+        <script src="../../../../javascripts/owd-des3d.js?v=266"></script>
       
-        <script src="../../../../javascripts/owd-inventaire-data.js?v=264"></script>
+        <script src="../../../../javascripts/owd-inventaire-data.js?v=266"></script>
       
-        <script src="../../../../javascripts/owd-fiche.js?v=264"></script>
+        <script src="../../../../javascripts/owd-fiche.js?v=266"></script>
       
         <script src="../../../../javascripts/copybtn.js"></script>
       
