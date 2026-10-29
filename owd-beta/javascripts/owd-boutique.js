@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   var $ = function (id) { return document.getElementById(id); };
-  var items = [], filtered = [], selected = null, page = 0, size = 24, quantity = 1, drag = null, pending = null;
+  var items = [], filtered = [], selected = null, page = 0, size = 12, quantity = 1, drag = null, pending = null;
   var search = $('ob-recherche'), categories = $('ob-categorie'), subcategories = $('ob-sous-categorie'), list = $('ob-items'), details = $('ob-details'), status = $('ob-status');
   var dialog = $('ob-dialog'), chatQuantity = $('ob-quantite-chat');
   function post(d) { d.ns = 'owd'; window.top.postMessage(d, '*'); }

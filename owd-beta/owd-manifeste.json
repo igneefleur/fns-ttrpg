@@ -1,7 +1,7 @@
 {
   "_lisezmoi": "Manifeste de la fiche Outward. C'est LUI qui dit quoi charger. roll20-fiche.html est un amorceur gelé, servi sans ?v= par la coquille signée et gardé dix minutes par GitHub Pages : il ne peut donc pas nommer les fichiers lui-même sans risquer de les figer. Ce manifeste, lui, se relit sans cache à chaque ouverture (fetch no-store, plus un ?t= qui change la clé de cache du CDN). Toutes les URL sont RELATIVES à la racine du site ; une URL absolue, une URL commençant par // ou une URL contenant .. fait refuser le manifeste ENTIER, et l'amorceur retombe sur son repli gelé — panne muette, la fiche a l'air de marcher mais sans ?v= et sans manifeste. Les ?v= sont des clés de cache, jamais des numéros de version : ils s'incrémentent ensemble, et le site qui charge le même bundle par mkdocs doit porter le même numéro, sinon les deux mondes ne font pas tourner le même code.",
   "_versions": "release et schema sont deux numéros indépendants. release est le numéro publié X.Y.Z ; le suffixe beta b ne change pas son rang. schema est un entier qui ne monte que lorsque la forme des données change. Toute différence de release ou de schéma demande un accord explicite avant mise à jour du personnage. Le réglage blocage est release. Une ancienne version ne peut être ouverte que si son archive exacte est disponible. Les numéros du manifeste, du bundle et de la table des attributs doivent rester alignés, ainsi que la chaîne des migrations.",
-  "release": "4.28.0b",
+  "release": "4.28.1b",
   "schema": 18,
   "blocage": "release",
   "amorce": [
