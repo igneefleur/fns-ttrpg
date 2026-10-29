@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.28.1b";
+  var RELEASE = "4.29.0b";
   var SCHEMA = 18;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -1671,6 +1671,7 @@
     var photo = effPhotoPartie(cle); if (photo) return photo.niveau;
     var mod = cle === "autre" ? num(state.effAutre, 0) : num(effReglage(cle).mod, 0);
     var valeur = effApresEffets(cle) + mod;
+    if(cle === 'autre')return valeur-Math.min(Math.max(0,valeur),Math.max(0,effetBonus('soulagementTotal')));
     return cle === "autre" ? valeur : Math.max(0, valeur);
   }
   function effondrementAuto() {
@@ -4487,6 +4488,7 @@
     { cle: "minute", nom: "Minute", court: "m", secondes: 60 },
     { cle: "10m", nom: "10 minutes", court: "10 m", secondes: 600 },
     { cle: "1h", nom: "1 heure", court: "1 h", secondes: 3600 },
+    { cle: "2h", nom: "2 heures", court: "2 h", secondes: 7200 },
     { cle: "8h", nom: "8 heures", court: "8 h", secondes: 28800 }
   ];
 
@@ -4499,7 +4501,7 @@
   }
   function recupNom(r) {
     if (r && r.perso) return String(r.nom || "Récupération");
-    if (r && r.effetActif) return (r.effetActif.categorie === "digestive" ? "Digestive" : "Spéciale") + " · " + r.contexte;
+    if (r && r.effetActif) return r.contexte + (num(r.effetActif.facteur,1)!==1?' × '+fmtP(r.effetActif.facteur):'');
     return (r && r.categorie === "naturelle" ? "Naturelle · " : "") + String(r && r.contexte || "Sans contexte");
   }
   function recupDureeDef(cle) {
@@ -4598,7 +4600,7 @@
     };
   }
   function recupEtatVueModule(r) {
-    if(r && r.effetActif){var d=effetDefinition(r.effetActif.effet),re=d.ops.regen;return {niveau:re.niveau,cadence:recupCadence(re.niveau),actif:effetsSources().some(function(x){return x.e.id===r.effetActif.id;}),condition:true,bloque:false};}
+    if(r && r.effetActif){var d=effetDefinition(r.effetActif.effet),re=d.ops.regen,c=recupCadence(re.niveau);if(c)c.points*=num(r.effetActif.facteur,1);return {niveau:re.niveau,cadence:c,actif:effetsSources().some(function(x){return x.e.id===r.effetActif.id;}),condition:true,bloque:false};}
     return r && r.perso ? recupCustomEtatModule(r) : recupEtat(r);
   }
   function recupListeModule() {
@@ -4782,7 +4784,7 @@
       } else {
         niv.appendChild(recupChampNombreModule(function () { return recupBonusModule(r); }, function (v) {
           ecritRecupBonusModule(r, v);
-        }, "Bonus au niveau de récupération (la règle de base n'est pas modifiée)"));
+        }, "Bonus au niveau de récupération"));
       }
     } else {
       nivJeu = recupValeurModule(""); niv.appendChild(nivJeu);
@@ -4830,6 +4832,7 @@
       row.classList.toggle("inactive", !e.actif);
       row.title = recupLibelle(r) + " · " + recupNom(r) + " · niveau " + sign(e.niveau) +
         (e.cadence ? " · " + recupCadenceCourt(e.cadence) : "");
+      if(r.effetActif){var definition=effetDefinition(r.effetActif.effet);if(definition)row.title=definition.description;}
     });
     return row;
   }
@@ -4976,6 +4979,14 @@
   function effetsDefinitions() { return D().effets || []; }
   var effetsCacheListe=null,effetsCache={};
   function effetDefinition(id) { var liste=effetsDefinitions();if(liste!==effetsCacheListe){effetsCacheListe=liste;effetsCache=Object.create(null);liste.forEach(function(d){effetsCache[d.id]=d;});}return effetsCache[id] || null; }
+  function effetNutrition(it, reserve, total) {
+    if(!total)return null;
+    var source=/^liquide/.test(it.sousType||'') || it.typeObjet==='liquide' || it.contenu==='liquide' ? 'Eau' : 'Nourriture';
+    var defs=effetsDefinitions().filter(function(d){var n=d.nutrition;return n && n.source===source && n.reserve===reserve && Math.sign(n.apport)===Math.sign(total);});
+    // Une ancienne portion garde ses données ; son apport utilise le palier le plus proche.
+    defs.sort(function(a,b){return Math.abs(a.nutrition.apport-total)-Math.abs(b.nutrition.apport-total)||Math.abs(a.nutrition.apport)-Math.abs(b.nutrition.apport);});
+    return defs[0]||null;
+  }
   function effetsNormalise(s) {
     var ids = {};
     s.effetsActifs = (Array.isArray(s.effetsActifs) ? s.effetsActifs : []).filter(function (e) { return e && typeof e === "object" && e.effet; }).map(function (e) {
@@ -4983,7 +4994,7 @@
       return { categorie: e.categorie === "digestive" ? "digestive" : "speciale", id: id, effet: String(e.effet), source: String(e.source || ""), cible: String(e.cible || ""),
         actif: e.actif !== false, reste: e.reste == null ? null : Math.max(0, num(e.reste, 0)),
         duree: e.duree == null ? null : Math.max(0, num(e.duree, 0)), suivi: Math.max(0, num(e.suivi, 0)),
-        niveau: clamp(Math.floor(num(e.niveau, 1)), 1, 4) };
+        niveau: clamp(Math.floor(num(e.niveau, 1)), 1, 4), facteur: Math.max(0, num(e.facteur, 1)) };
     }).filter(function (e) { return e.reste === null || e.reste > 0; });
     var alcool = 0, progression = 0;
     s.effetsActifs = s.effetsActifs.filter(function (e) {
@@ -5021,20 +5032,25 @@
     // Même famille portée plusieurs fois : le rang le plus élevé gagne.
     var families = {};
     return out.filter(function (x) {
-      if (x.d.ops.alerte || x.d.ops.alcool) return true;
+      if (x.d.ops.alerte || x.d.ops.alcool || x.d.nutrition) return true;
       var key = x.d.famille + "|" + (x.e.cible || "");
       var best = out.filter(function (y) { return y.d.famille + "|" + (y.e.cible || "") === key; }).sort(function (a,b) { return num(b.d.rang,0)-num(a.d.rang,0); })[0];
       if (families[key] || best !== x) return false; families[key] = true; return true;
     });
   }
   function effetBonus(cle, type, cible) {
-    var n = 0;
+    var n = 0, soulagement = 0;
     equipementsBonus().forEach(function(o){var v=o.stats&&o.stats[cle];if(type!==undefined)v=v&&v[type];n+=num(v,0);});
     effetsSources().forEach(function (x) {
       if (x.e.cible && x.e.cible !== cible) return;
-      var v = x.d.ops[cle]; if (type !== undefined) v = v && v[type]; n += num(v,0);
+      var v = x.d.ops[cle]; if (type !== undefined) v = v && v[type];
+      if(cle==='effondrement' && type!=='total'){
+        if(x.d.ops.soulagementTotal && ['pr','ps','ph','chaud','froid','charge','contenance','alcool','pi'].indexOf(type)>=0)v=-x.d.ops.soulagementTotal;
+        if(num(v,0)<0){soulagement=Math.min(soulagement,num(v,0));return;}
+      }
+      n += num(v,0);
     });
-    return n;
+    return n+soulagement;
   }
   function effetAlerte() {
     return (state.effetsActifs || []).reduce(function (n,e) { var d=effetDefinition(e.effet); return d && d.ops.alerte && e.actif && (e.reste===null || e.reste>0) ? Math.max(n,e.niveau) : n; },0);
@@ -5059,7 +5075,7 @@
       else if (n < 0 && !state.desUtilises[i]) { state.desUtilises[i] = true; n++; }
     }
   }
-  function appliqueEffet(id, source, cible, duree, categorie) {
+  function appliqueEffet(id, source, cible, duree, categorie, facteur) {
     var d=effetDefinition(id); if (!d) return false;
     var op=d.ops || {}, actifs=state.effetsActifs;
     if (op.alcool) { state.effAlcool = Math.max(0, num(state.effAlcool, 0)) + Math.max(0, num(op.alcool, 0)); return true; }
@@ -5077,7 +5093,7 @@
       }); return true;
     }
     if (op.impregnation && !(cible && defenseArme(cible))) return false;
-    var meme=actifs.filter(function(e){var def=effetDefinition(e.effet);return def && def.famille===d.famille && (e.cible||"")===(cible||"");})[0];
+    var meme=d.nutrition ? null : actifs.filter(function(e){var def=effetDefinition(e.effet);return def && def.famille===d.famille && (e.cible||"")===(cible||"");})[0];
     var seconds=duree === undefined ? d.duree : duree;
     if (op.alerte) {
       if (!meme) { meme={id:uid("eff"),effet:id,cible:"",niveau:0};actifs.push(meme); }
@@ -5086,7 +5102,7 @@
       var previous=effetDefinition(meme.effet);if(previous && num(previous.rang,0)>num(d.rang,0))return true;
     } else { meme={id:uid("eff"),niveau:1};actifs.push(meme); }
     meme.categorie=categorie === "digestive" ? "digestive" : "speciale";meme.effet=id;meme.source=String(source||"");meme.cible=String(cible||"");meme.actif=true;
-    meme.reste=seconds;meme.duree=seconds;meme.suivi=0;return true;
+    meme.reste=seconds;meme.duree=seconds;meme.suivi=0;if(d.nutrition)meme.facteur=Math.max(0,num(facteur,1));return true;
   }
   function effetsAvance(secondes) {
     var efficaces=Object.create(null);effetsSources().forEach(function(x){if(x.e.id)efficaces[x.e.id]=true;});
@@ -5094,8 +5110,8 @@
       if(!e.actif)return;
       var d=effetDefinition(e.effet),r=d && efficaces[e.id] && d.ops.regen,sec=e.reste===null?secondes:Math.min(secondes,e.reste);
       if(r && sec>0) {
-        if(courant(r.reserve)>=maxDe(r.reserve))e.suivi=0;
-        else {e.suivi+=sec;var ticks=Math.floor((e.suivi+1e-9)/r.cadence);e.suivi-=ticks*r.cadence;if(ticks)bougeReserve(r.reserve,ticks*r.points);}
+        if((r.points>0 && courant(r.reserve)>=maxDe(r.reserve)) || (r.points<0 && courant(r.reserve)<=0))e.suivi=0;
+        else {e.suivi+=sec;var ticks=Math.floor((e.suivi+1e-9)/r.cadence);e.suivi-=ticks*r.cadence;if(ticks)bougeReserve(r.reserve,ticks*r.points*num(e.facteur,1));}
       }
       if(e.reste!==null)e.reste=Math.max(0,e.reste-secondes);
     });
@@ -5116,8 +5132,8 @@
     var b=block("Effets",null,"effets"),box=el("div","pc-effets-liste");b.appendChild(box);
     var add=miniBtn("+ Ajouter un effet",null,function(){
       var body=el("div","pc-modal-body"),id="",temps=el("input","pc-edit-field"),armes=el("select","pc-select");
-      temps.type="text";temps.inputMode="decimal";temps.placeholder="Durée du référentiel";
-      var select=selectEffet("",function(v){id=v;var d=effetDefinition(id);temps.placeholder=d?d.dureeTexte:"Durée du référentiel";});
+      temps.type="text";temps.inputMode="decimal";temps.placeholder="Durée par défaut";
+      var select=selectEffet("",function(v){id=v;var d=effetDefinition(id);temps.placeholder=d?d.dureeTexte:"Durée par défaut";});
       body.appendChild(fld("Effet",select));body.appendChild(fld("Durée en minutes (facultatif)",temps));
       var none=el("option",null,"Personnage");none.value="";armes.appendChild(none);
       state.inv.objets.filter(function(o){return o.arme;}).forEach(function(o){var p=el("option",null,o.nom||"Arme");p.value=o.ref;armes.appendChild(p);});
@@ -5140,8 +5156,9 @@
         head.appendChild(el("span","pc-effet-temps",effetTemps(e.reste)));row.appendChild(head);
         var texte=d?d.description:"Effet inconnu : gestion manuelle.";
         if(d&&d.ops.alerte)texte="−"+e.niveau+" difficulté d’Esquive ; −"+(5*e.niveau)+" % de résistance aux dégâts. Un coup reçu retire un niveau.";
+        if(d && d.nutrition && num(e.facteur,1)!==1)name.textContent+=" × "+fmtP(e.facteur);
         var desc=el("div","pc-effet-desc",texte);row.appendChild(desc);
-        if(d&&d.manuel)row.appendChild(el("small","pc-effet-manuel","Conséquences manuelles"));
+
         var actions=el("div","pc-segs");actions.appendChild(miniBtn(e.actif?"Pauser":"Reprendre",null,function(){e.actif=!e.actif;if(d && d.ops.alcool && e.actif)effetsNormalise(state);refresh();}));
         if(d&&d.ops.alerte)actions.appendChild(miniBtn("Coup reçu", "Retirer un niveau d’Alerte",function(){effetCoupRecu();refresh();}));
         actions.appendChild(miniBtn("Retirer",null,function(){retireEffet(e.id);refresh();}));row.appendChild(actions);box.appendChild(row);
@@ -8620,7 +8637,10 @@
       if(it.unitesRestauration&&it.unitesRestauration[k]==="% max")v=avant[k]*v/100;
       if(ingere && (k==="ps"||k==="ph"))v+=num(it[k],0);
       v*=q;if(k==="pi")v=effetPerteInnocence(v);
-      if(v)bougeReserve(k,v);
+      if(ingere && (k==='ps'||k==='ph') && v){
+        var digestion=effetNutrition(it,k,v/q);
+        if(digestion)appliqueEffet(digestion.id,it.nom,'',undefined,'digestive',q);
+      }else if(v)bougeReserve(k,v);
     });
     if(ingere)state.etat.contenance=Math.round((contenancePrise()+q*pnum(it.places))*1000)/1000;
     it.qte=Math.round((it.qte-q)*100)/100;
@@ -8697,7 +8717,8 @@
     if(it.contenant)add("Contenant",it.contenant);if(it.contenu)add("Contenu",it.contenu);
     add("Type",INV_TYPES_OBJETS[invType(it)]);add("Sous-type",it.sousType);add("Taille",it.taille);add("Mains",it.mains || it.arme&&it.arme.mains || 1);
     if(it.nourri){add("Contenance",it.places===null?"Non renseignée":fmtP(it.places || 0));add("PS",it.ps===null?"Non renseigné":fmtP(it.ps||0));add("PH",it.ph===null?"Non renseigné":fmtP(it.ph||0));}
-    (it.effets||[]).filter(Boolean).forEach(function(id,i){add("Effet "+(i+1),id);});
+    (it.effets||[]).filter(Boolean).forEach(function(id,i){var d=typeof effetDefinition==='function'?effetDefinition(id):null;add("Effet "+(i+1),d?d.nom+' — '+d.description:id);});
+    if(it.nourri && typeof effetNutrition==='function')['ps','ph'].forEach(function(k){var d=effetNutrition(it,k,num(it[k],0));if(d)add('Assimilation '+k.toUpperCase(),d.nom+' — '+d.description);});
     Object.keys(it.restaurations||{}).forEach(function(k){if(it.restaurations[k])add("Restauration "+k.toUpperCase(),fmtP(it.restaurations[k])+" "+(it.unitesRestauration[k]||"points"));});
     if(it.cap)add("Capacité",fmtP(it.cap)+" L");if(it.ep)add("Accroches",fmtP(it.ep)+" acc (max. "+(it.tailleAccroche || "non renseignée")+")");
     if(it.poches)add("Poches",fmtP(it.poches)+" L");if(it.froid)add("Protection froid",fmtP(it.froid));if(it.chaud)add("Protection chaleur",fmtP(it.chaud));

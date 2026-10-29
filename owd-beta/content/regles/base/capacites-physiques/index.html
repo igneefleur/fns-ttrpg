@@ -55,9 +55,9 @@
     
       <link rel="stylesheet" href="../../../../stylesheets/cartes.css?v=24">
     
-      <link rel="stylesheet" href="../../../../stylesheets/owd-fiche.css?v=262">
+      <link rel="stylesheet" href="../../../../stylesheets/owd-fiche.css?v=264">
     
-      <link rel="stylesheet" href="../../../../stylesheets/owd-des3d.css?v=262">
+      <link rel="stylesheet" href="../../../../stylesheets/owd-des3d.css?v=264">
     
     <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -750,6 +750,28 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#lassimilation-des-aliments-et-des-boissons" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        L'assimilation des aliments et des boissons
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#le-soulagement-de-leffondrement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Le soulagement de l'effondrement
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#les-points-de-vie" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1301,6 +1323,28 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#lassimilation-des-aliments-et-des-boissons" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        L'assimilation des aliments et des boissons
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#le-soulagement-de-leffondrement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Le soulagement de l'effondrement
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#les-points-de-vie" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1702,8 +1746,8 @@
 </div>
 <p>Un niveau négatif se lit dans la même table, mais la réserve se vide au lieu de se remplir.</p>
 <p>Les récupérations se répartissent en trois catégories : <strong>Naturelle</strong> (récupération passive commune, selon l'activité), <strong>Digestive</strong> (tout ce qui est mangé ou bu, y compris potions et plats magiques) et <strong>Spéciale</strong> (autres sources : sorts, équipement et effets externes). Les cinq activités sont les conditions de la récupération naturelle : seule l'activité actuelle s'applique, sans récupération permanente supplémentaire.</p>
-<p>L'effondrement ne modifie que les récupérations naturelles indiquées dans sa table. Les récupérations digestives et spéciales restent indépendantes. Vomir le contenu ingéré interrompt les effets digestifs encore en cours ; les points déjà récupérés restent acquis. Les effets instantanés déjà résolus ne sont pas annulés.
-La table suivante donne les niveaux de base des sept réserves. La qualité du sommeil et les autres modificateurs s'appliquent ensuite.</p>
+<p>L'effondrement ne modifie que les récupérations naturelles indiquées dans sa table. Les récupérations digestives et spéciales restent indépendantes. Vomir le contenu ingéré interrompt les effets digestifs encore en cours ; les points déjà récupérés restent acquis. Les effets instantanés déjà résolus ne sont pas annulés.</p>
+<p>La table suivante donne les niveaux de base des sept réserves. La qualité du sommeil et les autres modificateurs s'appliquent ensuite.</p>
 <table>
 <thead>
 <tr>
@@ -1776,6 +1820,14 @@ La table suivante donne les niveaux de base des sept réserves. La qualité du s
 </div>
 <hr />
 <div class="cols">
+<h3 id="lassimilation-des-aliments-et-des-boissons">L'assimilation des aliments et des boissons</h3>
+<p>Manger ou boire ne restaure plus immédiatement les PS et PH. Les aliments et les soupes donnent des récupérations digestives pendant <strong>2 heures</strong>. Les eaux, thés, laits, vins et potions donnent leurs apports PS et PH pendant <strong>10 minutes</strong>. Leurs autres effets gardent leur durée propre.</p>
+<p>Chaque portion a sa propre progression. Les récupérations et déperditions digestives de PS et PH sont <strong>cumulables</strong>, y compris entre plusieurs portions du même objet. Le temps déjà accumulé par une portion n'est pas remis à zéro lorsqu'une autre est consommée. Une déperdition utilise les mêmes cadences qu'une récupération, en retirant les points. Vomir interrompt aussi les déperditions digestives restantes.</p>
+<p>Les effets <strong>Récupération (Nourriture) PS/PH I à X</strong> et <strong>Déperdition (Nourriture) PS/PH I à X</strong> correspondent aux niveaux de récupération 4 à 13. Les effets <strong>Récupération (Eau)</strong> et <strong>Déperdition (Eau)</strong> ont cinq rangs, correspondant aux niveaux 10 à 14. Ces rangs existent même si aucun objet ne les utilise encore. Les points sont appliqués à chaque échéance complète de leur cadence, y compris à l'instant où l'effet expire.</p>
+<p>Les autres familles de récupération et d'amélioration ne cumulent pas plusieurs rangs d'une même famille : seul le plus élevé s'applique. Les récupérations alimentaires, de potion et d'eau restent des familles distinctes. La récupération PI des potions comporte cinq rangs, correspondant aux niveaux 6 à 10, pendant 2 heures.</p>
+<h3 id="le-soulagement-de-leffondrement">Le soulagement de l'effondrement</h3>
+<p><strong>Soulagement (Satiété), (Hydratation) et (Repos)</strong> ont dix rangs : chaque rang neutralise les pénalités d'un point d'effondrement du type concerné pendant 2 heures. <strong>Soulagement Total</strong> neutralise les pénalités de 10 points de chaque type d'effondrement pendant 2 heures. Pour un même type, seul le soulagement le plus élevé s'applique.</p>
+<p><strong>Résistance à la corruption I à X</strong> réduit les pertes d'Innocence de 10 % par rang pendant 2 heures. <strong>Dégâts Physiques Augmentés (Nourriture/Potion) I à V</strong> donne 10 % de dégâts physiques par rang ; la durée est de 10 minutes pour la nourriture et de 1 minute pour les potions. Les deux sources de ce bonus de dégâts restent non cumulables entre elles.</p>
 <h3 id="les-points-de-vie">Les points de vie</h3>
 <p>Les points de vie mesurent ce que le corps encaisse avant de tomber. Ils découlent de la Vigueur.</p>
 <p class="formula">Points de vie = 80 + Vigueur</p>
@@ -2451,15 +2503,15 @@ La table suivante donne les niveaux de base des sept réserves. La qualité du s
       
         <script src="../../../../javascripts/night.js"></script>
       
-        <script src="../../../../javascripts/owd-migrations.js?v=262"></script>
+        <script src="../../../../javascripts/owd-migrations.js?v=264"></script>
       
-        <script src="../../../../javascripts/owd-mods.js?v=262"></script>
+        <script src="../../../../javascripts/owd-mods.js?v=264"></script>
       
-        <script src="../../../../javascripts/owd-des3d.js?v=262"></script>
+        <script src="../../../../javascripts/owd-des3d.js?v=264"></script>
       
-        <script src="../../../../javascripts/owd-inventaire-data.js?v=262"></script>
+        <script src="../../../../javascripts/owd-inventaire-data.js?v=264"></script>
       
-        <script src="../../../../javascripts/owd-fiche.js?v=262"></script>
+        <script src="../../../../javascripts/owd-fiche.js?v=264"></script>
       
         <script src="../../../../javascripts/copybtn.js"></script>
       

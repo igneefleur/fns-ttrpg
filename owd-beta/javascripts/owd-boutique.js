@@ -96,7 +96,7 @@
       if ((min!==null||max!==null) && (prix===null ? !$('ob-prix-inconnu').checked : (min!==null&&prix<min)||(max!==null&&prix>max))) return false;
       if ((pmax!==null&&(poids===null||poids>pmax)) || (vmax!==null&&(volume===null||volume>vmax))) return false;
       if ($('ob-taille').value && o.taille!==$('ob-taille').value) return false;
-      if (effect && fold((o.effets||[]).map(function(e){return typeof e==='string'?e:(e.nom||e.id||'');}).join(' ')).indexOf(effect)<0) return false;
+      if (effect && it.effectSearch.indexOf(effect)<0) return false;
       if (stat) { var v=statValue(o,stat); if(v===null || v < (threshold===null?1:threshold)) return false; }
       return true;
     });
@@ -171,7 +171,7 @@
       if (!data || !Array.isArray(data.objets) || !data.objets.length || data.objets.some(function(it){return !it.objet || !Array.isArray(it.champs);})) throw Error('Catalogue vide');
       items = data.objets.sort(function (a, b) { return a.categorie.localeCompare(b.categorie, 'fr') || a.nom.localeCompare(b.nom, 'fr'); });
       var counts = Object.create(null);
-      items.forEach(function (it) { it.search = fold([it.nom, it.categorie, it.sousCategorie, it.famille, it.origine, (it.objet.aliases||[]).join(' '), it.desc].join(' ')); counts[it.categorie] = (counts[it.categorie] || 0) + 1; });
+      items.forEach(function (it) { it.effectSearch=fold(it.champs.filter(function(f){return /^(Effet |Assimilation )/.test(f[0]);}).map(function(f){return f[1];}).concat(it.objet.effets||[]).join(' ')); it.search = fold([it.nom, it.categorie, it.sousCategorie, it.famille, it.origine, (it.objet.aliases||[]).join(' '), it.desc].join(' ')); counts[it.categorie] = (counts[it.categorie] || 0) + 1; });
       categories.replaceChildren(new Option('Toutes les catégories', ''));
       (data.categories || Object.keys(counts).map(function(c){return {nom:c};})).forEach(function(c){categories.add(new Option(c.nom+' ('+(counts[c.nom] || 0)+')',c.nom));});
       updateSubcategories();
