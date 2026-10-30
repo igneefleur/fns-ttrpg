@@ -1,5 +1,24 @@
 [
 {
+"short": "6dc8c66",
+"author": "Théo Cavaillès",
+"date": "2026-10-30T22:50:43+01:00",
+"message": "patch 4.30.1b",
+"url": "https://github.com/igneefleur/fns-ttrpg/commit/6dc8c660e4341f0960a716b68a157f651878a56d",
+"files": [
+{
+"status": "modified",
+"filename": "content/regles/base/competences.md",
+"url": "content/regles/base/competences/"
+},
+{
+"status": "modified",
+"filename": "content/regles/base/techniques.md",
+"url": "content/regles/base/techniques/"
+}
+]
+},
+{
 "short": "cf41ae8",
 "author": "Théo Cavaillès",
 "date": "2026-10-29T16:08:02+01:00",
