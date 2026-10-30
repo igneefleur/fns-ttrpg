@@ -145,8 +145,7 @@
       // fiche ne les barème donc pas et se contente de les compter.
       // Une entrée : { id, nom, rang, rangs, xp, offert, rupture, desc }.
       //   rangs   combien de rangs cette technique-là possède
-      //   offert  combien de ses PREMIERS rangs ont été reçus sans XP : ils
-      //           n'entrent pas dans la limite des rangs de technique
+      //   offert  ancien champ conservé à l’import, sans effet sur les règles
       //   xp      ce que le joueur a payé pour elle, saisi (aucune règle ne le fixe)
       //   rupture combien de points de rupture elle a demandés
       techniques: [],

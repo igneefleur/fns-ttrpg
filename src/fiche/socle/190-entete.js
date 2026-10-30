@@ -262,7 +262,7 @@
     }
     // DEUX LIGNES, dans l'ordre arrêté par l'auteur :
     //   Création | XP dépensé | XP total
-    //   Avantage | Rupture | Compétences | Techniques
+    //   Avantage | Rupture
     var mrow2 = el("div", "pc-id-meters");
     if (creation()) mrow.appendChild(meter("Création", creationDepense, creationPoints));
     mrow.appendChild(meter("XP dépensé", xpDepense, function () { return state.xpTotal; },
@@ -271,12 +271,6 @@
       mrow2.appendChild(pieces("Avantage", avantageDepense, avantagePoints, "carres", "Points d'avantage"));
     mrow2.appendChild(pieces("Rupture", ruptureDepense, ruptureMax, "chaines",
       "Points de rupture engagés par les Rangs Max et par les techniques"));
-    if (limiteRangs("competences") !== null)
-      mrow2.appendChild(meter("Compétences", compRangsComptes,
-        function () { return limiteRangs("competences"); }, "Rangs de compétence"));
-    if (limiteRangs("techniques") !== null)
-      mrow2.appendChild(meter("Techniques", techRangsComptes,
-        function () { return limiteRangs("techniques"); }, "Rangs de technique"));
     var xpIn = el("input");
     xpIn.type = "number"; xpIn.min = 0; xpIn.step = 25;
     xpIn.value = state.xpTotal;
@@ -320,12 +314,6 @@
       if (avantagePoints() !== null && avantageDepense() > avantagePoints())
         dire("Points d'avantage dépensés au-delà du compte (" + fmtP(avantageDepense()) +
              " / " + fmtP(avantagePoints()) + ").");
-      [["competences", compRangsComptes, "compétence"],
-       ["techniques", techRangsComptes, "technique"]].forEach(function (x) {
-        var lim = limiteRangs(x[0]);
-        if (lim !== null && x[1]() > lim)
-          dire("Rangs de " + x[2] + " au-delà de la limite (" + fmtP(x[1]()) + " / " + fmtP(lim) + ").");
-      });
       if (ruptureRestante() < 0)
         dire("Points de rupture engagés au-delà du compte (" + fmtP(ruptureDepense()) +
              " / " + fmtP(ruptureMax()) + ").");

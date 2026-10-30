@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.30.0b";
+  var RELEASE = "4.30.1b";
   var SCHEMA = 18;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -486,8 +486,7 @@
       // fiche ne les barème donc pas et se contente de les compter.
       // Une entrée : { id, nom, rang, rangs, xp, offert, rupture, desc }.
       //   rangs   combien de rangs cette technique-là possède
-      //   offert  combien de ses PREMIERS rangs ont été reçus sans XP : ils
-      //           n'entrent pas dans la limite des rangs de technique
+      //   offert  ancien champ conservé à l’import, sans effet sur les règles
       //   xp      ce que le joueur a payé pour elle, saisi (aucune règle ne le fixe)
       //   rupture combien de points de rupture elle a demandés
       techniques: [],
@@ -2005,42 +2004,6 @@
            levierRegleDe(lireComp("offerts", c.id));
   }
   function compGroupe(c) { return String(c.groupe || "").trim(); }
-
-  // ---- limites de rangs ----
-  // Combien de rangs de compétence et de technique le personnage porte en
-  // tout : la somme de ses caractéristiques (création + expérience, SANS les
-  // leviers du MJ) divisée comme les règles le disent. null quand les règles
-  // manquent : aucune limite inventée.
-  function sommeCaracs() {
-    var t = 0;
-    caracsOrdre().forEach(function (c) { t += caracVal(c); });
-    return t;
-  }
-  function limiteRangs(cle) {
-    var l = (D().limites || {})[cle];
-    if (!l) return null;
-    var q = sommeCaracs() / Math.max(1, num(l.diviseur, 1));
-    return l.arrondi === "haut" ? Math.ceil(q) : Math.floor(q);
-  }
-  // Les rangs qui COMPTENT : les rangs pris, moins les rangs offerts.
-  function compRangsComptes() {
-    var t = 0;
-    state.comps.forEach(function (c) { t += compRang(c) - compOfferts(c); });
-    return t;
-  }
-  function techOfferts(t) { return clamp(num(t.offert, 0), 0, num(t.rang, 0)); }
-  function techRangsComptes() {
-    var n = 0;
-    state.techniques.forEach(function (t) { n += Math.max(0, num(t.rang, 0) - techOfferts(t)); });
-    return n;
-  }
-  // Ce qu'une montée de `de` à `a` ajoute au compte, les rangs offerts
-  // (les `offert` premiers) n'y entrant pas.
-  function rangsComptesEntre(de, a, offert) {
-    var n = 0, i;
-    for (i = de + 1; i <= a; i++) if (i > offert) n++;
-    return n;
-  }
 
   // ---- techniques, expérience, rupture ----
   function techXp(t) { return Math.max(0, num(t.xp, 0)); }
@@ -3818,7 +3781,7 @@
     }
     // DEUX LIGNES, dans l'ordre arrêté par l'auteur :
     //   Création | XP dépensé | XP total
-    //   Avantage | Rupture | Compétences | Techniques
+    //   Avantage | Rupture
     var mrow2 = el("div", "pc-id-meters");
     if (creation()) mrow.appendChild(meter("Création", creationDepense, creationPoints));
     mrow.appendChild(meter("XP dépensé", xpDepense, function () { return state.xpTotal; },
@@ -3827,12 +3790,6 @@
       mrow2.appendChild(pieces("Avantage", avantageDepense, avantagePoints, "carres", "Points d'avantage"));
     mrow2.appendChild(pieces("Rupture", ruptureDepense, ruptureMax, "chaines",
       "Points de rupture engagés par les Rangs Max et par les techniques"));
-    if (limiteRangs("competences") !== null)
-      mrow2.appendChild(meter("Compétences", compRangsComptes,
-        function () { return limiteRangs("competences"); }, "Rangs de compétence"));
-    if (limiteRangs("techniques") !== null)
-      mrow2.appendChild(meter("Techniques", techRangsComptes,
-        function () { return limiteRangs("techniques"); }, "Rangs de technique"));
     var xpIn = el("input");
     xpIn.type = "number"; xpIn.min = 0; xpIn.step = 25;
     xpIn.value = state.xpTotal;
@@ -3876,12 +3833,6 @@
       if (avantagePoints() !== null && avantageDepense() > avantagePoints())
         dire("Points d'avantage dépensés au-delà du compte (" + fmtP(avantageDepense()) +
              " / " + fmtP(avantagePoints()) + ").");
-      [["competences", compRangsComptes, "compétence"],
-       ["techniques", techRangsComptes, "technique"]].forEach(function (x) {
-        var lim = limiteRangs(x[0]);
-        if (lim !== null && x[1]() > lim)
-          dire("Rangs de " + x[2] + " au-delà de la limite (" + fmtP(x[1]()) + " / " + fmtP(lim) + ").");
-      });
       if (ruptureRestante() < 0)
         dire("Points de rupture engagés au-delà du compte (" + fmtP(ruptureDepense()) +
              " / " + fmtP(ruptureMax()) + ").");
@@ -4334,7 +4285,6 @@
       // calculs : tous dérivés, donc en lecture seule
       calculs: {
         caracTotal: caracTotal, caracXp: caracXp, creationDepense: creationDepense,
-        limiteRangs: limiteRangs, compRangsComptes: compRangsComptes, techRangsComptes: techRangsComptes,
         compBonus: compBonus, compDes: compDes, compXp: compXp,
         pvMax: pvMax, peMax: peMax, pmMax: pmMax, piMax: piMax,
         prMax: prMax, psMax: psMax, phMax: phMax,
@@ -7280,15 +7230,10 @@
     function applyRang(cible) {
       var c = compDe(item.id);
       if (!c || cible === compRang(c)) return;
-      // Les rangs offerts ne coûtent rien et ne comptent pas dans la limite.
+      // Les rangs offerts ne coûtent pas d’XP.
       var off = compOffertsBrut(c);
       var deltaXp = xpJusque(Math.max(cible, off)) - xpJusque(Math.max(compRang(c), off));
       var deltaRup = ruptureJusque(cible) - ruptureJusque(compRang(c));
-      var lim = limiteRangs("competences");
-      if (lim !== null && cible > compRang(c) &&
-          compRangsComptes() + rangsComptesEntre(compRang(c), cible, off) > lim) {
-        flash("Limite de rangs de compétence atteinte."); return;
-      }
       if (deltaXp > 0 && xpRestant() < deltaXp) { flash("XP insuffisant."); return; }
       if (deltaRup > 0 && ruptureRestante() < deltaRup) { flash("Aucun point de rupture disponible."); return; }
       // REDESCENDRE REND l'XP et le point de rupture, et DESCENDRE AU RANG 0 NE
@@ -7642,12 +7587,6 @@
         sg.title = "Rang " + i + " de « " + (t.nom || "cette technique") + " »";
         sg.addEventListener("click", function () {
           if (!isEdit("techniques")) return;
-          var lim = limiteRangs("techniques");
-          if (lim !== null && i > t.rang &&
-              techRangsComptes() + rangsComptesEntre(t.rang, i, num(t.offert, 0)) > lim) {
-            flash("Limite de rangs de technique atteinte.");
-            return;
-          }
           t.rang = i;
           refresh();
           rendre();
@@ -7711,8 +7650,6 @@
       ligne.appendChild(nombre("XP", function () { return t.xp; },
         function (v) { t.xp = v; }, 0, 99999,
         "Ce que cette technique a coûté — aucune règle ne le fixe, c'est la décision de la table."));
-      ligne.appendChild(nombre("Offerts", function () { return num(t.offert, 0); },
-        function (v) { t.offert = Math.min(v, t.rangs); }, 0, 20, "Rangs offerts"));
       ligne.appendChild(nombre("Rupture", function () { return t.rupture; },
         function (v) { t.rupture = v; }, 0, 99,
         "Combien de points de rupture cette technique a demandés."));
@@ -7733,7 +7670,7 @@
       state.techniques.forEach(function (t) { box.appendChild(carte(t)); });
       if (!state.techniques.length) box.appendChild(el("div", "pc-empty", "Aucune technique."));
       box.appendChild(miniBtn("+ Ajouter une technique", null, function () {
-        state.techniques.push({ id: uid("t"), nom: "", rang: 0, rangs: 1, xp: 0, offert: 0, rupture: 0, desc: "" });
+        state.techniques.push({ id: uid("t"), nom: "", rang: 0, rangs: 1, xp: 0, rupture: 0, desc: "" });
         refresh();
         rendre();
       }, "pc-edit-only"));
@@ -11901,7 +11838,6 @@
     // DOM mesurerait la MISE EN FORME autant que le calcul.
     __calculs: {
       caracTotal: caracTotal, caracXp: caracXp, creationDepense: creationDepense,
-      limiteRangs: limiteRangs, compRangsComptes: compRangsComptes, techRangsComptes: techRangsComptes,
       compBonus: compBonus, compDes: compDes, compXp: compXp,
       pvMax: pvMax, peMax: peMax, pmMax: pmMax, piMax: piMax,
       prMax: prMax, psMax: psMax, phMax: phMax,

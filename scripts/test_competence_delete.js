@@ -19,4 +19,18 @@ test('armes liées : lien retiré après confirmation, autres armes intactes',()
 test('anciens imports : nettoyage sans imposer les anciennes tables aux fiches récentes',()=>{const s=fixture();s.compsMod={retirer:5,garder:7};s.compsForce={retirer:12};const w=ui(s);w.click();assert.deepEqual(s.compsMod,{garder:7});assert.ok(!s.compsForce||!('retirer' in s.compsForce));assert.equal(s.compsMod2,undefined);});
 test('sauvegarde partagée : la suppression reste effective après confirmation et réouverture',()=>{const s=fixture(),attrs=C.Compact.encode(s),session=new C.Compact.Session(attrs,s,Date.now,{id:'suppression'}),w=ui(s);w.click();session.capture(w.saved);const ops=Object.values(session.outgoing());attrs.owd_ops_test={current:JSON.stringify({epoch:session.epoch,ops})};const remote=C.Compact.read(attrs);assert.deepEqual(remote.state.comps.map(c=>c.id),['garder']);session.receive(attrs);assert.equal(Object.keys(session.pending).length,0);assert.deepEqual(new C.Compact.Session(attrs,remote.state).seed.comps.map(c=>c.id),['garder']);});
 test('dernière compétence : liste vide et suppression des leviers devenus vides',()=>{const s=fixture();s.comps=s.comps.slice(0,1);s.compsLeviers={bonus:{force:{retirer:5}}};const before=C.copy(s),w=ui(s);w.click();w.confirm();assert.equal(s.comps.length,0);assert.deepEqual(s.compsLeviers,{});const attrs=C.Compact.encode(before),session=new C.Compact.Session(attrs,before);session.capture(w.saved);attrs.owd_ops_test={current:JSON.stringify({epoch:session.epoch,ops:Object.values(session.outgoing())})};assert.equal(C.Compact.read(attrs).state.comps.length,0);});
+test('montée de rang sans quota malgré 500 compétences et anciennes données de limite',()=>{
+ const s=fixture();s.comps=Array.from({length:500},(_,i)=>({id:'c'+i,nom:'Compétence '+i,rang:1,groupe:''}));s.xpTotal=100000;
+ const w=ui(s);Object.assign(w.ctx,{D:()=>({limites:{competences:{diviseur:5}}}),caracsOrdre:()=>[],caracsXpDepense:()=>0,ruptureMax:()=>3,isEdit:()=>true,flash:message=>assert.fail(message)});
+ const row=w.ctx.compRow(s.comps[0],false,{module:'optcomps'});row.children[1].children.find(c=>c.className==='pc-stadebar').children[2].listeners.click();
+ assert.equal(s.comps[0].rang,2);assert.equal(w.saved.comps.length,500);assert.equal(w.ctx.compXp(s.comps[0]),30);assert.equal(w.ctx.ruptureComps(),1);
+ const restored=C.Compact.read(C.Compact.encode(w.saved)).state;assert.equal(restored.comps.length,500);assert.equal(restored.comps[0].rang,2);
+});
+test('sans quota : XP et rupture restent requis, rangs offerts toujours gratuits en XP',()=>{
+ const s=fixture(),w=ui(s),errors=[];s.techniques=[];s.xpTotal=0;Object.assign(w.ctx,{isEdit:()=>true,caracsXpDepense:()=>0,ruptureMax:()=>0,flash:m=>errors.push(m)});
+ function rank(n){const row=w.ctx.compRow(s.comps[0],false,{module:'optcomps'});row.children[1].children.find(c=>c.className==='pc-stadebar').children[n].listeners.click();}
+ rank(1);assert.equal(s.comps[0].rang,0);assert.equal(errors.pop(),'XP insuffisant.');
+ s.xpTotal=100;rank(2);assert.equal(s.comps[0].rang,0);assert.equal(errors.pop(),'Aucun point de rupture disponible.');
+ s.xpTotal=10;s.compsLeviers.offerts={force:{retirer:1}};rank(1);assert.equal(s.comps[0].rang,1);assert.equal(w.ctx.compXp(s.comps[0]),0);
+});
 console.log(count+' scénarios de suppression de compétence validés.');

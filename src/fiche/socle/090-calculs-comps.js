@@ -62,42 +62,6 @@
   }
   function compGroupe(c) { return String(c.groupe || "").trim(); }
 
-  // ---- limites de rangs ----
-  // Combien de rangs de compétence et de technique le personnage porte en
-  // tout : la somme de ses caractéristiques (création + expérience, SANS les
-  // leviers du MJ) divisée comme les règles le disent. null quand les règles
-  // manquent : aucune limite inventée.
-  function sommeCaracs() {
-    var t = 0;
-    caracsOrdre().forEach(function (c) { t += caracVal(c); });
-    return t;
-  }
-  function limiteRangs(cle) {
-    var l = (D().limites || {})[cle];
-    if (!l) return null;
-    var q = sommeCaracs() / Math.max(1, num(l.diviseur, 1));
-    return l.arrondi === "haut" ? Math.ceil(q) : Math.floor(q);
-  }
-  // Les rangs qui COMPTENT : les rangs pris, moins les rangs offerts.
-  function compRangsComptes() {
-    var t = 0;
-    state.comps.forEach(function (c) { t += compRang(c) - compOfferts(c); });
-    return t;
-  }
-  function techOfferts(t) { return clamp(num(t.offert, 0), 0, num(t.rang, 0)); }
-  function techRangsComptes() {
-    var n = 0;
-    state.techniques.forEach(function (t) { n += Math.max(0, num(t.rang, 0) - techOfferts(t)); });
-    return n;
-  }
-  // Ce qu'une montée de `de` à `a` ajoute au compte, les rangs offerts
-  // (les `offert` premiers) n'y entrant pas.
-  function rangsComptesEntre(de, a, offert) {
-    var n = 0, i;
-    for (i = de + 1; i <= a; i++) if (i > offert) n++;
-    return n;
-  }
-
   // ---- techniques, expérience, rupture ----
   function techXp(t) { return Math.max(0, num(t.xp, 0)); }
   function techRupture(t) { return Math.max(0, num(t.rupture, 0)); }
