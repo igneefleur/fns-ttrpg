@@ -508,9 +508,10 @@ def _effondrement(txt, capacites):
     reserves = [c for _, c in sorted(reserves)]
     if not reserves:
         raise ErreurRegles("effondrement : aucune réserve nommée dans l'ouverture")
-    surcharge = int(_un(r"La surcharge et l’excès de contenance ajoutent chacun un niveau par tranche complète de (\d+) %", corps,
-                         "effondrement : la tranche de surcharge").group(1))
-    if surcharge <= 0:
+    surcharge_regle = _un(r"La surcharge et l’excès de contenance ajoutent chacun (\d+) niveau dès que leur maximum est dépassé, puis 1 niveau supplémentaire par tranche complète de (\d+) %", corps,
+                           "effondrement : le premier niveau et la tranche de surcharge")
+    surcharge_depart, surcharge = map(int, surcharge_regle.groups())
+    if surcharge <= 0 or surcharge_depart <= 0:
         raise ErreurRegles("effondrement : la tranche de surcharge doit être positive")
     def valeurs(cause):
         ligne = _un(r"^\| " + re.escape(cause) + r" \| (.+) \|$", corps, "effondrement : " + cause, re.M).group(1)
@@ -522,7 +523,7 @@ def _effondrement(txt, capacites):
                    "chargePas": -valeurs("Charge")[0], "contenancePas": -valeurs("Contenance")[0],
                    "alcoolMana": -alcool[0], "alcoolDifficulte": alcool[1],
                    "alcoolSecondes": int(_un(r"tranche complète de (\d+) heures retire", corps, "alcool : cadence").group(1)) * 3600}
-    return {"surchargeTranche": surcharge, "tranche": tranche, "plafond": plafond,
+    return {"surchargeDepart": surcharge_depart, "surchargeTranche": surcharge, "tranche": tranche, "plafond": plafond,
             "peParNiveau": pe, "pvParNiveau": pv, "reserves": reserves, "specifiques": specifiques}
 
 

@@ -367,7 +367,7 @@ Exemple. Un personnage ordinaire, qui porte 20 en Chance, dispose de 4 points de
 
 ### La charge
 
-La charge est le poids que le personnage porte sans en être gêné. Elle découle de la Force. Il peut dépasser ce maximum : chaque tranche complète de 5 % de dépassement lui donne un niveau d’[effondrement](#leffondrement). Ces niveaux diminuent dès qu’il se décharge.
+La charge est le poids que le personnage porte sans en être gêné. Elle découle de la Force. Il peut dépasser ce maximum : il prend un niveau d’[effondrement](#leffondrement) dès le dépassement, puis un niveau supplémentaire par tranche complète de 5 % de dépassement. Ces niveaux diminuent dès qu’il se décharge.
 
 <p class="formula">Charge = 30 + Force</p>
 
@@ -431,11 +431,11 @@ Elle s'occupe comme la [charge](#la-charge) se remplit : elle part de zéro, mon
 
 <p class="formula">Le ventre digère 1 de volume toutes les dix minutes</p>
 
-Un personnage peut dépasser sa contenance maximale. Chaque tranche complète de 5 % de dépassement lui donne un niveau d’[effondrement](#leffondrement). Ces niveaux diminuent à mesure qu’il digère. Avec un maximum de 40, une contenance occupée de 42 donne un niveau, 44 en donne deux et 50 en donne cinq.
+Un personnage peut dépasser sa contenance maximale. Il prend un niveau d’[effondrement](#leffondrement) dès le dépassement, puis un niveau supplémentaire par tranche complète de 5 % de dépassement. Ces niveaux diminuent à mesure qu’il digère. Avec un maximum de 40, une contenance occupée de 40 ne donne aucun niveau, une valeur au-dessus de 40 et en dessous de 42 en donne un, 42 en donne deux, 44 en donne trois et 50 en donne six.
 
 <div class="memo" markdown>
 
-Exemple. Une chose d'un volume de 20 est digérée en trois heures vingt. Un personnage qui en avale deux d'affilée a rempli sa contenance. Il peut encore manger ou boire, mais chaque tranche complète de 2 points au-delà de son maximum de 40 lui donne un niveau d’effondrement.
+Exemple. Une chose d'un volume de 20 est digérée en trois heures vingt. Un personnage qui en avale deux d'affilée a rempli sa contenance. Il peut encore manger ou boire, mais le moindre dépassement de son maximum de 40 lui donne un niveau d’effondrement, puis chaque tranche complète de 2 points dépassant ce maximum en ajoute un.
 
 </div>
 
@@ -574,7 +574,7 @@ Les manques des [points de repos](#les-points-de-repos), des [points de satiét�
 
 Chaque réserve donne un niveau d'effondrement par tranche de 10 % perdue, ce qui fait dix niveaux, le dernier lorsqu'elle est vide. Les niveaux de toutes les réserves s'additionnent, sans jamais dépasser dix.
 
-La surcharge et l’excès de contenance ajoutent chacun un niveau par tranche complète de 5 % au-dessus de leur maximum. Leurs contributions s’ajoutent aux autres causes, toujours dans la limite du plafond global de dix.
+La surcharge et l’excès de contenance ajoutent chacun 1 niveau dès que leur maximum est dépassé, puis 1 niveau supplémentaire par tranche complète de 5 % de dépassement. Exactement au maximum, ils ne donnent aucun niveau. Leurs contributions s’ajoutent aux autres causes, toujours dans la limite du plafond global de dix.
 
 Le niveau d'effondrement réduit le maximum de points d'endurance de 10 % par niveau, et le maximum de points de vie de 5 %.
 

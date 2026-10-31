@@ -37,4 +37,14 @@ test('PV/PE forcés : pénalité appliquée après Forcé, annulée si effondrem
  w.state.effDesactive=true;assert.equal(w.ctx.pvMax(),200);assert.equal(w.ctx.peMax(),200);
  w.ctx.effondrement=()=>10;assert.equal(w.ctx.pvMax(),100);assert.equal(w.ctx.peMax(),0);
 });
+test('Charge et Contenance : premier point dès le dépassement puis seuils de 5 %',()=>{
+ const w=setup();assert.equal(data.effondrement.surchargeDepart,1);assert.equal(data.effondrement.surchargeTranche,5);
+ let poids=0,volume=0;w.ctx.poidsPorte=()=>poids;w.ctx.charge=()=>100;w.ctx.contenancePrise=()=>volume;w.ctx.contenance=()=>40;
+ for(const [ratio,n] of [[.9,0],[1,0],[1.000001,1],[1.0499,1],[1.05,2],[1.0999,2],[1.1,3],[1.25,6],[1.5,11],[1,0]]){
+  poids=100*ratio;volume=40*ratio;assert.equal(w.ctx.effBasePartie('charge'),n,'charge '+ratio);assert.equal(w.ctx.effBasePartie('contenance'),n,'contenance '+ratio);
+ }
+ assert.equal(w.ctx.effSurcharge(0,0),0);assert.equal(w.ctx.effSurcharge(1,0),10);
+ w.ctx.capDef=()=>({});w.ctx.effPartie=k=>w.ctx.effBasePartie(k);poids=110;volume=44;assert.equal(w.ctx.effondrementAuto(),6);
+ poids=150;volume=60;assert.equal(w.ctx.effondrementAuto(),10,'Le plafond global ne change pas');
+});
 console.log(count+' scénarios d’effondrement validés.');

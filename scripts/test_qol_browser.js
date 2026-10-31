@@ -105,21 +105,21 @@ const server=http.createServer((req,res)=> {
   assert.equal(await action.locator('.pc-desaction-pose:not(:disabled)').count(),await action.locator('.pc-desaction-pose').count()-1);
   await action.getByRole('button',{name:'Récupérer',exact:true}).click();
   assert.equal(await action.locator('.pc-desaction-pose:disabled').count(),0);
-  // Dépassement : tranches COMPLÈTES de 5 %, et retour immédiat sous le seuil.
+  // Dépassement : premier point immédiat, puis tranches complètes de 5 %.
   const initialInv=(await state()).inv.objets;
   const capacity=await frame.evaluate(()=>({charge:Owd.__calculs.charge(),ctn:Owd.__calculs.contenance()}));
-  for(const [ratio,level] of [[.9,0],[1,0],[1.0499,0],[1.05,1],[1.10,2],[1.25,5],[1.50,10],[1,0]]){
+  for(const [ratio,level] of [[.9,0],[1,0],[1.0001,1],[1.0499,1],[1.05,2],[1.10,3],[1.25,6],[1.50,11],[1,0]]){
     await replace(s=>{s.inv.objets=[{ref:'ballast',nom:'Charge de test',qte:1,poids:capacity.charge*ratio,ou:'poches'}];s.etat.contenance=capacity.ctn*ratio;});
     assert.equal(await frame.evaluate(()=>Owd.__calculs.effBasePartie('charge')),level);
     assert.equal(await frame.evaluate(()=>Owd.__calculs.effBasePartie('contenance')),level);
   }
   await replace(s=>{s.etat.pr=null;s.etat.ps=null;s.etat.ph=null;s.etat.pi=null;s.etat.expo=0;s.effAlcool=0;s.effAutre=0;s.effParties={};s.inv.objets=[{ref:'ballast',nom:'Charge de test',qte:1,poids:capacity.charge*1.1,ou:'poches'}];s.etat.contenance=capacity.ctn*1.1;});
-  assert.equal(await frame.evaluate(()=>Owd.__calculs.effondrement()),4);
+  assert.equal(await frame.evaluate(()=>Owd.__calculs.effondrement()),6);
   await replace(s=>{s.inv.objets=initialInv;s.etat.contenance=42;s.effort='repos';});
   const tenMinutes=sheet.getByLabel('Minutes, en plus ou en moins');
   await tenMinutes.fill('+10');await tenMinutes.press('Enter');
   assert.equal((await state()).etat.contenance,41);
-  assert.equal(await frame.evaluate(()=>Owd.__calculs.effBasePartie('contenance')),0);
+  assert.equal(await frame.evaluate(()=>Owd.__calculs.effBasePartie('contenance')),1);
   await replace(s=>{s.etat.contenance=0;});
   // Raw bases and effects do not cancel another category. Additional modifiers apply once.
   const max=await frame.evaluate(()=>{const c=Owd.__calculs;return {pr:c.prMax(),ps:c.psMax(),ph:c.phMax(),expo:c.expoMax()};});
@@ -214,8 +214,8 @@ const server=http.createServer((req,res)=> {
   assert.equal((await state()).etat.contenance,41);
   assert.equal((await state()).horlogeAlcool.minutes,10);
   assert.deepEqual((await state()).effPause,beforePausedTime);
-  assert.equal(await frame.evaluate(()=>Owd.__calculs.effBasePartie('contenance')),1);
-  await paused.click();assert.equal(await frame.evaluate(()=>Owd.__calculs.effBasePartie('contenance')),0);
+  assert.equal(await frame.evaluate(()=>Owd.__calculs.effBasePartie('contenance')),2);
+  await paused.click();assert.equal(await frame.evaluate(()=>Owd.__calculs.effBasePartie('contenance')),1);
   await replace(s=>{s.etat.pr=max.pr*.7;s.etat.ps=max.ps*.5;s.etat.ph=max.ph*.8;s.etat.pi=80;s.etat.contenance=0;s.effAlcool=0;s.effParties={pr:{effet:-1,mod:2},ps:{effet:-20,mod:0},ph:{effet:-1,mod:0}};s.effAutre=-1;});
   // Les deux signes de l’exposition restent exclusifs, les modificateurs sont indépendants.
   await replace(s=>{s.etat.expo=-max.expo*.3;s.effParties.froid={effet:-1,mod:0};s.effParties.chaud={effet:0,mod:0};});

@@ -185,11 +185,12 @@
   function effReglage(cle) {
     return (state.effParties || {})[cle] || { effet: 0, mod: 0 };
   }
-  // Une tranche complète de 5 % au-delà du maximum ; tolérance aux seules erreurs flottantes.
+  // Premier niveau dès le dépassement, puis chaque tranche complète supplémentaire.
   function effSurcharge(pris, maximum) {
     if (maximum <= 0) return pris > 0 ? effPlafond() : 0;
+    if (pris <= maximum) return 0;
     var tranche = Math.max(0.001, num(effDef().surchargeTranche, 5));
-    return Math.max(0, Math.floor((pris - maximum) * 100 / maximum / tranche + 1e-9));
+    return num(effDef().surchargeDepart, 1) + Math.floor((pris - maximum) * 100 / maximum / tranche + 1e-9);
   }
   function effPhotoPartie(cle) { return state.effPause && state.effPause.parties && state.effPause.parties[cle]; }
   function effBasePartie(cle) {
