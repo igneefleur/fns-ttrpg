@@ -143,7 +143,7 @@
   }
   // Le maximum EFFECTIF d'une capacité : le forçage du MJ s'il existe, la
   // valeur calculée sinon. `auto` est passée à part parce que PV et PE portent
-  // en plus le poids de l'effondrement.
+  // leur pénalité d’effondrement après cette chaîne.
   function capMax(cle, auto) { return chaine(lireCap("max", cle), auto()); }
   // « réglé » ne veut pas dire « forcé » : un facteur ou un ajout comptent
   // autant. C'est ce que la fiche marque d'un point d'encre appuyée.
@@ -261,10 +261,10 @@
     return clamp(100 - pct * effondrement(), 0, 100) / 100;
   }
   function pvMaxAuto() {
-    return Math.floor(capAuto("pv") * effReste(num(effDef().pvParNiveau, 0)));
+    return capAuto("pv");
   }
   function peMaxAuto() {
-    return Math.floor(capAuto("pe") * effReste(num(effDef().peParNiveau, 0)));
+    return capAuto("pe");
   }
 
   // ---- les treize maximums, un par un ----
@@ -272,8 +272,8 @@
   // public (après filtres). C'est ce qui permet au champ « Forcé » de montrer
   // la valeur calculée en filigrane, et à un mod de changer le résultat sans
   // toucher au forçage du MJ.
-  function pvMax() { return pub("pvMax", capMax("pv", pvMaxAuto), {}); }
-  function peMax() { return pub("peMax", capMax("pe", peMaxAuto), {}); }
+  function pvMax() { return pub("pvMax", Math.floor(capMax("pv", pvMaxAuto) * effReste(num(effDef().pvParNiveau, 0))), {}); }
+  function peMax() { return pub("peMax", Math.floor(capMax("pe", peMaxAuto) * effReste(num(effDef().peParNiveau, 0))), {}); }
   function pmMaxAuto() { return capAuto("pm"); }
   function pmMax() { return pub("pmMax", capMax("pm", pmMaxAuto), {}); }
   function piMaxAuto() { return capAuto("pi"); }

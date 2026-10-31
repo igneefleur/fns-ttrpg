@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.30.1b";
+  var RELEASE = "4.31.0b";
   var SCHEMA = 18;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -1288,7 +1288,7 @@
   // une règle de calcul sans qu'on rouvre ce fichier, et sans réécrire le
   // module qui affiche la valeur : tout ce qui lit pvMax() voit le même chiffre.
   //
-  // Les CASCADES sont voulues et tombent toutes seules : pvMaxAuto() appelle
+  // Les CASCADES sont voulues et tombent toutes seules : pvMax() appelle
   // effondrement() qui appelle prMax() qui appelle caracTotal(). Les gardes
   // sont donc par NOM, jamais globales, pour ne pas couper ces chaînes-là.
   //
@@ -1602,7 +1602,7 @@
   }
   // Le maximum EFFECTIF d'une capacité : le forçage du MJ s'il existe, la
   // valeur calculée sinon. `auto` est passée à part parce que PV et PE portent
-  // en plus le poids de l'effondrement.
+  // leur pénalité d’effondrement après cette chaîne.
   function capMax(cle, auto) { return chaine(lireCap("max", cle), auto()); }
   // « réglé » ne veut pas dire « forcé » : un facteur ou un ajout comptent
   // autant. C'est ce que la fiche marque d'un point d'encre appuyée.
@@ -1720,10 +1720,10 @@
     return clamp(100 - pct * effondrement(), 0, 100) / 100;
   }
   function pvMaxAuto() {
-    return Math.floor(capAuto("pv") * effReste(num(effDef().pvParNiveau, 0)));
+    return capAuto("pv");
   }
   function peMaxAuto() {
-    return Math.floor(capAuto("pe") * effReste(num(effDef().peParNiveau, 0)));
+    return capAuto("pe");
   }
 
   // ---- les treize maximums, un par un ----
@@ -1731,8 +1731,8 @@
   // public (après filtres). C'est ce qui permet au champ « Forcé » de montrer
   // la valeur calculée en filigrane, et à un mod de changer le résultat sans
   // toucher au forçage du MJ.
-  function pvMax() { return pub("pvMax", capMax("pv", pvMaxAuto), {}); }
-  function peMax() { return pub("peMax", capMax("pe", peMaxAuto), {}); }
+  function pvMax() { return pub("pvMax", Math.floor(capMax("pv", pvMaxAuto) * effReste(num(effDef().pvParNiveau, 0))), {}); }
+  function peMax() { return pub("peMax", Math.floor(capMax("pe", peMaxAuto) * effReste(num(effDef().peParNiveau, 0))), {}); }
   function pmMaxAuto() { return capAuto("pm"); }
   function pmMax() { return pub("pmMax", capMax("pm", pmMaxAuto), {}); }
   function piMaxAuto() { return capAuto("pi"); }
@@ -3734,13 +3734,14 @@
     idBox.appendChild(fld("Genre", textInput(function () { return state.genre; },
       function (v) { state.genre = v; }), "c2"));
 
-    // 2e ligne, pleine largeur : les deux budgets et le total d'XP.
-    var mrow = el("div", "pc-id-meters");
-    function meter(label, getUsed, getTotal, titre) {
+    // 2e ligne : rupture et expérience ; la charge et les accès suivent.
+    var mrow = el("div", "pc-id-meters pc-id-progression");
+    function meter(label, getUsed, getTotal, titre, totalInput, unite) {
       var m = el("span", "pc-meter");
       m.appendChild(el("span", null, label));
       var b = el("b", null, "");
       m.appendChild(b);
+      if(totalInput){m.appendChild(el("span",null,"/"));m.appendChild(totalInput);}
       var bar = el("span", "bar");
       var fill = el("i");
       bar.appendChild(fill);
@@ -3748,7 +3749,7 @@
       if (titre) m.title = titre;
       hooks.push(function () {
         var used = getUsed(), total = getTotal();
-        b.textContent = fmtP(used) + " / " + fmtP(total);
+        b.textContent = totalInput ? fmtP(used) : fmtP(used) + " / " + fmtP(total) + (unite ? " " + unite : "");
         var over = used > total;
         b.classList.toggle("over", over);
         fill.classList.toggle("over", over);
@@ -3779,18 +3780,8 @@
       });
       return m;
     }
-    // DEUX LIGNES, dans l'ordre arrêté par l'auteur :
-    //   Création | XP dépensé | XP total
-    //   Avantage | Rupture
-    var mrow2 = el("div", "pc-id-meters");
-    if (creation()) mrow.appendChild(meter("Création", creationDepense, creationPoints));
-    mrow.appendChild(meter("XP dépensé", xpDepense, function () { return state.xpTotal; },
-      "Ce que les rangs de compétence, les techniques et les caractéristiques ont coûté"));
-    if (avantagePoints() !== null)
-      mrow2.appendChild(pieces("Avantage", avantageDepense, avantagePoints, "carres", "Points d'avantage"));
-    mrow2.appendChild(pieces("Rupture", ruptureDepense, ruptureMax, "chaines",
-      "Points de rupture engagés par les Rangs Max et par les techniques"));
     var xpIn = el("input");
+    xpIn.className="pc-id-xp-total";xpIn.setAttribute("aria-label","XP total");xpIn.title="XP total";
     xpIn.type = "number"; xpIn.min = 0; xpIn.step = 25;
     xpIn.value = state.xpTotal;
     xpIn.addEventListener("input", function () {
@@ -3798,9 +3789,12 @@
       if (isFinite(v)) { state.xpTotal = Math.max(0, v); refresh(); }
     });
     hooks.push(function () { if (document.activeElement !== xpIn) xpIn.value = state.xpTotal; });
-    mrow.appendChild(fld("XP total", xpIn));
-    idBox.appendChild(mrow);
-    idBox.appendChild(mrow2);
+    mrow.appendChild(pieces("Rupture", ruptureDepense, ruptureMax, "chaines", "Points de rupture engagés"));
+    mrow.appendChild(meter("XP dépensé",xpDepense,function(){return state.xpTotal;},"Expérience dépensée / totale",xpIn));
+    var mrow2=el("div","pc-id-meters pc-id-portage");
+    mrow2.appendChild(meter("Charge",poidsPorte,charge,"Charge portée / maximum",null,"kg"));
+    mrow2.appendChild(meter("Accès rapides",accesPris,accesRapides,"Accès rapides utilisés / maximum"));
+    idBox.appendChild(mrow);idBox.appendChild(mrow2);
 
     head.appendChild(idBox);
     sheet.appendChild(head);
@@ -3999,7 +3993,7 @@
     // « pleine largeur » — le plan des modules la reconnaît et dessine alors sa
     // propre rangée.
     art: function (pane) {
-      return { seule: pane };
+      return { milieu: pane };
     },
     equipement: function (pane) {
       return { milieu: pane };
@@ -4446,6 +4440,17 @@
       });
       b.appendChild(row);
     });
+    if (creation()) {
+      var budget=el("div","pc-creation-budget pc-edit-only");
+      var ligne=el("div","pc-vital-tete");
+      ligne.appendChild(el("span","pc-vital-nom","Création"));
+      var valeur=el("span","pc-vital-val");ligne.appendChild(valeur);budget.appendChild(ligne);
+      var jauge=el("span","pc-vital-jauge"),plein=el("i");jauge.appendChild(plein);budget.appendChild(jauge);b.appendChild(budget);
+      hooks.push(function(){
+        var pris=creationDepense(),max=creationPoints();valeur.textContent=fmtP(pris)+" / "+fmtP(max);
+        plein.style.width=clamp(max?pris/max*100:0,0,100)+"%";plein.classList.toggle("over",pris>max);
+      });
+    }
     return b;
   }
   // ---- Récupération ----
@@ -7443,6 +7448,7 @@
         var titre = el("div", "pc-comp-champ");
         titre.appendChild(poigneeComp("Déplacer le groupe", function () { return { type: "groupe", groupe: g }; }, groupe));
         titre.appendChild(el("span", "pc-comp-groupe-nom", g || "Sans groupe"));
+        titre.appendChild(el("span", "pc-comp-groupe-trait"));
         var bouton = el("button", "pc-comp-repli", compReplies[g] ? "▸" : "▾");
         bouton.type = "button";
         bouton.setAttribute("aria-expanded", String(!compReplies[g]));
@@ -10031,28 +10037,6 @@
 
   // ================= ONGLET OPTIONS =================
 
-  // ---- 15. Jets ----
-  function buildJets() {
-    var b = block("Jets");
-    var de = el("input", "de");
-    de.type = "text";
-    de.title = "Ce que la fiche lance par dé d'action. Toute expression Roll20 est acceptée.";
-    de.value = state.de || DE_DEFAUT;
-    de.addEventListener("input", function () { state.de = de.value || DE_DEFAUT; save(); });
-    hooks.push(function () { if (document.activeElement !== de) de.value = state.de || DE_DEFAUT; });
-    // Le champ et son bouton sur la MÊME ligne : sous le champ, le bouton
-    // occupait une rangée entière pour un mot, et le bloc paraissait deux fois
-    // plus haut.
-    var ligne = el("div", "pc-jet-de");
-    ligne.appendChild(fld("Dé des jets", de));
-    ligne.appendChild(miniBtn("Réinitialiser", "Revenir au dé du livre : " + deDe(1),
-      function () { state.de = deDe(1); refresh(); }));
-    b.appendChild(ligne);
-    // Pas de note : ce que le champ contient se lit dans le champ, et dire
-    // combien de faces ont les dés du jeu, c'est réciter la règle.
-    return b;
-  }
-
   // ---- les deux champs partagés des grilles d'Options ----
   // Un champ de MODIFICATEUR : nu, sans − ni +. Sur cinquante lignes de quatre
   // colonnes, les boutons mangeaient la place et n'apportaient rien qu'on ne
@@ -10516,36 +10500,6 @@
     return b;
   }
 
-  // ---- Rupture ----
-  // UN MODULE D'OPTION : les points de rupture se dépensent en prenant un Rang
-  // Max ou un rang de technique, et l'en-tête en tient le compte. Ce bloc ne
-  // sert qu'à FORCER les points disponibles quand la table en décide
-  // autrement ; « Max » rend la main au calcul. Leur nombre au plus se règle
-  // dans les Réglages des capacités, à la ligne Rupture.
-  function buildRupture() {
-    var b = block("Rupture");
-    var row = el("div", "pc-kv");
-    row.appendChild(stepper(
-      function () { return state.etat.rupture === null ? ruptureRestante() : state.etat.rupture; },
-      function (v) { state.etat.rupture = Math.round(v); },
-      1, "points de rupture"));
-    var max = el("span", "max", "");
-    row.appendChild(max);
-    row.appendChild(el("span", "sp"));
-    row.appendChild(miniBtn("Max", "Revenir au calcul", function () {
-      state.etat.rupture = null;
-      refresh();
-    }));
-    b.appendChild(row);
-    hooks.push(function () {
-      max.textContent = "/ " + fmtP(ruptureMax());
-      max.classList.toggle("adj", capForce("rupture"));
-      max.title = capForce("rupture")
-        ? chaineTexteDe(lireCap("max", "rupture"), "calculé", ruptureMaxAuto())
-        : "";
-    });
-    return b;
-  }
   // ---- 21. Réglages des capacités ----
   // LE TABLEAU DE BORD DU MENEUR, seconde moitié : une rangée par valeur
   // dérivée du corps, et la même chaîne à neuf boîtes que les caractéristiques
@@ -10583,7 +10537,7 @@
       },
       lire: function (cle) { return B.lire("max", cle); },
       ecrire: function (cle, boite, v) { B.ecrire("max", boite, cle, v); },
-      mot: ["Total", "Valeur effective"],
+      mot: ["Total", "Valeur avant effondrement pour les PV et PE"],
       borne: 99999,
       // L'EFFONDREMENT N'EST PAS UN MAXIMUM, C'EST UN NIVEAU. Sa ligne montre
       // donc ce que le personnage SUBIT, pas le plafond de l'échelle : les deux
@@ -10595,7 +10549,7 @@
       rendu: function (cle) {
         var d = capDef(cle);
         return {
-          texte: fmtP(cle === "effondrement" ? effondrement() : maxDe(cle)),
+          texte: fmtP(cle === "effondrement" ? effondrement() : (cle === "pv" || cle === "pe") ? capMax(cle, function () { return autoDe(cle); }) : maxDe(cle)),
           // La formule du livre est ce que la capacité vaut AVANT tout réglage :
           // c'est la base de la chaîne, et la dire n'est pas réciter une règle,
           // c'est dire d'où sort le nombre qu'on lit.
@@ -10610,13 +10564,11 @@
 
   // ---- 22. Réglages des compétences ----
   // Le pendant des deux blocs précédents, compétence par compétence, et le seul
-  // des trois à porter une BANDE D'ONGLETS : une compétence a quatre valeurs
-  // dérivées, là où une caractéristique n'en a qu'une.
+  // des trois à porter une BANDE D'ONGLETS : une compétence a trois réglages
+  // disponibles, là où une caractéristique n'en a qu’un.
   //
   //   Bonus    ce qu'elle ajoute au jet
-  //   Dés      combien de dés d'action elle laisse engager
   //   XP       ce que ses rangs ont coûté
-  //   Offerts  combien de ses premiers rangs ont été reçus sans XP
   //   Rupture  ce que ses rangs ont engagé
   //
   // La liste est OUVERTE (le joueur nomme ses compétences) et FILTRÉE : le bloc
@@ -10624,7 +10576,7 @@
   // registre à lui, `optHooks`, vidé à chaque passe — sinon chaque rebâti
   // fuirait des hooks qui pointent sur un DOM disparu.
   //
-  // LES QUATRE ONGLETS SE REBÂTISSENT ENSEMBLE, et le rejeu final est
+  // LES TROIS ONGLETS SE REBÂTISSENT ENSEMBLE, et le rejeu final est
   // obligatoire : les appelants lancent refresh() PUIS le rebâti, donc les
   // fonctions fraîches naîtraient après la passe et les totaux resteraient
   // vides jusqu'au prochain geste.
@@ -10657,8 +10609,8 @@
     var B = boitesTable("compsLeviers");
     var rebatis = [];
 
-    // Ce que les quatre onglets montrent, dans l'ordre de la vie d'une
-    // compétence : ce qu'elle DONNE (bonus, dés), puis ce qu'elle COÛTE
+    // Ce que les trois onglets montrent, dans l'ordre de la vie d'une
+    // compétence : ce qu'elle DONNE (bonus), puis ce qu'elle COÛTE
     // (xp, rupture).
     function onglet(titre, aide, nom, mot, borne, auto, rendu) {
       bande.onglet(titre, aide, function (page) {
@@ -10720,19 +10672,6 @@
         };
       });
 
-    onglet("Dés", "", "des", ["Dés", "Dés d'action engageables"], 99,
-      function (c) { return c ? num(rangInfo(compRang(c)).des, 0) : 0; },
-      function (c) {
-        if (!c) return { texte: "—", titre: "" };
-        var rang = compRang(c);
-        return {
-          texte: fmtP(compDes(c)),
-          zero: !compDes(c),
-          titre: chaineTexteDe(lireComp("des", c.id), "rang " + rang + " :",
-                               num(rangInfo(rang).des, 0))
-        };
-      });
-
     onglet("XP", "", "xp", ["Coût", "Coût effectif en xp"], 9999,
       function (c) { return compXpAuto(c); },
       function (c) {
@@ -10743,17 +10682,6 @@
           titre: chaineTexteDe(lireComp("xp", c.id),
                                "rangs pris jusqu'au rang " + compRang(c) + " :",
                                compXpAuto(c))
-        };
-      });
-
-    onglet("Offerts", "", "offerts", ["Rangs", "Rangs offerts"], 99,
-      function () { return 0; },
-      function (c) {
-        if (!c) return { texte: "—", titre: "" };
-        return {
-          texte: fmtP(compOffertsBrut(c)),
-          zero: !compOffertsBrut(c),
-          titre: chaineTexteDe(lireComp("offerts", c.id), "rangs offerts :", 0)
         };
       });
 
@@ -11477,7 +11405,7 @@
     // Pleine largeur, seul de son onglet : une technique est une CARTE, avec
     // ses rangs, son coût et son effet. Elle vivait sous les huit blocs de la
     // Fiche, c'est-à-dire là où personne n'allait la chercher.
-    { id: "techniques",   titre: "TECHNIQUES",       onglet: "art", colonne: "seule",  build: buildTechniques },
+    { id: "techniques",   titre: "TECHNIQUES",       onglet: "art", colonne: "milieu",  build: buildTechniques },
     // ---- onglet Équipement ----
     { id: "inv",          titre: "INVENTAIRE",       onglet: "equipement", colonne: "milieu",    build: buildInv },
     // ---- onglet Bio ----
@@ -11490,12 +11418,10 @@
     // ---- onglet Options ----
     // Deux colonnes qui se répondent : à gauche ce qui touche aux valeurs et au
     // dispositif, à droite ce qui touche à la fiche et aux longues listes.
-    { id: "jets",         titre: "JETS",             onglet: "options", colonne: "gauche", build: buildJets },
     { id: "actions",      titre: "FICHE",            onglet: "options", colonne: "droite", build: buildActions },
     { id: "modcaracs",    titre: "RÉGLAGES DES CARACTÉRISTIQUES", onglet: "options", colonne: "gauche", build: buildModCaracs },
     { id: "optcaps",      titre: "RÉGLAGES DES CAPACITÉS", onglet: "options", colonne: "droite", build: buildOptCaps },
     // les points de rupture DISPONIBLES, à forcer : un réglage, pas un geste de jeu
-    { id: "rupture",      titre: "RUPTURE",          onglet: "options", colonne: "gauche", build: buildRupture },
     // « Affichage » n'existe que dans Roll20 ; son absence sur le site laisse
     // les deux colonnes à égalité.
     { id: "affichage",    titre: "AFFICHAGE",        onglet: "options", colonne: "gauche", build: buildAffichage, pour: affichagePresent },
@@ -11573,7 +11499,7 @@
   // recopier ici une liste de colonnes qui dériverait au premier onglet
   // remanié.
   function colonneNormalisee(onglet, colonne) {
-    return onglet === "equipement" && ["gauche", "droite", "bas", "seule"].indexOf(colonne) >= 0 ? "milieu" : colonne;
+    return (onglet === "equipement" || onglet === "art") && ["gauche", "droite", "bas", "seule"].indexOf(colonne) >= 0 ? "milieu" : colonne;
   }
   function colonnesDe(onglet) {
     if (!aClef(SQUELETTES, onglet)) return null;

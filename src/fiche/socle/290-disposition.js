@@ -4,7 +4,7 @@
   // recopier ici une liste de colonnes qui dériverait au premier onglet
   // remanié.
   function colonneNormalisee(onglet, colonne) {
-    return onglet === "equipement" && ["gauche", "droite", "bas", "seule"].indexOf(colonne) >= 0 ? "milieu" : colonne;
+    return (onglet === "equipement" || onglet === "art") && ["gauche", "droite", "bas", "seule"].indexOf(colonne) >= 0 ? "milieu" : colonne;
   }
   function colonnesDe(onglet) {
     if (!aClef(SQUELETTES, onglet)) return null;

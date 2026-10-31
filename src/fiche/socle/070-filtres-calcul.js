@@ -6,7 +6,7 @@
   // une règle de calcul sans qu'on rouvre ce fichier, et sans réécrire le
   // module qui affiche la valeur : tout ce qui lit pvMax() voit le même chiffre.
   //
-  // Les CASCADES sont voulues et tombent toutes seules : pvMaxAuto() appelle
+  // Les CASCADES sont voulues et tombent toutes seules : pvMax() appelle
   // effondrement() qui appelle prMax() qui appelle caracTotal(). Les gardes
   // sont donc par NOM, jamais globales, pour ne pas couper ces chaînes-là.
   //

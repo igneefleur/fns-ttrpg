@@ -215,13 +215,14 @@
     idBox.appendChild(fld("Genre", textInput(function () { return state.genre; },
       function (v) { state.genre = v; }), "c2"));
 
-    // 2e ligne, pleine largeur : les deux budgets et le total d'XP.
-    var mrow = el("div", "pc-id-meters");
-    function meter(label, getUsed, getTotal, titre) {
+    // 2e ligne : rupture et expérience ; la charge et les accès suivent.
+    var mrow = el("div", "pc-id-meters pc-id-progression");
+    function meter(label, getUsed, getTotal, titre, totalInput, unite) {
       var m = el("span", "pc-meter");
       m.appendChild(el("span", null, label));
       var b = el("b", null, "");
       m.appendChild(b);
+      if(totalInput){m.appendChild(el("span",null,"/"));m.appendChild(totalInput);}
       var bar = el("span", "bar");
       var fill = el("i");
       bar.appendChild(fill);
@@ -229,7 +230,7 @@
       if (titre) m.title = titre;
       hooks.push(function () {
         var used = getUsed(), total = getTotal();
-        b.textContent = fmtP(used) + " / " + fmtP(total);
+        b.textContent = totalInput ? fmtP(used) : fmtP(used) + " / " + fmtP(total) + (unite ? " " + unite : "");
         var over = used > total;
         b.classList.toggle("over", over);
         fill.classList.toggle("over", over);
@@ -260,18 +261,8 @@
       });
       return m;
     }
-    // DEUX LIGNES, dans l'ordre arrêté par l'auteur :
-    //   Création | XP dépensé | XP total
-    //   Avantage | Rupture
-    var mrow2 = el("div", "pc-id-meters");
-    if (creation()) mrow.appendChild(meter("Création", creationDepense, creationPoints));
-    mrow.appendChild(meter("XP dépensé", xpDepense, function () { return state.xpTotal; },
-      "Ce que les rangs de compétence, les techniques et les caractéristiques ont coûté"));
-    if (avantagePoints() !== null)
-      mrow2.appendChild(pieces("Avantage", avantageDepense, avantagePoints, "carres", "Points d'avantage"));
-    mrow2.appendChild(pieces("Rupture", ruptureDepense, ruptureMax, "chaines",
-      "Points de rupture engagés par les Rangs Max et par les techniques"));
     var xpIn = el("input");
+    xpIn.className="pc-id-xp-total";xpIn.setAttribute("aria-label","XP total");xpIn.title="XP total";
     xpIn.type = "number"; xpIn.min = 0; xpIn.step = 25;
     xpIn.value = state.xpTotal;
     xpIn.addEventListener("input", function () {
@@ -279,9 +270,12 @@
       if (isFinite(v)) { state.xpTotal = Math.max(0, v); refresh(); }
     });
     hooks.push(function () { if (document.activeElement !== xpIn) xpIn.value = state.xpTotal; });
-    mrow.appendChild(fld("XP total", xpIn));
-    idBox.appendChild(mrow);
-    idBox.appendChild(mrow2);
+    mrow.appendChild(pieces("Rupture", ruptureDepense, ruptureMax, "chaines", "Points de rupture engagés"));
+    mrow.appendChild(meter("XP dépensé",xpDepense,function(){return state.xpTotal;},"Expérience dépensée / totale",xpIn));
+    var mrow2=el("div","pc-id-meters pc-id-portage");
+    mrow2.appendChild(meter("Charge",poidsPorte,charge,"Charge portée / maximum",null,"kg"));
+    mrow2.appendChild(meter("Accès rapides",accesPris,accesRapides,"Accès rapides utilisés / maximum"));
+    idBox.appendChild(mrow);idBox.appendChild(mrow2);
 
     head.appendChild(idBox);
     sheet.appendChild(head);

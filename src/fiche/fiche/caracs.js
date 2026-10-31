@@ -108,5 +108,16 @@
       });
       b.appendChild(row);
     });
+    if (creation()) {
+      var budget=el("div","pc-creation-budget pc-edit-only");
+      var ligne=el("div","pc-vital-tete");
+      ligne.appendChild(el("span","pc-vital-nom","Création"));
+      var valeur=el("span","pc-vital-val");ligne.appendChild(valeur);budget.appendChild(ligne);
+      var jauge=el("span","pc-vital-jauge"),plein=el("i");jauge.appendChild(plein);budget.appendChild(jauge);b.appendChild(budget);
+      hooks.push(function(){
+        var pris=creationDepense(),max=creationPoints();valeur.textContent=fmtP(pris)+" / "+fmtP(max);
+        plein.style.width=clamp(max?pris/max*100:0,0,100)+"%";plein.classList.toggle("over",pris>max);
+      });
+    }
     return b;
   }

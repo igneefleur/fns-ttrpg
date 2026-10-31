@@ -2277,7 +2277,7 @@ html.night .t-pi { --palier-plein: #30343b; }
 .pc-editable.editing .pc-comp-row { grid-template-columns: minmax(0, 1fr) calc(6.2rem + 6.2rem / 6 + .2rem) 2.4rem; }
 .pc-editable.editing .pc-comp-rang-head { padding-left: calc(6.2rem / 6 + .2rem); }
 .pc-comp-champ::after { content: none; }
-.pc-comp-groupe-nom { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; padding: .15rem 0; }
+.pc-comp-groupe-nom { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; padding: .15rem 0; }
 .pc-comp-repli { border: 0; background: transparent; color: var(--ink-2); cursor: pointer; padding: 0 .3rem; font-size: .85rem; }
 .pc-comp-champ { user-select: none; }
 .pc-comp-add { flex-wrap: wrap; }
@@ -2386,3 +2386,20 @@ html.night .t-pi { --palier-plein: #30343b; }
 
 button.pc-obj-addtile{background:transparent;font-family:inherit}
 button.pc-obj-addtile:disabled{cursor:default;opacity:.45}
+
+/* En-tête : deux compteurs par ligne ; la création appartient aux caractéristiques. */
+.pc-id-meters.pc-id-progression, .pc-id-meters.pc-id-portage { flex-wrap: nowrap; }
+.pc-id-progression > .pc-meter.pc-meter-pieces { flex: 1 1 0; }
+.pc-id-progression > .pc-meter:not(.pc-meter-pieces) { flex: 2 1 0; }
+.pc-id-portage > .pc-meter { flex: 1 1 0; }
+.pc-id-xp-total {
+  width: 5ch; min-width: 3ch; padding: .03rem .1rem .08rem; border: 0;
+  border-bottom: 1px solid var(--line); border-radius: 0; background: transparent;
+  color: var(--ink); font: inherit; font-size: .72rem; font-weight: 600;
+  font-variant-numeric: tabular-nums; appearance: textfield;
+}
+.pc-id-xp-total:focus { outline: none; border-bottom: 2px solid var(--accent); }
+.pc-id-xp-total::-webkit-inner-spin-button, .pc-id-xp-total::-webkit-outer-spin-button { appearance: none; margin: 0; }
+.pc-comp-groupe-trait { flex: 1 1 1rem; min-width: 1rem; height: 1px; background: currentColor; pointer-events: none; }
+.pc-creation-budget { margin-top: .65rem; --teinte: var(--or); }
+.pc-creation-budget .pc-vital-tete { padding: 0; margin-bottom: .25rem; }

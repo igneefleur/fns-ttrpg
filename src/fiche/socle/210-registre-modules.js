@@ -88,7 +88,7 @@
     // « pleine largeur » — le plan des modules la reconnaît et dessine alors sa
     // propre rangée.
     art: function (pane) {
-      return { seule: pane };
+      return { milieu: pane };
     },
     equipement: function (pane) {
       return { milieu: pane };

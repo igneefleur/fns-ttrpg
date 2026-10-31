@@ -35,7 +35,7 @@
     // Pleine largeur, seul de son onglet : une technique est une CARTE, avec
     // ses rangs, son coût et son effet. Elle vivait sous les huit blocs de la
     // Fiche, c'est-à-dire là où personne n'allait la chercher.
-    { id: "techniques",   titre: "TECHNIQUES",       onglet: "art", colonne: "seule",  build: buildTechniques },
+    { id: "techniques",   titre: "TECHNIQUES",       onglet: "art", colonne: "milieu",  build: buildTechniques },
     // ---- onglet Équipement ----
     { id: "inv",          titre: "INVENTAIRE",       onglet: "equipement", colonne: "milieu",    build: buildInv },
     // ---- onglet Bio ----
@@ -48,12 +48,10 @@
     // ---- onglet Options ----
     // Deux colonnes qui se répondent : à gauche ce qui touche aux valeurs et au
     // dispositif, à droite ce qui touche à la fiche et aux longues listes.
-    { id: "jets",         titre: "JETS",             onglet: "options", colonne: "gauche", build: buildJets },
     { id: "actions",      titre: "FICHE",            onglet: "options", colonne: "droite", build: buildActions },
     { id: "modcaracs",    titre: "RÉGLAGES DES CARACTÉRISTIQUES", onglet: "options", colonne: "gauche", build: buildModCaracs },
     { id: "optcaps",      titre: "RÉGLAGES DES CAPACITÉS", onglet: "options", colonne: "droite", build: buildOptCaps },
     // les points de rupture DISPONIBLES, à forcer : un réglage, pas un geste de jeu
-    { id: "rupture",      titre: "RUPTURE",          onglet: "options", colonne: "gauche", build: buildRupture },
     // « Affichage » n'existe que dans Roll20 ; son absence sur le site laisse
     // les deux colonnes à égalité.
     { id: "affichage",    titre: "AFFICHAGE",        onglet: "options", colonne: "gauche", build: buildAffichage, pour: affichagePresent },

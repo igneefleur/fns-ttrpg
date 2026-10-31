@@ -318,6 +318,7 @@
         var titre = el("div", "pc-comp-champ");
         titre.appendChild(poigneeComp("Déplacer le groupe", function () { return { type: "groupe", groupe: g }; }, groupe));
         titre.appendChild(el("span", "pc-comp-groupe-nom", g || "Sans groupe"));
+        titre.appendChild(el("span", "pc-comp-groupe-trait"));
         var bouton = el("button", "pc-comp-repli", compReplies[g] ? "▸" : "▾");
         bouton.type = "button";
         bouton.setAttribute("aria-expanded", String(!compReplies[g]));

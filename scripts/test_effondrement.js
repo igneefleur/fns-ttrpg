@@ -25,4 +25,16 @@ test('Horloge : boire conserve 1 h 30, puis un seul point disparaît à 2 h',()=
 test('Horloge : sauvegarde compacte/rechargement sans attribut dédié de plus',()=>{const w=setup();w.state.effAlcool=2;w.ctx.avanceAlcoolSecondes(5401);const attrs=C.encode(w.state),restored=C.read(attrs).state;assert.equal(restored.horlogeAlcool.heures,1);assert.equal(restored.horlogeAlcool.minutes,30);assert.equal(restored.horlogeAlcool.secondes,1);assert.ok(attrs.owd_block_effondrement);assert.equal(Object.keys(attrs).some(k=>k==='owd_block_horlogeAlcool'),false);});
 test('Avance et annulation : alcool, horloge et réserves restaurés exactement',()=>{const w=setup();w.state.effAlcool=3;w.ctx.avanceAlcoolSecondes(5400);const before=JSON.stringify(w.ctx.photoTemps());w.ctx.avancerSecondes(7200);assert.equal(w.state.effAlcool,2);w.ctx.reculerSecondes(7200);assert.equal(JSON.stringify(w.ctx.photoTemps()),before);});
 test('Deux consommations simultanées fusionnent sans perdre un point',()=>{const s=M.blank(),attrs=C.encode(s),a=new C.Session(attrs,s),b=new C.Session(attrs,s);for(const peer of [a,b]){const next=C.copy(s);next.effAlcool=1;peer.capture(next);attrs['owd_ops_'+peer.id]={current:JSON.stringify({epoch:peer.epoch,ops:Object.values(peer.pending)})};}assert.equal(C.read(attrs).state.effAlcool,2);});
+test('PV/PE : ajouts et multiplicateurs avant effondrement, base de réglage inchangée',()=>{
+ const w=setup();w.ctx.capAuto=()=>100;w.ctx.effondrement=()=>2;
+ w.state.capsLeviers={max:{a1:{pv:20,pe:-20},m1:{pv:2},a3:{pv:10},m3:{pv:0.5}}};
+ assert.equal(w.ctx.pvMaxAuto(),100);assert.equal(w.ctx.peMaxAuto(),100);
+ assert.equal(w.ctx.capMax('pv',w.ctx.pvMaxAuto),125);assert.equal(w.ctx.pvMax(),112);assert.equal(w.ctx.peMax(),64);
+});
+test('PV/PE forcés : pénalité appliquée après Forcé, annulée si effondrement désactivé',()=>{
+ const w=setup();w.ctx.capAuto=()=>100;w.ctx.effondrement=()=>w.state.effDesactive?0:2;
+ w.state.capsLeviers={max:{force:{pv:200,pe:200,pm:200}}};assert.equal(w.ctx.pvMax(),180);assert.equal(w.ctx.peMax(),160);assert.equal(w.ctx.pmMax(),200);
+ w.state.effDesactive=true;assert.equal(w.ctx.pvMax(),200);assert.equal(w.ctx.peMax(),200);
+ w.ctx.effondrement=()=>10;assert.equal(w.ctx.pvMax(),100);assert.equal(w.ctx.peMax(),0);
+});
 console.log(count+' scénarios d’effondrement validés.');

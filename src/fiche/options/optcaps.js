@@ -35,7 +35,7 @@
       },
       lire: function (cle) { return B.lire("max", cle); },
       ecrire: function (cle, boite, v) { B.ecrire("max", boite, cle, v); },
-      mot: ["Total", "Valeur effective"],
+      mot: ["Total", "Valeur avant effondrement pour les PV et PE"],
       borne: 99999,
       // L'EFFONDREMENT N'EST PAS UN MAXIMUM, C'EST UN NIVEAU. Sa ligne montre
       // donc ce que le personnage SUBIT, pas le plafond de l'échelle : les deux
@@ -47,7 +47,7 @@
       rendu: function (cle) {
         var d = capDef(cle);
         return {
-          texte: fmtP(cle === "effondrement" ? effondrement() : maxDe(cle)),
+          texte: fmtP(cle === "effondrement" ? effondrement() : (cle === "pv" || cle === "pe") ? capMax(cle, function () { return autoDe(cle); }) : maxDe(cle)),
           // La formule du livre est ce que la capacité vaut AVANT tout réglage :
           // c'est la base de la chaîne, et la dire n'est pas réciter une règle,
           // c'est dire d'où sort le nombre qu'on lit.

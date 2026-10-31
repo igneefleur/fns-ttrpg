@@ -1,12 +1,10 @@
   // ---- 22. Réglages des compétences ----
   // Le pendant des deux blocs précédents, compétence par compétence, et le seul
-  // des trois à porter une BANDE D'ONGLETS : une compétence a quatre valeurs
-  // dérivées, là où une caractéristique n'en a qu'une.
+  // des trois à porter une BANDE D'ONGLETS : une compétence a trois réglages
+  // disponibles, là où une caractéristique n'en a qu’un.
   //
   //   Bonus    ce qu'elle ajoute au jet
-  //   Dés      combien de dés d'action elle laisse engager
   //   XP       ce que ses rangs ont coûté
-  //   Offerts  combien de ses premiers rangs ont été reçus sans XP
   //   Rupture  ce que ses rangs ont engagé
   //
   // La liste est OUVERTE (le joueur nomme ses compétences) et FILTRÉE : le bloc
@@ -14,7 +12,7 @@
   // registre à lui, `optHooks`, vidé à chaque passe — sinon chaque rebâti
   // fuirait des hooks qui pointent sur un DOM disparu.
   //
-  // LES QUATRE ONGLETS SE REBÂTISSENT ENSEMBLE, et le rejeu final est
+  // LES TROIS ONGLETS SE REBÂTISSENT ENSEMBLE, et le rejeu final est
   // obligatoire : les appelants lancent refresh() PUIS le rebâti, donc les
   // fonctions fraîches naîtraient après la passe et les totaux resteraient
   // vides jusqu'au prochain geste.
@@ -47,8 +45,8 @@
     var B = boitesTable("compsLeviers");
     var rebatis = [];
 
-    // Ce que les quatre onglets montrent, dans l'ordre de la vie d'une
-    // compétence : ce qu'elle DONNE (bonus, dés), puis ce qu'elle COÛTE
+    // Ce que les trois onglets montrent, dans l'ordre de la vie d'une
+    // compétence : ce qu'elle DONNE (bonus), puis ce qu'elle COÛTE
     // (xp, rupture).
     function onglet(titre, aide, nom, mot, borne, auto, rendu) {
       bande.onglet(titre, aide, function (page) {
@@ -110,19 +108,6 @@
         };
       });
 
-    onglet("Dés", "", "des", ["Dés", "Dés d'action engageables"], 99,
-      function (c) { return c ? num(rangInfo(compRang(c)).des, 0) : 0; },
-      function (c) {
-        if (!c) return { texte: "—", titre: "" };
-        var rang = compRang(c);
-        return {
-          texte: fmtP(compDes(c)),
-          zero: !compDes(c),
-          titre: chaineTexteDe(lireComp("des", c.id), "rang " + rang + " :",
-                               num(rangInfo(rang).des, 0))
-        };
-      });
-
     onglet("XP", "", "xp", ["Coût", "Coût effectif en xp"], 9999,
       function (c) { return compXpAuto(c); },
       function (c) {
@@ -133,17 +118,6 @@
           titre: chaineTexteDe(lireComp("xp", c.id),
                                "rangs pris jusqu'au rang " + compRang(c) + " :",
                                compXpAuto(c))
-        };
-      });
-
-    onglet("Offerts", "", "offerts", ["Rangs", "Rangs offerts"], 99,
-      function () { return 0; },
-      function (c) {
-        if (!c) return { texte: "—", titre: "" };
-        return {
-          texte: fmtP(compOffertsBrut(c)),
-          zero: !compOffertsBrut(c),
-          titre: chaineTexteDe(lireComp("offerts", c.id), "rangs offerts :", 0)
         };
       });
 
