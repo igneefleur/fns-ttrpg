@@ -299,6 +299,7 @@
   }
  ],
  "effondrement": {
+  "surchargeDepart": 1,
   "surchargeTranche": 5,
   "tranche": 10,
   "plafond": 10,

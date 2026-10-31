@@ -55,9 +55,9 @@
     
       <link rel="stylesheet" href="../../../../stylesheets/cartes.css?v=24">
     
-      <link rel="stylesheet" href="../../../../stylesheets/owd-fiche.css?v=270">
+      <link rel="stylesheet" href="../../../../stylesheets/owd-fiche.css?v=272">
     
-      <link rel="stylesheet" href="../../../../stylesheets/owd-des3d.css?v=270">
+      <link rel="stylesheet" href="../../../../stylesheets/owd-des3d.css?v=272">
     
     <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -2043,7 +2043,7 @@
 <p>Exemple. Un personnage ordinaire, qui porte 20 en Chance, dispose de 4 points de chance. Il lui en faut 25 pour en avoir 5.</p>
 </div>
 <h3 id="la-charge">La charge</h3>
-<p>La charge est le poids que le personnage porte sans en être gêné. Elle découle de la Force. Il peut dépasser ce maximum : chaque tranche complète de 5 % de dépassement lui donne un niveau d’<a href="#leffondrement">effondrement</a>. Ces niveaux diminuent dès qu’il se décharge.</p>
+<p>La charge est le poids que le personnage porte sans en être gêné. Elle découle de la Force. Il peut dépasser ce maximum : il prend un niveau d’<a href="#leffondrement">effondrement</a> dès le dépassement, puis un niveau supplémentaire par tranche complète de 5 % de dépassement. Ces niveaux diminuent dès qu’il se décharge.</p>
 <p class="formula">Charge = 30 + Force</p>
 <h3 id="les-acces-rapides">Les accès rapides</h3>
 <p>Les accès rapides sont les objets que le personnage garde sur lui et saisit sans rien fouiller. Ils découlent de la Dextérité. Tout le reste voyage dans son sac, et un sac se pose ou se jette.</p>
@@ -2101,9 +2101,9 @@
 <p class="formula">Contenance = 40</p>
 <p>Elle s'occupe comme la <a href="#la-charge">charge</a> se remplit : elle part de zéro, monte à mesure que le personnage avale, et redescend à mesure qu'il digère. Chaque chose avalée y occupe son volume, et le garde le temps que le corps met à en venir à bout ; chaque objet porte le sien, comme il porte son poids.</p>
 <p class="formula">Le ventre digère 1 de volume toutes les dix minutes</p>
-<p>Un personnage peut dépasser sa contenance maximale. Chaque tranche complète de 5 % de dépassement lui donne un niveau d’<a href="#leffondrement">effondrement</a>. Ces niveaux diminuent à mesure qu’il digère. Avec un maximum de 40, une contenance occupée de 42 donne un niveau, 44 en donne deux et 50 en donne cinq.</p>
+<p>Un personnage peut dépasser sa contenance maximale. Il prend un niveau d’<a href="#leffondrement">effondrement</a> dès le dépassement, puis un niveau supplémentaire par tranche complète de 5 % de dépassement. Ces niveaux diminuent à mesure qu’il digère. Avec un maximum de 40, une contenance occupée de 40 ne donne aucun niveau, une valeur au-dessus de 40 et en dessous de 42 en donne un, 42 en donne deux, 44 en donne trois et 50 en donne six.</p>
 <div class="memo">
-<p>Exemple. Une chose d'un volume de 20 est digérée en trois heures vingt. Un personnage qui en avale deux d'affilée a rempli sa contenance. Il peut encore manger ou boire, mais chaque tranche complète de 2 points au-delà de son maximum de 40 lui donne un niveau d’effondrement.</p>
+<p>Exemple. Une chose d'un volume de 20 est digérée en trois heures vingt. Un personnage qui en avale deux d'affilée a rempli sa contenance. Il peut encore manger ou boire, mais le moindre dépassement de son maximum de 40 lui donne un niveau d’effondrement, puis chaque tranche complète de 2 points dépassant ce maximum en ajoute un.</p>
 </div>
 </div>
 <hr />
@@ -2275,7 +2275,7 @@
 <h3 id="leffondrement">L'effondrement</h3>
 <p>Les manques des <a href="#les-points-de-repos">points de repos</a>, des <a href="#la-satiete-et-lhydratation">points de satiété et des points d'hydratation</a> se comptent sur une seule échelle, l'effondrement. L'<a href="#lexposition">exposition</a> au froid et au chaud s'y compte aussi.</p>
 <p>Chaque réserve donne un niveau d'effondrement par tranche de 10 % perdue, ce qui fait dix niveaux, le dernier lorsqu'elle est vide. Les niveaux de toutes les réserves s'additionnent, sans jamais dépasser dix.</p>
-<p>La surcharge et l’excès de contenance ajoutent chacun un niveau par tranche complète de 5 % au-dessus de leur maximum. Leurs contributions s’ajoutent aux autres causes, toujours dans la limite du plafond global de dix.</p>
+<p>La surcharge et l’excès de contenance ajoutent chacun 1 niveau dès que leur maximum est dépassé, puis 1 niveau supplémentaire par tranche complète de 5 % de dépassement. Exactement au maximum, ils ne donnent aucun niveau. Leurs contributions s’ajoutent aux autres causes, toujours dans la limite du plafond global de dix.</p>
 <p>Le niveau d'effondrement réduit le maximum de points d'endurance de 10 % par niveau, et le maximum de points de vie de 5 %.</p>
 <p>Quand un maximum baisse, les points qui le dépassent sont perdus : un personnage à 100 points de vie sur 100 qui gagne un niveau passe à 95 sur 95, et un personnage à 50 sur 100 passe à 50 sur 95. Quand le niveau d'effondrement baisse, le maximum remonte, mais les points perdus ne reviennent pas.</p>
 <p>La table ci-dessous donne ce qui reste du maximum de points d'endurance et du maximum de points de vie selon le niveau d'effondrement.</p>
@@ -2505,15 +2505,15 @@
       
         <script src="../../../../javascripts/night.js"></script>
       
-        <script src="../../../../javascripts/owd-migrations.js?v=270"></script>
+        <script src="../../../../javascripts/owd-migrations.js?v=272"></script>
       
-        <script src="../../../../javascripts/owd-mods.js?v=270"></script>
+        <script src="../../../../javascripts/owd-mods.js?v=272"></script>
       
-        <script src="../../../../javascripts/owd-des3d.js?v=270"></script>
+        <script src="../../../../javascripts/owd-des3d.js?v=272"></script>
       
-        <script src="../../../../javascripts/owd-inventaire-data.js?v=270"></script>
+        <script src="../../../../javascripts/owd-inventaire-data.js?v=272"></script>
       
-        <script src="../../../../javascripts/owd-fiche.js?v=270"></script>
+        <script src="../../../../javascripts/owd-fiche.js?v=272"></script>
       
         <script src="../../../../javascripts/copybtn.js"></script>
       
