@@ -638,8 +638,10 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
 .pc-expo-jauge > i { position: absolute; top: 0; bottom: 0; width: 0; }
 .pc-expo-jauge > i.froid { background: var(--froid); }
 .pc-expo-jauge > i.chaud { background: var(--chaud); }
-/* la zone idéale et l'intensité, en cases soudées sous la barre */
-.pc-expo-stat { margin: 0 .4rem .4rem; width: auto; }
+/* La zone idéale occupe sa ligne ; intensité et résorption se partagent
+   équitablement la ligne suivante. */
+.pc-expo-stats { display: flex; flex-direction: column; gap: .25rem; margin-bottom: .4rem; }
+.pc-expo-stat { margin: 0 .4rem; width: auto; }
 .pc-expo-stat .v.froid { color: var(--froid); }
 .pc-expo-stat .v.chaud { color: var(--chaud); }
 /* ---- Contenance : l'estomac ----

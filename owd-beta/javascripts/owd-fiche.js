@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.31.2b";
+  var RELEASE = "4.31.3b";
   var SCHEMA = 18;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -5487,15 +5487,21 @@
 
     // LA ZONE IDÉALE (en température de l'air, selon l'effort du module
     // Effort et Temps) et l'INTENSITÉ de froid ou de chaud qu'il subit
-    var stat = el("div", "pc-stat pc-expo-stat");
-    function caseStat(k) {
+    var stat = el("div", "pc-expo-stats");
+    var statZone = el("div", "pc-stat pc-expo-stat");
+    var statThermique = el("div", "pc-stat pc-expo-stat");
+    function caseStat(ligne, k) {
       var c = el("div", "c"), v = el("span", "v", "");
       c.appendChild(v);
       c.appendChild(el("span", "k", k));
-      stat.appendChild(c);
+      ligne.appendChild(c);
       return v;
     }
-    var vZone = caseStat("idéal °C"), vInt = caseStat("intensité"), vRes = caseStat("résorption");
+    var vZone = caseStat(statZone, "idéal °C");
+    var vInt = caseStat(statThermique, "intensité");
+    var vRes = caseStat(statThermique, "résorption");
+    stat.appendChild(statZone);
+    stat.appendChild(statThermique);
     vRes.setAttribute("aria-label", "Prochaine résorption naturelle");
     vRes.title = "Points de résorption naturelle à la prochaine tranche favorable complète";
 
